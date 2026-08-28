@@ -24,10 +24,11 @@ concept의 `sources[].resource`에 들어 있으면 해당 concept 본문을 고
 | macOS / Linux | `~/.whale-erp-worktrees/` |
 
 이름은 포켓몬 이름(소문자, 영문)으로 짓는다. `git worktree list` 로 이미 쓰는
-이름을 피한다.
+이름을 피한다. 특별한 주문이 없으면 항상 `main` 을 기준으로 분기한다 (현재
+체크아웃된 브랜치가 아니라).
 
 ```bash
-git worktree add ~/.whale-erp-worktrees/pikachu -b feat/some-branch
+git worktree add ~/.whale-erp-worktrees/pikachu -b feat/some-branch main
 cp .env* ~/.whale-erp-worktrees/pikachu/ 2>/dev/null   # Windows: copy .env* <루트>\pikachu\
 ```
 
