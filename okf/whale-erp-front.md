@@ -7,7 +7,7 @@ tags: [erp, frontend, nextjs]
 sources:
   - { id: package-json, resource: ../package.json, title: Dependency manifest }
   - { id: app-dir, resource: ../src/app, title: App Router entry }
-generated: { by: claude-code/opus-5, at: 2026-08-28T06:39:16Z }
+generated: { by: claude-code/opus-5, at: 2026-08-28T07:37:12Z }
 ---
 
 # Stack
@@ -18,6 +18,7 @@ generated: { by: claude-code/opus-5, at: 2026-08-28T06:39:16Z }
 | React      | 19.2.8  | `react-dom` at the same version.        |
 | TypeScript | ^5      | Strict config in `tsconfig.json`.       |
 | Tailwind   | ^4      | Via `@tailwindcss/postcss`.             |
+| pnpm       | 11.18.0 | `packageManager` 로 고정. npm 사용 금지. |
 
 # Layout
 
@@ -27,7 +28,8 @@ generated: { by: claude-code/opus-5, at: 2026-08-28T06:39:16Z }
 # Commands
 
 ```bash
-npm run dev     # dev server
-npm run build   # production build
-npm run lint    # eslint
+pnpm install    # deps
+pnpm dev        # dev server
+pnpm build      # production build
+pnpm lint       # eslint
 ```
