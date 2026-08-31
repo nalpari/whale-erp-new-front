@@ -23,13 +23,14 @@ concept의 `sources[].resource`에 들어 있으면 해당 concept 본문을 고
 | Windows | `C:\workspace\.whale-erp-worktrees\` |
 | macOS / Linux | `~/.whale-erp-worktrees/` |
 
-이름은 포켓몬 이름(소문자, 영문)으로 짓는다. `git worktree list` 로 이미 쓰는
-이름을 피한다. 특별한 주문이 없으면 항상 `main` 을 기준으로 분기한다 (현재
-체크아웃된 브랜치가 아니라).
+워크트리 이름은 세계 관광 명소 이름(소문자, 영문)으로, 그 안에 만드는 브랜치
+이름은 포켓몬 이름(소문자, 영문)으로 짓는다. `git worktree list` 와
+`git branch` 로 이미 쓰는 이름을 피한다. 특별한 주문이 없으면 항상 `main` 을
+기준으로 분기한다 (현재 체크아웃된 브랜치가 아니라).
 
 ```bash
-git worktree add ~/.whale-erp-worktrees/pikachu -b feat/some-branch main
-cp .env* ~/.whale-erp-worktrees/pikachu/ 2>/dev/null   # Windows: copy .env* <루트>\pikachu\
+git worktree add ~/.whale-erp-worktrees/machu-picchu -b pikachu main
+cp .env* ~/.whale-erp-worktrees/machu-picchu/ 2>/dev/null   # Windows: copy .env* <루트>\machu-picchu\
 ```
 
 `.env`, `.env.develop`, `.env.production` 등은 git 이 관리하지 않아 새 워크트리에
