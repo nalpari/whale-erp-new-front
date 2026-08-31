@@ -2,12 +2,12 @@
 type: Application
 title: Whale ERP Frontend
 description: Next.js 16 App Router frontend for Whale ERP.
-resource: https://github.com/nalpari/whale-erp-front
+resource: https://github.com/nalpari/whale-erp-new-front
 tags: [erp, frontend, nextjs]
 sources:
   - { id: package-json, resource: ../package.json, title: Dependency manifest }
   - { id: app-dir, resource: ../src/app, title: App Router entry }
-generated: { by: claude-code/opus-5, at: 2026-08-28T09:24:36Z }
+generated: { by: claude-code/opus-5, at: 2026-08-31T04:16:36Z }
 ---
 
 # Stack
