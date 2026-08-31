@@ -16,21 +16,24 @@ concept의 `sources[].resource`에 들어 있으면 해당 concept 본문을 고
 
 ## 워크트리
 
-워크트리는 저장소 안이 아니라 플랫폼별 루트 아래에 만든다.
+워크트리는 저장소 안이 아니라 플랫폼별 루트 아래, 프로젝트 이름으로 한 단계
+내려간 곳에 만든다. 루트는 whale-erp-* 프로젝트가 공유하므로 프로젝트 단계가
+없으면 이름이 서로 부딪힌다.
 
-| 플랫폼 | 루트 |
+| 플랫폼 | 경로 |
 |---|---|
-| Windows | `C:\workspace\.whale-erp-worktrees\` |
-| macOS / Linux | `~/.whale-erp-worktrees/` |
+| Windows | `C:\workspace\.whale-erp-worktrees\<프로젝트>\<워크트리>` |
+| macOS / Linux | `~/.whale-erp-worktrees/<프로젝트>/<워크트리>` |
 
-워크트리 이름은 세계 관광 명소 이름(소문자, 영문)으로, 그 안에 만드는 브랜치
-이름은 포켓몬 이름(소문자, 영문)으로 짓는다. `git worktree list` 와
-`git branch` 로 이미 쓰는 이름을 피한다. 특별한 주문이 없으면 항상 `main` 을
-기준으로 분기한다 (현재 체크아웃된 브랜치가 아니라).
+프로젝트 이름은 저장소 디렉터리 이름을 그대로 쓴다 (이 저장소는
+`whale-erp-front`). 워크트리 이름은 세계 관광 명소 이름(소문자, 영문)으로,
+그 안에 만드는 브랜치 이름은 포켓몬 이름(소문자, 영문)으로 짓는다.
+`git worktree list` 와 `git branch` 로 이미 쓰는 이름을 피한다. 특별한 주문이
+없으면 항상 `main` 을 기준으로 분기한다 (현재 체크아웃된 브랜치가 아니라).
 
 ```bash
-git worktree add ~/.whale-erp-worktrees/machu-picchu -b pikachu main
-cp .env* ~/.whale-erp-worktrees/machu-picchu/ 2>/dev/null   # Windows: copy .env* <루트>\machu-picchu\
+git worktree add ~/.whale-erp-worktrees/whale-erp-front/machu-picchu -b pikachu main
+cp .env* ~/.whale-erp-worktrees/whale-erp-front/machu-picchu/ 2>/dev/null   # Windows: copy .env* <루트>\whale-erp-front\machu-picchu\
 ```
 
 `.env`, `.env.develop`, `.env.production` 등은 git 이 관리하지 않아 새 워크트리에
