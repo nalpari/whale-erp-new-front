@@ -14,7 +14,10 @@
        루트 index.html  = 영역 목록만
        영역 overview    = 그 영역의 화면 목록 + 쟁점
        화면             = 그 화면의 내용 + 그 화면에 걸린 쟁점
-  5. 파일 간 문장 중복 (한 곳만 고치고 다른 곳을 잊는 사고를 막는다)
+  5. 금액 산술 — 급여 표의 기본급 + 수당 - 공제 = 실지급
+  6. 확정값 위반 — 정해진 결정과 어긋나는 값이 화면 본문에 남았는지
+       (쟁점 블록 안의 채택 안 한 안은 검사에서 뺀다)
+  7. 파일 간 문장 중복 (한 곳만 고치고 다른 곳을 잊는 사고를 막는다)
 """
 import os, re, sys, collections
 from html.parser import HTMLParser
@@ -107,12 +110,83 @@ def check_dupes(files):
             if len(t) >= 40: sent[t].add(f)
     return ['%s : "%s…"' % (sorted(v), k[:56]) for k, v in sent.items() if len(v) > 1]
 
+def _tables(html):
+    """<table> 을 (헤더 리스트, 행 리스트) 로 뽑는다. 셀 안의 태그는 벗겨낸다."""
+    out=[]
+    for t in re.findall(r'<table[^>]*>(.*?)</table>', html, re.S):
+        head=[re.sub(r'<[^>]+>','',c).strip() for c in re.findall(r'<th[^>]*>(.*?)</th>', t, re.S)]
+        rows=[]
+        for r in re.findall(r'<tr[^>]*>(.*?)</tr>', t, re.S):
+            cells=[re.sub(r'<[^>]+>','',c).strip() for c in re.findall(r'<td[^>]*>(.*?)</td>', r, re.S)]
+            if cells: rows.append(cells)
+        if head and rows: out.append((head, rows))
+    return out
+
+def _num(s):
+    """'2,840,000' → 2840000 · '—' 나 빈칸은 None (미입력과 0 을 구분한다)."""
+    s=s.strip()
+    if not s or s in ("—","-","–"): return None
+    m=re.fullmatch(r'[₩\s]*([\d,]+)\s*', s)
+    return int(m.group(1).replace(",","")) if m else None
+
+def check_amounts(files):
+    """급여 표의 산술 검증 — 기본급 + 수당 - 공제 = 실지급.
+       공제가 미입력이면 실지급은 지급 합계와 같아야 한다."""
+    out=[]
+    for f in files:
+        for head, rows in _tables(open(f, encoding="utf-8").read()):
+            def idx(*names):
+                for i,h in enumerate(head):
+                    if any(n in h for n in names): return i
+                return None
+            i_base, i_allw = idx("기본급"), idx("수당")
+            i_ded,  i_net  = idx("공제"), idx("실지급")
+            if None in (i_base, i_net): continue
+            for r in rows:
+                if max(i for i in (i_base,i_allw,i_ded,i_net) if i is not None) >= len(r): continue
+                base = _num(r[i_base]); net = _num(r[i_net])
+                if base is None or net is None: continue
+                allw = _num(r[i_allw]) if i_allw is not None else 0
+                ded  = _num(r[i_ded])  if i_ded  is not None else 0
+                expect = base + (allw or 0) - (ded or 0)
+                if expect != net:
+                    out.append("%s: %s → %s + %s - %s = %s 인데 실지급이 %s"
+                               % (f, r[0], r[i_base],
+                                  r[i_allw] if i_allw is not None else 0,
+                                  r[i_ded] if i_ded is not None else 0,
+                                  format(expect, ","), r[i_net]))
+    return out
+
+def check_decisions(files):
+    """확정된 결정과 어긋나는 값이 화면 본문에 남아 있는지.
+       쟁점 블록(.gap) 안은 채택 안 한 A 안을 일부러 남겨 두므로 검사에서 뺀다.
+       결정이 바뀌면 이 표를 고친다."""
+    DECIDED = [
+        ("날인 기한 30일",      [r'14일\s*뒤\s*(자동\s*)?만료', r'날인 기한은?\s*발송일로부터\s*14일']),
+        ("계약 상태 6단계",     [r'>승인 대기<']),
+        ("TO-DO 특별업무 전용", [r'매일 \d\d:\d\d', r'매주 [월화수목금토일]', r'매월 \d+일']),
+    ]
+    out=[]
+    for f in files:
+        s=open(f, encoding="utf-8").read()
+        # 쟁점 블록 제거 후 본문만 검사
+        body=re.sub(r'<div class="gap[^"]*">.*?\n\s{10,14}</div>', '', s, flags=re.S)
+        body=re.sub(r'<!--.*?-->', '', body, flags=re.S)
+        for label, pats in DECIDED:
+            for p in pats:
+                for m in re.finditer(p, body):
+                    ctx=' '.join(re.sub(r'<[^>]+>','',body[max(0,m.start()-40):m.end()+30]).split())
+                    out.append("%s: [%s] 위반 — …%s…" % (f, label, ctx[:60]))
+    return out
+
 def main():
     files=html_files()
     checks=[("태그 균형", check_balance(files)),
             ("링크·자원", check_links(files)),
             ("CSS 클래스", check_classes(files)),
             ("층 원칙", check_layers(files)),
+            ("금액 산술", check_amounts(files)),
+            ("확정값 위반", check_decisions(files)),
             ("문장 중복", check_dupes(files))]
     bad=0
     print("목업 파일 %d개 검사\n" % len(files))
