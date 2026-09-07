@@ -41,18 +41,19 @@
             </div>
           </div>
 
-          <div class="gap">
+          <div class="gap is-decided">
             <div class="gap__head">
               <span class="gap__no">STAFF-5</span>
               <b>이 금액을 누가 채우는가</b>
+              <span class="gap__decided">확정 · 주휴·연장까지 계산</span>
               <span class="gap__ref">F-XXYSNZ · S-DOVWAR</span>
             </div>
             <div class="gap__opts">
-              <div class="gap__opt" data-side="a">
+              <div class="gap__opt is-dropped" data-side="a">
                 <div class="gap__label">A · 현재 디자인 시안</div>
                 <p>출퇴근 기록에서 근로시간을 집계하고 <b>시스템이 계산해 채운다</b>. 관리자는 확인만 한다.</p>
               </div>
-              <div class="gap__opt" data-side="b">
+              <div class="gap__opt is-dropped" data-side="b">
                 <div class="gap__label">B · manyfast 문서</div>
                 <p>법정 계산은 범위 밖이므로 <b>관리자가 입력</b>한다. 시스템은 참조 데이터를 옆에 놓고 검토 사유만 분류한다.</p>
               </div>
@@ -61,6 +62,11 @@
               아래 폼은 두 안이 같은 화면으로 수렴하는 지점이다 — 입력란은 동일하고, <b>초깃값을 시스템이 넣느냐 사람이 넣느냐</b>만 다르다.
               A 로 가면 주휴수당·연장근로 계산식과 4대보험 공제 기준을 이번에 확정해야 한다.
             </p>
+            <div class="gap__block">
+                <b>확정 — 지급은 자동, 공제는 입력.</b>
+                기본급·주휴·연장은 이번 달 출퇴근으로 계산해 채우고 관리자가 고칠 수 있다.
+                아래 공제 칸은 비어 있으며, 지난 명세서에서 불러오거나 직접 넣는다.
+              </div>
           </div>
 
           <div class="grid grid--7-5">
@@ -80,7 +86,7 @@
                   <div class="field">
                     <label for="p1">기본급</label>
                     <input class="input mono" id="p1" value="2,840,000" />
-                    <span class="help">근로계약의 월급</span>
+                    <span class="help">근로계약의 월급 · 계산값이며 고칠 수 있다</span>
                   </div>
                   <div class="field">
                     <label for="p2">주휴수당</label>
@@ -92,7 +98,7 @@
                   <div class="field">
                     <label for="p3">연장근로수당</label>
                     <input class="input mono" id="p3" value="128,000" />
-                    <span class="help">8.0h · 계산 근거는 STAFF-5</span>
+                    <span class="help">8.0h × 1.5배 · 계약에 가산 적용됨</span>
                   </div>
                   <div class="field">
                     <label for="p4">기타 수당</label>
@@ -102,15 +108,22 @@
                 </div>
 
                 <hr class="hr" />
-                <div class="eyebrow">공제</div>
+                <div class="spread" style="margin-bottom: var(--s-3)">
+                  <span class="eyebrow" style="margin: 0">공제</span>
+                  <button class="btn btn--secondary btn--sm" type="button">
+                    <span data-icon="copy" data-icon-size="14"></span>지난 명세서에서 불러오기
+                  </button>
+                </div>
                 <div class="grid grid--2" style="gap: var(--s-4)">
                   <div class="field">
                     <label for="p5">4대보험</label>
-                    <input class="input mono" id="p5" value="215,300" />
+                    <input class="input mono" id="p5" value="" placeholder="직접 입력" />
+                    <span class="help">요율이 매년 바뀌어 자동 계산하지 않는다</span>
                   </div>
                   <div class="field">
                     <label for="p6">소득세·지방소득세</label>
-                    <input class="input mono" id="p6" value="32,000" />
+                    <input class="input mono" id="p6" value="" placeholder="직접 입력" />
+                    <span class="help">공제 대상이 아니면 <b>0</b> 을 넣는다</span>
                   </div>
                 </div>
 
@@ -118,8 +131,17 @@
                 <div class="spread" style="padding: var(--s-2) 0">
                   <span class="t-lg">실지급액</span>
                   <span class="stat">
-                    <span class="stat__cur">₩</span>2,778,700
+                    <span class="stat__cur">₩</span>3,026,000
                   </span>
+                </div>
+                <div class="band band--warn" style="margin: var(--s-3) 0 0">
+                  <span class="band__ic" data-icon="alert" data-icon-size="18"></span>
+                  <div class="band__body">
+                    <div class="band__title">공제가 아직 입력되지 않았습니다</div>
+                    <p class="band__desc">
+                      지금 실지급액은 지급 총액과 같습니다. 공제를 넣기 전에는 확정할 수 없습니다.
+                    </p>
+                  </div>
                 </div>
                 <p class="note">
                   <span data-icon="info" data-icon-size="14"></span>
@@ -136,7 +158,7 @@
               <div class="panel">
                 <div class="panel__head">
                   <h2 class="t-h2">검토 사유</h2>
-                  <span class="badge badge--warn">1건</span>
+                  <span class="badge badge--warn">2건</span>
                 </div>
                 <div class="panel__body">
                   <div class="rows">
@@ -144,6 +166,12 @@
                       <span class="badge badge--warn">누락</span>
                       <div class="rowmain__text">
                         <b>출퇴근 기록 2일 누락</b><span>09-05 퇴근 · 08-22 종일</span>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <span class="badge badge--risk">미입력</span>
+                      <div class="rowmain__text">
+                        <b>공제 미입력</b><span>4대보험 · 소득세 둘 다 비어 있음</span>
                       </div>
                     </div>
                   </div>
@@ -156,7 +184,7 @@
                   </dl>
                 </div>
                 <div class="panel__note">
-                  세 사유는 각각 구분해 저장한다 — 출퇴근 누락, 계약 만료 후 기록 포함, 급여 기간 중 계약 변경.
+                  네 사유를 각각 구분해 저장한다 — 출퇴근 누락, 계약 만료 후 기록 포함, 급여 기간 중 계약 변경, 공제 미입력. 공제가 <b>0</b> 인 것과 비어 있는 것은 다르게 본다.
                 </div>
               </div>
 
@@ -170,6 +198,8 @@
                     <dd><a class="tlink" href="contracts-detail.html">CTR-2026-0143</a> · 체결 완료</dd>
                     <dt>계약 급여</dt>
                     <dd class="mono">2,840,000 원 / 월</dd>
+                    <dt>연장·야간 가산</dt>
+                    <dd><span class="badge badge--ok">적용</span> <span class="subtle">5인 이상 점포</span></dd>
                     <dt>출퇴근 기간</dt>
                     <dd class="mono">2026-08-01 ~ 08-31</dd>
                     <dt>집계 근로시간</dt>

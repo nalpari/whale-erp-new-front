@@ -27,18 +27,19 @@
         </div>
 
         <div class="content">
-          <div class="gap">
+          <div class="gap is-decided">
             <div class="gap__head">
               <span class="gap__no">STAFF-1</span>
-              <b>이 화면의 존재 자체가 결정 대상이다</b>
+              <b>채용은 이 화면에서 시작한다</b>
+              <span class="gap__decided">확정 · 계약 초안이 시작점</span>
               <span class="gap__ref">F-GLGEOF · S-OIILIW</span>
             </div>
             <div class="gap__opts">
-              <div class="gap__opt" data-side="a">
+              <div class="gap__opt is-dropped" data-side="a">
                 <div class="gap__label">A · 현재 디자인 시안</div>
                 <p>직원을 <b>먼저 초대</b>하고, 가입한 사람 중에서 골라 계약서를 쓴다. 이 화면은 없어도 된다.</p>
               </div>
-              <div class="gap__opt" data-side="b">
+              <div class="gap__opt is-picked" data-side="b">
                 <div class="gap__label">B · manyfast 문서 · 아래 화면</div>
                 <p>계약 초안이 <b>먼저</b>다. 저장하면 미가입 직원 레코드가 생기고 초대가 자동으로 나간다.</p>
               </div>
@@ -106,6 +107,15 @@
                 <div class="field">
                   <label for="wk">소정근로시간</label>
                   <input class="input" id="wk" value="주 20시간 · 화·목·토 09:00-16:00" />
+                </div>
+                <div class="field">
+                  <label class="inline" for="ot">
+                    <span class="toggle" id="ot" role="switch" aria-pressed="false" tabindex="0"></span>
+                    연장·야간 가산 적용
+                  </label>
+                  <span class="help">
+                    상시근로자 5인 미만 사업장은 가산 의무가 없다. 이 값으로 급여명세서의 연장수당 계산이 갈린다.
+                  </span>
                 </div>
                 <div class="field">
                   <label for="pl">근무 장소</label>

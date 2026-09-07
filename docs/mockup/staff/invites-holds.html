@@ -35,25 +35,26 @@
             </div>
           </div>
 
-          <div class="gap">
+          <div class="gap is-decided">
             <div class="gap__head">
               <span class="gap__no">STAFF-7</span>
-              <b>관리자에게 무엇까지 보여줄 것인가</b>
+              <b>관리자에게 보여주는 범위</b>
+              <span class="gap__decided">확정 · 최소 정보 + 승인</span>
               <span class="gap__ref">S-VZBTHL · R-QFUXNA 개인정보 경계</span>
             </div>
             <div class="gap__opts">
-              <div class="gap__opt" data-side="a">
+              <div class="gap__opt is-dropped" data-side="a">
                 <div class="gap__label">A · 판단할 수 있게</div>
                 <p>인증된 <b>실명과 번호를 보여준다</b>. 관리자가 "내가 부른 그 사람"인지 눈으로 확인하고 승인한다.</p>
               </div>
-              <div class="gap__opt" data-side="b">
+              <div class="gap__opt is-picked" data-side="b">
                 <div class="gap__label">B · manyfast 문서 · 아래 화면</div>
                 <p>실명도 다른 소속도 <b>보여주지 않는다</b>. 번호 끝자리와 불일치 사유만 준다.</p>
               </div>
             </div>
             <p class="gap__note">
-              B 는 개인정보 원칙에는 맞지만, 관리자는 사실상 확인할 근거 없이 승인하게 된다.
-              전화를 걸어 확인하는 절차를 운영으로 둘지, 화면에서 최소한의 대조 정보를 줄지 정해야 한다.
+              화면만으로는 동일인인지 가릴 수 없으므로, 승인은 <b>직원에게 직접 연락해 번호를 확인한 뒤</b> 하는 것을 전제한다.
+              연락이 닿지 않으면 승인하지 말고 번호를 고쳐 재초대한다.
             </p>
           </div>
 
@@ -130,7 +131,7 @@
                     <div class="band__body">
                       <div class="band__title">가운데 네 자리가 다르다</div>
                       <p class="band__desc">
-                        초안에 번호를 잘못 적었을 수도, 다른 사람이 링크를 열었을 수도 있다. 화면만으로는 구별되지 않는다.
+                        초안에 번호를 잘못 적었을 수도, 다른 사람이 링크를 열었을 수도 있다. 화면만으로는 구별되지 않으므로 <b>직원에게 연락해 번호를 확인한 뒤</b> 승인한다.
                       </p>
                     </div>
                   </div>
@@ -171,7 +172,7 @@
                   </div>
                 </div>
                 <div class="panel__note">
-                  재초대를 고르면 새 초대 객체가 만들어지고, 기존 계정은 이 점포와 연결되지 않은 채 남는다.
+                  연락이 닿지 않으면 승인하지 말고 재초대한다. 재초대를 고르면 새 초대 객체가 만들어지고, 기존 계정은 이 점포와 연결되지 않은 채 남는다.
                 </div>
               </div>
             </section>

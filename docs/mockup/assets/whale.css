@@ -2742,3 +2742,91 @@ a.tile:hover {
     grid-template-columns: 1fr;
   }
 }
+
+/* 결정이 끝난 쟁점 -------------------------------------------------------
+   회의에서 A·B 중 하나를 고르면 여기로 바뀐다. 고르지 않은 쪽은 지우지 않고
+   흐리게 남긴다 — 나중에 "왜 이렇게 정했나"를 되짚을 때 필요하다. */
+.gap.is-decided {
+  border-color: var(--ok-line);
+  background: var(--ok-wash);
+}
+.gap.is-decided .gap__no {
+  background: var(--ok-text);
+}
+.gap__decided {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  font: 500 11px/1 var(--font-mono);
+  letter-spacing: 0.04em;
+  color: var(--ok-text);
+  background: var(--surface-card);
+  border: 1px solid var(--ok-line);
+  padding: 5px var(--s-2);
+  border-radius: var(--r-pill);
+  white-space: nowrap;
+}
+.gap__opt.is-picked {
+  border-color: var(--ok);
+  border-width: 1.5px;
+}
+.gap__opt.is-picked .gap__label {
+  color: var(--ok-text);
+}
+.gap__opt.is-dropped {
+  opacity: 0.44;
+}
+.gap__opt.is-dropped .gap__label::after {
+  content: " · 채택 안 함";
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* 보류된 쟁점 — 아직 고를 수 없는 것.
+   미정(아직 논의 전)과 구분한다. 왜 멈췄는지가 화면에 남아야 한다. */
+.gap.is-held {
+  border-color: var(--warn-line);
+  background: var(--warn-wash);
+}
+.gap.is-held .gap__no {
+  background: var(--warn);
+}
+.gap__held {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  font: 500 11px/1 var(--font-mono);
+  letter-spacing: 0.04em;
+  color: var(--warn);
+  background: var(--surface-card);
+  border: 1px solid var(--warn-line);
+  padding: 5px var(--s-2);
+  border-radius: var(--r-pill);
+  white-space: nowrap;
+}
+.gap__block {
+  margin: var(--s-3) 0 0;
+  padding: var(--s-3) var(--s-4);
+  border-left: 2px solid var(--warn);
+  background: var(--surface-card);
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--body);
+}
+.gap__block b {
+  color: var(--ink);
+}
+
+/* 확정 내용 블록 — A 도 B 도 아닌 절충으로 정해진 경우.
+   두 안을 모두 흐리게 두고 실제 결정을 여기에 적는다. */
+.gap.is-decided .gap__block {
+  border-left-color: var(--ok);
+}
+.gap__block ul {
+  margin: var(--s-2) 0 0;
+  padding-left: var(--s-4);
+}
+.gap__block li {
+  margin-bottom: var(--s-1);
+}

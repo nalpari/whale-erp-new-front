@@ -27,7 +27,7 @@
           <div class="band band--info">
             <span class="band__ic" data-icon="info" data-icon-size="20"></span>
             <div class="band__body">
-              <div class="band__title">이 영역에서 결정할 것은 8건이다</div>
+              <div class="band__title">이 영역에서 결정할 것은 8건, 그중 7건이 정해지고 1건은 보류다</div>
               <p class="band__desc">
                 화면은 <b>manyfast 문서 기준</b>으로 그렸고, 기존 디자인 시안과 어긋나는 곳은 지우지 않고
                 보라색 쟁점 블록으로 남겼다. 각 쟁점은 해당 화면 안에도 같은 블록으로 붙어 있다.
@@ -135,104 +135,109 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
-              <span class="badge badge--preview">8건 · 회의에서 결정</span>
+              <span class="badge badge--preview">8건 · 확정 7 · 보류 1</span>
             </div>
 
-            <div class="gap">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">STAFF-1</span>
                 <b>채용 절차의 시작점</b>
+                <span class="gap__decided">확정 · 계약 초안이 시작점</span>
                 <span class="gap__ref">F-GLGEOF · S-OIILIW</span>
               </div>
               <div class="gap__opts">
-                <div class="gap__opt" data-side="a">
+                <div class="gap__opt is-dropped" data-side="a">
                   <div class="gap__label">A · 현재 디자인 시안</div>
                   <p><b>직원 초대</b>가 먼저다. 초대 → 가입 → 관리자가 계약서 작성 → 발송.</p>
                 </div>
-                <div class="gap__opt" data-side="b">
+                <div class="gap__opt is-picked" data-side="b">
                   <div class="gap__label">B · manyfast 문서</div>
                   <p><b>계약서 초안 저장</b>이 유일한 시작점. 초안 없이 초대를 보낼 수 없고, 가입이 끝나는 순간 계약서가 자동 발송된다.</p>
                 </div>
               </div>
               <p class="gap__note">
-                B 를 고르면 "직원 초대" 버튼이 사라지고 "계약서 작성"이 그 자리에 온다. 첫 출근 전 계약 체결이 구조적으로 보장되는 대신,
-                아직 계약 조건이 안 정해진 사람을 미리 초대해 둘 수 없다.
+                "직원 초대" 버튼이 사라지고 "계약서 작성"이 그 자리에 온다. 첫 출근 전 계약 체결이 구조적으로 보장되는 대신,
+                아직 계약 조건이 안 정해진 사람은 미리 초대해 둘 수 없다.
               </p>
             </div>
 
-            <div class="gap">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">STAFF-2</span>
                 <b>근로계약 상태 단계</b>
+                <span class="gap__decided">확정 · 6단계</span>
                 <span class="gap__ref">S-XDBBDP</span>
               </div>
               <div class="gap__opts">
-                <div class="gap__opt" data-side="a">
+                <div class="gap__opt is-dropped" data-side="a">
                   <div class="gap__label">A · 현재 디자인 시안</div>
                   <p>승인 대기 · 체결 · 만료 예정 — <b>3단계</b></p>
                 </div>
-                <div class="gap__opt" data-side="b">
+                <div class="gap__opt is-picked" data-side="b">
                   <div class="gap__label">B · manyfast 문서</div>
                   <p>발송 대기 · 서명 대기 · 체결 완료 · 거부 · 만료 · 종료 — <b>6단계</b></p>
                 </div>
               </div>
               <p class="gap__note">
-                B 의 "발송 대기"는 초안은 저장됐지만 직원이 아직 가입하지 않은 상태를 포함한다. STAFF-1 에서 B 를 고르면 이 상태가 반드시 필요해진다.
+                "발송 대기"는 초안은 저장됐지만 직원이 아직 가입하지 않은 상태를 포함한다. STAFF-1 이 B 로 확정되어 이 상태가 반드시 필요하다.
               </p>
             </div>
 
-            <div class="gap">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">STAFF-3</span>
                 <b>날인 기한</b>
+                <span class="gap__decided">확정 · 30일</span>
                 <span class="gap__ref">S-OIILIW · S-XDBBDP</span>
               </div>
               <div class="gap__opts">
-                <div class="gap__opt" data-side="a">
+                <div class="gap__opt is-dropped" data-side="a">
                   <div class="gap__label">A · 현재 디자인 시안</div>
                   <p>계약 요청 후 <b>14일</b> 뒤 자동 만료</p>
                 </div>
-                <div class="gap__opt" data-side="b">
+                <div class="gap__opt is-picked" data-side="b">
                   <div class="gap__label">B · manyfast 문서</div>
                   <p>발송일로부터 <b>30일</b>. 초대 유효기간도 30일로 같다.</p>
                 </div>
               </div>
-              <p class="gap__note">숫자 하나지만 화면 문구·알림 발송 시점·만료 배치가 모두 여기에 묶인다.</p>
+              <p class="gap__note">숫자 하나지만 화면 문구·알림 발송 시점·만료 배치가 모두 여기에 묶인다. 초대 유효기간도 같은 30일이다.</p>
             </div>
 
-            <div class="gap">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">STAFF-4</span>
                 <b>TO-DO 의 성격</b>
+                <span class="gap__decided">확정 · 특별업무 전용</span>
                 <span class="gap__ref">S-NIAGGB</span>
               </div>
               <div class="gap__opts">
-                <div class="gap__opt" data-side="a">
+                <div class="gap__opt is-dropped" data-side="a">
                   <div class="gap__label">A · 현재 디자인 시안</div>
                   <p><b>반복 업무</b> 체크리스트. "매일 07:00 그라인더 청소", "매주 월 재고 실사".</p>
                 </div>
-                <div class="gap__opt" data-side="b">
+                <div class="gap__opt is-picked" data-side="b">
                   <div class="gap__label">B · manyfast 문서</div>
                   <p><b>특별업무 지시 전용</b>. 반복·정기 업무는 대상이 아니고 반복 설정도 두지 않는다. 개인 또는 근무지 전체에 배정하며, 전체는 각자 수행 / 한 명 수행 중 고른다.</p>
                 </div>
               </div>
               <p class="gap__note">
-                A 를 버리면 매일 하는 오픈·마감 점검을 담을 곳이 없어진다. 그 업무를 어디서 관리할지가 함께 결정되어야 한다.
+                매일 하는 오픈·마감 점검은 <b>1차 범위 밖</b>으로 두고 2차 과제로 넘긴다. 그때까지 현장은 기존 방식을 쓴다.
               </p>
             </div>
 
-            <div class="gap">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">STAFF-5</span>
                 <b>급여명세서의 계산 범위</b>
+                <span class="gap__decided">확정 · 주휴·연장까지 계산</span>
                 <span class="gap__ref">F-XXYSNZ · S-DOVWAR</span>
               </div>
               <div class="gap__opts">
-                <div class="gap__opt" data-side="a">
+                <div class="gap__opt is-dropped" data-side="a">
                   <div class="gap__label">A · 현재 디자인 시안</div>
                   <p>근로시간·기본급·<b>주휴·연장·공제·실지급액</b>까지 계산해 표로 보여준다.</p>
                 </div>
-                <div class="gap__opt" data-side="b">
+                <div class="gap__opt is-dropped" data-side="b">
                   <div class="gap__label">B · manyfast 문서</div>
                   <p>법정 급여 계산은 <b>범위 밖</b>. 계약·출퇴근은 참조일 뿐이고, 핵심은 <b>검토 대기 분류</b>(출퇴근 누락 / 계약 만료 후 기록 / 기간 중 계약 변경)다.</p>
                 </div>
@@ -240,52 +245,64 @@
               <p class="gap__note">
                 1차 범위 중 시안과 문서의 간극이 가장 큰 곳이다. A 로 가면 주휴수당·연장근로 계산 정책을 이번에 확정해야 한다.
               </p>
+              <div class="gap__block">
+                <b>확정 — 두 안의 절충.</b>
+                <ul>
+                  <li>근로시간·기본급·<b>주휴·연장까지 시스템이 계산</b>하고 관리자가 확인 후 수정한다.</li>
+                  <li>공제(4대보험·소득세·지방소득세)는 <b>공란</b>으로 두고 관리자가 직접 넣는다. 매년 요율이 바뀌어 자동화하지 않는다.</li>
+                  <li>연장·야간 <b>가산 적용 여부는 근로계약</b>에 둔다. 5인 미만 사업장은 가산 의무가 없기 때문이다.</li>
+                  <li>지난 명세서에서 <b>공제와 고정 수당을 불러올</b> 수 있다.</li>
+                </ul>
+              </div>
             </div>
 
-            <div class="gap">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">STAFF-6</span>
                 <b>직원 상세 화면</b>
+                <span class="gap__decided">확정 · 전체 페이지 상세</span>
                 <span class="gap__ref">F-ZAIMFF · S-PIXATL</span>
               </div>
               <div class="gap__opts">
-                <div class="gap__opt" data-side="a">
+                <div class="gap__opt is-dropped" data-side="a">
                   <div class="gap__label">A · 현재 디자인 시안</div>
                   <p>없다. 직원은 목록의 한 행으로만 존재하고, 계약·스케줄·급여는 각 탭에서 따로 본다.</p>
                 </div>
-                <div class="gap__opt" data-side="b">
+                <div class="gap__opt is-picked" data-side="b">
                   <div class="gap__label">B · manyfast 문서</div>
                   <p>좌측에 기본 정보와 계약 요약, 우측에 근무·출퇴근·급여·TO-DO 현황. <b>배치까지 명세에 적혀 있다.</b></p>
                 </div>
               </div>
-              <p class="gap__note">B 로 만들어 두었다. 실제로 관리자가 직원 한 명을 놓고 판단할 일이 얼마나 되는지가 판단 기준이다.</p>
+              <p class="gap__note">직원 문의 대응·퇴사 처리·입사 초기 점검처럼 한 사람을 놓고 판단하는 일에 쓴다. 조회 전용이라 실제 처리는 각 관리 화면에서 한다.</p>
             </div>
 
-            <div class="gap">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">STAFF-7</span>
                 <b>가입 연결 보류 처리</b>
+                <span class="gap__decided">확정 · 최소 정보 + 승인</span>
                 <span class="gap__ref">S-VZBTHL</span>
               </div>
               <div class="gap__opts">
-                <div class="gap__opt" data-side="a">
+                <div class="gap__opt is-dropped" data-side="a">
                   <div class="gap__label">A · 현재 디자인 시안</div>
                   <p>다루지 않는다. 초대를 받으면 가입되는 것으로 본다.</p>
                 </div>
-                <div class="gap__opt" data-side="b">
+                <div class="gap__opt is-picked" data-side="b">
                   <div class="gap__label">B · manyfast 문서</div>
                   <p>초대 토큰과 본인인증 번호가 <b>둘 다 일치할 때만</b> 자동 연결. 어긋나면 계정만 만들고 <b>관리자 승인 대기</b>로 둔다.</p>
                 </div>
               </div>
               <p class="gap__note">
-                문서는 이때 관리자에게 소속 추가 대상의 <b>실명조차 보여주지 않는다</b>. 개인정보 경계와 관리자의 판단 근거가 맞부딪히는 지점이라 화면으로 확인이 필요하다.
+                관리자에게는 번호 끝자리와 불일치 사유만 준다. 다른 사업자 소속일 수 있는 계정의 실명을 조회하는 통로가 되면 안 되기 때문이다. 대신 <b>승인 전 직원에게 직접 연락해 번호를 확인하는 절차</b>를 운영으로 둔다.
               </p>
             </div>
 
-            <div class="gap">
+            <div class="gap is-held">
               <div class="gap__head">
                 <span class="gap__no">STAFF-8</span>
                 <b>BP · 점포 조회 범위</b>
+                <span class="gap__held">보류 · 홈 화면 확인 후</span>
                 <span class="gap__ref">F-NZYHRF · S-TJRUBE</span>
               </div>
               <div class="gap__opts">
@@ -301,6 +318,12 @@
               <p class="gap__note">
                 둘 다 "전역 범위"를 말하지만 A 는 언제든 바꾸는 필터, B 는 한 번 정하면 유지되는 설정이다. 화면마다 점포 필터를 또 둘지가 실무에서 갈린다.
               </p>
+              <div class="gap__block">
+                <b>보류 — 홈 화면을 만들어 봐야 판단할 수 있다.</b><br />
+                BP·점포를 고정하는 동작은 홈(R-PSQNKC)에서 일어나고 직원관리는 그 결과를 쓰는 쪽이다.
+                홈 영역이 아직 목업으로 없어 전역 범위가 실제로 어떻게 움직이는지 확인할 수 없다.
+                <span class="mono">home/</span> 을 그린 뒤 함께 정한다.
+              </div>
             </div>
           </section>
         </div>
