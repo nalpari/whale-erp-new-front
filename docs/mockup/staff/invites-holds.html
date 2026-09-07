@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>가입 연결 확인 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="staff" data-sub="staff/invites-holds.html">
+    <!-- /staff/invites/holds · S-VZBTHL "직원 초대와 가입 확인" 중 연결 보류 처리
+         초대 토큰과 본인인증 번호가 어긋나면 계정만 만들고 연결을 보류한다.
+         이 화면의 어려움은 기능이 아니라 정보다 — 관리자는 상대의 실명을 볼 수 없다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <a class="iconbtn" href="index.html" aria-label="직원 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
+          <h1 class="t-h1">가입 연결 확인</h1>
+          <span class="badge badge--risk">2건</span>
+          <div class="titlebar__end">
+            <span class="filters__count">보류 중 <b>2</b>건 · 최장 <b>4</b>일 경과</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="band band--risk">
+            <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+            <div class="band__body">
+              <div class="band__title">연결이 보류된 동안 계약서는 나가지 않는다</div>
+              <p class="band__desc">
+                직원은 계정을 만들었지만 소속도 계약서도 받지 못한 상태로 기다린다.
+                관리자가 승인하거나 번호를 고쳐 재초대해야 절차가 다시 흐른다.
+              </p>
+            </div>
+          </div>
+
+          <div class="gap">
+            <div class="gap__head">
+              <span class="gap__no">STAFF-7</span>
+              <b>관리자에게 무엇까지 보여줄 것인가</b>
+              <span class="gap__ref">S-VZBTHL · R-QFUXNA 개인정보 경계</span>
+            </div>
+            <div class="gap__opts">
+              <div class="gap__opt" data-side="a">
+                <div class="gap__label">A · 판단할 수 있게</div>
+                <p>인증된 <b>실명과 번호를 보여준다</b>. 관리자가 "내가 부른 그 사람"인지 눈으로 확인하고 승인한다.</p>
+              </div>
+              <div class="gap__opt" data-side="b">
+                <div class="gap__label">B · manyfast 문서 · 아래 화면</div>
+                <p>실명도 다른 소속도 <b>보여주지 않는다</b>. 번호 끝자리와 불일치 사유만 준다.</p>
+              </div>
+            </div>
+            <p class="gap__note">
+              B 는 개인정보 원칙에는 맞지만, 관리자는 사실상 확인할 근거 없이 승인하게 된다.
+              전화를 걸어 확인하는 절차를 운영으로 둘지, 화면에서 최소한의 대조 정보를 줄지 정해야 한다.
+            </p>
+          </div>
+
+          <div class="grid grid--7-5">
+            <section class="panel">
+              <div class="panel__head">
+                <h2 class="t-h2">보류 중인 가입</h2>
+                <div class="panel__end">
+                  <div class="seg">
+                    <button type="button" aria-pressed="true">전체</button>
+                    <button type="button" aria-pressed="false">번호 불일치</button>
+                    <button type="button" aria-pressed="false">이름 불일치</button>
+                  </div>
+                </div>
+              </div>
+              <div class="tblwrap">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th scope="col">초안의 직원</th>
+                      <th scope="col">점포</th>
+                      <th scope="col">초대 발송</th>
+                      <th scope="col">사유</th>
+                      <th scope="col" style="width: 96px"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="k">하준서</td>
+                      <td>모리커피 성수점</td>
+                      <td class="mono">08-31</td>
+                      <td><span class="badge badge--risk">번호 불일치</span></td>
+                      <td class="c"><button class="tbtn" type="button">확인</button></td>
+                    </tr>
+                    <tr>
+                      <td class="k">정유담</td>
+                      <td>온기식당 판교점</td>
+                      <td class="mono">09-02</td>
+                      <td><span class="badge badge--warn">이름 불일치</span></td>
+                      <td class="c"><button class="tbtn" type="button">확인</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="panel__note">
+                자동 연결은 초대 토큰과 본인인증 번호가 <b>모두</b> 맞을 때만 일어난다. 하나라도 어긋나면 여기로 온다.
+              </div>
+            </section>
+
+            <section class="stack--lg" style="display: flex; flex-direction: column">
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">하준서 · 번호 불일치</h2>
+                  <span class="badge badge--risk">4일 경과</span>
+                </div>
+                <div class="panel__body">
+                  <dl class="kv">
+                    <dt>초안에 적은 번호</dt>
+                    <dd class="mono">010-3392-4418</dd>
+                    <dt>가입자가 인증한 번호</dt>
+                    <dd class="mono">010-****-4418</dd>
+                    <dt>가입자 실명</dt>
+                    <dd class="subtle">표시하지 않음</dd>
+                    <dt>다른 소속</dt>
+                    <dd class="subtle">표시하지 않음</dd>
+                    <dt>초대 발송</dt>
+                    <dd class="mono">2026-08-31 09:12</dd>
+                    <dt>가입 완료</dt>
+                    <dd class="mono">2026-08-31 21:40</dd>
+                  </dl>
+                  <hr class="hr" />
+                  <div class="band band-sec band-sec--soft">
+                    <span class="band__ic" data-icon="shield" data-icon-size="18"></span>
+                    <div class="band__body">
+                      <div class="band__title">가운데 네 자리가 다르다</div>
+                      <p class="band__desc">
+                        초안에 번호를 잘못 적었을 수도, 다른 사람이 링크를 열었을 수도 있다. 화면만으로는 구별되지 않는다.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div class="panel__foot">
+                  <button class="btn btn--secondary btn--sm" type="button">번호 수정 후 재초대</button>
+                  <button class="btn btn--primary btn--sm right" type="button">이 계정으로 연결 승인</button>
+                </div>
+              </div>
+
+              <div class="panel" style="flex: 1">
+                <div class="panel__head">
+                  <h2 class="t-h2">승인하면 이렇게 된다</h2>
+                </div>
+                <div class="panel__body">
+                  <div class="steps">
+                    <div class="step is-done">
+                      <span class="step__ic" data-icon="check" data-icon-size="15"></span>
+                      <div class="step__body">
+                        <span class="step__title">계정 생성 완료</span>
+                        <span class="step__meta">소속 없이 대기 중 · 08-31</span>
+                      </div>
+                    </div>
+                    <div class="step is-now">
+                      <span class="step__ic" data-icon="link" data-icon-size="15"></span>
+                      <div class="step__body">
+                        <span class="step__title">관리자 승인 · 직원 레코드에 연결</span>
+                        <span class="step__meta">승인자와 시각이 이력에 남는다</span>
+                      </div>
+                    </div>
+                    <div class="step">
+                      <span class="step__ic" data-icon="file" data-icon-size="15"></span>
+                      <div class="step__body">
+                        <span class="step__title">근로계약서 자동 발송</span>
+                        <span class="step__meta">보류로 멈춰 있던 초안이 그대로 나간다</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="panel__note">
+                  재초대를 고르면 새 초대 객체가 만들어지고, 기존 계정은 이 점포와 연결되지 않은 채 남는다.
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+  </body>
+</html>

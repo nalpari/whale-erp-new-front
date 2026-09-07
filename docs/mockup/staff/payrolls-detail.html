@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>급여명세서 검토 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="staff" data-sub="staff/payrolls-detail.html">
+    <!-- /staff/payrolls/[payrollId] · S-DOVWAR "급여명세서 작성과 발송"
+         검토 대기로 분류된 건을 열어 확인하고 고친 뒤 확정한다.
+         금액을 계산해서 채울지 입력받아 보관만 할지가 STAFF-5 다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <a class="iconbtn" href="index.html#payroll" aria-label="급여명세서로" data-icon="arrowleft" data-icon-size="18"></a>
+          <h1 class="t-h1">급여명세서 검토</h1>
+          <span class="badge badge--warn">검토 중</span>
+          <div class="titlebar__end">
+            <span class="filters__count">서지안 · 2026-08 · 모리커피 서초점</span>
+            <button class="btn btn--secondary btn--sm" type="button">임시저장</button>
+            <button class="btn btn--primary btn--sm" type="button">
+              <span data-icon="check" data-icon-size="14"></span>확정
+            </button>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="band band--warn">
+            <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
+            <div class="band__body">
+              <div class="band__title">출퇴근 기록이 2일 누락되어 검토 대기로 분류되었습니다</div>
+              <p class="band__desc">
+                09-05 퇴근 미등록, 08-22 출근·퇴근 모두 없음. 확인한 뒤에는 경고가 있어도 확정할 수 있습니다.
+              </p>
+            </div>
+            <div class="band__act">
+              <a class="btn btn--secondary" href="index.html#sched">출퇴근 보정</a>
+            </div>
+          </div>
+
+          <div class="gap">
+            <div class="gap__head">
+              <span class="gap__no">STAFF-5</span>
+              <b>이 금액을 누가 채우는가</b>
+              <span class="gap__ref">F-XXYSNZ · S-DOVWAR</span>
+            </div>
+            <div class="gap__opts">
+              <div class="gap__opt" data-side="a">
+                <div class="gap__label">A · 현재 디자인 시안</div>
+                <p>출퇴근 기록에서 근로시간을 집계하고 <b>시스템이 계산해 채운다</b>. 관리자는 확인만 한다.</p>
+              </div>
+              <div class="gap__opt" data-side="b">
+                <div class="gap__label">B · manyfast 문서</div>
+                <p>법정 계산은 범위 밖이므로 <b>관리자가 입력</b>한다. 시스템은 참조 데이터를 옆에 놓고 검토 사유만 분류한다.</p>
+              </div>
+            </div>
+            <p class="gap__note">
+              아래 폼은 두 안이 같은 화면으로 수렴하는 지점이다 — 입력란은 동일하고, <b>초깃값을 시스템이 넣느냐 사람이 넣느냐</b>만 다르다.
+              A 로 가면 주휴수당·연장근로 계산식과 4대보험 공제 기준을 이번에 확정해야 한다.
+            </p>
+          </div>
+
+          <div class="grid grid--7-5">
+            <section class="panel">
+              <div class="panel__head">
+                <h2 class="t-h2">지급 내역</h2>
+                <span class="badge badge--quiet">2026-08-01 ~ 08-31</span>
+                <div class="panel__end">
+                  <button class="btn btn--secondary btn--sm" type="button">
+                    <span data-icon="refresh" data-icon-size="14"></span>출퇴근으로 다시 계산
+                  </button>
+                </div>
+              </div>
+              <div class="panel__body">
+                <div class="eyebrow">지급</div>
+                <div class="grid grid--2" style="gap: var(--s-4)">
+                  <div class="field">
+                    <label for="p1">기본급</label>
+                    <input class="input mono" id="p1" value="2,840,000" />
+                    <span class="help">근로계약의 월급</span>
+                  </div>
+                  <div class="field">
+                    <label for="p2">주휴수당</label>
+                    <input class="input mono" id="p2" value="0" />
+                    <span class="help">월급제는 기본급에 포함</span>
+                  </div>
+                </div>
+                <div class="grid grid--2" style="gap: var(--s-4)">
+                  <div class="field">
+                    <label for="p3">연장근로수당</label>
+                    <input class="input mono" id="p3" value="128,000" />
+                    <span class="help">8.0h · 계산 근거는 STAFF-5</span>
+                  </div>
+                  <div class="field">
+                    <label for="p4">기타 수당</label>
+                    <input class="input mono" id="p4" value="58,000" />
+                    <span class="help">식대 등</span>
+                  </div>
+                </div>
+
+                <hr class="hr" />
+                <div class="eyebrow">공제</div>
+                <div class="grid grid--2" style="gap: var(--s-4)">
+                  <div class="field">
+                    <label for="p5">4대보험</label>
+                    <input class="input mono" id="p5" value="215,300" />
+                  </div>
+                  <div class="field">
+                    <label for="p6">소득세·지방소득세</label>
+                    <input class="input mono" id="p6" value="32,000" />
+                  </div>
+                </div>
+
+                <hr class="hr" />
+                <div class="spread" style="padding: var(--s-2) 0">
+                  <span class="t-lg">실지급액</span>
+                  <span class="stat">
+                    <span class="stat__cur">₩</span>2,778,700
+                  </span>
+                </div>
+                <p class="note">
+                  <span data-icon="info" data-icon-size="14"></span>
+                  <span>급여 지급은 이 시스템에서 실행하지 않는다. 명세서 교부까지만 한다.</span>
+                </p>
+              </div>
+              <div class="panel__foot">
+                <span>확정하면 수정할 수 없다 · 확정 취소하면 검토 중으로 돌아온다</span>
+                <button class="tbtn right" type="button">미리보기</button>
+              </div>
+            </section>
+
+            <section class="stack--lg" style="display: flex; flex-direction: column">
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">검토 사유</h2>
+                  <span class="badge badge--warn">1건</span>
+                </div>
+                <div class="panel__body">
+                  <div class="rows">
+                    <div class="row">
+                      <span class="badge badge--warn">누락</span>
+                      <div class="rowmain__text">
+                        <b>출퇴근 기록 2일 누락</b><span>09-05 퇴근 · 08-22 종일</span>
+                      </div>
+                    </div>
+                  </div>
+                  <hr class="hr" />
+                  <dl class="kv">
+                    <dt>계약 만료 후 기록</dt>
+                    <dd class="subtle">해당 없음</dd>
+                    <dt>기간 중 계약 변경</dt>
+                    <dd class="subtle">해당 없음</dd>
+                  </dl>
+                </div>
+                <div class="panel__note">
+                  세 사유는 각각 구분해 저장한다 — 출퇴근 누락, 계약 만료 후 기록 포함, 급여 기간 중 계약 변경.
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">참조한 것</h2>
+                </div>
+                <div class="panel__body">
+                  <dl class="kv">
+                    <dt>근로계약</dt>
+                    <dd><a class="tlink" href="contracts-detail.html">CTR-2026-0143</a> · 체결 완료</dd>
+                    <dt>계약 급여</dt>
+                    <dd class="mono">2,840,000 원 / 월</dd>
+                    <dt>출퇴근 기간</dt>
+                    <dd class="mono">2026-08-01 ~ 08-31</dd>
+                    <dt>집계 근로시간</dt>
+                    <dd class="mono">168.0h <span class="subtle">(누락 2일 제외)</span></dd>
+                    <dt>스케줄 기준</dt>
+                    <dd class="mono">176.0h</dd>
+                  </dl>
+                  <hr class="hr" />
+                  <a class="btn btn--secondary btn--block" href="index.html#sched">출퇴근 기록 보기</a>
+                </div>
+                <div class="panel__note">초안 생성 시 참조한 계약과 기간을 명세서에 연결해 저장한다.</div>
+              </div>
+
+              <div class="panel" style="flex: 1">
+                <div class="panel__head"><h2 class="t-h2">처리 이력</h2></div>
+                <div class="log log--flat">
+                  <div class="log__body">
+                    <div class="log__row">
+                      <span class="log__t">09-03 10:12</span>
+                      <span class="log__tag">edit</span>
+                      <span class="log__msg">연장근로수당 <b>96,000</b> → 128,000 · 정하윤</span>
+                    </div>
+                    <div class="log__row">
+                      <span class="log__t">09-01 09:00</span>
+                      <span class="log__tag">draft</span>
+                      <span class="log__msg">초안 일괄 생성 · 검토 대기로 분류</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="panel__note">초안 생성·확정·확정 취소·발송을 모두 이력으로 남긴다.</div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+  </body>
+</html>

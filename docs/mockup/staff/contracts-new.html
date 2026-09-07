@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>계약 초안 작성 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="staff" data-sub="staff/contracts-new.html">
+    <!-- /staff/contracts/new · S-OIILIW "근로계약 초안 작성과 발송"
+         이 화면이 채용의 시작점이다. 관리자는 초대를 직접 보내지 않는다.
+         초안을 저장하면 시스템이 휴대전화번호로 계정을 조회해 초대 유형을 스스로 정한다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <a class="iconbtn" href="index.html#contracts" aria-label="근로계약으로" data-icon="arrowleft" data-icon-size="18"></a>
+          <h1 class="t-h1">계약 초안 작성</h1>
+          <span class="badge badge--quiet">모리커피 성수점</span>
+          <div class="titlebar__end">
+            <button class="btn btn--secondary btn--sm" type="button">임시저장</button>
+            <button class="btn btn--primary btn--sm" type="button">
+              <span data-icon="check" data-icon-size="14"></span>초안 저장
+            </button>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="gap">
+            <div class="gap__head">
+              <span class="gap__no">STAFF-1</span>
+              <b>이 화면의 존재 자체가 결정 대상이다</b>
+              <span class="gap__ref">F-GLGEOF · S-OIILIW</span>
+            </div>
+            <div class="gap__opts">
+              <div class="gap__opt" data-side="a">
+                <div class="gap__label">A · 현재 디자인 시안</div>
+                <p>직원을 <b>먼저 초대</b>하고, 가입한 사람 중에서 골라 계약서를 쓴다. 이 화면은 없어도 된다.</p>
+              </div>
+              <div class="gap__opt" data-side="b">
+                <div class="gap__label">B · manyfast 문서 · 아래 화면</div>
+                <p>계약 초안이 <b>먼저</b>다. 저장하면 미가입 직원 레코드가 생기고 초대가 자동으로 나간다.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid--7-5">
+            <section class="panel">
+              <div class="panel__head">
+                <h2 class="t-h2">근로계약서</h2>
+                <div class="panel__end">
+                  <div class="seg">
+                    <button type="button" aria-pressed="true">정직원</button>
+                    <button type="button" aria-pressed="false">파트타이머</button>
+                  </div>
+                </div>
+              </div>
+              <div class="panel__body">
+                <div class="eyebrow">직원 정보</div>
+                <div class="grid grid--2" style="gap: var(--s-4)">
+                  <div class="field">
+                    <label for="nm">이름</label>
+                    <input class="input" id="nm" value="남도현" />
+                    <span class="help">본인인증 실명과 다르면 실명이 계약서에 들어간다</span>
+                  </div>
+                  <div class="field">
+                    <label for="ph">휴대전화번호</label>
+                    <input class="input mono" id="ph" value="010-9014-5563" />
+                    <span class="help">초대 발송과 가입 연결의 기준값</span>
+                  </div>
+                </div>
+                <div class="grid grid--2" style="gap: var(--s-4)">
+                  <div class="field">
+                    <label for="st">소속 근무지</label>
+                    <select class="select" id="st">
+                      <option>모리커피 성수점</option>
+                      <option>모리커피 서초점</option>
+                      <option>온기식당 판교점</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="jb">직무</label>
+                    <input class="input" id="jb" value="바리스타" />
+                  </div>
+                </div>
+
+                <hr class="hr" />
+                <div class="eyebrow">계약 조건</div>
+                <div class="grid grid--2" style="gap: var(--s-4)">
+                  <div class="field">
+                    <label for="cs">계약 시작일</label>
+                    <input class="input" id="cs" type="date" value="2026-09-14" />
+                  </div>
+                  <div class="field">
+                    <label for="ce">계약 종료일</label>
+                    <input class="input" id="ce" type="date" />
+                    <span class="help">비워 두면 무기한</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="pay">급여</label>
+                  <input class="input mono" id="pay" value="11,200 원 /시급" />
+                  <span class="help">2026년 최저임금 10,320원 이상</span>
+                </div>
+                <div class="field">
+                  <label for="wk">소정근로시간</label>
+                  <input class="input" id="wk" value="주 20시간 · 화·목·토 09:00-16:00" />
+                </div>
+                <div class="field">
+                  <label for="pl">근무 장소</label>
+                  <input class="input" id="pl" value="서울 성동구 연무장길 18, 1층" />
+                </div>
+
+                <hr class="hr" />
+                <div class="band band-sec band-sec--soft">
+                  <span class="band__ic" data-icon="info" data-icon-size="18"></span>
+                  <div class="band__body">
+                    <div class="band__title">주소 등 직원 기재사항은 여기서 받지 않는다</div>
+                    <p class="band__desc">
+                      직원이 앱에서 가입하며 직접 입력하고, 그 값이 계약서에 채워진 뒤 발송된다.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="panel__foot">
+                <span>저장하면 초대가 즉시 발송된다 · 되돌리려면 직원 레코드를 삭제해야 한다</span>
+              </div>
+            </section>
+
+            <section class="stack--lg" style="display: flex; flex-direction: column">
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">저장하면 이렇게 된다</h2>
+                  <span class="badge badge--warn">가입 초대</span>
+                </div>
+                <div class="panel__body">
+                  <div class="band band--warn" style="margin: 0 0 var(--s-4)">
+                    <span class="band__ic" data-icon="search" data-icon-size="18"></span>
+                    <div class="band__body">
+                      <div class="band__title">010-9014-5563 · 가입된 계정 없음</div>
+                      <p class="band__desc">이 점포에 직원 레코드도 없다. <b>가입 초대</b>를 보낸다.</p>
+                    </div>
+                  </div>
+                  <div class="steps">
+                    <div class="step is-now">
+                      <span class="step__ic" data-icon="file" data-icon-size="15"></span>
+                      <div class="step__body">
+                        <span class="step__title">초안 저장 · 미가입 직원 레코드 생성</span>
+                        <span class="step__meta">계약은 계정이 아니라 이 레코드에 붙는다</span>
+                      </div>
+                    </div>
+                    <div class="step">
+                      <span class="step__ic" data-icon="message" data-icon-size="15"></span>
+                      <div class="step__body">
+                        <span class="step__title">가입 초대 발송 · 토큰 링크</span>
+                        <span class="step__meta">발송일로부터 30일간 유효</span>
+                      </div>
+                    </div>
+                    <div class="step">
+                      <span class="step__ic" data-icon="shield" data-icon-size="15"></span>
+                      <div class="step__body">
+                        <span class="step__title">직원 가입 · 본인인증</span>
+                        <span class="step__meta">토큰과 인증 번호가 모두 맞아야 자동 연결</span>
+                      </div>
+                    </div>
+                    <div class="step">
+                      <span class="step__ic" data-icon="check" data-icon-size="15"></span>
+                      <div class="step__body">
+                        <span class="step__title">계약서 자동 발송 · 서명 대기</span>
+                        <span class="step__meta">관리자 개입 없이 나간다 · 날인 기한 30일</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="panel" style="flex: 1">
+                <div class="panel__head">
+                  <h2 class="t-h2">초대 유형 판별 규칙</h2>
+                  <span class="badge badge--quiet">시스템이 정한다</span>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr>
+                        <th scope="col">번호 조회 결과</th>
+                        <th scope="col">보내는 것</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>계정 없음 · 레코드 없음</td>
+                        <td><span class="badge badge--warn">가입 초대</span></td>
+                      </tr>
+                      <tr>
+                        <td>계정 없음 · 만료된 미가입 레코드</td>
+                        <td><span class="badge badge--warn">재초대</span></td>
+                      </tr>
+                      <tr>
+                        <td>계정 있음 · 이 점포에 레코드 없음</td>
+                        <td><span class="badge badge--info">소속 추가 확인</span></td>
+                      </tr>
+                      <tr>
+                        <td>계정 있음 · 퇴직 레코드</td>
+                        <td><span class="badge badge--info">복귀 확인</span></td>
+                      </tr>
+                      <tr>
+                        <td>계정 있음 · 이 점포 재직 중</td>
+                        <td><span class="badge badge--risk">차단 · 기존 안내</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__note">
+                  관리자는 유형을 고르지 않는다. 소속 추가 확인은 상대의 실명·다른 소속을 관리자에게 보여주지 않는다.
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+  </body>
+</html>

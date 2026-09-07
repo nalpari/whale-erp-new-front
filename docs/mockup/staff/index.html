@@ -1,0 +1,1399 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>직원·근로 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="staff">
+    <!-- /staff · /staff/contracts · /staff/schedules · /staff/payrolls · /staff/todos
+         디자인은 시안 5 "SHIP" 그대로. 내용은 manyfast 문서(R-QFUXNA)에 맞춰 고쳤다.
+         여기 있는 건 전부 **관리자가 보는 쪽**이다. 날인·출퇴근 찍기는 직원 앱에서 일어난다.
+         시안과 문서가 갈리는 곳은 보라색 쟁점 블록으로 남겼다 — 회의에서 고른다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <h1 class="t-h1">직원·근로</h1>
+          <span class="badge badge--quiet">63 / 100</span>
+          <div class="titlebar__end">
+            <a class="btn btn--secondary btn--sm" href="invites-holds.html">
+              <span data-icon="alert" data-icon-size="14"></span>가입 연결 확인
+              <span class="badge badge--risk">2</span>
+            </a>
+            <!-- STAFF-1 : 시안의 "직원 초대"가 여기 있었다. 문서 기준으로는 채용이
+                 계약서 작성에서 시작하므로 버튼을 바꿨다. -->
+            <a class="btn btn--primary btn--sm" href="contracts-new.html">
+              <span data-icon="plus" data-icon-size="14"></span>계약서 작성
+            </a>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="band band--warn">
+            <span class="band__ic" data-icon="file" data-icon-size="20"></span>
+            <div class="band__body">
+              <div class="band__title">서명 대기 3건이 6일째 멈춰 있습니다</div>
+              <p class="band__desc">
+                계약이 체결되기 전에도 스케줄은 경고와 함께 등록됩니다. 직원이 앱에서 날인하지 않은
+                계약은 발송일로부터 <b>30일</b> 뒤 만료되고, 만료된 계약은 재발송할 수 있습니다.
+              </p>
+            </div>
+            <div class="band__act">
+              <a class="btn btn--secondary" href="#contracts">계약 보기</a>
+              <button class="btn btn--primary" type="button">재발송</button>
+            </div>
+          </div>
+
+          <div class="gap">
+            <div class="gap__head">
+              <span class="gap__no">STAFF-1 · 3</span>
+              <b>채용의 시작점과 날인 기한</b>
+              <span class="gap__ref">F-GLGEOF · S-OIILIW · S-XDBBDP</span>
+            </div>
+            <div class="gap__opts">
+              <div class="gap__opt" data-side="a">
+                <div class="gap__label">A · 현재 디자인 시안</div>
+                <p>우측 상단 버튼이 <b>직원 초대</b>. 초대 → 가입 → 계약 작성 순서이고, 미승인 계약은 <b>14일</b> 뒤 만료.</p>
+              </div>
+              <div class="gap__opt" data-side="b">
+                <div class="gap__label">B · manyfast 문서 · 이 화면</div>
+                <p>버튼이 <b>계약서 작성</b>. 초안 저장이 채용의 시작점이고, 날인 기한과 초대 유효기간은 모두 <b>30일</b>.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="tabs" data-tabs="sf">
+            <button data-tab="list" aria-selected="true">직원 목록 <span class="count">63</span></button>
+            <button data-tab="contracts" aria-selected="false" id="contracts">
+              근로계약 <span class="count">3</span>
+            </button>
+            <button data-tab="sched" aria-selected="false" id="sched">스케줄·출퇴근</button>
+            <button data-tab="payroll" aria-selected="false" id="payroll">급여명세서</button>
+            <button data-tab="todo" aria-selected="false" id="todo">TO-DO</button>
+          </div>
+
+          <div id="sf">
+            <!-- 직원 목록 · 퇴직/재입사 (4.2.2) -->
+            <div data-panel="list">
+              <div class="filters">
+                <div class="inputwrap grow">
+                  <span data-icon="search" data-icon-size="15"></span>
+                  <input class="input" type="search" placeholder="이름·연락처로 검색" />
+                </div>
+                <select class="select" style="width: 168px" aria-label="점포">
+                  <option>전체 11개점</option>
+                  <option>모리커피 서초점</option>
+                  <option>온기식당 판교점</option>
+                </select>
+                <select class="select" style="width: 140px" aria-label="고용형태">
+                  <option>고용형태 전체</option>
+                  <option>정직원</option>
+                  <option>파트타임</option>
+                </select>
+                <select class="select" style="width: 130px" aria-label="상태">
+                  <option>재직</option>
+                  <option>퇴직</option>
+                  <option>전체</option>
+                </select>
+                <div class="filters__end">
+                  <span class="filters__count"><b>63</b>명</span>
+                </div>
+              </div>
+
+              <section class="panel">
+                <div class="tblwrap">
+                  <table class="tbl">
+                    <thead>
+                      <tr>
+                        <th scope="col">직원</th>
+                        <th scope="col">점포</th>
+                        <th scope="col">고용형태</th>
+                        <th scope="col">가입·인증</th>
+                        <th scope="col">계약 상태</th>
+                        <th scope="col" class="n">이번 주</th>
+                        <th scope="col">재직</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>
+                          <div class="rowmain">
+                            <span class="avatar"><img src="../assets/img/staff-1.webp" alt="" /></span>
+                            <div class="rowmain__text">
+                              <b><a class="tlink" href="detail.html">서지안</a></b><span>010-2841-7702</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td>모리커피 서초점</td>
+                        <td><span class="badge badge--quiet">정직원</span></td>
+                        <td><span class="badge badge--ok">가입 완료</span></td>
+                        <td><span class="badge badge--ok">체결 완료</span></td>
+                        <td class="n">38.5h</td>
+                        <td><span class="ok">재직</span></td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <div class="rowmain">
+                            <span class="avatar"><img src="../assets/img/staff-4.webp" alt="" /></span>
+                            <div class="rowmain__text">
+                              <b><a class="tlink" href="detail.html">오세라</a></b><span>010-3392-4418</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td>모리커피 서초점</td>
+                        <td><span class="badge badge--quiet">정직원</span></td>
+                        <td><span class="badge badge--ok">가입 완료</span></td>
+                        <td><span class="badge badge--ok">체결 완료</span></td>
+                        <td class="n">40.0h</td>
+                        <td><span class="ok">재직</span></td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <div class="rowmain">
+                            <span class="avatar"><img src="../assets/img/staff-2.webp" alt="" /></span>
+                            <div class="rowmain__text">
+                              <b><a class="tlink" href="detail.html">문태경</a></b><span>010-4471-2298</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td>온기식당 판교점</td>
+                        <td><span class="badge badge--quiet">정직원</span></td>
+                        <td><span class="badge badge--ok">가입 완료</span></td>
+                        <td><span class="badge badge--ok">체결 완료</span></td>
+                        <td class="n">42.0h</td>
+                        <td><span class="ok">재직</span></td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <div class="rowmain">
+                            <span class="avatar"><img src="../assets/img/staff-5.webp" alt="" /></span>
+                            <div class="rowmain__text">
+                              <b><a class="tlink" href="detail.html">배정숙</a></b><span>010-8820-3317</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td>온기식당 판교점</td>
+                        <td><span class="badge">파트타이머</span></td>
+                        <td><span class="badge badge--ok">가입 완료</span></td>
+                        <td><span class="badge badge--warn">갱신 예정 D-20</span></td>
+                        <td class="n">24.0h</td>
+                        <td><span class="ok">재직</span></td>
+                      </tr>
+                      <!-- 여기부터는 아직 계정이 없거나 연결되지 않은 사람들.
+                           문서에서는 계약 초안을 저장한 순간 이 행이 생긴다. -->
+                      <tr>
+                        <td>
+                          <div class="rowmain">
+                            <span class="avatar"><img src="../assets/img/staff-3.webp" alt="" /></span>
+                            <div class="rowmain__text">
+                              <b>남도현</b><span>010-9014-5563</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td>모리커피 성수점</td>
+                        <td><span class="badge">파트타이머</span></td>
+                        <td><span class="badge badge--warn">초대 발송 · 08-31</span></td>
+                        <td><span class="badge badge--quiet">발송 대기</span></td>
+                        <td class="n nil">—</td>
+                        <td><span class="subtle">가입 대기</span></td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <div class="rowmain">
+                            <span class="avatar"><img src="../assets/img/staff-6.webp" alt="" /></span>
+                            <div class="rowmain__text">
+                              <b>하준서</b><span>010-3392-4418</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td>모리커피 성수점</td>
+                        <td><span class="badge">파트타이머</span></td>
+                        <td>
+                          <a class="tlink" href="invites-holds.html">
+                            <span class="badge badge--risk">연결 보류</span>
+                          </a>
+                        </td>
+                        <td><span class="badge badge--quiet">발송 대기</span></td>
+                        <td class="n nil">—</td>
+                        <td><span class="risk">확인 필요</span></td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <div class="rowmain">
+                            <span class="avatar">정</span>
+                            <div class="rowmain__text">
+                              <b>정유담</b><span>010-5518-7734</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td>온기식당 판교점</td>
+                        <td><span class="badge">파트타이머</span></td>
+                        <td><span class="badge badge--info">소속 추가 확인</span></td>
+                        <td><span class="badge badge--quiet">발송 대기</span></td>
+                        <td class="n nil">—</td>
+                        <td><span class="subtle">응답 대기</span></td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <div class="rowmain">
+                            <span class="avatar">권</span>
+                            <div class="rowmain__text">
+                              <b><a class="tlink" href="detail.html">권도윤</a></b><span>010-7742-1160</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td>모리커피 서초점</td>
+                        <td><span class="badge">파트타이머</span></td>
+                        <td><span class="badge badge--ok">가입 완료</span></td>
+                        <td><span class="badge badge--warn">서명 대기 · D-24</span></td>
+                        <td class="n">18.0h</td>
+                        <td><span class="warn">날인 대기</span></td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <div class="rowmain">
+                            <span class="avatar">유</span>
+                            <div class="rowmain__text">
+                              <b><a class="tlink" href="detail.html">유하람</a></b><span>010-2093-8875</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td>모리커피 연남점</td>
+                        <td><span class="badge">파트타이머</span></td>
+                        <td><span class="badge badge--ok">가입 완료</span></td>
+                        <td><span class="badge badge--risk">거부 · 09-02</span></td>
+                        <td class="n nil">—</td>
+                        <td><span class="risk">재발송 필요</span></td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <div class="rowmain">
+                            <span class="avatar">임</span>
+                            <div class="rowmain__text">
+                              <b>임채운</b><span>010-6613-0284</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td>모리커피 연남점</td>
+                        <td><span class="badge">파트타이머</span></td>
+                        <td><span class="badge badge--quiet">가입 완료</span></td>
+                        <td><span class="badge badge--quiet">종료</span></td>
+                        <td class="n nil">—</td>
+                        <td><span class="subtle">퇴직 07-31</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__foot">
+                  <span>63명 중 10명 · 계약 초안을 저장하면 미가입 상태로 이 목록에 먼저 들어온다</span>
+                  <button class="tbtn right" type="button">퇴직자 포함</button>
+                </div>
+              </section>
+
+              <div class="grid grid--3" style="margin-top: var(--s-5)">
+                <div class="card">
+                  <span class="eyebrow">고용형태</span>
+                  <div class="stack">
+                    <div class="spread"><span>정직원</span><span class="num">21명</span></div>
+                    <div class="spread"><span>파트타임</span><span class="num">42명</span></div>
+                    <div class="spread"><span>이번 달 입사</span><span class="num">4명</span></div>
+                    <div class="spread"><span>이번 달 퇴직</span><span class="num">2명</span></div>
+                  </div>
+                </div>
+                <div class="card">
+                  <span class="eyebrow">PLAN 직원수 제약</span>
+                  <div class="stack">
+                    <div class="usage__row"><span>등록 직원</span><b>63 / 100</b></div>
+                    <div class="meter"><i style="width: 63%"></i></div>
+                    <p class="note" style="margin-top: var(--s-2)">
+                      <span data-icon="info" data-icon-size="14"></span>
+                      <span>퇴직 처리한 직원은 카운트에서 빠진다. 재입사하면 다시 들어온다.</span>
+                    </p>
+                  </div>
+                </div>
+                <div class="card">
+                  <span class="eyebrow">재입사 대기</span>
+                  <div class="rows">
+                    <div class="row" style="padding: var(--s-2) 0; border: 0">
+                      <span class="avatar avatar--sm">임</span>
+                      <div class="rowmain__text"><b>임채운</b><span>07-31 퇴직 · 연남점</span></div>
+                      <button class="btn btn--secondary btn--sm row__end" type="button">재입사</button>
+                    </div>
+                    <div class="row" style="padding: var(--s-2) 0; border: 0">
+                      <span class="avatar avatar--sm">권</span>
+                      <div class="rowmain__text"><b>권나윤</b><span>06-14 퇴직 · 서초점</span></div>
+                      <button class="btn btn--secondary btn--sm row__end" type="button">재입사</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 근로계약 (4.2.1) -->
+            <div data-panel="contracts" hidden>
+              <div class="gap">
+                <div class="gap__head">
+                  <span class="gap__no">STAFF-2</span>
+                  <b>계약 상태를 몇 단계로 둘 것인가</b>
+                  <span class="gap__ref">S-XDBBDP</span>
+                </div>
+                <div class="gap__opts">
+                  <div class="gap__opt" data-side="a">
+                    <div class="gap__label">A · 현재 디자인 시안</div>
+                    <p>승인 대기 · 체결 · 만료 예정 — <b>3단계</b>. 거부와 종료를 따로 두지 않는다.</p>
+                  </div>
+                  <div class="gap__opt" data-side="b">
+                    <div class="gap__label">B · manyfast 문서 · 이 화면</div>
+                    <p>발송 대기 · 서명 대기 · 체결 완료 · 거부 · 만료 · 종료 — <b>6단계</b>. 상태가 바뀔 때마다 이력을 남긴다.</p>
+                  </div>
+                </div>
+                <p class="gap__note">
+                  <b>발송 대기</b>는 초안은 저장됐지만 직원이 아직 가입하지 않은 상태다. STAFF-1 에서 B 를 고르면 이 상태가 반드시 필요해진다.
+                </p>
+              </div>
+
+              <div class="grid grid--7-5">
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">근로계약</h2>
+                    <div class="panel__end">
+                      <div class="seg">
+                        <button type="button" aria-pressed="true">전체</button>
+                        <button type="button" aria-pressed="false">발송 대기</button>
+                        <button type="button" aria-pressed="false">서명 대기</button>
+                        <button type="button" aria-pressed="false">거부·만료</button>
+                        <button type="button" aria-pressed="false">갱신 예정</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="tblwrap">
+                    <table class="tbl tbl--dense">
+                      <thead>
+                        <tr>
+                          <th scope="col">직원</th>
+                          <th scope="col">계약 기간</th>
+                          <th scope="col" class="n">급여</th>
+                          <th scope="col">발송일</th>
+                          <th scope="col">상태</th>
+                          <th scope="col" style="width: 104px"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td class="k">남도현</td>
+                          <td class="mono">2026-09-14 ~ 무기한</td>
+                          <td class="n">11,200 /h</td>
+                          <td class="mono nil">—</td>
+                          <td><span class="badge badge--quiet">발송 대기</span></td>
+                          <td class="c"><button class="tbtn" type="button">초대 재발송</button></td>
+                        </tr>
+                        <tr>
+                          <td class="k">하준서</td>
+                          <td class="mono">2026-09-14 ~ 무기한</td>
+                          <td class="n">11,200 /h</td>
+                          <td class="mono nil">—</td>
+                          <td><span class="badge badge--quiet">발송 대기</span></td>
+                          <td class="c"><a class="tbtn" href="invites-holds.html">연결 확인</a></td>
+                        </tr>
+                        <tr>
+                          <td class="k">정유담</td>
+                          <td class="mono">2026-09-18 ~ 2027-03-17</td>
+                          <td class="n">10,800 /h</td>
+                          <td class="mono nil">—</td>
+                          <td><span class="badge badge--quiet">발송 대기</span></td>
+                          <td class="c"><span class="subtle">소속 확인 중</span></td>
+                        </tr>
+                        <tr>
+                          <td class="k">권도윤</td>
+                          <td class="mono">2026-09-01 ~ 2027-08-31</td>
+                          <td class="n">11,600 /h</td>
+                          <td class="mono">09-01</td>
+                          <td><span class="badge badge--warn">서명 대기 · D-24</span></td>
+                          <td class="c"><button class="tbtn" type="button">재발송</button></td>
+                        </tr>
+                        <tr>
+                          <td class="k"><a class="tlink" href="contracts-detail.html">유하람</a></td>
+                          <td class="mono">2026-08-28 ~ 2027-02-27</td>
+                          <td class="n">10,800 /h</td>
+                          <td class="mono">08-28</td>
+                          <td><span class="badge badge--risk">거부 · 09-02</span></td>
+                          <td class="c"><a class="tbtn" href="contracts-detail.html">상세</a></td>
+                        </tr>
+                        <tr>
+                          <td class="k">서지안</td>
+                          <td class="mono">2026-03-01 ~ 무기한</td>
+                          <td class="n">2,840,000 /월</td>
+                          <td class="mono">02-24</td>
+                          <td><span class="badge badge--ok">체결 완료</span></td>
+                          <td class="c"><button class="tbtn" type="button">새 계약</button></td>
+                        </tr>
+                        <tr>
+                          <td class="k">오세라</td>
+                          <td class="mono">2025-11-01 ~ 무기한</td>
+                          <td class="n">3,420,000 /월</td>
+                          <td class="mono">10-27</td>
+                          <td><span class="badge badge--ok">체결 완료</span></td>
+                          <td class="c"><button class="tbtn" type="button">새 계약</button></td>
+                        </tr>
+                        <tr>
+                          <td class="k">배정숙</td>
+                          <td class="mono">2026-02-10 ~ 2026-09-30</td>
+                          <td class="n">11,600 /h</td>
+                          <td class="mono">02-06</td>
+                          <td><span class="badge badge--warn">갱신 예정 · D-20</span></td>
+                          <td class="c"><button class="tbtn" type="button">재계약</button></td>
+                        </tr>
+                        <tr>
+                          <td class="k">임채운</td>
+                          <td class="mono">2025-08-01 ~ 2026-07-31</td>
+                          <td class="n">10,400 /h</td>
+                          <td class="mono">07-28</td>
+                          <td><span class="badge badge--quiet">종료</span></td>
+                          <td class="c"><span class="subtle">퇴직</span></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="panel__note">
+                    날인·거부는 직원 앱에서 이뤄진다. 체결 완료된 계약은 수정하지 않고 새 계약으로 대체한다.
+                  </div>
+                </section>
+
+                <section class="stack--lg" style="display: flex; flex-direction: column">
+                  <!-- 시안은 이 자리에 계약 작성 폼을 인라인으로 두었다. 문서에서는 초안 작성이
+                       채용의 시작점이라 별도 화면(S-OIILIW)으로 올렸다. 폼을 여기 되돌릴지도 안건. -->
+                  <div class="panel">
+                    <div class="panel__head">
+                      <h2 class="t-h2">계약 상태 요약</h2>
+                      <span class="badge badge--quiet">9건</span>
+                    </div>
+                    <div class="panel__body">
+                      <div class="stack">
+                        <div class="spread">
+                          <span class="inline"><span class="badge badge--quiet">발송 대기</span>가입을 기다리는 초안</span>
+                          <b class="num">3</b>
+                        </div>
+                        <div class="spread">
+                          <span class="inline"><span class="badge badge--warn">서명 대기</span>날인을 기다림</span>
+                          <b class="num">1</b>
+                        </div>
+                        <div class="spread">
+                          <span class="inline"><span class="badge badge--ok">체결 완료</span></span>
+                          <b class="num">2</b>
+                        </div>
+                        <div class="spread">
+                          <span class="inline"><span class="badge badge--risk">거부</span>재발송 필요</span>
+                          <b class="num">1</b>
+                        </div>
+                        <div class="spread">
+                          <span class="inline"><span class="badge badge--warn">갱신 예정</span>종료 30일 전</span>
+                          <b class="num">1</b>
+                        </div>
+                        <div class="spread">
+                          <span class="inline"><span class="badge badge--quiet">종료</span></span>
+                          <b class="num">1</b>
+                        </div>
+                      </div>
+                      <hr class="hr" />
+                      <a class="btn btn--primary btn--block" href="contracts-new.html">
+                        <span data-icon="plus" data-icon-size="14"></span>계약 초안 작성
+                      </a>
+                    </div>
+                    <div class="panel__note">
+                      만료 상태는 지금 해당 건이 없다. 서명 대기가 30일을 넘기면 여기로 옮겨진다.
+                    </div>
+                  </div>
+
+                  <div class="log" style="flex: 1">
+                    <div class="log__head">
+                      <span data-icon="clock" data-icon-size="14"></span>계약 이력
+                      <span class="badge">남도현</span>
+                    </div>
+                    <div class="log__body">
+                      <!-- 시안의 이력은 invite → join → draft → send 순서였다.
+                           문서는 초안이 먼저이므로 draft → invite → join → send 로 뒤집힌다. -->
+                      <div class="log__row">
+                        <span class="log__t">대기 중</span>
+                        <span class="log__tag">send</span>
+                        <span class="log__msg">가입 완료 시 계약서 자동 발송 · <b>관리자 개입 없음</b></span>
+                      </div>
+                      <div class="log__row">
+                        <span class="log__t">대기 중</span>
+                        <span class="log__tag">join</span>
+                        <span class="log__msg">직원 가입 · 본인인증 번호 대조</span>
+                      </div>
+                      <div class="log__row">
+                        <span class="log__t">08-31 09:12</span>
+                        <span class="log__tag">invite</span>
+                        <span class="log__msg">가입 초대 자동 발송 · 010-9014-5563 · 만료 09-30</span>
+                      </div>
+                      <div class="log__row">
+                        <span class="log__t">08-31 09:12</span>
+                        <span class="log__tag">draft</span>
+                        <span class="log__msg">계약 초안 저장 · 시급 <b>11,200</b> · 미가입 직원 레코드 생성</span>
+                      </div>
+                    </div>
+                    <div class="log__foot">초안 저장이 채용의 시작점이다 · S-OIILIW</div>
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            <!-- 스케줄·출퇴근 (4.3.1) -->
+            <div data-panel="sched" hidden>
+              <div class="filters">
+                <select class="select" style="width: 168px" aria-label="점포">
+                  <option>모리커피 서초점</option>
+                  <option>모리커피 성수점</option>
+                </select>
+                <select class="select" style="width: 168px" aria-label="주">
+                  <option>2026-08-17 ~ 08-23</option>
+                  <option>2026-08-24 ~ 08-30</option>
+                </select>
+                <div class="filters__end">
+                  <button class="btn btn--secondary btn--sm" type="button">지난 주 복사</button>
+                  <button class="btn btn--primary btn--sm" type="button">스케줄 확정</button>
+                </div>
+              </div>
+
+              <section class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">주간 스케줄</h2>
+                  <span class="badge badge--quiet">모리커피 서초점 · 9명</span>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr>
+                        <th scope="col" style="min-width: 120px">직원</th>
+                        <th scope="col" class="c">월 17</th>
+                        <th scope="col" class="c">화 18</th>
+                        <th scope="col" class="c">수 19</th>
+                        <th scope="col" class="c">목 20</th>
+                        <th scope="col" class="c">금 21</th>
+                        <th scope="col" class="c">토 22</th>
+                        <th scope="col" class="c">일 23</th>
+                        <th scope="col" class="n">주 합계</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="k">오세라</td>
+                        <td class="c mono">09-18</td>
+                        <td class="c mono">09-18</td>
+                        <td class="c nil">휴무</td>
+                        <td class="c mono">09-18</td>
+                        <td class="c mono">09-18</td>
+                        <td class="c mono">11-20</td>
+                        <td class="c nil">휴무</td>
+                        <td class="n">45.0h</td>
+                      </tr>
+                      <tr>
+                        <td class="k">서지안</td>
+                        <td class="c mono">07-16</td>
+                        <td class="c mono">07-16</td>
+                        <td class="c mono">07-16</td>
+                        <td class="c mono">07-16</td>
+                        <td class="c nil">휴무</td>
+                        <td class="c nil">휴무</td>
+                        <td class="c mono">10-19</td>
+                        <td class="n">40.0h</td>
+                      </tr>
+                      <tr>
+                        <td class="k">하준서</td>
+                        <td class="c nil">—</td>
+                        <td class="c nil">—</td>
+                        <td class="c nil">—</td>
+                        <td class="c nil">—</td>
+                        <td class="c nil">—</td>
+                        <td class="c nil">—</td>
+                        <td class="c nil">—</td>
+                        <td class="n nil">계약 대기</td>
+                      </tr>
+                      <tr>
+                        <td class="k">권도윤</td>
+                        <td class="c mono">13-22</td>
+                        <td class="c nil">휴무</td>
+                        <td class="c mono">13-22</td>
+                        <td class="c mono">13-22</td>
+                        <td class="c mono">13-22</td>
+                        <td class="c nil">휴무</td>
+                        <td class="c mono">13-22</td>
+                        <td class="n">45.0h</td>
+                      </tr>
+                      <tr>
+                        <td class="k">유하람</td>
+                        <td class="c nil">휴무</td>
+                        <td class="c mono">16-22</td>
+                        <td class="c mono">16-22</td>
+                        <td class="c nil">휴무</td>
+                        <td class="c mono">16-22</td>
+                        <td class="c mono">12-22</td>
+                        <td class="c mono">12-22</td>
+                        <td class="n">38.0h</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__foot">
+                  <span>주 15시간 이상 근무자는 주휴수당 대상이다 — 급여명세서 초안에 자동 반영된다</span>
+                </div>
+              </section>
+
+              <!-- 스케줄 등록·수정 · S-WPGUXX
+                   주간 표 위에서 이어 입력하는 성격이라 별도 라우트로 빼지 않고 옆에 붙였다. -->
+              <div class="grid grid--7-5" style="margin-top: var(--s-5)">
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">스케줄 등록·수정</h2>
+                    <div class="panel__end">
+                      <div class="seg">
+                        <button type="button" aria-pressed="true">한 명</button>
+                        <button type="button" aria-pressed="false">여러 명 일괄</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="panel__body">
+                    <div class="grid grid--2" style="gap: var(--s-4)">
+                      <div class="field">
+                        <label for="sw">근무지</label>
+                        <select class="select" id="sw">
+                          <option>모리커피 서초점</option>
+                          <option>모리커피 성수점</option>
+                        </select>
+                      </div>
+                      <div class="field">
+                        <label for="se">직원</label>
+                        <select class="select" id="se">
+                          <option>서지안 · 바리스타</option>
+                          <option>오세라 · 점장</option>
+                          <option>권도윤 · 바리스타</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="grid grid--2" style="gap: var(--s-4)">
+                      <div class="field">
+                        <label for="sd">근무일</label>
+                        <input class="input" id="sd" type="date" value="2026-09-07" />
+                      </div>
+                      <div class="field">
+                        <label for="sy">근무 유형</label>
+                        <select class="select" id="sy">
+                          <option>오픈</option>
+                          <option>미들</option>
+                          <option>마감</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="grid grid--3" style="gap: var(--s-4)">
+                      <div class="field">
+                        <label for="s1">시작</label>
+                        <input class="input mono" id="s1" type="time" value="09:00" />
+                      </div>
+                      <div class="field">
+                        <label for="s2">종료</label>
+                        <input class="input mono" id="s2" type="time" value="17:00" />
+                      </div>
+                      <div class="field">
+                        <label for="s3">휴게시간</label>
+                        <input class="input mono" id="s3" value="60분" />
+                      </div>
+                    </div>
+
+                    <div class="band band--warn" style="margin: var(--s-4) 0 0">
+                      <span class="band__ic" data-icon="warn" data-icon-size="18"></span>
+                      <div class="band__body">
+                        <div class="band__title">권도윤 · 근로계약 미체결</div>
+                        <p class="band__desc">
+                          경고를 확인하면 등록할 수 있다. 계약이 없어도 스케줄과 출퇴근은 막지 않는다.
+                        </p>
+                      </div>
+                    </div>
+
+                    <hr class="hr" />
+                    <div class="spread">
+                      <button class="btn btn--ghost btn--sm" type="button">
+                        <span data-icon="trash" data-icon-size="14"></span>이 스케줄 삭제
+                      </button>
+                      <button class="btn btn--primary" type="button">저장</button>
+                    </div>
+                  </div>
+                  <div class="panel__note">
+                    같은 직원의 근무일시가 겹치면 등록을 막는다. 지난 날짜를 고치면 급여명세서에 영향을 줄 수 있다고 알린다.
+                  </div>
+                </section>
+
+                <section class="stack--lg" style="display: flex; flex-direction: column">
+                  <div class="panel">
+                    <div class="panel__head">
+                      <h2 class="t-h2">일괄 등록</h2>
+                      <span class="badge badge--quiet">여러 명 선택 시</span>
+                    </div>
+                    <div class="panel__body">
+                      <div class="rows">
+                        <div class="row">
+                          <span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="선택" data-icon="check" data-icon-size="11"></span>
+                          <div class="rowmain__text"><b>서지안</b><span>바리스타 · 주 38.5h</span></div>
+                        </div>
+                        <div class="row">
+                          <span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="선택" data-icon="check" data-icon-size="11"></span>
+                          <div class="rowmain__text"><b>권도윤</b><span>바리스타 · 주 18.0h</span></div>
+                          <span class="row__end warn">계약 미체결</span>
+                        </div>
+                        <div class="row">
+                          <span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="선택" data-icon="check" data-icon-size="11"></span>
+                          <div class="rowmain__text"><b>오세라</b><span>점장 · 주 40.0h</span></div>
+                        </div>
+                      </div>
+                      <hr class="hr" />
+                      <p class="note">
+                        <span data-icon="info" data-icon-size="14"></span>
+                        <span>일부가 실패해도 성공한 등록은 남고 실패 대상만 표시된다.</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="panel" style="flex: 1">
+                    <div class="panel__head"><h2 class="t-h2">변경 이력</h2></div>
+                    <div class="log log--flat">
+                      <div class="log__body">
+                        <div class="log__row">
+                          <span class="log__t">09-01 14:22</span>
+                          <span class="log__tag">edit</span>
+                          <span class="log__msg">서지안 09-04 <b>13:00-21:30</b> → 09:00-17:00 · 정하윤</span>
+                        </div>
+                        <div class="log__row">
+                          <span class="log__t">08-31 10:05</span>
+                          <span class="log__tag">add</span>
+                          <span class="log__msg">권도윤 09-01~09-06 일괄 등록 6건 · 정하윤</span>
+                        </div>
+                        <div class="log__row">
+                          <span class="log__t">08-28 17:41</span>
+                          <span class="log__tag log__tag--fail">del</span>
+                          <span class="log__msg">배정숙 08-30 마감 삭제 · 정하윤</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="panel__note">변경 전후 값·일시·처리 주체를 남긴다 · 3년 보존</div>
+                  </div>
+                </section>
+              </div>
+
+              <div class="grid grid--2" style="margin-top: var(--s-5)">
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">오늘 출퇴근</h2>
+                    <span class="badge badge--quiet">08-20 목</span>
+                  </div>
+                  <div class="tblwrap">
+                    <table class="tbl tbl--dense">
+                      <thead>
+                        <tr>
+                          <th scope="col">직원</th>
+                          <th scope="col">예정</th>
+                          <th scope="col">출근</th>
+                          <th scope="col">퇴근</th>
+                          <th scope="col">비고</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td class="k">오세라</td>
+                          <td class="mono subtle">09:00</td>
+                          <td class="mono">08:54</td>
+                          <td class="mono nil">근무 중</td>
+                          <td class="ok">정상</td>
+                        </tr>
+                        <tr>
+                          <td class="k">서지안</td>
+                          <td class="mono subtle">07:00</td>
+                          <td class="mono">07:02</td>
+                          <td class="mono">16:03</td>
+                          <td class="ok">정상</td>
+                        </tr>
+                        <tr>
+                          <td class="k">권도윤</td>
+                          <td class="mono subtle">13:00</td>
+                          <td class="mono warn">13:18</td>
+                          <td class="mono nil">근무 중</td>
+                          <td class="warn">지각 18분</td>
+                        </tr>
+                        <tr>
+                          <td class="k">유하람</td>
+                          <td class="mono subtle">—</td>
+                          <td class="mono nil">—</td>
+                          <td class="mono nil">—</td>
+                          <td class="subtle">휴무</td>
+                        </tr>
+                        <tr>
+                          <td class="k">배정숙</td>
+                          <td class="mono subtle">10:00</td>
+                          <td class="mono nil">미기록</td>
+                          <td class="mono nil">—</td>
+                          <td class="risk">미출근</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="panel__note">출퇴근은 직원 앱에서 찍는다. 관리자는 기록을 보정만 한다.</div>
+                </section>
+
+                <section class="panel">
+                  <div class="panel__head"><h2 class="t-h2">이번 주 근태 요약</h2></div>
+                  <div class="panel__body">
+                    <div class="stack">
+                      <div class="spread">
+                        <span>정상 출근</span>
+                        <span class="rollout__bar" style="max-width: 160px"><i class="done" style="width: 88%"></i></span>
+                        <span class="num" style="font-size: 12.5px">54회</span>
+                      </div>
+                      <div class="spread">
+                        <span>지각</span>
+                        <span class="rollout__bar" style="max-width: 160px"><i class="done" style="width: 8%"></i></span>
+                        <span class="num" style="font-size: 12.5px">5회</span>
+                      </div>
+                      <div class="spread">
+                        <span>미기록</span>
+                        <span class="rollout__bar" style="max-width: 160px"><i class="done" style="width: 4%"></i></span>
+                        <span class="num" style="font-size: 12.5px">2회</span>
+                      </div>
+                    </div>
+                    <hr class="hr" />
+                    <dl class="kv">
+                      <dt>총 근로시간</dt>
+                      <dd class="num">1,284h</dd>
+                      <dt>연장 근로</dt>
+                      <dd class="num">42h</dd>
+                      <dt>야간 근로</dt>
+                      <dd class="num">18h</dd>
+                      <dt>주휴 대상</dt>
+                      <dd class="num">38명</dd>
+                    </dl>
+                  </div>
+                </section>
+              </div>
+
+
+              <!-- 출퇴근 기록 보정 · S-EITCPC · 기록은 매장 앱에서 찍히고 관리자는 고치기만 한다 -->
+              <div class="grid grid--7-5" style="margin-top: var(--s-5)">
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">보정이 필요한 기록</h2>
+                    <span class="badge badge--warn">4건</span>
+                    <div class="panel__end">
+                      <span class="filters__count">최근 3개월 이내만 수정 가능</span>
+                    </div>
+                  </div>
+                  <div class="tblwrap">
+                    <table class="tbl tbl--dense">
+                      <thead>
+                        <tr>
+                          <th scope="col">직원</th>
+                          <th scope="col">날짜</th>
+                          <th scope="col">출근</th>
+                          <th scope="col">퇴근</th>
+                          <th scope="col">사유</th>
+                          <th scope="col" style="width: 84px"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td class="k">서지안</td>
+                          <td class="mono">09-05</td>
+                          <td class="mono">12:58</td>
+                          <td class="mono nil">—</td>
+                          <td><span class="badge badge--warn">퇴근 미등록</span></td>
+                          <td class="c"><button class="tbtn" type="button">보정</button></td>
+                        </tr>
+                        <tr>
+                          <td class="k">권도윤</td>
+                          <td class="mono">09-03</td>
+                          <td class="mono nil">—</td>
+                          <td class="mono">21:12</td>
+                          <td><span class="badge badge--warn">출근 미등록</span></td>
+                          <td class="c"><button class="tbtn" type="button">보정</button></td>
+                        </tr>
+                        <tr>
+                          <td class="k">배정숙</td>
+                          <td class="mono">09-02</td>
+                          <td class="mono">08:47</td>
+                          <td class="mono">23:58</td>
+                          <td><span class="badge badge--risk">퇴근 시각 이상</span></td>
+                          <td class="c"><button class="tbtn" type="button">보정</button></td>
+                        </tr>
+                        <tr>
+                          <td class="k">문태경</td>
+                          <td class="mono">08-29</td>
+                          <td class="mono">09:02</td>
+                          <td class="mono">18:30</td>
+                          <td>
+                            <span class="badge badge--info">수정됨</span>
+                            <span class="subtle">08-30 정하윤</span>
+                          </td>
+                          <td class="c"><button class="tbtn" type="button">이력</button></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="panel__note">
+                    급여명세서가 확정된 뒤에도 고칠 수 있지만, 명세서에 영향을 줄 수 있다고 경고한다.
+                  </div>
+                </section>
+
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">기록 보정</h2>
+                    <span class="badge badge--quiet">서지안 · 09-05</span>
+                  </div>
+                  <div class="panel__body">
+                    <div class="grid grid--2" style="gap: var(--s-4)">
+                      <div class="field">
+                        <label for="a1">출근</label>
+                        <input class="input mono" id="a1" type="time" value="12:58" />
+                        <span class="help">원본 12:58</span>
+                      </div>
+                      <div class="field">
+                        <label for="a2">퇴근</label>
+                        <input class="input mono" id="a2" type="time" value="21:30" />
+                        <span class="help">원본 없음</span>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label for="a3">수정 사유</label>
+                      <textarea class="textarea" id="a3" rows="2">퇴근 등록 누락 · 마감 스케줄 종료 시각으로 보정. 점장 구두 확인.</textarea>
+                      <span class="help">사유는 필수이며 이력에 그대로 남는다</span>
+                    </div>
+                    <hr class="hr" />
+                    <button class="btn btn--primary btn--block" type="button">보정 저장</button>
+                  </div>
+                  <div class="panel__note">
+                    수정 이력은 원본과 분리해 보관한다 — 수정자·시각·사유·변경 전후 값.
+                  </div>
+                </section>
+              </div>
+            </div>
+            <!-- 급여명세서 · S-DOVWAR · 작성 중 → 검토 중 → 확정 → 발송 완료 -->
+            <div data-panel="payroll" hidden>
+              <div class="gap">
+                <div class="gap__head">
+                  <span class="gap__no">STAFF-5</span>
+                  <b>급여를 계산할 것인가, 보관만 할 것인가</b>
+                  <span class="gap__ref">F-XXYSNZ · S-DOVWAR</span>
+                </div>
+                <div class="gap__opts">
+                  <div class="gap__opt" data-side="a">
+                    <div class="gap__label">A · 현재 디자인 시안</div>
+                    <p>출퇴근 기록으로 근로시간을 집계하고 <b>주휴·연장·공제·실지급액까지 계산</b>해 표로 보여준다.</p>
+                  </div>
+                  <div class="gap__opt" data-side="b">
+                    <div class="gap__label">B · manyfast 문서</div>
+                    <p>법정 급여 계산은 <b>범위 밖</b>. 계약·출퇴근은 참조일 뿐이고, 핵심은 아래 <b>검토 대기</b> 분류다.</p>
+                  </div>
+                </div>
+                <p class="gap__note">
+                  1차 범위에서 시안과 문서의 간극이 가장 큰 곳이다. A 로 가면 주휴수당·연장근로 계산 정책과 4대보험 공제 기준을
+                  이번에 함께 확정해야 한다. 아래 화면은 <b>두 안을 겹쳐</b> 두었다 — 금액 컬럼은 A, 검토 대기 패널은 B 다.
+                </p>
+              </div>
+
+              <div class="filters">
+                <select class="select" style="width: 148px" aria-label="급여 월">
+                  <option>2026-08</option>
+                  <option>2026-07</option>
+                </select>
+                <select class="select" style="width: 168px" aria-label="점포">
+                  <option>전체 11개점</option>
+                  <option>모리커피 서초점</option>
+                </select>
+                <select class="select" style="width: 150px" aria-label="명세서 상태">
+                  <option>상태 전체</option>
+                  <option>작성 중</option>
+                  <option>검토 중</option>
+                  <option>확정</option>
+                  <option>발송 완료</option>
+                </select>
+                <div class="filters__end">
+                  <span class="filters__count">
+                    작성 중 <b>52</b> · 검토 중 <b>8</b> · 확정 <b>3</b> · 발송 완료 <b>0</b>
+                  </span>
+                </div>
+              </div>
+
+              <!-- 검토 대기 : 문서가 급여 관리의 핵심으로 꼽는 자리다.
+                   출퇴근 누락 / 계약 만료 후 기록 / 기간 중 계약 변경 — 세 사유로 분류한다. -->
+              <section class="panel" style="margin-bottom: var(--s-5)">
+                <div class="panel__head">
+                  <h2 class="t-h2">검토 대기</h2>
+                  <span class="badge badge--warn">8건</span>
+                  <div class="panel__end">
+                    <span class="filters__count">확인 전에는 확정할 수 없다</span>
+                  </div>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr>
+                        <th scope="col">직원</th>
+                        <th scope="col">근무지</th>
+                        <th scope="col">급여 기간</th>
+                        <th scope="col">검토 사유</th>
+                        <th scope="col" style="width: 92px"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="k">서지안</td>
+                        <td>서초점</td>
+                        <td class="mono">2026-08</td>
+                        <td>
+                          <span class="badge badge--warn">출퇴근 누락</span>
+                          <span class="subtle">09-05 퇴근 미등록 등 2일</span>
+                        </td>
+                        <td class="c"><a class="tbtn" href="payrolls-detail.html">검토</a></td>
+                      </tr>
+                      <tr>
+                        <td class="k">유하람</td>
+                        <td>연남점</td>
+                        <td class="mono">2026-08</td>
+                        <td>
+                          <span class="badge badge--risk">계약 만료 후 기록</span>
+                          <span class="subtle">08-29 ~ 08-31 · 3일</span>
+                        </td>
+                        <td class="c"><a class="tbtn" href="payrolls-detail.html">검토</a></td>
+                      </tr>
+                      <tr>
+                        <td class="k">배정숙</td>
+                        <td>판교점</td>
+                        <td class="mono">2026-08</td>
+                        <td>
+                          <span class="badge badge--info">기간 중 계약 변경</span>
+                          <span class="subtle">08-16 시급 조정</span>
+                        </td>
+                        <td class="c"><a class="tbtn" href="payrolls-detail.html">검토</a></td>
+                      </tr>
+                      <tr>
+                        <td class="k">남도현</td>
+                        <td>성수점</td>
+                        <td class="mono">2026-08</td>
+                        <td>
+                          <span class="badge badge--risk">근로계약 없음</span>
+                          <span class="subtle">초안이 생성되지 않는다</span>
+                        </td>
+                        <td class="c"><span class="subtle">—</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__note">
+                  경고가 있는 명세서도 관리자가 확인하면 확정할 수 있다. 확정 취소는 발송 후에도 가능하며 검토 중으로 되돌아간다.
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">2026년 8월 급여명세서</h2>
+                  <span class="badge badge--quiet">작성 중 52건</span>
+                  <div class="panel__end">
+                    <span class="filters__count">지급 예정 <b>₩184,220,000</b></span>
+                    <button class="btn btn--secondary btn--sm" type="button">초안 일괄 생성</button>
+                    <button class="btn btn--primary btn--sm" type="button">확정 3건 발송</button>
+                  </div>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr>
+                        <th scope="col">직원</th>
+                        <th scope="col">점포</th>
+                        <th scope="col" class="n">근로시간</th>
+                        <th scope="col" class="n">기본급</th>
+                        <th scope="col" class="n">주휴·연장</th>
+                        <th scope="col" class="n">공제</th>
+                        <th scope="col" class="n">실지급</th>
+                        <th scope="col">상태</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="k">오세라</td>
+                        <td>서초점</td>
+                        <td class="n">180.0</td>
+                        <td class="n">3,420,000</td>
+                        <td class="n">184,000</td>
+                        <td class="n">312,400</td>
+                        <td class="n strong">3,291,600</td>
+                        <td><span class="badge badge--quiet">작성 중</span></td>
+                      </tr>
+                      <tr>
+                        <td class="k">서지안</td>
+                        <td>서초점</td>
+                        <td class="n">160.0</td>
+                        <td class="n">2,840,000</td>
+                        <td class="n">128,000</td>
+                        <td class="n">261,800</td>
+                        <td class="n strong">2,706,200</td>
+                        <td><span class="badge badge--quiet">작성 중</span></td>
+                      </tr>
+                      <tr>
+                        <td class="k">문태경</td>
+                        <td>판교점</td>
+                        <td class="n">184.0</td>
+                        <td class="n">3,680,000</td>
+                        <td class="n">276,000</td>
+                        <td class="n">348,200</td>
+                        <td class="n strong">3,607,800</td>
+                        <td><span class="badge badge--quiet">작성 중</span></td>
+                      </tr>
+                      <tr>
+                        <td class="k">배정숙</td>
+                        <td>판교점</td>
+                        <td class="n">96.0</td>
+                        <td class="n">1,113,600</td>
+                        <td class="n">92,800</td>
+                        <td class="n">40,400</td>
+                        <td class="n strong">1,166,000</td>
+                        <td><span class="badge badge--quiet">작성 중</span></td>
+                      </tr>
+                      <tr>
+                        <td class="k">권도윤</td>
+                        <td>서초점</td>
+                        <td class="n">176.0</td>
+                        <td class="n">1,971,200</td>
+                        <td class="n">164,800</td>
+                        <td class="n">71,600</td>
+                        <td class="n strong">2,064,400</td>
+                        <td><span class="badge badge--warn">검토 중</span></td>
+                      </tr>
+                      <tr>
+                        <td class="k">남도현</td>
+                        <td>성수점</td>
+                        <td class="n nil">—</td>
+                        <td class="n nil">—</td>
+                        <td class="n nil">—</td>
+                        <td class="n nil">—</td>
+                        <td class="n nil">—</td>
+                        <td><span class="badge badge--risk">계약 없음 · 초안 없음</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__foot">
+                  <span>63건 중 6건 · 계약이 없는 직원은 초안이 생성되지 않는다 · 발송 시 직원 앱 푸시가 함께 나간다</span>
+                  <button class="tbtn right" type="button">전체 보기</button>
+                </div>
+              </section>
+            </div>
+
+            <!-- TO-DO · S-NIAGGB · 정규 근무 외의 특별업무 지시 전용 -->
+            <div data-panel="todo" hidden>
+              <div class="gap">
+                <div class="gap__head">
+                  <span class="gap__no">STAFF-4</span>
+                  <b>TO-DO 로 무엇을 관리할 것인가</b>
+                  <span class="gap__ref">F-NUXMTT · S-NIAGGB</span>
+                </div>
+                <div class="gap__opts">
+                  <div class="gap__opt" data-side="a">
+                    <div class="gap__label">A · 현재 디자인 시안</div>
+                    <p><b>반복 업무 체크리스트</b>. "매일 07:00 그라인더 청소", "매주 월 재고 실사"처럼 정기 업무를 걸어둔다.</p>
+                  </div>
+                  <div class="gap__opt" data-side="b">
+                    <div class="gap__label">B · manyfast 문서 · 이 화면</div>
+                    <p><b>특별업무 지시 전용</b>. 반복 설정이 없다. 개인 또는 근무지 전체에 배정하고, 전체는 각자 수행 / 한 명 수행을 고른다.</p>
+                  </div>
+                </div>
+                <p class="gap__note">
+                  B 를 고르면 매일 하는 오픈·마감 점검을 담을 곳이 사라진다. 그 업무를 어디서 관리할지가 함께 결정되어야 한다.
+                </p>
+              </div>
+
+              <div class="filters">
+                <select class="select" style="width: 168px" aria-label="근무지">
+                  <option>전체 11개점</option>
+                  <option>모리커피 서초점</option>
+                </select>
+                <select class="select" style="width: 140px" aria-label="상태">
+                  <option>상태 전체</option>
+                  <option>대기</option>
+                  <option>진행 중</option>
+                  <option>완료</option>
+                </select>
+                <select class="select" style="width: 150px" aria-label="담당">
+                  <option>담당 전체</option>
+                  <option>개인 배정</option>
+                  <option>근무지 전체</option>
+                </select>
+                <div class="filters__end">
+                  <span class="filters__count">전체 <b>12</b> · 대기 <b>5</b> · 진행 중 <b>2</b> · 완료 <b>5</b></span>
+                </div>
+              </div>
+
+              <div class="grid grid--7-5">
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">TO-DO</h2>
+                    <div class="panel__end">
+                      <button class="btn btn--secondary btn--sm" type="button">
+                        <span data-icon="plus" data-icon-size="14"></span>TO-DO 등록
+                      </button>
+                    </div>
+                  </div>
+                  <div class="tblwrap">
+                    <table class="tbl tbl--dense">
+                      <thead>
+                        <tr>
+                          <th scope="col">담당</th>
+                          <th scope="col">근무지</th>
+                          <th scope="col">TO-DO</th>
+                          <th scope="col">수행 예정</th>
+                          <th scope="col">상태</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td class="k">전체 · 각자</td>
+                          <td>서초점</td>
+                          <td>
+                            본사 위생점검 대비 냉장고 정리
+                            <span class="badge badge--risk">긴급</span>
+                          </td>
+                          <td class="mono">09-03</td>
+                          <td><span class="badge badge--warn">진행 중</span></td>
+                        </tr>
+                        <tr>
+                          <td class="k">전체 · 한 명</td>
+                          <td>서초점</td>
+                          <td>가을 신메뉴 POP 교체</td>
+                          <td class="mono">09-04 10:00</td>
+                          <td><span class="badge badge--quiet">대기</span></td>
+                        </tr>
+                        <tr>
+                          <td class="k">서지안</td>
+                          <td>서초점</td>
+                          <td>신규 원두 시음 기록 제출</td>
+                          <td class="mono">09-05</td>
+                          <td><span class="badge badge--quiet">대기</span></td>
+                        </tr>
+                        <tr>
+                          <td class="k">오세라</td>
+                          <td>서초점</td>
+                          <td>분기 재물조사 입회</td>
+                          <td class="mono">09-08 14:00</td>
+                          <td><span class="badge badge--quiet">대기</span></td>
+                        </tr>
+                        <tr>
+                          <td class="k">전체 · 한 명</td>
+                          <td>판교점</td>
+                          <td>여름 프로모션 POP 철거</td>
+                          <td class="mono">08-25</td>
+                          <td>
+                            <span class="badge badge--ok">완료</span>
+                            <span class="subtle">문태경</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="k">권도윤</td>
+                          <td>서초점</td>
+                          <td>신메뉴 시식 교육 참석</td>
+                          <td class="mono">08-28 14:00</td>
+                          <td><span class="badge badge--ok">완료</span></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="panel__note">
+                    수행 예정 일시 오름차순 · 같은 일시 안에서는 긴급 건이 앞에 온다. 직원은 자기 건의 상태만 바꾼다.
+                  </div>
+                </section>
+
+                <section class="stack--lg" style="display: flex; flex-direction: column">
+                  <div class="panel">
+                    <div class="panel__head"><h2 class="t-h2">TO-DO 등록</h2></div>
+                    <div class="panel__body">
+                      <div class="field">
+                        <label for="tt">제목</label>
+                        <input class="input" id="tt" value="본사 위생점검 대비 냉장고 정리" />
+                      </div>
+                      <div class="field">
+                        <label for="tb">내용</label>
+                        <textarea class="textarea" id="tb" rows="2">선반별로 비우고 유통기한 지난 재료는 폐기 후 사진 남길 것</textarea>
+                      </div>
+                      <div class="field">
+                        <label for="tw">근무지</label>
+                        <select class="select" id="tw">
+                          <option>모리커피 서초점</option>
+                          <option>온기식당 판교점</option>
+                        </select>
+                      </div>
+                      <div class="field">
+                        <label>배정 대상</label>
+                        <div class="seg">
+                          <button type="button" aria-pressed="false">개인</button>
+                          <button type="button" aria-pressed="true">근무지 전체</button>
+                        </div>
+                      </div>
+                      <div class="field">
+                        <label>수행 방식</label>
+                        <div class="seg">
+                          <button type="button" aria-pressed="true">각자 수행</button>
+                          <button type="button" aria-pressed="false">한 명 수행</button>
+                        </div>
+                        <span class="help">등록 후에는 바꿀 수 없다 · 각자 수행은 직원당 1건, 한 명 수행은 공유 1건</span>
+                      </div>
+                      <div class="grid grid--2" style="gap: var(--s-4)">
+                        <div class="field">
+                          <label for="td">수행 예정 날짜</label>
+                          <input class="input" id="td" type="date" value="2026-09-03" />
+                        </div>
+                        <div class="field">
+                          <label for="th">시간</label>
+                          <input class="input" id="th" type="time" />
+                          <span class="help">선택</span>
+                        </div>
+                      </div>
+                      <div class="field">
+                        <label class="inline" for="tu">
+                          <span class="toggle" id="tu" role="switch" aria-pressed="true" tabindex="0"></span>
+                          긴급
+                        </label>
+                        <span class="help">근무시간 외에도 즉시 푸시가 나간다</span>
+                      </div>
+                      <hr class="hr" />
+                      <button class="btn btn--primary btn--block" type="button">등록하고 배정</button>
+                    </div>
+                    <div class="panel__note">
+                      반복 설정은 없다. 정기 업무는 TO-DO 로 등록하지 않는다.
+                    </div>
+                  </div>
+
+                  <div class="panel" style="flex: 1">
+                    <div class="panel__head">
+                      <h2 class="t-h2">배정 방식이 만드는 차이</h2>
+                    </div>
+                    <div class="panel__body">
+                      <dl class="kv">
+                        <dt>개인 배정</dt>
+                        <dd>고른 직원 각각에게 1건씩. 담당자가 명확하다.</dd>
+                        <dt>전체 · 각자 수행</dt>
+                        <dd>근무지 재직자 수만큼 생성된다. 전원이 해야 하는 일.</dd>
+                        <dt>전체 · 한 명 수행</dt>
+                        <dd>공유 1건. 먼저 완료한 사람이 수행자가 되고 나머지에게는 완료로 보인다.</dd>
+                      </dl>
+                    </div>
+                    <div class="panel__note">
+                      전체·각자로 생성된 건들은 같은 배정 그룹으로 묶여 관리자가 한 건처럼 수정·삭제한다.
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+  </body>
+</html>

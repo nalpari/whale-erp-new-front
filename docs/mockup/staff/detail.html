@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>직원 상세 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="staff" data-sub="staff/detail.html">
+    <!-- /staff/[staffId] · S-PIXATL "직원 상세 정보 확인"
+         조회만 한다. 계약·스케줄·급여·TO-DO 의 실제 처리는 각 관리 화면에서.
+         좌우 배치와 표 컬럼은 명세의 display 슬롯에 적힌 그대로다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <a class="iconbtn" href="index.html" aria-label="직원 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
+          <h1 class="t-h1">서지안</h1>
+          <span class="badge badge--ok">재직</span>
+          <span class="badge badge--quiet">본인인증 완료</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">EMP-2026-0143</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="gap">
+            <div class="gap__head">
+              <span class="gap__no">STAFF-6</span>
+              <b>이 화면을 만들 것인가</b>
+              <span class="gap__ref">F-ZAIMFF · S-PIXATL</span>
+            </div>
+            <div class="gap__opts">
+              <div class="gap__opt" data-side="a">
+                <div class="gap__label">A · 현재 디자인 시안</div>
+                <p>없다. 직원은 목록의 <b>한 행</b>일 뿐이고, 계약·스케줄·급여는 각 탭에서 따로 본다.</p>
+              </div>
+              <div class="gap__opt" data-side="b">
+                <div class="gap__label">B · manyfast 문서 · 아래 화면</div>
+                <p>직원 한 명을 기준으로 <b>다섯 업무의 현황을 모아</b> 보여준다. 처리는 각 관리 화면으로 넘긴다.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid--5-7">
+            <!-- 왼쪽 : 기본 정보 + 근로계약 요약 -->
+            <section class="stack--lg" style="display: flex; flex-direction: column">
+              <div class="panel">
+                <div class="panel__body">
+                  <div class="rowmain" style="gap: var(--s-4); margin-bottom: var(--s-4)">
+                    <span class="avatar avatar--lg"><img src="../assets/img/staff-1.webp" alt="" /></span>
+                    <div class="rowmain__text">
+                      <b style="font-size: 17px">서지안</b>
+                      <span>바리스타 · 모리커피 서초점</span>
+                    </div>
+                  </div>
+                  <dl class="kv">
+                    <dt>고용 형태</dt>
+                    <dd>정직원</dd>
+                    <dt>소속 근무지</dt>
+                    <dd>모리커피 서초점</dd>
+                    <dt>입사일</dt>
+                    <dd class="mono">2026-03-01</dd>
+                    <dt>생년월일</dt>
+                    <dd class="mono">1998-07-12</dd>
+                    <dt>연락처</dt>
+                    <dd class="mono">010-2841-7702</dd>
+                    <dt>이메일</dt>
+                    <dd class="mono">jian.seo@example.com</dd>
+                  </dl>
+                </div>
+                <div class="panel__note">
+                  연락처·주소는 직원이 앱의 내 정보에서 직접 고친다. 관리자는 대신 수정하지 않는다.
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">근로계약</h2>
+                  <div class="panel__end">
+                    <a class="tbtn" href="index.html#contracts">관리</a>
+                  </div>
+                </div>
+                <div class="panel__body">
+                  <dl class="kv">
+                    <dt>계약 유형</dt>
+                    <dd>정직원 근로계약</dd>
+                    <dt>계약 기간</dt>
+                    <dd class="mono">2026-03-01 ~ 무기한</dd>
+                    <dt>계약 상태</dt>
+                    <dd><span class="badge badge--ok">체결 완료</span></dd>
+                    <dt>최근 발송일</dt>
+                    <dd class="mono">2026-02-24</dd>
+                    <dt>갱신 예정일</dt>
+                    <dd class="subtle">—</dd>
+                  </dl>
+                </div>
+                <div class="panel__note">가장 최근 계약 1건만 보인다. 이전 이력은 근로계약 관리에서.</div>
+              </div>
+            </section>
+
+            <!-- 오른쪽 : 근무 · 출퇴근 · 급여 · TO-DO 현황 -->
+            <section class="stack--lg" style="display: flex; flex-direction: column">
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">이번 주 근무스케줄</h2>
+                  <span class="badge badge--quiet">38.5h</span>
+                  <div class="panel__end">
+                    <a class="tbtn" href="index.html#sched">관리</a>
+                  </div>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr>
+                        <th scope="col">날짜</th>
+                        <th scope="col">근무지</th>
+                        <th scope="col">시작</th>
+                        <th scope="col">종료</th>
+                        <th scope="col">근무 유형</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="mono">09-01 월</td>
+                        <td>서초점</td>
+                        <td class="mono">09:00</td>
+                        <td class="mono">17:00</td>
+                        <td><span class="badge badge--quiet">오픈</span></td>
+                      </tr>
+                      <tr>
+                        <td class="mono">09-02 화</td>
+                        <td>서초점</td>
+                        <td class="mono">09:00</td>
+                        <td class="mono">17:00</td>
+                        <td><span class="badge badge--quiet">오픈</span></td>
+                      </tr>
+                      <tr>
+                        <td class="mono">09-04 목</td>
+                        <td>서초점</td>
+                        <td class="mono">13:00</td>
+                        <td class="mono">21:30</td>
+                        <td><span class="badge badge--quiet">마감</span></td>
+                      </tr>
+                      <tr>
+                        <td class="mono">09-05 금</td>
+                        <td>서초점</td>
+                        <td class="mono">13:00</td>
+                        <td class="mono">21:30</td>
+                        <td><span class="badge badge--quiet">마감</span></td>
+                      </tr>
+                      <tr>
+                        <td class="mono">09-06 토</td>
+                        <td>서초점</td>
+                        <td class="mono">09:00</td>
+                        <td class="mono">15:00</td>
+                        <td><span class="badge badge--quiet">오픈</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">출퇴근 현황</h2>
+                  <span class="badge badge--quiet">이번 주 · 출근 4 · 지각 1 · 결근 0</span>
+                  <div class="panel__end">
+                    <a class="tbtn" href="index.html#sched">관리</a>
+                  </div>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr>
+                        <th scope="col">날짜</th>
+                        <th scope="col">출근</th>
+                        <th scope="col">퇴근</th>
+                        <th scope="col">상태</th>
+                        <th scope="col">비고</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="mono">09-01</td>
+                        <td class="mono">08:52</td>
+                        <td class="mono">17:04</td>
+                        <td><span class="ok">정상</span></td>
+                        <td class="subtle">—</td>
+                      </tr>
+                      <tr>
+                        <td class="mono">09-02</td>
+                        <td class="mono">09:14</td>
+                        <td class="mono">17:02</td>
+                        <td><span class="warn">지각</span></td>
+                        <td class="subtle">14분</td>
+                      </tr>
+                      <tr>
+                        <td class="mono">09-04</td>
+                        <td class="mono">12:55</td>
+                        <td class="mono">21:36</td>
+                        <td><span class="ok">정상</span></td>
+                        <td class="subtle">—</td>
+                      </tr>
+                      <tr>
+                        <td class="mono">09-05</td>
+                        <td class="mono">12:58</td>
+                        <td class="mono nil">—</td>
+                        <td><span class="warn">퇴근 미등록</span></td>
+                        <td class="subtle">관리자 보정 필요</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__note">기록은 매장 앱에서 찍힌다. 관리자는 최근 3개월 이내 건만 보정할 수 있다.</div>
+              </div>
+
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">급여명세서</h2>
+                  <span class="badge badge--warn">미발송 1건</span>
+                  <div class="panel__end">
+                    <a class="tbtn" href="index.html#payroll">관리</a>
+                  </div>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr>
+                        <th scope="col">지급월</th>
+                        <th scope="col" class="n">기본급</th>
+                        <th scope="col" class="n">수당</th>
+                        <th scope="col" class="n">공제</th>
+                        <th scope="col" class="n">실지급액</th>
+                        <th scope="col">상태</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="mono">2026-08</td>
+                        <td class="n">2,840,000</td>
+                        <td class="n">186,000</td>
+                        <td class="n">247,300</td>
+                        <td class="n strong">2,778,700</td>
+                        <td><span class="badge badge--warn">검토 중</span></td>
+                      </tr>
+                      <tr>
+                        <td class="mono">2026-07</td>
+                        <td class="n">2,840,000</td>
+                        <td class="n">142,000</td>
+                        <td class="n">241,800</td>
+                        <td class="n strong">2,740,200</td>
+                        <td><span class="badge badge--ok">발송 완료</span></td>
+                      </tr>
+                      <tr>
+                        <td class="mono">2026-06</td>
+                        <td class="n">2,840,000</td>
+                        <td class="n">98,000</td>
+                        <td class="n">238,400</td>
+                        <td class="n strong">2,699,600</td>
+                        <td><span class="badge badge--ok">발송 완료</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__note">
+                  <b>STAFF-5</b> — 금액 컬럼은 명세서의 display 슬롯에 적혀 있지만, 문서는 법정 급여 계산을 범위 밖으로 둔다.
+                  계산해서 채울지, 입력받아 보관만 할지가 결정되어야 한다.
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">TO-DO</h2>
+                  <span class="badge badge--quiet">전체 6 · 완료 4 · 미완료 2</span>
+                  <div class="panel__end">
+                    <a class="tbtn" href="index.html#todo">관리</a>
+                  </div>
+                </div>
+                <div class="rows">
+                  <div class="row">
+                    <span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="완료" data-icon="check" data-icon-size="11"></span>
+                    <div class="rowmain__text">
+                      <b>신메뉴 시식 교육 참석</b><span>개인 배정 · 08-28 14:00</span>
+                    </div>
+                    <span class="row__end ok">08-28 완료</span>
+                  </div>
+                  <div class="row">
+                    <span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="완료" data-icon="check" data-icon-size="11"></span>
+                    <div class="rowmain__text">
+                      <b>여름 프로모션 POP 교체</b><span>근무지 전체 · 한 명 수행</span>
+                    </div>
+                    <span class="row__end ok">08-25 완료</span>
+                  </div>
+                  <div class="row">
+                    <span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="완료" data-icon="check" data-icon-size="11"></span>
+                    <div class="rowmain__text">
+                      <b>본사 위생점검 대비 냉장고 정리</b><span>근무지 전체 · 각자 수행 · 09-03</span>
+                    </div>
+                    <span class="row__end warn">긴급</span>
+                  </div>
+                  <div class="row">
+                    <span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="완료" data-icon="check" data-icon-size="11"></span>
+                    <div class="rowmain__text">
+                      <b>신규 원두 시음 기록 제출</b><span>개인 배정 · 09-05</span>
+                    </div>
+                    <span class="row__end subtle">대기</span>
+                  </div>
+                </div>
+                <div class="panel__note">직원은 자기 TO-DO 의 수행 상태만 바꾼다. 등록·삭제는 관리자만.</div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+  </body>
+</html>

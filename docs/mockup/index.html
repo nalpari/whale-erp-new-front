@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>1차 목업 · WHALE ERP</title>
+    <link rel="icon" href="assets/img/favicon.svg" />
+    <link rel="stylesheet" href="assets/whale.css" />
+  </head>
+  <body data-page="staff">
+    <!-- WHALE ERP 1차 목업 허브
+         디자인은 design시안/BO 의 "SHIP" 을 그대로 쓴다.
+         내용은 manyfast 문서(PRD·요구사항·기능·스펙)를 기준으로 맞췄다.
+         둘이 어긋나는 곳은 지우지 않고 쟁점으로 남겨 회의에서 고른다.
+
+         구조 — 화면은 영역 폴더(staff/ home/ support/ notify/ staff-app/ attendance/)
+         아래 한 단계로만 둔다. 깊은 라우트는 파일명에 담는다.
+         영역 안의 화면은 <body data-root="../"> 로 루트까지의 거리를 알려준다.
+         이 파일은 루트라서 data-root 가 없다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <h1 class="t-h1">WHALE ERP 1차 목업</h1>
+          <span class="badge badge--preview">회의용</span>
+          <div class="titlebar__end">
+            <span class="filters__count">영역 <b>1</b>/6 · 화면 <b>7</b> · 쟁점 <b>8</b></span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="band band--info">
+            <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+            <div class="band__body">
+              <div class="band__title">이 목업은 결정을 받으려고 만든 것이다</div>
+              <p class="band__desc">
+                이 페이지는 <b>영역 목록</b>만 다룬다. 화면과 쟁점은 각 영역의 <b>개요</b>에 있고
+                여기에는 건수만 둔다. 영역이 늘어도 표에 한 줄씩만 붙는다.
+              </p>
+            </div>
+          </div>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">영역</h2>
+              <span class="badge badge--quiet">1차 범위 6개</span>
+            </div>
+            <div class="panel">
+              <div class="tblwrap">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th scope="col">영역</th>
+                      <th scope="col">요구사항</th>
+                      <th scope="col">폴더</th>
+                      <th scope="col">디바이스</th>
+                      <th scope="col" class="n">화면</th>
+                      <th scope="col" class="n">쟁점</th>
+                      <th scope="col">상태</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="k"><a class="tlink" href="staff/overview.html">직원 운영 관리</a></td>
+                      <td class="mono">R-QFUXNA</td>
+                      <td class="mono">staff/</td>
+                      <td>웹</td>
+                      <td class="n">7</td>
+                      <td class="n">8</td>
+                      <td>
+                        <span class="badge badge--ok">작성 완료</span>
+                        <a class="tbtn" href="staff/overview.html">개요</a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="k">홈·계정 진입</td>
+                      <td class="mono">R-PSQNKC</td>
+                      <td class="mono">home/</td>
+                      <td>웹</td>
+                      <td class="n subtle">7</td>
+                      <td class="n nil">—</td>
+                      <td><span class="badge badge--quiet">예정</span></td>
+                    </tr>
+                    <tr>
+                      <td class="k">고객지원·커뮤니티</td>
+                      <td class="mono">R-PEQDDV</td>
+                      <td class="mono">support/</td>
+                      <td>웹</td>
+                      <td class="n subtle">8</td>
+                      <td class="n nil">—</td>
+                      <td><span class="badge badge--quiet">예정</span></td>
+                    </tr>
+                    <tr>
+                      <td class="k">운영 알림</td>
+                      <td class="mono">R-NKFSGI</td>
+                      <td class="mono">notify/</td>
+                      <td>웹</td>
+                      <td class="n subtle">2</td>
+                      <td class="n nil">—</td>
+                      <td><span class="badge badge--quiet">예정</span></td>
+                    </tr>
+                    <tr>
+                      <td class="k">직원 근무 앱</td>
+                      <td class="mono">R-SXOPEA</td>
+                      <td class="mono">staff-app/</td>
+                      <td>직원 모바일 앱</td>
+                      <td class="n subtle">10</td>
+                      <td class="n nil">—</td>
+                      <td><span class="badge badge--quiet">예정</span></td>
+                    </tr>
+                    <tr>
+                      <td class="k">출퇴근 등록 운영</td>
+                      <td class="mono">R-CHVHQH</td>
+                      <td class="mono">attendance/</td>
+                      <td>매장 출퇴근 앱</td>
+                      <td class="n subtle">3</td>
+                      <td class="n nil">—</td>
+                      <td><span class="badge badge--quiet">예정</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="panel__note">
+                화면 목록과 쟁점 설명은 각 영역의 <b>개요</b>에 있다. 여기에는 건수만 둔다.
+                화면은 영역 폴더 아래 한 단계로만 두고, 깊은 라우트는 파일명에 담는다 —
+                <span class="mono">staff/contracts-new.html</span> 이 <span class="mono">/staff/contracts/new</span> 다.
+                디바이스가 달라도 <span class="mono">assets/</span> 는 하나를 함께 쓴다.
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </main>
+    </div>
+    <script src="assets/app.js"></script>
+  </body>
+</html>

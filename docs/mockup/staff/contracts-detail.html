@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>근로계약 상세 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="staff" data-sub="staff/contracts-detail.html">
+    <!-- /staff/contracts/[contractId] · S-XDBBDP "날인 확인과 계약 상태 관리"
+         체결 완료된 계약의 내용은 고치지 않는다. 새 계약으로 대체한다.
+         그래서 이 화면은 편집기가 아니라 상태와 이력을 보는 자리다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <a class="iconbtn" href="index.html#contracts" aria-label="근로계약으로" data-icon="arrowleft" data-icon-size="18"></a>
+          <h1 class="t-h1">근로계약 상세</h1>
+          <span class="badge badge--risk">거부</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">CTR-2026-0288</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="band band--risk">
+            <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+            <div class="band__body">
+              <div class="band__title">유하람 님이 09-02 에 날인을 거부했습니다</div>
+              <p class="band__desc">
+                거부 사유 — "근무 시작 시각이 면접 때 이야기한 것과 다릅니다. 11시가 아니라 13시로 알고 있었습니다."
+              </p>
+            </div>
+            <div class="band__act">
+              <a class="btn btn--secondary" href="contracts-new.html">조건 고쳐 새 계약</a>
+              <button class="btn btn--primary" type="button">그대로 재발송</button>
+            </div>
+          </div>
+
+          <div class="grid grid--7-5">
+            <section class="stack--lg" style="display: flex; flex-direction: column">
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">계약 내용</h2>
+                  <span class="badge badge--quiet">파트타이머</span>
+                  <div class="panel__end">
+                    <button class="btn btn--secondary btn--sm" type="button">
+                      <span data-icon="download" data-icon-size="14"></span>원본 내려받기
+                    </button>
+                  </div>
+                </div>
+                <div class="panel__body">
+                  <dl class="kv">
+                    <dt>직원</dt>
+                    <dd>유하람 · 010-2093-8875</dd>
+                    <dt>근무지</dt>
+                    <dd>모리커피 연남점</dd>
+                    <dt>고용 형태</dt>
+                    <dd>파트타이머</dd>
+                    <dt>계약 기간</dt>
+                    <dd class="mono">2026-08-28 ~ 2027-02-27</dd>
+                    <dt>급여</dt>
+                    <dd class="mono">10,800 원 / 시급</dd>
+                    <dt>소정근로시간</dt>
+                    <dd>주 15시간 · 월·수·금 11:00-16:00</dd>
+                    <dt>근무 장소</dt>
+                    <dd>서울 마포구 연남로 32, 1층</dd>
+                  </dl>
+                  <hr class="hr" />
+                  <div class="band band-sec band-sec--soft">
+                    <span class="band__ic" data-icon="lock" data-icon-size="18"></span>
+                    <div class="band__body">
+                      <div class="band__title">계약 내용은 이 화면에서 고치지 않는다</div>
+                      <p class="band__desc">
+                        거부·만료된 계약은 <b>그대로 재발송</b>하거나, 조건을 바꾸려면 <b>새 계약</b>을 만들어 대체한다.
+                        체결 완료된 계약도 마찬가지다.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">상태 변경 이력</h2>
+                  <span class="badge badge--quiet">5건</span>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr>
+                        <th scope="col">일시</th>
+                        <th scope="col">변경 전</th>
+                        <th scope="col">변경 후</th>
+                        <th scope="col">처리 주체</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="mono">09-02 19:44</td>
+                        <td><span class="badge badge--warn">서명 대기</span></td>
+                        <td><span class="badge badge--risk">거부</span></td>
+                        <td>유하람 · 직원 앱</td>
+                      </tr>
+                      <tr>
+                        <td class="mono">08-28 09:31</td>
+                        <td><span class="badge badge--quiet">발송 대기</span></td>
+                        <td><span class="badge badge--warn">서명 대기</span></td>
+                        <td class="subtle">시스템 · 가입 완료로 자동 발송</td>
+                      </tr>
+                      <tr>
+                        <td class="mono">08-28 09:31</td>
+                        <td class="nil">—</td>
+                        <td><span class="badge badge--quiet">발송 대기</span></td>
+                        <td>정하윤 · 초안 저장</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__note">
+                  상태가 바뀔 때마다 변경 전후·일시·처리 주체를 남긴다. 이력은 지우지 않는다.
+                </div>
+              </div>
+            </section>
+
+            <section class="stack--lg" style="display: flex; flex-direction: column">
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">진행</h2>
+                  <span class="badge badge--risk">거부 · 재발송 필요</span>
+                </div>
+                <div class="panel__body">
+                  <div class="steps">
+                    <div class="step is-done">
+                      <span class="step__ic" data-icon="file" data-icon-size="15"></span>
+                      <div class="step__body">
+                        <span class="step__title">초안 저장</span>
+                        <span class="step__meta">08-28 09:31 · 정하윤</span>
+                      </div>
+                    </div>
+                    <div class="step is-done">
+                      <span class="step__ic" data-icon="message" data-icon-size="15"></span>
+                      <div class="step__body">
+                        <span class="step__title">계약서 자동 발송</span>
+                        <span class="step__meta">08-28 09:31 · 날인 기한 09-27</span>
+                      </div>
+                    </div>
+                    <div class="step is-now">
+                      <span class="step__ic" data-icon="x" data-icon-size="15"></span>
+                      <div class="step__body">
+                        <span class="step__title">직원 날인 거부</span>
+                        <span class="step__meta">09-02 19:44 · 담당 관리자에게 이메일·알림 발송됨</span>
+                      </div>
+                    </div>
+                  </div>
+                  <hr class="hr" />
+                  <dl class="kv">
+                    <dt>발송일</dt>
+                    <dd class="mono">2026-08-28</dd>
+                    <dt>날인 기한</dt>
+                    <dd class="mono">2026-09-27</dd>
+                    <dt>최종 처리일</dt>
+                    <dd class="mono">2026-09-02</dd>
+                    <dt>재발송 횟수</dt>
+                    <dd class="num">0</dd>
+                  </dl>
+                </div>
+              </div>
+
+              <div class="panel" style="flex: 1">
+                <div class="panel__head">
+                  <h2 class="t-h2">상태별로 할 수 있는 것</h2>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr>
+                        <th scope="col">상태</th>
+                        <th scope="col">가능한 처리</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><span class="badge badge--quiet">발송 대기</span></td>
+                        <td>초대 재발송 · 초안 수정 · 레코드 삭제</td>
+                      </tr>
+                      <tr>
+                        <td><span class="badge badge--warn">서명 대기</span></td>
+                        <td>재발송(리마인드)</td>
+                      </tr>
+                      <tr>
+                        <td><span class="badge badge--ok">체결 완료</span></td>
+                        <td>새 계약으로 대체 · <span class="subtle">수정 불가</span></td>
+                      </tr>
+                      <tr>
+                        <td><span class="badge badge--risk">거부</span></td>
+                        <td>그대로 재발송 · 조건 바꿔 새 계약</td>
+                      </tr>
+                      <tr>
+                        <td><span class="badge badge--quiet">만료</span></td>
+                        <td>그대로 재발송 · 조건 바꿔 새 계약</td>
+                      </tr>
+                      <tr>
+                        <td><span class="badge badge--quiet">종료</span></td>
+                        <td>재계약 시작 · <span class="subtle">재발송 불가</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__note">
+                  재발송은 마지막 발송 후 일정 간격이 지나야 한다. 계약 상태를 손으로 바꾸는 권한은 BP 마스터·가맹마스터만 갖는다.
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+  </body>
+</html>
