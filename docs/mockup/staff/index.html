@@ -561,6 +561,124 @@
                 </div>
               </div>
 
+
+              <!-- 주간·일간 전환 · S-WPGUXX
+                   시간 텍스트(09-18)만으로는 누가 겹치는지, 아무도 없는 시간이
+                   있는지 읽히지 않는다. 일간은 가로를 시간축으로 눕혀 보여준다. -->
+              <div class="tabs" data-tabs="sv">
+                <button data-tab="day" aria-selected="true">일간 근무표</button>
+                <button data-tab="week" aria-selected="false">주간 근무표</button>
+              </div>
+
+              <div id="sv">
+                <div data-panel="day">
+                  <section class="panel" data-tl-root tabindex="-1">
+                    <div class="panel__head">
+                      <h2 class="t-h2" data-tl-title>2026-08-22 토</h2>
+                      <span class="badge badge--risk" data-tl-badge>공백 4시간</span>
+                      <div class="panel__end">
+                        <button class="iconbtn" type="button" data-tl-step="-1"
+                                aria-label="이전 날" data-icon="left" data-icon-size="16"></button>
+                        <select class="select select--sm" style="width: 132px" aria-label="날짜" data-tl-date>
+                          <option>08-22 토</option>
+                        </select>
+                        <button class="iconbtn" type="button" data-tl-step="1"
+                                aria-label="다음 날" data-icon="right" data-icon-size="16"></button>
+                        <span class="filters__count">운영 07:00-22:00</span>
+                      </div>
+                    </div>
+                    <div class="panel__body">
+                      <div class="tl">
+                        <div class="tl__head">
+                          <span class="tl__tick">07</span>
+                          <span class="tl__tick">08</span>
+                          <span class="tl__tick">09</span>
+                          <span class="tl__tick">10</span>
+                          <span class="tl__tick">11</span>
+                          <span class="tl__tick">12</span>
+                          <span class="tl__tick">13</span>
+                          <span class="tl__tick">14</span>
+                          <span class="tl__tick">15</span>
+                          <span class="tl__tick">16</span>
+                          <span class="tl__tick">17</span>
+                          <span class="tl__tick">18</span>
+                          <span class="tl__tick">19</span>
+                          <span class="tl__tick">20</span>
+                          <span class="tl__tick">21</span>
+                        </div>
+
+                        <!-- 아래 행과 인원 띠는 assets/timeline.js 가 날짜에 맞춰 다시 그린다.
+                             스크립트가 없어도 토요일 상태가 그대로 보이도록 남겨 둔다. -->
+                        <div data-tl-rows>
+
+                        <div class="tl__row">
+                          <span class="tl__name">오세라<span>점장</span></span>
+                          <div class="tl__track">
+                            <div class="tl__bar" style="left: 26.667%; width: 60%">11:00-20:00 · 미들</div>
+                          </div>
+                        </div>
+                        <div class="tl__row">
+                          <span class="tl__name">유하람<span>바리스타</span></span>
+                          <div class="tl__track">
+                            <div class="tl__bar" style="left: 33.333%; width: 66.667%">
+                              12:00-22:00 · 마감
+                            </div>
+                          </div>
+                        </div>
+                        <div class="tl__row">
+                          <span class="tl__name">서지안<span>바리스타</span></span>
+                          <div class="tl__track">
+                            <div class="tl__bar tl__bar--none" style="left: 0; width: 100%">휴무</div>
+                          </div>
+                        </div>
+                        <div class="tl__row">
+                          <span class="tl__name">권도윤<span>바리스타</span></span>
+                          <div class="tl__track">
+                            <div class="tl__bar tl__bar--none" style="left: 0; width: 100%">휴무</div>
+                          </div>
+                        </div>
+                        <div class="tl__row">
+                          <span class="tl__name">하준서<span>바리스타</span></span>
+                          <div class="tl__track">
+                            <div class="tl__bar tl__bar--blocked" style="left: 0; width: 100%">계약 대기 · 배정 불가</div>
+                          </div>
+                        </div>
+                        </div>
+
+                        <div class="tl__cover" data-tl-cover>
+                          <span class="tl__cell" data-n="0">0</span>
+                          <span class="tl__cell" data-n="0">0</span>
+                          <span class="tl__cell" data-n="0">0</span>
+                          <span class="tl__cell" data-n="0">0</span>
+                          <span class="tl__cell" data-n="1">1</span>
+                          <span class="tl__cell" data-n="2">2</span>
+                          <span class="tl__cell" data-n="2">2</span>
+                          <span class="tl__cell" data-n="2">2</span>
+                          <span class="tl__cell" data-n="2">2</span>
+                          <span class="tl__cell" data-n="2">2</span>
+                          <span class="tl__cell" data-n="2">2</span>
+                          <span class="tl__cell" data-n="2">2</span>
+                          <span class="tl__cell" data-n="2">2</span>
+                          <span class="tl__cell" data-n="1">1</span>
+                          <span class="tl__cell" data-n="1">1</span>
+                        </div>
+
+                        <div class="tl__legend">
+                          <b><span class="tl__swatch tl__swatch--0"></span>아무도 없음</b>
+                          <b><span class="tl__swatch tl__swatch--1"></span>혼자 근무 · 휴게 불가</b>
+                          <b><span class="tl__swatch tl__swatch--ok"></span>2명 이상</b>
+                          <span class="right">아래 줄은 그 시간에 매장에 있는 인원 수다</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="panel__foot">
+                      <span data-tl-note>07:00-11:00 에 배정된 직원이 없다</span>
+                      <button class="tbtn right" type="button">이 시간대에 배정</button>
+                    </div>
+                  </section>
+                </div>
+
+                <div data-panel="week" hidden>
               <section class="panel">
                 <div class="panel__head">
                   <h2 class="t-h2">주간 스케줄</h2>
@@ -644,6 +762,8 @@
                   <span>주 15시간 이상 근무자는 주휴수당 대상이다 — 급여명세서 초안에 자동 반영된다</span>
                 </div>
               </section>
+                </div>
+              </div>
 
               <!-- 스케줄 등록·수정 · S-WPGUXX
                    주간 표 위에서 이어 입력하는 성격이라 별도 라우트로 빼지 않고 옆에 붙였다. -->
@@ -1413,5 +1533,6 @@
       </main>
     </div>
     <script src="../assets/app.js"></script>
+    <script src="../assets/timeline.js"></script>
   </body>
 </html>

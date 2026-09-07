@@ -2830,3 +2830,141 @@ a.tile:hover {
 .gap__block li {
   margin-bottom: var(--s-1);
 }
+
+/* --- 22. 일간 근무 타임라인 -----------------------------------------------
+   시간 텍스트(09-18)로는 누가 언제 겹치는지, 아무도 없는 시간이 있는지
+   읽어 낼 수 없다. 가로를 시간축으로 놓고 근무를 막대로 눕힌다.
+   막대의 left·width 는 인라인 % 로 넣는다 — 목업이라 계산은 손으로 했다.
+   ------------------------------------------------------------------------ */
+.tl {
+  --tl-name: 104px;
+  --tl-h: 34px;
+}
+.tl__head,
+.tl__cover {
+  display: flex;
+  padding-left: var(--tl-name);
+}
+.tl__tick {
+  flex: 1;
+  min-width: 0;
+  font: 400 11px/1 var(--font-mono);
+  color: var(--muted-tert);
+  padding: 0 0 var(--s-2) var(--s-1);
+  border-left: 1px solid var(--hairline);
+}
+.tl__row {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid var(--hairline);
+}
+.tl__row:last-of-type {
+  border-bottom: 1px solid var(--hairline);
+}
+.tl__name {
+  width: var(--tl-name);
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  padding-right: var(--s-3);
+}
+.tl__name span {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--muted-tert);
+}
+.tl__track {
+  position: relative;
+  flex: 1;
+  height: var(--tl-h);
+  /* 시간 격자 — 07:00-22:00 15칸 */
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--hairline) 0 1px,
+    transparent 1px calc(100% / 15)
+  );
+}
+.tl__bar {
+  position: absolute;
+  top: 6px;
+  height: calc(var(--tl-h) - 12px);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--s-2);
+  border-radius: var(--r-xs);
+  background: var(--surface-dark);
+  color: var(--on-dark);
+  font: 500 11px/1 var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+}
+/* 근무 유형(오픈·미들·마감)은 막대 안 텍스트로만 구분한다.
+   채움을 달리하면 유형 사이에 없는 위계가 생긴다 — 근무는 하나의 상태다. */
+.tl__bar--none {
+  background: transparent;
+  color: var(--muted-tert);
+  border: 1px dashed var(--hairline-strong);
+}
+/* 휴무는 정상이고 배정 불가는 문제다. 같아 보이면 안 된다. */
+.tl__bar--blocked {
+  background: var(--risk-wash);
+  color: var(--risk-text);
+  border: 1px dashed var(--risk-line);
+}
+.tl__cover {
+  margin-top: var(--s-2);
+}
+.tl__cell {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font: 500 11px/1 var(--font-mono);
+  color: var(--body);
+  padding: var(--s-2) 0;
+  border-left: 1px solid var(--hairline);
+  background: var(--canvas-soft);
+}
+.tl__cell[data-n="1"] {
+  background: var(--warn-wash);
+  color: var(--warn);
+}
+.tl__cell[data-n="0"] {
+  background: var(--risk-wash);
+  color: var(--risk-text);
+  font-weight: 700;
+}
+.tl__legend {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  margin-top: var(--s-3);
+  font-size: 12px;
+  color: var(--muted-tert);
+  flex-wrap: wrap;
+}
+.tl__legend b {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-weight: 400;
+}
+.tl__swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--r-xs);
+  border: 1px solid var(--hairline-strong);
+}
+.tl__swatch--0 { background: var(--risk-wash); border-color: var(--risk-line); }
+.tl__swatch--1 { background: var(--warn-wash); border-color: var(--warn-line); }
+.tl__swatch--ok { background: var(--canvas-soft); }
+
+@media (max-width: 900px) {
+  .tl {
+    --tl-name: 76px;
+  }
+  .tl__tick:nth-child(even) {
+    color: transparent;
+  }
+}

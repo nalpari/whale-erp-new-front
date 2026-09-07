@@ -440,7 +440,9 @@
           bar.querySelectorAll("[data-tab]").forEach(function (o) {
             o.setAttribute("aria-selected", String(o === t));
           });
-          scope.querySelectorAll("[data-panel]").forEach(function (p) {
+          /* 직계 자식만 건드린다. 탭 안에 탭이 있을 때(스케줄의 주간·일간)
+             바깥 탭이 안쪽 패널까지 숨겨 버리는 것을 막는다. */
+          scope.querySelectorAll(":scope > [data-panel]").forEach(function (p) {
             p.hidden = p.dataset.panel !== t.dataset.tab;
           });
         });
