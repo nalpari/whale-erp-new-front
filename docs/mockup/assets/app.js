@@ -560,6 +560,15 @@
     });
   }
 
+  /* 메뉴가 #contracts 같은 해시로 보내면 그 탭을 연다.
+     같은 페이지 안에서 해시만 바뀔 때도 다시 읽어야 해서 hashchange 를 함께 듣는다. */
+  function openTabFromHash() {
+    var h = location.hash.slice(1);
+    if (!h) return;
+    var btn = document.querySelector('[data-tab="' + h + '"]');
+    if (btn) btn.click();
+  }
+
   function wireDrawer() {
     var t = document.querySelector(".navtoggle");
     var side = document.getElementById("side");
@@ -596,6 +605,8 @@
     wireTabs();
     wireStates();
     wireDrawer();
+    openTabFromHash();
+    window.addEventListener("hashchange", openTabFromHash);
   }
 
   if (document.readyState === "loading") {
