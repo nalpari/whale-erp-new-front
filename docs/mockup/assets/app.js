@@ -287,15 +287,34 @@
     return { cons: CONSOLES[0], menu: null };
   }
 
-  /* 점포 선택기는 전역이다 (STAFF-8). 어떤 화면에 있든 조회 범위는 여기서 읽는다. */
-  var SCOPES = [
+  /* 조회 범위 (STAFF-8 · STAFF-10). 묶음 셋과 점포 열하나가 층을 나눠 선다.
+     범위 식별자는 늘 하나다 — 여럿을 한꺼번에 봐야 하면 임의 다중 선택이 아니라
+     이름 붙인 묶음으로 푼다. 그래야 "지금 무엇을 보고 있나"가 버튼 한 줄로 읽히고
+     명세의 범위 식별자도 하나로 남는다. */
+  var SCOPE_SETS = [
     { label: "전체 11개점", meta: "직영 4 · 가맹 7" },
-    { label: "직영 4개점", meta: "㈜한강상회 직영" },
-    { label: "가맹 7개점", meta: "모리커피 · 온기식당" },
-    { label: "모리커피 서초점", meta: "직영 · POS·KIOSK·QR" },
-    { label: "모리커피 을지로점", meta: "가맹 · 미납 1건" },
-    { label: "온기식당 둔산점", meta: "가맹 · 미납 1건" }
+    { label: "직영 4개점", meta: "본사가 직접 운영" },
+    { label: "가맹 7개점", meta: "모리커피 · 온기식당" }
   ];
+
+  var STORES = [
+    { label: "모리커피 서초점", meta: "POS·KIOSK·QR", kind: "직영" },
+    { label: "모리커피 성수점", meta: "POS·KIOSK", kind: "직영" },
+    { label: "온기식당 판교점", meta: "POS", kind: "직영" },
+    { label: "온기식당 광화문점", meta: "POS·QR", kind: "직영" },
+    { label: "모리커피 을지로점", meta: "미납 1건", kind: "가맹" },
+    { label: "모리커피 연남점", meta: "POS·KIOSK", kind: "가맹" },
+    { label: "모리커피 청담점", meta: "개점 준비", kind: "가맹" },
+    { label: "모리커피 부평점", meta: "POS", kind: "가맹" },
+    { label: "온기식당 둔산점", meta: "미납 1건", kind: "가맹" },
+    { label: "온기식당 서면점", meta: "POS·KIOSK", kind: "가맹" },
+    { label: "온기식당 일산점", meta: "POS", kind: "가맹" }
+  ];
+
+  /* 팝오버가 고를 수 있는 것 전부. 눌린 순서를 이 배열로 되짚는다. */
+  function scopeAll() {
+    return SCOPE_SETS.concat(STORES);
+  }
 
   function topnavHTML() {
     return (
@@ -462,7 +481,7 @@
 
   /* ---------- 팝오버 ----------
      상단의 세 버튼(점포 선택기 · 서비스 바로가기 · MY PAGE)이 같은 것을 쓴다. */
-  function wirePop(btn, align, build, onPick) {
+  function wirePop(btn, align, build, onPick, onReady) {
     if (!btn) return;
     var pop = null;
     function close() {
@@ -473,7 +492,7 @@
       e.stopPropagation();
       if (pop) return close();
       pop = document.createElement("div");
-      pop.className = "pop";
+      pop.className = "pop" + (btn.classList.contains("scopebtn") ? " pop--scope" : "");
       pop.innerHTML = build();
       document.body.appendChild(pop);
       var r = btn.getBoundingClientRect();
@@ -487,6 +506,7 @@
           o.addEventListener("click", function () { onPick(i, o); close(); });
         });
       }
+      if (onReady) onReady(pop);
       pop.addEventListener("click", function (ev) { ev.stopPropagation(); });
     });
     document.addEventListener("click", close);
@@ -495,22 +515,62 @@
 
   function optionHTML(label, meta, on, dead) {
     return '<button type="button" ' + (dead ? 'disabled ' : 'role="option" ') +
-      'aria-selected="' + !!on + '">' +
+      'data-q="' + label + " " + meta + '" aria-selected="' + !!on + '">' +
       "<span><b>" + label + "</b><br><span class=\"subtle\" style=\"font-size:11.5px\">" + meta + "</span></span>" +
       (on ? ic("check", 14) : "") + "</button>";
+  }
+
+  /* 묶음과 점포를 한 목록에 섞지 않는다. 위가 범위, 아래가 점포다.
+     점포가 열을 넘으면 찾기 칸이 붙는다 — 프랜차이즈는 쉰 개도 된다. */
+  function scopePopHTML(val) {
+    function sect(title, items) {
+      return '<div class="pop__sect"><div class="pop__label">' + title + "</div>" +
+        items.map(function (s) { return optionHTML(s.label, s.meta, s.label === val); }).join("") +
+        "</div>";
+    }
+    var direct = STORES.filter(function (s) { return s.kind === "직영"; });
+    var fran = STORES.filter(function (s) { return s.kind === "가맹"; });
+    return (
+      (STORES.length >= 10
+        ? '<div class="pop__search">' + ic("search", 14) +
+          '<input class="pop__q" type="search" placeholder="점포 이름으로 찾기" aria-label="점포 찾기" /></div>'
+        : "") +
+      '<div class="pop__list">' +
+      sect("범위", SCOPE_SETS) +
+      sect("직영 " + direct.length, direct) +
+      sect("가맹 " + fran.length, fran) +
+      "</div>" +
+      '<hr><a href="#" class="is-na" aria-disabled="true">' + ic("plus", 14) + "점포 등록</a>"
+    );
+  }
+
+  function wireScopeSearch(pop) {
+    var q = pop.querySelector(".pop__q");
+    if (!q) return;
+    q.addEventListener("input", function () {
+      var v = q.value.trim().toLowerCase();
+      pop.querySelectorAll(".pop__sect").forEach(function (sect) {
+        var any = false;
+        sect.querySelectorAll("button[role=option]").forEach(function (b) {
+          var hit = !v || b.dataset.q.toLowerCase().indexOf(v) > -1;
+          b.hidden = !hit;
+          if (hit) any = true;
+        });
+        sect.hidden = !any;
+      });
+    });
+    q.focus();
   }
 
   function wireScope() {
     var btn = document.querySelector(".scopebtn");
     if (!btn) return;
-    var val = function () { return btn.querySelector(".scopebtn__val").textContent.trim(); };
+    var slot = btn.querySelector(".scopebtn__val");
     wirePop(btn, "left", function () {
-      return '<div class="pop__label">조회 범위</div>' +
-        SCOPES.map(function (s) { return optionHTML(s.label, s.meta, s.label === val()); }).join("") +
-        '<hr><a href="#" class="is-na" aria-disabled="true">' + ic("plus", 14) + "점포 등록</a>";
+      return scopePopHTML(slot.textContent.trim());
     }, function (i) {
-      btn.querySelector(".scopebtn__val").textContent = SCOPES[i].label;
-    });
+      slot.textContent = scopeAll()[i].label;
+    }, wireScopeSearch);
   }
 
   function wireMe() {

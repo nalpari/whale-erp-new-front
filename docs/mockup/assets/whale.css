@@ -2443,6 +2443,48 @@ a.tile:hover {
   flex-direction: column;
   gap: 1px;
 }
+/* 조회 범위 팝오버 — 묶음과 점포가 층을 나눠 선다 (STAFF-10). */
+.pop--scope {
+  min-width: 304px;
+}
+.pop__search {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 6px 10px 8px;
+  border-bottom: 1px solid var(--hairline);
+  margin-bottom: var(--s-1);
+}
+.pop__search svg {
+  color: var(--muted);
+  flex: none;
+}
+.pop__q {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 13px;
+}
+.pop__q:focus {
+  outline: none;
+}
+.pop__list {
+  max-height: 328px;
+  overflow-y: auto;
+  margin: 0 calc(var(--s-2) * -1);
+  padding: 0 var(--s-2);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.pop__sect {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
 .pop__head {
   display: flex;
   align-items: center;
