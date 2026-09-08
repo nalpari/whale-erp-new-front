@@ -2823,12 +2823,36 @@ a.tile:hover {
 .gap.is-decided .gap__block {
   border-left-color: var(--ok);
 }
+/* 아직 안 정한 쟁점의 부가 블록 — 쟁점 자체와 같은 보라를 쓴다. */
+.gap:not(.is-decided):not(.is-held) .gap__block {
+  border-left-color: var(--preview);
+}
+.gap:not(.is-decided):not(.is-held) .gap__block li::before {
+  background: var(--preview);
+}
 .gap__block ul {
   margin: var(--s-2) 0 0;
-  padding-left: var(--s-4);
+  padding-left: 0;
+  list-style: none;
 }
+/* 시안 리셋이 list-style 을 지우므로 마커를 직접 그린다. */
 .gap__block li {
+  position: relative;
+  padding-left: var(--s-4);
   margin-bottom: var(--s-1);
+}
+.gap__block li::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 9px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--muted-soft);
+}
+.gap.is-decided .gap__block li::before {
+  background: var(--ok);
 }
 
 /* --- 22. 일간 근무 타임라인 -----------------------------------------------

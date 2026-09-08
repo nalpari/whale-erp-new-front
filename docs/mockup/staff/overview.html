@@ -27,7 +27,7 @@
           <div class="band band--info">
             <span class="band__ic" data-icon="info" data-icon-size="20"></span>
             <div class="band__body">
-              <div class="band__title">이 영역에서 결정할 것은 8건, 그중 7건이 정해지고 1건은 보류다</div>
+              <div class="band__title">이 영역에서 결정할 것은 10건, 그중 8건이 정해졌다</div>
               <p class="band__desc">
                 화면은 <b>manyfast 문서 기준</b>으로 그렸고, 기존 디자인 시안과 어긋나는 곳은 지우지 않고
                 보라색 쟁점 블록으로 남겼다. 각 쟁점은 해당 화면 안에도 같은 블록으로 붙어 있다.
@@ -135,7 +135,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
-              <span class="badge badge--preview">8건 · 확정 7 · 보류 1</span>
+              <span class="badge badge--preview">10건 · 확정 8 · 미정 2</span>
             </div>
 
             <div class="gap is-decided">
@@ -298,31 +298,92 @@
               </p>
             </div>
 
-            <div class="gap is-held">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">STAFF-8</span>
                 <b>BP · 점포 조회 범위</b>
-                <span class="gap__held">보류 · 홈 화면 확인 후</span>
+                <span class="gap__decided">확정 · 상단 선택기 하나</span>
                 <span class="gap__ref">F-NZYHRF · S-TJRUBE</span>
               </div>
               <div class="gap__opts">
-                <div class="gap__opt" data-side="a">
+                <div class="gap__opt is-dropped" data-side="a">
                   <div class="gap__label">A · 현재 디자인 시안</div>
                   <p>상단 <b>전역 점포 선택기</b> + 화면마다 점포 필터 select 가 따로 있다.</p>
                 </div>
-                <div class="gap__opt" data-side="b">
+                <div class="gap__opt is-picked" data-side="b">
                   <div class="gap__label">B · manyfast 문서</div>
                   <p>홈에서 BP → 점포 순으로 <b>고정</b>하고, 직접 바꿀 때까지 이후 모든 업무 조회에 적용한다.</p>
                 </div>
               </div>
               <p class="gap__note">
-                둘 다 "전역 범위"를 말하지만 A 는 언제든 바꾸는 필터, B 는 한 번 정하면 유지되는 설정이다. 화면마다 점포 필터를 또 둘지가 실무에서 갈린다.
+                두 안 모두 전역 범위가 있어야 한다는 데는 같았다. 실제 쟁점은 <b>화면마다 점포 필터를 또 둘 것인가</b> 하나였고,
+                답은 두지 않는 쪽이다.
               </p>
               <div class="gap__block">
-                <b>보류 — 홈 화면을 만들어 봐야 판단할 수 있다.</b><br />
-                BP·점포를 고정하는 동작은 홈(R-PSQNKC)에서 일어나고 직원관리는 그 결과를 쓰는 쪽이다.
-                홈 영역이 아직 목업으로 없어 전역 범위가 실제로 어떻게 움직이는지 확인할 수 없다.
-                <span class="mono">home/</span> 을 그린 뒤 함께 정한다.
+                <b>확정 — 범위는 상단 선택기 한 곳에서만 정한다.</b>
+                <ul>
+                  <li>사용자별 설정으로 저장한다. 직접 바꿀 때까지 유지된다 — <span class="mono">S-TJRUBE</span> 명세 그대로다.</li>
+                  <li>화면 안 점포·근무지 필터 <b>4개를 없앴다.</b> 같은 것을 두 군데서 고르면 어느 쪽이 이기는지 정의할 수 없다.</li>
+                  <li>“전체”는 <b>권한 범위 안의 전체</b>다. BP 마스터는 63명, 가맹관리자는 자기 점포 9명이 나온다. 화면과 규칙은 하나인데 결과만 다르다.</li>
+                  <li>고를 점포가 하나뿐인 관리자에게는 선택기를 숨긴다.</li>
+                </ul>
+              </div>
+              <p class="gap__note">
+                주소에 범위를 넣는 안(<span class="mono">/stores/[범위]/staff</span>)도 검토했지만, 얻으려던 것이 링크 공유였고
+                권한이 갈리는 사이에서는 공유할 일이 없어 접었다. 서버에 저장하면 사용자가 값을 조작할 수도 없다.
+              </p>
+            </div>
+
+            <div class="gap">
+              <div class="gap__head">
+                <span class="gap__no">STAFF-9</span>
+                <b>직원 개인정보를 관리자가 고칠 수 있는가</b>
+                <span class="gap__ref">S-YWYTJY · S-PIXATL</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a">
+                  <div class="gap__label">A · 현장에서 필요하다</div>
+                  <p>앱을 쓰지 않는 직원, 관리자가 초안에 낸 오타, 퇴사자 정보 정정을 위해 <b>관리자가 대신 넣는다</b>.</p>
+                </div>
+                <div class="gap__opt" data-side="b">
+                  <div class="gap__label">B · manyfast 문서 · 지금 화면</div>
+                  <p>관리자는 연락처·주소·비밀번호를 <b>대신 수정할 수 없고</b> 직원 상세에서 조회만 한다. 수정은 직원이 앱에서 한다.</p>
+                </div>
+              </div>
+              <p class="gap__note">
+                항목마다 주인이 다르다 — 이름·생년월일은 본인인증 확정값이라 아무도 못 바꾸고, 소속·고용형태는 근로계약으로만 바뀐다.
+                <b>휴대폰 번호는 초대 연결의 매칭 키</b>라 관리자가 손대면 STAFF-7 에서 정한 본인 확인 체계가 무너진다 — 바꾸려면 재초대다.
+                그래서 실제로 정할 것은 <b>가입을 마친 직원의 이메일·주소</b> 하나로 좁혀진다.
+              </p>
+            </div>
+
+            <div class="gap">
+              <div class="gap__head">
+                <span class="gap__no">STAFF-10</span>
+                <b>범위를 어떻게 고르게 할 것인가</b>
+                <span class="gap__ref">S-TJRUBE</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a">
+                  <div class="gap__label">A · 하나만 · 지금 구현</div>
+                  <p>전체 · 직영 · 가맹 · 개별 점포 중 <b>하나</b>를 고른다. 문서의 “범위 유형 + 범위 식별자” 명세와 맞는다.</p>
+                </div>
+                <div class="gap__opt" data-side="b">
+                  <div class="gap__label">B · 여러 개</div>
+                  <p>점포를 <b>골라 묶는다</b> — 서초점＋성수점, 전체에서 연남점만 제외. 명세의 범위 식별자를 목록으로 바꿔야 한다.</p>
+                </div>
+              </div>
+              <p class="gap__note">
+                STAFF-8 은 범위를 <b>어디서</b> 정할지만 답했다. 시안의 선택기를 그대로 뒀을 뿐 고르는 방법은 따져보지 않았다.
+                A 를 고르면 지금 구현이 그대로 남고, B 는 선택기가 체크박스 목록으로 성격이 바뀐다.
+              </p>
+              <div class="gap__block">
+                <b>함께 정해야 풀린다.</b>
+                <ul>
+                  <li><b>직영 4개점 · 가맹 7개점</b>을 범위 유형으로 인정할 것인가. 문서는 범위 유형을 <b>BP 또는 점포</b>로만 두어, 이 그룹은 명세에 자리가 없다.</li>
+                  <li><b>BP 단계</b>를 선택기에 둘 것인가. 문서는 “BP 를 먼저 선택한 뒤 점포를 선택”이라 했는데 지금은 <span class="mono">㈜한강상회</span> 가 고정 텍스트다.</li>
+                  <li><b>점포가 많아지면</b> 어떻게 찾을 것인가. 지금 목록은 평면이고 검색이 없다. 11개는 넘겨도 프랜차이즈 50개는 못 쓴다.</li>
+                </ul>
               </div>
             </div>
           </section>
