@@ -212,7 +212,7 @@
       ]
     },
     {
-      id: "platform", text: "Platform", meta: "플랫폼 관리자",
+      id: "platform", text: "Platform", meta: "전용 상품", gated: 1,
       menus: [
         { key: "members", text: "회원관리", team: "3팀", phase: "2", items: [
           { text: "회원 정보 관리" },
@@ -288,15 +288,7 @@
     { label: "온기식당 둔산점", meta: "가맹 · 미납 1건" }
   ];
 
-  /* 서비스 바로가기 (슬라이드 16 ③). 부가서비스는 구독 상품이라 2차다. */
-  var SERVICES = [
-    { id: "erp", label: "ERP", meta: "BP Master 기준" },
-    { id: "platform", label: "Platform", meta: "플랫폼 관리자 콘솔" },
-    { id: null, label: "부가서비스", meta: "구독한 상품 — 2차 범위" }
-  ];
-
-  function topnavHTML(page) {
-    var cur = findMenu(page);
+  function topnavHTML() {
     return (
       '<header class="topnav">' +
       '<button class="iconbtn navtoggle" type="button" aria-label="메뉴 열기" aria-expanded="false" data-icon="menu" data-icon-size="18"></button>' +
@@ -307,8 +299,6 @@
       "<b>㈜한강상회</b><span class=\"sep\">·</span><span class=\"scopebtn__val\">전체 11개점</span>" +
       ic("selector", 14) + "</button>" +
       '<div class="topnav__end">' +
-      '<button class="svcbtn" type="button" aria-haspopup="listbox" aria-expanded="false">' +
-      ic("grid", 15) + '<b class="svcbtn__val">' + cur.cons.text + "</b>" + ic("selector", 14) + "</button>" +
       '<button class="iconbtn" type="button" aria-label="알림 3건" data-dot="1" data-icon="bell" data-icon-size="18"></button>' +
       '<button class="iconbtn" type="button" aria-label="도움말" data-icon="help" data-icon-size="18"></button>' +
       /* MY PAGE 는 이름을 눌러 들어간다 (슬라이드 4). 1팀 영역이다. */
@@ -337,19 +327,40 @@
     return hit ? hit.href : "";
   }
 
-  function menuHTML(m, on, sub) {
+  /* 펼친 메뉴는 페이지를 옮겨도 그대로 남는다. LNB 가 한 벌이면 모습도 한 벌이어야 한다. */
+  var OPEN_KEY = "whale-mockup-open";
+
+  function openKeys(page) {
+    var list = [];
+    try { list = JSON.parse(sessionStorage.getItem(OPEN_KEY) || "[]"); } catch (e) {}
+    if (page && list.indexOf(page) < 0) list.push(page); /* 지금 보는 메뉴는 늘 펼친다 */
+    return list;
+  }
+
+  function saveOpen(list) {
+    try { sessionStorage.setItem(OPEN_KEY, JSON.stringify(list)); } catch (e) {}
+  }
+
+  function menuHTML(m, on, sub, isOpen) {
     var mh = menuHref(m);
     var html =
+      '<div class="side__row">' +
       '<a class="side__item' + (mh ? "" : " is-na") + '"' +
       (mh ? ' href="' + url(mh) + '"' : ' href="#" aria-disabled="true" title="이번 목업 범위 밖"') +
       (on ? ' aria-current="page"' : "") + ">" +
       '<span class="side__text">' + m.text + "</span>" +
       (m.team ? badge(m.team, m.team === "1팀" ? "t1" : "t3") : "") +
       (m.phase ? badge(m.phase + "차", m.phase === "1.5" ? "half" : "second") : "") +
-      "</a>";
-    if (!on || !m.items) return html;
+      "</a>" +
+      (m.items
+        ? '<button class="side__toggle" type="button" data-menu="' + m.key +
+          '" aria-expanded="' + !!isOpen + '" aria-label="' + m.text + ' 하위 메뉴">' +
+          ic("down", 14) + "</button>"
+        : "") +
+      "</div>";
+    if (!m.items) return html;
 
-    html += '<div class="side__sub">';
+    html += '<div class="side__sub" data-sub-of="' + m.key + '"' + (isOpen ? "" : " hidden") + ">";
     m.items.forEach(function (it) {
       var ion = !!sub && (it.href === sub || (it.sub || []).some(function (s) { return s.href === sub; }));
       html +=
@@ -369,12 +380,21 @@
     return html + "</div>";
   }
 
-  function sideBodyHTML(cons, page, sub) {
-    var html = '<div class="side__group"><div class="side__label">' + cons.text + " · " + cons.meta + "</div>";
-    cons.menus.forEach(function (m) {
-      html += menuHTML(m, m.key === page, sub);
+  /* BP 기능은 모두가 본다. Platform 전용은 그 권한이 있는 사람에게만 한 무리 더 붙는다.
+     서비스를 갈아타는 것이 아니라 보이는 범위가 넓어지는 것이다. */
+  function sideBodyHTML(page, sub) {
+    var open = openKeys(page);
+    var html = "";
+    CONSOLES.forEach(function (c) {
+      html +=
+        '<div class="side__group"><div class="side__label">' + c.text + " · " + c.meta +
+        (c.gated ? '<span class="side__tag side__tag--gate">권한 필요</span>' : "") + "</div>";
+      c.menus.forEach(function (m) {
+        html += menuHTML(m, m.key === page, sub, open.indexOf(m.key) > -1);
+      });
+      html += "</div>";
     });
-    return html + "</div>" + sideFootHTML();
+    return html;
   }
 
   /* PLAN 사용량은 늘 바닥에 붙는다. 점포 추가가 막히는 이유가 여기 먼저 보여야 한다. */
@@ -394,7 +414,26 @@
 
   function sideHTML(page, sub) {
     return '<aside class="side" id="side" aria-label="메뉴">' +
-      sideBodyHTML(findMenu(page).cons, page, sub) + "</aside>";
+      sideBodyHTML(page, sub) + sideFootHTML() + "</aside>";
+  }
+
+  /* 하위 메뉴는 미리 그려 두고 여닫기만 한다. 여닫은 결과는 세션에 남는다. */
+  function wireAccordion() {
+    var side = document.getElementById("side");
+    if (!side) return;
+    side.addEventListener("click", function (e) {
+      var t = e.target.closest(".side__toggle");
+      if (!t) return;
+      var panel = side.querySelector('[data-sub-of="' + t.dataset.menu + '"]');
+      if (!panel) return;
+      panel.hidden = !panel.hidden;
+      t.setAttribute("aria-expanded", String(!panel.hidden));
+      var list = [];
+      side.querySelectorAll(".side__toggle[aria-expanded=true]").forEach(function (b) {
+        list.push(b.dataset.menu);
+      });
+      saveOpen(list);
+    });
   }
 
   function usageRow(label, val, pct, full) {
@@ -454,27 +493,6 @@
         '<hr><a href="#" class="is-na" aria-disabled="true">' + ic("plus", 14) + "점포 등록</a>";
     }, function (i) {
       btn.querySelector(".scopebtn__val").textContent = SCOPES[i].label;
-    });
-  }
-
-  /* 서비스를 바꾸면 좌측 Navigation 이 통째로 바뀐다 (슬라이드 16 ①). */
-  function wireService(page, sub) {
-    var btn = document.querySelector(".svcbtn");
-    var side = document.getElementById("side");
-    if (!btn || !side) return;
-    var val = function () { return btn.querySelector(".svcbtn__val").textContent.trim(); };
-    wirePop(btn, "right", function () {
-      return '<div class="pop__label">서비스 바로가기</div>' +
-        SERVICES.map(function (s) {
-          return optionHTML(s.label, s.meta, s.label === val(), !s.id);
-        }).join("");
-    }, function (i) {
-      var s = SERVICES[i];
-      if (!s.id) return;
-      btn.querySelector(".svcbtn__val").textContent = s.label;
-      var cons = CONSOLES.filter(function (c) { return c.id === s.id; })[0];
-      side.innerHTML = sideBodyHTML(cons, page, sub);
-      hydrateIcons(side);
     });
   }
 
@@ -565,8 +583,8 @@
     }
     hydrateIcons(document);
     wireScope();
-    wireService(page, document.body.dataset.sub);
     wireMe();
+    wireAccordion();
     wireTabs();
     wireStates();
     wireDrawer();
