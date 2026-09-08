@@ -8,160 +8,582 @@
     <link rel="stylesheet" href="../assets/whale.css" />
   </head>
   <body data-root="../" data-page="home" data-sub="home/signed-in.html">
-    <!-- 로그인 후 홈 · / · S-TJRUBE
+    <!-- 로그인 후 홈 · / · S-TJRUBE · S-JTHJWL
          비로그인 홈과 주소가 같다. 로그인한 사람이 / 로 오면 이 화면이 나온다.
-         업무 범위 고정(상단 선택기)과 서비스 바로가기가 이 화면의 내용이다. -->
+         구성은 디자인 시안 BO/dashboard.html 을 따르되 1차 범위 안의 데이터만 채웠다 —
+         매출·Master 배포·판매 채널·설비·청구는 자리째 뺐다 (HOME-5).
+         업무 범위 고정은 상단 선택기가 맡고(STAFF-8), 이 화면은 그 범위의 현황을 보여준다.
+         맨 위 탭은 목업용 역할 전환이다. 실제로는 로그인한 계정의 역할이 정한다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
       <main class="main" id="main">
         <div class="titlebar">
           <h1 class="t-h1">안녕하세요, 정하윤님</h1>
-          <span class="badge badge--quiet">BP Master</span>
+          <span class="badge badge--quiet">읽기 전용</span>
           <div class="titlebar__end">
-            <span class="filters__count mono">S-TJRUBE · /</span>
+            <span class="mono subtle" style="font-size: 12px">09-03 09:40 기준</span>
+            <button class="iconbtn" type="button" aria-label="다시 불러오기" data-icon="refresh" data-icon-size="17"></button>
+            <span class="filters__count mono">S-TJRUBE · S-JTHJWL · /</span>
           </div>
         </div>
 
         <div class="content">
-          <div class="band band--warn">
-            <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
-            <div class="band__body">
-              <div class="band__title">업무 범위를 아직 고르지 않았습니다</div>
-              <p class="band__desc">
-                범위를 고르면 그 뒤의 모든 조회가 그 기준으로 맞춰집니다.
-                한 번 고르면 직접 바꾸실 때까지 그대로 유지됩니다.
-              </p>
-            </div>
-            <div class="band__act">
-              <button class="btn btn--primary" type="button">범위 고르기</button>
-            </div>
+          <div class="tabs" data-tabs="role">
+            <button data-tab="bp" aria-selected="true">BP 마스터 화면</button>
+            <button data-tab="fr" aria-selected="false">가맹관리자 화면</button>
           </div>
 
-          <div class="gap">
-            <div class="gap__head">
-              <span class="gap__no">HOME-4</span>
-              <b>범위를 안 고른 채로 업무에 들어갈 수 있는가</b>
-              <span class="gap__ref">S-TJRUBE</span>
-            </div>
-            <div class="gap__opts">
-              <div class="gap__opt" data-side="a">
-                <div class="gap__label">A · 먼저 고르게 막는다</div>
-                <p>범위를 고르기 전에는 아래 바로가기를 <b>잠근다</b>. 잘못된 범위로 조회하는 일이 없다.</p>
+          <div id="role">
+            <!-- ===================== BP 마스터 · 전체 11개점 ===================== -->
+            <div data-panel="bp">
+              <!-- 지금 막고 있는 것 하나. 조건은 HOME-5 에서 정한다. -->
+              <div class="band band--warn">
+                <span class="band__ic" data-icon="calendar" data-icon-size="20"></span>
+                <div class="band__body">
+                  <div class="band__title">계약 갱신 예정 2건이 7일 안에 끝납니다</div>
+                  <p class="band__desc">
+                    서지안(서초점) 09-08, 문태경(판교점) 09-10 에 계약이 종료됩니다. 30일 전 갱신 알림은
+                    나갔지만 아직 새 계약 초안이 없습니다. 초안을 저장하면 재직 중이라 <b>즉시 발송</b>됩니다.
+                  </p>
+                </div>
+                <div class="band__act">
+                  <a class="btn btn--secondary" href="../staff/index.html#contracts">계약 보기</a>
+                  <a class="btn btn--primary" href="../staff/contracts-new.html">새 계약 작성</a>
+                </div>
               </div>
-              <div class="gap__opt" data-side="b">
-                <div class="gap__label">B · 안내만 하고 통과 · 이 화면</div>
-                <p>위 띠로 알리되 들어갈 수는 있다. 업무 화면 상단 선택기에서 그때 고른다.</p>
+
+              <div class="gap">
+                <div class="gap__head">
+                  <span class="gap__no">HOME-4</span>
+                  <b>범위를 안 고른 채로 업무에 들어갈 수 있는가</b>
+                  <span class="gap__ref">S-TJRUBE</span>
+                </div>
+                <div class="gap__opts">
+                  <div class="gap__opt" data-side="a">
+                    <div class="gap__label">A · 먼저 고르게 막는다</div>
+                    <p>범위를 고르기 전에는 바로가기와 현황을 <b>잠근다</b>. 잘못된 범위로 조회하는 일이 없다.</p>
+                  </div>
+                  <div class="gap__opt" data-side="b">
+                    <div class="gap__label">B · 안내만 하고 통과 · 이 화면</div>
+                    <p>범위 없는 상태면 현황 자리에 <b>범위 선택 안내</b>만 띄우고, 들어갈 수는 있다.</p>
+                  </div>
+                </div>
+                <p class="gap__note">
+                  이 화면은 범위가 <b>전체 11개점</b>으로 고정된 상태를 그렸다. 고정한 점포가 비활성화되면
+                  선택이 풀리므로 범위 없는 상태는 실제로 생기고, 그때 이 현황이 무엇을 보여줄지가 남는다.
+                </p>
               </div>
+
+              <div class="gap">
+                <div class="gap__head">
+                  <span class="gap__no">HOME-5</span>
+                  <b>홈 현황의 미결 5건</b>
+                  <span class="gap__ref">S-JTHJWL</span>
+                </div>
+                <div class="gap__block">
+                  <b>manyfast 에 질문으로 남아 있다. 화면은 추천안대로 그렸다.</b>
+                  <ul>
+                    <li>1차 범위 밖 위젯(매출·구독·배포·채널·설비) 자리 — <b>숨김</b>으로 그렸다. 대안은 “준비 중” 표시로 자리를 남기는 것.</li>
+                    <li>점포별 현황 표 — <b>미조치 많은 순 상위 7개</b>. 대안은 전체 점포 스크롤.</li>
+                    <li>상단 경고 밴드 조건 — <b>갱신 예정 계약이 7일 이내</b>. 대안은 서명 대기 7일 경과, 연결 확인 필요.</li>
+                    <li>서명 대기 항목 표시 시점 — <b>발송 즉시</b>, 경과 일수를 같이 보여준다. 대안은 3일 경과분만.</li>
+                    <li>집계 갱신 — <b>진입 시 조회 + 수동 새로고침</b>. 대안은 5분 자동.</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 지표 넷 : 시안의 매출·구독 자리를 오늘 출근·문의로 바꿨다. 각 칸은 조회 조건을 넘기며 이동한다. -->
+              <div class="figures">
+                <a class="figure" href="../staff/index.html" title="/staff?status=active">
+                  <div class="figure__label">재직 직원 <span data-icon="arrowright" data-icon-size="12"></span></div>
+                  <div class="stat">63<span class="stat__unit">명</span></div>
+                  <div class="figure__delta">
+                    <span class="warn">미체결 계약 3</span><span class="subtle">· 정직원 21 · 파트 42</span>
+                  </div>
+                </a>
+                <a class="figure" href="#" title="점포관리는 1팀 영역">
+                  <div class="figure__label">운영 점포 <span data-icon="arrowright" data-icon-size="12"></span></div>
+                  <div class="stat">11<span class="stat__unit">개점</span></div>
+                  <div class="figure__delta">
+                    <span class="subtle">직영 4 · 가맹 7</span>
+                  </div>
+                </a>
+                <a class="figure" href="../staff/index.html#sched" title="/staff/schedules?date=today">
+                  <div class="figure__label">오늘 출근 <span data-icon="arrowright" data-icon-size="12"></span></div>
+                  <div class="stat">27<span class="stat__unit">명</span></div>
+                  <div class="figure__delta">
+                    <span class="subtle">근무 예정 31</span><span class="warn">· 미출근 4</span>
+                  </div>
+                </a>
+                <a class="figure" href="#" title="고객지원은 support/ 예정">
+                  <div class="figure__label">내 문의 <span data-icon="arrowright" data-icon-size="12"></span></div>
+                  <div class="stat">2<span class="stat__unit">건</span></div>
+                  <div class="figure__delta">
+                    <span class="subtle">답변 대기 1 · 답변 완료 1</span>
+                  </div>
+                </a>
+              </div>
+
+              <div class="grid grid--7-5">
+                <!-- 점포별 현황 : 매출·전월비 열을 빼고 미체결 계약·오늘 출근을 넣었다 -->
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">점포별 현황</h2>
+                    <span class="badge badge--quiet">전체 11개점</span>
+                    <div class="panel__end">
+                      <div class="seg">
+                        <button type="button" aria-pressed="true">전체</button>
+                        <button type="button" aria-pressed="false">직영</button>
+                        <button type="button" aria-pressed="false">가맹</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="tblwrap">
+                    <table class="tbl tbl--dense">
+                      <thead>
+                        <tr>
+                          <th scope="col">점포</th>
+                          <th scope="col">유형</th>
+                          <th scope="col" class="n">재직 직원</th>
+                          <th scope="col" class="n">미체결 계약</th>
+                          <th scope="col" class="n">오늘 출근</th>
+                          <th scope="col" class="n">미조치</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td class="k">모리커피 성수점</td>
+                          <td><span class="badge badge--quiet">직영</span></td>
+                          <td class="n">7</td>
+                          <td class="n warn">1</td>
+                          <td class="n">3 / 4</td>
+                          <td class="n risk">3</td>
+                        </tr>
+                        <tr>
+                          <td class="k">모리커피 을지로점</td>
+                          <td><span class="badge">가맹</span></td>
+                          <td class="n">6</td>
+                          <td class="n warn">1</td>
+                          <td class="n">5 / 6</td>
+                          <td class="n risk">2</td>
+                        </tr>
+                        <tr>
+                          <td class="k">모리커피 연남점</td>
+                          <td><span class="badge">가맹</span></td>
+                          <td class="n">5</td>
+                          <td class="n warn">1</td>
+                          <td class="n">2 / 3</td>
+                          <td class="n risk">1</td>
+                        </tr>
+                        <tr>
+                          <td class="k">모리커피 서초점</td>
+                          <td><span class="badge badge--quiet">직영</span></td>
+                          <td class="n">9</td>
+                          <td class="n nil">—</td>
+                          <td class="n">7 / 8</td>
+                          <td class="n risk">1</td>
+                        </tr>
+                        <tr>
+                          <td class="k">온기식당 판교점</td>
+                          <td><span class="badge badge--quiet">직영</span></td>
+                          <td class="n">8</td>
+                          <td class="n nil">—</td>
+                          <td class="n">4 / 4</td>
+                          <td class="n nil">—</td>
+                        </tr>
+                        <tr>
+                          <td class="k">온기식당 둔산점</td>
+                          <td><span class="badge">가맹</span></td>
+                          <td class="n">6</td>
+                          <td class="n nil">—</td>
+                          <td class="n">3 / 3</td>
+                          <td class="n nil">—</td>
+                        </tr>
+                        <tr>
+                          <td class="k">모리커피 청담점</td>
+                          <td><span class="badge">가맹</span></td>
+                          <td class="n nil">—</td>
+                          <td class="n nil">—</td>
+                          <td class="n nil">—</td>
+                          <td class="n nil">—</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="panel__foot">
+                    <span>11개점 중 상위 7개 · 미조치 많은 순 · 청담점은 공사 중</span>
+                    <a class="tbtn right" href="../staff/index.html">직원 목록</a>
+                  </div>
+                </section>
+
+                <!-- 처리 대기 : 설비·가맹계약·배포 대신 우리 영역의 사건만 -->
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">처리 대기</h2>
+                    <span class="badge badge--warn">10건</span>
+                  </div>
+                  <div class="rows rows--hover">
+                    <a class="row" href="../staff/index.html#contracts">
+                      <span class="badge badge--warn">계약</span>
+                      <div class="rowmain__text">
+                        <b>근로계약 서명 대기 3건</b>
+                        <span>남도현 외 2명 · 발송 후 6일 경과</span>
+                      </div>
+                      <span class="row__end" data-icon="arrowright" data-icon-size="14"></span>
+                    </a>
+                    <a class="row" href="../staff/invites-holds.html">
+                      <span class="badge badge--risk">직원</span>
+                      <div class="rowmain__text">
+                        <b>가입 연결 확인 필요 2건</b>
+                        <span>번호 불일치 2 · 최장 4일 경과 · 계약서가 나가지 않고 있다</span>
+                      </div>
+                      <span class="row__end" data-icon="arrowright" data-icon-size="14"></span>
+                    </a>
+                    <a class="row" href="../staff/index.html">
+                      <span class="badge badge--risk">직원</span>
+                      <div class="rowmain__text">
+                        <b>소속 확인 거절 1건</b>
+                        <span>이준호 · 서초점 · 사유를 확인하고 레코드를 정리한다</span>
+                      </div>
+                      <span class="row__end" data-icon="arrowright" data-icon-size="14"></span>
+                    </a>
+                    <a class="row" href="../staff/index.html#contracts">
+                      <span class="badge badge--warn">계약</span>
+                      <div class="rowmain__text">
+                        <b>계약 갱신 예정 2건</b>
+                        <span>서지안 09-08 · 문태경 09-10 · 새 계약 초안 없음</span>
+                      </div>
+                      <span class="row__end" data-icon="arrowright" data-icon-size="14"></span>
+                    </a>
+                    <a class="row" href="#">
+                      <span class="badge badge--info">문의</span>
+                      <div class="rowmain__text">
+                        <b>답변 완료 1건</b>
+                        <span>KIOSK 영수증 프린터 연동 문의 · 고객지원에서 확인</span>
+                      </div>
+                      <span class="row__end" data-icon="arrowright" data-icon-size="14"></span>
+                    </a>
+                    <a class="row" href="../staff/index.html#todo">
+                      <span class="badge badge--quiet">TO-DO</span>
+                      <div class="rowmain__text">
+                        <b>긴급 TO-DO 미완료 1건</b>
+                        <span>성수점 · 냉장고 재료 폐기 · 오늘 14:00</span>
+                      </div>
+                      <span class="row__end" data-icon="arrowright" data-icon-size="14"></span>
+                    </a>
+                  </div>
+                  <div class="panel__note">
+                    건수가 0인 유형은 줄 자체를 숨긴다. 항목마다 점포·기간·상태 조건을 붙여 넘기고,
+                    도착한 화면이 권한을 다시 확인한다.
+                  </div>
+                </section>
+              </div>
+
+              <!-- 최근 활동 : 시안의 배포·감사 로그 자리. 1차에 감사 로그가 없어 운영 알림 최근 8건으로 채웠다. -->
+              <section class="log">
+                <div class="log__head">
+                  <span data-icon="bell" data-icon-size="14"></span>운영 알림
+                  <span class="badge">최근 8건</span>
+                </div>
+                <div class="log__body">
+                  <div class="log__row">
+                    <span class="log__t">09-03 09:12</span>
+                    <span class="log__tag">연결</span>
+                    <span class="log__who">system</span>
+                    <span class="log__msg">모리커피 성수점 <b>김하늘</b> 가입 — 인증 번호 불일치, 연결 보류</span>
+                  </div>
+                  <div class="log__row">
+                    <span class="log__t">09-03 08:40</span>
+                    <span class="log__tag log__tag--ship">날인</span>
+                    <span class="log__who">권도윤</span>
+                    <span class="log__msg">온기식당 판교점 근로계약 <b>날인 완료</b> — 파트타이머</span>
+                  </div>
+                  <div class="log__row">
+                    <span class="log__t">09-02 19:44</span>
+                    <span class="log__tag log__tag--fail">거부</span>
+                    <span class="log__who">유하람</span>
+                    <span class="log__msg">근로계약 <b>날인 거부</b> — 근무 시작 시각이 면접 때와 다름</span>
+                  </div>
+                  <div class="log__row">
+                    <span class="log__t">09-02 18:20</span>
+                    <span class="log__tag">문의</span>
+                    <span class="log__who">플랫폼</span>
+                    <span class="log__msg"><b>KIOSK 영수증 프린터 연동</b> 문의에 답변 등록</span>
+                  </div>
+                  <div class="log__row">
+                    <span class="log__t">09-01 14:02</span>
+                    <span class="log__tag log__tag--fail">거절</span>
+                    <span class="log__who">이준호</span>
+                    <span class="log__msg">모리커피 서초점 <b>소속 추가 확인</b> 거절 — 다른 매장 근무시간과 겹침</span>
+                  </div>
+                  <div class="log__row">
+                    <span class="log__t">08-30 10:30</span>
+                    <span class="log__tag">연결</span>
+                    <span class="log__who">system</span>
+                    <span class="log__msg">모리커피 을지로점 <b>박서연</b> 가입 — 인증 번호 불일치, 연결 보류</span>
+                  </div>
+                  <div class="log__row">
+                    <span class="log__t">08-28 09:31</span>
+                    <span class="log__tag">발송</span>
+                    <span class="log__who">system</span>
+                    <span class="log__msg"><b>남도현</b> 외 2명 근로계약서 발송 — 서명 대기, 날인 기한 09-27</span>
+                  </div>
+                  <div class="log__row">
+                    <span class="log__t">08-09 09:00</span>
+                    <span class="log__tag">갱신</span>
+                    <span class="log__who">system</span>
+                    <span class="log__msg">모리커피 서초점 <b>서지안</b> 계약 09-08 종료 예정 — 30일 전 알림</span>
+                  </div>
+                </div>
+                <div class="log__foot">
+                  <span>알림함은 notify/ 에서 따로 그린다. 여기서는 읽지 않은 것과 읽은 것을 가르지 않는다</span>
+                  <a href="#" class="right">알림함 전체 보기</a>
+                </div>
+              </section>
+
+              <section class="section">
+                <div class="panel__head" style="padding-left: 0; padding-right: 0">
+                  <h2 class="t-h2">서비스 바로가기</h2>
+                  <span class="badge badge--quiet">권한과 구독을 모두 만족하는 것만</span>
+                </div>
+                <div class="grid grid--3">
+                  <a class="mk-card" href="../staff/index.html">
+                    <span class="mk-card__route">/staff</span>
+                    <span class="mk-card__name">ERP</span>
+                    <span class="mk-card__desc">
+                      직원·근무·급여를 비롯한 점포 운영 업무. 좌측 메뉴의 ERP 무리가 여기에 해당합니다.
+                    </span>
+                    <span class="mk-card__end">
+                      <span class="badge badge--ok">이용 중</span>
+                    </span>
+                  </a>
+                  <span class="mk-card is-na">
+                    <span class="mk-card__route">구독 상품</span>
+                    <span class="mk-card__name">부가서비스</span>
+                    <span class="mk-card__desc">
+                      POS·KIOSK·주문처럼 구독한 상품이 여기 나타납니다. 구독하지 않은 상품은 숨깁니다.
+                    </span>
+                    <span class="mk-card__end">
+                      <span class="badge badge--quiet">2차 범위</span>
+                    </span>
+                  </span>
+                  <span class="mk-card is-na">
+                    <span class="mk-card__route">/platform</span>
+                    <span class="mk-card__name">Platform 콘솔</span>
+                    <span class="mk-card__desc">
+                      회원·BP·상품을 관리하는 플랫폼 관리자 화면. 권한이 없으면 이 칸 자체가 나오지 않습니다.
+                    </span>
+                    <span class="mk-card__end">
+                      <span class="badge badge--quiet">권한 없음</span>
+                    </span>
+                  </span>
+                </div>
+                <p class="gap__note" style="margin-top: var(--s-4)">
+                  역할이 여럿이면 <b>가진 역할의 허용 메뉴를 모두 합쳐</b> 보여준다. 권한이 없거나 구독하지 않은
+                  서비스는 흐리게가 아니라 아예 감춘다 — 위 두 칸은 그 자리를 설명하려고 남긴 것이다.
+                  관리자 정보 관리·비밀번호 변경·로그아웃은 상단 오른쪽 이름에서 열리며 <b>MY PAGE 는 1팀</b> 영역이다.
+                </p>
+              </section>
             </div>
-            <p class="gap__note">
-              문서는 “선택하라는 안내와 선택 진입점을 표시한다”라고만 하고 막으라고는 하지 않는다.
-              다만 고정한 점포가 비활성화되면 선택이 풀리므로 <b>범위 없는 상태가 실제로 생긴다</b>.
-              그 상태로 직원 목록에 들어가면 무엇을 보여줄지가 이 쟁점의 알맹이다.
-            </p>
+
+            <!-- ===================== 가맹관리자 · 모리커피 을지로점 ===================== -->
+            <div data-panel="fr" hidden>
+              <div class="band band--info">
+                <span class="band__ic" data-icon="store" data-icon-size="20"></span>
+                <div class="band__body">
+                  <div class="band__title">가맹관리자 · 모리커피 을지로점</div>
+                  <p class="band__desc">
+                    고를 점포가 하나뿐이라 상단 범위 선택기는 숨겨지고 이 점포로 자동 고정된다.
+                    점포별 현황 표 자리에는 <b>점포 상세 카드</b>가 온다. 나머지 배치는 BP 화면과 같다.
+                  </p>
+                </div>
+              </div>
+
+              <div class="figures">
+                <a class="figure" href="../staff/index.html" title="/staff?status=active">
+                  <div class="figure__label">재직 직원 <span data-icon="arrowright" data-icon-size="12"></span></div>
+                  <div class="stat">6<span class="stat__unit">명</span></div>
+                  <div class="figure__delta">
+                    <span class="warn">미체결 계약 1</span><span class="subtle">· 정직원 2 · 파트 4</span>
+                  </div>
+                </a>
+                <a class="figure" href="#" title="점포관리는 1팀 영역">
+                  <div class="figure__label">운영 점포 <span data-icon="arrowright" data-icon-size="12"></span></div>
+                  <div class="stat" style="font-size: 22px">모리커피 을지로점</div>
+                  <div class="figure__delta">
+                    <span class="subtle">가맹 · ㈜한강상회</span>
+                  </div>
+                </a>
+                <a class="figure" href="../staff/index.html#sched" title="/staff/schedules?date=today">
+                  <div class="figure__label">오늘 출근 <span data-icon="arrowright" data-icon-size="12"></span></div>
+                  <div class="stat">5<span class="stat__unit">명</span></div>
+                  <div class="figure__delta">
+                    <span class="subtle">근무 예정 6</span><span class="warn">· 미출근 1</span>
+                  </div>
+                </a>
+                <a class="figure" href="#" title="고객지원은 support/ 예정">
+                  <div class="figure__label">내 문의 <span data-icon="arrowright" data-icon-size="12"></span></div>
+                  <div class="stat">1<span class="stat__unit">건</span></div>
+                  <div class="figure__delta">
+                    <span class="subtle">답변 대기 1</span>
+                  </div>
+                </a>
+              </div>
+
+              <div class="grid grid--7-5">
+                <!-- 점포 상세 카드 : 표 대신 이 점포의 사람 이름이 나온다 -->
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">점포 상세</h2>
+                    <span class="badge badge--quiet">모리커피 을지로점</span>
+                    <div class="panel__end">
+                      <a class="tbtn" href="../staff/index.html#sched">출퇴근 현황</a>
+                    </div>
+                  </div>
+                  <div class="panel__body">
+                    <div class="spread">
+                      <span class="t-h3">오늘 출근</span>
+                      <span class="badge badge--ok">5 / 6</span>
+                    </div>
+                  </div>
+                  <div class="rows">
+                    <div class="row">
+                      <span class="avatar"><img src="../assets/img/staff-2.webp" alt="" /></span>
+                      <div class="rowmain__text"><b>김민재</b><span>정직원 · 09:02 출근</span></div>
+                      <span class="row__end ok">근무 중</span>
+                    </div>
+                    <div class="row">
+                      <span class="avatar"><img src="../assets/img/staff-3.webp" alt="" /></span>
+                      <div class="rowmain__text"><b>이수빈</b><span>파트 · 09:05 출근</span></div>
+                      <span class="row__end ok">근무 중</span>
+                    </div>
+                    <div class="row">
+                      <span class="avatar"><img src="../assets/img/staff-5.webp" alt="" /></span>
+                      <div class="rowmain__text"><b>정우진</b><span>파트 · 10:58 출근</span></div>
+                      <span class="row__end ok">근무 중</span>
+                    </div>
+                    <div class="row">
+                      <span class="avatar"><img src="../assets/img/staff-6.webp" alt="" /></span>
+                      <div class="rowmain__text"><b>최유나</b><span>정직원 · 11:00 출근</span></div>
+                      <span class="row__end ok">근무 중</span>
+                    </div>
+                    <div class="row">
+                      <span class="avatar">한</span>
+                      <div class="rowmain__text"><b>한지원</b><span>파트 · 11:30 출근</span></div>
+                      <span class="row__end ok">근무 중</span>
+                    </div>
+                    <div class="row">
+                      <span class="avatar">강</span>
+                      <div class="rowmain__text"><b>강다은</b><span>파트 · 12:00 예정</span></div>
+                      <span class="row__end subtle">미출근</span>
+                    </div>
+                  </div>
+                  <div class="panel__body">
+                    <div class="spread">
+                      <span class="t-h3">미체결 계약</span>
+                      <span class="badge badge--warn">1</span>
+                    </div>
+                  </div>
+                  <div class="rows rows--hover">
+                    <a class="row" href="../staff/contracts-detail.html">
+                      <span class="badge badge--warn">서명 대기</span>
+                      <div class="rowmain__text"><b>강다은</b><span>파트 · 08-28 발송 · 6일 경과 · 날인 기한 09-27</span></div>
+                      <span class="row__end" data-icon="arrowright" data-icon-size="14"></span>
+                    </a>
+                  </div>
+                  <div class="panel__body">
+                    <div class="spread">
+                      <span class="t-h3">진행 중 TO-DO</span>
+                      <span class="badge badge--quiet">2</span>
+                    </div>
+                  </div>
+                  <div class="rows rows--hover">
+                    <a class="row" href="../staff/index.html#todo">
+                      <span class="badge badge--risk">긴급</span>
+                      <div class="rowmain__text"><b>냉장고 재료 폐기</b><span>오늘 14:00 · 전체 · 한 명 수행 · 대기</span></div>
+                      <span class="row__end" data-icon="arrowright" data-icon-size="14"></span>
+                    </a>
+                    <a class="row" href="../staff/index.html#todo">
+                      <span class="badge badge--quiet">일반</span>
+                      <div class="rowmain__text"><b>신메뉴 POP 교체</b><span>09-05 · 김민재 · 진행 중</span></div>
+                      <span class="row__end" data-icon="arrowright" data-icon-size="14"></span>
+                    </a>
+                  </div>
+                  <div class="panel__foot">
+                    <span>이름이 나오는 건 이 점포 소속뿐이다. 다른 소속의 계약·급여·출퇴근은 보이지 않는다</span>
+                    <a class="tbtn right" href="../staff/index.html">직원 정보 관리</a>
+                  </div>
+                </section>
+
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">처리 대기</h2>
+                    <span class="badge badge--warn">3건</span>
+                  </div>
+                  <div class="rows rows--hover">
+                    <a class="row" href="../staff/index.html#contracts">
+                      <span class="badge badge--warn">계약</span>
+                      <div class="rowmain__text">
+                        <b>근로계약 서명 대기 1건</b>
+                        <span>강다은 · 발송 후 6일 경과</span>
+                      </div>
+                      <span class="row__end" data-icon="arrowright" data-icon-size="14"></span>
+                    </a>
+                    <a class="row" href="../staff/invites-holds.html">
+                      <span class="badge badge--risk">직원</span>
+                      <div class="rowmain__text">
+                        <b>가입 연결 확인 필요 1건</b>
+                        <span>박서연 · 번호 불일치 · 4일 경과</span>
+                      </div>
+                      <span class="row__end" data-icon="arrowright" data-icon-size="14"></span>
+                    </a>
+                    <a class="row" href="../staff/index.html#todo">
+                      <span class="badge badge--quiet">TO-DO</span>
+                      <div class="rowmain__text">
+                        <b>긴급 TO-DO 미완료 1건</b>
+                        <span>냉장고 재료 폐기 · 오늘 14:00</span>
+                      </div>
+                      <span class="row__end" data-icon="arrowright" data-icon-size="14"></span>
+                    </a>
+                  </div>
+                  <div class="panel__note">
+                    가맹 화면의 처리 대기는 이 점포에서 생긴 것만 담는다. 도입문의는 플랫폼 관리자에게만 보인다.
+                  </div>
+                </section>
+              </div>
+
+              <section class="log">
+                <div class="log__head">
+                  <span data-icon="bell" data-icon-size="14"></span>운영 알림
+                  <span class="badge">최근 3건</span>
+                </div>
+                <div class="log__body">
+                  <div class="log__row">
+                    <span class="log__t">09-02 19:44</span>
+                    <span class="log__tag log__tag--fail">거부</span>
+                    <span class="log__who">유하람</span>
+                    <span class="log__msg">근로계약 <b>날인 거부</b> — 근무 시작 시각이 면접 때와 다름</span>
+                  </div>
+                  <div class="log__row">
+                    <span class="log__t">08-30 10:30</span>
+                    <span class="log__tag">연결</span>
+                    <span class="log__who">system</span>
+                    <span class="log__msg"><b>박서연</b> 가입 — 인증 번호 불일치, 연결 보류</span>
+                  </div>
+                  <div class="log__row">
+                    <span class="log__t">08-28 09:31</span>
+                    <span class="log__tag">발송</span>
+                    <span class="log__who">system</span>
+                    <span class="log__msg"><b>강다은</b> 근로계약서 발송 — 서명 대기, 날인 기한 09-27</span>
+                  </div>
+                </div>
+                <div class="log__foot">
+                  <span>이 점포를 관리하는 사람에게 온 알림만 보인다</span>
+                  <a href="#" class="right">알림함 전체 보기</a>
+                </div>
+              </section>
+            </div>
           </div>
-
-          <section class="section">
-            <div class="panel__head" style="padding-left: 0; padding-right: 0">
-              <h2 class="t-h2">서비스 바로가기</h2>
-              <span class="badge badge--quiet">권한과 구독을 모두 만족하는 것만</span>
-            </div>
-            <div class="grid grid--3">
-              <a class="mk-card" href="../staff/index.html">
-                <span class="mk-card__route">/staff</span>
-                <span class="mk-card__name">ERP</span>
-                <span class="mk-card__desc">
-                  직원·근무·급여를 비롯한 점포 운영 업무. 좌측 메뉴의 ERP 무리가 여기에 해당합니다.
-                </span>
-                <span class="mk-card__end">
-                  <span class="badge badge--ok">이용 중</span>
-                </span>
-              </a>
-              <span class="mk-card is-na">
-                <span class="mk-card__route">구독 상품</span>
-                <span class="mk-card__name">부가서비스</span>
-                <span class="mk-card__desc">
-                  POS·KIOSK·주문처럼 구독한 상품이 여기 나타납니다. 구독하지 않은 상품은 숨깁니다.
-                </span>
-                <span class="mk-card__end">
-                  <span class="badge badge--quiet">2차 범위</span>
-                </span>
-              </span>
-              <span class="mk-card is-na">
-                <span class="mk-card__route">/platform</span>
-                <span class="mk-card__name">Platform 콘솔</span>
-                <span class="mk-card__desc">
-                  회원·BP·상품을 관리하는 플랫폼 관리자 화면. 권한이 없으면 이 칸 자체가 나오지 않습니다.
-                </span>
-                <span class="mk-card__end">
-                  <span class="badge badge--quiet">권한 없음</span>
-                </span>
-              </span>
-            </div>
-            <p class="gap__note" style="margin-top: var(--s-4)">
-              역할이 여럿이면 <b>가진 역할의 허용 메뉴를 모두 합쳐</b> 보여준다. 권한이 없거나 구독하지 않은
-              서비스는 흐리게가 아니라 아예 감춘다 — 위 두 칸은 그 자리를 설명하려고 남긴 것이다.
-            </p>
-          </section>
-
-          <section class="section">
-            <div class="panel__head" style="padding-left: 0; padding-right: 0">
-              <h2 class="t-h2">업무 범위</h2>
-              <span class="badge badge--quiet">고르면 상단 선택기에 그대로 표시된다</span>
-            </div>
-            <div class="panel">
-              <div class="panel__body">
-                <p class="subtle" style="margin-bottom: var(--s-4)">
-                  문서는 <b>BP 를 먼저 고른 뒤 그 BP 의 점포를 고른다</b>고 했다. 지금 상단 선택기는
-                  BP 가 <span class="mono">㈜한강상회</span> 로 고정된 텍스트라 BP 단계가 없다 —
-                  직원 영역의 범위 선택 쟁점과 함께 정할 일이다.
-                </p>
-                <div class="stack">
-                  <button class="card card--hover" type="button" style="text-align: left; cursor: pointer">
-                    <div class="spread">
-                      <span class="t-h2">전체 11개점</span>
-                      <span class="badge badge--quiet">직영 4 · 가맹 7</span>
-                    </div>
-                    <p class="subtle">모든 점포를 한 번에 봅니다.</p>
-                  </button>
-                  <button class="card card--hover" type="button" style="text-align: left; cursor: pointer">
-                    <div class="spread">
-                      <span class="t-h2">직영 4개점</span>
-                      <span class="badge badge--quiet">㈜한강상회 직영</span>
-                    </div>
-                    <p class="subtle">본사가 직접 운영하는 점포만 봅니다.</p>
-                  </button>
-                  <button class="card card--hover" type="button" style="text-align: left; cursor: pointer">
-                    <div class="spread">
-                      <span class="t-h2">가맹 7개점</span>
-                      <span class="badge badge--quiet">모리커피 · 온기식당</span>
-                    </div>
-                    <p class="subtle">가맹으로 운영하는 점포만 봅니다.</p>
-                  </button>
-                </div>
-              </div>
-              <div class="panel__note">
-                고정한 점포가 비활성화되거나 권한이 사라지면 선택을 풀고 다시 고르도록 안내한다.
-              </div>
-            </div>
-          </section>
-
-          <section class="section">
-            <div class="panel__head" style="padding-left: 0; padding-right: 0">
-              <h2 class="t-h2">계정</h2>
-              <span class="badge badge--warn">1팀</span>
-            </div>
-            <div class="panel">
-              <div class="panel__body">
-                <p class="subtle">
-                  관리자 정보 관리 · 비밀번호 변경 · 로그아웃은 상단 오른쪽 <b>이름</b>을 눌러 엽니다.
-                  본인 계정만 다룰 수 있고 다른 사람의 계정 정보에는 들어갈 수 없습니다.
-                </p>
-                <div class="panel__note" style="margin-top: var(--s-4)">
-                  MY PAGE 는 메뉴구조도에서 <b>1팀</b> 영역이다. 우리는 이 화면에서 그리로 나가는 길만 만든다.
-                </div>
-              </div>
-            </div>
-          </section>
         </div>
       </main>
     </div>
