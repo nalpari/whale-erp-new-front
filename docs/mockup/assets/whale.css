@@ -103,7 +103,7 @@
 
   /* 셸 치수 */
   --nav-h: 64px;
-  --side-w: 260px;
+  --side-w: 272px;
   --title-h: 60px;
 
   /* 깊이 — 단 하나 */
@@ -376,29 +376,6 @@ table {
   font-weight: 500;
 }
 
-.topnav__sections {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  min-width: 0;
-  overflow: hidden;
-}
-.topnav__sections a {
-  padding: 7px 11px;
-  border-radius: var(--r-md);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--body);
-  white-space: nowrap;
-}
-.topnav__sections a:hover {
-  background: var(--surface-strong);
-  color: var(--ink);
-}
-.topnav__sections a[aria-current="true"] {
-  color: var(--ink);
-  background: var(--surface-strong);
-}
 .topnav__end {
   margin-left: auto;
   display: flex;
@@ -435,6 +412,59 @@ table {
 .scopebtn svg {
   color: var(--muted);
 }
+
+/* 서비스 바로가기 (슬라이드 16 ③). ERP 와 Platform 은 메뉴가 통째로 다르다. */
+.svcbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 8px 0 10px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-md);
+  background: var(--surface-card);
+  color: var(--ink);
+  font-size: 13px;
+  white-space: nowrap;
+}
+.svcbtn:hover {
+  background: var(--surface-hover);
+}
+.svcbtn b {
+  font-weight: 600;
+}
+.svcbtn svg {
+  color: var(--muted);
+}
+
+/* 이름을 누르면 MY PAGE 가 열린다 (슬라이드 4). */
+.mebtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 6px 0 3px;
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 500;
+}
+.mebtn:hover {
+  background: var(--surface-strong);
+}
+.mebtn svg {
+  color: var(--muted);
+}
+.mebtn__name {
+  white-space: nowrap;
+}
+@media (max-width: 1080px) {
+  .mebtn__name {
+    display: none;
+  }
+}
+
 .avatar {
   width: 30px;
   height: 30px;
@@ -587,6 +617,22 @@ table {
 .side__sub a[aria-current="page"] {
   color: var(--ink);
   font-weight: 500;
+}
+/* 메뉴 이름 뒤에 오는 것(팀 배지 · 차수 · 라우트)은 오른쪽 끝에 붙는다. */
+.side__text {
+  margin-right: auto;
+}
+/* Depth 2 아래는 구조도에 없는 우리 라우트다. 점선으로 층을 구분한다. */
+.side__sub--deep {
+  margin: 2px 0 var(--s-2) 6px;
+  padding-left: 9px;
+  border-left-style: dashed;
+}
+.side__sub--deep a {
+  font-size: 12.5px;
+}
+.side__sub--deep .side__route {
+  font-size: 9.5px;
 }
 
 /* 사이드바 바닥 : PLAN 사용량은 늘 보인다. 점포 추가가 막히는 이유가 여기 있다. */
@@ -2329,6 +2375,27 @@ a.tile:hover {
   flex-direction: column;
   gap: 1px;
 }
+.pop__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) 10px var(--s-3);
+  border-bottom: 1px solid var(--hairline);
+  margin-bottom: var(--s-1);
+}
+.pop__head div {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.35;
+  margin-right: auto;
+}
+.pop__head b {
+  font-size: 13px;
+}
+.pop__head div span {
+  font-size: 11.5px;
+  color: var(--muted-tert);
+}
 .pop__label {
   font-size: 11px;
   font-weight: 600;
@@ -2621,6 +2688,44 @@ a.tile:hover {
 .is-na:hover {
   background: transparent !important;
   color: inherit !important;
+}
+
+/* 업무 분배 배지 — 메뉴구조도(v0.9)의 색을 그대로 옮겼다.
+   1팀 노랑 · 3팀 파랑 · 1.5차 연두 · 2차 회색.
+   회의에서 "이건 누구 것이고 언제 오나"를 색으로 바로 읽으라고 둔 것이다. */
+.side__tag {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  padding: 1px 5px;
+  border-radius: var(--r-xs);
+  white-space: nowrap;
+  flex: none;
+}
+.side__tag--t1 {
+  background: var(--warn-wash);
+  color: var(--warn);
+}
+.side__tag--t3 {
+  background: var(--info-wash);
+  color: var(--info);
+}
+.side__tag--half {
+  background: var(--ok-wash);
+  color: var(--ok-text);
+}
+.side__tag--second {
+  background: var(--surface-strong);
+  color: var(--muted-tert);
+}
+.side__tag--mock {
+  background: var(--preview-wash);
+  color: var(--preview);
+}
+/* Depth 2 에는 side__text 가 없다. 첫 칸이 이름 자리를 잡고, 이름은 접지 않는다. */
+.side__sub a > span:first-child {
+  margin-right: auto;
+  white-space: nowrap;
 }
 
 /* 쟁점 : 디자인 시안과 manyfast 문서가 어긋나는 지점.

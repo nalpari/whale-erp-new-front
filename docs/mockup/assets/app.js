@@ -131,176 +131,154 @@
   }
 
   /* ---------- 내비게이션 ----------
-     상단 6개 섹션이 라우트 35개를 가른다. 좌측 사이드바는 지금 섹션의 화면만
-     아이콘 없이 평평하게 세우고, 각 항목 오른쪽에 실제 App Router 라우트를
-     모노로 적는다. 시안과 docs/spec/화면-구조.md 의 라우트 맵이 어긋나지 않게 하려는 것이고,
-     동시에 이 화면이 무엇의 대역인지 읽는 사람이 바로 알게 하려는 것이다. */
-  var SECTIONS = [
+     메뉴는 메뉴구조도(0.웨일ERP_메뉴구조도_v0.9_260819) 슬라이드 1·4 를 그대로 옮겼다.
+     상단에는 섹션 탭을 두지 않는다 — 문서(슬라이드 16)는 상단을 BP 고정과
+     서비스 바로가기·MY PAGE 에만 쓰고, 메뉴는 전부 좌측 Navigation 에 편다.
+
+       team   업무 분배 — "1팀" 과 "3팀". 우리가 3팀이다.
+       phase  범위 — 적지 않으면 1차, "1.5" 와 "2" 는 그 차수.
+              Depth 1 에 적으면 그 아래가 전부 같은 차수라는 뜻이다.
+       href   목업에 있는 화면. 없으면 링크를 죽인다.
+       mock   구조도에 없는 목업 전용 화면. */
+  var CONSOLES = [
     {
-      id: "ops", text: "운영",
-      groups: [
-        { label: "현황", items: [
-          { key: "dashboard", href: "dashboard.html", text: "대시보드", route: "/dashboard" },
-          { key: "sales", href: "sales.html", text: "매출", route: "/sales", sub: [
-            { href: "sales.html", text: "매출 조회", route: "/sales" },
-            { href: "sales.html#stats", text: "매출 통계", route: "/sales/stats" }
-          ]}
+      id: "erp", text: "ERP", meta: "BP Master 기준",
+      menus: [
+        { key: "home", text: "Home", team: "3팀" },
+
+        { key: "master", text: "기초정보관리", team: "1팀", items: [
+          { text: "상품 정보 관리", phase: "2" },
+          { text: "가격 정보 관리", phase: "2" },
+          { text: "카테고리 정보 관리", phase: "2" },
+          { text: "자재 정보 관리", phase: "1.5" }
         ]},
-        { label: "점포·설비", items: [
-          { key: "stores", href: "stores.html", text: "점포", route: "/stores", sub: [
-            { href: "stores.html", text: "점포 목록", route: "/stores" },
-            { href: "stores.html#new", text: "점포 등록", route: "/stores/new" },
-            { href: "stores.html#detail", text: "점포 상세·해지", route: "/stores/[storeId]" }
-          ]},
-          { key: "equipment", href: "equipment.html", text: "설비·점검", route: "/facilities", count: "4", tone: "risk", sub: [
-            { href: "equipment.html", text: "설비 목록", route: "/facilities" },
-            { href: "equipment.html#insp", text: "점검 업무", route: "/facilities/inspections" },
-            { href: "equipment.html#fix", text: "이상 조치", route: "/facilities/inspections/[id]" }
-          ]}
-        ]}
-      ]
-    },
-    {
-      id: "master", text: "기준정보",
-      groups: [
-        { label: "Master Data", items: [
-          { key: "master-menu", href: "master-menu.html", text: "메뉴·카테고리", route: "/master/menus", sub: [
-            { href: "master-menu.html", text: "메뉴 Master", route: "/master/menus" },
-            { href: "master-menu.html#cat", text: "카테고리 Master", route: "/master/categories" }
-          ]},
-          { key: "master-price", href: "master-price.html", text: "가격", route: "/master/prices", sub: [
-            { href: "master-price.html", text: "Master 가격", route: "/master/prices" },
-            { href: "master-price.html#addons", text: "부가서비스별 가격", route: "/master/prices/addons" },
-            { href: "master-price.html#promo", text: "프로모션 가격", route: "/master/prices/promotions" }
-          ]},
-          { key: "master-ingredient", href: "master-ingredient.html", text: "재료", route: "/master/ingredients" }
-        ]}
-      ]
-    },
-    {
-      id: "org", text: "조직",
-      groups: [
-        { label: "사람", items: [
-          { key: "staff", href: "staff/index.html", text: "직원·근로", route: "/staff", count: "3", tone: "warn", sub: [
-            { href: "staff/overview.html", text: "영역 개요", route: "목업 전용" },
-            { href: "staff/index.html", text: "직원 목록", route: "/staff" },
-            { href: "staff/detail.html", text: "직원 상세", route: "/staff/[staffId]" },
-            { href: "staff/invites-holds.html", text: "가입 연결 확인", route: "/staff/invites/holds" },
-            { href: "staff/index.html#contracts", text: "근로계약", route: "/staff/contracts" },
-            { href: "staff/contracts-new.html", text: "계약 초안 작성", route: "/staff/contracts/new" },
-            { href: "staff/contracts-detail.html", text: "계약 상세", route: "/staff/contracts/[id]" },
-            { href: "staff/index.html#sched", text: "스케줄·출퇴근", route: "/staff/schedules" },
-            { href: "staff/index.html#payroll", text: "급여명세서", route: "/staff/payrolls" },
-            { href: "staff/payrolls-detail.html", text: "급여명세서 검토", route: "/staff/payrolls/[id]" },
-            { href: "staff/index.html#todo", text: "TO-DO", route: "/staff/todos" }
-          ]},
-          { key: "permissions", href: "permissions.html", text: "관리자 권한", route: "/admins" }
+
+        { key: "stores", text: "점포관리", team: "1팀", items: [
+          { text: "점포 정보 관리" },
+          { text: "계약서 템플릿 관리", phase: "2" },
+          { text: "계약서 관리", phase: "2" },
+          { text: "시설물 및 장비 관리", phase: "1.5" },
+          { text: "점검표 템플릿 관리", phase: "1.5" },
+          { text: "점검 결과 관리", phase: "1.5" }
         ]},
-        { label: "프랜차이즈", items: [
-          { key: "franchise", href: "franchise.html", text: "가맹 관리", route: "/franchise/contracts", sub: [
-            { href: "franchise.html", text: "가맹점 초대", route: "/franchise/invites" },
-            { href: "franchise.html#contracts", text: "가맹계약", route: "/franchise/contracts" },
-            { href: "franchise.html#tpl", text: "계약서 템플릿", route: "/franchise/templates" }
-          ]}
-        ]}
-      ]
-    },
-    {
-      id: "money", text: "비용",
-      groups: [
-        { label: "구독", items: [
-          { key: "subscription", href: "subscription.html", text: "요금 PLAN·부가서비스", route: "/billing/plan", sub: [
-            { href: "subscription.html", text: "요금 PLAN", route: "/billing/plan" },
-            { href: "subscription.html#addons", text: "부가서비스 구독", route: "/billing/subscriptions" }
-          ]}
-        ]},
-        { label: "돈", items: [
-          { key: "billing", href: "billing.html", text: "청구·정산", route: "/billing/invoices", count: "2", tone: "risk", sub: [
-            { href: "billing.html", text: "청구·납부", route: "/billing/invoices" },
-            { href: "billing.html#methods", text: "결제수단", route: "/billing/methods" },
-            { href: "billing.html#settle", text: "정산 현황", route: "/billing/settlements" }
+
+        { key: "staff", text: "직원관리", team: "3팀", items: [
+          { text: "영역 개요", href: "staff/overview.html", mock: 1 },
+          { text: "직원 정보 관리", href: "staff/index.html", sub: [
+            { text: "직원 목록", href: "staff/index.html", route: "/staff" },
+            { text: "직원 상세", href: "staff/detail.html", route: "/staff/[staffId]" },
+            { text: "가입 연결 확인", href: "staff/invites-holds.html", route: "/staff/invites/holds" }
           ]},
-          { key: "finance", href: "finance.html", text: "재무", route: "/finance/transactions", sub: [
-            { href: "finance.html", text: "입출금·거래", route: "/finance/transactions" },
-            { href: "finance.html#accounts", text: "계정 현황", route: "/finance/accounts" }
-          ]}
-        ]}
-      ]
-    },
-    {
-      id: "support", text: "지원",
-      groups: [
-        { label: "채널", items: [
-          { key: "support", href: "support/index.html", text: "공지·문의", route: "/support/notices", count: "1", sub: [
-            { href: "support/index.html", text: "공지사항", route: "/support/notices" },
-            { href: "support/index.html#ask", text: "문의하기", route: "/support/inquiries" }
-          ]}
+          { text: "근로계약 관리", href: "staff/index.html#contracts", sub: [
+            { text: "계약 목록", href: "staff/index.html#contracts", route: "/staff/contracts" },
+            { text: "계약 초안 작성", href: "staff/contracts-new.html", route: "/staff/contracts/new" },
+            { text: "계약 상세", href: "staff/contracts-detail.html", route: "/staff/contracts/[id]" }
+          ]},
+          { text: "급여명세서 관리", href: "staff/index.html#payroll", sub: [
+            { text: "명세서 목록", href: "staff/index.html#payroll", route: "/staff/payrolls" },
+            { text: "명세서 검토", href: "staff/payrolls-detail.html", route: "/staff/payrolls/[id]" }
+          ]},
+          { text: "근무 스케줄 관리", href: "staff/index.html#sched" },
+          { text: "출·퇴근 현황 조회", href: "staff/index.html#sched" },
+          { text: "TO-DO 리스트 관리", href: "staff/index.html#todo" }
         ]},
-        { label: "별도 클라이언트", items: [
-          { key: "staff-app", href: "staff-app/index.html", text: "직원 전용 앱", route: "웹 라우트 밖" }
+
+        { key: "sales", text: "매출조회", team: "3팀", phase: "1.5", items: [
+          { text: "매출 조회" },
+          { text: "매출 통계" }
+        ]},
+
+        { key: "finance", text: "재무관리", team: "3팀", phase: "2", note: "부가서비스 구독 필요", items: [
+          { text: "입·출금 관리" },
+          { text: "매출/매입 거래 등록" },
+          { text: "계정별 현황 조회" }
+        ]},
+
+        { key: "config", text: "환경설정", team: "1팀", items: [
+          { text: "관리자 관리" },
+          { text: "권한 관리" },
+          { text: "공통코드 관리" },
+          { text: "휴일 관리" }
+        ]},
+
+        { key: "support", text: "고객지원", team: "3팀", items: [
+          { text: "부가서비스 구독 관리", phase: "2" },
+          { text: "구독료 청구 및 납부 현황", phase: "2" },
+          { text: "결제수단 관리", phase: "2" },
+          { text: "정산 현황 조회", phase: "2" },
+          { text: "공지사항" },
+          { text: "문의하기" }
         ]}
       ]
     },
     {
-      id: "platform", text: "Platform",
-      groups: [
-        { label: "운영자 콘솔", items: [
-          { key: "platform-products", href: "platform-products.html", text: "상품·청구 정책", route: "/platform/plans", sub: [
-            { href: "platform-products.html", text: "요금 PLAN 상품", route: "/platform/plans" },
-            { href: "platform-products.html#addons", text: "부가서비스 상품", route: "/platform/addons" },
-            { href: "platform-products.html#pricing", text: "가격·청구 정책", route: "/platform/pricing" }
-          ]}
+      id: "platform", text: "Platform", meta: "플랫폼 관리자",
+      menus: [
+        { key: "members", text: "회원관리", team: "3팀", phase: "2", items: [
+          { text: "회원 정보 관리" },
+          { text: "휴면 회원 정보 관리" }
+        ]},
+        { key: "bp", text: "BP 정보관리", team: "1팀", items: [
+          { text: "BP Master 정보 관리" },
+          { text: "휴면 BP 정보 관리" }
+        ]},
+        { key: "settle", text: "서비스정산관리", phase: "2", items: [
+          { text: "부가서비스 주문 내역" },
+          { text: "부가서비스 정산" }
+        ]},
+        { key: "addons", text: "부가서비스관리", phase: "2", items: [
+          { text: "부가 서비스 정보 관리" }
+        ]},
+        { key: "promo", text: "프로모션관리", phase: "2", items: [
+          { text: "쿠폰 관리" },
+          { text: "포인트 관리" }
+        ]},
+        { key: "system", text: "시스템관리", team: "1팀", items: [
+          { text: "관리자 관리" },
+          { text: "관리자 권한 관리" },
+          { text: "프로그램 관리" },
+          { text: "공통코드 관리" },
+          { text: "휴일 관리" }
+        ]},
+        { key: "community", text: "커뮤니티관리", team: "3팀", items: [
+          { text: "공지사항" },
+          { text: "FAQ" },
+          { text: "문의사항" },
+          { text: "도입문의" }
         ]}
       ]
     }
   ];
 
   /* 화면은 영역 폴더(staff/ · home/ · support/ …) 아래 한 단계로만 둔다.
-     SECTIONS 의 href 는 전부 목업 루트 기준이고, 실제 링크를 쓸 때
+     CONSOLES 의 href 는 전부 목업 루트 기준이고, 실제 링크를 쓸 때
      각 화면이 <body data-root="../"> 로 알려준 접두사를 앞에 붙인다.
      루트 index.html 은 data-root 가 없으므로 "" 가 된다. */
   var ROOT = "";
-
-  /* 지금까지 만든 화면. 나머지 메뉴는 맥락을 보여주려고 사이드바에 남겨두되,
-     갈 곳이 없으므로 링크를 죽이고 흐리게 표시한다. */
-  var BUILT = {
-    "index.html": 1,
-    "staff/overview.html": 1,
-    "staff/index.html": 1,
-    "staff/detail.html": 1,
-    "staff/contracts-new.html": 1,
-    "staff/contracts-detail.html": 1,
-    "staff/payrolls-detail.html": 1,
-    "staff/invites-holds.html": 1
-  };
-
-  function isBuilt(href) {
-    return BUILT[String(href).split("#")[0]] === 1;
-  }
 
   function url(href) {
     return ROOT + href;
   }
 
+  /* href 가 있는 항목만 만들어 둔 화면이다. 나머지는 맥락을 보여주려고
+     메뉴에 남겨두되 갈 곳이 없으므로 링크를 죽이고 흐리게 표시한다. */
   function linkAttrs(href) {
-    return isBuilt(href)
+    return href
       ? ' href="' + url(href) + '"'
       : ' href="#" class="is-na" title="이번 목업 범위 밖" aria-disabled="true"';
   }
 
-  function findSection(page) {
-    for (var i = 0; i < SECTIONS.length; i++) {
-      var s = SECTIONS[i];
-      for (var g = 0; g < s.groups.length; g++) {
-        for (var j = 0; j < s.groups[g].items.length; j++) {
-          if (s.groups[g].items[j].key === page) return s;
-        }
+  function findMenu(page) {
+    for (var c = 0; c < CONSOLES.length; c++) {
+      var menus = CONSOLES[c].menus;
+      for (var m = 0; m < menus.length; m++) {
+        if (menus[m].key === page) return { cons: CONSOLES[c], menu: menus[m] };
       }
     }
-    return SECTIONS[0];
+    return { cons: CONSOLES[0], menu: null };
   }
 
-  /* 점포 선택기는 전역이다 (화면-구조.md). 어떤 화면에 있든 조회 범위는 여기서 읽는다. */
+  /* 점포 선택기는 전역이다 (STAFF-8). 어떤 화면에 있든 조회 범위는 여기서 읽는다. */
   var SCOPES = [
     { label: "전체 11개점", meta: "직영 4 · 가맹 7" },
     { label: "직영 4개점", meta: "㈜한강상회 직영" },
@@ -310,66 +288,98 @@
     { label: "온기식당 둔산점", meta: "가맹 · 미납 1건" }
   ];
 
+  /* 서비스 바로가기 (슬라이드 16 ③). 부가서비스는 구독 상품이라 2차다. */
+  var SERVICES = [
+    { id: "erp", label: "ERP", meta: "BP Master 기준" },
+    { id: "platform", label: "Platform", meta: "플랫폼 관리자 콘솔" },
+    { id: null, label: "부가서비스", meta: "구독한 상품 — 2차 범위" }
+  ];
+
   function topnavHTML(page) {
-    var cur = findSection(page);
-    var links = SECTIONS.map(function (s) {
-      return "<a" + linkAttrs(firstHref(s)) +
-        (s.id === cur.id ? ' aria-current="true"' : "") + ">" + s.text + "</a>";
-    }).join("");
+    var cur = findMenu(page);
     return (
       '<header class="topnav">' +
       '<button class="iconbtn navtoggle" type="button" aria-label="메뉴 열기" aria-expanded="false" data-icon="menu" data-icon-size="18"></button>' +
       '<a class="brand" href="' + url("index.html") + '">' + mark(30) +
       '<span class="brand__name">WHALE <span>ERP</span></span></a>' +
-      '<nav class="topnav__sections" aria-label="섹션">' + links + "</nav>" +
-      '<div class="topnav__end">' +
+      /* BP 고정 옵션 (슬라이드 16 ②) — 모든 검색 옵션이 여기 고른 것으로 고정된다. */
       '<button class="scopebtn" type="button" aria-haspopup="listbox" aria-expanded="false">' +
       "<b>㈜한강상회</b><span class=\"sep\">·</span><span class=\"scopebtn__val\">전체 11개점</span>" +
       ic("selector", 14) + "</button>" +
+      '<div class="topnav__end">' +
+      '<button class="svcbtn" type="button" aria-haspopup="listbox" aria-expanded="false">' +
+      ic("grid", 15) + '<b class="svcbtn__val">' + cur.cons.text + "</b>" + ic("selector", 14) + "</button>" +
       '<button class="iconbtn" type="button" aria-label="알림 3건" data-dot="1" data-icon="bell" data-icon-size="18"></button>' +
       '<button class="iconbtn" type="button" aria-label="도움말" data-icon="help" data-icon-size="18"></button>' +
-      '<span class="avatar" title="정하윤 · BP Master">정</span>' +
+      /* MY PAGE 는 이름을 눌러 들어간다 (슬라이드 4). 1팀 영역이다. */
+      '<button class="mebtn" type="button" aria-haspopup="menu" aria-expanded="false">' +
+      '<span class="avatar">정</span><span class="mebtn__name">정하윤</span>' +
+      ic("selector", 14) + "</button>" +
       "</div></header>"
     );
   }
 
-  function firstHref(section) {
-    return section.groups[0].items[0].href;
+  function badge(text, kind) {
+    return '<span class="side__tag side__tag--' + kind + '">' + text + "</span>";
   }
 
-  function sideHTML(page, sub) {
-    var cur = findSection(page);
-    var html = '<aside class="side" id="side" aria-label="' + cur.text + ' 화면">';
-    cur.groups.forEach(function (g) {
-      html += '<div class="side__group"><div class="side__label">' + g.label + "</div>";
-      g.items.forEach(function (it) {
-        var on = it.key === page;
-        var end = it.count
-          ? '<span class="side__count' + (it.tone ? " side__count--" + it.tone : "") + '">' + it.count + "</span>"
-          : '<span class="side__route">' + it.route + "</span>";
-        var na = !isBuilt(it.href);
-        html +=
-          '<a class="side__item' + (na ? " is-na" : "") + '" href="' + (na ? "#" : url(it.href)) + '"' +
-          (na ? ' aria-disabled="true" title="이번 목업 범위 밖"' : "") +
-          (on ? ' aria-current="page"' : "") + ">" +
-          '<span class="side__text">' + it.text + "</span>" + end + "</a>";
-        if (on && it.sub) {
-          html += '<div class="side__sub">';
-          it.sub.forEach(function (s, i) {
-            /* sub 는 해시(#contracts)로도, 파일명(staff-detail.html)으로도 가리킬 수 있다. */
-            var son = sub ? s.href.indexOf("#" + sub) > -1 || s.href === sub : i === 0;
-            html +=
-              "<a" + linkAttrs(s.href) + (son ? ' aria-current="page"' : "") + ">" +
-              "<span>" + s.text + "</span>" +
-              '<span class="side__route">' + s.route + "</span></a>";
-          });
-          html += "</div>";
-        }
-      });
-      html += "</div>";
+  /* 오른쪽 끝에 붙는 것 — 차수가 1차가 아니면 차수, 아니면 라우트를 적는다. */
+  function itemEnd(it, inherited) {
+    var ph = it.phase || inherited;
+    if (ph) return badge(ph + "차", ph === "1.5" ? "half" : "second");
+    return it.mock ? badge("목업", "mock") : "";
+  }
+
+  /* Depth 1 자신은 화면이 아니다. 아래에 만들어 둔 화면이 있으면 그 첫 화면으로 보낸다. */
+  function menuHref(m) {
+    if (m.href) return m.href;
+    var hit = (m.items || []).filter(function (i) { return i.href && !i.mock; })[0];
+    return hit ? hit.href : "";
+  }
+
+  function menuHTML(m, on, sub) {
+    var mh = menuHref(m);
+    var html =
+      '<a class="side__item' + (mh ? "" : " is-na") + '"' +
+      (mh ? ' href="' + url(mh) + '"' : ' href="#" aria-disabled="true" title="이번 목업 범위 밖"') +
+      (on ? ' aria-current="page"' : "") + ">" +
+      '<span class="side__text">' + m.text + "</span>" +
+      (m.team ? badge(m.team, m.team === "1팀" ? "t1" : "t3") : "") +
+      (m.phase ? badge(m.phase + "차", m.phase === "1.5" ? "half" : "second") : "") +
+      "</a>";
+    if (!on || !m.items) return html;
+
+    html += '<div class="side__sub">';
+    m.items.forEach(function (it) {
+      var ion = !!sub && (it.href === sub || (it.sub || []).some(function (s) { return s.href === sub; }));
+      html +=
+        "<a" + linkAttrs(it.href) + (ion ? ' aria-current="page"' : "") + ">" +
+        "<span>" + it.text + "</span>" + itemEnd(it, m.phase) + "</a>";
+      if (ion && it.sub) {
+        html += '<div class="side__sub side__sub--deep">';
+        it.sub.forEach(function (s) {
+          html +=
+            "<a" + linkAttrs(s.href) + (s.href === sub ? ' aria-current="page"' : "") + ">" +
+            "<span>" + s.text + "</span>" +
+            '<span class="side__route">' + s.route + "</span></a>";
+        });
+        html += "</div>";
+      }
     });
-    /* PLAN 사용량은 늘 바닥에 붙는다. 점포 추가가 막히는 이유가 여기 먼저 보여야 한다. */
-    html +=
+    return html + "</div>";
+  }
+
+  function sideBodyHTML(cons, page, sub) {
+    var html = '<div class="side__group"><div class="side__label">' + cons.text + " · " + cons.meta + "</div>";
+    cons.menus.forEach(function (m) {
+      html += menuHTML(m, m.key === page, sub);
+    });
+    return html + "</div>" + sideFootHTML();
+  }
+
+  /* PLAN 사용량은 늘 바닥에 붙는다. 점포 추가가 막히는 이유가 여기 먼저 보여야 한다. */
+  function sideFootHTML() {
+    return (
       '<div class="side__foot">' +
       "<h3>PLAN 사용량<span class=\"badge badge--dark\">FRANCHISE</span></h3>" +
       '<div class="usage">' +
@@ -378,8 +388,13 @@
       usageRow("부가서비스", "24건", 0, false) +
       "</div>" +
       '<div class="usage__row"><span>08월 청구 예정</span><b>₩2,184,000</b></div>' +
-      "</div></aside>";
-    return html;
+      "</div>"
+    );
+  }
+
+  function sideHTML(page, sub) {
+    return '<aside class="side" id="side" aria-label="메뉴">' +
+      sideBodyHTML(findMenu(page).cons, page, sub) + "</aside>";
   }
 
   function usageRow(label, val, pct, full) {
@@ -389,9 +404,9 @@
     );
   }
 
-  /* ---------- 점포 선택기 팝오버 ---------- */
-  function wireScope() {
-    var btn = document.querySelector(".scopebtn");
+  /* ---------- 팝오버 ----------
+     상단의 세 버튼(점포 선택기 · 서비스 바로가기 · MY PAGE)이 같은 것을 쓴다. */
+  function wirePop(btn, align, build, onPick) {
     if (!btn) return;
     var pop = null;
     function close() {
@@ -401,34 +416,80 @@
     btn.addEventListener("click", function (e) {
       e.stopPropagation();
       if (pop) return close();
-      var val = btn.querySelector(".scopebtn__val").textContent.trim();
       pop = document.createElement("div");
       pop.className = "pop";
-      pop.setAttribute("role", "listbox");
-      pop.innerHTML =
-        '<div class="pop__label">조회 범위</div>' +
-        SCOPES.map(function (s) {
-          return '<button type="button" role="option" aria-selected="' + (s.label === val) + '">' +
-            "<span><b>" + s.label + "</b><br><span class=\"subtle\" style=\"font-size:11.5px\">" + s.meta + "</span></span>" +
-            (s.label === val ? ic("check", 14) : "") + "</button>";
-        }).join("") +
-        '<hr><a href="#" class="is-na" aria-disabled="true">' + ic("plus", 14) + "점포 등록</a>";
+      pop.innerHTML = build();
       document.body.appendChild(pop);
       var r = btn.getBoundingClientRect();
       pop.style.top = r.bottom + 6 + "px";
-      pop.style.right = window.innerWidth - r.right + "px";
+      if (align === "left") pop.style.left = r.left + "px";
+      else pop.style.right = window.innerWidth - r.right + "px";
       btn.setAttribute("aria-expanded", "true");
       hydrateIcons(pop);
-      pop.querySelectorAll("button[role=option]").forEach(function (o) {
-        o.addEventListener("click", function () {
-          btn.querySelector(".scopebtn__val").textContent = o.querySelector("b").textContent;
-          close();
+      if (onPick) {
+        pop.querySelectorAll("button[role=option]").forEach(function (o, i) {
+          o.addEventListener("click", function () { onPick(i, o); close(); });
         });
-      });
+      }
       pop.addEventListener("click", function (ev) { ev.stopPropagation(); });
     });
     document.addEventListener("click", close);
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
+  }
+
+  function optionHTML(label, meta, on, dead) {
+    return '<button type="button" ' + (dead ? 'disabled ' : 'role="option" ') +
+      'aria-selected="' + !!on + '">' +
+      "<span><b>" + label + "</b><br><span class=\"subtle\" style=\"font-size:11.5px\">" + meta + "</span></span>" +
+      (on ? ic("check", 14) : "") + "</button>";
+  }
+
+  function wireScope() {
+    var btn = document.querySelector(".scopebtn");
+    if (!btn) return;
+    var val = function () { return btn.querySelector(".scopebtn__val").textContent.trim(); };
+    wirePop(btn, "left", function () {
+      return '<div class="pop__label">조회 범위</div>' +
+        SCOPES.map(function (s) { return optionHTML(s.label, s.meta, s.label === val()); }).join("") +
+        '<hr><a href="#" class="is-na" aria-disabled="true">' + ic("plus", 14) + "점포 등록</a>";
+    }, function (i) {
+      btn.querySelector(".scopebtn__val").textContent = SCOPES[i].label;
+    });
+  }
+
+  /* 서비스를 바꾸면 좌측 Navigation 이 통째로 바뀐다 (슬라이드 16 ①). */
+  function wireService(page, sub) {
+    var btn = document.querySelector(".svcbtn");
+    var side = document.getElementById("side");
+    if (!btn || !side) return;
+    var val = function () { return btn.querySelector(".svcbtn__val").textContent.trim(); };
+    wirePop(btn, "right", function () {
+      return '<div class="pop__label">서비스 바로가기</div>' +
+        SERVICES.map(function (s) {
+          return optionHTML(s.label, s.meta, s.label === val(), !s.id);
+        }).join("");
+    }, function (i) {
+      var s = SERVICES[i];
+      if (!s.id) return;
+      btn.querySelector(".svcbtn__val").textContent = s.label;
+      var cons = CONSOLES.filter(function (c) { return c.id === s.id; })[0];
+      side.innerHTML = sideBodyHTML(cons, page, sub);
+      hydrateIcons(side);
+    });
+  }
+
+  function wireMe() {
+    var btn = document.querySelector(".mebtn");
+    wirePop(btn, "right", function () {
+      return '<div class="pop__head">' +
+        '<span class="avatar">정</span>' +
+        "<div><b>정하윤</b><span>BP Master · ㈜한강상회</span></div>" +
+        '<span class="side__tag side__tag--t1">1팀</span></div>' +
+        '<div class="pop__label">MY PAGE</div>' +
+        '<a href="#" class="is-na" aria-disabled="true">관리자 정보 관리</a>' +
+        '<a href="#" class="is-na" aria-disabled="true">비밀번호 변경</a>' +
+        '<hr><a href="#" class="is-na" aria-disabled="true">' + ic("logout", 14) + "로그아웃</a>";
+    });
   }
 
   /* ---------- 탭 ---------- */
@@ -504,6 +565,8 @@
     }
     hydrateIcons(document);
     wireScope();
+    wireService(page, document.body.dataset.sub);
+    wireMe();
     wireTabs();
     wireStates();
     wireDrawer();

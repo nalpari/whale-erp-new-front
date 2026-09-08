@@ -7,7 +7,7 @@
     <link rel="icon" href="assets/img/favicon.svg" />
     <link rel="stylesheet" href="assets/whale.css" />
   </head>
-  <body data-page="staff">
+  <body data-page="index">
     <!-- WHALE ERP 1차 목업 허브
          디자인은 design시안/BO 의 "SHIP" 을 그대로 쓴다.
          내용은 manyfast 문서(PRD·요구사항·기능·스펙)를 기준으로 맞췄다.
@@ -24,7 +24,7 @@
           <h1 class="t-h1">WHALE ERP 1차 목업</h1>
           <span class="badge badge--preview">회의용</span>
           <div class="titlebar__end">
-            <span class="filters__count">영역 <b>1</b>/6 · 화면 <b>7</b> · 쟁점 <b>8</b>/10 확정</span>
+            <span class="filters__count">영역 <b>1</b>/6 · 화면 <b>7</b> · 쟁점 <b>8</b>/11 확정</span>
           </div>
         </div>
 
@@ -36,13 +36,86 @@
               <p class="band__desc">
                 이 페이지는 <b>영역 목록</b>만 다룬다. 화면과 쟁점은 각 영역의 <b>개요</b>에 있고
                 여기에는 건수만 둔다. 영역이 늘어도 표에 한 줄씩만 붙는다.
+                아래 두 표는 <b>메뉴구조도 v0.9</b>(26/08/19)의 업무 분배를 따른다 — 우리가 <b>3팀</b>이다.
               </p>
             </div>
           </div>
 
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
-              <h2 class="t-h2">영역</h2>
+              <h2 class="t-h2">1팀</h2>
+              <span class="badge badge--quiet">2차 제외 · 19건</span>
+            </div>
+            <div class="panel">
+              <div class="tblwrap">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th scope="col">위치</th>
+                      <th scope="col">영역</th>
+                      <th scope="col" class="n">1차</th>
+                      <th scope="col" class="n">1.5차</th>
+                      <th scope="col">남는 항목</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="subtle">① BP 전체</td>
+                      <td class="k">MY PAGE</td>
+                      <td class="n"><b>3</b></td>
+                      <td class="n nil">—</td>
+                      <td>관리자 정보 관리 · 비밀번호 변경 · 로그아웃</td>
+                    </tr>
+                    <tr>
+                      <td class="subtle">①</td>
+                      <td class="k">기초정보관리</td>
+                      <td class="n nil">—</td>
+                      <td class="n">1</td>
+                      <td>자재 정보 관리</td>
+                    </tr>
+                    <tr>
+                      <td class="subtle">①</td>
+                      <td class="k">점포관리</td>
+                      <td class="n"><b>1</b></td>
+                      <td class="n">3</td>
+                      <td>점포 정보 관리 <span class="subtle">/ 시설물·장비 · 점검표 템플릿 · 점검 결과</span></td>
+                    </tr>
+                    <tr>
+                      <td class="subtle">①</td>
+                      <td class="k">환경설정</td>
+                      <td class="n"><b>4</b></td>
+                      <td class="n nil">—</td>
+                      <td>관리자 · 권한 · 공통코드 · 휴일 관리</td>
+                    </tr>
+                    <tr>
+                      <td class="subtle">② Platform</td>
+                      <td class="k">BP 정보관리</td>
+                      <td class="n"><b>2</b></td>
+                      <td class="n nil">—</td>
+                      <td>BP Master · 휴면 BP 정보 관리</td>
+                    </tr>
+                    <tr>
+                      <td class="subtle">②</td>
+                      <td class="k">시스템관리</td>
+                      <td class="n"><b>5</b></td>
+                      <td class="n nil">—</td>
+                      <td>관리자 · 관리자 권한 · 프로그램 · 공통코드 · 휴일 관리</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="panel__note">
+                2차 5건은 뺐다 — 기초정보관리의 상품·가격·카테고리, 점포관리의 계약서 템플릿·계약서 관리.
+                <b>맞닿는 곳이 셋이다.</b> 로그인 후 Home 은 우리 것인데 거기서 뻗는 MY PAGE 가 1팀 것이고,
+                권한 관리도 1팀이라 개인정보를 누가 고치는지는 우리끼리 못 정한다.
+                상단 범위 선택기가 읽는 점포 데이터를 만드는 화면도 1팀에 있다.
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">3팀</h2>
               <span class="badge badge--quiet">1차 범위 6개</span>
             </div>
             <div class="panel">
@@ -66,7 +139,7 @@
                       <td class="mono">staff/</td>
                       <td>웹</td>
                       <td class="n">7</td>
-                      <td class="n"><b>8</b> / 10</td>
+                      <td class="n"><b>8</b> / 11</td>
                       <td>
                         <span class="badge badge--ok">작성 완료</span>
                         <a class="tbtn" href="staff/overview.html">개요</a>
