@@ -556,7 +556,7 @@ table {
   align-items: center;
   gap: 2px;
 }
-.side__row .side__item {
+.side__row > a {
   flex: 1;
   min-width: 0;
 }
@@ -579,6 +579,11 @@ table {
 }
 .side__toggle[aria-expanded="true"] svg {
   transform: rotate(180deg);
+}
+/* Depth 2 의 여닫기는 한 치수 작다. */
+.side__sub .side__toggle {
+  width: 20px;
+  height: 20px;
 }
 @media (prefers-reduced-motion: reduce) {
   .side__toggle svg {

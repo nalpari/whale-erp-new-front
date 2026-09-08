@@ -164,17 +164,17 @@
 
         { key: "staff", text: "직원관리", team: "3팀", items: [
           { text: "영역 개요", href: "staff/overview.html", mock: 1 },
-          { text: "직원 정보 관리", href: "staff/index.html", sub: [
+          { key: "staff-info", text: "직원 정보 관리", href: "staff/index.html", sub: [
             { text: "직원 목록", href: "staff/index.html", route: "/staff" },
             { text: "직원 상세", href: "staff/detail.html", route: "/staff/[staffId]" },
             { text: "가입 연결 확인", href: "staff/invites-holds.html", route: "/staff/invites/holds" }
           ]},
-          { text: "근로계약 관리", href: "staff/index.html#contracts", sub: [
+          { key: "staff-contracts", text: "근로계약 관리", href: "staff/index.html#contracts", sub: [
             { text: "계약 목록", href: "staff/index.html#contracts", route: "/staff/contracts" },
             { text: "계약 초안 작성", href: "staff/contracts-new.html", route: "/staff/contracts/new" },
             { text: "계약 상세", href: "staff/contracts-detail.html", route: "/staff/contracts/[id]" }
           ]},
-          { text: "급여명세서 관리", href: "staff/index.html#payroll", sub: [
+          { key: "staff-payrolls", text: "급여명세서 관리", href: "staff/index.html#payroll", sub: [
             { text: "명세서 목록", href: "staff/index.html#payroll", route: "/staff/payrolls" },
             { text: "명세서 검토", href: "staff/payrolls-detail.html", route: "/staff/payrolls/[id]" }
           ]},
@@ -341,8 +341,16 @@
     try { sessionStorage.setItem(OPEN_KEY, JSON.stringify(list)); } catch (e) {}
   }
 
-  function menuHTML(m, on, sub, isOpen) {
+  function toggleHTML(key, label, isOpen) {
+    return '<button class="side__toggle" type="button" data-menu="' + key +
+      '" aria-expanded="' + !!isOpen + '" aria-label="' + label + ' 하위 메뉴">' +
+      ic("down", 14) + "</button>";
+  }
+
+  /* 하위가 있으면 어느 층이든 같은 규칙으로 여닫는다. */
+  function menuHTML(m, on, sub, open) {
     var mh = menuHref(m);
+    var isOpen = open.indexOf(m.key) > -1;
     var html =
       '<div class="side__row">' +
       '<a class="side__item' + (mh ? "" : " is-na") + '"' +
@@ -352,30 +360,30 @@
       (m.team ? badge(m.team, m.team === "1팀" ? "t1" : "t3") : "") +
       (m.phase ? badge(m.phase + "차", m.phase === "1.5" ? "half" : "second") : "") +
       "</a>" +
-      (m.items
-        ? '<button class="side__toggle" type="button" data-menu="' + m.key +
-          '" aria-expanded="' + !!isOpen + '" aria-label="' + m.text + ' 하위 메뉴">' +
-          ic("down", 14) + "</button>"
-        : "") +
+      (m.items ? toggleHTML(m.key, m.text, isOpen) : "") +
       "</div>";
     if (!m.items) return html;
 
     html += '<div class="side__sub" data-sub-of="' + m.key + '"' + (isOpen ? "" : " hidden") + ">";
     m.items.forEach(function (it) {
       var ion = !!sub && (it.href === sub || (it.sub || []).some(function (s) { return s.href === sub; }));
+      var deepOpen = !!it.sub && (ion || open.indexOf(it.key) > -1);
       html +=
+        '<div class="side__row">' +
         "<a" + linkAttrs(it.href) + (ion ? ' aria-current="page"' : "") + ">" +
-        "<span>" + it.text + "</span>" + itemEnd(it, m.phase) + "</a>";
-      if (ion && it.sub) {
-        html += '<div class="side__sub side__sub--deep">';
-        it.sub.forEach(function (s) {
-          html +=
-            "<a" + linkAttrs(s.href) + (s.href === sub ? ' aria-current="page"' : "") + ">" +
-            "<span>" + s.text + "</span>" +
-            '<span class="side__route">' + s.route + "</span></a>";
-        });
-        html += "</div>";
-      }
+        "<span>" + it.text + "</span>" + itemEnd(it, m.phase) + "</a>" +
+        (it.sub ? toggleHTML(it.key, it.text, deepOpen) : "") +
+        "</div>";
+      if (!it.sub) return;
+      html += '<div class="side__sub side__sub--deep" data-sub-of="' + it.key + '"' +
+        (deepOpen ? "" : " hidden") + ">";
+      it.sub.forEach(function (s) {
+        html +=
+          "<a" + linkAttrs(s.href) + (s.href === sub ? ' aria-current="page"' : "") + ">" +
+          "<span>" + s.text + "</span>" +
+          '<span class="side__route">' + s.route + "</span></a>";
+      });
+      html += "</div>";
     });
     return html + "</div>";
   }
@@ -390,7 +398,7 @@
         '<div class="side__group"><div class="side__label">' + c.text + " · " + c.meta +
         (c.gated ? '<span class="side__tag side__tag--gate">권한 필요</span>' : "") + "</div>";
       c.menus.forEach(function (m) {
-        html += menuHTML(m, m.key === page, sub, open.indexOf(m.key) > -1);
+        html += menuHTML(m, m.key === page, sub, open);
       });
       html += "</div>";
     });
