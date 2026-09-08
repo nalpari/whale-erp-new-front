@@ -27,7 +27,7 @@
           <div class="band band--info">
             <span class="band__ic" data-icon="info" data-icon-size="20"></span>
             <div class="band__body">
-              <div class="band__title">이 영역에서 결정할 것은 12건, 그중 9건이 정해졌다</div>
+              <div class="band__title">이 영역에서 결정할 것은 12건, 그중 10건이 정해졌다</div>
               <p class="band__desc">
                 화면은 <b>manyfast 문서 기준</b>으로 그렸고, 기존 디자인 시안과 어긋나는 곳은 지우지 않고
                 보라색 쟁점 블록으로 남겼다. 각 쟁점은 해당 화면 안에도 같은 블록으로 붙어 있다.
@@ -135,7 +135,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
-              <span class="badge badge--preview">12건 · 확정 9 · 미정 3</span>
+              <span class="badge badge--preview">12건 · 확정 10 · 미정 2</span>
             </div>
 
             <div class="gap is-decided">
@@ -334,27 +334,47 @@
               </p>
             </div>
 
-            <div class="gap">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">STAFF-9</span>
                 <b>직원 개인정보를 관리자가 고칠 수 있는가</b>
+                <span class="gap__decided">확정 · 고치지 않는다 · 비밀번호는 초기화</span>
                 <span class="gap__ref">S-YWYTJY · S-PIXATL</span>
               </div>
               <div class="gap__opts">
-                <div class="gap__opt" data-side="a">
+                <div class="gap__opt is-dropped" data-side="a">
                   <div class="gap__label">A · 현장에서 필요하다</div>
-                  <p>앱을 쓰지 않는 직원, 관리자가 초안에 낸 오타, 퇴사자 정보 정정을 위해 <b>관리자가 대신 넣는다</b>.</p>
+                  <p>앱을 쓰지 않는 직원, 관리자가 초안에 낸 오타, 퇴사자 정보 정정을 위해 관리자가 대신 넣는다.</p>
                 </div>
-                <div class="gap__opt" data-side="b">
+                <div class="gap__opt is-picked" data-side="b">
                   <div class="gap__label">B · manyfast 문서 · 지금 화면</div>
-                  <p>관리자는 연락처·주소·비밀번호를 <b>대신 수정할 수 없고</b> 직원 상세에서 조회만 한다. 수정은 직원이 앱에서 한다.</p>
+                  <p>관리자는 대신 수정하지 않고 직원 상세에서 조회만 한다. 수정은 직원이 앱에서 한다.</p>
                 </div>
               </div>
               <p class="gap__note">
-                항목마다 주인이 다르다 — 이름·생년월일은 본인인증 확정값이라 아무도 못 바꾸고, 소속·고용형태는 근로계약으로만 바뀐다.
-                <b>휴대폰 번호는 초대 연결의 매칭 키</b>라 관리자가 손대면 STAFF-7 에서 정한 본인 확인 체계가 무너진다 — 바꾸려면 재초대다.
-                그래서 실제로 정할 것은 <b>가입을 마친 직원의 이메일·주소</b> 하나로 좁혀진다.
+                항목마다 주인이 다르고, 따져보니 정할 것은 <b>이메일·주소</b> 하나로 좁혀졌다 —
+                이름·생년월일은 본인인증 확정값이라 아무도 못 바꾸고, 소속·고용형태는 근로계약으로만 바뀌며,
+                휴대폰 번호는 초대 연결의 매칭 키라 손대면 STAFF-7 의 본인 확인 체계가 무너진다.
+                그 하나도 문서가 이미 답했다 — “가입이 완료되는 순간 <b>인적사항을 반영해</b> 자동 발송한다”라
+                계약서에 들어가는 값은 직원이 넣은 것이다. 주소가 계약서와 4대보험에 쓰인다는 것은
+                오히려 본인이 넣어야 할 이유다.
               </p>
+              <div class="gap__block">
+                <b>대신 비밀번호 초기화를 넣는다.</b>
+                <ul>
+                  <li>
+                    관리자가 새 비밀번호를 <b>정하지 않는다</b>. 등록된 휴대전화로 재설정 링크를 보낼 뿐이라
+                    관리자는 값을 알지 못한다. 아는 순간 그 계정으로 한 일이 누구의 것인지 흐려진다.
+                  </li>
+                  <li>
+                    보내는 번호는 초대 연결에 쓴 그 번호다(STAFF-7). 번호가 틀렸다면 초기화가 아니라 재초대다.
+                  </li>
+                  <li>
+                    A 안의 근거였던 “앱을 쓰지 않는 직원”은 성립하지 않는다 — <b>계약 날인 자체가 앱에서</b>
+                    일어나므로 앱을 쓰지 않으면 채용이 끝나지 않는다. 막히는 것은 대개 로그인이고, 그것이 초기화로 풀린다.
+                  </li>
+                </ul>
+              </div>
             </div>
 
             <div class="gap is-decided">
