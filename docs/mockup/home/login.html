@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>로그인 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body class="mkt" data-root="../">
+    <!-- 로그인 · 가입 · 계정 찾기 · /login · S-DKPXLC
+         HOME-2 확정 : 메뉴구조도대로 셋만 둔다. 시안의 "초대 확인"은 뺐다 —
+         초대를 받는 사람은 직원이고 직원은 직원 전용 앱으로 들어간다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="auth">
+      <div class="auth__form" id="main">
+        <a class="brand" href="index.html">
+          <span class="wm brand__mark" data-icon="whale" data-icon-size="32"></span>
+          <span class="brand__name">WHALE <span>ERP</span></span>
+        </a>
+
+        <div class="stack">
+          <h1 class="t-md">점포 운영을 한 곳에서</h1>
+          <p class="lead">직원·근무·급여를 하나의 Platform에서 관리합니다.</p>
+        </div>
+
+        <div class="gap is-decided" style="margin-bottom: var(--s-4)">
+          <div class="gap__head">
+            <span class="gap__no">HOME-2</span>
+            <b>LOGIN 아래에 무엇을 둘 것인가</b>
+            <span class="gap__decided">확정 · 메뉴구조도대로 셋</span>
+            <span class="gap__ref">S-DKPXLC</span>
+          </div>
+          <p class="gap__note" style="margin: 0">
+            <b>로그인 · 사업자 회원가입 · 아이디/비밀번호 찾기</b> 셋만 둔다. 시안에 있던 “초대 확인”은
+            뺐다 — 초대를 받아 들어오는 사람은 직원이고, 직원은 이 화면이 아니라
+            <b>직원 전용 앱</b>으로 들어간다. 가맹점 초대 수락은 초대 링크로 직접 들어오는
+            별도 주소(<span class="mono">/invite/[token]</span>)라 로그인 화면의 탭이 아니다.
+          </p>
+        </div>
+
+        <div class="tabs" data-tabs="au">
+          <button data-tab="login" aria-selected="true">로그인</button>
+          <button data-tab="signup" aria-selected="false" id="signup">가입</button>
+          <button data-tab="find" aria-selected="false" id="find">계정 찾기</button>
+        </div>
+
+        <div id="au">
+          <div data-panel="login" class="stack--lg" style="display: flex; flex-direction: column">
+            <div class="field">
+              <label for="email">이메일</label>
+              <input class="input" id="email" type="email" placeholder="name@company.com" autocomplete="username" />
+            </div>
+            <div class="field">
+              <label for="pw">비밀번호</label>
+              <input class="input" id="pw" type="password" autocomplete="current-password" />
+              <span class="help">비밀번호를 잊으셨다면 <b>계정 찾기</b> 탭으로 갑니다.</span>
+            </div>
+            <button class="btn btn--primary btn--lg btn--block" type="button">로그인</button>
+            <p class="note">
+              <span data-icon="shield" data-icon-size="14"></span>
+              <span>직원은 이 화면이 아니라 <b>직원 전용 앱</b>으로 로그인합니다.</span>
+            </p>
+          </div>
+
+          <div data-panel="signup" hidden class="stack--lg" style="display: flex; flex-direction: column">
+            <p class="subtle">
+              가입 경로는 BP 유형에 따라 다릅니다. 가맹점은 본사 초대로만 가입할 수 있습니다.
+            </p>
+            <div class="stack">
+              <button class="card card--hover" type="button" style="text-align: left; cursor: pointer">
+                <div class="spread">
+                  <span class="t-h2">일반 BP</span>
+                  <span class="badge badge--quiet">직접 가입</span>
+                </div>
+                <p class="subtle">
+                  식당·카페 등을 직접 운영하는 사업자. 가입 후 점포를 등록하고 요금 PLAN을 고릅니다.
+                </p>
+              </button>
+              <button class="card card--hover" type="button" style="text-align: left; cursor: pointer">
+                <div class="spread">
+                  <span class="t-h2">본사 BP</span>
+                  <span class="badge badge--quiet">직접 가입</span>
+                </div>
+                <p class="subtle">
+                  가맹점을 두는 프랜차이즈 본사. 가입 후 가맹점을 초대하고 기초정보를 내려보냅니다.
+                </p>
+              </button>
+              <button class="card" type="button" disabled style="text-align: left">
+                <div class="spread">
+                  <span class="t-h2">가맹점</span>
+                  <span class="badge badge--warn">초대 전용</span>
+                </div>
+                <p class="subtle">
+                  본사가 보낸 초대로만 가입합니다. 문자로 받은 <b>초대 링크</b>를 열면 그 자리에서 가입이 시작됩니다.
+                </p>
+              </button>
+            </div>
+          </div>
+
+          <div data-panel="find" hidden class="stack--lg" style="display: flex; flex-direction: column">
+            <p class="subtle">
+              가입할 때 등록한 휴대전화로 본인확인을 하면 아이디를 알려 드리고 비밀번호를 다시 정합니다.
+            </p>
+            <div class="field">
+              <label for="fname">이름</label>
+              <input class="input" id="fname" placeholder="홍길동" />
+            </div>
+            <div class="field">
+              <label for="fphone">휴대전화</label>
+              <input class="input mono" id="fphone" placeholder="010-0000-0000" />
+              <span class="help">가입할 때 본인인증한 번호와 같아야 합니다.</span>
+            </div>
+            <button class="btn btn--primary btn--lg btn--block" type="button">본인확인 하기</button>
+            <p class="note">
+              <span data-icon="info" data-icon-size="14"></span>
+              <span>메뉴구조도에는 이 화면이 <b>LOGIN 아래 별도 항목</b>으로 잡혀 있습니다.</span>
+            </p>
+          </div>
+
+        </div>
+
+        <div class="mkt-foot__end" style="margin-top: auto; border: 0; padding: 0">
+          <span>© 2026 인터플러그</span>
+          <a class="tlink is-na" href="#" aria-disabled="true" style="color: var(--link-legal)">이용약관</a>
+          <a class="tlink is-na" href="#" aria-disabled="true" style="color: var(--link-legal)">개인정보처리방침</a>
+        </div>
+      </div>
+
+      <aside class="auth__aside">
+        <div class="auth__shot">
+          <img src="../assets/img/cover-morning.webp" alt="개점 전 카페 카운터" style="width: 100%; display: block" />
+        </div>
+        <div class="stack">
+          <span class="badge">운영 중 11개점 · 직원 63명</span>
+          <div class="t-sm">
+            채용은 계약서에서<br />시작합니다
+          </div>
+          <p style="font-size: 14px; color: var(--body); max-width: 42ch">
+            근로계약 초안을 저장하면 초대가 자동으로 나가고, 직원이 가입을 마치는 순간 계약서가
+            발송됩니다. 첫 출근 전에 계약이 맺어집니다.
+          </p>
+        </div>
+      </aside>
+    </div>
+    <script src="../assets/app.js"></script>
+  </body>
+</html>

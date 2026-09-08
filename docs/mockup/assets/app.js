@@ -144,7 +144,16 @@
     {
       id: "erp", text: "ERP", meta: "BP Master 기준",
       menus: [
-        { key: "home", text: "Home", team: "3팀" },
+        { key: "home", text: "Home", team: "3팀", items: [
+          { text: "영역 개요", href: "home/overview.html", mock: 1 },
+          { text: "로그인 후 홈", href: "home/signed-in.html" },
+          { key: "home-public", text: "로그인 전 화면", sub: [
+            { text: "로그인 전 홈", href: "home/index.html", route: "/" },
+            { text: "로그인 · 가입", href: "home/login.html", route: "/login" },
+            { text: "공지사항 · FAQ", href: "home/notices.html", route: "/notices" },
+            { text: "도입문의", href: "home/inquiry.html", route: "/inquiry" }
+          ]}
+        ]},
 
         { key: "master", text: "기초정보관리", team: "1팀", items: [
           { text: "상품 정보 관리", phase: "2" },

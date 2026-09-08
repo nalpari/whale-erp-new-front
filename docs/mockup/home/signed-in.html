@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>홈 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="home" data-sub="home/signed-in.html">
+    <!-- 로그인 후 홈 · / · S-TJRUBE
+         비로그인 홈과 주소가 같다. 로그인한 사람이 / 로 오면 이 화면이 나온다.
+         업무 범위 고정(상단 선택기)과 서비스 바로가기가 이 화면의 내용이다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <h1 class="t-h1">안녕하세요, 정하윤님</h1>
+          <span class="badge badge--quiet">BP Master</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">S-TJRUBE · /</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="band band--warn">
+            <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+            <div class="band__body">
+              <div class="band__title">업무 범위를 아직 고르지 않았습니다</div>
+              <p class="band__desc">
+                범위를 고르면 그 뒤의 모든 조회가 그 기준으로 맞춰집니다.
+                한 번 고르면 직접 바꾸실 때까지 그대로 유지됩니다.
+              </p>
+            </div>
+            <div class="band__act">
+              <button class="btn btn--primary" type="button">범위 고르기</button>
+            </div>
+          </div>
+
+          <div class="gap">
+            <div class="gap__head">
+              <span class="gap__no">HOME-4</span>
+              <b>범위를 안 고른 채로 업무에 들어갈 수 있는가</b>
+              <span class="gap__ref">S-TJRUBE</span>
+            </div>
+            <div class="gap__opts">
+              <div class="gap__opt" data-side="a">
+                <div class="gap__label">A · 먼저 고르게 막는다</div>
+                <p>범위를 고르기 전에는 아래 바로가기를 <b>잠근다</b>. 잘못된 범위로 조회하는 일이 없다.</p>
+              </div>
+              <div class="gap__opt" data-side="b">
+                <div class="gap__label">B · 안내만 하고 통과 · 이 화면</div>
+                <p>위 띠로 알리되 들어갈 수는 있다. 업무 화면 상단 선택기에서 그때 고른다.</p>
+              </div>
+            </div>
+            <p class="gap__note">
+              문서는 “선택하라는 안내와 선택 진입점을 표시한다”라고만 하고 막으라고는 하지 않는다.
+              다만 고정한 점포가 비활성화되면 선택이 풀리므로 <b>범위 없는 상태가 실제로 생긴다</b>.
+              그 상태로 직원 목록에 들어가면 무엇을 보여줄지가 이 쟁점의 알맹이다.
+            </p>
+          </div>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">서비스 바로가기</h2>
+              <span class="badge badge--quiet">권한과 구독을 모두 만족하는 것만</span>
+            </div>
+            <div class="grid grid--3">
+              <a class="mk-card" href="../staff/index.html">
+                <span class="mk-card__route">/staff</span>
+                <span class="mk-card__name">ERP</span>
+                <span class="mk-card__desc">
+                  직원·근무·급여를 비롯한 점포 운영 업무. 좌측 메뉴의 ERP 무리가 여기에 해당합니다.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--ok">이용 중</span>
+                </span>
+              </a>
+              <span class="mk-card is-na">
+                <span class="mk-card__route">구독 상품</span>
+                <span class="mk-card__name">부가서비스</span>
+                <span class="mk-card__desc">
+                  POS·KIOSK·주문처럼 구독한 상품이 여기 나타납니다. 구독하지 않은 상품은 숨깁니다.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--quiet">2차 범위</span>
+                </span>
+              </span>
+              <span class="mk-card is-na">
+                <span class="mk-card__route">/platform</span>
+                <span class="mk-card__name">Platform 콘솔</span>
+                <span class="mk-card__desc">
+                  회원·BP·상품을 관리하는 플랫폼 관리자 화면. 권한이 없으면 이 칸 자체가 나오지 않습니다.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--quiet">권한 없음</span>
+                </span>
+              </span>
+            </div>
+            <p class="gap__note" style="margin-top: var(--s-4)">
+              역할이 여럿이면 <b>가진 역할의 허용 메뉴를 모두 합쳐</b> 보여준다. 권한이 없거나 구독하지 않은
+              서비스는 흐리게가 아니라 아예 감춘다 — 위 두 칸은 그 자리를 설명하려고 남긴 것이다.
+            </p>
+          </section>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">업무 범위</h2>
+              <span class="badge badge--quiet">고르면 상단 선택기에 그대로 표시된다</span>
+            </div>
+            <div class="panel">
+              <div class="panel__body">
+                <p class="subtle" style="margin-bottom: var(--s-4)">
+                  문서는 <b>BP 를 먼저 고른 뒤 그 BP 의 점포를 고른다</b>고 했다. 지금 상단 선택기는
+                  BP 가 <span class="mono">㈜한강상회</span> 로 고정된 텍스트라 BP 단계가 없다 —
+                  직원 영역의 범위 선택 쟁점과 함께 정할 일이다.
+                </p>
+                <div class="stack">
+                  <button class="card card--hover" type="button" style="text-align: left; cursor: pointer">
+                    <div class="spread">
+                      <span class="t-h2">전체 11개점</span>
+                      <span class="badge badge--quiet">직영 4 · 가맹 7</span>
+                    </div>
+                    <p class="subtle">모든 점포를 한 번에 봅니다.</p>
+                  </button>
+                  <button class="card card--hover" type="button" style="text-align: left; cursor: pointer">
+                    <div class="spread">
+                      <span class="t-h2">직영 4개점</span>
+                      <span class="badge badge--quiet">㈜한강상회 직영</span>
+                    </div>
+                    <p class="subtle">본사가 직접 운영하는 점포만 봅니다.</p>
+                  </button>
+                  <button class="card card--hover" type="button" style="text-align: left; cursor: pointer">
+                    <div class="spread">
+                      <span class="t-h2">가맹 7개점</span>
+                      <span class="badge badge--quiet">모리커피 · 온기식당</span>
+                    </div>
+                    <p class="subtle">가맹으로 운영하는 점포만 봅니다.</p>
+                  </button>
+                </div>
+              </div>
+              <div class="panel__note">
+                고정한 점포가 비활성화되거나 권한이 사라지면 선택을 풀고 다시 고르도록 안내한다.
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">계정</h2>
+              <span class="badge badge--warn">1팀</span>
+            </div>
+            <div class="panel">
+              <div class="panel__body">
+                <p class="subtle">
+                  관리자 정보 관리 · 비밀번호 변경 · 로그아웃은 상단 오른쪽 <b>이름</b>을 눌러 엽니다.
+                  본인 계정만 다룰 수 있고 다른 사람의 계정 정보에는 들어갈 수 없습니다.
+                </p>
+                <div class="panel__note" style="margin-top: var(--s-4)">
+                  MY PAGE 는 메뉴구조도에서 <b>1팀</b> 영역이다. 우리는 이 화면에서 그리로 나가는 길만 만든다.
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+  </body>
+</html>
