@@ -52,25 +52,29 @@
                 </div>
               </div>
 
-              <div class="gap">
+              <div class="gap is-decided">
                 <div class="gap__head">
                   <span class="gap__no">HOME-4</span>
                   <b>범위를 안 고른 채로 업무에 들어갈 수 있는가</b>
+                  <span class="gap__decided">확정 · 늘 “전체”로 시작한다</span>
                   <span class="gap__ref">S-TJRUBE</span>
                 </div>
                 <div class="gap__opts">
-                  <div class="gap__opt" data-side="a">
+                  <div class="gap__opt is-dropped" data-side="a">
                     <div class="gap__label">A · 먼저 고르게 막는다</div>
-                    <p>범위를 고르기 전에는 바로가기와 현황을 <b>잠근다</b>. 잘못된 범위로 조회하는 일이 없다.</p>
+                    <p>범위를 고르기 전에는 바로가기와 현황을 잠근다.</p>
                   </div>
-                  <div class="gap__opt" data-side="b">
-                    <div class="gap__label">B · 안내만 하고 통과 · 이 화면</div>
-                    <p>범위 없는 상태면 현황 자리에 <b>범위 선택 안내</b>만 띄우고, 들어갈 수는 있다.</p>
+                  <div class="gap__opt is-picked" data-side="b">
+                    <div class="gap__label">B · 물음 자체를 없앤다 · 이 화면</div>
+                    <p>로그인하면 늘 <b>“전체”</b>가 골라져 있다. 범위 없는 상태가 애초에 생기지 않는다.</p>
                   </div>
                 </div>
                 <p class="gap__note">
-                  이 화면은 범위가 <b>전체 11개점</b>으로 고정된 상태를 그렸다. 고정한 점포가 비활성화되면
-                  선택이 풀리므로 범위 없는 상태는 실제로 생기고, 그때 이 현황이 무엇을 보여줄지가 남는다.
+                  상단 선택기의 값을 <b>저장하지 않기로</b> 정하면서 이 물음이 사라졌다. 저장하지 않으니
+                  폐점이나 권한 회수로 무효가 될 값이 없고, 늘 “전체”에서 시작하니 고르지 않은 상태도 없다.
+                  이 화면이 <b>전체 11개점</b> 을 보여주는 것이 그래서 기본 모습이다.
+                  남는 것은 <b>점포를 아직 등록하지 않은 BP</b> 하나인데, 그때는 “범위를 고르세요”가 아니라
+                  “점포를 먼저 등록하세요”로 안내한다.
                 </p>
               </div>
 
