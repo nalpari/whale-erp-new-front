@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>문의 상세 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="community" data-sub="support/inquiry-detail.html">
+    <!-- 문의 상세·답변 · /platform/community/inquiries/[id] · S-GRDOPW
+         이 화면의 핵심은 답변과 내부 메모가 갈라져 있다는 것이다.
+         답변은 문의한 사람에게 그대로 가고, 메모는 운영자끼리만 본다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <a class="iconbtn" href="community.html#asks" aria-label="문의사항 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
+          <h1 class="t-h1">파트타이머 주휴수당이 계산되지 않습니다</h1>
+          <span class="badge badge--warn">답변 대기</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">S-GRDOPW · /platform/community/inquiries/[id]</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="grid grid--7-5">
+            <section class="stack--lg" style="display: flex; flex-direction: column">
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">문의 내용</h2>
+                  <span class="badge badge--quiet">직원·근로</span>
+                </div>
+                <div class="panel__body">
+                  <p style="color: var(--body); line-height: 1.7">
+                    파트타이머 배정숙 직원의 9월 급여명세서를 만들었는데 주휴수당이 0원으로 나옵니다.
+                    주 15시간 넘게 일했고 출퇴근 기록도 다 있는데 왜 안 잡히는지 모르겠습니다.
+                    확인 부탁드립니다.
+                  </p>
+                  <dl class="kv" style="margin-top: var(--s-5)">
+                    <dt>보낸 사람</dt>
+                    <dd>정하윤 · BP Master</dd>
+                    <dt>소속</dt>
+                    <dd>㈜한강상회</dd>
+                    <dt>접수 시각</dt>
+                    <dd class="mono">2026-09-04 10:32</dd>
+                  </dl>
+                </div>
+              </div>
+
+              <!-- 사용자에게 그대로 나가는 답변 -->
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">답변</h2>
+                  <span class="badge badge--info">문의한 사람에게 보입니다</span>
+                </div>
+                <div class="panel__body">
+                  <div class="field">
+                    <label for="ans">내용</label>
+                    <textarea class="textarea" id="ans" rows="8" placeholder="문의한 분이 그대로 읽습니다. 어떤 화면에서 무엇을 하면 되는지 적어 주세요."></textarea>
+                  </div>
+                  <div class="spread" style="margin-top: var(--s-4)">
+                    <p class="note" style="margin: 0">
+                      <span data-icon="info" data-icon-size="14"></span>
+                      <span>저장하면 상태가 <b>즉시 답변 완료</b>로 바뀌고 문의자에게 알림이 갑니다.</span>
+                    </p>
+                    <button class="btn btn--primary" type="button">답변 저장</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 운영자끼리만 보는 메모 -->
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">운영자 메모</h2>
+                  <span class="badge badge--risk">문의자에게 보이지 않습니다</span>
+                </div>
+                <div class="panel__body">
+                  <div class="field">
+                    <label for="memo">내부 기록</label>
+                    <textarea class="textarea" id="memo" rows="4">계약서에 소정근로시간이 주 14시간으로 들어가 있음. 실제 근무는 16시간대.
+계약을 새로 써야 주휴가 잡힘 — 개발팀 확인 완료. 답변에는 계약 수정 절차만 안내할 것.</textarea>
+                  </div>
+                  <div class="spread" style="margin-top: var(--s-4)">
+                    <span class="subtle" style="font-size: 12.5px">다른 운영자와 함께 봅니다</span>
+                    <button class="btn btn--secondary btn--sm" type="button">메모 저장</button>
+                  </div>
+                </div>
+                <div class="panel__note">
+                  답변과 메모를 <b>한 칸에 쓰지 않는다.</b> 섞이면 내부 판단이 그대로 문의자에게 나간다.
+                  화면에서 갈라 두는 것이 그것을 막는 유일한 방법이다.
+                </div>
+              </div>
+            </section>
+
+            <section class="stack--lg" style="display: flex; flex-direction: column">
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">보낸 곳</h2>
+                </div>
+                <div class="panel__body">
+                  <div class="rowmain" style="gap: var(--s-3)">
+                    <span class="avatar">정</span>
+                    <div class="rowmain__text">
+                      <b>정하윤</b>
+                      <span>BP Master · ㈜한강상회</span>
+                    </div>
+                  </div>
+                  <dl class="kv" style="margin-top: var(--s-4)">
+                    <dt>운영 점포</dt>
+                    <dd>11개점 <span class="subtle">직영 4 · 가맹 7</span></dd>
+                    <dt>요금 PLAN</dt>
+                    <dd>FRANCHISE</dd>
+                    <dt>이전 문의</dt>
+                    <dd>1건 <span class="subtle">답변 완료</span></dd>
+                  </dl>
+                </div>
+                <div class="panel__note">
+                  같은 사람이 전에 무엇을 물었는지 보이면 같은 답을 반복하지 않는다.
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">처리 이력</h2>
+                </div>
+                <div class="steps">
+                  <div class="step is-done">
+                    <span class="step__ic" data-icon="inbox" data-icon-size="15"></span>
+                    <div class="step__body">
+                      <span class="step__title">접수</span>
+                      <span class="step__meta">09-04 10:32 · 운영 알림 발송됨</span>
+                    </div>
+                  </div>
+                  <div class="step is-done">
+                    <span class="step__ic" data-icon="eye" data-icon-size="15"></span>
+                    <div class="step__body">
+                      <span class="step__title">확인</span>
+                      <span class="step__meta">09-04 11:15 · 이서준</span>
+                    </div>
+                  </div>
+                  <div class="step is-wait">
+                    <span class="step__ic" data-icon="message" data-icon-size="15"></span>
+                    <div class="step__body">
+                      <span class="step__title">답변</span>
+                      <span class="step__meta">저장하면 이 단계가 닫힌다</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="panel__note">
+                  여러 운영자가 같은 문의에 동시에 답변을 저장하면 <b>덮어쓰지 않고</b> 최신 내용을
+                  다시 확인하게 한다.
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+  </body>
+</html>

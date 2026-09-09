@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>공지 편집 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="community" data-sub="support/notice-edit.html">
+    <!-- 공지·FAQ 편집 · /platform/community/notices/[id] · S-GRDOPW
+         공지와 FAQ 가 같은 화면을 쓴다. 다른 것은 FAQ 가 카테고리를 갖는다는 점뿐이다.
+         이 화면의 알맹이는 본문이 아니라 노출 대상이다 — 여기서 고른 것이 다른 화면을 정한다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <a class="iconbtn" href="community.html" aria-label="커뮤니티관리로" data-icon="arrowleft" data-icon-size="18"></a>
+          <h1 class="t-h1">9월 정기 점검 안내</h1>
+          <span class="badge badge--ok">게시</span>
+          <div class="titlebar__end">
+            <span class="mono subtle" style="font-size: 12px">최근 수정 09-05 14:20 · 이서준</span>
+            <button class="btn btn--secondary btn--sm" type="button">임시저장</button>
+            <button class="btn btn--primary btn--sm" type="button">게시</button>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="grid grid--7-5">
+            <section class="panel">
+              <div class="panel__head">
+                <h2 class="t-h2">내용</h2>
+                <div class="panel__end">
+                  <div class="seg">
+                    <button type="button" aria-pressed="true">공지사항</button>
+                    <button type="button" aria-pressed="false">FAQ</button>
+                  </div>
+                </div>
+              </div>
+              <div class="panel__body">
+                <div class="field">
+                  <label for="ti">제목</label>
+                  <input class="input" id="ti" value="9월 정기 점검 안내 (09-14 02:00~05:00)" />
+                </div>
+                <div class="field" style="margin-top: var(--s-3)">
+                  <label for="bo">본문</label>
+                  <textarea class="textarea" id="bo" rows="12">9월 14일(일) 새벽 2시부터 5시까지 정기 점검이 있습니다.
+
+점검 시간에는 관리자 웹과 직원 전용 앱을 모두 사용할 수 없습니다.
+출퇴근 등록 앱은 오프라인으로 기록한 뒤 점검이 끝나면 자동으로 반영됩니다.
+
+점검이 일찍 끝나면 공지 없이 서비스를 재개합니다.</textarea>
+                </div>
+                <div class="field" style="margin-top: var(--s-3)">
+                  <label for="fi">첨부파일</label>
+                  <input class="input" id="fi" type="file" />
+                  <span class="help">이미지와 PDF 를 올릴 수 있습니다.</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="stack--lg" style="display: flex; flex-direction: column">
+              <!-- 이 화면의 알맹이. 여기서 고른 것이 로그인 전 홈과 고객지원을 가른다. -->
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">노출 대상</h2>
+                  <span class="badge badge--quiet">여러 개 고를 수 있음</span>
+                </div>
+                <div class="panel__body">
+                  <div class="stack">
+                    <button class="check" type="button" role="checkbox" aria-checked="true">
+                      <span>비회원 <span class="subtle">— 로그인 전 홈에 공개된다</span></span>
+                    </button>
+                    <button class="check" type="button" role="checkbox" aria-checked="true">
+                      <span>회원 <span class="subtle">— 로그인한 모든 사용자</span></span>
+                    </button>
+                    <button class="check" type="button" role="checkbox" aria-checked="true">
+                      <span>BP <span class="subtle">— 사업자 관리자</span></span>
+                    </button>
+                    <button class="check" type="button" role="checkbox" aria-checked="false">
+                      <span>점포 <span class="subtle">— 점포 단위 관리자</span></span>
+                    </button>
+                    <button class="check" type="button" role="checkbox" aria-checked="false">
+                      <span>부가서비스 <span class="subtle">— 해당 상품 구독자</span></span>
+                    </button>
+                  </div>
+                  <div class="band band--warn" style="margin-top: var(--s-4)">
+                    <span class="band__ic" data-icon="eye" data-icon-size="18"></span>
+                    <div class="band__body">
+                      <div class="band__title">비회원이 포함되어 로그인 전 홈에 공개됩니다</div>
+                      <p class="band__desc">
+                        누구나 볼 수 있습니다. 점포 이름이나 담당자 연락처가 본문에 있는지 확인하세요.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div class="panel__note">
+                  <b>전체</b>는 비회원을 포함한 모든 대상을 뜻한다. 비회원이 빠지면 로그인 전 홈에는 서지 않고
+                  해당 대상의 고객지원에만 선다.
+                </div>
+              </div>
+
+              <div class="gap">
+                <div class="gap__head">
+                  <span class="gap__no">SUPPORT-2</span>
+                  <b>대상을 어디까지 고르게 할 것인가</b>
+                  <span class="gap__ref">S-GRDOPW</span>
+                </div>
+                <div class="gap__opts">
+                  <div class="gap__opt" data-side="a">
+                    <div class="gap__label">A · 유형까지 · 이 화면</div>
+                    <p>다섯 유형을 체크한다. “BP 전체”가 가장 좁은 단위다.</p>
+                  </div>
+                  <div class="gap__opt" data-side="b">
+                    <div class="gap__label">B · 개별 대상까지</div>
+                    <p>유형 아래에 <b>특정 BP·점포를 집어</b> 고른다. 검색기가 이 패널 안에 또 들어온다.</p>
+                  </div>
+                </div>
+                <p class="gap__note">
+                  문서의 “비회원, 회원, BP, 점포 및 부가서비스 <b>단위로</b> 지정”에서 단위가 무엇을 뜻하는지가 갈린다.
+                  점검 안내처럼 특정 점포에만 보내야 하는 공지가 실제로 있는지가 판단 기준이다.
+                </p>
+              </div>
+
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">변경 이력</h2>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <tbody>
+                      <tr>
+                        <td class="mono">09-05 14:20</td>
+                        <td>이서준</td>
+                        <td>본문 수정</td>
+                      </tr>
+                      <tr>
+                        <td class="mono">09-05 11:02</td>
+                        <td>이서준</td>
+                        <td>임시저장 → 게시</td>
+                      </tr>
+                      <tr>
+                        <td class="mono">09-04 17:44</td>
+                        <td>이서준</td>
+                        <td>작성</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__note">
+                  둘이 동시에 고치면 저장이 부딪힌다. 그때는 덮어쓰지 않고 <b>최신 내용을 다시 확인</b>하게 한다.
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+  </body>
+</html>

@@ -211,12 +211,18 @@
         ]},
 
         { key: "support", text: "고객지원", team: "3팀", items: [
+          { text: "영역 개요", href: "support/overview.html", mock: 1 },
           { text: "부가서비스 구독 관리", phase: "2" },
           { text: "구독료 청구 및 납부 현황", phase: "2" },
           { text: "결제수단 관리", phase: "2" },
           { text: "정산 현황 조회", phase: "2" },
-          { text: "공지사항" },
-          { text: "문의하기" }
+          { text: "공지사항", href: "support/index.html" },
+          { text: "문의하기", href: "support/index.html" }
+        ]},
+
+        { key: "notify", text: "운영 알림", team: "3팀", items: [
+          { text: "영역 개요", href: "notify/overview.html", mock: 1 },
+          { text: "알림함", href: "notify/index.html" }
         ]}
       ]
     },
@@ -250,10 +256,19 @@
           { text: "휴일 관리" }
         ]},
         { key: "community", text: "커뮤니티관리", team: "3팀", items: [
-          { text: "공지사항" },
-          { text: "FAQ" },
-          { text: "문의사항" },
-          { text: "도입문의" }
+          { key: "cm-notices", text: "공지사항", href: "support/community.html", sub: [
+            { text: "공지 목록", href: "support/community.html", route: "/platform/community" },
+            { text: "공지·FAQ 편집", href: "support/notice-edit.html", route: "…/notices/[id]" }
+          ]},
+          { text: "FAQ", href: "support/community.html#faq" },
+          { key: "cm-asks", text: "문의사항", href: "support/community.html#asks", sub: [
+            { text: "문의 목록", href: "support/community.html#asks", route: "…/inquiries" },
+            { text: "문의 상세·답변", href: "support/inquiry-detail.html", route: "…/inquiries/[id]" }
+          ]},
+          { key: "cm-leads", text: "도입문의", href: "support/community.html#leads", sub: [
+            { text: "도입문의 목록", href: "support/community.html#leads", route: "…/leads" },
+            { text: "도입문의 상세", href: "support/lead-detail.html", route: "…/leads/[id]" }
+          ]}
         ]}
       ]
     }

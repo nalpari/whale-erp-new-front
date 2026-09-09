@@ -2800,6 +2800,15 @@ a.tile:hover {
   color: inherit !important;
 }
 
+/* 읽은 알림 — 미확인과 눈으로 갈린다. 문서가 "시각적으로 구분"을 요구했다. */
+.tbl tr.is-read .k a {
+  color: var(--muted-tert);
+  font-weight: 400;
+}
+.tbl tr.is-read td {
+  color: var(--muted);
+}
+
 /* FAQ 아코디언 — 문서가 "답변은 목록에서 펼치는 아코디언"이라고 정했다.
    상세 페이지로 넘기지 않는다는 뜻이라 details/summary 를 그대로 쓴다. */
 .acc {

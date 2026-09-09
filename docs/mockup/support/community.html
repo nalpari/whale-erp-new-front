@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>커뮤니티관리 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="community" data-sub="support/community.html">
+    <!-- 커뮤니티관리 · /platform/community · S-GRDOPW
+         플랫폼 관리자 전용이다. 권한이 없으면 메뉴 자체가 없고, 주소로 들어와도 막는다.
+         네 갈래(공지사항·FAQ·문의사항·도입문의)를 탭으로 나눈다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <h1 class="t-h1">커뮤니티관리</h1>
+          <span class="badge badge--quiet">플랫폼 관리자 전용</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">S-GRDOPW · /platform/community</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="band band--info">
+            <span class="band__ic" data-icon="shield" data-icon-size="20"></span>
+            <div class="band__body">
+              <div class="band__title">여기서 정한 노출 대상이 다른 화면을 정한다</div>
+              <p class="band__desc">
+                공지와 FAQ 에 <b>비회원</b>을 넣으면 로그인 전 홈까지 나가고, <b>BP</b> 나 <b>점포</b>를 넣으면
+                그 사용자의 고객지원에만 선다. 한 곳에서 쓰고 대상만 달리 붙이는 구조다.
+              </p>
+            </div>
+          </div>
+
+          <div class="tabs" data-tabs="cm">
+            <button data-tab="notices" aria-selected="true">공지사항 <span class="count">12</span></button>
+            <button data-tab="faq" aria-selected="false" id="faq">FAQ <span class="count">18</span></button>
+            <button data-tab="asks" aria-selected="false" id="asks">문의사항 <span class="count">7</span></button>
+            <button data-tab="leads" aria-selected="false" id="leads">도입문의 <span class="count">4</span></button>
+          </div>
+
+          <div id="cm">
+            <div data-panel="notices">
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">공지사항</h2>
+                  <div class="panel__end">
+                    <a class="btn btn--primary btn--sm" href="notice-edit.html">
+                      <span data-icon="plus" data-icon-size="14"></span>새 공지
+                    </a>
+                  </div>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl">
+                    <thead>
+                      <tr>
+                        <th scope="col">제목</th>
+                        <th scope="col">노출 대상</th>
+                        <th scope="col">상태</th>
+                        <th scope="col">게시일</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="k"><a class="tlink" href="notice-edit.html">9월 정기 점검 안내 (09-14 02:00~05:00)</a></td>
+                        <td>
+                          <span class="badge badge--quiet">비회원</span>
+                          <span class="badge badge--quiet">회원</span>
+                          <span class="badge badge--quiet">BP</span>
+                        </td>
+                        <td><span class="badge badge--ok">게시</span></td>
+                        <td class="mono">2026-09-05</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">근로계약 전자날인 기능이 열렸습니다</a></td>
+                        <td>
+                          <span class="badge badge--quiet">BP</span>
+                          <span class="badge badge--quiet">점포</span>
+                        </td>
+                        <td><span class="badge badge--ok">게시</span></td>
+                        <td class="mono">2026-09-01</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">㈜한강상회 가맹점 대상 정산 주기 변경</a></td>
+                        <td><span class="badge badge--info">BP 1곳</span></td>
+                        <td><span class="badge badge--ok">게시</span></td>
+                        <td class="mono">2026-08-28</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">10월 요금 PLAN 개편 사전 안내</a></td>
+                        <td><span class="subtle">—</span></td>
+                        <td><span class="badge badge--quiet">임시저장</span></td>
+                        <td class="subtle">—</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">8월 점검 안내 (종료)</a></td>
+                        <td><span class="badge badge--quiet">비회원</span></td>
+                        <td><span class="badge badge--quiet">비공개</span></td>
+                        <td class="mono">2026-08-10</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__note">
+                  상태는 <b>임시저장 · 게시 · 비공개</b> 셋이다. 지운 것도 복구할 수 있게 보관하고 사용자 화면에서만 감춘다.
+                  세 번째 줄의 <span class="mono">BP 1곳</span> 은 개별 대상 지정이라 <b>SUPPORT-2</b> 가 B 로 정해져야 성립한다.
+                </div>
+              </div>
+            </div>
+
+            <div data-panel="faq" hidden>
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">FAQ</h2>
+                  <div class="panel__end">
+                    <div class="seg">
+                      <button type="button" aria-pressed="true">전체</button>
+                      <button type="button" aria-pressed="false">직원·근로</button>
+                      <button type="button" aria-pressed="false">요금·구독</button>
+                      <button type="button" aria-pressed="false">점포·설비</button>
+                    </div>
+                    <a class="btn btn--primary btn--sm" href="notice-edit.html#faq">
+                      <span data-icon="plus" data-icon-size="14"></span>새 FAQ
+                    </a>
+                  </div>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl">
+                    <thead>
+                      <tr>
+                        <th scope="col">질문</th>
+                        <th scope="col">카테고리</th>
+                        <th scope="col">노출 대상</th>
+                        <th scope="col">상태</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">가입은 누가 할 수 있나요?</a></td>
+                        <td>가입·계정</td>
+                        <td><span class="badge badge--quiet">비회원</span></td>
+                        <td><span class="badge badge--ok">게시</span></td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">직원도 이 사이트로 로그인하나요?</a></td>
+                        <td>가입·계정</td>
+                        <td><span class="badge badge--quiet">비회원</span></td>
+                        <td><span class="badge badge--ok">게시</span></td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">근로계약서를 보냈는데 직원이 못 받았다고 합니다</a></td>
+                        <td>직원·근로</td>
+                        <td><span class="badge badge--quiet">BP</span></td>
+                        <td><span class="badge badge--ok">게시</span></td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">퇴사한 직원의 급여명세서는 어떻게 보나요</a></td>
+                        <td>직원·근로</td>
+                        <td>
+                          <span class="badge badge--quiet">BP</span>
+                          <span class="badge badge--quiet">점포</span>
+                        </td>
+                        <td><span class="badge badge--ok">게시</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__note">
+                  FAQ 는 공지와 <b>같은 편집 화면</b>을 쓴다. 다른 것은 카테고리를 갖는다는 점뿐이고,
+                  노출 대상과 게시 상태는 그대로다. 비회원이 붙은 둘이 로그인 전 홈에 서 있는 그 FAQ 다.
+                </div>
+              </div>
+            </div>
+
+            <div data-panel="asks" hidden>
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">문의사항</h2>
+                  <div class="panel__end">
+                    <div class="seg">
+                      <button type="button" aria-pressed="true">답변 대기 <span class="count">3</span></button>
+                      <button type="button" aria-pressed="false">답변 완료</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl">
+                    <thead>
+                      <tr>
+                        <th scope="col">제목</th>
+                        <th scope="col">보낸 곳</th>
+                        <th scope="col">분류</th>
+                        <th scope="col">상태</th>
+                        <th scope="col">접수</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="k"><a class="tlink" href="inquiry-detail.html">파트타이머 주휴수당이 계산되지 않습니다</a></td>
+                        <td>㈜한강상회 · 정하윤</td>
+                        <td>직원·근로</td>
+                        <td><span class="badge badge--warn">답변 대기</span></td>
+                        <td class="mono">09-04</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">가맹점 초대 메일이 반송됩니다</a></td>
+                        <td>㈜한강상회 · 정하윤</td>
+                        <td>가입·계정</td>
+                        <td><span class="badge badge--ok">답변 완료</span></td>
+                        <td class="mono">08-30</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">KIOSK 구독을 늘리고 싶습니다</a></td>
+                        <td>온기식당 · 배정숙</td>
+                        <td>요금·구독</td>
+                        <td><span class="badge badge--warn">답변 대기</span></td>
+                        <td class="mono">09-02</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__note">
+                  답변을 저장하면 상태가 <b>즉시 답변 완료</b>로 바뀐다. 따로 상태를 고르지 않는다.
+                </div>
+              </div>
+            </div>
+
+            <div data-panel="leads" hidden>
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">도입문의</h2>
+                  <div class="panel__end">
+                    <div class="seg">
+                      <button type="button" aria-pressed="true">답변 대기 <span class="count">2</span></button>
+                      <button type="button" aria-pressed="false">답변 완료</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl">
+                    <thead>
+                      <tr>
+                        <th scope="col">담당자</th>
+                        <th scope="col">사업자</th>
+                        <th scope="col">운영 형태</th>
+                        <th scope="col">상태</th>
+                        <th scope="col">접수</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="k"><a class="tlink" href="lead-detail.html">조민석 · 010-7741-2093</a></td>
+                        <td>모리커피 청담</td>
+                        <td>가맹점</td>
+                        <td><span class="badge badge--warn">답변 대기</span></td>
+                        <td class="mono">09-06</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">윤서린 · 010-3320-8814</a></td>
+                        <td>㈜세움에프앤비</td>
+                        <td>프랜차이즈 본사</td>
+                        <td><span class="badge badge--warn">답변 대기</span></td>
+                        <td class="mono">09-03</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">한도윤 · 010-9902-1177</a></td>
+                        <td>도윤상회</td>
+                        <td>단일 점포</td>
+                        <td><span class="badge badge--ok">답변 완료</span></td>
+                        <td class="mono">08-27</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__note">
+                  <b>로그인하지 않은 방문자</b>가 남긴 건이다. 문의사항과 달리 계정이 없으므로 담당자 정보와
+                  사업자 정보가 그 자체로 신원이 된다. 개인정보는 상담 완료일로부터 <b>1년</b> 뒤 파기한다.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+  </body>
+</html>
