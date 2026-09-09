@@ -157,6 +157,24 @@ def check_amounts(files):
                                   format(expect, ","), r[i_net]))
     return out
 
+def check_gap_state(files):
+    """쟁점 블록의 확정·보류 표시와 색(클래스)이 어긋나지 않는지.
+       gap__decided 가 있으면 is-decided, gap__held 가 있으면 is-held 여야 한다."""
+    out=[]
+    for f in files:
+        s=open(f, encoding="utf-8").read()
+        for m in re.finditer(r'<div class="(gap(?: [^"]*)?)">\s*<div class="gap__head">(.*?)</div>', s, re.S):
+            cls, head = m.group(1), m.group(2)
+            no = re.search(r'gap__no">([^<]+)<', head)
+            no = no.group(1) if no else "?"
+            if 'gap__decided' in head and 'is-decided' not in cls:
+                out.append("%s: %s 확정인데 is-decided 가 없다 (미확정 색으로 보인다)" % (f, no))
+            if 'gap__held' in head and 'is-held' not in cls:
+                out.append("%s: %s 보류인데 is-held 가 없다" % (f, no))
+            if 'is-decided' in cls and 'gap__decided' not in head:
+                out.append("%s: %s is-decided 인데 확정 표시가 없다" % (f, no))
+    return out
+
 def check_decisions(files):
     """확정된 결정과 어긋나는 값이 화면 본문에 남아 있는지.
        쟁점 블록(.gap) 안은 채택 안 한 A 안을 일부러 남겨 두므로 검사에서 뺀다.
@@ -187,6 +205,7 @@ def main():
             ("층 원칙", check_layers(files)),
             ("금액 산술", check_amounts(files)),
             ("확정값 위반", check_decisions(files)),
+            ("쟁점 상태·색", check_gap_state(files)),
             ("문장 중복", check_dupes(files))]
     bad=0
     print("목업 파일 %d개 검사\n" % len(files))
