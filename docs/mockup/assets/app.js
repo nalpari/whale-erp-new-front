@@ -594,7 +594,7 @@
   var BELL = [
     { tone: "risk", kind: "계약 거부", title: "서지안 님이 근로계약서를 거부했습니다", meta: "사유 · 근무 시작일이 협의한 날과 다릅니다", when: "09-06 09:12", href: "staff/contracts-detail.html" },
     { tone: "ok", kind: "계약 날인", title: "문태경 님이 근로계약서에 날인했습니다", meta: "온기식당 판교점 · 정직원", when: "09-05 18:40", href: "staff/contracts-detail.html" },
-    { tone: "info", kind: "문의 답변", title: "문의에 답변이 등록되었습니다", meta: "가맹점 초대 메일이 반송됩니다", when: "09-02 11:05", href: "support/index.html" }
+    { tone: "info", kind: "문의 답변", title: "문의에 답변이 등록되었습니다", meta: "가맹점 초대 메일이 반송됩니다", when: "09-02 11:05", href: "support/inquiry-mine.html" }
   ];
 
   function wireBell() {

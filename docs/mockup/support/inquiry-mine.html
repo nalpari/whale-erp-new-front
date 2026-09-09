@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>내 문의 상세 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="support" data-sub="support/index.html">
+    <!-- 내 문의 상세 · /support/inquiries/[id] · S-ITFILU
+         BP 사용자가 보는 쪽이다. 운영자가 보는 문의 상세(inquiry-detail.html)와 다르게
+         내부 메모가 없고 답변만 보인다. 답변 이력은 모두 남는다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <a class="iconbtn" href="inquiries.html" aria-label="내 문의로" data-icon="arrowleft" data-icon-size="18"></a>
+          <h1 class="t-h1">가맹점 초대 메일이 반송됩니다</h1>
+          <span class="badge badge--ok">답변 완료</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">S-ITFILU · /support/inquiries/[id]</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="grid grid--7-5">
+            <section class="stack--lg" style="display: flex; flex-direction: column">
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">내가 보낸 문의</h2>
+                  <div class="panel__end">
+                    <span class="mono subtle" style="font-size: 12px">08-30 16:12 · 점포·설비</span>
+                  </div>
+                </div>
+                <div class="panel__body" style="font-size: 14px; line-height: 1.7">
+                  <p>점포관리에서 가맹점 두 곳에 초대 메일을 보냈는데 둘 다 반송됩니다. 주소는 맞게 넣었고, 같은 주소로 제가 직접 보내면 잘 갑니다.</p>
+                  <p>반송 사유가 "발신 도메인 인증 실패"라고 나옵니다.</p>
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">답변</h2>
+                  <span class="badge badge--quiet">2건</span>
+                </div>
+                <div class="panel__body" style="font-size: 14px; line-height: 1.7">
+                  <div class="subtle mono" style="font-size: 12px">09-02 11:05 · WHALE ERP 운영팀</div>
+                  <p>원인이 확인되어 조치했습니다. 가맹점 메일 서버가 발신 도메인 검증을 새로 켜면서 반송된 것으로, 발신 도메인 인증 설정을 갱신했습니다. 점포관리에서 <b>초대 다시 보내기</b>를 눌러 주세요.</p>
+                  <hr style="border: 0; border-top: 1px solid var(--hairline); margin: var(--s-4) 0" />
+                  <div class="subtle mono" style="font-size: 12px">08-31 09:40 · WHALE ERP 운영팀</div>
+                  <p>접수했습니다. 반송 사유를 확인하고 있으며 내일 안에 답변드리겠습니다.</p>
+                </div>
+                <div class="panel__note">
+                  답변이 달릴 때마다 알림함과 이메일로 알려 준다. 운영자의 내부 메모는 여기 보이지 않는다.
+                </div>
+              </div>
+            </section>
+
+            <section class="stack--lg" style="display: flex; flex-direction: column">
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">진행</h2>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense tbl--fit">
+                    <tbody>
+                      <tr>
+                        <td class="mono">09-02 11:05</td>
+                        <td><span class="badge badge--ok">답변 완료</span></td>
+                      </tr>
+                      <tr>
+                        <td class="mono">08-31 09:40</td>
+                        <td><span class="badge badge--info">처리 중</span></td>
+                      </tr>
+                      <tr>
+                        <td class="mono">08-30 16:12</td>
+                        <td><span class="badge badge--warn">접수</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__note">
+                  답변이 부족하면 <b>새 문의</b>로 다시 묻는다. 닫힌 문의에 이어 쓰는 기능은 1차에 없다.
+                </div>
+              </div>
+              <a class="btn btn--secondary btn--block" href="index.html">새 문의</a>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+  </body>
+</html>
