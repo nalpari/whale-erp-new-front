@@ -677,6 +677,66 @@
     if (btn) btn.click();
   }
 
+  /* ---------- 페이저 (목록 공통 규칙) ----------
+     data-pager="총건수" 가 붙은 목록 아래에 선다. 페이지당 건수는 20·50·100 중 고르고
+     고른 값은 기억해 모든 목록이 같이 쓴다. 목업이라 줄은 늘 1페이지 표본이고 숫자만 바뀐다. */
+  var SIZE_KEY = "whale-mockup-pagesize";
+  var SIZES = [20, 50, 100];
+  function pageSize() {
+    var v = 0;
+    try { v = parseInt(localStorage.getItem(SIZE_KEY) || "", 10); } catch (e) {}
+    return SIZES.indexOf(v) >= 0 ? v : SIZES[0];
+  }
+  function pagerHTML(total, unit, cur, size) {
+    var last = Math.max(1, Math.ceil(total / size));
+    cur = Math.min(cur, last);
+    var from = total ? (cur - 1) * size + 1 : 0, to = Math.min(cur * size, total);
+    var nums = [];
+    for (var i = 1; i <= last; i++) {
+      if (last <= 7 || i <= 2 || i > last - 2 || Math.abs(i - cur) <= 1) nums.push(i);
+      else if (nums[nums.length - 1] !== "…") nums.push("…");
+    }
+    var nav = nums.map(function (n) {
+      if (n === "…") return '<span class="pager__gap">…</span>';
+      return '<button type="button" data-go="' + n + '"' + (n === cur ? ' aria-current="page"' : "") + ">" + n + "</button>";
+    }).join("");
+    return '<span class="pager__count">총 <b>' + total + "</b>" + unit + " · " + from + "–" + to + "</span>" +
+      '<label class="pager__size">페이지당 <select class="select select--sm">' +
+      SIZES.map(function (n) { return "<option" + (n === size ? " selected" : "") + ">" + n + "</option>"; }).join("") +
+      "</select></label>" +
+      '<nav class="pager__nav" aria-label="페이지">' +
+      '<button type="button" data-go="' + (cur - 1) + '" aria-label="이전"' + (cur <= 1 ? " disabled" : "") + ' data-icon="arrowleft" data-icon-size="14"></button>' +
+      nav +
+      '<button type="button" data-go="' + (cur + 1) + '" aria-label="다음"' + (cur >= last ? " disabled" : "") + ' data-icon="arrowright" data-icon-size="14"></button>' +
+      "</nav>";
+  }
+  function wirePager() {
+    var lists = document.querySelectorAll("[data-pager]");
+    if (!lists.length) return;
+    function render(el, cur) {
+      var bar = el.nextElementSibling;
+      if (!bar || !bar.classList.contains("pager")) {
+        el.insertAdjacentHTML("afterend", '<div class="pager"></div>');
+        bar = el.nextElementSibling;
+      }
+      bar.dataset.cur = cur;
+      bar.innerHTML = pagerHTML(parseInt(el.dataset.pager, 10) || 0, el.dataset.pagerUnit || "건", cur, pageSize());
+      hydrateIcons(bar);
+    }
+    lists.forEach(function (el) { render(el, 1); });
+    document.addEventListener("click", function (e) {
+      var b = e.target.closest(".pager [data-go]");
+      if (!b || b.disabled) return;
+      render(b.closest(".pager").previousElementSibling, parseInt(b.dataset.go, 10));
+    });
+    document.addEventListener("change", function (e) {
+      var sel = e.target.closest(".pager__size select");
+      if (!sel) return;
+      try { localStorage.setItem(SIZE_KEY, sel.value); } catch (err) {}
+      lists.forEach(function (el) { render(el, 1); });
+    });
+  }
+
   function wireDrawer() {
     var t = document.querySelector(".navtoggle");
     var side = document.getElementById("side");
@@ -714,6 +774,7 @@
     wireTabs();
     wireStates();
     wireDrawer();
+    wirePager();
     openTabFromHash();
     window.addEventListener("hashchange", openTabFromHash);
   }

@@ -2824,6 +2824,76 @@ a.tile:hover {
   color: var(--muted);
 }
 
+/* 페이저 — 목록 공통 규칙. 20건을 넘을 수 있는 목록은 모두 이걸 단다.
+   페이지당 건수는 사용자가 고르고, 한 번 고르면 모든 목록이 같이 따른다. */
+.pager {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-3) var(--s-5);
+  border-top: 1px solid var(--hairline);
+  font-size: 12.5px;
+  color: var(--muted-tert);
+}
+.pager__count {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.pager__count b {
+  color: var(--ink);
+  font-weight: 500;
+}
+.pager__size {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.pager__size .select {
+  width: auto;
+  height: 28px;
+  padding: 0 26px 0 8px;
+  font-size: 12px;
+  background-position: right 6px center;
+}
+.pager__nav {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.pager__nav button {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border-radius: var(--r-sm);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.pager__nav button:hover:not([disabled]) {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+.pager__nav button[aria-current="page"] {
+  background: var(--ink);
+  color: var(--on-dark);
+}
+.pager__nav button[disabled] {
+  opacity: 0.35;
+  cursor: default;
+}
+.pager__gap {
+  padding: 0 4px;
+}
+/* FAQ 묶음 — 페이저가 붙을 자리를 만든다. 아코디언도 표와 같은 규칙으로 나눈다. */
+.acclist {
+  display: block;
+}
+
 /* FAQ 아코디언 — 문서가 "답변은 목록에서 펼치는 아코디언"이라고 정했다.
    상세 페이지로 넘기지 않는다는 뜻이라 details/summary 를 그대로 쓴다. */
 .acc {

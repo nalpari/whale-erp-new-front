@@ -211,6 +211,27 @@
             </div>
           </section>
 
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">목록 공통 규칙</h2>
+              <span class="badge badge--ok">확정</span>
+            </div>
+            <div class="panel">
+              <div class="panel__body">
+                <ul class="stack" style="margin: 0; padding-left: 18px">
+                  <li><b>20건을 넘을 수 있는 목록은 모두 페이지로 나눈다.</b> 직원·계약·명세서·TO-DO·알림·공지·FAQ·문의·도입문의 — 표든 아코디언이든 같다. FAQ 도 한 카테고리에 100건이 쌓이면 표와 다를 게 없다.</li>
+                  <li><b>페이지당 건수는 사용자가 고른다.</b> 20 · 50 · 100 중 하나이고, 한 번 고르면 모든 목록이 같이 따른다. 기본은 20.</li>
+                  <li><b>페이지 번호 방식</b>이다. 상세를 봤다가 돌아오면 같은 페이지로 온다. 무한 스크롤은 쓰지 않는다.</li>
+                  <li><b>홈에 얹힌 요약 표는 나누지 않는다.</b> 상위 몇 건만 보이고 “전체 보기”로 목록 화면에 넘긴다.</li>
+                </ul>
+              </div>
+              <div class="panel__note">
+                페이저는 <span class="mono">data-pager="총건수"</span> 하나로 붙는다. 목업이라 줄은 늘 1페이지 표본이고 숫자만 움직인다.
+                이 규칙은 manyfast 문서에 없어 PRD 기본사항에 보태야 한다.
+              </div>
+            </div>
+          </section>
+
         </div>
       </main>
     </div>
