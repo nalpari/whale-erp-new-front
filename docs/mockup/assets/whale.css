@@ -2904,6 +2904,36 @@ a.tile:hover {
   100% { box-shadow: 0 0 0 3px rgba(37, 99, 235, 0); }
 }
 
+/* 정책 — 영역 개요에서 manyfast 규칙·권한을 화면을 가르는 것만 추려 적는다. */
+.pol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.pol li {
+  display: flex;
+  gap: var(--s-3);
+  align-items: baseline;
+  padding: 8px var(--s-5);
+  border-top: 1px solid var(--hairline);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.pol li:first-child {
+  border-top: 0;
+}
+.pol__t {
+  flex: 1;
+  min-width: 0;
+}
+.pol__ref {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted-tert);
+  white-space: nowrap;
+}
+
 /* FAQ 아코디언 — 문서가 "답변은 목록에서 펼치는 아코디언"이라고 정했다.
    상세 페이지로 넘기지 않는다는 뜻이라 details/summary 를 그대로 쓴다. */
 .acc {

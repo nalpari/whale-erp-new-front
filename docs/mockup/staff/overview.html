@@ -134,6 +134,87 @@
 
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">정책</h2>
+              <span class="badge badge--quiet">31줄</span>
+              <span class="badge badge--warn">반영 대기 1</span>
+            </div>
+            <div class="grid grid--2" style="align-items: start">
+              <div class="panel">
+                <div class="panel__head">
+                  <h3 class="t-h3">누가 무엇을 한다</h3>
+                  <span class="badge badge--quiet">9</span>
+                </div>
+                <ul class="pol">
+                <li><span class="pol__t">초대·계약·스케줄·TO-DO·급여 모두 <b>BP 마스터·BP 관리자·가맹마스터·가맹관리자</b>의 일이고 자기 소속 범위 안에서만이다. 권한이 없으면 진입점을 숨긴다.</span><span class="pol__ref">F-XJXAQO · F-GLGEOF · F-NUXMTT · F-XXYSNZ</span></li>
+                <li><span class="pol__t">마스터는 자기 <b>전체 소속 범위</b>, 관리자는 <b>점포 범위</b>에서 일한다.</span><span class="pol__ref">F-NUXMTT</span></li>
+                <li><span class="pol__t">플랫폼 마스터·관리자는 사업자의 근무·급여를 <b>조회만</b> 하고 고치지 못한다.</span><span class="pol__ref">F-NUXMTT · F-XXYSNZ</span></li>
+                <li><span class="pol__t">계약 상태를 손으로 바꾸는 것은 <b>BP 마스터와 가맹마스터</b>만 한다.</span><span class="pol__ref">S-XDBBDP</span></li>
+                <li><span class="pol__t">직원은 앱에서 자기 것만 본다. 스케줄을 고치지 못하고, TO-DO 를 만들거나 지우지 못하며, 배정된 것의 상태만 바꾼다.</span><span class="pol__ref">S-WPGUXX · S-NIAGGB</span></li>
+                <li><span class="pol__t">소속 추가 확인 대상의 실명·다른 소속·계약·급여·출퇴근은 관리자에게 보이지 않는다. 수락해도 본인인증 정보(실명·생년월일·연락처)만 새 레코드로 복사한다.</span><span class="pol__ref">S-VZBTHL</span></li>
+                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 관리자는 직원의 이메일·연락처·주소를 대신 고치지 않는다. 이름·생년월일은 본인인증 확정값, 소속·고용 형태는 계약으로만 바뀐다.</span><span class="pol__ref">S-PIXATL · STAFF-9</span></li>
+                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 비밀번호는 수정이 아니라 <b>초기화</b>만이다. 관리자는 값을 정하지 않고 인증 휴대전화로 재설정 링크만 보낸다. 번호가 틀렸다면 재초대다.</span><span class="pol__ref">S-PIXATL · STAFF-9</span></li>
+                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 직원 상세는 현황 요약과 이동만이다. 처리는 각 관리 화면에서 한다.</span><span class="pol__ref">S-PIXATL · STAFF-6</span></li>
+                </ul>
+              </div>
+              <div class="panel">
+                <div class="panel__head">
+                  <h3 class="t-h3">초대와 계약</h3>
+                  <span class="badge badge--quiet">9</span>
+                </div>
+                <ul class="pol">
+                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> <b>근로계약 초안 저장</b>이 채용의 유일한 시작점이다. 초안 없이 초대를 보낼 수 없고, 초대 유형은 시스템이 정한다.</span><span class="pol__ref">S-OIILIW · STAFF-1</span></li>
+                <li><span class="pol__t">가입 초대와 재초대는 토큰 링크로, 소속 추가 확인과 복귀 확인은 기존 계정의 앱 푸시로 간다. 재입사는 기존 계정을 두고 복귀 확인을 보낸다.</span><span class="pol__ref">S-VZBTHL</span></li>
+                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 가입 연결은 초대 토큰과 <b>본인인증 휴대전화</b>가 모두 맞을 때만 자동이다. 어긋나면 보류하고, 관리자가 직접 연락해 확인한 뒤 승인하거나 번호를 고쳐 재초대한다.</span><span class="pol__ref">S-VZBTHL · STAFF-7</span></li>
+                <li><span class="pol__t">보류 중에는 계약서를 보내지 않는다. 승인하면 보류됐던 초안을 그대로 보내고, 재초대하면 새 초대를 만들고 보류됐던 계정은 이 점포와 연결하지 않는다.</span><span class="pol__ref">S-VZBTHL</span></li>
+                <li><span class="pol__t">직원이 가입을 마치는 순간 계약서는 <b>관리자 개입 없이</b> 자동 발송된다. 이미 재직 중이면 초안 저장 즉시 보낸다.</span><span class="pol__ref">S-OIILIW</span></li>
+                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 초대도 날인도 <b>30일</b>이다. 지나면 만료이고, 재발송은 새 초대·새 발송 이력으로 남긴다.</span><span class="pol__ref">S-VZBTHL · S-XDBBDP · STAFF-3</span></li>
+                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 계약 상태는 발송 대기·서명 대기·체결 완료·거부·만료·종료 <b>여섯</b>이다.</span><span class="pol__ref">S-XDBBDP · STAFF-2</span></li>
+                <li><span class="pol__t">체결된 계약은 고치지 않고 새 계약으로 대체한다. 계약은 계정이 아니라 <b>직원 레코드</b>에 붙고 한 계정이 여러 레코드를 가질 수 있다.</span><span class="pol__ref">S-XDBBDP · F-GLGEOF</span></li>
+                <li><span class="pol__t">계약은 정직원용과 파트타이머용으로 나눈다. 전자서명의 세부 기술은 범위 밖이다.</span><span class="pol__ref">F-GLGEOF</span></li>
+                </ul>
+              </div>
+              <div class="panel">
+                <div class="panel__head">
+                  <h3 class="t-h3">근무와 TO-DO</h3>
+                  <span class="badge badge--quiet">5</span>
+                </div>
+                <ul class="pol">
+                <li><span class="pol__t">스케줄은 시점 제한 없이 고치고 지운다. 급여 초안의 참고 정보다.</span><span class="pol__ref">S-WPGUXX</span></li>
+                <li><span class="pol__t">출퇴근 기록의 등록과 수정은 이 영역이 아니다. 출퇴근 등록 운영의 것이다.</span><span class="pol__ref">F-NUXMTT</span></li>
+                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> TO-DO 는 정규 근무 밖 <b>특별업무 전용</b>이다. 반복·정기 업무는 넣지 않고 반복 설정도 없다.</span><span class="pol__ref">S-NIAGGB · STAFF-4</span></li>
+                <li><span class="pol__t">수행 날짜는 필수, 시간은 선택이다. 대상은 개인 또는 근무지 전체이고, 전체일 때 각자 수행인지 한 명 수행인지는 등록 때 고르고 바꾸지 못한다.</span><span class="pol__ref">S-NIAGGB</span></li>
+                <li><span class="pol__t">상태는 대기·진행 중·완료다. 긴급 표시는 근무시간 외 푸시 보류를 푸는 데만 쓰고 이력을 남긴다.</span><span class="pol__ref">S-NIAGGB</span></li>
+                </ul>
+              </div>
+              <div class="panel">
+                <div class="panel__head">
+                  <h3 class="t-h3">급여</h3>
+                  <span class="badge badge--quiet">5</span>
+                </div>
+                <ul class="pol">
+                <li><span class="pol__t">명세서 상태는 작성 중·검토 중·확정·발송 완료다. 확정 취소는 <b>발송 후에도</b> 되고 검토 중으로 돌아간다.</span><span class="pol__ref">S-DOVWAR</span></li>
+                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 기본급·주휴수당·연장수당은 시스템이 계산하고 관리자가 확인·수정한다. <b>공제는 관리자가 입력</b>한다 — 요율이 해마다 바뀐다.</span><span class="pol__ref">S-DOVWAR · STAFF-5</span></li>
+                <li><span class="pol__t">주휴 대상은 주 15시간 이상, 연장은 1일 8시간 또는 1주 40시간 초과다. 가산 적용 여부는 계약 항목을 따르고, 적용하지 않는 계약은 연장수당을 계산하지 않는다.</span><span class="pol__ref">S-DOVWAR</span></li>
+                <li><span class="pol__t">계산식과 가산율은 확정 전에 노무사 검토를 거친다. 급여 지급 실행은 없다.</span><span class="pol__ref">S-DOVWAR</span></li>
+                <li><span class="pol__t">명세서는 이메일로 보내고 직원은 앱에서 퇴직 전까지 본다.</span><span class="pol__ref">F-XXYSNZ</span></li>
+                </ul>
+              </div>
+              <div class="panel">
+                <div class="panel__head">
+                  <h3 class="t-h3">보존과 공통</h3>
+                  <span class="badge badge--quiet">3</span>
+                </div>
+                <ul class="pol">
+                <li><span class="pol__t">스케줄과 명세서는 생성일부터 <b>3년</b>, 퇴직자 계약은 퇴직일부터 <b>3년</b> 보존한다. 끝나면 지체 없이 파기하고, 더 두려면 근거를 관리하며 분리 저장한다. 기준은 노무사·법무 검토를 거친다.</span><span class="pol__ref">F-NUXMTT · F-GLGEOF · F-XXYSNZ</span></li>
+                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 범위 선택기는 데이터만 가르고 저장하지 않으며, 바꾸면 로그인 후 홈으로 돌아간다. 규칙은 홈 영역 명세에 있다.</span><span class="pol__ref">S-TJRUBE · STAFF-8 · 10 · 11 · 12</span></li>
+                <li><span class="pol__t"><span class="badge badge--warn">반영 대기</span> 직원·계약·명세서·TO-DO 목록은 목록 공통 규칙대로 페이지로 나눈다.</span><span class="pol__ref">문서에 없음</span></li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
               <span class="badge badge--preview">12건 · 확정 12</span>
             </div>
