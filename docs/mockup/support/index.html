@@ -10,7 +10,7 @@
   <body data-root="../" data-page="support" data-sub="support/index.html">
     <!-- 고객지원 · /support · S-ITFILU
          BP 사용자가 본다. 자기가 노출 대상인 공지·FAQ 만 보이고, 문의는 자기 것만 보인다.
-         SUPPORT-1 : 구독·청구·결제수단·정산 넷은 메뉴구조도에서 2차라 자리만 남겼다. -->
+         SUPPORT-1 확정 : 구독·청구·결제수단·정산 넷은 2차다. 화면에 자리도 남기지 않는다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
       <main class="main" id="main">
@@ -22,64 +22,38 @@
         </div>
 
         <div class="content">
-          <div class="gap">
+          <div class="gap is-decided">
             <div class="gap__head">
               <span class="gap__no">SUPPORT-1</span>
               <b>구독·청구·결제수단·정산을 1차에 보여줄 것인가</b>
+              <span class="gap__decided">확정 · 넷 다 2차</span>
               <span class="gap__ref">S-ITFILU</span>
             </div>
             <div class="gap__opts">
-              <div class="gap__opt" data-side="a">
+              <div class="gap__opt is-picked" data-side="a">
                 <div class="gap__label">A · 메뉴구조도 · 이 화면</div>
-                <p>넷 다 <b>2차</b>다. 아래에 자리만 남기고 값은 채우지 않았다.</p>
+                <p>넷 다 <b>2차</b>다. 1차 고객지원에는 공지사항과 문의하기만 둔다.</p>
               </div>
-              <div class="gap__opt" data-side="b">
+              <div class="gap__opt is-dropped" data-side="b">
                 <div class="gap__label">B · manyfast 문서</div>
-                <p><b>조회는 1차에 제공</b>한다. 빠지는 것은 결제와 정산 <b>실행</b>뿐이다.</p>
+                <p>조회는 1차에 제공한다. 빠지는 것은 결제와 정산 <b>실행</b>뿐이다.</p>
               </div>
             </div>
             <p class="gap__note">
-              조회만 열어도 결제수단을 바꾸거나 미납을 해결할 수는 없다. 데이터도 1팀 영역에서 만들어진다.
+              조회만 열면 <b>반쪽이 된다</b> — 미납을 봐도 낼 수 없고 결제수단을 봐도 바꿀 수 없다.
+              보고도 못 하는 화면은 문의만 늘린다. 넷을 함께 열 수 있을 때 한 번에 여는 편이 낫다.
             </p>
+            <div class="gap__block">
+              <b>2차로 미룬 넷 — 이 화면에 자리를 남기지 않는다.</b>
+              <ul>
+                <li>부가서비스 구독 관리 · 구독료 청구 및 납부 현황 · 결제수단 관리 · 정산 현황 조회</li>
+                <li>
+                  “준비 중” 칸을 세워 두지 않는다. 홈 현황에서 1차 범위 밖 위젯을 숨기기로 한 것과 같은 규칙이고,
+                  무엇이 빠졌는지는 <b>이 쟁점 블록이</b> 알려 준다.
+                </li>
+              </ul>
+            </div>
           </div>
-
-          <!-- 2차 범위 넷. 자리를 지워 버리면 회의에서 무엇이 빠졌는지 보이지 않는다. -->
-          <section class="section">
-            <div class="panel__head" style="padding-left: 0; padding-right: 0">
-              <h2 class="t-h2">이용 현황</h2>
-              <span class="badge badge--quiet">2차 범위</span>
-            </div>
-            <div class="grid grid--4">
-              <div class="panel">
-                <div class="panel__body">
-                  <div class="figure__label">부가서비스 구독</div>
-                  <p class="subtle" style="margin-top: var(--s-2)">2차에 열립니다.</p>
-                </div>
-              </div>
-              <div class="panel">
-                <div class="panel__body">
-                  <div class="figure__label">구독료 청구·납부</div>
-                  <p class="subtle" style="margin-top: var(--s-2)">2차에 열립니다.</p>
-                </div>
-              </div>
-              <div class="panel">
-                <div class="panel__body">
-                  <div class="figure__label">결제수단</div>
-                  <p class="subtle" style="margin-top: var(--s-2)">2차에 열립니다.</p>
-                </div>
-              </div>
-              <div class="panel">
-                <div class="panel__body">
-                  <div class="figure__label">정산 현황</div>
-                  <p class="subtle" style="margin-top: var(--s-2)">2차에 열립니다.</p>
-                </div>
-              </div>
-            </div>
-            <p class="gap__note" style="margin-top: var(--s-4)">
-              1차에 열더라도 <b>조회까지</b>다. 결제와 정산 실행은 문서가 1차에서 뺐으므로,
-              이 자리에는 “실행은 제공하지 않는다”는 안내가 함께 서야 한다.
-            </p>
-          </section>
 
           <div class="grid grid--7-5">
             <section class="stack--lg" style="display: flex; flex-direction: column">
