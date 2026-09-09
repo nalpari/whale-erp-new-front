@@ -18,7 +18,7 @@
           <a class="iconbtn" href="community.html" aria-label="커뮤니티관리로" data-icon="arrowleft" data-icon-size="18"></a>
           <h1 class="t-h1">9월 정기 점검 안내</h1>
           <span class="badge badge--ok">게시</span>
-          <span class="badge badge--risk">상단 고정</span>
+          <span class="badge badge--risk" data-notice-only>상단 고정</span>
           <div class="titlebar__end">
             <span class="mono subtle" style="font-size: 12px">최근 수정 09-05 14:20 · 이서준</span>
             <button class="btn btn--secondary btn--sm" type="button">임시저장</button>
@@ -32,7 +32,7 @@
               <div class="panel__head">
                 <h2 class="t-h2">내용</h2>
                 <div class="panel__end">
-                  <div class="seg">
+                  <div class="seg" id="kind">
                     <button type="button" aria-pressed="true">공지사항</button>
                     <button type="button" aria-pressed="false">FAQ</button>
                   </div>
@@ -62,7 +62,7 @@
 
             <section class="stack--lg" style="display: flex; flex-direction: column">
               <!-- 고정핀. 사용자 쪽 목록에서 맨 위에 먼저 선다. 여기서 켜야 저쪽에 보인다. -->
-              <div class="panel">
+              <div class="panel" data-notice-only>
                 <div class="panel__head">
                   <h2 class="t-h2">게시 설정</h2>
                 </div>
@@ -174,5 +174,14 @@
       </main>
     </div>
     <script src="../assets/app.js"></script>
+    <script>
+      /* 공지사항 ↔ FAQ 를 바꾸면 고정핀 자리는 공지에만 보인다. FAQ 에는 상단 고정이 없다. */
+      document.getElementById("kind").addEventListener("click", function (e) {
+        var b = e.target.closest("button");
+        if (!b) return;
+        var faq = b.textContent.trim() === "FAQ";
+        document.querySelectorAll("[data-notice-only]").forEach(function (el) { el.hidden = faq; });
+      });
+    </script>
   </body>
 </html>
