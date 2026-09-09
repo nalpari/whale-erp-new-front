@@ -737,6 +737,23 @@
     });
   }
 
+  /* ---------- 바탕을 누르면 누를 수 있는 것이 잠깐 빛난다 (Figma 프로토타입처럼) ---------- */
+  var HINT_SEL = 'a[href]:not(.is-na):not([aria-disabled="true"]), button:not([disabled]), .toggle:not([disabled]), .check:not([disabled]), details > summary';
+  function wireHint() {
+    document.addEventListener("click", function (e) {
+      if (e.target.closest(HINT_SEL + ", input, select, textarea, label, .pop")) return;
+      document.querySelectorAll(HINT_SEL).forEach(function (el) {
+        if (!el.getClientRects().length) return; /* 숨은 탭·메뉴 안은 건너뛴다 */
+        el.classList.remove("is-hint");
+        void el.offsetWidth; /* 연달아 눌러도 애니메이션이 다시 돈다 */
+        el.classList.add("is-hint");
+      });
+    });
+    document.addEventListener("animationend", function (e) {
+      if (e.animationName === "hint") e.target.classList.remove("is-hint");
+    });
+  }
+
   function wireDrawer() {
     var t = document.querySelector(".navtoggle");
     var side = document.getElementById("side");
@@ -775,6 +792,7 @@
     wireStates();
     wireDrawer();
     wirePager();
+    wireHint();
     openTabFromHash();
     window.addEventListener("hashchange", openTabFromHash);
   }

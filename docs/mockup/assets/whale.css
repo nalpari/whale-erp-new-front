@@ -2894,6 +2894,16 @@ a.tile:hover {
   display: block;
 }
 
+/* 바탕을 누르면 누를 수 있는 것이 잠깐 빛난다. 목업 전용. */
+.is-hint {
+  animation: hint 0.9s ease-out;
+}
+@keyframes hint {
+  0%   { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+  15%  { box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.55); }
+  100% { box-shadow: 0 0 0 3px rgba(37, 99, 235, 0); }
+}
+
 /* FAQ 아코디언 — 문서가 "답변은 목록에서 펼치는 아코디언"이라고 정했다.
    상세 페이지로 넘기지 않는다는 뜻이라 details/summary 를 그대로 쓴다. */
 .acc {
