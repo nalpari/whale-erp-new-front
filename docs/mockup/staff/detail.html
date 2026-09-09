@@ -151,13 +151,21 @@
             <section class="stack--lg" style="display: flex; flex-direction: column">
               <div class="panel">
                 <div class="panel__head">
-                  <h2 class="t-h2">이번 주 근무스케줄</h2>
-                  <span class="badge badge--quiet">38.5h</span>
+                  <h2 class="t-h2">근무스케줄</h2>
+                  <span class="badge badge--quiet">이번 주 38.5h</span>
                   <div class="panel__end">
+                    <select class="select select--sm" style="width: 132px" aria-label="기간">
+                      <option>이번 주</option>
+                      <option>최근 4주</option>
+                      <option>최근 3개월</option>
+                      <option>최근 1년</option>
+                      <option>전체 · 3년</option>
+                    </select>
                     <a class="tbtn" href="index.html#sched">관리</a>
                   </div>
                 </div>
-                <div class="tblwrap">
+                <!-- 한 사람의 3년치는 여기서 본다. 주간 표는 그 주의 여러 사람을 보는 자리다. -->
+                <div class="tblwrap" data-pager="5">
                   <table class="tbl tbl--dense">
                     <thead>
                       <tr>

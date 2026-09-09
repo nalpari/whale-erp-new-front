@@ -135,7 +135,8 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">정책</h2>
-              <span class="badge badge--quiet">31줄</span>
+              <span class="badge badge--quiet">34줄</span>
+              <span class="badge badge--warn">반영 대기 2</span>
             </div>
             <div class="grid grid--2" style="align-items: start">
               <div class="panel">
@@ -175,10 +176,13 @@
               <div class="panel">
                 <div class="panel__head">
                   <h3 class="t-h3">근무와 TO-DO</h3>
-                  <span class="badge badge--quiet">5</span>
+                  <span class="badge badge--quiet">8</span>
                 </div>
                 <ul class="pol">
                 <li><span class="pol__t">스케줄은 시점 제한 없이 고치고 지운다. 급여 초안의 참고 정보다.</span><span class="pol__ref">S-WPGUXX</span></li>
+                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 지난 주 복사는 <b>비어 있는 주에서만</b> 되고, 직전 주를 원본으로 재직자만 복사하며 결과는 확정 전 상태다. 재직이 아닌 사람은 미리보기에서 빠진다.</span><span class="pol__ref">S-WPGUXX · STAFF-13</span></li>
+                <li><span class="pol__t"><span class="badge badge--warn">반영 대기</span> 주는 이전·다음 화살표, 달력, 이번 주 버튼으로 옮기고 일간 표에는 오늘 버튼이 있다. 보존 기간 3년 안의 어느 주든 본다.</span><span class="pol__ref">S-WPGUXX</span></li>
+                <li><span class="pol__t"><span class="badge badge--warn">반영 대기</span> 한 사람의 3년치 스케줄은 직원 상세에서 기간 필터와 페이저로 본다.</span><span class="pol__ref">S-PIXATL</span></li>
                 <li><span class="pol__t">출퇴근 기록의 등록과 수정은 이 영역이 아니다. 출퇴근 등록 운영의 것이다.</span><span class="pol__ref">F-NUXMTT</span></li>
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> TO-DO 는 정규 근무 밖 <b>특별업무 전용</b>이다. 반복·정기 업무는 넣지 않고 반복 설정도 없다.</span><span class="pol__ref">S-NIAGGB · STAFF-4</span></li>
                 <li><span class="pol__t">수행 날짜는 필수, 시간은 선택이다. 대상은 개인 또는 근무지 전체이고, 전체일 때 각자 수행인지 한 명 수행인지는 등록 때 고르고 바꾸지 못한다.</span><span class="pol__ref">S-NIAGGB</span></li>
@@ -215,7 +219,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
-              <span class="badge badge--preview">12건 · 확정 12</span>
+              <span class="badge badge--preview">13건 · 확정 13</span>
             </div>
 
             <div class="gap is-decided">
@@ -598,6 +602,37 @@
                     그 요구가 잦으면 STAFF-10 에서 열어 둔 <b>이름 붙인 묶음</b>으로 한 번에 보는 쪽이고,
                     선택기를 왕복하는 것은 그 전의 임시 방편이다.
                   </li>
+                </ul>
+              </div>
+            </div>
+            <div class="gap is-decided">
+              <div class="gap__head">
+                <span class="gap__no">STAFF-13</span>
+                <b>지난 주 복사는 언제, 누구를 복사하는가</b>
+                <span class="gap__decided">확정 · 빈 주에서만 · 재직자만 · 확정 전 상태</span>
+                <span class="gap__ref">S-WPGUXX</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt is-picked" data-side="a">
+                  <div class="gap__label">A · 빈 주에서만 · 지금 화면</div>
+                  <p>이미 한 건이라도 있으면 버튼이 꺼진다. 덧붙일 땐 일괄 등록을 쓴다. 복사 전 <b>미리보기</b>에서 재직이 아닌 사람을 빼고 보여 준다.</p>
+                </div>
+                <div class="gap__opt is-dropped" data-side="b">
+                  <div class="gap__label">B · 있는 주에도</div>
+                  <p>겹치는 건은 건너뛰고 나머지만 붙인다. 문서가 겹침을 등록 차단으로 정해 실패 목록만 길어진다.</p>
+                </div>
+              </div>
+              <p class="gap__note">
+                문서에 없던 기능이다. 원본은 <b>직전 주</b>로 고정한다. 지난 주엔 있었지만 이번 주에 재직이 아닌 사람(퇴직·계약 종료)은 자동으로 빠지고
+                그 사실을 미리보기에 보인다. 새로 온 직원은 복사에 안 나오니 따로 넣는다. 계약 미체결자는 문서대로 경고만 달고 복사된다.
+                결과는 <b>확정 전</b> 상태로 들어가 스케줄 확정 버튼이 마무리를 맡는다.
+              </p>
+              <div class="gap__block">
+                <b>같이 정한 것 — 주 이동과 3년치.</b>
+                <ul>
+                  <li>주 선택은 드롭다운이 아니라 <b>이전·다음 주 화살표, 달력, 이번 주</b> 버튼이다. 일간 표에는 <b>오늘</b> 버튼이 있다. 156주를 드롭다운으로 고를 수는 없다.</li>
+                  <li>보존 기간 <b>3년</b> 안의 어느 주든 같은 표로 본다. 그보다 오래된 것은 문서대로 파기되어 없다.</li>
+                  <li><b>한 사람의 3년치</b>는 주간 표가 아니라 직원 상세의 근무스케줄 표가 맡는다. 기간 필터와 페이저를 둔다.</li>
                 </ul>
               </div>
             </div>

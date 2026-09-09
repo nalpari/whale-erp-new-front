@@ -36,7 +36,8 @@
   ];
 
   var DOW = ["일", "월", "화", "수", "목", "금", "토"];
-  var cur = 5; /* 공백이 드러나는 토요일부터 보여준다 */
+  var TODAY = 5; /* 샘플의 오늘. 공백이 드러나는 토요일이다 */
+  var cur = TODAY;
 
   function pct(h) { return ((h - OPEN) / SPAN) * 100; }
   function hhmm(h) { return (h < 10 ? "0" : "") + h + ":00"; }
@@ -122,6 +123,8 @@
     if (sel) sel.selectedIndex = cur;
     root.querySelector('[data-tl-step="-1"]').disabled = cur === 0;
     root.querySelector('[data-tl-step="1"]').disabled = cur === DAYS.length - 1;
+    var td = root.querySelector("[data-tl-today]");
+    if (td) td.disabled = cur === TODAY;
   }
 
   function boot() {
@@ -139,6 +142,8 @@
         render(root);
       });
     });
+    var today = root.querySelector("[data-tl-today]");
+    if (today) today.addEventListener("click", function () { cur = TODAY; render(root); });
     /* 좌우 화살표로도 넘긴다 — 하루씩 훑어볼 때 편하다. */
     root.addEventListener("keydown", function (e) {
       if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
