@@ -42,7 +42,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">화면</h2>
-              <span class="badge badge--quiet">5개</span>
+              <span class="badge badge--quiet">7개</span>
               <div class="panel__end">
                 <span class="filters__count mono">R-PEQDDV · support/</span>
               </div>
@@ -57,6 +57,28 @@
                 <span class="mk-card__end">
                   <span class="badge badge--quiet">S-ITFILU</span>
                   <span class="badge badge--ok">확정 1건</span>
+                </span>
+              </a>
+              <a class="mk-card" href="notices.html">
+                <span class="mk-card__route">/support/notices</span>
+                <span class="mk-card__name">공지사항 · FAQ 전체</span>
+                <span class="mk-card__desc">
+                  고객지원 홈의 “전체 보기”가 오는 곳. 검색과 구분으로 거르고 페이지로 나눈다.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--quiet">S-ITFILU</span>
+                  <span class="badge badge--ok">확정 1건</span>
+                </span>
+              </a>
+              <a class="mk-card" href="notice-detail.html">
+                <span class="mk-card__route">/support/notices/[id]</span>
+                <span class="mk-card__name">공지 상세</span>
+                <span class="mk-card__desc">
+                  제목·본문·첨부. 노출 대상과 이력은 운영자 편집 화면의 것이라 여기엔 없다.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--quiet">S-ITFILU</span>
+                  <span class="badge badge--preview">신규</span>
                 </span>
               </a>
               <a class="mk-card" href="community.html">
@@ -114,7 +136,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
-              <span class="badge badge--preview">3건 · 확정 3</span>
+              <span class="badge badge--preview">4건 · 확정 4</span>
             </div>
 
             <div class="gap is-decided">
@@ -243,6 +265,36 @@
                 <ul>
                   <li>가맹 Master 도 자기 점포 관리자에게 쓸 수 있는가.</li>
                   <li>BP 공지를 고객지원의 운영자 공지와 한 목록에 섞을지, 따로 둘지.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="gap is-decided">
+              <div class="gap__head">
+                <span class="gap__no">SUPPORT-4</span>
+                <b>공지 전체 목록과 상세를 어디에 둘 것인가</b>
+                <span class="gap__decided">확정 · 고객지원 안의 별도 화면</span>
+                <span class="gap__ref">S-ITFILU</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt is-picked" data-side="a">
+                  <div class="gap__label">A · 별도 화면 · 지금 화면</div>
+                  <p>고객지원 홈은 최신 몇 건과 <b>전체 보기</b>, 전체 목록과 상세는 따로 둔다. 로그인 전 화면과 같은 꼴이다.</p>
+                </div>
+                <div class="gap__opt is-dropped" data-side="b">
+                  <div class="gap__label">B · 홈에서 다 본다</div>
+                  <p>고객지원 홈의 공지 패널을 곧 전체 목록으로 쓴다. 검색·구분 필터가 홈에 얹힌다.</p>
+                </div>
+              </div>
+              <p class="gap__note">
+                문서는 “최신 공지 일부와 전체 목록으로 이동하는 진입점”이라고 적었는데 전체 목록 화면이 없었다.
+                홈은 훑는 자리, 전체 목록은 찾는 자리다. 검색과 구분 필터는 찾는 자리에만 둔다.
+                공지 상세는 문서가 “제목과 본문을 포함한 상세, 첨부 내려받기”를 요구해 같이 세웠다.
+              </p>
+              <div class="gap__block">
+                <b>딸린 것.</b>
+                <ul>
+                  <li>공지·FAQ 목록은 모두 목록 공통 규칙대로 페이지로 나눈다. 홈의 패널도 같다.</li>
+                  <li>로그인 전 공지 상세는 로그인 전 화면 쪽에 따로 서야 한다. 아직 그리지 않았다.</li>
                 </ul>
               </div>
             </div>

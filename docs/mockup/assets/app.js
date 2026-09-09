@@ -216,7 +216,7 @@
           { text: "구독료 청구 및 납부 현황", phase: "2" },
           { text: "결제수단 관리", phase: "2" },
           { text: "정산 현황 조회", phase: "2" },
-          { text: "공지사항", href: "support/index.html" },
+          { text: "공지사항", href: "support/notices.html" },
           { text: "문의하기", href: "support/index.html" }
         ]},
 

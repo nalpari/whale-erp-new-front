@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>공지사항 · FAQ · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="support" data-sub="support/notices.html">
+    <!-- 공지사항 · FAQ 전체 목록 · /support/notices · /support/faq · S-ITFILU
+         고객지원 홈의 "전체 보기"가 오는 곳. 로그인 전 화면과 같은 꼴이고, 다른 것은
+         노출 대상에 내가 들어간 것만 보인다는 점뿐이다. SUPPORT-4 로 자리를 정했다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <a class="iconbtn" href="index.html" aria-label="고객지원으로" data-icon="arrowleft" data-icon-size="18"></a>
+          <h1 class="t-h1">공지사항 · FAQ</h1>
+          <div class="titlebar__end">
+            <span class="filters__count mono">S-ITFILU · /support/notices</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="tabs" data-tabs="pub">
+            <button data-tab="notices" aria-selected="true">공지사항 <span class="count">9</span></button>
+            <button data-tab="faq" aria-selected="false" id="faq">FAQ <span class="count">11</span></button>
+          </div>
+
+          <div id="pub">
+            <div data-panel="notices">
+              <div class="panel">
+                <div class="panel__head">
+                  <div class="inputwrap grow">
+                    <span data-icon="search" data-icon-size="15"></span>
+                    <input class="input" type="search" placeholder="제목으로 검색" />
+                  </div>
+                  <div class="panel__end">
+                    <div class="seg">
+                      <button type="button" aria-pressed="true">전체</button>
+                      <button type="button" aria-pressed="false">점검</button>
+                      <button type="button" aria-pressed="false">기능</button>
+                      <button type="button" aria-pressed="false">약관</button>
+                      <button type="button" aria-pressed="false">안내</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="tblwrap" data-pager="9">
+                  <table class="tbl">
+                    <thead>
+                      <tr>
+                        <th scope="col">제목</th>
+                        <th scope="col">구분</th>
+                        <th scope="col">게시일</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="k"><span class="badge badge--risk" style="margin-right: 6px">고정</span><a class="tlink" href="notice-detail.html">9월 정기 점검 안내 (09-14 02:00~05:00)</a></td>
+                        <td><span class="badge badge--warn">점검</span></td>
+                        <td class="mono">2026-09-05</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="notice-detail.html">근로계약 전자날인 기능이 열렸습니다</a></td>
+                        <td><span class="badge badge--ok">기능</span></td>
+                        <td class="mono">2026-09-01</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="notice-detail.html">KIOSK 9월 업데이트 — 결제 화면이 바뀝니다</a></td>
+                        <td><span class="badge badge--info">KIOSK</span></td>
+                        <td class="mono">2026-08-28</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="notice-detail.html">개인정보처리방침 개정 안내</a></td>
+                        <td><span class="badge badge--quiet">약관</span></td>
+                        <td class="mono">2026-08-25</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="notice-detail.html">급여명세서 발송 시간이 오전 9시로 바뀝니다</a></td>
+                        <td><span class="badge badge--ok">기능</span></td>
+                        <td class="mono">2026-08-22</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="notice-detail.html">WHALE ERP 1차 오픈 일정 안내</a></td>
+                        <td><span class="badge badge--info">안내</span></td>
+                        <td class="mono">2026-08-19</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="notice-detail.html">8월 정기 점검 안내 (08-10 02:00~04:00)</a></td>
+                        <td><span class="badge badge--warn">점검</span></td>
+                        <td class="mono">2026-08-03</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="notice-detail.html">직원 초대 문자 발신번호 변경 안내</a></td>
+                        <td><span class="badge badge--info">안내</span></td>
+                        <td class="mono">2026-07-29</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="notice-detail.html">이용약관 개정 안내 (07-15 시행)</a></td>
+                        <td><span class="badge badge--quiet">약관</span></td>
+                        <td class="mono">2026-07-01</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__note">
+                  <b>노출 대상에 내가 들어간 것만</b> 보인다. 상단 고정 공지가 먼저, 나머지는 게시일 내림차순이다.
+                  KIOSK 건은 KIOSK 구독자에게만 보인다.
+                </div>
+              </div>
+            </div>
+
+            <div data-panel="faq" hidden>
+              <div class="panel">
+                <div class="panel__head">
+                  <div class="inputwrap grow">
+                    <span data-icon="search" data-icon-size="15"></span>
+                    <input class="input" type="search" placeholder="질문으로 검색" />
+                  </div>
+                  <div class="panel__end">
+                    <div class="seg">
+                      <button type="button" aria-pressed="true">전체</button>
+                      <button type="button" aria-pressed="false">직원·근로</button>
+                      <button type="button" aria-pressed="false">계정·권한</button>
+                      <button type="button" aria-pressed="false">요금·구독</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="acclist" data-pager="11">
+                  <details class="acc">
+                    <summary>근로계약서를 보냈는데 직원이 못 받았다고 합니다</summary>
+                    <div class="acc__body">계약 상세에서 <b>발송 이력</b>을 먼저 확인하세요. 직원이 아직 가입하지 않았다면 상태가 <b>발송 대기</b>로 남고, 가입이 끝나는 순간 자동으로 발송됩니다.</div>
+                  </details>
+                  <details class="acc">
+                    <summary>퇴사한 직원의 급여명세서는 어떻게 보나요</summary>
+                    <div class="acc__body">급여명세서 목록에서 재직 상태 필터를 <b>전체</b>로 바꾸면 보입니다. 인사 기록은 법정 보존 기간인 3년 이상 보관합니다.</div>
+                  </details>
+                  <details class="acc">
+                    <summary>직원이 계약서를 거부하면 어떻게 되나요</summary>
+                    <div class="acc__body">계약은 <b>거부</b> 상태로 남고 알림이 옵니다. 사유를 보고 내용을 고쳐 재발송하면 새 서명 요청이 나갑니다.</div>
+                  </details>
+                  <details class="acc">
+                    <summary>점포를 더 늘리려면 어떻게 하나요</summary>
+                    <div class="acc__body">요금 PLAN 의 점포 수를 넘으면 등록이 막힙니다. 좌측 아래 <b>PLAN 사용량</b>에서 남은 수를 확인하고, 부족하면 점포수 추가 부가서비스를 구독하세요.</div>
+                  </details>
+                  <details class="acc">
+                    <summary>관리자를 한 명 더 두려면 어떻게 하나요</summary>
+                    <div class="acc__body">환경설정의 <b>사용자·권한 관리</b>에서 초대합니다. 점포 단위 관리자는 그 점포의 직원만 봅니다.</div>
+                  </details>
+                  <details class="acc">
+                    <summary>비밀번호를 잊은 직원은 어떻게 하나요</summary>
+                    <div class="acc__body">직원 상세에서 <b>비밀번호 초기화</b>를 누르면 직원의 휴대전화로 재설정 링크가 갑니다. 관리자가 새 비밀번호를 정해 주지는 않습니다.</div>
+                  </details>
+                </div>
+                <div class="panel__note">
+                  답변은 그 자리에서 펼친다. 상세 페이지는 없다. 카테고리로 갈라도 길어지면 표와 같은 페이저로 나눈다.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+  </body>
+</html>
