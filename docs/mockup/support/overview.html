@@ -42,7 +42,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">화면</h2>
-              <span class="badge badge--quiet">9개</span>
+              <span class="badge badge--quiet">7개</span>
               <div class="panel__end">
                 <span class="filters__count mono">R-PEQDDV · support/</span>
               </div>
@@ -52,18 +52,7 @@
                 <span class="mk-card__route">/support</span>
                 <span class="mk-card__name">고객지원</span>
                 <span class="mk-card__desc">
-                  BP 사용자가 본다. 자기가 대상인 공지·FAQ 를 읽고 문의를 등록해 답변 상태를 확인한다.
-                </span>
-                <span class="mk-card__end">
-                  <span class="badge badge--quiet">S-ITFILU</span>
-                  <span class="badge badge--ok">확정 1건</span>
-                </span>
-              </a>
-              <a class="mk-card" href="notices.html">
-                <span class="mk-card__route">/support/notices</span>
-                <span class="mk-card__name">공지사항 · FAQ 전체</span>
-                <span class="mk-card__desc">
-                  고객지원 홈의 “전체 보기”가 오는 곳. 검색과 구분으로 거르고 페이지로 나눈다.
+                  공지사항 · FAQ · 문의하기 세 탭. 검색·필터·페이저가 탭마다 있고, 문의 등록 폼은 문의하기 탭에 있다.
                 </span>
                 <span class="mk-card__end">
                   <span class="badge badge--quiet">S-ITFILU</span>
@@ -75,17 +64,6 @@
                 <span class="mk-card__name">공지 상세</span>
                 <span class="mk-card__desc">
                   제목·본문·첨부. 노출 대상과 이력은 운영자 편집 화면의 것이라 여기엔 없다.
-                </span>
-                <span class="mk-card__end">
-                  <span class="badge badge--quiet">S-ITFILU</span>
-                  <span class="badge badge--preview">신규</span>
-                </span>
-              </a>
-              <a class="mk-card" href="inquiries.html">
-                <span class="mk-card__route">/support/inquiries</span>
-                <span class="mk-card__name">내 문의 전체</span>
-                <span class="mk-card__desc">
-                  자기가 등록한 문의만. 상태로 거르고 페이지로 나눈다. 등록 폼은 고객지원 홈에 있다.
                 </span>
                 <span class="mk-card__end">
                   <span class="badge badge--quiet">S-ITFILU</span>
@@ -294,29 +272,30 @@
               <div class="gap__head">
                 <span class="gap__no">SUPPORT-4</span>
                 <b>공지·문의의 전체 목록과 상세를 어디에 둘 것인가</b>
-                <span class="gap__decided">확정 · 고객지원 안의 별도 화면</span>
+                <span class="gap__decided">확정 · 고객지원 한 화면의 탭</span>
                 <span class="gap__ref">S-ITFILU</span>
               </div>
               <div class="gap__opts">
-                <div class="gap__opt is-picked" data-side="a">
-                  <div class="gap__label">A · 별도 화면 · 지금 화면</div>
-                  <p>고객지원 홈은 최신 몇 건과 <b>전체 보기</b>, 전체 목록과 상세는 따로 둔다. 로그인 전 화면과 같은 꼴이다.</p>
+                <div class="gap__opt is-dropped" data-side="a">
+                  <div class="gap__label">A · 요약 홈 + 별도 목록</div>
+                  <p>고객지원 홈은 최신 몇 건과 <b>전체 보기</b>, 전체 목록은 따로 둔다. 로그인 전 화면과 같은 꼴이다.</p>
                 </div>
-                <div class="gap__opt is-dropped" data-side="b">
-                  <div class="gap__label">B · 홈에서 다 본다</div>
-                  <p>고객지원 홈의 공지 패널을 곧 전체 목록으로 쓴다. 검색·구분 필터가 홈에 얹힌다.</p>
+                <div class="gap__opt is-picked" data-side="b">
+                  <div class="gap__label">B · 한 화면의 탭 · 지금 화면</div>
+                  <p>고객지원은 <b>공지사항 · FAQ · 문의하기</b> 세 탭이다. 탭이 곧 전체 목록이고 상세만 따로 둔다.</p>
                 </div>
               </div>
               <p class="gap__note">
-                문서는 “최신 공지 일부와 전체 목록으로 이동하는 진입점”이라고 적었는데 전체 목록 화면이 없었다.
-                홈은 훑는 자리, 전체 목록은 찾는 자리다. 검색과 구분 필터는 찾는 자리에만 둔다.
-                공지 상세는 문서가 “제목과 본문을 포함한 상세, 첨부 내려받기”를 요구해 같이 세웠다.
+                처음엔 A 로 그렸다가 <b>B 로 뒤집었다</b>. 고객지원은 공지·FAQ·문의 셋뿐이라 요약 홈을 따로 둘 만큼
+                내용이 없고, 요약과 전체 목록이 같은 공지를 두 번 보여 주게 된다. 직원관리가 한 화면에 탭을 두고
+                LNB 가 해시로 그 탭을 여는 것과 같은 꼴로 맞춘다. 문서의 “최신 공지 일부와 전체 목록 진입점”은
+                탭 하나가 둘 다 맡는 것으로 읽는다. 공지 상세는 문서가 “제목과 본문을 포함한 상세, 첨부 내려받기”를 요구해 세웠다.
               </p>
               <div class="gap__block">
                 <b>딸린 것.</b>
                 <ul>
-                  <li>공지·FAQ 목록은 모두 목록 공통 규칙대로 페이지로 나눈다. 홈의 패널도 같다.</li>
-                  <li>내 문의도 같은 꼴이다 — 홈에 최신 몇 건과 전체 보기, 전체 목록과 상세는 따로. 등록 폼만 홈에 남는다.</li>
+                  <li>LNB 고객지원을 누르면 이 화면이고, 아래 공지사항·문의하기는 해시로 그 탭을 연다. FAQ 는 메뉴구조도에 없어 LNB 에 두지 않고 탭으로만 간다.</li>
+                  <li>세 탭 모두 목록 공통 규칙대로 검색·필터·페이저를 둔다. 문의 등록 폼은 문의하기 탭 옆에 선다.</li>
                   <li>로그인 전 공지 상세는 로그인 전 화면 쪽에 따로 서야 한다. 아직 그리지 않았다.</li>
                 </ul>
               </div>

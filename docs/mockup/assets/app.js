@@ -210,14 +210,14 @@
           { text: "휴일 관리" }
         ]},
 
-        { key: "support", text: "고객지원", team: "3팀", items: [
+        { key: "support", text: "고객지원", team: "3팀", href: "support/index.html", items: [
           { text: "영역 개요", href: "support/overview.html", mock: 1 },
           { text: "부가서비스 구독 관리", phase: "2" },
           { text: "구독료 청구 및 납부 현황", phase: "2" },
           { text: "결제수단 관리", phase: "2" },
           { text: "정산 현황 조회", phase: "2" },
-          { text: "공지사항", href: "support/notices.html" },
-          { text: "문의하기", href: "support/index.html" }
+          { text: "공지사항", href: "support/index.html#notices" },
+          { text: "문의하기", href: "support/index.html#inquiries" }
         ]},
 
         { key: "notify", text: "운영 알림", team: "3팀", items: [
