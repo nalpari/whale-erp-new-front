@@ -2485,6 +2485,40 @@ a.tile:hover {
   gap: 1px;
 }
 
+/* 종 팝오버의 알림 한 줄 — 점 · 제목 · 부연 · 시각. 누르면 그 업무 화면으로 간다. */
+.pop__item {
+  align-items: flex-start;
+}
+.pop__item .badge--dot {
+  margin-top: 6px;
+}
+.pop__item.is-na {
+  display: flex;
+}
+.pop__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  line-height: 1.35;
+}
+.pop__body b {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.pop__body span {
+  font-size: 11.5px;
+  color: var(--muted-tert);
+}
+.pop__body .mono {
+  font-size: 10.5px;
+  color: var(--muted);
+}
+.pop--bell {
+  min-width: 340px;
+}
+
 .pop__head {
   display: flex;
   align-items: center;

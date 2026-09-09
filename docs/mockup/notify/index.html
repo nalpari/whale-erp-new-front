@@ -11,7 +11,8 @@
     <!-- 알림함 · /notifications · S-GDUNIT
          받는 알림이 역할에 따라 다르다. 플랫폼 운영자는 문의·도입문의, BP 관리자는
          소속 직원의 근로계약과 자기 문의의 답변을 받는다.
-         맨 위 탭은 목업용 역할 전환이다. 실제로는 로그인한 계정이 정한다. -->
+         맨 위 탭은 목업용 역할 전환이다. 실제로는 로그인한 계정이 정한다.
+         NOTIFY-1 확정 : 눌러 들어가면 읽음이다. 줄마다 읽음 버튼을 두지 않는다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
       <main class="main" id="main">
@@ -25,25 +26,25 @@
         </div>
 
         <div class="content">
-          <div class="gap">
+          <div class="gap is-decided">
             <div class="gap__head">
               <span class="gap__no">NOTIFY-1</span>
               <b>눌러서 들어가면 읽음으로 볼 것인가</b>
+              <span class="gap__decided">확정 · 들어가면 읽음</span>
               <span class="gap__ref">S-GDUNIT</span>
             </div>
             <div class="gap__opts">
-              <div class="gap__opt" data-side="a">
-                <div class="gap__label">A · manyfast 문서 · 이 화면</div>
-                <p>이동해도 읽음이 되지 않는다. 오른쪽 <b>읽음</b> 을 눌러야 바뀐다.</p>
+              <div class="gap__opt is-dropped" data-side="a">
+                <div class="gap__label">A · manyfast 문서</div>
+                <p>이동해도 읽음이 되지 않는다. 따로 눌러야 바뀐다.</p>
               </div>
-              <div class="gap__opt" data-side="b">
-                <div class="gap__label">B · 흔한 방식</div>
-                <p>누르고 들어가면 그것으로 읽음이다.</p>
+              <div class="gap__opt is-picked" data-side="b">
+                <div class="gap__label">B · 흔한 방식 · 이 화면</div>
+                <p>누르고 들어가면 그것으로 읽음이다. 줄마다 있던 <b>읽음</b> 버튼을 뺐다.</p>
               </div>
             </div>
             <p class="gap__note">
-              문서는 “이동해도 읽음 처리 여부는 <b>수신자의 읽음 변경 동작에 따라</b> 관리한다”라고 했다.
-              읽었다는 것과 처리했다는 것을 갈라, 처리할 때까지 미확인으로 남겨 <b>할 일 목록처럼</b> 쓰게 하려는 뜻이다.
+              “처리했나”는 원래 업무가 상태로 안다 — 거부된 계약은 재발송 전까지 거부 상태다. 알림함은 “봤나”만 맡는다.
             </p>
           </div>
 
@@ -75,7 +76,6 @@
                         </td>
                         <td><span class="badge badge--risk">계약 거부</span></td>
                         <td class="mono">09-06 09:12</td>
-                        <td><button class="tbtn" type="button">읽음</button></td>
                       </tr>
                       <tr>
                         <td><span class="badge badge--dot badge--ok"></span></td>
@@ -85,7 +85,6 @@
                         </td>
                         <td><span class="badge badge--ok">계약 날인</span></td>
                         <td class="mono">09-05 18:40</td>
-                        <td><button class="tbtn" type="button">읽음</button></td>
                       </tr>
                       <tr>
                         <td><span class="badge badge--dot badge--info"></span></td>
@@ -95,7 +94,6 @@
                         </td>
                         <td><span class="badge badge--info">문의 답변</span></td>
                         <td class="mono">09-02 11:05</td>
-                        <td><button class="tbtn" type="button">읽음</button></td>
                       </tr>
                       <tr class="is-read">
                         <td><span class="subtle">·</span></td>
@@ -105,7 +103,6 @@
                         </td>
                         <td><span class="badge badge--quiet">계약 날인</span></td>
                         <td class="mono">08-29 14:22</td>
-                        <td><span class="subtle" style="font-size: 12px">읽음</span></td>
                       </tr>
                       <tr class="is-read">
                         <td><span class="subtle">·</span></td>
@@ -115,7 +112,6 @@
                         </td>
                         <td><span class="badge badge--quiet">계약 만료</span></td>
                         <td class="mono">08-24 00:05</td>
-                        <td><span class="subtle" style="font-size: 12px">읽음</span></td>
                       </tr>
                     </tbody>
                   </table>
@@ -149,7 +145,6 @@
                         </td>
                         <td><span class="badge badge--warn">도입문의</span></td>
                         <td class="mono">09-06 15:47</td>
-                        <td><button class="tbtn" type="button">읽음</button></td>
                       </tr>
                       <tr>
                         <td><span class="badge badge--dot badge--warn"></span></td>
@@ -159,7 +154,6 @@
                         </td>
                         <td><span class="badge badge--warn">문의 접수</span></td>
                         <td class="mono">09-04 10:32</td>
-                        <td><button class="tbtn" type="button">읽음</button></td>
                       </tr>
                       <tr class="is-read">
                         <td><span class="subtle">·</span></td>
@@ -169,7 +163,6 @@
                         </td>
                         <td><span class="badge badge--quiet">상태 변경</span></td>
                         <td class="mono">08-27 16:10</td>
-                        <td><span class="subtle" style="font-size: 12px">읽음</span></td>
                       </tr>
                     </tbody>
                   </table>
@@ -182,16 +175,15 @@
             </div>
           </div>
 
-          <div class="gap">
+          <div class="gap is-decided">
             <div class="gap__head">
               <span class="gap__no">NOTIFY-2</span>
               <b>종 아이콘과 이 페이지를 둘 다 둘 것인가</b>
+              <span class="gap__decided">확정 · 둘 다</span>
               <span class="gap__ref">S-GDUNIT</span>
             </div>
             <p class="gap__note" style="margin: 0">
-              지금은 둘 다 있는 것으로 그렸다 — 상단 종에 미확인 수가 붙고, 눌러서 이 페이지로 온다.
-              메뉴구조도에는 알림 상자가 없어 <b>종 하나로 끝내는 안</b>도 성립한다.
-              하루에 알림이 몇 건 쌓이는지가 갈림길이다.
+              상단 종에 미확인 수가 붙고, 눌러서 이 페이지로 온다. 종은 최근 것을, 페이지는 걸러 보고 지나간 것을 찾는 자리를 맡는다.
             </p>
           </div>
         </div>

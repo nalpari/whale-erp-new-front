@@ -342,7 +342,7 @@
       "<b>㈜한강상회</b><span class=\"sep\">·</span><span class=\"scopebtn__val\">전체 11개점</span>" +
       ic("selector", 14) + "</button>" +
       '<div class="topnav__end">' +
-      '<button class="iconbtn" type="button" aria-label="알림 3건" data-dot="1" data-icon="bell" data-icon-size="18"></button>' +
+      '<button class="iconbtn bellbtn" type="button" aria-label="알림 3건" aria-haspopup="true" aria-expanded="false" data-dot="1" data-icon="bell" data-icon-size="18"></button>' +
       '<button class="iconbtn" type="button" aria-label="도움말" data-icon="help" data-icon-size="18"></button>' +
       /* MY PAGE 는 이름을 눌러 들어간다 (슬라이드 4). 1팀 영역이다. */
       '<button class="mebtn" type="button" aria-haspopup="menu" aria-expanded="false">' +
@@ -507,7 +507,8 @@
       e.stopPropagation();
       if (pop) return close();
       pop = document.createElement("div");
-      pop.className = "pop" + (btn.classList.contains("scopebtn") ? " pop--scope" : "");
+      pop.className = "pop" + (btn.classList.contains("scopebtn") ? " pop--scope" : "") +
+        (btn.classList.contains("bellbtn") ? " pop--bell" : "");
       pop.innerHTML = build();
       document.body.appendChild(pop);
       var r = btn.getBoundingClientRect();
@@ -586,6 +587,29 @@
     }, function (i) {
       slot.textContent = scopeAll()[i].label;
     }, wireScopeSearch);
+  }
+
+  /* 종을 누르면 미확인 알림 몇 건이 뜬다 (NOTIFY-2). 눌러 들어가면 그것으로 읽음이다 (NOTIFY-1).
+     목업은 BP 마스터 한 사람 기준이라 알림함의 미확인 셋과 같은 것을 보여 준다. */
+  var BELL = [
+    { tone: "risk", kind: "계약 거부", title: "서지안 님이 근로계약서를 거부했습니다", meta: "사유 · 근무 시작일이 협의한 날과 다릅니다", when: "09-06 09:12", href: "staff/contracts-detail.html" },
+    { tone: "ok", kind: "계약 날인", title: "문태경 님이 근로계약서에 날인했습니다", meta: "온기식당 판교점 · 정직원", when: "09-05 18:40", href: "staff/contracts-detail.html" },
+    { tone: "info", kind: "문의 답변", title: "문의에 답변이 등록되었습니다", meta: "가맹점 초대 메일이 반송됩니다", when: "09-02 11:05", href: "support/index.html" }
+  ];
+
+  function wireBell() {
+    var btn = document.querySelector(".bellbtn");
+    wirePop(btn, "right", function () {
+      return '<div class="pop__label">미확인 알림 ' + BELL.length + "건</div>" +
+        BELL.map(function (n) {
+          return "<a" + linkAttrs(n.href) + ' class="pop__item">' +
+            '<span class="badge badge--dot badge--' + n.tone + '"></span>' +
+            '<span class="pop__body"><b>' + n.title + "</b>" +
+            "<span>" + n.meta + "</span>" +
+            '<span class="mono">' + n.when + " · " + n.kind + "</span></span></a>";
+        }).join("") +
+        '<hr><a href="' + url("notify/index.html") + '">' + ic("inbox", 14) + "알림함 전체 보기</a>";
+    });
   }
 
   function wireMe() {
@@ -685,6 +709,7 @@
     hydrateIcons(document);
     wireScope();
     wireMe();
+    wireBell();
     wireAccordion();
     wireTabs();
     wireStates();
