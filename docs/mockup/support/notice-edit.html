@@ -18,6 +18,7 @@
           <a class="iconbtn" href="community.html" aria-label="커뮤니티관리로" data-icon="arrowleft" data-icon-size="18"></a>
           <h1 class="t-h1">9월 정기 점검 안내</h1>
           <span class="badge badge--ok">게시</span>
+          <span class="badge badge--risk">상단 고정</span>
           <div class="titlebar__end">
             <span class="mono subtle" style="font-size: 12px">최근 수정 09-05 14:20 · 이서준</span>
             <button class="btn btn--secondary btn--sm" type="button">임시저장</button>
@@ -60,6 +61,23 @@
             </section>
 
             <section class="stack--lg" style="display: flex; flex-direction: column">
+              <!-- 고정핀. 사용자 쪽 목록에서 맨 위에 먼저 선다. 여기서 켜야 저쪽에 보인다. -->
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">게시 설정</h2>
+                </div>
+                <div class="panel__body">
+                  <label class="inline" for="pin">
+                    <span class="toggle" id="pin" role="switch" aria-pressed="true" tabindex="0"></span>
+                    상단 고정
+                  </label>
+                  <span class="help" style="display: block; margin-top: var(--s-2)">
+                    켜면 사용자 쪽 공지 목록 <b>맨 위</b>에 <b>고정</b> 표시와 함께 선다. 여러 개면 그 안에서 게시일 내림차순이다.
+                    FAQ 에는 없다.
+                  </span>
+                </div>
+              </div>
+
               <!-- 이 화면의 알맹이. 여기서 고른 것이 로그인 전 홈과 고객지원을 가른다. -->
               <div class="panel">
                 <div class="panel__head">
@@ -131,7 +149,7 @@
                       <tr>
                         <td class="mono">09-05 14:20</td>
                         <td>이서준</td>
-                        <td>본문 수정</td>
+                        <td>본문 수정 · 상단 고정 켬</td>
                       </tr>
                       <tr>
                         <td class="mono">09-05 11:02</td>
