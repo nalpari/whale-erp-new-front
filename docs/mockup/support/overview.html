@@ -78,7 +78,7 @@
                 </span>
                 <span class="mk-card__end">
                   <span class="badge badge--quiet">S-GRDOPW</span>
-                  <span class="badge badge--warn">쟁점 1건</span>
+                  <span class="badge badge--ok">확정 1건</span>
                 </span>
               </a>
               <a class="mk-card" href="inquiry-detail.html">
@@ -114,7 +114,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
-              <span class="badge badge--preview">2건 · 확정 1 · 미정 1</span>
+              <span class="badge badge--preview">3건 · 확정 2 · 미정 1</span>
             </div>
 
             <div class="gap is-decided">
@@ -158,28 +158,78 @@
               </div>
             </div>
 
-            <div class="gap">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">SUPPORT-2</span>
                 <b>공지·FAQ 의 노출 대상을 어디까지 고르게 할 것인가</b>
+                <span class="gap__decided">확정 · 유형까지, 부가서비스만 상품별</span>
                 <span class="gap__ref">S-GRDOPW</span>
               </div>
               <div class="gap__opts">
-                <div class="gap__opt" data-side="a">
-                  <div class="gap__label">A · 대상 유형까지 · 이 화면</div>
+                <div class="gap__opt is-picked" data-side="a">
+                  <div class="gap__label">A · 대상 유형까지</div>
                   <p>비회원 · 회원 · BP · 점포 · 부가서비스 <b>다섯 유형</b>을 여러 개 고른다. “BP 전체”까지다.</p>
                 </div>
-                <div class="gap__opt" data-side="b">
+                <div class="gap__opt is-dropped" data-side="b">
                   <div class="gap__label">B · 개별 대상까지</div>
                   <p>유형을 고른 뒤 <b>특정 BP 몇 곳</b>, <b>특정 점포 몇 곳</b>을 집어 고른다.</p>
                 </div>
               </div>
               <p class="gap__note">
-                문서는 “비회원, 회원, BP, 점포 및 부가서비스 <b>단위로</b> 둘 이상 함께 지정”이라고 했다.
-                <b>단위</b>가 유형을 뜻하는지 개별 대상을 뜻하는지가 갈린다. A 면 대상 고르기가 체크박스 다섯 개로 끝나고,
-                B 면 BP·점포 검색기가 편집 화면 안에 또 들어온다. 점검 안내처럼 특정 점포에만 보내야 하는 공지가
-                실제로 있는지가 판단 기준이다.
+                이 화면의 공지는 <b>WHALE ERP 운영자가 쓰는 것</b>이다. 운영자가 특정 BP 한 곳에게만 알릴 일은
+                문의 답변이나 직접 연락이 더 빠르고, 목업에 넣어 두었던 “㈜한강상회 가맹점 대상 정산 주기 변경”은
+                내용을 보면 <b>본사가 자기 가맹점에 쓰는 글</b>이라 애초에 운영자 공지가 아니었다 — 그건 SUPPORT-3 으로 뗐다.
+                BP·점포를 개별로 집을 이유가 그렇게 사라진다.
               </p>
+              <div class="gap__block">
+                <b>부가서비스만 예외다.</b>
+                <ul>
+                  <li>
+                    “부가서비스를 하나라도 구독한 사람 전체”에게 보내는 공지는 잘 상상이 되지 않는다.
+                    실제로 필요한 것은 <b>상품별</b>이다 — POS 점검 안내를 KIOSK 만 쓰는 점포에 보낼 이유가 없다.
+                  </li>
+                  <li>
+                    부가서비스를 체크하면 <b>상품 목록이 열린다</b>. 상품은 열셋이라 검색 없이 다 보인다 —
+                    BP 쉰 곳, 점포 오백 곳과 다르다.
+                  </li>
+                  <li>
+                    나중에 BP·점포 개별 지정이 필요해지면 <b>같은 자리에 검색기만</b> 붙이면 된다.
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="gap">
+              <div class="gap__head">
+                <span class="gap__no">SUPPORT-3</span>
+                <b>BP 가 자기 조직에 쓰는 공지가 있어야 하는가</b>
+                <span class="gap__ref">S-GRDOPW</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a">
+                  <div class="gap__label">A · 1차에 없다 · 지금 화면</div>
+                  <p>문서와 메뉴구조도 그대로다. 본사가 가맹점에 알릴 일은 <b>문의 답변이나 직접 연락</b>으로.</p>
+                </div>
+                <div class="gap__opt" data-side="b">
+                  <div class="gap__label">B · 1차에 넣는다</div>
+                  <p>BP 마스터가 자기 하위 관리자·가맹점에 공지를 쓴다. <b>작성 화면과 메뉴가 새로</b> 생긴다.</p>
+                </div>
+              </div>
+              <p class="gap__note">
+                공지는 <b>두 층</b>이다. WHALE ERP 운영자가 모든 사용자에게 쓰는 것과, BP 가 자기 조직 안에 쓰는 것.
+                문서(<span class="mono">S-GRDOPW</span>)는 앞의 것만 정했고 “BP·점포·직원은 운영 관리 기능을 쓸 수 없다”라고
+                못박았다. 메뉴구조도도 BP 쪽에는 공지 <b>보기</b>만 있다. 그런데 프랜차이즈 본사가 가맹점에 정산 주기나
+                방침을 알리는 일은 실제로 있고, 그 자리가 지금은 없다.
+              </p>
+              <div class="gap__block">
+                <b>함께 정해야 한다.</b>
+                <ul>
+                  <li><b>범위</b> — 문서에 없으니 넣으면 1차 범위 추가다.</li>
+                  <li><b>메뉴 자리</b> — BP 쪽 ERP 에서는 환경설정·점포관리가 후보인데 <b>둘 다 1팀 영역</b>이다.</li>
+                  <li><b>가맹 Master</b> — 본사가 가맹에게 쓰는 것과, 가맹이 자기 점포 관리자에게 쓰는 것이 같은 기능인가.</li>
+                  <li><b>보이는 곳</b> — BP 공지를 고객지원의 운영자 공지와 한 목록에 섞을지, 따로 둘지.</li>
+                </ul>
+              </div>
             </div>
           </section>
         </div>

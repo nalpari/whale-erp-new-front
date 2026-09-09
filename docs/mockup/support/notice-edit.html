@@ -72,7 +72,15 @@
                     <div class="row" style="padding: 6px 0"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="회원" data-icon="check" data-icon-size="11"></span><span>회원 <span class="subtle">— 로그인한 모든 사용자</span></span></div>
                     <div class="row" style="padding: 6px 0"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="BP" data-icon="check" data-icon-size="11"></span><span>BP <span class="subtle">— 사업자 관리자</span></span></div>
                     <div class="row" style="padding: 6px 0"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="점포" data-icon="check" data-icon-size="11"></span><span>점포 <span class="subtle">— 점포 단위 관리자</span></span></div>
-                    <div class="row" style="padding: 6px 0"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="부가서비스" data-icon="check" data-icon-size="11"></span><span>부가서비스 <span class="subtle">— 해당 상품 구독자</span></span></div>
+                    <div class="row" style="padding: 6px 0"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="부가서비스" data-icon="check" data-icon-size="11"></span><span>부가서비스 <span class="subtle">— 고른 상품의 구독자</span></span></div>
+                  </div>
+                  <!-- 부가서비스는 상품별이다. 체크하면 이 목록이 열린다 (SUPPORT-2). -->
+                  <div class="stack" style="margin: var(--s-2) 0 0 28px; padding-left: var(--s-3); border-left: 1px solid var(--hairline)">
+                    <div class="row" style="padding: 4px 0; border: 0"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="POS" data-icon="check" data-icon-size="11"></span><span>POS</span></div>
+                    <div class="row" style="padding: 4px 0; border: 0"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="KIOSK" data-icon="check" data-icon-size="11"></span><span>KIOSK</span></div>
+                    <div class="row" style="padding: 4px 0; border: 0"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="QR 주문" data-icon="check" data-icon-size="11"></span><span>QR 주문</span></div>
+                    <div class="row" style="padding: 4px 0; border: 0"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="예약" data-icon="check" data-icon-size="11"></span><span>예약</span></div>
+                    <div class="row" style="padding: 4px 0; border: 0"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="재고" data-icon="check" data-icon-size="11"></span><span>재고 <span class="subtle">· 레시피 · 발주 · 대기 순번 … 열셋</span></span></div>
                   </div>
                   <div class="band band--warn" style="margin-top: var(--s-4)">
                     <span class="band__ic" data-icon="eye" data-icon-size="18"></span>
@@ -90,25 +98,26 @@
                 </div>
               </div>
 
-              <div class="gap">
+              <div class="gap is-decided">
                 <div class="gap__head">
                   <span class="gap__no">SUPPORT-2</span>
                   <b>대상을 어디까지 고르게 할 것인가</b>
+                  <span class="gap__decided">확정 · 유형까지, 부가서비스만 상품별</span>
                   <span class="gap__ref">S-GRDOPW</span>
                 </div>
                 <div class="gap__opts">
-                  <div class="gap__opt" data-side="a">
+                  <div class="gap__opt is-picked" data-side="a">
                     <div class="gap__label">A · 유형까지 · 이 화면</div>
-                    <p>다섯 유형을 체크한다. “BP 전체”가 가장 좁은 단위다.</p>
+                    <p>다섯 유형을 체크한다. 부가서비스만 <b>상품 목록</b>이 열린다.</p>
                   </div>
-                  <div class="gap__opt" data-side="b">
+                  <div class="gap__opt is-dropped" data-side="b">
                     <div class="gap__label">B · 개별 대상까지</div>
-                    <p>유형 아래에 <b>특정 BP·점포를 집어</b> 고른다. 검색기가 이 패널 안에 또 들어온다.</p>
+                    <p>유형 아래에 특정 BP·점포를 집어 고른다. 검색기가 이 패널 안에 또 들어온다.</p>
                   </div>
                 </div>
                 <p class="gap__note">
-                  문서의 “비회원, 회원, BP, 점포 및 부가서비스 <b>단위로</b> 지정”에서 단위가 무엇을 뜻하는지가 갈린다.
-                  점검 안내처럼 특정 점포에만 보내야 하는 공지가 실제로 있는지가 판단 기준이다.
+                  이 공지는 운영자가 쓰는 것이라 특정 BP 한 곳을 집을 일이 없다. 상품별 알림은 실제로 필요해서
+                  부가서비스만 아래로 열린다 — 상품은 열셋이라 검색 없이 다 보인다.
                 </p>
               </div>
 
