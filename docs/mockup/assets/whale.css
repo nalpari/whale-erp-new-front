@@ -413,30 +413,6 @@ table {
   color: var(--muted);
 }
 
-/* 서비스 바로가기 (슬라이드 16 ③). ERP 와 Platform 은 메뉴가 통째로 다르다. */
-.svcbtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 36px;
-  padding: 0 8px 0 10px;
-  border: 1px solid var(--hairline-strong);
-  border-radius: var(--r-md);
-  background: var(--surface-card);
-  color: var(--ink);
-  font-size: 13px;
-  white-space: nowrap;
-}
-.svcbtn:hover {
-  background: var(--surface-hover);
-}
-.svcbtn b {
-  font-weight: 600;
-}
-.svcbtn svg {
-  color: var(--muted);
-}
-
 /* 이름을 누르면 MY PAGE 가 열린다 (슬라이드 4). */
 .mebtn {
   display: inline-flex;
