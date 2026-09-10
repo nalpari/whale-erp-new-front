@@ -1,5 +1,10 @@
 # Bundle history
 
+## 2026-09-10
+
+* **Addition**: `docs/mockup/home/` 의 확정 쟁점 4건(HOME-1·2·4·5)과 정책 24줄을
+  [홈·계정 진입](/home.md) concept 으로 옮겼다. HOME-3 은 보류라 뺐다.
+
 ## 2026-08-28
 
 * **Update**: whale-erp-api 연동 샘플(고객 로그인·품목 목록)을 추가하고 [Whale ERP Frontend](/whale-erp-front.md) 에 API 절을 만들었다.
