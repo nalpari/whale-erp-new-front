@@ -16,6 +16,7 @@ concept의 `sources[].resource`에 들어 있으면 해당 concept 본문을 고
 
 코드가 아니라 회의록·기획서 같은 원자료에서 반영할 때는 `docs/raw/`에 자료를 넣고
 `/okf-ingest` 를 실행한다.
+목업(`docs/mockup/`)의 확정 쟁점을 반영할 때는 `/okf-from-mockup [영역]` 을 쓴다.
 
 ## 워크트리
 

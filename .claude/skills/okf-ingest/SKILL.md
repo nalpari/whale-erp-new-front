@@ -1,6 +1,6 @@
 ---
 name: okf-ingest
-description: docs/raw/ 에 넣어둔 원자료(회의록, 기획서, 스펙 덤프 등)를 읽어 okf/ 지식 번들의 concept 본문과 okf/log.md 에 반영한다. "raw 자료 반영해줘", "okf 갱신해줘", "/okf-ingest" 처럼 원자료 기반으로 okf 문서를 업데이트할 때 사용한다.
+description: docs/raw/ 에 넣어둔 원자료(회의록, 기획서, 스펙 덤프 등)를 읽어 okf/ 지식 번들의 concept 본문과 okf/log.md 에 반영한다. "raw 자료 반영해줘", "회의록 반영해줘", "/okf-ingest" 처럼 docs/raw 의 자료를 근거로 okf 문서를 업데이트할 때 사용한다. 근거가 목업(docs/mockup)이면 okf-from-mockup 을 쓴다.
 user-invocable: true
 argument-hint: "[docs/raw 아래 파일 또는 하위 경로 — 생략하면 전체]"
 ---
