@@ -14,6 +14,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 concept의 `sources[].resource`에 들어 있으면 해당 concept 본문을 고치고
 `generated.at`을 갱신한 뒤 `okf/log.md`에 한 줄 남긴다. 해당 없으면 건드리지 않는다.
 
+코드가 아니라 회의록·기획서 같은 원자료에서 반영할 때는 `docs/raw/`에 자료를 넣고
+`/okf-ingest` 를 실행한다.
+
 ## 워크트리
 
 워크트리는 저장소 안이 아니라 플랫폼별 루트 아래, 프로젝트 이름으로 한 단계
