@@ -136,6 +136,7 @@
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">정책</h2>
               <span class="badge badge--quiet">34줄</span>
+              <span class="badge badge--warn">반영 대기 1</span>
             </div>
             <div class="grid grid--2" style="align-items: start">
               <div class="panel">
@@ -151,7 +152,7 @@
                 <li><span class="pol__t">직원은 앱에서 자기 것만 본다. 스케줄을 고치지 못하고, TO-DO 를 만들거나 지우지 못하며, 배정된 것의 상태만 바꾼다.</span><span class="pol__ref">S-WPGUXX · S-NIAGGB</span></li>
                 <li><span class="pol__t">소속 추가 확인 대상의 실명·다른 소속·계약·급여·출퇴근은 관리자에게 보이지 않는다. 수락해도 본인인증 정보(실명·생년월일·연락처)만 새 레코드로 복사한다.</span><span class="pol__ref">S-VZBTHL</span></li>
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 관리자는 직원의 이메일·연락처·주소를 대신 고치지 않는다. 이름·생년월일은 본인인증 확정값, 소속·고용 형태는 계약으로만 바뀐다.</span><span class="pol__ref">S-PIXATL · STAFF-9</span></li>
-                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 비밀번호는 수정이 아니라 <b>초기화</b>만이다. 관리자는 값을 정하지 않고 인증 휴대전화로 재설정 링크만 보낸다. 번호가 틀렸다면 재초대다.</span><span class="pol__ref">S-PIXATL · STAFF-9</span></li>
+                <li><span class="pol__t"><span class="badge badge--warn">반영 대기</span> 비밀번호는 수정이 아니라 <b>초기화</b>만이다. 관리자는 값을 정하지 않고, 시스템이 만든 비밀번호가 직원의 이메일 아이디로 간다. 직원이 앱에서 이메일 핀으로 스스로 푸는 것이 기본이고 관리자 초기화는 보조 경로다.</span><span class="pol__ref">S-PIXATL · STAFF-9</span></li>
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 직원 상세는 현황 요약과 이동만이다. 처리는 각 관리 화면에서 한다.</span><span class="pol__ref">S-PIXATL · STAFF-6</span></li>
                 </ul>
               </div>
@@ -456,11 +457,18 @@
                 <b>대신 비밀번호 초기화를 넣는다.</b>
                 <ul>
                   <li>
-                    관리자가 새 비밀번호를 <b>정하지 않는다</b>. 등록된 휴대전화로 재설정 링크를 보낼 뿐이라
+                    관리자가 새 비밀번호를 <b>정하지 않는다</b>. 시스템이 만든 새 비밀번호가 직원의 <b>이메일 아이디</b>로 갈 뿐이라
                     관리자는 값을 알지 못한다. 아는 순간 그 계정으로 한 일이 누구의 것인지 흐려진다.
                   </li>
                   <li>
-                    보내는 번호는 초대 연결에 쓴 그 번호다(STAFF-7). 번호가 틀렸다면 초기화가 아니라 재초대다.
+                    <b>한 번 뒤집혔다.</b> 처음엔 본인인증 휴대전화로 재설정 링크를 보내기로 했는데, 직원 앱 쪽에서 로그인 아이디를 이메일로 바꾸고
+                    비밀번호 찾기를 이메일 핀으로 정하면서 링크 방식을 버렸다 — 로그인 못 한 앱은 링크를 열 자리가 없다.
+                    관리자 초기화는 직원이 스스로 핀으로 못 풀 때의 <b>보조 경로</b>가 됐다. 휴대전화 번호는 초대 연결의 매칭 키로만 남고,
+                    번호가 틀렸다면 초기화가 아니라 재초대다.
+                  </li>
+                  <li>
+                    <b>열린 것.</b> 이메일을 못 받는 직원(메일 앱 미설정, 가입 때 오타)은 핀도 관리자 초기화도 막힌다. 관리자 쪽에 받아 줄 수단을 둘지는
+                    manyfast 슬롯 질문으로 올려 두었다.
                   </li>
                   <li>
                     A 안의 근거였던 “앱을 쓰지 않는 직원”은 성립하지 않는다 — <b>계약 날인 자체가 앱에서</b>
