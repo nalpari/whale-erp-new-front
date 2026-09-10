@@ -754,6 +754,37 @@
     });
   }
 
+  /* ---------- 말풍선 (data-tip) ---------- */
+  function wireTips() {
+    var box = null;
+    function hide() { if (box) { box.remove(); box = null; } }
+    function show(el) {
+      hide();
+      box = document.createElement("div");
+      box.className = "tipbox";
+      box.setAttribute("role", "tooltip");
+      box.textContent = el.dataset.tip;
+      document.body.appendChild(box);
+      var r = el.getBoundingClientRect();
+      var left = Math.max(8, Math.min(r.left, window.innerWidth - box.offsetWidth - 8));
+      box.style.left = left + "px";
+      box.style.top = r.bottom + 8 + "px";
+      box.style.setProperty("--tip-x", (r.left + r.width / 2 - left) + "px");
+    }
+    document.addEventListener("mouseover", function (e) {
+      var t = e.target.closest("[data-tip]");
+      if (t) show(t);
+    });
+    document.addEventListener("mouseout", function (e) {
+      var t = e.target.closest("[data-tip]");
+      if (t && !t.contains(e.relatedTarget)) hide();
+    });
+    document.addEventListener("focusin", function (e) { var t = e.target.closest("[data-tip]"); if (t) show(t); });
+    document.addEventListener("focusout", hide);
+    document.addEventListener("scroll", hide, true);
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") hide(); });
+  }
+
   function wireDrawer() {
     var t = document.querySelector(".navtoggle");
     var side = document.getElementById("side");
@@ -793,6 +824,7 @@
     wireDrawer();
     wirePager();
     wireHint();
+    wireTips();
     openTabFromHash();
     window.addEventListener("hashchange", openTabFromHash);
   }

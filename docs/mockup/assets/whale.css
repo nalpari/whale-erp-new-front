@@ -2934,6 +2934,32 @@ a.tile:hover {
   white-space: nowrap;
 }
 
+/* 말풍선 — data-tip 을 단 요소에 마우스를 올리거나 포커스하면 아래에 뜬다. body 에 붙어 잘리지 않는다. */
+.tipbox {
+  position: fixed;
+  z-index: 60;
+  max-width: 320px;
+  padding: 8px 11px;
+  border-radius: var(--r-md);
+  background: var(--ink);
+  color: var(--on-dark);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.55;
+  white-space: pre-line;
+  pointer-events: none;
+}
+.tipbox::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: var(--tip-x, 16px);
+  margin-left: -5px;
+  border: 5px solid transparent;
+  border-top: 0;
+  border-bottom-color: var(--ink);
+}
+
 /* FAQ 아코디언 — 문서가 "답변은 목록에서 펼치는 아코디언"이라고 정했다.
    상세 페이지로 넘기지 않는다는 뜻이라 details/summary 를 그대로 쓴다. */
 .acc {
