@@ -75,7 +75,7 @@
                 <span class="mk-card__route">/login</span>
                 <span class="mk-card__name">로그인 · 가입 · 계정 찾기</span>
                 <span class="mk-card__desc">
-                  한 화면 세 탭. 가맹점은 본사 초대로만 가입하므로 가입 경로가 유형에 따라 갈린다.
+                  한 화면 세 탭. 가입은 일반 BP 와 본사 BP 만 하고, 가맹점은 본사가 만들어 준 계정으로 로그인한다.
                 </span>
                 <span class="mk-card__end">
                   <span class="badge badge--quiet">S-DKPXLC</span>
@@ -115,6 +115,7 @@
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">정책</h2>
               <span class="badge badge--quiet">25줄</span>
+              <span class="badge badge--warn">반영 대기 1</span>
             </div>
             <div class="grid grid--2" style="align-items: start">
               <div class="panel">
@@ -128,7 +129,7 @@
                 <li><span class="pol__t">로그인한 사용자가 로그인 전 홈 주소로 오면 로그인 후 홈으로 보낸다.</span><span class="pol__ref">F-QLMOVM</span></li>
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 로그인 화면은 로그인·사업자 회원가입·계정 찾기 <b>세 탭</b>이다. 초대 확인 탭은 직원 앱의 것이라 두지 않는다.</span><span class="pol__ref">S-DKPXLC · HOME-2</span></li>
                 <li><span class="pol__t">직원은 웹으로 로그인하지 않는다. 직원 앱으로 들어간다.</span><span class="pol__ref">S-DKPXLC</span></li>
-                <li><span class="pol__t">일반 BP 와 본사 BP 는 직접 가입하고, 가맹점은 본사가 보낸 <b>초대로만</b> 가입한다. 초대 링크는 로그인 화면이 아니라 별도 수락 주소로 들어온다.</span><span class="pol__ref">S-DKPXLC</span></li>
+                <li><span class="pol__t"><span class="badge badge--warn">반영 대기</span> 일반 BP 와 본사 BP 는 직접 가입한다. <b>가맹점은 가입하지 않는다</b> — 본사가 관리자 계정을 만들어 주고 가맹점은 그 계정으로 로그인한다. 초대 링크나 수락 주소는 없다.</span><span class="pol__ref">S-DKPXLC · HOME-2</span></li>
                 <li><span class="pol__t">가입과 BP 등록 절차 자체는 1팀 영역이다. 여기서는 진입점과 안내 문구만 다룬다.</span><span class="pol__ref">S-DKPXLC</span></li>
                 <li><span class="pol__t">계정 찾기의 본인확인 번호는 가입 때 인증한 번호와 같아야 한다.</span><span class="pol__ref">S-DKPXLC</span></li>
                 <li><span class="pol__t">도입문의는 로그인 없이 받는다. 문의사항과 다른 유형으로 관리하고 담당자가 영업일 1~2일 안에 연락한다. 문의자가 상태를 조회하는 화면은 없다.</span><span class="pol__ref">S-SDMDKC</span></li>
@@ -231,9 +232,9 @@
               </div>
               <p class="gap__note">
                 초대를 받아 들어오는 사람은 직원이고, 직원은 이 화면이 아니라 <b>직원 전용 앱</b>으로
-                들어간다. 그래서 웹 로그인 화면에 초대 탭을 둘 이유가 없다. 가맹점 초대 수락은
-                초대 링크로 곧장 들어오는 별도 주소(<span class="mono">/invite/[token]</span>)라
-                역시 탭이 아니다.
+                들어간다. 그래서 웹 로그인 화면에 초대 탭을 둘 이유가 없다. 처음엔 가맹점이 본사 초대 링크로
+                가입한다고 봤는데 <b>가맹점은 가입하지 않는다</b> — 본사가 관리자 계정을 만들어 주고 그 계정으로 로그인한다.
+                초대 링크도 수락 주소도 없다.
               </p>
             </div>
 

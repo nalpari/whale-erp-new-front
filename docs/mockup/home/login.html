@@ -34,8 +34,8 @@
           <p class="gap__note" style="margin: 0">
             <b>로그인 · 사업자 회원가입 · 아이디/비밀번호 찾기</b> 셋만 둔다. 시안에 있던 “초대 확인”은
             뺐다 — 초대를 받아 들어오는 사람은 직원이고, 직원은 이 화면이 아니라
-            <b>직원 전용 앱</b>으로 들어간다. 가맹점 초대 수락은 초대 링크로 직접 들어오는
-            별도 주소(<span class="mono">/invite/[token]</span>)라 로그인 화면의 탭이 아니다.
+            <b>직원 전용 앱</b>으로 들어간다. 가맹점은 가입하지 않는다 — 본사가 관리자 계정을 만들어 주고
+            그 계정으로 로그인 탭에서 바로 들어온다.
           </p>
         </div>
 
@@ -65,7 +65,7 @@
 
           <div data-panel="signup" hidden class="stack--lg" style="display: flex; flex-direction: column">
             <p class="subtle">
-              가입 경로는 BP 유형에 따라 다릅니다. 가맹점은 본사 초대로만 가입할 수 있습니다.
+              가입은 일반 BP 와 본사 BP 가 합니다. 가맹점은 가입하지 않고 본사가 만들어 준 계정으로 로그인합니다.
             </p>
             <div class="stack">
               <button class="card card--hover" type="button" style="text-align: left; cursor: pointer">
@@ -83,16 +83,16 @@
                   <span class="badge badge--quiet">직접 가입</span>
                 </div>
                 <p class="subtle">
-                  가맹점을 두는 프랜차이즈 본사. 가입 후 가맹점을 초대하고 기초정보를 내려보냅니다.
+                  가맹점을 두는 프랜차이즈 본사. 가입 후 가맹점 관리자 계정을 만들어 주고 기초정보를 내려보냅니다.
                 </p>
               </button>
               <button class="card" type="button" disabled style="text-align: left">
                 <div class="spread">
                   <span class="t-h2">가맹점</span>
-                  <span class="badge badge--warn">초대 전용</span>
+                  <span class="badge badge--quiet">가입 없음</span>
                 </div>
                 <p class="subtle">
-                  본사가 보낸 초대로만 가입합니다. 문자로 받은 <b>초대 링크</b>를 열면 그 자리에서 가입이 시작됩니다.
+                  가입하지 않습니다. 본사가 관리자 계정을 만들어 주면 그 계정으로 <b>로그인</b> 탭에서 바로 들어옵니다.
                 </p>
               </button>
             </div>
