@@ -18,7 +18,17 @@ os.chdir(ROOT)
 
 ASSET = re.compile(r'(href|src)="((?:\.\./)*assets/[^"?]+)"')
 
+FLOW = os.path.normpath(os.path.join(ROOT, "..", "flow"))  # 유저 플로우(archify)는 옆 폴더에 산다
+
 class Handler(http.server.SimpleHTTPRequestHandler):
+    def translate_path(self, path):
+        # 목업 페이지의 ../../flow/… 링크는 브라우저에서 /flow/… 로 뭉친다. 그걸 docs/flow 로 보낸다.
+        clean = path.split("?", 1)[0].split("#", 1)[0]
+        if clean == "/flow" or clean.startswith("/flow/"):
+            rest = clean[len("/flow"):].lstrip("/") or "index.html"
+            return os.path.normpath(os.path.join(FLOW, rest))
+        return super().translate_path(path)
+
     def _stamp(self, html, page_dir):
         def sub(m):
             attr, rel = m.group(1), m.group(2)

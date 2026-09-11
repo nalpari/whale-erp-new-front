@@ -1,0 +1,296 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "근무 스케줄과 TO-DO",
+    "quality_profile": "showcase",
+    "legend": {
+      "entries": {
+        "frontend": {
+          "label": "화면"
+        },
+        "backend": {
+          "label": "시스템 처리"
+        },
+        "security": {
+          "label": "판정 · 예외"
+        },
+        "messagebus": {
+          "label": "발송 · 알림"
+        },
+        "database": {
+          "label": "기록"
+        },
+        "external": {
+          "label": "직원 앱"
+        },
+        "cloud": {
+          "label": "외부"
+        }
+      }
+    },
+    "views": [
+      {
+        "id": "v1",
+        "label": "스케줄이 직원에게 가기까지",
+        "focus": [
+          "sched",
+          "copy",
+          "edit",
+          "confirm",
+          "push",
+          "appSched"
+        ],
+        "note": "복사든 직접 입력이든 확정을 거쳐야 직원 앱에 닿는다."
+      },
+      {
+        "id": "v2",
+        "label": "TO-DO",
+        "focus": [
+          "todoNew",
+          "assign",
+          "push",
+          "appTodo",
+          "state"
+        ],
+        "note": "관리자가 만들고 배정하며, 직원은 수행 상태만 바꾼다."
+      }
+    ],
+    "viewBox": [
+      1150,
+      668
+    ]
+  },
+  "lanes": [
+    {
+      "id": "sch",
+      "label": "스케줄 (관리자 웹)"
+    },
+    {
+      "id": "todo",
+      "label": "TO-DO (관리자 웹)"
+    },
+    {
+      "id": "sys",
+      "label": "시스템"
+    },
+    {
+      "id": "app",
+      "label": "직원 앱"
+    }
+  ],
+  "phases": [
+    {
+      "id": "p1",
+      "label": "작성",
+      "fromCol": 0,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "p2",
+      "label": "전달",
+      "fromCol": 4,
+      "toCol": 5
+    }
+  ],
+  "groups": [
+    {
+      "id": "g1",
+      "label": "STAFF-13 · 빈 주에서만 · 재직자만",
+      "lane": "sch",
+      "fromCol": 1,
+      "toCol": 1,
+      "variant": "dashed"
+    },
+    {
+      "id": "g2",
+      "label": "STAFF-4 · 특별업무 전용",
+      "lane": "todo",
+      "fromCol": 1,
+      "toCol": 2,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": [
+    "sched",
+    "copy",
+    "edit",
+    "confirm",
+    "push",
+    "appSched"
+  ],
+  "nodes": [
+    {
+      "id": "sched",
+      "lane": "sch",
+      "col": 0,
+      "type": "frontend",
+      "label": "주간 스케줄",
+      "sublabel": "주 이동 · 직접 입력도 여기서",
+      "width": 140
+    },
+    {
+      "id": "copy",
+      "lane": "sch",
+      "col": 1,
+      "type": "backend",
+      "label": "지난 주 복사",
+      "sublabel": "미리보기 · 확정 전 상태",
+      "width": 150
+    },
+    {
+      "id": "edit",
+      "lane": "sch",
+      "col": 2,
+      "type": "frontend",
+      "label": "등록 · 수정 · 일괄",
+      "sublabel": "시점 제한 없음",
+      "width": 150
+    },
+    {
+      "id": "confirm",
+      "lane": "sch",
+      "col": 3,
+      "type": "backend",
+      "label": "스케줄 확정",
+      "sublabel": "지난 날짜면 급여 경고",
+      "width": 140
+    },
+    {
+      "id": "todoNew",
+      "lane": "todo",
+      "col": 1,
+      "type": "frontend",
+      "label": "TO-DO 등록",
+      "sublabel": "날짜 필수 · 시간 선택",
+      "width": 140
+    },
+    {
+      "id": "assign",
+      "lane": "todo",
+      "col": 2,
+      "type": "backend",
+      "label": "배정",
+      "sublabel": "개인 또는 근무지 전체",
+      "width": 140,
+      "tag": "각자 · 한 명은 등록 때"
+    },
+    {
+      "id": "state",
+      "lane": "todo",
+      "col": 5,
+      "type": "database",
+      "label": "상태",
+      "sublabel": "대기 · 진행 중 · 완료",
+      "width": 140
+    },
+    {
+      "id": "push",
+      "lane": "sys",
+      "col": 4,
+      "type": "messagebus",
+      "label": "앱 푸시",
+      "sublabel": "주요 변경만 · 즉시",
+      "width": 140,
+      "tag": "긴급은 근무시간 외도"
+    },
+    {
+      "id": "appSched",
+      "lane": "app",
+      "col": 4,
+      "type": "external",
+      "label": "근무 일정 보기",
+      "sublabel": "직원은 고치지 못한다",
+      "width": 140
+    },
+    {
+      "id": "appTodo",
+      "lane": "app",
+      "col": 5,
+      "type": "external",
+      "label": "TO-DO 수행",
+      "sublabel": "배정된 것만 · 상태만 바꿈",
+      "width": 150
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "sched",
+      "to": "copy",
+      "variant": "dashed",
+      "label": "빈 주에서만",
+      "role": "branch"
+    },
+    {
+      "id": "e2",
+      "from": "copy",
+      "to": "edit",
+      "variant": "emphasis",
+      "label": "복사 결과"
+    },
+    {
+      "id": "e3",
+      "from": "edit",
+      "to": "confirm",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e4",
+      "from": "confirm",
+      "to": "push",
+      "variant": "emphasis",
+      "label": "주요 변경"
+    },
+    {
+      "id": "e5",
+      "from": "push",
+      "to": "appSched",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e6",
+      "from": "todoNew",
+      "to": "assign",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e7",
+      "from": "assign",
+      "to": "push",
+      "variant": "default",
+      "label": "배정 알림"
+    },
+    {
+      "id": "e8",
+      "from": "push",
+      "to": "appTodo",
+      "variant": "default"
+    },
+    {
+      "id": "e9",
+      "from": "appTodo",
+      "to": "state",
+      "variant": "dashed",
+      "label": "상태 변경",
+      "role": "return"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "확정된 결정",
+      "items": [
+        "STAFF-13 지난 주 복사는 빈 주에서만, 재직자만, 확정 전 상태 · STAFF-4 TO-DO는 반복 없음, 직원은 등록·삭제 못 함"
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "밖에 있는 것",
+      "items": [
+        "출퇴근 기록의 등록은 직원 앱(GPS)이 맡고 웹은 조회·보정만 · 스케줄은 급여 초안의 참고 정보"
+      ]
+    }
+  ]
+}

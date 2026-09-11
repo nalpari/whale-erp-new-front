@@ -1,0 +1,245 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "커뮤니티 운영과 운영 알림 — 운영자가 쓰고 사건이 알림이 된다",
+    "quality_profile": "showcase",
+    "legend": {
+      "entries": {
+        "frontend": {
+          "label": "화면"
+        },
+        "backend": {
+          "label": "시스템 처리"
+        },
+        "security": {
+          "label": "판정 · 예외"
+        },
+        "messagebus": {
+          "label": "발송 · 알림"
+        },
+        "database": {
+          "label": "기록"
+        },
+        "external": {
+          "label": "직원 앱"
+        },
+        "cloud": {
+          "label": "외부"
+        }
+      }
+    },
+    "views": [
+      {
+        "id": "v1",
+        "label": "공지가 서기까지",
+        "focus": [
+          "cm",
+          "edit",
+          "publish",
+          "shown"
+        ],
+        "note": "노출 대상이 어디에 설지 가른다. 비회원이 들면 로그인 전 홈에도 선다."
+      },
+      {
+        "id": "v2",
+        "label": "사건이 알림이 되기까지",
+        "focus": [
+          "lead",
+          "event",
+          "bell",
+          "inbox"
+        ],
+        "note": "직원의 계약 날인·거부도 같은 길로 관리자에게 온다."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "ops",
+      "label": "플랫폼 운영자"
+    },
+    {
+      "id": "sys",
+      "label": "시스템"
+    },
+    {
+      "id": "recv",
+      "label": "받는 쪽 (관리자 웹)"
+    }
+  ],
+  "phases": [
+    {
+      "id": "p1",
+      "label": "공지 · FAQ",
+      "fromCol": 0,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "p2",
+      "label": "운영 알림",
+      "fromCol": 4,
+      "toCol": 5
+    }
+  ],
+  "groups": [
+    {
+      "id": "g1",
+      "label": "SUPPORT-2 · 유형까지, 부가서비스만 상품별",
+      "lane": "ops",
+      "fromCol": 1,
+      "toCol": 1,
+      "variant": "dashed"
+    },
+    {
+      "id": "g2",
+      "label": "NOTIFY-1·2 · 들어가면 읽음 · 종 + 알림함",
+      "lane": "recv",
+      "fromCol": 4,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": [
+    "cm",
+    "edit",
+    "publish",
+    "shown"
+  ],
+  "nodes": [
+    {
+      "id": "cm",
+      "lane": "ops",
+      "col": 0,
+      "type": "frontend",
+      "label": "커뮤니티관리",
+      "sublabel": "공지 · FAQ · 문의 · 도입문의",
+      "width": 160
+    },
+    {
+      "id": "edit",
+      "lane": "ops",
+      "col": 1,
+      "type": "frontend",
+      "label": "공지 · FAQ 편집",
+      "sublabel": "노출 대상 · 상단 고정",
+      "width": 160,
+      "tag": "임시저장 · 게시 · 비공개"
+    },
+    {
+      "id": "lead",
+      "lane": "ops",
+      "col": 3,
+      "type": "frontend",
+      "label": "문의 · 도입문의 처리",
+      "sublabel": "답변 · 상태 변경",
+      "width": 160
+    },
+    {
+      "id": "publish",
+      "lane": "sys",
+      "col": 2,
+      "type": "backend",
+      "label": "게시",
+      "sublabel": "노출 대상별로 가른다",
+      "width": 140
+    },
+    {
+      "id": "event",
+      "lane": "sys",
+      "col": 4,
+      "type": "messagebus",
+      "label": "운영 알림 생성",
+      "sublabel": "여섯 사건 · 중복 없음",
+      "width": 140,
+      "tag": "이메일도 함께"
+    },
+    {
+      "id": "shown",
+      "lane": "recv",
+      "col": 3,
+      "type": "frontend",
+      "label": "공지가 서는 곳",
+      "sublabel": "로그인 전 홈 · 고객지원",
+      "width": 150
+    },
+    {
+      "id": "bell",
+      "lane": "recv",
+      "col": 4,
+      "type": "frontend",
+      "label": "종 팝오버",
+      "sublabel": "미확인 수 · 최근 몇 건",
+      "width": 140
+    },
+    {
+      "id": "inbox",
+      "lane": "recv",
+      "col": 5,
+      "type": "frontend",
+      "label": "알림함",
+      "sublabel": "들어가면 읽음",
+      "width": 140,
+      "tag": "사람마다 따로"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "cm",
+      "to": "edit",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e2",
+      "from": "edit",
+      "to": "publish",
+      "variant": "emphasis",
+      "label": "게시"
+    },
+    {
+      "id": "e3",
+      "from": "publish",
+      "to": "shown",
+      "variant": "emphasis",
+      "label": "비회원이면 로그인 전 홈에도"
+    },
+    {
+      "id": "e5",
+      "from": "lead",
+      "to": "event",
+      "variant": "default",
+      "label": "접수 · 답변 · 상태 변경"
+    },
+    {
+      "id": "e6",
+      "from": "event",
+      "to": "bell",
+      "variant": "default"
+    },
+    {
+      "id": "e7",
+      "from": "bell",
+      "to": "inbox",
+      "variant": "default",
+      "label": "전체 보기"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "확정된 결정",
+      "items": [
+        "SUPPORT-2 노출 대상은 다섯 유형, 부가서비스만 상품별 · 상단 고정은 공지에만 · NOTIFY-1 들어가면 읽음 · NOTIFY-2 종과 알림함 둘 다"
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "밖에 있는 것",
+      "items": [
+        "BP가 자기 조직에 쓰는 공지는 1차에 없다 (SUPPORT-3) · 모바일 푸시·문자 없음, 직원 알림은 직원 앱 몫 · 홈에는 알림 목록 없음"
+      ]
+    }
+  ]
+}

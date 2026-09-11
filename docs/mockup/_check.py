@@ -58,7 +58,7 @@ def check_links(files):
         root=os.path.dirname(f)
         for m in re.findall(r'(?:href|src)="([^"#][^"]*?)"', open(f, encoding="utf-8").read()):
             if m.startswith(("http","#","mailto")): continue
-            if not os.path.exists(os.path.normpath(os.path.join(root, m.split("#")[0]))):
+            if not os.path.exists(os.path.normpath(os.path.join(root, m.split("#")[0].split("?")[0]))):
                 out.append("%s → %s" % (f, m))
     return out
 
@@ -82,7 +82,7 @@ def check_layers(files):
 
     # 루트는 영역 개요 말고 다른 화면을 직접 가리키지 않는다
     for m in re.findall(r'href="([^"]+\.html[^"]*)"', root):
-        if not m.endswith("overview.html"):
+        if not m.endswith("overview.html") and not m.startswith("../flow/"):
             out.append("루트가 개별 화면을 직접 링크한다: %s" % m)
     # 루트는 스펙 ID·쟁점 ID 를 갖지 않는다
     for pat, label in [(r'\bS-[A-Z]{6}\b', "스펙 ID"), (r'\b[A-Z]{4,}-\d\b', "쟁점 ID")]:

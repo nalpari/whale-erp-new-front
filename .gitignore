@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# archify visual-check 스크린샷 증거는 커밋하지 않는다 (영수증 JSON 은 남긴다)
+docs/flow/*.visual-check.*.png
