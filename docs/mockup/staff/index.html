@@ -617,6 +617,29 @@
                 </p>
               </div>
 
+              <div class="gap is-decided">
+                <div class="gap__head">
+                  <span class="gap__no">STAFF-14</span>
+                  <b>스케줄의 기본값은 어디서 오는가</b>
+                  <span class="gap__decided">확정 · 근로계약 근무시간 · 등록할 때 한 번</span>
+                  <span class="gap__ref">S-WPGUXX</span>
+                </div>
+                <div class="gap__opts">
+                  <div class="gap__opt is-picked" data-side="a">
+                    <div class="gap__label">A · 계약에서 채우고 관리자가 고친다 · 이 화면</div>
+                    <p>직원을 고르면 계약서의 근무일·시작·종료·휴게가 미리 들어온다. 관리자는 고쳐 저장한다.</p>
+                  </div>
+                  <div class="gap__opt is-dropped" data-side="b">
+                    <div class="gap__label">B · 빈 칸에서 시작</div>
+                    <p>매번 손으로 넣는다. 계약과 스케줄이 따로 논다.</p>
+                  </div>
+                </div>
+                <p class="gap__note">
+                  자동 반영은 <b>등록하는 시점에 한 번</b>이다. 계약을 나중에 고쳐도 이미 등록된 스케줄은 바뀌지 않는다 — 스케줄은 급여 초안의 참고 정보라 등록된 뒤에 저절로 움직이면 안 된다.
+                  일괄 등록도 직원마다 자기 계약의 근무시간을 기본값으로 쓴다. 계약이 미체결이거나 근무시간이 없으면 빈 값으로 열고 경고만 단다.
+                </p>
+              </div>
+
 
 
               <!-- 주간·일간 전환 · S-WPGUXX
@@ -868,6 +891,17 @@
                         </select>
                       </div>
                     </div>
+                    <!-- STAFF-14 : 시작·종료·휴게는 이 직원의 근로계약 근무시간에서 미리 채워진다. 관리자는 고쳐 저장한다. -->
+                    <div class="band band--info" style="margin: 0 0 var(--s-3)">
+                      <span class="band__ic" data-icon="info" data-icon-size="18"></span>
+                      <div class="band__body">
+                        <div class="band__title">근로계약의 근무시간에서 채웠다 — 화·목·토 09:00-16:00 · 휴게 60분</div>
+                        <p class="band__desc">등록할 때 한 번 반영된다. 고쳐 저장해도 되고, 계약을 나중에 바꿔도 이미 등록한 스케줄은 그대로다.</p>
+                      </div>
+                      <div class="band__act">
+                        <button class="btn btn--secondary btn--sm" type="button">계약 값으로 되돌리기</button>
+                      </div>
+                    </div>
                     <div class="grid grid--3" style="gap: var(--s-4)">
                       <div class="field">
                         <label for="s1">시작</label>
@@ -875,7 +909,7 @@
                       </div>
                       <div class="field">
                         <label for="s2">종료</label>
-                        <input class="input mono" id="s2" type="time" value="17:00" />
+                        <input class="input mono" id="s2" type="time" value="16:00" />
                       </div>
                       <div class="field">
                         <label for="s3">휴게시간</label>
@@ -902,7 +936,7 @@
                     </div>
                   </div>
                   <div class="panel__note">
-                    같은 직원의 근무일시가 겹치면 등록을 막는다. 지난 날짜를 고치면 급여명세서에 영향을 줄 수 있다고 알린다.
+                    기본값은 근로계약의 근무시간이고 관리자가 편집한다. 같은 직원의 근무일시가 겹치면 등록을 막는다. 지난 날짜를 고치면 급여명세서에 영향을 줄 수 있다고 알린다.
                   </div>
                 </section>
 

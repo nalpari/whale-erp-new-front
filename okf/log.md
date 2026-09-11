@@ -2,6 +2,7 @@
 
 ## 2026-09-11
 
+* **Update**: 스케줄 기본값은 근로계약 근무시간이라는 결정(STAFF-14)을 [직원 운영 관리](/staff.md) 의 정책과 결정 표에 더했다.
 * **Addition**: `docs/mockup/staff/` 의 확정 쟁점 13건(STAFF-1~13)과 정책 35줄, 화면 7개를
   [직원 운영 관리](/staff.md) concept 으로 옮겼다. 보류 없음.
 * **Addition**: `docs/mockup/support/` 의 확정 쟁점 4건(SUPPORT-1~4)과 정책 19줄, 화면 7개를
