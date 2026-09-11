@@ -152,7 +152,7 @@
       "col": 1,
       "type": "backend",
       "label": "초대 유형 판별",
-      "sublabel": "재직 중이면 즉시 발송",
+      "sublabel": "계정을 조회해 정한다",
       "width": 170
     },
     {
@@ -188,14 +188,14 @@
       "lane": "sys",
       "col": 4,
       "type": "messagebus",
-      "label": "계약서 자동 발송",
-      "sublabel": "관리자 개입 없이",
+      "label": "계약서 발송",
+      "sublabel": "관리자 개입 없이 자동",
       "width": 150
     },
     {
       "id": "sign",
       "lane": "app",
-      "col": 4,
+      "col": 5,
       "type": "frontend",
       "label": "직원 날인 · 거부",
       "sublabel": "거부 사유를 남긴다",
@@ -239,6 +239,17 @@
       "from": "signup",
       "to": "match",
       "variant": "emphasis"
+    },
+    {
+      "id": "e-kind-send",
+      "from": "kind",
+      "to": "send",
+      "label": "재직 중이면 즉시 발송",
+      "variant": "dashed",
+      "role": "branch",
+      "fromSide": "top",
+      "toSide": "top",
+      "channelY": 166
     },
     {
       "id": "e-match-send",
