@@ -56,6 +56,22 @@
         <span class="sub">운영자가 쓰고 사건이 알림이 된다 · SUPPORT-2 · NOTIFY-1·2</span>
       </a>
       </div>
+      <h2 style="font-size:15px;margin:32px 0 10px">직원 앱</h2>
+      <div class="grid">
+        <a class="card" id="staff-flow" href="http://172.30.1.65:8081/flow/">
+          <span class="area">staff-app</span>
+          <b>직원 앱 유저 플로우</b>
+          <span class="sub">가입과 계약 날인 · 로그인 · 출퇴근(GPS) · 근무·급여 · 알림 — 직원 앱 저장소의 허브로 간다</span>
+        </a>
+      </div>
+      <script>
+        /* 직원 앱 허브는 다른 저장소에 산다. 미니에서는 8081, 이 Mac 에서는 8098 로 뜬다. */
+        (function () {
+          var a = document.getElementById("staff-flow"), h = location.hostname;
+          if (h === "localhost" || h === "127.0.0.1") a.href = "http://localhost:8098/flow/";
+          else if (h) a.href = location.protocol + "//" + h + ":8081/flow/";
+        })();
+      </script>
       <div class="note">
         여섯 열 제한 때문에 웹 전체를 한 장에 넣지 않고 업무 흐름 단위로 나눴다. 링크는 라이트 테마로 열리고(<code>?theme=light</code>),
         한 번 고른 테마는 그 브라우저에 기억된다. 뷰어 버튼 글자는 영어다. 원본은 각 폴더의 <code>*.workflow.json</code> 이고 archify 스킬로 다시 만든다.
