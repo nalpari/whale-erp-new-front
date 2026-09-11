@@ -96,7 +96,7 @@
       "label": "HOME-2 · 세 탭 · 초대 확인 없음",
       "lane": "auth",
       "fromCol": 1,
-      "toCol": 2,
+      "toCol": 1,
       "variant": "security"
     },
     {
@@ -150,15 +150,6 @@
       "label": "로그인 · 가입 · 계정 찾기",
       "sublabel": "세 탭 한 화면",
       "width": 170
-    },
-    {
-      "id": "invite",
-      "lane": "auth",
-      "col": 2,
-      "type": "security",
-      "label": "가맹점 초대 수락",
-      "sublabel": "본사 초대로만 가입",
-      "width": 150
     },
     {
       "id": "home",
@@ -219,14 +210,6 @@
       "to": "inquiry",
       "variant": "dashed",
       "role": "branch"
-    },
-    {
-      "id": "e4",
-      "from": "invite",
-      "to": "login",
-      "variant": "security",
-      "label": "가입 뒤",
-      "role": "return"
     },
     {
       "id": "e5",
