@@ -192,9 +192,9 @@
       "col": 4,
       "type": "messagebus",
       "label": "앱 푸시",
-      "sublabel": "주요 변경만 · 즉시",
+      "sublabel": "확정 때 · 바뀐 사람에게만",
       "width": 140,
-      "tag": "긴급은 근무시간 외도"
+      "tag": "STAFF-15 · 긴급은 근무시간 외도"
     },
     {
       "id": "appSched",
@@ -242,7 +242,7 @@
       "from": "confirm",
       "to": "push",
       "variant": "emphasis",
-      "label": "주요 변경"
+      "label": "등록·수정된 직원만"
     },
     {
       "id": "e5",
