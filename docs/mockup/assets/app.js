@@ -180,7 +180,7 @@
           ]},
           { key: "staff-contracts", text: "근로계약 관리", href: "staff/index.html#contracts", sub: [
             { text: "계약 목록", href: "staff/index.html#contracts", route: "/staff/contracts" },
-            { text: "계약 초안 작성", href: "staff/contracts-new.html", route: "/staff/contracts/new" },
+            { text: "근로계약서 초안 작성", href: "staff/contracts-new.html", route: "/staff/contracts/new" },
             { text: "계약 상세", href: "staff/contracts-detail.html", route: "/staff/contracts/[id]" }
           ]},
           { key: "staff-payrolls", text: "급여명세서 관리", href: "staff/index.html#payroll", sub: [

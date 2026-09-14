@@ -74,7 +74,7 @@
               </a>
               <a class="mk-card" href="contracts-new.html">
                 <span class="mk-card__route">/staff/contracts/new</span>
-                <span class="mk-card__name">계약 초안 작성</span>
+                <span class="mk-card__name">근로계약서 초안 작성</span>
                 <span class="mk-card__desc">
                   채용의 시작점. 초안을 저장하면 시스템이 초대 유형을 스스로 판별해 발송한다.
                 </span>
@@ -156,7 +156,7 @@
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 관리자는 직원의 이메일·연락처·주소를 대신 고치지 않는다. 이름·생년월일은 본인인증 확정값, 소속·고용 형태는 계약으로만 바뀐다.</span><span class="pol__ref">S-PIXATL · STAFF-9</span></li>
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 비밀번호는 수정이 아니라 <b>초기화</b>만이다. 관리자는 값을 정하지 않고, 시스템이 만든 비밀번호가 직원의 이메일 아이디로 간다. 직원이 앱에서 이메일 핀으로 스스로 푸는 것이 기본이고 관리자 초기화는 보조 경로다.</span><span class="pol__ref">S-PIXATL · STAFF-9</span></li>
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 직원 상세는 현황 요약과 이동만이다. 처리는 각 관리 화면에서 한다.</span><span class="pol__ref">S-PIXATL · STAFF-6</span></li>
-                <li><span class="pol__t">로그인 5회 실패로 잠긴 직원은 비밀번호를 새로 정하면 잠금도 함께 풀린다. 관리자 초기화가 잠금 해제를 겸하므로 관리자 웹에 잠금 해제 버튼은 따로 없다.</span><span class="pol__ref">S-PHHICH · 직원 앱 명세</span></li>
+                <li><span class="pol__t">로그인 5회 실패로 잠긴 직원은 비밀번호를 새로 정하면 잠금도 함께 풀린다. 관리자 초기화가 잠금 해제를 겸하므로 관리자 웹에 잠금 해제 버튼은 따로 없다.</span><span class="pol__ref">S-PHHICH · 직원 근무 앱 명세</span></li>
                 </ul>
               </div>
               <div class="panel">
@@ -165,7 +165,7 @@
                   <span class="badge badge--quiet">10</span>
                 </div>
                 <ul class="pol">
-                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> <b>근로계약 초안 저장</b>이 채용의 유일한 시작점이다. 초안 없이 초대를 보낼 수 없고, 초대 유형은 시스템이 정한다.</span><span class="pol__ref">S-OIILIW · STAFF-1</span></li>
+                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> <b>근로계약서 초안 저장</b>이 채용의 유일한 시작점이다. 초안 없이 초대를 보낼 수 없고, 초대 유형은 시스템이 정한다.</span><span class="pol__ref">S-OIILIW · STAFF-1</span></li>
                 <li><span class="pol__t">가입 초대와 재초대는 토큰 링크로, 소속 추가 확인과 복귀 확인은 기존 계정의 앱 푸시로 간다. 재입사는 기존 계정을 두고 복귀 확인을 보낸다.</span><span class="pol__ref">S-VZBTHL</span></li>
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 가입 연결은 초대 토큰과 <b>본인인증 휴대전화</b>가 모두 맞을 때만 자동이다. 어긋나면 보류하고, 관리자가 직접 연락해 확인한 뒤 승인하거나 번호를 고쳐 재초대한다.</span><span class="pol__ref">S-VZBTHL · STAFF-7</span></li>
                 <li><span class="pol__t">보류 중에는 계약서를 보내지 않는다. 승인하면 보류됐던 초안을 그대로 보내고, 재초대하면 새 초대를 만들고 보류됐던 계정은 이 점포와 연결하지 않는다.</span><span class="pol__ref">S-VZBTHL</span></li>
@@ -232,7 +232,7 @@
               <div class="gap__head">
                 <span class="gap__no">STAFF-1</span>
                 <b>채용 절차의 시작점</b>
-                <span class="gap__decided">확정 · 계약 초안이 시작점</span>
+                <span class="gap__decided">확정 · 근로계약서 초안이 시작점</span>
                 <span class="gap__ref">F-GLGEOF · S-OIILIW</span>
               </div>
               <div class="gap__opts">
@@ -454,7 +454,7 @@
               <p class="gap__note">
                 항목마다 주인이 다르고, 따져보니 정할 것은 <b>이메일·주소</b> 하나로 좁혀졌다 —
                 이름·생년월일은 본인인증 확정값이라 아무도 못 바꾸고, 소속·고용형태는 근로계약으로만 바뀌며,
-                휴대폰 번호는 초대 연결의 매칭 키라 손대면 STAFF-7 의 본인 확인 체계가 무너진다.
+                휴대전화번호는 초대 연결의 매칭 키라 손대면 STAFF-7 의 본인 확인 체계가 무너진다.
                 그 하나도 문서가 이미 답했다 — “가입이 완료되는 순간 <b>인적사항을 반영해</b> 자동 발송한다”라
                 계약서에 들어가는 값은 직원이 넣은 것이다. 주소가 계약서와 4대보험에 쓰인다는 것은
                 오히려 본인이 넣어야 할 이유다.
@@ -467,7 +467,7 @@
                     관리자는 값을 알지 못한다. 아는 순간 그 계정으로 한 일이 누구의 것인지 흐려진다.
                   </li>
                   <li>
-                    <b>한 번 뒤집혔다.</b> 처음엔 본인인증 휴대전화로 재설정 링크를 보내기로 했는데, 직원 앱 쪽에서 로그인 아이디를 이메일로 바꾸고
+                    <b>한 번 뒤집혔다.</b> 처음엔 본인인증 휴대전화로 재설정 링크를 보내기로 했는데, 직원 근무 앱 쪽에서 로그인 아이디를 이메일로 바꾸고
                     비밀번호 찾기를 이메일 핀으로 정하면서 링크 방식을 버렸다 — 로그인 못 한 앱은 링크를 열 자리가 없다.
                     관리자 초기화는 직원이 스스로 핀으로 못 풀 때의 <b>보조 경로</b>가 됐다. 휴대전화 번호는 초대 연결의 매칭 키로만 남고,
                     번호가 틀렸다면 초기화가 아니라 재초대다.

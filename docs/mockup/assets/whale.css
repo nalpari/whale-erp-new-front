@@ -2081,7 +2081,7 @@ a.channel:hover {
   display: block;
 }
 
-/* 직원 앱 프레임 — 별도 클라이언트라 여기서는 화면 자체를 그린다 */
+/* 직원 근무 앱 프레임 — 별도 클라이언트라 여기서는 화면 자체를 그린다 */
 .phones {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
