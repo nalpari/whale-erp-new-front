@@ -138,7 +138,8 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">정책</h2>
-              <span class="badge badge--quiet">37줄</span>
+              <span class="badge badge--quiet">38줄</span>
+              <span class="badge badge--warn">반영 대기 1</span>
             </div>
             <div class="grid grid--2" style="align-items: start">
               <div class="panel">
@@ -162,7 +163,7 @@
               <div class="panel">
                 <div class="panel__head">
                   <h3 class="t-h3">초대와 계약</h3>
-                  <span class="badge badge--quiet">9</span>
+                  <span class="badge badge--quiet">10</span>
                 </div>
                 <ul class="pol">
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> <b>근로계약 초안 저장</b>이 채용의 유일한 시작점이다. 초안 없이 초대를 보낼 수 없고, 초대 유형은 시스템이 정한다.</span><span class="pol__ref">S-OIILIW · STAFF-1</span></li>
@@ -174,6 +175,7 @@
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 계약 상태는 발송 대기·서명 대기·체결 완료·거부·만료·종료 <b>여섯</b>이다.</span><span class="pol__ref">S-XDBBDP · STAFF-2</span></li>
                 <li><span class="pol__t">체결된 계약은 고치지 않고 새 계약으로 대체한다. 계약은 계정이 아니라 <b>직원 레코드</b>에 붙고 한 계정이 여러 레코드를 가질 수 있다.</span><span class="pol__ref">S-XDBBDP · F-GLGEOF</span></li>
                 <li><span class="pol__t">계약은 정직원용과 파트타이머용으로 나눈다. 전자서명의 세부 기술은 범위 밖이다.</span><span class="pol__ref">F-GLGEOF</span></li>
+                <li><span class="pol__t"><span class="badge badge--warn">반영 대기</span> 근로계약서에는 <b>주민등록번호를 넣지 않는다</b>. 4대보험 취득 신고와 원천징수에 쓰는 주민등록번호는 서명을 마친 뒤 직원 앱에서 따로 받고, 동의 항목 없이 목적만 밝힌다. 관리자 웹에는 마스킹으로만 보이고 저장은 암호화한다.</span><span class="pol__ref">S-OIILIW · STAFF-16</span></li>
                 </ul>
               </div>
               <div class="panel">
@@ -224,7 +226,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
-              <span class="badge badge--preview">15건 · 확정 15</span>
+              <span class="badge badge--preview">16건 · 확정 16</span>
             </div>
 
             <div class="gap is-decided">
@@ -698,6 +700,29 @@
               <p class="gap__note">
                 알림은 확정 시점에 한 번 묶어 나간다. 저장할 때마다 가지 않는다. 삭제된 스케줄도 그 직원에게는 변경이라 알린다.
                 지난 주 복사로 들어온 것도 확정 때 처음 등록된 것이라 그 직원들에게 간다.
+              </p>
+            </div>
+            <div class="gap is-decided">
+              <div class="gap__head">
+                <span class="gap__no">STAFF-16</span>
+                <b>주민등록번호는 어디서 받는가</b>
+                <span class="gap__decided">확정 · 계약서에는 없다 · 서명 뒤 직원 앱에서 4대보험용으로</span>
+                <span class="gap__ref">S-OIILIW</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt is-picked" data-side="a">
+                  <div class="gap__label">A · 계약과 분리 · 직원이 앱에서 · 지금 화면</div>
+                  <p>계약 초안과 계약서에는 이름·연락처까지만 있다. 직원이 서명을 마치면 앱에서 <b>4대보험·급여 신고 정보</b> 단계가 열리고 거기서 본인이 주민등록번호를 넣는다.</p>
+                </div>
+                <div class="gap__opt is-dropped" data-side="b">
+                  <div class="gap__label">B · 관리자가 계약 초안에 입력</div>
+                  <p>관리자가 초안을 쓸 때 주민등록번호 칸을 채우고 계약서에도 찍힌다. 채용 확정 전 수집이 되기 쉽고 관리자가 원본을 보게 된다.</p>
+                </div>
+              </div>
+              <p class="gap__note">
+                근로기준법 제17조가 계약서에 요구하는 것은 근로조건뿐이고, 근로자명부·임금대장도 생년월일로 특정한다. 개인정보보호법 제24조의2는 주민등록번호를 법령이 요구하는 목적에만 허용하므로
+                4대보험 취득 신고와 원천징수를 근거로 채용 확정 뒤에 받는다. 동의로 받는 항목이 아니라 동의 체크를 두지 않는다. 저장은 암호화, 화면은 마스킹, 신고 파일로 내보낼 때만 원본을 쓴다.
+                4대보험 신고와 원천징수를 이 시스템이 직접 할지 외부 대행에 넘길지는 별도 결정이다.
               </p>
             </div>
           </section>
