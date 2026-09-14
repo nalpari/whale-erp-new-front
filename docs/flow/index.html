@@ -33,7 +33,7 @@
       <a class="card" href="schedule-todo/schedule-todo.html?theme=light">
         <span class="area">staff</span>
         <b>근무 스케줄과 TO-DO</b>
-        <span class="sub">관리자가 정하고 직원 앱이 받는다 · STAFF-4·13</span>
+        <span class="sub">관리자가 정하고 직원 근무 앱이 받는다 · STAFF-4·13</span>
       </a>
       <a class="card" href="payroll/payroll.html?theme=light">
         <span class="area">staff</span>
@@ -56,16 +56,16 @@
         <span class="sub">운영자가 쓰고 사건이 알림이 된다 · SUPPORT-2 · NOTIFY-1·2</span>
       </a>
       </div>
-      <h2 style="font-size:15px;margin:32px 0 10px">직원 앱</h2>
+      <h2 style="font-size:15px;margin:32px 0 10px">직원 근무 앱</h2>
       <div class="grid">
         <a class="card" id="staff-flow" href="http://172.30.1.65:8081/flow/">
           <span class="area">staff-app</span>
-          <b>직원 앱 유저 플로우</b>
-          <span class="sub">가입과 계약 날인 · 로그인 · 출퇴근(GPS) · 근무·급여 · 알림 — 직원 앱 저장소의 허브로 간다</span>
+          <b>직원 근무 앱 유저 플로우</b>
+          <span class="sub">가입과 계약 날인 · 로그인 · 출퇴근(GPS) · 근무·급여 · 알림 — 직원 근무 앱 저장소의 허브로 간다</span>
         </a>
       </div>
       <script>
-        /* 직원 앱 허브는 다른 저장소에 산다. 미니에서는 8081, 이 Mac 에서는 8098 로 뜬다. */
+        /* 직원 근무 앱 허브는 다른 저장소에 산다. 미니에서는 8081, 이 Mac 에서는 8098 로 뜬다. */
         (function () {
           var a = document.getElementById("staff-flow"), h = location.hostname;
           if (h === "localhost" || h === "127.0.0.1") a.href = "http://localhost:8098/flow/";

@@ -22,7 +22,7 @@
           "label": "기록"
         },
         "external": {
-          "label": "직원 앱"
+          "label": "직원 근무 앱"
         },
         "cloud": {
           "label": "외부"
@@ -70,7 +70,7 @@
     },
     {
       "id": "app",
-      "label": "직원 앱"
+      "label": "직원 근무 앱"
     },
     {
       "id": "exc",
@@ -163,7 +163,7 @@
       "lane": "app",
       "col": 5,
       "type": "external",
-      "label": "직원 앱 조회",
+      "label": "직원 근무 앱 조회",
       "sublabel": "퇴직 전까지",
       "width": 140
     },
