@@ -187,7 +187,7 @@
             { text: "명세서 목록", href: "staff/index.html#payroll", route: "/staff/payrolls" },
             { text: "명세서 검토", href: "staff/payrolls-detail.html", route: "/staff/payrolls/[id]" }
           ]},
-          { text: "근무 스케줄 관리", href: "staff/index.html#sched" },
+          { text: "근무스케줄 관리", href: "staff/index.html#sched" },
           { text: "출·퇴근 현황 조회", href: "staff/index.html#sched" },
           { text: "TO-DO 리스트 관리", href: "staff/index.html#todo" }
         ]},
@@ -635,7 +635,7 @@
           bar.querySelectorAll("[data-tab]").forEach(function (o) {
             o.setAttribute("aria-selected", String(o === t));
           });
-          /* 직계 자식만 건드린다. 탭 안에 탭이 있을 때(스케줄의 주간·일간)
+          /* 직계 자식만 건드린다. 탭 안에 탭이 있을 때(근무스케줄의 주간·일간)
              바깥 탭이 안쪽 패널까지 숨겨 버리는 것을 막는다. */
           scope.querySelectorAll(":scope > [data-panel]").forEach(function (p) {
             p.hidden = p.dataset.panel !== t.dataset.tab;

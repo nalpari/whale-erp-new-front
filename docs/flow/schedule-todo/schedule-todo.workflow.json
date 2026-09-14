@@ -2,7 +2,7 @@
   "schema_version": 2,
   "diagram_type": "workflow",
   "meta": {
-    "title": "근무 스케줄과 TO-DO",
+    "title": "근무스케줄과 TO-DO",
     "quality_profile": "showcase",
     "legend": {
       "entries": {
@@ -32,7 +32,7 @@
     "views": [
       {
         "id": "v1",
-        "label": "스케줄이 직원에게 가기까지",
+        "label": "근무스케줄이 직원에게 가기까지",
         "focus": [
           "sched",
           "copy",
@@ -64,7 +64,7 @@
   "lanes": [
     {
       "id": "sch",
-      "label": "스케줄 (관리자 웹)"
+      "label": "근무스케줄 (관리자 웹)"
     },
     {
       "id": "todo",
@@ -126,7 +126,7 @@
       "lane": "sch",
       "col": 0,
       "type": "frontend",
-      "label": "주간 스케줄",
+      "label": "주간 근무스케줄",
       "sublabel": "주 이동 · 직접 입력도 여기서",
       "width": 140
     },
@@ -154,7 +154,7 @@
       "lane": "sch",
       "col": 3,
       "type": "backend",
-      "label": "스케줄 확정",
+      "label": "근무스케줄 확정",
       "sublabel": "지난 날짜면 급여 경고",
       "width": 140
     },
@@ -290,7 +290,7 @@
       "dot": "slate",
       "title": "밖에 있는 것",
       "items": [
-        "출퇴근 기록의 등록은 직원 근무 앱(GPS)이 맡고 웹은 조회·보정만 · 스케줄은 급여 초안의 참고 정보"
+        "출퇴근 기록의 등록은 직원 근무 앱(GPS)이 맡고 웹은 조회·보정만 · 근무스케줄은 급여 초안의 참고 정보"
       ]
     }
   ]
