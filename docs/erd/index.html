@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WHALE ERP 1차 논리 ERD · 개요</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--paper:#ffffff;--paper-2:#fafafa;--ink:#171717;--muted:#60646c;--soft:#6f747c;--rule:#f0f0f3;--rule-solid:#dcdee0;--accent:#8145b5;--accent-tint:#f5eefb;--link:#0d74ce;
+--sans:'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;--serif:'Instrument Serif', 'Noto Serif KR', serif;--mono:'Geist Mono', ui-monospace, Menlo, monospace}
+body{font-family:var(--sans);background:var(--paper-2);color:var(--ink);padding:40px 32px 64px}
+.container{max-width:1400px;margin:0 auto}
+.header{margin-bottom:24px}
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+h1{font-family:var(--serif);font-size:40px;font-weight:400;letter-spacing:-.01em;line-height:1.15;margin-bottom:12px}
+.subtitle{font-size:15px;line-height:1.65;color:var(--muted);max-width:72ch}
+nav{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0}
+nav a{font-size:13px;color:var(--muted);text-decoration:none;padding:6px 12px;border:1px solid var(--rule-solid);border-radius:6px;background:var(--paper)}
+nav a:hover{color:var(--ink);border-color:var(--ink)}
+nav a[aria-current="page"]{color:var(--accent);border-color:var(--accent);background:var(--accent-tint)}
+nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.diagram{background:var(--paper);border:1px solid var(--rule-solid);border-radius:8px;padding:16px;overflow-x:auto}
+.diagram svg{display:block;width:100%;height:auto}
+.cards{display:grid;grid-template-columns:1.2fr 1fr .9fr;gap:16px;margin-top:16px}
+@media (max-width:900px){.cards{grid-template-columns:1fr}}
+.card{background:var(--paper);border:1px solid var(--rule-solid);border-radius:6px;padding:20px}
+.card .ey{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.card-h{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--rule)}
+.dot{width:7px;height:7px;border-radius:50%}
+.dot.coral{background:var(--accent)} .dot.ink{background:var(--ink)} .dot.muted{background:var(--soft)}
+.card h3{font-size:15px;font-weight:600}
+.card ul{list-style:none;color:var(--muted);font-size:13.5px;line-height:1.6}
+.card li{position:relative;padding-left:14px;margin-bottom:6px}
+.card li::before{content:'—';position:absolute;left:0;color:var(--rule-solid)}
+.index-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:16px}
+.index-list a{display:block;background:var(--paper);border:1px solid var(--rule-solid);border-radius:6px;padding:16px;text-decoration:none;color:var(--ink)}
+.index-list a:hover{border-color:var(--ink)}
+.index-list b{display:block;font-size:15px;margin-bottom:4px}
+.index-list span{font-size:13px;color:var(--muted);line-height:1.5}
+.index-list .n{font-family:var(--mono);font-size:11px;color:var(--soft);margin-top:8px;display:block}
+h2{font-family:var(--serif);font-size:28px;font-weight:400;margin:40px 0 4px}
+.footer{margin-top:32px;padding-top:20px;border-top:1px solid var(--rule-solid);font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--soft);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<p class="eyebrow">WHALE ERP · LOGICAL ERD · 1차 범위 · 3팀</p>
+<h1>WHALE ERP 1차 논리 ERD · 개요</h1>
+<p class="subtitle">직원 레코드를 중심으로 업무 데이터가 모인다. 계정은 사람, 직원 레코드는 점포별 소속이다. 계약·근무스케줄·출퇴근·급여명세서·TO-DO는 모두 직원 레코드에 붙는다.</p>
+</div>
+<nav aria-label="ERD 영역"><a href="index.html" aria-current="page">개요</a><a href="account.html">계정·접속</a><a href="hiring.html">채용·초대</a><a href="contract.html">근로계약</a><a href="attendance.html">근무스케줄·출퇴근</a><a href="todo.html">TO-DO</a><a href="payroll.html">급여명세서</a><a href="notify.html">알림</a><a href="support.html">고객지원·커뮤니티</a></nav>
+<div class="diagram">
+<svg viewBox="0 0 1328 756" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="erd-index-title erd-index-desc" style="min-width:1328px">
+<title id="erd-index-title">WHALE ERP 1차 논리 ERD · 개요</title>
+<desc id="erd-index-desc">WHALE ERP 1차 논리 ERD · 개요 논리 ERD. 엔티티 8개와 관계 7개를 보여 준다: 계정, 점포, 직원 레코드, 근로계약, 급여명세서, 근무스케줄, 출퇴근 기록, TO-DO.</desc>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<path d="M 496,172 L 496,232" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 280,300 L 376,300" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 616,300 L 712,300" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 952,300 L 1048,300" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 456,404 L 456,452 Q 456,460 448,460 L 168,460 Q 160,460 160,468 L 160,492" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 496,404 L 496,492" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 536,404 L 536,452 Q 536,460 544,460 L 824,460 Q 832,460 832,468 L 832,492" fill="none" stroke="#60646c" stroke-width="1"/>
+<g id="ent-account">
+<rect x="376" y="40" width="240" height="132" rx="6" fill="#ffffff"/>
+<rect x="376" y="40" width="240" height="132" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
+<rect x="377" y="41" width="238" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
+<line x1="376" y1="92" x2="616" y2="92" stroke="#171717" stroke-opacity="0.35" stroke-width="1"/>
+<text x="392" y="60" fill="#60646c" font-size="8" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="500" letter-spacing="0.08em">ENTITY · accounts</text>
+<text x="392" y="80" fill="#171717" font-size="16" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="600">계정</text>
+<text x="392" y="116" fill="#8145b5" font-size="11" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600">#</text>
+<text x="406" y="116" fill="#171717" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="600">계정 ID</text>
+<text x="600" y="116" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">id</text>
+<text x="392" y="136" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">이메일 아이디</text>
+<text x="600" y="136" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">text</text>
+<text x="392" y="156" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">본인인증 휴대전화번호</text>
+<text x="600" y="156" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">text</text>
+</g>
+<g id="ent-store">
+<rect x="40" y="232" width="240" height="152" rx="6" fill="#ffffff"/>
+<rect x="40" y="232" width="240" height="152" rx="6" fill="rgba(23,23,23,0.03)" stroke="rgba(23,23,23,0.30)" stroke-width="1" stroke-dasharray="2,3"/>
+<rect x="41" y="233" width="238" height="51" rx="5" fill="rgba(23,23,23,0.05)"/>
+<line x1="40" y1="284" x2="280" y2="284" stroke="rgba(23,23,23,0.30)" stroke-opacity="0.35" stroke-width="1"/>
+<text x="56" y="252" fill="#6f747c" font-size="8" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="500" letter-spacing="0.08em">TEAM-1 REF · stores</text>
+<text x="56" y="272" fill="#171717" font-size="16" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="600">점포</text>
+<text x="56" y="308" fill="#8145b5" font-size="11" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600">#</text>
+<text x="70" y="308" fill="#171717" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="600">점포 ID</text>
+<text x="264" y="308" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">id</text>
+<text x="56" y="328" fill="#60646c" font-size="11" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600">→</text>
+<text x="70" y="328" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">BP</text>
+<text x="264" y="328" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">id</text>
+<text x="56" y="348" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">점포 유형</text>
+<text x="264" y="348" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">enum</text>
+<text x="56" y="368" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">근무지 반경</text>
+<text x="264" y="368" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">int</text>
+</g>
+<g id="ent-staff_member">
+<rect x="376" y="232" width="240" height="172" rx="6" fill="#ffffff"/>
+<rect x="376" y="232" width="240" height="172" rx="6" fill="rgba(129,69,181,0.04)" stroke="#8145b5" stroke-width="1"/>
+<rect x="377" y="233" width="238" height="51" rx="5" fill="rgba(129,69,181,0.10)"/>
+<line x1="376" y1="284" x2="616" y2="284" stroke="#8145b5" stroke-opacity="0.35" stroke-width="1"/>
+<text x="392" y="252" fill="#8145b5" font-size="8" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="500" letter-spacing="0.08em">CORE ENTITY · staff_members</text>
+<text x="392" y="272" fill="#171717" font-size="16" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="600">직원 레코드</text>
+<text x="392" y="308" fill="#8145b5" font-size="11" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600">#</text>
+<text x="406" y="308" fill="#171717" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="600">직원 레코드 ID</text>
+<text x="600" y="308" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">id</text>
+<text x="392" y="328" fill="#60646c" font-size="11" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600">→</text>
+<text x="406" y="328" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">점포</text>
+<text x="600" y="328" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">id</text>
+<text x="392" y="348" fill="#60646c" font-size="11" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600">→</text>
+<text x="406" y="348" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">계정</text>
+<text x="600" y="348" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">id</text>
+<text x="392" y="368" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">재직 상태</text>
+<text x="600" y="368" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">enum</text>
+<text x="392" y="388" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">가입 상태</text>
+<text x="600" y="388" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">enum</text>
+</g>
+<g id="ent-contract">
+<rect x="712" y="232" width="240" height="152" rx="6" fill="#ffffff"/>
+<rect x="712" y="232" width="240" height="152" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
+<rect x="713" y="233" width="238" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
+<line x1="712" y1="284" x2="952" y2="284" stroke="#171717" stroke-opacity="0.35" stroke-width="1"/>
+<text x="728" y="252" fill="#60646c" font-size="8" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="500" letter-spacing="0.08em">ENTITY · contracts</text>
+<text x="728" y="272" fill="#171717" font-size="16" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="600">근로계약</text>
+<text x="728" y="308" fill="#8145b5" font-size="11" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600">#</text>
+<text x="742" y="308" fill="#171717" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="600">근로계약 ID</text>
+<text x="936" y="308" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">id</text>
+<text x="728" y="328" fill="#60646c" font-size="11" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600">→</text>
+<text x="742" y="328" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">직원 레코드</text>
+<text x="936" y="328" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">id</text>
+<text x="728" y="348" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">계약 상태</text>
+<text x="936" y="348" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">enum</text>
+<text x="728" y="368" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">계약 기간</text>
+<text x="936" y="368" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">date</text>
+</g>
+<g id="ent-payslip">
+<rect x="1048" y="232" width="240" height="152" rx="6" fill="#ffffff"/>
+<rect x="1048" y="232" width="240" height="152" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
+<rect x="1049" y="233" width="238" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
+<line x1="1048" y1="284" x2="1288" y2="284" stroke="#171717" stroke-opacity="0.35" stroke-width="1"/>
+<text x="1064" y="252" fill="#60646c" font-size="8" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="500" letter-spacing="0.08em">ENTITY · payslips</text>
+<text x="1064" y="272" fill="#171717" font-size="16" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="600">급여명세서</text>
+<text x="1064" y="308" fill="#8145b5" font-size="11" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600">#</text>
+<text x="1078" y="308" fill="#171717" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="600">급여명세서 ID</text>
+<text x="1272" y="308" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">id</text>
+<text x="1064" y="328" fill="#60646c" font-size="11" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600">→</text>
+<text x="1078" y="328" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">직원 레코드</text>
+<text x="1272" y="328" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">id</text>
+<text x="1064" y="348" fill="#60646c" font-size="11" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600">→</text>
+<text x="1078" y="348" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">참조 근로계약</text>
+<text x="1272" y="348" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">id</text>
+<text x="1064" y="368" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">명세서 상태</text>
+<text x="1272" y="368" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">enum</text>
+</g>
+<g id="ent-schedule">
+<rect x="40" y="492" width="240" height="152" rx="6" fill="#ffffff"/>
+<rect x="40" y="492" width="240" height="152" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
+<rect x="41" y="493" width="238" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
+<line x1="40" y1="544" x2="280" y2="544" stroke="#171717" stroke-opacity="0.35" stroke-width="1"/>
+<text x="56" y="512" fill="#60646c" font-size="8" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="500" letter-spacing="0.08em">ENTITY · work_schedules</text>
+<text x="56" y="532" fill="#171717" font-size="16" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="600">근무스케줄</text>
+<text x="56" y="568" fill="#8145b5" font-size="11" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600">#</text>
+<text x="70" y="568" fill="#171717" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="600">근무스케줄 ID</text>
+<text x="264" y="568" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">id</text>
+<text x="56" y="588" fill="#60646c" font-size="11" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600">→</text>
+<text x="70" y="588" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">직원 레코드</text>
+<text x="264" y="588" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">id</text>
+<text x="56" y="608" fill="#60646c" font-size="11" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600">→</text>
+<text x="70" y="608" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">근무지</text>
+<text x="264" y="608" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">id</text>
+<text x="56" y="628" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">확정 상태</text>
+<text x="264" y="628" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">enum</text>
+</g>
+<g id="ent-attendance">
+<rect x="376" y="492" width="240" height="152" rx="6" fill="#ffffff"/>
+<rect x="376" y="492" width="240" height="152" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
+<rect x="377" y="493" width="238" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
+<line x1="376" y1="544" x2="616" y2="544" stroke="#171717" stroke-opacity="0.35" stroke-width="1"/>
+<text x="392" y="512" fill="#60646c" font-size="8" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="500" letter-spacing="0.08em">ENTITY · attendance_records</text>
+<text x="392" y="532" fill="#171717" font-size="16" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="600">출퇴근 기록</text>
+<text x="392" y="568" fill="#8145b5" font-size="11" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600">#</text>
+<text x="406" y="568" fill="#171717" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="600">출퇴근 기록 ID</text>
+<text x="600" y="568" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">id</text>
+<text x="392" y="588" fill="#60646c" font-size="11" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600">→</text>
+<text x="406" y="588" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">직원 레코드</text>
+<text x="600" y="588" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">id</text>
+<text x="392" y="608" fill="#60646c" font-size="11" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600">→</text>
+<text x="406" y="608" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">근무지</text>
+<text x="600" y="608" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">id</text>
+<text x="392" y="628" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">위치 판정 결과</text>
+<text x="600" y="628" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">enum</text>
+</g>
+<g id="ent-todo">
+<rect x="712" y="492" width="240" height="152" rx="6" fill="#ffffff"/>
+<rect x="712" y="492" width="240" height="152" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
+<rect x="713" y="493" width="238" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
+<line x1="712" y1="544" x2="952" y2="544" stroke="#171717" stroke-opacity="0.35" stroke-width="1"/>
+<text x="728" y="512" fill="#60646c" font-size="8" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="500" letter-spacing="0.08em">ENTITY · todos</text>
+<text x="728" y="532" fill="#171717" font-size="16" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="600">TO-DO</text>
+<text x="728" y="568" fill="#8145b5" font-size="11" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600">#</text>
+<text x="742" y="568" fill="#171717" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="600">TO-DO ID</text>
+<text x="936" y="568" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">id</text>
+<text x="728" y="588" fill="#60646c" font-size="11" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600">→</text>
+<text x="742" y="588" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">근무지</text>
+<text x="936" y="588" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">id</text>
+<text x="728" y="608" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">배정·수행 방식</text>
+<text x="936" y="608" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">enum</text>
+<text x="728" y="628" fill="#2b2e33" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="400">수행 상태</text>
+<text x="936" y="628" fill="#6f747c" font-size="9" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="end">enum</text>
+</g>
+<rect x="500" y="180" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="508" y="190" fill="#60646c" font-size="10" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
+<rect x="500" y="212" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="508" y="222" fill="#60646c" font-size="10" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
+<rect x="456" y="192" width="32" height="16" rx="2" fill="#ffffff"/>
+<text x="472" y="204" fill="#60646c" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="500" text-anchor="middle">연결</text>
+<rect x="286" y="284" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="294" y="294" fill="#60646c" font-size="10" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
+<rect x="354" y="284" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="362" y="294" fill="#60646c" font-size="10" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
+<rect x="312" y="308" width="32" height="16" rx="2" fill="#ffffff"/>
+<text x="328" y="320" fill="#60646c" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="500" text-anchor="middle">소속</text>
+<rect x="622" y="284" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="630" y="294" fill="#60646c" font-size="10" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
+<rect x="690" y="284" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="698" y="294" fill="#60646c" font-size="10" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
+<rect x="648" y="308" width="32" height="16" rx="2" fill="#ffffff"/>
+<text x="664" y="320" fill="#60646c" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="500" text-anchor="middle">계약</text>
+<rect x="958" y="284" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="966" y="294" fill="#60646c" font-size="10" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
+<rect x="1026" y="284" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="1034" y="294" fill="#60646c" font-size="10" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
+<rect x="968" y="308" width="64" height="16" rx="2" fill="#ffffff"/>
+<text x="1000" y="320" fill="#60646c" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="500" text-anchor="middle">산정 근거</text>
+<rect x="460" y="412" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="468" y="422" fill="#60646c" font-size="10" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
+<rect x="164" y="472" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="172" y="482" fill="#60646c" font-size="10" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
+<rect x="274" y="468" width="68" height="16" rx="2" fill="#ffffff"/>
+<text x="308" y="480" fill="#60646c" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="500" text-anchor="middle">근무스케줄</text>
+<rect x="500" y="412" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="508" y="422" fill="#60646c" font-size="10" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
+<rect x="500" y="472" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="508" y="482" fill="#60646c" font-size="10" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
+<rect x="540" y="412" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="548" y="422" fill="#60646c" font-size="10" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
+<rect x="836" y="472" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="844" y="482" fill="#60646c" font-size="10" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
+<rect x="652" y="468" width="64" height="16" rx="2" fill="#ffffff"/>
+<text x="684" y="480" fill="#60646c" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="500" text-anchor="middle">배정 대상</text>
+<line x1="40" y1="692" x2="1288" y2="692" stroke="#dcdee0" stroke-width="0.8"/>
+<text x="40" y="712" fill="#60646c" font-size="8" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="500" letter-spacing="0.18em">LEGEND</text>
+<rect x="40" y="728" width="16" height="12" rx="2" fill="rgba(129,69,181,0.04)" stroke="#8145b5"/>
+<text x="64" y="739" fill="#60646c" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="500">중심 엔티티</text>
+<rect x="164" y="728" width="16" height="12" rx="2" fill="#ffffff" stroke="#171717"/>
+<text x="188" y="739" fill="#60646c" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="500">엔티티</text>
+<rect x="256" y="728" width="16" height="12" rx="2" fill="rgba(23,23,23,0.02)" stroke="rgba(23,23,23,0.32)" stroke-dasharray="4,3"/>
+<text x="280" y="739" fill="#60646c" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="500">이력</text>
+<rect x="336" y="728" width="16" height="12" rx="2" fill="rgba(23,23,23,0.03)" stroke="rgba(23,23,23,0.30)" stroke-dasharray="2,3"/>
+<text x="360" y="739" fill="#60646c" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="500">1팀 소유 · 참조만</text>
+<text x="500" y="739" fill="#8145b5" font-size="11" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600">#</text>
+<text x="516" y="739" fill="#60646c" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="500">식별자</text>
+<text x="584" y="739" fill="#60646c" font-size="11" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600">→</text>
+<text x="600" y="739" fill="#60646c" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="500">참조</text>
+<text x="656" y="739" fill="#60646c" font-size="11" font-family="'Geist Mono', ui-monospace, Menlo, monospace" font-weight="600">1 · N · 0..1</text>
+<text x="748" y="739" fill="#60646c" font-size="12" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" font-weight="500">관계 수</text>
+</svg>
+</div>
+<div class="cards"><div class="card"><p class="ey">중심</p><div class="card-h"><span class="dot coral"></span><h3>직원 레코드가 뿌리다</h3></div><ul><li>계약은 계정이 아니라 직원 레코드에 붙는다</li><li>계정 1개가 여러 점포의 직원 레코드를 가진다</li><li>가입 전에도 레코드는 있고 가입하면 계정이 연결된다</li></ul></div><div class="card"><div class="card-h"><span class="dot ink"></span><h3>근무지는 점포를 가리킨다</h3></div><ul><li>근무스케줄·출퇴근 기록·TO-DO의 근무지는 모두 점포 참조다</li><li>선을 줄이려고 개요에서는 근무지 선을 그리지 않았다</li><li>급여명세서도 직원 레코드를 직접 가리키지만 계약 선으로 대신했다</li></ul></div><div class="card"><div class="card-h"><span class="dot muted"></span><h3>1팀과 맞닿는 곳</h3></div><ul><li>점포·BP·관리자 계정은 1팀 소유라 참조만 한다</li><li>근무지 반경은 3팀이 필요한 항목이라 1팀 점포 테이블에 넣을지 정해야 한다</li></ul></div></div>
+<h2>영역별 상세</h2><p class="subtitle">한 장에 엔티티를 8개 넘게 두지 않으려고 영역마다 나눴다. 속성의 제안 컬럼명과 비고는 README.md 카탈로그에 있다.</p><div class="index-list"><a href="account.html"><b>계정·접속</b><span>본인인증 이력 · 접속 상태 · 계정 · 계정 변경 이력 · 로그인 이력 · 비밀번호 재설정 핀 · 관리자 계정</span><span class="n">ENTITY 7 · REL 6</span></a><a href="hiring.html"><b>채용·초대</b><span>점포 · 계정 · 직원 레코드 · 신고 정보 · 초대 · 가입 연결 보류 · 관리자 계정</span><span class="n">ENTITY 7 · REL 7</span></a><a href="contract.html"><b>근로계약</b><span>직원 레코드 · 점포 · 관리자 계정 · 근로계약 · 계약 당사자 정보 · 계약서 파일 · 계약 상태 이력</span><span class="n">ENTITY 7 · REL 6</span></a><a href="attendance.html"><b>근무스케줄·출퇴근</b><span>근무스케줄 · 근무스케줄 변경 이력 · 직원 레코드 · 계정 · 위치정보 동의 · 출퇴근 기록 · 출퇴근 보정 이력 · 점포</span><span class="n">ENTITY 8 · REL 7</span></a><a href="todo.html"><b>TO-DO</b><span>점포 · 관리자 계정 · TO-DO · TO-DO 배정 대상 · 직원 레코드 · TO-DO 상태 이력</span><span class="n">ENTITY 6 · REL 5</span></a><a href="payroll.html"><b>급여명세서</b><span>직원 레코드 · 근로계약 · 급여명세서 · 명세서 금액 항목 · 검토 대기 사유 · 명세서 발송 이력 · 명세서 상태 이력</span><span class="n">ENTITY 7 · REL 6</span></a><a href="notify.html"><b>알림</b><span>알림 · 관리자 계정 · 알림 수신 · 계정 · 알림 발송 이력 · 알림 수신 설정</span><span class="n">ENTITY 6 · REL 5</span></a><a href="support.html"><b>고객지원·커뮤니티</b><span>공지사항·FAQ · 노출 대상 · 첨부파일 · 문의사항 · 문의 답변 · 관리자 계정 · 도입문의</span><span class="n">ENTITY 7 · REL 4</span></a></div>
+<div class="footer"><span>근거 · Manyfast 명세 dataSpec 2026-09-15 · front·staff 목업 확정 쟁점</span><span>docs/erd/_build.py 로 생성 · 손으로 고치지 말 것</span></div>
+</div>
+</body>
+</html>
