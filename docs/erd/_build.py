@@ -37,11 +37,14 @@ ACCENT = "#8145b5"
 ACCENT_TINT = "#f5eefb"
 LINK = "#0d74ce"
 
-SANS = "'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif"
-SERIF = "'Instrument Serif', 'Noto Serif KR', serif"
-MONO = "'Geist Mono', ui-monospace, Menlo, monospace"
-FONT_LINK = ("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600"
-             "&family=Geist+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@400&display=swap")
+# 글꼴은 목업(docs/mockup/assets/whale.css)과 같게 둔다 — 한글 Pretendard, 라틴 Inter, 숫자·ID JetBrains Mono.
+# diagram-design 기본 글꼴(Geist·Instrument Serif)보다 프로젝트 디자인이 우선이다.
+SANS = "'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif"
+MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace"
+FONT_LINKS = [
+    "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css",
+    "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap",
+]
 
 BOX_W = 240
 GAP_X = 96
@@ -719,12 +722,12 @@ def build_svg(d):
 CSS = f"""
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
 :root{{--paper:{PAPER};--paper-2:{PAPER2};--ink:{INK};--muted:{MUTED};--soft:{SOFT};--rule:{RULE};--rule-solid:{RULE_SOLID};--accent:{ACCENT};--accent-tint:{ACCENT_TINT};--link:{LINK};
---sans:{SANS};--serif:{SERIF};--mono:{MONO}}}
-body{{font-family:var(--sans);background:var(--paper-2);color:var(--ink);padding:40px 32px 64px}}
+--sans:{SANS};--mono:{MONO}}}
+body{{font-family:var(--sans);background:var(--paper-2);color:var(--ink);padding:40px 32px 64px;-webkit-font-smoothing:antialiased}}
 .container{{max-width:1400px;margin:0 auto}}
 .header{{margin-bottom:24px}}
 .eyebrow{{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}}
-h1{{font-family:var(--serif);font-size:40px;font-weight:400;letter-spacing:-.01em;line-height:1.15;margin-bottom:12px}}
+h1{{font-family:var(--sans);font-size:32px;font-weight:600;letter-spacing:-.6px;line-height:1.25;margin-bottom:12px}}
 .subtitle{{font-size:15px;line-height:1.65;color:var(--muted);max-width:72ch}}
 nav{{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0}}
 nav a{{font-size:13px;color:var(--muted);text-decoration:none;padding:6px 12px;border:1px solid var(--rule-solid);border-radius:6px;background:var(--paper)}}
@@ -750,7 +753,7 @@ nav a:focus-visible{{outline:2px solid var(--accent);outline-offset:2px}}
 .index-list b{{display:block;font-size:15px;margin-bottom:4px}}
 .index-list span{{font-size:13px;color:var(--muted);line-height:1.5}}
 .index-list .n{{font-family:var(--mono);font-size:11px;color:var(--soft);margin-top:8px;display:block}}
-h2{{font-family:var(--serif);font-size:28px;font-weight:400;margin:40px 0 4px}}
+h2{{font-family:var(--sans);font-size:20px;font-weight:600;letter-spacing:-.4px;margin:40px 0 8px}}
 .footer{{margin-top:32px;padding-top:20px;border-top:1px solid var(--rule-solid);font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--soft);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}}
 """
 
@@ -780,7 +783,7 @@ def page(d, svg):
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{esc(d.title)}</title>
-<link href="{FONT_LINK}" rel="stylesheet">
+{"".join(f'<link href="{u}" rel="stylesheet">' for u in FONT_LINKS)}
 <style>{CSS}</style>
 </head>
 <body>
