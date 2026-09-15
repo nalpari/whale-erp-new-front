@@ -631,7 +631,7 @@ def entity_svg(e):
     elif e.kind == "history":
         fill, stroke, head, dash, tagc = "rgba(23,23,23,0.02)", "rgba(23,23,23,0.32)", "rgba(23,23,23,0.04)", ' stroke-dasharray="4,3"', MUTED
     elif e.kind == "ref":
-        fill, stroke, head, dash, tagc = "rgba(23,23,23,0.03)", "rgba(23,23,23,0.30)", "rgba(23,23,23,0.05)", ' stroke-dasharray="2,3"', SOFT
+        fill, stroke, head, dash, tagc = "rgba(13,116,206,0.03)", "rgba(13,116,206,0.60)", "rgba(13,116,206,0.07)", ' stroke-dasharray="2,3"', LINK
     else:
         fill, stroke, head, dash, tagc = PAPER, INK, "rgba(23,23,23,0.04)", "", MUTED
     o = [f'<g id="ent-{e.id}">',
@@ -704,7 +704,7 @@ def build_svg(d):
         elif kind == "history":
             out.append(f'<rect x="{lx}" y="{ly}" width="16" height="12" rx="2" fill="rgba(23,23,23,0.02)" stroke="rgba(23,23,23,0.32)" stroke-dasharray="4,3"/>')
         elif kind == "ref":
-            out.append(f'<rect x="{lx}" y="{ly}" width="16" height="12" rx="2" fill="rgba(23,23,23,0.03)" stroke="rgba(23,23,23,0.30)" stroke-dasharray="2,3"/>')
+            out.append(f'<rect x="{lx}" y="{ly}" width="16" height="12" rx="2" fill="rgba(13,116,206,0.03)" stroke="rgba(13,116,206,0.60)" stroke-dasharray="2,3"/>')
         else:
             out.append(f'<rect x="{lx}" y="{ly}" width="16" height="12" rx="2" fill="{PAPER}" stroke="{INK}"/>')
         out.append(t(lx + 24, ly + 11, label, 12, MUTED, SANS, 500))
