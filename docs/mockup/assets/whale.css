@@ -3215,6 +3215,25 @@ a.tile:hover {
   text-transform: none;
 }
 
+/* 미정인 쟁점 — 후보 안은 있고 아직 안 고른 것. 기본 보라를 그대로 쓰고 배지만 붙인다. */
+.gap.is-open {
+  border-color: var(--preview-line);
+  background: var(--preview-wash);
+}
+.gap__open {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  font: 500 11px/1 var(--font-mono);
+  letter-spacing: 0.04em;
+  color: var(--preview);
+  background: var(--surface-card);
+  border: 1px solid var(--preview-line);
+  padding: 5px var(--s-2);
+  border-radius: var(--r-pill);
+  white-space: nowrap;
+}
+
 /* 보류된 쟁점 — 아직 고를 수 없는 것.
    미정(아직 논의 전)과 구분한다. 왜 멈췄는지가 화면에 남아야 한다. */
 .gap.is-held {

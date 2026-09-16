@@ -173,6 +173,10 @@ def check_gap_state(files):
                 out.append("%s: %s 보류인데 is-held 가 없다" % (f, no))
             if 'is-decided' in cls and 'gap__decided' not in head:
                 out.append("%s: %s is-decided 인데 확정 표시가 없다" % (f, no))
+            if 'gap__open' in head and 'is-open' not in cls:
+                out.append("%s: %s 미정인데 is-open 이 없다" % (f, no))
+            if not any(x in head for x in ('gap__decided', 'gap__held', 'gap__open')):
+                out.append("%s: %s 상태 표시가 없다 (확정·보류·미정 중 하나를 붙인다)" % (f, no))
     return out
 
 def check_decisions(files):
