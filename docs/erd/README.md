@@ -773,10 +773,12 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK | 도입문의 ID | id | `lead_id` |  |
-|  | 담당자 정보 | text | `contact_*` | 이름·직책·휴대전화번호·이메일 |
-|  | 사업자 정보 | text | `company_*` | 상호·사업자등록번호·주소 |
-|  | 운영 형태·점포 수 | enum | `business_type·store_count` |  |
-|  | 관심 서비스·도입 시기 | text | `interests·plan_period` |  |
+|  | 문의자 이름 | text | `contact_name` |  |
+|  | 업종 | enum | `industry` | 목록 선택, 기타는 직접 입력 |
+|  | 전화번호 | text | `phone` | 휴대전화 아닐 수 있음 |
+|  | 이메일 | text | `email` | 접수 확인 발송 |
+|  | 관심 서비스 | enum | `interests` | 매장운영·재무관리·프랜차이즈·기타 |
+|  | 도입 예정 시기 | enum | `plan_period` | 목록 선택 |
 |  | 문의 내용 | text | `body` |  |
 |  | 개인정보 동의 일시 | datetime | `privacy_agreed_at` | 필수 |
 |  | 마케팅 동의 일시 | datetime | `marketing_agreed_at` | 선택 |

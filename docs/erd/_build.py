@@ -415,7 +415,7 @@ DIAGRAMS.append(Diagram(
           ["#|답변 ID|id|reply_id|", "→|문의사항|id|inquiry_id|답변 이력 전부 보관", "|답변 내용|text|body|", "→|답변 관리자|id|replied_by|", "|답변 시각|datetime|replied_at|"], 3, 40),
         ref_admin(2, 336),
         E("lead", "도입문의", "leads", "entity",
-          ["#|도입문의 ID|id|lead_id|", "|담당자 정보|text|contact_*|이름·직책·휴대전화번호·이메일", "|사업자 정보|text|company_*|상호·사업자등록번호·주소", "|운영 형태·점포 수|enum|business_type·store_count|", "|관심 서비스·도입 시기|text|interests·plan_period|", "|문의 내용|text|body|", "|개인정보 동의 일시|datetime|privacy_agreed_at|필수", "|마케팅 동의 일시|datetime|marketing_agreed_at|선택", "|답변 상태|enum|status|", "|사용자 노출 답변|text|reply|이메일로 회신", "|운영자 내부 메모|text|internal_memo|", "|접수 일시|datetime|created_at|", "|상담 완료일|date|consulted_on|1년 뒤 파기"], 3, 300),
+          ["#|도입문의 ID|id|lead_id|", "|문의자 이름|text|contact_name|", "|업종|enum|industry|목록 선택, 기타는 직접 입력", "|전화번호|text|phone|휴대전화 아닐 수 있음", "|이메일|text|email|접수 확인 발송", "|관심 서비스|enum|interests|매장운영·재무관리·프랜차이즈·기타", "|도입 예정 시기|enum|plan_period|목록 선택", "|문의 내용|text|body|", "|개인정보 동의 일시|datetime|privacy_agreed_at|필수", "|마케팅 동의 일시|datetime|marketing_agreed_at|선택", "|답변 상태|enum|status|", "|사용자 노출 답변|text|reply|이메일로 회신", "|운영자 내부 메모|text|internal_memo|", "|접수 일시|datetime|created_at|", "|상담 완료일|date|consulted_on|1년 뒤 파기"], 3, 300),
     ],
     [
         R("post", "right", "audience", "left", "1", "N", "", at_a=100, at_b=100),
