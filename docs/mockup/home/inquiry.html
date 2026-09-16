@@ -38,13 +38,13 @@
           <div class="stack" style="margin-bottom: var(--s-6)">
             <h1 class="t-lg">도입문의</h1>
             <p class="lead" style="max-width: 60ch">
-              가입하지 않아도 남기실 수 있습니다. 담당자가 확인한 뒤 알려주신 휴대전화번호나 이메일로 회신합니다.
+              가입하지 않아도 남기실 수 있습니다. 담당자가 확인한 뒤 알려주신 전화번호나 이메일로 회신합니다.
             </p>
           </div>
 
           <div class="panel">
             <div class="panel__head">
-              <h2 class="t-h2">담당자 정보</h2>
+              <h2 class="t-h2">문의자 정보</h2>
               <span class="badge badge--quiet">필수</span>
             </div>
             <div class="panel__body">
@@ -54,60 +54,56 @@
                   <input class="input" id="name" placeholder="홍길동" />
                 </div>
                 <div class="field">
-                  <label for="phone">휴대전화번호</label>
-                  <input class="input mono" id="phone" placeholder="010-0000-0000" />
+                  <label for="trade">업종</label>
+                  <select class="select" id="trade">
+                    <option>카페·음료</option>
+                    <option>음식점</option>
+                    <option>베이커리·디저트</option>
+                    <option>주점</option>
+                    <option>기타</option>
+                  </select>
+                  <span class="help">기타를 고르면 직접 적는 칸이 아래에 열린다.</span>
+                </div>
+                <div class="field">
+                  <label for="phone">전화번호</label>
+                  <input class="input mono" id="phone" placeholder="02-000-0000" />
+                  <span class="help">점포 번호를 적어도 된다. 중복 접수는 이 번호로 가른다.</span>
                 </div>
                 <div class="field">
                   <label for="mail">이메일</label>
                   <input class="input" id="mail" type="email" placeholder="name@company.com" />
                   <span class="help">접수 확인 메일을 이 주소로 보냅니다.</span>
                 </div>
-                <div class="field">
-                  <label for="role">직책</label>
-                  <input class="input" id="role" placeholder="점장 · 대표 등" />
-                </div>
               </div>
             </div>
           </div>
 
           <div class="panel" style="margin-top: var(--s-5)">
             <div class="panel__head">
-              <h2 class="t-h2">사업자 정보</h2>
-              <span class="badge badge--quiet">필수</span>
+              <h2 class="t-h2">도입 문의 내용</h2>
             </div>
             <div class="panel__body">
               <div class="grid grid--2">
                 <div class="field">
-                  <label for="biz">상호</label>
-                  <input class="input" id="biz" placeholder="㈜한강상회" />
-                </div>
-                <div class="field">
-                  <label for="bizno">사업자등록번호</label>
-                  <input class="input mono" id="bizno" placeholder="000-00-00000" />
-                </div>
-                <div class="field">
-                  <label for="kind">운영 형태</label>
-                  <select class="select" id="kind">
-                    <option>단일 점포</option>
-                    <option>다점포 (직영)</option>
-                    <option>프랜차이즈 본사</option>
-                    <option>가맹점</option>
+                  <label for="svc">관심 서비스</label>
+                  <select class="select" id="svc">
+                    <option>매장운영</option>
+                    <option>재무관리</option>
+                    <option>프랜차이즈</option>
+                    <option>기타</option>
                   </select>
                 </div>
                 <div class="field">
-                  <label for="cnt">점포 수</label>
-                  <input class="input mono" id="cnt" placeholder="11" />
+                  <label for="when">도입 예정 시기</label>
+                  <select class="select" id="when">
+                    <option>1개월 안</option>
+                    <option>3개월 안</option>
+                    <option>6개월 안</option>
+                    <option>아직 정하지 않음</option>
+                  </select>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div class="panel" style="margin-top: var(--s-5)">
-            <div class="panel__head">
-              <h2 class="t-h2">문의 내용</h2>
-            </div>
-            <div class="panel__body">
-              <div class="field">
+              <div class="field" style="margin-top: var(--s-4)">
                 <label for="body">어떤 점이 궁금하신가요</label>
                 <textarea class="textarea" id="body" rows="6" placeholder="지금 쓰고 계신 방식과 불편한 점을 적어 주시면 그에 맞춰 안내해 드립니다."></textarea>
               </div>
@@ -119,17 +115,18 @@
             <div class="band__body">
               <div class="band__title">개인정보 수집·이용 동의</div>
               <p class="band__desc">
-                문의 응대를 위해 이름·휴대전화번호·이메일과 사업자 정보를 수집합니다.
+                문의 응대를 위해 이름·업종·전화번호·이메일과 문의 내용을 받습니다. 사업자등록번호나 점포 수는 받지 않습니다.
                 <b>상담이 끝난 날로부터 1년간 보관</b>한 뒤 파기합니다. 동의를 거부하시면 접수가 되지 않습니다.
               </p>
               <div class="row" style="padding: 6px 0"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="개인정보 수집·이용에 동의합니다" data-icon="check" data-icon-size="11"></span><span>개인정보 수집·이용에 동의합니다</span></div>
+              <div class="row" style="padding: 6px 0; border: 0"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="마케팅 정보 수신에 동의합니다" data-icon="check" data-icon-size="11"></span><span>마케팅 정보 수신에 동의합니다 <span class="subtle">(선택)</span></span></div>
             </div>
           </div>
 
           <div class="spread" style="margin-top: var(--s-5)">
             <p class="note" style="margin: 0">
               <span data-icon="clock" data-icon-size="14"></span>
-              <span>같은 곳에서 짧은 시간에 여러 번 보내면 잠시 접수가 막힙니다.</span>
+              <span>같은 전화번호나 이메일로 짧은 시간에 여러 번 보내면 잠시 접수가 막힙니다.</span>
             </p>
             <button class="btn btn--primary btn--lg" type="button">문의 접수하기</button>
           </div>

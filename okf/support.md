@@ -20,7 +20,7 @@ generated: { by: claude-code/fable-5.1, at: 2026-09-11T02:24:13Z }
 | `/platform/community` | 커뮤니티관리 | 플랫폼 관리자가 본다. 공지·FAQ·문의사항·도입문의를 네 갈래로 나눠 관리한다. | `S-GRDOPW` |
 | `/platform/community/notices/[id]` | 공지·FAQ 편집 | 제목·본문·게시 상태와 **노출 대상**을 정한다. 비회원을 넣으면 비로그인 홈까지 나간다. | `S-GRDOPW` |
 | `/platform/community/inquiries/[id]` | 문의 상세 · 답변 | 사용자에게 보이는 답변과 운영자끼리 보는 내부 메모를 갈라서 쓴다. | `S-GRDOPW` |
-| `/platform/community/leads/[id]` | 도입문의 상세 | 비로그인 방문자가 남긴 건이다. 담당자 정보와 사업자 정보를 함께 놓고 답한다. | `S-GRDOPW` |
+| `/platform/community/leads/[id]` | 도입문의 상세 | 비로그인 방문자가 남긴 건이다. 문의자 정보와 도입 문의 내용을 함께 놓고 답한다. | `S-GRDOPW` |
 
 # 정책
 
