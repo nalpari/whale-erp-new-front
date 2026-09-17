@@ -1,5 +1,9 @@
 # Bundle history
 
+## 2026-09-17
+
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) 에 공통 컴포넌트(src/components/common), 디자인 샘플(src/app/design), 아이콘(public/icons), erp 토큰을 적고 sources 에 추가했다.
+
 ## 2026-09-16
 
 * **Update**: 도입문의가 사업자 정보를 받지 않고 문의자 정보와 도입 문의 내용만 받는 것으로 바뀌어 [홈·계정 진입](/home.md) 과 [고객지원·커뮤니티](/support.md) 를 맞췄다. 푸터 링크 여는 방식도 적었다.
