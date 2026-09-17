@@ -1,0 +1,10 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Alarm">
+<rect x="0.5" y="0.5" width="41" height="41" rx="20.5" stroke="#EDEDEE"/>
+<g id="elements">
+<path id="Vector" d="M13.0252 23.3323C12.8461 24.5062 13.6467 25.321 14.627 25.7271C18.3851 27.2839 23.6149 27.2839 27.373 25.7271C28.3533 25.321 29.1539 24.5062 28.9748 23.3323C28.8647 22.6109 28.3206 22.0101 27.9174 21.4235C27.3893 20.6457 27.3368 19.7973 27.3367 18.8947C27.3367 15.4066 24.4997 12.5789 21 12.5789C17.5003 12.5789 14.6633 15.4066 14.6633 18.8947C14.6632 19.7973 14.6107 20.6457 14.0826 21.4235C13.6794 22.0101 13.1353 22.6109 13.0252 23.3323Z" stroke="#6B7988" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Ellipse 1990" d="M17.6314 26.8947C18.0175 28.3476 19.3792 29.421 20.9999 29.421C22.6205 29.421 23.9822 28.3476 24.3683 26.8947" stroke="#6B7988" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<circle id="Ellipse 1991" cx="25" cy="14" r="3.25" fill="#FF0000" stroke="white" stroke-width="1.5"/>
+</g>
+</svg>

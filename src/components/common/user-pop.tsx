@@ -15,16 +15,21 @@ export type UserPopItem = { label: string; danger?: boolean } & (
 
 // Figma Login_infos. 이름을 누르면 MY PAGE 메뉴가 페이드로 뜬다.
 // 화살표 키 탐색을 따로 두지 않으므로 ARIA menu 대신 disclosure(aria-expanded + 링크/버튼 목록)로 둔다.
-export function UserPop({ name, items }: { name: string; items: UserPopItem[] }) {
+// v2 는 GlobalHeaderV2 의 Info(둥근 42px 사람 아이콘 + 이름)다.
+export function UserPop({ name, items, variant = "v1" }: { name: string; items: UserPopItem[]; variant?: "v1" | "v2" }) {
   const { open, setOpen, close, ref, trigger, id } = useDropdown();
 
   return (
     <div ref={ref} className="relative">
       <button ref={trigger} type="button" aria-expanded={open} aria-controls={id} onClick={() => setOpen(!open)} className="flex items-center">
-        <span className="flex items-center gap-[4px] text-[15px] font-medium text-erp-ink">
-          <span className="grid size-[24px] place-items-center">
-            <Image src="/icons/user.svg" alt="" width={18} height={18} />
-          </span>
+        <span className={`flex items-center text-[15px] font-medium text-erp-ink ${variant === "v2" ? "gap-[10px]" : "gap-[4px]"}`}>
+          {variant === "v2" ? (
+            <Image src="/icons/avatar.svg" alt="" width={42} height={42} />
+          ) : (
+            <span className="grid size-[24px] place-items-center">
+              <Image src="/icons/user.svg" alt="" width={18} height={18} />
+            </span>
+          )}
           {name}
         </span>
         <Image

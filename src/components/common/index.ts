@@ -13,3 +13,4 @@ export { GlobalHeader, type HeaderMenu } from "./global-header";
 export { StoreSelect } from "./store-select";
 export { UserPop, type UserPopItem } from "./user-pop";
 export { PageBar, ServiceLinks } from "./page-bar";
+export { GlobalHeaderV2, ServiceLinksV2, AlarmLink, PageBarV2 } from "./header-v2";
