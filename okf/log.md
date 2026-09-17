@@ -2,6 +2,7 @@
 
 ## 2026-09-17
 
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) 에 헤더 v2(Figma Top2)와 `/design/full-v2` 샘플을 적었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) 에 공통 컴포넌트(src/components/common), 디자인 샘플(src/app/design), 아이콘(public/icons), erp 토큰을 적고 sources 에 추가했다.
 
 ## 2026-09-16
