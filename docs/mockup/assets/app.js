@@ -230,8 +230,7 @@
       id: "platform", text: "Platform", meta: "전용 상품", gated: 1,
       menus: [
         { key: "members", text: "회원관리", team: "3팀", phase: "2", items: [
-          { text: "회원 정보 관리" },
-          { text: "휴면 회원 정보 관리" }
+          { text: "회원 정보 관리" }
         ]},
         { key: "bp", text: "BP 정보관리", team: "1팀", items: [
           { text: "BP Master 정보 관리" },
