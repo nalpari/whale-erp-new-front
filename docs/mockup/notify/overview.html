@@ -126,7 +126,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
-              <span class="badge badge--preview">2건 · 확정 2</span>
+              <span class="badge badge--preview">3건 · 확정 2 · 미정 1</span>
             </div>
 
             <div class="gap is-decided">
@@ -182,6 +182,30 @@
                 문서의 “알림 진입점 또는 알림함”을 그대로 둔다. 종은 미확인 건수와 최근 것을, 페이지는 걸러 보고
                 지나간 것을 찾는 자리를 맡는다. 종 하나로 시작해 나중에 페이지를 붙이는 것보다 처음부터 자리를
                 두는 편이 싸다.
+              </p>
+            </div>
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">NOTIFY-3</span>
+                <b>발송 실패와 발송 이력을 어디에 남기고 화면에 보일 것인가</b>
+                <span class="gap__open">미정 · 기획 세션으로 넘김</span>
+                <span class="gap__ref">S-JUWPXF</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a">
+                  <div class="gap__label">A · 알림함과 한 몸</div>
+                  <p>알림 한 줄에 발송 결과를 함께 담는다. 이메일이 못 나갔으면 그 줄에 <b>메일 실패</b>를 붙이고 관리자가 바로 본다. 목록이 무거워지고 재시도 이력이 쌓이면 줄이 길어진다.</p>
+                </div>
+                <div class="gap__opt" data-side="b">
+                  <div class="gap__label">B · 발송 이력을 따로</div>
+                  <p>알림함은 지금처럼 <b>봤나</b>만 맡고, 채널별 발송과 재시도는 별도 이력에 남긴다. 화면에는 실패가 안 보이므로 관리자가 알 방법을 따로 정해야 한다.</p>
+                </div>
+              </div>
+              <p class="gap__note">
+                명세는 "알림 생성 실패가 원본 업무에 영향을 주지 않고 실패 사실을 기록한다"까지만 적는다. 어디에 남기는지가 비어 있다.
+                운영 알림은 웹 알림함과 이메일을 함께 보내므로, 메일이 못 나간 것을 관리자가 아는 자리가 필요한지가 이 화면의 문제다.
+                직원 근무 앱에도 같이 걸린다 — 알림함에 남는 알림과 별개로 발송 이력을 둘지, 실패한 앱 푸시를 알림함에 그대로 남길지가 그쪽 화면을 가른다.
+                한 화면에서 끝나지 않고 데이터 구조를 건드리므로 여기서 정하지 않고 기획 세션에 넘긴다.
               </p>
             </div>
           </section>
