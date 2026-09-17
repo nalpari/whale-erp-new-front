@@ -1,15 +1,19 @@
 import type { ReactNode } from "react";
 import {
+  AlarmLink,
   Badge,
   Button,
   Checkbox,
   DataTable,
   DateField,
   GlobalHeader,
+  GlobalHeaderV2,
   ListToolbar,
   PageBar,
+  PageBarV2,
   Radio,
   SearchField,
+  ServiceLinksV2,
   Select,
   StoreSelect,
   UserPop,
@@ -32,6 +36,8 @@ const COLORS = [
   ["erp-bar", "bg-erp-bar", "#F0F2F3"],
   ["erp-on", "bg-erp-on", "#5E8CE9"],
   ["erp-off", "bg-erp-off", "#EF6363"],
+  ["erp-nav", "bg-erp-nav", "#282F37"],
+  ["erp-sub", "bg-erp-sub", "#53606F"],
 ];
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -149,6 +155,25 @@ export default function DesignUnitsPage() {
               }
             />
             <PageBar title="점포정보 관리" />
+          </div>
+        </div>
+      </Section>
+
+      <Section title="GlobalHeaderV2 · PageBarV2">
+        <div className="overflow-x-auto pb-[220px]">
+          <div className="min-w-[1720px] border border-erp-panel-line">
+            <GlobalHeaderV2
+              menus={MENUS}
+              right={
+                <>
+                  <StoreSelect variant="v2" options={STORES} />
+                  <ServiceLinksV2 />
+                  <AlarmLink href="#" />
+                  <UserPop variant="v2" name="김지영 (admin)" items={USER_ITEMS} />
+                </>
+              }
+            />
+            <PageBarV2 title="점포정보 관리" />
           </div>
         </div>
       </Section>

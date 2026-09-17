@@ -18,6 +18,9 @@ export default function DesignLayout({ children }: LayoutProps<"/design">) {
         <Link href="/design/full" className="rounded-[2px] px-3 py-1.5 hover:bg-white/15">
           전체 페이지
         </Link>
+        <Link href="/design/full-v2" className="rounded-[2px] px-3 py-1.5 hover:bg-white/15">
+          전체 페이지 v2
+        </Link>
       </nav>
     </ErpRoot>
   );
