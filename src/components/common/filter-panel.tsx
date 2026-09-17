@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { EASE_OUT } from "./theme";
 
 const PANEL_BUTTON = "grid h-[32px] place-items-center rounded-[2px] border border-erp-button-line bg-white";
@@ -11,7 +11,8 @@ const PANEL_BUTTON = "grid h-[32px] place-items-center rounded-[2px] border bord
 // 안쪽 내용은 폭을 고정해 두고 잘라내므로, 줄어드는 동안 줄바꿈이 일어나지 않는다.
 // 패널 높이는 부모가 정한다. 항목이 넘치면 제목 줄은 두고 그 아래만 세로로 스크롤한다.
 // 스크롤 영역은 왼쪽 18 여백 뒤에 188 폭 내용을 두고, 오른쪽 18 안에서 스크롤바 자리를 잡는다.
-// 누른 버튼이 inert 영역으로 들어가므로, 접고 펼칠 때 포커스를 반대쪽 버튼으로 옮긴다.
+// 접기/펼치기는 버튼 하나다. 오른쪽 18 에 붙여 두어, 폭이 줄면 그대로 따라 움직여 접힌 상태의 왼쪽 18 자리에 닿는다
+// (안쪽 폭 224 - 18 - 38 = 168, 74 - 18 - 38 = 18). 사라졌다 나타나지 않으니 깜빡이지 않고 포커스도 그대로다.
 export function FilterPanel({
   title = "필터",
   onReset,
@@ -27,13 +28,6 @@ export function FilterPanel({
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
-  const collapseButton = useRef<HTMLButtonElement>(null);
-  const expandButton = useRef<HTMLButtonElement>(null);
-  const toggle = (next: boolean) => {
-    setOpen(next);
-    // inert 가 풀리는 다음 프레임에 옮긴다.
-    requestAnimationFrame(() => (next ? collapseButton : expandButton).current?.focus());
-  };
 
   return (
     <aside
@@ -52,33 +46,23 @@ export function FilterPanel({
           <button type="button" aria-label={`${title} 초기화`} disabled={!onReset} onClick={onReset} className={`${PANEL_BUTTON} px-[13px]`}>
             <Image src="/icons/reset.svg" alt="" width={14} height={14} />
           </button>
-          <button
-            ref={collapseButton}
-            type="button"
-            aria-label={`${title} 접기`}
-            aria-expanded={open}
-            onClick={() => toggle(false)}
-            className={`${PANEL_BUTTON} px-[12px]`}
-          >
-            <Image src="/icons/collapse.svg" alt="" width={12} height={18} />
-          </button>
+          {/* 접기/펼치기 버튼 자리 */}
+          <span className="w-[38px]" />
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto pl-[18px] [scrollbar-gutter:stable]">
           <div className="flex w-[188px] flex-col gap-[18px] pt-[18px] pb-[24px]">{children}</div>
         </div>
       </div>
       <button
-        ref={expandButton}
         type="button"
-        aria-label={`${title} 펼치기`}
+        aria-label={`${title} ${open ? "접기" : "펼치기"}`}
         aria-expanded={open}
-        inert={open}
-        onClick={() => toggle(true)}
-        className={`absolute top-[18px] left-[18px] px-[12px] transition-opacity ${PANEL_BUTTON} ${
-          open ? "opacity-0 duration-100" : "opacity-100 delay-100 duration-200"
-        }`}
+        onClick={() => setOpen(!open)}
+        className={`absolute top-[18px] right-[18px] w-[38px] ${PANEL_BUTTON}`}
       >
-        <Image src="/icons/expand.svg" alt="" width={12} height={18} />
+        {/* 두 아이콘을 미리 그려 두고 보이는 것만 바꾼다. src 를 바꾸면 새로 불러오는 동안 비어 보인다. */}
+        <Image src="/icons/collapse.svg" alt="" width={12} height={18} className={`col-start-1 row-start-1 ${open ? "" : "invisible"}`} />
+        <Image src="/icons/expand.svg" alt="" width={12} height={18} className={`col-start-1 row-start-1 ${open ? "invisible" : ""}`} />
       </button>
     </aside>
   );
