@@ -6,6 +6,9 @@ import {
   Checkbox,
   DataTable,
   DateField,
+  Field,
+  FormGroup,
+  FormRow,
   GlobalHeader,
   GlobalHeaderV2,
   ListToolbar,
@@ -14,6 +17,8 @@ import {
   Radio,
   SearchField,
   ServiceLinksV2,
+  Textarea,
+  TextField,
   Select,
   StoreSelect,
   UserPop,
@@ -90,6 +95,28 @@ export default function DesignUnitsPage() {
         <div className="flex gap-2">
           <Badge tone="on">운영</Badge>
           <Badge tone="off">미운영</Badge>
+        </div>
+      </Section>
+
+      <Section title="Field · FormRow · FormGroup · TextField · Textarea">
+        {/* 등록 폼(RNB)에 쓰는 묶음. 실제 화면은 /design/full-v2 의 신규 등록 버튼으로 연다. */}
+        <div className="max-w-[416px]">
+          <FormGroup title="기본 정보">
+            <FormRow>
+              <Field label="점포명">
+                <TextField />
+              </Field>
+              <Field label="점포 유형" width="w-[120px]">
+                <Select defaultValue="직영점">
+                  <option>직영점</option>
+                  <option>가맹점</option>
+                </Select>
+              </Field>
+            </FormRow>
+            <Field label="점포 소개">
+              <Textarea rows={3} placeholder="점포 소개" />
+            </Field>
+          </FormGroup>
         </div>
       </Section>
 

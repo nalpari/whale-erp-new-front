@@ -1,6 +1,5 @@
 import {
   AlarmLink,
-  Button,
   DataTable,
   GlobalHeaderV2,
   ListToolbar,
@@ -13,6 +12,7 @@ import {
 import { MENUS, STORE_COLUMNS, STORE_ROWS, STORES, USER_ITEMS } from "../sample";
 import { SamplePagination } from "../sample-pagination";
 import { StoreFilter } from "../store-filter";
+import { StoreRegister } from "../store-register";
 
 // /design/full 과 같은 화면을 Figma Top2(헤더 v2)로 조합한 임시 페이지.
 // 화면 높이에 맞춰 두고, 넘치는 내용은 필터와 목록 안에서만 스크롤해 body 스크롤이 생기지 않게 한다.
@@ -20,7 +20,8 @@ import { StoreFilter } from "../store-filter";
 export default function DesignFullV2Page() {
   return (
     <div className="h-[100dvh] overflow-x-auto overflow-y-hidden bg-erp-thead-bg">
-      <div className="flex h-full min-w-[1720px] flex-col">
+      {/* 등록 패널(RNB)이 이 영역 오른쪽에 겹쳐 선다. 닫혀 있을 때는 오른쪽 바깥에 서 있어 잘라 낸다. */}
+      <div className="relative flex h-full min-w-[1720px] flex-col overflow-x-clip">
         <GlobalHeaderV2
           menus={MENUS}
           right={
@@ -37,7 +38,7 @@ export default function DesignFullV2Page() {
           <StoreFilter />
           <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px]">
             <ListToolbar total={100}>
-              <Button>신규 등록</Button>
+              <StoreRegister />
               <div className="w-[80px] shrink-0">
                 <Select aria-label="페이지당 건수" defaultValue="50">
                   <option>20</option>
