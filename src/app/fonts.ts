@@ -12,4 +12,7 @@ export const pretendard = localFont({
   ],
   variable: "--font-pretendard",
   display: "swap",
+  // 굵기마다 800KB 라 preload 하면 ERP 를 쓰지 않는 화면(로그인 등)까지 3MB 를 먼저 받는다.
+  // 끄면 화면에 실제로 쓰인 굵기만 받는다. 더 줄이려면 Pretendard 부분집합(subset) 파일로 바꾼다.
+  preload: false,
 });
