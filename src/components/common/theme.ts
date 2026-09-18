@@ -13,6 +13,7 @@ export const FIELD = `${FIELD_BOX} h-[34px] pl-[10px]`;
 
 // globals.css 는 OS 설정을 따라 다크 테마가 되므로, ERP 화면은 ErpRoot 안에서 밝은 테마로 고정한다.
 // Tailwind v4 는 버튼에 pointer 커서를 주지 않으므로 누를 수 있는 요소를 여기서 한 번에 잡는다.
-// 스크롤바 색도 ! 로 고정해 밝은 화면에 맞춘다.
+// 스크롤바는 색과 굵기(thin)를 ! 로 고정해 밝은 화면에 맞춘다. Chrome 은 색·굵기를 표준 속성으로 주면
+// ::-webkit-scrollbar 를 무시하므로 thin 보다 더 얇게는 못 줄인다.
 export const ERP_THEME =
-  "bg-white font-erp leading-[normal] tracking-[-0.025em] text-erp-ink scheme-light selection:bg-erp-brand selection:text-white [&_*:focus-visible]:outline-erp-brand! [&_:is(a[href],button:enabled,select:enabled,label:has(input:enabled),input[type=checkbox]:enabled)]:cursor-pointer [&_::-webkit-calendar-picker-indicator]:cursor-pointer [&_*]:[scrollbar-color:#cfd4da_transparent]!";
+  "bg-white font-erp leading-[normal] tracking-[-0.025em] text-erp-ink scheme-light selection:bg-erp-brand selection:text-white [&_*:focus-visible]:outline-erp-brand! [&_:is(a[href],button:enabled,select:enabled,label:has(input:enabled),input[type=checkbox]:enabled)]:cursor-pointer [&_::-webkit-calendar-picker-indicator]:cursor-pointer [&_*]:[scrollbar-color:#cfd4da_transparent]! [&_*]:[scrollbar-width:thin]!";
