@@ -1,17 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
 import { Button, Field, FormGroup, FormRow, Select, SlidePanel, Textarea, TextField } from "@/components/common";
 
 // Figma Slide(점포 등록). 목록 오른쪽에서 밀려 나오는 등록 폼.
 // 샘플이라 저장은 닫기만 한다. 실제 화면에서는 form action 에 서버 액션을 건다.
 export function StoreRegister() {
   const [open, setOpen] = useState(false);
+  const id = useId();
+  const trigger = useRef<HTMLButtonElement>(null);
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>신규 등록</Button>
-      <SlidePanel open={open} label="점포 등록">
+      <Button ref={trigger} aria-expanded={open} aria-controls={id} onClick={() => setOpen(true)}>
+        신규 등록
+      </Button>
+      <SlidePanel id={id} open={open} onClose={() => setOpen(false)} label="점포 등록" trigger={trigger}>
         <FormGroup title="기본 정보">
           <FormRow>
             <Field label="점포명">
