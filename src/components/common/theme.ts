@@ -6,7 +6,7 @@ export const EASE_OUT = "ease-[cubic-bezier(0.23,1,0.32,1)]";
 // 앱 전역 스타일이 포커스 링·캐럿을 덮어도 입력칸 모양이 유지되도록 ! 로 고정한다.
 // 높이와 안쪽 여백을 뺀 껍데기. 높이가 다른 입력칸(Textarea)이 같은 테두리·글자·포커스를 쓴다.
 export const FIELD_BOX =
-  "w-full rounded-[2px] border border-erp-field-line bg-white text-[14px] text-erp-ink outline-none! caret-erp-ink! transition-[border-color] duration-150 ease-out placeholder:text-erp-ink focus:border-erp-brand";
+  "w-full rounded-[2px] border border-erp-field-line bg-white text-[14px] text-erp-ink outline-none! caret-erp-ink! transition-[border-color] duration-150 ease-out placeholder:text-erp-label focus:border-erp-brand";
 
 export const FIELD = `${FIELD_BOX} h-[34px] pl-[10px]`;
 
