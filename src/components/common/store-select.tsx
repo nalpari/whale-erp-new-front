@@ -75,59 +75,50 @@ export function StoreSelect({
           </>
         )}
       </button>
-      {variant === "v2" ? (
-        // v2 는 선택칸이 둥글어 목록도 모서리를 키우고, 항목마다 줄 배경으로 올린 위치를 보여 준다.
-        // 그림자는 fold 전환의 clip-path 여유(8px) 안에 들어가게 작게 둔다.
-        <Popup
-          id={id}
-          open={open}
-          motion="fold"
-          className="left-0 w-[420px] rounded-[12px]! border-erp-field-line! p-[6px]! shadow-[0_2px_6px_rgba(40,47,55,0.08)]"
+      {/* 목록은 한 벌이고 v1·v2 는 껍데기 클래스만 다르다.
+          v1: 항목이 버튼이라 ul 에 trim 을 걸면 안쪽까지 닿지 않는다. 첫 항목 위, 마지막 항목 아래만 잘라 Figma 높이를 맞춘다.
+              잘린 기준선 아래 획이 가려지지 않도록 truncate 대신 줄바꿈만 막는다.
+          v2: 선택칸이 둥글어 목록도 모서리를 키우고, 항목마다 줄 배경으로 올린 위치를 보여 준다.
+              그림자는 fold 전환의 clip-path 여유(8px) 안에 들어가게 작게 둔다. */}
+      <Popup
+        id={id}
+        open={open}
+        motion="fold"
+        className={
+          variant === "v2"
+            ? "left-0 w-[420px] rounded-[12px]! border-erp-field-line! p-[6px]! shadow-[0_2px_6px_rgba(40,47,55,0.08)]"
+            : "right-0 w-[260px]"
+        }
+      >
+        <ul
+          aria-label={label}
+          className={
+            variant === "v2"
+              ? "text-[14px] text-erp-ink"
+              : "text-[14px] leading-[2] text-erp-ink [text-box-edge:cap_alphabetic] [&>li:first-child>button]:[text-box-trim:trim-start] [&>li:last-child>button]:[text-box-trim:trim-end]"
+          }
         >
-          <ul aria-label={label} className="text-[14px] text-erp-ink">
-            {rest.map((o) => (
-              <li key={o}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setInner(o);
-                    onChange?.(o);
-                    close();
-                  }}
-                  className="block w-full truncate rounded-[8px] px-[12px] py-[10px] text-left transition-colors duration-150 ease-out hover:bg-erp-thead-bg hover:text-erp-brand focus-visible:bg-erp-thead-bg"
-                >
-                  {o}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </Popup>
-      ) : (
-        <Popup id={id} open={open} motion="fold" className="right-0 w-[260px]">
-          {/* 항목이 버튼이라 ul 에 trim 을 걸면 안쪽까지 닿지 않는다. 첫 항목 위, 마지막 항목 아래만 잘라 Figma 높이를 맞춘다.
-              잘린 기준선 아래 획이 가려지지 않도록 truncate 대신 줄바꿈만 막는다. */}
-          <ul
-            aria-label={label}
-            className="text-[14px] leading-[2] text-erp-ink [text-box-edge:cap_alphabetic] [&>li:first-child>button]:[text-box-trim:trim-start] [&>li:last-child>button]:[text-box-trim:trim-end]"
-          >
-            {rest.map((o) => (
-              <li key={o}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setInner(o);
-                    onChange?.(o);
-                    close();
-                  }}
-                  className="block w-full text-left whitespace-nowrap hover:text-erp-brand"
-                >
-                  {o}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </Popup>
-      )}
+          {rest.map((o) => (
+            <li key={o}>
+              <button
+                type="button"
+                onClick={() => {
+                  setInner(o);
+                  onChange?.(o);
+                  close();
+                }}
+                className={
+                  variant === "v2"
+                    ? "block w-full truncate rounded-[8px] px-[12px] py-[10px] text-left transition-colors duration-150 ease-out hover:bg-erp-thead-bg hover:text-erp-brand focus-visible:bg-erp-thead-bg"
+                    : "block w-full text-left whitespace-nowrap hover:text-erp-brand"
+                }
+              >
+                {o}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </Popup>
     </div>
   );
 }
