@@ -604,7 +604,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |---|---|---|---|---|
 | PK | 처리 이력 ID | id | `log_id` |  |
 | FK | 급여명세서 | id | `payslip_id` |  |
-|  | 유형 | enum | `log_type` | 초안 생성·수정·확정·확정 취소·발송 |
+|  | 유형 | enum | `log_type` | 초안 생성·수정·확정·확정 취소·발송 (draft·edit·confirm·cancel·send) |
 |  | 변경 전 상태 | enum | `from_status` | 상태가 바뀐 경우만 |
 |  | 변경 후 상태 | enum | `to_status` | 확정 취소는 검토 중으로 |
 |  | 내용 | text | `summary` | 저장할 때 시스템이 만든 한 줄. 예: 연장수당 96,000원 → 128,000원 |
