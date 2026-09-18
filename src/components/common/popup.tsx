@@ -48,6 +48,7 @@ export function useDismiss<T extends HTMLElement>(
 
 // 트리거 + Popup 한 쌍. id 는 트리거의 aria-controls 와 Popup 의 id 로 쓴다.
 // 항목을 고르면 close() 로 닫는다. 고른 항목이 inert 로 들어가거나 사라지므로 포커스를 트리거로 되돌린다.
+// 쓰는 쪽에서 setOpen(false) 로 직접 닫으면 이 되돌림이 빠진다.
 export function useDropdown() {
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);

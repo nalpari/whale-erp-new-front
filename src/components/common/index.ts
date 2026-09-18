@@ -1,5 +1,5 @@
 // Whale ERP 공통 컴포넌트. 화면에서는 이 파일에서 가져다 쓴다.
-// ERP 화면은 ErpRoot 로 감싸야 밝은 테마와 Pretendard 가 적용된다.
+// ERP 화면은 ErpRoot 로 감싸야 밝은 테마와 font-erp 가 적용된다(글꼴 변수는 루트 layout 의 <html> 에 있어야 한다).
 export { ErpRoot } from "./erp-root";
 export { Badge } from "./badge";
 export { Button, type ButtonVariant } from "./button";

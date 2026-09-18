@@ -2,6 +2,7 @@
 
 ## 2026-09-18
 
+* **Update**: Pretendard 를 CDN 대신 저장소(`src/app/fonts/`)에서 쓰도록 바꾼 것을 [Whale ERP Frontend](/whale-erp-front.md) 에 적었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) 에 등록 폼 공통 컴포넌트와 오른쪽 슬라이드 패널(RNB)을 적었다.
 
 ## 2026-09-17

@@ -114,8 +114,8 @@ export function GlobalHeader({ menus, right }: { menus: HeaderMenu[]; right?: Re
         </nav>
         {right && <div className="flex shrink-0 items-center gap-[15px]">{right}</div>}
       </div>
-      {/* 왼쪽 404px 은 Figma 값이다(1depth 첫 글자는 Figma 와 같이 405px 에서 시작한다). */}
-      <SubMenu menus={menus} state={state} className="pl-[404px] text-erp-ink" />
+      {/* 왼쪽 여백은 1depth 첫 글자와 같은 405px(px-24 + 로고 177 + gap 54 + nav pl-150)에 맞춘다. */}
+      <SubMenu menus={menus} state={state} className="pl-[405px] text-erp-ink" />
     </header>
   );
 }

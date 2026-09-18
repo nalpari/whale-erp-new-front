@@ -1,4 +1,5 @@
 // Whale ERP 공통 컴포넌트가 함께 쓰는 스타일 조각. 색·서체 토큰은 globals.css 의 erp-* 에 있다.
+// Figma 에 한 번만 나오는 색(#ebebeb 팝업 테두리, #e93737 위험 항목 등)은 토큰으로 두지 않고 쓰는 곳에 직접 적는다.
 
 export const EASE_OUT = "ease-[cubic-bezier(0.23,1,0.32,1)]";
 

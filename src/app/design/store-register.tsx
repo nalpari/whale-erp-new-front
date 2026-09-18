@@ -4,7 +4,8 @@ import { useId, useRef, useState } from "react";
 import { Button, Field, FormGroup, FormRow, Select, SlidePanel, Textarea, TextField } from "@/components/common";
 
 // Figma Slide(점포 등록). 목록 오른쪽에서 밀려 나오는 등록 폼.
-// 샘플이라 저장은 닫기만 한다. 실제 화면에서는 form action 에 서버 액션을 건다.
+// 샘플이라 저장은 닫기만 한다. 실제 화면에서는 FormGroup 들을 <form action={서버액션}> 으로 감싸고
+// 저장 버튼을 type="submit" 으로 바꾼다(SlidePanel 은 form 을 만들지 않는다).
 export function StoreRegister() {
   const [open, setOpen] = useState(false);
   const id = useId();
