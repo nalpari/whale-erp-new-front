@@ -5,12 +5,12 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Logo, SubMenu, useHeaderMenu, type HeaderMenu } from "./global-header";
 
-// v2 툴팁. 아이콘 바로 아래 흰 말풍선이 뜬다. 아래쪽이 짙은 메뉴 줄에 걸리므로 흰 바탕과 그림자로 떼어 보이게 한다.
-// 떠오를 때 4px 아래에서 올라오고, 동작 줄이기 설정이면 투명도만 바꾼다.
+// Figma Info on. 아이콘 아래 뜨는 흰 알약 모양 툴팁. 아래쪽이 짙은 메뉴 줄에 걸치므로 테두리로 경계를 남긴다.
+// 떠오를 때 4px 아래에서 올라오고, 동작 줄이기 설정이면 올라오지 않고 나타나기만 한다.
 function Tip({ label }: { label: string }) {
   return (
-    <span className="pointer-events-none absolute top-[calc(100%+10px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[6px] border border-erp-field-line bg-white px-[10px] py-[7px] text-[13px] leading-none font-medium whitespace-nowrap text-erp-ink opacity-0 shadow-[0_4px_12px_rgba(40,47,55,0.18)] transition-[opacity,translate] duration-150 ease-out group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">
-      <span className="absolute -top-[4px] left-1/2 size-[7px] -translate-x-1/2 rotate-45 rounded-tl-[1px] border-t border-l border-erp-field-line bg-white" />
+    <span className="pointer-events-none absolute top-[calc(100%+10px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[100px] border border-[#ebebeb] bg-white px-[12px] py-[10px] text-[14px] leading-[2] whitespace-nowrap text-erp-brand opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">
+      <span className="absolute -top-[5px] left-1/2 size-[8px] -translate-x-1/2 -rotate-45 rounded-tr-[1px] border-t border-r border-[#ebebeb] bg-white" />
       {label}
     </span>
   );
