@@ -3,7 +3,7 @@
 export { ErpRoot } from "./erp-root";
 export { Badge } from "./badge";
 export { Button, type ButtonVariant } from "./button";
-export { Checkbox, DateField, Radio, Select } from "./form";
+export { Checkbox, DateField, Field, FormGroup, FormRow, Radio, Select, Textarea, TextField } from "./form";
 export { SearchField } from "./search-field";
 export { DataTable, type Column } from "./data-table";
 export { ListToolbar } from "./list-toolbar";
@@ -13,4 +13,5 @@ export { GlobalHeader, type HeaderMenu } from "./global-header";
 export { StoreSelect } from "./store-select";
 export { UserPop, type UserPopItem } from "./user-pop";
 export { PageBar, ServiceLinks } from "./page-bar";
+export { SlidePanel } from "./slide-panel";
 export { GlobalHeaderV2, ServiceLinksV2, AlarmLink, PageBarV2 } from "./header-v2";

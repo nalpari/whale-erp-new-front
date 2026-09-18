@@ -1,6 +1,15 @@
 import Image from "next/image";
-import type { ComponentProps } from "react";
-import { FIELD } from "./theme";
+import type { ComponentProps, ReactNode } from "react";
+import { FIELD, FIELD_BOX } from "./theme";
+
+export function TextField(props: Omit<ComponentProps<"input">, "className">) {
+  return <input {...props} className={FIELD} />;
+}
+
+// 여러 줄 입력. 높이는 rows 로 정한다(Figma 점포 소개 204 = 8줄).
+export function Textarea({ rows = 8, ...props }: Omit<ComponentProps<"textarea">, "className">) {
+  return <textarea {...props} rows={rows} className={`${FIELD_BOX} resize-none px-[16px] py-[12px] leading-[1.6]`} />;
+}
 
 export function Select(props: Omit<ComponentProps<"select">, "className">) {
   return (
@@ -57,5 +66,31 @@ export function Radio({ label, ...props }: { label: string } & Omit<ComponentPro
       </span>
       {label}
     </label>
+  );
+}
+
+// Figma Form. 라벨과 입력칸 한 쌍. 라벨을 감싸므로 라벨을 눌러도 입력칸이 잡힌다(입력칸이 하나일 때만 쓴다).
+// width 로 고정폭(w-[120px] 등)을 주고, 없으면 한 줄에서 남는 폭을 나눠 가진다.
+export function Field({ label, width, children }: { label: string; width?: string; children: ReactNode }) {
+  return (
+    <label className={`flex flex-col justify-center gap-[8px] ${width ?? "min-w-px flex-1"}`}>
+      <span className="truncate text-[14px] font-medium text-erp-label">{label}</span>
+      {children}
+    </label>
+  );
+}
+
+// Field 를 한 줄에 나란히 둔다.
+export function FormRow({ children }: { children: ReactNode }) {
+  return <div className="flex w-full gap-[6px]">{children}</div>;
+}
+
+// Figma Row group. 제목과 그 아래 입력칸 카드.
+export function FormGroup({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="flex w-full flex-col gap-[10px]">
+      <h3 className="text-[15px] font-semibold text-erp-ink">{title}</h3>
+      <div className="flex flex-col gap-[18px] rounded-[2px] border border-erp-panel-line bg-white px-[16px] py-[20px]">{children}</div>
+    </section>
   );
 }
