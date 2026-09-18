@@ -41,10 +41,11 @@ export function Pagination({
               type="button"
               aria-current={n === page ? "page" : undefined}
               onClick={() => go(n)}
-              className={`size-[38px] rounded-[2px] transition-[border-color,color] duration-150 ease-out ${
+              // 지금 페이지도 같은 색 테두리를 깔아 둔다. 테두리를 빼면 페이지를 옮길 때마다 획이 생겼다 사라져 깜빡인다.
+              className={`size-[38px] rounded-[2px] border border-erp-subtle transition-[background-color,border-color,color] duration-150 ease-out ${
                 n === page
                   ? "bg-erp-subtle font-semibold text-erp-ink"
-                  : "border border-erp-subtle bg-white text-erp-muted hover:border-erp-brand hover:text-erp-ink"
+                  : "bg-white text-erp-muted hover:border-erp-brand hover:text-erp-ink"
               }`}
             >
               {n}
