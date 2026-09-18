@@ -21,7 +21,7 @@
           <div class="titlebar__end">
             <span class="filters__count">서지안 · 2026-08 · 모리커피 서초점</span>
             <button class="btn btn--secondary btn--sm" type="button">임시저장</button>
-            <button class="btn btn--primary btn--sm" type="button">
+            <button class="btn btn--primary btn--sm" type="button" data-tip="확정까지만 여기서 한다. 발송은 급여명세서 목록에서 확정 건을 모아 보낸다.">
               <span data-icon="check" data-icon-size="14"></span>확정
             </button>
           </div>
@@ -240,6 +240,7 @@
                   유형은 문장과 따로 저장해 목록에서 거른다. 저장하는 값은 <span class="mono">draft · edit · confirm · cancel · send</span> 다섯이고, 화면에는 초안 생성·수정·확정·확정 취소·발송으로 보인다.
                   직원 근무 앱은 유형과 시각만 보고 금액 변화는 보지 않는다. 채널별 발송 성공·실패와 재시도는 이 이력이 아니라 발송 이력이 맡는다.
                   <b>재발송은 따로 세지 않는다.</b> 두 번째 발송부터 <b>발송</b> 줄이 한 번 더 쌓일 뿐이고, 화면에서 두 번째를 재발송으로 부르는 것은 보여 주기 위한 구분이다.
+                  직원에게 가는 문구는 갈린다 — 처음은 <b>도착했습니다</b>, 다시 보낼 때는 <b>다시 발송되었습니다</b>에 금액이 바뀌었을 수 있다는 줄이 붙는다.
                 </div>
               </div>
             </section>
