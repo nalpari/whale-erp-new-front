@@ -8,7 +8,7 @@ const TONE = {
 // Figma Beage. 운영(on) / 미운영(off) 같은 상태 표시.
 export function Badge({ tone, children }: { tone: keyof typeof TONE; children: ReactNode }) {
   return (
-    <span className={`inline-block rounded-[2px] px-[4px] py-[2px] text-center text-[14px] font-medium ${TONE[tone]}`}>
+    <span className={`inline-block rounded-[2px] px-[4px] py-[2px] text-center text-[14px] font-medium ${TONE[tone] ?? TONE.off}`}>
       {children}
     </span>
   );

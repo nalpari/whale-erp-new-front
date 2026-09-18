@@ -20,7 +20,7 @@ export function Button({
     <button
       {...props}
       type={type}
-      className={`h-[34px] shrink-0 rounded-[2px] border px-[24px] text-[14px] font-medium whitespace-nowrap transition-[background-color,border-color,color] duration-150 ease-out hover:border-erp-brand hover:bg-white hover:text-erp-ink ${TONE[variant]} ${className}`}
+      className={`h-[34px] shrink-0 rounded-[2px] border px-[24px] text-[14px] font-medium whitespace-nowrap transition-[background-color,border-color,color] duration-150 ease-out hover:border-erp-brand hover:bg-white hover:text-erp-ink ${TONE[variant] ?? TONE.primary} ${className}`}
     />
   );
 }

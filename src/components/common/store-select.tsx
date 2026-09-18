@@ -6,9 +6,10 @@ import { Popup, useDropdown } from "./popup";
 import { EASE_OUT } from "./theme";
 
 // Figma Select_top. 헤더 오른쪽의 점포 선택. 목록은 위에서부터 펼쳐진다.
-// 선택된 점포는 목록에서 빠진다(Figma 기준).
+// 선택된 점포는 목록에서 빠진다(Figma 기준). 남는 항목이 없으면(점포가 하나) 트리거를 비활성으로 둔다.
 // 화살표 키 탐색을 따로 두지 않으므로 ARIA listbox 대신 disclosure(aria-expanded + 버튼 목록)로 둔다.
-// v2 는 GlobalHeaderV2 의 둥근 420px 선택칸이다. 남는 폭을 차지하고 왼쪽에 붙는다.
+// v2 는 GlobalHeaderV2 의 둥근 420px 선택칸이다. 감싸는 div 만 flex-1 로 남는 폭을 먹어 오른쪽 아이콘들을 끝으로 밀고,
+// 선택칸과 목록은 420px 고정이다(둘이 같은 값이어야 한다).
 export function StoreSelect({
   options,
   value: controlled,
@@ -16,16 +17,18 @@ export function StoreSelect({
   onChange,
   label = "점포",
   placeholder = `${label} 선택`,
-  variant = "v1",
+  variant,
 }: {
   options: string[];
-  value?: string;
-  defaultValue?: string;
-  onChange?: (value: string) => void;
   label?: string;
   placeholder?: string;
-  variant?: "v1" | "v2";
-}) {
+  /** 감싸는 헤더에 맞춘다. 기본값을 두면 v2 헤더에 v1 선택칸이 들어가도 아무 경고가 없다. */
+  variant: "v1" | "v2";
+} & (
+  // 제어 모드는 고른 값을 되돌려 줄 onChange 와 짝으로만 쓸 수 있다. 짝이 없으면 목록은 닫히는데 값은 그대로다.
+  | { value: string; onChange: (value: string) => void; defaultValue?: never }
+  | { value?: never; defaultValue?: string; onChange?: (value: string) => void }
+)) {
   const { open, setOpen, close, ref, trigger, id } = useDropdown();
   const [inner, setInner] = useState(defaultValue);
   const value = controlled ?? inner;
@@ -77,7 +80,7 @@ export function StoreSelect({
       </button>
       {/* 목록은 한 벌이고 v1·v2 는 껍데기 클래스만 다르다.
           v1: 항목이 버튼이라 ul 에 trim 을 걸면 안쪽까지 닿지 않는다. 첫 항목 위, 마지막 항목 아래만 잘라 Figma 높이를 맞춘다.
-              잘린 기준선 아래 획이 가려지지 않도록 truncate 대신 줄바꿈만 막는다.
+              잘린 기준선 아래 획이 가려지지 않도록 truncate 대신 줄바꿈만 막는다 — 대신 긴 점포명은 말줄임 없이 잘린다.
           v2: 선택칸이 둥글어 목록도 모서리를 키우고, 항목마다 줄 배경으로 올린 위치를 보여 준다.
               그림자는 fold 전환의 clip-path 여유(8px) 안에 들어가게 작게 둔다. */}
       <Popup

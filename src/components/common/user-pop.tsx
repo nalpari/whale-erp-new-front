@@ -16,7 +16,7 @@ export type UserPopItem = { label: string; danger?: boolean } & (
 // Figma Login_infos. 이름을 누르면 MY PAGE 메뉴가 페이드로 뜬다.
 // 화살표 키 탐색을 따로 두지 않으므로 ARIA menu 대신 disclosure(aria-expanded + 링크/버튼 목록)로 둔다.
 // v2 는 GlobalHeaderV2 의 Info(둥근 42px 사람 아이콘 + 이름)다.
-export function UserPop({ name, items, variant = "v1" }: { name: string; items: UserPopItem[]; variant?: "v1" | "v2" }) {
+export function UserPop({ name, items, variant }: { name: string; items: UserPopItem[]; variant: "v1" | "v2" }) {
   const { open, setOpen, close, ref, trigger, id } = useDropdown();
 
   return (
@@ -49,11 +49,11 @@ export function UserPop({ name, items, variant = "v1" }: { name: string; items: 
             return (
               <li key={item.label}>
                 {item.href !== undefined ? (
-                  <Link href={item.href} onClick={() => setOpen(false)} className={tone}>
+                  <Link href={item.href} onClick={close} className={tone}>
                     {item.label}
                   </Link>
                 ) : item.action !== undefined ? (
-                  <form action={item.action}>
+                  <form action={item.action} onSubmit={close}>
                     <button type="submit" className={tone}>
                       {item.label}
                     </button>
