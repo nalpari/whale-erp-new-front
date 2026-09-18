@@ -58,7 +58,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 export default function DesignUnitsPage() {
   return (
     <main className="mx-auto max-w-[1680px] px-6 py-12 sm:px-10">
-      <h1 className="mb-2 text-[28px] font-bold">기본 유닛</h1>
+      <h1 className="mb-2 text-[28px] font-extrabold">기본 유닛</h1>
       <p className="mb-10 text-[14px] text-erp-label">2026 Whale ERP 1차수정 · @/components/common</p>
 
       <Section title="Color">
@@ -146,8 +146,8 @@ export default function DesignUnitsPage() {
       <Section title="StoreSelect · UserPop">
         {/* 팝업이 섹션 아래로 펼쳐질 자리를 남긴다. */}
         <div className="flex flex-wrap items-center gap-6 pb-[160px]">
-          <StoreSelect options={STORES} />
-          <UserPop name="김지영 (admin)" items={USER_ITEMS} />
+          <StoreSelect variant="v1" options={STORES} />
+          <UserPop variant="v1" name="김지영 (admin)" items={USER_ITEMS} />
         </div>
       </Section>
 
@@ -176,8 +176,8 @@ export default function DesignUnitsPage() {
               menus={MENUS}
               right={
                 <>
-                  <StoreSelect options={STORES} />
-                  <UserPop name="김지영 (admin)" items={USER_ITEMS} />
+                  <StoreSelect variant="v1" options={STORES} />
+                  <UserPop variant="v1" name="김지영 (admin)" items={USER_ITEMS} />
                 </>
               }
             />

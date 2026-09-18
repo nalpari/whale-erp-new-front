@@ -23,8 +23,8 @@ export default function DesignFullPage() {
           menus={MENUS}
           right={
             <>
-              <StoreSelect options={STORES} />
-              <UserPop name="김지영 (admin)" items={USER_ITEMS} />
+              <StoreSelect variant="v1" options={STORES} />
+              <UserPop variant="v1" name="김지영 (admin)" items={USER_ITEMS} />
             </>
           }
         />

@@ -3,7 +3,7 @@ import type { Key, ReactNode } from "react";
 export type Column<T> = {
   header: string;
   /** Tailwind 너비 클래스(w-[60px] 등). 없으면 남는 폭을 나눠 갖는다. */
-  width?: string;
+  width?: `w-[${number}px]`;
   /** 본문 정렬. 헤더는 항상 가운데다. */
   align?: "left" | "center";
   cell: (row: T) => ReactNode;

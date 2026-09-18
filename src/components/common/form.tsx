@@ -2,16 +2,16 @@ import Image from "next/image";
 import type { ComponentProps, ReactNode } from "react";
 import { FIELD, FIELD_BOX } from "./theme";
 
-export function TextField(props: Omit<ComponentProps<"input">, "className">) {
+export function TextField(props: Omit<ComponentProps<"input">, "className" | "style">) {
   return <input {...props} className={FIELD} />;
 }
 
-// 여러 줄 입력. 높이는 rows 로 정한다(Figma 점포 소개 204 = 8줄).
-export function Textarea({ rows = 8, ...props }: Omit<ComponentProps<"textarea">, "className">) {
+// 여러 줄 입력. 높이는 rows 로 정한다 — 8줄 × (14 × 1.6) + 위아래 12 + 테두리 1 ≈ 205 로 Figma 점포 소개(204)와 맞는다.
+export function Textarea({ rows = 8, ...props }: Omit<ComponentProps<"textarea">, "className" | "style">) {
   return <textarea {...props} rows={rows} className={`${FIELD_BOX} resize-none px-[16px] py-[12px] leading-[1.6]`} />;
 }
 
-export function Select(props: Omit<ComponentProps<"select">, "className">) {
+export function Select(props: Omit<ComponentProps<"select">, "className" | "style">) {
   return (
     <select
       {...props}
@@ -21,7 +21,7 @@ export function Select(props: Omit<ComponentProps<"select">, "className">) {
 }
 
 // 네이티브 달력 버튼은 투명하게 남겨 클릭 영역으로만 쓰고, 보이는 아이콘은 Figma 원본이다.
-export function DateField(props: Omit<ComponentProps<"input">, "type" | "className">) {
+export function DateField(props: Omit<ComponentProps<"input">, "type" | "className" | "style">) {
   return (
     <input
       {...props}
@@ -36,7 +36,7 @@ const MARK_MOTION =
 
 // Figma Form_check. 하루에도 여러 번 누르는 컨트롤이라 짧고 옅게만 움직인다:
 // 칸 색은 150ms 로 짧게 바뀌고, 체크 표시는 살짝 커지며 나타난다.
-export function Checkbox({ label, ...props }: { label: string } & Omit<ComponentProps<"input">, "type" | "className">) {
+export function Checkbox({ label, ...props }: { label: string } & Omit<ComponentProps<"input">, "type" | "className" | "style">) {
   return (
     <label className="flex items-center gap-[8px] text-[14px] text-erp-ink">
       <span className="relative grid size-[20px] shrink-0 place-items-center">
@@ -53,7 +53,7 @@ export function Checkbox({ label, ...props }: { label: string } & Omit<Component
 }
 
 // Figma Form_radio. 체크박스와 같은 방식으로, 선택되면 가운데 점이 살짝 커지며 나타난다.
-export function Radio({ label, ...props }: { label: string } & Omit<ComponentProps<"input">, "type" | "className">) {
+export function Radio({ label, ...props }: { label: string } & Omit<ComponentProps<"input">, "type" | "className" | "style">) {
   return (
     <label className="flex items-center gap-[8px] text-[14px] text-erp-ink">
       <span className="relative grid size-[20px] shrink-0 place-items-center">
@@ -71,7 +71,8 @@ export function Radio({ label, ...props }: { label: string } & Omit<ComponentPro
 
 // Figma Form. 라벨과 입력칸 한 쌍. 라벨을 감싸므로 라벨을 눌러도 입력칸이 잡힌다(입력칸이 하나일 때만 쓴다).
 // width 로 고정폭(w-[120px] 등)을 주고, 없으면 한 줄에서 남는 폭을 나눠 가진다.
-export function Field({ label, width, children }: { label: string; width?: string; children: ReactNode }) {
+// 폭 말고 다른 클래스는 받지 않는다 — 여기로 색이나 여백이 새면 폼 줄마다 모양이 달라진다.
+export function Field({ label, width, children }: { label: string; width?: `w-[${number}px]`; children: ReactNode }) {
   return (
     <label className={`flex flex-col justify-center gap-[8px] ${width ?? "min-w-px flex-1"}`}>
       <span className="truncate text-[14px] font-medium text-erp-label">{label}</span>
