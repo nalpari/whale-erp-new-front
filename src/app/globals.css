@@ -35,7 +35,7 @@
   --color-erp-off-bg: #fff1f1;
   --color-erp-nav: #282f37;
   --color-erp-sub: #53606f;
-  --font-erp: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-erp: var(--font-pretendard), Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
