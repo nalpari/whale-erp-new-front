@@ -1,5 +1,9 @@
 # Bundle history
 
+## 2026-09-18
+
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) 에 등록 폼 공통 컴포넌트와 오른쪽 슬라이드 패널(RNB)을 적었다.
+
 ## 2026-09-17
 
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) 에 헤더 v2(Figma Top2)와 `/design/full-v2` 샘플을 적었다.
