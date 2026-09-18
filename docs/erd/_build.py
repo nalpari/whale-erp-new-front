@@ -349,8 +349,8 @@ DIAGRAMS.append(Diagram(
           ["#|사유 ID|id|reason_id|", "→|급여명세서|id|payslip_id|", "|사유|enum|reason|출퇴근 누락·계약 만료 후 기록·기간 중 계약 변경·공제 미입력", "|상세|text|detail|누락 일수 등", "|확인 일시|datetime|acknowledged_at|"], 2, 312),
         E("dispatch", "명세서 발송 이력", "payslip_dispatches", "history",
           ["#|발송 이력 ID|id|dispatch_id|", "→|급여명세서|id|payslip_id|", "|발송 채널|enum|channel|이메일·앱 푸시", "|발송 상태|enum|status|", "|발송 시각|datetime|sent_at|", "→|발송자|id|sent_by|"], 1, 436),
-        E("payslip_status", "명세서 상태 이력", "payslip_status_histories", "history",
-          ["#|상태 이력 ID|id|history_id|", "→|급여명세서|id|payslip_id|", "|변경 전 상태|enum|from_status|", "|변경 후 상태|enum|to_status|확정 취소는 검토 중으로", "|처리 주체|id|changed_by|", "|변경 일시|datetime|changed_at|"], 0, 436),
+        E("payslip_status", "명세서 처리 이력", "payslip_logs", "history",
+          ["#|처리 이력 ID|id|log_id|", "→|급여명세서|id|payslip_id|", "|유형|enum|log_type|초안 생성·수정·확정·확정 취소·발송", "|변경 전 상태|enum|from_status|상태가 바뀐 경우만", "|변경 후 상태|enum|to_status|확정 취소는 검토 중으로", "|내용|text|summary|저장할 때 시스템이 만든 한 줄. 예: 연장수당 96,000원 → 128,000원", "|처리 주체|id|changed_by|", "|처리 일시|datetime|changed_at|"], 0, 436),
     ],
     [
         R("staff_member", "right", "payslip", "left", "1", "N", "", at_a=100, at_b=100),
