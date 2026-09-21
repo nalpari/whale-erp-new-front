@@ -171,28 +171,48 @@ PREFIX = {"웹": "[관리자웹]", "앱": "[직원앱]", "API": "[API]", "확인
 
 ## 7. 스크립트
 
-스크래치패드의 `plane-seed/`에 있다. 저장소에 두지 않은 것은 API 토큰을 읽기 때문이다.
-토큰은 `~/.config/plane-mcp/api-key`에서만 읽고 화면에 찍지 않는다.
+`docs/plane/scripts/` 에 있다. 파이썬 3만 있으면 돌고 설치할 것이 없다.
 
 | 파일 | 하는 일 |
 |---|---|
-| `seed.py` | 공통 함수(`call`·`get_all`·`esc`)와 프로젝트 주소·토큰 읽기 |
-| `run_module.py` | **러너.** 모듈 하나의 명세와 개발 작업을 만들고 모듈에 담고 선행을 건다 |
-| `<모듈>_tasks.py` | 모듈마다 하나씩 두는 정의 파일 (6장) |
-| `ids.json` | 작업 키와 Plane 작업 id의 짝 |
+| `plane_api.py` | Plane REST v1 을 부르는 공통 함수(`call`·`get_all`·`esc`). 프로젝트 값은 환경변수로 받는다 |
+| `run_module.py` | **러너.** 정의 파일 하나를 읽어 명세와 개발 작업을 만들고 모듈에 담고 선행을 건다 |
+| `example_tasks.py` | 정의 파일 본보기. 필드마다 뜻을 주석으로 달아 두었다 |
+| `ids.json` | 작업 키와 Plane 작업 id 의 짝. 러너가 만들고 쌓는다 (저장소에 두지 않는다) |
 
-```
-python3 run_module.py <정의 파일 이름>
+### 쓰는 법
+
+토큰을 먼저 만든다. Plane 웹의 프로필 → 설정 → Developer → 퍼스널 액세스 토큰이고,
+주소에 워크스페이스 슬러그가 들어가지 않는다 — `/settings/profile/api-tokens/`.
+만든 값을 파일에 넣고 그 파일만 읽게 한다. **토큰을 명령줄이나 채팅에 적지 않는다.**
+
+```bash
+mkdir -p ~/.config/plane-mcp && chmod 700 ~/.config/plane-mcp
+# 편집기로 ~/.config/plane-mcp/api-key 에 토큰을 넣는다
+chmod 600 ~/.config/plane-mcp/api-key
 ```
 
-이미 있는 `external_id`는 건너뛴다. 그래서 정의 파일을 고쳐 다시 돌려도 새로 생기지 않는다.
-완료 조건 문장을 고치려면 그 작업만 따로 `PATCH` 한다.
+프로젝트 값을 환경변수로 준다. 자기 프로젝트 것으로 바꾼다.
+
+```bash
+export PLANE_BASE=http://172.30.1.65:3333
+export PLANE_SLUG=whale-erp
+export PLANE_PROJECT=<프로젝트 UUID>
+export PLANE_SOURCE=<우리 팀 표시>        # 예: whale-plan
+
+python3 plane_api.py                      # 설정이 맞는지 본다
+python3 run_module.py example_tasks       # 모듈 하나를 만든다
+```
+
+러너를 돌리기 전에 **모듈과 라벨은 Plane 에 먼저 만들어 둔다.** 없으면 러너가 이름을 대며
+멈춘다. 이미 있는 `external_id` 는 건너뛰므로 정의 파일을 고쳐 다시 돌려도 새로 생기지 않는다.
+이미 만든 작업의 본문을 고치려면 그 작업만 따로 `PATCH` 한다.
 
 주의할 것 넷.
 
-1. **호출 간격 1.1초.** 분당 제한이 있어 더 빠르게 돌리면 429가 난다
+1. **호출 간격 1.1초.** 분당 제한이 있어 더 빠르게 돌리면 429 가 난다. `plane_api.INTERVAL` 에 있다
 2. **부모를 지우기 전에 자식이 풀렸는지 확인한다.** 그러지 않으면 자식까지 함께 지워진다
-3. **커뮤니티 판에는 작업 유형과 Epic API가 없다.** 계층은 부모-자식으로만 만든다
+3. **커뮤니티 판에는 작업 유형과 Epic API 가 없다.** 계층은 부모-자식으로만 만든다
 4. **웹훅이 돌면 알림이 나간다.** 한꺼번에 많이 바꿀 때는 중계기를 잠시 멈춘다 (9장)
 
 ---
@@ -223,8 +243,10 @@ python3 run_module.py <정의 파일 이름>
 
 층별로는 `[API]` 86, `[관리자웹]` 47, `[직원앱]` 38, `[점검]` 18건이다.
 
-정의 파일은 `contract`·`login`·`staffinfo`·`schedule`·`todo`·`attendance`·`payroll`·
-`opsnotify`·`staffnotify`·`support`·`community`·`public`·`adminhome`·`apphome`·`base` 열다섯이다.
+정의 파일 열다섯(`contract`·`login`·`staffinfo`·`schedule`·`todo`·`attendance`·`payroll`·
+`opsnotify`·`staffnotify`·`support`·`community`·`public`·`adminhome`·`apphome`·`base`)은
+우리 제품 내용이라 저장소에 두지 않고 기획 세션의 작업 폴더에 있다. 필요하면 기획 세션에 청한다.
+`docs/plane/scripts/example_tasks.py` 가 그 가운데 TO-DO 모듈을 본보기로 옮겨 놓은 것이다.
 
 라벨은 관리자 웹 · 직원 근무 앱 · API에 영역 라벨 여덟(기반·직원·근무·지원·출퇴근·알림·
 직원 알림·선행 조건)을 쓴다. 「결정 대기」와 「외부 검토」 라벨은 초기화 전 구조에서 쓰던
