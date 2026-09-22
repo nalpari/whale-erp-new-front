@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>플랫폼 관리자 수정 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="system" data-sub="system/admins.html">
+    <!-- 플랫폼 관리자 정보 수정 · /platform/system/admins/:아이디/edit · S-CZGHBS · 1팀
+         기본정보 · 사용자 권한 · 계정 상태를 나눠 고친다. 아이디는 읽기 전용이다.
+         아이디·이름·연락처·이메일·상태가 필수다. 입력 형식과 길이는 PL-OCJOFP 의 계정 기본정보 입력 규칙을 따른다.
+         계정 상태는 사용과 미사용만 고른다(탈퇴 없음). 미사용으로 저장하면 선행 조건 없이 바로 로그인·ERP 접근이 막히고 세션이 끊긴다. 사유는 받지 않는다.
+         플랫폼 마스터 계정은 플랫폼 마스터만 고친다. 플랫폼 관리자는 플랫폼 마스터 권한을 부여하거나 바꿀 수 없다.
+         본인 계정은 기본정보만 고치고 권한·상태는 읽기 전용이다. 마지막 사용 플랫폼 마스터는 상태·권한 항목을 막고 사유를 적는다.
+         다른 사람이 먼저 고쳤으면 저장하지 않고 최신 정보를 불러오게 한다.
+         쟁점 후보(S-CZGHBS): 수정 화면의 기본정보 목록에 주소가 없다(등록 S-FOJJKB 는 주소를 받는다). 표본은 주소를 고칠 수 있게 두었다 — 빼면 등록 뒤 주소를 바꿀 길이 없다.
+         쟁점 후보(S-CZGHBS): 미사용으로 바꿀 때 확인 창을 띄울지, 선택 즉시 안내만 하고 저장으로 확정할지 정해지지 않았다. 표본은 선택 아래 안내만 둔다.
+         쟁점 후보(S-CZGHBS): 본인 계정은 ‘읽기 전용’(본인 보호), 마지막 마스터는 ‘비활성’(마지막 마스터 보호)으로 명세 표현이 다르다. 표본은 앞은 읽기 전용 값, 뒤는 비활성 선택으로 그렸다.
+         위쪽 점선 줄은 목업 전용이다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div id="ef" style="display: contents">
+          <div class="titlebar">
+            <a class="iconbtn" href="admins-detail.html" aria-label="관리자 상세로" data-icon="arrowleft" data-icon-size="18" data-show="base off dupmail miss denied conflict fail"></a>
+            <a class="iconbtn" href="admins-detail.html?state=self" aria-label="관리자 상세로" data-icon="arrowleft" data-icon-size="18" data-show="self" hidden></a>
+            <a class="iconbtn" href="admins-detail.html?state=lastpm" aria-label="관리자 상세로" data-icon="arrowleft" data-icon-size="18" data-show="lastpm" hidden></a>
+            <h1 class="t-h1">플랫폼 관리자 수정</h1>
+            <span class="badge badge--quiet" data-show="base off dupmail miss denied conflict fail">박지우 · plat_park</span>
+            <span class="badge badge--quiet" data-show="self lastpm" hidden>정민재 · plat_jung · 본인</span>
+            <span class="badge badge--warn">1팀 작업</span>
+            <div class="titlebar__end">
+              <span class="filters__count mono">S-CZGHBS · /platform/system/admins/<span data-show="base off dupmail miss denied conflict fail">plat_park</span><span data-show="self lastpm" hidden>plat_jung</span>/edit</span>
+              <a class="btn btn--secondary btn--sm" href="admins-detail.html" data-show="base off dupmail miss denied conflict fail">취소</a>
+              <a class="btn btn--secondary btn--sm" href="admins-detail.html?state=self" data-show="self" hidden>취소</a>
+              <a class="btn btn--secondary btn--sm" href="admins-detail.html?state=lastpm" data-show="lastpm" hidden>취소</a>
+              <a class="btn btn--primary btn--sm" href="admins-detail.html" data-show="base off">저장</a>
+              <a class="btn btn--primary btn--sm" href="admins-detail.html?state=self" data-show="self" hidden>저장</a>
+              <a class="btn btn--primary btn--sm" href="admins-detail.html?state=lastpm" data-show="lastpm" hidden>저장</a>
+              <button class="btn btn--primary btn--sm" type="button" data-show="dupmail miss denied conflict fail" hidden>저장</button>
+            </div>
+          </div>
+
+          <div class="content">
+            <div class="demo" data-demo="ef">
+              <b>목업 상태</b>
+              <div class="seg">
+                <button type="button" data-state="base" aria-pressed="true">plat_park · 일반</button>
+                <button type="button" data-state="off" aria-pressed="false">미사용 선택</button>
+                <button type="button" data-state="self" aria-pressed="false">본인 계정</button>
+                <button type="button" data-state="lastpm" aria-pressed="false">마지막 사용 플랫폼 마스터</button>
+                <button type="button" data-state="dupmail" aria-pressed="false">이메일 중복</button>
+                <button type="button" data-state="miss" aria-pressed="false">필수 누락</button>
+                <button type="button" data-state="denied" aria-pressed="false">플랫폼 관리자의 마스터 권한 부여</button>
+                <button type="button" data-state="conflict" aria-pressed="false">동시 수정 충돌</button>
+                <button type="button" data-state="fail" aria-pressed="false">저장 실패</button>
+              </div>
+            </div>
+
+            <!-- 저장 결과·화면 제약 안내 — 한 번에 하나만 선다 -->
+            <div class="band band--warn" data-show="conflict" hidden>
+              <span class="band__ic" data-icon="refresh" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">이 화면을 연 뒤에 다른 사용자가 이 계정을 먼저 고쳤습니다</div>
+                <p class="band__desc">저장하지 않았습니다. 최신 정보를 불러와 바뀐 내용을 확인한 뒤 다시 고쳐 주세요.</p>
+              </div>
+              <div class="band__act">
+                <a class="btn btn--secondary btn--sm" href="admins-edit.html">최신 정보 불러오기</a>
+              </div>
+            </div>
+            <div class="band band--risk" data-show="fail" hidden>
+              <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">저장하지 못했습니다</div>
+                <p class="band__desc">계정 상태와 로그인 세션은 전과 같습니다. 입력한 내용은 화면에 남겨 두었으니 잠시 후 다시 저장해 주세요.</p>
+              </div>
+            </div>
+            <div class="band band--risk" data-show="dupmail" hidden>
+              <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">다른 계정이 쓰는 이메일이라 저장하지 않았습니다</div>
+              </div>
+            </div>
+            <div class="band band--risk" data-show="miss" hidden>
+              <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">필수 항목이 비어 있어 저장하지 않았습니다 — 이름, 이메일</div>
+              </div>
+            </div>
+            <div class="band band--risk" data-show="denied" hidden>
+              <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">플랫폼 마스터 권한으로 바꿀 수 없습니다</div>
+                <p class="band__desc">로그인 사용자가 플랫폼 관리자라 플랫폼 마스터 권한을 부여하거나 변경할 수 없습니다. 저장을 거부했습니다.</p>
+              </div>
+            </div>
+            <div class="band band--warn" data-show="lastpm" hidden>
+              <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">마지막 사용 플랫폼 마스터라 상태와 권한을 바꿀 수 없습니다</div>
+                <p class="band__desc">이 계정을 미사용으로 돌리거나 플랫폼 관리자 권한으로 내리면 사용 중인 플랫폼 마스터가 남지 않습니다. 기본정보만 고칠 수 있습니다.</p>
+              </div>
+            </div>
+            <div class="band band--info" data-show="self" hidden>
+              <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">본인 계정은 권한과 상태를 스스로 바꿀 수 없습니다</div>
+                <p class="band__desc">기본정보만 고칠 수 있습니다. 권한·상태를 바꿔야 하면 이 계정을 관리할 수 있는 다른 플랫폼 마스터에게 요청하세요.</p>
+              </div>
+            </div>
+
+            <!-- 기본정보 -->
+            <section class="panel">
+              <div class="panel__head">
+                <h2 class="t-h2">기본정보</h2>
+                <span class="subtle" style="font-size: 12px">* 표시가 필수 · 소속 부서·직책·주소는 선택</span>
+              </div>
+              <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
+                <div class="grid grid--2">
+                  <div class="field">
+                    <label for="eid">아이디 <span class="req">*</span></label>
+                    <input class="input mono" id="eid" value="plat_park" readonly data-show="base off dupmail miss denied conflict fail" />
+                    <input class="input mono" value="plat_jung" readonly aria-label="아이디" data-show="self lastpm" hidden />
+                    <span class="help">아이디는 바꿀 수 없습니다</span>
+                  </div>
+                  <div class="field">
+                    <label for="enm">이름 <span class="req">*</span></label>
+                    <input class="input" id="enm" value="박지우" maxlength="20" data-show="base off dupmail denied conflict fail" />
+                    <input class="input" value="" maxlength="20" aria-invalid="true" aria-label="이름" data-show="miss" hidden />
+                    <input class="input" value="정민재" maxlength="20" aria-label="이름" data-show="self lastpm" hidden />
+                    <span class="help" data-show="base off dupmail denied conflict fail self lastpm">한글 또는 영문 2~20자</span>
+                    <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>이름을 입력해 주세요.</span>
+                  </div>
+                  <div class="field">
+                    <label for="etel">연락처 <span class="req">*</span></label>
+                    <div class="tel3" data-show="base off dupmail miss denied conflict fail">
+                      <input class="input mono" id="etel" value="010" inputmode="numeric" aria-label="앞자리" />
+                      <input class="input mono" value="7781" inputmode="numeric" aria-label="가운데자리" />
+                      <input class="input mono" value="3302" inputmode="numeric" aria-label="끝자리" />
+                    </div>
+                    <div class="tel3" data-show="self lastpm" hidden>
+                      <input class="input mono" value="010" inputmode="numeric" aria-label="앞자리" />
+                      <input class="input mono" value="2011" inputmode="numeric" aria-label="가운데자리" />
+                      <input class="input mono" value="4410" inputmode="numeric" aria-label="끝자리" />
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="email">이메일 <span class="req">*</span></label>
+                    <input class="input mono" id="email" value="jiwoo.park@whale-erp.example" maxlength="100" data-show="base off denied conflict fail" />
+                    <input class="input mono" value="seoyeon.kim@whale-erp.example" maxlength="100" aria-invalid="true" aria-label="이메일" data-show="dupmail" hidden />
+                    <input class="input mono" value="" maxlength="100" aria-invalid="true" aria-label="이메일" data-show="miss" hidden />
+                    <input class="input mono" value="minjae.jung@whale-erp.example" maxlength="100" aria-label="이메일" data-show="self lastpm" hidden />
+                    <span class="help" data-show="base off denied conflict fail self lastpm">이메일 형식 · 100자 이하</span>
+                    <span class="err" data-show="dupmail" hidden><span data-icon="alert" data-icon-size="13"></span>이미 다른 관리자 계정에 등록된 이메일입니다.</span>
+                    <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>이메일을 입력해 주세요.</span>
+                  </div>
+                  <div class="field">
+                    <label for="edept">소속 부서</label>
+                    <input class="input" id="edept" value="고객지원팀" maxlength="30" data-show="base off dupmail miss denied conflict fail" />
+                    <input class="input" value="플랫폼운영팀" maxlength="30" aria-label="소속 부서" data-show="self lastpm" hidden />
+                  </div>
+                  <div class="field">
+                    <label for="epos">직책</label>
+                    <input class="input" id="epos" value="매니저" maxlength="30" data-show="base off dupmail miss denied conflict fail" />
+                    <input class="input" value="팀장" maxlength="30" aria-label="직책" data-show="self lastpm" hidden />
+                  </div>
+                </div>
+                <!-- 주소 — 점포 등록과 같은 주소 검색 프로세스(data-addr). 검색 결과가 입력칸 아래로 펼쳐지고, 고른 우편번호·기본주소만 들어간다. -->
+                <div class="field addr" data-addr data-show="base off dupmail miss denied conflict fail">
+                  <label for="ezq">주소</label>
+                  <div class="addr__search">
+                    <div class="addr__q">
+                      <span data-icon="search" data-icon-size="14"></span>
+                      <input class="input" id="ezq" type="search" placeholder="도로명, 건물명, 지번으로 검색" autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list" data-addr-q />
+                    </div>
+                    <button class="btn btn--secondary" type="button" data-addr-go>주소 검색</button>
+                    <div class="addr__list" role="listbox" aria-label="주소 검색 결과" hidden></div>
+                  </div>
+                  <div class="addr__picked">
+                    <input class="input mono" value="06236" readonly placeholder="우편번호" aria-label="우편번호" data-addr-zip />
+                    <input class="input" value="서울 강남구 테헤란로 152" readonly placeholder="검색해서 고르면 채워집니다" aria-label="기본주소" data-addr-base />
+                  </div>
+                  <input class="input" value="12층" maxlength="100" placeholder="상세주소" aria-label="상세주소" data-addr-detail />
+                  <span class="help">검색 결과에서 고른 우편번호·기본주소만 들어갑니다. 상세주소는 직접 적습니다.</span>
+                </div>
+                <div class="field addr" data-addr data-show="self lastpm" hidden>
+                  <label for="ezq2">주소</label>
+                  <div class="addr__search">
+                    <div class="addr__q">
+                      <span data-icon="search" data-icon-size="14"></span>
+                      <input class="input" id="ezq2" type="search" placeholder="도로명, 건물명, 지번으로 검색" autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list" data-addr-q />
+                    </div>
+                    <button class="btn btn--secondary" type="button" data-addr-go>주소 검색</button>
+                    <div class="addr__list" role="listbox" aria-label="주소 검색 결과" hidden></div>
+                  </div>
+                  <div class="addr__picked">
+                    <input class="input mono" value="" readonly placeholder="우편번호" aria-label="우편번호" data-addr-zip />
+                    <input class="input" value="" readonly placeholder="검색해서 고르면 채워집니다" aria-label="기본주소" data-addr-base />
+                  </div>
+                  <input class="input" value="" maxlength="100" placeholder="상세주소" aria-label="상세주소" data-addr-detail />
+                  <span class="help">검색 결과에서 고른 우편번호·기본주소만 들어갑니다. 상세주소는 직접 적습니다.</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 사용자 권한 · 계정 상태 -->
+            <section class="panel">
+              <div class="panel__head">
+                <h2 class="t-h2">사용자 권한 · 계정 상태</h2>
+                <div class="panel__end">
+                  <a class="tlink" href="roles.html" style="font-size: 12px">권한 구성은 플랫폼 권한 관리에서</a>
+                </div>
+              </div>
+              <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
+                <div class="grid grid--2">
+                  <div class="field">
+                    <label for="erole">사용자 권한</label>
+                    <select class="select" id="erole" data-show="base off dupmail miss conflict fail">
+                      <optgroup label="플랫폼 마스터">
+                        <option>플랫폼 마스터 · PM000001</option>
+                      </optgroup>
+                      <optgroup label="플랫폼 관리자">
+                        <option>플랫폼 관리자 · PA000001</option>
+                        <option selected>고객지원 담당 · PA000002</option>
+                        <option>정산 담당 · PA000003</option>
+                        <option>기준정보 조회 · PA000004</option>
+                      </optgroup>
+                    </select>
+                    <select class="select" aria-label="사용자 권한" aria-invalid="true" data-show="denied" hidden>
+                      <option selected>플랫폼 마스터 · PM000001</option>
+                    </select>
+                    <input class="input" value="플랫폼 마스터 · PM000001" readonly aria-label="사용자 권한" data-show="self" hidden />
+                    <select class="select" aria-label="사용자 권한" disabled data-show="lastpm" hidden>
+                      <option selected>플랫폼 마스터 · PM000001</option>
+                    </select>
+                    <span class="help" data-show="base off dupmail miss conflict fail">바꾸면 이 계정의 다음 요청부터 새 권한으로 판정합니다.</span>
+                    <span class="err" data-show="denied" hidden><span data-icon="alert" data-icon-size="13"></span>플랫폼 마스터 권한은 플랫폼 마스터만 부여할 수 있습니다.</span>
+                    <span class="help" data-show="self" hidden>본인 권한은 스스로 바꿀 수 없습니다.</span>
+                    <span class="help" data-show="lastpm" hidden>마지막 사용 플랫폼 마스터라 권한을 바꿀 수 없습니다.</span>
+                  </div>
+                  <div class="field">
+                    <label for="estat">계정 상태 <span class="req">*</span></label>
+                    <select class="select" id="estat" data-show="base dupmail miss denied conflict fail">
+                      <option selected>사용</option>
+                      <option>미사용</option>
+                    </select>
+                    <select class="select" aria-label="계정 상태" data-show="off" hidden>
+                      <option>사용</option>
+                      <option selected>미사용</option>
+                    </select>
+                    <input class="input" value="사용" readonly aria-label="계정 상태" data-show="self" hidden />
+                    <select class="select" aria-label="계정 상태" disabled data-show="lastpm" hidden>
+                      <option selected>사용</option>
+                    </select>
+                    <span class="help" data-show="self" hidden>본인 계정의 상태는 다른 사용자가 바꿔야 합니다.</span>
+                    <span class="help" data-show="lastpm" hidden>마지막 사용 플랫폼 마스터라 미사용으로 바꿀 수 없습니다.</span>
+                  </div>
+                </div>
+                <div class="band band--warn" data-show="off" hidden>
+                  <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
+                  <div class="band__body">
+                    <div class="band__title">미사용으로 저장하면 이 계정은 즉시 로그인과 ERP 접근이 차단됩니다</div>
+                    <p class="band__desc">로그인 중인 세션도 끊깁니다. 계정 정보와 업무 이력은 지우지 않고 보존하며, 나중에 사용으로 되돌리면 기존 비밀번호로 다시 로그인합니다.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <p class="note">
+              <span data-icon="info" data-icon-size="14"></span>
+              <span>정보·권한·상태 어느 것을 바꿔도 사유는 받지 않는다. 저장하면 바뀐 항목마다 변경 전후 값과 처리자가 상세의 생성·변경 이력에 쌓인다. 메뉴 구성은 대상 사용자가 다음 화면으로 옮기거나 새로고침할 때 새 권한으로 바뀐다.</span>
+            </p>
+          </div>
+
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+  </body>
+</html>

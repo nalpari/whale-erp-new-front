@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BP 환경설정 개요 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="config" data-sub="config/overview.html">
+    <!-- BP 환경 설정(R-DJGLEO) 영역 개요 — 목업 전용 페이지다. 1팀 작업이다.
+         기준은 manyfast [1팀공용] WHALE ERP 의 BP 환경 설정 하위 기능 넷과 명세 열셋이다.
+         메뉴구조도의 환경설정 네 줄(관리자 · 권한 · 공통코드 · 휴일)을 명세의 기능 이름으로 바꿨다.
+         기능당 메뉴 하나다 — 상세·등록·수정은 목록에서 이어 들어가고, 수정은 상세를 거친다.
+         표본은 ㈜한강상회(BP000017) 시점이다 — 관리 대상 관리자 8명 · 권한 그룹 8개 · 점포 11곳 · BP 휴일 6건. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <a class="iconbtn" href="../index.html" aria-label="목업 허브로" data-icon="arrowleft" data-icon-size="18"></a>
+          <h1 class="t-h1">BP 환경설정</h1>
+          <span class="badge badge--warn">1팀 작업</span>
+          <span class="badge badge--preview">영역 개요</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">R-DJGLEO · config/</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="band band--warn">
+            <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+            <div class="band__body">
+              <div class="band__title">BP 가 자기 관리자·권한·코드·휴일을 스스로 정하는 곳이다</div>
+              <p class="band__desc">
+                무엇을 볼 수 있는지는 <b>메뉴별 CRUD 권한과 점포 매핑을 둘 다 통과한 범위</b>다. BP 마스터·BP 관리자·가맹 마스터·가맹 관리자가 같은 화면을 보지만
+                역할마다 대상과 할 수 있는 일이 다르다. 각 화면 위의 점선 줄로 보는 사람을 바꿔 가며 무엇이 보이고 막히는지 볼 수 있다.
+                BP 마스터 계정과 BP 자체는 여기가 아니라 플랫폼의 BP 마스터 계정 관리 몫이다.
+              </p>
+            </div>
+            <div class="band__act">
+              <a class="btn btn--primary" href="admins.html">관리자 목록부터 보기</a>
+            </div>
+          </div>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">메뉴 이름</h2>
+              <span class="badge badge--quiet">구조도 → 명세</span>
+            </div>
+            <div class="panel">
+              <div class="tblwrap">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th scope="col">메뉴구조도 v0.9</th>
+                      <th scope="col">명세 기능 (이 목업의 메뉴)</th>
+                      <th scope="col">기능</th>
+                      <th scope="col" class="n">명세</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td class="subtle">관리자 관리</td><td class="k"><a class="tlink" href="admins.html">BP 관리자 관리</a></td><td class="mono">F-OILWTZ</td><td class="n">5</td></tr>
+                    <tr><td class="subtle">권한 관리</td><td class="k"><a class="tlink" href="roles.html">BP 권한 그룹 관리</a></td><td class="mono">F-GSJRKH</td><td class="n">2</td></tr>
+                    <tr><td class="subtle">공통코드 관리</td><td class="k"><a class="tlink" href="codes.html">BP 공통코드 관리</a></td><td class="mono">F-QPDEWN</td><td class="n">1</td></tr>
+                    <tr><td class="subtle">휴일 관리</td><td class="k"><a class="tlink" href="holidays.html">BP 휴일 관리</a></td><td class="mono">F-YQTLQE</td><td class="n">5</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="panel__note">
+                명세 열셋 중 반복 휴일 연장 배치(S-NMSCQK)는 화면이 없어 휴일 등록·상세의 “2년치를 먼저 만들고 이후는 배치가 채운다”는 안내로만 드러난다.
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">화면</h2>
+              <span class="badge badge--quiet">6개 + 팝업</span>
+              <div class="panel__end">
+                <span class="filters__count mono">/settings</span>
+              </div>
+            </div>
+            <div class="grid grid--2">
+              <a class="mk-card" href="admins.html">
+                <span class="mk-card__route">/settings/admins</span>
+                <span class="mk-card__name">BP 관리자 목록 → 상세 → 수정 · 등록</span>
+                <span class="mk-card__desc">
+                  BP 관리자·가맹 마스터·가맹 관리자 계정. 역할마다 보이는 대상이 다르고, 가맹 관리자는 가맹 마스터만 등록·수정·초기화한다.
+                  수정은 상세의 수정 버튼으로만 들어간다.
+                </span>
+                <span class="mk-card__end"><span class="badge badge--quiet">S-AJHXFU · S-EBIPGZ · S-NIMSMQ · S-OENTFQ · S-TKSRJX</span></span>
+              </a>
+              <a class="mk-card" href="roles.html">
+                <span class="mk-card__route">/settings/roles</span>
+                <span class="mk-card__name">BP 권한 그룹 관리 · 메뉴 등록 팝업</span>
+                <span class="mk-card__desc">
+                  BP 마스터는 BP 관리자 그룹을, 가맹 마스터는 자기 가맹 관리자 그룹을 만든다. 메뉴 CRUD 는 팝업에서만, 상한은 플랫폼이 정한 BP 마스터·가맹 마스터 권한이다.
+                </span>
+                <span class="mk-card__end"><span class="badge badge--quiet">S-LYKAEI · S-KUDELB</span></span>
+              </a>
+              <a class="mk-card" href="codes.html">
+                <span class="mk-card__route">/settings/codes</span>
+                <span class="mk-card__name">BP 공통코드 관리</span>
+                <span class="mk-card__desc">
+                  그룹은 플랫폼이 만들고 여기선 읽기만 한다. 플랫폼고정은 조회만, 플랫폼제공은 고치고 상세 코드를 더할 수 있으며 더한 코드는 BP전용이 된다.
+                </span>
+                <span class="mk-card__end"><span class="badge badge--quiet">S-FHVSAV</span></span>
+              </a>
+              <a class="mk-card" href="holidays.html">
+                <span class="mk-card__route">/settings/holidays</span>
+                <span class="mk-card__name">BP 휴일 목록 → 상세 → 수정 · 등록</span>
+                <span class="mk-card__desc">
+                  캘린더와 목록을 함께 보고, 전체 점포 휴일과 특정 점포 휴일을 기간·반복으로 만든다. 지난 날짜는 못 고치고, 휴일마다 변경 이력이 남는다.
+                </span>
+                <span class="mk-card__end"><span class="badge badge--quiet">S-YAFRYZ · S-MQELTV · S-UCPMYB · S-BXEAEZ</span></span>
+              </a>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">화면끼리 · 영역끼리 읽는 것</h2>
+              <span class="badge badge--quiet">5줄</span>
+            </div>
+            <div class="panel">
+              <div class="tblwrap">
+                <table class="tbl">
+                  <thead>
+                    <tr><th scope="col">읽는 곳</th><th scope="col">읽는 것</th><th scope="col">원본</th><th scope="col">근거</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><a class="tlink" href="admins-new.html">관리자 등록</a>·수정의 권한 그룹 선택</td>
+                      <td>사용 중인 BP 관리자 그룹, 가맹 관리자는 연결한 가맹 마스터가 만든 그룹만</td>
+                      <td><a class="tlink" href="roles.html">BP 권한 그룹 관리</a></td>
+                      <td class="mono">F-OILWTZ</td>
+                    </tr>
+                    <tr>
+                      <td>관리자의 관리 점포</td>
+                      <td>한강상회 점포 11곳 — 고르는 사람 자신의 관리 범위를 넘지 못한다</td>
+                      <td><a class="tlink" href="../stores/overview.html">점포 관리</a></td>
+                      <td class="mono">F-OILWTZ</td>
+                    </tr>
+                    <tr>
+                      <td><a class="tlink" href="roles.html">권한 메뉴 등록 팝업</a>의 메뉴와 상한</td>
+                      <td>Whale ERP 서비스 메뉴 트리 · BP 마스터(BM000001)·가맹 마스터(FM000001) 고정 권한</td>
+                      <td><a class="tlink" href="../system/overview.html">시스템관리</a>의 메뉴·권한 관리</td>
+                      <td class="mono">S-KUDELB · PL-AMTMVC</td>
+                    </tr>
+                    <tr>
+                      <td><a class="tlink" href="codes.html">BP 공통코드</a>의 그룹과 플랫폼 코드</td>
+                      <td>플랫폼고정·플랫폼제공 그룹과 플랫폼이 등록한 상세 코드</td>
+                      <td><a class="tlink" href="../system/overview.html">시스템관리</a>의 공통코드 관리</td>
+                      <td class="mono">PL-VOCZCE</td>
+                    </tr>
+                    <tr>
+                      <td><a class="tlink" href="holidays.html">BP 휴일</a> 캘린더의 빨간 날짜</td>
+                      <td>동기화된 대한민국 공식 휴일 — BP 휴일 데이터와 따로 표시</td>
+                      <td><a class="tlink" href="../system/overview.html">시스템관리</a>의 휴일 관리</td>
+                      <td class="mono">F-YQTLQE</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">정책</h2>
+              <span class="badge badge--quiet">14줄</span>
+            </div>
+            <div class="grid grid--2" style="align-items: start">
+              <div class="panel">
+                <div class="panel__head">
+                  <h3 class="t-h3">계정 · 권한 그룹</h3>
+                  <span class="badge badge--quiet">7</span>
+                </div>
+                <ul class="pol">
+                  <li><span class="pol__t">대상은 BP 관리자·가맹 마스터·가맹 관리자 계정이다. BP 마스터와 BP 자체, 플랫폼 관리자 계정은 여기 없다.</span><span class="pol__ref">F-OILWTZ · PL-RWJYLJ</span></li>
+                  <li><span class="pol__t">가맹 관리자 계정의 등록·수정·비밀번호 초기화는 가맹 마스터만 한다. 다른 역할은 메뉴 권한이 있어도 조회만.</span><span class="pol__ref">F-OILWTZ</span></li>
+                  <li><span class="pol__t">가맹 관리자는 가맹 마스터를 먼저 연결하고 그 마스터의 점포 안에서만 관리 점포를 고른다. 연결한 가맹 마스터는 나중에 바꾸지 않는다.</span><span class="pol__ref">F-OILWTZ</span></li>
+                  <li><span class="pol__t">가맹 마스터를 미사용으로 바꾸면 딸린 가맹 관리자 계정은 미사용, 그 마스터가 만든 권한 그룹은 사용 중지가 된다.</span><span class="pol__ref">F-OILWTZ · F-GSJRKH</span></li>
+                  <li><span class="pol__t">사용자 한 명에 권한 그룹 하나. 본인의 상태와 권한 그룹은 스스로 못 바꾸고, 본인이 연결된 그룹도 고치거나 지우지 못한다.</span><span class="pol__ref">F-OILWTZ · F-GSJRKH</span></li>
+                  <li><span class="pol__t">BP 관리자 그룹은 BP 마스터만, 가맹 관리자 그룹은 만든 가맹 마스터만 만든다(관리계정ID). 권한 코드·유형은 등록 뒤 못 바꾼다.</span><span class="pol__ref">F-GSJRKH · PL-EIMSQF</span></li>
+                  <li><span class="pol__t">그룹의 CRUD 는 BP 마스터·가맹 마스터 고정 권한과 설정자 본인 범위를 넘지 못한다. 그룹명은 같은 BP 안에서 유형과 상관없이 겹칠 수 없다.</span><span class="pol__ref">F-GSJRKH · PL-AMTMVC</span></li>
+                </ul>
+              </div>
+              <div class="panel">
+                <div class="panel__head">
+                  <h3 class="t-h3">공통코드 · 휴일</h3>
+                  <span class="badge badge--quiet">7</span>
+                </div>
+                <ul class="pol">
+                  <li><span class="pol__t">공통코드 그룹은 여기서 추가·수정·삭제하지 않는다. BP 가 다루는 단위는 상세 코드뿐이다.</span><span class="pol__ref">F-QPDEWN</span></li>
+                  <li><span class="pol__t">플랫폼고정 그룹은 조회만, 플랫폼제공 그룹은 플랫폼 코드를 고치고 코드를 더할 수 있다. BP 가 더한 코드는 BP전용이고 다른 BP 에 안 보인다.</span><span class="pol__ref">F-QPDEWN · PL-VOCZCE</span></li>
+                  <li><span class="pol__t">플랫폼 사용자는 BP 를 골라 그 BP 의 공통코드를 조회만 한다.</span><span class="pol__ref">F-QPDEWN</span></li>
+                  <li><span class="pol__t">BP 휴일은 전체 점포 또는 특정 점포에 건다. 같은 날 둘 다 있으면 둘 다 보이고, 그 점포 업무에는 특정 점포 휴일이 먼저다.</span><span class="pol__ref">F-YQTLQE</span></li>
+                  <li><span class="pol__t">전체 점포 휴일은 BP 마스터와 전체 점포 범위 BP 관리자만 바꾼다. 나머지는 자기 매핑 점포의 특정 점포 휴일만.</span><span class="pol__ref">F-YQTLQE</span></li>
+                  <li><span class="pol__t">기간은 최대 1년, 반복은 한 번에 730건까지. 종료일 없는 반복은 2년치를 먼저 만들고 배치가 이어 채운다.</span><span class="pol__ref">F-YQTLQE · S-NMSCQK</span></li>
+                  <li><span class="pol__t">오늘과 미래 날짜만 등록·수정·삭제한다. 반복 휴일은 이 휴일만·이후 모두·전체 중 범위를 고르고, 지난 날짜는 어느 범위든 그대로 둔다.</span><span class="pol__ref">F-YQTLQE</span></li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <!-- 쟁점 — 화면을 그리며 명세로 정해지지 않던 것 -->
+          <section class="section" id="gaps">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">쟁점</h2>
+              <span class="badge badge--preview">10건 · 미정 10</span>
+            </div>
+            <p class="gap__note" style="margin-top: 0">
+              명세로 정해지지 않아 화면이 갈리는 것만 모았다. 사소한 것은 각 화면 파일 머리 주석에 있다.
+              목록에서 수정·삭제를 바로 하지 않고 상세를 거치는 것은 목업 규칙으로 정했다 — 휴일 목록 명세(S-YAFRYZ)의 표시 항목과 다르다.
+            </p>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">CONFIG-1</span>
+                <b>일부 점포만 맡은 BP 관리자에게 관리자 목록을 점포 매핑으로 좁혀 보이는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">R-DJGLEO · S-AJHXFU · PL-RWJYLJ</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a">
+                  <div class="gap__label">A · 요구사항 수락 기준</div>
+                  <p>목록 데이터는 <b>메뉴 권한과 점포 매핑을 모두 통과한 범위</b>로 제한한다. 직영 4곳만 맡은 이서아는 그 점포의 관리자만 본다.</p>
+                </div>
+                <div class="gap__opt" data-side="b">
+                  <div class="gap__label">B · 권한 레벨 정책 · 이 목업</div>
+                  <p>BP 마스터·BP 관리자는 <b>본인 소속 BP 범위</b>의 계정을 본다. 목업은 이쪽을 따라 8명을 모두 보였다.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">CONFIG-2</span>
+                <b>가맹 관리자 계정을 가맹 마스터 말고 누가 바꿀 수 있는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-OENTFQ · F-OILWTZ · PL-CUECAY</span>
+              </div>
+              <p class="gap__note">
+                수정 명세의 처리 절은 다른 역할도 가맹 관리자의 기본정보·권한 그룹·상태를 고칠 수 있게 읽히는데, 규칙·권한 절은 연결된 가맹 마스터만이라고 한다.
+                계정 상태 정책은 또 가맹 관리자가 다른 가맹 관리자를 미사용으로 바꿀 수 있다고 적었다. 목업은 <b>연결된 가맹 마스터만</b> 고치게 했다.
+              </p>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">CONFIG-3</span>
+                <b>관리자 비밀번호 초기화는 새 초기 비밀번호 메일인가, 재설정 링크인가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-TKSRJX · S-XKYOND</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a">
+                  <div class="gap__label">A · 1팀 명세 · 이 목업</div>
+                  <p>BP·플랫폼 관리자 모두 시스템이 <b>12자 초기 비밀번호</b>를 만들어 계정 이메일로 보내고 첫 로그인에 바꾸게 한다.</p>
+                </div>
+                <div class="gap__opt" data-side="b">
+                  <div class="gap__label">B · 3팀 목업 확정값</div>
+                  <p>관리자 초기화는 임시 비밀번호가 아니라 <b>재설정 링크</b>를 보낸다고 정했다(ACC-11 · PRM-04). 두 팀 문서가 다르다.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">CONFIG-4</span>
+                <b>등록 화면에 계정 상태 입력을 두는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">F-OILWTZ · S-NIMSMQ</span>
+              </div>
+              <p class="gap__note">
+                기능 표시 절은 등록과 수정 화면 모두에 계정 상태 입력 영역이 있다고 하지만, 새 관리자 계정은 사용으로 생긴다(계정 상태 정책).
+                목업은 등록에서 상태 칸을 빼고 수정에만 두었다. 역할(계정 역할)도 수정에서 바꿀 수 있는지 적혀 있지 않아 읽기 전용으로 그렸다.
+              </p>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">CONFIG-5</span>
+                <b>가맹 관리자 그룹을 지울 때 다른 가맹 마스터의 그룹으로 옮길 수 있는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">F-GSJRKH · S-LYKAEI</span>
+              </div>
+              <p class="gap__note">
+                대체 그룹은 “같은 BP · 같은 권한 유형”이면 된다고 적혀 있다. 그런데 가맹 관리자 계정에는 연결된 가맹 마스터가 만든 그룹만 붙일 수 있어,
+                다른 마스터의 그룹으로 옮기면 그 규칙이 깨진다. 목업은 <b>같은 관리계정ID</b>의 사용 중인 그룹만 대체 후보로 보였다.
+              </p>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">CONFIG-6</span>
+                <b>BP 관리자 그룹은 어떻게 사용 중지되는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">F-GSJRKH</span>
+              </div>
+              <p class="gap__note">
+                권한 그룹은 사용·사용 중지 두 상태인데, 사용 중지로 가는 길은 가맹 마스터가 미사용이 될 때의 가맹 관리자 그룹뿐이다.
+                BP 관리자 그룹을 사람이 직접 멈추는 항목이 없다. 목업의 BA000007 점포 조회 전용은 사용 중지 표본으로만 두었고, 바꾸는 버튼은 그리지 않았다.
+              </p>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">CONFIG-7</span>
+                <b>BP 가 더한 상세 코드는 관리 주체를 따로 저장하는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-FHVSAV · PL-VOCZCE</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a">
+                  <div class="gap__label">A · BP 공통코드 명세 · 이 목업</div>
+                  <p>BP 가 추가한 상세 코드에는 관리 주체 <b>BP전용</b>과 소속 BP 를 저장한다. 목업은 행마다 플랫폼제공·BP전용을 읽기 전용으로 보였다.</p>
+                </div>
+                <div class="gap__opt" data-side="b">
+                  <div class="gap__label">B · 관리 주체 정책</div>
+                  <p>관리 주체는 그룹에서만 정하고 상세 코드는 그룹을 <b>상속하며 따로 저장하지 않는다</b>.</p>
+                </div>
+              </div>
+              <p class="gap__note">BP 가 고친 플랫폼제공 코드를 플랫폼 원래 값과 나란히 보일지도 정해지지 않았다.</p>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">CONFIG-8</span>
+                <b>“매일 · 종료일 없음” 반복은 2년치만으로 730건 상한에 걸린다</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">F-YQTLQE · S-UCPMYB</span>
+              </div>
+              <p class="gap__note">
+                종료일 없는 반복은 2년치를 먼저 만들고, 반복 한 번에 만들 수 있는 휴일은 730건까지다. 매일 반복의 2년치는 730~731건이라 윤년이 끼면 저장이 막힌다.
+                상한을 올릴지, 먼저 만드는 기간을 줄일지, 매일 반복을 종료일 필수로 할지 정해야 한다.
+              </p>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">CONFIG-9</span>
+                <b>반복 휴일의 날짜를 “이후 모든 휴일”로 바꾸면 나머지 날짜는 어떻게 되는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-BXEAEZ</span>
+              </div>
+              <p class="gap__note">
+                수정 범위(이 휴일만 · 이후 모든 휴일 · 전체 휴일)는 있지만 날짜를 옮길 때 다른 날짜들이 같이 밀리는지, 반복 규칙(요일·주기) 자체를 고치는 수단이 있는지 없다.
+                대상 점포를 바꾸면 연장 배치가 이어 만드는 날짜도 바뀌는지도 적혀 있지 않다. 목업은 휴일명·설명·대상만 바꾸는 예로 그렸다.
+              </p>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">CONFIG-10</span>
+                <b>휴일 등록은 점포 하나씩인가, 여러 점포를 한 번에 거는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-UCPMYB · F-YQTLQE</span>
+              </div>
+              <p class="gap__note">
+                데이터에는 대상 점포 식별자가 하나뿐이라 한 휴일에 한 점포로 읽힌다. 가맹 마스터가 자기 점포 넷에 같은 휴무를 걸려면 네 번 등록해야 한다.
+                기간 등록에 반복을 함께 걸 수 있는지, 종일이 아닐 때 시간을 받는지도 없다. 목업은 점포 하나 · 기간과 반복 중 하나 · 시간 없음으로 그렸다.
+              </p>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+  </body>
+</html>

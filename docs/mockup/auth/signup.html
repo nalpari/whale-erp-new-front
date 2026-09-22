@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>회원가입 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="auth" data-sub="auth/signup.html">
+    <!-- BP 회원가입 · /signup · S-RCJXIG 기본정보·사업자정보 입력 (F-JVTPSU) · S-VRNTHD 사업자 번호 인증 팝업
+         한 화면에 기본정보 · 사업자정보 인증 · 약관동의를 모두 둔다. 별도 약관 화면과 점포 입력은 없다.
+         사업자정보 인증은 선택이다. 인증에 성공해야 사업자정보 입력 영역이 열린다.
+         가입 전에는 아무것도 서버에 저장하지 않는다 — 새로 고치거나 떠나면 입력값과 인증 결과가 모두 사라진다.
+         아이디·이메일은 칸을 벗어날 때(포커스 아웃) 형식과 중복을 확인해 칸 아래에 결과를 보이고, 둘 다 통과해야 가입 버튼이 열린다.
+         값을 고치면 결과를 지우고 다시 벗어날 때 새로 확인한다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <h1 class="t-h1">회원가입</h1>
+          <span class="badge badge--warn">1팀 작업</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">S-RCJXIG · S-VRNTHD · /signup</span>
+          </div>
+        </div>
+
+        <div class="content">
+
+          <div class="screen">
+            <div class="screen__bar"><i></i><i></i><i></i><span>whale-erp.com/signup</span></div>
+          <div class="auth auth--framed">
+            <div class="auth__form" style="max-width: 640px; justify-content: flex-start">
+              <div class="inline">
+                <a class="brand" href="login.html">
+                  <span class="wm brand__mark" data-icon="whale" data-icon-size="32"></span>
+                  <span class="brand__name">WHALE <span>ERP</span></span>
+                </a>
+              </div>
+
+              <div class="stack">
+                <h2 class="t-md">회원가입</h2>
+                <p class="lead">사업자 한 곳이 BP 하나로 가입합니다. 점포는 가입한 뒤 점포 관리에서 등록합니다.</p>
+              </div>
+
+              <!-- ── 기본정보 ─────────────────────────── -->
+              <section class="stack--lg" style="display: flex; flex-direction: column">
+                <h2 class="t-h2">기본정보</h2>
+                <div class="demo">
+                  <b>목업</b>
+                  <span>아이디에 <span class="mono">whale01</span>, 이메일에 <span class="mono">taken@whale.kr</span> 을 넣고 칸을 벗어나면 중복으로 나옵니다.</span>
+                </div>
+                <div class="field">
+                  <label for="sid">아이디 <span class="req">*</span></label>
+                  <input class="input" id="sid" value="hangang01" autocomplete="username" data-dupcheck="id" data-taken="whale01,admin,hangang" />
+                  <span class="help">영문 또는 영문·숫자 4~20자 · 칸을 벗어나면 바로 중복을 확인합니다</span>
+                  <span class="pass" data-dup="ok" hidden><span data-icon="check" data-icon-size="13"></span>사용할 수 있는 아이디입니다.</span>
+                  <span class="err" data-dup="bad" hidden><span data-icon="alert" data-icon-size="13"></span>사용할 수 없는 아이디입니다.</span>
+                  <span class="err" data-dup="fmt" hidden><span data-icon="alert" data-icon-size="13"></span>영문 또는 영문·숫자 조합 4~20자로 입력해 주세요.</span>
+                </div>
+                <div class="grid grid--2">
+                  <div class="field">
+                    <label for="spw">비밀번호 <span class="req">*</span></label>
+                    <div class="pwfield">
+                      <input class="input" id="spw" type="password" value="whale-2026!" autocomplete="new-password" />
+                      <button class="iconbtn" type="button" data-pw-toggle aria-pressed="false" aria-label="비밀번호 보기" data-icon="eye" data-icon-size="16"></button>
+                    </div>
+                    <span class="help">영문·숫자·특수문자 각 1자 이상, 8~20자</span>
+                  </div>
+                  <div class="field">
+                    <label for="spw2">비밀번호 확인 <span class="req">*</span></label>
+                    <div class="pwfield">
+                      <input class="input" id="spw2" type="password" value="whale-2026!" autocomplete="new-password" />
+                      <button class="iconbtn" type="button" data-pw-toggle aria-pressed="false" aria-label="비밀번호 보기" data-icon="eye" data-icon-size="16"></button>
+                    </div>
+                    <span class="help">다르면 가입을 누른 뒤 “새 비밀번호가 일치하지 않습니다.”가 이 자리에 뜹니다.</span>
+                  </div>
+                </div>
+                <div class="grid grid--2">
+                  <div class="field">
+                    <label for="sname">이름 <span class="req">*</span></label>
+                    <input class="input" id="sname" value="정하윤" />
+                    <span class="help">한글 또는 영문 2~20자</span>
+                  </div>
+                  <div class="field">
+                    <label for="stel1">연락처 <span class="req">*</span></label>
+                    <div class="tel3" id="stel">
+                      <input class="input mono" id="stel1" value="010" inputmode="numeric" aria-label="앞자리" />
+                      <input class="input mono" value="4821" inputmode="numeric" aria-label="가운데자리" />
+                      <input class="input mono" value="7730" inputmode="numeric" aria-label="끝자리" />
+                    </div>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="smail">이메일 <span class="req">*</span></label>
+                  <input class="input" id="smail" type="email" value="hayoon@hangang.co.kr" data-dupcheck="mail" data-taken="taken@whale.kr,admin@whale.kr" />
+                  <span class="help">칸을 벗어나면 형식과 중복을 확인합니다 · 아이디 찾기와 임시 비밀번호가 이 주소로 갑니다</span>
+                  <span class="pass" data-dup="ok" hidden><span data-icon="check" data-icon-size="13"></span>사용할 수 있는 이메일입니다.</span>
+                  <span class="err" data-dup="bad" hidden><span data-icon="alert" data-icon-size="13"></span>이미 등록된 이메일입니다.</span>
+                  <span class="err" data-dup="fmt" hidden><span data-icon="alert" data-icon-size="13"></span>이메일 형식이 올바르지 않습니다.</span>
+                </div>
+                <div class="field">
+                  <label for="corp">상호명 <span class="req">*</span></label>
+                  <input class="input" id="corp" value="㈜한강상회" />
+                  <span class="help">1~50자. 사업자 인증 결과로 채우지 않고 직접 입력하며, 인증한 뒤에도 고칠 수 있습니다.</span>
+                </div>
+              </section>
+
+              <!-- ── 사업자정보 인증 (선택) ─────────────────
+                   인증 전: 사업자 번호 인증 입력 상자(S-VRNTHD 신규 인증 모드)를 패널 안에 펼쳐 둔다. × 로 접을 수 있다.
+                   인증 후: 같은 자리가 ‘사업자정보 · 인증 완료’로 바뀌어 세 값을 읽기 전용으로 보이고, 그 아래에 선택 입력 항목이 열린다.
+                   재인증은 지금 인증 결과와 선택 입력값을 버리고(초기화) 입력 상자로 돌아간다 — 확인을 한 번 받는다. -->
+              <section class="panel" id="bizsec">
+                <div class="panel__head">
+                  <h2 class="t-h2">사업자정보 인증</h2>
+                  <span class="badge badge--quiet">선택</span>
+                </div>
+                <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
+                  <p class="subtle" style="margin: 0; font-size: 12.5px">국세청 API로 사업자등록번호·대표자명·개업일자의 진위만 확인합니다. 인증하지 않아도 위 기본정보와 약관 동의만으로 회원가입을 요청할 수 있습니다. 상호명은 이 인증으로 채워지지 않습니다.</p>
+
+                  <!-- 인증 전 · 입력 상자 -->
+                  <div class="card card--soft bizbox" id="bizform">
+                    <div class="spread">
+                      <h3 class="t-h3 inline" style="gap: 6px"><span data-icon="building" data-icon-size="16"></span>사업자 번호 인증</h3>
+                      <button class="iconbtn" type="button" aria-label="접기" data-icon="x" data-icon-size="16" data-conceal="bizform" data-reveal="bizfold"></button>
+                    </div>
+                    <div class="demo" data-demo="bizform">
+                      <b>목업 결과</b>
+                      <div class="seg">
+                        <button type="button" data-state="in" aria-pressed="true">입력</button>
+                        <button type="button" data-state="dup" aria-pressed="false">번호 중복</button>
+                        <button type="button" data-state="fail" aria-pressed="false">확인 불가</button>
+                        <button type="button" data-state="error" aria-pressed="false">처리 오류</button>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label for="pbiz">사업자등록번호</label>
+                      <input class="input mono" id="pbiz" value="211-87-01234" />
+                    </div>
+                    <div class="field">
+                      <label for="pceo">대표자명</label>
+                      <input class="input" id="pceo" value="남도현" />
+                    </div>
+                    <div class="field">
+                      <label for="popen">개업일자</label>
+                      <input class="input mono" id="popen" type="date" value="2021-03-15" />
+                    </div>
+                    <!-- 사업자등록번호 중복 (PL-OCJOFP) — 국세청 진위확인 전에 먼저 본다. 다른 BP(사용·미사용)나
+                         다른 점포(미운영·운영)가 쓰는 번호면 인증을 끝내지 않는다. 누가 쓰는지는 보이지 않는다. -->
+                    <div class="band band--risk" data-show="dup" hidden>
+                      <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+                      <div class="band__body">
+                        <div class="band__title">이미 등록된 사업자등록번호입니다.</div>
+                        <p class="band__desc">다른 사업자등록번호로 인증하거나, 인증 없이 가입할 수 있습니다.</p>
+                      </div>
+                    </div>
+                    <div class="band band--risk" data-show="fail" hidden>
+                      <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+                      <div class="band__body">
+                        <div class="band__title">사업자정보를 확인할 수 없습니다.</div>
+                        <p class="band__desc">다시 입력해 인증하거나, 인증 없이 가입할 수 있습니다.</p>
+                      </div>
+                    </div>
+                    <div class="band band--risk" data-show="error" hidden>
+                      <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
+                      <div class="band__body">
+                        <div class="band__title">사업자정보 인증 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.</div>
+                      </div>
+                    </div>
+                    <div>
+                      <button class="btn btn--primary btn--sm" type="button" data-conceal="bizform" data-reveal="bizinfo bizopt" data-show="in">인증하기</button>
+                      <!-- 목업 결과가 중복·확인 불가·처리 오류면 눌러도 인증이 끝나지 않는다 -->
+                      <button class="btn btn--primary btn--sm" type="button" data-show="dup fail error" hidden>인증하기</button>
+                    </div>
+                  </div>
+
+                  <!-- 인증 전 · 접은 상태 -->
+                  <div id="bizfold" hidden>
+                    <button class="btn btn--secondary" type="button" data-conceal="bizfold" data-reveal="bizform">
+                      <span data-icon="building" data-icon-size="14"></span>사업자 번호 인증하기
+                    </button>
+                  </div>
+
+                  <!-- 인증 후 · 사업자정보 -->
+                  <div class="card card--soft bizbox" id="bizinfo" hidden>
+                    <div class="spread">
+                      <h3 class="t-h3 inline" style="gap: 6px"><span data-icon="building" data-icon-size="16"></span>사업자정보</h3>
+                      <span class="badge badge--ok">인증 완료</span>
+                    </div>
+                    <div class="grid grid--2">
+                      <div class="field">
+                        <label>사업자등록번호</label>
+                        <input class="input mono" value="211-87-01234" readonly />
+                      </div>
+                      <div class="field">
+                        <label>대표자명</label>
+                        <input class="input" value="남도현" readonly />
+                      </div>
+                      <div class="field">
+                        <label>개업일자</label>
+                        <input class="input mono" value="2021-03-15" readonly />
+                      </div>
+                    </div>
+                    <div>
+                      <button class="btn btn--secondary btn--sm" type="button" data-open="bizreset">
+                        <span data-icon="refresh" data-icon-size="14"></span>재인증
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- 인증 후 · 선택 입력 항목 -->
+                  <div class="stack--lg" id="bizopt" hidden style="display: flex; flex-direction: column">
+                    <div class="grid grid--2">
+                      <div class="field">
+                        <label for="btel"><span style="margin-right: auto">대표자 연락처</span>
+                          <span class="inline" style="gap: 6px; font-weight: 400; color: var(--muted)"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="대표자 연락처를 기본정보와 동일하게" data-icon="check" data-icon-size="11" data-same-as="stel" data-same-to="btel"></span>기본정보와 동일</span>
+                        </label>
+                        <input class="input mono" id="btel" placeholder="010-0000-0000" inputmode="numeric" />
+                      </div>
+                      <div class="field">
+                        <label for="bmail"><span style="margin-right: auto">대표자 이메일</span>
+                          <span class="inline" style="gap: 6px; font-weight: 400; color: var(--muted)"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="대표자 이메일을 기본정보와 동일하게" data-icon="check" data-icon-size="11" data-same-as="smail" data-same-to="bmail"></span>기본정보와 동일</span>
+                        </label>
+                        <input class="input" id="bmail" type="email" placeholder="ceo@company.com" />
+                      </div>
+                    </div>
+                    <div class="field addr" data-addr>
+                      <label for="bzq">사업장 주소</label>
+                      <div class="addr__search">
+                        <div class="addr__q">
+                          <span data-icon="search" data-icon-size="14"></span>
+                          <input class="input" id="bzq" type="search" placeholder="도로명, 건물명, 지번으로 검색" autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list" data-addr-q />
+                        </div>
+                        <button class="btn btn--secondary" type="button" data-addr-go>주소 검색</button>
+                        <div class="addr__list" role="listbox" aria-label="주소 검색 결과" hidden></div>
+                      </div>
+                      <div class="addr__picked">
+                        <input class="input mono" value="" readonly placeholder="우편번호" aria-label="우편번호" data-addr-zip />
+                        <input class="input" value="" readonly placeholder="검색해서 고르면 채워집니다" aria-label="기본주소" data-addr-base />
+                      </div>
+                      <input class="input" value="" maxlength="100" placeholder="상세주소" aria-label="상세주소" data-addr-detail />
+                      <span class="help">검색 결과에서 고른 우편번호·기본주소만 들어갑니다. 상세주소는 직접 적습니다.</span>
+                    </div>
+                    <div class="grid grid--2">
+                      <div class="field">
+                        <label for="btype">업태</label>
+                        <input class="input" id="btype" maxlength="50" />
+                      </div>
+                      <div class="field">
+                        <label for="bitem">종목</label>
+                        <input class="input" id="bitem" maxlength="50" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- ── 약관동의 ─────────────────────────── -->
+              <section class="stack" style="display: flex; flex-direction: column">
+                <h2 class="t-h2">약관동의</h2>
+                <div class="card" style="padding: var(--s-4) var(--s-5); gap: 0" data-agree>
+                  <div class="agree agree--all">
+                    <span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="약관 전체 동의" data-icon="check" data-icon-size="11"></span>
+                    <span>약관 전체 동의</span>
+                  </div>
+                  <div class="agree">
+                    <span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="이용약관 동의" data-icon="check" data-icon-size="11"></span>
+                    <span>이용약관 동의 <span class="req" style="color: var(--risk-text)">(필수)</span></span>
+                    <a class="tlink" href="#" data-terms="use" aria-haspopup="dialog">전문 보기</a>
+                  </div>
+                  <div class="agree">
+                    <span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="개인정보 수집·이용 동의" data-icon="check" data-icon-size="11"></span>
+                    <span>개인정보 수집·이용 동의 <span class="req" style="color: var(--risk-text)">(필수)</span></span>
+                    <a class="tlink" href="#" data-terms="privacy" aria-haspopup="dialog">전문 보기</a>
+                  </div>
+                </div>
+              </section>
+
+              <div class="stack" data-dupgate style="gap: 6px">
+
+                <a class="btn btn--primary btn--lg btn--block" href="signup-done.html" data-gate="go">회원가입</a>
+
+                <button class="btn btn--primary btn--lg btn--block" type="button" disabled data-gate="block" hidden>회원가입</button>
+
+                <span class="subtle" style="font-size: 12px; text-align: center" data-gate="block" hidden>아이디·이메일 중복 확인과 필수 약관 동의를 마쳐야 가입할 수 있습니다.</span>
+
+              </div>
+              <div class="auth__links">
+                <span class="subtle">이미 계정이 있나요?</span>
+                <a class="tlink" href="login.html">로그인</a>
+              </div>
+            </div>
+
+            <aside class="auth__aside">
+              <div class="stack">
+                <span class="badge badge--warn">1팀 작업</span>
+                <div class="t-sm">가입하면 BP 와<br />BP 마스터가 함께 생깁니다</div>
+                <ul class="stack" style="margin: 0; padding-left: 18px; font-size: 14px; color: var(--body); max-width: 44ch">
+                  <li>가입 계정에 BP 마스터 권한을 붙이고 BP 코드를 자동으로 매깁니다. 가입경로는 ‘회원가입’입니다.</li>
+                  <li>점포는 만들지 않습니다. 가입 완료 화면과 홈에서도 점포 등록을 권하지 않습니다.</li>
+                  <li>인증 결과는 10분짜리 토큰으로만 들고 있다가 가입할 때 한 번 씁니다. 10분이 지나면 다시 인증합니다.</li>
+                  <li>가입 완료 메일은 가입한 BP 와 플랫폼 마스터 양쪽에 갑니다.</li>
+                </ul>
+              </div>
+            </aside>
+          </div>
+
+          <!-- 재인증 확인 — 지금 인증 결과를 버리고(초기화) 입력 상자로 돌아간다 -->
+          <div class="modal modal--inset" id="bizreset" hidden role="dialog" aria-modal="true" aria-labelledby="bizreset-t">
+            <div class="modal__box" style="max-width: 400px">
+              <div class="modal__head">
+                <h2 class="t-h2" id="bizreset-t">사업자정보를 다시 인증할까요?</h2>
+                <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+              </div>
+              <div class="modal__body">
+                <p style="margin: 0; font-size: 13.5px">지금 인증 결과와 아래에 적은 대표자 연락처·이메일·사업장 주소·업태·종목이 지워지고 인증 전으로 돌아갑니다.</p>
+                <p class="subtle" style="margin: 0; font-size: 12.5px">기본정보와 상호명은 그대로 둡니다. 다시 인증하지 않고 가입해도 됩니다.</p>
+              </div>
+              <div class="modal__foot">
+                <button class="btn btn--ghost" type="button" data-close>취소</button>
+                <button class="btn btn--primary" type="button" data-close data-clear="bizopt" data-conceal="bizinfo bizopt" data-reveal="bizform">재인증</button>
+              </div>
+            </div>
+          </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+  </body>
+</html>

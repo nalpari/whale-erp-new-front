@@ -24,7 +24,7 @@
           <h1 class="t-h1">WHALE ERP 1차 목업</h1>
           <span class="badge badge--preview">회의용</span>
           <div class="titlebar__end">
-            <span class="filters__count">영역 <b>4</b>/6 · 화면 <b>20</b> · 쟁점 <b>28</b>/29 확정</span>
+            <span class="filters__count">영역 <b>6</b>/8 · 화면 <b>29</b> · 쟁점 <b>28</b>/37 확정</span>
           </div>
         </div>
 
@@ -75,37 +75,68 @@
                     </tr>
                     <tr>
                       <td class="subtle">①</td>
-                      <td class="k">점포관리</td>
+                      <td class="k">
+                        <a class="tlink" href="stores/overview.html">점포관리</a>
+                        <span class="side__tag side__tag--t1">1팀 작업</span>
+                      </td>
                       <td class="n"><b>1</b></td>
                       <td class="n">3</td>
-                      <td>점포 정보 관리 <span class="subtle">/ 시설물·장비 · 점검표 템플릿 · 점검 결과</span></td>
+                      <td>
+                        <a class="tlink" href="stores/overview.html">점포 정보 관리</a> <span class="subtle">/ 시설물·장비 · 점검표 템플릿 · 점검 결과</span>
+                        <a class="tbtn" href="stores/overview.html">개요</a>
+                      </td>
                     </tr>
                     <tr>
                       <td class="subtle">①</td>
-                      <td class="k">환경설정</td>
+                      <td class="k">
+                        <a class="tlink" href="config/overview.html">환경설정</a>
+                        <span class="side__tag side__tag--t1">1팀 작업</span>
+                      </td>
                       <td class="n"><b>4</b></td>
                       <td class="n nil">—</td>
-                      <td>관리자 · 권한 · 공통코드 · 휴일 관리</td>
+                      <td>
+                        BP 관리자 관리 · BP 권한 그룹 관리 · BP 공통코드 관리 · BP 휴일 관리
+                        <a class="tbtn" href="config/overview.html">개요</a>
+                      </td>
                     </tr>
                     <tr>
                       <td class="subtle">② Platform</td>
-                      <td class="k">BP 정보관리</td>
-                      <td class="n"><b>2</b></td>
+                      <td class="k">
+                        <a class="tlink" href="bp/overview.html">BP 마스터 계정 관리</a>
+                        <span class="side__tag side__tag--t1">1팀 작업</span>
+                      </td>
+                      <td class="n"><b>1</b></td>
                       <td class="n nil">—</td>
-                      <td>BP Master · 휴면 BP 정보 관리</td>
+                      <td>
+                        <a class="tlink" href="bp/overview.html">BP 마스터 계정 관리</a> <span class="subtle">/ 휴면 BP 는 목록의 상태 조건(미사용·탈퇴)으로 합쳤다</span>
+                        <a class="tbtn" href="bp/overview.html">개요</a>
+                      </td>
                     </tr>
                     <tr>
                       <td class="subtle">②</td>
-                      <td class="k">시스템관리</td>
+                      <td class="k">
+                        <a class="tlink" href="system/overview.html">시스템관리</a>
+                        <span class="side__tag side__tag--t1">1팀 작업</span>
+                      </td>
                       <td class="n"><b>5</b></td>
                       <td class="n nil">—</td>
-                      <td>관리자 · 관리자 권한 · 프로그램 · 공통코드 · 휴일 관리</td>
+                      <td>
+                        플랫폼 관리자 관리 · 플랫폼 권한 관리 · 플랫폼 메뉴 관리 · 플랫폼 공통코드 관리 · 플랫폼 휴일 관리
+                        <a class="tbtn" href="system/overview.html">개요</a>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
               <div class="panel__note">
+                <b>점포관리</b>는 1팀 명세(점포 관리)로 점포 정보 관리 목업을 먼저 만들었다 — 목록·상세·등록·수정 네 화면이다.
                 2차 5건은 뺐다 — 기초정보관리의 상품·가격·카테고리, 점포관리의 계약서 템플릿·계약서 관리.
+                <b>점포 정보 관리</b>는 1팀 점포 관리 명세로 목업을 만들었다 — 줄의 링크가 그 개요로 간다.
+                <b>BP 마스터 계정 관리</b>는 1팀 플랫폼 BP 관리 명세로 목록·상세·등록·수정 네 화면을 만들었다. 상세의 소속 점포 수가 점포 목록으로, 플랫폼이 등록한 BP 마스터의 첫 로그인이 강제 비밀번호 변경으로 이어진다.
+                <b>환경설정</b>은 1팀 BP 환경 설정 명세의 하위 기능 넷(BP 관리자 · BP 권한 그룹 · BP 공통코드 · BP 휴일)으로 이름을 바꿔 만들었다.
+                권한 그룹의 상한과 공통코드 그룹은 시스템관리의 플랫폼 권한·공통코드에서 오고, 캘린더의 빨간 날은 플랫폼 휴일이다.
+                <b>시스템관리</b>는 1팀 플랫폼 시스템 관리 명세의 하위 기능 다섯으로 메뉴 이름을 바꿨다 — 구조도의 프로그램 관리가 플랫폼 메뉴 관리다.
+                다섯은 서로 읽는다. 관리자의 권한 선택은 권한 관리를, 권한의 메뉴 등록 팝업은 메뉴 관리의 트리를, 메뉴 관리의 서비스는 공통코드 ‘서비스’ 그룹을 읽는다.
                 <b>맞닿는 곳이 셋이다.</b> 로그인 후 Home 은 우리 것인데 거기서 뻗는 MY PAGE 가 1팀 것이고,
                 권한 관리도 1팀이라 개인정보를 누가 고치는지는 우리끼리 못 정한다.
                 상단 범위 선택기가 읽는 점포 데이터를 만드는 화면도 1팀에 있다.
@@ -158,6 +189,36 @@
                       </td>
                     </tr>
                     <tr>
+                      <td class="k">
+                        <a class="tlink" href="auth/overview.html">로그인</a>
+                        <span class="side__tag side__tag--t1">1팀 작업</span>
+                      </td>
+                      <td class="mono">R-LYZWGG</td>
+                      <td class="mono">auth/</td>
+                      <td>웹</td>
+                      <td class="n">5</td>
+                      <td class="n"><b>0</b> / 4</td>
+                      <td>
+                        <span class="badge badge--warn">1팀 검토용</span>
+                        <a class="tbtn" href="auth/overview.html">개요</a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="k">
+                        <a class="tlink" href="mypage/overview.html">MY PAGE</a>
+                        <span class="side__tag side__tag--t1">1팀 작업</span>
+                      </td>
+                      <td class="mono">F-AMTDCK · F-RCHJES</td>
+                      <td class="mono">mypage/</td>
+                      <td>웹</td>
+                      <td class="n">3</td>
+                      <td class="n"><b>0</b> / 3</td>
+                      <td>
+                        <span class="badge badge--warn">1팀 검토용</span>
+                        <a class="tbtn" href="mypage/overview.html">개요</a>
+                      </td>
+                    </tr>
+                    <tr>
                       <td class="k"><a class="tlink" href="support/overview.html">고객지원·커뮤니티</a></td>
                       <td class="mono">R-PEQDDV</td>
                       <td class="mono">support/</td>
@@ -203,6 +264,9 @@
                 </table>
               </div>
               <div class="panel__note">
+                <b>로그인</b> 줄은 3팀 것이 아니다 — 홈 바로 앞 단계라 여기 붙여 두었지만 <b>1팀이 만들 화면</b>이고,
+                기준은 [1팀공용] 프로젝트의 인증 및 계정 관리 명세다. 로그인에 성공하면 3팀의 로그인 후 홈으로 넘어온다.
+                3팀 목업의 로그인 화면과 다른 네 곳은 그 개요에 쟁점으로 남겼다.
                 화면 목록과 쟁점 설명은 각 영역의 <b>개요</b>에 있다. 여기에는 건수만 둔다.
                 화면은 영역 폴더 아래 한 단계로만 두고, 깊은 라우트는 파일명에 담는다 —
                 <span class="mono">staff/contracts-new.html</span> 이 <span class="mono">/staff/contracts/new</span> 다.

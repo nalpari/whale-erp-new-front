@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>플랫폼 관리자 상세 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="system" data-sub="system/admins.html">
+    <!-- 플랫폼 관리자 상세 조회 · /platform/system/admins/:아이디 · S-BRSPGB · 계정 삭제 S-NLVXWJ · 비밀번호 초기화 S-XKYOND · 1팀
+         기본정보 · 권한·상태 · 생성·변경 이력을 나눠 보인다. 모든 항목은 읽기 전용이고 고치는 일은 수정 화면이 맡는다.
+         수정 권한이 있으면 수정·비밀번호 초기화를, 삭제 권한이 있으면 삭제를 보인다.
+         플랫폼 마스터 계정의 세 실행 항목은 보는 사람이 플랫폼 마스터일 때만 보인다.
+         본인 계정은 삭제·비밀번호 초기화를 막고 내 정보에서 처리한다고 알린다. 마지막 사용 플랫폼 마스터는 상태·권한 변경과 삭제를 막고 사유를 적는다.
+         삭제는 논리 삭제다 — 선행 조건 없이 바로 처리하고, 목록·검색·상세에서 빠지며 로그인을 막는다. 복구하지 않는다.
+         초기화한 비밀번호는 누구에게도 보이지 않고 계정 이메일로만 간다(플랫폼 관리자 계정 생성 메일 포맷 S-WABHRE 를 그대로 쓴다).
+         로그인 사용자는 정민재(plat_jung · 플랫폼 마스터)다. 본인 계정·마지막 마스터 시나리오는 이 사람을 기준으로 본다.
+         ‘마지막 사용 플랫폼 마스터’ 시나리오는 plat_kim 이 미사용이 됐다고 가정한 plat_jung 이다 —
+         플랫폼 마스터 계정은 플랫폼 마스터만 바꿀 수 있고 로그인한 마스터는 늘 사용 상태이므로, 마지막 마스터는 사실상 늘 본인 계정이다.
+         쟁점 후보(S-BRSPGB · S-NLVXWJ): 플랫폼 관리자가 플랫폼 마스터 계정을 볼 때 실행 항목을 숨기는지(S-BRSPGB “플랫폼 마스터에게만 표시”)
+           비활성으로 두는지(S-NLVXWJ “삭제할 수 없는 플랫폼 마스터 계정에는 비활성화”) 두 명세가 다르다. 표본은 숨긴다.
+         쟁점 후보(S-BRSPGB): 상세에 ‘상태 변경·권한 변경 실행 항목’이 따로 있는지 명세가 말하지 않는다 — 표본은 수정 화면에서만 바꾸고 여기서는 사유만 적는다.
+         쟁점 후보(S-XKYOND): 비밀번호 초기화 이력·삭제 이력을 화면에서 보여 줄지 정해지지 않았다 — 표본은 생성·변경 이력 표에 섞지 않는다.
+         쟁점 후보(S-BRSPGB): 기본정보 목록(S-BRSPGB display)에 주소가 없다 — 등록은 주소를 받으므로 표본은 기본정보에 주소를 둔다.
+         쟁점 후보(S-FOJJKB): 첫 로그인 강제 변경 때 플랫폼 관리자도 약관 동의를 받는지 명세에 없다 — 표본은 BP 상세와 같은 강제 변경 화면(플랫폼등록)으로 잇는다.
+         주소·상태 변경 일시·변경 이력 줄은 목업 표본이다. 첫 플랫폼 마스터(plat_jung)의 생성자는 명세 밖이라 system 으로 적었다. 삭제된 계정의 아이디 plat_seo 도 표본이다.
+         위쪽 점선 줄 둘은 목업 전용이다 — 보는 사람의 권한과 대상 계정을 따로 바꾼다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div id="ad" style="display: contents">
+          <div class="titlebar">
+            <a class="iconbtn" href="admins.html" aria-label="관리자 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
+            <h1 class="t-h1">
+              <span data-show="park">박지우</span>
+              <span data-show="choi" hidden>최유나</span>
+              <span data-show="kim" hidden>김서연</span>
+              <span data-show="self lastpm" hidden>정민재</span>
+              <span data-show="yoon created" hidden>윤채원</span>
+              <span data-show="gone" hidden>삭제된 계정</span>
+            </h1>
+            <span class="badge badge--ok" data-show="park kim self lastpm yoon created">사용</span>
+            <span class="badge badge--warn" data-show="choi" hidden>미사용</span>
+            <span class="badge badge--info" data-show="kim self lastpm" hidden>플랫폼 마스터</span>
+            <span class="badge badge--warn">1팀 작업</span>
+            <div class="titlebar__end">
+              <span class="filters__count mono">S-BRSPGB · /platform/system/admins/<span data-show="park">plat_park</span><span data-show="choi" hidden>plat_choi</span><span data-show="kim" hidden>plat_kim</span><span data-show="self lastpm" hidden>plat_jung</span><span data-show="yoon created" hidden>plat_yoon</span><span data-show="gone" hidden>plat_seo</span></span>
+
+              <!-- 비밀번호 초기화 — 수정 권한. 플랫폼 마스터 계정은 플랫폼 마스터만. 본인 계정은 비활성 -->
+              <button class="btn btn--secondary btn--sm" type="button" data-open="pop-reset" data-show-role="pm pa" data-show="park choi yoon created">비밀번호 초기화</button>
+              <button class="btn btn--secondary btn--sm" type="button" data-open="pop-reset" data-show-role="pm" data-show="kim" hidden>비밀번호 초기화</button>
+              <button class="btn btn--secondary btn--sm" type="button" disabled data-show-role="pm" data-show="self lastpm" hidden title="본인 비밀번호는 내 정보에서 변경합니다">비밀번호 초기화</button>
+
+              <!-- 계정 삭제 — 삭제 권한. 논리 삭제, 선행 조건 없음. 플랫폼 마스터 계정은 플랫폼 마스터만.
+                   본인 계정·마지막 사용 플랫폼 마스터는 흐리게 두고 이유를 말풍선으로 보인다. -->
+              <button class="btn btn--danger btn--sm" type="button" data-open="pop-delete" data-show-role="pm pa" data-show="park choi yoon created">계정 삭제</button>
+              <button class="btn btn--danger btn--sm" type="button" data-open="pop-delete" data-show-role="pm" data-show="kim" hidden>계정 삭제</button>
+              <span data-show-role="pm" data-show="self" hidden data-tip="본인 계정은 스스로 삭제할 수 없습니다." tabindex="0"><button class="btn btn--danger btn--sm" type="button" disabled>계정 삭제</button></span>
+              <span data-show-role="pm" data-show="lastpm" hidden data-tip="본인 계정이고, 삭제하면 사용 중인 플랫폼 마스터가 한 명도 남지 않아 삭제할 수 없습니다." tabindex="0"><button class="btn btn--danger btn--sm" type="button" disabled>계정 삭제</button></span>
+
+              <!-- 수정 — 수정 권한. 플랫폼 마스터 계정은 플랫폼 마스터만. 본인 계정은 기본정보만 고친다 -->
+              <a class="btn btn--primary btn--sm" href="admins-edit.html" data-show-role="pm pa" data-show="park choi yoon created">수정</a>
+              <a class="btn btn--primary btn--sm" href="admins-edit.html" data-show-role="pm" data-show="kim" hidden>수정</a>
+              <a class="btn btn--primary btn--sm" href="admins-edit.html?state=self" data-show-role="pm" data-show="self" hidden>수정</a>
+              <a class="btn btn--primary btn--sm" href="admins-edit.html?state=lastpm" data-show-role="pm" data-show="lastpm" hidden>수정</a>
+            </div>
+          </div>
+
+          <div class="content">
+            <div class="stack">
+              <div class="demo" data-demo="ad" data-demo-key="role">
+                <b>목업 권한</b>
+                <div class="seg">
+                  <button type="button" data-state="pm" aria-pressed="true">플랫폼 마스터</button>
+                  <button type="button" data-state="pa" aria-pressed="false">플랫폼 관리자 · 수정·삭제 권한</button>
+                  <button type="button" data-state="view" aria-pressed="false">조회만</button>
+                </div>
+              </div>
+              <div class="demo" data-demo="ad">
+                <b>목업 계정</b>
+                <div class="seg">
+                  <button type="button" data-state="park" aria-pressed="true">plat_park · 고객지원 담당</button>
+                  <button type="button" data-state="choi" aria-pressed="false">plat_choi · 미사용</button>
+                  <button type="button" data-state="kim" aria-pressed="false">plat_kim · 다른 플랫폼 마스터</button>
+                  <button type="button" data-state="lastpm" aria-pressed="false">마지막 사용 플랫폼 마스터</button>
+                  <button type="button" data-state="self" aria-pressed="false">plat_jung · 본인 계정</button>
+                  <button type="button" data-state="yoon" aria-pressed="false">plat_yoon · 첫 로그인 전</button>
+                  <button type="button" data-state="created" aria-pressed="false">등록 직후</button>
+                  <button type="button" data-state="gone" aria-pressed="false">삭제된 계정 열기</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 본인 계정 시나리오는 로그인 사용자(플랫폼 마스터) 기준이라 다른 권한 줄과 섞지 않는다 -->
+            <p class="note" data-show="self lastpm" data-show-role="pa view" hidden>
+              <span data-icon="info" data-icon-size="14"></span>
+              <span>이 시나리오는 로그인 사용자 plat_jung(플랫폼 마스터)의 본인 계정이다. 목업 권한을 ‘플랫폼 마스터’로 두고 본다.</span>
+            </p>
+
+            <!-- 삭제된 계정 — 상세정보를 주지 않는다 -->
+            <section class="panel" data-show="gone" hidden>
+              <div class="empty">
+                <span class="empty__ic" data-icon="lock" data-icon-size="22"></span>
+                <p>삭제된 계정이라 상세정보를 볼 수 없습니다.</p>
+                <a class="btn btn--secondary btn--sm" href="admins.html">관리자 목록으로</a>
+              </div>
+            </section>
+
+            <div class="band band--info" data-show="created" hidden>
+              <span class="band__ic" data-icon="check" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">플랫폼 관리자 계정을 등록했습니다 · <span class="mono">plat_yoon</span></div>
+                <p class="band__desc">
+                  사용 상태로 만들었고 초기 비밀번호는 <b class="mono">chaewon.yoon@whale-erp.example</b> 로만 보냈습니다.
+                  윤채원 님은 최초 로그인 때 <a class="tlink" href="../auth/force-password.html?state=platform">비밀번호를 새로 정해야</a> 권한에 맞는 ERP 홈으로 들어갈 수 있습니다.
+                </p>
+              </div>
+            </div>
+            <div class="band band--warn" data-show="choi" hidden>
+              <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">미사용 계정입니다 — 로그인과 ERP 이용이 막혀 있습니다</div>
+                <p class="band__desc">2026-05-06 11:20 부터 미사용입니다. 기본정보와 변경 이력은 그대로 볼 수 있고, 수정 화면에서 사용으로 되돌릴 수 있습니다.</p>
+              </div>
+            </div>
+            <div class="band band--info" data-show="kim" data-show-role="pa" hidden>
+              <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">플랫폼 마스터 계정은 플랫폼 마스터만 수정·삭제·비밀번호 초기화할 수 있습니다</div>
+              </div>
+            </div>
+            <div class="band band--warn" data-show="lastpm" hidden>
+              <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">사용 중인 플랫폼 마스터가 이 계정 하나뿐입니다</div>
+                <p class="band__desc">마지막 사용 플랫폼 마스터라 미사용 전환, 플랫폼 관리자 권한으로의 변경, 계정 삭제를 할 수 없습니다. 사용 상태의 플랫폼 마스터는 늘 한 명 이상 있어야 합니다.</p>
+              </div>
+            </div>
+            <div class="band band--info" data-show="self lastpm" hidden>
+              <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">내 계정입니다</div>
+                <p class="band__desc">기본정보는 수정에서 고칠 수 있습니다. 비밀번호는 내 정보에서 직접 바꾸고, 권한·계정 상태 변경과 계정 삭제는 스스로 할 수 없습니다.</p>
+              </div>
+            </div>
+
+            <div data-show="park choi kim lastpm self yoon created" style="display: contents">
+              <div class="grid grid--2" style="align-items: start">
+                <section class="panel">
+                  <div class="panel__head"><h2 class="t-h2">기본정보</h2></div>
+                  <div class="panel__body">
+                    <dl class="kv">
+                      <dt>아이디</dt>
+                      <dd class="mono"><span data-show="park">plat_park</span><span data-show="choi" hidden>plat_choi</span><span data-show="kim" hidden>plat_kim</span><span data-show="self lastpm" hidden>plat_jung</span><span data-show="yoon created" hidden>plat_yoon</span></dd>
+                      <dt>이름</dt>
+                      <dd><span data-show="park">박지우</span><span data-show="choi" hidden>최유나</span><span data-show="kim" hidden>김서연</span><span data-show="self lastpm" hidden>정민재</span><span data-show="yoon created" hidden>윤채원</span></dd>
+                      <dt>연락처</dt>
+                      <dd class="mono"><span data-show="park">010-7781-3302</span><span data-show="choi" hidden>010-6620-1185</span><span data-show="kim" hidden>010-3321-0981</span><span data-show="self lastpm" hidden>010-2011-4410</span><span data-show="yoon created" hidden>010-9013-5528</span></dd>
+                      <dt>이메일</dt>
+                      <dd class="mono"><span data-show="park">jiwoo.park@whale-erp.example</span><span data-show="choi" hidden>yuna.choi@whale-erp.example</span><span data-show="kim" hidden>seoyeon.kim@whale-erp.example</span><span data-show="self lastpm" hidden>minjae.jung@whale-erp.example</span><span data-show="yoon created" hidden>chaewon.yoon@whale-erp.example</span></dd>
+                      <dt>소속 부서</dt>
+                      <dd><span data-show="park choi">고객지원팀</span><span data-show="kim self lastpm yoon created" hidden>플랫폼운영팀</span></dd>
+                      <dt>직책</dt>
+                      <dd><span data-show="park">매니저</span><span data-show="choi yoon created" hidden>사원</span><span data-show="kim" hidden>파트장</span><span data-show="self lastpm" hidden>팀장</span></dd>
+                      <dt>주소</dt>
+                      <dd>
+                        <span data-show="park"><span class="mono">06236</span> 서울 강남구 테헤란로 152, 12층</span>
+                        <span data-show="yoon created" hidden><span class="mono">13529</span> 경기 성남시 분당구 판교역로 166, 7층</span>
+                        <span class="nil" data-show="choi kim self lastpm" hidden></span>
+                      </dd>
+                    </dl>
+                  </div>
+                  <div class="panel__note">소속 부서·직책·주소는 선택 입력이라 비어 있을 수 있다. 소속 BP·가맹점은 플랫폼 관리자 계정에 두지 않는다.</div>
+                </section>
+
+                <section class="panel">
+                  <div class="panel__head"><h2 class="t-h2">권한 · 상태</h2></div>
+                  <div class="panel__body">
+                    <dl class="kv">
+                      <dt>사용자 권한</dt>
+                      <dd>
+                        <span data-show="park choi">고객지원 담당 <span class="mono subtle">PA000002</span> <span class="subtle">· 플랫폼 관리자 추가 권한</span></span>
+                        <span data-show="kim self" hidden>플랫폼 마스터 <span class="mono subtle">PM000001</span></span>
+                        <span data-show="lastpm" hidden>플랫폼 마스터 <span class="mono subtle">PM000001</span> <span class="subtle">· 마지막 사용 플랫폼 마스터라 바꿀 수 없음</span></span>
+                        <span data-show="yoon created" hidden>플랫폼 관리자 <span class="mono subtle">PA000001</span> <span class="subtle">· 기본 권한</span></span>
+                      </dd>
+                      <dt>계정 상태</dt>
+                      <dd>
+                        <span data-show="park kim self yoon created"><span class="badge badge--ok">사용</span></span>
+                        <span data-show="choi" hidden><span class="badge badge--warn">미사용</span> <span class="mono subtle">2026-05-06 11:20</span></span>
+                        <span data-show="lastpm" hidden><span class="badge badge--ok">사용</span> <span class="subtle">· 미사용으로 바꿀 수 없음</span></span>
+                      </dd>
+                      <dt>생성 일시</dt>
+                      <dd class="mono"><span data-show="park">2025-06-02 10:11</span><span data-show="choi" hidden>2025-06-02 10:18</span><span data-show="kim" hidden>2025-01-06 09:05</span><span data-show="self lastpm" hidden>2025-01-06 09:00</span><span data-show="yoon created" hidden>2026-09-21 10:04</span></dd>
+                      <dt>최근 로그인</dt>
+                      <dd><span class="mono" data-show="park">2026-09-21 09:03</span><span class="mono" data-show="choi" hidden>2026-04-30 18:22</span><span class="mono" data-show="kim" hidden>2026-09-19 17:40</span><span class="mono" data-show="self lastpm" hidden>2026-09-21 08:52</span><span class="subtle" data-show="yoon created" hidden>로그인 기록 없음</span></dd>
+                      <dt>강제 비밀번호 변경</dt>
+                      <dd><span data-show="park choi kim self lastpm">대상 아님</span><span data-show="yoon created" hidden>대상 <span class="subtle">· 초기 비밀번호 발급 <span class="mono">2026-09-21 10:04</span></span></span></dd>
+                    </dl>
+                  </div>
+                  <div class="panel__note">권한이나 상태를 바꾸면 재로그인을 기다리지 않고 그 계정의 다음 요청부터 반영된다. 권한 구성 자체는 플랫폼 권한 관리에서 정한다.</div>
+                </section>
+              </div>
+
+              <section class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">생성 · 변경 이력</h2>
+                  <span class="badge badge--quiet">생성 · 정보 · 권한 · 상태 · 최신순</span>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr><th scope="col">일시</th><th scope="col">처리자</th><th scope="col">구분</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr data-show="park"><td class="mono">2026-03-02 14:20</td><td class="mono">plat_kim</td><td><span class="badge badge--quiet">정보 변경</span></td><td>직책</td><td>사원</td><td>매니저</td></tr>
+                      <tr data-show="park"><td class="mono">2025-07-01 09:30</td><td class="mono">plat_jung</td><td><span class="badge badge--quiet">권한 변경</span></td><td>사용자 권한</td><td>플랫폼 관리자 <span class="mono subtle">PA000001</span></td><td>고객지원 담당 <span class="mono subtle">PA000002</span></td></tr>
+                      <tr data-show="park"><td class="mono">2025-06-02 10:11</td><td class="mono">plat_jung</td><td><span class="badge badge--quiet">생성</span></td><td>계정</td><td class="nil"></td><td>사용 · 플랫폼 관리자 <span class="mono subtle">PA000001</span></td></tr>
+                      <tr data-show="choi" hidden><td class="mono">2026-05-06 11:20</td><td class="mono">plat_jung</td><td><span class="badge badge--quiet">상태 변경</span></td><td>계정 상태</td><td>사용</td><td>미사용</td></tr>
+                      <tr data-show="choi" hidden><td class="mono">2025-06-02 10:18</td><td class="mono">plat_jung</td><td><span class="badge badge--quiet">생성</span></td><td>계정</td><td class="nil"></td><td>사용 · 고객지원 담당 <span class="mono subtle">PA000002</span></td></tr>
+                      <tr data-show="kim" hidden><td class="mono">2025-01-06 09:05</td><td class="mono">plat_jung</td><td><span class="badge badge--quiet">생성</span></td><td>계정</td><td class="nil"></td><td>사용 · 플랫폼 마스터 <span class="mono subtle">PM000001</span></td></tr>
+                      <tr data-show="self lastpm" hidden><td class="mono">2026-02-10 16:02</td><td class="mono">plat_jung</td><td><span class="badge badge--quiet">정보 변경</span></td><td>연락처</td><td class="mono">010-2011-0071</td><td class="mono">010-2011-4410</td></tr>
+                      <tr data-show="self lastpm" hidden><td class="mono">2025-01-06 09:00</td><td class="mono">system</td><td><span class="badge badge--quiet">생성</span></td><td>계정</td><td class="nil"></td><td>사용 · 플랫폼 마스터 <span class="mono subtle">PM000001</span></td></tr>
+                      <tr data-show="yoon created" hidden><td class="mono">2026-09-21 10:04</td><td class="mono">plat_jung</td><td><span class="badge badge--quiet">생성</span></td><td>계정</td><td class="nil"></td><td>사용 · 플랫폼 관리자 <span class="mono subtle">PA000001</span></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__note">변경 전후 값과 처리자, 처리 일시만 남기고 사유는 받지 않는다. 비밀번호 초기화와 계정 삭제 기록은 이 표가 아니라 따로 보존된다.</div>
+              </section>
+
+            </div>
+          </div>
+
+          <!-- 비밀번호 초기화 확인 (S-XKYOND) — 새 초기 비밀번호는 화면 어디에도 나오지 않는다 -->
+          <div class="modal" id="pop-reset" hidden role="dialog" aria-modal="true" aria-labelledby="pr-t">
+            <div class="modal__box">
+              <div class="modal__head">
+                <h2 class="t-h2" id="pr-t">비밀번호 초기화</h2>
+                <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+              </div>
+              <div class="modal__body">
+                <div data-step="ask" class="stack--lg" style="display: flex; flex-direction: column">
+                  <dl class="kv">
+                    <dt>아이디</dt><dd class="mono"><span data-show="park">plat_park</span><span data-show="choi" hidden>plat_choi</span><span data-show="kim" hidden>plat_kim</span><span data-show="yoon created" hidden>plat_yoon</span></dd>
+                    <dt>이름</dt><dd><span data-show="park">박지우</span><span data-show="choi" hidden>최유나</span><span data-show="kim" hidden>김서연</span><span data-show="yoon created" hidden>윤채원</span></dd>
+                  </dl>
+                  <p style="margin: 0; font-size: 13px">새 초기 비밀번호(12자 무작위)를 계정 이메일로 보냅니다. 초기화하는 사람도 그 값을 볼 수 없습니다.</p>
+                  <div class="band band--warn">
+                    <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
+                    <div class="band__body">
+                      <div class="band__title">기존 비밀번호는 바로 무효가 되고, 로그인 중인 세션도 모두 끊깁니다</div>
+                      <p class="band__desc">계정 상태는 그대로입니다. 다음 로그인 때 비밀번호를 새로 정해야 합니다.</p>
+                    </div>
+                  </div>
+                  <div class="inline" style="justify-content: flex-end">
+                    <button class="btn btn--ghost" type="button" data-close>취소</button>
+                    <button class="btn btn--secondary" type="button" data-step-to="fail" title="목업 전용 — 처리 오류 결과 보기">오류로 보기</button>
+                    <button class="btn btn--secondary" type="button" data-step-to="mailfail" title="목업 전용 — 메일 발송 실패 결과 보기">발송 실패로 보기</button>
+                    <button class="btn btn--primary" type="button" data-step-to="sent">초기화</button>
+                  </div>
+                </div>
+                <div data-step="sent" hidden class="stack--lg" style="display: flex; flex-direction: column">
+                  <div class="band band--info">
+                    <span class="band__ic" data-icon="check" data-icon-size="20"></span>
+                    <div class="band__body">
+                      <div class="band__title">비밀번호를 초기화했습니다</div>
+                      <p class="band__desc">
+                        발송 대상 · <b class="mono"><span data-show="park">jiwoo.park@whale-erp.example</span><span data-show="choi" hidden>yuna.choi@whale-erp.example</span><span data-show="kim" hidden>seoyeon.kim@whale-erp.example</span><span data-show="yoon created" hidden>chaewon.yoon@whale-erp.example</span></b><br />
+                        새 비밀번호는 이 화면에 나오지 않습니다. 받은 사람은 그 값으로 로그인한 뒤 <a class="tlink" href="../auth/force-password.html?state=platform">강제 비밀번호 변경</a>을 마쳐야 ERP 를 쓸 수 있습니다.
+                      </p>
+                    </div>
+                  </div>
+                  <div class="inline" style="justify-content: flex-end">
+                    <button class="btn btn--primary" type="button" data-close>확인</button>
+                  </div>
+                </div>
+                <div data-step="mailfail" hidden class="stack--lg" style="display: flex; flex-direction: column">
+                  <div class="band band--risk">
+                    <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+                    <div class="band__body">
+                      <div class="band__title">새 비밀번호는 발급했지만 안내 메일이 나가지 못했습니다</div>
+                      <p class="band__desc">발송 실패를 기록했습니다. 기존 비밀번호로는 이미 로그인할 수 없으니, 한 번 더 초기화해 새 값으로 메일을 다시 보내 주세요.</p>
+                    </div>
+                  </div>
+                  <div class="inline" style="justify-content: flex-end">
+                    <button class="btn btn--ghost" type="button" data-close>닫기</button>
+                    <button class="btn btn--primary" type="button" data-step-to="ask">다시 초기화</button>
+                  </div>
+                </div>
+                <div data-step="fail" hidden class="stack--lg" style="display: flex; flex-direction: column">
+                  <div class="band band--risk">
+                    <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+                    <div class="band__body">
+                      <div class="band__title">비밀번호를 초기화하지 못했습니다</div>
+                      <p class="band__desc">기존 비밀번호를 그대로 두었습니다. 잠시 후 다시 시도해 주세요.</p>
+                    </div>
+                  </div>
+                  <div class="inline" style="justify-content: flex-end">
+                    <button class="btn btn--ghost" type="button" data-close>닫기</button>
+                    <button class="btn btn--primary" type="button" data-step-to="ask">다시 시도</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 계정 삭제 확인 (S-NLVXWJ) -->
+          <div class="modal" id="pop-delete" hidden role="dialog" aria-modal="true" aria-labelledby="pd-t">
+            <div class="modal__box">
+              <div class="modal__head">
+                <h2 class="t-h2" id="pd-t">플랫폼 관리자 계정 삭제</h2>
+                <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+              </div>
+              <div class="modal__body">
+                <div data-step="ask" class="stack--lg" style="display: flex; flex-direction: column">
+                  <dl class="kv">
+                    <dt>아이디</dt><dd class="mono"><span data-show="park">plat_park</span><span data-show="choi" hidden>plat_choi</span><span data-show="kim" hidden>plat_kim</span><span data-show="yoon created" hidden>plat_yoon</span></dd>
+                    <dt>이름</dt><dd><span data-show="park">박지우</span><span data-show="choi" hidden>최유나</span><span data-show="kim" hidden>김서연</span><span data-show="yoon created" hidden>윤채원</span></dd>
+                  </dl>
+                  <p style="margin: 0; font-size: 13px">삭제하면 <b>관리자 목록과 검색에서 빠지고</b>, 이 계정으로는 <b>더 로그인할 수 없습니다</b>. 로그인 중인 세션도 바로 끊깁니다.</p>
+                  <p class="subtle" style="margin: 0; font-size: 13px">되돌릴 수 없습니다. 아이디는 다시 쓸 수 없고, 이메일은 다른 계정에 다시 쓸 수 있습니다. 이 계정이 남긴 처리 이력은 지우지 않습니다.</p>
+                  <div class="inline" style="justify-content: flex-end">
+                    <button class="btn btn--ghost" type="button" data-close>취소</button>
+                    <button class="btn btn--secondary" type="button" data-step-to="fail" title="목업 전용 — 삭제 실패 결과 보기">실패로 보기</button>
+                    <a class="btn btn--danger" href="admins.html?state=deleted" data-show="park">삭제</a>
+                    <a class="btn btn--danger" href="admins.html" data-show="choi kim yoon created" hidden>삭제</a>
+                  </div>
+                </div>
+                <div data-step="fail" hidden class="stack--lg" style="display: flex; flex-direction: column">
+                  <div class="band band--risk">
+                    <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+                    <div class="band__body">
+                      <div class="band__title">계정을 삭제하지 못했습니다</div>
+                      <p class="band__desc">계정은 전과 같이 남아 있습니다. 잠시 후 다시 시도해 주세요.</p>
+                    </div>
+                  </div>
+                  <div class="inline" style="justify-content: flex-end">
+                    <button class="btn btn--ghost" type="button" data-close>닫기</button>
+                    <button class="btn btn--primary" type="button" data-step-to="ask">다시 시도</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+  </body>
+</html>

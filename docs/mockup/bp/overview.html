@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BP 마스터 계정 관리 개요 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="bp" data-sub="bp/overview.html">
+    <!-- 플랫폼 BP 관리(R-NMDCYH) 영역 개요 — 목업 전용 페이지다. 1팀 작업이다.
+         기준은 manyfast [1팀공용] WHALE ERP 의 플랫폼 BP 관리 · BP 마스터 계정 관리(F-EHHJLV) 와 하위 명세 다섯 개다.
+         메뉴구조도의 “BP 정보관리”(BP Master · 휴면 BP)를 이 이름으로 바꾸고, 휴면 BP 는 목록의 상태 조건으로 합쳤다.
+         명세만으로 화면이 갈리는 곳은 쟁점으로 남겼다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <a class="iconbtn" href="../index.html" aria-label="목업 허브로" data-icon="arrowleft" data-icon-size="18"></a>
+          <h1 class="t-h1">BP 마스터 계정 관리</h1>
+          <span class="badge badge--warn">1팀 작업</span>
+          <span class="badge badge--preview">영역 개요</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">R-NMDCYH · bp/</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="band band--warn">
+            <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+            <div class="band__body">
+              <div class="band__title">BP 하나에 BP 마스터 계정 하나 — 목록은 BP 를 기준으로 선다</div>
+              <p class="band__desc">
+                플랫폼 사용자만 쓰는 화면이고 점포 매핑 없이 전체 BP 가 대상이다. 상태는 <b>사용 · 미사용 · 탈퇴</b> 셋이고,
+                이 화면에서 고르는 것은 사용과 미사용뿐이다. 탈퇴는 BP 마스터의 회원 탈퇴로만 생기고 되돌리지 않는다.
+                삭제는 한 번도 로그인하지 않은 오등록 BP 를 치우는 용도로만 쓴다. 각 화면 위의 점선 줄로 BP 와 상태를 바꿔 본다.
+              </p>
+            </div>
+            <div class="band__act">
+              <a class="btn btn--primary" href="index.html">BP 목록부터 보기</a>
+            </div>
+          </div>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">화면</h2>
+              <span class="badge badge--quiet">4개 + 팝업 6</span>
+              <div class="panel__end">
+                <span class="filters__count mono">F-EHHJLV · bp/</span>
+              </div>
+            </div>
+            <div class="grid grid--2">
+              <a class="mk-card" href="index.html">
+                <span class="mk-card__route">/platform/bp</span>
+                <span class="mk-card__name">BP 마스터 계정 목록</span>
+                <span class="mk-card__desc">
+                  검색 기준(BP 코드·아이디+이름·상호명·사업자등록번호)을 고른 검색어 하나와 상태·인증 여부로 찾는다. 연락처·이메일, 등록자·등록 일시는 한 칸에 두 줄. 처음엔 조건 없이 전체, 20건씩. 탈퇴 BP 는 이름·연락처·이메일이 지워져 보인다.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--quiet">S-ALHCJS</span>
+                  <span class="badge badge--preview">상태 7</span>
+                </span>
+              </a>
+              <a class="mk-card" href="detail.html">
+                <span class="mk-card__route">/platform/bp/:BP코드</span>
+                <span class="mk-card__name">BP 마스터 계정 상세 · 상태 변경 · 비밀번호 초기화 · 삭제</span>
+                <span class="mk-card__desc">
+                  기본정보(계정 관리정보 포함)·사업자정보·변경 이력을 읽기 전용으로 보인다. 소속 점포 수를 누르면 점포 목록으로 간다. BP 상태 변경(사용↔미사용)·초기화·삭제 확인은 이 화면의 팝업이다 — 점포 상태 변경과 같은 자리다.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--quiet">S-GZDODB · S-PRRLMA</span>
+                  <span class="badge badge--preview">BP 5 · 권한 2</span>
+                </span>
+              </a>
+              <a class="mk-card" href="new.html">
+                <span class="mk-card__route">/platform/bp/new</span>
+                <span class="mk-card__name">BP 마스터 계정 등록</span>
+                <span class="mk-card__desc">
+                  필수는 아이디·이름·연락처·이메일·상호명. 사용 상태·플랫폼등록·약관 미동의로 생기고, 초기 비밀번호는 메일로만 간다. 사업자 인증은 선택이다.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--quiet">S-OJEYQJ</span>
+                  <span class="badge badge--preview">상태 3 · 인증 결과 4</span>
+                </span>
+              </a>
+              <a class="mk-card" href="edit.html">
+                <span class="mk-card__route">/platform/bp/:BP코드/edit</span>
+                <span class="mk-card__name">BP 마스터 계정 수정</span>
+                <span class="mk-card__desc">
+                  기본정보·사업자정보 수정. BP 상태는 보여 주기만 하고 바꾸는 것은 상세에서 한다. 사업자정보 세 값은 재인증으로만 바뀐다.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--quiet">S-CQGGZS</span>
+                  <span class="badge badge--preview">상태 5</span>
+                </span>
+              </a>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">다른 영역과 이어지는 곳</h2>
+              <span class="badge badge--quiet">3</span>
+            </div>
+            <div class="panel">
+              <ul class="pol">
+                <li><span class="pol__t"><b>점포 목록</b> — 상세의 소속 점포 수(폐점·삭제 제외)를 누르면 <a class="tlink" href="../stores/index.html?bp=㈜한강상회%20·%20BP000017">점포 목록</a>이 그 BP 로 좁혀져 열린다(점포 목록에는 BP 검색 칸이 없어 조건 띠로 보인다).</span><span class="pol__ref">S-GZDODB</span></li>
+                <li><span class="pol__t"><b>강제 비밀번호 변경</b> — 플랫폼이 등록했거나 비밀번호를 초기화한 BP 마스터는 첫 로그인 때 <a class="tlink" href="../auth/force-password.html?state=platform">강제 변경 팝업</a>에서 비밀번호를 바꾸고, 약관 미동의면 약관 동의도 같이 받는다.</span><span class="pol__ref">S-OJEYQJ · S-PRRLMA</span></li>
+                <li><span class="pol__t"><b>점포 상태</b> — BP 를 미사용으로 바꾸면 점포 상태는 그대로 두고 업무만 멈춘다. 탈퇴하면 미운영·운영 점포를 조건 검사 없이 모두 폐점한다. <a class="tlink" href="../stores/detail.html?state=bpoff">소속 BP 미사용 점포</a>에서 막힌 모습을 본다.</span><span class="pol__ref">F-EHHJLV</span></li>
+              </ul>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">정책</h2>
+              <span class="badge badge--quiet">12줄</span>
+            </div>
+            <div class="grid grid--2" style="align-items: start">
+              <div class="panel">
+                <div class="panel__head">
+                  <h3 class="t-h3">상태 · 권한</h3>
+                  <span class="badge badge--quiet">6</span>
+                </div>
+                <ul class="pol">
+                  <li><span class="pol__t">새 BP 는 경로와 상관없이 사용으로 생긴다. 미사용은 이용을 멈출 때만 쓰고, 오래 로그인하지 않아도 상태를 자동으로 바꾸지 않는다.</span><span class="pol__ref">F-EHHJLV</span></li>
+                  <li><span class="pol__t">미사용 전환은 선행 조건(운영 점포·구독·미정산·근로계약)을 보지 않고 바로 적용한다. BP 마스터·BP 관리자·가맹 마스터·가맹 관리자가 모두 미사용이 되고 세션이 끊긴다.</span><span class="pol__ref">S-CQGGZS</span></li>
+                  <li><span class="pol__t">사용으로 되돌리면 BP 와 BP 마스터만 살아난다. 나머지 계정은 BP 마스터가 BP 관리자 관리에서 하나씩 켠다.</span><span class="pol__ref">S-CQGGZS</span></li>
+                  <li><span class="pol__t">탈퇴 BP 는 조회만 된다. 수정·비밀번호 초기화·삭제 항목이 없고, 다시 쓰려면 새 BP 로 등록한다.</span><span class="pol__ref">S-GZDODB</span></li>
+                  <li><span class="pol__t">플랫폼 마스터와 플랫폼 관리자는 대상 범위 차이 없이 메뉴의 조회·등록·수정·삭제 권한으로만 갈린다. 비밀번호 초기화는 수정 권한이다.</span><span class="pol__ref">F-EHHJLV · S-PRRLMA</span></li>
+                  <li><span class="pol__t">이 화면은 BP 관리자·가맹 관리자 계정을 보이지도 바꾸지도 않는다. BP 마스터 비밀번호 초기화는 여기서만 한다.</span><span class="pol__ref">F-EHHJLV</span></li>
+                </ul>
+              </div>
+              <div class="panel">
+                <div class="panel__head">
+                  <h3 class="t-h3">데이터 · 이력</h3>
+                  <span class="badge badge--quiet">6</span>
+                </div>
+                <ul class="pol">
+                  <li><span class="pol__t">BP 코드는 계정이 생길 때 자동 채번한다. 회원가입과 플랫폼등록이 같은 규칙이고, 삭제한 BP 의 순번은 다시 쓰지 않는다.</span><span class="pol__ref">PL-EIMSQF</span></li>
+                  <li><span class="pol__t">아이디·BP 코드·가입경로는 등록 뒤 바꿀 수 없다. 개업일자는 사업자 인증 결과로만 바뀐다.</span><span class="pol__ref">S-CQGGZS</span></li>
+                  <li><span class="pol__t">아이디·이메일·사업자등록번호 중복은 식별정보 중복 검사 정책을 따른다. 사업자등록번호는 인증했을 때만 검사한다.</span><span class="pol__ref">PL-OCJOFP</span></li>
+                  <li><span class="pol__t">삭제는 사용·미사용 · 최근 로그인 일시 없음 · 하위 관리자 0 · 등록 점포 0 을 모두 채울 때만. 계정과 BP 를 함께 지우되 아이디는 남겨 다시 못 쓴다.</span><span class="pol__ref">S-GZDODB</span></li>
+                  <li><span class="pol__t">변경 사유는 받지 않는다. 이력에는 변경 전후 값·변경자·일시만 쌓고, 탈퇴 줄에만 회원 탈퇴 때 받은 사유를 붙인다.</span><span class="pol__ref">S-CQGGZS</span></li>
+                  <li><span class="pol__t">엑셀은 1만 건 미만이면 바로, 이상이면 생성 후 알림. 한 사람 1분 1회, 연락처·대표자 연락처만 가린다. 내려받은 사람·일시·조건·건수를 남긴다.</span><span class="pol__ref">S-ALHCJS</span></li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">쟁점</h2>
+              <span class="badge badge--preview">5건 · 미정 5</span>
+            </div>
+            <p class="gap__note" style="margin-top: 0">화면을 그리면서 명세만으로는 정해지지 않던 것들이다.</p>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">BP-1</span>
+                <b>1만 건 이상 엑셀을 어디에 두고 내려받게 하는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-ALHCJS</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a">
+                  <div class="gap__label">A · 행동 칸</div>
+                  <p>1만 건 이상이면 생성을 예약하고 끝나면 <b>알림과 내려받기 링크</b>를 준다.</p>
+                </div>
+                <div class="gap__opt" data-side="b">
+                  <div class="gap__label">B · 규칙 칸</div>
+                  <p>생성한 파일은 <b>서버에 보관하지 않고</b> 내려보낸 뒤 버린다. 링크를 주려면 잠시라도 보관해야 한다.</p>
+                </div>
+              </div>
+              <p class="gap__note">점포 목록은 24시간 보관·이메일 링크로 정했다. 알림 경로(이메일인지 운영 알림인지)와 보관 시간을 같이 정해야 한다.</p>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">BP-2</span>
+                <b>목록 검색 조건에 사업자정보 인증 여부를 두는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-ALHCJS</span>
+              </div>
+              <p class="gap__note">
+                행동 칸에는 인증완료·미인증 조건이 있는데 표시 칸의 검색 영역 목록에는 빠져 있다. 목업은 행동 칸을 따라 조건을 두었다.
+              </p>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">BP-3</span>
+                <b>등록을 마친 뒤 어디로 가서 BP 코드를 보여 주는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-OJEYQJ</span>
+              </div>
+              <p class="gap__note">
+                “저장이 완료되면 생성된 값을 안내한다”까지만 있다. 목업은 새 BP 의 상세로 보내 위쪽 띠로 BP 코드와 메일 발송 주소를 알린다.
+                목록으로 돌아가 토스트로 알리는 안도 있다.
+              </p>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">BP-4</span>
+                <b>비밀번호 초기화 메일을 “BP 신규 등록” 포맷 그대로 보내는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-PRRLMA · F-TKSNOK</span>
+              </div>
+              <p class="gap__note">
+                명세는 신규 등록 포맷을 그대로 쓴다고 했다. 이미 쓰던 BP 마스터가 “신규 등록” 제목의 메일을 받으면 헷갈린다. 초기화 전용 문구를 메일 포맷에 하나 더 둘지 정해야 한다.
+              </p>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">BP-5</span>
+                <b>상세에 최근 로그인·약관 동의·강제 변경 대상을 보이는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-GZDODB</span>
+              </div>
+              <p class="gap__note">
+                데이터 칸에는 저장하지만 표시 칸에는 없다. 삭제가 막히는 이유(로그인 기록)와 첫 로그인 전인지를 운영자가 알아야 해서 목업은 “계정 관리정보” 영역으로 보였다.
+              </p>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+  </body>
+</html>

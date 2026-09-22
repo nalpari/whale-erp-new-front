@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>로그인 개요 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="auth" data-sub="auth/overview.html">
+    <!-- 로그인 — 인증 및 계정 관리(R-LYZWGG) 영역 개요. 목업 전용 페이지다.
+         이 영역은 1팀 작업이다. 기준은 manyfast [1팀공용] WHALE ERP 의 인증 및 계정 관리 하위 기능·명세이고
+         3팀 목업(홈·계정 진입)의 로그인 화면과는 따로 만들었다. 둘이 다른 곳은 아래 쟁점에 남긴다.
+         MY PAGE(내 정보·비밀번호 변경·회원 탈퇴)와 로그아웃은 mypage/ 영역에 따로 있다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <a class="iconbtn" href="../index.html" aria-label="목업 허브로" data-icon="arrowleft" data-icon-size="18"></a>
+          <h1 class="t-h1">로그인</h1>
+          <span class="badge badge--warn">1팀 작업</span>
+          <span class="badge badge--preview">영역 개요</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">R-LYZWGG · auth/</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="band band--warn">
+            <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+            <div class="band__body">
+              <div class="band__title">1팀이 만들 화면이다 — 3팀은 로그인 뒤 홈부터 받는다</div>
+              <p class="band__desc">
+                manyfast <b>[1팀공용] WHALE ERP</b> 의 <b>인증 및 계정 관리</b> 명세를 그대로 옮겼다. 로그인 화면에서 닿는
+                여섯 갈래 — 로그인 판정, 아이디 찾기, 임시 비밀번호, 회원가입, 가입 완료, 강제 비밀번호 변경 — 를 모두 잇고,
+                로그인에 성공하면 3팀의 <b>로그인 후 홈</b>으로 넘어간다. 각 화면 위의 점선 줄은 목업 전용 상태 전환이라
+                오류 문구와 분기를 회의에서 넘겨 볼 수 있다.
+              </p>
+            </div>
+            <div class="band__act">
+              <a class="btn btn--primary" href="login.html">로그인 화면부터 보기</a>
+            </div>
+          </div>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">화면</h2>
+              <span class="badge badge--quiet">5개 + 상태 2</span>
+              <div class="panel__end">
+                <span class="filters__count mono">R-LYZWGG · auth/</span>
+              </div>
+            </div>
+            <div class="grid grid--3">
+              <a class="mk-card" href="login.html">
+                <span class="mk-card__route">/login</span>
+                <span class="mk-card__name">로그인</span>
+                <span class="mk-card__desc">
+                  아이디·비밀번호·아이디 저장. 잠금 → 아이디·비밀번호 → 계정 상태 → 강제 변경 순으로 판정하고 상태마다 문구가 다르다.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--quiet">S-XJDKSI</span>
+                  <span class="badge badge--preview">상태 8</span>
+                </span>
+              </a>
+              <a class="mk-card" href="find.html#id">
+                <span class="mk-card__route">/find · 두 탭</span>
+                <span class="mk-card__name">아이디·비밀번호 찾기</span>
+                <span class="mk-card__desc">
+                  아이디는 이름·이메일로 찾아 앞 2자·뒤 1자만 보여 준다. 비밀번호는 이름·아이디·이메일로 확인해 임시 비밀번호를 메일로 보낸다.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--quiet">S-PHOPWY · S-EOMSRG</span>
+                </span>
+              </a>
+              <a class="mk-card" href="signup.html">
+                <span class="mk-card__route">/signup</span>
+                <span class="mk-card__name">회원가입</span>
+                <span class="mk-card__desc">
+                  기본정보(아이디·이메일은 칸을 벗어날 때 중복 확인) · 사업자정보 인증(선택, 화면 안 입력 상자) · 약관 두 가지. 인증 후 재인증으로 초기화할 수 있다.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--quiet">S-RCJXIG · S-VRNTHD</span>
+                </span>
+              </a>
+              <a class="mk-card" href="signup-done.html">
+                <span class="mk-card__route">/signup/done</span>
+                <span class="mk-card__name">가입 완료</span>
+                <span class="mk-card__desc">
+                  완료 안내와 웨일ERP 시작하기 버튼 하나. 버튼을 누르는 순간 로그인 세션이 생기고 홈으로 간다.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--quiet">S-UUBGOD</span>
+                </span>
+              </a>
+              <a class="mk-card" href="force-password.html">
+                <span class="mk-card__route">로그인 직후 팝업</span>
+                <span class="mk-card__name">강제 비밀번호 변경</span>
+                <span class="mk-card__desc">
+                  초기·임시 비밀번호로 들어온 계정에 닫을 수 없게 뜬다. 운영자가 만든 계정이면 같은 화면 아래 약관 동의까지 한 번에 받는다.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--quiet">S-VFGQLI</span>
+                </span>
+              </a>
+              <a class="mk-card" href="../stores/index.html?session=expired">
+                <span class="mk-card__route">쓰던 화면 위 경고창</span>
+                <span class="mk-card__name">세션 만료</span>
+                <span class="mk-card__desc">
+                  쓰던 화면에서 경고창을 띄우고 확인하면 로그인 화면으로 간다. 로그인 화면에는 세션 만료 문구가 없다.
+                  임시 비밀번호가 만료된 경우만 로그인 화면의 아이디 저장 아래에 안내가 선다.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--quiet">S-QCNVFC</span>
+                </span>
+              </a>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">화면 연결</h2>
+              <span class="badge badge--quiet">로그인에서 뻗는 길</span>
+            </div>
+            <div class="panel">
+              <div class="tblwrap">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th scope="col">출발</th>
+                      <th scope="col">누르는 것 · 조건</th>
+                      <th scope="col">도착</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td class="k">로그인</td><td>로그인 · 일반 계정</td><td><a class="tlink" href="../home/overview.html">로그인 후 홈</a> <span class="side__tag side__tag--t3">3팀</span></td></tr>
+                    <tr><td class="k">로그인</td><td>로그인 · 초기 또는 임시 비밀번호로 들어옴</td><td><a class="tlink" href="force-password.html">강제 비밀번호 변경</a> → 홈</td></tr>
+                    <tr><td class="k">로그인</td><td>잠김 안내의 비밀번호 찾기 · 임시 비밀번호 만료 안내</td><td><a class="tlink" href="find.html#pw">비밀번호 찾기 탭</a></td></tr>
+                    <tr><td class="k">로그인</td><td>아이디 찾기 · 비밀번호 찾기</td><td><a class="tlink" href="find.html#id">아이디·비밀번호 찾기</a> — 누른 쪽 탭이 열린다</td></tr>
+                    <tr><td class="k">로그인</td><td>사업자회원가입</td><td><a class="tlink" href="signup.html">회원가입</a></td></tr>
+                    <tr><td class="k">아이디 찾기</td><td>찾음 → 로그인하러 가기</td><td><a class="tlink" href="login.html">로그인</a></td></tr>
+                    <tr><td class="k">비밀번호 찾기</td><td>발송함 → 확인</td><td><a class="tlink" href="login.html">로그인</a> — 받은 임시 비밀번호로 들어오면 강제 변경</td></tr>
+                    <tr><td class="k">회원가입</td><td>사업자정보 인증하기</td><td>사업자 번호 인증 팝업 → 성공하면 사업자정보 영역이 열림</td></tr>
+                    <tr><td class="k">회원가입</td><td>회원가입</td><td><a class="tlink" href="signup-done.html">가입 완료</a></td></tr>
+                    <tr><td class="k">가입 완료</td><td>웨일ERP 시작하기</td><td>로그인 후 홈 <span class="side__tag side__tag--t3">3팀</span> — 강제 변경 없음(본인이 정한 비밀번호)</td></tr>
+                    <tr><td class="k">강제 변경</td><td>로그아웃</td><td><a class="tlink" href="login.html">로그인</a></td></tr>
+                    <tr><td class="k">어느 화면이든</td><td>갱신 토큰 만료</td><td><a class="tlink" href="../stores/index.html?session=expired">그 화면 위 세션 만료 경고창</a> → 확인 → 로그인</td></tr>
+                    <tr><td class="k">강제 변경</td><td>임시 비밀번호 1시간 경과</td><td><a class="tlink" href="login.html?state=tempexpired">로그인 · 아이디 저장 아래 안내</a></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">정책</h2>
+              <span class="badge badge--quiet">16줄</span>
+            </div>
+            <div class="grid grid--2" style="align-items: start">
+              <div class="panel">
+                <div class="panel__head">
+                  <h3 class="t-h3">로그인 · 세션</h3>
+                  <span class="badge badge--quiet">8</span>
+                </div>
+                <ul class="pol">
+                  <li><span class="pol__t">식별자는 <b>아이디</b>다. 영문 또는 영문·숫자 4~20자이고 탈퇴·삭제한 계정의 아이디도 다시 쓸 수 없다.</span><span class="pol__ref">S-XJDKSI · PL-OCJOFP</span></li>
+                  <li><span class="pol__t">연속 5회 틀리면 5분 잠근다. 풀리는 길은 5분 경과와 임시 비밀번호 발급 둘뿐이고 운영자가 푸는 기능은 1차에 없다.</span><span class="pol__ref">F-DZVFIC</span></li>
+                  <li><span class="pol__t">틀린 경우와 탈퇴 계정은 같은 문구 하나로 답한다. 미사용 계정은 비밀번호까지 맞을 때만 이용 제한을 알린다.</span><span class="pol__ref">S-XJDKSI</span></li>
+                  <li><span class="pol__t">아이디 저장은 브라우저에만 둔다. 로그인 유지 선택은 없다.</span><span class="pol__ref">S-XJDKSI</span></li>
+                  <li><span class="pol__t">접근 토큰 1시간, 갱신 토큰은 마지막 사용부터 1시간. 쓰는 동안은 끊기지 않는다.</span><span class="pol__ref">S-QCNVFC</span></li>
+                  <li><span class="pol__t">만료 안내는 동시에 실패한 요청이 여럿이어도 한 번만 띄운다. 저장 중이던 입력은 복구하지 않는다.</span><span class="pol__ref">S-QCNVFC</span></li>
+                  <li><span class="pol__t">접근할 메뉴가 하나도 없는 계정도 로그인은 되고, 홈에 권한 요청 안내와 MY PAGE 만 보인다.</span><span class="pol__ref">S-XJDKSI</span></li>
+                  <li><span class="pol__t">강제 변경 대상은 계정에 저장한 표시로만 판정한다. 회원가입으로 들어온 계정은 첫 로그인이어도 대상이 아니다.</span><span class="pol__ref">S-VFGQLI · PL-QSBSYY</span></li>
+                </ul>
+              </div>
+              <div class="panel">
+                <div class="panel__head">
+                  <h3 class="t-h3">가입 · 계정 찾기</h3>
+                  <span class="badge badge--quiet">8</span>
+                </div>
+                <ul class="pol">
+                  <li><span class="pol__t">가입 필수는 상호명·아이디·비밀번호·확인·이름·연락처·이메일. 이메일은 형식과 중복만 보고 소유 인증은 하지 않는다.</span><span class="pol__ref">S-RCJXIG</span></li>
+                  <li><span class="pol__t">사업자 번호 인증은 선택이다. 상호명은 인증 결과로 채우지 않는다 — 진위확인이 상호명을 돌려주지 않는다.</span><span class="pol__ref">S-RCJXIG · S-VRNTHD</span></li>
+                  <li><span class="pol__t">약관은 필수 두 가지뿐이다. 마케팅 수신 동의는 1차에 없다.</span><span class="pol__ref">S-RCJXIG</span></li>
+                  <li><span class="pol__t">가입 중 입력은 서버에 두지 않는다. 떠나거나 새로 고치면 인증 결과까지 모두 사라진다.</span><span class="pol__ref">F-JVTPSU</span></li>
+                  <li><span class="pol__t">가입해도 점포는 만들지 않고, 완료 화면과 홈에서 점포 등록을 권하지 않는다.</span><span class="pol__ref">S-UUBGOD</span></li>
+                  <li><span class="pol__t">아이디 찾기는 사용 상태 계정만 대상이다. 찾으면 앞 2자와 뒤 1자만 보인다. 횟수 제한은 없다.</span><span class="pol__ref">S-PHOPWY</span></li>
+                  <li><span class="pol__t">임시 비밀번호는 12자, 1시간 유효, 계정당 1시간 5회. 발급해도 기존 비밀번호는 살아 있다.</span><span class="pol__ref">S-EOMSRG</span></li>
+                  <li><span class="pol__t">비밀번호 오류 문구는 화면이 따로 만들지 않고 비밀번호 정책의 문구를 그대로 쓴다.</span><span class="pol__ref">PL-QSBSYY</span></li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">쟁점</h2>
+              <span class="badge badge--preview">4건 · 미정 4</span>
+            </div>
+            <p class="gap__note" style="margin-top: 0">
+              넷 다 3팀 목업의 로그인 화면(홈·계정 진입 영역)과 1팀 명세가 다른 곳이다. 이 영역의 화면은 모두 1팀 명세 쪽을 따랐다.
+              어느 쪽이 맞는지는 두 팀이 함께 정한다 — 정해지면 진 쪽 화면을 고치거나 지운다.
+            </p>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">AUTH-1</span>
+                <b>로그인을 아이디로 하는가, 이메일로 하는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-XJDKSI</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a">
+                  <div class="gap__label">A · 3팀 목업</div>
+                  <p>로그인 탭이 <b>이메일</b>과 비밀번호를 받는다.</p>
+                </div>
+                <div class="gap__opt" data-side="b">
+                  <div class="gap__label">B · 1팀 명세 · 이 화면</div>
+                  <p><b>아이디</b>와 비밀번호를 받고 아이디 저장을 둔다. 아이디 찾기가 따로 있는 것도 이 때문이다.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">AUTH-2</span>
+                <b>계정 찾기의 본인 확인 수단</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-PHOPWY · S-EOMSRG</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a">
+                  <div class="gap__label">A · 3팀 목업</div>
+                  <p>이름과 <b>휴대전화 본인확인</b>으로 아이디를 알려 주고 비밀번호를 다시 정한다.</p>
+                </div>
+                <div class="gap__opt" data-side="b">
+                  <div class="gap__label">B · 1팀 명세 · 이 화면</div>
+                  <p>등록한 <b>이름·이메일</b>(비밀번호는 아이디까지) 대조. 비밀번호는 등록 이메일로 <b>임시 비밀번호</b>를 보내고, 들어오면 강제로 바꾸게 한다.</p>
+                </div>
+              </div>
+              <p class="gap__note">
+                1팀 명세에는 휴대전화 본인인증이 가입에도 없다. A 로 가면 가입 때 인증한 번호가 없어 대조할 기준부터 만들어야 한다.
+              </p>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">AUTH-3</span>
+                <b>가입할 때 BP 유형을 고르는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-RCJXIG</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a">
+                  <div class="gap__label">A · 3팀 목업</div>
+                  <p>가입 탭에서 <b>일반 BP · 본사 BP</b> 중 하나를 고르고, 가맹점은 가입하지 않는다고 안내한다.</p>
+                </div>
+                <div class="gap__opt" data-side="b">
+                  <div class="gap__label">B · 1팀 명세 · 이 화면</div>
+                  <p>유형 선택 없이 <b>BP 하나</b>로 가입한다. 직영과 가맹의 구분은 BP 가 아니라 가입 뒤 등록하는 <b>점포 유형</b>이 맡는다.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">AUTH-4</span>
+                <b>비밀번호를 되찾게 하는 수단 — 임시 비밀번호인가 재설정 링크인가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-EOMSRG · PL-QSBSYY</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a">
+                  <div class="gap__label">A · 3팀 공통 기반 메일 목록</div>
+                  <p>목업 허브의 메일 발송 항목이 <b>비밀번호 찾기 핀</b>과 <b>관리자 초기화의 재설정 링크</b>를 적어 두었다.</p>
+                </div>
+                <div class="gap__opt" data-side="b">
+                  <div class="gap__label">B · 1팀 명세 · 이 화면</div>
+                  <p>찾기와 관리자 초기화 모두 <b>12자 임시·초기 비밀번호</b>를 메일로 보내고, 그 비밀번호로 들어오면 강제 비밀번호 변경 팝업이 막는다.</p>
+                </div>
+              </div>
+              <p class="gap__note">
+                메일 발송은 3팀이 맡기로 했으므로 어느 쪽이든 발송 포맷은 3팀이 만든다. 1팀 명세에는 임시 비밀번호 발급 포맷과 관리자 계정 생성 포맷이 이미 있다.
+              </p>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+  </body>
+</html>

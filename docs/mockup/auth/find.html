@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>아이디·비밀번호 찾기 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="auth" data-sub="auth/find.html">
+    <!-- 아이디/비밀번호 찾기 · /find · S-PHOPWY 아이디 찾기 · S-EOMSRG 임시 비밀번호 발급 (F-FQKGEE)
+         한 화면 두 탭이다. 로그인 화면의 두 진입점이 각각 #id · #pw 로 해당 탭을 열고 들어온다.
+         본인 확인은 휴대전화 인증이 아니라 등록한 이름·이메일(비밀번호는 아이디까지) 대조다.
+         비밀번호를 재설정 링크로 바꾸는 방식이 아니라 등록 이메일로 임시 비밀번호를 보낸다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <h1 class="t-h1">아이디·비밀번호 찾기</h1>
+          <span class="badge badge--warn">1팀 작업</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">S-PHOPWY · S-EOMSRG · /find</span>
+          </div>
+        </div>
+
+        <div class="content">
+
+          <div class="screen">
+            <div class="screen__bar"><i></i><i></i><i></i><span>whale-erp.com/find</span></div>
+          <div class="auth auth--framed">
+            <div class="auth__form">
+              <div class="inline">
+                <a class="brand" href="login.html">
+                  <span class="wm brand__mark" data-icon="whale" data-icon-size="32"></span>
+                  <span class="brand__name">WHALE <span>ERP</span></span>
+                </a>
+              </div>
+
+              <div class="stack">
+                <h2 class="t-md">아이디·비밀번호 찾기</h2>
+                <p class="lead">가입할 때 등록한 이름과 이메일로 확인합니다.</p>
+              </div>
+
+              <div class="tabs" data-tabs="fd">
+                <button data-tab="id" aria-selected="true">아이디 찾기</button>
+                <button data-tab="pw" aria-selected="false">비밀번호 찾기</button>
+              </div>
+
+              <div id="fd">
+                <!-- ── 아이디 찾기 ─────────────────────────── -->
+                <div data-panel="id" class="stack--lg" style="display: flex; flex-direction: column">
+                  <div class="demo" data-demo="idbox">
+                    <b>목업 상태</b>
+                    <div class="seg">
+                      <button type="button" data-state="in" aria-pressed="true">입력</button>
+                      <button type="button" data-state="ok" aria-pressed="false">찾음</button>
+                      <button type="button" data-state="none" aria-pressed="false">일치 없음</button>
+                    </div>
+                  </div>
+                  <div id="idbox" class="stack--lg" style="display: flex; flex-direction: column">
+                    <div data-show="in none" class="stack--lg" style="display: flex; flex-direction: column">
+                      <div class="field">
+                        <label for="iname">이름 <span class="req">*</span></label>
+                        <input class="input" id="iname" value="정하윤" />
+                      </div>
+                      <div class="field">
+                        <label for="imail">이메일 <span class="req">*</span></label>
+                        <input class="input" id="imail" type="email" value="hayoon@hangang.co.kr" />
+                        <span class="help">둘 중 하나라도 비어 있으면 찾기를 누를 수 없습니다.</span>
+                      </div>
+                      <div class="band band--risk" data-show="none" hidden>
+                        <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+                        <div class="band__body">
+                          <div class="band__title">입력하신 정보와 일치하는 계정을 찾을 수 없습니다.</div>
+                          <p class="band__desc">미사용·탈퇴 계정과만 일치해도 같은 문구다 — 계정이 있는지 드러내지 않는다.</p>
+                        </div>
+                      </div>
+                      <button class="btn btn--primary btn--lg btn--block" type="button" data-state-go="ok">아이디 찾기</button>
+                    </div>
+
+                    <div data-show="ok" hidden class="card card--soft" style="align-items: center; text-align: center">
+                      <span data-icon="check" data-icon-size="22" style="color: var(--ok)"></span>
+                      <p style="margin: 0">정하윤님의 아이디를 확인했습니다.</p>
+                      <span class="masked">ha******1</span>
+                      <span class="subtle" style="font-size: 12px">앞 2자와 뒤 1자만 보여 드립니다.</span>
+                    </div>
+                    <a class="btn btn--primary btn--lg btn--block" href="login.html" data-show="ok" hidden>로그인하러 가기</a>
+                    <a class="tlink" href="#pw" data-show="ok" hidden style="text-align: center; font-size: 13px">비밀번호도 잊으셨나요?</a>
+                  </div>
+                </div>
+
+                <!-- ── 비밀번호 찾기 = 임시 비밀번호 발급 ──────── -->
+                <div data-panel="pw" hidden class="stack--lg" style="display: flex; flex-direction: column">
+                  <div class="demo" data-demo="pwbox">
+                    <b>목업 상태</b>
+                    <div class="seg">
+                      <button type="button" data-state="in" aria-pressed="true">입력</button>
+                      <button type="button" data-state="ok" aria-pressed="false">발송함</button>
+                      <button type="button" data-state="none" aria-pressed="false">일치 없음</button>
+                      <button type="button" data-state="limit" aria-pressed="false">횟수 초과</button>
+                      <button type="button" data-state="mailfail" aria-pressed="false">메일 실패</button>
+                    </div>
+                  </div>
+                  <div id="pwbox" class="stack--lg" style="display: flex; flex-direction: column">
+                    <div data-show="in none limit mailfail" class="stack--lg" style="display: flex; flex-direction: column">
+                      <div class="field">
+                        <label for="pname">이름 <span class="req">*</span></label>
+                        <input class="input" id="pname" value="정하윤" />
+                      </div>
+                      <div class="field">
+                        <label for="pid">아이디 <span class="req">*</span></label>
+                        <input class="input" id="pid" value="hangang01" />
+                      </div>
+                      <div class="field">
+                        <label for="pmail">이메일 <span class="req">*</span></label>
+                        <input class="input" id="pmail" type="email" value="hayoon@hangang.co.kr" />
+                      </div>
+                      <div class="band band--risk" data-show="none" hidden>
+                        <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+                        <div class="band__body">
+                          <div class="band__title">입력하신 정보와 일치하는 계정을 찾을 수 없습니다.</div>
+                        </div>
+                      </div>
+                      <div class="band band--warn" data-show="limit" hidden>
+                        <span class="band__ic" data-icon="clock" data-icon-size="20"></span>
+                        <div class="band__body">
+                          <div class="band__title">임시 비밀번호 발급 횟수를 초과했습니다. 1시간 후 다시 시도해 주세요.</div>
+                          <p class="band__desc">한 계정에 1시간 5회까지다. 이메일이 아니라 계정 기준으로 센다.</p>
+                        </div>
+                      </div>
+                      <div class="band band--risk" data-show="mailfail" hidden>
+                        <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
+                        <div class="band__body">
+                          <div class="band__title">임시 비밀번호를 보내지 못했습니다. 잠시 후 다시 시도해 주세요.</div>
+                          <p class="band__desc">메일이 나가지 않으면 임시 비밀번호도 활성화하지 않는다.</p>
+                        </div>
+                      </div>
+                      <button class="btn btn--primary btn--lg btn--block" type="button" data-state-go="ok">임시 비밀번호 받기</button>
+                      <p class="note">
+                        <span data-icon="info" data-icon-size="14"></span>
+                        <span>받은 뒤에도 지금 비밀번호로 로그인할 수 있습니다. 임시 비밀번호로 들어오면 새 비밀번호를 정해야 ERP 를 쓸 수 있습니다.</span>
+                      </p>
+                    </div>
+
+                    <div data-show="ok" hidden class="card card--soft" style="align-items: center; text-align: center">
+                      <span data-icon="check" data-icon-size="22" style="color: var(--ok)"></span>
+                      <p style="margin: 0">정하윤님의 정보가 확인되었습니다.<br />등록된 이메일 주소로 임시 비밀번호가 발송되었습니다.</p>
+                      <span class="subtle" style="font-size: 12px">임시 비밀번호는 발급 뒤 <b>1시간</b> 동안만 쓸 수 있습니다. 다시 받으면 앞의 것은 바로 만료됩니다.</span>
+                    </div>
+                    <a class="btn btn--primary btn--lg btn--block" href="login.html" data-show="ok" hidden>확인</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="auth__links">
+                <a class="tlink" href="login.html">로그인으로 돌아가기</a>
+                <span class="subtle">·</span>
+                <a class="tlink" href="signup.html">회원가입</a>
+              </div>
+            </div>
+
+            <aside class="auth__aside">
+              <div class="stack">
+                <span class="badge badge--warn">1팀 작업</span>
+                <div class="t-sm">임시 비밀번호는<br />지금 비밀번호를 지우지 않습니다</div>
+                <ul class="stack" style="margin: 0; padding-left: 18px; font-size: 14px; color: var(--body); max-width: 44ch">
+                  <li>발급만으로는 기존 비밀번호가 살아 있어 둘 다 로그인에 쓸 수 있습니다.</li>
+                  <li>기존 비밀번호로 먼저 들어오면 쓰지 않은 임시 비밀번호는 무효가 됩니다.</li>
+                  <li>임시 비밀번호로 들어오면 새 비밀번호를 정하는 순간 둘 다 만료됩니다.</li>
+                  <li>잠긴 계정도 발급받을 수 있고, 발급하면 잠금이 풀립니다.</li>
+                </ul>
+              </div>
+            </aside>
+          </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+  </body>
+</html>

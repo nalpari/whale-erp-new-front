@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>점포 상세 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="stores" data-sub="stores/index.html">
+    <!-- 점포 상세 조회·삭제 · /stores/:점포코드 · S-AGGZZG · 상태 변경 S-MNRZOM · 1팀
+         기본정보 · 사업자정보 · 사업자 인증정보 · 연계 관리정보 · 변경 이력을 나눠 보인다. 모든 항목은 읽기 전용이다.
+         수정은 점포 수정 화면, 상태 전환은 이 화면의 점포 상태 변경 팝업과 점포 수정 화면의 점포상태 선택이 같은 조건으로 맡는다. 삭제는 미운영이면서 삭제 조건을 모두 채운 점포만 되고, 버튼은 제목줄의 점포 상태 변경 옆에 있다.
+         기본정보는 대표 이미지 오른쪽에 항목을 놓고, 등록일 아래에 등록자 · 최근 수정일시 · 최근 수정자를 보인다. 두 열의 높이는 같게 맞춘다.
+         위쪽 점선 줄은 목업 전용이다 — 점포를 바꿔 가며 상태별로 무엇이 보이고 막히는지 본다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div id="store" style="display: contents">
+          <div class="titlebar">
+            <a class="iconbtn" href="index.html" aria-label="점포 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
+            <h1 class="t-h1">
+              <span data-show="run bpoff">모리커피 연남점</span>
+              <span data-show="unop" hidden>모리커피 청담점</span>
+              <span data-show="closed" hidden>모리커피 합정점</span>
+            </h1>
+            <span class="badge badge--ok" data-show="run bpoff">운영</span>
+            <span class="badge badge--quiet" data-show="unop" hidden>미운영</span>
+            <span class="badge badge--risk" data-show="closed" hidden>폐점</span>
+            <span class="badge badge--quiet">가맹점포</span>
+            <div class="titlebar__end">
+              <!-- 실행 항목 — 권한과 상태에 따라 갈린다. 삭제는 조건을 못 채우면 비활성이고 이유를 말풍선으로 보인다. 폐점 점포에는 삭제가 없다. -->
+              <button class="btn btn--secondary btn--sm" type="button" data-open="pop-status-run" data-show="run">점포 상태 변경</button>
+              <button class="btn btn--secondary btn--sm" type="button" data-open="pop-status-unop" data-show="unop" hidden>점포 상태 변경</button>
+              <button class="btn btn--secondary btn--sm" type="button" disabled data-show="bpoff" hidden>점포 상태 변경</button>
+              <button class="btn btn--danger btn--sm" type="button" data-open="pop-delete" data-show="unop" hidden>점포 삭제</button>
+              <button class="btn btn--danger btn--sm" type="button" disabled data-show="run" title="미운영 점포만 삭제할 수 있습니다. 운영을 끝내려면 점포 상태 변경에서 폐점하세요.">점포 삭제</button>
+              <button class="btn btn--danger btn--sm" type="button" disabled data-show="bpoff" hidden title="소속 BP가 미사용 상태여서 삭제할 수 없습니다.">점포 삭제</button>
+              <a class="btn btn--primary btn--sm" href="edit.html" data-show="run">점포 정보 수정</a>
+              <a class="btn btn--primary btn--sm" href="edit.html?state=noauth" data-show="unop" hidden>점포 정보 수정</a>
+              <button class="btn btn--primary btn--sm" type="button" disabled data-show="bpoff" hidden>점포 정보 수정</button>
+            </div>
+          </div>
+
+          <div class="content">
+            <div class="demo" data-demo="store">
+              <b>목업 점포</b>
+              <div class="seg">
+                <button type="button" data-state="run" aria-pressed="true">연남점 · 운영</button>
+                <button type="button" data-state="unop" aria-pressed="false">청담점 · 미운영 · 미인증</button>
+                <button type="button" data-state="closed" aria-pressed="false">합정점 · 폐점</button>
+                <button type="button" data-state="bpoff" aria-pressed="false">소속 BP 미사용</button>
+              </div>
+            </div>
+
+            <div class="band band--warn" data-show="bpoff" hidden>
+              <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">소속 BP가 미사용 상태여서 이 업무를 할 수 없습니다.</div>
+                <p class="band__desc">조회는 그대로 됩니다. 수정 · 상태 변경 · 삭제만 막힙니다. 점포 상태도 그대로 운영입니다.</p>
+              </div>
+            </div>
+            <div class="band band--info" data-show="closed" hidden>
+              <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">폐점 점포는 수정할 수 없고, 삭제하지 않고 보존합니다</div>
+                <p class="band__desc">2025-12-31 폐점. 매출·정산·근로계약 이력이 이 점포를 가리키므로 조회만 됩니다. 다시 운영하려면 신규 점포로 등록합니다.</p>
+              </div>
+            </div>
+            <div class="band band--info" data-show="unop" hidden>
+              <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">사업자정보를 인증해야 운영으로 바꿀 수 있습니다</div>
+                <p class="band__desc">점포 정보 수정에서 사업자 번호를 인증하면 같은 화면의 점포상태에서 바로 운영을 고를 수 있습니다.</p>
+              </div>
+              <div class="band__act">
+                <a class="btn btn--secondary btn--sm" href="edit.html?state=noauth">인증하러 가기</a>
+              </div>
+            </div>
+
+            <div class="grid grid--2" style="align-items: stretch">
+              <section class="panel">
+                <div class="panel__head"><h2 class="t-h2">점포 기본정보</h2></div>
+                <div class="panel__body detailinfo">
+                  <div class="imgup__box is-filled" data-show="run bpoff closed"><img src="../assets/img/store-photo-1.jpg" alt="대표 이미지" /></div>
+                  <div class="imgup__box" data-show="unop" hidden><span class="stack" style="align-items: center; gap: 6px; font-size: 12px"><span data-icon="store" data-icon-size="28"></span>대표 이미지 없음</span></div>
+                  <dl class="kv">
+                    <dt>점포코드</dt>
+                    <dd class="mono"><span data-show="run bpoff">ST000006</span><span data-show="unop" hidden>ST000007</span><span data-show="closed" hidden>ST000012</span></dd>
+                    <dt>점포유형</dt><dd>가맹점포</dd>
+                    <dt>점포상태</dt>
+                    <dd><span class="badge badge--ok" data-show="run bpoff">운영</span><span class="badge badge--quiet" data-show="unop" hidden>미운영</span><span class="badge badge--risk" data-show="closed" hidden>폐점</span></dd>
+                    <dt>점포 연락처</dt><dd class="mono">02-322-1180</dd>
+                    <dt>주소</dt><dd><span class="mono">03991</span> 서울 마포구 동교로 256, 1층</dd>
+                    <dt>위도 · 경도</dt>
+                    <dd class="mono" data-show="run bpoff closed">37.562104 · 126.925631</dd>
+                    <dd data-show="unop" hidden><span class="subtle">좌표를 계산하지 못했습니다.</span> <a class="tlink" href="edit.html?state=noauth">수정에서 주소를 다시 고르거나 직접 입력</a></dd>
+                    <dt>근무지 반경</dt><dd class="mono">150m</dd>
+                    <dt>등록일</dt>
+                    <dd class="mono"><span data-show="run bpoff">2025-08-01</span><span data-show="unop" hidden>2026-09-10</span><span data-show="closed" hidden>2025-02-14</span></dd>
+                    <dt>등록자</dt>
+                    <dd><span data-show="run bpoff closed">정하윤</span><span data-show="unop" hidden>정하윤</span></dd>
+                    <dt>최근 수정일시</dt>
+                    <dd class="mono"><span data-show="run bpoff">2026-08-14 10:31</span><span data-show="closed" hidden>2025-12-31 18:02</span><span class="nil" data-show="unop" hidden>-</span></dd>
+                    <dt>최근 수정자</dt>
+                    <dd><span data-show="run bpoff closed">정하윤</span><span class="nil" data-show="unop" hidden>-</span></dd>
+                  </dl>
+                </div>
+              </section>
+
+              <div class="stack--lg" style="display: flex; flex-direction: column">
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">점포 사업자정보</h2>
+                    <span class="badge badge--ok" data-show="run bpoff closed">인증 완료</span>
+                    <span class="badge badge--warn" data-show="unop" hidden>미인증</span>
+                  </div>
+                  <div class="panel__body">
+                    <dl class="kv" data-show="run bpoff closed">
+                      <dt>사업자등록번호</dt><dd class="mono">105-22-81934</dd>
+                      <dt>대표자명</dt><dd>박서윤</dd>
+                      <dt>상호명</dt><dd>모리커피 연남</dd>
+                      <dt>사업자주소</dt><dd><span class="mono">03991</span> 서울 마포구 동교로 256, 1층</dd>
+                      <dt>업태 · 종목</dt><dd>음식점업 · 커피전문점</dd>
+                      <dt>개업일자</dt><dd class="mono">2019-05-10</dd>
+                      <dt>대표자 연락처</dt><dd class="mono">010-5521-3380</dd>
+                      <dt>최종 인증일시</dt><dd class="mono">2025-08-01 14:22</dd>
+                    </dl>
+                    <dl class="kv" data-show="unop" hidden>
+                      <dt>사업자등록번호</dt><dd class="nil">-</dd>
+                      <dt>대표자명</dt><dd class="nil">-</dd>
+                      <dt>상호명</dt><dd>모리커피 청담</dd>
+                      <dt>사업자주소</dt><dd class="nil">-</dd>
+                      <dt>업태 · 종목</dt><dd class="nil">-</dd>
+                      <dt>개업일자</dt><dd class="nil">-</dd>
+                      <dt>대표자 연락처</dt><dd class="nil">-</dd>
+                      <dt>최종 인증일시</dt><dd class="nil">-</dd>
+                    </dl>
+                  </div>
+                  <div class="panel__note">
+                    인증 완료 여부는 따로 저장하지 않고 사업자등록번호가 있는지로 판정한다. 대표자 연락처는 화면에서는 가리지 않고, 엑셀에서만 가운데자리를 가린다.
+                  </div>
+                </section>
+
+                <section class="panel" style="flex: 1">
+                  <div class="panel__head"><h2 class="t-h2">연계 관리정보</h2></div>
+                  <div class="panel__body">
+                    <dl class="kv">
+                      <dt>근무직원 수</dt>
+                      <dd><b data-show="run bpoff">6명</b><b data-show="unop closed" hidden>0명</b> <span class="subtle">재직 직원</span></dd>
+                    </dl>
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            <!-- 기타 정보 — 매장평수 · 전용면적 · 좌석수 · 층수. 입력하지 않은 값은 하이픈으로 보인다. -->
+            <section class="panel">
+              <div class="panel__head"><h2 class="t-h2">기타 정보</h2></div>
+              <div class="panel__body">
+                <div class="grid grid--2">
+                  <dl class="kv">
+                    <dt>매장평수</dt><dd class="mono"><span data-show="run bpoff closed">18평</span><span class="nil" data-show="unop" hidden>-</span></dd>
+                    <dt>전용면적</dt><dd class="mono"><span data-show="run bpoff closed">59.5㎡</span><span class="nil" data-show="unop" hidden>-</span></dd>
+                  </dl>
+                  <dl class="kv">
+                    <dt>좌석수</dt><dd class="mono"><span data-show="run bpoff closed">32석</span><span class="nil" data-show="unop" hidden>-</span></dd>
+                    <dt>층수</dt><dd><span data-show="run bpoff closed">지상 1층</span><span class="nil" data-show="unop" hidden>-</span></dd>
+                  </dl>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel__head">
+                <h2 class="t-h2">변경 이력</h2>
+                <span class="badge badge--quiet">최근 1년</span>
+              </div>
+              <div class="tblwrap" data-show="run bpoff closed">
+                <table class="tbl tbl--dense">
+                  <thead>
+                    <tr><th scope="col">변경 일시</th><th scope="col">변경자</th><th scope="col">변경 항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr data-show="closed" hidden><td class="mono">2025-12-31 18:02</td><td>정하윤</td><td><span class="badge badge--quiet">점포상태</span></td><td>운영</td><td>폐점</td></tr>
+                    <tr><td class="mono">2026-08-14 10:31</td><td>정하윤</td><td>점포 연락처</td><td class="mono">02-322-1100</td><td class="mono">02-322-1180</td></tr>
+                    <tr><td class="mono">2026-03-02 16:45</td><td>박서윤</td><td>근무지 반경</td><td class="mono">100m</td><td class="mono">150m</td></tr>
+                    <tr><td class="mono">2025-11-20 09:12</td><td>박서윤</td><td>대표자명</td><td>박서연</td><td>박서윤</td></tr>
+                    <tr><td class="mono">2025-08-20 11:00</td><td>정하윤</td><td><span class="badge badge--quiet">점포상태</span></td><td>미운영</td><td>운영</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="empty" data-show="unop" hidden>
+                <span class="empty__ic" data-icon="clock" data-icon-size="22"></span>
+                <p>변경 이력이 없습니다.</p>
+              </div>
+            </section>
+
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- 상태 변경 · 운영 점포 — 갈 수 있는 곳은 폐점뿐이다. 운영은 미운영으로 되돌릴 수 없다. -->
+    <div class="modal" id="pop-status-run" hidden role="dialog" aria-modal="true" aria-labelledby="ps-run-t">
+      <div class="modal__box">
+        <div class="modal__head">
+          <h2 class="t-h2" id="ps-run-t">점포 상태 변경</h2>
+          <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+        </div>
+        <div class="modal__body" id="psrun">
+          <div data-step="pick" class="stack--lg" style="display: flex; flex-direction: column">
+            <div class="demo" data-demo="psrun">
+              <b>목업 폐점 조건</b>
+              <div class="seg">
+                <button type="button" data-state="unmet" aria-pressed="true">못 채움</button>
+                <button type="button" data-state="met" aria-pressed="false">모두 채움</button>
+              </div>
+            </div>
+            <p style="margin: 0; font-size: 13px">현재 상태 <span class="badge badge--ok">운영</span> — 운영은 미운영으로 되돌릴 수 없어 <b>폐점</b>만 고를 수 있습니다.</p>
+            <div class="card" style="padding: var(--s-4) var(--s-5); gap: var(--s-2)">
+              <b style="font-size: 13.5px">폐점 조건</b>
+              <ul class="stack" style="margin: 0; padding-left: 18px; font-size: 13px; gap: 4px">
+                <li data-show="unmet">유효한 근로계약 <b style="color: var(--risk-text)">6건</b> — 정리해야 할 근로계약이 있습니다</li>
+                <li data-show="unmet">이용 중인 부가서비스 구독 <b style="color: var(--risk-text)">1건</b> — 해지해야 할 구독이 있습니다</li>
+                <li data-show="met" hidden>유효한 근로계약 0건 ✓</li>
+                <li data-show="met" hidden>이용 중인 부가서비스 구독 0건 ✓</li>
+                <li>정산 대기 금액 0원 ✓</li>
+              </ul>
+            </div>
+            <div class="inline" style="justify-content: flex-end">
+              <button class="btn btn--ghost" type="button" data-close>취소</button>
+              <button class="btn btn--primary" type="button" disabled data-show="unmet">폐점으로 변경</button>
+              <button class="btn btn--primary" type="button" data-step-to="confirm" data-show="met" hidden>폐점으로 변경</button>
+            </div>
+          </div>
+          <div data-step="confirm" hidden class="stack--lg" style="display: flex; flex-direction: column">
+            <div class="band band--risk">
+              <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">모리커피 연남점 · 운영 → 폐점</div>
+                <p class="band__desc">되돌릴 수 없는 전환입니다. 폐점일은 오늘(2026-09-21)로 정해지고, 내일부터 이 점포에는 BP 휴일이 적용되지 않습니다.</p>
+              </div>
+            </div>
+            <p class="subtle" style="margin: 0; font-size: 12.5px">폐점 사유는 받지 않습니다. 관리자 매핑은 그대로 두고 조회만 됩니다.</p>
+            <div class="inline" style="justify-content: flex-end">
+              <button class="btn btn--ghost" type="button" data-step-to="pick">이전</button>
+              <a class="btn btn--danger" href="detail.html?state=closed">폐점 확정</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 상태 변경 · 미운영 점포 — 운영은 사업자정보 인증이 끝나야, 폐점은 조건을 채우면 고를 수 있다. -->
+    <div class="modal" id="pop-status-unop" hidden role="dialog" aria-modal="true" aria-labelledby="ps-unop-t">
+      <div class="modal__box">
+        <div class="modal__head">
+          <h2 class="t-h2" id="ps-unop-t">점포 상태 변경</h2>
+          <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+        </div>
+        <div class="modal__body">
+          <div data-step="pick" class="stack--lg" style="display: flex; flex-direction: column">
+            <p style="margin: 0; font-size: 13px">현재 상태 <span class="badge badge--quiet">미운영</span></p>
+            <div class="card" style="padding: var(--s-4) var(--s-5); gap: 6px; opacity: 0.6">
+              <div class="spread"><b style="font-size: 13.5px">운영</b><span class="badge badge--warn">고를 수 없음</span></div>
+              <span style="font-size: 12.5px">사업자정보를 먼저 인증해야 합니다. <a class="tlink" href="edit.html?state=noauth">점포 수정의 ‘인증하기’로 이동</a></span>
+            </div>
+            <button class="card card--hover" type="button" data-step-to="confirm" style="text-align: left; padding: var(--s-4) var(--s-5); gap: 6px">
+              <div class="spread"><b style="font-size: 13.5px">폐점</b><span class="badge badge--ok">조건 충족</span></div>
+              <span class="subtle" style="font-size: 12.5px">유효한 근로계약 0건 · 이용 중인 구독 0건 · 정산 대기 0원</span>
+            </button>
+            <div class="inline" style="justify-content: flex-end">
+              <button class="btn btn--ghost" type="button" data-close>취소</button>
+            </div>
+          </div>
+          <div data-step="confirm" hidden class="stack--lg" style="display: flex; flex-direction: column">
+            <div class="band band--risk">
+              <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">모리커피 청담점 · 미운영 → 폐점</div>
+                <p class="band__desc">되돌릴 수 없는 전환입니다. 폐점일은 오늘(2026-09-21)이고 내일부터 BP 휴일이 적용되지 않습니다. 아직 운영한 적이 없다면 폐점보다 삭제가 맞을 수 있습니다.</p>
+              </div>
+            </div>
+            <div class="inline" style="justify-content: flex-end">
+              <button class="btn btn--ghost" type="button" data-step-to="pick">이전</button>
+              <a class="btn btn--danger" href="detail.html?state=closed">폐점 확정</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 점포 삭제 확인 -->
+    <div class="modal" id="pop-delete" hidden role="dialog" aria-modal="true" aria-labelledby="pd-t">
+      <div class="modal__box">
+        <div class="modal__head">
+          <h2 class="t-h2" id="pd-t">점포 삭제</h2>
+          <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+        </div>
+        <div class="modal__body">
+          <p style="margin: 0; font-size: 13.5px"><b>모리커피 청담점</b>을 삭제합니다.</p>
+          <p class="subtle" style="margin: 0; font-size: 13px">삭제하면 점포 목록과 상세 조회에서 사라지고 되돌릴 수 없습니다. 삭제 이력은 남습니다.</p>
+        </div>
+        <div class="modal__foot">
+          <button class="btn btn--ghost" type="button" data-close>취소</button>
+          <a class="btn btn--danger" href="index.html">삭제</a>
+        </div>
+      </div>
+    </div>
+
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+  </body>
+</html>

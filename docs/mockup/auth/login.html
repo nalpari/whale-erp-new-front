@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>로그인 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="auth" data-sub="auth/login.html">
+    <!-- 로그인 화면 · /login · S-XJDKSI (F-DZVFIC) · 1팀 인증 및 계정 관리 R-LYZWGG
+         판정 순서는 명세 그대로다 — 잠금 확인 → 아이디·비밀번호 → 계정 상태 → 강제 비밀번호 변경.
+         아이디로 로그인한다(이메일이 아니다). 아이디 저장은 있고 로그인 유지는 없다.
+         세션 만료는 이 화면이 아니라 쓰던 화면에서 경고창으로 알리고 확인하면 여기로 온다 — 이 화면에는 세션 만료 문구가 없다.
+         임시 비밀번호 만료로 돌아온 경우만 아이디 저장 아래에 안내를 띄운다.
+         위쪽 점선 줄은 목업 전용 상태 전환이다. 실제 화면에는 없다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <h1 class="t-h1">로그인</h1>
+          <span class="badge badge--warn">1팀 작업</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">S-XJDKSI · /login</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="demo" data-demo="loginbox">
+          <b>목업 상태</b>
+          <div class="seg">
+            <button type="button" data-state="base" aria-pressed="true">기본</button>
+            <button type="button" data-state="empty" aria-pressed="false">입력 누락</button>
+            <button type="button" data-state="fail" aria-pressed="false">불일치 · 탈퇴</button>
+            <button type="button" data-state="inactive" aria-pressed="false">미사용 계정</button>
+            <button type="button" data-state="locked" aria-pressed="false">잠김</button>
+            <button type="button" data-state="error" aria-pressed="false">시스템 오류</button>
+            <button type="button" data-state="tempexpired" aria-pressed="false">임시 비밀번호 만료</button>
+            <button type="button" data-state="force" aria-pressed="false">강제 변경 대상</button>
+          </div>
+        </div>
+
+          <div class="screen">
+            <div class="screen__bar"><i></i><i></i><i></i><span>whale-erp.com/login</span></div>
+          <div class="auth auth--framed">
+            <div class="auth__form">
+              <div class="inline">
+                <a class="brand" href="login.html">
+                  <span class="wm brand__mark" data-icon="whale" data-icon-size="32"></span>
+                  <span class="brand__name">WHALE <span>ERP</span></span>
+                </a>
+              </div>
+
+              <div id="loginbox" class="stack--lg" style="display: flex; flex-direction: column">
+                <div class="stack">
+                  <h2 class="t-md">웨일ERP 로그인</h2>
+                </div>
+
+                <div class="field">
+                  <label for="uid">아이디</label>
+                  <input class="input" id="uid" autocomplete="username" placeholder="아이디" value="hangang01" />
+                  <span class="err" data-show="empty" hidden><span data-icon="alert" data-icon-size="13"></span>아이디를 입력해주세요.</span>
+                </div>
+                <div class="field">
+                  <label for="upw">비밀번호</label>
+                  <div class="pwfield">
+                    <input class="input" id="upw" type="password" autocomplete="current-password" value="whale-2026!" />
+                    <button class="iconbtn" type="button" data-pw-toggle aria-pressed="false" aria-label="비밀번호 보기" data-icon="eye" data-icon-size="16"></button>
+                  </div>
+                  <span class="err" data-show="empty" hidden><span data-icon="alert" data-icon-size="13"></span>비밀번호를 입력해주세요.</span>
+                </div>
+
+                <div class="inline">
+                  <span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="아이디 저장" data-icon="check" data-icon-size="11"></span>
+                  <span style="font-size: 13px">아이디 저장</span>
+                </div>
+                <!-- 임시 비밀번호 만료로 세션이 끝나 돌아온 경우 — 아이디 저장 바로 아래에 선다 (S-QCNVFC) -->
+                <div class="band band--warn" data-show="tempexpired" hidden>
+                  <span class="band__ic" data-icon="clock" data-icon-size="20"></span>
+                  <div class="band__body">
+                    <div class="band__title">임시 비밀번호의 유효 시간이 지났습니다. 다시 발급받아 주세요.</div>
+                    <p class="band__desc">새 비밀번호를 정하기 전에 발급 1시간이 지나 세션이 끝났습니다.</p>
+                  </div>
+                  <div class="band__act">
+                    <a class="btn btn--secondary btn--sm" href="find.html#pw">임시 비밀번호 다시 받기</a>
+                  </div>
+                </div>
+
+                <!-- 판정 결과 안내. 같은 자리에 하나만 선다. -->
+                <div class="band band--risk" data-show="fail" hidden>
+                  <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+                  <div class="band__body">
+                    <div class="band__title">아이디 또는 비밀번호가 올바르지 않습니다.</div>
+                    <p class="band__desc">없는 아이디·비밀번호 불일치·임시 비밀번호 불일치·탈퇴 계정 모두 이 문구 하나다. 불일치는 연속 실패 횟수에 쌓인다.</p>
+                  </div>
+                </div>
+                <div class="band band--warn" data-show="inactive" hidden>
+                  <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
+                  <div class="band__body">
+                    <div class="band__title">사용이 제한된 계정입니다. 플랫폼 운영자에게 문의해 주세요.</div>
+                    <p class="band__desc">아이디와 비밀번호가 모두 맞을 때만 이 문구가 나온다.</p>
+                  </div>
+                </div>
+                <div class="band band--risk" data-show="locked" hidden>
+                  <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
+                  <div class="band__body">
+                    <div class="band__title">로그인 실패 횟수를 초과하여 계정이 잠겼습니다. 4분 후 다시 시도해 주세요.</div>
+                    <p class="band__desc">잠긴 동안에는 아이디·비밀번호를 확인하지 않습니다. 바로 들어가야 하면 임시 비밀번호를 받으세요 — 발급하면 잠금이 풀립니다.</p>
+                  </div>
+                  <div class="band__act">
+                    <a class="btn btn--secondary btn--sm" href="find.html#pw">비밀번호 찾기</a>
+                  </div>
+                </div>
+                <div class="band band--risk" data-show="error" hidden>
+                  <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
+                  <div class="band__body">
+                    <div class="band__title">시스템 오류로 로그인할 수 없습니다. 잠시 후 다시 시도해 주세요.</div>
+                  </div>
+                </div>
+
+                <!-- 로그인 버튼의 도착지는 계정에 따라 갈린다. 강제 변경 대상이면 홈 위에 닫을 수 없는 팝업이 뜬다. -->
+                <a class="btn btn--primary btn--lg btn--block" href="../home/signed-in.html" data-show="base">로그인</a>
+                <a class="btn btn--primary btn--lg btn--block" href="force-password.html" data-show="force" hidden>로그인</a>
+                <button class="btn btn--primary btn--lg btn--block" type="button" data-show="empty fail inactive locked error tempexpired" hidden>로그인</button>
+
+                <div class="auth__links">
+                  <a class="tlink" href="find.html#id">아이디 찾기</a>
+                  <span class="subtle">·</span>
+                  <a class="tlink" href="find.html#pw">비밀번호 찾기</a>
+                  <span class="subtle">·</span>
+                  <a class="tlink" href="signup.html">사업자회원가입</a>
+                </div>
+              </div>
+
+              <!-- 네이버 로그인 화면처럼 맨 아래 가운데에 작은 글씨 링크를 세로선으로 나누어 둔다.
+                   개인정보처리방침은 다른 링크보다 눈에 띄게 굵게 쓴다 — 개인정보 보호법이 쉽게 알아볼 수 있게 두라고 정했다.
+                   누르면 전문을 팝업으로 연다. 개인정보처리방침은 가입 때 받는 “개인정보 수집·이용 동의”와 다른 문서다. -->
+              <footer class="legal">
+                <nav class="legal__links" aria-label="약관 및 정책">
+                  <a href="#" data-terms="use" aria-haspopup="dialog">이용약관</a>
+                  <a href="#" data-terms="policy" aria-haspopup="dialog"><b>개인정보처리방침</b></a>
+                </nav>
+                <p class="legal__copy"><b>WHALE ERP</b> Copyright © Interplug Corp. All Rights Reserved.</p>
+              </footer>
+            </div>
+
+            <aside class="auth__aside">
+              <div class="stack">
+                <span class="badge badge--warn">1팀 작업</span>
+                <div class="t-sm">로그인 판정은<br />네 단계를 차례로 탑니다</div>
+                <ol class="stack" style="margin: 0; padding-left: 18px; font-size: 14px; color: var(--body); max-width: 44ch">
+                  <li><b>잠금 확인</b> — 5회 연속 틀리면 5분 잠금. 잠긴 동안은 비밀번호를 보지 않습니다.</li>
+                  <li><b>아이디·비밀번호</b> — 틀리면 계정 상태를 보지 않고 공통 문구 하나만 냅니다.</li>
+                  <li><b>계정 상태</b> — 사용은 통과, 미사용은 이용 제한, 탈퇴는 존재를 알리지 않습니다.</li>
+                  <li><b>강제 비밀번호 변경</b> — 초기·임시 비밀번호로 들어온 계정은 새 비밀번호부터 정합니다.</li>
+                </ol>
+                <p class="subtle" style="font-size: 13px; max-width: 44ch">
+                  접근 토큰 1시간, 갱신 토큰은 마지막 사용부터 1시간. 여러 브라우저에서 동시에 로그인할 수 있고 세션은 기기별로 따로 관리합니다.
+                </p>
+              </div>
+            </aside>
+          </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+  </body>
+</html>

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>가입 완료 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="auth" data-sub="auth/signup-done.html">
+    <!-- 가입 완료 · /signup/done · S-UUBGOD (F-JVTPSU)
+         가입 완료 토큰(10분)으로만 들어온다. 이 화면에 들어온 것만으로는 로그인 상태가 아니다 —
+         웨일ERP 시작하기를 누른 순간 세션을 만들고 홈으로 간다. 토큰이 만료됐으면 로그인 화면으로 보낸다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <h1 class="t-h1">가입 완료</h1>
+          <span class="badge badge--warn">1팀 작업</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">S-UUBGOD · /signup/done</span>
+          </div>
+        </div>
+
+        <div class="content">
+
+          <div class="screen">
+            <div class="screen__bar"><i></i><i></i><i></i><span>whale-erp.com/signup/done</span></div>
+          <div class="auth auth--framed">
+            <div class="auth__form">
+              <div class="inline">
+                <a class="brand" href="login.html">
+                  <span class="wm brand__mark" data-icon="whale" data-icon-size="32"></span>
+                  <span class="brand__name">WHALE <span>ERP</span></span>
+                </a>
+              </div>
+
+              <div class="card" style="align-items: center; text-align: center; padding: var(--s-8) var(--s-6)">
+                <span data-icon="check" data-icon-size="32" style="color: var(--ok)"></span>
+                <h2 class="t-md">회원가입이 완료되었습니다</h2>
+                <p class="lead" style="margin: 0">㈜한강상회 · 아이디 <span class="mono">hangang01</span></p>
+                <p class="subtle" style="margin: 0; font-size: 13px">가입 안내 메일을 <b>hayoon@hangang.co.kr</b> 로 보냈습니다.</p>
+                <a class="btn btn--primary btn--lg btn--block" href="../home/signed-in.html" style="margin-top: var(--s-4)">웨일ERP 시작하기</a>
+              </div>
+
+              <p class="note">
+                <span data-icon="clock" data-icon-size="14"></span>
+                <span>이 화면은 10분 동안만 열립니다. 시간이 지나면 <a class="tlink" href="login.html">로그인 화면</a>에서 가입한 아이디로 들어오세요.</span>
+              </p>
+            </div>
+
+            <aside class="auth__aside">
+              <div class="stack">
+                <span class="badge badge--warn">1팀 작업</span>
+                <div class="t-sm">완료 화면에는<br />버튼 하나만 둡니다</div>
+                <p style="font-size: 14px; color: var(--body); max-width: 44ch">
+                  약관·입력·점포 등록은 이 화면에 없습니다. 점포 등록을 권하는 팝업도 띄우지 않습니다.
+                  메일 발송이 실패해도 가입은 그대로 끝난 것으로 둡니다.
+                </p>
+              </div>
+            </aside>
+          </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BP 관리자 상세 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="config" data-sub="config/admins.html">
+    <!-- BP 관리자 계정 상세 조회 · /settings/admins/:아이디 · S-EBIPGZ · 비밀번호 초기화 S-TKSRJX (F-OILWTZ) · 1팀
+         기본정보 · 소속 BP정보 · 권한 그룹 · 점포 매핑 · 계정 상태 · 변경 이력을 나눠 보인다. 이 화면의 값은 모두 읽기 전용이고 고치는 일은 수정 화면이 맡는다.
+         수정 · 비밀번호 초기화는 수정 권한이 있고 관리 범위 안인 계정에만 보인다.
+           BP 관리자 · 가맹 마스터 계정 = BP 마스터 · BP 관리자 · 플랫폼 사용자(수정 권한)가 한다.
+           가맹 관리자 계정 = 연결된 가맹 마스터만 한다. 다른 역할에게는 두 실행 항목을 감추고 조회만 한다고 알린다.
+         가맹 마스터 · 가맹 관리자는 BP 관리자 · 가맹 마스터 계정을 볼 수 없다 — 주소로 열어도 상세정보를 주지 않는다.
+         본인 계정은 비밀번호 초기화를 막는다(내 정보에서 직접 바꾼다). 수정은 열리지만 권한 그룹과 계정 상태는 수정 화면에서 읽기 전용이다.
+         초기화한 비밀번호는 처리한 사람에게도 보이지 않고 계정 이메일로만 간다 — BP 관리자 계정 생성 메일 포맷(S-CYGFAF)을 그대로 쓴다. 계정 상태는 바뀌지 않는다.
+         플랫폼 사용자에게는 관리 대상 BP 를 위에 띄운다.
+         표본 수정 화면이 없는 계정(hg_ops · hg_acct · hg_cs)의 수정 버튼은 대표 수정(hg_hr)으로 간다.
+         쟁점 후보(S-EBIPGZ · PL-RWJYLJ): S-EBIPGZ 는 BP 마스터 계정 상세에서 실행 항목을 감추고 안내한다고 하지만, PL-RWJYLJ 는 BP 마스터 계정을 이 메뉴의 관리 대상에서 뺀다.
+           목록에 없는 BP 마스터 상세가 열릴 길이 있는지 갈린다. 표본은 주소로 연 경우 안내만 보이고 상세정보는 주지 않는다.
+         쟁점 후보(S-EBIPGZ): 상세의 outcome 이 “계정 회수 업무의 기준 정보”를 말하지만 F-OILWTZ 는 계정 회수를 제공하지 않는다. 표본에는 회수 항목이 없다.
+         쟁점 후보(S-TKSRJX): 비밀번호 초기화 이력을 화면에 보일지 정해지지 않았다 — 표본은 변경 이력 표에 섞지 않고 따로 보존한다고만 적었다.
+         쟁점 후보(S-EBIPGZ): 점포 매핑이 ‘전체 점포’인 계정의 점포 매핑 영역을 점포 목록으로 펼칠지, 전체 점포 한 줄로 둘지 정해지지 않았다 — 표본은 한 줄이다.
+         가맹 마스터 미사용 직후(fmoff)는 수정 화면에서 morinam01 을 미사용으로 저장한 결과다 — 표본 값에는 없는 가정 상태다.
+         위쪽 점선 줄 둘은 목업 전용이다 — 보는 사람의 역할과 대상 계정을 따로 바꾼다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div id="bd" style="display: contents">
+          <div class="titlebar">
+            <a class="iconbtn" href="admins.html" aria-label="관리자 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
+            <h1 class="t-h1">
+              <span data-show="hr">이서아</span>
+              <span data-show="ops" hidden>김도윤</span>
+              <span data-show="acct" hidden>최민호</span>
+              <span data-show="created" hidden>문가은</span>
+              <span data-show="morinam fmoff" hidden>박서윤</span>
+              <span data-show="yn" hidden>한지수</span>
+              <span data-show="bpm" hidden>BP 마스터 계정</span>
+              <span data-show="deny" hidden>찾을 수 없는 계정</span>
+            </h1>
+            <span class="badge badge--ok" data-show="hr ops created morinam yn">사용</span>
+            <span class="badge badge--warn" data-show="acct fmoff" hidden>미사용</span>
+            <span class="badge badge--quiet" data-show="hr ops acct created">BP 관리자</span>
+            <span class="badge badge--quiet" data-show="morinam fmoff" hidden>가맹 마스터</span>
+            <span class="badge badge--quiet" data-show="yn" hidden>가맹 관리자</span>
+            <span class="badge badge--warn">1팀 작업</span>
+            <div class="titlebar__end">
+              <span class="filters__count mono">S-EBIPGZ · /settings/admins/<span data-show="hr">hg_hr</span><span data-show="ops" hidden>hg_ops</span><span data-show="acct" hidden>hg_acct</span><span data-show="created" hidden>hg_cs</span><span data-show="morinam fmoff" hidden>morinam01</span><span data-show="yn" hidden>mori_yn</span><span data-show="bpm" hidden>hangang01</span><span data-show="deny" hidden>hg_temp</span></span>
+
+              <!-- 비밀번호 초기화 — 수정 권한 + 관리 범위. 가맹 관리자 계정은 연결된 가맹 마스터만. 본인 계정은 비활성 -->
+              <button class="btn btn--secondary btn--sm" type="button" data-open="pop-reset" data-show="hr" data-show-role="bm bpall plat">비밀번호 초기화</button>
+              <button class="btn btn--secondary btn--sm" type="button" data-open="pop-reset" data-show="ops" data-show-role="bm bppart plat" hidden>비밀번호 초기화</button>
+              <button class="btn btn--secondary btn--sm" type="button" data-open="pop-reset" data-show="acct created morinam fmoff" data-show-role="bm bpall bppart plat" hidden>비밀번호 초기화</button>
+              <button class="btn btn--secondary btn--sm" type="button" data-open="pop-reset" data-show="yn" data-show-role="fm" hidden>비밀번호 초기화</button>
+              <button class="btn btn--secondary btn--sm" type="button" disabled data-show="hr" data-show-role="bppart" hidden title="본인 비밀번호는 내 정보에서 바꿉니다">비밀번호 초기화</button>
+              <button class="btn btn--secondary btn--sm" type="button" disabled data-show="ops" data-show-role="bpall" hidden title="본인 비밀번호는 내 정보에서 바꿉니다">비밀번호 초기화</button>
+
+              <!-- 수정 — 상세를 거쳐서만 수정으로 간다 -->
+              <a class="btn btn--primary btn--sm" href="admins-edit.html" data-show="hr ops acct created" data-show-role="bm bpall bppart plat">수정</a>
+              <a class="btn btn--primary btn--sm" href="admins-edit.html?state=morinam" data-show="morinam fmoff" data-show-role="bm bpall bppart plat" hidden>수정</a>
+              <a class="btn btn--primary btn--sm" href="admins-edit.html?state=yn" data-show="yn" data-show-role="fm" hidden>수정</a>
+            </div>
+          </div>
+
+          <div class="content">
+            <div class="stack">
+              <div class="demo" data-demo="bd" data-demo-key="role">
+                <b>목업 권한</b>
+                <div class="seg">
+                  <button type="button" data-state="bm" aria-pressed="true">BP 마스터 · hangang01</button>
+                  <button type="button" data-state="bpall" aria-pressed="false">BP 관리자 · 전체 점포 · hg_ops</button>
+                  <button type="button" data-state="bppart" aria-pressed="false">BP 관리자 · 일부 점포 · hg_hr</button>
+                  <button type="button" data-state="fm" aria-pressed="false">가맹 마스터 · morinam01</button>
+                  <button type="button" data-state="fa" aria-pressed="false">가맹 관리자 · mori_yn</button>
+                  <button type="button" data-state="plat" aria-pressed="false">플랫폼 사용자 · plat_jung</button>
+                  <button type="button" data-state="view" aria-pressed="false">조회만</button>
+                </div>
+              </div>
+              <div class="demo" data-demo="bd">
+                <b>목업 계정</b>
+                <div class="seg">
+                  <button type="button" data-state="hr" aria-pressed="true">hg_hr · BP 관리자 · 일부 점포</button>
+                  <button type="button" data-state="ops" aria-pressed="false">hg_ops · 전체 점포</button>
+                  <button type="button" data-state="acct" aria-pressed="false">hg_acct · 미사용</button>
+                  <button type="button" data-state="created" aria-pressed="false">hg_cs · 등록 직후</button>
+                  <button type="button" data-state="morinam" aria-pressed="false">morinam01 · 가맹 마스터</button>
+                  <button type="button" data-state="fmoff" aria-pressed="false">가맹 마스터 미사용 직후</button>
+                  <button type="button" data-state="yn" aria-pressed="false">mori_yn · 가맹 관리자</button>
+                  <button type="button" data-state="bpm" aria-pressed="false">BP 마스터 계정 주소로 열기</button>
+                  <button type="button" data-state="deny" aria-pressed="false">없는 계정 · 범위 밖</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 플랫폼 사용자 — 고른 BP 를 늘 보인다 -->
+            <div class="band band--info" data-show-role="plat" data-show="hr ops acct created morinam fmoff yn" hidden>
+              <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">관리 대상 BP · ㈜한강상회 <span class="mono">BP000017</span></div>
+                <p class="band__desc">목록에서 고른 BP 의 계정을 보고 있습니다. 다른 BP 는 목록으로 돌아가 다시 고릅니다.</p>
+              </div>
+            </div>
+
+            <!-- 가맹 쪽 사용자가 BP 쪽 계정을 연 경우 -->
+            <section class="panel" data-show="hr ops acct created morinam fmoff" data-show-role="fm fa" hidden>
+              <div class="empty">
+                <span class="empty__ic" data-icon="lock" data-icon-size="22"></span>
+                <p>접근할 수 없는 계정입니다. 가맹 마스터와 가맹 관리자는 매핑 점포 범위의 가맹 관리자 계정만 볼 수 있습니다.</p>
+                <a class="btn btn--secondary btn--sm" href="admins.html">관리자 목록으로</a>
+              </div>
+            </section>
+            <section class="panel" data-show="deny" hidden>
+              <div class="empty">
+                <span class="empty__ic" data-icon="lock" data-icon-size="22"></span>
+                <p>계정이 없거나 다른 BP 소속이거나 접근 범위를 벗어나 상세정보를 드릴 수 없습니다. 목록에서 최신 상태를 다시 확인해 주세요.</p>
+                <a class="btn btn--secondary btn--sm" href="admins.html">관리자 목록으로</a>
+              </div>
+            </section>
+            <section class="panel" data-show="bpm" hidden>
+              <div class="empty">
+                <span class="empty__ic" data-icon="info" data-icon-size="22"></span>
+                <p>BP 마스터 계정은 BP 관리자 관리에서 다루지 않습니다. 수정 · 비밀번호 초기화 · 상태 변경은 플랫폼의 BP 관리에서 처리합니다.</p>
+                <a class="btn btn--secondary btn--sm" href="admins.html">관리자 목록으로</a>
+              </div>
+            </section>
+
+            <!-- 결과 · 상태 안내 -->
+            <div class="band band--info" data-show="created" data-show-role="bm bpall bppart plat view" hidden>
+              <span class="band__ic" data-icon="check" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">BP 관리자 계정을 등록했습니다 · <span class="mono">hg_cs</span></div>
+                <p class="band__desc">
+                  계정은 사용 상태로 생겼고, 12자 초기 비밀번호는 <b class="mono">gaeun.moon@hangang.co.kr</b> 로만 나갔습니다.
+                  문가은 님은 첫 로그인 때 <a class="tlink" href="../auth/force-password.html?state=platform">새 비밀번호를 정하고 약관에 동의해야</a> ERP 를 쓸 수 있습니다.
+                </p>
+              </div>
+            </div>
+            <div class="band band--warn" data-show="acct" data-show-role="bm bpall bppart plat view" hidden>
+              <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">미사용 계정 — 로그인과 ERP 접근이 막혀 있습니다</div>
+                <p class="band__desc">2026-04-01 09:00 에 미사용으로 바뀌었습니다. 계정과 변경 이력은 보존되며, 수정 화면에서 사용으로 되돌리면 기존 비밀번호로 다시 로그인합니다.</p>
+              </div>
+            </div>
+            <div class="band band--warn" data-show="fmoff" data-show-role="bm bpall bppart plat view" hidden>
+              <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">가맹 마스터를 미사용으로 바꿨고, 연결된 계정과 권한 그룹도 함께 멈췄습니다</div>
+                <p class="band__desc">
+                  가맹 관리자 <span class="mono">mori_yn</span> 한지수 · <span class="mono">mori_cd</span> 윤재희 → 미사용(처리자 system · 사유 가맹 마스터 미사용).
+                  가맹 관리자 권한 그룹 <span class="mono">FA000002</span> 모리 점장 · <span class="mono">FA000003</span> 모리 매니저 → 사용 중지.
+                  모리커피 을지로·연남·청담·부평점의 점포 상태와 점포 업무는 그대로이며, 전체 점포를 맡은 BP 마스터·BP 관리자가 이어서 관리합니다.
+                  박서윤 님을 다시 사용으로 돌려도 가맹 관리자는 미사용으로 남습니다.
+                </p>
+              </div>
+            </div>
+            <div class="band band--info" data-show="hr" data-show-role="bppart" hidden>
+              <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">내 계정입니다</div>
+                <p class="band__desc">수정 화면에서는 기본정보와 점포 매핑만 바뀝니다. 권한 그룹과 계정 상태는 이 계정을 관리할 수 있는 다른 사용자가, 비밀번호는 내 정보에서 직접 바꿉니다.</p>
+              </div>
+            </div>
+            <div class="band band--info" data-show="ops" data-show-role="bpall" hidden>
+              <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">내 계정입니다</div>
+                <p class="band__desc">권한 그룹과 계정 상태는 스스로 바꿀 수 없습니다. 비밀번호는 내 정보에서 직접 바꿉니다.</p>
+              </div>
+            </div>
+            <div class="band band--info" data-show="yn" data-show-role="bm bpall bppart plat view" hidden>
+              <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">가맹 관리자 계정은 연결된 가맹 마스터만 수정 · 비밀번호 초기화할 수 있습니다</div>
+                <p class="band__desc">이 계정의 가맹 마스터는 <span class="mono">morinam01</span> 박서윤입니다. 여기서는 조회만 합니다.</p>
+              </div>
+            </div>
+            <div class="band band--info" data-show="yn" data-show-role="fa" hidden>
+              <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">내 계정입니다 — 조회만 합니다</div>
+                <p class="band__desc">가맹 관리자는 계정을 수정하지 않습니다. 계정 정보·권한 그룹·점포·상태는 연결된 가맹 마스터가 바꾸고, 비밀번호는 내 정보에서 직접 바꿉니다.</p>
+              </div>
+            </div>
+
+            <!-- ===== BP 쪽 계정 (BP 관리자 · 가맹 마스터) ===== -->
+            <div data-show="hr ops acct created morinam fmoff" data-show-role="bm bpall bppart plat view" style="display: contents">
+              <!-- 왼쪽: 기본정보 · 계정 상태 · 권한 그룹 / 오른쪽: 소속 BP정보 · 점포 매핑 — 점포 매핑은 왼쪽 세 영역 높이에 맞추고 넘치면 그 안에서 스크롤 -->
+              <div class="grid grid--2">
+                <div class="stack">
+                  <section class="panel">
+                    <div class="panel__head"><h2 class="t-h2">기본정보</h2></div>
+                    <div class="panel__body">
+                      <dl class="kv">
+                        <dt>아이디</dt>
+                        <dd class="mono"><span data-show="hr">hg_hr</span><span data-show="ops" hidden>hg_ops</span><span data-show="acct" hidden>hg_acct</span><span data-show="created" hidden>hg_cs</span><span data-show="morinam fmoff" hidden>morinam01</span></dd>
+                        <dt>이름</dt>
+                        <dd><span data-show="hr">이서아</span><span data-show="ops" hidden>김도윤</span><span data-show="acct" hidden>최민호</span><span data-show="created" hidden>문가은</span><span data-show="morinam fmoff" hidden>박서윤</span></dd>
+                        <dt>휴대전화번호</dt>
+                        <dd class="mono"><span data-show="hr">010-2290-5173</span><span data-show="ops" hidden>010-4410-2381</span><span data-show="acct" hidden>010-8813-0442</span><span data-show="created" hidden>010-3308-6214</span><span data-show="morinam fmoff" hidden>010-5521-7730</span></dd>
+                        <dt>이메일</dt>
+                        <dd class="mono"><span data-show="hr">seoa.lee@hangang.co.kr</span><span data-show="ops" hidden>doyun.kim@hangang.co.kr</span><span data-show="acct" hidden>minho.choi@hangang.co.kr</span><span data-show="created" hidden>gaeun.moon@hangang.co.kr</span><span data-show="morinam fmoff" hidden>seoyun.park@morinam.kr</span></dd>
+                        <dt>등록일시</dt>
+                        <dd class="mono"><span data-show="hr">2025-04-01 09:12</span><span data-show="ops" hidden>2025-02-10 10:20</span><span data-show="acct" hidden>2025-07-15 14:03</span><span data-show="created" hidden>2026-09-21 10:30</span><span data-show="morinam fmoff" hidden>2025-03-03 11:00</span></dd>
+                        <dt>최근 로그인</dt>
+                        <dd><span class="mono" data-show="hr">2026-09-20 17:55</span><span class="mono" data-show="ops" hidden>2026-09-21 08:30</span><span class="mono" data-show="acct" hidden>2026-03-31 18:10</span><span class="subtle" data-show="created" hidden>로그인 기록 없음</span><span class="mono" data-show="morinam fmoff" hidden>2026-09-21 09:12</span></dd>
+                      </dl>
+                    </div>
+                  </section>
+                  <section class="panel">
+                    <div class="panel__head"><h2 class="t-h2">계정 상태</h2></div>
+                    <div class="panel__body">
+                      <dl class="kv">
+                        <dt>계정 상태</dt>
+                        <dd>
+                          <span data-show="hr ops created morinam"><span class="badge badge--ok">사용</span></span>
+                          <span data-show="acct" hidden><span class="badge badge--warn">미사용</span> <span class="mono subtle">2026-04-01 09:00 부터</span></span>
+                          <span data-show="fmoff" hidden><span class="badge badge--warn">미사용</span> <span class="mono subtle">2026-09-21 10:40 부터</span></span>
+                        </dd>
+                        <dt>강제 비밀번호 변경</dt>
+                        <dd><span data-show="hr ops acct morinam fmoff">대상 아님</span><span data-show="created" hidden>대상 <span class="subtle">· 초기 비밀번호 발급 <span class="mono">2026-09-21 10:30</span></span></span></dd>
+                      </dl>
+                    </div>
+                  </section>
+                  <section class="panel">
+                    <div class="panel__head">
+                      <h2 class="t-h2">권한 그룹</h2>
+                    </div>
+                    <div class="panel__body">
+                      <dl class="kv">
+                        <dt>계정 역할</dt>
+                        <dd><span data-show="hr ops acct created">BP 관리자</span><span data-show="morinam fmoff" hidden>가맹 마스터</span></dd>
+                        <dt>권한 그룹</dt>
+                        <dd>
+                          <span data-show="hr"><a class="tlink" href="roles.html">인사 담당</a> <span class="mono subtle">BA000004</span></span>
+                          <span data-show="ops" hidden><a class="tlink" href="roles.html">운영 총괄</a> <span class="mono subtle">BA000003</span></span>
+                          <span data-show="acct" hidden><a class="tlink" href="roles.html">정산 조회</a> <span class="mono subtle">BA000005</span></span>
+                          <span data-show="created" hidden><a class="tlink" href="roles.html">고객응대</a> <span class="mono subtle">BA000006</span></span>
+                          <span data-show="morinam fmoff" hidden><a class="tlink" href="roles.html">가맹 마스터(고정)</a> <span class="mono subtle">FM000001</span> <span class="subtle">· 플랫폼이 정한 기본 권한</span></span>
+                        </dd>
+                      </dl>
+                    </div>
+                    <div class="panel__note">계정 하나에 권한 그룹 하나다. 그룹의 메뉴 권한을 바꾸면 연결된 사용자에게 곧바로 반영된다.</div>
+                  </section>
+                </div>
+                <div class="fillcol">
+                  <section class="panel">
+                    <div class="panel__head"><h2 class="t-h2">소속 BP정보</h2></div>
+                    <div class="panel__body">
+                      <dl class="kv">
+                        <dt>BP코드</dt><dd class="mono">BP000017</dd>
+                        <dt>BP상호명</dt><dd>㈜한강상회</dd>
+                      </dl>
+                    </div>
+                  </section>
+                  <div class="fillcol__rest">
+                    <section class="panel">
+                      <div class="panel__head">
+                        <h2 class="t-h2">점포 매핑</h2>
+                        <span class="badge badge--quiet" data-show="hr">일부 · 4개점</span>
+                        <span class="badge badge--quiet" data-show="ops acct created" hidden>전체 점포</span>
+                        <span class="badge badge--quiet" data-show="morinam fmoff" hidden>일부 · 4개점</span>
+                      </div>
+                      <div class="panel__body" data-show="ops acct created" hidden>
+                        <p style="margin: 0; font-size: 13px"><b>전체 점포</b> — ㈜한강상회의 모든 점포(지금 11개점)를 관리합니다.</p>
+                      </div>
+                      <div class="tblwrap" data-show="hr morinam fmoff">
+                        <table class="tbl tbl--dense">
+                          <thead>
+                            <tr><th scope="col">점포명</th><th scope="col">점포코드</th><th scope="col">점포 유형</th><th scope="col">점포 상태</th></tr>
+                          </thead>
+                          <tbody>
+                            <tr data-show="hr"><td class="k">모리커피 서초점</td><td class="mono">ST000001</td><td>일반점포</td><td><span class="badge badge--ok">운영</span></td></tr>
+                            <tr data-show="hr"><td class="k">모리커피 성수점</td><td class="mono">ST000002</td><td>일반점포</td><td><span class="badge badge--ok">운영</span></td></tr>
+                            <tr data-show="hr"><td class="k">온기식당 판교점</td><td class="mono">ST000003</td><td>일반점포</td><td><span class="badge badge--ok">운영</span></td></tr>
+                            <tr data-show="hr"><td class="k">온기식당 광화문점</td><td class="mono">ST000004</td><td>일반점포</td><td><span class="badge badge--ok">운영</span></td></tr>
+                            <tr data-show="morinam fmoff" hidden><td class="k">모리커피 을지로점</td><td class="mono">ST000005</td><td>가맹점포</td><td><span class="badge badge--ok">운영</span></td></tr>
+                            <tr data-show="morinam fmoff" hidden><td class="k">모리커피 연남점</td><td class="mono">ST000006</td><td>가맹점포</td><td><span class="badge badge--ok">운영</span></td></tr>
+                            <tr data-show="morinam fmoff" hidden><td class="k">모리커피 청담점</td><td class="mono">ST000007</td><td>가맹점포</td><td><span class="badge badge--ok">운영</span></td></tr>
+                            <tr data-show="morinam fmoff" hidden><td class="k">모리커피 부평점</td><td class="mono">ST000008</td><td>가맹점포</td><td><span class="badge badge--ok">운영</span></td></tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                </div>
+              </div>
+
+              <section class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">변경 이력</h2>
+                  <span class="badge badge--quiet">생성 · 정보 · 권한 그룹 · 점포 · 상태 · 최신순</span>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr><th scope="col">일시</th><th scope="col">처리자</th><th scope="col">구분</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr data-show="hr"><td class="mono">2026-02-03 15:10</td><td class="mono">hangang01</td><td><span class="badge badge--quiet">점포 변경</span></td><td>점포 매핑</td><td>일부 · ST000001~002</td><td>일부 · ST000001~004</td></tr>
+                      <tr data-show="hr"><td class="mono">2025-09-15 11:02</td><td class="mono">hangang01</td><td><span class="badge badge--quiet">권한 그룹 변경</span></td><td>권한 그룹</td><td>정산 조회 <span class="mono subtle">BA000005</span></td><td>인사 담당 <span class="mono subtle">BA000004</span></td></tr>
+                      <tr data-show="hr"><td class="mono">2025-04-01 09:12</td><td class="mono">hangang01</td><td><span class="badge badge--quiet">생성</span></td><td>계정</td><td class="nil"></td><td>사용 · BP 관리자 · 정산 조회 <span class="mono subtle">BA000005</span></td></tr>
+                      <tr data-show="ops" hidden><td class="mono">2025-02-10 10:20</td><td class="mono">hangang01</td><td><span class="badge badge--quiet">생성</span></td><td>계정</td><td class="nil"></td><td>사용 · BP 관리자 · 운영 총괄 <span class="mono subtle">BA000003</span> · 전체 점포</td></tr>
+                      <tr data-show="acct" hidden><td class="mono">2026-04-01 09:00</td><td class="mono">hangang01</td><td><span class="badge badge--quiet">상태 변경</span></td><td>계정 상태</td><td>사용</td><td>미사용</td></tr>
+                      <tr data-show="acct" hidden><td class="mono">2025-07-15 14:03</td><td class="mono">hangang01</td><td><span class="badge badge--quiet">생성</span></td><td>계정</td><td class="nil"></td><td>사용 · BP 관리자 · 정산 조회 <span class="mono subtle">BA000005</span> · 전체 점포</td></tr>
+                      <tr data-show="created" hidden><td class="mono">2026-09-21 10:30</td><td class="mono">hangang01</td><td><span class="badge badge--quiet">생성</span></td><td>계정</td><td class="nil"></td><td>사용 · BP 관리자 · 고객응대 <span class="mono subtle">BA000006</span> · 전체 점포</td></tr>
+                      <tr data-show="fmoff" hidden><td class="mono">2026-09-21 10:40</td><td class="mono">hangang01</td><td><span class="badge badge--quiet">상태 변경</span></td><td>계정 상태</td><td>사용</td><td>미사용</td></tr>
+                      <tr data-show="morinam fmoff" hidden><td class="mono">2025-03-03 11:00</td><td class="mono">hangang01</td><td><span class="badge badge--quiet">생성</span></td><td>계정</td><td class="nil"></td><td>사용 · 가맹 마스터(고정) <span class="mono subtle">FM000001</span> · ST000005~008</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__note">바뀐 항목마다 변경 전후 값과 처리자, 처리 일시를 남긴다. 사용·미사용 전환에도 사유는 받지 않는다. 비밀번호 초기화 기록은 이 표와 따로 보존한다.</div>
+              </section>
+            </div>
+
+            <!-- ===== 가맹 관리자 계정 (mori_yn) — 모든 역할이 볼 수 있다 ===== -->
+            <div data-show="yn" style="display: contents" hidden>
+              <!-- 왼쪽: 기본정보 · 계정 상태 · 권한 그룹 / 오른쪽: 소속 BP정보 · 점포 매핑 — 점포 매핑은 왼쪽 세 영역 높이에 맞추고 넘치면 그 안에서 스크롤 -->
+              <div class="grid grid--2">
+                <div class="stack">
+                  <section class="panel">
+                    <div class="panel__head"><h2 class="t-h2">기본정보</h2></div>
+                    <div class="panel__body">
+                      <dl class="kv">
+                        <dt>아이디</dt><dd class="mono">mori_yn</dd>
+                        <dt>이름</dt><dd>한지수</dd>
+                        <dt>휴대전화번호</dt><dd class="mono">010-6672-1180</dd>
+                        <dt>이메일</dt><dd class="mono">jisu.han@morinam.kr</dd>
+                        <dt>등록일시</dt><dd class="mono">2025-08-11 10:05</dd>
+                        <dt>최근 로그인</dt><dd class="mono">2026-09-21 07:58</dd>
+                      </dl>
+                    </div>
+                  </section>
+                  <section class="panel">
+                    <div class="panel__head"><h2 class="t-h2">계정 상태</h2></div>
+                    <div class="panel__body">
+                      <dl class="kv">
+                        <dt>계정 상태</dt><dd><span class="badge badge--ok">사용</span></dd>
+                        <dt>강제 비밀번호 변경</dt><dd>대상 아님</dd>
+                      </dl>
+                    </div>
+                  </section>
+                  <section class="panel">
+                    <div class="panel__head"><h2 class="t-h2">권한 그룹</h2></div>
+                    <div class="panel__body">
+                      <dl class="kv">
+                        <dt>계정 역할</dt><dd>가맹 관리자</dd>
+                        <dt>가맹 마스터</dt><dd><span class="mono">morinam01</span> 박서윤 <span class="subtle">· 등록 때 정해져 바뀌지 않음</span></dd>
+                        <dt>권한 그룹</dt><dd><a class="tlink" href="roles.html">모리 점장</a> <span class="mono subtle">FA000002</span> <span class="subtle">· 관리계정ID morinam01</span></dd>
+                      </dl>
+                    </div>
+                    <div class="panel__note">가맹 관리자에게는 연결된 가맹 마스터가 만든 권한 그룹만 붙는다.</div>
+                  </section>
+                </div>
+                <div class="fillcol">
+                  <section class="panel">
+                    <div class="panel__head"><h2 class="t-h2">소속 BP정보</h2></div>
+                    <div class="panel__body">
+                      <dl class="kv">
+                        <dt>BP코드</dt><dd class="mono">BP000017</dd>
+                        <dt>BP상호명</dt><dd>㈜한강상회</dd>
+                      </dl>
+                    </div>
+                  </section>
+                  <div class="fillcol__rest">
+                    <section class="panel">
+                      <div class="panel__head">
+                        <h2 class="t-h2">점포 매핑</h2>
+                        <span class="badge badge--quiet">일부 · 1개점</span>
+                      </div>
+                      <div class="tblwrap">
+                        <table class="tbl tbl--dense">
+                          <thead>
+                            <tr><th scope="col">점포명</th><th scope="col">점포코드</th><th scope="col">점포 유형</th><th scope="col">점포 상태</th></tr>
+                          </thead>
+                          <tbody>
+                            <tr><td class="k">모리커피 연남점</td><td class="mono">ST000006</td><td>가맹점포</td><td><span class="badge badge--ok">운영</span></td></tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="panel__note">가맹 마스터 박서윤의 점포(ST000005~008) 안에서만 고른다.</div>
+                    </section>
+                  </div>
+                </div>
+              </div>
+
+              <section class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">변경 이력</h2>
+                  <span class="badge badge--quiet">최신순</span>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr><th scope="col">일시</th><th scope="col">처리자</th><th scope="col">구분</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td class="mono">2026-03-12 16:25</td><td class="mono">morinam01</td><td><span class="badge badge--quiet">정보 변경</span></td><td>휴대전화번호</td><td class="mono">010-6672-0093</td><td class="mono">010-6672-1180</td></tr>
+                      <tr><td class="mono">2025-08-11 10:05</td><td class="mono">morinam01</td><td><span class="badge badge--quiet">생성</span></td><td>계정</td><td class="nil"></td><td>사용 · 가맹 관리자 · 모리 점장 <span class="mono subtle">FA000002</span> · 가맹 마스터 morinam01 · ST000006</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <!-- 비밀번호 초기화 확인 (S-TKSRJX) — 새 초기 비밀번호는 어디에도 나오지 않는다 -->
+          <div class="modal" id="pop-reset" hidden role="dialog" aria-modal="true" aria-labelledby="br-t">
+            <div class="modal__box">
+              <div class="modal__head">
+                <h2 class="t-h2" id="br-t">비밀번호 초기화</h2>
+                <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+              </div>
+              <div class="modal__body">
+                <div data-step="ask" class="stack--lg" style="display: flex; flex-direction: column">
+                  <dl class="kv">
+                    <dt>아이디</dt><dd class="mono"><span data-show="hr">hg_hr</span><span data-show="ops" hidden>hg_ops</span><span data-show="acct" hidden>hg_acct</span><span data-show="created" hidden>hg_cs</span><span data-show="morinam fmoff" hidden>morinam01</span><span data-show="yn" hidden>mori_yn</span></dd>
+                    <dt>이름</dt><dd><span data-show="hr">이서아</span><span data-show="ops" hidden>김도윤</span><span data-show="acct" hidden>최민호</span><span data-show="created" hidden>문가은</span><span data-show="morinam fmoff" hidden>박서윤</span><span data-show="yn" hidden>한지수</span></dd>
+                  </dl>
+                  <p style="margin: 0; font-size: 13px">시스템이 12자 무작위 초기 비밀번호를 새로 발급해 이 계정의 이메일로만 보냅니다. 처리하는 사람도 그 값을 볼 수 없습니다.</p>
+                  <div class="band band--warn">
+                    <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
+                    <div class="band__body">
+                      <div class="band__title">지금 비밀번호는 곧바로 못 쓰게 되고, 열려 있는 세션도 모두 닫힙니다</div>
+                      <p class="band__desc">계정 상태는 바뀌지 않습니다. 받은 사람은 다음 로그인 때 비밀번호를 새로 정합니다.</p>
+                    </div>
+                  </div>
+                  <div class="inline" style="justify-content: flex-end">
+                    <button class="btn btn--ghost" type="button" data-close>취소</button>
+                    <button class="btn btn--secondary" type="button" data-step-to="fail" title="목업 전용 — 처리 오류 결과 보기">오류로 보기</button>
+                    <button class="btn btn--secondary" type="button" data-step-to="mailfail" title="목업 전용 — 메일 발송 실패 결과 보기">발송 실패로 보기</button>
+                    <button class="btn btn--primary" type="button" data-step-to="sent">초기화</button>
+                  </div>
+                </div>
+                <div data-step="sent" hidden class="stack--lg" style="display: flex; flex-direction: column">
+                  <div class="band band--info">
+                    <span class="band__ic" data-icon="check" data-icon-size="20"></span>
+                    <div class="band__body">
+                      <div class="band__title">초기화했고 안내 메일을 보냈습니다</div>
+                      <p class="band__desc">
+                        발송 대상 · <b class="mono"><span data-show="hr">seoa.lee@hangang.co.kr</span><span data-show="ops" hidden>doyun.kim@hangang.co.kr</span><span data-show="acct" hidden>minho.choi@hangang.co.kr</span><span data-show="created" hidden>gaeun.moon@hangang.co.kr</span><span data-show="morinam fmoff" hidden>seoyun.park@morinam.kr</span><span data-show="yn" hidden>jisu.han@morinam.kr</span></b><br />
+                        메일 제목은 「[WHALE ERP] 관리자 계정이 생성되었습니다」입니다. 받은 사람은 메일의 값으로 로그인한 뒤 <a class="tlink" href="../auth/force-password.html?state=init">강제 비밀번호 변경</a>을 마쳐야 ERP 에 들어갑니다.
+                      </p>
+                    </div>
+                  </div>
+                  <div class="inline" style="justify-content: flex-end">
+                    <button class="btn btn--primary" type="button" data-close>확인</button>
+                  </div>
+                </div>
+                <div data-step="mailfail" hidden class="stack--lg" style="display: flex; flex-direction: column">
+                  <div class="band band--risk">
+                    <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+                    <div class="band__body">
+                      <div class="band__title">초기 비밀번호는 발급됐지만 메일을 보내지 못했습니다</div>
+                      <p class="band__desc">발송 실패를 기록했습니다. 예전 비밀번호로는 이미 들어갈 수 없으니 다시 초기화해 새 값으로 메일을 보내 주세요.</p>
+                    </div>
+                  </div>
+                  <div class="inline" style="justify-content: flex-end">
+                    <button class="btn btn--ghost" type="button" data-close>닫기</button>
+                    <button class="btn btn--primary" type="button" data-step-to="ask">다시 초기화</button>
+                  </div>
+                </div>
+                <div data-step="fail" hidden class="stack--lg" style="display: flex; flex-direction: column">
+                  <div class="band band--risk">
+                    <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+                    <div class="band__body">
+                      <div class="band__title">초기화하지 못했습니다</div>
+                      <p class="band__desc">예전 비밀번호가 그대로 살아 있습니다. 잠시 뒤 다시 시도해 주세요.</p>
+                    </div>
+                  </div>
+                  <div class="inline" style="justify-content: flex-end">
+                    <button class="btn btn--ghost" type="button" data-close>닫기</button>
+                    <button class="btn btn--primary" type="button" data-step-to="ask">다시 시도</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+  </body>
+</html>

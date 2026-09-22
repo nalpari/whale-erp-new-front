@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>플랫폼 메뉴 관리 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="system" data-sub="system/menus.html">
+    <!-- 플랫폼 메뉴 관리 · /platform/system/menus · S-GXMZOU (F-CWWQUR) · 1팀
+         처음 들어오면 서비스 목록을 본다. 서비스 코드·이름·사용 상태는 공통코드 ‘서비스’(SERVICE) 그룹에서 읽고 여기서 바꾸지 않는다.
+         서비스를 고르면 왼쪽에 그 서비스의 메뉴 트리(최대 3단계), 오른쪽에 메뉴 상세가 선다. ?state=plat · ?state=erp 로 바로 들어온다.
+         이 목업은 실제로 움직인다 — 맨 아래 스크립트가 메뉴를 메모리에 들고 트리와 상세를 다시 그린다. 새로 고치면 처음 표본으로 돌아간다.
+           · 행을 누르면 오른쪽에 상세가 선다. 고른 행을 한 번 더 누르면 고른 것을 푼다.
+             상세 순서는 서비스 코드 → 상위 메뉴 → 메뉴 코드·메뉴 순서(한 줄) → 노출 메뉴명 · 메뉴 URL · 메뉴 사용 상태.
+             앞의 넷은 읽기 전용이고 뒤의 셋만 고쳐 저장한다. 노출 메뉴명은 필수다.
+           · 신규 메뉴 — 고른 메뉴 아래 맨 끝에 새 자리를 만든다. 고른 메뉴가 3단계면 그 상위 아래, 고른 것이 없으면 최상위.
+             상세에서 최상위로 바꿀 수 있다. 저장하면 트리에 들어가고 취소하면 버린다.
+             메뉴 코드는 MN + 6자리 순번으로 저장할 때 채번한다(PL-EIMSQF). 목업은 서비스를 가리지 않고 가장 큰 번호의 다음을 쓴다.
+           · 옮기기 — 손잡이를 끌어 행의 위·아래 끝에 놓으면 그 앞·뒤로, 가운데에 놓으면 그 메뉴 안 맨 끝으로 간다. 트리 맨 아래 칸은 최상위 맨 끝이다.
+             상세 아래 ‘위치 옮기기’(위로 · 아래로 · 상위로 올리기 · 위 메뉴 안으로 넣기)와 행에서 Alt + 방향키가 같은 규칙으로 마우스 없이 옮긴다.
+             하위 메뉴는 함께 움직인다. 옮긴 뒤 옛 상위와 새 상위의 순서를 1부터 다시 매기고 단계를 다시 센다.
+             다른 서비스(위 탭) · 3단계 초과 · 자기 자신이나 하위 메뉴 아래는 끄는 동안 놓을 수 없음을 표시하고, 놓으면 띠로 거절한다.
+           · 점선 줄 ‘목업 저장’에서 ‘다음 저장 실패로 보기’를 켜면 다음 이동·저장 한 번이 실패하고 데이터는 그대로다.
+         메뉴 삭제와 메뉴 변경 이력은 없다 — 안 쓰는 메뉴는 사용중지로 돌린다. 사용중지 메뉴는 사용자 화면과 신규 권한 부여에서 빠진다.
+         이 트리가 권한 관리(roles.html) 메뉴 등록 팝업의 원본이다. Whale ERP 서비스는 48개 중 표본 15개만 그렸다.
+         목업 권한 “등록·수정” 은 플랫폼 마스터로 본다 — 표본에서 플랫폼 관리자 PA000001 은 이 메뉴에 조회만 있다.
+         조회만이면 끌기 손잡이 · 신규 메뉴 · 저장 · 위치 옮기기가 없고 상세는 읽기만 한다.
+         쟁점 후보(화면 밖): 사용중지 서비스를 목록에서 고를 수 있는지 · 트리 검색 조건(예외에만 “검색 결과 없음”이 있다) ·
+         상위 메뉴를 상세 폼에서 직접 고르게 할지(목업은 끌기와 위치 옮기기 버튼만) · 사용중지 상위 메뉴 아래 하위 메뉴의 노출 ·
+         묶음 메뉴의 URL 필수 여부 · 신규 메뉴의 순서 기본값(목업은 맨 끝) · 사용중지 메뉴 아래에 신규 메뉴를 둘 수 있는지. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div id="menus" style="display: contents">
+          <div class="titlebar">
+            <h1 class="t-h1">플랫폼 메뉴 관리</h1>
+            <span class="badge badge--warn">1팀 작업</span>
+            <div class="titlebar__end">
+              <span class="filters__count mono">S-GXMZOU · /platform/system/menus</span>
+            </div>
+          </div>
+
+          <div class="content">
+            <div class="stack">
+              <div class="demo" data-demo="menus" data-demo-key="role">
+                <b>목업 권한</b>
+                <div class="seg">
+                  <button type="button" data-state="edit" aria-pressed="true">등록·수정</button>
+                  <button type="button" data-state="view" aria-pressed="false">조회만</button>
+                </div>
+              </div>
+              <div class="demo" data-demo="menus">
+                <b>목업 상태</b>
+                <div class="seg">
+                  <button type="button" data-state="list" aria-pressed="true">서비스 목록</button>
+                  <button type="button" data-state="plat" aria-pressed="false">플랫폼 관리 트리</button>
+                  <button type="button" data-state="erp" aria-pressed="false">Whale ERP 트리(3단계)</button>
+                </div>
+              </div>
+              <!-- 저장 실패 보기 — 켜 두면 다음 이동·저장 한 번만 실패한다. 한 번 쓰면 저절로 ‘정상 저장’으로 돌아간다. -->
+              <div class="demo" data-show="plat erp" data-show-role="edit" hidden>
+                <b>목업 저장</b>
+                <div class="seg" id="mn-fail">
+                  <button type="button" data-fail="0" aria-pressed="true">정상 저장</button>
+                  <button type="button" data-fail="1" aria-pressed="false">다음 저장 실패로 보기</button>
+                </div>
+                <span>켜 두면 다음 이동·저장 한 번이 실패하고 메뉴는 그대로 남습니다.</span>
+              </div>
+            </div>
+
+            <!-- ============ 서비스 목록 (기본 화면) ============ -->
+            <section class="panel" data-show="list">
+              <div class="panel__head">
+                <h2 class="t-h2">서비스</h2>
+                <span class="badge badge--quiet">12개 · 사용 11 · 사용중지 1</span>
+                <span class="subtle" style="font-size: 12px">공통코드 표시 순서</span>
+              </div>
+              <div class="tblwrap">
+                <table class="tbl tbl--dense">
+                  <thead>
+                    <tr>
+                      <th scope="col" class="n">순서</th>
+                      <th scope="col">서비스 코드</th>
+                      <th scope="col">서비스명</th>
+                      <th scope="col">서비스 사용 상태</th>
+                      <th scope="col" class="n">등록 메뉴 수</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="n">1</td>
+                      <td class="mono"><button class="tlink" type="button" data-state-go="erp">WHALE_ERP</button></td>
+                      <td class="k"><button class="tlink" type="button" data-state-go="erp">Whale ERP</button></td>
+                      <td><span class="badge badge--ok">사용</span></td>
+                      <td class="n" id="mn-cnt-erp">48</td>
+                    </tr>
+                    <tr>
+                      <td class="n">2</td>
+                      <td class="mono"><button class="tlink" type="button" data-state-go="plat">WHALE_ERP_PLATFORM_MANAGEMENT</button></td>
+                      <td class="k"><button class="tlink" type="button" data-state-go="plat">Whale ERP 플랫폼 관리</button></td>
+                      <td><span class="badge badge--ok">사용</span></td>
+                      <td class="n" id="mn-cnt-plat">22</td>
+                    </tr>
+                    <tr><td class="n">3</td><td class="mono">POS</td><td>POS</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
+                    <tr><td class="n">4</td><td class="mono">KIOSK</td><td>KIOSK</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
+                    <tr><td class="n">5</td><td class="mono">TABLE_ORDER</td><td>Table Order</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
+                    <tr><td class="n">6</td><td class="mono">PICK_UP_ORDER</td><td>Pick Up Order</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
+                    <tr><td class="n">7</td><td class="mono">QR_ORDER</td><td>QR Order</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
+                    <tr><td class="n">8</td><td class="mono">RECIPE_MANAGEMENT</td><td>레시피관리</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
+                    <tr><td class="n">9</td><td class="mono">ORDER_MANAGEMENT</td><td>발주관리</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
+                    <tr><td class="n">10</td><td class="mono">STORE_INVENTORY_MANAGEMENT</td><td>점포재고관리</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
+                    <tr><td class="n">11</td><td class="mono">WAITING_MANAGEMENT</td><td>대기순번관리</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
+                    <!-- 쟁점 후보 — 사용중지 서비스를 목록에서 골라 기존 메뉴를 볼 수 있게 할지. 목업은 보이되 고르지 않는다. -->
+                    <tr style="color: var(--muted)">
+                      <td class="n">12</td>
+                      <td class="mono">RESERVATION_MANAGEMENT</td>
+                      <td>예약관리</td>
+                      <td><span class="badge badge--warn">사용중지</span> <span class="subtle" style="font-size: 12px">신규 메뉴 등록·권한 부여 제외 · 기존 메뉴 보존</span></td>
+                      <td class="n">0</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="panel__note">
+                서비스는 <a class="tlink" href="codes.html?state=service">플랫폼 공통코드 관리의 ‘서비스’ 그룹</a>에서 읽습니다. 이 화면에서는 서비스를 추가하거나 이름·상태를 바꾸지 않습니다.
+              </div>
+            </section>
+
+            <!-- ============ 서비스 선택 뒤 — 트리 + 상세 ============
+                 탭은 서비스 전환이자 ‘다른 서비스 영역’이다. 메뉴를 끄는 동안 다른 서비스 탭에 놓을 수 없음을 표시한다. -->
+            <div class="tabs" data-show="plat erp" hidden>
+              <button type="button" data-state-go="list"><span data-icon="arrowleft" data-icon-size="14"></span>서비스 목록</button>
+              <button type="button" data-state-go="erp" data-svc-tab="erp" aria-selected="false">Whale ERP <span class="count" data-tab-count>48</span><span data-noplace hidden>· 놓을 수 없음</span></button>
+              <button type="button" data-state-go="plat" data-svc-tab="plat" aria-selected="false">Whale ERP 플랫폼 관리 <span class="count" data-tab-count>22</span><span data-noplace hidden>· 놓을 수 없음</span></button>
+            </div>
+
+            <!-- 결과 띠 — 이동·저장·거절·실패를 한 곳에서 알린다. 스크립트가 채우고, 화면을 내려도 따라온다. -->
+            <div id="mn-band" role="status" aria-live="polite" hidden style="position: sticky; top: calc(var(--nav-h) + var(--title-h) + var(--s-3)); z-index: 10"></div>
+
+            <div style="display: grid; grid-template-columns: minmax(0, 1fr) 368px; gap: var(--s-5); align-items: start" data-show="plat erp" hidden>
+              <!-- 왼쪽 — 메뉴 트리 -->
+              <section class="panel" aria-labelledby="mn-tree-t">
+                <div class="panel__head">
+                  <h2 class="t-h2" id="mn-tree-t">메뉴 트리</h2>
+                  <span class="badge badge--quiet" id="mn-size">22개</span>
+                  <span class="subtle" id="mn-hint" style="font-size: 12px">상위 메뉴 · 순서대로 · 최대 3단계</span>
+                  <div class="panel__end" data-show-role="edit">
+                    <button class="btn btn--primary btn--sm" type="button" id="mn-new">
+                      <span data-icon="plus" data-icon-size="14"></span>신규 메뉴
+                    </button>
+                  </div>
+                </div>
+                <div class="tblwrap" id="mn-wrap" style="position: relative">
+                  <table class="tbl tbl--dense tbl--fit" id="mn-tree"></table>
+                  <div id="mn-drop" hidden aria-hidden="true" style="position: absolute; pointer-events: none"></div>
+                </div>
+                <div class="panel__note" data-show-role="edit">
+                  손잡이를 끌어 같은 서비스 안에서 순서·상위 메뉴·단계를 바꿉니다. 행의 위·아래 끝에 놓으면 그 앞·뒤로, 가운데에 놓으면 그 메뉴 안 맨 끝으로 들어갑니다.
+                  하위 메뉴는 함께 움직이고, 놓을 수 없는 자리는 빨간 점선으로 표시합니다. 사용중지 메뉴는 흐리게 보입니다.
+                </div>
+                <div class="panel__note" data-show-role="view" hidden>조회 권한만 있어 끌기 손잡이가 없습니다. 사용중지 메뉴는 흐리게 보입니다.</div>
+              </section>
+
+              <!-- 오른쪽 — 메뉴 상세·수정과 위치 옮기기. 스크립트가 고른 메뉴로 그린다. -->
+              <div class="stack" id="mn-detail"></div>
+            </div>
+
+            <p class="note">
+              <span data-icon="info" data-icon-size="14"></span>
+              <span>
+                메뉴 삭제 버튼과 변경 이력 영역은 일부러 두지 않았다 — 명세가 둘 다 제외한다. 권한 관리의 메뉴 등록 팝업은 이 트리를 그대로 읽고, 사용중지 메뉴와 사용중지 서비스는 새 권한 부여에서 뺀다.
+              </span>
+            </p>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+    <script>
+      /* 플랫폼 메뉴 관리 — 메모리 위의 메뉴 트리. 목업 상태 줄(auth.js)이 서비스와 권한을 고르고, 이 스크립트가 트리·상세를 그린다. */
+      (function () {
+        "use strict";
+        var MAX = 3;
+        /* [메뉴 코드, 단계, 노출 메뉴명, 메뉴 URL, 사용 1 · 사용중지 0] — 적은 순서가 곧 메뉴 순서다. */
+        var SVC = {
+          plat: {
+            code: "WHALE_ERP_PLATFORM_MANAGEMENT", name: "Whale ERP 플랫폼 관리", omitted: 0, first: "MN000214",
+            eg: "예: 플랫폼 배치 관리", urlEg: "/platform/system/…",
+            src: [
+              ["MN000201", 1, "회원관리", "", 0],
+              ["MN000202", 2, "회원 정보 관리", "", 0],
+              ["MN000203", 1, "BP 마스터 계정 관리", "/platform/bp", 1],
+              ["MN000204", 1, "서비스정산관리", "", 0],
+              ["MN000205", 2, "부가서비스 주문 내역", "", 0],
+              ["MN000206", 2, "부가서비스 정산", "", 0],
+              ["MN000207", 1, "부가서비스관리", "", 0],
+              ["MN000208", 2, "부가 서비스 정보 관리", "", 0],
+              ["MN000209", 1, "프로모션관리", "", 0],
+              ["MN000210", 2, "쿠폰 관리", "", 0],
+              ["MN000211", 2, "포인트 관리", "", 0],
+              ["MN000212", 1, "시스템관리", "", 1],
+              ["MN000213", 2, "플랫폼 관리자 관리", "/platform/system/admins", 1],
+              ["MN000214", 2, "플랫폼 권한 관리", "/platform/system/roles", 1],
+              ["MN000215", 2, "플랫폼 메뉴 관리", "/platform/system/menus", 1],
+              ["MN000216", 2, "플랫폼 공통코드 관리", "/platform/system/codes", 1],
+              ["MN000217", 2, "플랫폼 휴일 관리", "/platform/system/holidays", 1],
+              ["MN000218", 1, "커뮤니티관리", "", 1],
+              ["MN000219", 2, "공지사항", "/platform/community/notices", 1],
+              ["MN000220", 2, "FAQ", "/platform/community/faq", 1],
+              ["MN000221", 2, "문의사항", "/platform/community/inquiries", 1],
+              ["MN000222", 2, "도입문의", "/platform/community/leads", 1]
+            ]
+          },
+          /* 48개 중 표본 15개. 3단계 예시는 직원관리 › 근로계약 관리 › 근로계약서 초안 작성. */
+          erp: {
+            code: "WHALE_ERP", name: "Whale ERP", omitted: 33, first: "MN000008",
+            eg: "예: 근무 교대 요청", urlEg: "/staff/…",
+            src: [
+              ["MN000001", 1, "점포관리", "", 1],
+              ["MN000002", 2, "점포 정보 관리", "/stores", 1],
+              ["MN000003", 2, "계약서 템플릿 관리", "/stores/contract-templates", 0],
+              ["MN000004", 1, "직원관리", "", 1],
+              ["MN000005", 2, "직원 정보 관리", "/staff", 1],
+              ["MN000006", 2, "근로계약 관리", "", 1],
+              ["MN000007", 3, "계약 목록", "/staff/contracts", 1],
+              ["MN000008", 3, "근로계약서 초안 작성", "/staff/contracts/new", 1],
+              ["MN000009", 2, "급여명세서 관리", "/staff/payrolls", 1],
+              ["MN000010", 2, "근무스케줄 관리", "/staff/schedules", 1],
+              ["MN000011", 1, "환경설정", "", 1],
+              ["MN000012", 2, "BP 관리자 관리", "/settings/admins", 1],
+              ["MN000013", 2, "BP 권한 그룹 관리", "/settings/roles", 1],
+              ["MN000014", 2, "BP 공통코드 관리", "/settings/codes", 1],
+              ["MN000015", 2, "BP 휴일 관리", "/settings/holidays", 1]
+            ]
+          }
+        };
+        var KEYS = ["plat", "erp"];
+
+        function on(el, ev, fn) { el.addEventListener(ev, fn); }
+        /* ---------- 모델 ---------- */
+        KEYS.forEach(function (k) {
+          var s = SVC[k], stack = [];
+          s.key = k;
+          s.roots = [];
+          s.src.forEach(function (r) {
+            var n = { code: r[0], name: r[2], url: r[3], use: !!r[4], parent: null, kids: [] };
+            n.parent = r[1] > 1 ? stack[r[1] - 2] : null;
+            (n.parent ? n.parent.kids : s.roots).push(n);
+            stack.length = r[1] - 1;
+            stack[r[1] - 1] = n;
+          });
+        });
+        function sib(s, p) { return p ? p.kids : s.roots; }
+        function pos(s, n) { return sib(s, n.parent).indexOf(n); }
+        function lvl(n) { var l = 1; while (n.parent) { n = n.parent; l++; } return l; }
+        function height(n) { var h = 1; n.kids.forEach(function (k) { h = Math.max(h, 1 + height(k)); }); return h; }
+        function count(n) { var c = 0; n.kids.forEach(function (k) { c += 1 + count(k); }); return c; }
+        function within(a, n) { for (; n; n = n.parent) if (n === a) return true; return false; }
+        function each(s, fn) { (function go(list) { list.forEach(function (n) { fn(n); go(n.kids); }); })(s.roots); }
+        function find(s, code) { var f = null; if (code) each(s, function (n) { if (n.code === code) f = n; }); return f; }
+        function path(n) { var a = []; for (; n; n = n.parent) a.unshift(n.name); return a.join(" › "); }
+        function nextCode() {
+          var m = 0;
+          KEYS.forEach(function (k) { each(SVC[k], function (n) { m = Math.max(m, +n.code.slice(2)); }); });
+          return "MN" + String(m + 1).padStart(6, "0");
+        }
+        function where(p, i) { return (p ? "‘" + p.name + "’ 아래 " : "최상위 ") + i + "번째"; }
+        function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+        function ic(name, sz) { return '<svg width="' + sz + '" height="' + sz + '" aria-hidden="true"><use href="#i-' + name + '"/></svg>'; }
+
+        /* ---------- 화면 상태 ---------- */
+        var st = { svc: null, role: "edit", sel: { plat: SVC.plat.first, erp: SVC.erp.first }, draft: null, buf: null, band: null, moved: null, drag: null };
+        var root = document.getElementById("menus");
+        var listBar = root.querySelector('[data-demo="menus"]:not([data-demo-key])');
+        var roleBar = root.querySelector('[data-demo="menus"][data-demo-key="role"]');
+        var $ = function (id) { return document.getElementById(id); };
+        var tree = $("mn-tree"), wrap = $("mn-wrap"), drop = $("mn-drop"), detail = $("mn-detail"), bandBox = $("mn-band"), hint = $("mn-hint");
+        var HINT = hint.textContent;
+        function S() { return SVC[st.svc]; }
+        function selNode() { return st.svc ? find(S(), st.sel[st.svc]) : null; }
+
+        function takeFail() {
+          var on = document.querySelector('#mn-fail [data-fail="1"]');
+          if (on.getAttribute("aria-pressed") !== "true") return false;
+          on.setAttribute("aria-pressed", "false");
+          document.querySelector('#mn-fail [data-fail="0"]').setAttribute("aria-pressed", "true");
+          return true;
+        }
+        function band(kind, title, desc) { st.band = { kind: kind, title: title, desc: desc }; }
+
+        /* ---------- 옮기기 규칙 ----------
+           p 아래 i 자리(옮기기 전 목록 기준)로 옮기면 어떻게 되는지. cycle · depth 는 거절, noop 은 제자리. */
+        function judge(s, n, p, i) {
+          if (p && within(n, p)) return { kind: "cycle" };
+          var from = pos(s, n);
+          if (p === n.parent && (i === from || i === from + 1)) return { kind: "noop" };
+          var L = (p ? lvl(p) : 0) + 1, deep = L + height(n) - 1;
+          return { kind: deep > MAX ? "depth" : "ok", level: L, deep: deep, at: p === n.parent && i > from ? i - 1 : i };
+        }
+        function move(n, p, i) {
+          var s = S(), v = judge(s, n, p, i);
+          if (v.kind === "noop") return;
+          st.moved = null;
+          if (v.kind === "cycle") {
+            band("risk", "메뉴를 자기 자신이나 하위 메뉴 아래로 옮길 수 없습니다",
+              "‘" + n.name + "’ 메뉴를 " + (p === n ? "자기 자신" : "그 하위인 ‘" + p.name + "’") + " 아래에 놓으려 했습니다. 옮기지 않았습니다 — 트리는 그대로입니다.");
+          } else if (v.kind === "depth") {
+            band("risk", "메뉴는 최대 3단계까지만 둘 수 있습니다",
+              "‘" + n.name + "’ 메뉴를 " + (p ? "‘" + p.name + "’ 아래" : "최상위") + "에 놓으면 " + v.level + "단계" +
+              (v.deep > v.level ? ", 그 하위 메뉴가 " + v.deep + "단계" : "") + "가 됩니다. 옮기지 않았습니다.");
+          } else {
+            var fromP = n.parent, fromI = pos(s, n);
+            if (takeFail()) {
+              band("risk", "메뉴 이동을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+                "‘" + n.name + "’ 메뉴의 상위 메뉴와 순서를 옮기기 전(" + where(fromP, fromI + 1) + ")으로 되돌렸습니다.");
+            } else {
+              sib(s, fromP).splice(fromI, 1);
+              n.parent = p;
+              sib(s, p).splice(v.at, 0, n);
+              if (st.sel[st.svc] !== n.code) st.buf = null;
+              st.sel[st.svc] = n.code;
+              st.moved = n.code;
+              var k = count(n);
+              band("info", "이동했습니다 — 순서와 단계를 다시 매겼습니다",
+                "‘" + n.name + "’ 메뉴를 " + where(fromP, fromI + 1) + "에서 " + where(p, v.at + 1) + "(" + v.level + "단계)로 옮겼습니다." +
+                (k ? " 하위 메뉴 " + k + "개가 함께 움직였습니다." : "") + " 같은 상위 메뉴 안의 순서를 1부터 다시 매겼고, 변경 이력은 남기지 않습니다.");
+            }
+          }
+          render();
+        }
+        /* 위치 옮기기 버튼 · Alt + 방향키 — 끌어 놓기와 같은 move() 를 부른다. */
+        function steps(s, n) {
+          var list = sib(s, n.parent), i = list.indexOf(n), prev = list[i - 1], next = list[i + 1];
+          return {
+            up: prev ? { p: n.parent, i: i - 1, tip: "‘" + prev.name + "’ 앞으로" } : null,
+            down: next ? { p: n.parent, i: i + 2, tip: "‘" + next.name + "’ 뒤로" } : null,
+            out: n.parent ? { p: n.parent.parent, i: pos(s, n.parent) + 1, tip: "‘" + n.parent.name + "’ 바로 뒤, " + lvl(n.parent) + "단계로" } : null,
+            into: prev ? { p: prev, i: prev.kids.length, tip: "‘" + prev.name + "’ 안 맨 끝으로" } : null
+          };
+        }
+        function step(dir) {
+          var n = selNode();
+          if (!n || st.draft || st.role !== "edit") return;
+          var t = steps(S(), n)[dir];
+          if (t) move(n, t.p, t.i);
+        }
+
+        /* ---------- 신규 메뉴 · 저장 ---------- */
+        function newDraft() {
+          if (st.draft) return;
+          var cur = selNode(), p = null;
+          st.band = null;
+          if (cur) {
+            p = lvl(cur) < MAX ? cur : cur.parent;
+            if (p !== cur) band("warn", "3단계 메뉴 아래에는 새 메뉴를 둘 수 없습니다",
+              "고른 ‘" + cur.name + "’ 메뉴가 3단계라 같은 단계(‘" + p.name + "’ 아래 맨 끝)에 새 메뉴 자리를 만들었습니다.");
+          }
+          st.draft = { parent: p, from: p, name: "", url: "", use: true, err: "" };
+          st.moved = null;
+          render();
+          $("mn-name").focus();
+        }
+        function bufOf(n) {
+          if (!st.buf || st.buf.code !== n.code) st.buf = { code: n.code, name: n.name, url: n.url, use: n.use, err: "" };
+          return st.buf;
+        }
+        function save() {
+          var s = S(), d = st.draft, n = d ? null : selNode(), b = d || bufOf(n), name = b.name.trim(), url = b.url.trim();
+          if (!name) {
+            b.err = "노출 메뉴명을 입력해 주세요.";
+            render();
+            $("mn-name").focus();
+            return;
+          }
+          if (d) {
+            var list = sib(s, d.parent);
+            if (takeFail()) {
+              band("risk", "메뉴를 등록하지 못했습니다. 잠시 후 다시 시도해 주세요.", "트리는 그대로입니다. 입력한 값은 상세에 남겨 두었습니다.");
+            } else {
+              var m = { code: nextCode(), name: name, url: url, use: d.use, parent: d.parent, kids: [] };
+              list.push(m);
+              st.draft = null;
+              st.sel[st.svc] = m.code;
+              st.buf = null;
+              band("info", "저장했습니다 · 변경 이력은 남기지 않습니다",
+                "새 메뉴 " + m.code + " ‘" + m.name + "’ — " + where(m.parent, list.length) + " · " + lvl(m) + "단계로 등록했습니다. 권한 관리의 메뉴 등록 팝업에 바로 나타나고, 권한은 거기서 따로 줍니다.");
+            }
+          } else if (name === n.name && url === n.url && b.use === n.use) {
+            band("info", "바꾼 내용이 없습니다", "‘" + n.name + "’ 메뉴를 그대로 두었습니다.");
+            st.buf = null;
+          } else if (takeFail()) {
+            band("risk", "메뉴를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.", "‘" + n.name + "’ 메뉴는 저장 전 값 그대로입니다. 입력한 값은 상세에 남겨 두었습니다.");
+          } else {
+            var off = n.use && !b.use;
+            n.name = name; n.url = url; n.use = b.use;
+            st.buf = null;
+            band("info", "저장했습니다 · 변경 이력은 남기지 않습니다",
+              n.code + " ‘" + n.name + "’ — " + (off ? "사용중지로 돌려 사용자 화면과 신규 권한 부여에서 빠집니다. 이미 준 권한은 남습니다." : "노출 메뉴명 · URL · 사용 상태를 트리에 반영했습니다."));
+          }
+          st.moved = null;
+          render();
+        }
+
+        /* ---------- 그리기 ---------- */
+        var TH = "padding: 6px 10px";
+        function rowHTML(n, L, edit) {
+          var on = st.sel[st.svc] === n.code && !st.draft;
+          var cell = "padding: 8px 10px;" + (n.use ? "" : " color: var(--muted);") + (on ? " background: var(--info-wash);" : "");
+          var mark = on ? " box-shadow: inset 2px 0 0 var(--info);" : "";
+          var nm = (L === 1 ? "<b>" + esc(n.name) + "</b>" : esc(n.name)) +
+            (n.kids.length ? ' <span class="subtle" style="font-size: 12px">묶음</span>' : "") +
+            (st.moved === n.code ? ' <span class="badge badge--info">방금 옮김</span>' : "");
+          var handle = st.draft
+            ? '<span title="새 메뉴를 저장하거나 취소한 뒤 옮길 수 있습니다" aria-hidden="true" style="display: inline-flex; padding: 4px; color: var(--muted-soft); cursor: not-allowed">' + ic("dots", 14) + "</span>"
+            : '<span data-drag draggable="true" title="끌어서 옮기기" aria-hidden="true" style="display: inline-flex; padding: 4px; border-radius: 4px; color: var(--muted-tert); cursor: grab">' + ic("dots", 14) + "</span>";
+          return '<tr data-code="' + n.code + '" tabindex="' + (on ? 0 : -1) + '"' + (on ? ' aria-current="true"' : "") + ' style="cursor: pointer">' +
+            (edit ? '<td style="' + cell + mark + ' width: 30px; padding-right: 0">' + handle + "</td>" : "") +
+            '<td style="' + cell + (edit ? "" : mark) + " padding-left: " + (10 + (L - 1) * 18) + 'px">' + nm + "</td>" +
+            '<td class="mono" style="' + cell + '">' + n.code + "</td>" +
+            (n.url ? '<td class="mono" style="' + cell + ' font-size: 12px; word-break: break-all">' + esc(n.url) + "</td>" : '<td class="nil" style="' + cell + '">—</td>') +
+            '<td class="n" style="' + cell + '">' + (pos(S(), n) + 1) + "</td>" +
+            '<td style="' + cell + '">' + (n.use ? '<span class="badge badge--ok">사용</span>' : '<span class="badge badge--warn">사용중지</span>') + "</td></tr>";
+        }
+        function draftHTML(edit) {
+          var d = st.draft, L = (d.parent ? lvl(d.parent) : 0) + 1, cell = "padding: 8px 10px; background: var(--info-wash);";
+          return '<tr data-draft style="outline: 1px dashed var(--info); outline-offset: -3px">' +
+            (edit ? '<td style="' + cell + '"></td>' : "") +
+            '<td style="' + cell + " color: var(--info); padding-left: " + (10 + (L - 1) * 18) + 'px"><b id="mn-draft-name">' + (d.name.trim() ? esc(d.name) : "새 메뉴") + "</b> " +
+            '<span class="badge badge--preview">작성 중</span></td>' +
+            '<td class="mono" style="' + cell + '">' + nextCode() + "</td>" +
+            '<td class="nil" style="' + cell + '">—</td>' +
+            '<td class="n" style="' + cell + '">' + (sib(S(), d.parent).length + 1) + "</td>" +
+            '<td style="' + cell + '"><span class="badge badge--preview">저장 전</span></td></tr>';
+        }
+        function renderTree() {
+          var s = S(), edit = st.role === "edit", cols = edit ? 6 : 5, out = [];
+          (function go(list, parent, L) {
+            list.forEach(function (n) { out.push(rowHTML(n, L, edit)); go(n.kids, n, L + 1); });
+            if (st.draft && st.draft.parent === parent) out.push(draftHTML(edit));
+          })(s.roots, null, 1);
+          if (edit) out.push('<tr id="mn-end" hidden><td colspan="' + cols + '" style="padding: 10px; text-align: center; font-size: 12px; color: var(--muted-tert); outline: 1px dashed var(--hairline-strong); outline-offset: -4px">여기에 놓으면 최상위 맨 끝으로 옮깁니다</td></tr>');
+          if (s.omitted) out.push('<tr><td colspan="' + cols + '" class="subtle" style="padding: 8px 10px">… 외 ' + s.omitted + "개 메뉴 · 목업 표본에서 생략</td></tr>");
+          tree.innerHTML =
+            "<thead><tr>" +
+            (edit ? '<th scope="col" style="' + TH + '; width: 30px; padding-right: 0"><span class="subtle" title="끌어서 옮기기">이동</span></th>' : "") +
+            '<th scope="col" style="' + TH + '">노출 메뉴명</th><th scope="col" style="' + TH + '">메뉴 코드</th><th scope="col" style="' + TH + '">메뉴 URL</th>' +
+            '<th scope="col" class="n" style="' + TH + '">순서</th><th scope="col" style="' + TH + '">사용 상태</th></tr></thead>' +
+            "<tbody>" + out.join("") + "</tbody>";
+        }
+
+        function field(id, label, value, cls, extra) {
+          return '<div class="field"><label for="' + id + '">' + label + "</label>" +
+            (cls === "mono" ? '<input class="input mono" id="' + id + '" value="' + esc(value) + '" readonly />' : '<input class="input" id="' + id + '" value="' + esc(value) + '" readonly />') +
+            (extra || "") + "</div>";
+        }
+        function renderDetail() {
+          var s = S(), d = st.draft, n = d ? null : selNode(), edit = st.role === "edit";
+          if (!d && !n) {
+            detail.innerHTML =
+              '<section class="panel"><div class="panel__head"><h2 class="t-h2">메뉴 상세</h2></div>' +
+              '<div class="empty"><span class="empty__ic">' + ic("list", 22) + "</span><p>왼쪽 트리에서 메뉴를 고르면 상세가 여기에 섭니다.</p>" +
+              (edit ? '<p class="subtle" style="font-size: 12px">아무것도 고르지 않고 신규 메뉴를 누르면 최상위(1단계) 메뉴로 등록합니다.</p>' : "") +
+              "</div></section>";
+            return;
+          }
+          var p = d ? d.parent : n.parent, L = (p ? lvl(p) : 0) + 1;
+          var order = d ? sib(s, p).length + 1 : pos(s, n) + 1, code = d ? nextCode() : n.code;
+          var v = d || (st.buf && st.buf.code === n.code ? st.buf : n);
+          var parentTxt = p ? p.code + " · " + path(p) : "없음 · 최상위(1단계) 메뉴";
+          var head = '<div class="panel__head"><h2 class="t-h2">' + (d ? "신규 메뉴 등록" : "메뉴 상세") + '</h2><span class="badge badge--quiet">' + L + "단계</span>" +
+            (d ? '<span class="badge badge--preview">저장 전</span>' : "") + "</div>";
+          var noDelete = '<div class="panel__note">메뉴는 지우지 않습니다. 쓰지 않는 메뉴는 사용중지로 돌립니다. 메뉴 등록·수정·이동 이력은 남기지 않습니다.</div>';
+
+          if (!edit) {
+            detail.innerHTML = '<section class="panel">' + head +
+              '<dl class="kv panel__body">' +
+              '<dt>서비스 코드</dt><dd class="mono">' + s.code + "</dd>" +
+              "<dt>상위 메뉴</dt><dd>" + (p ? '<span class="mono">' + p.code + "</span> " + esc(path(p)) : '<span class="subtle">없음 · 최상위 메뉴</span>') + "</dd>" +
+              '<dt>메뉴 코드</dt><dd class="mono">' + n.code + "</dd>" +
+              '<dt>메뉴 순서</dt><dd class="mono">' + order + "</dd>" +
+              "<dt>노출 메뉴명</dt><dd>" + esc(n.name) + "</dd>" +
+              "<dt>메뉴 URL</dt><dd" + (n.url ? ' class="mono">' + esc(n.url) : ' class="nil">—') + "</dd>" +
+              "<dt>메뉴 사용 상태</dt><dd>" + (n.use ? '<span class="badge badge--ok">사용</span>' : '<span class="badge badge--warn">사용중지</span>') + "</dd>" +
+              "</dl>" + noDelete + "</section>";
+            return;
+          }
+
+          var parentHelp = d
+            ? (d.parent
+                ? '<button class="tbtn" type="button" data-top style="align-self: flex-start">최상위 메뉴로 바꾸기</button>'
+                : d.from ? '<button class="tbtn" type="button" data-back style="align-self: flex-start">‘' + esc(d.from.name) + "’ 아래로 되돌리기</button>" : '<span class="help">고른 메뉴가 없어 최상위에 등록합니다.</span>')
+            : '<span class="help">' + (L >= MAX ? "3단계 메뉴라 이 아래에는 하위 메뉴를 둘 수 없습니다. " : "") + "상위 메뉴와 순서는 트리에서 끌거나 아래 ‘위치 옮기기’로 바꿉니다.</span>";
+          var err = v.err ? '<span class="err" id="mn-name-err">' + ic("alert", 14) + esc(v.err) + "</span>" : "";
+          var html = '<section class="panel" aria-label="' + (d ? "신규 메뉴 등록" : "메뉴 상세") + '">' + head +
+            '<div class="panel__body">' +
+            field("mn-svc", "서비스 코드", s.code, "mono") +
+            field("mn-parent", "상위 메뉴", parentTxt, "", parentHelp) +
+            '<div class="grid grid--2" style="gap: var(--s-4)">' +
+            field("mn-code", "메뉴 코드" + (d ? ' <span class="badge badge--preview">자동 채번</span>' : ""), code, "mono") +
+            field("mn-order", "메뉴 순서", String(order), "mono") +
+            "</div>" +
+            (d ? '<span class="subtle" style="font-size: 12px; margin-top: calc(-1 * var(--s-2))">코드는 저장할 때 확정됩니다. 순서는 상위 메뉴의 맨 끝이고, 저장 뒤 트리에서 옮깁니다.</span>' : "") +
+            '<div class="field"><label for="mn-name">노출 메뉴명 <span class="req">*</span></label>' +
+            '<input class="input" id="mn-name" value="' + esc(v.name) + '" placeholder="' + esc(s.eg) + '"' + (v.err ? ' aria-invalid="true" aria-describedby="mn-name-err"' : "") + " />" + err + "</div>" +
+            '<div class="field"><label for="mn-url">메뉴 URL</label><input class="input mono" id="mn-url" value="' + esc(v.url) + '" placeholder="' + esc(s.urlEg) + '" /></div>' +
+            '<div class="field"><label id="mn-use-l">메뉴 사용 상태</label>' +
+            '<div class="seg" role="group" aria-labelledby="mn-use-l" style="align-self: flex-start">' +
+            '<button type="button" data-use="1" aria-pressed="' + v.use + '">사용</button><button type="button" data-use="0" aria-pressed="' + !v.use + '">사용중지</button></div>' +
+            '<span class="help">사용중지하면 사용자 화면에서 빠지고 새로 권한을 줄 수 없습니다. 이미 준 권한은 남습니다.</span></div>' +
+            "</div>" +
+            '<div class="panel__foot inline" style="justify-content: flex-end">' +
+            (d ? '<button class="btn btn--ghost btn--sm" type="button" data-cancel>취소</button>' : "") +
+            '<button class="btn btn--primary btn--sm" type="button" data-save>저장</button></div>' +
+            (d ? '<div class="panel__note">저장한 메뉴는 권한 관리의 메뉴 등록 팝업에 바로 나타납니다. 권한은 거기서 따로 줍니다.</div>' : noDelete) +
+            "</section>";
+
+          if (!d) {
+            var t = steps(s, n);
+            var btn = function (key, icon, label) {
+              return t[key]
+                ? '<button class="btn btn--secondary btn--sm" type="button" data-mv="' + key + '" data-tip="' + esc(t[key].tip) + '">' + ic(icon, 14) + label + "</button>"
+                : '<button class="btn btn--secondary btn--sm" type="button" data-mv="' + key + '" disabled>' + ic(icon, 14) + label + "</button>";
+            };
+            html += '<section class="panel" aria-labelledby="mn-mv-t"><div class="panel__head"><h2 class="t-h2" id="mn-mv-t">위치 옮기기</h2>' +
+              '<span class="subtle" style="font-size: 12px">누르면 바로 반영 · 저장과 따로</span></div>' +
+              '<div class="panel__body"><div class="grid grid--2" style="gap: var(--s-2)">' +
+              btn("up", "up", "위로") + btn("down", "down", "아래로") + btn("out", "left", "상위로 올리기") + btn("into", "right", "위 메뉴 안으로 넣기") +
+              '</div><span class="subtle" style="font-size: 12px">끌어 놓기와 같은 규칙입니다 — 하위 메뉴가 함께 움직이고 3단계를 넘길 수 없습니다. 트리 행에서 Alt + ↑ ↓ ← → 로도 옮깁니다.</span></div></section>';
+          }
+          detail.innerHTML = html;
+        }
+
+        function renderBand() {
+          var b = st.band;
+          bandBox.hidden = !(b && st.svc);
+          if (bandBox.hidden) { bandBox.innerHTML = ""; return; }
+          var close = '<div class="band__act"><button class="iconbtn" type="button" data-band-close aria-label="알림 닫기">' + ic("x", 16) + "</button></div>";
+          var body = '<div class="band__body"><div class="band__title">' + esc(b.title) + '</div><p class="band__desc">' + esc(b.desc) + "</p></div>" + close;
+          bandBox.innerHTML =
+            b.kind === "risk" ? '<div class="band band--risk" style="box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06)"><span class="band__ic">' + ic("alert", 20) + "</span>" + body + "</div>"
+            : b.kind === "warn" ? '<div class="band band--warn" style="box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06)"><span class="band__ic">' + ic("info", 20) + "</span>" + body + "</div>"
+            : '<div class="band band--info" style="box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06)"><span class="band__ic">' + ic("check", 20) + "</span>" + body + "</div>";
+        }
+
+        function renderCounts() {
+          KEYS.forEach(function (k) {
+            var s = SVC[k], all = 0, off = 0;
+            each(s, function (n) { all++; if (!n.use) off++; });
+            var total = all + s.omitted;
+            $("mn-cnt-" + k).innerHTML = total + (off && !s.omitted ? ' <span class="subtle">· 사용중지 ' + off + "</span>" : "");
+            var tab = root.querySelector('[data-svc-tab="' + k + '"]');
+            tab.setAttribute("aria-selected", String(st.svc === k));
+            tab.querySelector("[data-tab-count]").textContent = total;
+            if (st.svc === k) $("mn-size").textContent = s.omitted ? total + "개 · 표본 " + all + "개" : total + "개 · 사용 " + (all - off) + " · 사용중지 " + off;
+          });
+          var nb = $("mn-new");
+          if (st.draft) nb.setAttribute("disabled", ""); else nb.removeAttribute("disabled");
+        }
+
+        function focusKey() {
+          var a = document.activeElement;
+          if (!a || a === document.body) return null;
+          if (a.dataset && a.dataset.code) return "[data-code='" + a.dataset.code + "']";
+          if (a.dataset && a.dataset.mv) return "[data-mv='" + a.dataset.mv + "']";
+          return a.id ? "#" + a.id : null;
+        }
+        function render() {
+          var fk = focusKey();
+          st.role = roleBar.dataset.current || "edit";
+          if (st.role !== "edit") st.draft = null;
+          renderBand();
+          if (!st.svc) return;
+          renderCounts();
+          renderTree();
+          renderDetail();
+          document.querySelectorAll(".tipbox").forEach(function (t) { t.remove(); });
+          if (!tree.querySelector('tr[tabindex="0"]')) { var f = tree.querySelector("tr[data-code]"); if (f) f.tabIndex = 0; }
+          if (fk) {
+            var el = root.querySelector(fk);
+            if (el && !el.disabled) el.focus();
+            else if (fk.indexOf("data-mv") > -1) { var r = tree.querySelector('[aria-current="true"]'); if (r) r.focus(); }
+          }
+        }
+
+        /* 목업 상태 줄 — auth.js 가 먼저 상태를 바꾼 뒤 이 처리기가 돈다. */
+        function sync() {
+          var cur = listBar.dataset.current;
+          var svc = SVC[cur] ? cur : null;
+          if (svc !== st.svc) { st.svc = svc; st.draft = null; st.buf = null; st.band = null; st.moved = null; }
+          render();
+        }
+        on(listBar, "click", function (e) { if (e.target.closest("[data-state]")) sync(); });
+        on(roleBar, "click", function (e) { if (e.target.closest("[data-state]")) render(); });
+
+        /* ---------- 트리 — 고르기 · 키보드 ---------- */
+        function pick(code) {
+          var at = code;
+          if (st.draft) st.draft = null;
+          else if (st.sel[st.svc] === code) code = null;
+          st.sel[st.svc] = code;
+          st.buf = null;
+          render();
+          var r = tree.querySelector("[data-code='" + at + "']");
+          if (r) { r.tabIndex = 0; r.focus(); }
+        }
+        on(tree, "click", function (e) {
+          var tr = e.target.closest("tr[data-code]");
+          if (tr) pick(tr.dataset.code);
+        });
+        on(tree, "keydown", function (e) {
+          var tr = e.target.closest("tr[data-code]");
+          if (!tr) return;
+          var arrows = { ArrowUp: "up", ArrowDown: "down", ArrowLeft: "out", ArrowRight: "into" };
+          if (e.altKey && arrows[e.key]) {
+            e.preventDefault();
+            if (st.sel[st.svc] !== tr.dataset.code || st.draft) pick(tr.dataset.code);
+            step(arrows[e.key]);
+            return;
+          }
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(tr.dataset.code); return; }
+          if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+            e.preventDefault();
+            var rows = [].slice.call(tree.querySelectorAll("tr[data-code]")), i = rows.indexOf(tr);
+            var to = rows[i + (e.key === "ArrowUp" ? -1 : 1)];
+            if (to) to.focus();
+          }
+        });
+        on($("mn-new"), "click", newDraft);
+
+        /* ---------- 상세 ---------- */
+        on(detail, "click", function (e) {
+          var t = e.target.closest("button");
+          if (!t) return;
+          var d = st.draft, n = d ? null : selNode();
+          if (t.dataset.use) {
+            var b = d || bufOf(n);
+            b.use = t.dataset.use === "1";
+            t.parentNode.querySelectorAll("[data-use]").forEach(function (o) { o.setAttribute("aria-pressed", String(o === t)); });
+          } else if (t.hasAttribute("data-save")) save();
+          else if (t.hasAttribute("data-cancel")) { st.draft = null; st.band = null; render(); }
+          else if (t.hasAttribute("data-top")) { d.parent = null; render(); }
+          else if (t.hasAttribute("data-back")) { d.parent = d.from; render(); }
+          else if (t.dataset.mv) step(t.dataset.mv);
+        });
+        on(detail, "input", function (e) {
+          var id = e.target.id;
+          if (id !== "mn-name" && id !== "mn-url") return;
+          var b = st.draft || bufOf(selNode());
+          b[id === "mn-name" ? "name" : "url"] = e.target.value;
+          if (id === "mn-name") {
+            if (b.err && e.target.value.trim()) {
+              b.err = "";
+              e.target.removeAttribute("aria-invalid");
+              e.target.removeAttribute("aria-describedby");
+              var er = $("mn-name-err");
+              if (er) er.remove();
+            }
+            var live = $("mn-draft-name");
+            if (live) live.textContent = e.target.value.trim() || "새 메뉴";
+          }
+        });
+        on(detail, "keydown", function (e) {
+          if (e.key === "Enter" && (e.target.id === "mn-name" || e.target.id === "mn-url")) { e.preventDefault(); save(); }
+          if (e.key === "Escape" && st.draft) { st.draft = null; st.band = null; render(); }
+        });
+        on(bandBox, "click", function (e) {
+          if (e.target.closest("[data-band-close]")) { st.band = null; render(); }
+        });
+
+        /* ---------- 끌어 놓기 ----------
+           행을 세 칸으로 나눈다 — 위 30% 는 그 앞, 아래 30% 는 그 뒤(하위가 있으면 그 안 맨 앞), 가운데는 그 안 맨 끝. */
+        function targetAt(e) {
+          var el = e.target.nodeType === 1 ? e.target : e.target.parentNode;
+          var tr = el && el.closest && el.closest("tr");
+          if (!tr || !tree.contains(tr) || !tr.parentNode || tr.parentNode.tagName !== "TBODY") return null;
+          var s = S();
+          if (tr.id === "mn-end") return { tr: tr, p: null, i: s.roots.length, mode: "box", L: 1 };
+          var n = find(s, tr.dataset.code);
+          if (!n) return null;
+          var r = tr.getBoundingClientRect(), y = (e.clientY - r.top) / r.height;
+          if (y < 0.3) return { tr: tr, p: n.parent, i: pos(s, n), mode: "top", L: lvl(n) };
+          if (y > 0.7) return n.kids.length
+            ? { tr: tr, p: n, i: 0, mode: "bottom", L: lvl(n) + 1 }
+            : { tr: tr, p: n.parent, i: pos(s, n) + 1, mode: "bottom", L: lvl(n) };
+          return { tr: tr, p: n, i: n.kids.length, mode: "box", L: lvl(n) + 1 };
+        }
+        function verdictText(v, t) {
+          if (v.kind === "ok") return { ok: true, label: where(t.p, v.at + 1) + " · " + v.level + "단계", hint: "놓으면 " + where(t.p, v.at + 1) + " · " + v.level + "단계" };
+          if (v.kind === "depth") return { ok: false, label: "놓을 수 없음 · " + v.deep + "단계가 됨", hint: "놓을 수 없음 — 메뉴는 최대 3단계까지 (놓으면 " + v.deep + "단계)" };
+          if (v.kind === "cycle") return { ok: false, label: "놓을 수 없음 · 자기 하위", hint: "놓을 수 없음 — 자기 자신이나 하위 메뉴 아래" };
+          return null;
+        }
+        function showDrop(t, vt) {
+          var w = wrap.getBoundingClientRect(), r = t.tr.getBoundingClientRect();
+          var top = r.top - w.top + wrap.scrollTop, left = r.left - w.left + wrap.scrollLeft;
+          var col = vt.ok ? "var(--info)" : "var(--risk-text)";
+          var pill = '<span style="position: absolute; right: 8px; ' + (t.mode === "box" ? "top: 50%; transform: translateY(-50%)" : "top: -10px") +
+            "; padding: 1px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 600; white-space: nowrap; color: var(--on-dark); background: " + col + '">' + esc(vt.label) + "</span>";
+          if (t.mode === "box") {
+            drop.style.cssText = "position: absolute; pointer-events: none; top: " + top + "px; left: " + (left + 2) + "px; width: " + (r.width - 4) + "px; height: " + r.height + "px";
+            drop.innerHTML = '<span style="position: absolute; inset: 0; border-radius: 6px; mix-blend-mode: multiply; border: ' + (vt.ok ? "2px solid " : "1px dashed ") + col +
+              "; background: " + (vt.ok ? "var(--info-wash)" : "var(--risk-wash)") + '"></span>' + pill;
+          } else {
+            var name = t.tr.cells[st.role === "edit" ? 1 : 0], indent = name.offsetLeft + 10 + (t.L - 1) * 18;
+            drop.style.cssText = "position: absolute; pointer-events: none; top: " + ((t.mode === "top" ? top : top + r.height) - 1) + "px; left: " + (left + indent) + "px; width: " + (r.width - indent) + "px; height: 2px; background: " +
+              (vt.ok ? col : "repeating-linear-gradient(90deg, var(--risk-text) 0 6px, transparent 6px 10px)");
+            drop.innerHTML = '<span style="position: absolute; left: -4px; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: ' + col + '"></span>' + pill;
+          }
+          drop.hidden = false;
+          hint.textContent = vt.hint;
+          hint.style.color = col;
+        }
+        function hideDrop() {
+          drop.hidden = true;
+          hint.textContent = st.drag ? "놓을 자리를 고르세요 — 행 위·아래 끝은 앞·뒤로, 가운데는 그 안으로" : HINT;
+          hint.style.color = "";
+        }
+        function dragUI(on) {
+          var end = $("mn-end");
+          if (end) end.hidden = !on;
+          root.querySelectorAll("[data-svc-tab]").forEach(function (tab) {
+            var other = on && tab.dataset.svcTab !== st.svc;
+            tab.querySelector("[data-noplace]").hidden = !other;
+            tab.style.cssText = other ? "outline: 1px dashed var(--risk-text); outline-offset: 4px; color: var(--risk-text)" : "";
+          });
+          var src = st.drag && tree.querySelector("[data-code='" + st.drag + "']");
+          if (src) src.style.opacity = on ? "0.45" : "";
+          hideDrop();
+          if (!on) hint.textContent = HINT;
+        }
+        on(tree, "dragstart", function (e) {
+          var h = e.target.closest && e.target.closest("[data-drag]");
+          if (!h || st.role !== "edit" || st.draft) { e.preventDefault(); return; }
+          var tr = h.closest("tr");
+          st.drag = tr.dataset.code;
+          e.dataTransfer.effectAllowed = "move";
+          e.dataTransfer.setData("text/plain", st.drag);
+          try { e.dataTransfer.setDragImage(tr, 16, tr.offsetHeight / 2); } catch (err) {}
+          setTimeout(function () { if (st.drag) dragUI(true); }, 0);
+        });
+        on(tree, "dragover", function (e) {
+          if (!st.drag) return;
+          var t = targetAt(e);
+          if (!t) { hideDrop(); return; }
+          var v = judge(S(), find(S(), st.drag), t.p, t.i), vt = verdictText(v, t);
+          if (!vt) { hideDrop(); hint.textContent = "지금 자리입니다"; return; }
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "move";
+          showDrop(t, vt);
+        });
+        on(wrap, "dragleave", function (e) {
+          if (st.drag && !wrap.contains(e.relatedTarget)) hideDrop();
+        });
+        on(tree, "drop", function (e) {
+          if (!st.drag) return;
+          e.preventDefault();
+          var t = targetAt(e), n = find(S(), st.drag);
+          dragUI(false);
+          st.drag = null;
+          if (t && n) move(n, t.p, t.i);
+        });
+        on(document, "dragend", function () {
+          if (!st.drag) return;
+          dragUI(false);
+          st.drag = null;
+        });
+        /* 다른 서비스 탭 — 놓을 수 없는 영역. 놓으면 거절 띠만 보이고 트리는 그대로다. */
+        on(root.querySelector(".tabs"), "dragover", function (e) {
+          var tab = e.target.closest && e.target.closest("[data-svc-tab]");
+          if (!st.drag || !tab || tab.dataset.svcTab === st.svc) return;
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "move";
+          hint.textContent = "놓을 수 없음 — 다른 서비스로는 옮길 수 없습니다";
+          hint.style.color = "var(--risk-text)";
+        });
+        on(root.querySelector(".tabs"), "drop", function (e) {
+          var tab = e.target.closest && e.target.closest("[data-svc-tab]");
+          if (!st.drag || !tab || tab.dataset.svcTab === st.svc) return;
+          e.preventDefault();
+          var n = find(S(), st.drag);
+          dragUI(false);
+          st.drag = null;
+          st.moved = null;
+          band("risk", "같은 서비스 안에서만 옮길 수 있습니다",
+            "‘" + n.name + "’ 메뉴를 다른 서비스(" + SVC[tab.dataset.svcTab].name + ")로 옮기지 않았습니다. 트리는 그대로입니다.");
+          render();
+        });
+
+        sync();
+      })();
+    </script>
+  </body>
+</html>

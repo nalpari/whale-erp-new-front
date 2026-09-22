@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MY PAGE 개요 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="mypage" data-sub="mypage/overview.html">
+    <!-- MY PAGE — 인증 및 계정 관리(R-LYZWGG)의 내 정보 및 비밀번호 관리(F-AMTDCK)와 로그아웃(F-RCHJES). 목업 전용 개요.
+         1팀 작업이다. 실제 제품에서 MY PAGE 는 사이드바 메뉴가 아니라 상단 이름을 눌러 여는 메뉴다.
+         목업 허브에서 찾기 쉽도록 사이드바에도 같은 묶음을 둔다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <a class="iconbtn" href="../index.html" aria-label="목업 허브로" data-icon="arrowleft" data-icon-size="18"></a>
+          <h1 class="t-h1">MY PAGE</h1>
+          <span class="badge badge--warn">1팀 작업</span>
+          <span class="badge badge--preview">영역 개요</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">F-AMTDCK · F-RCHJES · mypage/</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="band band--warn">
+            <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+            <div class="band__body">
+              <div class="band__title">상단 오른쪽 이름을 누르면 열리는 메뉴다</div>
+              <p class="band__desc">
+                manyfast <b>[1팀공용] WHALE ERP</b> 의 <b>내 정보 및 비밀번호 관리</b>와 <b>로그아웃</b> 명세로 만들었다.
+                어느 화면에서든 상단의 <b>정하윤</b>을 누르면 내 정보 관리 · 비밀번호 변경 · 회원 탈퇴 · 로그아웃이 뜬다.
+                메뉴 권한 설정과 상관없이 로그인한 사람 모두에게 보이고, 회원 탈퇴만 BP 마스터에게 보인다.
+              </p>
+            </div>
+            <div class="band__act">
+              <a class="btn btn--primary" href="profile.html">내 정보부터 보기</a>
+            </div>
+          </div>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">화면</h2>
+              <span class="badge badge--quiet">3개 + 로그아웃</span>
+            </div>
+            <div class="grid grid--3">
+              <a class="mk-card" href="profile.html">
+                <span class="mk-card__route">/mypage/profile · 두 탭</span>
+                <span class="mk-card__name">내 정보</span>
+                <span class="mk-card__desc">
+                  기본정보 탭은 이름·연락처·이메일만 고친다. 사업자정보 탭은 BP 마스터에게만 있고, 번호·대표자명·개업일자는 인증으로만 바뀐다.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--quiet">S-JXKHCM · S-UOJVUR</span>
+                  <span class="badge badge--preview">역할 2</span>
+                </span>
+              </a>
+              <a class="mk-card" href="password.html">
+                <span class="mk-card__route">/mypage/password</span>
+                <span class="mk-card__name">비밀번호 변경</span>
+                <span class="mk-card__desc">
+                  현재 비밀번호 확인 뒤 새 비밀번호. 오류 문구는 비밀번호 정책의 것을 그대로 쓰고, 이 기기 로그인은 이어진다.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--quiet">S-PTWREE</span>
+                  <span class="badge badge--preview">상태 8</span>
+                </span>
+              </a>
+              <a class="mk-card" href="withdraw.html">
+                <span class="mk-card__route">/mypage/withdraw · BP 마스터</span>
+                <span class="mk-card__name">회원 탈퇴</span>
+                <span class="mk-card__desc">
+                  비밀번호 확인 팝업을 지나야 보인다. 선행 조건 셋의 충족 여부, 폐점될 점포 수, 사유 선택, 최종 확인까지.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--quiet">S-JHQQNR</span>
+                </span>
+              </a>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">화면 연결</h2>
+              <span class="badge badge--quiet">상단 이름에서 뻗는 길</span>
+            </div>
+            <div class="panel">
+              <div class="tblwrap">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th scope="col">출발</th>
+                      <th scope="col">누르는 것 · 조건</th>
+                      <th scope="col">도착</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td class="k">모든 화면</td><td>상단 이름 → 내 정보 관리</td><td><a class="tlink" href="profile.html">내 정보</a> — 기본정보 탭이 먼저 열림</td></tr>
+                    <tr><td class="k">모든 화면</td><td>상단 이름 → 비밀번호 변경</td><td><a class="tlink" href="password.html">비밀번호 변경</a></td></tr>
+                    <tr><td class="k">모든 화면</td><td>상단 이름 → 회원 탈퇴 (BP 마스터만)</td><td>비밀번호 확인 팝업 → <a class="tlink" href="withdraw.html">회원 탈퇴</a></td></tr>
+                    <tr><td class="k">모든 화면</td><td>상단 이름 → 로그아웃</td><td><a class="tlink" href="../auth/login.html">로그인</a> — 이 브라우저 세션만 끝남</td></tr>
+                    <tr><td class="k">비밀번호 확인 팝업</td><td>취소</td><td><a class="tlink" href="profile.html">내 정보</a></td></tr>
+                    <tr><td class="k">회원 탈퇴</td><td>조건 충족 · 사유 선택 → 회원 탈퇴 → 확인</td><td>완료 안내 → <a class="tlink" href="../auth/login.html">로그인</a></td></tr>
+                    <tr><td class="k">회원 탈퇴</td><td>조건 미충족 → 회원 탈퇴</td><td>해야 할 일 안내 팝업 (그 자리)</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">정책</h2>
+              <span class="badge badge--quiet">10줄</span>
+            </div>
+            <div class="grid grid--2" style="align-items: start">
+              <div class="panel">
+                <div class="panel__head">
+                  <h3 class="t-h3">내 정보 · 비밀번호</h3>
+                  <span class="badge badge--quiet">5</span>
+                </div>
+                <ul class="pol">
+                  <li><span class="pol__t">본인 것만 고친다. 아이디·사용자 권한·가입일·최근 로그인 일시는 보여만 준다.</span><span class="pol__ref">S-JXKHCM</span></li>
+                  <li><span class="pol__t">이메일을 바꾸면 형식·중복만 보고 바로 저장한다. 소유 인증도, 바꿨다는 알림 메일도 없다.</span><span class="pol__ref">S-JXKHCM · PL-OCJOFP</span></li>
+                  <li><span class="pol__t">BP 재인증은 번호·대표자명·개업일자 셋을 모두 다시 넣는다. 번호 중복은 국세청 확인보다 먼저 본다.</span><span class="pol__ref">S-UOJVUR · S-VRNTHD</span></li>
+                  <li><span class="pol__t">새 비밀번호는 현재 것과 같을 수 없다. 과거 비밀번호 재사용은 막지 않는다.</span><span class="pol__ref">PL-QSBSYY</span></li>
+                  <li><span class="pol__t">비밀번호를 바꿔도 지금 기기는 로그인 상태로 두고, 다른 기기·브라우저 세션만 끊는다.</span><span class="pol__ref">S-PTWREE</span></li>
+                </ul>
+              </div>
+              <div class="panel">
+                <div class="panel__head">
+                  <h3 class="t-h3">회원 탈퇴 · 로그아웃</h3>
+                  <span class="badge badge--quiet">5</span>
+                </div>
+                <ul class="pol">
+                  <li><span class="pol__t">탈퇴는 BP 마스터만 한다. 플랫폼 계정은 스스로 탈퇴하지 못한다.</span><span class="pol__ref">S-JHQQNR</span></li>
+                  <li><span class="pol__t">선행 조건은 구독 해지·미정산 없음·진행 중 근로계약 없음 셋. 점포는 조건이 아니고 탈퇴가 모두 폐점시킨다.</span><span class="pol__ref">S-JHQQNR</span></li>
+                  <li><span class="pol__t">탈퇴는 논리 삭제다. 이름·연락처·이메일은 완료 메일 요청 뒤 지우고, 업무 기록과 이력은 남긴다.</span><span class="pol__ref">S-JHQQNR</span></li>
+                  <li><span class="pol__t">같은 이메일·사업자등록번호로 다시 가입할 수 있지만 아이디는 다시 못 쓰고 예전 기록도 잇지 않는다.</span><span class="pol__ref">S-JHQQNR · PL-OCJOFP</span></li>
+                  <li><span class="pol__t">로그아웃은 이 브라우저의 두 토큰만 무효로 한다. 다른 기기 세션과 업무 데이터는 그대로다.</span><span class="pol__ref">S-TMRGOG</span></li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">쟁점</h2>
+              <span class="badge badge--preview">3건 · 미정 3</span>
+            </div>
+            <p class="gap__note" style="margin-top: 0">목업을 만들며 명세끼리 또는 명세와 다른 화면이 어긋난 곳이다. 이 목업은 각 쟁점의 B 안으로 그렸다.</p>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">MYPAGE-1</span>
+                <b>사업자정보 인증 — 팝업인가, 화면 안 입력 상자인가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-UOJVUR · S-VRNTHD</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a">
+                  <div class="gap__label">A · S-UOJVUR 문구</div>
+                  <p>사업자정보 탭의 인증 버튼이 <b>사업자 번호 인증 팝업</b>을 연다.</p>
+                </div>
+                <div class="gap__opt" data-side="b">
+                  <div class="gap__label">B · 이 화면</div>
+                  <p>회원가입·점포 등록·점포 수정처럼 <b>탭 안에 입력 상자를 펼친다</b>. 공통 명세 S-VRNTHD 는 둘 다 허용한다.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">MYPAGE-2</span>
+                <b>조건이 모자랄 때 회원 탈퇴 버튼 — 눌리지 않는가, 눌러서 안내하는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-JHQQNR</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a">
+                  <div class="gap__label">A · 완전 비활성</div>
+                  <p>버튼을 꺼 두면 누를 수 없으니, 명세의 ‘탈퇴 시도 시 팝업’이 뜰 길이 없다.</p>
+                </div>
+                <div class="gap__opt" data-side="b">
+                  <div class="gap__label">B · 이 화면</div>
+                  <p>버튼은 <b>꺼진 모양</b>으로 두되 누르면 채워야 할 조건과 조치를 팝업으로 보인다.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">MYPAGE-3</span>
+                <b>로그아웃·탈퇴 뒤 가는 ‘로그인 전 홈’은 어느 화면인가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-TMRGOG · S-JHQQNR</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a">
+                  <div class="gap__label">A · 3팀 목업</div>
+                  <p>홈·계정 진입 영역의 <b>로그인 전 화면</b>(3팀 초안)으로 보낸다.</p>
+                </div>
+                <div class="gap__opt" data-side="b">
+                  <div class="gap__label">B · 이 화면</div>
+                  <p>1팀 로그인 영역의 <b>로그인 화면</b>으로 보낸다. 완료 문구는 로그인 화면에 따로 띄우지 않는다.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+  </body>
+</html>

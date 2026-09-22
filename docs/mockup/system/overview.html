@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>플랫폼 시스템 관리 개요 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="system" data-sub="system/overview.html">
+    <!-- 플랫폼 시스템 관리(R-KJGJXP) 영역 개요 — 목업 전용 페이지다. 1팀 작업이다.
+         기준은 manyfast [1팀공용] WHALE ERP 의 플랫폼 시스템 관리 하위 기능 다섯과 명세 열두 개다.
+         메뉴구조도의 시스템관리 다섯 줄(관리자 · 관리자 권한 · 프로그램 · 공통코드 · 휴일)을 명세의 기능 이름으로 바꿨다.
+         프로그램 관리가 플랫폼 메뉴 관리다.
+         다섯 화면은 같은 표본 데이터를 읽는다 — 권한 7건 · 관리자 7명 · 플랫폼 관리 메뉴 22개 · 공통코드 그룹 9개 · 2026 공식 휴일. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <a class="iconbtn" href="../index.html" aria-label="목업 허브로" data-icon="arrowleft" data-icon-size="18"></a>
+          <h1 class="t-h1">플랫폼 시스템 관리</h1>
+          <span class="badge badge--warn">1팀 작업</span>
+          <span class="badge badge--preview">영역 개요</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">R-KJGJXP · system/</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="band band--warn">
+            <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+            <div class="band__body">
+              <div class="band__title">플랫폼 운영 인력의 계정·권한과, 모든 BP 가 함께 쓰는 기준정보를 다룬다</div>
+              <p class="band__desc">
+                플랫폼 사용자는 점포 매핑 없이 전체 BP 를 대상으로 일하고, 무엇을 할 수 있는지는 <b>역할과 메뉴별 CRUD 권한</b>으로만 판정한다.
+                BP 측 관리자 계정·BP 권한 그룹·BP 공통코드·BP 휴일은 BP 환경 설정의 몫이라 여기 없다.
+                각 화면 위의 점선 줄로 보는 사람의 권한과 화면 상태를 바꿔 가며 무엇이 보이고 막히는지 볼 수 있다.
+              </p>
+            </div>
+            <div class="band__act">
+              <a class="btn btn--primary" href="admins.html">관리자 목록부터 보기</a>
+            </div>
+          </div>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">메뉴 이름</h2>
+              <span class="badge badge--quiet">구조도 → 명세</span>
+            </div>
+            <div class="panel">
+              <div class="tblwrap">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th scope="col">메뉴구조도 v0.9</th>
+                      <th scope="col">명세 기능 (이 목업의 메뉴)</th>
+                      <th scope="col">기능</th>
+                      <th scope="col" class="n">명세</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td class="subtle">관리자 관리</td><td class="k"><a class="tlink" href="admins.html">플랫폼 관리자 관리</a></td><td class="mono">F-RVDLOW</td><td class="n">6</td></tr>
+                    <tr><td class="subtle">관리자 권한 관리</td><td class="k"><a class="tlink" href="roles.html">플랫폼 권한 관리</a></td><td class="mono">F-PPMWQI</td><td class="n">2</td></tr>
+                    <tr><td class="subtle">프로그램 관리</td><td class="k"><a class="tlink" href="menus.html">플랫폼 메뉴 관리</a></td><td class="mono">F-CWWQUR</td><td class="n">1</td></tr>
+                    <tr><td class="subtle">공통코드 관리</td><td class="k"><a class="tlink" href="codes.html">플랫폼 공통코드 관리</a></td><td class="mono">F-LOUVWE</td><td class="n">1</td></tr>
+                    <tr><td class="subtle">휴일 관리</td><td class="k"><a class="tlink" href="holidays.html">플랫폼 휴일 관리</a></td><td class="mono">F-CNPWOQ</td><td class="n">2</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="panel__note">
+                프로그램 관리는 명세에서 <b>플랫폼 메뉴 관리</b>가 됐다 — 화면 단위가 아니라 서비스별 메뉴 트리를 관리한다.
+                명세 열둘 중 연도별 공식 휴일 동기화 배치(S-WEEWHU)는 화면이 없어 휴일 화면의 동기화 안내로만 드러난다.
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">화면</h2>
+              <span class="badge badge--quiet">7개 + 팝업</span>
+              <div class="panel__end">
+                <span class="filters__count mono">/platform/system</span>
+              </div>
+            </div>
+            <div class="grid grid--2">
+              <a class="mk-card" href="admins.html">
+                <span class="mk-card__route">/platform/system/admins</span>
+                <span class="mk-card__name">플랫폼 관리자 목록</span>
+                <span class="mk-card__desc">
+                  아이디·이름·권한·상태·등록일시로 찾는다. 플랫폼 마스터는 여럿일 수 있고, 미사용은 구분해 보이며 삭제한 계정은 목록에서 빠진다.
+                </span>
+                <span class="mk-card__end"><span class="badge badge--quiet">S-YTKWGG</span></span>
+              </a>
+              <a class="mk-card" href="admins-detail.html">
+                <span class="mk-card__route">/platform/system/admins/:아이디</span>
+                <span class="mk-card__name">관리자 상세 → 수정 · 삭제 · 비밀번호 초기화</span>
+                <span class="mk-card__desc">
+                  기본정보·권한·상태·변경 이력. 수정은 상세의 수정 버튼으로만 들어가고, 저장·취소하면 상세로 돌아온다.
+                  수정에서 기본정보·권한·상태(사용·미사용)를 바꾸며, 본인은 권한·상태를, 마지막 사용 플랫폼 마스터는 미사용·강등을 못 한다.
+                  삭제는 논리 삭제로 즉시, 초기화는 새 비밀번호를 메일로만 보낸다.
+                </span>
+                <span class="mk-card__end"><span class="badge badge--quiet">S-BRSPGB · S-CZGHBS · S-NLVXWJ · S-XKYOND</span></span>
+              </a>
+              <a class="mk-card" href="admins-new.html">
+                <span class="mk-card__route">/platform/system/admins/new</span>
+                <span class="mk-card__name">관리자 등록</span>
+                <span class="mk-card__desc">
+                  상태와 비밀번호 칸이 없다 — 사용으로 생기고 12자 초기 비밀번호가 메일로 간다. 플랫폼 관리자는 플랫폼 마스터를 등록하지 못한다.
+                </span>
+                <span class="mk-card__end"><span class="badge badge--quiet">S-FOJJKB</span></span>
+              </a>
+              <a class="mk-card" href="roles.html">
+                <span class="mk-card__route">/platform/system/roles</span>
+                <span class="mk-card__name">플랫폼 권한 관리 · 메뉴 등록 팝업</span>
+                <span class="mk-card__desc">
+                  왼쪽 권한 목록, 오른쪽 상세·등록·수정. 고정 권한 넷과 플랫폼 관리자 추가 권한. 메뉴별 CRUD 는 팝업에서만, 추가 권한은 기준 권한을 넘지 못한다.
+                </span>
+                <span class="mk-card__end"><span class="badge badge--quiet">S-JDCOAG · S-EFQREM</span></span>
+              </a>
+              <a class="mk-card" href="menus.html">
+                <span class="mk-card__route">/platform/system/menus</span>
+                <span class="mk-card__name">플랫폼 메뉴 관리</span>
+                <span class="mk-card__desc">
+                  서비스를 고르면 왼쪽 트리, 오른쪽 상세. 같은 서비스 안에서 끌어 옮기고 하위가 함께 간다. 최대 3단계, 삭제와 이력은 없다.
+                </span>
+                <span class="mk-card__end"><span class="badge badge--quiet">S-GXMZOU</span></span>
+              </a>
+              <a class="mk-card" href="codes.html">
+                <span class="mk-card__route">/platform/system/codes</span>
+                <span class="mk-card__name">플랫폼 공통코드 관리</span>
+                <span class="mk-card__desc">
+                  왼쪽 그룹, 오른쪽 상세 코드를 행 추가로 등록·수정한다. 관리 주체는 그룹에만 있고 상세는 따른다. 서비스 목록도 여기 한 그룹이다.
+                </span>
+                <span class="mk-card__end"><span class="badge badge--quiet">S-UQPNIH</span></span>
+              </a>
+              <a class="mk-card" href="holidays.html">
+                <span class="mk-card__route">/platform/system/holidays</span>
+                <span class="mk-card__name">플랫폼 휴일 관리</span>
+                <span class="mk-card__desc">
+                  조회만 한다. 공식 휴일은 동기화 배치만 채우고, 진입하면 이번 달 캘린더. 목록 보기로 날짜·휴일명·비고·최종 동기화를 본다.
+                </span>
+                <span class="mk-card__end"><span class="badge badge--quiet">S-DDGJKQ · S-WEEWHU</span></span>
+              </a>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">화면끼리 읽는 것</h2>
+              <span class="badge badge--quiet">5줄</span>
+            </div>
+            <div class="panel">
+              <div class="tblwrap">
+                <table class="tbl">
+                  <thead>
+                    <tr><th scope="col">읽는 화면</th><th scope="col">읽는 것</th><th scope="col">원본 화면</th><th scope="col">근거</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><a class="tlink" href="admins-new.html">관리자 등록·수정</a>의 권한 선택</td>
+                      <td>플랫폼 마스터·플랫폼 관리자와 그 추가 권한 (BP 마스터·가맹 마스터는 부여 불가)</td>
+                      <td><a class="tlink" href="roles.html">플랫폼 권한 관리</a></td>
+                      <td class="mono">S-FOJJKB</td>
+                    </tr>
+                    <tr>
+                      <td><a class="tlink" href="roles.html">권한 관리</a>의 연결 사용자 수</td>
+                      <td>그 권한을 가진 플랫폼 관리자 계정</td>
+                      <td><a class="tlink" href="admins.html">플랫폼 관리자 목록</a></td>
+                      <td class="mono">F-PPMWQI</td>
+                    </tr>
+                    <tr>
+                      <td><a class="tlink" href="roles.html">메뉴 등록 팝업</a>의 메뉴 계층</td>
+                      <td>서비스별 메뉴 트리와 사용 상태 — 사용 중지 메뉴는 새로 권한을 줄 수 없다</td>
+                      <td><a class="tlink" href="menus.html">플랫폼 메뉴 관리</a></td>
+                      <td class="mono">S-EFQREM</td>
+                    </tr>
+                    <tr>
+                      <td><a class="tlink" href="menus.html">메뉴 관리</a>의 서비스 목록</td>
+                      <td>플랫폼고정 그룹 ‘서비스’의 사용 값 — 서비스 코드·서비스명·사용 상태</td>
+                      <td><a class="tlink" href="codes.html?state=service">플랫폼 공통코드 관리</a></td>
+                      <td class="mono">F-LOUVWE</td>
+                    </tr>
+                    <tr>
+                      <td>관리자 화면의 권한 유형·계정 상태 표기</td>
+                      <td>공통코드 ‘권한 유형’ · ‘계정 상태’</td>
+                      <td><a class="tlink" href="codes.html">플랫폼 공통코드 관리</a></td>
+                      <td class="mono">S-BCYNVP · S-RAUFVC</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="panel__note">
+                화면 밖으로 이어지는 곳이 둘이다. 등록하거나 비밀번호를 초기화한 관리자의 첫 로그인은
+                <a class="tlink" href="../auth/force-password.html?state=platform">강제 비밀번호 변경</a>으로 가고,
+                동기화한 공식 휴일은 BP 환경 설정의 BP 휴일 캘린더에 조회용으로 넘어간다.
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">정책</h2>
+              <span class="badge badge--quiet">14줄</span>
+            </div>
+            <div class="grid grid--2" style="align-items: start">
+              <div class="panel">
+                <div class="panel__head">
+                  <h3 class="t-h3">계정 · 권한</h3>
+                  <span class="badge badge--quiet">7</span>
+                </div>
+                <ul class="pol">
+                  <li><span class="pol__t">플랫폼 계정 상태는 사용·미사용 둘뿐이다. 탈퇴가 없고, 미사용은 즉시 세션을 끊지만 데이터와 이력은 남긴다.</span><span class="pol__ref">PL-CUECAY</span></li>
+                  <li><span class="pol__t">플랫폼 마스터는 여럿 둘 수 있고, 사용 상태 플랫폼 마스터가 늘 한 명 이상이어야 한다. 마지막 한 명은 미사용·강등·삭제가 안 된다.</span><span class="pol__ref">F-RVDLOW</span></li>
+                  <li><span class="pol__t">플랫폼 마스터 계정은 플랫폼 마스터만 등록·수정·삭제·초기화한다. 누가 누구를 바꾸는지는 메뉴 권한 · 마스터 보호 · 본인 보호 셋으로만 가린다.</span><span class="pol__ref">F-RVDLOW</span></li>
+                  <li><span class="pol__t">본인의 권한과 상태는 스스로 못 바꾸고, 본인 계정은 삭제·초기화도 여기서 안 한다. 기본정보는 고칠 수 있다.</span><span class="pol__ref">S-CZGHBS</span></li>
+                  <li><span class="pol__t">권한 변경은 재로그인 없이 다음 요청부터 적용하고, 메뉴 모양은 다음 화면 이동이나 새로고침 때 바뀐다.</span><span class="pol__ref">PL-AMTMVC</span></li>
+                  <li><span class="pol__t">고정 권한은 플랫폼 마스터·플랫폼 관리자·BP 마스터·가맹 마스터 넷, 각 한 건이다. 플랫폼 마스터는 전체 허용 고정이라 조회만 된다. 삭제는 플랫폼 관리자 유형만.</span><span class="pol__ref">S-JDCOAG</span></li>
+                  <li><span class="pol__t">추가 권한의 CRUD 는 기준 고정 권한을, 설정자 본인의 권한 범위를 넘지 못한다. 등록·수정·삭제를 켜면 조회가 같이 켜지고 조회를 끄면 셋이 같이 꺼진다.</span><span class="pol__ref">S-EFQREM</span></li>
+                </ul>
+              </div>
+              <div class="panel">
+                <div class="panel__head">
+                  <h3 class="t-h3">기준정보 · 이력</h3>
+                  <span class="badge badge--quiet">7</span>
+                </div>
+                <ul class="pol">
+                  <li><span class="pol__t">권한 코드는 권한 유형 + 6자리 순번(PM000001), 메뉴 코드는 MN + 6자리. 자동 채번이고 바꿀 수 없으며 삭제한 순번은 다시 쓰지 않는다.</span><span class="pol__ref">PL-EIMSQF</span></li>
+                  <li><span class="pol__t">아이디는 삭제·탈퇴 계정까지 포함해 다시 쓸 수 없고, 이메일은 사용·미사용 계정 사이에서만 겹치면 안 된다.</span><span class="pol__ref">PL-OCJOFP</span></li>
+                  <li><span class="pol__t">메뉴는 서비스 단위로 최대 3단계. 같은 서비스 안에서만 옮기고 하위가 함께 간다. 메뉴 삭제와 메뉴 변경 이력은 두지 않는다.</span><span class="pol__ref">F-CWWQUR</span></li>
+                  <li><span class="pol__t">서비스 목록은 플랫폼고정 공통코드 그룹 ‘서비스’다. 코드는 직접 입력하고 바꾸지 않으며, 사용 중지하면 새 메뉴·새 권한에서만 빠진다.</span><span class="pol__ref">F-LOUVWE</span></li>
+                  <li><span class="pol__t">관리 주체는 그룹에만 둔다(플랫폼고정·플랫폼제공). 상세 코드는 그룹을 따르고, BP 가 추가한 BP전용 코드는 이 화면에 없다.</span><span class="pol__ref">PL-VOCZCE</span></li>
+                  <li><span class="pol__t">플랫폼 휴일은 대한민국 공식 휴일만, 동기화 배치만 채운다. 토·일은 휴일 데이터가 아니고 한 날짜에 한 건이다.</span><span class="pol__ref">F-CNPWOQ</span></li>
+                  <li><span class="pol__t">휴일 변경 이력과 동기화 이력은 데이터로만 남기고 화면이 없다. 계정 변경 이력은 상세에서 보이고, 삭제한 계정은 데이터로만 남는다.</span><span class="pol__ref">PL-HKZBNU · S-BRSPGB</span></li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <!-- 쟁점 — 화면을 그리며 명세로 정해지지 않던 것 -->
+          <section class="section" id="gaps">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">쟁점</h2>
+              <span class="badge badge--preview">10건 · 미정 10</span>
+            </div>
+            <p class="gap__note" style="margin-top: 0">
+              화면을 그리면서 명세만으로는 정해지지 않던 것 중 화면을 가르는 것만 올렸다. 작은 것은 각 화면 파일 맨 위 주석에 남겼다.
+            </p>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">SYSTEM-1</span>
+                <b>플랫폼 관리자가 플랫폼 마스터 계정을 열면 실행 항목을 숨기는가, 흐리게 두는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-BRSPGB · S-NLVXWJ</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a">
+                  <div class="gap__label">A · 상세 명세 · 이 목업</div>
+                  <p>마스터 계정의 수정·삭제·초기화 항목은 <b>플랫폼 마스터에게만 표시</b>한다. 목업은 숨겼다.</p>
+                </div>
+                <div class="gap__opt" data-side="b">
+                  <div class="gap__label">B · 삭제 명세</div>
+                  <p>삭제할 수 없는 플랫폼 마스터 계정에는 삭제 항목을 <b>비활성화</b>한다.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">SYSTEM-2</span>
+                <b>“마지막 사용 플랫폼 마스터” 보호는 사실상 본인 계정에서만 일어난다</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">F-RVDLOW · S-CZGHBS</span>
+              </div>
+              <p class="gap__note">
+                마스터 계정은 마스터만 바꾸고, 로그인한 마스터는 늘 사용 상태다. 그래서 남은 한 명이 다른 사람일 수는 없고, 본인 보호와 겹친다.
+                둘이 서로를 동시에 강등하는 경우만 남으니 화면 안내보다 <b>서버의 동시 검사</b>를 명세에 적을지 정해야 한다.
+                목업의 이 상태는 plat_jung 을 열고 plat_kim 이 미사용이라고 가정했다.
+              </p>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">SYSTEM-3</span>
+                <b>등록 때 초기 비밀번호 메일이 실패하면 계정을 남기는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-FOJJKB · S-XKYOND</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a">
+                  <div class="gap__label">A · 등록 명세 · 이 목업</div>
+                  <p>생성이나 초기 비밀번호 발급이 실패하면 <b>계정을 활성화하지 않고</b> 실패를 안내한다. 메일 실패가 여기 드는지는 적혀 있지 않다.</p>
+                </div>
+                <div class="gap__opt" data-side="b">
+                  <div class="gap__label">B · 초기화 명세처럼</div>
+                  <p>발급은 유지하고 발송 실패만 기록한 뒤, 상세에서 <b>비밀번호 초기화로 다시 보낸다</b>.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">SYSTEM-4</span>
+                <b>주소를 상세에 보이고 수정에서 고칠 수 있는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-FOJJKB · S-BRSPGB · S-CZGHBS</span>
+              </div>
+              <p class="gap__note">
+                등록은 우편번호·기본주소·상세주소를 받는데 상세의 표시 항목과 수정의 기본정보에는 주소가 없다. 없으면 등록한 주소를 다시 볼 수도 고칠 수도 없다.
+                목업은 상세와 수정 모두에 주소를 넣었다.
+              </p>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">SYSTEM-5</span>
+                <b>플랫폼 관리자 기본 권한(PA000001)을 지울 수 있고, 대체 권한이 될 수 있는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-JDCOAG</span>
+              </div>
+              <p class="gap__note">
+                “플랫폼 관리자 권한만 삭제”라서 PA000001 도 삭제 대상으로 읽히지만, 추가 권한 모두의 기준이자 상한이다.
+                또 PA000001 이 늘 대체 권한으로 고를 수 있으면 “대체 권한 없음” 오류는 일어나지 않는다. 목업은 삭제를 추가 권한(PA000002)으로만 보였고, 대체 권한 목록에는 PA000001 을 넣었다.
+              </p>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">SYSTEM-6</span>
+                <b>BP 마스터·가맹 마스터 고정 권한의 메뉴 CRUD 는 누가 정하는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">F-PPMWQI · S-EFQREM · PL-AMTMVC</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a">
+                  <div class="gap__label">A · 기능 권한 칸</div>
+                  <p>플랫폼 권한 관리의 <b>수정 권한이 있는 플랫폼 사용자</b>는 BP 마스터·가맹 마스터 CRUD 를 설정할 수 있다.</p>
+                </div>
+                <div class="gap__opt" data-side="b">
+                  <div class="gap__label">B · 본인 범위 상한 · 이 목업</div>
+                  <p>설정자 본인의 권한을 넘을 수 없는데 플랫폼 관리자는 ERP 메뉴 권한이 없다. 그러면 <b>사실상 플랫폼 마스터만</b> 정한다.</p>
+                </div>
+              </div>
+              <p class="gap__note">BP 마스터·가맹 마스터에게 플랫폼 관리 서비스 메뉴를 줄 수 있는지도 적혀 있지 않다. 목업은 막았다.</p>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">SYSTEM-7</span>
+                <b>메뉴의 상위 메뉴와 순서를 상세에서도 고치는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-GXMZOU</span>
+              </div>
+              <p class="gap__note">
+                상세 영역에 상위 메뉴와 메뉴 순서가 나오지만 바꾸는 방법은 끌어 옮기기만 적혀 있다. 새 메뉴의 기본 위치도 없다.
+                예외에 “검색 결과 없음”이 있는데 검색 칸은 정의돼 있지 않다. 목업은 상위·순서를 읽기 전용으로, 새 메뉴는 고른 묶음의 맨 끝으로 두고 검색 칸은 두지 않았다.
+              </p>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">SYSTEM-8</span>
+                <b>휴일 화면에 들어오면 늘 이번 달인가, 마지막에 본 달인가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">F-CNPWOQ · S-DDGJKQ</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a">
+                  <div class="gap__label">A · 기능 규칙 · 이 목업</div>
+                  <p>진입하면 <b>항상 현재연도 현재월 캘린더</b>.</p>
+                </div>
+                <div class="gap__opt" data-side="b">
+                  <div class="gap__label">B · 기능 결과 · 명세 데이터</div>
+                  <p>사용자별 <b>마지막 보기 방식과 연·월</b>을 설정한 경우 다음 진입에 적용한다. 어디서 설정하는지는 없다.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">SYSTEM-9</span>
+                <b>휴일 목록 보기는 한 달인가 한 해인가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-DDGJKQ</span>
+              </div>
+              <p class="gap__note">
+                보기를 바꾸면 “같은 기간”을 보인다고 해서 목업은 고른 달만 목록으로 보였다. 휴일은 한 달에 몇 건뿐이라 연도 단위가 더 쓸모 있을 수 있다.
+                아직 동기화하지 않은 연도를 고를 때 빈 안내인지 동기화 미완료 안내인지도 함께 정한다.
+              </p>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">SYSTEM-10</span>
+                <b>공통코드는 등록 뒤 코드 값을 바꿀 수 있고, 한 줄씩 저장하는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-UQPNIH · PL-VOCZCE</span>
+              </div>
+              <p class="gap__note">
+                서비스 코드만 “등록 후 바꾸지 않는다”고 적혀 있고 다른 그룹 코드·상세 코드는 말이 없다. 기존 그룹의 관리 주체를 플랫폼고정↔플랫폼제공으로 바꿀 수 있는지,
+                그룹을 사용 중지하면 상세 코드와 BP 쪽은 어떻게 되는지도 없다. 목업은 모든 기존 코드 칸을 읽기 전용으로, 저장은 패널마다 한 번으로 그렸다.
+              </p>
+            </div>
+
+            <div class="panel__note" style="border-top: 0; padding-left: 0">
+              표본 아이디 <span class="mono">plat_*</span> 는 밑줄을 쓰는데 계정 입력 규칙(PL-OCJOFP)은 영문·숫자만 허용한다 — 1팀 BP 목업의 변경자 표기와 맞추려고 그대로 두었다.
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+  </body>
+</html>

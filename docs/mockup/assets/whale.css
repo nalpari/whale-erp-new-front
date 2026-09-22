@@ -927,6 +927,10 @@ table {
   min-width: 0;
   overflow: hidden;
 }
+/* 주소 검색 결과 목록은 패널 밖으로 펼쳐진다 — 주소가 패널의 마지막 칸이어도 잘리지 않게 한다 */
+.panel:has(.addr) {
+  overflow: visible;
+}
 .panel__head {
   display: flex;
   align-items: center;
@@ -1197,6 +1201,246 @@ a.figure:hover .figure__label svg {
   width: 44px;
   height: 44px;
   border-radius: var(--r-md);
+}
+
+/* 점포 목록 · 카드형 — 화면 구성 비교용. 한 줄에 셋, 좁으면 둘·하나 */
+.scards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-5);
+}
+@media (max-width: 1100px) {
+  .scards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .scards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* 목록 보기 전환에서 고르지 않은 보기 — 목업 상태 줄의 hidden 과 따로 움직이도록 클래스로 끈다 */
+.is-view-off {
+  display: none !important;
+}
+.scards--inpanel {
+  padding: var(--s-5) var(--s-6);
+}
+.viewswitch button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-inline: 10px;
+}
+.scard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--s-5) var(--s-6);
+  background: var(--surface-card);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-xl);
+  min-width: 0;
+}
+.scard:hover {
+  box-shadow: var(--lift);
+}
+.scard__img {
+  width: 96px;
+  height: 96px;
+  border-radius: var(--r-lg);
+  object-fit: cover;
+  background: var(--surface-strong);
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+/* 대표 이미지 칸 — 왼쪽 위 모서리에 점포 상태 배지를 겹쳐 올린다 */
+.scard__media {
+  position: relative;
+  align-self: flex-start;
+  margin-bottom: var(--s-2);
+}
+.scard__state {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  font-size: 11px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+/* 미운영(테두리만 있는 배지)은 사진 위에서 사라지지 않게 흰 바탕을 깐다 */
+.scard__state.badge--quiet {
+  background: var(--surface-card);
+}
+.scard__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+  min-width: 0;
+}
+.scard__head .scard__name {
+  flex: 1;
+  min-width: 0;
+}
+.scard__date {
+  flex: none;
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--muted-tert);
+}
+/* 카드형 시안(index-cards.html)의 아래 줄 — 상태 배지와 등록일 */
+.scard__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  margin-top: var(--s-3);
+  font-size: 12.5px;
+  color: var(--muted-tert);
+}
+.scard__staff {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.scard__staff svg {
+  color: var(--muted);
+}
+.scard__name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.scard__bp {
+  font-size: 13.5px;
+  color: var(--body);
+}
+.scard__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--muted-tert);
+  min-width: 0;
+}
+.scard__meta svg {
+  flex: none;
+  color: var(--muted);
+}
+.scard__meta span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 큰 선택 카드 — 점포유형처럼 둘 중 하나를 고르는 곳. 고른 카드는 테두리가 짙어진다. */
+.typepick {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-4);
+}
+@media (max-width: 640px) {
+  .typepick {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.typepick__opt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: var(--s-6) var(--s-5);
+  border: 1.5px solid var(--hairline-strong);
+  border-radius: var(--r-xl);
+  background: var(--surface-card);
+  text-align: center;
+  cursor: pointer;
+}
+.typepick__opt:hover {
+  background: var(--surface-hover);
+}
+.typepick__opt b {
+  font-size: 16px;
+  color: var(--ink);
+}
+.typepick__opt > span:last-child {
+  font-size: 13px;
+  color: var(--muted-tert);
+}
+.typepick__ic {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--r-lg);
+  display: grid;
+  place-items: center;
+  background: var(--surface-strong);
+  color: var(--muted-tert);
+  margin-bottom: var(--s-2);
+}
+.typepick__opt[aria-checked="true"] {
+  border: 2px solid var(--ink);
+  background: var(--surface-hover);
+}
+.typepick__opt[aria-checked="true"] .typepick__ic {
+  background: var(--surface-card);
+  color: var(--ink);
+  box-shadow: var(--lift);
+}
+.typepick[aria-invalid="true"] .typepick__opt {
+  border-color: var(--risk);
+}
+
+/* 상세 기본정보 — 대표 이미지 오른쪽에 항목. 좁으면 이미지 아래로 내려간다. */
+.panel__body.detailinfo {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--s-6);
+}
+.detailinfo .kv {
+  flex: 1;
+  min-width: 0;
+}
+@media (max-width: 640px) {
+  .panel__body.detailinfo {
+    flex-direction: column;
+  }
+}
+
+/* 대표 이미지 올리기 — 미리보기 한 칸과 안내·버튼 */
+.imgup {
+  display: flex;
+  align-items: center;
+  gap: var(--s-5);
+  flex-wrap: wrap;
+}
+.imgup__box {
+  width: 160px;
+  height: 160px;
+  border-radius: var(--r-lg);
+  border: 1px dashed var(--hairline-strong);
+  background: var(--surface-hover);
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  overflow: hidden;
+  flex: none;
+}
+.imgup__box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.imgup__box.is-filled {
+  border-style: solid;
+}
+.imgup__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
 }
 
 /* --- 11. 서명 하나 : 배포 레인 ------------------------------------------
@@ -1534,6 +1778,14 @@ a.channel:hover {
 .band--info .band__ic {
   color: var(--info);
 }
+/* 저장·변경 완료 안내 (MY PAGE) */
+.band--ok {
+  background: var(--ok-wash);
+  border-color: var(--ok-line);
+}
+.band--ok .band__ic {
+  color: var(--ok-text);
+}
 .band__body {
   min-width: 0;
   display: flex;
@@ -1617,6 +1869,37 @@ a.channel:hover {
 }
 .input[aria-invalid="true"] {
   border-color: var(--risk-text);
+}
+/* 읽기 전용·잠긴 칸 — 입력할 수 있는 칸(흰 바탕·진한 테두리)과 한눈에 갈리게 회색 바탕·옅은 테두리로 둔다.
+   인증 상자·주소 검색의 회색 칸과 같은 말이다. 눌러도 입력 초점 테두리를 띄우지 않는다. */
+.input[readonly],
+.textarea[readonly],
+.input:disabled,
+.select:disabled,
+.textarea:disabled {
+  background-color: var(--surface-strong);
+  border-color: transparent;
+  color: var(--body);
+  cursor: default;
+}
+/* 읽기 전용 칸에는 오른쪽에 자물쇠를 붙여 ‘입력하는 칸이 아님’을 글자 없이도 알린다 */
+.input[readonly] {
+  padding-right: 34px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23999999' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><rect x='5' y='11' width='14' height='9.5' rx='2'/><path d='M8 11V8a4 4 0 0 1 8 0v3'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px;
+}
+.input[readonly]:focus,
+.textarea[readonly]:focus {
+  border-color: transparent;
+  box-shadow: none;
+}
+/* 입력할 수 있는 칸 — 흰 바탕에 테두리가 보이고, 올리면 테두리가 진해진다 */
+.input:not([readonly]):not(:disabled):hover,
+.textarea:not([readonly]):not(:disabled):hover,
+.select:not(:disabled):hover {
+  border-color: var(--muted);
 }
 .select {
   appearance: none;
@@ -3443,4 +3726,1182 @@ a.tile:hover {
   .tl__tick:nth-child(even) {
     color: transparent;
   }
+}
+
+/* --- 20. 인증·계정(1팀) — 모달 · 비밀번호 필드 · 약관 줄 -------------------
+   auth/ 화면에서 쓴다. 강제 비밀번호 변경 팝업은 닫기 항목이 없고 바깥을 눌러도 닫히지 않는다.
+   사업자 번호 인증 팝업은 닫을 수 있다 — 닫기 항목에 data-close 를 붙인다. */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: var(--s-6) var(--s-4);
+  background: rgba(23, 23, 23, 0.42);
+  overflow-y: auto;
+}
+.modal[hidden] {
+  display: none;
+}
+.modal__box {
+  width: 100%;
+  max-width: 440px;
+  background: var(--surface-card);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-xl);
+  box-shadow: 0 24px 60px rgba(23, 23, 23, 0.18);
+  display: flex;
+  flex-direction: column;
+}
+.modal__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-5) var(--s-6) var(--s-3);
+}
+.modal__head .t-h2 {
+  margin-right: auto;
+}
+.modal__body {
+  padding: 0 var(--s-6) var(--s-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+.modal__foot {
+  display: flex;
+  gap: var(--s-2);
+  justify-content: flex-end;
+  padding: var(--s-4) var(--s-6);
+  border-top: 1px solid var(--hairline);
+}
+.pwfield {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.pwfield .input {
+  padding-right: 42px;
+}
+.pwfield .iconbtn {
+  position: absolute;
+  right: 4px;
+}
+.pwfield .iconbtn[aria-pressed="true"] {
+  color: var(--ink);
+}
+.tel3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+.agree {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: 13px;
+  padding: 6px 0;
+}
+.agree .tlink {
+  margin-left: auto;
+  font-size: 12px;
+}
+.agree--all {
+  font-weight: 600;
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: var(--s-3);
+}
+.auth__links {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-4);
+  font-size: 13px;
+}
+.masked {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--ink);
+}
+/* 목업 전용 상태 전환 줄 — 실제 화면에는 없다. 오류 문구와 분기를 회의에서 넘겨 보려고 둔다. */
+.demo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  border: 1px dashed var(--preview-line);
+  border-radius: var(--r-md);
+  background: var(--preview-wash);
+  font-size: 12px;
+  color: var(--preview);
+}
+.demo .seg {
+  flex-wrap: wrap;
+}
+@media (max-width: 720px) {
+  .modal__head,
+  .modal__body,
+  .modal__foot {
+    padding-left: var(--s-4);
+    padding-right: var(--s-4);
+  }
+}
+
+/* 로그인 전 화면을 업무 셸 오른쪽에 띄우는 틀. 목업 내비게이션(왼쪽 메뉴)은 그대로 두고
+   실제 서비스에서 한 화면 전체를 차지할 로그인·가입 화면을 이 틀 안에 그린다.
+   팝업은 틀 안에서만 뜬다(.modal--inset) — 왼쪽 메뉴는 계속 누를 수 있다. */
+.screen {
+  position: relative;
+  isolation: isolate; /* 틀 안 팝업의 어두운 막이 위쪽 고정 바 위로 올라오지 않게 */
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-xl);
+  background: var(--surface-card);
+  box-shadow: 0 24px 60px rgba(23, 23, 23, 0.06);
+  overflow: clip; /* hidden 이면 스크롤 틀이 되어 안쪽 팝업이 따라 붙지 않는다 */
+}
+.screen__bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--hairline);
+  background: var(--canvas-soft);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--muted-tert);
+}
+.screen__bar i {
+  width: 9px;
+  height: 9px;
+  border-radius: var(--r-pill);
+  background: var(--hairline-strong);
+  display: block;
+}
+.screen__bar span {
+  margin-left: var(--s-2);
+}
+.auth--framed {
+  min-height: 680px;
+}
+.auth--framed .auth__form {
+  padding: var(--s-7) var(--s-8);
+}
+.auth--framed .auth__aside {
+  padding: var(--s-7);
+}
+.modal--inset {
+  position: absolute;
+  z-index: 30;
+  overflow: visible; /* 스크롤 틀이 되면 팝업이 화면을 따라 붙지 않는다 */
+  align-items: start;
+  padding-top: var(--s-8);
+}
+.modal--inset .modal__box {
+  position: sticky;
+  top: calc(var(--nav-h) + 96px);
+}
+@media (max-width: 1100px) {
+  .auth--framed {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .auth--framed .auth__aside {
+    display: none;
+  }
+}
+
+/* 약관 전문 팝업 — 본문만 스크롤한다. 머리와 확인 버튼은 늘 보인다. */
+.modal__box--wide {
+  max-width: 560px;
+}
+.modal__scroll {
+  max-height: min(52vh, 460px);
+  overflow-y: auto;
+  padding-right: var(--s-2);
+}
+.terms {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--body);
+}
+.terms h3 {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 2px;
+}
+.terms p,
+.terms ol {
+  margin: 0;
+}
+.terms ol {
+  padding-left: 18px;
+}
+
+/* 로그인 화면 맨 아래 약관·방침 링크 — 네이버 로그인 화면처럼 작은 글씨를 세로선으로 나누고
+   개인정보처리방침만 굵게 둔다. */
+.legal {
+  margin-top: auto;
+  padding-top: var(--s-6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+.legal__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.legal__links a {
+  position: relative;
+  padding: 0 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.legal__links a + a::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 1px;
+  height: 10px;
+  background: var(--hairline-strong);
+  transform: translateY(-50%);
+}
+.legal__links a:hover {
+  text-decoration: underline;
+}
+.legal__links b {
+  color: var(--ink);
+  font-weight: 700;
+}
+.legal__copy {
+  margin: 0;
+  font-size: 11px;
+  color: var(--muted-tert);
+}
+.legal__copy b {
+  font-weight: 700;
+  color: var(--muted);
+}
+
+/* 입력 칸에서 포커스가 빠질 때 확인한 결과(아이디·이메일 중복 확인) — 통과는 초록, 막힘은 .err 와 같은 빨강 */
+.field .pass {
+  font-size: 12px;
+  color: var(--ok-text);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 회원가입 사업자정보 인증 상자 — 인증한 값은 회색 칸(읽기 전용)으로 보인다 */
+.bizbox {
+  padding: var(--s-5) var(--s-6);
+  gap: var(--s-4);
+}
+.bizbox .input[readonly] {
+  background-color: var(--surface-strong);
+  color: var(--body);
+  /* 세 칸이 한 줄에 들어가 좁다 — 자물쇠 자리 때문에 사업자등록번호가 잘리지 않게 여백을 줄인다 */
+  padding-left: 8px;
+  padding-right: 23px;
+  background-position: right 7px center;
+  font-size: 12.5px;
+}
+
+/* 주소 검색 (S-LEAAUT) — 검색어 칸 아래로 결과가 셀렉트처럼 펼쳐지고, 고르면 우편번호·기본주소가 채워진다 */
+.addr__search {
+  position: relative;
+  display: flex;
+  gap: var(--s-2);
+}
+.addr__q {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+.addr__q > [data-icon] {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted-tert);
+  pointer-events: none;
+}
+.addr__q .input {
+  width: 100%;
+  padding-left: 34px;
+}
+.addr__list {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 288px;
+  overflow-y: auto;
+  background: var(--surface-card);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.12);
+  padding: 4px;
+}
+.addr__count {
+  padding: 6px 10px 4px;
+  font-size: 12px;
+  color: var(--muted-tert);
+}
+.addr__opt {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  padding: 9px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.addr__opt[aria-selected="true"] {
+  background: var(--surface-hover);
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
+}
+.addr__zip {
+  flex: none;
+  font-size: 12.5px;
+  color: var(--link);
+  padding-top: 1px;
+}
+.addr__txt {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.addr__txt b {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.addr__bld {
+  font-weight: 400;
+  color: var(--body);
+}
+.addr__jibun {
+  font-size: 12px;
+  color: var(--muted-tert);
+}
+.addr__tag {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 0 5px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 16px;
+}
+.addr__note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 12px;
+  font-size: 13px;
+  color: var(--body);
+}
+.addr__note.is-risk {
+  color: var(--risk-text);
+}
+.addr__spin {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--hairline-strong);
+  border-top-color: var(--ink);
+  border-radius: 50%;
+  animation: addr-spin 0.7s linear infinite;
+}
+@keyframes addr-spin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .addr__spin { animation: none; }
+}
+.addr__picked {
+  display: flex;
+  gap: var(--s-2);
+}
+.addr__picked [data-addr-zip] {
+  flex: none;
+  width: 110px;
+}
+.addr__picked [data-addr-base] {
+  flex: 1;
+  min-width: 0;
+}
+.addr [readonly] {
+  background-color: var(--surface-strong);
+  color: var(--body);
+}
+
+/* 관리 점포 고르기 — 위는 내 관리 점포를 찾는 자동완성, 아래는 고른 점포 영역(칩을 옆으로 나열, 하나씩 빼기).
+   찾는 곳과 고른 곳을 나눠, 많이 골라도 검색 칸이 밀리지 않고 무엇을 골랐는지 한눈에 본다. */
+.panel:has(.spick) {
+  overflow: visible;
+}
+.spick {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+.spick__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 24px;
+  margin-bottom: var(--s-2);
+  font-size: 13px;
+  color: var(--body);
+}
+.spick__head b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.spick__head .tlink {
+  margin-left: auto;
+  font-size: 12px;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.spick__opt {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: 8px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 13.5px;
+  color: var(--ink);
+}
+.spick__opt[aria-selected="true"] {
+  background: var(--surface-hover);
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
+}
+.spick__opt mark {
+  background: none;
+  color: var(--link);
+  font-weight: 600;
+}
+.spick__code {
+  font-size: 12px;
+  color: var(--muted-tert);
+}
+.spick__type {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--muted-tert);
+  white-space: nowrap;
+}
+.spick__box {
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  padding: var(--s-3);
+  background: var(--surface-strong);
+}
+.spick__picked {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  max-height: 220px;
+  overflow-y: auto;
+}
+.spick__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  max-width: 100%;
+  padding: 5px 4px 5px 12px;
+  background: var(--surface-card);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: var(--ink);
+}
+.spick__item .spick__type {
+  margin-left: 2px;
+}
+.spick__rm {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--muted-tert);
+  cursor: pointer;
+}
+.spick__rm:hover {
+  background: var(--surface-hover);
+  color: var(--risk-text);
+}
+.spick__empty {
+  margin: 0;
+  padding: 22px 8px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted-tert);
+}
+.spick__find {
+  min-width: 0;
+}
+.spick__q {
+  width: 100%;
+}
+.spick__list {
+  max-height: 300px;
+}
+
+/* 옆 칸 높이에 맞추는 영역 — 두 칸 그리드의 한쪽 맨 아래 패널이 다른 칸의 높이까지만 늘어나고,
+   내용이 넘치면 그 안에서 세로로 스크롤한다(표 머리는 붙어 있다). 한 칸으로 접히면 최소 높이만 둔다. */
+.fillcol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  min-width: 0;
+}
+.fillcol__rest {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 240px;
+}
+.fillcol__rest > .panel {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.fillcol__rest > .panel > .tblwrap,
+.fillcol__rest > .panel > .panel__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+.fillcol__rest > .panel > .panel__head,
+.fillcol__rest > .panel > .panel__note {
+  flex: none;
+}
+.fillcol__rest .tbl {
+  min-width: 0;
+}
+
+/* 화면 팝업 (app.js data-pagepop) — 등록·상세·수정 화면을 목록 위에 띄운다. 안의 화면은 ?embed=1 로 메뉴 없이 싣는다 */
+.pagepop__box {
+  position: relative;
+  max-width: min(1180px, calc(100vw - 48px));
+  height: min(88vh, 980px);
+  padding: 0;
+  overflow: hidden;
+}
+.pagepop__frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: var(--canvas);
+}
+.pagepop__x {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  background: var(--surface-card);
+}
+.is-embed .shell {
+  display: block;
+  min-height: 0;
+}
+.is-embed .titlebar {
+  top: 0;
+  padding-right: 64px;
+}
+.is-embed .titlebar > .iconbtn:first-child {
+  display: none;
+}
+.is-embed .content {
+  padding: var(--s-5) var(--s-6) var(--s-7);
+}
+.is-embed .demo[data-demo-key="role"] {
+  display: none;
+}
+
+/* ===== 점포 썸네일 목록 시안 비교 (stores/card-variants.html) ===== */
+.cv-note {
+  margin: 0 0 var(--s-3);
+  font-size: 13px;
+  color: var(--body);
+  max-width: 900px;
+}
+.cv-note b {
+  margin-left: var(--s-2);
+  color: var(--ink);
+}
+.cv-stage {
+  padding: var(--s-5);
+  background: var(--surface-hover);
+}
+.cv-grid3,
+.cv-grid2 {
+  display: grid;
+  gap: var(--s-4);
+}
+.cv-grid3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.cv-grid2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (max-width: 1100px) {
+  .cv-grid3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 720px) {
+  .cv-grid3,
+  .cv-grid2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.cva__staff {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.cva__staff svg,
+.cva__meta svg,
+.cvb__meta svg,
+.cvd__col svg {
+  color: var(--muted);
+  flex: none;
+}
+
+/* A 커버형 */
+.cva {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-card);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  color: inherit;
+}
+.cva:hover {
+  box-shadow: var(--lift);
+}
+.cva__media {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  background: var(--surface-strong);
+}
+.cva__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+.cva__state {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+}
+.cva__state.badge--quiet {
+  background: var(--surface-card);
+}
+.cva__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--s-4) var(--s-5) var(--s-5);
+}
+.cva__head,
+.cvb__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+  min-width: 0;
+}
+.cva__name,
+.cvb__name,
+.cvc__name,
+.cvd__name {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--ink);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cva__name {
+  flex: 1;
+}
+.cva__date {
+  flex: none;
+  font-size: 12px;
+  color: var(--muted-tert);
+}
+.cva__meta,
+.cvb__meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--body);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* B 가로형 */
+.cvb {
+  display: flex;
+  gap: var(--s-4);
+  padding: var(--s-4);
+  background: var(--surface-card);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-xl);
+  color: inherit;
+}
+.cvb:hover {
+  box-shadow: var(--lift);
+}
+.cvb__media {
+  flex: none;
+}
+.cvb__img {
+  width: 104px;
+  height: 104px;
+  border-radius: var(--r-lg);
+  object-fit: cover;
+  background: var(--surface-strong);
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+.cvb__body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  flex: 1;
+}
+.cvb__head .cvb__name {
+  flex: 1;
+}
+.cvb__head .badge {
+  flex: none;
+}
+.cvb__date {
+  margin-top: auto;
+  font-size: 12px;
+  color: var(--muted-tert);
+}
+
+/* C 정보 격자형 */
+.cvc {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  padding: var(--s-4) var(--s-5);
+  background: var(--surface-card);
+  border: 1px solid var(--hairline-strong);
+  border-left-width: 4px;
+  border-radius: var(--r-lg);
+  color: inherit;
+}
+.cvc:hover {
+  box-shadow: var(--lift);
+}
+.cvc--ok {
+  border-left-color: var(--ok);
+}
+.cvc--quiet {
+  border-left-color: var(--muted-soft);
+}
+.cvc--risk {
+  border-left-color: var(--risk);
+}
+.cvc__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-width: 0;
+}
+.cvc__img {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-md);
+  object-fit: cover;
+  background: var(--surface-strong);
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  flex: none;
+}
+.cvc__img svg {
+  width: 20px;
+  height: 20px;
+}
+.cvc__title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.cvc__sub {
+  font-size: 12px;
+  color: var(--muted-tert);
+}
+.cvc__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-3) var(--s-4);
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--hairline);
+  font-size: 13px;
+  color: var(--ink);
+}
+.cvc__grid > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cvc__grid .cvc__wide {
+  grid-column: 1 / -1;
+}
+.cvc__grid i {
+  font-style: normal;
+  font-size: 11.5px;
+  color: var(--muted-tert);
+}
+
+/* D 컴팩트 리스트 */
+.cv-list {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-card);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+.cvd {
+  display: grid;
+  grid-template-columns: 44px minmax(140px, 1.4fr) 90px 80px minmax(110px, 1fr) 48px 64px 96px;
+  align-items: center;
+  gap: var(--s-4);
+  padding: 10px var(--s-5);
+  border-top: 1px solid var(--hairline);
+  font-size: 13px;
+  color: var(--body);
+}
+.cvd:first-child {
+  border-top: 0;
+}
+.cvd:hover {
+  background: var(--surface-hover);
+}
+.cvd__img {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-md);
+  object-fit: cover;
+  background: var(--surface-strong);
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+.cvd__img svg {
+  width: 18px;
+  height: 18px;
+}
+.cvd__name {
+  font-size: 14px;
+}
+.cvd__code,
+.cvd__date {
+  font-size: 12px;
+  color: var(--muted-tert);
+}
+.cvd__col {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cvd .badge {
+  justify-self: start;
+}
+@media (max-width: 900px) {
+  .cvd {
+    grid-template-columns: 44px minmax(0, 1fr) auto auto;
+  }
+  .cvd__code,
+  .cvd__col,
+  .cvd__date {
+    display: none;
+  }
+}
+
+/* 상단 조회 범위 선택 (F-TLJOCK) — [점포 선택 드롭다운] [BP 변경]. BP 변경은 플랫폼 사용자에게만 */
+.scopebp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  margin-left: calc(var(--s-2) * -1);
+  padding: 0 12px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-md);
+  background: var(--surface-card);
+  color: var(--body);
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.scopebp:hover {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+.scopebtn--empty {
+  color: var(--body);
+  text-decoration: none;
+}
+.scopepop__box {
+  max-width: 560px;
+}
+.scopepop__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  max-height: min(34vh, 272px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+  padding-top: var(--s-3);
+  padding-bottom: var(--s-3);
+}
+/* 점포 목록을 내려도 유형 머리가 위에 붙어 있다 */
+.scopepop__ghead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.scopepop__grp {
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.scopepop__ghead {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 10px 12px;
+  background: var(--canvas-soft);
+  border-bottom: 1px solid var(--hairline);
+  font-size: 13px;
+  cursor: pointer;
+}
+.scopepop__ghead b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.scopepop__gsel {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--link);
+}
+.scopepop__stores {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (max-width: 560px) {
+  .scopepop__stores { grid-template-columns: minmax(0, 1fr); }
+}
+.scopepop__store {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+}
+.scopepop__store:hover {
+  background: var(--surface-hover);
+}
+.scopepop__store .mono {
+  font-size: 11px;
+}
+.scopepop__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.scopepop__store.is-closed {
+  color: var(--muted);
+  cursor: not-allowed;
+}
+.scopepop__store.is-closed:hover {
+  background: none;
+}
+.scopepop__result {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: var(--surface-strong);
+  font-size: 13px;
+  color: var(--body);
+}
+.scopepop__result b {
+  color: var(--ink);
+}
+.scopepop__result .tlink {
+  margin-left: auto;
+  font-size: 12px;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.scopepop__none,
+.scopepop__wait {
+  margin: 0;
+  padding: 24px 8px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted-tert);
+}
+.scopetoast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  z-index: 90;
+  transform: translateX(-50%);
+  padding: 10px 16px;
+  border-radius: var(--r-md);
+  background: var(--ink);
+  color: var(--canvas);
+  font-size: 13px;
+  box-shadow: 0 10px 30px rgba(23, 23, 23, 0.18);
+}
+
+/* 공통 점포 검색 필터 (S-WDJFWH) — 검색창 아래 자동완성(여러 개 고름) · 그 아래 둥근 Chip 과 X */
+.sfilt {
+  min-width: 0;
+}
+.sfilt__box {
+  position: relative;
+}
+.sfilt__list {
+  max-height: 300px;
+}
+.sfilt__opt .sfilt__mark {
+  flex: none;
+  width: 14px;
+  color: var(--ok-text);
+  font-weight: 700;
+  padding-top: 1px;
+}
+.sfilt__opt[aria-checked="true"] {
+  background: var(--ok-wash);
+}
+.sfilt__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.sfilt__chips[hidden] {
+  display: none;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 4px 0 12px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-pill);
+  background: var(--surface-card);
+  color: var(--ink);
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+.chip__code {
+  font-size: 11px;
+  color: var(--muted-tert);
+}
+.chip__x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted-tert);
+  cursor: pointer;
+}
+.chip__x:hover {
+  background: var(--surface-strong);
+  color: var(--ink);
+}
+.sfilt__sum {
+  font-weight: 400;
+  color: var(--muted-tert);
+  font-size: 12px;
+  margin-left: 6px;
+}
+.pop__none {
+  margin: 0;
+  padding: 14px 10px;
+  font-size: 12.5px;
+  color: var(--muted-tert);
+}
+.pop__note {
+  margin: 4px 0 0;
+  padding: 8px 10px 4px;
+  border-top: 1px solid var(--hairline);
+  font-size: 12px;
+  color: var(--muted-tert);
+}
+.scopepop__only {
+  color: var(--body);
+}
+.scopepop__bpq {
+  width: 100%;
 }

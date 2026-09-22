@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>점포 목록 카드형 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="stores" data-sub="stores/index.html">
+    <!-- 점포 목록 · 카드형 시안 — 화면 구성 비교용이다. 다른 화면과 잇지 않았다.
+         줄 카드 목록(index.html)과 같은 점포를 한 줄에 세 장씩 카드로 놓아 본다.
+         카드: 대표 이미지 · 점포명 · BP상호명과 점포코드 · 지역 | 유형 · 직원 수 · 상태 배지와 등록일. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <h1 class="t-h1">점포 정보 관리</h1>
+          <span class="badge badge--warn">1팀 작업</span>
+          <span class="badge badge--preview">카드형 시안</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">화면 구성 비교용</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">점포</h2>
+              <span class="badge badge--quiet">10곳</span>
+            </div>
+            <div class="scards">
+              <article class="scard">
+                <span class="scard__img" role="img" aria-label="대표 이미지 없음" data-icon="store" data-icon-size="24"></span>
+                <div class="scard__name">모리커피 청담점</div>
+                <div class="scard__bp">㈜한강상회 · <span class="mono">ST000007</span></div>
+                <div class="scard__meta"><span data-icon="pin" data-icon-size="14"></span><span>서울 강남구 | 가맹점포 · 직원 0명</span></div>
+                <div class="scard__foot">
+                  <span class="badge badge--quiet">미운영</span>
+                  <span class="mono">2026-09-10</span>
+                </div>
+              </article>
+              <article class="scard">
+                <img class="scard__img" src="../assets/img/store-ongi.svg" alt="온기식당 일산점 대표 이미지" />
+                <div class="scard__name">온기식당 일산점</div>
+                <div class="scard__bp">㈜한강상회 · <span class="mono">ST000011</span></div>
+                <div class="scard__meta"><span data-icon="pin" data-icon-size="14"></span><span>경기 고양시 | 가맹점포 · 직원 5명</span></div>
+                <div class="scard__foot">
+                  <span class="badge badge--ok">운영</span>
+                  <span class="mono">2026-02-23</span>
+                </div>
+              </article>
+              <article class="scard">
+                <img class="scard__img" src="../assets/img/store-ongi.svg" alt="온기식당 서면점 대표 이미지" />
+                <div class="scard__name">온기식당 서면점</div>
+                <div class="scard__bp">㈜한강상회 · <span class="mono">ST000010</span></div>
+                <div class="scard__meta"><span data-icon="pin" data-icon-size="14"></span><span>부산 부산진구 | 가맹점포 · 직원 6명</span></div>
+                <div class="scard__foot">
+                  <span class="badge badge--ok">운영</span>
+                  <span class="mono">2026-01-09</span>
+                </div>
+              </article>
+              <article class="scard">
+                <span class="scard__img" role="img" aria-label="대표 이미지 없음" data-icon="store" data-icon-size="24"></span>
+                <div class="scard__name">온기식당 둔산점</div>
+                <div class="scard__bp">㈜한강상회 · <span class="mono">ST000009</span></div>
+                <div class="scard__meta"><span data-icon="pin" data-icon-size="14"></span><span>대전 서구 | 가맹점포 · 직원 6명</span></div>
+                <div class="scard__foot">
+                  <span class="badge badge--ok">운영</span>
+                  <span class="mono">2025-11-18</span>
+                </div>
+              </article>
+              <article class="scard">
+                <img class="scard__img" src="../assets/img/store-mori.svg" alt="모리커피 부평점 대표 이미지" />
+                <div class="scard__name">모리커피 부평점</div>
+                <div class="scard__bp">㈜한강상회 · <span class="mono">ST000008</span></div>
+                <div class="scard__meta"><span data-icon="pin" data-icon-size="14"></span><span>인천 부평구 | 가맹점포 · 직원 5명</span></div>
+                <div class="scard__foot">
+                  <span class="badge badge--ok">운영</span>
+                  <span class="mono">2025-10-06</span>
+                </div>
+              </article>
+              <article class="scard">
+                <img class="scard__img" src="../assets/img/store-mori.svg" alt="모리커피 연남점 대표 이미지" />
+                <div class="scard__name">모리커피 연남점</div>
+                <div class="scard__bp">㈜한강상회 · <span class="mono">ST000006</span></div>
+                <div class="scard__meta"><span data-icon="pin" data-icon-size="14"></span><span>서울 마포구 | 가맹점포 · 직원 6명</span></div>
+                <div class="scard__foot">
+                  <span class="badge badge--ok">운영</span>
+                  <span class="mono">2025-08-01</span>
+                </div>
+              </article>
+              <article class="scard">
+                <img class="scard__img" src="../assets/img/store-mori.svg" alt="모리커피 을지로점 대표 이미지" />
+                <div class="scard__name">모리커피 을지로점</div>
+                <div class="scard__bp">㈜한강상회 · <span class="mono">ST000005</span></div>
+                <div class="scard__meta"><span data-icon="pin" data-icon-size="14"></span><span>서울 중구 | 가맹점포 · 직원 5명</span></div>
+                <div class="scard__foot">
+                  <span class="badge badge--ok">운영</span>
+                  <span class="mono">2025-07-15</span>
+                </div>
+              </article>
+              <article class="scard">
+                <img class="scard__img" src="../assets/img/store-ongi.svg" alt="온기식당 광화문점 대표 이미지" />
+                <div class="scard__name">온기식당 광화문점</div>
+                <div class="scard__bp">㈜한강상회 · <span class="mono">ST000004</span></div>
+                <div class="scard__meta"><span data-icon="pin" data-icon-size="14"></span><span>서울 종로구 | 일반점포 · 직원 6명</span></div>
+                <div class="scard__foot">
+                  <span class="badge badge--ok">운영</span>
+                  <span class="mono">2025-06-02</span>
+                </div>
+              </article>
+              <article class="scard">
+                <img class="scard__img" src="../assets/img/store-ongi.svg" alt="온기식당 판교점 대표 이미지" />
+                <div class="scard__name">온기식당 판교점</div>
+                <div class="scard__bp">㈜한강상회 · <span class="mono">ST000003</span></div>
+                <div class="scard__meta"><span data-icon="pin" data-icon-size="14"></span><span>경기 성남시 | 일반점포 · 직원 7명</span></div>
+                <div class="scard__foot">
+                  <span class="badge badge--ok">운영</span>
+                  <span class="mono">2025-05-20</span>
+                </div>
+              </article>
+              <article class="scard">
+                <img class="scard__img" src="../assets/img/store-mori.svg" alt="모리커피 성수점 대표 이미지" />
+                <div class="scard__name">모리커피 성수점</div>
+                <div class="scard__bp">㈜한강상회 · <span class="mono">ST000002</span></div>
+                <div class="scard__meta"><span data-icon="pin" data-icon-size="14"></span><span>서울 성동구 | 일반점포 · 직원 8명</span></div>
+                <div class="scard__foot">
+                  <span class="badge badge--ok">운영</span>
+                  <span class="mono">2025-04-11</span>
+                </div>
+              </article>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+  </body>
+</html>

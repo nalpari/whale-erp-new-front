@@ -9,6 +9,9 @@
 
   var ICONS = {
     home: '<path d="M3.2 10.4 12 3.2l8.8 7.2"/><path d="M5.5 9.4V20.3h13V9.4"/><path d="M9.6 20.3v-5.6h4.8v5.6"/>',
+    table: '<rect x="3.4" y="4.6" width="17.2" height="14.8" rx="2"/><path d="M3.4 9.6h17.2M3.4 14.6h17.2M9.6 9.6v9.8"/>',
+    pin: '<path d="M12 21s-6.6-6.1-6.6-11.2a6.6 6.6 0 0 1 13.2 0C18.6 14.9 12 21 12 21z"/><circle cx="12" cy="9.8" r="2.4"/>',
+    image: '<rect x="3.4" y="4.6" width="17.2" height="14.8" rx="2"/><circle cx="9" cy="9.8" r="1.7"/><path d="m20.6 16.2-5-5-8.4 8.2"/>',
     store:
       '<path d="M4.6 9.6v10.7h14.8V9.6"/><path d="M3 9.6 4.7 3.9h14.6L21 9.6"/><path d="M3 9.6a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M9.6 20.3v-6.1h4.8v6.1"/>',
     network:
@@ -35,6 +38,7 @@
     help: '<circle cx="12" cy="12" r="8.8"/><path d="M9.4 9.3a2.7 2.7 0 0 1 5.2.9c0 1.8-2.6 2.3-2.6 4"/><path d="M12 17.3h.01"/>',
     phone:
       '<rect x="6.4" y="2.6" width="11.2" height="18.8" rx="2.4"/><path d="M10.4 18.4h3.2"/>',
+    mail: '<rect x="3" y="5.4" width="18" height="13.2" rx="1.8"/><path d="m3.6 6.4 8.4 6.6 8.4-6.6"/>',
     search: '<circle cx="11" cy="11" r="6.6"/><path d="m15.9 15.9 5.1 5.1"/>',
     filter: '<path d="M3.4 5.4h17.2l-6.7 7.7v5.9l-3.8 1.9v-7.8z"/>',
     plus: '<path d="M12 5.2v13.6"/><path d="M5.2 12h13.6"/>',
@@ -155,6 +159,29 @@
           ]}
         ]},
 
+        /* 로그인은 1팀 작업이다 — 인증 및 계정 관리(R-LYZWGG) 명세로 만들었다. 홈 바로 앞 단계라 Home 밑에 둔다.
+           Depth 1 “로그인”은 화면으로 보내지 않고 하위만 여닫는다(toggle). 화면은 “로그인 화면”부터 열고,
+           그 화면에서 이어지는 화면을 한 층 아래에 둔다.
+           로그인 전 화면 묶음의 “로그인 · 가입”은 3팀이 먼저 그린 초안이고, 둘이 다른 곳은 auth 개요의 쟁점에 있다. */
+        { key: "auth", text: "로그인", team: "1팀", toggle: 1, items: [
+          { text: "영역 개요", href: "auth/overview.html", mock: 1 },
+          { key: "auth-screens", text: "로그인 화면", href: "auth/login.html", sub: [
+            { text: "아이디·비밀번호 찾기", href: "auth/find.html", route: "/find" },
+            { text: "회원가입", href: "auth/signup.html", route: "/signup" },
+            { text: "가입 완료", href: "auth/signup-done.html", route: "/signup/done" },
+            { text: "강제 비밀번호 변경", href: "auth/force-password.html", route: "팝업" },
+            { text: "세션 만료 경고", href: "stores/index.html?session=expired", route: "쓰던 화면" }
+          ]}
+        ]},
+
+        /* MY PAGE 는 실제로는 상단 이름을 눌러 여는 메뉴다(F-AMTDCK · F-RCHJES). 목업 허브에서 찾기 쉽게 여기에도 둔다. */
+        { key: "mypage", text: "MY PAGE", team: "1팀", toggle: 1, items: [
+          { text: "영역 개요", href: "mypage/overview.html", mock: 1 },
+          { text: "내 정보 관리", href: "mypage/profile.html" },
+          { text: "비밀번호 변경", href: "mypage/password.html" },
+          { text: "회원 탈퇴", href: "mypage/withdraw.html" }
+        ]},
+
         { key: "master", text: "기초정보관리", team: "1팀", items: [
           { text: "상품 정보 관리", phase: "2" },
           { text: "가격 정보 관리", phase: "2" },
@@ -162,8 +189,11 @@
           { text: "자재 정보 관리", phase: "1.5" }
         ]},
 
-        { key: "stores", text: "점포관리", team: "1팀", items: [
-          { text: "점포 정보 관리" },
+        /* 점포 정보 관리는 1팀 명세(R-QTPRUQ 점포 관리)로 만들었다. 로그인과 같이 이름은 하위만 여닫는다. */
+        { key: "stores", text: "점포관리", team: "1팀", toggle: 1, items: [
+          { text: "영역 개요", href: "stores/overview.html", mock: 1 },
+          /* 상세·등록·수정은 메뉴로 나누지 않는다 — 상세·등록은 목록에서, 수정은 상세에서 들어간다. 그 화면들은 이 줄을 켜 둔다. */
+          { text: "점포 정보 관리", href: "stores/index.html" },
           { text: "계약서 템플릿 관리", phase: "2" },
           { text: "계약서 관리", phase: "2" },
           { text: "시설물 및 장비 관리", phase: "1.5" },
@@ -203,11 +233,14 @@
           { text: "계정별 현황 조회" }
         ]},
 
-        { key: "config", text: "환경설정", team: "1팀", items: [
-          { text: "관리자 관리" },
-          { text: "권한 관리" },
-          { text: "공통코드 관리" },
-          { text: "휴일 관리" }
+        /* 환경설정은 1팀 명세(R-DJGLEO BP 환경 설정)의 하위 기능 넷으로 이름을 맞췄다.
+           기능당 메뉴 하나다 — 상세·등록·수정은 목록에서 이어 들어가고, 수정은 상세를 거친다. */
+        { key: "config", text: "환경설정", team: "1팀", toggle: 1, items: [
+          { text: "영역 개요", href: "config/overview.html", mock: 1 },
+          { text: "BP 관리자 관리", href: "config/admins.html" },
+          { text: "BP 권한 그룹 관리", href: "config/roles.html" },
+          { text: "BP 공통코드 관리", href: "config/codes.html" },
+          { text: "BP 휴일 관리", href: "config/holidays.html" }
         ]},
 
         { key: "support", text: "고객지원", team: "3팀", href: "support/index.html", items: [
@@ -232,9 +265,15 @@
         { key: "members", text: "회원관리", team: "3팀", phase: "2", items: [
           { text: "회원 정보 관리" }
         ]},
-        { key: "bp", text: "BP 정보관리", team: "1팀", items: [
-          { text: "BP Master 정보 관리" },
-          { text: "휴면 BP 정보 관리" }
+        /* BP 마스터 계정 관리는 1팀 명세(R-NMDCYH 플랫폼 BP 관리 · F-EHHJLV)로 만들었다.
+           구조도의 휴면 BP 정보 관리는 따로 두지 않는다 — 목록의 상태 조건(미사용·탈퇴)이 맡는다. */
+        { key: "bp", text: "BP 마스터 계정 관리", team: "1팀", toggle: 1, items: [
+          { text: "영역 개요", href: "bp/overview.html", mock: 1 },
+          { key: "bp-master", text: "BP 마스터 계정 목록", href: "bp/index.html", sub: [
+            { text: "BP 마스터 계정 상세", href: "bp/detail.html", route: "/platform/bp/BP000017" },
+            { text: "BP 마스터 계정 등록", href: "bp/new.html", route: "/platform/bp/new" },
+            { text: "BP 마스터 계정 수정", href: "bp/edit.html", route: "/platform/bp/…/edit" }
+          ]}
         ]},
         { key: "settle", text: "서비스정산관리", phase: "2", items: [
           { text: "부가서비스 주문 내역" },
@@ -247,12 +286,15 @@
           { text: "쿠폰 관리" },
           { text: "포인트 관리" }
         ]},
-        { key: "system", text: "시스템관리", team: "1팀", items: [
-          { text: "관리자 관리" },
-          { text: "관리자 권한 관리" },
-          { text: "프로그램 관리" },
-          { text: "공통코드 관리" },
-          { text: "휴일 관리" }
+        /* 시스템관리는 1팀 명세(R-KJGJXP 플랫폼 시스템 관리)의 하위 기능 다섯으로 이름을 맞췄다.
+           구조도의 프로그램 관리가 플랫폼 메뉴 관리다. 권한 팝업의 메뉴는 메뉴 관리의 트리를, 메뉴 관리의 서비스는 공통코드 ‘서비스’를 읽는다. */
+        { key: "system", text: "시스템관리", team: "1팀", toggle: 1, items: [
+          { text: "영역 개요", href: "system/overview.html", mock: 1 },
+          { text: "플랫폼 관리자 관리", href: "system/admins.html" },
+          { text: "플랫폼 권한 관리", href: "system/roles.html" },
+          { text: "플랫폼 메뉴 관리", href: "system/menus.html" },
+          { text: "플랫폼 공통코드 관리", href: "system/codes.html" },
+          { text: "플랫폼 휴일 관리", href: "system/holidays.html" }
         ]},
         { key: "community", text: "커뮤니티관리", team: "3팀", items: [
           { key: "cm-notices", text: "공지사항", href: "support/community.html", sub: [
@@ -301,33 +343,73 @@
     return { cons: CONSOLES[0], menu: null };
   }
 
-  /* 조회 범위 (STAFF-8 · STAFF-10). 묶음 셋과 점포 열하나가 층을 나눠 선다.
-     범위 식별자는 늘 하나다 — 여럿을 한꺼번에 봐야 하면 임의 다중 선택이 아니라
-     이름 붙인 묶음으로 푼다. 그래야 "지금 무엇을 보고 있나"가 버튼 한 줄로 읽히고
-     명세의 범위 식별자도 하나로 남는다. */
-  var SCOPE_SETS = [
-    { label: "전체 11개점", meta: "직영 4 · 가맹 7" },
-    { label: "직영 4개점", meta: "본사가 직접 운영" },
-    { label: "가맹 7개점", meta: "모리커피 · 온기식당" }
+  /* 상단 조회 범위 선택 (F-TLJOCK). 조회 범위는 BP 하나와 그 BP 안의 점포 범위다.
+     점포는 일반점포 · 가맹점포 유형 그룹 또는 개별 점포로 여러 개를 고른다. 점포를 고르지 않고 적용하면 그 BP 전체 점포다.
+     적용한 범위는 서버에 두지 않고 이 브라우저 세션 동안만 유지한다(sessionStorage) — 로그아웃하면 사라진다.
+     목업 전용 주소 값: ?scope=first 는 BP 가 적용되지 않은 플랫폼 사용자의 최초 진입(닫을 수 없는 팝업), ?scope=nostore 는 접근할 점포가 없는 사용자다. */
+  var BPS = [
+    { code: "BP000017", name: "㈜한강상회", stores: [
+      { id: "ST000001", name: "모리커피 서초점", type: "일반점포" },
+      { id: "ST000002", name: "모리커피 성수점", type: "일반점포" },
+      { id: "ST000003", name: "온기식당 판교점", type: "일반점포" },
+      { id: "ST000004", name: "온기식당 광화문점", type: "일반점포" },
+      { id: "ST000005", name: "모리커피 을지로점", type: "가맹점포" },
+      { id: "ST000006", name: "모리커피 연남점", type: "가맹점포" },
+      { id: "ST000007", name: "모리커피 청담점", type: "가맹점포" },
+      { id: "ST000008", name: "모리커피 부평점", type: "가맹점포" },
+      { id: "ST000009", name: "온기식당 둔산점", type: "가맹점포" },
+      { id: "ST000010", name: "온기식당 서면점", type: "가맹점포" },
+      { id: "ST000011", name: "온기식당 일산점", type: "가맹점포" }
+    ] },
+    { code: "BP000003", name: "모리커피 본사", stores: [
+      { id: "ST000031", name: "모리커피 강남본점", type: "일반점포" },
+      { id: "ST000032", name: "모리커피 합정점", type: "가맹점포" },
+      { id: "ST000033", name: "모리커피 수원점", type: "가맹점포" }
+    ] },
+    { code: "BP000021", name: "㈜바다푸드", stores: [
+      { id: "ST000041", name: "바다횟집 광안점", type: "일반점포" },
+      { id: "ST000042", name: "바다횟집 해운대점", type: "일반점포", closed: true },
+      { id: "ST000043", name: "바다횟집 서면점", type: "가맹점포" }
+    ] },
+    { code: "BP000024", name: "㈜한강푸드시스템", stores: [
+      { id: "ST000051", name: "한강국밥 여의도점", type: "일반점포" },
+      { id: "ST000052", name: "한강국밥 마포점", type: "가맹점포" }
+    ] },
+    { code: "BP000030", name: "온기식당 본사", stores: [
+      { id: "ST000061", name: "온기식당 을지로본점", type: "일반점포" }
+    ] }
   ];
-
-  var STORES = [
-    { label: "모리커피 서초점", meta: "POS·KIOSK·QR", kind: "직영" },
-    { label: "모리커피 성수점", meta: "POS·KIOSK", kind: "직영" },
-    { label: "온기식당 판교점", meta: "POS", kind: "직영" },
-    { label: "온기식당 광화문점", meta: "POS·QR", kind: "직영" },
-    { label: "모리커피 을지로점", meta: "미납 1건", kind: "가맹" },
-    { label: "모리커피 연남점", meta: "POS·KIOSK", kind: "가맹" },
-    { label: "모리커피 청담점", meta: "개점 준비", kind: "가맹" },
-    { label: "모리커피 부평점", meta: "POS", kind: "가맹" },
-    { label: "온기식당 둔산점", meta: "미납 1건", kind: "가맹" },
-    { label: "온기식당 서면점", meta: "POS·KIOSK", kind: "가맹" },
-    { label: "온기식당 일산점", meta: "POS", kind: "가맹" }
-  ];
-
-  /* 팝오버가 고를 수 있는 것 전부. 눌린 순서를 이 배열로 되짚는다. */
-  function scopeAll() {
-    return SCOPE_SETS.concat(STORES);
+  var SCOPE_KEY = "whale-mockup-scope";
+  var Q0 = new URLSearchParams(location.search);
+  var SCOPE_MODE = Q0.get("scope") || "";
+  function bpOf(code) {
+    for (var i = 0; i < BPS.length; i++) if (BPS[i].code === code) return BPS[i];
+    return BPS[0];
+  }
+  function scopeNow() {
+    var v = null;
+    try { v = JSON.parse(sessionStorage.getItem(SCOPE_KEY)); } catch (e) {}
+    return v && v.bp ? v : { bp: "BP000017", all: true, ids: [] };
+  }
+  function scopeSave(v) { try { sessionStorage.setItem(SCOPE_KEY, JSON.stringify(v)); } catch (e) {} }
+  /* 버튼 한 줄 — 유형 하나를 통째로 고르면 그 유형 이름으로, 한 곳이면 점포명, 여럿이면 “첫 점포 외 N곳”으로 줄인다 */
+  function scopeLabel(v) {
+    var bp = bpOf(v.bp), open = bp.stores.filter(function (x) { return !x.closed; });
+    if (v.all || !v.ids.length) return "전체 " + open.length + "개점";
+    var picked = open.filter(function (x) { return v.ids.indexOf(x.id) > -1; });
+    if (!picked.length) return "전체 " + open.length + "개점";
+    if (picked.length === open.length) return "전체 " + open.length + "개점";
+    /* 통째로 고른 유형은 “일반점포 전체”로 묶고, 나머지 개별 점포는 “첫 점포 외 N곳”으로 붙인다 */
+    var parts = [], rest = picked.slice();
+    ["일반점포", "가맹점포"].forEach(function (t) {
+      var all = open.filter(function (x) { return x.type === t; });
+      if (all.length && all.every(function (x) { return v.ids.indexOf(x.id) > -1; })) {
+        parts.push(t + " 전체");
+        rest = rest.filter(function (x) { return x.type !== t; });
+      }
+    });
+    if (rest.length) parts.push(rest[0].name + (rest.length > 1 ? " 외 " + (rest.length - 1) + "곳" : ""));
+    return parts.length === 1 && !rest.length ? parts[0] + " " + picked.length + "개점" : parts.join(" · ");
   }
 
   function topnavHTML() {
@@ -336,10 +418,14 @@
       '<button class="iconbtn navtoggle" type="button" aria-label="메뉴 열기" aria-expanded="false" data-icon="menu" data-icon-size="18"></button>' +
       '<a class="brand" href="' + url("index.html") + '">' + mark(30) +
       '<span class="brand__name">WHALE <span>ERP</span></span></a>' +
-      /* BP 고정 옵션 (슬라이드 16 ②) — 모든 검색 옵션이 여기 고른 것으로 고정된다. */
-      '<button class="scopebtn" type="button" aria-haspopup="listbox" aria-expanded="false">' +
-      "<b>㈜한강상회</b><span class=\"sep\">·</span><span class=\"scopebtn__val\">전체 11개점</span>" +
-      ic("selector", 14) + "</button>" +
+      /* 점포 선택 드롭다운 · BP 변경 (F-TLJOCK) — 업무 화면은 여기 적용한 BP · 점포 범위로 조회한다.
+         BP 변경 버튼은 실제로는 플랫폼 마스터 · 플랫폼 관리자에게만 있다. 목업에는 플랫폼 사용자로 들어오는 경로가 없어
+         우선 누구에게나 보이고, 팝업 안에 플랫폼 사용자 전용이라는 안내를 둔다. */
+      (SCOPE_MODE === "nostore"
+        ? '<a class="scopebtn scopebtn--empty" href="' + url("stores/new.html") + '">' + ic("plus", 14) + "<span>접근할 점포가 없습니다 · 점포 등록</span></a>"
+        : '<button class="scopebtn" type="button" aria-haspopup="listbox" aria-expanded="false" title="점포 범위 선택">' +
+          '<b class="scopebtn__bp"></b><span class="sep">·</span><span class="scopebtn__val"></span>' + ic("selector", 14) + "</button>" +
+          '<button class="scopebp" type="button" aria-haspopup="dialog" title="BP 및 점포 선택">' + ic("refresh", 14) + "BP 변경</button>") +
       '<div class="topnav__end">' +
       '<button class="iconbtn bellbtn" type="button" aria-label="알림 3건" aria-haspopup="true" aria-expanded="false" data-dot="1" data-icon="bell" data-icon-size="18"></button>' +
       '<button class="iconbtn" type="button" aria-label="도움말" data-icon="help" data-icon-size="18"></button>' +
@@ -391,12 +477,13 @@
 
   /* 하위가 있으면 어느 층이든 같은 규칙으로 여닫는다. */
   function menuHTML(m, on, sub, open) {
-    var mh = menuHref(m);
+    var mh = m.toggle ? "" : menuHref(m);
     var isOpen = open.indexOf(m.key) > -1;
     var html =
       '<div class="side__row">' +
-      '<a class="side__item' + (mh ? "" : " is-na") + '"' +
-      (mh ? ' href="' + url(mh) + '"' : ' href="#" aria-disabled="true" title="이번 목업 범위 밖"') +
+      '<a class="side__item' + (mh || m.toggle ? "" : " is-na") + '"' +
+      (m.toggle ? ' href="#" data-toggle-menu="' + m.key + '" aria-expanded="' + isOpen + '"'
+        : mh ? ' href="' + url(mh) + '"' : ' href="#" aria-disabled="true" title="이번 목업 범위 밖"') +
       (on ? ' aria-current="page"' : "") + ">" +
       '<span class="side__text">' + m.text + "</span>" +
       (m.team ? badge(m.team, m.team === "1팀" ? "t1" : "t3") : "") +
@@ -472,12 +559,22 @@
     var side = document.getElementById("side");
     if (!side) return;
     side.addEventListener("click", function (e) {
+      /* toggle 메뉴는 이름을 눌러도 화면으로 가지 않고 하위만 여닫는다. */
+      var name = e.target.closest("[data-toggle-menu]");
+      if (name) {
+        e.preventDefault();
+        var tg = side.querySelector('.side__toggle[data-menu="' + name.dataset.toggleMenu + '"]');
+        if (tg) tg.click();
+        return;
+      }
       var t = e.target.closest(".side__toggle");
       if (!t) return;
       var panel = side.querySelector('[data-sub-of="' + t.dataset.menu + '"]');
       if (!panel) return;
       panel.hidden = !panel.hidden;
       t.setAttribute("aria-expanded", String(!panel.hidden));
+      var nm = side.querySelector('[data-toggle-menu="' + t.dataset.menu + '"]');
+      if (nm) nm.setAttribute("aria-expanded", String(!panel.hidden));
       var list = [];
       side.querySelectorAll(".side__toggle[aria-expanded=true]").forEach(function (b) {
         list.push(b.dataset.menu);
@@ -528,64 +625,301 @@
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
   }
 
-  function optionHTML(label, meta, on, dead) {
-    return '<button type="button" ' + (dead ? 'disabled ' : 'role="option" ') +
-      'data-q="' + label + " " + meta + '" aria-selected="' + !!on + '">' +
-      "<span><b>" + label + "</b><br><span class=\"subtle\" style=\"font-size:11.5px\">" + meta + "</span></span>" +
-      (on ? ic("check", 14) : "") + "</button>";
-  }
-
-  /* 묶음과 점포를 한 목록에 섞지 않는다. 위가 범위, 아래가 점포다.
-     점포가 열을 넘으면 찾기 칸이 붙는다 — 프랜차이즈는 쉰 개도 된다. */
-  function scopePopHTML(val) {
-    function sect(title, items) {
-      return '<div class="pop__sect"><div class="pop__label">' + title + "</div>" +
-        items.map(function (s) { return optionHTML(s.label, s.meta, s.label === val); }).join("") +
-        "</div>";
-    }
-    var direct = STORES.filter(function (s) { return s.kind === "직영"; });
-    var fran = STORES.filter(function (s) { return s.kind === "가맹"; });
-    return (
-      (STORES.length >= 10
-        ? '<div class="pop__search">' + ic("search", 14) +
-          '<input class="pop__q" type="search" placeholder="점포 이름으로 찾기" aria-label="점포 찾기" /></div>'
-        : "") +
-      '<div class="pop__list">' +
-      sect("범위", SCOPE_SETS) +
-      sect("직영 " + direct.length, direct) +
-      sect("가맹 " + fran.length, fran) +
-      "</div>" +
-      '<hr><a href="#" class="is-na" aria-disabled="true">' + ic("plus", 14) + "점포 등록</a>"
-    );
-  }
-
-  function wireScopeSearch(pop) {
-    var q = pop.querySelector(".pop__q");
-    if (!q) return;
-    q.addEventListener("input", function () {
-      var v = q.value.trim().toLowerCase();
-      pop.querySelectorAll(".pop__sect").forEach(function (sect) {
-        var any = false;
-        sect.querySelectorAll("button[role=option]").forEach(function (b) {
-          var hit = !v || b.dataset.q.toLowerCase().indexOf(v) > -1;
-          b.hidden = !hit;
-          if (hit) any = true;
-        });
-        sect.hidden = !any;
-      });
-    });
-    q.focus();
-  }
-
+  /* ---------- 점포 선택 드롭다운 · BP 및 점포 선택 팝업 (F-TLJOCK) ----------
+     드롭다운은 지금 BP 안의 범위를 그 자리에서 바로 고른다. BP 를 바꿀 때만 BP 변경 버튼(플랫폼 사용자)이 팝업을 연다.
+     팝업 구성 — BP 선택(단일) · 점포명 검색 · 유형 그룹(일반점포 · 가맹점포, 그룹 체크와 점포 수) · 개별 점포 체크 · 선택 결과 · 적용 · 취소.
+     그룹과 개별 조합, 서로 다른 유형 간 복수 선택이 된다. 폐점 점포도 폐점 표시와 함께 보이되 고르지 않는다.
+     최초 진입(플랫폼 사용자 · 적용된 BP 없음)에는 취소 · 닫기가 없다. */
   function wireScope() {
-    var btn = document.querySelector(".scopebtn");
+    var btn = document.querySelector("button.scopebtn");
     if (!btn) return;
-    var slot = btn.querySelector(".scopebtn__val");
-    wirePop(btn, "left", function () {
-      return scopePopHTML(slot.textContent.trim());
-    }, function (i) {
-      slot.textContent = scopeAll()[i].label;
-    }, wireScopeSearch);
+    var bpBtn = document.querySelector(".scopebp");
+    function paint() {
+      if (forced) {
+        btn.querySelector(".scopebtn__bp").textContent = "BP 미적용";
+        btn.querySelector(".scopebtn__val").textContent = "BP 를 고르세요";
+        return;
+      }
+      var v = scopeNow();
+      btn.querySelector(".scopebtn__bp").textContent = bpOf(v.bp).name;
+      btn.querySelector(".scopebtn__val").textContent = scopeLabel(v);
+    }
+    paint();
+    var m = document.createElement("div");
+    m.className = "modal scopepop";
+    m.hidden = true;
+    m.setAttribute("role", "dialog");
+    m.setAttribute("aria-modal", "true");
+    m.setAttribute("aria-labelledby", "scp-t");
+    document.body.appendChild(m);
+    var st = null, forced = false, back = null;
+    function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+    function draw(q) {
+      q = q || "";
+      var bp = bpOf(st.bp);
+      var open = bp.stores.filter(function (x) { return !x.closed; });
+      var hit = function (x) { return !q || (x.name + x.id).toLowerCase().indexOf(q.toLowerCase()) > -1; };
+      var groups = ["일반점포", "가맹점포"].map(function (t) {
+        var all = bp.stores.filter(function (x) { return x.type === t; });
+        var can = all.filter(function (x) { return !x.closed; }).length;
+        var sel = all.filter(function (x) { return !x.closed && st.ids.indexOf(x.id) > -1; }).length;
+        var shown = all.filter(hit);
+        if (!shown.length) return "";
+        var gs = !can ? "false" : sel === can ? "true" : sel ? "mixed" : "false";
+        return '<div class="scopepop__grp">' +
+          '<label class="scopepop__ghead"><span class="check" role="checkbox" tabindex="0" aria-checked="' + gs + '" aria-label="' + t + ' 전체" data-grp="' + t + '"' + (can ? "" : " disabled") + ">" + ic(gs === "mixed" ? "minus" : "check", 11) + "</span>" +
+          "<b>" + t + '</b><span class="subtle">' + all.length + "개점" + (all.length !== can ? " · 폐점 " + (all.length - can) : "") + "</span>" +
+          '<span class="scopepop__gsel">' + (sel ? sel + "곳 선택" : "") + "</span></label>" +
+          '<div class="scopepop__stores">' + shown.map(function (x) {
+            var on = st.ids.indexOf(x.id) > -1 && !x.closed;
+            return '<label class="scopepop__store' + (x.closed ? " is-closed" : "") + '"' + (x.closed ? ' title="폐점한 점포는 고를 수 없습니다"' : "") + '><span class="check" role="checkbox" tabindex="' + (x.closed ? "-1" : "0") + '" aria-checked="' + on + '" aria-label="' + esc(x.name) + '" data-id="' + x.id + '"' + (x.closed ? " disabled" : "") + ">" + ic("check", 11) + "</span>" +
+              '<span class="scopepop__name">' + esc(x.name) + '</span><span class="mono subtle">' + x.id + "</span>" + (x.closed ? '<span class="badge badge--quiet">폐점</span>' : "") + "</label>";
+          }).join("") + "</div></div>";
+      }).join("");
+      var n = st.ids.length;
+      var result = n ? "<b>선택 " + n + "곳</b> · " + esc(scopeLabel({ bp: st.bp, all: false, ids: st.ids })) : "<b>선택 안 함</b> · 적용하면 전체 " + open.length + "개점을 봅니다";
+      var noBp = forced && !st.picked;
+      /* 목업에는 플랫폼 사용자로 들어오는 경로가 없어 BP 변경 버튼을 늘 보이고, 팝업은 플랫폼 사용자 기준(BP 선택)으로 그린다.
+         BP 는 자동완성으로 고른다 — 칸을 누르면 접근할 수 있는 BP 가 펼쳐지고, 상호명 · BP 코드 일부로 좁힌다. */
+      var bpField = '<div class="addr__q scopepop__bpq"><span data-icon="search" data-icon-size="15"></span>' +
+          '<input class="input" id="scp-bp" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="scp-bplist" autocomplete="off"' +
+          ' placeholder="BP 상호명 또는 BP 코드로 찾기" value="' + (noBp ? "" : esc(bp.name + " · " + bp.code)) + '" />' +
+          '<div class="addr__list" id="scp-bplist" role="listbox" aria-label="고를 수 있는 BP" hidden></div></div>' +
+          '<span class="help">접근 권한이 있는 BP 만 나옵니다. 한 번에 하나만 고르고, 바꾸면 고른 점포는 비워집니다.</span>';
+      m.innerHTML = '<div class="modal__box scopepop__box">' +
+        '<div class="modal__head"><h2 class="t-h2" id="scp-t">BP 및 점포 선택</h2>' +
+        (forced ? "" : '<button class="iconbtn" type="button" data-scp-cancel aria-label="닫기">' + ic("x", 16) + "</button>") + "</div>" +
+        '<div class="modal__body">' +
+        '<p class="note scopepop__only" style="margin:0">' + ic("lock", 14) + "<span>이 팝업과 BP 변경 버튼은 <b>플랫폼 마스터 · 플랫폼 관리자</b>에게만 노출됩니다. 고객 사용자(BP 측 관리자)는 본인 BP 로 고정되어 점포 선택 드롭다운만 씁니다.</span></p>" +
+        (forced ? '<p class="note" style="margin:0">' + ic("info", 14) + "<span>적용된 BP 가 없습니다. BP 와 점포 범위를 골라 적용해야 ERP 화면을 쓸 수 있습니다.</span></p>" : "") +
+        '<div class="field"><label for="scp-bp">BP</label>' + bpField + "</div>" +
+        (noBp ? '<div class="scopepop__wait">BP 를 고르면 그 BP 의 점포 목록이 나옵니다.</div>' :
+          '<div class="field"><label for="scp-q">점포</label><div class="inputwrap">' + ic("search", 15) +
+          '<input class="input" id="scp-q" placeholder="점포명으로 찾기" value="' + esc(q) + '" autocomplete="off" /></div>' +
+          '<span class="help">유형 전체를 고르거나 점포를 하나씩 고릅니다. 고르지 않고 적용하면 전체 점포입니다.</span></div>' +
+          '<div class="scopepop__list">' + (groups || '<p class="scopepop__none">‘' + esc(q) + "’에 맞는 점포가 없습니다.</p>") + "</div>" +
+          '<div class="scopepop__result"><span>' + result + "</span>" + (n ? '<button class="tlink" type="button" data-scp-clear>선택 지우기</button>' : "") + "</div>") +
+        "</div>" +
+        '<div class="modal__foot">' + (forced ? "" : '<button class="btn btn--ghost" type="button" data-scp-cancel>취소</button>') +
+        '<button class="btn btn--primary" type="button" data-scp-apply' + (noBp ? " disabled" : "") + ">적용</button></div></div>";
+      hydrateIcons(m);
+    }
+    function openPop(fromBp) {
+      var v = scopeNow();
+      st = { bp: v.bp, ids: v.all ? [] : v.ids.slice(), picked: !forced };
+      back = document.activeElement;
+      draw("");
+      m.hidden = false;
+      btn.setAttribute("aria-expanded", "true");
+      var f = (fromBp || forced) ? m.querySelector("#scp-bp") : (m.querySelector("#scp-q") || m.querySelector("#scp-bp"));
+      if (f) f.focus();
+    }
+    function closePop() {
+      if (forced) return;
+      m.hidden = true;
+      btn.setAttribute("aria-expanded", "false");
+      if (back && back.focus) back.focus();
+    }
+    function qNow() { var q = m.querySelector("#scp-q"); return q ? q.value : ""; }
+    function toggleCheck(c) {
+      if (!c || c.hasAttribute("disabled")) return;
+      var bp = bpOf(st.bp), key;
+      if (c.dataset.id) {
+        var i = st.ids.indexOf(c.dataset.id);
+        if (i > -1) st.ids.splice(i, 1); else st.ids.push(c.dataset.id);
+        key = '[data-id="' + c.dataset.id + '"]';
+      } else {
+        var mine = bp.stores.filter(function (x) { return x.type === c.dataset.grp && !x.closed; }).map(function (x) { return x.id; });
+        var allOn = mine.every(function (id) { return st.ids.indexOf(id) > -1; });
+        st.ids = st.ids.filter(function (id) { return mine.indexOf(id) < 0; });
+        if (!allOn) st.ids = st.ids.concat(mine);
+        key = '[data-grp="' + c.dataset.grp + '"]';
+      }
+      draw(qNow());
+      var again = m.querySelector(key);
+      if (again) again.focus();
+    }
+    m.addEventListener("click", function (e) {
+      if (e.target === m) return closePop();
+      if (e.target.closest("[data-scp-cancel]")) return closePop();
+      if (e.target.closest("[data-scp-clear]")) { st.ids = []; draw(qNow()); return; }
+      if (e.target.closest("[data-scp-apply]")) {
+        if (forced && !st.picked) return;
+        scopeSave({ bp: st.bp, all: !st.ids.length, ids: st.ids.slice() });
+        forced = false;
+        paint();
+        m.hidden = true;
+        btn.setAttribute("aria-expanded", "false");
+        toast("조회 범위를 적용했습니다 · " + bpOf(st.bp).name + " · " + scopeLabel(scopeNow()));
+        return;
+      }
+      var lab = e.target.closest("label.scopepop__ghead, label.scopepop__store");
+      if (lab) { e.preventDefault(); toggleCheck(lab.querySelector(".check")); }
+    });
+    m.addEventListener("keydown", function (e) {
+      var c = e.target.closest(".check");
+      if (c && (e.key === " " || e.key === "Enter")) { e.preventDefault(); toggleCheck(c); }
+      if (e.key === "Escape") { e.stopPropagation(); closePop(); }
+    });
+    m.addEventListener("input", function (e) {
+      if (e.target.id !== "scp-q") return;
+      var v = e.target.value, pos = e.target.selectionStart;
+      draw(v);
+      var q = m.querySelector("#scp-q");
+      q.focus();
+      q.setSelectionRange(pos, pos);
+    });
+    /* BP 자동완성 */
+    var bpFound = [], bpAt = -1;
+    function bpList() { return m.querySelector("#scp-bplist"); }
+    function bpClose() {
+      var l = bpList(), q = m.querySelector("#scp-bp");
+      if (l) { l.hidden = true; l.innerHTML = ""; }
+      if (q) { q.setAttribute("aria-expanded", "false"); q.removeAttribute("aria-activedescendant"); }
+      bpFound = []; bpAt = -1;
+    }
+    function bpMark(i) {
+      bpAt = i;
+      [].forEach.call(bpList().querySelectorAll(".spick__opt"), function (o, k) {
+        o.setAttribute("aria-selected", String(k === i));
+        if (k === i) { o.scrollIntoView({ block: "nearest" }); m.querySelector("#scp-bp").setAttribute("aria-activedescendant", o.id); }
+      });
+    }
+    function bpHi(text, t) {
+      var i = t ? text.toLowerCase().indexOf(t) : -1;
+      return i < 0 ? esc(text) : esc(text.slice(0, i)) + "<mark>" + esc(text.slice(i, i + t.length)) + "</mark>" + esc(text.slice(i + t.length));
+    }
+    function bpOpen() {
+      var q = m.querySelector("#scp-bp"), l = bpList();
+      if (!q || !l) return;
+      var cur = bpOf(st.bp), raw = q.value.trim();
+      var t = st.picked && raw === cur.name + " · " + cur.code ? "" : raw.toLowerCase();
+      bpFound = BPS.filter(function (b) { return !t || (b.name + " " + b.code).toLowerCase().indexOf(t) > -1; });
+      l.innerHTML = bpFound.length
+        ? '<div class="addr__count">' + (t ? "맞는 BP " : "접근할 수 있는 BP ") + bpFound.length + "곳</div>" + bpFound.map(function (b, i) {
+            var n = b.stores.filter(function (x) { return !x.closed; }).length;
+            return '<div class="spick__opt" role="option" id="scp-bpo-' + i + '" data-i="' + i + '" aria-selected="false">' +
+              "<span>" + bpHi(b.name, t) + '</span><span class="mono spick__code">' + bpHi(b.code, t) + '</span><span class="spick__type">점포 ' + n + "곳" +
+              (st.picked && b.code === st.bp ? " · 지금 BP" : "") + "</span></div>";
+          }).join("")
+        : '<div class="addr__note">‘' + esc(raw) + "’에 맞는 BP 가 없습니다. 접근 권한이 있는 BP 안에서만 찾습니다.</div>";
+      l.hidden = false;
+      q.setAttribute("aria-expanded", "true");
+      if (bpFound.length) bpMark(0);
+    }
+    function bpPick(i) {
+      var b = bpFound[i];
+      if (!b) return;
+      if (b.code !== st.bp || !st.picked) { st.bp = b.code; st.ids = []; }
+      st.picked = true;
+      draw("");
+      var q = m.querySelector("#scp-q") || m.querySelector("#scp-bp");
+      if (q) q.focus();
+    }
+    m.addEventListener("focusin", function (e) { if (e.target.id === "scp-bp") { e.target.select(); bpOpen(); } });
+    m.addEventListener("input", function (e) { if (e.target.id === "scp-bp") bpOpen(); });
+    m.addEventListener("keydown", function (e) {
+      if (e.target.id !== "scp-bp") return;
+      var on = !bpList().hidden && bpFound.length;
+      if (e.key === "ArrowDown") { e.preventDefault(); if (bpList().hidden) bpOpen(); else if (on) bpMark(Math.min(bpAt + 1, bpFound.length - 1)); }
+      else if (e.key === "ArrowUp" && on) { e.preventDefault(); bpMark(Math.max(bpAt - 1, 0)); }
+      else if (e.key === "Enter") { e.preventDefault(); if (on && bpAt > -1) bpPick(bpAt); }
+      else if (e.key === "Escape" && !bpList().hidden) { e.preventDefault(); e.stopImmediatePropagation(); bpClose(); }
+      else if (e.key === "Tab") bpClose();
+    }, true);
+    m.addEventListener("mousedown", function (e) { if (e.target.closest("#scp-bplist")) e.preventDefault(); });
+    m.addEventListener("mousemove", function (e) {
+      var o = e.target.closest("#scp-bplist .spick__opt");
+      if (o && +o.dataset.i !== bpAt) bpMark(+o.dataset.i);
+    });
+    m.addEventListener("click", function (e) {
+      var o = e.target.closest("#scp-bplist .spick__opt");
+      if (o) { e.stopPropagation(); bpPick(+o.dataset.i); return; }
+      if (!e.target.closest(".scopepop__bpq")) bpClose();
+    }, true);
+    m.addEventListener("focusout", function (e) {
+      if (e.target.id !== "scp-bp") return;
+      setTimeout(function () {
+        if (m.contains(document.activeElement) && document.activeElement.id === "scp-bp") return;
+        bpClose();
+        var q = m.querySelector("#scp-bp"), cur = bpOf(st.bp);
+        if (q && st.picked) q.value = cur.name + " · " + cur.code;   /* 고르지 않고 벗어나면 지금 BP 로 되돌린다 */
+      }, 0);
+    });
+    /* 점포 선택 드롭다운 — 누른 자리에서 바로 펼친다. 지금 적용된 BP 안의 범위만 고르고 BP 는 바꾸지 않는다.
+       전체 · 직영 · 가맹 묶음과 직영 점포, 가맹 점포 세 무리로 보이고, 점포가 10곳 이상이면 이름으로 찾는 칸이 붙는다.
+       고르면 곧바로 그 범위로 바뀐다. 폐점 점포는 이 목록에 싣지 않는다(팝업에서만 폐점 표시와 함께 보인다). */
+    function ddOpt(key, label, meta, on) {
+      return '<button type="button" role="option" data-scope="' + key + '" data-q="' + label + " " + meta + '" aria-selected="' + !!on + '">' +
+        "<span><b>" + label + "</b><br><span class=\"subtle\" style=\"font-size:11.5px\">" + meta + "</span></span>" +
+        (on ? ic("check", 14) : "") + "</button>";
+    }
+    function ddHTML() {
+      var v = scopeNow(), bp = bpOf(v.bp);
+      var open = bp.stores.filter(function (x) { return !x.closed; });
+      var dir = open.filter(function (x) { return x.type === "일반점포"; });
+      var fr = open.filter(function (x) { return x.type === "가맹점포"; });
+      var ids = v.all ? [] : v.ids;
+      var same = function (list) { return ids.length === list.length && list.every(function (x) { return ids.indexOf(x.id) > -1; }); };
+      var cur = !ids.length || same(open) ? "all" : dir.length && same(dir) ? "dir" : fr.length && same(fr) ? "fr" : ids.length === 1 ? ids[0] : "";
+      function sect(title, items) {
+        return items.length ? '<div class="pop__sect"><div class="pop__label">' + title + "</div>" + items.join("") + "</div>" : "";
+      }
+      return (open.length >= 10
+          ? '<div class="pop__search">' + ic("search", 14) + '<input class="pop__q" type="search" placeholder="점포 이름으로 찾기" aria-label="점포 찾기" /></div>'
+          : "") +
+        '<div class="pop__list">' +
+        sect(bp.name, [ddOpt("all", "전체 " + open.length + "개점", "직영 " + dir.length + " · 가맹 " + fr.length, cur === "all")]
+          .concat(dir.length ? [ddOpt("dir", "직영 " + dir.length + "개점", "일반점포 전체", cur === "dir")] : [])
+          .concat(fr.length ? [ddOpt("fr", "가맹 " + fr.length + "개점", "가맹점포 전체", cur === "fr")] : [])) +
+        sect("직영 " + dir.length, dir.map(function (x) { return ddOpt(x.id, x.name, x.id, cur === x.id); })) +
+        sect("가맹 " + fr.length, fr.map(function (x) { return ddOpt(x.id, x.name, x.id, cur === x.id); })) +
+        '<p class="pop__none" hidden>맞는 점포가 없습니다.</p>' +
+        "</div>" +
+        (!v.all && ids.length > 1 && !cur ? '<p class="pop__note">지금 범위는 BP 변경 팝업에서 여러 점포를 골라 적용한 것입니다.</p>' : "");
+    }
+    function ddPick(key) {
+      var v = scopeNow(), bp = bpOf(v.bp);
+      var open = bp.stores.filter(function (x) { return !x.closed; });
+      var pick = key === "all" ? [] :
+        key === "dir" ? open.filter(function (x) { return x.type === "일반점포"; }).map(function (x) { return x.id; }) :
+        key === "fr" ? open.filter(function (x) { return x.type === "가맹점포"; }).map(function (x) { return x.id; }) : [key];
+      scopeSave({ bp: v.bp, all: !pick.length, ids: pick });
+      paint();
+      toast("조회 범위를 바꿨습니다 · " + bp.name + " · " + scopeLabel(scopeNow()));
+    }
+    function ddSearch(pop) {
+      var q = pop.querySelector(".pop__q");
+      if (!q) return;
+      q.addEventListener("input", function () {
+        var t = q.value.trim().toLowerCase(), anyAll = false;
+        pop.querySelectorAll(".pop__sect").forEach(function (sect) {
+          var any = false;
+          sect.querySelectorAll("button[role=option]").forEach(function (b) {
+            var hit = !t || b.dataset.q.toLowerCase().indexOf(t) > -1;
+            b.hidden = !hit;
+            if (hit) any = true;
+          });
+          sect.hidden = !any;
+          if (any) anyAll = true;
+        });
+        pop.querySelector(".pop__none").hidden = anyAll;
+      });
+      q.focus();
+    }
+    wirePop(btn, "left", ddHTML, function (i, o) { ddPick(o.dataset.scope); }, ddSearch);
+    if (bpBtn) bpBtn.addEventListener("click", function () { openPop(true); });
+    if (SCOPE_MODE === "first") { forced = true; paint(); openPop(true); }
+  }
+
+  /* 화면 아래 잠깐 뜨는 알림 — 조회 범위를 적용했을 때 */
+  function toast(msg) {
+    var t = document.createElement("div");
+    t.className = "scopetoast";
+    t.setAttribute("role", "status");
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 2600);
   }
 
   /* 종을 누르면 미확인 알림 몇 건이 뜬다 (NOTIFY-2). 눌러 들어가면 그것으로 읽음이다 (NOTIFY-1).
@@ -619,9 +953,12 @@
         "<div><b>정하윤</b><span>BP Master · ㈜한강상회</span></div>" +
         '<span class="side__tag side__tag--t1">1팀</span></div>' +
         '<div class="pop__label">MY PAGE</div>' +
-        '<a href="#" class="is-na" aria-disabled="true">관리자 정보 관리</a>' +
-        '<a href="#" class="is-na" aria-disabled="true">비밀번호 변경</a>' +
-        '<hr><a href="#" class="is-na" aria-disabled="true">' + ic("logout", 14) + "로그아웃</a>";
+        '<a href="' + url("mypage/profile.html") + '">내 정보 관리</a>' +
+        '<a href="' + url("mypage/password.html") + '">비밀번호 변경</a>' +
+        /* 회원 탈퇴는 BP 마스터에게만 보인다 — 목업의 로그인 사용자가 BP 마스터라 늘 보인다. */
+        '<a href="' + url("mypage/withdraw.html") + '">회원 탈퇴</a>' +
+        /* 로그아웃은 이 브라우저 세션만 끝내고 로그인 화면으로 간다(S-TMRGOG). */
+        '<hr><a href="' + url("auth/login.html") + '">' + ic("logout", 14) + "로그아웃</a>";
     });
   }
 
@@ -681,12 +1018,22 @@
      고른 값은 기억해 모든 목록이 같이 쓴다. 목업이라 줄은 늘 1페이지 표본이고 숫자만 바뀐다. */
   var SIZE_KEY = "whale-mockup-pagesize";
   var SIZES = [20, 50, 100];
-  function pageSize() {
-    var v = 0;
-    try { v = parseInt(localStorage.getItem(SIZE_KEY) || "", 10); } catch (e) {}
-    return SIZES.indexOf(v) >= 0 ? v : SIZES[0];
+  /* 목록이 data-pager-sizes="10,30,50" 로 제 건수를 가지면 그것을 쓴다. 명세가 공통 규칙과 다르게 정한
+     목록(1팀 점포 목록)용이다. 그 목록의 선택은 따로 기억해 다른 목록의 20·50·100 을 흔들지 않는다. */
+  function sizesOf(el) {
+    var own = (el && el.dataset.pagerSizes || "").split(",").map(function (n) { return parseInt(n, 10); }).filter(Boolean);
+    return own.length ? own : SIZES;
   }
-  function pagerHTML(total, unit, cur, size) {
+  function sizeKeyOf(el) {
+    return el && el.dataset.pagerSizes ? SIZE_KEY + ":" + el.dataset.pagerSizes : SIZE_KEY;
+  }
+  function pageSize(el) {
+    var v = 0, sizes = sizesOf(el);
+    try { v = parseInt(localStorage.getItem(sizeKeyOf(el)) || "", 10); } catch (e) {}
+    return sizes.indexOf(v) >= 0 ? v : sizes[0];
+  }
+  function pagerHTML(total, unit, cur, size, sizes) {
+    sizes = sizes || SIZES;
     var last = Math.max(1, Math.ceil(total / size));
     cur = Math.min(cur, last);
     var from = total ? (cur - 1) * size + 1 : 0, to = Math.min(cur * size, total);
@@ -701,7 +1048,7 @@
     }).join("");
     return '<span class="pager__count">총 <b>' + total + "</b>" + unit + " · " + from + "–" + to + "</span>" +
       '<label class="pager__size">페이지당 <select class="select select--sm">' +
-      SIZES.map(function (n) { return "<option" + (n === size ? " selected" : "") + ">" + n + "</option>"; }).join("") +
+      sizes.map(function (n) { return "<option" + (n === size ? " selected" : "") + ">" + n + "</option>"; }).join("") +
       "</select></label>" +
       '<nav class="pager__nav" aria-label="페이지">' +
       '<button type="button" data-go="' + (cur - 1) + '" aria-label="이전"' + (cur <= 1 ? " disabled" : "") + ' data-icon="arrowleft" data-icon-size="14"></button>' +
@@ -719,7 +1066,7 @@
         bar = el.nextElementSibling;
       }
       bar.dataset.cur = cur;
-      bar.innerHTML = pagerHTML(parseInt(el.dataset.pager, 10) || 0, el.dataset.pagerUnit || "건", cur, pageSize());
+      bar.innerHTML = pagerHTML(parseInt(el.dataset.pager, 10) || 0, el.dataset.pagerUnit || "건", cur, pageSize(el), sizesOf(el));
       hydrateIcons(bar);
     }
     lists.forEach(function (el) { render(el, 1); });
@@ -731,7 +1078,7 @@
     document.addEventListener("change", function (e) {
       var sel = e.target.closest(".pager__size select");
       if (!sel) return;
-      try { localStorage.setItem(SIZE_KEY, sel.value); } catch (err) {}
+      try { localStorage.setItem(sizeKeyOf(sel.closest(".pager").previousElementSibling), sel.value); } catch (err) {}
       lists.forEach(function (el) { render(el, 1); });
     });
   }
@@ -810,7 +1157,9 @@
     document.body.insertAdjacentHTML("afterbegin", iconSprite());
     var page = document.body.dataset.page;
     var shell = document.querySelector(".shell");
-    if (shell && page) {
+    var embed = EMBED;
+    if (embed) document.documentElement.classList.add("is-embed");
+    if (shell && page && !embed) {
       shell.insertAdjacentHTML("afterbegin", topnavHTML(page) + sideHTML(page, document.body.dataset.sub));
     }
     hydrateIcons(document);
@@ -826,6 +1175,103 @@
     wireTips();
     openTabFromHash();
     window.addEventListener("hashchange", openTabFromHash);
+    wireSessionExpiry();
+    wirePagePop();
+    if (embed) wireEmbed();
+  }
+
+  /* ---------- 화면 팝업 (data-pagepop) ----------
+     목록에서 등록·상세·수정 화면을 화면 이동 없이 팝업으로 연다. 팝업 안에는 그 화면 파일을 ?embed=1 로 싣는다 —
+     메뉴·상단바 없이 제목줄과 본문만 보이고, 화면 파일 하나를 단독 화면과 팝업이 함께 쓴다.
+     팝업 안에서 상세 → 수정 → 상세로 가는 링크는 팝업 안에서 이어진다. 목록 화면으로 가는 링크는 팝업을 닫고,
+     결과 상태(?state=…)를 달고 있으면(삭제 직후 등) 목록을 그 상태로 다시 연다.
+     목록의 목업 권한(data-demo-key="role")은 ?role= 로 팝업 화면에 넘긴다. */
+  var EMBED = new URLSearchParams(location.search).get("embed") === "1";
+  function roleNow() {
+    var bar = document.querySelector('[data-demo][data-demo-key="role"]');
+    return bar && bar.dataset.current;
+  }
+  function withParams(href, extra) {
+    var u = new URL(href, location.href);
+    Object.keys(extra).forEach(function (k) { if (extra[k]) u.searchParams.set(k, extra[k]); });
+    return u.href;
+  }
+  function wirePagePop() {
+    if (EMBED || !document.querySelector("[data-pagepop]")) return;
+    var pop = document.createElement("div");
+    pop.className = "modal pagepop";
+    pop.hidden = true;
+    pop.setAttribute("role", "dialog");
+    pop.setAttribute("aria-modal", "true");
+    pop.setAttribute("aria-label", "화면 팝업");
+    pop.innerHTML = '<div class="modal__box pagepop__box">' +
+      '<button class="iconbtn pagepop__x" type="button" data-close aria-label="팝업 닫기">' + ic("x", 16) + "</button>" +
+      '<iframe class="pagepop__frame" title="팝업 화면"></iframe></div>';
+    document.body.appendChild(pop);
+    var frame = pop.querySelector("iframe"), back = null;
+    function close() { pop.hidden = true; frame.removeAttribute("src"); if (back) back.focus(); }
+    pop.querySelector(".pagepop__x").addEventListener("click", close);
+    pop.addEventListener("click", function (e) { if (e.target === pop) close(); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !pop.hidden) close(); });
+    frame.addEventListener("load", function () {
+      try { frame.title = frame.contentDocument.title || "팝업 화면"; } catch (err) {}
+    });
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest("[data-pagepop]");
+      if (!a) return;
+      e.preventDefault();
+      back = a;
+      frame.src = withParams(a.getAttribute("href") || a.dataset.pagepop, { embed: "1", role: roleNow(), from: location.pathname });
+      pop.hidden = false;
+      pop.querySelector(".pagepop__x").focus();
+    });
+    window.addEventListener("message", function (e) {
+      var d = e.data || {};
+      if (d.pagepop !== "close") return;
+      close();
+      if (d.go) location.href = d.go;
+    });
+  }
+  /* 팝업 안의 화면 — 링크가 목록(부모 화면)으로 가면 팝업을 닫고, 다른 화면으로 가면 팝업 안에서 이어 간다 */
+  function wireEmbed() {
+    var q = new URLSearchParams(location.search);
+    var parentPath = q.get("from") || "", role = q.get("role");
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest("a[href]");
+      if (!a || a.target || e.defaultPrevented) return;
+      var u = new URL(a.getAttribute("href"), location.href);
+      if (u.origin !== location.origin && u.protocol !== "file:") return;
+      e.preventDefault();
+      if (u.pathname === parentPath) {
+        var st = u.searchParams.get("state");
+        window.parent.postMessage({ pagepop: "close", go: st && !a.classList.contains("iconbtn") ? u.href : "" }, "*");
+        return;
+      }
+      location.href = withParams(u.href, { embed: "1", role: role, from: parentPath });
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape") return;
+      if (document.querySelector(".modal:not([hidden])")) return;
+      window.parent.postMessage({ pagepop: "close" }, "*");
+    });
+  }
+
+  /* ---------- 세션 만료 경고 (1팀 S-QCNVFC) ----------
+     갱신 토큰까지 만료되면 로그인 화면으로 바로 보내지 않고, 쓰던 화면 위에 경고창을 한 번 띄운다.
+     확인을 누르면 로그인 화면으로 간다. 다시 로그인하면 보던 화면으로 돌아오는 것은 서버 쪽 처리다.
+     목업에서는 아무 화면 주소 뒤에 ?session=expired 를 붙이면 뜬다. */
+  function wireSessionExpiry() {
+    if (new URLSearchParams(location.search).get("session") !== "expired") return;
+    document.body.insertAdjacentHTML("beforeend",
+      '<div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="sx-t" aria-describedby="sx-d">' +
+      '<div class="modal__box" style="max-width: 400px">' +
+      '<div class="modal__head"><h2 class="t-h2" id="sx-t">' + ic("clock", 18) + " 세션이 만료되었습니다</h2></div>" +
+      '<div class="modal__body"><p id="sx-d" style="margin: 0; font-size: 13.5px">장시간 사용하지 않아 로그아웃되었습니다.</p>' +
+      '<p class="subtle" style="margin: 0; font-size: 12.5px">다시 로그인하면 지금 보던 화면으로 돌아옵니다. 저장하지 않은 입력은 복구되지 않습니다.</p></div>' +
+      '<div class="modal__foot"><a class="btn btn--primary" href="' + url("auth/login.html") + '">확인</a></div>' +
+      "</div></div>");
+    var ok = document.querySelector('[aria-labelledby="sx-t"] .btn');
+    if (ok) ok.focus();
   }
 
   if (document.readyState === "loading") {

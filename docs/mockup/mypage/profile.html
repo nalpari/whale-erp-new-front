@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>내 정보 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="mypage" data-sub="mypage/profile.html">
+    <!-- 내 정보 · /mypage/profile · S-JXKHCM(기본정보) · S-UOJVUR(사업자정보) · 1팀
+         상단 이름 → MY PAGE → 내 정보 관리로 들어온다. 기본정보 탭이 먼저 열린다.
+         기본정보: 이름·연락처·이메일만 고친다. 아이디·사용자 권한·가입일·최근 로그인 일시는 읽기 전용.
+         이메일은 칸을 벗어날 때 형식과 중복을 확인한다(회원가입과 같은 규칙). 원래 이메일 그대로면 확인하지 않는다.
+         사업자정보 탭은 BP 마스터에게만 보인다. 사업자등록번호·대표자명·개업일자는 인증 결과로만 바뀐다.
+         인증은 회원가입·점포 등록과 같이 팝업 없이 영역 안에 펼치는 입력 상자로 한다(S-VRNTHD 가 허용).
+         BP 재인증은 세 값을 모두 다시 넣는다. 번호 중복 확인이 국세청 확인보다 먼저다(PL-OCJOFP).
+         상호명·대표자 연락처·대표자 이메일·사업장 주소·업태·종목은 인증과 관계없이 직접 고친다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <h1 class="t-h1">내 정보</h1>
+          <span class="badge badge--quiet">MY PAGE</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">S-JXKHCM · S-UOJVUR</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="demo" data-demo="pfbody" data-demo-key="role">
+            <b>목업 역할</b>
+            <div class="seg">
+              <button type="button" data-state="bpm" aria-pressed="true">BP 마스터</button>
+              <button type="button" data-state="admin" aria-pressed="false">그 밖의 관리자</button>
+            </div>
+          </div>
+
+          <div id="pfbody" class="stack--lg" style="display: flex; flex-direction: column">
+            <div class="tabs" data-tabs="pftabs">
+              <button data-tab="basic" aria-selected="true">기본정보</button>
+              <button data-tab="biz" aria-selected="false" data-show-role="bpm">사업자정보</button>
+            </div>
+
+            <div id="pftabs">
+              <!-- ── 기본정보 탭 ─────────────────────────── -->
+              <div data-panel="basic" class="stack--lg" style="display: flex; flex-direction: column">
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">계정 정보</h2>
+                    <span class="badge badge--quiet">바꿀 수 없음</span>
+                  </div>
+                  <div class="panel__body">
+                    <div class="grid grid--2">
+                      <div class="field">
+                        <label for="pfid">아이디</label>
+                        <input class="input mono" id="pfid" value="hangang01" readonly />
+                      </div>
+                      <div class="field">
+                        <label for="pfrole">사용자 권한</label>
+                        <input class="input" id="pfrole" value="BP 마스터" readonly data-show-role="bpm" />
+                        <input class="input" value="BP 관리자" readonly aria-label="사용자 권한" data-show-role="admin" hidden />
+                      </div>
+                      <div class="field">
+                        <label for="pfjoin">가입일</label>
+                        <input class="input mono" id="pfjoin" value="2026-03-04" readonly />
+                      </div>
+                      <div class="field">
+                        <label for="pflast">최근 로그인 일시</label>
+                        <input class="input mono" id="pflast" value="2026-09-22 09:12" readonly />
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">기본정보</h2>
+                    <span class="badge badge--quiet">이름 · 연락처 · 이메일</span>
+                  </div>
+                  <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
+                    <div class="grid grid--2">
+                      <div class="field">
+                        <label for="pfname">이름 <span class="req">*</span></label>
+                        <input class="input" id="pfname" value="정하윤" maxlength="20" />
+                        <span class="help">한글 또는 영문 2~20자</span>
+                      </div>
+                      <div class="field">
+                        <label for="pftel1">연락처 <span class="req">*</span></label>
+                        <div class="tel3" id="pftel">
+                          <input class="input mono" id="pftel1" value="010" inputmode="numeric" aria-label="앞자리" />
+                          <input class="input mono" value="4821" inputmode="numeric" aria-label="가운데자리" />
+                          <input class="input mono" value="7730" inputmode="numeric" aria-label="끝자리" />
+                        </div>
+                        <span class="help">휴대전화 · 숫자 10~11자리</span>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label for="pfmail">이메일 <span class="req">*</span></label>
+                      <input class="input" id="pfmail" type="email" value="hayoon@hangang.co.kr" maxlength="100" data-dupcheck="mail" data-dup-keep data-taken="taken@whale.kr,admin@whale.kr" />
+                      <span class="help">바꾸면 칸을 벗어날 때 형식과 중복을 확인합니다 · 소유 인증 없이 바로 저장되고, 바꿨다는 메일은 보내지 않습니다</span>
+                      <span class="pass" data-dup="ok" hidden><span data-icon="check" data-icon-size="13"></span>사용할 수 있는 이메일입니다.</span>
+                      <span class="err" data-dup="bad" hidden><span data-icon="alert" data-icon-size="13"></span>이미 등록된 이메일입니다.</span>
+                      <span class="err" data-dup="fmt" hidden><span data-icon="alert" data-icon-size="13"></span>이메일 형식이 올바르지 않습니다.</span>
+                    </div>
+                    <p class="subtle" style="margin: 0; font-size: 12.5px">목업: 이메일에 <span class="mono">taken@whale.kr</span> 을 넣고 칸을 벗어나면 중복으로 나옵니다.</p>
+
+                    <div class="band band--ok" id="pfsaved" hidden>
+                      <span class="band__ic" data-icon="check" data-icon-size="20"></span>
+                      <div class="band__body">
+                        <div class="band__title">저장되었습니다.</div>
+                        <p class="band__desc">바뀐 값과 바뀌기 전 값, 바꾼 사람, 바꾼 시각이 이력으로 남습니다.</p>
+                      </div>
+                    </div>
+
+                    <div class="inline" data-dupgate style="justify-content: flex-end; gap: 8px">
+                      <span class="subtle" style="font-size: 12px" data-gate="block" hidden>이메일 확인을 통과해야 저장할 수 있습니다.</span>
+                      <button class="btn btn--primary" type="button" data-gate="go" data-reveal="pfsaved">저장</button>
+                      <button class="btn btn--primary" type="button" disabled data-gate="block" hidden>저장</button>
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              <!-- ── 사업자정보 탭 · BP 마스터만 ─────────────────────── -->
+              <div data-panel="biz" hidden>
+                <div class="band band--warn" data-show-role="admin" hidden>
+                  <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
+                  <div class="band__body">
+                    <div class="band__title">BP 마스터가 아니면 이 탭은 보이지 않습니다</div>
+                  </div>
+                </div>
+
+                <div class="stack--lg" style="display: flex; flex-direction: column" data-show-role="bpm">
+                  <div class="demo" data-demo="pfbody" data-demo-key="biz">
+                    <b>목업 상태</b>
+                    <div class="seg">
+                      <button type="button" data-state="auth" aria-pressed="true">인증 완료</button>
+                      <button type="button" data-state="unauth" aria-pressed="false">미인증</button>
+                    </div>
+                  </div>
+
+                  <section class="panel">
+                    <div class="panel__head">
+                      <h2 class="t-h2">사업자정보</h2>
+                      <span class="badge badge--ok" data-show-biz="auth">인증 완료</span>
+                      <span class="badge badge--warn" data-show-biz="unauth" hidden>미인증</span>
+                    </div>
+                    <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
+                      <p class="subtle" style="margin: 0; font-size: 12.5px">국세청 API 로 사업자등록번호·대표자명·개업일자의 진위만 확인합니다. 세 값은 인증 결과로만 바뀌고, 상호명은 인증으로 채워지지 않습니다.</p>
+
+                      <!-- 인증 완료 · 세 값 읽기 전용 + 재인증 -->
+                      <div data-show-biz="auth">
+                        <div class="card card--soft bizbox" id="pbinfo">
+                          <div class="spread">
+                            <h3 class="t-h3 inline" style="gap: 6px"><span data-icon="building" data-icon-size="16"></span>사업자정보</h3>
+                            <span class="badge badge--ok">인증 완료 · 2026-03-04</span>
+                          </div>
+                          <div class="grid grid--3">
+                            <div class="field">
+                              <label>사업자등록번호</label>
+                              <input class="input mono" value="211-87-01234" readonly />
+                            </div>
+                            <div class="field">
+                              <label>대표자명</label>
+                              <input class="input" value="남도현" readonly />
+                            </div>
+                            <div class="field">
+                              <label>개업일자</label>
+                              <input class="input mono" value="2021-03-15" readonly />
+                            </div>
+                          </div>
+                          <div>
+                            <button class="btn btn--secondary btn--sm" type="button" data-conceal="pbinfo" data-reveal="pbform">
+                              <span data-icon="refresh" data-icon-size="14"></span>재인증
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- 미인증 · 인증하기 -->
+                      <div data-show-biz="unauth" hidden>
+                        <div class="card card--soft bizbox" id="pbnone">
+                          <div class="spread">
+                            <h3 class="t-h3 inline" style="gap: 6px"><span data-icon="building" data-icon-size="16"></span>사업자정보</h3>
+                            <span class="badge badge--warn">미인증</span>
+                          </div>
+                          <p class="subtle" style="margin: 0; font-size: 12.5px">아직 인증하지 않았습니다. 인증하지 않아도 아래 항목은 저장할 수 있습니다.</p>
+                          <div>
+                            <button class="btn btn--secondary btn--sm" type="button" data-conceal="pbnone" data-reveal="pbform">
+                              <span data-icon="building" data-icon-size="14"></span>사업자 번호 인증하기
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- 인증 입력 상자 · BP 는 재인증 때도 세 값을 모두 다시 넣는다 -->
+                      <div class="card card--soft bizbox" id="pbform" hidden>
+                        <div class="spread">
+                          <h3 class="t-h3 inline" style="gap: 6px"><span data-icon="building" data-icon-size="16"></span>사업자 번호 인증</h3>
+                          <button class="iconbtn" type="button" aria-label="접기" data-icon="x" data-icon-size="16" data-conceal="pbform" data-reveal="pbinfo pbnone"></button>
+                        </div>
+                        <div class="demo" data-demo="pbform">
+                          <b>목업 결과</b>
+                          <div class="seg">
+                            <button type="button" data-state="in" aria-pressed="true">입력</button>
+                            <button type="button" data-state="dup" aria-pressed="false">번호 중복</button>
+                            <button type="button" data-state="fail" aria-pressed="false">확인 불가</button>
+                            <button type="button" data-state="error" aria-pressed="false">처리 오류</button>
+                          </div>
+                        </div>
+                        <div class="grid grid--3">
+                          <div class="field">
+                            <label for="pbnum">사업자등록번호</label>
+                            <input class="input mono" id="pbnum" value="211-87-01234" />
+                          </div>
+                          <div class="field">
+                            <label for="pbceo">대표자명</label>
+                            <input class="input" id="pbceo" value="남도현" />
+                          </div>
+                          <div class="field">
+                            <label for="pbopen">개업일자</label>
+                            <input class="input mono" id="pbopen" type="date" value="2021-03-15" />
+                          </div>
+                        </div>
+                        <!-- 번호 중복 — 다른 BP(사용·미사용)나 이 BP 소속이 아닌 점포(미운영·운영)가 쓰는 번호. 누가 쓰는지는 보이지 않는다. -->
+                        <div class="band band--risk" data-show="dup" hidden>
+                          <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+                          <div class="band__body">
+                            <div class="band__title">이미 등록된 사업자등록번호입니다.</div>
+                            <p class="band__desc">지금 저장된 사업자정보는 그대로입니다.</p>
+                          </div>
+                        </div>
+                        <div class="band band--risk" data-show="fail" hidden>
+                          <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+                          <div class="band__body">
+                            <div class="band__title">사업자정보를 확인할 수 없습니다.</div>
+                            <p class="band__desc">입력한 세 값을 다시 확인해 주세요. 지금 저장된 사업자정보는 그대로입니다.</p>
+                          </div>
+                        </div>
+                        <div class="band band--risk" data-show="error" hidden>
+                          <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
+                          <div class="band__body">
+                            <div class="band__title">사업자정보 인증 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.</div>
+                          </div>
+                        </div>
+                        <div>
+                          <button class="btn btn--primary btn--sm" type="button" data-show="in" data-conceal="pbform" data-reveal="pbinfo" data-state-go="auth">인증하기</button>
+                          <button class="btn btn--primary btn--sm" type="button" data-show="dup fail error" hidden>인증하기</button>
+                        </div>
+                      </div>
+
+                      <div class="field">
+                        <label for="pbcorp">상호명 <span class="req">*</span></label>
+                        <input class="input" id="pbcorp" value="㈜한강상회" maxlength="50" />
+                        <span class="help">1~50자 · 인증 결과로 채우지 않고 직접 적습니다</span>
+                      </div>
+                      <div class="grid grid--2">
+                        <div class="field">
+                          <label for="pbtel1">대표자 연락처</label>
+                          <div class="tel3">
+                            <input class="input mono" id="pbtel1" value="010" inputmode="numeric" aria-label="앞자리" />
+                            <input class="input mono" value="5530" inputmode="numeric" aria-label="가운데자리" />
+                            <input class="input mono" value="1182" inputmode="numeric" aria-label="끝자리" />
+                          </div>
+                        </div>
+                        <div class="field">
+                          <label for="pbmail">대표자 이메일</label>
+                          <input class="input" id="pbmail" type="email" value="ceo@hangang.co.kr" maxlength="100" />
+                        </div>
+                      </div>
+                      <div class="field addr" data-addr>
+                        <label for="pbq">사업장 주소</label>
+                        <div class="addr__search">
+                          <div class="addr__q">
+                            <span data-icon="search" data-icon-size="14"></span>
+                            <input class="input" id="pbq" type="search" placeholder="도로명, 건물명, 지번으로 검색" autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list" data-addr-q />
+                          </div>
+                          <button class="btn btn--secondary" type="button" data-addr-go>주소 검색</button>
+                          <div class="addr__list" role="listbox" aria-label="주소 검색 결과" hidden></div>
+                        </div>
+                        <div class="addr__picked">
+                          <input class="input mono" value="04007" readonly placeholder="우편번호" aria-label="우편번호" data-addr-zip />
+                          <input class="input" value="서울 마포구 망원로 42" readonly placeholder="검색해서 고르면 채워집니다" aria-label="기본주소" data-addr-base />
+                        </div>
+                        <input class="input" value="3층" maxlength="100" placeholder="상세주소" aria-label="상세주소" data-addr-detail />
+                      </div>
+                      <div class="grid grid--2">
+                        <div class="field">
+                          <label for="pbtype">업태</label>
+                          <input class="input" id="pbtype" value="도소매업" maxlength="50" />
+                        </div>
+                        <div class="field">
+                          <label for="pbitem">종목</label>
+                          <input class="input" id="pbitem" value="식자재 유통" maxlength="50" />
+                        </div>
+                      </div>
+                      <p class="subtle" style="margin: 0; font-size: 12.5px">점포에 등록한 사업자등록번호는 여기서 바뀌지 않습니다. 점포 수정 화면에서 관리합니다.</p>
+
+                      <div class="band band--ok" id="pbsaved" hidden>
+                        <span class="band__ic" data-icon="check" data-icon-size="20"></span>
+                        <div class="band__body">
+                          <div class="band__title">저장되었습니다.</div>
+                          <p class="band__desc">바뀐 값과 인증 결과가 이력으로 남습니다.</p>
+                        </div>
+                      </div>
+                      <div class="inline" style="justify-content: flex-end">
+                        <button class="btn btn--primary" type="button" data-reveal="pbsaved">저장</button>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+  </body>
+</html>

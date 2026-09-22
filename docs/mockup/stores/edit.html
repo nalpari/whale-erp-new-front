@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>점포 수정 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="stores" data-sub="stores/index.html">
+    <!-- 점포 수정 · /stores/:점포코드/edit · S-JEPOMK · 1팀
+         점포코드 · 점포유형은 바꾸지 않는다. 소속 BP 는 보이지 않는다.
+         점포상태는 여기서도 바꿀 수 있다(S-MNRZOM, 상세의 점포 상태 변경과 같은 조건). 선택지는 현재 상태에서 갈 수 있는 곳만 보인다 —
+         미운영 → 운영·폐점, 운영 → 폐점. 운영은 사업자정보가 인증돼 있어야(이 화면에서 최초 인증을 마쳐도 된다) 고를 수 있다.
+         폐점을 고르는 순간 폐점 조건(유효 근로계약 0건 · 이용 중 구독 0건 · 정산 대기 0원)을 확인하고, 못 채우면 팝업으로 못 채운 조건을 보인 뒤 선택을 이전 상태로 돌린다.
+         조건을 채운 전환은 저장을 누를 때 확인 창을 거쳐 다른 수정 내용과 함께 반영한다.
+         사업자 번호 인증은 등록 화면과 같은 흐름(팝업 없이 영역 안에서)이다.
+         사업자등록번호가 없으면 ‘사업자 번호 인증하기’ → 입력 상자(세 값 모두) → 인증 완료 카드.
+         있으면 인증 완료 카드의 ‘재인증’ → 입력 상자(번호·개업일자 고정, 대표자명만) → 카드.
+         한 번 저장된 사업자등록번호는 바꿀 수 없다 — 바꾸려면 기존 점포를 끝내고 새로 등록한다.
+         재인증에 실패해도 저장된 사업자정보와 인증 완료는 그대로다. 폐점 점포와 소속 BP 미사용 점포는 수정할 수 없다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div id="ef" style="display: contents">
+          <div class="titlebar">
+            <a class="iconbtn" href="detail.html" aria-label="점포 상세로" data-icon="arrowleft" data-icon-size="18"></a>
+            <h1 class="t-h1">점포 수정</h1>
+            <span class="badge badge--quiet" data-show="auth fail conflict closed bpoff">모리커피 연남점 · ST000006</span>
+            <span class="badge badge--quiet" data-show="noauth" hidden>모리커피 청담점 · ST000007</span>
+            <div class="titlebar__end">
+              <span class="filters__count mono">S-JEPOMK</span>
+              <a class="btn btn--secondary btn--sm" href="detail.html">취소</a>
+              <a class="btn btn--primary btn--sm" href="detail.html" data-show="auth fail" data-status-save>저장</a>
+              <a class="btn btn--primary btn--sm" href="detail.html?state=unop" data-show="noauth" hidden data-status-save>저장</a>
+              <button class="btn btn--primary btn--sm" type="button" data-show="conflict" hidden>저장</button>
+              <button class="btn btn--primary btn--sm" type="button" disabled data-show="closed bpoff" hidden>저장</button>
+            </div>
+          </div>
+
+          <div class="content">
+            <div class="demo" data-demo="ef">
+              <b>목업 상태</b>
+              <div class="seg">
+                <button type="button" data-state="auth" aria-pressed="true">인증된 점포 · 재인증</button>
+                <button type="button" data-state="noauth" aria-pressed="false">미인증 점포 · 최초 인증</button>
+                <button type="button" data-state="fail" aria-pressed="false">재인증 실패</button>
+                <button type="button" data-state="conflict" aria-pressed="false">동시 수정</button>
+                <button type="button" data-state="closed" aria-pressed="false">폐점 점포</button>
+                <button type="button" data-state="bpoff" aria-pressed="false">소속 BP 미사용</button>
+              </div>
+            </div>
+
+            <div class="demo" data-demo="ef" data-demo-key="close">
+              <b>목업 폐점 조건</b>
+              <div class="seg">
+                <button type="button" data-state="unmet" aria-pressed="true">못 채움</button>
+                <button type="button" data-state="met" aria-pressed="false">모두 채움</button>
+              </div>
+            </div>
+
+            <div class="demo" data-demo="ef" data-demo-key="img">
+              <b>목업 이미지</b>
+              <div class="seg">
+                <button type="button" data-state="none" aria-pressed="false">이미지 없음</button>
+                <button type="button" data-state="on" aria-pressed="true">이미지 있음</button>
+                <button type="button" data-state="bad" aria-pressed="false">형식·용량 오류</button>
+              </div>
+            </div>
+
+            <div class="band band--risk" data-show="closed" hidden>
+              <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">폐점 점포는 수정할 수 없습니다</div>
+                <p class="band__desc">상세 화면에서도 수정 버튼이 보이지 않습니다. 주소로 직접 들어와도 저장하지 않습니다.</p>
+              </div>
+            </div>
+            <div class="band band--warn" data-show="bpoff" hidden>
+              <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">소속 BP가 미사용 상태여서 이 업무를 할 수 없습니다.</div>
+              </div>
+            </div>
+            <div class="band band--warn" data-show="conflict" hidden>
+              <span class="band__ic" data-icon="refresh" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">화면을 연 뒤에 다른 사람이 이 점포를 먼저 고쳤습니다</div>
+                <p class="band__desc">저장하지 않았습니다. 최신 정보를 불러와 다시 확인한 뒤 고쳐 주세요.</p>
+              </div>
+              <div class="band__act">
+                <a class="btn btn--secondary btn--sm" href="edit.html">최신 정보 불러오기</a>
+              </div>
+            </div>
+
+            <!-- 대표 이미지 — 1장 · 선택 · JPG·PNG 5MB 이하. 목록 썸네일과 상세에 같은 이미지가 보인다. -->
+            <section class="panel">
+              <div class="panel__head">
+                <h2 class="t-h2">대표 이미지</h2>
+                <span class="badge badge--quiet">선택 · 1장</span>
+              </div>
+              <div class="panel__body">
+                <div class="imgup">
+                  <div class="imgup__box" data-show-img="none bad"><span class="stack" style="align-items: center; gap: 6px; font-size: 12px"><span data-icon="image" data-icon-size="28"></span>이미지 없음</span></div>
+                  <div class="imgup__box is-filled" data-show-img="on" hidden><img src="../assets/img/store-photo-1.jpg" alt="모리커피 연남점 대표 이미지" /></div>
+                  <div class="imgup__side">
+                    <div class="inline" data-show="auth noauth fail conflict">
+                      <button class="btn btn--secondary btn--sm" type="button" data-state-go="on" data-show-img="none bad"><span data-icon="upload" data-icon-size="14"></span>이미지 올리기</button>
+                      <button class="btn btn--secondary btn--sm" type="button" data-state-go="bad" data-show-img="none bad" title="목업 전용 — 형식·용량 오류 보기">잘못된 파일로 보기</button>
+                      <button class="btn btn--secondary btn--sm" type="button" data-state-go="on" data-show-img="on" hidden><span data-icon="upload" data-icon-size="14"></span>바꾸기</button>
+                      <button class="btn btn--ghost btn--sm" type="button" data-state-go="none" data-show-img="on" hidden><span data-icon="trash" data-icon-size="14"></span>삭제</button>
+                    </div>
+                    <p class="subtle" style="margin: 0; font-size: 13px" data-show="closed bpoff" hidden>이 상태에서는 이미지를 바꿀 수 없습니다.</p>
+                    <span class="help">JPG · PNG, 5MB 이하 한 장. 점포 목록의 썸네일과 상세에 보입니다. 없으면 점포 아이콘이 대신 섭니다.</span>
+                    <span class="err" data-show-img="bad" hidden><span data-icon="alert" data-icon-size="13"></span>JPG · PNG 파일만, 5MB 이하로 올릴 수 있습니다.</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div class="grid grid--2" style="align-items: start">
+              <!-- 점포 기본정보 -->
+              <section class="panel">
+                <div class="panel__head"><h2 class="t-h2">점포 기본정보</h2></div>
+                <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
+                  <dl class="kv">
+                    <dt>점포유형</dt><dd>가맹점포 <span class="subtle">· 바꿀 수 없음</span></dd>
+                  </dl>
+                  <!-- 점포상태 — 현재 상태에서 갈 수 있는 곳만 고른다. 폐점은 고르는 순간 조건을 확인한다. -->
+                  <div class="field">
+                    <label for="estat">점포상태</label>
+                    <select class="select" id="estat" data-status-pick data-show="auth fail conflict" style="max-width: 220px">
+                      <option value="run" selected>운영 (현재)</option>
+                      <option value="closed">폐점</option>
+                    </select>
+                    <select class="select" id="estat2" data-status-pick data-show="noauth" hidden style="max-width: 220px" aria-label="점포상태">
+                      <option value="unop" selected>미운영 (현재)</option>
+                      <option value="run" disabled data-need-auth>운영 — 사업자 인증 후</option>
+                      <option value="closed">폐점</option>
+                    </select>
+                    <select class="select" disabled data-show="closed bpoff" hidden aria-label="점포상태" style="max-width: 220px">
+                      <option data-show="bpoff">운영 (현재)</option>
+                      <option data-show="closed" hidden>폐점 (현재)</option>
+                    </select>
+                    <span class="help" data-show="auth fail conflict">운영은 미운영으로 되돌릴 수 없어 폐점만 고를 수 있습니다.</span>
+                    <span class="help" data-show="noauth" hidden data-need-auth-help>운영은 아래 사업자정보에서 사업자 번호를 인증하면 고를 수 있습니다.</span>
+                    <span class="help" data-show="bpoff" hidden>소속 BP가 미사용 상태여서 바꿀 수 없습니다.</span>
+                    <div class="band band--warn" data-status-note="closed" hidden>
+                      <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+                      <div class="band__body">
+                        <div class="band__title">저장하면 폐점으로 바뀝니다</div>
+                        <p class="band__desc">폐점 조건을 모두 채웠습니다. 되돌릴 수 없고, 폐점일은 저장한 날로 정해지며 폐점 뒤에는 이 점포를 수정할 수 없습니다.</p>
+                      </div>
+                    </div>
+                    <div class="band band--info" data-status-note="run" hidden>
+                      <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+                      <div class="band__body">
+                        <div class="band__title">저장하면 운영으로 바뀝니다</div>
+                        <p class="band__desc">운영은 미운영으로 되돌릴 수 없습니다. 사업자 인증 결과와 함께 저장됩니다.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="ename">점포명 <span class="req">*</span></label>
+                    <input class="input" id="ename" value="모리커피 연남점" maxlength="50" />
+                  </div>
+                  <div class="field">
+                    <label for="etel">점포 연락처</label>
+                    <div class="tel3">
+                      <input class="input mono" id="etel" value="02" inputmode="numeric" aria-label="앞자리" />
+                      <input class="input mono" value="322" inputmode="numeric" aria-label="가운데자리" />
+                      <input class="input mono" value="1180" inputmode="numeric" aria-label="끝자리" />
+                    </div>
+                  </div>
+                  <div class="field addr" data-addr data-addr-lat="elat" data-addr-lng="elng">
+                    <label for="ezq">점포 주소</label>
+                    <div class="addr__search">
+                      <div class="addr__q">
+                        <span data-icon="search" data-icon-size="14"></span>
+                        <input class="input" id="ezq" type="search" placeholder="도로명, 건물명, 지번으로 검색" autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list" data-addr-q />
+                      </div>
+                      <button class="btn btn--secondary" type="button" data-addr-go>주소 검색</button>
+                      <div class="addr__list" role="listbox" aria-label="주소 검색 결과" hidden></div>
+                    </div>
+                    <div class="addr__picked">
+                      <input class="input mono" value="03991" readonly placeholder="우편번호" aria-label="우편번호" data-addr-zip />
+                      <input class="input" value="서울 마포구 동교로 256" readonly placeholder="검색해서 고르면 채워집니다" aria-label="기본주소" data-addr-base />
+                    </div>
+                    <input class="input" value="1층" maxlength="100" placeholder="상세주소" aria-label="상세주소" data-addr-detail />
+                  </div>
+                  <div class="grid grid--2">
+                    <div class="field">
+                      <label for="elat">위도</label>
+                      <input class="input mono" id="elat" value="37.562104" data-show="auth fail conflict closed bpoff" />
+                      <input class="input mono" placeholder="좌표를 계산하지 못했습니다." data-show="noauth" hidden aria-label="위도" />
+                    </div>
+                    <div class="field">
+                      <label for="elng">경도</label>
+                      <input class="input mono" id="elng" value="126.925631" data-show="auth fail conflict closed bpoff" />
+                      <input class="input mono" placeholder="좌표를 계산하지 못했습니다." data-show="noauth" hidden aria-label="경도" />
+                    </div>
+                  </div>
+                  <div class="inline" style="justify-content: space-between">
+                    <span class="subtle" style="font-size: 12px">범위 −90~90 · −180~180, 소수점 6자리까지</span>
+                    <button class="btn btn--secondary btn--sm" type="button">주소로 다시 계산</button>
+                  </div>
+                  <div class="field">
+                    <label for="erad">근무지 반경</label>
+                    <div class="inline" style="flex-wrap: nowrap">
+                      <input class="input mono" id="erad" value="150" inputmode="numeric" style="max-width: 120px" />
+                      <span class="subtle">m</span>
+                    </div>
+                    <span class="help">50m~1,000m · 10m 단위</span>
+                  </div>
+                </div>
+              </section>
+
+              <!-- 점포 사업자정보 -->
+              <section class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">점포 사업자정보</h2>
+                  <span class="badge badge--ok" data-show="auth fail conflict closed bpoff">인증 완료</span>
+                  <span class="badge badge--warn" data-show="noauth" hidden>미인증</span>
+                </div>
+                <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
+                  <div class="band band--risk" data-show="fail" hidden>
+                    <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+                    <div class="band__body">
+                      <div class="band__title">재인증에 실패했습니다 — 입력한 대표자명이 사업자정보와 맞지 않습니다</div>
+                      <p class="band__desc">저장된 사업자정보와 최종 인증일시, 인증 완료는 그대로입니다. 실패 사유는 저장하지 않습니다.</p>
+                    </div>
+                  </div>
+                  <p class="subtle" style="margin: 0; font-size: 12.5px">국세청 API로 사업자등록번호·대표자명·개업일자의 진위만 확인합니다. 인증 결과는 저장을 눌러야 반영됩니다.</p>
+
+                  <!-- 미인증 점포 · 최초 인증 — 등록 화면과 같다: 버튼 → 입력 상자 → 인증 완료 카드 -->
+                  <div class="stack--lg" style="display: flex; flex-direction: column" data-show="noauth" hidden>
+                    <div id="efold">
+                      <button class="btn btn--secondary" type="button" data-conceal="efold" data-reveal="eform">
+                        <span data-icon="building" data-icon-size="14"></span>사업자 번호 인증하기
+                      </button>
+                    </div>
+                    <div class="card card--soft bizbox" id="eform" hidden>
+                      <div class="spread">
+                        <h3 class="t-h3 inline" style="gap: 6px"><span data-icon="building" data-icon-size="16"></span>사업자 번호 인증</h3>
+                        <button class="iconbtn" type="button" aria-label="접기" data-icon="x" data-icon-size="16" data-conceal="eform" data-reveal="efold"></button>
+                      </div>
+                      <div class="demo" data-demo="ef" data-demo-key="biz">
+                        <b>목업 결과</b>
+                        <div class="seg">
+                          <button type="button" data-state="in" aria-pressed="true">입력</button>
+                          <button type="button" data-state="fail" aria-pressed="false">확인 불가</button>
+                          <button type="button" data-state="dup" aria-pressed="false">번호 중복</button>
+                          <button type="button" data-state="error" aria-pressed="false">처리 오류</button>
+                        </div>
+                      </div>
+                      <div class="field">
+                        <label for="ef1">사업자등록번호</label>
+                        <input class="input mono" id="ef1" value="211-33-70912" />
+                      </div>
+                      <div class="field">
+                        <label for="ef2">대표자명</label>
+                        <input class="input" id="ef2" value="윤하진" />
+                      </div>
+                      <div class="field">
+                        <label for="ef3">개업일자</label>
+                        <input class="input mono" id="ef3" type="date" value="2026-09-01" />
+                      </div>
+                      <div class="band band--risk" data-show-biz="fail" hidden>
+                        <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+                        <div class="band__body"><div class="band__title">사업자정보를 확인할 수 없습니다.</div><p class="band__desc">다시 입력해 인증하거나, 인증 없이 저장할 수 있습니다.</p></div>
+                      </div>
+                      <div class="band band--risk" data-show-biz="dup" hidden>
+                        <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+                        <div class="band__body"><div class="band__title">이미 다른 점포가 쓰고 있는 사업자등록번호입니다</div><p class="band__desc">미운영·운영 점포와는 겹칠 수 없습니다. 폐점·삭제한 점포의 번호는 다시 쓸 수 있습니다.</p></div>
+                      </div>
+                      <div class="band band--risk" data-show-biz="error" hidden>
+                        <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
+                        <div class="band__body"><div class="band__title">사업자정보 인증 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.</div></div>
+                      </div>
+                      <div>
+                        <button class="btn btn--primary btn--sm" type="button" data-conceal="eform" data-reveal="enewinfo" data-auth-ok>인증하기</button>
+                      </div>
+                    </div>
+                    <div class="card card--soft bizbox" id="enewinfo" hidden>
+                      <div class="spread">
+                        <h3 class="t-h3 inline" style="gap: 6px"><span data-icon="building" data-icon-size="16"></span>사업자정보</h3>
+                        <span class="badge badge--ok">인증 완료</span>
+                      </div>
+                      <div class="grid grid--3">
+                        <div class="field"><label>사업자등록번호</label><input class="input mono" value="211-33-70912" readonly /></div>
+                        <div class="field"><label>대표자명</label><input class="input" value="윤하진" readonly /></div>
+                        <div class="field"><label>개업일자</label><input class="input mono" value="2026-09-01" readonly /></div>
+                      </div>
+                      <p class="subtle" style="margin: 0; font-size: 12.5px">저장하면 사업자등록번호가 확정되고, 그 뒤로는 번호를 바꿀 수 없습니다. 이제 위의 점포상태에서 운영을 고를 수 있습니다.</p>
+                    </div>
+                  </div>
+
+                  <!-- 인증된 점포 · 재인증 — 같은 흐름이다: 인증 완료 카드 → 재인증 → 입력 상자(번호·개업일자 고정, 대표자명만) → 카드 -->
+                  <div class="stack--lg" style="display: flex; flex-direction: column" data-show="auth fail conflict closed bpoff">
+                    <div class="card card--soft bizbox" id="einfo">
+                      <div class="spread">
+                        <h3 class="t-h3 inline" style="gap: 6px"><span data-icon="building" data-icon-size="16"></span>사업자정보</h3>
+                        <span class="badge badge--ok">인증 완료</span>
+                      </div>
+                      <div class="grid grid--3">
+                        <div class="field"><label>사업자등록번호</label><input class="input mono" value="105-22-81934" readonly /></div>
+                        <div class="field"><label>대표자명</label><input class="input" value="박서윤" readonly /></div>
+                        <div class="field"><label>개업일자</label><input class="input mono" value="2019-05-10" readonly /></div>
+                      </div>
+                      <div data-show="auth fail conflict">
+                        <button class="btn btn--secondary btn--sm" type="button" data-conceal="einfo" data-reveal="eform2">
+                          <span data-icon="refresh" data-icon-size="14"></span>재인증
+                        </button>
+                      </div>
+                    </div>
+                    <div class="card card--soft bizbox" id="eform2" hidden>
+                      <div class="spread">
+                        <h3 class="t-h3 inline" style="gap: 6px"><span data-icon="building" data-icon-size="16"></span>사업자 번호 재인증</h3>
+                        <button class="iconbtn" type="button" aria-label="접기" data-icon="x" data-icon-size="16" data-conceal="eform2" data-reveal="einfo"></button>
+                      </div>
+                      <div class="field">
+                        <label>사업자등록번호</label>
+                        <input class="input mono" value="105-22-81934" readonly />
+                      </div>
+                      <div class="field">
+                        <label>개업일자</label>
+                        <input class="input mono" value="2019-05-10" readonly />
+                      </div>
+                      <div class="field">
+                        <label for="er-ceo">대표자명</label>
+                        <input class="input" id="er-ceo" value="박서윤" />
+                        <span class="help">대표자가 바뀌었을 때 새 이름으로 다시 확인합니다. 번호와 개업일자는 바꿀 수 없습니다.</span>
+                      </div>
+                      <div class="inline">
+                        <button class="btn btn--primary btn--sm" type="button" data-conceal="eform2" data-reveal="einfo" data-state-go="auth">인증하기</button>
+                        <button class="btn btn--secondary btn--sm" type="button" data-conceal="eform2" data-reveal="einfo" data-state-go="fail" title="목업 전용 — 실패 결과 보기">실패로 보기</button>
+                      </div>
+                    </div>
+                    <p class="note" style="margin: 0">
+                      <span data-icon="lock" data-icon-size="14"></span>
+                      <span>사업자등록번호는 점포에서 바꿀 수 없습니다. 번호가 바뀌면 이 점포를 끝내고 새 점포로 등록합니다. 재인증으로는 대표자명만 고칩니다.</span>
+                    </p>
+                  </div>
+                  <div class="field">
+                    <label for="ecorp">상호명</label>
+                    <input class="input" id="ecorp" value="모리커피 연남" />
+                    <span class="help">재인증해도 바뀌지 않습니다.</span>
+                  </div>
+                  <div class="field">
+                    <label>사업자주소</label>
+                    <div class="inline">
+                      <span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="점포 주소와 같음" data-icon="check" data-icon-size="11"></span>
+                      <span style="font-size: 13px">점포 주소와 같음</span>
+                    </div>
+                    <input class="input" value="03991 서울 마포구 동교로 256, 1층" readonly aria-label="사업자주소" />
+                  </div>
+                  <div class="grid grid--2">
+                    <div class="field">
+                      <label for="eb1">업태</label>
+                      <input class="input" id="eb1" value="음식점업" maxlength="50" />
+                    </div>
+                    <div class="field">
+                      <label for="eb2">종목</label>
+                      <input class="input" id="eb2" value="커피전문점" maxlength="50" />
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="eceo">대표자 연락처</label>
+                    <div class="tel3">
+                      <input class="input mono" id="eceo" value="010" inputmode="numeric" aria-label="앞자리" />
+                      <input class="input mono" value="5521" inputmode="numeric" aria-label="가운데자리" />
+                      <input class="input mono" value="3380" inputmode="numeric" aria-label="끝자리" />
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <!-- 기타 정보 — 매장평수 · 전용면적 · 좌석수 · 층수. 모두 선택 입력이고 점포 기본정보와 따로 둔다. -->
+            <section class="panel">
+              <div class="panel__head">
+                <h2 class="t-h2">기타 정보</h2>
+                <span class="badge badge--quiet">선택</span>
+              </div>
+              <div class="panel__body">
+                <div class="grid grid--2">
+                  <div class="field">
+                    <label for="epy">매장평수</label>
+                    <div class="inline" style="flex-wrap: nowrap">
+                      <input class="input mono" id="epy" value="18" placeholder="예: 18" inputmode="decimal" style="max-width: 140px" />
+                      <span class="subtle">평</span>
+                    </div>
+                    <span class="help">소수 첫째 자리까지 · 선택</span>
+                  </div>
+                  <div class="field">
+                    <label for="ear">전용면적</label>
+                    <div class="inline" style="flex-wrap: nowrap">
+                      <input class="input mono" id="ear" value="59.5" placeholder="예: 59.5" inputmode="decimal" style="max-width: 140px" />
+                      <span class="subtle">㎡</span>
+                    </div>
+                    <span class="help">소수 둘째 자리까지 · 1평 = 3.3058㎡ · 선택</span>
+                  </div>
+                  <div class="field">
+                    <label for="est">좌석수</label>
+                    <div class="inline" style="flex-wrap: nowrap">
+                      <input class="input mono" id="est" value="32" placeholder="예: 32" inputmode="decimal" style="max-width: 140px" />
+                      <span class="subtle">석</span>
+                    </div>
+                    <span class="help">0 이상 정수 · 선택</span>
+                  </div>
+                  <div class="field">
+                    <label for="efl">층수</label>
+                    <div class="inline" style="flex-wrap: nowrap; gap: var(--s-2)">
+                      <select class="select" id="efl" aria-label="지상·지하" style="width: 96px; flex: none">
+                        <option selected>지상</option>
+                        <option>지하</option>
+                      </select>
+                      <input class="input mono" value="1" placeholder="예: 1" inputmode="numeric" aria-label="층" style="max-width: 90px" />
+                      <span class="subtle">층</span>
+                    </div>
+                    <span class="help">점포가 있는 층 · 선택</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <p class="note">
+              <span data-icon="info" data-icon-size="14"></span>
+              <span>저장하면 바뀐 항목마다 변경 전후 값, 변경자, 변경 일시가 변경 이력에 쌓입니다. 변경 사유는 받지 않습니다.</span>
+            </p>
+          </div>
+
+          <!-- 폐점 조건 미충족 — 폐점을 고른 순간 뜬다. 확인을 누르면 선택은 이전 상태로 돌아가 있다. -->
+          <div class="modal" id="pop-close-unmet" hidden role="dialog" aria-modal="true" aria-labelledby="pcu-t">
+            <div class="modal__box">
+              <div class="modal__head">
+                <h2 class="t-h2" id="pcu-t">폐점할 수 없습니다</h2>
+                <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+              </div>
+              <div class="modal__body">
+                <p style="margin: 0; font-size: 13.5px">폐점 조건을 채우지 못해 <b>폐점</b>을 고를 수 없습니다. 점포상태는 이전 상태인 <b data-status-prev-label>운영</b>으로 되돌렸습니다.</p>
+                <div class="card" style="padding: var(--s-4) var(--s-5); gap: var(--s-2)">
+                  <b style="font-size: 13.5px">채우지 못한 조건</b>
+                  <ul class="stack" style="margin: 0; padding-left: 18px; font-size: 13px; gap: 4px">
+                    <li data-show="auth fail conflict">유효한 근로계약 <b style="color: var(--risk-text)">6건</b> — 정리해야 할 근로계약이 있습니다</li>
+                    <li data-show="auth fail conflict">이용 중인 부가서비스 구독 <b style="color: var(--risk-text)">1건</b> — 해지해야 할 구독이 있습니다</li>
+                    <li data-show="noauth" hidden>정산 대기 금액 <b style="color: var(--risk-text)">35,000원</b> — 정산이 끝나지 않았습니다</li>
+                  </ul>
+                  <span class="subtle" style="font-size: 12.5px" data-show="auth fail conflict">정산 대기 금액 0원은 채웠습니다.</span>
+                  <span class="subtle" style="font-size: 12.5px" data-show="noauth" hidden>유효한 근로계약 0건 · 이용 중인 구독 0건은 채웠습니다.</span>
+                </div>
+                <p class="subtle" style="margin: 0; font-size: 12.5px">조건을 정리한 뒤 다시 폐점을 고르세요. 다른 수정 내용은 그대로 남아 있습니다.</p>
+              </div>
+              <div class="modal__foot">
+                <button class="btn btn--primary" type="button" data-close>확인</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 상태 전환 확인 — 저장을 누를 때, 상태를 바꿨으면 한 번 더 묻는다. -->
+          <div class="modal" id="pop-status-save" hidden role="dialog" aria-modal="true" aria-labelledby="pss-t">
+            <div class="modal__box">
+              <div class="modal__head">
+                <h2 class="t-h2" id="pss-t">점포 상태를 바꿔 저장합니다</h2>
+                <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+              </div>
+              <div class="modal__body">
+                <div class="band band--risk" data-status-note="closed">
+                  <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+                  <div class="band__body">
+                    <div class="band__title"><span data-show="auth fail conflict">모리커피 연남점 · 운영 → 폐점</span><span data-show="noauth" hidden>모리커피 청담점 · 미운영 → 폐점</span></div>
+                    <p class="band__desc">되돌릴 수 없는 전환입니다. 폐점일은 오늘(2026-09-22)로 정해지고, 내일부터 이 점포에는 BP 휴일이 적용되지 않습니다.</p>
+                  </div>
+                </div>
+                <div class="band band--info" data-status-note="run" hidden>
+                  <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+                  <div class="band__body">
+                    <div class="band__title">모리커피 청담점 · 미운영 → 운영</div>
+                    <p class="band__desc">되돌릴 수 없는 전환입니다. 사업자 인증 결과와 함께 저장되고, 저장하면 직원·부가서비스·판매·근태 업무를 할 수 있습니다.</p>
+                  </div>
+                </div>
+                <p class="subtle" style="margin: 0; font-size: 12.5px">저장 직전에 조건을 한 번 더 확인합니다. 그 사이 조건이 바뀌었으면 저장하지 않고 최신 정보를 안내합니다.</p>
+              </div>
+              <div class="modal__foot">
+                <button class="btn btn--ghost" type="button" data-close>취소</button>
+                <a class="btn btn--danger" href="detail.html?state=closed" data-status-note="closed">폐점하고 저장</a>
+                <a class="btn btn--primary" href="detail.html" data-status-note="run" hidden>운영으로 저장</a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+    <script>
+      /* 점포상태 선택 — 폐점을 고르면 조건을 보고, 못 채우면 팝업을 띄우고 이전 값으로 돌린다. 목업 전용. */
+      (function () {
+        var LABEL = { unop: "미운영", run: "운영", closed: "폐점" };
+        function closeMet() {
+          var b = document.querySelector('[data-demo-key="close"] [aria-pressed="true"]');
+          return b && b.dataset.state === "met";
+        }
+        function showNote(scope, v) {
+          scope.querySelectorAll("[data-status-note]").forEach(function (n) { n.hidden = n.dataset.statusNote !== v; });
+        }
+        function activePick() {
+          return [].slice.call(document.querySelectorAll("[data-status-pick]")).filter(function (s) { return !s.hidden; })[0];
+        }
+        document.querySelectorAll("[data-status-pick]").forEach(function (sel) {
+          sel.dataset.prev = sel.value;
+          sel.dataset.orig = sel.value;
+          sel.addEventListener("change", function () {
+            if (sel.value === "closed" && !closeMet()) {
+              var prev = sel.dataset.prev;
+              sel.value = prev;
+              document.querySelector("[data-status-prev-label]").textContent = LABEL[prev];
+              document.getElementById("pop-close-unmet").hidden = false;
+            }
+            sel.dataset.prev = sel.value;
+            showNote(sel.closest(".field"), sel.value === sel.dataset.orig ? "" : sel.value);
+          });
+        });
+        document.addEventListener("click", function (e) {
+          /* 최초 인증 성공 → 운영을 고를 수 있다 */
+          if (e.target.closest("[data-auth-ok]")) {
+            var o = document.querySelector("[data-need-auth]");
+            o.disabled = false; o.textContent = "운영";
+            document.querySelector("[data-need-auth-help]").textContent = "사업자 번호를 인증했습니다. 운영을 고를 수 있습니다.";
+          }
+          /* 상태를 바꿨으면 저장 전에 확인 창 */
+          var save = e.target.closest("[data-status-save]");
+          if (save) {
+            var sel = activePick();
+            if (sel && sel.value !== sel.dataset.orig) {
+              e.preventDefault();
+              var m = document.getElementById("pop-status-save");
+              showNote(m, sel.value);
+              m.hidden = false;
+            }
+          }
+          /* 목업 상태를 바꾸면 선택을 처음 값으로 돌린다 */
+          if (e.target.closest("[data-demo] [data-state]")) {
+            document.querySelectorAll("[data-status-pick]").forEach(function (s) {
+              s.value = s.dataset.prev = s.dataset.orig;
+              showNote(s.closest(".field"), "");
+            });
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

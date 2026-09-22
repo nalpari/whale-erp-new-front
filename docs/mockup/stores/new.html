@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>점포 등록 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="stores" data-sub="stores/index.html">
+    <!-- 점포 등록 · /stores/new · S-ALHLHW · 1팀
+         기본정보와 사업자정보를 나눠 받는다. 필수는 점포유형과 점포명 둘뿐이고 새 점포는 미운영으로만 생긴다. 점포상태 칸은 보이지 않는다.
+         점포유형은 큰 선택 카드 둘로 고른다. 점포코드 칸은 두지 않는다 — 저장이 끝난 뒤 시스템이 ST+6자리로 매긴다.
+         플랫폼 관리자에게는 소속 BP 입력 영역이 없다. BP 측 역할은 소속 BP 가 고정된다.
+         사업자 번호 인증은 회원가입의 사업자정보 인증과 같은 모양(접힘 → 입력 상자 → 인증 완료 카드)이고 등록 단계에서 선택이다.
+         가맹 마스터·가맹 관리자는 권한이 있어도 등록할 수 없다.
+         위쪽 점선 줄 둘은 목업 전용이다 — 역할과 입력 상태를 따로 바꾼다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div id="nf" style="display: contents">
+          <div class="titlebar">
+            <a class="iconbtn" href="index.html" aria-label="점포 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
+            <h1 class="t-h1">점포 등록</h1>
+            <span class="badge badge--warn">1팀 작업</span>
+            <div class="titlebar__end">
+              <span class="filters__count mono">S-ALHLHW · /stores/new</span>
+              <a class="btn btn--secondary btn--sm" href="index.html">취소</a>
+              <a class="btn btn--primary btn--sm" href="detail.html?state=unop" data-show-role="plat bp" data-show="in coord">등록</a>
+              <button class="btn btn--primary btn--sm" type="button" data-show-role="plat bp" data-show="miss" hidden>등록</button>
+              <button class="btn btn--primary btn--sm" type="button" disabled data-show-role="fr" hidden>등록</button>
+            </div>
+          </div>
+
+          <div class="content">
+            <div class="stack">
+              <div class="demo" data-demo="nf" data-demo-key="role">
+                <b>목업 역할</b>
+                <div class="seg">
+                  <button type="button" data-state="plat" aria-pressed="true">플랫폼 관리자</button>
+                  <button type="button" data-state="bp" aria-pressed="false">BP 마스터</button>
+                  <button type="button" data-state="fr" aria-pressed="false">가맹 마스터</button>
+                </div>
+              </div>
+              <div class="demo" data-demo="nf">
+                <b>목업 상태</b>
+                <div class="seg">
+                  <button type="button" data-state="in" aria-pressed="true">입력 중</button>
+                  <button type="button" data-state="miss" aria-pressed="false">필수 누락</button>
+                  <button type="button" data-state="coord" aria-pressed="false">좌표 계산 실패</button>
+                </div>
+              </div>
+              <div class="demo" data-demo="nf" data-demo-key="img">
+                <b>목업 이미지</b>
+                <div class="seg">
+                  <button type="button" data-state="none" aria-pressed="true">이미지 없음</button>
+                  <button type="button" data-state="on" aria-pressed="false">이미지 올림</button>
+                  <button type="button" data-state="bad" aria-pressed="false">형식·용량 오류</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="band band--risk" data-show-role="fr" hidden>
+              <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">가맹 마스터와 가맹 관리자는 신규 점포를 등록할 수 없습니다</div>
+                <p class="band__desc">점포 관리 메뉴에 등록 권한이 켜져 있어도 마찬가지입니다. 매핑된 점포의 조회와 수정만 할 수 있습니다. 목록에서도 등록 버튼이 보이지 않습니다.</p>
+              </div>
+            </div>
+
+            <!-- 소속 BP — 플랫폼 관리자는 입력 영역이 없다. BP 측 역할에게만 고정된 소속 BP 를 알린다. -->
+            <section class="panel" data-show-role="bp fr" hidden>
+              <div class="panel__head"><h2 class="t-h2">소속 BP</h2></div>
+              <div class="panel__body">
+                <p style="margin: 0; font-size: 13px">㈜한강상회 <span class="mono subtle">BP000017</span> — 로그인한 계정의 소속 BP 로 고정됩니다.</p>
+              </div>
+            </section>
+
+            <!-- 대표 이미지 — 1장 · 선택 · JPG·PNG 5MB 이하. 목록 썸네일과 상세에 같은 이미지가 보인다. -->
+            <section class="panel">
+              <div class="panel__head">
+                <h2 class="t-h2">대표 이미지</h2>
+                <span class="badge badge--quiet">선택 · 1장</span>
+              </div>
+              <div class="panel__body">
+                <div class="imgup">
+                  <div class="imgup__box" data-show-img="none bad"><span class="stack" style="align-items: center; gap: 6px; font-size: 12px"><span data-icon="image" data-icon-size="28"></span>이미지 없음</span></div>
+                  <div class="imgup__box is-filled" data-show-img="on" hidden><img src="../assets/img/store-mori.svg" alt="모리커피 망원점 대표 이미지" /></div>
+                  <div class="imgup__side">
+                    <div class="inline">
+                      <button class="btn btn--secondary btn--sm" type="button" data-state-go="on" data-show-img="none bad"><span data-icon="upload" data-icon-size="14"></span>이미지 올리기</button>
+                      <button class="btn btn--secondary btn--sm" type="button" data-state-go="bad" data-show-img="none bad" title="목업 전용 — 형식·용량 오류 보기">잘못된 파일로 보기</button>
+                      <button class="btn btn--secondary btn--sm" type="button" data-state-go="on" data-show-img="on" hidden><span data-icon="upload" data-icon-size="14"></span>바꾸기</button>
+                      <button class="btn btn--ghost btn--sm" type="button" data-state-go="none" data-show-img="on" hidden><span data-icon="trash" data-icon-size="14"></span>삭제</button>
+                    </div>
+                    <span class="help">JPG · PNG, 5MB 이하 한 장. 점포 목록의 썸네일과 상세에 보입니다. 없으면 점포 아이콘이 대신 섭니다.</span>
+                    <span class="err" data-show-img="bad" hidden><span data-icon="alert" data-icon-size="13"></span>JPG · PNG 파일만, 5MB 이하로 올릴 수 있습니다.</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 점포 기본정보 -->
+            <section class="panel">
+              <div class="panel__head"><h2 class="t-h2">점포 기본정보</h2></div>
+              <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
+                <!-- 점포유형 — 큰 선택 카드 둘. 등록 뒤에는 바꿀 수 없다. -->
+                <div class="field">
+                  <label>점포유형 <span class="req">*</span></label>
+                  <div class="typepick" role="radiogroup" aria-label="점포유형" data-show="in coord">
+                    <button class="typepick__opt" type="button" role="radio" aria-checked="true" data-pick>
+                      <span class="typepick__ic" data-icon="store" data-icon-size="22"></span>
+                      <b>일반점포</b>
+                      <span>직접 운영하는 매장이에요</span>
+                    </button>
+                    <button class="typepick__opt" type="button" role="radio" aria-checked="false" data-pick>
+                      <span class="typepick__ic" data-icon="users" data-icon-size="22"></span>
+                      <b>가맹점포</b>
+                      <span>가맹점주가 운영하는 매장이에요</span>
+                    </button>
+                  </div>
+                  <div class="typepick" role="radiogroup" aria-label="점포유형" aria-invalid="true" data-show="miss" hidden>
+                    <button class="typepick__opt" type="button" role="radio" aria-checked="false" data-pick>
+                      <span class="typepick__ic" data-icon="store" data-icon-size="22"></span>
+                      <b>일반점포</b>
+                      <span>직접 운영하는 매장이에요</span>
+                    </button>
+                    <button class="typepick__opt" type="button" role="radio" aria-checked="false" data-pick>
+                      <span class="typepick__ic" data-icon="users" data-icon-size="22"></span>
+                      <b>가맹점포</b>
+                      <span>가맹점주가 운영하는 매장이에요</span>
+                    </button>
+                  </div>
+                  <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>점포유형을 선택해주세요.</span>
+                  <span class="help inline" style="gap: 6px" data-show="in coord"><span data-icon="lock" data-icon-size="13"></span>등록 후에는 점포 유형을 바꿀 수 없어요</span>
+                </div>
+                <div class="grid grid--2">
+                  <div class="field">
+                    <label for="nname">점포명 <span class="req">*</span></label>
+                    <input class="input" id="nname" value="모리커피 망원점" maxlength="50" data-show="in coord" />
+                    <input class="input" value="" maxlength="50" aria-invalid="true" aria-label="점포명" data-show="miss" hidden />
+                    <span class="help" data-show="in coord">1~50자 · 같은 BP 안에서 이름이 겹쳐도 됩니다</span>
+                    <span class="help" data-show="miss" hidden>둘 다 비었을 때는 위쪽 항목(점포유형)의 안내만 먼저 뜹니다.</span>
+                  </div>
+                  <div class="field">
+                    <label for="ntel">점포 연락처</label>
+                    <div class="tel3">
+                      <input class="input mono" id="ntel" value="02" inputmode="numeric" aria-label="앞자리" />
+                      <input class="input mono" value="332" inputmode="numeric" aria-label="가운데자리" />
+                      <input class="input mono" value="4410" inputmode="numeric" aria-label="끝자리" />
+                    </div>
+                    <span class="help">숫자 9~11자리 · 유선·휴대전화 모두</span>
+                  </div>
+                </div>
+                <div class="field addr" data-addr data-addr-lat="nlat" data-addr-lng="nlng">
+                  <label for="nzq">점포 주소</label>
+                  <div class="addr__search">
+                    <div class="addr__q">
+                      <span data-icon="search" data-icon-size="14"></span>
+                      <input class="input" id="nzq" type="search" placeholder="도로명, 건물명, 지번으로 검색" autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list" data-addr-q />
+                    </div>
+                    <button class="btn btn--secondary" type="button" data-addr-go>주소 검색</button>
+                    <div class="addr__list" role="listbox" aria-label="주소 검색 결과" hidden></div>
+                  </div>
+                  <div class="addr__picked">
+                    <input class="input mono" value="04007" readonly placeholder="우편번호" aria-label="우편번호" data-addr-zip />
+                    <input class="input" value="서울 마포구 망원로 42" readonly placeholder="검색해서 고르면 채워집니다" aria-label="기본주소" data-addr-base />
+                  </div>
+                  <input class="input" value="1층 101호" maxlength="100" placeholder="상세주소" aria-label="상세주소" data-addr-detail />
+                </div>
+                <div class="grid grid--3">
+                  <div class="field">
+                    <label for="nlat">위도</label>
+                    <input class="input mono" id="nlat" value="37.556312" data-show="in miss" />
+                    <input class="input mono" value="" placeholder="좌표를 계산하지 못했습니다." data-show="coord" hidden aria-label="위도" />
+                  </div>
+                  <div class="field">
+                    <label for="nlng">경도</label>
+                    <input class="input mono" id="nlng" value="126.901845" data-show="in miss" />
+                    <input class="input mono" value="" placeholder="좌표를 계산하지 못했습니다." data-show="coord" hidden aria-label="경도" />
+                  </div>
+                  <div class="field">
+                    <label for="nrad">근무지 반경</label>
+                    <div class="inline" style="flex-wrap: nowrap">
+                      <input class="input mono" id="nrad" value="100" inputmode="numeric" style="max-width: 120px" />
+                      <span class="subtle">m</span>
+                    </div>
+                    <span class="help">50m~1,000m · 10m 단위 · 기본 100m</span>
+                  </div>
+                </div>
+                <p class="note" data-show="in miss">
+                  <span data-icon="info" data-icon-size="14"></span>
+                  <span>위도·경도는 고른 주소로 자동으로 채워집니다. 직접 고쳐도 되고, 주소를 다시 고르면 다시 계산한 값으로 바뀝니다.</span>
+                </p>
+                <div class="band band--warn" data-show="coord" hidden>
+                  <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
+                  <div class="band__body">
+                    <div class="band__title">좌표를 계산하지 못했습니다</div>
+                    <p class="band__desc">그래도 등록은 됩니다. 주소를 다시 고르거나 위도·경도를 직접 입력하세요. 좌표가 없으면 직원 출퇴근의 위치 판정을 쓸 수 없습니다.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 기타 정보 — 매장평수 · 전용면적 · 좌석수 · 층수. 모두 선택 입력이고 점포 기본정보와 따로 둔다. -->
+            <section class="panel">
+              <div class="panel__head">
+                <h2 class="t-h2">기타 정보</h2>
+                <span class="badge badge--quiet">선택</span>
+              </div>
+              <div class="panel__body">
+                <div class="grid grid--2">
+                  <div class="field">
+                    <label for="xpy">매장평수</label>
+                    <div class="inline" style="flex-wrap: nowrap">
+                      <input class="input mono" id="xpy" placeholder="예: 18" inputmode="decimal" style="max-width: 140px" />
+                      <span class="subtle">평</span>
+                    </div>
+                    <span class="help">소수 첫째 자리까지 · 선택</span>
+                  </div>
+                  <div class="field">
+                    <label for="xar">전용면적</label>
+                    <div class="inline" style="flex-wrap: nowrap">
+                      <input class="input mono" id="xar" placeholder="예: 59.5" inputmode="decimal" style="max-width: 140px" />
+                      <span class="subtle">㎡</span>
+                    </div>
+                    <span class="help">소수 둘째 자리까지 · 1평 = 3.3058㎡ · 선택</span>
+                  </div>
+                  <div class="field">
+                    <label for="xst">좌석수</label>
+                    <div class="inline" style="flex-wrap: nowrap">
+                      <input class="input mono" id="xst" placeholder="예: 32" inputmode="decimal" style="max-width: 140px" />
+                      <span class="subtle">석</span>
+                    </div>
+                    <span class="help">0 이상 정수 · 선택</span>
+                  </div>
+                  <div class="field">
+                    <label for="xfl">층수</label>
+                    <div class="inline" style="flex-wrap: nowrap; gap: var(--s-2)">
+                      <select class="select" id="xfl" aria-label="지상·지하" style="width: 96px; flex: none">
+                        <option selected>지상</option>
+                        <option>지하</option>
+                      </select>
+                      <input class="input mono" placeholder="예: 1" inputmode="numeric" aria-label="층" style="max-width: 90px" />
+                      <span class="subtle">층</span>
+                    </div>
+                    <span class="help">점포가 있는 층 · 선택</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 점포 사업자정보 — 사업자 번호 인증은 회원가입의 ‘사업자정보 인증’과 같은 모양이다.
+                 인증 전: ‘사업자 번호 인증하기’ 버튼 → 누르면 입력 상자가 패널 안에 펼쳐진다(× 로 접는다).
+                 인증 후: 같은 자리가 ‘사업자정보 · 인증 완료’ 카드로 바뀌고, 재인증은 확인을 한 번 받는다.
+                 상호명·대표자 연락처·사업자주소·업태·종목은 인증과 상관없이 늘 입력할 수 있다. -->
+            <section class="panel">
+              <div class="panel__head">
+                <h2 class="t-h2">점포 사업자정보</h2>
+                <span class="badge badge--quiet">인증 선택 · 운영 전환 때 필수</span>
+              </div>
+              <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
+                <p class="subtle" style="margin: 0; font-size: 12.5px">국세청 API로 사업자등록번호·대표자명·개업일자의 진위만 확인합니다. 인증하지 않아도 점포를 등록할 수 있고, 운영으로 바꿀 때 인증이 필요합니다.</p>
+
+                <!-- 인증 전 · 접은 상태 -->
+                <div id="sbizfold">
+                  <button class="btn btn--secondary" type="button" data-conceal="sbizfold" data-reveal="sbizform">
+                    <span data-icon="building" data-icon-size="14"></span>사업자 번호 인증하기
+                  </button>
+                </div>
+
+                <!-- 인증 전 · 입력 상자 -->
+                <div class="card card--soft bizbox" id="sbizform" hidden>
+                  <div class="spread">
+                    <h3 class="t-h3 inline" style="gap: 6px"><span data-icon="building" data-icon-size="16"></span>사업자 번호 인증</h3>
+                    <button class="iconbtn" type="button" aria-label="접기" data-icon="x" data-icon-size="16" data-conceal="sbizform" data-reveal="sbizfold"></button>
+                  </div>
+                  <div class="demo" data-demo="nf" data-demo-key="biz">
+                    <b>목업 결과</b>
+                    <div class="seg">
+                      <button type="button" data-state="in" aria-pressed="true">입력</button>
+                      <button type="button" data-state="fail" aria-pressed="false">확인 불가</button>
+                      <button type="button" data-state="dup" aria-pressed="false">번호 중복</button>
+                      <button type="button" data-state="error" aria-pressed="false">처리 오류</button>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="sbiz">사업자등록번호</label>
+                    <input class="input mono" id="sbiz" value="113-25-60418" />
+                  </div>
+                  <div class="field">
+                    <label for="sceo">대표자명</label>
+                    <input class="input" id="sceo" value="한지우" />
+                  </div>
+                  <div class="field">
+                    <label for="sopen">개업일자</label>
+                    <input class="input mono" id="sopen" type="date" value="2026-08-03" />
+                  </div>
+                  <div class="band band--risk" data-show-biz="fail" hidden>
+                    <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+                    <div class="band__body">
+                      <div class="band__title">사업자정보를 확인할 수 없습니다.</div>
+                      <p class="band__desc">다시 입력해 인증하거나, 인증 없이 점포를 등록할 수 있습니다.</p>
+                    </div>
+                  </div>
+                  <div class="band band--risk" data-show-biz="dup" hidden>
+                    <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+                    <div class="band__body">
+                      <div class="band__title">이미 다른 점포가 쓰고 있는 사업자등록번호입니다</div>
+                      <p class="band__desc">미운영·운영 점포와는 겹칠 수 없습니다(소속 BP 와 상관없이). 폐점·삭제한 점포의 번호는 다시 쓸 수 있습니다.</p>
+                    </div>
+                  </div>
+                  <div class="band band--risk" data-show-biz="error" hidden>
+                    <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
+                    <div class="band__body">
+                      <div class="band__title">사업자정보 인증 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.</div>
+                    </div>
+                  </div>
+                  <div>
+                    <button class="btn btn--primary btn--sm" type="button" data-conceal="sbizform" data-reveal="sbizinfo">인증하기</button>
+                  </div>
+                </div>
+
+                <!-- 인증 후 · 사업자정보 -->
+                <div class="card card--soft bizbox" id="sbizinfo" hidden>
+                  <div class="spread">
+                    <h3 class="t-h3 inline" style="gap: 6px"><span data-icon="building" data-icon-size="16"></span>사업자정보</h3>
+                    <span class="badge badge--ok">인증 완료</span>
+                  </div>
+                  <div class="grid grid--3">
+                    <div class="field">
+                      <label>사업자등록번호</label>
+                      <input class="input mono" value="113-25-60418" readonly />
+                    </div>
+                    <div class="field">
+                      <label>대표자명</label>
+                      <input class="input" value="한지우" readonly />
+                    </div>
+                    <div class="field">
+                      <label>개업일자</label>
+                      <input class="input mono" value="2026-08-03" readonly />
+                    </div>
+                  </div>
+                  <div>
+                    <button class="btn btn--secondary btn--sm" type="button" data-open="sbizreset">
+                      <span data-icon="refresh" data-icon-size="14"></span>재인증
+                    </button>
+                  </div>
+                </div>
+
+                <div class="grid grid--2">
+                  <div class="field">
+                    <label for="ncorp">상호명</label>
+                    <input class="input" id="ncorp" value="모리커피 망원" />
+                    <span class="help">진위확인이 상호명을 돌려주지 않아 직접 입력합니다.</span>
+                  </div>
+                  <div class="field">
+                    <label for="nceo">대표자 연락처</label>
+                    <div class="tel3">
+                      <input class="input mono" id="nceo" inputmode="numeric" aria-label="앞자리" />
+                      <input class="input mono" inputmode="numeric" aria-label="가운데자리" />
+                      <input class="input mono" inputmode="numeric" aria-label="끝자리" />
+                    </div>
+                    <span class="help">휴대전화 10~11자리</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>사업자주소</label>
+                  <div class="inline">
+                    <span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="점포 주소와 같음" data-icon="check" data-icon-size="11"></span>
+                    <span style="font-size: 13px">점포 주소와 같음</span>
+                  </div>
+                  <div class="field addr" data-addr>
+                    <div class="addr__search">
+                      <div class="addr__q">
+                        <span data-icon="search" data-icon-size="14"></span>
+                        <input class="input" id="nbzq" type="search" placeholder="도로명, 건물명, 지번으로 검색" autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list" data-addr-q aria-label="사업자주소 주소 검색어" />
+                      </div>
+                      <button class="btn btn--secondary" type="button" data-addr-go>주소 검색</button>
+                      <div class="addr__list" role="listbox" aria-label="사업자주소 주소 검색 결과" hidden></div>
+                    </div>
+                    <div class="addr__picked">
+                      <input class="input mono" value="04007" readonly placeholder="우편번호" aria-label="사업자주소 우편번호" data-addr-zip />
+                      <input class="input" value="서울 마포구 망원로 42" readonly placeholder="검색해서 고르면 채워집니다" aria-label="사업자주소 기본주소" data-addr-base />
+                    </div>
+                    <input class="input" value="1층 101호" maxlength="100" placeholder="상세주소" aria-label="사업자주소 상세주소" data-addr-detail />
+                  </div>
+                </div>
+                <div class="grid grid--2">
+                  <div class="field">
+                    <label for="nbiz1">업태</label>
+                    <input class="input" id="nbiz1" value="음식점업" maxlength="50" />
+                  </div>
+                  <div class="field">
+                    <label for="nbiz2">종목</label>
+                    <input class="input" id="nbiz2" value="커피전문점" maxlength="50" />
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- 재인증 확인 — 지금 인증 결과를 버리고 입력 상자로 돌아간다 -->
+          <div class="modal" id="sbizreset" hidden role="dialog" aria-modal="true" aria-labelledby="sbizreset-t">
+            <div class="modal__box" style="max-width: 400px">
+              <div class="modal__head">
+                <h2 class="t-h2" id="sbizreset-t">사업자정보를 다시 인증할까요?</h2>
+                <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+              </div>
+              <div class="modal__body">
+                <p style="margin: 0; font-size: 13.5px">지금 인증한 사업자등록번호·대표자명·개업일자가 지워지고 인증 전으로 돌아갑니다.</p>
+                <p class="subtle" style="margin: 0; font-size: 12.5px">상호명과 아래에 적은 사업자정보는 그대로 둡니다. 다시 인증하지 않고 등록해도 됩니다.</p>
+              </div>
+              <div class="modal__foot">
+                <button class="btn btn--ghost" type="button" data-close>취소</button>
+                <button class="btn btn--primary" type="button" data-close data-conceal="sbizinfo" data-reveal="sbizform">재인증</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+  </body>
+</html>

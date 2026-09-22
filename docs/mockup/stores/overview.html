@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>점포 관리 개요 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="stores" data-sub="stores/overview.html">
+    <!-- 점포 관리(R-QTPRUQ) 영역 개요 — 목업 전용 페이지다. 1팀 작업이다.
+         기준은 manyfast [1팀공용] WHALE ERP 의 점포 관리 · 점포정보 관리(F-MOQKGY) 하위 명세 다섯 개다.
+         1·2·3차 검토(73건)를 반영·승인한 본문으로 그렸고, 4차 검토에서 아직 정하지 않은 것 중 화면을 가르는 것만 쟁점으로 남겼다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <a class="iconbtn" href="../index.html" aria-label="목업 허브로" data-icon="arrowleft" data-icon-size="18"></a>
+          <h1 class="t-h1">점포 관리</h1>
+          <span class="badge badge--warn">1팀 작업</span>
+          <span class="badge badge--preview">영역 개요</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">R-QTPRUQ · stores/</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="band band--warn">
+            <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+            <div class="band__body">
+              <div class="band__title">점포는 로그인 계정이 아니라 BP 의 운영 단위다</div>
+              <p class="band__desc">
+                직영(일반점포)과 가맹(가맹점포)을 같은 구조로 다룬다. 상태는 <b>미운영 → 운영 → 폐점</b> 한 방향으로만 가고,
+                운영 전환은 사업자정보 인증이 끝나야 된다. 폐점은 조건(근로계약·구독·정산)을 채워야 하고 한 번 폐점하면 되돌릴 수 없다.
+                각 화면 위의 점선 줄로 역할과 상태를 바꿔 가며 무엇이 보이고 막히는지 볼 수 있다.
+              </p>
+            </div>
+            <div class="band__act">
+              <a class="btn btn--primary" href="index.html">점포 목록부터 보기</a>
+            </div>
+          </div>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">화면</h2>
+              <span class="badge badge--quiet">4개 + 팝업 5</span>
+              <div class="panel__end">
+                <span class="filters__count mono">F-MOQKGY · stores/</span>
+              </div>
+            </div>
+            <div class="grid grid--2">
+              <a class="mk-card" href="index.html">
+                <span class="mk-card__route">/stores</span>
+                <span class="mk-card__name">점포 목록</span>
+                <span class="mk-card__desc">
+                  대표 이미지 썸네일을 단 줄 카드 목록. 검색 기준(점포명·코드·사업자등록번호)을 고른 검색어 하나와 상태·유형 체크로 한 줄에서 찾는다. 처음엔 폐점을 뺀다. 점포명을 누르면 상세로 간다.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--quiet">S-BAYAJS</span>
+                  <span class="badge badge--preview">역할 3 · 상태 8</span>
+                </span>
+              </a>
+              <a class="mk-card" href="detail.html">
+                <span class="mk-card__route">/stores/:코드</span>
+                <span class="mk-card__name">점포 상세 · 삭제 · 상태 변경</span>
+                <span class="mk-card__desc">
+                  기본정보·사업자정보·연계 관리정보·변경 이력을 읽기 전용으로 보인다. 상태 변경과 삭제 확인은 이 화면의 팝업이다.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--quiet">S-AGGZZG · S-MNRZOM</span>
+                  <span class="badge badge--preview">점포 4</span>
+                </span>
+              </a>
+              <a class="mk-card" href="new.html">
+                <span class="mk-card__route">/stores/new</span>
+                <span class="mk-card__name">점포 등록</span>
+                <span class="mk-card__desc">
+                  필수는 점포유형과 점포명뿐이고 미운영으로 생긴다. 대표 이미지 1장(JPG·PNG 5MB, 선택)을 올릴 수 있다. 사업자 번호 인증은 선택이다. 가맹 역할은 등록할 수 없다.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--quiet">S-ALHLHW · S-VRNTHD · S-LEAAUT</span>
+                </span>
+              </a>
+              <a class="mk-card" href="edit.html">
+                <span class="mk-card__route">/stores/:코드/edit</span>
+                <span class="mk-card__name">점포 수정</span>
+                <span class="mk-card__desc">
+                  번호가 없으면 최초 인증, 있으면 대표자명만 바꾸는 재인증. 사업자등록번호 자체는 바꿀 수 없다. 폐점·BP 미사용 점포는 막힌다.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--quiet">S-JEPOMK</span>
+                  <span class="badge badge--preview">상태 6</span>
+                </span>
+              </a>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">정책</h2>
+              <span class="badge badge--quiet">15줄</span>
+            </div>
+            <div class="grid grid--2" style="align-items: start">
+              <div class="panel">
+                <div class="panel__head">
+                  <h3 class="t-h3">상태 · 권한</h3>
+                  <span class="badge badge--quiet">7</span>
+                </div>
+                <ul class="pol">
+                  <li><span class="pol__t">전환은 미운영→운영, 미운영·운영→폐점뿐이다. 운영을 미운영으로 되돌리지 않고, 폐점을 다시 열려면 새 점포로 등록한다.</span><span class="pol__ref">S-MNRZOM</span></li>
+                  <li><span class="pol__t">운영 전환 조건은 사업자정보 인증 완료와 소속 BP 사용 상태 둘이다. 휴업·폐업 사업자인지는 보지 않는다.</span><span class="pol__ref">S-MNRZOM</span></li>
+                  <li><span class="pol__t">폐점 조건은 유효한 근로계약 0건 · 이용 중인 구독 0건 · 정산 대기 0원. 폐점일은 바꾼 날로 자동이고 사유는 받지 않는다.</span><span class="pol__ref">S-MNRZOM</span></li>
+                  <li><span class="pol__t">소속 BP 가 미사용이면 목록·상세 조회만 되고 등록·수정·상태 변경·삭제는 막는다. 점포 상태는 그대로 둔다.</span><span class="pol__ref">F-MOQKGY</span></li>
+                  <li><span class="pol__t">BP 가 탈퇴하면 그 BP 의 미운영·운영 점포를 조건 검사 없이 모두 폐점한다.</span><span class="pol__ref">F-MOQKGY · S-JHQQNR</span></li>
+                  <li><span class="pol__t">가맹 마스터·가맹 관리자는 등록 권한이 켜져 있어도 점포를 등록할 수 없고, 매핑된 점포만 보고 고친다.</span><span class="pol__ref">S-ALHLHW</span></li>
+                  <li><span class="pol__t">새 점포는 등록한 사람과 같은 BP 의 전체 점포 범위 사용자에게 자동으로 매핑된다. 플랫폼 사용자는 매핑 없이 전체를 본다.</span><span class="pol__ref">F-MOQKGY</span></li>
+                </ul>
+              </div>
+              <div class="panel">
+                <div class="panel__head">
+                  <h3 class="t-h3">데이터 · 이력</h3>
+                  <span class="badge badge--quiet">8</span>
+                </div>
+                <ul class="pol">
+                  <li><span class="pol__t">사업자 인증 완료 여부는 따로 저장하지 않는다. 사업자등록번호가 있으면 인증된 것이고, 재인증에 실패해도 그대로다.</span><span class="pol__ref">F-MOQKGY</span></li>
+                  <li><span class="pol__t">점포 사업자등록번호는 미운영·운영인 다른 점포와 겹칠 수 없다(플랫폼 전체). BP 사업자등록번호와는 따로 본다.</span><span class="pol__ref">PL-OCJOFP</span></li>
+                  <li><span class="pol__t">대표 이미지는 점포당 1장 · 선택 · JPG·PNG 5MB 이하. 목록 썸네일과 상세에 같은 이미지가 보이고, 없으면 점포 아이콘이 선다. 엑셀에는 담지 않는다.</span><span class="pol__ref">S-ALHLHW · S-JEPOMK</span></li>
+                  <li><span class="pol__t">좌표는 주소로 자동 계산하고 직접 고칠 수 있다. 계산하지 못해도 저장되고 운영 전환도 막지 않는다.</span><span class="pol__ref">S-ALHLHW</span></li>
+                  <li><span class="pol__t">근무지 반경은 50~1,000m, 10m 단위, 기본 100m.</span><span class="pol__ref">F-MOQKGY</span></li>
+                  <li><span class="pol__t">삭제는 미운영이면서 폐점 조건과 같은 세 조건을 채운 점포만 된다. 폐점 점포는 지우지 않고 보존한다.</span><span class="pol__ref">S-AGGZZG</span></li>
+                  <li><span class="pol__t">변경·삭제·상태 변경 이력은 1년 보존. 변경 이력은 상세에서 조회 권한자에게 보이고, 삭제 이력은 운영 요청으로만 확인한다.</span><span class="pol__ref">F-MOQKGY</span></li>
+                  <li><span class="pol__t">엑셀은 1만 건 미만이면 바로, 이상이면 예약 생성(24시간 보관). 한 사람 1분 1회, 대표자 연락처만 가린다.</span><span class="pol__ref">S-BAYAJS</span></li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">쟁점</h2>
+              <span class="badge badge--preview">4건 · 미정 4</span>
+            </div>
+            <p class="gap__note" style="margin-top: 0">
+              화면을 그리면서 명세만으로는 정해지지 않던 것들이다. 앞의 셋은 점포 관리 4차 검토(ST4)에도 올라 있다.
+            </p>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">STORE-1</span>
+                <b>가맹 마스터가 점포 상태를 바꿀 수 있는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-MNRZOM · ST4-A3</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a">
+                  <div class="gap__label">A · 기능 권한 칸</div>
+                  <p>수정 권한이 있으면 역할을 가리지 않고 상태를 바꿀 수 있다고 적었다.</p>
+                </div>
+                <div class="gap__opt" data-side="b">
+                  <div class="gap__label">B · 상태 변경 명세 · 이 목업</div>
+                  <p>권한 칸에 플랫폼·BP 마스터·BP 관리자만 있다. 목업은 이쪽을 따라 가맹 역할에게 상태 변경 버튼을 보이지 않는다.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">STORE-2</span>
+                <b>좌표 없는 점포를 운영으로 바꿀 때 알리는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-MNRZOM · ST4-C5</span>
+              </div>
+              <p class="gap__note">
+                막지 않기로는 정했는데 알린다는 문장이 없다. 알리지 않으면 출퇴근 위치 판정만 빠진 채 운영이 시작된다.
+                목업은 등록·상세에만 좌표 없음 안내를 두고 상태 변경 팝업에는 두지 않았다.
+              </p>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">STORE-3</span>
+                <b>목록·상세에 소속 BP 상태를 보이는가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-BAYAJS · S-AGGZZG · ST4-C4</span>
+              </div>
+              <p class="gap__note">
+                BP 미사용이면 수정·상태 변경·삭제가 모두 막히는데 화면에 BP 상태 칸이 없다. 목업은 막혔을 때의 안내만 보이고 상태 칸은 두지 않았다.
+              </p>
+            </div>
+
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">STORE-4</span>
+                <b>점포 목록의 페이지 건수</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-BAYAJS</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a">
+                  <div class="gap__label">A · 목업 목록 공통 규칙</div>
+                  <p>관리자 웹의 모든 목록은 <b>20 · 50 · 100건, 기본 20</b>. 한 번 고르면 모든 목록이 따른다.</p>
+                </div>
+                <div class="gap__opt" data-side="b">
+                  <div class="gap__label">B · 1팀 점포 목록 명세 · 이 목업</div>
+                  <p><b>10 · 30 · 50건, 기본 10</b>. 목업은 명세를 따라 이 목록만 따로 기억하게 했다.</p>
+                </div>
+              </div>
+              <p class="gap__note">BP 목록은 또 20건 고정이다. 관리자 웹 전체의 목록 규칙을 한 번 맞춰야 한다.</p>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+  </body>
+</html>

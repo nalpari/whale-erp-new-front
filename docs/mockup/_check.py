@@ -76,7 +76,7 @@ def check_classes(files):
 
 def check_layers(files):
     """새 영역을 추가하면 AREAS 에 폴더명만 넣으면 된다."""
-    AREAS = ["staff", "home", "support", "notify", "staff-app", "attendance"]
+    AREAS = ["staff", "home", "auth", "mypage", "stores", "bp", "system", "config", "support", "notify", "staff-app", "attendance"]
     out=[]
     root=open("index.html", encoding="utf-8").read()
 
