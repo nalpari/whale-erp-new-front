@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>점포관리</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--paper:#ffffff;--paper-2:#fafafa;--ink:#171717;--muted:#60646c;--soft:#6f747c;--rule:#f0f0f3;--rule-solid:#dcdee0;--accent:#8145b5;--accent-tint:#f5eefb;--link:#0d74ce;
+--sans:'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif;--mono:'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace}
+body{font-family:var(--sans);background:var(--paper-2);color:var(--ink);padding:40px 32px 64px;-webkit-font-smoothing:antialiased}
+.container{max-width:1400px;margin:0 auto}
+.header{margin-bottom:24px}
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+h1{font-family:var(--sans);font-size:32px;font-weight:600;letter-spacing:-.6px;line-height:1.25;margin-bottom:12px}
+.subtitle{font-size:15px;line-height:1.65;color:var(--muted);max-width:72ch}
+nav{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0}
+nav a{font-size:13px;color:var(--muted);text-decoration:none;padding:6px 12px;border:1px solid var(--rule-solid);border-radius:6px;background:var(--paper)}
+nav a:hover{color:var(--ink);border-color:var(--ink)}
+nav a[aria-current="page"]{color:var(--accent);border-color:var(--accent);background:var(--accent-tint)}
+nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.diagram{background:var(--paper);border:1px solid var(--rule-solid);border-radius:8px;padding:16px;overflow-x:auto}
+.diagram svg{display:block;width:100%;height:auto}
+.cards{display:grid;grid-template-columns:1.2fr 1fr .9fr;gap:16px;margin-top:16px}
+@media (max-width:900px){.cards{grid-template-columns:1fr}}
+.card{background:var(--paper);border:1px solid var(--rule-solid);border-radius:6px;padding:20px}
+.card .ey{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.card-h{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--rule)}
+.dot{width:7px;height:7px;border-radius:50%}
+.dot.coral{background:var(--accent)} .dot.ink{background:var(--ink)} .dot.muted{background:var(--soft)}
+.card h3{font-size:15px;font-weight:600}
+.card ul{list-style:none;color:var(--muted);font-size:13.5px;line-height:1.6}
+.card li{position:relative;padding-left:14px;margin-bottom:6px}
+.card li::before{content:'—';position:absolute;left:0;color:var(--rule-solid)}
+.index-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:16px}
+.index-list a{display:block;background:var(--paper);border:1px solid var(--rule-solid);border-radius:6px;padding:16px;text-decoration:none;color:var(--ink)}
+.index-list a:hover{border-color:var(--ink)}
+.index-list b{display:block;font-size:15px;margin-bottom:4px}
+.index-list span{font-size:13px;color:var(--muted);line-height:1.5}
+.index-list .n{font-family:var(--mono);font-size:11px;color:var(--soft);margin-top:8px;display:block}
+h2{font-family:var(--sans);font-size:20px;font-weight:600;letter-spacing:-.4px;margin:40px 0 8px}
+.footer{margin-top:32px;padding-top:20px;border-top:1px solid var(--rule-solid);font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--soft);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.nav-row{display:flex;align-items:center;gap:16px;margin:24px 0;flex-wrap:wrap}
+.nav-row nav{display:flex;flex-wrap:wrap;gap:8px;margin:0}
+.key-btns{display:inline-flex;gap:6px;margin-left:auto}
+.key-btns button{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.06em;padding:5px 12px;border:1px solid var(--rule-solid);border-radius:6px;background:var(--paper);color:var(--muted);cursor:pointer;transition:all .15s}
+.key-btns button:hover{color:var(--ink);border-color:var(--ink)}
+.key-btns button[aria-pressed="true"]{color:var(--accent);border-color:var(--accent);background:var(--accent-tint)}
+.diagram.show-pk g[data-key="fk"],.diagram.show-pk g[data-key="none"]{opacity:.1;transition:opacity .2s}
+.diagram.show-fk g[data-key="pk"],.diagram.show-fk g[data-key="none"]{opacity:.1;transition:opacity .2s}
+.diagram g[data-key]{transition:opacity .2s}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<p class="eyebrow">WHALE ERP · LOGICAL ERD · 1차 범위 · 1팀</p>
+<h1>점포관리</h1>
+<p class="subtitle">직영(일반점포)과 가맹(가맹점포)을 같은 구조로 다룬다. 상태는 미운영 -&gt; 운영 -&gt; 폐점 한 방향이고, 운영 전환은 사업자정보 인증 완료가 조건이다. 사업자정보는 별도 테이블로 관리한다.</p>
+</div>
+<div class="nav-row">
+<nav aria-label="ERD 영역"><a href="index.html">개요</a><a href="auth.html">인증·계정</a><a href="store.html" aria-current="page">점포관리</a><a href="bp.html">BP 관리</a><a href="system.html">환경설정 &amp; 시스템관리</a></nav>
+<div class="key-btns" role="group" aria-label="키 필터">
+<button type="button" aria-pressed="false" data-filter="pk">PK</button>
+<button type="button" aria-pressed="false" data-filter="fk">FK</button>
+</div>
+</div>
+<div class="diagram">
+<svg viewBox="0 0 1328 864" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="erd-store-title erd-store-desc" style="min-width:1328px">
+<title id="erd-store-title">점포관리</title>
+<desc id="erd-store-desc">점포관리 논리 ERD. 엔티티 7개와 관계 6개를 보여 준다: BP 코드, 점포, 점포 층별정보, 점포 변경 이력, 점포 사업자정보, 관리자 점포 매핑, 관리자 계정 (소속).</desc>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<path d="M 280,108 L 376,108" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 376,390 L 280,390" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 616,108 L 712,108" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 616,300 L 1048,300" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 616,460 L 656,460 Q 664,460 664,468 L 664,592 Q 664,600 672,600 L 712,600" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 280,600 L 488,600 Q 496,600 496,608 L 496,652 Q 496,660 504,660 L 712,660" fill="none" stroke="#60646c" stroke-width="1"/>
+<g id="ent-bp_code_ref">
+<rect x="40" y="40" width="240" height="112" rx="6" fill="#ffffff"/>
+<rect x="40" y="40" width="240" height="112" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
+<rect x="41" y="41" width="238" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
+<line x1="40" y1="92" x2="280" y2="92" stroke="#171717" stroke-opacity="0.35" stroke-width="1"/>
+<text x="56" y="60" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">ENTITY · bp_codes</text>
+<text x="56" y="80" fill="#171717" font-size="16" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">BP 코드</text>
+<g data-key="pk">
+<text x="56" y="116" fill="#8145b5" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">#</text>
+<text x="70" y="116" fill="#171717" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">BP ID</text>
+<text x="264" y="116" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+</g>
+<g data-key="none">
+<text x="56" y="136" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">BP 코드</text>
+<text x="264" y="136" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+</g>
+</g>
+<g id="ent-store">
+<rect x="376" y="40" width="240" height="472" rx="6" fill="#ffffff"/>
+<rect x="376" y="40" width="240" height="472" rx="6" fill="rgba(129,69,181,0.04)" stroke="#8145b5" stroke-width="1"/>
+<rect x="377" y="41" width="238" height="51" rx="5" fill="rgba(129,69,181,0.10)"/>
+<line x1="376" y1="92" x2="616" y2="92" stroke="#8145b5" stroke-opacity="0.35" stroke-width="1"/>
+<text x="392" y="60" fill="#8145b5" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">CORE ENTITY · stores</text>
+<text x="392" y="80" fill="#171717" font-size="16" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">점포</text>
+<g data-key="pk">
+<text x="392" y="116" fill="#8145b5" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">#</text>
+<text x="406" y="116" fill="#171717" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">점포 ID</text>
+<text x="600" y="116" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+</g>
+<g data-key="none">
+<text x="392" y="136" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">점포코드</text>
+<text x="600" y="136" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+</g>
+<g data-key="fk">
+<text x="392" y="156" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="406" y="156" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">BP</text>
+<text x="600" y="156" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+</g>
+<g data-key="none">
+<text x="392" y="176" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">점포유형</text>
+<text x="600" y="176" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">enum</text>
+</g>
+<g data-key="none">
+<text x="392" y="196" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">점포명</text>
+<text x="600" y="196" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+</g>
+<g data-key="none">
+<text x="392" y="216" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">연락처</text>
+<text x="600" y="216" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+</g>
+<g data-key="none">
+<text x="392" y="236" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">우편번호</text>
+<text x="600" y="236" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+</g>
+<g data-key="none">
+<text x="392" y="256" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">기본주소</text>
+<text x="600" y="256" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+</g>
+<g data-key="none">
+<text x="392" y="276" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">상세주소</text>
+<text x="600" y="276" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+</g>
+<g data-key="none">
+<text x="392" y="296" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">대표 이미지</text>
+<text x="600" y="296" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+</g>
+<g data-key="none">
+<text x="392" y="316" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">위도</text>
+<text x="600" y="316" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">decimal</text>
+</g>
+<g data-key="none">
+<text x="392" y="336" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">경도</text>
+<text x="600" y="336" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">decimal</text>
+</g>
+<g data-key="none">
+<text x="392" y="356" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">근무지 반경</text>
+<text x="600" y="356" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">int</text>
+</g>
+<g data-key="none">
+<text x="392" y="376" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">폐점일</text>
+<text x="600" y="376" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">date</text>
+</g>
+<g data-key="none">
+<text x="392" y="396" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">점포상태</text>
+<text x="600" y="396" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">enum</text>
+</g>
+<g data-key="none">
+<text x="392" y="416" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">삭제 여부</text>
+<text x="600" y="416" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">bool</text>
+</g>
+<g data-key="none">
+<text x="392" y="436" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">등록 일시</text>
+<text x="600" y="436" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">datetime</text>
+</g>
+<g data-key="fk">
+<text x="392" y="456" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="406" y="456" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">등록자</text>
+<text x="600" y="456" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+</g>
+<g data-key="none">
+<text x="392" y="476" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">최근 수정 일시</text>
+<text x="600" y="476" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">datetime</text>
+</g>
+<g data-key="fk">
+<text x="392" y="496" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="406" y="496" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">수정자</text>
+<text x="600" y="496" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+</g>
+</g>
+<g id="ent-store_floor">
+<rect x="40" y="200" width="240" height="312" rx="6" fill="#ffffff"/>
+<rect x="40" y="200" width="240" height="312" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
+<rect x="41" y="201" width="238" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
+<line x1="40" y1="252" x2="280" y2="252" stroke="#171717" stroke-opacity="0.35" stroke-width="1"/>
+<text x="56" y="220" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">ENTITY · store_floor_infos</text>
+<text x="56" y="240" fill="#171717" font-size="16" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">점포 층별정보</text>
+<g data-key="pk">
+<text x="56" y="276" fill="#8145b5" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">#</text>
+<text x="70" y="276" fill="#171717" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">층별정보 ID</text>
+<text x="264" y="276" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+</g>
+<g data-key="fk">
+<text x="56" y="296" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="70" y="296" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">점포</text>
+<text x="264" y="296" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+</g>
+<g data-key="none">
+<text x="56" y="316" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">매장평수</text>
+<text x="264" y="316" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">decimal</text>
+</g>
+<g data-key="none">
+<text x="56" y="336" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">전용면적</text>
+<text x="264" y="336" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">decimal</text>
+</g>
+<g data-key="none">
+<text x="56" y="356" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">좌석수</text>
+<text x="264" y="356" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">int</text>
+</g>
+<g data-key="none">
+<text x="56" y="376" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">층수 구분</text>
+<text x="264" y="376" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">enum</text>
+</g>
+<g data-key="none">
+<text x="56" y="396" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">층수</text>
+<text x="264" y="396" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">int</text>
+</g>
+<g data-key="none">
+<text x="56" y="416" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">삭제 여부</text>
+<text x="264" y="416" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">bool</text>
+</g>
+<g data-key="none">
+<text x="56" y="436" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">등록 일시</text>
+<text x="264" y="436" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">datetime</text>
+</g>
+<g data-key="fk">
+<text x="56" y="456" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="70" y="456" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">등록자</text>
+<text x="264" y="456" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+</g>
+<g data-key="none">
+<text x="56" y="476" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">최근 수정 일시</text>
+<text x="264" y="476" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">datetime</text>
+</g>
+<g data-key="fk">
+<text x="56" y="496" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="70" y="496" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">수정자</text>
+<text x="264" y="496" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+</g>
+</g>
+<g id="ent-store_hist">
+<rect x="712" y="40" width="240" height="212" rx="6" fill="#ffffff"/>
+<rect x="712" y="40" width="240" height="212" rx="6" fill="rgba(23,23,23,0.02)" stroke="rgba(23,23,23,0.32)" stroke-width="1" stroke-dasharray="4,3"/>
+<rect x="713" y="41" width="238" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
+<line x1="712" y1="92" x2="952" y2="92" stroke="rgba(23,23,23,0.32)" stroke-opacity="0.35" stroke-width="1"/>
+<text x="728" y="60" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">HISTORY · store_change_histories</text>
+<text x="728" y="80" fill="#171717" font-size="16" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">점포 변경 이력</text>
+<g data-key="pk">
+<text x="728" y="116" fill="#8145b5" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">#</text>
+<text x="742" y="116" fill="#171717" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">변경 이력 ID</text>
+<text x="936" y="116" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+</g>
+<g data-key="fk">
+<text x="728" y="136" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="742" y="136" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">점포</text>
+<text x="936" y="136" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+</g>
+<g data-key="none">
+<text x="728" y="156" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">변경 항목</text>
+<text x="936" y="156" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+</g>
+<g data-key="none">
+<text x="728" y="176" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">변경 전 값</text>
+<text x="936" y="176" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+</g>
+<g data-key="none">
+<text x="728" y="196" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">변경 후 값</text>
+<text x="936" y="196" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+</g>
+<g data-key="fk">
+<text x="728" y="216" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="742" y="216" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">변경자</text>
+<text x="936" y="216" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+</g>
+<g data-key="none">
+<text x="728" y="236" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">변경 일시</text>
+<text x="936" y="236" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">datetime</text>
+</g>
+</g>
+<g id="ent-store_biz">
+<rect x="1048" y="40" width="240" height="392" rx="6" fill="#ffffff"/>
+<rect x="1048" y="40" width="240" height="392" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
+<rect x="1049" y="41" width="238" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
+<line x1="1048" y1="92" x2="1288" y2="92" stroke="#171717" stroke-opacity="0.35" stroke-width="1"/>
+<text x="1064" y="60" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">ENTITY · store_business_infos</text>
+<text x="1064" y="80" fill="#171717" font-size="16" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">점포 사업자정보</text>
+<g data-key="pkfk">
+<text x="1064" y="116" fill="#8145b5" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">#→</text>
+<text x="1088" y="116" fill="#171717" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">점포</text>
+<text x="1272" y="116" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+</g>
+<g data-key="none">
+<text x="1064" y="136" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">상호명</text>
+<text x="1272" y="136" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+</g>
+<g data-key="none">
+<text x="1064" y="156" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">사업자등록번호</text>
+<text x="1272" y="156" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+</g>
+<g data-key="none">
+<text x="1064" y="176" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">대표자명</text>
+<text x="1272" y="176" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+</g>
+<g data-key="none">
+<text x="1064" y="196" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">개업일자</text>
+<text x="1272" y="196" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">date</text>
+</g>
+<g data-key="none">
+<text x="1064" y="216" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">대표자 연락처</text>
+<text x="1272" y="216" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+</g>
+<g data-key="none">
+<text x="1064" y="236" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">사업자 우편번호</text>
+<text x="1272" y="236" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+</g>
+<g data-key="none">
+<text x="1064" y="256" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">사업자 기본주소</text>
+<text x="1272" y="256" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+</g>
+<g data-key="none">
+<text x="1064" y="276" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">사업자 상세주소</text>
+<text x="1272" y="276" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+</g>
+<g data-key="none">
+<text x="1064" y="296" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">업태</text>
+<text x="1272" y="296" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+</g>
+<g data-key="none">
+<text x="1064" y="316" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">종목</text>
+<text x="1272" y="316" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+</g>
+<g data-key="none">
+<text x="1064" y="336" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">최종 인증일시</text>
+<text x="1272" y="336" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">datetime</text>
+</g>
+<g data-key="none">
+<text x="1064" y="356" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">등록 일시</text>
+<text x="1272" y="356" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">datetime</text>
+</g>
+<g data-key="fk">
+<text x="1064" y="376" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="1078" y="376" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">등록자</text>
+<text x="1272" y="376" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+</g>
+<g data-key="none">
+<text x="1064" y="396" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">최근 수정 일시</text>
+<text x="1272" y="396" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">datetime</text>
+</g>
+<g data-key="fk">
+<text x="1064" y="416" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="1078" y="416" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">수정자</text>
+<text x="1272" y="416" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+</g>
+</g>
+<g id="ent-mapping">
+<rect x="712" y="540" width="240" height="212" rx="6" fill="#ffffff"/>
+<rect x="712" y="540" width="240" height="212" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
+<rect x="713" y="541" width="238" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
+<line x1="712" y1="592" x2="952" y2="592" stroke="#171717" stroke-opacity="0.35" stroke-width="1"/>
+<text x="728" y="560" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">ENTITY · admin_store_mappings</text>
+<text x="728" y="580" fill="#171717" font-size="16" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">관리자 점포 매핑</text>
+<g data-key="pkfk">
+<text x="728" y="616" fill="#8145b5" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">#→</text>
+<text x="752" y="616" fill="#171717" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">관리자</text>
+<text x="936" y="616" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+</g>
+<g data-key="pkfk">
+<text x="728" y="636" fill="#8145b5" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">#→</text>
+<text x="752" y="636" fill="#171717" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">점포</text>
+<text x="936" y="636" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+</g>
+<g data-key="none">
+<text x="728" y="656" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">삭제 여부</text>
+<text x="936" y="656" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">bool</text>
+</g>
+<g data-key="none">
+<text x="728" y="676" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">등록 일시</text>
+<text x="936" y="676" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">datetime</text>
+</g>
+<g data-key="fk">
+<text x="728" y="696" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="742" y="696" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">등록자</text>
+<text x="936" y="696" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+</g>
+<g data-key="none">
+<text x="728" y="716" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">최근 수정 일시</text>
+<text x="936" y="716" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">datetime</text>
+</g>
+<g data-key="fk">
+<text x="728" y="736" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="742" y="736" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">수정자</text>
+<text x="936" y="736" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+</g>
+</g>
+<g id="ent-customer_sub">
+<rect x="40" y="540" width="240" height="152" rx="6" fill="#ffffff"/>
+<rect x="40" y="540" width="240" height="152" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
+<rect x="41" y="541" width="238" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
+<line x1="40" y1="592" x2="280" y2="592" stroke="#171717" stroke-opacity="0.35" stroke-width="1"/>
+<text x="56" y="560" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">ENTITY · customers</text>
+<text x="56" y="580" fill="#171717" font-size="16" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">관리자 계정 (소속)</text>
+<g data-key="pk">
+<text x="56" y="616" fill="#8145b5" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">#</text>
+<text x="70" y="616" fill="#171717" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">관리자 ID</text>
+<text x="264" y="616" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+</g>
+<g data-key="none">
+<text x="56" y="636" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">관리자 로그인ID</text>
+<text x="264" y="636" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+</g>
+<g data-key="fk">
+<text x="56" y="656" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="70" y="656" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">BP</text>
+<text x="264" y="656" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+</g>
+<g data-key="none">
+<text x="56" y="676" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">권한역할</text>
+<text x="264" y="676" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">enum</text>
+</g>
+</g>
+<rect x="286" y="92" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="294" y="102" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
+<rect x="354" y="92" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="362" y="102" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
+<rect x="312" y="116" width="32" height="16" rx="2" fill="#ffffff"/>
+<text x="328" y="128" fill="#60646c" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="500" text-anchor="middle">소속</text>
+<rect x="354" y="374" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="362" y="384" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
+<rect x="286" y="374" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="294" y="384" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
+<rect x="622" y="92" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="630" y="102" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
+<rect x="690" y="92" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="698" y="102" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
+<rect x="622" y="284" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="630" y="294" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
+<rect x="1006" y="284" width="36" height="12" rx="2" fill="#ffffff"/>
+<text x="1024" y="294" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">0..1</text>
+<rect x="622" y="444" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="630" y="454" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
+<rect x="690" y="584" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="698" y="594" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
+<rect x="286" y="584" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="294" y="594" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
+<rect x="690" y="644" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="698" y="654" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
+<line x1="40" y1="800" x2="1288" y2="800" stroke="#dcdee0" stroke-width="0.8"/>
+<text x="40" y="820" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.18em">LEGEND</text>
+<rect x="40" y="836" width="16" height="12" rx="2" fill="rgba(129,69,181,0.04)" stroke="#8145b5"/>
+<text x="64" y="847" fill="#60646c" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="500">중심 엔티티</text>
+<rect x="164" y="836" width="16" height="12" rx="2" fill="#ffffff" stroke="#171717"/>
+<text x="188" y="847" fill="#60646c" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="500">엔티티</text>
+<rect x="256" y="836" width="16" height="12" rx="2" fill="rgba(23,23,23,0.02)" stroke="rgba(23,23,23,0.32)" stroke-dasharray="4,3"/>
+<text x="280" y="847" fill="#60646c" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="500">이력</text>
+<rect x="336" y="836" width="16" height="12" rx="2" fill="rgba(13,116,206,0.03)" stroke="rgba(13,116,206,0.60)" stroke-dasharray="2,3"/>
+<text x="360" y="847" fill="#60646c" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="500">3팀 소유 · 참조만</text>
+<text x="500" y="847" fill="#8145b5" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">#</text>
+<text x="516" y="847" fill="#60646c" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="500">식별자</text>
+<text x="584" y="847" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="600" y="847" fill="#60646c" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="500">참조</text>
+<text x="656" y="847" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">1 · N · 0..1</text>
+<text x="748" y="847" fill="#60646c" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="500">관계 수</text>
+</svg>
+</div>
+<div class="cards"><div class="card"><p class="ey">중심</p><div class="card-h"><span class="dot coral"></span><h3>점포 상태는 한 방향이다</h3></div><ul><li>미운영 -&gt; 운영 -&gt; 폐점 단방향 전환이다</li><li>운영 전환은 사업자정보 인증 완료가 조건이다</li><li>미운영 상태에서만 삭제할 수 있다</li></ul></div><div class="card"><div class="card-h"><span class="dot ink"></span><h3>사업자·층별정보 분리</h3></div><ul><li>사업자등록번호·대표자·업태·종목 등은 별도 테이블이다</li><li>층별정보는 한 점포에 여러 층을 등록할 수 있다(1:N)</li><li>인증 완료 여부는 사업자등록번호 유무로 판정한다</li></ul></div><div class="card"><div class="card-h"><span class="dot muted"></span><h3>3팀 연계</h3></div><ul><li>근무지 반경은 출퇴근 GPS 판정에 필요한 3팀 요구다</li><li>1팀 점포 테이블에 넣을지 3팀 확장 테이블로 둘지 정해야 한다</li></ul></div></div>
+
+<div class="footer"><span>근거 · 1팀 목업 (auth·mypage·stores·bp·config·system) · Manyfast 명세</span><span>_build.py 로 생성 · 손으로 고치지 말 것</span></div>
+</div>
+<script>
+document.querySelectorAll('.key-btns button').forEach(function(btn){
+btn.addEventListener('click',function(){
+var f=btn.dataset.filter,d=document.querySelector('.diagram'),on=btn.getAttribute('aria-pressed')==='true';
+document.querySelectorAll('.key-btns button').forEach(function(b){b.setAttribute('aria-pressed','false')});
+d.classList.remove('show-pk','show-fk');
+if(!on){btn.setAttribute('aria-pressed','true');d.classList.add('show-'+f)}
+})
+});
+</script>
+</body>
+</html>
