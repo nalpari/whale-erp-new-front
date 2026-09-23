@@ -957,8 +957,9 @@
         '<a href="' + url("mypage/password.html") + '">비밀번호 변경</a>' +
         /* 회원 탈퇴는 BP 마스터에게만 보인다 — 목업의 로그인 사용자가 BP 마스터라 늘 보인다. */
         '<a href="' + url("mypage/withdraw.html") + '">회원 탈퇴</a>' +
-        /* 로그아웃은 이 브라우저 세션만 끝내고 로그인 화면으로 간다(S-TMRGOG). */
-        '<hr><a href="' + url("auth/login.html") + '">' + ic("logout", 14) + "로그아웃</a>";
+        /* 로그아웃은 이 브라우저 세션만 끝내고 로그인 전 홈으로 간다(S-TMRGOG · MYPAGE-3 확정).
+           세션 만료로 끊긴 경우만 로그인 화면으로 보낸다. */
+        '<hr><a href="' + url("home/index.html") + '">' + ic("logout", 14) + "로그아웃</a>";
     });
   }
 

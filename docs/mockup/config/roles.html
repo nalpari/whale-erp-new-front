@@ -19,15 +19,13 @@
          권한 코드는 유형 코드 + 6자리 순번으로 등록할 때 채번한다 (PL-EIMSQF). 신규 미리보기는 BA000008 · FA000005 다.
          권한명은 같은 BP 안에서 권한 유형과 관계없이 겹칠 수 없다. 권한 유형·권한 코드는 등록 뒤 읽기 전용이다.
          삭제 — 연결 사용자가 있으면 같은 BP·같은 유형의 다른 그룹을 골라 일괄 변경한 뒤 지운다. 대체 후보가 없으면 지우지 않는다.
-         본인이 연결된 그룹은 수정·삭제·메뉴 저장이 막힌다. 사용 중지 그룹은 수정·삭제·메뉴등록이 막히고 관리자 계정의 선택 대상에서 빠진다.
+         본인이 연결된 그룹은 수정·삭제·메뉴 저장이 막힌다. 권한 그룹에는 사용 상태가 없다 — 쓰거나 지우거나 둘뿐이다 (CONFIG-6 확정).
          메뉴 트리는 system/menus.html 의 Whale ERP 서비스 표본이다. 칸이 흐린 이유는 셋 — 사용중지 메뉴 · 기준 고정 권한 밖 · 설정자 본인 권한 밖.
          목록·상세·두 팝업은 아래 스크립트가 목업 권한 줄과 목업 상태 줄에 따라 그린다. 행을 누르면 그 그룹의 상세로 바뀐다.
 
          쟁점 후보 (명세로 정해지지 않아 화면이 갈리는 곳)
          - 가맹 마스터·가맹 관리자에게 BA 그룹이 보이는가. 목업은 관리계정ID 가 연결 가맹 마스터인 FA 그룹만 보인다 (S-LYKAEI · PL-RWJYLJ).
          - FA 그룹 삭제의 대체 후보를 같은 관리계정ID 로 좁히는가. 명세는 같은 BP·같은 유형만 말하지만, 다른 가맹 마스터의 그룹으로 옮기면 연결 규칙이 깨진다 (F-GSJRKH).
-         - 사용 중지 그룹을 대체 후보로 칠지. 목업은 뺐다 (S-LYKAEI).
-         - BA 그룹이 사용 중지되는 경로 — 명세는 가맹 마스터 미사용에 따른 FA 중지만 정한다. 표본 BA000007 은 어떻게 중지되었는가 (S-LYKAEI).
          - 권한명 중복이 조회 범위 밖 그룹과 겹칠 때(가맹 마스터가 BA 이름을 쓸 때) 어느 그룹과 겹쳤는지 알려 주는가. 목업은 겹친다는 사실만 알린다 (S-LYKAEI).
          - 플랫폼 사용자가 조회할 BP 를 고르는 수단이 명세에 없다 (F-GSJRKH). 목업은 BP000017 을 고른 상태로만 본다.
          - 팝업에 서비스 선택을 두는가. S-CMWABV 는 BP 권한 그룹 관리도 서비스별로 본다고 하지만 S-KUDELB 에 서비스 항목이 없다. 목업은 Whale ERP 한 서비스로 고정했다.
@@ -68,8 +66,6 @@
                   <button type="button" data-state="fail" aria-pressed="false">저장 실패</button>
                   <button type="button" data-state="deleted" aria-pressed="false">삭제 완료</button>
                   <button type="button" data-state="own" aria-pressed="false">본인 연결 그룹</button>
-                  <button type="button" data-state="stop" aria-pressed="false">사용 중지 그룹</button>
-                  <button type="button" data-state="fmoff" aria-pressed="false">가맹 마스터 미사용 시 (ongi_fm 가정)</button>
                   <button type="button" data-state="empty" aria-pressed="false">권한 그룹 없음</button>
                 </div>
               </div>
@@ -118,7 +114,6 @@
                         <th scope="col">권한 유형 · 코드</th>
                         <th scope="col">권한명</th>
                         <th scope="col">설명</th>
-                        <th scope="col">사용 상태</th>
                         <th scope="col">최종 수정일시 · 수정자</th>
                         <th scope="col">메뉴 등록 여부</th>
                         <th scope="col">메뉴등록</th>
@@ -129,7 +124,6 @@
                 </div>
                 <div class="panel__note">
                   행을 누르면 오른쪽에 그 그룹의 상세가 섭니다. 관리자 계정에 권한 그룹을 붙이고 바꾸는 일은 <a class="tlink" href="admins.html">BP 관리자 관리</a>에서 합니다.
-                  사용 중지된 그룹은 관리자 계정의 권한 그룹 선택에서 빠지지만, 이미 붙어 있던 계정은 그대로 둡니다.
                 </div>
               </section>
 
@@ -307,18 +301,18 @@
         var MASTER = { morinam01: "박서윤", ongi_fm: "오태민" };
         var USERS = { hg_ops: ["김도윤", 1], hg_hr: ["이서아", 1], hg_acct: ["최민호", 0], mori_yn: ["한지수", 1], mori_cd: ["윤재희", 1], ongi_ds: ["서동현", 0] };
         var GROUPS = [
-          { code: "BA000003", type: "BA", name: "운영 총괄", desc: "점포·직원·환경설정 전반", owner: null, on: true, users: ["hg_ops"], mod: ["2026-08-28 16:40", "hangang01"], reg: ["2025-02-07 14:10", "hangang01"] },
-          { code: "BA000004", type: "BA", name: "인사 담당", desc: "직원관리 중심", owner: null, on: true, users: ["hg_hr"], mod: ["2026-09-15 11:20", "hangang01"], reg: ["2025-03-28 15:30", "hangang01"] },
-          { code: "BA000005", type: "BA", name: "정산 조회", desc: "조회 위주", owner: null, on: true, users: ["hg_acct"], mod: ["2025-07-15 13:50", "hangang01"], reg: ["2025-07-15 13:48", "hangang01"] },
-          { code: "BA000006", type: "BA", name: "고객응대", desc: "고객 문의 응대용", owner: null, on: true, users: [], mod: ["2026-09-18 09:05", "hangang01"], reg: ["2026-09-18 09:05", "hangang01"] },
-          { code: "BA000007", type: "BA", name: "점포 조회 전용", desc: "점포 정보 조회만", owner: null, on: false, users: [], mod: ["2026-06-30 17:10", "hangang01"], reg: ["2025-11-03 10:00", "hangang01"] },
-          { code: "FA000002", type: "FA", name: "모리 점장", desc: "", owner: "morinam01", on: true, users: ["mori_yn"], mod: ["2026-09-02 14:15", "morinam01"], reg: ["2025-08-08 16:20", "morinam01"] },
-          { code: "FA000003", type: "FA", name: "모리 매니저", desc: "", owner: "morinam01", on: true, users: ["mori_cd"], mod: ["2026-01-06 13:10", "morinam01"], reg: ["2026-01-05 18:00", "morinam01"] },
-          { code: "FA000004", type: "FA", name: "온기 점장", desc: "", owner: "ongi_fm", on: true, users: ["ongi_ds"], mod: ["2025-09-01 09:30", "ongi_fm"], reg: ["2025-08-29 11:00", "ongi_fm"] }
+          { code: "BA000003", type: "BA", name: "운영 총괄", desc: "점포·직원·환경설정 전반", owner: null, users: ["hg_ops"], mod: ["2026-08-28 16:40", "hangang01"], reg: ["2025-02-07 14:10", "hangang01"] },
+          { code: "BA000004", type: "BA", name: "인사 담당", desc: "직원관리 중심", owner: null, users: ["hg_hr"], mod: ["2026-09-15 11:20", "hangang01"], reg: ["2025-03-28 15:30", "hangang01"] },
+          { code: "BA000005", type: "BA", name: "정산 조회", desc: "조회 위주", owner: null, users: ["hg_acct"], mod: ["2025-07-15 13:50", "hangang01"], reg: ["2025-07-15 13:48", "hangang01"] },
+          { code: "BA000006", type: "BA", name: "고객응대", desc: "고객 문의 응대용", owner: null, users: [], mod: ["2026-09-18 09:05", "hangang01"], reg: ["2026-09-18 09:05", "hangang01"] },
+          { code: "BA000007", type: "BA", name: "점포 조회 전용", desc: "점포 정보 조회만", owner: null, users: [], mod: ["2026-06-30 17:10", "hangang01"], reg: ["2025-11-03 10:00", "hangang01"] },
+          { code: "FA000002", type: "FA", name: "모리 점장", desc: "", owner: "morinam01", users: ["mori_yn"], mod: ["2026-09-02 14:15", "morinam01"], reg: ["2025-08-08 16:20", "morinam01"] },
+          { code: "FA000003", type: "FA", name: "모리 매니저", desc: "", owner: "morinam01", users: ["mori_cd"], mod: ["2026-01-06 13:10", "morinam01"], reg: ["2026-01-05 18:00", "morinam01"] },
+          { code: "FA000004", type: "FA", name: "온기 점장", desc: "", owner: "ongi_fm", users: ["ongi_ds"], mod: ["2025-09-01 09:30", "ongi_fm"], reg: ["2025-08-29 11:00", "ongi_fm"] }
         ];
         var NEWG = {
-          BA000008: { code: "BA000008", type: "BA", name: "매장 운영 지원", desc: "점포 정보 조회 · 근무스케줄", owner: null, on: true, users: [], mod: ["2026-09-21 10:42", "hangang01"], reg: ["2026-09-21 10:42", "hangang01"], fresh: true },
-          FA000005: { code: "FA000005", type: "FA", name: "모리 스태프", desc: "근무스케줄 중심", owner: "morinam01", on: true, users: [], mod: ["2026-09-21 10:42", "morinam01"], reg: ["2026-09-21 10:42", "morinam01"], fresh: true }
+          BA000008: { code: "BA000008", type: "BA", name: "매장 운영 지원", desc: "점포 정보 조회 · 근무스케줄", owner: null, users: [], mod: ["2026-09-21 10:42", "hangang01"], reg: ["2026-09-21 10:42", "hangang01"], fresh: true },
+          FA000005: { code: "FA000005", type: "FA", name: "모리 스태프", desc: "근무스케줄 중심", owner: "morinam01", users: [], mod: ["2026-09-21 10:42", "morinam01"], reg: ["2026-09-21 10:42", "morinam01"], fresh: true }
         };
         /* 목업 권한 → 보는 사람. manage = 등록·수정·삭제하는 유형, side = 보이는 범위 */
         var VIEWER = {
@@ -331,14 +325,13 @@
         var FAILNAME = { BA000004: "인사·노무 담당", FA000003: "모리 매니저(주말)" };
 
         /* ---------- 화면 상태 ---------- */
-        var live = { removed: {}, created: false, fmoff: false, empty: false };
+        var live = { removed: {}, created: false, empty: false };
         var sel = null, mode = "view", pending = null;
 
         function viewer() { return VIEWER[roleBar.dataset.current || "bpm"]; }
         function newCode(v) { return v.side === "fa" ? "FA000005" : "BA000008"; }
         function sees(v, g) { return v.side === "bp" || (g.type === "FA" && g.owner === v.master); }
-        function isOn(g) { return g.code === "FA000004" && live.fmoff ? false : g.on; }
-        function modOf(g) { return g.code === "FA000004" && live.fmoff ? ["2026-09-21 09:40", "시스템"] : g.mod; }
+        function modOf(g) { return g.mod; }
         function visible(v) {
           if (live.empty) return [];
           var list = GROUPS.slice();
@@ -353,14 +346,11 @@
           if (v.manage !== g.type) return "type";
           if (g.type === "FA" && g.owner !== v.id) return "type";
           if (v.own === g.code) return "own";
-          if (!isOn(g)) return "stop";
           return null;
         }
         function preset(st, v) {
           var bp = v.side === "bp";
           if (st === "own") return v.own && v.own.indexOf("M0") < 0 ? v.own : (bp ? "BA000004" : "FA000003");
-          if (st === "stop") return bp ? "BA000007" : null;
-          if (st === "fmoff") return bp ? "FA000004" : null;
           if (st === "created") return newCode(v);
           if (st === "new" || st === "dup" || st === "deleted" || st === "empty") return null;
           return bp ? "BA000004" : "FA000003";
@@ -376,28 +366,19 @@
         }
 
         /* ---------- 목록 ---------- */
-        function statusHTML(g) {
-          if (isOn(g)) return '<span class="badge badge--ok">사용</span>';
-          return '<span class="badge badge--warn">사용 중지</span>' +
-            (g.type === "FA" ? '<br /><span class="subtle" style="font-size: 12px">' + g.owner + " 미사용</span>" : "");
-        }
         function rowHTML(g, v) {
-          var on = isOn(g), picked = g.code === sel, m = modOf(g);
+          var picked = g.code === sel, m = modOf(g);
           var st = ["cursor: pointer"];
           if (picked) st.push("background: var(--info-wash)");
-          if (!on) st.push("color: var(--muted)");
           return '<tr data-rg-row="' + g.code + '" style="' + st.join("; ") + '"' + (picked ? ' aria-current="true"' : "") + ">" +
             '<td style="white-space: nowrap"><span style="font-size: 12px">' + TYPE[g.type] + '</span><br /><button class="tlink mono" type="button" style="padding: 0">' + g.code + "</button></td>" +
             '<td class="k" style="white-space: nowrap">' + g.name +
             (v.own === g.code ? ' <span class="badge badge--info">본인</span>' : "") +
             (g.fresh ? ' <span class="badge badge--preview">새로 등록</span>' : "") + "</td>" +
             '<td style="min-width: 96px">' + (g.desc || '<span class="subtle">—</span>') + "</td>" +
-            '<td style="white-space: nowrap">' + statusHTML(g) + "</td>" +
             '<td style="white-space: nowrap; font-size: 12px"><span class="mono">' + m[0] + '</span><br />' + (m[1] === "시스템" ? '<span class="subtle" style="font-size: 12px">' : '<span class="mono subtle" style="font-size: 12px">') + m[1] + "</span></td>" +
             '<td style="white-space: nowrap">' + regHTML(g.code) + "</td>" +
-            "<td>" + (on
-              ? '<button class="btn btn--secondary btn--sm" type="button" data-rg-menu="' + g.code + '">메뉴등록</button>'
-              : '<button class="btn btn--secondary btn--sm" type="button" disabled title="사용 중지된 권한 그룹은 메뉴등록을 열 수 없습니다">메뉴등록</button>') + "</td></tr>";
+            '<td><button class="btn btn--secondary btn--sm" type="button" data-rg-menu="' + g.code + '">메뉴등록</button></td></tr>';
         }
         function emptyList(v) {
           var msg, sub;
@@ -412,22 +393,13 @@
           countEl.textContent = list.length + "건";
           rowsEl.innerHTML = list.length
             ? list.map(function (g) { return rowHTML(g, v); }).join("")
-            : '<tr><td colspan="7" style="padding: 0">' + emptyList(v) + "</td></tr>";
+            : '<tr><td colspan="6" style="padding: 0">' + emptyList(v) + "</td></tr>";
           document.getElementById("rg-list").dataset.pager = String(list.length);
           var pc = document.querySelector("#rg-list + .pager .pager__count");
           if (pc) pc.innerHTML = "총 <b>" + list.length + "</b>건 · " + (list.length ? "1–" + list.length : "0–0");
         }
 
         /* ---------- 오른쪽 영역 ---------- */
-        function stopBand(g) {
-          if (g.type === "FA") {
-            return band("warn", "lock", "가맹 마스터 " + g.owner + " " + MASTER[g.owner] + " 계정이 미사용이라 사용 중지되었습니다",
-              "시스템이 함께 바꾼 상태라 수정·삭제·메뉴등록을 할 수 없고, 관리자 계정의 권한 그룹 선택에서도 빠집니다. 이미 연결된 " + g.users.join(", ") +
-              " 의 연결은 그대로입니다. 가맹 마스터 계정을 다시 사용으로 바꾸면 이 그룹도 사용으로 돌아옵니다.");
-          }
-          return band("warn", "lock", "사용 중지된 권한 그룹입니다", "수정·삭제·메뉴등록을 할 수 없고, 관리자 계정의 권한 그룹 선택 대상에서 빠집니다. 이미 붙어 있던 계정의 연결은 유지됩니다.") +
-            noteP("목업 표본 — 명세는 가맹 마스터 미사용에 따른 중지만 정해 두었고, BP 관리자 권한 그룹이 중지되는 경로는 아직 정하지 않았습니다.");
-        }
         function roNote(v, g) {
           if (v.plat) return "플랫폼 사용자는 BP 권한 그룹을 고객 지원 목적으로 조회만 합니다.";
           if (v.side === "fa" && !v.manage) return "가맹 관리자는 권한 그룹을 조회만 합니다. 등록·수정·삭제는 연결된 가맹 마스터 morinam01 박서윤이 합니다.";
@@ -449,20 +421,18 @@
             "<dt>권한명</dt><dd>" + g.name + "</dd>" +
             "<dt>설명</dt><dd>" + (g.desc || '<span class="subtle">—</span>') + "</dd>" +
             "<dt>관리계정ID</dt><dd>" + (g.owner ? '<span class="mono">' + g.owner + "</span> " + MASTER[g.owner] : '<span class="subtle">두지 않음 · BP 범위로만 구분</span>') + "</dd>" +
-            "<dt>사용 상태</dt><dd>" + statusHTML(g).replace("<br />", " ") + "</dd>" +
             '<dt>생성</dt><dd><span class="mono">' + g.reg[0] + '</span> · <span class="mono">' + g.reg[1] + "</span></dd>" +
-            '<dt>최종 수정</dt><dd><span class="mono">' + m[0] + "</span> · " + (m[1] === "시스템" ? "시스템 (가맹 마스터 상태 변경)" : '<span class="mono">' + m[1] + "</span>") + "</dd>" +
+            '<dt>최종 수정</dt><dd><span class="mono">' + m[0] + '</span> · <span class="mono">' + m[1] + "</span></dd>" +
             "</dl>";
         }
         function detailHTML(g, v, pre) {
-          var lock = lockOf(v, g), on = isOn(g), mine = lock !== "role" && lock !== "type";
+          var lock = lockOf(v, g), mine = lock !== "role" && lock !== "type";
           var bands = pre || "";
           if (g.fresh) bands += band("info", "info", "메뉴 권한이 아직 비어 있습니다", "목록의 메뉴등록에서 메뉴별 조회·등록·수정·삭제를 정해야 이 그룹을 받은 관리자에게 메뉴가 보입니다.");
           if (v.own === g.code) bands += band("warn", "lock", "본인이 연결된 권한 그룹입니다", "본인 권한은 스스로 바꿀 수 없습니다. 권한명·설명 수정, 메뉴 권한 저장과 삭제가 막히고, 이 그룹을 관리하는 다른 사용자가 처리합니다.");
-          if (!on) bands += stopBand(g);
           var foot;
           if (mine) {
-            var why = lock === "own" ? "본인 권한이라 바꿀 수 없습니다" : lock === "stop" ? "사용 중지된 그룹이라 바꿀 수 없습니다" : "";
+            var why = lock === "own" ? "본인 권한이라 바꿀 수 없습니다" : "";
             var dis = why ? ' disabled title="' + why + '"' : "";
             foot = '<div class="panel__foot inline" style="justify-content: flex-end">' +
               '<button class="btn btn--danger btn--sm" type="button" data-rg-del style="margin-right: auto"' + dis + ">삭제</button>" +
@@ -510,7 +480,7 @@
               "저장하는 순간 순번이 확정되며, 누가 동시에 등록해도 번호가 겹치지 않습니다.") +
             (fa ? field("n-owner", "관리계정ID", '<input class="input mono" id="n-owner" value="morinam01" readonly />', "등록한 가맹 마스터의 아이디로 저장되고 이후 바뀌지 않습니다.") : "") +
             '<div class="field"><label for="n-name">권한명 <span class="req">*</span></label><input class="input" id="n-name" value="' + name + '"' + (dup ? ' aria-invalid="true"' : "") + " />" + err + "</div>" +
-            field("n-desc", "설명", '<textarea class="textarea" id="n-desc" placeholder="이 그룹에 맡길 업무를 적습니다">' + (dup ? "" : g.desc) + "</textarea>", "등록하면 사용 상태로 시작합니다.") +
+            field("n-desc", "설명", '<textarea class="textarea" id="n-desc" placeholder="이 그룹에 맡길 업무를 적습니다">' + (dup ? "" : g.desc) + "</textarea>", "등록하면 바로 쓸 수 있습니다. 권한 그룹에는 사용 상태를 두지 않습니다.") +
             "</div>" +
             '<div class="panel__foot inline" style="justify-content: flex-end">' +
             '<button class="btn btn--ghost btn--sm" type="button" data-rg-cancel>취소</button>' +
@@ -528,7 +498,6 @@
           var msg = "왼쪽 목록에서 권한 그룹을 고르면 상세가 여기에 보입니다.";
           if (st === "deleted") msg = "삭제한 그룹은 목록과 관리자 계정의 권한 그룹 선택에서 빠졌습니다. 다른 권한 그룹을 고르세요.";
           if (st === "empty") msg = "보여 드릴 권한 그룹이 없습니다.";
-          if (st === "stop" || st === "fmoff") msg = "morinam01 범위에는 사용 중지된 그룹이 없습니다. 이 상태는 BP 마스터·BP 관리자·플랫폼 사용자 시점에서 확인하세요.";
           return '<section class="panel"><div class="empty"><span class="empty__ic">' + ic("list", 22) + "</span><p>" + msg + "</p>" +
             (v.manage && st !== "empty" ? '<button class="btn btn--secondary btn--sm" type="button" data-rg-new>' + ic("plus", 14) + "신규 등록</button>" : "") + "</div></section>";
         }
@@ -554,7 +523,7 @@
           pending = null;
           mode = st;
           if (!p) {
-            live = { removed: {}, created: st === "created", fmoff: st === "fmoff", empty: st === "empty" };
+            live = { removed: {}, created: st === "created", empty: st === "empty" };
             if (st === "deleted") live.removed[v.side === "bp" ? "BA000004" : "FA000003"] = 1;
             sel = preset(st, v);
             if (v.manage === "BA" && st === "created") toast("권한 그룹을 등록했습니다 · BA000008 매장 운영 지원");
@@ -588,7 +557,7 @@
           var v = viewer(), g = find(sel, v);
           if (!g || lockOf(v, g)) return;
           delTarget = g;
-          var alts = visible(v).filter(function (o) { return o.type === g.type && o.code !== g.code && isOn(o) && (g.type !== "FA" || o.owner === g.owner); });
+          var alts = visible(v).filter(function (o) { return o.type === g.type && o.code !== g.code && (g.type !== "FA" || o.owner === g.owner); });
           var n = g.users.length;
           var head = '<dl class="kv"><dt>권한 그룹</dt><dd>' + g.name + ' <span class="mono subtle">' + g.code + "</span></dd>" +
             "<dt>권한 유형</dt><dd>" + TYPE[g.type] + (g.owner ? ' <span class="subtle">· 관리계정ID ' + g.owner + "</span>" : "") + "</dd>" +

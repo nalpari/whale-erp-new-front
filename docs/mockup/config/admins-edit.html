@@ -18,8 +18,8 @@
          점포 매핑 선택 대상은 수정하는 사람 본인의 관리 점포 범위로 줄인다 — 일부 점포만 맡은 hg_hr 에게는 직영 4개점만 보인다.
          본인 계정(hg_hr 가 hg_hr 를 열 때)은 권한 그룹과 계정 상태를 읽기 전용으로 두고 다른 사용자가 바꿔야 한다고 알린다.
          계정 상태는 사용 · 미사용 두 값이다. 사유는 받지 않고 선행 조건도 보지 않는다(PL-CUECAY). 미사용으로 저장하면 곧바로 세션이 끊긴다.
-         가맹 마스터를 미사용으로 저장하면 연결된 가맹 관리자 전부가 미사용, 그 가맹 마스터가 만든 FA 그룹이 사용 중지로 바뀐다 — 저장 전에 확인 창으로 알린다.
-         사용 중지된 권한 그룹은 새로 고를 수 없지만, 이미 붙어 있는 계정은 그대로 두고 다른 항목만 고친다(표본 계정에는 해당 줄이 없다).
+         가맹 마스터를 미사용으로 저장하면 연결된 가맹 관리자 전부가 미사용으로 바뀐다 — 저장 전에 확인 창으로 알린다.
+         권한 그룹에는 사용 상태가 없어 그 마스터가 만든 FA 그룹은 그대로 남는다(CONFIG-6 확정).
          쟁점 후보(S-OENTFQ): 본인 계정의 기본정보를 이 화면에서 고칠 수 있는지 갈린다 — display 는 권한 그룹 · 상태만 읽기 전용이라 하고,
            rules 는 “본인 계정의 기본정보는 MY PAGE 내 정보에서 관리한다”고 한다. 표본은 기본정보 · 점포 매핑을 열어 두었다.
          쟁점 후보(S-OENTFQ · F-OILWTZ): F-OILWTZ display 는 수정 화면에 ‘계정 역할’ 입력 영역을 두지만 S-OENTFQ 에는 역할 변경이 없다. 표본은 역할을 읽기 전용으로 보인다.
@@ -253,7 +253,7 @@
                       </select>
                       <input class="input" value="인사 담당 · BA000004" readonly aria-label="권한 그룹" data-show="hr off dupmail miss conflict fail" data-show-role="bppart" hidden />
                       <input class="input" value="가맹 마스터(고정) · FM000001" readonly aria-label="권한 그룹" data-show="morinam fmoff" hidden />
-                      <span class="help" data-show="hr off dupmail miss conflict fail" data-show-role="bm bpall plat">사용 중지된 점포 조회 전용(BA000007)은 새로 고를 수 없습니다. 바꾸면 다음 요청부터 새 권한으로 판정합니다.</span>
+                      <span class="help" data-show="hr off dupmail miss conflict fail" data-show-role="bm bpall plat">바꾸면 다음 요청부터 새 권한으로 판정합니다.</span>
                       <span class="help" data-show="hr off dupmail miss conflict fail" data-show-role="bppart" hidden>본인 권한 그룹은 다른 사용자가 바꿔야 합니다.</span>
                       <span class="help" data-show="morinam fmoff" hidden>가맹 마스터는 플랫폼이 정한 고정 권한만 씁니다.</span>
                     </div>
@@ -428,9 +428,9 @@
                   <div class="band band--warn" data-show="fmoff" hidden>
                     <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
                     <div class="band__body">
-                      <div class="band__title">가맹 마스터를 미사용으로 저장하면 연결된 계정과 권한 그룹도 함께 멈춥니다</div>
+                      <div class="band__title">가맹 마스터를 미사용으로 저장하면 연결된 가맹 관리자 계정도 함께 멈춥니다</div>
                       <p class="band__desc">
-                        가맹 관리자 mori_yn · mori_cd → 미사용, 박서윤이 만든 가맹 관리자 권한 그룹 FA000002 · FA000003 → 사용 중지.
+                        가맹 관리자 mori_yn · mori_cd → 미사용. 박서윤이 만든 권한 그룹 FA000002 · FA000003 은 그대로 남습니다.
                         선행 조건 없이 바로 적용되고, 점포 상태와 점포 업무는 바뀌지 않습니다.
                       </p>
                     </div>
@@ -596,7 +596,7 @@
                   <dl class="kv">
                     <dt>대상</dt><dd><span class="mono">morinam01</span> 박서윤 · 가맹 마스터</dd>
                     <dt>함께 미사용</dt><dd><span class="mono">mori_yn</span> 한지수 · <span class="mono">mori_cd</span> 윤재희</dd>
-                    <dt>함께 사용 중지</dt><dd>모리 점장 <span class="mono subtle">FA000002</span> · 모리 매니저 <span class="mono subtle">FA000003</span></dd>
+                    <dt>권한 그룹</dt><dd>모리 점장 <span class="mono subtle">FA000002</span> · 모리 매니저 <span class="mono subtle">FA000003</span> <span class="subtle">· 그대로 남습니다</span></dd>
                   </dl>
                   <p style="margin: 0; font-size: 13px">세 계정의 세션이 모두 닫히고 로그인이 막힙니다. 점포 상태와 점포 업무는 그대로이며, 전체 점포를 맡은 BP 마스터 · BP 관리자가 이어서 관리합니다.</p>
                   <p class="subtle" style="margin: 0; font-size: 13px">나중에 박서윤을 사용으로 돌려도 가맹 관리자 두 명은 미사용으로 남고, 박서윤이 필요한 계정만 하나씩 다시 켭니다.</p>

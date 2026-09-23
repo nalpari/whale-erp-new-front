@@ -54,7 +54,7 @@
                 <span class="mk-card__route">/platform/bp</span>
                 <span class="mk-card__name">BP 마스터 계정 목록</span>
                 <span class="mk-card__desc">
-                  검색 기준(BP 코드·아이디+이름·상호명·사업자등록번호)을 고른 검색어 하나와 상태·인증 여부로 찾는다. 연락처·이메일, 등록자·등록 일시는 한 칸에 두 줄. 처음엔 조건 없이 전체, 20건씩. 탈퇴 BP 는 이름·연락처·이메일이 지워져 보인다.
+                  검색 기준(BP 코드·아이디+이름·상호명·사업자등록번호)을 고른 검색어 하나와 상태·인증 여부로 찾는다. 연락처·이메일, 등록자·등록 일시는 한 칸에 두 줄. 처음엔 조건 없이 전체, 20 · 50 · 100건(기본 20). 탈퇴 BP 는 이름·연락처·이메일이 지워져 보인다.
                 </span>
                 <span class="mk-card__end">
                   <span class="badge badge--quiet">S-ALHCJS</span>
@@ -151,15 +151,15 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
-              <span class="badge badge--preview">5건 · 미정 5</span>
+              <span class="badge badge--ok">5건 · 모두 확정</span>
             </div>
             <p class="gap__note" style="margin-top: 0">화면을 그리면서 명세만으로는 정해지지 않던 것들이다.</p>
 
-            <div class="gap is-open">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">BP-1</span>
                 <b>1만 건 이상 엑셀을 어디에 두고 내려받게 하는가</b>
-                <span class="gap__open">미정</span>
+                <span class="gap__decided">확정 · 점포 목록과 같게 · 메일 링크 24시간</span>
                 <span class="gap__ref">S-ALHCJS</span>
               </div>
               <div class="gap__opts">
@@ -172,55 +172,54 @@
                   <p>생성한 파일은 <b>서버에 보관하지 않고</b> 내려보낸 뒤 버린다. 링크를 주려면 잠시라도 보관해야 한다.</p>
                 </div>
               </div>
-              <p class="gap__note">점포 목록은 24시간 보관·이메일 링크로 정했다. 알림 경로(이메일인지 운영 알림인지)와 보관 시간을 같이 정해야 한다.</p>
+              <p class="gap__note">점포 목록과 같게 맞춘다 — 1만 건 이상이면 예약 생성하고, 끝나면 등록한 이메일로 내려받기 링크를 보낸다. 파일은 24시간 보관하고 요청한 본인만 받는다. 즉시 생성분은 보관하지 않는다는 규칙은 그대로다.</p>
             </div>
 
-            <div class="gap is-open">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">BP-2</span>
                 <b>목록 검색 조건에 사업자정보 인증 여부를 두는가</b>
-                <span class="gap__open">미정</span>
+                <span class="gap__decided">확정 · 검색 조건에 둔다 · 명세 표시 칸에 추가</span>
                 <span class="gap__ref">S-ALHCJS</span>
               </div>
               <p class="gap__note">
-                행동 칸에는 인증완료·미인증 조건이 있는데 표시 칸의 검색 영역 목록에는 빠져 있다. 목업은 행동 칸을 따라 조건을 두었다.
+                행동 칸에는 인증완료·미인증 조건이 있는데 표시 칸의 검색 영역 목록에는 빠져 있었다. 화면은 그대로 두고 명세 표시 칸에 ‘사업자정보 인증’을 더해 둘을 맞춘다.
               </p>
             </div>
 
-            <div class="gap is-open">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">BP-3</span>
                 <b>등록을 마친 뒤 어디로 가서 BP 코드를 보여 주는가</b>
-                <span class="gap__open">미정</span>
+                <span class="gap__decided">확정 · 새 BP 상세로 이동 · 위쪽 띠 안내</span>
                 <span class="gap__ref">S-OJEYQJ</span>
               </div>
               <p class="gap__note">
-                “저장이 완료되면 생성된 값을 안내한다”까지만 있다. 목업은 새 BP 의 상세로 보내 위쪽 띠로 BP 코드와 메일 발송 주소를 알린다.
-                목록으로 돌아가 토스트로 알리는 안도 있다.
+                “저장이 완료되면 생성된 값을 안내한다”까지만 있다. 등록을 마치면 새 BP 의 상세로 보내 위쪽 띠로 BP 코드와 메일 발송 주소를 알린다. 목록으로 돌아가 토스트로 알리는 안은 채택하지 않았다.
               </p>
             </div>
 
-            <div class="gap is-open">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">BP-4</span>
                 <b>비밀번호 초기화 메일을 “BP 신규 등록” 포맷 그대로 보내는가</b>
-                <span class="gap__open">미정</span>
+                <span class="gap__decided">확정 · 초기화 전용 메일 포맷 추가</span>
                 <span class="gap__ref">S-PRRLMA · F-TKSNOK</span>
               </div>
               <p class="gap__note">
-                명세는 신규 등록 포맷을 그대로 쓴다고 했다. 이미 쓰던 BP 마스터가 “신규 등록” 제목의 메일을 받으면 헷갈린다. 초기화 전용 문구를 메일 포맷에 하나 더 둘지 정해야 한다.
+                이미 쓰던 BP 마스터가 “신규 등록” 제목의 메일을 받으면 헷갈린다. 메일 포맷에 <b>비밀번호 초기화 전용</b>을 하나 더 두고, 초기화로 발급한 비밀번호는 그 포맷으로 보낸다. 새 비밀번호와 강제 변경 안내는 두 포맷이 같다.
               </p>
             </div>
 
-            <div class="gap is-open">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">BP-5</span>
                 <b>상세에 최근 로그인·약관 동의·강제 변경 대상을 보이는가</b>
-                <span class="gap__open">미정</span>
+                <span class="gap__decided">확정 · 상세에 보인다 · 명세 표시 칸에 추가</span>
                 <span class="gap__ref">S-GZDODB</span>
               </div>
               <p class="gap__note">
-                데이터 칸에는 저장하지만 표시 칸에는 없다. 삭제가 막히는 이유(로그인 기록)와 첫 로그인 전인지를 운영자가 알아야 해서 목업은 “계정 관리정보” 영역으로 보였다.
+                데이터 칸에는 저장하지만 표시 칸에는 없었다. 삭제가 막히는 이유(로그인 기록)와 첫 로그인 전인지를 운영자가 알아야 하므로 상세에 보인다 — 최근 로그인·약관 동의·강제 비밀번호 변경 대상을 소속 점포 아래 줄에 둔다. 명세 표시 칸에도 이 항목을 더한다.
               </p>
             </div>
           </section>

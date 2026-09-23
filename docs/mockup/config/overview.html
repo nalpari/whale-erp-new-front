@@ -180,7 +180,7 @@
                   <li><span class="pol__t">대상은 BP 관리자·가맹 마스터·가맹 관리자 계정이다. BP 마스터와 BP 자체, 플랫폼 관리자 계정은 여기 없다.</span><span class="pol__ref">F-OILWTZ · PL-RWJYLJ</span></li>
                   <li><span class="pol__t">가맹 관리자 계정의 등록·수정·비밀번호 초기화는 가맹 마스터만 한다. 다른 역할은 메뉴 권한이 있어도 조회만.</span><span class="pol__ref">F-OILWTZ</span></li>
                   <li><span class="pol__t">가맹 관리자는 가맹 마스터를 먼저 연결하고 그 마스터의 점포 안에서만 관리 점포를 고른다. 연결한 가맹 마스터는 나중에 바꾸지 않는다.</span><span class="pol__ref">F-OILWTZ</span></li>
-                  <li><span class="pol__t">가맹 마스터를 미사용으로 바꾸면 딸린 가맹 관리자 계정은 미사용, 그 마스터가 만든 권한 그룹은 사용 중지가 된다.</span><span class="pol__ref">F-OILWTZ · F-GSJRKH</span></li>
+                  <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 가맹 마스터를 미사용으로 바꾸면 딸린 가맹 관리자 계정은 미사용이 된다. 권한 그룹에는 사용 상태가 없어 그룹은 그대로 남는다.</span><span class="pol__ref">F-OILWTZ · F-GSJRKH · CONFIG-6</span></li>
                   <li><span class="pol__t">사용자 한 명에 권한 그룹 하나. 본인의 상태와 권한 그룹은 스스로 못 바꾸고, 본인이 연결된 그룹도 고치거나 지우지 못한다.</span><span class="pol__ref">F-OILWTZ · F-GSJRKH</span></li>
                   <li><span class="pol__t">BP 관리자 그룹은 BP 마스터만, 가맹 관리자 그룹은 만든 가맹 마스터만 만든다(관리계정ID). 권한 코드·유형은 등록 뒤 못 바꾼다.</span><span class="pol__ref">F-GSJRKH · PL-EIMSQF</span></li>
                   <li><span class="pol__t">그룹의 CRUD 는 BP 마스터·가맹 마스터 고정 권한과 설정자 본인 범위를 넘지 못한다. 그룹명은 같은 BP 안에서 유형과 상관없이 겹칠 수 없다.</span><span class="pol__ref">F-GSJRKH · PL-AMTMVC</span></li>
@@ -208,18 +208,18 @@
           <section class="section" id="gaps">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
-              <span class="badge badge--preview">10건 · 미정 10</span>
+              <span class="badge badge--preview">10건 · 확정 7 · 미정 3</span>
             </div>
             <p class="gap__note" style="margin-top: 0">
               명세로 정해지지 않아 화면이 갈리는 것만 모았다. 사소한 것은 각 화면 파일 머리 주석에 있다.
               목록에서 수정·삭제를 바로 하지 않고 상세를 거치는 것은 목업 규칙으로 정했다 — 휴일 목록 명세(S-YAFRYZ)의 표시 항목과 다르다.
             </p>
 
-            <div class="gap is-open">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">CONFIG-1</span>
                 <b>일부 점포만 맡은 BP 관리자에게 관리자 목록을 점포 매핑으로 좁혀 보이는가</b>
-                <span class="gap__open">미정</span>
+                <span class="gap__decided">확정 · 소속 BP 전체</span>
                 <span class="gap__ref">R-DJGLEO · S-AJHXFU · PL-RWJYLJ</span>
               </div>
               <div class="gap__opts">
@@ -234,24 +234,24 @@
               </div>
             </div>
 
-            <div class="gap is-open">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">CONFIG-2</span>
                 <b>가맹 관리자 계정을 가맹 마스터 말고 누가 바꿀 수 있는가</b>
-                <span class="gap__open">미정</span>
+                <span class="gap__decided">확정 · 연결된 가맹 마스터만</span>
                 <span class="gap__ref">S-OENTFQ · F-OILWTZ · PL-CUECAY</span>
               </div>
               <p class="gap__note">
-                수정 명세의 처리 절은 다른 역할도 가맹 관리자의 기본정보·권한 그룹·상태를 고칠 수 있게 읽히는데, 규칙·권한 절은 연결된 가맹 마스터만이라고 한다.
-                계정 상태 정책은 또 가맹 관리자가 다른 가맹 관리자를 미사용으로 바꿀 수 있다고 적었다. 목업은 <b>연결된 가맹 마스터만</b> 고치게 했다.
+                수정 명세의 처리 절은 다른 역할도 고칠 수 있게 읽혔지만, 규칙·권한 절대로 <b>연결된 가맹 마스터만</b> 고친다. 기본정보·권한 그룹·점포 매핑·계정 상태 모두 같다.
+                계정 상태 정책의 ‘가맹 관리자가 다른 가맹 관리자를 미사용으로 바꾼다’는 줄은 채택하지 않는다. 다른 역할은 조회만 한다.
               </p>
             </div>
 
-            <div class="gap is-open">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">CONFIG-3</span>
                 <b>관리자 비밀번호 초기화는 새 초기 비밀번호 메일인가, 재설정 링크인가</b>
-                <span class="gap__open">미정</span>
+                <span class="gap__decided">확정 · 초기 비밀번호 메일</span>
                 <span class="gap__ref">S-TKSRJX · S-XKYOND</span>
               </div>
               <div class="gap__opts">
@@ -266,50 +266,50 @@
               </div>
             </div>
 
-            <div class="gap is-open">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">CONFIG-4</span>
                 <b>등록 화면에 계정 상태 입력을 두는가</b>
-                <span class="gap__open">미정</span>
+                <span class="gap__decided">확정 · 등록에는 상태 칸 없음 · 역할은 읽기 전용</span>
                 <span class="gap__ref">F-OILWTZ · S-NIMSMQ</span>
               </div>
               <p class="gap__note">
                 기능 표시 절은 등록과 수정 화면 모두에 계정 상태 입력 영역이 있다고 하지만, 새 관리자 계정은 사용으로 생긴다(계정 상태 정책).
-                목업은 등록에서 상태 칸을 빼고 수정에만 두었다. 역할(계정 역할)도 수정에서 바꿀 수 있는지 적혀 있지 않아 읽기 전용으로 그렸다.
+                등록 화면에는 상태 칸을 두지 않고 새 계정은 늘 사용으로 만든다. 상태는 수정 화면에서만 바꾼다. 계정 역할도 수정에서 바꾸지 않고 읽기 전용으로 둔다.
               </p>
             </div>
 
-            <div class="gap is-open">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">CONFIG-5</span>
                 <b>가맹 관리자 그룹을 지울 때 다른 가맹 마스터의 그룹으로 옮길 수 있는가</b>
-                <span class="gap__open">미정</span>
+                <span class="gap__decided">확정 · 같은 관리계정ID의 사용 중 그룹만</span>
                 <span class="gap__ref">F-GSJRKH · S-LYKAEI</span>
               </div>
               <p class="gap__note">
                 대체 그룹은 “같은 BP · 같은 권한 유형”이면 된다고 적혀 있다. 그런데 가맹 관리자 계정에는 연결된 가맹 마스터가 만든 그룹만 붙일 수 있어,
-                다른 마스터의 그룹으로 옮기면 그 규칙이 깨진다. 목업은 <b>같은 관리계정ID</b>의 사용 중인 그룹만 대체 후보로 보였다.
+                다른 마스터의 그룹으로 옮기면 그 규칙이 깨진다. 대체 후보는 <b>같은 관리계정ID</b>의 사용 중인 그룹만으로 한정한다 — 후보가 없으면 그 그룹은 지울 수 없다. 명세의 ‘같은 BP·같은 권한 유형’은 BP 관리자 그룹에만 적용한다.
               </p>
             </div>
 
-            <div class="gap is-open">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">CONFIG-6</span>
                 <b>BP 관리자 그룹은 어떻게 사용 중지되는가</b>
-                <span class="gap__open">미정</span>
+                <span class="gap__decided">확정 · 권한 그룹에 사용 상태를 두지 않음</span>
                 <span class="gap__ref">F-GSJRKH</span>
               </div>
               <p class="gap__note">
-                권한 그룹은 사용·사용 중지 두 상태인데, 사용 중지로 가는 길은 가맹 마스터가 미사용이 될 때의 가맹 관리자 그룹뿐이다.
-                BP 관리자 그룹을 사람이 직접 멈추는 항목이 없다. 목업의 BA000007 점포 조회 전용은 사용 중지 표본으로만 두었고, 바꾸는 버튼은 그리지 않았다.
+                권한 그룹에는 <b>사용 상태를 두지 않는다</b>. 플랫폼 권한에도 상태가 없는 것과 같다 — 그룹은 쓰거나 지우거나 둘뿐이다.
+                가맹 마스터가 미사용이 되어도 그 그룹을 중지하지 않는다. 목업에서 사용 상태 열·배지와 사용 중지 안내를 모두 걷어냈다.
               </p>
             </div>
 
-            <div class="gap is-open">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">CONFIG-7</span>
                 <b>BP 가 더한 상세 코드는 관리 주체를 따로 저장하는가</b>
-                <span class="gap__open">미정</span>
+                <span class="gap__decided">확정 · 상세 코드에도 관리 주체 저장</span>
                 <span class="gap__ref">S-FHVSAV · PL-VOCZCE</span>
               </div>
               <div class="gap__opts">
@@ -322,7 +322,7 @@
                   <p>관리 주체는 그룹에서만 정하고 상세 코드는 그룹을 <b>상속하며 따로 저장하지 않는다</b>.</p>
                 </div>
               </div>
-              <p class="gap__note">BP 가 고친 플랫폼제공 코드를 플랫폼 원래 값과 나란히 보일지도 정해지지 않았다.</p>
+              <p class="gap__note">BP 가 고친 플랫폼제공 코드를 플랫폼 원래 값과 나란히 보일지는 아직 정하지 않았다 — 목업은 BP 가 고친 값만 보인다.</p>
             </div>
 
             <div class="gap is-open">
