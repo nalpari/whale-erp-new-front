@@ -1550,7 +1550,8 @@
                     </table>
                   </div>
                   <div class="panel__note">
-                    수행 예정 일시 오름차순 · 같은 일시 안에서는 긴급 건이 앞에 온다. 직원은 자기 건의 상태만 바꾼다.
+                    세 묶음으로 세운다 — <b>미완료 긴급</b>, <b>미완료 나머지</b>, <b>완료</b>. 묶음 안은 모두 수행 예정 일시 오름차순이다.
+                    긴급은 미완료일 때만 맨 위로 올라가고, <b>완료되면 긴급이든 아니든 맨 뒤 묶음</b>으로 내려간다. 직원은 자기 건의 상태만 바꾼다.
                   </div>
                 </section>
 
@@ -1604,7 +1605,7 @@
                           <span class="toggle" id="tu" role="switch" aria-pressed="true" tabindex="0"></span>
                           긴급
                         </label>
-                        <span class="help">근무시간 외에도 즉시 푸시가 나간다</span>
+                        <span class="help">직원 근무 앱 홈·근무 탭 맨 위에 강조되고 관리자 웹 미조치에 센다. 푸시는 보내지 않는다.</span>
                       </div>
                       <hr class="hr" />
                       <button class="btn btn--primary btn--block" type="button">등록하고 배정</button>

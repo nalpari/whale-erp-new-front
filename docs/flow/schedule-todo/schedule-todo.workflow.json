@@ -49,11 +49,10 @@
         "focus": [
           "todoNew",
           "assign",
-          "push",
           "appTodo",
           "state"
         ],
-        "note": "관리자가 만들고 배정하며, 직원은 수행 상태만 바꾼다."
+        "note": "관리자가 만들고 배정하면 직원 근무 앱 홈과 근무 탭에 뜬다. 푸시는 보내지 않고 알림함에 한 줄 남는다. 직원은 수행 상태만 바꾼다."
       }
     ],
     "viewBox": [
@@ -194,7 +193,7 @@
       "label": "앱 푸시",
       "sublabel": "확정 때 · 바뀐 사람에게만",
       "width": 140,
-      "tag": "STAFF-15 · 긴급은 근무시간 외도"
+      "tag": "STAFF-15"
     },
     {
       "id": "appSched",
@@ -211,7 +210,7 @@
       "col": 5,
       "type": "external",
       "label": "TO-DO 수행",
-      "sublabel": "배정된 것만 · 상태만 바꿈",
+      "sublabel": "앱 홈에 뜸 · 상태만 바꿈",
       "width": 150
     }
   ],
@@ -259,15 +258,9 @@
     {
       "id": "e7",
       "from": "assign",
-      "to": "push",
-      "variant": "default",
-      "label": "배정 알림"
-    },
-    {
-      "id": "e8",
-      "from": "push",
       "to": "appTodo",
-      "variant": "default"
+      "variant": "default",
+      "label": "푸시 없이 앱 홈에"
     },
     {
       "id": "e9",
@@ -283,14 +276,14 @@
       "dot": "emerald",
       "title": "확정된 결정",
       "items": [
-        "STAFF-14 기본값은 계약 근무시간, 등록할 때 한 번 · STAFF-13 지난 주 복사는 빈 주에서만 · STAFF-4 TO-DO는 반복 없음 · TO-DO 배정 알림은 근무시간 밖이면 다음 근무일 아침까지 미루고 긴급이면 바로 보낸다"
+        "STAFF-14 기본값은 계약 근무시간, 등록할 때 한 번 · STAFF-13 지난 주 복사는 빈 주에서만 · STAFF-4 TO-DO는 반복 없음 · TO-DO 배정은 푸시 없이 앱 홈과 알림함에 · 긴급은 맨 위로 강조"
       ]
     },
     {
       "dot": "slate",
       "title": "밖에 있는 것",
       "items": [
-        "출퇴근 기록의 등록은 직원 근무 앱(GPS)이 맡고 웹은 조회·보정만 · 근무스케줄은 급여 초안의 참고 정보 · 미루는 기준 시각은 노무사·법무 확인이 남았다(NOTI-1)"
+        "출퇴근 기록의 등록은 직원 근무 앱(GPS)이 맡고 웹은 조회·보정만 · 근무스케줄은 급여 초안의 참고 정보"
       ]
     }
   ]
