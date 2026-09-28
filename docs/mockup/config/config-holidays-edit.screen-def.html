@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BP 휴일 수정 — 화면정의서</title>
+<link rel="stylesheet" href="../assets/screen-def.css">
+</head>
+<body data-export-name="config-holidays-edit.screen-def">
+<header>
+  <div>
+    <h1>BP 휴일 수정 — 화면정의서</h1>
+    <p>config/holidays-edit.html?embed=1 렌더링(LNB·상단 GNB 제외, 화면 본문만, HD-0122 창립기념일·BP 마스터가 수정하는 상태 기준) 위에 번호를 붙이고 우측에 설명을 매칭했다. manyfast S-BXEAEZ(F-YQTLQE BP 휴일 관리) 기준.</p>
+    <table class="meta-table">
+      <tr><td class="k">화면명</td><td class="v" id="metaName"></td><td class="k">화면경로</td><td class="v" id="metaPath"></td></tr>
+    </table>
+  </div>
+  <div class="head-actions">
+    <button type="button" class="btn2" id="btnEdit">편집 모드</button>
+    <button type="button" class="btn2" id="btnArm" hidden>핀 추가</button>
+    <button type="button" class="btn2 btn2--accent" id="btnExport" hidden>내보내기</button>
+  </div>
+</header>
+<div class="edit-hint">편집 모드: "핀 추가"를 누르고 화면을 한 번 클릭하면 그 자리에 새 번호가 생깁니다(또는 아래 "+ 항목 추가"로 기본 위치에 바로 추가). 기존 핀은 드래그로 옮기고, 오른쪽 × 로 지웁니다. Shift(또는 Ctrl)+클릭으로 핀 여러 개를 한꺼번에 선택해 같이 드래그할 수 있습니다. 빈 곳을 클릭하면 선택이 풀립니다. 항목명·설명은 클릭해서 바로 고치세요. 다 끝나면 "내보내기"로 새 HTML 파일을 받아 저장소 파일과 바꿔주세요(이 브라우저에는 임시로 자동저장됩니다).</div>
+
+<div class="layout">
+  <div class="shot-pane">
+    <div class="shot-wrap" id="shotWrap">
+      <img src="config-holidays-edit.screen-def.png" alt="BP 휴일 수정 화면 스크린샷(LNB 제외)" id="shotImg">
+    </div>
+  </div>
+
+  <div class="desc-pane">
+    <div class="desc-title"><span>Description</span></div>
+    <div class="purpose" id="purposeEl"></div>
+
+    <table class="desc-table"><tbody id="descBody"></tbody></table>
+    <div class="add-row" id="addRow">+ 항목 추가 (기본 위치에 추가 — 드래그로 옮기세요)</div>
+
+    <div class="skip-note">
+      "목업 상태" 토글은 실제 화면 요소가 아니라 목업 자체의 전환 컨트롤이라 번호에서 제외했다. 상단 GNB와 좌측 LNB는 이 화면정의서 스크린샷 자체에서 제외했다(embed 모드). 상세의 수정 버튼으로만 이 화면에 들어오고, 저장·취소·뒤로는 모두 그 휴일의 상세로 돌아간다(사용자 확정 규칙).
+    </div>
+  </div>
+</div>
+
+<script id="state-json" type="application/json">
+{
+  "screenName": "BP 휴일 수정",
+  "screenPath": "BP 환경설정 > BP 휴일 관리 > 수정",
+  "purpose": "# 화면 목적 및 기능 — 휴일 상세에서 넘어와 적용 범위·대상 점포·날짜·휴일명·종일 여부·설명을 고치는 화면. 반복으로 만든 휴일은 저장할 때 이 휴일만/이후 모든 휴일/전체 휴일 중 적용 범위를 고르고, 지난 날짜 휴일은 모든 입력과 저장이 막힌다",
+  "items": [
+    { "x": 200, "y": 29, "title": "수정 대상 배지", "desc": "정의: 지금 고치는 휴일명과 휴일 번호(HD-번호) 표시" },
+    { "x": 1019, "y": 29, "title": "취소", "desc": "정의: 저장하지 않고 그 휴일의 상세로 돌아가는 버튼" },
+    { "x": 1073, "y": 29, "title": "저장", "desc": "정의: 반복 휴일이면 먼저 수정 범위(이 휴일만/이후 모든 휴일/전체 휴일)를 고르는 팝업을 연다\n'이 휴일만'을 고르면 그 회차를 반복에서 떼어낸 건으로 표시하고, 지난 날짜 회차는 어느 범위를 골라도 바뀌지 않는다\n저장 후에는 항상 그 휴일의 상세로 돌아간다\n실패하면 휴일 정보는 그대로, 입력한 내용은 화면에 남겨 두고 다시 저장 가능\n다른 사람이 먼저 고쳤으면 저장하지 않고 최신 정보를 불러오도록 안내" },
+    { "x": 210, "y": 239, "title": "적용 대상 안내", "desc": "정의: 지금 수정하는 사람의 이름·아이디·역할 표시\n권한에 따라 표본이 달라진다 — 전체 점포로 바꾸는 것은 BP 마스터·전체 점포 범위 BP 관리자만 가능, 일부 점포 BP 관리자·가맹 마스터는 전체 점포 선택지가 비활성" },
+    { "x": 430, "y": 380, "title": "적용 범위", "desc": "정의: 전체 점포 · 특정 점포 중 선택(필수)\n특정 점포를 고르면 대상 점포 선택란이 나타나고 전체 점포면 숨김\n대상 점포 선택지는 수정하는 사람의 접근 범위 안 점포만 나온다\n같은 날짜·같은 적용 범위의 기존 휴일과 겹치는지는 수정에서 따로 검사하지 않는다(등록의 중복 규칙이 수정에는 없음)" },
+    { "x": 135, "y": 650, "title": "날짜", "desc": "정의: 필수 입력\n바꿀 날짜도 오늘 또는 그 뒤여야 하며, 지난 날짜로 바꾸면 저장하지 않고 \"바꾸려는 날짜가 지난 날짜라 저장하지 않았습니다\" 안내" },
+    { "x": 851, "y": 650, "title": "휴일명", "desc": "정의: 필수 입력(최대 30자)\n비어 있으면 저장하지 않고 \"필수 항목이 비어 있어 저장하지 않았습니다 — 휴일명\"" },
+    { "x": 100, "y": 754, "title": "종일 여부", "desc": "정의: 종일 · 종일 아님(시간 지정) 토글, 필수" },
+    { "x": 580, "y": 855, "title": "설명", "desc": "정의: 선택 입력 텍스트 영역" },
+    { "x": 280, "y": 1032, "title": "반복 설정", "desc": "정의: 반복 주기·종료 조건·묶인 휴일 건수를 읽기 전용으로 표시\n반복 유형·주기·종료 조건 자체는 이 화면에서 바꿀 수 없다 — 바꾸려면 지우고 새로 등록해야 한다" },
+    { "x": 52, "y": 1140, "title": "반복 설정 보충 설명", "desc": "정의: 반복 유형·주기·종료 조건은 여기서 바꾸지 않으며, 저장할 때 이 휴일만·이후 모든 휴일·전체 휴일 중 바꿀 범위를 고른다는 안내" },
+    { "x": 52, "y": 1195, "title": "하단 안내", "desc": "정의: 저장하면 바뀐 항목마다 변경 전후 값과 변경자·변경 일시가 상세 아래 변경 이력에 쌓인다는 안내\n전체 점포 휴일 수정은 그 BP 모든 점포의 운영 업무에, 특정 점포 휴일 수정은 그 점포에만 반영된다" }
+  ]
+}
+</script>
+
+<script src="../assets/screen-def.js"></script>
+</body>
+</html>

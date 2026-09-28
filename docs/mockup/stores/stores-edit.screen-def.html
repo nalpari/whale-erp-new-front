@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>점포 수정 — 화면정의서</title>
+<link rel="stylesheet" href="../assets/screen-def.css">
+</head>
+<body data-export-name="stores-edit.screen-def">
+<header>
+  <div>
+    <h1>점포 수정 — 화면정의서</h1>
+    <p>stores/edit.html?embed=1 렌더링(LNB·상단 GNB 제외, 화면 본문만) 위에 번호를 붙이고 우측에 설명을 매칭했다. manyfast S-JEPOMK 기준(상태 전환은 S-MNRZOM과 같은 조건).</p>
+    <table class="meta-table">
+      <tr><td class="k">화면명</td><td class="v" id="metaName"></td><td class="k">화면경로</td><td class="v" id="metaPath"></td></tr>
+    </table>
+  </div>
+  <div class="head-actions">
+    <button type="button" class="btn2" id="btnEdit">편집 모드</button>
+    <button type="button" class="btn2" id="btnArm" hidden>핀 추가</button>
+    <button type="button" class="btn2 btn2--accent" id="btnExport" hidden>내보내기</button>
+  </div>
+</header>
+<div class="edit-hint">편집 모드: "핀 추가"를 누르고 화면을 한 번 클릭하면 그 자리에 새 번호가 생깁니다(또는 아래 "+ 항목 추가"로 기본 위치에 바로 추가). 기존 핀은 드래그로 옮기고, 오른쪽 × 로 지웁니다. Shift(또는 Ctrl)+클릭으로 핀 여러 개를 한꺼번에 선택해 같이 드래그할 수 있습니다. 빈 곳을 클릭하면 선택이 풀립니다. 항목명·설명은 클릭해서 바로 고치세요. 다 끝나면 "내보내기"로 새 HTML 파일을 받아 저장소 파일과 바꿔주세요(이 브라우저에는 임시로 자동저장됩니다).</div>
+
+<div class="layout">
+  <div class="shot-pane">
+    <div class="shot-wrap" id="shotWrap">
+      <img src="stores-edit.screen-def.png" alt="점포 수정 화면 스크린샷(LNB 제외)" id="shotImg">
+    </div>
+  </div>
+
+  <div class="desc-pane">
+    <div class="desc-title"><span>Description</span></div>
+    <div class="purpose" id="purposeEl"></div>
+
+    <table class="desc-table"><tbody id="descBody"></tbody></table>
+    <div class="add-row" id="addRow">+ 항목 추가 (기본 위치에 추가 — 드래그로 옮기세요)</div>
+
+    <div class="skip-note">
+      "목업 상태" · "목업 폐점 조건" · "목업 이미지" 토글은 실제 화면 요소가 아니라 목업 자체의 상태 전환 컨트롤이라 번호에서 제외했다. 폐점 조건 미충족 팝업과 상태 전환 확인 팝업은 기본 화면에 보이지 않아(점포상태를 바꿀 때만 뜸) 번호 대신 5번 항목 설명에 규칙을 적었다. 상단 GNB와 좌측 LNB는 이 화면정의서 스크린샷 자체에서 제외했다(embed 모드).
+    </div>
+  </div>
+</div>
+
+<script id="state-json" type="application/json">
+{
+  "screenName": "점포 수정",
+  "screenPath": "점포관리 > 점포 정보 관리 > 점포 수정",
+  "purpose": "# 화면 목적 및 기능 — 기존 점포의 기본정보·사업자정보·기타정보를 수정하고 점포상태를 다음 단계로 전환하며(폐점 조건 확인 포함), 대표 이미지를 관리하는 화면",
+  "items": [
+    { "x": 1020, "y": 30, "title": "취소", "desc": "정의: 수정 내용을 저장하지 않고 점포 상세로 돌아감" },
+    { "x": 1073, "y": 30, "title": "저장", "desc": "정의: 수정 내용을 반영\n점포상태를 바꿨으면 저장 전에 한 번 더 확인 창을 거침\n저장하면 바뀐 항목마다 변경 전후 값·변경자·변경 일시가 변경 이력에 쌓임(변경 사유는 받지 않음)" },
+    { "x": 300, "y": 452, "title": "대표 이미지 바꾸기 · 삭제", "desc": "정의: 대표 이미지를 새로 올리거나 지움\nJPG·PNG, 5MB 이하 한 장 · 목록 썸네일과 상세에 같은 이미지가 보임 · 없으면 점포 아이콘이 대신 섬" },
+    { "x": 67, "y": 678, "title": "점포유형", "desc": "정의: 점포유형 표시, 등록 후에는 바꿀 수 없음(읽기전용)" },
+    { "x": 150, "y": 755, "title": "점포상태", "desc": "정의: 현재 상태에서 갈 수 있는 다음 상태만 선택 가능\n미운영 → 운영·폐점 / 운영 → 폐점 (되돌릴 수 없음)\n운영은 사업자정보 인증이 끝나야 고를 수 있음(이 화면에서 최초 인증해도 됨)\n폐점을 고르는 순간 폐점 조건(유효 근로계약 0건 · 이용 중 구독 0건 · 정산 대기 0원)을 확인, 못 채우면 팝업으로 안내하고 이전 상태로 되돌림" },
+    { "x": 300, "y": 869, "title": "점포명", "desc": "정의: 점포명 입력, 필수" },
+    { "x": 295, "y": 955, "title": "점포 연락처", "desc": "정의: 점포 대표 연락처를 세 자리로 나눠 입력" },
+    { "x": 250, "y": 1040, "title": "점포 주소 검색", "desc": "정의: 도로명 · 건물명 · 지번으로 검색해 주소를 채움\n우편번호 · 기본주소는 검색 결과로만 채워지고 직접 수정 불가, 상세주소만 직접 입력" },
+    { "x": 95, "y": 1224, "title": "위도", "desc": "정의: 점포 위치의 위도, 범위 −90~90 · 소수점 6자리까지" },
+    { "x": 357, "y": 1224, "title": "경도", "desc": "정의: 점포 위치의 경도, 범위 −180~180 · 소수점 6자리까지" },
+    { "x": 565, "y": 1279, "title": "주소로 다시 계산", "desc": "정의: 입력된 주소를 기준으로 위도 · 경도를 다시 계산" },
+    { "x": 105, "y": 1360, "title": "근무지 반경", "desc": "정의: 출퇴근 인정 반경, 50m~1,000m · 10m 단위" },
+    { "x": 850, "y": 830, "title": "사업자정보(인증 완료)", "desc": "정의: 인증된 사업자등록번호 · 대표자명 · 개업일자 표시(수정 불가)\n국세청 API로 사업자등록번호 · 대표자명 · 개업일자의 진위만 확인, 인증 결과는 저장을 눌러야 반영" },
+    { "x": 684, "y": 883, "title": "재인증", "desc": "정의: 대표자가 바뀌었을 때 새 대표자명으로 다시 인증\n사업자등록번호 · 개업일자는 고정, 대표자명만 새로 입력\n재인증에 실패해도 저장된 사업자정보와 인증 완료는 그대로 유지" },
+    { "x": 616, "y": 935, "title": "사업자등록번호 고정 안내", "desc": "정의: 사업자등록번호는 점포에서 바꿀 수 없다는 안내\n번호가 바뀌면 이 점포를 끝내고 새 점포로 등록해야 함" },
+    { "x": 735, "y": 1042, "title": "상호명", "desc": "정의: 상호명 입력, 재인증해도 바뀌지 않음" },
+    { "x": 660, "y": 1144, "title": "사업자주소", "desc": "정의: '점포 주소와 같음' 체크 시 점포 주소를 그대로 사용(읽기전용)" },
+    { "x": 730, "y": 1271, "title": "업태", "desc": "정의: 사업자의 업태 입력" },
+    { "x": 912, "y": 1271, "title": "종목", "desc": "정의: 사업자의 종목 입력" },
+    { "x": 862, "y": 1357, "title": "대표자 연락처", "desc": "정의: 사업자 대표자의 연락처를 세 자리로 나눠 입력" },
+    { "x": 95, "y": 1568, "title": "매장평수", "desc": "정의: 점포 매장평수, 소수 첫째 자리까지 · 선택" },
+    { "x": 655, "y": 1568, "title": "전용면적", "desc": "정의: 점포 전용면적(㎡), 소수 둘째 자리까지 · 1평=3.3058㎡ · 선택" },
+    { "x": 95, "y": 1668, "title": "좌석수", "desc": "정의: 점포 좌석수, 0 이상 정수 · 선택" },
+    { "x": 700, "y": 1668, "title": "층수", "desc": "정의: 점포가 있는 층(지상/지하 구분 + 층수) · 선택" },
+    { "x": 45, "y": 1753, "title": "변경 이력 안내", "desc": "정의: 저장하면 바뀐 항목마다 변경 전후 값 · 변경자 · 변경 일시가 변경 이력에 쌓인다는 안내(변경 사유는 받지 않음)" }
+  ]
+}
+</script>
+
+<script src="../assets/screen-def.js"></script>
+</body>
+</html>

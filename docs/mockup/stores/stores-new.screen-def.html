@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>점포 등록 — 화면정의서</title>
+<link rel="stylesheet" href="../assets/screen-def.css">
+</head>
+<body data-export-name="stores-new.screen-def">
+<header>
+  <div>
+    <h1>점포 등록 — 화면정의서</h1>
+    <p>stores/new.html?embed=1 렌더링(LNB·상단 GNB 제외, 화면 본문만) 위에 번호를 붙이고 우측에 설명을 매칭했다. manyfast S-ALHLHW 기준 · 기본 상태(플랫폼 관리자 · 입력 중 · 이미지 없음)를 캡처했다.</p>
+    <table class="meta-table">
+      <tr><td class="k">화면명</td><td class="v" id="metaName"></td><td class="k">화면경로</td><td class="v" id="metaPath"></td></tr>
+    </table>
+  </div>
+  <div class="head-actions">
+    <button type="button" class="btn2" id="btnEdit">편집 모드</button>
+    <button type="button" class="btn2" id="btnArm" hidden>핀 추가</button>
+    <button type="button" class="btn2 btn2--accent" id="btnExport" hidden>내보내기</button>
+  </div>
+</header>
+<div class="edit-hint">편집 모드: "핀 추가"를 누르고 화면을 한 번 클릭하면 그 자리에 새 번호가 생깁니다(또는 아래 "+ 항목 추가"로 기본 위치에 바로 추가). 기존 핀은 드래그로 옮기고, 오른쪽 × 로 지웁니다. Shift(또는 Ctrl)+클릭으로 핀 여러 개를 한꺼번에 선택해 같이 드래그할 수 있습니다. 빈 곳을 클릭하면 선택이 풀립니다. 항목명·설명은 클릭해서 바로 고치세요. 다 끝나면 "내보내기"로 새 HTML 파일을 받아 저장소 파일과 바꿔주세요(이 브라우저에는 임시로 자동저장됩니다).</div>
+
+<div class="layout">
+  <div class="shot-pane">
+    <div class="shot-wrap" id="shotWrap">
+      <img src="stores-new.screen-def.png" alt="점포 등록 화면 스크린샷(LNB 제외)" id="shotImg">
+    </div>
+  </div>
+
+  <div class="desc-pane">
+    <div class="desc-title"><span>Description</span></div>
+    <div class="purpose" id="purposeEl"></div>
+
+    <table class="desc-table"><tbody id="descBody"></tbody></table>
+    <div class="add-row" id="addRow">+ 항목 추가 (기본 위치에 추가 — 드래그로 옮기세요)</div>
+
+    <div class="skip-note">
+      "목업 역할"·"목업 상태"·"목업 이미지" 토글과 우측 상단 "화면정의서" 버튼은 실제 화면 요소가 아니라 목업 자체의 전환·문서화 컨트롤이라 번호에서 제외했다. 상단 GNB와 좌측 LNB는 이 화면정의서 스크린샷 자체에서 제외했다(embed 모드). 소속 BP 안내와 가맹 마스터 등록 불가 안내는 역할에 따라 조건부로 뜨는 영역이라 기본(플랫폼 관리자) 상태 스크린샷에는 보이지 않는다.
+    </div>
+  </div>
+</div>
+
+<script id="state-json" type="application/json">
+{
+  "screenName": "점포 등록",
+  "screenPath": "점포관리 > 점포 정보 관리 > 점포 등록",
+  "purpose": "# 화면 목적 및 기능 — 점포유형·점포명만 필수로 받아 새 점포를 미운영 상태로 등록하고, 사업자정보 인증은 선택으로 남겨 운영 전환 시점으로 미루는 등록 화면",
+  "items": [
+    { "x": 1073, "y": 29, "title": "취소 · 등록", "desc": "정의: 취소는 목록으로 돌아가고, 등록은 저장 후 상세로 이동\n점포코드는 화면에 입력칸이 없고, 저장 완료 뒤 시스템이 ST+6자리로 자동 채번\n가맹 마스터·가맹 관리자는 권한이 있어도 등록할 수 없음(버튼 자체가 비활성)" },
+    { "x": 125, "y": 380, "title": "대표 이미지", "desc": "정의: 선택 · 1장 · JPG·PNG 5MB 이하\n목록 썸네일과 상세 화면에 같은 이미지가 보이고, 없으면 점포 아이콘이 대신 선다" },
+    { "x": 308, "y": 660, "title": "점포유형", "desc": "정의: 일반점포 · 가맹점포 중 하나를 큰 선택 카드로 고름(필수)\n등록 후에는 점포 유형을 바꿀 수 없음" },
+    { "x": 300, "y": 865, "title": "점포명", "desc": "정의: 1~50자 필수 입력\n같은 BP 안에서 이름이 겹쳐도 등록 가능" },
+    { "x": 670, "y": 865, "title": "점포 연락처", "desc": "정의: 숫자 9~11자리, 유선·휴대전화 모두 허용하는 선택 입력" },
+    { "x": 300, "y": 980, "title": "점포 주소", "desc": "정의: 도로명·건물명·지번으로 검색해 우편번호·기본주소를 채우고, 상세주소는 직접 입력\n선택 입력" },
+    { "x": 220, "y": 1165, "title": "위도", "desc": "정의: 고른 주소로 자동 계산되어 채워지는 값\n직접 고쳐도 되고, 주소를 다시 고르면 다시 계산한 값으로 바뀜" },
+    { "x": 580, "y": 1165, "title": "경도", "desc": "정의: 위도와 같은 방식으로 주소 선택 시 자동 계산\n직접 수정 가능" },
+    { "x": 830, "y": 1165, "title": "근무지 반경", "desc": "정의: 50m~1,000m, 10m 단위, 기본값 100m\n좌표 계산에 실패해도 등록은 되지만, 좌표가 없으면 직원 출퇴근 위치 판정을 쓸 수 없음" },
+    { "x": 88, "y": 1420, "title": "매장평수", "desc": "정의: 소수 첫째 자리까지 입력하는 선택 항목" },
+    { "x": 630, "y": 1420, "title": "전용면적", "desc": "정의: 소수 둘째 자리까지 입력하는 선택 항목(㎡) · 1평 = 3.3058㎡" },
+    { "x": 88, "y": 1505, "title": "좌석수", "desc": "정의: 0 이상 정수로 입력하는 선택 항목" },
+    { "x": 650, "y": 1505, "title": "층수", "desc": "정의: 지상·지하를 고르고 층수를 입력하는 선택 항목" },
+    { "x": 145, "y": 1758, "title": "사업자 번호 인증하기", "desc": "정의: 국세청 API로 사업자등록번호·대표자명·개업일자의 진위만 확인하는 절차\n등록 단계에서는 선택 — 인증하지 않아도 점포를 등록할 수 있고, 운영 상태로 바꿀 때 비로소 인증이 필요해짐\n버튼을 누르면 같은 자리에 입력 상자가 펼쳐지고(사업자등록번호·대표자명·개업일자), 인증 완료 시 읽기전용 카드로 바뀌며 재인증은 확인을 한 번 더 받음\n사업자등록번호는 미운영·운영 점포와 중복될 수 없음(폐점·삭제 점포의 번호는 재사용 가능)" },
+    { "x": 300, "y": 1838, "title": "상호명", "desc": "정의: 사업자정보 인증과 무관하게 항상 입력 가능한 값\n진위확인 API가 상호명을 돌려주지 않아 직접 입력해야 함" },
+    { "x": 670, "y": 1838, "title": "대표자 연락처", "desc": "정의: 휴대전화 10~11자리로 입력하는 선택 항목" },
+    { "x": 90, "y": 1943, "title": "사업자주소", "desc": "정의: \"점포 주소와 같음\" 체크 시 위쪽 점포 주소를 그대로 쓰고, 해제하면 별도로 검색해 입력\n체크 상태가 기본값" },
+    { "x": 230, "y": 2148, "title": "업태", "desc": "정의: 사업자정보의 업태를 입력하는 선택 항목(최대 50자)" },
+    { "x": 650, "y": 2148, "title": "종목", "desc": "정의: 사업자정보의 종목을 입력하는 선택 항목(최대 50자)" }
+  ]
+}
+</script>
+
+<script src="../assets/screen-def.js"></script>
+</body>
+</html>

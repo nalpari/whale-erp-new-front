@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>점포 정보 관리 — 화면정의서</title>
+<link rel="stylesheet" href="../assets/screen-def.css">
+</head>
+<body data-export-name="stores-index.screen-def">
+<header>
+  <div>
+    <h1>점포 정보 관리 — 목록 화면정의서</h1>
+    <p>stores/index.html?embed=1 렌더링(LNB·상단 GNB 제외, 화면 본문만) 위에 번호를 붙이고 우측에 설명을 매칭했다. manyfast S-BAYAJS 기준.</p>
+    <table class="meta-table">
+      <tr><td class="k">화면명</td><td class="v" id="metaName"></td><td class="k">화면경로</td><td class="v" id="metaPath"></td></tr>
+    </table>
+  </div>
+  <div class="head-actions">
+    <button type="button" class="btn2" id="btnEdit">편집 모드</button>
+    <button type="button" class="btn2" id="btnArm" hidden>핀 추가</button>
+    <button type="button" class="btn2 btn2--accent" id="btnExport" hidden>내보내기</button>
+  </div>
+</header>
+<div class="edit-hint">편집 모드: "핀 추가"를 누르고 화면을 한 번 클릭하면 그 자리에 새 번호가 생깁니다(또는 아래 "+ 항목 추가"로 기본 위치에 바로 추가). 기존 핀은 드래그로 옮기고, 오른쪽 × 로 지웁니다. Shift(또는 Ctrl)+클릭으로 핀 여러 개를 한꺼번에 선택해 같이 드래그할 수 있습니다. 빈 곳을 클릭하면 선택이 풀립니다. 항목명·설명은 클릭해서 바로 고치세요. 다 끝나면 "내보내기"로 새 HTML 파일을 받아 저장소 파일과 바꿔주세요(이 브라우저에는 임시로 자동저장됩니다).</div>
+
+<div class="layout">
+  <div class="shot-pane">
+    <div class="shot-wrap" id="shotWrap">
+      <img src="stores-index.screen-def.png" alt="점포 정보 관리 목록 화면 스크린샷(LNB 제외)" id="shotImg">
+    </div>
+  </div>
+
+  <div class="desc-pane">
+    <div class="desc-title"><span>Description</span></div>
+    <div class="purpose" id="purposeEl"></div>
+
+    <table class="desc-table"><tbody id="descBody"></tbody></table>
+    <div class="add-row" id="addRow">+ 항목 추가 (기본 위치에 추가 — 드래그로 옮기세요)</div>
+
+    <div class="skip-note">
+      "목업 상태" 토글과 우측 상단 "화면정의서" 버튼은 실제 화면 요소가 아니라 목업 자체의 전환·문서화 컨트롤이라 번호에서 제외했다. 상단 GNB와 좌측 LNB는 이 화면정의서 스크린샷 자체에서 제외했다(embed 모드).
+    </div>
+  </div>
+</div>
+
+<script id="state-json" type="application/json">
+{
+  "screenName": "점포 정보 관리",
+  "screenPath": "점포관리 > 점포 정보 관리",
+  "purpose": "# 화면 목적 및 기능 — 접근 가능한 점포를 검색·조회하고 카드/표로 목록을 확인하며, 신규 등록·엑셀 다운로드로 이어지는 점포 관리 진입 화면",
+  "items": [
+    { "x": 150, "y": 280, "title": "점포 검색", "desc": "정의: 점포코드 또는 점포명으로 검색하는 입력란\n선택하지 않으면 접근 가능한 점포 전체가 대상" },
+    { "x": 500, "y": 280, "title": "사업자등록번호 검색", "desc": "정의: 하이픈 없이 10자리로 검색하는 입력란" },
+    { "x": 750, "y": 280, "title": "점포상태 필터", "desc": "정의: 미운영 · 운영 · 폐점 중 표시할 상태를 다중 선택" },
+    { "x": 985, "y": 280, "title": "점포유형 필터", "desc": "정의: 일반점포 · 가맹점포 중 표시할 유형을 다중 선택" },
+    { "x": 1045, "y": 337, "title": "초기화 · 조회", "desc": "정의: 검색 조건을 기본값으로 되돌리거나, 조건대로 목록을 다시 불러옴" },
+    { "x": 60, "y": 435, "title": "점포 목록 건수", "desc": "정의: 현재 검색 조건에 해당하는 점포 총 개수 표시" },
+    { "x": 825, "y": 435, "title": "카드 · 표 보기 전환", "desc": "정의: 같은 목록을 카드형 또는 표형으로 바꿔 보는 토글" },
+    { "x": 955, "y": 435, "title": "엑셀 다운로드", "desc": "정의: 현재 검색 조건의 점포 목록을 엑셀 파일로 내려받음\n목록 항목과 사업자정보를 함께 담고, 대표자 연락처만 가운데자리를 가림 · 파일에는 암호를 걸지 않음" },
+    { "x": 1065, "y": 435, "title": "점포 등록", "desc": "정의: 신규 점포 등록 화면으로 이동하는 버튼" },
+    { "x": 97, "y": 529, "title": "대표 이미지 · 아이콘", "desc": "정의: 점포 대표 이미지 표시, 없으면 점포 아이콘이 대신 선다" },
+    { "x": 180, "y": 529, "title": "점포명 · 점포코드 · 유형", "desc": "정의: 점포명과 점포코드, 일반점포/가맹점포 구분을 함께 표시" },
+    { "x": 345, "y": 529, "title": "점포상태 배지", "desc": "정의: 미운영 · 운영 · 폐점 상태를 카드 좌측 색상과 배지로 표시" },
+    { "x": 82, "y": 612, "title": "근무직원 수", "desc": "정의: 그 점포를 근무지로 하는 재직 직원 수" },
+    { "x": 270, "y": 612, "title": "연락처", "desc": "정의: 점포 대표 연락처 표시" },
+    { "x": 82, "y": 663, "title": "지역", "desc": "정의: 점포가 위치한 시 · 군 · 구 단위 지역 표시" },
+    { "x": 125, "y": 1398, "title": "페이지네이션 · 페이지당 표시", "desc": "정의: 전체 건수/현재 범위 표시, 페이지당 표시 개수 선택, 이전 · 다음 이동" },
+    { "x": 45, "y": 1458, "title": "안내 문구", "desc": "정의: 대표 이미지 · 근무직원 · 사업자정보 미인증 · 엑셀 항목에 대한 화면 하단 보충 설명" }
+  ]
+}
+</script>
+
+<script src="../assets/screen-def.js"></script>
+</body>
+</html>

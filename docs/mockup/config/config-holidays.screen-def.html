@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BP 휴일 관리 — 화면정의서</title>
+<link rel="stylesheet" href="../assets/screen-def.css">
+</head>
+<body data-export-name="config-holidays.screen-def">
+<header>
+  <div>
+    <h1>BP 휴일 관리 — 화면정의서</h1>
+    <p>config/holidays.html?embed=1 렌더링(LNB·상단 GNB 제외, 화면 본문만, BP 마스터 역할·9월 21일(오늘) 선택 상태 기준) 위에 번호를 붙이고 우측에 설명을 매칭했다. manyfast S-YAFRYZ(F-YQTLQE BP 휴일 관리) 기준.</p>
+    <table class="meta-table">
+      <tr><td class="k">화면명</td><td class="v" id="metaName"></td><td class="k">화면경로</td><td class="v" id="metaPath"></td></tr>
+    </table>
+  </div>
+  <div class="head-actions">
+    <button type="button" class="btn2" id="btnEdit">편집 모드</button>
+    <button type="button" class="btn2" id="btnArm" hidden>핀 추가</button>
+    <button type="button" class="btn2 btn2--accent" id="btnExport" hidden>내보내기</button>
+  </div>
+</header>
+<div class="edit-hint">편집 모드: "핀 추가"를 누르고 화면을 한 번 클릭하면 그 자리에 새 번호가 생깁니다(또는 아래 "+ 항목 추가"로 기본 위치에 바로 추가). 기존 핀은 드래그로 옮기고, 오른쪽 × 로 지웁니다. Shift(또는 Ctrl)+클릭으로 핀 여러 개를 한꺼번에 선택해 같이 드래그할 수 있습니다. 빈 곳을 클릭하면 선택이 풀립니다. 항목명·설명은 클릭해서 바로 고치세요. 다 끝나면 "내보내기"로 새 HTML 파일을 받아 저장소 파일과 바꿔주세요(이 브라우저에는 임시로 자동저장됩니다).</div>
+
+<div class="layout">
+  <div class="shot-pane">
+    <div class="shot-wrap" id="shotWrap">
+      <img src="config-holidays.screen-def.png" alt="BP 휴일 관리 화면 스크린샷(LNB 제외)" id="shotImg">
+    </div>
+  </div>
+
+  <div class="desc-pane">
+    <div class="desc-title"><span>Description</span></div>
+    <div class="purpose" id="purposeEl"></div>
+
+    <table class="desc-table"><tbody id="descBody"></tbody></table>
+    <div class="add-row" id="addRow">+ 항목 추가 (기본 위치에 추가 — 드래그로 옮기세요)</div>
+
+    <div class="skip-note">
+      "목업 권한"·"목업 상태" 토글은 실제 화면 요소가 아니라 목업 자체의 전환 컨트롤이라 번호에서 제외했다. 상단 GNB와 좌측 LNB는 이 화면정의서 스크린샷 자체에서 제외했다(embed 모드). 휴일 등록·상세·수정은 화면 이동 없이 이 목록 화면 위 팝업(data-pagepop)으로 열리고, 상세→수정→상세로 이어지는 흐름도 팝업 안에서 계속된다 — 각 화면은 별도 화면정의서로도 문서화했다.
+    </div>
+  </div>
+</div>
+
+<script id="state-json" type="application/json">
+{
+  "screenName": "BP 휴일 관리",
+  "screenPath": "BP 환경설정 > BP 휴일 관리 > 목록",
+  "purpose": "# 화면 목적 및 기능 — 보는 사람의 소속 BP와 접근 범위 안 점포의 휴일을 월간 캘린더와 날짜별 목록으로 함께 보여주고, 날짜를 골라 그날의 BP 휴일을 확인하며 등록·상세·수정 팝업으로 이어지는 화면. 공식 휴일(플랫폼 동기화)은 날짜만 빨갛게 표시하고 BP 휴일 데이터로 취급하지 않는다",
+  "items": [
+    { "x": 256, "y": 306, "title": "점포 필터", "desc": "정의: 점포코드 또는 점포명으로 여러 점포를 골라 칩으로 쌓는 공통 점포 검색 필터(S-WDJFWH)\n선택하지 않으면 접근할 수 있는 점포 전체가 대상" },
+    { "x": 700, "y": 306, "title": "조회 기간", "desc": "정의: 시작일~종료일 입력, 기본값은 이번 달 1일~말일\n캘린더에서 달을 옮기면 그 달 1일부터 말일까지로 자동 교체된다(달 이동 = 조회 기간 교체)" },
+    { "x": 1143, "y": 306, "title": "휴일명", "desc": "정의: 휴일명 일부만 입력해도 찾는 검색란\n검색 조건은 목록뿐 아니라 월간 캘린더의 건수 배지에도 함께 적용된다" },
+    { "x": 1255, "y": 390, "title": "초기화", "desc": "정의: 검색 조건을 기본값(이번 달·오늘 선택)으로 되돌림" },
+    { "x": 1326, "y": 390, "title": "검색", "desc": "정의: 조건대로 캘린더·목록을 다시 불러옴" },
+    { "x": 68, "y": 486, "title": "오늘", "desc": "정의: 캘린더를 오늘이 있는 달로 되돌리고 오늘 날짜를 선택" },
+    { "x": 137, "y": 486, "title": "이전달 · 다음달", "desc": "정의: 캘린더를 한 달씩 이동, 조회 기간도 그 달로 함께 바뀐다" },
+    { "x": 732, "y": 486, "title": "변경 이력 보기", "desc": "정의: 고른 기간의 등록·수정·삭제를 날짜별로 묶어 보여주는 팝업\n삭제된 휴일은 이 팝업에서만 확인할 수 있다(목록·캘린더에서는 사라짐)\n반복 휴일 연장 배치가 만든 휴일은 생성 주체를 '연장 배치'로 표시\n기본 기간은 이력 일시 기준 이달 1일~오늘" },
+    { "x": 844, "y": 486, "title": "휴일 등록", "desc": "정의: 휴일 등록 화면을 팝업으로 여는 버튼\n등록 권한이 있는 사람(BP 마스터·BP 관리자·가맹 마스터)에게만 보이고, 조회만 권한에는 버튼이 없다" },
+    { "x": 270, "y": 543, "title": "범례", "desc": "정의: 공식 휴일(빨강, 플랫폼 동기화) · BP 휴일 건수 배지(파랑) · 선택한 날짜·오늘(검정 원)의 표시 의미 안내" },
+    { "x": 465, "y": 780, "title": "월간 캘린더", "desc": "정의: 이번 달 날짜를 격자로 표시, BP 휴일이 있는 날짜에 건수 배지 표시, 공식 휴일은 날짜를 빨갛게 칠하고 휴일명을 표시\n날짜를 누르면 선택 표시(검정 원/테두리)로 바뀌고 오른쪽 패널에 그날의 BP 휴일이 모두 나타남\n폐점한 점포는 폐점일 다음 날부터 대상에서 빠지고, 그 점포만 대상이던 휴일은 캘린더·목록에서 감춰진다\n같은 날짜에 전체 점포 휴일과 특정 점포 휴일이 겹칠 수 있고, 겹치면 업무에는 특정 점포 휴일이 우선한다" },
+    { "x": 996, "y": 481, "title": "선택 날짜 · 건수", "desc": "정의: 선택한 날짜와 그날의 BP 휴일 건수 표시\n휴일이 없으면 \"이 날짜에 등록된 BP 휴일이 없습니다.\" 빈 상태로 대체\n공식 휴일과 겹치는 날은 \"날짜만 빨갛게 칠하고 아래 BP 휴일 목록에는 넣지 않습니다\" 안내가 함께 뜬다" },
+    { "x": 1150, "y": 530, "title": "BP 휴일 목록 행", "desc": "정의: 전체 점포/특정 점포 구분 배지 + \"휴일명 - 적용 대상명\"(전체 점포는 BP 상호, 특정 점포는 점포명) + 반복 여부 + 휴일 코드\n지난 날짜 휴일에는 \"지난 날짜 · 수정·삭제 불가\" 꼬리표, 전체 점포 휴일을 바꿀 수 없는 사람에게는 \"조회만\" 꼬리표\n누르면 휴일 상세 화면이 팝업으로 열림 — 수정·삭제 실행은 목록에 두지 않고 상세에서만 한다(사용자 확정 규칙)" },
+    { "x": 52, "y": 1108, "title": "하단 안내", "desc": "정의: 날짜를 누르면 오른쪽에 그날의 BP 휴일이 모두 나온다는 안내, 빨간 날짜·휴일명은 플랫폼 휴일 관리에서 동기화한 대한민국 공식 휴일이며 BP 휴일 데이터가 아니라는 안내" }
+  ]
+}
+</script>
+
+<script src="../assets/screen-def.js"></script>
+</body>
+</html>
