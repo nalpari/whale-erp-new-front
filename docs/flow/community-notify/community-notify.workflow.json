@@ -32,14 +32,14 @@
     "views": [
       {
         "id": "v1",
-        "label": "공지가 서기까지",
+        "label": "공지사항이 서기까지",
         "focus": [
           "cm",
           "edit",
           "publish",
           "shown"
         ],
-        "note": "노출 대상이 어디에 설지 가른다. 비회원이 들면 로그인 전 홈에도 선다."
+        "note": "노출 대상이 어디에 설지 가른다. 비회원이 들면 비로그인 홈에도 선다."
       },
       {
         "id": "v2",
@@ -71,7 +71,7 @@
   "phases": [
     {
       "id": "p1",
-      "label": "공지 · FAQ",
+      "label": "공지사항 · FAQ",
       "fromCol": 0,
       "toCol": 3,
       "variant": "emphasis"
@@ -94,7 +94,7 @@
     },
     {
       "id": "g2",
-      "label": "NOTIFY-1·2 · 들어가면 읽음 · 종 + 알림함",
+      "label": "NOTIFY-1·2 · 들어가면 읽음 · 종 + 운영 알림함",
       "lane": "recv",
       "fromCol": 4,
       "toCol": 5,
@@ -114,7 +114,7 @@
       "col": 0,
       "type": "frontend",
       "label": "커뮤니티관리",
-      "sublabel": "공지 · FAQ · 문의 · 도입문의",
+      "sublabel": "공지사항 · FAQ · 문의 · 도입문의",
       "width": 160
     },
     {
@@ -122,7 +122,7 @@
       "lane": "ops",
       "col": 1,
       "type": "frontend",
-      "label": "공지 · FAQ 편집",
+      "label": "공지사항 · FAQ 편집",
       "sublabel": "노출 대상 · 상단 고정",
       "width": 160,
       "tag": "임시저장 · 게시 · 비공개"
@@ -160,8 +160,8 @@
       "lane": "recv",
       "col": 3,
       "type": "frontend",
-      "label": "공지가 서는 곳",
-      "sublabel": "로그인 전 홈 · 고객지원",
+      "label": "공지사항이 서는 곳",
+      "sublabel": "비로그인 홈 · 고객지원",
       "width": 150
     },
     {
@@ -178,7 +178,7 @@
       "lane": "recv",
       "col": 5,
       "type": "frontend",
-      "label": "알림함",
+      "label": "운영 알림함",
       "sublabel": "들어가면 읽음",
       "width": 140,
       "tag": "사람마다 따로"
@@ -203,7 +203,7 @@
       "from": "publish",
       "to": "shown",
       "variant": "emphasis",
-      "label": "비회원이면 로그인 전 홈에도"
+      "label": "비회원이면 비로그인 홈에도"
     },
     {
       "id": "e5",
@@ -231,14 +231,14 @@
       "dot": "emerald",
       "title": "확정된 결정",
       "items": [
-        "SUPPORT-2 노출 대상은 다섯 유형, 부가서비스만 상품별 · 상단 고정은 공지에만 · NOTIFY-1 들어가면 읽음 · NOTIFY-2 종과 알림함 둘 다"
+        "SUPPORT-2 노출 대상은 다섯 유형, 부가서비스만 상품별 · 상단 고정은 공지사항에만 · NOTIFY-1 들어가면 읽음 · NOTIFY-2 종과 운영 알림함 둘 다 · 알림 줄에 이메일 발송 결과를 붙인다"
       ]
     },
     {
       "dot": "slate",
       "title": "밖에 있는 것",
       "items": [
-        "BP가 자기 조직에 쓰는 공지는 1차에 없다 (SUPPORT-3) · 모바일 푸시·문자 없음, 직원 알림은 직원 근무 앱 몫 · 홈에는 알림 목록 없음"
+        "BP가 자기 조직에 쓰는 공지사항은 1차에 없다 (SUPPORT-3) · 모바일 푸시·문자 없음, 직원 알림은 직원 근무 앱 몫 · 홈에는 알림 목록 없음"
       ]
     }
   ]

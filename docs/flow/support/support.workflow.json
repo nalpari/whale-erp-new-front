@@ -2,7 +2,7 @@
   "schema_version": 2,
   "diagram_type": "workflow",
   "meta": {
-    "title": "고객지원 — 공지를 읽고 문의를 남기기까지",
+    "title": "고객지원 — 공지사항을 읽고 문의를 남기기까지",
     "quality_profile": "showcase",
     "legend": {
       "entries": {
@@ -40,11 +40,11 @@
           "notify",
           "mine"
         ],
-        "note": "등록 때는 알림이 없고 답변이 달릴 때만 알림함과 이메일로 간다."
+        "note": "등록 때는 알림이 없고 답변이 달릴 때만 운영 알림함과 이메일로 간다."
       },
       {
         "id": "v2",
-        "label": "공지 읽기",
+        "label": "공지사항 읽기",
         "focus": [
           "home",
           "notices",
@@ -107,7 +107,7 @@
       "col": 0,
       "type": "frontend",
       "label": "고객지원",
-      "sublabel": "공지 · FAQ · 문의하기 탭",
+      "sublabel": "공지사항 · FAQ · 문의하기 탭",
       "width": 150
     },
     {
@@ -115,7 +115,7 @@
       "lane": "user",
       "col": 1,
       "type": "frontend",
-      "label": "공지 · FAQ",
+      "label": "공지사항 · FAQ",
       "sublabel": "노출 대상에 든 것만",
       "width": 140
     },
@@ -124,7 +124,7 @@
       "lane": "user",
       "col": 2,
       "type": "frontend",
-      "label": "공지 상세",
+      "label": "공지사항 상세",
       "sublabel": "본문 · 첨부",
       "width": 140
     },
@@ -162,7 +162,7 @@
       "col": 5,
       "type": "messagebus",
       "label": "답변 알림",
-      "sublabel": "알림함 + 이메일",
+      "sublabel": "운영 알림함 + 이메일",
       "width": 140,
       "tag": "등록 때는 알림 없음"
     },
@@ -226,7 +226,7 @@
       "from": "notify",
       "to": "mine",
       "variant": "emphasis",
-      "label": "이메일 · 알림함"
+      "label": "이메일 · 운영 알림함"
     },
     {
       "id": "e7",
@@ -249,7 +249,7 @@
       "dot": "slate",
       "title": "보는 규칙",
       "items": [
-        "노출 대상에 내가 든 공지·FAQ와 내가 등록한 문의만 · 같은 BP의 다른 관리자 문의는 안 보임 · 20건 넘으면 페이지"
+        "노출 대상에 내가 든 공지사항·FAQ와 내가 등록한 문의만 · 같은 BP의 다른 관리자 문의는 안 보임 · 20건 넘으면 페이지"
       ]
     }
   ]
