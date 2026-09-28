@@ -7,8 +7,8 @@
   "visualReview": "pending",
   "artifact": {
     "path": "/Users/jaeyounglee/IdeaProjects/whale-erp-v2/whale-erp-front/docs/flow/schedule-todo/schedule-todo.html",
-    "sha256": "9eb3eb48953e22058d31773a29ca786cdaf07089a7f1238c21bf49168cbc1725",
-    "bytes": 814133
+    "sha256": "c7be2c9e9eb0d6fc5ff342ee653d23a5c929f7399798f3886126e2076abe2547",
+    "bytes": 813757
   },
   "state": {
     "detail": "read",
@@ -95,8 +95,8 @@
         "overflowX": false,
         "overflowY": false,
         "ok": true,
-        "readerWidth": 1192,
-        "diagramWidth": 1162,
+        "readerWidth": 1220,
+        "diagramWidth": 1190,
         "viewBoxWidth": 1150,
         "minimumProjectedNodeTextPx": 7.8,
         "minimumProjectedNodeText": "주 이동 · 직접 입력도 여기서",
@@ -225,8 +225,8 @@
         "overflowX": false,
         "overflowY": false,
         "ok": true,
-        "readerWidth": 1192,
-        "diagramWidth": 1162,
+        "readerWidth": 1220,
+        "diagramWidth": 1190,
         "viewBoxWidth": 1150,
         "minimumProjectedNodeTextPx": 7.8,
         "minimumProjectedNodeText": "주 이동 · 직접 입력도 여기서",
@@ -354,8 +354,8 @@
         "overflowX": false,
         "overflowY": false,
         "ok": true,
-        "readerWidth": 1192,
-        "diagramWidth": 1162,
+        "readerWidth": 1220,
+        "diagramWidth": 1190,
         "viewBoxWidth": 1150,
         "minimumProjectedNodeTextPx": 7.8,
         "minimumProjectedNodeText": "주 이동 · 직접 입력도 여기서",
