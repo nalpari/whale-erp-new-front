@@ -455,17 +455,23 @@ BP·플랫폼의 권한 그룹·공통코드·메뉴·휴일과 플랫폼 공식
 
 ### BP 휴일 `bp_holidays` · 중심
 
+규칙을 한 줄로 저장하고, 실제 날짜는 화면에서 볼 때 계산한다. 기간과 반복은 함께 쓰지 않으며 종일만 다룬다(시각 없음).
+
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK | 휴일 ID | id | `holiday_id` |  |
 | FK | BP | id | `bp_id` | bp_codes FK |
 |  | 적용 범위 | enum | `scope` | 전체점포·특정점포 |
-|  | 휴일 시작날짜 | date | `start_date` |  |
-|  | 휴일 종료날짜 | date | `end_date` | 하루짜리면 시작날짜와 같음 |
+|  | 휴일 유형 | enum | `holiday_type` | 하루·기간·반복 |
+|  | 휴일 시작날짜 | date | `start_date` | 반복 기준일 |
+|  | 휴일 종료날짜 | date | `end_date` | 기간 휴일의 종료일 |
+|  | 반복 유형 | code | `repeat_type` | 공통코드 '휴일 반복 유형' · 반복일 때만 |
+|  | 반복 종료 조건 | enum | `repeat_end_type` | 없음·날짜·횟수 |
+|  | 반복 종료일 | date | `repeat_until` |  |
+|  | 반복 횟수 | int | `repeat_count` |  |
 |  | 휴일명 | text | `name` | 30자 |
-|  | 종일 여부 | bool | `is_all_day` |  |
 |  | 설명 | text | `description` |  |
-|  | 반복 규칙 | json | `repeat_rule` | 반복유형·주기·요일·종료조건 등 |
+| FK | 원래 휴일 | id | `origin_holiday_id` | bp_holidays 자기 참조, '이후 모두' 수정으로 분할된 경우 |
 |  | 삭제 여부 | bool | `is_deleted` |  |
 |  | 등록 일시 | datetime | `created_at` |  |
 | FK | 등록자 | id | `created_by` |  |
@@ -474,13 +480,26 @@ BP·플랫폼의 권한 그룹·공통코드·메뉴·휴일과 플랫폼 공식
 
 ### 휴일 점포 매핑 `holiday_store_mappings` · 엔티티
 
-BP 휴일이 적용되는 점포를 관리하는 매핑 테이블이다. 전체 점포 적용 시에도 개별 점포별로 행을 생성한다.
+특정 점포 휴일이 적용되는 점포를 묶는 매핑 테이블이다. 한 휴일에 여러 점포가 붙는다.
 
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK·FK | 휴일 | id | `holiday_id` | bp_holidays FK |
 | PK·FK | 대상 점포 | id | `store_id` | stores FK |
-| PK | 휴일 날짜 | date | `holiday_date` |  |
+|  | 삭제 여부 | bool | `is_deleted` |  |
+|  | 등록 일시 | datetime | `created_at` |  |
+| FK | 등록자 | id | `created_by` | customers FK |
+|  | 최근 수정 일시 | datetime | `updated_at` |  |
+| FK | 수정자 | id | `updated_by` | customers FK |
+
+### 휴일 예외 점포 `holiday_excluded_stores` · 엔티티
+
+전체 점포 휴일에서 빠지는 점포를 관리하는 매핑 테이블이다. 휴일의 모든 날짜에 적용된다.
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK·FK | 휴일 | id | `holiday_id` | bp_holidays FK |
+| PK·FK | 예외 점포 | id | `store_id` | stores FK |
 |  | 삭제 여부 | bool | `is_deleted` |  |
 |  | 등록 일시 | datetime | `created_at` |  |
 | FK | 등록자 | id | `created_by` | customers FK |
@@ -488,6 +507,8 @@ BP 휴일이 적용되는 점포를 관리하는 매핑 테이블이다. 전체 
 | FK | 수정자 | id | `updated_by` | customers FK |
 
 ### BP 휴일 변경 이력 `bp_holiday_change_histories` · 이력
+
+수정·삭제는 고른 날짜부터 이후 모두에 적용한다. 삭제는 행을 지우지 않고 종료 조건·종료일을 앞당기는 것으로 기록한다.
 
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
@@ -513,6 +534,9 @@ BP 휴일이 적용되는 점포를 관리하는 매핑 테이블이다. 전체 
 - BP 코드 `1` -- `N` BP 휴일
 - BP 휴일 `1` -- `N` 휴일 점포 매핑
 - 점포 `1` -- `N` 휴일 점포 매핑
+- BP 휴일 `1` -- `N` 휴일 예외 점포
+- 점포 `1` -- `N` 휴일 예외 점포
+- BP 휴일 `0..1` -- `N` BP 휴일 · 원래 휴일(자기 참조)
 - BP 휴일 `1` -- `N` BP 휴일 변경 이력
 - 관리자 계정 `1` -- `N` BP 휴일 · 등록자
 - 관리자 계정 `1` -- `N` BP 휴일 변경 이력 · 변경자
@@ -521,32 +545,47 @@ BP 휴일이 적용되는 점포를 관리하는 매핑 테이블이다. 전체 
 
 ### 플랫폼 공식 휴일 `public_holidays` · 엔티티
 
+2000~2100년을 규칙으로 적재하고, 올해·다음 해는 매월 1일 공공 API로 다시 맞춘다.
+
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK | 공식 휴일 ID | id | `public_holiday_id` |  |
 |  | 날짜 | date | `holiday_date` | 한 날짜에 한 건 |
-|  | 연도 | int | `year` |  |
+|  | 연도 | int | `year` | 2000~2100 |
 |  | 휴일명 | text | `name` |  |
 |  | 비고 | text | `note` |  |
-|  | 동기화 배치 ID | text | `sync_batch_id` |  |
-|  | 최종 동기화 일시 | datetime | `synced_at` |  |
-|  | 삭제 여부 | bool | `is_deleted` |  |
-|  | 등록 일시 | datetime | `created_at` |  |
-| FK | 등록자 | id | `created_by` | customers FK |
-|  | 최근 수정 일시 | datetime | `updated_at` |  |
-| FK | 수정자 | id | `updated_by` | customers FK |
+|  | 출처 | enum | `source` | 규칙 계산·공식 API |
+|  | 공식 원본 식별자 | text | `source_ref` | 공식 API일 때만 |
+|  | 최종 동기화 일시 | datetime | `synced_at` | 공식 API일 때만 |
 
 ### 동기화 이력 `public_holiday_sync_histories` · 이력
+
+올해·다음 해분을 공식 API로 맞춘 이력이다.
 
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK | 동기화 이력 ID | id | `sync_id` |  |
-|  | 대상 연도 | int | `year` |  |
+|  | 대상 연도 | int | `year` | 올해·다음 해 |
 |  | 동기화 일시 | datetime | `synced_at` |  |
 |  | 등록 건수 | int | `created_count` |  |
 |  | 수정 건수 | int | `updated_count` |  |
 |  | 삭제 건수 | int | `deleted_count` |  |
+|  | 실패 건수 | int | `failed_count` |  |
+|  | 오류 정보 | text | `error` |  |
 |  | 결과 | enum | `result` | 성공·실패 |
+
+### 공식 휴일 적재 이력 `public_holiday_load_histories` · 이력
+
+2000~2100년 범위를 규칙으로 적재한 이력이다.
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 적재 이력 ID | id | `load_id` |  |
+|  | 적재 범위 | text | `range` | 예: 2000~2100 |
+|  | 실행 일시 | datetime | `loaded_at` |  |
+|  | 적재 건수 | int | `loaded_count` |  |
+|  | 오류 정보 | text | `error` |  |
+| FK | 실행자 | id | `executed_by` | customers FK, 운영 담당자 |
 
 ---
 
