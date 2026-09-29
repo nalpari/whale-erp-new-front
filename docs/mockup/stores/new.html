@@ -11,7 +11,7 @@
     <!-- 점포 등록 · /stores/new · S-ALHLHW · 1팀
          기본정보와 사업자정보를 나눠 받는다. 필수는 점포유형과 점포명 둘뿐이고 새 점포는 미운영으로만 생긴다. 점포상태 칸은 보이지 않는다.
          점포유형은 큰 선택 카드 둘로 고른다. 점포코드 칸은 두지 않는다 — 저장이 끝난 뒤 시스템이 ST+6자리로 매긴다.
-         플랫폼 관리자에게는 소속 BP 입력 영역이 없다. BP 측 역할은 소속 BP 가 고정된다.
+         플랫폼 관리자는 화면 상단에서 고른 BP 로 등록한다 — 소속 BP 입력 칸은 없고 고른 BP 를 읽기 전용으로 보인다(확정 2026-09-29). BP 측 역할은 소속 BP 가 고정된다.
          사업자 번호 인증은 회원가입의 사업자정보 인증과 같은 모양(접힘 → 입력 상자 → 인증 완료 카드)이고 등록 단계에서 선택이다.
          가맹 마스터·가맹 관리자는 권한이 있어도 등록할 수 없다.
          위쪽 점선 줄 둘은 목업 전용이다 — 역할과 입력 상태를 따로 바꾼다. -->
@@ -69,7 +69,13 @@
               </div>
             </div>
 
-            <!-- 소속 BP — 플랫폼 관리자는 입력 영역이 없다. BP 측 역할에게만 고정된 소속 BP 를 알린다. -->
+            <!-- 소속 BP — 입력 칸은 없다. 플랫폼 관리자는 화면 상단에서 고른 BP, BP 측 역할은 소속 BP 를 읽기 전용으로 알린다. -->
+            <section class="panel" data-show-role="plat">
+              <div class="panel__head"><h2 class="t-h2">소속 BP</h2></div>
+              <div class="panel__body">
+                <p style="margin: 0; font-size: 13px">㈜한강상회 <span class="mono subtle">BP000017</span> — 화면 상단에서 고른 BP 로 등록됩니다. 다른 BP 로 등록하려면 상단에서 BP 를 바꾸세요.</p>
+              </div>
+            </section>
             <section class="panel" data-show-role="bp fr" hidden>
               <div class="panel__head"><h2 class="t-h2">소속 BP</h2></div>
               <div class="panel__body">
@@ -203,52 +209,54 @@
               </div>
             </section>
 
-            <!-- 기타 정보 — 매장평수 · 전용면적 · 좌석수 · 층수. 모두 선택 입력이고 점포 기본정보와 따로 둔다. -->
+            <!-- 기타 정보 — 층별 정보(점포 1 : 층 N, ERD store_floor_infos). 층마다 층수 · 매장평수 · 전용면적 · 좌석수를 한 줄로 둔다. 모두 선택 (확정 2026-09-29). -->
             <section class="panel">
               <div class="panel__head">
-                <h2 class="t-h2">기타 정보</h2>
+                <h2 class="t-h2">기타 정보 · 층별</h2>
                 <span class="badge badge--quiet">선택</span>
-              </div>
-              <div class="panel__body">
-                <div class="grid grid--2">
-                  <div class="field">
-                    <label for="xpy">매장평수</label>
-                    <div class="inline" style="flex-wrap: nowrap">
-                      <input class="input mono" id="xpy" placeholder="예: 18" inputmode="decimal" style="max-width: 140px" />
-                      <span class="subtle">평</span>
-                    </div>
-                    <span class="help">소수 첫째 자리까지 · 선택</span>
-                  </div>
-                  <div class="field">
-                    <label for="xar">전용면적</label>
-                    <div class="inline" style="flex-wrap: nowrap">
-                      <input class="input mono" id="xar" placeholder="예: 59.5" inputmode="decimal" style="max-width: 140px" />
-                      <span class="subtle">㎡</span>
-                    </div>
-                    <span class="help">소수 둘째 자리까지 · 1평 = 3.3058㎡ · 선택</span>
-                  </div>
-                  <div class="field">
-                    <label for="xst">좌석수</label>
-                    <div class="inline" style="flex-wrap: nowrap">
-                      <input class="input mono" id="xst" placeholder="예: 32" inputmode="decimal" style="max-width: 140px" />
-                      <span class="subtle">석</span>
-                    </div>
-                    <span class="help">0 이상 정수 · 선택</span>
-                  </div>
-                  <div class="field">
-                    <label for="xfl">층수</label>
-                    <div class="inline" style="flex-wrap: nowrap; gap: var(--s-2)">
-                      <select class="select" id="xfl" aria-label="지상·지하" style="width: 96px; flex: none">
-                        <option selected>지상</option>
-                        <option>지하</option>
-                      </select>
-                      <input class="input mono" placeholder="예: 1" inputmode="numeric" aria-label="층" style="max-width: 90px" />
-                      <span class="subtle">층</span>
-                    </div>
-                    <span class="help">점포가 있는 층 · 선택</span>
-                  </div>
+                <div style="margin-left: auto">
+                  <button class="btn btn--secondary btn--sm" type="button" data-floor-add><span data-icon="plus" data-icon-size="14"></span> 층 추가</button>
                 </div>
               </div>
+              <div class="tblwrap">
+                <table class="tbl">
+                  <thead>
+                    <tr><th scope="col">층</th><th scope="col">매장평수</th><th scope="col">전용면적</th><th scope="col">좌석수</th><th scope="col" style="width: 48px" aria-label="삭제"></th></tr>
+                  </thead>
+                  <tbody data-floor-body>
+                      <tr data-floor-row>
+                        <td>
+                          <div class="inline" style="flex-wrap: nowrap; gap: var(--s-2)">
+                            <select class="select select--sm" aria-label="지상·지하" style="width: 80px; flex: none">
+                              <option selected>지상</option>
+                              <option>지하</option>
+                            </select>
+                            <input class="input input--sm mono" placeholder="1" inputmode="numeric" aria-label="층" style="max-width: 64px" />
+                            <span class="subtle">층</span>
+                          </div>
+                        </td>
+                        <td><div class="inline" style="flex-wrap: nowrap"><input class="input input--sm mono" placeholder="18" inputmode="decimal" aria-label="매장평수" style="max-width: 96px" /><span class="subtle">평</span></div></td>
+                        <td><div class="inline" style="flex-wrap: nowrap"><input class="input input--sm mono" placeholder="59.5" inputmode="decimal" aria-label="전용면적" style="max-width: 96px" /><span class="subtle">㎡</span></div></td>
+                        <td><div class="inline" style="flex-wrap: nowrap"><input class="input input--sm mono" placeholder="32" inputmode="numeric" aria-label="좌석수" style="max-width: 80px" /><span class="subtle">석</span></div></td>
+                        <td style="text-align: right"><button class="iconbtn" type="button" aria-label="이 층 삭제" data-icon="trash" data-icon-size="15" data-floor-del></button></td>
+                      </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="panel__note">층마다 한 줄로 적습니다(점포 1 : 층 N). 매장평수는 소수 첫째 자리, 전용면적은 소수 둘째 자리(1평 = 3.3058㎡), 좌석수는 0 이상 정수이며 모두 선택입니다.</div>
+              <script>
+                (function () {
+                  var body = document.currentScript.parentNode.querySelector("[data-floor-body]");
+                  var add = document.currentScript.parentNode.querySelector("[data-floor-add]");
+                  var tpl = body.querySelector("[data-floor-row]").cloneNode(true);
+                  tpl.querySelectorAll("input").forEach(function (i) { i.value = ""; });
+                  add.addEventListener("click", function () { body.appendChild(tpl.cloneNode(true)); });
+                  body.addEventListener("click", function (e) {
+                    var b = e.target.closest("[data-floor-del]");
+                    if (b && body.querySelectorAll("[data-floor-row]").length > 1) b.closest("[data-floor-row]").remove();
+                  });
+                })();
+              </script>
             </section>
 
             <!-- 점포 사업자정보 — 사업자 번호 인증은 회원가입의 ‘사업자정보 인증’과 같은 모양이다.

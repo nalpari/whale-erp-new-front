@@ -71,8 +71,8 @@
             <div class="band band--info" data-show="unop" hidden>
               <span class="band__ic" data-icon="info" data-icon-size="20"></span>
               <div class="band__body">
-                <div class="band__title">사업자정보를 인증해야 운영으로 바꿀 수 있습니다</div>
-                <p class="band__desc">점포 정보 수정에서 사업자 번호를 인증하면 같은 화면의 점포상태에서 바로 운영을 고를 수 있습니다.</p>
+                <div class="band__title">사업자정보 인증과 좌표 입력이 끝나야 운영으로 바꿀 수 있습니다</div>
+                <p class="band__desc">점포 정보 수정에서 사업자 번호를 인증하고 위도·경도를 채우면 같은 화면의 점포상태에서 바로 운영을 고를 수 있습니다.</p>
               </div>
               <div class="band__act">
                 <a class="btn btn--secondary btn--sm" href="edit.html?state=noauth">인증하러 가기</a>
@@ -155,27 +155,27 @@
               </div>
             </div>
 
-            <!-- 기타 정보 — 매장평수 · 전용면적 · 좌석수 · 층수. 입력하지 않은 값은 하이픈으로 보인다. -->
+            <!-- 기타 정보 — 층별 정보(점포 1 : 층 N). 층마다 한 줄, 입력하지 않은 값은 하이픈 (확정 2026-09-29). -->
             <section class="panel">
-              <div class="panel__head"><h2 class="t-h2">기타 정보</h2></div>
-              <div class="panel__body">
-                <div class="grid grid--2">
-                  <dl class="kv">
-                    <dt>매장평수</dt><dd class="mono"><span data-show="run bpoff closed">18평</span><span class="nil" data-show="unop" hidden>-</span></dd>
-                    <dt>전용면적</dt><dd class="mono"><span data-show="run bpoff closed">59.5㎡</span><span class="nil" data-show="unop" hidden>-</span></dd>
-                  </dl>
-                  <dl class="kv">
-                    <dt>좌석수</dt><dd class="mono"><span data-show="run bpoff closed">32석</span><span class="nil" data-show="unop" hidden>-</span></dd>
-                    <dt>층수</dt><dd><span data-show="run bpoff closed">지상 1층</span><span class="nil" data-show="unop" hidden>-</span></dd>
-                  </dl>
-                </div>
+              <div class="panel__head"><h2 class="t-h2">기타 정보 · 층별</h2></div>
+              <div class="tblwrap" data-show="run bpoff closed">
+                <table class="tbl">
+                  <thead><tr><th scope="col">층</th><th scope="col">매장평수</th><th scope="col">전용면적</th><th scope="col">좌석수</th></tr></thead>
+                  <tbody>
+                    <tr><td>지상 1층</td><td class="mono">18평</td><td class="mono">59.5㎡</td><td class="mono">32석</td></tr>
+                    <tr><td>지상 2층</td><td class="mono">12평</td><td class="mono">39.7㎡</td><td class="mono">20석</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="panel__body" data-show="unop" hidden>
+                <div class="empty"><p>등록한 층별 정보가 없습니다.</p></div>
               </div>
             </section>
 
             <section class="panel">
               <div class="panel__head">
                 <h2 class="t-h2">변경 이력</h2>
-                <span class="badge badge--quiet">최근 1년</span>
+                <span class="badge badge--quiet">5년 보존</span>
               </div>
               <div class="tblwrap" data-show="run bpoff closed">
                 <table class="tbl tbl--dense">
@@ -253,7 +253,7 @@
       </div>
     </div>
 
-    <!-- 상태 변경 · 미운영 점포 — 운영은 점포 기본정보와 사업자정보를 모두 채워야(인증 포함), 폐점은 조건을 채우면 고를 수 있다 (STORE-2 확정). -->
+    <!-- 상태 변경 · 미운영 점포 — 운영은 사업자정보 인증 · 필수 항목(점포유형·점포명) · 좌표(위도·경도) · 소속 BP 사용 상태을 채워야(선택 항목은 비어도 됨), 폐점은 조건을 채우면 고를 수 있다 (확정 2026-09-29). -->
     <div class="modal" id="pop-status-unop" hidden role="dialog" aria-modal="true" aria-labelledby="ps-unop-t">
       <div class="modal__box">
         <div class="modal__head">
@@ -265,7 +265,7 @@
             <p style="margin: 0; font-size: 13px">현재 상태 <span class="badge badge--quiet">미운영</span></p>
             <div class="card" style="padding: var(--s-4) var(--s-5); gap: 6px; opacity: 0.6">
               <div class="spread"><b style="font-size: 13.5px">운영</b><span class="badge badge--warn">고를 수 없음</span></div>
-              <span style="font-size: 12.5px">운영으로 바꾸려면 <b>점포 기본정보와 점포 사업자정보를 모두 채워야</b> 합니다 — 지금은 사업자정보 인증이 남았습니다. <a class="tlink" href="edit.html?state=noauth">점포 수정의 ‘인증하기’로 이동</a></span>
+              <span style="font-size: 12.5px">운영으로 바꾸려면 <b>사업자정보 인증과 위도·경도</b>가 있어야 합니다 — 지금은 사업자정보 인증과 좌표가 남았습니다. <a class="tlink" href="edit.html?state=noauth">점포 수정의 ‘인증하기’로 이동</a></span>
             </div>
             <button class="card card--hover" type="button" data-step-to="confirm" style="text-align: left; padding: var(--s-4) var(--s-5); gap: 6px">
               <div class="spread"><b style="font-size: 13.5px">폐점</b><span class="badge badge--ok">조건 충족</span></div>

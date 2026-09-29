@@ -11,7 +11,7 @@
     <!-- 점포 수정 · /stores/:점포코드/edit · S-JEPOMK · 1팀
          점포코드 · 점포유형은 바꾸지 않는다. 소속 BP 는 보이지 않는다.
          점포상태는 여기서도 바꿀 수 있다(S-MNRZOM, 상세의 점포 상태 변경과 같은 조건). 점포 수정 권한이 있으면 역할을 가리지 않는다(STORE-1 확정).
-         운영으로 바꾸거나 이미 운영인 점포는 점포 기본정보와 점포 사업자정보가 모두 필수다 — 빈 칸이 있으면 저장을 막는다(STORE-2 확정). 선택지는 현재 상태에서 갈 수 있는 곳만 보인다 —
+         운영 전환 조건은 사업자정보 인증 · 필수 항목(점포유형·점포명) · 좌표(위도·경도) · 소속 BP 사용 상태다 — 연락처·주소 같은 선택 항목은 비어도 되고, 좌표가 비면 운영으로 저장하지 않는다(확정 2026-09-29, STORE-2 수정). 선택지는 현재 상태에서 갈 수 있는 곳만 보인다 —
          미운영 → 운영·폐점, 운영 → 폐점. 운영은 사업자정보가 인증돼 있어야(이 화면에서 최초 인증을 마쳐도 된다) 고를 수 있다.
          폐점을 고르는 순간 폐점 조건(유효 근로계약 0건 · 이용 중 구독 0건 · 정산 대기 0원)을 확인하고, 못 채우면 팝업으로 못 채운 조건을 보인 뒤 선택을 이전 상태로 돌린다.
          조건을 채운 전환은 저장을 누를 때 확인 창을 거쳐 다른 수정 내용과 함께 반영한다.
@@ -157,7 +157,7 @@
                       <span class="band__ic" data-icon="info" data-icon-size="20"></span>
                       <div class="band__body">
                         <div class="band__title">저장하면 운영으로 바뀝니다</div>
-                        <p class="band__desc">운영 점포는 점포 기본정보와 점포 사업자정보가 모두 채워져 있어야 합니다 — 빈 곳이 있으면 저장하지 않고 그 칸을 짚어 줍니다. 운영은 미운영으로 되돌릴 수 없고, 사업자 인증 결과와 함께 저장됩니다.</p>
+                        <p class="band__desc">운영 점포는 사업자정보 인증, 점포명, 위도·경도가 있어야 합니다 — 좌표가 비었으면 저장하지 않고 그 칸을 짚어 줍니다. 연락처 같은 선택 항목은 비어도 됩니다. 운영은 미운영으로 되돌릴 수 없고, 사업자 인증 결과와 함께 저장됩니다.</p>
                       </div>
                     </div>
                   </div>
@@ -202,7 +202,7 @@
                     </div>
                   </div>
                   <div class="inline" style="justify-content: space-between">
-                    <span class="subtle" style="font-size: 12px">범위 −90~90 · −180~180, 소수점 6자리까지</span>
+                    <span class="subtle" style="font-size: 12px">범위 −90~90 · −180~180, 소수점 6자리까지 · 운영 전환 때 필수</span>
                     <button class="btn btn--secondary btn--sm" type="button">주소로 다시 계산</button>
                   </div>
                   <div class="field">
@@ -377,52 +377,70 @@
               </section>
             </div>
 
-            <!-- 기타 정보 — 매장평수 · 전용면적 · 좌석수 · 층수. 모두 선택 입력이고 점포 기본정보와 따로 둔다. -->
+            <!-- 기타 정보 — 층별 정보(점포 1 : 층 N, ERD store_floor_infos). 층마다 층수 · 매장평수 · 전용면적 · 좌석수를 한 줄로 둔다. 모두 선택 (확정 2026-09-29). -->
             <section class="panel">
               <div class="panel__head">
-                <h2 class="t-h2">기타 정보</h2>
+                <h2 class="t-h2">기타 정보 · 층별</h2>
                 <span class="badge badge--quiet">선택</span>
-              </div>
-              <div class="panel__body">
-                <div class="grid grid--2">
-                  <div class="field">
-                    <label for="epy">매장평수</label>
-                    <div class="inline" style="flex-wrap: nowrap">
-                      <input class="input mono" id="epy" value="18" placeholder="예: 18" inputmode="decimal" style="max-width: 140px" />
-                      <span class="subtle">평</span>
-                    </div>
-                    <span class="help">소수 첫째 자리까지 · 선택</span>
-                  </div>
-                  <div class="field">
-                    <label for="ear">전용면적</label>
-                    <div class="inline" style="flex-wrap: nowrap">
-                      <input class="input mono" id="ear" value="59.5" placeholder="예: 59.5" inputmode="decimal" style="max-width: 140px" />
-                      <span class="subtle">㎡</span>
-                    </div>
-                    <span class="help">소수 둘째 자리까지 · 1평 = 3.3058㎡ · 선택</span>
-                  </div>
-                  <div class="field">
-                    <label for="est">좌석수</label>
-                    <div class="inline" style="flex-wrap: nowrap">
-                      <input class="input mono" id="est" value="32" placeholder="예: 32" inputmode="decimal" style="max-width: 140px" />
-                      <span class="subtle">석</span>
-                    </div>
-                    <span class="help">0 이상 정수 · 선택</span>
-                  </div>
-                  <div class="field">
-                    <label for="efl">층수</label>
-                    <div class="inline" style="flex-wrap: nowrap; gap: var(--s-2)">
-                      <select class="select" id="efl" aria-label="지상·지하" style="width: 96px; flex: none">
-                        <option selected>지상</option>
-                        <option>지하</option>
-                      </select>
-                      <input class="input mono" value="1" placeholder="예: 1" inputmode="numeric" aria-label="층" style="max-width: 90px" />
-                      <span class="subtle">층</span>
-                    </div>
-                    <span class="help">점포가 있는 층 · 선택</span>
-                  </div>
+                <div style="margin-left: auto">
+                  <button class="btn btn--secondary btn--sm" type="button" data-floor-add><span data-icon="plus" data-icon-size="14"></span> 층 추가</button>
                 </div>
               </div>
+              <div class="tblwrap">
+                <table class="tbl">
+                  <thead>
+                    <tr><th scope="col">층</th><th scope="col">매장평수</th><th scope="col">전용면적</th><th scope="col">좌석수</th><th scope="col" style="width: 48px" aria-label="삭제"></th></tr>
+                  </thead>
+                  <tbody data-floor-body>
+                      <tr data-floor-row>
+                        <td>
+                          <div class="inline" style="flex-wrap: nowrap; gap: var(--s-2)">
+                            <select class="select select--sm" aria-label="지상·지하" style="width: 80px; flex: none">
+                              <option selected>지상</option>
+                              <option>지하</option>
+                            </select>
+                            <input class="input input--sm mono" value="1" placeholder="1" inputmode="numeric" aria-label="층" style="max-width: 64px" />
+                            <span class="subtle">층</span>
+                          </div>
+                        </td>
+                        <td><div class="inline" style="flex-wrap: nowrap"><input class="input input--sm mono" value="18" placeholder="18" inputmode="decimal" aria-label="매장평수" style="max-width: 96px" /><span class="subtle">평</span></div></td>
+                        <td><div class="inline" style="flex-wrap: nowrap"><input class="input input--sm mono" value="59.5" placeholder="59.5" inputmode="decimal" aria-label="전용면적" style="max-width: 96px" /><span class="subtle">㎡</span></div></td>
+                        <td><div class="inline" style="flex-wrap: nowrap"><input class="input input--sm mono" value="32" placeholder="32" inputmode="numeric" aria-label="좌석수" style="max-width: 80px" /><span class="subtle">석</span></div></td>
+                        <td style="text-align: right"><button class="iconbtn" type="button" aria-label="이 층 삭제" data-icon="trash" data-icon-size="15" data-floor-del></button></td>
+                      </tr>
+                      <tr data-floor-row>
+                        <td>
+                          <div class="inline" style="flex-wrap: nowrap; gap: var(--s-2)">
+                            <select class="select select--sm" aria-label="지상·지하" style="width: 80px; flex: none">
+                              <option selected>지상</option>
+                              <option>지하</option>
+                            </select>
+                            <input class="input input--sm mono" value="2" placeholder="1" inputmode="numeric" aria-label="층" style="max-width: 64px" />
+                            <span class="subtle">층</span>
+                          </div>
+                        </td>
+                        <td><div class="inline" style="flex-wrap: nowrap"><input class="input input--sm mono" value="12" placeholder="18" inputmode="decimal" aria-label="매장평수" style="max-width: 96px" /><span class="subtle">평</span></div></td>
+                        <td><div class="inline" style="flex-wrap: nowrap"><input class="input input--sm mono" value="39.7" placeholder="59.5" inputmode="decimal" aria-label="전용면적" style="max-width: 96px" /><span class="subtle">㎡</span></div></td>
+                        <td><div class="inline" style="flex-wrap: nowrap"><input class="input input--sm mono" value="20" placeholder="32" inputmode="numeric" aria-label="좌석수" style="max-width: 80px" /><span class="subtle">석</span></div></td>
+                        <td style="text-align: right"><button class="iconbtn" type="button" aria-label="이 층 삭제" data-icon="trash" data-icon-size="15" data-floor-del></button></td>
+                      </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="panel__note">층마다 한 줄로 적습니다(점포 1 : 층 N). 매장평수는 소수 첫째 자리, 전용면적은 소수 둘째 자리(1평 = 3.3058㎡), 좌석수는 0 이상 정수이며 모두 선택입니다.</div>
+              <script>
+                (function () {
+                  var body = document.currentScript.parentNode.querySelector("[data-floor-body]");
+                  var add = document.currentScript.parentNode.querySelector("[data-floor-add]");
+                  var tpl = body.querySelector("[data-floor-row]").cloneNode(true);
+                  tpl.querySelectorAll("input").forEach(function (i) { i.value = ""; });
+                  add.addEventListener("click", function () { body.appendChild(tpl.cloneNode(true)); });
+                  body.addEventListener("click", function (e) {
+                    var b = e.target.closest("[data-floor-del]");
+                    if (b && body.querySelectorAll("[data-floor-row]").length > 1) b.closest("[data-floor-row]").remove();
+                  });
+                })();
+              </script>
             </section>
 
             <p class="note">
