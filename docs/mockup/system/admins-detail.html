@@ -16,17 +16,18 @@
          초기 비밀번호 메일이 나가지 못한 계정은 그대로 두고 ‘초기 비밀번호 미발송’을 적는다 — 다시 보내는 길은 비밀번호 초기화뿐이다 (SYSTEM-3 확정).
          삭제는 논리 삭제다 — 선행 조건 없이 바로 처리하고, 목록·검색·상세에서 빠지며 로그인을 막는다. 복구하지 않는다.
          초기화한 비밀번호는 누구에게도 보이지 않고 계정 이메일로만 간다 — 계정 생성 메일이 아니라 비밀번호 초기화 전용 양식으로 보낸다.
-         로그인 사용자는 정민재(plat_jung · 플랫폼 마스터)다. 본인 계정 시나리오는 이 사람을 기준으로 본다.
+         로그인 사용자는 정민재(platjung · 플랫폼 마스터)다. 본인 계정 시나리오는 이 사람을 기준으로 본다.
          ‘마지막 사용 플랫폼 마스터’ 시나리오는 두지 않는다 — 마스터 계정은 마스터만 바꾸고 로그인한 마스터는 늘 사용 상태라
          마지막 마스터는 사실상 늘 본인 계정이고, 본인 계정 보호와 겹친다. 남는 것은 마스터 둘이 서로를 동시에 강등하는 순간뿐이라
          화면에서 미리 막지 않고 저장할 때 서버가 ‘사용 중 마스터 한 명 이상’을 검사해 걸리면 되돌리고 알린다 (SYSTEM-2 확정).
          플랫폼 관리자가 플랫폼 마스터 계정을 볼 때 수정·삭제·비밀번호 초기화 항목은 모두 숨긴다 — 권한이 없으면 실행 항목을 보이지 않는다 (SYSTEM-1 확정).
            비활성으로 흐리게 두는 것은 권한은 있으나 상태 때문에 막힌 경우뿐이다 — 본인 계정.
-         쟁점 후보(S-BRSPGB): 상세에 ‘상태 변경·권한 변경 실행 항목’이 따로 있는지 명세가 말하지 않는다 — 표본은 수정 화면에서만 바꾸고 여기서는 사유만 적는다.
-         쟁점 후보(S-XKYOND): 비밀번호 초기화 이력·삭제 이력을 화면에서 보여 줄지 정해지지 않았다 — 표본은 생성·변경 이력 표에 섞지 않는다.
+         상태·권한 변경 실행 항목은 상세에 두지 않는다 — 수정 화면에서만 바꾼다 (확정 2026-09-29).
+         비밀번호 초기화 이력은 생성·변경 이력 표에 ‘비밀번호 초기화’ 한 줄로 함께 보인다 — 처리자·일시·발송 결과만, 비밀번호 값은 남기지 않는다.
+           삭제 이력은 삭제된 계정이 목록·상세에 나오지 않으므로 데이터로만 남는다 (확정 2026-09-29).
          기본정보에는 주소를 둔다 — 등록에서 받은 우편번호·기본주소·상세주소를 상세에서 보고 수정에서 고친다 (SYSTEM-4 확정).
-         쟁점 후보(S-FOJJKB): 첫 로그인 강제 변경 때 플랫폼 관리자도 약관 동의를 받는지 명세에 없다 — 표본은 BP 상세와 같은 강제 변경 화면(플랫폼등록)으로 잇는다.
-         주소·상태 변경 일시·변경 이력 줄은 목업 표본이다. 첫 플랫폼 마스터(plat_jung)의 생성자는 명세 밖이라 system 으로 적었다. 삭제된 계정의 아이디 plat_seo 도 표본이다.
+         시스템에서 만든 계정(플랫폼 관리자 포함)은 첫 로그인 강제 변경 화면에서 약관 동의도 받는다 — 회원가입 계정은 가입 때 받았으므로 제외 (확정 2026-09-29).
+         주소·상태 변경 일시·변경 이력 줄은 목업 표본이다. 첫 플랫폼 마스터(platjung)의 생성자는 명세 밖이라 system 으로 적었다. 삭제된 계정의 아이디 platseo 도 표본이다.
          위쪽 점선 줄 둘은 목업 전용이다 — 보는 사람의 권한과 대상 계정을 따로 바꾼다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
@@ -47,7 +48,7 @@
             <span class="badge badge--info" data-show="kim self" hidden>플랫폼 마스터</span>
             <span class="badge badge--warn">1팀 작업</span>
             <div class="titlebar__end">
-              <span class="filters__count mono">S-BRSPGB · /platform/system/admins/<span data-show="park">plat_park</span><span data-show="choi" hidden>plat_choi</span><span data-show="kim" hidden>plat_kim</span><span data-show="self" hidden>plat_jung</span><span data-show="yoon created mailfail" hidden>plat_yoon</span><span data-show="gone" hidden>plat_seo</span></span>
+              <span class="filters__count mono">S-BRSPGB · /platform/system/admins/<span data-show="park">platpark</span><span data-show="choi" hidden>platchoi</span><span data-show="kim" hidden>platkim</span><span data-show="self" hidden>platjung</span><span data-show="yoon created mailfail" hidden>platyoon</span><span data-show="gone" hidden>platseo</span></span>
 
               <!-- 비밀번호 초기화 — 수정 권한. 플랫폼 마스터 계정은 플랫폼 마스터만. 본인 계정은 비활성 -->
               <button class="btn btn--secondary btn--sm" type="button" data-open="pop-reset" data-show-role="pm pa" data-show="park choi yoon created mailfail">비밀번호 초기화</button>
@@ -80,11 +81,11 @@
               <div class="demo" data-demo="ad">
                 <b>목업 계정</b>
                 <div class="seg">
-                  <button type="button" data-state="park" aria-pressed="true">plat_park · 고객지원 담당</button>
-                  <button type="button" data-state="choi" aria-pressed="false">plat_choi · 미사용</button>
-                  <button type="button" data-state="kim" aria-pressed="false">plat_kim · 다른 플랫폼 마스터</button>
-                  <button type="button" data-state="self" aria-pressed="false">plat_jung · 본인 계정</button>
-                  <button type="button" data-state="yoon" aria-pressed="false">plat_yoon · 첫 로그인 전</button>
+                  <button type="button" data-state="park" aria-pressed="true">platpark · 고객지원 담당</button>
+                  <button type="button" data-state="choi" aria-pressed="false">platchoi · 미사용</button>
+                  <button type="button" data-state="kim" aria-pressed="false">platkim · 다른 플랫폼 마스터</button>
+                  <button type="button" data-state="self" aria-pressed="false">platjung · 본인 계정</button>
+                  <button type="button" data-state="yoon" aria-pressed="false">platyoon · 첫 로그인 전</button>
                   <button type="button" data-state="created" aria-pressed="false">등록 직후</button>
                   <button type="button" data-state="mailfail" aria-pressed="false">등록 직후 · 메일 발송 실패</button>
                   <button type="button" data-state="gone" aria-pressed="false">삭제된 계정 열기</button>
@@ -95,7 +96,7 @@
             <!-- 본인 계정 시나리오는 로그인 사용자(플랫폼 마스터) 기준이라 다른 권한 줄과 섞지 않는다 -->
             <p class="note" data-show="self" data-show-role="pa view" hidden>
               <span data-icon="info" data-icon-size="14"></span>
-              <span>이 시나리오는 로그인 사용자 plat_jung(플랫폼 마스터)의 본인 계정이다. 목업 권한을 ‘플랫폼 마스터’로 두고 본다.</span>
+              <span>이 시나리오는 로그인 사용자 platjung(플랫폼 마스터)의 본인 계정이다. 목업 권한을 ‘플랫폼 마스터’로 두고 본다.</span>
             </p>
 
             <!-- 삭제된 계정 — 상세정보를 주지 않는다 -->
@@ -110,7 +111,7 @@
             <div class="band band--info" data-show="created" hidden>
               <span class="band__ic" data-icon="check" data-icon-size="20"></span>
               <div class="band__body">
-                <div class="band__title">플랫폼 관리자 계정을 등록했습니다 · <span class="mono">plat_yoon</span></div>
+                <div class="band__title">플랫폼 관리자 계정을 등록했습니다 · <span class="mono">platyoon</span></div>
                 <p class="band__desc">
                   사용 상태로 만들었고 초기 비밀번호는 <b class="mono">chaewon.yoon@whale-erp.example</b> 로만 보냈습니다.
                   윤채원 님은 최초 로그인 때 <a class="tlink" href="../auth/force-password.html?state=platform">비밀번호를 새로 정해야</a> 권한에 맞는 ERP 홈으로 들어갈 수 있습니다.
@@ -120,7 +121,7 @@
             <div class="band band--warn" data-show="mailfail" hidden>
               <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
               <div class="band__body">
-                <div class="band__title">계정은 등록했지만 초기 비밀번호 메일이 나가지 못했습니다 · <span class="mono">plat_yoon</span></div>
+                <div class="band__title">계정은 등록했지만 초기 비밀번호 메일이 나가지 못했습니다 · <span class="mono">platyoon</span></div>
                 <p class="band__desc">
                   계정과 초기 비밀번호는 그대로 두고 발송 실패만 기록했습니다. 윤채원 님은 아직 비밀번호를 받지 못해 로그인할 수 없습니다.
                   <b>비밀번호 초기화</b>로 새 초기 비밀번호를 만들어 <b class="mono">chaewon.yoon@whale-erp.example</b> 로 다시 보내 주세요.
@@ -158,7 +159,7 @@
                   <div class="panel__body">
                     <dl class="kv">
                       <dt>아이디</dt>
-                      <dd class="mono"><span data-show="park">plat_park</span><span data-show="choi" hidden>plat_choi</span><span data-show="kim" hidden>plat_kim</span><span data-show="self" hidden>plat_jung</span><span data-show="yoon created mailfail" hidden>plat_yoon</span></dd>
+                      <dd class="mono"><span data-show="park">platpark</span><span data-show="choi" hidden>platchoi</span><span data-show="kim" hidden>platkim</span><span data-show="self" hidden>platjung</span><span data-show="yoon created mailfail" hidden>platyoon</span></dd>
                       <dt>이름</dt>
                       <dd><span data-show="park">박지우</span><span data-show="choi" hidden>최유나</span><span data-show="kim" hidden>김서연</span><span data-show="self" hidden>정민재</span><span data-show="yoon created mailfail" hidden>윤채원</span></dd>
                       <dt>연락처</dt>
@@ -210,7 +211,7 @@
               <section class="panel">
                 <div class="panel__head">
                   <h2 class="t-h2">생성 · 변경 이력</h2>
-                  <span class="badge badge--quiet">생성 · 정보 · 권한 · 상태 · 최신순</span>
+                  <span class="badge badge--quiet">생성 · 정보 · 권한 · 상태 · 비밀번호 초기화 · 최신순</span>
                 </div>
                 <div class="tblwrap">
                   <table class="tbl tbl--dense">
@@ -218,19 +219,20 @@
                       <tr><th scope="col">일시</th><th scope="col">처리자</th><th scope="col">구분</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
                     </thead>
                     <tbody>
-                      <tr data-show="park"><td class="mono">2026-03-02 14:20</td><td class="mono">plat_kim</td><td><span class="badge badge--quiet">정보 변경</span></td><td>직책</td><td>사원</td><td>매니저</td></tr>
-                      <tr data-show="park"><td class="mono">2025-07-01 09:30</td><td class="mono">plat_jung</td><td><span class="badge badge--quiet">권한 변경</span></td><td>사용자 권한</td><td>플랫폼 관리자 <span class="mono subtle">PA000001</span></td><td>고객지원 담당 <span class="mono subtle">PA000002</span></td></tr>
-                      <tr data-show="park"><td class="mono">2025-06-02 10:11</td><td class="mono">plat_jung</td><td><span class="badge badge--quiet">생성</span></td><td>계정</td><td class="nil"></td><td>사용 · 플랫폼 관리자 <span class="mono subtle">PA000001</span></td></tr>
-                      <tr data-show="choi" hidden><td class="mono">2026-05-06 11:20</td><td class="mono">plat_jung</td><td><span class="badge badge--quiet">상태 변경</span></td><td>계정 상태</td><td>사용</td><td>미사용</td></tr>
-                      <tr data-show="choi" hidden><td class="mono">2025-06-02 10:18</td><td class="mono">plat_jung</td><td><span class="badge badge--quiet">생성</span></td><td>계정</td><td class="nil"></td><td>사용 · 고객지원 담당 <span class="mono subtle">PA000002</span></td></tr>
-                      <tr data-show="kim" hidden><td class="mono">2025-01-06 09:05</td><td class="mono">plat_jung</td><td><span class="badge badge--quiet">생성</span></td><td>계정</td><td class="nil"></td><td>사용 · 플랫폼 마스터 <span class="mono subtle">PM000001</span></td></tr>
-                      <tr data-show="self" hidden><td class="mono">2026-02-10 16:02</td><td class="mono">plat_jung</td><td><span class="badge badge--quiet">정보 변경</span></td><td>연락처</td><td class="mono">010-2011-0071</td><td class="mono">010-2011-4410</td></tr>
+                      <tr data-show="park"><td class="mono">2026-08-12 09:40</td><td class="mono">platkim</td><td><span class="badge badge--quiet">비밀번호 초기화</span></td><td>초기 비밀번호</td><td class="nil">—</td><td>초기화 메일 발송 완료 <span class="subtle">· 값은 남기지 않음</span></td></tr>
+                      <tr data-show="park"><td class="mono">2026-03-02 14:20</td><td class="mono">platkim</td><td><span class="badge badge--quiet">정보 변경</span></td><td>직책</td><td>사원</td><td>매니저</td></tr>
+                      <tr data-show="park"><td class="mono">2025-07-01 09:30</td><td class="mono">platjung</td><td><span class="badge badge--quiet">권한 변경</span></td><td>사용자 권한</td><td>플랫폼 관리자 <span class="mono subtle">PA000001</span></td><td>고객지원 담당 <span class="mono subtle">PA000002</span></td></tr>
+                      <tr data-show="park"><td class="mono">2025-06-02 10:11</td><td class="mono">platjung</td><td><span class="badge badge--quiet">생성</span></td><td>계정</td><td class="nil"></td><td>사용 · 플랫폼 관리자 <span class="mono subtle">PA000001</span></td></tr>
+                      <tr data-show="choi" hidden><td class="mono">2026-05-06 11:20</td><td class="mono">platjung</td><td><span class="badge badge--quiet">상태 변경</span></td><td>계정 상태</td><td>사용</td><td>미사용</td></tr>
+                      <tr data-show="choi" hidden><td class="mono">2025-06-02 10:18</td><td class="mono">platjung</td><td><span class="badge badge--quiet">생성</span></td><td>계정</td><td class="nil"></td><td>사용 · 고객지원 담당 <span class="mono subtle">PA000002</span></td></tr>
+                      <tr data-show="kim" hidden><td class="mono">2025-01-06 09:05</td><td class="mono">platjung</td><td><span class="badge badge--quiet">생성</span></td><td>계정</td><td class="nil"></td><td>사용 · 플랫폼 마스터 <span class="mono subtle">PM000001</span></td></tr>
+                      <tr data-show="self" hidden><td class="mono">2026-02-10 16:02</td><td class="mono">platjung</td><td><span class="badge badge--quiet">정보 변경</span></td><td>연락처</td><td class="mono">010-2011-0071</td><td class="mono">010-2011-4410</td></tr>
                       <tr data-show="self" hidden><td class="mono">2025-01-06 09:00</td><td class="mono">system</td><td><span class="badge badge--quiet">생성</span></td><td>계정</td><td class="nil"></td><td>사용 · 플랫폼 마스터 <span class="mono subtle">PM000001</span></td></tr>
-                      <tr data-show="yoon created mailfail" hidden><td class="mono">2026-09-21 10:04</td><td class="mono">plat_jung</td><td><span class="badge badge--quiet">생성</span></td><td>계정</td><td class="nil"></td><td>사용 · 플랫폼 관리자 <span class="mono subtle">PA000001</span></td></tr>
+                      <tr data-show="yoon created mailfail" hidden><td class="mono">2026-09-21 10:04</td><td class="mono">platjung</td><td><span class="badge badge--quiet">생성</span></td><td>계정</td><td class="nil"></td><td>사용 · 플랫폼 관리자 <span class="mono subtle">PA000001</span></td></tr>
                     </tbody>
                   </table>
                 </div>
-                <div class="panel__note">변경 전후 값과 처리자, 처리 일시만 남기고 사유는 받지 않는다. 비밀번호 초기화와 계정 삭제 기록은 이 표가 아니라 따로 보존된다.</div>
+                <div class="panel__note">변경 전후 값과 처리자, 처리 일시만 남기고 사유는 받지 않는다. 비밀번호 초기화는 이 표에 함께 보이되 비밀번호 값은 남기지 않는다. 계정 삭제 기록은 데이터로만 보존된다.</div>
               </section>
 
             </div>
@@ -246,7 +248,7 @@
               <div class="modal__body">
                 <div data-step="ask" class="stack--lg" style="display: flex; flex-direction: column">
                   <dl class="kv">
-                    <dt>아이디</dt><dd class="mono"><span data-show="park">plat_park</span><span data-show="choi" hidden>plat_choi</span><span data-show="kim" hidden>plat_kim</span><span data-show="yoon created mailfail" hidden>plat_yoon</span></dd>
+                    <dt>아이디</dt><dd class="mono"><span data-show="park">platpark</span><span data-show="choi" hidden>platchoi</span><span data-show="kim" hidden>platkim</span><span data-show="yoon created mailfail" hidden>platyoon</span></dd>
                     <dt>이름</dt><dd><span data-show="park">박지우</span><span data-show="choi" hidden>최유나</span><span data-show="kim" hidden>김서연</span><span data-show="yoon created mailfail" hidden>윤채원</span></dd>
                   </dl>
                   <p style="margin: 0; font-size: 13px">새 초기 비밀번호(12자 무작위)를 비밀번호 초기화 안내 메일로 계정 이메일에 보냅니다. 초기화하는 사람도 그 값을 볼 수 없습니다.</p>
@@ -319,7 +321,7 @@
               <div class="modal__body">
                 <div data-step="ask" class="stack--lg" style="display: flex; flex-direction: column">
                   <dl class="kv">
-                    <dt>아이디</dt><dd class="mono"><span data-show="park">plat_park</span><span data-show="choi" hidden>plat_choi</span><span data-show="kim" hidden>plat_kim</span><span data-show="yoon created mailfail" hidden>plat_yoon</span></dd>
+                    <dt>아이디</dt><dd class="mono"><span data-show="park">platpark</span><span data-show="choi" hidden>platchoi</span><span data-show="kim" hidden>platkim</span><span data-show="yoon created mailfail" hidden>platyoon</span></dd>
                     <dt>이름</dt><dd><span data-show="park">박지우</span><span data-show="choi" hidden>최유나</span><span data-show="kim" hidden>김서연</span><span data-show="yoon created mailfail" hidden>윤채원</span></dd>
                   </dl>
                   <p style="margin: 0; font-size: 13px">삭제하면 <b>관리자 목록과 검색에서 빠지고</b>, 이 계정으로는 <b>더 로그인할 수 없습니다</b>. 로그인 중인 세션도 바로 끊깁니다.</p>

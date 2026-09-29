@@ -15,10 +15,10 @@
          플랫폼 마스터 계정은 플랫폼 마스터만 고친다. 플랫폼 관리자는 플랫폼 마스터 권한을 부여하거나 바꿀 수 없다.
          본인 계정은 기본정보만 고치고 권한·상태는 읽기 전용이다.
          마지막 사용 플랫폼 마스터는 화면에서 미리 막지 않는다 — 저장할 때 서버가 ‘사용 중 마스터 한 명 이상’을 검사해 걸리면 되돌리고 알린다 (SYSTEM-2 확정).
-         lastfail 은 다른 마스터(plat_kim)를 미사용으로 저장하는 사이 그쪽이 나를 미사용으로 바꿔 검사에 걸린 화면이다.
+         lastfail 은 다른 마스터(platkim)를 미사용으로 저장하는 사이 그쪽이 나를 미사용으로 바꿔 검사에 걸린 화면이다.
          다른 사람이 먼저 고쳤으면 저장하지 않고 최신 정보를 불러오게 한다.
          기본정보에는 주소를 둔다 — 등록에서 받은 주소를 여기서 고친다. 빼면 등록 뒤 주소를 바꿀 길이 없다 (SYSTEM-4 확정).
-         쟁점 후보(S-CZGHBS): 미사용으로 바꿀 때 확인 창을 띄울지, 선택 즉시 안내만 하고 저장으로 확정할지 정해지지 않았다. 표본은 선택 아래 안내만 둔다.
+         미사용으로 바꿀 때 확인 창은 없다 — 선택 아래 안내만 두고 저장으로 확정한다 (확정 2026-09-29).
          위쪽 점선 줄은 목업 전용이다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
@@ -29,12 +29,12 @@
             <a class="iconbtn" href="admins-detail.html?state=self" aria-label="관리자 상세로" data-icon="arrowleft" data-icon-size="18" data-show="self" hidden></a>
             <a class="iconbtn" href="admins-detail.html?state=kim" aria-label="관리자 상세로" data-icon="arrowleft" data-icon-size="18" data-show="lastfail" hidden></a>
             <h1 class="t-h1">플랫폼 관리자 수정</h1>
-            <span class="badge badge--quiet" data-show="base off dupmail miss denied conflict fail">박지우 · plat_park</span>
-            <span class="badge badge--quiet" data-show="self" hidden>정민재 · plat_jung · 본인</span>
-            <span class="badge badge--info" data-show="lastfail" hidden>김서연 · plat_kim · 플랫폼 마스터</span>
+            <span class="badge badge--quiet" data-show="base off dupmail miss denied conflict fail">박지우 · platpark</span>
+            <span class="badge badge--quiet" data-show="self" hidden>정민재 · platjung · 본인</span>
+            <span class="badge badge--info" data-show="lastfail" hidden>김서연 · platkim · 플랫폼 마스터</span>
             <span class="badge badge--warn">1팀 작업</span>
             <div class="titlebar__end">
-              <span class="filters__count mono">S-CZGHBS · /platform/system/admins/<span data-show="base off dupmail miss denied conflict fail">plat_park</span><span data-show="self" hidden>plat_jung</span><span data-show="lastfail" hidden>plat_kim</span>/edit</span>
+              <span class="filters__count mono">S-CZGHBS · /platform/system/admins/<span data-show="base off dupmail miss denied conflict fail">platpark</span><span data-show="self" hidden>platjung</span><span data-show="lastfail" hidden>platkim</span>/edit</span>
               <a class="btn btn--secondary btn--sm" href="admins-detail.html" data-show="base off dupmail miss denied conflict fail">취소</a>
               <a class="btn btn--secondary btn--sm" href="admins-detail.html?state=self" data-show="self" hidden>취소</a>
               <a class="btn btn--secondary btn--sm" href="admins-detail.html?state=kim" data-show="lastfail" hidden>취소</a>
@@ -49,7 +49,7 @@
             <div class="demo" data-demo="ef">
               <b>목업 상태</b>
               <div class="seg">
-                <button type="button" data-state="base" aria-pressed="true">plat_park · 일반</button>
+                <button type="button" data-state="base" aria-pressed="true">platpark · 일반</button>
                 <button type="button" data-state="off" aria-pressed="false">미사용 선택</button>
                 <button type="button" data-state="self" aria-pressed="false">본인 계정</button>
                 <button type="button" data-state="lastfail" aria-pressed="false">저장 실패 · 마지막 플랫폼 마스터</button>
@@ -123,9 +123,9 @@
                 <div class="grid grid--2">
                   <div class="field">
                     <label for="eid">아이디 <span class="req">*</span></label>
-                    <input class="input mono" id="eid" value="plat_park" readonly data-show="base off dupmail miss denied conflict fail" />
-                    <input class="input mono" value="plat_jung" readonly aria-label="아이디" data-show="self" hidden />
-                    <input class="input mono" value="plat_kim" readonly aria-label="아이디" data-show="lastfail" hidden />
+                    <input class="input mono" id="eid" value="platpark" readonly data-show="base off dupmail miss denied conflict fail" />
+                    <input class="input mono" value="platjung" readonly aria-label="아이디" data-show="self" hidden />
+                    <input class="input mono" value="platkim" readonly aria-label="아이디" data-show="lastfail" hidden />
                     <span class="help">아이디는 바꿀 수 없습니다</span>
                   </div>
                   <div class="field">

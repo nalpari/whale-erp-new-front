@@ -22,12 +22,12 @@
          저장은 행마다가 아니라 그룹 목록·상세 코드 목록 패널마다 한 번이다.
          위쪽 점선 줄 둘은 목업 전용이다 — 권한과 화면 상태를 따로 바꾼다.
 
-         쟁점 후보 (명세로 정해지지 않아 화면이 갈리는 곳)
-         - 그룹 코드·상세 코드의 형식과 길이 — PL-VOCZCE 가 따르라고 하지만 정책 본문에 값이 없다.
-         - 신규 행의 표시 순서 기본값(마지막 다음)과 사용 상태 기본값(사용).
+         확정 (2026-09-29)
+         - 그룹 코드·상세 코드는 영문 대문자·숫자·밑줄만 쓰고 영문으로 시작하며 20자 이내다. 소문자로 치면 대문자로 바꾼다.
+         - 신규 행의 표시 순서는 마지막 다음, 사용 상태는 ‘사용’이 기본값이다.
          표시 순서는 직접 입력하지 않는다 — 숫자로만 보이고, 등록·수정 권한이 있으면 행을 끌어서 옮기면 1부터 다시 매긴다(겹칠 일이 없다).
-         - 등록·수정 이력은 저장만 하고 화면이 없는가 (F-LOUVWE outcome). 목업은 이력 화면을 두지 않았다.
-         - 사용 중인 서비스 코드를 사용중지할 때 확인 팝업을 띄우는가 (S-CMWABV). -->
+         - 등록·수정 이력은 데이터로만 남기고 화면은 두지 않는다.
+         - 서비스 코드를 사용중지할 때 확인 팝업은 없다 — 다른 코드처럼 행 상태만 바꾸고 저장할 때 반영하며, 안내 문구만 둔다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
       <main class="main" id="main">
@@ -178,7 +178,7 @@
                   </tr>
                     <tr data-show="newgroup dupgroup" data-show-role="edit" hidden style="background: var(--surface-hover)">
                       <td>
-                        <input class="input input--sm mono" data-show="newgroup" placeholder="그룹 코드" aria-label="그룹 코드" />
+                        <input class="input input--sm mono" data-show="newgroup" placeholder="그룹 코드" maxlength="20" style="text-transform: uppercase" aria-label="그룹 코드" title="영문 대문자·숫자·밑줄, 영문으로 시작, 20자 이내 (소문자는 대문자로 바뀝니다)" />
                         <input class="input input--sm mono" data-show="dupgroup" hidden value="SERVICE" aria-invalid="true" aria-label="그룹 코드" />
                       </td>
                       <td>
@@ -193,6 +193,9 @@
                         </select>
                       </td>
                       <td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="사용 상태"></button><span>사용</span></span></td>
+                    </tr>
+                    <tr data-show="newgroup" data-show-role="edit" hidden style="background: var(--surface-hover)">
+                      <td colspan="4"><span class="help">그룹 코드는 영문 대문자·숫자·밑줄, 영문으로 시작, 20자 이내 (소문자는 대문자로 바뀝니다). 새 그룹은 ‘사용’으로 시작합니다.</span></td>
                     </tr>
                     <tr data-show="dupgroup" data-show-role="edit" hidden style="background: var(--surface-hover)">
                       <td colspan="4"><div class="field"><span class="err"><span data-icon="alert" data-icon-size="13"></span>이미 등록된 그룹 코드입니다 — SERVICE · 서비스 (플랫폼고정). 다른 그룹 코드를 입력해 주세요.</span></div></td>
@@ -215,7 +218,7 @@
                   <div class="band__title">서비스 그룹 — 상세 코드가 곧 서비스 코드입니다</div>
                   <p class="band__desc">
                     코드명은 서비스명, 사용 상태는 서비스 사용 상태로 씁니다. 서비스 코드는 직접 입력하며 등록한 뒤에는 바꿀 수 없습니다.
-                    사용중지한 서비스는 신규 메뉴 등록과 권한 부여에서만 빠지고, 이미 등록된 메뉴는 그대로 남습니다.
+                    사용중지한 서비스는 사용자 화면과 신규 권한 부여에서 빠지고, 이미 등록된 메뉴는 그대로 남아 메뉴 관리에서 계속 편집할 수 있습니다. 사용중지는 확인 창 없이 저장할 때 반영됩니다.
                     <a class="tlink" href="menus.html">메뉴 관리에서 보기</a>
                   </p>
                 </div>
@@ -273,7 +276,7 @@
                       <td><span class="inline" style="gap: 6px; flex-wrap: nowrap" data-show-role="edit"><button class="toggle" type="button" aria-pressed="true" aria-label="사용 상태"></button><span>사용</span></span><span data-show-role="view" hidden><span class="badge badge--ok">사용</span></span></td>
                     </tr>
                     <tr>
-                      <td style="width: 44px; text-align: center"><span class="subtle" data-drag-handle data-show-role="edit" data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td><td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><span class="mono">WHALE_ERP_PLATFORM_MANAGEMENT</span><span class="nil" data-icon="lock" data-icon-size="12" data-show-role="edit" aria-label="변경 불가"></span></span></td>
+                      <td style="width: 44px; text-align: center"><span class="subtle" data-drag-handle data-show-role="edit" data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td><td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><span class="mono">PLATFORM</span><span class="nil" data-icon="lock" data-icon-size="12" data-show-role="edit" aria-label="변경 불가"></span></span></td>
                       <td class="k"><input class="input input--sm" style="width: 124px" data-show-role="edit" value="Whale ERP 플랫폼 관리" aria-label="코드명" /><span data-show-role="view" hidden>Whale ERP 플랫폼 관리</span></td>
                       <td style="text-align: center"><span class="mono" data-order>2</span></td>
                       <td><span class="inline" style="gap: 6px; flex-wrap: nowrap" data-show-role="edit"><button class="toggle" type="button" aria-pressed="true" aria-label="사용 상태"></button><span>사용</span></span><span data-show-role="view" hidden><span class="badge badge--ok">사용</span></span></td>
@@ -321,7 +324,7 @@
                       <td><span class="inline" style="gap: 6px; flex-wrap: nowrap" data-show-role="edit"><button class="toggle" type="button" aria-pressed="true" aria-label="사용 상태"></button><span>사용</span></span><span data-show-role="view" hidden><span class="badge badge--ok">사용</span></span></td>
                     </tr>
                     <tr>
-                      <td style="width: 44px; text-align: center"><span class="subtle" data-drag-handle data-show-role="edit" data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td><td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><span class="mono">STORE_INVENTORY_MANAGEMENT</span><span class="nil" data-icon="lock" data-icon-size="12" data-show-role="edit" aria-label="변경 불가"></span></span></td>
+                      <td style="width: 44px; text-align: center"><span class="subtle" data-drag-handle data-show-role="edit" data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td><td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><span class="mono">STORE_INVENTORY</span><span class="nil" data-icon="lock" data-icon-size="12" data-show-role="edit" aria-label="변경 불가"></span></span></td>
                       <td class="k"><input class="input input--sm" style="width: 124px" data-show-role="edit" value="점포재고관리" aria-label="코드명" /><span data-show-role="view" hidden>점포재고관리</span></td>
                       <td style="text-align: center"><span class="mono" data-order>10</span></td>
                       <td><span class="inline" style="gap: 6px; flex-wrap: nowrap" data-show-role="edit"><button class="toggle" type="button" aria-pressed="true" aria-label="사용 상태"></button><span>사용</span></span><span data-show-role="view" hidden><span class="badge badge--ok">사용</span></span></td>
@@ -333,14 +336,14 @@
                       <td><span class="inline" style="gap: 6px; flex-wrap: nowrap" data-show-role="edit"><button class="toggle" type="button" aria-pressed="true" aria-label="사용 상태"></button><span>사용</span></span><span data-show-role="view" hidden><span class="badge badge--ok">사용</span></span></td>
                     </tr>
                     <tr>
-                      <td style="width: 44px; text-align: center"><span class="subtle" data-drag-handle data-show-role="edit" data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td><td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><span class="mono">RESERVATION_MANAGEMENT</span><span class="nil" data-icon="lock" data-icon-size="12" data-show-role="edit" aria-label="변경 불가"></span></span></td>
+                      <td style="width: 44px; text-align: center"><span class="subtle" data-drag-handle data-show-role="edit" data-icon="dots" data-icon-size="14" title="끌어서 순서 바꾸기" style="cursor: grab; display: inline-flex; vertical-align: -2px"></span></td><td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><span class="mono">RESERVATION</span><span class="nil" data-icon="lock" data-icon-size="12" data-show-role="edit" aria-label="변경 불가"></span></span></td>
                       <td class="k"><input class="input input--sm" style="width: 124px" data-show-role="edit" value="예약관리" aria-label="코드명" /><span data-show-role="view" hidden>예약관리</span></td>
                       <td style="text-align: center"><span class="mono" data-order>12</span></td>
                       <td><span class="inline" style="gap: 6px; flex-wrap: nowrap" data-show-role="edit"><button class="toggle" type="button" aria-pressed="false" aria-label="사용 상태"></button><span>사용중지</span></span><span data-show-role="view" hidden><span class="badge badge--quiet">사용중지</span></span></td>
                     </tr>
                     <tr data-show="newcode dupcode" data-show-role="edit" hidden style="background: var(--surface-hover)">
                       <td></td><td>
-                        <input class="input input--sm mono" data-show="newcode" placeholder="서비스 코드 직접 입력" aria-label="상세 코드" />
+                        <input class="input input--sm mono" data-show="newcode" placeholder="서비스 코드 직접 입력" maxlength="20" style="text-transform: uppercase" aria-label="상세 코드" title="영문 대문자·숫자·밑줄, 영문으로 시작, 20자 이내 (소문자는 대문자로 바뀝니다)" />
                         <input class="input input--sm mono" data-show="dupcode" hidden value="POS" aria-invalid="true" aria-label="상세 코드" />
                       </td>
                       <td>
@@ -351,7 +354,7 @@
                       <td><span class="inline" style="gap: 6px; flex-wrap: nowrap"><button class="toggle" type="button" aria-pressed="true" aria-label="사용 상태"></button><span>사용</span></span></td>
                     </tr>
                     <tr data-show="newcode" data-show-role="edit" hidden style="background: var(--surface-hover)">
-                      <td colspan="5"><span class="help">서비스 코드는 자동으로 매기지 않습니다. 저장한 뒤에는 코드를 바꿀 수 없으니 확인하고 저장해 주세요.</span></td>
+                      <td colspan="5"><span class="help">서비스 코드는 자동으로 매기지 않습니다 — 영문 대문자·숫자·밑줄, 영문으로 시작, 20자 이내 (소문자는 대문자로 바뀝니다). 새 코드는 맨 끝 순서 · ‘사용’으로 시작합니다. 저장한 뒤에는 코드를 바꿀 수 없으니 확인하고 저장해 주세요.</span></td>
                     </tr>
                     <tr data-show="dupcode" data-show-role="edit" hidden style="background: var(--surface-hover)">
                       <td colspan="5"><div class="field"><span class="err"><span data-icon="alert" data-icon-size="13"></span>이 그룹에 이미 있는 상세 코드입니다 — POS · POS (표시 순서 3). 다른 코드를 입력해 주세요.</span></div></td>

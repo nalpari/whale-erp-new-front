@@ -29,8 +29,10 @@
          목업 권한 “등록·수정” 은 플랫폼 마스터로 본다 — 표본에서 플랫폼 관리자 PA000001 은 이 메뉴에 조회만 있다.
          조회만이면 끌기 손잡이 · 신규 메뉴 · 저장 · 위치 옮기기가 없고 상세는 읽기만 한다.
          트리에는 검색 칸을 두지 않는다 — 명세의 “검색 결과 없음” 예외도 함께 뺀다 (SYSTEM-7 확정).
-         쟁점 후보(화면 밖): 사용중지 서비스를 목록에서 고를 수 있는지 · 사용중지 상위 메뉴 아래 하위 메뉴의 노출 ·
-         묶음 메뉴의 URL 필수 여부 · 사용중지 메뉴 아래에 신규 메뉴를 둘 수 있는지. -->
+         사용중지 서비스(예약관리)도 목록에서 골라 트리를 보고 메뉴를 편집할 수 있다 — 재개 전 준비용이며 사용자 화면에는 보이지 않는다 (확정 2026-09-29).
+         상위 메뉴를 사용중지하면 하위 메뉴도 사용자 화면·신규 권한 부여에서 함께 빠진다. 하위의 사용 상태 값은 바꾸지 않아 상위를 다시 켜면 그대로 돌아온다 (확정 2026-09-29).
+         메뉴 URL 은 선택 입력이다 — 하위를 묶기만 하는 메뉴는 비워 두고, 넣으면 누를 때 그 화면으로 간다 (확정 2026-09-29).
+         사용중지 메뉴 아래에도 신규 메뉴를 만들 수 있다 — 상위가 사용중지라 사용자에게는 보이지 않는다고 알린다 (확정 2026-09-29). -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
       <main class="main" id="main">
@@ -58,10 +60,11 @@
                   <button type="button" data-state="list" aria-pressed="true">서비스 목록</button>
                   <button type="button" data-state="plat" aria-pressed="false">플랫폼 관리 트리</button>
                   <button type="button" data-state="erp" aria-pressed="false">Whale ERP 트리(3단계)</button>
+                  <button type="button" data-state="resv" aria-pressed="false">예약관리 트리(사용중지 서비스)</button>
                 </div>
               </div>
               <!-- 저장 실패 보기 — 켜 두면 다음 이동·저장 한 번만 실패한다. 한 번 쓰면 저절로 ‘정상 저장’으로 돌아간다. -->
-              <div class="demo" data-show="plat erp" data-show-role="edit" hidden>
+              <div class="demo" data-show="plat erp resv" data-show-role="edit" hidden>
                 <b>목업 저장</b>
                 <div class="seg" id="mn-fail">
                   <button type="button" data-fail="0" aria-pressed="true">정상 저장</button>
@@ -99,7 +102,7 @@
                     </tr>
                     <tr>
                       <td class="n">2</td>
-                      <td class="mono"><button class="tlink" type="button" data-state-go="plat">WHALE_ERP_PLATFORM_MANAGEMENT</button></td>
+                      <td class="mono"><button class="tlink" type="button" data-state-go="plat">PLATFORM</button></td>
                       <td class="k"><button class="tlink" type="button" data-state-go="plat">Whale ERP 플랫폼 관리</button></td>
                       <td><span class="badge badge--ok">사용</span></td>
                       <td class="n" id="mn-cnt-plat">22</td>
@@ -111,15 +114,15 @@
                     <tr><td class="n">7</td><td class="mono">QR_ORDER</td><td>QR Order</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
                     <tr><td class="n">8</td><td class="mono">RECIPE_MANAGEMENT</td><td>레시피관리</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
                     <tr><td class="n">9</td><td class="mono">ORDER_MANAGEMENT</td><td>발주관리</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
-                    <tr><td class="n">10</td><td class="mono">STORE_INVENTORY_MANAGEMENT</td><td>점포재고관리</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
+                    <tr><td class="n">10</td><td class="mono">STORE_INVENTORY</td><td>점포재고관리</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
                     <tr><td class="n">11</td><td class="mono">WAITING_MANAGEMENT</td><td>대기순번관리</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
-                    <!-- 쟁점 후보 — 사용중지 서비스를 목록에서 골라 기존 메뉴를 볼 수 있게 할지. 목업은 보이되 고르지 않는다. -->
+                    <!-- 사용중지 서비스도 골라 트리를 보고 메뉴를 편집한다 — 사용자 화면·신규 권한 부여에서만 빠진다 (확정 2026-09-29) -->
                     <tr style="color: var(--muted)">
                       <td class="n">12</td>
-                      <td class="mono">RESERVATION_MANAGEMENT</td>
-                      <td>예약관리</td>
-                      <td><span class="badge badge--warn">사용중지</span> <span class="subtle" style="font-size: 12px">신규 메뉴 등록·권한 부여 제외 · 기존 메뉴 보존</span></td>
-                      <td class="n">0</td>
+                      <td class="mono"><button class="tlink" type="button" data-state-go="resv">RESERVATION</button></td>
+                      <td><button class="tlink" type="button" data-state-go="resv">예약관리</button></td>
+                      <td><span class="badge badge--warn">사용중지</span> <span class="subtle" style="font-size: 12px">사용자 화면·권한 부여 제외 · 메뉴는 편집 가능</span></td>
+                      <td class="n" id="mn-cnt-resv">3</td>
                     </tr>
                   </tbody>
                 </table>
@@ -131,16 +134,24 @@
 
             <!-- ============ 서비스 선택 뒤 — 트리 + 상세 ============
                  탭은 서비스 전환이자 ‘다른 서비스 영역’이다. 메뉴를 끄는 동안 다른 서비스 탭에 놓을 수 없음을 표시한다. -->
-            <div class="tabs" data-show="plat erp" hidden>
+            <div class="tabs" data-show="plat erp resv" hidden>
               <button type="button" data-state-go="list"><span data-icon="arrowleft" data-icon-size="14"></span>서비스 목록</button>
               <button type="button" data-state-go="erp" data-svc-tab="erp" aria-selected="false">Whale ERP <span class="count" data-tab-count>48</span><span data-noplace hidden>· 놓을 수 없음</span></button>
               <button type="button" data-state-go="plat" data-svc-tab="plat" aria-selected="false">Whale ERP 플랫폼 관리 <span class="count" data-tab-count>22</span><span data-noplace hidden>· 놓을 수 없음</span></button>
+              <button type="button" data-state-go="resv" data-svc-tab="resv" aria-selected="false">예약관리 <span class="badge badge--warn">사용중지</span> <span class="count" data-tab-count>3</span><span data-noplace hidden>· 놓을 수 없음</span></button>
+            </div>
+            <div class="band band--warn" data-show="resv" hidden>
+              <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+              <div class="band__body">
+                <div class="band__title">사용중지 서비스입니다 — 메뉴는 편집할 수 있지만 사용자 화면에는 보이지 않습니다</div>
+                <p class="band__desc">서비스 사용 상태는 플랫폼 공통코드 관리의 ‘서비스’ 그룹에서 바꿉니다. 다시 사용하면 여기서 준비한 메뉴가 그대로 나타나고, 권한은 권한 관리에서 줍니다.</p>
+              </div>
             </div>
 
             <!-- 결과 띠 — 이동·저장·거절·실패를 한 곳에서 알린다. 스크립트가 채우고, 화면을 내려도 따라온다. -->
             <div id="mn-band" role="status" aria-live="polite" hidden style="position: sticky; top: calc(var(--nav-h) + var(--title-h) + var(--s-3)); z-index: 10"></div>
 
-            <div style="display: grid; grid-template-columns: minmax(0, 1fr) 368px; gap: var(--s-5); align-items: start" data-show="plat erp" hidden>
+            <div style="display: grid; grid-template-columns: minmax(0, 1fr) 368px; gap: var(--s-5); align-items: start" data-show="plat erp resv" hidden>
               <!-- 왼쪽 — 메뉴 트리 -->
               <section class="panel" aria-labelledby="mn-tree-t">
                 <div class="panel__head">
@@ -160,6 +171,7 @@
                 <div class="panel__note" data-show-role="edit">
                   손잡이를 끌어 같은 서비스 안에서 순서·상위 메뉴·단계를 바꿉니다. 행의 위·아래 끝에 놓으면 그 앞·뒤로, 가운데에 놓으면 그 메뉴 안 맨 끝으로 들어갑니다.
                   하위 메뉴는 함께 움직이고, 놓을 수 없는 자리는 빨간 점선으로 표시합니다. 사용중지 메뉴는 흐리게 보입니다.
+                  상위 메뉴가 사용중지면 그 아래 메뉴도 사용자 화면에 나오지 않습니다 — 하위의 사용 상태는 그대로 두어 상위를 다시 켜면 돌아옵니다.
                 </div>
                 <div class="panel__note" data-show-role="view" hidden>조회 권한만 있어 끌기 손잡이가 없습니다. 사용중지 메뉴는 흐리게 보입니다.</div>
               </section>
@@ -188,7 +200,7 @@
         /* [메뉴 코드, 단계, 노출 메뉴명, 메뉴 URL, 사용 1 · 사용중지 0] — 적은 순서가 곧 메뉴 순서다. */
         var SVC = {
           plat: {
-            code: "WHALE_ERP_PLATFORM_MANAGEMENT", name: "Whale ERP 플랫폼 관리", omitted: 0, first: "MN000214",
+            code: "PLATFORM", name: "Whale ERP 플랫폼 관리", omitted: 0, first: "MN000214",
             eg: "예: 플랫폼 배치 관리", urlEg: "/platform/system/…",
             src: [
               ["MN000201", 1, "회원관리", "", 0],
@@ -236,9 +248,19 @@
               ["MN000014", 2, "BP 공통코드 관리", "/settings/codes", 1],
               ["MN000015", 2, "BP 휴일 관리", "/settings/holidays", 1]
             ]
+          },
+          /* 사용중지 서비스 — 골라서 보고 편집한다 (확정 2026-09-29) */
+          resv: {
+            code: "RESERVATION", name: "예약관리", omitted: 0, first: "MN000302",
+            eg: "예: 예약 알림 설정", urlEg: "/reservations/…",
+            src: [
+              ["MN000301", 1, "예약관리", "", 1],
+              ["MN000302", 2, "예약 현황", "/reservations", 1],
+              ["MN000303", 2, "예약 설정", "/reservations/settings", 1]
+            ]
           }
         };
-        var KEYS = ["plat", "erp"];
+        var KEYS = ["plat", "erp", "resv"];
 
         function on(el, ev, fn) { el.addEventListener(ev, fn); }
         /* ---------- 모델 ---------- */
@@ -273,7 +295,7 @@
         function ic(name, sz) { return '<svg width="' + sz + '" height="' + sz + '" aria-hidden="true"><use href="#i-' + name + '"/></svg>'; }
 
         /* ---------- 화면 상태 ---------- */
-        var st = { svc: null, role: "edit", sel: { plat: SVC.plat.first, erp: SVC.erp.first }, draft: null, buf: null, band: null, moved: null, drag: null };
+        var st = { svc: null, role: "edit", sel: { plat: SVC.plat.first, erp: SVC.erp.first, resv: SVC.resv.first }, draft: null, buf: null, band: null, moved: null, drag: null };
         var root = document.getElementById("menus");
         var listBar = root.querySelector('[data-demo="menus"]:not([data-demo-key])');
         var roleBar = root.querySelector('[data-demo="menus"][data-demo-key="role"]');
@@ -489,11 +511,15 @@
             return;
           }
 
-          var parentHelp = d
+          /* 상위(또는 그 위)가 사용중지면 사용자에게 보이지 않는다 */
+          var offUp = false;
+          for (var q = p; q; q = q.parent) if (!q.use) offUp = true;
+          var hideHelp = offUp ? '<span class="help">상위가 사용중지라 사용자에게는 보이지 않습니다.</span>' : "";
+          var parentHelp = hideHelp + (d
             ? (d.parent
                 ? '<button class="tbtn" type="button" data-top style="align-self: flex-start">최상위 메뉴로 바꾸기</button>'
                 : d.from ? '<button class="tbtn" type="button" data-back style="align-self: flex-start">‘' + esc(d.from.name) + "’ 아래로 되돌리기</button>" : '<span class="help">고른 메뉴가 없어 최상위에 등록합니다.</span>')
-            : '<span class="help">' + (L >= MAX ? "3단계 메뉴라 이 아래에는 하위 메뉴를 둘 수 없습니다. " : "") + "상위 메뉴와 순서는 트리에서 끌거나 아래 ‘위치 옮기기’로 바꿉니다.</span>";
+            : '<span class="help">' + (L >= MAX ? "3단계 메뉴라 이 아래에는 하위 메뉴를 둘 수 없습니다. " : "") + "상위 메뉴와 순서는 트리에서 끌거나 아래 ‘위치 옮기기’로 바꿉니다.</span>");
           var err = v.err ? '<span class="err" id="mn-name-err">' + ic("alert", 14) + esc(v.err) + "</span>" : "";
           var html = '<section class="panel" aria-label="' + (d ? "신규 메뉴 등록" : "메뉴 상세") + '">' + head +
             '<div class="panel__body">' +
@@ -506,7 +532,8 @@
             (d ? '<span class="subtle" style="font-size: 12px; margin-top: calc(-1 * var(--s-2))">코드는 저장할 때 확정됩니다. 순서는 상위 메뉴의 맨 끝이고, 저장 뒤 트리에서 옮깁니다.</span>' : "") +
             '<div class="field"><label for="mn-name">노출 메뉴명 <span class="req">*</span></label>' +
             '<input class="input" id="mn-name" value="' + esc(v.name) + '" placeholder="' + esc(s.eg) + '"' + (v.err ? ' aria-invalid="true" aria-describedby="mn-name-err"' : "") + " />" + err + "</div>" +
-            '<div class="field"><label for="mn-url">메뉴 URL</label><input class="input mono" id="mn-url" value="' + esc(v.url) + '" placeholder="' + esc(s.urlEg) + '" /></div>' +
+            '<div class="field"><label for="mn-url">메뉴 URL <span class="subtle" style="font-weight: 400">선택</span></label><input class="input mono" id="mn-url" value="' + esc(v.url) + '" placeholder="' + esc(s.urlEg) + '" />' +
+            '<span class="help">하위 메뉴를 묶기만 하는 메뉴는 비워 둘 수 있습니다. 넣으면 누를 때 그 화면으로 갑니다.</span></div>' +
             '<div class="field"><label id="mn-use-l">메뉴 사용 상태</label>' +
             '<div class="seg" role="group" aria-labelledby="mn-use-l" style="align-self: flex-start">' +
             '<button type="button" data-use="1" aria-pressed="' + v.use + '">사용</button><button type="button" data-use="0" aria-pressed="' + !v.use + '">사용중지</button></div>' +

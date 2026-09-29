@@ -9,17 +9,17 @@
   </head>
   <body data-root="../" data-page="system" data-sub="system/admins.html">
     <!-- 플랫폼 관리자 정보 등록 · /platform/system/admins/new · S-FOJJKB · 1팀
-         기본정보(아이디·이름·연락처·이메일 필수, 소속 부서·직책·주소 선택)와 사용자 권한 하나를 받는다.
+         기본정보(아이디·이름·연락처·이메일 필수, 소속 부서·직책·주소 선택)와 사용자 권한 하나(필수)를 받는다.
          입력 형식과 길이는 식별정보 중복 검사 정책(PL-OCJOFP)의 계정 기본정보 입력 규칙을 따른다.
          아이디는 삭제한 계정까지 포함해 겹칠 수 없고, 이메일은 사용·미사용 계정과만 겹치지 않으면 된다. 중복 안내는 항목별로 따로 낸다.
          계정 상태 항목은 없다 — 새 계정은 늘 사용으로 생긴다. 비밀번호 입력도 없다 — 12자 무작위 초기 비밀번호를 등록 이메일로만 보낸다(S-WABHRE).
          우편번호·기본주소는 주소 검색 컴포넌트에서 고른 값만 들어가고 직접 칠 수 없다. 상세주소만 직접 적는다.
          플랫폼 관리자는 플랫폼 마스터 계정을 등록할 수 없다. BP 마스터·가맹 마스터 같은 BP 관련 권한은 누구도 부여할 수 없다.
          등록하면 상세(등록 직후)로 가서 첫 로그인 때 비밀번호를 바꿔야 한다고 알린다.
-         쟁점 후보(S-FOJJKB): 플랫폼 관리자에게 권한 선택지에서 플랫폼 마스터를 숨길지, 보이되 막을지, 고르게 두고 등록 때 거부할지 정해지지 않았다.
-           표본은 선택지에서 뺐고, 요청이 들어온 경우의 거부 안내는 ‘마스터 등록 시도’ 상태로 보인다.
-         쟁점 후보(S-FOJJKB): 사용자 권한이 필수 항목인지 명세의 필수 목록(아이디·이름·연락처·이메일)에 없다. 권한 없는 계정이 가능한지 갈린다.
-         쟁점 후보(PL-OCJOFP): 아이디 규칙은 영문·숫자뿐인데 표본 아이디(plat_yoon 등)는 밑줄을 쓴다. 밑줄 허용 여부를 정해야 한다.
+         플랫폼 관리자에게는 권한 선택지에서 플랫폼 마스터를 뺀다. 그래도 요청이 들어오면 서버가 거부한다 — ‘마스터 등록 시도’ 상태 (확정 2026-09-29).
+         사용자 권한은 필수다 — 권한 없는 계정은 만들 수 없다 (확정 2026-09-29).
+         아이디는 영문·숫자만 쓴다(밑줄 불가). 표본 아이디도 밑줄을 뺐다 — plat_yoon → platyoon (확정 2026-09-29).
+         시스템에서 만든 계정은 첫 로그인 때 강제 비밀번호 변경 화면에서 약관 동의도 함께 받는다 — 회원가입 계정은 가입 때 받았으므로 제외 (확정 2026-09-29).
          메일 발송 실패는 등록 실패로 보지 않는다 — 계정과 초기 비밀번호 발급은 그대로 두고 발송 실패만 기록한다.
            다시 보내는 길은 상세의 비밀번호 초기화뿐이고, 목록·상세에 ‘초기 비밀번호 미발송’을 표시한다 (SYSTEM-3 확정).
            ‘처리 실패’ 상태는 계정 생성이나 초기 비밀번호 발급 자체가 실패한 경우다 — 그때만 계정을 만들지 않는다.
@@ -108,8 +108,8 @@
                 <div class="grid grid--2">
                   <div class="field">
                     <label for="nid">아이디 <span class="req">*</span></label>
-                    <input class="input mono" id="nid" value="plat_yoon" maxlength="20" data-show="in dupmail miss denied fail" />
-                    <input class="input mono" value="plat_han" maxlength="20" aria-invalid="true" aria-label="아이디" data-show="dupid" hidden />
+                    <input class="input mono" id="nid" value="platyoon" maxlength="20" data-show="in dupmail miss denied fail" />
+                    <input class="input mono" value="plathan" maxlength="20" aria-invalid="true" aria-label="아이디" data-show="dupid" hidden />
                     <span class="help" data-show="in dupmail miss denied fail">영문 또는 영문·숫자 4~20자 · 등록한 뒤에는 바꿀 수 없습니다</span>
                     <span class="err" data-show="dupid" hidden><span data-icon="alert" data-icon-size="13"></span>이미 사용 중인 아이디입니다. 삭제된 계정의 아이디도 다시 쓸 수 없습니다.</span>
                   </div>
@@ -185,7 +185,7 @@
               <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
                 <div class="grid grid--2">
                   <div class="field">
-                    <label for="nrole">사용자 권한</label>
+                    <label for="nrole">사용자 권한 <span class="req">*</span></label>
                     <select class="select" id="nrole" data-show-role="pm" data-show="in dupid dupmail miss fail">
                       <optgroup label="플랫폼 마스터">
                         <option>플랫폼 마스터 · PM000001</option>
