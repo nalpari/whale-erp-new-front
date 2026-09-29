@@ -268,7 +268,7 @@ DIAGRAMS.append(Diagram(
 # ── 4. 근무스케줄·출퇴근 ──────────────────────────────────────────────────
 DIAGRAMS.append(Diagram(
     "attendance", "근무스케줄·출퇴근", "근무스케줄과 출퇴근",
-    "근무스케줄은 관리자가 등록하고 확정한다. 출퇴근은 직원이 직원 근무 앱에서 GPS 판정으로 등록한다. 좌표는 저장하지 않고 판정 결과와 오차만 남기며, 보정은 원본과 분리해 이력으로 쌓는다.",
+    "근무스케줄은 관리자가 등록하고 확정한다. 출퇴근은 직원이 직원 근무 앱에서 GPS 판정으로 등록한다. 판정은 휴대전화에서 하고 좌표와 판정 결과(반경 안·밖, 오차)는 저장하지 않는다. 확인 필요 사유만 관리자 검토 때까지 남기며, 보정은 원본과 분리해 이력으로 쌓는다.",
     [
         E("schedule", "근무스케줄", "work_schedules", "entity",
           ["#|근무스케줄 ID|id|schedule_id|", "→|직원 레코드|id|staff_member_id|", "→|근무지|id|store_id|", "|근무 시작 일시|datetime|start_at|", "|근무 종료 일시|datetime|end_at|같은 직원 겹침 차단", "|휴게시간|int|break_minutes|", "|근무 유형|enum|work_type|오픈·미들·마감", "|확정 상태|enum|confirm_status|확정 전·확정", "→|기본값 근로계약|id|source_contract_id|등록 때 한 번 반영", "→|등록 관리자|id|created_by|"], 0, 40),
@@ -280,20 +280,23 @@ DIAGRAMS.append(Diagram(
           ["#|계정 ID|id|account_id|", "|이메일 아이디|text|email|"], 1, 256),
         E("consent", "위치정보 동의", "location_consents", "entity",
           ["#|동의 ID|id|consent_id|", "→|계정|id|account_id|", "|동의 문구 버전|text|terms_version|", "|동의 일시|datetime|agreed_at|첫 출퇴근 등록 때", "|철회 일시|datetime|withdrawn_at|"], 1, 432),
+        E("access_log", "위치정보 확인자료", "location_access_logs", "history",
+          ["#|확인자료 ID|id|access_log_id|", "→|계정|id|account_id|대상 직원", "|처리 구분|enum|action|수집·이용·제공", "|처리 일시|datetime|occurred_at|", "|수집 방법|text|method|기기 GPS · 휴대전화 안 판정", "|제공받는 자|text|recipient|제공일 때", "|제공 목적|text|purpose|제공일 때", "→|출퇴근 기록|id|attendance_id|있을 때"], 3, 320),
         E("attendance", "출퇴근 기록", "attendance_records", "focal",
-          ["#|출퇴근 기록 ID|id|attendance_id|", "→|직원 레코드|id|staff_member_id|", "→|근무지|id|store_id|여럿이면 가장 가까운 곳", "|구분|enum|kind|출근·퇴근", "|기록 시각|datetime|recorded_at|기기 시각", "|서버 수신 시각|datetime|received_at|확정 기준", "|위치 판정 결과|enum|location_result|반경 안·확인 필요", "|판정 오차|int|accuracy_m|좌표는 저장 안 함", "|계약 미체결 경고|bool|unsigned_warning|경고 후 허용", "→|짝 출근 기록|id|clock_in_id|퇴근일 때"], 2, 40),
+          ["#|출퇴근 기록 ID|id|attendance_id|", "→|직원 레코드|id|staff_member_id|", "→|근무지|id|store_id|여럿이면 가장 가까운 곳", "|구분|enum|kind|출근·퇴근", "|기록 시각|datetime|recorded_at|기기 시각", "|서버 수신 시각|datetime|received_at|확정 기준", "|확인 필요 사유|enum|review_reason|오차 초과·반경 밖 퇴근·위치 조작, 검토 후 null", "→|검토 관리자|id|reviewed_by|보정 또는 이상 없음", "|검토 일시|datetime|reviewed_at|", "|등록 방식|enum|entry_method|직원 등록·대신 등록", "→|대신 등록 관리자|id|proxy_by|대신 등록일 때", "|대신 등록 사유|text|proxy_reason|대신 등록일 때 필수", "|계약 미체결 경고|bool|unsigned_warning|경고 후 허용", "→|짝 출근 기록|id|clock_in_id|퇴근일 때"], 2, 40),
         E("correction", "출퇴근 보정 이력", "attendance_corrections", "history",
-          ["#|보정 이력 ID|id|correction_id|", "→|출퇴근 기록|id|attendance_id|", "|수정 전 값|json|before_value|", "|수정 후 값|json|after_value|", "|수정 사유|text|reason|필수", "→|수정 관리자|id|corrected_by|최근 3개월만", "|수정 일시|datetime|corrected_at|"], 2, 368),
+          ["#|보정 이력 ID|id|correction_id|", "→|출퇴근 기록|id|attendance_id|", "|수정 전 값|json|before_value|", "|수정 후 값|json|after_value|", "|수정 사유|text|reason|필수", "→|수정 관리자|id|corrected_by|최근 3개월만", "|수정 일시|datetime|corrected_at|"], 2, 448),
         ref_store(3, 40, ["|좌표|geo|location|", "|근무지 반경|int|geofence_radius_m|기본 100m"]),
     ],
     [
         R("staff_member", "left", "schedule", "right", "1", "N", "", at_a=100, at_b=100),
         R("schedule", "bottom", "schedule_history", "top", "1", "N", ""),
         R("staff_member", "right", "attendance", "left", "1", "N", "", at_a=100, at_b=100),
-        R("store", "left", "attendance", "right", "1", "N", "반경 판정", at_a=132, at_b=132),
+        R("store", "left", "attendance", "right", "1", "N", "근무지", at_a=132, at_b=132),
         R("attendance", "bottom", "correction", "top", "1", "N", ""),
         R("staff_member", "bottom", "account", "top", "N", "0..1", ""),
         R("account", "bottom", "consent", "top", "1", "N", ""),
+        R("attendance", "right", "access_log", "left", "1", "N", "", at_a=360, at_b=360),
     ],
     [
         ("coral", "중심", "출퇴근은 GPS로 판정한다", ["근무지 반경은 공통 100m, 지하·실내는 관리자가 넓힌다", "오차가 반경보다 크면 등록은 받고 확인 필요로 표시한다", "위치 권한을 거부하면 등록하지 못한다"]),

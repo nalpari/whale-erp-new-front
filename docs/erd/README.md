@@ -342,7 +342,7 @@ python3 docs/erd/_build.py
 
 ## 근무스케줄과 출퇴근
 
-근무스케줄은 관리자가 등록하고 확정한다. 출퇴근은 직원이 직원 근무 앱에서 GPS 판정으로 등록한다. 좌표는 저장하지 않고 판정 결과와 오차만 남기며, 보정은 원본과 분리해 이력으로 쌓는다.
+근무스케줄은 관리자가 등록하고 확정한다. 출퇴근은 직원이 직원 근무 앱에서 GPS 판정으로 등록한다. 판정은 휴대전화에서 하고 좌표와 판정 결과(반경 안·밖, 오차)는 저장하지 않는다. 확인 필요 사유만 관리자 검토 때까지 남기며, 보정은 원본과 분리해 이력으로 쌓는다.
 
 ### 근무스케줄 `work_schedules` · 엔티티
 
@@ -397,6 +397,19 @@ python3 docs/erd/_build.py
 |  | 동의 일시 | datetime | `agreed_at` | 첫 출퇴근 등록 때 |
 |  | 철회 일시 | datetime | `withdrawn_at` |  |
 
+### 위치정보 확인자료 `location_access_logs` · 이력
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 확인자료 ID | id | `access_log_id` |  |
+| FK | 계정 | id | `account_id` | 대상 직원 |
+|  | 처리 구분 | enum | `action` | 수집·이용·제공 |
+|  | 처리 일시 | datetime | `occurred_at` |  |
+|  | 수집 방법 | text | `method` | 기기 GPS · 휴대전화 안 판정 |
+|  | 제공받는 자 | text | `recipient` | 제공일 때 |
+|  | 제공 목적 | text | `purpose` | 제공일 때 |
+| FK | 출퇴근 기록 | id | `attendance_id` | 있을 때 |
+
 ### 출퇴근 기록 `attendance_records` · 중심
 
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
@@ -407,8 +420,12 @@ python3 docs/erd/_build.py
 |  | 구분 | enum | `kind` | 출근·퇴근 |
 |  | 기록 시각 | datetime | `recorded_at` | 기기 시각 |
 |  | 서버 수신 시각 | datetime | `received_at` | 확정 기준 |
-|  | 위치 판정 결과 | enum | `location_result` | 반경 안·확인 필요 |
-|  | 판정 오차 | int | `accuracy_m` | 좌표는 저장 안 함 |
+|  | 확인 필요 사유 | enum | `review_reason` | 오차 초과·반경 밖 퇴근·위치 조작, 검토 후 null |
+| FK | 검토 관리자 | id | `reviewed_by` | 보정 또는 이상 없음 |
+|  | 검토 일시 | datetime | `reviewed_at` |  |
+|  | 등록 방식 | enum | `entry_method` | 직원 등록·대신 등록 |
+| FK | 대신 등록 관리자 | id | `proxy_by` | 대신 등록일 때 |
+|  | 대신 등록 사유 | text | `proxy_reason` | 대신 등록일 때 필수 |
 |  | 계약 미체결 경고 | bool | `unsigned_warning` | 경고 후 허용 |
 | FK | 짝 출근 기록 | id | `clock_in_id` | 퇴근일 때 |
 
@@ -441,10 +458,11 @@ python3 docs/erd/_build.py
 - 직원 레코드 `1` — `N` 근무스케줄
 - 근무스케줄 `1` — `N` 근무스케줄 변경 이력
 - 직원 레코드 `1` — `N` 출퇴근 기록
-- 점포 `1` — `N` 출퇴근 기록 · 반경 판정
+- 점포 `1` — `N` 출퇴근 기록 · 근무지
 - 출퇴근 기록 `1` — `N` 출퇴근 보정 이력
 - 직원 레코드 `N` — `0..1` 계정
 - 계정 `1` — `N` 위치정보 동의
+- 출퇴근 기록 `1` — `N` 위치정보 확인자료
 
 ## TO-DO
 
