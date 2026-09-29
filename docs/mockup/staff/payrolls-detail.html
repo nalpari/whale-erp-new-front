@@ -85,6 +85,16 @@
                   <span class="eyebrow" style="margin: 0">지급</span>
                   <span class="subtle" style="font-size: 12px">계산값 셋 · 입력 여덟</span>
                 </div>
+                <div class="field">
+                  <label class="inline" for="ot">
+                    <span class="toggle" id="ot" role="switch" aria-pressed="true" tabindex="0"></span>
+                    연장·야간 가산 적용
+                  </label>
+                  <span class="help">
+                    상시근로자 5인 미만 사업장은 가산 의무가 없다. 끄면 연장수당을 계산하지 않는다.
+                    <b>이 명세서 한 장에만</b> 걸리는 값이라 달마다 다시 정한다. 바꾸면 연장수당 계산값이 다시 채워지고, 바꾼 것은 처리 이력에 <b>수정</b>으로 남는다.
+                  </span>
+                </div>
                 <div class="grid grid--2" style="gap: var(--s-4)">
                   <div class="field">
                     <label for="p1">기본급</label>
@@ -99,7 +109,7 @@
                   <div class="field">
                     <label for="p3">연장수당</label>
                     <input class="input mono" id="p3" value="128,000" />
-                    <span class="help">8.0h × 1.5배 · 계약에 가산 적용됨 · 계산값</span>
+                    <span class="help">8.0h × 1.5배 · 가산 적용 · 계산값</span>
                   </div>
                   <div class="field">
                     <label for="p4">야간수당</label>
@@ -271,8 +281,6 @@
                     <dd><a class="tlink" href="contracts-detail.html">CTR-2026-0143</a> · 체결 완료</dd>
                     <dt>계약 급여</dt>
                     <dd class="mono">2,840,000 원 / 월</dd>
-                    <dt>연장·야간 가산</dt>
-                    <dd><span class="badge badge--ok">적용</span> <span class="subtle">5인 이상 점포</span></dd>
                     <dt>출퇴근 기간</dt>
                     <dd class="mono">2026-08-01 ~ 08-31</dd>
                     <dt>집계 근로시간</dt>
@@ -301,6 +309,11 @@
                       <span class="log__msg">기본급 <b>1,842,000</b> → 1,876,000 · 정하윤</span>
                     </div>
                     <div class="log__row">
+                      <span class="log__t">09-02 17:05</span>
+                      <span class="log__tag">수정</span>
+                      <span class="log__msg">연장·야간 가산 <b>미적용</b> → 적용 · 연장수당 0 → 128,000 · 정하윤</span>
+                    </div>
+                    <div class="log__row">
                       <span class="log__t">09-01 09:00</span>
                       <span class="log__tag">초안 생성</span>
                       <span class="log__msg">초안 일괄 생성 · 검토 대기로 분류</span>
@@ -323,5 +336,16 @@
       </main>
     </div>
     <script src="../assets/app.js"></script>
+    <script>
+      /* 가산을 끄면 연장수당을 계산하지 않는다. 목업이라 표본 두 값을 오간다. */
+      document.getElementById("ot").addEventListener("click", function () {
+        var on = this.getAttribute("aria-pressed") === "true";
+        var p3 = document.getElementById("p3");
+        p3.value = on ? "128,000" : "0";
+        p3.nextElementSibling.innerHTML = on
+          ? "8.0h × 1.5배 · 가산 적용 · 계산값"
+          : "8.0h × 1.0배 · <b>가산 미적용이라 연장수당을 계산하지 않는다</b>";
+      });
+    </script>
   </body>
 </html>
