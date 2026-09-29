@@ -126,6 +126,19 @@ python3 docs/erd/_build.py
 |  | 쿨다운 해제 시각 | datetime | `cooldown_until` |  |
 |  | 사용 시각 | datetime | `used_at` |  |
 
+### 위치정보 확인자료 `location_access_logs` · 이력
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 확인자료 ID | id | `access_log_id` |  |
+| FK | 계정 | id | `account_id` | 대상 직원 |
+|  | 처리 구분 | enum | `action` | 수집·이용·제공 |
+|  | 처리 일시 | datetime | `occurred_at` |  |
+|  | 수집 방법 | text | `method` | 기기 GPS · 휴대전화 안 판정 |
+|  | 제공받는 자 | text | `recipient` | 제공일 때 |
+|  | 제공 목적 | text | `purpose` | 제공일 때 |
+| FK | 출퇴근 기록 | id | `attendance_id` | 있을 때 · 출퇴근 장 |
+
 ### 관리자 계정 `customers` · 1팀 참조
 
 1팀 영역(환경설정·권한). api 저장소에서는 customers 테이블.
@@ -142,6 +155,7 @@ python3 docs/erd/_build.py
 - 계정 `1` — `N` 접속 상태
 - 계정 `1` — `N` 로그인 이력
 - 계정 `1` — `N` 비밀번호 재설정 핀
+- 계정 `1` — `N` 위치정보 확인자료
 - 계정 `1` — `N` 계정 변경 이력
 - 관리자 계정 `1` — `N` 계정 변경 이력 · 초기화 요청
 
@@ -397,19 +411,6 @@ python3 docs/erd/_build.py
 |  | 동의 일시 | datetime | `agreed_at` | 첫 출퇴근 등록 때 |
 |  | 철회 일시 | datetime | `withdrawn_at` |  |
 
-### 위치정보 확인자료 `location_access_logs` · 이력
-
-| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
-|---|---|---|---|---|
-| PK | 확인자료 ID | id | `access_log_id` |  |
-| FK | 계정 | id | `account_id` | 대상 직원 |
-|  | 처리 구분 | enum | `action` | 수집·이용·제공 |
-|  | 처리 일시 | datetime | `occurred_at` |  |
-|  | 수집 방법 | text | `method` | 기기 GPS · 휴대전화 안 판정 |
-|  | 제공받는 자 | text | `recipient` | 제공일 때 |
-|  | 제공 목적 | text | `purpose` | 제공일 때 |
-| FK | 출퇴근 기록 | id | `attendance_id` | 있을 때 |
-
 ### 출퇴근 기록 `attendance_records` · 중심
 
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
@@ -462,7 +463,6 @@ python3 docs/erd/_build.py
 - 출퇴근 기록 `1` — `N` 출퇴근 보정 이력
 - 직원 레코드 `N` — `0..1` 계정
 - 계정 `1` — `N` 위치정보 동의
-- 출퇴근 기록 `1` — `N` 위치정보 확인자료
 
 ## TO-DO
 
