@@ -19,7 +19,7 @@
          수정은 이 화면의 수정 버튼으로만 간다(사용자 확정 규칙). 수정·삭제 버튼은 변경 권한과 날짜가 모두 맞을 때만 보인다 —
            전체 점포 휴일은 BP 마스터 · 전체 점포 범위 BP 관리자 · 플랫폼 사용자만, 특정 점포 휴일은 대상 점포 중 한 곳이라도 접근할 수 있는 사람만. 조회만 권한은 버튼이 없다.
          플랫폼 사용자(플랫폼 마스터·관리자)는 화면 상단에서 고른 BP 의 휴일을 BP 마스터와 같은 범위로 조회·수정·삭제한다(메뉴 권한 필요).
-         여러 점포 휴일의 일부 점포만 맡은 사람(표본 HD-0124 — hg_hr 은 성수·판교만, morinam01 은 연남만)은 자기 범위 점포만 그 휴일에서 빼거나 고친다.
+         여러 점포 휴일의 일부 점포만 맡은 사람(표본 HD-0124 — hghr 은 성수·판교만, morinam01 은 연남만)은 자기 범위 점포만 그 휴일에서 빼거나 고친다.
            고치면 그 점포가 원래 휴일에서 빠지고 그 점포만 대상인 새 휴일이 생긴다. 나머지 점포는 그대로이고, 범위 밖 점포는 조회만 한다.
          지난 날짜 휴일은 버튼을 비활성으로 두고 수정·삭제할 수 없다고 적는다. 대상 점포가 모두 접근 범위 밖인 휴일은 상세를 주지 않는다.
          삭제는 확인 창 하나다 — 반복·기간 휴일은 ‘이 날짜부터 이후 휴일에 모두 적용됩니다’를 보이고, ‘이 휴일만’ 고르기는 없다.
@@ -28,12 +28,12 @@
          대표 상세는 HD-0122 창립기념일(전체 점포 · 매년 반복 · 첫 날짜 2026-10-01)이다. HD-0114 는 2026-09-28 을 고른 날짜로 보인다.
          위쪽 점선 줄 둘은 목업 전용이다 — 보는 사람의 권한과 대상 휴일을 따로 바꾼다.
 
-         쟁점 후보 (명세로 정해지지 않아 화면이 갈리는 곳)
-         - 지난 날짜 휴일의 삭제 항목을 ‘비활성 + 안내’(S-MQELTV display)로 둘지 ‘표시하지 않음’(같은 display 의 "삭제 권한이 있고 오늘 또는 미래 날짜인 휴일에만 표시")으로 둘지 — 한 명세 안에서 갈린다. 목업은 비활성.
-         - 전체 점포 휴일을 볼 수만 있는 사람에게 수정·삭제를 숨기는가, 비활성으로 두는가 (S-MQELTV "표시" vs S-YAFRYZ "표시하지 않는다"). 목업은 숨기고 조회만 안내를 둔다.
-         - 운영 영향 정보(S-MQELTV outcome "적용 대상과 운영 영향 정보")가 무엇인지 — 목업은 적용 점포 수와 같은 날 겹치는 휴일의 우선 적용만 적었다.
-         - 반복 휴일의 ‘다음 날짜’를 몇 개까지 보이는가. 목업은 셋.
-         - 삭제 후 목록으로 돌아갈 때 결과 안내를 띄우는가, 어느 달을 여는가. 목업은 창립기념일만 삭제 직후 상태(10월)로 보낸다. -->
+         확정 (2026-09-29)
+         - 지난 날짜 휴일은 수정 · 삭제 버튼을 모두 비활성으로 두고 사유를 적는다.
+         - 권한이 없어 바꿀 수 없는 휴일(전체 점포 휴일을 볼 수만 있는 사람 등)은 버튼을 숨기고 조회만 안내를 둔다 — 날짜 사유는 비활성, 권한 사유는 숨김이다.
+         - 운영 영향은 적용 점포 수와 ‘같은 날 겹치면 특정 점포 휴일 우선’ 안내뿐이다. 따로 운영 영향 정보를 두지 않는다.
+         - 반복 휴일의 다음 날짜는 셋까지 보인다.
+         - 삭제하면 팝업을 닫고 보던 달 · 보기 · 검색어 · 고른 날짜를 그대로 둔 채 완료 토스트를 띄운다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
       <main class="main" id="main">
@@ -142,8 +142,8 @@
               <div class="seg">
                 <button type="button" data-state="bm" aria-pressed="true">BP 마스터 · hangang01</button>
                 <button type="button" data-state="pf" aria-pressed="false">플랫폼 관리자 · ㈜한강상회 선택</button>
-                <button type="button" data-state="ba" aria-pressed="false">BP 관리자 · 전체 점포 · hg_ops</button>
-                <button type="button" data-state="bp" aria-pressed="false">BP 관리자 · 일부 점포(직영 4) · hg_hr</button>
+                <button type="button" data-state="ba" aria-pressed="false">BP 관리자 · 전체 점포 · hgops</button>
+                <button type="button" data-state="bp" aria-pressed="false">BP 관리자 · 일부 점포(직영 4) · hghr</button>
                 <button type="button" data-state="fm" aria-pressed="false">가맹 마스터 · morinam01</button>
                 <button type="button" data-state="view" aria-pressed="false">조회만</button>
               </div>
@@ -429,8 +429,8 @@
                     <dl class="kv">
                       <dt>휴일 유형</dt><dd>하루</dd>
                       <dt>휴일 번호</dt><dd><span class="mono">HD-0123</span></dd>
-                      <dt>등록</dt><dd><span class="mono">hg_hr</span> <span class="mono subtle">2026-09-10 13:20</span></dd>
-                      <dt>최종 수정</dt><dd><span class="mono">hg_hr</span> <span class="mono subtle">2026-09-14 09:15</span></dd>
+                      <dt>등록</dt><dd><span class="mono">hghr</span> <span class="mono subtle">2026-09-10 13:20</span></dd>
+                      <dt>최종 수정</dt><dd><span class="mono">hghr</span> <span class="mono subtle">2026-09-14 09:15</span></dd>
                     </dl>
                   </div>
                 </section>
@@ -447,9 +447,9 @@
                       <tr><th scope="col">변경 일시</th><th scope="col">변경자</th><th scope="col">구분</th><th scope="col">변경 항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
                     </thead>
                     <tbody>
-                      <tr><td class="mono">2026-09-14 09:15</td><td class="mono">hg_hr</td><td><span class="badge badge--quiet">수정</span></td><td>설명</td><td>오후 단축 운영</td><td>오후 2시 이후 단축 운영 · 오전만 영업</td></tr>
-                      <tr><td class="mono">2026-09-11 18:02</td><td class="mono">hg_hr</td><td><span class="badge badge--quiet">수정</span></td><td>휴일명</td><td>오후 휴무</td><td>오후 휴무(단축 운영)</td></tr>
-                      <tr><td class="mono">2026-09-10 13:20</td><td class="mono">hg_hr</td><td><span class="badge badge--quiet">등록</span></td><td>휴일</td><td class="nil"></td><td>오후 휴무 · 온기식당 광화문점</td></tr>
+                      <tr><td class="mono">2026-09-14 09:15</td><td class="mono">hghr</td><td><span class="badge badge--quiet">수정</span></td><td>설명</td><td>오후 단축 운영</td><td>오후 2시 이후 단축 운영 · 오전만 영업</td></tr>
+                      <tr><td class="mono">2026-09-11 18:02</td><td class="mono">hghr</td><td><span class="badge badge--quiet">수정</span></td><td>휴일명</td><td>오후 휴무</td><td>오후 휴무(단축 운영)</td></tr>
+                      <tr><td class="mono">2026-09-10 13:20</td><td class="mono">hghr</td><td><span class="badge badge--quiet">등록</span></td><td>휴일</td><td class="nil"></td><td>오후 휴무 · 온기식당 광화문점</td></tr>
                     </tbody>
                   </table>
                 </div>
@@ -492,8 +492,8 @@
                     <dl class="kv">
                       <dt>휴일 유형</dt><dd>하루</dd>
                       <dt>휴일 번호</dt><dd><span class="mono">HD-0101</span></dd>
-                      <dt>등록</dt><dd><span class="mono">hg_ops</span> <span class="mono subtle">2026-09-01 09:40</span></dd>
-                      <dt>최종 수정</dt><dd><span class="mono">hg_ops</span> <span class="mono subtle">2026-09-01 09:40</span></dd>
+                      <dt>등록</dt><dd><span class="mono">hgops</span> <span class="mono subtle">2026-09-01 09:40</span></dd>
+                      <dt>최종 수정</dt><dd><span class="mono">hgops</span> <span class="mono subtle">2026-09-01 09:40</span></dd>
                     </dl>
                   </div>
                 </section>
@@ -510,7 +510,7 @@
                       <tr><th scope="col">변경 일시</th><th scope="col">변경자</th><th scope="col">구분</th><th scope="col">변경 항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
                     </thead>
                     <tbody>
-                      <tr><td class="mono">2026-09-01 09:40</td><td class="mono">hg_ops</td><td><span class="badge badge--quiet">등록</span></td><td>휴일</td><td class="nil"></td><td>정전 점검 휴무 · 모리커피 서초점</td></tr>
+                      <tr><td class="mono">2026-09-01 09:40</td><td class="mono">hgops</td><td><span class="badge badge--quiet">등록</span></td><td>휴일</td><td class="nil"></td><td>정전 점검 휴무 · 모리커피 서초점</td></tr>
                     </tbody>
                   </table>
                 </div>
@@ -527,7 +527,7 @@
             <div class="band band--info" data-show="created" data-show-role="bp" hidden>
               <span class="band__ic" data-icon="info" data-icon-size="20"></span>
               <div class="band__body">
-                <div class="band__title">대상 점포 3곳 중 모리커피 성수점 · 온기식당 판교점만 hg_hr 의 범위입니다</div>
+                <div class="band__title">대상 점포 3곳 중 모리커피 성수점 · 온기식당 판교점만 hghr 의 범위입니다</div>
                 <p class="band__desc">수정·삭제는 이 두 점포에만 적용됩니다. 고치면 두 점포가 이 휴일에서 빠지고 두 점포만 대상인 새 휴일이 생깁니다. 모리커피 연남점은 조회만 하고, 이 휴일에 그대로 남습니다.</p>
               </div>
             </div>
