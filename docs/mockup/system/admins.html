@@ -14,6 +14,7 @@
          상태는 사용·미사용 두 값뿐이다(탈퇴 없음). 미사용 줄은 흐리게 하고 상태 꼬리표로 가른다.
          논리 삭제한 계정은 목록·검색에서 빠지고 상세로도 가지 않는다.
          표본 상세가 없는 줄(plat_lee · plat_han)은 대표 상세(plat_park)로 간다.
+         초기 비밀번호 메일이 나가지 못한 계정은 계정 상태 아래에 ‘초기 비밀번호 미발송’을 적는다 — 다시 보내는 길은 상세의 비밀번호 초기화다 (SYSTEM-3 확정).
          쟁점 후보(S-YTKWGG): 정렬 기준이 명세에 없다 — 표본은 등록일시 최신순으로 늘어놓았다.
          쟁점 후보(S-YTKWGG): 조회 권한이 없을 때 메뉴를 숨기는지, 주소로 들어오면 안내만 하는지 홈으로 보내는지 정해지지 않았다.
          위쪽 점선 줄 둘은 목업 전용이다 — 권한과 목록 상태를 따로 바꾼다. -->
@@ -44,6 +45,7 @@
                 <button type="button" data-state="off" aria-pressed="false">미사용만</button>
                 <button type="button" data-state="cs" aria-pressed="false">권한 · 고객지원 담당</button>
                 <button type="button" data-state="empty" aria-pressed="false">결과 없음</button>
+                <button type="button" data-state="mailfail" aria-pressed="false">초기 비밀번호 미발송</button>
                 <button type="button" data-state="deleted" aria-pressed="false">계정 삭제 직후</button>
                 <button type="button" data-state="noauth" aria-pressed="false">조회 권한 없음</button>
               </div>
@@ -161,7 +163,16 @@
                     <td><span class="subtle">로그인 기록 없음</span></td>
                     <td class="mono">2026-09-21 10:04</td>
                   </tr>
-                  <tr data-show="base deleted">
+                  <tr data-show="mailfail" hidden>
+                    <td class="mono"><a class="tlink" href="admins-detail.html?state=yoon">plat_yoon</a></td>
+                    <td class="k"><a class="tlink" href="admins-detail.html?state=yoon">윤채원</a></td>
+                    <td>플랫폼 관리자</td>
+                    <td><span class="badge badge--ok">사용</span><br /><span class="badge badge--warn" style="margin-top: 4px">초기 비밀번호 미발송</span></td>
+                    <td class="mono" style="white-space: nowrap"><span style="display: inline-flex; align-items: center; gap: 6px"><span class="subtle" data-icon="phone" data-icon-size="13" style="display: inline-flex"></span>010-9013-5528</span><br /><span style="display: inline-flex; align-items: center; gap: 6px"><span class="subtle" data-icon="mail" data-icon-size="13" style="display: inline-flex"></span>chaewon.yoon@whale-erp.example</span></td>
+                    <td><span class="subtle">로그인 기록 없음</span></td>
+                    <td class="mono">2026-09-21 10:04</td>
+                  </tr>
+                  <tr data-show="base deleted mailfail">
                     <td class="mono"><a class="tlink" href="admins-detail.html">plat_han</a></td>
                     <td class="k"><a class="tlink" href="admins-detail.html">한승우</a></td>
                     <td>정산 담당</td>
@@ -170,7 +181,7 @@
                     <td class="mono">2026-09-18 16:05</td>
                     <td class="mono">2025-11-17 13:40</td>
                   </tr>
-                  <tr class="is-read" data-show="base off cs deleted">
+                  <tr class="is-read" data-show="base off cs deleted mailfail">
                     <td class="mono"><a class="tlink" href="admins-detail.html?state=choi">plat_choi</a></td>
                     <td class="k"><a class="tlink" href="admins-detail.html?state=choi">최유나</a></td>
                     <td>고객지원 담당</td>
@@ -179,7 +190,7 @@
                     <td class="mono">2026-04-30 18:22</td>
                     <td class="mono">2025-06-02 10:18</td>
                   </tr>
-                  <tr data-show="base cs">
+                  <tr data-show="base cs mailfail">
                     <td class="mono"><a class="tlink" href="admins-detail.html">plat_park</a></td>
                     <td class="k"><a class="tlink" href="admins-detail.html">박지우</a></td>
                     <td>고객지원 담당</td>
@@ -188,7 +199,7 @@
                     <td class="mono">2026-09-21 09:03</td>
                     <td class="mono">2025-06-02 10:11</td>
                   </tr>
-                  <tr data-show="base deleted">
+                  <tr data-show="base deleted mailfail">
                     <td class="mono"><a class="tlink" href="admins-detail.html">plat_lee</a></td>
                     <td class="k"><a class="tlink" href="admins-detail.html">이도현</a></td>
                     <td>플랫폼 관리자</td>
@@ -197,7 +208,7 @@
                     <td class="mono">2026-09-20 10:15</td>
                     <td class="mono">2025-03-10 14:22</td>
                   </tr>
-                  <tr data-show="base deleted">
+                  <tr data-show="base deleted mailfail">
                     <td class="mono"><a class="tlink" href="admins-detail.html?state=kim">plat_kim</a></td>
                     <td class="k"><a class="tlink" href="admins-detail.html?state=kim">김서연</a></td>
                     <td>플랫폼 마스터</td>
@@ -206,7 +217,7 @@
                     <td class="mono">2026-09-19 17:40</td>
                     <td class="mono">2025-01-06 09:05</td>
                   </tr>
-                  <tr data-show="base deleted">
+                  <tr data-show="base deleted mailfail">
                     <td class="mono"><a class="tlink" href="admins-detail.html?state=self">plat_jung</a></td>
                     <td class="k"><a class="tlink" href="admins-detail.html?state=self">정민재</a></td>
                     <td>플랫폼 마스터</td>
