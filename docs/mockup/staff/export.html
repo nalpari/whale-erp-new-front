@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>직원 자료 일괄 저장 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="staff" data-sub="staff/export.html">
+    <!-- /staff/export · 운영 정책 RET-09 "직원 자료 일괄 저장"
+         BP 가 보존 기간 안에 탈퇴하면 관리자 계정이 모두 미사용이 되어 자료를 열 길이 없다.
+         그래서 탈퇴 화면이 아니라 직원 관리 안에 두고, 언제든 받아 두게 한다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <a class="iconbtn" href="index.html" aria-label="직원 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
+          <h1 class="t-h1">직원 자료 일괄 저장</h1>
+          <span class="badge badge--preview">신규</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">운영 정책 RET-09 · /staff/export</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="band band--warn">
+            <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+            <div class="band__body">
+              <div class="band__title">BP 가 탈퇴하면 관리자 계정이 모두 미사용이 되어 자료를 볼 수 없습니다</div>
+              <p class="band__desc">
+                탈퇴한 뒤에는 이 화면도 열리지 않습니다. 보존 기간이 남아 있어도 마찬가지입니다.
+                필요한 자료는 <b>탈퇴 전에</b> 받아 두세요. 탈퇴와 상관없이 평소에도 받을 수 있습니다.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid--7-5">
+            <section class="stack--lg" style="display: flex; flex-direction: column">
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">담기는 자료</h2>
+                  <span class="badge badge--quiet">네 가지</span>
+                  <div class="panel__end">
+                    <span class="filters__count">ZIP 한 개</span>
+                  </div>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr>
+                        <th scope="col">자료</th>
+                        <th scope="col">담기는 것</th>
+                        <th scope="col">형식</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="k">근로계약서</td>
+                        <td>체결 완료본과 종이 계약 날인본, 그리고 전체 목록</td>
+                        <td class="mono">PDF · CSV</td>
+                      </tr>
+                      <tr>
+                        <td class="k">출퇴근 기록</td>
+                        <td>기록 시각과 보정·대신 등록 이력</td>
+                        <td class="mono">CSV</td>
+                      </tr>
+                      <tr>
+                        <td class="k">급여명세서</td>
+                        <td>발송 완료된 명세서와 전체 목록</td>
+                        <td class="mono">PDF · CSV</td>
+                      </tr>
+                      <tr>
+                        <td class="k">근무스케줄</td>
+                        <td>확정된 근무스케줄</td>
+                        <td class="mono">CSV</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__note">
+                  <b>주민등록번호·신고 정보·확인자료·동의 기록은 담지 않는다.</b> 법령이 정한 목적으로만 쓰는 값이라
+                  BP 가 내려받아 따로 보관할 자료가 아니다. 급여명세서에 찍히는 값도 마스킹한 그대로 나간다.
+                  담기는 것은 모두 관리자가 관리자 웹에서 이미 볼 수 있는 자료다.
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">지난 요청</h2>
+                  <span class="badge badge--quiet">3건</span>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr>
+                        <th scope="col">요청 일시</th>
+                        <th scope="col">요청자</th>
+                        <th scope="col" class="n">대상</th>
+                        <th scope="col">상태</th>
+                        <th scope="col" style="width: 96px"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="mono">09-29 14:12</td>
+                        <td>정하윤</td>
+                        <td class="n">71명</td>
+                        <td><span class="badge badge--warn">만드는 중</span></td>
+                        <td class="c"><span class="subtle">다 되면 알림</span></td>
+                      </tr>
+                      <tr>
+                        <td class="mono">09-12 09:40</td>
+                        <td>정하윤</td>
+                        <td class="n">70명</td>
+                        <td>
+                          <span class="badge badge--ok">받을 수 있음</span>
+                          <span class="subtle">09-19 까지</span>
+                        </td>
+                        <td class="c">
+                          <button class="tbtn" type="button">
+                            <span data-icon="download" data-icon-size="13"></span>내려받기
+                          </button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="mono">08-04 17:26</td>
+                        <td>김서준</td>
+                        <td class="n">68명</td>
+                        <td><span class="badge badge--quiet">기한 지남</span></td>
+                        <td class="c"><span class="subtle nil">—</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__note">
+                  다 만들면 <b>운영 알림</b>이 가고 여기에 내려받기 버튼과 기한이 선다. 기한이 지나면 파일을 지우고 다시 요청해야 한다.
+                  누가 언제 받았는지는 요청 이력으로 남는다. 기한은 아직 정해지지 않았고 지금 화면은 7일이다(STAFF-22).
+                </div>
+              </div>
+            </section>
+
+            <section class="stack--lg" style="display: flex; flex-direction: column">
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">새로 요청</h2>
+                </div>
+                <div class="panel__body">
+                  <dl class="kv">
+                    <dt>업무 범위</dt>
+                    <dd>㈜한강상회 · 점포 4곳 전체</dd>
+                    <dt>대상 직원</dt>
+                    <dd><b>71명</b> <span class="subtle">재직 63 · 보존 기간 안 퇴직 8</span></dd>
+                    <dt>파일 형식</dt>
+                    <dd>ZIP 한 개 <span class="subtle">직원별 폴더로 나뉜다</span></dd>
+                  </dl>
+                  <hr class="hr" />
+                  <button class="btn btn--primary btn--block" type="button">
+                    <span data-icon="download" data-icon-size="15"></span>일괄 저장 요청
+                  </button>
+                  <p class="note" style="margin-top: var(--s-3)">
+                    <span data-icon="clock" data-icon-size="14"></span>
+                    <span>사람 수에 따라 몇 분에서 몇십 분 걸린다. 화면을 닫아도 계속 만든다.</span>
+                  </p>
+                </div>
+                <div class="panel__note">
+                  퇴직자는 <b>보존 기간이 남은 사람</b>만 든다. 기간이 지나 지워진 자료는 여기에도 없다.
+                  쓸 수 있는 역할은 아직 정해지지 않았다 — 지금 화면은 BP 마스터와 가맹마스터만이다(STAFF-21).
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">만드는 중</h2>
+                  <span class="badge badge--warn">09-29 14:12 요청</span>
+                </div>
+                <div class="panel__body">
+                  <div class="steps">
+                    <div class="step is-done">
+                      <span class="step__ic" data-icon="check" data-icon-size="15"></span>
+                      <div class="step__body">
+                        <span class="step__title">요청 접수</span>
+                        <span class="step__meta">09-29 14:12 · 정하윤</span>
+                      </div>
+                    </div>
+                    <div class="step is-now">
+                      <span class="step__ic" data-icon="box" data-icon-size="15"></span>
+                      <div class="step__body">
+                        <span class="step__title">자료 모으는 중</span>
+                        <span class="step__meta">71명 가운데 44명</span>
+                      </div>
+                    </div>
+                    <div class="step is-wait">
+                      <span class="step__ic" data-icon="bell" data-icon-size="15"></span>
+                      <div class="step__body">
+                        <span class="step__title">운영 알림과 내려받기</span>
+                        <span class="step__meta">다 되면 기한이 함께 선다</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="panel" style="flex: 1">
+                <div class="panel__head">
+                  <h2 class="t-h2">받은 뒤</h2>
+                </div>
+                <div class="panel__body">
+                  <div class="band band-sec band-sec--soft">
+                    <span class="band__ic" data-icon="shield" data-icon-size="18"></span>
+                    <div class="band__body">
+                      <div class="band__title">내려받은 파일의 보관 책임은 BP 에 있습니다</div>
+                      <p class="band__desc">
+                        직원의 이름·휴대전화번호·급여가 담긴 파일입니다. 잠긴 곳에 두고, 쓸 일이 끝나면 지우세요.
+                        플랫폼은 기한이 지난 파일을 지우지만 내려받은 사본까지는 어쩌지 못합니다.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+  </body>
+</html>
