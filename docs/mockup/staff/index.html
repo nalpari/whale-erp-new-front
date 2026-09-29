@@ -1136,7 +1136,7 @@
                           <th scope="col">출근</th>
                           <th scope="col">퇴근</th>
                           <th scope="col">사유</th>
-                          <th scope="col" style="width: 84px"></th>
+                          <th scope="col" style="width: 152px"></th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1146,7 +1146,10 @@
                           <td class="mono">12:58</td>
                           <td class="mono nil">—</td>
                           <td><span class="badge badge--warn">퇴근 미등록</span></td>
-                          <td class="c"><button class="tbtn" type="button">보정</button></td>
+                          <td class="c">
+                            <button class="tbtn" type="button">보정</button>
+                            <button class="tbtn" type="button" data-tip="기록 값은 그대로 두고 검토만 끝낸다. 보정 이력도 연필 표시도 남지 않는다.">이상 없음</button>
+                          </td>
                         </tr>
                         <tr>
                           <td class="k">권도윤</td>
@@ -1154,7 +1157,10 @@
                           <td class="mono nil">—</td>
                           <td class="mono">21:12</td>
                           <td><span class="badge badge--warn">출근 미등록</span></td>
-                          <td class="c"><button class="tbtn" type="button">보정</button></td>
+                          <td class="c">
+                            <button class="tbtn" type="button">보정</button>
+                            <button class="tbtn" type="button" data-tip="기록 값은 그대로 두고 검토만 끝낸다. 보정 이력도 연필 표시도 남지 않는다.">이상 없음</button>
+                          </td>
                         </tr>
                         <tr>
                           <td class="k">배정숙</td>
@@ -1162,7 +1168,10 @@
                           <td class="mono">08:47</td>
                           <td class="mono">23:58</td>
                           <td><span class="badge badge--risk">퇴근 시각 이상</span></td>
-                          <td class="c"><button class="tbtn" type="button">보정</button></td>
+                          <td class="c">
+                            <button class="tbtn" type="button">보정</button>
+                            <button class="tbtn" type="button" data-tip="기록 값은 그대로 두고 검토만 끝낸다. 보정 이력도 연필 표시도 남지 않는다.">이상 없음</button>
+                          </td>
                         </tr>
                         <tr>
                           <td class="k">남주호</td>
@@ -1170,7 +1179,10 @@
                           <td class="mono">09:04</td>
                           <td class="mono">18:02</td>
                           <td><span class="badge badge--risk">위치 조작 감지</span></td>
-                          <td class="c"><button class="tbtn" type="button">보정</button></td>
+                          <td class="c">
+                            <button class="tbtn" type="button">보정</button>
+                            <button class="tbtn" type="button" data-tip="기록 값은 그대로 두고 검토만 끝낸다. 보정 이력도 연필 표시도 남지 않는다.">이상 없음</button>
+                          </td>
                         </tr>
                         <tr>
                           <td class="k">문태경</td>
@@ -1201,8 +1213,9 @@
 급여명세서가 확정된 뒤에도 고칠 수 있지만, 명세서에 영향을 줄 수 있다고 경고한다.
                     <b>확인 필요</b>로 올라오는 사유는 출근·퇴근 미등록, 퇴근 시각 이상, 위치 오차가 반경보다 큼, <b>위치 조작 감지</b>다.
                     모의 위치가 잡힌 <b>퇴근</b>이 마지막 사유로 들어온다 — 출근은 앱이 아예 막는다.
+                    보정하거나 <b>이상 없음</b>을 누르면 확인 필요와 사유가 지워진다.
+                    위치 판정 결과(반경 안·밖, 오차)는 처음부터 저장하지 않아 사유 글자만 남았다가 검토와 함께 사라진다.
                     <b>대신 등록</b>한 기록은 목록에서 그렇게 구분해 보이고 직원 근무 앱에는 보정과 같이 연필 표시로 드러난다.
-                    위치 판정 결과가 없다는 점만 보정과 다르다.
                   </div>
                 </section>
 
@@ -1235,7 +1248,8 @@
                   <div class="panel__note">
                     수정 이력은 원본과 분리해 보관한다 — 수정자·시각·사유·변경 전후 값.
                     <b>대신 등록</b>은 이 자리에서 날짜까지 받는다. 최근 3개월 이내만 되고 사유는 보정과 마찬가지로 필수다.
-                    <b>위치 판정 데이터</b>(반경 안·밖, 오차, 확인 필요 사유)는 시각 기록과 따로 두고 보존 기간도 따로 정한다. 대신 등록한 기록에는 이 데이터가 없다.
+                    확인 필요 건을 여기서 저장하면 꼬리표와 사유가 함께 사라진다.
+                    <b>위치 판정 결과</b>(반경 안·밖, 오차)는 처음부터 저장하지 않는다. 남는 것은 확인 필요 사유 글자뿐이고 그것도 검토를 마치면 지운다.
                   </div>
                 </section>
               </div>
