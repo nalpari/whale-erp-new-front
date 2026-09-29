@@ -141,8 +141,8 @@ h2{font-family:var(--sans);font-size:20px;font-weight:600;letter-spacing:-.4px;m
 </g>
 </g>
 <g id="ent-role_group">
-<rect x="712" y="40" width="240" height="152" rx="6" fill="#ffffff"/>
-<rect x="712" y="40" width="240" height="152" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
+<rect x="712" y="40" width="240" height="132" rx="6" fill="#ffffff"/>
+<rect x="712" y="40" width="240" height="132" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
 <rect x="713" y="41" width="238" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
 <line x1="712" y1="92" x2="952" y2="92" stroke="#171717" stroke-opacity="0.35" stroke-width="1"/>
 <text x="728" y="60" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">ENTITY · role_groups</text>
@@ -160,10 +160,6 @@ h2{font-family:var(--sans);font-size:20px;font-weight:600;letter-spacing:-.4px;m
 <g data-key="none">
 <text x="728" y="156" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">권한명</text>
 <text x="936" y="156" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
-</g>
-<g data-key="none">
-<text x="728" y="176" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">사용 상태</text>
-<text x="936" y="176" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">enum</text>
 </g>
 </g>
 <g id="ent-menu">
@@ -277,7 +273,7 @@ h2{font-family:var(--sans);font-size:20px;font-weight:600;letter-spacing:-.4px;m
 </svg>
 </div>
 <div class="cards"><div class="card"><p class="ey">중심</p><div class="card-h"><span class="dot coral"></span><h3>관리자 계정이 중심이다</h3></div><ul><li>BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼마스터·플랫폼관리자를 모두 담는다</li><li>BP 코드가 조직의 뿌리 역할을 한다</li><li>한 명에 하나의 권한 그룹이 연결된다</li></ul></div><div class="card"><div class="card-h"><span class="dot ink"></span><h3>BP 코드가 조직의 뿌리다</h3></div><ul><li>BP 코드에 소속 관리자 여럿, 점포 여럿이 붙는다</li><li>플랫폼 관리자는 BP 코드 없이 독립적으로 존재한다</li></ul></div><div class="card"><div class="card-h"><span class="dot muted"></span><h3>환경설정 기준정보</h3></div><ul><li>권한 그룹은 메뉴별 CRUD 권한을 정한다</li><li>공통코드는 플랫폼이 제공하고 BP가 일부를 덮어쓴다</li></ul></div></div>
-<h2>영역별 상세</h2><p class="subtitle">한 장에 엔티티를 8개 넘게 두지 않으려고 영역마다 나눴다. 속성의 제안 컬럼명과 비고는 README.md 카탈로그에 있다.</p><div class="index-list"><a href="auth.html"><b>인증·계정</b><span>관리자 접속 상태 · 임시 비밀번호 · 약관 버전 · 관리자 계정 · 관리자 로그인 이력 · BP 코드 · 관리자 변경 이력 · 약관 동의 이력</span><span class="n">ENTITY 8 · REL 7</span></a><a href="store.html"><b>점포관리</b><span>BP 코드 · 점포 · 점포 층별정보 · 점포 변경 이력 · 점포 사업자정보 · 관리자 점포 매핑 · 관리자 계정 (소속)</span><span class="n">ENTITY 7 · REL 6</span></a><a href="bp.html"><b>BP 관리</b><span>BP 코드 · BP 변경 이력 · 관리자 계정 (소속) · 점포 · 계정 · 직원 레코드</span><span class="n">ENTITY 6 · REL 3</span></a><a href="system.html"><b>환경설정 &amp; 시스템관리</b><span>권한 그룹 · 권한 메뉴 · 공통코드 그룹 · 상세 코드 · 메뉴 · BP 휴일 · 휴일 점포 매핑 · 휴일 예외 점포 · BP 휴일 변경 이력 · 플랫폼 공식 휴일 · 동기화 이력 · 공식 휴일 적재 이력</span><span class="n">ENTITY 12 · REL 6</span></a></div>
+<h2>영역별 상세</h2><p class="subtitle">한 장에 엔티티를 8개 넘게 두지 않으려고 영역마다 나눴다. 속성의 제안 컬럼명과 비고는 README.md 카탈로그에 있다.</p><div class="index-list"><a href="auth.html"><b>인증·계정</b><span>관리자 접속 상태 · 임시 비밀번호 · 약관 버전 · 관리자 계정 · 관리자 로그인 이력 · BP 코드 · 관리자 변경 이력 · 메일 발송 이력 · 약관 동의 이력</span><span class="n">ENTITY 9 · REL 8</span></a><a href="store.html"><b>점포관리</b><span>BP 코드 · 점포 · 점포 층별정보 · 점포 변경 이력 · 점포 사업자정보 · 관리자 점포 매핑 · 관리자 계정 (소속)</span><span class="n">ENTITY 7 · REL 6</span></a><a href="bp.html"><b>BP 관리</b><span>BP 코드 · BP 변경 이력 · 관리자 계정 (소속) · 점포 · 계정 · 직원 레코드</span><span class="n">ENTITY 6 · REL 3</span></a><a href="system.html"><b>환경설정 &amp; 시스템관리</b><span>권한 그룹 · 권한 메뉴 · 공통코드 그룹 · 상세 코드 · 메뉴 · BP 휴일 · 휴일 점포 매핑 · 휴일 예외 점포 · BP 휴일 변경 이력 · 플랫폼 공식 휴일 · 동기화 이력 · 공식 휴일 적재 이력</span><span class="n">ENTITY 12 · REL 6</span></a></div>
 <div class="footer"><span>근거 · 1팀 목업 (auth·mypage·stores·bp·config·system) · Manyfast 명세</span><span>_build.py 로 생성 · 손으로 고치지 말 것</span></div>
 </div>
 <script>
