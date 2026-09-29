@@ -10,6 +10,8 @@
   <body data-root="../" data-page="config" data-sub="config/holidays.html">
     <!-- BP 휴일 상세 조회 · /settings/holidays/:id · S-MQELTV (F-YQTLQE BP 휴일 관리) · 삭제 포함 · 1팀
          휴일은 규칙 한 건이다 — 하루, 기간(시작일~종료일), 반복(시작일 + 반복 유형 + 종료 조건) 중 하나이고 날짜는 볼 때 계산한다.
+         휴일 유형(하루·기간·반복)을 먼저 고르고, 반복일 때만 반복 유형(매일·매주·매월·매년 — 공통코드 휴일 반복 유형)을 고른다. 하루 휴일은 종료일을 시작일과 같게 저장한다 (확정).
+         하루·기간 휴일의 휴일 정보에는 ‘휴일 유형’ 값만 적고 반복 유형·종료 조건 칸은 두지 않는다. 반복 휴일은 ‘휴일 유형 반복’과 함께 반복 유형·시작일·종료 조건 요약을 보인다.
          목록·캘린더에서 고른 날짜로 들어오며, 그 날짜를 ‘고른 날짜’로 보인다. 수정·삭제는 이 고른 날짜를 기준으로 한다.
          적용 범위 · 대상 점포(특정 점포 휴일은 여러 곳) 또는 예외 점포(전체 점포 휴일) · 날짜 · 휴일명 · 설명을 읽기 전용으로 보이고,
            반복 휴일은 반복 설정 요약(반복 유형 · 시작일 · 종료 조건)과 다음 날짜 몇 개를 함께 둔다.
@@ -198,6 +200,7 @@
                   <div class="panel__head"><h2 class="t-h2">반복 · 등록 정보</h2></div>
                   <div class="panel__body">
                     <dl class="kv">
+                      <dt>휴일 유형</dt><dd>반복</dd>
                       <dt>반복 유형</dt><dd>매년 · 시작일의 날짜(10월 1일)</dd>
                       <dt>시작일</dt><dd><span class="mono">2026-10-01</span> <span class="subtle">(목)</span></dd>
                       <dt>종료 조건</dt><dd>종료일 없음</dd>
@@ -256,6 +259,7 @@
                   <div class="panel__head"><h2 class="t-h2">반복 · 등록 정보</h2></div>
                   <div class="panel__body">
                     <dl class="kv">
+                      <dt>휴일 유형</dt><dd>반복</dd>
                       <dt>반복 유형</dt><dd>매주 · 시작일의 요일(월요일)</dd>
                       <dt>시작일</dt><dd><span class="mono">2026-09-21</span> <span class="subtle">(월)</span></dd>
                       <dt>종료 조건</dt><dd>종료일 없음</dd>
@@ -315,7 +319,7 @@
                   <div class="panel__head"><h2 class="t-h2">등록 정보</h2></div>
                   <div class="panel__body">
                     <dl class="kv">
-                      <dt>반복</dt><dd>반복 안 함</dd>
+                      <dt>휴일 유형</dt><dd>하루</dd>
                       <dt>휴일 번호</dt><dd><span class="mono">HD-0120</span></dd>
                       <dt>등록</dt><dd><span class="mono">hangang01</span> <span class="mono subtle">2026-09-02 11:00</span></dd>
                       <dt>최종 수정</dt><dd><span class="mono">hangang01</span> <span class="mono subtle">2026-09-02 11:00</span></dd>
@@ -369,7 +373,7 @@
                   <div class="panel__head"><h2 class="t-h2">등록 정보</h2></div>
                   <div class="panel__body">
                     <dl class="kv">
-                      <dt>반복</dt><dd>반복 안 함</dd>
+                      <dt>휴일 유형</dt><dd>하루</dd>
                       <dt>휴일 번호</dt><dd><span class="mono">HD-0121</span></dd>
                       <dt>등록</dt><dd><span class="mono">morinam01</span> <span class="mono subtle">2026-09-08 16:20</span></dd>
                       <dt>최종 수정</dt><dd><span class="mono">morinam01</span> <span class="mono subtle">2026-09-08 16:20</span></dd>
@@ -423,7 +427,7 @@
                   <div class="panel__head"><h2 class="t-h2">등록 정보</h2></div>
                   <div class="panel__body">
                     <dl class="kv">
-                      <dt>반복</dt><dd>반복 안 함</dd>
+                      <dt>휴일 유형</dt><dd>하루</dd>
                       <dt>휴일 번호</dt><dd><span class="mono">HD-0123</span></dd>
                       <dt>등록</dt><dd><span class="mono">hg_hr</span> <span class="mono subtle">2026-09-10 13:20</span></dd>
                       <dt>최종 수정</dt><dd><span class="mono">hg_hr</span> <span class="mono subtle">2026-09-14 09:15</span></dd>
@@ -486,7 +490,7 @@
                   <div class="panel__head"><h2 class="t-h2">등록 정보</h2></div>
                   <div class="panel__body">
                     <dl class="kv">
-                      <dt>반복</dt><dd>반복 안 함</dd>
+                      <dt>휴일 유형</dt><dd>하루</dd>
                       <dt>휴일 번호</dt><dd><span class="mono">HD-0101</span></dd>
                       <dt>등록</dt><dd><span class="mono">hg_ops</span> <span class="mono subtle">2026-09-01 09:40</span></dd>
                       <dt>최종 수정</dt><dd><span class="mono">hg_ops</span> <span class="mono subtle">2026-09-01 09:40</span></dd>
@@ -558,7 +562,7 @@
                   <div class="panel__head"><h2 class="t-h2">등록 정보</h2></div>
                   <div class="panel__body">
                     <dl class="kv">
-                      <dt>반복</dt><dd>반복 안 함</dd>
+                      <dt>휴일 유형</dt><dd>하루</dd>
                       <dt>휴일 번호</dt><dd><span class="mono">HD-0124</span></dd>
                       <dt>등록</dt><dd><span class="mono">hangang01</span> <span class="mono subtle">2026-09-21 10:40</span></dd>
                       <dt>최종 수정</dt><dd><span class="mono">hangang01</span> <span class="mono subtle">2026-09-21 10:40</span></dd>
@@ -614,6 +618,7 @@
                   <div class="panel__head"><h2 class="t-h2">반복 · 등록 정보</h2></div>
                   <div class="panel__body">
                     <dl class="kv">
+                      <dt>휴일 유형</dt><dd>반복</dd>
                       <dt>반복 유형</dt><dd>매년 · 시작일의 날짜(10월 1일)</dd>
                       <dt>시작일</dt><dd><span class="mono">2026-10-01</span> <span class="subtle">(목)</span></dd>
                       <dt>종료 조건</dt><dd>종료일 없음</dd>

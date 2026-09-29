@@ -18,7 +18,8 @@
            고른 날짜 전날에 기존 휴일을 끝내고 그 날짜부터 새 휴일을 시작한다 — 날짜 이동, 반복 유형, 종료 조건 변경도 같다. 고른 날짜가 첫 날짜면 휴일 전체가 바뀐다.
            나뉘면 앞부분(고른 날짜 전날까지)은 원래 휴일 번호를 유지하고 뒷부분(고른 날짜부터)은 새 휴일 번호를 받는다. 새 휴일에는 ‘원래 휴일 HD-xxxx’를 표시하고 상세에서 서로 오갈 수 있다(확정).
            시작일을 옮기는 수정에서도 기존 휴일은 고른 날짜 전날에 끝난다. 새 시작일은 고른 날짜 이후로만 고를 수 있고, 더 앞당기려면 그 날짜를 골라 수정한다(확정).
-           반복 유형과 종료 조건은 여기서 고친다. 하루 휴일도 반복 유형을 고를 수 있다. 기간과 반복은 함께 쓰지 않는다.
+           휴일 유형(하루·기간·반복)을 먼저 고르고, 반복일 때만 반복 유형(매일·매주·매월·매년 — 공통코드 휴일 반복 유형)을 고른다. 하루 휴일은 종료일을 시작일과 같게 저장한다 (확정).
+           휴일 유형을 바꾸는 수정도 고른 날짜부터 이후 모두에 적용되는 분할 규칙을 그대로 따르고, 세그먼트 고르기 말고 다른 입력은 필요 없다.
          여러 점포 휴일의 일부 점포만 맡은 사람은 자기 범위 점포만 고친다(표본 partial — hg_hr 이 HD-0124 의 성수·판교를 고침).
            저장하면 그 점포들이 원래 휴일에서 빠지고 그 점포만 대상인 새 휴일이 생긴다. 나머지 점포는 원래 휴일에 그대로 남고, 범위 밖 점포는 조회만 한다.
          같은 점포에 날짜가 겹치는 휴일이 있어도 저장한다(겹침 안내만). 지난 날짜는 어떤 경우에도 바뀌지 않는다.
@@ -220,6 +221,7 @@
                   <div class="grid grid--2">
                     <div class="field">
                       <label for="f0122-date">시작일 <span class="req">*</span></label>
+                      <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="false">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="true">반복</button></div>
                       <input class="input mono" id="f0122-date" value="2026-10-01" style="max-width: 180px" />
                       <span class="help">고른 날짜 2026-10-01 · 옮기면 새 휴일은 그 날짜부터 반복합니다. 고른 날짜(2026-10-01) 이후로만 옮길 수 있습니다 — 앞당기려면 상세에서 그 날짜를 골라 수정하세요.</span>
                     </div>
@@ -245,7 +247,7 @@
                   <div class="grid grid--3">
                     <div class="field">
                       <label for="f0122-rep">반복 유형</label>
-                      <select class="select" id="f0122-rep"><option>반복 안 함</option><option>매일</option><option>매주</option><option>매월</option><option selected>매년</option></select>
+                      <select class="select" id="f0122-rep"><option>매일</option><option>매주</option><option>매월</option><option selected>매년</option></select>
                       <span class="help">시작일의 날짜(10월 1일)마다 반복합니다.</span>
                     </div>
                   </div>
@@ -330,6 +332,7 @@
                   <div class="grid grid--2">
                     <div class="field">
                       <label for="f0114-date">시작일 <span class="req">*</span></label>
+                      <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="false">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="true">반복</button></div>
                       <input class="input mono" id="f0114-date" value="2026-09-28" style="max-width: 180px" />
                       <span class="help">고른 날짜 2026-09-28 · 옮기면 새 휴일은 그 날짜부터 반복합니다. 고른 날짜(2026-09-28) 이후로만 옮길 수 있습니다 — 앞당기려면 상세에서 그 날짜를 골라 수정하세요.</span>
                     </div>
@@ -355,7 +358,7 @@
                   <div class="grid grid--3">
                     <div class="field">
                       <label for="f0114-rep">반복 유형</label>
-                      <select class="select" id="f0114-rep"><option>반복 안 함</option><option>매일</option><option selected>매주</option><option>매월</option><option>매년</option></select>
+                      <select class="select" id="f0114-rep"><option>매일</option><option selected>매주</option><option>매월</option><option>매년</option></select>
                       <span class="help">시작일의 요일(월요일)마다 반복합니다.</span>
                     </div>
                   </div>
@@ -440,6 +443,7 @@
                   <div class="grid grid--2">
                     <div class="field">
                       <label for="f0120-date">날짜 <span class="req">*</span></label>
+                      <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
                       <input class="input mono" id="f0120-date" value="2026-09-25" style="max-width: 180px" />
                       <span class="help">바꿀 날짜도 오늘 또는 그 뒤여야 합니다.</span>
                     </div>
@@ -452,21 +456,6 @@
                   <div class="field">
                     <label for="f0120-desc">설명</label>
                     <textarea class="textarea" id="f0120-desc" rows="2">추석 당일 전 점포 휴무</textarea>
-                  </div>
-                </div>
-              </section>
-              <section class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">반복 설정</h2>
-                  <span class="subtle" style="font-size: 12px">지금은 반복 안 함</span>
-                </div>
-                <div class="panel__body">
-                  <div class="grid grid--3">
-                    <div class="field">
-                      <label for="f0120-rep">반복 유형</label>
-                      <select class="select" id="f0120-rep"><option selected>반복 안 함</option><option>매일</option><option>매주</option><option>매월</option><option>매년</option></select>
-                      <span class="help">하루 휴일도 반복으로 바꿀 수 있습니다. 반복 기준은 시작일의 요일·날짜입니다.</span>
-                    </div>
                   </div>
                 </div>
               </section>
@@ -526,6 +515,7 @@
                   <div class="grid grid--2">
                     <div class="field">
                       <label for="f0121-date">날짜 <span class="req">*</span></label>
+                      <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
                       <input class="input mono" id="f0121-date" value="2026-09-29" style="max-width: 180px" />
                       <span class="help">바꿀 날짜도 오늘 또는 그 뒤여야 합니다.</span>
                     </div>
@@ -538,21 +528,6 @@
                   <div class="field">
                     <label for="f0121-desc">설명</label>
                     <textarea class="textarea" id="f0121-desc" rows="2">주방 배관 교체 공사</textarea>
-                  </div>
-                </div>
-              </section>
-              <section class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">반복 설정</h2>
-                  <span class="subtle" style="font-size: 12px">지금은 반복 안 함</span>
-                </div>
-                <div class="panel__body">
-                  <div class="grid grid--3">
-                    <div class="field">
-                      <label for="f0121-rep">반복 유형</label>
-                      <select class="select" id="f0121-rep"><option selected>반복 안 함</option><option>매일</option><option>매주</option><option>매월</option><option>매년</option></select>
-                      <span class="help">하루 휴일도 반복으로 바꿀 수 있습니다. 반복 기준은 시작일의 요일·날짜입니다.</span>
-                    </div>
                   </div>
                 </div>
               </section>
@@ -612,6 +587,7 @@
                   <div class="grid grid--2">
                     <div class="field">
                       <label for="f0123-date">날짜 <span class="req">*</span></label>
+                      <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
                       <input class="input mono" id="f0123-date" value="2026-10-01" style="max-width: 180px" />
                       <span class="help">바꿀 날짜도 오늘 또는 그 뒤여야 합니다.</span>
                     </div>
@@ -624,21 +600,6 @@
                   <div class="field">
                     <label for="f0123-desc">설명</label>
                     <textarea class="textarea" id="f0123-desc" rows="2">오후 2시 이후 단축 운영 · 오전만 영업</textarea>
-                  </div>
-                </div>
-              </section>
-              <section class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">반복 설정</h2>
-                  <span class="subtle" style="font-size: 12px">지금은 반복 안 함</span>
-                </div>
-                <div class="panel__body">
-                  <div class="grid grid--3">
-                    <div class="field">
-                      <label for="f0123-rep">반복 유형</label>
-                      <select class="select" id="f0123-rep"><option selected>반복 안 함</option><option>매일</option><option>매주</option><option>매월</option><option>매년</option></select>
-                      <span class="help">하루 휴일도 반복으로 바꿀 수 있습니다. 반복 기준은 시작일의 요일·날짜입니다.</span>
-                    </div>
                   </div>
                 </div>
               </section>
@@ -716,6 +677,7 @@
                   <div class="grid grid--2">
                     <div class="field">
                       <label for="fnew-date">날짜 <span class="req">*</span></label>
+                      <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
                       <input class="input mono" id="fnew-date" value="2026-10-15" style="max-width: 180px" />
                       <span class="help">바꿀 날짜도 오늘 또는 그 뒤여야 합니다.</span>
                     </div>
@@ -728,21 +690,6 @@
                   <div class="field">
                     <label for="fnew-desc">설명</label>
                     <textarea class="textarea" id="fnew-desc" rows="2">분기 재고 실사로 하루 휴무</textarea>
-                  </div>
-                </div>
-              </section>
-              <section class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">반복 설정</h2>
-                  <span class="subtle" style="font-size: 12px">지금은 반복 안 함</span>
-                </div>
-                <div class="panel__body">
-                  <div class="grid grid--3">
-                    <div class="field">
-                      <label for="fnew-rep">반복 유형</label>
-                      <select class="select" id="fnew-rep"><option selected>반복 안 함</option><option>매일</option><option>매주</option><option>매월</option><option>매년</option></select>
-                      <span class="help">하루 휴일도 반복으로 바꿀 수 있습니다. 반복 기준은 시작일의 요일·날짜입니다.</span>
-                    </div>
                   </div>
                 </div>
               </section>
@@ -808,6 +755,7 @@
                   <div class="grid grid--2">
                     <div class="field">
                       <label for="fpart-date">날짜 <span class="req">*</span></label>
+                      <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
                       <input class="input mono" id="fpart-date" value="2026-10-16" style="max-width: 180px" />
                       <span class="help">원래 2026-10-15 · 바꿀 날짜도 오늘 또는 그 뒤여야 합니다.</span>
                     </div>
@@ -896,6 +844,7 @@
                   <div class="grid grid--2">
                     <div class="field">
                       <label for="fpd-date">날짜 <span class="req">*</span></label>
+                      <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
                       <input class="input mono" id="fpd-date" value="2026-09-18" style="max-width: 180px" aria-invalid="true" />
                       <span class="err"><span data-icon="alert" data-icon-size="13"></span>오늘(2026-09-21) 또는 그 뒤 날짜로만 바꿀 수 있습니다.</span>
                     </div>
@@ -908,21 +857,6 @@
                   <div class="field">
                     <label for="fpd-desc">설명</label>
                     <textarea class="textarea" id="fpd-desc" rows="2">추석 당일 전 점포 휴무</textarea>
-                  </div>
-                </div>
-              </section>
-              <section class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">반복 설정</h2>
-                  <span class="subtle" style="font-size: 12px">지금은 반복 안 함</span>
-                </div>
-                <div class="panel__body">
-                  <div class="grid grid--3">
-                    <div class="field">
-                      <label for="fpd-rep">반복 유형</label>
-                      <select class="select" id="fpd-rep"><option selected>반복 안 함</option><option>매일</option><option>매주</option><option>매월</option><option>매년</option></select>
-                      <span class="help">하루 휴일도 반복으로 바꿀 수 있습니다. 반복 기준은 시작일의 요일·날짜입니다.</span>
-                    </div>
                   </div>
                 </div>
               </section>
@@ -982,6 +916,7 @@
                   <div class="grid grid--2">
                     <div class="field">
                       <label for="foos-date">날짜 <span class="req">*</span></label>
+                      <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="true">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="false">반복</button></div>
                       <input class="input mono" id="foos-date" value="2026-10-01" style="max-width: 180px" />
                       <span class="help">바꿀 날짜도 오늘 또는 그 뒤여야 합니다.</span>
                     </div>
@@ -994,21 +929,6 @@
                   <div class="field">
                     <label for="foos-desc">설명</label>
                     <textarea class="textarea" id="foos-desc" rows="2">오후 2시 이후 단축 운영 · 오전만 영업</textarea>
-                  </div>
-                </div>
-              </section>
-              <section class="panel">
-                <div class="panel__head">
-                  <h2 class="t-h2">반복 설정</h2>
-                  <span class="subtle" style="font-size: 12px">지금은 반복 안 함</span>
-                </div>
-                <div class="panel__body">
-                  <div class="grid grid--3">
-                    <div class="field">
-                      <label for="foos-rep">반복 유형</label>
-                      <select class="select" id="foos-rep"><option selected>반복 안 함</option><option>매일</option><option>매주</option><option>매월</option><option>매년</option></select>
-                      <span class="help">하루 휴일도 반복으로 바꿀 수 있습니다. 반복 기준은 시작일의 요일·날짜입니다.</span>
-                    </div>
                   </div>
                 </div>
               </section>
@@ -1086,6 +1006,7 @@
                   <div class="grid grid--2">
                     <div class="field">
                       <label for="fmiss-date">시작일 <span class="req">*</span></label>
+                      <div class="seg" role="group" aria-label="휴일 유형" style="align-self: flex-start"><button type="button" aria-pressed="false">하루</button><button type="button" aria-pressed="false">기간</button><button type="button" aria-pressed="true">반복</button></div>
                       <input class="input mono" id="fmiss-date" value="2026-10-01" style="max-width: 180px" />
                       <span class="help">고른 날짜 2026-10-01 · 옮기면 새 휴일은 그 날짜부터 반복합니다. 고른 날짜(2026-10-01) 이후로만 옮길 수 있습니다 — 앞당기려면 상세에서 그 날짜를 골라 수정하세요.</span>
                     </div>
@@ -1111,7 +1032,7 @@
                   <div class="grid grid--3">
                     <div class="field">
                       <label for="fmiss-rep">반복 유형</label>
-                      <select class="select" id="fmiss-rep"><option>반복 안 함</option><option>매일</option><option>매주</option><option>매월</option><option selected>매년</option></select>
+                      <select class="select" id="fmiss-rep"><option>매일</option><option>매주</option><option>매월</option><option selected>매년</option></select>
                       <span class="help">시작일의 날짜(10월 1일)마다 반복합니다.</span>
                     </div>
                   </div>

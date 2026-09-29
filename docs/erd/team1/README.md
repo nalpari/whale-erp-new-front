@@ -462,10 +462,10 @@ BP·플랫폼의 권한 그룹·공통코드·메뉴·휴일과 플랫폼 공식
 | PK | 휴일 ID | id | `holiday_id` |  |
 | FK | BP | id | `bp_id` | bp_codes FK |
 |  | 적용 범위 | enum | `scope` | 전체점포·특정점포 |
-|  | 휴일 유형 | enum | `holiday_type` | 하루·기간·반복 |
+|  | 휴일 유형 | code | `holiday_type` | 공통코드 `HOLIDAY_TYPE`(DAY 하루·PERIOD 기간·REPEAT 반복) |
 |  | 휴일 시작날짜 | date | `start_date` | 반복 기준일 |
-|  | 휴일 종료날짜 | date | `end_date` | 기간 휴일의 종료일 |
-|  | 반복 유형 | code | `repeat_type` | 공통코드 '휴일 반복 유형' · 반복일 때만 |
+|  | 휴일 종료날짜 | date | `end_date` | 하루는 시작일과 같게 · 기간의 종료일 · 반복은 비움 |
+|  | 반복 유형 | code | `repeat_type` | 공통코드 `HOLIDAY_REPEAT_TYPE`(DAILY·WEEKLY·MONTHLY·YEARLY) · 반복일 때만, 하루·기간은 비움 |
 |  | 반복 종료 조건 | enum | `repeat_end_type` | 없음·날짜·횟수 |
 |  | 반복 종료일 | date | `repeat_until` |  |
 |  | 반복 횟수 | int | `repeat_count` |  |
