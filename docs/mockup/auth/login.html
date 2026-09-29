@@ -37,6 +37,7 @@
             <button type="button" data-state="locked" aria-pressed="false">잠김</button>
             <button type="button" data-state="error" aria-pressed="false">시스템 오류</button>
             <button type="button" data-state="tempexpired" aria-pressed="false">임시 비밀번호 만료</button>
+            <button type="button" data-state="initexpired" aria-pressed="false">초기 비밀번호 만료</button>
             <button type="button" data-state="force" aria-pressed="false">강제 변경 대상</button>
           </div>
         </div>
@@ -87,6 +88,18 @@
                   </div>
                 </div>
 
+                <!-- 만료된 초기 비밀번호로 로그인 — 초기·초기화 비밀번호도 발급 1시간 뒤 만료한다 (확정 2026-09-29). 관리자 없이 비밀번호 찾기로 다시 받는다. -->
+                <div class="band band--warn" data-show="initexpired" hidden>
+                  <span class="band__ic" data-icon="clock" data-icon-size="20"></span>
+                  <div class="band__body">
+                    <div class="band__title">초기 비밀번호의 유효 시간(1시간)이 지났습니다.</div>
+                    <p class="band__desc">비밀번호 찾기에서 아이디와 등록 이메일을 넣어 임시 비밀번호를 다시 받아 주세요.</p>
+                  </div>
+                  <div class="band__act">
+                    <a class="btn btn--secondary btn--sm" href="find.html#pw">비밀번호 찾기</a>
+                  </div>
+                </div>
+
                 <!-- 판정 결과 안내. 같은 자리에 하나만 선다. -->
                 <div class="band band--risk" data-show="fail" hidden>
                   <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
@@ -122,7 +135,7 @@
                 <!-- 로그인 버튼의 도착지는 계정에 따라 갈린다. 강제 변경 대상이면 홈 위에 닫을 수 없는 팝업이 뜬다. -->
                 <a class="btn btn--primary btn--lg btn--block" href="../home/signed-in.html" data-show="base">로그인</a>
                 <a class="btn btn--primary btn--lg btn--block" href="force-password.html" data-show="force" hidden>로그인</a>
-                <button class="btn btn--primary btn--lg btn--block" type="button" data-show="empty fail inactive locked error tempexpired" hidden>로그인</button>
+                <button class="btn btn--primary btn--lg btn--block" type="button" data-show="empty fail inactive locked error tempexpired initexpired" hidden>로그인</button>
 
                 <div class="auth__links">
                   <a class="tlink" href="find.html#id">아이디 찾기</a>

@@ -135,9 +135,9 @@
                   <span class="badge badge--quiet">5</span>
                 </div>
                 <ul class="pol">
-                  <li><span class="pol__t">탈퇴는 BP 마스터만 한다. 플랫폼 계정은 스스로 탈퇴하지 못한다.</span><span class="pol__ref">S-JHQQNR</span></li>
+                  <li><span class="pol__t">탈퇴는 BP 마스터 본인만 한다. 플랫폼 계정은 스스로 탈퇴하지 못하고, 플랫폼 사용자도 BP 를 탈퇴로 바꾸지 못한다(미사용까지만).</span><span class="pol__ref">S-JHQQNR</span></li>
                   <li><span class="pol__t">선행 조건은 구독 해지·미정산 없음·진행 중 근로계약 없음 셋. 점포는 조건이 아니고 탈퇴가 모두 폐점시킨다.</span><span class="pol__ref">S-JHQQNR</span></li>
-                  <li><span class="pol__t">탈퇴는 논리 삭제다. 이름·연락처·이메일은 완료 메일 요청 뒤 지우고, 업무 기록과 이력은 남긴다.</span><span class="pol__ref">S-JHQQNR</span></li>
+                  <li><span class="pol__t">탈퇴는 논리 삭제다. 이름·연락처·이메일은 완료 메일 요청 뒤 지우고, 같은 BP 의 하위 계정(BP 관리자·가맹 마스터·가맹 관리자)도 즉시 탈퇴 처리해 개인정보를 지운다 — 아이디만 남긴다. 업무 기록과 이력은 보존 정책대로 남긴다.</span><span class="pol__ref">S-JHQQNR</span></li>
                   <li><span class="pol__t">같은 이메일·사업자등록번호로 다시 가입할 수 있지만 아이디는 다시 못 쓰고 예전 기록도 잇지 않는다.</span><span class="pol__ref">S-JHQQNR · PL-OCJOFP</span></li>
                   <li><span class="pol__t">로그아웃은 이 브라우저의 두 토큰만 무효로 한다. 다른 기기 세션과 업무 데이터는 그대로다.</span><span class="pol__ref">S-TMRGOG</span></li>
                 </ul>
@@ -198,15 +198,16 @@
                 <span class="gap__ref">S-TMRGOG · S-JHQQNR</span>
               </div>
               <div class="gap__opts">
-                <div class="gap__opt" data-side="a">
+                <div class="gap__opt is-picked" data-side="a">
                   <div class="gap__label">A · 3팀 목업</div>
                   <p>홈·계정 진입 영역의 <b>로그인 전 화면</b>(3팀 초안)으로 보낸다.</p>
                 </div>
-                <div class="gap__opt" data-side="b">
+                <div class="gap__opt is-dropped" data-side="b">
                   <div class="gap__label">B · 이 화면</div>
                   <p>1팀 로그인 영역의 <b>로그인 화면</b>으로 보낸다. 완료 문구는 로그인 화면에 따로 띄우지 않는다.</p>
                 </div>
               </div>
+              <p class="gap__note">로그아웃 버튼·회원 탈퇴처럼 스스로 세션을 끝내면 로그인 전 홈으로, 세션 만료(타임아웃)로 끝나면 로그인 화면으로 보낸다 (확정 2026-09-29).</p>
             </div>
           </section>
         </div>

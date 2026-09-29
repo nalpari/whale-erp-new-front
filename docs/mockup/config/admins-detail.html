@@ -15,7 +15,7 @@
            가맹 관리자 계정 = 연결된 가맹 마스터만 한다. 다른 역할에게는 두 실행 항목을 감추고 조회만 한다고 알린다.
          가맹 마스터 · 가맹 관리자는 BP 관리자 · 가맹 마스터 계정을 볼 수 없다 — 주소로 열어도 상세정보를 주지 않는다.
          본인 계정은 비밀번호 초기화를 막는다(내 정보에서 직접 바꾼다). 수정은 열리지만 기본정보만 고치고 권한 그룹 · 계정 상태 · 점포 매핑은 읽기 전용이다 (확정 2026-09-29).
-         초기화한 비밀번호는 처리한 사람에게도 보이지 않고 계정 이메일로만 간다 — BP 관리자 계정 생성 메일 포맷(S-CYGFAF)을 그대로 쓴다. 계정 상태는 바뀌지 않는다.
+         초기화한 비밀번호는 처리한 사람에게도 보이지 않고 계정 이메일로만 간다 — 계정 생성 메일이 아니라 플랫폼·BP 마스터와 같은 비밀번호 초기화 전용 양식을 쓴다(확정 2026-09-29). 계정 상태는 바뀌지 않는다.
          플랫폼 사용자에게는 관리 대상 BP 를 위에 띄운다.
          표본 수정 화면이 없는 계정(hgops · hgacct · hgcs)의 수정 버튼은 대표 수정(hghr)으로 간다.
          BP 마스터 계정은 이 메뉴의 관리 대상이 아니다 — 주소로 열면 상세정보 없이 안내만 보인다 (확정 2026-09-29).
@@ -421,7 +421,7 @@
                     <dt>아이디</dt><dd class="mono"><span data-show="hr">hghr</span><span data-show="ops" hidden>hgops</span><span data-show="acct" hidden>hgacct</span><span data-show="created" hidden>hgcs</span><span data-show="morinam fmoff" hidden>morinam01</span><span data-show="yn" hidden>moriyn</span></dd>
                     <dt>이름</dt><dd><span data-show="hr">이서아</span><span data-show="ops" hidden>김도윤</span><span data-show="acct" hidden>최민호</span><span data-show="created" hidden>문가은</span><span data-show="morinam fmoff" hidden>박서윤</span><span data-show="yn" hidden>한지수</span></dd>
                   </dl>
-                  <p style="margin: 0; font-size: 13px">시스템이 12자 무작위 초기 비밀번호를 새로 발급해 이 계정의 이메일로만 보냅니다. 처리하는 사람도 그 값을 볼 수 없습니다.</p>
+                  <p style="margin: 0; font-size: 13px">시스템이 12자 무작위 초기 비밀번호를 새로 발급해 이 계정의 이메일로만 보냅니다. 처리하는 사람도 그 값을 볼 수 없습니다. 초기 비밀번호는 1시간 안에 로그인해야 하며, 지나면 로그인 화면의 비밀번호 찾기로 임시 비밀번호를 다시 받습니다.</p>
                   <div class="band band--warn">
                     <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
                     <div class="band__body">
@@ -443,7 +443,7 @@
                       <div class="band__title">초기화했고 안내 메일을 보냈습니다</div>
                       <p class="band__desc">
                         발송 대상 · <b class="mono"><span data-show="hr">seoa.lee@hangang.co.kr</span><span data-show="ops" hidden>doyun.kim@hangang.co.kr</span><span data-show="acct" hidden>minho.choi@hangang.co.kr</span><span data-show="created" hidden>gaeun.moon@hangang.co.kr</span><span data-show="morinam fmoff" hidden>seoyun.park@morinam.kr</span><span data-show="yn" hidden>jisu.han@morinam.kr</span></b><br />
-                        메일 제목은 「[WHALE ERP] 관리자 계정이 생성되었습니다」입니다. 받은 사람은 메일의 값으로 로그인한 뒤 <a class="tlink" href="../auth/force-password.html?state=init">강제 비밀번호 변경</a>을 마쳐야 ERP 에 들어갑니다.
+                        메일 제목은 「[WHALE ERP] 비밀번호가 초기화되었습니다」(초기화 전용 양식)입니다. 받은 사람은 1시간 안에 메일의 값으로 로그인한 뒤 <a class="tlink" href="../auth/force-password.html?state=init">강제 비밀번호 변경</a>을 마쳐야 ERP 에 들어갑니다.
                       </p>
                     </div>
                   </div>
