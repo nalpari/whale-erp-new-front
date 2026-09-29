@@ -162,7 +162,7 @@
               <div class="panel">
                 <div class="panel__head">
                   <h3 class="t-h3">초대와 계약</h3>
-                  <span class="badge badge--quiet">11</span>
+                  <span class="badge badge--quiet">13</span>
                 </div>
                 <ul class="pol">
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> <b>근로계약서 초안 저장</b>이 채용의 유일한 시작점이다. 초안 없이 초대를 보낼 수 없고, 초대 유형은 시스템이 정한다.</span><span class="pol__ref">S-OIILIW · STAFF-1</span></li>
@@ -174,6 +174,8 @@
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 계약 상태는 발송 대기·서명 대기·체결 완료·거부·만료·종료 <b>여섯</b>이다.</span><span class="pol__ref">S-XDBBDP · STAFF-2</span></li>
                 <li><span class="pol__t">체결된 계약은 고치지 않고 새 계약으로 대체한다. 계약은 계정이 아니라 <b>직원 레코드</b>에 붙고 한 계정이 여러 레코드를 가질 수 있다.</span><span class="pol__ref">S-XDBBDP · F-GLGEOF</span></li>
                 <li><span class="pol__t">계약은 정직원용과 파트타이머용으로 나눈다. 전자서명의 세부 기술은 범위 밖이다.</span><span class="pol__ref">F-GLGEOF</span></li>
+                <li><span class="pol__t">계약 조건은 <b>칸으로 나눠</b> 받는다. 급여는 고용 형태에 따라 월급 또는 시급 한 칸, 소정근로시간은 요일마다 시업·종업·휴게, 그리고 주휴일과 임금지급일(당월·익월과 날짜, 31은 말일)을 받는다. 계약 종료일을 비우면 기간의 정함이 없는 계약이다.</span><span class="pol__ref">S-OIILIW · 운영 정책 CTR-20</span></li>
+                <li><span class="pol__t">4대보험 가입 여부는 고용보험·산재보험·국민연금·건강보험을 각각 고른다. 사업주가 정하는 값이라 계약서 사회보험 조항에 들어가고, 날인 뒤 직원이 넣는 신고 정보와 다르다.</span><span class="pol__ref">S-OIILIW · 운영 정책 CTR-22</span></li>
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 날인은 직원이 서명란에 그리는 <b>필기 서명</b>이다. 서명은 처리 완료본에 합성하고 이미지 파일도 따로 보관하며, 열람 권한과 보존 기간은 계약서와 같다.</span><span class="pol__ref">S-XDBBDP · STAFF-17</span></li>
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 근로계약서에는 <b>주민등록번호를 넣지 않는다</b>. 4대보험 취득 신고와 원천징수에 쓰는 주민등록번호는 날인을 마친 뒤 직원 근무 앱에서 따로 받고, 동의 항목 없이 목적만 밝힌다. 관리자 웹에는 마스킹으로만 보이고 저장은 암호화한다.</span><span class="pol__ref">S-OIILIW · STAFF-16</span></li>
                 </ul>
@@ -228,7 +230,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
-              <span class="badge badge--preview">18건 · 확정 17 · 미정 1</span>
+              <span class="badge badge--preview">19건 · 확정 17 · 미정 2</span>
             </div>
 
             <div class="gap is-decided">
@@ -774,6 +776,29 @@
                 항목은 옛 시스템에서 그대로 가져왔다. 다만 근로계약을 맺고 근무스케줄로 일하는 파트타이머에게 3.3% 를 떼면
                 사업소득으로 신고하는 것이 되어 근로자성 판단과 부딪힐 수 있다. <b>노무사·세무 검토</b>를 거쳐 정한다.
                 검토 전까지 화면에는 항목을 두되 쓸 수 있는지는 정해지지 않았다고 적는다.
+              </p>
+            </div>
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">STAFF-19</span>
+                <b>종이 계약에서 세 가지가 남았다 — 초대·조건 칸·파일 형식</b>
+                <span class="gap__open">미정 · 기획 세션 질문 중</span>
+                <span class="gap__ref">S-OIILIW · S-XDBBDP</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a">
+                  <div class="gap__label">A · 전자계약과 같게 · 추천</div>
+                  <p>종이 계약 직원에게도 <b>가입 초대를 보내고</b> 날인 단계만 건너뛴다. 계약 조건 칸은 <b>모두 채운다</b>. 파일은 <b>PDF·JPG·PNG</b>를 받는다.</p>
+                </div>
+                <div class="gap__opt" data-side="b">
+                  <div class="gap__label">B · 등록만 하고 최소로</div>
+                  <p>초대를 보내지 않아 직원은 앱을 쓰지 않는다. 조건 칸도 급여·기간만 받는다. 파일은 PDF 만 받는다.</p>
+                </div>
+              </div>
+              <p class="gap__note">
+                초대를 보내지 않으면 그 직원은 근무스케줄·급여명세서·TO-DO 를 앱에서 볼 수 없고, 출퇴근도 등록하지 못한다.
+                조건 칸을 비우면 근무스케줄 기본값과 근무 시간 중복 검사, 급여 계산이 그 직원만 빈손이 된다. 그래서 A 를 권한다.
+                파일 형식은 사진으로 찍어 올리는 일이 많아 이미지를 받는 편이 현실에 가깝다. 세 가지 모두 기획 세션이 manyfast 에 질문으로 올려 두었다.
               </p>
             </div>
           </section>

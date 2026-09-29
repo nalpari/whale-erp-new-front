@@ -90,6 +90,20 @@
                 </div>
 
                 <hr class="hr" />
+                <div class="spread" style="margin-bottom: var(--s-3)">
+                  <span class="eyebrow" style="margin: 0">계약 방식</span>
+                  <span class="subtle" style="font-size: 12px">고른 값에 따라 아래가 달라진다</span>
+                </div>
+                <div class="seg" role="group" aria-label="계약 방식">
+                  <button type="button" aria-pressed="true">전자계약</button>
+                  <button type="button" aria-pressed="false">종이 계약</button>
+                </div>
+                <p class="note" style="margin: var(--s-2) 0 0">
+                  <span data-icon="info" data-icon-size="14"></span>
+                  <span>종이 계약을 고르면 날인본 파일 올리는 칸이 열리고 발송·날인 기한 안내는 사라진다. 저장하면 곧바로 <b>체결 완료</b>다.</span>
+                </p>
+
+                <hr class="hr" />
                 <div class="eyebrow">계약 조건</div>
                 <div class="grid grid--2" style="gap: var(--s-4)">
                   <div class="field">
@@ -99,18 +113,75 @@
                   <div class="field">
                     <label for="ce">계약 종료일</label>
                     <input class="input" id="ce" type="date" />
-                    <span class="help">비워 두면 무기한</span>
+                    <span class="help">비워 두면 기간의 정함이 없는 계약</span>
+                  </div>
+                  <div class="field">
+                    <label for="pay">시급</label>
+                    <input class="input mono" id="pay" value="11,200" />
+                    <span class="help">고용 형태가 파트타이머라 <b>시급</b>이다. 정직원이면 칸 이름이 월급으로 바뀐다. 2026년 최저임금 10,320원 이상</span>
+                  </div>
+                  <div class="field">
+                    <label for="hol">주휴일</label>
+                    <select class="select" id="hol">
+                      <option>일요일</option>
+                      <option>월요일</option>
+                      <option>화요일</option>
+                      <option>수요일</option>
+                      <option>목요일</option>
+                      <option>금요일</option>
+                      <option>토요일</option>
+                    </select>
+                    <span class="help">계약서 휴일 조항에 들어간다</span>
                   </div>
                 </div>
-                <div class="field">
-                  <label for="pay">급여</label>
-                  <input class="input mono" id="pay" value="11,200 원 /시급" />
-                  <span class="help">2026년 최저임금 10,320원 이상</span>
+
+                <div class="spread" style="margin: var(--s-4) 0 var(--s-2)">
+                  <span class="eyebrow" style="margin: 0">소정근로시간</span>
+                  <span class="subtle" style="font-size: 12px">주 <b class="mono">20.0</b> 시간</span>
                 </div>
-                <div class="field">
-                  <label for="wk">소정근로시간</label>
-                  <input class="input" id="wk" value="주 20시간 · 화·목·토 09:00-16:00" />
-                  <span class="help">여기 적은 근무시간이 이 직원의 근무스케줄을 등록할 때 기본값으로 들어간다. 관리자가 거기서 고칠 수 있다.</span>
+                <div class="tblwrap">
+                  <table class="tbl tbl--fit tbl--dense">
+                    <thead>
+                      <tr>
+                        <th scope="col">요일</th>
+                        <th scope="col">시업</th>
+                        <th scope="col">종업</th>
+                        <th scope="col">휴게 시작</th>
+                        <th scope="col">휴게 종료</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><td class="k">월</td><td class="mono nil">—</td><td class="mono nil">—</td><td class="mono nil">—</td><td class="mono nil">—</td></tr>
+                      <tr><td class="k">화</td><td class="mono">09:00</td><td class="mono">16:00</td><td class="mono">12:00</td><td class="mono">13:00</td></tr>
+                      <tr><td class="k">수</td><td class="mono nil">—</td><td class="mono nil">—</td><td class="mono nil">—</td><td class="mono nil">—</td></tr>
+                      <tr><td class="k">목</td><td class="mono">09:00</td><td class="mono">16:00</td><td class="mono">12:00</td><td class="mono">13:00</td></tr>
+                      <tr><td class="k">금</td><td class="mono nil">—</td><td class="mono nil">—</td><td class="mono nil">—</td><td class="mono nil">—</td></tr>
+                      <tr><td class="k">토</td><td class="mono">09:00</td><td class="mono">16:00</td><td class="mono">12:00</td><td class="mono">13:00</td></tr>
+                      <tr><td class="k">일</td><td class="mono nil">—</td><td class="mono nil">—</td><td class="mono nil">—</td><td class="mono nil">—</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="note" style="margin: var(--s-2) 0 0">
+                  <span data-icon="info" data-icon-size="14"></span>
+                  <span>요일마다 받은 이 시간이 근무스케줄을 등록할 때 기본값으로 들어가고, 다른 점포 계약과의 근무 시간 중복 검사에도 쓰인다. 관리자가 근무스케줄에서 고칠 수 있다.</span>
+                </p>
+
+                <div class="grid grid--2" style="gap: var(--s-4); margin-top: var(--s-4)">
+                  <div class="field">
+                    <label for="pd">임금지급일</label>
+                    <div class="inline">
+                      <select class="select" id="pd">
+                        <option>익월</option>
+                        <option>당월</option>
+                      </select>
+                      <input class="input mono" id="pdd" value="10" aria-label="임금지급일 날짜" />
+                    </div>
+                    <span class="help">31 을 넣으면 말일로 본다</span>
+                  </div>
+                  <div class="field">
+                    <label for="pl">근무 장소</label>
+                    <input class="input" id="pl" value="서울 성동구 연무장길 18, 1층" />
+                  </div>
                 </div>
                 <div class="field">
                   <label class="inline" for="ot">
@@ -121,10 +192,22 @@
                     상시근로자 5인 미만 사업장은 가산 의무가 없다. 이 값으로 급여명세서의 연장수당 계산이 갈린다.
                   </span>
                 </div>
-                <div class="field">
-                  <label for="pl">근무 장소</label>
-                  <input class="input" id="pl" value="서울 성동구 연무장길 18, 1층" />
+
+                <hr class="hr" />
+                <div class="spread" style="margin-bottom: var(--s-3)">
+                  <span class="eyebrow" style="margin: 0">4대보험 가입 여부</span>
+                  <span class="subtle" style="font-size: 12px">사업주가 정한다 · 계약서 사회보험 조항</span>
                 </div>
+                <div class="grid grid--2" style="gap: var(--s-2)">
+                  <div class="row" style="padding: 6px 0; border: 0"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="고용보험" data-icon="check" data-icon-size="11"></span><span>고용보험</span></div>
+                  <div class="row" style="padding: 6px 0; border: 0"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="산재보험" data-icon="check" data-icon-size="11"></span><span>산재보험</span></div>
+                  <div class="row" style="padding: 6px 0; border: 0"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="국민연금" data-icon="check" data-icon-size="11"></span><span>국민연금</span></div>
+                  <div class="row" style="padding: 6px 0; border: 0"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="건강보험" data-icon="check" data-icon-size="11"></span><span>건강보험</span></div>
+                </div>
+                <p class="note" style="margin: var(--s-2) 0 0">
+                  <span data-icon="info" data-icon-size="14"></span>
+                  <span>날인 뒤 직원이 앱에서 넣는 <b>신고 정보</b>와는 다르다. 이 칸은 계약서에 어떤 보험에 든다고 적을지 정하는 자리다.</span>
+                </p>
 
                 <hr class="hr" />
                 <div class="band band-sec band-sec--soft">

@@ -51,6 +51,9 @@
                     <button class="btn btn--secondary btn--sm" type="button">
                       <span data-icon="download" data-icon-size="14"></span>원본 내려받기
                     </button>
+                    <button class="btn btn--secondary btn--sm is-na" type="button" aria-disabled="true" data-tip="종이 계약일 때만 쓴다. 관리자가 올린 날인본 파일을 내려받는다.">
+                      <span data-icon="download" data-icon-size="14"></span>날인본 내려받기
+                    </button>
                   </div>
                 </div>
                 <div class="panel__body">
@@ -63,10 +66,16 @@
                     <dd>파트타이머</dd>
                     <dt>계약 기간</dt>
                     <dd class="mono">2026-08-28 ~ 2027-02-27</dd>
-                    <dt>급여</dt>
-                    <dd class="mono">10,800 원 / 시급</dd>
+                    <dt>시급</dt>
+                    <dd class="mono">10,800</dd>
                     <dt>소정근로시간</dt>
-                    <dd>주 15시간 · 월·수·금 11:00-16:00</dd>
+                    <dd>주 15.0시간 · 월·수·금 11:00-16:00 <span class="subtle">휴게 12:00-13:00</span></dd>
+                    <dt>주휴일</dt>
+                    <dd>일요일</dd>
+                    <dt>임금지급일</dt>
+                    <dd>익월 10일</dd>
+                    <dt>4대보험</dt>
+                    <dd>고용보험 · 산재보험 <span class="subtle">국민연금·건강보험 미가입</span></dd>
                     <dt>연장·야간 가산</dt>
                     <dd><span class="badge badge--quiet">미적용</span> <span class="subtle">5인 미만 사업장</span></dd>
                     <dt>근무 장소</dt>
@@ -161,6 +170,8 @@
                   </div>
                   <hr class="hr" />
                   <dl class="kv">
+                    <dt>계약 방식</dt>
+                    <dd><span class="badge badge--quiet">전자계약</span></dd>
                     <dt>발송일</dt>
                     <dd class="mono">2026-08-28</dd>
                     <dt>날인 기한</dt>
@@ -170,6 +181,10 @@
                     <dt>재발송 횟수</dt>
                     <dd class="num">0</dd>
                   </dl>
+                  <div class="panel__note" style="margin-top: var(--s-3)">
+                    <b>종이 계약</b>이면 이 자리가 달라진다 — 발송일·날인 기한 대신 <b>등록일과 등록한 관리자</b>가 서고, 진행 단계 없이 체결 완료로 시작하며
+                    아래에 <b>날인본 파일 내려받기</b>가 붙는다. 재발송도 없다.
+                  </div>
                 </div>
               </div>
 
