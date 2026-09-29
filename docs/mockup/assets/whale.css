@@ -4192,6 +4192,10 @@ a.tile:hover {
   background: var(--surface-hover);
   box-shadow: inset 0 0 0 1px var(--hairline-strong);
 }
+.spick__opt.is-off {
+  color: var(--muted-tert);
+  cursor: not-allowed;
+}
 .spick__opt mark {
   background: none;
   color: var(--link);

@@ -18,17 +18,19 @@
            가맹 관리자 = 이 화면에서 아무 계정도 등록하지 않는다.
          권한 그룹 — BP 관리자는 그 BP 의 BA 그룹 전부(권한 그룹에는 사용 상태가 없다 · CONFIG-6), 가맹 마스터는 고정 권한 FM000001,
            가맹 관리자는 관리계정ID 가 등록하는 가맹 마스터인 사용 중 FA 그룹(FA000002 · FA000003)만. 하나도 없으면 먼저 만들라고 알리고 등록을 막는다.
-         관리 점포는 등록하는 사람 본인의 관리 점포 범위를 넘지 못한다 — 일부 점포만 맡은 hg_hr 는 ‘전체 점포’를 줄 수 없고 직영 4개점 안에서만 고른다.
+         관리 점포는 등록하는 사람 본인의 관리 점포 범위를 넘지 못한다 — 일부 점포만 맡은 hghr 는 ‘전체 점포’를 줄 수 없고 직영 4개점 안에서만 고른다.
          소속 BP 칸은 두지 않는다 — BP 쪽은 본인 소속 BP, 플랫폼 사용자는 화면 상단에서 고른 BP 로 정해진다.
          관리 점포를 ‘일부 점포’로 주면 위 자동완성에서 내 관리 점포를 찾아 더하고, 아래 선택한 점포 영역(옆으로 나열)에서 하나씩 뺀다.
          비밀번호 입력은 없다 — 12자 무작위 초기 비밀번호를 등록 이메일로만 보낸다(S-CYGFAF). 계정 상태 항목도 없다 — 새 계정은 늘 사용이다(PL-CUECAY).
-         등록하면 새 계정의 상세(등록 직후)로 간다. 가맹 마스터 · 가맹 관리자 등록 직후 표본은 없어 같은 역할의 대표 상세(morinam01 · mori_yn)로 간다.
-         입력 값은 역할과 관계없이 등록 직후 표본(hg_cs 문가은)을 그대로 둔다.
-         쟁점 후보(S-NIMSMQ · F-OILWTZ): F-OILWTZ display 는 등록 화면에 ‘계정 상태 입력 영역’을 두라 하고, S-NIMSMQ 는 사용 상태로 자동 생성한다. 표본은 상태 항목을 두지 않았다.
-         쟁점 후보(S-NIMSMQ): 가맹 마스터 계정의 관리 점포를 가맹점포로만 한정하는지, 다른 가맹 마스터와 점포가 겹쳐도 되는지 정해지지 않았다. 표본은 11개점을 모두 보인다.
-         쟁점 후보(S-NIMSMQ): 관리 점포(전체 · 일부)가 필수인지, 일부 점포를 고르고 하나도 체크하지 않은 채 등록할 수 있는지 명세에 없다.
-         쟁점 후보(PL-OCJOFP): 아이디 규칙은 영문 · 숫자뿐인데 표본 아이디(hg_cs · mori_yn)는 밑줄을 쓴다.
-         쟁점 후보(S-NIMSMQ): 가맹 관리자 역할을 선택지에서 빼면서(표시 규칙) 요청이 들어오면 거부 안내(예외 규칙)도 둔다 — 표본은 요청 거부를 ‘가맹 관리자 등록 요청’ 상태로만 보인다.
+         등록하면 새 계정의 상세(등록 직후)로 간다. 가맹 마스터 · 가맹 관리자 등록 직후 표본은 없어 같은 역할의 대표 상세(morinam01 · moriyn)로 간다.
+         입력 값은 역할과 관계없이 등록 직후 표본(hgcs 문가은)을 그대로 둔다.
+         등록 화면에는 계정 상태 항목을 두지 않는다 — 새 계정은 늘 사용이다 (CONFIG-4 확정).
+         가맹 마스터 계정의 관리 점포는 직영을 포함한 전체 점포에서 고른다. 한 점포는 한 가맹 마스터만 맡는다 —
+           다른 가맹 마스터가 이미 맡은 점포는 후보에 흐리게 ‘ongifm 담당’처럼 보이고 고를 수 없다 (확정 2026-09-29).
+         가맹 마스터는 ‘일부 점포’만 쓴다 — ‘전체 점포’는 BP 관리자에게만 준다. 가맹 마스터를 고르면 범위의 ‘전체 점포’가 막힌다 (확정 2026-09-29).
+         관리 점포는 필수다 — ‘일부 점포’면 한 곳 이상 골라야 등록된다 (확정 2026-09-29 · ‘일부 점포 · 점포 없음’ 상태).
+         아이디는 영문·숫자만 쓴다(밑줄 불가). 표본 아이디도 밑줄을 뺐다 — hg_cs → hgcs, mori_yn → moriyn (확정 2026-09-29).
+         가맹 관리자 역할은 가맹 마스터가 아닌 사람의 선택지에서 빼기만 한다 — 따로 거부 안내 상태는 두지 않는다 (확정 2026-09-29).
          위쪽 점선 줄 둘은 목업 전용이다 — 등록하는 사람의 역할과 입력 상태를 따로 바꾼다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
@@ -44,8 +46,8 @@
               <a class="btn btn--primary btn--sm" href="admins-detail.html?state=created" data-show="in part" data-show-role="bm bpall bppart plat">등록</a>
               <a class="btn btn--primary btn--sm" href="admins-detail.html?state=morinam" data-show="fmr" data-show-role="bm bpall bppart plat" hidden>등록</a>
               <a class="btn btn--primary btn--sm" href="admins-detail.html?state=yn" data-show="in" data-show-role="fm" hidden>등록</a>
-              <button class="btn btn--primary btn--sm" type="button" data-show="dupid dupmail miss badgroup deniedfa fail" data-show-role="bm bpall bppart fm plat" hidden>등록</button>
-              <button class="btn btn--primary btn--sm" type="button" data-show="part fmr" data-show-role="fm" hidden>등록</button>
+              <button class="btn btn--primary btn--sm" type="button" data-show="dupid dupmail miss badgroup fail nostore" data-show-role="bm bpall bppart fm plat" hidden>등록</button>
+              <button class="btn btn--primary btn--sm" type="button" data-show="part nostore fmr" data-show-role="fm" hidden>등록</button>
               <button class="btn btn--primary btn--sm" type="button" data-show="nogroup" data-show-role="bm bpall bppart plat" hidden>등록</button>
               <button class="btn btn--primary btn--sm" type="button" disabled data-show="nogroup" data-show-role="fm" hidden title="연결할 권한 그룹이 없어 등록할 수 없습니다">등록</button>
               <button type="button" class="btn btn--primary btn--sm" onclick="window.open('./config-admins-new.screen-def.html', 'screenDef', 'width=1620,height=900')"><span data-icon="clipboard" data-icon-size="14"></span>화면정의서</button>
@@ -58,11 +60,11 @@
                 <b>목업 권한</b>
                 <div class="seg">
                   <button type="button" data-state="bm" aria-pressed="true">BP 마스터 · hangang01</button>
-                  <button type="button" data-state="bpall" aria-pressed="false">BP 관리자 · 전체 점포 · hg_ops</button>
-                  <button type="button" data-state="bppart" aria-pressed="false">BP 관리자 · 일부 점포 · hg_hr</button>
+                  <button type="button" data-state="bpall" aria-pressed="false">BP 관리자 · 전체 점포 · hgops</button>
+                  <button type="button" data-state="bppart" aria-pressed="false">BP 관리자 · 일부 점포 · hghr</button>
                   <button type="button" data-state="fm" aria-pressed="false">가맹 마스터 · morinam01</button>
-                  <button type="button" data-state="fa" aria-pressed="false">가맹 관리자 · mori_yn</button>
-                  <button type="button" data-state="plat" aria-pressed="false">플랫폼 사용자 · plat_jung</button>
+                  <button type="button" data-state="fa" aria-pressed="false">가맹 관리자 · moriyn</button>
+                  <button type="button" data-state="plat" aria-pressed="false">플랫폼 사용자 · platjung</button>
                 </div>
               </div>
               <div class="demo" data-demo="bn">
@@ -70,13 +72,13 @@
                 <div class="seg">
                   <button type="button" data-state="in" aria-pressed="true">입력 · BP 관리자 전체 점포</button>
                   <button type="button" data-state="part" aria-pressed="false">일부 점포 선택</button>
+                  <button type="button" data-state="nostore" aria-pressed="false">일부 점포 · 점포 없음</button>
                   <button type="button" data-state="fmr" aria-pressed="false">가맹 마스터 역할 선택</button>
                   <button type="button" data-state="dupid" aria-pressed="false">아이디 중복</button>
                   <button type="button" data-state="dupmail" aria-pressed="false">이메일 중복</button>
                   <button type="button" data-state="miss" aria-pressed="false">필수 누락</button>
                   <button type="button" data-state="nogroup" aria-pressed="false">연결할 권한 그룹 없음</button>
                   <button type="button" data-state="badgroup" aria-pressed="false">다른 마스터의 권한 그룹</button>
-                  <button type="button" data-state="deniedfa" aria-pressed="false">가맹 관리자 등록 요청</button>
                   <button type="button" data-state="fail" aria-pressed="false">처리 실패</button>
                 </div>
               </div>
@@ -97,7 +99,7 @@
                 <span data-icon="info" data-icon-size="14"></span>
                 <span>이 상태는 가맹 마스터가 가맹 관리자를 등록할 때 생긴다. 목업 권한을 ‘가맹 마스터’로 두고 본다.</span>
               </p>
-              <p class="note" data-show="part fmr deniedfa" data-show-role="fm" hidden>
+              <p class="note" data-show="part nostore fmr" data-show-role="fm" hidden>
                 <span data-icon="info" data-icon-size="14"></span>
                 <span>이 상태는 BP 쪽 사용자나 플랫폼 사용자가 등록할 때 생긴다. 가맹 마스터의 역할 선택지는 가맹 관리자 하나뿐이다.</span>
               </p>
@@ -115,6 +117,13 @@
                 <div class="band__body">
                   <div class="band__title">이메일이 다른 관리자 계정에 이미 있어 계정을 만들지 않았습니다</div>
                   <p class="band__desc">초기 비밀번호를 받을 다른 이메일을 넣어 주세요.</p>
+                </div>
+              </div>
+              <div class="band band--risk" data-show="nostore" data-show-role="bm bpall plat" hidden>
+                <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+                <div class="band__body">
+                  <div class="band__title">관리 점포를 고르지 않아 계정을 만들지 않았습니다</div>
+                  <p class="band__desc">‘일부 점포’를 골랐다면 관리할 점포를 한 곳 이상 더해 주세요. 모든 점포를 맡기려면 ‘전체 점포’로 바꿉니다.</p>
                 </div>
               </div>
               <div class="band band--risk" data-show="miss" hidden>
@@ -137,14 +146,7 @@
                 <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
                 <div class="band__body">
                   <div class="band__title">선택할 수 없는 권한이라 계정을 만들지 않았습니다</div>
-                  <p class="band__desc">온기 점장(FA000004)은 다른 가맹 마스터(ongi_fm)가 만든 권한 그룹입니다. 관리계정ID 가 본인(morinam01)인 그룹에서 골라 주세요.</p>
-                </div>
-              </div>
-              <div class="band band--risk" data-show="deniedfa" data-show-role="bm bpall bppart plat" hidden>
-                <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
-                <div class="band__body">
-                  <div class="band__title">가맹 관리자 계정은 가맹 마스터만 등록할 수 있습니다</div>
-                  <p class="band__desc">메뉴 등록 권한이 있어도 BP 마스터 · BP 관리자 · 플랫폼 사용자는 가맹 관리자를 만들 수 없어 요청을 처리하지 않았습니다.</p>
+                  <p class="band__desc">온기 점장(FA000004)은 다른 가맹 마스터(ongifm)가 만든 권한 그룹입니다. 관리계정ID 가 본인(morinam01)인 그룹에서 골라 주세요.</p>
                 </div>
               </div>
               <div class="band band--risk" data-show="fail" hidden>
@@ -165,21 +167,21 @@
                   <div class="grid grid--2">
                     <div class="field">
                       <label for="bid">아이디 <span class="req">*</span></label>
-                      <input class="input mono" id="bid" value="hg_cs" maxlength="20" data-show="in part fmr dupmail miss nogroup badgroup deniedfa fail" />
-                      <input class="input mono" value="hg_ops" maxlength="20" aria-invalid="true" aria-label="아이디" data-show="dupid" hidden />
-                      <span class="help" data-show="in part fmr dupmail miss nogroup badgroup deniedfa fail">영문 또는 영문·숫자 4~20자 · 등록 뒤에는 바꾸지 못합니다</span>
+                      <input class="input mono" id="bid" value="hgcs" maxlength="20" data-show="in part nostore fmr dupmail miss nogroup badgroup fail" />
+                      <input class="input mono" value="hgops" maxlength="20" aria-invalid="true" aria-label="아이디" data-show="dupid" hidden />
+                      <span class="help" data-show="in part nostore fmr dupmail miss nogroup badgroup fail">영문 또는 영문·숫자 4~20자 · 등록 뒤에는 바꾸지 못합니다</span>
                       <span class="err" data-show="dupid" hidden><span data-icon="alert" data-icon-size="13"></span>사용할 수 없는 아이디입니다. 미사용 · 탈퇴 · 삭제된 계정의 아이디도 다시 쓰지 못합니다.</span>
                     </div>
                     <div class="field">
                       <label for="bnm">이름 <span class="req">*</span></label>
-                      <input class="input" id="bnm" value="문가은" maxlength="20" data-show="in part fmr dupid dupmail nogroup badgroup deniedfa fail" />
+                      <input class="input" id="bnm" value="문가은" maxlength="20" data-show="in part nostore fmr dupid dupmail nogroup badgroup fail" />
                       <input class="input" value="" maxlength="20" aria-invalid="true" aria-label="이름" data-show="miss" hidden />
-                      <span class="help" data-show="in part fmr dupid dupmail nogroup badgroup deniedfa fail">한글 또는 영문 2~20자</span>
+                      <span class="help" data-show="in part nostore fmr dupid dupmail nogroup badgroup fail">한글 또는 영문 2~20자</span>
                       <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>이름을 입력해 주세요.</span>
                     </div>
                     <div class="field">
                       <label for="btel">휴대전화번호 <span class="req">*</span></label>
-                      <div class="tel3" data-show="in part fmr dupid dupmail nogroup badgroup deniedfa fail">
+                      <div class="tel3" data-show="in part nostore fmr dupid dupmail nogroup badgroup fail">
                         <input class="input mono" id="btel" value="010" inputmode="numeric" aria-label="앞자리" />
                         <input class="input mono" value="3308" inputmode="numeric" aria-label="가운데자리" />
                         <input class="input mono" value="6214" inputmode="numeric" aria-label="끝자리" />
@@ -189,14 +191,14 @@
                         <input class="input mono" value="" inputmode="numeric" aria-invalid="true" aria-label="가운데자리" />
                         <input class="input mono" value="" inputmode="numeric" aria-invalid="true" aria-label="끝자리" />
                       </div>
-                      <span class="help" data-show="in part fmr dupid dupmail nogroup badgroup deniedfa fail">세 칸을 합친 숫자 10~11자리</span>
+                      <span class="help" data-show="in part nostore fmr dupid dupmail nogroup badgroup fail">세 칸을 합친 숫자 10~11자리</span>
                       <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>휴대전화번호를 입력해 주세요.</span>
                     </div>
                     <div class="field">
                       <label for="bmail">이메일 <span class="req">*</span></label>
-                      <input class="input mono" id="bmail" value="gaeun.moon@hangang.co.kr" maxlength="100" data-show="in part fmr dupid miss nogroup badgroup deniedfa fail" />
+                      <input class="input mono" id="bmail" value="gaeun.moon@hangang.co.kr" maxlength="100" data-show="in part nostore fmr dupid miss nogroup badgroup fail" />
                       <input class="input mono" value="seoa.lee@hangang.co.kr" maxlength="100" aria-invalid="true" aria-label="이메일" data-show="dupmail" hidden />
-                      <span class="help" data-show="in part fmr dupid miss nogroup badgroup deniedfa fail">이메일 형식 · 100자 이하 · 초기 비밀번호를 받는 주소</span>
+                      <span class="help" data-show="in part nostore fmr dupid miss nogroup badgroup fail">이메일 형식 · 100자 이하 · 초기 비밀번호를 받는 주소</span>
                       <span class="err" data-show="dupmail" hidden><span data-icon="alert" data-icon-size="13"></span>이미 등록된 이메일입니다.</span>
                     </div>
                   </div>
@@ -216,7 +218,7 @@
                     <!-- BP 쪽 · 플랫폼 등록자 -->
                     <div class="field" data-show-role="bm bpall bppart plat">
                       <label for="brole">계정 역할 <span class="req">*</span></label>
-                      <select class="select" id="brole" data-show="in part dupid dupmail miss nogroup badgroup fail">
+                      <select class="select" id="brole" data-show="in part nostore dupid dupmail miss nogroup badgroup fail">
                         <option selected>BP 관리자</option>
                         <option>가맹 마스터</option>
                       </select>
@@ -224,15 +226,11 @@
                         <option>BP 관리자</option>
                         <option selected>가맹 마스터</option>
                       </select>
-                      <select class="select" aria-label="계정 역할" aria-invalid="true" data-show="deniedfa" hidden>
-                        <option selected>가맹 관리자</option>
-                      </select>
-                      <span class="help" data-show="in part fmr dupid dupmail miss nogroup badgroup fail">가맹 관리자는 가맹 마스터만 등록해 여기 없습니다.</span>
-                      <span class="err" data-show="deniedfa" hidden><span data-icon="alert" data-icon-size="13"></span>가맹 관리자 계정은 가맹 마스터만 등록할 수 있습니다.</span>
+                      <span class="help" data-show="in part nostore fmr dupid dupmail miss nogroup badgroup fail">가맹 관리자는 가맹 마스터만 등록해 여기 없습니다.</span>
                     </div>
                     <div class="field" data-show-role="bm bpall bppart plat">
                       <label for="bgrp">권한 그룹 <span class="req">*</span></label>
-                      <select class="select" id="bgrp" data-show="in part dupid dupmail miss nogroup badgroup deniedfa fail">
+                      <select class="select" id="bgrp" data-show="in part nostore dupid dupmail miss nogroup badgroup fail">
                         <optgroup label="BP 관리자 · 사용 중">
                           <option>운영 총괄 · BA000003</option>
                           <option>인사 담당 · BA000004</option>
@@ -241,7 +239,7 @@
                         </optgroup>
                       </select>
                       <input class="input" value="가맹 마스터(고정) · FM000001" readonly aria-label="권한 그룹" data-show="fmr" hidden />
-                      <span class="help" data-show="in part dupid dupmail miss nogroup badgroup deniedfa fail">사용 중인 BP 관리자 그룹만 나옵니다. 권한 그룹은 모두 고를 수 있습니다 — 그룹에는 사용 상태가 없습니다.</span>
+                      <span class="help" data-show="in part nostore dupid dupmail miss nogroup badgroup fail">사용 중인 BP 관리자 그룹만 나옵니다. 권한 그룹은 모두 고를 수 있습니다 — 그룹에는 사용 상태가 없습니다.</span>
                       <span class="help" data-show="fmr" hidden>가맹 마스터는 플랫폼이 정한 고정 권한 하나만 씁니다.</span>
                     </div>
 
@@ -253,7 +251,7 @@
                     </div>
                     <div class="field" data-show-role="fm" hidden>
                       <label for="bgrp2">권한 그룹 <span class="req">*</span></label>
-                      <select class="select" id="bgrp2" data-show="in part fmr dupid dupmail miss deniedfa fail">
+                      <select class="select" id="bgrp2" data-show="in part nostore fmr dupid dupmail miss fail">
                         <optgroup label="가맹 관리자 · 관리계정ID morinam01">
                           <option>모리 점장 · FA000002</option>
                           <option selected>모리 매니저 · FA000003</option>
@@ -265,7 +263,7 @@
                       <select class="select" aria-label="권한 그룹" aria-invalid="true" data-show="badgroup" hidden>
                         <option selected>온기 점장 · FA000004</option>
                       </select>
-                      <span class="help" data-show="in part fmr dupid dupmail miss deniedfa fail">본인이 관리계정ID 인 사용 중 그룹만 나옵니다. 다른 가맹 마스터의 그룹은 보이지 않습니다.</span>
+                      <span class="help" data-show="in part nostore fmr dupid dupmail miss fail">본인이 관리계정ID 인 사용 중 그룹만 나옵니다. 다른 가맹 마스터의 그룹은 보이지 않습니다.</span>
                       <span class="err" data-show="nogroup" hidden><span data-icon="alert" data-icon-size="13"></span>가맹 관리자 권한 그룹을 먼저 만들어야 합니다.</span>
                       <span class="err" data-show="badgroup" hidden><span data-icon="alert" data-icon-size="13"></span>선택할 수 없는 권한입니다.</span>
                     </div>
@@ -293,16 +291,21 @@
                     <div class="grid grid--2">
                       <div class="field">
                         <label for="bscope">범위 <span class="req">*</span></label>
-                        <select class="select" id="bscope" data-show="in dupid dupmail miss nogroup badgroup deniedfa fail">
+                        <select class="select" id="bscope" data-show="in dupid dupmail miss nogroup badgroup fail">
                           <option selected>전체 점포</option>
                           <option>일부 점포</option>
                         </select>
-                        <select class="select" aria-label="범위" data-show="part fmr" hidden>
+                        <select class="select" aria-label="범위" data-show="part nostore" hidden>
                           <option>전체 점포</option>
                           <option selected>일부 점포</option>
                         </select>
-                        <span class="help" data-show="in dupid dupmail miss nogroup badgroup deniedfa fail">㈜한강상회의 모든 점포를 관리합니다.</span>
-                        <span class="help" data-show="part fmr" hidden>아래에서 고른 점포만 관리합니다.</span>
+                        <select class="select" aria-label="범위" data-show="fmr" hidden>
+                          <option disabled>전체 점포</option>
+                          <option selected>일부 점포</option>
+                        </select>
+                        <span class="help" data-show="in dupid dupmail miss nogroup badgroup fail">㈜한강상회의 모든 점포를 관리합니다.</span>
+                        <span class="help" data-show="part nostore" hidden>아래에서 고른 점포만 관리합니다. 한 곳 이상 골라야 합니다.</span>
+                        <span class="help" data-show="fmr" hidden>가맹 마스터는 점포를 골라서 맡습니다. ‘전체 점포’는 BP 관리자에게만 줄 수 있습니다.</span>
                       </div>
                     </div>
                   </div>
@@ -324,8 +327,26 @@
                       </div>
                     </div>
                   </div>
-                  <div class="panel__body" data-show="fmr" hidden>
+                  <div class="panel__body" data-show="nostore" hidden>
                     <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|일반점포;ST000002|모리커피 성수점|일반점포;ST000003|온기식당 판교점|일반점포;ST000004|온기식당 광화문점|일반점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포;ST000009|온기식당 둔산점|가맹점포;ST000010|온기식당 서면점|가맹점포;ST000011|온기식당 일산점|가맹점포" data-picked="">
+                      <div class="spick__find">
+                        <div class="spick__head"><b>점포 찾기</b><span class="subtle">㈜한강상회 전체 11개점 중에서</span></div>
+                        <div class="addr__q spick__q">
+                          <span data-icon="search" data-icon-size="15"></span>
+                          <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="관리할 점포 찾기" aria-invalid="true" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                          <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
+                        </div>
+                        <span class="err" style="margin-top: var(--s-2)"><span data-icon="alert" data-icon-size="13"></span>관리할 점포를 한 곳 이상 골라 주세요.</span>
+                      </div>
+                      <div class="spick__box">
+                        <div class="spick__head"><b>선택한 점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="tlink" type="button" data-spick-clear>모두 빼기</button></div>
+                        <ul class="spick__picked" data-spick-list aria-label="선택한 점포"></ul>
+                        <p class="spick__empty" data-spick-empty hidden>아직 고른 점포가 없습니다. 위에서 찾아 더하세요.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="panel__body" data-show="fmr" hidden>
+                    <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|일반점포;ST000002|모리커피 성수점|일반점포;ST000003|온기식당 판교점|일반점포;ST000004|온기식당 광화문점|일반점포;ST000005|모리커피 을지로점|가맹점포|morinam01 담당;ST000006|모리커피 연남점|가맹점포|morinam01 담당;ST000007|모리커피 청담점|가맹점포|morinam01 담당;ST000008|모리커피 부평점|가맹점포|morinam01 담당;ST000009|온기식당 둔산점|가맹점포|ongifm 담당;ST000010|온기식당 서면점|가맹점포|ongifm 담당;ST000011|온기식당 일산점|가맹점포|ongifm 담당" data-picked="">
                       <div class="spick__find">
                         <div class="spick__head"><b>점포 찾기</b><span class="subtle">㈜한강상회 전체 11개점 중에서</span></div>
                         <div class="addr__q spick__q">
@@ -333,7 +354,7 @@
                           <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="관리할 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
                           <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
                         </div>
-                        <span class="help" style="display: block; margin-top: var(--s-2)">칸을 누르면 고를 수 있는 점포가 펼쳐지고, 글자를 넣으면 좁혀집니다. 고르면 아래 선택한 점포에 더해집니다.</span>
+                        <span class="help" style="display: block; margin-top: var(--s-2)">직영을 포함한 전체 점포에서 고릅니다. 한 점포는 한 가맹 마스터만 맡아, 다른 가맹 마스터가 맡은 점포는 흐리게 보이고 고를 수 없습니다.</span>
                       </div>
                       <div class="spick__box">
                         <div class="spick__head"><b>선택한 점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="tlink" type="button" data-spick-clear>모두 빼기</button></div>
@@ -344,7 +365,7 @@
                   </div>
                 </div>
 
-                <!-- 일부 점포만 맡은 등록자 (hg_hr) -->
+                <!-- 일부 점포만 맡은 등록자 (hghr) -->
                 <div data-show-role="bppart" style="display: contents" hidden>
                   <div class="panel__body">
                     <div class="grid grid--2">

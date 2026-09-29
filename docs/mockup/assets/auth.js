@@ -23,7 +23,9 @@
    data-addr                주소 검색 묶음. [data-addr-q] 검색어, [data-addr-go] 검색 버튼, .addr__list 결과 목록,
                             [data-addr-zip]·[data-addr-base]·[data-addr-detail] 채울 칸.
    data-spick               관리 점포 고르기. data-pool="코드|점포명|유형;…" 은 고를 수 있는 점포(내 관리 범위),
-                            data-picked="코드 코드" 는 처음 골라 둔 점포. 위 [data-spick-q] 자동완성에서 고르면
+                            data-picked="코드 코드" 는 처음 골라 둔 점포. 넷째 칸(코드|점포명|유형|사유)이 있으면
+                            후보에 흐리게 보이되 고를 수 없다(예: 다른 가맹 마스터가 맡은 점포 — ‘ongifm 담당’).
+                            위 [data-spick-q] 자동완성에서 고르면
                             아래 [data-spick-list] 에 더하고, 줄의 × 로 하나씩, [data-spick-clear] 로 모두 뺀다.
    data-same-as="id" data-same-to="id"  ‘기본정보와 동일’ 체크. 켜면 원본 값(칸이 여럿이면 - 로 이어)을 대상 칸에
                             채우고 잠그며, 끄면 잠금만 푼다.
@@ -521,7 +523,7 @@
     var count = box.querySelector("[data-spick-count]");
     var clear = box.querySelector("[data-spick-clear]");
     if (!q || !list || !out) return;
-    var pool = (box.dataset.pool || "").split(";").filter(Boolean).map(function (t) { var a = t.split("|"); return { code: a[0], name: a[1], type: a[2] || "" }; });
+    var pool = (box.dataset.pool || "").split(";").filter(Boolean).map(function (t) { var a = t.split("|"); return { code: a[0], name: a[1], type: a[2] || "", lock: a[3] || "" }; });
     var picked = (box.dataset.picked || "").split(/\s+/).filter(Boolean);
     var added = {};
     var found = [], at = -1;
@@ -561,7 +563,7 @@
         list.innerHTML = '<div class="addr__note">' + (left ? "‘" + esc(q.value.trim()) + "’에 맞는 점포가 없습니다. 내 관리 점포 안에서만 찾습니다." : "고를 수 있는 점포를 모두 골랐습니다.") + "</div>";
       } else {
         list.innerHTML = '<div class="addr__count">' + (t ? "맞는 점포 " + found.length + "곳" : "고를 수 있는 점포 " + found.length + "곳") + "</div>" + found.map(function (s, i) {
-          return '<div class="spick__opt" role="option" aria-selected="false" id="' + list.id + "-" + i + '" data-i="' + i + '"><span>' + hi(s.name, t) + '</span><span class="mono spick__code">' + hi(s.code, t) + '</span><span class="spick__type">' + esc(s.type) + "</span></div>";
+          return '<div class="spick__opt' + (s.lock ? " is-off" : "") + '" role="option" aria-selected="false"' + (s.lock ? ' aria-disabled="true"' : "") + ' id="' + list.id + "-" + i + '" data-i="' + i + '"><span>' + hi(s.name, t) + '</span><span class="mono spick__code">' + hi(s.code, t) + '</span><span class="spick__type">' + esc(s.lock ? s.type + " · " + s.lock : s.type) + "</span></div>";
         }).join("");
       }
       list.hidden = false;
@@ -569,7 +571,7 @@
       if (found.length) mark(0);
     }
     function add(i) {
-      var s = found[i]; if (!s) return;
+      var s = found[i]; if (!s || s.lock) return;
       picked.unshift(s.code); added[s.code] = 1;
       q.value = ""; draw(); open();
     }
