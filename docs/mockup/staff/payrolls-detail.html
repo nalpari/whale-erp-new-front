@@ -64,8 +64,8 @@
             </p>
             <div class="gap__block">
                 <b>확정 — 지급은 자동, 공제는 입력.</b>
-                기본급·주휴·연장은 이번 달 출퇴근으로 계산해 채우고 관리자가 고칠 수 있다.
-                아래 공제 칸은 비어 있으며, 지난 명세서에서 불러오거나 직접 넣는다.
+                기본급·주휴수당·연장수당 <b>셋만</b> 이번 달 출퇴근으로 계산해 채우고 관리자가 고칠 수 있다. 나머지 지급 여덟 줄은 직접 넣는다.
+                아래 공제 칸은 비어 있으며, 지난 명세서에서 불러오거나 직접 넣는다. 항목 목록은 플랫폼 관리자가 관리하고 점포 관리자는 골라 붙이기만 한다.
               </div>
           </div>
 
@@ -81,7 +81,10 @@
                 </div>
               </div>
               <div class="panel__body">
-                <div class="eyebrow">지급</div>
+                <div class="spread" style="margin-bottom: var(--s-3)">
+                  <span class="eyebrow" style="margin: 0">지급</span>
+                  <span class="subtle" style="font-size: 12px">계산값 셋 · 입력 여덟</span>
+                </div>
                 <div class="grid grid--2" style="gap: var(--s-4)">
                   <div class="field">
                     <label for="p1">기본급</label>
@@ -91,41 +94,110 @@
                   <div class="field">
                     <label for="p2">주휴수당</label>
                     <input class="input mono" id="p2" value="0" />
-                    <span class="help">월급제는 기본급에 포함</span>
+                    <span class="help">월급제는 기본급에 포함 · 계산값</span>
                   </div>
+                  <div class="field">
+                    <label for="p3">연장수당</label>
+                    <input class="input mono" id="p3" value="128,000" />
+                    <span class="help">8.0h × 1.5배 · 계약에 가산 적용됨 · 계산값</span>
+                  </div>
+                  <div class="field">
+                    <label for="p4">야간수당</label>
+                    <input class="input mono" id="p4" value="0" />
+                    <span class="help">직접 입력</span>
+                  </div>
+                  <div class="field">
+                    <label for="p5">휴일근무수당</label>
+                    <input class="input mono" id="p5" value="0" />
+                    <span class="help">직접 입력</span>
+                  </div>
+                  <div class="field">
+                    <label for="p6">추가근무수당</label>
+                    <input class="input mono" id="p6" value="0" />
+                    <span class="help">직접 입력</span>
+                  </div>
+                  <div class="field">
+                    <label for="p7">연차수당</label>
+                    <input class="input mono" id="p7" value="0" />
+                    <span class="help">직접 입력</span>
+                  </div>
+                  <div class="field">
+                    <label for="p8">상여</label>
+                    <input class="input mono" id="p8" value="0" />
+                    <span class="help">종류는 본사가 정한다</span>
+                  </div>
+                </div>
+                <div class="spread" style="margin: var(--s-4) 0 var(--s-3)">
+                  <span class="eyebrow" style="margin: 0">지급 · 비과세</span>
+                  <span class="subtle" style="font-size: 12px">셋 모두 직접 입력</span>
                 </div>
                 <div class="grid grid--2" style="gap: var(--s-4)">
                   <div class="field">
-                    <label for="p3">연장근로수당</label>
-                    <input class="input mono" id="p3" value="128,000" />
-                    <span class="help">8.0h × 1.5배 · 계약에 가산 적용됨</span>
+                    <label for="p9">식대</label>
+                    <input class="input mono" id="p9" value="58,000" />
+                    <span class="help">비과세</span>
                   </div>
                   <div class="field">
-                    <label for="p4">기타 수당</label>
-                    <input class="input mono" id="p4" value="58,000" />
-                    <span class="help">식대 등</span>
+                    <label for="p10">자가운전보조금</label>
+                    <input class="input mono" id="p10" value="0" />
+                    <span class="help">비과세</span>
+                  </div>
+                  <div class="field">
+                    <label for="p11">육아수당</label>
+                    <input class="input mono" id="p11" value="0" />
+                    <span class="help">비과세</span>
                   </div>
                 </div>
 
                 <hr class="hr" />
                 <div class="spread" style="margin-bottom: var(--s-3)">
-                  <span class="eyebrow" style="margin: 0">공제</span>
+                  <span class="eyebrow" style="margin: 0">공제 · 기본</span>
                   <button class="btn btn--secondary btn--sm" type="button">
                     <span data-icon="copy" data-icon-size="14"></span>지난 명세서에서 불러오기
                   </button>
                 </div>
                 <div class="grid grid--2" style="gap: var(--s-4)">
                   <div class="field">
-                    <label for="p5">4대보험</label>
-                    <input class="input mono" id="p5" value="" placeholder="직접 입력" />
+                    <label for="d1">국민연금</label>
+                    <input class="input mono" id="d1" value="" placeholder="직접 입력" />
                     <span class="help">요율이 매년 바뀌어 자동 계산하지 않는다</span>
                   </div>
                   <div class="field">
-                    <label for="p6">소득세·지방소득세</label>
-                    <input class="input mono" id="p6" value="" placeholder="직접 입력" />
+                    <label for="d2">건강보험</label>
+                    <input class="input mono" id="d2" value="" placeholder="직접 입력" />
+                    <span class="help">직접 입력</span>
+                  </div>
+                  <div class="field">
+                    <label for="d3">고용보험</label>
+                    <input class="input mono" id="d3" value="" placeholder="직접 입력" />
+                    <span class="help">직접 입력</span>
+                  </div>
+                  <div class="field">
+                    <label for="d4">장기요양보험</label>
+                    <input class="input mono" id="d4" value="" placeholder="직접 입력" />
+                    <span class="help">직접 입력</span>
+                  </div>
+                  <div class="field">
+                    <label for="d5">소득세</label>
+                    <input class="input mono" id="d5" value="" placeholder="직접 입력" />
+                    <span class="help">공제 대상이 아니면 <b>0</b> 을 넣는다</span>
+                  </div>
+                  <div class="field">
+                    <label for="d6">지방소득세</label>
+                    <input class="input mono" id="d6" value="" placeholder="직접 입력" />
                     <span class="help">공제 대상이 아니면 <b>0</b> 을 넣는다</span>
                   </div>
                 </div>
+                <div class="spread" style="margin: var(--s-4) 0 var(--s-3)">
+                  <span class="eyebrow" style="margin: 0">공제 · 추가</span>
+                  <button class="btn btn--secondary btn--sm" type="button">
+                    <span data-icon="plus" data-icon-size="14"></span>항목 추가
+                  </button>
+                </div>
+                <p class="note" style="margin: 0">
+                  <span data-icon="info" data-icon-size="14"></span>
+                  <span>붙인 항목만 보인다. 연말(중도)정산·같은 항목의 소득세와 주민세·건강보험정산·장기요양보험정산·고용보험정산·국민연금정산·장기요양보험산정·퇴사자유보금·스톡옵션 열 가지 중에서 고른다.</span>
+                </p>
 
                 <hr class="hr" />
                 <div class="spread" style="padding: var(--s-2) 0">
@@ -137,9 +209,10 @@
                 <div class="band band--warn" style="margin: var(--s-3) 0 0">
                   <span class="band__ic" data-icon="alert" data-icon-size="18"></span>
                   <div class="band__body">
-                    <div class="band__title">공제가 아직 입력되지 않았습니다</div>
+                    <div class="band__title">기본 공제 여섯 칸이 아직 비어 있습니다</div>
                     <p class="band__desc">
-                      지금 실지급액은 지급 총액과 같습니다. 공제를 넣기 전에는 확정할 수 없습니다.
+                      지금 실지급액은 지급 총액과 같습니다. <b>기본 공제나 붙인 추가 공제가 비어 있으면</b> 확정할 수 없습니다.
+                      공제 대상이 아닌 항목에는 0 을 넣으세요. 파트타이머의 3.3% 원천징수는 쓸 수 있는지 아직 정해지지 않았습니다(STAFF-18).
                     </p>
                   </div>
                 </div>

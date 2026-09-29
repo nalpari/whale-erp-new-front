@@ -199,11 +199,12 @@
               <div class="panel">
                 <div class="panel__head">
                   <h3 class="t-h3">급여</h3>
-                  <span class="badge badge--quiet">6</span>
+                  <span class="badge badge--quiet">7</span>
                 </div>
                 <ul class="pol">
                 <li><span class="pol__t">명세서 상태는 작성 중·검토 중·확정·발송 완료다. 확정 취소는 <b>발송 후에도</b> 되고 검토 중으로 돌아간다.</span><span class="pol__ref">S-DOVWAR</span></li>
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 기본급·주휴수당·연장수당은 시스템이 계산하고 관리자가 확인·수정한다. <b>공제는 관리자가 입력</b>한다 — 요율이 해마다 바뀐다.</span><span class="pol__ref">S-DOVWAR · STAFF-5</span></li>
+                <li><span class="pol__t">지급은 <b>열한 줄</b>이고 그중 기본급·주휴수당·연장수당 셋만 시스템이 계산한다. 식대·자가운전보조금·육아수당은 비과세로 가른다. 공제는 <b>기본 여섯</b>이 늘 보이고 추가 열은 붙인 것만 보인다. 항목 목록은 플랫폼 관리자가 관리하고 점포 관리자는 골라 붙인다.</span><span class="pol__ref">S-DOVWAR · 운영 정책 PAY-02·03</span></li>
                 <li><span class="pol__t">주휴 대상은 주 15시간 이상, 연장은 1일 8시간 또는 1주 40시간 초과다. 가산 적용 여부는 계약 항목을 따르고, 적용하지 않는 계약은 연장수당을 계산하지 않는다.</span><span class="pol__ref">S-DOVWAR</span></li>
                 <li><span class="pol__t">계산식과 가산율은 확정 전에 노무사 검토를 거친다. 급여 지급 실행은 없다.</span><span class="pol__ref">S-DOVWAR</span></li>
                 <li><span class="pol__t">명세서는 이메일로 보내고 직원은 앱에서 퇴직 전까지 본다.</span><span class="pol__ref">F-XXYSNZ</span></li>
@@ -227,7 +228,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
-              <span class="badge badge--preview">17건 · 확정 17</span>
+              <span class="badge badge--preview">18건 · 확정 17 · 미정 1</span>
             </div>
 
             <div class="gap is-decided">
@@ -750,6 +751,29 @@
                 그래서 열람 권한을 따로 정하지 않는다 — 계약을 볼 수 있는 사람이 서명도 본다. 보존도 계약서의 3년을 따르므로 대체되거나 종료된 계약의 서명도 같이 지워진다.
                 직원 근무 앱은 계약 조항을 화면에 직접 그리고, 체결이 끝나면 완료본 PDF 를 공유 시트로 내보낸다. 서명 대기 상태에서는 내보내지 않는다.
                 화면에 그리는 조항과 완료본 PDF 는 <b>같은 계약서 템플릿</b>에서 만든다 — 두 벌로 갈라지면 글자가 어긋난다. 템플릿 관리 화면은 1팀의 2차 항목이다.
+              </p>
+            </div>
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">STAFF-18</span>
+                <b>파트타이머에게 3.3% 원천징수를 쓸 수 있는가</b>
+                <span class="gap__open">미정 · 노무·세무 검토</span>
+                <span class="gap__ref">S-DOVWAR</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt" data-side="a">
+                  <div class="gap__label">A · 공제 항목으로 둔다</div>
+                  <p>옛 시스템처럼 <b>3.3% 원천징수</b> 한 줄을 공제에 두고 관리자가 고른다. 사업소득으로 신고해 온 곳은 그대로 쓴다.</p>
+                </div>
+                <div class="gap__opt" data-side="b">
+                  <div class="gap__label">B · 4대보험·소득세만 둔다</div>
+                  <p>근로계약을 맺은 직원이므로 <b>근로소득</b>으로만 처리한다. 3.3% 줄을 아예 두지 않는다.</p>
+                </div>
+              </div>
+              <p class="gap__note">
+                항목은 옛 시스템에서 그대로 가져왔다. 다만 근로계약을 맺고 근무스케줄로 일하는 파트타이머에게 3.3% 를 떼면
+                사업소득으로 신고하는 것이 되어 근로자성 판단과 부딪힐 수 있다. <b>노무사·세무 검토</b>를 거쳐 정한다.
+                검토 전까지 화면에는 항목을 두되 쓸 수 있는지는 정해지지 않았다고 적는다.
               </p>
             </div>
           </section>
