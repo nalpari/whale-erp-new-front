@@ -51,7 +51,7 @@
               <div class="panel__head">
                 <h2 class="t-h2">근로계약서</h2>
                 <div class="panel__end">
-                  <div class="seg">
+                  <div class="seg" id="emp">
                     <button type="button" aria-pressed="true">정직원</button>
                     <button type="button" aria-pressed="false">파트타이머</button>
                   </div>
@@ -94,14 +94,25 @@
                   <span class="eyebrow" style="margin: 0">계약 방식</span>
                   <span class="subtle" style="font-size: 12px">고른 값에 따라 아래가 달라진다</span>
                 </div>
-                <div class="seg" role="group" aria-label="계약 방식">
+                <div class="seg" id="way" role="group" aria-label="계약 방식">
                   <button type="button" aria-pressed="true">전자계약</button>
                   <button type="button" aria-pressed="false">종이 계약</button>
                 </div>
-                <p class="note" style="margin: var(--s-2) 0 0">
+                <p class="note" style="margin: var(--s-2) 0 0" data-when="e">
                   <span data-icon="info" data-icon-size="14"></span>
-                  <span>종이 계약을 고르면 날인본 파일 올리는 칸이 열리고 발송·날인 기한 안내는 사라진다. 저장하면 곧바로 <b>체결 완료</b>다.</span>
+                  <span>저장하면 초대가 나가고, 직원이 가입을 마치는 순간 계약서가 자동으로 발송된다. 날인 기한은 30일이다.</span>
                 </p>
+                <div data-when="p" hidden>
+                  <p class="note" style="margin: var(--s-2) 0 var(--s-3)">
+                    <span data-icon="info" data-icon-size="14"></span>
+                    <span>당사자가 모두 날인한 계약서를 올려 등록한다. 발송도 날인 기한도 없고, 저장하면 곧바로 <b>체결 완료</b>다. 직원에게는 가입 초대가 따로 나간다.</span>
+                  </p>
+                  <div class="field">
+                    <label for="scan">날인본 파일</label>
+                    <input class="input" id="scan" type="file" />
+                    <span class="help">PDF · JPG · PNG</span>
+                  </div>
+                </div>
 
                 <hr class="hr" />
                 <div class="eyebrow">계약 조건</div>
@@ -116,9 +127,9 @@
                     <span class="help">비워 두면 기간의 정함이 없는 계약</span>
                   </div>
                   <div class="field">
-                    <label for="pay">시급</label>
-                    <input class="input mono" id="pay" value="11,200" />
-                    <span class="help">고용 형태가 파트타이머라 <b>시급</b>이다. 정직원이면 칸 이름이 월급으로 바뀐다. 2026년 최저임금 10,320원 이상</span>
+                    <label for="pay" id="pay-label">월급</label>
+                    <input class="input mono" id="pay" value="2,400,000" />
+                    <span class="help" id="pay-help">월 소정근로시간 기준 최저임금 이상</span>
                   </div>
                   <div class="field">
                     <label for="hol">주휴일</label>
@@ -137,7 +148,7 @@
 
                 <div class="spread" style="margin: var(--s-4) 0 var(--s-2)">
                   <span class="eyebrow" style="margin: 0">소정근로시간</span>
-                  <span class="subtle" style="font-size: 12px">주 <b class="mono">20.0</b> 시간</span>
+                  <span class="subtle" style="font-size: 12px">주 <b class="mono" id="wk-sum">40.0</b> 시간</span>
                 </div>
                 <div class="tblwrap">
                   <table class="tbl tbl--fit tbl--dense">
@@ -151,13 +162,13 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <tr><td class="k">월</td><td class="mono nil">—</td><td class="mono nil">—</td><td class="mono nil">—</td><td class="mono nil">—</td></tr>
-                      <tr><td class="k">화</td><td class="mono">09:00</td><td class="mono">16:00</td><td class="mono">12:00</td><td class="mono">13:00</td></tr>
-                      <tr><td class="k">수</td><td class="mono nil">—</td><td class="mono nil">—</td><td class="mono nil">—</td><td class="mono nil">—</td></tr>
-                      <tr><td class="k">목</td><td class="mono">09:00</td><td class="mono">16:00</td><td class="mono">12:00</td><td class="mono">13:00</td></tr>
-                      <tr><td class="k">금</td><td class="mono nil">—</td><td class="mono nil">—</td><td class="mono nil">—</td><td class="mono nil">—</td></tr>
-                      <tr><td class="k">토</td><td class="mono">09:00</td><td class="mono">16:00</td><td class="mono">12:00</td><td class="mono">13:00</td></tr>
-                      <tr><td class="k">일</td><td class="mono nil">—</td><td class="mono nil">—</td><td class="mono nil">—</td><td class="mono nil">—</td></tr>
+                      <tr data-day="월"><td class="k">월</td><td class="mono">09:00</td><td class="mono">18:00</td><td class="mono">12:00</td><td class="mono">13:00</td></tr>
+                      <tr data-day="화"><td class="k">화</td><td class="mono">09:00</td><td class="mono">18:00</td><td class="mono">12:00</td><td class="mono">13:00</td></tr>
+                      <tr data-day="수"><td class="k">수</td><td class="mono">09:00</td><td class="mono">18:00</td><td class="mono">12:00</td><td class="mono">13:00</td></tr>
+                      <tr data-day="목"><td class="k">목</td><td class="mono">09:00</td><td class="mono">18:00</td><td class="mono">12:00</td><td class="mono">13:00</td></tr>
+                      <tr data-day="금"><td class="k">금</td><td class="mono">09:00</td><td class="mono">18:00</td><td class="mono">12:00</td><td class="mono">13:00</td></tr>
+                      <tr data-day="토"><td class="k">토</td><td class="mono nil">—</td><td class="mono nil">—</td><td class="mono nil">—</td><td class="mono nil">—</td></tr>
+                      <tr data-day="일"><td class="k">일</td><td class="mono nil">—</td><td class="mono nil">—</td><td class="mono nil">—</td><td class="mono nil">—</td></tr>
                     </tbody>
                   </table>
                 </div>
@@ -221,7 +232,9 @@
                 </div>
               </div>
               <div class="panel__foot">
-                <span>저장하면 초대가 즉시 발송된다 · 되돌리려면 직원 레코드를 삭제해야 한다</span>
+                <span data-when="e">저장하면 초대가 즉시 발송된다 · 되돌리려면 직원 레코드를 삭제해야 한다</span>
+                <span data-when="p" hidden>등록하면 곧바로 체결 완료가 된다 · 되돌리려면 직원 레코드를 삭제해야 한다</span>
+                <button class="btn btn--primary btn--sm right" type="button" id="save">초안 저장하고 발송</button>
               </div>
             </section>
 
@@ -319,5 +332,41 @@
       </main>
     </div>
     <script src="../assets/app.js"></script>
+    <script>
+      /* 고용 형태와 계약 방식은 누르면 화면이 따라 바뀐다. 목업이라 값은 표본 두 벌을 오간다. */
+      var WK = {
+        정직원: { label: "월급", pay: "2,400,000", help: "월 소정근로시간 기준 최저임금 이상", sum: "40.0",
+                 days: { 월: 1, 화: 1, 수: 1, 목: 1, 금: 1, 토: 0, 일: 0 }, end: "18:00" },
+        파트타이머: { label: "시급", pay: "11,200", help: "2026년 최저임금 10,320원 이상", sum: "20.0",
+                   days: { 월: 0, 화: 1, 수: 0, 목: 1, 금: 0, 토: 1, 일: 0 }, end: "16:00" }
+      };
+      document.getElementById("emp").addEventListener("click", function (e) {
+        var b = e.target.closest("button");
+        if (!b) return;
+        var v = WK[b.textContent.trim()];
+        if (!v) return;
+        document.getElementById("pay-label").textContent = v.label;
+        document.getElementById("pay").value = v.pay;
+        document.getElementById("pay-help").textContent = v.help;
+        document.getElementById("wk-sum").textContent = v.sum;
+        document.querySelectorAll("[data-day]").forEach(function (tr) {
+          var on = v.days[tr.getAttribute("data-day")];
+          var td = tr.querySelectorAll("td");
+          var vals = on ? ["09:00", v.end, "12:00", "13:00"] : ["—", "—", "—", "—"];
+          for (var i = 1; i < 5; i++) {
+            td[i].textContent = vals[i - 1];
+            td[i].className = on ? "mono" : "mono nil";
+          }
+        });
+      });
+      document.getElementById("way").addEventListener("click", function (e) {
+        var b = e.target.closest("button");
+        if (!b) return;
+        var paper = b.textContent.trim() === "종이 계약";
+        document.querySelectorAll("[data-when=e]").forEach(function (el) { el.hidden = paper; });
+        document.querySelectorAll("[data-when=p]").forEach(function (el) { el.hidden = !paper; });
+        document.getElementById("save").textContent = paper ? "날인본 등록하고 체결 완료" : "초안 저장하고 발송";
+      });
+    </script>
   </body>
 </html>
