@@ -244,7 +244,7 @@
   svg .edge.emph { stroke: var(--edge-emph); }
   svg .edge.dashed { stroke: var(--ink-3); stroke-dasharray: 3 3; }
   svg .edge.sec { stroke: var(--security); }
-  svg .edge-label { fill: var(--ink-3); font-size: 10.5px; }
+  svg .edge-label { fill: var(--ink-3); font-size: 9.4px; }
   svg .edge-label.muted2 { fill: var(--ink-2); }
   svg .edge-label.sec { fill: var(--security); }
 
@@ -252,8 +252,8 @@
   svg .arrow-emph-fill { fill: var(--edge-emph); }
 
   svg .node rect.body { rx: 10; }
-  svg .node .lbl { font-size: 13px; font-weight: 600; text-anchor: middle; }
-  svg .node .sub { font-size: 10px; text-anchor: middle; fill: var(--ink-2); }
+  svg .node .lbl { font-size: 11.6px; font-weight: 600; text-anchor: middle; }
+  svg .node .sub { font-size: 8.9px; text-anchor: middle; fill: var(--ink-2); }
   svg .node .badge { rx: 2; }
   svg .node.frontend rect.body { fill: var(--frontend-bg); stroke: var(--frontend-line); }
   svg .node.frontend .lbl { fill: var(--frontend); }
@@ -271,11 +271,11 @@
   svg .node.cloud .lbl { fill: var(--cloud); }
   svg .node.cloud .badge { fill: var(--cloud); }
   svg .tag-pill { fill: var(--cloud); fill-opacity: .18; }
-  svg .tag-text { fill: var(--cloud); font-size: 9.5px; text-anchor: middle; }
+  svg .tag-text { fill: var(--cloud); font-size: 8.5px; text-anchor: middle; }
 
   .legend {
     display: flex; flex-wrap: wrap; gap: 10px 18px; margin-top: 16px; padding-top: 14px;
-    border-top: 1px solid var(--border-soft); font-size: 12px; color: var(--ink-2);
+    border-top: 1px solid var(--border-soft); font-size: 10.7px; color: var(--ink-2);
   }
   .legend span { display: inline-flex; align-items: center; gap: 7px; }
   .legend i { width: 12px; height: 12px; border-radius: 4px; flex: none; }
@@ -368,7 +368,7 @@
   </p>
 
   <div class="note-box">
-    <b>핵심 갈림길 둘.</b> ① 사업자정보 인증(국세청 진위확인)은 <b>등록 때는 선택</b>이지만 <b>운영으로 바꿀 때는 필수</b>다.
+    <b>핵심 갈림길 둘.</b> ① 사업자정보 인증(국세청 진위확인)은 <b>등록 때는 선택</b>이지만, <b>운영으로 바꿀 때는 인증·필수 항목(점포유형·점포명)·좌표(위도·경도)</b>가 모두 있어야 한다(2026-09-29 확정) — 좌표는 주소로 자동 계산되고 직접 고칠 수 있다.
     ② 폐점·삭제는 <b>유효한 근로계약 · 이용 중인 부가서비스 구독 · 정산 대기 금액이 모두 0</b>이어야만 된다 — 삭제는 여기에 미운영 상태까지 더 필요하다.
   </div>
 
@@ -387,7 +387,7 @@
   </div>
 
   <div class="diagram-frame">
-    <svg viewBox="0 0 1920 440" role="img" aria-label="점포정보 관리 흐름도. 점포 목록에서 등록으로 이동하고, 등록 시 사업자정보 인증은 선택이며 미운영 상태로 점포가 생성된다. 상세 화면에서 수정하거나 상태를 변경할 수 있고, 운영 전환은 사업자정보 인증 완료가 필요하며 폐점은 근로계약·구독·정산이 모두 0이어야 하고 삭제도 같은 조건에 미운영 상태까지 필요하다.">
+    <svg viewBox="0 0 1920 440" role="img" aria-label="점포정보 관리 흐름도. 점포 목록에서 등록으로 이동하고, 등록 시 사업자정보 인증은 선택이며 미운영 상태로 점포가 생성된다. 주소를 고르면 좌표(위도·경도)가 자동 계산된다. 상세 화면에서 수정하거나 상태를 변경할 수 있고, 운영 전환은 사업자정보 인증·필수 항목(점포유형·점포명)·좌표가 모두 있어야 하며(2026-09-29 확정) 폐점은 근로계약·구독·정산이 모두 0이어야 하고 삭제도 같은 조건에 미운영 상태까지 필요하다.">
       <defs>
         <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
           <path class="arrow-fill" d="M0,0 L10,5 L0,10 z" />
@@ -399,12 +399,12 @@
 
       <!-- lane boxes (archify c-lane 재현: 점선 테두리 + 번호 라벨) -->
       <rect class="lane-box" x="4" y="76" width="1912" height="68" rx="8"/>
-      <text class="lane-num" x="16" y="92" font-size="10">01 / BP 측 관리자</text>
+      <text class="lane-num" x="16" y="92" font-size="8.9">01 / BP 측 관리자</text>
       <rect class="lane-box" x="4" y="246" width="1912" height="68" rx="8"/>
-      <text class="lane-num" x="16" y="262" font-size="10">02 / 시스템</text>
+      <text class="lane-num" x="16" y="262" font-size="8.9">02 / 시스템</text>
 
       <!-- phase separator: 실제 화면처럼 점선 + 라벨 -->
-      <g font-family="JetBrains Mono, monospace" font-size="10.5" letter-spacing="0.04em">
+      <g font-family="JetBrains Mono, monospace" font-size="9.4" letter-spacing="0.04em">
         <line class="phase-line" x1="180" y1="34" x2="1890" y2="34"/>
         <text class="phase-label" x="560" y="26" text-anchor="middle">등록</text>
         <text class="phase-label" x="1130" y="26" text-anchor="middle">조회 · 수정</text>
@@ -413,7 +413,7 @@
 
       <!-- group box : 인증은 선택 -->
       <rect class="group-box" x="370" y="234" width="380" height="90" rx="10" stroke-dasharray="4 4"/>
-      <text class="group-label" x="560" y="222" text-anchor="middle" font-size="11">사업자정보 인증은 선택 — 운영 전환 때만 필수</text>
+      <text class="group-label" x="560" y="222" text-anchor="middle" font-size="9.8">운영 전환은 인증 · 필수항목 · 좌표 모두 필요(2026-09-29 확정)</text>
 
       <!-- ===== edges (drawn first, under nodes) ===== -->
       <g>
@@ -431,7 +431,7 @@
 
         <!-- e4 dup -> gen (dashed) -->
         <line class="edge dashed" x1="742" y1="280" x2="768" y2="280" marker-end="url(#arrow)"/>
-        <text class="edge-label" x="755" y="266" text-anchor="middle" font-size="10">중복 없음</text>
+        <text class="edge-label" x="755" y="266" text-anchor="middle" font-size="8.9">중복 없음</text>
 
         <!-- e5 new -> gen (bypass, cross-lane emphasis) -->
         <path class="edge emph" d="M465,142 C465,210 780,210 845,248" marker-end="url(#arrow-emph)"/>
@@ -471,7 +471,7 @@
 
         <!-- e15 closecheck -> closed -->
         <line class="edge emph" x1="1685" y1="280" x2="1721" y2="280" marker-end="url(#arrow-emph)"/>
-        <text class="edge-label" x="1703" y="266" text-anchor="middle" font-size="10">폐점 확정</text>
+        <text class="edge-label" x="1703" y="266" text-anchor="middle" font-size="8.9">폐점 확정</text>
       </g>
 
       <!-- ===== nodes ===== -->
@@ -486,14 +486,14 @@
         <rect class="body" x="395" y="78" width="140" height="64"/>
         <rect class="badge" x="403" y="86" width="8" height="8"/>
         <text class="lbl" x="465" y="103">점포 등록</text>
-        <text class="sub" x="465" y="120">기본정보 입력</text>
+        <text class="sub" x="465" y="120">기본정보 · 좌표계산</text>
       </g>
 
       <g class="node cloud">
         <rect class="body" x="370" y="248" width="190" height="64"/>
         <rect class="badge" x="378" y="256" width="8" height="8"/>
-        <text class="lbl" x="465" y="270" font-size="12.5">국세청 진위확인</text>
-        <text class="sub" x="465" y="286" font-size="9.5">사업자등록번호·대표자명·개업일자</text>
+        <text class="lbl" x="465" y="270" font-size="11.2">국세청 진위확인</text>
+        <text class="sub" x="465" y="286" font-size="8.5">사업자등록번호·대표자명·개업일자</text>
         <rect class="tag-pill" x="428" y="292" width="74" height="16" rx="8"/>
         <text class="tag-text" x="465" y="303">선택 항목</text>
       </g>
@@ -501,71 +501,71 @@
       <g class="node security">
         <rect class="body" x="570" y="248" width="170" height="64"/>
         <rect class="badge" x="578" y="256" width="8" height="8"/>
-        <text class="lbl" x="655" y="270" font-size="12.5">사업자번호 중복검사</text>
-        <text class="sub" x="655" y="286" font-size="9.5">미운영 · 운영 점포와만</text>
+        <text class="lbl" x="655" y="270" font-size="11.2">사업자번호 중복검사</text>
+        <text class="sub" x="655" y="286" font-size="8.5">미운영 · 운영 점포와만</text>
       </g>
 
       <g class="node backend">
         <rect class="body" x="770" y="248" width="150" height="64"/>
         <rect class="badge" x="778" y="256" width="8" height="8"/>
-        <text class="lbl" x="845" y="270" font-size="12.5">점포코드 자동채번</text>
-        <text class="sub" x="845" y="286" font-size="9.5">ST + 6자리</text>
+        <text class="lbl" x="845" y="270" font-size="11.2">점포코드 자동채번</text>
+        <text class="sub" x="845" y="286" font-size="8.5">ST + 6자리</text>
       </g>
 
       <g class="node database">
         <rect class="body" x="960" y="248" width="150" height="64"/>
         <rect class="badge" x="968" y="256" width="8" height="8"/>
-        <text class="lbl" x="1035" y="270" font-size="12.5">점포 레코드 생성</text>
-        <text class="sub" x="1035" y="286" font-size="9.5">미운영 상태로 고정</text>
+        <text class="lbl" x="1035" y="270" font-size="11.2">점포 레코드 생성</text>
+        <text class="sub" x="1035" y="286" font-size="8.5">미운영 상태로 고정</text>
       </g>
 
       <g class="node frontend">
         <rect class="body" x="955" y="78" width="160" height="64"/>
         <rect class="badge" x="963" y="86" width="8" height="8"/>
         <text class="lbl" x="1035" y="103">점포 상세</text>
-        <text class="sub" x="1035" y="120" font-size="10">기본 · 사업자 · 인증 · 이력</text>
+        <text class="sub" x="1035" y="120" font-size="8.9">기본 · 사업자 · 인증 · 이력</text>
       </g>
 
       <g class="node frontend">
         <rect class="body" x="1150" y="78" width="150" height="64"/>
         <rect class="badge" x="1158" y="86" width="8" height="8"/>
         <text class="lbl" x="1225" y="103">점포 수정</text>
-        <text class="sub" x="1225" y="120" font-size="10">재인증은 대표자명만</text>
+        <text class="sub" x="1225" y="120" font-size="8.9">재인증은 대표자명만</text>
       </g>
 
       <g class="node security">
         <rect class="body" x="1130" y="248" width="190" height="64"/>
         <rect class="badge" x="1138" y="256" width="8" height="8"/>
-        <text class="lbl" x="1225" y="270" font-size="12.5">삭제 조건 검사</text>
-        <text class="sub" x="1225" y="286" font-size="9">미운영 + 근로계약·구독·정산 0</text>
+        <text class="lbl" x="1225" y="270" font-size="11.2">삭제 조건 검사</text>
+        <text class="sub" x="1225" y="286" font-size="8">미운영 + 근로계약·구독·정산 0</text>
       </g>
 
       <g class="node frontend">
         <rect class="body" x="1340" y="78" width="150" height="64"/>
         <rect class="badge" x="1348" y="86" width="8" height="8"/>
         <text class="lbl" x="1415" y="103">상태 변경</text>
-        <text class="sub" x="1415" y="120" font-size="10">미운영 → 운영 → 폐점</text>
+        <text class="sub" x="1415" y="120" font-size="8.9">미운영 → 운영 → 폐점</text>
       </g>
 
       <g class="node security">
         <rect class="body" x="1340" y="248" width="150" height="64"/>
         <rect class="badge" x="1348" y="256" width="8" height="8"/>
-        <text class="lbl" x="1415" y="270" font-size="12">운영 전환 조건</text>
-        <text class="sub" x="1415" y="286" font-size="9.5">사업자정보 인증 완료</text>
+        <text class="lbl" x="1415" y="270" font-size="10.7">운영 전환 조건</text>
+        <text class="sub" x="1415" y="286" font-size="8.5">인증 · 필수항목 · 좌표</text>
       </g>
 
       <g class="node security">
         <rect class="body" x="1525" y="248" width="160" height="64"/>
         <rect class="badge" x="1533" y="256" width="8" height="8"/>
-        <text class="lbl" x="1605" y="270" font-size="12">폐점 조건</text>
-        <text class="sub" x="1605" y="286" font-size="9.5">근로계약·구독·정산 모두 0</text>
+        <text class="lbl" x="1605" y="270" font-size="10.7">폐점 조건</text>
+        <text class="sub" x="1605" y="286" font-size="8.5">근로계약·구독·정산 모두 0</text>
       </g>
 
       <g class="node database">
         <rect class="body" x="1725" y="248" width="140" height="64"/>
         <rect class="badge" x="1733" y="256" width="8" height="8"/>
-        <text class="lbl" x="1795" y="270" font-size="12.5">폐점 · 보존</text>
-        <text class="sub" x="1795" y="286" font-size="9.5">수정 · 삭제 불가</text>
+        <text class="lbl" x="1795" y="270" font-size="11.2">폐점 · 보존</text>
+        <text class="sub" x="1795" y="286" font-size="8.5">수정 · 삭제 불가</text>
       </g>
     </svg>
 

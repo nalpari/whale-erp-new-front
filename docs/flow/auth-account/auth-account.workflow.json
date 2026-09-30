@@ -32,7 +32,7 @@
         "id": "v3",
         "label": "내 정보 관리와 회원 탈퇴",
         "focus": ["mypage", "logout", "bizinfo", "reauth", "withdraw", "withdrawcheck", "delete", "delmail"],
-        "note": "탈퇴 선행조건은 구독 해지·정산 0·근로계약 0 뿐이며, 점포는 탈퇴 시 자동으로 전부 폐점된다."
+        "note": "탈퇴 선행조건은 구독 해지·정산 0·근로계약 0 뿐이며, 점포는 탈퇴 시 자동으로 전부 폐점되고 같은 BP의 하위 계정도 함께 탈퇴된다. 로그아웃·탈퇴처럼 스스로 세션을 끝내면 로그인 전 홈으로, 타임아웃이면 로그인 화면으로 이동한다(2026-09-29 확정)."
       }
     ]
   },
@@ -75,7 +75,7 @@
     { "id": "reauth", "lane": "sys", "col": 9, "type": "cloud", "label": "국세청 재인증", "sublabel": "중복확인 후 진위확인", "width": 180, "tag": "선택" },
     { "id": "withdraw", "lane": "user", "col": 10, "type": "frontend", "label": "회원 탈퇴 요청", "sublabel": "비밀번호 재인증 → 탈퇴화면", "width": 170 },
     { "id": "withdrawcheck", "lane": "sys", "col": 10, "type": "security", "label": "탈퇴 선행조건 검사", "sublabel": "구독해지·정산0·근로계약0", "width": 170 },
-    { "id": "delete", "lane": "sys", "col": 11, "type": "database", "label": "계정 논리삭제", "sublabel": "같은 BP 점포 전부 폐점(조건 미검증)", "width": 180 },
+    { "id": "delete", "lane": "sys", "col": 11, "type": "database", "label": "계정 논리삭제", "sublabel": "하위계정 함께 탈퇴, 점포 전부 폐점", "width": 180 },
     { "id": "delmail", "lane": "sys", "col": 12, "type": "messagebus", "label": "탈퇴완료 메일", "sublabel": "BP마스터 등록 이메일로 발송", "width": 170 }
   ],
   "edges": [
@@ -90,7 +90,7 @@
     { "id": "e9", "from": "login", "to": "findaccount", "variant": "dashed", "label": "아이디/비밀번호 찾기" },
     { "id": "e10", "from": "findaccount", "to": "tmpmail", "variant": "dashed", "label": "비밀번호 찾기 → 발급" },
     { "id": "e11", "from": "tmpmail", "to": "login", "variant": "dashed", "label": "임시비밀번호로 재로그인", "role": "return" },
-    { "id": "e12", "from": "loginjudge", "to": "mypage", "variant": "emphasis", "label": "로그인 후" },
+    { "id": "e12", "from": "loginjudge", "to": "mypage", "variant": "emphasis", "label": "로그인 후 (BP→BP홈 · 플랫폼→플랫폼관리)" },
     { "id": "e13", "from": "mypage", "to": "logout", "variant": "dashed", "label": "로그아웃" },
     { "id": "e14", "from": "mypage", "to": "bizinfo", "variant": "dashed", "label": "BP마스터만" },
     { "id": "e15", "from": "bizinfo", "to": "reauth", "variant": "dashed", "label": "재인증(선택)" },

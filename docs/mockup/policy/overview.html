@@ -40,7 +40,7 @@
 
           <div class="tabs" data-tabs="policyPanels">
             <button data-tab="common" aria-selected="true">공통정책 <span class="count">12</span></button>
-            <button data-tab="terms" aria-selected="false">약관콘텐츠 <span class="count">5</span></button>
+            <button data-tab="terms" aria-selected="false">약관콘텐츠 <span class="count">6</span></button>
           </div>
 
           <div id="policyPanels">
@@ -207,8 +207,8 @@
                   <thead>
                     <tr>
                       <th scope="col" class="n">No.</th>
-                      <th scope="col">문서</th>
                       <th scope="col">받는 화면</th>
+                      <th scope="col">약관유형</th>
                       <th scope="col">필수·선택</th>
                       <th scope="col">버전</th>
                     </tr>
@@ -216,43 +216,43 @@
                   <tbody>
                     <tr>
                       <td class="n">1</td>
-                      <td class="k"><a class="tlink" href="../auth/terms.html#use">플랫폼 이용약관 (BP사업자 회원가입용)</a></td>
                       <td>BP 회원가입 <span class="side__tag side__tag--t1">1팀</span></td>
+                      <td class="k"><a class="tlink" href="../auth/terms.html#use">플랫폼 이용약관 (BP사업자 회원가입용)</a></td>
                       <td><span class="badge badge--warn">필수</span></td>
                       <td class="mono">v0.7 · 초안</td>
                     </tr>
                     <tr>
                       <td class="n">2</td>
-                      <td class="k"><a class="tlink" href="../auth/terms.html#privacy">개인정보 수집·이용 동의</a></td>
                       <td>BP 회원가입 <span class="side__tag side__tag--t1">1팀</span></td>
+                      <td class="k"><a class="tlink" href="../auth/terms.html#privacy">개인정보 수집·이용 동의</a></td>
                       <td><span class="badge badge--warn">필수</span></td>
                       <td class="mono">v0.7 · 초안</td>
                     </tr>
                     <tr>
                       <td class="n">3</td>
-                      <td class="k"><a class="tlink" href="../auth/terms.html#useStaff">플랫폼 이용약관 (직원앱 회원가입용)</a></td>
                       <td>직원 근무 앱 가입(초대 수락) <span class="side__tag side__tag--t3">3팀</span></td>
+                      <td class="k"><a class="tlink" href="../auth/terms.html#useStaff">플랫폼 이용약관 (직원앱 회원가입용)</a></td>
                       <td><span class="badge badge--warn">필수</span></td>
-                      <td class="mono">v0.7 · 초안</td>
+                      <td class="mono">v0.8 · 수정초안</td>
                     </tr>
                     <tr>
                       <td class="n">4</td>
-                      <td class="k"><a class="tlink" href="../auth/terms.html#privacyStaff">직원 개인정보 수집·이용 동의</a> <span class="badge badge--preview">쟁점 · 문서 미정</span></td>
                       <td>직원 근무 앱 가입(초대 수락) <span class="side__tag side__tag--t3">3팀</span></td>
+                      <td class="k"><a class="tlink" href="../auth/terms.html#privacyStaff">직원 개인정보 수집·이용 동의</a> <span class="badge badge--preview">초안 · 3팀·법무 검토 전</span></td>
                       <td><span class="badge badge--warn">필수(안)</span></td>
-                      <td class="mono">—</td>
+                      <td class="mono">v0.1 · 초안</td>
                     </tr>
                     <tr>
                       <td class="n">5</td>
-                      <td class="k"><a class="tlink" href="../auth/terms.html#marketing">마케팅 수신을 위한 개인정보 이용 동의</a></td>
                       <td>직원 근무 앱 <span class="side__tag side__tag--t3">3팀</span></td>
+                      <td class="k"><a class="tlink" href="../auth/terms.html#marketing">마케팅 수신을 위한 개인정보 이용 동의</a></td>
                       <td><span class="badge badge--quiet">선택</span></td>
                       <td class="mono">v0.7 · 초안</td>
                     </tr>
                     <tr>
                       <td class="n">6</td>
-                      <td class="k"><a class="tlink" href="../auth/terms.html#location">위치정보 수집·이용 동의</a></td>
                       <td>직원 근무 앱 <span class="subtle">· 첫 출퇴근 등록 때</span> <span class="side__tag side__tag--t3">3팀</span></td>
+                      <td class="k"><a class="tlink" href="../auth/terms.html#location">위치정보 수집·이용 동의</a></td>
                       <td><span class="badge badge--warn">GPS 출퇴근 쓰려면 필수</span></td>
                       <td class="mono">v0.7 · 초안</td>
                     </tr>
@@ -264,18 +264,21 @@
                 <a class="tlink" href="../auth/terms.html">약관 전문</a> 화면의 여섯 탭이 받는 대상별로 묶여 그대로 보여준다.
                 플랫폼 이용약관은 받는 대상이 갈려 ①BP사업자 회원가입용과 ③직원앱 회원가입용 둘로 나눴다 — 본문은 다르지만
                 같은 회사·같은 서비스를 규정하는 약관이다. ①②는 BP 회원가입 화면(1팀)에서, ③④⑤⑥은 직원 근무 앱(3팀, 아직
-                목업 없음)에서 받는다 — manyfast <span class="mono">F-OFBCVL</span> 약관 콘텐츠와 그 하위 스펙 다섯
-                (<span class="mono">S-BXQKUW · S-SBRAPD · S-NMFIOQ · S-YLLRWY · S-RTOFHP</span>)에 반영했다.
-                지금 버전은 법무 검토 전 초안(v0.7)이고, 내부 확인을 거치면 v0.8, 실제 오픈 시점에 v1.0으로 올린다.
+                목업 없음)에서 받는다 — manyfast <span class="mono">F-OFBCVL</span> 약관 콘텐츠와 그 하위 스펙 여섯
+                (<span class="mono">S-BXQKUW · S-SBRAPD · S-NMFIOQ · S-YGOKFJ · S-YLLRWY · S-RTOFHP</span>)에 반영했다.
+                지금 버전은 대부분 법무 검토 전 초안(v0.7)이고, ③직원앱 회원가입용은 3팀 피드백을 반영해 조문을 다시 쓴
+                수정 초안(v0.8), ④직원 개인정보 수집·이용 동의는 방금 처음 채운 초안(v0.1)이다. 내부 확인을 거치면 v0.8,
+                실제 오픈 시점에 모두 v1.0으로 올린다.
               </div>
               <div class="panel__note">
-                <b>4번은 아직 본문이 없는 쟁점이다.</b> ③직원앱 회원가입용 이용약관의 제4조(이용계약의 성립)가 직원 본인이
-                초대를 받아 동의하고 가입하는 절차를 이미 정하고 있어 <b>이용약관 동의</b> 자체는 해결됐다. 다만
+                <b>4번은 2026-09-30에 처음 초안을 채웠다.</b> ③직원앱 회원가입용 이용약관의 제4조(이용계약의 성립 및 소속 관리)가
+                직원 본인이 초대를 받아 동의하고 가입하는 절차를 이미 정하고 있어 <b>이용약관 동의</b> 자체는 해결됐었다. 다만
                 ②개인정보 수집·이용 동의는 <b>BP 회원가입 화면에서 BP 마스터 자신의 개인정보</b>(아이디·이름·연락처 등)
                 수집만 다루고 있어, <b>관리자가 등록한 직원 개인정보</b>를 그 직원 본인이 근무 앱 가입(초대 수락) 때
-                직접 동의하는 절차와 문서는 아직 없다. 1팀(로그인·가입 확인 화면)과 3팀(직원 근무 앱)이 함께 정할
-                문제라 본문을 만들지 않고 자리만 남겼다 — <a class="tlink" href="../auth/terms.html#privacyStaff">약관 전문의 4번 탭</a>을
-                열면 이 안내가 그대로 보인다.
+                직접 동의하는 별도 문서가 필요했다. 3팀 목업(<span class="mono">staff/overview.html</span>의 주민등록번호·
+                급여계좌 결정)과 타사 근태관리 SaaS 표준을 참고해 초안(<span class="mono">S-YGOKFJ</span>)을 채웠지만,
+                아직 3팀·법무 검토 전이라 <span class="mono">[ ]</span> 표시가 많다 —
+                <a class="tlink" href="../auth/terms.html#privacyStaff">약관 전문의 4번 탭</a>에서 전문을 볼 수 있다.
               </div>
             </div>
           </section>
