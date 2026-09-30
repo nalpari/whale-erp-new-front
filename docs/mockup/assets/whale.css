@@ -3546,9 +3546,9 @@ a.tile:hover {
 .gap__block {
   margin: var(--s-3) 0 0;
   padding: var(--s-3) var(--s-4);
-  border-left: 2px solid var(--warn);
+  border: 1px solid var(--warn-line);
   background: var(--surface-card);
-  border-radius: 0 var(--r-md) var(--r-md) 0;
+  border-radius: var(--r-md);
   font-size: 12.5px;
   line-height: 1.6;
   color: var(--body);
