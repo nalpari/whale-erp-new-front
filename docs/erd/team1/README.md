@@ -7,6 +7,7 @@
 - `#` 은 식별자, `->` 는 다른 엔티티 참조다. 선 끝의 `1`·`N`·`0..1` 은 관계 수다.
 - 태그: `중심` 은 그 영역의 핵심 엔티티, `이력` 은 지우지 않는 변경 기록, `3팀 참조` 는 3팀 소유라 참조만 한다.
 - 속성 이름은 업무 용어집 표기를 따른다. 제안 컬럼명은 카탈로그에만 있다.
+- 논리 타입 `code` 는 공통코드 값을 담는 컬럼이다. 실제 타입은 text 이고 비고에 공통코드 그룹 코드를 적는다. 컬럼명은 그룹 코드를 소문자로 쓰고 `_code` 를 붙인다(예: `ACCOUNT_STATUS` → `account_status_code`). 상세 코드가 (그룹 코드, 상세코드, BP 코드) 복합키라 FK 는 걸지 않는다. 공통코드 테이블 자신의 `group_code`·`item_code` 는 코드를 정의하는 컬럼이라 text 다.
 
 ## 근거
 
@@ -40,9 +41,11 @@
 - 플랫폼 사용자의 점포 등록은 점포 목록에서 하고, 소속 BP 는 화면 상단에서 고른 BP 다.
 - 비밀번호 초기화 메일은 플랫폼·BP 마스터·BP 관리자 모두 초기화 전용 양식 하나를 쓴다.
 - 플랫폼 BP 를 둔다 (2026-09-30) — `bp_codes` 에 플랫폼 BP 여부(`is_platform`)가 true 인 행을 하나만 두고, 플랫폼 계정·플랫폼 권한 그룹·공통코드 원본 행이 모두 여기에 소속된다.
-  그래서 `customers`·`role_groups`·`code_items` 의 `bp_id` 는 NULL 없이 필수다. 플랫폼 BP 는 BP 목록·조회 범위·공통코드 배포·배치·통계·사업자등록번호 중복 검사 등 모든 고객 BP 대상 처리에서 빠진다.
-  권한 판정은 `bp_id` 가 아니라 역할(`role`)로 한다.
-- BP 상태를 `bp_codes.status`(사용·미사용·탈퇴)에 둔다 (2026-09-30) — BP 마스터 계정 상태와 함께 바뀌고, 오등록 삭제는 `is_deleted` 로 따로 본다. 상태 변경 일시는 `bp_codes` 에 두지 않는다.
+  그래서 `customers`·`role_groups` 의 `bp_id` 와 `code_items` 의 `bp_code` 는 NULL 없이 필수다. 플랫폼 BP 는 BP 목록·조회 범위·공통코드 배포·배치·통계·사업자등록번호 중복 검사 등 모든 고객 BP 대상 처리에서 빠진다.
+  권한 판정은 `bp_id` 가 아니라 권한 유형(`auth_type_code`)으로 한다.
+- 공통코드는 식별자 대신 코드로 PK 를 잡는다 (2026-09-30) — `code_groups` 는 `group_code`, `code_items` 는 (`group_code`, `item_code`, `bp_code`) 복합 PK 다. 세 값 모두 필수이고 등록 뒤 바꾸지 않는다. 복사된 행의 원본은 같은 그룹 코드·상세코드의 플랫폼 BP 행이라 원본 참조 컬럼을 두지 않는다.
+- 공통코드 값을 담는 컬럼은 논리 타입 `code`, 이름은 그룹 코드 + `_code` 로 맞춘다 (2026-09-30) — 권한 유형·계정 상태·BP 상태·점포 상태·점포 유형·관리 주체·가입경로·탈퇴 사유(`WITHDRAW_REASON`)·휴일 유형·휴일 반복 유형·서비스.
+- BP 상태를 `bp_codes.account_status_code`(사용·미사용·탈퇴)에 둔다 (2026-09-30) — BP 마스터 계정 상태와 함께 바뀌고, 오등록 삭제는 `is_deleted` 로 따로 본다. 상태 변경 일시는 `bp_codes` 에 두지 않는다.
 - 가맹 마스터는 직영점을 포함한 BP 의 전체 점포에서 관리 점포를 고른다(한 점포 한 가맹 마스터).
 
 ## 아직 정하지 않은 것
@@ -77,7 +80,7 @@
 
 ### BP 코드 `bp_codes` · 중심
 
-BP 조직을 식별하고 사업자정보를 관리하는 테이블이다. BP 생성 시 자동 채번되며, 소속 관리자 계정과 1:N으로 연결된다. BP 상태는 `status`(사용·미사용·탈퇴)에 둔다 — BP 등록, BP 상태 변경, 회원 탈퇴 때 BP 마스터 계정 상태(`customers.status`)와 같은 트랜잭션에서 시스템만 바꾸며 사람이 직접 고치지 않는다. 오등록 삭제는 상태가 아니라 `is_deleted` 로 표시하므로, BP 상태 판정은 늘 `is_deleted` = false 와 함께 본다 (점포 업무는 `status` = 사용, 사업자등록번호 중복 검사와 공통코드 배포는 `status` IN (사용, 미사용)).
+BP 조직을 식별하고 사업자정보를 관리하는 테이블이다. BP 생성 시 자동 채번되며, 소속 관리자 계정과 1:N으로 연결된다. BP 상태는 `account_status_code`(사용·미사용·탈퇴)에 둔다 — BP 등록, BP 상태 변경, 회원 탈퇴 때 BP 마스터 계정 상태(`customers.account_status_code`)와 같은 트랜잭션에서 시스템만 바꾸며 사람이 직접 고치지 않는다. 오등록 삭제는 상태가 아니라 `is_deleted` 로 표시하므로, BP 상태 판정은 늘 `is_deleted` = false 와 함께 본다 (점포 업무는 `account_status_code` = 사용, 사업자등록번호 중복 검사와 공통코드 배포는 `account_status_code` IN (사용, 미사용)).
 
 플랫폼 BP 한 행(`is_platform` = true)을 함께 둔다. 플랫폼 마스터·플랫폼 관리자 계정, 플랫폼 권한 그룹, 공통코드 원본 행이 여기에 소속된다. 플랫폼 BP 에는 BP 마스터가 없고 상태 판정·점포·배포 대상이 아니며, 고객 BP 를 다루는 모든 조회·처리는 `is_platform` = false 인 행만 본다.
 
@@ -86,7 +89,7 @@ BP 조직을 식별하고 사업자정보를 관리하는 테이블이다. BP �
 | PK | BP ID | id | `bp_id` |  |
 |  | BP 코드 | text | `bp_code` | BP+6자리, 고유, 자동 채번, 변경 불가. 플랫폼 BP 는 BP000000 예약(채번 제외) |
 |  | 플랫폼 BP 여부 | bool | `is_platform` | 기본 false. true 인 행은 하나만(부분 유일) |
-|  | BP 상태 | enum | `status` | 사용·미사용·탈퇴(계정 상태 공통코드), 기본 사용. 시스템만 변경, 플랫폼 BP 는 사용 고정 |
+|  | BP 상태 코드 | code | `account_status_code` | 공통코드 `ACCOUNT_STATUS`(사용·미사용·탈퇴), 기본 사용. 시스템만 변경, 플랫폼 BP 는 사용 고정 |
 |  | 상호명 | text | `corp_name` | 1~50자 |
 |  | 사업자등록번호 | text | `biz_reg_no` | 탈퇴하지 않은 고객 BP끼리 고유(부분 유일). 플랫폼 BP 는 검사에서 제외 |
 |  | 대표자명 | text | `biz_ceo_name` | 인증 결과만 |
@@ -118,7 +121,7 @@ BP 마스터·BP 관리자·가맹 마스터·가맹 관리자·플랫폼 마스
 |  | 비밀번호 해시 | hash | `password_hash` |  |
 |  | 연락처 | text | `phone` | 숫자 10~11자리 |
 |  | 이메일 | text | `email` | 사용·미사용 계정 간 고유 |
-|  | 권한역할 | enum | `role` | BP마스터·BP관리자·가맹마스터·가맹관리자·플랫폼마스터·플랫폼관리자 |
+|  | 권한 유형 코드 | code | `auth_type_code` | 공통코드 `AUTH_TYPE`(플랫폼 마스터·플랫폼 관리자·BP 마스터·BP 관리자·가맹 마스터·가맹 관리자) |
 | FK | 권한 그룹 | id | `role_group_id` | 한 명에 하나 |
 | FK | 이용약관 최근 동의 버전 | id | `terms_of_use_version_id` | terms_versions FK, 동의 전(플랫폼등록 계정 첫 로그인 전)은 비움 |
 |  | 이용약관 동의 일시 | datetime | `terms_of_use_agreed_at` |  |
@@ -130,16 +133,16 @@ BP 마스터·BP 관리자·가맹 마스터·가맹 관리자·플랫폼 마스
 |  | 로그인 실패 횟수 | int | `failed_login_count` | 5회 잠금 |
 |  | 잠금 해제 시각 | datetime | `locked_until` | 5분 잠금 |
 |  | 최근 로그인 일시 | datetime | `last_login_at` |  |
-|  | 가입경로 | enum | `signup_channel` | 모든 계정 필수, 회원가입·플랫폼등록 |
+|  | 가입경로 코드 | code | `join_path_code` | 공통코드 `JOIN_PATH`(회원가입·플랫폼등록), 모든 계정 필수 |
 |  | 관리 점포 범위 | enum | `store_scope` | 전체·일부, 일부면 `admin_store_mappings`. 가맹 마스터는 일부만 |
 |  | 소속 부서 | text | `department` | 플랫폼 관리자만, 선택 |
 |  | 직책 | text | `job_title` | 플랫폼 관리자만, 선택 |
 |  | 우편번호 | text | `zip_code` | 플랫폼 관리자만, 선택 |
 |  | 기본주소 | text | `address` | 플랫폼 관리자만, 선택 |
 |  | 상세주소 | text | `address_detail` | 플랫폼 관리자만, 선택 |
-|  | 탈퇴사유코드 | code | `withdraw_reason_code` | 공통코드 '탈퇴 사유'(WD_*) |
+|  | 탈퇴 사유 코드 | code | `withdraw_reason_code` | 공통코드 `WITHDRAW_REASON`(WD_CLOSE 등 탈퇴 사유) |
 |  | 탈퇴사유설명 | text | `withdraw_reason_detail` | 직접입력 시 500자 |
-|  | 계정 상태 | enum | `status` | 사용·미사용·탈퇴. BP 마스터 계정은 `bp_codes.status` 와 같은 트랜잭션에서 함께 바뀐다 |
+|  | 계정 상태 코드 | code | `account_status_code` | 공통코드 `ACCOUNT_STATUS`(사용·미사용·탈퇴). BP 마스터 계정은 `bp_codes.account_status_code` 와 같은 트랜잭션에서 함께 바뀐다 |
 |  | 계정상태변경일시 | datetime | `status_changed_at` | 탈퇴 일시도 여기에 남는다. BP 가 탈퇴하면 하위 계정(BP 관리자·가맹 마스터·가맹 관리자)도 같은 순간 탈퇴하고 개인정보를 지운다 — 아이디만 보존 |
 |  | 삭제 여부 | bool | `is_deleted` | 오등록 삭제용, 논리 삭제. 회원 탈퇴는 바꾸지 않음(상태만 탈퇴) |
 |  | 등록 일시 | datetime | `created_at` |  |
@@ -261,7 +264,7 @@ BP 마스터·BP 관리자·가맹 마스터·가맹 관리자·플랫폼 마스
 
 로그인한 관리자 본인의 정보 관리(기본정보·사업자정보)·비밀번호 변경·회원 탈퇴를 다룬다. 사업자정보 탭은 BP 마스터에게만 보인다.
 
-마이페이지는 별도 엔티티를 만들지 않는다. 기본정보 수정은 `customers` 테이블의 이름·연락처·이메일을 갱신하고, 사업자정보 수정은 `bp_codes` 테이블의 사업자정보 속성을 갱신하며, 비밀번호 변경은 `customers.password_hash`를 갱신한다. 모든 변경은 `admin_change_histories`에 이력을 남긴다. 회원 탈퇴는 `customers.status`를 '탈퇴'로만 바꾸고(삭제 여부 `is_deleted`는 그대로 — 탈퇴 BP·계정은 목록과 상세에 계속 나온다), `bp_codes`의 대표자 연락처·대표자 이메일을 비우며, `status_changed_at`(탈퇴 일시)·`withdraw_reason_code`·`withdraw_reason_detail`을 기록하며, 같은 BP의 하위 계정도 함께 탈퇴 처리해 개인정보를 지우고(아이디만 보존) 점포를 폐점한다.
+마이페이지는 별도 엔티티를 만들지 않는다. 기본정보 수정은 `customers` 테이블의 이름·연락처·이메일을 갱신하고, 사업자정보 수정은 `bp_codes` 테이블의 사업자정보 속성을 갱신하며, 비밀번호 변경은 `customers.password_hash`를 갱신한다. 모든 변경은 `admin_change_histories`에 이력을 남긴다. 회원 탈퇴는 `customers.account_status_code`를 '탈퇴'로만 바꾸고(삭제 여부 `is_deleted`는 그대로 — 탈퇴 BP·계정은 목록과 상세에 계속 나온다), `bp_codes`의 대표자 연락처·대표자 이메일을 비우며, `status_changed_at`(탈퇴 일시)·`withdraw_reason_code`·`withdraw_reason_detail`을 기록하며, 같은 BP의 하위 계정도 함께 탈퇴 처리해 개인정보를 지우고(아이디만 보존) 점포를 폐점한다.
 
 ---
 
@@ -276,7 +279,7 @@ BP 마스터·BP 관리자·가맹 마스터·가맹 관리자·플랫폼 마스
 | PK | 점포 ID | id | `store_id` |  |
 |  | 점포코드 | text | `store_code` | ST+6자리, 고유, 자동 채번, 변경 불가 |
 | FK | BP | id | `bp_id` | 소속 BP, bp_codes FK |
-|  | 점포유형 | enum | `store_type` | 일반점포·가맹점포, 변경 불가 |
+|  | 점포 유형 코드 | code | `store_type_code` | 공통코드 `STORE_TYPE`(일반점포·가맹점포), 변경 불가 |
 |  | 점포명 | text | `name` | 1~50자, 필수 |
 |  | 점포 연락처 | text | `phone` | 숫자 9~11자리 |
 |  | 우편번호 | text | `zip_code` |  |
@@ -287,7 +290,7 @@ BP 마스터·BP 관리자·가맹 마스터·가맹 관리자·플랫폼 마스
 |  | 근무지 반경 | int | `geofence_radius_m` | 50~1000m, 10m 단위, 기본 100m |
 |  | 대표 이미지 경로 | text | `image_path` | JPG·PNG 5MB, 선택, 1장 |
 |  | 폐점일 | date | `closed_on` | 폐점 전환일 자동 |
-|  | 점포상태 | enum | `status` | 미운영·운영·폐점 |
+|  | 점포 상태 코드 | code | `store_status_code` | 공통코드 `STORE_STATUS`(미운영·운영·폐점) |
 |  | 삭제 여부 | bool | `is_deleted` | 미운영만 삭제 가능 |
 |  | 등록 일시 | datetime | `created_at` |  |
 | FK | 등록자 | id | `created_by` |  |
@@ -380,7 +383,7 @@ BP 마스터·BP 관리자·가맹 마스터·가맹 관리자·플랫폼 마스
 
 플랫폼 사용자가 BP 마스터 계정을 등록·조회·수정·삭제하는 영역이다. BP 조직 정보는 `bp_codes` 테이블에서 관리된다.
 
-이 영역은 `bp_codes` 테이블과 `customers` 테이블의 BP 마스터 행(role = BP마스터)을 다룬다. BP 조직 정보(상호명·사업자정보)는 `bp_codes`에, 계정 정보는 `customers`에 있다. 속성 상세는 인증·계정 섹션의 `bp_codes`·`customers` 테이블을 참조한다.
+이 영역은 `bp_codes` 테이블과 `customers` 테이블의 BP 마스터 행(auth_type_code = BP 마스터)을 다룬다. BP 조직 정보(상호명·사업자정보)는 `bp_codes`에, 계정 정보는 `customers`에 있다. 속성 상세는 인증·계정 섹션의 `bp_codes`·`customers` 테이블을 참조한다.
 
 ### BP 변경 이력 `bp_change_histories` · 이력
 
@@ -415,7 +418,7 @@ BP·플랫폼의 권한 그룹·공통코드·메뉴·휴일과 플랫폼 공식
 | PK | 권한 그룹 ID | id | `role_group_id` |  |
 |  | 권한 코드 | text | `role_code` | 유형코드+6자리(BM000001 등), 고유, 변경 불가 |
 | FK | BP | id | `bp_id` | bp_codes FK, 필수. 플랫폼 권한은 플랫폼 BP |
-|  | 권한 유형 | enum | `role_type` | BP마스터·BP관리자·가맹마스터·가맹관리자·플랫폼마스터·플랫폼관리자, 변경 불가 |
+|  | 권한 유형 코드 | code | `auth_type_code` | 공통코드 `AUTH_TYPE`(플랫폼 마스터·플랫폼 관리자·BP 마스터·BP 관리자·가맹 마스터·가맹 관리자), 변경 불가 |
 |  | 권한명 | text | `name` | 같은 BP·같은 관리계정ID 안 고유(BA 그룹끼리, 가맹 마스터별 FA 그룹끼리) |
 |  | 설명 | text | `description` |  |
 |  | 마스터 권한 여부 | bool | `is_master` | BM000001·FM000001·PM000001·PA000001 |
@@ -446,10 +449,9 @@ BP·플랫폼의 권한 그룹·공통코드·메뉴·휴일과 플랫폼 공식
 
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
-| PK | 그룹 ID | id | `code_group_id` |  |
-|  | 그룹 코드 | text | `group_code` | 대문자 밑줄, 예: EMP_TYPE, 고유, 변경 불가 |
+| PK | 그룹 코드 | text | `group_code` | 대문자 밑줄, 예: EMP_TYPE, 필수, 변경 불가. 삭제한 그룹의 코드도 다시 쓰지 않는다 |
 |  | 그룹명 | text | `group_name` |  |
-|  | 관리 주체 | enum | `ownership` | 플랫폼고정·플랫폼제공 |
+|  | 관리 주체 코드 | code | `manage_owner_code` | 공통코드 `MANAGE_OWNER` 중 플랫폼고정·플랫폼제공 |
 |  | BP 적용 여부 | bool | `bp_applied` | 플랫폼제공 그룹만. 신규는 미적용, 적용으로 바꾸는 순간 사용 중인 모든 BP에 복사, 되돌릴 수 없음 |
 |  | 설명 | text | `description` |  |
 |  | 사용 상태 | enum | `status` | 사용·사용중지 |
@@ -463,17 +465,16 @@ BP·플랫폼의 권한 그룹·공통코드·메뉴·휴일과 플랫폼 공식
 ### 상세 코드 `code_items` · 엔티티
 
 플랫폼 원본 행과 BP별 행을 함께 담는다. 플랫폼제공 그룹을 BP에 적용하면 그때의 상세 코드가 BP별 행으로 복사되고, BP는 자기 행의 코드명·표시 순서·사용 상태를 바꾼다. 적용 뒤 플랫폼이 추가한 코드는 기존 BP에 퍼지지 않고, 새로 가입하는 BP가 가입 때 적용된 그룹을 모두 복사받는다. 플랫폼고정 그룹은 복사하지 않고 원본을 모든 BP가 읽는다. BP전용 코드의 중복 검사는 그 BP가 가진 행 기준이다.
-플랫폼 원본 행의 `bp_id` 는 플랫폼 BP 다 — 한 BP 가 보는 코드는 `bp_id IN (그 BP, 플랫폼 BP)` 로 읽는다. 배포는 플랫폼 BP 에 복사하지 않는다.
+PK 는 그룹 코드 + 상세코드 + BP 코드이며 셋 다 필수다. 플랫폼 원본 행의 `bp_code` 는 플랫폼 BP(BP000000)다 — 한 BP 가 보는 코드는 `bp_code IN (그 BP, 플랫폼 BP)` 로 읽는다. 배포는 플랫폼 BP 에 복사하지 않는다.
+복사된 행의 원본은 같은 `group_code`·`item_code` 의 플랫폼 BP 행이므로 원본을 가리키는 컬럼은 두지 않는다. 삭제는 논리 삭제라 삭제한 코드도 PK 에 남아 같은 그룹·BP 안에서 다시 쓰지 않는다.
 
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
-| PK | 상세코드 ID | id | `code_item_id` |  |
-|  | 상세코드 | text | `value` | 그룹+BP 안 고유(원본은 플랫폼 BP 기준). 영문 대문자·숫자·밑줄 20자, 등록 후 변경 불가 |
-| FK | 그룹 | id | `code_group_id` |  |
-| FK | BP | id | `bp_id` | 필수. 플랫폼 원본은 플랫폼 BP, BP별 행(적용 때 복사된 행·BP전용 코드)은 그 BP |
-| FK | 원본 상세 코드 | id | `source_item_id` | code_items 자기 참조, 복사된 행일 때 |
+| PK·FK | 그룹 코드 | text | `group_code` | code_groups FK, 필수 |
+| PK | 상세코드 | text | `item_code` | 필수. 영문 대문자·숫자·밑줄 20자, 등록 후 변경 불가 |
+| PK·FK | BP 코드 | text | `bp_code` | bp_codes.bp_code FK, 필수. 플랫폼 원본은 플랫폼 BP(BP000000), BP별 행(적용 때 복사된 행·BP전용 코드)은 그 BP |
 |  | 코드명 | text | `label` |  |
-|  | 관리 주체 | enum | `item_ownership` | 플랫폼고정·플랫폼제공·BP전용 |
+|  | 관리 주체 코드 | code | `manage_owner_code` | 공통코드 `MANAGE_OWNER`(플랫폼고정·플랫폼제공·BP전용) |
 |  | 사용 상태 | enum | `status` | 사용·사용중지 |
 |  | 표시 순서 | int | `sort_order` |  |
 |  | 삭제 여부 | bool | `is_deleted` |  |
@@ -488,7 +489,7 @@ BP·플랫폼의 권한 그룹·공통코드·메뉴·휴일과 플랫폼 공식
 |---|---|---|---|---|
 | PK | 메뉴 ID | id | `menu_id` |  |
 |  | 메뉴 코드 | text | `menu_code` | MN+6자리, 고유, 자동 채번, 변경 불가 |
-| FK | 서비스 코드 | text | `service_code` | 공통코드 '서비스' 그룹의 코드 값 |
+|  | 서비스 코드 | code | `service_code` | 공통코드 `SERVICE` |
 | FK | 상위 메뉴 | id | `parent_menu_id` | 최대 3단계 |
 |  | 노출 메뉴명 | text | `name` | 필수 |
 |  | 메뉴 URL | text | `url` |  |
@@ -510,10 +511,10 @@ BP·플랫폼의 권한 그룹·공통코드·메뉴·휴일과 플랫폼 공식
 | PK | 휴일 ID | id | `holiday_id` |  |
 | FK | BP | id | `bp_id` | bp_codes FK |
 |  | 적용 범위 | enum | `scope` | 전체점포·특정점포 |
-|  | 휴일 유형 | code | `holiday_type` | 공통코드 `HOLIDAY_TYPE`(DAY 하루·PERIOD 기간·REPEAT 반복) |
+|  | 휴일 유형 코드 | code | `holiday_type_code` | 공통코드 `HOLIDAY_TYPE`(DAY 하루·PERIOD 기간·REPEAT 반복) |
 |  | 휴일 시작날짜 | date | `start_date` | 반복 기준일 |
 |  | 휴일 종료날짜 | date | `end_date` | 하루는 시작일과 같게 · 기간의 종료일 · 반복은 비움 |
-|  | 반복 유형 | code | `repeat_type` | 공통코드 `HOLIDAY_REPEAT_TYPE`(DAILY·WEEKLY·MONTHLY·YEARLY) · 반복일 때만, 하루·기간은 비움 |
+|  | 휴일 반복 유형 코드 | code | `holiday_repeat_type_code` | 공통코드 `HOLIDAY_REPEAT_TYPE`(DAILY·WEEKLY·MONTHLY·YEARLY) · 반복일 때만, 하루·기간은 비움 |
 |  | 반복 종료 조건 | enum | `repeat_end_type` | 없음·날짜·횟수 |
 |  | 반복 종료일 | date | `repeat_until` |  |
 |  | 반복 횟수 | int | `repeat_count` |  |
