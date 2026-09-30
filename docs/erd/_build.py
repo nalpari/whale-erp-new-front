@@ -247,7 +247,7 @@ DIAGRAMS.append(Diagram(
         E("contract", "근로계약", "contracts", "focal",
           ["#|근로계약 ID|id|contract_id|", "→|직원 레코드|id|staff_member_id|", "→|근무지|id|store_id|", "→|직전 계약|id|previous_contract_id|재계약일 때", "|계약 유형|enum|contract_type|정직원·파트타이머", "|계약 기간|date|start_on·end_on|종료일 비우면 무기한", "|근무 조건|json|work_terms|근무일·시작·종료·휴게", "|급여 조건|json|wage_terms|시급·월급·지급일", "|연장·야간 가산 적용 여부|bool|overtime_premium|5인 미만 미적용 가능", "|계약 상태|enum|status|발송 대기·서명 대기·체결 완료·거부·만료·종료", "|초안 처리 유형|enum|draft_action|가입 초대·소속 추가 확인·복귀 확인·즉시 발송", "|발송 일시|datetime|sent_at|", "|날인 기한|datetime|sign_due_at|발송일부터 30일", "|재발송 횟수|int|resend_count|", "|거부 사유|text|reject_reason|", "→|작성 관리자|id|created_by|"], 1, 40),
         E("party", "계약 당사자 정보", "contract_parties", "entity",
-          ["#→|근로계약|id|contract_id|1:1", "|관리자 입력 이름·번호|text|admin_name·admin_phone|", "|본인인증 실명·생년월일|text|verified_name·birth_date|실명이 다르면 실명 반영", "|본인인증 휴대전화번호|text|verified_phone|", "|직원 입력 주소|text|address|", "|반영 일시|datetime|filled_at|가입 완료 시 채움"], 2, 40),
+          ["#→|근로계약|id|contract_id|1:1", "|관리자 입력 이름·번호|text|admin_name·admin_phone|", "|관리자 입력 생년월일|date|admin_birth_date|만 19세 미만 차단용", "|본인인증 실명·생년월일|text|verified_name·birth_date|실명이 다르면 실명 반영", "|본인인증 휴대전화번호|text|verified_phone|", "|직원 입력 주소|text|address|", "|반영 일시|datetime|filled_at|가입 완료 시 채움"], 2, 40),
         E("document", "계약서 파일", "contract_documents", "entity",
           ["#|파일 ID|id|document_id|", "→|근로계약|id|contract_id|", "|파일 구분|enum|kind|발송 원본·날인 완료본", "|저장 위치|text|storage_key|", "|파일 해시|hash|checksum|", "|생성 일시|datetime|created_at|"], 2, 276),
         E("status", "계약 상태 이력", "contract_status_histories", "history",

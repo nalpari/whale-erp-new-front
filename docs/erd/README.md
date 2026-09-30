@@ -318,6 +318,7 @@ python3 docs/erd/_build.py
 |---|---|---|---|---|
 | PK·FK | 근로계약 | id | `contract_id` | 1:1 |
 |  | 관리자 입력 이름·번호 | text | `admin_name·admin_phone` |  |
+|  | 관리자 입력 생년월일 | date | `admin_birth_date` | 만 19세 미만 차단용 |
 |  | 본인인증 실명·생년월일 | text | `verified_name·birth_date` | 실명이 다르면 실명 반영 |
 |  | 본인인증 휴대전화번호 | text | `verified_phone` |  |
 |  | 직원 입력 주소 | text | `address` |  |
