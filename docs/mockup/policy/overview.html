@@ -32,14 +32,14 @@
               <div class="band__title">화면 하나가 아니라 모든 화면에 걸리는 공통 동작이다</div>
               <p class="band__desc">
                 상단 GNB 점포 전환, URL 직접 접근, 수정·삭제 권한, 삭제 확인, 저장 성공 토스트,
-                목록 조회 결과 없음, 검색·페이징 — 열 가지를 표로 모았다. 1팀·3팀 화면 모두에 적용되므로
+                목록 조회 결과 없음, 검색·페이징, 버튼 노출 조건 — 열세 가지를 표로 모았다. 1팀·3팀 화면 모두에 적용되므로
                 이 페이지는 어느 팀 메뉴의 하위도 아닌 독립된 자리에 둔다. 아직 1팀·3팀 협의가 끝나지 않았다.
               </p>
             </div>
           </div>
 
           <div class="tabs" data-tabs="policyPanels">
-            <button data-tab="common" aria-selected="true">공통정책 <span class="count">12</span></button>
+            <button data-tab="common" aria-selected="true">공통정책 <span class="count">13</span></button>
             <button data-tab="terms" aria-selected="false">약관콘텐츠 <span class="count">6</span></button>
           </div>
 
@@ -47,7 +47,7 @@
           <section class="section" data-panel="common">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">공통정책</h2>
-              <span class="badge badge--quiet">12건</span>
+              <span class="badge badge--quiet">13건</span>
             </div>
             <div class="panel">
               <div class="tblwrap">
@@ -179,13 +179,38 @@
                       <td>(해당 없음 — 화면에 보이지 않는 서버 발송 설정)</td>
                       <td><span class="badge badge--warn">미정</span></td>
                     </tr>
+                    <tr>
+                      <td class="n">13</td>
+                      <td class="k">버튼 노출 조건</td>
+                      <td>
+                        <ul style="margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 6px">
+                          <li>manyfast 는 화면의 CRUD(조회·등록·수정·저장·삭제)만 정의하고, 그 CRUD를 구현하는 <b>화면별 특수 버튼</b>이 <b>언제 보이고 언제 숨는지</b>는 화면마다 따로 정해야 한다.</li>
+                          <li>1팀·3팀 목업 전체(40여 화면)에서 쓰는 버튼 라벨을 훑어 <b>공통 CRUD</b>와 <b>화면별 특수 버튼</b>으로 나눴다 — 목업의 상태 시연용 버튼(<span class="mono">[실패로 보기]</span> 류의 데모 전환, 플로우 허브 이동 링크)은 뺐다.</li>
+                          <li><b>공통 CRUD</b> — <span class="mono">[조회] [목록] [등록] [수정] [저장] [삭제] [취소] [확인] [닫기] [검색] [초기화]</span>. 이 버튼들의 표시·숨김 규칙은 위 3·7·8·9번에서 이미 다룬다.</li>
+                          <li><b>화면별 특수 버튼 — 상태 전환류</b>: <span class="mono">[폐점으로 변경] [폐점 확정] [사용으로 변경] [미사용으로 변경] [운영으로 저장] [BP 상태 변경] [점포 상태 변경]</span>. 지금 상태에서 갈 수 있는 다음 상태만 버튼으로 보여야 한다.</li>
+                          <li><b>인증류</b>: <span class="mono">[인증하기] [재인증] [본인확인 하기]</span>. 인증 전·후 상태에 따라 다른 버튼이 보인다.</li>
+                          <li><b>계정·비밀번호류</b>: <span class="mono">[비밀번호 초기화] [비밀번호 찾기] [비밀번호 변경] [임시 비밀번호 받기] [임시 비밀번호 다시 받기] [계정 삭제] [회원 탈퇴] [재입사]</span>.</li>
+                          <li><b>재발송·재초대류</b>: <span class="mono">[재발송] [그대로 재발송] [번호 수정 후 재초대]</span>.</li>
+                          <li><b>저장 변형류</b>: <span class="mono">[임시저장] [초안 저장하고 발송] [초안 일괄 생성] [회수하고 저장] [보정 저장] [메모 저장] [답변 저장] [등록하고 배정]</span>.</li>
+                          <li><b>근태·계약 특수</b>: <span class="mono">[근무스케줄 확정] [출퇴근 보정] [지난 주 복사] [조건 해제] [조건 고쳐 새 계약] [계약 값으로 되돌리기]</span>.</li>
+                          <li><b>기타</b>: <span class="mono">[이 계정으로 연결 승인] [모두 읽음으로] [변경하고 동의] [게시] [메뉴등록] [BP에 적용]</span>.</li>
+                        </ul>
+                      </td>
+                      <td>
+                        <ul style="margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 6px">
+                          <li>화면별 특수 버튼은 대부분 <b>상태(status)에 따른 조건부 노출</b>이다 — 예: 운영 중인 점포엔 [폐점으로 변경]만, 미운영 점포엔 [사용으로 변경]만 보인다.</li>
+                          <li>1팀·3팀이 같은 방식(상태 머신 기준 노출)을 쓰는지, 화면마다 규칙이 다른지부터 맞춰야 한다.</li>
+                        </ul>
+                      </td>
+                      <td><span class="badge badge--warn">미정</span></td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
               <div class="panel__note">
                 맨 오른쪽 <b>확정여부</b> 칸은 1팀·3팀 협의 결과를 표시하는 자리다. 지금은 1번(로그인 후 이동)이
                 manyfast <span class="mono">F-DZVFIC</span>(로그인)에, 2번(GNB 점포 전환: 선택 방식)이
-                <span class="mono">F-TLJOCK</span>(상단 조회 범위 선택)에 반영된 <b>확정</b> 상태이고, 나머지 열 가지는 특정 명세의
+                <span class="mono">F-TLJOCK</span>(상단 조회 범위 선택)에 반영된 <b>확정</b> 상태이고, 나머지 열한 가지는 특정 명세의
                 슬롯이 아니라 여러 화면에 공통으로 적용되는 규칙이라 아직 어느 manyfast 항목에도 붙어 있지 않은
                 <b>미정</b>이다. 회의에서 정해지는 대로 이 칸을 확정으로 바꾸고 해당 공통 컴포넌트(토스트·확인창 등)
                 명세에 나눠 반영한다.
