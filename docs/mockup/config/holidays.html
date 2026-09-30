@@ -13,6 +13,7 @@
          플랫폼 사용자(플랫폼 마스터·관리자)는 화면 상단에서 BP 를 고르면 그 BP 의 휴일을 BP 마스터와 같은 범위로 조회·등록·수정·삭제·예외 점포 지정 한다(메뉴 권한 필요). 목업 권한 ‘플랫폼 관리자’는 ㈜한강상회를 고른 상태다.
          들어오면 이번 달(2026년 9월) 캘린더다. 위 조작 줄은 플랫폼 휴일 관리(system/holidays.html)와 같다 — 오늘 · 이전달 · 다음달 · 연도·월 선택 · 캘린더/목록 전환.
          조회 기간 검색 조건은 없다. 기간은 조작 줄에서 고른 달 하나이고, 캘린더와 목록 모두 월 단위다.
+         연도 선택은 플랫폼 휴일 관리와 같이 2000년부터 2100년까지다 — 공식 휴일이 있는 범위와 같다 (CONFIG-8 · 확정 2026-09-30).
          목록은 플랫폼 휴일 관리(목록 = 고른 연도 한 해)와 달리 고른 달의 BP 휴일만 싣는다 — 그래서 목록 보기에서도 이전달 · 다음달 · 월 선택이 그대로 선다.
          검색 조건은 휴일명(포함) 하나다. 점포 검색 필터와 적용 범위 검색은 두지 않는다 — 두 보기 모두 보는 사람의 접근 범위 안 점포 휴일만 싣는다.
          휴일은 규칙 한 건(하루 · 기간 · 반복)이고, 캘린더와 목록의 날짜는 고른 달 안에서 규칙으로 계산한다. 목록은 계산한 날짜마다 한 줄이다.
@@ -143,9 +144,13 @@
               </div>
               <div class="inline" style="gap: 6px; flex-wrap: nowrap">
                 <select class="select select--sm" aria-label="연도" style="width: 96px">
+                  <option>2000년</option>
+                  <option>…</option>
                   <option>2025년</option>
                   <option selected>2026년</option>
                   <option>2027년</option>
+                  <option>…</option>
+                  <option>2100년</option>
                 </select>
                 <select class="select select--sm" aria-label="월" style="width: 80px" data-show="listaug" hidden>
                   <option>7월</option>
