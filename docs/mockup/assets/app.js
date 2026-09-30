@@ -356,6 +356,7 @@
   /* 상단 조회 범위 선택 (F-TLJOCK). 조회 범위는 BP 하나와 그 BP 안의 점포 범위다.
      점포는 일반점포 · 가맹점포 유형 그룹 또는 개별 점포로 여러 개를 고른다. 점포를 고르지 않고 적용하면 그 BP 전체 점포다.
      적용한 범위는 서버에 두지 않고 이 브라우저 세션 동안만 유지한다(sessionStorage) — 로그아웃하면 사라진다.
+     BP 목록에는 사용 · 미사용 BP 가 나오고 미사용에는 표시를 붙인다. 탈퇴 · 삭제 BP 와 플랫폼 BP 는 나오지 않는다 (확정 2026-09-30).
      목업 전용 주소 값: ?scope=first 는 BP 가 적용되지 않은 플랫폼 사용자의 최초 진입(닫을 수 없는 팝업), ?scope=nostore 는 접근할 점포가 없는 사용자다. */
   var BPS = [
     { code: "BP000017", name: "㈜한강상회", stores: [
@@ -381,7 +382,7 @@
       { id: "ST000042", name: "바다횟집 해운대점", type: "일반점포", closed: true },
       { id: "ST000043", name: "바다횟집 서면점", type: "가맹점포" }
     ] },
-    { code: "BP000024", name: "㈜한강푸드시스템", stores: [
+    { code: "BP000024", name: "㈜한강푸드시스템", off: true, stores: [
       { id: "ST000051", name: "한강국밥 여의도점", type: "일반점포" },
       { id: "ST000052", name: "한강국밥 마포점", type: "가맹점포" }
     ] },
@@ -810,7 +811,7 @@
             var n = b.stores.filter(function (x) { return !x.closed; }).length;
             return '<div class="spick__opt" role="option" id="scp-bpo-' + i + '" data-i="' + i + '" aria-selected="false">' +
               "<span>" + bpHi(b.name, t) + '</span><span class="mono spick__code">' + bpHi(b.code, t) + '</span><span class="spick__type">점포 ' + n + "곳" +
-              (st.picked && b.code === st.bp ? " · 지금 BP" : "") + "</span></div>";
+              (st.picked && b.code === st.bp ? " · 지금 BP" : "") + "</span>" + (b.off ? '<span class="badge badge--quiet">미사용</span>' : "") + "</div>";
           }).join("")
         : '<div class="addr__note">‘' + esc(raw) + "’에 맞는 BP 가 없습니다. 접근 권한이 있는 BP 안에서만 찾습니다.</div>";
       l.hidden = false;
