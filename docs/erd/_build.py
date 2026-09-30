@@ -238,14 +238,14 @@ DIAGRAMS.append(Diagram(
 # ── 3. 근로계약 ───────────────────────────────────────────────────────────
 DIAGRAMS.append(Diagram(
     "contract", "근로계약", "근로계약",
-    "계약은 직원 레코드에 붙는다. 체결되면 고치지 않고 새 계약으로 대체한다. 계약서 데이터는 관리자 입력분·본인인증분·직원 입력분을 나눠 저장하고 발송 원본과 날인 완료본을 모두 보존한다.",
+    "계약은 직원 레코드에 붙는다. 체결되면 고치지 않고 새 계약으로 대체한다. 계약서 데이터는 관리자 입력분·본인인증분·직원 입력분을 나눠 저장하고 발송 원본과 날인 완료본을 모두 보존한다. 연장·야간 가산 적용 여부는 여기 두지 않는다 — 계약서 조항은 근로기준법에 따라 가산한다는 일반 문구로 두고, 적용 여부는 급여명세서마다 정한다.",
     [
         E("staff_member", "직원 레코드", "staff_members", "entity",
           ["#|직원 레코드 ID|id|staff_member_id|", "→|점포|id|store_id|", "|재직 상태|enum|employment_status|"], 0, 40),
         ref_store(0, 232),
         ref_admin(0, 388),
         E("contract", "근로계약", "contracts", "focal",
-          ["#|근로계약 ID|id|contract_id|", "→|직원 레코드|id|staff_member_id|", "→|근무지|id|store_id|", "→|직전 계약|id|previous_contract_id|재계약일 때", "|계약 유형|enum|contract_type|정직원·파트타이머", "|계약 기간|date|start_on·end_on|종료일 비우면 무기한", "|근무 조건|json|work_terms|근무일·시작·종료·휴게", "|급여 조건|json|wage_terms|시급·월급·지급일", "|연장·야간 가산 적용 여부|bool|overtime_premium|5인 미만 미적용 가능", "|계약 상태|enum|status|발송 대기·서명 대기·체결 완료·거부·만료·종료", "|초안 처리 유형|enum|draft_action|가입 초대·소속 추가 확인·복귀 확인·즉시 발송", "|발송 일시|datetime|sent_at|", "|날인 기한|datetime|sign_due_at|발송일부터 30일", "|재발송 횟수|int|resend_count|", "|거부 사유|text|reject_reason|", "→|작성 관리자|id|created_by|"], 1, 40),
+          ["#|근로계약 ID|id|contract_id|", "→|직원 레코드|id|staff_member_id|", "→|근무지|id|store_id|", "→|직전 계약|id|previous_contract_id|재계약일 때", "|계약 유형|enum|contract_type|정직원·파트타이머", "|계약 기간|date|start_on·end_on|종료일 비우면 무기한", "|근무 조건|json|work_terms|근무일·시작·종료·휴게", "|급여 조건|json|wage_terms|시급·월급·지급일", "|계약 상태|enum|status|발송 대기·서명 대기·체결 완료·거부·만료·종료", "|초안 처리 유형|enum|draft_action|가입 초대·소속 추가 확인·복귀 확인·즉시 발송", "|발송 일시|datetime|sent_at|", "|날인 기한|datetime|sign_due_at|발송일부터 30일", "|재발송 횟수|int|resend_count|", "|거부 사유|text|reject_reason|", "→|작성 관리자|id|created_by|"], 1, 40),
         E("party", "계약 당사자 정보", "contract_parties", "entity",
           ["#→|근로계약|id|contract_id|1:1", "|관리자 입력 이름·번호|text|admin_name·admin_phone|", "|관리자 입력 생년월일|date|admin_birth_date|만 19세 미만 차단용", "|본인인증 실명·생년월일|text|verified_name·birth_date|실명이 다르면 실명 반영", "|본인인증 휴대전화번호|text|verified_phone|", "|직원 입력 주소|text|address|", "|반영 일시|datetime|filled_at|가입 완료 시 채움"], 2, 40),
         E("document", "계약서 파일", "contract_documents", "entity",
@@ -256,10 +256,10 @@ DIAGRAMS.append(Diagram(
     [
         R("staff_member", "right", "contract", "left", "1", "N", "", at_a=100, at_b=100),
         R("store", "right", "contract", "left", "1", "N", "근무지", at_a=288, at_b=288),
-        R("admin", "right", "contract", "left", "1", "N", "작성", at_a=412, at_b=412),
+        R("admin", "right", "contract", "left", "1", "N", "작성", at_a=412, at_b=388),
         R("contract", "right", "party", "left", "1", "1", "", at_a=120, at_b=120),
         R("contract", "right", "document", "left", "1", "N", "", at_a=356, at_b=356),
-        R("contract", "right", "status", "left", "1", "N", "", at_a=412, at_b=592, mid=664),
+        R("contract", "right", "status", "left", "1", "N", "", at_a=388, at_b=592, mid=664),
     ],
     [
         ("coral", "중심", "체결된 계약은 고치지 않는다", ["조건을 바꾸려면 새 계약을 만들고 직전 계약을 가리킨다", "같은 점포에 진행 중인 계약이 있으면 대체 여부를 묻는다", "근무 조건은 근무스케줄 등록 때 기본값으로 한 번 쓰인다"]),
@@ -338,14 +338,14 @@ DIAGRAMS.append(Diagram(
 # ── 6. 급여명세서 ─────────────────────────────────────────────────────────
 DIAGRAMS.append(Diagram(
     "payroll", "급여명세서", "급여명세서",
-    "근로계약과 출퇴근 기록을 참조해 초안을 만든다. 지급 항목은 시스템 계산값과 관리자 수정값을 나눠 두고 공제 항목은 미입력과 0을 구분한다. 검토 대기 사유가 붙은 명세서도 확인하면 확정할 수 있다.",
+    "근로계약과 출퇴근 기록을 참조해 초안을 만든다. 지급 항목은 시스템 계산값과 관리자 수정값을 나눠 두고 공제 항목은 미입력과 0을 구분한다. 검토 대기 사유가 붙은 명세서도 확인하면 확정할 수 있다. 연장·야간 가산 적용 여부는 명세서마다 정한다. 새 명세서는 같은 직원의 지난 명세서 값을 따르고 첫 명세서는 적용으로 시작하며, 끄면 연장수당을 계산하지 않는다.",
     [
         E("staff_member", "직원 레코드", "staff_members", "entity",
           ["#|직원 레코드 ID|id|staff_member_id|", "→|점포|id|store_id|", "|재직 상태|enum|employment_status|"], 0, 40),
         E("contract", "근로계약", "contracts", "entity",
-          ["#|근로계약 ID|id|contract_id|", "|급여 조건|json|wage_terms|", "|연장·야간 가산 적용 여부|bool|overtime_premium|"], 0, 232),
+          ["#|근로계약 ID|id|contract_id|", "|급여 조건|json|wage_terms|"], 0, 232),
         E("payslip", "급여명세서", "payslips", "focal",
-          ["#|급여명세서 ID|id|payslip_id|", "→|직원 레코드|id|staff_member_id|같은 기간 중복 생성 차단", "→|근무지|id|store_id|", "→|참조 근로계약|id|contract_id|계약 없으면 초안 없음", "|급여 기간|date|period_start·period_end|", "|계약 유형|enum|contract_type|", "|출퇴근 참조 기간|date|attendance_from·to|", "|명세서 상태|enum|status|작성 중·검토 중·확정·발송 완료", "|지급 총액|money|gross_pay|", "|공제 총액|money|total_deduction|", "|실지급액|money|net_pay|", "|확정 일시|datetime|confirmed_at|", "→|확정 관리자|id|confirmed_by|"], 1, 40),
+          ["#|급여명세서 ID|id|payslip_id|", "→|직원 레코드|id|staff_member_id|같은 기간 중복 생성 차단", "→|근무지|id|store_id|", "→|참조 근로계약|id|contract_id|계약 없으면 초안 없음", "|급여 기간|date|period_start·period_end|", "|계약 유형|enum|contract_type|", "|출퇴근 참조 기간|date|attendance_from·to|", "|명세서 상태|enum|status|작성 중·검토 중·확정·발송 완료", "|연장·야간 가산 적용 여부|bool|overtime_premium|명세서마다 정함·끄면 연장수당 계산 안 함", "|지급 총액|money|gross_pay|", "|공제 총액|money|total_deduction|", "|실지급액|money|net_pay|", "|확정 일시|datetime|confirmed_at|", "→|확정 관리자|id|confirmed_by|"], 1, 40),
         E("item", "명세서 금액 항목", "payslip_items", "entity",
           ["#|항목 ID|id|item_id|", "→|급여명세서|id|payslip_id|", "|항목 구분|enum|category|지급·공제", "|항목 코드|enum|code|기본급·주휴·연장·고정 수당·4대보험·소득세·지방소득세", "|시스템 계산값|money|calculated_amount|지급 항목만", "|관리자 수정값|money|adjusted_amount|", "|입력 여부|bool|entered|공제 미입력과 0 구분"], 2, 40),
         E("reason", "검토 대기 사유", "payslip_review_reasons", "entity",
