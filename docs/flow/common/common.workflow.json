@@ -1,0 +1,101 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "공통 — 여러 화면이 함께 쓰는 다섯 가지",
+    "quality_profile": "showcase",
+    "legend": {
+      "entries": {
+        "frontend": { "label": "화면" },
+        "backend": { "label": "시스템 처리" },
+        "security": { "label": "판정 · 예외" },
+        "messagebus": { "label": "발송" },
+        "database": { "label": "기록 · 참조" },
+        "external": { "label": "수신자 · 외부" },
+        "cloud": { "label": "외부 API" }
+      }
+    },
+    "views": [
+      { "id": "v1", "label": "공통 컴포넌트", "focus": ["call", "bizauth", "addr", "storefind"], "note": "사업자정보 인증과 주소 검색은 외부 API를 부르고, 점포 검색은 내부 조회다 — 셋 다 결과만 호출 화면에 적용하고 저장 권한은 갖지 않는다." },
+      { "id": "v2", "label": "공통코드", "focus": ["codes", "owner", "consumer"], "note": "관리 주체가 플랫폼고정 · 플랫폼제공 · BP전용 세 갈래로 어디까지 고칠 수 있는지를 가른다." },
+      { "id": "v3", "label": "메일 포맷", "focus": ["event", "mailsend", "recipient"], "note": "가입완료 · 계정생성 · 탈퇴 등 계정 이벤트마다 다른 포맷을 골라 수신자별로 발송한다." },
+      { "id": "v4", "label": "약관 콘텐츠", "focus": ["termsview", "terms"], "note": "열람 전용 참조 콘텐츠 — 동의 체크박스와 필수 검증은 이 기능이 아니라 BP 회원가입 같은 소비 기능이 담당한다." },
+      { "id": "v5", "label": "상단 조회 범위 선택", "focus": ["storedrop", "bpswitch", "authcheck", "bppopup", "scopeapply"], "note": "드롭다운은 현재 BP 안 점포만 바꾸고, BP 자체를 바꾸려면 반드시 BP 변경 버튼으로 팝업을 열어야 한다." }
+    ]
+  },
+  "lanes": [
+    { "id": "user", "label": "관리자 · 사용자 (관리자 웹)" },
+    { "id": "sys", "label": "시스템" }
+  ],
+  "phases": [
+    { "id": "p1", "label": "공통 컴포넌트", "fromCol": 0, "toCol": 2 },
+    { "id": "p2", "label": "공통코드", "fromCol": 3, "toCol": 4 },
+    { "id": "p3", "label": "메일 포맷", "fromCol": 5, "toCol": 6 },
+    { "id": "p4", "label": "약관 콘텐츠", "fromCol": 7, "toCol": 7 },
+    { "id": "p5", "label": "상단 조회 범위 선택", "fromCol": 8, "toCol": 10, "variant": "emphasis" }
+  ],
+  "groups": [
+    { "id": "g1", "label": "BP 변경은 플랫폼 마스터 · 관리자만 노출", "lane": "sys", "fromCol": 9, "toCol": 9, "variant": "dashed" }
+  ],
+  "mainPath": ["bpswitch", "authcheck", "bppopup", "scopeapply"],
+  "nodes": [
+    { "id": "call", "lane": "user", "col": 1, "type": "frontend", "label": "입력 화면", "sublabel": "사업자정보 · 주소 · 점포 검색 호출", "width": 150 },
+    { "id": "bizauth", "lane": "sys", "col": 0, "type": "cloud", "label": "사업자정보 인증", "sublabel": "국세청 진위확인 · 상호명은 미반환", "width": 150 },
+    { "id": "addr", "lane": "sys", "col": 1, "type": "cloud", "label": "주소 검색", "sublabel": "외부 주소 API", "width": 150 },
+    { "id": "storefind", "lane": "sys", "col": 2, "type": "backend", "label": "점포 검색 필터", "sublabel": "코드 · 점포명 자동완성 다중선택", "width": 150 },
+
+    { "id": "codes", "lane": "sys", "col": 3, "type": "database", "label": "공통코드 8종", "sublabel": "권한유형 · 계정상태 · 점포상태 등", "width": 160 },
+    { "id": "owner", "lane": "sys", "col": 4, "type": "security", "label": "관리주체 판정", "sublabel": "플랫폼고정 · 플랫폼제공 · BP전용", "width": 160 },
+    { "id": "consumer", "lane": "user", "col": 4, "type": "frontend", "label": "업무 화면들", "sublabel": "등록된 값만 선택 · 저장", "width": 150 },
+
+    { "id": "event", "lane": "sys", "col": 5, "type": "backend", "label": "계정 이벤트", "sublabel": "가입완료 · 계정생성 · 탈퇴 등", "width": 140 },
+    { "id": "mailsend", "lane": "sys", "col": 6, "type": "messagebus", "label": "메일 포맷 적용 · 발송", "sublabel": "수신자별 제목 · 본문 6종", "width": 170 },
+    { "id": "recipient", "lane": "user", "col": 6, "type": "external", "label": "수신자", "sublabel": "가입 BP · 신규 관리자 · 플랫폼 마스터", "width": 140 },
+
+    { "id": "termsview", "lane": "user", "col": 7, "type": "frontend", "label": "약관 동의 화면", "sublabel": "BP 회원가입 등", "width": 150 },
+    { "id": "terms", "lane": "sys", "col": 7, "type": "database", "label": "약관 콘텐츠", "sublabel": "이용약관 · 개인정보 동의", "width": 150 },
+
+    { "id": "storedrop", "lane": "user", "col": 8, "type": "frontend", "label": "점포 선택 드롭다운", "sublabel": "인라인 · BP는 그대로", "width": 160 },
+    { "id": "bpswitch", "lane": "user", "col": 9, "type": "frontend", "label": "BP 변경 버튼", "sublabel": "플랫폼 마스터 · 관리자만", "width": 140 },
+    { "id": "bppopup", "lane": "user", "col": 10, "type": "frontend", "label": "BP 및 점포 선택 팝업", "sublabel": "최초진입 시 강제, 취소 없음", "width": 170 },
+    { "id": "authcheck", "lane": "sys", "col": 9, "type": "security", "label": "권한 판정", "sublabel": "고객 사용자는 BP 고정", "width": 140 },
+    { "id": "scopeapply", "lane": "sys", "col": 10, "type": "database", "label": "조회 범위 적용", "sublabel": "BP · 점포 식별자 저장", "width": 160 }
+  ],
+  "edges": [
+    { "id": "e1", "from": "call", "to": "bizauth", "variant": "default", "label": "인증 요청" },
+    { "id": "e2", "from": "call", "to": "addr", "variant": "default", "label": "주소 검색" },
+    { "id": "e3", "from": "call", "to": "storefind", "variant": "default", "label": "점포 검색" },
+    { "id": "e5", "from": "codes", "to": "owner", "variant": "default", "label": "관리주체별 구분" },
+    { "id": "e6", "from": "owner", "to": "consumer", "variant": "emphasis", "label": "값만 선택 · 저장" },
+    { "id": "e7", "from": "event", "to": "mailsend", "variant": "dashed", "label": "이벤트별 포맷 선택" },
+    { "id": "e8", "from": "mailsend", "to": "recipient", "variant": "emphasis", "label": "수신자별 발송" },
+    { "id": "e9", "from": "termsview", "to": "terms", "variant": "default", "label": "전문 조회 · 표시" },
+    { "id": "e10", "from": "storedrop", "to": "scopeapply", "variant": "default", "label": "범위만 적용 (BP 유지)" },
+    { "id": "e11", "from": "bpswitch", "to": "authcheck", "variant": "dashed", "label": "플랫폼 마스터 · 관리자만", "role": "branch" },
+    { "id": "e12", "from": "authcheck", "to": "bppopup", "variant": "dashed", "label": "팝업 오픈" },
+    { "id": "e13", "from": "bppopup", "to": "scopeapply", "variant": "emphasis", "label": "적용" }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "확정된 결정",
+      "items": [
+        "사업자 인증 팝업은 상호명을 조회·반환하지 않는다(사용자가 직접 입력) · 임시·초기 비밀번호 원문은 발송 외에는 저장·재표시하지 않는다 · 공통코드 값의 추가·변경·중지는 공통코드 관리에서만 일관 적용한다"
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "막히는 조건",
+      "items": [
+        "메일 발송 실패는 계정 생성·가입·탈퇴 자체를 취소하지 않고 발송 실패만 기록한다 · 필수 약관 미동의 시 BP 회원가입을 완료할 수 없다 · 플랫폼고정 공통코드는 BP가 조회만 하고 고칠 수 없다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "되돌릴 수 없는 것",
+      "items": [
+        "가입경로(회원가입·플랫폼등록)는 계정 생성 시 한 번 정해지면 이후 바꿀 수 없다 · 사용 중지된 공통코드 값은 기존 이력엔 남지만 신규 선택 대상에서는 영구히 빠진다"
+      ]
+    }
+  ]
+}

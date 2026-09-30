@@ -148,6 +148,15 @@
     {
       id: "erp", text: "ERP", meta: "BP Master 기준",
       menus: [
+        /* 공통정책은 메뉴구조도에 없다. 화면 하나하나의 명세가 아니라 화면을 가로지르는
+           공통 동작 규칙(권한 없음 안내, 삭제 확인, GNB 점포 전환, 저장·오류 토스트, 검색·페이징)을
+           모아 둔 자리다. 1팀·3팀 화면에 다 걸치므로 어느 팀 메뉴 아래에도 넣지 않고
+           독립 꼭지로 맨 위에 둔다. */
+        { key: "policy", text: "공통 (협의필요)", team: "1팀+3팀", items: [
+          { text: "공통정책", href: "policy/overview.html#common" },
+          { text: "약관콘텐츠", href: "policy/overview.html#terms" }
+        ]},
+
         { key: "home", text: "Home", team: "3팀", items: [
           { text: "영역 개요", href: "home/overview.html", mock: 1 },
           { text: "로그인 후 홈", href: "home/signed-in.html" },
@@ -169,6 +178,7 @@
             { text: "아이디·비밀번호 찾기", href: "auth/find.html", route: "/find" },
             { text: "회원가입", href: "auth/signup.html", route: "/signup" },
             { text: "가입 완료", href: "auth/signup-done.html", route: "/signup/done" },
+            { text: "약관 전문", href: "auth/terms.html", route: "/terms" },
             { text: "강제 비밀번호 변경", href: "auth/force-password.html", route: "팝업" },
             { text: "세션 만료 경고", href: "stores/index.html?session=expired", route: "쓰던 화면" }
           ]}
@@ -486,7 +496,7 @@
         : mh ? ' href="' + url(mh) + '"' : ' href="#" aria-disabled="true" title="이번 목업 범위 밖"') +
       (on ? ' aria-current="page"' : "") + ">" +
       '<span class="side__text">' + m.text + "</span>" +
-      (m.team ? badge(m.team, m.team === "1팀" ? "t1" : "t3") : "") +
+      (m.team ? badge(m.team, m.team === "1팀" ? "t1" : m.team === "1팀+3팀" ? "t13" : "t3") : "") +
       (m.phase ? badge(m.phase + "차", m.phase === "1.5" ? "half" : "second") : "") +
       "</a>" +
       (m.items ? toggleHTML(m.key, m.text, isOpen) : "") +

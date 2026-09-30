@@ -3314,6 +3314,10 @@ a.tile:hover {
   background: var(--info-wash);
   color: var(--info);
 }
+.side__tag--t13 {
+  background: var(--risk-wash);
+  color: var(--risk-text);
+}
 .side__tag--half {
   background: var(--ok-wash);
   color: var(--ok-text);
@@ -3942,6 +3946,28 @@ a.tile:hover {
 }
 .terms ol {
   padding-left: 18px;
+}
+/* 개인정보 동의의 목적·항목·기간 표 */
+.terms table {
+  font-size: 12.5px;
+  border-top: 1px solid var(--hairline-strong);
+}
+.terms th,
+.terms td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--hairline);
+  text-align: left;
+  vertical-align: top;
+}
+.terms th {
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--surface-strong);
+}
+/* [ ] 로 감싼 자리는 회사가 아직 채우지 않은 값이다 — 법무 검토·정책 확정 전까지 눈에 띄게 빨강으로 둔다. */
+.term-tbd {
+  color: var(--risk-text);
+  font-weight: 600;
 }
 
 /* 로그인 화면 맨 아래 약관·방침 링크 — 네이버 로그인 화면처럼 작은 글씨를 세로선으로 나누고

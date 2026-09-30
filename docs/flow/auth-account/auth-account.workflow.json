@@ -1,0 +1,125 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "인증 및 계정 관리 — 가입부터 탈퇴까지",
+    "quality_profile": "showcase",
+    "legend": {
+      "entries": {
+        "frontend": { "label": "화면" },
+        "backend": { "label": "시스템 처리" },
+        "security": { "label": "판정 · 예외" },
+        "messagebus": { "label": "메일 발송" },
+        "database": { "label": "기록" },
+        "external": { "label": "직원 근무 앱" },
+        "cloud": { "label": "외부(국세청)" }
+      }
+    },
+    "views": [
+      {
+        "id": "v1",
+        "label": "가입에서 완료까지",
+        "focus": ["signup", "dup", "bizauth", "bpcreate", "donemail", "donepage"],
+        "note": "사업자정보 인증은 선택이며, 상호명은 인증 결과로 채워지지 않는다."
+      },
+      {
+        "id": "v2",
+        "label": "로그인과 계정 복구",
+        "focus": ["login", "loginjudge", "forcepw", "findaccount", "tmpmail"],
+        "note": "강제 비밀번호 변경 대상 여부는 로그인 횟수가 아니라 계정에 저장된 표시로만 판정한다."
+      },
+      {
+        "id": "v3",
+        "label": "내 정보 관리와 회원 탈퇴",
+        "focus": ["mypage", "logout", "bizinfo", "reauth", "withdraw", "withdrawcheck", "delete", "delmail"],
+        "note": "탈퇴 선행조건은 구독 해지·정산 0·근로계약 0 뿐이며, 점포는 탈퇴 시 자동으로 전부 폐점된다."
+      }
+    ]
+  },
+  "lanes": [
+    { "id": "user", "label": "비로그인 · 로그인 사용자" },
+    { "id": "sys", "label": "시스템" }
+  ],
+  "phases": [
+    { "id": "p1", "label": "가입", "fromCol": 0, "toCol": 3 },
+    { "id": "p2", "label": "로그인 · 복구", "fromCol": 4, "toCol": 6 },
+    { "id": "p3", "label": "내 정보 관리", "fromCol": 7, "toCol": 9 },
+    { "id": "p4", "label": "회원 탈퇴", "fromCol": 10, "toCol": 12, "variant": "emphasis" }
+  ],
+  "groups": [
+    {
+      "id": "g1",
+      "label": "사업자정보 인증은 선택 — 가입 때도, 내 정보 재인증 때도",
+      "lane": "sys",
+      "fromCol": 0,
+      "toCol": 1,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": ["signup", "bpcreate", "donepage", "login", "loginjudge", "mypage", "withdraw", "withdrawcheck", "delete"],
+  "nodes": [
+    { "id": "signup", "lane": "user", "col": 0, "type": "frontend", "label": "회원가입 화면", "sublabel": "기본정보 + 선택 사업자인증", "width": 170 },
+    { "id": "dup", "lane": "sys", "col": 0, "type": "security", "label": "사업자번호 중복검사", "sublabel": "BP·점포가 쓰는 번호와 비교", "width": 170 },
+    { "id": "bizauth", "lane": "sys", "col": 1, "type": "cloud", "label": "국세청 진위확인", "sublabel": "사업자등록번호·대표자명·개업일자", "width": 170, "tag": "선택" },
+    { "id": "bpcreate", "lane": "sys", "col": 2, "type": "database", "label": "BP 계정 생성", "sublabel": "BP마스터 권한 자동부여, 점포는 생성 안함", "width": 170 },
+    { "id": "donemail", "lane": "sys", "col": 3, "type": "messagebus", "label": "가입완료 메일", "sublabel": "가입 BP + 플랫폼마스터 발송", "width": 170 },
+    { "id": "donepage", "lane": "user", "col": 3, "type": "frontend", "label": "가입 완료 화면", "sublabel": "웨일ERP 시작하기", "width": 170 },
+    { "id": "login", "lane": "user", "col": 4, "type": "frontend", "label": "로그인 화면", "sublabel": "아이디 + 비밀번호, 아이디저장", "width": 170 },
+    { "id": "loginjudge", "lane": "sys", "col": 4, "type": "security", "label": "로그인 판정", "sublabel": "잠금 → 아이디·비밀번호 → 계정상태", "width": 170 },
+    { "id": "forcepw", "lane": "user", "col": 5, "type": "frontend", "label": "강제 비밀번호 변경 팝업", "sublabel": "닫기 불가 · 최초/임시비밀번호 로그인 시", "width": 190 },
+    { "id": "findaccount", "lane": "user", "col": 6, "type": "frontend", "label": "아이디/비밀번호 찾기", "sublabel": "아이디 찾기 · 임시비밀번호 발급 탭", "width": 190 },
+    { "id": "tmpmail", "lane": "sys", "col": 6, "type": "messagebus", "label": "임시비밀번호 메일", "sublabel": "1시간 유효, 계정당 1시간 5회 제한", "width": 170 },
+    { "id": "mypage", "lane": "user", "col": 7, "type": "frontend", "label": "MY PAGE 내정보·비밀번호", "sublabel": "이름·연락처·이메일 / 현재비번 확인 후 변경", "width": 190 },
+    { "id": "logout", "lane": "user", "col": 8, "type": "frontend", "label": "로그아웃", "sublabel": "현재 세션만 종료", "width": 140 },
+    { "id": "bizinfo", "lane": "user", "col": 9, "type": "frontend", "label": "BP 사업자정보 탭", "sublabel": "재인증으로만 사업자등록번호 변경", "width": 180, "tag": "BP마스터" },
+    { "id": "reauth", "lane": "sys", "col": 9, "type": "cloud", "label": "국세청 재인증", "sublabel": "중복확인 후 진위확인", "width": 180, "tag": "선택" },
+    { "id": "withdraw", "lane": "user", "col": 10, "type": "frontend", "label": "회원 탈퇴 요청", "sublabel": "비밀번호 재인증 → 탈퇴화면", "width": 170 },
+    { "id": "withdrawcheck", "lane": "sys", "col": 10, "type": "security", "label": "탈퇴 선행조건 검사", "sublabel": "구독해지·정산0·근로계약0", "width": 170 },
+    { "id": "delete", "lane": "sys", "col": 11, "type": "database", "label": "계정 논리삭제", "sublabel": "같은 BP 점포 전부 폐점(조건 미검증)", "width": 180 },
+    { "id": "delmail", "lane": "sys", "col": 12, "type": "messagebus", "label": "탈퇴완료 메일", "sublabel": "BP마스터 등록 이메일로 발송", "width": 170 }
+  ],
+  "edges": [
+    { "id": "e1", "from": "signup", "to": "dup", "variant": "dashed", "label": "인증하기(선택)", "role": "branch" },
+    { "id": "e2", "from": "dup", "to": "bizauth", "variant": "dashed", "label": "중복 아님" },
+    { "id": "e3", "from": "bizauth", "to": "bpcreate", "variant": "emphasis", "label": "인증 결과 반영" },
+    { "id": "e4", "from": "signup", "to": "bpcreate", "variant": "emphasis", "label": "회원가입 요청(인증 없이도)" },
+    { "id": "e5", "from": "bpcreate", "to": "donemail", "variant": "emphasis", "label": "BP+플랫폼마스터 발송" },
+    { "id": "e6", "from": "bpcreate", "to": "donepage", "variant": "emphasis", "label": "가입완료 토큰 발급" },
+    { "id": "e7", "from": "login", "to": "loginjudge", "variant": "emphasis", "label": "로그인 시도" },
+    { "id": "e8", "from": "loginjudge", "to": "forcepw", "variant": "security", "label": "강제변경 대상", "role": "branch" },
+    { "id": "e9", "from": "login", "to": "findaccount", "variant": "dashed", "label": "아이디/비밀번호 찾기" },
+    { "id": "e10", "from": "findaccount", "to": "tmpmail", "variant": "dashed", "label": "비밀번호 찾기 → 발급" },
+    { "id": "e11", "from": "tmpmail", "to": "login", "variant": "dashed", "label": "임시비밀번호로 재로그인", "role": "return" },
+    { "id": "e12", "from": "loginjudge", "to": "mypage", "variant": "emphasis", "label": "로그인 후" },
+    { "id": "e13", "from": "mypage", "to": "logout", "variant": "dashed", "label": "로그아웃" },
+    { "id": "e14", "from": "mypage", "to": "bizinfo", "variant": "dashed", "label": "BP마스터만" },
+    { "id": "e15", "from": "bizinfo", "to": "reauth", "variant": "dashed", "label": "재인증(선택)" },
+    { "id": "e16", "from": "mypage", "to": "withdraw", "variant": "dashed", "label": "회원탈퇴(BP마스터만)" },
+    { "id": "e17", "from": "withdraw", "to": "withdrawcheck", "variant": "security", "label": "선행조건 확인" },
+    { "id": "e18", "from": "withdrawcheck", "to": "delete", "variant": "security", "label": "모두 충족" },
+    { "id": "e19", "from": "delete", "to": "delmail", "variant": "emphasis", "label": "BP마스터 발송" }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "확정된 결정",
+      "items": [
+        "아이디·이메일 중복확인은 포커스아웃 시 즉시, 사업자번호 중복확인은 국세청 인증 전에 먼저 수행 · 로그인 판정 순서는 잠금→아이디비밀번호→계정상태→강제변경 고정 · 비밀번호 변경 시 다른 기기 세션은 모두 종료하되 현재 세션은 유지 · 아이디 찾기 결과는 앞 2자·뒤 1자만 노출"
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "막히는 조건",
+      "items": [
+        "5회 연속 로그인 실패 시 5분 잠금(임시비밀번호 발급으로만 즉시 해제) · 임시비밀번호는 발급 후 1시간 유효, 계정당 1시간 5회 제한 · 회원탈퇴는 부가서비스 구독 해지·미정산 금액 0·진행 중 근로계약 0을 모두 충족해야 가능"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "되돌릴 수 없는 것",
+      "items": [
+        "탈퇴한 계정의 아이디는 재사용할 수 없다(동일 이메일·사업자번호로는 재가입 가능하나 완전히 새 계정) · 탈퇴 시 그 BP의 모든 점포는 상태와 무관하게 즉시 폐점 · 임시·초기 비밀번호로 로그인한 뒤 강제 변경을 완료하면 그 비밀번호는 즉시 폐기된다"
+      ]
+    }
+  ]
+}

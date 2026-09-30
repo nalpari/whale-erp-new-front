@@ -1,0 +1,730 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BP 환경 설정 흐름도</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --bg: #020617;
+    --panel: #0f172a;
+    --lane-band: #0a1120;
+    --border: #334155;
+    --border-soft: #1e293b;
+    --ink: #ffffff;
+    --ink-2: #94a3b8;
+    --ink-3: #7d8da1;
+    --toolbar-bg: rgba(15, 23, 42, 0.8);
+    --toolbar-hover: rgba(15, 23, 42, 0.95);
+    --toolbar-border: #334155;
+    --toolbar-text: #e2e8f0;
+
+    --frontend: #22d3ee;   --frontend-bg: rgba(8, 51, 68, 0.4);    --frontend-line: #22d3ee;
+    --backend:  #34d399;   --backend-bg:  rgba(6, 78, 59, 0.4);    --backend-line:  #34d399;
+    --security: #fb7185;   --security-bg: rgba(136, 19, 55, 0.4);  --security-line: #fb7185;
+    --database: #a78bfa;   --database-bg: rgba(76, 29, 149, 0.4);  --database-line: #a78bfa;
+    --cloud:    #fbbf24;   --cloud-bg:    rgba(120, 53, 15, 0.3);  --cloud-line:    #fbbf24;
+
+    --edge: #64748b;
+    --edge-emph: #34d399;
+  }
+  :root[data-theme="light"] {
+    --bg: #f8fafc; --panel: #ffffff; --lane-band: #eef2f6; --border: #cbd5e1; --border-soft: #e2e8f0;
+    --ink: #0f172a; --ink-2: #64748b; --ink-3: #64748b;
+    --toolbar-bg: rgba(255, 255, 255, 0.85); --toolbar-hover: #ffffff; --toolbar-border: #cbd5e1; --toolbar-text: #334155;
+    --frontend: #0891b2; --frontend-bg: rgba(34, 211, 238, 0.15);  --frontend-line: #0891b2;
+    --backend:  #059669; --backend-bg:  rgba(52, 211, 153, 0.18);  --backend-line:  #059669;
+    --security: #e11d48; --security-bg: rgba(251, 113, 133, 0.15); --security-line: #e11d48;
+    --database: #7c3aed; --database-bg: rgba(167, 139, 250, 0.2);  --database-line: #7c3aed;
+    --cloud:    #d97706; --cloud-bg:    rgba(251, 191, 36, 0.18);  --cloud-line:    #d97706;
+    --edge: #94a3b8; --edge-emph: #059669;
+  }
+
+  /* ---- 프리셋(VISUAL IDENTITY) — 실제 archify의 4가지 프리셋 토큰을 그대로 옮김 ---- */
+  :root[data-preset="signal-flow"][data-theme="dark"] {
+    --bg: #030711; --panel: #07101e; --lane-band: rgba(9, 22, 40, .5); --border: #1d3350; --border-soft: #2c4564;
+    --ink: #f5fbff; --ink-2: #9eb0c7; --ink-3: #7890ad;
+    --toolbar-bg: rgba(7, 16, 30, .86); --toolbar-hover: rgba(18, 40, 66, .9); --toolbar-border: #29415f; --toolbar-text: #e6eef8;
+    --frontend: #67e8f9; --frontend-bg: rgba(6, 182, 212, .14); --frontend-line: #67e8f9;
+    --backend:  #5eead4; --backend-bg:  rgba(16, 185, 129, .14); --backend-line:  #5eead4;
+    --security: #fda4af; --security-bg: rgba(244, 63, 94, .13); --security-line: #fda4af;
+    --database: #c4b5fd; --database-bg: rgba(139, 92, 246, .16); --database-line: #c4b5fd;
+    --cloud:    #fcd34d; --cloud-bg:    rgba(245, 158, 11, .13); --cloud-line:    #fcd34d;
+    --messagebus: #fdba74; --messagebus-bg: rgba(249, 115, 22, .13); --messagebus-line: #fdba74;
+    --external:   #a5b4c7; --external-bg:   rgba(71, 85, 105, .24); --external-line:   #a5b4c7;
+    --edge: #7890ad; --edge-emph: #2dd4bf;
+  }
+  :root[data-preset="signal-flow"][data-theme="light"] {
+    --bg: #f4f9fc; --panel: #ffffff; --lane-band: rgba(232, 243, 248, .62); --border: #bfd5e2; --border-soft: #a9c5d5;
+    --ink: #102638; --ink-2: #587287; --ink-3: #668397;
+    --toolbar-bg: rgba(255,255,255,.85); --toolbar-hover: #ffffff; --toolbar-border: #bfd5e2; --toolbar-text: #294f61;
+    --frontend: #0789a1; --frontend-bg: rgba(6, 182, 212, .09); --frontend-line: #0789a1;
+    --backend:  #087f69; --backend-bg:  rgba(5, 150, 105, .09); --backend-line:  #087f69;
+    --security: #c53a59; --security-bg: rgba(225, 29, 72, .08); --security-line: #c53a59;
+    --database: #7254c7; --database-bg: rgba(124, 58, 237, .09); --database-line: #7254c7;
+    --cloud:    #b9670b; --cloud-bg:    rgba(217, 119, 6, .08); --cloud-line:    #b9670b;
+    --messagebus: #c65f27; --messagebus-bg: rgba(234, 88, 12, .08); --messagebus-line: #c65f27;
+    --external:   #607a8c; --external-bg:   rgba(100, 116, 139, .1); --external-line:   #607a8c;
+    --edge: #7b97aa; --edge-emph: #0d9488;
+  }
+  :root[data-preset="blueprint"][data-theme="dark"] {
+    --bg: #06131f; --panel: #0a2031; --lane-band: rgba(10, 43, 66, .36); --border: #27627f; --border-soft: #34799a;
+    --ink: #e3f6ff; --ink-2: #91b8ca; --ink-3: #739caf;
+    --toolbar-bg: rgba(7, 28, 45, .92); --toolbar-hover: rgba(18, 58, 83, .95); --toolbar-border: #34799a; --toolbar-text: #d8f3ff;
+    --frontend: #66d9ef; --frontend-bg: rgba(26, 157, 193, .14); --frontend-line: #66d9ef;
+    --backend:  #69dfbd; --backend-bg:  rgba(31, 155, 124, .13); --backend-line:  #69dfbd;
+    --security: #ff8da1; --security-bg: rgba(199, 76, 104, .13); --security-line: #ff8da1;
+    --database: #b4a8ff; --database-bg: rgba(120, 105, 196, .14); --database-line: #b4a8ff;
+    --cloud:    #ffd166; --cloud-bg:    rgba(197, 145, 43, .13); --cloud-line:    #ffd166;
+    --messagebus: #ffad66; --messagebus-bg: rgba(207, 112, 49, .13); --messagebus-line: #ffad66;
+    --external:   #a7cad9; --external-bg:   rgba(84, 119, 139, .18); --external-line:   #a7cad9;
+    --edge: #78a3b7; --edge-emph: #64dfc1;
+  }
+  :root[data-preset="blueprint"][data-theme="light"] {
+    --bg: #edf7fa; --panel: #f9fdff; --lane-band: rgba(210, 232, 240, .42); --border: #78aabd; --border-soft: #83b2c4;
+    --ink: #123344; --ink-2: #4e7486; --ink-3: #668c9d;
+    --toolbar-bg: rgba(247,252,254,.94); --toolbar-hover: #ffffff; --toolbar-border: #8ab5c5; --toolbar-text: #294f61;
+    --frontend: #087f9c; --frontend-bg: rgba(8, 145, 178, .08); --frontend-line: #087f9c;
+    --backend:  #08755f; --backend-bg:  rgba(5, 128, 101, .08); --backend-line:  #08755f;
+    --security: #b32f50; --security-bg: rgba(190, 48, 80, .07); --security-line: #b32f50;
+    --database: #6757a8; --database-bg: rgba(100, 75, 180, .08); --database-line: #6757a8;
+    --cloud:    #a86609; --cloud-bg:    rgba(181, 120, 15, .08); --cloud-line:    #a86609;
+    --messagebus: #b65120; --messagebus-bg: rgba(196, 81, 22, .07); --messagebus-line: #b65120;
+    --external:   #506f7e; --external-bg:   rgba(79, 112, 128, .08); --external-line:   #506f7e;
+    --edge: #6d93a5; --edge-emph: #087f69;
+  }
+  :root[data-preset="editorial"][data-theme="dark"] {
+    --bg: #181611; --panel: #231f18; --lane-band: rgba(52, 46, 35, .46); --border: #625a4a; --border-soft: #726957;
+    --ink: #f4eddf; --ink-2: #b9ae9b; --ink-3: #9d917e;
+    --toolbar-bg: rgba(35, 31, 24, .92); --toolbar-hover: #302a20; --toolbar-border: #625a4a; --toolbar-text: #eee5d5;
+    --frontend: #7fc6c7; --frontend-bg: rgba(43, 133, 142, .16); --frontend-line: #7fc6c7;
+    --backend:  #8fc29e; --backend-bg:  rgba(63, 132, 92, .16); --backend-line:  #8fc29e;
+    --security: #df9085; --security-bg: rgba(157, 69, 65, .17); --security-line: #df9085;
+    --database: #c0a4d0; --database-bg: rgba(117, 91, 141, .17); --database-line: #c0a4d0;
+    --cloud:    #d8ad68; --cloud-bg:    rgba(170, 119, 49, .16); --cloud-line:    #d8ad68;
+    --messagebus: #df946f; --messagebus-bg: rgba(174, 79, 42, .16); --messagebus-line: #df946f;
+    --external:   #b8ad99; --external-bg:   rgba(126, 115, 96, .18); --external-line:   #b8ad99;
+    --edge: #948978; --edge-emph: #dd6b3d;
+  }
+  :root[data-preset="editorial"][data-theme="light"] {
+    --bg: #f2eee5; --panel: #fbf8f1; --lane-band: rgba(229, 221, 207, .42); --border: #c4b9a6; --border-soft: #b8aa94;
+    --ink: #242018; --ink-2: #6f6658; --ink-3: #817767;
+    --toolbar-bg: rgba(251, 248, 241, .94); --toolbar-hover: #fffdf8; --toolbar-border: #c4b9a6; --toolbar-text: #40392f;
+    --frontend: #287e84; --frontend-bg: rgba(31, 117, 126, .09); --frontend-line: #287e84;
+    --backend:  #397b53; --backend-bg:  rgba(42, 119, 75, .09); --backend-line:  #397b53;
+    --security: #9e463f; --security-bg: rgba(153, 58, 52, .09); --security-line: #9e463f;
+    --database: #765d86; --database-bg: rgba(105, 75, 130, .09); --database-line: #765d86;
+    --cloud:    #9a671f; --cloud-bg:    rgba(157, 103, 31, .1); --cloud-line:    #9a671f;
+    --messagebus: #ad4b25; --messagebus-bg: rgba(182, 70, 27, .09); --messagebus-line: #ad4b25;
+    --external:   #746b5e; --external-bg:   rgba(101, 91, 75, .09); --external-line:   #746b5e;
+    --edge: #8a806f; --edge-emph: #bb4c23;
+  }
+  :root[data-preset="editorial"] h1, :root[data-preset="editorial"] .lbl { font-family: Georgia, "Noto Serif KR", serif; }
+  :root[data-preset="blueprint"] svg .node rect.body, :root[data-preset="blueprint"] svg .lane-box { rx: 2; }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); }
+  body {
+    color: var(--ink);
+    font-family: "Noto Sans KR", -apple-system, sans-serif;
+    padding: 24px 20px 60px;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+  .eyebrow {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11.5px; letter-spacing: 0.05em; color: var(--ink-3);
+    margin-bottom: 8px;
+  }
+
+  /* ---- title row + toolbar (archify 실제 UI 재현) ---- */
+  .topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+  .topbar__title { display: flex; align-items: center; gap: 9px; }
+  .topbar__title .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--frontend); flex: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--frontend) 25%, transparent); }
+  h1 { font-size: 20px; font-weight: 600; margin: 0; }
+  .toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .tbtn {
+    background: var(--toolbar-bg); color: var(--toolbar-text); border: 1px solid var(--toolbar-border);
+    padding: 7px 13px; border-radius: 9px; font-family: inherit; font-size: 11.5px; font-weight: 500;
+    cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px;
+    backdrop-filter: blur(8px); box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  }
+  .tbtn:hover { background: var(--toolbar-hover); }
+  .tbtn--accent { background: var(--frontend); color: #04222b; border-color: var(--frontend); font-weight: 600; }
+  .tbtn--accent:hover { filter: brightness(1.08); }
+  .tbtn[aria-pressed="true"] { border-color: var(--frontend); color: var(--frontend); }
+
+  /* ---- Classic ▾ 드롭다운(VISUAL IDENTITY) ---- */
+  .tbtn-wrap { position: relative; }
+  .preset-menu {
+    position: absolute; top: calc(100% + 8px); left: 0; z-index: 50; width: 240px;
+    background: var(--toolbar-menu-bg, var(--panel)); border: 1px solid var(--toolbar-border); border-radius: 12px;
+    box-shadow: 0 16px 40px rgba(0,0,0,.28); overflow: hidden;
+  }
+  .preset-menu__head {
+    padding: 9px 12px; font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: .06em;
+    color: var(--ink-3); border-bottom: 1px solid var(--toolbar-border);
+  }
+  .preset-opt {
+    width: 100%; display: flex; align-items: center; gap: 10px; padding: 9px 12px; background: none; border: none;
+    cursor: pointer; text-align: left; color: var(--ink);
+  }
+  .preset-opt:hover { background: var(--toolbar-hover); }
+  .preset-swatch { width: 22px; height: 16px; border-radius: 4px; flex: none; border: 1px solid var(--toolbar-border); }
+  .preset-swatch.sw-classic { background: linear-gradient(135deg,#22d3ee,#34d399); }
+  .preset-swatch.sw-signal-flow { background: linear-gradient(135deg,#67e8f9,#2dd4bf); }
+  .preset-swatch.sw-blueprint { background: linear-gradient(135deg,#66d9ef,#0a2031); border-radius: 2px; }
+  .preset-swatch.sw-editorial { background: linear-gradient(135deg,#d8ad68,#231f18); }
+  .preset-opt__text { flex: 1; min-width: 0; }
+  .preset-opt__text b { display: block; font-size: 12px; font-weight: 600; }
+  .preset-opt__text small { display: block; font-size: 10.5px; color: var(--ink-3); }
+  .preset-check { width: 14px; flex: none; color: var(--frontend); font-size: 12px; opacity: 0; }
+  .preset-opt.is-active .preset-check { opacity: 1; }
+  .preset-opt.is-active { background: color-mix(in srgb, var(--frontend) 8%, transparent); }
+
+  /* ---- Present 모드: 발표용으로 곁가지 숨기고 다이어그램만 남김 ---- */
+  body.present .eyebrow, body.present .lede, body.present .note-box, body.present .cards, body.present .src { display: none; }
+  body.present .wrap { max-width: none; }
+  body.present .guided { margin-bottom: 12px; }
+
+  .lede { color: var(--ink-2); font-size: 13px; line-height: 1.65; max-width: 76ch; margin: 10px 0 16px; }
+  .lede code { font-family: "JetBrains Mono", monospace; font-size: 12px; background: var(--lane-band); padding: 1px 5px; border-radius: 4px; }
+  .note-box {
+    background: var(--security-bg); border: 1px solid var(--security-line); color: var(--ink);
+    border-radius: 10px; padding: 12px 16px; font-size: 12.5px; line-height: 1.7; margin-bottom: 16px;
+  }
+  .note-box b { color: var(--security); }
+  .note-box ol { margin: 6px 0 0; padding-left: 18px; }
+
+  /* ---- guided views strip (archify 실제 UI 재현, 정적) ---- */
+  .guided {
+    display: grid; grid-template-columns: minmax(0,1fr) auto auto; align-items: center; gap: 14px;
+    padding: 10px 14px; border: 1px solid var(--toolbar-border); border-radius: 12px;
+    background: linear-gradient(120deg, var(--toolbar-bg), color-mix(in srgb, var(--toolbar-bg) 82%, var(--frontend-bg)));
+    box-shadow: 0 10px 28px rgba(0,0,0,.18); margin-bottom: 18px;
+  }
+  .guided__meta { min-width: 0; }
+  .guided__label { font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: .06em; color: var(--ink-3); margin-bottom: 5px; }
+  .guided__label b { color: var(--ink); }
+  .guided__progress { height: 4px; border-radius: 2px; background: var(--border-soft); overflow: hidden; margin-bottom: 5px; max-width: 220px; }
+  .guided__progress span { display: block; height: 100%; width: 0%; background: var(--frontend); }
+  .guided__sub { font-size: 11.5px; color: var(--ink-2); }
+  .guided__play {
+    background: var(--frontend); color: #04222b; border: none; border-radius: 9px; padding: 9px 14px;
+    font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; display: inline-flex; gap: 6px; align-items: center;
+  }
+  .guided__chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    background: var(--panel); border: 1px solid var(--toolbar-border); color: var(--ink-2);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; cursor: pointer; white-space: nowrap;
+    display: inline-flex; gap: 6px; align-items: center;
+  }
+  .chip b { font-family: "JetBrains Mono", monospace; color: var(--frontend); font-size: 10px; }
+  .chip:hover { border-color: var(--frontend-line); color: var(--ink); }
+
+  .diagram-frame {
+    position: relative;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+    padding: 16px 8px 8px; overflow-x: auto;
+  }
+  .diagram-frame svg { display: block; min-width: 1320px; font-family: "Noto Sans KR", sans-serif; }
+
+  /* ---- SVG theming via classes (var() inside a bare fill="" attribute does not resolve) ---- */
+  svg .phase-line { stroke: var(--border-soft); stroke-dasharray: 2 4; }
+  svg .phase-label { fill: var(--ink-3); }
+  svg .phase-label.emph { fill: var(--security); }
+  svg .lane-box { fill: var(--lane-band); stroke: var(--border-soft); stroke-dasharray: 5 4; }
+  svg .lane-label { fill: var(--ink-2); font-weight: 600; }
+  svg .lane-num { fill: var(--ink-3); font-family: "JetBrains Mono", monospace; }
+  svg .divider { stroke: var(--border-soft); }
+  svg .group-box { fill: none; stroke: var(--security); stroke-opacity: .55; }
+  svg .group-label { fill: var(--security); }
+
+  svg .edge { fill: none; stroke-width: 1.6; stroke: var(--edge); }
+  svg .edge.emph { stroke: var(--edge-emph); }
+  svg .edge.dashed { stroke: var(--ink-3); stroke-dasharray: 3 3; }
+  svg .edge.sec { stroke: var(--security); }
+  svg .edge-label { fill: var(--ink-3); font-size: 10.5px; }
+  svg .edge-label.muted2 { fill: var(--ink-2); }
+  svg .edge-label.sec { fill: var(--security); }
+
+  svg .arrow-fill { fill: var(--edge); }
+  svg .arrow-emph-fill { fill: var(--edge-emph); }
+  svg .arrow-sec-fill { fill: var(--security); }
+
+  svg .node rect.body { rx: 10; }
+  svg .node .lbl { font-size: 12.5px; font-weight: 600; text-anchor: middle; }
+  svg .node .sub { font-size: 9.5px; text-anchor: middle; fill: var(--ink-2); }
+  svg .node .badge { rx: 2; }
+  svg .node.frontend rect.body { fill: var(--frontend-bg); stroke: var(--frontend-line); }
+  svg .node.frontend .lbl { fill: var(--frontend); }
+  svg .node.frontend .badge { fill: var(--frontend); }
+  svg .node.backend rect.body { fill: var(--backend-bg); stroke: var(--backend-line); }
+  svg .node.backend .lbl { fill: var(--backend); }
+  svg .node.backend .badge { fill: var(--backend); }
+  svg .node.security rect.body { fill: var(--security-bg); stroke: var(--security-line); }
+  svg .node.security .lbl { fill: var(--security); }
+  svg .node.security .badge { fill: var(--security); }
+  svg .node.database rect.body { fill: var(--database-bg); stroke: var(--database-line); }
+  svg .node.database .lbl { fill: var(--database); }
+  svg .node.database .badge { fill: var(--database); }
+  svg .node.cloud rect.body { fill: var(--cloud-bg); stroke: var(--cloud-line); }
+  svg .node.cloud .lbl { fill: var(--cloud); }
+  svg .node.cloud .badge { fill: var(--cloud); }
+  svg .tag-pill { fill: var(--cloud); fill-opacity: .18; }
+  svg .tag-text { fill: var(--cloud); font-size: 9px; text-anchor: middle; }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 10px 18px; margin-top: 16px; padding-top: 14px;
+    border-top: 1px solid var(--border-soft); font-size: 12px; color: var(--ink-2);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .legend i { width: 12px; height: 12px; border-radius: 4px; flex: none; }
+  .legend i.c-frontend { background: var(--frontend); }
+  .legend i.c-backend { background: var(--backend); }
+  .legend i.c-security { background: var(--security); }
+  .legend i.c-database { background: var(--database); }
+  .legend i.c-cloud { background: var(--cloud); }
+  .legend b { color: var(--ink); font-weight: 600; }
+
+  /* ---- mini nav toolbar (archify 실제 UI 재현, 정적) ---- */
+  .mini-nav {
+    position: absolute; right: 16px; bottom: 16px; display: flex; align-items: center; gap: 2px;
+    background: var(--toolbar-bg); border: 1px solid var(--toolbar-border); border-radius: 10px;
+    padding: 5px 6px; backdrop-filter: blur(8px); box-shadow: 0 8px 20px rgba(0,0,0,.2);
+    font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--ink-3);
+  }
+  .mini-nav span.lbl { padding: 4px 7px; cursor: pointer; border-radius: 6px; }
+  .mini-nav span.lbl:hover { background: var(--toolbar-hover); color: var(--ink); }
+  .mini-nav .sep { width: 1px; height: 14px; background: var(--toolbar-border); margin: 0 3px; }
+  .mini-nav .zoom { padding: 4px 6px; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; margin-top: 22px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .card__title { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .card__title i { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+  .card__title i.c-database { background: var(--database); }
+  .card__title i.c-ink3 { background: var(--ink-3); }
+  .card p { margin: 0; font-size: 12.5px; line-height: 1.65; color: var(--ink-2); }
+
+  .src {
+    margin-top: 20px; font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--ink-3);
+    line-height: 1.7;
+  }
+
+  @media (max-width: 640px) {
+    h1 { font-size: 17px; }
+    .guided { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body data-theme="dark">
+
+<div class="wrap">
+  <div class="eyebrow">manyfast · R-DJGLEO BP 환경 설정 · F-OILWTZ · F-GSJRKH · F-QPDEWN · F-YQTLQE</div>
+
+  <div class="topbar">
+    <div class="topbar__title">
+      <span class="dot"></span>
+      <h1>BP 환경 설정 — 관리자 · 권한 · 공통코드 · 휴일</h1>
+    </div>
+    <div class="toolbar">
+      <button class="tbtn" type="button" id="btnTheme" onclick="toggleTheme()"><span id="themeIcon">☀</span> <span id="themeLabel">Light</span></button>
+      <div class="tbtn-wrap">
+        <button class="tbtn" type="button" id="btnPreset" onclick="togglePresetMenu(event)">⬤ <span id="presetLabel">Classic</span> ▾</button>
+        <div class="preset-menu" id="presetMenu" hidden>
+          <div class="preset-menu__head">VISUAL IDENTITY</div>
+          <button class="preset-opt is-active" type="button" data-preset="classic" onclick="setPreset('classic')">
+            <span class="preset-swatch sw-classic"></span>
+            <span class="preset-opt__text"><b>Classic</b><small>Stable technical default</small></span>
+            <span class="preset-check">✓</span>
+          </button>
+          <button class="preset-opt" type="button" data-preset="signal-flow" onclick="setPreset('signal-flow')">
+            <span class="preset-swatch sw-signal-flow"></span>
+            <span class="preset-opt__text"><b>Signal Flow</b><small>Motion-forward presentation</small></span>
+            <span class="preset-check">✓</span>
+          </button>
+          <button class="preset-opt" type="button" data-preset="blueprint" onclick="setPreset('blueprint')">
+            <span class="preset-swatch sw-blueprint"></span>
+            <span class="preset-opt__text"><b>Blueprint</b><small>Engineering review</small></span>
+            <span class="preset-check">✓</span>
+          </button>
+          <button class="preset-opt" type="button" data-preset="editorial" onclick="setPreset('editorial')">
+            <span class="preset-swatch sw-editorial"></span>
+            <span class="preset-opt__text"><b>Editorial</b><small>Publication and launch notes</small></span>
+            <span class="preset-check">✓</span>
+          </button>
+        </div>
+      </div>
+      <button class="tbtn" type="button" id="btnPresent" aria-pressed="false" onclick="togglePresent()">▢ Present</button>
+      <button class="tbtn tbtn--accent" type="button" onclick="window.print()">Export</button>
+    </div>
+  </div>
+
+  <p class="lede">
+    이 폴더가 원래 쓰던 <b>archify</b> 뷰어(라우트 추적 · 시맨틱 레이더 등 인터랙티브 기능 포함)는 이 환경에 설치돼 있지 않아,
+    실제 화면의 툴바 · 가이드 뷰 · 레인 · 범례 구성을 그대로 옮기되 <b>정적 SVG</b>로 손으로 그렸다. 같은 폴더의
+    <code>bp-settings-flow.workflow.json</code>이 archify가 실제로 읽는 원본 모델이라, archify를 쓸 수 있는 곳에서 그 파일을
+    넣으면 라우트 추적 등 인터랙션까지 포함해 다시 만들 수 있다. (Theme 버튼만 실제로 동작한다.)
+    이 장은 BP 환경 설정 아래 서로 다른 네 메뉴(관리자 계정 · 권한 그룹 · 공통코드 · 휴일)를 한 장에 묶은 것이라,
+    네 구간(위 단계 표시) 사이에는 화면 이동 관계가 없고 각자 독립된 메뉴다.
+  </p>
+
+  <div class="note-box">
+    <b>핵심 갈림길 셋.</b>
+    <ol>
+      <li>가맹관리자 계정의 <b>등록 · 수정 · 비밀번호초기화는 가맹마스터만</b> 하고, 다른 역할은 조회만 한다. 초기화 이력은 계정 변경 이력과 <b>별도로 보존</b>한다.</li>
+      <li>권한 그룹 삭제는 연결된 사용자를 <b>같은 BP · 같은 유형의 다른 그룹으로 먼저 이관</b>해야 하며, 대체 그룹이 없으면 삭제되지 않는다.</li>
+      <li>종료일 없는 반복 휴일은 처음엔 <b>2년치만</b> 만들고, 이후는 별도 <b>연장 배치</b>가 이어서 채운다(한 번에 최대 730건).</li>
+    </ol>
+  </div>
+
+  <div class="guided">
+    <div class="guided__meta">
+      <div class="guided__label">GUIDED VIEWS <b>0</b> / <b>3</b></div>
+      <div class="guided__progress"><span></span></div>
+      <div class="guided__sub">Explore this system</div>
+    </div>
+    <button class="guided__play" type="button">▶ Play story</button>
+    <div class="guided__chips">
+      <button class="chip" type="button"><b>01</b>관리자 계정과 비밀번호</button>
+      <button class="chip" type="button"><b>02</b>권한 그룹과 메뉴 CRUD</button>
+      <button class="chip" type="button"><b>03</b>공통코드와 휴일</button>
+    </div>
+  </div>
+
+  <div class="diagram-frame">
+    <svg viewBox="0 0 2020 440" role="img" aria-label="BP 환경 설정 흐름도. 관리자 계정 목록에서 상세로 이동해 등록·수정 또는 비밀번호 초기화를 하며, 가맹관리자 계정 처리는 가맹마스터만 통과하고 초기화 이력은 계정 변경 이력과 분리 보존된다. 권한 그룹은 등록·수정하고 메뉴별 CRUD는 별도 팝업에서 설정하며 삭제는 대체 그룹으로 사용자를 이관해야 한다. 공통코드는 플랫폼고정 그룹은 조회만, 플랫폼제공 그룹에는 상세 코드를 추가할 수 있다. 휴일은 등록·수정하며 전체점포 적용은 마스터만 가능하고 종료일 없는 반복 휴일은 배치가 이어서 연장한다.">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path class="arrow-fill" d="M0,0 L10,5 L0,10 z" />
+        </marker>
+        <marker id="arrow-emph" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse">
+          <path class="arrow-emph-fill" d="M0,0 L10,5 L0,10 z" />
+        </marker>
+        <marker id="arrow-sec" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path class="arrow-sec-fill" d="M0,0 L10,5 L0,10 z" />
+        </marker>
+      </defs>
+
+      <!-- lane boxes (archify c-lane 재현: 점선 테두리 + 번호 라벨) -->
+      <rect class="lane-box" x="4" y="76" width="2012" height="68" rx="8"/>
+      <text class="lane-num" x="16" y="92" font-size="10">01 / BP 측 관리자 (관리자 웹)</text>
+      <rect class="lane-box" x="4" y="246" width="2012" height="68" rx="8"/>
+      <text class="lane-num" x="16" y="262" font-size="10">02 / 시스템</text>
+
+      <!-- phase separator: 실제 화면처럼 점선 + 라벨 -->
+      <g font-family="JetBrains Mono, monospace" font-size="10.5" letter-spacing="0.04em">
+        <line class="phase-line" x1="110" y1="34" x2="1970" y2="34"/>
+        <text class="phase-label" x="488" y="26" text-anchor="middle">관리자 계정</text>
+        <text class="phase-label" x="1135" y="26" text-anchor="middle">권한 그룹</text>
+        <text class="phase-label" x="1502" y="26" text-anchor="middle">공통코드</text>
+        <text class="phase-label emph" x="1769" y="26" text-anchor="middle">휴일</text>
+      </g>
+
+      <line class="divider" x1="110" y1="10" x2="110" y2="400"/>
+
+      <!-- group box : 가맹관리자 전용 처리 -->
+      <rect class="group-box" x="490" y="234" width="528" height="92" rx="10" stroke-dasharray="4 4"/>
+      <text class="group-label" x="754" y="222" text-anchor="middle" font-size="11">가맹관리자 계정의 등록·수정·비밀번호초기화는 가맹마스터만</text>
+
+      <!-- ===== edges ===== -->
+      <g>
+        <!-- e1 admin-list -> admin-detail -->
+        <line class="edge emph" x1="290" y1="110" x2="322" y2="110" marker-end="url(#arrow-emph)"/>
+        <text class="edge-label" x="306" y="100" text-anchor="middle">선택</text>
+
+        <!-- e2 admin-list -> scope -->
+        <path class="edge dashed" d="M215,142 C215,190 402,200 402,248" marker-end="url(#arrow)"/>
+        <text class="edge-label" x="300" y="192">조회 시 범위 판정</text>
+
+        <!-- e3 scope -> admin-detail -->
+        <path class="edge dashed" d="M402,248 C402,210 400,170 400,142" marker-end="url(#arrow)"/>
+        <text class="edge-label muted2" x="430" y="205">통과 시 표시</text>
+
+        <!-- e4 admin-detail -> admin-edit -->
+        <line class="edge emph" x1="472" y1="110" x2="504" y2="110" marker-end="url(#arrow-emph)"/>
+        <text class="edge-label" x="488" y="100" text-anchor="middle">수정</text>
+
+        <!-- e5 admin-detail -> pw-reset (arc over admin-edit) -->
+        <path class="edge dashed" d="M410,78 C460,38 720,38 768,78" marker-end="url(#arrow)"/>
+        <text class="edge-label muted2" x="580" y="44" text-anchor="middle">비밀번호 초기화</text>
+
+        <!-- e6 admin-edit -> franchise-guard -->
+        <line class="edge sec" x1="579" y1="142" x2="589" y2="248" marker-end="url(#arrow-sec)"/>
+        <text class="edge-label sec" x="615" y="200">가맹관리자 대상</text>
+
+        <!-- e7 pw-reset -> franchise-guard -->
+        <path class="edge dashed" d="M761,142 C761,190 620,215 589,248" marker-end="url(#arrow)"/>
+
+        <!-- e8 franchise-guard -> history -->
+        <line class="edge sec" x1="674" y1="280" x2="686" y2="280" marker-end="url(#arrow-sec)"/>
+        <text class="edge-label sec" x="680" y="266" text-anchor="middle" font-size="9.5">가맹마스터만 통과</text>
+
+        <!-- e9 franchise-guard -> pw-history (dips below sys band to clear 'history') -->
+        <path class="edge dashed" d="M660,312 C760,352 850,352 868,290" marker-end="url(#arrow)"/>
+        <text class="edge-label" x="762" y="366" text-anchor="middle">계정 이력과 분리 보존</text>
+
+        <!-- e10 perm-list -> perm-edit -->
+        <line class="edge emph" x1="1018" y1="110" x2="1050" y2="110" marker-end="url(#arrow-emph)"/>
+        <text class="edge-label" x="1034" y="100" text-anchor="middle">등록 · 수정</text>
+
+        <!-- e11 perm-edit -> perm-code-gen -->
+        <line class="edge emph" x1="1125" y1="142" x2="1135" y2="248" marker-end="url(#arrow-emph)"/>
+        <text class="edge-label" x="1163" y="200">저장 시 자동채번</text>
+
+        <!-- e12 perm-edit -> menu-popup -->
+        <line class="edge dashed" x1="1200" y1="110" x2="1232" y2="110" marker-end="url(#arrow)"/>
+        <text class="edge-label muted2" x="1216" y="100" text-anchor="middle" font-size="9.5">메뉴등록</text>
+
+        <!-- e13 perm-edit -> perm-delete -->
+        <path class="edge dashed" d="M1125,142 C1125,190 1250,212 1317,248" marker-end="url(#arrow)"/>
+        <text class="edge-label" x="1218" y="205">삭제 요청</text>
+
+        <!-- e14 perm-delete -> perm-list (long bottom-corridor return) -->
+        <path class="edge dashed" d="M1317,312 C1317,372 1000,372 943,142" marker-end="url(#arrow)"/>
+        <text class="edge-label" x="1130" y="388" text-anchor="middle">대체 그룹 이관 후 삭제</text>
+
+        <!-- e15 code-edit -> code-guard -->
+        <line class="edge emph" x1="1499" y1="142" x2="1489" y2="248" marker-end="url(#arrow-emph)"/>
+
+        <!-- e16 code-guard -> code-edit (return) -->
+        <path class="edge dashed" d="M1465,248 C1465,205 1450,165 1440,142" marker-end="url(#arrow)"/>
+        <text class="edge-label" x="1300" y="206" font-size="9.5">플랫폼고정 차단 / 제공만 BP전용 반영</text>
+
+        <!-- e17 holiday-list -> holiday-edit -->
+        <line class="edge emph" x1="1746" y1="110" x2="1778" y2="110" marker-end="url(#arrow-emph)"/>
+        <text class="edge-label" x="1762" y="100" text-anchor="middle">등록 · 수정</text>
+
+        <!-- e18 holiday-edit -> holiday-scope -->
+        <path class="edge dashed" d="M1858,142 C1858,190 1700,212 1676,248" marker-end="url(#arrow)"/>
+        <text class="edge-label" x="1795" y="200">적용범위 판정</text>
+
+        <!-- e19 holiday-scope -> holiday-edit (return) -->
+        <path class="edge dashed" d="M1660,248 C1660,205 1750,165 1800,142" marker-end="url(#arrow)"/>
+        <text class="edge-label" x="1636" y="207" font-size="9">전체점포는 마스터만 통과</text>
+
+        <!-- e20 holiday-edit -> batch -->
+        <line class="edge dashed" x1="1858" y1="142" x2="1863" y2="248" marker-end="url(#arrow)"/>
+        <text class="edge-label" x="1893" y="200" font-size="9.5">종료일 없는 반복</text>
+
+        <!-- e21 batch -> holiday-list (long bottom-corridor return) -->
+        <path class="edge dashed" d="M1863,312 C1863,372 1750,372 1671,142" marker-end="url(#arrow)"/>
+        <text class="edge-label" x="1760" y="390" text-anchor="middle">2년치 이후 배치가 연장</text>
+      </g>
+
+      <!-- ===== nodes ===== -->
+      <g class="node frontend">
+        <rect class="body" x="140" y="78" width="150" height="64"/>
+        <rect class="badge" x="148" y="86" width="8" height="8"/>
+        <text class="lbl" x="215" y="103">관리자 계정 목록</text>
+        <text class="sub" x="215" y="120">아이디 · 이름 검색</text>
+      </g>
+      <g class="node frontend">
+        <rect class="body" x="322" y="78" width="150" height="64"/>
+        <rect class="badge" x="330" y="86" width="8" height="8"/>
+        <text class="lbl" x="397" y="103">계정 상세</text>
+        <text class="sub" x="397" y="120" font-size="9">권한그룹 · 매핑점포 · 이력</text>
+      </g>
+      <g class="node frontend">
+        <rect class="body" x="504" y="78" width="150" height="64"/>
+        <rect class="badge" x="512" y="86" width="8" height="8"/>
+        <text class="lbl" x="579" y="103">등록 · 수정</text>
+        <text class="sub" x="579" y="120" font-size="9">권한그룹 1개만 연결</text>
+      </g>
+      <g class="node frontend">
+        <rect class="body" x="686" y="78" width="150" height="64"/>
+        <rect class="badge" x="694" y="86" width="8" height="8"/>
+        <text class="lbl" x="761" y="103">비밀번호 초기화</text>
+        <text class="sub" x="761" y="120" font-size="9">가맹관리자는 가맹마스터만</text>
+      </g>
+      <g class="node frontend">
+        <rect class="body" x="868" y="78" width="150" height="64"/>
+        <rect class="badge" x="876" y="86" width="8" height="8"/>
+        <text class="lbl" x="943" y="103">권한 그룹 목록</text>
+        <text class="sub" x="943" y="120" font-size="9">BP관리자 · 가맹관리자 유형</text>
+      </g>
+      <g class="node frontend">
+        <rect class="body" x="1050" y="78" width="150" height="64"/>
+        <rect class="badge" x="1058" y="86" width="8" height="8"/>
+        <text class="lbl" x="1125" y="103">그룹 등록 · 수정</text>
+        <text class="sub" x="1125" y="120" font-size="9">코드 · 유형은 등록 후 고정</text>
+      </g>
+      <g class="node frontend">
+        <rect class="body" x="1232" y="78" width="170" height="64"/>
+        <rect class="badge" x="1240" y="86" width="8" height="8"/>
+        <text class="lbl" x="1317" y="103">권한 메뉴 등록 팝업</text>
+        <text class="sub" x="1317" y="120" font-size="9">메뉴별 CRUD 설정</text>
+      </g>
+      <g class="node frontend">
+        <rect class="body" x="1414" y="78" width="170" height="64"/>
+        <rect class="badge" x="1422" y="86" width="8" height="8"/>
+        <text class="lbl" x="1499" y="103">BP 공통코드</text>
+        <text class="sub" x="1499" y="120" font-size="9">그룹은 조회 전용 · 상세만 등록</text>
+      </g>
+      <g class="node frontend">
+        <rect class="body" x="1596" y="78" width="150" height="64"/>
+        <rect class="badge" x="1604" y="86" width="8" height="8"/>
+        <text class="lbl" x="1671" y="103">휴일 캘린더 · 목록</text>
+        <text class="sub" x="1671" y="120" font-size="9">전체점포 · 특정점포</text>
+      </g>
+      <g class="node frontend">
+        <rect class="body" x="1778" y="78" width="160" height="64"/>
+        <rect class="badge" x="1786" y="86" width="8" height="8"/>
+        <text class="lbl" x="1858" y="103">휴일 등록 · 수정</text>
+        <text class="sub" x="1858" y="120" font-size="9">기간 · 반복 설정</text>
+      </g>
+
+      <g class="node security">
+        <rect class="body" x="322" y="248" width="160" height="64"/>
+        <rect class="badge" x="330" y="256" width="8" height="8"/>
+        <text class="lbl" x="402" y="270" font-size="12">관리 범위 판정</text>
+        <text class="sub" x="402" y="286" font-size="9">권한레벨 정책 + 점포매핑</text>
+      </g>
+      <g class="node security">
+        <rect class="body" x="504" y="248" width="170" height="64"/>
+        <rect class="badge" x="512" y="256" width="8" height="8"/>
+        <text class="lbl" x="589" y="270" font-size="12">가맹마스터 전용 검사</text>
+        <text class="sub" x="589" y="286" font-size="9">등록 · 수정 · 비밀번호초기화</text>
+      </g>
+      <g class="node database">
+        <rect class="body" x="686" y="248" width="150" height="64"/>
+        <rect class="badge" x="694" y="256" width="8" height="8"/>
+        <text class="lbl" x="761" y="270" font-size="12">계정 변경 이력</text>
+        <text class="sub" x="761" y="286" font-size="9">변경 전후 값 + 처리자</text>
+      </g>
+      <g class="node database">
+        <rect class="body" x="868" y="248" width="150" height="64"/>
+        <rect class="badge" x="876" y="256" width="8" height="8"/>
+        <text class="lbl" x="943" y="270" font-size="12">초기화 이력</text>
+        <text class="sub" x="943" y="286" font-size="8.5">계정 변경 이력과 별도 보존</text>
+        <rect class="tag-pill" x="898" y="292" width="90" height="16" rx="8"/>
+        <text class="tag-text" x="943" y="303">분리 보존</text>
+      </g>
+      <g class="node backend">
+        <rect class="body" x="1050" y="248" width="170" height="64"/>
+        <rect class="badge" x="1058" y="256" width="8" height="8"/>
+        <text class="lbl" x="1135" y="270" font-size="12">권한코드 자동채번</text>
+        <text class="sub" x="1135" y="286" font-size="9">유형별 순번</text>
+      </g>
+      <g class="node security">
+        <rect class="body" x="1232" y="248" width="170" height="64"/>
+        <rect class="badge" x="1240" y="256" width="8" height="8"/>
+        <text class="lbl" x="1317" y="270" font-size="12">삭제 시 사용자 이관</text>
+        <text class="sub" x="1317" y="286" font-size="9">대체 그룹 없으면 차단</text>
+      </g>
+      <g class="node security">
+        <rect class="body" x="1414" y="248" width="150" height="64"/>
+        <rect class="badge" x="1422" y="256" width="8" height="8"/>
+        <text class="lbl" x="1489" y="270" font-size="12">관리주체 판정</text>
+        <text class="sub" x="1489" y="286" font-size="9">플랫폼고정은 조회만</text>
+      </g>
+      <g class="node security">
+        <rect class="body" x="1596" y="248" width="160" height="64"/>
+        <rect class="badge" x="1604" y="256" width="8" height="8"/>
+        <text class="lbl" x="1676" y="270" font-size="12">적용범위 판정</text>
+        <text class="sub" x="1676" y="286" font-size="9">전체점포는 마스터만</text>
+      </g>
+      <g class="node backend">
+        <rect class="body" x="1778" y="248" width="170" height="64"/>
+        <rect class="badge" x="1786" y="256" width="8" height="8"/>
+        <text class="lbl" x="1863" y="268" font-size="11.5">반복 휴일 연장 배치</text>
+        <text class="sub" x="1863" y="284" font-size="8.5">2년치 이후 자동 연장</text>
+        <rect class="tag-pill" x="1828" y="290" width="70" height="16" rx="8"/>
+        <text class="tag-text" x="1863" y="301">배치</text>
+      </g>
+    </svg>
+
+    <div class="mini-nav">
+      <span class="lbl">PATH</span><span class="lbl">MAP</span><span class="lbl">LENS</span>
+      <span class="sep"></span>
+      <span class="zoom">🔍</span><span class="zoom">🕐</span>
+      <span class="sep"></span>
+      <span class="zoom">−</span><span class="zoom">100%</span><span class="zoom">+</span>
+    </div>
+
+    <div class="legend">
+      <span><i class="c-frontend"></i>화면 <b>10</b></span>
+      <span><i class="c-backend"></i>시스템 처리 <b>2</b></span>
+      <span><i class="c-security"></i>판정 · 예외 <b>5</b></span>
+      <span><i class="c-database"></i>기록 <b>2</b></span>
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card__title"><i class="c-database"></i>확정된 결정</div>
+      <p>권한코드는 유형별(BP관리자/가맹관리자)로 자동채번하고 등록 후 코드·유형은 변경 불가 · 사용자 한 명은 권한 그룹 1개만 연결 · 가맹관리자 계정에 연결된 가맹마스터는 등록 시점에 정해지고 이후 바꿀 수 없음 · 본인 계정의 계정 상태와 권한 그룹은 스스로 바꿀 수 없음. 비밀번호 초기화 이력은 계정 변경 이력과 별도로 보존해 두 이력이 합쳐지지 않으며, 가맹마스터를 미사용으로 바꾸면 연결된 가맹관리자 계정과 그가 만든 권한 그룹이 함께 사용중지되고 지난 날짜의 휴일은 반복이든 아니든 수정·삭제할 수 없다.</p>
+    </div>
+    <div class="card">
+      <div class="card__title"><i class="c-ink3"></i>밖에 있는 것</div>
+      <p>플랫폼 공통코드 · 플랫폼 휴일 · 플랫폼 관리자 관리는 별도 화면(플랫폼 시스템 관리)이며 이 장에서 다루지 않는다. 네 메뉴(관리자 계정 · 권한 그룹 · 공통코드 · 휴일) 사이에는 실제 화면 이동 관계가 없다 — 위 단계 표시는 한 페이지에 모아 보여주기 위한 구획일 뿐, 진짜 내비게이션 흐름이 아니다.</p>
+    </div>
+  </div>
+
+  <div class="src">
+    manyfast · R-DJGLEO BP 환경 설정 › F-OILWTZ BP 관리자 관리 · F-GSJRKH BP 권한 그룹 관리 · F-QPDEWN BP 공통코드 관리 · F-YQTLQE BP 휴일 관리<br>
+    원본 모델: ./bp-settings-flow.workflow.json (schema_version 2, docs/flow 의 다른 *.workflow.json 과 같은 스키마)
+  </div>
+</div>
+
+<script>
+  var PRESET_NAMES = { classic: "Classic", "signal-flow": "Signal Flow", blueprint: "Blueprint", editorial: "Editorial" };
+
+  function toggleTheme() {
+    var html = document.documentElement;
+    var isLight = html.getAttribute("data-theme") === "light";
+    var next = isLight ? "dark" : "light";
+    html.setAttribute("data-theme", next);
+    document.getElementById("themeIcon").textContent = next === "dark" ? "☀" : "🌙";
+    document.getElementById("themeLabel").textContent = next === "dark" ? "Light" : "Dark";
+    try { localStorage.setItem("whale-flow-theme", next); } catch (e) {}
+  }
+
+  function togglePresetMenu(e) {
+    if (e) e.stopPropagation();
+    var m = document.getElementById("presetMenu");
+    m.hidden = !m.hidden;
+  }
+  function setPreset(name) {
+    document.documentElement.setAttribute("data-preset", name);
+    document.getElementById("presetMenu").hidden = true;
+    document.getElementById("presetLabel").textContent = PRESET_NAMES[name] || name;
+    var opts = document.querySelectorAll(".preset-opt");
+    for (var i = 0; i < opts.length; i++) opts[i].classList.toggle("is-active", opts[i].getAttribute("data-preset") === name);
+    try { localStorage.setItem("whale-flow-preset", name); } catch (e) {}
+  }
+  document.addEventListener("click", function (e) {
+    var m = document.getElementById("presetMenu");
+    if (m && !m.hidden && !e.target.closest(".tbtn-wrap")) m.hidden = true;
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { var m = document.getElementById("presetMenu"); if (m) m.hidden = true; }
+  });
+
+  function togglePresent() {
+    var on = document.body.classList.toggle("present");
+    document.getElementById("btnPresent").setAttribute("aria-pressed", on ? "true" : "false");
+  }
+
+  (function () {
+    var html = document.documentElement;
+    try {
+      var savedTheme = localStorage.getItem("whale-flow-theme");
+      if (savedTheme === "light") {
+        html.setAttribute("data-theme", "light");
+        document.getElementById("themeIcon").textContent = "🌙";
+        document.getElementById("themeLabel").textContent = "Dark";
+      } else {
+        html.setAttribute("data-theme", "dark");
+      }
+    } catch (e) { html.setAttribute("data-theme", "dark"); }
+    try {
+      var savedPreset = localStorage.getItem("whale-flow-preset");
+      if (savedPreset && PRESET_NAMES[savedPreset]) setPreset(savedPreset);
+    } catch (e) {}
+  })();
+</script>
+</body>
+</html>

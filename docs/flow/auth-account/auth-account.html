@@ -1,0 +1,752 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>인증 및 계정 관리 흐름도</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --bg: #020617;
+    --panel: #0f172a;
+    --lane-band: #0a1120;
+    --border: #334155;
+    --border-soft: #1e293b;
+    --ink: #ffffff;
+    --ink-2: #94a3b8;
+    --ink-3: #7d8da1;
+    --toolbar-bg: rgba(15, 23, 42, 0.8);
+    --toolbar-hover: rgba(15, 23, 42, 0.95);
+    --toolbar-border: #334155;
+    --toolbar-text: #e2e8f0;
+
+    --frontend: #22d3ee;   --frontend-bg: rgba(8, 51, 68, 0.4);    --frontend-line: #22d3ee;
+    --backend:  #34d399;   --backend-bg:  rgba(6, 78, 59, 0.4);    --backend-line:  #34d399;
+    --security: #fb7185;   --security-bg: rgba(136, 19, 55, 0.4);  --security-line: #fb7185;
+    --database: #a78bfa;   --database-bg: rgba(76, 29, 149, 0.4);  --database-line: #a78bfa;
+    --cloud:    #fbbf24;   --cloud-bg:    rgba(120, 53, 15, 0.3);  --cloud-line:    #fbbf24;
+    --messagebus: #fb923c; --messagebus-bg: rgba(251, 146, 60, 0.3); --messagebus-line: #fb923c;
+
+    --edge: #64748b;
+    --edge-emph: #34d399;
+  }
+  :root[data-theme="light"] {
+    --bg: #f8fafc; --panel: #ffffff; --lane-band: #eef2f6; --border: #cbd5e1; --border-soft: #e2e8f0;
+    --ink: #0f172a; --ink-2: #64748b; --ink-3: #64748b;
+    --toolbar-bg: rgba(255, 255, 255, 0.85); --toolbar-hover: #ffffff; --toolbar-border: #cbd5e1; --toolbar-text: #334155;
+    --frontend: #0891b2; --frontend-bg: rgba(34, 211, 238, 0.15);  --frontend-line: #0891b2;
+    --backend:  #059669; --backend-bg:  rgba(52, 211, 153, 0.18);  --backend-line:  #059669;
+    --security: #e11d48; --security-bg: rgba(251, 113, 133, 0.15); --security-line: #e11d48;
+    --database: #7c3aed; --database-bg: rgba(167, 139, 250, 0.2);  --database-line: #7c3aed;
+    --cloud:    #d97706; --cloud-bg:    rgba(251, 191, 36, 0.18);  --cloud-line:    #d97706;
+    --messagebus: #ea580c; --messagebus-bg: rgba(251, 146, 60, 0.15); --messagebus-line: #ea580c;
+    --edge: #94a3b8; --edge-emph: #059669;
+  }
+
+  /* ---- 프리셋(VISUAL IDENTITY) — 실제 archify의 4가지 프리셋 토큰을 그대로 옮김 ---- */
+  :root[data-preset="signal-flow"][data-theme="dark"] {
+    --bg: #030711; --panel: #07101e; --lane-band: rgba(9, 22, 40, .5); --border: #1d3350; --border-soft: #2c4564;
+    --ink: #f5fbff; --ink-2: #9eb0c7; --ink-3: #7890ad;
+    --toolbar-bg: rgba(7, 16, 30, .86); --toolbar-hover: rgba(18, 40, 66, .9); --toolbar-border: #29415f; --toolbar-text: #e6eef8;
+    --frontend: #67e8f9; --frontend-bg: rgba(6, 182, 212, .14); --frontend-line: #67e8f9;
+    --backend:  #5eead4; --backend-bg:  rgba(16, 185, 129, .14); --backend-line:  #5eead4;
+    --security: #fda4af; --security-bg: rgba(244, 63, 94, .13); --security-line: #fda4af;
+    --database: #c4b5fd; --database-bg: rgba(139, 92, 246, .16); --database-line: #c4b5fd;
+    --cloud:    #fcd34d; --cloud-bg:    rgba(245, 158, 11, .13); --cloud-line:    #fcd34d;
+    --messagebus: #fdba74; --messagebus-bg: rgba(249, 115, 22, .13); --messagebus-line: #fdba74;
+    --external:   #a5b4c7; --external-bg:   rgba(71, 85, 105, .24); --external-line:   #a5b4c7;
+    --edge: #7890ad; --edge-emph: #2dd4bf;
+  }
+  :root[data-preset="signal-flow"][data-theme="light"] {
+    --bg: #f4f9fc; --panel: #ffffff; --lane-band: rgba(232, 243, 248, .62); --border: #bfd5e2; --border-soft: #a9c5d5;
+    --ink: #102638; --ink-2: #587287; --ink-3: #668397;
+    --toolbar-bg: rgba(255,255,255,.85); --toolbar-hover: #ffffff; --toolbar-border: #bfd5e2; --toolbar-text: #294f61;
+    --frontend: #0789a1; --frontend-bg: rgba(6, 182, 212, .09); --frontend-line: #0789a1;
+    --backend:  #087f69; --backend-bg:  rgba(5, 150, 105, .09); --backend-line:  #087f69;
+    --security: #c53a59; --security-bg: rgba(225, 29, 72, .08); --security-line: #c53a59;
+    --database: #7254c7; --database-bg: rgba(124, 58, 237, .09); --database-line: #7254c7;
+    --cloud:    #b9670b; --cloud-bg:    rgba(217, 119, 6, .08); --cloud-line:    #b9670b;
+    --messagebus: #c65f27; --messagebus-bg: rgba(234, 88, 12, .08); --messagebus-line: #c65f27;
+    --external:   #607a8c; --external-bg:   rgba(100, 116, 139, .1); --external-line:   #607a8c;
+    --edge: #7b97aa; --edge-emph: #0d9488;
+  }
+  :root[data-preset="blueprint"][data-theme="dark"] {
+    --bg: #06131f; --panel: #0a2031; --lane-band: rgba(10, 43, 66, .36); --border: #27627f; --border-soft: #34799a;
+    --ink: #e3f6ff; --ink-2: #91b8ca; --ink-3: #739caf;
+    --toolbar-bg: rgba(7, 28, 45, .92); --toolbar-hover: rgba(18, 58, 83, .95); --toolbar-border: #34799a; --toolbar-text: #d8f3ff;
+    --frontend: #66d9ef; --frontend-bg: rgba(26, 157, 193, .14); --frontend-line: #66d9ef;
+    --backend:  #69dfbd; --backend-bg:  rgba(31, 155, 124, .13); --backend-line:  #69dfbd;
+    --security: #ff8da1; --security-bg: rgba(199, 76, 104, .13); --security-line: #ff8da1;
+    --database: #b4a8ff; --database-bg: rgba(120, 105, 196, .14); --database-line: #b4a8ff;
+    --cloud:    #ffd166; --cloud-bg:    rgba(197, 145, 43, .13); --cloud-line:    #ffd166;
+    --messagebus: #ffad66; --messagebus-bg: rgba(207, 112, 49, .13); --messagebus-line: #ffad66;
+    --external:   #a7cad9; --external-bg:   rgba(84, 119, 139, .18); --external-line:   #a7cad9;
+    --edge: #78a3b7; --edge-emph: #64dfc1;
+  }
+  :root[data-preset="blueprint"][data-theme="light"] {
+    --bg: #edf7fa; --panel: #f9fdff; --lane-band: rgba(210, 232, 240, .42); --border: #78aabd; --border-soft: #83b2c4;
+    --ink: #123344; --ink-2: #4e7486; --ink-3: #668c9d;
+    --toolbar-bg: rgba(247,252,254,.94); --toolbar-hover: #ffffff; --toolbar-border: #8ab5c5; --toolbar-text: #294f61;
+    --frontend: #087f9c; --frontend-bg: rgba(8, 145, 178, .08); --frontend-line: #087f9c;
+    --backend:  #08755f; --backend-bg:  rgba(5, 128, 101, .08); --backend-line:  #08755f;
+    --security: #b32f50; --security-bg: rgba(190, 48, 80, .07); --security-line: #b32f50;
+    --database: #6757a8; --database-bg: rgba(100, 75, 180, .08); --database-line: #6757a8;
+    --cloud:    #a86609; --cloud-bg:    rgba(181, 120, 15, .08); --cloud-line:    #a86609;
+    --messagebus: #b65120; --messagebus-bg: rgba(196, 81, 22, .07); --messagebus-line: #b65120;
+    --external:   #506f7e; --external-bg:   rgba(79, 112, 128, .08); --external-line:   #506f7e;
+    --edge: #6d93a5; --edge-emph: #087f69;
+  }
+  :root[data-preset="editorial"][data-theme="dark"] {
+    --bg: #181611; --panel: #231f18; --lane-band: rgba(52, 46, 35, .46); --border: #625a4a; --border-soft: #726957;
+    --ink: #f4eddf; --ink-2: #b9ae9b; --ink-3: #9d917e;
+    --toolbar-bg: rgba(35, 31, 24, .92); --toolbar-hover: #302a20; --toolbar-border: #625a4a; --toolbar-text: #eee5d5;
+    --frontend: #7fc6c7; --frontend-bg: rgba(43, 133, 142, .16); --frontend-line: #7fc6c7;
+    --backend:  #8fc29e; --backend-bg:  rgba(63, 132, 92, .16); --backend-line:  #8fc29e;
+    --security: #df9085; --security-bg: rgba(157, 69, 65, .17); --security-line: #df9085;
+    --database: #c0a4d0; --database-bg: rgba(117, 91, 141, .17); --database-line: #c0a4d0;
+    --cloud:    #d8ad68; --cloud-bg:    rgba(170, 119, 49, .16); --cloud-line:    #d8ad68;
+    --messagebus: #df946f; --messagebus-bg: rgba(174, 79, 42, .16); --messagebus-line: #df946f;
+    --external:   #b8ad99; --external-bg:   rgba(126, 115, 96, .18); --external-line:   #b8ad99;
+    --edge: #948978; --edge-emph: #dd6b3d;
+  }
+  :root[data-preset="editorial"][data-theme="light"] {
+    --bg: #f2eee5; --panel: #fbf8f1; --lane-band: rgba(229, 221, 207, .42); --border: #c4b9a6; --border-soft: #b8aa94;
+    --ink: #242018; --ink-2: #6f6658; --ink-3: #817767;
+    --toolbar-bg: rgba(251, 248, 241, .94); --toolbar-hover: #fffdf8; --toolbar-border: #c4b9a6; --toolbar-text: #40392f;
+    --frontend: #287e84; --frontend-bg: rgba(31, 117, 126, .09); --frontend-line: #287e84;
+    --backend:  #397b53; --backend-bg:  rgba(42, 119, 75, .09); --backend-line:  #397b53;
+    --security: #9e463f; --security-bg: rgba(153, 58, 52, .09); --security-line: #9e463f;
+    --database: #765d86; --database-bg: rgba(105, 75, 130, .09); --database-line: #765d86;
+    --cloud:    #9a671f; --cloud-bg:    rgba(157, 103, 31, .1); --cloud-line:    #9a671f;
+    --messagebus: #ad4b25; --messagebus-bg: rgba(182, 70, 27, .09); --messagebus-line: #ad4b25;
+    --external:   #746b5e; --external-bg:   rgba(101, 91, 75, .09); --external-line:   #746b5e;
+    --edge: #8a806f; --edge-emph: #bb4c23;
+  }
+  :root[data-preset="editorial"] h1, :root[data-preset="editorial"] .lbl { font-family: Georgia, "Noto Serif KR", serif; }
+  :root[data-preset="blueprint"] svg .node rect.body, :root[data-preset="blueprint"] svg .lane-box { rx: 2; }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); }
+  body {
+    color: var(--ink);
+    font-family: "Noto Sans KR", -apple-system, sans-serif;
+    padding: 24px 20px 60px;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+  .eyebrow {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11.5px; letter-spacing: 0.05em; color: var(--ink-3);
+    margin-bottom: 8px;
+  }
+
+  /* ---- title row + toolbar (archify 실제 UI 재현) ---- */
+  .topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+  .topbar__title { display: flex; align-items: center; gap: 9px; }
+  .topbar__title .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--frontend); flex: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--frontend) 25%, transparent); }
+  h1 { font-size: 20px; font-weight: 600; margin: 0; }
+  .toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .tbtn {
+    background: var(--toolbar-bg); color: var(--toolbar-text); border: 1px solid var(--toolbar-border);
+    padding: 7px 13px; border-radius: 9px; font-family: inherit; font-size: 11.5px; font-weight: 500;
+    cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px;
+    backdrop-filter: blur(8px); box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  }
+  .tbtn:hover { background: var(--toolbar-hover); }
+  .tbtn--accent { background: var(--frontend); color: #04222b; border-color: var(--frontend); font-weight: 600; }
+  .tbtn--accent:hover { filter: brightness(1.08); }
+  .tbtn[aria-pressed="true"] { border-color: var(--frontend); color: var(--frontend); }
+
+  /* ---- Classic ▾ 드롭다운(VISUAL IDENTITY) ---- */
+  .tbtn-wrap { position: relative; }
+  .preset-menu {
+    position: absolute; top: calc(100% + 8px); left: 0; z-index: 50; width: 240px;
+    background: var(--toolbar-menu-bg, var(--panel)); border: 1px solid var(--toolbar-border); border-radius: 12px;
+    box-shadow: 0 16px 40px rgba(0,0,0,.28); overflow: hidden;
+  }
+  .preset-menu__head {
+    padding: 9px 12px; font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: .06em;
+    color: var(--ink-3); border-bottom: 1px solid var(--toolbar-border);
+  }
+  .preset-opt {
+    width: 100%; display: flex; align-items: center; gap: 10px; padding: 9px 12px; background: none; border: none;
+    cursor: pointer; text-align: left; color: var(--ink);
+  }
+  .preset-opt:hover { background: var(--toolbar-hover); }
+  .preset-swatch { width: 22px; height: 16px; border-radius: 4px; flex: none; border: 1px solid var(--toolbar-border); }
+  .preset-swatch.sw-classic { background: linear-gradient(135deg,#22d3ee,#34d399); }
+  .preset-swatch.sw-signal-flow { background: linear-gradient(135deg,#67e8f9,#2dd4bf); }
+  .preset-swatch.sw-blueprint { background: linear-gradient(135deg,#66d9ef,#0a2031); border-radius: 2px; }
+  .preset-swatch.sw-editorial { background: linear-gradient(135deg,#d8ad68,#231f18); }
+  .preset-opt__text { flex: 1; min-width: 0; }
+  .preset-opt__text b { display: block; font-size: 12px; font-weight: 600; }
+  .preset-opt__text small { display: block; font-size: 10.5px; color: var(--ink-3); }
+  .preset-check { width: 14px; flex: none; color: var(--frontend); font-size: 12px; opacity: 0; }
+  .preset-opt.is-active .preset-check { opacity: 1; }
+  .preset-opt.is-active { background: color-mix(in srgb, var(--frontend) 8%, transparent); }
+
+  /* ---- Present 모드: 발표용으로 곁가지 숨기고 다이어그램만 남김 ---- */
+  body.present .eyebrow, body.present .lede, body.present .note-box, body.present .cards, body.present .src { display: none; }
+  body.present .wrap { max-width: none; }
+  body.present .guided { margin-bottom: 12px; }
+
+  .lede { color: var(--ink-2); font-size: 13px; line-height: 1.65; max-width: 74ch; margin: 10px 0 16px; }
+  .lede code { font-family: "JetBrains Mono", monospace; font-size: 12px; background: var(--lane-band); padding: 1px 5px; border-radius: 4px; }
+  .note-box {
+    background: var(--security-bg); border: 1px solid var(--security-line); color: var(--ink);
+    border-radius: 10px; padding: 12px 16px; font-size: 12.5px; line-height: 1.6; margin-bottom: 16px;
+  }
+  .note-box b { color: var(--security); }
+  .note-box ul { margin: 6px 0 0; padding-left: 18px; }
+  .note-box li { margin: 3px 0; }
+
+  /* ---- guided views strip (archify 실제 UI 재현, 정적) ---- */
+  .guided {
+    display: grid; grid-template-columns: minmax(0,1fr) auto auto; align-items: center; gap: 14px;
+    padding: 10px 14px; border: 1px solid var(--toolbar-border); border-radius: 12px;
+    background: linear-gradient(120deg, var(--toolbar-bg), color-mix(in srgb, var(--toolbar-bg) 82%, var(--frontend-bg)));
+    box-shadow: 0 10px 28px rgba(0,0,0,.18); margin-bottom: 18px;
+  }
+  .guided__meta { min-width: 0; }
+  .guided__label { font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: .06em; color: var(--ink-3); margin-bottom: 5px; }
+  .guided__label b { color: var(--ink); }
+  .guided__progress { height: 4px; border-radius: 2px; background: var(--border-soft); overflow: hidden; margin-bottom: 5px; max-width: 220px; }
+  .guided__progress span { display: block; height: 100%; width: 0%; background: var(--frontend); }
+  .guided__sub { font-size: 11.5px; color: var(--ink-2); }
+  .guided__play {
+    background: var(--frontend); color: #04222b; border: none; border-radius: 9px; padding: 9px 14px;
+    font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; display: inline-flex; gap: 6px; align-items: center;
+  }
+  .guided__chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    background: var(--panel); border: 1px solid var(--toolbar-border); color: var(--ink-2);
+    border-radius: 8px; padding: 6px 10px; font-size: 11px; cursor: pointer; white-space: nowrap;
+    display: inline-flex; gap: 6px; align-items: center;
+  }
+  .chip b { font-family: "JetBrains Mono", monospace; color: var(--frontend); font-size: 10px; }
+  .chip:hover { border-color: var(--frontend-line); color: var(--ink); }
+
+  .diagram-frame {
+    position: relative;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+    padding: 16px 8px 8px; overflow-x: auto;
+  }
+  .diagram-frame svg { display: block; min-width: 1720px; font-family: "Noto Sans KR", sans-serif; }
+
+  /* ---- SVG theming via classes (var() inside a bare fill="" attribute does not resolve) ---- */
+  svg .phase-line { stroke: var(--border-soft); stroke-dasharray: 2 4; }
+  svg .phase-label { fill: var(--ink-3); }
+  svg .phase-label.emph { fill: var(--security); }
+  svg .lane-box { fill: var(--lane-band); stroke: var(--border-soft); stroke-dasharray: 5 4; }
+  svg .lane-label { fill: var(--ink-2); font-weight: 600; }
+  svg .lane-num { fill: var(--ink-3); font-family: "JetBrains Mono", monospace; }
+  svg .divider { stroke: var(--border-soft); }
+  svg .group-box { fill: none; stroke: var(--security); stroke-opacity: .55; }
+  svg .group-label { fill: var(--security); }
+
+  svg .edge { fill: none; stroke-width: 1.6; stroke: var(--edge); }
+  svg .edge.emph { stroke: var(--edge-emph); }
+  svg .edge.dashed { stroke: var(--ink-3); stroke-dasharray: 3 3; }
+  svg .edge.sec { stroke: var(--security); }
+  svg .edge-label { fill: var(--ink-3); font-size: 10.5px; }
+  svg .edge-label.muted2 { fill: var(--ink-2); }
+  svg .edge-label.sec { fill: var(--security); }
+
+  svg .arrow-fill { fill: var(--edge); }
+  svg .arrow-emph-fill { fill: var(--edge-emph); }
+  svg .arrow-sec-fill { fill: var(--security); }
+
+  svg .node rect.body { rx: 10; }
+  svg .node .lbl { font-size: 12.5px; font-weight: 600; text-anchor: middle; }
+  svg .node .sub { font-size: 9.5px; text-anchor: middle; fill: var(--ink-2); }
+  svg .node .badge { rx: 2; }
+  svg .node.frontend rect.body { fill: var(--frontend-bg); stroke: var(--frontend-line); }
+  svg .node.frontend .lbl { fill: var(--frontend); }
+  svg .node.frontend .badge { fill: var(--frontend); }
+  svg .node.backend rect.body { fill: var(--backend-bg); stroke: var(--backend-line); }
+  svg .node.backend .lbl { fill: var(--backend); }
+  svg .node.backend .badge { fill: var(--backend); }
+  svg .node.security rect.body { fill: var(--security-bg); stroke: var(--security-line); }
+  svg .node.security .lbl { fill: var(--security); }
+  svg .node.security .badge { fill: var(--security); }
+  svg .node.database rect.body { fill: var(--database-bg); stroke: var(--database-line); }
+  svg .node.database .lbl { fill: var(--database); }
+  svg .node.database .badge { fill: var(--database); }
+  svg .node.cloud rect.body { fill: var(--cloud-bg); stroke: var(--cloud-line); }
+  svg .node.cloud .lbl { fill: var(--cloud); }
+  svg .node.cloud .badge { fill: var(--cloud); }
+  svg .node.messagebus rect.body { fill: var(--messagebus-bg); stroke: var(--messagebus-line); }
+  svg .node.messagebus .lbl { fill: var(--messagebus); }
+  svg .node.messagebus .badge { fill: var(--messagebus); }
+  svg .tag-pill { fill: var(--cloud); fill-opacity: .18; }
+  svg .tag-text { fill: var(--cloud); font-size: 9px; text-anchor: middle; }
+  svg .tag-pill.role { fill: var(--security); fill-opacity: .18; }
+  svg .tag-text.role { fill: var(--security); }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 10px 18px; margin-top: 16px; padding-top: 14px;
+    border-top: 1px solid var(--border-soft); font-size: 12px; color: var(--ink-2);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .legend i { width: 12px; height: 12px; border-radius: 4px; flex: none; }
+  .legend i.c-frontend { background: var(--frontend); }
+  .legend i.c-backend { background: var(--backend); }
+  .legend i.c-security { background: var(--security); }
+  .legend i.c-database { background: var(--database); }
+  .legend i.c-cloud { background: var(--cloud); }
+  .legend i.c-messagebus { background: var(--messagebus); }
+  .legend b { color: var(--ink); font-weight: 600; }
+
+  /* ---- mini nav toolbar (archify 실제 UI 재현, 정적) ---- */
+  .mini-nav {
+    position: absolute; right: 16px; bottom: 16px; display: flex; align-items: center; gap: 2px;
+    background: var(--toolbar-bg); border: 1px solid var(--toolbar-border); border-radius: 10px;
+    padding: 5px 6px; backdrop-filter: blur(8px); box-shadow: 0 8px 20px rgba(0,0,0,.2);
+    font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--ink-3);
+  }
+  .mini-nav span.lbl { padding: 4px 7px; cursor: pointer; border-radius: 6px; }
+  .mini-nav span.lbl:hover { background: var(--toolbar-hover); color: var(--ink); }
+  .mini-nav .sep { width: 1px; height: 14px; background: var(--toolbar-border); margin: 0 3px; }
+  .mini-nav .zoom { padding: 4px 6px; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; margin-top: 22px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .card__title { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .card__title i { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+  .card__title i.c-database { background: var(--database); }
+  .card__title i.c-ink3 { background: var(--ink-3); }
+  .card p { margin: 0; font-size: 12.5px; line-height: 1.65; color: var(--ink-2); }
+
+  .src {
+    margin-top: 20px; font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--ink-3);
+    line-height: 1.7;
+  }
+
+  @media (max-width: 640px) {
+    h1 { font-size: 17px; }
+    .guided { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body data-theme="dark">
+
+<div class="wrap">
+  <div class="eyebrow">manyfast · R-LYZWGG 인증 및 계정 관리 · F-JVTPSU · F-DZVFIC · F-FQKGEE · F-AMTDCK · F-RCHJES</div>
+
+  <div class="topbar">
+    <div class="topbar__title">
+      <span class="dot"></span>
+      <h1>인증 및 계정 관리 — 가입부터 탈퇴까지</h1>
+    </div>
+    <div class="toolbar">
+      <button class="tbtn" type="button" id="btnTheme" onclick="toggleTheme()"><span id="themeIcon">☀</span> <span id="themeLabel">Light</span></button>
+      <div class="tbtn-wrap">
+        <button class="tbtn" type="button" id="btnPreset" onclick="togglePresetMenu(event)">⬤ <span id="presetLabel">Classic</span> ▾</button>
+        <div class="preset-menu" id="presetMenu" hidden>
+          <div class="preset-menu__head">VISUAL IDENTITY</div>
+          <button class="preset-opt is-active" type="button" data-preset="classic" onclick="setPreset('classic')">
+            <span class="preset-swatch sw-classic"></span>
+            <span class="preset-opt__text"><b>Classic</b><small>Stable technical default</small></span>
+            <span class="preset-check">✓</span>
+          </button>
+          <button class="preset-opt" type="button" data-preset="signal-flow" onclick="setPreset('signal-flow')">
+            <span class="preset-swatch sw-signal-flow"></span>
+            <span class="preset-opt__text"><b>Signal Flow</b><small>Motion-forward presentation</small></span>
+            <span class="preset-check">✓</span>
+          </button>
+          <button class="preset-opt" type="button" data-preset="blueprint" onclick="setPreset('blueprint')">
+            <span class="preset-swatch sw-blueprint"></span>
+            <span class="preset-opt__text"><b>Blueprint</b><small>Engineering review</small></span>
+            <span class="preset-check">✓</span>
+          </button>
+          <button class="preset-opt" type="button" data-preset="editorial" onclick="setPreset('editorial')">
+            <span class="preset-swatch sw-editorial"></span>
+            <span class="preset-opt__text"><b>Editorial</b><small>Publication and launch notes</small></span>
+            <span class="preset-check">✓</span>
+          </button>
+        </div>
+      </div>
+      <button class="tbtn" type="button" id="btnPresent" aria-pressed="false" onclick="togglePresent()">▢ Present</button>
+      <button class="tbtn tbtn--accent" type="button" onclick="window.print()">Export</button>
+    </div>
+  </div>
+
+  <p class="lede">
+    이 폴더가 원래 쓰던 <b>archify</b> 뷰어(라우트 추적 · 시맨틱 레이더 등 인터랙티브 기능 포함)는 이 환경에
+    설치돼 있지 않아, 실제 화면의 툴바 · 가이드 뷰 · 레인 · 범례 구성을 그대로 옮기되 <b>정적 SVG</b>로 손으로 그렸다.
+    같은 폴더의 <code>auth-account.workflow.json</code>이 archify가 실제로 읽는 원본 모델이라, archify를 쓸 수
+    있는 곳에서 그 파일을 그대로 넣으면 라우트 추적 등 인터랙션까지 포함해 다시 만들 수 있다. (Theme 버튼만 실제로 동작한다.)
+  </p>
+
+  <div class="note-box">
+    <b>핵심 갈림길 셋.</b>
+    <ul>
+      <li>사업자정보 인증(국세청 진위확인)은 <b>회원가입 때도, 마이페이지 재인증 때도 선택</b>이다 — 인증 없이도 가입·유지할 수 있고, 상호명은 인증 결과로 채워지지 않는다.</li>
+      <li>강제 비밀번호 변경 대상 여부는 로그인 <b>횟수가 아니라 계정에 저장된 표시</b>로만 판정한다 — 회원가입으로 본인이 비밀번호를 정한 계정은 최초 로그인이어도 대상이 아니다.</li>
+      <li>회원 탈퇴 선행조건은 <b>부가서비스 구독 해지 · 미정산 금액 0 · 진행 중 근로계약 0</b> 세 가지뿐이다 — 점포 운영 여부는 조건이 아니며, 탈퇴하면 그 BP의 점포는 상태와 무관하게 전부 폐점된다.</li>
+    </ul>
+  </div>
+
+  <div class="guided">
+    <div class="guided__meta">
+      <div class="guided__label">GUIDED VIEWS <b>0</b> / <b>3</b></div>
+      <div class="guided__progress"><span></span></div>
+      <div class="guided__sub">Explore this system</div>
+    </div>
+    <button class="guided__play" type="button">▶ Play story</button>
+    <div class="guided__chips">
+      <button class="chip" type="button"><b>01</b>가입에서 완료까지</button>
+      <button class="chip" type="button"><b>02</b>로그인과 계정 복구</button>
+      <button class="chip" type="button"><b>03</b>내 정보 관리와 회원 탈퇴</button>
+    </div>
+  </div>
+
+  <div class="diagram-frame">
+    <svg viewBox="0 0 2780 440" role="img" aria-label="인증 및 계정 관리 흐름도. 회원가입 화면에서 선택적으로 국세청 사업자정보 인증을 거쳐 BP 계정을 생성하고 가입완료 메일과 가입완료 화면으로 이어진다. 로그인 화면은 로그인 판정을 거쳐 강제 비밀번호 변경 팝업으로 분기하거나 아이디비밀번호 찾기로 이어지며, 로그인 후에는 MY PAGE에서 내정보와 비밀번호를 관리하고 로그아웃하거나 BP마스터만 사업자정보 재인증과 회원탈퇴를 할 수 있다. 회원탈퇴는 구독해지 정산0 근로계약0 선행조건을 모두 충족해야 계정 논리삭제와 점포 일괄 폐점, 탈퇴완료 메일로 이어진다.">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path class="arrow-fill" d="M0,0 L10,5 L0,10 z" />
+        </marker>
+        <marker id="arrow-emph" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse">
+          <path class="arrow-emph-fill" d="M0,0 L10,5 L0,10 z" />
+        </marker>
+        <marker id="arrow-sec" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse">
+          <path class="arrow-sec-fill" d="M0,0 L10,5 L0,10 z" />
+        </marker>
+      </defs>
+
+      <!-- lane boxes (archify c-lane 재현: 점선 테두리 + 번호 라벨) -->
+      <rect class="lane-box" x="4" y="76" width="2772" height="68" rx="8"/>
+      <text class="lane-num" x="16" y="92" font-size="10">01 / 비로그인 · 로그인 사용자</text>
+      <rect class="lane-box" x="4" y="246" width="2772" height="68" rx="8"/>
+      <text class="lane-num" x="16" y="262" font-size="10">02 / 시스템</text>
+
+      <!-- phase separator: 실제 화면처럼 점선 + 라벨 -->
+      <g font-family="JetBrains Mono, monospace" font-size="10.5" letter-spacing="0.04em">
+        <line class="phase-line" x1="170" y1="34" x2="2725" y2="34"/>
+        <text class="phase-label" x="552" y="26" text-anchor="middle">가입</text>
+        <text class="phase-label" x="1242" y="26" text-anchor="middle">로그인 · 복구</text>
+        <text class="phase-label" x="1832" y="26" text-anchor="middle">내 정보 관리</text>
+        <text class="phase-label emph" x="2415" y="26" text-anchor="middle">회원 탈퇴</text>
+      </g>
+
+      <!-- lane labels -->
+      <line class="divider" x1="160" y1="10" x2="160" y2="400"/>
+
+      <!-- group box : 사업자정보 인증은 선택 -->
+      <rect class="group-box" x="175" y="234" width="370" height="92" rx="10" stroke-dasharray="4 4"/>
+      <text class="group-label" x="360" y="222" text-anchor="middle" font-size="10.5">사업자정보 인증은 선택 — 가입 때도, 재인증 때도</text>
+
+      <!-- ===== edges (drawn first, under nodes) ===== -->
+      <g>
+        <!-- e1 signup -> dup -->
+        <path class="edge dashed" d="M265,142 V244" marker-end="url(#arrow)"/>
+        <text class="edge-label" x="300" y="200">인증하기(선택)</text>
+
+        <!-- e2 dup -> bizauth -->
+        <line class="edge dashed" x1="350" y1="280" x2="375" y2="280" marker-end="url(#arrow)"/>
+        <text class="edge-label" x="362" y="266" text-anchor="middle" font-size="9.5">중복 아님</text>
+
+        <!-- e3 bizauth -> bpcreate -->
+        <line class="edge emph" x1="545" y1="280" x2="570" y2="280" marker-end="url(#arrow-emph)"/>
+        <text class="edge-label" x="557" y="266" text-anchor="middle" font-size="9">인증 결과 반영</text>
+
+        <!-- e4 signup -> bpcreate (bypass) -->
+        <path class="edge emph" d="M265,142 C265,205 655,205 655,248" marker-end="url(#arrow-emph)"/>
+        <text class="edge-label muted2" x="460" y="200" text-anchor="middle">회원가입 요청 (인증 없이도)</text>
+
+        <!-- e5 bpcreate -> donemail -->
+        <line class="edge emph" x1="740" y1="280" x2="765" y2="280" marker-end="url(#arrow-emph)"/>
+        <text class="edge-label" x="752" y="266" text-anchor="middle" font-size="9">BP+플랫폼마스터 발송</text>
+
+        <!-- e6 bpcreate -> donepage -->
+        <path class="edge emph" d="M655,248 C655,195 850,195 850,142" marker-end="url(#arrow-emph)"/>
+        <text class="edge-label muted2" x="748" y="200" text-anchor="middle">가입완료 토큰 발급</text>
+
+        <!-- e7 login -> loginjudge -->
+        <path class="edge emph" d="M1045,142 V244" marker-end="url(#arrow-emph)"/>
+        <text class="edge-label muted2" x="1080" y="200">로그인 시도</text>
+
+        <!-- e8 loginjudge -> forcepw -->
+        <path class="edge sec" d="M1045,248 C1045,195 1250,195 1250,142" marker-end="url(#arrow-sec)"/>
+        <text class="edge-label sec" x="1150" y="205">강제변경 대상</text>
+
+        <!-- e9 login -> findaccount (arc over forcepw) -->
+        <path class="edge dashed" d="M1045,78 C1100,40 1390,40 1445,78" marker-end="url(#arrow)"/>
+        <text class="edge-label muted2" x="1245" y="46" text-anchor="middle">아이디/비밀번호 찾기</text>
+
+        <!-- e10 findaccount -> tmpmail -->
+        <path class="edge dashed" d="M1445,142 L1435,248" marker-end="url(#arrow)"/>
+        <text class="edge-label" x="1478" y="200">비밀번호 찾기 → 발급</text>
+
+        <!-- e11 tmpmail -> login (bottom corridor return) -->
+        <path class="edge dashed" d="M1435,312 C1435,378 980,378 980,142" marker-end="url(#arrow)"/>
+        <text class="edge-label" x="1210" y="392" text-anchor="middle" font-size="10">임시비밀번호로 재로그인</text>
+
+        <!-- e12 loginjudge -> mypage -->
+        <path class="edge emph" d="M1045,248 C1045,178 1640,178 1640,142" marker-end="url(#arrow-emph)"/>
+        <text class="edge-label muted2" x="1330" y="172" text-anchor="middle">로그인 후</text>
+
+        <!-- e13 mypage -> logout -->
+        <line class="edge dashed" x1="1735" y1="110" x2="1745" y2="110" marker-end="url(#arrow)"/>
+        <text class="edge-label" x="1740" y="100" text-anchor="middle" font-size="9">로그아웃</text>
+
+        <!-- e14 mypage -> bizinfo (arc over logout) -->
+        <path class="edge dashed" d="M1640,78 C1750,38 1950,38 2030,78" marker-end="url(#arrow)"/>
+        <text class="edge-label" x="1835" y="44" text-anchor="middle">BP마스터만</text>
+
+        <!-- e15 bizinfo -> reauth -->
+        <path class="edge dashed" d="M2030,142 V244" marker-end="url(#arrow)"/>
+        <text class="edge-label" x="2065" y="200">재인증(선택)</text>
+
+        <!-- e16 mypage -> withdraw (long arc) -->
+        <path class="edge dashed" d="M1640,78 C1800,26 2080,26 2220,78" marker-end="url(#arrow)"/>
+        <text class="edge-label" x="1930" y="30" text-anchor="middle" font-size="10">회원탈퇴 (BP마스터만·비번 재인증)</text>
+
+        <!-- e17 withdraw -> withdrawcheck -->
+        <path class="edge sec" d="M2220,142 V244" marker-end="url(#arrow-sec)"/>
+        <text class="edge-label sec" x="2255" y="200">선행조건 확인</text>
+
+        <!-- e18 withdrawcheck -> delete -->
+        <line class="edge sec" x1="2305" y1="280" x2="2330" y2="280" marker-end="url(#arrow-sec)"/>
+        <text class="edge-label sec" x="2317" y="266" text-anchor="middle" font-size="9">모두 충족</text>
+
+        <!-- e19 delete -> delmail -->
+        <line class="edge emph" x1="2510" y1="280" x2="2530" y2="280" marker-end="url(#arrow-emph)"/>
+        <text class="edge-label" x="2520" y="266" text-anchor="middle" font-size="9">BP마스터 발송</text>
+      </g>
+
+      <!-- ===== nodes ===== -->
+      <g class="node frontend">
+        <rect class="body" x="180" y="78" width="170" height="64"/>
+        <rect class="badge" x="188" y="86" width="8" height="8"/>
+        <text class="lbl" x="265" y="103">회원가입 화면</text>
+        <text class="sub" x="265" y="120">기본정보 + 선택 사업자인증</text>
+      </g>
+
+      <g class="node security">
+        <rect class="body" x="180" y="248" width="170" height="64"/>
+        <rect class="badge" x="188" y="256" width="8" height="8"/>
+        <text class="lbl" x="265" y="270" font-size="11.5">사업자번호 중복검사</text>
+        <text class="sub" x="265" y="286" font-size="9">BP·점포 사용중 번호와 비교</text>
+      </g>
+
+      <g class="node cloud">
+        <rect class="body" x="375" y="248" width="170" height="64"/>
+        <rect class="badge" x="383" y="256" width="8" height="8"/>
+        <text class="lbl" x="460" y="270" font-size="11.5">국세청 진위확인</text>
+        <text class="sub" x="460" y="286" font-size="8.5">사업자등록번호·대표자명·개업일자</text>
+        <rect class="tag-pill" x="418" y="292" width="84" height="16" rx="8"/>
+        <text class="tag-text" x="460" y="303">선택 항목</text>
+      </g>
+
+      <g class="node database">
+        <rect class="body" x="570" y="248" width="170" height="64"/>
+        <rect class="badge" x="578" y="256" width="8" height="8"/>
+        <text class="lbl" x="655" y="270" font-size="11.5">BP 계정 생성</text>
+        <text class="sub" x="655" y="286" font-size="8.5">BP마스터 권한 자동부여, 점포는 생성 안함</text>
+      </g>
+
+      <g class="node messagebus">
+        <rect class="body" x="765" y="248" width="170" height="64"/>
+        <rect class="badge" x="773" y="256" width="8" height="8"/>
+        <text class="lbl" x="850" y="270" font-size="11.5">가입완료 메일</text>
+        <text class="sub" x="850" y="286" font-size="9">가입 BP + 플랫폼마스터 발송</text>
+      </g>
+
+      <g class="node frontend">
+        <rect class="body" x="765" y="78" width="170" height="64"/>
+        <rect class="badge" x="773" y="86" width="8" height="8"/>
+        <text class="lbl" x="850" y="103">가입 완료 화면</text>
+        <text class="sub" x="850" y="120">웨일ERP 시작하기</text>
+      </g>
+
+      <g class="node frontend">
+        <rect class="body" x="960" y="78" width="170" height="64"/>
+        <rect class="badge" x="968" y="86" width="8" height="8"/>
+        <text class="lbl" x="1045" y="103">로그인 화면</text>
+        <text class="sub" x="1045" y="120" font-size="9">아이디 + 비밀번호, 아이디저장</text>
+      </g>
+
+      <g class="node security">
+        <rect class="body" x="960" y="248" width="170" height="64"/>
+        <rect class="badge" x="968" y="256" width="8" height="8"/>
+        <text class="lbl" x="1045" y="270" font-size="11.5">로그인 판정</text>
+        <text class="sub" x="1045" y="286" font-size="8.5">잠금 → 아이디·비밀번호 → 계정상태</text>
+      </g>
+
+      <g class="node frontend">
+        <rect class="body" x="1155" y="78" width="190" height="64"/>
+        <rect class="badge" x="1163" y="86" width="8" height="8"/>
+        <text class="lbl" x="1250" y="103" font-size="12">강제 비밀번호 변경 팝업</text>
+        <text class="sub" x="1250" y="120" font-size="8.5">닫기 불가 · 최초/임시비밀번호 로그인 시</text>
+      </g>
+
+      <g class="node frontend">
+        <rect class="body" x="1350" y="78" width="190" height="64"/>
+        <rect class="badge" x="1358" y="86" width="8" height="8"/>
+        <text class="lbl" x="1445" y="103" font-size="12">아이디/비밀번호 찾기</text>
+        <text class="sub" x="1445" y="120" font-size="8.5">아이디 찾기 · 임시비밀번호 발급 탭</text>
+      </g>
+
+      <g class="node messagebus">
+        <rect class="body" x="1350" y="248" width="170" height="64"/>
+        <rect class="badge" x="1358" y="256" width="8" height="8"/>
+        <text class="lbl" x="1435" y="270" font-size="11.5">임시비밀번호 메일</text>
+        <text class="sub" x="1435" y="286" font-size="8">1시간 유효, 계정당 1시간 5회 제한</text>
+      </g>
+
+      <g class="node frontend">
+        <rect class="body" x="1545" y="78" width="190" height="64"/>
+        <rect class="badge" x="1553" y="86" width="8" height="8"/>
+        <text class="lbl" x="1640" y="103" font-size="11.5">MY PAGE 내정보·비밀번호</text>
+        <text class="sub" x="1640" y="120" font-size="8">이름·연락처·이메일 / 현재비번 확인 후 변경</text>
+      </g>
+
+      <g class="node frontend">
+        <rect class="body" x="1745" y="78" width="140" height="64"/>
+        <rect class="badge" x="1753" y="86" width="8" height="8"/>
+        <text class="lbl" x="1815" y="103">로그아웃</text>
+        <text class="sub" x="1815" y="120" font-size="9">현재 세션만 종료</text>
+      </g>
+
+      <g class="node frontend">
+        <rect class="body" x="1940" y="78" width="180" height="64"/>
+        <rect class="badge" x="1948" y="86" width="8" height="8"/>
+        <text class="lbl" x="2030" y="103" font-size="12">BP 사업자정보 탭</text>
+        <text class="sub" x="2030" y="120" font-size="8.5">재인증으로만 사업자등록번호 변경</text>
+        <rect class="tag-pill role" x="1975" y="126" width="110" height="16" rx="8"/>
+        <text class="tag-text role" x="2030" y="137">BP마스터 전용</text>
+      </g>
+
+      <g class="node cloud">
+        <rect class="body" x="1940" y="248" width="180" height="64"/>
+        <rect class="badge" x="1948" y="256" width="8" height="8"/>
+        <text class="lbl" x="2030" y="270" font-size="11.5">국세청 재인증</text>
+        <text class="sub" x="2030" y="286" font-size="9">중복확인 후 진위확인</text>
+        <rect class="tag-pill" x="1985" y="292" width="90" height="16" rx="8"/>
+        <text class="tag-text" x="2030" y="303">선택 항목</text>
+      </g>
+
+      <g class="node frontend">
+        <rect class="body" x="2135" y="78" width="170" height="64"/>
+        <rect class="badge" x="2143" y="86" width="8" height="8"/>
+        <text class="lbl" x="2220" y="103">회원 탈퇴 요청</text>
+        <text class="sub" x="2220" y="120" font-size="9">비밀번호 재인증 → 탈퇴화면</text>
+      </g>
+
+      <g class="node security">
+        <rect class="body" x="2135" y="248" width="170" height="64"/>
+        <rect class="badge" x="2143" y="256" width="8" height="8"/>
+        <text class="lbl" x="2220" y="270" font-size="11.5">탈퇴 선행조건 검사</text>
+        <text class="sub" x="2220" y="286" font-size="8.5">구독해지·정산0·근로계약0</text>
+      </g>
+
+      <g class="node database">
+        <rect class="body" x="2330" y="248" width="180" height="64"/>
+        <rect class="badge" x="2338" y="256" width="8" height="8"/>
+        <text class="lbl" x="2420" y="270" font-size="11.5">계정 논리삭제</text>
+        <text class="sub" x="2420" y="286" font-size="8">같은 BP 점포 전부 폐점(조건 미검증)</text>
+      </g>
+
+      <g class="node messagebus">
+        <rect class="body" x="2530" y="248" width="170" height="64"/>
+        <rect class="badge" x="2538" y="256" width="8" height="8"/>
+        <text class="lbl" x="2615" y="270" font-size="11.5">탈퇴완료 메일</text>
+        <text class="sub" x="2615" y="286" font-size="8.5">BP마스터 등록 이메일로 발송</text>
+      </g>
+    </svg>
+
+    <div class="mini-nav">
+      <span class="lbl">PATH</span><span class="lbl">MAP</span><span class="lbl">LENS</span>
+      <span class="sep"></span>
+      <span class="zoom">🔍</span><span class="zoom">🕐</span>
+      <span class="sep"></span>
+      <span class="zoom">−</span><span class="zoom">100%</span><span class="zoom">+</span>
+    </div>
+
+    <div class="legend">
+      <span><i class="c-frontend"></i>화면 <b>9</b></span>
+      <span><i class="c-security"></i>판정 · 예외 <b>3</b></span>
+      <span><i class="c-database"></i>기록 <b>2</b></span>
+      <span><i class="c-messagebus"></i>메일 발송 <b>3</b></span>
+      <span><i class="c-cloud"></i>외부(국세청) <b>2</b></span>
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card__title"><i class="c-database"></i>확정된 결정</div>
+      <p>아이디·이메일 중복확인은 포커스아웃 시 즉시, 사업자번호 중복확인은 국세청 인증 전에 먼저 수행. 로그인 판정 순서는 잠금→아이디비밀번호→계정상태→강제변경 고정. 비밀번호 변경 시 다른 기기 세션은 모두 종료하되 현재 세션은 유지. 아이디 찾기 결과는 앞 2자·뒤 1자만 노출. 5회 연속 로그인 실패 시 5분 잠금(임시비밀번호 발급으로만 즉시 해제). 임시비밀번호는 발급 후 1시간 유효, 계정당 1시간 5회 제한. 회원탈퇴는 구독 해지·정산 0·근로계약 0을 모두 충족해야 가능하며, 탈퇴한 계정의 아이디는 재사용할 수 없고 그 BP의 모든 점포는 상태와 무관하게 즉시 폐점된다.</p>
+    </div>
+    <div class="card">
+      <div class="card__title"><i class="c-ink3"></i>밖에 있는 것</div>
+      <p>판매용 부가서비스 회원과 직원 전용 앱 계정은 이 범위에서 제외한다(별도 가입·인증 체계). 회원가입 과정에서는 점포를 등록하거나 자동 생성하지 않는다 — 점포 등록은 별개 기능이다. 점포 운영 여부는 회원 탈퇴의 조건이 아니며, 이 화면은 탈퇴로 점포가 폐점되는 결과까지만 다루고 점포 개별 처리는 그리지 않는다.</p>
+    </div>
+  </div>
+
+  <div class="src">
+    manyfast · R-LYZWGG 인증 및 계정 관리 › F-JVTPSU BP 회원가입 · F-DZVFIC 로그인 · F-FQKGEE 계정 찾기 및 비밀번호 재설정 · F-AMTDCK 내 정보 및 비밀번호 관리 · F-RCHJES 로그아웃<br>
+    원본 모델: ./auth-account.workflow.json (schema_version 2, docs/flow 의 다른 *.workflow.json 과 같은 스키마)
+  </div>
+</div>
+
+<script>
+  var PRESET_NAMES = { classic: "Classic", "signal-flow": "Signal Flow", blueprint: "Blueprint", editorial: "Editorial" };
+
+  function toggleTheme() {
+    var html = document.documentElement;
+    var isLight = html.getAttribute("data-theme") === "light";
+    var next = isLight ? "dark" : "light";
+    html.setAttribute("data-theme", next);
+    document.getElementById("themeIcon").textContent = next === "dark" ? "☀" : "🌙";
+    document.getElementById("themeLabel").textContent = next === "dark" ? "Light" : "Dark";
+    try { localStorage.setItem("whale-flow-theme", next); } catch (e) {}
+  }
+
+  function togglePresetMenu(e) {
+    if (e) e.stopPropagation();
+    var m = document.getElementById("presetMenu");
+    m.hidden = !m.hidden;
+  }
+  function setPreset(name) {
+    document.documentElement.setAttribute("data-preset", name);
+    document.getElementById("presetMenu").hidden = true;
+    document.getElementById("presetLabel").textContent = PRESET_NAMES[name] || name;
+    var opts = document.querySelectorAll(".preset-opt");
+    for (var i = 0; i < opts.length; i++) opts[i].classList.toggle("is-active", opts[i].getAttribute("data-preset") === name);
+    try { localStorage.setItem("whale-flow-preset", name); } catch (e) {}
+  }
+  document.addEventListener("click", function (e) {
+    var m = document.getElementById("presetMenu");
+    if (m && !m.hidden && !e.target.closest(".tbtn-wrap")) m.hidden = true;
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { var m = document.getElementById("presetMenu"); if (m) m.hidden = true; }
+  });
+
+  function togglePresent() {
+    var on = document.body.classList.toggle("present");
+    document.getElementById("btnPresent").setAttribute("aria-pressed", on ? "true" : "false");
+  }
+
+  (function () {
+    var html = document.documentElement;
+    try {
+      var savedTheme = localStorage.getItem("whale-flow-theme");
+      if (savedTheme === "light") {
+        html.setAttribute("data-theme", "light");
+        document.getElementById("themeIcon").textContent = "🌙";
+        document.getElementById("themeLabel").textContent = "Dark";
+      } else {
+        html.setAttribute("data-theme", "dark");
+      }
+    } catch (e) { html.setAttribute("data-theme", "dark"); }
+    try {
+      var savedPreset = localStorage.getItem("whale-flow-preset");
+      if (savedPreset && PRESET_NAMES[savedPreset]) setPreset(savedPreset);
+    } catch (e) {}
+  })();
+</script>
+</body>
+</html>
