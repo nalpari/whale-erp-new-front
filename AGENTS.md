@@ -18,6 +18,10 @@ concept의 `sources[].resource`에 들어 있으면 해당 concept 본문을 고
 `/okf-ingest` 를 실행한다.
 목업(`docs/mockup/`)의 확정 쟁점을 반영할 때는 `/okf-from-mockup [영역]` 을 쓴다.
 
+## 네이밍
+
+@okf/conventions/naming.md
+
 ## 워크트리
 
 워크트리는 저장소 안이 아니라 플랫폼별 루트 아래, 프로젝트 이름으로 한 단계
