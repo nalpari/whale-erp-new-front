@@ -27,7 +27,7 @@
           <div class="band band--info">
             <span class="band__ic" data-icon="info" data-icon-size="20"></span>
             <div class="band__body">
-              <div class="band__title">이 영역에서 결정할 것은 22건, 20건이 정해졌다</div>
+              <div class="band__title">이 영역에서 결정할 것은 23건, 21건이 정해졌다</div>
               <p class="band__desc">
                 화면은 <b>manyfast 문서 기준</b>으로 그렸고, 기존 디자인 시안과 어긋나는 곳은 지우지 않고
                 보라색 쟁점 블록으로 남겼다. 각 쟁점은 해당 화면 안에도 같은 블록으로 붙어 있다.
@@ -160,6 +160,7 @@
                 <ul class="pol">
                 <li><span class="pol__t">초대·계약·근무스케줄·TO-DO·급여 모두 <b>BP 마스터·BP 관리자·가맹마스터·가맹관리자</b>의 일이고 자기 소속 범위 안에서만이다. 권한이 없으면 진입점을 숨긴다.</span><span class="pol__ref">F-XJXAQO · F-GLGEOF · F-NUXMTT · F-XXYSNZ</span></li>
                 <li><span class="pol__t">마스터는 자기 <b>전체 소속 범위</b>, 관리자는 <b>점포 범위</b>에서 일한다.</span><span class="pol__ref">F-NUXMTT</span></li>
+                <li><span class="pol__t">가맹 점포 직원의 개인 기록은 직원이 <b>본사 제공 동의</b>를 한 경우에만 본사(BP 마스터·BP 관리자)에게 보인다. 가맹 점포 직원의 고용주는 가맹점이라 본사 열람을 <b>제3자 제공</b>으로 보기 때문이다. 동의하지 않았거나 철회한 직원은 직원 목록·상세·계약·출퇴근·근무스케줄·급여에서 가리고, 점포별 숫자에는 그대로 센다. 가맹마스터·가맹관리자 화면은 바뀌지 않고 직영 점포도 해당하지 않는다.</span><span class="pol__ref">운영 정책 ATT-30 · 법무 확인 대기 · STAFF-23</span></li>
                 <li><span class="pol__t">플랫폼 마스터·관리자는 사업자의 근무·급여를 <b>조회만</b> 하고 고치지 못한다.</span><span class="pol__ref">F-NUXMTT · F-XXYSNZ</span></li>
                 <li><span class="pol__t">계약 상태를 손으로 바꾸는 것은 <b>BP 마스터와 가맹마스터</b>만 한다.</span><span class="pol__ref">S-XDBBDP</span></li>
                 <li><span class="pol__t">직원은 앱에서 자기 것만 본다. 근무스케줄을 고치지 못하고, TO-DO 를 만들거나 지우지 못하며, 배정된 것의 상태만 바꾼다.</span><span class="pol__ref">S-WPGUXX · S-NIAGGB</span></li>
@@ -815,6 +816,28 @@
 종이 계약 직원에게도 <b>가입 초대를 보낸다</b>. 직원은 앱에 가입해 날인 없이 신고 정보 단계로 넘어가고, 그 뒤로는 전자계약 직원과 같다 —
                 근무스케줄·급여명세서·TO-DO 를 보고 출퇴근을 등록한다. 계약 조건 칸은 <b>모두 채워야 등록</b>된다. 비워 두면 근무스케줄 기본값과
                 근무 시간 중복 검사, 급여 계산이 그 직원만 빈손이 되기 때문이다. 파일은 <b>PDF 와 JPG·PNG</b> 를 받는다 — 사진으로 찍어 올리는 일이 많다.
+              </p>
+            </div>
+            <div class="gap is-decided">
+              <div class="gap__head">
+                <span class="gap__no">STAFF-23</span>
+                <b>본사 제공 동의가 없는 가맹 점포 직원을 목록에서 어떻게 보이는가</b>
+                <span class="gap__decided">확정 · 행은 남기고 내용을 가림</span>
+                <span class="gap__ref">운영 정책 ATT-30</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt is-picked" data-side="a">
+                  <div class="gap__label">A · 행을 남기고 내용을 가림 · 확정</div>
+                  <p>행은 그대로 서고 이름·번호·상태가 <b>본사 제공 동의 없음</b> 한 줄로 바뀐다. 점포 이름만 보인다.</p>
+                </div>
+                <div class="gap__opt is-dropped" data-side="b">
+                  <div class="gap__label">B · 한 줄로 묶는다</div>
+                  <p>가린 직원을 「동의 없음 3명」처럼 한 줄로 묶어 접는다. 목록은 짧아지지만 몇 번째 행인지 알 수 없다.</p>
+                </div>
+              </div>
+              <p class="gap__note">
+                점포별 인원수에는 가린 직원도 세므로 <b>행 수와 숫자가 맞아야</b> 한다. 그래서 A 다. 묶어서 접으면 목록 길이와 인원수가
+                어긋나 본사가 사람 수를 세지 못한다. 가린 행에서는 상세로 들어가지 못하고 점포 이름만 남는다.
               </p>
             </div>
             <div class="gap is-held">
