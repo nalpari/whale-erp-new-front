@@ -44,7 +44,10 @@
   그래서 `customers`·`role_groups` 의 `bp_id` 와 `code_items` 의 `bp_code` 는 NULL 없이 필수다. 플랫폼 BP 는 BP 목록·조회 범위·공통코드 배포·배치·통계·사업자등록번호 중복 검사 등 모든 고객 BP 대상 처리에서 빠진다.
   권한 판정은 `bp_id` 가 아니라 권한 유형(`auth_type_code`)으로 한다.
 - 공통코드는 식별자 대신 코드로 PK 를 잡는다 (2026-09-30) — `code_groups` 는 `group_code`, `code_items` 는 (`group_code`, `item_code`, `bp_code`) 복합 PK 다. 세 값 모두 필수이고 등록 뒤 바꾸지 않는다. 복사된 행의 원본은 같은 그룹 코드·상세코드의 플랫폼 BP 행이라 원본 참조 컬럼을 두지 않는다.
-- 공통코드 값을 담는 컬럼은 논리 타입 `code`, 이름은 그룹 코드 + `_code` 로 맞춘다 (2026-09-30) — 권한 유형·계정 상태·BP 상태·점포 상태·점포 유형·관리 주체·가입경로·탈퇴 사유(`WITHDRAW_REASON`)·휴일 유형·휴일 반복 유형·서비스.
+- 공식 휴일 적재 이력 테이블은 두지 않는다 (2026-09-30) — 규칙 적재는 운영 작업이라 따로 기록하지 않는다. 동기화 이력은 3팀과의 배치 이력 공통화 논의 결과에 따라 남기거나 없앤다.
+- 이력 테이블에는 변경 유형(`change_type`)을 두지 않는다 (2026-09-30) — 무엇이 바뀌었는지는 변경 항목과 변경 전후 값으로 본다.
+- 공통코드 값을 담는 컬럼은 논리 타입 `code`, 이름은 그룹 코드 + `_code` 로 맞춘다 (2026-09-30) — 권한 유형·계정 상태·BP 상태·점포 상태·점포 유형·관리 주체·가입경로·탈퇴 사유(`WITHDRAW_REASON`)·휴일 유형·휴일 반복 유형·서비스·메일 유형(`MAIL_TYPE`)·약관 유형(`TERMS_TYPE`)·층수 구분(`FLOOR_TYPE`).
+- 관리자 계정의 관리 점포 범위(전체·일부)는 전체 점포 적용 여부(`is_all_stores`, bool)로 둔다 (2026-09-30). BP 휴일의 적용 범위(전체점포·특정점포)도 같은 이름·같은 컬럼(`bp_holidays.is_all_stores`)으로 둔다 — 관리 점포 범위는 이 값이 true 면 소속 BP 모든 점포, false 면 점포 매핑에 있는 점포다.
 - BP 상태를 `bp_codes.account_status_code`(사용·미사용·탈퇴)에 둔다 (2026-09-30) — BP 마스터 계정 상태와 함께 바뀌고, 오등록 삭제는 `is_deleted` 로 따로 본다. 상태 변경 일시는 `bp_codes` 에 두지 않는다.
 - 가맹 마스터는 직영점을 포함한 BP 의 전체 점포에서 관리 점포를 고른다(한 점포 한 가맹 마스터).
 
@@ -66,7 +69,7 @@
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK | 약관 버전 ID | id | `terms_version_id` |  |
-|  | 약관 유형 | enum | `terms_type` | 이용약관·개인정보수집이용 |
+|  | 약관 유형 코드 | code | `terms_type_code` | 공통코드 `TERMS_TYPE`(이용약관·개인정보 수집·이용 동의·마케팅 수신 동의·위치정보 수집·이용 동의) |
 |  | 버전 번호 | text | `version` | 예: v1.0, v1.1 |
 |  | 약관 내용 | text | `content` | 약관 본문 |
 |  | 제목 | text | `title` |  |
@@ -134,7 +137,7 @@ BP 마스터·BP 관리자·가맹 마스터·가맹 관리자·플랫폼 마스
 |  | 잠금 해제 시각 | datetime | `locked_until` | 5분 잠금 |
 |  | 최근 로그인 일시 | datetime | `last_login_at` |  |
 |  | 가입경로 코드 | code | `join_path_code` | 공통코드 `JOIN_PATH`(회원가입·플랫폼등록), 모든 계정 필수 |
-|  | 관리 점포 범위 | enum | `store_scope` | 전체·일부, 일부면 `admin_store_mappings`. 가맹 마스터는 일부만 |
+|  | 전체 점포 적용 여부 | bool | `is_all_stores` | true 면 소속 BP 모든 점포(이후 등록 포함)를 관리하고 점포 매핑을 두지 않음. false 면 `admin_store_mappings`. 가맹 마스터는 false 만 |
 |  | 소속 부서 | text | `department` | 플랫폼 관리자만, 선택 |
 |  | 직책 | text | `job_title` | 플랫폼 관리자만, 선택 |
 |  | 우편번호 | text | `zip_code` | 플랫폼 관리자만, 선택 |
@@ -204,7 +207,6 @@ BP 마스터·BP 관리자·가맹 마스터·가맹 관리자·플랫폼 마스
 |---|---|---|---|---|
 | PK | 변경 이력 ID | id | `change_id` |  |
 | FK | 대상 관리자 | id | `customer_id` |  |
-|  | 변경 유형 | enum | `change_type` | 기본정보수정·상태변경·권한그룹변경·비밀번호변경·비밀번호초기화·탈퇴·삭제 |
 |  | 변경 항목 | text | `field` | 이름·연락처·이메일·계정상태 등 |
 |  | 변경 전 값 | text | `before_value` | 비밀번호는 저장 안 함 |
 |  | 변경 후 값 | text | `after_value` | 비밀번호는 저장 안 함 |
@@ -232,7 +234,7 @@ BP 마스터·BP 관리자·가맹 마스터·가맹 관리자·플랫폼 마스
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK | 발송 이력 ID | id | `mail_id` |  |
-|  | 메일 유형 | enum | `mail_type` | 계정생성·비밀번호초기화·임시비밀번호·가입완료 등 |
+|  | 메일 유형 코드 | code | `mail_type_code` | 공통코드 `MAIL_TYPE`(회원가입 완료·신규 BP 가입 알림·BP 신규 등록·플랫폼 관리자 계정 생성·BP 관리자 계정 생성·비밀번호 초기화·임시 비밀번호 발급·회원 탈퇴 완료) |
 | FK | 수신 계정 | id | `customer_id` | customers FK |
 |  | 발신 이메일 | text | `from_email` | 보낸 주소 |
 |  | 수신 이메일 | text | `to_email` | 보낸 시점의 주소 |
@@ -308,7 +310,7 @@ BP 마스터·BP 관리자·가맹 마스터·가맹 관리자·플랫폼 마스
 |  | 매장평수 | decimal | `floor_area_pyeong` | 소수 1자리, 선택 |
 |  | 전용면적 | decimal | `floor_area_sqm` | 소수 2자리, 선택 |
 |  | 좌석수 | int | `seat_count` | 0 이상, 선택 |
-|  | 층수 구분 | enum | `floor_type` | 지상·지하 |
+|  | 층수 구분 코드 | code | `floor_type_code` | 공통코드 `FLOOR_TYPE`(GROUND 지상·BASEMENT 지하) |
 |  | 층수 | int | `floor_number` |  |
 |  | 삭제 여부 | bool | `is_deleted` |  |
 |  | 등록 일시 | datetime | `created_at` |  |
@@ -354,7 +356,7 @@ BP 마스터·BP 관리자·가맹 마스터·가맹 관리자·플랫폼 마스
 
 ### 관리자 점포 매핑 `admin_store_mappings` · 엔티티
 
-관리 점포 범위(`customers.store_scope`)가 일부인 계정만 행을 가진다. 가맹점포 하나는 가맹 마스터 한 명만 맡는다 — 스키마 제약 없이 저장할 때 앱이 검사한다.
+전체 점포 적용 여부(`customers.is_all_stores`)가 false 인 계정만 행을 가진다. 가맹점포 하나는 가맹 마스터 한 명만 맡는다 — 스키마 제약 없이 저장할 때 앱이 검사한다.
 
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
@@ -510,7 +512,7 @@ PK 는 그룹 코드 + 상세코드 + BP 코드이며 셋 다 필수다. 플랫�
 |---|---|---|---|---|
 | PK | 휴일 ID | id | `holiday_id` |  |
 | FK | BP | id | `bp_id` | bp_codes FK |
-|  | 적용 범위 | enum | `scope` | 전체점포·특정점포 |
+|  | 전체 점포 적용 여부 | bool | `is_all_stores` | true 면 전체 점포 휴일(예외 점포 제외), false 면 특정 점포 휴일(휴일-점포 매핑) |
 |  | 휴일 유형 코드 | code | `holiday_type_code` | 공통코드 `HOLIDAY_TYPE`(DAY 하루·PERIOD 기간·REPEAT 반복) |
 |  | 휴일 시작날짜 | date | `start_date` | 반복 기준일 |
 |  | 휴일 종료날짜 | date | `end_date` | 하루는 시작일과 같게 · 기간의 종료일 · 반복은 비움 |
@@ -565,7 +567,6 @@ PK 는 그룹 코드 + 상세코드 + BP 코드이며 셋 다 필수다. 플랫�
 |---|---|---|---|---|
 | PK | 변경 이력 ID | id | `change_id` |  |
 | FK | 휴일 | id | `holiday_id` |  |
-|  | 변경 유형 | enum | `change_type` | 등록·수정·삭제 |
 |  | 변경 항목 | text | `field` |  |
 |  | 변경 전 값 | text | `before_value` |  |
 |  | 변경 후 값 | text | `after_value` |  |
@@ -611,7 +612,7 @@ PK 는 그룹 코드 + 상세코드 + BP 코드이며 셋 다 필수다. 플랫�
 
 ### 동기화 이력 `public_holiday_sync_histories` · 이력
 
-올해·다음 해분을 공식 API로 맞춘 이력이다.
+올해·다음 해분을 공식 API로 맞춘 이력이다. 배치 실행 이력을 3팀과 공통 테이블로 둘지 논의 중이며, 공통 테이블로 가면 이 테이블은 없앤다.
 
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
@@ -624,19 +625,6 @@ PK 는 그룹 코드 + 상세코드 + BP 코드이며 셋 다 필수다. 플랫�
 |  | 실패 건수 | int | `failed_count` |  |
 |  | 오류 정보 | text | `error` |  |
 |  | 결과 | enum | `result` | 성공·실패 |
-
-### 공식 휴일 적재 이력 `public_holiday_load_histories` · 이력
-
-2000~2100년 범위를 규칙으로 적재한 이력이다.
-
-| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
-|---|---|---|---|---|
-| PK | 적재 이력 ID | id | `load_id` |  |
-|  | 적재 범위 | text | `range` | 예: 2000~2100 |
-|  | 실행 일시 | datetime | `loaded_at` |  |
-|  | 적재 건수 | int | `loaded_count` |  |
-|  | 오류 정보 | text | `error` |  |
-| FK | 실행자 | id | `executed_by` | customers FK, 운영 담당자 |
 
 ---
 
