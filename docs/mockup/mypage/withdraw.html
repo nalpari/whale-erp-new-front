@@ -11,6 +11,8 @@
     <!-- 회원 탈퇴 · /mypage/withdraw · S-JHQQNR · 1팀 · BP 마스터만
          MY PAGE → 회원 탈퇴를 누르면 먼저 비밀번호 확인 팝업이 뜬다. 맞아야 탈퇴 화면이 보이고, 취소하면 내 정보로 돌아간다.
          탈퇴 화면은 선행 조건 세 가지(부가서비스 구독 해지 · 미정산 금액 없음 · 진행 중인 근로계약 없음)의 충족 상태를 보인다.
+         구독·정산은 1차 범위 밖이라 어느 팀 몫도 아니다 — 두 조건은 「1차 범위 밖」으로만 표시하고 확인하지 않는다.
+         1차에서 실제로 확인하는 조건은 진행 중인 근로계약 없음 하나이고, 건수는 3팀이 점포 폐점·삭제용으로 주는 점포별 진행 중 근로계약 건수를 그 BP 모든 점포에 대해 합산한다(진행 중 기준은 3팀이 정함).
          점포는 조건이 아니다 — 탈퇴하면 그 BP 의 점포를 상태와 관계없이 모두 폐점으로 바꾼다.
          조건이 모자라도 회원 탈퇴 버튼은 평소 모양 그대로다 — 누르면 아직 채우지 못한 조건과 할 일을 팝업으로 안내한다(MYPAGE-2 확정).
          조건을 모두 채운 뒤에는 사유를 골라야 버튼이 켜진다.
@@ -54,29 +56,24 @@
             <div class="panel__head">
               <h2 class="t-h2">탈퇴 조건</h2>
               <span class="badge badge--ok" data-show="met">모두 충족</span>
-              <span class="badge badge--risk" data-show="unmet" hidden>2개 미충족</span>
+              <span class="badge badge--risk" data-show="unmet" hidden>1개 미충족</span>
             </div>
             <div class="rows">
               <div class="row">
-                <span data-icon="check" data-icon-size="16" style="color: var(--ok-text)" data-show="met"></span>
-                <span data-icon="x" data-icon-size="16" style="color: var(--risk-text)" data-show="unmet" hidden></span>
+                <span data-icon="minus" data-icon-size="16" style="color: var(--muted-tert)"></span>
                 <span class="stack" style="gap: 2px">
                   <b style="font-size: 13.5px">부가서비스 구독 해지</b>
-                  <span class="subtle" style="font-size: 12.5px" data-show="met">이용 중인 부가서비스가 없습니다.</span>
-                  <span class="subtle" style="font-size: 12.5px" data-show="unmet" hidden>이용 중인 부가서비스 1건 — 해지해야 합니다.</span>
+                  <span class="subtle" style="font-size: 12.5px">1차 범위 밖 — 1차에서는 확인하지 않습니다.</span>
                 </span>
-                <span class="row__end">
-                  <span class="badge badge--ok" data-show="met">충족</span>
-                  <span class="badge badge--risk" data-show="unmet" hidden>미충족</span>
-                </span>
+                <span class="row__end"><span class="badge badge--quiet">1차 범위 밖</span></span>
               </div>
               <div class="row">
-                <span data-icon="check" data-icon-size="16" style="color: var(--ok-text)"></span>
+                <span data-icon="minus" data-icon-size="16" style="color: var(--muted-tert)"></span>
                 <span class="stack" style="gap: 2px">
                   <b style="font-size: 13.5px">미정산 금액 없음</b>
-                  <span class="subtle" style="font-size: 12.5px">정산하지 않은 금액이 없습니다.</span>
+                  <span class="subtle" style="font-size: 12.5px">1차 범위 밖 — 1차에서는 확인하지 않습니다.</span>
                 </span>
-                <span class="row__end"><span class="badge badge--ok">충족</span></span>
+                <span class="row__end"><span class="badge badge--quiet">1차 범위 밖</span></span>
               </div>
               <div class="row">
                 <span data-icon="check" data-icon-size="16" style="color: var(--ok-text)" data-show="met"></span>
@@ -178,12 +175,6 @@
             <div class="modal__body">
               <p style="margin: 0; font-size: 13.5px">아래 조건을 먼저 채워 주세요.</p>
               <div class="rows">
-                <div class="row">
-                  <span class="stack" style="gap: 2px">
-                    <b style="font-size: 13px">부가서비스 구독 해지</b>
-                    <span class="subtle" style="font-size: 12.5px">이용 중인 부가서비스 1건을 해지하세요.</span>
-                  </span>
-                </div>
                 <div class="row">
                   <span class="stack" style="gap: 2px">
                     <b style="font-size: 13px">진행 중인 근로계약 없음</b>

@@ -222,11 +222,10 @@
             <div class="card" style="padding: var(--s-4) var(--s-5); gap: var(--s-2)">
               <b style="font-size: 13.5px">폐점 조건</b>
               <ul class="stack" style="margin: 0; padding-left: 18px; font-size: 13px; gap: 4px">
-                <li data-show="unmet">유효한 근로계약 <b style="color: var(--risk-text)">6건</b> — 정리해야 할 근로계약이 있습니다</li>
-                <li data-show="unmet">이용 중인 부가서비스 구독 <b style="color: var(--risk-text)">1건</b> — 해지해야 할 구독이 있습니다</li>
-                <li data-show="met" hidden>유효한 근로계약 0건 ✓</li>
-                <li data-show="met" hidden>이용 중인 부가서비스 구독 0건 ✓</li>
-                <li>정산 대기 금액 0원 ✓</li>
+                <li data-show="unmet">진행 중인 근로계약 <b style="color: var(--risk-text)">6건</b> — 정리해야 할 근로계약이 있습니다</li>
+                <li data-show="met" hidden>진행 중인 근로계약 0건 ✓</li>
+                <li class="subtle">이용 중인 부가서비스 구독 — <span class="badge badge--quiet">1차 범위 밖</span></li>
+                <li class="subtle">정산 대기 금액 — <span class="badge badge--quiet">1차 범위 밖</span></li>
               </ul>
             </div>
             <div class="inline" style="justify-content: flex-end">
@@ -269,7 +268,7 @@
             </div>
             <button class="card card--hover" type="button" data-step-to="confirm" style="text-align: left; padding: var(--s-4) var(--s-5); gap: 6px">
               <div class="spread"><b style="font-size: 13.5px">폐점</b><span class="badge badge--ok">조건 충족</span></div>
-              <span class="subtle" style="font-size: 12.5px">유효한 근로계약 0건 · 이용 중인 구독 0건 · 정산 대기 0원</span>
+              <span class="subtle" style="font-size: 12.5px">진행 중인 근로계약 0건 (구독·정산은 1차 범위 밖)</span>
             </button>
             <div class="inline" style="justify-content: flex-end">
               <button class="btn btn--ghost" type="button" data-close>취소</button>
