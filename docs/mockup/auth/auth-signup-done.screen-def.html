@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>가입 완료 — 화면정의서</title>
+<link rel="stylesheet" href="../assets/screen-def.css">
+</head>
+<body data-export-name="auth-signup-done.screen-def">
+<header>
+  <div>
+    <h1>가입 완료 — 화면정의서</h1>
+    <p>auth/signup-done.html?embed=1 렌더링(LNB·상단 GNB 제외, 화면 본문만) 위에 번호를 붙이고 우측에 설명을 매칭했다. manyfast S-UUBGOD(F-JVTPSU) 기준.</p>
+    <table class="meta-table">
+      <tr><td class="k">화면명</td><td class="v" id="metaName"></td><td class="k">화면경로</td><td class="v" id="metaPath"></td></tr>
+    </table>
+  </div>
+  <div class="head-actions">
+    <button type="button" class="btn2" id="btnEdit">편집 모드</button>
+    <button type="button" class="btn2" id="btnArm" hidden>핀 추가</button>
+    <button type="button" class="btn2 btn2--accent" id="btnExport" hidden>내보내기</button>
+  </div>
+</header>
+<div class="edit-hint">편집 모드: "핀 추가"를 누르고 화면을 한 번 클릭하면 그 자리에 새 번호가 생깁니다(또는 아래 "+ 항목 추가"로 기본 위치에 바로 추가). 기존 핀은 드래그로 옮기고, 오른쪽 × 로 지웁니다. Shift(또는 Ctrl)+클릭으로 핀 여러 개를 한꺼번에 선택해 같이 드래그할 수 있습니다. 빈 곳을 클릭하면 선택이 풀립니다. 항목명·설명은 클릭해서 바로 고치세요. 다 끝나면 "내보내기"로 새 HTML 파일을 받아 저장소 파일과 바꿔주세요(이 브라우저에는 임시로 자동저장됩니다).</div>
+
+<div class="layout">
+  <div class="shot-pane">
+    <div class="shot-wrap" id="shotWrap">
+      <img src="auth-signup-done.screen-def.png" alt="가입 완료 화면 스크린샷(LNB 제외)" id="shotImg">
+    </div>
+  </div>
+
+  <div class="desc-pane">
+    <div class="desc-title"><span>Description</span></div>
+    <div class="purpose" id="purposeEl"></div>
+
+    <table class="desc-table"><tbody id="descBody"></tbody></table>
+    <div class="add-row" id="addRow">+ 항목 추가 (기본 위치에 추가 — 드래그로 옮기세요)</div>
+
+    <div class="skip-note">
+      상단 GNB와 좌측 LNB는 이 화면정의서 스크린샷 자체에서 제외했다(embed 모드).
+    </div>
+  </div>
+</div>
+
+<script id="state-json" type="application/json">
+{
+  "screenName": "가입 완료",
+  "screenPath": "인증 > BP 회원가입 > 가입 완료",
+  "purpose": "# 화면 목적 및 기능 — 가입 완료 토큰(10분)으로만 들어오는 안내 화면. 들어온 것만으로는 로그인 상태가 아니며, 버튼을 눌러야 세션이 생긴다. 약관·입력·점포 등록은 이 화면에 없다",
+  "items": [
+    { "x": 302, "y": 388, "title": "가입 완료 안내", "desc": "정의: 가입한 BP 상호명과 아이디를 함께 표시" },
+    { "x": 302, "y": 481, "title": "메일 발송 안내", "desc": "정의: 가입 안내 메일을 보낸 주소 표시\n메일 발송이 실패해도 가입은 그대로 완료된 것으로 처리" },
+    { "x": 302, "y": 541, "title": "웨일ERP 시작하기", "desc": "정의: 누르는 순간 로그인 세션을 만들고 홈으로 이동\n이 화면에 들어온 것만으로는 로그인 상태가 아니며, 이 버튼을 눌러야 실제로 로그인됨\n토큰이 만료된 뒤 눌렀다면 로그인 화면으로 이동" },
+    { "x": 78, "y": 650, "title": "만료 안내", "desc": "정의: 이 화면은 가입 완료 토큰으로 10분 동안만 열리고, 시간이 지나면 로그인 화면에서 가입한 아이디로 들어와야 한다는 안내" },
+    { "x": 717, "y": 420, "title": "안내 패널(우측)", "desc": "정의: 완료 화면에는 버튼 하나만 두며, 약관·입력·점포 등록·점포 등록 권유 팝업은 이 화면에 없다는 설계 의도를 설명하는 보조 정보 영역" }
+  ]
+}
+</script>
+
+<script src="../assets/screen-def.js"></script>
+</body>
+</html>

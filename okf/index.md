@@ -9,6 +9,7 @@ okf_version: "0.2"
 * [직원 운영 관리](staff.md) - 직원 초대·근로계약·근무스케줄·출퇴근·급여·TO-DO. 채용은 근로계약서 초안에서 시작한다. 목업 `docs/mockup/staff/` 기준.
 * [고객지원·커뮤니티](support.md) - 사용자가 읽는 고객지원과 운영자가 쓰는 커뮤니티관리. 목업 `docs/mockup/support/` 기준.
 * [운영 알림](notify.md) - 문의·계약 사건을 관리자 웹 알림함과 이메일로 알린다. 목업 `docs/mockup/notify/` 기준.
+* [네이밍 규칙](conventions/naming.md) - DB·API·FRONT 세 계층의 이름 규칙과 용어집 영문 식별자 대응표. 세 저장소가 함께 쓴다.
 
 # Bundle files
 

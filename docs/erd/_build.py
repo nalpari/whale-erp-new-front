@@ -181,13 +181,16 @@ DIAGRAMS.append(Diagram(
           ["#|로그인 이력 ID|id|login_id|", "→|계정|id|account_id|없는 이메일이면 비움", "|시도 이메일|text|email|", "|성공 여부|bool|succeeded|", "|실패 사유|enum|failure_reason|안내 문구는 구분 안 함", "|시도 시각|datetime|attempted_at|"], 2, 40),
         E("pin", "비밀번호 재설정 핀", "password_reset_pins", "entity",
           ["#|핀 ID|id|pin_id|", "→|계정|id|account_id|", "|핀 검증값|hash|pin_hash|원본 저장 안 함", "|발급 시각|datetime|issued_at|1분 재발급 제한, 하루 10회", "|만료 시각|datetime|expires_at|10분", "|시도 횟수|int|attempt_count|5회", "|쿨다운 단계|int|cooldown_step|1·3·5분, 3회까지", "|쿨다운 해제 시각|datetime|cooldown_until|", "|사용 시각|datetime|used_at|"], 2, 312),
+        E("access_log", "위치정보 확인자료", "location_access_logs", "history",
+          ["#|확인자료 ID|id|access_log_id|", "→|계정|id|account_id|대상 직원", "|처리 구분|enum|action|수집·이용·제공", "|처리 일시|datetime|occurred_at|", "|수집 방법|text|method|기기 GPS · 휴대전화 안 판정", "|제공받는 자|text|recipient|제공일 때", "|제공 목적|text|purpose|제공일 때", "→|출퇴근 기록|id|attendance_id|있을 때 · 출퇴근 장"], 2, 608),
         E("admin", "관리자 계정", "customers", "ref", ["#|관리자 ID|id|admin_id|api customers 테이블", "→|BP|id|bp_id|", "|역할|enum|role|BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼"], 0, 560, "1팀 영역(환경설정·권한). api 저장소에서는 customers 테이블."),
     ],
     [
         R("account", "left", "identity", "right", "1", "N", "", at_a=120, at_b=120),
         R("account", "left", "session", "right", "1", "N", "", at_a=300, at_b=392, mid=328),
         R("account", "right", "login", "left", "1", "N", "", at_a=120, at_b=120),
-        R("account", "right", "pin", "left", "1", "N", "", at_a=300, at_b=412, mid=664),
+        R("account", "right", "pin", "left", "1", "N", "", at_a=240, at_b=412, mid=664),
+        R("account", "right", "access_log", "left", "1", "N", "", at_a=316, at_b=660, mid=648),
         R("account", "bottom", "change", "top", "1", "N", ""),
         R("admin", "right", "change", "left", "1", "N", "초기화 요청", at_a=604, at_b=604),
     ],
@@ -235,16 +238,16 @@ DIAGRAMS.append(Diagram(
 # ── 3. 근로계약 ───────────────────────────────────────────────────────────
 DIAGRAMS.append(Diagram(
     "contract", "근로계약", "근로계약",
-    "계약은 직원 레코드에 붙는다. 체결되면 고치지 않고 새 계약으로 대체한다. 계약서 데이터는 관리자 입력분·본인인증분·직원 입력분을 나눠 저장하고 발송 원본과 날인 완료본을 모두 보존한다.",
+    "계약은 직원 레코드에 붙는다. 체결되면 고치지 않고 새 계약으로 대체한다. 계약서 데이터는 관리자 입력분·본인인증분·직원 입력분을 나눠 저장하고 발송 원본과 날인 완료본을 모두 보존한다. 연장·야간·휴일 가산 적용 여부는 여기 두지 않는다 — 계약서 조항 「연장·야간·휴일 가산」은 근로기준법에 따라 가산한다는 일반 문구로 두고, 적용 여부는 급여명세서마다 정한다.",
     [
         E("staff_member", "직원 레코드", "staff_members", "entity",
           ["#|직원 레코드 ID|id|staff_member_id|", "→|점포|id|store_id|", "|재직 상태|enum|employment_status|"], 0, 40),
         ref_store(0, 232),
         ref_admin(0, 388),
         E("contract", "근로계약", "contracts", "focal",
-          ["#|근로계약 ID|id|contract_id|", "→|직원 레코드|id|staff_member_id|", "→|근무지|id|store_id|", "→|직전 계약|id|previous_contract_id|재계약일 때", "|계약 유형|enum|contract_type|정직원·파트타이머", "|계약 기간|date|start_on·end_on|종료일 비우면 무기한", "|근무 조건|json|work_terms|근무일·시작·종료·휴게", "|급여 조건|json|wage_terms|시급·월급·지급일", "|연장·야간 가산 적용 여부|bool|overtime_premium|5인 미만 미적용 가능", "|계약 상태|enum|status|발송 대기·서명 대기·체결 완료·거부·만료·종료", "|초안 처리 유형|enum|draft_action|가입 초대·소속 추가 확인·복귀 확인·즉시 발송", "|발송 일시|datetime|sent_at|", "|날인 기한|datetime|sign_due_at|발송일부터 30일", "|재발송 횟수|int|resend_count|", "|거부 사유|text|reject_reason|", "→|작성 관리자|id|created_by|"], 1, 40),
+          ["#|근로계약 ID|id|contract_id|", "→|직원 레코드|id|staff_member_id|", "→|근무지|id|store_id|", "→|직전 계약|id|previous_contract_id|재계약일 때", "|계약 유형|enum|contract_type|정직원·파트타이머", "|계약 기간|date|start_on·end_on|종료일 비우면 무기한", "|근무 조건|json|work_terms|근무일·시작·종료·휴게", "|급여 조건|json|wage_terms|시급·월급·지급일", "|계약 상태|enum|status|발송 대기·서명 대기·체결 완료·거부·만료·종료", "|초안 처리 유형|enum|draft_action|가입 초대·소속 추가 확인·복귀 확인·즉시 발송", "|발송 일시|datetime|sent_at|", "|날인 기한|datetime|sign_due_at|발송일부터 30일", "|재발송 횟수|int|resend_count|", "|거부 사유|text|reject_reason|", "→|작성 관리자|id|created_by|"], 1, 40),
         E("party", "계약 당사자 정보", "contract_parties", "entity",
-          ["#→|근로계약|id|contract_id|1:1", "|관리자 입력 이름·번호|text|admin_name·admin_phone|", "|본인인증 실명·생년월일|text|verified_name·birth_date|실명이 다르면 실명 반영", "|본인인증 휴대전화번호|text|verified_phone|", "|직원 입력 주소|text|address|", "|반영 일시|datetime|filled_at|가입 완료 시 채움"], 2, 40),
+          ["#→|근로계약|id|contract_id|1:1", "|관리자 입력 이름·번호|text|admin_name·admin_phone|", "|관리자 입력 생년월일|date|admin_birth_date|만 19세 미만 차단용", "|본인인증 실명·생년월일|text|verified_name·birth_date|실명이 다르면 실명 반영", "|본인인증 휴대전화번호|text|verified_phone|", "|직원 입력 주소|text|address|", "|반영 일시|datetime|filled_at|가입 완료 시 채움"], 2, 40),
         E("document", "계약서 파일", "contract_documents", "entity",
           ["#|파일 ID|id|document_id|", "→|근로계약|id|contract_id|", "|파일 구분|enum|kind|발송 원본·날인 완료본", "|저장 위치|text|storage_key|", "|파일 해시|hash|checksum|", "|생성 일시|datetime|created_at|"], 2, 276),
         E("status", "계약 상태 이력", "contract_status_histories", "history",
@@ -253,10 +256,10 @@ DIAGRAMS.append(Diagram(
     [
         R("staff_member", "right", "contract", "left", "1", "N", "", at_a=100, at_b=100),
         R("store", "right", "contract", "left", "1", "N", "근무지", at_a=288, at_b=288),
-        R("admin", "right", "contract", "left", "1", "N", "작성", at_a=412, at_b=412),
+        R("admin", "right", "contract", "left", "1", "N", "작성", at_a=412, at_b=388),
         R("contract", "right", "party", "left", "1", "1", "", at_a=120, at_b=120),
         R("contract", "right", "document", "left", "1", "N", "", at_a=356, at_b=356),
-        R("contract", "right", "status", "left", "1", "N", "", at_a=412, at_b=592, mid=664),
+        R("contract", "right", "status", "left", "1", "N", "", at_a=388, at_b=592, mid=664),
     ],
     [
         ("coral", "중심", "체결된 계약은 고치지 않는다", ["조건을 바꾸려면 새 계약을 만들고 직전 계약을 가리킨다", "같은 점포에 진행 중인 계약이 있으면 대체 여부를 묻는다", "근무 조건은 근무스케줄 등록 때 기본값으로 한 번 쓰인다"]),
@@ -268,7 +271,7 @@ DIAGRAMS.append(Diagram(
 # ── 4. 근무스케줄·출퇴근 ──────────────────────────────────────────────────
 DIAGRAMS.append(Diagram(
     "attendance", "근무스케줄·출퇴근", "근무스케줄과 출퇴근",
-    "근무스케줄은 관리자가 등록하고 확정한다. 출퇴근은 직원이 직원 근무 앱에서 GPS 판정으로 등록한다. 좌표는 저장하지 않고 판정 결과와 오차만 남기며, 보정은 원본과 분리해 이력으로 쌓는다.",
+    "근무스케줄은 관리자가 등록하고 확정한다. 출퇴근은 직원이 직원 근무 앱에서 GPS 판정으로 등록한다. 판정은 휴대전화에서 하고 좌표와 판정 결과(반경 안·밖, 오차)는 저장하지 않는다. 확인 필요 사유만 관리자 검토 때까지 남기며, 보정은 원본과 분리해 이력으로 쌓는다.",
     [
         E("schedule", "근무스케줄", "work_schedules", "entity",
           ["#|근무스케줄 ID|id|schedule_id|", "→|직원 레코드|id|staff_member_id|", "→|근무지|id|store_id|", "|근무 시작 일시|datetime|start_at|", "|근무 종료 일시|datetime|end_at|같은 직원 겹침 차단", "|휴게시간|int|break_minutes|", "|근무 유형|enum|work_type|오픈·미들·마감", "|확정 상태|enum|confirm_status|확정 전·확정", "→|기본값 근로계약|id|source_contract_id|등록 때 한 번 반영", "→|등록 관리자|id|created_by|"], 0, 40),
@@ -281,16 +284,16 @@ DIAGRAMS.append(Diagram(
         E("consent", "위치정보 동의", "location_consents", "entity",
           ["#|동의 ID|id|consent_id|", "→|계정|id|account_id|", "|동의 문구 버전|text|terms_version|", "|동의 일시|datetime|agreed_at|첫 출퇴근 등록 때", "|철회 일시|datetime|withdrawn_at|"], 1, 432),
         E("attendance", "출퇴근 기록", "attendance_records", "focal",
-          ["#|출퇴근 기록 ID|id|attendance_id|", "→|직원 레코드|id|staff_member_id|", "→|근무지|id|store_id|여럿이면 가장 가까운 곳", "|구분|enum|kind|출근·퇴근", "|기록 시각|datetime|recorded_at|기기 시각", "|서버 수신 시각|datetime|received_at|확정 기준", "|위치 판정 결과|enum|location_result|반경 안·확인 필요", "|판정 오차|int|accuracy_m|좌표는 저장 안 함", "|계약 미체결 경고|bool|unsigned_warning|경고 후 허용", "→|짝 출근 기록|id|clock_in_id|퇴근일 때"], 2, 40),
+          ["#|출퇴근 기록 ID|id|attendance_id|", "→|직원 레코드|id|staff_member_id|", "→|근무지|id|store_id|여럿이면 가장 가까운 곳", "|구분|enum|kind|출근·퇴근", "|기록 시각|datetime|recorded_at|기기 시각", "|서버 수신 시각|datetime|received_at|확정 기준", "|확인 필요 사유|enum|review_reason|오차 초과·반경 밖 퇴근·위치 조작, 검토 후 null", "→|검토 관리자|id|reviewed_by|보정 또는 이상 없음", "|검토 일시|datetime|reviewed_at|", "|등록 방식|enum|entry_method|직원 등록·대신 등록", "→|대신 등록 관리자|id|proxy_by|대신 등록일 때", "|대신 등록 사유|text|proxy_reason|대신 등록일 때 필수", "|계약 미체결 경고|bool|unsigned_warning|경고 후 허용", "→|짝 출근 기록|id|clock_in_id|퇴근일 때"], 2, 40),
         E("correction", "출퇴근 보정 이력", "attendance_corrections", "history",
-          ["#|보정 이력 ID|id|correction_id|", "→|출퇴근 기록|id|attendance_id|", "|수정 전 값|json|before_value|", "|수정 후 값|json|after_value|", "|수정 사유|text|reason|필수", "→|수정 관리자|id|corrected_by|최근 3개월만", "|수정 일시|datetime|corrected_at|"], 2, 368),
+          ["#|보정 이력 ID|id|correction_id|", "→|출퇴근 기록|id|attendance_id|", "|수정 전 값|json|before_value|", "|수정 후 값|json|after_value|", "|수정 사유|text|reason|필수", "→|수정 관리자|id|corrected_by|최근 3개월만", "|수정 일시|datetime|corrected_at|"], 2, 448),
         ref_store(3, 40, ["|좌표|geo|location|", "|근무지 반경|int|geofence_radius_m|기본 100m"]),
     ],
     [
         R("staff_member", "left", "schedule", "right", "1", "N", "", at_a=100, at_b=100),
         R("schedule", "bottom", "schedule_history", "top", "1", "N", ""),
         R("staff_member", "right", "attendance", "left", "1", "N", "", at_a=100, at_b=100),
-        R("store", "left", "attendance", "right", "1", "N", "반경 판정", at_a=132, at_b=132),
+        R("store", "left", "attendance", "right", "1", "N", "근무지", at_a=132, at_b=132),
         R("attendance", "bottom", "correction", "top", "1", "N", ""),
         R("staff_member", "bottom", "account", "top", "N", "0..1", ""),
         R("account", "bottom", "consent", "top", "1", "N", ""),
@@ -335,22 +338,22 @@ DIAGRAMS.append(Diagram(
 # ── 6. 급여명세서 ─────────────────────────────────────────────────────────
 DIAGRAMS.append(Diagram(
     "payroll", "급여명세서", "급여명세서",
-    "근로계약과 출퇴근 기록을 참조해 초안을 만든다. 지급 항목은 시스템 계산값과 관리자 수정값을 나눠 두고 공제 항목은 미입력과 0을 구분한다. 검토 대기 사유가 붙은 명세서도 확인하면 확정할 수 있다.",
+    "근로계약과 출퇴근 기록을 참조해 초안을 만든다. 지급 항목은 시스템 계산값과 관리자 수정값을 나눠 두고 공제 항목은 미입력과 0을 구분한다. 검토 대기 사유가 붙은 명세서도 확인하면 확정할 수 있다. 연장·야간·휴일 가산 적용 여부는 명세서마다 정한다. 5인 미만 사업장에는 근로기준법 제56조와 기간제법 제6조가 모두 걸리지 않아 셋을 한 스위치로 묶었다. 새 명세서는 같은 직원의 지난 명세서 값을 따르고 첫 명세서는 적용으로 시작하며, 끄면 연장수당을 계산하지 않고 야간·휴일수당도 가산 대상이 아니다.",
     [
         E("staff_member", "직원 레코드", "staff_members", "entity",
           ["#|직원 레코드 ID|id|staff_member_id|", "→|점포|id|store_id|", "|재직 상태|enum|employment_status|"], 0, 40),
         E("contract", "근로계약", "contracts", "entity",
-          ["#|근로계약 ID|id|contract_id|", "|급여 조건|json|wage_terms|", "|연장·야간 가산 적용 여부|bool|overtime_premium|"], 0, 232),
+          ["#|근로계약 ID|id|contract_id|", "|급여 조건|json|wage_terms|"], 0, 232),
         E("payslip", "급여명세서", "payslips", "focal",
-          ["#|급여명세서 ID|id|payslip_id|", "→|직원 레코드|id|staff_member_id|같은 기간 중복 생성 차단", "→|근무지|id|store_id|", "→|참조 근로계약|id|contract_id|계약 없으면 초안 없음", "|급여 기간|date|period_start·period_end|", "|계약 유형|enum|contract_type|", "|출퇴근 참조 기간|date|attendance_from·to|", "|명세서 상태|enum|status|작성 중·검토 중·확정·발송 완료", "|지급 총액|money|gross_pay|", "|공제 총액|money|total_deduction|", "|실지급액|money|net_pay|", "|확정 일시|datetime|confirmed_at|", "→|확정 관리자|id|confirmed_by|"], 1, 40),
+          ["#|급여명세서 ID|id|payslip_id|", "→|직원 레코드|id|staff_member_id|같은 기간 중복 생성 차단", "→|근무지|id|store_id|", "→|참조 근로계약|id|contract_id|계약 없으면 초안 없음", "|급여 기간|date|period_start·period_end|", "|계약 유형|enum|contract_type|", "|출퇴근 참조 기간|date|attendance_from·to|", "|명세서 상태|enum|status|작성 중·검토 중·확정·발송 완료", "|연장·야간·휴일 가산|bool|overtime_premium|적용 여부·명세서마다 정함", "|지급 총액|money|gross_pay|", "|공제 총액|money|total_deduction|", "|실지급액|money|net_pay|", "|확정 일시|datetime|confirmed_at|", "→|확정 관리자|id|confirmed_by|"], 1, 40),
         E("item", "명세서 금액 항목", "payslip_items", "entity",
           ["#|항목 ID|id|item_id|", "→|급여명세서|id|payslip_id|", "|항목 구분|enum|category|지급·공제", "|항목 코드|enum|code|기본급·주휴·연장·고정 수당·4대보험·소득세·지방소득세", "|시스템 계산값|money|calculated_amount|지급 항목만", "|관리자 수정값|money|adjusted_amount|", "|입력 여부|bool|entered|공제 미입력과 0 구분"], 2, 40),
         E("reason", "검토 대기 사유", "payslip_review_reasons", "entity",
           ["#|사유 ID|id|reason_id|", "→|급여명세서|id|payslip_id|", "|사유|enum|reason|출퇴근 누락·계약 만료 후 기록·기간 중 계약 변경·공제 미입력", "|상세|text|detail|누락 일수 등", "|확인 일시|datetime|acknowledged_at|"], 2, 312),
         E("dispatch", "명세서 발송 이력", "payslip_dispatches", "history",
           ["#|발송 이력 ID|id|dispatch_id|", "→|급여명세서|id|payslip_id|", "|발송 채널|enum|channel|이메일·앱 푸시", "|발송 상태|enum|status|", "|발송 시각|datetime|sent_at|", "→|발송자|id|sent_by|"], 1, 436),
-        E("payslip_status", "명세서 상태 이력", "payslip_status_histories", "history",
-          ["#|상태 이력 ID|id|history_id|", "→|급여명세서|id|payslip_id|", "|변경 전 상태|enum|from_status|", "|변경 후 상태|enum|to_status|확정 취소는 검토 중으로", "|처리 주체|id|changed_by|", "|변경 일시|datetime|changed_at|"], 0, 436),
+        E("payslip_status", "명세서 처리 이력", "payslip_logs", "history",
+          ["#|처리 이력 ID|id|log_id|", "→|급여명세서|id|payslip_id|", "|유형|enum|log_type|초안 생성·수정·확정·확정 취소·발송 (draft·edit·confirm·cancel·send)", "|변경 전 상태|enum|from_status|상태가 바뀐 경우만", "|변경 후 상태|enum|to_status|확정 취소는 검토 중으로", "|내용|text|summary|저장할 때 시스템이 만든 한 줄. 예: 연장수당 96,000원 → 128,000원", "|처리 주체|id|changed_by|", "|처리 일시|datetime|changed_at|"], 0, 436),
     ],
     [
         R("staff_member", "right", "payslip", "left", "1", "N", "", at_a=100, at_b=100),
@@ -394,7 +397,7 @@ DIAGRAMS.append(Diagram(
     [
         ("coral", "중심", "알림 하나, 수신 여럿", ["읽음은 사람마다 따로라 수신 행에 둔다", "같은 사건으로 같은 사람에게 두 번 만들지 않는다", "처리했는지는 알림이 아니라 원래 업무의 상태가 안다"]),
         ("ink", "", "채널과 보류", ["운영 알림은 알림함과 이메일, 모바일 푸시는 없다", "직원 알림은 앱 푸시가 기본이고 놓치면 안 되는 것은 알림톡으로 대체한다", "보류된 TO-DO 알림은 다음 근무일 아침에 묶어서 보낸다"]),
-        ("muted", "미정", "남은 결정", ["NOTI-1 근무시간 외의 기준 시각", "알림톡 대체 발송 범위와 발송 담당(업무 분배 미정)"]),
+        ("muted", "미정", "남은 결정", ["NOTI-1 근무시간 외의 기준 시각", "알림톡 대체 발송 범위와 템플릿 검수 범위(3팀)"]),
     ],
 ))
 
@@ -833,7 +836,7 @@ def readme():
          "- **관리자 역할과 권한 범위**는 1팀 권한 관리에서 정한다. 3팀 화면의 업무 범위는 그 결과를 따른다.", "",
          "## 아직 정하지 않은 것", "",
          "- 근무시간 외 알림 보류의 기준 시각 (NOTI-1)과 알림톡 대체 발송 범위",
-         "- 배치·알림·알림톡/SMS·메일 발송의 담당과 발송 이력·재시도 저장 위치 (업무 분배 미정)",
+         "- 배치·알림·알림톡/SMS·메일 발송의 대행사, 템플릿 검수, 발송 이력·재시도 저장 위치 (3팀 담당, 2026-09-17 배정)",
          "- 신고 정보를 내 정보에서 조회·수정하는 방법",
          "- 공유 TO-DO 수행자 이름 공개 (WORK-3), 연결 보류 안내 범위 (JOIN-3), 이메일을 못 받는 직원 (LOGIN-8)",
          "- 위치정보 동의·주민등록번호 처리의 법무 검토, 주휴·연장 계산식과 보존·파기 기준의 노무 검토", ""]

@@ -1,0 +1,1270 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BP 휴일 관리 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="config" data-sub="config/holidays.html">
+    <!-- BP 휴일 관리 (캘린더 · 목록) · /settings/holidays · S-YAFRYZ (F-YQTLQE BP 휴일 관리) · 1팀
+         보는 사람의 소속 BP(㈜한강상회)의 전체 점포 휴일과, 대상 점포 중 한 곳이라도 접근 범위 안인 특정 점포 휴일만 보인다. 다른 BP·범위 밖 점포만의 휴일은 아예 나오지 않는다.
+         플랫폼 사용자(플랫폼 마스터·관리자)는 화면 상단에서 BP 를 고르면 그 BP 의 휴일을 BP 마스터와 같은 범위로 조회·등록·수정·삭제·예외 점포 지정 한다(메뉴 권한 필요). 목업 권한 ‘플랫폼 관리자’는 ㈜한강상회를 고른 상태다.
+         들어오면 이번 달(2026년 9월) 캘린더다. 위 조작 줄은 플랫폼 휴일 관리(system/holidays.html)와 같다 — 오늘 · 이전달 · 다음달 · 연도·월 선택 · 캘린더/목록 전환.
+         조회 기간 검색 조건은 없다. 기간은 조작 줄에서 고른 달 하나이고, 캘린더와 목록 모두 월 단위다.
+         연도 선택은 플랫폼 휴일 관리와 같이 2000년부터 2100년까지다 — 공식 휴일이 있는 범위와 같다 (CONFIG-8 · 확정 2026-09-30).
+         목록은 플랫폼 휴일 관리(목록 = 고른 연도 한 해)와 달리 고른 달의 BP 휴일만 싣는다 — 그래서 목록 보기에서도 이전달 · 다음달 · 월 선택이 그대로 선다.
+         검색 조건은 휴일명(포함) 하나다. 점포 검색 필터와 적용 범위 검색은 두지 않는다 — 두 보기 모두 보는 사람의 접근 범위 안 점포 휴일만 싣는다.
+         휴일은 규칙 한 건(하루 · 기간 · 반복)이고, 캘린더와 목록의 날짜는 고른 달 안에서 규칙으로 계산한다. 목록은 계산한 날짜마다 한 줄이다.
+         목록 열은 날짜(요일) · 휴일명 · 적용 대상 · 휴일 유형 · 최종 수정이다. 적용 대상은 ‘전체 점포’(예외가 있으면 ‘예외 N곳’을 붙인다) 또는 점포명(여러 곳이면 ‘첫 점포명 외 N곳’, 보는 사람 범위 안 점포만 센다)이다.
+         휴일 유형은 하루 · 기간(‘n일 중 m일째’) · 반복 요약(매주 · 월요일, 매년 · 10월 1일 등)이다. 표본에는 예외 점포 · 여러 점포 · 기간 휴일이 없다.
+         공식 휴일은 목록의 줄이 아니다 — 캘린더에서 날짜를 빨갛게 칠하고 휴일명을 적는 표시용이며, 플랫폼 공식 휴일 테이블(system/holidays.html 과 같은 값)에서 읽는다. BP·점포 휴일과 별개다.
+         특정 점포 휴일은 한 휴일에 여러 점포를 묶을 수 있고, 전체 점포 휴일은 예외 점포를 둘 수 있다 — 예외 점포는 그 휴일의 모든 날짜에서 빠진다.
+         휴일 등록 · 상세 · 수정은 화면을 옮기지 않고 팝업으로 연다(app.js data-pagepop — 각 화면 파일을 팝업 안에 싣는다). 상세에서 수정으로, 수정 저장 뒤 상세로 가는 흐름은 팝업 안에서 이어진다.
+         캘린더는 BP 휴일이 있는 날짜에 건수 배지를 단다. 날짜를 누르면 오른쪽에 그날의 BP 휴일을 ‘휴일명 - 적용 대상명’으로 모두 보인다 — 전체 점포 휴일의 대상명은 BP 상호, 특정 점포 휴일은 점포명(여러 곳이면 보는 사람 범위 안 점포명).
+         10-01 은 전체 점포 휴일(창립기념일)과 특정 점포 휴일(광화문점 오후 휴무)이 겹치는 표본이다. 둘 다 보이고 광화문점 업무에는 특정 점포 휴일이 우선한다.
+         목록의 줄이나 캘린더 우측 항목을 누르면 상세로 간다. 수정·삭제는 상세에서만 한다 — 목록에는 수정·삭제 실행 항목이 없다(사용자 확정 규칙).
+         지난 날짜 휴일은 흐린 줄 + ‘지난 날짜’ 꼬리표로 수정·삭제할 수 없음을 미리 알린다. 전체 점포 휴일을 바꿀 수 없는 사람에게는 ‘조회만’ 꼬리표를 단다.
+         휴일 등록 버튼은 등록 권한이 있는 사람(BP 마스터·BP 관리자·가맹 마스터·가맹 관리자·플랫폼 사용자)에게만 보인다. 조회만 권한은 버튼이 없다.
+         변경 이력 보기는 팝업이다 — 고른 기간의 등록·수정·삭제를 날짜별로 묶고, 삭제된 휴일은 여기서만 보인다.
+         폐점한 점포는 폐점일 다음 날부터 적용 대상에서 빠지고, 그 점포만 대상으로 하던 휴일은 목록·캘린더에서 감춘다 — 표본 점포는 모두 운영 중이라 감춰진 줄이 없다.
+         반복 휴일의 다른 날짜(HD-0114 의 다른 월요일)는 표본 상세(고른 날짜 2026-09-28)로 간다. HD 번호는 목업 표본이다.
+         2026년 8월은 표본 BP 휴일이 없는 달이다(정기휴무 HD-0114 는 09-21 부터) — 목록의 빈 달 표본이다. 8월 캘린더는 그리지 않았다.
+         목업 권한의 메뉴 권한은 BP 휴일 관리 조회·등록·수정·삭제를 모두 가진 것으로 가정한다(조회만 제외). 조회만은 전체 점포 범위로 둔다.
+
+         확정 (2026-09-29)
+         - 수정·삭제는 상세 팝업에서만 한다. 목록 · 캘린더 우측 목록의 줄에는 실행 항목이 없다.
+         - 휴일명 검색은 두 보기 모두에 걸린다 — 캘린더 배지 · 우측 목록도 맞는 휴일만 남는다. 공식 휴일 빨간 표시는 검색과 무관하다.
+         - 변경 이력 보기는 이력이 생긴 일시로 찾고 기본 기간은 이달 1일~오늘이다.
+         - 목록과 우측 목록은 날짜순이고, 같은 날짜에 여러 건이면 등록 순서다.
+         - 보는 동안 다른 사람이 바꾼 내용은 달 이동 · 검색 · 팝업을 닫을 때 다시 조회하며 반영한다. 실시간 감지는 없다.
+         - 폐점 점포만 대상인 휴일은 폐점일 다음 날부터만 감춘다 — 폐점일까지의 날짜는 계속 보인다.
+         - 조회 권한이 없으면 전 메뉴 공통 규칙(PL-AMTMVC)을 따른다 — 메뉴를 숨기고, 주소로 들어오면 권한 없음 안내 화면을 보인다.
+         - 캘린더 앞뒤 달 칸은 비운다 (플랫폼 휴일 캘린더와 같다). -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <h1 class="t-h1">BP 휴일 관리</h1>
+          <span class="badge badge--warn">1팀 작업</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">S-YAFRYZ · /settings/holidays</span>
+            <button type="button" class="btn btn--primary btn--sm" onclick="window.open('./config-holidays.screen-def.html', 'screenDef', 'width=1620,height=900')"><span data-icon="clipboard" data-icon-size="14"></span>화면정의서</button>
+          </div>
+        </div>
+
+        <div class="content" id="hl">
+          <div class="stack">
+            <div class="demo" data-demo="hl" data-demo-key="role">
+              <b>목업 권한</b>
+              <div class="seg">
+                <button type="button" data-state="bm" aria-pressed="true">BP 마스터 · hangang01</button>
+                <button type="button" data-state="pf" aria-pressed="false">플랫폼 관리자 · ㈜한강상회 선택</button>
+                <button type="button" data-state="ba" aria-pressed="false">BP 관리자 · 전체 점포 · hgops</button>
+                <button type="button" data-state="bp" aria-pressed="false">BP 관리자 · 일부 점포(직영 4) · hghr</button>
+                <button type="button" data-state="fm" aria-pressed="false">가맹 마스터 · morinam01</button>
+                <button type="button" data-state="view" aria-pressed="false">조회만</button>
+              </div>
+            </div>
+            <div class="demo" data-demo="hl">
+              <b>목업 상태</b>
+              <div class="seg">
+                <button type="button" data-state="base" aria-pressed="true">9월 캘린더 · 처음 진입 · 오늘(21일)</button>
+                <button type="button" data-state="day0910" aria-pressed="false">9월 10일 · 지난 날짜</button>
+                <button type="button" data-state="day0923" aria-pressed="false">9월 23일 · 휴일 없는 날</button>
+                <button type="button" data-state="day0925" aria-pressed="false">9월 25일 · 공식 휴일과 겹침</button>
+                <button type="button" data-state="day0929" aria-pressed="false">9월 29일 · 가맹 점포 휴일</button>
+                <button type="button" data-state="day1001" aria-pressed="false">10월 1일 · 전체·특정 겹침</button>
+                <button type="button" data-state="named" aria-pressed="false">캘린더 · 휴일명 ‘휴무’</button>
+                <button type="button" data-state="empty" aria-pressed="false">캘린더 · 검색 결과 없음</button>
+                <button type="button" data-state="deleted" aria-pressed="false">캘린더 · 창립기념일 삭제 직후</button>
+                <button type="button" data-state="list" aria-pressed="false">9월 목록</button>
+                <button type="button" data-state="listoct" aria-pressed="false">10월 목록 · 전체·특정 겹침</button>
+                <button type="button" data-state="listaug" aria-pressed="false">8월 목록 · BP 휴일 없는 달</button>
+                <button type="button" data-state="namedlist" aria-pressed="false">목록 · 휴일명 ‘휴무’</button>
+                <button type="button" data-state="emptylist" aria-pressed="false">목록 · 검색 결과 없음</button>
+                <button type="button" data-state="deletedlist" aria-pressed="false">10월 목록 · 창립기념일 삭제 직후</button>
+                <button type="button" data-state="noauth" aria-pressed="false">조회 권한 없음</button>
+              </div>
+            </div>
+          </div>
+
+          <p class="note" data-show-role="pf" hidden>
+            <span data-icon="info" data-icon-size="14"></span>
+            <span>플랫폼 관리자는 화면 상단에서 BP 를 ㈜한강상회로 고른 상태다. 그 BP 의 휴일을 BP 마스터와 같은 범위로 보고, 전체 점포 휴일과 예외 점포도 다룬다.</span>
+          </p>
+
+          <section class="panel" data-show="noauth" hidden>
+            <div class="empty">
+              <span class="empty__ic" data-icon="lock" data-icon-size="22"></span>
+              <p>이 화면을 볼 권한이 없습니다. BP 휴일 관리 조회 권한이 필요합니다.</p>
+              <a class="btn btn--secondary btn--sm" href="../home/index.html">홈으로 가기</a>
+            </div>
+          </section>
+
+          <div class="band band--info" data-show="deleted deletedlist" hidden>
+            <span class="band__ic" data-icon="check" data-icon-size="20"></span>
+            <div class="band__body">
+              <div class="band__title">창립기념일을 삭제했습니다 · 2026-10-01 부터 이후 모두</div>
+              <!-- 실제로는 완료 토스트다 — 목업은 띠로 대신 그렸다. 달 · 보기 · 검색어 · 고른 날짜는 팝업을 열기 전 그대로(10월)다. -->
+              <p class="band__desc">고른 날짜가 이 반복의 첫 날짜라 남는 날짜가 없어 휴일 자체를 삭제했습니다. 목록·캘린더와 운영 적용 대상에서 빠졌고, 삭제 기록은 변경 이력 보기에 남습니다.</p>
+            </div>
+          </div>
+
+          <!-- 검색 조건 — 휴일명 하나. 조회 기간은 없고 기간은 아래 조작 줄에서 고른 달이다 -->
+          <section class="panel" data-show="base day0910 day0923 day0925 day0929 day1001 named empty deleted list listoct listaug namedlist emptylist deletedlist">
+            <div class="panel__head" style="flex-wrap: wrap; border-bottom: 0">
+              <label for="q-name" style="font-size: 13px; font-weight: 500">휴일명</label>
+              <div class="inputwrap" style="width: 280px">
+                <span data-icon="search" data-icon-size="15"></span>
+                <input class="input" id="q-name" placeholder="일부만 입력해도 찾습니다" data-show="base day0910 day0923 day0925 day0929 day1001 deleted list listoct listaug deletedlist" />
+                <input class="input" value="휴무" aria-label="휴일명" data-show="named namedlist" hidden />
+                <input class="input" value="창립" aria-label="휴일명" data-show="empty emptylist" hidden />
+              </div>
+              <button class="btn btn--primary" type="button">검색</button>
+              <span class="subtle" style="font-size: 12px">㈜한강상회 · 접근할 수 있는 점포의 휴일만 · 캘린더 배지와 목록에 함께 걸립니다</span>
+            </div>
+          </section>
+
+          <!-- 상단 조작 줄 — 오늘 · 이전달 · 다음달 · 연도·월 · 보기 전환 (system/holidays.html 과 같은 줄). 목록도 월 단위라 목록 보기에서도 달 이동이 선다 -->
+          <section class="panel" data-show="base day0910 day0923 day0925 day0929 day1001 named empty deleted list listoct listaug namedlist emptylist deletedlist">
+            <div class="panel__head" style="flex-wrap: wrap; border-bottom: 0">
+              <button class="btn btn--secondary btn--sm" type="button" data-state-go="base" data-show="base day0910 day0923 day0925 day0929 day1001 named empty deleted">오늘</button>
+              <button class="btn btn--secondary btn--sm" type="button" data-state-go="list" data-show="list listoct listaug namedlist emptylist deletedlist" hidden>오늘</button>
+              <div class="inline" style="gap: 4px; flex-wrap: nowrap">
+                <button class="iconbtn" type="button" aria-label="이전달" data-icon="left" data-icon-size="16" data-show="base day0910 day0923 day0925 day0929 named empty namedlist emptylist listaug"></button>
+                <button class="iconbtn" type="button" aria-label="이전달" data-icon="left" data-icon-size="16" data-state-go="base" data-show="day1001 deleted" hidden></button>
+                <button class="iconbtn" type="button" aria-label="이전달" data-icon="left" data-icon-size="16" data-state-go="listaug" data-show="list" hidden></button>
+                <button class="iconbtn" type="button" aria-label="이전달" data-icon="left" data-icon-size="16" data-state-go="list" data-show="listoct deletedlist" hidden></button>
+                <button class="iconbtn" type="button" aria-label="다음달" data-icon="right" data-icon-size="16" data-state-go="day1001" data-show="base day0910 day0923 day0925 day0929 named empty"></button>
+                <button class="iconbtn" type="button" aria-label="다음달" data-icon="right" data-icon-size="16" data-state-go="listoct" data-show="list namedlist emptylist" hidden></button>
+                <button class="iconbtn" type="button" aria-label="다음달" data-icon="right" data-icon-size="16" data-state-go="list" data-show="listaug" hidden></button>
+                <button class="iconbtn" type="button" aria-label="다음달" data-icon="right" data-icon-size="16" data-show="day1001 deleted listoct deletedlist" hidden></button>
+              </div>
+              <div class="inline" style="gap: 6px; flex-wrap: nowrap">
+                <select class="select select--sm" aria-label="연도" style="width: 96px">
+                  <option>2000년</option>
+                  <option>…</option>
+                  <option>2025년</option>
+                  <option selected>2026년</option>
+                  <option>2027년</option>
+                  <option>…</option>
+                  <option>2100년</option>
+                </select>
+                <select class="select select--sm" aria-label="월" style="width: 80px" data-show="listaug" hidden>
+                  <option>7월</option>
+                  <option selected>8월</option>
+                  <option>9월</option>
+                </select>
+                <select class="select select--sm" aria-label="월" style="width: 80px" data-show="base day0910 day0923 day0925 day0929 named empty list namedlist emptylist">
+                  <option>8월</option>
+                  <option selected>9월</option>
+                  <option>10월</option>
+                </select>
+                <select class="select select--sm" aria-label="월" style="width: 80px" data-show="day1001 deleted listoct deletedlist" hidden>
+                  <option>9월</option>
+                  <option selected>10월</option>
+                  <option>11월</option>
+                </select>
+              </div>
+              <span class="subtle" style="font-size: 12px" data-show="list listoct listaug namedlist emptylist deletedlist" hidden>목록도 고른 달 한 달을 보여 줍니다</span>
+              <div class="panel__end">
+                <div class="seg" role="group" aria-label="보기 방식" data-show="base day0910 day0923 day0925 day0929 day1001 named empty deleted">
+                  <button type="button" style="display: inline-flex; align-items: center; gap: 6px" aria-pressed="true"><span data-icon="calendar" data-icon-size="13"></span> 캘린더</button>
+                  <button type="button" style="display: inline-flex; align-items: center; gap: 6px" aria-pressed="false" data-state-go="list" data-show="base day0910 day0923 day0925 day0929"><span data-icon="list" data-icon-size="13"></span> 목록</button>
+                  <button type="button" style="display: inline-flex; align-items: center; gap: 6px" aria-pressed="false" data-state-go="listoct" data-show="day1001" hidden><span data-icon="list" data-icon-size="13"></span> 목록</button>
+                  <button type="button" style="display: inline-flex; align-items: center; gap: 6px" aria-pressed="false" data-state-go="namedlist" data-show="named" hidden><span data-icon="list" data-icon-size="13"></span> 목록</button>
+                  <button type="button" style="display: inline-flex; align-items: center; gap: 6px" aria-pressed="false" data-state-go="emptylist" data-show="empty" hidden><span data-icon="list" data-icon-size="13"></span> 목록</button>
+                  <button type="button" style="display: inline-flex; align-items: center; gap: 6px" aria-pressed="false" data-state-go="deletedlist" data-show="deleted" hidden><span data-icon="list" data-icon-size="13"></span> 목록</button>
+                </div>
+                <div class="seg" role="group" aria-label="보기 방식" data-show="list listoct listaug namedlist emptylist deletedlist" hidden>
+                  <button type="button" style="display: inline-flex; align-items: center; gap: 6px" aria-pressed="false" data-state-go="base" data-show="list" hidden><span data-icon="calendar" data-icon-size="13"></span> 캘린더</button>
+                  <button type="button" style="display: inline-flex; align-items: center; gap: 6px" aria-pressed="false" data-state-go="day1001" data-show="listoct" hidden><span data-icon="calendar" data-icon-size="13"></span> 캘린더</button>
+                  <button type="button" style="display: inline-flex; align-items: center; gap: 6px" aria-pressed="false" data-show="listaug" hidden><span data-icon="calendar" data-icon-size="13"></span> 캘린더</button>
+                  <button type="button" style="display: inline-flex; align-items: center; gap: 6px" aria-pressed="false" data-state-go="named" data-show="namedlist" hidden><span data-icon="calendar" data-icon-size="13"></span> 캘린더</button>
+                  <button type="button" style="display: inline-flex; align-items: center; gap: 6px" aria-pressed="false" data-state-go="empty" data-show="emptylist" hidden><span data-icon="calendar" data-icon-size="13"></span> 캘린더</button>
+                  <button type="button" style="display: inline-flex; align-items: center; gap: 6px" aria-pressed="false" data-state-go="deleted" data-show="deletedlist" hidden><span data-icon="calendar" data-icon-size="13"></span> 캘린더</button>
+                  <button type="button" style="display: inline-flex; align-items: center; gap: 6px" aria-pressed="true"><span data-icon="list" data-icon-size="13"></span> 목록</button>
+                </div>
+                <button class="btn btn--secondary btn--sm" type="button" data-open="pop-hist"><span data-icon="clock" data-icon-size="14"></span>변경 이력 보기</button>
+                <a class="btn btn--primary btn--sm" href="holidays-new.html" data-pagepop data-show-role="bm pf ba bp fm"><span data-icon="plus" data-icon-size="14"></span>휴일 등록</a>
+              </div>
+            </div>
+          </section>
+
+          <!-- 캘린더 보기 — 월간 캘린더 + 고른 날짜의 BP 휴일 -->
+          <div class="grid grid--8-4" style="align-items: start" data-show="base day0910 day0923 day0925 day0929 day1001 named empty deleted">
+            <section class="panel">
+              <div class="panel__head" style="flex-wrap: wrap">
+                <h2 class="t-h2"><span data-show="base day0910 day0923 day0925 day0929 named empty">2026년 9월</span><span data-show="day1001 deleted" hidden>2026년 10월</span></h2>
+                <div class="panel__end legend">
+                  <span><i style="background: var(--risk-text)"></i>공식 휴일 · 플랫폼 공식 휴일</span>
+                  <span><i style="background: var(--info)"></i>BP 휴일 건수 배지</span>
+                  <span><i style="background: var(--ink)"></i>선택한 날짜 · 오늘 <span class="mono">2026-09-21</span></span>
+                </div>
+              </div>
+            <div class="panel__body" data-show="base">
+              <table style="width: 100%; border-collapse: collapse; table-layout: fixed" aria-label="2026년 9월 BP 휴일 캘린더">
+                <thead>
+                  <tr><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">일</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">월</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">화</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">수</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">목</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">금</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">토</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">2</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">3</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">4</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">5</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">6</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">7</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">8</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">9</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><button type="button" data-state-go="day0910" aria-label="9월 10일 휴일 보기" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="color: var(--ink); font-size: 13px">10</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">11</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">12</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">13</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">14</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">15</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">16</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">17</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">18</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">19</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">20</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); box-shadow: inset 0 0 0 2px var(--ink);"><button type="button" data-state-go="base" aria-label="9월 21일 휴일 보기" aria-pressed="true" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; padding: 0 6px; border-radius: var(--r-pill); background: var(--ink); color: var(--on-dark); font-weight: 600; font-size: 12.5px" aria-label="오늘">21</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">22</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><button type="button" data-state-go="day0923" aria-label="9월 23일 휴일 보기" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="color: var(--ink); font-size: 13px">23</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">24</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><button type="button" data-state-go="day0925" aria-label="9월 25일 휴일 보기" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">25</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span><span class="badge badge--info" title="BP 휴일 1건"><span data-icon="calendar" data-icon-size="11"></span>1</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">26</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">27</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">28</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">대체공휴일</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><button type="button" data-state-go="day0929" aria-label="9월 29일 휴일 보기" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="color: var(--ink); font-size: 13px">29</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba fm view"><span data-icon="calendar" data-icon-size="11"></span>1</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">30</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="panel__body" data-show="day0910" hidden>
+              <table style="width: 100%; border-collapse: collapse; table-layout: fixed" aria-label="2026년 9월 BP 휴일 캘린더">
+                <thead>
+                  <tr><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">일</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">월</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">화</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">수</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">목</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">금</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">토</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">2</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">3</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">4</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">5</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">6</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">7</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">8</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">9</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); box-shadow: inset 0 0 0 2px var(--ink);"><button type="button" data-state-go="day0910" aria-label="9월 10일 휴일 보기" aria-pressed="true" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="color: var(--ink); font-size: 13px">10</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">11</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">12</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">13</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">14</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">15</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">16</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">17</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">18</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">19</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">20</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><button type="button" data-state-go="base" aria-label="9월 21일 휴일 보기" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; padding: 0 6px; border-radius: var(--r-pill); background: var(--ink); color: var(--on-dark); font-weight: 600; font-size: 12.5px" aria-label="오늘">21</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">22</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><button type="button" data-state-go="day0923" aria-label="9월 23일 휴일 보기" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="color: var(--ink); font-size: 13px">23</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">24</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><button type="button" data-state-go="day0925" aria-label="9월 25일 휴일 보기" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">25</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span><span class="badge badge--info" title="BP 휴일 1건"><span data-icon="calendar" data-icon-size="11"></span>1</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">26</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">27</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">28</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">대체공휴일</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><button type="button" data-state-go="day0929" aria-label="9월 29일 휴일 보기" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="color: var(--ink); font-size: 13px">29</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba fm view"><span data-icon="calendar" data-icon-size="11"></span>1</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">30</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="panel__body" data-show="day0923" hidden>
+              <table style="width: 100%; border-collapse: collapse; table-layout: fixed" aria-label="2026년 9월 BP 휴일 캘린더">
+                <thead>
+                  <tr><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">일</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">월</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">화</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">수</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">목</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">금</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">토</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">2</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">3</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">4</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">5</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">6</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">7</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">8</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">9</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><button type="button" data-state-go="day0910" aria-label="9월 10일 휴일 보기" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="color: var(--ink); font-size: 13px">10</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">11</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">12</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">13</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">14</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">15</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">16</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">17</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">18</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">19</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">20</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><button type="button" data-state-go="base" aria-label="9월 21일 휴일 보기" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; padding: 0 6px; border-radius: var(--r-pill); background: var(--ink); color: var(--on-dark); font-weight: 600; font-size: 12.5px" aria-label="오늘">21</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">22</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); box-shadow: inset 0 0 0 2px var(--ink);"><button type="button" data-state-go="day0923" aria-label="9월 23일 휴일 보기" aria-pressed="true" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="color: var(--ink); font-size: 13px">23</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">24</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><button type="button" data-state-go="day0925" aria-label="9월 25일 휴일 보기" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">25</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span><span class="badge badge--info" title="BP 휴일 1건"><span data-icon="calendar" data-icon-size="11"></span>1</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">26</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">27</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">28</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">대체공휴일</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><button type="button" data-state-go="day0929" aria-label="9월 29일 휴일 보기" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="color: var(--ink); font-size: 13px">29</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba fm view"><span data-icon="calendar" data-icon-size="11"></span>1</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">30</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="panel__body" data-show="day0925" hidden>
+              <table style="width: 100%; border-collapse: collapse; table-layout: fixed" aria-label="2026년 9월 BP 휴일 캘린더">
+                <thead>
+                  <tr><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">일</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">월</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">화</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">수</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">목</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">금</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">토</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">2</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">3</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">4</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">5</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">6</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">7</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">8</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">9</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><button type="button" data-state-go="day0910" aria-label="9월 10일 휴일 보기" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="color: var(--ink); font-size: 13px">10</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">11</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">12</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">13</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">14</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">15</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">16</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">17</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">18</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">19</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">20</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><button type="button" data-state-go="base" aria-label="9월 21일 휴일 보기" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; padding: 0 6px; border-radius: var(--r-pill); background: var(--ink); color: var(--on-dark); font-weight: 600; font-size: 12.5px" aria-label="오늘">21</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">22</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><button type="button" data-state-go="day0923" aria-label="9월 23일 휴일 보기" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="color: var(--ink); font-size: 13px">23</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">24</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash); box-shadow: inset 0 0 0 2px var(--ink);"><button type="button" data-state-go="day0925" aria-label="9월 25일 휴일 보기" aria-pressed="true" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">25</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span><span class="badge badge--info" title="BP 휴일 1건"><span data-icon="calendar" data-icon-size="11"></span>1</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">26</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">27</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">28</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">대체공휴일</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><button type="button" data-state-go="day0929" aria-label="9월 29일 휴일 보기" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="color: var(--ink); font-size: 13px">29</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba fm view"><span data-icon="calendar" data-icon-size="11"></span>1</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">30</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="panel__body" data-show="day0929" hidden>
+              <table style="width: 100%; border-collapse: collapse; table-layout: fixed" aria-label="2026년 9월 BP 휴일 캘린더">
+                <thead>
+                  <tr><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">일</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">월</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">화</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">수</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">목</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">금</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">토</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">2</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">3</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">4</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">5</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">6</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">7</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">8</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">9</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><button type="button" data-state-go="day0910" aria-label="9월 10일 휴일 보기" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="color: var(--ink); font-size: 13px">10</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">11</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">12</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">13</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">14</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">15</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">16</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">17</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">18</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">19</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">20</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><button type="button" data-state-go="base" aria-label="9월 21일 휴일 보기" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; padding: 0 6px; border-radius: var(--r-pill); background: var(--ink); color: var(--on-dark); font-weight: 600; font-size: 12.5px" aria-label="오늘">21</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">22</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><button type="button" data-state-go="day0923" aria-label="9월 23일 휴일 보기" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="color: var(--ink); font-size: 13px">23</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">24</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><button type="button" data-state-go="day0925" aria-label="9월 25일 휴일 보기" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">25</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span><span class="badge badge--info" title="BP 휴일 1건"><span data-icon="calendar" data-icon-size="11"></span>1</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">26</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">27</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">28</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">대체공휴일</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); box-shadow: inset 0 0 0 2px var(--ink);"><button type="button" data-state-go="day0929" aria-label="9월 29일 휴일 보기" aria-pressed="true" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="color: var(--ink); font-size: 13px">29</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba fm view"><span data-icon="calendar" data-icon-size="11"></span>1</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">30</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="panel__body" data-show="named" hidden>
+              <table style="width: 100%; border-collapse: collapse; table-layout: fixed" aria-label="2026년 9월 BP 휴일 캘린더">
+                <thead>
+                  <tr><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">일</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">월</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">화</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">수</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">목</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">금</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">토</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">2</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">3</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">4</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">5</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">6</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">7</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">8</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">9</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">10</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">11</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">12</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">13</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">14</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">15</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">16</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">17</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">18</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">19</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">20</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); box-shadow: inset 0 0 0 2px var(--ink);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; padding: 0 6px; border-radius: var(--r-pill); background: var(--ink); color: var(--on-dark); font-weight: 600; font-size: 12.5px" aria-label="오늘">21</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">22</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">23</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">24</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">25</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span><span class="badge badge--info" title="BP 휴일 1건"><span data-icon="calendar" data-icon-size="11"></span>1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">26</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">27</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">28</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">대체공휴일</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">29</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">30</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="panel__body" data-show="empty" hidden>
+              <table style="width: 100%; border-collapse: collapse; table-layout: fixed" aria-label="2026년 9월 BP 휴일 캘린더">
+                <thead>
+                  <tr><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">일</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">월</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">화</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">수</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">목</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">금</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">토</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">2</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">3</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">4</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">5</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">6</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">7</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">8</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">9</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">10</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">11</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">12</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">13</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">14</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">15</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">16</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">17</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">18</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">19</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">20</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); box-shadow: inset 0 0 0 2px var(--ink);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; padding: 0 6px; border-radius: var(--r-pill); background: var(--ink); color: var(--on-dark); font-weight: 600; font-size: 12.5px" aria-label="오늘">21</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">22</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">23</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">24</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">25</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">26</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">추석</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">27</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">28</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">대체공휴일</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">29</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">30</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="panel__body" data-show="day1001" hidden>
+              <table style="width: 100%; border-collapse: collapse; table-layout: fixed" aria-label="2026년 10월 BP 휴일 캘린더">
+                <thead>
+                  <tr><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">일</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">월</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">화</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">수</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">목</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">금</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">토</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); box-shadow: inset 0 0 0 2px var(--ink);"><button type="button" data-state-go="day1001" aria-label="10월 1일 휴일 보기" aria-pressed="true" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="color: var(--ink); font-size: 13px">1</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="fm" hidden><span data-icon="calendar" data-icon-size="11"></span>1</span><span class="badge badge--info" title="BP 휴일 2건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>2</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">2</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">3</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">개천절</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">4</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">5</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">대체공휴일</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">6</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">7</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">8</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">9</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">한글날</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">10</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">11</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">12</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">13</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">14</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">15</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">16</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">17</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">18</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">19</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">20</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">21</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">22</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">23</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">24</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">25</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">26</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">27</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">28</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">29</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">30</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">31</span></div></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="panel__body" data-show="deleted" hidden>
+              <table style="width: 100%; border-collapse: collapse; table-layout: fixed" aria-label="2026년 10월 BP 휴일 캘린더">
+                <thead>
+                  <tr><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">일</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">월</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">화</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">수</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">목</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">금</th><th scope="col" style="padding: 8px 10px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted-tert); border-bottom: 1px solid var(--hairline-strong)">토</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--canvas-soft)"></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); box-shadow: inset 0 0 0 2px var(--ink);"><button type="button" data-state-go="deleted" aria-label="10월 1일 휴일 보기" aria-pressed="true" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 78px; padding: 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer"><span class="mono" style="color: var(--ink); font-size: 13px">1</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></button></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">2</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">3</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">개천절</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">4</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">5</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">대체공휴일</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">6</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">7</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">8</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline); background: var(--risk-wash);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--risk-text); font-weight: 600; font-size: 13px">9</span><span style="font-size: 12px; font-weight: 500; color: var(--risk-text)">한글날</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">10</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">11</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">12</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">13</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">14</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">15</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">16</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">17</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">18</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">19</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">20</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">21</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">22</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">23</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">24</span></div></td>
+                  </tr>
+                  <tr>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">25</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">26</span><span class="badge badge--info" title="BP 휴일 1건" data-show-role="bm pf ba bp view"><span data-icon="calendar" data-icon-size="11"></span>1</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">27</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">28</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">29</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">30</span></div></td>
+                    <td style="height: 92px; padding: 6px 8px; vertical-align: top; border-bottom: 1px solid var(--hairline); border-left: 1px solid var(--hairline);"><div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px"><span class="mono" style="color: var(--ink); font-size: 13px">31</span></div></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+              <div class="panel__note">날짜를 누르면 오른쪽에 그날의 BP 휴일이 모두 나옵니다. 빨간 날짜와 휴일명은 플랫폼 공식 휴일로, 달력 표시용이며 BP 휴일 데이터가 아닙니다.</div>
+            </section>
+            <section class="panel" style="align-self: start" data-show="base">
+              <div class="panel__head">
+                <h2 class="t-h2">9월 21일 (월)</h2>
+                <span class="badge badge--quiet" data-show-role="fm" hidden>0건</span><span class="badge badge--quiet" data-show-role="bm pf ba bp view">1건</span>
+                <span class="subtle" style="font-size: 12px">휴일명 - 적용 대상</span>
+              </div>
+              <div class="rows rows--hover" data-show-role="bm pf ba bp view">
+                <a class="row" href="holidays-detail.html?state=hd0114" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none" data-show-role="bm pf ba bp view">
+                  <span class="badge badge--quiet">특정 점포</span>
+                  <span class="stack" style="gap: 3px; min-width: 0">
+                    <b style="font-size: 13px; font-weight: 600">정기휴무 - 온기식당 판교점</b>
+                    <span class="subtle" style="font-size: 12px">매주 반복 · HD-0114 <span class="tag" data-show-role="view" hidden>조회만</span></span>
+                  </span>
+                  <span class="row__end" style="color: var(--muted-tert)" data-icon="right" data-icon-size="14"></span>
+                </a>
+              </div>
+              <div class="empty" data-show-role="fm" hidden>
+                <span class="empty__ic" data-icon="calendar" data-icon-size="22"></span>
+                <p>이 날짜에 등록된 BP 휴일이 없습니다.</p>
+              </div>
+            </section>
+            <section class="panel" style="align-self: start" data-show="day0910" hidden>
+              <div class="panel__head">
+                <h2 class="t-h2">9월 10일 (목)</h2>
+                <span class="badge badge--quiet" data-show-role="fm" hidden>0건</span><span class="badge badge--quiet" data-show-role="bm pf ba bp view">1건</span>
+                <span class="subtle" style="font-size: 12px">휴일명 - 적용 대상</span>
+              </div>
+              <div class="rows rows--hover" data-show-role="bm pf ba bp view">
+                <a class="row" href="holidays-detail.html?state=hd0101" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none" data-show-role="bm pf ba bp view">
+                  <span class="badge badge--quiet">특정 점포</span>
+                  <span class="stack" style="gap: 3px; min-width: 0">
+                    <b style="font-size: 13px; font-weight: 600">정전 점검 휴무 - 모리커피 서초점</b>
+                    <span class="subtle" style="font-size: 12px">HD-0101 <span class="tag">지난 날짜 · 수정·삭제 불가</span></span>
+                  </span>
+                  <span class="row__end" style="color: var(--muted-tert)" data-icon="right" data-icon-size="14"></span>
+                </a>
+              </div>
+              <div class="empty" data-show-role="fm" hidden>
+                <span class="empty__ic" data-icon="calendar" data-icon-size="22"></span>
+                <p>이 날짜에 등록된 BP 휴일이 없습니다.</p>
+              </div>
+            </section>
+            <section class="panel" style="align-self: start" data-show="day0923" hidden>
+              <div class="panel__head">
+                <h2 class="t-h2">9월 23일 (수)</h2>
+                <span class="badge badge--quiet">0건</span>
+                <span class="subtle" style="font-size: 12px">휴일명 - 적용 대상</span>
+              </div>
+              <div class="empty">
+                <span class="empty__ic" data-icon="calendar" data-icon-size="22"></span>
+                <p>이 날짜에 등록된 BP 휴일이 없습니다.</p>
+              </div>
+            </section>
+            <section class="panel" style="align-self: start" data-show="day0925" hidden>
+              <div class="panel__head">
+                <h2 class="t-h2">9월 25일 (금)</h2>
+                <span class="badge badge--quiet">1건</span>
+                <span class="subtle" style="font-size: 12px">휴일명 - 적용 대상</span>
+              </div>
+              <div class="panel__body" style="padding-bottom: 0">
+                <p style="margin: 0; font-size: 12.5px; color: var(--risk-text)">공식 휴일 · 추석 — 날짜만 빨갛게 칠하고 아래 BP 휴일 목록에는 넣지 않습니다.</p>
+              </div>
+              <div class="rows rows--hover">
+                <a class="row" href="holidays-detail.html?state=hd0120" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none">
+                  <span class="badge badge--info">전체 점포</span>
+                  <span class="stack" style="gap: 3px; min-width: 0">
+                    <b style="font-size: 13px; font-weight: 600">추석 당일 휴무 - ㈜한강상회</b>
+                    <span class="subtle" style="font-size: 12px">HD-0120 <span class="tag" data-show-role="bp fm view" hidden>조회만</span></span>
+                  </span>
+                  <span class="row__end" style="color: var(--muted-tert)" data-icon="right" data-icon-size="14"></span>
+                </a>
+              </div>
+            </section>
+            <section class="panel" style="align-self: start" data-show="day0929" hidden>
+              <div class="panel__head">
+                <h2 class="t-h2">9월 29일 (화)</h2>
+                <span class="badge badge--quiet" data-show-role="bp" hidden>0건</span><span class="badge badge--quiet" data-show-role="bm pf ba fm view">1건</span>
+                <span class="subtle" style="font-size: 12px">휴일명 - 적용 대상</span>
+              </div>
+              <div class="rows rows--hover" data-show-role="bm pf ba fm view">
+                <a class="row" href="holidays-detail.html?state=hd0121" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none" data-show-role="bm pf ba fm view">
+                  <span class="badge badge--quiet">특정 점포</span>
+                  <span class="stack" style="gap: 3px; min-width: 0">
+                    <b style="font-size: 13px; font-weight: 600">내부 공사 - 모리커피 연남점</b>
+                    <span class="subtle" style="font-size: 12px">HD-0121 <span class="tag" data-show-role="view" hidden>조회만</span></span>
+                  </span>
+                  <span class="row__end" style="color: var(--muted-tert)" data-icon="right" data-icon-size="14"></span>
+                </a>
+              </div>
+              <div class="empty" data-show-role="bp" hidden>
+                <span class="empty__ic" data-icon="calendar" data-icon-size="22"></span>
+                <p>이 날짜에 등록된 BP 휴일이 없습니다.</p>
+              </div>
+            </section>
+            <section class="panel" style="align-self: start" data-show="named" hidden>
+              <div class="panel__head">
+                <h2 class="t-h2">9월 21일 (월)</h2>
+                <span class="badge badge--quiet" data-show-role="fm" hidden>0건</span><span class="badge badge--quiet" data-show-role="bm pf ba bp view">1건</span>
+                <span class="subtle" style="font-size: 12px">휴일명 - 적용 대상</span>
+              </div>
+              <div class="rows rows--hover" data-show-role="bm pf ba bp view">
+                <a class="row" href="holidays-detail.html?state=hd0114" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none" data-show-role="bm pf ba bp view">
+                  <span class="badge badge--quiet">특정 점포</span>
+                  <span class="stack" style="gap: 3px; min-width: 0">
+                    <b style="font-size: 13px; font-weight: 600">정기휴무 - 온기식당 판교점</b>
+                    <span class="subtle" style="font-size: 12px">매주 반복 · HD-0114 <span class="tag" data-show-role="view" hidden>조회만</span></span>
+                  </span>
+                  <span class="row__end" style="color: var(--muted-tert)" data-icon="right" data-icon-size="14"></span>
+                </a>
+              </div>
+              <div class="empty" data-show-role="fm" hidden>
+                <span class="empty__ic" data-icon="calendar" data-icon-size="22"></span>
+                <p>이 날짜에 등록된 BP 휴일이 없습니다.</p>
+              </div>
+            </section>
+            <section class="panel" style="align-self: start" data-show="empty" hidden>
+              <div class="panel__head">
+                <h2 class="t-h2">9월 21일 (월)</h2>
+                <span class="badge badge--quiet">0건</span>
+                <span class="subtle" style="font-size: 12px">휴일명 - 적용 대상</span>
+              </div>
+              <div class="empty">
+                <span class="empty__ic" data-icon="calendar" data-icon-size="22"></span>
+                <p>검색 조건에 맞는 BP 휴일이 이 날짜에 없습니다.</p>
+              </div>
+            </section>
+            <section class="panel" style="align-self: start" data-show="day1001" hidden>
+              <div class="panel__head">
+                <h2 class="t-h2">10월 1일 (목)</h2>
+                <span class="badge badge--quiet" data-show-role="fm" hidden>1건</span><span class="badge badge--quiet" data-show-role="bm pf ba bp view">2건</span>
+                <span class="subtle" style="font-size: 12px">휴일명 - 적용 대상</span>
+              </div>
+              <div class="rows rows--hover">
+                <a class="row" href="holidays-detail.html?state=hd0122" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none">
+                  <span class="badge badge--info">전체 점포</span>
+                  <span class="stack" style="gap: 3px; min-width: 0">
+                    <b style="font-size: 13px; font-weight: 600">창립기념일 - ㈜한강상회</b>
+                    <span class="subtle" style="font-size: 12px">매년 반복 · HD-0122 <span class="tag" data-show-role="bp fm view" hidden>조회만</span></span>
+                  </span>
+                  <span class="row__end" style="color: var(--muted-tert)" data-icon="right" data-icon-size="14"></span>
+                </a>
+                <a class="row" href="holidays-detail.html?state=hd0123" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none" data-show-role="bm pf ba bp view">
+                  <span class="badge badge--quiet">특정 점포</span>
+                  <span class="stack" style="gap: 3px; min-width: 0">
+                    <b style="font-size: 13px; font-weight: 600">오후 휴무(단축 운영) - 온기식당 광화문점</b>
+                    <span class="subtle" style="font-size: 12px">HD-0123 <span class="tag" data-show-role="view" hidden>조회만</span></span>
+                  </span>
+                  <span class="row__end" style="color: var(--muted-tert)" data-icon="right" data-icon-size="14"></span>
+                </a>
+              </div>
+              <div class="panel__note" data-show-role="bm pf ba bp view">같은 날 전체 점포 휴일과 특정 점포 휴일이 함께 있어 둘 다 보입니다. 온기식당 광화문점 업무에는 특정 점포 휴일이 우선합니다.</div>
+            </section>
+            <section class="panel" style="align-self: start" data-show="deleted" hidden>
+              <div class="panel__head">
+                <h2 class="t-h2">10월 1일 (목)</h2>
+                <span class="badge badge--quiet" data-show-role="fm" hidden>0건</span><span class="badge badge--quiet" data-show-role="bm pf ba bp view">1건</span>
+                <span class="subtle" style="font-size: 12px">휴일명 - 적용 대상</span>
+              </div>
+              <div class="rows rows--hover" data-show-role="bm pf ba bp view">
+                <a class="row" href="holidays-detail.html?state=hd0123" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none" data-show-role="bm pf ba bp view">
+                  <span class="badge badge--quiet">특정 점포</span>
+                  <span class="stack" style="gap: 3px; min-width: 0">
+                    <b style="font-size: 13px; font-weight: 600">오후 휴무(단축 운영) - 온기식당 광화문점</b>
+                    <span class="subtle" style="font-size: 12px">HD-0123 <span class="tag" data-show-role="view" hidden>조회만</span></span>
+                  </span>
+                  <span class="row__end" style="color: var(--muted-tert)" data-icon="right" data-icon-size="14"></span>
+                </a>
+              </div>
+              <div class="empty" data-show-role="fm" hidden>
+                <span class="empty__ic" data-icon="calendar" data-icon-size="22"></span>
+                <p>이 날짜에 등록된 BP 휴일이 없습니다.</p>
+              </div>
+            </section>
+          </div>
+
+          <!-- 목록 보기 — 고른 달의 BP 휴일을 날짜마다 한 줄로. 공식 휴일은 줄이 아니다 -->
+          <section class="panel" data-show="list" hidden>
+            <div class="panel__head">
+              <h2 class="t-h2">2026년 9월 BP 휴일</h2>
+              <span class="badge badge--quiet" data-show-role="fm" hidden>2건</span><span class="badge badge--quiet" data-show-role="bp" hidden>4건</span><span class="badge badge--quiet" data-show-role="bm pf ba view">5건</span>
+              <span class="subtle" style="font-size: 12px">날짜순 · 같은 날은 등록 순서 · 줄을 누르면 상세</span>
+            </div>
+            <div class="tblwrap">
+              <table class="tbl tbl--dense">
+                <thead>
+                  <tr>
+                    <th scope="col">날짜</th>
+                    <th scope="col">휴일명</th>
+                    <th scope="col">적용 대상</th>
+                    <th scope="col">휴일 유형</th>
+                    <th scope="col">최종 수정</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="is-read" data-pagepop="holidays-detail.html?state=hd0101" style="cursor: pointer" data-show-role="bm pf ba bp view">
+                    <td style="white-space: nowrap"><span class="mono">2026-09-10</span> <span class="subtle">(목)</span> <span class="badge badge--quiet">지난 날짜</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0101" data-pagepop>정전 점검 휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
+                    <td><span class="badge badge--quiet">특정 점포</span> 모리커피 서초점 <span class="mono subtle">ST000001</span></td>
+                    <td>하루</td>
+                    <td style="white-space: nowrap"><span class="mono">hgops</span> <span class="mono subtle">2026-09-01 09:40</span></td>
+                  </tr>
+                  <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
+                    <td style="white-space: nowrap"><span class="mono">2026-09-21</span> <span class="subtle">(월)</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
+                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
+                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                  </tr>
+                  <tr data-pagepop="holidays-detail.html?state=hd0120" style="cursor: pointer">
+                    <td style="white-space: nowrap"><span class="mono">2026-09-25</span> <span class="subtle">(금)</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0120" data-pagepop>추석 당일 휴무</a> <span class="tag" data-show-role="bp fm view" hidden>조회만</span></td>
+                    <td><span class="badge badge--info">전체 점포</span> <span class="subtle">예외 없음</span></td>
+                    <td>하루</td>
+                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-02 11:00</span></td>
+                  </tr>
+                  <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
+                    <td style="white-space: nowrap"><span class="mono">2026-09-28</span> <span class="subtle">(월)</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
+                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
+                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                  </tr>
+                  <tr data-pagepop="holidays-detail.html?state=hd0121" style="cursor: pointer" data-show-role="bm pf ba fm view">
+                    <td style="white-space: nowrap"><span class="mono">2026-09-29</span> <span class="subtle">(화)</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0121" data-pagepop>내부 공사</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
+                    <td><span class="badge badge--quiet">특정 점포</span> 모리커피 연남점 <span class="mono subtle">ST000006</span></td>
+                    <td>하루</td>
+                    <td style="white-space: nowrap"><span class="mono">morinam01</span> <span class="mono subtle">2026-09-08 16:20</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div data-show-role="fm" hidden><div data-pager="2"></div></div>
+            <div data-show-role="bp" hidden><div data-pager="4"></div></div>
+            <div data-show-role="bm pf ba view"><div data-pager="5"></div></div>
+            <div class="panel__note">고른 달의 BP 휴일을 규칙으로 계산해 날짜마다 한 줄로 보여 줍니다. 반복 휴일은 날짜마다 따로 줄이 섭니다. 플랫폼 공식 휴일은 캘린더의 빨간 날짜로만 표시하고 목록에는 넣지 않습니다.</div>
+          </section>
+          <section class="panel" data-show="listoct" hidden>
+            <div class="panel__head">
+              <h2 class="t-h2">2026년 10월 BP 휴일</h2>
+              <span class="badge badge--quiet" data-show-role="fm" hidden>1건</span><span class="badge badge--quiet" data-show-role="bm pf ba bp view">6건</span>
+              <span class="subtle" style="font-size: 12px">날짜순 · 같은 날은 등록 순서 · 줄을 누르면 상세</span>
+            </div>
+            <div class="tblwrap">
+              <table class="tbl tbl--dense">
+                <thead>
+                  <tr>
+                    <th scope="col">날짜</th>
+                    <th scope="col">휴일명</th>
+                    <th scope="col">적용 대상</th>
+                    <th scope="col">휴일 유형</th>
+                    <th scope="col">최종 수정</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr data-pagepop="holidays-detail.html?state=hd0122" style="cursor: pointer">
+                    <td style="white-space: nowrap"><span class="mono">2026-10-01</span> <span class="subtle">(목)</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0122" data-pagepop>창립기념일</a> <span class="tag" data-show-role="bp fm view" hidden>조회만</span></td>
+                    <td><span class="badge badge--info">전체 점포</span> <span class="subtle">예외 없음</span></td>
+                    <td>매년 · 10월 1일 <span class="subtle">· 종료일 없음</span></td>
+                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-17 15:30</span></td>
+                  </tr>
+                  <tr data-pagepop="holidays-detail.html?state=hd0123" style="cursor: pointer" data-show-role="bm pf ba bp view">
+                    <td style="white-space: nowrap"><span class="mono">2026-10-01</span> <span class="subtle">(목)</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0123" data-pagepop>오후 휴무(단축 운영)</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
+                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 광화문점 <span class="mono subtle">ST000004</span></td>
+                    <td>하루</td>
+                    <td style="white-space: nowrap"><span class="mono">hghr</span> <span class="mono subtle">2026-09-14 09:15</span></td>
+                  </tr>
+                  <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
+                    <td style="white-space: nowrap"><span class="mono">2026-10-05</span> <span class="subtle">(월)</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
+                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
+                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                  </tr>
+                  <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
+                    <td style="white-space: nowrap"><span class="mono">2026-10-12</span> <span class="subtle">(월)</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
+                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
+                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                  </tr>
+                  <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
+                    <td style="white-space: nowrap"><span class="mono">2026-10-19</span> <span class="subtle">(월)</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
+                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
+                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                  </tr>
+                  <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
+                    <td style="white-space: nowrap"><span class="mono">2026-10-26</span> <span class="subtle">(월)</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
+                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
+                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div data-show-role="fm" hidden><div data-pager="1"></div></div>
+            <div data-show-role="bm pf ba bp view"><div data-pager="6"></div></div>
+            <div class="panel__note">고른 달의 BP 휴일을 규칙으로 계산해 날짜마다 한 줄로 보여 줍니다. 반복 휴일은 날짜마다 따로 줄이 섭니다. 플랫폼 공식 휴일은 캘린더의 빨간 날짜로만 표시하고 목록에는 넣지 않습니다.</div>
+            <div class="panel__note" data-show-role="bm pf ba bp view">10월 1일에는 전체 점포 휴일과 특정 점포 휴일이 함께 있어 두 줄로 보입니다. 온기식당 광화문점 업무에는 특정 점포 휴일이 우선합니다.</div>
+          </section>
+          <section class="panel" data-show="listaug" hidden>
+            <div class="panel__head">
+              <h2 class="t-h2">2026년 8월 BP 휴일</h2>
+              <span class="badge badge--quiet">0건</span>
+              <span class="subtle" style="font-size: 12px">날짜순 · 같은 날은 등록 순서 · 줄을 누르면 상세</span>
+            </div>
+            <div class="empty">
+              <span class="empty__ic" data-icon="calendar" data-icon-size="22"></span>
+              <p>2026년 8월에 볼 수 있는 BP 휴일이 없습니다.</p>
+            </div>
+          </section>
+          <section class="panel" data-show="namedlist" hidden>
+            <div class="panel__head">
+              <h2 class="t-h2">2026년 9월 BP 휴일</h2>
+              <span class="badge badge--quiet" data-show-role="fm" hidden>1건</span><span class="badge badge--quiet" data-show-role="bm pf ba bp view">4건</span>
+              <span class="subtle" style="font-size: 12px">날짜순 · 같은 날은 등록 순서 · 줄을 누르면 상세</span> <span class="subtle" style="font-size: 12px">· 휴일명 ‘휴무’</span>
+            </div>
+            <div class="tblwrap">
+              <table class="tbl tbl--dense">
+                <thead>
+                  <tr>
+                    <th scope="col">날짜</th>
+                    <th scope="col">휴일명</th>
+                    <th scope="col">적용 대상</th>
+                    <th scope="col">휴일 유형</th>
+                    <th scope="col">최종 수정</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="is-read" data-pagepop="holidays-detail.html?state=hd0101" style="cursor: pointer" data-show-role="bm pf ba bp view">
+                    <td style="white-space: nowrap"><span class="mono">2026-09-10</span> <span class="subtle">(목)</span> <span class="badge badge--quiet">지난 날짜</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0101" data-pagepop>정전 점검 휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
+                    <td><span class="badge badge--quiet">특정 점포</span> 모리커피 서초점 <span class="mono subtle">ST000001</span></td>
+                    <td>하루</td>
+                    <td style="white-space: nowrap"><span class="mono">hgops</span> <span class="mono subtle">2026-09-01 09:40</span></td>
+                  </tr>
+                  <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
+                    <td style="white-space: nowrap"><span class="mono">2026-09-21</span> <span class="subtle">(월)</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
+                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
+                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                  </tr>
+                  <tr data-pagepop="holidays-detail.html?state=hd0120" style="cursor: pointer">
+                    <td style="white-space: nowrap"><span class="mono">2026-09-25</span> <span class="subtle">(금)</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0120" data-pagepop>추석 당일 휴무</a> <span class="tag" data-show-role="bp fm view" hidden>조회만</span></td>
+                    <td><span class="badge badge--info">전체 점포</span> <span class="subtle">예외 없음</span></td>
+                    <td>하루</td>
+                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-02 11:00</span></td>
+                  </tr>
+                  <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
+                    <td style="white-space: nowrap"><span class="mono">2026-09-28</span> <span class="subtle">(월)</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
+                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
+                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div data-show-role="fm" hidden><div data-pager="1"></div></div>
+            <div data-show-role="bm pf ba bp view"><div data-pager="4"></div></div>
+            <div class="panel__note">고른 달의 BP 휴일을 규칙으로 계산해 날짜마다 한 줄로 보여 줍니다. 반복 휴일은 날짜마다 따로 줄이 섭니다. 플랫폼 공식 휴일은 캘린더의 빨간 날짜로만 표시하고 목록에는 넣지 않습니다.</div>
+          </section>
+          <section class="panel" data-show="emptylist" hidden>
+            <div class="panel__head">
+              <h2 class="t-h2">2026년 9월 BP 휴일</h2>
+              <span class="badge badge--quiet">0건</span>
+              <span class="subtle" style="font-size: 12px">날짜순 · 같은 날은 등록 순서 · 줄을 누르면 상세</span> <span class="subtle" style="font-size: 12px">· 휴일명 ‘창립’</span>
+            </div>
+            <div class="empty">
+              <span class="empty__ic" data-icon="search" data-icon-size="22"></span>
+              <p>2026년 9월에 휴일명 ‘창립’에 맞는 BP 휴일이 없습니다. 다른 달로 옮기거나 휴일명을 바꿔 다시 찾아 보세요.</p>
+            </div>
+          </section>
+          <section class="panel" data-show="deletedlist" hidden>
+            <div class="panel__head">
+              <h2 class="t-h2">2026년 10월 BP 휴일</h2>
+              <span class="badge badge--quiet" data-show-role="fm" hidden>0건</span><span class="badge badge--quiet" data-show-role="bm pf ba bp view">5건</span>
+              <span class="subtle" style="font-size: 12px">날짜순 · 같은 날은 등록 순서 · 줄을 누르면 상세</span>
+            </div>
+            <div class="tblwrap" data-show-role="bm pf ba bp view">
+              <table class="tbl tbl--dense">
+                <thead>
+                  <tr>
+                    <th scope="col">날짜</th>
+                    <th scope="col">휴일명</th>
+                    <th scope="col">적용 대상</th>
+                    <th scope="col">휴일 유형</th>
+                    <th scope="col">최종 수정</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr data-pagepop="holidays-detail.html?state=hd0123" style="cursor: pointer" data-show-role="bm pf ba bp view">
+                    <td style="white-space: nowrap"><span class="mono">2026-10-01</span> <span class="subtle">(목)</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0123" data-pagepop>오후 휴무(단축 운영)</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
+                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 광화문점 <span class="mono subtle">ST000004</span></td>
+                    <td>하루</td>
+                    <td style="white-space: nowrap"><span class="mono">hghr</span> <span class="mono subtle">2026-09-14 09:15</span></td>
+                  </tr>
+                  <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
+                    <td style="white-space: nowrap"><span class="mono">2026-10-05</span> <span class="subtle">(월)</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
+                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
+                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                  </tr>
+                  <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
+                    <td style="white-space: nowrap"><span class="mono">2026-10-12</span> <span class="subtle">(월)</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
+                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
+                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                  </tr>
+                  <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
+                    <td style="white-space: nowrap"><span class="mono">2026-10-19</span> <span class="subtle">(월)</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
+                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
+                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                  </tr>
+                  <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
+                    <td style="white-space: nowrap"><span class="mono">2026-10-26</span> <span class="subtle">(월)</span></td>
+                    <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
+                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
+                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div data-show-role="bm pf ba bp view"><div data-pager="5"></div></div>
+            <div class="panel__note">고른 달의 BP 휴일을 규칙으로 계산해 날짜마다 한 줄로 보여 줍니다. 반복 휴일은 날짜마다 따로 줄이 섭니다. 플랫폼 공식 휴일은 캘린더의 빨간 날짜로만 표시하고 목록에는 넣지 않습니다.</div>
+            <div class="empty" data-show-role="fm" hidden>
+              <span class="empty__ic" data-icon="calendar" data-icon-size="22"></span>
+              <p>2026년 10월에 볼 수 있는 BP 휴일이 없습니다.</p>
+            </div>
+          </section>
+
+          <p class="note" data-show="base day0910 day0923 day0925 day0929 day1001 named empty deleted list listoct listaug namedlist emptylist deletedlist">
+            <span data-icon="info" data-icon-size="14"></span>
+            <span>
+              전체 점포 휴일은 ㈜한강상회의 모든 점포에, 특정 점포 휴일은 고른 점포에만 적용된다. 같은 날 둘 다 있으면 그 점포 업무에는 특정 점포 휴일이 우선한다.
+              폐점한 점포는 폐점일 다음 날부터 휴일 적용 대상에서 빠지고, 그 점포만 대상으로 하던 휴일은 목록과 캘린더에서 감춘다.
+              지난 날짜 휴일은 대한민국 표준시 기준 오늘보다 이른 날로, 상세에서 수정·삭제가 막힌다. 삭제한 휴일은 변경 이력 보기에서만 확인할 수 있다.
+            </span>
+          </p>
+          <!-- 변경 이력 보기 — 고른 기간의 등록·수정·삭제를 날짜별로. 삭제된 휴일은 여기서만 보인다 -->
+          <div class="modal" id="pop-hist" hidden role="dialog" aria-modal="true" aria-labelledby="ph-t">
+            <div class="modal__box modal__box--wide">
+              <div class="modal__head">
+                <h2 class="t-h2" id="ph-t">변경 이력 보기</h2>
+                <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+              </div>
+              <div class="modal__body">
+                <div class="inline" style="flex-wrap: nowrap">
+                  <input class="input mono" value="2026-09-01" aria-label="이력 시작일" />
+                  <span class="subtle">~</span>
+                  <input class="input mono" value="2026-09-21" aria-label="이력 종료일" />
+                  <button class="btn btn--secondary" type="button">조회</button>
+                </div>
+                <p class="subtle" style="margin: 0; font-size: 12px">휴일 날짜가 아니라 등록·수정·삭제한 날 기준입니다. 내 접근 범위 밖 점포의 이력은 나오지 않습니다.</p>
+                <div class="modal__scroll">
+                  <div class="stack" style="gap: 0" data-show="deleted deletedlist" hidden>
+                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-21</span> <span class="subtle">(월)</span></div>
+                    <div class="row" style="align-items: flex-start; padding: 8px 0" data-show="deleted deletedlist" hidden>
+                      <span class="badge badge--risk" style="flex: none">삭제</span>
+                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600">창립기념일 - ㈜한강상회</b><span class="subtle" style="font-size: 12px">2026-10-01 부터 이후 모두 삭제 · 첫 날짜라 휴일 자체를 삭제</span></span>
+                      <span class="row__end mono subtle" style="font-size: 12px">hangang01 · 10:52</span>
+                    </div>
+                  </div>
+                  <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
+                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-18</span> <span class="subtle">(금)</span></div>
+                    <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
+                      <span class="badge badge--risk" style="flex: none">삭제</span>
+                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600">임시 휴무 - 모리커피 성수점</b><span class="subtle" style="font-size: 12px">휴일 날짜 2026-09-30 · 삭제되어 목록과 캘린더에 없음</span></span>
+                      <span class="row__end mono subtle" style="font-size: 12px">hgops · 17:05</span>
+                    </div>
+                  </div>
+                  <div class="stack" style="gap: 0">
+                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-17</span> <span class="subtle">(목)</span></div>
+                    <div class="row" style="align-items: flex-start; padding: 8px 0">
+                      <span class="badge badge--info" style="flex: none">수정</span>
+                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0122" data-pagepop>창립기념일 - ㈜한강상회</a></b><span class="subtle" style="font-size: 12px">설명 · 2026-10-01 부터 이후 모두(첫 날짜라 휴일 전체)</span></span>
+                      <span class="row__end mono subtle" style="font-size: 12px">hangang01 · 15:30</span>
+                    </div>
+                  </div>
+                  <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
+                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-16</span> <span class="subtle">(수)</span></div>
+                    <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
+                      <span class="badge badge--info" style="flex: none">수정</span>
+                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무 - 온기식당 판교점</a></b><span class="subtle" style="font-size: 12px">설명 · 2026-09-21 부터 이후 모두(첫 날짜라 휴일 전체)</span></span>
+                      <span class="row__end mono subtle" style="font-size: 12px">hangang01 · 10:05</span>
+                    </div>
+                  </div>
+                  <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
+                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-15</span> <span class="subtle">(화)</span></div>
+                    <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
+                      <span class="badge badge--ok" style="flex: none">등록</span>
+                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무 - 온기식당 판교점</a></b><span class="subtle" style="font-size: 12px">매주 반복 · 시작 2026-09-21 · 종료일 없음</span></span>
+                      <span class="row__end mono subtle" style="font-size: 12px">hangang01 · 14:10</span>
+                    </div>
+                  </div>
+                  <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
+                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-14</span> <span class="subtle">(월)</span></div>
+                    <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
+                      <span class="badge badge--info" style="flex: none">수정</span>
+                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0123" data-pagepop>오후 휴무(단축 운영) - 온기식당 광화문점</a></b><span class="subtle" style="font-size: 12px">설명</span></span>
+                      <span class="row__end mono subtle" style="font-size: 12px">hghr · 09:15</span>
+                    </div>
+                  </div>
+                  <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
+                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-11</span> <span class="subtle">(금)</span></div>
+                    <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
+                      <span class="badge badge--info" style="flex: none">수정</span>
+                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0123" data-pagepop>오후 휴무(단축 운영) - 온기식당 광화문점</a></b><span class="subtle" style="font-size: 12px">휴일명 · 오후 휴무 → 오후 휴무(단축 운영)</span></span>
+                      <span class="row__end mono subtle" style="font-size: 12px">hghr · 18:02</span>
+                    </div>
+                  </div>
+                  <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
+                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-10</span> <span class="subtle">(목)</span></div>
+                    <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
+                      <span class="badge badge--ok" style="flex: none">등록</span>
+                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0123" data-pagepop>오후 휴무(단축 운영) - 온기식당 광화문점</a></b><span class="subtle" style="font-size: 12px">휴일 날짜 2026-10-01</span></span>
+                      <span class="row__end mono subtle" style="font-size: 12px">hghr · 13:20</span>
+                    </div>
+                  </div>
+                  <div class="stack" style="gap: 0" data-show-role="bm pf ba fm view">
+                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-08</span> <span class="subtle">(화)</span></div>
+                    <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba fm view">
+                      <span class="badge badge--ok" style="flex: none">등록</span>
+                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0121" data-pagepop>내부 공사 - 모리커피 연남점</a></b><span class="subtle" style="font-size: 12px">휴일 날짜 2026-09-29</span></span>
+                      <span class="row__end mono subtle" style="font-size: 12px">morinam01 · 16:20</span>
+                    </div>
+                  </div>
+                  <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
+                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-05</span> <span class="subtle">(토)</span></div>
+                    <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
+                      <span class="badge badge--ok" style="flex: none">등록</span>
+                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600">임시 휴무 - 모리커피 성수점</b><span class="subtle" style="font-size: 12px">휴일 날짜 2026-09-30</span></span>
+                      <span class="row__end mono subtle" style="font-size: 12px">hgops · 11:30</span>
+                    </div>
+                  </div>
+                  <div class="stack" style="gap: 0">
+                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-02</span> <span class="subtle">(수)</span></div>
+                    <div class="row" style="align-items: flex-start; padding: 8px 0">
+                      <span class="badge badge--ok" style="flex: none">등록</span>
+                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0120" data-pagepop>추석 당일 휴무 - ㈜한강상회</a></b><span class="subtle" style="font-size: 12px">휴일 날짜 2026-09-25</span></span>
+                      <span class="row__end mono subtle" style="font-size: 12px">hangang01 · 11:00</span>
+                    </div>
+                  </div>
+                  <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
+                    <div class="t-cap" style="padding: 10px 0 4px; border-bottom: 1px solid var(--hairline-strong)"><span class="mono">2026-09-01</span> <span class="subtle">(화)</span></div>
+                    <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
+                      <span class="badge badge--ok" style="flex: none">등록</span>
+                      <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0101" data-pagepop>정전 점검 휴무 - 모리커피 서초점</a></b><span class="subtle" style="font-size: 12px">휴일 날짜 2026-09-10</span></span>
+                      <span class="row__end mono subtle" style="font-size: 12px">hgops · 09:40</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal__foot"><button class="btn btn--primary" type="button" data-close>닫기</button></div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+    <script src="../assets/auth.js"></script>
+  </body>
+</html>

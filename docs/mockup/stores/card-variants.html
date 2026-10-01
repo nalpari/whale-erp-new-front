@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>점포 카드 시안 비교 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="stores" data-sub="stores/index.html">
+    <!-- 점포 목록 · 썸네일 목록 시안 비교 — 화면 구성을 고르기 위한 목업 전용 페이지다. 다른 화면과 잇지 않았다.
+         같은 여섯 점포(사진 · 일러스트 · 이미지 없음 · 미운영 · 폐점 섞음)를 네 가지 모양으로 놓았다.
+         어느 안이든 담는 항목은 같다 — 대표 이미지 · 점포명 · 상태 · 유형 · 점포코드 · 근무직원 · 지역 · 등록일. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <h1 class="t-h1">점포 목록 · 썸네일 시안 비교</h1>
+          <span class="badge badge--preview">고르기용</span>
+          <div class="titlebar__end">
+            <a class="btn btn--secondary btn--sm" href="index.html">지금 목록으로</a>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="band band--info">
+            <span class="band__ic" data-icon="info" data-icon-size="20"></span>
+            <div class="band__body">
+              <div class="band__title">추천 — 기본은 B 가로형, 사진이 중요한 운영자에게는 A 커버형</div>
+              <p class="band__desc">점포 목록은 사진을 감상하는 곳이 아니라 “어느 점포를 열까”를 고르는 곳이다. 이름 · 상태 · 코드가 한 시선에 들어오는 B 가 가장 빨리 읽힌다. 점포가 수십 곳을 넘으면 D, 직원 수·지역을 비교해야 하면 C 가 낫다.</p>
+            </div>
+          </div>
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">A · 커버형</h2>
+              <span class="badge badge--quiet">한 줄 세 장</span>
+            </div>
+            <p class="cv-note">사진을 카드 폭만큼 크게 두고 상태를 사진 왼쪽 위에 겹친다. 지금 목록을 키운 모양이다. <b>잘 맞는 때</b> 점포 수가 적고(10곳 안팎) 매장 사진을 모두 올려 두는 BP. <b>아쉬운 점</b> 사진이 없는 점포가 많으면 빈 칸이 크게 보이고, 한 화면에 여섯 곳 남짓만 들어온다.</p>
+            <div class="panel cv-stage">
+              <div class="cv-grid3">
+              <a class="cva" href="detail.html">
+                <span class="cva__media"><img class="cva__img" src="../assets/img/store-photo-1.jpg" alt="모리커피 연남점 대표 이미지" /><span class="badge badge--ok cva__state">운영</span></span>
+                <span class="cva__body">
+                  <span class="cva__head"><b class="cva__name">모리커피 연남점</b><span class="cva__date mono" title="등록일">2025-08-01</span></span>
+                  <span class="cva__meta">가맹점포 · <span class="mono">ST000006</span> · <span class="cva__staff" title="근무직원 수"><span data-icon="users" data-icon-size="14"></span>6</span></span>
+                  <span class="cva__meta"><span data-icon="pin" data-icon-size="14"></span>서울 마포구</span>
+                </span>
+              </a>
+              <a class="cva" href="detail.html">
+                <span class="cva__media"><img class="cva__img" src="../assets/img/store-photo-2.jpg" alt="온기식당 일산점 대표 이미지" /><span class="badge badge--ok cva__state">운영</span></span>
+                <span class="cva__body">
+                  <span class="cva__head"><b class="cva__name">온기식당 일산점</b><span class="cva__date mono" title="등록일">2026-02-23</span></span>
+                  <span class="cva__meta">가맹점포 · <span class="mono">ST000011</span> · <span class="cva__staff" title="근무직원 수"><span data-icon="users" data-icon-size="14"></span>5</span></span>
+                  <span class="cva__meta"><span data-icon="pin" data-icon-size="14"></span>경기 고양시</span>
+                </span>
+              </a>
+              <a class="cva" href="detail.html">
+                <span class="cva__media"><span class="cva__img" role="img" aria-label="대표 이미지 없음"><span data-icon="store" data-icon-size="26"></span></span><span class="badge badge--quiet cva__state">미운영</span></span>
+                <span class="cva__body">
+                  <span class="cva__head"><b class="cva__name">모리커피 청담점</b><span class="cva__date mono" title="등록일">2026-09-10</span></span>
+                  <span class="cva__meta">가맹점포 · <span class="mono">ST000007</span> · <span class="cva__staff" title="근무직원 수"><span data-icon="users" data-icon-size="14"></span>0</span></span>
+                  <span class="cva__meta"><span data-icon="pin" data-icon-size="14"></span>서울 강남구</span>
+                </span>
+              </a>
+              <a class="cva" href="detail.html">
+                <span class="cva__media"><img class="cva__img" src="../assets/img/store-photo-3.jpg" alt="온기식당 서면점 대표 이미지" /><span class="badge badge--ok cva__state">운영</span></span>
+                <span class="cva__body">
+                  <span class="cva__head"><b class="cva__name">온기식당 서면점</b><span class="cva__date mono" title="등록일">2026-01-09</span></span>
+                  <span class="cva__meta">가맹점포 · <span class="mono">ST000010</span> · <span class="cva__staff" title="근무직원 수"><span data-icon="users" data-icon-size="14"></span>6</span></span>
+                  <span class="cva__meta"><span data-icon="pin" data-icon-size="14"></span>부산 부산진구</span>
+                </span>
+              </a>
+              <a class="cva" href="detail.html">
+                <span class="cva__media"><img class="cva__img" src="../assets/img/store-photo-6.jpg" alt="온기식당 광화문점 대표 이미지" /><span class="badge badge--ok cva__state">운영</span></span>
+                <span class="cva__body">
+                  <span class="cva__head"><b class="cva__name">온기식당 광화문점</b><span class="cva__date mono" title="등록일">2025-06-02</span></span>
+                  <span class="cva__meta">일반점포 · <span class="mono">ST000004</span> · <span class="cva__staff" title="근무직원 수"><span data-icon="users" data-icon-size="14"></span>6</span></span>
+                  <span class="cva__meta"><span data-icon="pin" data-icon-size="14"></span>서울 종로구</span>
+                </span>
+              </a>
+              <a class="cva" href="detail.html">
+                <span class="cva__media"><img class="cva__img" src="../assets/img/store-mori.svg" alt="모리커피 합정점 대표 이미지" /><span class="badge badge--risk cva__state">폐점</span></span>
+                <span class="cva__body">
+                  <span class="cva__head"><b class="cva__name">모리커피 합정점</b><span class="cva__date mono" title="등록일">2025-02-14</span></span>
+                  <span class="cva__meta">가맹점포 · <span class="mono">ST000012</span> · <span class="cva__staff" title="근무직원 수"><span data-icon="users" data-icon-size="14"></span>0</span></span>
+                  <span class="cva__meta"><span data-icon="pin" data-icon-size="14"></span>서울 마포구</span>
+                </span>
+              </a>
+              </div>
+            </div>
+          </section>
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">B · 가로형</h2>
+              <span class="badge badge--ok">추천</span> <span class="badge badge--quiet">한 줄 두 장</span>
+            </div>
+            <p class="cv-note">왼쪽에 정사각 썸네일, 오른쪽에 이름과 상태를 한 줄로 둔다. 눈이 왼쪽 위에서 시작해 이름 → 상태 → 코드 순으로 내려간다. <b>잘 맞는 때</b> 대부분의 BP. 사진 유무와 상관없이 카드 높이가 같고 전체 주소까지 들어간다. <b>아쉬운 점</b> A 보다 사진이 작아 매장을 알아보는 힘은 약하다.</p>
+            <div class="panel cv-stage">
+              <div class="cv-grid2">
+              <a class="cvb" href="detail.html">
+                <span class="cvb__media"><img class="cvb__img" src="../assets/img/store-photo-1.jpg" alt="모리커피 연남점 대표 이미지" /></span>
+                <span class="cvb__body">
+                  <span class="cvb__head"><b class="cvb__name">모리커피 연남점</b><span class="badge badge--ok ">운영</span></span>
+                  <span class="cvb__meta">가맹점포 · <span class="mono">ST000006</span> · <span class="cva__staff" title="근무직원 수"><span data-icon="users" data-icon-size="14"></span>6</span></span>
+                  <span class="cvb__meta"><span data-icon="pin" data-icon-size="14"></span>서울 마포구 동교로 256, 1층</span>
+                  <span class="cvb__date mono">2025-08-01 등록</span>
+                </span>
+              </a>
+              <a class="cvb" href="detail.html">
+                <span class="cvb__media"><img class="cvb__img" src="../assets/img/store-photo-2.jpg" alt="온기식당 일산점 대표 이미지" /></span>
+                <span class="cvb__body">
+                  <span class="cvb__head"><b class="cvb__name">온기식당 일산점</b><span class="badge badge--ok ">운영</span></span>
+                  <span class="cvb__meta">가맹점포 · <span class="mono">ST000011</span> · <span class="cva__staff" title="근무직원 수"><span data-icon="users" data-icon-size="14"></span>5</span></span>
+                  <span class="cvb__meta"><span data-icon="pin" data-icon-size="14"></span>경기 고양시 일산동구 중앙로 1275</span>
+                  <span class="cvb__date mono">2026-02-23 등록</span>
+                </span>
+              </a>
+              <a class="cvb" href="detail.html">
+                <span class="cvb__media"><span class="cvb__img" role="img" aria-label="대표 이미지 없음"><span data-icon="store" data-icon-size="26"></span></span></span>
+                <span class="cvb__body">
+                  <span class="cvb__head"><b class="cvb__name">모리커피 청담점</b><span class="badge badge--quiet ">미운영</span></span>
+                  <span class="cvb__meta">가맹점포 · <span class="mono">ST000007</span> · <span class="cva__staff" title="근무직원 수"><span data-icon="users" data-icon-size="14"></span>0</span></span>
+                  <span class="cvb__meta"><span data-icon="pin" data-icon-size="14"></span>서울 강남구 도산대로 318</span>
+                  <span class="cvb__date mono">2026-09-10 등록</span>
+                </span>
+              </a>
+              <a class="cvb" href="detail.html">
+                <span class="cvb__media"><img class="cvb__img" src="../assets/img/store-photo-3.jpg" alt="온기식당 서면점 대표 이미지" /></span>
+                <span class="cvb__body">
+                  <span class="cvb__head"><b class="cvb__name">온기식당 서면점</b><span class="badge badge--ok ">운영</span></span>
+                  <span class="cvb__meta">가맹점포 · <span class="mono">ST000010</span> · <span class="cva__staff" title="근무직원 수"><span data-icon="users" data-icon-size="14"></span>6</span></span>
+                  <span class="cvb__meta"><span data-icon="pin" data-icon-size="14"></span>부산 부산진구 서면로 68</span>
+                  <span class="cvb__date mono">2026-01-09 등록</span>
+                </span>
+              </a>
+              <a class="cvb" href="detail.html">
+                <span class="cvb__media"><img class="cvb__img" src="../assets/img/store-photo-6.jpg" alt="온기식당 광화문점 대표 이미지" /></span>
+                <span class="cvb__body">
+                  <span class="cvb__head"><b class="cvb__name">온기식당 광화문점</b><span class="badge badge--ok ">운영</span></span>
+                  <span class="cvb__meta">일반점포 · <span class="mono">ST000004</span> · <span class="cva__staff" title="근무직원 수"><span data-icon="users" data-icon-size="14"></span>6</span></span>
+                  <span class="cvb__meta"><span data-icon="pin" data-icon-size="14"></span>서울 종로구 세종대로 175</span>
+                  <span class="cvb__date mono">2025-06-02 등록</span>
+                </span>
+              </a>
+              <a class="cvb" href="detail.html">
+                <span class="cvb__media"><img class="cvb__img" src="../assets/img/store-mori.svg" alt="모리커피 합정점 대표 이미지" /></span>
+                <span class="cvb__body">
+                  <span class="cvb__head"><b class="cvb__name">모리커피 합정점</b><span class="badge badge--risk ">폐점</span></span>
+                  <span class="cvb__meta">가맹점포 · <span class="mono">ST000012</span> · <span class="cva__staff" title="근무직원 수"><span data-icon="users" data-icon-size="14"></span>0</span></span>
+                  <span class="cvb__meta"><span data-icon="pin" data-icon-size="14"></span>서울 마포구 양화로 45</span>
+                  <span class="cvb__date mono">2025-02-14 등록</span>
+                </span>
+              </a>
+              </div>
+            </div>
+          </section>
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">C · 정보 격자형</h2>
+              <span class="badge badge--quiet">한 줄 세 장</span>
+            </div>
+            <p class="cv-note">머리에 작은 썸네일 · 이름 · 점포코드와 유형 · 상태, 아래에 근무직원 · 등록일 칸과 맨 아래 지역 줄. 상태는 카드 왼쪽 띠 색으로도 한 번 더 보인다. <b>잘 맞는 때</b> 직원 수 · 등록일 · 지역을 점포끼리 견줘 봐야 할 때. 라벨이 있어 처음 쓰는 사람도 헷갈리지 않는다. <b>아쉬운 점</b> 글자가 많아 카드가 무겁고, 사진은 거의 장식이 된다.</p>
+            <div class="panel cv-stage">
+              <div class="cv-grid3">
+              <a class="cvc cvc--ok" href="detail.html">
+                <span class="cvc__head"><img class="cvc__img" src="../assets/img/store-photo-1.jpg" alt="모리커피 연남점 대표 이미지" /><span class="cvc__title"><b class="cvc__name">모리커피 연남점</b><span class="cvc__sub"><span class="mono">ST000006</span> · 가맹점포</span></span><span class="badge badge--ok ">운영</span></span>
+                <span class="cvc__grid">
+                  <span><i>근무직원</i><b>6명</b></span>
+                  <span><i>등록일</i><span class="mono">2025-08-01</span></span>
+                  <span class="cvc__wide"><i>지역</i>서울 마포구</span>
+                </span>
+              </a>
+              <a class="cvc cvc--ok" href="detail.html">
+                <span class="cvc__head"><img class="cvc__img" src="../assets/img/store-photo-2.jpg" alt="온기식당 일산점 대표 이미지" /><span class="cvc__title"><b class="cvc__name">온기식당 일산점</b><span class="cvc__sub"><span class="mono">ST000011</span> · 가맹점포</span></span><span class="badge badge--ok ">운영</span></span>
+                <span class="cvc__grid">
+                  <span><i>근무직원</i><b>5명</b></span>
+                  <span><i>등록일</i><span class="mono">2026-02-23</span></span>
+                  <span class="cvc__wide"><i>지역</i>경기 고양시</span>
+                </span>
+              </a>
+              <a class="cvc cvc--quiet" href="detail.html">
+                <span class="cvc__head"><span class="cvc__img" role="img" aria-label="대표 이미지 없음"><span data-icon="store" data-icon-size="26"></span></span><span class="cvc__title"><b class="cvc__name">모리커피 청담점</b><span class="cvc__sub"><span class="mono">ST000007</span> · 가맹점포</span></span><span class="badge badge--quiet ">미운영</span></span>
+                <span class="cvc__grid">
+                  <span><i>근무직원</i><b>0명</b></span>
+                  <span><i>등록일</i><span class="mono">2026-09-10</span></span>
+                  <span class="cvc__wide"><i>지역</i>서울 강남구</span>
+                </span>
+              </a>
+              <a class="cvc cvc--ok" href="detail.html">
+                <span class="cvc__head"><img class="cvc__img" src="../assets/img/store-photo-3.jpg" alt="온기식당 서면점 대표 이미지" /><span class="cvc__title"><b class="cvc__name">온기식당 서면점</b><span class="cvc__sub"><span class="mono">ST000010</span> · 가맹점포</span></span><span class="badge badge--ok ">운영</span></span>
+                <span class="cvc__grid">
+                  <span><i>근무직원</i><b>6명</b></span>
+                  <span><i>등록일</i><span class="mono">2026-01-09</span></span>
+                  <span class="cvc__wide"><i>지역</i>부산 부산진구</span>
+                </span>
+              </a>
+              <a class="cvc cvc--ok" href="detail.html">
+                <span class="cvc__head"><img class="cvc__img" src="../assets/img/store-photo-6.jpg" alt="온기식당 광화문점 대표 이미지" /><span class="cvc__title"><b class="cvc__name">온기식당 광화문점</b><span class="cvc__sub"><span class="mono">ST000004</span> · 일반점포</span></span><span class="badge badge--ok ">운영</span></span>
+                <span class="cvc__grid">
+                  <span><i>근무직원</i><b>6명</b></span>
+                  <span><i>등록일</i><span class="mono">2025-06-02</span></span>
+                  <span class="cvc__wide"><i>지역</i>서울 종로구</span>
+                </span>
+              </a>
+              <a class="cvc cvc--risk" href="detail.html">
+                <span class="cvc__head"><img class="cvc__img" src="../assets/img/store-mori.svg" alt="모리커피 합정점 대표 이미지" /><span class="cvc__title"><b class="cvc__name">모리커피 합정점</b><span class="cvc__sub"><span class="mono">ST000012</span> · 가맹점포</span></span><span class="badge badge--risk ">폐점</span></span>
+                <span class="cvc__grid">
+                  <span><i>근무직원</i><b>0명</b></span>
+                  <span><i>등록일</i><span class="mono">2025-02-14</span></span>
+                  <span class="cvc__wide"><i>지역</i>서울 마포구</span>
+                </span>
+              </a>
+              </div>
+            </div>
+          </section>
+          <section class="section">
+            <div class="panel__head" style="padding-left: 0; padding-right: 0">
+              <h2 class="t-h2">D · 컴팩트 리스트</h2>
+              <span class="badge badge--quiet">한 줄 한 점포</span>
+            </div>
+            <p class="cv-note">작은 썸네일을 단 한 줄 목록. 칸 위치가 모든 줄에서 같아 세로로 훑기 쉽다. <b>잘 맞는 때</b> 점포가 수십 곳 이상인 BP · 플랫폼 관리자. 표 보기보다 부드럽고 카드보다 촘촘하다. <b>아쉬운 점</b> 좁은 화면에서는 칸이 줄어 지역 · 유형이 숨는다.</p>
+            <div class="panel cv-stage">
+              <div class="cv-list">
+              <a class="cvd" href="detail.html">
+                <img class="cvd__img" src="../assets/img/store-photo-1.jpg" alt="모리커피 연남점 대표 이미지" />
+                <b class="cvd__name">모리커피 연남점</b>
+                <span class="cvd__code mono">ST000006</span>
+                <span class="cvd__col">가맹점포</span>
+                <span class="cvd__col"><span data-icon="pin" data-icon-size="14"></span>서울 마포구</span>
+                <span class="cvd__col cva__staff" title="근무직원 수"><span data-icon="users" data-icon-size="14"></span>6</span>
+                <span class="badge badge--ok ">운영</span>
+                <span class="cvd__date mono">2025-08-01</span>
+              </a>
+              <a class="cvd" href="detail.html">
+                <img class="cvd__img" src="../assets/img/store-photo-2.jpg" alt="온기식당 일산점 대표 이미지" />
+                <b class="cvd__name">온기식당 일산점</b>
+                <span class="cvd__code mono">ST000011</span>
+                <span class="cvd__col">가맹점포</span>
+                <span class="cvd__col"><span data-icon="pin" data-icon-size="14"></span>경기 고양시</span>
+                <span class="cvd__col cva__staff" title="근무직원 수"><span data-icon="users" data-icon-size="14"></span>5</span>
+                <span class="badge badge--ok ">운영</span>
+                <span class="cvd__date mono">2026-02-23</span>
+              </a>
+              <a class="cvd" href="detail.html">
+                <span class="cvd__img" role="img" aria-label="대표 이미지 없음"><span data-icon="store" data-icon-size="26"></span></span>
+                <b class="cvd__name">모리커피 청담점</b>
+                <span class="cvd__code mono">ST000007</span>
+                <span class="cvd__col">가맹점포</span>
+                <span class="cvd__col"><span data-icon="pin" data-icon-size="14"></span>서울 강남구</span>
+                <span class="cvd__col cva__staff" title="근무직원 수"><span data-icon="users" data-icon-size="14"></span>0</span>
+                <span class="badge badge--quiet ">미운영</span>
+                <span class="cvd__date mono">2026-09-10</span>
+              </a>
+              <a class="cvd" href="detail.html">
+                <img class="cvd__img" src="../assets/img/store-photo-3.jpg" alt="온기식당 서면점 대표 이미지" />
+                <b class="cvd__name">온기식당 서면점</b>
+                <span class="cvd__code mono">ST000010</span>
+                <span class="cvd__col">가맹점포</span>
+                <span class="cvd__col"><span data-icon="pin" data-icon-size="14"></span>부산 부산진구</span>
+                <span class="cvd__col cva__staff" title="근무직원 수"><span data-icon="users" data-icon-size="14"></span>6</span>
+                <span class="badge badge--ok ">운영</span>
+                <span class="cvd__date mono">2026-01-09</span>
+              </a>
+              <a class="cvd" href="detail.html">
+                <img class="cvd__img" src="../assets/img/store-photo-6.jpg" alt="온기식당 광화문점 대표 이미지" />
+                <b class="cvd__name">온기식당 광화문점</b>
+                <span class="cvd__code mono">ST000004</span>
+                <span class="cvd__col">일반점포</span>
+                <span class="cvd__col"><span data-icon="pin" data-icon-size="14"></span>서울 종로구</span>
+                <span class="cvd__col cva__staff" title="근무직원 수"><span data-icon="users" data-icon-size="14"></span>6</span>
+                <span class="badge badge--ok ">운영</span>
+                <span class="cvd__date mono">2025-06-02</span>
+              </a>
+              <a class="cvd" href="detail.html">
+                <img class="cvd__img" src="../assets/img/store-mori.svg" alt="모리커피 합정점 대표 이미지" />
+                <b class="cvd__name">모리커피 합정점</b>
+                <span class="cvd__code mono">ST000012</span>
+                <span class="cvd__col">가맹점포</span>
+                <span class="cvd__col"><span data-icon="pin" data-icon-size="14"></span>서울 마포구</span>
+                <span class="cvd__col cva__staff" title="근무직원 수"><span data-icon="users" data-icon-size="14"></span>0</span>
+                <span class="badge badge--risk ">폐점</span>
+                <span class="cvd__date mono">2025-02-14</span>
+              </a>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+  </body>
+</html>

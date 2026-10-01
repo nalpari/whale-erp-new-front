@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BP 휴일 수정 — 화면정의서</title>
+<link rel="stylesheet" href="../assets/screen-def.css">
+</head>
+<body data-export-name="config-holidays-edit.screen-def">
+<header>
+  <div>
+    <h1>BP 휴일 수정 — 화면정의서</h1>
+    <p>config/holidays-edit.html?embed=1 렌더링(LNB·상단 GNB 제외, 화면 본문만, HD-0122 창립기념일 · 전체 점포 · 매년 반복 상태 기준) 위에 번호를 붙이고 우측에 설명을 매칭했다. manyfast S-BXEAEZ(F-YQTLQE BP 휴일 관리) 기준.</p>
+    <table class="meta-table">
+      <tr><td class="k">화면명</td><td class="v" id="metaName"></td><td class="k">화면경로</td><td class="v" id="metaPath"></td></tr>
+    </table>
+  </div>
+  <div class="head-actions">
+    <button type="button" class="btn2" id="btnEdit">편집 모드</button>
+    <button type="button" class="btn2" id="btnArm" hidden>핀 추가</button>
+    <button type="button" class="btn2 btn2--accent" id="btnExport" hidden>내보내기</button>
+  </div>
+</header>
+<div class="edit-hint">편집 모드: "핀 추가"를 누르고 화면을 한 번 클릭하면 그 자리에 새 번호가 생깁니다(또는 아래 "+ 항목 추가"로 기본 위치에 바로 추가). 기존 핀은 드래그로 옮기고, 오른쪽 × 로 지웁니다. Shift(또는 Ctrl)+클릭으로 핀 여러 개를 한꺼번에 선택해 같이 드래그할 수 있습니다. 빈 곳을 클릭하면 선택이 풀립니다. 항목명·설명은 클릭해서 바로 고치세요. 다 끝나면 "내보내기"로 새 HTML 파일을 받아 저장소 파일과 바꿔주세요(이 브라우저에는 임시로 자동저장됩니다).</div>
+
+<div class="layout">
+  <div class="shot-pane">
+    <div class="shot-wrap" id="shotWrap">
+      <img src="config-holidays-edit.screen-def.png" alt="BP 휴일 수정 화면 스크린샷(LNB 제외)" id="shotImg">
+    </div>
+  </div>
+
+  <div class="desc-pane">
+    <div class="desc-title"><span>Description</span></div>
+    <div class="purpose" id="purposeEl"></div>
+
+    <table class="desc-table"><tbody id="descBody"></tbody></table>
+    <div class="add-row" id="addRow">+ 항목 추가 (기본 위치에 추가 — 드래그로 옮기세요)</div>
+
+    <div class="skip-note">
+      "목업 상태" 토글은 실제 화면 요소가 아니라 목업 자체의 전환 컨트롤이라 번호에서 제외했다. 상단 GNB와 좌측 LNB는 이 화면정의서 스크린샷 자체에서 제외했다(embed 모드). 지난 날짜·권한 없음으로 주소 진입 시에는 이 화면을 열지 않고 상세로 돌려보낸다(실제로는 뜨지 않는 화면).
+    </div>
+  </div>
+</div>
+
+<script id="state-json" type="application/json">
+{
+  "screenName": "BP 휴일 수정",
+  "screenPath": "BP 환경설정 > BP 휴일 관리 > 수정",
+  "purpose": "# 화면 목적 및 기능 — 상세의 수정 버튼으로만 들어와 휴일의 적용 범위·대상(또는 예외) 점포·날짜·휴일명·설명·반복 설정을 고치는 화면. 저장·취소·뒤로는 모두 그 휴일의 상세로 돌아간다. 반복·기간 휴일의 수정은 항상 상세에서 고른 날짜부터 이후 모두에 적용되며, 첫 날짜가 아니면 휴일이 두 번호로 나뉜다",
+  "items": [
+    { "x": 1019, "y": 29, "title": "취소", "desc": "정의: 저장하지 않고 이 휴일의 상세로 돌아가는 버튼" },
+    { "x": 1073, "y": 29, "title": "저장", "desc": "정의: '이 날짜부터 이후 휴일에 모두 적용됩니다'를 한 번 확인한 뒤 저장\n고른 날짜가 반복의 첫 날짜면 휴일 전체가 바뀜. 첫 날짜가 아니면 앞부분(고른 날짜 전날까지)은 원래 휴일 번호를 유지하고, 뒷부분(고른 날짜부터)은 새 휴일 번호를 받아 '원래 휴일 HD-xxxx'를 표시하며 상세에서 서로 오갈 수 있음\n같은 점포에 날짜가 겹치는 휴일이 있어도 저장(겹침 안내만), 지난 날짜는 어떤 경우에도 바뀌지 않음\n다른 사람이 먼저 고쳤으면 저장하지 않고 '최신 정보 불러오기' 안내\n필수 항목 누락, 바꾸려는 날짜가 지난 날짜, 대상 점포가 접근 범위 밖이 된 경우도 저장하지 않고 각각 안내\n일부 점포만 맡은 사람이 저장하면 그 점포들이 원래 휴일에서 빠지고 그 점포만 대상인 새 휴일이 생기며, 나머지 점포는 원래 휴일에 그대로 남음" },
+    { "x": 309, "y": 383, "title": "적용 범위 · 전체 점포", "desc": "정의: BP의 모든 점포에 적용, 예외 점포를 뺄 수 있음\n전체 점포로 바꾸는 것은 BP 마스터·전체 점포 범위 BP 관리자·플랫폼 사용자만 가능" },
+    { "x": 852, "y": 383, "title": "적용 범위 · 특정 점포", "desc": "정의: 고른 점포에만 적용, 여러 곳을 한 휴일로 묶을 수 있음\n선택지는 수정하는 사람의 접근 범위 안 점포뿐" },
+    { "x": 594, "y": 581, "title": "예외 점포 찾기", "desc": "정의: 전체 점포 적용 시, 뺄 점포를 검색해 추가하는 입력란(접근 범위 안 점포만)" },
+    { "x": 594, "y": 678, "title": "예외 점포 목록", "desc": "정의: 고른 예외 점포 목록과 개수, '모두 빼기' 버튼\n고른 점포는 이 휴일의 모든 날짜에서 빠지고, 비워 두면 모든 점포에 적용" },
+    { "x": 135, "y": 933, "title": "시작일(고른 날짜)", "desc": "정의: 필수 입력\n옮기면 새 휴일은 그 날짜부터 반복하며, 고른 날짜 이후로만 옮길 수 있음(앞당기려면 상세에서 그 날짜를 골라 수정해야 함)" },
+    { "x": 852, "y": 933, "title": "휴일명", "desc": "정의: 필수 입력, 최대 30자" },
+    { "x": 580, "y": 1087, "title": "설명", "desc": "정의: 선택 입력 텍스트" },
+    { "x": 216, "y": 1299, "title": "반복 유형", "desc": "정의: 반복 안 함 · 매일 · 매주 · 매월 · 매년 중 선택\n하루 휴일도 반복 유형을 고를 수 있고, 기간과 반복은 함께 쓰지 않음" },
+    { "x": 150, "y": 1382, "title": "종료 조건", "desc": "정의: 종료일 없음 · 특정 날짜까지 · 지정 횟수만큼 중 선택" },
+    { "x": 52, "y": 1460, "title": "반복설정 하단 안내", "desc": "정의: 고른 날짜가 이 반복의 첫 날짜라 휴일 전체가 바뀐다는 것과, 저장할 때 확인 문구를 한 번 거친다는 안내\n첫 날짜가 아닌 경우(예: HD-0114)에는 기존 휴일이 고른 날짜 전날에 끝나고 새 휴일 번호로 이어진다는 안내로 바뀐다" }
+  ]
+}
+</script>
+
+<script src="../assets/screen-def.js"></script>
+</body>
+</html>

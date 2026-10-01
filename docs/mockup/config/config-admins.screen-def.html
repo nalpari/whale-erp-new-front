@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BP 관리자 관리 — 화면정의서</title>
+<link rel="stylesheet" href="../assets/screen-def.css">
+</head>
+<body data-export-name="config-admins.screen-def">
+<header>
+  <div>
+    <h1>BP 관리자 관리 — 목록 화면정의서</h1>
+    <p>config/admins.html?embed=1 렌더링(LNB·상단 GNB 제외, 화면 본문만, BP 마스터·처음 진입 상태 기준) 위에 번호를 붙이고 우측에 설명을 매칭했다. manyfast S-AJHXFU 기준.</p>
+    <table class="meta-table">
+      <tr><td class="k">화면명</td><td class="v" id="metaName"></td><td class="k">화면경로</td><td class="v" id="metaPath"></td></tr>
+    </table>
+  </div>
+  <div class="head-actions">
+    <button type="button" class="btn2" id="btnEdit">편집 모드</button>
+    <button type="button" class="btn2" id="btnArm" hidden>핀 추가</button>
+    <button type="button" class="btn2 btn2--accent" id="btnExport" hidden>내보내기</button>
+  </div>
+</header>
+<div class="edit-hint">편집 모드: "핀 추가"를 누르고 화면을 한 번 클릭하면 그 자리에 새 번호가 생깁니다(또는 아래 "+ 항목 추가"로 기본 위치에 바로 추가). 기존 핀은 드래그로 옮기고, 오른쪽 × 로 지웁니다. Shift(또는 Ctrl)+클릭으로 핀 여러 개를 한꺼번에 선택해 같이 드래그할 수 있습니다. 빈 곳을 클릭하면 선택이 풀립니다. 항목명·설명은 클릭해서 바로 고치세요. 다 끝나면 "내보내기"로 새 HTML 파일을 받아 저장소 파일과 바꿔주세요(이 브라우저에는 임시로 자동저장됩니다).</div>
+
+<div class="layout">
+  <div class="shot-pane">
+    <div class="shot-wrap" id="shotWrap">
+      <img src="config-admins.screen-def.png" alt="BP 관리자 관리 목록 화면 스크린샷(LNB 제외)" id="shotImg">
+    </div>
+  </div>
+
+  <div class="desc-pane">
+    <div class="desc-title"><span>Description</span></div>
+    <div class="purpose" id="purposeEl"></div>
+
+    <table class="desc-table"><tbody id="descBody"></tbody></table>
+    <div class="add-row" id="addRow">+ 항목 추가 (기본 위치에 추가 — 드래그로 옮기세요)</div>
+
+    <div class="skip-note">
+      "목업 권한"·"목업 상태" 토글은 실제 화면 요소가 아니라 목업 자체의 전환 컨트롤이라 번호에서 제외했다. 상단 GNB와 좌측 LNB는 이 화면정의서 스크린샷 자체에서 제외했다(embed 모드). 조회 범위는 보는 사람의 역할(BP 마스터/BP 관리자/가맹 마스터/가맹 관리자/플랫폼 사용자)에 따라 달라진다 — 화면은 BP 마스터 기준 기본 상태를 캡처했다.
+    </div>
+  </div>
+</div>
+
+<script id="state-json" type="application/json">
+{
+  "screenName": "BP 관리자 관리",
+  "screenPath": "BP 환경설정 > BP 관리자 관리 > 목록",
+  "purpose": "# 화면 목적 및 기능 — BP 관리자·가맹 마스터·가맹 관리자 계정을 역할별 조회 범위 안에서 검색·조회하고, 상세로 이동하거나 신규 등록으로 이어지는 진입 화면(BP 마스터·플랫폼 관리자 계정은 다루지 않음)",
+  "items": [
+    { "x": 260, "y": 280, "title": "점포 필터", "desc": "정의: 점포코드 또는 점포명으로 검색해 여러 점포를 골라 칩으로 쌓는 다중 선택 필터\n선택하지 않으면 접근 가능한 점포 전체가 대상" },
+    { "x": 635, "y": 280, "title": "아이디 · 이름", "desc": "정의: 아이디와 이름을 한꺼번에 검색하는 입력란(둘 중 하나에 입력한 글자가 포함되면 결과에 나옴)" },
+    { "x": 927, "y": 280, "title": "권한 그룹", "desc": "정의: 조회 범위 안의 권한 그룹으로 좁히는 드롭다운\nBP 관리자/가맹 마스터/가맹 관리자 그룹을 optgroup으로 구분해 표시" },
+    { "x": 1218, "y": 280, "title": "계정 상태", "desc": "정의: 전체 · 사용 · 미사용 중 하나를 고르는 드롭다운(일치 조건)" },
+    { "x": 1255, "y": 337, "title": "초기화", "desc": "정의: 검색 조건을 기본값(처음 진입 상태)으로 되돌림" },
+    { "x": 1326, "y": 337, "title": "검색", "desc": "정의: 조건대로(모두 AND) 목록을 다시 불러옴" },
+    { "x": 173, "y": 432, "title": "관리자 계정 건수", "desc": "정의: 현재 검색 조건에 해당하는 계정 총 인원수(미사용 인원 포함 표시)" },
+    { "x": 1303, "y": 432, "title": "관리자 등록", "desc": "정의: 관리자 등록 화면으로 이동하는 버튼\n등록 권한이 있는 BP 마스터·BP 관리자·가맹 마스터·플랫폼 사용자에게만 보임 — 가맹 관리자는 어느 역할도 등록하지 않음" },
+    { "x": 68, "y": 522, "title": "아이디", "desc": "정의: 계정 아이디, 누르면 상세로 이동\n목록에는 수정 링크가 없고 수정은 상세를 거쳐서만 가능" },
+    { "x": 219, "y": 522, "title": "이름", "desc": "정의: 계정 이름, 누르면 상세로 이동\n등록 직후 계정은 \"새 계정\" 배지가 붙음" },
+    { "x": 370, "y": 522, "title": "권한", "desc": "정의: 권한 그룹명·코드와 역할(BP 관리자/가맹 마스터/가맹 관리자)을 함께 표시" },
+    { "x": 626, "y": 522, "title": "계정 상태", "desc": "정의: 사용 · 미사용 배지 표시, 미사용 줄은 흐리게 표시" },
+    { "x": 778, "y": 522, "title": "매핑 점포", "desc": "정의: 이 계정이 맡은 점포 수, BP 관리자가 전체 점포를 맡으면 \"전체 · N\"으로 표시" },
+    { "x": 954, "y": 522, "title": "등록일시", "desc": "정의: 계정 등록 일시, 기본 정렬 기준(최신순)" },
+    { "x": 1204, "y": 522, "title": "최근 로그인", "desc": "정의: 가장 최근 로그인 일시, 기록이 없으면 \"로그인 기록 없음\"" },
+    { "x": 163, "y": 968, "title": "페이지네이션 · 페이지당 표시", "desc": "정의: 전체 건수/현재 범위 표시, 페이지당 표시 개수 선택, 이전 · 다음 이동" },
+    { "x": 52, "y": 1028, "title": "하단 안내 문구", "desc": "정의: 흐린 줄(미사용 계정)은 로그인·ERP 이용만 막히고 상세·변경 이력은 그대로 남는다는 안내\nBP 마스터 계정은 플랫폼 BP 관리에서 다루므로 이 목록에 없음\n가맹 관리자 줄은 조회만 되고 수정·비밀번호 초기화는 연결된 가맹 마스터만 가능\n권한 그룹은 BP 권한 그룹 관리 화면의 값과 같음(링크 제공)" }
+  ]
+}
+</script>
+
+<script src="../assets/screen-def.js"></script>
+</body>
+</html>

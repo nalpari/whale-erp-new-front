@@ -38,7 +38,7 @@
           "login",
           "home"
         ],
-        "note": "로그인 전 홈은 마케팅 표면이고, 로그인하면 업무 셸이 시작된다."
+        "note": "비로그인 홈은 마케팅 표면이고, 로그인하면 업무 셸이 시작된다."
       },
       {
         "id": "v2",
@@ -93,7 +93,7 @@
   "groups": [
     {
       "id": "g1",
-      "label": "HOME-2 · 세 탭 · 초대 확인 없음",
+      "label": "1팀 화면 · 초대 확인은 앱에서",
       "lane": "auth",
       "fromCol": 1,
       "toCol": 1,
@@ -120,8 +120,8 @@
       "lane": "pre",
       "col": 0,
       "type": "frontend",
-      "label": "로그인 전 홈",
-      "sublabel": "소개 · 공지 · 도입문의",
+      "label": "비로그인 홈",
+      "sublabel": "소개 · 공지사항 · 도입문의",
       "width": 150
     },
     {
@@ -147,8 +147,8 @@
       "lane": "auth",
       "col": 1,
       "type": "security",
-      "label": "로그인 · 가입 · 계정 찾기",
-      "sublabel": "세 탭 한 화면",
+      "label": "로그인 · 가입 · 찾기",
+      "sublabel": "1팀 화면 · 아이디 로그인",
       "width": 170
     },
     {
@@ -167,7 +167,7 @@
       "col": 5,
       "type": "frontend",
       "label": "업무 화면",
-      "sublabel": "직원 · 고객지원 · 알림함",
+      "sublabel": "직원 · 고객지원 · 운영 알림함",
       "width": 140
     },
     {
@@ -256,6 +256,20 @@
       "variant": "security",
       "label": "고를 점포 없음",
       "role": "error"
+    },
+    {
+      "id": "e-home-landing",
+      "from": "home",
+      "to": "landing",
+      "label": "로그아웃 · 탈퇴",
+      "role": "branch"
+    },
+    {
+      "id": "e-home-login",
+      "from": "home",
+      "to": "login",
+      "label": "접속 만료",
+      "role": "branch"
     }
   ],
   "cards": [
@@ -263,14 +277,14 @@
       "dot": "emerald",
       "title": "확정된 결정",
       "items": [
-        "HOME-2 세 탭, 초대 확인은 직원 근무 앱 · HOME-4 로그인하면 늘 전체 · STAFF-10·11 하나만 고르고 데이터만 가른다"
+        "HOME-4 로그인하면 늘 전체 · STAFF-10·11 하나만 고르고 데이터만 가른다 · 스스로 로그아웃하거나 탈퇴하면 비로그인 홈으로, 접속이 만료되면 로그인 화면으로 간다(1팀 MYPAGE-3 · 2026-09-23)"
       ]
     },
     {
       "dot": "slate",
       "title": "밖에 있는 것",
       "items": [
-        "가입·BP 등록 절차는 1팀 영역 · 직원은 웹으로 로그인하지 않는다 · 서비스 소개 분량은 HOME-3 보류"
+        "로그인·가입·계정 찾기는 1팀 화면이다 — 관리자는 아이디로 로그인하고 임시 비밀번호를 메일로 받는다(1팀 AUTH-1·4) · 직원은 웹으로 로그인하지 않고 초대 확인도 직원 근무 앱에서 한다 · 서비스 소개 분량은 HOME-3 보류"
       ]
     }
   ]

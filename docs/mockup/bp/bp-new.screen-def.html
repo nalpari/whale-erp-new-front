@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BP 마스터 계정 등록 — 화면정의서</title>
+<link rel="stylesheet" href="../assets/screen-def.css">
+</head>
+<body data-export-name="bp-new.screen-def">
+<header>
+  <div>
+    <h1>BP 마스터 계정 등록 — 화면정의서</h1>
+    <p>bp/new.html?embed=1 렌더링(LNB·상단 GNB 제외, 화면 본문만) 위에 번호를 붙이고 우측에 설명을 매칭했다. manyfast S-OJEYQJ · 사업자 번호 인증 컴포넌트 S-VRNTHD 기준.</p>
+    <table class="meta-table">
+      <tr><td class="k">화면명</td><td class="v" id="metaName"></td><td class="k">화면경로</td><td class="v" id="metaPath"></td></tr>
+    </table>
+  </div>
+  <div class="head-actions">
+    <button type="button" class="btn2" id="btnEdit">편집 모드</button>
+    <button type="button" class="btn2" id="btnArm" hidden>핀 추가</button>
+    <button type="button" class="btn2 btn2--accent" id="btnExport" hidden>내보내기</button>
+  </div>
+</header>
+<div class="edit-hint">편집 모드: "핀 추가"를 누르고 화면을 한 번 클릭하면 그 자리에 새 번호가 생깁니다(또는 아래 "+ 항목 추가"로 기본 위치에 바로 추가). 기존 핀은 드래그로 옮기고, 오른쪽 × 로 지웁니다. Shift(또는 Ctrl)+클릭으로 핀 여러 개를 한꺼번에 선택해 같이 드래그할 수 있습니다. 빈 곳을 클릭하면 선택이 풀립니다. 항목명·설명은 클릭해서 바로 고치세요. 다 끝나면 "내보내기"로 새 HTML 파일을 받아 저장소 파일과 바꿔주세요(이 브라우저에는 임시로 자동저장됩니다).</div>
+
+<div class="layout">
+  <div class="shot-pane">
+    <div class="shot-wrap" id="shotWrap">
+      <img src="bp-new.screen-def.png" alt="BP 마스터 계정 등록 화면 스크린샷(LNB 제외)" id="shotImg">
+    </div>
+  </div>
+
+  <div class="desc-pane">
+    <div class="desc-title"><span>Description</span></div>
+    <div class="purpose" id="purposeEl"></div>
+
+    <table class="desc-table"><tbody id="descBody"></tbody></table>
+    <div class="add-row" id="addRow">+ 항목 추가 (기본 위치에 추가 — 드래그로 옮기세요)</div>
+
+    <div class="skip-note">
+      "목업 상태" 토글은 실제 화면 요소가 아니라 목업 자체의 전환 컨트롤이라 번호에서 제외했다. 상단 GNB와 좌측 LNB는 이 화면정의서 스크린샷 자체에서 제외했다(embed 모드). 인증 완료 후의 읽기전용 카드·재인증 팝업은 기본 상태 스크린샷에는 안 보이지만 10번 항목 설명에 정리했다.
+    </div>
+  </div>
+</div>
+
+<script id="state-json" type="application/json">
+{
+  "screenName": "BP 마스터 계정 등록",
+  "screenPath": "BP 마스터 계정 관리 > BP 마스터 계정 등록",
+  "purpose": "# 화면 목적 및 기능 — 플랫폼 관리자가 BP와 BP 마스터 계정을 한 번에 등록하는 화면. 기본정보와 상호명만 필수이고 사업자정보 인증은 전부 선택이며, 인증 안 해도 등록할 수 있다",
+  "items": [
+    { "x": 1019, "y": 29, "title": "취소", "desc": "정의: 저장하지 않고 BP 목록으로 돌아가는 버튼" },
+    { "x": 1073, "y": 29, "title": "등록", "desc": "정의: BP와 BP 마스터 계정을 함께 생성하고 상세 화면으로 이동\n사업자정보 인증 여부와 무관하게 등록 가능\nBP 상태는 사용으로 고정, 권한 그룹은 BP 마스터 기본 권한, 가입경로는 플랫폼등록, 약관은 미동의로 생성\nBP 코드는 저장이 끝난 뒤 자동 채번해 상세 화면에서 알림\n초기 비밀번호는 BP 신규 등록 메일로만 발송" },
+    { "x": 307, "y": 281, "title": "아이디", "desc": "정의: 필수 입력, 등록한 뒤에는 바꿀 수 없다\n다른 계정과 중복이면 \"이미 사용 중인 아이디입니다.\"" },
+    { "x": 851, "y": 281, "title": "이름", "desc": "정의: BP 마스터 이름, 필수 입력" },
+    { "x": 130, "y": 393, "title": "연락처", "desc": "정의: BP 마스터 연락처, 필수 입력\n앞자리·가운데자리·끝자리 세 칸으로 나눠 입력" },
+    { "x": 851, "y": 393, "title": "이메일", "desc": "정의: 필수 입력, 초기 비밀번호가 이 주소로 발송된다\n다른 계정에 등록된 이메일이면 \"이미 다른 계정에 등록된 이메일입니다.\"" },
+    { "x": 52, "y": 468, "title": "기본정보 하단 안내", "desc": "정의: 이 화면에서는 약관 동의를 받지 않고, 등록한 BP 마스터가 첫 로그인 때 비밀번호를 바꾸며 이용약관·개인정보 수집이용에 동의한다는 안내\n권한 그룹은 BP 마스터 기본 권한으로 정해진다" },
+    { "x": 229, "y": 551, "title": "사업자정보 선택 배지", "desc": "정의: 사업자정보 전체가 선택 항목이며 인증하지 않아도 등록된다는 표시" },
+    { "x": 52, "y": 609, "title": "사업자정보 인증 설명", "desc": "정의: 국세청 API로 사업자등록번호·대표자명·개업일자의 진위만 확인하며, 인증하지 않아도 등록할 수 있고 나중에 수정 화면에서 인증할 수 있다는 안내\n상호명은 이 인증으로 채워지지 않는다" },
+    { "x": 128, "y": 656, "title": "사업자 번호 인증하기", "desc": "정의: 사업자 번호 인증 컴포넌트(신규 인증 모드)를 팝업이 아니라 패널 안에 펼쳐 사업자등록번호·대표자명·개업일자를 입력·인증\n인증 UI는 점포 등록(stores/new.html)·회원가입과 동일한 형태\n인증에 성공하면 같은 자리가 읽기 전용 '사업자정보 · 인증 완료' 카드로 바뀌고 재인증 버튼이 생긴다\n재인증을 누르면 확인 팝업이 한 번 뜨고, 확인하면 기존 인증값이 지워지고 인증 전 입력 상자로 돌아간다(기본정보·상호명·아래 사업자정보는 그대로 유지)\n번호 중복·확인 불가·처리 오류면 인증 없이 등록으로 계속 진행할 수 있다" },
+    { "x": 307, "y": 741, "title": "상호명", "desc": "정의: 필수 입력, 1~50자\n인증 결과로 채워지지 않아 직접 입력한다" },
+    { "x": 130, "y": 853, "title": "대표자 연락처", "desc": "정의: 선택 입력, 세 칸으로 나눠 입력" },
+    { "x": 851, "y": 853, "title": "대표자 이메일", "desc": "정의: 선택 입력" },
+    { "x": 540, "y": 940, "title": "사업자주소 검색", "desc": "정의: 도로명·건물명·지번으로 검색하는 입력란" },
+    { "x": 1073, "y": 940, "title": "주소 검색 버튼", "desc": "정의: 검색어로 주소를 찾아 결과 목록을 펼치는 버튼" },
+    { "x": 250, "y": 988, "title": "우편번호 · 기본주소", "desc": "정의: 읽기 전용, 주소 검색 결과에서 고른 값만 채워진다" },
+    { "x": 307, "y": 1036, "title": "상세주소", "desc": "정의: 직접 입력하는 상세주소" },
+    { "x": 52, "y": 1073, "title": "주소 입력 안내", "desc": "정의: 검색 결과에서 고른 우편번호·기본주소만 들어가고, 상세주소는 직접 적는다는 안내" },
+    { "x": 307, "y": 1149, "title": "업태", "desc": "정의: 선택 입력" },
+    { "x": 851, "y": 1149, "title": "종목", "desc": "정의: 선택 입력" }
+  ]
+}
+</script>
+
+<script src="../assets/screen-def.js"></script>
+</body>
+</html>

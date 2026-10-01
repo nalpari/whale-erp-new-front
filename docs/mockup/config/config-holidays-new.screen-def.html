@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BP 휴일 등록 — 화면정의서</title>
+<link rel="stylesheet" href="../assets/screen-def.css">
+</head>
+<body data-export-name="config-holidays-new.screen-def">
+<header>
+  <div>
+    <h1>BP 휴일 등록 — 화면정의서</h1>
+    <p>config/holidays-new.html?embed=1 렌더링(LNB·상단 GNB 제외, 화면 본문만, BP 마스터 역할·입력·하루·점포 여럿 상태 기준) 위에 번호를 붙이고 우측에 설명을 매칭했다. manyfast S-UCPMYB(F-YQTLQE BP 휴일 관리) 기준.</p>
+    <table class="meta-table">
+      <tr><td class="k">화면명</td><td class="v" id="metaName"></td><td class="k">화면경로</td><td class="v" id="metaPath"></td></tr>
+    </table>
+  </div>
+  <div class="head-actions">
+    <button type="button" class="btn2" id="btnEdit">편집 모드</button>
+    <button type="button" class="btn2" id="btnArm" hidden>핀 추가</button>
+    <button type="button" class="btn2 btn2--accent" id="btnExport" hidden>내보내기</button>
+  </div>
+</header>
+<div class="edit-hint">편집 모드: "핀 추가"를 누르고 화면을 한 번 클릭하면 그 자리에 새 번호가 생깁니다(또는 아래 "+ 항목 추가"로 기본 위치에 바로 추가). 기존 핀은 드래그로 옮기고, 오른쪽 × 로 지웁니다. Shift(또는 Ctrl)+클릭으로 핀 여러 개를 한꺼번에 선택해 같이 드래그할 수 있습니다. 빈 곳을 클릭하면 선택이 풀립니다. 항목명·설명은 클릭해서 바로 고치세요. 다 끝나면 "내보내기"로 새 HTML 파일을 받아 저장소 파일과 바꿔주세요(이 브라우저에는 임시로 자동저장됩니다).</div>
+
+<div class="layout">
+  <div class="shot-pane">
+    <div class="shot-wrap" id="shotWrap">
+      <img src="config-holidays-new.screen-def.png" alt="BP 휴일 등록 화면 스크린샷(LNB 제외)" id="shotImg">
+    </div>
+  </div>
+
+  <div class="desc-pane">
+    <div class="desc-title"><span>Description</span></div>
+    <div class="purpose" id="purposeEl"></div>
+
+    <table class="desc-table"><tbody id="descBody"></tbody></table>
+    <div class="add-row" id="addRow">+ 항목 추가 (기본 위치에 추가 — 드래그로 옮기세요)</div>
+
+    <div class="skip-note">
+      "목업 권한"·"목업 상태" 토글은 실제 화면 요소가 아니라 목업 자체의 전환 컨트롤이라 번호에서 제외했다. 상단 GNB와 좌측 LNB는 이 화면정의서 스크린샷 자체에서 제외했다(embed 모드). 조회만 권한은 이 화면 자체를 쓸 수 없다(목록에 휴일 등록 버튼이 없음).
+    </div>
+  </div>
+</div>
+
+<script id="state-json" type="application/json">
+{
+  "screenName": "BP 휴일 등록",
+  "screenPath": "BP 환경설정 > BP 휴일 관리 > 등록",
+  "purpose": "# 화면 목적 및 기능 — 적용 범위(전체/특정 점포) → 대상 또는 예외 점포 → 날짜(하루/기간) → 휴일명·설명 → 반복 순서로 입력받아 BP 휴일을 규칙 한 건으로 등록하는 화면. 기간과 반복은 함께 쓰지 않고, 휴일은 종일만 지원하며 지난 날짜는 등록할 수 없다",
+  "items": [
+    { "x": 1019, "y": 29, "title": "취소", "desc": "정의: 저장하지 않고 휴일 목록으로 돌아가는 버튼" },
+    { "x": 1073, "y": 29, "title": "등록", "desc": "정의: 입력한 내용으로 휴일을 만들고 새 휴일의 상세(등록 직후)로 이동\n실패 사유별 안내: 반복 823건처럼 730건 초과(\"한 번에 만들 수 있는 휴일은 730건까지\"), 기간 1년 초과, 종료일이 시작일보다 빠름, 지난 날짜, 같은 날짜·같은 적용 범위에 이미 휴일 있음(기존 휴일 보기 링크 제공), 대상 점포가 접근 범위 밖, 필수 항목 누락, 처리 실패\n실패하면 휴일은 한 건도 만들어지지 않고 입력 내용은 화면에 남는다\n같은 점포에 날짜가 겹치는 휴일이 이미 있어도 등록은 막지 않고 겹침 안내만 표시(처음 10건, 나머지는 '외 N건')\n전체 점포 휴일에서 예외 점포로 모든 점포를 빼 적용 점포가 0곳이어도 등록은 막지 않음" },
+    { "x": 309, "y": 383, "title": "적용 범위 · 전체 점포", "desc": "정의: BP의 모든 점포에 적용, 예외 점포를 뺄 수 있음\n전체 점포 휴일과 예외 점포는 BP 마스터·전체 점포 범위 BP 관리자·플랫폼 사용자만 다룰 수 있고, 일부 점포 BP 관리자·가맹 마스터·가맹 관리자에게는 이 카드가 비활성" },
+    { "x": 852, "y": 383, "title": "적용 범위 · 특정 점포", "desc": "정의: 고른 점포에만 적용, 여러 곳을 한 휴일로 묶을 수 있음(기본 선택)\n선택지는 등록하는 사람의 접근 범위 안 점포뿐" },
+    { "x": 594, "y": 581, "title": "대상 점포 찾기", "desc": "정의: 필수, 점포명 또는 점포코드로 검색해 추가하는 입력란\n대상 점포를 한 곳도 안 고르면 \"특정 점포 휴일은 대상 점포를 한 곳 이상 골라야 합니다.\"" },
+    { "x": 594, "y": 665, "title": "선택한 점포 목록", "desc": "정의: 고른 대상(또는 예외) 점포 목록과 개수, '모두 빼기' 버튼\n고른 점포는 모두 이 휴일 한 건에 묶인다" },
+    { "x": 100, "y": 902, "title": "날짜 방식", "desc": "정의: 하루 · 기간 중 선택(기본값 하루)\n기간을 고르면 반복 설정 칸을 닫는다 — 기간과 반복은 함께 쓰지 않음" },
+    { "x": 135, "y": 948, "title": "날짜 값", "desc": "정의: 필수, 오늘 또는 그 뒤 날짜만 가능(대한민국 표준시 기준)\n지난 날짜를 넣고 등록하면 \"지난 날짜에는 휴일을 등록할 수 없습니다.\"" },
+    { "x": 852, "y": 905, "title": "휴일명", "desc": "정의: 필수, 최대 30자\n캘린더 우측 목록에 '휴일명 - 적용 대상'으로 표시된다" },
+    { "x": 580, "y": 1057, "title": "설명", "desc": "정의: 선택 입력 텍스트" },
+    { "x": 216, "y": 1297, "title": "반복 유형", "desc": "정의: 반복 안 함(기본값) · 매일 · 매주 · 매월 · 매년 중 선택, 공통코드(휴일 반복 유형)에서 읽어 채움\n반복 기준은 시작일의 요일·날짜, 종료 조건은 종료일 없음·특정 날짜까지·지정 횟수만큼 중 하나\n그 날짜가 없는 달·해(31일 없는 달, 2월 29일 없는 해)는 건너뛰고 미리 알리며, 지정 횟수는 실제로 생긴 날만 센다\n만들어지는 날짜 수에 상한은 없으나 등록 시 730건을 넘으면 등록을 막는다" },
+    { "x": 52, "y": 1395, "title": "반복 하단 안내", "desc": "정의: 같은 날 전체 점포 휴일이 있어도 특정 점포 휴일은 따로 만들 수 있고 그 점포 업무에는 특정 점포 휴일이 우선한다는 것, 매년 반복을 2월 29일에 시작하면 2월 29일이 없는 해는 건너뛴다는 것, 저장이 실패하면 휴일이 생기지 않는다는 것, 공식 휴일은 플랫폼 공식 휴일 테이블에서 읽어 달력에만 칠하므로 여기서 등록하지 않는다는 안내" }
+  ]
+}
+</script>
+
+<script src="../assets/screen-def.js"></script>
+</body>
+</html>

@@ -76,7 +76,7 @@ def check_classes(files):
 
 def check_layers(files):
     """새 영역을 추가하면 AREAS 에 폴더명만 넣으면 된다."""
-    AREAS = ["staff", "home", "support", "notify", "staff-app", "attendance"]
+    AREAS = ["staff", "home", "auth", "mypage", "stores", "bp", "system", "config", "support", "notify", "staff-app", "attendance"]
     out=[]
     root=open("index.html", encoding="utf-8").read()
 
@@ -187,6 +187,7 @@ def check_decisions(files):
         ("날인 기한 30일",      [r'14일\s*뒤\s*(자동\s*)?만료', r'날인 기한은?\s*발송일로부터\s*14일']),
         ("계약 상태 6단계",     [r'>승인 대기<']),
         ("TO-DO 특별업무 전용", [r'매일 \d\d:\d\d', r'매주 [월화수목금토일]', r'매월 \d+일']),
+        ("관리자 초기화는 재설정 링크", [r'시스템이 만든 (새 )?비밀번호']),
     ]
     out=[]
     for f in files:

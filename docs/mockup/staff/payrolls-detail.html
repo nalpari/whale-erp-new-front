@@ -21,7 +21,7 @@
           <div class="titlebar__end">
             <span class="filters__count">서지안 · 2026-08 · 모리커피 서초점</span>
             <button class="btn btn--secondary btn--sm" type="button">임시저장</button>
-            <button class="btn btn--primary btn--sm" type="button">
+            <button class="btn btn--primary btn--sm" type="button" data-tip="확정까지만 여기서 한다. 발송은 급여명세서 목록에서 확정 건을 모아 보낸다.">
               <span data-icon="check" data-icon-size="14"></span>확정
             </button>
           </div>
@@ -64,8 +64,8 @@
             </p>
             <div class="gap__block">
                 <b>확정 — 지급은 자동, 공제는 입력.</b>
-                기본급·주휴·연장은 이번 달 출퇴근으로 계산해 채우고 관리자가 고칠 수 있다.
-                아래 공제 칸은 비어 있으며, 지난 명세서에서 불러오거나 직접 넣는다.
+                기본급·주휴수당·연장수당 <b>셋만</b> 이번 달 출퇴근으로 계산해 채우고 관리자가 고칠 수 있다. 나머지 지급 여덟 줄은 직접 넣는다.
+                아래 공제 칸은 비어 있으며, 지난 명세서에서 불러오거나 직접 넣는다. 항목 목록은 플랫폼 관리자가 관리하고 점포 관리자는 골라 붙이기만 한다.
               </div>
           </div>
 
@@ -81,7 +81,34 @@
                 </div>
               </div>
               <div class="panel__body">
-                <div class="eyebrow">지급</div>
+                <div class="spread" style="margin-bottom: var(--s-3)">
+                  <span class="eyebrow" style="margin: 0">지급</span>
+                  <span class="subtle" style="font-size: 12px">계산값 셋 · 입력 여덟</span>
+                </div>
+                <div class="field">
+                  <label class="inline" for="ot">
+                    <span class="toggle" id="ot" role="switch" aria-pressed="true" tabindex="0"></span>
+                    연장·야간·휴일 가산 적용
+                  </label>
+                  <span class="help">
+                    상시근로자 5인 미만 사업장은 근로기준법 제56조(연장·야간·휴일)와 기간제법 제6조가 모두 걸리지 않아 셋을 한 스위치로 묶었다.
+                    끄면 연장수당을 계산하지 않고, 관리자가 넣는 야간수당·휴일근무수당 칸에는 <b>가산 대상 아님</b>이 선다.
+                    <b>이 명세서 한 장에만</b> 걸리는 값이라 달마다 다시 정한다. 바꾸면 연장수당 계산값이 다시 채워지고, 바꾼 것은 처리 이력에 <b>수정</b>으로 남는다.
+새 명세서는 같은 직원의 <b>지난 명세서 값</b>으로 시작하고, 첫 명세서는 적용으로 연다.
+                  </span>
+                </div>
+                <div class="field">
+                  <label class="inline" for="wh">
+                    <span class="toggle" id="wh" role="switch" aria-pressed="true" tabindex="0"></span>
+                    3.3% 원천징수 적용
+                  </label>
+                  <span class="help">
+                    근로계약을 맺은 직원에게 사업소득 3.3% 를 적용한다. <b>노무·세무 확인 중</b>이다(STAFF-18).
+                    켜면 공제가 4대보험 네 줄과 3.3% 가 되고 소득세·지방소득세는 빠진다 — 3.3% 가 사업소득세 3% 와 지방소득세 0.3% 라서 두 줄을 남기면 세금을 두 번 떼게 된다.
+                    끄면 기본 공제 여섯으로 돌아간다. 지난 명세서 값으로 시작하고 첫 명세서는 켜진 채로 연다. 바꾼 것은 처리 이력에 <b>수정</b>으로 남는다.
+                    <b>파트타이머 명세서에만 서는 칸이다</b> — 정직원 명세서에는 없다. 이 표본은 정직원이지만 칸을 보이려고 함께 뒀다.
+                  </span>
+                </div>
                 <div class="grid grid--2" style="gap: var(--s-4)">
                   <div class="field">
                     <label for="p1">기본급</label>
@@ -91,41 +118,124 @@
                   <div class="field">
                     <label for="p2">주휴수당</label>
                     <input class="input mono" id="p2" value="0" />
-                    <span class="help">월급제는 기본급에 포함</span>
+                    <span class="help">월급제는 기본급에 포함 · 계산값 · 1주 소정근로시간 ÷ 40 × 8시간 × 시급 · 주 15시간 이상이고 그 주 소정근로일을 개근해야 대상</span>
                   </div>
+                  <div class="field">
+                    <label for="p3">연장수당</label>
+                    <input class="input mono" id="p3" value="128,000" />
+                    <span class="help">8.0h × 1.5배 · 가산 적용 · <b>계산값 96,000</b> 을 128,000 으로 고침</span>
+                  </div>
+                  <div class="field">
+                    <label for="p4">야간수당</label>
+                    <input class="input mono" id="p4" value="0" />
+                    <span class="help" id="p4-help">직접 입력</span>
+                  </div>
+                  <div class="field">
+                    <label for="p5">휴일근무수당</label>
+                    <input class="input mono" id="p5" value="0" />
+                    <span class="help" id="p5-help">직접 입력</span>
+                  </div>
+                  <div class="field">
+                    <label for="p6">추가근무수당</label>
+                    <input class="input mono" id="p6" value="0" />
+                    <span class="help">직접 입력</span>
+                  </div>
+                  <div class="field">
+                    <label for="p7">연차수당</label>
+                    <input class="input mono" id="p7" value="0" />
+                    <span class="help">직접 입력</span>
+                  </div>
+                  <div class="field">
+                    <label for="p8">상여</label>
+                    <input class="input mono" id="p8" value="0" />
+                    <span class="help">종류는 본사가 정한다</span>
+                  </div>
+                </div>
+                <div class="spread" style="margin: var(--s-4) 0 var(--s-3)">
+                  <span class="eyebrow" style="margin: 0">지급 · 비과세</span>
+                  <span class="subtle" style="font-size: 12px">셋 모두 직접 입력</span>
                 </div>
                 <div class="grid grid--2" style="gap: var(--s-4)">
                   <div class="field">
-                    <label for="p3">연장근로수당</label>
-                    <input class="input mono" id="p3" value="128,000" />
-                    <span class="help">8.0h × 1.5배 · 계약에 가산 적용됨</span>
+                    <label for="p9">식대</label>
+                    <input class="input mono" id="p9" value="58,000" />
+                    <span class="help">비과세</span>
                   </div>
                   <div class="field">
-                    <label for="p4">기타 수당</label>
-                    <input class="input mono" id="p4" value="58,000" />
-                    <span class="help">식대 등</span>
+                    <label for="p10">자가운전보조금</label>
+                    <input class="input mono" id="p10" value="0" />
+                    <span class="help">비과세</span>
+                  </div>
+                  <div class="field">
+                    <label for="p11">육아수당</label>
+                    <input class="input mono" id="p11" value="0" />
+                    <span class="help">비과세</span>
                   </div>
                 </div>
 
+                <p class="note" style="margin: var(--s-3) 0 0">
+                  <span data-icon="info" data-icon-size="14"></span>
+                  <span>
+                    지급·공제 <b>모든 금액을 관리자가 고칠 수 있다</b>. 계산값이 있는 기본급·주휴수당·연장수당을 고치면 그 칸에 <b>계산값을 함께</b> 보여 준다.
+                    파트타이머는 계약한 요일별 소정근로시간이나 1주 소정근로시간을 넘긴 시간도 연장으로 본다 — 계약하지 않은 요일은 일한 시간 전부다.
+                    같은 시간을 두 번 가산하지는 않는다.
+                  </span>
+                </p>
+
                 <hr class="hr" />
                 <div class="spread" style="margin-bottom: var(--s-3)">
-                  <span class="eyebrow" style="margin: 0">공제</span>
+                  <span class="eyebrow" style="margin: 0">공제 · 기본</span>
                   <button class="btn btn--secondary btn--sm" type="button">
                     <span data-icon="copy" data-icon-size="14"></span>지난 명세서에서 불러오기
                   </button>
                 </div>
                 <div class="grid grid--2" style="gap: var(--s-4)">
                   <div class="field">
-                    <label for="p5">4대보험</label>
-                    <input class="input mono" id="p5" value="" placeholder="직접 입력" />
+                    <label for="d1">국민연금</label>
+                    <input class="input mono" id="d1" value="" placeholder="직접 입력" />
                     <span class="help">요율이 매년 바뀌어 자동 계산하지 않는다</span>
                   </div>
                   <div class="field">
-                    <label for="p6">소득세·지방소득세</label>
-                    <input class="input mono" id="p6" value="" placeholder="직접 입력" />
+                    <label for="d2">건강보험</label>
+                    <input class="input mono" id="d2" value="" placeholder="직접 입력" />
+                    <span class="help">직접 입력</span>
+                  </div>
+                  <div class="field">
+                    <label for="d3">고용보험</label>
+                    <input class="input mono" id="d3" value="" placeholder="직접 입력" />
+                    <span class="help">직접 입력</span>
+                  </div>
+                  <div class="field">
+                    <label for="d4">장기요양보험</label>
+                    <input class="input mono" id="d4" value="" placeholder="직접 입력" />
+                    <span class="help">직접 입력</span>
+                  </div>
+                  <div class="field">
+                    <label for="d5">소득세</label>
+                    <input class="input mono" id="d5" value="" placeholder="직접 입력" />
                     <span class="help">공제 대상이 아니면 <b>0</b> 을 넣는다</span>
                   </div>
+                  <div class="field">
+                    <label for="d6">지방소득세</label>
+                    <input class="input mono" id="d6" value="" placeholder="직접 입력" />
+                    <span class="help">공제 대상이 아니면 <b>0</b> 을 넣는다</span>
+                  </div>
+                  <div class="field" id="wh-row" hidden>
+                    <label for="d7">3.3% 원천징수</label>
+                    <input class="input mono" id="d7" value="99,858" />
+                    <span class="help">지급 총액 3,026,000 × 3.3% · 계산값 · <b>식대 같은 비과세를 포함한 총액</b>에 매긴다</span>
+                  </div>
                 </div>
+                <div class="spread" style="margin: var(--s-4) 0 var(--s-3)">
+                  <span class="eyebrow" style="margin: 0">공제 · 추가</span>
+                  <button class="btn btn--secondary btn--sm" type="button">
+                    <span data-icon="plus" data-icon-size="14"></span>항목 추가
+                  </button>
+                </div>
+                <p class="note" style="margin: 0">
+                  <span data-icon="info" data-icon-size="14"></span>
+                  <span>붙인 항목만 보인다. 연말(중도)정산·같은 항목의 소득세와 주민세·건강보험정산·장기요양보험정산·고용보험정산·국민연금정산·장기요양보험산정·퇴사자유보금·스톡옵션 열 가지 중에서 고른다.</span>
+                </p>
 
                 <hr class="hr" />
                 <div class="spread" style="padding: var(--s-2) 0">
@@ -137,9 +247,10 @@
                 <div class="band band--warn" style="margin: var(--s-3) 0 0">
                   <span class="band__ic" data-icon="alert" data-icon-size="18"></span>
                   <div class="band__body">
-                    <div class="band__title">공제가 아직 입력되지 않았습니다</div>
+                    <div class="band__title">기본 공제 여섯 칸이 아직 비어 있습니다</div>
                     <p class="band__desc">
-                      지금 실지급액은 지급 총액과 같습니다. 공제를 넣기 전에는 확정할 수 없습니다.
+                      지금 실지급액은 지급 총액과 같습니다. <b>기본 공제나 붙인 추가 공제가 비어 있으면</b> 확정할 수 없습니다.
+                      공제 대상이 아닌 항목에는 0 을 넣으세요. 파트타이머 명세서는 <b>3.3% 원천징수를 적용한 채로</b> 시작하며, 그때 공제는 4대보험 네 줄과 3.3% 입니다. 소득세·지방소득세는 3.3% 에 이미 들어 있어 함께 두지 않습니다. 적용해도 되는지는 노무·세무 확인을 기다립니다(STAFF-18).
                     </p>
                   </div>
                 </div>
@@ -198,8 +309,6 @@
                     <dd><a class="tlink" href="contracts-detail.html">CTR-2026-0143</a> · 체결 완료</dd>
                     <dt>계약 급여</dt>
                     <dd class="mono">2,840,000 원 / 월</dd>
-                    <dt>연장·야간 가산</dt>
-                    <dd><span class="badge badge--ok">적용</span> <span class="subtle">5인 이상 점포</span></dd>
                     <dt>출퇴근 기간</dt>
                     <dd class="mono">2026-08-01 ~ 08-31</dd>
                     <dt>집계 근로시간</dt>
@@ -218,18 +327,41 @@
                 <div class="log log--flat">
                   <div class="log__body">
                     <div class="log__row">
+                      <span class="log__t">09-03 14:40</span>
+                      <span class="log__tag">수정</span>
+                      <span class="log__msg">연장수당 <b>96,000</b> → 128,000 · 소득세 12,400 → 15,900 · 정하윤</span>
+                    </div>
+                    <div class="log__row">
                       <span class="log__t">09-03 10:12</span>
-                      <span class="log__tag">edit</span>
-                      <span class="log__msg">연장근로수당 <b>96,000</b> → 128,000 · 정하윤</span>
+                      <span class="log__tag">수정</span>
+                      <span class="log__msg">기본급 <b>1,842,000</b> → 1,876,000 · 정하윤</span>
+                    </div>
+                    <div class="log__row">
+                      <span class="log__t">09-03 09:20</span>
+                      <span class="log__tag">수정</span>
+                      <span class="log__msg">3.3% 원천징수 <b>적용</b> → 미적용 · 공제가 기본 여섯으로 돌아감 · 정하윤</span>
+                    </div>
+                    <div class="log__row">
+                      <span class="log__t">09-02 17:05</span>
+                      <span class="log__tag">수정</span>
+                      <span class="log__msg">연장·야간·휴일 가산 <b>미적용</b> → 적용 · 연장수당 0 → 128,000 · 정하윤</span>
                     </div>
                     <div class="log__row">
                       <span class="log__t">09-01 09:00</span>
-                      <span class="log__tag">draft</span>
+                      <span class="log__tag">초안 생성</span>
                       <span class="log__msg">초안 일괄 생성 · 검토 대기로 분류</span>
                     </div>
                   </div>
                 </div>
-                <div class="panel__note">초안 생성·확정·확정 취소·발송을 모두 이력으로 남긴다.</div>
+                <div class="panel__note">
+                  초안 생성·<b>수정</b>·확정·확정 취소·발송을 한 이력에 남긴다. 검토 중에 금액만 고쳐도 남으므로 상태가 그대로여도 이력이 쌓인다.
+                  수정 줄은 시스템이 바뀐 항목을 견줘 <b>연장수당 96,000 → 128,000</b> 꼴로 짓는다. 관리자가 적지 않는다. 한 번 저장에 여러 항목이 바뀌면 한 줄에 모은다.
+                  유형은 문장과 따로 저장해 목록에서 거른다. 저장하는 값은 <span class="mono">draft · edit · confirm · cancel · send</span> 다섯이고, 화면에는 초안 생성·수정·확정·확정 취소·발송으로 보인다.
+                  직원 근무 앱은 유형과 시각만 보고 금액 변화는 보지 않는다. 채널별 발송 성공·실패와 재시도는 이 이력이 아니라 발송 이력이 맡는다.
+                  <b>재발송은 따로 세지 않는다.</b> 두 번째 발송부터 <b>발송</b> 줄이 한 번 더 쌓일 뿐이고, 화면에서 두 번째를 재발송으로 부르는 것은 보여 주기 위한 구분이다.
+                  직원에게 가는 문구는 갈린다 — 처음은 <b>도착했습니다</b>, 다시 보낼 때는 <b>다시 발송되었습니다</b>에 금액이 바뀌었을 수 있다는 줄이 붙는다.
+                  문구의 달은 <b>급여 기간</b>을 따른다. 7월 근무분은 8월에 지급해도 7월 급여명세서이고, 6월 21일~7월 20일처럼 걸치면 시작 월인 6월로 적는다.
+                </div>
               </div>
             </section>
           </div>
@@ -237,5 +369,25 @@
       </main>
     </div>
     <script src="../assets/app.js"></script>
+    <script>
+      /* 가산을 끄면 연장수당을 계산하지 않는다. 목업이라 표본 두 값을 오간다. */
+      document.getElementById("ot").addEventListener("click", function () {
+        var on = this.getAttribute("aria-pressed") === "true";
+        var p3 = document.getElementById("p3");
+        p3.value = on ? "128,000" : "0";
+        p3.nextElementSibling.innerHTML = on
+          ? "8.0h × 1.5배 · 가산 적용 · <b>계산값 96,000</b> 을 128,000 으로 고침"
+          : "8.0h × 1.0배 · <b>가산 미적용이라 연장수당을 계산하지 않는다</b>";
+        document.getElementById("p4-help").innerHTML = on ? "직접 입력" : "<b>가산 대상 아님</b> · 넣어도 가산하지 않는다";
+        document.getElementById("p5-help").innerHTML = on ? "직접 입력" : "<b>가산 대상 아님</b> · 넣어도 가산하지 않는다";
+      });
+      /* 3.3% 를 켜면 공제가 4대보험 네 줄과 3.3% 가 된다. 소득세·지방소득세는 3.3% 에 이미 들어 있다. */
+      document.getElementById("wh").addEventListener("click", function () {
+        var on = this.getAttribute("aria-pressed") === "true";
+        document.getElementById("d5").closest(".field").hidden = on;
+        document.getElementById("d6").closest(".field").hidden = on;
+        document.getElementById("wh-row").hidden = !on;
+      });
+    </script>
   </body>
 </html>

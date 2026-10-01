@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BP 휴일 상세 — 화면정의서</title>
+<link rel="stylesheet" href="../assets/screen-def.css">
+</head>
+<body data-export-name="config-holidays-detail.screen-def">
+<header>
+  <div>
+    <h1>BP 휴일 상세 — 화면정의서</h1>
+    <p>config/holidays-detail.html?embed=1 렌더링(LNB·상단 GNB 제외, 화면 본문만, BP 마스터 역할·HD-0122 창립기념일 상태 기준) 위에 번호를 붙이고 우측에 설명을 매칭했다. manyfast S-MQELTV(F-YQTLQE BP 휴일 관리) 기준.</p>
+    <table class="meta-table">
+      <tr><td class="k">화면명</td><td class="v" id="metaName"></td><td class="k">화면경로</td><td class="v" id="metaPath"></td></tr>
+    </table>
+  </div>
+  <div class="head-actions">
+    <button type="button" class="btn2" id="btnEdit">편집 모드</button>
+    <button type="button" class="btn2" id="btnArm" hidden>핀 추가</button>
+    <button type="button" class="btn2 btn2--accent" id="btnExport" hidden>내보내기</button>
+  </div>
+</header>
+<div class="edit-hint">편집 모드: "핀 추가"를 누르고 화면을 한 번 클릭하면 그 자리에 새 번호가 생깁니다(또는 아래 "+ 항목 추가"로 기본 위치에 바로 추가). 기존 핀은 드래그로 옮기고, 오른쪽 × 로 지웁니다. Shift(또는 Ctrl)+클릭으로 핀 여러 개를 한꺼번에 선택해 같이 드래그할 수 있습니다. 빈 곳을 클릭하면 선택이 풀립니다. 항목명·설명은 클릭해서 바로 고치세요. 다 끝나면 "내보내기"로 새 HTML 파일을 받아 저장소 파일과 바꿔주세요(이 브라우저에는 임시로 자동저장됩니다).</div>
+
+<div class="layout">
+  <div class="shot-pane">
+    <div class="shot-wrap" id="shotWrap">
+      <img src="config-holidays-detail.screen-def.png" alt="BP 휴일 상세 화면 스크린샷(LNB 제외)" id="shotImg">
+    </div>
+  </div>
+
+  <div class="desc-pane">
+    <div class="desc-title"><span>Description</span></div>
+    <div class="purpose" id="purposeEl"></div>
+
+    <table class="desc-table"><tbody id="descBody"></tbody></table>
+    <div class="add-row" id="addRow">+ 항목 추가 (기본 위치에 추가 — 드래그로 옮기세요)</div>
+
+    <div class="skip-note">
+      "목업 권한"·"목업 휴일" 토글은 실제 화면 요소가 아니라 목업 자체의 전환 컨트롤이라 번호에서 제외했다. 상단 GNB와 좌측 LNB는 이 화면정의서 스크린샷 자체에서 제외했다(embed 모드). 삭제 확인 팝업의 세부 규칙은 삭제 버튼 설명에 정리했다.
+    </div>
+  </div>
+</div>
+
+<script id="state-json" type="application/json">
+{
+  "screenName": "BP 휴일 상세",
+  "screenPath": "BP 환경설정 > BP 휴일 관리 > 상세",
+  "purpose": "# 화면 목적 및 기능 — 목록·캘린더에서 고른 날짜 기준으로 휴일 규칙 한 건(적용 범위·대상·날짜·반복)과 변경 이력을 읽기 전용으로 보여주고, 권한과 날짜 조건이 맞을 때만 수정·삭제로 이어지는 화면. 휴일은 규칙 한 건으로 저장되고 날짜는 조회 시점에 계산한다",
+  "items": [
+    { "x": 110, "y": 29, "title": "제목 · 유형 배지", "desc": "정의: 휴일명과 적용 범위(전체 점포/특정 점포) · 반복 여부 배지 표시\n접근 범위 밖 점포만의 휴일이면 '볼 수 없는 휴일'로 표시하고 본문 대신 안내만 보임\n삭제된 휴일을 열면 '삭제된 휴일' + 상세정보 대신 안내(변경 이력 보기에서만 확인 가능)" },
+    { "x": 1019, "y": 29, "title": "삭제", "desc": "정의: 삭제 확인 팝업을 연다\n반복·기간 휴일은 '이 날짜부터 이후 휴일에 모두 적용' — 이 날짜 하나만 지우는 방법은 없음\n반복은 종료 조건을 고른 날짜 전날까지로, 기간은 종료일을 전날로 앞당김. 고른 날짜가 첫 날짜라 남는 날짜가 없으면 휴일 자체를 삭제\n원래 종료 조건은 변경 이력에만 남고, 지난 날짜는 목록·캘린더에 그대로 남는다. 되돌릴 수 없음, 실패 시 기존 값 유지\n지난 날짜 휴일은 비활성 + '지난 날짜 휴일은 삭제할 수 없습니다'\n전체 점포 휴일은 BP 마스터·전체 점포 범위 BP 관리자·플랫폼 사용자만, 특정 점포 휴일은 대상 점포 중 한 곳이라도 접근 가능한 사람만 보임(조회만 권한은 없음)\n여러 점포가 걸린 휴일에서 일부 점포만 맡은 사람은 '내 점포 삭제'로 자기 범위 점포만 뺄 수 있고, 나머지 점포는 그대로 원래 휴일에 남는다" },
+    { "x": 1073, "y": 29, "title": "수정", "desc": "정의: 휴일 수정 화면으로 이동(수정 화면에서 세부 규칙 처리)\n삭제와 같은 권한·날짜 조건(지난 날짜 비활성, 접근 범위)을 따른다" },
+    { "x": 200, "y": 299, "title": "적용 범위", "desc": "정의: 전체 점포 · 특정 점포 배지 표시" },
+    { "x": 193, "y": 328, "title": "대상 점포", "desc": "정의: 특정 점포 휴일이면 대상 점포명(여러 곳이면 모두), 전체 점포 휴일이면 '전체 점포' 표시" },
+    { "x": 178, "y": 356, "title": "예외 점포", "desc": "정의: 전체 점포 휴일에서 제외한 점포, 없으면 '없음'(특정 점포 휴일에는 이 항목이 없음)" },
+    { "x": 270, "y": 385, "title": "고른 날짜", "desc": "정의: 목록·캘린더에서 고른 날짜와 요일\n반복의 첫 날짜/몇 번째 날짜인지, 그 날짜가 공식 휴일과 겹치면 겹침 안내를 함께 표시" },
+    { "x": 200, "y": 413, "title": "휴일명", "desc": "정의: 휴일 이름 표시" },
+    { "x": 280, "y": 442, "title": "설명", "desc": "정의: 휴일 설명 텍스트 표시" },
+    { "x": 52, "y": 486, "title": "적용 범위 보충 설명", "desc": "정의: 이 휴일이 실제로 적용되는 점포 범위와, 같은 날 다른 휴일과 겹칠 때 어느 쪽이 우선하는지(특정 점포 휴일이 전체 점포 휴일보다 우선) 안내" },
+    { "x": 780, "y": 298, "title": "반복 유형", "desc": "정의: 반복 안 함 · 매주(요일 기준) · 매년(날짜 기준) 등 반복 규칙 표시" },
+    { "x": 773, "y": 326, "title": "시작일", "desc": "정의: 이 휴일 규칙이 시작하는 날짜" },
+    { "x": 778, "y": 354, "title": "종료 조건", "desc": "정의: 종료일 없음 또는 특정 종료일 표시" },
+    { "x": 863, "y": 382, "title": "다음 날짜", "desc": "정의: 이 규칙으로 계산한 다음 날짜를 최대 3개까지 표시(쟁점 후보 — 개수는 명세에 없어 목업이 정함)" },
+    { "x": 761, "y": 411, "title": "휴일 번호", "desc": "정의: 휴일을 식별하는 고유 번호(HD-번호) 표시" },
+    { "x": 820, "y": 440, "title": "등록", "desc": "정의: 등록자와 등록 일시 표시" },
+    { "x": 830, "y": 468, "title": "최종 수정", "desc": "정의: 마지막 수정자와 수정 일시 표시" },
+    { "x": 100, "y": 630, "title": "변경 이력", "desc": "정의: 이 휴일의 변경 일시·변경자·구분(등록/수정)·변경 항목·변경 전후 값을 최신순으로 표시" },
+    { "x": 52, "y": 741, "title": "하단 규칙 안내", "desc": "정의: 휴일은 규칙 한 건으로 저장되고 날짜는 조회 시 계산하며, 반복·기간 휴일은 어느 날짜로 들어와도 같은 휴일이고 수정·삭제는 고른 날짜부터 이후 모두에 적용된다는 안내\n수정·삭제는 대한민국 표준시 기준 오늘 또는 미래 날짜에만 가능, 삭제 권한 범위는 등록·수정 범위와 같음" }
+  ]
+}
+</script>
+
+<script src="../assets/screen-def.js"></script>
+</body>
+</html>
