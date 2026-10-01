@@ -2,99 +2,333 @@
   "schema_version": 2,
   "diagram_type": "workflow",
   "meta": {
-    "title": "공통 — 여러 화면이 함께 쓰는 다섯 가지",
+    "title": "공통 — 공통코드에서 메일과 약관 동의까지",
     "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "v1",
+        "label": "공통코드에서 화면까지",
+        "focus": [
+          "codes",
+          "bpcodes",
+          "screens",
+          "acct"
+        ],
+        "note": "그룹은 플랫폼만 만들고 관리 주체는 그룹에 붙는다. 플랫폼제공 그룹에만 BP가 코드를 더하고, 업무 화면은 사용 중인 코드만 고른다."
+      },
+      {
+        "id": "v2",
+        "label": "계정 메일",
+        "focus": [
+          "acct",
+          "send",
+          "mailfail",
+          "force"
+        ],
+        "note": "관리자 등록·초기화와 비밀번호 찾기는 12자 비밀번호를 메일로 보낸다. 발송은 3팀 공통 기반이고, 실패해도 계정은 남는다."
+      },
+      {
+        "id": "v3",
+        "label": "약관 동의",
+        "focus": [
+          "terms",
+          "signup",
+          "force",
+          "deny"
+        ],
+        "note": "약관 전문은 한 곳에서 온다. 가입은 필수 두 가지를 받고, 운영자가 만든 계정은 강제 비밀번호 변경 화면에서 같은 두 가지를 받는다."
+      }
+    ],
     "legend": {
       "entries": {
-        "frontend": { "label": "화면" },
-        "backend": { "label": "시스템 처리" },
-        "security": { "label": "판정 · 예외" },
-        "messagebus": { "label": "발송" },
-        "database": { "label": "기록 · 참조" },
-        "external": { "label": "수신자 · 외부" },
-        "cloud": { "label": "외부 API" }
+        "frontend": {
+          "label": "화면"
+        },
+        "backend": {
+          "label": "시스템 처리"
+        },
+        "security": {
+          "label": "판정 · 예외"
+        },
+        "messagebus": {
+          "label": "발송 · 알림"
+        },
+        "database": {
+          "label": "기록"
+        },
+        "external": {
+          "label": "직원 근무 앱"
+        },
+        "cloud": {
+          "label": "외부"
+        }
       }
-    },
-    "views": [
-      { "id": "v1", "label": "공통 컴포넌트", "focus": ["call", "bizauth", "addr", "storefind"], "note": "사업자정보 인증과 주소 검색은 외부 API를 부르고, 점포 검색은 내부 조회다 — 셋 다 결과만 호출 화면에 적용하고 저장 권한은 갖지 않는다." },
-      { "id": "v2", "label": "공통코드", "focus": ["codes", "owner", "consumer"], "note": "관리 주체가 플랫폼고정 · 플랫폼제공 · BP전용 세 갈래로 어디까지 고칠 수 있는지를 가른다." },
-      { "id": "v3", "label": "메일 포맷", "focus": ["event", "mailsend", "recipient"], "note": "가입완료 · 계정생성 · 탈퇴 등 계정 이벤트마다 다른 포맷을 골라 수신자별로 발송한다." },
-      { "id": "v4", "label": "약관 콘텐츠", "focus": ["termsview", "terms"], "note": "열람 전용 참조 콘텐츠 — 동의 체크박스와 필수 검증은 이 기능이 아니라 BP 회원가입 같은 소비 기능이 담당한다." },
-      { "id": "v5", "label": "상단 조회 범위 선택", "focus": ["storedrop", "bpswitch", "authcheck", "bppopup", "scopeapply"], "note": "드롭다운은 현재 BP 안 점포만 바꾸고, BP 자체를 바꾸려면 반드시 BP 변경 버튼으로 팝업을 열어야 한다." }
-    ]
+    }
   },
   "lanes": [
-    { "id": "user", "label": "관리자 · 사용자 (관리자 웹)" },
-    { "id": "sys", "label": "시스템" }
+    {
+      "id": "web",
+      "label": "관리자 · 가입자 (관리자 웹)"
+    },
+    {
+      "id": "sys",
+      "label": "시스템"
+    },
+    {
+      "id": "exc",
+      "label": "막힘 · 예외",
+      "variant": "exception"
+    }
   ],
   "phases": [
-    { "id": "p1", "label": "공통 컴포넌트", "fromCol": 0, "toCol": 2 },
-    { "id": "p2", "label": "공통코드", "fromCol": 3, "toCol": 4 },
-    { "id": "p3", "label": "메일 포맷", "fromCol": 5, "toCol": 6 },
-    { "id": "p4", "label": "약관 콘텐츠", "fromCol": 7, "toCol": 7 },
-    { "id": "p5", "label": "상단 조회 범위 선택", "fromCol": 8, "toCol": 10, "variant": "emphasis" }
+    {
+      "id": "p1",
+      "label": "공통코드",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "p2",
+      "label": "계정 메일",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "p3",
+      "label": "약관 동의",
+      "fromCol": 4,
+      "toCol": 5
+    }
   ],
   "groups": [
-    { "id": "g1", "label": "BP 변경은 플랫폼 마스터 · 관리자만 노출", "lane": "sys", "fromCol": 9, "toCol": 9, "variant": "dashed" }
+    {
+      "id": "g1",
+      "label": "2026-09-17 · 발송은 3팀",
+      "lane": "sys",
+      "fromCol": 3,
+      "toCol": 3,
+      "variant": "dashed"
+    },
+    {
+      "id": "g2",
+      "label": "필수 둘 동의해야 변경",
+      "lane": "web",
+      "fromCol": 5,
+      "toCol": 5,
+      "variant": "security"
+    }
   ],
-  "mainPath": ["bpswitch", "authcheck", "bppopup", "scopeapply"],
+  "mainPath": [
+    "codes",
+    "acct",
+    "send",
+    "force"
+  ],
   "nodes": [
-    { "id": "call", "lane": "user", "col": 1, "type": "frontend", "label": "입력 화면", "sublabel": "사업자정보 · 주소 · 점포 검색 호출", "width": 150 },
-    { "id": "bizauth", "lane": "sys", "col": 0, "type": "cloud", "label": "사업자정보 인증", "sublabel": "국세청 진위확인 · 상호명은 미반환", "width": 150 },
-    { "id": "addr", "lane": "sys", "col": 1, "type": "cloud", "label": "주소 검색", "sublabel": "외부 주소 API", "width": 150 },
-    { "id": "storefind", "lane": "sys", "col": 2, "type": "backend", "label": "점포 검색 필터", "sublabel": "코드 · 점포명 자동완성 다중선택", "width": 150 },
-
-    { "id": "codes", "lane": "sys", "col": 3, "type": "database", "label": "공통코드 8종", "sublabel": "권한유형 · 계정상태 · 점포상태 등", "width": 160 },
-    { "id": "owner", "lane": "sys", "col": 4, "type": "security", "label": "관리주체 판정", "sublabel": "플랫폼고정 · 플랫폼제공 · BP전용", "width": 160 },
-    { "id": "consumer", "lane": "user", "col": 4, "type": "frontend", "label": "업무 화면들", "sublabel": "등록된 값만 선택 · 저장", "width": 150 },
-
-    { "id": "event", "lane": "sys", "col": 5, "type": "backend", "label": "계정 이벤트", "sublabel": "가입완료 · 계정생성 · 탈퇴 등", "width": 140 },
-    { "id": "mailsend", "lane": "sys", "col": 6, "type": "messagebus", "label": "메일 포맷 적용 · 발송", "sublabel": "수신자별 제목 · 본문 6종", "width": 170 },
-    { "id": "recipient", "lane": "user", "col": 6, "type": "external", "label": "수신자", "sublabel": "가입 BP · 신규 관리자 · 플랫폼 마스터", "width": 140 },
-
-    { "id": "termsview", "lane": "user", "col": 7, "type": "frontend", "label": "약관 동의 화면", "sublabel": "BP 회원가입 등", "width": 150 },
-    { "id": "terms", "lane": "sys", "col": 7, "type": "database", "label": "약관 콘텐츠", "sublabel": "이용약관 · 개인정보 동의", "width": 150 },
-
-    { "id": "storedrop", "lane": "user", "col": 8, "type": "frontend", "label": "점포 선택 드롭다운", "sublabel": "인라인 · BP는 그대로", "width": 160 },
-    { "id": "bpswitch", "lane": "user", "col": 9, "type": "frontend", "label": "BP 변경 버튼", "sublabel": "플랫폼 마스터 · 관리자만", "width": 140 },
-    { "id": "bppopup", "lane": "user", "col": 10, "type": "frontend", "label": "BP 및 점포 선택 팝업", "sublabel": "최초진입 시 강제, 취소 없음", "width": 170 },
-    { "id": "authcheck", "lane": "sys", "col": 9, "type": "security", "label": "권한 판정", "sublabel": "고객 사용자는 BP 고정", "width": 140 },
-    { "id": "scopeapply", "lane": "sys", "col": 10, "type": "database", "label": "조회 범위 적용", "sublabel": "BP · 점포 식별자 저장", "width": 160 }
+    {
+      "id": "codes",
+      "lane": "sys",
+      "col": 0,
+      "type": "database",
+      "label": "공통코드 그룹",
+      "sublabel": "관리 주체는 그룹에",
+      "width": 150,
+      "tag": "SYSTEM-10"
+    },
+    {
+      "id": "bpcodes",
+      "lane": "web",
+      "col": 0,
+      "type": "frontend",
+      "label": "BP 공통코드 관리",
+      "sublabel": "플랫폼제공만 코드 추가",
+      "width": 160,
+      "tag": "CONFIG-7"
+    },
+    {
+      "id": "screens",
+      "lane": "web",
+      "col": 1,
+      "type": "frontend",
+      "label": "업무 화면 선택지",
+      "sublabel": "사용 중인 코드만",
+      "width": 150,
+      "tag": "서비스 · 고용 형태"
+    },
+    {
+      "id": "acct",
+      "lane": "web",
+      "col": 2,
+      "type": "frontend",
+      "label": "계정 등록 · 초기화",
+      "sublabel": "비밀번호 찾기 포함",
+      "width": 160,
+      "tag": "CONFIG-3"
+    },
+    {
+      "id": "send",
+      "lane": "sys",
+      "col": 3,
+      "type": "messagebus",
+      "label": "메일 발송",
+      "sublabel": "12자 비밀번호 · 1시간",
+      "width": 150,
+      "tag": "3팀 공통 기반"
+    },
+    {
+      "id": "mailfail",
+      "lane": "exc",
+      "col": 3,
+      "type": "security",
+      "label": "발송 실패",
+      "sublabel": "계정은 남고 기록만",
+      "width": 150,
+      "tag": "SYSTEM-3"
+    },
+    {
+      "id": "terms",
+      "lane": "sys",
+      "col": 4,
+      "type": "database",
+      "label": "약관 콘텐츠",
+      "sublabel": "전문 한 곳 · 초안 v0.7",
+      "width": 150,
+      "tag": "F-OFBCVL"
+    },
+    {
+      "id": "signup",
+      "lane": "web",
+      "col": 4,
+      "type": "frontend",
+      "label": "BP 회원가입",
+      "sublabel": "필수 두 가지 동의",
+      "width": 150,
+      "tag": "S-RCJXIG"
+    },
+    {
+      "id": "force",
+      "lane": "web",
+      "col": 5,
+      "type": "frontend",
+      "label": "강제 비밀번호 변경",
+      "sublabel": "운영자 생성 계정만 동의",
+      "width": 170,
+      "tag": "S-VFGQLI"
+    },
+    {
+      "id": "deny",
+      "lane": "exc",
+      "col": 5,
+      "type": "security",
+      "label": "약관 미동의",
+      "sublabel": "로그아웃만 할 수 있다",
+      "width": 150
+    }
   ],
   "edges": [
-    { "id": "e1", "from": "call", "to": "bizauth", "variant": "default", "label": "인증 요청" },
-    { "id": "e2", "from": "call", "to": "addr", "variant": "default", "label": "주소 검색" },
-    { "id": "e3", "from": "call", "to": "storefind", "variant": "default", "label": "점포 검색" },
-    { "id": "e5", "from": "codes", "to": "owner", "variant": "default", "label": "관리주체별 구분" },
-    { "id": "e6", "from": "owner", "to": "consumer", "variant": "emphasis", "label": "값만 선택 · 저장" },
-    { "id": "e7", "from": "event", "to": "mailsend", "variant": "dashed", "label": "이벤트별 포맷 선택" },
-    { "id": "e8", "from": "mailsend", "to": "recipient", "variant": "emphasis", "label": "수신자별 발송" },
-    { "id": "e9", "from": "termsview", "to": "terms", "variant": "default", "label": "전문 조회 · 표시" },
-    { "id": "e10", "from": "storedrop", "to": "scopeapply", "variant": "default", "label": "범위만 적용 (BP 유지)" },
-    { "id": "e11", "from": "bpswitch", "to": "authcheck", "variant": "dashed", "label": "플랫폼 마스터 · 관리자만", "role": "branch" },
-    { "id": "e12", "from": "authcheck", "to": "bppopup", "variant": "dashed", "label": "팝업 오픈" },
-    { "id": "e13", "from": "bppopup", "to": "scopeapply", "variant": "emphasis", "label": "적용" }
+    {
+      "id": "e1",
+      "from": "codes",
+      "to": "screens",
+      "label": "사용 값만",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e2",
+      "from": "codes",
+      "to": "bpcodes",
+      "label": "플랫폼제공",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "e3",
+      "from": "bpcodes",
+      "to": "screens",
+      "label": "BP전용 추가",
+      "variant": "dashed"
+    },
+    {
+      "id": "e4",
+      "from": "codes",
+      "to": "acct",
+      "label": "권한 유형·상태",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e5",
+      "from": "acct",
+      "to": "send",
+      "label": "12자 비밀번호",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e6",
+      "from": "send",
+      "to": "mailfail",
+      "label": "발송 실패",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "e7",
+      "from": "mailfail",
+      "to": "acct",
+      "label": "초기화로 재발송",
+      "variant": "dashed",
+      "role": "return"
+    },
+    {
+      "id": "e8",
+      "from": "send",
+      "to": "force",
+      "label": "받은 비번 로그인",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e9",
+      "from": "terms",
+      "to": "signup",
+      "label": "필수 두 가지",
+      "variant": "default"
+    },
+    {
+      "id": "e10",
+      "from": "terms",
+      "to": "force",
+      "label": "같은 두 가지",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e11",
+      "from": "force",
+      "to": "deny",
+      "label": "미동의",
+      "variant": "security",
+      "role": "error"
+    }
   ],
   "cards": [
     {
       "dot": "emerald",
       "title": "확정된 결정",
       "items": [
-        "사업자 인증 팝업은 상호명을 조회·반환하지 않는다(사용자가 직접 입력) · 임시·초기 비밀번호 원문은 발송 외에는 저장·재표시하지 않는다 · 공통코드 값의 추가·변경·중지는 공통코드 관리에서만 일관 적용한다"
+        "SYSTEM-10 공통코드는 코드 값·관리 주체 모두 잠금 · CONFIG-7 BP가 더한 상세 코드도 관리 주체를 저장하고 다른 BP엔 안 보인다 · 플랫폼이 사용 중지한 코드는 BP가 다시 켜지 못한다 · CONFIG-3·AUTH-4 관리자 초기화와 비밀번호 찾기는 12자 비밀번호 메일이고 들어오면 강제 변경 · SYSTEM-3 메일이 실패해도 계정은 남기고 발송 실패만 기록 · 가입 약관은 필수 두 가지뿐이고 마케팅 동의는 1차에 없다 · 목록은 20건이 넘으면 페이지 번호로 나누고 20·50·100 중 고른 값을 모든 목록이 따른다"
       ]
     },
     {
       "dot": "slate",
-      "title": "막히는 조건",
+      "title": "밖에 있는 것",
       "items": [
-        "메일 발송 실패는 계정 생성·가입·탈퇴 자체를 취소하지 않고 발송 실패만 기록한다 · 필수 약관 미동의 시 BP 회원가입을 완료할 수 없다 · 플랫폼고정 공통코드는 BP가 조회만 하고 고칠 수 없다"
+        "메일 포맷·발송과 발송 이력·실패 재시도 위치는 3팀 공통 기반(2026-09-17) · 직원 앱 약관 ③~⑥은 3팀 직원 근무 앱에서 받는다 · 상단 점포 범위 선택기는 3팀 HOME-4·STAFF-12이고 1팀은 그 점포 데이터만 만든다 · 메일 유형·약관 유형은 플랫폼고정 코드 그룹으로만 둔다"
       ]
     },
     {
       "dot": "amber",
-      "title": "되돌릴 수 없는 것",
+      "title": "아직 미정",
       "items": [
-        "가입경로(회원가입·플랫폼등록)는 계정 생성 시 한 번 정해지면 이후 바꿀 수 없다 · 사용 중지된 공통코드 값은 기존 이력엔 남지만 신규 선택 대상에서는 영구히 빠진다"
+        "공통정책 3~13은 1팀·3팀 협의 전 미정 — 점포 전환 뒤 같은 메뉴 목록으로 갈지(3팀 STAFF-12는 홈으로 확정), URL 직접 접근, 권한 없는 버튼 숨김, 삭제 확인창, 저장 토스트, 결과 없음 문구, 검색·페이징 복원, 화면별 특수 버튼 노출 조건 · 시스템 메일 발신 주소와 BCC는 미정 · 약관 전문은 법무 검토 전 초안"
       ]
     }
   ]

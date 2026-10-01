@@ -1,0 +1,331 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "휴일 — 공식 휴일에서 BP 휴일 규칙까지",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "v1",
+        "label": "등록에서 저장까지",
+        "focus": [
+          "cal",
+          "new",
+          "scope",
+          "rule"
+        ],
+        "note": "휴일 유형을 먼저 고르고 점포를 묶어 규칙 한 건으로 저장한다. 날짜는 목록·캘린더에서 볼 때 계산한다."
+      },
+      {
+        "id": "v2",
+        "label": "이후 모두 수정",
+        "focus": [
+          "detail",
+          "past",
+          "edit",
+          "hist",
+          "rule"
+        ],
+        "note": "반복·기간 휴일은 고른 날짜 전날에 끝내고 그 날짜부터 새 휴일을 시작한다. 지난 날짜는 그대로 둔다."
+      },
+      {
+        "id": "v3",
+        "label": "공식 휴일",
+        "focus": [
+          "sync",
+          "phol",
+          "cal"
+        ],
+        "note": "공식 휴일은 2100년까지 규칙으로 채우고 올해·다음 해만 정부값으로 맞춘다. BP 캘린더에는 빨간 날로만 보인다."
+      }
+    ],
+    "legend": {
+      "entries": {
+        "frontend": {
+          "label": "화면"
+        },
+        "backend": {
+          "label": "시스템 처리"
+        },
+        "security": {
+          "label": "판정 · 예외"
+        },
+        "messagebus": {
+          "label": "발송 · 알림"
+        },
+        "database": {
+          "label": "기록"
+        },
+        "external": {
+          "label": "직원 근무 앱"
+        },
+        "cloud": {
+          "label": "외부"
+        }
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "ops",
+      "label": "플랫폼 운영자"
+    },
+    {
+      "id": "bp",
+      "label": "BP 관리자 (관리자 웹)"
+    },
+    {
+      "id": "sys",
+      "label": "시스템"
+    },
+    {
+      "id": "exc",
+      "label": "막힘 · 예외",
+      "variant": "exception"
+    }
+  ],
+  "phases": [
+    {
+      "id": "p1",
+      "label": "공식 휴일",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "p2",
+      "label": "등록",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "p3",
+      "label": "수정 · 삭제",
+      "fromCol": 4,
+      "toCol": 5
+    }
+  ],
+  "groups": [
+    {
+      "id": "g1",
+      "label": "CONFIG-10 · 전체 점포는 마스터 몫",
+      "lane": "sys",
+      "fromCol": 2,
+      "toCol": 2,
+      "variant": "security"
+    },
+    {
+      "id": "g2",
+      "label": "CONFIG-9 · 이 휴일만 없음",
+      "lane": "bp",
+      "fromCol": 5,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": [
+    "sync",
+    "cal",
+    "new",
+    "scope",
+    "rule",
+    "detail",
+    "edit",
+    "hist"
+  ],
+  "nodes": [
+    {
+      "id": "sync",
+      "lane": "sys",
+      "col": 0,
+      "type": "cloud",
+      "label": "공식 휴일 동기화",
+      "sublabel": "올해 · 다음 해 정부값",
+      "width": 150,
+      "tag": "2100년까지 적재"
+    },
+    {
+      "id": "phol",
+      "lane": "ops",
+      "col": 1,
+      "type": "frontend",
+      "label": "플랫폼 휴일 관리",
+      "sublabel": "조회만 · 늘 이번 달",
+      "width": 150,
+      "tag": "SYSTEM-8"
+    },
+    {
+      "id": "cal",
+      "lane": "bp",
+      "col": 1,
+      "type": "frontend",
+      "label": "BP 휴일 캘린더",
+      "sublabel": "빨간 날 = 공식 휴일",
+      "width": 150
+    },
+    {
+      "id": "new",
+      "lane": "bp",
+      "col": 2,
+      "type": "frontend",
+      "label": "휴일 등록",
+      "sublabel": "하루 · 기간 · 반복",
+      "width": 140,
+      "tag": "여러 점포 묶음"
+    },
+    {
+      "id": "scope",
+      "lane": "sys",
+      "col": 2,
+      "type": "security",
+      "label": "점포 범위 판정",
+      "sublabel": "전체 점포는 마스터만",
+      "width": 150
+    },
+    {
+      "id": "rule",
+      "lane": "sys",
+      "col": 3,
+      "type": "database",
+      "label": "규칙 한 건 저장",
+      "sublabel": "날짜는 볼 때 계산",
+      "width": 150,
+      "tag": "CONFIG-8"
+    },
+    {
+      "id": "detail",
+      "lane": "bp",
+      "col": 4,
+      "type": "frontend",
+      "label": "휴일 상세",
+      "sublabel": "고른 날짜 · 다음 날짜",
+      "width": 150
+    },
+    {
+      "id": "past",
+      "lane": "exc",
+      "col": 4,
+      "type": "security",
+      "label": "지난 날짜",
+      "sublabel": "수정 · 삭제 막힘",
+      "width": 140
+    },
+    {
+      "id": "edit",
+      "lane": "bp",
+      "col": 5,
+      "type": "frontend",
+      "label": "수정 · 삭제",
+      "sublabel": "고른 날짜부터 이후 모두",
+      "width": 160
+    },
+    {
+      "id": "hist",
+      "lane": "sys",
+      "col": 5,
+      "type": "database",
+      "label": "변경 이력",
+      "sublabel": "원래 종료 조건 남김",
+      "width": 150
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "sync",
+      "to": "phol",
+      "label": "조회 전용",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "e2",
+      "from": "sync",
+      "to": "cal",
+      "label": "빨간 날",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e3",
+      "from": "cal",
+      "to": "new",
+      "label": "휴일 등록",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e4",
+      "from": "new",
+      "to": "scope",
+      "label": "등록",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e5",
+      "from": "scope",
+      "to": "new",
+      "label": "범위 밖",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "e6",
+      "from": "scope",
+      "to": "rule",
+      "label": "통과",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e7",
+      "from": "rule",
+      "to": "detail",
+      "label": "목록 줄",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e8",
+      "from": "detail",
+      "to": "past",
+      "label": "오늘 이전",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "e9",
+      "from": "detail",
+      "to": "edit",
+      "label": "수정 · 삭제",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e10",
+      "from": "edit",
+      "to": "hist",
+      "label": "전날로 끝냄",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e11",
+      "from": "edit",
+      "to": "rule",
+      "label": "새 휴일 시작",
+      "variant": "dashed",
+      "role": "return"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "확정된 결정",
+      "items": [
+        "CONFIG-8 휴일은 규칙 한 건이고 건수 상한·연장 배치가 없다 · CONFIG-9 수정·삭제는 고른 날짜부터 이후 모두, 이 휴일만은 없다 · CONFIG-10 여러 점포 묶음·예외 점포·기간과 반복 중 하나·종일만 · SYSTEM-8 플랫폼 휴일은 늘 이번 달로 연다 · SYSTEM-9 목록은 한 해 · 공식 휴일은 빨간 날로만 보이고 상세 팝업엔 없다"
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "밖에 있는 것",
+      "items": [
+        "공식 휴일 변경 이력은 남기지 않고 동기화 이력만 데이터로 · 겹치는 휴일도 등록하고 안내만 한다 · 일부 점포만 맡으면 자기 점포만 떼어 새 휴일이 생긴다 · 폐점 점포는 폐점 다음 날부터 빠진다 · 토·일은 휴일 데이터가 아니다"
+      ]
+    }
+  ]
+}
