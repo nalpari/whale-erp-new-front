@@ -37,10 +37,9 @@
           "past",
           "edit",
           "judge",
-          "whole",
           "rule"
         ],
-        "note": "고른 날짜 앞에 남는 날짜가 없으면(고른 날짜가 반복의 첫 날짜) 빈 휴일을 남길 필요가 없어 나누지 않고 그 휴일을 그대로 고친다. 오늘 이전 날짜는 수정·삭제할 수 없다."
+        "note": "고른 날짜 앞에 남는 날짜가 없으면(고른 날짜가 반복의 첫 날짜) 빈 휴일을 남길 필요가 없어 나누지 않고 그 휴일 규칙을 그대로 고쳐 저장한다. 오늘 이전 날짜는 수정·삭제할 수 없다."
       }
     ],
     "legend": {
@@ -213,15 +212,6 @@
       "width": 180
     },
     {
-      "id": "whole",
-      "lane": "exc",
-      "col": 3,
-      "type": "backend",
-      "label": "휴일 전체 변경",
-      "sublabel": "남는 날짜 없어 안 나눔",
-      "width": 170
-    },
-    {
       "id": "close",
       "lane": "sys",
       "col": 4,
@@ -313,16 +303,8 @@
     {
       "id": "e9",
       "from": "judge",
-      "to": "whole",
-      "label": "남는 날짜 없음",
-      "variant": "dashed",
-      "role": "branch"
-    },
-    {
-      "id": "e10",
-      "from": "whole",
       "to": "rule",
-      "label": "규칙 그대로 고침",
+      "label": "없음 · 그대로 수정",
       "variant": "dashed",
       "role": "return"
     },
