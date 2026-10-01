@@ -5,10 +5,12 @@ description: DB·API·FRONT 세 계층이 같은 개념을 같은 영문 이름�
 tags: [convention, naming, shared]
 sources:
   - { id: naming-2026-09-30, resource: ../../docs/raw/2026-09-30-네이밍-규칙.md, title: WHALE ERP 네이밍 규칙 (DB · API · FRONT) }
-generated: { by: claude-code/opus-5, at: 2026-09-30T07:34:02Z }
+generated: { by: claude-code/opus-5, at: 2026-10-01T01:23:04Z }
 ---
 
-근거: `docs/raw/2026-09-30-네이밍-규칙.md` (3팀 기획 세션 · 2026-09-30 재영 확인 · 적용)
+근거: `docs/raw/2026-09-30-네이밍-규칙.md` (3팀 기획 세션 · 2026-10-01 고침)
+
+문서 전체는 **기획 세션 제안이고 재영 검토 전**이다. 아래 「목록 응답」만 2026-10-01 재영 확인을 받았다.
 
 세 저장소(`whale-erp-api`, `whale-erp-front`, `whale-erp-staff`)가 같은 개념을 같은 영문 이름으로 부르게 하려는 규약이다. 한글 용어는 공통 용어집의 표준 표기를 따르고, 여기 적힌 **영문 식별자**가 그 표준 표기의 코드 이름이다. 새 개념을 코드에 넣을 때는 대응표에 먼저 한 줄을 더한다.
 
@@ -42,14 +44,26 @@ generated: { by: claude-code/opus-5, at: 2026-09-30T07:34:02Z }
 |---|---|---|
 | 경로 | kebab-case 복수 명사, 동사 금지 | `GET /staff-members/:id/contracts` |
 | 상태를 바꾸는 동작 | 하위 경로 + POST | `POST /contracts/:id/resend`, `POST /payslips/:id/cancel-confirmation` |
-| 쿼리 파라미터 | camelCase | `?storeId=3&from=2026-09-01&page=1&pageSize=20` |
+| 쿼리 파라미터 | camelCase | `?storeId=3&from=2026-09-01` |
 | JSON 필드 | camelCase, DB 컬럼명을 그대로 내보내지 않는다 | `{ startDate, isProxyEntry }` |
-| 목록 응답 | `{ items, total }` · 페이지는 `page` · `pageSize` | |
-| 날짜 · 시각 | 날짜 `YYYY-MM-DD`, 시각 ISO 8601 + 오프셋 | `2026-09-30T09:02:00+09:00` |
-| 오류 | `{ code, message }`, `code` 는 UPPER_SNAKE | `UNDER_AGE_19`, `OUTSIDE_RADIUS` |
 | 모듈 폴더 | 자원 복수 kebab | `src/payslips/`, `src/staff-members/` |
 | 파일 | `{자원}.{역할}.ts` | `payslips.service.ts` |
 | DTO | 파일 `create-payslip.dto.ts` · 클래스 `CreatePayslipDto` | 응답은 `payslip.response.dto.ts` · `PayslipResponseDto` |
+
+## 목록 응답 (2026-10-01 재영 확인)
+
+| 항목 | 규칙 |
+|---|---|
+| 목록 응답 | `{ items, total }` |
+| total 구하기 | `findMany` + `count` — 같은 `where`, `$transaction` 으로 묶는다 |
+| 페이지 파라미터 | `page`(1부터), `pageSize`(기본 20, 최대 200) |
+| 정렬 | 기본 정렬 + 마지막에 `id` |
+| 빈 결과 · 마지막 페이지를 넘긴 요청 | `{ items: [], total }` |
+| 오류 응답 | Nest 기본 `{ statusCode, message, error }` 를 그대로 둔다 |
+
+오류를 Nest 기본 형식으로 두는 것은 front 가 이미 그 형식을 읽기 때문이다 — `src/lib/api.ts` 의 `errorMessage` 가 `message` 를 꺼내고 검증 실패일 때의 배열까지 다룬다.
+
+기존 items 예제(`take`·`skip`, 배열 응답, `id` 순)는 front 가 지금 형식으로 부르고 있어 바꾸지 않는다. `/items` 와 `listItems` 는 그대로 두고, **새로 만드는 목록 API 부터** 적용한다.
 
 # DB (PostgreSQL + Prisma)
 
