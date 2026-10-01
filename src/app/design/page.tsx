@@ -5,6 +5,7 @@ import {
   Button,
   Checkbox,
   DataTable,
+  DetailTable,
   DateField,
   Field,
   FormGroup,
@@ -21,7 +22,7 @@ import {
   StoreSelect,
   UserPop,
 } from "@/components/common";
-import { MENUS, STORE_COLUMNS, STORE_ROWS, STORES, USER_ITEMS } from "./sample";
+import { CONTRACT_ROWS, MENUS, STORE_COLUMNS, STORE_ROWS, STORES, USER_ITEMS } from "./sample";
 import { SamplePagination } from "./sample-pagination";
 import { StoreFilter } from "./store-filter";
 
@@ -147,6 +148,10 @@ export default function DesignUnitsPage() {
           <StoreSelect options={STORES} />
           <UserPop name="김지영 (admin)" items={USER_ITEMS} />
         </div>
+      </Section>
+
+      <Section title="DetailTable">
+        <DetailTable title="가맹점 계약" rows={CONTRACT_ROWS.slice(0, 3)} />
       </Section>
 
       <Section title="FilterPanel · FilterSection">

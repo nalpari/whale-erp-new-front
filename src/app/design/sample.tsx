@@ -1,4 +1,5 @@
-import { Badge, type Column, type HeaderMenu, type UserPopItem } from "@/components/common";
+import Link from "next/link";
+import { Badge, DetailValues, type Column, type HeaderMenu, type UserPopItem } from "@/components/common";
 
 // /design 샘플 화면에 넣는 더미 데이터. Figma 시안의 값을 그대로 옮겼다.
 
@@ -63,6 +64,30 @@ export const STORE_COLUMNS: Column<StoreRow>[] = [
   { header: "점포명", width: "w-[320px]", align: "left", cell: (r) => r.store },
   { header: "점포 연락처", cell: (r) => r.phone },
   { header: "대표자명", cell: (r) => r.owner },
-  { header: "계약여부", cell: (r) => r.contract },
+  {
+    header: "계약여부",
+    cell: () => (
+      <Link href="/design/detail" className="text-erp-link hover:underline">
+        계약서보기
+      </Link>
+    ),
+  },
   { header: "등록일", cell: (r) => r.createdAt },
+];
+
+// Figma 03.프레임_상세의 전자 계약서 표. 값이 여럿인 칸은 DetailValues 로 세로선을 넣는다.
+export const CONTRACT_ROWS = [
+  { label: "계약 당사자", value: <DetailValues items={["힘이나는 커피생활", "을지로3가점"]} /> },
+  { label: "점포명/계약관리 번호", value: <DetailValues items={["힘이나는 커피생활 을지로3가점", "(주) 따름인 힘이나는 커피생활"]} /> },
+  { label: "계약정보", value: <DetailValues items={["을지로3가점 가맹 계약서", "계약서 완료"]} /> },
+  { label: "계약준비 및 체결일", value: <DetailValues items={["2026.02.08", "2026.02.28"]} /> },
+  { label: "서명 정보", value: <DetailValues items={["홍길동", "010 2222 3333", "010 2222 3333"]} /> },
+  {
+    label: "계약서(날인본)",
+    value: (
+      <Link href="#" className="text-erp-link hover:underline">
+        을지로3가점 가맹 계약서.pdf
+      </Link>
+    ),
+  },
 ];

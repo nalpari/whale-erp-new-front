@@ -7,6 +7,7 @@ export { Checkbox, Field, FormGroup, FormRow, Radio, Select, Textarea, TextField
 export { DateField } from "./date-field";
 export { SearchField } from "./search-field";
 export { DataTable, type Column } from "./data-table";
+export { DetailTable, DetailValues } from "./detail-table";
 export { ListToolbar } from "./list-toolbar";
 export { Pagination } from "./pagination";
 export { FilterPanel, FilterSection } from "./filter-panel";
