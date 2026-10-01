@@ -5,12 +5,12 @@ description: DB·API·FRONT 세 계층이 같은 개념을 같은 영문 이름�
 tags: [convention, naming, shared]
 sources:
   - { id: naming-2026-09-30, resource: ../../docs/raw/2026-09-30-네이밍-규칙.md, title: WHALE ERP 네이밍 규칙 (DB · API · FRONT) }
-generated: { by: claude-code/opus-5.5, at: 2026-10-01T04:12:52Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-01T04:20:54Z }
 ---
 
 근거: `docs/raw/2026-09-30-네이밍-규칙.md` (3팀 기획 세션 · 2026-10-01 고침)
 
-문서 전체는 **기획 세션 제안이고 재영 검토 전**이다. 아래 「목록 응답」과 「영문 식별자 대응표」는 2026-10-01 재영 확인을 받았다.
+**확정** — 2026-10-01 재영이 문서 전체를 확인했다. 새 라우트·타입·API 함수는 이 규칙을 따른다.
 
 세 저장소(`whale-erp-api`, `whale-erp-front`, `whale-erp-staff`)가 같은 개념을 같은 영문 이름으로 부르게 하려는 규약이다. 한글 용어는 공통 용어집의 표준 표기를 따르고, 여기 적힌 **영문 식별자**가 그 표준 표기의 코드 이름이다. 새 개념을 코드에 넣을 때는 대응표에 먼저 한 줄을 더한다.
 
@@ -50,7 +50,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-01T04:12:52Z }
 | 파일 | `{자원}.{역할}.ts` | `payslips.service.ts` |
 | DTO | 파일 `create-payslip.dto.ts` · 클래스 `CreatePayslipDto` | 응답은 `payslip.response.dto.ts` · `PayslipResponseDto` |
 
-## 목록 응답 (2026-10-01 재영 확인)
+## 목록 응답
 
 | 항목 | 규칙 |
 |---|---|
@@ -87,7 +87,7 @@ ERD 에 단수·복수가 섞인 이름은 다음 ERD 재생성 때 복수형으
 
 # 영문 식별자 (용어집 대응표)
 
-2026-10-01 재영 확인. 새 테이블·API·타입은 이 이름을 쓴다.
+새 테이블·API·타입은 이 이름을 쓴다.
 
 DB 테이블은 복수형, 모델·타입은 PascalCase 단수형으로 바꿔 쓴다.
 
