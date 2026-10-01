@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Badge, DetailValues, type Column, type HeaderMenu, type UserPopItem } from "@/components/common";
+import { Badge, DetailValues, type Column, type DetailRow, type HeaderMenu, type UserPopItem } from "@/components/common";
 
-// /design 샘플 화면에 넣는 더미 데이터. Figma 시안의 값을 그대로 옮겼다.
+// /design 샘플 화면에 넣는 더미 데이터와, 그 값을 그리는 데 필요한 만큼의 표현(배지·링크). Figma 시안의 값을 그대로 옮겼다.
 
 const menu = (label: string, items: string[]): HeaderMenu => ({
   label,
@@ -65,18 +65,19 @@ export const STORE_COLUMNS: Column<StoreRow>[] = [
   { header: "점포 연락처", cell: (r) => r.phone },
   { header: "대표자명", cell: (r) => r.owner },
   {
+    // 링크 이름이 행마다 같으면 읽기 도구의 링크 목록에서 "계약서보기"만 열 개가 늘어선다. 점포명을 붙여 구분한다.
     header: "계약여부",
-    cell: () => (
-      <Link href="/design/detail" className="text-erp-link hover:underline">
-        계약서보기
+    cell: (r) => (
+      <Link href="/design/detail" aria-label={`${r.store} ${r.contract}`} className="text-erp-link hover:underline">
+        {r.contract}
       </Link>
     ),
   },
   { header: "등록일", cell: (r) => r.createdAt },
 ];
 
-// Figma 03.프레임_상세의 전자 계약서 표. 값이 여럿인 칸은 DetailValues 로 세로선을 넣는다.
-export const CONTRACT_ROWS = [
+// Figma 03.프레임_상세 전자 계약서 영역의 "가맹점 계약" 표 행. 값이 여럿인 칸은 DetailValues 로 세로선을 넣는다.
+export const CONTRACT_ROWS: DetailRow[] = [
   { label: "계약 당사자", value: <DetailValues items={["힘이나는 커피생활", "을지로3가점"]} /> },
   { label: "점포명/계약관리 번호", value: <DetailValues items={["힘이나는 커피생활 을지로3가점", "(주) 따름인 힘이나는 커피생활"]} /> },
   { label: "계약정보", value: <DetailValues items={["을지로3가점 가맹 계약서", "계약서 완료"]} /> },

@@ -2,7 +2,7 @@ import { AlarmLink, Button, DetailTable, GlobalHeader, PageBar, ServiceLinks, St
 import { CONTRACT_ROWS, MENUS, STORES, USER_ITEMS } from "../sample";
 
 // Figma 03.프레임_상세(점포정보 관리 상세). 목록에서 계약서보기를 누르면 들어오는 화면이다.
-// 머리말은 목록과 같고, 본문만 한 건을 세로로 펼친 표로 바꾼다. 표가 길어지므로 본문 영역만 세로로 스크롤한다.
+// 머리말은 /design/full 과 같은 조합이다 — 한쪽을 고치면 다른 쪽도 고친다. 본문만 한 건을 세로로 펼친 표로 바꾼다.
 export default function DesignDetailPage() {
   return (
     <div className="h-[100dvh] overflow-x-auto overflow-y-hidden bg-erp-thead-bg">
@@ -19,7 +19,7 @@ export default function DesignDetailPage() {
           }
         />
         <PageBar title="점포정보 관리" />
-        {/* Figma 기준 흰 카드가 남는 높이를 모두 차지한다. 표가 길어지면 이 영역만 세로로 스크롤한다. */}
+        {/* 카드가 남는 높이를 모두 차지하고(flex-1), 표가 그보다 길어지면 이 영역에서 세로로 스크롤한다. */}
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
           <div className="flex flex-1 flex-col gap-[24px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
             <div className="flex flex-col gap-[12px]">
@@ -31,6 +31,7 @@ export default function DesignDetailPage() {
               </div>
               <DetailTable title="가맹점 계약" rows={CONTRACT_ROWS} />
             </div>
+            {/* Figma 에 같은 표가 두 개 있다. 아래 표에 들어갈 내용이 아직 안 나와 위와 같은 더미를 쓴다. */}
             <DetailTable title="가맹점 계약" rows={CONTRACT_ROWS} />
           </div>
         </div>
