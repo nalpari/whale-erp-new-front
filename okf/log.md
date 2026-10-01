@@ -1,5 +1,10 @@
 # Bundle history
 
+## 2026-10-01
+
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) 에 직접 그린 달력(DateField·date-math)과 popover 때문에 올린 browserslist 를 적었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) 에 헤더 v2 확정으로 v1 헤더·`variant` 분기·`/design/full-v2` 를 지운 것을 적었다.
+
 ## 2026-09-18
 
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) 에 `/design/full` 에도 등록 패널이 붙은 것과 샘플 이동 메뉴를 아래 가운데로 옮긴 것을 적었다.
