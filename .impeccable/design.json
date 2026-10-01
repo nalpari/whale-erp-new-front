@@ -1,0 +1,181 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-01T10:00:00Z",
+  "title": "Design System: Whale ERP",
+  "extensions": {
+    "colorMeta": {
+      "brand": {
+        "role": "primary",
+        "displayName": "회청 브랜드",
+        "canonical": "#6b7988",
+        "tonalRamp": ["#20262c", "#2f373f", "#434d57", "#57636f", "#6b7988", "#93a0ad", "#bcc5ce", "#e3e8ed"]
+      },
+      "brand-soft": {
+        "role": "primary",
+        "displayName": "연회청",
+        "canonical": "#8f9eaf",
+        "tonalRamp": ["#2b333c", "#3e4953", "#55626f", "#72808f", "#8f9eaf", "#aab6c3", "#c8d0d9", "#e8ecf0"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "먹색",
+        "canonical": "#3c4046",
+        "tonalRamp": ["#17191c", "#24272a", "#303338", "#3c4046", "#5a6069", "#878e98", "#b9bfc7", "#e6e8eb"]
+      },
+      "label": {
+        "role": "neutral",
+        "displayName": "라벨 회색",
+        "canonical": "#888888",
+        "tonalRamp": ["#262626", "#3b3b3b", "#555555", "#6f6f6f", "#888888", "#a8a8a8", "#c9c9c9", "#eaeaea"]
+      },
+      "thead-bg": {
+        "role": "neutral",
+        "displayName": "표 머리 바탕",
+        "canonical": "#f8f9fb",
+        "tonalRamp": ["#2f3236", "#434850", "#5c636d", "#7b838e", "#a3abb5", "#c9ced6", "#e6e9ee", "#f8f9fb"]
+      },
+      "link": {
+        "role": "secondary",
+        "displayName": "링크 파랑",
+        "canonical": "#366fe3",
+        "tonalRamp": ["#0d1c3c", "#15295a", "#1d3c84", "#2855b2", "#366fe3", "#6b93ea", "#a3bbf2", "#dbe4fa"]
+      },
+      "on": {
+        "role": "tertiary",
+        "displayName": "운영 파랑",
+        "canonical": "#5e8ce9",
+        "tonalRamp": ["#15233c", "#1f365c", "#2b4d87", "#3f6cb8", "#5e8ce9", "#8aaaef", "#b6c8f5", "#e2e9fb"]
+      },
+      "off": {
+        "role": "tertiary",
+        "displayName": "미운영 빨강",
+        "canonical": "#ef6363",
+        "tonalRamp": ["#3d1414", "#5c1d1d", "#8a2b2b", "#bc4040", "#ef6363", "#f38f8f", "#f8baba", "#fde5e5"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "페이지 제목 줄. 화면당 하나." },
+      "headline": { "displayName": "Headline", "purpose": "카드 안 묶음 제목." },
+      "title": { "displayName": "Title", "purpose": "헤더 1depth 메뉴, 상세 표 제목 줄." },
+      "body": { "displayName": "Body", "purpose": "입력칸·표 본문·버튼. 화면의 대부분." },
+      "label": { "displayName": "Label", "purpose": "헤더 오른쪽 컨트롤과 폼 라벨." }
+    },
+    "shadows": [
+      {
+        "name": "popup",
+        "value": "0 2px 6px rgba(40,47,55,0.08)",
+        "purpose": "떠 있는 것(드롭다운·달력 팝업)에만. 카드·표·패널에는 그림자를 쓰지 않는다."
+      }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.23, 1, 0.32, 1)", "purpose": "모든 전환이 공유하는 감속 곡선." },
+      { "name": "state", "value": "150ms", "purpose": "색·테두리처럼 자주 일어나는 상태 변화." },
+      { "name": "menu", "value": "200ms", "purpose": "2depth 줄 펼침(grid 행 높이)." },
+      { "name": "fold-open", "value": "260ms", "purpose": "드롭다운 펼침. 닫기는 180ms 로 더 빠르다." },
+      { "name": "panel", "value": "250ms", "purpose": "오른쪽 슬라이드 패널과 필터 폭 전환." }
+    ],
+    "breakpoints": [
+      { "name": "min", "value": "1720px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "그 줄의 주 동작(저장·검색·목록).",
+      "html": "<button class=\"ds-btn-primary\">저장</button>",
+      "css": ".ds-btn-primary { height: 34px; padding: 0 24px; border: 1px solid #6b7988; border-radius: 2px; background: #6b7988; color: #fff; font-size: 14px; font-weight: 500; letter-spacing: -0.025em; cursor: pointer; transition: background-color .15s cubic-bezier(.23,1,.32,1), border-color .15s cubic-bezier(.23,1,.32,1), color .15s cubic-bezier(.23,1,.32,1); } .ds-btn-primary:hover { background: #fff; color: #3c4046; } .ds-btn-primary:focus-visible { outline: 2px solid #6b7988; outline-offset: 2px; }"
+    },
+    {
+      "name": "Soft Button",
+      "kind": "button",
+      "refersTo": "button-soft",
+      "description": "주 동작 옆에 서는 보조 동작(삭제·수정).",
+      "html": "<button class=\"ds-btn-soft\">삭제</button>",
+      "css": ".ds-btn-soft { height: 34px; padding: 0 24px; border: 1px solid #8f9eaf; border-radius: 2px; background: #8f9eaf; color: #fff; font-size: 14px; font-weight: 500; letter-spacing: -0.025em; cursor: pointer; transition: background-color .15s cubic-bezier(.23,1,.32,1), border-color .15s cubic-bezier(.23,1,.32,1), color .15s cubic-bezier(.23,1,.32,1); } .ds-btn-soft:hover { background: #fff; border-color: #6b7988; color: #3c4046; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "모든 한 줄 입력의 껍데기. Select·DateField 가 같은 모양을 쓴다.",
+      "html": "<input class=\"ds-input\" placeholder=\"대표자명 입력\" />",
+      "css": ".ds-input { width: 220px; height: 34px; padding: 0 10px; border: 1px solid #ededee; border-radius: 2px; background: #fff; color: #3c4046; font-size: 14px; letter-spacing: -0.025em; outline: none; transition: border-color .15s ease-out; } .ds-input::placeholder { color: #888; } .ds-input:focus { border-color: #6b7988; }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "refersTo": "badge-on",
+      "description": "운영/미운영 같은 상태. 색만으로 말하지 않고 글자를 함께 둔다.",
+      "html": "<span class=\"ds-badge-on\">운영</span><span class=\"ds-badge-off\">미운영</span>",
+      "css": ".ds-badge-on, .ds-badge-off { display: inline-block; padding: 2px 4px; border-radius: 2px; font-size: 14px; font-weight: 500; text-align: center; letter-spacing: -0.025em; } .ds-badge-on { min-width: 44px; background: #f4f9ff; color: #5e8ce9; } .ds-badge-off { background: #fff1f1; color: #ef6363; margin-left: 6px; }"
+    },
+    {
+      "name": "List Table",
+      "kind": "custom",
+      "refersTo": "table-head",
+      "description": "목록. 머리글 42px, 줄 46px, 셀은 넘치면 말줄임.",
+      "html": "<table class=\"ds-table\"><thead><tr><th>번호</th><th>BP 상호명</th><th>등록일</th></tr></thead><tbody><tr><td>10</td><td>주식회사 따름인</td><td>2025.08.28</td></tr><tr><td>9</td><td>주식회사 따름인</td><td>2025.08.28</td></tr></tbody></table>",
+      "css": ".ds-table { width: 420px; border-collapse: collapse; border-left: 1px solid #e9edf5; border-right: 1px solid #e9edf5; font-size: 14px; letter-spacing: -0.025em; } .ds-table th { height: 42px; padding: 0 10px; background: #f8f9fb; border-top: 1px solid #e9edf5; border-bottom: 1px solid #e9edf5; color: #858b94; font-weight: 500; } .ds-table td { height: 46px; padding: 0 10px; border-bottom: 1px solid #e9edf5; color: #3c4046; text-align: center; }"
+    },
+    {
+      "name": "Detail Table",
+      "kind": "custom",
+      "refersTo": "table-row",
+      "description": "한 건을 세로로 펼친 표. 라벨 180px 고정, 값이 여럿이면 11px 세로선으로 나눈다.",
+      "html": "<div class=\"ds-detail\"><p class=\"ds-detail-title\">가맹점 계약</p><dl><div class=\"ds-detail-row\"><dt>계약 당사자</dt><dd><span>힘이나는 커피생활</span><i></i><span>을지로3가점</span></dd></div><div class=\"ds-detail-row\"><dt>계약정보</dt><dd><span>계약서 완료</span></dd></div></dl></div>",
+      "css": ".ds-detail { width: 520px; font-size: 14px; letter-spacing: -0.025em; } .ds-detail-title { display: flex; align-items: center; height: 42px; margin: 0; padding: 0 10px; border: 1px solid #e9edf5; border-radius: 2px 2px 0 0; background: #f8f9fb; color: #3c4046; font-size: 16px; font-weight: 500; } .ds-detail dl { margin: 0; } .ds-detail-row { display: flex; } .ds-detail dt { display: flex; align-items: center; width: 180px; height: 46px; padding: 12px; box-sizing: border-box; border-left: 1px solid #e9edf5; border-bottom: 1px solid #e9edf5; color: #888; font-weight: 500; } .ds-detail dd { display: flex; flex: 1; align-items: center; gap: 10px; height: 46px; margin: 0; padding: 12px; box-sizing: border-box; border-right: 1px solid #e9edf5; border-bottom: 1px solid #e9edf5; color: #3c4046; } .ds-detail dd i { width: 1px; height: 11px; background: #d9d9d9; }"
+    },
+    {
+      "name": "Popup",
+      "kind": "card",
+      "refersTo": "popup",
+      "description": "트리거 아래 떠오르는 드롭다운·툴팁의 껍데기. 이 시스템에서 그림자가 붙는 유일한 것.",
+      "html": "<div class=\"ds-popup\"><p>MY PAGE</p><ul><li>내정보 관리</li><li>비밀번호 변경</li></ul></div>",
+      "css": ".ds-popup { width: 154px; padding: 23px; border: 1px solid #ebebeb; border-radius: 2px; background: #fff; box-shadow: 0 2px 6px rgba(40,47,55,.08); font-size: 14px; letter-spacing: -0.025em; color: #3c4046; } .ds-popup p { margin: 0 0 12px; font-size: 15px; font-weight: 500; color: #111; } .ds-popup ul { margin: 0; padding: 0 0 0 0; list-style: none; line-height: 2; } .ds-popup li:hover { color: #6b7988; }"
+    },
+    {
+      "name": "Header Pill",
+      "kind": "nav",
+      "refersTo": "field",
+      "description": "헤더 오른쪽의 알약형 컨트롤. 조작하는 것만 둥글다.",
+      "html": "<button class=\"ds-pill\"><span>힘이나는커피생활 종로점 BP1234</span><svg width=\"6\" height=\"10\" viewBox=\"0 0 6 10\" fill=\"none\"><path d=\"M1 1l4 4-4 4\" stroke=\"#6b7988\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" transform=\"rotate(90 3 5)\"/></svg></button>",
+      "css": ".ds-pill { display: flex; align-items: center; gap: 10px; width: 420px; height: 42px; padding: 0 18px; border: 1px solid #ededee; border-radius: 100px; background: #f8f9fb; color: #3c4046; font-size: 14px; letter-spacing: -0.025em; text-align: left; cursor: pointer; } .ds-pill span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ds-pill:hover { border-color: #6b7988; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "조용한 작업대",
+    "overview": "하루 여덟 시간을 들여다보는 관리자 화면이다. 화면이 말을 걸면 안 되고, 눈에 띄는 것은 데이터여야 한다. 그래서 이 시스템은 색을 거의 쓰지 않는다. 바탕은 흰색과 아주 옅은 회청색(#f8f9fb) 두 장뿐이고, 강조색조차 채도가 낮은 회청색(#6b7988)이다. 빨강과 파랑은 상태 배지와 링크에만 허락된다.\n\n밀도는 높다. 입력칸 34px, 표 줄 46px, 머리글 42px로 한 화면에 열 줄 이상이 들어간다. 여백으로 숨을 틔우는 대신 1px 선과 아주 옅은 바탕 차이로 영역을 나눈다. 모서리는 2px — 거의 각이 살아 있고, 둥근 모양은 헤더의 알약형 컨트롤처럼 \"지금 조작할 수 있는 것\"에만 쓴다.\n\n움직임은 150~260ms로 짧고, 전부 같은 감속 곡선(cubic-bezier(0.23,1,0.32,1))을 쓴다. 떠오르는 것은 아래에서 위로 4~6px 올라오고, 사라지는 것은 더 빠르게 접힌다. 모든 전환은 prefers-reduced-motion 에서 꺼진다.",
+    "keyCharacteristics": [
+      "회청색 한 가지로 끌고 가는 저채도 팔레트",
+      "2px 각진 모서리, 1px 선으로 나눈 영역",
+      "34px / 42px / 46px 로 고정된 높이 체계",
+      "Pretendard 400·500·600·800 네 단계만 사용",
+      "색은 상태를 말할 때만 등장(운영·미운영·링크·위험)"
+    ],
+    "rules": [
+      { "name": "The 두 바탕 규칙", "body": "바탕은 흰색과 #f8f9fb 둘뿐이다. 영역을 나눌 때 새 회색을 만들지 말고 선을 쓴다.", "section": "colors" },
+      { "name": "The 색은 상태다 규칙", "body": "파랑과 빨강은 상태·링크·위험에만 쓴다. 장식으로 색을 올리지 않는다.", "section": "colors" },
+      { "name": "The 네 굵기 규칙", "body": "400·500·600·800 외에는 쓰지 않는다. 800 은 로고 한 곳뿐이다.", "section": "typography" },
+      { "name": "The 한 화면 규칙", "body": "새 화면도 100dvh 안에서 끝낸다. 길어지면 본문 영역에 스크롤을 주고 머리말은 고정한다.", "section": "layout" },
+      { "name": "The 뜬 것만 그림자 규칙", "body": "문서 흐름에 놓인 것은 선으로, 위에 뜬 것만 그림자로 구분한다.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do 색은 --color-erp-* 토큰에서 가져온다. Figma 에 한 번만 나오는 색은 쓰는 자리에 직접 적고 이유를 주석으로 남긴다.",
+      "Do 높이를 34(컨트롤) / 42(머리글) / 46(표 줄) 중에서 고른다.",
+      "Do 전환은 150ms, 펼침은 200~260ms, cubic-bezier(0.23,1,0.32,1) 하나로 맞춘다.",
+      "Do 호버에서 색만 바꾼다. 테두리는 같은 색으로 미리 깔아 둔다.",
+      "Do 새 화면도 ErpRoot 안에 둔다. 밝은 테마·글꼴·스크롤바가 거기서만 적용된다.",
+      "Do 스크롤은 필요한 영역에만 준다. body 는 스크롤하지 않는다."
+    ],
+    "donts": [
+      "Don't 공통 컴포넌트에 className·style 을 넘기지 않는다. 폭과 자리는 감싸는 쪽이 정한다.",
+      "Don't 새 회색을 만들지 않는다. 바탕은 흰색과 #f8f9fb 둘뿐이다.",
+      "Don't 카드·표·패널에 그림자를 넣지 않는다. 그림자는 떠 있는 팝업 하나의 값만 쓴다.",
+      "Don't 모서리를 8px 이상으로 둥글리지 않는다. 알약형(100px)은 헤더의 조작 요소 전용이다.",
+      "Don't 색만으로 상태를 말하지 않는다. 배지는 글자를 함께 둔다.",
+      "Don't 글자 굵기를 네 단계 밖에서 쓰지 않는다."
+    ]
+  }
+}
