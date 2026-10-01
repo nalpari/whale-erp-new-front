@@ -2,6 +2,7 @@
 
 ## 2026-10-01
 
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) 에 상세 화면(DetailTable·/design/detail)과 Figma Link_text 토큰을 적었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) 에 직접 그린 달력(DateField·date-math)과 popover 때문에 올린 browserslist 를 적었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) 에 헤더 v2 확정으로 v1 헤더·`variant` 분기·`/design/full-v2` 를 지운 것을 적었다.
 
