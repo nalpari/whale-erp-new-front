@@ -20,17 +20,6 @@ export function Select(props: Omit<ComponentProps<"select">, "className" | "styl
   );
 }
 
-// 네이티브 달력 버튼은 투명하게 남겨 클릭 영역으로만 쓰고, 보이는 아이콘은 Figma 원본이다.
-export function DateField(props: Omit<ComponentProps<"input">, "type" | "className" | "style">) {
-  return (
-    <input
-      {...props}
-      type="date"
-      className={`${FIELD} bg-[url(/icons/calendar.svg)] bg-[length:30px_30px] bg-[position:right_center] bg-no-repeat [&::-webkit-calendar-picker-indicator]:opacity-0`}
-    />
-  );
-}
-
 const MARK_MOTION =
   "pointer-events-none relative scale-75 opacity-0 transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] peer-checked:scale-100 peer-checked:opacity-100 motion-reduce:scale-100";
 

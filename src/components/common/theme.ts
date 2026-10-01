@@ -16,4 +16,4 @@ export const FIELD = `${FIELD_BOX} h-[34px] pl-[10px]`;
 // 스크롤바는 색과 굵기(thin)를 ! 로 고정해 밝은 화면에 맞춘다. Chrome 은 색·굵기를 표준 속성으로 주면
 // ::-webkit-scrollbar 를 무시하므로 thin 보다 더 얇게는 못 줄인다.
 export const ERP_THEME =
-  "bg-white font-erp leading-[normal] tracking-[-0.025em] text-erp-ink scheme-light selection:bg-erp-brand selection:text-white [&_*:focus-visible]:outline-erp-brand! [&_:is(a[href],button:enabled,select:enabled,label:has(input:enabled),input[type=checkbox]:enabled)]:cursor-pointer [&_::-webkit-calendar-picker-indicator]:cursor-pointer [&_*]:[scrollbar-color:#cfd4da_transparent]! [&_*]:[scrollbar-width:thin]!";
+  "bg-white font-erp leading-[normal] tracking-[-0.025em] text-erp-ink scheme-light selection:bg-erp-brand selection:text-white [&_*:focus-visible]:outline-erp-brand! [&_:is(a[href],button:enabled,select:enabled,label:has(input:enabled),input[type=checkbox]:enabled)]:cursor-pointer [&_*]:[scrollbar-color:#cfd4da_transparent]! [&_*]:[scrollbar-width:thin]!";

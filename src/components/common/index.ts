@@ -3,7 +3,8 @@
 export { ErpRoot } from "./erp-root";
 export { Badge } from "./badge";
 export { Button, type ButtonVariant } from "./button";
-export { Checkbox, DateField, Field, FormGroup, FormRow, Radio, Select, Textarea, TextField } from "./form";
+export { Checkbox, Field, FormGroup, FormRow, Radio, Select, Textarea, TextField } from "./form";
+export { DateField } from "./date-field";
 export { SearchField } from "./search-field";
 export { DataTable, type Column } from "./data-table";
 export { ListToolbar } from "./list-toolbar";
