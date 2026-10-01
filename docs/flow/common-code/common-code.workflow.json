@@ -169,7 +169,7 @@
       "lane": "sys",
       "col": 1,
       "type": "backend",
-      "label": "플랫폼고정 배포",
+      "label": "복사 없이 원본 조회",
       "sublabel": "모든 BP 같은 값",
       "width": 150
     },
