@@ -433,7 +433,8 @@
          BP 변경 버튼은 실제로는 플랫폼 마스터 · 플랫폼 관리자에게만 있다. 목업에는 플랫폼 사용자로 들어오는 경로가 없어
          우선 누구에게나 보이고, 팝업 안에 플랫폼 사용자 전용이라는 안내를 둔다. */
       (SCOPE_MODE === "nostore"
-        ? '<a class="scopebtn scopebtn--empty" href="' + url("stores/new.html") + '">' + ic("plus", 14) + "<span>접근할 점포가 없습니다 · 점포 등록</span></a>"
+        ? /* 점포가 없으면 안내만 둔다. 점포 등록 안내와 링크는 홈 진입 팝업이 맡는다(3팀 · 점포 등록 권한이 있을 때만). */
+          '<span class="scopebtn scopebtn--empty">' + ic("store", 14) + "<span>접근할 점포가 없습니다</span></span>"
         : '<button class="scopebtn" type="button" aria-haspopup="listbox" aria-expanded="false" title="점포 범위 선택">' +
           '<b class="scopebtn__bp"></b><span class="sep">·</span><span class="scopebtn__val"></span>' + ic("selector", 14) + "</button>" +
           '<button class="scopebp" type="button" aria-haspopup="dialog" title="BP 및 점포 선택">' + ic("refresh", 14) + "BP 변경</button>") +

@@ -4725,6 +4725,7 @@ a.tile:hover {
 .scopebtn--empty {
   color: var(--body);
   text-decoration: none;
+  cursor: default;
 }
 .scopepop__box {
   max-width: 560px;
