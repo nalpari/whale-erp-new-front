@@ -5,7 +5,7 @@ description: DB·API·FRONT 세 계층이 같은 개념을 같은 영문 이름�
 tags: [convention, naming, shared]
 sources:
   - { id: naming-2026-09-30, resource: ../../docs/raw/2026-09-30-네이밍-규칙.md, title: WHALE ERP 네이밍 규칙 (DB · API · FRONT) }
-generated: { by: claude-code/opus-5, at: 2026-10-01T01:23:04Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-01T04:12:52Z }
 ---
 
 근거: `docs/raw/2026-09-30-네이밍-규칙.md` (3팀 기획 세션 · 2026-10-01 고침)

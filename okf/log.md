@@ -2,6 +2,7 @@
 
 ## 2026-10-01
 
+* **Update**: [Naming](/conventions/naming.md) 의 영문 식별자 대응표를 2026-10-01 재영 확인으로 표시했다. 1~4장 계층별 규칙은 여전히 제안이다.
 * **Update**: `2026-09-30-네이밍-규칙.md` 의 고친 3장(목록 응답 규칙 확정, 오류는 Nest 기본 유지, 날짜·시각 형식 뺌)과 상태 표시를 [네이밍 규칙](/conventions/naming.md) 에 반영했다.
 
 ## 2026-09-30
@@ -79,4 +80,3 @@
 * **Update**: whale-erp-api 연동 샘플(고객 로그인·품목 목록)을 추가하고 [Whale ERP Frontend](/whale-erp-front.md) 에 API 절을 만들었다.
 * **Update**: 패키지 매니저를 pnpm 으로 전환하면서 [Whale ERP Frontend](/whale-erp-front.md) 의 스택과 명령을 갱신했다.
 * **Initialization**: Created the OKF v0.2 bundle root and the [Whale ERP Frontend](/whale-erp-front.md) concept.
-- 대응표(영문 식별자) 재영 확인 표시 (2026-10-01, 기획 세션)
