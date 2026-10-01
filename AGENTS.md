@@ -22,6 +22,16 @@ concept의 `sources[].resource`에 들어 있으면 해당 concept 본문을 고
 
 @okf/conventions/naming.md
 
+## 디자인
+
+관리자 웹 화면 코드(`src/`)는 아래 디자인 시스템을 따른다. 1팀이 Figma(2026 1차 수정)에서 옮긴 것이고, 고칠 때는 1팀과 먼저 맞춘다.
+
+@DESIGN.md
+
+- 화면을 만들 때는 `src/components/common/`의 공통 컴포넌트를 먼저 쓴다. 없는 컴포넌트를 새로 만들 때도 DESIGN.md의 토큰과 높이 체계를 따른다.
+- 색은 `globals.css`의 `--color-erp-*` 토큰에서, 스타일 조각은 `src/components/common/theme.ts`에서 가져온다.
+- 목업(`docs/mockup/`)은 기획 산출물이라 이 규칙을 적용하지 않는다.
+
 ## 워크트리
 
 워크트리는 저장소 안이 아니라 플랫폼별 루트 아래, 프로젝트 이름으로 한 단계
