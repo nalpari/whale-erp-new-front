@@ -10,13 +10,11 @@ import {
   FormGroup,
   FormRow,
   GlobalHeader,
-  GlobalHeaderV2,
   ListToolbar,
   PageBar,
-  PageBarV2,
   Radio,
   SearchField,
-  ServiceLinksV2,
+  ServiceLinks,
   Textarea,
   TextField,
   Select,
@@ -99,7 +97,7 @@ export default function DesignUnitsPage() {
       </Section>
 
       <Section title="Field · FormRow · FormGroup · TextField · Textarea">
-        {/* 등록 폼(RNB)에 쓰는 묶음. 실제 화면은 /design/full-v2 의 신규 등록 버튼으로 연다. */}
+        {/* 등록 폼(RNB)에 쓰는 묶음. 실제 화면은 /design/full 의 신규 등록 버튼으로 연다. */}
         <div className="max-w-[416px]">
           <FormGroup title="기본 정보">
             <FormRow>
@@ -146,8 +144,8 @@ export default function DesignUnitsPage() {
       <Section title="StoreSelect · UserPop">
         {/* 팝업이 섹션 아래로 펼쳐질 자리를 남긴다. */}
         <div className="flex flex-wrap items-center gap-6 pb-[160px]">
-          <StoreSelect variant="v1" options={STORES} />
-          <UserPop variant="v1" name="김지영 (admin)" items={USER_ITEMS} />
+          <StoreSelect options={STORES} />
+          <UserPop name="김지영 (admin)" items={USER_ITEMS} />
         </div>
       </Section>
 
@@ -176,31 +174,14 @@ export default function DesignUnitsPage() {
               menus={MENUS}
               right={
                 <>
-                  <StoreSelect variant="v1" options={STORES} />
-                  <UserPop variant="v1" name="김지영 (admin)" items={USER_ITEMS} />
+                  <StoreSelect options={STORES} />
+                  <ServiceLinks />
+                  <AlarmLink href="#" />
+                  <UserPop name="김지영 (admin)" items={USER_ITEMS} />
                 </>
               }
             />
             <PageBar title="점포정보 관리" />
-          </div>
-        </div>
-      </Section>
-
-      <Section title="GlobalHeaderV2 · PageBarV2">
-        <div className="overflow-x-auto pb-[220px]">
-          <div className="min-w-[1720px] border border-erp-panel-line">
-            <GlobalHeaderV2
-              menus={MENUS}
-              right={
-                <>
-                  <StoreSelect variant="v2" options={STORES} />
-                  <ServiceLinksV2 />
-                  <AlarmLink href="#" />
-                  <UserPop variant="v2" name="김지영 (admin)" items={USER_ITEMS} />
-                </>
-              }
-            />
-            <PageBarV2 title="점포정보 관리" />
           </div>
         </div>
       </Section>

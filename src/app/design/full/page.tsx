@@ -1,9 +1,11 @@
 import {
+  AlarmLink,
   DataTable,
   GlobalHeader,
   ListToolbar,
   PageBar,
   Select,
+  ServiceLinks,
   StoreSelect,
   UserPop,
 } from "@/components/common";
@@ -24,8 +26,10 @@ export default function DesignFullPage() {
           menus={MENUS}
           right={
             <>
-              <StoreSelect variant="v1" options={STORES} />
-              <UserPop variant="v1" name="김지영 (admin)" items={USER_ITEMS} />
+              <StoreSelect options={STORES} />
+              <ServiceLinks />
+              <AlarmLink href="#" />
+              <UserPop name="김지영 (admin)" items={USER_ITEMS} />
             </>
           }
         />
