@@ -2,6 +2,20 @@
 
 ## 2026-10-01
 
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) 에 상세 화면(DetailTable·/design/detail)과 Figma Link_text 토큰을 적었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) 에 직접 그린 달력(DateField·date-math)과 popover 때문에 올린 browserslist 를 적었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) 에 헤더 v2 확정으로 v1 헤더·`variant` 분기·`/design/full-v2` 를 지운 것을 적었다.
+
+## 2026-09-18
+
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) 에 `/design/full` 에도 등록 패널이 붙은 것과 샘플 이동 메뉴를 아래 가운데로 옮긴 것을 적었다.
+* **Update**: Pretendard 를 CDN 대신 저장소(`src/app/fonts/`)에서 쓰도록 바꾼 것을 [Whale ERP Frontend](/whale-erp-front.md) 에 적었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) 에 등록 폼 공통 컴포넌트와 오른쪽 슬라이드 패널(RNB)을 적었다.
+
+## 2026-09-17
+
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) 에 헤더 v2(Figma Top2)와 `/design/full-v2` 샘플을 적었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) 에 공통 컴포넌트(src/components/common), 디자인 샘플(src/app/design), 아이콘(public/icons), erp 토큰을 적고 sources 에 추가했다.
 * **Update**: [Naming](/conventions/naming.md) 문서 전체(1~5장)를 2026-10-01 재영 확인으로 확정했다.
 * **Update**: [Naming](/conventions/naming.md) 의 영문 식별자 대응표를 2026-10-01 재영 확인으로 표시했다. 1~4장 계층별 규칙은 여전히 제안이다.
 * **Update**: `2026-09-30-네이밍-규칙.md` 의 고친 3장(목록 응답 규칙 확정, 오류는 Nest 기본 유지, 날짜·시각 형식 뺌)과 상태 표시를 [네이밍 규칙](/conventions/naming.md) 에 반영했다.

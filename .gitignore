@@ -43,5 +43,10 @@ next-env.d.ts
 # archify visual-check 스크린샷 증거는 커밋하지 않는다 (영수증 JSON 은 남긴다)
 docs/flow/**/*.visual-check.*.png
 
+
+# impeccable 디자인 훅이 세션마다 새로 쓰는 캐시 (절대 경로·세션 ID 가 들어간다)
+.impeccable/hook.cache.json
+
 # Plane 러너가 만드는 작업 id 짝. 사람마다 다르고 공유하지 않는다
 docs/plane/scripts/ids.json
+

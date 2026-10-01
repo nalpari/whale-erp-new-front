@@ -1,0 +1,19 @@
+// Whale ERP 공통 컴포넌트가 함께 쓰는 스타일 조각. 색·서체 토큰은 globals.css 의 erp-* 에 있다.
+// Figma 에 한 번만 나오는 색(#ebebeb 팝업 테두리, #e93737 위험 항목 등)은 토큰으로 두지 않고 쓰는 곳에 직접 적는다.
+
+export const EASE_OUT = "ease-[cubic-bezier(0.23,1,0.32,1)]";
+
+// 입력칸. 모두 폭을 채우므로(w-full) 폭은 감싸는 요소로 정한다. 포커스 링 대신 테두리 색만 브랜드색으로 바꾼다.
+// 앱 전역 스타일이 포커스 링·캐럿을 덮어도 입력칸 모양이 유지되도록 ! 로 고정한다.
+// 높이와 안쪽 여백을 뺀 껍데기. 높이가 다른 입력칸(Textarea)이 같은 테두리·글자·포커스를 쓴다.
+export const FIELD_BOX =
+  "w-full rounded-[2px] border border-erp-field-line bg-white text-[14px] text-erp-ink outline-none! caret-erp-ink! transition-[border-color] duration-150 ease-out placeholder:text-erp-label focus:border-erp-brand";
+
+export const FIELD = `${FIELD_BOX} h-[34px] pl-[10px]`;
+
+// globals.css 는 OS 설정을 따라 다크 테마가 되므로, ERP 화면은 ErpRoot 안에서 밝은 테마로 고정한다.
+// Tailwind v4 는 버튼에 pointer 커서를 주지 않으므로 누를 수 있는 요소를 여기서 한 번에 잡는다.
+// 스크롤바는 색과 굵기(thin)를 ! 로 고정해 밝은 화면에 맞춘다. Chrome 은 색·굵기를 표준 속성으로 주면
+// ::-webkit-scrollbar 를 무시하므로 thin 보다 더 얇게는 못 줄인다.
+export const ERP_THEME =
+  "bg-white font-erp leading-[normal] tracking-[-0.025em] text-erp-ink scheme-light selection:bg-erp-brand selection:text-white [&_*:focus-visible]:outline-erp-brand! [&_:is(a[href],button:enabled,select:enabled,label:has(input:enabled),input[type=checkbox]:enabled)]:cursor-pointer [&_*]:[scrollbar-color:#cfd4da_transparent]! [&_*]:[scrollbar-width:thin]!";
