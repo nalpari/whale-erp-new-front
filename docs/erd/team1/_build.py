@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""WHALE ERP 1팀 1차 범위 논리 ERD 생성기.
+"""WHALE ERP 1팀 1차 범위 ERD 생성기 (논리 모델 · 그리기 · 검사).
 
 모델(엔티티·관계)을 이 파일 한 곳에 두고, 여기서 SVG 를 담은 HTML 을
 함께 만든다. 그림을 손으로 고치지 말고 모델을 고친 뒤 다시 돌린다.
+물리 모델·schema.sql 과 페이지의 물리·논리+물리 보기는 _build_physical.py 가 만든다.
 
   python3 _build.py
 
@@ -115,21 +116,21 @@ DIAGRAMS = []
 
 # ── 0. 개요 ────────────────────────────────────────────────────────────────
 DIAGRAMS.append(Diagram(
-    "index", "개요", "WHALE ERP 1팀 1차 논리 ERD · 개요",
+    "index", "개요", "WHALE ERP 1팀 1차 ERD · 개요",
     "관리자 계정을 중심으로 점포·권한·메뉴·공통코드가 모인다. BP 마스터 계정이 조직의 뿌리이며, 소속 관리자와 점포가 이를 참조한다.",
     [
         E("admin_account", "관리자 계정", "admin_accounts", "focal",
           ["#|관리자 ID|id|admin_account_id|", "|관리자 로그인ID|text|login_id|영문·숫자 4~20자, 고유",
-           "→|BP|id|bp_id|플랫폼은 플랫폼 BP",
-           "|권한 유형 코드|code|auth_type_code|AUTH_TYPE",
+           "→|BP|id|bp_code_id|플랫폼은 플랫폼 BP",
+           "|권한 유형 코드|code|role_type_code|ROLE_TYPE",
            "→|권한 그룹|id|role_group_id|",
            "|계정 상태 코드|code|account_status_code|ACCOUNT_STATUS"],
           1, 40),
         E("store", "점포", "stores", "entity",
-          ["#|점포 ID|id|store_id|", "|점포코드|text|store_code|ST+6자리, 고유", "→|BP|id|bp_id|", "|점포 유형 코드|code|store_type_code|STORE_TYPE", "|점포 상태 코드|code|store_status_code|STORE_STATUS"],
+          ["#|점포 ID|id|store_id|", "|점포코드|text|store_code|ST+6자리, 고유", "→|BP|id|bp_code_id|", "|점포 유형 코드|code|store_type_code|STORE_TYPE", "|점포 상태 코드|code|store_status_code|STORE_STATUS"],
           0, 300),
         E("role_group", "권한 그룹", "role_groups", "entity",
-          ["#|권한 코드|text|role_code|유형+6자리", "→|BP|id|bp_id|플랫폼은 플랫폼 BP", "|권한명|text|name|BP+관리계정ID 안 고유"],
+          ["#|권한 코드|text|role_code|유형+6자리", "→|BP|id|bp_code_id|플랫폼은 플랫폼 BP", "|권한명|text|name|BP+관리계정ID 안 고유"],
           2, 40),
         E("menu", "메뉴", "menus", "entity",
           ["#|메뉴 코드|text|menu_code|MN+6자리", "|노출 메뉴명|text|name|", "|사용 상태|enum|status|"],
@@ -188,12 +189,12 @@ DIAGRAMS.append(Diagram(
           0, 600),
         E("admin_account", "관리자 계정", "admin_accounts", "focal",
           ["#|관리자 ID|id|admin_account_id|", "|관리자 로그인ID|text|login_id|영문·숫자 4~20자, 고유",
-           "→|BP|id|bp_id|플랫폼은 플랫폼 BP",
+           "→|BP|id|bp_code_id|플랫폼은 플랫폼 BP",
            "|이름|text|name|한글·영문 2~20자",
            "|비밀번호 해시|hash|password_hash|",
            "|연락처|text|phone|숫자 10~11자리",
            "|이메일|text|email|고유",
-           "|권한 유형 코드|code|auth_type_code|AUTH_TYPE",
+           "|권한 유형 코드|code|role_type_code|ROLE_TYPE",
            "→|권한 그룹|id|role_group_id|",
            "→|이용약관 최근 동의 버전|id|terms_of_use_version_id|동의 전 비움",
            "→|개인정보 최근 동의 버전|id|privacy_version_id|동의 전 비움",
@@ -201,7 +202,7 @@ DIAGRAMS.append(Diagram(
            "|강제 비밀번호 변경|bool|is_password_change_required|",
            "|초기 비밀번호 미발송|bool|is_initial_password_unsent|",
            "|로그인 실패 횟수|int|failed_login_count|5회 잠금",
-           "|잠금 해제 시각|datetime|locked_until|5분 잠금",
+           "|잠금 해제 시각|datetime|lock_expires_at|5분 잠금",
            "|최근 로그인 일시|datetime|last_login_at|",
            "|가입경로 코드|code|join_path_code|JOIN_PATH, 필수",
            "|전체 점포 적용 여부|bool|is_all_stores|false 면 매핑",
@@ -217,13 +218,13 @@ DIAGRAMS.append(Diagram(
           1, 40),
         E("login_hist", "관리자 로그인 이력", "admin_login_logs", "history",
           ["#|로그인 이력 ID|id|login_id|", "→|관리자|id|admin_account_id|없는 아이디면 비움",
-           "|접속 IP|text|ip_address|",
+           "|접속 IP|text|client_address|",
            "|성공 여부|bool|is_succeeded|",
            "|실패 사유|enum|failure_reason|불일치·잠금·미사용·탈퇴",
            "|시도 시각|datetime|attempted_at|1년 보존"],
           2, 40),
         E("bp_code", "BP 코드", "bp_codes", "focal",
-          ["#|BP ID|id|bp_id|", "|BP 코드|text|bp_code|BP+6자리, 고유, 변경 불가",
+          ["#|BP ID|id|bp_code_id|", "|BP 코드|text|bp_code|BP+6자리, 고유, 변경 불가",
            "|플랫폼 BP 여부|bool|is_platform|true 는 한 행만",
            "|BP 상태 코드|code|account_status_code|ACCOUNT_STATUS, 시스템만 변경",
            "|상호명|text|trade_name|1~50자",
@@ -297,11 +298,11 @@ DIAGRAMS.append(Diagram(
     "직영점포와 가맹점포를 같은 구조로 다룬다. 상태는 미운영 -> 운영 -> 폐점 한 방향이고, 운영 전환은 사업자정보 인증 완료 · 필수 항목 입력 · 좌표(위도·경도) 입력 · 소속 BP 사용 상태가 조건이다. 사업자정보는 별도 테이블로 관리한다.",
     [
         E("bp_code_ref", "BP 코드", "bp_codes", "entity",
-          ["#|BP ID|id|bp_id|", "|BP 코드|text|bp_code|BP+6자리, 고유"],
+          ["#|BP ID|id|bp_code_id|", "|BP 코드|text|bp_code|BP+6자리, 고유"],
           0, 40),
         E("store", "점포", "stores", "focal",
           ["#|점포 ID|id|store_id|", "|점포코드|text|store_code|ST+6자리, 고유, 자동 채번",
-           "→|BP|id|bp_id|소속 BP",
+           "→|BP|id|bp_code_id|소속 BP",
            "|점포 유형 코드|code|store_type_code|STORE_TYPE, 변경 불가",
            "|점포명|text|name|1~50자",
            "|연락처|text|phone|숫자 9~11자리",
@@ -311,7 +312,7 @@ DIAGRAMS.append(Diagram(
            "|위도|decimal|latitude|소수 6자리",
            "|경도|decimal|longitude|소수 6자리",
            "|위치 적용 여부|bool|is_location_applied|기본 true(사용)",
-           "|폐점일|date|closed_on|폐점 시 자동",
+           "|폐점일|date|closed_date|폐점 시 자동",
            "|점포 상태 코드|code|store_status_code|STORE_STATUS",
            "|삭제 여부|bool|is_deleted|미운영만",
            "|등록 일시|datetime|created_at|",
@@ -345,12 +346,14 @@ DIAGRAMS.append(Diagram(
           ["#|파일 ID|id|file_id|",
            "→|점포|id|store_id|stores FK, 점포당 1장",
            "|원본 파일명|text|file_name|",
-           "|파일 형식|text|mime_type|JPG·PNG",
+           "|파일 구분|enum|file_type|JPG·PNG",
            "|파일 크기|int|size_bytes|5MB 이하",
            "|저장 위치|text|storage_key|",
            "|삭제 여부|bool|is_deleted|",
            "|등록 일시|datetime|created_at|",
-           "→|등록자|id|created_by|"],
+           "→|등록자|id|created_by|",
+           "|최근 수정 일시|datetime|updated_at|",
+           "→|수정자|id|updated_by|"],
           2, 288),
         E("store_biz", "점포 사업자정보", "store_business_profiles", "entity",
           ["#→|점포|id|store_id|stores FK, 1:1",
@@ -377,11 +380,11 @@ DIAGRAMS.append(Diagram(
            "→|등록자|id|created_by|",
            "|최근 수정 일시|datetime|updated_at|",
            "→|수정자|id|updated_by|"],
-          2, 580),
+          2, 640),
         E("admin_account_sub", "관리자 계정 (소속)", "admin_accounts", "entity",
           ["#|관리자 ID|id|admin_account_id|", "|관리자 로그인ID|text|login_id|고유",
-           "→|BP|id|bp_id|",
-           "|권한 유형 코드|code|auth_type_code|AUTH_TYPE"],
+           "→|BP|id|bp_code_id|",
+           "|권한 유형 코드|code|role_type_code|ROLE_TYPE"],
           0, 580),
     ],
     [
@@ -390,8 +393,8 @@ DIAGRAMS.append(Diagram(
         R("store", "right", "store_hist", "left", "1", "N", "", at_a=108, at_b=108),
         R("store", "right", "store_biz", "left", "1", "0..1", "", at_a=268, at_b=268),
         R("store", "right", "store_image", "left", "1", "0..1", "", at_a=400, at_b=400),
-        R("store", "right", "mapping", "left", "1", "N", "", at_a=448, at_b=640),
-        R("admin_account_sub", "right", "mapping", "left", "1", "N", "", at_a=640, at_b=700),
+        R("store", "right", "mapping", "left", "1", "N", "", at_a=448, at_b=700),
+        R("admin_account_sub", "right", "mapping", "left", "1", "N", "", at_a=640, at_b=760),
     ],
     [
         ("coral", "중심", "점포 상태는 한 방향이다", ["미운영 -> 운영 -> 폐점 단방향 전환이다", "운영 전환은 사업자정보 인증 완료가 조건이다", "미운영 상태에서만 삭제할 수 있다"]),
@@ -406,7 +409,7 @@ DIAGRAMS.append(Diagram(
     "플랫폼 사용자가 BP 마스터 계정을 등록·조회·수정·삭제하는 영역이다. BP 마스터 계정 하나가 조직의 뿌리이며, 소속 관리자와 점포가 이를 참조한다.",
     [
         E("bp_code", "BP 코드", "bp_codes", "focal",
-          ["#|BP ID|id|bp_id|", "|BP 코드|text|bp_code|BP+6자리, 고유, 변경 불가",
+          ["#|BP ID|id|bp_code_id|", "|BP 코드|text|bp_code|BP+6자리, 고유, 변경 불가",
            "|플랫폼 BP 여부|bool|is_platform|true 는 한 행만",
            "|BP 상태 코드|code|account_status_code|ACCOUNT_STATUS, 시스템만 변경",
            "|상호명|text|trade_name|1~50자",
@@ -428,7 +431,7 @@ DIAGRAMS.append(Diagram(
            "→|수정자|id|updated_by|"],
           0, 40),
         E("bp_hist", "BP 변경 이력", "bp_change_histories", "history",
-          ["#|변경 이력 ID|id|change_id|", "→|BP|id|bp_id|",
+          ["#|변경 이력 ID|id|change_id|", "→|BP|id|bp_code_id|",
            "|변경 항목|text|field|상호명·BP상태 등",
            "|변경 전 값|text|before_value|",
            "|변경 후 값|text|after_value|",
@@ -437,11 +440,11 @@ DIAGRAMS.append(Diagram(
            "|비고|text|note|탈퇴 줄에만 탈퇴 사유"],
           1, 40),
         E("admin_account_sub", "관리자 계정 (소속)", "admin_accounts", "entity",
-          ["#|관리자 ID|id|admin_account_id|", "|관리자 로그인ID|text|login_id|고유", "→|BP|id|bp_id|",
-           "|권한 유형 코드|code|auth_type_code|BP 관리자·가맹 마스터 등"],
+          ["#|관리자 ID|id|admin_account_id|", "|관리자 로그인ID|text|login_id|고유", "→|BP|id|bp_code_id|",
+           "|권한 유형 코드|code|role_type_code|BP 관리자·가맹 마스터 등"],
           1, 340),
         E("store", "점포", "stores", "entity",
-          ["#|점포 ID|id|store_id|", "|점포코드|text|store_code|ST+6자리, 고유", "→|BP|id|bp_id|"],
+          ["#|점포 ID|id|store_id|", "|점포코드|text|store_code|ST+6자리, 고유", "→|BP|id|bp_code_id|"],
           0, 600),
         E("account_ref", "계정", "accounts", "ref",
           ["#|계정 ID|id|account_id|", "|이메일 아이디|text|email|"],
@@ -470,8 +473,8 @@ DIAGRAMS.append(Diagram(
     [
         E("role_group", "권한 그룹", "role_groups", "focal",
           ["#|권한 그룹 ID|id|role_group_id|", "|권한 코드|text|role_code|유형+6자리, 고유, 변경 불가",
-           "→|BP|id|bp_id|플랫폼은 플랫폼 BP",
-           "|권한 유형 코드|code|auth_type_code|AUTH_TYPE, 변경 불가",
+           "→|BP|id|bp_code_id|플랫폼은 플랫폼 BP",
+           "|권한 유형 코드|code|role_type_code|ROLE_TYPE, 변경 불가",
            "|권한명|text|name|같은 BP·관리계정ID 안 고유",
            "|설명|text|description|",
            "|마스터 권한 여부|bool|is_master|",
@@ -536,18 +539,18 @@ DIAGRAMS.append(Diagram(
            "→|수정자|id|updated_by|"],
           2, 40),
         E("holiday", "BP 휴일", "bp_holidays", "entity",
-          ["#|휴일 ID|id|holiday_id|", "→|BP|id|bp_id|",
+          ["#|BP 휴일 ID|id|bp_holiday_id|", "→|BP|id|bp_code_id|",
            "|전체 점포 적용 여부|bool|is_all_stores|false 면 특정 점포",
            "|휴일 유형 코드|code|holiday_type_code|공통코드 HOLIDAY_TYPE(DAY·PERIOD·REPEAT)",
            "|휴일 시작날짜|date|start_date|반복 기준일",
            "|휴일 종료날짜|date|end_date|하루는 시작일과 같게 · 기간의 종료일 · 반복은 비움",
            "|휴일 반복 유형 코드|code|holiday_repeat_type_code|공통코드 HOLIDAY_REPEAT_TYPE(DAILY·WEEKLY·MONTHLY·YEARLY) · 반복일 때만",
            "|반복 종료 조건|enum|repeat_end_type|없음·날짜·횟수",
-           "|반복 종료일|date|repeat_until|",
+           "|반복 종료일|date|repeat_end_date|",
            "|반복 횟수|int|repeat_count|",
            "|휴일명|text|name|30자",
            "|설명|text|description|",
-           "→|원래 휴일|id|origin_holiday_id|'이후 모두' 수정으로 분할된 경우",
+           "→|원래 휴일|id|origin_bp_holiday_id|'이후 모두' 수정으로 분할된 경우",
            "|삭제 여부|bool|is_deleted|",
            "|등록 일시|datetime|created_at|",
            "→|등록자|id|created_by|",
@@ -555,9 +558,9 @@ DIAGRAMS.append(Diagram(
            "→|수정자|id|updated_by|"],
           3, 40),
         E("holiday_store", "휴일 점포 매핑", "holiday_store_mappings", "entity",
-          ["#→|휴일|id|holiday_id|",
+          ["#→|휴일|id|bp_holiday_id|",
            "#→|대상 점포|id|store_id|",
-           "|적용 종료일|date|effective_until|뺄 때 고른 날짜 전날",
+           "|적용 종료일|date|effective_end_date|뺄 때 고른 날짜 전날",
            "|삭제 여부|bool|is_deleted|",
            "|등록 일시|datetime|created_at|",
            "→|등록자|id|created_by|",
@@ -565,9 +568,9 @@ DIAGRAMS.append(Diagram(
            "→|수정자|id|updated_by|"],
           3, 552),
         E("holiday_except", "휴일 예외 점포", "holiday_excluded_stores", "entity",
-          ["#→|휴일|id|holiday_id|",
+          ["#→|휴일|id|bp_holiday_id|",
            "#→|예외 점포|id|store_id|",
-           "|적용 시작일|date|effective_from|",
+           "|적용 시작일|date|effective_start_date|",
            "|삭제 여부|bool|is_deleted|",
            "|등록 일시|datetime|created_at|",
            "→|등록자|id|created_by|",
@@ -575,7 +578,7 @@ DIAGRAMS.append(Diagram(
            "→|수정자|id|updated_by|"],
           3, 804),
         E("holiday_hist", "BP 휴일 변경 이력", "bp_holiday_change_histories", "history",
-          ["#|변경 이력 ID|id|change_id|", "→|휴일|id|holiday_id|",
+          ["#|변경 이력 ID|id|change_id|", "→|휴일|id|bp_holiday_id|",
            "|변경 항목|text|field|",
            "|변경 전 값|text|before_value|",
            "|변경 후 값|text|after_value|",
@@ -590,12 +593,12 @@ DIAGRAMS.append(Diagram(
            "|비고|text|note|",
            "|출처|enum|source|규칙 계산·공식 API",
            "|공식 원본 식별자|text|source_ref|공식 API일 때만",
-           "|최종 동기화 일시|datetime|synced_at|공식 API일 때만"],
+           "|최종 동기화 일시|datetime|synchronized_at|공식 API일 때만"],
           2, 680),
-        E("sync_hist", "동기화 이력", "public_holiday_sync_logs", "history",
-          ["#|동기화 이력 ID|id|sync_id|",
+        E("sync_hist", "동기화 이력", "public_holiday_synchronization_logs", "history",
+          ["#|동기화 이력 ID|id|synchronization_id|",
            "|대상 연도|int|year|올해·다음 해",
-           "|동기화 일시|datetime|synced_at|",
+           "|동기화 일시|datetime|synchronized_at|",
            "|등록 건수|int|created_count|",
            "|수정 건수|int|updated_count|",
            "|삭제 건수|int|deleted_count|",
@@ -981,7 +984,7 @@ def page(d, svg):
             links.append(f'<a href="{x.slug}.html"><b>{esc(x.nav)}</b><span>{esc(names)}</span>'
                          f'<span class="n">ENTITY {len(x.entities)} · REL {len(x.rels)}</span></a>')
         extra = ('<h2>영역별 상세</h2><p class="subtitle">한 장에 엔티티를 8개 넘게 두지 않으려고 영역마다 나눴다. '
-                 '속성의 제안 컬럼명과 비고는 README.md 카탈로그에 있다.</p>'
+                 '속성의 제안 컬럼명과 비고는 README.md 카탈로그에 있다. 위 보기 버튼으로 논리·물리·논리+물리를 고른다.</p>'
                  f'<div class="index-list">{"".join(links)}</div>')
     return f"""<!DOCTYPE html>
 <html lang="ko">
@@ -1029,21 +1032,10 @@ if(!on){{btn.setAttribute('aria-pressed','true');d.classList.add('show-'+f)}}
 
 
 def main():
-    all_errs = []
-    for d in DIAGRAMS:
-        svg, errs, W = build_svg(d)
-        all_errs += errs
-        with open(os.path.join(OUT, f"{d.slug}.html"), "w", encoding="utf-8") as fh:
-            fh.write(page(d, svg))
-    n_ent = len({e.table for d in DIAGRAMS for e in d.entities.values()})
-    print(f"ERD {len(DIAGRAMS)}장 · 고유 엔티티 {n_ent}개 생성")
-    if all_errs:
-        print(f"\n검사 실패 {len(all_errs)}건")
-        for e in all_errs:
-            print("  -", e)
-        return 1
-    print("검사 통과")
-    return 0
+    # 페이지는 논리·물리·논리+물리 세 보기를 한 장에 담는다. 물리 모델과 페이지 쓰기는 _build_physical.py 가 맡는다.
+    sys.dont_write_bytecode = True
+    import _build_physical
+    return _build_physical.main()
 
 
 if __name__ == "__main__":
