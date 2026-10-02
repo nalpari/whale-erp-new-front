@@ -20,7 +20,7 @@ const sub = (t) => `<span class="ml-[10px] text-[14px] font-normal text-erp-labe
 // [그룹 코드, 그룹명, 관리 주체, BP 적용(null=해당 없음, true=적용, false=미적용)]
 const GROUPS = [
   ["SERVICE", "서비스", "플랫폼고정", null],
-  ["AUTH_TYPE", "권한 유형", "플랫폼고정", null],
+  ["ROLE_TYPE", "권한 유형", "플랫폼고정", null],
   ["ACCOUNT_STATUS", "계정 상태", "플랫폼고정", null],
   ["JOIN_PATH", "가입경로", "플랫폼고정", null],
   ["WITHDRAW_REASON", "탈퇴 사유", "플랫폼고정", null],

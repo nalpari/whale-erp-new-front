@@ -64,7 +64,7 @@
                 <button type="button" data-state="newcode" aria-pressed="false">상세 코드 추가 행</button>
                 <button type="button" data-state="dupcode" aria-pressed="false">상세 코드 중복</button>
                 <button type="button" data-state="leave" aria-pressed="false">LEAVE_TYPE 선택</button>
-                <button type="button" data-state="fixed" aria-pressed="false">AUTH_TYPE 선택 · 플랫폼고정</button>
+                <button type="button" data-state="fixed" aria-pressed="false">ROLE_TYPE 선택 · 플랫폼고정</button>
                 <button type="button" data-state="stopcode" aria-pressed="false">플랫폼 사용중지 코드</button>
                 <button type="button" data-state="stopgrp" aria-pressed="false">사용중지 그룹</button>
                 <button type="button" data-state="fail" aria-pressed="false">저장 실패</button>
@@ -166,13 +166,13 @@
                         <td><span class="badge badge--ok">사용</span></td>
                       </tr>
                       <tr data-show="fixed" hidden style="background: var(--surface-strong)">
-                        <td><b class="mono" aria-current="true">AUTH_TYPE</b></td>
+                        <td><b class="mono" aria-current="true">ROLE_TYPE</b></td>
                         <td class="k">권한 유형</td>
                         <td><span class="badge badge--dark">플랫폼고정</span></td>
                         <td><span class="badge badge--ok">사용</span></td>
                       </tr>
                       <tr data-show="emp none newcode dupcode leave stopcode stopgrp fail">
-                        <td><button class="tlink mono" type="button" data-state-go="fixed">AUTH_TYPE</button></td>
+                        <td><button class="tlink mono" type="button" data-state-go="fixed">ROLE_TYPE</button></td>
                         <td class="k">권한 유형</td>
                         <td><span class="badge badge--dark">플랫폼고정</span></td>
                         <td><span class="badge badge--ok">사용</span></td>
@@ -303,7 +303,7 @@
                   <h2 class="t-h2">상세 코드</h2>
                   <span class="mono subtle" data-show="emp newcode dupcode stopcode fail">EMP_TYPE · 고용 형태</span>
                   <span class="mono subtle" data-show="leave stopgrp" hidden>LEAVE_TYPE · 휴가 유형</span>
-                  <span class="mono subtle" data-show="fixed" hidden>AUTH_TYPE · 권한 유형</span>
+                  <span class="mono subtle" data-show="fixed" hidden>ROLE_TYPE · 권한 유형</span>
                   <span class="badge badge--info" data-show="emp newcode dupcode stopcode fail leave stopgrp">플랫폼제공</span>
                   <span class="badge badge--dark" data-show="fixed" hidden>플랫폼고정</span>
                   <div class="panel__end" data-show-role="edit">

@@ -146,7 +146,7 @@ python3 docs/erd/_build.py
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK | 관리자 ID | id | `admin_account_id` | admin_accounts PK |
-| FK | BP | id | `bp_id` |  |
+| FK | BP | id | `bp_code_id` |  |
 |  | 역할 | enum | `role` | BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼 |
 
 **관계**
@@ -170,7 +170,7 @@ python3 docs/erd/_build.py
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK | 점포 ID | id | `store_id` | 1팀 점포 정보 관리 |
-| FK | BP | id | `bp_id` | 1팀 BP |
+| FK | BP | id | `bp_code_id` | 1팀 BP |
 |  | 점포 유형 | enum | `store_type` | 직영·가맹 |
 |  | 좌표 | geo | `location` |  |
 |  | 근무지 반경 | int | `geofence_radius_m` | 기본 100m, 3팀 요청 항목 |
@@ -246,7 +246,7 @@ python3 docs/erd/_build.py
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK | 관리자 ID | id | `admin_account_id` | admin_accounts PK |
-| FK | BP | id | `bp_id` |  |
+| FK | BP | id | `bp_code_id` |  |
 |  | 역할 | enum | `role` | BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼 |
 
 **관계**
@@ -278,7 +278,7 @@ python3 docs/erd/_build.py
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK | 점포 ID | id | `store_id` | 1팀 점포 정보 관리 |
-| FK | BP | id | `bp_id` | 1팀 BP |
+| FK | BP | id | `bp_code_id` | 1팀 BP |
 |  | 점포 유형 | enum | `store_type` | 직영·가맹 |
 
 ### 관리자 계정 `admin_accounts` · 1팀 참조
@@ -288,7 +288,7 @@ python3 docs/erd/_build.py
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK | 관리자 ID | id | `admin_account_id` | admin_accounts PK |
-| FK | BP | id | `bp_id` |  |
+| FK | BP | id | `bp_code_id` |  |
 |  | 역할 | enum | `role` | BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼 |
 
 ### 근로계약 `contracts` · 중심
@@ -449,7 +449,7 @@ python3 docs/erd/_build.py
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK | 점포 ID | id | `store_id` | 1팀 점포 정보 관리 |
-| FK | BP | id | `bp_id` | 1팀 BP |
+| FK | BP | id | `bp_code_id` | 1팀 BP |
 |  | 점포 유형 | enum | `store_type` | 직영·가맹 |
 |  | 좌표 | geo | `location` |  |
 |  | 근무지 반경 | int | `geofence_radius_m` | 기본 100m |
@@ -475,7 +475,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK | 점포 ID | id | `store_id` | 1팀 점포 정보 관리 |
-| FK | BP | id | `bp_id` | 1팀 BP |
+| FK | BP | id | `bp_code_id` | 1팀 BP |
 |  | 점포 유형 | enum | `store_type` | 직영·가맹 |
 
 ### 관리자 계정 `admin_accounts` · 1팀 참조
@@ -485,7 +485,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK | 관리자 ID | id | `admin_account_id` | admin_accounts PK |
-| FK | BP | id | `bp_id` |  |
+| FK | BP | id | `bp_code_id` |  |
 |  | 역할 | enum | `role` | BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼 |
 
 ### TO-DO `todos` · 중심
@@ -663,7 +663,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK | 관리자 ID | id | `admin_account_id` | admin_accounts PK |
-| FK | BP | id | `bp_id` |  |
+| FK | BP | id | `bp_code_id` |  |
 |  | 역할 | enum | `role` | BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼 |
 
 ### 알림 수신 `notification_recipients` · 엔티티
@@ -785,7 +785,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK | 관리자 ID | id | `admin_account_id` | admin_accounts PK |
-| FK | BP | id | `bp_id` |  |
+| FK | BP | id | `bp_code_id` |  |
 |  | 역할 | enum | `role` | BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼 |
 
 ### 도입문의 `leads` · 엔티티

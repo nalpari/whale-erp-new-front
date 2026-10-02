@@ -8,7 +8,7 @@ import { erpHeader } from "../../site.mjs";
 // [그룹 코드, 그룹명, 관리 주체, 고를 수 있는지]
 const GROUPS = [
   ["SERVICE", "서비스", "플랫폼고정"],
-  ["AUTH_TYPE", "권한 유형", "플랫폼고정", true],
+  ["ROLE_TYPE", "권한 유형", "플랫폼고정", true],
   ["ACCOUNT_STATUS", "계정 상태", "플랫폼고정"],
   ["JOIN_PATH", "가입경로", "플랫폼고정"],
   ["WITHDRAW_REASON", "탈퇴 사유", "플랫폼고정"],

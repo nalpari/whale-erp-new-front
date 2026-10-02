@@ -115,13 +115,13 @@ R = Rel
 # 공용 참조 엔티티 (1팀 소유)
 def ref_store(col, y, extra=()):
     return E("store", "점포", "stores", "ref",
-             ["#|점포 ID|id|store_id|1팀 점포 정보 관리", "→|BP|id|bp_id|1팀 BP", "|점포 유형|enum|store_type|직영·가맹", *extra],
+             ["#|점포 ID|id|store_id|1팀 점포 정보 관리", "→|BP|id|bp_code_id|1팀 BP", "|점포 유형|enum|store_type|직영·가맹", *extra],
              col, y, "1팀 영역. 3팀은 참조만 한다.")
 
 
 def ref_admin(col, y):
     return E("admin", "관리자 계정", "admin_accounts", "ref",
-             ["#|관리자 ID|id|admin_account_id|admin_accounts PK", "→|BP|id|bp_id|", "|역할|enum|role|BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼"],
+             ["#|관리자 ID|id|admin_account_id|admin_accounts PK", "→|BP|id|bp_code_id|", "|역할|enum|role|BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼"],
              col, y, "1팀 영역(환경설정·권한). 1팀 ERD 의 admin_accounts 테이블.")
 
 
@@ -183,7 +183,7 @@ DIAGRAMS.append(Diagram(
           ["#|핀 ID|id|pin_id|", "→|계정|id|account_id|", "|핀 검증값|hash|pin_hash|원본 저장 안 함", "|발급 시각|datetime|issued_at|1분 재발급 제한, 하루 10회", "|만료 시각|datetime|expires_at|10분", "|시도 횟수|int|attempt_count|5회", "|쿨다운 단계|int|cooldown_step|1·3·5분, 3회까지", "|쿨다운 해제 시각|datetime|cooldown_until|", "|사용 시각|datetime|used_at|"], 2, 312),
         E("access_log", "위치정보 확인자료", "location_access_logs", "history",
           ["#|확인자료 ID|id|access_log_id|", "→|계정|id|account_id|대상 직원", "|처리 구분|enum|action|수집·이용·제공", "|처리 일시|datetime|occurred_at|", "|수집 방법|text|method|기기 GPS · 휴대전화 안 판정", "|제공받는 자|text|recipient|제공일 때", "|제공 목적|text|purpose|제공일 때", "→|출퇴근 기록|id|attendance_id|있을 때 · 출퇴근 장"], 2, 608),
-        E("admin", "관리자 계정", "admin_accounts", "ref", ["#|관리자 ID|id|admin_account_id|admin_accounts PK", "→|BP|id|bp_id|", "|역할|enum|role|BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼"], 0, 560, "1팀 영역(환경설정·권한). 1팀 ERD 의 admin_accounts 테이블."),
+        E("admin", "관리자 계정", "admin_accounts", "ref", ["#|관리자 ID|id|admin_account_id|admin_accounts PK", "→|BP|id|bp_code_id|", "|역할|enum|role|BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼"], 0, 560, "1팀 영역(환경설정·권한). 1팀 ERD 의 admin_accounts 테이블."),
     ],
     [
         R("account", "left", "identity", "right", "1", "N", "", at_a=120, at_b=120),

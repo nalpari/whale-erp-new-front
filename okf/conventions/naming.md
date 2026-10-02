@@ -20,7 +20,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-02T05:01:19Z }
 
 1. **계층마다 생태계 관례를 따른다.** DB는 `snake_case`, API·JSON·TypeScript는 `camelCase`, URL·파일은 `kebab-case`. 변환은 Prisma `@map` 이 맡는다.
 2. **표준 표기 하나 = 영문 식별자 하나.** 세 계층이 같은 어근을 쓴다 — `attendance_records` ↔ `attendanceRecord` ↔ `/attendance-records` ↔ `AttendanceRecord`.
-3. **약어 금지.** `emp`, `ctr`, `att` 처럼 줄이지 않는다. 예외는 `id`, `url`, `bp`, `hq`, `faq`, `todo`, `rrn`(주민등록번호), `biz`(사업자), `ceo`(대표자) 뿐이다.
+3. **약어 금지.** `emp`, `ctr`, `att` 처럼 줄이지 않는다. 예외는 `id`, `url`, `bp`, `hq`, `faq`, `todo`, `rrn`(주민등록번호), `biz`(사업자), `ceo`(대표자), `admin`(관리자) 뿐이다.
 
 # FRONT (Next.js)
 

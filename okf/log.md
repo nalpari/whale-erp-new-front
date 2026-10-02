@@ -2,6 +2,11 @@
 
 ## 2026-10-02
 
+* **Update**: 1팀 ERD `store_image_files` 에 최근 수정 일시·수정자(`updated_at`·`updated_by`)를 더하고, 파일 형식(`mime_type`)을 파일 구분 enum `file_type`(JPG·PNG)으로 바꿨다.
+* **Update**: [네이밍 규칙](/conventions/naming.md) 약어 금지 예외에 `admin` 을 더하고, 1팀 ERD 의 나머지 약어를 풀었다 — `auth_type_code`→`role_type_code`(공통코드 `ROLE_TYPE`), `ip_address`→`client_address`, `public_holiday_sync_logs`→`public_holiday_synchronization_logs`(`synchronized_at`·`synchronization_id`). 목업·데모 공통코드 화면의 그룹 코드도 맞췄다.
+* **Update**: BP 테이블(`bp_codes`)의 기본키와 이를 가리키는 외래키 `bp_id` 를 테이블 단수형에 맞춰 `bp_code_id` 로 바꿨다 — 1팀 ERD 6개 테이블, 3팀 ERD 의 1팀 참조 박스(점포·관리자 계정), 네이밍 규칙 원자료.
+* **Update**: 1팀 ERD `bp_holidays` 의 기본키를 테이블 단수형에 맞춰 `bp_holiday_id` 로 바꾸고, 이를 가리키는 외래키(`holiday_store_mappings`·`holiday_excluded_stores`·`bp_holiday_change_histories` 의 `bp_holiday_id`, 자기 참조 `origin_bp_holiday_id`)도 맞췄다.
+* **Update**: 1팀 ERD 의 날짜 컬럼 5개를 [네이밍 규칙](/conventions/naming.md) 의 `_date` 접미로(`closed_date`·`repeat_end_date`·`effective_end_date`·`effective_start_date`·`retain_end_date`), 시각 컬럼 `locked_until` 을 `_at` 접미 `lock_expires_at` 으로 맞췄다. 물리 ERD 기본키는 새 규칙대로 논리 이름(`{참조 단수}_id`)을 그대로 쓴다.
 * **Update**: [네이밍 규칙](/conventions/naming.md) DB 절에 삭제 표시(`is_deleted`) 규칙과 함정 두 가지, 기본키도 `{참조 단수}_id`(새 테이블부터) 규칙을 넣고 시각 예시 `deleted_at` 을 `created_at` 으로 바꿨다(2026-10-02 재영, api 세션에서 정함).
 * **Update**: 네이밍 규칙 원자료의 1팀 예외에서 세 줄(전체 범위 참·거짓, 변경 이력, 논리 삭제)을 빼고, 삭제 여부(`deleted_at` ↔ `is_deleted`)를 맞춰야 할 것으로 옮겼다. 용어집의 「공통코드 그룹」 목록 절도 각 용어 행과 겹쳐 뺐고, 사건 기록 4종의 용어집 식별자를 `_log` 로 맞췄다(`admin_login_log` 등). 2장 「1팀 예외」 절 이름은 「식별자 1팀 예외」로 바꾸고, 「맞춰야 할 것 (1팀 ↔ 3팀)」 절은 통째로 뺐다. [네이밍 규칙](/conventions/naming.md) 본문은 그대로다.
 * **Update**: 1팀 ERD 의 참·거짓 컬럼 8개를 [네이밍 규칙](/conventions/naming.md) 의 `is_` 접두로 맞췄다(`is_bp_applied`, `is_readable` 등). 원자료 공통코드 표의 BP 적용 여부도 같이 고쳤다.

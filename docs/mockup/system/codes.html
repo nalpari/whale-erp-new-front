@@ -55,7 +55,7 @@
               <b>목업 상태</b>
               <div class="seg">
                 <button type="button" data-state="service" aria-pressed="true">SERVICE 선택</button>
-                <button type="button" data-state="auth" aria-pressed="false">AUTH_TYPE 선택</button>
+                <button type="button" data-state="auth" aria-pressed="false">ROLE_TYPE 선택</button>
                 <button type="button" data-state="emp" aria-pressed="false">EMP_TYPE · 플랫폼제공</button>
                 <button type="button" data-state="newgroup" aria-pressed="false">그룹 추가 행</button>
                 <button type="button" data-state="newcode" aria-pressed="false">상세 코드 추가 행</button>
@@ -123,14 +123,14 @@
                     <td><span class="inline" style="gap: 6px; flex-wrap: nowrap" data-show-role="edit"><button class="toggle" type="button" aria-pressed="true" aria-label="사용 상태"></button><span>사용</span></span><span data-show-role="view" hidden><span class="badge badge--ok">사용</span></span></td>
                   </tr>
                   <tr data-show="auth" hidden style="background: var(--surface-strong)">
-                    <td><b class="mono" aria-current="true">AUTH_TYPE</b></td>
+                    <td><b class="mono" aria-current="true">ROLE_TYPE</b></td>
                     <td class="k"><input class="input input--sm" style="width: 104px" data-show-role="edit" value="권한 유형" aria-label="그룹명" /><span data-show-role="view" hidden>권한 유형</span></td>
                     <td><span class="badge badge--dark">플랫폼고정</span></td>
                     <td><span class="nil" title="플랫폼고정 그룹은 BP에 복사하지 않고 원본을 모든 BP가 읽습니다">—</span></td>
                     <td><span class="inline" style="gap: 6px; flex-wrap: nowrap" data-show-role="edit"><button class="toggle" type="button" aria-pressed="true" aria-label="사용 상태"></button><span>사용</span></span><span data-show-role="view" hidden><span class="badge badge--ok">사용</span></span></td>
                   </tr>
                   <tr data-show="service emp newgroup newcode dupgroup dupcode bponly fail">
-                    <td><a class="tlink mono" href="?state=auth">AUTH_TYPE</a></td>
+                    <td><a class="tlink mono" href="?state=auth">ROLE_TYPE</a></td>
                     <td class="k"><input class="input input--sm" style="width: 104px" data-show-role="edit" value="권한 유형" aria-label="그룹명" /><span data-show-role="view" hidden>권한 유형</span></td>
                     <td><span class="badge badge--dark">플랫폼고정</span></td>
                     <td><span class="nil" title="플랫폼고정 그룹은 BP에 복사하지 않고 원본을 모든 BP가 읽습니다">—</span></td>
@@ -298,7 +298,7 @@
                 <div class="panel__head">
                   <h2 class="t-h2">상세 코드</h2>
                   <span class="mono subtle" data-show="service newgroup newcode dupgroup dupcode fail">SERVICE · 서비스</span>
-                  <span class="mono subtle" data-show="auth" hidden>AUTH_TYPE · 권한 유형</span>
+                  <span class="mono subtle" data-show="auth" hidden>ROLE_TYPE · 권한 유형</span>
                   <span class="mono subtle" data-show="emp bponly" hidden>EMP_TYPE · 고용 형태</span>
                   <span class="badge badge--dark" data-show="service newgroup newcode dupgroup dupcode fail auth">플랫폼고정</span>
                   <span class="badge badge--info" data-show="emp bponly" hidden>플랫폼제공</span>
