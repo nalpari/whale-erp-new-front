@@ -2,6 +2,7 @@
 
 ## 2026-10-02
 
+* **Update**: 약관 유형 공통코드 `TERMS_TYPE` 을 목업 약관 전문 6종에 맞춰 6종으로 정리했다 — 직원 앱용 `STAFF_TERMS_SERVICE`·`STAFF_PRIVACY_COLLECT` 를 더해 1팀 ERD 카탈로그와 네이밍 원자료 용어집에 반영했다(Manyfast S-PNPZBX·F-OFBCVL 승인 대기).
 * **Update**: 1팀 ERD `store_image_files` 에 최근 수정 일시·수정자(`updated_at`·`updated_by`)를 더하고, 파일 형식(`mime_type`)을 파일 구분 enum `file_type`(JPG·PNG)으로 바꿨다.
 * **Update**: [네이밍 규칙](/conventions/naming.md) 약어 금지 예외에 `admin` 을 더하고, 1팀 ERD 의 나머지 약어를 풀었다 — `auth_type_code`→`role_type_code`(공통코드 `ROLE_TYPE`), `ip_address`→`client_address`, `public_holiday_sync_logs`→`public_holiday_synchronization_logs`(`synchronized_at`·`synchronization_id`). 목업·데모 공통코드 화면의 그룹 코드도 맞췄다.
 * **Update**: BP 테이블(`bp_codes`)의 기본키와 이를 가리키는 외래키 `bp_id` 를 테이블 단수형에 맞춰 `bp_code_id` 로 바꿨다 — 1팀 ERD 6개 테이블, 3팀 ERD 의 1팀 참조 박스(점포·관리자 계정), 네이밍 규칙 원자료.

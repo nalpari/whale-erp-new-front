@@ -80,7 +80,7 @@
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK | 약관 버전 ID | id | `terms_version_id` |  |
-|  | 약관 유형 코드 | code | `terms_type_code` | 공통코드 `TERMS_TYPE`(이용약관·개인정보 수집·이용 동의·마케팅 수신 동의·위치정보 수집·이용 동의) |
+|  | 약관 유형 코드 | code | `terms_type_code` | 공통코드 `TERMS_TYPE`(`TERMS_SERVICE` 이용약관(BP 회원가입용)·`PRIVACY_COLLECT` 개인정보 수집·이용 동의(BP 회원가입용)·`STAFF_TERMS_SERVICE` 이용약관(직원 앱 회원가입용)·`STAFF_PRIVACY_COLLECT` 개인정보 수집·이용 동의(직원 앱 회원가입용)·`MARKETING` 마케팅 수신 동의·`LOCATION` 위치정보 수집·이용 동의) |
 |  | 버전 번호 | text | `version` | 예: v1.0, v1.1 |
 |  | 약관 내용 | text | `content` | 약관 본문 |
 |  | 제목 | text | `title` |  |

@@ -653,7 +653,7 @@ CREATE INDEX "public_holidays_year_idx" ON "public_holidays" ("year");
 -- ── 주석 ──
 COMMENT ON TABLE "terms_versions" IS '약관 버전';
 COMMENT ON COLUMN "terms_versions"."terms_version_id" IS '약관 버전 ID';
-COMMENT ON COLUMN "terms_versions"."terms_type_code" IS '약관 유형 코드 — 공통코드 `TERMS_TYPE`(이용약관·개인정보 수집·이용 동의·마케팅 수신 동의·위치정보 수집·이용 동의)';
+COMMENT ON COLUMN "terms_versions"."terms_type_code" IS '약관 유형 코드 — 공통코드 `TERMS_TYPE`(`TERMS_SERVICE` 이용약관(BP 회원가입용)·`PRIVACY_COLLECT` 개인정보 수집·이용 동의(BP 회원가입용)·`STAFF_TERMS_SERVICE` 이용약관(직원 앱 회원가입용)·`STAFF_PRIVACY_COLLECT` 개인정보 수집·이용 동의(직원 앱 회원가입용)·`MARKETING` 마케팅 수신 동의·`LOCATION` 위치정보 수집·이용 동의)';
 COMMENT ON COLUMN "terms_versions"."version" IS '버전 번호 — 예: v1.0, v1.1';
 COMMENT ON COLUMN "terms_versions"."content" IS '약관 내용 — 약관 본문';
 COMMENT ON COLUMN "terms_versions"."title" IS '제목';
