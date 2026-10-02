@@ -1,18 +1,19 @@
 // 아이디·비밀번호 찾기. 목업 docs/mockup/auth/find.html. 한 화면 두 탭이고 #id · #pw 로 해당 탭을 연다.
 import * as ui from "../../ui.mjs";
+import { req } from "../../biz-form.mjs";
 import * as x from "../../extra.mjs";
 import * as p from "../../public.mjs";
 import { link } from "../../site.mjs";
 
 export default ({ A, R }) => {
   const id =
-    ui.field("이름 *", ui.textField({ value: "정하윤" })) +
-    ui.field("이메일 *", ui.textField({ type: "email", value: "hayoon@hangang.co.kr" }) + p.help("둘 중 하나라도 비어 있으면 찾기를 누를 수 없습니다.")) +
+    ui.field(req("이름"), ui.textField({ value: "정하윤" })) +
+    ui.field(req("이메일"), ui.textField({ type: "email", value: "hayoon@hangang.co.kr" }) + p.help("둘 중 하나라도 비어 있으면 찾기를 누를 수 없습니다.")) +
     p.block(ui.button("아이디 찾기"));
   const pw =
-    ui.field("이름 *", ui.textField({ value: "정하윤" })) +
-    ui.field("아이디 *", ui.textField({ value: "hangang01" })) +
-    ui.field("이메일 *", ui.textField({ type: "email", value: "hayoon@hangang.co.kr" })) +
+    ui.field(req("이름"), ui.textField({ value: "정하윤" })) +
+    ui.field(req("아이디"), ui.textField({ value: "hangang01" })) +
+    ui.field(req("이메일"), ui.textField({ type: "email", value: "hayoon@hangang.co.kr" })) +
     p.block(ui.button("임시 비밀번호 받기")) +
     p.note("받은 뒤에도 지금 비밀번호로 로그인할 수 있습니다. 임시 비밀번호로 들어오면 새 비밀번호를 정해야 ERP 를 쓸 수 있습니다.");
   const card =

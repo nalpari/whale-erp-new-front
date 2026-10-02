@@ -191,7 +191,7 @@ export function staffSections({ A, R }) {
   const fixBtns = () => `<span class="flex justify-center gap-[6px]">${ui.slideTrigger("보정", fixPanel, "off")}${offBtn("이상 없음")}</span>`;
   const fixList = p.section(
     "보정이 필요한 기록",
-    `<span class="pr-[6px] text-[14px] text-erp-label">최근 3개월 이내만 수정 가능</span>` + ui.button("출퇴근 대신 등록", { variant: "soft" }),
+    ui.button("출퇴근 대신 등록", { variant: "soft" }),
     ui.dataTable(
       [
         { header: "직원", width: "w-[100px]", align: "left" },

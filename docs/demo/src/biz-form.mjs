@@ -5,12 +5,14 @@ import * as x from "./extra.mjs";
 
 // 도움말 한 줄(입력칸 아래 안내 문구)
 export const help = (t) => `<span class="text-[13px] text-erp-label">${t}</span>`;
-// 필수 표시. 새 색을 만들지 않으려고 라벨과 같은 색으로 둔다.
-export const req = (label) => `${label} *`;
+// 필수 표시: 라벨 뒤 빨간 「*」(목업·디자인 시안의 .req 와 같다, 2026-10-02 재영).
+// 색은 Figma 위험 빨강 #e93737 — DESIGN.md 가 한 번만 나오는 색은 쓰는 자리에 직접 적으라고 한다. 1팀 공통 컴포넌트에 필수 표시가 없어 컴포넌트 제안 대상.
+export const REQ = ' <span aria-hidden="true" class="text-[#e93737]">*</span><span class="sr-only">(필수)</span>';
+export const req = (label) => `${label}${REQ}`;
 
 // 입력칸이 여럿인 항목(연락처 세 칸, 라디오 묶음, 주소). ui.field 는 <label> 이라 입력칸을 하나만 품을 수 있다.
 export const group = (label, control, width) =>
-  `<div role="group" aria-label="${label.replace(/ \*$/, "")}" class="flex flex-col justify-center gap-[8px] ${width ?? "min-w-px flex-1"}"><span class="truncate text-[14px] font-medium text-erp-label">${label}</span>${control}</div>`;
+  `<div role="group" aria-label="${label.replace(REQ, "")}" class="flex flex-col justify-center gap-[8px] ${width ?? "min-w-px flex-1"}"><span class="truncate text-[14px] font-medium text-erp-label">${label}</span>${control}</div>`;
 
 // 연락처 세 칸
 export const tel = (a = "", b = "", c = "") =>

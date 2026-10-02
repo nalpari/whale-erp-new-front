@@ -559,6 +559,9 @@
   .w-\[40px\] {
     width: 40px;
   }
+  .w-\[44px\] {
+    width: 44px;
+  }
   .w-\[54px\] {
     width: 54px;
   }
@@ -1829,6 +1832,15 @@
   }
   .disabled\:opacity-40:disabled {
     opacity: 40%;
+  }
+  .aria-pressed\:border-erp-brand-soft[aria-pressed="true"] {
+    border-color: var(--color-erp-brand-soft);
+  }
+  .aria-pressed\:bg-erp-brand-soft[aria-pressed="true"] {
+    background-color: var(--color-erp-brand-soft);
+  }
+  .aria-pressed\:text-white[aria-pressed="true"] {
+    color: var(--color-white);
   }
   @media (prefers-reduced-motion: reduce) {
     .motion-reduce\:translate-y-0 {

@@ -239,6 +239,62 @@
     if (now) set(now.getAttribute("aria-label").slice(4));
   }
 
+  // ── 근무 일정 입력(data-workplan) → 소정근로시간 표(data-hours)·주 시간(data-hours-sum) ──
+  // 평일 근무요일은 눌러서 켜고 끈다. 토·일은 근무 안함 / 매주 / 격주(주 시간에 절반으로 센다).
+  function initWorkPlan(root) {
+    const table = $("table[data-hours]");
+    const sum = $("[data-hours-sum]");
+    if (!table) return;
+    const v = (k) => Math.min(59, Math.max(0, parseInt($(`[data-k="${k}"]`, root).value, 10) || 0));
+    const at = (k) => `${pad(v(`${k}-sh`))}:${pad(v(`${k}-sm`))}`;
+    const to = (k) => `${pad(v(`${k}-eh`))}:${pad(v(`${k}-em`))}`;
+    const len = (k) => v(`${k}-eh`) * 60 + v(`${k}-em`) - (v(`${k}-sh`) * 60 + v(`${k}-sm`));
+    const weekend = (name) => {
+      const t = $(`input[name="${name}"]:checked`, root)?.closest("label")?.textContent.trim() || "";
+      return /격주/.test(t) ? 0.5 : /매주/.test(t) ? 1 : 0;
+    };
+    const sync = () => {
+      const on = Object.fromEntries($$("button[aria-pressed]", root).map((b) => [b.textContent, b.getAttribute("aria-pressed") === "true" ? 1 : 0]));
+      on.토 = weekend("sat");
+      on.일 = weekend("sun");
+      const day = Math.max(0, len("work") - Math.max(0, len("rest")));
+      [...table.tBodies[0].rows].forEach((tr) => {
+        const d = (tr.dataset.day ||= tr.cells[0].textContent);
+        const f = on[d] || 0;
+        tr.cells[0].textContent = f === 0.5 ? `${d} (격주)` : d;
+        [at("work"), to("work"), at("rest"), to("rest")].forEach((t, i) => (tr.cells[i + 1].textContent = f ? t : "-"));
+      });
+      if (sum) sum.textContent = ((Object.values(on).reduce((n, f) => n + f, 0) * day) / 60).toFixed(1);
+    };
+    root.addEventListener("click", (e) => {
+      const b = e.target.closest("button[aria-pressed]");
+      if (!b) return;
+      b.setAttribute("aria-pressed", String(b.getAttribute("aria-pressed") !== "true"));
+      sync();
+    });
+    root.addEventListener("input", sync);
+    root.addEventListener("change", sync);
+    sync();
+  }
+
+  // ── 첨부 파일 칸(data-file): 고른 파일 이름을 옆 칸에 보인다 ──
+  document.addEventListener("change", (e) => {
+    const f = e.target.closest('[data-file] input[type="file"]');
+    if (f) $("input[readonly]", f.closest("[data-file]")).value = [...f.files].map((x) => x.name).join(", ");
+  });
+
+  // ── 라디오에서 고른 값에 따라 칸을 보이고 숨긴다: data-when="라디오 name:고른 항목 글자" ──
+  function initWhen(els) {
+    const picked = (name) => $(`input[type="radio"][name="${CSS.escape(name)}"]:checked`)?.closest("label")?.textContent.trim();
+    const sync = () =>
+      els.forEach((el) => {
+        const [name, value] = el.dataset.when.split(":");
+        el.hidden = picked(name) !== value;
+      });
+    document.addEventListener("change", (e) => e.target.type === "radio" && sync());
+    sync();
+  }
+
   // ── Pagination (pagination.tsx). 데모라 번호 강조만 옮긴다 ──
   const PAGE_ON = "bg-erp-subtle font-semibold text-erp-ink";
   const PAGE_OFF = "bg-white text-erp-muted hover:border-erp-brand hover:text-erp-ink";
@@ -680,6 +736,8 @@
     $$('button[aria-expanded][aria-label$="접기"], button[aria-expanded][aria-label$="펼치기"]').forEach(initFilter);
     $$('input[type="search"]').forEach(initSearch);
     $$("input[data-scope-store]").forEach(initScopeStore);
+    initWhen($$("[data-when]"));
+    $$("[data-workplan]").forEach(initWorkPlan);
     $$('nav[aria-label="페이지"]').forEach(initPagination);
     $$("button[popovertarget]:not([data-week-label])").forEach(initDate);
     $$("[data-weeks]").forEach(initWeeks);

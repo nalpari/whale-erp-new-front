@@ -2,6 +2,7 @@
 // 왼쪽 권한 목록 + 오른쪽 권한 상세. 신규 등록은 오른쪽에서 밀려 나오는 패널로, 행의 메뉴등록은 권한별 확인창으로 옮겼다.
 // 플랫폼 관리자에게는 삭제 권한이 없어 삭제 버튼·삭제 확인창이 없다(목업 admin 권한과 같다).
 import * as ui from "../../ui.mjs";
+import { req } from "../../biz-form.mjs";
 import * as x from "../../extra.mjs";
 import { platformHeader, link } from "../../site.mjs";
 
@@ -212,7 +213,7 @@ export default ({ A, R }) => {
       ["최종 수정", ui.detailValues(["2026-09-10 10:42", "platjung"])],
     ]) +
     `<div class="flex flex-col gap-[18px] pt-[6px]">` +
-    ui.field("권한명 *", ui.textField({ value: "고객지원 담당" })) +
+    ui.field(req("권한명"), ui.textField({ value: "고객지원 담당" })) +
     ui.field("설명", ui.textarea({ rows: 4, value: "커뮤니티관리·BP 조회" })) +
     `</div>` +
     `<div class="flex justify-end gap-[6px]">${ui.button("저장")}</div>` +
@@ -223,10 +224,10 @@ export default ({ A, R }) => {
     "신규 권한 등록",
     `<h2 class="text-[18px] font-semibold text-erp-ink">신규 권한 등록</h2>` +
       `<div class="flex flex-col gap-[18px]">` +
-      ui.field("권한유형 *", ui.select(["플랫폼 관리자"]) + help("플랫폼 마스터·BP 마스터·가맹 마스터가 모두 등록되어 있어 플랫폼 관리자만 고를 수 있습니다.")) +
+      ui.field(req("권한유형"), ui.select(["플랫폼 관리자"]) + help("플랫폼 마스터·BP 마스터·가맹 마스터가 모두 등록되어 있어 플랫폼 관리자만 고를 수 있습니다.")) +
       ui.field("권한코드 · 자동 채번", ui.textField({ value: "PA000005", readonly: true }) + help("등록할 때 확정됩니다. 같은 유형을 동시에 등록하면 겹치지 않는 다음 순번이 붙습니다.")) +
       ui.field("기준 고정 권한", ui.textField({ value: "PA000001 · 플랫폼 관리자", readonly: true })) +
-      ui.field("권한명 *", ui.textField({ placeholder: "예: 프로모션 담당" })) +
+      ui.field(req("권한명"), ui.textField({ placeholder: "예: 프로모션 담당" })) +
       ui.field("설명", ui.textarea({ rows: 4, placeholder: "이 권한으로 맡길 업무를 적습니다" })) +
       `</div>` +
       ui.panelButtons("취소", "등록"),

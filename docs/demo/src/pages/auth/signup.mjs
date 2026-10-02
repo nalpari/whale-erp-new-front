@@ -1,6 +1,7 @@
 // 회원가입. 목업 docs/mockup/auth/signup.html 의 기본 상태(사업자정보 인증 전).
 // 기본정보 · 사업자정보 인증(선택) · 약관동의를 한 화면에 둔다.
 import * as ui from "../../ui.mjs";
+import { req } from "../../biz-form.mjs";
 import * as x from "../../extra.mjs";
 import * as p from "../../public.mjs";
 import { link } from "../../site.mjs";
@@ -9,14 +10,14 @@ export default ({ A, R }) => {
   const tel = `<div class="flex gap-[6px]">${ui.textField({ value: "010", inputmode: "numeric", "aria-label": "앞자리" })}${ui.textField({ value: "4821", inputmode: "numeric", "aria-label": "가운데자리" })}${ui.textField({ value: "7730", inputmode: "numeric", "aria-label": "끝자리" })}</div>`;
   const basic = ui.formGroup(
     "기본정보",
-    ui.field("아이디 *", ui.textField({ value: "hangang01", autocomplete: "username" }) + p.help("영문 또는 영문·숫자 4~20자 · 칸을 벗어나면 바로 중복을 확인합니다")),
+    ui.field(req("아이디"), ui.textField({ value: "hangang01", autocomplete: "username" }) + p.help("영문 또는 영문·숫자 4~20자 · 칸을 벗어나면 바로 중복을 확인합니다")),
     p.row(
-      ui.field("비밀번호 *", ui.textField({ type: "password", value: "whale-2026!", autocomplete: "new-password" }) + p.help("영문·숫자·특수문자 각 1자 이상, 8~20자")),
-      ui.field("비밀번호 확인 *", ui.textField({ type: "password", value: "whale-2026!", autocomplete: "new-password" })),
+      ui.field(req("비밀번호"), ui.textField({ type: "password", value: "whale-2026!", autocomplete: "new-password" }) + p.help("영문·숫자·특수문자 각 1자 이상, 8~20자")),
+      ui.field(req("비밀번호 확인"), ui.textField({ type: "password", value: "whale-2026!", autocomplete: "new-password" })),
     ),
-    p.row(ui.field("이름 *", ui.textField({ value: "정하윤" }) + p.help("한글 또는 영문 2~20자")), ui.field("연락처 *", tel)),
-    ui.field("이메일 *", ui.textField({ type: "email", value: "hayoon@hangang.co.kr" }) + p.help("칸을 벗어나면 형식과 중복을 확인합니다 · 아이디 찾기와 임시 비밀번호가 이 주소로 갑니다")),
-    ui.field("상호명 *", ui.textField({ value: "㈜한강상회" }) + p.help("1~50자. 사업자 인증 결과로 채우지 않고 직접 입력하며, 인증한 뒤에도 고칠 수 있습니다.")),
+    p.row(ui.field(req("이름"), ui.textField({ value: "정하윤" }) + p.help("한글 또는 영문 2~20자")), ui.field(req("연락처"), tel)),
+    ui.field(req("이메일"), ui.textField({ type: "email", value: "hayoon@hangang.co.kr" }) + p.help("칸을 벗어나면 형식과 중복을 확인합니다 · 아이디 찾기와 임시 비밀번호가 이 주소로 갑니다")),
+    ui.field(req("상호명"), ui.textField({ value: "㈜한강상회" }) + p.help("1~50자. 사업자 인증 결과로 채우지 않고 직접 입력하며, 인증한 뒤에도 고칠 수 있습니다.")),
   );
 
   const biz = ui.formGroup(

@@ -8,10 +8,8 @@ export default ({ A, R }) => {
   const L = (path) => link(R, path);
   const resendId = x.dialogId();
 
-  const head = ui.sectionHead(
-    `유하람 근로계약 <span class="pl-[6px] text-[14px] font-normal text-erp-label">CTR-2026-0288</span>`,
-    p.tag("risk", "거부") + `<span class="w-[6px]"></span>` + ui.button("목록", { href: L("staff/contracts.html") }),
-  );
+  // 화면 제목은 메뉴 이름(근로계약 관리), 본문 첫 줄에 「근로계약 상세」 + 목록(직원 상세와 같은 틀, 2026-10-02 재영)
+  const head = `<div class="flex items-center gap-[6px]"><h2 class="flex-1 text-[18px] font-semibold text-erp-ink">근로계약 상세</h2>${ui.button("목록", { href: L("staff/contracts.html") })}</div>`;
   const refused = p.band("유하람 님이 09-02 에 날인을 거부했습니다", {
     tone: "risk",
     desc: "거부 사유 — “근무 시작 시각이 면접 때 이야기한 것과 다릅니다. 11시가 아니라 13시로 알고 있었습니다.”",
@@ -20,9 +18,7 @@ export default ({ A, R }) => {
 
   const content = p.section(
     "계약 내용",
-    p.tag("quiet", "파트타이머") +
-      `<span class="w-[6px]"></span>` +
-      ui.button("원본 내려받기", { variant: "off" }) +
+    ui.button("원본 내려받기", { variant: "off" }) +
       ui.button("날인본 내려받기", { variant: "off", disabled: true, title: "종이 계약일 때만 쓴다" }),
     ui.detailTable("파트타이머 근로계약", [
       ["직원", ui.detailValues(["유하람", "010-2093-8875"])],
@@ -51,7 +47,7 @@ export default ({ A, R }) => {
   );
   const progress = p.section(
     "진행",
-    p.tag("risk", "거부 · 재발송 필요"),
+    "",
     p.steps([
       ["done", "초안 저장", "08-28 09:31 · 정하윤"],
       ["done", "계약서 자동 발송", "08-28 09:31 · 날인 기한 09-27"],
@@ -73,5 +69,5 @@ export default ({ A, R }) => {
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("재발송", { "data-close": true }),
   );
   const body = ui.detailBody(`<div class="flex flex-col gap-[12px]">${head}${refused}</div>${p.cols(content + history, progress)}${resendDialog}`);
-  return { title: "근로계약 상세", html: ui.erpFrame({ header: erpHeader(A, R), title: "근로계약 상세", body }) };
+  return { title: "근로계약 상세", html: ui.erpFrame({ header: erpHeader(A, R), title: "근로계약 관리", body }) };
 };

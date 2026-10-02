@@ -68,6 +68,14 @@ export const cols = (left, right, tmpl = "grid-cols-[7fr_5fr]") =>
 export const iconButton = (A, icon, label) =>
   `<button type="button" aria-label="${label}" class="grid size-[34px] shrink-0 place-items-center rounded-[2px] border border-erp-button-line bg-white transition-[border-color] duration-150 ease-out hover:border-erp-brand">${ui.img(A, icon, 16, 16)}</button>`;
 
+// 첨부 파일 칸: 고른 파일 이름을 보여 주는 읽기 전용 칸 + 「파일 선택」(안에 숨은 file 입력). 이름 표시는 erp.js 가 한다.
+// 1팀 공통 컴포넌트에 파일 칸이 없어 컴포넌트 제안 대상.
+export const fileField = (label, accept = ".pdf,.jpg,.jpeg,.png") =>
+  `<div data-file class="flex gap-[6px]">${ui.textField({ readonly: true, placeholder: "PDF · JPG · PNG", "aria-label": `${label} 파일 이름` })}${ui
+    .button("파일 선택", { variant: "soft" })
+    .replace('<button type="button"', '<label class="cursor-pointer"><span')
+    .replace("</button>", `</span><input type="file" accept="${accept}" aria-label="${label} 파일 선택" class="sr-only"></label>`)}</div>`;
+
 // 합계 줄(실지급액)
 export const total = (label, value) =>
   `<div class="flex h-[46px] items-center border-y border-erp-thead-line px-[12px]"><span class="flex-1 text-[16px] font-semibold text-erp-ink">${label}</span><span class="text-[22px] font-semibold text-erp-ink">${value}</span></div>`;

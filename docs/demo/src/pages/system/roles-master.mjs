@@ -2,6 +2,7 @@
 // roles.mjs(플랫폼 관리자 기준)와 다른 점: 본인 권한이 PM000001, 권한 상세에 [삭제]와 권한 삭제 확인창이 있고,
 // 메뉴등록에서 본인 범위 상한이 걸리지 않으며 PA000001 고정 권한도 고칠 수 있다.
 import * as ui from "../../ui.mjs";
+import { req } from "../../biz-form.mjs";
 import * as x from "../../extra.mjs";
 import { platformHeader, link } from "../../site.mjs";
 
@@ -212,7 +213,7 @@ export default ({ A, R }) => {
         ["권한", `고객지원 담당 ${sub("PA000002")}`],
         ["연결 사용자", `2명 ${sub("· platpark 박지우, platchoi 최유나(미사용)")}`],
       ]) +
-      ui.field("대체 권한 *", ui.select(["선택하세요", "PA000003 · 정산 담당", "PA000004 · 기준정보 조회"]) + help("변경 대상 사용자 2명의 권한을 고른 권한으로 한꺼번에 바꾼 뒤 삭제합니다. 기준 고정 권한 PA000001 플랫폼 관리자는 고를 수 없습니다 — 옮기면 권한이 기준까지 넓어집니다.")) +
+      ui.field(req("대체 권한"), ui.select(["선택하세요", "PA000003 · 정산 담당", "PA000004 · 기준정보 조회"]) + help("변경 대상 사용자 2명의 권한을 고른 권한으로 한꺼번에 바꾼 뒤 삭제합니다. 기준 고정 권한 PA000001 플랫폼 관리자는 고를 수 없습니다 — 옮기면 권한이 기준까지 넓어집니다.")) +
       band("로그인 중인 두 사용자도 다음 요청부터 새 권한으로 판정됩니다") +
       `</div>`,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("삭제", { "data-close": true }),
@@ -230,7 +231,7 @@ export default ({ A, R }) => {
       ["최종 수정", ui.detailValues(["2026-09-10 10:42", "platjung"])],
     ]) +
     `<div class="flex flex-col gap-[18px] pt-[6px]">` +
-    ui.field("권한명 *", ui.textField({ value: "고객지원 담당" })) +
+    ui.field(req("권한명"), ui.textField({ value: "고객지원 담당" })) +
     ui.field("설명", ui.textarea({ rows: 4, value: "커뮤니티관리·BP 조회" })) +
     `</div>` +
     `<div class="flex gap-[6px]">${x.dialogTrigger("삭제", delId, "soft")}<span class="flex-1"></span>${ui.button("저장")}</div>` +
@@ -241,10 +242,10 @@ export default ({ A, R }) => {
     "신규 권한 등록",
     `<h2 class="text-[18px] font-semibold text-erp-ink">신규 권한 등록</h2>` +
       `<div class="flex flex-col gap-[18px]">` +
-      ui.field("권한유형 *", ui.select(["플랫폼 관리자"]) + help("플랫폼 마스터·BP 마스터·가맹 마스터가 모두 등록되어 있어 플랫폼 관리자만 고를 수 있습니다.")) +
+      ui.field(req("권한유형"), ui.select(["플랫폼 관리자"]) + help("플랫폼 마스터·BP 마스터·가맹 마스터가 모두 등록되어 있어 플랫폼 관리자만 고를 수 있습니다.")) +
       ui.field("권한코드 · 자동 채번", ui.textField({ value: "PA000005", readonly: true }) + help("등록할 때 확정됩니다. 같은 유형을 동시에 등록하면 겹치지 않는 다음 순번이 붙습니다.")) +
       ui.field("기준 고정 권한", ui.textField({ value: "PA000001 · 플랫폼 관리자", readonly: true })) +
-      ui.field("권한명 *", ui.textField({ placeholder: "예: 프로모션 담당" })) +
+      ui.field(req("권한명"), ui.textField({ placeholder: "예: 프로모션 담당" })) +
       ui.field("설명", ui.textarea({ rows: 4, placeholder: "이 권한으로 맡길 업무를 적습니다" })) +
       `</div>` +
       ui.panelButtons("취소", "등록"),
