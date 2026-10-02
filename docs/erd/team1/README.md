@@ -132,7 +132,7 @@ BP 마스터·BP 관리자·가맹 마스터·가맹 관리자·플랫폼 마스
 | FK | 개인정보 최근 동의 버전 | id | `privacy_version_id` | terms_versions FK, 동의 전은 비움 |
 |  | 개인정보 동의 일시 | datetime | `privacy_agreed_at` |  |
 |  | 약관 최근 동의 일시 | datetime | `terms_agreed_at` | 이용약관과 개인정보 수집·이용 동의한 일시 |
-|  | 강제 비밀번호 변경 대상 | bool | `force_password_change` | 초기·임시 비밀번호 발급 시 true |
+|  | 강제 비밀번호 변경 대상 | bool | `is_password_change_required` | 초기·임시 비밀번호 발급 시 true |
 |  | 초기 비밀번호 미발송 | bool | `is_initial_password_unsent` | 계정 생성·초기화 메일이 실패하면 true, 다시 보내면 false |
 |  | 로그인 실패 횟수 | int | `failed_login_count` | 5회 잠금 |
 |  | 잠금 해제 시각 | datetime | `locked_until` | 5분 잠금 |
@@ -198,7 +198,7 @@ BP 마스터·BP 관리자·가맹 마스터·가맹 관리자·플랫폼 마스
 | PK | 로그인 이력 ID | id | `login_id` |  |
 | FK | 관리자 | id | `admin_account_id` | 없는 아이디면 비움 |
 |  | 접속 IP | text | `ip_address` |  |
-|  | 성공 여부 | bool | `succeeded` |  |
+|  | 성공 여부 | bool | `is_succeeded` |  |
 |  | 실패 사유 | enum | `failure_reason` | 불일치·잠금·미사용·탈퇴 |
 |  | 시도 시각 | datetime | `attempted_at` | 1년 보존 |
 
@@ -223,7 +223,7 @@ BP 마스터·BP 관리자·가맹 마스터·가맹 관리자·플랫폼 마스
 | PK | 동의 이력 ID | id | `agreement_id` |  |
 | FK | 관리자 | id | `admin_account_id` | admin_accounts FK |
 | FK | 약관 버전 | id | `terms_version_id` | terms_versions FK |
-|  | 동의 여부 | bool | `agreed` |  |
+|  | 동의 여부 | bool | `is_agreed` |  |
 |  | 동의 일시 | datetime | `agreed_at` |  |
 |  | 동의 경로 | enum | `channel` | 회원가입·최초 로그인·재동의·약관변경 |
 |  | 접속 IP | text | `ip_address` |  |
@@ -454,10 +454,10 @@ BP·플랫폼의 권한 그룹·공통코드·메뉴·휴일과 플랫폼 공식
 |---|---|---|---|---|
 | PK·FK | 권한 그룹 | id | `role_group_id` |  |
 | PK·FK | 메뉴 | id | `menu_id` |  |
-|  | 조회 | bool | `can_read` |  |
-|  | 등록 | bool | `can_create` |  |
-|  | 수정 | bool | `can_update` |  |
-|  | 삭제 | bool | `can_delete` |  |
+|  | 조회 | bool | `is_readable` |  |
+|  | 등록 | bool | `is_creatable` |  |
+|  | 수정 | bool | `is_updatable` |  |
+|  | 삭제 | bool | `is_deletable` |  |
 |  | 삭제 여부 | bool | `is_deleted` |  |
 |  | 등록 일시 | datetime | `created_at` |  |
 | FK | 등록자 | id | `created_by` | admin_accounts FK |
@@ -471,7 +471,7 @@ BP·플랫폼의 권한 그룹·공통코드·메뉴·휴일과 플랫폼 공식
 | PK | 그룹 코드 | text | `group_code` | 대문자 밑줄, 예: EMP_TYPE, 필수, 변경 불가. 삭제한 그룹의 코드도 다시 쓰지 않는다 |
 |  | 그룹명 | text | `group_name` |  |
 |  | 관리 주체 코드 | code | `manage_owner_code` | 공통코드 `MANAGE_OWNER` 중 플랫폼고정·플랫폼제공 |
-|  | BP 적용 여부 | bool | `bp_applied` | 플랫폼제공 그룹만. 신규는 미적용, 적용으로 바꾸는 순간 사용 중인 모든 BP에 복사, 되돌릴 수 없음 |
+|  | BP 적용 여부 | bool | `is_bp_applied` | 플랫폼제공 그룹만. 신규는 미적용, 적용으로 바꾸는 순간 사용 중인 모든 BP에 복사, 되돌릴 수 없음 |
 |  | 설명 | text | `description` |  |
 |  | 사용 상태 | enum | `status` | 사용·사용중지 |
 |  | 표시 순서 | int | `sort_order` |  |
