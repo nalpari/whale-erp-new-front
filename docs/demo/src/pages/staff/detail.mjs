@@ -10,8 +10,8 @@ export default ({ A, R }) => {
   const resetId = x.dialogId();
 
   const head = ui.sectionHead(
-    `<span class="flex items-center gap-[12px]">${p.avatar(A, "서지안", 1, 42)}서지안<span class="text-[14px] font-normal text-erp-label">바리스타 · 모리커피 서초점</span><span class="pl-[6px] text-[14px] font-normal text-erp-label">EMP-2026-0143</span></span>`,
-    p.tag("ok", "재직") + p.tag("quiet", "본인인증 완료") + `<span class="w-[6px]"></span>` + ui.button("목록", { href: L("staff/index.html") }),
+    `<span class="flex items-center gap-[12px]">서지안<span class="text-[14px] font-normal text-erp-label">바리스타 · 모리커피 서초점</span><span class="pl-[6px] text-[14px] font-normal text-erp-label">EMP-2026-0143</span></span>`,
+    ui.button("목록", { href: L("staff/index.html") }),
   );
 
   const basic = ui.detailTable("기본 정보", [
@@ -20,8 +20,10 @@ export default ({ A, R }) => {
     ["고용 형태", "정직원"],
     ["소속 근무지", "모리커피 서초점"],
     ["입사일", "2026-03-01"],
+    ["재직 상태", "재직"],
     ["생년월일", "1998-07-12"],
     ["휴대전화번호", "010-2841-7702"],
+    ["본인인증", "완료"],
     ["이메일", "jian.seo@example.com"],
   ]);
   const reset = p.bar(`<span class="text-[14px] text-erp-label">앱에 못 들어간다면</span>`, x.dialogTrigger("비밀번호 초기화", resetId, "soft"));

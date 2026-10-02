@@ -32,7 +32,7 @@ export function staffSections({ A, R }) {
     [who("문태경", D), "010-4471-2298", "온기식당 판교점", "정직원", p.tag("ok", "가입 완료"), p.tag("ok", "체결 완료"), "42.0h", p.mark("ok", "재직")],
     [who("배정숙", D), "010-8820-3317", "온기식당 판교점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("warn", "갱신 예정 D-20"), "24.0h", p.mark("ok", "재직")],
     [who("남도현"), "010-9014-5563", "모리커피 성수점", "파트타이머", p.tag("warn", "초대 발송 · 08-31"), p.tag("quiet", "발송 대기"), "-", p.mark("subtle", "가입 대기")],
-    [who("하준서"), "010-3392-4418", "모리커피 성수점", "파트타이머", `<button type="button" aria-expanded="false" aria-controls="${holdPanel}">${p.tag("risk", "연결 보류 · 4일")}</button>`, p.tag("quiet", "발송 대기"), "-", p.mark("risk", "확인 필요")],
+    [`<button type="button" aria-expanded="false" aria-controls="${holdPanel}" class="text-erp-link hover:underline">하준서</button>`, "010-3392-4418", "모리커피 성수점", "파트타이머", p.tag("risk", "연결 보류 · 4일"), p.tag("quiet", "발송 대기"), "-", p.mark("risk", "확인 필요")],
     [who("정유담"), "010-5518-7734", "온기식당 판교점", "파트타이머", p.tag("info", "소속 추가 확인"), p.tag("quiet", "발송 대기"), "-", p.mark("subtle", "응답 대기")],
     [who("권도윤", D), "010-7742-1160", "모리커피 서초점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("warn", "서명 대기 · D-24"), "18.0h", p.mark("warn", "날인 대기")],
     [who("유하람", D), "010-2093-8875", "모리커피 연남점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("risk", "거부 · 09-02"), "-", p.mark("risk", "재발송 필요")],
@@ -368,7 +368,7 @@ export function staffSections({ A, R }) {
       ui.panelButtons("취소", "등록하고 배정"),
   );
 
-  // 가입 연결 확인: 목업 docs/mockup/staff/invites-holds.html 의 별도 화면을 직원 목록의 슬라이드 패널로 흡수했다(2026-10-02 재영, 데모만).
+  // 가입 연결 확인: 목업 docs/mockup/staff/invites-holds.html 의 별도 화면을 직원 목록의 슬라이드 패널로 흡수했다(2026-10-02 재영, 데모만). 하준서 이름을 누르면 열린다.
   const approveId = x.dialogId();
   const reinviteId = x.dialogId();
   const holdForm =
@@ -384,7 +384,7 @@ export function staffSections({ A, R }) {
           ["초대 발송", "2026-08-31 09:12"],
           ["가입 완료", "2026-08-31 21:40"],
         ]) +
-        `<div class="flex justify-center gap-[6px]">${x.dialogTrigger("번호 수정 후 재초대", reinviteId, "soft")}${x.dialogTrigger("이 계정으로 연결 승인", approveId)}</div>`,
+        `<div class="flex justify-center gap-[6px]">${offBtn("닫기", { "data-close": true })}${x.dialogTrigger("번호 수정 후 재초대", reinviteId, "soft")}${x.dialogTrigger("이 계정으로 연결 승인", approveId)}</div>`,
     ) +
     x.dialog(
       approveId,

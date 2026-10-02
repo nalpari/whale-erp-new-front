@@ -75,8 +75,3 @@ export const total = (label, value) =>
 // 시간 입력칸(네이티브 time)
 export const timeField = (value, label) => ui.textField({ type: "time", value, "aria-label": label });
 
-// 직원 사진(없으면 이름 첫 글자). 헤더의 사용자 아이콘처럼 둥근 모양.
-export const avatar = (A, name, photo, size = 28) =>
-  photo
-    ? `<img src="${A}img/staff-${photo}.webp" alt="" width="${size}" height="${size}" class="shrink-0 rounded-full object-cover" style="width:${size}px;height:${size}px">`
-    : `<span aria-hidden="true" class="grid shrink-0 place-items-center rounded-full bg-erp-subtle text-[12px] font-medium text-erp-label" style="width:${size}px;height:${size}px">${name[0]}</span>`;
