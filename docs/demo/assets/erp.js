@@ -240,7 +240,7 @@
   }
 
   // ── 근무 일정 입력(data-workplan) → 소정근로시간 표(data-hours)·주 시간(data-hours-sum) ──
-  // 평일 근무요일은 눌러서 켜고 끈다. 토·일은 근무 안함 / 매주 / 격주(주 시간에 절반으로 센다).
+  // 근무요일(월~일)은 눌러서 켜고 끈다. 시·분은 선택칸.
   function initWorkPlan(root) {
     const table = $("table[data-hours]");
     const sum = $("[data-hours-sum]");
@@ -249,19 +249,12 @@
     const at = (k) => `${pad(v(`${k}-sh`))}:${pad(v(`${k}-sm`))}`;
     const to = (k) => `${pad(v(`${k}-eh`))}:${pad(v(`${k}-em`))}`;
     const len = (k) => v(`${k}-eh`) * 60 + v(`${k}-em`) - (v(`${k}-sh`) * 60 + v(`${k}-sm`));
-    const weekend = (name) => {
-      const t = $(`input[name="${name}"]:checked`, root)?.closest("label")?.textContent.trim() || "";
-      return /격주/.test(t) ? 0.5 : /매주/.test(t) ? 1 : 0;
-    };
     const sync = () => {
       const on = Object.fromEntries($$("button[aria-pressed]", root).map((b) => [b.textContent, b.getAttribute("aria-pressed") === "true" ? 1 : 0]));
-      on.토 = weekend("sat");
-      on.일 = weekend("sun");
       const day = Math.max(0, len("work") - Math.max(0, len("rest")));
       [...table.tBodies[0].rows].forEach((tr) => {
         const d = (tr.dataset.day ||= tr.cells[0].textContent);
         const f = on[d] || 0;
-        tr.cells[0].textContent = f === 0.5 ? `${d} (격주)` : d;
         [at("work"), to("work"), at("rest"), to("rest")].forEach((t, i) => (tr.cells[i + 1].textContent = f ? t : "-"));
       });
       if (sum) sum.textContent = ((Object.values(on).reduce((n, f) => n + f, 0) * day) / 60).toFixed(1);

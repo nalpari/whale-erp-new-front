@@ -18,25 +18,18 @@ export default ({ A, R }) => {
     ],
   );
 
-  // 근무 일정 입력(2026-10-02 재영 · 받은 시안 이미지의 항목을 이 폼 모양으로): 평일 근무시간·휴게시간·근무요일, 토요일·일요일 근무 여부.
-  // 고르면 아래 소정근로시간 표와 주 시간이 따라 바뀐다(erp.js initWorkPlan). 격주는 주 시간에 절반으로 센다.
-  const twoDigit = (k, v, label) =>
-    `<span class="w-[44px]">${ui.textField({ value: v, inputmode: "numeric", maxlength: 2, "aria-label": label, "data-k": k }).replace("pl-[10px]", "text-center")}</span>`;
+  // 근무 일정 입력(2026-10-02 재영): 근무시간·휴게시간(시 00~23, 분 00·30 선택)과 근무요일(월~일 눌러 켜고 끄기).
+  // 고르면 아래 소정근로시간 표와 주 시간이 따라 바뀐다(erp.js initWorkPlan).
+  const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
+  const pick = (k, v, opts, label) => `<span class="w-[72px]">${ui.select(opts, { value: v, "aria-label": label, "data-k": k })}</span>`;
   const span = (k, [sh, sm, eh, em], what) =>
-    `<span class="flex items-center gap-[8px] text-[14px] text-erp-ink">${twoDigit(`${k}-sh`, sh, `${what} 시작 시`)}시${twoDigit(`${k}-sm`, sm, `${what} 시작 분`)}분 ~${twoDigit(`${k}-eh`, eh, `${what} 끝 시`)}시${twoDigit(`${k}-em`, em, `${what} 끝 분`)}분</span>`;
+    `<span class="flex items-center gap-[8px] text-[14px] text-erp-ink">${pick(`${k}-sh`, sh, HOURS, `${what} 시작 시`)}시${pick(`${k}-sm`, sm, ["00", "30"], `${what} 시작 분`)}분 ~${pick(`${k}-eh`, eh, HOURS, `${what} 끝 시`)}시${pick(`${k}-em`, em, ["00", "30"], `${what} 끝 분`)}분</span>`;
   const dayChip = (d, on) =>
     `<button type="button" aria-pressed="${on}" class="grid size-[34px] place-items-center rounded-[2px] border border-erp-field-line bg-white text-[14px] text-erp-label transition-colors duration-150 ease-out aria-pressed:border-erp-brand-soft aria-pressed:bg-erp-brand-soft aria-pressed:text-white">${d}</button>`;
   // 칸 배치는 이 폼의 다른 항목과 같게(라벨 위 · 입력 아래, 구분선 없음).
-  const weekend = (d, name) => group(`${d}요일 근무`, p.radios(name, ["근무 안함", `매주 ${d}요일`, `${d}요일 격주`]));
-  const workPlan =
-    `<div data-workplan class="flex flex-col gap-[18px]">` +
-    ui.formRow(group("평일 근무시간", span("work", ["09", "00", "18", "00"], "근무시간")), group("평일 휴게시간", span("rest", ["12", "00", "13", "00"], "휴게시간"))) +
-    ui.formRow(
-      group("평일 근무요일", `<span class="flex gap-[6px]">${["월", "화", "수", "목", "금"].map((d) => dayChip(d, true)).join("")}</span>`),
-      weekend("토", "sat"),
-      weekend("일", "sun"),
-    ).replace('class="flex w-full gap-[6px]"', 'class="flex w-full items-start gap-[6px]"') +
-    `</div>`;
+  // 근무요일은 월급·시급 옆(2026-10-02 재영). data-workplan 은 그 줄과 근무시간 줄을 함께 감싼다.
+  const workDays = group("근무요일", `<span class="flex gap-[6px]">${["월", "화", "수", "목", "금", "토", "일"].map((d, i) => dayChip(d, i < 5)).join("")}</span>`);
+  const workTimes = ui.formRow(group("근무시간", span("work", ["09", "00", "18", "00"], "근무시간")), group("휴게시간", span("rest", ["12", "00", "13", "00"], "휴게시간")));
 
   const form =
     ui.formGroup(
@@ -65,13 +58,15 @@ export default ({ A, R }) => {
         p.fieldH(req("계약 시작일"), ui.dateField(A, { label: "계약 시작일", value: "2026-09-14" }), ""),
         p.fieldH("계약 종료일", ui.dateField(A, { label: "계약 종료일" }), "비워 두면 기간의 정함이 없는 계약"),
       ),
+      `<div data-workplan class="flex flex-col gap-[18px]">` +
       ui.formRow(
         // 고용 형태에 따라 월급(정직원)·시급(파트타이머) 중 하나가 보인다(목업과 같은 값, erp.js initWhen). 둘 다 필수(2026-10-02 재영).
         p.fieldH(req("월급"), ui.textField({ value: "2,400,000", inputmode: "numeric" }), "월 소정근로시간 기준 최저임금 이상").replace("<div ", '<div data-when="employment:정직원" '),
         p.fieldH(req("시급"), ui.textField({ value: "11,200", inputmode: "numeric" }), "2026년 최저임금 10,320원 이상").replace("<div ", '<div data-when="employment:파트타이머" '),
-        p.fieldH("주휴일", ui.select(["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"]), ""),
-      ),
-      workPlan,
+        workDays,
+      ).replace('class="flex w-full gap-[6px]"', 'class="flex w-full items-start gap-[6px]"') +
+        workTimes +
+        `</div>`,
       `<div class="flex flex-col gap-[8px]"><div class="flex items-center"><span class="flex-1 text-[14px] font-medium text-erp-label">소정근로시간</span><span class="text-[14px] text-erp-label">주 <b data-hours-sum class="font-semibold text-erp-ink">40.0</b> 시간</span></div>${hours.replace("<table ", "<table data-hours ")}</div>`,
       ui.formRow(
         p.fieldH(
