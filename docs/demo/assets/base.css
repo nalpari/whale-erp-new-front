@@ -1,0 +1,17 @@
+/* 앱에서는 next/font 와 루트 layout 이 하던 일. build-css.mjs 가 erp.css 앞부분에 붙인다. */
+@font-face { font-family: "Pretendard"; src: url(fonts/Pretendard-Regular.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Pretendard"; src: url(fonts/Pretendard-Medium.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Pretendard"; src: url(fonts/Pretendard-SemiBold.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Pretendard"; src: url(fonts/Pretendard-ExtraBold.woff2) format("woff2"); font-weight: 800; font-display: swap; }
+
+/* --font-erp 가 var(--font-pretendard) 로 시작한다. 비워 두면 font-family 전체가 무효가 되므로 채운다. */
+:root { --font-pretendard: "Pretendard"; }
+
+/* 앱 루트 layout 의 html h-full antialiased · body min-h-full */
+html { height: 100%; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body { min-height: 100%; margin: 0; }
+
+/* Select 화살표. 컴포넌트는 /icons/... 절대 경로를 쓰는데, 데모는 어느 경로 아래에서 열릴지 몰라 erp.css 기준 상대 경로로 덮는다.
+   데모 HTML 에 상대 경로를 쓴 배경 클래스를 새로 만들지 않는다. 앱의 Tailwind 가 docs/ 까지 훑어 그 클래스를 앱 CSS 에 넣고,
+   앱 빌드가 그 경로의 파일을 못 찾아 깨진다(2026-10-02 실제로 깨졌다). 이 주석에도 그 클래스 모양을 적지 않는다. */
+select.bg-\[url\(\/icons\/select-arrow\.svg\)\] { background-image: url(icons/select-arrow.svg); }

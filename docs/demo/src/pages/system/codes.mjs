@@ -1,0 +1,112 @@
+// 플랫폼 공통코드 관리. 목업 docs/mockup/system/codes.html 의 기본 상태(등록·수정 권한, SERVICE 그룹 선택)를 플랫폼 관리자로 본 것.
+// 왼쪽 공통코드 그룹, 오른쪽 고른 그룹의 상세 코드를 두 카드로 나란히 둔다(2단 카드 본문).
+import * as ui from "../../ui.mjs";
+import * as x from "../../extra.mjs";
+import { platformHeader } from "../../site.mjs";
+
+// 안내 띠(목업 band 의 제목 줄). 1팀 컴포넌트에 없어 표 머리와 같은 바탕·선으로 그린다.
+const band = (text) => `<p class="flex h-[42px] items-center rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[12px] text-[14px] font-medium text-erp-ink">${text}</p>`;
+// 두 카드 껍데기
+const card = (w, html) => `<section class="${w} flex flex-col gap-[12px] overflow-y-auto rounded-[4px] [&>*]:shrink-0 border border-erp-panel-line bg-white p-[25px]">${html}</section>`;
+// 고른 줄 표시(목업 surface-strong). dataTable 결과의 n 번째 줄에 표 머리 바탕을 얹는다.
+const markRow = (table, n) => {
+  let i = -1;
+  return table.replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, (m) => (++i === n ? m.replace('">', ' bg-erp-thead-bg">') : m));
+};
+// 끌어서 순서 바꾸는 손잡이. 아이콘이 없어 글자 기호로 둔다.
+const handle = '<span title="끌어서 순서 바꾸기" aria-label="끌어서 순서 바꾸기" class="cursor-grab text-[16px] text-erp-label">≡</span>';
+const sub = (t) => `<span class="ml-[10px] text-[14px] font-normal text-erp-label">${t}</span>`;
+
+// [그룹 코드, 그룹명, 관리 주체, BP 적용(null=해당 없음, true=적용, false=미적용)]
+const GROUPS = [
+  ["SERVICE", "서비스", "플랫폼고정", null],
+  ["AUTH_TYPE", "권한 유형", "플랫폼고정", null],
+  ["ACCOUNT_STATUS", "계정 상태", "플랫폼고정", null],
+  ["JOIN_PATH", "가입경로", "플랫폼고정", null],
+  ["WITHDRAW_REASON", "탈퇴 사유", "플랫폼고정", null],
+  ["MAIL_TYPE", "메일 유형", "플랫폼고정", null],
+  ["TERMS_TYPE", "약관 유형", "플랫폼고정", null],
+  ["FLOOR_TYPE", "층수 구분", "플랫폼고정", null],
+  ["STORE_STATUS", "점포 상태", "플랫폼고정", null],
+  ["STORE_TYPE", "점포 유형", "플랫폼고정", null],
+  ["MANAGE_OWNER", "관리 주체", "플랫폼고정", null],
+  ["EMP_TYPE", "고용 형태", "플랫폼제공", true],
+  ["LEAVE_TYPE", "휴가 유형", "플랫폼제공", true],
+  ["PAY_TYPE", "급여 형태", "플랫폼제공", false],
+];
+const SERVICES = [
+  ["WHALE_ERP", "Whale ERP"],
+  ["PLATFORM", "Whale ERP 플랫폼 관리"],
+  ["POS", "POS"],
+  ["KIOSK", "KIOSK"],
+  ["TABLE_ORDER", "Table Order"],
+  ["PICK_UP_ORDER", "Pick Up Order"],
+  ["QR_ORDER", "QR Order"],
+  ["RECIPE_MANAGEMENT", "레시피관리"],
+  ["ORDER_MANAGEMENT", "발주관리"],
+  ["STORE_INVENTORY", "점포재고관리"],
+  ["WAITING_MANAGEMENT", "대기순번관리"],
+  ["RESERVATION", "예약관리", false],
+];
+
+export default ({ A, R }) => {
+  const apply = x.dialogId();
+
+  const groupCols = [
+    { header: "그룹 코드", width: "w-[170px]", align: "left" },
+    { header: "그룹명", align: "left" },
+    { header: "관리 주체", width: "w-[100px]" },
+    { header: "BP 적용", width: "w-[130px]" },
+    { header: "사용 상태", width: "w-[100px]" },
+  ];
+  const groupRows = GROUPS.map(([code, name, owner, bp], i) => [
+    i === 0 ? `<b class="font-semibold" aria-current="true">${code}</b>` : ui.link(code, "#"),
+    ui.textField({ value: name, "aria-label": "그룹명" }),
+    owner,
+    bp === null ? '<span class="text-erp-muted">—</span>' : bp ? ui.badge("on", "적용") : x.dialogTrigger("BP에 적용", apply, "soft"),
+    x.toggle("사용", true),
+  ]);
+  const left = card(
+    "w-[780px] shrink-0",
+    ui.sectionHead(`공통코드 그룹${sub(`${GROUPS.length}개`)}`, ui.button("그룹 추가", { variant: "soft" }) + ui.button("저장")) +
+      markRow(ui.dataTable(groupCols, groupRows), 0),
+  );
+
+  const codeCols = [
+    { header: "이동", width: "w-[60px]" },
+    { header: "상세 코드", width: "w-[220px]", align: "left" },
+    { header: "코드명", align: "left" },
+    { header: "표시 순서", width: "w-[90px]" },
+    { header: "사용 상태", width: "w-[120px]" },
+  ];
+  const codeRows = SERVICES.map(([code, name, on = true], i) => [
+    handle,
+    code,
+    ui.textField({ value: name, "aria-label": "코드명" }),
+    i + 1,
+    x.toggle(on ? "사용" : "사용중지", on),
+  ]);
+  const right = card(
+    "min-w-0 flex-1",
+    band("서비스 그룹 — 상세 코드가 곧 서비스 코드입니다") +
+      ui.sectionHead(`상세 코드${sub("SERVICE · 서비스 · 플랫폼고정")}`, ui.button("상세 코드 추가", { variant: "soft" }) + ui.button("저장")) +
+      ui.dataTable(codeCols, codeRows),
+  );
+
+  // #e93737: DESIGN.md 가 허락한 위험 글자색
+  const dialog = x.dialog(
+    apply,
+    "BP에 적용",
+    `<dl class="grid grid-cols-[80px_1fr] gap-y-[6px]"><dt class="text-erp-label">그룹</dt><dd>PAY_TYPE · 급여 형태</dd><dt class="text-erp-label">상세 코드</dt><dd>지금 등록된 상세 코드 전부</dd></dl><p class="mt-[12px] font-medium text-[#e93737]">사용 중인 모든 BP에 배포되며 되돌릴 수 없습니다</p>`,
+    ui.button("취소", { variant: "off", "data-close": true }) + ui.button("적용", { "data-close": true }),
+  );
+
+  return {
+    title: "플랫폼 공통코드 관리",
+    html: ui.erpFrame({
+      header: platformHeader(A, R),
+      title: "플랫폼 공통코드 관리",
+      body: `<div class="flex min-h-0 flex-1 gap-[12px] p-[24px]">${left}${right}</div>${dialog}`,
+    }),
+  };
+};
