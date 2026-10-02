@@ -83,7 +83,8 @@
               </div>
             </section>
 
-            <!-- 대표 이미지 — 1장 · 선택 · JPG·PNG 5MB 이하. 목록 썸네일과 상세에 같은 이미지가 보인다. -->
+            <!-- 대표 이미지 — 1장 · 선택 · JPG·PNG 5MB 이하. 목록 썸네일과 상세에 같은 이미지가 보인다.
+                 파일은 점포 컬럼이 아니라 점포 대표 이미지 파일 테이블(store_image_files)에 두고, 바꾸거나 지우면 기존 파일 행을 삭제 처리한다. -->
             <section class="panel">
               <div class="panel__head">
                 <h2 class="t-h2">대표 이미지</h2>
@@ -187,12 +188,12 @@
                     <input class="input mono" value="" placeholder="좌표를 계산하지 못했습니다." data-show="coord" hidden aria-label="경도" />
                   </div>
                   <div class="field">
-                    <label for="nrad">근무지 반경</label>
-                    <div class="inline" style="flex-wrap: nowrap">
-                      <input class="input mono" id="nrad" value="100" inputmode="numeric" style="max-width: 120px" />
-                      <span class="subtle">m</span>
-                    </div>
-                    <span class="help">50m~1,000m · 10m 단위 · 기본 100m</span>
+                    <label for="nloc">위치 적용 여부</label>
+                    <select class="select" id="nloc" style="max-width: 160px">
+                      <option selected>사용</option>
+                      <option>미사용</option>
+                    </select>
+                    <span class="help">사용이면 직원 출퇴근을 위도·경도 기준으로 허용 여부를 판정합니다 · 기본 사용</span>
                   </div>
                 </div>
                 <p class="note" data-show="in miss">

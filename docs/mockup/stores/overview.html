@@ -126,9 +126,9 @@
                 <ul class="pol">
                   <li><span class="pol__t">사업자 인증 완료 여부는 따로 저장하지 않는다. 사업자등록번호가 있으면 인증된 것이고, 재인증에 실패해도 그대로다.</span><span class="pol__ref">F-MOQKGY</span></li>
                   <li><span class="pol__t">점포 사업자등록번호는 미운영·운영인 다른 점포와 겹칠 수 없다(플랫폼 전체). BP 사업자등록번호와는 따로 본다.</span><span class="pol__ref">PL-OCJOFP</span></li>
-                  <li><span class="pol__t">대표 이미지는 점포당 1장 · 선택 · JPG·PNG 5MB 이하. 목록 썸네일과 상세에 같은 이미지가 보이고, 없으면 점포 아이콘이 선다. 엑셀에는 담지 않는다.</span><span class="pol__ref">S-ALHLHW · S-JEPOMK</span></li>
+                  <li><span class="pol__t">대표 이미지는 점포당 1장 · 선택 · JPG·PNG 5MB 이하. 파일은 점포 대표 이미지 파일 테이블에 따로 두고 점포 테이블에는 경로를 두지 않는다. 목록 썸네일과 상세에 같은 이미지가 보이고, 없으면 점포 아이콘이 선다. 엑셀에는 담지 않는다.</span><span class="pol__ref">S-ALHLHW · S-JEPOMK</span></li>
                   <li><span class="pol__t">좌표는 주소로 자동 계산하고 직접 고칠 수 있다. 계산하지 못해도 미운영으로는 저장되지만, 운영으로 바꾸려면 좌표가 있어야 한다.</span><span class="pol__ref">S-ALHLHW</span></li>
-                  <li><span class="pol__t">근무지 반경은 50~1,000m, 10m 단위, 기본 100m.</span><span class="pol__ref">F-MOQKGY</span></li>
+                  <li><span class="pol__t">근무지 반경은 점포에서 관리하지 않는다. 대신 위치 적용 여부(사용·미사용, 기본 사용)를 두고, 3팀이 사용인 점포에서만 위도·경도 기준으로 출퇴근 허용 여부를 판정한다.</span><span class="pol__ref">F-MOQKGY</span></li>
                   <li><span class="pol__t">삭제는 미운영이면서 폐점 조건과 같은 세 조건을 채운 점포만 된다. 폐점 점포는 지우지 않고 보존한다.</span><span class="pol__ref">S-AGGZZG</span></li>
                   <li><span class="pol__t">변경·삭제·상태 변경 이력은 5년 보존(1년 규칙 폐기 · 탈퇴 BP 는 PL-ZHHPAV 우선). 변경 이력은 상세에서 조회 권한자에게 보이고, 삭제 이력은 운영 요청으로만 확인한다.</span><span class="pol__ref">F-MOQKGY</span></li>
                   <li><span class="pol__t">엑셀은 1만 건 미만이면 바로, 이상이면 예약 생성(24시간 보관). 한 사람 1분 1회, 대표자 연락처만 가린다.</span><span class="pol__ref">S-BAYAJS</span></li>
