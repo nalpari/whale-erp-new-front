@@ -3,7 +3,7 @@
 // 여기 없는 부품이 필요하면 화면 파일 안에서 같은 규칙으로 만들고, 무엇을 만들었는지 보고한다.
 import { button, uid } from "./ui.mjs";
 
-// 탭. 고른 탭은 erp.js 가 바꾼다. 주소의 #id 가 탭 패널 id 와 같으면 그 탭으로 연다(support/community.html#faq).
+// 탭. 고른 탭은 erp.js 가 바꾼다. 주소의 #id 가 탭 패널 id 와 같으면 그 탭으로 연다(예: 화면.html#탭 id).
 // tabs: [{ id, label, html }]
 const TAB_ON = "border-erp-brand font-semibold text-erp-ink";
 const TAB_OFF = "border-transparent font-medium text-erp-label hover:text-erp-ink";

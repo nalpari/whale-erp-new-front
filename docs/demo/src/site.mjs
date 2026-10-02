@@ -98,10 +98,10 @@ const PLATFORM_MENUS = [
   [
     "커뮤니티관리",
     [
-      ["공지사항", "support/community.html"],
-      ["FAQ", "support/community.html#faq"],
-      ["문의사항", "support/community.html#asks"],
-      ["도입문의", "support/community.html#leads"],
+      ["공지사항", "support/community-notices.html"],
+      ["FAQ", "support/community-faq.html"],
+      ["문의사항", "support/community-asks.html"],
+      ["도입문의", "support/community-leads.html"],
     ],
   ],
 ];

@@ -88,6 +88,18 @@ export const weekNav = (A, blocks = "", start = "2026-08-31", { day = false, mon
   return `<span data-weeks="${blocks}" data-week-start="${start}"${step ? ` data-step="${step}"` : ""} class="relative flex items-center gap-[6px]">${iconButton(A, "prev.svg", `이전 ${unit}`)}<button type="button" popovertarget="${pop}" aria-haspopup="dialog" aria-expanded="false" data-week-label class="h-[34px] min-w-[190px] rounded-[2px] border border-erp-button-line bg-white px-[12px] text-[14px] font-semibold text-erp-ink transition-[border-color] duration-150 ease-out hover:border-erp-brand"></button>${iconButton(A, "next.svg", `다음 ${unit}`)}<div id="${pop}" popover="auto" role="dialog" aria-label="${month ? "달" : day ? "날짜" : "주"} 선택" class="${ui.POPOVER}"></div></span>`;
 };
 
+// 상세 화면 틀(2026-10-02 재영): 본문 첫 줄은 「○○ 상세」 + 오른쪽 끝 버튼, 묶음 제목은 회색 머리 칸 안(왼쪽 제목, 오른쪽 끝 요약·이동·버튼).
+// 머리 칸은 detail-table.tsx 의 제목 칸과 같은 모양이고, 아래 data-table 머리줄과 선이 겹치지 않게 아래 테두리만 뺐다.
+export const detailHead = (title, right) =>
+  `<div class="flex items-center gap-[6px]"><h2 class="flex-1 text-[18px] font-semibold text-erp-ink">${title}</h2>${right}</div>`;
+export const headIn = (title, right = "") =>
+  `<span class="flex-1">${title}</span><span class="flex items-center gap-[6px] text-[14px] font-normal">${right}</span>`;
+// pad: 표가 아니라 글을 담을 때 테두리·안쪽 여백을 둔다.
+export const box = (title, right, body, { pad = false } = {}) =>
+  `<section class="min-w-0"><h3 class="flex h-[42px] items-center gap-[6px] rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[16px] font-medium text-erp-ink">${headIn(title, right)}</h3>${
+    pad ? `<div class="rounded-b-[2px] border border-erp-thead-line bg-white p-[16px]">${body}</div>` : body
+  }</section>`;
+
 // 누르면 확인창이 뜨는 버튼(데모라 실제로 바꾸지는 않는다). body 는 설명 문장이나 표, ok 는 확인 버튼 글자(「닫기」면 닫기 하나만).
 // okAttrs: 확인 버튼에 붙일 속성(예: data-remove-picked).
 export const ask = (label, variant, title, body = "", ok = label, okAttrs = {}) => {

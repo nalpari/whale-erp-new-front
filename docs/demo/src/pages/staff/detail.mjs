@@ -8,17 +8,13 @@ export default ({ A, R }) => {
   const L = (path) => link(R, path);
   const manage = (page) => ui.link("관리", L(`staff/${page}.html`));
   const resetId = x.dialogId();
-  // 묶음 제목은 표 머리 안에 둔다(2026-10-02 재영): 왼쪽 제목, 오른쪽 끝에 요약·이동·「관리」.
-  // 머리 칸은 detail-table.tsx 의 제목 칸과 같은 모양이고, 아래 data-table 머리줄과 선이 겹치지 않게 아래 테두리만 뺐다.
-  const headIn = (title, right) => `<span class="flex-1">${title}</span><span class="flex items-center gap-[6px] text-[14px] font-normal">${right}</span>`;
+  const { headIn, box } = p;
   // 머리 칸 아래 열 이름 줄은 흰 바탕에 굵고 진한 글자(2026-10-02 재영)
   const whiteHead = (table) =>
     table.replace("border-erp-thead-line bg-erp-thead-bg\">", "border-erp-thead-line bg-white\">").replaceAll('class="px-[10px] font-medium text-erp-thead-text"', 'class="px-[10px] font-semibold text-erp-ink"');
   // 표 아래 요약 한 줄(오른쪽 끝에 이름 + 값)
   const foot = (label, value) =>
     `<div class="flex h-[46px] items-center justify-end gap-[12px] border-x border-b border-erp-thead-line bg-erp-thead-bg px-[12px] text-[14px]"><span class="text-erp-thead-text">${label}</span><b class="font-semibold text-erp-ink">${value}</b></div>`;
-  const box = (title, right, body) =>
-    `<section class="min-w-0"><h3 class="flex h-[42px] items-center gap-[6px] rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[16px] font-medium text-erp-ink">${headIn(title, right)}</h3>${body}</section>`;
 
   const basic = ui.detailTable("기본 정보", [
     ["이름", "서지안"],
@@ -120,7 +116,7 @@ export default ({ A, R }) => {
   );
 
   const body = ui.detailBody(
-    `<div class="flex flex-col gap-[12px]"><div class="flex items-center gap-[6px]"><h2 class="flex-1 text-[18px] font-semibold text-erp-ink">직원 상세</h2>${ui.button("목록", { href: L("staff/index.html") })}</div>${p.cols(basic + reset + contract, schedule + attendance + payslips + todo, "grid-cols-[5fr_7fr]")}</div>` + resetDialog,
+    `<div class="flex flex-col gap-[12px]">${p.detailHead("직원 상세", ui.button("목록", { href: L("staff/index.html") }))}${p.cols(basic + reset + contract, schedule + attendance + payslips + todo, "grid-cols-[5fr_7fr]")}</div>` + resetDialog,
   );
   return { title: "직원 상세", html: ui.erpFrame({ header: erpHeader(A, R), title: "직원 정보 관리", body }) };
 };
