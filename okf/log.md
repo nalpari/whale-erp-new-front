@@ -1,5 +1,12 @@
 # Bundle history
 
+## 2026-10-02
+
+* **Update**: [네이밍 규칙](/conventions/naming.md) 약어 금지 예외에 `biz`(사업자)·`ceo`(대표자)를 더했다. 1팀 ERD 의 나머지 약어(`temp`·`pw`·`reg_no`·`corp`·`info`)는 풀어 썼다.
+* **Update**: 점포 유형 표기를 일반점포에서 직영점포로 바꾼 정책(코드 `DIRECT`·`FRANCHISE`)을 [점포 관리](/stores.md) 에 반영했다.
+* **Update**: 목업 안에서 어긋나던 곳을 사용자 결정으로 정리해 [로그인](/auth.md) 약관 6종, [BP 마스터 계정 관리](/bp.md) 미인증 BP 의 하이픈 표시 6항목, [점포 관리](/stores.md) 목록 검색(검색 기준+검색어), [BP 환경설정](/config.md) 권한명 중복 범위(같은 관리계정ID), [플랫폼 시스템 관리](/system.md) 관리자 목록 등록일시 검색에 반영했다. 가입 유형(AUTH-3 ↔ HOME-2)은 3팀과 협의 중이라 [홈·계정 진입](/home.md) 은 그대로 둔다.
+* **Add**: `docs/mockup/` 의 1팀 영역 6곳을 새 concept 으로 옮겼다 — [로그인](/auth.md) AUTH-1~4, [MY PAGE](/mypage.md) MYPAGE-1~3, [BP 마스터 계정 관리](/bp.md) BP-1~5, [점포 관리](/stores.md) STORE-1~4, [BP 환경설정](/config.md) CONFIG-1~10, [플랫폼 시스템 관리](/system.md) SYSTEM-1~10. 보류 쟁점은 없었고, 목업 안에서 서로 어긋나는 문구는 확정 쪽을 따르거나 뺐다.
+
 ## 2026-10-01
 
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) 에 상세 화면(DetailTable·/design/detail)과 Figma Link_text 토큰을 적었다.
