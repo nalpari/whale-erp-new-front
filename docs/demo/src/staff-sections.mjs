@@ -161,32 +161,62 @@ export function staffSections({ A, R }) {
       ],
     ),
   );
+  // 출퇴근 현황: 일별 출퇴근은 하루씩, 근태 요약은 한 주씩 넘겨 본다(2026-10-02 재영). 데모의 오늘은 2026-09-06(일).
+  // 데이터는 09-04 ~ 09-06 사흘과 08-24 · 08-31 두 주뿐이고, 나머지 날짜·주는 빈 표.
+  const days = [
+    ["2026-09-06", [
+      ["오세라", p.sub("09:00"), "08:54", p.sub("근무 중"), p.mark("ok", "정상")],
+      ["서지안", p.sub("09:00"), "08:57", p.sub("근무 중"), p.mark("ok", "정상")],
+      ["권도윤", p.sub("13:00"), p.mark("warn", "13:18"), p.sub("근무 중"), p.mark("warn", "지각 18분")],
+      ["유하람", p.sub("-"), "-", "-", p.mark("subtle", "휴무")],
+      ["배정숙", p.sub("10:00"), p.sub("미기록"), "-", p.mark("risk", "미출근")],
+    ]],
+    ["2026-09-05", [
+      ["오세라", p.sub("09:00"), "08:51", "18:02", p.mark("ok", "정상")],
+      ["서지안", p.sub("13:00"), "12:58", p.sub("미기록"), p.mark("warn", "퇴근 미등록")],
+      ["권도윤", p.sub("-"), "-", "-", p.mark("subtle", "휴무")],
+      ["유하람", p.sub("-"), "-", "-", p.mark("subtle", "휴무")],
+      ["배정숙", p.sub("10:00"), "09:58", "16:01", p.mark("ok", "정상")],
+    ]],
+    ["2026-09-04", [
+      ["오세라", p.sub("09:00"), "09:00", "18:00", p.mark("ok", "정상")],
+      ["서지안", p.sub("13:00"), "12:55", "21:36", p.mark("ok", "정상")],
+      ["권도윤", p.sub("13:00"), "13:02", "21:30", p.mark("ok", "정상")],
+      ["유하람", p.sub("-"), "-", "-", p.mark("subtle", "휴무")],
+      ["배정숙", p.sub("10:00"), "09:55", "16:00", p.mark("ok", "정상")],
+    ]],
+    ["", []],
+  ];
   const today = p.section(
-    "오늘 출퇴근",
-    p.tag("quiet", "08-20 목"),
-    ui.dataTable(
-      [{ header: "직원", align: "left" }, { header: "예정" }, { header: "출근" }, { header: "퇴근" }, { header: "비고" }],
-      [
-        ["오세라", p.sub("09:00"), "08:54", p.sub("근무 중"), p.mark("ok", "정상")],
-        ["서지안", p.sub("07:00"), "07:02", "16:03", p.mark("ok", "정상")],
-        ["권도윤", p.sub("13:00"), p.mark("warn", "13:18"), p.sub("근무 중"), p.mark("warn", "지각 18분")],
-        ["유하람", p.sub("-"), "-", "-", p.mark("subtle", "휴무")],
-        ["배정숙", p.sub("10:00"), p.sub("미기록"), "-", p.mark("risk", "미출근")],
-      ],
-    ),
+    "일별 출퇴근",
+    p.weekNav(A, "attend-days", "2026-09-06", { day: true }),
+    `<div id="attend-days">${days
+      .map(
+        ([d, rows]) =>
+          `<div data-week="${d}" hidden>${ui.dataTable(
+            [{ header: "직원", align: "left" }, { header: "예정" }, { header: "출근" }, { header: "퇴근" }, { header: "비고" }],
+            rows,
+            "이 날의 출퇴근 기록이 없습니다.",
+          )}</div>`,
+      )
+      .join("")}</div>`,
   );
   const rate = (label, pct, n) =>
     `<div class="flex h-[34px] items-center gap-[12px] text-[14px]"><span class="w-[80px] shrink-0 text-erp-label">${label}</span><span class="w-[200px]">${p.meter(pct)}</span><span>${n}</span></div>`;
+  const weekSum = (week, [ok, late, miss], [total, over, night, paid]) => {
+    const n = ok + late + miss;
+    const pct = (v) => (n ? Math.round((v / n) * 100) : 0);
+    return `<div data-week="${week}" hidden class="flex flex-col gap-[12px]"><div class="flex flex-col">${rate("정상 출근", pct(ok), `${ok}회`)}${rate("지각", pct(late), `${late}회`)}${rate("미기록", pct(miss), `${miss}회`)}</div>${ui.detailTable("근로시간", [
+      ["총 근로시간", total],
+      ["연장 근로", over],
+      ["야간 근로", night],
+      ["주휴 대상", paid],
+    ])}</div>`;
+  };
   const summary = p.section(
-    "이번 주 근태 요약",
-    "",
-    `<div class="flex flex-col">${rate("정상 출근", 88, "54회")}${rate("지각", 8, "5회")}${rate("미기록", 4, "2회")}</div>`,
-    ui.detailTable("근로시간", [
-      ["총 근로시간", "1,284h"],
-      ["연장 근로", "42h"],
-      ["야간 근로", "18h"],
-      ["주휴 대상", "38명"],
-    ]),
+    "근태 요약",
+    p.weekNav(A, "attend-sums", "2026-08-31"),
+    `<div id="attend-sums">${weekSum("2026-08-31", [54, 5, 2], ["1,284h", "42h", "18h", "38명"])}${weekSum("2026-08-24", [58, 3, 1], ["1,312h", "36h", "16h", "38명"])}${weekSum("", [0, 0, 0], ["0h", "0h", "0h", "-"])}</div>`,
   );
   const fixBtns = () => `<span class="flex justify-center gap-[6px]">${ui.slideTrigger("보정", fixPanel, "off")}${offBtn("이상 없음")}</span>`;
   const fixList = p.section(
@@ -213,11 +243,8 @@ export function staffSections({ A, R }) {
   );
   const schedTab =
     p.bar(
-      p.iconButton(A, "prev.svg", "이전 주") +
-        `<span class="px-[6px] text-[14px] font-semibold">2026-08-17 ~ 08-23</span>` +
-        p.iconButton(A, "next.svg", "다음 주") +
-        p.w("w-[150px]", ui.dateField(A, { label: "날짜로 이동", value: "2026-08-22" })) +
-        offBtn("이번 주"),
+      // 날짜 선택은 직원 상세와 같은 주 이동(2026-10-02 재영). 데모라 근무표 내용은 주를 바꿔도 그대로다.
+      p.weekNav(A, "", "2026-08-17"),
       ui.button("지난 주 복사", { variant: "soft" }) + ui.slideTrigger("근무스케줄 등록", schedPanel, "soft") + ui.button("근무스케줄 확정"),
     ) +
     p.bar(x.segment("근무표 보기", [{ id: "sched-day", label: "일간 근무표" }, { id: "sched-week", label: "주간 근무표" }])) +

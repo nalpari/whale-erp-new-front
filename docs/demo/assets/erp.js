@@ -434,9 +434,13 @@
   const md = (d) => `${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   const WEEK_MON = ["월", "화", "수", "목", "금", "토", "일"];
   function initWeeks(nav) {
-    const blocks = $$("[data-week]", document.getElementById(nav.dataset.weeks));
+    const box = nav.dataset.weeks && document.getElementById(nav.dataset.weeks);
+    const blocks = box ? $$("[data-week]", box) : [];
     const [prev, trigger, next] = $$(":scope > button", nav);
     const pop = document.getElementById(trigger.getAttribute("popovertarget"));
+    // data-step="day" 이면 하루씩 넘기고 달력에서 날짜 하나를 고른다(출퇴근 현황 일별).
+    const day = nav.dataset.step === "day";
+    const step = day ? 1 : 7;
     const first = parse(nav.dataset.weekStart);
     let mon = first;
     let cursor = mon;
@@ -444,9 +448,36 @@
       const key = iso(mon);
       const hit = blocks.find((b) => b.dataset.week === key) || blocks.find((b) => b.dataset.week === "");
       blocks.forEach((b) => (b.hidden = b !== hit));
-      trigger.textContent = `${mon.getFullYear()}년 ${md(mon)} ~ ${md(addDays(mon, 6))}`;
+      trigger.textContent = day ? `${iso(mon)} (${WEEK[mon.getDay()]})` : `${mon.getFullYear()}년 ${md(mon)} ~ ${md(addDays(mon, 6))}`;
+    };
+    const head = (y, m) => `
+        <div class="flex items-center justify-between">
+          <button type="button" aria-label="이전 달" data-move="-1" class="${NAV}">${ICON("chevron-small.svg")}</button>
+          <p aria-live="polite" class="text-[15px] font-semibold text-erp-ink">${y}년 ${m + 1}월</p>
+          <button type="button" aria-label="다음 달" data-move="1" class="${NAV}">${ICON("chevron-small.svg", "rotate-180")}</button>
+        </div>`;
+    const foot = (label) => `
+        <div class="mt-[12px] flex justify-end border-t border-erp-divider pt-[12px]">
+          <button type="button" data-first class="${FOOT} text-erp-brand hover:text-erp-ink">${label}</button>
+        </div>`;
+    const renderDay = () => {
+      const y = cursor.getFullYear();
+      const m = cursor.getMonth();
+      const last = new Date(y, m + 1, 0);
+      const rows = [];
+      for (let w = monday(new Date(y, m, 1)); w <= last; w = addDays(w, 7)) rows.push(w);
+      const cell = (d) => {
+        const sel = iso(d) === iso(mon);
+        return `<button type="button" data-pick="${iso(d)}" aria-pressed="${sel}" aria-label="${d.getMonth() + 1}월 ${d.getDate()}일" class="grid h-[32px] w-[33px] place-items-center rounded-[2px] text-[14px] transition-colors duration-150 ease-out ${sel ? "bg-erp-brand text-white" : `hover:bg-erp-thead-bg ${d.getMonth() !== m ? "text-erp-label" : "text-erp-ink"}`}">${d.getDate()}</button>`;
+      };
+      pop.innerHTML = `${head(y, m)}
+        <div class="mt-[12px] flex text-[12px] text-erp-label">${WEEK_MON.map((w) => `<span class="grid h-[28px] w-[33px] place-items-center">${w}</span>`).join("")}</div>
+        ${rows.map((w) => `<div class="flex">${Array.from({ length: 7 }, (_, i) => cell(addDays(w, i))).join("")}</div>`).join("")}
+        ${foot("오늘")}`;
+      $('[aria-pressed="true"]', pop)?.focus();
     };
     const render = () => {
+      if (day) return renderDay();
       // cursor 달에 목요일이 드는 주들
       const thu1 = new Date(cursor.getFullYear(), cursor.getMonth(), 1 + ((4 - new Date(cursor.getFullYear(), cursor.getMonth(), 1).getDay() + 7) % 7));
       const rows = [];
@@ -458,17 +489,10 @@
           .join("");
         return `<button type="button" data-pick="${iso(m)}" aria-pressed="${sel}" class="flex w-full items-center rounded-[2px] text-[14px] transition-colors duration-150 ease-out ${sel ? "bg-erp-brand text-white" : "text-erp-ink hover:bg-erp-thead-bg"}"><span class="w-[54px] text-[13px] font-semibold">${n}주</span>${days}</button>`;
       };
-      pop.innerHTML = `
-        <div class="flex items-center justify-between">
-          <button type="button" aria-label="이전 달" data-move="-1" class="${NAV}">${ICON("chevron-small.svg")}</button>
-          <p aria-live="polite" class="text-[15px] font-semibold text-erp-ink">${thu1.getFullYear()}년 ${thu1.getMonth() + 1}월</p>
-          <button type="button" aria-label="다음 달" data-move="1" class="${NAV}">${ICON("chevron-small.svg", "rotate-180")}</button>
-        </div>
+      pop.innerHTML = `${head(thu1.getFullYear(), thu1.getMonth())}
         <div class="mt-[12px] flex text-[12px] text-erp-label"><span class="w-[54px]"></span>${WEEK_MON.map((w) => `<span class="grid h-[28px] w-[26px] place-items-center">${w}</span>`).join("")}</div>
         <div class="flex flex-col gap-[2px]">${rows.map((m, i) => row(m, i + 1)).join("")}</div>
-        <div class="mt-[12px] flex justify-end border-t border-erp-divider pt-[12px]">
-          <button type="button" data-first class="${FOOT} text-erp-brand hover:text-erp-ink">이번 주</button>
-        </div>`;
+        ${foot("이번 주")}`;
       $('[aria-pressed="true"]', pop)?.focus();
     };
     const place = () => {
@@ -480,13 +504,13 @@
       mon = m;
       show();
     };
-    prev.addEventListener("click", () => go(addDays(mon, -7)));
-    next.addEventListener("click", () => go(addDays(mon, 7)));
+    prev.addEventListener("click", () => go(addDays(mon, -step)));
+    next.addEventListener("click", () => go(addDays(mon, step)));
     pop.addEventListener("toggle", (e) => {
       const opened = e.newState === "open";
       trigger.setAttribute("aria-expanded", String(opened));
       if (opened) {
-        cursor = addDays(mon, 3);
+        cursor = day ? mon : addDays(mon, 3);
         render();
         place();
         addEventListener("scroll", place, { capture: true, passive: true });

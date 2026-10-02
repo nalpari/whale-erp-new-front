@@ -76,6 +76,15 @@ export const fileField = (label, accept = ".pdf,.jpg,.jpeg,.png") =>
     .replace('<button type="button"', '<label class="cursor-pointer"><span')
     .replace("</button>", `</span><input type="file" accept="${accept}" aria-label="${label} 파일 선택" class="sr-only"></label>`)}</div>`;
 
+// 주 이동: ‹ 2026년 08-31 ~ 09-06 › — 가운데를 누르면 주 선택 달력. 동작은 erp.js initWeeks.
+// blocks: 주마다 바꿔 보일 묶음의 id([data-week="월요일"]). 비우면 날짜 표시만 바뀐다.
+// day: true 면 하루씩(‹ 2026-09-06 (일) ›, 달력에서 날짜 하나) — 묶음 키는 그 날짜.
+export const weekNav = (A, blocks = "", start = "2026-08-31", { day = false } = {}) => {
+  const pop = ui.uid("week");
+  const unit = day ? "날" : "주";
+  return `<span data-weeks="${blocks}" data-week-start="${start}"${day ? ' data-step="day"' : ""} class="relative flex items-center gap-[6px]">${iconButton(A, "prev.svg", `이전 ${unit}`)}<button type="button" popovertarget="${pop}" aria-haspopup="dialog" aria-expanded="false" data-week-label class="h-[34px] min-w-[190px] rounded-[2px] border border-erp-button-line bg-white px-[12px] text-[14px] font-semibold text-erp-ink transition-[border-color] duration-150 ease-out hover:border-erp-brand"></button>${iconButton(A, "next.svg", `다음 ${unit}`)}<div id="${pop}" popover="auto" role="dialog" aria-label="${day ? "날짜" : "주"} 선택" class="${ui.POPOVER}"></div></span>`;
+};
+
 // 합계 줄(실지급액)
 export const total = (label, value) =>
   `<div class="flex h-[46px] items-center border-y border-erp-thead-line px-[12px]"><span class="flex-1 text-[16px] font-semibold text-erp-ink">${label}</span><span class="text-[22px] font-semibold text-erp-ink">${value}</span></div>`;

@@ -61,14 +61,9 @@ export default ({ A, R }) => {
       rows.map(([d, s, e, t]) => [d, "서초점", s, e, p.tag("quiet", t)]),
       "이 주에 잡힌 근무스케줄이 없습니다.",
     ))}${foot("주간 근무시간 합계", `${(rows.reduce((n, [, s, e]) => n + worked(s, e), 0) / 60).toFixed(1)}h`)}</div>`;
-  // 주 이동(‹ 2026년 08-31 ~ 09-06 ›). 근무스케줄·출퇴근 현황이 따로 쓴다. 동작은 erp.js initWeeks.
-  const weekNav = (blocks, start = "2026-08-31") => {
-    const pop = ui.uid("week");
-    return `<span data-weeks="${blocks}" data-week-start="${start}" class="relative flex items-center gap-[6px]">${p.iconButton(A, "prev.svg", "이전 주")}<button type="button" popovertarget="${pop}" aria-haspopup="dialog" aria-expanded="false" data-week-label class="h-[34px] min-w-[190px] rounded-[2px] border border-erp-button-line bg-white px-[12px] text-[14px] font-semibold text-erp-ink transition-[border-color] duration-150 ease-out hover:border-erp-brand"></button>${p.iconButton(A, "next.svg", "다음 주")}<div id="${pop}" popover="auto" role="dialog" aria-label="주 선택" class="${ui.POPOVER}"></div></span>`;
-  };
   const schedule = box(
     "근무스케줄",
-    weekNav("sched-weeks") + manage("work-schedules"),
+    p.weekNav(A, "sched-weeks") + manage("work-schedules"),
     `<div id="sched-weeks">${weeks.map(([w, rows]) => weekTable(w, rows)).join("")}${weekTable("", [])}</div>`,
   );
   // 출퇴근 현황도 주 단위로 넘겨 본다(2026-10-02 재영). 데이터 없는 주는 빈 표.
@@ -79,7 +74,7 @@ export default ({ A, R }) => {
   ];
   const attendance = box(
     "출퇴근 현황",
-    weekNav("attend-weeks") + manage("attendance"),
+    p.weekNav(A, "attend-weeks") + manage("attendance"),
     `<div id="attend-weeks">${attendWeeks
       .map(
         ([week, rows, sum]) =>
