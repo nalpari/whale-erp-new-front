@@ -55,7 +55,7 @@ export default ({ A, R }) => {
 
   const todo = [
     ["계약", "근로계약 서명 대기 3건", "남도현 외 2명 · 발송 후 6일 경과", "staff/contracts.html"],
-    ["직원", "가입 연결 확인 필요 2건", "번호 불일치 2 · 최장 4일 경과", "staff/invites-holds.html"],
+    ["직원", "가입 연결 확인 필요 1건", "번호 불일치 · 4일 경과", "staff/index.html"],
     ["직원", "소속 확인 거절 1건", "이준호 · 서초점", "staff/index.html"],
     ["계약", "계약 갱신 예정 2건", "서지안 09-08 · 문태경 09-10 · 새 근로계약서 초안 없음", "staff/contracts.html"],
     ["문의", "답변 완료 1건", "KIOSK 영수증 프린터 연동 문의", "support/index.html#inquiries"],

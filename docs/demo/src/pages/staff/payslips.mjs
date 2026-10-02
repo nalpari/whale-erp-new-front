@@ -11,7 +11,7 @@ export default ({ A, R }) => {
       header: erpHeader(A, R),
       title: "급여명세서 관리",
       titleRight: "",
-      body: ui.detailBody(s.payrollTab),
+      body: ui.listBody(s.payslipsFilter, s.payrollTab),
       panels: "",
     }),
   };

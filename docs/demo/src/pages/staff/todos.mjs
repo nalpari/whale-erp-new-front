@@ -11,7 +11,7 @@ export default ({ A, R }) => {
       header: erpHeader(A, R),
       title: "TO-DO 리스트 관리",
       titleRight: "",
-      body: ui.detailBody(s.todoTab),
+      body: ui.listBody(s.todosFilter, s.todoTab),
       panels: s.todoForm,
     }),
   };

@@ -11,7 +11,7 @@ export default ({ A, R }) => {
       header: erpHeader(A, R),
       title: "근로계약 관리",
       titleRight: ui.button("계약서 작성", { href: s.N }),
-      body: ui.detailBody(s.contractsTab),
+      body: ui.listBody(s.contractsFilter, s.contractsTab),
       panels: "",
     }),
   };

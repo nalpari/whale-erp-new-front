@@ -6,7 +6,8 @@ import { erpHeader, link } from "../../site.mjs";
 
 export default ({ A, R }) => {
   const L = (path) => link(R, path);
-  const dot = `<span role="img" aria-label="미확인" class="inline-block size-[6px] rounded-full bg-erp-off"></span>`;
+  // 「미확인」 글자를 화면 밖에 둬서 읽기 도구와 목록 거르기(확인 상태 필터)가 함께 읽는다.
+  const dot = `<span class="inline-block size-[6px] rounded-full bg-erp-off" aria-hidden="true"></span><span class="sr-only">미확인</span>`;
   // [미확인?, 제목, 이동할 곳, 덧붙임, 메일 결과, 구분 배지, 일시]
   const row = (unread, title, href, detail, mail, kind, at) => [
     unread ? dot : "",
@@ -25,9 +26,15 @@ export default ({ A, R }) => {
     row(false, "배정숙 님의 계약이 만료되었습니다", null, "날인 기한 30일 경과 · 재발송 가능", "-", p.tag("quiet", "계약 만료"), "08-24 00:05"),
   ];
 
-  const body = ui.detailBody(
+  const filter = ui.filterPanel(A, [
+    ui.filterSection("알림", ui.searchField(A, { placeholder: "알림 제목" }), { tight: true }),
+    ui.filterSection("확인 상태", ["전체 6", "미확인 3"].map((t, i) => ui.radio(t, "notify-filter", i === 0)).join("")),
+    ui.filterSection("구분", ["계약 거부", "계약 날인", "계약 만료", "문의 답변"].map((t) => ui.checkbox(A, t, true)).join(""), { last: true }),
+  ]);
+  const body = ui.listBody(
+    filter,
     `<div class="flex flex-col gap-[12px]">` +
-      ui.listToolbar(6, p.radios("notify-filter", ["전체 6", "미확인 3"]) + `<span class="w-[12px]"></span>` + ui.button("모두 읽음으로", { variant: "off" })) +
+      ui.listToolbar(6, ui.button("모두 읽음으로", { variant: "off" })) +
       ui.dataTable(
         [
           { header: "", width: "w-[40px]" },

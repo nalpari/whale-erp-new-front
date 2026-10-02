@@ -7,7 +7,12 @@ import { platformHeader, link } from "../../site.mjs";
 // 1팀 배지는 운영(on)·미운영(off) 두 색뿐이다. 임시저장·고정처럼 상태 색이 없는 값은 옅은 회색 꼬리표로 둔다.
 const tag = (text) => `<span class="inline-block rounded-[2px] bg-erp-subtle px-[4px] py-[2px] text-center text-[14px] font-medium text-erp-ink">${text}</span>`;
 const count = (n) => ` <span class="ml-[4px] text-erp-label">${n}</span>`;
-const radios = (name, items) => `<div role="radiogroup" class="flex h-[34px] items-center gap-[18px]">${items.map((t, i) => ui.radio(t, name, i === 0)).join("")}</div>`;
+// 탭마다 왼쪽 필터 + 목록(목록 화면 기본 틀). 라디오는 필터 안에 세로로, 첫 값(전체)을 고른 채로 둔다.
+const radioGroup = (name, items) => items.map((t, i) => ui.radio(t, name, i === 0)).join("");
+const withFilter = (A, sections, content) =>
+  `<div class="flex min-h-0 flex-1 items-start gap-[12px]">${ui.filterPanel(A, sections)}<div class="flex min-w-0 flex-1 flex-col gap-[12px]">${content}</div></div>`;
+const search = (A, label, placeholder) => ui.filterSection(label, ui.searchField(A, { placeholder }), { tight: true });
+const pick = (label, name, items) => ui.filterSection(label, radioGroup(name, items), { last: true });
 const pager = (A) => `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`;
 
 export default ({ A, R }) => {
@@ -45,45 +50,57 @@ export default ({ A, R }) => {
     {
       id: "notices",
       label: "공지사항" + count(12),
-      html:
+      html: withFilter(
+        A,
+        [search(A, "제목", "제목으로 검색"), pick("상태", "notice-state", ["전체", "게시", "임시저장", "비공개"])],
         ui.listToolbar(12, ui.button("새 공지", { href: edit })) +
-        ui.dataTable([{ header: "제목", align: "left" }, { header: "노출 대상", width: "w-[260px]" }, STATE, { header: "게시일", width: "w-[140px]" }], notices) +
-        pager(A),
+          ui.dataTable([{ header: "제목", align: "left" }, { header: "노출 대상", width: "w-[260px]" }, STATE, { header: "게시일", width: "w-[140px]" }], notices) +
+          pager(A),
+      ),
     },
     {
       id: "faq",
       label: "FAQ" + count(18),
-      html:
-        ui.listToolbar(18, radios("faq-cat", ["전체", "직원·근로", "요금·구독", "점포·설비"]) + ui.button("새 FAQ", { href: faqEdit })) +
-        ui.dataTable([{ header: "질문", align: "left" }, { header: "카테고리", width: "w-[160px]" }, { header: "노출 대상", width: "w-[200px]" }, STATE], faqs) +
-        pager(A),
+      html: withFilter(
+        A,
+        [search(A, "질문", "질문으로 검색"), pick("카테고리", "faq-cat", ["전체", "가입·계정", "직원·근로", "요금·구독", "점포·설비"])],
+        ui.listToolbar(18, ui.button("새 FAQ", { href: faqEdit })) +
+          ui.dataTable([{ header: "질문", align: "left" }, { header: "카테고리", width: "w-[160px]" }, { header: "노출 대상", width: "w-[200px]" }, STATE], faqs) +
+          pager(A),
+      ),
     },
     {
       id: "asks",
       label: "문의사항" + count(7),
-      html:
-        ui.listToolbar(7, radios("ask-state", ["답변 대기 3", "답변 완료"])) +
-        ui.dataTable(
-          [{ header: "제목", align: "left" }, { header: "보낸 곳", width: "w-[220px]" }, { header: "분류", width: "w-[140px]" }, STATE, { header: "접수", width: "w-[110px]" }],
-          asks,
-        ) +
-        pager(A),
+      html: withFilter(
+        A,
+        [search(A, "제목", "제목으로 검색"), pick("상태", "ask-state", ["전체", "답변 대기", "답변 완료"])],
+        ui.listToolbar(7, "") +
+          ui.dataTable(
+            [{ header: "제목", align: "left" }, { header: "보낸 곳", width: "w-[220px]" }, { header: "분류", width: "w-[140px]" }, STATE, { header: "접수", width: "w-[110px]" }],
+            asks,
+          ) +
+          pager(A),
+      ),
     },
     {
       id: "leads",
       label: "도입문의" + count(4),
-      html:
-        ui.listToolbar(4, radios("lead-state", ["답변 대기 2", "답변 완료"])) +
-        ui.dataTable(
-          [{ header: "담당자", align: "left" }, { header: "사업자", width: "w-[220px]" }, { header: "운영 형태", width: "w-[160px]" }, STATE, { header: "접수", width: "w-[110px]" }],
-          leads,
-        ) +
-        pager(A),
+      html: withFilter(
+        A,
+        [search(A, "담당자", "이름 또는 번호"), pick("상태", "lead-state", ["전체", "답변 대기", "답변 완료"])],
+        ui.listToolbar(4, "") +
+          ui.dataTable(
+            [{ header: "담당자", align: "left" }, { header: "사업자", width: "w-[220px]" }, { header: "운영 형태", width: "w-[160px]" }, STATE, { header: "접수", width: "w-[110px]" }],
+            leads,
+          ) +
+          pager(A),
+      ),
     },
   ]);
 
   return {
     title: "커뮤니티관리",
-    html: ui.erpFrame({ header: platformHeader(A, R), title: "커뮤니티관리", body: ui.listBody("", tabs) }),
+    html: ui.erpFrame({ header: platformHeader(A, R), title: "커뮤니티관리", body: ui.detailBody(tabs) }),
   };
 };

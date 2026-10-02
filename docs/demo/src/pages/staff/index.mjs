@@ -10,9 +10,9 @@ export default ({ A, R }) => {
     html: ui.erpFrame({
       header: erpHeader(A, R),
       title: "직원 정보 관리",
-      titleRight: `<div class="flex gap-[6px]">${ui.button("가입 연결 확인 2", { variant: "soft", href: s.L("staff/invites-holds.html") })}${ui.button("계약서 작성", { href: s.N })}</div>`,
+      titleRight: `<div class="flex gap-[6px]">${ui.slideTrigger("가입 연결 확인 1", s.holdPanel, "soft")}${ui.button("계약서 작성", { href: s.N })}</div>`,
       body: ui.listBody(s.listFilter, s.listTab),
-      panels: "",
+      panels: s.holdForm,
     }),
   };
 };

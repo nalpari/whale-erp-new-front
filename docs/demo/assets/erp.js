@@ -532,7 +532,9 @@
     // 검색어는 그 열에서만 찾는다(사업자등록번호 칸에 「모리」를 쳐서 점포명이 걸리면 안 된다). 고르는 값만 줄 전체로 다시 본다.
     for (const c of conds) c.whole = !c.text && !items.some((it) => pass(it, c, false));
     const first = $$("table, [data-filter-items]", root).find((t) => !t.closest("dialog, aside[aria-label]") && (t.tagName !== "TABLE" || t.tHead));
-    const active = set === first ? conds : conds.filter((c) => c.text || items.some((it) => pass(it, c, c.whole)));
+    // 고르는 조건이 이 목록의 어느 열과도 이름이 맞지 않고 어느 줄에도 없으면, 이 목록과 상관없는 조건으로 보고 무시한다
+    // (급여명세서 화면의 「명세서 상태」가 「검토 대기」 표까지 비우지 않게). 검색어는 늘 그대로 건다.
+    const active = conds.filter((c) => c.text || colsFor(heads, c.label).length || items.some((it) => pass(it, c, true)));
     let shown = 0;
     for (const it of items) {
       const ok = active.every((c) => pass(it, c, c.whole));

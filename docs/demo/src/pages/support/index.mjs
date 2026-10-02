@@ -1,5 +1,5 @@
 // 고객지원(BP 사용자 쪽). 목업 docs/mockup/support/index.html 의 기본 상태를 BP 마스터로 본 것.
-// 탭 셋(공지사항·FAQ·문의하기). 헤더 메뉴가 #notices · #inquiries 로 탭을 바로 연다. 문의 등록 폼은 슬라이드 패널로 옮겼다.
+// 탭 셋(공지사항·FAQ·문의하기). 헤더 메뉴가 #notices · #inquiries 로 탭을 바로 연다. 탭마다 왼쪽 필터를 두고(목록 화면 기본 틀), 문의 등록 폼은 슬라이드 패널로 옮겼다.
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as p from "../../staff-parts.mjs";
@@ -10,14 +10,15 @@ export default ({ A, R }) => {
   const count = (n) => ` <span class="ml-[4px] text-erp-muted">${n}</span>`;
   const pageNav = (n) => `<div class="pt-[14px]">${ui.pagination(A, 1, n)}</div>`;
   const ND = L("support/notice-detail.html");
+  // 탭마다 왼쪽 필터 + 목록(목록 화면의 기본 틀). 라디오는 필터 안에 세로로 둔다.
+  const radioGroup = (name, items) => items.map((t, i) => ui.radio(t, name, i === 0)).join("");
+  const withFilter = (filter, content) =>
+    `<div class="flex min-h-0 flex-1 items-start gap-[12px]">${filter}<div class="flex min-w-0 flex-1 flex-col gap-[12px]">${content}</div></div>`;
   const IM = L("support/inquiry-mine.html");
 
   const notice = (title, kind, date, pinned) => [`${pinned ? `${p.tag("quiet", "고정")} ` : ""}${ui.link(title, ND)}`, kind, date];
   const notices =
-    p.bar(
-      p.w("w-[320px]", ui.searchField(A, { placeholder: "제목으로 검색" })),
-      p.radios("notice-kind", ["전체", "점검", "기능", "약관", "안내"]),
-    ) +
+    ui.listToolbar(9, "") +
     ui.dataTable(
       [{ header: "제목", align: "left" }, { header: "구분", width: "w-[120px]" }, { header: "게시일", width: "w-[140px]" }],
       [
@@ -39,11 +40,8 @@ export default ({ A, R }) => {
   const qa = (q, a) =>
     `<details class="group border-b border-erp-thead-line"><summary class="flex h-[46px] cursor-pointer list-none items-center gap-[10px] px-[10px] text-[14px] text-erp-ink [&::-webkit-details-marker]:hidden"><span class="font-semibold text-erp-brand">Q</span><span class="flex-1 truncate">${q}</span>${ui.img(A, "chevron-small.svg", 5, 8, "-rotate-90 transition-transform duration-150 group-open:rotate-90")}</summary><div class="flex gap-[10px] bg-erp-thead-bg px-[10px] py-[12px] text-[14px] leading-[1.6] text-erp-ink"><span class="font-semibold text-erp-label">A</span><p class="flex-1">${a}</p></div></details>`;
   const faq =
-    p.bar(
-      p.w("w-[320px]", ui.searchField(A, { placeholder: "질문으로 검색" })),
-      p.radios("faq-kind", ["전체", "직원·근로", "계정·권한", "요금·구독"]),
-    ) +
-    `<div class="border-t border-erp-thead-line">${[
+    ui.listToolbar(11, "") +
+    `<div data-filter-items class="border-t border-erp-thead-line">${[
       qa("근로계약서를 보냈는데 직원이 못 받았다고 합니다", "계약 상세에서 <b>발송 이력</b>을 먼저 확인하세요. 직원이 아직 가입하지 않았다면 상태가 <b>발송 대기</b>로 남고, 가입이 끝나는 순간 자동으로 발송됩니다."),
       qa("퇴사한 직원의 급여명세서는 어떻게 보나요", "급여명세서 목록에서 재직 상태 필터를 <b>전체</b>로 바꾸면 보입니다. 인사 기록은 법정 보존 기간인 3년 이상 보관합니다."),
       qa("직원이 계약서를 거부하면 어떻게 되나요", "계약은 <b>거부</b> 상태로 남고 알림이 옵니다. 사유를 보고 내용을 고쳐 재발송하면 새 서명 요청이 나갑니다."),
@@ -59,10 +57,7 @@ export default ({ A, R }) => {
   const askPanel = "inquiry-form";
   const inq = (title, cat, state, reg, ans) => [ui.link(title, IM), cat, state, reg, ans];
   const inquiries =
-    p.bar(
-      p.w("w-[320px]", ui.searchField(A, { placeholder: "제목으로 검색" })),
-      p.radios("inquiry-state", ["전체 7", "접수 1", "처리중 1", "답변완료 5"]) + `<span class="w-[12px]"></span>` + ui.slideTrigger("문의하기", askPanel),
-    ) +
+    ui.listToolbar(7, ui.slideTrigger("문의하기", askPanel)) +
     ui.dataTable(
       [
         { header: "제목", align: "left" },
@@ -99,9 +94,39 @@ export default ({ A, R }) => {
 
   const body = ui.detailBody(
     `<div class="flex flex-col gap-[12px]">${x.tabs([
-      { id: "notices", label: `공지사항${count(9)}`, html: notices },
-      { id: "faq", label: `FAQ${count(11)}`, html: faq },
-      { id: "inquiries", label: `문의하기${count(7)}`, html: inquiries },
+      {
+        id: "notices",
+        label: `공지사항${count(9)}`,
+        html: withFilter(
+          ui.filterPanel(A, [
+            ui.filterSection("제목", ui.searchField(A, { placeholder: "제목으로 검색" }), { tight: true }),
+            ui.filterSection("구분", radioGroup("notice-kind", ["전체", "점검", "기능", "약관", "안내"]), { last: true }),
+          ]),
+          notices,
+        ),
+      },
+      {
+        id: "faq",
+        label: `FAQ${count(11)}`,
+        html: withFilter(
+          ui.filterPanel(A, [
+            ui.filterSection("질문", ui.searchField(A, { placeholder: "질문으로 검색" }), { tight: true }),
+            ui.filterSection("분류", radioGroup("faq-kind", ["전체", "직원·근로", "계정·권한", "요금·구독"]), { last: true }),
+          ]),
+          faq,
+        ),
+      },
+      {
+        id: "inquiries",
+        label: `문의하기${count(7)}`,
+        html: withFilter(
+          ui.filterPanel(A, [
+            ui.filterSection("제목", ui.searchField(A, { placeholder: "제목으로 검색" }), { tight: true }),
+            ui.filterSection("상태", radioGroup("inquiry-state", ["전체 7", "접수 1", "처리중 1", "답변완료 5"]), { last: true }),
+          ]),
+          inquiries,
+        ),
+      },
     ])}</div>`,
   );
   return { title: "고객지원", html: ui.erpFrame({ header: erpHeader(A, R), title: "고객지원", body, panels: askForm }) };
