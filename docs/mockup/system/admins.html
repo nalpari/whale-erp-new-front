@@ -76,7 +76,7 @@
               <span class="subtle" style="font-size: 12px">플랫폼 마스터 · 플랫폼 관리자 계정만</span>
             </div>
             <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
-              <div class="grid grid--3">
+              <div class="grid grid--4">
                 <div class="field">
                   <label for="q-word">아이디 · 이름</label>
                   <div class="inputwrap" title="아이디와 이름을 한꺼번에 찾습니다 — 둘 중 하나에 입력한 글자가 들어 있으면 나옵니다.">
@@ -116,6 +116,15 @@
                     <option>사용</option>
                     <option selected>미사용</option>
                   </select>
+                </div>
+                <!-- 등록일시 — 시작일과 종료일을 모두 포함한다. 비워 두면 기간 조건 없이 본다 -->
+                <div class="field">
+                  <label for="q-from">등록일시</label>
+                  <div class="inline" style="flex-wrap: nowrap; gap: var(--s-2)">
+                    <input class="input mono" id="q-from" type="date" aria-label="등록일시 시작일" />
+                    <span class="subtle">~</span>
+                    <input class="input mono" type="date" aria-label="등록일시 종료일" />
+                  </div>
                 </div>
               </div>
               <div class="inline" style="justify-content: flex-end">

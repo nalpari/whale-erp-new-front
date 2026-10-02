@@ -354,16 +354,16 @@
   }
 
   /* 상단 조회 범위 선택 (F-TLJOCK). 조회 범위는 BP 하나와 그 BP 안의 점포 범위다.
-     점포는 일반점포 · 가맹점포 유형 그룹 또는 개별 점포로 여러 개를 고른다. 점포를 고르지 않고 적용하면 그 BP 전체 점포다.
+     점포는 직영점포 · 가맹점포 유형 그룹 또는 개별 점포로 여러 개를 고른다. 점포를 고르지 않고 적용하면 그 BP 전체 점포다.
      적용한 범위는 서버에 두지 않고 이 브라우저 세션 동안만 유지한다(sessionStorage) — 로그아웃하면 사라진다.
      BP 목록에는 사용 · 미사용 BP 가 나오고 미사용에는 표시를 붙인다. 탈퇴 · 삭제 BP 와 플랫폼 BP 는 나오지 않는다 (확정 2026-09-30).
      목업 전용 주소 값: ?scope=first 는 BP 가 적용되지 않은 플랫폼 사용자의 최초 진입(닫을 수 없는 팝업), ?scope=nostore 는 접근할 점포가 없는 사용자다. */
   var BPS = [
     { code: "BP000017", name: "㈜한강상회", stores: [
-      { id: "ST000001", name: "모리커피 서초점", type: "일반점포" },
-      { id: "ST000002", name: "모리커피 성수점", type: "일반점포" },
-      { id: "ST000003", name: "온기식당 판교점", type: "일반점포" },
-      { id: "ST000004", name: "온기식당 광화문점", type: "일반점포" },
+      { id: "ST000001", name: "모리커피 서초점", type: "직영점포" },
+      { id: "ST000002", name: "모리커피 성수점", type: "직영점포" },
+      { id: "ST000003", name: "온기식당 판교점", type: "직영점포" },
+      { id: "ST000004", name: "온기식당 광화문점", type: "직영점포" },
       { id: "ST000005", name: "모리커피 을지로점", type: "가맹점포" },
       { id: "ST000006", name: "모리커피 연남점", type: "가맹점포" },
       { id: "ST000007", name: "모리커피 청담점", type: "가맹점포" },
@@ -373,21 +373,21 @@
       { id: "ST000011", name: "온기식당 일산점", type: "가맹점포" }
     ] },
     { code: "BP000003", name: "모리커피 본사", stores: [
-      { id: "ST000031", name: "모리커피 강남본점", type: "일반점포" },
+      { id: "ST000031", name: "모리커피 강남본점", type: "직영점포" },
       { id: "ST000032", name: "모리커피 합정점", type: "가맹점포" },
       { id: "ST000033", name: "모리커피 수원점", type: "가맹점포" }
     ] },
     { code: "BP000021", name: "㈜바다푸드", stores: [
-      { id: "ST000041", name: "바다횟집 광안점", type: "일반점포" },
-      { id: "ST000042", name: "바다횟집 해운대점", type: "일반점포", closed: true },
+      { id: "ST000041", name: "바다횟집 광안점", type: "직영점포" },
+      { id: "ST000042", name: "바다횟집 해운대점", type: "직영점포", closed: true },
       { id: "ST000043", name: "바다횟집 서면점", type: "가맹점포" }
     ] },
     { code: "BP000024", name: "㈜한강푸드시스템", off: true, stores: [
-      { id: "ST000051", name: "한강국밥 여의도점", type: "일반점포" },
+      { id: "ST000051", name: "한강국밥 여의도점", type: "직영점포" },
       { id: "ST000052", name: "한강국밥 마포점", type: "가맹점포" }
     ] },
     { code: "BP000030", name: "온기식당 본사", stores: [
-      { id: "ST000061", name: "온기식당 을지로본점", type: "일반점포" }
+      { id: "ST000061", name: "온기식당 을지로본점", type: "직영점포" }
     ] }
   ];
   var SCOPE_KEY = "whale-mockup-scope";
@@ -410,9 +410,9 @@
     var picked = open.filter(function (x) { return v.ids.indexOf(x.id) > -1; });
     if (!picked.length) return "전체 " + open.length + "개점";
     if (picked.length === open.length) return "전체 " + open.length + "개점";
-    /* 통째로 고른 유형은 “일반점포 전체”로 묶고, 나머지 개별 점포는 “첫 점포 외 N곳”으로 붙인다 */
+    /* 통째로 고른 유형은 “직영점포 전체”로 묶고, 나머지 개별 점포는 “첫 점포 외 N곳”으로 붙인다 */
     var parts = [], rest = picked.slice();
-    ["일반점포", "가맹점포"].forEach(function (t) {
+    ["직영점포", "가맹점포"].forEach(function (t) {
       var all = open.filter(function (x) { return x.type === t; });
       if (all.length && all.every(function (x) { return v.ids.indexOf(x.id) > -1; })) {
         parts.push(t + " 전체");
@@ -639,7 +639,7 @@
 
   /* ---------- 점포 선택 드롭다운 · BP 및 점포 선택 팝업 (F-TLJOCK) ----------
      드롭다운은 지금 BP 안의 범위를 그 자리에서 바로 고른다. BP 를 바꿀 때만 BP 변경 버튼(플랫폼 사용자)이 팝업을 연다.
-     팝업 구성 — BP 선택(단일) · 점포명 검색 · 유형 그룹(일반점포 · 가맹점포, 그룹 체크와 점포 수) · 개별 점포 체크 · 선택 결과 · 적용 · 취소.
+     팝업 구성 — BP 선택(단일) · 점포명 검색 · 유형 그룹(직영점포 · 가맹점포, 그룹 체크와 점포 수) · 개별 점포 체크 · 선택 결과 · 적용 · 취소.
      그룹과 개별 조합, 서로 다른 유형 간 복수 선택이 된다. 폐점 점포도 폐점 표시와 함께 보이되 고르지 않는다.
      최초 진입(플랫폼 사용자 · 적용된 BP 없음)에는 취소 · 닫기가 없다. */
   function wireScope() {
@@ -671,7 +671,7 @@
       var bp = bpOf(st.bp);
       var open = bp.stores.filter(function (x) { return !x.closed; });
       var hit = function (x) { return !q || (x.name + x.id).toLowerCase().indexOf(q.toLowerCase()) > -1; };
-      var groups = ["일반점포", "가맹점포"].map(function (t) {
+      var groups = ["직영점포", "가맹점포"].map(function (t) {
         var all = bp.stores.filter(function (x) { return x.type === t; });
         var can = all.filter(function (x) { return !x.closed; }).length;
         var sel = all.filter(function (x) { return !x.closed && st.ids.indexOf(x.id) > -1; }).length;
@@ -869,7 +869,7 @@
     function ddHTML() {
       var v = scopeNow(), bp = bpOf(v.bp);
       var open = bp.stores.filter(function (x) { return !x.closed; });
-      var dir = open.filter(function (x) { return x.type === "일반점포"; });
+      var dir = open.filter(function (x) { return x.type === "직영점포"; });
       var fr = open.filter(function (x) { return x.type === "가맹점포"; });
       var ids = v.all ? [] : v.ids;
       var same = function (list) { return ids.length === list.length && list.every(function (x) { return ids.indexOf(x.id) > -1; }); };
@@ -882,7 +882,7 @@
           : "") +
         '<div class="pop__list">' +
         sect(bp.name, [ddOpt("all", "전체 " + open.length + "개점", "직영 " + dir.length + " · 가맹 " + fr.length, cur === "all")]
-          .concat(dir.length ? [ddOpt("dir", "직영 " + dir.length + "개점", "일반점포 전체", cur === "dir")] : [])
+          .concat(dir.length ? [ddOpt("dir", "직영 " + dir.length + "개점", "직영점포 전체", cur === "dir")] : [])
           .concat(fr.length ? [ddOpt("fr", "가맹 " + fr.length + "개점", "가맹점포 전체", cur === "fr")] : [])) +
         sect("직영 " + dir.length, dir.map(function (x) { return ddOpt(x.id, x.name, x.id, cur === x.id); })) +
         sect("가맹 " + fr.length, fr.map(function (x) { return ddOpt(x.id, x.name, x.id, cur === x.id); })) +
@@ -894,7 +894,7 @@
       var v = scopeNow(), bp = bpOf(v.bp);
       var open = bp.stores.filter(function (x) { return !x.closed; });
       var pick = key === "all" ? [] :
-        key === "dir" ? open.filter(function (x) { return x.type === "일반점포"; }).map(function (x) { return x.id; }) :
+        key === "dir" ? open.filter(function (x) { return x.type === "직영점포"; }).map(function (x) { return x.id; }) :
         key === "fr" ? open.filter(function (x) { return x.type === "가맹점포"; }).map(function (x) { return x.id; }) : [key];
       scopeSave({ bp: v.bp, all: !pick.length, ids: pick });
       paint();

@@ -57,26 +57,21 @@
               <span class="subtle" style="font-size: 12px" data-show-role="bp fr" hidden>소속 BP <b>㈜한강상회 · BP000017</b> 로 고정</span>
             </div>
             <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
-              <!-- 검색 조건 — 점포(왼쪽 위, 고른 점포는 아래 Chip) · 사업자등록번호 · 점포상태 · 점포유형을 한 줄 격자로, 초기화 · 조회는 아래 오른쪽 (BP 휴일 관리와 같은 구조) -->
-              <div class="grid grid--4" style="align-items: start; grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr))">
-                <!-- 점포 검색 필터 (S-WDJFWH) — 검색 영역 왼쪽 위. 여러 점포를 골라 Chip 으로 쌓는다 -->
-                <div class="field sfilt" data-sfilt>
-                  <label for="q-store">점포 <span class="sfilt__sum" aria-live="polite"></span></label>
-                  <div class="sfilt__box">
-                    <div class="inputwrap">
-                      <span data-icon="search" data-icon-size="15"></span>
-                      <input class="input" id="q-store" placeholder="점포코드 또는 점포명으로 찾기" autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list" data-sfilt-q />
-                    </div>
-                    <div class="addr__list sfilt__list" role="listbox" aria-multiselectable="true" aria-label="점포 검색 결과" hidden></div>
-                  </div>
-                  <div class="sfilt__chips" hidden></div>
-                </div>
-                <!-- 검색어 — 사업자등록번호 하나로만 찾는다. 검색 기준 선택은 두지 않는다 -->
+              <!-- 검색 조건 — 검색 기준+검색어 · 점포상태 · 점포유형을 한 줄 격자로, 초기화 · 조회는 아래 오른쪽 -->
+              <div class="grid grid--3" style="align-items: start; grid-template-columns: minmax(0, 1.6fr) repeat(2, minmax(0, 1fr))">
+                <!-- 검색어 — 검색 기준(점포명 · 점포코드 · 사업자등록번호)을 고르고 검색어 하나를 넣는다. 사업자등록번호는 하이픈을 빼고 비교한다 -->
                 <div class="field">
-                  <label for="q-word">사업자등록번호</label>
-                  <div class="inputwrap">
-                    <span data-icon="search" data-icon-size="15"></span>
-                    <input class="input mono" id="q-word" inputmode="numeric" placeholder="하이픈 없이 10자리" />
+                  <label for="q-word">검색어</label>
+                  <div class="inline" style="flex-wrap: nowrap; gap: var(--s-2)">
+                    <select class="select" id="q-key" aria-label="검색 기준" style="width: 150px; flex: none">
+                      <option selected>점포명</option>
+                      <option>점포코드</option>
+                      <option>사업자등록번호</option>
+                    </select>
+                    <div class="inputwrap" style="flex: 1">
+                      <span data-icon="search" data-icon-size="15"></span>
+                      <input class="input" id="q-word" placeholder="점포명 일부 · ST000001 · 하이픈 없는 사업자등록번호" />
+                    </div>
                   </div>
                 </div>
                 <div class="field">
@@ -91,7 +86,7 @@
                 <div class="field">
                   <label>점포유형</label>
                   <div class="inline" style="min-height: 40px; gap: var(--s-4)">
-                    <span class="inline" style="gap: 6px"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="일반점포" data-icon="check" data-icon-size="11"></span>일반점포</span>
+                    <span class="inline" style="gap: 6px"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="직영점포" data-icon="check" data-icon-size="11"></span>직영점포</span>
                     <span class="inline" style="gap: 6px"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="가맹점포" data-icon="check" data-icon-size="11"></span>가맹점포</span>
                   </div>
                 </div>
@@ -226,19 +221,19 @@
                   <tr data-show-role="plat bp">
                     <td class="n">8</td><td class="mono">ST000004</td>
                     <td class="k"><a class="tlink" href="detail.html">온기식당 광화문점</a></td>
-                    <td>일반점포</td><td><span class="badge badge--ok">운영</span></td>
+                    <td>직영점포</td><td><span class="badge badge--ok">운영</span></td>
                     <td class="mono">104-81-55120</td><td class="mono">02-734-5528</td><td class="n">6</td><td class="mono">2025-06-02</td>
                   </tr>
                   <tr data-show-role="plat bp">
                     <td class="n">9</td><td class="mono">ST000003</td>
                     <td class="k"><a class="tlink" href="detail.html">온기식당 판교점</a></td>
-                    <td>일반점포</td><td><span class="badge badge--ok">운영</span></td>
+                    <td>직영점포</td><td><span class="badge badge--ok">운영</span></td>
                     <td class="mono">131-81-44710</td><td class="mono">031-8017-2231</td><td class="n">7</td><td class="mono">2025-05-20</td>
                   </tr>
                   <tr data-show-role="plat bp">
                     <td class="n">10</td><td class="mono">ST000002</td>
                     <td class="k"><a class="tlink" href="detail.html">모리커피 성수점</a></td>
-                    <td>일반점포</td><td><span class="badge badge--ok">운영</span></td>
+                    <td>직영점포</td><td><span class="badge badge--ok">운영</span></td>
                     <td class="mono">101-81-22302</td><td class="mono">02-462-7719</td><td class="n">8</td><td class="mono">2025-04-11</td>
                   </tr>
                   <tr data-show-role="plat bp" data-show="closed" hidden>
@@ -309,7 +304,7 @@
                   </span>
                 </a>
                 <a class="cvc cvc--ok" href="detail.html" data-show-role="plat bp">
-                  <span class="cvc__head"><img class="cvc__img" src="../assets/img/store-photo-6.jpg" alt="온기식당 광화문점 대표 이미지" /><span class="cvc__title"><b class="cvc__name">온기식당 광화문점</b><span class="cvc__sub"><span class="mono">ST000004</span> · 일반점포</span></span><span class="badge badge--ok">운영</span></span>
+                  <span class="cvc__head"><img class="cvc__img" src="../assets/img/store-photo-6.jpg" alt="온기식당 광화문점 대표 이미지" /><span class="cvc__title"><b class="cvc__name">온기식당 광화문점</b><span class="cvc__sub"><span class="mono">ST000004</span> · 직영점포</span></span><span class="badge badge--ok">운영</span></span>
                   <span class="cvc__grid">
                     <span><i>근무직원</i><b>6명</b></span>
                     <span><i>연락처</i><span class="mono">02-734-5528</span></span>
@@ -317,7 +312,7 @@
                   </span>
                 </a>
                 <a class="cvc cvc--ok" href="detail.html" data-show-role="plat bp">
-                  <span class="cvc__head"><img class="cvc__img" src="../assets/img/store-ongi.svg" alt="온기식당 판교점 대표 이미지" /><span class="cvc__title"><b class="cvc__name">온기식당 판교점</b><span class="cvc__sub"><span class="mono">ST000003</span> · 일반점포</span></span><span class="badge badge--ok">운영</span></span>
+                  <span class="cvc__head"><img class="cvc__img" src="../assets/img/store-ongi.svg" alt="온기식당 판교점 대표 이미지" /><span class="cvc__title"><b class="cvc__name">온기식당 판교점</b><span class="cvc__sub"><span class="mono">ST000003</span> · 직영점포</span></span><span class="badge badge--ok">운영</span></span>
                   <span class="cvc__grid">
                     <span><i>근무직원</i><b>7명</b></span>
                     <span><i>연락처</i><span class="mono">031-8017-2231</span></span>
@@ -325,7 +320,7 @@
                   </span>
                 </a>
                 <a class="cvc cvc--ok" href="detail.html" data-show-role="plat bp">
-                  <span class="cvc__head"><img class="cvc__img" src="../assets/img/store-mori.svg" alt="모리커피 성수점 대표 이미지" /><span class="cvc__title"><b class="cvc__name">모리커피 성수점</b><span class="cvc__sub"><span class="mono">ST000002</span> · 일반점포</span></span><span class="badge badge--ok">운영</span></span>
+                  <span class="cvc__head"><img class="cvc__img" src="../assets/img/store-mori.svg" alt="모리커피 성수점 대표 이미지" /><span class="cvc__title"><b class="cvc__name">모리커피 성수점</b><span class="cvc__sub"><span class="mono">ST000002</span> · 직영점포</span></span><span class="badge badge--ok">운영</span></span>
                   <span class="cvc__grid">
                     <span><i>근무직원</i><b>8명</b></span>
                     <span><i>연락처</i><span class="mono">02-462-7719</span></span>
