@@ -9,11 +9,6 @@ export default ({ A, R }) => {
   const manage = (page) => ui.link("관리", L(`staff/${page}.html`));
   const resetId = x.dialogId();
 
-  const head = ui.sectionHead(
-    `<span class="flex items-center gap-[12px]">서지안<span class="text-[14px] font-normal text-erp-label">바리스타 · 모리커피 서초점</span><span class="pl-[6px] text-[14px] font-normal text-erp-label">EMP-2026-0143</span></span>`,
-    ui.button("목록", { href: L("staff/index.html") }),
-  );
-
   const basic = ui.detailTable("기본 정보", [
     ["이름", "서지안"],
     ["직무", "바리스타"],
@@ -102,7 +97,7 @@ export default ({ A, R }) => {
   );
 
   const body = ui.detailBody(
-    `<div class="flex flex-col gap-[12px]">${head}${p.cols(basic + reset + contract, schedule + attendance + payslips + todo, "grid-cols-[5fr_7fr]")}</div>` + resetDialog,
+    `<div class="flex flex-col gap-[12px]">${p.cols(basic + reset + contract, schedule + attendance + payslips + todo, "grid-cols-[5fr_7fr]")}</div>` + resetDialog,
   );
-  return { title: "직원 상세", html: ui.erpFrame({ header: erpHeader(A, R), title: "직원 상세", body }) };
+  return { title: "직원 상세", html: ui.erpFrame({ header: erpHeader(A, R), title: "직원 상세", titleRight: ui.button("목록", { href: L("staff/index.html") }), body }) };
 };
