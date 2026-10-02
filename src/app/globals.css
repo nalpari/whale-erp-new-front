@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* docs/(목업·데모 HTML)는 앱이 아니다. 훑으면 거기 쓴 클래스가 앱 CSS 에 섞이고, 경로를 담은 클래스는 앱 빌드를 깨뜨린다. */
+@source not "../../docs";
 
 :root {
   --background: #ffffff;
