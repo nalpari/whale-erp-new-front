@@ -18,7 +18,7 @@ export default ({ A, R }) => {
 
   const content = p.section(
     "계약 내용",
-    ui.button("원본 내려받기", { variant: "off" }) +
+    p.ask("원본 내려받기", "off", "근로계약서 원본을 내려받으시겠습니까?", "유하람_근로계약서.pdf", "내려받기") +
       ui.button("날인본 내려받기", { variant: "off", disabled: true, title: "종이 계약일 때만 쓴다" }),
     ui.detailTable("파트타이머 근로계약", [
       ["직원", ui.detailValues(["유하람", "010-2093-8875"])],

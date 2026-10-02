@@ -1,6 +1,7 @@
 // 3팀 화면(staff · support · notify)이 같이 쓰는 임시 부품. 1팀 공통 컴포넌트에 없어 데모용으로 만든 것이고, 컴포넌트 제안의 대상이다.
 // 생김새는 DESIGN.md 토큰과 규칙(2px 모서리, 1px 선, 34/42/46 높이, 그림자 없음)으로만 만든다.
 import * as ui from "./ui.mjs";
+import * as x from "./extra.mjs";
 
 // 상태 배지. 1팀 Badge 는 운영(파랑)·미운영(빨강) 두 가지라, 회색 중립 배지를 더했다.
 // ok·info → 파랑, warn·risk → 빨강(손이 가야 하는 상태), quiet → 회색.
@@ -79,10 +80,19 @@ export const fileField = (label, accept = ".pdf,.jpg,.jpeg,.png") =>
 // 주 이동: ‹ 2026년 08-31 ~ 09-06 › — 가운데를 누르면 주 선택 달력. 동작은 erp.js initWeeks.
 // blocks: 주마다 바꿔 보일 묶음의 id([data-week="월요일"]). 비우면 날짜 표시만 바뀐다.
 // day: true 면 하루씩(‹ 2026-09-06 (일) ›, 달력에서 날짜 하나) — 묶음 키는 그 날짜.
-export const weekNav = (A, blocks = "", start = "2026-08-31", { day = false } = {}) => {
+// month: true 면 한 달씩(‹ 2026년 8월 ›, 열두 달 판) — 묶음 키는 그 달 1일.
+export const weekNav = (A, blocks = "", start = "2026-08-31", { day = false, month = false } = {}) => {
   const pop = ui.uid("week");
-  const unit = day ? "날" : "주";
-  return `<span data-weeks="${blocks}" data-week-start="${start}"${day ? ' data-step="day"' : ""} class="relative flex items-center gap-[6px]">${iconButton(A, "prev.svg", `이전 ${unit}`)}<button type="button" popovertarget="${pop}" aria-haspopup="dialog" aria-expanded="false" data-week-label class="h-[34px] min-w-[190px] rounded-[2px] border border-erp-button-line bg-white px-[12px] text-[14px] font-semibold text-erp-ink transition-[border-color] duration-150 ease-out hover:border-erp-brand"></button>${iconButton(A, "next.svg", `다음 ${unit}`)}<div id="${pop}" popover="auto" role="dialog" aria-label="${day ? "날짜" : "주"} 선택" class="${ui.POPOVER}"></div></span>`;
+  const unit = month ? "달" : day ? "날" : "주";
+  const step = month ? "month" : day ? "day" : "";
+  return `<span data-weeks="${blocks}" data-week-start="${start}"${step ? ` data-step="${step}"` : ""} class="relative flex items-center gap-[6px]">${iconButton(A, "prev.svg", `이전 ${unit}`)}<button type="button" popovertarget="${pop}" aria-haspopup="dialog" aria-expanded="false" data-week-label class="h-[34px] min-w-[190px] rounded-[2px] border border-erp-button-line bg-white px-[12px] text-[14px] font-semibold text-erp-ink transition-[border-color] duration-150 ease-out hover:border-erp-brand"></button>${iconButton(A, "next.svg", `다음 ${unit}`)}<div id="${pop}" popover="auto" role="dialog" aria-label="${month ? "달" : day ? "날짜" : "주"} 선택" class="${ui.POPOVER}"></div></span>`;
+};
+
+// 누르면 확인창이 뜨는 버튼(데모라 실제로 바꾸지는 않는다). body 는 설명 문장이나 표, ok 는 확인 버튼 글자(「닫기」면 닫기 하나만).
+export const ask = (label, variant, title, body = "", ok = label) => {
+  const id = x.dialogId();
+  const buttons = ok === "닫기" ? ui.button("닫기", { variant: "off", "data-close": true }) : ui.button("취소", { variant: "off", "data-close": true }) + ui.button(ok, { "data-close": true });
+  return x.dialogTrigger(label, id, variant) + x.dialog(id, title, body, buttons);
 };
 
 // 합계 줄(실지급액)

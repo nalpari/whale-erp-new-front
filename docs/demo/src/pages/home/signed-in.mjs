@@ -24,7 +24,7 @@ export default ({ A, R }) => {
     figure(A, link(R, "staff/index.html"), "재직 직원", "63", "명", `${warn("미체결 계약 3")} · 정직원 21 · 파트 42`),
     figure(A, link(R, "stores/index.html"), "운영 점포", "11", "개점", "직영 4 · 가맹 7"),
     figure(A, link(R, "staff/attendance.html"), "오늘 출근", "27", "명", `근무 예정 31 · ${warn("미출근 4")}`),
-    figure(A, link(R, "support/index.html#inquiries"), "내 문의", "2", "건", "답변 대기 1 · 답변 완료 1"),
+    figure(A, link(R, "support/inquiries.html"), "내 문의", "2", "건", "답변 대기 1 · 답변 완료 1"),
   ].join("")}</div>`;
 
   const nil = '<span class="text-erp-muted">—</span>';
@@ -58,7 +58,7 @@ export default ({ A, R }) => {
     ["직원", "가입 연결 확인 필요 1건", "번호 불일치 · 4일 경과", "staff/index.html"],
     ["직원", "소속 확인 거절 1건", "이준호 · 서초점", "staff/index.html"],
     ["계약", "계약 갱신 예정 2건", "서지안 09-08 · 문태경 09-10 · 새 근로계약서 초안 없음", "staff/contracts.html"],
-    ["문의", "답변 완료 1건", "KIOSK 영수증 프린터 연동 문의", "support/index.html#inquiries"],
+    ["문의", "답변 완료 1건", "KIOSK 영수증 프린터 연동 문의", "support/inquiries.html"],
     ["TO-DO", "긴급 TO-DO 미완료 1건", "성수점 · 냉장고 재료 폐기 · 오늘 14:00", "staff/todos.html"],
   ];
   const waiting = `<section class="${CARD} flex flex-col gap-[12px] p-[24px]">${ui.sectionHead("처리 대기", '<p class="text-[14px]">총 <b class="font-semibold">10</b> 건</p>')}${ui.dataTable(

@@ -12,7 +12,7 @@ export default ({ A, R }) => {
       title: "출·퇴근 현황 조회",
       titleRight: "",
       body: ui.detailBody(s.attendTab),
-      panels: s.fixForm,
+      panels: s.fixForm + s.proxyForm,
     }),
   };
 };

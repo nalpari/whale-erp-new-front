@@ -103,6 +103,7 @@
   // 패널 안의 data-close 버튼(취소·저장)은 패널을 닫는다.
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-close]");
+    if (b?.closest("dialog")) return; // 패널 안 확인창의 버튼은 확인창만 닫는다
     const panel = b?.closest("aside");
     if (panel?._entry) panel._entry.close();
   });
@@ -432,8 +433,10 @@
     const [prev, trigger, next] = $$(":scope > button", nav);
     const pop = document.getElementById(trigger.getAttribute("popovertarget"));
     // data-step="day" 이면 하루씩 넘기고 달력에서 날짜 하나를 고른다(출퇴근 현황 일별).
+    // data-step="month" 이면 한 달씩 넘기고 열두 달 판에서 달을 고른다(급여명세서). 묶음 키는 그 달 1일.
     const day = nav.dataset.step === "day";
-    const step = day ? 1 : 7;
+    const month = nav.dataset.step === "month";
+    const move = (d, n) => (month ? shiftMonth(d, n) : addDays(d, n * (day ? 1 : 7)));
     const first = parse(nav.dataset.weekStart);
     let mon = first;
     let cursor = mon;
@@ -441,7 +444,11 @@
       const key = iso(mon);
       const hit = blocks.find((b) => b.dataset.week === key) || blocks.find((b) => b.dataset.week === "");
       blocks.forEach((b) => (b.hidden = b !== hit));
-      trigger.textContent = day ? `${iso(mon)} (${WEEK[mon.getDay()]})` : `${mon.getFullYear()}년 ${md(mon)} ~ ${md(addDays(mon, 6))}`;
+      trigger.textContent = month
+        ? `${mon.getFullYear()}년 ${mon.getMonth() + 1}월`
+        : day
+          ? `${iso(mon)} (${WEEK[mon.getDay()]})`
+          : `${mon.getFullYear()}년 ${md(mon)} ~ ${md(addDays(mon, 6))}`;
     };
     const head = (y, m) => `
         <div class="flex items-center justify-between">
@@ -469,7 +476,24 @@
         ${foot("오늘")}`;
       $('[aria-pressed="true"]', pop)?.focus();
     };
+    const renderMonth = () => {
+      const y = cursor.getFullYear();
+      const cell = (i) => {
+        const sel = y === mon.getFullYear() && i === mon.getMonth();
+        return `<button type="button" data-pick="${iso(new Date(y, i, 1))}" aria-pressed="${sel}" class="grid h-[36px] place-items-center rounded-[2px] text-[14px] transition-colors duration-150 ease-out ${sel ? "bg-erp-brand text-white" : "text-erp-ink hover:bg-erp-thead-bg"}">${i + 1}월</button>`;
+      };
+      pop.innerHTML = `
+        <div class="flex items-center justify-between">
+          <button type="button" aria-label="이전 해" data-move="-12" class="${NAV}">${ICON("chevron-small.svg")}</button>
+          <p aria-live="polite" class="text-[15px] font-semibold text-erp-ink">${y}년</p>
+          <button type="button" aria-label="다음 해" data-move="12" class="${NAV}">${ICON("chevron-small.svg", "rotate-180")}</button>
+        </div>
+        <div class="mt-[12px] grid grid-cols-4 gap-[4px]">${Array.from({ length: 12 }, (_, i) => cell(i)).join("")}</div>
+        ${foot("이번 달")}`;
+      $('[aria-pressed="true"]', pop)?.focus();
+    };
     const render = () => {
+      if (month) return renderMonth();
       if (day) return renderDay();
       // cursor 달에 목요일이 드는 주들
       const thu1 = new Date(cursor.getFullYear(), cursor.getMonth(), 1 + ((4 - new Date(cursor.getFullYear(), cursor.getMonth(), 1).getDay() + 7) % 7));
@@ -497,13 +521,13 @@
       mon = m;
       show();
     };
-    prev.addEventListener("click", () => go(addDays(mon, -step)));
-    next.addEventListener("click", () => go(addDays(mon, step)));
+    prev.addEventListener("click", () => go(move(mon, -1)));
+    next.addEventListener("click", () => go(move(mon, 1)));
     pop.addEventListener("toggle", (e) => {
       const opened = e.newState === "open";
       trigger.setAttribute("aria-expanded", String(opened));
       if (opened) {
-        cursor = day ? mon : addDays(mon, 3);
+        cursor = day || month ? mon : addDays(mon, 3);
         render();
         place();
         addEventListener("scroll", place, { capture: true, passive: true });

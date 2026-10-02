@@ -475,6 +475,9 @@
   .h-\[34px\] {
     height: 34px;
   }
+  .h-\[36px\] {
+    height: 36px;
+  }
   .h-\[42px\] {
     height: 42px;
   }
@@ -1270,9 +1273,6 @@
   }
   .px-\[4px\] {
     padding-inline: 4px;
-  }
-  .px-\[6px\] {
-    padding-inline: 6px;
   }
   .px-\[10px\] {
     padding-inline: 10px;

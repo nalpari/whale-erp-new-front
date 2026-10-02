@@ -94,7 +94,7 @@ export default ({ A, R }) => {
 
   const head = ui.sectionHead(
     `근로계약서 <span class="pl-[6px] text-[14px] font-normal text-erp-label">모리커피 성수점</span>`,
-    ui.button("취소", { variant: "off", href: L("staff/contracts.html") }) + ui.button("임시저장", { variant: "soft" }) + ui.button("초안 저장", { href: L("staff/contracts.html") }),
+    ui.button("취소", { variant: "off", href: L("staff/contracts.html") }) + p.ask("임시저장", "soft", "작성 중인 초안을 임시저장하시겠습니까?", "초대와 계약서는 보내지 않습니다.") + ui.button("초안 저장", { href: L("staff/contracts.html") }),
   );
   const body = ui.detailBody(`<div class="flex flex-col gap-[12px]">${head}${`<div class="flex flex-col gap-[24px]">${form}</div>`}</div>`);
   return { title: "근로계약서 초안 작성", html: ui.erpFrame({ header: erpHeader(A, R), title: "근로계약서 초안 작성", body }) };

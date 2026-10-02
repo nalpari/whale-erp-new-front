@@ -14,10 +14,8 @@ export default ({ A, R }) => {
 
   const head = ui.sectionHead(
     `서지안 <span class="pl-[6px] text-[14px] font-normal text-erp-label">2026-08 · 모리커피 서초점</span>`,
-    p.tag("warn", "검토 중") +
-      `<span class="w-[6px]"></span>` +
-      ui.button("목록", { variant: "off", href: L("staff/payslips.html") }) +
-      ui.button("임시저장", { variant: "soft" }) +
+    ui.button("목록", { variant: "off", href: L("staff/payslips.html") }) +
+      p.ask("임시저장", "soft", "급여명세서를 임시저장하시겠습니까?") +
       x.dialogTrigger("확정", confirmId),
   );
   const warn = p.band("출퇴근 기록이 2일 누락되어 검토 대기로 분류되었습니다", {
@@ -27,7 +25,7 @@ export default ({ A, R }) => {
 
   const pay = p.section(
     "지급 내역",
-    p.tag("quiet", "2026-08-01 ~ 08-31") + `<span class="w-[6px]"></span>` + ui.button("출퇴근으로 다시 계산", { variant: "soft" }),
+    p.tag("quiet", "2026-08-01 ~ 08-31") + `<span class="w-[6px]"></span>` + p.ask("출퇴근으로 다시 계산", "soft", "출퇴근 기록으로 다시 계산하시겠습니까?", "2026-08-01 ~ 08-31 출퇴근 기록으로 기본급·주휴수당·연장수당을 다시 계산합니다.", "다시 계산"),
     `<div class="flex flex-col gap-[8px]">${x.toggle("연장·야간·휴일 가산 적용", true)}</div>`,
     ui.formGroup(
       "지급",
@@ -42,21 +40,43 @@ export default ({ A, R }) => {
     ),
     ui.formGroup(
       "공제 · 기본",
-      groupHead("", ui.button("지난 명세서에서 불러오기", { variant: "soft" })),
+      groupHead("", p.ask("지난 명세서에서 불러오기", "soft", "지난 명세서의 공제 값을 불러오시겠습니까?", "2026-07 명세서의 기본 공제 여섯 칸 값을 불러옵니다.", "불러오기")),
       ui.formRow(blank("국민연금"), blank("건강보험")),
       ui.formRow(blank("고용보험"), blank("장기요양보험")),
       ui.formRow(blank("소득세"), blank("지방소득세")),
     ),
     ui.formGroup(
       "공제 · 추가",
-      groupHead("", ui.button("항목 추가", { variant: "soft" })),
+      groupHead(
+        "",
+        p.ask(
+          "항목 추가",
+          "soft",
+          "추가 공제 항목 추가",
+          ui.field("항목", ui.select(["연말(중도)정산", "연말(중도)정산 소득세", "연말(중도)정산 주민세", "건강보험정산", "장기요양보험정산", "고용보험정산", "국민연금정산", "장기요양보험산정", "퇴사자유보금", "스톡옵션"])),
+          "추가",
+        ),
+      ),
     ),
     p.total("실지급액", "₩3,026,000"),
     p.band("기본 공제 여섯 칸이 아직 비어 있습니다", {
       tone: "risk",
       desc: "지금 실지급액은 지급 총액과 같습니다. 기본 공제나 붙인 추가 공제가 비어 있으면 확정할 수 없습니다. 공제 대상이 아닌 항목에는 0 을 넣으세요.",
     }),
-    p.bar("", ui.button("미리보기", { variant: "off" })),
+    p.bar(
+      "",
+      p.ask(
+        "미리보기",
+        "off",
+        "직원에게 보이는 급여명세서",
+        ui.detailTable("서지안 · 2026-08", [
+          ["지급 합계", "3,026,000"],
+          ["공제 합계", "0"],
+          ["실지급액", "3,026,000"],
+        ]),
+        "닫기",
+      ),
+    ),
   );
 
   const reasons = p.section(

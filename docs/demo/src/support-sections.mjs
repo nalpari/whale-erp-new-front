@@ -1,19 +1,16 @@
-// 고객지원(BP 사용자 쪽). 목업 docs/mockup/support/index.html 의 기본 상태를 BP 마스터로 본 것.
-// 탭 셋(공지사항·FAQ·문의하기). 헤더 메뉴가 #notices · #inquiries 로 탭을 바로 연다. 탭마다 왼쪽 필터를 두고(목록 화면 기본 틀), 문의 등록 폼은 슬라이드 패널로 옮겼다.
-import * as ui from "../../ui.mjs";
-import * as x from "../../extra.mjs";
-import * as p from "../../staff-parts.mjs";
-import { erpHeader, link } from "../../site.mjs";
+// 고객지원(BP 사용자 쪽) 화면들이 같이 쓰는 내용. 목업 docs/mockup/support/index.html 의 기본 상태를 BP 마스터로 본 것.
+// 목업은 탭 셋(공지사항·FAQ·문의하기)이었는데, 데모에서는 헤더 고객지원 메뉴의 소메뉴마다 화면을 나눴다(2026-10-02 재영).
+// 화면마다 왼쪽 필터 + 목록(목록 화면 기본 틀), 문의 등록 폼은 슬라이드 패널.
+import * as ui from "./ui.mjs";
+import * as p from "./staff-parts.mjs";
+import { link } from "./site.mjs";
 
-export default ({ A, R }) => {
+export function supportSections({ A, R }) {
   const L = (path) => link(R, path);
-  const count = (n) => ` <span class="ml-[4px] text-erp-muted">${n}</span>`;
   const pageNav = (n) => `<div class="pt-[14px]">${ui.pagination(A, 1, n)}</div>`;
   const ND = L("support/notice-detail.html");
-  // 탭마다 왼쪽 필터 + 목록(목록 화면의 기본 틀). 라디오는 필터 안에 세로로 둔다.
+  // 라디오는 필터 안에 세로로 둔다.
   const radioGroup = (name, items) => items.map((t, i) => ui.radio(t, name, i === 0)).join("");
-  const withFilter = (filter, content) =>
-    `<div class="flex min-h-0 flex-1 items-start gap-[12px]">${filter}<div class="flex min-w-0 flex-1 flex-col gap-[12px]">${content}</div></div>`;
   const IM = L("support/inquiry-mine.html");
 
   const notice = (title, kind, date, pinned) => [`${pinned ? `${p.tag("quiet", "고정")} ` : ""}${ui.link(title, ND)}`, kind, date];
@@ -92,42 +89,10 @@ export default ({ A, R }) => {
       ui.panelButtons("취소", "문의 등록"),
   );
 
-  const body = ui.detailBody(
-    `<div class="flex flex-col gap-[12px]">${x.tabs([
-      {
-        id: "notices",
-        label: `공지사항${count(9)}`,
-        html: withFilter(
-          ui.filterPanel(A, [
-            ui.filterSection("제목", ui.searchField(A, { placeholder: "제목으로 검색" }), { tight: true }),
-            ui.filterSection("구분", radioGroup("notice-kind", ["전체", "점검", "기능", "약관", "안내"]), { last: true }),
-          ]),
-          notices,
-        ),
-      },
-      {
-        id: "faq",
-        label: `FAQ${count(11)}`,
-        html: withFilter(
-          ui.filterPanel(A, [
-            ui.filterSection("질문", ui.searchField(A, { placeholder: "질문으로 검색" }), { tight: true }),
-            ui.filterSection("분류", radioGroup("faq-kind", ["전체", "직원·근로", "계정·권한", "요금·구독"]), { last: true }),
-          ]),
-          faq,
-        ),
-      },
-      {
-        id: "inquiries",
-        label: `문의하기${count(7)}`,
-        html: withFilter(
-          ui.filterPanel(A, [
-            ui.filterSection("제목", ui.searchField(A, { placeholder: "제목으로 검색" }), { tight: true }),
-            ui.filterSection("상태", radioGroup("inquiry-state", ["전체 7", "접수 1", "처리중 1", "답변완료 5"]), { last: true }),
-          ]),
-          inquiries,
-        ),
-      },
-    ])}</div>`,
-  );
-  return { title: "고객지원", html: ui.erpFrame({ header: erpHeader(A, R), title: "고객지원", body, panels: askForm }) };
-};
+  const radioFilter = (search, name, items) =>
+    ui.filterPanel(A, [ui.filterSection(search[0], ui.searchField(A, { placeholder: search[1] }), { tight: true }), ui.filterSection(search[2], radioGroup(name, items), { last: true })]);
+  const noticeFilter = radioFilter(["제목", "제목으로 검색", "구분"], "notice-kind", ["전체", "점검", "기능", "약관", "안내"]);
+  const faqFilter = radioFilter(["질문", "질문으로 검색", "분류"], "faq-kind", ["전체", "직원·근로", "계정·권한", "요금·구독"]);
+  const inquiryFilter = radioFilter(["제목", "제목으로 검색", "상태"], "inquiry-state", ["전체 7", "접수 1", "처리중 1", "답변완료 5"]);
+  return { notices, faq, inquiries, askForm, noticeFilter, faqFilter, inquiryFilter };
+}

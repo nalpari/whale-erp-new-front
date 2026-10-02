@@ -5,10 +5,13 @@ import * as ui from "./ui.mjs";
 import * as x from "./extra.mjs";
 import * as p from "./staff-parts.mjs";
 import { link } from "./site.mjs";
+import { req } from "./biz-form.mjs";
 
 export function staffSections({ A, R }) {
   const L = (path) => link(R, path);
   const offBtn = (label, a = {}) => ui.button(label, { variant: "off", ...a });
+  // 직원관리의 목록은 맨 앞에 순번(2026-10-02 재영)
+  const numbered = (columns, rows, empty) => ui.dataTable([{ header: "순번", width: "w-[60px]" }, ...columns], rows.map((r, i) => [i + 1, ...r]), empty);
   const pageNav = (n) => `<div class="pt-[14px]">${ui.pagination(A, 1, n)}</div>`;
 
   // 필터의 점포 칸. 헤더 점포 선택이 점포 1개면 그 점포로 고정, 전체·일반·가맹 묶음이면 검색(erp.js initScopeStore, 2026-10-02 재영).
@@ -18,9 +21,9 @@ export function staffSections({ A, R }) {
   // ── 직원 목록 ──
   const staffCols = [
     { header: "순번", width: "w-[60px]" },
-    { header: "직원", width: "w-[110px]", align: "left" },
+    { header: "직원", width: "w-[110px]" },
     { header: "휴대전화번호", width: "w-[140px]" },
-    { header: "점포", align: "left" },
+    { header: "점포" },
     { header: "고용형태", width: "w-[110px]" },
     { header: "가입·인증", width: "w-[210px]" },
     { header: "계약 상태", width: "w-[160px]" },
@@ -64,10 +67,10 @@ export function staffSections({ A, R }) {
   // ── 근로계약 ──
   const N = L("staff/contracts-new.html");
   const contractRows = [
-    ["남도현", "모리커피 성수점", "2026-09-14 ~ 무기한", "11,200 /h", "-", p.tag("quiet", "발송 대기"), offBtn("초대 재발송")],
+    ["남도현", "모리커피 성수점", "2026-09-14 ~ 무기한", "11,200 /h", "-", p.tag("quiet", "발송 대기"), p.ask("초대 재발송", "off", "가입 초대를 다시 보내시겠습니까?", "남도현 님(010-9014-5563)에게 가입 초대를 다시 보냅니다.")],
     ["하준서", "모리커피 성수점", "2026-09-14 ~ 무기한", "11,200 /h", "-", p.tag("quiet", "발송 대기"), offBtn("연결 확인", { href: L("staff/index.html") })],
     ["정유담", "온기식당 판교점", "2026-09-18 ~ 2027-03-17", "10,800 /h", "-", p.tag("quiet", "발송 대기"), p.sub("소속 확인 중")],
-    ["권도윤", "모리커피 서초점", "2026-09-01 ~ 2027-08-31", "11,600 /h", "09-01", p.tag("warn", "서명 대기 · D-24"), offBtn("재발송")],
+    ["권도윤", "모리커피 서초점", "2026-09-01 ~ 2027-08-31", "11,600 /h", "09-01", p.tag("warn", "서명 대기 · D-24"), p.ask("재발송", "off", "근로계약서를 재발송하시겠습니까?", "권도윤 님에게 서명 대기 중인 근로계약서를 다시 보냅니다.")],
     [ui.link("유하람", L("staff/contracts-detail.html")), "모리커피 연남점", "2026-08-28 ~ 2027-02-27", "10,800 /h", "08-28", p.tag("risk", "거부 · 09-02"), offBtn("상세", { href: L("staff/contracts-detail.html") })],
     ["서지안", "모리커피 서초점", "2026-03-01 ~ 무기한", "2,840,000 /월", "02-24", p.tag("ok", "체결 완료"), offBtn("새 계약", { href: N })],
     ["오세라", "모리커피 서초점", "2025-11-01 ~ 무기한", "3,420,000 /월", "10-27", p.tag("ok", "체결 완료"), offBtn("새 계약", { href: N })],
@@ -82,10 +85,10 @@ export function staffSections({ A, R }) {
   ]);
   const contractsTab =
     ui.listToolbar(contractRows.length, "") +
-    ui.dataTable(
+    numbered(
       [
-        { header: "직원", width: "w-[90px]", align: "left" },
-        { header: "점포", width: "w-[140px]", align: "left" },
+        { header: "직원", width: "w-[90px]" },
+        { header: "점포", width: "w-[140px]" },
         { header: "계약 기간" },
         { header: "급여", width: "w-[130px]" },
         { header: "발송일", width: "w-[80px]" },
@@ -100,6 +103,7 @@ export function staffSections({ A, R }) {
   // ── 근무스케줄·출퇴근 ──
   const schedPanel = "sched-form";
   const fixPanel = "fix-form";
+  const proxyPanel = "proxy-form";
   const ticks = Array.from({ length: 15 }, (_, i) => String(7 + i).padStart(2, "0"));
   const BAR = {
     on: "bg-erp-brand-soft text-white",
@@ -125,21 +129,18 @@ export function staffSections({ A, R }) {
     `<div class="flex items-center gap-[18px] pt-[12px] text-[13px] text-erp-label">${swatch(0, "아무도 없음")}${swatch(1, "혼자 근무 · 휴게 불가")}${swatch(2, "2명 이상")}</div>` +
     `</div>`;
   const dayView =
+    // 날짜 이동은 출퇴근 현황 일별과 같은 하루 이동(달력 · 오늘). 데모라 근무표 내용은 날짜를 바꿔도 그대로다.
     p.bar(
-      `<h3 class="text-[16px] font-semibold text-erp-ink">2026-08-22 토</h3>${p.tag("risk", "공백 4시간")}`,
-      p.iconButton(A, "prev.svg", "이전 날") +
-        p.w("w-[150px]", ui.dateField(A, { label: "날짜", value: "2026-08-22" })) +
-        p.iconButton(A, "next.svg", "다음 날") +
-        offBtn("오늘") +
-        `<span class="pl-[6px] text-[14px] text-erp-label">운영 07:00-22:00</span>`,
+      p.weekNav(A, "", "2026-08-22", { day: true }) + p.tag("risk", "공백 4시간"),
+      `<span class="pl-[6px] text-[14px] text-erp-label">운영 07:00-22:00</span>`,
     ) +
     timeline +
     p.bar(p.note("07:00-11:00 에 배정된 직원이 없습니다."), ui.slideTrigger("이 시간대에 배정", schedPanel, "soft"));
   const wk = (...c) => c;
   const weekView =
     p.bar(`<h3 class="text-[16px] font-semibold text-erp-ink">주간 근무스케줄</h3>${p.tag("quiet", "모리커피 서초점 · 9명")}`) +
-    ui.dataTable(
-      [{ header: "직원", width: "w-[120px]", align: "left" }, ...["월 17", "화 18", "수 19", "목 20", "금 21", "토 22", "일 23"].map((h) => ({ header: h })), { header: "주 합계", width: "w-[100px]" }],
+    numbered(
+      [{ header: "직원", width: "w-[120px]" }, ...["월 17", "화 18", "수 19", "목 20", "금 21", "토 22", "일 23"].map((h) => ({ header: h })), { header: "주 합계", width: "w-[100px]" }],
       [
         wk("오세라", "09-18", "09-18", p.sub("휴무"), "09-18", "09-18", "11-20", p.sub("휴무"), "45.0h"),
         wk("서지안", "07-16", "07-16", "07-16", "07-16", p.sub("휴무"), p.sub("휴무"), "10-19", "40.0h"),
@@ -194,7 +195,7 @@ export function staffSections({ A, R }) {
       .map(
         ([d, rows]) =>
           `<div data-week="${d}" hidden>${ui.dataTable(
-            [{ header: "직원", align: "left" }, { header: "예정" }, { header: "출근" }, { header: "퇴근" }, { header: "비고" }],
+            [{ header: "직원" }, { header: "예정" }, { header: "출근" }, { header: "퇴근" }, { header: "비고" }],
             rows,
             "이 날의 출퇴근 기록이 없습니다.",
           )}</div>`,
@@ -218,13 +219,33 @@ export function staffSections({ A, R }) {
     p.weekNav(A, "attend-sums", "2026-08-31"),
     `<div id="attend-sums">${weekSum("2026-08-31", [54, 5, 2], ["1,284h", "42h", "18h", "38명"])}${weekSum("2026-08-24", [58, 3, 1], ["1,312h", "36h", "16h", "38명"])}${weekSum("", [0, 0, 0], ["0h", "0h", "0h", "-"])}</div>`,
   );
-  const fixBtns = () => `<span class="flex justify-center gap-[6px]">${ui.slideTrigger("보정", fixPanel, "off")}${offBtn("이상 없음")}</span>`;
+  // 「이력」은 그 기록의 변경 이력을 확인창으로 보인다(변경 전후 값·일시·처리한 사람·사유, 2026-10-02 재영).
+  const histId = { 문태경: x.dialogId(), 오세라: x.dialogId() };
+  const histDialog = (name, rows) =>
+    x.dialog(histId[name], `${name} 출퇴근 기록 이력`, ui.detailTable("이력", rows), ui.button("닫기", { variant: "off", "data-close": true }));
+  const histDialogs =
+    histDialog("문태경", [
+      ["일시", "2026-08-30 10:12"],
+      ["구분", "보정"],
+      ["처리한 사람", "정하윤 (BP 마스터)"],
+      ["변경 전", "출근 09:02 · 퇴근 없음"],
+      ["변경 후", "출근 09:02 · 퇴근 18:30"],
+      ["사유", "퇴근 등록 누락 · 마감 확인"],
+    ]) +
+    histDialog("오세라", [
+      ["일시", "2026-08-27 18:05"],
+      ["구분", "대신 등록"],
+      ["처리한 사람", "정하윤 (BP 마스터)"],
+      ["등록한 값", "출근 10:00 · 퇴근 16:00"],
+      ["사유", "위치 수집 일시 중지 · 점장 확인"],
+    ]);
+  const fixBtns = () => `<span class="flex justify-center gap-[6px]">${ui.slideTrigger("보정", fixPanel, "off")}${p.ask("이상 없음", "off", "이상 없음으로 검토를 마치시겠습니까?", "확인 필요 꼬리표와 사유를 지웁니다.")}</span>`;
   const fixList = p.section(
     "보정이 필요한 기록",
-    ui.button("출퇴근 대신 등록", { variant: "soft" }),
+    ui.slideTrigger("출퇴근 대신 등록", proxyPanel, "soft"),
     ui.dataTable(
       [
-        { header: "직원", width: "w-[100px]", align: "left" },
+        { header: "직원", width: "w-[100px]" },
         { header: "날짜", width: "w-[80px]" },
         { header: "출근", width: "w-[80px]" },
         { header: "퇴근", width: "w-[80px]" },
@@ -236,8 +257,8 @@ export function staffSections({ A, R }) {
         ["권도윤", "09-03", "-", "21:12", p.tag("warn", "출근 미등록"), fixBtns()],
         ["배정숙", "09-02", "08:47", "23:58", p.tag("risk", "퇴근 시각 이상"), fixBtns()],
         ["남주호", "09-01", "09:04", "18:02", p.tag("risk", "위치 조작 감지"), fixBtns()],
-        ["문태경", "08-29", "09:02", "18:30", `${p.tag("info", "수정됨")} ${p.sub("08-30 정하윤")}`, offBtn("이력")],
-        ["오세라", "08-27", "10:00", "16:00", `${p.tag("info", "대신 등록")} ${p.sub("위치 수집 일시 중지 · 정하윤")}`, offBtn("이력")],
+        ["문태경", "08-29", "09:02", "18:30", `${p.tag("info", "수정됨")} ${p.sub("08-30 정하윤")}`, x.dialogTrigger("이력", histId.문태경, "off")],
+        ["오세라", "08-27", "10:00", "16:00", `${p.tag("info", "대신 등록")} ${p.sub("위치 수집 일시 중지 · 정하윤")}`, x.dialogTrigger("이력", histId.오세라, "off")],
       ],
     ),
   );
@@ -245,76 +266,103 @@ export function staffSections({ A, R }) {
     p.bar(
       // 날짜 선택은 직원 상세와 같은 주 이동(2026-10-02 재영). 데모라 근무표 내용은 주를 바꿔도 그대로다.
       p.weekNav(A, "", "2026-08-17"),
-      ui.button("지난 주 복사", { variant: "soft" }) + ui.slideTrigger("근무스케줄 등록", schedPanel, "soft") + ui.button("근무스케줄 확정"),
+      p.ask("지난 주 복사", "soft", "지난 주 근무스케줄을 복사하시겠습니까?", "지난 주 근무스케줄을 지금 보고 있는 주에 그대로 넣습니다.", "복사") +
+        ui.slideTrigger("근무스케줄 등록", schedPanel, "soft") +
+        p.ask("근무스케줄 확정", "primary", "이 주의 근무스케줄을 확정하시겠습니까?", "", "확정"),
     ) +
     p.bar(x.segment("근무표 보기", [{ id: "sched-day", label: "일간 근무표" }, { id: "sched-week", label: "주간 근무표" }])) +
     x.tabPanel("sched-day", dayView, true) +
     x.tabPanel("sched-week", weekView) +
     `<div class="flex flex-col gap-[24px] pt-[12px]">${schedLog}</div>`;
-  const attendTab = `<div class="flex flex-col gap-[24px]">${p.cols(today, summary, "grid-cols-2")}${fixList}</div>`;
+  const attendTab = `<div class="flex flex-col gap-[24px]">${p.cols(today, summary, "grid-cols-2")}${fixList}</div>${histDialogs}`;
 
   // ── 급여명세서 ──
   const PD = L("staff/payrolls-detail.html");
   const review = (tone, label, detail) => `${p.tag(tone, label)} ${p.sub(detail)}`;
-  const reviewList = p.section(
-    "검토 대기",
-    p.tag("warn", "9건"),
-    ui.dataTable(
-      [
-        { header: "직원", width: "w-[110px]", align: "left" },
-        { header: "근무지", width: "w-[140px]" },
-        { header: "급여 기간", width: "w-[110px]" },
-        { header: "검토 사유", align: "left" },
-        { header: "", width: "w-[120px]" },
-      ],
-      [
-        ["서지안", "모리커피 서초점", "2026-08", review("warn", "출퇴근 누락", "09-05 퇴근 미등록 등 2일"), offBtn("검토", { href: PD })],
-        ["유하람", "모리커피 연남점", "2026-08", review("risk", "계약 만료 후 기록 포함", "08-29 ~ 08-31 · 3일"), offBtn("검토", { href: PD })],
-        ["배정숙", "온기식당 판교점", "2026-08", review("info", "기간 중 계약 변경", "08-16 시급 조정"), offBtn("검토", { href: PD })],
-        ["권도윤", "모리커피 서초점", "2026-08", review("risk", "공제 미입력", "4대보험·소득세 비어 있음"), offBtn("검토", { href: PD })],
-        ["남도현", "모리커피 성수점", "2026-08", p.tag("risk", "근로계약 없음"), "-"],
-      ],
-    ),
-  );
+  // 급여명세서 관리는 달 단위로 넘겨 본다(2026-10-02 재영): ‹ 2026년 8월 › · 달 선택. 데모 데이터는 8월·7월, 나머지 달은 빈 목록.
+  const reviewList = (rows) =>
+    p.section(
+      "검토 대기",
+      p.tag(rows.length ? "warn" : "quiet", `${rows.length ? 9 : 0}건`),
+      numbered(
+        [
+          { header: "직원", width: "w-[110px]" },
+          { header: "근무지", width: "w-[140px]" },
+          { header: "급여 기간", width: "w-[110px]" },
+          { header: "검토 사유", align: "left" },
+          { header: "", width: "w-[120px]" },
+        ],
+        rows,
+        "검토 대기 중인 명세서가 없습니다.",
+      ),
+    );
   const payRow = (name, store, h, base, extra, ded, net, st) => [ui.link(name, PD), store, h, base, extra, ded, `<b class="font-semibold">${net}</b>`, st];
-  const payList = p.section(
-    "2026년 8월 급여명세서",
-    p.tag("quiet", "작성 중 52건") +
-      `<span class="px-[6px] text-[14px] text-erp-label">지급 예정 <b class="font-semibold text-erp-ink">₩184,220,000</b></span>` +
-      ui.button("초안 일괄 생성", { variant: "soft" }) +
-      ui.button("확정 3건 발송"),
-    ui.dataTable(
-      [
-        { header: "직원", align: "left" },
-        { header: "점포" },
-        { header: "근로시간" },
-        { header: "기본급" },
-        { header: "수당" },
-        { header: "공제" },
-        { header: "실지급" },
-        { header: "상태", width: "w-[180px]" },
-      ],
-      [
-        payRow("오세라", "모리커피 서초점", "180.0", "3,420,000", "184,000", "-", "3,604,000", p.tag("quiet", "작성 중")),
-        payRow("서지안", "모리커피 서초점", "168.0", "2,840,000", "186,000", "-", "3,026,000", p.tag("warn", "검토 중")),
-        payRow("문태경", "온기식당 판교점", "184.0", "3,680,000", "276,000", "-", "3,956,000", p.tag("quiet", "작성 중")),
-        payRow("배정숙", "온기식당 판교점", "96.0", "1,113,600", "92,800", "-", "1,206,400", p.tag("quiet", "작성 중")),
-        payRow("권도윤", "모리커피 서초점", "176.0", "1,971,200", "164,800", "-", "2,136,000", p.tag("warn", "검토 중")),
-        ["남도현", "모리커피 성수점", "-", "-", "-", "-", "-", p.tag("risk", "계약 없음 · 초안 없음")],
-      ],
-    ),
-    pageNav(4),
-  );
-  // 급여명세서 관리: 왼쪽 필터(점포 · 급여 월 · 직원 · 명세서 상태) + 상태 건수 · 검토 대기 · 명세서 목록.
+  const payList = (title, right, rows) =>
+    p.section(
+      title,
+      right,
+      numbered(
+        [
+          { header: "직원" },
+          { header: "점포" },
+          { header: "근로시간" },
+          { header: "기본급" },
+          { header: "수당" },
+          { header: "공제" },
+          { header: "실지급" },
+          { header: "상태", width: "w-[180px]" },
+        ],
+        rows,
+        "이 달의 급여명세서가 없습니다.",
+      ),
+      rows.length ? pageNav(4) : "",
+    );
+  const counts = (a, b, c, d) =>
+    `<p class="text-[14px] text-erp-label">작성 중 <b class="font-semibold text-erp-ink">${a}</b> · 검토 중 <b class="font-semibold text-erp-ink">${b}</b> · 확정 <b class="font-semibold text-erp-ink">${c}</b> · 발송 완료 <b class="font-semibold text-erp-ink">${d}</b></p>`;
+  // 목록 오른쪽 위 버튼: 「급여명세서 작성」은 어느 달이든 늘 보인다(2026-10-02 재영). 데모라 명세서 화면으로 간다.
+  const payButtons = (n) => ui.button("급여명세서 작성", { variant: "soft", href: PD }) + (n ? p.ask(`확정 ${n}건 발송`, "primary", `확정한 급여명세서 ${n}건을 발송하시겠습니까?`, "직원 근무 앱으로 보냅니다.", "발송") : "");
+  const month = (key, body) => `<div data-week="${key}" hidden class="flex flex-col gap-[24px]">${body}</div>`;
+  const sent = p.tag("ok", "발송 완료");
+  const months =
+    month(
+      "2026-08-01",
+      counts(52, 8, 3, 0) +
+        reviewList([
+          ["서지안", "모리커피 서초점", "2026-08", review("warn", "출퇴근 누락", "09-05 퇴근 미등록 등 2일"), offBtn("검토", { href: PD })],
+          ["유하람", "모리커피 연남점", "2026-08", review("risk", "계약 만료 후 기록 포함", "08-29 ~ 08-31 · 3일"), offBtn("검토", { href: PD })],
+          ["배정숙", "온기식당 판교점", "2026-08", review("info", "기간 중 계약 변경", "08-16 시급 조정"), offBtn("검토", { href: PD })],
+          ["권도윤", "모리커피 서초점", "2026-08", review("risk", "공제 미입력", "4대보험·소득세 비어 있음"), offBtn("검토", { href: PD })],
+          ["남도현", "모리커피 성수점", "2026-08", p.tag("risk", "근로계약 없음"), "-"],
+        ]) +
+        payList("급여명세서", payButtons(3), [
+          payRow("오세라", "모리커피 서초점", "180.0", "3,420,000", "184,000", "-", "3,604,000", p.tag("quiet", "작성 중")),
+          payRow("서지안", "모리커피 서초점", "168.0", "2,840,000", "186,000", "-", "3,026,000", p.tag("warn", "검토 중")),
+          payRow("문태경", "온기식당 판교점", "184.0", "3,680,000", "276,000", "-", "3,956,000", p.tag("quiet", "작성 중")),
+          payRow("배정숙", "온기식당 판교점", "96.0", "1,113,600", "92,800", "-", "1,206,400", p.tag("quiet", "작성 중")),
+          payRow("권도윤", "모리커피 서초점", "176.0", "1,971,200", "164,800", "-", "2,136,000", p.tag("warn", "검토 중")),
+          ["남도현", "모리커피 성수점", "-", "-", "-", "-", "-", p.tag("risk", "계약 없음 · 초안 없음")],
+        ]),
+    ) +
+    month(
+      "2026-07-01",
+      counts(0, 0, 0, 61) +
+        reviewList([]) +
+        payList("급여명세서", payButtons(0), [
+          payRow("오세라", "모리커피 서초점", "176.0", "3,420,000", "142,000", "241,800", "3,320,200", sent),
+          payRow("서지안", "모리커피 서초점", "168.0", "2,840,000", "142,000", "241,800", "2,740,200", sent),
+          payRow("문태경", "온기식당 판교점", "180.0", "3,680,000", "232,000", "268,400", "3,643,600", sent),
+          payRow("배정숙", "온기식당 판교점", "92.0", "1,067,200", "88,000", "37,920", "1,117,280", sent),
+          payRow("권도윤", "모리커피 서초점", "172.0", "1,926,400", "158,000", "68,780", "2,015,620", sent),
+        ]),
+    ) +
+    month("", counts(0, 0, 0, 0) + reviewList([]) + payList("급여명세서", payButtons(0), []));
+  // 급여명세서 관리: 왼쪽 필터(점포 · 직원 · 명세서 상태) + 달 이동 · 상태 건수 · 검토 대기 · 명세서 목록. 「급여 월」 선택칸은 달 이동으로 옮겼다.
   const payslipsFilter = ui.filterPanel(A, [
     storeFilter(),
-    ui.filterSection("급여 월", ui.select(["2026-08", "2026-07"], { "aria-label": "급여 월" }), { tight: true }),
     ui.filterSection("직원", ui.searchField(A, { placeholder: "이름" }), { tight: true }),
     ui.filterSection("명세서 상태", ["작성 중", "검토 중", "확정", "발송 완료"].map((t) => ui.checkbox(A, t, true)).join(""), { last: true }),
   ]);
-  const payrollTab =
-    `<p class="text-[14px] text-erp-label">작성 중 <b class="font-semibold text-erp-ink">52</b> · 검토 중 <b class="font-semibold text-erp-ink">8</b> · 확정 <b class="font-semibold text-erp-ink">3</b> · 발송 완료 <b class="font-semibold text-erp-ink">0</b></p>` +
-    `<div class="flex flex-col gap-[24px]">${reviewList}${payList}</div>`;
+  const payrollTab = `<div class="flex flex-col gap-[12px]">${p.weekNav(A, "pay-months", "2026-08-01", { month: true })}<div id="pay-months">${months}</div></div>`;
 
   // ── TO-DO ──
   const todoPanel = "todo-form";
@@ -324,23 +372,27 @@ export function staffSections({ A, R }) {
     ui.filterSection("담당", ui.searchField(A, { placeholder: "이름" }), { tight: true }),
     ui.filterSection("상태", ["대기", "진행 중", "완료"].map((t) => ui.checkbox(A, t, true)).join(""), { last: true }),
   ]);
+  // 대기 중인 TO-DO 는 「수정」으로 슬라이드 패널을 열어 고친다(2026-10-02 재영). 패널은 아래 todoEdits.
+  const todoEditIds = [0, 1, 2].map(() => ui.uid("todo-edit"));
+  const editBtn = (i) => ui.slideTrigger("수정", todoEditIds[i], "off");
   const todoTab =
     ui.listToolbar(12, ui.slideTrigger("TO-DO 등록", todoPanel)) +
-    ui.dataTable(
+    numbered(
       [
-        { header: "담당", width: "w-[140px]", align: "left" },
+        { header: "담당", width: "w-[140px]" },
         { header: "근무지", width: "w-[140px]" },
         { header: "TO-DO", align: "left" },
         { header: "수행 예정", width: "w-[140px]" },
         { header: "상태", width: "w-[160px]" },
+        { header: "", width: "w-[100px]" },
       ],
       [
-        ["전체 · 각자", "모리커피 서초점", `본사 위생점검 대비 냉장고 정리 ${p.tag("risk", "긴급")}`, "09-03", p.tag("warn", "진행 중")],
-        ["전체 · 한 명", "모리커피 서초점", "가을 신메뉴 POP 교체", "09-04 10:00", p.tag("quiet", "대기")],
-        ["서지안", "모리커피 서초점", "신규 원두 시음 기록 제출", "09-05", p.tag("quiet", "대기")],
-        ["오세라", "모리커피 서초점", "분기 재물조사 입회", "09-08 14:00", p.tag("quiet", "대기")],
-        ["전체 · 한 명", "온기식당 판교점", "여름 프로모션 POP 철거", "08-25", `${p.tag("ok", "완료")} ${p.sub("문태경")}`],
-        ["권도윤", "모리커피 서초점", "신메뉴 시식 교육 참석", "08-28 14:00", p.tag("ok", "완료")],
+        ["전체 · 각자", "모리커피 서초점", `본사 위생점검 대비 냉장고 정리 ${p.tag("risk", "긴급")}`, "09-03", p.tag("warn", "진행 중"), ""],
+        ["전체 · 한 명", "모리커피 서초점", "가을 신메뉴 POP 교체", "09-04 10:00", p.tag("quiet", "대기"), editBtn(0)],
+        ["서지안", "모리커피 서초점", "신규 원두 시음 기록 제출", "09-05", p.tag("quiet", "대기"), editBtn(1)],
+        ["오세라", "모리커피 서초점", "분기 재물조사 입회", "09-08 14:00", p.tag("quiet", "대기"), editBtn(2)],
+        ["전체 · 한 명", "온기식당 판교점", "여름 프로모션 POP 철거", "08-25", `${p.tag("ok", "완료")} ${p.sub("문태경")}`, ""],
+        ["권도윤", "모리커피 서초점", "신메뉴 시식 교육 참석", "08-28 14:00", p.tag("ok", "완료"), ""],
       ],
       "등록된 TO-DO 가 없습니다.",
     ) +
@@ -382,6 +434,22 @@ export function staffSections({ A, R }) {
       ) +
       ui.panelButtons("취소", "보정 저장"),
   );
+  // 출퇴근 대신 등록(운영 정책 ATT-20): 직원 · 날짜 · 출근 · 퇴근 · 사유(필수). 직원 근무 앱에는 연필 표시로 보인다.
+  const proxyForm = ui.slidePanel(
+    proxyPanel,
+    "출퇴근 대신 등록",
+    panelHead("출퇴근 대신 등록") +
+      ui.formGroup(
+        "출퇴근 기록",
+        ui.formRow(
+          p.fieldH(req("직원"), ui.select(["오세라", "서지안", "권도윤", "배정숙", "유하람"]), ""),
+          p.fieldH(req("날짜"), ui.dateField(A, { label: "날짜", value: "2026-09-06" }), ""),
+        ),
+        ui.formRow(p.fieldH(req("출근"), p.timeField("09:00", "출근"), ""), p.fieldH("퇴근", p.timeField("", "퇴근"), "")),
+        p.fieldH(req("사유"), ui.textarea({ rows: 4, placeholder: "예: 위치 수집 일시 중지 · 점장 확인" }), ""),
+      ) +
+      ui.panelButtons("취소", "대신 등록"),
+  );
   const todoForm = ui.slidePanel(
     todoPanel,
     "TO-DO 등록",
@@ -401,6 +469,34 @@ export function staffSections({ A, R }) {
       ) +
       ui.panelButtons("취소", "등록하고 배정"),
   );
+
+  // TO-DO 수정: 등록과 같은 칸. 수행 방식은 등록 후에 바꿀 수 없어(목업) 글자로만 보인다. 아래에 삭제.
+  const todoEdit = (id, { title, body, store, person, mode, date, time = "", urgent = false }) => {
+    const target = person ? "개인" : "근무지 전체";
+    return ui.slidePanel(
+      id,
+      "TO-DO 수정",
+      panelHead("TO-DO 수정", p.tag("quiet", "대기")) +
+        ui.formGroup("내용", ui.field("제목", ui.textField({ value: title })), ui.field("내용", ui.textarea({ rows: 3, value: body }))) +
+        ui.formGroup(
+          "배정",
+          ui.field("근무지", ui.select(["모리커피 서초점", "온기식당 판교점"], { value: store })),
+          `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">배정 대상</span>${p.radios(`${id}-target`, ["개인", "근무지 전체"], target)}</div>`,
+          person ? ui.field("직원", ui.select(["서지안", "오세라", "권도윤"], { value: person })) : "",
+          `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">수행 방식</span><span class="text-[14px] text-erp-ink">${mode}</span>${p.help("등록 후에는 바꿀 수 없다")}</div>`,
+          ui.formRow(p.fieldH("수행 예정 날짜", ui.dateField(A, { label: "수행 예정 날짜", value: date }), ""), p.fieldH("시간", p.timeField(time, "시간"), "선택")),
+          `<div class="flex flex-col gap-[8px]">${x.toggle("긴급", urgent)}</div>`,
+        ) +
+        `<div class="flex justify-between gap-[6px]">${p.ask("삭제", "soft", "이 TO-DO 를 삭제하시겠습니까?", `「${title}」을 지웁니다. 배정된 직원 근무 앱에서도 사라집니다.`)}<span class="flex gap-[6px]">${offBtn("취소", { "data-close": true })}${ui.button("저장", { "data-close": true })}</span></div>`,
+    );
+  };
+  const todoEdits = [
+    { title: "가을 신메뉴 POP 교체", body: "여름 POP 를 떼고 가을 신메뉴 POP 를 붙인다", store: "모리커피 서초점", mode: "한 명 수행", date: "2026-09-04", time: "10:00" },
+    { title: "신규 원두 시음 기록 제출", body: "시음 노트 양식에 맛·향을 적어 제출", store: "모리커피 서초점", person: "서지안", mode: "각자 수행", date: "2026-09-05" },
+    { title: "분기 재물조사 입회", body: "본사 담당자 방문 때 재고 수량 확인에 입회", store: "모리커피 서초점", person: "오세라", mode: "각자 수행", date: "2026-09-08", time: "14:00" },
+  ]
+    .map((t, i) => todoEdit(todoEditIds[i], t))
+    .join("");
 
   // 가입 연결 확인: 목업 docs/mockup/staff/invites-holds.html 의 별도 화면을 직원 목록의 슬라이드 패널로 흡수했다(2026-10-02 재영, 데모만). 하준서 이름을 누르면 열린다.
   const approveId = x.dialogId();
@@ -433,5 +529,5 @@ export function staffSections({ A, R }) {
       ui.button("취소", { variant: "off", "data-close": true }) + ui.button("재초대", { "data-close": true }),
     );
 
-  return { L, N, holdPanel, holdForm, listFilter, contractsFilter, payslipsFilter, todosFilter, listTab, contractsTab, schedTab, attendTab, payrollTab, todoTab, schedForm, delDialog, fixForm, todoForm };
+  return { L, N, holdPanel, holdForm, proxyForm, todoEdits, listFilter, contractsFilter, payslipsFilter, todosFilter, listTab, contractsTab, schedTab, attendTab, payrollTab, todoTab, schedForm, delDialog, fixForm, todoForm };
 }

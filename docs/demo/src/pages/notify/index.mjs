@@ -26,13 +26,9 @@ export default ({ A, R }) => {
     row(false, "배정숙 님의 계약이 만료되었습니다", null, "날인 기한 30일 경과 · 재발송 가능", "-", p.tag("quiet", "계약 만료"), "08-24 00:05"),
   ];
 
-  const filter = ui.filterPanel(A, [
-    ui.filterSection("알림", ui.searchField(A, { placeholder: "알림 제목" }), { tight: true }),
-    ui.filterSection("확인 상태", ["전체 6", "미확인 3"].map((t, i) => ui.radio(t, "notify-filter", i === 0)).join("")),
-    ui.filterSection("구분", ["계약 거부", "계약 날인", "계약 만료", "문의 답변"].map((t) => ui.checkbox(A, t, true)).join(""), { last: true }),
-  ]);
+  // 왼쪽 필터 없이 목록만(2026-10-02 재영)
   const body = ui.listBody(
-    filter,
+    "",
     `<div class="flex flex-col gap-[12px]">` +
       ui.listToolbar(6, ui.button("모두 읽음으로", { variant: "off" })) +
       ui.dataTable(

@@ -10,7 +10,7 @@ export default ({ A, R }) => {
 
   const head = ui.sectionHead(
     "가맹점 초대 메일이 반송됩니다",
-    p.tag("ok", "답변완료") + `<span class="w-[6px]"></span>` + ui.button("새 문의", { variant: "soft", href: L("support/index.html#inquiries") }) + ui.button("목록", { href: L("support/index.html#inquiries") }),
+    ui.button("새 문의", { variant: "soft", href: L("support/inquiries.html") }) + ui.button("목록", { href: L("support/inquiries.html") }),
   );
   const mine = p.section(
     "내가 보낸 문의",
@@ -19,7 +19,7 @@ export default ({ A, R }) => {
   );
   const answers = p.section(
     "답변",
-    p.tag("quiet", "2건"),
+    "",
     `<div class="flex flex-col gap-[12px]">${by("09-02 11:05 · WHALE ERP 운영팀")}${prose(
       "원인이 확인되어 조치했습니다. 가맹점 메일 서버가 발신 도메인 검증을 새로 켜면서 반송된 것으로, 발신 도메인 인증 설정을 갱신했습니다. 점포관리에서 <b>초대 다시 보내기</b>를 눌러 주세요.",
     )}<hr class="border-erp-divider">${by("08-31 09:40 · WHALE ERP 운영팀")}${prose("접수했습니다. 반송 사유를 확인하고 있으며 내일 안에 답변드리겠습니다.")}</div>`,

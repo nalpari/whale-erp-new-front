@@ -10,7 +10,6 @@ const columns = (left, right) =>
 const card = (head, body) => `<section class="flex flex-col gap-[18px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">${head}${body}</section>`;
 const hint = (text) => `<span class="text-[14px] font-normal text-erp-label">${text}</span>`;
 const note = (html) => `<p class="text-[14px] leading-[1.6] text-erp-label">${html}</p>`;
-const tag = (text) => `<span class="inline-block rounded-[2px] bg-erp-subtle px-[4px] py-[2px] text-center text-[14px] font-medium text-erp-ink">${text}</span>`;
 // 경고 띠(목업 band--warn). 제목 한 줄만 둔다.
 const band = (text) => `<p class="rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] font-medium text-erp-off">${text}</p>`;
 // 첨부파일 칸: 읽기 전용 입력칸 + [파일 선택]
@@ -57,7 +56,7 @@ export default ({ A, R }) => {
     ),
   );
 
-  const title = `<span class="flex items-center gap-[10px]">9월 정기 점검 안내${ui.badge("on", "게시")}${tag("상단 고정")}</span>`;
+  const title = `<span class="flex items-center gap-[10px]">9월 정기 점검 안내</span>`;
   const right = `<div class="flex items-center gap-[6px]"><span class="mr-[12px] text-[14px] text-erp-label">최근 수정 09-05 14:20 · 이서준</span>${ui.button("목록", { variant: "off", href: link(R, "support/community.html") })}${ui.button("임시저장", { variant: "soft" })}${ui.button("게시", { href: link(R, "support/community.html") })}</div>`;
 
   return {

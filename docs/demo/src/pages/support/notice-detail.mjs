@@ -7,7 +7,7 @@ export default ({ A, R }) => {
   const L = (path) => link(R, path);
   const head = ui.sectionHead(
     "9월 정기 점검 안내 (09-14 02:00~05:00)",
-    p.tag("quiet", "점검") + p.tag("quiet", "상단 고정") + `<span class="w-[6px]"></span>` + ui.button("목록", { href: L("support/index.html#notices") }),
+    ui.button("목록", { href: L("support/notices.html") }),
   );
   const meta = `<p class="border-b border-erp-thead-line pb-[12px] text-[13px] text-erp-label">게시 2026-09-05 · WHALE ERP 운영팀</p>`;
   const text = `<div class="flex flex-col gap-[12px] text-[14px] leading-[1.7] text-erp-ink">${[
