@@ -111,7 +111,7 @@ export const searchField = (A, { placeholder = "", label = placeholder, value = 
   `<div class="relative"><input aria-label="${label}" placeholder="${placeholder}" type="search" value="${value}" class="${FIELD} pr-[52px] [&::-webkit-search-cancel-button]:appearance-none"><button type="button" aria-label="입력 지우기" inert class="group absolute top-1/2 right-[32px] grid size-[18px] -translate-y-1/2 place-items-center rounded-full bg-erp-subtle transition-[opacity,background-color] duration-150 ease-out hover:bg-erp-field-line pointer-events-none opacity-0"><svg viewBox="0 0 8 8" class="size-[8px] stroke-erp-label transition-colors duration-150 ease-out group-hover:stroke-erp-ink" aria-hidden="true"><path d="M1 1l6 6M7 1L1 7" stroke-width="1.5" stroke-linecap="round" fill="none"></path></svg></button><button type="button" aria-label="검색" class="absolute top-0 right-0 grid size-[34px] place-items-center disabled:opacity-40">${img(A, "search.svg", 12, 12)}</button></div>`;
 
 // date-field.tsx. 날짜판은 erp.js 가 popover 안에 그린다.
-const POPOVER =
+export const POPOVER =
   "fixed m-0 w-[268px] rounded-[2px] border border-[#ebebeb] bg-white p-[16px] shadow-[0_2px_6px_rgba(40,47,55,0.08)] font-erp tracking-[-0.025em] text-erp-ink scheme-light -translate-y-[4px] opacity-0 transition-[opacity,translate,display,overlay] transition-discrete duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] open:translate-y-0 open:opacity-100 starting:open:-translate-y-[4px] starting:open:opacity-0 motion-reduce:translate-y-0 motion-reduce:transition-none [&_*:focus-visible]:outline-erp-brand! [&_button]:cursor-pointer";
 export function dateField(A, { label = "날짜", value = "" } = {}) {
   const id = uid("date");

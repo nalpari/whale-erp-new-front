@@ -119,6 +119,7 @@
       label.textContent = item.textContent;
       item.textContent = prev;
       trigger.setAttribute("aria-label", trigger.getAttribute("aria-label").replace(/: .*/, `: ${label.textContent}`));
+      document.dispatchEvent(new CustomEvent("erp:scope", { detail: label.textContent }));
     }
     if (trigger) setPopup(trigger, pop, false, true);
   });
@@ -184,6 +185,7 @@
     // 초기화: 처음 그려진 값으로 되돌린다(데모라 목록은 그대로).
     aside.querySelector('button[aria-label$="초기화"]:not([disabled])')?.addEventListener("click", () => {
       $$("input", aside).forEach((i) => {
+        if (i.readOnly) return; // 헤더 점포 선택으로 고정된 칸은 그대로
         if (i.type === "checkbox" || i.type === "radio") i.checked = i.defaultChecked;
         else i.value = i.defaultValue;
         i.dispatchEvent(new Event("input", { bubbles: true }));
@@ -208,7 +210,7 @@
   function initSearch(input) {
     const clear = input.parentElement.querySelector('button[aria-label="입력 지우기"]');
     const sync = () => {
-      const has = !!input.value;
+      const has = !!input.value && !input.readOnly;
       swap(clear, has, "opacity-100", "pointer-events-none opacity-0");
       clear.inert = !has;
     };
@@ -219,6 +221,22 @@
       input.focus();
     });
     sync();
+  }
+
+  // ── 필터의 점포 칸(data-scope-store). 헤더 점포 선택이 점포 1개면 그 점포로 고정하고,
+  // 전체·일반점포 전체·가맹점포 전체처럼 묶음이면 고정을 풀어 검색할 수 있게 한다 ──
+  function initScopeStore(input) {
+    const set = (scope) => {
+      const one = !/전체/.test(scope);
+      if (!one && !input.readOnly) return;
+      input.readOnly = one;
+      input.value = one ? scope : "";
+      input.style.backgroundColor = one ? "var(--color-erp-thead-bg)" : "";
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    };
+    document.addEventListener("erp:scope", (e) => set(e.detail));
+    const now = $('header button[aria-label^="점포: "]');
+    if (now) set(now.getAttribute("aria-label").slice(4));
   }
 
   // ── Pagination (pagination.tsx). 데모라 번호 강조만 옮긴다 ──
@@ -351,6 +369,86 @@
       if (d) input.value = iso(d);
       else if (input.value) input.value = "";
     });
+  }
+
+  // ── 주 선택(직원 상세 근무스케줄). 화살표로 한 주씩, 가운데 버튼은 달력에서 그 달의 몇째 주를 고른다 ──
+  // 주는 월요일에 시작한다. 몇째 주인지는 목요일이 든 달로 센다(9월 1주 = 08-31 ~ 09-06).
+  // data-weeks 가 가리키는 묶음의 [data-week="월요일"] 하나만 보이고, 없는 주는 data-week="" 빈 표를 보인다.
+  const monday = (d) => addDays(d, -((d.getDay() + 6) % 7));
+  const md = (d) => `${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const WEEK_MON = ["월", "화", "수", "목", "금", "토", "일"];
+  function initWeeks(nav) {
+    const blocks = $$("[data-week]", document.getElementById(nav.dataset.weeks));
+    const [prev, trigger, next] = $$(":scope > button", nav);
+    const pop = document.getElementById(trigger.getAttribute("popovertarget"));
+    const first = parse(nav.dataset.weekStart);
+    let mon = first;
+    let cursor = mon;
+    const show = () => {
+      const key = iso(mon);
+      const hit = blocks.find((b) => b.dataset.week === key) || blocks.find((b) => b.dataset.week === "");
+      blocks.forEach((b) => (b.hidden = b !== hit));
+      trigger.textContent = `${mon.getFullYear()}년 ${md(mon)} ~ ${md(addDays(mon, 6))}`;
+    };
+    const render = () => {
+      // cursor 달에 목요일이 드는 주들
+      const thu1 = new Date(cursor.getFullYear(), cursor.getMonth(), 1 + ((4 - new Date(cursor.getFullYear(), cursor.getMonth(), 1).getDay() + 7) % 7));
+      const rows = [];
+      for (let m = addDays(thu1, -3); addDays(m, 3).getMonth() === thu1.getMonth(); m = addDays(m, 7)) rows.push(m);
+      const row = (m, n) => {
+        const sel = iso(m) === iso(mon);
+        const days = Array.from({ length: 7 }, (_, i) => addDays(m, i))
+          .map((d) => `<span class="grid h-[32px] w-[26px] place-items-center ${!sel && d.getMonth() !== thu1.getMonth() ? "text-erp-label" : ""}">${d.getDate()}</span>`)
+          .join("");
+        return `<button type="button" data-pick="${iso(m)}" aria-pressed="${sel}" class="flex w-full items-center rounded-[2px] text-[14px] transition-colors duration-150 ease-out ${sel ? "bg-erp-brand text-white" : "text-erp-ink hover:bg-erp-thead-bg"}"><span class="w-[54px] text-[13px] font-semibold">${n}주</span>${days}</button>`;
+      };
+      pop.innerHTML = `
+        <div class="flex items-center justify-between">
+          <button type="button" aria-label="이전 달" data-move="-1" class="${NAV}">${ICON("chevron-small.svg")}</button>
+          <p aria-live="polite" class="text-[15px] font-semibold text-erp-ink">${thu1.getFullYear()}년 ${thu1.getMonth() + 1}월</p>
+          <button type="button" aria-label="다음 달" data-move="1" class="${NAV}">${ICON("chevron-small.svg", "rotate-180")}</button>
+        </div>
+        <div class="mt-[12px] flex text-[12px] text-erp-label"><span class="w-[54px]"></span>${WEEK_MON.map((w) => `<span class="grid h-[28px] w-[26px] place-items-center">${w}</span>`).join("")}</div>
+        <div class="flex flex-col gap-[2px]">${rows.map((m, i) => row(m, i + 1)).join("")}</div>
+        <div class="mt-[12px] flex justify-end border-t border-erp-divider pt-[12px]">
+          <button type="button" data-first class="${FOOT} text-erp-brand hover:text-erp-ink">이번 주</button>
+        </div>`;
+      $('[aria-pressed="true"]', pop)?.focus();
+    };
+    const place = () => {
+      const r = trigger.getBoundingClientRect();
+      pop.style.left = `${Math.max(8, Math.min(r.left + r.width / 2 - pop.offsetWidth / 2, innerWidth - pop.offsetWidth - 8))}px`;
+      pop.style.top = `${r.bottom + 6}px`;
+    };
+    const go = (m) => {
+      mon = m;
+      show();
+    };
+    prev.addEventListener("click", () => go(addDays(mon, -7)));
+    next.addEventListener("click", () => go(addDays(mon, 7)));
+    pop.addEventListener("toggle", (e) => {
+      const opened = e.newState === "open";
+      trigger.setAttribute("aria-expanded", String(opened));
+      if (opened) {
+        cursor = addDays(mon, 3);
+        render();
+        place();
+        addEventListener("scroll", place, { capture: true, passive: true });
+        addEventListener("resize", place);
+      } else {
+        removeEventListener("scroll", place, { capture: true });
+        removeEventListener("resize", place);
+        pop.innerHTML = "";
+      }
+    });
+    pop.addEventListener("click", (e) => {
+      const b = e.target.closest("button");
+      if (!b) return;
+      if (b.dataset.pick) (go(parse(b.dataset.pick)), pop.hidePopover(), trigger.focus());
+      else if (b.dataset.move) ((cursor = shiftMonth(cursor, +b.dataset.move)), render());
+      else if ("first" in b.dataset) (go(first), pop.hidePopover(), trigger.focus());
+    });
+    show();
   }
 
   // 이 스크립트 파일이 있는 폴더(assets/). 화면이 하위 폴더에 있어도 아이콘 경로가 맞도록 여기서 잡는다.
@@ -581,8 +679,10 @@
     $$("header").forEach(initHeader);
     $$('button[aria-expanded][aria-label$="접기"], button[aria-expanded][aria-label$="펼치기"]').forEach(initFilter);
     $$('input[type="search"]').forEach(initSearch);
+    $$("input[data-scope-store]").forEach(initScopeStore);
     $$('nav[aria-label="페이지"]').forEach(initPagination);
-    $$("button[popovertarget]").forEach(initDate);
+    $$("button[popovertarget]:not([data-week-label])").forEach(initDate);
+    $$("[data-weeks]").forEach(initWeeks);
   };
   document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", init) : init();
 })();
