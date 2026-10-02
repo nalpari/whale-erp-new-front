@@ -271,6 +271,25 @@
     sync();
   }
 
+  // ── 목록에서 골라 지우기: 머리 체크(data-pick-all)로 모두 고르고, 확인창의 버튼(data-remove-picked="표 id")이 고른 줄을 지운다 ──
+  document.addEventListener("change", (e) => {
+    if (!e.target.matches("[data-pick-all]")) return;
+    $$("[data-pick-row]", e.target.closest("table")).forEach((c) => (c.checked = e.target.checked));
+  });
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-remove-picked]");
+    const table = b && document.getElementById(b.dataset.removePicked);
+    if (!table) return;
+    $$("[data-pick-row]:checked", table).forEach((c) => c.closest("tr").remove());
+    const all = $("[data-pick-all]", table);
+    if (all) all.checked = false;
+    const body = table.tBodies[0];
+    if (!body.rows.length)
+      body.innerHTML = `<tr class="h-[92px] border-b border-erp-thead-line"><td colspan="${table.tHead.rows[0].cells.length}" class="text-center text-erp-muted">${table.dataset.empty}</td></tr>`;
+    const total = table.closest("main")?.querySelector("p b");
+    if (total) total.textContent = $$("[data-pick-row]", table).length;
+  });
+
   // ── 첨부 파일 칸(data-file): 고른 파일 이름을 옆 칸에 보인다 ──
   document.addEventListener("change", (e) => {
     const f = e.target.closest('[data-file] input[type="file"]');

@@ -89,9 +89,10 @@ export const weekNav = (A, blocks = "", start = "2026-08-31", { day = false, mon
 };
 
 // 누르면 확인창이 뜨는 버튼(데모라 실제로 바꾸지는 않는다). body 는 설명 문장이나 표, ok 는 확인 버튼 글자(「닫기」면 닫기 하나만).
-export const ask = (label, variant, title, body = "", ok = label) => {
+// okAttrs: 확인 버튼에 붙일 속성(예: data-remove-picked).
+export const ask = (label, variant, title, body = "", ok = label, okAttrs = {}) => {
   const id = x.dialogId();
-  const buttons = ok === "닫기" ? ui.button("닫기", { variant: "off", "data-close": true }) : ui.button("취소", { variant: "off", "data-close": true }) + ui.button(ok, { "data-close": true });
+  const buttons = ok === "닫기" ? ui.button("닫기", { variant: "off", "data-close": true }) : ui.button("취소", { variant: "off", "data-close": true }) + ui.button(ok, { "data-close": true, ...okAttrs });
   return x.dialogTrigger(label, id, variant) + x.dialog(id, title, body, buttons);
 };
 
