@@ -290,6 +290,21 @@
     if (total) total.textContent = $$("[data-pick-row]", table).length;
   });
 
+  // ── 모두 읽음(data-read-all="표 id"): 미확인 점을 지우고 제목을 읽은 글자로 ──
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-read-all]");
+    const table = b && document.getElementById(b.dataset.readAll);
+    if (!table) return;
+    $$("[data-unread]", table).forEach((d) => {
+      const tr = d.closest("tr");
+      d.parentElement.textContent = "";
+      $$("a.font-semibold", tr).forEach((a) => {
+        a.classList.remove("font-semibold");
+        a.classList.replace("text-erp-ink", "text-erp-muted");
+      });
+    });
+  });
+
   // ── 첨부 파일 칸(data-file): 고른 파일 이름을 옆 칸에 보인다 ──
   document.addEventListener("change", (e) => {
     const f = e.target.closest('[data-file] input[type="file"]');
@@ -616,7 +631,9 @@
   // ── 확인창 (src/extra.mjs). 네이티브 dialog ──
   document.addEventListener("click", (e) => {
     const open = e.target.closest("[data-dialog]");
-    if (open) document.getElementById(open.dataset.dialog)?.showModal();
+    // data-need-pick="표 id": 고른 줄이 없으면 확인창 대신 data-none-dialog 안내창을 띄운다(선택 삭제)
+    const none = open?.dataset.needPick && !$$("[data-pick-row]:checked", document.getElementById(open.dataset.needPick)).length;
+    if (open) document.getElementById(none ? open.dataset.noneDialog : open.dataset.dialog)?.showModal();
     const close = e.target.closest("dialog [data-close]");
     if (close) close.closest("dialog").close();
   });
