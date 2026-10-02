@@ -2,6 +2,7 @@
 
 ## 2026-10-02
 
+* **Update**: 1팀 ERD 의 참·거짓 컬럼 8개를 [네이밍 규칙](/conventions/naming.md) 의 `is_` 접두로 맞췄다(`is_bp_applied`, `is_readable` 등). 원자료 공통코드 표의 BP 적용 여부도 같이 고쳤다.
 * **Update**: [네이밍 규칙](/conventions/naming.md) 약어 금지 예외에 `biz`(사업자)·`ceo`(대표자)를 더했다. 1팀 ERD 의 나머지 약어(`temp`·`pw`·`reg_no`·`corp`·`info`)는 풀어 썼다.
 * **Update**: 점포 유형 표기를 일반점포에서 직영점포로 바꾼 정책(코드 `DIRECT`·`FRANCHISE`)을 [점포 관리](/stores.md) 에 반영했다.
 * **Update**: 목업 안에서 어긋나던 곳을 사용자 결정으로 정리해 [로그인](/auth.md) 약관 6종, [BP 마스터 계정 관리](/bp.md) 미인증 BP 의 하이픈 표시 6항목, [점포 관리](/stores.md) 목록 검색(검색 기준+검색어), [BP 환경설정](/config.md) 권한명 중복 범위(같은 관리계정ID), [플랫폼 시스템 관리](/system.md) 관리자 목록 등록일시 검색에 반영했다. 가입 유형(AUTH-3 ↔ HOME-2)은 3팀과 협의 중이라 [홈·계정 진입](/home.md) 은 그대로 둔다.
