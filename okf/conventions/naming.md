@@ -5,7 +5,7 @@ description: DB·API·FRONT 세 계층이 같은 개념을 같은 영문 이름�
 tags: [convention, naming, shared]
 sources:
   - { id: naming-2026-09-30, resource: ../../docs/raw/2026-09-30-네이밍-규칙.md, title: WHALE ERP 네이밍 규칙 (DB · API · FRONT) }
-generated: { by: claude-code/opus-5.5, at: 2026-10-01T04:20:54Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-02T03:58:43Z }
 ---
 
 근거: `docs/raw/2026-09-30-네이밍-규칙.md` (3팀 기획 세션 · 2026-10-01 고침)
@@ -20,7 +20,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-01T04:20:54Z }
 
 1. **계층마다 생태계 관례를 따른다.** DB는 `snake_case`, API·JSON·TypeScript는 `camelCase`, URL·파일은 `kebab-case`. 변환은 Prisma `@map` 이 맡는다.
 2. **표준 표기 하나 = 영문 식별자 하나.** 세 계층이 같은 어근을 쓴다 — `attendance_records` ↔ `attendanceRecord` ↔ `/attendance-records` ↔ `AttendanceRecord`.
-3. **약어 금지.** `emp`, `ctr`, `att` 처럼 줄이지 않는다. 예외는 `id`, `url`, `bp`, `hq`, `faq`, `todo`, `rrn`(주민등록번호) 뿐이다.
+3. **약어 금지.** `emp`, `ctr`, `att` 처럼 줄이지 않는다. 예외는 `id`, `url`, `bp`, `hq`, `faq`, `todo`, `rrn`(주민등록번호), `biz`(사업자), `ceo`(대표자) 뿐이다.
 
 # FRONT (Next.js)
 
