@@ -2,6 +2,7 @@
 
 ## 2026-10-02
 
+* **Update**: [네이밍 규칙](/conventions/naming.md) DB 절에 삭제 표시(`is_deleted`) 규칙과 함정 두 가지, 기본키도 `{참조 단수}_id`(새 테이블부터) 규칙을 넣고 시각 예시 `deleted_at` 을 `created_at` 으로 바꿨다(2026-10-02 재영, api 세션에서 정함).
 * **Update**: 네이밍 규칙 원자료의 1팀 예외에서 세 줄(전체 범위 참·거짓, 변경 이력, 논리 삭제)을 빼고, 삭제 여부(`deleted_at` ↔ `is_deleted`)를 맞춰야 할 것으로 옮겼다. 용어집의 「공통코드 그룹」 목록 절도 각 용어 행과 겹쳐 뺐고, 사건 기록 4종의 용어집 식별자를 `_log` 로 맞췄다(`admin_login_log` 등). 2장 「1팀 예외」 절 이름은 「식별자 1팀 예외」로 바꾸고, 「맞춰야 할 것 (1팀 ↔ 3팀)」 절은 통째로 뺐다. [네이밍 규칙](/conventions/naming.md) 본문은 그대로다.
 * **Update**: 1팀 ERD 의 참·거짓 컬럼 8개를 [네이밍 규칙](/conventions/naming.md) 의 `is_` 접두로 맞췄다(`is_bp_applied`, `is_readable` 등). 원자료 공통코드 표의 BP 적용 여부도 같이 고쳤다.
 * **Update**: [네이밍 규칙](/conventions/naming.md) 약어 금지 예외에 `biz`(사업자)·`ceo`(대표자)를 더했다. 1팀 ERD 의 나머지 약어(`temp`·`pw`·`reg_no`·`corp`·`info`)는 풀어 썼다.

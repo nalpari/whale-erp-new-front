@@ -5,7 +5,7 @@ description: DB·API·FRONT 세 계층이 같은 개념을 같은 영문 이름�
 tags: [convention, naming, shared]
 sources:
   - { id: naming-2026-09-30, resource: ../../docs/raw/2026-09-30-네이밍-규칙.md, title: WHALE ERP 네이밍 규칙 (DB · API · FRONT) }
-generated: { by: claude-code/opus-5.5, at: 2026-10-02T03:58:43Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-02T05:01:19Z }
 ---
 
 근거: `docs/raw/2026-09-30-네이밍-규칙.md` (3팀 기획 세션 · 2026-10-01 고침)
@@ -72,16 +72,25 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-02T03:58:43Z }
 | 테이블 | snake_case 복수형 | `contracts`, `attendance_records`, `location_access_logs` |
 | Prisma 모델 | PascalCase 단수형 + `@@map` | `model Contract { … @@map("contracts") }` |
 | 컬럼 | snake_case, Prisma 필드는 camelCase + `@map` | `start_date` ↔ `startDate` |
-| 기본키 · 외래키 | `id` · `{참조 단수}_id` | `staff_member_id`, `store_id` |
-| 시각 | `_at`, `timestamptz` | `signed_at`, `reviewed_at`, `deleted_at` |
+| 기본키 · 외래키 | `{참조 단수}_id` · `{참조 단수}_id` (기본키도 같은 이름) | `contracts.contract_id`, `staff_members.staff_member_id`, 외래키 `store_id` |
+| 시각 | `_at`, `timestamptz` | `signed_at`, `reviewed_at`, `created_at` |
 | 날짜만 | `_date` | `start_date`, `birth_date` |
 | 참·거짓 | `is_` · `has_` | `is_proxy_entry`, `is_premium_applied` |
+| 삭제 표시 | `is_deleted boolean NOT NULL DEFAULT false`. 행을 DELETE 하지 않는다. 삭제가 가능한 테이블에만 둔다 | `contracts.is_deleted` |
 | 금액 | `_amount`, 원 단위 정수 | `base_pay_amount` |
 | 길이 · 단위 | 단위를 이름 끝에 | `break_minutes`, `radius_m` |
 | 상태 값 | Prisma enum, 값은 UPPER_SNAKE | `ContractStatus.PENDING_SIGNATURE` |
 | 이력 | 변경 전후는 `_histories`, 사건 기록은 `_logs` | `contract_status_histories`, `payslip_logs` |
 | 인덱스 · 키 | `{table}_{cols}_{idx·key·fkey}` | `stock_movements_item_id_idx` |
 | CHECK 제약 | `{table}_{col}_{조건}`, 조건을 이름에 쓴다 | `items_sku_not_blank`, `payslip_items_amount_nonzero` |
+
+**삭제 표시 · 기본키 이름** (2026-10-02 재영, api 세션에서 정함)
+
+- 삭제 가능한 데이터는 행을 지우지 않고 `is_deleted = true` 로 표시한다. 표시는 `is_deleted` 하나뿐이다 — `deleted_at` 을 함께 두면 플래그와 시각이 어긋난 행이 생길 수 있다. 삭제 시각이 필요해지면 그때 `deleted_at` 을 더하고 CHECK 로 묶는다.
+- 남아야 하는 기록(`stock_movements`, `*_logs`, `*_histories`)에는 두지 않는다. 이 컬럼이 없는 테이블은 지우지 않는 테이블이다.
+- 모든 조회에 `is_deleted = false` 를 건다. 빠뜨려도 오류가 나지 않고 지운 행이 그대로 보인다 — 목록, id 조회, total 을 위한 count, insert 전 존재 확인 모두 해당한다.
+- 유니크 제약은 부분 인덱스(`WHERE NOT is_deleted`)로 만든다. 안 그러면 지운 행이 sku·email 을 붙잡아 같은 값으로 다시 만들 때 409 가 난다. Prisma 가 표현하지 못해 CHECK 제약처럼 마이그레이션 SQL 에만 남는다.
+- 새 테이블부터 기본키도 `{참조 단수}_id` 로 짓는다. 지금 있는 `items`·`stock_movements`(예제)와 `staff`·`customers`(템플릿 인증 주체)는 기본키가 `id` 인데, 결함이 아니라 예제·템플릿이라 고치지 않는다. front 의 `listItems` 와 로그인이 아직 쓰고 있어, 계정 테이블과 첫 도메인 모듈이 생길 때 함께 정리하거나 대체한다.
 
 ERD 에 단수·복수가 섞인 이름은 다음 ERD 재생성 때 복수형으로 맞춘다. 이 저장소 `docs/erd/_build.py` 에 남은 것은 `attendance`, `schedule_history`, `access_log` 셋이고, `access_log` 는 `location_access_logs`(확인자료)로 바꾼다. 이름만 고쳐도 박스 폭과 연결점 좌표를 다시 맞춰야 해서, 테이블 구조가 바뀌어 어차피 다시 그릴 때 함께 처리한다. (2026-09-30 기획 세션 확인)
 
