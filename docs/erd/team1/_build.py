@@ -472,7 +472,6 @@ DIAGRAMS.append(Diagram(
           ["#|권한 그룹 ID|id|role_group_id|", "|권한 코드|text|role_code|유형+6자리, 고유, 변경 불가",
            "→|BP|id|bp_id|플랫폼은 플랫폼 BP",
            "|권한 유형 코드|code|auth_type_code|AUTH_TYPE, 변경 불가",
-           "|권한 버전|text|auth_version|",
            "|권한명|text|name|같은 BP·관리계정ID 안 고유",
            "|설명|text|description|",
            "|마스터 권한 여부|bool|is_master|",
