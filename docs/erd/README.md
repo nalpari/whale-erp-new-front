@@ -28,14 +28,14 @@ python3 docs/erd/_build.py
 | 논리 엔티티 | api 현재 테이블 | 차이 |
 |---|---|---|
 | 계정 | `staff` | 이름이 겹친다. api 의 `staff` 는 직원 근무 앱 로그인 주체라 논리 모델의 **계정**에 해당한다. 논리 모델의 **직원 레코드**는 점포별 소속이라 별도 테이블(`staff_members` 등)이 필요하다. |
-| 관리자 계정 | `customers` | 1팀 소유. 역할·BP 연결은 1팀 설계를 따른다. |
+| 관리자 계정 | `admin_accounts` | 1팀 소유. 역할·BP 연결은 1팀 설계를 따른다. |
 | 접속 상태 | 없음 (`refresh_token_hash` 한 칸) | 한 계정이 여러 기기에서 30일 유지하려면 접속 상태 테이블이 필요하다. api CLAUDE.md 도 같은 한계를 적어 두었다. |
 
 ## 1팀과 맞닿는 곳
 
 - **점포·BP·관리자 계정**은 1팀 소유다. 3팀 엔티티는 식별자로 참조만 한다.
 - **근무지 좌표·반경**은 출퇴근 GPS 판정에 필요한 3팀 요구다. 1팀 점포 테이블에 넣을지, 3팀 확장 테이블로 둘지 정해야 한다.
-- **관리자 계정(`customers`)과 계정(`staff`)은 테이블을 나눈다.** 관리자이면서 직원인 사람은 없다. 관리자 계정은 BP 마스터가 사업자 회원가입으로 직접 만들고 그 아래 BP 관리자·가맹마스터·가맹관리자 계정은 만들어 준다. 계정은 초대받은 직원이 본인인증과 개인정보를 넣어 직접 가입한다. 두 테이블에 겹치는 속성은 이메일·비밀번호·잠금 정도라서 잠금과 핀 재설정 같은 로직은 테이블이 아니라 api 공통 모듈로 나눠 쓴다. (2026-09-15 재영 확인)
+- **관리자 계정(`admin_accounts`)과 계정(`staff`)은 테이블을 나눈다.** 관리자이면서 직원인 사람은 없다. 관리자 계정은 BP 마스터가 사업자 회원가입으로 직접 만들고 그 아래 BP 관리자·가맹마스터·가맹관리자 계정은 만들어 준다. 계정은 초대받은 직원이 본인인증과 개인정보를 넣어 직접 가입한다. 두 테이블에 겹치는 속성은 이메일·비밀번호·잠금 정도라서 잠금과 핀 재설정 같은 로직은 테이블이 아니라 api 공통 모듈로 나눠 쓴다. (2026-09-15 재영 확인)
 - **관리자 역할과 권한 범위**는 1팀 권한 관리에서 정한다. 3팀 화면의 업무 범위는 그 결과를 따른다.
 
 ## 아직 정하지 않은 것
@@ -139,13 +139,13 @@ python3 docs/erd/_build.py
 |  | 제공 목적 | text | `purpose` | 제공일 때 |
 | FK | 출퇴근 기록 | id | `attendance_id` | 있을 때 · 출퇴근 장 |
 
-### 관리자 계정 `customers` · 1팀 참조
+### 관리자 계정 `admin_accounts` · 1팀 참조
 
-1팀 영역(환경설정·권한). api 저장소에서는 customers 테이블.
+1팀 영역(환경설정·권한). 1팀 ERD 의 admin_accounts 테이블.
 
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
-| PK | 관리자 ID | id | `admin_id` | api customers 테이블 |
+| PK | 관리자 ID | id | `admin_account_id` | admin_accounts PK |
 | FK | BP | id | `bp_id` |  |
 |  | 역할 | enum | `role` | BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼 |
 
@@ -239,13 +239,13 @@ python3 docs/erd/_build.py
 | FK | 처리 관리자 | id | `resolved_by` |  |
 |  | 처리 일시 | datetime | `resolved_at` |  |
 
-### 관리자 계정 `customers` · 1팀 참조
+### 관리자 계정 `admin_accounts` · 1팀 참조
 
-1팀 영역(환경설정·권한). api 저장소에서는 customers 테이블.
+1팀 영역(환경설정·권한). 1팀 ERD 의 admin_accounts 테이블.
 
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
-| PK | 관리자 ID | id | `admin_id` | api customers 테이블 |
+| PK | 관리자 ID | id | `admin_account_id` | admin_accounts PK |
 | FK | BP | id | `bp_id` |  |
 |  | 역할 | enum | `role` | BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼 |
 
@@ -281,13 +281,13 @@ python3 docs/erd/_build.py
 | FK | BP | id | `bp_id` | 1팀 BP |
 |  | 점포 유형 | enum | `store_type` | 직영·가맹 |
 
-### 관리자 계정 `customers` · 1팀 참조
+### 관리자 계정 `admin_accounts` · 1팀 참조
 
-1팀 영역(환경설정·권한). api 저장소에서는 customers 테이블.
+1팀 영역(환경설정·권한). 1팀 ERD 의 admin_accounts 테이블.
 
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
-| PK | 관리자 ID | id | `admin_id` | api customers 테이블 |
+| PK | 관리자 ID | id | `admin_account_id` | admin_accounts PK |
 | FK | BP | id | `bp_id` |  |
 |  | 역할 | enum | `role` | BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼 |
 
@@ -478,13 +478,13 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 | FK | BP | id | `bp_id` | 1팀 BP |
 |  | 점포 유형 | enum | `store_type` | 직영·가맹 |
 
-### 관리자 계정 `customers` · 1팀 참조
+### 관리자 계정 `admin_accounts` · 1팀 참조
 
-1팀 영역(환경설정·권한). api 저장소에서는 customers 테이블.
+1팀 영역(환경설정·권한). 1팀 ERD 의 admin_accounts 테이블.
 
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
-| PK | 관리자 ID | id | `admin_id` | api customers 테이블 |
+| PK | 관리자 ID | id | `admin_account_id` | admin_accounts PK |
 | FK | BP | id | `bp_id` |  |
 |  | 역할 | enum | `role` | BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼 |
 
@@ -656,13 +656,13 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |  | 긴급 여부 | bool | `urgent` |  |
 |  | 생성 시각 | datetime | `created_at` |  |
 
-### 관리자 계정 `customers` · 1팀 참조
+### 관리자 계정 `admin_accounts` · 1팀 참조
 
-1팀 영역(환경설정·권한). api 저장소에서는 customers 테이블.
+1팀 영역(환경설정·권한). 1팀 ERD 의 admin_accounts 테이블.
 
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
-| PK | 관리자 ID | id | `admin_id` | api customers 테이블 |
+| PK | 관리자 ID | id | `admin_account_id` | admin_accounts PK |
 | FK | BP | id | `bp_id` |  |
 |  | 역할 | enum | `role` | BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼 |
 
@@ -673,7 +673,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 | PK | 수신 ID | id | `recipient_id` |  |
 | FK | 알림 | id | `notification_id` |  |
 | FK | 수신 계정 | id | `account_id` | 직원 알림 |
-| FK | 수신 관리자 | id | `admin_id` | 운영 알림 |
+| FK | 수신 관리자 | id | `admin_account_id` | 운영 알림 |
 |  | 읽음 여부 | bool | `is_read` |  |
 |  | 읽음 처리 시각 | datetime | `read_at` |  |
 
@@ -778,13 +778,13 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 | FK | 답변 관리자 | id | `replied_by` |  |
 |  | 답변 시각 | datetime | `replied_at` |  |
 
-### 관리자 계정 `customers` · 1팀 참조
+### 관리자 계정 `admin_accounts` · 1팀 참조
 
-1팀 영역(환경설정·권한). api 저장소에서는 customers 테이블.
+1팀 영역(환경설정·권한). 1팀 ERD 의 admin_accounts 테이블.
 
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
-| PK | 관리자 ID | id | `admin_id` | api customers 테이블 |
+| PK | 관리자 ID | id | `admin_account_id` | admin_accounts PK |
 | FK | BP | id | `bp_id` |  |
 |  | 역할 | enum | `role` | BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼 |
 

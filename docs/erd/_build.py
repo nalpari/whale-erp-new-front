@@ -120,9 +120,9 @@ def ref_store(col, y, extra=()):
 
 
 def ref_admin(col, y):
-    return E("admin", "관리자 계정", "customers", "ref",
-             ["#|관리자 ID|id|admin_id|api customers 테이블", "→|BP|id|bp_id|", "|역할|enum|role|BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼"],
-             col, y, "1팀 영역(환경설정·권한). api 저장소에서는 customers 테이블.")
+    return E("admin", "관리자 계정", "admin_accounts", "ref",
+             ["#|관리자 ID|id|admin_account_id|admin_accounts PK", "→|BP|id|bp_id|", "|역할|enum|role|BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼"],
+             col, y, "1팀 영역(환경설정·권한). 1팀 ERD 의 admin_accounts 테이블.")
 
 
 DIAGRAMS = []
@@ -183,7 +183,7 @@ DIAGRAMS.append(Diagram(
           ["#|핀 ID|id|pin_id|", "→|계정|id|account_id|", "|핀 검증값|hash|pin_hash|원본 저장 안 함", "|발급 시각|datetime|issued_at|1분 재발급 제한, 하루 10회", "|만료 시각|datetime|expires_at|10분", "|시도 횟수|int|attempt_count|5회", "|쿨다운 단계|int|cooldown_step|1·3·5분, 3회까지", "|쿨다운 해제 시각|datetime|cooldown_until|", "|사용 시각|datetime|used_at|"], 2, 312),
         E("access_log", "위치정보 확인자료", "location_access_logs", "history",
           ["#|확인자료 ID|id|access_log_id|", "→|계정|id|account_id|대상 직원", "|처리 구분|enum|action|수집·이용·제공", "|처리 일시|datetime|occurred_at|", "|수집 방법|text|method|기기 GPS · 휴대전화 안 판정", "|제공받는 자|text|recipient|제공일 때", "|제공 목적|text|purpose|제공일 때", "→|출퇴근 기록|id|attendance_id|있을 때 · 출퇴근 장"], 2, 608),
-        E("admin", "관리자 계정", "customers", "ref", ["#|관리자 ID|id|admin_id|api customers 테이블", "→|BP|id|bp_id|", "|역할|enum|role|BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼"], 0, 560, "1팀 영역(환경설정·권한). api 저장소에서는 customers 테이블."),
+        E("admin", "관리자 계정", "admin_accounts", "ref", ["#|관리자 ID|id|admin_account_id|admin_accounts PK", "→|BP|id|bp_id|", "|역할|enum|role|BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼"], 0, 560, "1팀 영역(환경설정·권한). 1팀 ERD 의 admin_accounts 테이블."),
     ],
     [
         R("account", "left", "identity", "right", "1", "N", "", at_a=120, at_b=120),
@@ -379,7 +379,7 @@ DIAGRAMS.append(Diagram(
           ["#|알림 ID|id|notification_id|", "|알림 대상 구분|enum|audience|운영 알림·직원 알림", "|알림 유형|enum|type|운영 6종·직원 4종", "|관련 업무 유형|enum|related_type|문의사항·도입문의·근로계약 등", "|관련 업무 ID|id|related_id|", "|알림 내용|text|body|", "|중복 방지 키|text|dedupe_key|같은 사건·수신자 1회", "|긴급 여부|bool|urgent|", "|생성 시각|datetime|created_at|"], 0, 240),
         ref_admin(1, 40),
         E("recipient", "알림 수신", "notification_recipients", "entity",
-          ["#|수신 ID|id|recipient_id|", "→|알림|id|notification_id|", "→|수신 계정|id|account_id|직원 알림", "→|수신 관리자|id|admin_id|운영 알림", "|읽음 여부|bool|is_read|", "|읽음 처리 시각|datetime|read_at|"], 1, 240),
+          ["#|수신 ID|id|recipient_id|", "→|알림|id|notification_id|", "→|수신 계정|id|account_id|직원 알림", "→|수신 관리자|id|admin_account_id|운영 알림", "|읽음 여부|bool|is_read|", "|읽음 처리 시각|datetime|read_at|"], 1, 240),
         E("account", "계정", "accounts", "entity",
           ["#|계정 ID|id|account_id|", "|이메일 아이디|text|email|"], 1, 496),
         E("delivery", "알림 발송 이력", "notification_deliveries", "history",
@@ -827,12 +827,12 @@ def readme():
          "## api 저장소와의 대응", "",
          "| 논리 엔티티 | api 현재 테이블 | 차이 |", "|---|---|---|",
          "| 계정 | `staff` | 이름이 겹친다. api 의 `staff` 는 직원 근무 앱 로그인 주체라 논리 모델의 **계정**에 해당한다. 논리 모델의 **직원 레코드**는 점포별 소속이라 별도 테이블(`staff_members` 등)이 필요하다. |",
-         "| 관리자 계정 | `customers` | 1팀 소유. 역할·BP 연결은 1팀 설계를 따른다. |",
+         "| 관리자 계정 | `admin_accounts` | 1팀 소유. 역할·BP 연결은 1팀 설계를 따른다. |",
          "| 접속 상태 | 없음 (`refresh_token_hash` 한 칸) | 한 계정이 여러 기기에서 30일 유지하려면 접속 상태 테이블이 필요하다. api CLAUDE.md 도 같은 한계를 적어 두었다. |", "",
          "## 1팀과 맞닿는 곳", "",
          "- **점포·BP·관리자 계정**은 1팀 소유다. 3팀 엔티티는 식별자로 참조만 한다.",
          "- **근무지 좌표·반경**은 출퇴근 GPS 판정에 필요한 3팀 요구다. 1팀 점포 테이블에 넣을지, 3팀 확장 테이블로 둘지 정해야 한다.",
-         "- **관리자 계정(`customers`)과 계정(`staff`)은 테이블을 나눈다.** 관리자이면서 직원인 사람은 없다. 관리자 계정은 BP 마스터가 사업자 회원가입으로 직접 만들고 그 아래 BP 관리자·가맹마스터·가맹관리자 계정은 만들어 준다. 계정은 초대받은 직원이 본인인증과 개인정보를 넣어 직접 가입한다. 두 테이블에 겹치는 속성은 이메일·비밀번호·잠금 정도라서 잠금과 핀 재설정 같은 로직은 테이블이 아니라 api 공통 모듈로 나눠 쓴다. (2026-09-15 재영 확인)",
+         "- **관리자 계정(`admin_accounts`)과 계정(`staff`)은 테이블을 나눈다.** 관리자이면서 직원인 사람은 없다. 관리자 계정은 BP 마스터가 사업자 회원가입으로 직접 만들고 그 아래 BP 관리자·가맹마스터·가맹관리자 계정은 만들어 준다. 계정은 초대받은 직원이 본인인증과 개인정보를 넣어 직접 가입한다. 두 테이블에 겹치는 속성은 이메일·비밀번호·잠금 정도라서 잠금과 핀 재설정 같은 로직은 테이블이 아니라 api 공통 모듈로 나눠 쓴다. (2026-09-15 재영 확인)",
          "- **관리자 역할과 권한 범위**는 1팀 권한 관리에서 정한다. 3팀 화면의 업무 범위는 그 결과를 따른다.", "",
          "## 아직 정하지 않은 것", "",
          "- 근무시간 외 알림 보류의 기준 시각 (NOTI-1)과 알림톡 대체 발송 범위",
