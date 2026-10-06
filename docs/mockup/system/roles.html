@@ -9,15 +9,17 @@
   </head>
   <body data-root="../" data-page="system" data-sub="system/roles.html">
     <!-- 플랫폼 권한 관리 · /platform/system/roles · S-JDCOAG · 메뉴 등록 팝업 S-EFQREM (F-PPMWQI) · 1팀
-         왼쪽은 권한 목록, 오른쪽은 선택한 권한의 상세·등록·수정 영역이다. 목록은 고정 권한 넷(PM·PA·BM·FM)과 PA000001 기준 추가 권한만 싣는다.
+         왼쪽은 권한 목록, 오른쪽은 선택한 권한의 상세·등록·수정 영역이다. 목록은 고정 권한 넷(PM·PA·BM·FM)과 플랫폼 관리자 추가 권한만 싣는다.
          BP 관리자·가맹 관리자(BA·FA)는 BP 환경설정의 권한 그룹 관리에서 만들므로 목록에도 신규 유형에도 없다.
          권한유형·권한코드는 읽기 전용이고 권한명·설명만 고친다. 코드는 유형 코드 + 6자리 순번으로 저장할 때 채번한다(PL-EIMSQF).
          삭제는 플랫폼 관리자 추가 권한에만 있다 — 고정 권한 넷(PM·PA·BM·FM)은 지우지 않는다.
          연결 사용자가 있으면 다른 추가 권한을 골라 한꺼번에 옮긴 뒤 지우고, 옮길 곳이 없으면 삭제하지 않는다 (SYSTEM-5 확정).
-         기준 고정 권한 PA000001 은 대체 후보로 치지 않는다 — 옮기면 권한이 기준까지 넓어지기 때문이다.
+         고정 권한 PA000001 은 대체 후보로 치지 않는다 — 옮기면 권한이 플랫폼 관리자 기본 권한까지 넓어지기 때문이다.
          메뉴별 CRUD 는 행의 메뉴등록 팝업에서만 정한다. 팝업의 메뉴는 플랫폼 메뉴 관리(menus.html)의 트리를 그대로 읽는다.
          BP 마스터·가맹 마스터 고정 권한은 권한 관리 수정 권한만 있으면 정한다 — 설정자 본인 범위 상한을 걸지 않는다 (SYSTEM-6 확정).
          본인 범위 상한은 플랫폼 쪽 권한(PA 추가 권한)에만 건다.
+         추가 권한의 메뉴 CRUD 상한은 설정자 본인 권한 하나뿐이다 — 기준 고정 권한(PA000001) 상한은 두지 않는다. 플랫폼 마스터는 본인 메뉴 전체 안에서,
+         플랫폼 관리자는 본인이 받은 메뉴·CRUD 안에서만 준다 (확정 2026-10-06).
          BP 마스터·가맹 마스터 고정 권한에는 플랫폼 관리 사이트(PLATFORM 서비스) 메뉴를 등록할 수 없다 — 칸이 모두 막힌다 (정책 확정 · PL-AMTMVC).
          CRUD 표본(PLATFORM 서비스) — PM000001 전체 · PA000001 BP 조회·등록·수정, 서비스정산 조회, 시스템관리 조회(관리자·권한 관리는 조회·등록·수정), 커뮤니티 전체 ·
          PA000002 BP 조회, 커뮤니티 조회·등록·수정 · PA000003 BP 조회, 서비스정산 조회 · PA000004 시스템관리 조회. BM·FM 은 Whale ERP 서비스 메뉴를 쓴다.
@@ -226,7 +228,6 @@
                     <div class="field">
                       <label for="d2-type">권한유형</label>
                       <input class="input" id="d2-type" value="플랫폼 관리자" readonly />
-                      <span class="help">기준 고정 권한 <span class="mono">PA000001</span> 플랫폼 관리자</span>
                     </div>
                     <div class="field">
                       <label for="d2-code">권한코드</label>
@@ -342,8 +343,6 @@
                       <textarea class="textarea" id="db-desc-r" readonly>BP 관리자 권한 그룹의 상한</textarea>
                     </div>
                     <dl class="kv">
-                      <dt>쓰는 곳</dt><dd><a class="tlink" href="../bp/index.html">BP 8곳</a> <span class="subtle">· BP 마스터 계정</span></dd>
-                      <dt>하위 권한 그룹</dt><dd>BP 관리자 권한 그룹 23개</dd>
                       <dt>최종 수정</dt><dd><span class="mono">2026-09-01 11:05</span> · <span class="mono">platkim</span></dd>
                     </dl>
                   </div>
@@ -373,10 +372,6 @@
                       <span class="help">등록할 때 확정됩니다. 같은 유형을 동시에 등록하면 겹치지 않는 다음 순번이 붙습니다.</span>
                     </div>
                     <div class="field">
-                      <label for="n-base">기준 고정 권한</label>
-                      <input class="input" id="n-base" value="PA000001 · 플랫폼 관리자" readonly />
-                    </div>
-                    <div class="field">
                       <label for="n-name">권한명 <span class="req">*</span></label>
                       <input class="input" id="n-name" placeholder="예: 프로모션 담당" />
                     </div>
@@ -389,7 +384,7 @@
                     <button class="btn btn--ghost btn--sm" type="button" data-state-go="pa2">취소</button>
                     <button class="btn btn--primary btn--sm" type="button">등록</button>
                   </div>
-                  <div class="panel__note" data-show-role="master admin">등록한 뒤 목록의 메뉴등록에서 메뉴별 권한을 정합니다. 기준 권한 PA000001 이 허용한 칸만 고를 수 있습니다.</div>
+                  <div class="panel__note" data-show-role="master admin">등록한 뒤 목록의 메뉴등록에서 메뉴별 권한을 정합니다. 설정하는 사람 본인이 가진 메뉴·CRUD 안에서만 고를 수 있습니다.</div>
                   <div class="empty" data-show-role="view" hidden>
                     <span class="empty__ic" data-icon="lock" data-icon-size="22"></span>
                     <p>권한을 등록할 권한이 없습니다.</p>
@@ -431,7 +426,7 @@
                     <button class="btn btn--ghost btn--sm" type="button" data-state-go="pa2">취소</button>
                     <button class="btn btn--primary btn--sm" type="button">등록</button>
                   </div>
-                  <div class="panel__note" data-show-role="master admin">플랫폼 관리자를 고르면 코드가 PA000005, 기준 고정 권한이 PA000001 로 바뀝니다.</div>
+                  <div class="panel__note" data-show-role="master admin">플랫폼 관리자를 고르면 코드가 PA000005 로 바뀝니다.</div>
                   <div class="empty" data-show-role="view" hidden>
                     <span class="empty__ic" data-icon="lock" data-icon-size="22"></span>
                     <p>권한을 등록할 권한이 없습니다.</p>
@@ -453,7 +448,7 @@
     </div>
 
     <!-- 플랫폼 관리자 권한 삭제 (S-JDCOAG) — 연결 사용자가 있으면 대체 권한을 골라 일괄 변경한 뒤 지운다.
-         대체 후보는 같은 유형의 다른 추가 권한뿐이다. 기준 고정 권한 PA000001 은 넣지 않고, 후보가 하나도 없으면 삭제하지 않는다 (SYSTEM-5 확정). -->
+         대체 후보는 같은 유형의 다른 추가 권한뿐이다. 고정 권한 PA000001 은 넣지 않고, 후보가 하나도 없으면 삭제하지 않는다 (SYSTEM-5 확정). -->
     <div class="modal" id="pop-del" hidden role="dialog" aria-modal="true" aria-labelledby="pdel-t">
       <div class="modal__box">
         <div class="modal__head">
@@ -474,7 +469,7 @@
                 <option>PA000004 · 기준정보 조회</option>
               </select>
               <span class="help">변경 대상 사용자 <b>2명</b>의 권한을 고른 권한으로 한꺼번에 바꾼 뒤 삭제합니다.
-                기준 고정 권한 <span class="mono">PA000001</span> 플랫폼 관리자는 고를 수 없습니다 — 옮기면 권한이 기준까지 넓어집니다.</span>
+                고정 권한 <span class="mono">PA000001</span> 플랫폼 관리자는 고를 수 없습니다 — 옮기면 권한이 플랫폼 관리자 기본 권한까지 넓어집니다.</span>
             </div>
             <div class="band band--warn">
               <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
@@ -541,7 +536,7 @@
     </div>
 
     <!-- 권한 메뉴 등록 팝업 (S-EFQREM) — 목록 행의 메뉴등록이 연다. 표는 아래 스크립트가 권한·보는 사람·서비스에 따라 그린다.
-         메뉴 트리는 menus.html 과 같은 표본이되 사용중지 메뉴와 그 하위는 뺀다 (확정 2026-09-29). 칸이 흐린 이유는 셋 — 기준 고정 권한 밖 · 설정자 본인 권한 밖 · BP 측 고정 권한의 플랫폼 메뉴.
+         메뉴 트리는 menus.html 과 같은 표본이되 사용중지 메뉴와 그 하위는 뺀다 (확정 2026-09-29). 칸이 흐린 이유는 둘 — 설정자 본인 권한 밖 · BP 측 고정 권한의 플랫폼 메뉴. 기준 고정 권한 상한은 두지 않는다 (확정 2026-10-06).
          묶음 메뉴의 칸은 일괄 설정용이다 — 하위 메뉴가 모두 켜져 있으면 켜짐, 일부면 반쯤으로 보이고, 누르면 하위의 고를 수 있는 칸을 한꺼번에 켜고 끈다.
          고정 권한에서 칸을 빼고 저장하면 함께 빠지는 하위 권한 그룹 수와 연결 사용자 수를 먼저 보인다.
          BM·FM 을 “Whale ERP 플랫폼 관리” 서비스로 열면 모두 막는다 — BP 마스터·가맹 마스터 고정 권한에는 플랫폼 관리 사이트 메뉴를 줄 수 없다 (정책 PL-AMTMVC). -->
@@ -737,14 +732,12 @@
           if (v.own === cur.code) return "own";
           if (!m[3]) return "stop";
           if (r.bp && svc === "PLATFORM") return "bp";
-          if (r.base && !has(GRANT[r.base][svc], m[0], op)) return "base";
           /* 본인 범위 상한은 플랫폼 쪽 권한에만 건다 — BP 측 고정 권한은 수정 권한만 보고 연다 (SYSTEM-6 확정) */
           if (!r.bp && v.own !== "PM000001" && !has(GRANT[v.own][svc], m[0], op)) return "self";
           return null;
         }
         var TIP = {
           stop: "사용중지 메뉴 · 신규 부여 제외",
-          base: "기준 고정 권한 밖",
           self: "본인 권한 범위 밖",
           bp: "BP 마스터·가맹 마스터 권한에는 플랫폼 관리 메뉴를 줄 수 없습니다"
         };
@@ -884,7 +877,6 @@
           document.getElementById("pm-head").innerHTML =
             "<dt>권한 유형</dt><dd>" + r.type + "</dd>" +
             "<dt>권한 구분</dt><dd>" + r.kind + "</dd>" +
-            "<dt>기준 고정 권한</dt><dd>" + (r.base ? '<span class="mono">' + r.base + "</span> 플랫폼 관리자" : '<span class="subtle">없음 · 고정 권한</span>') + "</dd>" +
             "<dt>권한명</dt><dd>" + r.name + ' <span class="mono subtle">' + cur.code + "</span></dd>";
 
           var out = [];
@@ -895,7 +887,6 @@
           } else if (v.own === cur.code) {
             out.push(band("warn", "lock", "본인이 연결된 권한이라 바꿀 수 없습니다", "칸과 저장이 모두 막힙니다. 이 권한의 설정은 다른 설정자가 바꿔야 합니다."));
           } else {
-            if (r.base) out.push('<p class="note" style="margin: 0"><svg width="14" height="14" aria-hidden="true"><use href="#i-info"/></svg><span>추가 권한은 기준 고정 권한 <span class="mono">' + r.base + "</span> 이 허용한 칸 안에서만 고릅니다. 흐린 칸은 기준 권한 밖입니다.</span></p>");
             if (v.own !== "PM000001" && !r.bp) out.push(band("warn", "warn", "본인 권한(" + v.own + ") 범위 밖 칸은 고를 수 없습니다", "수정 권한이 있어도 설정자 본인이 받은 메뉴·CRUD 를 넘겨 부여하지 못합니다."));
             if (v.own !== "PM000001" && r.bp) out.push(band("info", "info", "BP 측 고정 권한이라 설정자 본인 범위 상한을 걸지 않습니다", "권한 관리 메뉴의 수정 권한이 있으면 ERP 메뉴 칸을 모두 고를 수 있습니다. 플랫폼 관리 메뉴만 BP 측 권한에 줄 수 없습니다."));
             if (r.below) out.push('<p class="note" style="margin: 0"><svg width="14" height="14" aria-hidden="true"><use href="#i-info"/></svg><span>이 고정 권한이 ' + r.below + "의 상한입니다. 칸을 빼고 저장하면 저장 전에 영향 범위를 보여 드립니다.</span></p>");

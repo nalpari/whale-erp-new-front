@@ -1,5 +1,7 @@
 // 플랫폼 메뉴 관리(플랫폼 마스터 기준). 목업 docs/mockup/system/menus.html 의 「등록·수정」 권한 = 플랫폼 마스터로 본 것.
-// 관리자 기준 menus.mjs 와 달리 끌기 손잡이·신규 메뉴·저장·위치 옮기기가 있고 상세를 고칠 수 있다. 신규 메뉴 등록은 옆 패널로 연다.
+// 끌기 손잡이·신규 메뉴·저장·위치 옮기기가 있고 상세를 고칠 수 있다. 신규 메뉴 등록과 수정은 목업처럼 트리 오른쪽 칸에서 한다.
+// 메뉴 삭제 버튼과 변경 이력은 목업처럼 두지 않는다(명세가 둘 다 제외) — 안 쓰는 메뉴는 사용중지로 돌린다.
+// 관리자 기준 menus.mjs 도 목업 기본 권한(등록·수정)에 맞춰 이 화면을 헤더만 바꿔 그린다.
 // 목업의 서비스 목록 ↔ 서비스별 트리 전환은 탭으로 옮겼다(서비스 목록의 코드·이름을 누르면 그 서비스 탭이 열린다).
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
@@ -111,10 +113,16 @@ function services() {
   );
 }
 
-// 서비스 하나의 트리 + 고른 메뉴 상세(편집) + 위치 옮기기 + 신규 메뉴 패널
+// 서비스 하나의 트리 + 오른쪽 칸(메뉴 상세·수정 / 신규 메뉴 등록 / 위치 옮기기)
+// 목업처럼 등록과 수정 모두 오른쪽 칸에서 한다 — 따로 열리는 패널이 없다. 칸 바꾸기는 아래 MENU_SCRIPT 가 한다.
 // 메뉴 코드는 서비스를 가리지 않고 가장 큰 번호의 다음을 쓴다(목업 규칙).
 const NEXT_CODE = `MN${String(Math.max(...Object.values(SVC).flatMap((s) => s.src.map((r) => +r[0].slice(2)))) + 1).padStart(6, "0")}`;
 const EG = { erp: ["예: 근무 교대 요청", "/staff/…"], plat: ["예: 플랫폼 배치 관리", "/platform/system/…"], resv: ["예: 예약 알림 설정", "/reservations/…"] };
+// 갈 수 없는 쪽·작성 중에 누를 수 없는 버튼은 흐리게(1팀 버튼에 비활성 모양이 없어 덧붙인다)
+const dim = (b) => b.replace('class="', 'class="disabled:pointer-events-none disabled:opacity-40 ');
+const sideHead = (title, lvl, extra = "") =>
+  ui.sectionHead(`${title} <span class="text-[14px] font-normal text-erp-label"><span data-f="lvl">${lvl}</span>단계${extra}</span>`);
+const NO_DELETE = "메뉴는 지우지 않습니다. 쓰지 않는 메뉴는 사용중지로 돌립니다. 메뉴 등록·수정·이동 이력은 남기지 않습니다.";
 
 function treeTab(key, s) {
   // 상위 메뉴·순서·묶음 여부를 적은 순서에서 계산한다
@@ -129,8 +137,13 @@ function treeTab(key, s) {
   const sibs = (p) => nodes.filter((m) => m.parent === p);
   nodes.forEach((n) => (n.order = sibs(n.parent).indexOf(n) + 1));
   const path = (n) => (n ? `${path(n.parent)}${n.parent ? " › " : ""}${n.name}` : "");
+  // 자기나 그 위가 사용중지면 그 아래 메뉴는 사용자에게 보이지 않는다
+  const hides = (n) => {
+    for (let q = n; q; q = q.parent) if (!q.use) return true;
+    return false;
+  };
   const sel = nodes.find((n) => n.code === s.first);
-  const offUp = (() => { for (let q = sel.parent; q; q = q.parent) if (!q.use) return true; return false; })();
+  const [eg, urlEg] = EG[key];
 
   const rows = nodes.map((n) => [
     handle,
@@ -148,84 +161,196 @@ function treeTab(key, s) {
     { header: "순서", width: "w-[60px]" },
     { header: "사용 상태", width: "w-[100px]" },
   ];
-  const table = markRows(ui.dataTable(cols, rows), (i) => [nodes[i] === sel ? "bg-erp-thead-bg" : "", nodes[i].use ? "" : "text-erp-muted"].filter(Boolean).join(" "));
+  // 줄마다 스크립트가 읽을 단서를 단다 — 이 줄 아래에 새 메뉴를 만들 때의 단계·상위 표시·순서
+  let i = -1;
+  const table = ui.dataTable(cols, rows).replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, () => {
+    const n = nodes[++i];
+    const cls = ["cursor-pointer", n === sel ? "bg-erp-thead-bg" : "", n.use ? "" : "text-erp-muted"].filter(Boolean).join(" ");
+    return `<tr class="h-[46px] border-b border-erp-thead-line ${cls}" data-row="${key}" data-code="${n.code}" data-lvl="${n.lvl}" data-name="${n.name}" data-label="${n.code} · ${path(n)}" data-kids="${n.kids}"${hides(n) ? " data-hides" : ""}>`;
+  });
 
-  const [eg, urlEg] = EG[key];
-  const p = sel.parent;
-  const nameFields = (name, url, use, id) =>
-    ui.field(req("노출 메뉴명"), ui.textField({ value: name, placeholder: eg })) +
+  const nameFields = (name, url, use, id, isNew) =>
+    ui.field(req("노출 메뉴명"), ui.textField({ value: name, placeholder: eg, "data-new-name": isNew })) +
     ui.field(`메뉴 URL ${help("선택")}`, stack(ui.textField({ value: url, placeholder: urlEg }), help("하위 메뉴를 묶기만 하는 메뉴는 비워 둘 수 있습니다. 넣으면 누를 때 그 화면으로 갑니다."))) +
     `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">메뉴 사용 상태</span>${useRadios(id, use)}${help("사용중지하면 사용자 화면에서 빠지고 새로 권한을 줄 수 없습니다. 이미 준 권한은 남습니다.")}</div>`;
 
-  const detail =
+  // 메뉴 하나의 상세·수정 + 위치 옮기기. 고른 줄의 것만 보인다.
+  const detailOf = (n) => {
+    const p = n.parent;
+    const sib = sibs(p), k = sib.indexOf(n), prev = sib[k - 1], next = sib[k + 1];
+    const mv = (ok, label) => dim(ui.button(label, { variant: "soft", disabled: !ok }));
+    return (
+      `<div data-view="${n.code}" class="flex flex-col gap-[24px]"${n === sel ? "" : " hidden"}>` +
+      `<section class="flex flex-col gap-[18px]">${sideHead("메뉴 상세", n.lvl)}` +
+      ui.field("서비스 코드", ro(s.code)) +
+      ui.field(
+        "상위 메뉴",
+        stack(
+          ro(p ? `${p.code} · ${path(p)}` : "없음 · 최상위(1단계) 메뉴"),
+          (p && hides(p) ? help("상위가 사용중지라 사용자에게는 보이지 않습니다.") : "") +
+            help(`${n.lvl >= 3 ? "3단계 메뉴라 이 아래에는 하위 메뉴를 둘 수 없습니다. " : ""}상위 메뉴와 순서는 트리에서 끌거나 아래 ‘위치 옮기기’로 바꿉니다.`),
+        ),
+      ) +
+      ui.formRow(ui.field("메뉴 코드", ro(n.code)), ui.field("메뉴 순서", ro(String(n.order)))) +
+      nameFields(n.name, n.url, n.use, `use-${key}-${n.code}`, false) +
+      `<div class="flex justify-end">${ui.button("저장")}</div>` +
+      help(NO_DELETE) +
+      `</section>` +
+      `<section class="flex flex-col gap-[12px] border-t border-erp-divider pt-[24px]">${ui.sectionHead(`위치 옮기기 <span class="text-[14px] font-normal text-erp-label">누르면 바로 반영 · 저장과 따로</span>`)}` +
+      `<div class="grid grid-cols-2 gap-[6px] [&>*]:w-full">${mv(prev, "위로")}${mv(next, "아래로")}${mv(p, "상위로 올리기")}${mv(prev && n.lvl < 3, "위 메뉴 안으로 넣기")}</div>` +
+      help("끌어 놓기와 같은 규칙입니다 — 하위 메뉴가 함께 움직이고 3단계를 넘길 수 없습니다. 트리 행에서 Alt + ↑ ↓ ← → 로도 옮깁니다.") +
+      `</section></div>`
+    );
+  };
+
+  // 아무것도 고르지 않았을 때
+  const empty =
+    `<section data-view="empty" hidden class="flex flex-col gap-[18px]">${ui.sectionHead("메뉴 상세")}` +
+    `<div class="flex flex-col items-center gap-[6px] rounded-[2px] border border-erp-thead-line px-[18px] py-[36px] text-center text-[14px] text-erp-muted"><p>왼쪽 트리에서 메뉴를 고르면 상세가 여기에 섭니다.</p><p class="text-[13px]">아무것도 고르지 않고 신규 메뉴를 누르면 최상위(1단계) 메뉴로 등록합니다.</p></div></section>`;
+
+  // 신규 메뉴 등록 — 상위 메뉴·단계·순서는 스크립트가 고른 줄을 보고 채운다
+  const self = (b) => dim(b).replace("inline-flex", "inline-flex self-start");
+  const form =
+    `<section data-view="new" hidden class="flex flex-col gap-[18px]">${sideHead("신규 메뉴 등록", 1, " · 저장 전")}` +
     ui.field("서비스 코드", ro(s.code)) +
     ui.field(
       "상위 메뉴",
       stack(
-        ro(p ? `${p.code} · ${path(p)}` : "없음 · 최상위(1단계) 메뉴"),
-        (offUp ? help("상위가 사용중지라 사용자에게는 보이지 않습니다.") : "") +
-          help(`${sel.lvl >= 3 ? "3단계 메뉴라 이 아래에는 하위 메뉴를 둘 수 없습니다. " : ""}상위 메뉴와 순서는 트리에서 끌거나 아래 ‘위치 옮기기’로 바꿉니다.`),
+        ui.textField({ value: "", readonly: true, "data-f": "parent" }),
+        `<span data-f="hide" hidden>${help("상위가 사용중지라 사용자에게는 보이지 않습니다.")}</span>`,
+        self(ui.button("최상위 메뉴로 바꾸기", { variant: "off", "data-top": true })),
+        self(ui.button("되돌리기", { variant: "off", "data-back": true })),
+        `<span data-f="root" hidden>${help("고른 메뉴가 없어 최상위에 등록합니다.")}</span>`,
       ),
     ) +
-    ui.formRow(ui.field("메뉴 코드", ro(sel.code)), ui.field("메뉴 순서", ro(String(sel.order)))) +
-    nameFields(sel.name, sel.url, sel.use, `use-${key}`) +
-    `<div class="flex justify-end">${ui.button("저장")}</div>`;
+    ui.formRow(ui.field(`메뉴 코드 ${help("자동 채번")}`, ro(NEXT_CODE)), ui.field("메뉴 순서", ui.textField({ value: "", readonly: true, "data-f": "order" }))) +
+    help("코드는 저장할 때 확정됩니다. 순서는 상위 메뉴의 맨 끝이고, 저장 뒤 트리에서 옮깁니다.") +
+    nameFields("", "", true, `new-${key}`, true) +
+    `<div class="flex justify-end gap-[6px]">${ui.button("취소", { variant: "off", "data-cancel": true })}${ui.button("저장", { "data-save": true })}</div>` +
+    help("저장한 메뉴는 권한 관리의 메뉴 등록 팝업에 바로 나타납니다. 권한은 거기서 따로 줍니다.") +
+    `</section>`;
 
-  // 위치 옮기기 — 갈 수 없는 쪽은 눌리지 않는다
-  const sib = sibs(p), i = sib.indexOf(sel), prev = sib[i - 1], next = sib[i + 1];
-  // 갈 수 없는 쪽은 흐리게(1팀 버튼에 비활성 모양이 없어 덧붙인다)
-  const mv = (ok, label) => ui.button(label, { variant: "soft", disabled: !ok }).replace('class="', 'class="disabled:pointer-events-none disabled:opacity-40 ');
-  const move =
-    `<div class="grid grid-cols-2 gap-[6px] [&>*]:w-full">${mv(prev, "위로")}${mv(next, "아래로")}${mv(p, "상위로 올리기")}${mv(prev, "위 메뉴 안으로 넣기")}</div>` +
-    help("끌어 놓기와 같은 규칙입니다 — 하위 메뉴가 함께 움직이고 3단계를 넘길 수 없습니다. 트리 행에서 Alt + ↑ ↓ ← → 로도 옮깁니다.");
-
-  // 신규 메뉴 — 고른 메뉴 아래 맨 끝(3단계면 그 상위 아래)
-  const np = sel.lvl >= 3 ? sel.parent : sel;
-  const panelId = `new-${key}`;
-  const panel = ui.slidePanel(
-    panelId,
-    "신규 메뉴 등록",
-    ui.sectionHead(`신규 메뉴 등록 ${help(`${np.lvl + 1}단계`)}`) +
-      // ui.field 는 flex-1 이라 패널(세로 flex)에 바로 넣으면 칸이 늘어난다 — 묶음으로 감싼다
-      `<div class="flex flex-col gap-[18px]">` +
-      ui.field("서비스 코드", ro(s.code)) +
-      ui.field("상위 메뉴", stack(ro(`${np.code} · ${path(np)}`), ui.button("최상위 메뉴로 바꾸기", { variant: "off" }).replace('inline-flex', 'inline-flex self-start'))) +
-      ui.formRow(ui.field(`메뉴 코드 ${help("자동 채번")}`, ro(NEXT_CODE)), ui.field("메뉴 순서", ro(String(sibs(np).length + 1)))) +
-      help("코드는 저장할 때 확정됩니다. 순서는 상위 메뉴의 맨 끝이고, 저장 뒤 트리에서 옮깁니다.") +
-      nameFields("", "", true, `use-${panelId}`) +
-      `</div>` +
-      ui.panelButtons(),
+  return (
+    (s.off ? band("사용중지 서비스입니다 — 메뉴는 편집할 수 있지만 사용자 화면에는 보이지 않습니다") : "") +
+    `<div class="flex items-start gap-[24px]">` +
+    `<section class="flex min-w-0 flex-1 flex-col gap-[12px]">${ui.sectionHead(
+      `메뉴 트리 <span class="text-[14px] font-normal text-erp-label">${nodes.length}개 · 상위 메뉴 · 순서대로 · 최대 3단계</span>`,
+      dim(ui.button("신규 메뉴", { "data-new": key })),
+    )}${table}${
+      s.count > nodes.length ? help(`… 외 ${s.count - nodes.length}개 메뉴 · 목업 표본에서 생략`) : ""
+    }${help("손잡이를 끌어 같은 서비스 안에서 순서·상위 메뉴·단계를 바꿉니다. 행의 위·아래 끝에 놓으면 그 앞·뒤로, 가운데에 놓으면 그 메뉴 안 맨 끝으로 들어갑니다. 하위 메뉴는 함께 움직이고, 사용중지 메뉴는 흐리게 보입니다. 상위 메뉴가 사용중지면 그 아래 메뉴도 사용자 화면에 나오지 않습니다 — 하위의 사용 상태는 그대로 두어 상위를 다시 켜면 돌아옵니다.")}</section>` +
+    `<div class="flex w-[440px] shrink-0 flex-col" data-side="${key}" data-roots="${sibs(null).length}" data-next="${NEXT_CODE}">` +
+    nodes.map(detailOf).join("") +
+    empty +
+    form +
+    `</div></div>`
   );
-
-  return {
-    html:
-      (s.off ? band("사용중지 서비스입니다 — 메뉴는 편집할 수 있지만 사용자 화면에는 보이지 않습니다") : "") +
-      `<div class="flex items-start gap-[24px]">` +
-      `<section class="flex min-w-0 flex-1 flex-col gap-[12px]">${ui.sectionHead(
-        `메뉴 트리 <span class="text-[14px] font-normal text-erp-label">${nodes.length}개 · 상위 메뉴 · 순서대로 · 최대 3단계</span>`,
-        ui.slideTrigger("신규 메뉴", panelId),
-      )}${table}</section>` +
-      `<div class="flex w-[440px] shrink-0 flex-col gap-[24px]">` +
-      `<section class="flex flex-col gap-[18px]">${ui.sectionHead(`메뉴 상세 <span class="text-[14px] font-normal text-erp-label">${sel.lvl}단계</span>`)}${detail}</section>` +
-      `<section class="flex flex-col gap-[12px] border-t border-erp-divider pt-[24px]">${ui.sectionHead(`위치 옮기기 <span class="text-[14px] font-normal text-erp-label">누르면 바로 반영 · 저장과 따로</span>`)}${move}</section>` +
-      `</div></div>`,
-    panel,
-  };
 }
 
-export default ({ A, R }) => {
+// 오른쪽 칸 바꾸기(이 화면 전용 — 공통 erp.js 는 건드리지 않는다).
+// 줄을 누르면 그 메뉴 상세, 같은 줄을 다시 누르면 고른 것을 푼다. 신규 메뉴를 누르면 같은 칸이 등록 양식이 되고,
+// 트리의 새 자리(고른 메뉴 맨 끝, 3단계를 고르면 그 상위 맨 끝)에 ‘작성 중’ 줄이 선다. 취소·저장하면 상세로 돌아간다(데모라 트리에 넣지는 않는다).
+const MENU_SCRIPT = `<script>
+(() => {
+  const SEL = "bg-erp-thead-bg";
+  document.querySelectorAll("[data-side]").forEach((side) => {
+    const key = side.dataset.side;
+    const rows = [...document.querySelectorAll('[data-row="' + key + '"]')];
+    const body = rows[0].parentElement;
+    const newBtn = document.querySelector('[data-new="' + key + '"]');
+    const form = side.querySelector('[data-view="new"]');
+    const f = (k) => form.querySelector('[data-f="' + k + '"]');
+    const name = form.querySelector("[data-new-name]");
+    const top = form.querySelector("[data-top]");
+    const back = form.querySelector("[data-back]");
+    const first = rows.find((r) => r.classList.contains(SEL));
+    let cur = first ? first.dataset.code : null;
+    let draft = null, from = null;
+    const show = (v) => side.querySelectorAll("[data-view]").forEach((el) => (el.hidden = el.dataset.view !== v));
+    const mark = () => rows.forEach((r) => r.classList.toggle(SEL, !draft && r.dataset.code === cur));
+    const parentOf = (r) => {
+      for (let i = rows.indexOf(r) - 1; i >= 0; i--) if (+rows[i].dataset.lvl < +r.dataset.lvl) return rows[i];
+      return null;
+    };
+    const end = () => {
+      if (draft) draft.remove();
+      draft = null;
+      newBtn.disabled = false;
+      mark();
+      show(cur || "empty");
+    };
+    // 새 자리: 상위 줄(p)의 마지막 하위 다음, 상위가 없으면 트리 맨 끝
+    const place = (p) => {
+      if (draft) draft.remove();
+      const lvl = p ? +p.dataset.lvl + 1 : 1;
+      const order = p ? +p.dataset.kids + 1 : +side.dataset.roots + 1;
+      draft = document.createElement("tr");
+      draft.className = "h-[46px] border-b border-erp-thead-line bg-erp-thead-bg";
+      draft.innerHTML =
+        '<td class="px-[10px] text-center"></td>' +
+        '<td class="truncate px-[10px] text-left"><span style="padding-left:' + (lvl - 1) * 18 + 'px"><b class="font-semibold" data-draft-name></b> <span class="text-[13px] text-erp-label">작성 중</span></span></td>' +
+        '<td class="px-[10px] text-center">' + side.dataset.next + '</td><td class="px-[10px] text-left">—</td>' +
+        '<td class="px-[10px] text-center">' + order + '</td><td class="px-[10px] text-center text-[13px] text-erp-label">저장 전</td>';
+      draft.querySelector("[data-draft-name]").textContent = name.value.trim() || "새 메뉴";
+      let at = null;
+      if (p) {
+        let j = rows.indexOf(p) + 1;
+        while (j < rows.length && +rows[j].dataset.lvl > +p.dataset.lvl) j++;
+        at = rows[j] || null;
+      }
+      body.insertBefore(draft, at);
+      f("lvl").textContent = lvl;
+      f("parent").value = p ? p.dataset.label : "없음 · 최상위(1단계) 메뉴";
+      f("order").value = order;
+      f("hide").hidden = !(p && p.hasAttribute("data-hides"));
+      top.hidden = !p;
+      back.hidden = !!p || !from;
+      if (from) back.textContent = "‘" + from.dataset.name + "’ 아래로 되돌리기";
+      f("root").hidden = !!p || !!from;
+    };
+    rows.forEach((r) =>
+      r.addEventListener("click", () => {
+        if (draft) end();
+        cur = cur === r.dataset.code ? null : r.dataset.code;
+        mark();
+        show(cur || "empty");
+      }),
+    );
+    newBtn.addEventListener("click", () => {
+      const c = rows.find((r) => r.dataset.code === cur) || null;
+      from = c && +c.dataset.lvl >= 3 ? parentOf(c) : c;
+      name.value = "";
+      place(from);
+      newBtn.disabled = true;
+      mark();
+      show("new");
+      name.focus();
+    });
+    name.addEventListener("input", () => {
+      if (draft) draft.querySelector("[data-draft-name]").textContent = name.value.trim() || "새 메뉴";
+    });
+    top.addEventListener("click", () => place(null));
+    back.addEventListener("click", () => place(from));
+    form.querySelector("[data-cancel]").addEventListener("click", end);
+    form.querySelector("[data-save]").addEventListener("click", end);
+  });
+})();
+</script>`;
+
+export const render = ({ A, R }, { master = true } = {}) => {
   const tab = (k) => `${SVC[k].name}&nbsp;${sub(SVC[k].count)}${SVC[k].off ? `&nbsp;${ui.badge("off", "사용중지")}` : ""}`;
-  const t = Object.fromEntries(["erp", "plat", "resv"].map((k) => [k, treeTab(k, SVC[k])]));
   const body = ui.detailBody(
     x.tabs([
       { id: "services", label: "서비스 목록", html: services() },
-      { id: "erp", label: tab("erp"), html: t.erp.html },
-      { id: "plat", label: tab("plat"), html: t.plat.html },
-      { id: "resv", label: tab("resv"), html: t.resv.html },
+      { id: "erp", label: tab("erp"), html: treeTab("erp", SVC.erp) },
+      { id: "plat", label: tab("plat"), html: treeTab("plat", SVC.plat) },
+      { id: "resv", label: tab("resv"), html: treeTab("resv", SVC.resv) },
     ]),
   );
   return {
     title: "플랫폼 메뉴 관리",
-    html: ui.erpFrame({ header: platformHeader(A, R, { master: true }), title: "플랫폼 메뉴 관리", body, panels: t.erp.panel + t.plat.panel + t.resv.panel }),
+    html: ui.erpFrame({ header: platformHeader(A, R, { master }), title: "플랫폼 메뉴 관리", body }) + MENU_SCRIPT,
   };
 };
+
+export default (ctx) => render(ctx);

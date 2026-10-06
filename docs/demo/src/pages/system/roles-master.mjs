@@ -5,6 +5,7 @@ import * as ui from "../../ui.mjs";
 import { req } from "../../biz-form.mjs";
 import * as x from "../../extra.mjs";
 import { platformHeader, link } from "../../site.mjs";
+import { roleSide, tagRows, newButton } from "../../role-side.mjs";
 
 // 1팀 컴포넌트에 없는 것들. 토큰으로만 그린다.
 const note = (html) => `<p class="text-[14px] leading-[1.6] text-erp-label">${html}</p>`;
@@ -19,11 +20,6 @@ const kv = (rows) =>
 const band = (t) => `<div class="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[16px] py-[12px] text-[14px] font-medium text-erp-ink">${t}</div>`;
 // 2단 카드 본문의 카드 껍데기
 const CARD = "flex min-h-0 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px]";
-// dataTable 결과의 n 번째 줄에 클래스를 얹는다(선택 줄 바탕).
-const markRows = (table, idx, cls) => {
-  let n = -1;
-  return table.replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, (m) => (idx.includes(++n) ? m.replace('">', ` ${cls}">`) : m));
-};
 
 // 메뉴 트리 표본(플랫폼 메뉴 관리와 같다). [코드, 단계, 메뉴명, 사용, 묶음]
 const TREE = {
@@ -58,7 +54,7 @@ const GRANT = {
   BM000001: { PLATFORM: {}, ERP: full("ERP", true) },
   FM000001: { PLATFORM: {}, ERP: { MN000001: "R", MN000002: "RU", MN000004: "R", MN000005: "RCU", MN000006: "R", MN000007: "RCU", MN000008: "RCU", MN000009: "R", MN000010: "RCU", MN000011: "R", MN000012: "RCU", MN000013: "RCU", MN000014: "R", MN000015: "RCUD" } },
 };
-// [권한유형, 코드, 권한명, 구분, 설명, 최종수정일시, 수정자, 등록일, 등록자, 기준 고정 권한, 기본 서비스, 아래 권한 그룹]
+// [권한유형, 코드, 권한명, 구분, 설명, 최종수정일시, 수정자, 등록일, 등록자, 소속 고정 권한(추가 권한만), 기본 서비스, 아래 권한 그룹]
 const ROLES = [
   ["플랫폼 마스터", "PM000001", "플랫폼 마스터", "고정", "전체 메뉴 허용 고정 · 조회 전용", "2025-01-06 09:00", "시스템", "2025-01-06", "시스템", null, "PLATFORM"],
   ["플랫폼 관리자", "PA000001", "플랫폼 관리자", "고정", "플랫폼 관리자 기본 권한 · 추가 권한의 상한", "2026-08-12 14:20", "platjung", "2025-01-06", "시스템", null, "PLATFORM", "플랫폼 관리자 추가 권한"],
@@ -72,18 +68,17 @@ const OWN = "PM000001"; // 보는 사람(플랫폼 마스터)에게 연결된 �
 const SELECTED = "PA000002";
 
 const has = (map, code, op) => !!map?.[code]?.includes(op);
-const TIP = { base: "기준 고정 권한 밖", self: "본인 권한 범위 밖", bp: "BP 마스터·가맹 마스터 권한에는 플랫폼 관리 메뉴를 줄 수 없습니다" };
+const TIP = { self: "본인 권한 범위 밖", bp: "BP 마스터·가맹 마스터 권한에는 플랫폼 관리 메뉴를 줄 수 없습니다" };
 const SVC_OPTS = { PLATFORM: "Whale ERP 플랫폼 관리 · PLATFORM", ERP: "Whale ERP · WHALE_ERP" };
 
 // 메뉴 등록 확인창 하나(권한 하나). 목업 스크립트가 그리던 표를 빌드 때 그린다.
 function menuDialog(A, R, role, id) {
-  const [type, code, name, kind, , , , , , base, svc] = role;
+  const [type, code, name, kind, , , , , , base, svc] = role; // base: 추가 권한인지 가리는 데만 쓴다(상한은 설정자 본인 권한뿐 · 확정 2026-10-06)
   const isBp = code.startsWith("BM") || code.startsWith("FM");
   const block = (m, op) => {
     if (code === "PM000001") return "fixed";
     if (code === OWN) return "own";
     if (isBp && svc === "PLATFORM") return "bp";
-    if (base && !has(GRANT[base][svc], m[0], op)) return "base";
     return null;
   };
   // 사용중지 메뉴와 그 아래는 뺀다
@@ -138,8 +133,7 @@ function menuDialog(A, R, role, id) {
   if (code === "PM000001") bands.push(band("플랫폼 마스터 권한은 전체 메뉴 허용으로 고정되어 조회만 됩니다"));
   else if (code === OWN) bands.push(band("본인이 연결된 권한이라 바꿀 수 없습니다"));
   else {
-    // 마스터는 본인 범위 상한이 없어 그 안내 띠를 두지 않는다
-    if (base) bands.push(note(`추가 권한은 기준 고정 권한 ${base} 이 허용한 칸 안에서만 고릅니다. 흐린 칸은 기준 권한 밖입니다.`));
+    // 마스터는 본인 메뉴가 전체라 상한 안내 띠를 두지 않는다
     if (role[11]) bands.push(note(`이 고정 권한이 ${role[11]}의 상한입니다. 칸을 빼고 저장하면 저장 전에 영향 범위를 보여 드립니다.`));
   }
   const canSave = code !== "PM000001" && code !== OWN;
@@ -149,7 +143,6 @@ function menuDialog(A, R, role, id) {
     ui.detailTable("권한", [
       ["권한 유형", type],
       ["권한 구분", `${kind} 권한`],
-      ["기준 고정 권한", base ? `${base} 플랫폼 관리자` : sub("없음 · 고정 권한")],
       ["권한명", `${name} ${sub(code)}`],
     ]) +
     ui.field("서비스", ui.select([SVC_OPTS.PLATFORM, SVC_OPTS.ERP, "POS · POS"], { value: SVC_OPTS[svc] }) + help("사용중지 서비스(예약관리)는 고를 수 없습니다. 메뉴가 없는 서비스는 빈 표로 보입니다."), "w-[360px]") +
@@ -194,70 +187,48 @@ export default ({ A, R }) => {
     { header: "메뉴 등록 여부", width: "w-[130px]" },
     { header: "메뉴등록", width: "w-[124px]" },
   ];
-  const table = markRows(ui.dataTable(cols, rows), [ROLES.findIndex((r) => r[1] === SELECTED)], "bg-erp-thead-bg");
+  const table = tagRows(ui.dataTable(cols, rows), ROLES, SELECTED);
 
   const left =
     `<section class="${CARD} flex-1">` +
-    ui.sectionHead(`권한 목록 <span class="text-[14px] font-normal text-erp-label">7건 · 고정 4 · 추가 3</span>`, ui.slideTrigger("신규 등록", "role-new")) +
+    ui.sectionHead(`권한 목록 <span class="text-[14px] font-normal text-erp-label">7건 · 고정 4 · 추가 3</span>`, newButton()) +
     table +
     note("권한과 메뉴 설정을 바꾸면 연결된 사용자에게 재로그인 없이 다음 요청부터 적용됩니다. 왼쪽 메뉴 구성은 다음 화면 이동이나 새로고침 때 바뀝니다. 변경 전후 값·변경자·변경 일시는 권한 변경 이력으로 남고 이 화면에는 보이지 않습니다.") +
     `</section>`;
 
-  // 권한 삭제 확인창(목업 pop-del 의 첫 단계)
-  const delId = x.dialogId();
-  const delDialog = x.dialog(
-    delId,
-    "권한 삭제",
-    `<div class="flex flex-col gap-[12px] break-keep">` +
-      kv([
-        ["권한", `고객지원 담당 ${sub("PA000002")}`],
-        ["연결 사용자", `2명 ${sub("· platpark 박지우, platchoi 최유나(미사용)")}`],
-      ]) +
-      ui.field(req("대체 권한"), ui.select(["선택하세요", "PA000003 · 정산 담당", "PA000004 · 기준정보 조회"]) + help("변경 대상 사용자 2명의 권한을 고른 권한으로 한꺼번에 바꾼 뒤 삭제합니다. 기준 고정 권한 PA000001 플랫폼 관리자는 고를 수 없습니다 — 옮기면 권한이 기준까지 넓어집니다.")) +
-      band("로그인 중인 두 사용자도 다음 요청부터 새 권한으로 판정됩니다") +
-      `</div>`,
-    ui.button("취소", { variant: "off", "data-close": true }) + ui.button("삭제", { "data-close": true }),
-  );
+  // 권한 삭제 확인창(목업 pop-del 의 첫 단계) — 추가 권한마다 하나. 연결 사용자는 플랫폼 관리자 목록 표본(admins.mjs)을 따른다.
+  // 대체 권한은 다른 추가 권한만 고른다 — 고정 권한 PA000001 로 옮기면 권한이 플랫폼 관리자 기본 권한까지 넓어진다.
+  const USERS = { PA000002: ["platpark 박지우", "platchoi 최유나(미사용)"], PA000003: ["plathan 한승우"], PA000004: [] };
+  const del = {};
+  const delDialogs = ROLES.filter((r) => r[3] === "추가")
+    .map(([, code, name]) => {
+      const id = (del[code] = x.dialogId());
+      const users = USERS[code];
+      const others = ROLES.filter((r) => r[3] === "추가" && r[1] !== code).map((r) => `${r[1]} · ${r[2]}`);
+      const body = users.length
+        ? kv([
+            ["권한", `${name} ${sub(code)}`],
+            ["연결 사용자", `${users.length}명 ${sub(`· ${users.join(", ")}`)}`],
+          ]) +
+          ui.field(req("대체 권한"), ui.select(["선택하세요", ...others]) + help(`변경 대상 사용자 ${users.length}명의 권한을 고른 권한으로 한꺼번에 바꾼 뒤 삭제합니다. 고정 권한 PA000001 플랫폼 관리자는 고를 수 없습니다 — 옮기면 권한이 플랫폼 관리자 기본 권한까지 넓어집니다.`)) +
+          band(`로그인 중인 사용자도 다음 요청부터 새 권한으로 판정됩니다`)
+        : kv([
+            ["권한", `${name} ${sub(code)}`],
+            ["연결 사용자", "없음"],
+          ]) + note("연결된 사용자가 없어 바로 삭제합니다. 되돌릴 수 없습니다.");
+      return x.dialog(id, "권한 삭제", `<div class="flex flex-col gap-[12px] break-keep">${body}</div>`, ui.button("취소", { variant: "off", "data-close": true }) + ui.button("삭제", { "data-close": true }));
+    })
+    .join("");
 
-  // 오른쪽 — 고른 권한(PA000002 · 추가 권한) 상세. 권한유형·코드는 읽기 전용, 권한명·설명만 고친다.
-  const right =
-    `<section class="${CARD} w-[464px] shrink-0">` +
-    ui.sectionHead("권한 상세", `<span class="text-[14px] text-erp-label">추가 권한</span>`) +
-    ui.detailTable("기본 정보", [
-      ["권한유형", "플랫폼 관리자"],
-      ["기준 고정 권한", "PA000001 플랫폼 관리자"],
-      ["권한코드", "PA000002"],
-      ["등록", ui.detailValues(["2025-06-02", "platjung"])],
-      ["최종 수정", ui.detailValues(["2026-09-10 10:42", "platjung"])],
-    ]) +
-    `<div class="flex flex-col gap-[18px] pt-[6px]">` +
-    ui.field(req("권한명"), ui.textField({ value: "고객지원 담당" })) +
-    ui.field("설명", ui.textarea({ rows: 4, value: "커뮤니티관리·BP 조회" })) +
-    `</div>` +
-    `<div class="flex gap-[6px]">${x.dialogTrigger("삭제", delId, "soft")}<span class="flex-1"></span>${ui.button("저장")}</div>` +
-    `</section>`;
-
-  const panel = ui.slidePanel(
-    "role-new",
-    "신규 권한 등록",
-    `<h2 class="text-[18px] font-semibold text-erp-ink">신규 권한 등록</h2>` +
-      `<div class="flex flex-col gap-[18px]">` +
-      ui.field(req("권한유형"), ui.select(["플랫폼 관리자"]) + help("플랫폼 마스터·BP 마스터·가맹 마스터가 모두 등록되어 있어 플랫폼 관리자만 고를 수 있습니다.")) +
-      ui.field("권한코드 · 자동 채번", ui.textField({ value: "PA000005", readonly: true }) + help("등록할 때 확정됩니다. 같은 유형을 동시에 등록하면 겹치지 않는 다음 순번이 붙습니다.")) +
-      ui.field("기준 고정 권한", ui.textField({ value: "PA000001 · 플랫폼 관리자", readonly: true })) +
-      ui.field(req("권한명"), ui.textField({ placeholder: "예: 프로모션 담당" })) +
-      ui.field("설명", ui.textarea({ rows: 4, placeholder: "이 권한으로 맡길 업무를 적습니다" })) +
-      `</div>` +
-      ui.panelButtons("취소", "등록"),
-  );
+  // 오른쪽 — 고른 권한 상세·수정 / 신규 권한 등록. 권한유형·코드는 읽기 전용, 권한명·설명만 고친다.
+  const right = roleSide({ roles: ROLES, own: OWN, master: true, selected: SELECTED, del, card: CARD });
 
   return {
     title: "플랫폼 권한 관리",
     html: ui.erpFrame({
       header: platformHeader(A, R, { master: true }),
       title: "플랫폼 권한 관리",
-      body: `<div class="flex min-h-0 flex-1 gap-[12px] p-[24px]">${left}${right}</div>` + dialogs.join("") + delDialog,
-      panels: panel,
+      body: `<div class="flex min-h-0 flex-1 gap-[12px] p-[24px]">${left}${right}</div>` + dialogs.join("") + delDialogs,
     }),
   };
 };

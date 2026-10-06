@@ -23,7 +23,7 @@ const isEntry = (f) => relative(pagesDir, f) === "index.mjs";
 const files = walk(pagesDir).sort((a, b) => isEntry(a) - isEntry(b));
 const built = [];
 for (const file of files) {
-  const rel = relative(pagesDir, file).replace(/\.mjs$/, ".html");
+  const rel = relative(pagesDir, file).replaceAll("\\", "/").replace(/\.mjs$/, ".html"); // Windows 의 \ 구분자도 / 로 맞춘다
   const depth = rel.split("/").length - 1;
   const R = "../".repeat(depth); // 데모 루트까지
   const A = `${R}assets/`;

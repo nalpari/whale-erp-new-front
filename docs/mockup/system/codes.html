@@ -605,6 +605,20 @@
           note(tbody);
         });
       })();
+      /* 그룹 추가 · 상세 코드 추가 — 새 행은 표 맨 끝에 생겨 화면 밖일 수 있다. 상태가 바뀐 뒤 그 행의 첫 입력칸으로 내려가 커서를 둔다. */
+      (function () {
+        document.addEventListener("click", function (e) {
+          var b = e.target.closest("[data-state-go=\"newgroup\"], [data-state-go=\"newcode\"]");
+          if (!b) return;
+          var st = b.dataset.stateGo;
+          setTimeout(function () {
+            var input = document.querySelector("tr[data-show~=\"" + st + "\"]:not([hidden]) input[data-show=\"" + st + "\"]");
+            if (!input) return;
+            input.scrollIntoView({ block: "center", behavior: "smooth" });
+            input.focus({ preventScroll: true });
+          }, 0);
+        });
+      })();
     </script>
   </body>
 </html>

@@ -410,6 +410,10 @@
     width: 12px;
     height: 12px;
   }
+  .size-\[13px\] {
+    width: 13px;
+    height: 13px;
+  }
   .size-\[14px\] {
     width: 14px;
     height: 14px;
@@ -1404,6 +1408,9 @@
   .py-\[24px\] {
     padding-block: 24px;
   }
+  .py-\[36px\] {
+    padding-block: 36px;
+  }
   .py-\[40px\] {
     padding-block: 40px;
   }
@@ -1585,6 +1592,9 @@
   }
   .break-keep {
     word-break: keep-all;
+  }
+  .whitespace-normal {
+    white-space: normal;
   }
   .whitespace-nowrap {
     white-space: nowrap;
