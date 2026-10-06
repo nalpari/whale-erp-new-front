@@ -347,156 +347,156 @@
                   </div>
                   <div class="gap__opt is-picked" data-side="b">
                     <div class="gap__label">B · 그 점포의 운영 화면 · 이 화면</div>
-                    <p>오늘 근무스케줄·TO-DO 진행·급여 예정·직원과 계약을 한 화면에 둔다. 처리 대기는 그대로 남긴다.</p>
+                    <p>시안 배치대로 공지 띠 · 운영 점포 정보 · 직원 급여 · TO-DO · 내 문의 · 근무스케줄(주·요일, 근무 유형 색) · 직원 정보를 둔다. 처리 대기는 시안처럼 뺀다.</p>
                   </div>
                 </div>
                 <p class="gap__note">
                   가맹관리자는 고를 점포가 하나라 처음부터 B 다. BP 마스터·BP 관리자는 늘 “전체”로 시작하고(HOME-4),
-                  범위 선택기에서 점포 하나를 고를 때만 B 로 바뀐다. 시안에서 가져오지 않은 것: <b>운영 점포 정보</b>(점장·영업시간·개점은 1팀 점포 데이터),
-                  <b>직원 초대 버튼</b>(채용은 근로계약서 초안에서만 시작한다), <b>등록 직원 4 / 5명</b>(직원 수 상한은 1차에 없다).
+                  범위 선택기에서 점포 하나를 고를 때만 B 로 바뀐다. 시안에서 가져오지 않은 것:
+                  <b>직원 초대 버튼</b>(채용은 근로계약서 초안에서만 시작한다), <b>등록 직원 4 / 5명</b>(직원 수 상한은 1차에 없다). 근무 유형별 색은 근무표 규칙(유형은 글자로만)과 다르게 이 화면에서만 시안을 따랐다(2026-10-06 재영).
                 </p>
               </div>
 
-              <div class="figures">
-                <a class="figure" href="../staff/index.html" title="/staff?status=active">
-                  <div class="figure__label">재직 직원 <span data-icon="arrowright" data-icon-size="12"></span></div>
-                  <div class="stat">6<span class="stat__unit">명</span></div>
-                  <div class="figure__delta"><span class="warn">미체결 계약 1</span><span class="subtle">· 정직원 2 · 파트 4</span></div>
-                </a>
-                <a class="figure" href="../staff/index.html#sched" title="/staff/attendance?date=today">
-                  <div class="figure__label">오늘 출근 <span data-icon="arrowright" data-icon-size="12"></span></div>
-                  <div class="stat">5<span class="stat__unit">명</span></div>
-                  <div class="figure__delta"><span class="subtle">근무 예정 6</span><span class="warn">· 미출근 1</span></div>
-                </a>
-                <a class="figure" href="../staff/index.html#todo" title="/staff/todos?date=today">
-                  <div class="figure__label">오늘 TO-DO <span data-icon="arrowright" data-icon-size="12"></span></div>
-                  <div class="stat">7<span class="stat__unit">/ 12건</span></div>
-                  <div class="figure__delta"><span class="meter" style="flex: 1"><i style="width: 58%"></i></span><span class="warn">긴급 미완료 1</span></div>
-                </a>
-                <a class="figure" href="../staff/index.html#pay" title="/staff/payslips?month=2026-09">
-                  <div class="figure__label">9월 급여 예정 <span data-icon="arrowright" data-icon-size="12"></span></div>
-                  <div class="stat">1,184<span class="stat__unit">만원</span></div>
-                  <div class="figure__delta"><span class="subtle">정직원 2 · 642만 · 파트 4 · 542만 · 명세서 초안 합계</span></div>
-                </a>
-              </div>
-
-              <div class="grid grid--7-5">
-                <!-- 오늘 근무스케줄 : 시안의 하루 시간대 막대. 막대는 근무스케줄, 글자는 출퇴근 상태 -->
-                <section class="panel">
-                  <div class="panel__head">
-                    <h2 class="t-h2">오늘 근무스케줄</h2>
-                    <span class="badge badge--quiet">09-03 (목) · 모리커피 을지로점</span>
-                    <div class="panel__end">
-                      <a class="tbtn" href="../staff/index.html#sched">근무스케줄 관리</a>
-                    </div>
-                  </div>
-                  <div class="panel__body">
-                    <div class="tl">
-                      <div class="tl__head"><span class="tl__tick">07</span><span class="tl__tick">08</span><span class="tl__tick">09</span><span class="tl__tick">10</span><span class="tl__tick">11</span><span class="tl__tick">12</span><span class="tl__tick">13</span><span class="tl__tick">14</span><span class="tl__tick">15</span><span class="tl__tick">16</span><span class="tl__tick">17</span><span class="tl__tick">18</span><span class="tl__tick">19</span><span class="tl__tick">20</span><span class="tl__tick">21</span></div>
-                        <div class="tl__row">
-                          <span class="tl__name">김민재<span>정직원</span></span>
-                          <div class="tl__track"><div class="tl__bar" style="left: 13.333%; width: 60.000%">09:00-18:00 · 근무 중</div></div>
-                        </div>
-                        <div class="tl__row">
-                          <span class="tl__name">이수빈<span>파트</span></span>
-                          <div class="tl__track"><div class="tl__bar" style="left: 13.333%; width: 40.000%">09:00-15:00 · 근무 중</div></div>
-                        </div>
-                        <div class="tl__row">
-                          <span class="tl__name">정우진<span>파트</span></span>
-                          <div class="tl__track"><div class="tl__bar" style="left: 26.667%; width: 40.000%">11:00-17:00 · 근무 중</div></div>
-                        </div>
-                        <div class="tl__row">
-                          <span class="tl__name">최유나<span>정직원</span></span>
-                          <div class="tl__track"><div class="tl__bar" style="left: 26.667%; width: 60.000%">11:00-20:00 · 근무 중</div></div>
-                        </div>
-                        <div class="tl__row">
-                          <span class="tl__name">한지원<span>파트</span></span>
-                          <div class="tl__track"><div class="tl__bar" style="left: 30.000%; width: 33.333%">11:30-16:30 · 근무 중</div></div>
-                        </div>
-                        <div class="tl__row">
-                          <span class="tl__name">강다은<span>파트</span></span>
-                          <div class="tl__track"><div class="tl__bar tl__bar--blocked" style="left: 33.333%; width: 40.000%">12:00-18:00 · 미출근</div></div>
-                        </div>
-                      <div class="tl__cover"><span class="tl__cell">—</span><span class="tl__cell">—</span><span class="tl__cell" data-n="2">2</span><span class="tl__cell" data-n="2">2</span><span class="tl__cell" data-n="4">4</span><span class="tl__cell" data-n="6">6</span><span class="tl__cell" data-n="6">6</span><span class="tl__cell" data-n="6">6</span><span class="tl__cell" data-n="5">5</span><span class="tl__cell" data-n="5">5</span><span class="tl__cell" data-n="3">3</span><span class="tl__cell" data-n="1">1</span><span class="tl__cell" data-n="1">1</span><span class="tl__cell">—</span><span class="tl__cell">—</span></div>
-                    </div>
-                  </div>
-                  <div class="panel__foot">
-                    <span>근무 6 · 근무 중 5 · 미출근 1 · 아래 띠는 시간대별 근무 인원</span>
-                    <a class="tbtn right" href="../staff/index.html#sched">출퇴근 현황</a>
-                  </div>
-                </section>
-
-                <section class="panel">
-                  <div class="panel__head">
-                    <h2 class="t-h2">처리 대기</h2>
-                    <span class="badge badge--warn">3건</span>
-                  </div>
-                  <div class="rows rows--hover">
-                    <a class="row" href="../staff/index.html#contracts">
-                      <span class="badge badge--warn">계약</span>
-                      <div class="rowmain__text"><b>근로계약 서명 대기 1건</b><span>강다은 · 발송 후 6일 경과</span></div>
-                      <span class="row__end" data-icon="arrowright" data-icon-size="14"></span>
-                    </a>
-                    <a class="row" href="../staff/invites-holds.html">
-                      <span class="badge badge--risk">직원</span>
-                      <div class="rowmain__text"><b>가입 연결 확인 필요 1건</b><span>박서연 · 번호 불일치 · 4일 경과</span></div>
-                      <span class="row__end" data-icon="arrowright" data-icon-size="14"></span>
-                    </a>
-                    <a class="row" href="../staff/index.html#todo">
-                      <span class="badge badge--quiet">TO-DO</span>
-                      <div class="rowmain__text"><b>긴급 TO-DO 미완료 1건</b><span>냉장고 재료 폐기 · 오늘 14:00</span></div>
-                      <span class="row__end" data-icon="arrowright" data-icon-size="14"></span>
-                    </a>
-                  </div>
-                  <div class="panel__head">
-                    <h2 class="t-h2">오늘 TO-DO</h2>
-                    <span class="badge badge--quiet">미완료 5</span>
-                  </div>
-                  <div class="rows rows--hover">
-                    <a class="row" href="../staff/index.html#todo">
-                      <span class="badge badge--risk">긴급</span>
-                      <div class="rowmain__text"><b>냉장고 재료 폐기</b><span>오늘 14:00 · 근무지 전체 · 한 명 수행 · 대기</span></div>
-                      <span class="row__end" data-icon="arrowright" data-icon-size="14"></span>
-                    </a>
-                    <a class="row" href="../staff/index.html#todo">
-                      <span class="badge badge--quiet">일반</span>
-                      <div class="rowmain__text"><b>신메뉴 POP 교체</b><span>오늘 · 김민재 · 진행 중</span></div>
-                      <span class="row__end" data-icon="arrowright" data-icon-size="14"></span>
-                    </a>
-                  </div>
-                  <div class="panel__foot"><span>외 3건</span><a class="tbtn right" href="../staff/index.html#todo">TO-DO 리스트</a></div>
-                </section>
-              </div>
-
-              <!-- 직원과 근로계약 : 시안의 직원 정보 표. 초대 버튼 대신 계약서 작성 -->
+              <!-- 공지 띠 : 시안 맨 위 한 줄 -->
               <section class="panel">
                 <div class="panel__head">
-                  <h2 class="t-h2">직원과 근로계약</h2>
+                  <h2 class="t-h2">공지사항</h2>
+                  <div class="rowmain__text" style="flex: 1; flex-direction: row; gap: var(--s-6); overflow: hidden">
+                    <span><span class="badge badge--info">업데이트</span> 급여명세서 일괄 발송 기능이 추가되었습니다 <span class="subtle mono">09-01</span></span>
+                    <span><span class="badge badge--warn">점검</span> 정기 시스템 점검 안내 (09-14 02:00~05:00) <span class="subtle mono">08-29</span></span>
+                    <span><span class="badge badge--quiet">안내</span> 추석 연휴 고객센터 운영 안내 <span class="subtle mono">08-27</span></span>
+                  </div>
+                  <div class="panel__end"><a class="tbtn" href="notices.html">공지 목록</a></div>
+                </div>
+              </section>
+
+              <!-- 카드 넷 : 시안의 운영 점포 정보 · 직원 급여 · TO-DO · 내 문의 -->
+              <div class="grid grid--4">
+                <section class="panel">
+                  <div class="panel__head"><h2 class="t-h2">운영 점포 정보</h2><div class="panel__end"><a class="tbtn" href="#" title="점포관리는 1팀 영역">점포 정보 관리</a></div></div>
+                  <div class="panel__body">
+                    <dl class="kv">
+                      <dt>점포</dt><dd>모리커피 을지로점 <span class="badge">가맹</span></dd>
+                      <dt>점장</dt><dd>김민재 <span class="subtle mono">010-****-2841</span></dd>
+                      <dt>영업시간</dt><dd class="mono">09:00~익일 02:00</dd>
+                      <dt>개점</dt><dd class="mono">2024-03</dd>
+                    </dl>
+                  </div>
+                  <div class="panel__note">1팀 점포 정보를 읽기만 한다. 점장 칸이 1팀 점포 데이터에 있는지는 1팀 확인이 필요하다.</div>
+                </section>
+                <section class="panel">
+                  <div class="panel__head"><h2 class="t-h2">직원 급여</h2><div class="panel__end"><a class="tbtn" href="../staff/index.html#pay">급여명세서</a></div></div>
+                  <div class="panel__body">
+                    <div class="figure__label">9월 급여 지급 예정</div>
+                    <div class="stat">1,184<span class="stat__unit">만원</span></div>
+                    <div class="subtle" style="font-size: 12px">직원 6명 · 급여명세서 초안 합계</div>
+                    <dl class="kv" style="margin-top: var(--s-4)">
+                      <dt>정직원 2명</dt><dd class="mono">642만원</dd>
+                      <dt>파트타이머 4명</dt><dd class="mono">542만원</dd>
+                    </dl>
+                  </div>
+                </section>
+                <section class="panel">
+                  <div class="panel__head"><h2 class="t-h2">TO-DO</h2><div class="panel__end"><a class="tbtn" href="../staff/index.html#todo">TO-DO 리스트</a></div></div>
+                  <div class="panel__body">
+                    <div class="spread"><span class="figure__label">오늘 완료</span><span class="stat" style="font-size: 22px">7<span class="stat__unit">/ 12건</span></span></div>
+                    <div class="meter" style="margin: var(--s-2) 0"><i style="width: 58%"></i></div>
+                    <div class="subtle" style="font-size: 12px">미완료 5건 · <span class="warn">긴급 1</span></div>
+                  </div>
+                  <div class="rows rows--hover">
+                    <a class="row" href="../staff/index.html#todo"><span class="badge badge--risk">긴급</span><div class="rowmain__text"><b>냉장고 재료 폐기</b><span>오늘 14:00 · 근무지 전체</span></div></a>
+                    <a class="row" href="../staff/index.html#todo"><span class="badge badge--quiet">일반</span><div class="rowmain__text"><b>신메뉴 POP 교체</b><span>김민재 · 진행 중</span></div></a>
+                  </div>
+                  <div class="panel__foot"><span>외 3건</span></div>
+                </section>
+                <section class="panel">
+                  <div class="panel__head"><h2 class="t-h2">내 문의</h2><div class="panel__end"><a class="tbtn" href="../support/index.html">문의 내역</a></div></div>
+                  <div class="panel__body"><span class="subtle" style="font-size: 12px">답변 대기 <b class="warn">1</b>건 · 전체 2건</span></div>
+                  <div class="rows rows--hover">
+                    <a class="row" href="#"><span class="badge badge--warn">접수</span><div class="rowmain__text"><b>급여명세서 발송 후 직원 앱에서 보이지 않습니다</b><span class="mono">09-02</span></div></a>
+                    <a class="row" href="#"><span class="badge badge--ok">답변완료</span><div class="rowmain__text"><b>근무스케줄을 주 단위로 일괄 등록할 수 있나요</b><span class="mono">08-27</span></div></a>
+                  </div>
+                  <div class="panel__body"><a class="btn btn--primary btn--block" href="../support/index.html">문의하기</a></div>
+                </section>
+              </div>
+
+              <!-- 근무스케줄 : 시안의 주·요일 고르기, 주간/월간 보기, 익일 새벽까지의 시간축, 근무 유형별 색 -->
+              <section class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">근무스케줄</h2>
+                  <span class="badge badge--quiet">모리커피 을지로점 · 09-03 (목)</span>
+                  <span class="badge badge--info">영업일 기준 · 마감 익일 02:00</span>
+                  <div class="panel__end">
+                    <div class="seg"><button type="button" aria-pressed="true">주간 보기</button><button type="button" aria-pressed="false">월간 보기</button></div>
+                    <a class="tbtn" href="../staff/index.html#sched">근무스케줄 관리</a>
+                  </div>
+                </div>
+                <div class="panel__body">
+                  <div class="spread" style="margin-bottom: var(--s-3)">
+                    <div class="seg"><button type="button" aria-pressed="true">1주</button><button type="button" aria-pressed="false">2주</button><button type="button" aria-pressed="false">3주</button><button type="button" aria-pressed="false">4주</button><button type="button" aria-pressed="false">5주</button></div>
+                    <span class="subtle" style="font-size: 12px">2026년 9월 1주 · 08-31 ~ 09-06</span>
+                  </div>
+                  <div style="display: flex; gap: 6px; margin-bottom: var(--s-4)"><button type="button" class="btn btn--sm btn--secondary" style="flex: 1; justify-content: center" aria-pressed="false">월 31 <span class="subtle" style="margin-left: 6px">5명</span></button><button type="button" class="btn btn--sm btn--secondary" style="flex: 1; justify-content: center" aria-pressed="false">화 1 <span class="subtle" style="margin-left: 6px">6명</span></button><button type="button" class="btn btn--sm btn--secondary" style="flex: 1; justify-content: center" aria-pressed="false">수 2 <span class="subtle" style="margin-left: 6px">6명</span></button><button type="button" class="btn btn--sm btn--primary" style="flex: 1; justify-content: center" aria-pressed="true">목 3 <span class="subtle" style="margin-left: 6px">6명</span></button><button type="button" class="btn btn--sm btn--secondary" style="flex: 1; justify-content: center" aria-pressed="false">금 4 <span class="subtle" style="margin-left: 6px">6명</span></button><button type="button" class="btn btn--sm btn--secondary" style="flex: 1; justify-content: center" aria-pressed="false">토 5 <span class="subtle" style="margin-left: 6px">4명</span></button><button type="button" class="btn btn--sm btn--secondary" style="flex: 1; justify-content: center" aria-pressed="false">일 6 <span class="subtle" style="margin-left: 6px">3명</span></button></div>
+                  <div class="subtle" style="font-size: 12.5px; margin-bottom: var(--s-3)"><b style="color: var(--ink)">배치 6명</b> · 근무 중 5명 · 미출근 1명 · <a class="tbtn" href="../staff/index.html#sched">출퇴근 현황</a></div>
+                  <div class="tl">
+                    <div class="tl__head"><span class="tl__tick">09</span><span class="tl__tick">10</span><span class="tl__tick">11</span><span class="tl__tick">12</span><span class="tl__tick">13</span><span class="tl__tick">14</span><span class="tl__tick">15</span><span class="tl__tick">16</span><span class="tl__tick">17</span><span class="tl__tick">18</span><span class="tl__tick">19</span><span class="tl__tick">20</span><span class="tl__tick">21</span><span class="tl__tick">22</span><span class="tl__tick">23</span><span class="tl__tick">익일 00</span><span class="tl__tick">익일 01</span></div>
+                      <div class="tl__row">
+                        <span class="tl__name">김민재<span>정직원</span></span>
+                        <div class="tl__track" style="background-image: repeating-linear-gradient(to right, var(--hairline) 0 1px, transparent 1px calc(100% / 17))"><div class="tl__bar" style="left: 0.000%; width: 52.941%; background: var(--info-wash); color: var(--info); border: 1px solid var(--info-line)"><b>주간</b>&nbsp;09:00~18:00</div></div>
+                      </div>
+                      <div class="tl__row">
+                        <span class="tl__name">이수빈<span>파트타이머</span></span>
+                        <div class="tl__track" style="background-image: repeating-linear-gradient(to right, var(--hairline) 0 1px, transparent 1px calc(100% / 17))"><div class="tl__bar" style="left: 0.000%; width: 35.294%; background: var(--ok-wash); color: var(--ok-text); border: 1px solid var(--ok-line)"><b>오픈</b>&nbsp;09:00~15:00</div></div>
+                      </div>
+                      <div class="tl__row">
+                        <span class="tl__name">최유나<span>정직원</span></span>
+                        <div class="tl__track" style="background-image: repeating-linear-gradient(to right, var(--hairline) 0 1px, transparent 1px calc(100% / 17))"><div class="tl__bar" style="left: 11.765%; width: 52.941%; background: var(--info-wash); color: var(--info); border: 1px solid var(--info-line)"><b>주간</b>&nbsp;11:00~20:00</div></div>
+                      </div>
+                      <div class="tl__row">
+                        <span class="tl__name">강다은<span>파트타이머</span></span>
+                        <div class="tl__track" style="background-image: repeating-linear-gradient(to right, var(--hairline) 0 1px, transparent 1px calc(100% / 17))"><div class="tl__bar" style="left: 17.647%; width: 35.294%; background: var(--warn-wash); color: var(--warn); border: 1px dashed var(--risk-line)"><b>미들</b>&nbsp;12:00~18:00 · 미출근</div></div>
+                      </div>
+                      <div class="tl__row">
+                        <span class="tl__name">정우진<span>파트타이머</span></span>
+                        <div class="tl__track" style="background-image: repeating-linear-gradient(to right, var(--hairline) 0 1px, transparent 1px calc(100% / 17))"><div class="tl__bar" style="left: 23.529%; width: 35.294%; background: var(--warn-wash); color: var(--warn); border: 1px solid var(--warn-line)"><b>미들</b>&nbsp;13:00~19:00</div></div>
+                      </div>
+                      <div class="tl__row">
+                        <span class="tl__name">한지원<span>파트타이머</span></span>
+                        <div class="tl__track" style="background-image: repeating-linear-gradient(to right, var(--hairline) 0 1px, transparent 1px calc(100% / 17))"><div class="tl__bar" style="left: 52.941%; width: 41.176%; background: var(--preview-wash); color: #7a3fa8; border: 1px solid var(--preview-line)"><b>마감</b>&nbsp;18:00~익일 01:00</div></div>
+                      </div>
+                  </div>
+                  <div class="tl__legend" style="margin-top: var(--s-3)"><b><span class="tl__swatch" style="background: var(--info-wash); border-color: var(--info-line)"></span>주간</b><b><span class="tl__swatch" style="background: var(--ok-wash); border-color: var(--ok-line)"></span>오픈</b><b><span class="tl__swatch" style="background: var(--warn-wash); border-color: var(--warn-line)"></span>미들</b><b><span class="tl__swatch" style="background: var(--preview-wash); border-color: var(--preview-line)"></span>마감</b></div>
+                </div>
+              </section>
+
+              <!-- 직원 정보 : 시안의 직원 표. 초대 버튼 대신 계약서 작성, 직원 수 상한 표시는 뺐다 -->
+              <section class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">직원 정보</h2>
                   <span class="badge badge--quiet">재직 6 · 가입 대기 1</span>
                   <div class="panel__end">
-                    <a class="tbtn" href="../staff/index.html">직원 정보 관리</a>
+                    <a class="tbtn" href="../staff/index.html#contracts">근로계약 관리</a>
+                    <a class="tbtn" href="../staff/index.html">직원 관리</a>
                     <a class="btn btn--primary btn--sm" href="../staff/contracts-new.html">계약서 작성</a>
                   </div>
                 </div>
                 <div class="tblwrap">
                   <table class="tbl tbl--dense">
                     <thead>
-                      <tr><th scope="col">직원</th><th scope="col">고용 형태</th><th scope="col">근무 시간</th><th scope="col">근무요일</th><th scope="col">근로계약</th><th scope="col">재직</th></tr>
+                      <tr><th scope="col">직원</th><th scope="col">점포</th><th scope="col">구분</th><th scope="col">근무 시간</th><th scope="col">근무요일</th><th scope="col">근로계약</th><th scope="col">상태</th></tr>
                     </thead>
                     <tbody>
-                      <tr><td class="k">김민재</td><td>정직원</td><td class="mono">09:00-18:00</td><td>월~금</td><td><span class="badge badge--ok">체결 완료</span> <span class="subtle">무기한</span></td><td>재직</td></tr>
-                      <tr><td class="k">최유나</td><td>정직원</td><td class="mono">11:00-20:00</td><td>화~토</td><td><span class="badge badge--ok">체결 완료</span> <span class="subtle">무기한</span></td><td>재직</td></tr>
-                      <tr><td class="k">이수빈</td><td>파트타이머</td><td class="mono">09:00-15:00</td><td>월·수·금</td><td><span class="badge badge--warn">갱신 예정 · D-18</span> <span class="subtle">~09-21</span></td><td>재직</td></tr>
-                      <tr><td class="k">정우진</td><td>파트타이머</td><td class="mono">11:00-17:00</td><td>목~일</td><td><span class="badge badge--ok">체결 완료</span> <span class="subtle">~2027-02-28</span></td><td>재직</td></tr>
-                      <tr><td class="k">한지원</td><td>파트타이머</td><td class="mono">11:30-16:30</td><td>화·목</td><td><span class="badge badge--ok">체결 완료</span> <span class="subtle">~2027-05-31</span></td><td>재직</td></tr>
-                      <tr><td class="k">강다은</td><td>파트타이머</td><td class="mono">12:00-18:00</td><td>월~금</td><td><span class="badge badge--warn">서명 대기</span> <span class="subtle">날인 기한 09-27</span></td><td>재직</td></tr>
-                      <tr><td class="k">박서연</td><td>파트타이머</td><td class="mono nil">—</td><td class="nil">—</td><td><span class="badge badge--risk">연결 보류</span> <span class="subtle">번호 불일치</span></td><td class="subtle">가입 대기</td></tr>
+                      <tr><td class="k">김민재</td><td>을지로점</td><td>정직원</td><td class="mono">09:00~18:00</td><td>월~금</td><td><span class="badge badge--ok">체결 완료</span> <span class="subtle">무기한</span></td><td>재직</td></tr>
+                      <tr><td class="k">최유나</td><td>을지로점</td><td>정직원</td><td class="mono">11:00~20:00</td><td>화~토</td><td><span class="badge badge--ok">체결 완료</span> <span class="subtle">무기한</span></td><td>재직</td></tr>
+                      <tr><td class="k">이수빈</td><td>을지로점</td><td>파트타이머</td><td class="mono">09:00~15:00</td><td>월·수·금</td><td><span class="badge badge--warn">갱신 예정 · D-18</span> <span class="subtle">~09-21</span></td><td>재직</td></tr>
+                      <tr><td class="k">강다은</td><td>을지로점</td><td>파트타이머</td><td class="mono">12:00~18:00</td><td>월~금</td><td><span class="badge badge--warn">서명 대기</span> <span class="subtle">날인 기한 09-27</span></td><td>재직</td></tr>
+                      <tr><td class="k">정우진</td><td>을지로점</td><td>파트타이머</td><td class="mono">13:00~19:00</td><td>목~일</td><td><span class="badge badge--ok">체결 완료</span> <span class="subtle">~2027-02-28</span></td><td>재직</td></tr>
+                      <tr><td class="k">한지원</td><td>을지로점</td><td>파트타이머</td><td class="mono">18:00~익일 01:00</td><td>금~일</td><td><span class="badge badge--ok">체결 완료</span> <span class="subtle">~2027-05-31</span></td><td>재직</td></tr>
+                      <tr><td class="k">박서연</td><td>을지로점</td><td>파트타이머</td><td class="mono nil">—</td><td class="nil">—</td><td><span class="badge badge--risk">연결 보류</span> <span class="subtle">번호 불일치</span></td><td class="subtle">가입 대기</td></tr>
                     </tbody>
                   </table>
                 </div>
-                <div class="panel__foot">
-                  <span>이름이 나오는 건 이 점포 소속뿐이다. 다른 소속의 계약·급여·출퇴근은 보이지 않는다</span>
-                </div>
+                <div class="panel__foot"><span>이름이 나오는 건 이 점포 소속뿐이다. 다른 소속의 계약·급여·출퇴근은 보이지 않는다</span></div>
               </section>
             </div>
           </div>
