@@ -5,16 +5,27 @@ description: DB·API·FRONT 세 계층이 같은 개념을 같은 영문 이름�
 tags: [convention, naming, shared]
 sources:
   - { id: naming-2026-09-30, resource: ../../docs/raw/2026-09-30-네이밍-규칙.md, title: WHALE ERP 네이밍 규칙 (DB · API · FRONT) }
-generated: { by: claude-code/opus-5.5, at: 2026-10-06T01:12:21Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-06T08:53:00Z }
 ---
 
 근거: `docs/raw/2026-09-30-네이밍-규칙.md` (3팀 기획 세션 · 2026-10-06 고침)
 
-**확정** — 2026-10-01 재영이 문서 전체를 확인했다. 새 라우트·타입·API 함수는 이 규칙을 따른다.
+# 범위
 
-세 저장소(`whale-erp-api`, `whale-erp-front`, `whale-erp-staff`)가 같은 개념을 같은 영문 이름으로 부르게 하려는 규약이다. 한글 용어는 공통 용어집의 표준 표기를 따르고, 여기 적힌 **영문 식별자**가 그 표준 표기의 코드 이름이다. 새 개념을 코드에 넣을 때는 대응표에 먼저 한 줄을 더한다.
+`whale-erp-api`, `whale-erp-front`(관리자 웹), `whale-erp-staff`(직원 근무 앱) 세
+저장소가 같은 개념을 같은 영문 이름으로 부르게 하는 규칙이다. 한글 용어는 공통
+용어집(`whale-erp-v2/CLAUDE.md`)의 표준 표기를 따르고, 여기의 **영문 식별자**가 그
+표준 표기의 코드 이름이다. 새 개념을 코드에 넣을 때는 대응표에 먼저 한 줄을 더한다.
 
-원본은 기획 세션이 관리한다. 원자료 `docs/raw/2026-09-30-네이밍-규칙.md` 한 파일을 제자리에서 고치고 세 저장소에 같은 내용으로 둔다. 파일 이름의 날짜는 만든 날이지 버전이 아니며, 고칠 때마다 머리말에 「고침」 줄을 더한다. 최신인지는 「고침」 줄과 `okf/log.md`를 비교해 확인하고, 고친 뒤 각 저장소에서 `/okf-ingest`를 돌린다. 새 개념이 생기면 공통 용어집에 표준 표기를 먼저 정하고 대응표에 영문 식별자를 더한다.
+**상태**: **확정** — 2026-10-01 재영이 1~5장 전체를, 2026-10-02 삭제 표시·기본키 이름을
+확인했다. 1팀(인증·계정 · BP·점포 · 설정·시스템관리) 영문 식별자와 DB 예외(식별자 1팀 예외)는
+**1팀이 판단하는 영역**이라 재영 확인 대상이 아니다(2026-10-02 재영). 2026-10-02 에 더했고, 근거는
+1팀 1차 논리 ERD(`docs/erd/team1/README.md`)와 2026-09-29·09-30 확정분이다.
+
+원본은 기획 세션이 관리한다. 원자료는 `docs/raw/2026-09-30-네이밍-규칙.md` 한 파일을
+제자리에서 고치고, 세 저장소의 `docs/raw/`에 같은 내용으로 둔다. 고친 뒤 각 저장소에서
+`/okf-ingest`를 돌린다. 파일 이름의 날짜는 만든 날이지 버전이 아니며, 고칠 때마다 머리말에
+「고침」 줄을 더한다. 이름이 그대로라 최신인지는 「고침」 줄과 `okf/log.md`를 비교해 확인한다.
 
 # 원칙
 
@@ -36,7 +47,22 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-06T01:12:21Z }
 | 이벤트 핸들러 | `handle` 접두 | `handleSubmit`, `handleProxyEntryClick` |
 | 쿼리 키 | `[자원, 범위, 조건]` | `['payslips', 'list', { storeId, month }]` |
 | 타입 | 자원 PascalCase 단수, enum 은 API 값 그대로 | `Payslip`, `PayslipStatus` |
-| 화면 문구 | enum → 한글 대응표를 한 곳에 | `PAYSLIP_STATUS_LABEL.CONFIRMED = '확정'` |
+| 화면 문구 | enum 한글은 `getEnum(name)` 으로 받은 `label` 을 쓴다. front·staff 에 상수 대응표를 두지 않는다 | `labelOf(await getEnum('PayslipStatus'), row.status)` |
+
+## API 타입·enum 공유 (2026-10-06 재영)
+
+| 항목 | 규칙 |
+|---|---|
+| enum 원본 | api 가 관리한다. 값은 Prisma·DB enum, 한글은 물리 ERD 원본(api `docs/erd-physical/_model.py`)과 API 전용 enum 목록에서 api 배포 때 만든다 |
+| enum 조회 | front·staff 는 `GET /enums`(전체)·`GET /enums/{name}`(하나)로 값·한글·순서를 받아 쓴다. 응답 `{ version, enums: { ContractStatus: [{ value, label, order }] } }`. enum 이 바뀌어도 front·staff 는 따로 작업하지 않는다 |
+| front·staff 캐시 | 데이터 접근 계층 한 곳(`getEnum(name)`)에서 Next 서버 캐시로 받는다. enum 은 api 배포 때만 바뀌므로 오래 두고, `version` 이 바뀌면 새로 받는다 |
+| 화면 | 등록 화면 선택지와 목록·상세의 한글 표시는 조회한 목록으로 그린다. 특정 값에 따라 동작이 갈리는 코드(예: 서명 대기일 때만 재발송)는 값을 코드에 적고, 새 값이 생기면 그 코드는 고친다 |
+| 공통코드 | enum 과 같은 모양으로 조회한다(`getCodes(group)`). 운영 중에 바뀌므로 플랫폼 관리자가 고치면 캐시를 비운다. 조회 API 는 1팀 공통코드와 맞춰 정한다 |
+| 요청·응답 타입 | api 가 `pnpm openapi:export` 로 `openapi/openapi.json` 을 커밋하고, front·staff 는 `openapi-typescript` 로 경로·입력·응답 타입을 생성한다(`WHALE_API_DIR`, 기본 `../whale-erp-api`). enum 필드에는 `@ApiProperty({ enum, enumName })` 를 단다. 이 타입은 enum 값 목록이 아니라 API 모양을 맞추는 데 쓴다 |
+
+남은 것: 1팀 동의 대기 — api·front 저장소를 1팀도 쓴다. 공통코드 조회 API 를 누가 만들지 1팀과 정한다.
+
+지금 front 에는 `getEnum`·`getCodes` 도, 생성한 요청·응답 타입도 없다. `src/lib/api.ts` 의 `Item` 은 손으로 적은 예제 타입이다. api 의 `/enums` 와 `openapi:export` 가 나온 뒤 만든다.
 
 # API (NestJS)
 
@@ -73,6 +99,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-06T01:12:21Z }
 | Prisma 모델 | PascalCase 단수형 + `@@map` | `model Contract { … @@map("contracts") }` |
 | 컬럼 | snake_case, Prisma 필드는 camelCase + `@map` | `start_date` ↔ `startDate` |
 | 기본키 · 외래키 | `{참조 단수}_id` · `{참조 단수}_id` (기본키도 같은 이름) | `contracts.contract_id`, `staff_members.staff_member_id`, 외래키 `store_id` |
+| 역할 외래키 | 사람(관리자)을 가리키는 외래키는 역할을 이름으로 `{역할}_by`. 한 테이블에 관리자 외래키가 여럿일 수 있어서다 (2026-10-06 재영) | `created_by`, `reviewed_by`, `confirmed_by` |
 | 시각 | `_at`, `timestamptz` | `signed_at`, `reviewed_at`, `created_at` |
 | 날짜만 | `_date` | `start_date`, `birth_date` |
 | 참·거짓 | `is_` · `has_` | `is_proxy_entry`, `is_premium_applied` |
@@ -94,11 +121,25 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-06T01:12:21Z }
 
 ERD 에 단수·복수가 섞인 이름은 다음 ERD 재생성 때 복수형으로 맞춘다. 이 저장소 `docs/erd/_build.py` 에 남은 것은 `attendance`, `schedule_history`, `access_log` 셋이고, `access_log` 는 `location_access_logs`(확인자료)로 바꾼다. 이름만 고쳐도 박스 폭과 연결점 좌표를 다시 맞춰야 해서, 테이블 구조가 바뀌어 어차피 다시 그릴 때 함께 처리한다. (2026-09-30 기획 세션 확인)
 
+## 식별자 1팀 예외
+
+1팀이 판단하는 영역이다. 재영 확인 대상이 아니다(2026-10-02 재영).
+
+| 대상 | 1팀 규칙 | 이유 |
+|---|---|---|
+| 공통코드 기본키 | `code_groups`는 `group_code`, `code_items`는 (`group_code`, `item_code`, `bp_code`) 복합 PK | 코드 자체가 식별자다. 셋 다 필수이고 등록 뒤 바꾸지 않는다 |
+| BP 기본키 | `bp_codes`는 PK `bp_code_id` 와 별도로 `bp_code`(BP+6자리)를 고유 식별자로 쓴다 | 외부 노출·화면 표기는 `bp_code` 다 |
+| 사람이 읽는 코드 | `{자원}_code` + 접두 6자리 | `bp_code`(BP), `store_code`(ST), `menu_code`(MN), `role_code`(유형코드, 예 BM000001). 자동 채번, 변경 불가 |
+| 공통코드 값 컬럼 | 논리 타입 `code`, 이름은 `{그룹 코드 소문자}_code` | `role_type_code`, `account_status_code`, `store_type_code`, `manage_owner_code` |
+| 상세코드 값 | 영문 대문자·숫자·밑줄 20자, 등록 후 변경 불가 | Prisma enum이 아니라 `code_items` 행이다 — 2장의 「상태 값」 규칙을 쓰지 않는다 |
+
 # 영문 식별자 (용어집 대응표)
 
 새 테이블·API·타입은 이 이름을 쓴다.
 
 DB 테이블은 복수형, 모델·타입은 PascalCase 단수형으로 바꿔 쓴다.
+
+인증 · 계정, BP · 점포, 설정 · 시스템관리 세 묶음은 1팀이 더한 식별자다. 1팀이 판단하는 영역이고 재영 확인 대상이 아니다(2026-10-02 재영).
 
 ## 사람 · 조직
 
@@ -107,22 +148,86 @@ DB 테이블은 복수형, 모델·타입은 PascalCase 단수형으로 바꿔 �
 | 플랫폼 마스터 / 플랫폼 관리자 | `PM` / `PA` | 공통코드 `ROLE_TYPE` 의 상세코드. DB 저장값이자 화면 표시값이고, `role_groups.role_code` 의 2글자 접두로도 쓴다(`PM000001`). `role_code` CHECK 제약이 `^[A-Z]{2}[0-9]{6}$` 라 2글자가 아니면 저장되지 않는다 |
 | BP 마스터 / BP 관리자 | `BM` / `BA` | 같은 공통코드. `BM000001` · `BA000001` |
 | 가맹마스터 / 가맹관리자 | `FM` / `FA` | 같은 공통코드. `FM000001` · `FA000001` |
-| BP | `bp` | 1팀 테이블, 3팀은 참조만 |
+| BP | `bp` | |
 | 본사 | `hq` | |
 | 점포 · 근무지 | `store` | 근무지는 직원 레코드의 `store_id` |
 | 직영 / 가맹 | `DIRECT` / `FRANCHISE` | `store_type` |
-| 계정 | `account` | 로그인 주체. api 의 기존 `staff` 테이블(템플릿의 인증 주체)과 직원 레코드 `staff_members` 는 다른 것이다. 계정 테이블을 만들 때 `staff` 를 정리한다 |
+| 계정 | `account` | 로그인 주체. api의 기존 `staff` 테이블(템플릿의 인증 주체)과 직원 레코드 `staff_members`는 다른 것이다. 계정 테이블을 만들 때 `staff`를 정리한다 |
+| 관리자 계정 | `admin_account` | 관리자 웹 로그인 주체. 아래 「인증 · 계정」 참고 |
 | 직원 레코드 | `staff_member` | 계정 1 : 레코드 N |
+| 직무 | `job_title` | 직원 레코드 칸. 근로계약서 초안 필수 |
 | 정직원 / 파트타이머 | `FULL_TIME` / `PART_TIME` | `employment_type` |
 | 업무 범위 · 범위 선택기 | `scope` · `ScopeSelector` | |
+
+## 인증 · 계정
+
+| 표준 표기 | 영문 식별자 | 비고 |
+|---|---|---|
+| 관리자 계정 | `admin_account` · 테이블 `admin_accounts` | 관리자 웹 로그인 주체. 3팀 `accounts`(직원 앱 계정)·`staff_members`(직원 레코드)와 다른 테이블이다. PK·FK 는 `admin_account_id` — 3팀 ERD 가 쓰던 `admin_id` 도 같이 맞췄다 |
+| 관리자 로그인ID | `login_id` | 영문·숫자 4~20자, 탈퇴·삭제 포함 고유, 변경 불가 |
+| 권한 유형 | `role_type_code` | 공통코드 `ROLE_TYPE` 6종. 등록 뒤 변경 불가 |
+| 계정 상태 | `account_status_code` | 공통코드 `ACCOUNT_STATUS`(사용 · 미사용 · 탈퇴) |
+| 가입경로 | `join_path_code` | 공통코드 `JOIN_PATH`(회원가입 · 플랫폼등록). 모든 계정 필수, 변경 불가 |
+| 탈퇴 사유 | `withdraw_reason_code` · `withdraw_reason_detail` | 공통코드 `WITHDRAW_REASON`(`WD_CLOSE` 등). 직접입력은 500자 |
+| 관리 점포 범위 | `is_all_stores` | true면 소속 BP 전체 점포, false면 `admin_store_mappings` 의 점포 |
+| 관리자 점포 매핑 | `admin_store_mapping` | (`admin_account_id`, `store_id`) 복합 PK |
+| 약관 버전 · 약관 유형 | `terms_version` · `terms_type_code` | 공통코드 `TERMS_TYPE` 6종(`TERMS_SERVICE` · `PRIVACY_COLLECT` BP 회원가입용, `STAFF_TERMS_SERVICE` · `STAFF_PRIVACY` 직원 앱 회원가입용, `MARKETING` · `LOCATION`) |
+| 약관 동의 이력 | `terms_agreement_log` | 동의 경로 `channel`(회원가입 · 최초 로그인 · 재동의 · 약관변경) |
+| 관리자 접속 상태 | `admin_session` | 접근 토큰 1시간, 갱신 토큰은 마지막 사용 후 1시간 |
+| 임시 비밀번호 | `temp_password` | 발급 용도 `purpose`(임시비밀번호 · 초기비밀번호 · 비밀번호초기화), 모두 1시간 만료 |
+| 관리자 로그인 이력 | `admin_login_log` | 실패 사유 `failure_reason`(불일치 · 잠금 · 미사용 · 탈퇴). 보존 1년 |
+| 메일 발송 이력 · 메일 유형 | `mail_send_log` · `mail_type_code` | 공통코드 `MAIL_TYPE` 8종. 보존 1년 |
+| 관리자 변경 이력 | `admin_change_history` | 보존 5년 |
+
+## BP · 점포
+
+| 표준 표기 | 영문 식별자 | 비고 |
+|---|---|---|
+| BP | `bp_code` · 테이블 `bp_codes` | PK는 `bp_code_id`, 외부 식별자는 `bp_code`(BP+6자리). 3팀은 참조만 한다 |
+| 플랫폼 BP | `is_platform` | `bp_codes` 에 한 행(BP000000)만. 고객 BP 대상 조회·배포·배치·중복검사에서 빠진다 |
+| BP 상태 | `account_status_code` | 공통코드 `ACCOUNT_STATUS`. BP 마스터 계정 상태와 같은 트랜잭션에서 함께 바뀐다 |
+| 사업자정보 | `biz_` 접두 | `biz_registration_number`, `biz_ceo_name`, `biz_open_date`, `biz_category`, `biz_item`, `biz_verified_at` 등 |
+| BP 변경 이력 | `bp_change_history` | 보존 5년 |
+| 점포 | `store` · `store_code` | 점포코드는 ST+6자리, 자동 채번, 변경 불가 |
+| 점포 유형 | `store_type_code` | 공통코드 `STORE_TYPE`(`DIRECT` 직영점포 · `FRANCHISE` 가맹점포), 변경 불가 |
+| 점포 상태 | `store_status_code` | 공통코드 `STORE_STATUS`(미운영 · 운영 · 폐점) |
+| 점포 층별정보 · 층수 구분 | `store_floor` · `floor_type_code` | 공통코드 `FLOOR_TYPE`(`GROUND` 지상 · `BASEMENT` 지하) |
+| 점포 대표 이미지 | `store_image_file` | |
+| 점포 사업자정보 | `store_business_profile` | 테이블 이름은 `info` 로 줄이지 않는다. 컬럼은 BP 사업자정보와 같은 `biz_` 접두 |
+| 점포 변경 이력 | `store_change_history` | 보존 5년 |
+
+## 설정 · 시스템관리
+
+| 표준 표기 | 영문 식별자 | 비고 |
+|---|---|---|
+| 권한 그룹 · 권한 코드 | `role_group` · `role_code` | 유형코드+6자리(`BM000001` 등), 고유, 변경 불가 |
+| 권한 메뉴 | `role_group_menu` | 메뉴별 CRUD 권한 |
+| 공통코드 그룹 | `code_group` · `group_code` | 대문자 밑줄(예 `EMP_TYPE`). 삭제한 그룹의 코드도 다시 쓰지 않는다 |
+| 상세 코드 | `code_item` · `item_code` · `label` | 플랫폼 원본 행과 BP별 행을 한 테이블에 담는다 |
+| 관리 주체 | `manage_owner_code` | 공통코드 `MANAGE_OWNER`(플랫폼고정 · 플랫폼제공 · BP전용). 등록 뒤 변경 불가 |
+| BP 적용 여부 | `is_bp_applied` | 플랫폼제공 그룹만. 적용으로 바꾸면 사용 중 모든 BP에 복사되고 되돌릴 수 없다 |
+| 메뉴 · 메뉴 코드 | `menu` · `menu_code` | MN+6자리, 자동 채번, 변경 불가. 최대 3단계(`parent_menu_id`, `depth`) |
+| 서비스 | `service_code` | 공통코드 `SERVICE`. 플랫폼고정 그룹이다 |
+| BP 휴일 | `bp_holiday` | 규칙을 한 줄로 저장하고 실제 날짜는 볼 때 계산한다 |
+| 휴일 유형 | `holiday_type_code` | 공통코드 `HOLIDAY_TYPE`(`DAY` 하루 · `PERIOD` 기간 · `REPEAT` 반복) |
+| 휴일 반복 유형 | `holiday_repeat_type_code` | 공통코드 `HOLIDAY_REPEAT_TYPE`(`DAILY` · `WEEKLY` · `MONTHLY` · `YEARLY`) |
+| 반복 종료 조건 | `repeat_end_type` · `repeat_end_date` · `repeat_count` | 없음 · 날짜 · 횟수 |
+| 휴일 적용 범위 | `is_all_stores` | 관리자 계정의 관리 점포 범위와 같은 이름을 쓴다 |
+| 휴일 점포 매핑 · 예외 점포 | `holiday_store_mapping` · `holiday_excluded_store` | 예외는 `effective_start_date` 부터 적용해 지난 날짜를 보존한다 |
+| 플랫폼 공식 휴일 | `public_holiday` | 출처 `source`(규칙 계산 · 공식 API) |
+| 공식 휴일 동기화 이력 | `public_holiday_synchronization_log` | |
+| BP 휴일 변경 이력 | `bp_holiday_change_history` | 보존 5년 |
 
 ## 채용 · 계약
 
 | 표준 표기 | 영문 식별자 | 비고 |
 |---|---|---|
-| 근로계약(서) | `contract` | 초안은 상태 `PENDING_SEND` 인 계약 |
+| 근로계약(서) | `contract` | 초안은 상태 `PENDING_SEND`인 계약 |
 | 근로계약 상태 6종 | `PENDING_SEND` · `PENDING_SIGNATURE` · `SIGNED` · `REJECTED` · `EXPIRED` · `ENDED` | 발송 대기 · 서명 대기 · 체결 완료 · 거부 · 만료 · 종료 |
 | 전자계약 / 종이 계약 | `ELECTRONIC` / `PAPER` | `contract_method` |
+| 임금계약서 | `wage_contract` | 종이 계약에서 따로 날인한 임금 약정 문서 |
+| 계약서 파일 구분 | `SENT_ORIGINAL` · `SIGNED_COPY` · `PAPER_EMPLOYMENT_CONTRACT` · `WAGE_CONTRACT` | `contract_documents.kind` — 발송 원본 · 날인 완료본 · 종이 계약 근로계약서 · 임금계약서 |
+| 4대보험 가입 여부 | `is_health_pension_insured` · `is_employment_injury_insured` | 근로계약 칸 두 개 — 건강보험·국민연금 / 고용보험·산재보험 |
 | 날인 · 필기 서명 · 날인 기한 | `sign` · `handwritten_signature` · `sign_deadline_at` | |
 | 재발송 | `resend` | |
 | 초대 · 초대 토큰 | `invitation` · `invitation_token` | |
@@ -167,7 +272,7 @@ DB 테이블은 복수형, 모델·타입은 PascalCase 단수형으로 바꿔 �
 | 지급 항목 / 공제 항목 | `earning` / `deduction` | 줄 하나는 `payslip_item` |
 | 기본 공제 / 추가 공제 | `BASIC` / `ADDITIONAL` | |
 | 비과세 | `is_tax_free` | |
-| 3.3% 원천징수 | `business_income_withholding` | 적용 여부는 `is_withholding_applied` |
+| 3.3% 원천징수 | `business_income_withholding` | 적용 여부 `is_withholding_applied` |
 | 연장·야간·휴일 가산 적용 여부 | `is_premium_applied` | |
 | 주휴수당 · 연장수당 | `weekly_holiday_pay` · `overtime_pay` | 항목 코드 |
 | 일괄 저장 | `bulk_export` | |
