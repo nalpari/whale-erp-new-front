@@ -731,6 +731,9 @@
   .w-\[464px\] {
     width: 464px;
   }
+  .w-\[480px\] {
+    width: 480px;
+  }
   .w-\[560px\] {
     width: 560px;
   }
@@ -930,9 +933,6 @@
   }
   .grid-cols-\[60px_1fr\] {
     grid-template-columns: 60px 1fr;
-  }
-  .grid-cols-\[80px_1fr\] {
-    grid-template-columns: 80px 1fr;
   }
   .grid-cols-\[84px_1fr\] {
     grid-template-columns: 84px 1fr;
@@ -1398,6 +1398,9 @@
   }
   .py-\[12px\] {
     padding-block: 12px;
+  }
+  .py-\[14px\] {
+    padding-block: 14px;
   }
   .py-\[18px\] {
     padding-block: 18px;
