@@ -21,7 +21,7 @@
 | 순서 | 그룹 코드 | 그룹명 |
 |:-:|---|---|
 | 1 | `SERVICE` | 서비스 |
-| 2 | `AUTH_TYPE` | 권한 유형 |
+| 2 | `ROLE_TYPE` | 권한 유형 |
 | 3 | `ACCOUNT_STATUS` | 계정 상태 |
 | 4 | `JOIN_PATH` | 가입경로 |
 | 5 | `WITHDRAW_REASON` | 탈퇴 사유 |
@@ -55,7 +55,7 @@
 | 11 | `WAITING_MANAGEMENT` | 대기순번관리 |
 | 12 | `RESERVATION` | 예약관리 |
 
-**② AUTH_TYPE — 권한 유형**
+**② ROLE_TYPE — 권한 유형**
 
 | 순서 | 코드값 | 코드명 |
 |:-:|---|---|
@@ -128,7 +128,7 @@
 
 | 순서 | 코드값 | 코드명 |
 |:-:|---|---|
-| 1 | `DIRECT` | 일반점포 |
+| 1 | `DIRECT` | 직영점포 |
 | 2 | `FRANCHISE` | 가맹점포 |
 
 **⑪ MANAGE_OWNER — 관리 주체**
@@ -143,23 +143,25 @@
 
 | 순서 | 코드값 | 코드명 |
 |:-:|---|---|
-| 1 | `TERMS_OF_USE` | 이용약관 |
-| 2 | `PRIVACY_CONSENT` | 개인정보 수집·이용 동의 |
-| 3 | `MARKETING_CONSENT` | 마케팅 수신 동의 |
-| 4 | `LOCATION_CONSENT` | 위치정보 수집·이용 동의 |
+| 1 | `TERMS_SERVICE` | 이용약관(BP 사업자 회원가입용) |
+| 2 | `PRIVACY_COLLECT` | 개인정보 수집·이용 동의(BP 사업자 회원가입용) |
+| 3 | `STAFF_TERMS_SERVICE` | 이용약관(직원 근무 앱 회원가입용) |
+| 4 | `STAFF_PRIVACY` | 개인정보 수집·이용 동의(직원 근무 앱 회원가입용) |
+| 5 | `MARKETING` | 마케팅 수신 동의 |
+| 6 | `LOCATION` | 위치정보 수집·이용 동의 |
 
 **⑬ MAIL_TYPE — 메일 유형**
 
 | 순서 | 코드값 | 코드명 |
 |:-:|---|---|
-| 1 | `SIGNUP_COMPLETED` | 회원가입 완료 |
-| 2 | `BP_SIGNUP_NOTICE` | 신규 BP 가입 알림 |
-| 3 | `BP_REGISTERED` | BP 신규 등록 |
-| 4 | `PLATFORM_ADMIN_ADDED` | 플랫폼 관리자 계정 생성 |
-| 5 | `BP_ADMIN_ADDED` | BP 관리자 계정 생성 |
+| 1 | `SIGNUP_DONE` | 회원가입 완료 |
+| 2 | `SIGNUP_ALERT` | 신규 BP 가입 알림 |
+| 3 | `BP_REGISTER` | BP 신규 등록 |
+| 4 | `PLAT_ADMIN_CREATE` | 플랫폼 관리자 계정 생성 |
+| 5 | `BP_ADMIN_CREATE` | BP 관리자 계정 생성 |
 | 6 | `PASSWORD_RESET` | 비밀번호 초기화 |
-| 7 | `TEMPORARY_PASSWORD` | 임시 비밀번호 발급 |
-| 8 | `WITHDRAWAL_COMPLETED` | 회원 탈퇴 완료 |
+| 7 | `TEMP_PASSWORD` | 임시 비밀번호 발급 |
+| 8 | `WITHDRAW_DONE` | 회원 탈퇴 완료 |
 
 ---
 
@@ -248,8 +250,8 @@
 
 | 약관 유형 | 본문 | 버전 | 시행일 |
 |---|---|---|---|
-| `TERMS_OF_USE` | `docs/raw/2026-09-29-약관3종-표준안.md` 1-1절 | `v1.0` | 서비스 오픈일 |
-| `PRIVACY_CONSENT` | 같은 파일 2-1절 | `v1.0` | 서비스 오픈일 |
+| `TERMS_SERVICE` | `docs/raw/2026-09-29-약관3종-표준안.md` 1-1절 | `v1.0` | 서비스 오픈일 |
+| `PRIVACY_COLLECT` | 같은 파일 2-1절 | `v1.0` | 서비스 오픈일 |
 
 ### 6) 최초 플랫폼 마스터 계정 — 1건
 
