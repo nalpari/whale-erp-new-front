@@ -40,7 +40,7 @@ python3 docs/erd/_build.py
 
 ## 아직 정하지 않은 것
 
-- 근무시간 외 알림 보류의 기준 시각 (NOTI-1)과 알림톡 대체 발송 범위
+- 알림톡을 보낼 상황 (NOTI-2)
 - 배치·알림·알림톡/SMS·메일 발송의 대행사, 템플릿 검수, 발송 이력·재시도 저장 위치 (3팀 담당, 2026-09-17 배정)
 - 신고 정보를 내 정보에서 조회·수정하는 방법
 - 공유 TO-DO 수행자 이름 공개 (WORK-3), 연결 보류 안내 범위 (JOIN-3), 이메일을 못 받는 직원 (LOGIN-8)
@@ -120,7 +120,7 @@ python3 docs/erd/_build.py
 | FK | 계정 | id | `account_id` |  |
 |  | 핀 검증값 | hash | `pin_hash` | 원본 저장 안 함 |
 |  | 발급 시각 | datetime | `issued_at` | 1분 재발급 제한, 하루 10회 |
-|  | 만료 시각 | datetime | `expires_at` | 10분 |
+|  | 만료 시각 | datetime | `expires_at` | 15분 (ME-1) |
 |  | 시도 횟수 | int | `attempt_count` | 5회 |
 |  | 쿨다운 단계 | int | `cooldown_step` | 1·3·5분, 3회까지 |
 |  | 쿨다운 해제 시각 | datetime | `cooldown_until` |  |
@@ -505,7 +505,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |  | 수행 방식 | enum | `perform_mode` | 각자·공유, 등록 후 변경 불가 |
 |  | 수행 예정 날짜 | date | `due_date` | 필수, 과거 날짜 불가 |
 |  | 수행 시간 | time | `due_time` | 선택 |
-|  | 긴급 여부 | bool | `urgent` | 근무시간 외 즉시 푸시 |
+|  | 긴급 여부 | bool | `urgent` | 강조 표시, 미조치에 셈 |
 |  | 수행 상태 | enum | `status` | 대기·진행 중·완료 |
 | FK | 수행자 | id | `performed_by` | 공유 TO-DO |
 |  | 완료 일시 | datetime | `completed_at` |  |
@@ -595,7 +595,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 | PK | 항목 ID | id | `item_id` |  |
 | FK | 급여명세서 | id | `payslip_id` |  |
 |  | 항목 구분 | enum | `category` | 지급·공제 |
-|  | 항목 코드 | enum | `code` | 기본급·주휴·연장·고정 수당·4대보험·소득세·지방소득세 |
+|  | 항목 코드 | enum | `code` | 지급·공제 항목, 목록은 플랫폼 관리자가 관리 |
 |  | 시스템 계산값 | money | `calculated_amount` | 지급 항목만 |
 |  | 관리자 수정값 | money | `adjusted_amount` |  |
 |  | 입력 여부 | bool | `entered` | 공제 미입력과 0 구분 |
@@ -645,7 +645,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 
 ## 운영 알림과 직원 알림
 
-관리자 웹의 운영 알림과 직원 근무 앱의 직원 알림은 같은 알림 구조를 쓴다. 읽음은 수신자마다 따로 두고 발송은 채널별 이력으로 남긴다. TO-DO 배정 알림은 근무시간 외에 발송 예정 시각을 잡아 보류한다.
+관리자 웹의 운영 알림과 직원 근무 앱의 직원 알림은 같은 알림 구조를 쓴다. 읽음은 수신자마다 따로 두고 발송은 채널별 이력으로 남긴다. TO-DO 배정은 앱 푸시 없이 알림함에만 남긴다(2026-09-28).
 
 ### 알림 `notifications` · 중심
 
@@ -697,11 +697,11 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 | PK | 발송 이력 ID | id | `delivery_id` |  |
 | FK | 알림 수신 | id | `recipient_id` |  |
 |  | 발송 채널 | enum | `channel` | 앱 푸시·알림톡·이메일 |
-|  | 발송 예정 시각 | datetime | `scheduled_at` | 보류 시 |
+|  | 발송 예정 시각 | datetime | `scheduled_at` | 쓰지 않음, 보류 없어짐 (NOTI-1) |
 |  | 발송 시각 | datetime | `sent_at` |  |
 |  | 발송 결과 | enum | `result` |  |
 |  | 대체 발송 여부 | bool | `is_fallback` | 푸시 실패 시 알림톡 |
-|  | 묶음 발송 ID | id | `batch_id` | 보류분 아침 묶음 |
+|  | 묶음 발송 ID | id | `batch_id` | 한 번에 보낸 발송 묶음 |
 
 ### 알림 수신 설정 `notification_preferences` · 엔티티
 
