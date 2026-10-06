@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>고객지원과 커뮤니티</title>
+<title>고객지원과 커뮤니티 · 3팀 1차 물리 ERD</title>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -42,6 +42,8 @@ nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 h2{font-family:var(--sans);font-size:20px;font-weight:600;letter-spacing:-.4px;margin:40px 0 8px}
 .footer{margin-top:32px;padding-top:20px;border-top:1px solid var(--rule-solid);font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--soft);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
 
+.nav-row{display:flex;align-items:center;gap:16px;margin:24px 0;flex-wrap:wrap}
+.nav-row nav{display:flex;flex-wrap:wrap;gap:8px;margin:0}
 .view-btns{display:inline-flex;border:1px solid var(--rule-solid);border-radius:6px;overflow:hidden;background:var(--paper)}
 .view-btns button{font-family:var(--sans);font-size:12.5px;font-weight:500;padding:5px 14px;border:0;border-right:1px solid var(--rule-solid);background:var(--paper);color:var(--muted);cursor:pointer}
 .view-btns button:last-child{border-right:0}
@@ -69,14 +71,14 @@ table.spec td.n{color:var(--muted)}
 .diagram.pan.dragging{cursor:grabbing;user-select:none}
 </style>
 </head>
-<body data-view="logical">
+<body data-view="physical">
 <div class="container">
 <div class="header">
-<p class="eyebrow">WHALE ERP · LOGICAL · PHYSICAL ERD · 1차 범위 · 3팀</p>
+<p class="eyebrow">WHALE ERP · PHYSICAL ERD · 1차 범위 · 3팀</p>
 <h1>고객지원과 커뮤니티</h1>
 <p class="subtitle">플랫폼 관리자가 공지사항·FAQ를 쓰고 노출 대상을 정하면, 사용자는 자기가 대상인 글만 본다. 문의사항은 로그인한 관리자가, 도입문의는 비로그인 사용자가 남긴다. 둘 다 사용자 노출 답변과 운영자 내부 메모를 나눠 둔다.</p>
 </div>
-<nav aria-label="ERD 영역"><a href="index.html">개요</a><a href="account.html">계정·접속</a><a href="hiring.html">채용·초대</a><a href="contract.html">근로계약</a><a href="attendance.html">근무스케줄·출퇴근</a><a href="todo.html">TO-DO</a><a href="payroll.html">급여명세서</a><a href="notify.html">알림</a><a href="support.html" aria-current="page">고객지원·커뮤니티</a></nav>
+<div class="nav-row"><nav aria-label="ERD 영역"><a href="index.html">개요</a><a href="account.html">계정·접속</a><a href="hiring.html">채용·초대</a><a href="contract.html">근로계약</a><a href="attendance.html">근무스케줄·출퇴근</a><a href="todo.html">TO-DO</a><a href="payroll.html">급여명세서</a><a href="notify.html">알림</a><a href="support.html" aria-current="page">고객지원·커뮤니티</a></nav><div class="tools"><div class="view-btns" role="group" aria-label="보기"><button type="button" aria-pressed="false" data-view="logical">논리</button><button type="button" aria-pressed="true" data-view="physical">물리</button><button type="button" aria-pressed="false" data-view="both">논리+물리</button></div></div></div>
 <div class="diagram">
 <div class="v v-logical"><svg viewBox="0 0 1328 784" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="erd-support-logical-title erd-support-logical-desc" style="min-width:1328px">
 <title id="erd-support-logical-title">고객지원과 커뮤니티</title>
@@ -851,13 +853,13 @@ table.spec td.n{color:var(--muted)}
 (function(){
 var views=['logical','physical','both'],body=document.body;
 function pick(){var h=location.hash.slice(1);if(views.indexOf(h)>=0)return h;
-try{var s=localStorage.getItem('erd-team3-physical-view');if(views.indexOf(s)>=0)return s}catch(e){}return 'logical'}
+try{var s=localStorage.getItem('erd-team3-physical-view');if(views.indexOf(s)>=0)return s}catch(e){}return 'physical'}
 function apply(v){body.setAttribute('data-view',v);
 document.querySelectorAll('.view-btns button').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.view===v?'true':'false')});
-document.querySelectorAll('nav[aria-label="ERD 영역"] a, .index-list a').forEach(function(a){a.href=a.getAttribute('href').split('#')[0]+(v==='logical'?'':'#'+v)});
+document.querySelectorAll('nav[aria-label="ERD 영역"] a, .index-list a').forEach(function(a){a.href=a.getAttribute('href').split('#')[0]+(v==='physical'?'':'#'+v)});
 try{localStorage.setItem('erd-team3-physical-view',v)}catch(e){}}
 document.querySelectorAll('.view-btns button').forEach(function(b){b.addEventListener('click',function(){
-var v=b.dataset.view;apply(v);history.replaceState(null,'',v==='logical'?location.pathname:'#'+v)})});
+var v=b.dataset.view;apply(v);history.replaceState(null,'',v==='physical'?location.pathname:'#'+v)})});
 window.addEventListener('hashchange',function(){apply(pick())});
 apply(pick());
 })();

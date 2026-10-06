@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WHALE ERP 1차 논리 ERD · 개요</title>
+<title>WHALE ERP 3팀 1차 물리 ERD · 개요</title>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -42,6 +42,8 @@ nav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 h2{font-family:var(--sans);font-size:20px;font-weight:600;letter-spacing:-.4px;margin:40px 0 8px}
 .footer{margin-top:32px;padding-top:20px;border-top:1px solid var(--rule-solid);font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--soft);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
 
+.nav-row{display:flex;align-items:center;gap:16px;margin:24px 0;flex-wrap:wrap}
+.nav-row nav{display:flex;flex-wrap:wrap;gap:8px;margin:0}
 .view-btns{display:inline-flex;border:1px solid var(--rule-solid);border-radius:6px;overflow:hidden;background:var(--paper)}
 .view-btns button{font-family:var(--sans);font-size:12.5px;font-weight:500;padding:5px 14px;border:0;border-right:1px solid var(--rule-solid);background:var(--paper);color:var(--muted);cursor:pointer}
 .view-btns button:last-child{border-right:0}
@@ -69,18 +71,18 @@ table.spec td.n{color:var(--muted)}
 .diagram.pan.dragging{cursor:grabbing;user-select:none}
 </style>
 </head>
-<body data-view="logical">
+<body data-view="physical">
 <div class="container">
 <div class="header">
-<p class="eyebrow">WHALE ERP · LOGICAL · PHYSICAL ERD · 1차 범위 · 3팀</p>
-<h1>WHALE ERP 1차 논리 ERD · 개요</h1>
+<p class="eyebrow">WHALE ERP · PHYSICAL ERD · 1차 범위 · 3팀</p>
+<h1>WHALE ERP 3팀 1차 물리 ERD · 개요</h1>
 <p class="subtitle">직원 레코드를 중심으로 업무 데이터가 모인다. 계정은 사람, 직원 레코드는 점포별 소속이다. 계약·근무스케줄·출퇴근·급여명세서·TO-DO는 모두 직원 레코드에 붙는다.</p>
 </div>
-<nav aria-label="ERD 영역"><a href="index.html" aria-current="page">개요</a><a href="account.html">계정·접속</a><a href="hiring.html">채용·초대</a><a href="contract.html">근로계약</a><a href="attendance.html">근무스케줄·출퇴근</a><a href="todo.html">TO-DO</a><a href="payroll.html">급여명세서</a><a href="notify.html">알림</a><a href="support.html">고객지원·커뮤니티</a></nav>
+<div class="nav-row"><nav aria-label="ERD 영역"><a href="index.html" aria-current="page">개요</a><a href="account.html">계정·접속</a><a href="hiring.html">채용·초대</a><a href="contract.html">근로계약</a><a href="attendance.html">근무스케줄·출퇴근</a><a href="todo.html">TO-DO</a><a href="payroll.html">급여명세서</a><a href="notify.html">알림</a><a href="support.html">고객지원·커뮤니티</a></nav><div class="tools"><div class="view-btns" role="group" aria-label="보기"><button type="button" aria-pressed="false" data-view="logical">논리</button><button type="button" aria-pressed="true" data-view="physical">물리</button><button type="button" aria-pressed="false" data-view="both">논리+물리</button></div></div></div>
 <div class="diagram">
 <div class="v v-logical"><svg viewBox="0 0 1328 756" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="erd-index-logical-title erd-index-logical-desc" style="min-width:1328px">
-<title id="erd-index-logical-title">WHALE ERP 1차 논리 ERD · 개요</title>
-<desc id="erd-index-logical-desc">WHALE ERP 1차 논리 ERD · 개요 논리 ERD. 엔티티 8개와 관계 7개를 보여 준다: 계정, 점포, 직원 레코드, 근로계약, 급여명세서, 근무스케줄, 출퇴근 기록, TO-DO.</desc>
+<title id="erd-index-logical-title">WHALE ERP 3팀 1차 물리 ERD · 개요</title>
+<desc id="erd-index-logical-desc">WHALE ERP 3팀 1차 물리 ERD · 개요 논리 ERD. 엔티티 8개와 관계 7개를 보여 준다: 계정, 점포, 직원 레코드, 근로계약, 급여명세서, 근무스케줄, 출퇴근 기록, TO-DO.</desc>
 <rect width="100%" height="100%" fill="#ffffff"/>
 <path d="M 496,172 L 496,232" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 280,300 L 376,300" fill="none" stroke="#60646c" stroke-width="1"/>
@@ -294,8 +296,8 @@ table.spec td.n{color:var(--muted)}
 <text x="748" y="739" fill="#60646c" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="500">관계 수</text>
 </svg></div>
 <div class="v v-physical"><p class="view-note">PostgreSQL 테이블·컬럼·타입이다. 타입 끝 ? 는 NULL 허용이다. 이름이 논리 ERD 와 다른 컬럼은 테이블 정의의 비고에 논리 이름을 적었다.</p><svg viewBox="0 0 1800 736" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="erd-index-physical-title erd-index-physical-desc" style="min-width:1800px">
-<title id="erd-index-physical-title">WHALE ERP 1차 논리 ERD · 개요</title>
-<desc id="erd-index-physical-desc">WHALE ERP 1차 논리 ERD · 개요 물리 ERD. 엔티티 8개와 관계 7개를 보여 준다: 계정, 점포, 직원 레코드, 근로계약, 급여명세서, 근무스케줄, 출퇴근 기록, TO-DO.</desc>
+<title id="erd-index-physical-title">WHALE ERP 3팀 1차 물리 ERD · 개요</title>
+<desc id="erd-index-physical-desc">WHALE ERP 3팀 1차 물리 ERD · 개요 물리 ERD. 엔티티 8개와 관계 7개를 보여 준다: 계정, 점포, 직원 레코드, 근로계약, 급여명세서, 근무스케줄, 출퇴근 기록, TO-DO.</desc>
 <rect width="100%" height="100%" fill="#ffffff"/>
 <path d="M 668,172 L 668,236" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 380,292 L 500,292" fill="none" stroke="#60646c" stroke-width="1"/>
@@ -473,8 +475,8 @@ table.spec td.n{color:var(--muted)}
 <text x="748" y="719" fill="#60646c" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="500">관계 수</text>
 </svg></div>
 <div class="v v-both"><p class="view-note">논리 속성명 옆에 물리 컬럼명과 타입을 함께 보인다. 타입 끝 ? 는 NULL 허용이다.</p><svg viewBox="0 0 2760 736" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="erd-index-both-title erd-index-both-desc" style="min-width:2760px">
-<title id="erd-index-both-title">WHALE ERP 1차 논리 ERD · 개요</title>
-<desc id="erd-index-both-desc">WHALE ERP 1차 논리 ERD · 개요 논리·물리 ERD. 엔티티 8개와 관계 7개를 보여 준다: 계정, 점포, 직원 레코드, 근로계약, 급여명세서, 근무스케줄, 출퇴근 기록, TO-DO.</desc>
+<title id="erd-index-both-title">WHALE ERP 3팀 1차 물리 ERD · 개요</title>
+<desc id="erd-index-both-desc">WHALE ERP 3팀 1차 물리 ERD · 개요 논리·물리 ERD. 엔티티 8개와 관계 7개를 보여 준다: 계정, 점포, 직원 레코드, 근로계약, 급여명세서, 근무스케줄, 출퇴근 기록, TO-DO.</desc>
 <rect width="100%" height="100%" fill="#ffffff"/>
 <path d="M 1028,172 L 1028,236" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 620,292 L 740,292" fill="none" stroke="#60646c" stroke-width="1"/>
@@ -672,7 +674,7 @@ table.spec td.n{color:var(--muted)}
 </svg></div>
 </div>
 <div class="cards"><div class="card"><p class="ey">중심</p><div class="card-h"><span class="dot coral"></span><h3>직원 레코드가 뿌리다</h3></div><ul><li>계약은 계정이 아니라 직원 레코드에 붙는다</li><li>계정 1개가 여러 점포의 직원 레코드를 가진다</li><li>가입 전에도 레코드는 있고 가입하면 계정이 연결된다</li></ul></div><div class="card"><div class="card-h"><span class="dot ink"></span><h3>근무지는 점포를 가리킨다</h3></div><ul><li>근무스케줄·출퇴근 기록·TO-DO의 근무지는 모두 점포 참조다</li><li>선을 줄이려고 개요에서는 근무지 선을 그리지 않았다</li><li>급여명세서도 직원 레코드를 직접 가리키지만 계약 선으로 대신했다</li></ul></div><div class="card"><div class="card-h"><span class="dot muted"></span><h3>1팀과 맞닿는 곳</h3></div><ul><li>점포·BP·관리자 계정은 1팀 소유라 참조만 한다</li><li>근무지 반경은 3팀이 필요한 항목이라 1팀 점포 테이블에 넣을지 정해야 한다</li></ul></div></div>
-<h2>영역별 상세</h2><p class="subtitle">한 장에 엔티티를 8개 넘게 두지 않으려고 영역마다 나눴다. 속성의 제안 컬럼명과 비고는 README.md 카탈로그에 있다.</p><div class="index-list"><a href="account.html"><b>계정·접속</b><span>본인인증 이력 · 접속 상태 · 계정 · 계정 변경 이력 · 로그인 이력 · 비밀번호 재설정 핀 · 위치정보 확인자료 · 관리자 계정</span><span class="n">ENTITY 8 · REL 7</span></a><a href="hiring.html"><b>채용·초대</b><span>점포 · 계정 · 직원 레코드 · 신고 정보 · 초대 · 가입 연결 보류 · 관리자 계정</span><span class="n">ENTITY 7 · REL 7</span></a><a href="contract.html"><b>근로계약</b><span>직원 레코드 · 점포 · 관리자 계정 · 근로계약 · 계약 당사자 정보 · 계약서 파일 · 계약 상태 이력</span><span class="n">ENTITY 7 · REL 6</span></a><a href="attendance.html"><b>근무스케줄·출퇴근</b><span>근무스케줄 · 근무스케줄 변경 이력 · 직원 레코드 · 계정 · 위치정보 동의 · 출퇴근 기록 · 출퇴근 보정 이력 · 점포</span><span class="n">ENTITY 8 · REL 7</span></a><a href="todo.html"><b>TO-DO</b><span>점포 · 관리자 계정 · TO-DO · TO-DO 배정 대상 · 직원 레코드 · TO-DO 상태 이력</span><span class="n">ENTITY 6 · REL 5</span></a><a href="payroll.html"><b>급여명세서</b><span>직원 레코드 · 근로계약 · 급여명세서 · 명세서 금액 항목 · 검토 대기 사유 · 명세서 발송 이력 · 명세서 처리 이력</span><span class="n">ENTITY 7 · REL 6</span></a><a href="notify.html"><b>알림</b><span>알림 · 관리자 계정 · 알림 수신 · 계정 · 알림 발송 이력 · 알림 수신 설정</span><span class="n">ENTITY 6 · REL 5</span></a><a href="support.html"><b>고객지원·커뮤니티</b><span>공지사항·FAQ · 노출 대상 · 첨부파일 · 문의사항 · 문의 답변 · 관리자 계정 · 도입문의</span><span class="n">ENTITY 7 · REL 4</span></a></div>
+<h2>영역별 상세</h2><p class="subtitle">한 장에 엔티티를 8개 넘게 두지 않으려고 영역마다 나눴다. 속성의 제안 컬럼명과 비고는 README.md 카탈로그에 있다.</p><div class="index-list"><a href="account.html"><b>계정·접속</b><span>본인인증 이력 · 접속 상태 · 계정 · 계정 변경 이력 · 로그인 이력 · 비밀번호 재설정 핀 · 위치정보 확인자료 · 관리자 계정</span><span class="n">ENTITY 8 · REL 7</span></a><a href="hiring.html"><b>채용·초대</b><span>점포 · 계정 · 직원 레코드 · 신고 정보 · 초대 · 가입 연결 보류 · 관리자 계정</span><span class="n">ENTITY 7 · REL 7</span></a><a href="contract.html"><b>근로계약</b><span>직원 레코드 · 점포 · 관리자 계정 · 근로계약 · 계약 당사자 정보 · 계약서 파일 · 계약 상태 이력</span><span class="n">ENTITY 7 · REL 6</span></a><a href="attendance.html"><b>근무스케줄·출퇴근</b><span>근무스케줄 · 근무스케줄 변경 이력 · 직원 레코드 · 계정 · 위치정보 동의 · 출퇴근 기록 · 출퇴근 보정 이력 · 점포</span><span class="n">ENTITY 8 · REL 7</span></a><a href="todo.html"><b>TO-DO</b><span>점포 · 관리자 계정 · TO-DO · TO-DO 배정 대상 · 직원 레코드 · TO-DO 상태 이력</span><span class="n">ENTITY 6 · REL 5</span></a><a href="payroll.html"><b>급여명세서</b><span>직원 레코드 · 근로계약 · 급여명세서 · 명세서 금액 항목 · 검토 대기 사유 · 명세서 발송 이력 · 명세서 처리 이력</span><span class="n">ENTITY 7 · REL 6</span></a><a href="notify.html"><b>알림</b><span>알림 · 관리자 계정 · 알림 수신 · 계정 · 알림 발송 이력 · 알림 수신 설정</span><span class="n">ENTITY 6 · REL 5</span></a><a href="support.html"><b>고객지원·커뮤니티</b><span>공지사항·FAQ · 노출 대상 · 첨부파일 · 문의사항 · 문의 답변 · 관리자 계정 · 도입문의</span><span class="n">ENTITY 7 · REL 4</span></a></div><h2>물리 ERD</h2><p class="subtitle">이 논리 모델을 테이블·컬럼·제약으로 옮긴 물리 모델이다. 원본과 생성기는 whale-erp-api 에 있다.</p><div class="index-list"><a href="physical/index.html"><b>3팀 물리 ERD</b><span>테이블 정의 · schema.sql</span></a></div>
 <div class="phys-only"><h2>스키마</h2><p class="subtitle">CREATE TABLE·제약·인덱스·주석은 <a href="schema.sql">schema.sql</a> 에 있다. 영역 장의 물리·논리+물리 보기 아래에 테이블 정의가 있다.</p></div>
 <div class="footer"><span>근거 · Manyfast 명세 dataSpec 2026-09-15 · front·staff 목업 확정 쟁점</span><span>docs/erd/_build.py 로 생성 · 손으로 고치지 말 것</span></div>
 </div>
@@ -681,13 +683,13 @@ table.spec td.n{color:var(--muted)}
 (function(){
 var views=['logical','physical','both'],body=document.body;
 function pick(){var h=location.hash.slice(1);if(views.indexOf(h)>=0)return h;
-try{var s=localStorage.getItem('erd-team3-physical-view');if(views.indexOf(s)>=0)return s}catch(e){}return 'logical'}
+try{var s=localStorage.getItem('erd-team3-physical-view');if(views.indexOf(s)>=0)return s}catch(e){}return 'physical'}
 function apply(v){body.setAttribute('data-view',v);
 document.querySelectorAll('.view-btns button').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.view===v?'true':'false')});
-document.querySelectorAll('nav[aria-label="ERD 영역"] a, .index-list a').forEach(function(a){a.href=a.getAttribute('href').split('#')[0]+(v==='logical'?'':'#'+v)});
+document.querySelectorAll('nav[aria-label="ERD 영역"] a, .index-list a').forEach(function(a){a.href=a.getAttribute('href').split('#')[0]+(v==='physical'?'':'#'+v)});
 try{localStorage.setItem('erd-team3-physical-view',v)}catch(e){}}
 document.querySelectorAll('.view-btns button').forEach(function(b){b.addEventListener('click',function(){
-var v=b.dataset.view;apply(v);history.replaceState(null,'',v==='logical'?location.pathname:'#'+v)})});
+var v=b.dataset.view;apply(v);history.replaceState(null,'',v==='physical'?location.pathname:'#'+v)})});
 window.addEventListener('hashchange',function(){apply(pick())});
 apply(pick());
 })();

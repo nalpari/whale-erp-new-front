@@ -779,7 +779,9 @@ def page(d, svg):
                          f'<span class="n">ENTITY {len(x.entities)} · REL {len(x.rels)}</span></a>')
         extra = ('<h2>영역별 상세</h2><p class="subtitle">한 장에 엔티티를 8개 넘게 두지 않으려고 영역마다 나눴다. '
                  '속성의 제안 컬럼명과 비고는 README.md 카탈로그에 있다.</p>'
-                 f'<div class="index-list">{"".join(links)}</div>')
+                 f'<div class="index-list">{"".join(links)}</div>'
+                 '<h2>물리 ERD</h2><p class="subtitle">이 논리 모델을 테이블·컬럼·제약으로 옮긴 물리 모델이다. 원본과 생성기는 whale-erp-api 에 있다.</p>'
+                 '<div class="index-list"><a href="physical/index.html"><b>3팀 물리 ERD</b><span>테이블 정의 · schema.sql</span></a></div>')
     return f"""<!DOCTYPE html>
 <html lang="ko">
 <head>
