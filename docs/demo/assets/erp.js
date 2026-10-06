@@ -240,6 +240,64 @@
     if (now) set(now.getAttribute("aria-label").slice(4));
   }
 
+  // ── 로그인 후 홈: 범위 선택기가 「전체」면 전체 화면, 점포 하나면 점포 하나 화면(HOME-6 B) ──
+  function initScopeView(views) {
+    const set = (scope) => {
+      const one = !/전체/.test(scope);
+      views.forEach((v) => (v.hidden = (v.dataset.scopeView === "one") !== one));
+      if (!one) return;
+      $$("[data-scope-name]").forEach((el) => (el.textContent = scope));
+      const box = $("[data-stores]");
+      const row = box && JSON.parse(box.dataset.stores)[scope];
+      if (row) $$("[data-store-field]", box).forEach((el) => (el.textContent = row[el.dataset.storeField]));
+    };
+    document.addEventListener("erp:scope", (e) => set(e.detail));
+    const now = $('header button[aria-label^="점포: "]');
+    if (now) set(now.getAttribute("aria-label").slice(4));
+  }
+
+  // ── 점포 하나 화면 근무스케줄: 요일 칩(data-wd-pick)은 그 요일 근무자만 남기고, 월간 달력(data-dayplan)은 날짜를 누르면 그날 근무스케줄을 보인다 ──
+  function initDayPlan(root) {
+    const { crew, holiday, today } = JSON.parse(root.dataset.dayplan);
+    const WD = "일월화수목금토";
+    const pane = root.firstElementChild;
+    const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    let cur = today;
+    const show = (key) => {
+      const d = new Date(`${key}T00:00:00`);
+      if (d.getMonth() !== 8) return; // 데모 달력은 2026년 9월뿐
+      cur = key;
+      const off = holiday.includes(key);
+      const list = off ? [] : crew.filter((c) => c[4].includes(d.getDay()));
+      $("[data-daytitle]", pane).textContent = `${d.getMonth() + 1}월 ${d.getDate()}일 (${WD[d.getDay()]})`;
+      $("[data-daysum]", pane).innerHTML = off ? "추석 연휴 · 점포 휴무" : `근무 <b class="text-erp-ink">${list.length}명</b> · ${key === today ? "오늘" : key < today ? "지난 날" : "예정"}`;
+      $("[data-daylist]", pane).innerHTML = list.length
+        ? list.map((c) => `<li class="flex items-center gap-[8px] border-b border-erp-thead-line py-[8px]"><span class="flex-1">${c[0]} <span class="text-erp-muted">${c[1]}</span></span><span class="text-right text-[13px]">${c[2]}<br><span class="text-erp-muted">${c[3]}</span></span></li>`).join("")
+        : '<li class="py-[8px] text-[13px] text-erp-muted">근무 없음</li>';
+      $$("[data-day]", root).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.day === key)));
+    };
+    root.addEventListener("click", (e) => {
+      const day = e.target.closest("[data-day]");
+      if (day) return show(day.dataset.day);
+      const move = e.target.closest("[data-daymove]");
+      if (!move) return;
+      const d = new Date(`${cur}T00:00:00`);
+      d.setDate(d.getDate() + Number(move.dataset.daymove));
+      show(iso(d));
+    });
+    show(today);
+  }
+  document.addEventListener("click", (e) => {
+    const chip = e.target.closest("[data-wd-pick]");
+    if (!chip) return;
+    const wd = chip.dataset.wdPick;
+    $$("[data-wd-pick]").forEach((b) => b.setAttribute("aria-pressed", String(b === chip)));
+    const rows = $$("[data-wd]");
+    rows.forEach((r) => (r.hidden = !r.dataset.wd.split(",").includes(wd)));
+    const n = $("[data-wd-count]");
+    if (n) n.textContent = rows.filter((r) => !r.hidden).length;
+  });
+
   // ── 근무 일정 입력(data-workplan) → 소정근로시간 표(data-hours)·주 시간(data-hours-sum) ──
   // 근무요일(월~일)은 눌러서 켜고 끈다. 시·분은 선택칸.
   function initWorkPlan(root) {
@@ -813,6 +871,9 @@
     $$('button[aria-expanded][aria-label$="접기"], button[aria-expanded][aria-label$="펼치기"]').forEach(initFilter);
     $$('input[type="search"]').forEach(initSearch);
     $$("input[data-scope-store]").forEach(initScopeStore);
+    const views = $$("[data-scope-view]");
+    if (views.length) initScopeView(views);
+    $$("[data-dayplan]").forEach(initDayPlan);
     initWhen($$("[data-when]"));
     $$("[data-workplan]").forEach(initWorkPlan);
     $$('nav[aria-label="페이지"]').forEach(initPagination);
