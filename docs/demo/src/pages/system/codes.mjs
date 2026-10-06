@@ -3,6 +3,7 @@
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import { platformHeader } from "../../site.mjs";
+import { band as riskBand } from "../../staff-parts.mjs";
 
 // 안내 띠(목업 band 의 제목 줄). 1팀 컴포넌트에 없어 표 머리와 같은 바탕·선으로 그린다.
 const band = (text) => `<p class="flex h-[42px] items-center rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[12px] text-[14px] font-medium text-erp-ink">${text}</p>`;
@@ -143,13 +144,29 @@ export default ({ A, R }) => {
       ),
   );
 
-  // #e93737: DESIGN.md 가 허락한 위험 글자색
-  const dialog = x.dialog(
-    apply,
-    "BP에 적용",
-    `<dl class="grid grid-cols-[80px_1fr] gap-y-[6px]"><dt class="text-erp-label">그룹</dt><dd>PAY_TYPE · 급여 형태</dd><dt class="text-erp-label">상세 코드</dt><dd>지금 등록된 상세 코드 전부</dd></dl><p class="mt-[12px] font-medium text-[#e93737]">사용 중인 모든 BP에 배포되며 되돌릴 수 없습니다</p>`,
-    ui.button("취소", { variant: "off", "data-close": true }) + ui.button("적용", { "data-close": true }),
-  );
+  // BP에 적용 확인창 — 문구는 목업 pop-apply 와 같다. 적용 대상 요약(표 머리와 같은 바탕·선) + 되돌릴 수 없다는 위험 띠.
+  const summary = (rows) =>
+    `<dl class="grid grid-cols-[84px_1fr] gap-x-[12px] gap-y-[8px] rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[16px] py-[14px]">${rows
+      .map(([k, v]) => `<dt class="font-medium text-erp-label">${k}</dt><dd class="text-erp-ink">${v}</dd>`)
+      .join("")}</dl>`;
+  const dialog = x
+    .dialog(
+      apply,
+      "BP에 적용",
+      `<div class="flex flex-col gap-[12px] break-keep">` +
+        summary([
+          ["그룹", `PAY_TYPE <span class="text-erp-label">·</span> 급여 형태`],
+          ["상세 코드", "지금 등록된 상세 코드 전부"],
+        ]) +
+        riskBand("사용 중인 모든 BP에 배포되며 되돌릴 수 없습니다", {
+          tone: "risk",
+          desc: "적용하면 이 그룹과 상세 코드가 각 BP에 복사되고, 그룹의 BP 적용은 다시 미적용으로 바꿀 수 없습니다. 적용한 뒤 추가하는 상세 코드는 기존 BP에는 배포되지 않고 새로 가입하는 BP부터 적용됩니다.",
+        }) +
+        `</div>`,
+      ui.button("취소", { variant: "off", "data-close": true }) + ui.button("적용", { "data-close": true }),
+    )
+    // 안내 문단이 길어 이 창만 넓힌다(기본 420px)
+    .replace("w-[420px]", "w-[480px]");
 
   return {
     title: "플랫폼 공통코드 관리",
