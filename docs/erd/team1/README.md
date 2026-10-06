@@ -80,7 +80,7 @@
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK | 약관 버전 ID | id | `terms_version_id` |  |
-|  | 약관 유형 코드 | code | `terms_type_code` | 공통코드 `TERMS_TYPE`(`TERMS_SERVICE` 이용약관(BP 회원가입용)·`PRIVACY_COLLECT` 개인정보 수집·이용 동의(BP 회원가입용)·`STAFF_TERMS_SERVICE` 이용약관(직원 앱 회원가입용)·`STAFF_PRIVACY_COLLECT` 개인정보 수집·이용 동의(직원 앱 회원가입용)·`MARKETING` 마케팅 수신 동의·`LOCATION` 위치정보 수집·이용 동의) |
+|  | 약관 유형 코드 | code | `terms_type_code` | 공통코드 `TERMS_TYPE`(`TERMS_SERVICE` 이용약관(BP 회원가입용)·`PRIVACY_COLLECT` 개인정보 수집·이용 동의(BP 회원가입용)·`STAFF_TERMS_SERVICE` 이용약관(직원 앱 회원가입용)·`STAFF_PRIVACY` 개인정보 수집·이용 동의(직원 앱 회원가입용)·`MARKETING` 마케팅 수신 동의·`LOCATION` 위치정보 수집·이용 동의) |
 |  | 버전 번호 | text | `version` | 예: v1.0, v1.1 |
 |  | 약관 내용 | text | `content` | 약관 본문 |
 |  | 제목 | text | `title` |  |
@@ -480,7 +480,7 @@ BP·플랫폼의 권한 그룹·공통코드·메뉴·휴일과 플랫폼 공식
 
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
-| PK | 그룹 코드 | text | `group_code` | 대문자 밑줄, 예: EMP_TYPE, 필수, 변경 불가. 삭제한 그룹의 코드도 다시 쓰지 않는다 |
+| PK | 그룹 코드 | text | `group_code` | 영문 대문자·숫자·밑줄, 영문으로 시작, 20자. 예: EMP_TYPE. 필수, 변경 불가. 삭제한 그룹의 코드도 다시 쓰지 않는다 |
 |  | 그룹명 | text | `group_name` |  |
 |  | 관리 주체 코드 | code | `manage_owner_code` | 공통코드 `MANAGE_OWNER` 중 플랫폼고정·플랫폼제공 |
 |  | BP 적용 여부 | bool | `is_bp_applied` | 플랫폼제공 그룹만. 신규는 미적용, 적용으로 바꾸는 순간 사용 중인 모든 BP에 복사, 되돌릴 수 없음 |
@@ -502,7 +502,7 @@ PK 는 그룹 코드 + 상세코드 + BP 코드이며 셋 다 필수다. 플랫�
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK·FK | 그룹 코드 | text | `group_code` | code_groups FK, 필수 |
-| PK | 상세코드 | text | `item_code` | 필수. 영문 대문자·숫자·밑줄 20자, 등록 후 변경 불가 |
+| PK | 상세코드 | text | `item_code` | 필수. 영문 대문자·숫자·밑줄, 영문으로 시작, 20자. 등록 후 변경 불가 |
 | PK·FK | BP 코드 | text | `bp_code` | bp_codes.bp_code FK, 필수. 플랫폼 원본은 플랫폼 BP(BP000000), BP별 행(적용 때 복사된 행·BP전용 코드)은 그 BP |
 |  | 코드명 | text | `label` |  |
 |  | 관리 주체 코드 | code | `manage_owner_code` | 공통코드 `MANAGE_OWNER`(플랫폼고정·플랫폼제공·BP전용) |

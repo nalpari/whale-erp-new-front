@@ -527,8 +527,8 @@ ALTER TABLE "store_business_profiles" ADD CONSTRAINT "store_business_profiles_bi
 ALTER TABLE "store_business_profiles" ADD CONSTRAINT "store_business_profiles_biz_category_length" CHECK (char_length("biz_category") <= 50);
 ALTER TABLE "store_business_profiles" ADD CONSTRAINT "store_business_profiles_biz_item_length" CHECK (char_length("biz_item") <= 50);
 ALTER TABLE "role_groups" ADD CONSTRAINT "role_groups_role_code_format" CHECK ("role_code" ~ '^[A-Z]{2}[0-9]{6}$');
-ALTER TABLE "code_groups" ADD CONSTRAINT "code_groups_group_code_format" CHECK ("group_code" ~ '^[A-Z][A-Z0-9_]*$');
-ALTER TABLE "code_items" ADD CONSTRAINT "code_items_item_code_format" CHECK ("item_code" ~ '^[A-Z0-9_]{1,20}$');
+ALTER TABLE "code_groups" ADD CONSTRAINT "code_groups_group_code_format" CHECK ("group_code" ~ '^[A-Z][A-Z0-9_]{0,19}$');
+ALTER TABLE "code_items" ADD CONSTRAINT "code_items_item_code_format" CHECK ("item_code" ~ '^[A-Z][A-Z0-9_]{0,19}$');
 ALTER TABLE "menus" ADD CONSTRAINT "menus_menu_code_format" CHECK ("menu_code" ~ '^MN[0-9]{6}$');
 ALTER TABLE "menus" ADD CONSTRAINT "menus_depth_range" CHECK ("depth" BETWEEN 1 AND 3);
 ALTER TABLE "bp_holidays" ADD CONSTRAINT "bp_holidays_name_length" CHECK (char_length("name") BETWEEN 1 AND 30);
@@ -653,7 +653,7 @@ CREATE INDEX "public_holidays_year_idx" ON "public_holidays" ("year");
 -- ── 주석 ──
 COMMENT ON TABLE "terms_versions" IS '약관 버전';
 COMMENT ON COLUMN "terms_versions"."terms_version_id" IS '약관 버전 ID';
-COMMENT ON COLUMN "terms_versions"."terms_type_code" IS '약관 유형 코드 — 공통코드 `TERMS_TYPE`(`TERMS_SERVICE` 이용약관(BP 회원가입용)·`PRIVACY_COLLECT` 개인정보 수집·이용 동의(BP 회원가입용)·`STAFF_TERMS_SERVICE` 이용약관(직원 앱 회원가입용)·`STAFF_PRIVACY_COLLECT` 개인정보 수집·이용 동의(직원 앱 회원가입용)·`MARKETING` 마케팅 수신 동의·`LOCATION` 위치정보 수집·이용 동의)';
+COMMENT ON COLUMN "terms_versions"."terms_type_code" IS '약관 유형 코드 — 공통코드 `TERMS_TYPE`(`TERMS_SERVICE` 이용약관(BP 회원가입용)·`PRIVACY_COLLECT` 개인정보 수집·이용 동의(BP 회원가입용)·`STAFF_TERMS_SERVICE` 이용약관(직원 앱 회원가입용)·`STAFF_PRIVACY` 개인정보 수집·이용 동의(직원 앱 회원가입용)·`MARKETING` 마케팅 수신 동의·`LOCATION` 위치정보 수집·이용 동의)';
 COMMENT ON COLUMN "terms_versions"."version" IS '버전 번호 — 예: v1.0, v1.1';
 COMMENT ON COLUMN "terms_versions"."content" IS '약관 내용 — 약관 본문';
 COMMENT ON COLUMN "terms_versions"."title" IS '제목';
@@ -901,7 +901,7 @@ COMMENT ON COLUMN "role_group_menus"."created_by" IS '등록자 — admin_accoun
 COMMENT ON COLUMN "role_group_menus"."updated_at" IS '최근 수정 일시';
 COMMENT ON COLUMN "role_group_menus"."updated_by" IS '수정자 — admin_accounts FK';
 COMMENT ON TABLE "code_groups" IS '공통코드 그룹';
-COMMENT ON COLUMN "code_groups"."group_code" IS '그룹 코드 — 대문자 밑줄, 예: EMP_TYPE, 필수, 변경 불가. 삭제한 그룹의 코드도 다시 쓰지 않는다';
+COMMENT ON COLUMN "code_groups"."group_code" IS '그룹 코드 — 영문 대문자·숫자·밑줄, 영문으로 시작, 20자. 예: EMP_TYPE. 필수, 변경 불가. 삭제한 그룹의 코드도 다시 쓰지 않는다';
 COMMENT ON COLUMN "code_groups"."group_name" IS '그룹명';
 COMMENT ON COLUMN "code_groups"."manage_owner_code" IS '관리 주체 코드 — 공통코드 `MANAGE_OWNER` 중 플랫폼고정·플랫폼제공';
 COMMENT ON COLUMN "code_groups"."is_bp_applied" IS 'BP 적용 여부 — 플랫폼제공 그룹만. 신규는 미적용, 적용으로 바꾸는 순간 사용 중인 모든 BP에 복사, 되돌릴 수 없음';
@@ -915,7 +915,7 @@ COMMENT ON COLUMN "code_groups"."updated_at" IS '최근 수정 일시';
 COMMENT ON COLUMN "code_groups"."updated_by" IS '수정자 — admin_accounts FK';
 COMMENT ON TABLE "code_items" IS '상세 코드';
 COMMENT ON COLUMN "code_items"."group_code" IS '그룹 코드 — code_groups FK, 필수';
-COMMENT ON COLUMN "code_items"."item_code" IS '상세코드 — 필수. 영문 대문자·숫자·밑줄 20자, 등록 후 변경 불가';
+COMMENT ON COLUMN "code_items"."item_code" IS '상세코드 — 필수. 영문 대문자·숫자·밑줄, 영문으로 시작, 20자. 등록 후 변경 불가';
 COMMENT ON COLUMN "code_items"."bp_code" IS 'BP 코드 — bp_codes.bp_code FK, 필수. 플랫폼 원본은 플랫폼 BP(BP000000), BP별 행(적용 때 복사된 행·BP전용 코드)은 그 BP';
 COMMENT ON COLUMN "code_items"."label" IS '코드명';
 COMMENT ON COLUMN "code_items"."manage_owner_code" IS '관리 주체 코드 — 공통코드 `MANAGE_OWNER`(플랫폼고정·플랫폼제공·BP전용)';
