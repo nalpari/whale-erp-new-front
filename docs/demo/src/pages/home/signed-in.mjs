@@ -167,8 +167,7 @@ function oneStore(A, R) {
         [p.tag("ok", "답변완료"), "근무스케줄을 주 단위로 일괄 등록할 수 있나요", "08-27"],
       ]
         .map(([t, title, d]) => `<li class="flex items-center gap-[8px] border-b border-erp-thead-line py-[8px]">${t}<a class="min-w-0 flex-1 truncate hover:underline" href="${link(R, "support/inquiry-detail.html")}">${title}</a>${p.sub(d)}</li>`)
-        .join("")}</ul>` +
-      ui.button("문의하기", { href: link(R, "support/inquiry-mine.html") }),
+        .join("")}</ul>`,
   );
 
   // 근무스케줄 · 주간: 주 이동 + 요일 칩 + 09시~익일 02시 시간축(17칸). 요일 칩을 누르면 그 요일 근무자만 남는다.
