@@ -224,9 +224,14 @@ export function globalHeader(A, menus, right, home = "#") {
     .join("")}</nav><div inert class="grid transition-[grid-template-rows] duration-200 ${EASE_OUT} motion-reduce:transition-none grid-rows-[0fr]"><div class="overflow-hidden"><ul class="flex gap-[24px] border-b border-erp-bar-line py-[12px] pl-[24px] text-[13.5px] leading-[16px] text-erp-sub transition-opacity ease-out opacity-100 duration-[180ms]">${sub}</ul></div></div></header>`;
 }
 
+// 슬라이드 패널 바탕창 — 패널이 열리면 화면 전체(헤더 포함)를 덮어 뒤 버튼을 못 누르게 막고, 누르면 패널을 닫는다(2026-10-06 피드백).
+// fixed 라 어느 패널이 열려도 같은 바탕창 하나를 쓴다. erp.js 의 setPanel 이 패널과 같이 열고 닫는다.
+const PANEL_BACKDROP =
+  '<div data-panel-backdrop inert class="fixed inset-0 z-[5] bg-erp-nav/40 opacity-0 transition-opacity duration-250 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none"></div>';
+
 // 화면 틀. /design/full 과 같은 조합이다: 헤더 · 제목 줄 · 본문(남는 높이). 등록 패널은 바깥 relative 영역 오른쪽에 겹친다.
 export function erpFrame({ header, title, titleRight = "", body, panels = "" }) {
-  return `<div class="${ERP_THEME} min-h-[100dvh]"><div class="h-[100dvh] overflow-x-auto overflow-y-hidden bg-erp-thead-bg"><div class="relative flex h-full min-w-[1720px] flex-col overflow-x-clip">${header}${pageBar(title, titleRight)}${body}${panels}</div></div></div>`;
+  return `<div class="${ERP_THEME} min-h-[100dvh]"><div class="h-[100dvh] overflow-x-auto overflow-y-hidden bg-erp-thead-bg"><div class="relative flex h-full min-w-[1720px] flex-col overflow-x-clip">${header}${pageBar(title, titleRight)}${body}${panels}${PANEL_BACKDROP}</div></div></div>`;
 }
 
 // 목록 화면 본문: 왼쪽 필터 + 오른쪽 목록 카드

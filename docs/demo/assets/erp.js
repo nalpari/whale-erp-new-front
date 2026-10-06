@@ -76,10 +76,19 @@
   // ── SlidePanel (slide-panel.tsx) ──
   const isPanel = (el) => el.tagName === "ASIDE" && (el.classList.contains("translate-x-full") || el.classList.contains("translate-x-0"));
 
+  // 바탕창(PANEL_BACKDROP) — 패널이 열리면 같이 떠서 화면 전체(헤더 포함)를 막고, 패널이 닫히면 같이 꺼진다.
+  function setBackdrop(open) {
+    const bd = $("[data-panel-backdrop]");
+    if (!bd) return;
+    swap(bd, open, "opacity-100", "opacity-0");
+    bd.inert = !open;
+  }
+
   function setPanel(trigger, panel, open) {
     swap(panel, open, "translate-x-0", "translate-x-full");
     panel.inert = !open;
     trigger.setAttribute("aria-expanded", String(open));
+    setBackdrop(open);
     if (open) {
       panel._entry = { root: panel, sticky: true, close: () => setPanel(trigger, panel, false) };
       push(panel._entry);
@@ -89,6 +98,12 @@
       trigger.focus();
     }
   }
+
+  // 바탕창을 누르면 열려 있는 패널을 모두 닫는다(2026-10-06 피드백) — 패널이 닫히기 전에는 바탕창이 뒤 버튼 클릭을 막는다.
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest("[data-panel-backdrop]")) return;
+    [...stack].reverse().forEach((entry) => entry.sticky && entry.close());
+  });
 
   document.addEventListener("click", (e) => {
     const t = e.target.closest("button[aria-controls]");

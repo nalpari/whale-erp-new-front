@@ -292,6 +292,9 @@
   .z-50 {
     z-index: 50;
   }
+  .z-\[5\] {
+    z-index: 5;
+  }
   .col-span-2 {
     grid-column: span 2 / span 2;
   }
@@ -1295,6 +1298,12 @@
   }
   .bg-erp-nav {
     background-color: var(--color-erp-nav);
+  }
+  .bg-erp-nav\/40 {
+    background-color: color-mix(in srgb, #282f37 40%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-erp-nav) 40%, transparent);
+    }
   }
   .bg-erp-off {
     background-color: var(--color-erp-off);
