@@ -100,12 +100,33 @@
     else if (isPanel(target) && !target._entry) setPanel(t, target, true);
   });
 
-  // 패널 안의 data-close 버튼(취소·저장)은 패널을 닫는다.
+  // 패널 안의 data-close 버튼(닫기·취소)은 패널을 닫는다. 저장류 버튼은 data-close 를 달지 않아 패널이 열린 채로 남는다.
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-close]");
     if (b?.closest("dialog")) return; // 패널 안 확인창의 버튼은 확인창만 닫는다
     const panel = b?.closest("aside");
     if (panel?._entry) panel._entry.close();
+  });
+
+  // ── Toast (저장 등 완료 안내). data-toast="문구" 버튼을 누르면 화면 아래에 잠깐 떴다가 사라진다 ──
+  let toastEl, toastTimer;
+  function showToast(msg) {
+    if (!toastEl) {
+      toastEl = document.createElement("div");
+      toastEl.setAttribute("role", "status");
+      toastEl.setAttribute("aria-live", "polite");
+      toastEl.className =
+        "fixed inset-x-0 bottom-[32px] z-50 mx-auto w-fit rounded-[2px] bg-erp-nav px-[18px] py-[12px] text-[14px] text-white opacity-0 translate-y-[6px] transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none pointer-events-none";
+      document.body.append(toastEl);
+    }
+    toastEl.textContent = msg;
+    clearTimeout(toastTimer);
+    requestAnimationFrame(() => toastEl.classList.remove("opacity-0", "translate-y-[6px]"));
+    toastTimer = setTimeout(() => toastEl.classList.add("opacity-0", "translate-y-[6px]"), 2200);
+  }
+  document.addEventListener("click", (e) => {
+    const t = e.target.closest("[data-toast]");
+    if (t?.dataset.toast) showToast(t.dataset.toast);
   });
 
   // 드롭다운 항목을 고르면 닫는다. 점포 선택칸은 고른 값을 칸에 넣고, 원래 값을 목록으로 돌려놓는다.
@@ -123,6 +144,45 @@
       document.dispatchEvent(new CustomEvent("erp:scope", { detail: label.textContent }));
     }
     if (trigger) setPopup(trigger, pop, false, true);
+  });
+
+  // ── 점포 범위 드롭다운(scopeDropdown). 전체·일반·가맹 묶음 + 점포 목록이 role="option" 버튼으로 평평하게 들어 있어
+  // 위 일반 드롭다운(ul 전제)과는 별도로 고른다. 칸의 점포 값만 바꾸고 BP 이름은 그대로 둔다 ──
+  document.addEventListener("click", (e) => {
+    const opt = e.target.closest('[data-scope-label][role="option"]');
+    if (!opt) return;
+    const pop = opt.closest("[id]");
+    if (!pop) return;
+    const trigger = $(`[aria-controls="${CSS.escape(pop.id)}"]`);
+    if (!trigger) return;
+    $$('[role="option"]', pop).forEach((o) => o.setAttribute("aria-selected", String(o === opt)));
+    const value = $("[data-scope-value]", trigger);
+    if (value) value.textContent = opt.dataset.scopeLabel;
+    trigger.setAttribute("aria-label", `점포: ${opt.dataset.scopeLabel}`);
+    setPopup(trigger, pop, false, true);
+    document.dispatchEvent(new CustomEvent("erp:scope", { detail: opt.dataset.scopeLabel }));
+  });
+
+  // 점포 이름으로 찾기 — 묶음(전체·일반·가맹)과 이름·코드가 맞는 점포만 남기고, 빈 묶음은 숨긴다.
+  document.addEventListener("input", (e) => {
+    const q = e.target.closest("[data-scope-q-input]");
+    if (!q) return;
+    const pop = q.closest("[id]");
+    const list = $("[data-scope-list]", pop);
+    const term = q.value.trim().toLowerCase();
+    let any = false;
+    $$("[data-scope-sect]", list).forEach((sect) => {
+      let sectAny = false;
+      $$('[role="option"]', sect).forEach((o) => {
+        const hit = !term || (o.dataset.scopeQ || "").toLowerCase().includes(term);
+        o.hidden = !hit;
+        if (hit) sectAny = true;
+      });
+      sect.hidden = !sectAny;
+      if (sectAny) any = true;
+    });
+    const none = $("[data-scope-none]", pop);
+    if (none) none.hidden = any;
   });
 
   // ── GlobalHeader (global-header.tsx). 1depth 를 누르면 2depth 줄이 열린다 ──

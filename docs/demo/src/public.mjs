@@ -15,9 +15,12 @@ export const brand = (A, href) =>
 // 칸 아래 도움말, 안내 문구
 export const help = (t) => `<span class="text-[12px] leading-[1.5] text-erp-label">${t}</span>`;
 export const note = (t) => `<p class="text-[13px] leading-[1.6] text-erp-label">${t}</p>`;
-// 조용한 글자 링크(로그인 아래 찾기·가입 등). 파란 링크는 상세로 가는 링크에만 쓰므로 회색으로 둔다.
+// 조용한 글자 링크(로그인 아래 찾기 등). 파란 링크는 상세로 가는 링크에만 쓰므로 회색으로 둔다.
 export const quietLink = (text, href, a = "") =>
   `<a${a} class="text-erp-label transition-colors duration-150 ease-out hover:text-erp-ink" href="${href}">${text}</a>`;
+// 키컬러 글자 링크(로그인 아래 사업자회원가입처럼 다음 행동을 눈에 띄게 둘 때, 2026-10-06 피드백). 굵게 + 브랜드색.
+export const keyLink = (text, href, a = "") =>
+  `<a${a} class="font-semibold text-erp-brand transition-colors duration-150 ease-out hover:text-erp-ink" href="${href}">${text}</a>`;
 // 링크 여럿을 11px 세로선(#d9d9d9, DetailTable 값 구분선과 같은 것)으로 나눈 가운데 줄
 export const linkRow = (...links) =>
   `<p class="flex items-center justify-center gap-[10px] text-[14px]">${links.join('<span class="h-[11px] w-px bg-[#d9d9d9]"></span>')}</p>`;
@@ -33,12 +36,12 @@ export function authPage(A, R, { card, width = "w-[420px]", foot = "", home = li
   return `<div class="${ui.ERP_THEME}"><div class="h-[100dvh] overflow-y-auto bg-erp-thead-bg"><div class="flex min-h-full flex-col items-center justify-center gap-[24px] p-[24px]">${brand(A, home)}<main class="flex ${width} flex-col gap-[18px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">${card}</main>${foot}</div></div></div>`;
 }
 
-// 로그인 화면 맨 아래 약관 링크 줄. 누르면 전문을 확인창으로 연다.
+// 로그인 화면 맨 아래 약관 링크 줄. 누르면 전문을 확인창으로 연다. 확인창 폭은 회원가입 전문 보기와 같은 640px(2026-10-06 피드백).
 export function legalFoot() {
   const use = x.dialogId();
   const policy = x.dialogId();
   const btn = (id, label) => `<button type="button" data-dialog="${id}" class="transition-colors duration-150 ease-out hover:text-erp-ink">${label}</button>`;
-  return `<footer class="flex flex-col items-center gap-[6px] text-[12px] text-erp-label"><nav aria-label="약관 및 정책" class="flex gap-[12px]">${btn(use, "이용약관")}${btn(policy, '<b class="font-semibold text-erp-ink">개인정보처리방침</b>')}</nav><p><b class="font-semibold">WHALE ERP</b> Copyright © Interplug Corp. All Rights Reserved.</p></footer>${termsDialog(use, "use")}${termsDialog(policy, "policy")}`;
+  return `<footer class="flex flex-col items-center gap-[6px] text-[12px] text-erp-label"><nav aria-label="약관 및 정책" class="flex gap-[12px]">${btn(use, "이용약관")}${btn(policy, '<b class="font-semibold text-erp-ink">개인정보처리방침</b>')}</nav><p><b class="font-semibold">WHALE ERP</b> Copyright © Interplug Corp. All Rights Reserved.</p></footer>${termsDialog(use, "use", "w-[640px]")}${termsDialog(policy, "policy", "w-[640px]")}`;
 }
 
 // 약관 문구. 목업 auth.js 의 TERMS 한 곳에서 읽는다(두 곳에 적지 않는다).
@@ -63,8 +66,11 @@ export function termsBody(key) {
     .join("");
 }
 export const termsVer = (key) => `<p class="text-[12px] text-erp-label">${TERMS[key].ver}</p>`;
-export const termsDialog = (id, key) =>
-  x.dialog(id, TERMS[key].title, `${termsVer(key)}<div class="mt-[12px] flex max-h-[60dvh] flex-col gap-[12px] overflow-y-auto pr-[10px]">${termsBody(key)}</div>`, ui.button("확인", { "data-close": true }));
+// width 를 주면 확인창 기본 폭(420px) 대신 그 값을 쓴다(회원가입처럼 뒤 카드 폭에 맞출 때, 2026-10-06 피드백).
+export const termsDialog = (id, key, width) => {
+  const html = x.dialog(id, TERMS[key].title, `${termsVer(key)}<div class="mt-[12px] flex max-h-[60dvh] flex-col gap-[12px] overflow-y-auto pr-[10px]">${termsBody(key)}</div>`, ui.button("확인", { "data-close": true }));
+  return width ? html.replace("w-[420px]", width) : html;
+};
 
 // ── 비로그인 홈 쪽(홈·공지사항·도입문의) 위쪽 줄과 아래쪽 줄 ──
 export function siteNav(A, R, current = "") {

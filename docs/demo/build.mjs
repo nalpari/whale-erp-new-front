@@ -23,7 +23,9 @@ const isEntry = (f) => relative(pagesDir, f) === "index.mjs";
 const files = walk(pagesDir).sort((a, b) => isEntry(a) - isEntry(b));
 const built = [];
 for (const file of files) {
-  const rel = relative(pagesDir, file).replace(/\.mjs$/, ".html");
+  // relative() 는 윈도우에서 \ 로 나온다. split("/") 만 쓰면 깊이가 0으로 잘못 세어져
+  // assets 상대 경로(../assets/)가 전부 assets/ 로 빠진다 — 슬래시를 먼저 통일한다.
+  const rel = relative(pagesDir, file).replace(/\\/g, "/").replace(/\.mjs$/, ".html");
   const depth = rel.split("/").length - 1;
   const R = "../".repeat(depth); // 데모 루트까지
   const A = `${R}assets/`;

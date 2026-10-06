@@ -13,7 +13,7 @@ export default ({ A, R }) => {
     p.linkRow(
       p.quietLink("아이디 찾기", link(R, "auth/find.html#id")),
       p.quietLink("비밀번호 찾기", link(R, "auth/find.html#pw")),
-      p.quietLink("사업자회원가입", link(R, "auth/signup.html")),
+      p.keyLink("사업자회원가입", link(R, "auth/signup.html")),
     );
   return { title: "로그인", html: p.authPage(A, R, { card, foot: p.legalFoot() }) };
 };

@@ -14,14 +14,22 @@ export const req = (label) => `${label}${REQ}`;
 export const group = (label, control, width) =>
   `<div role="group" aria-label="${label.replace(REQ, "")}" class="flex flex-col justify-center gap-[8px] ${width ?? "min-w-px flex-1"}"><span class="truncate text-[14px] font-medium text-erp-label">${label}</span>${control}</div>`;
 
-// 연락처 세 칸
+// 비밀번호 칸 + [보기]. 1팀 컴포넌트에 비밀번호 칸이 없어 TextField 위에 글자 버튼을 겹쳤다. MY PAGE 비밀번호 변경과 회원가입이 같이 쓴다.
+export const pwField = (label, value, autocomplete, helpText = "") =>
+  group(
+    req(label),
+    `<div class="relative">${ui.textField({ type: "password", value, autocomplete, "aria-label": label })}<button type="button" aria-pressed="false" aria-label="비밀번호 보기" class="absolute top-0 right-0 h-[34px] px-[10px] text-[13px] text-erp-label hover:text-erp-ink" onclick="const i=this.previousElementSibling,on=i.type==='password';i.type=on?'text':'password';this.setAttribute('aria-pressed',on);this.textContent=on?'숨기기':'보기'">보기</button></div>` +
+      (helpText ? help(helpText) : ""),
+  );
+
+// 연락처 세 칸. 세 칸 모두 숫자 4자리를 넘지 않는다.
 export const tel = (a = "", b = "", c = "") =>
   `<div class="flex gap-[6px]">${[
     [a, "앞자리"],
     [b, "가운데자리"],
     [c, "끝자리"],
   ]
-    .map(([v, l]) => ui.textField({ value: v, inputmode: "numeric", "aria-label": l }))
+    .map(([v, l]) => ui.textField({ value: v, inputmode: "numeric", "aria-label": l, maxlength: 4 }))
     .join("")}</div>`;
 
 // 주소: 검색어 + [주소 검색] / 우편번호 · 기본주소(읽기 전용) / 상세주소
@@ -50,23 +58,19 @@ export function bizAuth(A, p, { start = "fold", values = ["", "", ""], input = v
   const ids = { fold: `${p}-fold`, form: `${p}-form`, done: `${p}-done` };
   const [num, ceo, open] = input;
   const fold = `<div id="${ids.fold}"${start === "fold" ? "" : " hidden"}>${ui.button("사업자 번호 인증하기", { variant: "soft", ...swapAttr(ids.fold, ids.form) })}</div>`;
-  const back = start === "fold" ? ids.fold : ids.done;
-  const closeBtn = ui.button("접기", { variant: "off", ...swapAttr(ids.form, back) });
   const fields = reauthLocked
     ? ui.formRow(
-        ui.field("사업자등록번호", ui.textField({ value: num, readonly: true })),
-        ui.field("개업일자", ui.textField({ value: open, readonly: true })),
+        ui.field("사업자등록번호", ui.textField({ value: num, disabled: true })),
+        ui.field("개업일자", ui.textField({ value: open, disabled: true })),
         ui.field("대표자명", ui.textField({ value: ceo })),
       ) + help("대표자가 바뀌었을 때 새 이름으로 다시 확인합니다. 번호와 개업일자는 바꿀 수 없습니다.")
-    : ui.formRow(
-        ui.field("사업자등록번호", ui.textField({ value: num })),
-        ui.field("대표자명", ui.textField({ value: ceo })),
-        group("개업일자", ui.dateField(A, { label: "개업일자", value: open })),
-      );
+    : ui.field("사업자등록번호", ui.textField({ value: num })) +
+      ui.field("대표자명", ui.textField({ value: ceo })) +
+      group("개업일자", ui.dateField(A, { label: "개업일자", value: open }));
   const form = box(
     ids.form,
     start === "done" ? "사업자 번호 재인증" : "사업자 번호 인증",
-    closeBtn,
+    "",
     fields + `<div>${ui.button("인증하기", swapAttr(ids.form, ids.done))}</div>`,
     true,
   );
@@ -87,11 +91,9 @@ export function bizAuth(A, p, { start = "fold", values = ["", "", ""], input = v
     ids.done,
     "사업자정보",
     ui.badge("on", doneBadge),
-    ui.formRow(
-      ui.field("사업자등록번호", ui.textField({ value: vn, readonly: true })),
-      ui.field("대표자명", ui.textField({ value: vc, readonly: true })),
-      ui.field("개업일자", ui.textField({ value: vo, readonly: true })),
-    ) +
+    ui.field("사업자등록번호", ui.textField({ value: vn, disabled: true })) +
+      ui.field("대표자명", ui.textField({ value: vc, disabled: true })) +
+      ui.field("개업일자", ui.textField({ value: vo, disabled: true })) +
       after +
       `<div>${reauth}</div>`,
     start !== "done",

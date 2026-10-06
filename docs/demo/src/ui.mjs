@@ -180,11 +180,16 @@ export function storeSelect(A, options, value = options[0], label = "점포") {
   )}</div>`;
 }
 
-// user-pop.tsx. items: { label, href, danger? }
+// user-pop.tsx. items: { label, href, danger? } | { label, panel }. panel 은 href 대신 그 id 의 슬라이드 패널을 연다(전체 페이지 전환 없이).
 export function userPop(A, name, items) {
   const id = uid("user");
   const list = items
-    .map((it) => `<li><a class="${it.danger ? "text-[#e93737]" : "text-erp-ink hover:text-erp-brand"}" href="${it.href}">${it.label}</a></li>`)
+    .map((it) => {
+      const cls = it.danger ? "text-[#e93737]" : "text-erp-ink hover:text-erp-brand";
+      return it.panel
+        ? `<li><button type="button" aria-controls="${it.panel}" aria-expanded="false" class="text-left ${cls}">${it.label}</button></li>`
+        : `<li><a class="${cls}" href="${it.href}">${it.label}</a></li>`;
+    })
     .join("");
   return `<div class="relative"><button type="button" aria-expanded="false" aria-controls="${id}" class="flex items-center"><span class="flex items-center gap-[10px] text-[15px] font-medium text-erp-ink">${img(A, "avatar.svg", 42, 42)}${name}</span>${img(A, "user-more.svg", 34, 34, `transition-transform duration-200 ${EASE_OUT} `)}</button>${popup(
     id,
@@ -201,7 +206,7 @@ const ICON_HOVER =
 const tip = (label) =>
   `<span class="pointer-events-none absolute top-[calc(100%+10px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[100px] border border-[#ebebeb] bg-white px-[12px] py-[10px] text-[14px] leading-[2] whitespace-nowrap text-erp-brand opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">${TAIL}${label}</span>`;
 export const serviceLinks = (A, hrefs = {}) =>
-  `<div class="flex h-[42px] shrink-0 items-center gap-[18px] rounded-full border border-erp-field-line bg-white px-[24px]"><span class="text-[15px] font-medium whitespace-nowrap text-erp-ink">서비스 바로가기</span><div class="flex items-center gap-[12px]"><a aria-label="웨일ERP" class="${ICON_HOVER} w-[32px]" href="${hrefs.erp ?? "#"}">${img(A, "service-erp.svg", 32, 32)}${tip("웨일ERP")}</a><a aria-label="부가서비스 현황" class="${ICON_HOVER} w-[32px] bg-white" href="${hrefs.addon ?? "#"}">${img(A, "service-chat.svg", 19, 19)}${tip("부가서비스 현황")}</a><a aria-label="플랫폼관리" class="${ICON_HOVER} w-[14px]" href="${hrefs.platform ?? "#"}"><span class="grid grid-cols-3 gap-[2.5px]">${img(A, "dot.svg", 3, 3).repeat(9)}</span>${tip("플랫폼관리")}</a></div></div>`;
+  `<div class="flex h-[42px] shrink-0 items-center gap-[18px] rounded-full border border-erp-field-line bg-white px-[24px]"><span class="text-[15px] font-medium whitespace-nowrap text-erp-ink">서비스 바로가기</span><div class="flex items-center gap-[12px]"><a aria-label="웨일ERP" class="${ICON_HOVER} w-[32px]" href="${hrefs.erp ?? "#"}">${img(A, "service-erp.svg", 32, 32)}${tip("웨일ERP")}</a><a aria-label="부가서비스 현황" class="${ICON_HOVER} w-[32px] bg-white" href="${hrefs.addon ?? "#"}">${img(A, "service-chat.svg", 19, 19)}${tip("부가서비스 현황")}</a><a aria-label="플랫폼관리" class="${ICON_HOVER} w-[20px] bg-white" href="${hrefs.platform ?? "#"}">${img(A, "service-platform.svg", 20, 20)}${tip("플랫폼관리")}</a></div></div>`;
 export const alarmLink = (A, href) =>
   `<a aria-label="알림" class="shrink-0 rounded-full transition-opacity duration-150 ease-out hover:opacity-70" href="${href}">${img(A, "alarm.svg", 42, 42)}</a>`;
 
