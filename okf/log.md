@@ -1,5 +1,14 @@
 # Bundle history
 
+## 2026-10-06
+
+* **Update**: 공통코드 코드값 CHECK 제약 두 개를 목업 안내와 맞췄다 — `code_groups.group_code` 에 20자 제한이, `code_items.item_code` 에 영문 시작 조건이 각각 빠져 있어 둘 다 `^[A-Z][A-Z0-9_]{0,19}$` 로 통일했다. 목업 공통코드 화면은 그룹·상세 모두 "영문 대문자·숫자·밑줄, 영문으로 시작, 20자 이내"로 안내한다(2026-09-29 확정). 카탈로그 비고도 보강하고 물리 모델을 다시 만들었다. 그룹 13종·상세 60건 전수 통과(최장 19자).
+
+* **Update**: 약관 유형 상세코드 `STAFF_PRIVACY_COLLECT`(21자)를 `STAFF_PRIVACY`(13자)로 줄였다 — 물리 모델의 `code_items.item_code` CHECK 제약이 `^[A-Z0-9_]{1,20}$` 라 21자는 저장되지 않는다. 1팀 ERD 카탈로그·네이밍 원자료·초기 데이터 명세를 고치고 물리 모델을 다시 만들었다. Manyfast `S-PNPZBX` 는 PRO 플랜이 막혀 대기다. 그룹 13종과 상세 60건을 전수 검사해 나머지는 제약을 지킨다(최장 `STAFF_TERMS_SERVICE`·`PLATFORM_REGISTERED` 19자).
+
+* **Update**: `2026-09-29-약관3종-표준안.md` 의 표준안 결론과 미정 항목을 [로그인](/auth.md) 약관 절에 반영했다 — 이용약관 22조 구조, 개인정보 동의 4단 표와 "입력 시 수집" 갈음(제22조 충족 여부는 법무 확인 대기), 마케팅 동의의 채널별 선택·2년 재확인·야간 별도, 못 채운 값 5개와 DPA 별도 문서 여부. 약관 전문 자체는 원자료에 둔다.
+* **Update**: `2026-09-30-네이밍-규칙.md` 의 역할 값을 [네이밍 규칙](/conventions/naming.md) 「사람 · 조직」에 반영했다 — `PLATFORM_MASTER` 류를 공통코드 `ROLE_TYPE` 상세코드(`PM`·`PA`·`BM`·`BA`·`FM`·`FA`)로 바꿨다. 긴 형식은 저장소에서 쓰이는 곳이 없었고, `role_groups.role_code` CHECK 제약(`^[A-Z]{2}[0-9]{6}$`)이 유형코드를 대문자 2글자로 못 박아 접두로 쓸 수도 없다.
+
 ## 2026-10-02
 
 * **Update**: 약관 유형 공통코드 `TERMS_TYPE` 을 목업 약관 전문 6종에 맞춰 6종으로 정리했다 — 직원 앱용 `STAFF_TERMS_SERVICE`·`STAFF_PRIVACY_COLLECT` 를 더해 1팀 ERD 카탈로그와 네이밍 원자료 용어집에 반영했다(Manyfast S-PNPZBX·F-OFBCVL 승인 대기).

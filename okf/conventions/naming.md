@@ -5,10 +5,10 @@ description: DB·API·FRONT 세 계층이 같은 개념을 같은 영문 이름�
 tags: [convention, naming, shared]
 sources:
   - { id: naming-2026-09-30, resource: ../../docs/raw/2026-09-30-네이밍-규칙.md, title: WHALE ERP 네이밍 규칙 (DB · API · FRONT) }
-generated: { by: claude-code/opus-5.5, at: 2026-10-02T05:01:19Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-06T01:12:21Z }
 ---
 
-근거: `docs/raw/2026-09-30-네이밍-규칙.md` (3팀 기획 세션 · 2026-10-01 고침)
+근거: `docs/raw/2026-09-30-네이밍-규칙.md` (3팀 기획 세션 · 2026-10-06 고침)
 
 **확정** — 2026-10-01 재영이 문서 전체를 확인했다. 새 라우트·타입·API 함수는 이 규칙을 따른다.
 
@@ -104,9 +104,9 @@ DB 테이블은 복수형, 모델·타입은 PascalCase 단수형으로 바꿔 �
 
 | 표준 표기 | 영문 식별자 | 비고 |
 |---|---|---|
-| 플랫폼 마스터 / 플랫폼 관리자 | `PLATFORM_MASTER` / `PLATFORM_ADMIN` | 역할 값 |
-| BP 마스터 / BP 관리자 | `BP_MASTER` / `BP_ADMIN` | 역할 값 |
-| 가맹마스터 / 가맹관리자 | `FRANCHISE_MASTER` / `FRANCHISE_ADMIN` | 역할 값 |
+| 플랫폼 마스터 / 플랫폼 관리자 | `PM` / `PA` | 공통코드 `ROLE_TYPE` 의 상세코드. DB 저장값이자 화면 표시값이고, `role_groups.role_code` 의 2글자 접두로도 쓴다(`PM000001`). `role_code` CHECK 제약이 `^[A-Z]{2}[0-9]{6}$` 라 2글자가 아니면 저장되지 않는다 |
+| BP 마스터 / BP 관리자 | `BM` / `BA` | 같은 공통코드. `BM000001` · `BA000001` |
+| 가맹마스터 / 가맹관리자 | `FM` / `FA` | 같은 공통코드. `FM000001` · `FA000001` |
 | BP | `bp` | 1팀 테이블, 3팀은 참조만 |
 | 본사 | `hq` | |
 | 점포 · 근무지 | `store` | 근무지는 직원 레코드의 `store_id` |
