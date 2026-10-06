@@ -137,7 +137,7 @@ python3 docs/erd/_build.py
 |  | 수집 방법 | text | `method` | 기기 GPS · 휴대전화 안 판정 |
 |  | 제공받는 자 | text | `recipient` | 제공일 때 |
 |  | 제공 목적 | text | `purpose` | 제공일 때 |
-| FK | 출퇴근 기록 | id | `attendance_id` | 있을 때 · 출퇴근 장 |
+| FK | 출퇴근 기록 | id | `attendance_record_id` | 있을 때 · 출퇴근 장 |
 
 ### 관리자 계정 `admin_accounts` · 1팀 참조
 
@@ -195,10 +195,11 @@ python3 docs/erd/_build.py
 |  | 이름 | text | `name` | 초안 입력값 |
 |  | 휴대전화번호 | text | `phone` | 초대 기준값 |
 |  | 고용 형태 | enum | `employment_type` | 정직원·파트타이머, 계약으로만 바뀜 |
-|  | 입사일 | date | `hired_on` |  |
+|  | 직무 | text | `job_title` | 초안 필수 (2026-10-06) |
+|  | 입사일 | date | `hired_date` |  |
 |  | 재직 상태 | enum | `employment_status` | 재직·퇴직 |
 |  | 가입 상태 | enum | `join_status` | 초안·초대 발송·가입 완료 |
-|  | 퇴직일 | date | `retired_on` |  |
+|  | 퇴직일 | date | `retired_date` |  |
 
 ### 신고 정보 `staff_tax_profiles` · 엔티티
 
@@ -300,13 +301,16 @@ python3 docs/erd/_build.py
 | FK | 근무지 | id | `store_id` |  |
 | FK | 직전 계약 | id | `previous_contract_id` | 재계약일 때 |
 |  | 계약 유형 | enum | `contract_type` | 정직원·파트타이머 |
-|  | 계약 기간 | date | `start_on·end_on` | 종료일 비우면 무기한 |
-|  | 근무 조건 | json | `work_terms` | 근무일·시작·종료·휴게 |
+|  | 계약 방식 | enum | `contract_method` | ELECTRONIC·PAPER (CTR-23) |
+|  | 계약 기간 | date | `start_date·end_date` | 종료일 비우면 무기한 |
+|  | 근무 조건 | json | `work_terms` | 근무요일(월~일)·시작·종료·휴게, 30분 단위 |
+|  | 건강보험·국민연금 가입 | bool | `is_health_pension_insured` |  |
+|  | 고용보험·산재보험 가입 | bool | `is_employment_injury_insured` |  |
 |  | 급여 조건 | json | `wage_terms` | 시급·월급·지급일 |
 |  | 계약 상태 | enum | `status` | 발송 대기·서명 대기·체결 완료·거부·만료·종료 |
 |  | 초안 처리 유형 | enum | `draft_action` | 가입 초대·소속 추가 확인·복귀 확인·즉시 발송 |
 |  | 발송 일시 | datetime | `sent_at` |  |
-|  | 날인 기한 | datetime | `sign_due_at` | 발송일부터 30일 |
+|  | 날인 기한 | datetime | `sign_deadline_at` | 발송일부터 30일 |
 |  | 재발송 횟수 | int | `resend_count` |  |
 |  | 거부 사유 | text | `reject_reason` |  |
 | FK | 작성 관리자 | id | `created_by` |  |
@@ -327,9 +331,9 @@ python3 docs/erd/_build.py
 
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
-| PK | 파일 ID | id | `document_id` |  |
+| PK | 파일 ID | id | `contract_document_id` |  |
 | FK | 근로계약 | id | `contract_id` |  |
-|  | 파일 구분 | enum | `kind` | 발송 원본·날인 완료본 |
+|  | 파일 구분 | enum | `kind` | 발송 원본·날인 완료본·종이 계약 근로계약서·임금계약서 |
 |  | 저장 위치 | text | `storage_key` |  |
 |  | 파일 해시 | hash | `checksum` |  |
 |  | 생성 일시 | datetime | `created_at` |  |
@@ -415,7 +419,7 @@ python3 docs/erd/_build.py
 
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
-| PK | 출퇴근 기록 ID | id | `attendance_id` |  |
+| PK | 출퇴근 기록 ID | id | `attendance_record_id` |  |
 | FK | 직원 레코드 | id | `staff_member_id` |  |
 | FK | 근무지 | id | `store_id` | 여럿이면 가장 가까운 곳 |
 |  | 구분 | enum | `kind` | 출근·퇴근 |
@@ -427,7 +431,7 @@ python3 docs/erd/_build.py
 |  | 등록 방식 | enum | `entry_method` | 직원 등록·대신 등록 |
 | FK | 대신 등록 관리자 | id | `proxy_by` | 대신 등록일 때 |
 |  | 대신 등록 사유 | text | `proxy_reason` | 대신 등록일 때 필수 |
-|  | 계약 미체결 경고 | bool | `unsigned_warning` | 경고 후 허용 |
+|  | 계약 미체결 경고 | bool | `has_unsigned_warning` | 경고 후 허용 |
 | FK | 짝 출근 기록 | id | `clock_in_id` | 퇴근일 때 |
 
 ### 출퇴근 보정 이력 `attendance_corrections` · 이력
@@ -435,7 +439,7 @@ python3 docs/erd/_build.py
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK | 보정 이력 ID | id | `correction_id` |  |
-| FK | 출퇴근 기록 | id | `attendance_id` |  |
+| FK | 출퇴근 기록 | id | `attendance_record_id` |  |
 |  | 수정 전 값 | json | `before_value` |  |
 |  | 수정 후 값 | json | `after_value` |  |
 |  | 수정 사유 | text | `reason` | 필수 |
@@ -499,7 +503,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |  | 내용 | text | `body` |  |
 |  | 배정 방식 | enum | `assign_mode` | 개인·전체, 등록 후 변경 불가 |
 |  | 수행 방식 | enum | `perform_mode` | 각자·공유, 등록 후 변경 불가 |
-|  | 수행 예정 날짜 | date | `due_on` | 필수, 과거 날짜 불가 |
+|  | 수행 예정 날짜 | date | `due_date` | 필수, 과거 날짜 불가 |
 |  | 수행 시간 | time | `due_time` | 선택 |
 |  | 긴급 여부 | bool | `urgent` | 근무시간 외 즉시 푸시 |
 |  | 수행 상태 | enum | `status` | 대기·진행 중·완료 |
@@ -507,6 +511,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |  | 완료 일시 | datetime | `completed_at` |  |
 | FK | 등록 관리자 | id | `created_by` |  |
 |  | 등록일 | datetime | `created_at` |  |
+|  | 삭제 표시 | bool | `is_deleted` | 대기일 때만 삭제 |
 
 ### TO-DO 배정 대상 `todo_assignees` · 엔티티
 
@@ -676,6 +681,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 | FK | 수신 관리자 | id | `admin_account_id` | 운영 알림 |
 |  | 읽음 여부 | bool | `is_read` |  |
 |  | 읽음 처리 시각 | datetime | `read_at` |  |
+|  | 삭제 표시 | bool | `is_deleted` | 받은 사람별로 지움 |
 
 ### 계정 `accounts` · 엔티티
 
@@ -731,7 +737,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |  | 게시 기간 | date | `publish_from·to` |  |
 |  | 상단 고정 여부 | bool | `pinned` | 공지사항만 |
 |  | FAQ 카테고리 | enum | `faq_category` | FAQ만 |
-|  | 삭제 일시 | datetime | `deleted_at` | 복구 가능, 무기한 보관 |
+|  | 삭제 표시 | bool | `is_deleted` | 복구 가능, 무기한 보관 |
 | FK | 최종 수정 관리자 | id | `updated_by` |  |
 |  | 최종 수정 일시 | datetime | `updated_at` |  |
 
@@ -806,7 +812,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |  | 사용자 노출 답변 | text | `reply` | 이메일로 회신 |
 |  | 운영자 내부 메모 | text | `internal_memo` |  |
 |  | 접수 일시 | datetime | `created_at` |  |
-|  | 상담 완료일 | date | `consulted_on` | 1년 뒤 파기 |
+|  | 상담 완료일 | date | `consulted_date` | 1년 뒤 파기 |
 
 **관계**
 
