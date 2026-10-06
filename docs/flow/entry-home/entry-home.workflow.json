@@ -157,7 +157,7 @@
       "col": 3,
       "type": "frontend",
       "label": "로그인 후 홈",
-      "sublabel": "처리 대기 · 점포별 현황",
+      "sublabel": "점포 하나면 운영 화면",
       "width": 140,
       "tag": "늘 전체 범위로 시작"
     },
