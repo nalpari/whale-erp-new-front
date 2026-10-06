@@ -180,7 +180,7 @@ DIAGRAMS.append(Diagram(
         E("login", "로그인 이력", "login_histories", "history",
           ["#|로그인 이력 ID|id|login_id|", "→|계정|id|account_id|없는 이메일이면 비움", "|시도 이메일|text|email|", "|성공 여부|bool|succeeded|", "|실패 사유|enum|failure_reason|안내 문구는 구분 안 함", "|시도 시각|datetime|attempted_at|"], 2, 40),
         E("pin", "비밀번호 재설정 핀", "password_reset_pins", "entity",
-          ["#|핀 ID|id|pin_id|", "→|계정|id|account_id|", "|핀 검증값|hash|pin_hash|원본 저장 안 함", "|발급 시각|datetime|issued_at|1분 재발급 제한, 하루 10회", "|만료 시각|datetime|expires_at|10분", "|시도 횟수|int|attempt_count|5회", "|쿨다운 단계|int|cooldown_step|1·3·5분, 3회까지", "|쿨다운 해제 시각|datetime|cooldown_until|", "|사용 시각|datetime|used_at|"], 2, 312),
+          ["#|핀 ID|id|pin_id|", "→|계정|id|account_id|", "|핀 검증값|hash|pin_hash|원본 저장 안 함", "|발급 시각|datetime|issued_at|1분 재발급 제한, 하루 10회", "|만료 시각|datetime|expires_at|15분 (ME-1)", "|시도 횟수|int|attempt_count|5회", "|쿨다운 단계|int|cooldown_step|1·3·5분, 3회까지", "|쿨다운 해제 시각|datetime|cooldown_until|", "|사용 시각|datetime|used_at|"], 2, 312),
         E("access_log", "위치정보 확인자료", "location_access_logs", "history",
           ["#|확인자료 ID|id|access_log_id|", "→|계정|id|account_id|대상 직원", "|처리 구분|enum|action|수집·이용·제공", "|처리 일시|datetime|occurred_at|", "|수집 방법|text|method|기기 GPS · 휴대전화 안 판정", "|제공받는 자|text|recipient|제공일 때", "|제공 목적|text|purpose|제공일 때", "→|출퇴근 기록|id|attendance_record_id|있을 때 · 출퇴근 장"], 2, 608),
         E("admin", "관리자 계정", "admin_accounts", "ref", ["#|관리자 ID|id|admin_account_id|admin_accounts PK", "→|BP|id|bp_code_id|", "|역할|enum|role|BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼"], 0, 560, "1팀 영역(환경설정·권한). 1팀 ERD 의 admin_accounts 테이블."),
@@ -301,7 +301,7 @@ DIAGRAMS.append(Diagram(
     [
         ("coral", "중심", "출퇴근은 GPS로 판정한다", ["근무지 반경은 공통 100m, 지하·실내는 관리자가 넓힌다", "오차가 반경보다 크면 등록은 받고 확인 필요로 표시한다", "위치 권한을 거부하면 등록하지 못한다"]),
         ("ink", "", "원본은 그대로, 보정은 따로", ["기록 시각은 서버 수신 시각으로 확정한다", "관리자 보정은 최근 3개월 이내, 사유와 전후 값을 남긴다", "근무스케줄은 확정 전으로 복사되고 확정할 때 알림이 나간다"]),
-        ("muted", "미정", "남은 결정", ["위치정보 동의와 이용내역 통지가 법무 요건을 채우는지", "근무시간 외 보류의 기준을 근무스케줄로 볼지 영업시간으로 볼지 (NOTI-1)", "매장용 출퇴근 등록 앱과 QR 식별은 2차"]),
+        ("muted", "미정", "남은 결정", ["위치정보 동의와 이용내역 통지가 법무 요건을 채우는지", "매장용 출퇴근 등록 앱과 QR 식별은 2차"]),
     ],
 ))
 
@@ -313,7 +313,7 @@ DIAGRAMS.append(Diagram(
         ref_store(0, 40),
         ref_admin(0, 256),
         E("todo", "TO-DO", "todos", "focal",
-          ["#|TO-DO ID|id|todo_id|", "→|근무지|id|store_id|", "|배정 그룹 ID|id|assign_group_id|전체·각자 수행 묶음", "|제목|text|title|", "|내용|text|body|", "|배정 방식|enum|assign_mode|개인·전체, 등록 후 변경 불가", "|수행 방식|enum|perform_mode|각자·공유, 등록 후 변경 불가", "|수행 예정 날짜|date|due_date|필수, 과거 날짜 불가", "|수행 시간|time|due_time|선택", "|긴급 여부|bool|urgent|근무시간 외 즉시 푸시", "|수행 상태|enum|status|대기·진행 중·완료", "→|수행자|id|performed_by|공유 TO-DO", "|완료 일시|datetime|completed_at|", "→|등록 관리자|id|created_by|", "|등록일|datetime|created_at|", "|삭제 표시|bool|is_deleted|대기일 때만 삭제"], 1, 40),
+          ["#|TO-DO ID|id|todo_id|", "→|근무지|id|store_id|", "|배정 그룹 ID|id|assign_group_id|전체·각자 수행 묶음", "|제목|text|title|", "|내용|text|body|", "|배정 방식|enum|assign_mode|개인·전체, 등록 후 변경 불가", "|수행 방식|enum|perform_mode|각자·공유, 등록 후 변경 불가", "|수행 예정 날짜|date|due_date|필수, 과거 날짜 불가", "|수행 시간|time|due_time|선택", "|긴급 여부|bool|urgent|강조 표시, 미조치에 셈", "|수행 상태|enum|status|대기·진행 중·완료", "→|수행자|id|performed_by|공유 TO-DO", "|완료 일시|datetime|completed_at|", "→|등록 관리자|id|created_by|", "|등록일|datetime|created_at|", "|삭제 표시|bool|is_deleted|대기일 때만 삭제"], 1, 40),
         E("assignee", "TO-DO 배정 대상", "todo_assignees", "entity",
           ["#→|TO-DO|id|todo_id|", "#→|직원 레코드|id|staff_member_id|퇴직자 배정 불가", "|완료 여부|bool|completed|", "|완료 시각|datetime|completed_at|"], 2, 40),
         E("staff_member", "직원 레코드", "staff_members", "entity",
@@ -330,7 +330,7 @@ DIAGRAMS.append(Diagram(
     ],
     [
         ("coral", "중심", "배정 방식이 행 수를 정한다", ["개인·각자 수행은 직원당 1건, 담당 직원 한 명", "공유는 1건에 대상 직원 여럿, 먼저 완료한 사람이 수행자", "배정 방식과 수행 방식은 등록 후 바꾸지 못한다", "제목·내용·수행 예정 일시·긴급은 대기일 때만 고치거나 지운다 (2026-10-06)"]),
-        ("ink", "", "긴급은 알림에만 영향", ["긴급 표시는 근무시간 외 푸시 보류를 푸는 데만 쓴다", "상태는 직원이 자기 건만 바꾼다", "반복 설정은 없다, 정기 업무는 2차"]),
+        ("ink", "", "긴급은 강조 표시", ["긴급은 직원 근무 앱 홈·근무 탭 맨 위에 두고 미조치에 센다, 푸시는 없다", "상태는 직원이 자기 건만 바꾼다", "반복 설정은 없다, 정기 업무는 2차"]),
         ("muted", "미정", "남은 결정", ["WORK-3 공유 TO-DO 수행자 이름을 다른 직원에게 보여줄지"]),
     ],
 ))
@@ -347,7 +347,7 @@ DIAGRAMS.append(Diagram(
         E("payslip", "급여명세서", "payslips", "focal",
           ["#|급여명세서 ID|id|payslip_id|", "→|직원 레코드|id|staff_member_id|같은 기간 중복 생성 차단", "→|근무지|id|store_id|", "→|참조 근로계약|id|contract_id|계약 없으면 초안 없음", "|급여 기간|date|period_start·period_end|", "|계약 유형|enum|contract_type|", "|출퇴근 참조 기간|date|attendance_from·to|", "|명세서 상태|enum|status|작성 중·검토 중·확정·발송 완료", "|연장·야간·휴일 가산|bool|overtime_premium|적용 여부·명세서마다 정함", "|지급 총액|money|gross_pay|", "|공제 총액|money|total_deduction|", "|실지급액|money|net_pay|", "|확정 일시|datetime|confirmed_at|", "→|확정 관리자|id|confirmed_by|"], 1, 40),
         E("item", "명세서 금액 항목", "payslip_items", "entity",
-          ["#|항목 ID|id|item_id|", "→|급여명세서|id|payslip_id|", "|항목 구분|enum|category|지급·공제", "|항목 코드|enum|code|기본급·주휴·연장·고정 수당·4대보험·소득세·지방소득세", "|시스템 계산값|money|calculated_amount|지급 항목만", "|관리자 수정값|money|adjusted_amount|", "|입력 여부|bool|entered|공제 미입력과 0 구분"], 2, 40),
+          ["#|항목 ID|id|item_id|", "→|급여명세서|id|payslip_id|", "|항목 구분|enum|category|지급·공제", "|항목 코드|enum|code|지급·공제 항목, 목록은 플랫폼 관리자가 관리", "|시스템 계산값|money|calculated_amount|지급 항목만", "|관리자 수정값|money|adjusted_amount|", "|입력 여부|bool|entered|공제 미입력과 0 구분"], 2, 40),
         E("reason", "검토 대기 사유", "payslip_review_reasons", "entity",
           ["#|사유 ID|id|reason_id|", "→|급여명세서|id|payslip_id|", "|사유|enum|reason|출퇴근 누락·계약 만료 후 기록·기간 중 계약 변경·공제 미입력", "|상세|text|detail|누락 일수 등", "|확인 일시|datetime|acknowledged_at|"], 2, 312),
         E("dispatch", "명세서 발송 이력", "payslip_dispatches", "history",
@@ -373,7 +373,7 @@ DIAGRAMS.append(Diagram(
 # ── 7. 알림 ───────────────────────────────────────────────────────────────
 DIAGRAMS.append(Diagram(
     "notify", "알림", "운영 알림과 직원 알림",
-    "관리자 웹의 운영 알림과 직원 근무 앱의 직원 알림은 같은 알림 구조를 쓴다. 읽음은 수신자마다 따로 두고 발송은 채널별 이력으로 남긴다. TO-DO 배정 알림은 근무시간 외에 발송 예정 시각을 잡아 보류한다.",
+    "관리자 웹의 운영 알림과 직원 근무 앱의 직원 알림은 같은 알림 구조를 쓴다. 읽음은 수신자마다 따로 두고 발송은 채널별 이력으로 남긴다. TO-DO 배정은 앱 푸시 없이 알림함에만 남긴다(2026-09-28).",
     [
         E("notification", "알림", "notifications", "focal",
           ["#|알림 ID|id|notification_id|", "|알림 대상 구분|enum|audience|운영 알림·직원 알림", "|알림 유형|enum|type|운영 6종·직원 4종", "|관련 업무 유형|enum|related_type|문의사항·도입문의·근로계약 등", "|관련 업무 ID|id|related_id|", "|알림 내용|text|body|", "|중복 방지 키|text|dedupe_key|같은 사건·수신자 1회", "|긴급 여부|bool|urgent|", "|생성 시각|datetime|created_at|"], 0, 240),
@@ -383,7 +383,7 @@ DIAGRAMS.append(Diagram(
         E("account", "계정", "accounts", "entity",
           ["#|계정 ID|id|account_id|", "|이메일 아이디|text|email|"], 1, 496),
         E("delivery", "알림 발송 이력", "notification_deliveries", "history",
-          ["#|발송 이력 ID|id|delivery_id|", "→|알림 수신|id|recipient_id|", "|발송 채널|enum|channel|앱 푸시·알림톡·이메일", "|발송 예정 시각|datetime|scheduled_at|보류 시", "|발송 시각|datetime|sent_at|", "|발송 결과|enum|result|", "|대체 발송 여부|bool|is_fallback|푸시 실패 시 알림톡", "|묶음 발송 ID|id|batch_id|보류분 아침 묶음"], 2, 240),
+          ["#|발송 이력 ID|id|delivery_id|", "→|알림 수신|id|recipient_id|", "|발송 채널|enum|channel|앱 푸시·알림톡·이메일", "|발송 예정 시각|datetime|scheduled_at|쓰지 않음, 보류 없어짐 (NOTI-1)", "|발송 시각|datetime|sent_at|", "|발송 결과|enum|result|", "|대체 발송 여부|bool|is_fallback|푸시 실패 시 알림톡", "|묶음 발송 ID|id|batch_id|한 번에 보낸 발송 묶음"], 2, 240),
         E("preference", "알림 수신 설정", "notification_preferences", "entity",
           ["#→|계정|id|account_id|", "#|알림 유형|enum|type|", "|수신 여부|bool|enabled|기본 켬, 계약·급여는 끌 수 없음", "|변경 시각|datetime|updated_at|"], 2, 512),
     ],
@@ -396,8 +396,8 @@ DIAGRAMS.append(Diagram(
     ],
     [
         ("coral", "중심", "알림 하나, 수신 여럿", ["읽음은 사람마다 따로라 수신 행에 둔다", "같은 사건으로 같은 사람에게 두 번 만들지 않는다", "처리했는지는 알림이 아니라 원래 업무의 상태가 안다"]),
-        ("ink", "", "채널과 보류", ["운영 알림은 알림함과 이메일, 모바일 푸시는 없다", "직원 알림은 앱 푸시가 기본이고 놓치면 안 되는 것은 알림톡으로 대체한다", "보류된 TO-DO 알림은 다음 근무일 아침에 묶어서 보낸다"]),
-        ("muted", "미정", "남은 결정", ["NOTI-1 근무시간 외의 기준 시각", "알림톡 대체 발송 범위와 템플릿 검수 범위(3팀)"]),
+        ("ink", "", "채널과 보류", ["운영 알림은 알림함과 이메일, 모바일 푸시는 없다", "직원 알림은 앱 푸시가 기본이고 놓치면 안 되는 것은 알림톡으로 대체한다", "TO-DO 배정은 푸시 없이 알림함에만 남긴다"]),
+        ("muted", "미정", "남은 결정", ["알림톡을 보낼 상황과 템플릿 검수 범위(3팀, NOTI-2)"]),
     ],
 ))
 
@@ -779,7 +779,9 @@ def page(d, svg):
                          f'<span class="n">ENTITY {len(x.entities)} · REL {len(x.rels)}</span></a>')
         extra = ('<h2>영역별 상세</h2><p class="subtitle">한 장에 엔티티를 8개 넘게 두지 않으려고 영역마다 나눴다. '
                  '속성의 제안 컬럼명과 비고는 README.md 카탈로그에 있다.</p>'
-                 f'<div class="index-list">{"".join(links)}</div>')
+                 f'<div class="index-list">{"".join(links)}</div>'
+                 '<h2>물리 ERD</h2><p class="subtitle">이 논리 모델을 테이블·컬럼·제약으로 옮긴 물리 모델이다. 원본과 생성기는 whale-erp-api 에 있다.</p>'
+                 '<div class="index-list"><a href="physical/index.html"><b>3팀 물리 ERD</b><span>테이블 정의 · schema.sql</span></a></div>')
     return f"""<!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -835,7 +837,7 @@ def readme():
          "- **관리자 계정(`admin_accounts`)과 계정(`staff`)은 테이블을 나눈다.** 관리자이면서 직원인 사람은 없다. 관리자 계정은 BP 마스터가 사업자 회원가입으로 직접 만들고 그 아래 BP 관리자·가맹마스터·가맹관리자 계정은 만들어 준다. 계정은 초대받은 직원이 본인인증과 개인정보를 넣어 직접 가입한다. 두 테이블에 겹치는 속성은 이메일·비밀번호·잠금 정도라서 잠금과 핀 재설정 같은 로직은 테이블이 아니라 api 공통 모듈로 나눠 쓴다. (2026-09-15 재영 확인)",
          "- **관리자 역할과 권한 범위**는 1팀 권한 관리에서 정한다. 3팀 화면의 업무 범위는 그 결과를 따른다.", "",
          "## 아직 정하지 않은 것", "",
-         "- 근무시간 외 알림 보류의 기준 시각 (NOTI-1)과 알림톡 대체 발송 범위",
+         "- 알림톡을 보낼 상황 (NOTI-2)",
          "- 배치·알림·알림톡/SMS·메일 발송의 대행사, 템플릿 검수, 발송 이력·재시도 저장 위치 (3팀 담당, 2026-09-17 배정)",
          "- 신고 정보를 내 정보에서 조회·수정하는 방법",
          "- 공유 TO-DO 수행자 이름 공개 (WORK-3), 연결 보류 안내 범위 (JOIN-3), 이메일을 못 받는 직원 (LOGIN-8)",

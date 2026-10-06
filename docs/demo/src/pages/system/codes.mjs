@@ -16,6 +16,34 @@ const markRow = (table, n) => {
 // 끌어서 순서 바꾸는 손잡이. 아이콘이 없어 글자 기호로 둔다.
 const handle = '<span title="끌어서 순서 바꾸기" aria-label="끌어서 순서 바꾸기" class="cursor-grab text-[16px] text-erp-label">≡</span>';
 const sub = (t) => `<span class="ml-[10px] text-[14px] font-normal text-erp-label">${t}</span>`;
+const help = (t) => `<span class="text-[13px] leading-[1.5] whitespace-normal text-erp-label">${t}</span>`;
+// 추가 행(목업 surface-hover). 버튼을 누르면 아래 ADD_SCRIPT 가 template 을 표 맨 끝에 붙인다 — 입력 행 + 안내 행.
+const addRows = (id, cells, note) =>
+  `<template id="${id}"><tr class="h-[46px] border-b border-erp-thead-line bg-erp-thead-bg" data-new-row>${cells
+    .map(([c, left]) => `<td class="px-[10px] ${left ? "text-left" : "text-center"}">${c}</td>`)
+    .join("")}</tr><tr class="border-b border-erp-thead-line bg-erp-thead-bg"><td colspan="${cells.length}" class="px-[10px] py-[10px] text-left">${help(note)}</td></tr></template>`;
+// 코드는 영문 대문자로만 — 소문자를 치면 대문자로 바꾼다
+const codeField = (placeholder, label) => ui.textField({ placeholder, maxlength: 20, "aria-label": label, "data-upper": true, title: "영문 대문자·숫자·밑줄, 영문으로 시작, 20자 이내 (소문자는 대문자로 바뀝니다)" });
+// 추가 버튼을 누르면 그 표에 새 행을 붙이고, 첫 칸으로 스크롤·포커스한다. 저장 전 새 행은 하나만 둔다(목업과 같다).
+const ADD_SCRIPT = `<script>
+(() => {
+  document.querySelectorAll("[data-add-row]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const tpl = document.getElementById(btn.dataset.addRow);
+      const body = btn.closest("section").querySelector("tbody");
+      body.append(tpl.content.cloneNode(true));
+      btn.disabled = true;
+      const first = body.querySelector("[data-new-row] input");
+      first.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      first.focus({ preventScroll: true });
+    });
+  });
+  document.addEventListener("input", (e) => {
+    if (e.target.matches("[data-upper]")) e.target.value = e.target.value.toUpperCase();
+  });
+})();
+</script>`;
+const dim = (b) => b.replace('class="', 'class="disabled:pointer-events-none disabled:opacity-40 ');
 
 // [그룹 코드, 그룹명, 관리 주체, BP 적용(null=해당 없음, true=적용, false=미적용)]
 const GROUPS = [
@@ -68,8 +96,19 @@ export default ({ A, R }) => {
   ]);
   const left = card(
     "w-[780px] shrink-0",
-    ui.sectionHead(`공통코드 그룹${sub(`${GROUPS.length}개`)}`, ui.button("그룹 추가", { variant: "soft" }) + ui.button("저장")) +
-      markRow(ui.dataTable(groupCols, groupRows), 0),
+    ui.sectionHead(`공통코드 그룹${sub(`${GROUPS.length}개`)}`, dim(ui.button("그룹 추가", { variant: "soft", "data-add-row": "new-group" })) + ui.button("저장")) +
+      markRow(ui.dataTable(groupCols, groupRows), 0) +
+      addRows(
+        "new-group",
+        [
+          [codeField("그룹 코드", "그룹 코드"), true],
+          [ui.textField({ placeholder: "그룹명", "aria-label": "그룹명" }), true],
+          [ui.select(["선택", "플랫폼고정", "플랫폼제공"], { "aria-label": "관리 주체" })],
+          ['<span class="text-erp-label" title="플랫폼제공 그룹은 미적용으로 저장합니다">미적용</span>'],
+          [x.toggle("사용", true)],
+        ],
+        "그룹 코드는 영문 대문자·숫자·밑줄, 영문으로 시작, 20자 이내 (소문자는 대문자로 바뀝니다). 새 그룹은 ‘사용’으로 시작합니다. 플랫폼제공 그룹은 ‘미적용’으로 저장되고, 상세 코드를 다 정리한 뒤 ‘BP에 적용’을 누를 때 BP들에게 배포됩니다.",
+      ),
   );
 
   const codeCols = [
@@ -89,8 +128,19 @@ export default ({ A, R }) => {
   const right = card(
     "min-w-0 flex-1",
     band("서비스 그룹 — 상세 코드가 곧 서비스 코드입니다") +
-      ui.sectionHead(`상세 코드${sub("SERVICE · 서비스 · 플랫폼고정")}`, ui.button("상세 코드 추가", { variant: "soft" }) + ui.button("저장")) +
-      ui.dataTable(codeCols, codeRows),
+      ui.sectionHead(`상세 코드${sub("SERVICE · 서비스 · 플랫폼고정")}`, dim(ui.button("상세 코드 추가", { variant: "soft", "data-add-row": "new-code" })) + ui.button("저장")) +
+      ui.dataTable(codeCols, codeRows) +
+      addRows(
+        "new-code",
+        [
+          [""],
+          [codeField("서비스 코드 직접 입력", "상세 코드"), true],
+          [ui.textField({ placeholder: "서비스명", "aria-label": "코드명" }), true],
+          [`<span title="맨 끝에 붙습니다. 저장한 뒤 끌어서 옮길 수 있습니다">${SERVICES.length + 1}</span>`],
+          [x.toggle("사용", true)],
+        ],
+        "서비스 코드는 자동으로 매기지 않습니다 — 영문 대문자·숫자·밑줄, 영문으로 시작, 20자 이내 (소문자는 대문자로 바뀝니다). 새 코드는 맨 끝 순서 · ‘사용’으로 시작합니다. 저장한 뒤에는 코드를 바꿀 수 없으니 확인하고 저장해 주세요.",
+      ),
   );
 
   // #e93737: DESIGN.md 가 허락한 위험 글자색
@@ -106,7 +156,7 @@ export default ({ A, R }) => {
     html: ui.erpFrame({
       header: platformHeader(A, R),
       title: "플랫폼 공통코드 관리",
-      body: `<div class="flex min-h-0 flex-1 gap-[12px] p-[24px]">${left}${right}</div>${dialog}`,
+      body: `<div class="flex min-h-0 flex-1 gap-[12px] p-[24px]">${left}${right}</div>${dialog}${ADD_SCRIPT}`,
     }),
   };
 };

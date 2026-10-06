@@ -37,7 +37,7 @@ export default ({ A, R }) => {
 
   const storeTable = ui.dataTable(
     [{ header: "점포명", align: "left" }, { header: "점포코드", width: "w-[110px]" }, { header: "점포 유형", width: "w-[100px]" }, { header: "점포 상태", width: "w-[90px]" }],
-    STORES.map(([n, code]) => [n, code, "일반점포", ui.badge("on", "운영")]),
+    STORES.map(([n, code]) => [n, code, "직영점포", ui.badge("on", "운영")]),
   );
   const right =
     ui.detailTable("소속 BP정보", [

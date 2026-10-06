@@ -50,20 +50,38 @@ export const tabPanel = (id, html, shown) => `<div role="tabpanel" id="${id}" ar
 export const ICON = {
   grid: '<rect x="3.6" y="3.6" width="7" height="7" rx="1.4"/><rect x="13.4" y="3.6" width="7" height="7" rx="1.4"/><rect x="3.6" y="13.4" width="7" height="7" rx="1.4"/><rect x="13.4" y="13.4" width="7" height="7" rx="1.4"/>',
   table: '<rect x="3.4" y="4.6" width="17.2" height="14.8" rx="2"/><path d="M3.4 9.6h17.2M3.4 14.6h17.2M9.6 9.6v9.8"/>',
+  people: '<circle cx="9" cy="8" r="3.4"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M15.4 4.9a3.4 3.4 0 0 1 0 6.2M18 14.4c1.8.9 3 2.9 3 5.6"/>',
+  lock: '<rect x="5" y="10.6" width="14" height="9.8" rx="1.6"/><path d="M8.2 10.6V7.8a3.8 3.8 0 0 1 7.6 0v2.8"/>',
   store: '<path d="M4.6 9.6v10.7h14.8V9.6"/><path d="M3 9.6 4.7 3.9h14.6L21 9.6"/><path d="M3 9.6a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M9.6 20.3v-6.1h4.8v6.1"/>',
 };
 
 // 카드(점포 카드 등). 카드 전체가 링크다. 모서리 4px·1px 선·그림자 없음(카드·패널 규칙), 호버는 선 색만 바꾼다.
 // image: 이미지 주소(없으면 아이콘 칸), fields: [[라벨, 값, wide?]]
 // data: 목록 거르기용 항목 { 열 이름: 값 }. 카드에 보이지 않는 값(사업자등록번호 등)도 넣는다 — 표 머리와 같은 이름이면 erp.js 가 그 열처럼 거른다.
-export function card({ href, image, icon = ICON.store, title, sub, badge = "", fields = [], data }) {
+// muted: 미운영처럼 아직 쓰지 않는 카드. 바탕을 두 번째 바탕색(#f8f9fb)으로 깔고, 아이콘 칸은 흰색으로 뒤집어 묻히지 않게 한다.
+export function card({ href, image, icon = ICON.store, title, sub, badge = "", fields = [], data, muted = false }) {
   const pic = image
     ? `<img src="${image}" alt="${title} 대표 이미지" class="size-[48px] shrink-0 rounded-[2px] object-cover">`
-    : `<span role="img" aria-label="대표 이미지 없음" class="grid size-[48px] shrink-0 place-items-center rounded-[2px] bg-erp-thead-bg text-erp-label"><svg viewBox="0 0 24 24" class="size-[20px] fill-none stroke-current" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icon}</svg></span>`;
+    : `<span role="img" aria-label="대표 이미지 없음" class="grid size-[48px] shrink-0 place-items-center rounded-[2px] ${muted ? "bg-white" : "bg-erp-thead-bg"} text-erp-label"><svg viewBox="0 0 24 24" class="size-[20px] fill-none stroke-current" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icon}</svg></span>`;
   const grid = fields
     .map(([k, v, wide]) => `<div class="${wide ? "col-span-2 " : ""}flex flex-col gap-[4px]"><dt class="text-[13px] text-erp-label">${k}</dt><dd class="truncate text-[14px] text-erp-ink">${v}</dd></div>`)
     .join("");
-  return `<a href="${href}"${data ? ` data-fields='${JSON.stringify(data)}'` : ""} class="flex flex-col gap-[18px] rounded-[4px] border border-erp-panel-line bg-white p-[18px] transition-colors duration-150 ease-out hover:border-erp-brand"><div class="flex items-center gap-[12px]">${pic}<div class="flex min-w-0 flex-1 flex-col gap-[4px]"><b class="truncate text-[15px] font-semibold text-erp-ink">${title}</b><span class="truncate text-[13px] text-erp-label">${sub}</span></div>${badge}</div><dl class="grid grid-cols-2 gap-x-[12px] gap-y-[10px] border-t border-erp-divider pt-[12px]">${grid}</dl></a>`;
+  return `<a href="${href}"${data ? ` data-fields='${JSON.stringify(data)}'` : ""} class="flex flex-col gap-[18px] rounded-[4px] border border-erp-panel-line ${muted ? "bg-erp-thead-bg" : "bg-white"} p-[18px] transition-colors duration-150 ease-out hover:border-erp-brand"><div class="flex items-center gap-[12px]">${pic}<div class="flex min-w-0 flex-1 flex-col gap-[4px]"><b class="truncate text-[15px] font-semibold text-erp-ink">${title}</b><span class="truncate text-[13px] text-erp-label">${sub}</span></div>${badge}</div><dl class="grid grid-cols-2 gap-x-[12px] gap-y-[10px] border-t border-erp-divider pt-[12px]">${grid}</dl></a>`;
 }
+// 큰 선택 카드(라디오). 아이콘 · 이름 · 한 줄 설명. 카드 규칙대로 4px 모서리 · 1px 선 · 그림자 없음,
+// 고르면 선이 브랜드색, 바탕이 두 번째 바탕색(#f8f9fb)으로 바뀌고 아이콘 칸은 흰색으로 뒤집힌다. 선 두께는 바뀌지 않는다.
+// items: [{ label, desc, icon, checked }]
+// locked: 바꿀 수 없는 값(수정 화면). 라디오를 막고 호버를 끄며, 고르지 않은 카드는 흐리게 둔다.
+export function choiceCards(name, items, { locked = false } = {}) {
+  return `<div role="radiogroup" aria-label="${name}" class="grid grid-cols-2 gap-[12px]">${items
+    .map(
+      ({ label, desc, icon, checked }) =>
+        `<label class="group flex ${locked ? `cursor-default${checked ? "" : " opacity-40"}` : "cursor-pointer hover:border-erp-brand"} flex-col items-center gap-[10px] rounded-[4px] border border-erp-panel-line bg-white px-[18px] py-[24px] transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:focus-visible]:border-erp-brand"><input type="radio" name="${name}" class="sr-only"${checked ? " checked" : ""}${locked ? " disabled" : ""}><span class="grid size-[48px] place-items-center rounded-[4px] border border-transparent bg-erp-thead-bg text-erp-label transition-colors duration-150 group-has-[:checked]:border-erp-panel-line group-has-[:checked]:bg-white group-has-[:checked]:text-erp-ink"><svg viewBox="0 0 24 24" class="size-[22px] fill-none stroke-current" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icon}</svg></span><b class="text-[16px] font-semibold text-erp-ink">${label}</b><span class="text-[13px] text-erp-label">${desc}</span></label>`,
+    )
+    .join("")}</div>`;
+}
+// 앞에 작은 아이콘을 단 안내 한 줄(예: 자물쇠 + 바꿀 수 없음)
+export const iconNote = (icon, text) =>
+  `<span class="flex items-center gap-[6px] text-[13px] text-erp-label"><svg viewBox="0 0 24 24" class="size-[14px] fill-none stroke-current" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icon}</svg>${text}</span>`;
 // data-filter-items: erp.js 의 목록 거르기가 카드 하나하나를 거르는 단서.
 export const cardGrid = (cards) => `<div data-filter-items class="grid grid-cols-4 gap-[12px]">${cards.join("")}</div>`;

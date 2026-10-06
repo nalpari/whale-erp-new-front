@@ -113,7 +113,7 @@
                 <span class="mk-card__route">/platform/system/roles</span>
                 <span class="mk-card__name">플랫폼 권한 관리 · 메뉴 등록 팝업</span>
                 <span class="mk-card__desc">
-                  왼쪽 권한 목록, 오른쪽 상세·등록·수정. 고정 권한 넷과 플랫폼 관리자 추가 권한. 메뉴별 CRUD 는 팝업에서만, 추가 권한은 기준 권한을 넘지 못한다.
+                  왼쪽 권한 목록, 오른쪽 상세·등록·수정. 고정 권한 넷과 플랫폼 관리자 추가 권한. 메뉴별 CRUD 는 팝업에서만, 추가 권한은 설정자 본인 권한을 넘지 못한다.
                 </span>
                 <span class="mk-card__end"><span class="badge badge--quiet">S-JDCOAG · S-EFQREM</span></span>
               </a>
@@ -215,7 +215,7 @@
                   <li><span class="pol__t">본인의 권한과 상태는 스스로 못 바꾸고, 본인 계정은 삭제·초기화도 여기서 안 한다. 기본정보는 고칠 수 있다.</span><span class="pol__ref">S-CZGHBS</span></li>
                   <li><span class="pol__t">권한 변경은 재로그인 없이 다음 요청부터 적용하고, 메뉴 모양은 다음 화면 이동이나 새로고침 때 바뀐다.</span><span class="pol__ref">PL-AMTMVC</span></li>
                   <li><span class="pol__t">고정 권한은 플랫폼 마스터·플랫폼 관리자·BP 마스터·가맹 마스터 넷, 각 한 건이다. 플랫폼 마스터는 전체 허용 고정이라 조회만 된다. 삭제는 플랫폼 관리자 유형만.</span><span class="pol__ref">S-JDCOAG</span></li>
-                  <li><span class="pol__t">추가 권한의 CRUD 는 기준 고정 권한을, 설정자 본인의 권한 범위를 넘지 못한다. 등록·수정·삭제를 켜면 조회가 같이 켜지고 조회를 끄면 셋이 같이 꺼진다.</span><span class="pol__ref">S-EFQREM</span></li>
+                  <li><span class="pol__t">추가 권한의 CRUD 는 설정자 본인의 권한 범위만 넘지 못한다 — 플랫폼 마스터는 본인 메뉴 전체 안에서, 플랫폼 관리자는 본인이 받은 메뉴·CRUD 안에서 준다. 기준 고정 권한(PA000001) 상한은 두지 않는다(확정 2026-10-06). 등록·수정·삭제를 켜면 조회가 같이 켜지고 조회를 끄면 셋이 같이 꺼진다.</span><span class="pol__ref">S-EFQREM</span></li>
                 </ul>
               </div>
               <div class="panel">

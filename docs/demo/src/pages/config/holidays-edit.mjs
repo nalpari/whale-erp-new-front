@@ -13,7 +13,7 @@ export const editForm = (A) =>
     c.stack(`<span class="text-[14px] font-medium text-erp-label">${c.req("적용 범위")}</span>`, scopeRadios("he-scope", true)),
     c.stack(
       `<span class="text-[14px] font-medium text-erp-label">${c.req("대상 점포")}</span>`,
-      c.storePicker(A, { pool: "㈜한강상회 전체 11개점 중에서", label: "대상 점포 찾기", picked: [["온기식당 판교점", "ST000003", "일반점포"]] }),
+      c.storePicker(A, { pool: "㈜한강상회 전체 11개점 중에서", label: "대상 점포 찾기", picked: [["온기식당 판교점", "ST000003", "직영점포"]] }),
       c.help("hangang01의 접근 범위 안 점포만 나옵니다. 여러 곳을 한 휴일로 묶을 수 있습니다."),
     ),
   ) +

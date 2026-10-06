@@ -52,13 +52,13 @@ export default ({ A, R }) => {
   const resetDialog = x.dialog(
     resetId,
     "비밀번호 초기화",
-    `<div class="flex flex-col gap-[12px] break-keep">${WHO}<p>새 초기 비밀번호(12자 무작위)를 비밀번호 초기화 안내 메일로 계정 이메일에 보냅니다. 초기화하는 사람도 그 값을 볼 수 없습니다. 초기 비밀번호는 1시간 안에 로그인해야 하며, 지나면 로그인 화면의 비밀번호 찾기로 임시 비밀번호를 다시 받습니다.</p><p><b class="font-semibold">기존 비밀번호는 바로 무효가 되고, 로그인 중인 세션도 모두 끊깁니다.</b> 계정 상태는 그대로입니다. 다음 로그인 때 비밀번호를 새로 정해야 합니다.</p></div>`,
+    `<div class="flex flex-col gap-[12px] break-keep">${WHO}<p>새 초기 비밀번호(12자 무작위)를 비밀번호 초기화 안내 메일로 계정 이메일에 보냅니다. 초기화하는 사람도 그 값을 볼 수 없습니다. 초기 비밀번호는 1시간 안에 로그인해야 하며, 지나면 로그인 화면의 비밀번호 찾기로 임시 비밀번호를 다시 받습니다.</p><p><b class="font-semibold">기존 비밀번호는 바로 무효가 되지만, 로그인 중인 세션은 끊지 않습니다.</b> 계정 상태는 그대로입니다. 다음 로그인 때 비밀번호를 새로 정해야 합니다.</p></div>`,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("초기화", { "data-close": true }),
   );
   const deleteDialog = x.dialog(
     deleteId,
     "플랫폼 관리자 계정 삭제",
-    `<div class="flex flex-col gap-[12px] break-keep">${WHO}<p>삭제하면 <b class="font-semibold">관리자 목록과 검색에서 빠지고</b>, 이 계정으로는 <b class="font-semibold">더 로그인할 수 없습니다</b>. 로그인 중인 세션도 바로 끊깁니다.</p><p class="text-erp-label">되돌릴 수 없습니다. 아이디는 다시 쓸 수 없고, 이메일은 다른 계정에 다시 쓸 수 있습니다. 이 계정이 남긴 처리 이력은 지우지 않습니다.</p></div>`,
+    `<div class="flex flex-col gap-[12px] break-keep">${WHO}<p>삭제하면 <b class="font-semibold">관리자 목록과 검색에서 빠지고</b>, 이 계정으로는 <b class="font-semibold">더 로그인할 수 없습니다</b>.</p><p class="text-erp-label">되돌릴 수 없습니다. 아이디는 다시 쓸 수 없고, 이메일은 다른 계정에 다시 쓸 수 있습니다. 이 계정이 남긴 처리 이력은 지우지 않습니다.</p></div>`,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("삭제", { href: link(R, "system/admins.html") }),
   );
 

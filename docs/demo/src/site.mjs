@@ -45,18 +45,18 @@ export const STORES = [
   ["ST000008", "모리커피 부평점", "가맹점포", "운영", "122-31-60021", "032-512-6604", 5, "2025-10-06", "인천 부평구", "store-photo-4.jpg"],
   ["ST000006", "모리커피 연남점", "가맹점포", "운영", "105-22-81934", "02-322-1180", 6, "2025-08-01", "서울 마포구", "store-photo-1.jpg"],
   ["ST000005", "모리커피 을지로점", "가맹점포", "운영", "201-12-34567", "02-2265-0917", 5, "2025-07-15", "서울 중구", "store-photo-5.jpg"],
-  ["ST000004", "온기식당 광화문점", "일반점포", "운영", "104-81-55120", "02-734-5528", 6, "2025-06-02", "서울 종로구", "store-photo-6.jpg"],
-  ["ST000003", "온기식당 판교점", "일반점포", "운영", "131-81-44710", "031-8017-2231", 7, "2025-05-20", "경기 성남시", "store-ongi.svg"],
-  ["ST000002", "모리커피 성수점", "일반점포", "운영", "101-81-22302", "02-462-7719", 8, "2025-04-11", "서울 성동구", "store-mori.svg"],
-  ["ST000001", "모리커피 서초점", "일반점포", "운영", "114-81-90215", "02-3474-1290", 9, "2025-03-17", "서울 서초구", "store-bread.svg"],
+  ["ST000004", "온기식당 광화문점", "직영점포", "운영", "104-81-55120", "02-734-5528", 6, "2025-06-02", "서울 종로구", "store-photo-6.jpg"],
+  ["ST000003", "온기식당 판교점", "직영점포", "운영", "131-81-44710", "031-8017-2231", 7, "2025-05-20", "경기 성남시", "store-ongi.svg"],
+  ["ST000002", "모리커피 성수점", "직영점포", "운영", "101-81-22302", "02-462-7719", 8, "2025-04-11", "서울 성동구", "store-mori.svg"],
+  ["ST000001", "모리커피 서초점", "직영점포", "운영", "114-81-90215", "02-3474-1290", 9, "2025-03-17", "서울 서초구", "store-bread.svg"],
 ];
 export const USER = "정하윤 (BP 마스터)";
 
-// 헤더의 점포 범위 드롭다운 — 목업(F-TLJOCK)처럼 전체·일반·가맹 묶음 + 일반·가맹 점포 목록 + 이름 검색으로 그린다.
+// 헤더의 점포 범위 드롭다운 — 목업(F-TLJOCK)처럼 전체·직영·가맹 묶음 + 직영·가맹 점포 목록 + 이름 검색으로 그린다.
 // BP 변경 버튼은 넣지 않는다 — 실제로는 플랫폼 마스터·플랫폼 관리자에게만 있고, 이 데모는 BP 마스터(정하윤) 기준이다.
 function scopeDropdown(A) {
   const id = ui.uid("scope");
-  const dir = STORES.filter((s) => s[2] === "일반점포");
+  const dir = STORES.filter((s) => s[2] === "직영점포");
   const fr = STORES.filter((s) => s[2] === "가맹점포");
   const initial = `전체 ${STORES.length}개점`;
 
@@ -72,12 +72,12 @@ function scopeDropdown(A) {
     sect(
       BP.name,
       [
-        opt(initial, `일반 ${dir.length} · 가맹 ${fr.length}`, initial, true),
-        dir.length ? opt(`일반 ${dir.length}개점`, "일반점포 전체", `일반 ${dir.length}개점`, false) : "",
+        opt(initial, `직영 ${dir.length} · 가맹 ${fr.length}`, initial, true),
+        dir.length ? opt(`직영 ${dir.length}개점`, "직영점포 전체", `직영 ${dir.length}개점`, false) : "",
         fr.length ? opt(`가맹 ${fr.length}개점`, "가맹점포 전체", `가맹 ${fr.length}개점`, false) : "",
       ].filter(Boolean),
     ) +
-    sect(`일반 ${dir.length}`, dir.map(storeOpt)) +
+    sect(`직영 ${dir.length}`, dir.map(storeOpt)) +
     sect(`가맹 ${fr.length}`, fr.map(storeOpt));
 
   const search = `<div class="mb-[6px] flex items-center gap-[8px] border-b border-erp-divider px-[12px] pb-[8px]">${ui.img(A, "search.svg", 12, 12)}<input type="search" placeholder="점포 이름으로 찾기" aria-label="점포 찾기" class="min-w-0 flex-1 border-0 bg-transparent text-[13px] text-erp-ink outline-none placeholder:text-erp-label" data-scope-q-input></div>`;
