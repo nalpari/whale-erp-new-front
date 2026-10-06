@@ -2,15 +2,14 @@
 // 목업 위쪽 검색 조건 묶음은 디자인 가이드의 왼쪽 필터로 옮겼다. 카드·표 전환은 목업대로 두고 카드가 기본이다(카드는 extra.mjs 임시 부품).
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
-import { BP, STORES, erpHeader, link } from "../../site.mjs";
+import { STORES, erpHeader, link } from "../../site.mjs";
 
 export default ({ A, R }) => {
   const filter = ui.filterPanel(A, [
-    ui.filterSection("소속 BP", `<p class="text-[14px] text-erp-ink">${BP.name} · ${BP.code}</p>`),
     ui.filterSection("점포", ui.searchField(A, { placeholder: "점포코드·점포명" }), { tight: true }),
     ui.filterSection("사업자등록번호", ui.searchField(A, { placeholder: "하이픈 없이 10자리", label: "사업자등록번호" }), { tight: true }),
     ui.filterSection("점포상태", ui.checkbox(A, "미운영", true) + ui.checkbox(A, "운영", true) + ui.checkbox(A, "폐점")),
-    ui.filterSection("점포유형", ui.checkbox(A, "일반점포", true) + ui.checkbox(A, "가맹점포", true), { last: true }),
+    ui.filterSection("점포유형", ui.checkbox(A, "직영점포", true) + ui.checkbox(A, "가맹점포", true), { last: true }),
   ]);
 
   const cols = [
@@ -43,6 +42,7 @@ export default ({ A, R }) => {
       title: name,
       sub: `${code} · ${type}`,
       badge: ui.badge(state === "운영" ? "on" : "off", state),
+      muted: state === "미운영",
       fields: [["근무직원", `${staff}명`], ["연락처", phone], ["지역", region, true]],
       data: { 점포코드: code, 점포명: name, 점포유형: type, 점포상태: state, 사업자등록번호: biz },
     }),

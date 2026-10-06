@@ -379,6 +379,9 @@
   .hidden {
     display: none;
   }
+  .inline {
+    display: inline;
+  }
   .inline-block {
     display: inline-block;
   }
@@ -407,6 +410,10 @@
     width: 12px;
     height: 12px;
   }
+  .size-\[14px\] {
+    width: 14px;
+    height: 14px;
+  }
   .size-\[15px\] {
     width: 15px;
     height: 15px;
@@ -422,6 +429,10 @@
   .size-\[20px\] {
     width: 20px;
     height: 20px;
+  }
+  .size-\[22px\] {
+    width: 22px;
+    height: 22px;
   }
   .size-\[24px\] {
     width: 24px;
@@ -450,6 +461,10 @@
   .size-\[120px\] {
     width: 120px;
     height: 120px;
+  }
+  .size-full {
+    width: 100%;
+    height: 100%;
   }
   .h-14 {
     height: calc(var(--spacing) * 14);
@@ -502,11 +517,17 @@
   .h-\[100dvh\] {
     height: 100dvh;
   }
+  .h-\[184px\] {
+    height: 184px;
+  }
   .h-full {
     height: 100%;
   }
   .max-h-\[60dvh\] {
     max-height: 60dvh;
+  }
+  .max-h-\[273px\] {
+    max-height: 273px;
   }
   .max-h-\[420px\] {
     max-height: 420px;
@@ -651,6 +672,9 @@
   }
   .w-\[180px\] {
     width: 180px;
+  }
+  .w-\[184px\] {
+    width: 184px;
   }
   .w-\[188px\] {
     width: 188px;
@@ -843,6 +867,9 @@
   .rotate-180 {
     rotate: 180deg;
   }
+  .cursor-default {
+    cursor: default;
+  }
   .cursor-grab {
     cursor: grab;
   }
@@ -939,6 +966,9 @@
   .items-start {
     align-items: flex-start;
   }
+  .items-stretch {
+    align-items: stretch;
+  }
   .justify-between {
     justify-content: space-between;
   }
@@ -1033,6 +1063,9 @@
   }
   .self-center {
     align-self: center;
+  }
+  .self-end {
+    align-self: flex-end;
   }
   .self-start {
     align-self: flex-start;
@@ -1277,6 +1310,9 @@
   }
   .p-\[6px\]\! {
     padding: 6px !important;
+  }
+  .p-\[8px\] {
+    padding: 8px;
   }
   .p-\[10px\] {
     padding: 10px;
@@ -1784,6 +1820,15 @@
   .group-focus-visible\:opacity-100:is(:where(.group):focus-visible *) {
     opacity: 100%;
   }
+  .group-has-\[\:checked\]\:border-erp-panel-line:is(:where(.group):has(:is(:checked)) *) {
+    border-color: var(--color-erp-panel-line);
+  }
+  .group-has-\[\:checked\]\:bg-white:is(:where(.group):has(:is(:checked)) *) {
+    background-color: var(--color-white);
+  }
+  .group-has-\[\:checked\]\:text-erp-ink:is(:where(.group):has(:is(:checked)) *) {
+    color: var(--color-erp-ink);
+  }
   .peer-checked\:translate-x-\[16px\]:is(:where(.peer):checked ~ *) {
     --tw-translate-x: 16px;
     translate: var(--tw-translate-x) var(--tw-translate-y);
@@ -1891,6 +1936,15 @@
   .disabled\:opacity-40:disabled {
     opacity: 40%;
   }
+  .has-\[\:checked\]\:border-erp-brand:has(:is(:checked)) {
+    border-color: var(--color-erp-brand);
+  }
+  .has-\[\:checked\]\:bg-erp-thead-bg:has(:is(:checked)) {
+    background-color: var(--color-erp-thead-bg);
+  }
+  .has-\[\:focus-visible\]\:border-erp-brand:has(:is(:focus-visible)) {
+    border-color: var(--color-erp-brand);
+  }
   .aria-pressed\:border-erp-brand[aria-pressed="true"] {
     border-color: var(--color-erp-brand);
   }
@@ -1994,6 +2048,24 @@
   .\[\&_button\]\:cursor-pointer button {
     cursor: pointer;
   }
+  .\[\&_tbody_tr\:last-child\]\:border-b-0 tbody tr:last-child {
+    border-bottom-style: var(--tw-border-style);
+    border-bottom-width: 0px;
+  }
+  .\[\&_thead\]\:sticky thead {
+    position: sticky;
+  }
+  .\[\&_thead\]\:top-0 thead {
+    top: 0px;
+  }
+  .\[\&_thead\]\:shadow-\[0_1px_0_var\(--color-erp-thead-line\)\] thead {
+    --tw-shadow: 0 1px 0 var(--tw-shadow-color, var(--color-erp-thead-line));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .\[\&_thead_tr\]\:border-y-0 thead tr {
+    border-block-style: var(--tw-border-style);
+    border-block-width: 0px;
+  }
   .\[\&\:\:-webkit-details-marker\]\:hidden::-webkit-details-marker {
     display: none;
   }
@@ -2019,6 +2091,12 @@
     .hover\:\[\&\>img\]\:opacity-70:hover > img {
       opacity: 70%;
     }
+  }
+  .\[\&\>section\]\:h-full > section {
+    height: 100%;
+  }
+  .\[\&\>section\>div\]\:flex-1 > section > div {
+    flex: 1;
   }
   .\[\&\>span\:first-child\]\:transition-opacity > span:first-child {
     transition-property: opacity;

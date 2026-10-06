@@ -43,15 +43,17 @@ export const box = (id, title, right, body, hidden = false) =>
 export const swapAttr = (from, to) => ({ "data-swap": `${from},${to}` });
 export const SWAP_SCRIPT = `<script>document.addEventListener("click",(e)=>{const b=e.target.closest("[data-swap]");if(!b)return;const[f,t]=b.dataset.swap.split(",");document.getElementById(f).hidden=true;document.getElementById(t).hidden=false;});</script>`;
 
-// 사업자 번호 인증 묶음. start: "fold"(인증 전·접힘) | "done"(인증 완료).
+// 사업자 번호 인증 묶음. start: "fold"(인증 전·접힘) | "open"(인증 전·늘 펼침, 접기 없음) | "done"(인증 완료).
 // values: [사업자등록번호, 대표자명, 개업일자], input: 입력 상자의 처음 값(없으면 values),
 // reauthLocked: 재인증 때 번호·개업일자를 고정하고 대표자명만 받는다(점포 수정).
-export function bizAuth(A, p, { start = "fold", values = ["", "", ""], input = values, doneBadge = "인증 완료", reauthLocked = false, after = "", confirmReauth = false } = {}) {
+// inline: [인증하기] 를 입력칸 줄 끝(개업일자 옆)에 둬 상자 높이를 한 줄 줄인다(점포 등록).
+export function bizAuth(A, p, { start = "fold", values = ["", "", ""], input = values, doneBadge = "인증 완료", reauthLocked = false, after = "", confirmReauth = false, inline = false } = {}) {
   const ids = { fold: `${p}-fold`, form: `${p}-form`, done: `${p}-done` };
   const [num, ceo, open] = input;
-  const fold = `<div id="${ids.fold}"${start === "fold" ? "" : " hidden"}>${ui.button("사업자 번호 인증하기", { variant: "soft", ...swapAttr(ids.fold, ids.form) })}</div>`;
+  const fold = start === "open" ? "" : `<div id="${ids.fold}"${start === "fold" ? "" : " hidden"}>${ui.button("사업자 번호 인증하기", { variant: "soft", ...swapAttr(ids.fold, ids.form) })}</div>`;
   const back = start === "fold" ? ids.fold : ids.done;
-  const closeBtn = ui.button("접기", { variant: "off", ...swapAttr(ids.form, back) });
+  const closeBtn = start === "open" ? "" : ui.button("접기", { variant: "off", ...swapAttr(ids.form, back) });
+  const authBtn = ui.button("인증하기", swapAttr(ids.form, ids.done));
   const fields = reauthLocked
     ? ui.formRow(
         ui.field("사업자등록번호", ui.textField({ value: num, readonly: true })),
@@ -62,13 +64,14 @@ export function bizAuth(A, p, { start = "fold", values = ["", "", ""], input = v
         ui.field("사업자등록번호", ui.textField({ value: num })),
         ui.field("대표자명", ui.textField({ value: ceo })),
         group("개업일자", ui.dateField(A, { label: "개업일자", value: open })),
+        inline ? `<div class="shrink-0 self-end">${authBtn}</div>` : "",
       );
   const form = box(
     ids.form,
     start === "done" ? "사업자 번호 재인증" : "사업자 번호 인증",
     closeBtn,
-    fields + `<div>${ui.button("인증하기", swapAttr(ids.form, ids.done))}</div>`,
-    true,
+    fields + (inline && !reauthLocked ? "" : `<div>${authBtn}</div>`),
+    start !== "open",
   );
   const [vn, vc, vo] = values;
   let reauth = ui.button("재인증", { variant: "soft", ...swapAttr(ids.done, ids.form) });
@@ -86,7 +89,7 @@ export function bizAuth(A, p, { start = "fold", values = ["", "", ""], input = v
   const done = box(
     ids.done,
     "사업자정보",
-    ui.badge("on", doneBadge),
+    doneBadge ? ui.badge("on", doneBadge) : "", // 묶음 제목에 이미 인증 배지가 있으면 doneBadge: "" 로 뺀다
     ui.formRow(
       ui.field("사업자등록번호", ui.textField({ value: vn, readonly: true })),
       ui.field("대표자명", ui.textField({ value: vc, readonly: true })),
