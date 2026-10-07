@@ -1094,6 +1094,9 @@
           if (!f.closest("[hidden]") && f.value.length > +c.dataset.max)
             errs.push(`${f.matches("[data-tpl-body]") ? "본문" : "제목"}은 ${c.dataset.max}자를 넘을 수 없습니다(지금 ${f.value.length}자).`);
         });
+        // 템플릿 코드가 다른 템플릿과 겹치면 저장하지 않는다(NOTIFY-11).
+        const tplCode = $("[data-tpl-code]", root).value.trim();
+        if (JSON.parse(root.dataset.codes || "[]").includes(tplCode)) errs.push(`템플릿 코드 ${tplCode} 는 이미 있는 템플릿이 쓰고 있습니다.`);
         const text = fields.map((f) => f.value).join("\n");
         vars()
           .filter((v) => v.required && !text.includes(`#{${v.name}}`))
@@ -1110,22 +1113,21 @@
     });
     root.addEventListener("input", (e) => e.target.matches("[data-var-name]") && drawButtons());
 
-    // 채널: 알림톡이면 제목 칸을 숨기고 카카오 템플릿 코드·검수 안내를 보인다.
+    // 채널: 알림톡이면 제목 칸을 숨기고 카카오 템플릿 코드·검수 안내를, 앱 푸시면 수신 설정 묶음을 보인다.
+    // 등록 화면은 채널을 고르면 템플릿 코드의 접두만 바꾸고 운영자가 넣은 나머지는 둔다(NOTIFY-11).
     const channel = $("[data-tpl-channel]", root);
-    const kind = $("[data-tpl-kind]", root);
     const code = $("[data-tpl-code]", root);
     const prefixes = JSON.parse(root.dataset.prefixes);
-    const kinds = JSON.parse(root.dataset.kinds);
     const sync = () => {
       const talk = channel.value === "알림톡";
       $$("[data-tpl-talk]", root).forEach((el) => (el.hidden = !talk));
       $$("[data-tpl-title]", root).forEach((el) => (el.hidden = talk));
+      $$("[data-tpl-push]", root).forEach((el) => (el.hidden = channel.value !== "앱 푸시"));
     };
     const fillCode = () => {
-      if (root.hasAttribute("data-tpl-new") && prefixes[channel.value] && kinds[kind.value]) code.value = `${prefixes[channel.value]}_${kinds[kind.value]}`;
+      if (root.hasAttribute("data-tpl-new") && prefixes[channel.value]) code.value = `${prefixes[channel.value]}_${code.value.replace(/^(NTF|PUSH|EMAIL|TALK)_?/, "")}`;
     };
     channel.addEventListener("change", () => (sync(), fillCode()));
-    kind.addEventListener("change", fillCode);
     code.addEventListener("change", () => {
       if (code.dataset.codeOriginal && code.value !== code.dataset.codeOriginal) document.getElementById(code.dataset.codeDialog)?.showModal();
     });

@@ -1,6 +1,6 @@
 // 알림 템플릿 수정·등록 화면(목업 docs/mockup/notify/templates-edit.html · templates-new.html). 플랫폼 운영자 전용.
 // 등록한 것과 기본 37건 모두 모든 항목을 고친다(NOTIFY-10, 2026-10-07 재영): 채널·유형·템플릿 코드·카카오 템플릿 코드·변수 목록·사용 여부.
-// 템플릿 하나는 알림 유형(또는 발송 용도) × 채널 한 칸이라, 채널마다 미리보기 모양이 다르다.
+// 템플릿은 채널 + 템플릿 이름 + 템플릿 코드로 구분하고(NOTIFY-11), 채널마다 미리보기 모양이 다르다.
 // 목업은 예시를 탭으로 오갔지만 데모는 상태 시연을 두지 않으므로 채널마다 한 장씩 만든다(notify/templates-edit*.mjs).
 // 제목·본문 필수(2026-10-07 재영). 앱 푸시는 제목 40자·본문 100자이고 넘으면 저장하지 않는다(NOTIFY-4).
 // 메일 본문은 일반 글만 쓰고 머리·꼬리·버튼은 공통 메일 틀이 붙인다(NOTIFY-5).
@@ -10,7 +10,7 @@ import * as p from "./staff-parts.mjs";
 import { req } from "./biz-form.mjs";
 import * as x from "./extra.mjs";
 import { platformHeader, link } from "./site.mjs";
-import { CHANNELS, KINDS } from "./template-codes.mjs";
+import { CHANNELS, PUSH_GROUPS, ALL_CODES } from "./template-codes.mjs";
 
 const box = (title, right, body) => p.box(title, right, `<div class="flex flex-col gap-[18px]">${body}</div>`, { pad: true });
 
@@ -35,7 +35,7 @@ const PREVIEW = {
     `<div class="rounded-[4px] bg-erp-thead-bg p-[16px]"><div class="max-w-[300px] overflow-hidden rounded-[8px] border border-erp-panel-line bg-white"><div class="bg-erp-on-bg px-[12px] py-[8px] text-[12px] font-semibold text-erp-ink">알림톡 도착</div><p class="whitespace-pre-line px-[12px] py-[12px] text-[14px] leading-[1.6] text-erp-ink">${v.body}</p><div class="mx-[12px] mb-[12px] rounded-[2px] border border-erp-button-line py-[8px] text-center text-[13px] text-erp-ink">${v.button}</div></div></div>`,
 };
 
-// t: { mode("edit"|"new"), kind, type, channel, to, templateCode, kakaoCode, title, body, vars:[{name,label,required,example}], preview, count, history, notice, base }
+// t: { mode("edit"|"new"), kind, type(템플릿 이름), pushGroup, channel, to, templateCode, kakaoCode, title, body, vars:[{name,label,required,example}], preview, count, history, notice, base }
 // kind 가 talk 면 제목 칸 대신 카카오 템플릿 코드 칸을 둔다. base 는 기본 37건(기본 문구로 되돌리기가 이때만 보인다).
 const field = (label, control, w) => ui.field(label, control, w ?? "min-w-px flex-1");
 
@@ -50,21 +50,22 @@ export function templateEdit(t) {
     const channelName = t.channel ?? "운영 알림";
     const talk = t.kind === "talk";
 
-    // 템플릿 정보 — 모두 고친다. 등록에서는 채널·유형을 고르면 템플릿 코드 기본값이 채워진다.
-    const kindOpts = ["선택", ...KINDS.map(([n, , g]) => `${n} · ${g}`)];
-    const kindValue = t.type ? kindOpts.find((o) => o.startsWith(`${t.type} · `)) : "선택";
+    // 템플릿 정보 — 모두 고친다. 템플릿은 채널 + 템플릿 이름 + 템플릿 코드로 구분한다(NOTIFY-11).
+    // 등록에서 채널을 고르면 템플릿 코드에 채널 접두만 채운다. 앱 푸시만 수신 설정 묶음을 고른다.
+    const push = channelName === "앱 푸시";
     const info = box(
       "템플릿",
       x.toggle("사용", t.inUse ?? true),
       ui.formRow(
         field(req("발송 채널"), ui.select(isNew ? ["선택", ...CHANNELS.map((c) => c[0])] : CHANNELS.map((c) => c[0]), { value: isNew ? "선택" : channelName, "data-tpl-channel": true })),
-        field(req("알림 유형 · 발송 용도"), ui.select(kindOpts, { value: kindValue, "data-tpl-kind": true })),
+        field(req("템플릿 이름"), ui.textField({ value: t.type ?? "", "aria-label": "템플릿 이름" })),
       ) +
+        `<div data-tpl-push${push ? "" : " hidden"}>${p.fieldH(req("수신 설정 묶음"), ui.select(PUSH_GROUPS, { value: t.pushGroup ?? PUSH_GROUPS[0], "aria-label": "수신 설정 묶음" }), "직원 알림 수신 설정이 이 묶음으로 켜고 끕니다.", "w-full")}</div>` +
         ui.formRow(
           p.fieldH(
             req("템플릿 코드"),
             ui.textField({ value: t.templateCode ?? "", "data-tpl-code": true, ...(isNew ? {} : { "data-code-original": t.templateCode, "data-code-dialog": codeDlg }), "aria-label": "템플릿 코드" }),
-            isNew ? "채널과 유형을 고르면 「채널 접두 + 코드」로 채워집니다. 바꿀 수 있습니다." : "바꾸면 발송 코드도 함께 바꿔야 할 수 있습니다.",
+            isNew ? "채널을 고르면 접두(NTF_·PUSH_·EMAIL_·TALK_)가 채워지고, 나머지는 직접 넣습니다." : "바꾸면 발송 코드도 함께 바꿔야 할 수 있습니다.",
           ),
           `<div class="min-w-px flex-1" data-tpl-talk${talk ? "" : " hidden"}>${p.fieldH(req("카카오 템플릿 코드"), ui.textField({ value: t.kakaoCode ?? "", "aria-label": "카카오 템플릿 코드" }), "카카오에 등록한 코드입니다.", "w-full")}</div>`,
         ) +
@@ -107,7 +108,8 @@ export function templateEdit(t) {
       `${ui.button("되돌리기", { variant: "off", "data-close": true, "data-code-revert": true })}${ui.button("바꾸기", { "data-close": true })}`,
     );
     const prefixes = JSON.stringify(Object.fromEntries(CHANNELS)).replaceAll('"', "&quot;");
-    const kinds = JSON.stringify(Object.fromEntries(KINDS.map(([n, c, g]) => [`${n} · ${g}`, c]))).replaceAll('"', "&quot;");
+    // 템플릿 코드 겹침 검사용(저장 전, erp.js). 고치는 템플릿 자신의 코드는 뺀다.
+    const codes = JSON.stringify(ALL_CODES.filter((c) => c !== t.templateCode)).replaceAll('"', "&quot;");
 
     const heading = isNew ? "알림 템플릿 등록" : "알림 템플릿 수정";
     return {
@@ -116,7 +118,7 @@ export function templateEdit(t) {
         header: platformHeader(A, R),
         title: "알림 템플릿 관리",
         body: ui.detailBody(
-          `<div class="flex flex-col gap-[24px]" data-tpl-root${isNew ? " data-tpl-new" : ""} data-prefixes="${prefixes}" data-kinds="${kinds}">` +
+          `<div class="flex flex-col gap-[24px]" data-tpl-root${isNew ? " data-tpl-new" : ""} data-prefixes="${prefixes}" data-codes="${codes}">` +
             p.detailHead(heading, right) +
             p.cols(info + form, preview + varBox + history) +
             codeConfirm +

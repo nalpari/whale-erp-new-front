@@ -8,6 +8,7 @@ export default templateEdit({
   kind: "push",
   type: "근로계약서 발송",
   channel: "앱 푸시",
+  pushGroup: "근로계약서",
   to: "직원",
   count: true,
   title: "근로계약서가 도착했습니다",

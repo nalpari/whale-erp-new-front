@@ -63,7 +63,7 @@
                 <span class="mk-card__route">/platform/notification-templates</span>
                 <span class="mk-card__name">알림 템플릿 관리</span>
                 <span class="mk-card__desc">
-                  채널 탭 넷(운영 알림·앱 푸시·메일·알림톡)에서 알림 유형과 발송 용도별 문구를 본다. 플랫폼 운영자 전용.
+                  채널 탭 넷(운영 알림·앱 푸시·메일·알림톡)에서 템플릿 이름·코드별 문구를 본다. 플랫폼 운영자 전용.
                 </span>
                 <span class="mk-card__end">
                   <span class="badge badge--quiet">F-TZPHZT</span>
@@ -112,7 +112,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">정책</h2>
-              <span class="badge badge--quiet">26줄</span>
+              <span class="badge badge--quiet">27줄</span>
             </div>
             <div class="grid grid--2" style="align-items: start">
               <div class="panel">
@@ -156,19 +156,20 @@
               <div class="panel">
                 <div class="panel__head">
                   <h3 class="t-h3">알림 템플릿</h3>
-                  <span class="badge badge--quiet">12</span>
+                  <span class="badge badge--quiet">13</span>
                 </div>
                 <ul class="pol">
-                <li><span class="pol__t">템플릿은 <b>알림 유형(또는 발송 용도) × 채널</b> 한 칸에 하나다. 채널은 운영 알림·앱 푸시·메일·알림톡 넷이다.</span><span class="pol__ref">F-TZPHZT</span></li>
-                <li><span class="pol__t">플랫폼 마스터·플랫폼 관리자만 고친다. 고치는 것은 제목과 본문뿐이고 받는 사람은 알림 유형이 정한다.</span><span class="pol__ref">S-QQPYIU</span></li>
+                <li><span class="pol__t">템플릿은 <b>채널 + 템플릿 이름 + 템플릿 코드</b>로 구분한다. 알림 유형·발송 용도 공통코드는 두지 않는다. 채널은 운영 알림·앱 푸시·메일·알림톡 넷이고, 템플릿 코드가 겹칠 때만 저장을 막는다.</span><span class="pol__ref">F-TZPHZT · NOTIFY-11</span></li>
+                <li><span class="pol__t">앱 푸시 템플릿은 <b>수신 설정 묶음</b>(근로계약서·근무스케줄·TO-DO·급여명세서) 하나를 고른다. 직원 알림 수신 설정이 이 묶음으로 켜고 끈다.</span><span class="pol__ref">F-TZPHZT · NOTIFY-11</span></li>
+                <li><span class="pol__t">플랫폼 마스터·플랫폼 관리자만 등록하고 고친다.</span><span class="pol__ref">S-QQPYIU</span></li>
                 <li><span class="pol__t"><b>등록</b>으로 새 템플릿을 더하고, 기본 37건과 등록한 것 모두 <b>모든 항목</b>(채널·유형·템플릿 코드·카카오 템플릿 코드·변수 목록·제목·본문)을 고친다. 지우지 않고 <b>사용 / 사용 안 함</b>으로 끄며, 사용 안 함은 목록에서 흐리게 보인다.</span><span class="pol__ref">F-TZPHZT · NOTIFY-10</span></li>
                 <li><span class="pol__t">변수 목록은 화면에서 넣고 고친다 — 줄마다 변수 이름·표시 이름·필수·예시 값. 본문 위 변수 단추는 이 목록에서 그린다. 제목·본문에 목록에 없는 변수가 있거나 필수 변수가 빠지면 저장하지 않고 위치를 알려 준다. 저장할 때마다 바뀌기 전 문구를 변경 이력에 남긴다.</span><span class="pol__ref">S-QQPYIU · NOTIFY-10</span></li>
                 <li><span class="pol__t"><b>기본 문구로 되돌리기</b>는 기본 37건에만 보인다. 등록한 템플릿에는 없다.</span><span class="pol__ref">S-QQPYIU · NOTIFY-10</span></li>
                 <li><span class="pol__t">앱 푸시 탭은 직원 근무 앱 알림함에 쌓이는 문구까지 맡는다. TO-DO 배정은 푸시 없이 알림함에만 쌓인다.</span><span class="pol__ref">S-QQPYIU · 앱 NOTI-1</span></li>
                 <li><span class="pol__t">알림톡도 수정 화면에서 <b>본문을 고친다</b>. 카카오 검수를 받은 문구와 한 글자라도 다르면 발송되지 않아, 본문 위에 그 안내를 둔다. 제목은 없고 승인 상태도 두지 않는다. 배포는 필요 없다.</span><span class="pol__ref">S-HIBBDL · NOTIFY-6 · NOTIFY-8</span></li>
                 <li><span class="pol__t">운영 알림·앱 푸시·메일은 <b>제목과 본문이 필수</b>라 비우면 저장하지 않는다. 알림톡은 제목이 없고 본문만 필수다.</span><span class="pol__ref">S-QQPYIU · S-HIBBDL · NOTIFY-6</span></li>
-                <li><span class="pol__t">1팀 화면에서 나가는 관리자 메일 8종(회원가입 완료, 신규 BP 가입 알림, BP 신규 등록, 플랫폼 관리자 계정 생성, BP 관리자 계정 생성, 비밀번호 초기화, 임시 비밀번호 발급, 회원 탈퇴 완료)도 메일 탭의 발송 용도로 두고 문구를 여기서 고친다. 1팀 공통코드 메일 유형은 쓰지 않는다.</span><span class="pol__ref">F-TZPHZT · NOTIFY-9</span></li>
-                <li><span class="pol__t">템플릿마다 <b>템플릿 코드</b>를 둔다. 등록할 때 채널 접두(NTF·PUSH·EMAIL·TALK)와 알림 유형·발송 용도 코드로 기본값을 채우고(예: NTF_CONTRACT_SIGNED) 운영자가 바꿀 수 있다. 이미 있는 템플릿의 코드를 바꾸면 「발송 코드에서 이 템플릿 코드를 쓰고 있으면 함께 바꿔야 합니다」 확인창을 띄운다. 알림톡의 카카오 템플릿 코드와는 다른 값이다.</span><span class="pol__ref">F-TZPHZT · NOTIFY-10</span></li>
+                <li><span class="pol__t">1팀 화면에서 나가는 관리자 메일 8종(회원가입 완료, 신규 BP 가입 알림, BP 신규 등록, 플랫폼 관리자 계정 생성, BP 관리자 계정 생성, 비밀번호 초기화, 임시 비밀번호 발급, 회원 탈퇴 완료)도 메일 탭의 템플릿으로 두고 문구를 여기서 고친다. 1팀 공통코드 메일 유형은 쓰지 않는다.</span><span class="pol__ref">F-TZPHZT · NOTIFY-9</span></li>
+                <li><span class="pol__t">템플릿마다 <b>템플릿 코드</b>를 둔다. 등록할 때 채널 접두(NTF_·PUSH_·EMAIL_·TALK_)만 채우고 나머지는 운영자가 넣는다. 기본 37건의 코드는 지금 값 그대로다. 이미 있는 템플릿의 코드를 바꾸면 「발송 코드에서 이 템플릿 코드를 쓰고 있으면 함께 바꿔야 합니다」 확인창을 띄운다. 알림톡의 카카오 템플릿 코드와는 다른 값이다.</span><span class="pol__ref">F-TZPHZT · NOTIFY-10 · NOTIFY-11</span></li>
                 <li><span class="pol__t">앱 푸시는 <b>제목 40자·본문 100자</b>까지이고 넘으면 저장하지 않는다. 메일 본문은 <b>일반 글</b>만 쓰고 머리·꼬리·버튼은 공통 메일 틀이 붙인다.</span><span class="pol__ref">S-QQPYIU · NOTIFY-4 · NOTIFY-5</span></li>
                 <li><span class="pol__t">템플릿을 읽지 못해 기본 문구로 보낸 일은 서버 로그에만 남기고 화면에는 보이지 않는다.</span><span class="pol__ref">S-QQPYIU</span></li>
                 </ul>
@@ -179,7 +180,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
-              <span class="badge badge--preview">10건 · 확정 10</span>
+              <span class="badge badge--preview">11건 · 확정 11</span>
             </div>
 
             <div class="gap is-decided">
@@ -324,6 +325,15 @@
                 <span class="gap__ref">F-TZPHZT</span>
               </div>
               <p class="gap__note" style="margin: 0">2026-10-07 재영 확정 — 등록을 넣고 기본 37건도 모든 항목을 고친다. 앞서 「템플릿 코드는 바꾸지 않는다」「변수 목록은 고치지 않는다」고 적은 것을 걷었다. 삭제는 두지 않고 사용 여부로 끈다.</p>
+            </div>
+            <div class="gap is-decided">
+              <div class="gap__head">
+                <span class="gap__no">NOTIFY-11</span>
+                <b>알림 유형·발송 용도 공통코드로 템플릿을 구분할 것인가</b>
+                <span class="gap__decided">확정 · 템플릿 이름·코드로 구분</span>
+                <span class="gap__ref">F-TZPHZT</span>
+              </div>
+              <p class="gap__note" style="margin: 0">2026-10-07 재영 확정 — 공통코드 NOTIFICATION_TYPE·SEND_PURPOSE 를 없애고 채널 + 템플릿 이름 + 템플릿 코드로 구분한다. 「같은 채널·유형에 하나만」 규칙을 걷고 코드가 겹칠 때만 막는다. 앱 푸시는 수신 설정 묶음을 고른다.</p>
             </div>
           </section>
         </div>

@@ -1,6 +1,6 @@
 // 알림 템플릿 관리. 목업 docs/mockup/notify/templates.html. 플랫폼 운영자 전용이라 플랫폼 헤더로 그린다.
 // 채널 탭 넷. 줄 이름을 누르면 그 채널의 수정 화면으로 간다(채널마다 한 장, src/template-edit.mjs).
-// TO-DO 배정은 푸시 없이 알림함에만 쌓인다(앱 NOTI-1). 알림톡도 본문을 화면에서 고치고(NOTIFY-8) 승인 상태는 두지 않는다(NOTIFY-6).
+// 템플릿은 채널 + 템플릿 이름 + 템플릿 코드로 구분한다(NOTIFY-11). TO-DO 배정은 푸시 없이 알림함에만 쌓인다(앱 NOTI-1). 알림톡도 본문을 화면에서 고치고(NOTIFY-8) 승인 상태는 두지 않는다(NOTIFY-6).
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as p from "../../staff-parts.mjs";
@@ -42,8 +42,8 @@ const PUSH = [
   ["급여명세서 발송", "#{지급월} 급여명세서가 도착했습니다"],
 ];
 
-import { CODE } from "../../template-codes.mjs";
-const code = (prefix, t) => `<span class="font-mono text-[13px]">${prefix}_${CODE[t]}</span>`;
+import { CODES } from "../../template-codes.mjs";
+const code = (channel, t) => `<span class="font-mono text-[13px]">${CODES[channel][t]}</span>`;
 
 export default ({ A, R }) => {
   const L = (path) => link(R, path);
@@ -62,12 +62,10 @@ export default ({ A, R }) => {
   const dim = (row, on = true) => (on ? row : row.map((c) => `<span class="opacity-50">${c}</span>`));
   const table = (first, rows) => ui.dataTable(cols(first), rows);
 
-  const ops = table(
-    "알림 유형",
+  const ops = table("템플릿 이름",
     OPS.map(([t, to, title, e, on = true]) => dim([name(t, L("notify/templates-edit.html")), code("NTF", t), to, title, edited(e), use(on)], on)),
   );
-  const push = table(
-    "알림 유형",
+  const push = table("템플릿 이름",
     PUSH.map(([t, title, e, inboxOnly]) => [
       name(t, L(inboxOnly ? "notify/templates-edit-inbox.html" : "notify/templates-edit-push.html"), inboxOnly ? p.tag("quiet", "알림함에만, 푸시 없음") : ""),
       code("PUSH", t),
@@ -77,16 +75,16 @@ export default ({ A, R }) => {
       use(),
     ]),
   );
-  const mail = table("알림 유형 · 발송 용도", [
-    ...PURPOSES.map(([t, to, title]) => [name(t, L("notify/templates-edit-mail.html"), p.tag("quiet", "발송 용도")), code("EMAIL", t), to, title, edited(), use()]),
-    ...TEAM1_MAILS.map(([t, to, title]) => [name(t, L("notify/templates-edit-mail.html"), p.tag("quiet", "발송 용도") + p.tag("info", "1팀")), code("EMAIL", t), to, title, edited(), use()]),
+  const mail = table("템플릿 이름", [
+    ...PURPOSES.map(([t, to, title]) => [name(t, L("notify/templates-edit-mail.html") ), code("EMAIL", t), to, title, edited(), use()]),
+    ...TEAM1_MAILS.map(([t, to, title]) => [name(t, L("notify/templates-edit-mail.html"), p.tag("info", "1팀")), code("EMAIL", t), to, title, edited(), use()]),
     ...OPS.map(([t, to, title, e]) => [name(t, L("notify/templates-edit-mail.html")), code("EMAIL", t), to, `[WHALE ERP] ${title}`, edited(e), use()]),
   ]);
 
   // 알림톡: 다른 탭처럼 줄 이름으로 수정 화면에 들어간다(NOTIFY-8). 제목 대신 카카오 템플릿 코드와 본문 요약.
   const talk = ui.dataTable(
     [
-      { header: "발송 용도", width: "w-[260px]" },
+      { header: "템플릿 이름", width: "w-[260px]" },
       { header: "템플릿 코드", width: "w-[280px]" },
       { header: "카카오 템플릿 코드", width: "w-[220px]" },
       { header: "본문 요약", align: "left" },

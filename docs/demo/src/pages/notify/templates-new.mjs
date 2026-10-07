@@ -1,5 +1,5 @@
 // 알림 템플릿 등록. 목업 docs/mockup/notify/templates-new.html. 수정 화면과 같은 틀(src/template-edit.mjs)을 쓴다.
-// 채널과 알림 유형·발송 용도를 고르면 템플릿 코드 기본값(채널 접두 + 코드)이 채워지고 바꿀 수 있다(NOTIFY-10, 2026-10-07 재영).
+// 템플릿 이름은 직접 넣고, 채널을 고르면 템플릿 코드에 채널 접두만 채워진다(NOTIFY-10·11, 2026-10-07 재영).
 import { templateEdit } from "../../template-edit.mjs";
 
 export default templateEdit({

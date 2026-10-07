@@ -7,6 +7,7 @@ export default templateEdit({
   kind: "inbox",
   type: "TO-DO 배정",
   channel: "앱 푸시",
+  pushGroup: "TO-DO",
   to: "직원 · 푸시 없이 직원 근무 앱 알림함에만",
   title: "새 TO-DO 가 배정되었습니다",
   body: "#{TO-DO제목} · #{수행예정일시}",

@@ -9,7 +9,7 @@
   </head>
   <body data-root="../" data-page="system" data-sub="notify/templates-new.html">
     <!-- 알림 템플릿 등록 · /platform/notification-templates/new · F-TZPHZT
-         수정 화면과 같은 틀(NOTIFY-10). 채널과 알림 유형·발송 용도를 고르면 템플릿 코드 기본값이 채워지고 바꿀 수 있다.
+         수정 화면과 같은 틀(NOTIFY-10). 템플릿 이름은 직접 넣고(NOTIFY-11), 채널을 고르면 템플릿 코드에 채널 접두만 채워진다.
          알림톡을 고르면 제목 칸이 빠지고 카카오 템플릿 코드와 검수 안내가 선다. 기본 문구로 되돌리기는 없다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
@@ -45,22 +45,21 @@
                     </select>
                   </div>
                   <div class="field">
-                    <label for="n-kind">알림 유형 · 발송 용도</label>
-                    <select class="select" id="n-kind">
-                      <option value="">선택</option>
-                      <option value="CONTRACT_EXPIRED" selected>근로계약 만료 · 알림 유형</option>
-                      <option value="CONTRACT_RENEWAL_DUE">계약 갱신 예정 · 알림 유형</option>
-                      <option value="STAFF_INVITATION">가입 초대 · 발송 용도</option>
-                      <option value="LEAD_CONFIRMATION">도입문의 접수 확인 · 발송 용도</option>
-                    </select>
-                    <span class="help">공통코드 알림 유형·발송 용도에서 고른다. 표본에는 넷만 그렸다.</span>
+                    <label for="n-name">템플릿 이름 <span class="subtle">· 필수</span></label>
+                    <input class="input" id="n-name" value="근로계약 만료 재안내" />
+                    <span class="help">목록에 보이는 이름이다. 공통코드에서 고르지 않는다(NOTIFY-11).</span>
                   </div>
                 </div>
                 <div class="grid grid--2" style="gap: var(--s-4)">
                   <div class="field">
                     <label for="n-code">템플릿 코드</label>
-                    <input class="input mono" id="n-code" value="EMAIL_CONTRACT_EXPIRED" />
-                    <span class="help">채널과 유형을 고르면 「채널 접두 + 코드」로 채워진다. 바꿀 수 있다.</span>
+                    <input class="input mono" id="n-code" value="EMAIL_CONTRACT_EXPIRED_REMIND" />
+                    <span class="help">채널을 고르면 접두(NTF_·PUSH_·EMAIL_·TALK_)만 채워지고 나머지는 직접 넣는다. 다른 템플릿과 겹치면 저장하지 않는다.</span>
+                  </div>
+                  <div class="field" data-push hidden>
+                    <label for="n-group">수신 설정 묶음</label>
+                    <select class="select" id="n-group"><option>근로계약서</option><option>근무스케줄</option><option>TO-DO</option><option>급여명세서</option></select>
+                    <span class="help">앱 푸시만. 직원 알림 수신 설정이 이 묶음으로 켜고 끈다.</span>
                   </div>
                   <div class="field" data-talk hidden>
                     <label for="n-kakao">카카오 템플릿 코드</label>
@@ -157,16 +156,17 @@
     </div>
     <script src="../assets/app.js"></script>
     <script>
-      /* 목업 동작 — 채널·유형을 고르면 템플릿 코드 기본값을 채우고, 알림톡이면 제목 대신 카카오 템플릿 코드와 검수 안내를 보인다. */
-      var ch = document.getElementById("n-channel"), kind = document.getElementById("n-kind"), code = document.getElementById("n-code");
-      function sync() {
-        if (ch.value && kind.value) code.value = ch.value + "_" + kind.value;
+      /* 목업 동작 — 채널을 고르면 템플릿 코드 접두를 바꾸고, 앱 푸시면 수신 설정 묶음을, 알림톡이면 제목 대신 카카오 템플릿 코드와 검수 안내를 보인다. */
+      var ch = document.getElementById("n-channel"), code = document.getElementById("n-code");
+      ch.addEventListener("change", function onChannel() {
+        // 접두만 바꾸고 운영자가 넣은 나머지는 둔다
+        var rest = code.value.replace(/^(NTF|PUSH|EMAIL|TALK)_?/, "");
+        if (ch.value) code.value = ch.value + "_" + rest;
         var talk = ch.value === "TALK";
         document.querySelectorAll("[data-talk]").forEach(function (el) { el.hidden = !talk; });
+        document.querySelectorAll("[data-push]").forEach(function (el) { el.hidden = ch.value !== "PUSH"; });
         document.querySelector("[data-title]").hidden = talk;
-      }
-      ch.addEventListener("change", sync);
-      kind.addEventListener("change", sync);
+      });
     </script>
   </body>
 </html>
