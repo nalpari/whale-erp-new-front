@@ -29,6 +29,8 @@ const CODES = [
   ["INTERN", "수습", "BP전용"],
 ];
 
+// 두 카드의 머리 줄 높이를 버튼 높이(34px)로 맞춰, 왼쪽 그룹 표와 오른쪽 상세 코드 표가 같은 높이에서 시작하게 한다.
+const head = (title, right) => ui.sectionHead(title, right).replace('class="flex items-end gap-[6px]"', 'class="flex h-[34px] items-end gap-[6px]"');
 // 끌어서 순서 바꾸는 손잡이. 아이콘이 없어 글자 기호로 둔다(system 공통코드와 같다).
 const handle = '<span title="끌어서 순서 바꾸기" aria-label="끌어서 순서 바꾸기" class="cursor-grab text-[16px] text-erp-label">≡</span>';
 
@@ -52,7 +54,7 @@ export default ({ A, R }) => {
   ]);
   const left = c.card(
     "w-[560px] shrink-0",
-    ui.sectionHead(`공통코드 그룹${c.sub(`${GROUPS.length}개 · 조회 전용`)}`) +
+    head(`공통코드 그룹${c.sub(`${GROUPS.length}개 · 조회 전용`)}`) +
       c.markRow(ui.dataTable(groupCols, groupRows, "조건에 맞는 공통코드 그룹이 없습니다."), SELECTED) +
       `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
   );
@@ -68,8 +70,7 @@ export default ({ A, R }) => {
   const codeRows = CODES.map(([code, name, owner], i) => [handle, code, ui.textField({ value: name, "aria-label": "코드명" }), i + 1, x.toggle("사용", true), c.tag(owner)]);
   const right = c.card(
     "min-w-0 flex-1",
-    c.band("플랫폼제공 그룹 — 새로 추가하는 상세 코드는 BP전용으로 관리됩니다") +
-      ui.sectionHead(
+      head(
         `상세 코드${c.sub("EMP_TYPE · 고용 형태")}<span class="ml-[10px] inline-flex align-middle">${c.tag("플랫폼제공")}</span>`,
         ui.button("상세 코드 추가", { variant: "soft" }) + ui.button("저장"),
       ) +

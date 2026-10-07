@@ -1,8 +1,15 @@
 // BP 관리자 관리 목록. 목업 docs/mockup/config/admins.html 의 기본 상태(처음 진입 · 전체)를 BP 마스터로 본 것.
-// 목업 위쪽 검색 조건 묶음은 왼쪽 필터로 옮겼다. 표본 상세는 hghr 하나라 모든 줄이 그 상세로 간다.
+// 목업 위쪽 검색 조건 묶음은 왼쪽 필터로 옮겼다. 표본 상세는 hghr 하나라 모든 줄이 그 상세를 연다.
+// 상세·등록·수정은 BP 마스터 계정 관리처럼 오른쪽 슬라이드 패널로 연다 — 전체 화면 주소도 그대로 둔다.
 import * as ui from "../../ui.mjs";
 import * as c from "../../config-parts.mjs";
-import { erpHeader, link } from "../../site.mjs";
+import { erpHeader } from "../../site.mjs";
+import { adminNewPanel } from "./admins-new.mjs";
+import { adminDetailPanel } from "./admins-detail.mjs";
+import { adminEditPanel } from "./admins-edit.mjs";
+
+// 아이디·이름은 상세를 슬라이드 패널로 연다
+const detailTrigger = (text) => `<button type="button" aria-controls="admin-detail-panel" aria-expanded="false" class="text-erp-link hover:underline">${text}</button>`;
 
 // [아이디, 이름, 역할, 권한 그룹, 그룹 코드, 상태, 매핑 점포, 등록일시, 최근 로그인] — 등록일시 최신순
 const ADMINS = [
@@ -36,7 +43,6 @@ export default ({ A, R }) => {
     ui.filterSection("계정 상태", ui.select(["전체", "사용", "미사용"], { "aria-label": "계정 상태" }), { tight: true, last: true }),
   ]);
 
-  const detail = link(R, "config/admins-detail.html");
   const cols = [
     { header: "아이디", width: "w-[140px]", align: "left" },
     { header: "이름", width: "w-[110px]" },
@@ -48,8 +54,8 @@ export default ({ A, R }) => {
     { header: "최근 로그인", width: "w-[160px]" },
   ];
   const rows = ADMINS.map(([id, name, role, group, code, state, stores, reg, login]) => [
-    ui.link(id, detail),
-    ui.link(name, detail),
+    detailTrigger(id),
+    detailTrigger(name),
     role,
     `${group} ${c.muted(code)}`,
     ui.badge(state === "사용" ? "on" : "off", state),
@@ -61,7 +67,7 @@ export default ({ A, R }) => {
 
   const toolbar = ui.listToolbar(
     ADMINS.length,
-    ui.button("관리자 등록", { href: link(R, "config/admins-new.html") }) + `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`,
+    ui.slideTrigger("등록", "admin-new-panel") + `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`,
   );
 
   return {
@@ -73,6 +79,7 @@ export default ({ A, R }) => {
         filter,
         toolbar + c.dimRows(ui.dataTable(cols, rows, "조건에 맞는 관리자 계정이 없습니다."), off) + `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
       ),
+      panels: adminNewPanel(A, R) + adminDetailPanel(A, R) + adminEditPanel(A, R),
     }),
   };
 };

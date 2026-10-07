@@ -140,7 +140,8 @@
           <div class="grid grid--5-7" style="align-items: start; grid-template-columns: minmax(0, 12fr) minmax(0, 13fr)">
             <!-- 왼쪽 — 공통코드 그룹. 조회 전용, 그룹 추가 없음. -->
             <section class="panel">
-              <div class="panel__head">
+              <!-- 머리 줄 높이를 오른쪽 상세 코드(버튼이 있는 줄)와 같게 해 두 표가 같은 높이에서 시작하게 한다 -->
+              <div class="panel__head" style="min-height: 63px">
                 <h2 class="t-h2">공통코드 그룹</h2>
                 <span class="badge badge--quiet" data-show="emp none newcode dupcode leave fixed stopcode stopgrp fail">9개</span>
                 <span class="badge badge--quiet" data-show="noresult" hidden>0개</span>
@@ -276,13 +277,6 @@
 
             <!-- 오른쪽 — 고른 그룹의 상세 코드 -->
             <div class="stack">
-              <div class="band band--info" data-show="emp newcode dupcode leave stopcode fail">
-                <span class="band__ic" data-icon="info" data-icon-size="20"></span>
-                <div class="band__body">
-                  <div class="band__title">플랫폼제공 그룹 — 새로 추가하는 상세 코드는 BP전용으로 관리됩니다</div>
-                  <p class="band__desc">플랫폼이 등록한 코드는 한강상회 범위에서 코드명·표시 순서·사용 상태를 고칠 수 있습니다. 한강상회가 추가한 코드는 다른 BP 와 플랫폼 공통코드 관리에는 보이지 않습니다.</p>
-                </div>
-              </div>
               <div class="band band--info" data-show="fixed" hidden>
                 <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
                 <div class="band__body">

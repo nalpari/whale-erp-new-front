@@ -9,7 +9,7 @@
   </head>
   <body data-root="../" data-page="config" data-sub="config/admins.html">
     <!-- BP 관리자 계정 상세 조회 · /settings/admins/:아이디 · S-EBIPGZ · 비밀번호 초기화 S-TKSRJX (F-OILWTZ) · 1팀
-         기본정보 · 소속 BP정보 · 권한 그룹 · 점포 매핑 · 계정 상태 · 변경 이력을 나눠 보인다. 이 화면의 값은 모두 읽기 전용이고 고치는 일은 수정 화면이 맡는다.
+         기본정보(등록일시·최종 수정일시는 일시 | 처리자명) · 소속 BP정보 · 점포 매핑 · 변경 이력을 나눠 보인다. 계정 상태·계정 역할·권한 그룹은 제목 줄 배지로 보인다(2026-10-07). 이 화면의 값은 모두 읽기 전용이고 고치는 일은 수정 화면이 맡는다.
          수정 · 비밀번호 초기화는 수정 권한이 있고 관리 범위 안인 계정에만 보인다.
            BP 관리자 · 가맹 마스터 계정 = BP 마스터 · BP 관리자 · 플랫폼 사용자(수정 권한)가 한다.
            가맹 관리자 계정 = 연결된 가맹 마스터만 한다. 다른 역할에게는 두 실행 항목을 감추고 조회만 한다고 알린다.
@@ -45,6 +45,13 @@
             <span class="badge badge--quiet" data-show="hr ops acct created">BP 관리자</span>
             <span class="badge badge--quiet" data-show="morinam fmoff" hidden>가맹 마스터</span>
             <span class="badge badge--quiet" data-show="yn" hidden>가맹 관리자</span>
+            <!-- 권한 그룹 — 계정 역할 옆에 방패 아이콘 배지로 둔다(본문의 권한 그룹 영역은 없앴다 · 2026-10-07) -->
+            <span class="badge badge--quiet" data-show="hr" title="권한 그룹"><span data-icon="shield" data-icon-size="12"></span>인사 담당</span>
+            <span class="badge badge--quiet" data-show="ops" hidden title="권한 그룹"><span data-icon="shield" data-icon-size="12"></span>운영 총괄</span>
+            <span class="badge badge--quiet" data-show="acct" hidden title="권한 그룹"><span data-icon="shield" data-icon-size="12"></span>정산 조회</span>
+            <span class="badge badge--quiet" data-show="created" hidden title="권한 그룹"><span data-icon="shield" data-icon-size="12"></span>고객응대</span>
+            <span class="badge badge--quiet" data-show="morinam fmoff" hidden title="권한 그룹"><span data-icon="shield" data-icon-size="12"></span>가맹 마스터(고정)</span>
+            <span class="badge badge--quiet" data-show="yn" hidden title="권한 그룹"><span data-icon="shield" data-icon-size="12"></span>모리 점장</span>
             <span class="badge badge--warn">1팀 작업</span>
             <div class="titlebar__end">
               <span class="filters__count mono">S-EBIPGZ · /settings/admins/<span data-show="hr">hghr</span><span data-show="ops" hidden>hgops</span><span data-show="acct" hidden>hgacct</span><span data-show="created" hidden>hgcs</span><span data-show="morinam fmoff" hidden>morinam01</span><span data-show="yn" hidden>moriyn</span><span data-show="bpm" hidden>hangang01</span><span data-show="deny" hidden>hgtemp</span></span>
@@ -188,7 +195,7 @@
 
             <!-- ===== BP 쪽 계정 (BP 관리자 · 가맹 마스터) ===== -->
             <div data-show="hr ops acct created morinam fmoff" data-show-role="bm bpall bppart plat view" style="display: contents">
-              <!-- 왼쪽: 기본정보 · 계정 상태 · 권한 그룹 / 오른쪽: 소속 BP정보 · 점포 매핑 — 점포 매핑은 왼쪽 세 영역 높이에 맞추고 넘치면 그 안에서 스크롤 -->
+              <!-- 왼쪽: 기본정보 / 오른쪽: 소속 BP정보 · 점포 매핑 — 계정 상태·권한 그룹은 제목 줄 배지로 본다(2026-10-07). 점포 매핑은 왼쪽 높이에 맞추고 넘치면 그 안에서 스크롤 -->
               <div class="grid grid--2">
                 <div class="stack">
                   <section class="panel">
@@ -204,46 +211,13 @@
                         <dt>이메일</dt>
                         <dd class="mono"><span data-show="hr">seoa.lee@hangang.co.kr</span><span data-show="ops" hidden>doyun.kim@hangang.co.kr</span><span data-show="acct" hidden>minho.choi@hangang.co.kr</span><span data-show="created" hidden>gaeun.moon@hangang.co.kr</span><span data-show="morinam fmoff" hidden>seoyun.park@morinam.kr</span></dd>
                         <dt>등록일시</dt>
-                        <dd class="mono"><span data-show="hr">2025-04-01 09:12</span><span data-show="ops" hidden>2025-02-10 10:20</span><span data-show="acct" hidden>2025-07-15 14:03</span><span data-show="created" hidden>2026-09-21 10:30</span><span data-show="morinam fmoff" hidden>2025-03-03 11:00</span></dd>
+                        <dd><span class="mono" data-show="hr">2025-04-01 09:12</span><span class="mono" data-show="ops" hidden>2025-02-10 10:20</span><span class="mono" data-show="acct" hidden>2025-07-15 14:03</span><span class="mono" data-show="created" hidden>2026-09-21 10:30</span><span class="mono" data-show="morinam fmoff" hidden>2025-03-03 11:00</span> <span class="subtle">|</span> 정하윤</dd>
+                        <dt>최종 수정일시</dt>
+                        <dd><span class="mono" data-show="hr">2026-02-03 15:10</span><span class="mono" data-show="ops" hidden>2025-02-10 10:20</span><span class="mono" data-show="acct" hidden>2026-04-01 09:00</span><span class="mono" data-show="created" hidden>2026-09-21 10:30</span><span class="mono" data-show="morinam" hidden>2025-03-03 11:00</span><span class="mono" data-show="fmoff" hidden>2026-09-21 10:40</span> <span class="subtle">|</span> 정하윤</dd>
                         <dt>최근 로그인</dt>
                         <dd><span class="mono" data-show="hr">2026-09-20 17:55</span><span class="mono" data-show="ops" hidden>2026-09-21 08:30</span><span class="mono" data-show="acct" hidden>2026-03-31 18:10</span><span class="subtle" data-show="created" hidden>로그인 기록 없음</span><span class="mono" data-show="morinam fmoff" hidden>2026-09-21 09:12</span></dd>
                       </dl>
                     </div>
-                  </section>
-                  <section class="panel">
-                    <div class="panel__head"><h2 class="t-h2">계정 상태</h2></div>
-                    <div class="panel__body">
-                      <dl class="kv">
-                        <dt>계정 상태</dt>
-                        <dd>
-                          <span data-show="hr ops created morinam"><span class="badge badge--ok">사용</span></span>
-                          <span data-show="acct" hidden><span class="badge badge--warn">미사용</span> <span class="mono subtle">2026-04-01 09:00 부터</span></span>
-                          <span data-show="fmoff" hidden><span class="badge badge--warn">미사용</span> <span class="mono subtle">2026-09-21 10:40 부터</span></span>
-                        </dd>
-                        <dt>강제 비밀번호 변경</dt>
-                        <dd><span data-show="hr ops acct morinam fmoff">대상 아님</span><span data-show="created" hidden>대상 <span class="subtle">· 초기 비밀번호 발급 <span class="mono">2026-09-21 10:30</span></span></span></dd>
-                      </dl>
-                    </div>
-                  </section>
-                  <section class="panel">
-                    <div class="panel__head">
-                      <h2 class="t-h2">권한 그룹</h2>
-                    </div>
-                    <div class="panel__body">
-                      <dl class="kv">
-                        <dt>계정 역할</dt>
-                        <dd><span data-show="hr ops acct created">BP 관리자</span><span data-show="morinam fmoff" hidden>가맹 마스터</span></dd>
-                        <dt>권한 그룹</dt>
-                        <dd>
-                          <span data-show="hr"><a class="tlink" href="roles.html">인사 담당</a> <span class="mono subtle">BA000004</span></span>
-                          <span data-show="ops" hidden><a class="tlink" href="roles.html">운영 총괄</a> <span class="mono subtle">BA000003</span></span>
-                          <span data-show="acct" hidden><a class="tlink" href="roles.html">정산 조회</a> <span class="mono subtle">BA000005</span></span>
-                          <span data-show="created" hidden><a class="tlink" href="roles.html">고객응대</a> <span class="mono subtle">BA000006</span></span>
-                          <span data-show="morinam fmoff" hidden><a class="tlink" href="roles.html">가맹 마스터(고정)</a> <span class="mono subtle">FM000001</span> <span class="subtle">· 플랫폼이 정한 기본 권한</span></span>
-                        </dd>
-                      </dl>
-                    </div>
-                    <div class="panel__note">계정 하나에 권한 그룹 하나다. 그룹의 메뉴 권한을 바꾸면 연결된 사용자에게 곧바로 반영된다.</div>
                   </section>
                 </div>
                 <div class="fillcol">
@@ -319,7 +293,7 @@
 
             <!-- ===== 가맹 관리자 계정 (moriyn) — 모든 역할이 볼 수 있다 ===== -->
             <div data-show="yn" style="display: contents" hidden>
-              <!-- 왼쪽: 기본정보 · 계정 상태 · 권한 그룹 / 오른쪽: 소속 BP정보 · 점포 매핑 — 점포 매핑은 왼쪽 세 영역 높이에 맞추고 넘치면 그 안에서 스크롤 -->
+              <!-- 왼쪽: 기본정보 / 오른쪽: 소속 BP정보 · 점포 매핑 — 계정 상태·권한 그룹은 제목 줄 배지로 본다(2026-10-07). 점포 매핑은 왼쪽 높이에 맞추고 넘치면 그 안에서 스크롤 -->
               <div class="grid grid--2">
                 <div class="stack">
                   <section class="panel">
@@ -330,30 +304,11 @@
                         <dt>이름</dt><dd>한지수</dd>
                         <dt>휴대전화번호</dt><dd class="mono">010-6672-1180</dd>
                         <dt>이메일</dt><dd class="mono">jisu.han@morinam.kr</dd>
-                        <dt>등록일시</dt><dd class="mono">2025-08-11 10:05</dd>
+                        <dt>등록일시</dt><dd><span class="mono">2025-08-11 10:05</span> <span class="subtle">|</span> 박서윤</dd>
+                        <dt>최종 수정일시</dt><dd><span class="mono">2026-03-12 16:25</span> <span class="subtle">|</span> 박서윤</dd>
                         <dt>최근 로그인</dt><dd class="mono">2026-09-21 07:58</dd>
                       </dl>
                     </div>
-                  </section>
-                  <section class="panel">
-                    <div class="panel__head"><h2 class="t-h2">계정 상태</h2></div>
-                    <div class="panel__body">
-                      <dl class="kv">
-                        <dt>계정 상태</dt><dd><span class="badge badge--ok">사용</span></dd>
-                        <dt>강제 비밀번호 변경</dt><dd>대상 아님</dd>
-                      </dl>
-                    </div>
-                  </section>
-                  <section class="panel">
-                    <div class="panel__head"><h2 class="t-h2">권한 그룹</h2></div>
-                    <div class="panel__body">
-                      <dl class="kv">
-                        <dt>계정 역할</dt><dd>가맹 관리자</dd>
-                        <dt>가맹 마스터</dt><dd><span class="mono">morinam01</span> 박서윤 <span class="subtle">· 등록 때 정해져 바뀌지 않음</span></dd>
-                        <dt>권한 그룹</dt><dd><a class="tlink" href="roles.html">모리 점장</a> <span class="mono subtle">FA000002</span> <span class="subtle">· 관리계정ID morinam01</span></dd>
-                      </dl>
-                    </div>
-                    <div class="panel__note">가맹 관리자에게는 연결된 가맹 마스터가 만든 권한 그룹만 붙는다.</div>
                   </section>
                 </div>
                 <div class="fillcol">

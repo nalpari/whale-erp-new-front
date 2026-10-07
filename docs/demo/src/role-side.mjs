@@ -80,7 +80,7 @@ export function roleSide({ roles, own, master, selected, del = {}, card }) {
 
 // 오른쪽 칸 바꾸기(이 화면 전용 — 공통 erp.js 는 건드리지 않는다).
 // 줄을 누르면 그 권한 상세. 신규 등록을 누르면 등록 양식이 되고 목록의 고른 줄 표시가 풀린다. 취소·등록하면 고르던 권한으로 돌아간다(데모라 목록에 넣지는 않는다).
-const ROLE_SCRIPT = `<script>
+export const ROLE_SCRIPT = `<script>
 (() => {
   const SEL = "bg-erp-thead-bg";
   const side = document.querySelector("[data-role-side]");

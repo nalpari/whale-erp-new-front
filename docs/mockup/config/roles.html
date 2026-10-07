@@ -10,7 +10,8 @@
   <body data-root="../" data-page="config" data-sub="config/roles.html">
     <!-- BP 권한 그룹 관리 · /settings/roles · S-LYKAEI · 권한 메뉴 등록 팝업 S-KUDELB (F-GSJRKH) · 1팀
          한 화면이다. 왼쪽은 권한 그룹 목록, 오른쪽은 고른 그룹의 상세·등록·수정 영역이다.
-         목록에는 수정 항목이 없다 — 행을 고르면 오른쪽에 상세가 서고, 상세의 수정 버튼으로만 수정에 들어간다. 저장·취소는 상세로 돌아온다.
+         목록에는 수정 항목이 없다 — 행을 고르면 오른쪽에 상세가 서고, 그 상세에서 권한명·설명을 바로 고쳐 저장한다. 따로 수정 단계는 없다
+         (플랫폼 권한 관리와 같다 · 확정 2026-10-07). 고칠 수 없는 그룹(다른 유형·다른 관리계정ID·본인 연결)은 읽기 전용 상세만 선다.
          신규 등록을 마치면 새 그룹의 상세가 서고, 삭제를 마치면 선택 없는 목록으로 돌아온다. 저장·삭제가 성공하면 오른쪽 아래 토스트를 띄운다.
          목록은 BP 관리자(BA)·가맹 관리자(FA) 권한 그룹만 싣는다. 가맹 마스터 고정 권한 FM000001 은 목록 위 가맹마스터 보기 버튼이 조회 전용 팝업으로 연다.
          BP 마스터 고정 권한 BM000001 은 BA 그룹의 상한, FM000001 은 FA 그룹의 상한이다 (PL-AMTMVC). 두 마스터의 본인 권한이 곧 상한이라 설정자 범위와 상한이 같다.
@@ -64,7 +65,6 @@
                 <b>목업 상태</b>
                 <div class="seg">
                   <button type="button" data-state="view" aria-pressed="true">상세</button>
-                  <button type="button" data-state="edit" aria-pressed="false">수정</button>
                   <button type="button" data-state="new" aria-pressed="false">신규 등록</button>
                   <button type="button" data-state="created" aria-pressed="false">등록 완료</button>
                   <button type="button" data-state="dup" aria-pressed="false">권한명 중복</button>
@@ -436,45 +436,44 @@
             '<dt>최종 수정</dt><dd><span class="mono">' + m[0] + '</span> · <span class="mono">' + m[1] + "</span></dd>" +
             "</dl>";
         }
-        function detailHTML(g, v, pre) {
-          var lock = lockOf(v, g), mine = lock !== "role" && lock !== "type";
-          var bands = pre || "";
-          if (g.fresh) bands += band("info", "info", "메뉴 권한이 아직 비어 있습니다", "목록의 메뉴등록에서 메뉴별 조회·등록·수정·삭제를 정해야 이 그룹을 받은 관리자에게 메뉴가 보입니다.");
-          if (v.own === g.code) bands += band("warn", "lock", "본인이 연결된 권한 그룹입니다", "본인 권한은 스스로 바꿀 수 없습니다. 권한명·설명 수정, 메뉴 권한 저장과 삭제가 막히고, 이 그룹을 관리하는 다른 사용자가 처리합니다.");
-          var foot;
-          if (mine) {
-            var why = lock === "own" ? "본인 권한이라 바꿀 수 없습니다" : "";
-            var dis = why ? ' disabled title="' + why + '"' : "";
-            foot = '<div class="panel__foot inline" style="justify-content: flex-end">' +
-              '<button class="btn btn--danger btn--sm" type="button" data-rg-del style="margin-right: auto"' + dis + ">삭제</button>" +
-              '<button class="btn btn--primary btn--sm" type="button" data-rg-edit' + dis + ">수정</button></div>" +
-              (why ? '<div class="panel__note">' + why + " — 수정·삭제 항목을 비활성화했습니다.</div>" : "");
-          } else {
-            foot = '<div class="panel__note">' + roNote(v, g) + "</div>";
-          }
-          return '<section class="panel"><div class="panel__head"><h2 class="t-h2">권한 그룹 상세</h2><span class="badge badge--quiet">' + TYPE[g.type] + "</span></div>" +
-            '<div class="panel__body stack--lg" style="display: flex; flex-direction: column">' + bands + kvHTML(g) + "</div>" + foot + "</section>";
-        }
         function field(id, label, control, help) {
           return '<div class="field"><label for="' + id + '">' + label + "</label>" + control + (help ? '<span class="help">' + help + "</span>" : "") + "</div>";
         }
-        function editHTML(g, fail) {
-          var name = fail ? FAILNAME[g.code] || g.name : g.name;
-          var out = fail ? band("risk", "alert", "권한 그룹을 저장하지 못했습니다",
+        /* 상세 — 고칠 수 있는 그룹이면 권한명·설명이 바로 입력칸이고 [삭제][저장]을 둔다(플랫폼 권한 관리와 같다). fail 이면 저장 실패 띠를 얹는다. */
+        function detailHTML(g, v, pre, fail) {
+          var lock = lockOf(v, g), mine = lock !== "role" && lock !== "type", editable = mine && lock !== "own";
+          var bands = fail ? band("risk", "alert", "권한 그룹을 저장하지 못했습니다",
             "실패 사유: 저장 중 서버가 응답하지 않았습니다(목업). 기존 권한 그룹과 연결 사용자 권한은 그대로이고, 입력한 권한명·설명은 화면에 남겨 두었습니다.") : "";
-          out += '<section class="panel"><div class="panel__head"><h2 class="t-h2">권한 그룹 수정</h2><span class="badge badge--quiet">' + TYPE[g.type] + "</span></div>" +
-            '<div class="panel__body stack--lg" style="display: flex; flex-direction: column">' +
-            field("e-type", "권한 유형", '<input class="input" id="e-type" value="' + TYPE[g.type] + '" readonly />') +
-            field("e-code", "권한 코드", '<input class="input mono" id="e-code" value="' + g.code + '" readonly />', "권한 유형과 권한 코드는 등록한 뒤 바꿀 수 없습니다.") +
-            (g.owner ? field("e-owner", "관리계정ID", '<input class="input mono" id="e-owner" value="' + g.owner + '" readonly />') : "") +
-            field("e-name", '권한명 <span class="req">*</span>', '<input class="input" id="e-name" value="' + name + '" />') +
-            field("e-desc", "설명", '<textarea class="textarea" id="e-desc">' + g.desc + "</textarea>") +
-            "</div>" +
-            '<div class="panel__foot inline" style="justify-content: flex-end">' +
-            '<button class="btn btn--ghost btn--sm" type="button" data-rg-cancel>취소</button>' +
-            '<button class="btn btn--primary btn--sm" type="button" data-rg-save>저장</button></div>' +
-            '<div class="panel__note">메뉴별 권한은 여기서 고치지 않고 목록의 메뉴등록 팝업에서 정합니다.</div></section>';
-          return out;
+          bands += pre || "";
+          if (g.fresh) bands += band("info", "info", "메뉴 권한이 아직 비어 있습니다", "목록의 메뉴등록에서 메뉴별 조회·등록·수정·삭제를 정해야 이 그룹을 받은 관리자에게 메뉴가 보입니다.");
+          if (v.own === g.code) bands += band("warn", "lock", "본인이 연결된 권한 그룹입니다", "본인 권한은 스스로 바꿀 수 없습니다. 권한명·설명 수정, 메뉴 권한 저장과 삭제가 막히고, 이 그룹을 관리하는 다른 사용자가 처리합니다.");
+          var m = modOf(g), body, foot;
+          if (editable) {
+            var name = fail ? FAILNAME[g.code] || g.name : g.name;
+            body = field("e-type", "권한 유형", '<input class="input" id="e-type" value="' + TYPE[g.type] + '" readonly />') +
+              field("e-code", "권한 코드", '<input class="input mono" id="e-code" value="' + g.code + '" readonly />', "권한 유형과 권한 코드는 등록한 뒤 바꿀 수 없습니다.") +
+              (g.owner ? field("e-owner", "관리계정ID", '<input class="input mono" id="e-owner" value="' + g.owner + '" readonly />') : "") +
+              field("e-name", '권한명 <span class="req">*</span>', '<input class="input" id="e-name" value="' + name + '" />') +
+              field("e-desc", "설명", '<textarea class="textarea" id="e-desc">' + g.desc + "</textarea>") +
+              '<dl class="kv">' +
+              '<dt>생성</dt><dd><span class="mono">' + g.reg[0] + '</span> · <span class="mono">' + g.reg[1] + "</span></dd>" +
+              '<dt>최종 수정</dt><dd><span class="mono">' + m[0] + '</span> · <span class="mono">' + m[1] + "</span></dd></dl>";
+            foot = '<div class="panel__foot inline" style="justify-content: flex-end">' +
+              '<button class="btn btn--danger btn--sm" type="button" data-rg-del style="margin-right: auto">삭제</button>' +
+              '<button class="btn btn--primary btn--sm" type="button" data-rg-save>저장</button></div>' +
+              '<div class="panel__note">메뉴별 권한은 여기서 고치지 않고 목록의 메뉴등록 팝업에서 정합니다.</div>';
+          } else {
+            body = kvHTML(g);
+            if (lock === "own") {
+              var why = "본인 권한이라 바꿀 수 없습니다", dis = ' disabled title="' + why + '"';
+              foot = '<div class="panel__foot inline" style="justify-content: flex-end">' +
+                '<button class="btn btn--danger btn--sm" type="button" data-rg-del style="margin-right: auto"' + dis + ">삭제</button>" +
+                '<button class="btn btn--primary btn--sm" type="button" data-rg-save' + dis + ">저장</button></div>" +
+                '<div class="panel__note">' + why + " — 권한명·설명 수정과 삭제를 비활성화했습니다.</div>";
+            } else foot = '<div class="panel__note">' + roNote(v, g) + "</div>";
+          }
+          return '<section class="panel"><div class="panel__head"><h2 class="t-h2">권한 그룹 상세</h2><span class="badge badge--quiet">' + TYPE[g.type] + "</span></div>" +
+            '<div class="panel__body stack--lg" style="display: flex; flex-direction: column">' + bands + body + "</div>" + foot + "</section>";
         }
         function newHTML(v, dup) {
           var fa = v.manage === "FA", code = newCode(v), g = NEWG[code];
@@ -515,7 +514,7 @@
         function renderSide(v) {
           var g = sel ? find(sel, v) : null, html;
           if (mode === "new" || mode === "dup") html = v.manage ? newHTML(v, mode === "dup") : lockPanel(v);
-          else if ((mode === "edit" || mode === "fail") && g) html = lockOf(v, g) ? detailHTML(g, v, band("info", "eye", "수정할 수 없는 권한 그룹이라 상세만 보여 드립니다", "")) : editHTML(g, mode === "fail");
+          else if (mode === "fail" && g) html = detailHTML(g, v, "", !lockOf(v, g));
           else if (g) {
             var pre = "";
             if (mode === "own" && v.own !== g.code) {
@@ -549,7 +548,7 @@
           }
           if (sel && !find(sel, v)) sel = null;
           if (st === "view" && !sel) { var d = find(preset("view", v), v) || visible(v)[0]; sel = d ? d.code : null; }
-          if ((st === "edit" || st === "fail") && v.manage) {
+          if (st === "fail" && v.manage) {
             var g = sel && find(sel, v);
             if (!g || lockOf(v, g)) sel = preset(st, v);
           }
@@ -827,7 +826,6 @@
           if ((t = e.target.closest("[data-rg-menu]"))) { openMenu(t.dataset.rgMenu); return; }
           if ((t = e.target.closest("[data-rg-row]"))) { go("view", { sel: t.dataset.rgRow }); return; }
           if (e.target.closest("[data-rg-new]")) { go("new", {}); return; }
-          if (e.target.closest("[data-rg-edit]")) { go("edit", { sel: sel }); return; }
           if (e.target.closest("[data-rg-del]")) { openDel(); return; }
           if (e.target.closest("[data-rg-cancel]")) { go("view", {}); return; }
           if (e.target.closest("[data-rg-save]")) {
