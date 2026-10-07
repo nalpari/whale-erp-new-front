@@ -2,6 +2,14 @@
 
 ## 2026-10-06
 
+* **Update**: `2026-09-30-네이밍-규칙.md`(md5 f7ff246d) 「화면 문구」 줄의 「front 에」를 「front·staff 에」로 [네이밍 규칙](/conventions/naming.md) 에 반영했다 — 두 클라이언트 공통 규칙이다.
+* **Update**: `2026-09-30-네이밍-규칙.md`(md5 dca33aa8) 4장 FRONT 표의 「화면 문구」 줄을 [네이밍 규칙](/conventions/naming.md) 에 반영했다 — enum 한글은 `getEnum(name)` 으로 받은 label 을 쓰고 front 에 상수 대응표를 두지 않는다.
+* **Update**: `2026-09-30-네이밍-규칙.md`(md5 c9b20796) 의 새로 쓴 4장 「API 타입·enum 공유」를 [네이밍 규칙](/conventions/naming.md) 에 반영했다 — enum 은 생성 파일(`labels.ts`) 대신 api 의 `GET /enums`·`/enums/{name}` 을 `getEnum(name)` 으로 받아 Next 서버 캐시에 두고 `version` 이 바뀌면 새로 받는다. 공통코드도 `getCodes(group)` 로 같은 모양. 요청·응답 타입만 openapi.json 에서 생성한다.
+* **Update**: `2026-09-30-네이밍-규칙.md`(md5 59625752) 의 고친 「원본」·「front·staff 쪽」 줄을 [네이밍 규칙](/conventions/naming.md) 에 반영했다 — 타입 생성의 원본을 api 가 커밋한 `openapi/openapi.json` 으로 맞추고 `/docs-json` 은 같은 Swagger 문서라는 설명으로만 남겼다.
+* **Update**: `2026-09-30-네이밍-규칙.md`(md5 ca6c609b) 4장 「API 타입·enum 공유」의 미정을 결정으로 바꿔 [네이밍 규칙](/conventions/naming.md) 에 반영했다 — 생성 도구 openapi-typescript, api 가 `openapi/openapi.json`·`enum-labels.json` 을 커밋, front·staff 는 `pnpm api:types` 로 `WHALE_API_DIR`(기본 `../whale-erp-api`)에서 읽어 생성하고 머리에 api 커밋 해시를 적는다. 1팀 동의 대기. front 구현은 아직 하지 않았다.
+* **Update**: [네이밍 규칙](/conventions/naming.md) 맨 앞에 「# 범위」 절을 staff·api 와 같은 문구로 넣었다 — 원자료 머리말의 적용 범위·상태(1팀 영역은 재영 확인 대상 아님)·원본 관리 방식. 같은 내용을 따로 적어 두었던 머리 세 단락은 걷었다.
+* **Update**: `2026-09-30-네이밍-규칙.md` 에서 front 에만 빠져 있던 셋을 [네이밍 규칙](/conventions/naming.md) 에 넣어 staff·api 와 맞췄다 — DB 표의 「역할 외래키」(`{역할}_by`, 2026-10-06 재영), 「식별자 1팀 예외」 절, 대응표의 1팀 묶음 셋(인증·계정 · BP·점포 · 설정·시스템관리)과 그 밖에 빠진 줄(관리자 계정·직무·임금계약서·계약서 파일 구분·4대보험 가입 여부). 1팀 묶음에는 「1팀이 판단하는 영역, 재영 확인 대상 아님」을 표시했다.
+* **Update**: `2026-09-30-네이밍-규칙.md` 4장의 「API 타입·enum 공유」(A안, 2026-10-06 재영)를 [네이밍 규칙](/conventions/naming.md) FRONT 절 아래에 반영했다 — api `/docs-json` 에서 타입·enum 을 생성하고 손으로 적지 않는다. 생성 도구·시점과 한글 대응표 전달 방법은 미정.
 * **Update**: `docs/mockup/system/roles.html`·`overview.html` 의 권한 상한 정책 변경을 [플랫폼 시스템 관리](/system.md) 에 옮겼다 — 플랫폼 관리자 추가 권한의 메뉴 CRUD 상한은 설정자 본인 권한뿐이고 기준 고정 권한(PA000001) 상한은 뺐다(`S-EFQREM`). 플랫폼 마스터는 본인 메뉴 전체 안에서 준다.
 * **Update**: `docs/mockup/system/admins-detail.html` 의 비밀번호 초기화 정책 변경을 [플랫폼 시스템 관리](/system.md) 에 옮겼다 — 초기화해도 로그인 중인 세션은 끊지 않는다(`S-XKYOND`). 기존 비밀번호 무효화는 그대로다.
 * **Update**: 목업 쟁점 HOME-6(점포 하나를 고르면 홈이 무엇을 보여주는가) 확정을 [홈·계정 진입](/home.md)에 반영했다 — 업무 범위가 점포 하나면 점포 하나 화면(공지 띠·카드 넷·근무스케줄·직원 정보, 처리 대기 없음). 가맹 역할은 늘, BP 역할은 점포 하나를 고를 때. 옛 「가맹 역할은 점포 상세 카드」 규칙과 「탭으로 오간다」 설명을 갈음했다.
