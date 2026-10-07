@@ -110,7 +110,7 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
     ui.formGroup(
       "기본정보",
       ui.field(f.req("이름"), ui.textField({ value: "정하윤", maxlength: 20, placeholder: "한글 또는 영문 2~20자" })),
-      f.group(f.req("연락처"), f.tel("010", "4821", "7730") + f.help("휴대전화 · 숫자 10~11자리")),
+      f.group(f.req("연락처"), f.tel("010", "4821", "7730")),
       ui.field(f.req("이메일"), ui.textField({ type: "email", value: "hayoon@hangang.co.kr", maxlength: 100 })),
       save,
     );
@@ -129,7 +129,6 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
   // 가입 직후처럼 아직 사업자 인증을 받지 않은 초기 상태 — 인증완료 탭과 생김새를 견주어 보려고 따로 둔다(2026-10-07 피드백).
   const bizNew = ui.formGroup(
     f.titleBadge("사업자정보", "off", "미인증"),
-    f.help("인증 전에도 상호명 등 다른 정보는 저장할 수 있습니다."),
     f.bizAuth(A, `${idPrefix}-new`, { start: "open" }),
     ui.field(f.req("상호명"), ui.textField({ value: "㈜한강상회", maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })),
     f.group("대표자 연락처", f.tel("010", "5530", "1182")),

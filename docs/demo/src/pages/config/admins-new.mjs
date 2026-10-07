@@ -19,7 +19,7 @@ export function adminNewBody(A, R, { panel = false } = {}) {
       ui.field(c.req("이름"), c.stack(ui.textField({ value: "문가은", maxlength: 20 }), c.help("한글 또는 영문 2~20자"))),
     ),
     row(
-      ui.field(c.req("휴대전화번호"), c.stack(c.tel("010", "3308", "6214"), c.help("세 칸을 합친 숫자 10~11자리"))),
+      ui.field(c.req("휴대전화번호"), c.tel("010", "3308", "6214")),
       ui.field(c.req("이메일"), c.stack(ui.textField({ value: "gaeun.moon@hangang.co.kr", maxlength: 100 }), c.help("이메일 형식 · 100자 이하 · 초기 비밀번호를 받는 주소"))),
     ),
   );

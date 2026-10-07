@@ -21,7 +21,6 @@ export default ({ A, R }) => {
 
   const biz = ui.formGroup(
     "사업자정보 인증 (선택)",
-    p.note("국세청 API로 사업자등록번호·대표자명·개업일자의 진위만 확인합니다."),
     `<h4 class="text-[14px] font-semibold">사업자 번호 인증</h4>`,
     ui.field("사업자등록번호", ui.textField({ value: "211-87-01234" })),
     p.row(ui.field("대표자명", ui.textField({ value: "남도현" })), ui.field("개업일자", ui.dateField(A, { label: "개업일자", value: "2021-03-15" }))),
@@ -50,8 +49,8 @@ export default ({ A, R }) => {
     agree +
     p.block(ui.button("회원가입", { href: link(R, "auth/signup-done.html") })) +
     `<p class="flex justify-center gap-[10px] text-[14px]"><span class="text-erp-label">이미 계정이 있나요?</span>${p.quietLink('<b class="font-semibold text-erp-ink">로그인</b>', link(R, "auth/login.html"))}</p>` +
-    // 전문 보기 확인창 폭을 이 카드(w-[640px])에 맞춘다.
-    p.termsDialog(use, "use", "w-[640px]") +
-    p.termsDialog(privacy, "privacy", "w-[640px]");
-  return { title: "회원가입", html: p.authPage(A, R, { card, width: "w-[640px]" }) };
+    // 전문 보기 확인창 폭을 이 카드(w-[860px] · 도입문의 화면과 같은 폭, 2026-10-07 피드백)에 맞춘다.
+    p.termsDialog(use, "use", "w-[860px]") +
+    p.termsDialog(privacy, "privacy", "w-[860px]");
+  return { title: "회원가입", html: p.authPage(A, R, { card, width: "w-[860px]" }) };
 };

@@ -27,7 +27,7 @@ export function bpEditBody(A, R, { panel = false } = {}) {
 
   const biz = ui.formGroup(
     `${f.titleBadge("BP 사업자정보", "on", "인증완료")}<span class="ml-[10px] text-[13px] font-normal text-erp-label">최종 인증 2026-03-04 10:20</span>`,
-    f.help("국세청 API로 사업자등록번호·대표자명·개업일자의 진위만 확인합니다. 인증 결과는 저장을 눌러야 반영됩니다. 상호명은 이 인증으로 채워지지 않습니다."),
+    f.help("인증 결과는 저장을 눌러야 반영됩니다. 상호명은 이 인증으로 채워지지 않습니다."),
     f.bizAuth(A, "ebiz", { start: "done", values: ["211-87-01234", "남도현", "2021-03-15"], input: ["211-87-40981", "남도현", "2026-09-01"] }),
     f.help("세 값은 직접 고칠 수 없고 재인증을 통과해야 바뀝니다. 바꾼 사업자등록번호도 다른 BP 와 겹치는지 검사합니다."),
     ui.field(f.req("상호명"), ui.textField({ value: BP.name, maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })),

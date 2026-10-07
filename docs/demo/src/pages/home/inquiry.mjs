@@ -28,6 +28,5 @@ export default ({ A, R }) => {
   const main = `<div class="mx-auto flex w-[860px] flex-col gap-[24px] px-[24px] py-[48px]"><div class="flex flex-col gap-[6px]"><h1 class="text-[22px] font-semibold">도입문의</h1><p class="text-[14px] text-erp-label">가입하지 않아도 남기실 수 있습니다. 담당자가 확인한 뒤 알려주신 전화번호나 이메일로 회신합니다.</p></div>${who}${what}${consent}<div class="flex items-center gap-[18px]"><div class="flex-1">${p.note(
     "같은 전화번호나 이메일로 짧은 시간에 여러 번 보내면 잠시 접수가 막힙니다.",
   )}</div>${ui.button("문의 접수하기")}</div></div>`;
-  const foot = p.siteFoot(`<span class="flex-1">${p.BIZ}</span>`, p.quietLink("홈으로", link(R, "home/index.html")), p.quietLink("공지사항", link(R, "home/notices.html")));
-  return { title: "도입문의", html: p.sitePage(A, R, { current: "inquiry", main, foot }) };
+  return { title: "도입문의", html: p.sitePage(A, R, { current: "inquiry", main, foot: p.siteFoot(A, R) }) };
 };

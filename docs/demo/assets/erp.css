@@ -355,9 +355,6 @@
   .mr-\[6px\] {
     margin-right: 6px;
   }
-  .mr-\[12px\] {
-    margin-right: 12px;
-  }
   .-mb-px {
     margin-bottom: -1px;
   }
@@ -482,6 +479,10 @@
   .size-\[28px\] {
     width: 28px;
     height: 28px;
+  }
+  .size-\[32px\] {
+    width: 32px;
+    height: 32px;
   }
   .size-\[34px\] {
     width: 34px;
@@ -989,9 +990,6 @@
   .grid-cols-15 {
     grid-template-columns: repeat(15, minmax(0, 1fr));
   }
-  .grid-cols-\[2fr_1fr_1fr_1fr\] {
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-  }
   .grid-cols-\[5fr_7fr\] {
     grid-template-columns: 5fr 7fr;
   }
@@ -1296,6 +1294,9 @@
   .bg-\[\#d9d9d9\] {
     background-color: #d9d9d9;
   }
+  .bg-\[\#d9dbe0\] {
+    background-color: #d9dbe0;
+  }
   .bg-\[\#ecf8f1\] {
     background-color: #ecf8f1;
   }
@@ -1502,6 +1503,9 @@
   }
   .py-\[24px\] {
     padding-block: 24px;
+  }
+  .py-\[32px\] {
+    padding-block: 32px;
   }
   .py-\[36px\] {
     padding-block: 36px;
@@ -2033,6 +2037,9 @@
   @media (hover: hover) {
     .hover\:border-erp-brand:hover {
       border-color: var(--color-erp-brand);
+    }
+    .hover\:bg-erp-brand:hover {
+      background-color: var(--color-erp-brand);
     }
     .hover\:bg-erp-field-line:hover {
       background-color: var(--color-erp-field-line);

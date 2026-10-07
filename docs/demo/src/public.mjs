@@ -73,23 +73,43 @@ export const termsDialog = (id, key, width) => {
   return width ? html.replace("w-[420px]", width) : html;
 };
 
-// ── 비로그인 홈 쪽(홈·공지사항·도입문의) 위쪽 줄과 아래쪽 줄 ──
+// ── 비로그인 홈 쪽(홈·공지사항·도입문의) 위쪽 줄과 아래쪽 줄 ── 1팀 Figma(2026_Whale-ERP, node 1-689) GNB·푸터로 맞췄다(2026-10-07 피드백).
+// 오른쪽 묶음(LOGIN·도입문의·공지사항)은 버튼이 아니라 조용한 글자 링크다 — quietLink 와 같은 회색, 자산이 없는 사람 아이콘만 인라인으로 그렸다.
+const PERSON_ICON = `<svg viewBox="0 0 24 24" class="size-[16px]" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7"/></svg>`;
 export function siteNav(A, R, current = "") {
   const sec = [
     ["ops", "매장운영"],
     ["finance", "재무관리"],
     ["franchise", "프랜차이즈"],
-    ["addons", "부가서비스"],
+    ["addons", "요금안내"],
   ];
   const home = link(R, "home/index.html");
   const nav = sec
     .map(([id, l]) => `<a class="text-[15px] font-medium text-erp-ink transition-colors duration-150 ease-out hover:text-erp-brand" href="${home === "#" ? "#" : `${home}#${id}`}">${l}</a>`)
     .join("");
-  const notices = `<a${current === "notices" ? ' aria-current="page"' : ""} class="text-[14px] font-medium ${current === "notices" ? "text-erp-brand" : "text-erp-ink"} transition-colors duration-150 ease-out hover:text-erp-brand" href="${link(R, "home/notices.html")}">공지사항</a>`;
-  return `<header class="sticky top-0 z-10 flex h-[70px] items-center gap-[54px] border-b border-erp-bar-line bg-white px-[24px]">${brand(A, home)}<nav aria-label="서비스 안내" class="flex flex-1 gap-[34px]">${nav}</nav><div class="flex items-center gap-[6px]"><span class="mr-[12px]">${notices}</span>${ui.button("도입문의", { variant: "soft", href: link(R, "home/inquiry.html") })}${ui.button("로그인", { href: link(R, "auth/login.html") })}</div></header>`;
+  const quiet = (label, href, cur, icon = "") =>
+    `<a${cur ? ' aria-current="page"' : ""} class="flex items-center gap-[4px] text-[14px] font-medium ${cur ? "text-erp-brand" : "text-erp-label"} transition-colors duration-150 ease-out hover:text-erp-ink" href="${href}">${icon}${label}</a>`;
+  const right =
+    quiet("LOGIN", link(R, "auth/login.html"), current === "login", PERSON_ICON) +
+    quiet("도입문의", link(R, "home/inquiry.html"), current === "inquiry") +
+    quiet("공지사항", link(R, "home/notices.html"), current === "notices");
+  return `<header class="sticky top-0 z-10 flex h-[70px] items-center gap-[54px] border-b border-erp-bar-line bg-white px-[24px]">${brand(A, home)}<nav aria-label="서비스 안내" class="flex flex-1 gap-[34px]">${nav}</nav><div class="flex items-center gap-[24px]">${right}</div></header>`;
 }
-export const siteFoot = (...items) =>
-  `<footer class="border-t border-erp-bar-line bg-erp-thead-bg"><div class="mx-auto flex w-[1200px] items-center gap-[18px] px-[24px] py-[24px] text-[13px] text-erp-label">${items.join("")}</div></footer>`;
+// 1팀 Figma 푸터(2026-10-07 피드백) — 인터플러그 로고 + 약관·사업자정보 + 소셜 아이콘 셋. 로고·아이콘 자산이 없어 인라인 SVG 로 그렸다.
+const INTERPLUG_MARK = `<svg viewBox="0 0 32 32" class="size-[32px] shrink-0" aria-hidden="true"><circle cx="16" cy="16" r="16" fill="#1a1a1a"/><text x="16" y="21" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">im</text></svg>`;
+const socialIcon = (label, path) =>
+  `<a href="#" aria-label="${label}" class="grid size-[32px] shrink-0 place-items-center rounded-full bg-[#d9dbe0] text-white transition-colors duration-150 ease-out hover:bg-erp-brand"><svg viewBox="0 0 24 24" class="size-[15px]" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg></a>`;
+const SOCIAL =
+  socialIcon("인스타그램", '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="0.6" fill="currentColor" stroke="none"/>') +
+  socialIcon("유튜브", '<rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="M10.5 9.5v5l4.5-2.5z" fill="currentColor" stroke="none"/>') +
+  socialIcon("틱톡", '<path d="M14 3v10.2a3.3 3.3 0 1 1-3.3-3.3c.3 0 .6 0 .9.1V7.4a5.9 5.9 0 1 0 5 5.8V8.6c1 .7 2.2 1.1 3.4 1.1V7.1A5.9 5.9 0 0 1 16 3z" fill="currentColor" stroke="none"/>');
+export function siteFoot(A, R) {
+  const sep = '<span class="h-[11px] w-px bg-[#d9d9d9]"></span>';
+  const row = (...items) => `<p class="flex flex-wrap items-center gap-[10px] text-[13px] text-erp-label">${items.join(sep)}</p>`;
+  return `<footer class="border-t border-erp-bar-line bg-white"><div class="mx-auto flex w-[1200px] items-start justify-between gap-[24px] px-[24px] py-[32px]"><div class="flex items-start gap-[18px]"><div class="flex flex-col items-center gap-[4px]">${INTERPLUG_MARK}<span class="text-[11px] whitespace-nowrap text-erp-label">INTERPLUG Co., Ltd.</span></div><div class="flex flex-col gap-[6px]">${row(quietLink("이용약관", link(R, "auth/terms.html#use")), quietLink("개인정보처리방침", "#"))}${row(
+    "상호: 인터플러그",
+    "주소: 03787 서울특별시 서대문구 연세로 5다길 22-3, 발리빌딩 3층",
+  )}${row("이메일: help@interplug.co.kr", "전화번호: 6923-0028", "사업자등록번호 : 1233467890")}${row("통신판매업신고번호: 2021-00000000000")}<p class="mt-[6px] text-[12px] text-erp-muted">Copyrights© 2026 INTERPLUG. All Rights Reserved.</p></div></div><div class="flex items-center gap-[10px]">${SOCIAL}</div></div></footer>`;
+}
 export const sitePage = (A, R, { current, main, foot }) =>
   `<div class="${ui.ERP_THEME}"><div class="h-[100dvh] overflow-y-auto bg-white">${siteNav(A, R, current)}<main>${main}</main>${foot}</div></div>`;
-export const BIZ = "상호 인터플러그 · 사업자등록번호 105-87-63602";

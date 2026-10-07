@@ -35,7 +35,7 @@ export default ({ A, R }) => {
       ui.field(req("이름"), stack(ui.textField({ value: "윤채원", maxlength: 20 }), help("한글 또는 영문 2~20자"))),
     ),
     row(
-      ui.field(req("연락처"), stack(tel("010", "9013", "5528"), help("세 칸을 합쳐 숫자 10~11자리"))),
+      ui.field(req("연락처"), tel("010", "9013", "5528")),
       ui.field(req("이메일"), stack(ui.textField({ value: "chaewon.yoon@whale-erp.example", maxlength: 100 }), help("100자 이하 · 초기 비밀번호가 이 주소로 갑니다"))),
     ),
     row(

@@ -34,6 +34,5 @@ export default ({ A, R }) => {
     { id: "notices", label: "공지사항 4", html: notices },
     { id: "faq", label: "FAQ 5", html: faq },
   ])}</div>`;
-  const foot = p.siteFoot(`<span class="flex-1">${p.BIZ}</span>`, p.quietLink("홈으로", link(R, "home/index.html")), p.quietLink("도입문의", link(R, "home/inquiry.html")));
-  return { title: "공지사항 · FAQ", html: p.sitePage(A, R, { current: "notices", main, foot }) };
+  return { title: "공지사항 · FAQ", html: p.sitePage(A, R, { current: "notices", main, foot: p.siteFoot(A, R) }) };
 };

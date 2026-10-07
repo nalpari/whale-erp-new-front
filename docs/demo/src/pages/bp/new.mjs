@@ -16,8 +16,8 @@ export function bpNewBody(A, R, { panel = false } = {}) {
 
   const biz = ui.formGroup(
     "BP 사업자정보",
-    f.help("국세청 API로 사업자등록번호·대표자명·개업일자의 진위만 확인합니다."),
     f.bizAuth(A, "pbiz", {
+      start: "open",
       values: ["214-88-10555", "오세린", "2026-08-20"],
       confirmReauth:
         '<p>지금 인증한 사업자등록번호·대표자명·개업일자가 지워지고 인증 전으로 돌아갑니다.</p><p class="mt-[6px] text-erp-label">기본정보와 상호명, 아래에 적은 사업자정보는 그대로 둡니다. 다시 인증하지 않고 등록해도 됩니다.</p>',

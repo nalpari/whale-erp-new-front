@@ -44,25 +44,5 @@ export default ({ A, R }) => {
     ) +
     `<section class="border-t border-erp-bar-line bg-white py-[48px]"><div class="${WRAP} flex items-center gap-[24px]"><div class="flex flex-1 flex-col gap-[10px]"><h2 class="text-[22px] font-semibold">먼저 물어보셔도 됩니다</h2><p class="text-[15px]">가입 전에 도입 상담을 받을 수 있습니다. 로그인은 필요하지 않습니다.</p></div>${ui.button("도입문의 남기기", { href: link(R, "home/inquiry.html") })}</div></section>`;
 
-  const col = (title, items) =>
-    `<div class="flex flex-col gap-[12px]"><h4 class="text-[14px] font-semibold text-erp-ink">${title}</h4><ul class="flex flex-col gap-[10px]">${items.map(([t, h]) => `<li>${p.quietLink(t, h)}</li>`).join("")}</ul></div>`;
-  const home = link(R, "home/index.html");
-  const login = link(R, "auth/login.html");
-  const at = (h, id) => (h === "#" ? "#" : `${h}#${id}`);
-  const foot = `<footer class="border-t border-erp-bar-line bg-erp-thead-bg"><div class="${WRAP} flex flex-col gap-[24px] py-[48px] text-[13px] text-erp-label"><div class="grid grid-cols-[2fr_1fr_1fr_1fr] gap-[24px]"><div class="flex flex-col gap-[12px]">${p.brand(A, home)}<p>다점포·프랜차이즈 점포 운영 플랫폼.</p></div>${col("서비스", [
-    ["매장운영", "#ops"],
-    ["재무관리", "#finance"],
-    ["프랜차이즈", "#franchise"],
-    ["부가서비스", "#addons"],
-  ])}${col("계정", [
-    ["로그인", login],
-    ["사업자 회원가입", link(R, "auth/signup.html")],
-    ["아이디·비밀번호 찾기", link(R, "auth/find.html")],
-  ])}${col("안내", [
-    ["공지사항", link(R, "home/notices.html")],
-    ["FAQ", at(link(R, "home/notices.html"), "faq")],
-    ["도입문의", link(R, "home/inquiry.html")],
-  ])}</div><div class="flex items-center gap-[18px] border-t border-erp-bar-line pt-[18px]"><span>${p.BIZ}</span><span class="flex-1">서울특별시 서대문구 연세로 5다길 22-3 발리빌딩 3층</span>${p.quietLink("이용약관", link(R, "auth/terms.html#use"))}${p.quietLink("개인정보처리방침", "#")}</div></div></footer>`;
-
-  return { title: "점포 운영을 한 곳에서", html: p.sitePage(A, R, { main, foot }) };
+  return { title: "점포 운영을 한 곳에서", html: p.sitePage(A, R, { main, foot: p.siteFoot(A, R) }) };
 };
