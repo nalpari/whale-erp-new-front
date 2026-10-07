@@ -205,8 +205,13 @@ const ICON_HOVER =
   "group relative grid h-[32px] place-items-center rounded-full [&>img]:transition-opacity [&>img]:duration-150 hover:[&>img]:opacity-70 [&>span:first-child]:transition-opacity hover:[&>span:first-child]:opacity-70";
 const tip = (label) =>
   `<span class="pointer-events-none absolute top-[calc(100%+10px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[100px] border border-[#ebebeb] bg-white px-[12px] py-[10px] text-[14px] leading-[2] whitespace-nowrap text-erp-brand opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">${TAIL}${label}</span>`;
-export const serviceLinks = (A, hrefs = {}) =>
-  `<div class="flex h-[42px] shrink-0 items-center gap-[18px] rounded-full border border-erp-field-line bg-white px-[24px]"><span class="text-[15px] font-medium whitespace-nowrap text-erp-ink">서비스 바로가기</span><div class="flex items-center gap-[12px]"><a aria-label="웨일ERP" class="${ICON_HOVER} w-[32px]" href="${hrefs.erp ?? "#"}">${img(A, "service-erp.svg", 32, 32)}${tip("웨일ERP")}</a><a aria-label="부가서비스 현황" class="${ICON_HOVER} w-[32px] bg-white" href="${hrefs.addon ?? "#"}">${img(A, "service-chat.svg", 19, 19)}${tip("부가서비스 현황")}</a><a aria-label="플랫폼관리" class="${ICON_HOVER} w-[20px] bg-white" href="${hrefs.platform ?? "#"}">${img(A, "service-platform.svg", 20, 20)}${tip("플랫폼관리")}</a></div></div>`;
+// scopeDialog 를 주면(플랫폼 콘솔) 웨일ERP 아이콘이 바로 이동하지 않고 그 id 의 BP·점포 선택 확인창을 먼저 연다(F-TLJOCK).
+export const serviceLinks = (A, hrefs = {}) => {
+  const erpLink = hrefs.scopeDialog
+    ? `<button type="button" aria-label="웨일ERP" data-dialog="${hrefs.scopeDialog}" class="${ICON_HOVER} w-[32px]">${img(A, "service-erp.svg", 32, 32)}${tip("웨일ERP")}</button>`
+    : `<a aria-label="웨일ERP" class="${ICON_HOVER} w-[32px]" href="${hrefs.erp ?? "#"}">${img(A, "service-erp.svg", 32, 32)}${tip("웨일ERP")}</a>`;
+  return `<div class="flex h-[42px] shrink-0 items-center gap-[18px] rounded-full border border-erp-field-line bg-white px-[24px]"><span class="text-[15px] font-medium whitespace-nowrap text-erp-ink">서비스 바로가기</span><div class="flex items-center gap-[12px]">${erpLink}<a aria-label="부가서비스 현황" class="${ICON_HOVER} w-[32px] bg-white" href="${hrefs.addon ?? "#"}">${img(A, "service-chat.svg", 19, 19)}${tip("부가서비스 현황")}</a><a aria-label="플랫폼관리" class="${ICON_HOVER} w-[20px] bg-white" href="${hrefs.platform ?? "#"}">${img(A, "service-platform.svg", 20, 20)}${tip("플랫폼관리")}</a></div></div>`;
+};
 export const alarmLink = (A, href) =>
   `<a aria-label="알림" class="shrink-0 rounded-full transition-opacity duration-150 ease-out hover:opacity-70" href="${href}">${img(A, "alarm.svg", 42, 42)}</a>`;
 

@@ -2,6 +2,7 @@
 // 목업 위쪽 검색 조건 묶음은 점포 목록처럼 왼쪽 필터로 옮겼다.
 import * as ui from "../../ui.mjs";
 import { platformHeader, link } from "../../site.mjs";
+import { bpNewPanel } from "./new.mjs";
 
 // [BP 코드, 아이디, 이름, 연락처, 이메일, 상태, 상호명, 사업자등록번호, 가입경로, 등록자, 등록 일시]
 const GONE = '<span class="text-erp-muted">탈퇴로 삭제됨</span>';
@@ -32,30 +33,34 @@ export default ({ A, R }) => {
     { header: "BP 코드", width: "w-[110px]" },
     { header: "아이디", width: "w-[120px]" },
     { header: "이름", width: "w-[110px]" },
-    { header: "연락처 · 이메일", align: "left" },
+    { header: "연락처", width: "w-[130px]" },
+    { header: "이메일", align: "left" },
     { header: "상태", width: "w-[90px]" },
     { header: "상호명", width: "w-[160px]" },
     { header: "사업자등록번호", width: "w-[150px]" },
     { header: "가입경로", width: "w-[110px]" },
-    { header: "등록자 · 등록 일시", width: "w-[170px]" },
+    { header: "등록자", width: "w-[110px]" },
+    { header: "등록 일시", width: "w-[150px]" },
   ];
   const detail = link(R, "bp/detail.html");
   const rows = BPS.map(([code, id, nm, tel, mail, state, corp, biz, via, by, at]) => [
     ui.link(code, detail),
     id,
     nm ?? GONE,
-    tel ? `${tel}<br>${mail}` : GONE,
+    tel ?? GONE,
+    mail ?? GONE,
     ui.badge(state === "사용" ? "on" : "off", state),
     ui.link(corp, detail),
     biz,
     via,
-    `${by}<br>${at}`,
+    by,
+    at,
   ]);
 
   const toolbar = ui.listToolbar(
     BPS.length,
     ui.button("엑셀 다운로드", { variant: "soft" }) +
-      ui.button("BP 마스터 계정 등록", { href: link(R, "bp/new.html") }) +
+      ui.slideTrigger("BP 마스터 계정 등록", "bp-new-panel") +
       `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`,
   );
 
@@ -65,6 +70,7 @@ export default ({ A, R }) => {
       header: platformHeader(A, R),
       title: "BP 마스터 계정 관리",
       body: ui.listBody(filter, toolbar + ui.dataTable(cols, rows, "일치하는 BP가 없습니다.") + `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`),
+      panels: bpNewPanel(A, R),
     }),
   };
 };

@@ -315,6 +315,38 @@ const BPS = ["BP 선택", `${BP.name} · ${BP.code}`, "㈜모리푸드 · BP0000
 export const PLATFORM_USER = "김지영 (플랫폼 관리자)";
 export const PLATFORM_MASTER = "김서연 (플랫폼 마스터)"; // system/admins 목록의 platkim
 
+// 플랫폼 콘솔에서 "웨일ERP" 바로가기를 누르면 여는 "BP 및 점포 선택" 확인창(F-TLJOCK) — 어떤 BP·점포 범위로 ERP 콘솔에
+// 들어갈지 고른다. 이 데모는 점포 목록을 ㈜한강상회(BP) 것만 갖고 있어 그 BP 기준으로 그린다.
+function platformScopeDialog(A, R, id) {
+  const dir = STORES.filter((s) => s[2] === "직영점포");
+  const fr = STORES.filter((s) => s[2] === "가맹점포");
+
+  const groupCheck = (type) =>
+    `<span role="checkbox" tabindex="0" aria-checked="false" aria-label="${type} 전체" data-scope-group="${type}" class="relative grid size-[20px] shrink-0 place-items-center rounded-[2px] border border-erp-field-line bg-white"><img alt="" width="12" height="9" class="hidden" data-group-check src="${A}icons/check.svg"><span class="hidden h-[2px] w-[10px] bg-erp-brand" data-group-mixed></span></span>`;
+  const storeRow = (s) =>
+    `<label class="flex items-center gap-[10px] rounded-[8px] px-[12px] py-[8px] hover:bg-erp-thead-bg" data-scope-q="${s[1]} ${s[0]}">${ui.checkbox(
+      A,
+      "",
+      false,
+      { "data-scope-pick": "", "data-scope-type": s[2], "data-scope-name": s[1], "aria-label": s[1] },
+    )}<span class="flex-1 truncate text-[13px] text-erp-ink">${s[1]}</span><span class="text-[11.5px] text-erp-muted">${s[0]}</span></label>`;
+  const group = (type, items) =>
+    items.length
+      ? `<div class="flex flex-col gap-[1px]" data-scope-sect><div class="flex items-center gap-[10px] px-[12px] py-[8px]">${groupCheck(type)}<b class="flex-1 text-[13px] font-semibold text-erp-ink">${type}</b><span class="text-[11.5px] text-erp-muted">${items.length}개점</span></div>${items.map(storeRow).join("")}</div>`
+      : "";
+
+  const body =
+    ui.field("BP", `<div class="w-full">${ui.select([`${BP.name} · ${BP.code}`, "㈜모리푸드 · BP000021", "㈜온기에프앤비 · BP000009"], { "aria-label": "BP" })}</div>`) +
+    `<div class="mt-[12px] flex items-center gap-[8px] border-b border-erp-divider pb-[8px]">${ui.img(A, "search.svg", 12, 12)}<input type="search" placeholder="점포 이름으로 찾기" aria-label="점포 찾기" class="min-w-0 flex-1 border-0 bg-transparent text-[13px] text-erp-ink outline-none placeholder:text-erp-label" data-scope-q-input></div>` +
+    `<div class="mt-[6px] max-h-[280px] overflow-y-auto" data-scope-list>${group("직영점포", dir)}${group("가맹점포", fr)}<p class="hidden px-[12px] py-[14px] text-center text-[13px] text-erp-label" data-scope-none>맞는 점포가 없습니다.</p></div>` +
+    `<p class="mt-[12px] text-[13px] text-erp-label" data-scope-summary>선택 안 함 · 적용하면 전체 ${STORES.length}개점을 봅니다</p>`;
+
+  return `<dialog id="${id}" data-scope-popup aria-labelledby="${id}-t" class="m-auto w-[420px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"><h2 id="${id}-t" class="text-[18px] font-semibold">BP 및 점포 선택</h2><div class="mt-[12px] text-[14px] leading-[1.6] text-erp-ink">${body}</div><div class="mt-[24px] flex justify-end gap-[6px]">${ui.button(
+    "취소",
+    { variant: "off", "data-close": true },
+  )}${ui.button("적용", { "data-scope-apply": to(R, "home/signed-in.html") })}</div></dialog>`;
+}
+
 // master: true 면 플랫폼 마스터로 로그인한 헤더(마스터 기준 화면용).
 export function platformHeader(A, R, { master = false } = {}) {
   const menus = PLATFORM_MENUS.map(([label, items]) => ({ label, items: items.map(([l, p]) => ({ label: l, href: to(R, p) })) }));
@@ -323,13 +355,16 @@ export function platformHeader(A, R, { master = false } = {}) {
     { label: "비밀번호 변경", href: to(R, "mypage/password.html") },
     { label: "로그아웃", href: to(R, "auth/login.html"), danger: true },
   ];
-  return ui.globalHeader(
-    A,
-    menus,
-    ui.storeSelect(A, BPS, BPS[0], "BP") +
-      ui.serviceLinks(A, { erp: to(R, "home/signed-in.html"), platform: to(R, "bp/index.html") }) +
-      ui.alarmLink(A, "#") +
-      ui.userPop(A, master ? PLATFORM_MASTER : PLATFORM_USER, user),
-    to(R, "bp/index.html"),
+  const scopeId = ui.uid("scope-dlg");
+  return (
+    ui.globalHeader(
+      A,
+      menus,
+      ui.storeSelect(A, BPS, BPS[0], "BP") +
+        ui.serviceLinks(A, { erp: to(R, "home/signed-in.html"), platform: to(R, "bp/index.html"), scopeDialog: scopeId }) +
+        ui.alarmLink(A, "#") +
+        ui.userPop(A, master ? PLATFORM_MASTER : PLATFORM_USER, user),
+      to(R, "bp/index.html"),
+    ) + platformScopeDialog(A, R, scopeId)
   );
 }

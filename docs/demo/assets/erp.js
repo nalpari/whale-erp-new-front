@@ -143,6 +143,13 @@
     const t = e.target.closest("[data-toast]");
     if (t?.dataset.toast) showToast(t.dataset.toast);
   });
+  // "저장" 버튼은 어디서든 공통으로 "저장되었습니다." 토스트를 띄운다(2026-10-06 피드백) — data-toast 로 자기만의
+  // 문구를 이미 정한 버튼과, 또 다른 확인창을 먼저 여는 버튼(data-dialog, 아직 저장이 끝난 게 아니다)은 건너뛴다.
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (!b || b.textContent.trim() !== "저장" || b.hasAttribute("data-toast") || b.hasAttribute("data-dialog")) return;
+    showToast("저장되었습니다.");
+  });
 
   // 드롭다운 항목을 고르면 닫는다. 점포 선택칸은 고른 값을 칸에 넣고, 원래 값을 목록으로 돌려놓는다.
   document.addEventListener("click", (e) => {
@@ -178,7 +185,8 @@
     document.dispatchEvent(new CustomEvent("erp:scope", { detail: opt.dataset.scopeLabel }));
   });
 
-  // 점포 이름으로 찾기 — 묶음(전체·일반·가맹)과 이름·코드가 맞는 점포만 남기고, 빈 묶음은 숨긴다.
+  // 점포 이름으로 찾기 — 묶음(전체·일반·가맹, 또는 직영·가맹 선택 확인창)과 이름·코드가 맞는 점포만 남기고, 빈 묶음은 숨긴다.
+  // role="option" 평평한 목록(scopeDropdown)과 라벨·체크박스 목록(BP·점포 선택 확인창) 모두 data-scope-q 를 들고 있어 같이 거른다.
   document.addEventListener("input", (e) => {
     const q = e.target.closest("[data-scope-q-input]");
     if (!q) return;
@@ -188,7 +196,7 @@
     let any = false;
     $$("[data-scope-sect]", list).forEach((sect) => {
       let sectAny = false;
-      $$('[role="option"]', sect).forEach((o) => {
+      $$("[data-scope-q]", sect).forEach((o) => {
         const hit = !term || (o.dataset.scopeQ || "").toLowerCase().includes(term);
         o.hidden = !hit;
         if (hit) sectAny = true;
@@ -199,6 +207,89 @@
     const none = $("[data-scope-none]", pop);
     if (none) none.hidden = any;
   });
+
+  // ── BP 및 점포 선택 확인창(platformScopeDialog, F-TLJOCK) — 묶음 체크 ↔ 개별 점포 체크 두 방향 동기화, 선택 결과 요약 ──
+  function paintScopeGroup(g, state) {
+    g.setAttribute("aria-checked", state);
+    g.classList.toggle("border-erp-brand", state !== "false");
+    g.classList.toggle("bg-erp-brand", state === "true");
+    const check = $("[data-group-check]", g);
+    const mixed = $("[data-group-mixed]", g);
+    if (check) check.classList.toggle("hidden", state !== "true");
+    if (mixed) mixed.classList.toggle("hidden", state !== "mixed");
+  }
+  function syncScopeDialog(dlg) {
+    $$("[data-scope-group]", dlg).forEach((g) => {
+      const items = $$(`[data-scope-pick][data-scope-type="${g.dataset.scopeGroup}"]`, dlg);
+      const on = items.filter((i) => i.checked).length;
+      paintScopeGroup(g, !on ? "false" : on === items.length ? "true" : "mixed");
+    });
+    const total = $$("[data-scope-pick]:checked", dlg).length;
+    const summary = $("[data-scope-summary]", dlg);
+    if (summary) {
+      const all = $$("[data-scope-pick]", dlg).length;
+      summary.textContent = total ? `선택 ${total}곳` : `선택 안 함 · 적용하면 전체 ${all}개점을 봅니다`;
+    }
+  }
+  document.addEventListener("click", (e) => {
+    const g = e.target.closest('[data-scope-group][role="checkbox"]');
+    if (!g) return;
+    const dlg = g.closest("[data-scope-popup]");
+    const next = g.getAttribute("aria-checked") !== "true";
+    $$(`[data-scope-pick][data-scope-type="${g.dataset.scopeGroup}"]`, dlg).forEach((i) => (i.checked = next));
+    syncScopeDialog(dlg);
+  });
+  document.addEventListener("change", (e) => {
+    if (!e.target.matches("[data-scope-pick]")) return;
+    const dlg = e.target.closest("[data-scope-popup]");
+    if (dlg) syncScopeDialog(dlg);
+  });
+
+  // [적용] — 고른 BP·점포 범위를 세션에 남기고 웨일ERP 로 이동한다. 이동한 페이지는 initAppliedScope 가 이 값을 읽어 GNB 에 그린다.
+  const SCOPE_KEY = "whale-applied-scope";
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-scope-apply]");
+    if (!btn) return;
+    const dlg = btn.closest("[data-scope-popup]");
+    const bpSelect = $("select", dlg);
+    const bp = bpSelect ? bpSelect.value.split(" · ")[0] : "";
+    const groupTotal = {};
+    $$("[data-scope-group]", dlg).forEach((g) => (groupTotal[g.dataset.scopeGroup] = $$(`[data-scope-pick][data-scope-type="${g.dataset.scopeGroup}"]`, dlg).length));
+    const checked = $$("[data-scope-pick]:checked", dlg);
+    const all = $$("[data-scope-pick]", dlg).length;
+    let value;
+    if (!checked.length) value = `전체 ${all}개점`;
+    else if (checked.length === 1) value = checked[0].dataset.scopeName;
+    else {
+      const byType = {};
+      checked.forEach((c) => (byType[c.dataset.scopeType] = (byType[c.dataset.scopeType] || 0) + 1));
+      const types = Object.keys(byType);
+      value = types.length === 1 && byType[types[0]] === groupTotal[types[0]] ? `${types[0].replace("점포", "")} ${byType[types[0]]}개점` : `선택 ${checked.length}곳`;
+    }
+    try {
+      sessionStorage.setItem(SCOPE_KEY, JSON.stringify({ bp, value }));
+    } catch (err) {}
+    location.href = btn.dataset.scopeApply;
+  });
+
+  // 위 세션값을 읽어 ERP 화면 GNB 의 점포 범위 드롭다운(scopeDropdown)에 그대로 반영한다.
+  function initAppliedScope() {
+    let data;
+    try {
+      data = JSON.parse(sessionStorage.getItem(SCOPE_KEY) || "null");
+    } catch (err) {
+      return;
+    }
+    if (!data) return;
+    const trigger = $('header button[aria-controls^="scope-"]');
+    if (!trigger) return;
+    const bp = trigger.querySelector("b");
+    const value = $("[data-scope-value]", trigger);
+    if (bp && data.bp) bp.textContent = data.bp;
+    if (value) value.textContent = data.value;
+    trigger.setAttribute("aria-label", `점포: ${data.value}`);
+    document.dispatchEvent(new CustomEvent("erp:scope", { detail: data.value }));
+  }
 
   // ── GlobalHeader (global-header.tsx). 1depth 를 누르면 2depth 줄이 열린다 ──
   function initHeader(header) {
@@ -946,6 +1037,7 @@
     $$('button[aria-expanded][aria-label$="접기"], button[aria-expanded][aria-label$="펼치기"]').forEach(initFilter);
     $$('input[type="search"]').forEach(initSearch);
     $$("input[data-scope-store]").forEach(initScopeStore);
+    initAppliedScope();
     const views = $$("[data-scope-view]");
     if (views.length) initScopeView(views);
     $$("[data-dayplan]").forEach(initDayPlan);

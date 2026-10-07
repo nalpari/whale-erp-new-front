@@ -4,6 +4,7 @@ import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as f from "../../biz-form.mjs";
 import { BP, platformHeader, link } from "../../site.mjs";
+import { bpEditPanel } from "./edit.mjs";
 
 export default ({ A, R }) => {
   const offId = x.dialogId();
@@ -16,7 +17,7 @@ export default ({ A, R }) => {
     x.dialogTrigger("BP 상태 변경", offId, "soft") +
       x.dialogTrigger("비밀번호 초기화", resetId, "soft") +
       f.disabledButton("계정 삭제", "삭제할 수 없습니다 — 로그인 기록이 있고(2026-09-20), 하위 관리자 4명과 등록 점포 11곳이 있습니다. 대신 BP 상태를 미사용으로 바꾸세요.") +
-      ui.button("BP 마스터 계정 수정", { variant: "soft", href: link(R, "bp/edit.html") }) +
+      ui.slideTrigger("BP 마스터 계정 수정", "bp-edit-panel", "soft") +
       ui.button("목록", { href: link(R, "bp/index.html") }),
   );
 
@@ -90,5 +91,8 @@ export default ({ A, R }) => {
       sentDialog,
   );
 
-  return { title: "BP 마스터 계정 상세", html: ui.erpFrame({ header: platformHeader(A, R), title: "BP 마스터 계정 관리", body }) };
+  return {
+    title: "BP 마스터 계정 상세",
+    html: ui.erpFrame({ header: platformHeader(A, R), title: "BP 마스터 계정 관리", body, panels: bpEditPanel(A, R) }),
+  };
 };
