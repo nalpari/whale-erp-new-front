@@ -55,7 +55,7 @@ export default ({ A, R }) => {
       { id: "table", label: "표", icon: x.ICON.table },
     ]) +
       ui.button("엑셀 다운로드", { variant: "soft" }) +
-      ui.button("점포 등록", { href: link(R, "stores/new.html") }) +
+      ui.button("등록", { href: link(R, "stores/new.html") }) +
       `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`,
   );
 

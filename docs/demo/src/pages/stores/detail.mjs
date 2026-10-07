@@ -11,9 +11,9 @@ export default ({ A, R }) => {
 
   const head = ui.sectionHead(
     name,
-    x.dialogTrigger("점포 상태 변경", statusId, "soft") +
-      f.disabledButton("점포 삭제", "미운영 점포만 삭제할 수 있습니다. 운영을 끝내려면 점포 상태 변경에서 폐점하세요.") +
-      ui.button("점포 정보 수정", { variant: "soft", href: link(R, "stores/edit.html") }) +
+    x.dialogTrigger("상태 변경", statusId, "soft") +
+      f.disabledButton("삭제", "미운영 점포만 삭제할 수 있습니다. 운영을 끝내려면 상태 변경에서 폐점하세요.") +
+      ui.button("수정", { variant: "soft", href: link(R, "stores/edit.html") }) +
       ui.button("목록", { href: link(R, "stores/index.html") }),
   );
 
@@ -76,8 +76,8 @@ export default ({ A, R }) => {
   // 운영 점포의 상태 변경: 갈 수 있는 곳은 폐점뿐이고, 기본 상태는 폐점 조건을 못 채운 경우다.
   const statusDialog = x.dialog(
     statusId,
-    "점포 상태 변경",
-    `<p>현재 상태 ${ui.badge("on", "운영")} — 운영은 미운영으로 되돌릴 수 없어 <b class="font-semibold">폐점</b>만 고를 수 있습니다.</p>` +
+    "상태 변경",
+    `<p>현재 상태 ${ui.badge("on", "운영")}</p>` +
       `<div class="mt-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]"><p class="font-semibold">폐점 조건</p><ul class="mt-[6px] list-disc pl-[18px]"><li>진행 중인 근로계약 <b class="font-semibold">6건</b> — 정리해야 할 근로계약이 있습니다</li><li class="text-erp-label">이용 중인 부가서비스 구독 — 1차 범위 밖</li><li class="text-erp-label">정산 대기 금액 — 1차 범위 밖</li></ul></div>`,
     ui.button("취소", { variant: "off", "data-close": true }) + f.disabledButton("폐점으로 변경", "폐점 조건을 채우지 못했습니다.", "primary"),
   );

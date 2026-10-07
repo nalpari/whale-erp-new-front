@@ -145,10 +145,16 @@
   });
   // "저장" 버튼은 어디서든 공통으로 "저장되었습니다." 토스트를 띄운다(2026-10-06 피드백) — data-toast 로 자기만의
   // 문구를 이미 정한 버튼과, 또 다른 확인창을 먼저 여는 버튼(data-dialog, 아직 저장이 끝난 게 아니다)은 건너뛴다.
+  // 점포 등록·수정의 [저장] 은 다음 화면으로 가는 링크라, 바로 옮기면 토스트가 보이지 않는다 — 조금 늦게 옮긴다.
   document.addEventListener("click", (e) => {
-    const b = e.target.closest("button");
+    const b = e.target.closest("button, a[href]");
     if (!b || b.textContent.trim() !== "저장" || b.hasAttribute("data-toast") || b.hasAttribute("data-dialog")) return;
     showToast("저장되었습니다.");
+    const href = b.getAttribute("href");
+    if (href) {
+      e.preventDefault();
+      setTimeout(() => (location.href = b.href), 900);
+    }
   });
 
   // 드롭다운 항목을 고르면 닫는다. 점포 선택칸은 고른 값을 칸에 넣고, 원래 값을 목록으로 돌려놓는다.
@@ -1146,6 +1152,25 @@
     });
   }
 
+  // 점포 등록·수정의 층별 정보 표. [층 추가] 는 빈 줄 template 을 복제해 표 끝에 붙이고,
+  // 줄의 [삭제] 는 그 줄을 지운다. 마지막 줄을 지우면 공통 표의 빈 상태 줄을 되돌려 놓는다.
+  // 마크업은 biz-form.mjs 의 floorTable 이 낸다 — 단서가 바뀌면 거기도 같이 고친다.
+  function initFloors(root) {
+    const body = $("tbody", root);
+    const clone = (name) => $(`[data-floor-${name}]`, root).content.cloneNode(true);
+    root.addEventListener("click", (e) => {
+      if (e.target.closest("[data-floor-add]")) {
+        $("td[colspan]", body)?.closest("tr").remove(); // 빈 상태 줄이 있으면 치운다
+        body.append(clone("row"));
+      }
+      const del = e.target.closest("[data-floor-del]");
+      if (del) {
+        del.closest("tr").remove();
+        if (!body.rows.length) body.append(clone("empty"));
+      }
+    });
+  }
+
   const init = () => {
     fromHash();
     $$("[data-tpl-root]").forEach(initTemplateEdit);
@@ -1163,6 +1188,7 @@
     $$('nav[aria-label="페이지"]').forEach(initPagination);
     $$("button[popovertarget]:not([data-week-label])").forEach(initDate);
     $$("[data-weeks]").forEach(initWeeks);
+    $$("[data-floors]").forEach(initFloors);
   };
   document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", init) : init();
 })();
