@@ -55,19 +55,18 @@ export const listToolbar = (total, right = "") =>
   `<div class="flex items-end gap-[6px]"><p class="flex-1 text-[14px] text-erp-ink">총 <b class="font-semibold">${total.toLocaleString("ko-KR")}</b> 건</p>${right}</div>`;
 
 // data-table.tsx. columns: { header, width?, align? }, rows: 칸 HTML 배열의 배열
+// 표의 줄 하나·빈 상태 줄. dataTable 이 쓰고, 줄을 더 만드는 쪽(층별 정보의 [층 추가])도 같은 마크업을 쓰려고 따로 뺐다.
+export const tableRow = (columns, cells) =>
+  `<tr class="h-[46px] border-b border-erp-thead-line">${cells
+    .map((cell, i) => `<td class="truncate px-[10px] ${columns[i].align === "left" ? "text-left" : "text-center"}">${cell}</td>`)
+    .join("")}</tr>`;
+export const tableEmptyRow = (columns, empty = "데이터가 없습니다.") =>
+  `<tr class="h-[92px] border-b border-erp-thead-line"><td colspan="${columns.length}" class="text-center text-erp-muted">${empty}</td></tr>`;
+
 export function dataTable(columns, rows, empty = "데이터가 없습니다.") {
   const cols = columns.map((c) => (c.width ? `<col class="${c.width}">` : "<col>")).join("");
   const head = columns.map((c) => `<th scope="col" class="px-[10px] font-medium text-erp-thead-text">${c.header}</th>`).join("");
-  const body = rows.length
-    ? rows
-        .map(
-          (r) =>
-            `<tr class="h-[46px] border-b border-erp-thead-line">${r
-              .map((cell, i) => `<td class="truncate px-[10px] ${columns[i].align === "left" ? "text-left" : "text-center"}">${cell}</td>`)
-              .join("")}</tr>`,
-        )
-        .join("")
-    : `<tr class="h-[92px] border-b border-erp-thead-line"><td colspan="${columns.length}" class="text-center text-erp-muted">${empty}</td></tr>`;
+  const body = rows.length ? rows.map((r) => tableRow(columns, r)).join("") : tableEmptyRow(columns, empty);
   return `<table class="w-full table-fixed border-collapse border-x border-erp-thead-line text-[14px]"><colgroup>${cols}</colgroup><thead><tr class="h-[42px] border-y border-erp-thead-line bg-erp-thead-bg">${head}</tr></thead><tbody class="text-erp-ink">${body}</tbody></table>`;
 }
 

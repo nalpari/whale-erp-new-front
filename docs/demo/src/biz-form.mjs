@@ -44,8 +44,10 @@ export const address = (A, label, { zip = "", base = "", detail = "" } = {}, { t
   );
 
 // 안쪽 묶음 상자(사업자 번호 인증 상자 등). 두 바탕 규칙대로 #f8f9fb 바탕 + 패널 선.
-export const box = (id, title, right, body, hidden = false) =>
-  `<div id="${id}" class="flex flex-col gap-[18px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]"${hidden ? " hidden" : ""}><div class="flex items-center gap-[6px]"><h4 class="flex-1 text-[15px] font-semibold text-erp-ink">${title}</h4>${right}</div>${body}</div>`;
+// flat: 테두리·바탕·안쪽 여백을 뺀다. 바깥 묶음(formGroup)이 이미 흰 상자라 테두리가 겹쳐 보일 때 쓴다.
+const BOX_CHROME = " rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]";
+export const box = (id, title, right, body, hidden = false, flat = false) =>
+  `<div id="${id}" class="flex flex-col gap-[18px]${flat ? "" : BOX_CHROME}"${hidden ? " hidden" : ""}><div class="flex items-center gap-[6px]"><h4 class="flex-1 text-[15px] font-semibold text-erp-ink">${title}</h4>${right}</div>${body}</div>`;
 
 // 같은 자리의 두 묶음을 바꿔 보이는 버튼(접힌 버튼 ↔ 입력 상자 ↔ 인증 완료). swap 스크립트가 처리한다.
 export const swapAttr = (from, to) => ({ "data-swap": `${from},${to}` });
@@ -54,7 +56,9 @@ export const SWAP_SCRIPT = `<script>document.addEventListener("click",(e)=>{cons
 // 사업자 번호 인증 묶음. start: "fold"(인증 전·접힘) | "open"(인증 전·늘 펼침, 접기 없음) | "done"(인증 완료).
 // values: [사업자등록번호, 대표자명, 개업일자], input: 입력 상자의 처음 값(없으면 values),
 // reauthLocked: 재인증 때 번호·개업일자를 고정하고 대표자명만 받는다(점포 수정).
-// inline: [인증하기] 를 입력칸 줄 끝(개업일자 옆)에 둬 상자 높이를 한 줄 줄인다(점포 등록).
+// inline: 점포 등록·수정의 배치. 입력칸을 한 줄에 두고 [인증하기] 를 줄 끝(개업일자 옆)에 붙이며,
+//         인증을 마친 뒤의 사업자정보 상자도 같은 한 줄로 둔다 — 인증 전후로 생김새가 바뀌지 않게.
+//         상자 테두리·바탕도 뺀다. 바깥 「점포 사업자정보」 묶음이 이미 흰 상자라 테두리가 두 겹으로 보인다.
 export function bizAuth(A, p, { start = "fold", values = ["", "", ""], input = values, doneBadge = "인증 완료", reauthLocked = false, after = "", confirmReauth = false, inline = false } = {}) {
   const ids = { fold: `${p}-fold`, form: `${p}-form`, done: `${p}-done` };
   const [num, ceo, open] = input;
@@ -85,6 +89,7 @@ export function bizAuth(A, p, { start = "fold", values = ["", "", ""], input = v
     "",
     fields + (inline && !reauthLocked ? "" : `<div>${authBtn}</div>`),
     start !== "open",
+    inline,
   );
   const [vn, vc, vo] = values;
   let reauth = ui.button("재인증", { variant: "soft", ...swapAttr(ids.done, ids.form) });
@@ -99,16 +104,20 @@ export function bizAuth(A, p, { start = "fold", values = ["", "", ""], input = v
       ui.button("취소", { variant: "off", "data-close": true }) + ui.button("재인증", { "data-close": true, ...swapAttr(ids.done, ids.form) }),
     );
   }
+  const doneFields = [
+    ui.field("사업자등록번호", ui.textField({ value: vn, disabled: true })),
+    ui.field("대표자명", ui.textField({ value: vc, disabled: true })),
+    ui.field("개업일자", ui.textField({ value: vo, disabled: true })),
+  ];
   const done = box(
     ids.done,
     "사업자정보",
     doneBadge ? ui.badge("on", doneBadge) : "", // 묶음 제목에 이미 인증 배지가 있으면 doneBadge: "" 로 뺀다
-    ui.field("사업자등록번호", ui.textField({ value: vn, disabled: true })) +
-      ui.field("대표자명", ui.textField({ value: vc, disabled: true })) +
-      ui.field("개업일자", ui.textField({ value: vo, disabled: true })) +
-      after +
-      `<div>${reauth}</div>`,
+    inline
+      ? ui.formRow(...doneFields, `<div class="shrink-0 self-end">${reauth}</div>`) + after
+      : doneFields.join("") + after + `<div>${reauth}</div>`,
     start !== "done",
+    inline,
   );
   return fold + form + done + dialog;
 }
@@ -137,9 +146,17 @@ export const floorRow = ([pos, floor, py, m2, seats] = ["지상", "", "", "", ""
     unit(py, "매장평수", "18", "평"),
     unit(m2, "전용면적", "59.5", "㎡"),
     unit(seats, "좌석수", "32", "석", "w-[80px]"),
-    ui.button("삭제", { variant: "off", "aria-label": "이 층 삭제" }),
+    ui.button("삭제", { variant: "off", "aria-label": "이 층 삭제", "data-floor-del": true }),
   ];
 };
+// 층별 정보 표 + [층 추가]. 추가·삭제는 erp.js 의 initFloors 가 아래 두 template 을 복제해 처리한다.
+// 표와 단추를 한 묶음으로 내는 것은 둘을 잇는 단서(data-floors)가 둘을 함께 감싸야 해서다.
+const FLOOR_COLUMNS = [{ header: "층" }, { header: "매장평수" }, { header: "전용면적" }, { header: "좌석수" }, { header: "삭제", width: "w-[100px]" }];
 export const floorTable = (rows) =>
-  ui.dataTable([{ header: "층" }, { header: "매장평수" }, { header: "전용면적" }, { header: "좌석수" }, { header: "삭제", width: "w-[100px]" }], rows.map(floorRow));
+  `<div data-floors class="flex flex-col gap-[18px]">` +
+  `<div class="flex justify-end">${ui.button("층 추가", { variant: "soft", "data-floor-add": true })}</div>` +
+  ui.dataTable(FLOOR_COLUMNS, rows.map(floorRow)) +
+  `<template data-floor-row>${ui.tableRow(FLOOR_COLUMNS, floorRow())}</template>` +
+  `<template data-floor-empty>${ui.tableEmptyRow(FLOOR_COLUMNS)}</template>` +
+  `</div>`;
 
