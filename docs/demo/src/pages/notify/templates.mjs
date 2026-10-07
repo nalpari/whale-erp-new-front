@@ -42,12 +42,12 @@ const PUSH = [
   ["급여명세서 발송", "#{지급월} 급여명세서가 도착했습니다"],
 ];
 
-// 알림 유형·발송 용도 코드. 템플릿 코드는 채널 접두와 이 코드를 이어 시스템이 만든다(2026-10-07 재영). 값은 예시.
+// 알림 유형·발송 용도 코드(공통코드 NOTIFICATION_TYPE·SEND_PURPOSE, 1팀 8종은 1팀 값 그대로). 템플릿 코드는 채널 접두와 이 코드를 이어 시스템이 만든다(2026-10-07 재영).
 const CODE = {
   "문의사항 접수": "INQUIRY_RECEIVED",
   "도입문의 접수": "LEAD_RECEIVED",
   "문의사항 답변": "INQUIRY_ANSWERED",
-  "도입문의 처리 상태 변경": "LEAD_STATUS_CHANGED",
+  "도입문의 처리 상태 변경": "LEAD_ANSWERED",
   "근로계약 날인": "CONTRACT_SIGNED",
   "근로계약 거부": "CONTRACT_REJECTED",
   "근로계약 만료": "CONTRACT_EXPIRED",
@@ -55,22 +55,22 @@ const CODE = {
   "소속 추가 확인 거절": "AFFILIATION_REJECTED",
   "계약 갱신 예정": "CONTRACT_RENEWAL_DUE",
   "근로계약서 발송": "CONTRACT_SENT",
-  "근무스케줄 주요 변경": "WORK_SCHEDULE_CHANGED",
+  "근무스케줄 주요 변경": "SCHEDULE_CHANGED",
   "TO-DO 배정": "TODO_ASSIGNED",
   "급여명세서 발송": "PAYSLIP_SENT",
   "비밀번호 찾기 핀": "STAFF_PASSWORD_PIN",
   "관리자 초기화 재설정 링크": "STAFF_RESET_LINK",
   "로그인 이메일 변경 핀": "EMAIL_CHANGE_PIN",
-  "도입문의 접수 확인": "LEAD_RECEIPT",
+  "도입문의 접수 확인": "LEAD_CONFIRMATION",
   "가입 초대": "STAFF_INVITATION",
   "회원가입 완료": "SIGNUP_DONE",
-  "신규 BP 가입 알림": "BP_SIGNUP_NOTICE",
-  "BP 신규 등록": "BP_REGISTERED",
-  "플랫폼 관리자 계정 생성": "PLATFORM_ADMIN_CREATED",
-  "BP 관리자 계정 생성": "BP_ADMIN_CREATED",
+  "신규 BP 가입 알림": "SIGNUP_ALERT",
+  "BP 신규 등록": "BP_REGISTER",
+  "플랫폼 관리자 계정 생성": "PLAT_ADMIN_CREATE",
+  "BP 관리자 계정 생성": "BP_ADMIN_CREATE",
   "비밀번호 초기화": "PASSWORD_RESET",
-  "임시 비밀번호 발급": "TEMPORARY_PASSWORD_ISSUED",
-  "회원 탈퇴 완료": "WITHDRAWAL_DONE"
+  "임시 비밀번호 발급": "TEMP_PASSWORD",
+  "회원 탈퇴 완료": "WITHDRAW_DONE"
 };
 const code = (prefix, t) => `<span class="font-mono text-[13px]">${prefix}_${CODE[t]}</span>`;
 
