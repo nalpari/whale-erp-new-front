@@ -2,6 +2,7 @@
 
 ## 2026-10-07
 
+* **Update**: `2026-09-30-네이밍-규칙.md` 「템플릿 사용 여부 · 변수 목록」 줄의 변수 모양에 `isButtonLink`(선택)를 더해 [네이밍 규칙](/conventions/naming.md) 에 반영했다 — 메일 공통 틀·알림톡 버튼이 붙이는 링크 변수는 이 표시로 「필수 변수는 제목·본문에」 검사에서 뺀다(2026-10-07 재영).
 * **Update**: 다른 세션이 원자료에 더한 근무 유형 4종(ed083af)과 급여 항목 표·급여 항목 코드(2b47d56·ad61fe9)가 front okf 에 빠져 있어 [네이밍 규칙](/conventions/naming.md) 「근무 · 출퇴근」「급여」 절을 원자료로 갈음했다.
 * **Update**: `2026-09-30-네이밍-규칙.md`(7e88e65) 의 견본 삭제 반영을 [네이밍 규칙](/conventions/naming.md) 에 옮겼다 — 예시 이름을 실제 DDL 이름(contracts_staff_member_id_idx 등)으로, 「예제는 고치지 않는다」·「listItems 는 그대로」 문장을 「2026-10-07 에 지웠다」로. 견본 `Item` 이 없어진 front 사정도 맞췄다.
 * **Update**: api 견본(items·stock_movements·staff·customers)과 견본 로그인을 지운 결정(2026-10-07 재영)에 맞춰 front 의 `src/app/items/`·`src/app/login/`·`docs/result/architecture.html` 을 지우고 `src/lib/api.ts` 를 호출 틀만 남겼다. 첫 화면은 `/design`. [Whale ERP Frontend](/whale-erp-front.md) 의 Layout·API 절을 맞췄다.
