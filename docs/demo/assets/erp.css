@@ -794,6 +794,9 @@
   .w-\[720px\] {
     width: 720px;
   }
+  .w-\[760px\] {
+    width: 760px;
+  }
   .w-\[780px\] {
     width: 780px;
   }
@@ -1526,6 +1529,9 @@
   }
   .pt-\[14px\] {
     padding-top: 14px;
+  }
+  .pt-\[16px\] {
+    padding-top: 16px;
   }
   .pt-\[18px\] {
     padding-top: 18px;

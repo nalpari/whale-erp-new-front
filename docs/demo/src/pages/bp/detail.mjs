@@ -11,16 +11,21 @@ export function bpDetailBody(A, R, { panel = false } = {}) {
   const offId = x.dialogId();
   const resetId = x.dialogId();
   const sentId = x.dialogId();
+  const histId = x.dialogId();
   const cancel = ui.button("취소", { variant: "off", "data-close": true });
 
   const closeBtn = panel ? ui.button("닫기", { variant: "off", "data-close": true }) : ui.button("닫기", { variant: "off", href: link(R, "bp/index.html") });
-  const head = ui.sectionHead(
-    BP.name,
+  const actionButtons =
     x.dialogTrigger("상태변경", offId, "soft") +
-      f.disabledButton("삭제", "삭제할 수 없습니다 — 로그인 기록이 있고(2026-09-20), 하위 관리자 4명과 등록 점포 11곳이 있습니다. 대신 BP 상태를 미사용으로 바꾸세요.") +
-      ui.slideTrigger("수정", "bp-edit-panel", "soft") +
-      closeBtn,
-  );
+    f.disabledButton("삭제", "삭제할 수 없습니다 — 로그인 기록이 있고(2026-09-20), 하위 관리자 4명과 등록 점포 11곳이 있습니다. 대신 BP 상태를 미사용으로 바꾸세요.") +
+    ui.slideTrigger("수정", "bp-edit-panel", "soft") +
+    x.dialogTrigger("변경 이력", histId, "soft");
+
+  // 패널 모드(464px)에서는 버튼을 한 줄에 다 두면 BP 이름이 밀려 글자 단위로 줄바꿈된다 — 이름은 맨 위에 혼자 두고, 기능 버튼은 맨 아래로 내린다(2026-10-07 피드백).
+  const head = panel
+    ? `<div class="flex items-center justify-between gap-[12px]"><h2 class="text-[18px] font-semibold whitespace-nowrap text-erp-ink">${BP.name}</h2>${closeBtn}</div>`
+    : ui.sectionHead(BP.name, actionButtons + closeBtn);
+  const bottomButtons = panel ? `<div class="flex flex-wrap justify-center gap-[6px] border-t border-erp-panel-line pt-[16px]">${actionButtons}</div>` : "";
 
   const basic = ui.detailTable("BP 마스터 기본정보", [
     ["BP 코드", BP.code],
@@ -83,15 +88,18 @@ export function bpDetailBody(A, R, { panel = false } = {}) {
     `<p>새 초기 비밀번호를 <b class="font-semibold">hayoon@hangang.co.kr</b> 로 보냈습니다. 화면에는 보이지 않습니다. 초기 비밀번호는 1시간 안에 로그인해야 하며, 지나면 로그인 화면의 비밀번호 찾기로 임시 비밀번호를 다시 받습니다.</p>`,
     ui.button("확인", { "data-close": true }),
   );
+  const historyDialog = x
+    .dialog(histId, "변경 이력", `<div class="overflow-x-auto">${history}</div>`, ui.button("닫기", { variant: "off", "data-close": true }))
+    .replace("w-[420px]", "w-[760px] max-h-[calc(100dvh-48px)] overflow-y-auto");
 
   const infoLayout = panel ? `<div class="flex flex-col gap-[24px]">${basic}${biz}</div>` : `<div class="grid grid-cols-2 items-start gap-[24px]">${basic}${biz}</div>`;
-  const historyBlock = panel ? `<div class="overflow-x-auto">${history}</div>` : history;
   return (
     `<div class="flex flex-col gap-[12px]">${head}${infoLayout}</div>` +
-    `<div class="flex flex-col gap-[12px]">${ui.sectionHead("변경 이력")}${historyBlock}</div>` +
+    bottomButtons +
     offDialog +
     resetDialog +
-    sentDialog
+    sentDialog +
+    historyDialog
   );
 }
 
