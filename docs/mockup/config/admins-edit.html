@@ -18,7 +18,7 @@
            권한 그룹은 관리계정ID 가 연결 가맹 마스터인 FA 그룹만(FA000002 · FA000003), 점포는 그 가맹 마스터의 점포(ST000005~008) 안에서만.
          점포 매핑 선택 대상은 수정하는 사람 본인의 관리 점포 범위로 줄인다 — 일부 점포만 맡은 hghr 에게는 직영 4개점만 보인다.
          본인 계정(hghr 가 hghr 를 열 때)은 기본정보만 고친다 — 권한 그룹 · 계정 상태 · 점포 매핑은 읽기 전용이고 다른 사용자가 바꿔야 한다고 알린다 (확정 2026-09-29).
-         계정 상태는 사용 · 미사용 두 값이다. 사유는 받지 않고 선행 조건도 보지 않는다(PL-CUECAY). 미사용으로 저장하면 곧바로 세션이 끊긴다.
+         계정 상태는 사용 · 미사용 두 값이다. 사유는 받지 않고 선행 조건도 보지 않는다(PL-CUECAY). 미사용으로 저장해도 열린 세션은 끊지 않는다.
          가맹 마스터를 미사용으로 저장하면 연결된 가맹 관리자 전부가 미사용으로 바뀐다 — 선택 아래 안내와 저장 전 확인 창으로 알린다.
            함께 멈추는 계정은 아이디를 모두 늘어놓지 않고 첫 계정과 ‘외 N명’으로 보인다 (확정 2026-09-29).
          권한 그룹에는 사용 상태가 없어 그 마스터가 만든 FA 그룹은 그대로 남는다(CONFIG-6 확정).
@@ -427,7 +427,7 @@
                     <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
                     <div class="band__body">
                       <div class="band__title">미사용으로 저장하면 곧바로 로그인과 ERP 접근이 막힙니다</div>
-                      <p class="band__desc">열려 있는 세션도 닫힙니다. 계정 · 점포 매핑 · 이력은 그대로 보존되고, 다시 사용으로 돌리면 기존 비밀번호로 들어옵니다.</p>
+                      <p class="band__desc">열려 있는 세션은 닫지 않습니다. 계정 · 점포 매핑 · 이력은 그대로 보존되고, 다시 사용으로 돌리면 기존 비밀번호로 들어옵니다.</p>
                     </div>
                   </div>
                   <div class="band band--warn" data-show="fmoff" hidden>
@@ -603,7 +603,7 @@
                     <dt>함께 미사용</dt><dd>가맹 관리자 <span class="mono">moriyn</span> 한지수 외 1명 <span class="subtle">· 아이디는 첫 계정만 보입니다</span></dd>
                     <dt>권한 그룹</dt><dd>모리 점장 <span class="mono subtle">FA000002</span> · 모리 매니저 <span class="mono subtle">FA000003</span> <span class="subtle">· 그대로 남습니다</span></dd>
                   </dl>
-                  <p style="margin: 0; font-size: 13px">세 계정의 세션이 모두 닫히고 로그인이 막힙니다. 점포 상태와 점포 업무는 그대로이며, 전체 점포를 맡은 BP 마스터 · BP 관리자가 이어서 관리합니다.</p>
+                  <p style="margin: 0; font-size: 13px">세 계정의 로그인이 막힙니다. 열려 있는 세션은 닫지 않습니다. 점포 상태와 점포 업무는 그대로이며, 전체 점포를 맡은 BP 마스터 · BP 관리자가 이어서 관리합니다.</p>
                   <p class="subtle" style="margin: 0; font-size: 13px">나중에 박서윤을 사용으로 돌려도 가맹 관리자 두 명은 미사용으로 남고, 박서윤이 필요한 계정만 하나씩 다시 켭니다.</p>
                   <div class="inline" style="justify-content: flex-end">
                     <button class="btn btn--ghost" type="button" data-close>취소</button>

@@ -12,7 +12,7 @@ export default ({ A, R }) => {
       ui.textField({ type: "password", autocomplete: "new-password" }) + p.help("영문·숫자·특수문자 각 1자 이상 8~20자 · 아이디와 달라야 함 · 받은 비밀번호와 달라야 함"),
     ) +
     ui.field("새 비밀번호 확인", ui.textField({ type: "password", autocomplete: "new-password" })) +
-    p.note("현재 비밀번호는 묻지 않습니다. 바꾸면 다른 기기의 로그인은 모두 끝나고 이 기기는 그대로 이어집니다.") +
+    p.note("현재 비밀번호는 묻지 않습니다. 바꿔도 이 기기와 다른 기기의 로그인은 모두 그대로 이어집니다.") +
     `<div class="flex items-center justify-between text-[14px]">${p.quietLink("로그아웃", link(R, "home/index.html"))}${ui.button("변경", { href: link(R, "home/signed-in.html") })}</div>`;
   return { title: "새 비밀번호 설정", html: p.authPage(A, R, { card }) };
 };
