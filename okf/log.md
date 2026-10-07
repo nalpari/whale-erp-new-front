@@ -2,6 +2,7 @@
 
 ## 2026-10-07
 
+* **Add**: `docs/mockup/notify/templates.html`·`templates-edit.html` 의 알림 템플릿 관리(F-TZPHZT)를 [운영 알림](/notify.md) 에 넣었다 — 화면 둘, 정책 다섯 줄, 미정 쟁점 NOTIFY-4~7.
 * **Update**: [로그인](/auth.md) 「로그인 · 세션」과 `docs/mockup/auth/overview.html` 정책에 갱신 거절 규칙을 더했다 — 갱신 토큰으로 세션을 연장할 때 미사용·삭제 계정이면 거절해, 끊지 않은 세션도 최대 1시간 안에 끝난다.
 * **Update**: 로그인 중인 세션을 강제로 끊는 정책을 없앴다 — 관리자의 비밀번호 초기화·미사용 전환·계정 삭제와 본인의 MY PAGE 비밀번호 변경·강제 비밀번호 변경 모두 열린 세션과 다른 기기 로그인을 그대로 둔다. [플랫폼 시스템 관리](/system.md)(미사용·삭제), [BP 환경설정](/config.md)(초기화·미사용), [MY PAGE](/mypage.md)(`S-PTWREE`), [로그인](/auth.md)(`S-VFGQLI`) 과 목업·화면 정의서·데모·유저 플로우(bp-master·admin-account·mypage·auth-account)를 맞췄다. 세션이 끝나는 것은 로그아웃과 만료뿐이다.
 * **Update**: `docs/mockup/bp/detail.html`·`overview.html` 의 BP 미사용 전환 정책 변경을 [BP 마스터 계정 관리](/bp.md) 에 옮겼다 — 관리자 계정 전부를 미사용으로 바꿔도 로그인 중인 세션은 끊지 않는다(`S-CQGGZS`). 비밀번호를 그대로 두는 것은 같다.

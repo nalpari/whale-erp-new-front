@@ -30,7 +30,7 @@
               <div class="band__title">놓치면 안 되는 세 가지를 모은다</div>
               <p class="band__desc">
                 문의사항·도입문의의 <b>접수와 처리 상태 변경</b>, 직원의 <b>근로계약 날인·거부</b>.
-                1차 범위는 웹 알림함과 읽음 상태까지이고, 문자와 모바일 푸시 발송은 들어가지 않는다.
+                1차 범위는 웹 알림함과 읽음 상태, 그리고 플랫폼 운영자가 채널별 문구를 고치는 <b>알림 템플릿 관리</b>까지다.
               </p>
             </div>
             <div class="band__act">
@@ -42,7 +42,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">화면</h2>
-              <span class="badge badge--quiet">1개</span>
+              <span class="badge badge--quiet">3개</span>
               <div class="panel__end">
                 <span class="filters__count mono">R-NKFSGI · notify/</span>
               </div>
@@ -57,6 +57,28 @@
                 <span class="mk-card__end">
                   <span class="badge badge--quiet">S-GDUNIT</span>
                   <span class="badge badge--ok">확정 2건</span>
+                </span>
+              </a>
+              <a class="mk-card" href="templates.html">
+                <span class="mk-card__route">/platform/notification-templates</span>
+                <span class="mk-card__name">알림 템플릿 관리</span>
+                <span class="mk-card__desc">
+                  채널 탭 넷(운영 알림·앱 푸시·메일·알림톡)에서 알림 유형과 발송 용도별 문구를 본다. 플랫폼 운영자 전용.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--quiet">F-TZPHZT</span>
+                  <span class="badge badge--preview">신규</span>
+                </span>
+              </a>
+              <a class="mk-card" href="templates-edit.html">
+                <span class="mk-card__route">/platform/notification-templates/[id]</span>
+                <span class="mk-card__name">알림 템플릿 수정</span>
+                <span class="mk-card__desc">
+                  제목·본문과 변수, 채널 모양 미리보기, 변경 이력, 기본 문구로 되돌리기. 알림톡은 여기서 고치지 않는다.
+                </span>
+                <span class="mk-card__end">
+                  <span class="badge badge--quiet">S-QQPYIU</span>
+                  <span class="badge badge--preview">신규</span>
                 </span>
               </a>
               <div class="mk-card is-na">
@@ -79,7 +101,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">정책</h2>
-              <span class="badge badge--quiet">14줄</span>
+              <span class="badge badge--quiet">19줄</span>
             </div>
             <div class="grid grid--2" style="align-items: start">
               <div class="panel">
@@ -120,13 +142,26 @@
                 <li><span class="pol__t">직원에게 가는 앱 푸시와 알림톡은 이 영역이 아니라 직원 알림 기능의 것이다.</span><span class="pol__ref">F-SYOZEO</span></li>
                 </ul>
               </div>
+              <div class="panel">
+                <div class="panel__head">
+                  <h3 class="t-h3">알림 템플릿</h3>
+                  <span class="badge badge--quiet">5</span>
+                </div>
+                <ul class="pol">
+                <li><span class="pol__t">템플릿은 <b>알림 유형(또는 발송 용도) × 채널</b> 한 칸에 하나다. 채널은 운영 알림·앱 푸시·메일·알림톡 넷이다.</span><span class="pol__ref">F-TZPHZT</span></li>
+                <li><span class="pol__t">플랫폼 마스터·플랫폼 관리자만 고친다. 고치는 것은 제목과 본문뿐이고 받는 사람은 알림 유형이 정한다.</span><span class="pol__ref">S-QQPYIU</span></li>
+                <li><span class="pol__t">변수는 알림 유형마다 정해져 있고, 목록에 없는 변수를 쓰면 저장하지 않는다. 저장할 때마다 바뀌기 전 문구를 변경 이력에 남기고 <b>기본 문구로 되돌리기</b>를 둔다.</span><span class="pol__ref">S-QQPYIU</span></li>
+                <li><span class="pol__t">앱 푸시 탭은 직원 근무 앱 알림함에 쌓이는 문구까지 맡는다. TO-DO 배정은 푸시 없이 알림함에만 쌓인다.</span><span class="pol__ref">S-QQPYIU · 앱 NOTI-1</span></li>
+                <li><span class="pol__t">알림톡은 카카오 검수 문구와 같아야 해서 문구를 고치지 않는다. 바꾸려면 카카오 재승인과 배포가 필요하고, 화면에서는 승인 상태만 본다.</span><span class="pol__ref">S-HIBBDL</span></li>
+                </ul>
+              </div>
             </div>
           </section>
 
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
-              <span class="badge badge--preview">3건 · 확정 3</span>
+              <span class="badge badge--preview">7건 · 확정 3</span>
             </div>
 
             <div class="gap is-decided">
@@ -208,6 +243,42 @@
 발송 이력만 따로 보는 화면은 두지 않는다. 관리자가 실패를 알아야 하는 자리가 알림함 하나로 모인다.
                 직원 근무 앱의 <b>NOTI-4</b> 도 같은 답으로 닫혔다. 앱 알림함도 한 줄에 발송 결과를 담는다.
               </p>
+            </div>
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">NOTIFY-4</span>
+                <b>앱 푸시 글자 수를 얼마로 막을 것인가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-QQPYIU</span>
+              </div>
+              <p class="gap__note" style="margin: 0">후보는 제목 40·본문 100, 제목 30·본문 60, 제한 없이 미리보기만. 수정 화면은 첫째를 가정해 글자 수를 센다.</p>
+            </div>
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">NOTIFY-5</span>
+                <b>메일 본문을 어떻게 편집할 것인가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-QQPYIU</span>
+              </div>
+              <p class="gap__note" style="margin: 0">추천은 일반 글에 공통 메일 틀을 씌우는 것이다. 간단 서식 편집기와 HTML 직접 입력이 다른 후보다.</p>
+            </div>
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">NOTIFY-6</span>
+                <b>알림톡 승인 상태를 어떻게 알 것인가</b>
+                <span class="gap__open">미정</span>
+                <span class="gap__ref">S-HIBBDL</span>
+              </div>
+              <p class="gap__note" style="margin: 0">추천은 운영자가 카카오 검수 결과를 보고 직접 기록하는 것이다. 다른 후보는 비즈뿌리오 API 로 읽어 오는 것이다.</p>
+            </div>
+            <div class="gap is-open">
+              <div class="gap__head">
+                <span class="gap__no">NOTIFY-7</span>
+                <b>알림 템플릿 관리를 어느 메뉴 아래에 둘 것인가</b>
+                <span class="gap__open">미정 · 1팀 협의</span>
+                <span class="gap__ref">F-TZPHZT</span>
+              </div>
+              <p class="gap__note" style="margin: 0">플랫폼 시스템관리(1팀) 아래로 갈지 1팀과 협의 중이다. 정해지기 전까지 목업은 Platform 아래 3팀 메뉴로 따로 세웠다.</p>
             </div>
           </section>
         </div>

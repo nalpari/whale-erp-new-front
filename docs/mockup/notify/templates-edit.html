@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>알림 템플릿 수정 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="templates" data-sub="notify/templates-edit.html">
+    <!-- 알림 템플릿 수정 · /platform/notification-templates/[id] · S-QQPYIU
+         템플릿 하나는 알림 유형(또는 발송 용도) × 채널 한 칸이다.
+         맨 위 탭은 목업용 예시 전환이다. 실제로는 목록에서 고른 템플릿 하나만 열린다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <a class="iconbtn" href="templates.html" aria-label="알림 템플릿 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
+          <h1 class="t-h1">알림 템플릿 수정</h1>
+          <div class="titlebar__end">
+            <span class="filters__count mono">S-QQPYIU · /platform/notification-templates/[id]</span>
+            <button class="btn btn--secondary btn--sm" type="button" data-tip="처음 배포된 문구로 돌린다. 되돌린 것도 변경 이력에 한 줄로 남는다.">
+              <span data-icon="refresh" data-icon-size="14"></span>기본 문구로 되돌리기
+            </button>
+            <button class="btn btn--primary btn--sm" type="button">저장</button>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="tabs" data-tabs="example">
+            <button data-tab="mail" aria-selected="true">예 · 근로계약 거부 · 메일</button>
+            <button data-tab="push" aria-selected="false">예 · 근로계약서 발송 · 앱 푸시</button>
+            <button data-tab="inbox" aria-selected="false">예 · TO-DO 배정 · 알림함에만</button>
+          </div>
+
+          <div id="example">
+            <!-- 메일 -->
+            <div data-panel="mail">
+              <div class="grid grid--7-5">
+                <section class="panel" data-tpl>
+                  <div class="panel__head">
+                    <h2 class="t-h2">근로계약 거부</h2>
+                    <span class="badge badge--quiet">메일</span>
+                    <span class="badge badge--quiet">받는 사람 · 소속 범위 사업자 관리자</span>
+                  </div>
+                  <div class="panel__body">
+                    <div class="field">
+                      <label for="m-title">제목</label>
+                      <input class="input" id="m-title" value="[WHALE ERP] #{직원이름} 님이 근로계약서를 거부했습니다" />
+                    </div>
+                    <div class="field">
+                      <label for="m-body">본문</label>
+                      <textarea class="textarea" id="m-body" rows="7">#{직원이름} 님이 #{근무지} 근로계약서를 거부했습니다.
+
+거부 사유: #{거부사유}
+
+조건을 고쳐 새 계약을 만들거나 그대로 재발송할 수 있습니다.</textarea>
+                      <span class="help">일반 글로 쓴다. 머리·꼬리와 버튼은 공통 메일 틀이 붙인다(NOTIFY-5).</span>
+                    </div>
+                    <div class="field">
+                      <label>변수 <span class="subtle">· 누르면 본문 커서 자리에 들어간다</span></label>
+                      <div class="tpl-var">
+                        <button class="tbtn" type="button" data-var="#{직원이름}">직원이름</button>
+                        <button class="tbtn" type="button" data-var="#{근무지}">근무지</button>
+                        <button class="tbtn" type="button" data-var="#{거부사유}">거부사유</button>
+                        <button class="tbtn" type="button" data-var="#{계약링크}">계약링크</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="panel__note">
+                    변수는 알림 유형마다 정해져 있고 운영자가 새로 만들지 않는다. 목록에 없는 <b>#{…}</b> 를 쓰면 저장하지 않는다.
+                    거부 사유는 직원이 남기지 않을 수 있어 비면 「사유를 남기지 않았습니다」가 들어간다.
+                  </div>
+                </section>
+
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">미리보기</h2>
+                    <span class="badge badge--quiet">예시 값으로 채움</span>
+                  </div>
+                  <div class="panel__body">
+                    <div class="tpl-mail">
+                      <div class="tpl-mail__head">[WHALE ERP] 유하람 님이 근로계약서를 거부했습니다</div>
+                      <div class="tpl-mail__body" style="white-space: pre-line">유하람 님이 모리커피 연남점 근로계약서를 거부했습니다.
+
+거부 사유: 근무 시작 시각이 면접 때 이야기한 것과 다릅니다.
+
+조건을 고쳐 새 계약을 만들거나 그대로 재발송할 수 있습니다.</div>
+                      <div class="tpl-mail__body" style="padding-top: 0">
+                        <span class="btn btn--primary btn--sm">계약 열기</span>
+                      </div>
+                      <div class="tpl-mail__foot">WHALE ERP 운영 알림 · 이 메일은 발신 전용입니다</div>
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              <div class="gap is-open">
+                <div class="gap__head">
+                  <span class="gap__no">NOTIFY-5</span>
+                  <b>메일 본문을 어떻게 편집할 것인가</b>
+                  <span class="gap__open">미정</span>
+                  <span class="gap__ref">S-QQPYIU</span>
+                </div>
+                <div class="gap__opts">
+                  <div class="gap__opt" data-side="a">
+                    <div class="gap__label">A · 일반 글 + 공통 메일 틀 · 추천 · 지금 목업</div>
+                    <p>본문은 글만 쓰고 머리·꼬리·버튼은 틀이 붙인다.</p>
+                  </div>
+                  <div class="gap__opt" data-side="b">
+                    <div class="gap__label">B · 간단 서식 편집기</div>
+                    <p>굵게·링크 정도의 서식을 운영자가 넣는다.</p>
+                  </div>
+                  <div class="gap__opt" data-side="c">
+                    <div class="gap__label">C · HTML 직접</div>
+                    <p>모양을 마음대로 바꾸지만 깨질 수 있다.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 앱 푸시 -->
+            <div data-panel="push" hidden>
+              <div class="grid grid--7-5">
+                <section class="panel" data-tpl>
+                  <div class="panel__head">
+                    <h2 class="t-h2">근로계약서 발송</h2>
+                    <span class="badge badge--quiet">앱 푸시</span>
+                    <span class="badge badge--quiet">받는 사람 · 직원</span>
+                  </div>
+                  <div class="panel__body">
+                    <div class="field">
+                      <label for="p-title">제목 <span class="subtle mono" data-count="p-title" data-max="40"></span></label>
+                      <input class="input" id="p-title" value="근로계약서가 도착했습니다" />
+                    </div>
+                    <div class="field">
+                      <label for="p-body">본문 <span class="subtle mono" data-count="p-body" data-max="100"></span></label>
+                      <textarea class="textarea" id="p-body" rows="3">#{근무지} 근로계약서를 확인하고 날인해 주세요. 날인 기한은 #{날인기한}까지입니다.</textarea>
+                      <span class="help">글자 수 제한은 아직 정하지 않았다. 지금은 제목 40·본문 100 을 가정해 센다(NOTIFY-4).</span>
+                    </div>
+                    <div class="field">
+                      <label>변수 <span class="subtle">· 누르면 본문 커서 자리에 들어간다</span></label>
+                      <div class="tpl-var">
+                        <button class="tbtn" type="button" data-var="#{근무지}">근무지</button>
+                        <button class="tbtn" type="button" data-var="#{날인기한}">날인기한</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="panel__note">
+                    같은 제목·본문이 잠금 화면 푸시로도, 직원 근무 앱 알림함 한 줄로도 쓰인다. 미리보기에 두 모양을 함께 둔다.
+                  </div>
+                </section>
+
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">미리보기</h2>
+                    <span class="badge badge--quiet">예시 값으로 채움</span>
+                  </div>
+                  <div class="panel__body">
+                    <div class="eyebrow">잠금 화면 푸시</div>
+                    <div class="tpl-push">
+                      <span class="tpl-push__ic" aria-hidden="true"></span>
+                      <span class="tpl-push__title">근로계약서가 도착했습니다</span>
+                      <span class="tpl-push__body">모리커피 연남점 근로계약서를 확인하고 날인해 주세요. 날인 기한은 10-30까지입니다.</span>
+                    </div>
+                    <div class="eyebrow" style="margin-top: var(--s-5)">직원 근무 앱 알림함 한 줄</div>
+                    <div class="tpl-mail">
+                      <div class="tpl-mail__body">
+                        <b>근로계약서가 도착했습니다</b>
+                        <div class="subtle" style="font-size: 12px">모리커피 연남점 · 10-07 09:41</div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              <div class="gap is-open">
+                <div class="gap__head">
+                  <span class="gap__no">NOTIFY-4</span>
+                  <b>앱 푸시 글자 수를 얼마로 막을 것인가</b>
+                  <span class="gap__open">미정</span>
+                  <span class="gap__ref">S-QQPYIU</span>
+                </div>
+                <div class="gap__opts">
+                  <div class="gap__opt" data-side="a">
+                    <div class="gap__label">A · 제목 40 · 본문 100 · 지금 목업</div>
+                    <p>넘으면 저장하지 않는다.</p>
+                  </div>
+                  <div class="gap__opt" data-side="b">
+                    <div class="gap__label">B · 제목 30 · 본문 60</div>
+                    <p>잠금 화면에서 잘리지 않는 길이에 맞춘다.</p>
+                  </div>
+                  <div class="gap__opt" data-side="c">
+                    <div class="gap__label">C · 제한 없이 미리보기만</div>
+                    <p>잘리는 모양을 보고 운영자가 줄인다.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 알림함에만 -->
+            <div data-panel="inbox" hidden>
+              <div class="grid grid--7-5">
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">TO-DO 배정</h2>
+                    <span class="badge badge--quiet">알림함에만, 푸시 없음</span>
+                    <span class="badge badge--quiet">받는 사람 · 직원</span>
+                  </div>
+                  <div class="panel__body">
+                    <div class="field">
+                      <label for="t-title">제목</label>
+                      <input class="input" id="t-title" value="새 TO-DO 가 배정되었습니다" />
+                    </div>
+                    <div class="field">
+                      <label for="t-body">본문</label>
+                      <textarea class="textarea" id="t-body" rows="2">#{TO-DO제목} · #{수행예정일시}</textarea>
+                    </div>
+                  </div>
+                  <div class="panel__note">
+                    TO-DO 배정은 앱 푸시를 보내지 않는다(앱 NOTI-1). 직원 근무 앱 알림함에만 쌓이므로 미리보기도 알림함 줄 모양만 보인다.
+                  </div>
+                </section>
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">미리보기</h2>
+                  </div>
+                  <div class="panel__body">
+                    <div class="eyebrow">직원 근무 앱 알림함 한 줄</div>
+                    <div class="tpl-mail">
+                      <div class="tpl-mail__body">
+                        <b>새 TO-DO 가 배정되었습니다</b>
+                        <div class="subtle" style="font-size: 12px">마감 정산표 확인 · 10-08 18:00</div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+
+          <section class="panel">
+            <div class="panel__head">
+              <h2 class="t-h2">변경 이력</h2>
+              <span class="badge badge--quiet">근로계약 거부 · 메일 · 2건</span>
+            </div>
+            <div class="tblwrap">
+              <table class="tbl tbl--dense">
+                <thead>
+                  <tr>
+                    <th scope="col">일시</th>
+                    <th scope="col">수정자</th>
+                    <th scope="col">바뀐 것</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="mono">10-06 16:20</td>
+                    <td>이서준</td>
+                    <td>본문 · 마지막 줄 「조건을 고쳐 새 계약을 만들거나 그대로 재발송할 수 있습니다」를 더함</td>
+                  </tr>
+                  <tr>
+                    <td class="mono">10-01 09:00</td>
+                    <td class="subtle">시스템</td>
+                    <td>기본 문구로 배포</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="panel__note">
+              저장할 때마다 바뀌기 전 제목·본문을 통째로 남긴다. 기본 문구로 되돌린 것도 한 줄로 쌓인다. 이력은 지우지 않는다.
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+    <script>
+      /* 목업 동작 둘 — 변수 단추를 누르면 그 패널 본문 커서 자리에 #{…} 를 넣고,
+         입력하는 대로 글자 수를 센다. 미리보기는 예시 값으로 채운 고정 문구다. */
+      document.querySelectorAll("[data-var]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var box = b.closest("[data-tpl]").querySelector("textarea");
+          var at = box.selectionStart, v = b.dataset.var;
+          box.value = box.value.slice(0, at) + v + box.value.slice(box.selectionEnd);
+          box.focus();
+          box.selectionStart = box.selectionEnd = at + v.length;
+          box.dispatchEvent(new Event("input"));
+        });
+      });
+      document.querySelectorAll("[data-count]").forEach(function (c) {
+        var f = document.getElementById(c.dataset.count), max = +c.dataset.max;
+        function show() {
+          c.textContent = f.value.length + " / " + max;
+          c.style.color = f.value.length > max ? "var(--risk-text)" : "";
+        }
+        f.addEventListener("input", show);
+        show();
+      });
+    </script>
+  </body>
+</html>

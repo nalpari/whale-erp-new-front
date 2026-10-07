@@ -4959,3 +4959,54 @@ a.tile:hover {
   display: table;
   margin-top: var(--s-1);
 }
+
+/* --- 알림 템플릿 미리보기 (notify/templates-edit) -------------------------
+   채널마다 받는 사람 눈에 보이는 모양을 흉내 낸다. 앱 푸시는 잠금 화면 알림 한 장,
+   메일은 공통 메일 틀(머리·본문·버튼·꼬리). 새 색은 쓰지 않는다. */
+.tpl-push {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: var(--s-1) var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 14px;
+  background: var(--surface-strong);
+}
+.tpl-push__ic {
+  grid-row: span 2;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: var(--ink);
+}
+.tpl-push__title { font-weight: 600; color: var(--ink); }
+.tpl-push__body { color: var(--body); line-height: 1.5; }
+.tpl-mail {
+  border: 1px solid var(--hairline-strong);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface-card);
+}
+.tpl-mail__head {
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--hairline);
+  font-weight: 600;
+  color: var(--ink);
+}
+.tpl-mail__body {
+  padding: var(--s-4);
+  color: var(--body);
+  line-height: 1.7;
+}
+.tpl-mail__foot {
+  padding: var(--s-3) var(--s-4);
+  border-top: 1px solid var(--hairline);
+  background: var(--canvas-soft);
+  color: var(--muted-tert);
+  font-size: 12px;
+}
+.tpl-var {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}

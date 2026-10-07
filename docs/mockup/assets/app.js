@@ -320,6 +320,15 @@
             { text: "도입문의 목록", href: "support/community.html#leads", route: "…/leads" },
             { text: "도입문의 상세", href: "support/lead-detail.html", route: "…/leads/[id]" }
           ]}
+        ]},
+        /* 알림 템플릿 관리(F-TZPHZT)는 플랫폼 운영자 전용이다. 시스템관리(1팀) 아래로 갈지는
+           NOTIFY-7 에서 1팀과 정한다. 정해지기 전까지 3팀 메뉴로 따로 세운다. */
+        { key: "templates", text: "알림 템플릿 관리", team: "3팀", items: [
+          { text: "영역 개요", href: "notify/overview.html", mock: 1 },
+          { key: "tpl-list", text: "알림 템플릿", href: "notify/templates.html", sub: [
+            { text: "템플릿 목록", href: "notify/templates.html", route: "/platform/notification-templates" },
+            { text: "템플릿 수정", href: "notify/templates-edit.html", route: "…/notification-templates/[id]" }
+          ]}
         ]}
       ]
     }

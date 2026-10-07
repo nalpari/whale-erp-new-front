@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>알림 템플릿 관리 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="templates" data-sub="notify/templates.html">
+    <!-- 알림 템플릿 관리 · /platform/notification-templates · F-TZPHZT
+         S-QQPYIU(운영 알림·앱 푸시·메일 템플릿 수정) · S-HIBBDL(알림톡 템플릿 관리)
+         플랫폼 운영자만 들어온다. 알림 유형(또는 발송 용도)과 채널 한 칸마다 템플릿이 하나다.
+         알림톡은 카카오 검수 문구와 같아야 해서 여기서 고치지 않고 승인 상태만 본다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <h1 class="t-h1">알림 템플릿 관리</h1>
+          <span class="badge badge--quiet">플랫폼 운영자 전용</span>
+          <div class="titlebar__end">
+            <span class="filters__count mono">F-TZPHZT · /platform/notification-templates</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="gap is-open">
+            <div class="gap__head">
+              <span class="gap__no">NOTIFY-7</span>
+              <b>이 화면을 어느 메뉴 아래에 둘 것인가</b>
+              <span class="gap__open">미정 · 1팀 협의</span>
+              <span class="gap__ref">F-TZPHZT</span>
+            </div>
+            <div class="gap__opts">
+              <div class="gap__opt" data-side="a">
+                <div class="gap__label">A · 플랫폼 시스템관리 아래</div>
+                <p>공통코드·메뉴와 나란히 둔다. 메뉴는 1팀 영역이다.</p>
+              </div>
+              <div class="gap__opt" data-side="b">
+                <div class="gap__label">B · 따로 한 줄 · 지금 목업</div>
+                <p>Platform 아래 3팀 메뉴로 따로 세운다.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="tabs" data-tabs="channel">
+            <button data-tab="ops" aria-selected="true">운영 알림 <span class="count">10</span></button>
+            <button data-tab="push" aria-selected="false">앱 푸시 <span class="count">4</span></button>
+            <button data-tab="mail" aria-selected="false">메일 <span class="count">14</span></button>
+            <button data-tab="talk" aria-selected="false">알림톡 <span class="count">1</span></button>
+          </div>
+
+          <div id="channel">
+            <!-- 운영 알림 : 관리자 웹 알림함에 쌓이는 한 줄 -->
+            <div data-panel="ops">
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">운영 알림 템플릿</h2>
+                  <span class="badge badge--quiet">알림 유형 10</span>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl">
+                    <thead>
+                      <tr>
+                        <th scope="col">알림 유형</th>
+                        <th scope="col">받는 사람</th>
+                        <th scope="col">제목</th>
+                        <th scope="col">최근 수정</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">문의사항 접수</a></td>
+                        <td>플랫폼 마스터·관리자</td>
+                        <td>새 문의사항이 접수되었습니다</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">도입문의 접수</a></td>
+                        <td>플랫폼 마스터·관리자</td>
+                        <td>새 도입문의가 접수되었습니다</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">문의사항 답변</a></td>
+                        <td>문의를 등록한 관리자</td>
+                        <td>문의에 답변이 등록되었습니다</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">도입문의 처리 상태 변경</a></td>
+                        <td>플랫폼 마스터·관리자</td>
+                        <td>도입문의가 <span class="mono">#{상태}</span>(으)로 바뀌었습니다</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">근로계약 날인</a></td>
+                        <td>소속 범위 사업자 관리자</td>
+                        <td><span class="mono">#{직원이름}</span> 님이 근로계약서에 날인했습니다</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">근로계약 거부</a></td>
+                        <td>소속 범위 사업자 관리자</td>
+                        <td><span class="mono">#{직원이름}</span> 님이 근로계약서를 거부했습니다</td>
+                        <td><span class="mono">10-06 16:20</span> <span class="subtle">이서준</span></td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">근로계약 만료</a></td>
+                        <td>소속 범위 사업자 관리자</td>
+                        <td><span class="mono">#{직원이름}</span> 님의 계약이 만료되었습니다</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">가입 연결 보류</a></td>
+                        <td>근로계약서 초안을 쓴 관리자</td>
+                        <td><span class="mono">#{직원이름}</span> 님의 가입 연결이 보류되었습니다</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">소속 추가 확인 거절</a></td>
+                        <td>근로계약서 초안을 쓴 관리자</td>
+                        <td><span class="mono">#{직원이름}</span> 님이 소속 추가를 거절했습니다</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">계약 갱신 예정</a></td>
+                        <td>소속 범위 사업자 관리자</td>
+                        <td><span class="mono">#{직원이름}</span> 님의 계약이 30일 뒤 끝납니다</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__note">
+                  받는 사람은 알림 유형이 정하고 이 화면에서 바꾸지 않는다. 고치는 것은 <b>제목과 본문</b>뿐이다.
+                  한 번도 고치지 않은 템플릿은 최근 수정 자리에 <b>기본 문구</b>가 선다.
+                </div>
+              </div>
+            </div>
+
+            <!-- 앱 푸시 : 직원 근무 앱으로 가는 알림 -->
+            <div data-panel="push" hidden>
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">앱 푸시 · 직원 알림함 템플릿</h2>
+                  <span class="badge badge--quiet">알림 유형 4</span>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl">
+                    <thead>
+                      <tr>
+                        <th scope="col">알림 유형</th>
+                        <th scope="col">받는 사람</th>
+                        <th scope="col">제목</th>
+                        <th scope="col">최근 수정</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html#push">근로계약서 발송</a></td>
+                        <td>직원</td>
+                        <td>근로계약서가 도착했습니다</td>
+                        <td><span class="mono">10-07 09:41</span> <span class="subtle">김하린</span></td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html#push">근무스케줄 주요 변경</a></td>
+                        <td>직원</td>
+                        <td>근무스케줄이 바뀌었습니다</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html#push">TO-DO 배정</a> <span class="badge badge--quiet">알림함에만, 푸시 없음</span></td>
+                        <td>직원</td>
+                        <td>새 TO-DO 가 배정되었습니다</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html#push">급여명세서 발송</a></td>
+                        <td>직원</td>
+                        <td><span class="mono">#{지급월}</span> 급여명세서가 도착했습니다</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__note">
+                  이 탭은 앱 푸시와 함께 <b>직원 근무 앱 알림함</b>에 쌓이는 문구까지 맡는다. 같은 제목·본문이 푸시로도, 알림함 한 줄로도 쓰인다.
+                  <b>TO-DO 배정</b>은 앱 푸시를 보내지 않는다(앱 NOTI-1). 알림함에만 쌓이므로 수정 화면의 미리보기도 알림함 줄 모양만 보인다.
+                </div>
+              </div>
+            </div>
+
+            <!-- 메일 : 운영 알림의 메일과 발송 용도 메일 -->
+            <div data-panel="mail" hidden>
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">메일 템플릿</h2>
+                  <span class="badge badge--quiet">알림 유형 10 · 발송 용도 4</span>
+                </div>
+                <div class="tblwrap" data-pager="14">
+                  <table class="tbl">
+                    <thead>
+                      <tr>
+                        <th scope="col">알림 유형 · 발송 용도</th>
+                        <th scope="col">받는 사람</th>
+                        <th scope="col">제목</th>
+                        <th scope="col">최근 수정</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">비밀번호 찾기 핀</a> <span class="badge badge--quiet">발송 용도</span></td>
+                        <td>본인</td>
+                        <td>[WHALE ERP] 비밀번호 재설정 인증번호</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">관리자 초기화 재설정 링크</a> <span class="badge badge--quiet">발송 용도</span></td>
+                        <td>직원</td>
+                        <td>[WHALE ERP] 비밀번호를 다시 정해 주세요</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">로그인 이메일 변경 핀</a> <span class="badge badge--quiet">발송 용도</span></td>
+                        <td>본인</td>
+                        <td>[WHALE ERP] 로그인 이메일 변경 인증번호</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">도입문의 접수 확인</a> <span class="badge badge--quiet">발송 용도</span></td>
+                        <td>도입문의를 남긴 사람</td>
+                        <td>[WHALE ERP] 도입문의를 받았습니다</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">근로계약 거부</a></td>
+                        <td>소속 범위 사업자 관리자</td>
+                        <td>[WHALE ERP] <span class="mono">#{직원이름}</span> 님이 근로계약서를 거부했습니다</td>
+                        <td><span class="mono">10-06 16:20</span> <span class="subtle">이서준</span></td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">근로계약 날인</a></td>
+                        <td>소속 범위 사업자 관리자</td>
+                        <td>[WHALE ERP] <span class="mono">#{직원이름}</span> 님이 근로계약서에 날인했습니다</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__note">
+                  운영 알림은 알림함과 메일로 함께 나가므로 알림 유형 10 이 여기에도 한 줄씩 있다. 같은 사건이라도 채널마다 템플릿이 따로라 메일 제목만 고칠 수 있다.
+                  메일 제목은 열지 않고도 어느 알림인지 알 수 있어야 해서 머리에 <b>[WHALE ERP]</b> 를 붙인다. 목록은 페이지로 나누고, 여기에는 여섯 줄만 그렸다.
+                </div>
+              </div>
+            </div>
+
+            <!-- 알림톡 : 카카오 검수 문구라 읽기만 한다 -->
+            <div data-panel="talk" hidden>
+              <div class="band band--warn">
+                <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
+                <div class="band__body">
+                  <div class="band__title">알림톡 문구는 이 화면에서 고치지 않습니다</div>
+                  <p class="band__desc">
+                    카카오가 검수해 승인한 문구와 글자 하나까지 같아야 발송됩니다. 문구를 바꾸려면 카카오 재승인을 받고 배포해야 합니다.
+                  </p>
+                </div>
+              </div>
+
+              <div class="grid grid--7-5">
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">등록 템플릿</h2>
+                    <span class="badge badge--quiet">1</span>
+                  </div>
+                  <div class="tblwrap">
+                    <table class="tbl">
+                      <thead>
+                        <tr>
+                          <th scope="col">발송 용도</th>
+                          <th scope="col">카카오 템플릿 코드</th>
+                          <th scope="col">승인 상태</th>
+                          <th scope="col">기록</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td class="k">가입 초대</td>
+                          <td class="mono">WHALE_INVITE_01</td>
+                          <td><span class="badge badge--ok">승인</span></td>
+                          <td><span class="mono">09-30</span> <span class="subtle">이서준</span></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="panel__note">
+                    지금 알림톡으로 나가는 것은 <b>가입 초대</b> 하나로 그렸다. 휴대전화번호로만 닿는 사람이라서다.
+                    다른 알림 유형이나 발송 용도도 알림톡으로 보내는지는 기획 세션에 묻는다.
+                  </div>
+                </section>
+
+                <section class="panel">
+                  <div class="panel__head">
+                    <h2 class="t-h2">가입 초대</h2>
+                    <span class="badge badge--ok">승인</span>
+                  </div>
+                  <div class="panel__body">
+                    <dl class="kv">
+                      <dt>템플릿 코드</dt>
+                      <dd class="mono">WHALE_INVITE_01</dd>
+                      <dt>발신 프로필</dt>
+                      <dd>WHALE ERP</dd>
+                      <dt>문구</dt>
+                      <dd style="white-space: pre-line"><span class="mono">#{근무지}</span>에서 근로계약서를 보내려고 합니다.
+아래 링크로 WHALE ERP 직원 근무 앱에 가입해 주세요.
+링크는 30일 동안 쓸 수 있습니다.</dd>
+                      <dt>버튼</dt>
+                      <dd>가입하기 <span class="subtle">· 초대 토큰 링크</span></dd>
+                    </dl>
+                  </div>
+                  <div class="panel__note">
+                    읽기 전용이다. 승인 상태와 기록만 고친다(NOTIFY-6).
+                  </div>
+                </section>
+              </div>
+
+              <div class="gap is-open">
+                <div class="gap__head">
+                  <span class="gap__no">NOTIFY-6</span>
+                  <b>알림톡 승인 상태를 어떻게 알 것인가</b>
+                  <span class="gap__open">미정</span>
+                  <span class="gap__ref">S-HIBBDL</span>
+                </div>
+                <div class="gap__opts">
+                  <div class="gap__opt" data-side="a">
+                    <div class="gap__label">A · 운영자가 직접 기록 · 추천 · 지금 목업</div>
+                    <p>카카오 검수 결과를 보고 운영자가 상태를 바꾼다.</p>
+                  </div>
+                  <div class="gap__opt" data-side="b">
+                    <div class="gap__label">B · 비즈뿌리오 API 조회</div>
+                    <p>발송 대행사에서 상태를 읽어 온다. 연동이 늘어난다.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+  </body>
+</html>
