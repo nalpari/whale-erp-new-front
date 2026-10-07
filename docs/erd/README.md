@@ -717,6 +717,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK | 템플릿 ID | id | `notification_template_id` |  |
+|  | 템플릿 코드 | text | `template_code` | 고유·불변. 채널 접두 + 유형·용도 코드(예: EMAIL_SIGNUP_DONE) |
 |  | 발송 채널 | enum | `channel` | 운영 알림·앱 푸시·메일·알림톡 |
 |  | 알림 유형 | enum | `notification_type` | NOTIFICATION_TYPE, 발송 용도와 둘 중 하나 |
 |  | 발송 용도 | enum | `send_purpose` | SEND_PURPOSE, 알림 유형이 없는 메일·알림톡 |
