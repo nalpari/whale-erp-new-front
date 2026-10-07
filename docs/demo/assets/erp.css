@@ -558,6 +558,9 @@
   .h-\[184px\] {
     height: 184px;
   }
+  .h-\[420px\] {
+    height: 420px;
+  }
   .h-\[calc\(100dvh-70px\)\] {
     height: calc(100dvh - 70px);
   }
@@ -575,9 +578,6 @@
   }
   .max-h-\[328px\] {
     max-height: 328px;
-  }
-  .max-h-\[420px\] {
-    max-height: 420px;
   }
   .max-h-\[440px\] {
     max-height: 440px;
@@ -812,9 +812,6 @@
   }
   .w-\[920px\] {
     width: 920px;
-  }
-  .w-\[1100px\] {
-    width: 1100px;
   }
   .w-\[1200px\] {
     width: 1200px;
@@ -2096,6 +2093,19 @@
   }
   .disabled\:opacity-40:disabled {
     opacity: 40%;
+  }
+  :where(:is(.hide-official)) .in-\[\.hide-official\]\:hidden {
+    display: none;
+  }
+  :where(:is(.hide-official)) .in-\[\.hide-official\]\:bg-white {
+    background-color: var(--color-white);
+  }
+  :where(:is(.hide-official)) .in-\[\.hide-official\]\:font-normal {
+    --tw-font-weight: var(--font-weight-normal);
+    font-weight: var(--font-weight-normal);
+  }
+  :where(:is(.hide-official)) .in-\[\.hide-official\]\:text-erp-ink {
+    color: var(--color-erp-ink);
   }
   .has-\[\:checked\]\:border-erp-brand:has(:is(:checked)) {
     border-color: var(--color-erp-brand);

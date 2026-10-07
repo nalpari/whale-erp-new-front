@@ -456,7 +456,7 @@
             '<td class="mono" style="' + cell + '">' + nextCode() + "</td>" +
             '<td class="nil" style="' + cell + '">—</td>' +
             '<td class="n" style="' + cell + '">' + (sib(S(), d.parent).length + 1) + "</td>" +
-            '<td style="' + cell + '"><span class="badge badge--preview">저장 전</span></td></tr>';
+            '<td class="nil" style="' + cell + '">—</td></tr>';
         }
         function renderTree() {
           var s = S(), edit = st.role === "edit", cols = edit ? 6 : 5, out = [];
@@ -494,7 +494,7 @@
           var v = d || (st.buf && st.buf.code === n.code ? st.buf : n);
           var parentTxt = p ? p.code + " · " + path(p) : "없음 · 최상위(1단계) 메뉴";
           var head = '<div class="panel__head"><h2 class="t-h2">' + (d ? "신규 메뉴 등록" : "메뉴 상세") + '</h2><span class="badge badge--quiet">' + L + "단계</span>" +
-            (d ? '<span class="badge badge--preview">저장 전</span>' : "") + "</div>";
+            "</div>";
           var noDelete = '<div class="panel__note">메뉴는 지우지 않습니다. 쓰지 않는 메뉴는 사용중지로 돌립니다. 메뉴 등록·수정·이동 이력은 남기지 않습니다.</div>';
 
           if (!edit) {

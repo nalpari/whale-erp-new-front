@@ -211,7 +211,7 @@ function treeTab(key, s) {
   // 신규 메뉴 등록 — 상위 메뉴·단계·순서는 스크립트가 고른 줄을 보고 채운다
   const self = (b) => dim(b).replace("inline-flex", "inline-flex self-start");
   const form =
-    `<section data-view="new" hidden class="flex flex-col gap-[18px]">${sideHead("신규 메뉴 등록", 1, " · 저장 전")}` +
+    `<section data-view="new" hidden class="flex flex-col gap-[18px]">${sideHead("신규 메뉴 등록", 1)}` +
     ui.field("서비스 코드", ro(s.code)) +
     ui.field(
       "상위 메뉴",
@@ -290,7 +290,7 @@ const MENU_SCRIPT = `<script>
         '<td class="px-[10px] text-center"></td>' +
         '<td class="truncate px-[10px] text-left"><span style="padding-left:' + (lvl - 1) * 18 + 'px"><b class="font-semibold" data-draft-name></b> <span class="text-[13px] text-erp-label">작성 중</span></span></td>' +
         '<td class="px-[10px] text-center">' + side.dataset.next + '</td><td class="px-[10px] text-left">—</td>' +
-        '<td class="px-[10px] text-center">' + order + '</td><td class="px-[10px] text-center text-[13px] text-erp-label">저장 전</td>';
+        '<td class="px-[10px] text-center">' + order + '</td><td class="px-[10px] text-center text-erp-muted">—</td>';
       draft.querySelector("[data-draft-name]").textContent = name.value.trim() || "새 메뉴";
       let at = null;
       if (p) {

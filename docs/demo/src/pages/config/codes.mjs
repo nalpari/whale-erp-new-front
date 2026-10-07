@@ -36,8 +36,8 @@ const handle = '<span title="끌어서 순서 바꾸기" aria-label="끌어서 �
 
 export default ({ A, R }) => {
   const filter = ui.filterPanel(A, [
-    ui.filterSection("그룹 코드", ui.searchField(A, { placeholder: "예: EMP_TYPE", label: "그룹 코드" }) + c.help("일부만 입력해도 찾습니다 · 대소문자 구분 없음"), { tight: true }),
-    ui.filterSection("그룹명", ui.searchField(A, { placeholder: "예: 고용 형태", label: "그룹명" }) + c.help("일부만 입력해도 찾습니다"), { tight: true, last: true }),
+    ui.filterSection("그룹 코드", ui.searchField(A, { placeholder: "예: EMP_TYPE", label: "그룹 코드" }), { tight: true }),
+    ui.filterSection("그룹명", ui.searchField(A, { placeholder: "예: 고용 형태", label: "그룹명" }), { tight: true, last: true }),
   ]);
 
   const groupCols = [
@@ -54,7 +54,7 @@ export default ({ A, R }) => {
   ]);
   const left = c.card(
     "w-[560px] shrink-0",
-    head(`공통코드 그룹${c.sub(`${GROUPS.length}개 · 조회 전용`)}`) +
+    head(`공통코드 그룹${c.sub(`${GROUPS.length}개`)}`) +
       c.markRow(ui.dataTable(groupCols, groupRows, "조건에 맞는 공통코드 그룹이 없습니다."), SELECTED) +
       `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
   );
@@ -72,12 +72,9 @@ export default ({ A, R }) => {
     "min-w-0 flex-1",
       head(
         `상세 코드${c.sub("EMP_TYPE · 고용 형태")}<span class="ml-[10px] inline-flex align-middle">${c.tag("플랫폼제공")}</span>`,
-        ui.button("상세 코드 추가", { variant: "soft" }) + ui.button("저장"),
+        ui.button("추가", { variant: "soft" }) + ui.button("저장"),
       ) +
-      ui.dataTable(codeCols, codeRows) +
-      c.note(
-        "저장한 상세 코드는 한강상회의 관련 업무 화면 선택 항목에 반영되고, 등록·수정 이력은 보존되지만 이 화면에는 보이지 않습니다. 공통코드는 적용 서비스로 나누지 않아 검색 조건에도 적용 서비스가 없습니다.",
-      ),
+      ui.dataTable(codeCols, codeRows),
   );
 
   return {
