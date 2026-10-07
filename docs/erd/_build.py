@@ -174,7 +174,7 @@ DIAGRAMS.append(Diagram(
         E("session", "접속 상태", "auth_sessions", "entity",
           ["#|접속 ID|id|session_id|", "→|계정|id|account_id|", "|기기 식별 정보|text|device_info|한 계정 여러 기기", "|발급 시각|datetime|issued_at|", "|만료 시각|datetime|expires_at|마지막 접속 후 30일", "|종료 시각|datetime|revoked_at|재설정 시 모두 종료"], 0, 312),
         E("account", "계정", "accounts", "focal",
-          ["#|계정 ID|id|account_id|", "|이메일 아이디|text|email|로그인 아이디, 고유", "|비밀번호 해시|hash|password_hash|", "|실명|text|real_name|본인인증 값, 수정 불가", "|생년월일|date|birth_date|본인인증 값, 수정 불가", "|휴대전화번호|text|phone|본인인증, 변경 시 재인증", "|동일인 식별값|text|ci|", "|주소|text|address|다음 계약부터 반영", "|계정 상태|enum|status|가입 완료·연결 보류", "|로그인 실패 횟수|int|failed_login_count|5회 잠금", "|잠금 해제 시각|datetime|locked_until|재설정하면 해제"], 1, 40),
+          ["#|계정 ID|id|account_id|", "|이메일 아이디|text|email|로그인 아이디, 고유", "|비밀번호 해시|hash|password_hash|", "|실명|text|real_name|본인인증 값, 수정 불가", "|생년월일|date|birth_date|본인인증 값, 수정 불가", "|휴대전화번호|text|phone|본인인증, 변경 시 재인증", "|동일인 식별값|text|ci|", "|주소|text|address|다음 계약부터 반영", "|계정 상태|enum|status|가입 완료·연결 보류·탈퇴, 휴면 없음", "|로그인 실패 횟수|int|failed_login_count|5회 잠금", "|잠금 해제 시각|datetime|locked_until|재설정하면 해제"], 1, 40),
         E("change", "계정 변경 이력", "account_change_histories", "history",
           ["#|변경 이력 ID|id|change_id|", "→|계정|id|account_id|", "|변경 항목|enum|field|휴대전화번호·이메일·주소·비밀번호", "|변경 전 값|text|before_value|비밀번호는 저장 안 함", "|변경 후 값|text|after_value|비밀번호는 저장 안 함", "|변경 경로|enum|channel|본인·핀 재설정·관리자 초기화", "→|요청 관리자|id|requested_by|관리자 초기화일 때", "|변경 일시|datetime|changed_at|"], 1, 424),
         E("login", "로그인 이력", "login_histories", "history",
@@ -218,6 +218,8 @@ DIAGRAMS.append(Diagram(
         E("hold", "가입 연결 보류", "link_holds", "entity",
           ["#|보류 ID|id|hold_id|", "→|초대|id|invitation_id|", "→|보류 계정|id|account_id|", "|불일치 사유|enum|mismatch_reason|번호 불일치·이름 불일치", "|처리 결과|enum|resolution|승인·번호 수정 후 재초대", "→|처리 관리자|id|resolved_by|", "|처리 일시|datetime|resolved_at|"], 2, 364),
         ref_admin(3, 404),
+        E("retirement", "퇴직 처리 이력", "staff_member_retirement_logs", "history",
+          ["#|퇴직 처리 이력 ID|id|staff_member_retirement_log_id|", "→|직원 레코드|id|staff_member_id|", "|처리 종류|enum|action|처리·취소", "|퇴직일|date|retired_date|처리·취소한 퇴직일", "→|앞당긴 근로계약|id|contract_id|처리 행만, 계약마다 한 줄", "|원래 계약 종료일|date|previous_contract_end_date|취소 때 되돌림", "→|처리 관리자|id|processed_by|", "|처리 일시|datetime|processed_at|같은 처리는 같은 시각"], 1, 680),
     ],
     [
         R("store", "right", "staff_member", "left", "1", "N", "소속", at_a=108, at_b=108),
@@ -227,6 +229,8 @@ DIAGRAMS.append(Diagram(
         R("invitation", "bottom", "hold", "top", "1", "0..1", ""),
         R("account", "bottom", "hold", "bottom", "1", "N", "보류 계정", at_a=160, at_b=880, mid=648),
         R("admin", "left", "hold", "right", "1", "N", "처리", at_a=464, at_b=464),
+        # 순번에 기대는 물리 생성기 보정(REL_FIX)이 있어 새 관계는 맨 뒤에 둔다
+        R("staff_member", "left", "retirement", "left", "1", "N", "", at_a=200, at_b=760, mid=348),
     ],
     [
         ("coral", "중심", "레코드는 계정보다 먼저 생긴다", ["초안 저장이 채용의 유일한 시작점이다", "가입이 끝나면 계정을 연결하고 계약서를 자동 발송한다", "소속 확인을 수락하면 본인인증 정보만 새 레코드로 복사한다"]),
@@ -319,7 +323,7 @@ DIAGRAMS.append(Diagram(
         E("staff_member", "직원 레코드", "staff_members", "entity",
           ["#|직원 레코드 ID|id|staff_member_id|", "→|점포|id|store_id|", "|재직 상태|enum|employment_status|"], 3, 40),
         E("todo_status", "TO-DO 상태 이력", "todo_status_histories", "history",
-          ["#|상태 이력 ID|id|history_id|", "→|TO-DO|id|todo_id|", "|변경 전 상태|enum|from_status|", "|변경 후 상태|enum|to_status|", "|긴급 표시 변경|bool|urgent_changed|긴급 표시 이력", "|변경 주체|id|changed_by|", "|변경 일시|datetime|changed_at|"], 2, 280),
+          ["#|상태 이력 ID|id|history_id|", "→|TO-DO|id|todo_id|", "|변경 전 상태|enum|from_status|", "|변경 후 상태|enum|to_status|", "|긴급 표시 변경|bool|urgent_changed|긴급 표시 이력", "|변경 주체|id|changed_by|", "→|배정 해제 직원|id|unassigned_staff_member_id|퇴직으로 배정을 풀었을 때 (2026-10-07)", "|변경 일시|datetime|changed_at|"], 2, 280),
     ],
     [
         R("store", "right", "todo", "left", "1", "N", "근무지", at_a=112, at_b=112),

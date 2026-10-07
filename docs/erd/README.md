@@ -84,7 +84,7 @@ python3 docs/erd/_build.py
 |  | 휴대전화번호 | text | `phone` | 본인인증, 변경 시 재인증 |
 |  | 동일인 식별값 | text | `ci` |  |
 |  | 주소 | text | `address` | 다음 계약부터 반영 |
-|  | 계정 상태 | enum | `status` | 가입 완료·연결 보류 |
+|  | 계정 상태 | enum | `status` | 가입 완료·연결 보류·탈퇴, 휴면 없음 |
 |  | 로그인 실패 횟수 | int | `failed_login_count` | 5회 잠금 |
 |  | 잠금 해제 시각 | datetime | `locked_until` | 재설정하면 해제 |
 
@@ -250,6 +250,19 @@ python3 docs/erd/_build.py
 | FK | BP | id | `bp_code_id` |  |
 |  | 역할 | enum | `role` | BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼 |
 
+### 퇴직 처리 이력 `staff_member_retirement_logs` · 이력
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 퇴직 처리 이력 ID | id | `staff_member_retirement_log_id` |  |
+| FK | 직원 레코드 | id | `staff_member_id` |  |
+|  | 처리 종류 | enum | `action` | 처리·취소 |
+|  | 퇴직일 | date | `retired_date` | 처리·취소한 퇴직일 |
+| FK | 앞당긴 근로계약 | id | `contract_id` | 처리 행만, 계약마다 한 줄 |
+|  | 원래 계약 종료일 | date | `previous_contract_end_date` | 취소 때 되돌림 |
+| FK | 처리 관리자 | id | `processed_by` |  |
+|  | 처리 일시 | datetime | `processed_at` | 같은 처리는 같은 시각 |
+
 **관계**
 
 - 점포 `1` — `N` 직원 레코드 · 소속
@@ -259,6 +272,7 @@ python3 docs/erd/_build.py
 - 초대 `1` — `0..1` 가입 연결 보류
 - 계정 `1` — `N` 가입 연결 보류 · 보류 계정
 - 관리자 계정 `1` — `N` 가입 연결 보류 · 처리
+- 직원 레코드 `1` — `N` 퇴직 처리 이력
 
 ## 근로계약
 
@@ -540,6 +554,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |  | 변경 후 상태 | enum | `to_status` |  |
 |  | 긴급 표시 변경 | bool | `urgent_changed` | 긴급 표시 이력 |
 |  | 변경 주체 | id | `changed_by` |  |
+| FK | 배정 해제 직원 | id | `unassigned_staff_member_id` | 퇴직으로 배정을 풀었을 때 (2026-10-07) |
 |  | 변경 일시 | datetime | `changed_at` |  |
 
 **관계**
