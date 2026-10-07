@@ -2,6 +2,8 @@
 
 ## 2026-10-07
 
+* **Update**: 다른 세션이 원자료에 더한 근무 유형 4종(ed083af)과 급여 항목 표·급여 항목 코드(2b47d56·ad61fe9)가 front okf 에 빠져 있어 [네이밍 규칙](/conventions/naming.md) 「근무 · 출퇴근」「급여」 절을 원자료로 갈음했다.
+* **Update**: `2026-09-30-네이밍-규칙.md`(7e88e65) 의 견본 삭제 반영을 [네이밍 규칙](/conventions/naming.md) 에 옮겼다 — 예시 이름을 실제 DDL 이름(contracts_staff_member_id_idx 등)으로, 「예제는 고치지 않는다」·「listItems 는 그대로」 문장을 「2026-10-07 에 지웠다」로. 견본 `Item` 이 없어진 front 사정도 맞췄다.
 * **Update**: api 견본(items·stock_movements·staff·customers)과 견본 로그인을 지운 결정(2026-10-07 재영)에 맞춰 front 의 `src/app/items/`·`src/app/login/`·`docs/result/architecture.html` 을 지우고 `src/lib/api.ts` 를 호출 틀만 남겼다. 첫 화면은 `/design`. [Whale ERP Frontend](/whale-erp-front.md) 의 Layout·API 절을 맞췄다.
 * **Update**: `2026-09-30-네이밍-규칙.md`(45f1ff4) 「알림 템플릿」 행 비고를 [네이밍 규칙](/conventions/naming.md) 에 반영했다 — 발송 채널 + 템플릿 이름 + 템플릿 코드로 구분.
 * **Update**: `2026-09-30-네이밍-규칙.md`(8c77649) 의 「고객지원 · 알림」을 [네이밍 규칙](/conventions/naming.md) 에 반영했다 — 알림 유형·발송 용도 공통코드를 없애고 템플릿 이름·수신 설정 묶음을 더했으며, 코드값 표를 기본 템플릿 코드 37건 표로 바꿨다.

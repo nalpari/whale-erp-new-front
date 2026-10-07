@@ -5,7 +5,7 @@ description: DB·API·FRONT 세 계층이 같은 개념을 같은 영문 이름�
 tags: [convention, naming, shared]
 sources:
   - { id: naming-2026-09-30, resource: ../../docs/raw/2026-09-30-네이밍-규칙.md, title: WHALE ERP 네이밍 규칙 (DB · API · FRONT) }
-generated: { by: claude-code/opus-5.5, at: 2026-10-07T05:24:06Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-07T05:43:07Z }
 ---
 
 근거: `docs/raw/2026-09-30-네이밍-규칙.md` (3팀 기획 세션 · 2026-10-07 고침)
@@ -62,7 +62,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-07T05:24:06Z }
 
 남은 것: 1팀 동의 대기 — api·front 저장소를 1팀도 쓴다. 공통코드 조회 API 를 누가 만들지 1팀과 정한다.
 
-지금 front 에는 `getEnum`·`getCodes` 도, 생성한 요청·응답 타입도 없다. `src/lib/api.ts` 의 `Item` 은 손으로 적은 예제 타입이다. api 의 `/enums` 와 `openapi:export` 가 나온 뒤 만든다.
+지금 front 에는 `getEnum`·`getCodes` 도, 생성한 요청·응답 타입도 없다. 손으로 적은 API 타입도 없다 — 견본 `Item` 은 2026-10-07 에 지웠다. api 의 `/enums` 와 `openapi:export` 가 나온 뒤 만든다.
 
 # API (NestJS)
 
@@ -89,7 +89,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-07T05:24:06Z }
 
 오류를 Nest 기본 형식으로 두는 것은 front 가 이미 그 형식을 읽기 때문이다 — `src/lib/api.ts` 의 `errorMessage` 가 `message` 를 꺼내고 검증 실패일 때의 배열까지 다룬다.
 
-기존 items 예제(`take`·`skip`, 배열 응답, `id` 순)는 front 가 지금 형식으로 부르고 있어 바꾸지 않는다. `/items` 와 `listItems` 는 그대로 두고, **새로 만드는 목록 API 부터** 적용한다.
+모든 목록 API 에 적용한다. 다른 형식이던 견본 `/items`(`take`·`skip`, 배열 응답)는 2026-10-07 에 지웠다.
 
 # DB (PostgreSQL + Prisma)
 
@@ -108,16 +108,16 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-07T05:24:06Z }
 | 길이 · 단위 | 단위를 이름 끝에 | `break_minutes`, `radius_m` |
 | 상태 값 | Prisma enum, 값은 UPPER_SNAKE | `ContractStatus.PENDING_SIGNATURE` |
 | 이력 | 변경 전후는 `_histories`, 사건 기록은 `_logs` | `contract_status_histories`, `payslip_logs` |
-| 인덱스 · 키 | `{table}_{cols}_{idx·key·fkey}` | `stock_movements_item_id_idx` |
-| CHECK 제약 | `{table}_{col}_{조건}`, 조건을 이름에 쓴다 | `items_sku_not_blank`, `payslip_items_amount_nonzero` |
+| 인덱스 · 키 | `{table}_{cols}_{idx·key·fkey}` | `contracts_staff_member_id_idx` |
+| CHECK 제약 | `{table}_{col}_{조건}`, 조건을 이름에 쓴다 | `accounts_phone_format`, `notification_templates_template_code_format` |
 
 **삭제 표시 · 기본키 이름** (2026-10-02 재영, api 세션에서 정함)
 
 - 삭제 가능한 데이터는 행을 지우지 않고 `is_deleted = true` 로 표시한다. 표시는 `is_deleted` 하나뿐이다 — `deleted_at` 을 함께 두면 플래그와 시각이 어긋난 행이 생길 수 있다. 삭제 시각이 필요해지면 그때 `deleted_at` 을 더하고 CHECK 로 묶는다.
-- 남아야 하는 기록(`stock_movements`, `*_logs`, `*_histories`)에는 두지 않는다. 이 컬럼이 없는 테이블은 지우지 않는 테이블이다.
+- 남아야 하는 기록(`*_logs`, `*_histories`)에는 두지 않는다. 이 컬럼이 없는 테이블은 지우지 않는 테이블이다.
 - 모든 조회에 `is_deleted = false` 를 건다. 빠뜨려도 오류가 나지 않고 지운 행이 그대로 보인다 — 목록, id 조회, total 을 위한 count, insert 전 존재 확인 모두 해당한다.
 - 유니크 제약은 부분 인덱스(`WHERE NOT is_deleted`)로 만든다. 안 그러면 지운 행이 sku·email 을 붙잡아 같은 값으로 다시 만들 때 409 가 난다. Prisma 가 표현하지 못해 CHECK 제약처럼 마이그레이션 SQL 에만 남는다.
-- 새 테이블부터 기본키도 `{참조 단수}_id` 로 짓는다. 지금 있는 `items`·`stock_movements`(예제)와 `staff`·`customers`(템플릿 인증 주체)는 기본키가 `id` 인데, 결함이 아니라 예제·템플릿이라 고치지 않는다. front 의 `listItems` 와 로그인이 아직 쓰고 있어, 계정 테이블과 첫 도메인 모듈이 생길 때 함께 정리하거나 대체한다.
+- 기본키도 `{참조 단수}_id` 로 짓는다. 기본키가 `id` 였던 견본 테이블(`items`·`stock_movements`·`staff`·`customers`)은 2026-10-07 에 견본 로그인·`/items` API 와 함께 지웠다(재영).
 
 ERD 에 단수·복수가 섞인 이름은 다음 ERD 재생성 때 복수형으로 맞춘다. 이 저장소 `docs/erd/_build.py` 에 남은 것은 `attendance`, `schedule_history`, `access_log` 셋이고, `access_log` 는 `location_access_logs`(확인자료)로 바꾼다. 이름만 고쳐도 박스 폭과 연결점 좌표를 다시 맞춰야 해서, 테이블 구조가 바뀌어 어차피 다시 그릴 때 함께 처리한다. (2026-09-30 기획 세션 확인)
 
@@ -152,7 +152,7 @@ DB 테이블은 복수형, 모델·타입은 PascalCase 단수형으로 바꿔 �
 | 본사 | `hq` | |
 | 점포 · 근무지 | `store` | 근무지는 직원 레코드의 `store_id` |
 | 직영 / 가맹 | `DIRECT` / `FRANCHISE` | `store_type` |
-| 계정 | `account` | 로그인 주체. api의 기존 `staff` 테이블(템플릿의 인증 주체)과 직원 레코드 `staff_members`는 다른 것이다. 계정 테이블을 만들 때 `staff`를 정리한다 |
+| 계정 | `account` | 직원 근무 앱 로그인 주체(3팀 `accounts`). 직원 레코드 `staff_members` 와 다른 것이다. 견본 인증 테이블 `staff` 는 2026-10-07 에 지웠다 |
 | 관리자 계정 | `admin_account` | 관리자 웹 로그인 주체. 아래 「인증 · 계정」 참고 |
 | 직원 레코드 | `staff_member` | 계정 1 : 레코드 N |
 | 직무 | `job_title` | 직원 레코드 칸. 근로계약서 초안 필수 |
@@ -244,6 +244,7 @@ DB 테이블은 복수형, 모델·타입은 PascalCase 단수형으로 바꿔 �
 | 표준 표기 | 영문 식별자 | 비고 |
 |---|---|---|
 | 근무스케줄 | `work_schedule` | |
+| 근무 유형 4종 | `DAY` · `OPEN` · `MIDDLE` · `CLOSE` | 주간 · 오픈 · 미들 · 마감. enum `work_type` |
 | 출퇴근 기록 · 출퇴근 현황 | `attendance_record` · `attendance` | 현황은 화면·경로 이름 |
 | 출근 / 퇴근 | `CHECK_IN` / `CHECK_OUT` | |
 | 보정 | `correction` | |
@@ -274,8 +275,18 @@ DB 테이블은 복수형, 모델·타입은 PascalCase 단수형으로 바꿔 �
 | 비과세 | `is_tax_free` | |
 | 3.3% 원천징수 | `business_income_withholding` | 적용 여부 `is_withholding_applied` |
 | 연장·야간·휴일 가산 적용 여부 | `is_premium_applied` | |
-| 주휴수당 · 연장수당 | `weekly_holiday_pay` · `overtime_pay` | 항목 코드 |
 | 일괄 저장 | `bulk_export` | |
+| 급여 항목 | `payslip_item_master` | 공통코드가 아니라 전용 표. 항목 코드 `item_code`, 구분 `category`, 비과세 `is_tax_free`, 시스템 계산 `is_system_calculated`, 사용 여부 `is_active`. 플랫폼 관리자가 관리(PAY-21) |
+| 급여 항목 구분 4종 | `EARNING` · `BASIC` · `ADDITIONAL` · `WITHHOLDING` | 지급 · 기본 공제 · 추가 공제 · 원천징수. 기본·추가 공제 값은 위 줄과 같다 |
+
+### 급여 항목 코드 (2026-10-07 재영)
+
+| 구분 | 코드값 | 표준 표기 |
+|---|---|---|
+| 지급 11 | `BASE_PAY` · `WEEKLY_HOLIDAY_PAY` · `OVERTIME_PAY` · `NIGHT_WORK_PAY` · `HOLIDAY_WORK_PAY` · `EXTRA_WORK_PAY` · `ANNUAL_LEAVE_PAY` · `BONUS` · `MEAL_ALLOWANCE` · `CAR_ALLOWANCE` · `CHILDCARE_ALLOWANCE` | 기본급 · 주휴수당 · 연장수당 · 야간수당 · 휴일근무수당 · 추가근무수당 · 연차수당 · 상여 · 식대 · 자가운전보조금 · 육아수당. 앞의 셋은 시스템 계산, 끝의 셋은 비과세 |
+| 기본 공제 6 | `NATIONAL_PENSION` · `HEALTH_INSURANCE` · `EMPLOYMENT_INSURANCE` · `LONG_TERM_CARE_INSURANCE` · `INCOME_TAX` · `LOCAL_INCOME_TAX` | 국민연금 · 건강보험 · 고용보험 · 장기요양보험 · 소득세 · 지방소득세 |
+| 추가 공제 10 | `YEAR_END_SETTLEMENT` · `YEAR_END_INCOME_TAX` · `YEAR_END_LOCAL_TAX` · `HEALTH_INSURANCE_SETTLEMENT` · `LONG_TERM_CARE_SETTLEMENT` · `EMPLOYMENT_INSURANCE_SETTLEMENT` · `NATIONAL_PENSION_SETTLEMENT` · `LONG_TERM_CARE_ASSESSMENT` · `RETIREMENT_RESERVE` · `STOCK_OPTION` | 연말(중도)정산 · 연말(중도)정산 소득세 · 연말(중도)정산 주민세 · 건강보험정산 · 장기요양보험정산 · 고용보험정산 · 국민연금정산 · 장기요양보험산정 · 퇴사자유보금 · 스톡옵션 |
+| 원천징수 2 | `BUSINESS_INCOME_TAX` · `BUSINESS_LOCAL_INCOME_TAX` | 사업소득세(3%) · 지방소득세(0.3%). 3.3% 원천징수 |
 
 ## 고객지원 · 알림
 
