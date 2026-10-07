@@ -11,7 +11,7 @@
     <!-- 알림 템플릿 관리 · /platform/notification-templates · F-TZPHZT
          S-QQPYIU(운영 알림·앱 푸시·메일 템플릿 수정) · S-HIBBDL(알림톡 템플릿 관리)
          플랫폼 운영자만 들어온다. 알림 유형(또는 발송 용도)과 채널 한 칸마다 템플릿이 하나다.
-         알림톡은 카카오 검수 문구와 같아야 해서 화면에서는 읽기만 한다. 문구는 카카오 검수 뒤 코드로 고친다(NOTIFY-6). -->
+         알림톡도 본문을 화면에서 고친다(NOTIFY-8). 제목은 없고 승인 상태도 두지 않는다(NOTIFY-6). -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
       <main class="main" id="main">
@@ -255,72 +255,58 @@
               </div>
             </div>
 
-            <!-- 알림톡 : 카카오 검수 문구라 읽기만 한다 -->
+            <!-- 알림톡 : 제목 없이 본문만. 카카오 검수 문구와 같아야 발송된다 -->
             <div data-panel="talk" hidden>
-              <div class="band band--warn">
-                <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
-                <div class="band__body">
-                  <div class="band__title">알림톡 문구는 이 화면에서 고치지 않습니다</div>
-                  <p class="band__desc">
-                    카카오가 검수한 문구와 글자 하나까지 같아야 발송됩니다. 문구를 바꾸려면 카카오 검수와 배포가 필요합니다.
-                  </p>
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">알림톡 템플릿</h2>
+                  <span class="badge badge--quiet">발송 용도 1</span>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl">
+                    <thead>
+                      <tr>
+                        <th scope="col">발송 용도</th>
+                        <th scope="col">카카오 템플릿 코드</th>
+                        <th scope="col">본문 요약</th>
+                        <th scope="col">최근 수정</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html#talk">가입 초대</a></td>
+                        <td class="mono">WHALE_INVITE_01</td>
+                        <td><span class="mono">#{근무지}</span>에서 근로계약서를 보내려고 합니다…</td>
+                        <td><span class="mono">09-30 14:05</span> <span class="subtle">이서준</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__note">
+                  알림톡도 다른 채널처럼 수정 화면에서 본문을 고친다(NOTIFY-8). 제목은 없다. 카카오 템플릿 코드와 변수 목록은 고칠 수 없다.
+                  알림톡으로 나가는 것은 <b>가입 초대</b> 하나다. 휴대전화번호로만 닿는 사람이라서다. 나머지 발송 용도 넷은 메일로 간다.
+                  어떤 상황에 알림톡을 더 보낼지는 직원 근무 앱 쟁점 <b>NOTI-2</b> 에서 정하기 전까지 비워 둔다.
                 </div>
               </div>
 
-              <div class="grid grid--7-5">
-                <section class="panel">
-                  <div class="panel__head">
-                    <h2 class="t-h2">등록 템플릿</h2>
-                    <span class="badge badge--quiet">1</span>
+              <div class="gap is-decided">
+                <div class="gap__head">
+                  <span class="gap__no">NOTIFY-8</span>
+                  <b>알림톡 본문을 화면에서 고칠 것인가</b>
+                  <span class="gap__decided">확정 · 화면에서 고친다</span>
+                  <span class="gap__ref">S-HIBBDL</span>
+                </div>
+                <div class="gap__opts">
+                  <div class="gap__opt is-dropped" data-side="a">
+                    <div class="gap__label">A · 읽기 전용</div>
+                    <p>검수 받은 문구를 코드로 고치고 배포한다.</p>
                   </div>
-                  <div class="tblwrap">
-                    <table class="tbl">
-                      <thead>
-                        <tr>
-                          <th scope="col">발송 용도</th>
-                          <th scope="col">카카오 템플릿 코드</th>
-                          <th scope="col">본문 요약</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td class="k">가입 초대</td>
-                          <td class="mono">WHALE_INVITE_01</td>
-                          <td><span class="mono">#{근무지}</span>에서 근로계약서를 보내려고 합니다…</td>
-                        </tr>
-                      </tbody>
-                    </table>
+                  <div class="gap__opt is-picked" data-side="b">
+                    <div class="gap__label">B · 화면에서 고친다 · 확정</div>
+                    <p>다른 채널처럼 수정 화면에서 본문을 고친다.</p>
                   </div>
-                  <div class="panel__note">
-                    알림톡으로 나가는 것은 <b>가입 초대</b> 하나다. 휴대전화번호로만 닿는 사람이라서다. 나머지 발송 용도 넷은 메일로 간다.
-                    어떤 상황에 알림톡을 더 보낼지는 직원 근무 앱 쟁점 <b>NOTI-2</b> 에서 정하기 전까지 비워 둔다.
-                  </div>
-                </section>
-
-                <section class="panel">
-                  <div class="panel__head">
-                    <h2 class="t-h2">가입 초대</h2>
-                    <span class="badge badge--quiet">읽기 전용</span>
-                  </div>
-                  <div class="panel__body">
-                    <dl class="kv">
-                      <dt>템플릿 코드</dt>
-                      <dd class="mono">WHALE_INVITE_01</dd>
-                      <dt>발신 프로필</dt>
-                      <dd>WHALE ERP</dd>
-                      <dt>본문</dt>
-                      <dd style="white-space: pre-line"><span class="mono">#{근무지}</span>에서 근로계약서를 보내려고 합니다.
-아래 링크로 WHALE ERP 직원 근무 앱에 가입해 주세요.
-링크는 30일 동안 쓸 수 있습니다.</dd>
-                      <dt>버튼</dt>
-                      <dd>가입하기 <span class="subtle">· 초대 토큰 링크</span></dd>
-                    </dl>
-                  </div>
-                  <div class="panel__note">
-                    본문은 카카오가 검수한 문구를 그대로 보여 주고 고칠 수 없다. 알림톡에는 제목이 없다.
-                    문구를 바꾸려면 카카오 검수를 받은 뒤 코드로 고쳐 배포한다. 그래서 승인 상태도 화면에 두지 않는다(NOTIFY-6).
-                  </div>
-                </section>
+                </div>
+                <p class="gap__note">알림톡 본문 화면 수정 · 확정 · 2026-10-07 재영. 배포는 필요 없다. 카카오 검수를 받은 문구와 한 글자라도 다르면 발송되지 않으므로, 수정 화면 본문 위에 그 안내를 둔다.</p>
               </div>
 
               <div class="gap is-decided">
@@ -340,7 +326,7 @@
                     <p>발송 대행사에서 상태를 읽어 온다. 연동이 늘어난다.</p>
                   </div>
                 </div>
-                <p class="gap__note">승인 상태를 두지 않음(A·B 모두 버림). 2026-10-07 재영. 문구는 카카오 검수를 받은 뒤 코드로 고치므로 화면에 상태를 둘 필요가 없다.</p>
+                <p class="gap__note">승인 상태를 두지 않음(A·B 모두 버림). 2026-10-07 재영. 검수 결과는 운영자가 카카오에서 확인하고, 화면에는 상태를 두지 않는다.</p>
               </div>
             </div>
           </div>

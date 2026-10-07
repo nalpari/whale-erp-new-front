@@ -1,6 +1,6 @@
 // 알림 템플릿 관리. 목업 docs/mockup/notify/templates.html. 플랫폼 운영자 전용이라 플랫폼 헤더로 그린다.
 // 채널 탭 넷. 줄 이름을 누르면 그 채널의 수정 화면으로 간다(채널마다 한 장, src/template-edit.mjs).
-// TO-DO 배정은 푸시 없이 알림함에만 쌓인다(앱 NOTI-1). 알림톡은 카카오 검수 문구라 승인 상태 없이 읽기 전용(NOTIFY-6, 2026-10-07 재영).
+// TO-DO 배정은 푸시 없이 알림함에만 쌓인다(앱 NOTI-1). 알림톡도 본문을 화면에서 고치고(NOTIFY-8) 승인 상태는 두지 않는다(NOTIFY-6).
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as p from "../../staff-parts.mjs";
@@ -61,21 +61,16 @@ export default ({ A, R }) => {
     ...OPS.map(([t, to, title, e]) => [name(t, L("notify/templates-edit-mail.html")), to, `[WHALE ERP] ${title}`, edited(e)]),
   ]);
 
-  // 알림톡: 목록은 발송 용도·카카오 템플릿 코드·본문 요약만. 상세는 읽기 전용(제목 없음).
-  const talkBody = "#{근무지}에서 근로계약서를 보내려고 합니다.\n아래 링크로 WHALE ERP 직원 근무 앱에 가입해 주세요.\n링크는 30일 동안 쓸 수 있습니다.";
-  const talk =
-    p.band("알림톡 문구는 이 화면에서 고칠 수 없습니다", { desc: "카카오가 검수한 문구와 글자 하나까지 같아야 발송됩니다. 문구를 바꾸려면 카카오 검수와 배포가 필요합니다." }) +
-    p.cols(
-      ui.dataTable(
-        [{ header: "발송 용도", width: "w-[160px]" }, { header: "카카오 템플릿 코드", width: "w-[200px]" }, { header: "본문 요약", align: "left" }],
-        [["가입 초대", "WHALE_INVITE_01", "#{근무지}에서 근로계약서를 보내려고 합니다…"]],
-      ),
-      `<div class="flex flex-col gap-[12px]">${ui.detailTable("가입 초대", [
-        ["템플릿 코드", "WHALE_INVITE_01"],
-        ["발신 프로필", "WHALE ERP"],
-        ["버튼", "가입하기"],
-      ])}${p.box("본문", "", `<p class="whitespace-pre-line text-[14px] leading-[1.6] text-erp-ink">${talkBody}</p>`, { pad: true })}</div>`,
-    );
+  // 알림톡: 다른 탭처럼 줄 이름으로 수정 화면에 들어간다(NOTIFY-8). 제목 대신 카카오 템플릿 코드와 본문 요약.
+  const talk = ui.dataTable(
+    [
+      { header: "발송 용도", width: "w-[260px]" },
+      { header: "카카오 템플릿 코드", width: "w-[220px]" },
+      { header: "본문 요약", align: "left" },
+      { header: "최근 수정", width: "w-[170px]" },
+    ],
+    [[name("가입 초대", L("notify/templates-edit-talk.html")), "WHALE_INVITE_01", "#{근무지}에서 근로계약서를 보내려고 합니다…", edited(["09-30 14:05", "이서준"])]],
+  );
 
   const count = (items) => `<div class="flex flex-col gap-[12px]">${ui.listToolbar(items)}`;
   const body = ui.listBody(
@@ -84,7 +79,7 @@ export default ({ A, R }) => {
       { id: "ops", label: "운영 알림", html: count(OPS.length) + ops + "</div>" },
       { id: "push", label: "앱 푸시", html: count(PUSH.length) + push + "</div>" },
       { id: "mail", label: "메일", html: count(PURPOSES.length + OPS.length) + mail + `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div></div>` },
-      { id: "talk", label: "알림톡", html: talk },
+      { id: "talk", label: "알림톡", html: count(1) + talk + "</div>" },
     ]),
   );
   return {

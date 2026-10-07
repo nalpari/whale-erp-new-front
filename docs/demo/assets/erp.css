@@ -316,6 +316,9 @@
   .m-auto {
     margin: auto;
   }
+  .mx-\[12px\] {
+    margin-inline: 12px;
+  }
   .mx-\[18px\] {
     margin-inline: 18px;
   }
@@ -369,6 +372,9 @@
   }
   .mb-\[8px\] {
     margin-bottom: 8px;
+  }
+  .mb-\[12px\] {
+    margin-bottom: 12px;
   }
   .mb-\[18px\] {
     margin-bottom: 18px;
@@ -817,6 +823,9 @@
   }
   .max-w-\[60ch\] {
     max-width: 60ch;
+  }
+  .max-w-\[300px\] {
+    max-width: 300px;
   }
   .max-w-\[416px\] {
     max-width: 416px;

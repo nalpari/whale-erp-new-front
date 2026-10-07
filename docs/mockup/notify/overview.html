@@ -74,7 +74,7 @@
                 <span class="mk-card__route">/platform/notification-templates/[id]</span>
                 <span class="mk-card__name">알림 템플릿 수정</span>
                 <span class="mk-card__desc">
-                  제목·본문과 변수, 채널 모양 미리보기, 변경 이력, 기본 문구로 되돌리기. 알림톡은 여기서 고치지 않는다.
+                  제목·본문과 변수, 채널 모양 미리보기, 변경 이력, 기본 문구로 되돌리기. 알림톡은 제목 없이 본문만 고친다.
                 </span>
                 <span class="mk-card__end">
                   <span class="badge badge--quiet">S-QQPYIU</span>
@@ -152,8 +152,8 @@
                 <li><span class="pol__t">플랫폼 마스터·플랫폼 관리자만 고친다. 고치는 것은 제목과 본문뿐이고 받는 사람은 알림 유형이 정한다.</span><span class="pol__ref">S-QQPYIU</span></li>
                 <li><span class="pol__t">변수는 알림 유형마다 정해져 있고, 목록에 없는 변수를 쓰면 저장하지 않는다. 저장할 때마다 바뀌기 전 문구를 변경 이력에 남기고 <b>기본 문구로 되돌리기</b>를 둔다.</span><span class="pol__ref">S-QQPYIU</span></li>
                 <li><span class="pol__t">앱 푸시 탭은 직원 근무 앱 알림함에 쌓이는 문구까지 맡는다. TO-DO 배정은 푸시 없이 알림함에만 쌓인다.</span><span class="pol__ref">S-QQPYIU · 앱 NOTI-1</span></li>
-                <li><span class="pol__t">알림톡은 카카오 검수 문구와 같아야 해서 문구를 고치지 않는다. 바꾸려면 카카오 검수를 받은 뒤 코드로 고쳐 배포한다. 화면은 읽기만 하고 승인 상태도 두지 않는다.</span><span class="pol__ref">S-HIBBDL</span></li>
-                <li><span class="pol__t">운영 알림·앱 푸시·메일은 <b>제목과 본문이 필수</b>라 비우면 저장하지 않는다. 알림톡은 제목이 없고 본문은 카카오 검수 문구 그대로다.</span><span class="pol__ref">S-QQPYIU · S-HIBBDL · NOTIFY-6</span></li>
+                <li><span class="pol__t">알림톡도 수정 화면에서 <b>본문을 고친다</b>. 카카오 검수를 받은 문구와 한 글자라도 다르면 발송되지 않아, 본문 위에 그 안내를 둔다. 카카오 템플릿 코드와 변수 목록은 고칠 수 없고 승인 상태도 두지 않는다. 배포는 필요 없다.</span><span class="pol__ref">S-HIBBDL · NOTIFY-6 · NOTIFY-8</span></li>
+                <li><span class="pol__t">운영 알림·앱 푸시·메일은 <b>제목과 본문이 필수</b>라 비우면 저장하지 않는다. 알림톡은 제목이 없고 본문만 필수다.</span><span class="pol__ref">S-QQPYIU · S-HIBBDL · NOTIFY-6</span></li>
                 <li><span class="pol__t">템플릿을 읽지 못해 기본 문구로 보낸 일은 서버 로그에만 남기고 화면에는 보이지 않는다.</span><span class="pol__ref">S-QQPYIU</span></li>
                 </ul>
               </div>
@@ -163,7 +163,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
-              <span class="badge badge--preview">7건 · 확정 4</span>
+              <span class="badge badge--preview">8건 · 확정 5</span>
             </div>
 
             <div class="gap is-decided">
@@ -271,7 +271,16 @@
                 <span class="gap__decided">확정 · 승인 상태를 두지 않음</span>
                 <span class="gap__ref">S-HIBBDL</span>
               </div>
-              <p class="gap__note" style="margin: 0">승인 상태를 두지 않음(A·B 모두 버림). 2026-10-07 재영. 알림톡 문구는 카카오 검수를 받은 뒤 코드로 고치므로 화면에 상태를 둘 필요가 없다. 목록은 발송 용도·카카오 템플릿 코드·본문 요약만, 상세는 읽기 전용이다.</p>
+              <p class="gap__note" style="margin: 0">승인 상태를 두지 않음(A·B 모두 버림). 2026-10-07 재영. 검수 결과는 운영자가 카카오에서 확인하고, 화면에는 상태를 두지 않는다.</p>
+            </div>
+            <div class="gap is-decided">
+              <div class="gap__head">
+                <span class="gap__no">NOTIFY-8</span>
+                <b>알림톡 본문을 화면에서 고칠 것인가</b>
+                <span class="gap__decided">확정 · 화면에서 고친다</span>
+                <span class="gap__ref">S-HIBBDL</span>
+              </div>
+              <p class="gap__note" style="margin: 0">알림톡 본문 화면 수정 · 확정 · 2026-10-07 재영. 읽기 전용으로 두고 코드로 고쳐 배포하던 안을 버렸다. 제목 없이 본문만 고치고, 목록에 최근 수정을 다른 탭과 같게 둔다.</p>
             </div>
             <div class="gap is-open">
               <div class="gap__head">

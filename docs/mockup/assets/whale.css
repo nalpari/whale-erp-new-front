@@ -5010,3 +5010,36 @@ a.tile:hover {
   flex-wrap: wrap;
   gap: var(--s-2);
 }
+/* 알림톡 말풍선 — 카카오 대화창 모양을 흉내 낸다. 머리 띠는 기존 warn 바탕을 쓴다 */
+.tpl-talk {
+  padding: var(--s-4);
+  border-radius: 6px;
+  background: var(--sky-light);
+}
+.tpl-talk__bubble {
+  max-width: 300px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--surface-card);
+}
+.tpl-talk__head {
+  padding: var(--s-2) var(--s-3);
+  background: var(--warn-wash);
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--ink);
+}
+.tpl-talk__body {
+  padding: var(--s-3);
+  color: var(--ink);
+  line-height: 1.6;
+  white-space: pre-line;
+}
+.tpl-talk__btn {
+  margin: 0 var(--s-3) var(--s-3);
+  padding: var(--s-2);
+  border-radius: 4px;
+  background: var(--surface-strong);
+  text-align: center;
+  font-size: 13px;
+}

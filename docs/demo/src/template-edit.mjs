@@ -26,9 +26,14 @@ const PREVIEW = {
     caption("직원 근무 앱 알림함 한 줄") +
     inboxLine(v.title, v.sub),
   inbox: (v) => caption("직원 근무 앱 알림함 한 줄") + inboxLine(v.title, v.sub),
+  // 카카오 알림톡 말풍선. 대화창 바탕은 #f8f9fb, 머리 띠는 연한 파랑 바탕(상태 배지의 바탕 토큰)으로 나눈다.
+  talk: (v) =>
+    caption("카카오 알림톡") +
+    `<div class="rounded-[4px] bg-erp-thead-bg p-[16px]"><div class="max-w-[300px] overflow-hidden rounded-[8px] border border-erp-panel-line bg-white"><div class="bg-erp-on-bg px-[12px] py-[8px] text-[12px] font-semibold text-erp-ink">알림톡 도착</div><p class="whitespace-pre-line px-[12px] py-[12px] text-[14px] leading-[1.6] text-erp-ink">${v.body}</p><div class="mx-[12px] mb-[12px] rounded-[2px] border border-erp-button-line py-[8px] text-center text-[13px] text-erp-ink">${v.button}</div></div></div>`,
 };
 
-// t: { kind, type, channel, to, title, body, vars, preview: { title, body, sub, button }, count, history }
+// t: { kind, type, channel, to, title, body, vars, preview: { title, body, sub, button }, count, history, code, notice }
+// title 을 비우면(알림톡) 제목 칸을 그리지 않는다. code 는 카카오 템플릿 코드(읽기 전용), notice 는 본문 위 안내 한 줄.
 export function templateEdit(t) {
   return ({ A, R }) => {
     const bodyId = ui.uid("tpl-body");
@@ -39,16 +44,18 @@ export function templateEdit(t) {
       .join("");
 
     const info = ui.detailTable("템플릿", [
-      ["알림 유형", t.type],
+      [t.kind === "talk" ? "발송 용도" : "알림 유형", t.type],
       ["채널", t.channel],
       ["받는 사람", t.to],
+      ...(t.code ? [["카카오 템플릿 코드", t.code]] : []),
     ]);
     const form = box(
       "문구",
       "",
-      ui.field(req("제목") + counted(titleId, 40), ui.textField({ id: titleId, value: t.title })) +
+      (t.title ? ui.field(req("제목") + counted(titleId, 40), ui.textField({ id: titleId, value: t.title })) : "") +
+        (t.notice ? p.note(t.notice) : "") +
         ui.field(req("본문") + counted(bodyId, 100), ui.textarea({ id: bodyId, rows: t.kind === "mail" ? 8 : 4, value: t.body })) +
-        `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">변수</span><div class="flex flex-wrap gap-[6px]">${vars}</div>${p.help("누르면 본문 커서 자리에 들어갑니다.")}</div>`,
+        `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">변수</span><div class="flex flex-wrap gap-[6px]">${vars}</div>${p.help(t.kind === "talk" ? "누르면 본문 커서 자리에 들어갑니다. 변수 목록은 카카오에 등록된 것이라 고칠 수 없습니다." : "누르면 본문 커서 자리에 들어갑니다.")}</div>`,
     );
     const preview = box("미리보기", "", PREVIEW[t.kind](t.preview));
     const history = p.box(
