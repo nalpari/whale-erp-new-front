@@ -376,6 +376,9 @@
   // ── SearchField (search-field.tsx). 값이 있을 때만 지우기 버튼 ──
   function initSearch(input) {
     const clear = input.parentElement.querySelector('button[aria-label="입력 지우기"]');
+    // 지우기 단추가 없는 검색칸(플랫폼 헤더 「BP 및 점포 선택」 창의 점포 찾기)은 건너뛴다.
+    // 없으면 여기서 멈춰 그 뒤 초기화(페이지 번호·달력·주 이동)가 모든 플랫폼 화면에서 빠졌다.
+    if (!clear) return;
     const sync = () => {
       const has = !!input.value && !input.readOnly;
       swap(clear, has, "opacity-100", "pointer-events-none opacity-0");
@@ -1030,8 +1033,34 @@
     document.addEventListener("click", (e) => e.target.closest('button[aria-label="검색"]') && run());
   }
 
+  // 알림 템플릿 수정: 변수 단추를 누르면 본문 커서 자리에 #{변수} 를 넣고, data-count 는 입력한 글자 수를 센다.
+  function initTemplateEdit() {
+    document.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-insert-var]");
+      if (!b) return;
+      const box = document.getElementById(b.dataset.target);
+      const at = box.selectionStart;
+      const v = b.dataset.insertVar;
+      box.value = box.value.slice(0, at) + v + box.value.slice(box.selectionEnd);
+      box.focus();
+      box.selectionStart = box.selectionEnd = at + v.length;
+      box.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    $$("[data-count]").forEach((c) => {
+      const f = document.getElementById(c.dataset.count);
+      const max = +c.dataset.max;
+      const show = () => {
+        c.textContent = `${f.value.length} / ${max}`;
+        c.classList.toggle("text-erp-off", f.value.length > max);
+      };
+      f.addEventListener("input", show);
+      show();
+    });
+  }
+
   const init = () => {
     fromHash();
+    initTemplateEdit();
     initFilters();
     $$("header").forEach(initHeader);
     $$('button[aria-expanded][aria-label$="접기"], button[aria-expanded][aria-label$="펼치기"]').forEach(initFilter);
