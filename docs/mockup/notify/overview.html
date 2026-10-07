@@ -101,7 +101,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">정책</h2>
-              <span class="badge badge--quiet">19줄</span>
+              <span class="badge badge--quiet">21줄</span>
             </div>
             <div class="grid grid--2" style="align-items: start">
               <div class="panel">
@@ -145,7 +145,7 @@
               <div class="panel">
                 <div class="panel__head">
                   <h3 class="t-h3">알림 템플릿</h3>
-                  <span class="badge badge--quiet">5</span>
+                  <span class="badge badge--quiet">7</span>
                 </div>
                 <ul class="pol">
                 <li><span class="pol__t">템플릿은 <b>알림 유형(또는 발송 용도) × 채널</b> 한 칸에 하나다. 채널은 운영 알림·앱 푸시·메일·알림톡 넷이다.</span><span class="pol__ref">F-TZPHZT</span></li>
@@ -153,6 +153,8 @@
                 <li><span class="pol__t">변수는 알림 유형마다 정해져 있고, 목록에 없는 변수를 쓰면 저장하지 않는다. 저장할 때마다 바뀌기 전 문구를 변경 이력에 남기고 <b>기본 문구로 되돌리기</b>를 둔다.</span><span class="pol__ref">S-QQPYIU</span></li>
                 <li><span class="pol__t">앱 푸시 탭은 직원 근무 앱 알림함에 쌓이는 문구까지 맡는다. TO-DO 배정은 푸시 없이 알림함에만 쌓인다.</span><span class="pol__ref">S-QQPYIU · 앱 NOTI-1</span></li>
                 <li><span class="pol__t">알림톡은 카카오 검수 문구와 같아야 해서 문구를 고치지 않는다. 바꾸려면 카카오 재승인과 배포가 필요하고, 화면에서는 승인 상태만 본다.</span><span class="pol__ref">S-HIBBDL</span></li>
+                <li><span class="pol__t">운영 알림·앱 푸시·메일은 <b>제목과 본문이 필수</b>라 비우면 저장하지 않는다. 알림톡은 제목이 없고 본문은 카카오 검수 문구 그대로다. 승인 상태(검수 전·검수 중·승인·반려)와 반려 사유는 플랫폼 운영자가 직접 기록한다.</span><span class="pol__ref">S-QQPYIU · S-HIBBDL · NOTIFY-6</span></li>
+                <li><span class="pol__t">템플릿을 읽지 못해 기본 문구로 보낸 일은 서버 로그에만 남기고 화면에는 보이지 않는다.</span><span class="pol__ref">S-QQPYIU</span></li>
                 </ul>
               </div>
             </div>
@@ -161,7 +163,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
-              <span class="badge badge--preview">7건 · 확정 3</span>
+              <span class="badge badge--preview">7건 · 확정 4</span>
             </div>
 
             <div class="gap is-decided">
@@ -262,14 +264,14 @@
               </div>
               <p class="gap__note" style="margin: 0">추천은 일반 글에 공통 메일 틀을 씌우는 것이다. 간단 서식 편집기와 HTML 직접 입력이 다른 후보다.</p>
             </div>
-            <div class="gap is-open">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">NOTIFY-6</span>
                 <b>알림톡 승인 상태를 어떻게 알 것인가</b>
-                <span class="gap__open">미정</span>
+                <span class="gap__decided">확정 · 운영자가 직접 기록</span>
                 <span class="gap__ref">S-HIBBDL</span>
               </div>
-              <p class="gap__note" style="margin: 0">추천은 운영자가 카카오 검수 결과를 보고 직접 기록하는 것이다. 다른 후보는 비즈뿌리오 API 로 읽어 오는 것이다.</p>
+              <p class="gap__note" style="margin: 0">플랫폼 운영자가 카카오 검수 결과를 보고 알림톡 상세에서 승인 상태와 반려 사유를 직접 기록한다(2026-10-07 재영). 비즈뿌리오 API 로 읽어 오는 안은 버렸다.</p>
             </div>
             <div class="gap is-open">
               <div class="gap__head">

@@ -45,7 +45,7 @@
                   </div>
                   <div class="panel__body">
                     <div class="field">
-                      <label for="m-title">제목</label>
+                      <label for="m-title">제목 <span class="subtle">· 필수</span></label>
                       <input class="input" id="m-title" value="[WHALE ERP] #{직원이름} 님이 근로계약서를 거부했습니다" />
                     </div>
                     <div class="field">
@@ -68,7 +68,7 @@
                     </div>
                   </div>
                   <div class="panel__note">
-                    변수는 알림 유형마다 정해져 있고 운영자가 새로 만들지 않는다. 목록에 없는 <b>#{…}</b> 를 쓰면 저장하지 않는다.
+                    제목과 본문은 둘 다 필수다. 비우면 저장하지 않는다. 변수는 알림 유형마다 정해져 있고 운영자가 새로 만들지 않는다. 목록에 없는 <b>#{…}</b> 를 쓰면 저장하지 않는다.
                     거부 사유는 직원이 남기지 않을 수 있어 비면 「사유를 남기지 않았습니다」가 들어간다.
                   </div>
                 </section>
@@ -130,7 +130,7 @@
                   </div>
                   <div class="panel__body">
                     <div class="field">
-                      <label for="p-title">제목 <span class="subtle mono" data-count="p-title" data-max="40"></span></label>
+                      <label for="p-title">제목 <span class="subtle">· 필수</span> <span class="subtle mono" data-count="p-title" data-max="40"></span></label>
                       <input class="input" id="p-title" value="근로계약서가 도착했습니다" />
                     </div>
                     <div class="field">
@@ -209,7 +209,7 @@
                   </div>
                   <div class="panel__body">
                     <div class="field">
-                      <label for="t-title">제목</label>
+                      <label for="t-title">제목 <span class="subtle">· 필수</span></label>
                       <input class="input" id="t-title" value="새 TO-DO 가 배정되었습니다" />
                     </div>
                     <div class="field">
