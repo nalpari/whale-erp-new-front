@@ -321,8 +321,8 @@
             { text: "도입문의 상세", href: "support/lead-detail.html", route: "…/leads/[id]" }
           ]}
         ]},
-        /* 알림 템플릿 관리(F-TZPHZT)는 플랫폼 운영자 전용이다. 시스템관리(1팀) 아래로 갈지는
-           NOTIFY-7 에서 1팀과 정한다. 정해지기 전까지 3팀 메뉴로 따로 세운다. */
+        /* 알림 템플릿 관리(F-TZPHZT)는 플랫폼 운영자 전용이다. 시스템관리(1팀) 아래가 아니라
+           3팀 메뉴로 따로 한 줄을 둔다(NOTIFY-7 확정, 2026-10-07 재영). */
         { key: "templates", text: "알림 템플릿 관리", team: "3팀", items: [
           { text: "영역 개요", href: "notify/overview.html", mock: 1 },
           { key: "tpl-list", text: "알림 템플릿", href: "notify/templates.html", sub: [
