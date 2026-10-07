@@ -64,7 +64,7 @@ export default ({ A, R }) => {
   const toolbar = ui.listToolbar(
     BPS.length,
     ui.button("엑셀 다운로드", { variant: "soft" }) +
-      ui.slideTrigger("BP 마스터 계정 등록", "bp-new-panel") +
+      ui.slideTrigger("등록", "bp-new-panel") +
       `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`,
   );
 
