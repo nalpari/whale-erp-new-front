@@ -653,7 +653,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |---|---|---|---|---|
 | PK | 알림 ID | id | `notification_id` |  |
 |  | 알림 대상 구분 | enum | `audience` | 운영 알림·직원 알림 |
-|  | 알림 유형 | enum | `type` | 운영 6종·직원 4종 |
+|  | 알림 유형 | enum | `type` | 공통코드 NOTIFICATION_TYPE 운영 10·직원 4 |
 |  | 관련 업무 유형 | enum | `related_type` | 문의사항·도입문의·근로계약 등 |
 |  | 관련 업무 ID | id | `related_id` |  |
 |  | 알림 내용 | text | `body` |  |
@@ -712,6 +712,31 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |  | 수신 여부 | bool | `enabled` | 기본 켬, 계약·급여는 끌 수 없음 |
 |  | 변경 시각 | datetime | `updated_at` |  |
 
+### 알림 템플릿 `notification_templates` · 엔티티
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 템플릿 ID | id | `notification_template_id` |  |
+|  | 발송 채널 | enum | `channel` | 운영 알림·앱 푸시·메일·알림톡 |
+|  | 알림 유형 | enum | `notification_type` | NOTIFICATION_TYPE, 발송 용도와 둘 중 하나 |
+|  | 발송 용도 | enum | `send_purpose` | SEND_PURPOSE, 알림 유형이 없는 메일·알림톡 |
+|  | 제목 | text | `title` | 알림톡은 비움 |
+|  | 본문 | text | `body` | #{변수}, 알림톡은 코드 문구 사본 |
+|  | 카카오 템플릿 코드 | text | `kakao_template_code` | 알림톡만 |
+| FK | 수정 관리자 | id | `updated_by` |  |
+|  | 수정 시각 | datetime | `updated_at` |  |
+
+### 알림 템플릿 변경 이력 `notification_template_histories` · 이력
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 이력 ID | id | `template_history_id` |  |
+| FK | 템플릿 | id | `notification_template_id` |  |
+|  | 이전 제목 | text | `title` |  |
+|  | 이전 본문 | text | `body` |  |
+| FK | 수정 관리자 | id | `changed_by` |  |
+|  | 수정 시각 | datetime | `changed_at` |  |
+
 **관계**
 
 - 알림 `1` — `N` 알림 수신
@@ -719,6 +744,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 - 알림 수신 `1` — `N` 알림 발송 이력
 - 계정 `0..1` — `N` 알림 수신
 - 계정 `1` — `N` 알림 수신 설정
+- 알림 템플릿 `1` — `N` 알림 템플릿 변경 이력
 
 ## 고객지원과 커뮤니티
 

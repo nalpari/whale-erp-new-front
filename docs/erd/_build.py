@@ -376,7 +376,7 @@ DIAGRAMS.append(Diagram(
     "관리자 웹의 운영 알림과 직원 근무 앱의 직원 알림은 같은 알림 구조를 쓴다. 읽음은 수신자마다 따로 두고 발송은 채널별 이력으로 남긴다. TO-DO 배정은 앱 푸시 없이 알림함에만 남긴다(2026-09-28).",
     [
         E("notification", "알림", "notifications", "focal",
-          ["#|알림 ID|id|notification_id|", "|알림 대상 구분|enum|audience|운영 알림·직원 알림", "|알림 유형|enum|type|운영 6종·직원 4종", "|관련 업무 유형|enum|related_type|문의사항·도입문의·근로계약 등", "|관련 업무 ID|id|related_id|", "|알림 내용|text|body|", "|중복 방지 키|text|dedupe_key|같은 사건·수신자 1회", "|긴급 여부|bool|urgent|", "|생성 시각|datetime|created_at|"], 0, 240),
+          ["#|알림 ID|id|notification_id|", "|알림 대상 구분|enum|audience|운영 알림·직원 알림", "|알림 유형|enum|type|공통코드 NOTIFICATION_TYPE 운영 10·직원 4", "|관련 업무 유형|enum|related_type|문의사항·도입문의·근로계약 등", "|관련 업무 ID|id|related_id|", "|알림 내용|text|body|", "|중복 방지 키|text|dedupe_key|같은 사건·수신자 1회", "|긴급 여부|bool|urgent|", "|생성 시각|datetime|created_at|"], 0, 240),
         ref_admin(1, 40),
         E("recipient", "알림 수신", "notification_recipients", "entity",
           ["#|수신 ID|id|recipient_id|", "→|알림|id|notification_id|", "→|수신 계정|id|account_id|직원 알림", "→|수신 관리자|id|admin_account_id|운영 알림", "|읽음 여부|bool|is_read|", "|읽음 처리 시각|datetime|read_at|", "|삭제 표시|bool|is_deleted|받은 사람별로 지움"], 1, 240),
@@ -386,6 +386,10 @@ DIAGRAMS.append(Diagram(
           ["#|발송 이력 ID|id|delivery_id|", "→|알림 수신|id|recipient_id|", "|발송 채널|enum|channel|앱 푸시·알림톡·이메일", "|발송 예정 시각|datetime|scheduled_at|쓰지 않음, 보류 없어짐 (NOTI-1)", "|발송 시각|datetime|sent_at|", "|발송 결과|enum|result|", "|대체 발송 여부|bool|is_fallback|푸시 실패 시 알림톡", "|묶음 발송 ID|id|batch_id|한 번에 보낸 발송 묶음"], 2, 240),
         E("preference", "알림 수신 설정", "notification_preferences", "entity",
           ["#→|계정|id|account_id|", "#|알림 유형|enum|type|", "|수신 여부|bool|enabled|기본 켬, 계약·급여는 끌 수 없음", "|변경 시각|datetime|updated_at|"], 2, 512),
+        E("template", "알림 템플릿", "notification_templates", "entity",
+          ["#|템플릿 ID|id|notification_template_id|", "|발송 채널|enum|channel|운영 알림·앱 푸시·메일·알림톡", "|알림 유형|enum|notification_type|NOTIFICATION_TYPE, 발송 용도와 둘 중 하나", "|발송 용도|enum|send_purpose|SEND_PURPOSE, 알림 유형이 없는 메일·알림톡", "|제목|text|title|알림톡은 비움", "|본문|text|body|#{변수}, 알림톡은 코드 문구 사본", "|카카오 템플릿 코드|text|kakao_template_code|알림톡만", "→|수정 관리자|id|updated_by|", "|수정 시각|datetime|updated_at|"], 0, 560),
+        E("template_history", "알림 템플릿 변경 이력", "notification_template_histories", "history",
+          ["#|이력 ID|id|template_history_id|", "→|템플릿|id|notification_template_id|", "|이전 제목|text|title|", "|이전 본문|text|body|", "→|수정 관리자|id|changed_by|", "|수정 시각|datetime|changed_at|"], 0, 900),
     ],
     [
         R("notification", "right", "recipient", "left", "1", "N", "", at_a=300, at_b=300),
@@ -393,11 +397,12 @@ DIAGRAMS.append(Diagram(
         R("recipient", "right", "delivery", "left", "1", "N", "", at_a=300, at_b=300),
         R("account", "top", "recipient", "bottom", "0..1", "N", ""),
         R("account", "right", "preference", "left", "1", "N", "", at_a=548, at_b=548),
+        R("template", "bottom", "template_history", "top", "1", "N", ""),
     ],
     [
         ("coral", "중심", "알림 하나, 수신 여럿", ["읽음은 사람마다 따로라 수신 행에 둔다", "같은 사건으로 같은 사람에게 두 번 만들지 않는다", "처리했는지는 알림이 아니라 원래 업무의 상태가 안다"]),
         ("ink", "", "채널과 보류", ["운영 알림은 알림함과 이메일, 모바일 푸시는 없다", "직원 알림은 앱 푸시가 기본이고 놓치면 안 되는 것은 알림톡으로 대체한다", "TO-DO 배정은 푸시 없이 알림함에만 남긴다"]),
-        ("muted", "미정", "남은 결정", ["알림톡을 보낼 상황과 템플릿 검수 범위(3팀, NOTI-2)"]),
+        ("muted", "미정", "남은 결정", ["알림톡을 보낼 상황과 템플릿 검수 범위(3팀, NOTI-2)", "앱 푸시 글자 수 제한, 메일 본문 편집 방식, 메뉴 위치(알림 템플릿 관리)"]),
     ],
 ))
 
