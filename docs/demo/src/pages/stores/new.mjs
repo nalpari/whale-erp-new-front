@@ -32,7 +32,7 @@ export default ({ A, R }) => {
     "점포 기본정보",
     status,
     ui.formRow(
-      ui.field(f.req("점포명"), ui.textField({ maxlength: 50, placeholder: "50자 이내로 입력해주세요." })),
+      ui.field(f.req("점포명"), ui.textField({ maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })),
       f.group("점포 연락처", f.tel()),
     ),
     f.address(A, "점포 주소"),
@@ -51,7 +51,7 @@ export default ({ A, R }) => {
     "점포 사업자정보",
     f.bizAuth(A, "sbiz", { start: "open", inline: true, values: ["113-25-60418", "한지우", "2026-08-03"], input: ["", "", ""], confirmReauth: reauthText }),
     ui.formRow(
-      ui.field("상호명", ui.textField({ maxlength: 50, placeholder: "50자 이내로 입력해주세요." })),
+      ui.field("상호명", ui.textField({ maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })),
       f.group("대표자 연락처", f.tel()),
     ),
     f.address(A, "사업자주소", {}, { top: ui.checkbox(A, "점포 주소와 같음", true) }),

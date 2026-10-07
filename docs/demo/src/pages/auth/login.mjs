@@ -15,5 +15,5 @@ export default ({ A, R }) => {
       p.quietLink("비밀번호 찾기", link(R, "auth/find.html#pw")),
       p.keyLink("사업자회원가입", link(R, "auth/signup.html")),
     );
-  return { title: "로그인", html: p.authPage(A, R, { card, foot: p.legalFoot() }) };
+  return { title: "로그인", html: p.authPage(A, R, { card, foot: p.legalFoot(), header: p.siteNav(A, R) }) };
 };

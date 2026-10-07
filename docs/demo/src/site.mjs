@@ -118,7 +118,7 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
   const biz = ui.formGroup(
     f.titleBadge("사업자정보", "on", "인증 완료"),
     f.bizAuth(A, `${idPrefix}-done`, { start: "done", values: ["211-87-01234", "남도현", "2021-03-15"], doneBadge: "인증 완료 · 2026-03-04" }),
-    ui.field(f.req("상호명"), ui.textField({ value: "㈜한강상회", maxlength: 50, placeholder: "1~50자" })),
+    ui.field(f.req("상호명"), ui.textField({ value: "㈜한강상회", maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })),
     f.group("대표자 연락처", f.tel("010", "5530", "1182")),
     ui.field("대표자 이메일", ui.textField({ type: "email", value: "ceo@hangang.co.kr", maxlength: 100 })),
     f.address(A, "사업장 주소", { zip: "04007", base: "서울 마포구 망원로 42", detail: "3층" }),
@@ -131,7 +131,7 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
     f.titleBadge("사업자정보", "off", "미인증"),
     f.help("인증 전에도 상호명 등 다른 정보는 저장할 수 있습니다."),
     f.bizAuth(A, `${idPrefix}-new`, { start: "open" }),
-    ui.field(f.req("상호명"), ui.textField({ value: "㈜한강상회", maxlength: 50, placeholder: "1~50자" })),
+    ui.field(f.req("상호명"), ui.textField({ value: "㈜한강상회", maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })),
     f.group("대표자 연락처", f.tel("010", "5530", "1182")),
     ui.field("대표자 이메일", ui.textField({ type: "email", value: "ceo@hangang.co.kr", maxlength: 100 })),
     f.address(A, "사업장 주소", { zip: "04007", base: "서울 마포구 망원로 42", detail: "3층" }),
@@ -160,7 +160,13 @@ export function passwordBody({ closeSave = false } = {}) {
   return ui.formGroup(
     "새 비밀번호 설정",
     f.pwField("현재 비밀번호", "whale-2026!", "current-password", "지금 쓰고 있는 비밀번호를 입력하세요"),
-    f.pwField("새 비밀번호", "hangang-0922#", "new-password", "영문·숫자·특수문자 각 1자 이상 8~20자 · 특수문자는 ! @ # $ % ^ &amp; * ( ) - _ = + [ ] { } ? 만, 공백 불가"),
+    f.pwField(
+      "새 비밀번호",
+      "hangang-0922#",
+      "new-password",
+      "특수문자는 ! @ # $ % ^ &amp; * ( ) - _ = + [ ] { } ? 만, 공백 불가",
+      "영문·숫자·특수문자를 조합하여 8~20자 입력해 주세요.",
+    ),
     f.pwField("새 비밀번호 확인", "hangang-0922#", "new-password", "새 비밀번호를 한 번 더 입력하세요"),
     saveRow("비밀번호 변경", closeSave, "비밀번호가 변경되었습니다."),
   );

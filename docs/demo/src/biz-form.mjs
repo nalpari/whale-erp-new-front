@@ -15,10 +15,10 @@ export const group = (label, control, width) =>
   `<div role="group" aria-label="${label.replace(REQ, "")}" class="flex flex-col justify-center gap-[8px] ${width ?? "min-w-px flex-1"}"><span class="truncate text-[14px] font-medium text-erp-label">${label}</span>${control}</div>`;
 
 // 비밀번호 칸 + [보기]. 1팀 컴포넌트에 비밀번호 칸이 없어 TextField 위에 글자 버튼을 겹쳤다. MY PAGE 비밀번호 변경과 회원가입이 같이 쓴다.
-export const pwField = (label, value, autocomplete, helpText = "") =>
+export const pwField = (label, value, autocomplete, helpText = "", placeholder = "") =>
   group(
     req(label),
-    `<div class="relative">${ui.textField({ type: "password", value, autocomplete, "aria-label": label })}<button type="button" aria-pressed="false" aria-label="비밀번호 보기" class="absolute top-0 right-0 h-[34px] px-[10px] text-[13px] text-erp-label hover:text-erp-ink" onclick="const i=this.previousElementSibling,on=i.type==='password';i.type=on?'text':'password';this.setAttribute('aria-pressed',on);this.textContent=on?'숨기기':'보기'">보기</button></div>` +
+    `<div class="relative">${ui.textField({ type: "password", value, autocomplete, placeholder, "aria-label": label })}<button type="button" aria-pressed="false" aria-label="비밀번호 보기" class="absolute top-0 right-0 h-[34px] px-[10px] text-[13px] text-erp-label hover:text-erp-ink" onclick="const i=this.previousElementSibling,on=i.type==='password';i.type=on?'text':'password';this.setAttribute('aria-pressed',on);this.textContent=on?'숨기기':'보기'">보기</button></div>` +
       (helpText ? help(helpText) : ""),
   );
 

@@ -9,14 +9,14 @@ import { link } from "../../site.mjs";
 export default ({ A, R }) => {
   const basic = ui.formGroup(
     "기본정보",
-    ui.field(req("아이디"), ui.textField({ value: "hangang01", autocomplete: "username" }) + p.help("영문 또는 영문·숫자 4~20자")),
+    ui.field(req("아이디"), ui.textField({ value: "hangang01", autocomplete: "username", placeholder: "영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요." })),
     p.row(
-      pwField("비밀번호", "whale-2026!", "new-password", "영문·숫자·특수문자 각 1자 이상, 8~20자"),
+      pwField("비밀번호", "whale-2026!", "new-password", "", "영문·숫자·특수문자를 조합하여 8~20자 입력해 주세요."),
       pwField("비밀번호 확인", "whale-2026!", "new-password"),
     ),
     p.row(ui.field(req("이름"), ui.textField({ value: "정하윤" }) + p.help("한글 또는 영문 2~20자")), ui.field(req("연락처"), tel("010", "4821", "7730"))),
     ui.field(req("이메일"), ui.textField({ type: "email", value: "hayoon@hangang.co.kr" })),
-    ui.field(req("상호명"), ui.textField({ value: "㈜한강상회" }) + p.help("1~50자.")),
+    ui.field(req("상호명"), ui.textField({ value: "㈜한강상회", placeholder: "50자 이내로 입력해 주세요." })),
   );
 
   const biz = ui.formGroup(

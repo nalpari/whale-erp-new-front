@@ -56,9 +56,13 @@ export const listToolbar = (total, right = "") =>
 
 // data-table.tsx. columns: { header, width?, align? }, rows: 칸 HTML 배열의 배열
 // 표의 줄 하나·빈 상태 줄. dataTable 이 쓰고, 줄을 더 만드는 쪽(층별 정보의 [층 추가])도 같은 마크업을 쓰려고 따로 뺐다.
+// 셀이 순수 글자(배지·링크 같은 태그가 섞이지 않은 값)면 title 을 달아, 칸이 좁아 말줄임된 값도 마우스 오버로 전체를 볼 수 있게 한다.
 export const tableRow = (columns, cells) =>
   `<tr class="h-[46px] border-b border-erp-thead-line">${cells
-    .map((cell, i) => `<td class="truncate px-[10px] ${columns[i].align === "left" ? "text-left" : "text-center"}">${cell}</td>`)
+    .map(
+      (cell, i) =>
+        `<td class="truncate px-[10px] ${columns[i].align === "left" ? "text-left" : "text-center"}"${typeof cell === "string" && !cell.includes("<") ? ` title="${cell}"` : ""}>${cell}</td>`,
+    )
     .join("")}</tr>`;
 export const tableEmptyRow = (columns, empty = "데이터가 없습니다.") =>
   `<tr class="h-[92px] border-b border-erp-thead-line"><td colspan="${columns.length}" class="text-center text-erp-muted">${empty}</td></tr>`;

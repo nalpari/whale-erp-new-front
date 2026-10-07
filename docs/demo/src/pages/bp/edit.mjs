@@ -30,7 +30,7 @@ export function bpEditBody(A, R, { panel = false } = {}) {
     f.help("국세청 API로 사업자등록번호·대표자명·개업일자의 진위만 확인합니다. 인증 결과는 저장을 눌러야 반영됩니다. 상호명은 이 인증으로 채워지지 않습니다."),
     f.bizAuth(A, "ebiz", { start: "done", values: ["211-87-01234", "남도현", "2021-03-15"], input: ["211-87-40981", "남도현", "2026-09-01"] }),
     f.help("세 값은 직접 고칠 수 없고 재인증을 통과해야 바뀝니다. 바꾼 사업자등록번호도 다른 BP 와 겹치는지 검사합니다."),
-    ui.field(f.req("상호명"), ui.textField({ value: BP.name, maxlength: 50 })),
+    ui.field(f.req("상호명"), ui.textField({ value: BP.name, maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })),
     f.group("대표자 연락처", f.tel("010", "5530", "1182")),
     ui.field("대표자 이메일", ui.textField({ value: "ceo@hangang.co.kr" })),
     f.address(A, "사업자주소", { zip: "04007", base: "서울 마포구 망원로 42", detail: "3층" }),

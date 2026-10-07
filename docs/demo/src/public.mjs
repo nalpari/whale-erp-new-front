@@ -32,8 +32,9 @@ export const cardTitle = (t, lead = "") =>
   `<div class="flex flex-col gap-[6px]"><h1 class="text-[18px] font-semibold">${t}</h1>${lead ? `<p class="text-[14px] text-erp-label">${lead}</p>` : ""}</div>`;
 
 // 가운데 카드 하나짜리 화면(로그인·찾기·가입·약관)
-export function authPage(A, R, { card, width = "w-[420px]", foot = "", home = link(R, "auth/login.html") }) {
-  return `<div class="${ui.ERP_THEME}"><div class="h-[100dvh] overflow-y-auto bg-erp-thead-bg"><div class="flex min-h-full flex-col items-center justify-center gap-[24px] p-[24px]">${brand(A, home)}<main class="flex ${width} flex-col gap-[18px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">${card}</main>${foot}</div></div></div>`;
+// header 를 주면(로그인 화면, 2026-10-07 피드백) 로그인전 홈화면의 GNB(siteNav)를 위에 얹는다 — 로고가 거기 이미 있어 가운데 칸의 brand 는 뺀다.
+export function authPage(A, R, { card, width = "w-[420px]", foot = "", home = link(R, "auth/login.html"), header = "" }) {
+  return `<div class="${ui.ERP_THEME}">${header}<div class="${header ? "h-[calc(100dvh-70px)]" : "h-[100dvh]"} overflow-y-auto bg-erp-thead-bg"><div class="flex min-h-full flex-col items-center justify-center gap-[24px] p-[24px]">${header ? "" : brand(A, home)}<main class="flex ${width} flex-col gap-[18px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">${card}</main>${foot}</div></div></div>`;
 }
 
 // 로그인 화면 맨 아래 약관 링크 줄. 누르면 전문을 확인창으로 연다. 확인창 폭은 회원가입 전문 보기와 같은 640px(2026-10-06 피드백).

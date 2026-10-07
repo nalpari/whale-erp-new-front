@@ -7,7 +7,7 @@ import { platformHeader, link } from "../../site.mjs";
 export function bpNewBody(A, R, { panel = false } = {}) {
   const basic = ui.formGroup(
     "BP 마스터 기본정보",
-    ui.field(f.req("아이디"), ui.textField({ value: "bakerylab" }) + f.help("등록한 뒤에는 바꿀 수 없습니다.")),
+    ui.field(f.req("아이디"), ui.textField({ value: "bakerylab", placeholder: "영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요." }) + f.help("등록한 뒤에는 바꿀 수 없습니다.")),
     ui.field(f.req("이름"), ui.textField({ value: "오세린" })),
     f.group(f.req("연락처"), f.tel("010", "2291", "7730")),
     ui.field(f.req("이메일"), ui.textField({ value: "serin@breadlab.kr" }) + f.help("초기 비밀번호가 이 주소로 갑니다.")),
@@ -22,7 +22,7 @@ export function bpNewBody(A, R, { panel = false } = {}) {
       confirmReauth:
         '<p>지금 인증한 사업자등록번호·대표자명·개업일자가 지워지고 인증 전으로 돌아갑니다.</p><p class="mt-[6px] text-erp-label">기본정보와 상호명, 아래에 적은 사업자정보는 그대로 둡니다. 다시 인증하지 않고 등록해도 됩니다.</p>',
     }),
-    ui.field(f.req("상호명"), ui.textField({ value: "브레드랩 2호", maxlength: 50 }) + f.help("1~50자")),
+    ui.field(f.req("상호명"), ui.textField({ value: "브레드랩 2호", maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })),
     f.group("대표자 연락처", f.tel()),
     ui.field("대표자 이메일", ui.textField()),
     f.address(A, "사업자주소"),

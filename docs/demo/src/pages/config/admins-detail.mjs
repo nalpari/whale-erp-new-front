@@ -20,6 +20,7 @@ const NAME_BADGES = `이서아 <span class="ml-[6px] inline-flex gap-[6px] align
 
 export function adminDetailBody(A, R, { panel = false } = {}) {
   const resetId = x.dialogId();
+  const histId = x.dialogId();
 
   const left = [
     ui.detailTable("기본정보", [
@@ -27,6 +28,7 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
       ["이름", "이서아"],
       ["휴대전화번호", "010-2290-5173"],
       ["이메일", "seoa.lee@hangang.co.kr"],
+      ["비밀번호", `<span class="tracking-[0.2em] text-erp-ink">••••••••</span>${x.dialogTrigger("초기화", resetId, "soft")}`],
       ["등록일시", ui.detailValues(["2025-04-01 09:12", "정하윤"])],
       ["최종 수정일시", ui.detailValues(["2026-02-03 15:10", "정하윤"])],
       ["최근 로그인", "2026-09-20 17:55"],
@@ -65,26 +67,29 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
     `<div class="flex flex-col gap-[12px] break-keep">${c.kv([["아이디", "hghr"], ["이름", "이서아"]], 60)}<p>시스템이 12자 무작위 초기 비밀번호를 새로 발급해 이 계정의 이메일로만 보냅니다. 처리하는 사람도 그 값을 볼 수 없습니다. 초기 비밀번호는 1시간 안에 로그인해야 하며, 지나면 로그인 화면의 비밀번호 찾기로 임시 비밀번호를 다시 받습니다.</p><p><b class="font-semibold">지금 비밀번호는 곧바로 못 쓰게 되지만, 열려 있는 세션은 닫지 않습니다</b></p></div>`,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("초기화", { "data-close": true }),
   );
+  const historyDialog = c.wide(
+    x.dialog(
+      histId,
+      `변경 이력${c.sub("생성 · 정보 · 권한 그룹 · 점포 · 상태 · 비밀번호 초기화 · 최신순")}`,
+      `<div class="overflow-x-auto">${history}</div><div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
+      ui.button("닫기", { variant: "off", "data-close": true }),
+    ),
+    "w-[640px] max-h-[calc(100dvh-48px)] overflow-y-auto",
+  );
 
-  const resetBtn = x.dialogTrigger("비밀번호 초기화", resetId, "soft");
   const editBtn = ui.slideTrigger("수정", "admin-edit-panel");
-  // 패널: 이름 줄 아래에 [비밀번호 초기화][수정][닫기] — 464px 패널에서는 이름 옆에 세 버튼이 다 들어가지 않는다 / 전체 화면: 아래 버튼 줄
+  const histBtn = x.dialogTrigger("변경 이력", histId, "soft");
+  // 패널: BP 마스터 계정 상세와 같다 — 이름은 맨 위에 혼자, 기능 버튼은 맨 아래로(2026-10-07 피드백). 전체 화면: 아래 버튼 줄.
   const head = panel
-    ? `<div class="flex flex-col gap-[12px]">${ui.sectionHead(NAME_BADGES)}<div class="flex justify-end gap-[6px]">${resetBtn}${editBtn}${ui.button("닫기", { variant: "off", "data-close": true })}</div></div>`
+    ? `<div class="flex items-center justify-between gap-[12px]"><h2 class="text-[18px] font-semibold whitespace-nowrap text-erp-ink">${NAME_BADGES}</h2>${ui.button("닫기", { variant: "off", "data-close": true })}</div>`
     : "";
+  const bottomButtons = panel ? `<div class="flex flex-wrap justify-center gap-[6px] border-t border-erp-panel-line pt-[16px]">${editBtn}${histBtn}</div>` : "";
   const info = panel
     ? `<div class="flex flex-col gap-[24px]">${left}${right}</div>`
     : `<div class="grid grid-cols-2 items-start gap-[24px]"><div class="flex flex-col gap-[24px]">${left}</div><div class="flex flex-col gap-[24px]">${right}</div></div>`;
-  const historyBlock = panel ? `<div class="overflow-x-auto">${history}</div>` : history;
-  const foot = panel ? "" : c.buttons(ui.button("목록", { variant: "off", href: link(R, "config/admins.html") }), resetBtn, editBtn);
+  const foot = panel ? "" : c.buttons(ui.button("목록", { variant: "off", href: link(R, "config/admins.html") }), editBtn, histBtn);
 
-  return (
-    head +
-    info +
-    `<div class="flex flex-col gap-[12px]">${ui.sectionHead(`변경 이력${c.sub("생성 · 정보 · 권한 그룹 · 점포 · 상태 · 비밀번호 초기화 · 최신순")}`)}${historyBlock}</div>` +
-    foot +
-    resetDialog
-  );
+  return head + info + bottomButtons + foot + resetDialog + historyDialog;
 }
 
 export function adminDetailPanel(A, R) {

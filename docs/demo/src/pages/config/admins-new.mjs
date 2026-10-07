@@ -12,7 +12,10 @@ export function adminNewBody(A, R, { panel = false } = {}) {
   const basic = ui.formGroup(
     `기본정보${c.sub("네 항목 모두 필수")}`,
     row(
-      ui.field(c.req("아이디"), c.stack(ui.textField({ value: "hgcs", maxlength: 20 }), c.help("영문 또는 영문·숫자 4~20자 · 등록 뒤에는 바꾸지 못합니다"))),
+      ui.field(
+        c.req("아이디"),
+        c.stack(ui.textField({ value: "hgcs", maxlength: 20, placeholder: "영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요." }), c.help("등록 뒤에는 바꾸지 못합니다")),
+      ),
       ui.field(c.req("이름"), c.stack(ui.textField({ value: "문가은", maxlength: 20 }), c.help("한글 또는 영문 2~20자"))),
     ),
     row(

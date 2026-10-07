@@ -28,7 +28,10 @@ export default ({ A, R }) => {
   const basic = ui.formGroup(
     `기본정보${sub("* 표시가 필수 · 소속 부서·직책·주소는 선택")}`,
     row(
-      ui.field(req("아이디"), stack(ui.textField({ value: "platyoon", maxlength: 20 }), help("영문 또는 영문·숫자 4~20자 · 등록한 뒤에는 바꿀 수 없습니다"))),
+      ui.field(
+        req("아이디"),
+        stack(ui.textField({ value: "platyoon", maxlength: 20, placeholder: "영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요." }), help("등록한 뒤에는 바꿀 수 없습니다")),
+      ),
       ui.field(req("이름"), stack(ui.textField({ value: "윤채원", maxlength: 20 }), help("한글 또는 영문 2~20자"))),
     ),
     row(

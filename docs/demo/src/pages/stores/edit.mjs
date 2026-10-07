@@ -44,7 +44,7 @@ export default ({ A, R }) => {
     "점포 기본정보",
     status,
     ui.formRow(
-      ui.field(f.req("점포명"), ui.textField({ value: name, maxlength: 50, placeholder: "50자 이내로 입력해주세요." })),
+      ui.field(f.req("점포명"), ui.textField({ value: name, maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })),
       f.group("점포 연락처", f.tel("02", "322", "1180")),
     ),
     f.address(A, "점포 주소", { zip: "03991", base: "서울 마포구 동교로 256", detail: "1층" }),
@@ -61,7 +61,7 @@ export default ({ A, R }) => {
     "점포 사업자정보",
     f.bizAuth(A, "ebiz", { start: "open", inline: true, values: ["105-22-81934", "박서윤", "2019-05-10"], confirmReauth: reauthText }),
     ui.formRow(
-      ui.field("상호명", ui.textField({ value: "모리커피 연남", maxlength: 50, placeholder: "50자 이내로 입력해주세요." })),
+      ui.field("상호명", ui.textField({ value: "모리커피 연남", maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })),
       f.group("대표자 연락처", f.tel("010", "5521", "3380")),
     ),
     f.address(A, "사업자주소", { zip: "03991", base: "서울 마포구 동교로 256", detail: "1층" }, { top: ui.checkbox(A, "점포 주소와 같음", true) }),
