@@ -298,6 +298,8 @@ const PLATFORM_MENUS = [
       ["플랫폼 권한 관리", "system/roles.html"],
       ["플랫폼 메뉴 관리", "system/menus.html"],
       ["플랫폼 공통코드 관리", "system/codes.html"],
+      // 알림 템플릿 관리는 3팀 화면, NOTIFY-7 · 2026-10-07 재영, 1팀 전달 사항 14번
+      ["알림 템플릿 관리", "notify/templates.html"],
       ["플랫폼 휴일 관리", "system/holidays.html"],
     ],
   ],
@@ -310,8 +312,6 @@ const PLATFORM_MENUS = [
       ["도입문의", "support/community-leads.html"],
     ],
   ],
-  // 알림 템플릿 관리(F-TZPHZT). 시스템관리(1팀) 아래가 아니라 3팀 메뉴로 따로 한 줄(NOTIFY-7 확정, 2026-10-07 재영).
-  ["알림 템플릿 관리", [["알림 템플릿", "notify/templates.html"]]],
 ];
 const BPS = ["BP 선택", `${BP.name} · ${BP.code}`, "㈜모리푸드 · BP000021", "㈜온기에프앤비 · BP000009"];
 export const PLATFORM_USER = "김지영 (플랫폼 관리자)";

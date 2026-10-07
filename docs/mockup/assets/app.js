@@ -296,7 +296,7 @@
           { text: "쿠폰 관리" },
           { text: "포인트 관리" }
         ]},
-        /* 시스템관리는 1팀 명세(R-KJGJXP 플랫폼 시스템 관리)의 하위 기능 다섯으로 이름을 맞췄다.
+        /* 시스템관리는 1팀 명세(R-KJGJXP 플랫폼 시스템 관리)의 하위 기능 다섯으로 이름을 맞췄다. 여섯째 알림 템플릿 관리는 3팀 화면이다(NOTIFY-7 · 2026-10-07 재영, 1팀 전달 사항 14번).
            구조도의 프로그램 관리가 플랫폼 메뉴 관리다. 권한 팝업의 메뉴는 메뉴 관리의 트리를, 메뉴 관리의 서비스는 공통코드 ‘서비스’를 읽는다. */
         { key: "system", text: "시스템관리", team: "1팀", toggle: 1, items: [
           { text: "영역 개요", href: "system/overview.html", mock: 1 },
@@ -304,6 +304,12 @@
           { text: "플랫폼 권한 관리", href: "system/roles.html" },
           { text: "플랫폼 메뉴 관리", href: "system/menus.html" },
           { text: "플랫폼 공통코드 관리", href: "system/codes.html" },
+          /* 알림 템플릿 관리는 3팀 화면, NOTIFY-7 · 2026-10-07 재영, 1팀 전달 사항 14번 */
+          { key: "tpl-list", text: "알림 템플릿 관리", href: "notify/templates.html", sub: [
+            { text: "템플릿 목록", href: "notify/templates.html", route: "/platform/notification-templates" },
+            { text: "템플릿 수정", href: "notify/templates-edit.html", route: "…/notification-templates/[id]" },
+            { text: "템플릿 등록", href: "notify/templates-new.html", route: "…/notification-templates/new" }
+          ]},
           { text: "플랫폼 휴일 관리", href: "system/holidays.html" }
         ]},
         { key: "community", text: "커뮤니티관리", team: "3팀", items: [
@@ -319,16 +325,6 @@
           { key: "cm-leads", text: "도입문의", href: "support/community.html#leads", sub: [
             { text: "도입문의 목록", href: "support/community.html#leads", route: "…/leads" },
             { text: "도입문의 상세", href: "support/lead-detail.html", route: "…/leads/[id]" }
-          ]}
-        ]},
-        /* 알림 템플릿 관리(F-TZPHZT)는 플랫폼 운영자 전용이다. 시스템관리(1팀) 아래가 아니라
-           3팀 메뉴로 따로 한 줄을 둔다(NOTIFY-7 확정, 2026-10-07 재영). */
-        { key: "templates", text: "알림 템플릿 관리", team: "3팀", items: [
-          { text: "영역 개요", href: "notify/overview.html", mock: 1 },
-          { key: "tpl-list", text: "알림 템플릿", href: "notify/templates.html", sub: [
-            { text: "템플릿 목록", href: "notify/templates.html", route: "/platform/notification-templates" },
-            { text: "템플릿 수정", href: "notify/templates-edit.html", route: "…/notification-templates/[id]" },
-            { text: "템플릿 등록", href: "notify/templates-new.html", route: "…/notification-templates/new" }
           ]}
         ]}
       ]
