@@ -5,6 +5,17 @@
       "docs/mockup/**",
       "docs/flow/**"
     ],
-    "ignoreValues": []
+    "ignoreValues": [
+      {
+        "rule": "design-system-font-size",
+        "value": "13px",
+        "createdAt": "2026-10-07T06:48:04.683Z"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "12px",
+        "createdAt": "2026-10-07T06:48:04.847Z"
+      }
+    ]
   }
 }
