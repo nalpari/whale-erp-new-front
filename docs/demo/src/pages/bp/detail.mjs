@@ -89,8 +89,13 @@ export function bpDetailBody(A, R, { panel = false } = {}) {
     ui.button("확인", { "data-close": true }),
   );
   const historyDialog = x
-    .dialog(histId, "변경 이력", `<div class="overflow-x-auto">${history}</div>`, ui.button("닫기", { variant: "off", "data-close": true }))
-    .replace("w-[420px]", "w-[760px] max-h-[calc(100dvh-48px)] overflow-y-auto");
+    .dialog(
+      histId,
+      "변경 이력",
+      `<div class="overflow-x-auto">${history}</div><div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
+      ui.button("닫기", { variant: "off", "data-close": true }),
+    )
+    .replace("w-[420px]", "w-[640px] max-h-[calc(100dvh-48px)] overflow-y-auto");
 
   const infoLayout = panel ? `<div class="flex flex-col gap-[24px]">${basic}${biz}</div>` : `<div class="grid grid-cols-2 items-start gap-[24px]">${basic}${biz}</div>`;
   return (

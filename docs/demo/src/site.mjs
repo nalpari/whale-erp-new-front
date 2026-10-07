@@ -109,7 +109,7 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
     ) +
     ui.formGroup(
       "기본정보",
-      ui.field(f.req("이름"), ui.textField({ value: "정하윤", maxlength: 20 }) + f.help("한글 또는 영문 2~20자")),
+      ui.field(f.req("이름"), ui.textField({ value: "정하윤", maxlength: 20, placeholder: "한글 또는 영문 2~20자" })),
       f.group(f.req("연락처"), f.tel("010", "4821", "7730") + f.help("휴대전화 · 숫자 10~11자리")),
       ui.field(f.req("이메일"), ui.textField({ type: "email", value: "hayoon@hangang.co.kr", maxlength: 100 })),
       save,
@@ -117,9 +117,21 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
 
   const biz = ui.formGroup(
     f.titleBadge("사업자정보", "on", "인증 완료"),
-    f.help("국세청 API 로 사업자등록번호·대표자명·개업일자의 진위만 확인합니다."),
-    f.bizAuth(A, idPrefix, { start: "done", values: ["211-87-01234", "남도현", "2021-03-15"], doneBadge: "인증 완료 · 2026-03-04" }),
-    ui.field(f.req("상호명"), ui.textField({ value: "㈜한강상회", maxlength: 50 }) + f.help("1~50자")),
+    f.bizAuth(A, `${idPrefix}-done`, { start: "done", values: ["211-87-01234", "남도현", "2021-03-15"], doneBadge: "인증 완료 · 2026-03-04" }),
+    ui.field(f.req("상호명"), ui.textField({ value: "㈜한강상회", maxlength: 50, placeholder: "1~50자" })),
+    f.group("대표자 연락처", f.tel("010", "5530", "1182")),
+    ui.field("대표자 이메일", ui.textField({ type: "email", value: "ceo@hangang.co.kr", maxlength: 100 })),
+    f.address(A, "사업장 주소", { zip: "04007", base: "서울 마포구 망원로 42", detail: "3층" }),
+    ui.formRow(ui.field("업태", ui.textField({ value: "도소매업", maxlength: 50 })), ui.field("종목", ui.textField({ value: "식자재 유통", maxlength: 50 }))),
+    save,
+  );
+
+  // 가입 직후처럼 아직 사업자 인증을 받지 않은 초기 상태 — 인증완료 탭과 생김새를 견주어 보려고 따로 둔다(2026-10-07 피드백).
+  const bizNew = ui.formGroup(
+    f.titleBadge("사업자정보", "off", "미인증"),
+    f.help("인증 전에도 상호명 등 다른 정보는 저장할 수 있습니다."),
+    f.bizAuth(A, `${idPrefix}-new`, { start: "open" }),
+    ui.field(f.req("상호명"), ui.textField({ value: "㈜한강상회", maxlength: 50, placeholder: "1~50자" })),
     f.group("대표자 연락처", f.tel("010", "5530", "1182")),
     ui.field("대표자 이메일", ui.textField({ type: "email", value: "ceo@hangang.co.kr", maxlength: 100 })),
     f.address(A, "사업장 주소", { zip: "04007", base: "서울 마포구 망원로 42", detail: "3층" }),
@@ -131,6 +143,7 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
     x.tabs([
       { id: `${tabPrefix}basic`, label: "기본정보", html: basic },
       { id: `${tabPrefix}biz`, label: "사업자정보", html: biz },
+      { id: `${tabPrefix}biz-new`, label: "사업자정보(인증 전)", html: bizNew },
     ]) + f.SWAP_SCRIPT
   );
 }
