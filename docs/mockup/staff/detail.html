@@ -17,10 +17,13 @@
         <div class="titlebar">
           <a class="iconbtn" href="index.html" aria-label="직원 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
           <h1 class="t-h1">서지안</h1>
-          <span class="badge badge--ok">재직</span>
+          <span class="badge badge--ok" data-ret-badge>재직</span>
           <span class="badge badge--quiet">본인인증 완료</span>
           <div class="titlebar__end">
             <span class="filters__count mono">EMP-2026-0143</span>
+            <a class="btn btn--secondary btn--sm" href="index.html">목록</a>
+            <button class="btn btn--secondary btn--sm" type="button" data-ret-open="ret-pop" data-tip="그 직원 근무지가 업무 범위 안에 있고 메뉴 권한 「직원 정보 관리」 수정이 켜진 관리자에게만 보인다.">퇴직 처리</button>
+            <button class="btn btn--secondary btn--sm" type="button" data-ret-open="ret-undo" hidden>퇴직 처리 취소</button>
           </div>
         </div>
 
@@ -42,6 +45,7 @@
                 <p>직원 한 명을 기준으로 <b>다섯 업무의 현황을 모아</b> 보여준다. 처리는 각 관리 화면으로 넘긴다.</p>
               </div>
             </div>
+            <p class="gap__note">직원 레코드의 퇴직 처리와 취소만 상세에서 한다(2026-10-07 재영). 그 밖의 처리는 각 관리 화면으로 넘긴다.</p>
           </div>
 
           <div class="gap is-decided">
@@ -102,6 +106,8 @@
                     <dd>모리커피 서초점</dd>
                     <dt>입사일</dt>
                     <dd class="mono">2026-03-01</dd>
+                    <dt data-ret-date hidden>퇴직일</dt>
+                    <dd class="mono" data-ret-date hidden>2026-09-10</dd>
                     <dt>생년월일</dt>
                     <dd class="mono">1998-07-12</dd>
                     <dt>휴대전화번호</dt>
@@ -376,9 +382,79 @@
               </div>
             </section>
           </div>
+          <!-- 퇴직 처리 확인 · 운영 정책 CTR-24·CTR-25 · 2026-10-07 재영 -->
+          <div class="modal" id="ret-pop" hidden role="dialog" aria-modal="true" aria-labelledby="ret-t">
+            <div class="modal__box">
+              <div class="modal__head">
+                <h2 class="t-h2" id="ret-t">퇴직 처리</h2>
+                <button class="iconbtn" type="button" data-ret-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+              </div>
+              <div class="modal__body">
+                <div class="field">
+                  <label for="ret-day">퇴직일</label>
+                  <input class="input mono" id="ret-day" type="date" value="2026-09-10" min="2026-06-06" />
+                  <span class="help">오늘 이후, 또는 최근 3개월 안의 지난 날짜(STAFF-24)</span>
+                </div>
+                <dl class="kv">
+                  <dt>종료될 근로계약</dt>
+                  <dd>1건 <span class="subtle">· 체결 완료 계약이 퇴직일에 종료</span></dd>
+                  <dt>지울 근무스케줄</dt>
+                  <dd>2건 <span class="subtle">· 퇴직일 다음 날(09-11)부터</span></dd>
+                  <dt>배정을 풀 TO-DO</dt>
+                  <dd>1건 <span class="subtle">· 개인 배정 미완료</span></dd>
+                </dl>
+                <div class="band band--warn">
+                  <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
+                  <div class="band__body">
+                    <div class="band__title">지운 근무스케줄과 푼 배정은 되돌릴 수 없습니다</div>
+                    <p class="band__desc">퇴직 처리 취소는 퇴직일 전날까지만 되고, 재직 상태와 계약 종료일만 돌아옵니다. 계정은 막지 않습니다.</p>
+                  </div>
+                </div>
+                <div class="inline" style="justify-content: flex-end">
+                  <button class="btn btn--ghost" type="button" data-ret-close>취소</button>
+                  <button class="btn btn--primary" type="button" data-ret-done="on">퇴직 처리</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal" id="ret-undo" hidden role="dialog" aria-modal="true" aria-labelledby="ret-u">
+            <div class="modal__box">
+              <div class="modal__head">
+                <h2 class="t-h2" id="ret-u">퇴직 처리 취소</h2>
+                <button class="iconbtn" type="button" data-ret-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+              </div>
+              <div class="modal__body">
+                <p style="margin: 0">재직 상태와 계약 종료일이 돌아옵니다. 지운 근무스케줄 2건과 푼 TO-DO 배정 1건은 돌아오지 않습니다.</p>
+                <div class="inline" style="justify-content: flex-end">
+                  <button class="btn btn--ghost" type="button" data-ret-close>닫기</button>
+                  <button class="btn btn--primary" type="button" data-ret-done="off">퇴직 처리 취소</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
     </div>
     <script src="../assets/app.js"></script>
+    <script>
+      /* 목업 동작 — 퇴직 처리 확인창을 여닫고, 확인하면 재직 → 퇴직(퇴직일 표시, 버튼은 퇴직 처리 취소)으로, 취소하면 되돌린다. */
+      document.addEventListener("click", function onRetireClick(e) {
+        var o = e.target.closest("[data-ret-open]");
+        if (o) document.getElementById(o.dataset.retOpen).hidden = false;
+        var c = e.target.closest("[data-ret-close]");
+        if (c) c.closest(".modal").hidden = true;
+        var d = e.target.closest("[data-ret-done]");
+        if (!d) return;
+        var on = d.dataset.retDone === "on";
+        var badge = document.querySelector("[data-ret-badge]");
+        badge.textContent = on ? "퇴직" : "재직";
+        badge.className = "badge " + (on ? "badge--quiet" : "badge--ok");
+        document.querySelectorAll("[data-ret-date]").forEach(function (el) { el.hidden = !on; });
+        document.querySelector('[data-ret-date].mono').textContent = document.getElementById("ret-day").value;
+        document.querySelector('[data-ret-open="ret-pop"]').hidden = on;
+        document.querySelector('[data-ret-open="ret-undo"]').hidden = !on;
+        d.closest(".modal").hidden = true;
+      });
+    </script>
   </body>
 </html>

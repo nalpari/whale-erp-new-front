@@ -1,4 +1,4 @@
-// 직원 상세. 목업 docs/mockup/staff/detail.html(서지안)을 BP 마스터로 본 것. 조회만 하고 처리는 각 관리 탭으로 넘긴다.
+// 직원 상세. 목업 docs/mockup/staff/detail.html(서지안)을 BP 마스터로 본 것. 처리는 각 관리 탭으로 넘기고, 퇴직 처리만 여기서 한다(2026-10-07 재영).
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as p from "../../staff-parts.mjs";
@@ -8,6 +8,7 @@ export default ({ A, R }) => {
   const L = (path) => link(R, path);
   const manage = (page) => ui.link("관리", L(`staff/${page}.html`));
   const resetId = x.dialogId();
+  const retireId = x.dialogId();
   const { headIn, box } = p;
   // 머리 칸 아래 열 이름 줄은 흰 바탕에 굵고 진한 글자(2026-10-02 재영)
   const whiteHead = (table) =>
@@ -115,8 +116,17 @@ export default ({ A, R }) => {
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("초기화", { "data-close": true }),
   );
 
+  // 퇴직 처리(운영 정책 CTR-24·CTR-25). 퇴직일은 오늘 이후이거나 최근 3개월 안의 지난 날짜(STAFF-24).
+  // 근무지가 업무 범위 안이고 「직원 정보 관리」 수정 권한이 있을 때만 버튼이 보인다. 퇴직일 전이면 같은 자리에 「퇴직 처리 취소」.
+  const retireDialog = x.dialog(
+    retireId,
+    "퇴직 처리",
+    `<div class="flex flex-col gap-[12px]">${ui.dateField(A, { label: "퇴직일", value: "2026-09-10" })}<p class="text-[13px] text-erp-label">오늘 이후, 또는 최근 3개월 안의 지난 날짜를 받습니다.</p><ul class="list-disc pl-[18px]"><li>종료될 근로계약 1건</li><li>지울 근무스케줄 2건 (퇴직일 다음 날부터)</li><li>배정을 풀 개인 TO-DO 1건</li></ul><p>지운 근무스케줄과 푼 배정은 되돌릴 수 없습니다. 퇴직 처리 취소는 퇴직일 전날까지만 되고, 계정은 막지 않습니다.</p></div>`,
+    ui.button("취소", { variant: "off", "data-close": true }) + ui.button("퇴직 처리", { "data-close": true }),
+  );
+
   const body = ui.detailBody(
-    `<div class="flex flex-col gap-[12px]">${p.detailHead("직원 상세", ui.button("목록", { href: L("staff/index.html") }))}${p.cols(basic + reset + contract, schedule + attendance + payslips + todo, "grid-cols-[5fr_7fr]")}</div>` + resetDialog,
+    `<div class="flex flex-col gap-[12px]">${p.detailHead("직원 상세", ui.button("목록", { href: L("staff/index.html") }) + x.dialogTrigger("퇴직 처리", retireId, "soft"))}${p.cols(basic + reset + contract, schedule + attendance + payslips + todo, "grid-cols-[5fr_7fr]")}</div>` + resetDialog + retireDialog,
   );
   return { title: "직원 상세", html: ui.erpFrame({ header: erpHeader(A, R), title: "직원 정보 관리", body }) };
 };
