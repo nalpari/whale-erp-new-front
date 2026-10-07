@@ -1088,6 +1088,12 @@
               if (!known.has(m[1])) errs.push(`${where} ${i + 1}번째 줄: #{${m[1]}} 는 변수 목록에 없습니다.`);
           });
         });
+        // 글자 수 제한(앱 푸시 제목 40·본문 100, NOTIFY-4): 넘으면 저장하지 않는다.
+        $$("[data-count]", root).forEach((c) => {
+          const f = document.getElementById(c.dataset.count);
+          if (!f.closest("[hidden]") && f.value.length > +c.dataset.max)
+            errs.push(`${f.matches("[data-tpl-body]") ? "본문" : "제목"}은 ${c.dataset.max}자를 넘을 수 없습니다(지금 ${f.value.length}자).`);
+        });
         const text = fields.map((f) => f.value).join("\n");
         vars()
           .filter((v) => v.required && !text.includes(`#{${v.name}}`))

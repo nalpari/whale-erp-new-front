@@ -1,5 +1,5 @@
 // 알림 템플릿 수정 · 앱 푸시. 목업 docs/mockup/notify/templates-edit.html 의 「근로계약서 발송 · 앱 푸시」 예.
-// 같은 문구가 잠금 화면 푸시와 직원 근무 앱 알림함 한 줄로 쓰인다. 글자 수는 NOTIFY-4 미정이라 제목 40·본문 100 가정.
+// 같은 문구가 잠금 화면 푸시와 직원 근무 앱 알림함 한 줄로 쓰인다. 글자 수는 제목 40·본문 100, 넘으면 저장하지 않는다(NOTIFY-4).
 import { templateEdit } from "../../template-edit.mjs";
 
 export default templateEdit({

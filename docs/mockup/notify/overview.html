@@ -112,7 +112,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">정책</h2>
-              <span class="badge badge--quiet">25줄</span>
+              <span class="badge badge--quiet">26줄</span>
             </div>
             <div class="grid grid--2" style="align-items: start">
               <div class="panel">
@@ -156,7 +156,7 @@
               <div class="panel">
                 <div class="panel__head">
                   <h3 class="t-h3">알림 템플릿</h3>
-                  <span class="badge badge--quiet">11</span>
+                  <span class="badge badge--quiet">12</span>
                 </div>
                 <ul class="pol">
                 <li><span class="pol__t">템플릿은 <b>알림 유형(또는 발송 용도) × 채널</b> 한 칸에 하나다. 채널은 운영 알림·앱 푸시·메일·알림톡 넷이다.</span><span class="pol__ref">F-TZPHZT</span></li>
@@ -169,6 +169,7 @@
                 <li><span class="pol__t">운영 알림·앱 푸시·메일은 <b>제목과 본문이 필수</b>라 비우면 저장하지 않는다. 알림톡은 제목이 없고 본문만 필수다.</span><span class="pol__ref">S-QQPYIU · S-HIBBDL · NOTIFY-6</span></li>
                 <li><span class="pol__t">1팀 화면에서 나가는 관리자 메일 8종(회원가입 완료, 신규 BP 가입 알림, BP 신규 등록, 플랫폼 관리자 계정 생성, BP 관리자 계정 생성, 비밀번호 초기화, 임시 비밀번호 발급, 회원 탈퇴 완료)도 메일 탭의 발송 용도로 두고 문구를 여기서 고친다. 1팀 공통코드 메일 유형은 쓰지 않는다.</span><span class="pol__ref">F-TZPHZT · NOTIFY-9</span></li>
                 <li><span class="pol__t">템플릿마다 <b>템플릿 코드</b>를 둔다. 등록할 때 채널 접두(NTF·PUSH·EMAIL·TALK)와 알림 유형·발송 용도 코드로 기본값을 채우고(예: NTF_CONTRACT_SIGNED) 운영자가 바꿀 수 있다. 이미 있는 템플릿의 코드를 바꾸면 「발송 코드에서 이 템플릿 코드를 쓰고 있으면 함께 바꿔야 합니다」 확인창을 띄운다. 알림톡의 카카오 템플릿 코드와는 다른 값이다.</span><span class="pol__ref">F-TZPHZT · NOTIFY-10</span></li>
+                <li><span class="pol__t">앱 푸시는 <b>제목 40자·본문 100자</b>까지이고 넘으면 저장하지 않는다. 메일 본문은 <b>일반 글</b>만 쓰고 머리·꼬리·버튼은 공통 메일 틀이 붙인다.</span><span class="pol__ref">S-QQPYIU · NOTIFY-4 · NOTIFY-5</span></li>
                 <li><span class="pol__t">템플릿을 읽지 못해 기본 문구로 보낸 일은 서버 로그에만 남기고 화면에는 보이지 않는다.</span><span class="pol__ref">S-QQPYIU</span></li>
                 </ul>
               </div>
@@ -178,7 +179,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
-              <span class="badge badge--preview">10건 · 확정 7</span>
+              <span class="badge badge--preview">10건 · 확정 9</span>
             </div>
 
             <div class="gap is-decided">
@@ -261,23 +262,23 @@
                 직원 근무 앱의 <b>NOTI-4</b> 도 같은 답으로 닫혔다. 앱 알림함도 한 줄에 발송 결과를 담는다.
               </p>
             </div>
-            <div class="gap is-open">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">NOTIFY-4</span>
                 <b>앱 푸시 글자 수를 얼마로 막을 것인가</b>
-                <span class="gap__open">미정</span>
+                <span class="gap__decided">확정 · 제목 40 · 본문 100</span>
                 <span class="gap__ref">S-QQPYIU</span>
               </div>
-              <p class="gap__note" style="margin: 0">후보는 제목 40·본문 100, 제목 30·본문 60, 제한 없이 미리보기만. 수정 화면은 첫째를 가정해 글자 수를 센다.</p>
+              <p class="gap__note" style="margin: 0">2026-10-07 재영 확정 — 앱 푸시는 제목 40자·본문 100자이고 넘으면 저장하지 않는다. 제목 30·본문 60 과 제한 없이 미리보기만 두는 안은 버렸다.</p>
             </div>
-            <div class="gap is-open">
+            <div class="gap is-decided">
               <div class="gap__head">
                 <span class="gap__no">NOTIFY-5</span>
                 <b>메일 본문을 어떻게 편집할 것인가</b>
-                <span class="gap__open">미정</span>
+                <span class="gap__decided">확정 · 일반 글 + 공통 메일 틀</span>
                 <span class="gap__ref">S-QQPYIU</span>
               </div>
-              <p class="gap__note" style="margin: 0">추천은 일반 글에 공통 메일 틀을 씌우는 것이다. 간단 서식 편집기와 HTML 직접 입력이 다른 후보다.</p>
+              <p class="gap__note" style="margin: 0">2026-10-07 재영 확정 — 메일 본문은 일반 글만 쓰고 머리·꼬리·버튼은 공통 메일 틀이 붙인다. 간단 서식 편집기와 HTML 직접 입력은 버렸다.</p>
             </div>
             <div class="gap is-decided">
               <div class="gap__head">
