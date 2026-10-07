@@ -387,7 +387,7 @@ DIAGRAMS.append(Diagram(
         E("preference", "알림 수신 설정", "notification_preferences", "entity",
           ["#→|계정|id|account_id|", "#|알림 유형|enum|type|", "|수신 여부|bool|enabled|기본 켬, 계약·급여는 끌 수 없음", "|변경 시각|datetime|updated_at|"], 2, 512),
         E("template", "알림 템플릿", "notification_templates", "entity",
-          ["#|템플릿 ID|id|notification_template_id|", "|발송 채널|enum|channel|운영 알림·앱 푸시·메일·알림톡", "|알림 유형|enum|notification_type|NOTIFICATION_TYPE, 발송 용도와 둘 중 하나", "|발송 용도|enum|send_purpose|SEND_PURPOSE, 알림 유형이 없는 메일·알림톡", "|제목|text|title|알림톡은 비움", "|본문|text|body|#{변수}, 알림톡은 코드 문구 사본", "|카카오 템플릿 코드|text|kakao_template_code|알림톡만", "→|수정 관리자|id|updated_by|", "|수정 시각|datetime|updated_at|"], 0, 560),
+          ["#|템플릿 ID|id|notification_template_id|", "|발송 채널|enum|channel|운영 알림·앱 푸시·메일·알림톡", "|알림 유형|enum|notification_type|NOTIFICATION_TYPE, 발송 용도와 둘 중 하나", "|발송 용도|enum|send_purpose|SEND_PURPOSE, 알림 유형이 없는 메일·알림톡", "|제목|text|title|알림톡은 비움", "|본문|text|body|#{변수}. 알림톡은 카카오 검수 문구와 같게", "|카카오 템플릿 코드|text|kakao_template_code|알림톡만", "→|수정 관리자|id|updated_by|", "|수정 시각|datetime|updated_at|"], 0, 560),
         E("template_history", "알림 템플릿 변경 이력", "notification_template_histories", "history",
           ["#|이력 ID|id|template_history_id|", "→|템플릿|id|notification_template_id|", "|이전 제목|text|title|", "|이전 본문|text|body|", "→|수정 관리자|id|changed_by|", "|수정 시각|datetime|changed_at|"], 0, 900),
     ],

@@ -721,7 +721,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |  | 알림 유형 | enum | `notification_type` | NOTIFICATION_TYPE, 발송 용도와 둘 중 하나 |
 |  | 발송 용도 | enum | `send_purpose` | SEND_PURPOSE, 알림 유형이 없는 메일·알림톡 |
 |  | 제목 | text | `title` | 알림톡은 비움 |
-|  | 본문 | text | `body` | #{변수}, 알림톡은 코드 문구 사본 |
+|  | 본문 | text | `body` | #{변수}. 알림톡은 카카오 검수 문구와 같게 |
 |  | 카카오 템플릿 코드 | text | `kakao_template_code` | 알림톡만 |
 | FK | 수정 관리자 | id | `updated_by` |  |
 |  | 수정 시각 | datetime | `updated_at` |  |
