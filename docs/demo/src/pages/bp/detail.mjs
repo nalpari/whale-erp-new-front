@@ -63,7 +63,7 @@ export default ({ A, R }) => {
     `<p>현재 상태 ${ui.badge("on", "사용")} — <b class="font-semibold">미사용</b>으로만 바꿀 수 있습니다. 탈퇴는 BP 마스터의 회원 탈퇴로만 생깁니다.</p>` +
       box(
         `${BP.name} · 사용 → 미사용`,
-        "이 BP 의 관리자 계정 <b class=\"font-semibold\">5개</b>(BP 마스터 1 · BP 관리자 2 · 가맹 마스터 1 · 가맹 관리자 1)가 모두 미사용이 됩니다. 로그인 중인 세션은 바로 끊기고 비밀번호는 그대로 둡니다.",
+        "이 BP 의 관리자 계정 <b class=\"font-semibold\">5개</b>(BP 마스터 1 · BP 관리자 2 · 가맹 마스터 1 · 가맹 관리자 1)가 모두 미사용이 됩니다. 로그인 중인 세션은 끊지 않고 비밀번호도 그대로 둡니다.",
       ) +
       `<ul class="mt-[12px] list-disc pl-[18px]"><li>점포 <b class="font-semibold">11곳</b>은 상태를 그대로 두고 업무만 멈춥니다 — 직원 초대 · 근로계약 · 부가서비스 · 매출 연동 · 출퇴근 기록.</li><li>운영 중인 점포 · 구독 · 미정산 금액 같은 선행 조건은 검사하지 않고 <b class="font-semibold">바로 적용</b>합니다.</li></ul>`,
     cancel + ui.button("미사용으로 변경", { "data-close": true }),
@@ -72,8 +72,7 @@ export default ({ A, R }) => {
     resetId,
     "비밀번호 초기화",
     `<dl class="grid grid-cols-[60px_1fr] gap-y-[6px]"><dt class="text-erp-label">BP</dt><dd>${BP.name} <span class="text-erp-label">${BP.code}</span></dd><dt class="text-erp-label">계정</dt><dd>hangang01 · 정하윤</dd></dl>` +
-      `<p class="mt-[12px]">새 초기 비밀번호(12자 무작위)를 계정 이메일로 보냅니다. 메일은 「[WHALE ERP] 비밀번호가 초기화되었습니다」 초기화 전용 포맷으로 갑니다(BP 신규 등록 메일과 다른 포맷). 기존 비밀번호로는 더 로그인할 수 없고, 다음 로그인 때 비밀번호를 새로 정해야 합니다. 초기 비밀번호는 1시간 안에 로그인해야 하며, 지나면 로그인 화면의 비밀번호 찾기로 임시 비밀번호를 다시 받습니다.</p>` +
-      box("이 계정의 로그인 세션이 모두 끊어집니다"),
+      `<p class="mt-[12px]">새 초기 비밀번호(12자 무작위)를 계정 이메일로 보냅니다. 메일은 「[WHALE ERP] 비밀번호가 초기화되었습니다」 초기화 전용 포맷으로 갑니다(BP 신규 등록 메일과 다른 포맷). 기존 비밀번호로는 더 로그인할 수 없고, 다음 로그인 때 비밀번호를 새로 정해야 합니다. 초기 비밀번호는 1시간 안에 로그인해야 하며, 지나면 로그인 화면의 비밀번호 찾기로 임시 비밀번호를 다시 받습니다.</p>`,
     cancel + ui.button("초기화", { "data-close": true, "data-dialog": sentId }),
   );
   const sentDialog = x.dialog(

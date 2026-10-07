@@ -1,5 +1,10 @@
 # Bundle history
 
+## 2026-10-07
+
+* **Update**: `docs/mockup/bp/detail.html`·`overview.html` 의 BP 미사용 전환 정책 변경을 [BP 마스터 계정 관리](/bp.md) 에 옮겼다 — 관리자 계정 전부를 미사용으로 바꿔도 로그인 중인 세션은 끊지 않는다(`S-CQGGZS`). 비밀번호를 그대로 두는 것은 같다.
+* **Update**: `docs/mockup/bp/detail.html` 의 비밀번호 초기화 팝업에서 세션을 끊는다는 안내를 뺀 것을 [BP 마스터 계정 관리](/bp.md) 에 옮겼다 — 초기화해도 로그인 중인 세션은 끊지 않는다(`S-PRRLMA`). 플랫폼 관리자 상세와 같은 정책이다.
+
 ## 2026-10-06
 
 * **Update**: `2026-09-30-네이밍-규칙.md`(md5 f7ff246d) 「화면 문구」 줄의 「front 에」를 「front·staff 에」로 [네이밍 규칙](/conventions/naming.md) 에 반영했다 — 두 클라이언트 공통 규칙이다.
