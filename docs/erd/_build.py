@@ -174,7 +174,7 @@ DIAGRAMS.append(Diagram(
         E("session", "접속 상태", "auth_sessions", "entity",
           ["#|접속 ID|id|session_id|", "→|계정|id|account_id|", "|기기 식별 정보|text|device_info|한 계정 여러 기기", "|발급 시각|datetime|issued_at|", "|만료 시각|datetime|expires_at|마지막 접속 후 30일", "|종료 시각|datetime|revoked_at|재설정 시 모두 종료"], 0, 312),
         E("account", "계정", "accounts", "focal",
-          ["#|계정 ID|id|account_id|", "|이메일 아이디|text|email|로그인 아이디, 고유", "|비밀번호 해시|hash|password_hash|", "|실명|text|real_name|본인인증 값, 수정 불가", "|생년월일|date|birth_date|본인인증 값, 수정 불가", "|휴대전화번호|text|phone|본인인증, 변경 시 재인증", "|동일인 식별값|text|ci|", "|주소|text|address|다음 계약부터 반영", "|계정 상태|enum|status|가입 완료·연결 보류", "|로그인 실패 횟수|int|failed_login_count|5회 잠금", "|잠금 해제 시각|datetime|locked_until|재설정하면 해제"], 1, 40),
+          ["#|계정 ID|id|account_id|", "|이메일 아이디|text|email|로그인 아이디, 고유", "|비밀번호 해시|hash|password_hash|", "|실명|text|real_name|본인인증 값, 수정 불가", "|생년월일|date|birth_date|본인인증 값, 수정 불가", "|휴대전화번호|text|phone|본인인증, 변경 시 재인증", "|동일인 식별값|text|ci|", "|주소|text|address|다음 계약부터 반영", "|계정 상태|enum|status|가입 완료·연결 보류·탈퇴, 휴면 없음", "|로그인 실패 횟수|int|failed_login_count|5회 잠금", "|잠금 해제 시각|datetime|locked_until|재설정하면 해제"], 1, 40),
         E("change", "계정 변경 이력", "account_change_histories", "history",
           ["#|변경 이력 ID|id|change_id|", "→|계정|id|account_id|", "|변경 항목|enum|field|휴대전화번호·이메일·주소·비밀번호", "|변경 전 값|text|before_value|비밀번호는 저장 안 함", "|변경 후 값|text|after_value|비밀번호는 저장 안 함", "|변경 경로|enum|channel|본인·핀 재설정·관리자 초기화", "→|요청 관리자|id|requested_by|관리자 초기화일 때", "|변경 일시|datetime|changed_at|"], 1, 424),
         E("login", "로그인 이력", "login_histories", "history",

@@ -84,7 +84,7 @@ python3 docs/erd/_build.py
 |  | 휴대전화번호 | text | `phone` | 본인인증, 변경 시 재인증 |
 |  | 동일인 식별값 | text | `ci` |  |
 |  | 주소 | text | `address` | 다음 계약부터 반영 |
-|  | 계정 상태 | enum | `status` | 가입 완료·연결 보류 |
+|  | 계정 상태 | enum | `status` | 가입 완료·연결 보류·탈퇴, 휴면 없음 |
 |  | 로그인 실패 횟수 | int | `failed_login_count` | 5회 잠금 |
 |  | 잠금 해제 시각 | datetime | `locked_until` | 재설정하면 해제 |
 
