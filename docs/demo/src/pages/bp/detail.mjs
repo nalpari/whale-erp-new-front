@@ -1,24 +1,25 @@
 // BP 마스터 계정 상세. 목업 docs/mockup/bp/detail.html 의 기본 상태(㈜한강상회 · 사용 · 조회·수정·삭제 권한)를 플랫폼 관리자로 본 것.
 // 생김새는 1팀 /design/detail 샘플: 카드 안 묶음 제목 줄 + [버튼] 과 상세 표.
+// 목록(bp/index.html)에서 슬라이드 패널로 연다(2026-10-07 피드백) — 전체 화면은 그대로 두고 직접 들어와도 쓸 수 있게 둔다.
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as f from "../../biz-form.mjs";
 import { BP, platformHeader, link } from "../../site.mjs";
 import { bpEditPanel } from "./edit.mjs";
 
-export default ({ A, R }) => {
+export function bpDetailBody(A, R, { panel = false } = {}) {
   const offId = x.dialogId();
   const resetId = x.dialogId();
   const sentId = x.dialogId();
   const cancel = ui.button("취소", { variant: "off", "data-close": true });
 
+  const closeBtn = panel ? ui.button("닫기", { variant: "off", "data-close": true }) : ui.button("닫기", { variant: "off", href: link(R, "bp/index.html") });
   const head = ui.sectionHead(
     BP.name,
-    x.dialogTrigger("BP 상태 변경", offId, "soft") +
-      x.dialogTrigger("비밀번호 초기화", resetId, "soft") +
-      f.disabledButton("계정 삭제", "삭제할 수 없습니다 — 로그인 기록이 있고(2026-09-20), 하위 관리자 4명과 등록 점포 11곳이 있습니다. 대신 BP 상태를 미사용으로 바꾸세요.") +
-      ui.slideTrigger("BP 마스터 계정 수정", "bp-edit-panel", "soft") +
-      ui.button("목록", { href: link(R, "bp/index.html") }),
+    x.dialogTrigger("상태변경", offId, "soft") +
+      f.disabledButton("삭제", "삭제할 수 없습니다 — 로그인 기록이 있고(2026-09-20), 하위 관리자 4명과 등록 점포 11곳이 있습니다. 대신 BP 상태를 미사용으로 바꾸세요.") +
+      ui.slideTrigger("수정", "bp-edit-panel", "soft") +
+      closeBtn,
   );
 
   const basic = ui.detailTable("BP 마스터 기본정보", [
@@ -27,6 +28,7 @@ export default ({ A, R }) => {
     ["이름", "정하윤"],
     ["연락처", "010-4821-7730"],
     ["이메일", "hayoon@hangang.co.kr"],
+    ["비밀번호", `<span class="tracking-[0.2em] text-erp-ink">••••••••</span>${x.dialogTrigger("초기화", resetId, "soft")}`],
     ["BP 상태", `${ui.badge("on", "사용")}<span class="text-erp-label">2025-02-03 11:12</span>`],
     ["소속 점포", ui.link("11곳 · 점포 목록에서 보기", link(R, "stores/index.html"))],
     ["가입경로", "회원가입"],
@@ -82,14 +84,23 @@ export default ({ A, R }) => {
     ui.button("확인", { "data-close": true }),
   );
 
-  const body = ui.detailBody(
-    `<div class="flex flex-col gap-[12px]">${head}<div class="grid grid-cols-2 items-start gap-[24px]">${basic}${biz}</div></div>` +
-      `<div class="flex flex-col gap-[12px]">${ui.sectionHead("변경 이력")}${history}</div>` +
-      offDialog +
-      resetDialog +
-      sentDialog,
+  const infoLayout = panel ? `<div class="flex flex-col gap-[24px]">${basic}${biz}</div>` : `<div class="grid grid-cols-2 items-start gap-[24px]">${basic}${biz}</div>`;
+  const historyBlock = panel ? `<div class="overflow-x-auto">${history}</div>` : history;
+  return (
+    `<div class="flex flex-col gap-[12px]">${head}${infoLayout}</div>` +
+    `<div class="flex flex-col gap-[12px]">${ui.sectionHead("변경 이력")}${historyBlock}</div>` +
+    offDialog +
+    resetDialog +
+    sentDialog
   );
+}
 
+export function bpDetailPanel(A, R) {
+  return ui.slidePanel("bp-detail-panel", "BP 마스터 계정 상세", bpDetailBody(A, R, { panel: true }));
+}
+
+export default ({ A, R }) => {
+  const body = ui.detailBody(bpDetailBody(A, R));
   return {
     title: "BP 마스터 계정 상세",
     html: ui.erpFrame({ header: platformHeader(A, R), title: "BP 마스터 계정 관리", body, panels: bpEditPanel(A, R) }),

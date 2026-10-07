@@ -1,8 +1,13 @@
 // BP 마스터 계정 목록. 목업 docs/mockup/bp/index.html 의 기본 상태(처음 진입 · 전체)를 플랫폼 관리자로 본 것.
 // 목업 위쪽 검색 조건 묶음은 점포 목록처럼 왼쪽 필터로 옮겼다.
 import * as ui from "../../ui.mjs";
-import { platformHeader, link } from "../../site.mjs";
+import { platformHeader } from "../../site.mjs";
 import { bpNewPanel } from "./new.mjs";
+import { bpDetailPanel } from "./detail.mjs";
+import { bpEditPanel } from "./edit.mjs";
+
+// 표의 BP 코드·상호명은 상세를 슬라이드 패널로 연다 — 이 데모는 점포·사업자 데이터를 ㈜한강상회 하나만 갖고 있어 어느 줄을 눌러도 같은 상세가 뜬다.
+const detailTrigger = (text) => `<button type="button" aria-controls="bp-detail-panel" aria-expanded="false" class="text-erp-link hover:underline">${text}</button>`;
 
 // [BP 코드, 아이디, 이름, 연락처, 이메일, 상태, 상호명, 사업자등록번호, 가입경로, 등록자, 등록 일시]
 const GONE = '<span class="text-erp-muted">탈퇴로 삭제됨</span>';
@@ -42,15 +47,14 @@ export default ({ A, R }) => {
     { header: "등록자", width: "w-[110px]" },
     { header: "등록 일시", width: "w-[150px]" },
   ];
-  const detail = link(R, "bp/detail.html");
   const rows = BPS.map(([code, id, nm, tel, mail, state, corp, biz, via, by, at]) => [
-    ui.link(code, detail),
+    detailTrigger(code),
     id,
     nm ?? GONE,
     tel ?? GONE,
     mail ?? GONE,
     ui.badge(state === "사용" ? "on" : "off", state),
-    ui.link(corp, detail),
+    detailTrigger(corp),
     biz,
     via,
     by,
@@ -70,7 +74,7 @@ export default ({ A, R }) => {
       header: platformHeader(A, R),
       title: "BP 마스터 계정 관리",
       body: ui.listBody(filter, toolbar + ui.dataTable(cols, rows, "일치하는 BP가 없습니다.") + `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`),
-      panels: bpNewPanel(A, R),
+      panels: bpNewPanel(A, R) + bpDetailPanel(A, R) + bpEditPanel(A, R),
     }),
   };
 };
