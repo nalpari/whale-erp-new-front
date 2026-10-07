@@ -2,6 +2,7 @@
 import { templateEdit } from "../../template-edit.mjs";
 
 export default templateEdit({
+  base: true,
   templateCode: "EMAIL_CONTRACT_REJECTED",
   kind: "mail",
   type: "근로계약 거부",
@@ -9,7 +10,7 @@ export default templateEdit({
   to: "소속 범위 사업자 관리자",
   title: "[WHALE ERP] #{직원이름} 님이 근로계약서를 거부했습니다",
   body: "#{직원이름} 님이 #{근무지} 근로계약서를 거부했습니다.\n\n거부 사유: #{거부사유}\n\n조건을 고쳐 새 계약을 만들거나 그대로 재발송할 수 있습니다.",
-  vars: ["직원이름", "근무지", "거부사유", "계약링크"],
+  vars: [{ name: "직원이름", label: "직원 이름", required: true, example: "유하람" }, { name: "근무지", label: "근무지", required: true, example: "모리커피 연남점" }, { name: "거부사유", label: "거부 사유", required: false, example: "근무 시작 시각이 다릅니다" }, { name: "계약링크", label: "계약 링크", required: false, example: "https://…" }],
   preview: {
     title: "[WHALE ERP] 유하람 님이 근로계약서를 거부했습니다",
     body: "유하람 님이 모리커피 연남점 근로계약서를 거부했습니다.\n\n거부 사유: 근무 시작 시각이 면접 때 이야기한 것과 다릅니다.\n\n조건을 고쳐 새 계약을 만들거나 그대로 재발송할 수 있습니다.",

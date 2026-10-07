@@ -3,6 +3,7 @@
 import { templateEdit } from "../../template-edit.mjs";
 
 export default templateEdit({
+  base: true,
   templateCode: "PUSH_CONTRACT_SENT",
   kind: "push",
   type: "근로계약서 발송",
@@ -11,7 +12,7 @@ export default templateEdit({
   count: true,
   title: "근로계약서가 도착했습니다",
   body: "#{근무지} 근로계약서를 확인하고 날인해 주세요. 날인 기한은 #{날인기한}까지입니다.",
-  vars: ["근무지", "날인기한"],
+  vars: [{ name: "근무지", label: "근무지", required: true, example: "모리커피 연남점" }, { name: "날인기한", label: "날인 기한", required: false, example: "10-30" }],
   preview: {
     title: "근로계약서가 도착했습니다",
     body: "모리커피 연남점 근로계약서를 확인하고 날인해 주세요. 날인 기한은 10-30까지입니다.",

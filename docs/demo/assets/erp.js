@@ -1033,20 +1033,100 @@
     document.addEventListener("click", (e) => e.target.closest('button[aria-label="검색"]') && run());
   }
 
-  // 알림 템플릿 수정: 변수 단추를 누르면 본문 커서 자리에 #{변수} 를 넣고, data-count 는 입력한 글자 수를 센다.
-  function initTemplateEdit() {
-    document.addEventListener("click", (e) => {
-      const b = e.target.closest("[data-insert-var]");
-      if (!b) return;
-      const box = document.getElementById(b.dataset.target);
-      const at = box.selectionStart;
-      const v = b.dataset.insertVar;
-      box.value = box.value.slice(0, at) + v + box.value.slice(box.selectionEnd);
-      box.focus();
-      box.selectionStart = box.selectionEnd = at + v.length;
-      box.dispatchEvent(new Event("input", { bubbles: true }));
+  // 알림 템플릿 수정·등록(NOTIFY-10). 변수 목록 줄에서 본문 위 변수 단추를 그리고, 단추를 누르면 본문 커서 자리에 #{변수} 를 넣는다.
+  // 저장 전에 제목·본문을 검사해 목록에 없는 #{변수}와 빠진 필수 변수를 줄 번호와 함께 보이고, 통과하면 저장 확인창을 연다.
+  // 채널·유형을 고르면 등록 화면은 템플릿 코드 기본값(채널 접두 + 코드)을 채우고, 수정 화면은 코드를 바꿀 때 확인창을 띄운다.
+  function initTemplateEdit(root) {
+    const rows = () => $$("[data-var-row]", root);
+    const vars = () =>
+      rows()
+        .map((r) => ({ name: $("[data-var-name]", r).value.trim(), required: $("[data-var-required]", r).checked }))
+        .filter((v) => v.name);
+    const btnBox = $("[data-var-buttons]", root);
+    const body = btnBox && document.getElementById(btnBox.dataset.target);
+    const btnClass = $("[data-var-add]", root)?.className ?? "";
+    const drawButtons = () => {
+      btnBox.replaceChildren(
+        ...vars().map((v) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = btnClass;
+          b.textContent = v.name;
+          b.dataset.insertVar = `#{${v.name}}`;
+          return b;
+        }),
+      );
+    };
+    root.addEventListener("click", (e) => {
+      const ins = e.target.closest("[data-insert-var]");
+      if (ins && body) {
+        const at = body.selectionStart;
+        const v = ins.dataset.insertVar;
+        body.value = body.value.slice(0, at) + v + body.value.slice(body.selectionEnd);
+        body.focus();
+        body.selectionStart = body.selectionEnd = at + v.length;
+        body.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      if (e.target.closest("[data-var-add]")) {
+        $("[data-var-body]", root).append($("[data-var-template]", root).content.cloneNode(true));
+        drawButtons();
+      }
+      const del = e.target.closest("[data-var-del]");
+      if (del) {
+        del.closest("[data-var-row]").remove();
+        drawButtons();
+      }
+      const save = e.target.closest("[data-tpl-save]");
+      if (save) {
+        const errs = [];
+        const known = new Set(vars().map((v) => v.name));
+        const fields = $$("[data-tpl-check]", root).filter((f) => !f.closest("[hidden]"));
+        fields.forEach((f) => {
+          const where = f.matches("[data-tpl-body]") ? "본문" : "제목";
+          f.value.split("\n").forEach((line, i) => {
+            for (const m of line.matchAll(/#\{([^}]*)\}/g))
+              if (!known.has(m[1])) errs.push(`${where} ${i + 1}번째 줄: #{${m[1]}} 는 변수 목록에 없습니다.`);
+          });
+        });
+        const text = fields.map((f) => f.value).join("\n");
+        vars()
+          .filter((v) => v.required && !text.includes(`#{${v.name}}`))
+          .forEach((v) => errs.push(`필수 변수 #{${v.name}} 가 제목·본문에 없습니다.`));
+        const box = $("[data-tpl-errors]", root);
+        box.replaceChildren(...errs.map((t) => Object.assign(document.createElement("p"), { textContent: t })));
+        box.hidden = !errs.length;
+        if (!errs.length) document.getElementById(save.dataset.tplSave)?.showModal();
+      }
+      if (e.target.closest("[data-code-revert]")) {
+        const code = $("[data-code-original]", root);
+        code.value = code.dataset.codeOriginal;
+      }
     });
-    $$("[data-count]").forEach((c) => {
+    root.addEventListener("input", (e) => e.target.matches("[data-var-name]") && drawButtons());
+
+    // 채널: 알림톡이면 제목 칸을 숨기고 카카오 템플릿 코드·검수 안내를 보인다.
+    const channel = $("[data-tpl-channel]", root);
+    const kind = $("[data-tpl-kind]", root);
+    const code = $("[data-tpl-code]", root);
+    const prefixes = JSON.parse(root.dataset.prefixes);
+    const kinds = JSON.parse(root.dataset.kinds);
+    const sync = () => {
+      const talk = channel.value === "알림톡";
+      $$("[data-tpl-talk]", root).forEach((el) => (el.hidden = !talk));
+      $$("[data-tpl-title]", root).forEach((el) => (el.hidden = talk));
+    };
+    const fillCode = () => {
+      if (root.hasAttribute("data-tpl-new") && prefixes[channel.value] && kinds[kind.value]) code.value = `${prefixes[channel.value]}_${kinds[kind.value]}`;
+    };
+    channel.addEventListener("change", () => (sync(), fillCode()));
+    kind.addEventListener("change", fillCode);
+    code.addEventListener("change", () => {
+      if (code.dataset.codeOriginal && code.value !== code.dataset.codeOriginal) document.getElementById(code.dataset.codeDialog)?.showModal();
+    });
+    drawButtons();
+    sync();
+
+    $$("[data-count]", root).forEach((c) => {
       const f = document.getElementById(c.dataset.count);
       const max = +c.dataset.max;
       const show = () => {
@@ -1060,7 +1140,7 @@
 
   const init = () => {
     fromHash();
-    initTemplateEdit();
+    $$("[data-tpl-root]").forEach(initTemplateEdit);
     initFilters();
     $$("header").forEach(initHeader);
     $$('button[aria-expanded][aria-label$="접기"], button[aria-expanded][aria-label$="펼치기"]').forEach(initFilter);

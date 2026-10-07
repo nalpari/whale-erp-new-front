@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>알림 템플릿 등록 · WHALE ERP</title>
+    <link rel="icon" href="../assets/img/favicon.svg" />
+    <link rel="stylesheet" href="../assets/whale.css" />
+  </head>
+  <body data-root="../" data-page="templates" data-sub="notify/templates-new.html">
+    <!-- 알림 템플릿 등록 · /platform/notification-templates/new · F-TZPHZT
+         수정 화면과 같은 틀(NOTIFY-10). 채널과 알림 유형·발송 용도를 고르면 템플릿 코드 기본값이 채워지고 바꿀 수 있다.
+         알림톡을 고르면 제목 칸이 빠지고 카카오 템플릿 코드와 검수 안내가 선다. 기본 문구로 되돌리기는 없다. -->
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <div class="shell">
+      <main class="main" id="main">
+        <div class="titlebar">
+          <a class="iconbtn" href="templates.html" aria-label="알림 템플릿 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
+          <h1 class="t-h1">알림 템플릿 등록</h1>
+          <div class="titlebar__end">
+            <span class="filters__count mono">F-TZPHZT · /platform/notification-templates/new</span>
+            <button class="btn btn--primary btn--sm" type="button">저장</button>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="grid grid--7-5">
+            <section class="panel">
+              <div class="panel__head">
+                <h2 class="t-h2">새 템플릿</h2>
+                <div class="panel__end">
+                  <label class="inline"><span class="toggle" role="switch" aria-pressed="true" tabindex="0"></span>사용</label>
+                </div>
+              </div>
+              <div class="panel__body">
+                <div class="grid grid--2" style="gap: var(--s-4)">
+                  <div class="field">
+                    <label for="n-channel">발송 채널</label>
+                    <select class="select" id="n-channel">
+                      <option value="">선택</option>
+                      <option value="NTF">운영 알림</option>
+                      <option value="PUSH">앱 푸시</option>
+                      <option value="EMAIL" selected>메일</option>
+                      <option value="TALK">알림톡</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="n-kind">알림 유형 · 발송 용도</label>
+                    <select class="select" id="n-kind">
+                      <option value="">선택</option>
+                      <option value="CONTRACT_EXPIRED" selected>근로계약 만료 · 알림 유형</option>
+                      <option value="CONTRACT_RENEWAL_DUE">계약 갱신 예정 · 알림 유형</option>
+                      <option value="STAFF_INVITATION">가입 초대 · 발송 용도</option>
+                      <option value="LEAD_CONFIRMATION">도입문의 접수 확인 · 발송 용도</option>
+                    </select>
+                    <span class="help">공통코드 알림 유형·발송 용도에서 고른다. 표본에는 넷만 그렸다.</span>
+                  </div>
+                </div>
+                <div class="grid grid--2" style="gap: var(--s-4)">
+                  <div class="field">
+                    <label for="n-code">템플릿 코드</label>
+                    <input class="input mono" id="n-code" value="EMAIL_CONTRACT_EXPIRED" />
+                    <span class="help">채널과 유형을 고르면 「채널 접두 + 코드」로 채워진다. 바꿀 수 있다.</span>
+                  </div>
+                  <div class="field" data-talk hidden>
+                    <label for="n-kakao">카카오 템플릿 코드</label>
+                    <input class="input mono" id="n-kakao" value="" placeholder="카카오에 등록한 코드" />
+                  </div>
+                </div>
+                <hr class="hr" />
+                <div class="field" data-title>
+                  <label for="n-title">제목 <span class="subtle">· 필수</span></label>
+                  <input class="input" id="n-title" value="[WHALE ERP] #{직원이름} 님의 근로계약서가 만료되었습니다" />
+                </div>
+                <p class="note" style="margin: 0" data-talk hidden>
+                  <span data-icon="alert" data-icon-size="14"></span>
+                  <span>카카오 검수를 받은 문구와 한 글자라도 다르면 발송되지 않습니다. 검수를 받은 뒤 고쳐 주세요.</span>
+                </p>
+                <div class="field">
+                  <label for="n-body">본문 <span class="subtle">· 필수</span></label>
+                  <textarea class="textarea" id="n-body" rows="5">#{직원이름} 님이 날인 기한 안에 근로계약서에 날인하지 않아 계약이 만료되었습니다.
+그대로 재발송하거나 조건을 바꿔 새 계약을 만들 수 있습니다.</textarea>
+                </div>
+                <div class="field">
+                  <label>변수 <span class="subtle">· 누르면 본문 커서 자리에 들어간다 · 단추는 아래 변수 목록에서 만든다</span></label>
+                  <div class="tpl-var">
+                    <button class="tbtn" type="button">직원이름</button>
+                    <button class="tbtn" type="button">근무지</button>
+                  </div>
+                </div>
+              </div>
+              <div class="panel__note">
+                등록한 템플릿에는 기본 문구가 없어 <b>기본 문구로 되돌리기</b>가 없다. 지우지 않고 <b>사용 안 함</b>으로 끈다.
+              </div>
+            </section>
+
+            <section class="stack--lg" style="display: flex; flex-direction: column">
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">미리보기</h2>
+                  <span class="badge badge--quiet">예시 값으로 채움</span>
+                </div>
+                <div class="panel__body">
+                  <div class="tpl-mail">
+                    <div class="tpl-mail__head">[WHALE ERP] 유하람 님의 근로계약서가 만료되었습니다</div>
+                    <div class="tpl-mail__body" style="white-space: pre-line">유하람 님이 날인 기한 안에 근로계약서에 날인하지 않아 계약이 만료되었습니다.
+그대로 재발송하거나 조건을 바꿔 새 계약을 만들 수 있습니다.</div>
+                    <div class="tpl-mail__foot">WHALE ERP 운영 알림 · 이 메일은 발신 전용입니다</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel__head">
+                  <h2 class="t-h2">변수 목록</h2>
+                  <div class="panel__end">
+                    <button class="btn btn--secondary btn--sm" type="button"><span data-icon="plus" data-icon-size="14"></span>줄 추가</button>
+                  </div>
+                </div>
+                <div class="tblwrap">
+                  <table class="tbl tbl--dense">
+                    <thead>
+                      <tr>
+                        <th scope="col">변수 이름</th>
+                        <th scope="col">표시 이름</th>
+                        <th scope="col">필수</th>
+                        <th scope="col">예시 값</th>
+                        <th scope="col"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><input class="input mono" value="직원이름" aria-label="변수 이름" /></td>
+                        <td><input class="input" value="직원 이름" aria-label="표시 이름" /></td>
+                        <td class="c"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="필수"></span></td>
+                        <td><input class="input" value="유하람" aria-label="예시 값" /></td>
+                        <td class="c"><button class="tbtn" type="button">삭제</button></td>
+                      </tr>
+                      <tr>
+                        <td><input class="input mono" value="근무지" aria-label="변수 이름" /></td>
+                        <td><input class="input" value="근무지" aria-label="표시 이름" /></td>
+                        <td class="c"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="필수"></span></td>
+                        <td><input class="input" value="모리커피 연남점" aria-label="예시 값" /></td>
+                        <td class="c"><button class="tbtn" type="button">삭제</button></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel__note">
+                  저장할 때 제목·본문에 목록에 없는 변수가 있거나 필수 변수가 빠졌으면 저장하지 않고 몇째 줄인지 알려 준다.
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="../assets/app.js"></script>
+    <script>
+      /* 목업 동작 — 채널·유형을 고르면 템플릿 코드 기본값을 채우고, 알림톡이면 제목 대신 카카오 템플릿 코드와 검수 안내를 보인다. */
+      var ch = document.getElementById("n-channel"), kind = document.getElementById("n-kind"), code = document.getElementById("n-code");
+      function sync() {
+        if (ch.value && kind.value) code.value = ch.value + "_" + kind.value;
+        var talk = ch.value === "TALK";
+        document.querySelectorAll("[data-talk]").forEach(function (el) { el.hidden = !talk; });
+        document.querySelector("[data-title]").hidden = talk;
+      }
+      ch.addEventListener("change", sync);
+      kind.addEventListener("change", sync);
+    </script>
+  </body>
+</html>

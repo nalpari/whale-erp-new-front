@@ -3,16 +3,17 @@
 import { templateEdit } from "../../template-edit.mjs";
 
 export default templateEdit({
+  base: true,
   templateCode: "TALK_STAFF_INVITATION",
   kind: "talk",
   type: "가입 초대",
   channel: "알림톡",
   to: "초대받은 직원",
-  code: "WHALE_INVITE_01",
+  kakaoCode: "WHALE_INVITE_01",
   notice: "카카오 검수를 받은 문구와 한 글자라도 다르면 발송되지 않습니다. 검수를 받은 뒤 고쳐 주세요.",
   title: "",
   body: "#{근무지}에서 근로계약서를 보내려고 합니다.\n아래 링크로 WHALE ERP 직원 근무 앱에 가입해 주세요.\n링크는 30일 동안 쓸 수 있습니다.",
-  vars: ["근무지", "초대링크"],
+  vars: [{ name: "근무지", label: "근무지", required: true, example: "모리커피 연남점" }, { name: "초대링크", label: "초대 링크", required: false, example: "https://…" }],
   preview: {
     body: "모리커피 연남점에서 근로계약서를 보내려고 합니다.\n아래 링크로 WHALE ERP 직원 근무 앱에 가입해 주세요.\n링크는 30일 동안 쓸 수 있습니다.",
     button: "가입하기",

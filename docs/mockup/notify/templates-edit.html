@@ -19,7 +19,7 @@
           <h1 class="t-h1">알림 템플릿 수정</h1>
           <div class="titlebar__end">
             <span class="filters__count mono">S-QQPYIU · /platform/notification-templates/[id]</span>
-            <button class="btn btn--secondary btn--sm" type="button" data-tip="처음 배포된 문구로 돌린다. 되돌린 것도 변경 이력에 한 줄로 남는다.">
+            <button class="btn btn--secondary btn--sm" type="button" data-tip="처음 배포된 문구로 돌린다. 기본 37건에만 보이고 등록한 템플릿에는 없다. 되돌린 것도 변경 이력에 한 줄로 남는다.">
               <span data-icon="refresh" data-icon-size="14"></span>기본 문구로 되돌리기
             </button>
             <button class="btn btn--primary btn--sm" type="button">저장</button>
@@ -45,9 +45,24 @@
                     <span class="badge badge--quiet">받는 사람 · 소속 범위 사업자 관리자</span>
                   </div>
                   <div class="panel__body">
+                    <div class="spread">
+                      <span class="eyebrow" style="margin: 0">템플릿</span>
+                      <label class="inline"><span class="toggle" role="switch" aria-pressed="true" tabindex="0"></span>사용</label>
+                    </div>
+                    <div class="grid grid--2" style="gap: var(--s-4)">
+                      <div class="field">
+                        <label>발송 채널</label>
+                        <select class="select"><option>운영 알림</option><option>앱 푸시</option><option selected>메일</option><option>알림톡</option></select>
+                      </div>
+                      <div class="field">
+                        <label>알림 유형 · 발송 용도</label>
+                        <select class="select"><option selected>근로계약 거부 · 알림 유형</option></select>
+                      </div>
+                    </div>
                     <div class="field">
                       <label>템플릿 코드</label>
-                      <input class="input mono" value="EMAIL_CONTRACT_REJECTED" readonly />
+                      <input class="input mono" value="EMAIL_CONTRACT_REJECTED" />
+                      <span class="help">바꾸면 「발송 코드에서 이 템플릿 코드를 쓰고 있으면 함께 바꿔야 합니다」 확인창이 뜬다.</span>
                     </div>
                     <div class="field">
                       <label for="m-title">제목 <span class="subtle">· 필수</span></label>
@@ -134,9 +149,24 @@
                     <span class="badge badge--quiet">받는 사람 · 직원</span>
                   </div>
                   <div class="panel__body">
+                    <div class="spread">
+                      <span class="eyebrow" style="margin: 0">템플릿</span>
+                      <label class="inline"><span class="toggle" role="switch" aria-pressed="true" tabindex="0"></span>사용</label>
+                    </div>
+                    <div class="grid grid--2" style="gap: var(--s-4)">
+                      <div class="field">
+                        <label>발송 채널</label>
+                        <select class="select"><option>운영 알림</option><option selected>앱 푸시</option><option>메일</option><option>알림톡</option></select>
+                      </div>
+                      <div class="field">
+                        <label>알림 유형 · 발송 용도</label>
+                        <select class="select"><option selected>근로계약서 발송 · 알림 유형</option></select>
+                      </div>
+                    </div>
                     <div class="field">
                       <label>템플릿 코드</label>
-                      <input class="input mono" value="PUSH_CONTRACT_SENT" readonly />
+                      <input class="input mono" value="PUSH_CONTRACT_SENT" />
+                      <span class="help">바꾸면 「발송 코드에서 이 템플릿 코드를 쓰고 있으면 함께 바꿔야 합니다」 확인창이 뜬다.</span>
                     </div>
                     <div class="field">
                       <label for="p-title">제목 <span class="subtle">· 필수</span> <span class="subtle mono" data-count="p-title" data-max="40"></span></label>
@@ -217,9 +247,24 @@
                     <span class="badge badge--quiet">받는 사람 · 직원</span>
                   </div>
                   <div class="panel__body">
+                    <div class="spread">
+                      <span class="eyebrow" style="margin: 0">템플릿</span>
+                      <label class="inline"><span class="toggle" role="switch" aria-pressed="true" tabindex="0"></span>사용</label>
+                    </div>
+                    <div class="grid grid--2" style="gap: var(--s-4)">
+                      <div class="field">
+                        <label>발송 채널</label>
+                        <select class="select"><option>운영 알림</option><option selected>앱 푸시</option><option>메일</option><option>알림톡</option></select>
+                      </div>
+                      <div class="field">
+                        <label>알림 유형 · 발송 용도</label>
+                        <select class="select"><option selected>TO-DO 배정 · 알림 유형</option></select>
+                      </div>
+                    </div>
                     <div class="field">
                       <label>템플릿 코드</label>
-                      <input class="input mono" value="PUSH_TODO_ASSIGNED" readonly />
+                      <input class="input mono" value="PUSH_TODO_ASSIGNED" />
+                      <span class="help">바꾸면 「발송 코드에서 이 템플릿 코드를 쓰고 있으면 함께 바꿔야 합니다」 확인창이 뜬다.</span>
                     </div>
                     <div class="field">
                       <label for="t-title">제목 <span class="subtle">· 필수</span></label>
@@ -251,7 +296,7 @@
               </div>
             </div>
 
-            <!-- 알림톡 : 제목 없이 본문만(NOTIFY-8). 카카오 템플릿 코드와 변수 목록은 고치지 않는다 -->
+            <!-- 알림톡 : 제목 없이 본문만(NOTIFY-8). 카카오 템플릿 코드와 변수 목록도 고친다(NOTIFY-10) -->
             <div data-panel="talk" hidden>
               <div class="grid grid--7-5">
                 <section class="panel" data-tpl>
@@ -261,13 +306,28 @@
                     <span class="badge badge--quiet">받는 사람 · 초대받은 직원</span>
                   </div>
                   <div class="panel__body">
+                    <div class="spread">
+                      <span class="eyebrow" style="margin: 0">템플릿</span>
+                      <label class="inline"><span class="toggle" role="switch" aria-pressed="true" tabindex="0"></span>사용</label>
+                    </div>
+                    <div class="grid grid--2" style="gap: var(--s-4)">
+                      <div class="field">
+                        <label>발송 채널</label>
+                        <select class="select"><option>운영 알림</option><option>앱 푸시</option><option>메일</option><option selected>알림톡</option></select>
+                      </div>
+                      <div class="field">
+                        <label>알림 유형 · 발송 용도</label>
+                        <select class="select"><option selected>가입 초대 · 발송 용도</option></select>
+                      </div>
+                    </div>
                     <div class="field">
                       <label>템플릿 코드 <span class="subtle">· WHALE ERP 가 만든 코드</span></label>
-                      <input class="input mono" value="TALK_STAFF_INVITATION" readonly />
+                      <input class="input mono" value="TALK_STAFF_INVITATION" />
+                      <span class="help">바꾸면 「발송 코드에서 이 템플릿 코드를 쓰고 있으면 함께 바꿔야 합니다」 확인창이 뜬다.</span>
                     </div>
                     <div class="field">
                       <label for="k-code">카카오 템플릿 코드 <span class="subtle">· 카카오에 등록한 코드</span></label>
-                      <input class="input mono" id="k-code" value="WHALE_INVITE_01" readonly />
+                      <input class="input mono" id="k-code" value="WHALE_INVITE_01" />
                     </div>
                     <p class="note" style="margin: 0">
                       <span data-icon="alert" data-icon-size="14"></span>
@@ -280,7 +340,7 @@
 링크는 30일 동안 쓸 수 있습니다.</textarea>
                     </div>
                     <div class="field">
-                      <label>변수 <span class="subtle">· 누르면 본문 커서 자리에 들어간다 · 목록은 고칠 수 없다</span></label>
+                      <label>변수 <span class="subtle">· 누르면 본문 커서 자리에 들어간다 · 단추는 변수 목록에서 만든다</span></label>
                       <div class="tpl-var">
                         <button class="tbtn" type="button" data-var="#{근무지}">근무지</button>
                         <button class="tbtn" type="button" data-var="#{초대링크}">초대링크</button>
@@ -288,7 +348,7 @@
                     </div>
                   </div>
                   <div class="panel__note">
-                    알림톡에는 제목이 없다. 카카오 템플릿 코드와 변수 목록은 카카오에 등록된 값이라 고칠 수 없다.
+                    알림톡에는 제목이 없다. 카카오 템플릿 코드와 변수 목록도 고친다(NOTIFY-10) — 카카오에 등록한 값과 같게 맞춘다.
                     배포 없이 저장하면 바로 쓰이므로, 카카오 검수를 먼저 받고 같은 문구로 고친다.
                   </div>
                 </section>
@@ -313,6 +373,63 @@
               </div>
             </div>
           </div>
+
+          <section class="panel">
+            <div class="panel__head">
+              <h2 class="t-h2">변수 목록</h2>
+              <span class="badge badge--quiet">근로계약 거부 · 메일</span>
+              <div class="panel__end">
+                <button class="btn btn--secondary btn--sm" type="button"><span data-icon="plus" data-icon-size="14"></span>줄 추가</button>
+              </div>
+            </div>
+            <div class="tblwrap">
+              <table class="tbl tbl--dense">
+                <thead>
+                  <tr>
+                    <th scope="col">변수 이름</th>
+                    <th scope="col">표시 이름</th>
+                    <th scope="col">필수</th>
+                    <th scope="col">예시 값</th>
+                    <th scope="col"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><input class="input mono" value="직원이름" aria-label="변수 이름" /></td>
+                    <td><input class="input" value="직원 이름" aria-label="표시 이름" /></td>
+                    <td class="c"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="필수"></span></td>
+                    <td><input class="input" value="유하람" aria-label="예시 값" /></td>
+                    <td class="c"><button class="tbtn" type="button">삭제</button></td>
+                  </tr>
+                  <tr>
+                    <td><input class="input mono" value="근무지" aria-label="변수 이름" /></td>
+                    <td><input class="input" value="근무지" aria-label="표시 이름" /></td>
+                    <td class="c"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="필수"></span></td>
+                    <td><input class="input" value="모리커피 연남점" aria-label="예시 값" /></td>
+                    <td class="c"><button class="tbtn" type="button">삭제</button></td>
+                  </tr>
+                  <tr>
+                    <td><input class="input mono" value="거부사유" aria-label="변수 이름" /></td>
+                    <td><input class="input" value="거부 사유" aria-label="표시 이름" /></td>
+                    <td class="c"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="필수"></span></td>
+                    <td><input class="input" value="근무 시작 시각이 다릅니다" aria-label="예시 값" /></td>
+                    <td class="c"><button class="tbtn" type="button">삭제</button></td>
+                  </tr>
+                  <tr>
+                    <td><input class="input mono" value="계약링크" aria-label="변수 이름" /></td>
+                    <td><input class="input" value="계약 링크" aria-label="표시 이름" /></td>
+                    <td class="c"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="필수"></span></td>
+                    <td><input class="input" value="https://…" aria-label="예시 값" /></td>
+                    <td class="c"><button class="tbtn" type="button">삭제</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="panel__note">
+              변수 목록은 화면에서 넣고 고친다(NOTIFY-10). 줄마다 변수 이름·표시 이름·필수·예시 값을 두고, 본문 위 변수 단추는 이 목록에서 그린다. 예시 값은 미리보기를 채운다.
+              저장할 때 본문에 <b>목록에 없는 #{변수}</b> 가 있거나 <b>필수 변수가 빠졌으면</b> 저장하지 않고 몇째 줄인지 알려 준다.
+            </div>
+          </section>
 
           <section class="panel">
             <div class="panel__head">

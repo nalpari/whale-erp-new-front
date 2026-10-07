@@ -327,7 +327,8 @@
           { text: "영역 개요", href: "notify/overview.html", mock: 1 },
           { key: "tpl-list", text: "알림 템플릿", href: "notify/templates.html", sub: [
             { text: "템플릿 목록", href: "notify/templates.html", route: "/platform/notification-templates" },
-            { text: "템플릿 수정", href: "notify/templates-edit.html", route: "…/notification-templates/[id]" }
+            { text: "템플릿 수정", href: "notify/templates-edit.html", route: "…/notification-templates/[id]" },
+            { text: "템플릿 등록", href: "notify/templates-new.html", route: "…/notification-templates/new" }
           ]}
         ]}
       ]

@@ -614,6 +614,9 @@
   .w-\[20px\] {
     width: 20px;
   }
+  .w-\[22\%\] {
+    width: 22%;
+  }
   .w-\[26px\] {
     width: 26px;
   }
@@ -1431,6 +1434,9 @@
   .px-\[4px\] {
     padding-inline: 4px;
   }
+  .px-\[6px\] {
+    padding-inline: 6px;
+  }
   .px-\[8px\] {
     padding-inline: 8px;
   }
@@ -1775,6 +1781,9 @@
   }
   .opacity-40 {
     opacity: 40%;
+  }
+  .opacity-50 {
+    opacity: 50%;
   }
   .opacity-70 {
     opacity: 70%;
