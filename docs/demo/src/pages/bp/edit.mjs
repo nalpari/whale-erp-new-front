@@ -16,7 +16,6 @@ export function bpEditBody(A, R, { panel = false } = {}) {
   const basic = ui.formGroup(
     "BP 마스터 기본정보",
     ui.formRow(
-<<<<<<< Updated upstream
       ui.field("BP 코드", ui.textField({ value: BP.code, disabled: true })),
       ui.field("아이디", ui.textField({ value: "hangang01", disabled: true })),
       ui.field("가입경로", ui.textField({ value: "회원가입", disabled: true })),
@@ -24,18 +23,6 @@ export function bpEditBody(A, R, { panel = false } = {}) {
     ui.field(f.req("이름"), ui.textField({ value: "정하윤" })),
     f.group(f.req("연락처"), f.tel("010", "4821", "7730")),
     ui.field(f.req("이메일"), ui.textField({ value: "hayoon@hangang.co.kr" }) + f.help("형식과 중복만 검사하고 소유 인증은 하지 않습니다.")),
-=======
-      ui.field("BP 코드", ui.textField({ value: BP.code, readonly: true })),
-      ui.field("아이디", ui.textField({ value: "hangang01", readonly: true })),
-      ui.field("가입경로", ui.textField({ value: "회원가입", readonly: true })),
-    ),
-    // 이메일 칸 아래 안내 줄 때문에 칸들이 세로 가운데로 어긋나지 않게 위쪽에 맞춘다
-    ui.formRow(
-      ui.field(f.req("이름"), ui.textField({ value: "정하윤" })),
-      f.group(f.req("연락처"), f.tel("010", "4821", "7730")),
-      ui.field(f.req("이메일"), ui.textField({ value: "hayoon@hangang.co.kr" }) + f.help("형식과 중복만 검사하고 소유 인증은 하지 않습니다.")),
-    ).replace('class="flex w-full gap-[6px]"', 'class="flex w-full items-start gap-[6px]"'),
->>>>>>> Stashed changes
   );
 
   const biz = ui.formGroup(
