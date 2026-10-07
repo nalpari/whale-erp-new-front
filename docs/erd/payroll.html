@@ -52,13 +52,14 @@ h2{font-family:var(--sans);font-size:20px;font-weight:600;letter-spacing:-.4px;m
 </div>
 <nav aria-label="ERD 영역"><a href="index.html">개요</a><a href="account.html">계정·접속</a><a href="hiring.html">채용·초대</a><a href="contract.html">근로계약</a><a href="attendance.html">근무스케줄·출퇴근</a><a href="todo.html">TO-DO</a><a href="payroll.html" aria-current="page">급여명세서</a><a href="notify.html">알림</a><a href="support.html">고객지원·커뮤니티</a></nav>
 <div class="diagram">
-<svg viewBox="0 0 992 780" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="erd-payroll-title erd-payroll-desc" style="min-width:992px">
+<svg viewBox="0 0 1328 780" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="erd-payroll-title erd-payroll-desc" style="min-width:1328px">
 <title id="erd-payroll-title">급여명세서</title>
-<desc id="erd-payroll-desc">급여명세서 논리 ERD. 엔티티 7개와 관계 6개를 보여 준다: 직원 레코드, 근로계약, 급여명세서, 명세서 금액 항목, 검토 대기 사유, 명세서 발송 이력, 명세서 처리 이력.</desc>
+<desc id="erd-payroll-desc">급여명세서 논리 ERD. 엔티티 8개와 관계 7개를 보여 준다: 직원 레코드, 근로계약, 급여명세서, 명세서 금액 항목, 급여 항목, 검토 대기 사유, 명세서 발송 이력, 명세서 처리 이력.</desc>
 <rect width="100%" height="100%" fill="#ffffff"/>
 <path d="M 280,100 L 376,100" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 280,292 L 376,292" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 616,120 L 712,120" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 1048,144 L 952,144" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 616,348 L 712,348" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 496,392 L 496,436" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 376,356 L 336,356 Q 328,356 328,364 L 328,492 Q 328,500 320,500 L 280,500" fill="none" stroke="#60646c" stroke-width="1"/>
@@ -147,14 +148,40 @@ h2{font-family:var(--sans);font-size:20px;font-weight:600;letter-spacing:-.4px;m
 <text x="936" y="136" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
 <text x="728" y="156" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">항목 구분</text>
 <text x="936" y="156" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">enum</text>
-<text x="728" y="176" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">항목 코드</text>
-<text x="936" y="176" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">enum</text>
+<text x="728" y="176" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="742" y="176" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">급여 항목</text>
+<text x="936" y="176" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
 <text x="728" y="196" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">시스템 계산값</text>
 <text x="936" y="196" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">money</text>
 <text x="728" y="216" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">관리자 수정값</text>
 <text x="936" y="216" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">money</text>
 <text x="728" y="236" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">입력 여부</text>
 <text x="936" y="236" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">bool</text>
+</g>
+<g id="ent-item_master">
+<rect x="1048" y="40" width="240" height="232" rx="6" fill="#ffffff"/>
+<rect x="1048" y="40" width="240" height="232" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
+<rect x="1049" y="41" width="238" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
+<line x1="1048" y1="92" x2="1288" y2="92" stroke="#171717" stroke-opacity="0.35" stroke-width="1"/>
+<text x="1064" y="60" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">ENTITY · payslip_item_masters</text>
+<text x="1064" y="80" fill="#171717" font-size="16" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">급여 항목</text>
+<text x="1064" y="116" fill="#8145b5" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">#</text>
+<text x="1078" y="116" fill="#171717" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">급여 항목 ID</text>
+<text x="1272" y="116" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+<text x="1064" y="136" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">항목 코드</text>
+<text x="1272" y="136" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+<text x="1064" y="156" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">항목 이름</text>
+<text x="1272" y="156" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+<text x="1064" y="176" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">구분</text>
+<text x="1272" y="176" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">enum</text>
+<text x="1064" y="196" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">비과세 여부</text>
+<text x="1272" y="196" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">bool</text>
+<text x="1064" y="216" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">시스템 계산 여부</text>
+<text x="1272" y="216" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">bool</text>
+<text x="1064" y="236" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">순서</text>
+<text x="1272" y="236" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">int</text>
+<text x="1064" y="256" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">사용 여부</text>
+<text x="1272" y="256" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">bool</text>
 </g>
 <g id="ent-reason">
 <rect x="712" y="312" width="240" height="172" rx="6" fill="#ffffff"/>
@@ -239,6 +266,10 @@ h2{font-family:var(--sans);font-size:20px;font-weight:600;letter-spacing:-.4px;m
 <text x="630" y="114" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
 <rect x="690" y="104" width="16" height="12" rx="2" fill="#ffffff"/>
 <text x="698" y="114" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
+<rect x="1026" y="128" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="1034" y="138" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
+<rect x="958" y="128" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="966" y="138" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
 <rect x="622" y="332" width="16" height="12" rx="2" fill="#ffffff"/>
 <text x="630" y="342" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
 <rect x="690" y="332" width="16" height="12" rx="2" fill="#ffffff"/>
@@ -251,7 +282,7 @@ h2{font-family:var(--sans);font-size:20px;font-weight:600;letter-spacing:-.4px;m
 <text x="362" y="350" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
 <rect x="286" y="484" width="16" height="12" rx="2" fill="#ffffff"/>
 <text x="294" y="494" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
-<line x1="40" y1="716" x2="952" y2="716" stroke="#dcdee0" stroke-width="0.8"/>
+<line x1="40" y1="716" x2="1288" y2="716" stroke="#dcdee0" stroke-width="0.8"/>
 <text x="40" y="736" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.18em">LEGEND</text>
 <rect x="40" y="752" width="16" height="12" rx="2" fill="rgba(129,69,181,0.04)" stroke="#8145b5"/>
 <text x="64" y="763" fill="#60646c" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="500">중심 엔티티</text>

@@ -372,7 +372,7 @@ python3 docs/erd/_build.py
 |  | 근무 시작 일시 | datetime | `start_at` |  |
 |  | 근무 종료 일시 | datetime | `end_at` | 같은 직원 겹침 차단 |
 |  | 휴게시간 | int | `break_minutes` |  |
-|  | 근무 유형 | enum | `work_type` | 오픈·미들·마감 |
+|  | 근무 유형 | enum | `work_type` | 주간·오픈·미들·마감 |
 |  | 확정 상태 | enum | `confirm_status` | 확정 전·확정 |
 | FK | 기본값 근로계약 | id | `source_contract_id` | 등록 때 한 번 반영 |
 | FK | 등록 관리자 | id | `created_by` |  |
@@ -595,10 +595,23 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 | PK | 항목 ID | id | `item_id` |  |
 | FK | 급여명세서 | id | `payslip_id` |  |
 |  | 항목 구분 | enum | `category` | 지급·공제 |
-|  | 항목 코드 | enum | `code` | 지급·공제 항목, 목록은 플랫폼 관리자가 관리 |
+| FK | 급여 항목 | id | `payslip_item_master_id` | 항목 이름·구분은 명세서에도 박아 둠 |
 |  | 시스템 계산값 | money | `calculated_amount` | 지급 항목만 |
 |  | 관리자 수정값 | money | `adjusted_amount` |  |
 |  | 입력 여부 | bool | `entered` | 공제 미입력과 0 구분 |
+
+### 급여 항목 `payslip_item_masters` · 엔티티
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 급여 항목 ID | id | `payslip_item_master_id` |  |
+|  | 항목 코드 | text | `item_code` | 고유, 영문 대문자(예: BASE_PAY) |
+|  | 항목 이름 | text | `name` |  |
+|  | 구분 | enum | `category` | 지급·기본 공제·추가 공제·원천징수 |
+|  | 비과세 여부 | bool | `is_tax_free` | 식대·자가운전보조금·육아수당 |
+|  | 시스템 계산 여부 | bool | `is_system_calculated` | 기본급·주휴수당·연장수당 |
+|  | 순서 | int | `sort_order` |  |
+|  | 사용 여부 | bool | `is_active` | 플랫폼 관리자가 관리(PAY-21) |
 
 ### 검토 대기 사유 `payslip_review_reasons` · 엔티티
 
@@ -639,6 +652,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 - 직원 레코드 `1` — `N` 급여명세서
 - 근로계약 `1` — `N` 급여명세서 · 산정 근거
 - 급여명세서 `1` — `N` 명세서 금액 항목
+- 급여 항목 `1` — `N` 명세서 금액 항목
 - 급여명세서 `1` — `N` 검토 대기 사유
 - 급여명세서 `1` — `N` 명세서 발송 이력
 - 급여명세서 `1` — `N` 명세서 처리 이력
@@ -653,7 +667,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |---|---|---|---|---|
 | PK | 알림 ID | id | `notification_id` |  |
 |  | 알림 대상 구분 | enum | `audience` | 운영 알림·직원 알림 |
-|  | 알림 유형 | enum | `type` | 공통코드 NOTIFICATION_TYPE 운영 10·직원 4 |
+|  | 템플릿 코드 | text | `template_code` | 만들 때 쓴 알림 템플릿. 문구는 이 알림에 박아 둠 |
 |  | 관련 업무 유형 | enum | `related_type` | 문의사항·도입문의·근로계약 등 |
 |  | 관련 업무 ID | id | `related_id` |  |
 |  | 알림 내용 | text | `body` |  |
@@ -708,7 +722,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK·FK | 계정 | id | `account_id` |  |
-| PK | 알림 유형 | enum | `type` |  |
+| PK | 수신 설정 묶음 | enum | `preference_category` | 근로계약서·근무스케줄·TO-DO·급여명세서 |
 |  | 수신 여부 | bool | `enabled` | 기본 켬, 계약·급여는 끌 수 없음 |
 |  | 변경 시각 | datetime | `updated_at` |  |
 
@@ -717,10 +731,10 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK | 템플릿 ID | id | `notification_template_id` |  |
-|  | 템플릿 코드 | text | `template_code` | 고유. 등록 때 채널 접두 + 유형·용도 코드로 기본값, 운영자가 고칠 수 있음 |
+|  | 템플릿 코드 | text | `template_code` | 고유. 등록 때 채널 접두를 채우고 운영자가 정함. 개발자는 이 코드로 부름 |
 |  | 발송 채널 | enum | `channel` | 운영 알림·앱 푸시·메일·알림톡 |
-|  | 알림 유형 | enum | `notification_type` | NOTIFICATION_TYPE, 발송 용도와 둘 중 하나 |
-|  | 발송 용도 | enum | `send_purpose` | SEND_PURPOSE, 알림 유형이 없는 메일·알림톡 |
+|  | 템플릿 이름 | text | `template_name` | 예: 근로계약 날인 알림 |
+|  | 수신 설정 묶음 | enum | `preference_category` | 앱 푸시만. 직원 수신 설정 기준 |
 |  | 제목 | text | `title` | 알림톡은 비움 |
 |  | 본문 | text | `body` | #{변수}. 알림톡은 카카오 검수 문구와 같게 |
 |  | 변수 목록 | json | `variables` | [{이름, 표시 이름, 필수, 예시 값}] 순서대로. 저장 때 본문·제목의 #{변수}가 목록 안에 있는지 검사 |
@@ -737,8 +751,8 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 | FK | 템플릿 | id | `notification_template_id` |  |
 |  | 이전 템플릿 코드 | text | `template_code` |  |
 |  | 이전 발송 채널 | enum | `channel` |  |
-|  | 이전 알림 유형 | enum | `notification_type` |  |
-|  | 이전 발송 용도 | enum | `send_purpose` |  |
+|  | 이전 템플릿 이름 | text | `template_name` |  |
+|  | 이전 수신 설정 묶음 | enum | `preference_category` |  |
 |  | 이전 카카오 템플릿 코드 | text | `kakao_template_code` |  |
 |  | 이전 사용 여부 | bool | `is_active` |  |
 |  | 이전 제목 | text | `title` |  |
@@ -783,7 +797,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |---|---|---|---|---|
 | PK·FK | 게시물 | id | `post_id` |  |
 | PK | 대상 유형 | enum | `audience_type` | 비회원·회원·BP·점포·부가서비스 |
-|  | 부가서비스 상품 | enum | `addon_code` | 부가서비스일 때 |
+|  | 부가서비스 | code | `service_code` | 공통코드 SERVICE(1팀), 부가서비스일 때 |
 
 ### 첨부파일 `post_attachments` · 엔티티
 
