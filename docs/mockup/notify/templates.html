@@ -11,7 +11,7 @@
     <!-- 알림 템플릿 관리 · /platform/notification-templates · F-TZPHZT
          S-QQPYIU(운영 알림·앱 푸시·메일 템플릿 수정) · S-HIBBDL(알림톡 템플릿 관리)
          플랫폼 운영자만 들어온다. 알림 유형(또는 발송 용도)과 채널 한 칸마다 템플릿이 하나다.
-         알림톡은 카카오 검수 문구와 같아야 해서 본문을 고치지 않고 승인 상태만 기록한다(NOTIFY-6). -->
+         알림톡은 카카오 검수 문구와 같아야 해서 화면에서는 읽기만 한다. 문구는 카카오 검수 뒤 코드로 고친다(NOTIFY-6). -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
       <main class="main" id="main">
@@ -262,7 +262,7 @@
                 <div class="band__body">
                   <div class="band__title">알림톡 문구는 이 화면에서 고치지 않습니다</div>
                   <p class="band__desc">
-                    카카오가 검수해 승인한 문구와 글자 하나까지 같아야 발송됩니다. 문구를 바꾸려면 카카오 재승인을 받고 배포해야 합니다.
+                    카카오가 검수한 문구와 글자 하나까지 같아야 발송됩니다. 문구를 바꾸려면 카카오 검수와 배포가 필요합니다.
                   </p>
                 </div>
               </div>
@@ -279,16 +279,14 @@
                         <tr>
                           <th scope="col">발송 용도</th>
                           <th scope="col">카카오 템플릿 코드</th>
-                          <th scope="col">승인 상태</th>
-                          <th scope="col">기록</th>
+                          <th scope="col">본문 요약</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr>
                           <td class="k">가입 초대</td>
                           <td class="mono">WHALE_INVITE_01</td>
-                          <td><span class="badge badge--ok">승인</span></td>
-                          <td><span class="mono">09-30</span> <span class="subtle">이서준</span></td>
+                          <td><span class="mono">#{근무지}</span>에서 근로계약서를 보내려고 합니다…</td>
                         </tr>
                       </tbody>
                     </table>
@@ -302,7 +300,7 @@
                 <section class="panel">
                   <div class="panel__head">
                     <h2 class="t-h2">가입 초대</h2>
-                    <span class="badge badge--ok">승인</span>
+                    <span class="badge badge--quiet">읽기 전용</span>
                   </div>
                   <div class="panel__body">
                     <dl class="kv">
@@ -317,28 +315,10 @@
                       <dt>버튼</dt>
                       <dd>가입하기 <span class="subtle">· 초대 토큰 링크</span></dd>
                     </dl>
-                    <hr class="hr" />
-                    <div class="field">
-                      <label for="talk-state">승인 상태</label>
-                      <select class="select" id="talk-state">
-                        <option>검수 전</option>
-                        <option>검수 중</option>
-                        <option selected>승인</option>
-                        <option>반려</option>
-                      </select>
-                    </div>
-                    <div class="field">
-                      <label for="talk-reason">반려 사유</label>
-                      <textarea class="textarea" id="talk-reason" rows="2" placeholder="반려일 때 카카오가 보낸 사유를 옮겨 적는다"></textarea>
-                    </div>
-                    <div class="spread">
-                      <span class="subtle" style="font-size: 12.5px">최근 수정 <span class="mono">09-30 14:05</span> · 이서준</span>
-                      <button class="btn btn--primary btn--sm" type="button">저장</button>
-                    </div>
                   </div>
                   <div class="panel__note">
                     본문은 카카오가 검수한 문구를 그대로 보여 주고 고칠 수 없다. 알림톡에는 제목이 없다.
-                    고치는 것은 <b>승인 상태</b>와 <b>반려 사유</b>뿐이고, 카카오 검수 결과를 보고 플랫폼 운영자가 직접 기록한다(NOTIFY-6).
+                    문구를 바꾸려면 카카오 검수를 받은 뒤 코드로 고쳐 배포한다. 그래서 승인 상태도 화면에 두지 않는다(NOTIFY-6).
                   </div>
                 </section>
               </div>
@@ -347,12 +327,12 @@
                 <div class="gap__head">
                   <span class="gap__no">NOTIFY-6</span>
                   <b>알림톡 승인 상태를 어떻게 알 것인가</b>
-                  <span class="gap__decided">확정 · 운영자가 직접 기록</span>
+                  <span class="gap__decided">확정 · 승인 상태를 두지 않음</span>
                   <span class="gap__ref">S-HIBBDL</span>
                 </div>
                 <div class="gap__opts">
-                  <div class="gap__opt is-picked" data-side="a">
-                    <div class="gap__label">A · 운영자가 직접 기록 · 확정</div>
+                  <div class="gap__opt is-dropped" data-side="a">
+                    <div class="gap__label">A · 운영자가 직접 기록</div>
                     <p>카카오 검수 결과를 보고 운영자가 상태를 바꾼다.</p>
                   </div>
                   <div class="gap__opt is-dropped" data-side="b">
@@ -360,6 +340,7 @@
                     <p>발송 대행사에서 상태를 읽어 온다. 연동이 늘어난다.</p>
                   </div>
                 </div>
+                <p class="gap__note">승인 상태를 두지 않음(A·B 모두 버림). 2026-10-07 재영. 문구는 카카오 검수를 받은 뒤 코드로 고치므로 화면에 상태를 둘 필요가 없다.</p>
               </div>
             </div>
           </div>
