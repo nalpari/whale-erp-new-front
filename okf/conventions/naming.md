@@ -5,10 +5,10 @@ description: DB·API·FRONT 세 계층이 같은 개념을 같은 영문 이름�
 tags: [convention, naming, shared]
 sources:
   - { id: naming-2026-09-30, resource: ../../docs/raw/2026-09-30-네이밍-규칙.md, title: WHALE ERP 네이밍 규칙 (DB · API · FRONT) }
-generated: { by: claude-code/opus-5.5, at: 2026-10-06T08:53:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-07T03:53:07Z }
 ---
 
-근거: `docs/raw/2026-09-30-네이밍-규칙.md` (3팀 기획 세션 · 2026-10-06 고침)
+근거: `docs/raw/2026-09-30-네이밍-규칙.md` (3팀 기획 세션 · 2026-10-07 고침)
 
 # 범위
 
@@ -286,3 +286,21 @@ DB 테이블은 복수형, 모델·타입은 PascalCase 단수형으로 바꿔 �
 | 게시 상태 | `PUBLISHED` · `DRAFT` · `PRIVATE` | 게시 · 임시저장 · 비공개 |
 | 문의 답변 상태 | `RECEIVED` · `IN_PROGRESS` · `ANSWERED` | 접수 · 처리중 · 답변완료 |
 | 운영 알림 · 앱 푸시 | `notification` · `push` | |
+| 알림 템플릿 | `notification_template` | 알림 유형(또는 발송 용도) × 발송 채널 한 칸마다 제목·본문 틀. 변경 이력은 `notification_template_history` |
+| 발송 채널 4종 | `NOTIFICATION` · `PUSH` · `EMAIL` · `ALIMTALK` | 운영 알림 · 앱 푸시 · 메일 · 알림톡. enum `NotificationTemplateChannel` |
+| 템플릿 코드 | `template_code` | 등록할 때 채널 접두(`NTF` · `PUSH` · `EMAIL` · `TALK`) + `_` + 알림 유형·발송 용도 코드로 기본값을 채우고(예 `EMAIL_SIGNUP_DONE`) 플랫폼 운영자가 고칠 수 있다. 형식 `^[A-Z][A-Z0-9_]*$`, 고유. 개발자는 이 코드로 템플릿을 불러 발송한다. 알림톡의 카카오 템플릿 코드는 `kakao_template_code` 로 따로 둔다 |
+| 템플릿 사용 여부 · 변수 목록 | `is_active` · `variables` | 지우지 않고 `is_active = false` 로 끈다. 변수 목록은 JSON 배열 `[{ name, label, isRequired, sampleValue }]` |
+| 알림 유형 | `notification_type_code` | 공통코드 `NOTIFICATION_TYPE`. 값은 아래 표 |
+| 발송 용도 | `send_purpose_code` | 공통코드 `SEND_PURPOSE`. 알림 유형이 없는 메일·알림톡. 값은 아래 표. 1팀 `mail_send_logs.mail_type_code` 도 이 값을 담는다 |
+
+### 알림 유형 · 발송 용도 코드값 (2026-10-07 재영)
+
+공통코드 상세코드라 `^[A-Z][A-Z0-9_]{0,19}$` 를 따르고 등록 뒤 바꾸지 않는다. 화면·문서에서 지어 쓰지 말고 이 값을 쓴다.
+
+| 그룹 | 코드값 | 표준 표기 |
+|---|---|---|
+| `NOTIFICATION_TYPE` 운영 10 | `INQUIRY_RECEIVED` · `LEAD_RECEIVED` · `INQUIRY_ANSWERED` · `LEAD_ANSWERED` · `CONTRACT_SIGNED` · `CONTRACT_REJECTED` · `CONTRACT_EXPIRED` · `LINK_HOLD` · `AFFILIATION_REJECTED` · `CONTRACT_RENEWAL_DUE` | 문의사항 접수 · 도입문의 접수 · 문의사항 답변 · 도입문의 처리 상태 변경 · 근로계약 날인 · 근로계약 거부 · 근로계약 만료 · 가입 연결 보류 · 소속 추가 확인 거절 · 계약 갱신 예정 |
+| `NOTIFICATION_TYPE` 직원 4 | `CONTRACT_SENT` · `SCHEDULE_CHANGED` · `TODO_ASSIGNED` · `PAYSLIP_SENT` | 근로계약서 발송 · 근무스케줄 주요 변경 · TO-DO 배정 · 급여명세서 발송 |
+| `SEND_PURPOSE` 3팀 5 | `STAFF_PASSWORD_PIN` · `STAFF_RESET_LINK` · `EMAIL_CHANGE_PIN` · `LEAD_CONFIRMATION` · `STAFF_INVITATION` | 비밀번호 찾기 핀 · 관리자 초기화 재설정 링크 · 로그인 이메일 변경 핀 · 도입문의 접수 확인 · 가입 초대 |
+| `SEND_PURPOSE` 1팀 8 | `SIGNUP_DONE` · `SIGNUP_ALERT` · `BP_REGISTER` · `PLAT_ADMIN_CREATE` · `BP_ADMIN_CREATE` · `PASSWORD_RESET` · `TEMP_PASSWORD` · `WITHDRAW_DONE` | 회원가입 완료 · 신규 BP 가입 알림 · BP 신규 등록 · 플랫폼 관리자 계정 생성 · BP 관리자 계정 생성 · 비밀번호 초기화 · 임시 비밀번호 발급 · 회원 탈퇴 완료. 1팀 `MAIL_TYPE` 에서 옮긴 값이라 1팀 코드값 그대로다 |
+
