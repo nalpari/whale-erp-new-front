@@ -401,9 +401,13 @@
 
   // ── 필터의 점포 칸(data-scope-store). 헤더 점포 선택이 점포 1개면 그 점포로 고정하고,
   // 전체·일반점포 전체·가맹점포 전체처럼 묶음이면 고정을 풀어 검색할 수 있게 한다 ──
+  // 범위 값이 실제 점포 이름일 때만 점포 하나다. 「전체 11개점」「직영 3개점」「선택 2곳」은 묶음이다.
+  // ponytail: 「선택 N곳」은 고른 점포로 거르지 않고 전체를 보인다(데모).
+  const isOneStore = (scope) => !/전체|개점$|^선택 \d+곳$/.test(scope);
+
   function initScopeStore(input) {
     const set = (scope) => {
-      const one = !/전체/.test(scope);
+      const one = isOneStore(scope);
       if (!one && !input.readOnly) return;
       input.readOnly = one;
       input.value = one ? scope : "";
@@ -418,7 +422,7 @@
   // ── 로그인 후 홈: 범위 선택기가 「전체」면 전체 화면, 점포 하나면 점포 하나 화면(HOME-6 B) ──
   function initScopeView(views) {
     const set = (scope) => {
-      const one = !/전체/.test(scope);
+      const one = isOneStore(scope);
       views.forEach((v) => (v.hidden = (v.dataset.scopeView === "one") !== one));
       if (!one) return;
       $$("[data-scope-name]").forEach((el) => (el.textContent = scope));
