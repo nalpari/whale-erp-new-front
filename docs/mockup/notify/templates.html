@@ -46,7 +46,7 @@
           <div class="tabs" data-tabs="channel">
             <button data-tab="ops" aria-selected="true">운영 알림 <span class="count">10</span></button>
             <button data-tab="push" aria-selected="false">앱 푸시 <span class="count">4</span></button>
-            <button data-tab="mail" aria-selected="false">메일 <span class="count">14</span></button>
+            <button data-tab="mail" aria-selected="false">메일 <span class="count">22</span></button>
             <button data-tab="talk" aria-selected="false">알림톡 <span class="count">1</span></button>
           </div>
 
@@ -196,9 +196,9 @@
               <div class="panel">
                 <div class="panel__head">
                   <h2 class="t-h2">메일 템플릿</h2>
-                  <span class="badge badge--quiet">알림 유형 10 · 발송 용도 4</span>
+                  <span class="badge badge--quiet">알림 유형 10 · 발송 용도 12</span>
                 </div>
-                <div class="tblwrap" data-pager="14">
+                <div class="tblwrap" data-pager="22">
                   <table class="tbl">
                     <thead>
                       <tr>
@@ -234,6 +234,54 @@
                         <td class="subtle">기본 문구</td>
                       </tr>
                       <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">회원가입 완료</a> <span class="badge badge--quiet">발송 용도</span> <span class="badge badge--info">1팀</span></td>
+                        <td>가입한 BP 마스터</td>
+                        <td>[WHALE ERP] 회원가입이 완료되었습니다</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">신규 BP 가입 알림</a> <span class="badge badge--quiet">발송 용도</span> <span class="badge badge--info">1팀</span></td>
+                        <td>플랫폼 운영자</td>
+                        <td>[WHALE ERP] 새 BP 가 가입했습니다</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">BP 신규 등록</a> <span class="badge badge--quiet">발송 용도</span> <span class="badge badge--info">1팀</span></td>
+                        <td>등록된 BP 마스터</td>
+                        <td>[WHALE ERP] BP 가 등록되었습니다</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">플랫폼 관리자 계정 생성</a> <span class="badge badge--quiet">발송 용도</span> <span class="badge badge--info">1팀</span></td>
+                        <td>새 플랫폼 관리자</td>
+                        <td>[WHALE ERP] 플랫폼 관리자 계정이 만들어졌습니다</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">BP 관리자 계정 생성</a> <span class="badge badge--quiet">발송 용도</span> <span class="badge badge--info">1팀</span></td>
+                        <td>새 BP 관리자</td>
+                        <td>[WHALE ERP] 관리자 계정이 만들어졌습니다</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">비밀번호 초기화</a> <span class="badge badge--quiet">발송 용도</span> <span class="badge badge--info">1팀</span></td>
+                        <td>관리자 본인</td>
+                        <td>[WHALE ERP] 비밀번호가 초기화되었습니다</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">임시 비밀번호 발급</a> <span class="badge badge--quiet">발송 용도</span> <span class="badge badge--info">1팀</span></td>
+                        <td>관리자 본인</td>
+                        <td>[WHALE ERP] 임시 비밀번호를 보내 드립니다</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">회원 탈퇴 완료</a> <span class="badge badge--quiet">발송 용도</span> <span class="badge badge--info">1팀</span></td>
+                        <td>탈퇴한 BP 마스터</td>
+                        <td>[WHALE ERP] 회원 탈퇴가 완료되었습니다</td>
+                        <td class="subtle">기본 문구</td>
+                      </tr>
+                      <tr>
                         <td class="k"><a class="tlink" href="templates-edit.html">근로계약 거부</a></td>
                         <td>소속 범위 사업자 관리자</td>
                         <td>[WHALE ERP] <span class="mono">#{직원이름}</span> 님이 근로계약서를 거부했습니다</td>
@@ -250,8 +298,28 @@
                 </div>
                 <div class="panel__note">
                   운영 알림은 알림함과 메일로 함께 나가므로 알림 유형 10 이 여기에도 한 줄씩 있다. 같은 사건이라도 채널마다 템플릿이 따로라 메일 제목만 고칠 수 있다.
-                  메일 제목은 열지 않고도 어느 알림인지 알 수 있어야 해서 머리에 <b>[WHALE ERP]</b> 를 붙인다. 목록은 페이지로 나누고, 여기에는 여섯 줄만 그렸다.
+                  메일 제목은 열지 않고도 어느 알림인지 알 수 있어야 해서 머리에 <b>[WHALE ERP]</b> 를 붙인다. 목록은 페이지로 나누고, 여기에는 열네 줄만 그렸다.
+                  <b>1팀</b> 꼬리표가 붙은 여덟은 1팀 화면(회원가입·BP·관리자 계정·비밀번호·탈퇴)에서 나가는 관리자 메일이다. 문구는 여기서 함께 고친다(NOTIFY-9).
                 </div>
+              </div>
+              <div class="gap is-decided">
+                <div class="gap__head">
+                  <span class="gap__no">NOTIFY-9</span>
+                  <b>1팀 관리자 메일 문구도 알림 템플릿에서 관리할 것인가</b>
+                  <span class="gap__decided">확정 · 알림 템플릿에서 관리</span>
+                  <span class="gap__ref">F-TZPHZT</span>
+                </div>
+                <div class="gap__opts">
+                  <div class="gap__opt is-picked" data-side="a">
+                    <div class="gap__label">A · 알림 템플릿에서 관리 · 확정</div>
+                    <p>1팀 메일 8종도 메일 탭에서 고친다.</p>
+                  </div>
+                  <div class="gap__opt is-dropped" data-side="b">
+                    <div class="gap__label">B · 1팀 공통코드에 둔다</div>
+                    <p>메일 유형 공통코드로 따로 관리한다.</p>
+                  </div>
+                </div>
+                <p class="gap__note">1팀 메일 문구도 알림 템플릿에서 관리 · 확정 · 2026-10-07 재영. 1팀은 공통코드 메일 유형을 빼고 「메일 유형은 메일 템플릿에서 관리한다」로 정했다. 그 메일 템플릿이 이 화면이다. 1팀 화면에서 나가는 메일이라 목록에 1팀 꼬리표를 단다.</p>
               </div>
             </div>
 

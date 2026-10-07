@@ -24,6 +24,17 @@ const PURPOSES = [
   ["로그인 이메일 변경 핀", "본인", "[WHALE ERP] 로그인 이메일 변경 인증번호"],
   ["도입문의 접수 확인", "도입문의를 남긴 사람", "[WHALE ERP] 도입문의를 받았습니다"],
 ];
+// 1팀 화면에서 나가는 관리자 메일 8종. 1팀이 공통코드 MAIL_TYPE 을 빼고 메일 템플릿(이 화면)에서 관리한다(NOTIFY-9, 2026-10-07 재영).
+const TEAM1_MAILS = [
+  ["회원가입 완료", "가입한 BP 마스터", "[WHALE ERP] 회원가입이 완료되었습니다"],
+  ["신규 BP 가입 알림", "플랫폼 운영자", "[WHALE ERP] 새 BP 가 가입했습니다"],
+  ["BP 신규 등록", "등록된 BP 마스터", "[WHALE ERP] BP 가 등록되었습니다"],
+  ["플랫폼 관리자 계정 생성", "새 플랫폼 관리자", "[WHALE ERP] 플랫폼 관리자 계정이 만들어졌습니다"],
+  ["BP 관리자 계정 생성", "새 BP 관리자", "[WHALE ERP] 관리자 계정이 만들어졌습니다"],
+  ["비밀번호 초기화", "관리자 본인", "[WHALE ERP] 비밀번호가 초기화되었습니다"],
+  ["임시 비밀번호 발급", "관리자 본인", "[WHALE ERP] 임시 비밀번호를 보내 드립니다"],
+  ["회원 탈퇴 완료", "탈퇴한 BP 마스터", "[WHALE ERP] 회원 탈퇴가 완료되었습니다"],
+];
 const PUSH = [
   ["근로계약서 발송", "근로계약서가 도착했습니다", ["10-07 09:41", "김하린"]],
   ["근무스케줄 주요 변경", "근무스케줄이 바뀌었습니다"],
@@ -58,6 +69,7 @@ export default ({ A, R }) => {
   );
   const mail = table("알림 유형 · 발송 용도", [
     ...PURPOSES.map(([t, to, title]) => [name(t, L("notify/templates-edit-mail.html"), p.tag("quiet", "발송 용도")), to, title, edited()]),
+    ...TEAM1_MAILS.map(([t, to, title]) => [name(t, L("notify/templates-edit-mail.html"), p.tag("quiet", "발송 용도") + p.tag("info", "1팀")), to, title, edited()]),
     ...OPS.map(([t, to, title, e]) => [name(t, L("notify/templates-edit-mail.html")), to, `[WHALE ERP] ${title}`, edited(e)]),
   ]);
 
@@ -78,7 +90,7 @@ export default ({ A, R }) => {
     x.tabs([
       { id: "ops", label: "운영 알림", html: count(OPS.length) + ops + "</div>" },
       { id: "push", label: "앱 푸시", html: count(PUSH.length) + push + "</div>" },
-      { id: "mail", label: "메일", html: count(PURPOSES.length + OPS.length) + mail + `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div></div>` },
+      { id: "mail", label: "메일", html: count(PURPOSES.length + TEAM1_MAILS.length + OPS.length) + mail + `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div></div>` },
       { id: "talk", label: "알림톡", html: count(1) + talk + "</div>" },
     ]),
   );
