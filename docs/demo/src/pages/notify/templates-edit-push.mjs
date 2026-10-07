@@ -3,6 +3,7 @@
 import { templateEdit } from "../../template-edit.mjs";
 
 export default templateEdit({
+  templateCode: "PUSH_CONTRACT_SENT",
   kind: "push",
   type: "근로계약서 발송",
   channel: "앱 푸시",

@@ -2,6 +2,7 @@
 import { templateEdit } from "../../template-edit.mjs";
 
 export default templateEdit({
+  templateCode: "PUSH_TODO_ASSIGNED",
   kind: "inbox",
   type: "TO-DO 배정",
   channel: "직원 근무 앱 알림함 · 푸시 없음",

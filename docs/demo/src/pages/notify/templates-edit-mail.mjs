@@ -2,6 +2,7 @@
 import { templateEdit } from "../../template-edit.mjs";
 
 export default templateEdit({
+  templateCode: "EMAIL_CONTRACT_REJECTED",
   kind: "mail",
   type: "근로계약 거부",
   channel: "메일",

@@ -755,6 +755,9 @@
   .w-\[268px\] {
     width: 268px;
   }
+  .w-\[280px\] {
+    width: 280px;
+  }
   .w-\[304px\] {
     width: 304px;
   }
@@ -1595,6 +1598,9 @@
   }
   .font-erp {
     font-family: var(--font-erp);
+  }
+  .font-mono {
+    font-family: var(--font-mono);
   }
   .text-\[11\.5px\] {
     font-size: 11.5px;

@@ -47,7 +47,9 @@ export function templateEdit(t) {
       [t.kind === "talk" ? "발송 용도" : "알림 유형", t.type],
       ["채널", t.channel],
       ["받는 사람", t.to],
-      ...(t.code ? [["카카오 템플릿 코드", t.code]] : []),
+      // 템플릿 코드는 WHALE ERP 가 만든 값, 카카오 템플릿 코드는 카카오에 등록한 값이라 이름표로 가른다.
+      ["템플릿 코드", `<span class="font-mono text-[13px]">${t.templateCode}</span>`],
+      ...(t.code ? [["카카오 템플릿 코드", `<span class="font-mono text-[13px]">${t.code}</span> <span class="text-erp-muted">카카오 등록</span>`]] : []),
     ]);
     const form = box(
       "문구",

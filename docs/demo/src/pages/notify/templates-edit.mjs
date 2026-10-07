@@ -2,6 +2,7 @@
 import { templateEdit } from "../../template-edit.mjs";
 
 export default templateEdit({
+  templateCode: "NTF_CONTRACT_REJECTED",
   kind: "ops",
   type: "근로계약 거부",
   channel: "운영 알림",

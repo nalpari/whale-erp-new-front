@@ -3,6 +3,7 @@
 import { templateEdit } from "../../template-edit.mjs";
 
 export default templateEdit({
+  templateCode: "TALK_STAFF_INVITATION",
   kind: "talk",
   type: "가입 초대",
   channel: "알림톡",
