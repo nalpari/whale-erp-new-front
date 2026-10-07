@@ -2,6 +2,7 @@
 
 ## 2026-10-07
 
+* **Update**: api 견본(items·stock_movements·staff·customers)과 견본 로그인을 지운 결정(2026-10-07 재영)에 맞춰 front 의 `src/app/items/`·`src/app/login/`·`docs/result/architecture.html` 을 지우고 `src/lib/api.ts` 를 호출 틀만 남겼다. 첫 화면은 `/design`. [Whale ERP Frontend](/whale-erp-front.md) 의 Layout·API 절을 맞췄다.
 * **Update**: `2026-09-30-네이밍-규칙.md`(45f1ff4) 「알림 템플릿」 행 비고를 [네이밍 규칙](/conventions/naming.md) 에 반영했다 — 발송 채널 + 템플릿 이름 + 템플릿 코드로 구분.
 * **Update**: `2026-09-30-네이밍-규칙.md`(8c77649) 의 「고객지원 · 알림」을 [네이밍 규칙](/conventions/naming.md) 에 반영했다 — 알림 유형·발송 용도 공통코드를 없애고 템플릿 이름·수신 설정 묶음을 더했으며, 코드값 표를 기본 템플릿 코드 37건 표로 바꿨다.
 * **Update**: NOTIFY-11(공통코드 대신 템플릿 이름·코드로 구분, 앱 푸시는 수신 설정 묶음, 코드가 겹칠 때만 막음, 2026-10-07 재영)을 [운영 알림](/notify.md) 에 반영했다. 목업·데모의 「알림 유형·발송 용도」 열·칸·꼬리표를 템플릿 이름으로 바꾸고 데모 코드 목록을 전체 코드 문자열로 바꿨다.
