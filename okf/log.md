@@ -2,6 +2,7 @@
 
 ## 2026-10-07
 
+* **Update**: [로그인](/auth.md) 「로그인 · 세션」의 갱신 거절 대상에 탈퇴 계정을 더했다 — 미사용·삭제·탈퇴 계정이면 갱신을 거절한다. BP 마스터 탈퇴로 함께 탈퇴된 하위 계정의 열린 세션도 최대 1시간 안에 끝난다. `docs/mockup/auth/overview.html` 정책도 맞췄다.
 * **Update**: 운영 알림 유형에 근로계약 만료가 더해져 열 가지가 된 것을 [운영 알림](/notify.md) 정책 줄에 반영했다(2026-10-07 재영). 알림톡은 가입 초대 하나이고 더 보낼 상황은 앱 NOTI-2 에서 정한다고 목록 화면에 적었다.
 * **Add**: `docs/mockup/notify/templates.html`·`templates-edit.html` 의 알림 템플릿 관리(F-TZPHZT)를 [운영 알림](/notify.md) 에 넣었다 — 화면 둘, 정책 다섯 줄, 미정 쟁점 NOTIFY-4~7.
 * **Update**: [로그인](/auth.md) 「로그인 · 세션」과 `docs/mockup/auth/overview.html` 정책에 갱신 거절 규칙을 더했다 — 갱신 토큰으로 세션을 연장할 때 미사용·삭제 계정이면 거절해, 끊지 않은 세션도 최대 1시간 안에 끝난다.
