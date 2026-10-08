@@ -158,7 +158,7 @@ export default ({ A, R }) => {
   const editPanel = ui.slidePanel(
     PANEL.edit,
     "BP 휴일 수정",
-    ui.sectionHead(`BP 휴일 수정${c.sub("정기휴무 · HD-0114")}`) +
+    ui.sectionHead("BP 휴일 수정") +
       `<div class="flex flex-col gap-[18px]">${editForm(A, { panel: true })}</div>` +
       c.buttons(ui.button("닫기", { variant: "off", "data-close": true }), ui.button("저장", { "data-save-panel": PANEL.detail })),
   );

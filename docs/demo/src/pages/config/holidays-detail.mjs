@@ -16,7 +16,7 @@ export function detailParts(A, R, delId, { panel = false } = {}) {
   const info = ui.detailTable("휴일 정보", [
     ["휴일명", "정기휴무"],
     ["휴일 유형", "반복"],
-    ["고른 날짜", `2026-09-28 ${c.muted("(월)")}`],
+    ["선택 날짜", `2026-09-28 ${c.muted("(월)")}`],
     ["설명", "월요일마다 쉬는 정기 휴무"],
     // 등록일시 · 최종수정일시는 휴일 정보의 설명 아래에 둔다(2026-10-08)
     ["등록일시", `2026-09-15 14:10 ${c.muted("| hangang01")}`],
@@ -81,7 +81,7 @@ export function detailParts(A, R, delId, { panel = false } = {}) {
     "휴일 삭제",
     `<div class="flex flex-col gap-[12px] break-keep">${c.kv([
       ["휴일명", "정기휴무"],
-      ["고른 날짜", `2026-09-28 ${c.muted("(월)")}`],
+      ["선택 날짜", `2026-09-28 ${c.muted("(월)")}`],
       ["적용 대상", "온기식당 판교점"],
       ["반복", "매주 · 시작 2026-09-21 · 종료일 없음"],
     ])}</div>`,
