@@ -106,7 +106,9 @@ export default ({ A, R }) => {
           ['<span class="text-erp-label" title="플랫폼제공 그룹은 미적용으로 저장합니다">미적용</span>'],
           [x.toggle("사용", true)],
         ],
-      ),
+      ) +
+      // 목록 아래 페이지 이동 — BP 공통코드 관리 그룹 목록과 같다(2026-10-08)
+      `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
   );
 
   const codeCols = [

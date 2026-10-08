@@ -1,8 +1,7 @@
 // 플랫폼 관리자 수정. 목업 docs/mockup/system/admins-edit.html 의 기본 상태(platpark 박지우 · 일반)를 플랫폼 관리자로 본 것.
 // 목업 제목 줄의 [취소][저장]은 화면 아래로 내렸다. 권한 선택의 묶음(optgroup)은 Select 가 받지 않아 한 줄 목록으로 폈다.
-// 목록·상세에서 슬라이드 패널로 연다(BP 관리자 관리와 같다 · 2026-10-08) — 전체 화면은 그대로 두고 직접 들어와도 쓸 수 있게 둔다.
-import * as ui from "../../ui.mjs";
-import { platformHeader, link } from "../../site.mjs";
+// 상세·등록·수정은 따로 화면(주소)이 없고 목록(system/admins.html)의 슬라이드 패널로만 연다(2026-10-08). 저장하면 상세 패널로 간다(erp.js data-save-panel).
+import * as ui from "../ui.mjs";
 
 // 1팀 컴포넌트에 없는 것들: 필수 표시, 입력칸 아래 도움말, 안내 문구, 묶음 제목 옆 보조 글. (admins-new 와 같은 모양)
 const req = (label) => `${label} <span class="text-[#e93737]">*</span>`; // #e93737: DESIGN.md 위험 글자색
@@ -15,16 +14,13 @@ const tel = (a, b, c) =>
   ]
     .map(([v, l]) => ui.textField({ value: v, inputmode: "numeric", "aria-label": l }))
     .join("")}</div>`;
-// 도움말 유무로 칸 높이가 달라도 라벨이 위에서 맞도록 위 정렬한 FormRow
-const rowWide = (...c) => ui.formRow(...c).replace('class="flex w-full gap-[6px]"', 'class="flex w-full items-start gap-[6px]"');
 const stack = (...c) => `<div class="flex flex-col gap-[8px]">${c.join("")}</div>`;
 const address = (A, zip, base, detail) =>
   `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">주소</span><div class="flex gap-[6px]"><div class="flex-1">${ui.searchField(A, { placeholder: "도로명, 건물명, 지번으로 검색", label: "주소 검색어" })}</div>${ui.button("주소 검색", { variant: "soft" })}</div><div class="flex gap-[6px]"><div class="w-[120px] shrink-0">${ui.textField({ value: zip, readonly: true, placeholder: "우편번호", "aria-label": "우편번호" })}</div>${ui.textField({ value: base, readonly: true, placeholder: "검색해서 고르면 채워집니다", "aria-label": "기본주소" })}</div>${ui.textField({ value: detail, maxlength: 100, placeholder: "상세주소", "aria-label": "상세주소" })}</div>`;
 
-export function platformAdminEditBody(A, R, { panel = false } = {}) {
-  const detail = link(R, "system/admins-detail.html");
-  // 패널(464px)에서는 두 칸 줄을 한 칸씩 세로로 쌓는다
-  const row = panel ? (...cells) => cells.join("") : rowWide;
+function platformAdminEditBody(A) {
+  // 패널(464px)이라 두 칸 줄을 한 칸씩 세로로 쌓는다
+  const row = (...cells) => cells.join("");
 
   const basic = ui.formGroup(
     "기본정보",
@@ -59,8 +55,8 @@ export function platformAdminEditBody(A, R, { panel = false } = {}) {
     ),
   );
 
-  const cancel = panel ? ui.button("닫기", { variant: "off", "data-close": true }) : ui.button("취소", { variant: "off", href: detail });
-  const buttons = `<div class="flex justify-center gap-[6px]">${cancel}${ui.button("저장", { href: detail })}</div>`;
+  // 저장하면 수정 패널을 닫아 아래 상세 패널을 보인다
+  const buttons = `<div class="flex justify-center gap-[6px]">${ui.button("닫기", { variant: "off", "data-close": true })}${ui.button("저장", { "data-save-panel": "platform-admin-detail-panel" })}</div>`;
   return basic + role + buttons;
 }
 
@@ -68,15 +64,5 @@ export const platformAdminEditPanel = (A, R) =>
   ui.slidePanel(
     "platform-admin-edit-panel",
     "플랫폼 관리자 수정",
-    ui.sectionHead(`플랫폼 관리자 수정${sub("박지우 · platpark")}`) + platformAdminEditBody(A, R, { panel: true }),
+    ui.sectionHead(`플랫폼 관리자 수정${sub("박지우 · platpark")}`) + platformAdminEditBody(A),
   );
-
-export default ({ A, R }) => ({
-  title: "플랫폼 관리자 수정",
-  html: ui.erpFrame({
-    header: platformHeader(A, R),
-    title: "플랫폼 관리자 수정",
-    titleRight: `<span class="text-[14px] text-erp-label">박지우 · platpark</span>`,
-    body: ui.detailBody(platformAdminEditBody(A, R)),
-  }),
-});

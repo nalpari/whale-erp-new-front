@@ -1,11 +1,11 @@
 // 플랫폼 관리자 관리 목록. 목업 docs/mockup/system/admins.html 의 기본 상태(조회·등록 권한, 전체)를 플랫폼 관리자로 본 것.
 // 목업 위쪽 검색 조건은 왼쪽 필터로 옮겼다(점포 목록과 같은 방식). 등록일시 검색은 두지 않는다(2026-10-08).
-// 상세·등록·수정은 BP 관리자 관리처럼 오른쪽 슬라이드 패널로 연다 — 전체 화면 주소도 그대로 둔다.
+// 상세·등록·수정은 BP 관리자 관리처럼 오른쪽 슬라이드 패널로만 연다 — 따로 화면(주소)을 두지 않는다(src/platform-admin/).
 import * as ui from "../../ui.mjs";
 import { platformHeader } from "../../site.mjs";
-import { platformAdminNewPanel } from "./admins-new.mjs";
-import { platformAdminDetailPanel } from "./admins-detail.mjs";
-import { platformAdminEditPanel } from "./admins-edit.mjs";
+import { platformAdminNewPanel } from "../../platform-admin/new.mjs";
+import { platformAdminDetailPanel } from "../../platform-admin/detail.mjs";
+import { platformAdminEditPanel } from "../../platform-admin/edit.mjs";
 
 // 아이디·이름은 상세를 슬라이드 패널로 연다(표본 상세는 platpark 하나라 모든 줄이 그 상세를 연다)
 const detailTrigger = (text) => `<button type="button" aria-controls="platform-admin-detail-panel" aria-expanded="false" class="text-erp-link hover:underline">${text}</button>`;

@@ -1,12 +1,11 @@
 // 플랫폼 관리자 상세. 목업 docs/mockup/system/admins-detail.html 의 기본 상태(platpark 박지우, 수정·삭제 권한 있음)를 플랫폼 관리자로 본 것.
 // 목업 제목 줄 오른쪽의 실행 버튼들은 화면 아래 버튼 줄로 내렸다. 목업 전용 결과 단계(오류·발송 실패)는 뺐다.
-// 목록(system/admins.html)에서 슬라이드 패널로 연다(BP 관리자 관리와 같다 · 2026-10-08) — 전체 화면은 그대로 두고 직접 들어와도 쓸 수 있게 둔다.
-// 수정은 전체 화면·패널 모두 수정 패널을 연다.
-import * as ui from "../../ui.mjs";
-import * as x from "../../extra.mjs";
-import * as c from "../../config-parts.mjs";
-import { platformHeader, link } from "../../site.mjs";
-import { platformAdminEditPanel } from "./admins-edit.mjs";
+// 상세·등록·수정은 따로 화면(주소)이 없고 목록(system/admins.html)의 슬라이드 패널로만 연다(2026-10-08). 저장하면 상세 패널로 간다(erp.js data-save-panel).
+// 수정은 상세 패널 위에 수정 패널을 겹쳐 연다.
+import * as ui from "../ui.mjs";
+import * as x from "../extra.mjs";
+import * as c from "../config-parts.mjs";
+import { link } from "../site.mjs";
 
 const muted = (t) => `<span class="text-erp-muted">${t}</span>`;
 // 확인창 안의 짧은 항목·값 목록(목업 .kv). 1팀 컴포넌트에 없어 두 칸 grid 로 그린다.
@@ -19,7 +18,7 @@ const WHO = kv([["아이디", "platpark"], ["이름", "박지우"]]);
 const SHIELD = `<svg viewBox="0 0 24 24" class="mr-[4px] inline-block size-[12px] align-[-1px]" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.1 20 6v6.1c0 4.5-3.4 7.9-8 8.9-4.6-1-8-4.4-8-8.9V6z"/><path d="m8.9 12.1 2.1 2.1 4.1-4.2"/></svg>`;
 const NAME = `박지우 <span class="ml-[6px] inline-flex gap-[6px] align-middle">${ui.badge("on", "사용")}<span title="사용자 권한">${c.tag(`${SHIELD}고객지원 담당`)}</span></span>`;
 
-export function platformAdminDetailBody(A, R, { panel = false } = {}) {
+function platformAdminDetailBody(A, R) {
   const resetId = x.dialogId();
   const deleteId = x.dialogId();
   const histId = x.dialogId();
@@ -84,19 +83,11 @@ export function platformAdminDetailBody(A, R, { panel = false } = {}) {
 
   const editBtn = ui.slideTrigger("수정", "platform-admin-edit-panel");
   const actions = `${x.dialogTrigger("삭제", deleteId, "soft")}${editBtn}${x.dialogTrigger("변경 이력", histId, "soft")}`;
-  // 패널: 이름은 맨 위에 혼자, 기능 버튼은 닫기까지 모두 맨 아래로(BP 관리자 상세 패널과 같다). 전체 화면: 아래 버튼 줄.
-  const head = panel ? `<h2 class="text-[18px] font-semibold whitespace-nowrap text-erp-ink">${NAME}</h2>` : "";
-  const tables = info;
-  const buttons = panel
-    ? `<div class="flex flex-wrap justify-center gap-[6px] border-t border-erp-panel-line pt-[16px]">${actions}${ui.button("닫기", { variant: "off", "data-close": true })}</div>`
-    : `<div class="flex justify-center gap-[6px]">${ui.button("목록", { variant: "off", href: link(R, "system/admins.html") })}${actions}</div>`;
+  // 이름은 맨 위에 혼자, 기능 버튼은 닫기까지 모두 맨 아래로(BP 관리자 상세 패널과 같다)
+  const head = `<h2 class="text-[18px] font-semibold whitespace-nowrap text-erp-ink">${NAME}</h2>`;
+  const buttons = `<div class="flex flex-wrap justify-center gap-[6px] border-t border-erp-panel-line pt-[16px]">${actions}${ui.button("닫기", { variant: "off", "data-close": true })}</div>`;
 
-  return head + tables + buttons + resetDialog + deleteDialog + historyDialog;
+  return head + info + buttons + resetDialog + deleteDialog + historyDialog;
 }
 
-export const platformAdminDetailPanel = (A, R) => ui.slidePanel("platform-admin-detail-panel", "플랫폼 관리자 상세", platformAdminDetailBody(A, R, { panel: true }));
-
-export default ({ A, R }) => ({
-  title: "박지우",
-  html: ui.erpFrame({ header: platformHeader(A, R), title: NAME, body: ui.detailBody(platformAdminDetailBody(A, R)), panels: platformAdminEditPanel(A, R) }),
-});
+export const platformAdminDetailPanel = (A, R) => ui.slidePanel("platform-admin-detail-panel", "플랫폼 관리자 상세", platformAdminDetailBody(A, R));
