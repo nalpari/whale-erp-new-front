@@ -828,9 +828,6 @@
   .w-\[880px\] {
     width: 880px;
   }
-  .w-\[920px\] {
-    width: 920px;
-  }
   .w-\[1200px\] {
     width: 1200px;
   }
@@ -1165,9 +1162,6 @@
   }
   .self-end {
     align-self: flex-end;
-  }
-  .self-start {
-    align-self: flex-start;
   }
   .truncate {
     overflow: hidden;
@@ -1575,9 +1569,6 @@
   }
   .pt-\[18px\] {
     padding-top: 18px;
-  }
-  .pt-\[24px\] {
-    padding-top: 24px;
   }
   .pr-\[4px\] {
     padding-right: 4px;
@@ -2298,9 +2289,6 @@
   }
   .\[\&\:\:-webkit-search-cancel-button\]\:appearance-none::-webkit-search-cancel-button {
     appearance: none;
-  }
-  .\[\&\>\*\]\:w-full > * {
-    width: 100%;
   }
   .\[\&\>\*\]\:shrink-0 > * {
     flex-shrink: 0;
