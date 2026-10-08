@@ -81,27 +81,22 @@ export default ({ A, R }) => {
 
 // ── 점포 하나 화면(HOME-6 B) ──
 // 데모라 어느 점포를 골라도 을지로점 예시 직원·근무스케줄을 보인다. 점포 이름과 운영 점포 정보만 고른 점포로 바뀐다.
-// 근무 유형 색은 근무표 규칙(유형은 글자로만)과 달리 이 화면에서만 대시보드 시안을 따른다(2026-10-06 재영).
-const TYPE = {
-  주간: "bg-erp-on-bg text-erp-on border-erp-on",
-  오픈: "bg-[#ecf8f1] text-[#2f8a57] border-[#2f8a57]",
-  미들: "bg-[#fff6e6] text-[#b7740c] border-[#b7740c]",
-  마감: "bg-[#f4eefb] text-[#7a3fa8] border-[#7a3fa8]",
-};
-// [이름, 고용 형태, 근무 유형, 시작 시, 끝 시(익일은 24+), 근무요일(0=일)]
+// 근무 막대는 근무스케줄 관리(staff-sections BAR.on)와 같은 색이고, 근무 유형(주간·오픈·미들·마감)은 보이지 않는다(2026-10-08 재영).
+const BAR_ON = "bg-erp-brand-soft text-white border-erp-brand-soft";
+// [이름, 고용 형태, 시작 시, 끝 시(익일은 24+), 근무요일(0=일)]
 const CREW = [
-  ["김민재", "정직원", "주간", 9, 18, [1, 2, 3, 4, 5]],
-  ["최유나", "정직원", "주간", 11, 20, [2, 3, 4, 5, 6]],
-  ["이수빈", "파트타이머", "오픈", 9, 15, [1, 4, 5]],
-  ["강다은", "파트타이머", "미들", 12, 18, [1, 2, 3, 4, 5]],
-  ["정우진", "파트타이머", "미들", 13, 19, [4, 5, 6, 0]],
-  ["한지원", "파트타이머", "마감", 18, 25, [4, 5, 6, 0]],
+  ["김민재", "정직원", 9, 18, [1, 2, 3, 4, 5]],
+  ["최유나", "정직원", 11, 20, [2, 3, 4, 5, 6]],
+  ["이수빈", "파트타이머", 9, 15, [1, 4, 5]],
+  ["강다은", "파트타이머", 12, 18, [1, 2, 3, 4, 5]],
+  ["정우진", "파트타이머", 13, 19, [4, 5, 6, 0]],
+  ["한지원", "파트타이머", 18, 25, [4, 5, 6, 0]],
 ];
 const hm = (h) => (h >= 24 ? `익일 ${String(h - 24).padStart(2, "0")}:00` : `${String(h).padStart(2, "0")}:00`);
-const span = (c) => `${hm(c[3])}~${hm(c[4])}`;
+const span = (c) => `${hm(c[2])}~${hm(c[3])}`;
 const WD = "일월화수목금토";
 const days = (c) => {
-  const d = c[5];
+  const d = c[4];
   if (d.length === 5 && d.join() === "1,2,3,4,5") return "월~금";
   if (d.join() === "2,3,4,5,6") return "화~토";
   if (d.join() === "4,5,6,0") return "목~일";
@@ -173,7 +168,7 @@ function oneStore(A, R) {
   // 근무스케줄 · 주간: 주 이동 + 요일 칩 + 09시~익일 02시 시간축(17칸). 요일 칩을 누르면 그 요일 근무자만 남는다.
   const SPAN = 17;
   const ticks = Array.from({ length: SPAN }, (_, i) => (9 + i >= 24 ? `익일 ${String(9 + i - 24).padStart(2, "0")}` : String(9 + i).padStart(2, "0")));
-  const count = (wd) => CREW.filter((c) => c[5].includes(wd)).length;
+  const count = (wd) => CREW.filter((c) => c[4].includes(wd)).length;
   const chips = [1, 2, 3, 4, 5, 6, 0]
     .map(
       (wd) =>
@@ -182,16 +177,12 @@ function oneStore(A, R) {
     .join("");
   const rows = CREW.map(
     (c) =>
-      `<div data-wd="${c[5].join(",")}" class="flex h-[46px] items-center border-b border-erp-thead-line"${c[5].includes(4) ? "" : " hidden"}><span class="w-[140px] shrink-0 truncate px-[10px] text-[14px]">${c[0]} <span class="text-erp-muted">${c[1]}</span></span><div class="relative h-[34px] flex-1 rounded-[2px] bg-erp-thead-bg"><div class="absolute inset-y-0 flex items-center truncate rounded-[2px] border px-[10px] text-[13px] ${TYPE[c[2]]}" style="left:${(((c[3] - 9) / SPAN) * 100).toFixed(3)}%;width:${(((c[4] - c[3]) / SPAN) * 100).toFixed(3)}%"><b class="mr-[6px] font-semibold">${c[2]}</b>${span(c)}</div></div></div>`,
+      `<div data-wd="${c[4].join(",")}" class="flex h-[46px] items-center border-b border-erp-thead-line"${c[4].includes(4) ? "" : " hidden"}><span class="w-[140px] shrink-0 truncate px-[10px] text-[14px]">${c[0]} <span class="text-erp-muted">${c[1]}</span></span><div class="relative h-[34px] flex-1 rounded-[2px] bg-erp-thead-bg"><div class="absolute inset-y-0 flex items-center truncate rounded-[2px] border px-[10px] text-[13px] ${BAR_ON}" style="left:${(((c[2] - 9) / SPAN) * 100).toFixed(3)}%;width:${(((c[3] - c[2]) / SPAN) * 100).toFixed(3)}%">${span(c)}</div></div></div>`,
   ).join("");
-  const legend = `<div class="flex items-center gap-[18px] text-[13px] text-erp-label">${Object.entries(TYPE)
-    .map(([k, cls]) => `<span class="flex items-center gap-[6px]"><span class="size-[12px] rounded-[2px] border ${cls}"></span>${k}</span>`)
-    .join("")}</div>`;
   const week =
     p.bar(p.weekNav(A, "", "2026-08-31"), `<span class="text-[14px] text-erp-label">근무 <b class="font-semibold text-erp-ink" data-wd-count>${count(4)}</b>명</span>`) +
     `<div class="flex gap-[6px]">${chips}</div>` +
-    `<div class="flex flex-col"><div class="flex h-[42px] items-center border-y border-erp-thead-line bg-erp-thead-bg"><span class="w-[140px] shrink-0 px-[10px] text-[14px] font-medium text-erp-thead-text">직원</span><div class="grid flex-1 grid-cols-[repeat(17,minmax(0,1fr))] text-[12px] text-erp-thead-text">${ticks.map((t) => `<span class="truncate">${t}</span>`).join("")}</div></div>${rows}</div>` +
-    legend;
+    `<div class="flex flex-col"><div class="flex h-[42px] items-center border-y border-erp-thead-line bg-erp-thead-bg"><span class="w-[140px] shrink-0 px-[10px] text-[14px] font-medium text-erp-thead-text">직원</span><div class="grid flex-1 grid-cols-[repeat(17,minmax(0,1fr))] text-[12px] text-erp-thead-text">${ticks.map((t) => `<span class="truncate">${t}</span>`).join("")}</div></div>${rows}</div>`;
 
   // 근무스케줄 · 월간: 2026년 9월 달력. 날짜를 누르면 왼쪽에 그날 근무스케줄(erp.js initDayPlan).
   const first = new Date(2026, 8, 1);
@@ -204,7 +195,7 @@ function oneStore(A, R) {
     const tag = HOLIDAY.includes(iso) ? p.tag("warn", "추석 · 휴무") : p.tag("quiet", `${count(d.getDay())}명`);
     return `<button type="button" data-day="${iso}" aria-pressed="${iso === TODAY}" class="flex min-h-[64px] flex-col items-start gap-[4px] bg-white px-[8px] py-[6px] text-left transition-colors duration-150 ease-out hover:bg-erp-on-bg aria-pressed:bg-erp-on-bg aria-pressed:shadow-[inset_0_0_0_2px_var(--color-erp-on)]"><b class="text-[13px] font-semibold ${tone}">${d.getDate()}</b>${tag}</button>`;
   }).join("");
-  const plan = { crew: CREW.map((c) => [c[0], c[1], c[2], span(c), c[5]]), holiday: HOLIDAY, today: TODAY };
+  const plan = { crew: CREW.map((c) => [c[0], c[1], span(c), c[4]]), holiday: HOLIDAY, today: TODAY };
   const month =
     `<div data-dayplan='${JSON.stringify(plan)}' class="grid grid-cols-[268px_minmax(0,1fr)] items-start gap-[18px]">` +
     `<div class="flex flex-col gap-[8px] rounded-[2px] border border-erp-thead-line p-[14px]"><div class="flex items-center justify-between"><button type="button" data-daymove="-1" aria-label="이전 날" class="grid size-[28px] place-items-center rounded-[2px] border border-erp-button-line">${ui.img(A, "prev.svg", 7, 12)}</button><b data-daytitle class="text-[15px] font-semibold"></b><button type="button" data-daymove="1" aria-label="다음 날" class="grid size-[28px] place-items-center rounded-[2px] border border-erp-button-line">${ui.img(A, "next.svg", 7, 12)}</button></div><p data-daysum class="text-[13px] text-erp-label"></p><ul data-daylist class="flex flex-col text-[14px]"></ul></div>` +

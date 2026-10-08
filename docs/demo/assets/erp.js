@@ -733,11 +733,11 @@
       if (d.getMonth() !== 8) return; // 데모 달력은 2026년 9월뿐
       cur = key;
       const off = holiday.includes(key);
-      const list = off ? [] : crew.filter((c) => c[4].includes(d.getDay()));
+      const list = off ? [] : crew.filter((c) => c[3].includes(d.getDay()));
       $("[data-daytitle]", pane).textContent = `${d.getMonth() + 1}월 ${d.getDate()}일 (${WD[d.getDay()]})`;
       $("[data-daysum]", pane).innerHTML = off ? "추석 연휴 · 점포 휴무" : `근무 <b class="text-erp-ink">${list.length}명</b> · ${key === today ? "오늘" : key < today ? "지난 날" : "예정"}`;
       $("[data-daylist]", pane).innerHTML = list.length
-        ? list.map((c) => `<li class="flex items-center gap-[8px] border-b border-erp-thead-line py-[8px]"><span class="flex-1">${c[0]} <span class="text-erp-muted">${c[1]}</span></span><span class="text-right text-[13px]">${c[2]}<br><span class="text-erp-muted">${c[3]}</span></span></li>`).join("")
+        ? list.map((c) => `<li class="flex items-center gap-[8px] border-b border-erp-thead-line py-[8px]"><span class="flex-1">${c[0]} <span class="text-erp-muted">${c[1]}</span></span><span class="text-right text-[13px] text-erp-muted">${c[2]}</span></li>`).join("")
         : '<li class="py-[8px] text-[13px] text-erp-muted">근무 없음</li>';
       $$("[data-day]", root).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.day === key)));
     };
