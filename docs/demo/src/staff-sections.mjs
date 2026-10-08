@@ -450,6 +450,16 @@ export function staffSections({ A, R }) {
       ) +
       ui.panelButtons("취소", "대신 등록"),
   );
+  // 배정 대상·수행 방식 라벨과 ⓘ 툴팁(2026-10-08 재영)
+  const TIP_TARGET = "개인: 고른 직원에게만 보입니다. 여러 명을 고르면 한 사람에 한 건씩 생깁니다.\n근무지 전체: 그 근무지의 재직 직원 모두에게 보입니다.";
+  const TIP_MODE = "각자 수행: 직원마다 한 건씩 생기고 저마다 완료합니다.\n한 명 수행: 한 건을 함께 보고, 한 명이 완료하면 모두에게 완료로 보입니다. 등록한 뒤에는 바꿀 수 없습니다.";
+  const tipLabel = (label, text) => `<span class="flex items-center gap-[6px] text-[14px] font-medium text-erp-label">${label}${p.infoTip(label, text)}</span>`;
+  // 개인 배정 직원 고르기(STAFF-25 확정 — 한 명 이상, 직원마다 1건). 개인일 때만 보이고, 수행 방식은 근무지 전체일 때만 보인다(data-when).
+  // 고른 근무지의 재직 직원을 이름·휴대전화번호 끝자리로 찾고, 고른 직원은 칩. 데모라 칩의 ×·근무지 변경 비우기·저장 막기는 안내 문구로만 보인다.
+  const staffChip = (name) =>
+    `<li class="flex h-[34px] items-center gap-[8px] rounded-[2px] border border-erp-field-line bg-white pr-[4px] pl-[10px] text-[14px]"><span class="font-medium">${name}</span><button type="button" aria-label="${name} 빼기" class="grid size-[26px] place-items-center rounded-[2px] text-erp-label hover:text-erp-ink">×</button></li>`;
+  const staffPick = (radio, picked = []) =>
+    `<div class="flex flex-col gap-[8px]" data-when="${radio}:개인"><span class="text-[14px] font-medium text-erp-label">직원</span>${ui.searchField(A, { placeholder: "이름 또는 휴대전화번호 끝자리" })}<ul aria-label="고른 직원" class="flex flex-wrap gap-[6px]">${picked.map(staffChip).join("")}</ul>${p.help("고른 근무지의 재직 직원 중 한 명 이상 고르고, 직원마다 1건씩 생긴다. 근무지를 바꾸면 비우고, 아무도 고르지 않으면 「직원을 한 명 이상 골라 주세요」로 막는다.")}</div>`;
   const todoForm = ui.slidePanel(
     todoPanel,
     "TO-DO 등록",
@@ -462,8 +472,9 @@ export function staffSections({ A, R }) {
       ui.formGroup(
         "배정",
         ui.field("근무지", ui.select(["모리커피 서초점", "온기식당 판교점"])),
-        `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">배정 대상</span>${p.radios("todo-target", ["개인", "근무지 전체"], "근무지 전체")}</div>`,
-        `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">수행 방식</span>${p.radios("todo-mode", ["각자 수행", "한 명 수행"])}${p.help("등록 후에는 바꿀 수 없다 · 각자 수행은 직원당 1건, 한 명 수행은 공유 1건")}</div>`,
+        `<div class="flex flex-col gap-[8px]">${tipLabel("배정 대상", TIP_TARGET)}${p.radios("todo-target", ["개인", "근무지 전체"], "근무지 전체")}</div>`,
+        staffPick("todo-target"),
+        `<div class="flex flex-col gap-[8px]" data-when="todo-target:근무지 전체">${tipLabel("수행 방식", TIP_MODE)}${p.radios("todo-mode", ["각자 수행", "한 명 수행"])}${p.help("등록 후에는 바꿀 수 없다 · 각자 수행은 직원당 1건, 한 명 수행은 공유 1건")}</div>`,
         ui.formRow(p.fieldH("수행 예정 날짜", ui.dateField(A, { label: "수행 예정 날짜", value: "2026-09-03" }), ""), p.fieldH("시간", p.timeField("", "시간"), "선택")),
         `<div class="flex flex-col gap-[8px]">${x.toggle("긴급", true)}</div>`,
       ) +
@@ -481,9 +492,9 @@ export function staffSections({ A, R }) {
         ui.formGroup(
           "배정",
           ui.field("근무지", ui.select(["모리커피 서초점", "온기식당 판교점"], { value: store })),
-          `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">배정 대상</span>${p.radios(`${id}-target`, ["개인", "근무지 전체"], target)}</div>`,
-          person ? ui.field("직원", ui.select(["서지안", "오세라", "권도윤"], { value: person })) : "",
-          `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">수행 방식</span><span class="text-[14px] text-erp-ink">${mode}</span>${p.help("등록 후에는 바꿀 수 없다")}</div>`,
+          `<div class="flex flex-col gap-[8px]">${tipLabel("배정 대상", TIP_TARGET)}${p.radios(`${id}-target`, ["개인", "근무지 전체"], target)}</div>`,
+          staffPick(`${id}-target`, person ? [person] : []),
+          `<div class="flex flex-col gap-[8px]" data-when="${id}-target:근무지 전체">${tipLabel("수행 방식", TIP_MODE)}<span class="text-[14px] text-erp-ink">${mode}</span>${p.help("등록 후에는 바꿀 수 없다")}</div>`,
           ui.formRow(p.fieldH("수행 예정 날짜", ui.dateField(A, { label: "수행 예정 날짜", value: date }), ""), p.fieldH("시간", p.timeField(time, "시간"), "선택")),
           `<div class="flex flex-col gap-[8px]">${x.toggle("긴급", urgent)}</div>`,
         ) +

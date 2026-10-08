@@ -253,6 +253,9 @@
   .top-\[calc\(100\%\+4px\)\] {
     top: calc(100% + 4px);
   }
+  .top-\[calc\(100\%\+6px\)\] {
+    top: calc(100% + 6px);
+  }
   .top-\[calc\(100\%\+8px\)\] {
     top: calc(100% + 8px);
   }
@@ -963,6 +966,9 @@
   }
   .cursor-grab {
     cursor: grab;
+  }
+  .cursor-help {
+    cursor: help;
   }
   .cursor-not-allowed {
     cursor: not-allowed;

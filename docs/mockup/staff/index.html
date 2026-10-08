@@ -1656,20 +1656,30 @@
                       </div>
                       <div class="field">
                         <label for="tw">근무지</label>
-                        <select class="select" id="tw">
+                        <select class="select" id="tw" data-todo-store>
                           <option>모리커피 서초점</option>
                           <option>온기식당 판교점</option>
                         </select>
                       </div>
                       <div class="field">
-                        <label>배정 대상</label>
-                        <div class="seg">
+                        <label>배정 대상 <span class="subtle" tabindex="0" data-tip="개인: 고른 직원에게만 보입니다. 여러 명을 고르면 한 사람에 한 건씩 생깁니다. / 근무지 전체: 그 근무지의 재직 직원 모두에게 보입니다." aria-label="배정 대상 설명">ⓘ</span></label>
+                        <div class="seg" data-todo-target>
                           <button type="button" aria-pressed="false">개인</button>
                           <button type="button" aria-pressed="true">근무지 전체</button>
                         </div>
                       </div>
-                      <div class="field">
-                        <label>수행 방식</label>
+                      <!-- 개인일 때만 · 고른 근무지의 재직 직원 · 이름·휴대전화번호 끝자리로 찾는다 (STAFF-25 확정: 한 명 이상, 직원마다 1건) -->
+                      <div class="field" data-todo-pick hidden>
+                        <label for="tp">직원</label>
+                        <input class="input" id="tp" placeholder="이름 또는 휴대전화번호 끝자리" autocomplete="off" />
+                        <div class="inline" style="flex-wrap: wrap; gap: var(--s-1)" data-todo-pool></div>
+                        <div class="inline" style="flex-wrap: wrap; gap: var(--s-1)" data-todo-chips></div>
+                        <span class="help">한 명 이상 고르고, 직원마다 1건씩 생긴다. 근무지를 바꾸면 고른 직원을 비운다.</span>
+                        <p class="note" style="margin: 0" data-todo-err hidden><span data-icon="alert" data-icon-size="14"></span><span>직원을 한 명 이상 골라 주세요</span></p>
+                      </div>
+                      <!-- 수행 방식은 근무지 전체일 때만 -->
+                      <div class="field" data-todo-mode>
+                        <label>수행 방식 <span class="subtle" tabindex="0" data-tip="각자 수행: 직원마다 한 건씩 생기고 저마다 완료합니다. / 한 명 수행: 한 건을 함께 보고, 한 명이 완료하면 모두에게 완료로 보입니다. 등록한 뒤에는 바꿀 수 없습니다." aria-label="수행 방식 설명">ⓘ</span></label>
                         <div class="seg">
                           <button type="button" aria-pressed="true">각자 수행</button>
                           <button type="button" aria-pressed="false">한 명 수행</button>
@@ -1695,7 +1705,7 @@
                         <span class="help">직원 근무 앱 홈·근무 탭 맨 위에 강조되고 관리자 웹 미조치에 센다. 푸시는 보내지 않는다.</span>
                       </div>
                       <hr class="hr" />
-                      <button class="btn btn--primary btn--block" type="button">등록하고 배정</button>
+                      <button class="btn btn--primary btn--block" type="button" data-todo-save>등록하고 배정</button>
                     </div>
                     <div class="panel__note">
                       반복 설정은 없다. 정기 업무는 TO-DO 로 등록하지 않으며, 1차 범위 밖이라 2차에서 다룬다.
@@ -1709,7 +1719,7 @@
                     <div class="panel__body">
                       <dl class="kv">
                         <dt>개인 배정</dt>
-                        <dd>고른 직원 각각에게 1건씩. 담당자가 명확하다.</dd>
+                        <dd>고른 직원 각각에게 1건씩(한 명 이상). 담당자가 명확하다. 수행 방식은 고르지 않는다.</dd>
                         <dt>전체 · 각자 수행</dt>
                         <dd>근무지 재직자 수만큼 생성된다. 전원이 해야 하는 일.</dd>
                         <dt>전체 · 한 명 수행</dt>
@@ -1737,6 +1747,48 @@
         p.querySelectorAll("[data-copy-close]").forEach(function (x) {
           x.addEventListener("click", function () { p.hidden = true; b.setAttribute("aria-expanded", "false"); });
         });
+      })();
+    </script>
+    <script>
+      /* 목업 동작 — TO-DO 등록의 개인 배정 직원 고르기. 개인이면 칸을 열고, 근무지의 재직 직원을 이름·번호 끝자리로 걸러
+         누르면 칩으로 더한다. 칩의 ×로 하나씩 빼고, 근무지를 바꾸면 비운다. 아무도 없이 저장하면 막는다. */
+      (function todoPick() {
+        var STAFF = {
+          "모리커피 서초점": [["서지안", "7702"], ["오세라", "4418"], ["권도윤", "2290"], ["남도현", "5163"]],
+          "온기식당 판교점": [["하준서", "3307"], ["정유담", "8841"]],
+        };
+        var store = document.querySelector("[data-todo-store]"), target = document.querySelector("[data-todo-target]");
+        var box = document.querySelector("[data-todo-pick]");
+        if (!store || !box) return;
+        var q = box.querySelector("input"), pool = box.querySelector("[data-todo-pool]"), chips = box.querySelector("[data-todo-chips]");
+        var err = box.querySelector("[data-todo-err]"), mode = document.querySelector("[data-todo-mode]"), picked = [];
+        function draw() {
+          var word = q.value.trim();
+          pool.innerHTML = "";
+          (STAFF[store.value] || []).forEach(function (p) {
+            if (picked.indexOf(p[0]) >= 0 || (word && p[0].indexOf(word) < 0 && p[1].indexOf(word) < 0)) return;
+            var b = document.createElement("button");
+            b.type = "button"; b.className = "tbtn"; b.textContent = p[0] + " · " + p[1];
+            b.onclick = function () { picked.push(p[0]); err.hidden = true; draw(); };
+            pool.appendChild(b);
+          });
+          chips.innerHTML = "";
+          picked.forEach(function (n) {
+            var c = document.createElement("span");
+            c.className = "chip"; c.textContent = n;
+            var x = document.createElement("button");
+            x.type = "button"; x.className = "chip__x"; x.setAttribute("aria-label", n + " 빼기"); x.textContent = "×";
+            x.onclick = function () { picked.splice(picked.indexOf(n), 1); draw(); };
+            c.appendChild(x); chips.appendChild(c);
+          });
+        }
+        target.addEventListener("click", function () {
+          setTimeout(function () { box.hidden = target.querySelector('[aria-pressed="true"]').textContent !== "개인"; mode.hidden = !box.hidden; err.hidden = true; });
+        });
+        store.addEventListener("change", function () { picked = []; q.value = ""; draw(); });
+        q.addEventListener("input", draw);
+        document.querySelector("[data-todo-save]").addEventListener("click", function () { err.hidden = box.hidden || picked.length > 0; });
+        draw();
       })();
     </script>
     <script src="../assets/timeline.js"></script>

@@ -20,6 +20,9 @@ export const sub = (text) => `<span class="text-erp-muted">${text}</span>`;
 export const note = (text) => `<p class="text-[13px] leading-[1.6] text-erp-label">${text}</p>`;
 
 // 입력칸 아래 도움말. ui.field 의 control 자리에 입력칸과 함께 넣는다.
+// 라벨 옆 ⓘ 툴팁. 헤더 서비스 바로가기 말풍선(ui.mjs tip)은 헤더 전용 알약형이라, 여기는 DESIGN.md 팝업 모양(2px·뜬 것 그림자)으로 그렸다.
+export const infoTip = (label, text) =>
+  `<span tabindex="0" aria-label="${label} 설명" class="group relative inline-grid size-[16px] cursor-help place-items-center text-[13px] text-erp-label">ⓘ<span role="tooltip" class="pointer-events-none absolute top-[calc(100%+6px)] left-0 z-20 w-[280px] rounded-[2px] border border-[#ebebeb] bg-white px-[12px] py-[10px] text-[13px] leading-[1.6] font-normal whitespace-pre-line text-erp-ink opacity-0 shadow-[0_2px_6px_rgba(40,47,55,0.08)] transition-opacity duration-150 ease-out group-hover:opacity-100 group-focus-visible:opacity-100">${text}</span></span>`;
 export const help = (text) => `<span class="text-[12px] leading-[1.5] text-erp-muted">${text}</span>`;
 // 도움말이 있는 칸. 도움말 유무가 섞인 줄에서도 칸 위쪽이 맞도록 감싸서 위로 붙인다(도움말 없는 칸은 text 를 비운다).
 export const fieldH = (label, control, text, width) =>
