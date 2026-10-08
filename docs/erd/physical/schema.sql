@@ -18,7 +18,7 @@ CREATE TYPE "employment_type" AS ENUM ('FULL_TIME', 'PART_TIME');  -- 정직원 
 CREATE TYPE "employment_status" AS ENUM ('EMPLOYED', 'RETIRED');  -- 재직 · 퇴직
 CREATE TYPE "staff_member_join_status" AS ENUM ('DRAFT', 'INVITED', 'JOINED');  -- 초안 · 초대 발송 · 가입 완료
 CREATE TYPE "invitation_type" AS ENUM ('SIGNUP', 'REINVITE', 'AFFILIATION_CONFIRM', 'RETURN_CONFIRM');  -- 가입 초대 · 재초대 · 소속 추가 확인 · 복귀 확인
-CREATE TYPE "invitation_channel" AS ENUM ('SMS', 'ALIMTALK');  -- SMS · 알림톡
+CREATE TYPE "invitation_channel" AS ENUM ('SMS', 'ALIMTALK', 'PUSH');  -- SMS · 알림톡 · 앱 푸시
 CREATE TYPE "invitation_status" AS ENUM ('SENT', 'ACCEPTED', 'EXPIRED', 'REJECTED', 'REJECTED_UNDER_AGE');  -- 발송 · 수락 · 만료 · 거절 · 가입 불가(만 19세 미만)
 CREATE TYPE "link_hold_mismatch_reason" AS ENUM ('PHONE_MISMATCH', 'NAME_MISMATCH');  -- 번호 불일치 · 이름 불일치
 CREATE TYPE "link_hold_resolution" AS ENUM ('APPROVED', 'REINVITED');  -- 승인 · 번호 수정 후 재초대
