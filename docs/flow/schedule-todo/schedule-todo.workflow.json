@@ -37,11 +37,11 @@
           "sched",
           "copy",
           "edit",
-          "confirm",
+          "save",
           "push",
           "appSched"
         ],
-        "note": "복사든 직접 입력이든 확정을 거쳐야 직원 근무 앱에 닿는다."
+        "note": "복사든 직접 입력이든 저장하면 바로 직원 근무 앱에 닿는다. 확정 단계는 없다."
       },
       {
         "id": "v2",
@@ -115,7 +115,7 @@
     "sched",
     "copy",
     "edit",
-    "confirm",
+    "save",
     "push",
     "appSched"
   ],
@@ -135,7 +135,7 @@
       "col": 1,
       "type": "backend",
       "label": "지난 주 복사",
-      "sublabel": "미리보기 · 확정 전 상태",
+      "sublabel": "바로 반영 · 해당 직원 알림",
       "width": 150
     },
     {
@@ -149,11 +149,11 @@
       "tag": "STAFF-14"
     },
     {
-      "id": "confirm",
+      "id": "save",
       "lane": "sch",
       "col": 3,
       "type": "backend",
-      "label": "근무스케줄 확정",
+      "label": "저장 · 바로 반영",
       "sublabel": "지난 날짜면 급여 경고",
       "width": 140
     },
@@ -191,7 +191,7 @@
       "col": 4,
       "type": "messagebus",
       "label": "앱 푸시",
-      "sublabel": "확정 때 · 바뀐 사람에게만",
+      "sublabel": "저장 때 · 바뀐 사람에게만",
       "width": 140,
       "tag": "STAFF-15"
     },
@@ -233,15 +233,15 @@
     {
       "id": "e3",
       "from": "edit",
-      "to": "confirm",
+      "to": "save",
       "variant": "emphasis"
     },
     {
       "id": "e4",
-      "from": "confirm",
+      "from": "save",
       "to": "push",
       "variant": "emphasis",
-      "label": "등록·수정된 직원만"
+      "label": "바뀐 직원만"
     },
     {
       "id": "e5",

@@ -29,7 +29,7 @@ export const CODES = {
   NTF: Object.fromEntries(OPS.map(([n, c]) => [n, `NTF_${c}`])),
   PUSH: {
     "근로계약서 발송": "PUSH_CONTRACT_SENT",
-    "근무스케줄 주요 변경": "PUSH_SCHEDULE_CHANGED",
+    "근무스케줄 변경": "PUSH_SCHEDULE_CHANGED",
     "TO-DO 배정": "PUSH_TODO_ASSIGNED",
     "급여명세서 발송": "PUSH_PAYSLIP_SENT",
   },
