@@ -3,7 +3,7 @@ type: Area
 title: 고객지원·커뮤니티
 description: BP 사용자가 공지·FAQ 를 읽고 문의를 남기는 고객지원과, 플랫폼 운영자가 공지·FAQ·문의·도입문의를 관리하는 커뮤니티관리.
 tags: [mockup, support]
-generated: { by: claude-code/fable-5.1, at: 2026-10-08T01:29:22Z }
+generated: { by: claude-code/fable-5.1, at: 2026-10-08T01:35:52Z }
 ---
 
 근거: `docs/mockup/support/` (목업 · 1차 · R-PEQDDV)
@@ -16,10 +16,10 @@ generated: { by: claude-code/fable-5.1, at: 2026-10-08T01:29:22Z }
 |------|------|---------|------|
 | `/support` | 고객지원 | 공지사항 · FAQ · 문의하기 세 탭. 검색·필터·페이저가 탭마다 있고, 문의 등록 폼은 문의하기 탭에 있다. | `S-ITFILU` |
 | `/support/notices/[id]` | 공지 상세 | 제목·본문·첨부. 노출 대상과 이력은 운영자 편집 화면의 것이라 여기엔 없다. | `S-ITFILU` |
-| `/support/inquiries/[id]` | 내 문의 상세 | 내 문의와 답변 이력. 운영자 쪽 상세와 달리 내부 메모는 보이지 않는다. | `S-ITFILU` |
+| `/support/inquiries/[id]` | 내 문의 상세 | 내 문의와 마지막 답변. 고친 답변이면 수정 시각만 붙는다. 운영자 쪽 상세와 달리 내부 메모·이전 답변·고친 운영자는 보이지 않는다. | `S-ITFILU` |
 | `/platform/community` | 커뮤니티관리 | 플랫폼 관리자가 본다. 공지·FAQ·문의사항·도입문의를 네 갈래로 나눠 관리한다. | `S-GRDOPW` |
 | `/platform/community/notices/[id]` | 공지·FAQ 편집 | 제목·본문·게시 상태와 **노출 대상**을 정한다. 비회원을 넣으면 비로그인 홈까지 나간다. | `S-GRDOPW` |
-| `/platform/community/inquiries/[id]` | 문의 상세 · 답변 | 사용자에게 보이는 답변과 운영자끼리 보는 내부 메모를 갈라서 쓴다. | `S-GRDOPW` |
+| `/platform/community/inquiries/[id]` | 문의 상세 · 답변 | 사용자에게 보이는 답변과 운영자끼리 보는 내부 메모를 갈라서 쓴다. 답변 완료 뒤에도 「답변 수정」으로 고친다. | `S-GRDOPW` |
 | `/platform/community/leads/[id]` | 도입문의 상세 | 비로그인 방문자가 남긴 건이다. 문의자 정보와 도입 문의 내용을 함께 놓고 답한다. | `S-GRDOPW` |
 
 # 정책
@@ -40,6 +40,7 @@ generated: { by: claude-code/fable-5.1, at: 2026-10-08T01:29:22Z }
 * 게시된 글을 고치면 즉시 대상 사용자에게 반영된다. 둘이 동시에 고치면 덮어쓰지 않고 최신 내용을 다시 확인하게 한다. — `S-GRDOPW`
 * **상단 고정**을 켠 공지는 사용자 쪽 목록 맨 위에 먼저 선다. FAQ 에는 없다. — `S-GRDOPW` · `S-KJEVVS`
 * 문의 상태는 접수·처리 중·답변 완료 셋이다. 등록 때는 알림이 없고 **답변이 달릴 때만** 알림함과 이메일로 간다. — `S-ITFILU`
+* 답변은 답변 완료 뒤에도 운영자가 고칠 수 있다. 읽기 상태의 「답변 수정」이 같은 입력칸을 열고, 저장하면 읽기 상태로 돌아간다. 상태는 답변 완료 그대로고 문의자에게 알림은 다시 가지 않는다. 운영자 쪽에는 「수정됨 · 시각 · 고친 운영자」와 펼쳐 보는 「이전 답변 n개」가, 문의자 쪽에는 마지막 답변과 「수정됨 · 시각」만 보인다(2026-10-08 재영). 고칠 때마다 `inquiry_replies` 에 행이 남는다 — `운영 정책 CNT-17` · `S-GRDOPW` · `S-ITFILU`
 * 문의 등록 건수에 제한은 없다. 같은 내용이 연달아 들어오면 중복으로 막는다. — `S-ITFILU`
 * 공지·FAQ·내 문의 목록은 목록 공통 규칙대로 페이지로 나눈다. — `S-ITFILU` · `S-GRDOPW`
 

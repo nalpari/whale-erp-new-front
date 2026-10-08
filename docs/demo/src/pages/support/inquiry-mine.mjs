@@ -22,9 +22,10 @@ export default ({ A, R }) => {
   const answers = p.box(
     "답변",
     "",
-    `<div class="flex flex-col gap-[12px]">${by("09-02 11:05 · WHALE ERP 운영팀")}${prose(
+    // 마지막 답변만, 고친 답변이면 수정 시각만 붙인다. 이전 답변·고친 운영자는 문의자에게 보이지 않는다(운영 정책 CNT-17, 2026-10-08 재영).
+    `<div class="flex flex-col gap-[12px]">${by("08-31 09:40 · WHALE ERP 운영팀 · 수정됨 09-02 11:05")}${prose(
       "원인이 확인되어 조치했습니다. 가맹점 메일 서버가 발신 도메인 검증을 새로 켜면서 반송된 것으로, 발신 도메인 인증 설정을 갱신했습니다. 점포관리에서 <b>초대 다시 보내기</b>를 눌러 주세요.",
-    )}<hr class="border-erp-divider">${by("08-31 09:40 · WHALE ERP 운영팀")}${prose("접수했습니다. 반송 사유를 확인하고 있으며 내일 안에 답변드리겠습니다.")}</div>`,
+    )}</div>`,
     { pad: true },
   );
   const progress = p.box(
@@ -33,8 +34,8 @@ export default ({ A, R }) => {
     ui.dataTable(
       [{ header: "일시" }, { header: "상태" }],
       [
-        ["09-02 11:05", p.tag("ok", "답변완료")],
-        ["08-31 09:40", p.tag("quiet", "처리중")],
+        ["08-31 09:40", p.tag("ok", "답변완료")],
+        ["08-31 09:12", p.tag("quiet", "처리중")],
         ["08-30 16:12", p.tag("warn", "접수")],
       ],
     ),
