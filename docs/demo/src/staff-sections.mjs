@@ -232,10 +232,10 @@ export function staffSections({ A, R }) {
   const schedTab =
     p.bar(
       // 날짜 선택은 직원 상세와 같은 주 이동(2026-10-02 재영). 데모라 근무표 내용은 주를 바꿔도 그대로다.
-      p.weekNav(A, "", "2026-08-17") + p.tag("warn", "확정 전"),
-      p.ask("지난 주 복사", "soft", "지난 주 근무스케줄을 복사하시겠습니까?", "지난 주 근무스케줄을 지금 보고 있는 주에 그대로 넣습니다.", "복사") +
-        ui.slideTrigger("근무스케줄 등록", schedPanel, "soft") +
-        p.ask("근무스케줄 확정", "primary", "이 주의 근무스케줄을 확정하시겠습니까?", "", "확정"),
+      // 확정 단계는 없다 — 저장하면 바로 직원 근무 앱에 반영되고 바뀐 직원에게 알림이 간다(2026-10-08 재영, STAFF-15).
+      p.weekNav(A, "", "2026-08-17"),
+      p.ask("지난 주 복사", "soft", "지난 주 근무스케줄을 복사하시겠습니까?", "지난 주 근무스케줄을 지금 보고 있는 주에 그대로 넣습니다. 복사하면 바로 반영되고 해당 직원에게 알림이 갑니다.", "복사") +
+        ui.slideTrigger("근무스케줄 등록", schedPanel),
     ) +
     p.bar(
       x.segment("근무스케줄 보기", [
@@ -389,6 +389,7 @@ export function staffSections({ A, R }) {
         ui.formRow(ui.field("시작", p.timeField("09:00", "시작")), ui.field("종료", p.timeField("16:00", "종료")), ui.field("휴게시간", ui.textField({ value: "60분" }))),
         `<div data-when="sched-staff:권도윤 · 바리스타">${p.band("권도윤 · 근로계약 미체결", { tone: "risk" })}</div>`,
       ) +
+      p.note("저장하면 바로 직원 근무 앱에 반영되고, 바뀐 직원에게 알림이 갑니다.") +
       `<div class="flex justify-between gap-[6px]">${x.dialogTrigger("삭제", delId, "soft")}<span class="flex gap-[6px]">${offBtn("취소", { "data-close": true })}${ui.button("저장", { "data-close": true })}</span></div>`,
   );
   const delDialog = x.dialog(

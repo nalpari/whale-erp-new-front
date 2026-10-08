@@ -48,7 +48,7 @@ h2{font-family:var(--sans);font-size:20px;font-weight:600;letter-spacing:-.4px;m
 <div class="header">
 <p class="eyebrow">WHALE ERP · LOGICAL ERD · 1차 범위 · 3팀</p>
 <h1>근무스케줄과 출퇴근</h1>
-<p class="subtitle">근무스케줄은 관리자가 등록하고 확정한다. 출퇴근은 직원이 직원 근무 앱에서 GPS 판정으로 등록한다. 판정은 휴대전화에서 하고 좌표와 판정 결과(반경 안·밖, 오차)는 저장하지 않는다. 확인 필요 사유만 관리자 검토 때까지 남기며, 보정은 원본과 분리해 이력으로 쌓는다.</p>
+<p class="subtitle">근무스케줄은 관리자가 등록하면 바로 직원 근무 앱에 반영된다(확정 단계 없음, 2026-10-08). 출퇴근은 직원이 직원 근무 앱에서 GPS 판정으로 등록한다. 판정은 휴대전화에서 하고 좌표와 판정 결과(반경 안·밖, 오차)는 저장하지 않는다. 확인 필요 사유만 관리자 검토 때까지 남기며, 보정은 원본과 분리해 이력으로 쌓는다.</p>
 </div>
 <nav aria-label="ERD 영역"><a href="index.html">개요</a><a href="account.html">계정·접속</a><a href="hiring.html">채용·초대</a><a href="contract.html">근로계약</a><a href="attendance.html" aria-current="page">근무스케줄·출퇴근</a><a href="todo.html">TO-DO</a><a href="payroll.html">급여명세서</a><a href="notify.html">알림</a><a href="support.html">고객지원·커뮤니티</a></nav>
 <div class="diagram">
@@ -57,15 +57,15 @@ h2{font-family:var(--sans);font-size:20px;font-weight:600;letter-spacing:-.4px;m
 <desc id="erd-attendance-desc">근무스케줄과 출퇴근 논리 ERD. 엔티티 8개와 관계 7개를 보여 준다: 근무스케줄, 근무스케줄 변경 이력, 직원 레코드, 계정, 위치정보 동의, 출퇴근 기록, 출퇴근 보정 이력, 점포.</desc>
 <rect width="100%" height="100%" fill="#ffffff"/>
 <path d="M 376,100 L 280,100" fill="none" stroke="#60646c" stroke-width="1"/>
-<path d="M 160,312 L 160,368" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 160,292 L 160,368" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 616,100 L 712,100" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 1048,132 L 952,132" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 832,392 L 832,448" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 496,192 L 496,256" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 496,368 L 496,432" fill="none" stroke="#60646c" stroke-width="1"/>
 <g id="ent-schedule">
-<rect x="40" y="40" width="240" height="272" rx="6" fill="#ffffff"/>
-<rect x="40" y="40" width="240" height="272" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
+<rect x="40" y="40" width="240" height="252" rx="6" fill="#ffffff"/>
+<rect x="40" y="40" width="240" height="252" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
 <rect x="41" y="41" width="238" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
 <line x1="40" y1="92" x2="280" y2="92" stroke="#171717" stroke-opacity="0.35" stroke-width="1"/>
 <text x="56" y="60" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">ENTITY · work_schedules</text>
@@ -87,14 +87,12 @@ h2{font-family:var(--sans);font-size:20px;font-weight:600;letter-spacing:-.4px;m
 <text x="264" y="216" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">int</text>
 <text x="56" y="236" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">근무 유형</text>
 <text x="264" y="236" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">enum</text>
-<text x="56" y="256" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">확정 상태</text>
-<text x="264" y="256" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">enum</text>
+<text x="56" y="256" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="70" y="256" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">기본값 근로계약</text>
+<text x="264" y="256" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
 <text x="56" y="276" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
-<text x="70" y="276" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">기본값 근로계약</text>
+<text x="70" y="276" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">등록 관리자</text>
 <text x="264" y="276" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
-<text x="56" y="296" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
-<text x="70" y="296" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">등록 관리자</text>
-<text x="264" y="296" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
 </g>
 <g id="ent-schedule_history">
 <rect x="40" y="368" width="240" height="212" rx="6" fill="#ffffff"/>
@@ -263,8 +261,8 @@ h2{font-family:var(--sans);font-size:20px;font-weight:600;letter-spacing:-.4px;m
 <text x="362" y="94" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
 <rect x="286" y="84" width="16" height="12" rx="2" fill="#ffffff"/>
 <text x="294" y="94" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
-<rect x="164" y="320" width="16" height="12" rx="2" fill="#ffffff"/>
-<text x="172" y="330" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
+<rect x="164" y="300" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="172" y="310" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
 <rect x="164" y="348" width="16" height="12" rx="2" fill="#ffffff"/>
 <text x="172" y="358" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
 <rect x="622" y="84" width="16" height="12" rx="2" fill="#ffffff"/>
@@ -307,7 +305,7 @@ h2{font-family:var(--sans);font-size:20px;font-weight:600;letter-spacing:-.4px;m
 <text x="748" y="755" fill="#60646c" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="500">관계 수</text>
 </svg>
 </div>
-<div class="cards"><div class="card"><p class="ey">중심</p><div class="card-h"><span class="dot coral"></span><h3>출퇴근은 GPS로 판정한다</h3></div><ul><li>근무지 반경은 공통 100m, 지하·실내는 관리자가 넓힌다</li><li>오차가 반경보다 크면 등록은 받고 확인 필요로 표시한다</li><li>위치 권한을 거부하면 등록하지 못한다</li></ul></div><div class="card"><div class="card-h"><span class="dot ink"></span><h3>원본은 그대로, 보정은 따로</h3></div><ul><li>기록 시각은 서버 수신 시각으로 확정한다</li><li>관리자 보정은 최근 3개월 이내, 사유와 전후 값을 남긴다</li><li>근무스케줄은 확정 전으로 복사되고 확정할 때 알림이 나간다</li></ul></div><div class="card"><p class="ey">미정</p><div class="card-h"><span class="dot muted"></span><h3>남은 결정</h3></div><ul><li>위치정보 동의와 이용내역 통지가 법무 요건을 채우는지</li><li>매장용 출퇴근 등록 앱과 QR 식별은 2차</li></ul></div></div>
+<div class="cards"><div class="card"><p class="ey">중심</p><div class="card-h"><span class="dot coral"></span><h3>출퇴근은 GPS로 판정한다</h3></div><ul><li>근무지 반경은 공통 100m, 지하·실내는 관리자가 넓힌다</li><li>오차가 반경보다 크면 등록은 받고 확인 필요로 표시한다</li><li>위치 권한을 거부하면 등록하지 못한다</li></ul></div><div class="card"><div class="card-h"><span class="dot ink"></span><h3>원본은 그대로, 보정은 따로</h3></div><ul><li>기록 시각은 서버 수신 시각으로 확정한다</li><li>관리자 보정은 최근 3개월 이내, 사유와 전후 값을 남긴다</li><li>근무스케줄은 저장하면 바로 반영되고 바뀐 직원에게 알림이 나간다</li></ul></div><div class="card"><p class="ey">미정</p><div class="card-h"><span class="dot muted"></span><h3>남은 결정</h3></div><ul><li>위치정보 동의와 이용내역 통지가 법무 요건을 채우는지</li><li>매장용 출퇴근 등록 앱과 QR 식별은 2차</li></ul></div></div>
 
 <div class="footer"><span>근거 · Manyfast 명세 dataSpec 2026-09-15 · front·staff 목업 확정 쟁점</span><span>docs/erd/_build.py 로 생성 · 손으로 고치지 말 것</span></div>
 </div>
