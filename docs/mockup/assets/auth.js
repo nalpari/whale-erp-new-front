@@ -23,11 +23,13 @@
    data-terms-doc="키"       약관 전문 화면에 TERMS 문구를 펼친다.
    data-addr                주소 검색 묶음. [data-addr-q] 검색어, [data-addr-go] 검색 버튼, .addr__list 결과 목록,
                             [data-addr-zip]·[data-addr-base]·[data-addr-detail] 채울 칸.
+   data-spick-default       범위를 ‘일부 점포’로 바꿨는데 보이는 점포 고르기 영역이 없을 때 여는 영역. ‘전체 점포’면 영역을 숨긴다.
    data-spick               관리 점포 고르기. data-pool="코드|점포명|유형;…" 은 고를 수 있는 점포(내 관리 범위),
                             data-picked="코드 코드" 는 처음 골라 둔 점포. 넷째 칸(코드|점포명|유형|사유)이 있으면
                             후보에 흐리게 보이되 고를 수 없다(예: 다른 가맹 마스터가 맡은 점포 — ‘ongifm 담당’).
                             위 [data-spick-q] 자동완성에서 고르면
                             아래 [data-spick-list] 에 더하고, 줄의 × 로 하나씩, [data-spick-clear] 로 모두 뺀다.
+                            [data-spick-bulk] 일괄 검색 버튼은 고를 수 있는 점포 전체를 팝업에 펴고 체크로 한꺼번에 고른다.
    data-same-as="id" data-same-to="id"  ‘기본정보와 동일’ 체크. 켜면 원본 값(칸이 여럿이면 - 로 이어)을 대상 칸에
                             채우고 잠그며, 끄면 잠금만 푼다.
    data-terms="use|privacy|marketing|location|policy" 약관·방침 전문 팝업을 연다. 문구는 아래 TERMS 한 곳에만 두고
@@ -633,6 +635,191 @@
     document.addEventListener("click", function (e) { if (!box.contains(e.target)) close(); });
   });
 
+  /* ---------- 관리 점포 일괄 검색 ----------
+     점포가 많을 때 하나씩 더하는 대신, [data-spick-bulk] 버튼이 팝업을 열어 두 목록 사이로 점포를 옮긴다.
+     왼쪽은 매핑 안 된 점포, 오른쪽은 매핑된 점포다. 처음에는 지금 선택한 점포가 오른쪽에 있다.
+     옮기는 방법은 둘이다 — 체크하고 가운데 [추가 ›] · [‹ 빼기] 를 누르거나, 줄을 끌어 반대쪽 목록에 놓는다.
+     체크한 줄을 끌면 같은 쪽에서 체크한 줄이 모두 함께 간다. 체크하지 않은 줄을 끌면 그 줄만 간다.
+     두 목록 위 옵션(전체 선택 · 직영점포 · 가맹점포)은 그 목록에서 묶음을 한꺼번에 체크한다(옮기지는 않는다).
+     다른 가맹 마스터가 맡은 점포처럼 고를 수 없는 점포는 왼쪽에 사유와 함께 흐리게 있고, 체크도 끌기도 되지 않는다.
+     [적용]을 눌러야 화면의 선택한 점포가 오른쪽 목록으로 바뀐다. 새로 매핑한 점포가 앞에 붙는다.
+     취소 · 닫기 · Esc · 바깥 누르기는 아무것도 바꾸지 않는다. 팝업은 한 화면에 하나만 두고, 연 묶음의 점포와 선택을 받아 그린다. */
+  var bulkPop = null, bulk = null;
+  function bulkIc(name, size) { return '<svg width="' + size + '" height="' + size + '" aria-hidden="true"><use href="#i-' + name + '"/></svg>'; }
+  function bulkSide(side) {
+    return bulk.pool.filter(function (s) { return (bulk.sel.indexOf(s.code) > -1) === (side === "R"); });
+  }
+  function bulkChk(side) { return side === "R" ? bulk.chkR : bulk.chkL; }
+  function bulkDraw() {
+    var left = bulkSide("L"), right = bulkSide("R");
+    var types = [];
+    bulk.pool.forEach(function (s) { if (types.indexOf(s.type) < 0) types.push(s.type); });
+    function stateOf(list, chk) {
+      var n = list.filter(function (s) { return chk.indexOf(s.code) > -1; }).length;
+      return !n ? "false" : n === list.length ? "true" : "mixed";
+    }
+    function check(st, label, attrs, off) {
+      return '<span class="check" role="checkbox" tabindex="' + (off ? "-1" : "0") + '" aria-checked="' + st + '" aria-label="' + esc(label) + '" ' + attrs + (off ? " disabled" : "") + ">" + bulkIc(st === "mixed" ? "minus" : "check", 11) + "</span>";
+    }
+    function opt(key, label, list, chk, side) {
+      var st = stateOf(list, chk);
+      return '<span class="spickpop__opt">' + check(st, label, 'data-spb-opt="' + esc(key) + '" data-spb-side="' + side + '"', !list.length) + esc(label) + ' <span class="subtle">' + list.length + "</span></span>";
+    }
+    function item(s, side) {
+      var chk = bulkChk(side), on = chk.indexOf(s.code) > -1, off = !!s.lock;
+      return '<div class="spickpop__item' + (on ? " is-on" : "") + (off ? " is-off" : "") + '" draggable="' + !off + '" data-spb-item="' + esc(s.code) + '" data-spb-side="' + side + '"' + (off ? ' title="' + esc(s.lock) + ' · 고를 수 없습니다"' : "") + ">" +
+        check(String(on), s.name, 'data-spb-pick="' + esc(s.code) + '" data-spb-side="' + side + '"', off) +
+        '<span class="spickpop__name">' + esc(s.name) + '</span><span class="mono spickpop__code">' + esc(s.code) + '</span><span class="spickpop__type">' + esc(off ? s.lock : s.type) + "</span></div>";
+    }
+    function opts(list, chk, side, label) {
+      var can = list.filter(function (s) { return !s.lock; });
+      return '<div class="spickpop__opts" role="group" aria-label="' + label + '">' + opt("*", "전체 선택", can, chk, side) + types.map(function (t) {
+        return opt(t, t, can.filter(function (s) { return s.type === t; }), chk, side);
+      }).join("") + "</div>";
+    }
+    var nl = bulk.chkL.length, nr = bulk.chkR.length, n = bulk.sel.length;
+    bulkPop.innerHTML = '<div class="modal__box spickpop__box">' +
+      '<div class="modal__head"><h2 class="t-h2" id="spb-t">점포 일괄 검색</h2><button class="iconbtn" type="button" data-spb-cancel aria-label="닫기">' + bulkIc("x", 16) + "</button></div>" +
+      '<div class="modal__body">' +
+      '<p class="help" style="margin: 0">왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 매핑됩니다. 오른쪽에서 빼면 매핑이 풀립니다.</p>' +
+      '<div class="spickpop__cols">' +
+      '<section class="spickpop__pane" data-spb-pane="L" aria-label="매핑 안 된 점포">' +
+      '<div class="spickpop__phead"><b>매핑 안 된 점포</b><span class="subtle">' + left.length + "곳</span></div>" +
+      opts(left, bulk.chkL, "L", "매핑 안 된 점포에서 한꺼번에 체크") +
+      '<div class="spickpop__list">' + (left.length ? left.map(function (s) { return item(s, "L"); }).join("") : '<p class="spickpop__empty">고를 수 있는 점포를 모두 매핑했습니다.</p>') + "</div></section>" +
+      '<div class="spickpop__mid">' +
+      '<button class="btn btn--secondary btn--sm" type="button" data-spb-move="R"' + (nl ? "" : " disabled") + ">추가" + (nl ? " " + nl : "") + " ›</button>" +
+      '<button class="btn btn--secondary btn--sm" type="button" data-spb-move="L"' + (nr ? "" : " disabled") + ">‹ 빼기" + (nr ? " " + nr : "") + "</button></div>" +
+      '<section class="spickpop__pane" data-spb-pane="R" aria-label="매핑된 점포">' +
+      '<div class="spickpop__phead"><b>매핑된 점포</b><span class="subtle">' + right.length + "곳</span></div>" +
+      opts(right, bulk.chkR, "R", "매핑된 점포에서 한꺼번에 체크") +
+      '<div class="spickpop__list">' + (right.length ? right.map(function (s) { return item(s, "R"); }).join("") : '<p class="spickpop__empty">아직 매핑된 점포가 없습니다.<br />왼쪽에서 골라 옮기세요.</p>') + "</div></section>" +
+      "</div>" +
+      "</div>" +
+      '<div class="modal__foot"><button class="btn btn--ghost" type="button" data-spb-cancel>취소</button>' +
+      '<button class="btn btn--primary" type="button" data-spb-apply>' + n + "개점 적용</button></div></div>";
+  }
+  function bulkClose() {
+    bulkPop.hidden = true;
+    if (bulk && bulk.back && bulk.back.focus) bulk.back.focus();
+    bulk = null;
+  }
+  function bulkRefocus(sel) {
+    var again = sel && bulkPop.querySelector(sel);
+    if (again && !again.hasAttribute("disabled")) again.focus();
+  }
+  function bulkToggle(c) {
+    if (!c || c.hasAttribute("disabled")) return;
+    var side = c.dataset.spbSide, chk = bulkChk(side), key;
+    if (c.dataset.spbPick) {
+      var i = chk.indexOf(c.dataset.spbPick);
+      if (i > -1) chk.splice(i, 1); else chk.push(c.dataset.spbPick);
+      key = '[data-spb-pick="' + c.dataset.spbPick + '"]';
+    } else {
+      var t = c.dataset.spbOpt;
+      var mine = bulkSide(side).filter(function (s) { return !s.lock && (t === "*" || s.type === t); }).map(function (s) { return s.code; });
+      var allOn = mine.every(function (x) { return chk.indexOf(x) > -1; });
+      var rest = chk.filter(function (x) { return mine.indexOf(x) < 0; });
+      if (!allOn) rest = rest.concat(mine);
+      if (side === "R") bulk.chkR = rest; else bulk.chkL = rest;
+      key = '[data-spb-opt="' + t + '"][data-spb-side="' + side + '"]';
+    }
+    bulkDraw();
+    bulkRefocus(key);
+  }
+  /* 옮기기 — to 는 놓는 쪽(R 매핑 · L 매핑 해제). 옮긴 점포는 체크가 풀린다. */
+  function bulkMove(codes, to) {
+    var ok = codes.filter(function (c) { var s = bulk.pool.filter(function (x) { return x.code === c; })[0]; return s && !s.lock; });
+    if (!ok.length) return;
+    if (to === "R") {
+      bulk.sel = bulk.sel.concat(ok.filter(function (c) { return bulk.sel.indexOf(c) < 0; }));
+      bulk.chkL = bulk.chkL.filter(function (c) { return ok.indexOf(c) < 0; });
+    } else {
+      bulk.sel = bulk.sel.filter(function (c) { return ok.indexOf(c) < 0; });
+      bulk.chkR = bulk.chkR.filter(function (c) { return ok.indexOf(c) < 0; });
+    }
+    bulkDraw();
+  }
+  function bulkWire() {
+    bulkPop.addEventListener("click", function (e) {
+      if (e.target === bulkPop || e.target.closest("[data-spb-cancel]")) return bulkClose();
+      if (e.target.closest("[data-spb-apply]")) { bulk.apply(bulk.sel.slice()); bulkClose(); return; }
+      var mv = e.target.closest("[data-spb-move]");
+      if (mv) {
+        var to = mv.dataset.spbMove;
+        bulkMove((to === "R" ? bulk.chkL : bulk.chkR).slice(), to);
+        var next = bulkPop.querySelector('[data-spb-move]:not([disabled])') || bulkPop.querySelector(".spickpop__opts .check:not([disabled])") || bulkPop.querySelector("[data-spb-apply]");
+        next.focus();
+        return;
+      }
+      var opt = e.target.closest(".spickpop__opt");
+      if (opt) { bulkToggle(opt.querySelector(".check")); return; }
+      var it = e.target.closest("[data-spb-item]");
+      if (it) bulkToggle(it.querySelector(".check"));
+    });
+    bulkPop.addEventListener("keydown", function (e) {
+      var c = e.target.closest(".check");
+      if (c && (e.key === " " || e.key === "Enter")) { e.preventDefault(); bulkToggle(c); }
+      if (e.key === "Escape") { e.stopPropagation(); bulkClose(); }
+    });
+    /* 끌어서 옮기기 */
+    var drag = null;
+    function panes() { return bulkPop.querySelectorAll("[data-spb-pane]"); }
+    function clearOver() { [].forEach.call(panes(), function (p) { p.classList.remove("is-over"); }); }
+    bulkPop.addEventListener("dragstart", function (e) {
+      var it = e.target.closest && e.target.closest('[data-spb-item][draggable="true"]');
+      if (!it) return;
+      var side = it.dataset.spbSide, code = it.dataset.spbItem, chk = bulkChk(side);
+      drag = { from: side, codes: chk.indexOf(code) > -1 ? chk.slice() : [code] };
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", drag.codes.join(" "));
+      drag.codes.forEach(function (c) {
+        var el = bulkPop.querySelector('[data-spb-item="' + c + '"]');
+        if (el) el.classList.add("is-drag");
+      });
+    });
+    bulkPop.addEventListener("dragover", function (e) {
+      var p = drag && e.target.closest && e.target.closest("[data-spb-pane]");
+      if (!p || p.dataset.spbPane === drag.from) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      if (!p.classList.contains("is-over")) { clearOver(); p.classList.add("is-over"); }
+    });
+    bulkPop.addEventListener("dragleave", function (e) {
+      var p = e.target.closest && e.target.closest("[data-spb-pane]");
+      if (p && !p.contains(e.relatedTarget)) p.classList.remove("is-over");
+    });
+    bulkPop.addEventListener("drop", function (e) {
+      var p = drag && e.target.closest && e.target.closest("[data-spb-pane]");
+      if (!p || p.dataset.spbPane === drag.from) return;
+      e.preventDefault();
+      var d = drag; drag = null;
+      bulkMove(d.codes, p.dataset.spbPane);
+    });
+    bulkPop.addEventListener("dragend", function () {
+      drag = null;
+      clearOver();
+      [].forEach.call(bulkPop.querySelectorAll(".is-drag"), function (el) { el.classList.remove("is-drag"); });
+    });
+  }
+  function spickBulk(o) {
+    if (!bulkPop) {
+      bulkPop = document.createElement("div");
+      bulkPop.className = "modal spickpop";
+      bulkPop.hidden = true;
+      bulkPop.setAttribute("role", "dialog");
+      bulkPop.setAttribute("aria-modal", "true");
+      bulkPop.setAttribute("aria-labelledby", "spb-t");
+      document.body.appendChild(bulkPop);
+      bulkWire();
+    }
+    bulk = { pool: o.pool, sel: o.picked.slice(), was: o.picked.slice(), chkL: [], chkR: [], apply: o.apply, back: document.activeElement };
+    bulkDraw();
+    bulkPop.hidden = false;
+    var first = bulkPop.querySelector(".spickpop__opts .check:not([disabled])") || bulkPop.querySelector("[data-spb-cancel]");
+    first.focus();
+  }
+
   /* ---------- 관리 점포 고르기 ----------
      찾는 곳(위 자동완성)과 고른 곳(아래, 옆으로 나열)을 나눈다. 입력칸에 초점이 가면 아직 고르지 않은 점포가 셀렉트처럼 펼쳐지고,
      글자를 넣으면 점포명·점포코드로 좁힌다. 고른 점포는 후보에서 빠지고 선택한 점포 맨 앞에 붙는다. */
@@ -646,7 +833,6 @@
     if (!q || !list || !out) return;
     var pool = (box.dataset.pool || "").split(";").filter(Boolean).map(function (t) { var a = t.split("|"); return { code: a[0], name: a[1], type: a[2] || "", lock: a[3] || "" }; });
     var picked = (box.dataset.picked || "").split(/\s+/).filter(Boolean);
-    var added = {};
     var found = [], at = -1;
     list.id = list.id || "spick-list-" + n;
     q.setAttribute("aria-controls", list.id);
@@ -659,8 +845,7 @@
     function draw() {
       out.innerHTML = picked.map(function (c) {
         var s = byCode(c); if (!s) return "";
-        return '<li class="spick__item" data-code="' + c + '"><span class="k">' + esc(s.name) + '</span><span class="mono spick__code">' + c + "</span>" +
-          (added[c] ? '<span class="badge badge--info">추가</span>' : "") + '<span class="spick__type">' + esc(s.type) + "</span>" +
+        return '<li class="spick__item" data-code="' + c + '" title="' + esc(s.name + " · " + c + " · " + s.type) + '"><span class="k">' + esc(s.name) + "</span>" +
           '<button class="spick__rm" type="button" aria-label="' + esc(s.name) + ' 빼기" title="빼기"><svg width="14" height="14" aria-hidden="true"><use href="#i-x"/></svg></button></li>';
       }).join("");
       if (empty) empty.hidden = picked.length > 0;
@@ -683,8 +868,8 @@
       if (!found.length) {
         list.innerHTML = '<div class="addr__note">' + (left ? "‘" + esc(q.value.trim()) + "’에 맞는 점포가 없습니다. 내 관리 점포 안에서만 찾습니다." : "고를 수 있는 점포를 모두 골랐습니다.") + "</div>";
       } else {
-        list.innerHTML = '<div class="addr__count">' + (t ? "맞는 점포 " + found.length + "곳" : "고를 수 있는 점포 " + found.length + "곳") + "</div>" + found.map(function (s, i) {
-          return '<div class="spick__opt' + (s.lock ? " is-off" : "") + '" role="option" aria-selected="false"' + (s.lock ? ' aria-disabled="true"' : "") + ' id="' + list.id + "-" + i + '" data-i="' + i + '"><span>' + hi(s.name, t) + '</span><span class="mono spick__code">' + hi(s.code, t) + '</span><span class="spick__type">' + esc(s.lock ? s.type + " · " + s.lock : s.type) + "</span></div>";
+        list.innerHTML = found.map(function (s, i) {
+          return '<div class="spick__opt' + (s.lock ? " is-off" : "") + '" role="option" aria-selected="false"' + (s.lock ? ' aria-disabled="true"' : "") + ' id="' + list.id + "-" + i + '" data-i="' + i + '"><span>' + hi(s.name, t) + '</span><span class="mono spick__code">' + hi(s.code, t) + '</span>' + (s.lock ? '<span class="spick__type">' + esc(s.lock) + "</span>" : "") + "</div>";
         }).join("");
       }
       list.hidden = false;
@@ -693,7 +878,7 @@
     }
     function add(i) {
       var s = found[i]; if (!s || s.lock) return;
-      picked.unshift(s.code); added[s.code] = 1;
+      picked.unshift(s.code);
       q.value = ""; draw(); open();
     }
     q.addEventListener("focus", open);
@@ -714,16 +899,58 @@
       var b = e.target.closest(".spick__rm"); if (!b) return;
       var li = b.closest("[data-code]"), c = li.dataset.code;
       var next = li.nextElementSibling || li.previousElementSibling;
-      picked = picked.filter(function (x) { return x !== c; }); delete added[c];
+      picked = picked.filter(function (x) { return x !== c; });
       var nc = next && next.dataset.code;
       draw();
       var f = nc && out.querySelector('[data-code="' + nc + '"] .spick__rm');
       (f || q).focus();
       if (!f) close();
     });
-    if (clear) clear.addEventListener("click", function () { picked = []; added = {}; draw(); q.focus(); });
+    if (clear) clear.addEventListener("click", function () { picked = []; draw(); q.focus(); });
+    var bulkBtn = box.querySelector("[data-spick-bulk]");
+    if (bulkBtn) bulkBtn.addEventListener("click", function () {
+      close();
+      spickBulk({
+        pool: pool, picked: picked,
+        apply: function (sel) {
+          var keep = picked.filter(function (c) { return sel.indexOf(c) > -1; });
+          var fresh = pool.filter(function (s) { return !s.lock && sel.indexOf(s.code) > -1 && picked.indexOf(s.code) < 0; }).map(function (s) { return s.code; });
+          picked = fresh.concat(keep);
+          draw();
+        }
+      });
+    });
     document.addEventListener("click", function (e) { if (!box.querySelector(".spick__q").contains(e.target)) close(); });
     draw();
+  });
+
+  /* ---------- 범위에 따라 점포 고르기 영역 보이기 ----------
+     관리 점포 · 점포 매핑 묶음에서 범위가 ‘전체 점포’면 점포 고르기 영역(점포 찾기 · 선택한 점포)을 숨기고, ‘일부 점포’일 때만 보인다.
+     묶음은 범위 선택을 감싼 [data-show-role] 줄(없으면 .panel)이다. 일부 점포로 바꿨는데 지금 상태에 보이는 영역이 없으면
+     (등록 ‘입력 · 전체 점포’ 상태처럼) [data-spick-default] 영역을 연다. 목업 상태 전환 줄을 누르면 범위 선택을 처음 값으로 되돌린다. */
+  function scopeRegion(sel) { return sel.closest("[data-show-role]") || sel.closest(".panel"); }
+  function scopeSync(sel) {
+    var region = scopeRegion(sel);
+    var all = sel.value === "전체 점포";
+    region.classList.toggle("is-scope-all", all);
+    if (all) return;
+    var shown = [].some.call(region.querySelectorAll("[data-spick]"), function (b) { return !b.closest("[hidden]"); });
+    var d = region.querySelector("[data-spick-default]");
+    if (!shown && d) d.hidden = false;
+  }
+  var scopeSelects = [].filter.call(document.querySelectorAll("select"), function (s) {
+    var r = scopeRegion(s);
+    return r && r.querySelector("[data-spick]") && [].some.call(s.options, function (o) { return o.text === "전체 점포"; });
+  });
+  scopeSelects.forEach(function (s) { s.addEventListener("change", function () { scopeSync(s); }); });
+  document.querySelectorAll("[data-demo]").forEach(function (bar) {
+    bar.addEventListener("click", function (e) {
+      if (!e.target.closest("[data-state]")) return;
+      scopeSelects.forEach(function (s) {
+        [].forEach.call(s.options, function (o) { o.selected = o.defaultSelected; });
+        scopeRegion(s).classList.remove("is-scope-all");
+      });
+    });
   });
 
   /* ---------- 공통 점포 검색 필터 (S-WDJFWH) ----------

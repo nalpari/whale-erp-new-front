@@ -21,6 +21,7 @@
          관리 점포는 등록하는 사람 본인의 관리 점포 범위를 넘지 못한다 — 일부 점포만 맡은 hghr 는 ‘전체 점포’를 줄 수 없고 직영 4개점 안에서만 고른다.
          소속 BP 칸은 두지 않는다 — BP 쪽은 본인 소속 BP, 플랫폼 사용자는 화면 상단에서 고른 BP 로 정해진다.
          관리 점포를 ‘일부 점포’로 주면 위 자동완성에서 내 관리 점포를 찾아 더하고, 아래 선택한 점포 영역(옆으로 나열)에서 하나씩 뺀다.
+         점포가 많을 때는 찾기 칸 옆 ‘일괄 검색’ 팝업에서 옮겨 매핑한다 — 왼쪽은 매핑 안 된 점포, 오른쪽은 매핑된 점포다. 체크하고 [추가 ›] · [‹ 빼기] 로 옮기거나 끌어서 반대쪽에 놓는다. 두 목록 위 옵션(전체 선택 · 직영점포 · 가맹점포)으로 그 목록의 묶음을 한꺼번에 체크한다. 고를 수 없는 점포는 왼쪽에 사유와 함께 흐리게 있고 옮길 수 없다. [적용]을 눌러야 선택한 점포가 바뀐다.
          비밀번호 입력은 없다 — 12자 무작위 초기 비밀번호를 등록 이메일로만 보낸다(S-CYGFAF). 계정 상태 항목도 없다 — 새 계정은 늘 사용이다(PL-CUECAY).
          등록하면 새 계정의 상세(등록 직후)로 간다. 가맹 마스터 · 가맹 관리자 등록 직후 표본은 없어 같은 역할의 대표 상세(morinam01 · moriyn)로 간다.
          입력 값은 역할과 관계없이 등록 직후 표본(hgcs 문가은)을 그대로 둔다.
@@ -70,7 +71,7 @@
               <div class="demo" data-demo="bn">
                 <b>목업 상태</b>
                 <div class="seg">
-                  <button type="button" data-state="in" aria-pressed="true">입력 · BP 관리자 전체 점포</button>
+                  <button type="button" data-state="in" aria-pressed="true">입력 · BP 관리자</button>
                   <button type="button" data-state="part" aria-pressed="false">일부 점포 선택</button>
                   <button type="button" data-state="nostore" aria-pressed="false">일부 점포 · 점포 없음</button>
                   <button type="button" data-state="fmr" aria-pressed="false">가맹 마스터 역할 선택</button>
@@ -161,7 +162,6 @@
               <section class="panel">
                 <div class="panel__head">
                   <h2 class="t-h2">기본정보</h2>
-                  <span class="subtle" style="font-size: 12px">네 항목 모두 필수</span>
                 </div>
                 <div class="panel__body">
                   <div class="grid grid--2">
@@ -169,7 +169,7 @@
                       <label for="bid">아이디 <span class="req">*</span></label>
                       <input class="input mono" id="bid" value="hgcs" maxlength="20" data-show="in part nostore fmr dupmail miss nogroup badgroup fail" />
                       <input class="input mono" value="hgops" maxlength="20" aria-invalid="true" aria-label="아이디" data-show="dupid" hidden />
-                      <span class="help" data-show="in part nostore fmr dupmail miss nogroup badgroup fail">영문 또는 영문·숫자 4~20자 · 등록 뒤에는 바꾸지 못합니다</span>
+                      <span class="help" data-show="in part nostore fmr dupmail miss nogroup badgroup fail">영문 또는 영문·숫자 4~20자</span>
                       <span class="err" data-show="dupid" hidden><span data-icon="alert" data-icon-size="13"></span>사용할 수 없는 아이디입니다. 미사용 · 탈퇴 · 삭제된 계정의 아이디도 다시 쓰지 못합니다.</span>
                     </div>
                     <div class="field">
@@ -198,7 +198,6 @@
                       <label for="bmail">이메일 <span class="req">*</span></label>
                       <input class="input mono" id="bmail" value="gaeun.moon@hangang.co.kr" maxlength="100" data-show="in part nostore fmr dupid miss nogroup badgroup fail" />
                       <input class="input mono" value="seoa.lee@hangang.co.kr" maxlength="100" aria-invalid="true" aria-label="이메일" data-show="dupmail" hidden />
-                      <span class="help" data-show="in part nostore fmr dupid miss nogroup badgroup fail">이메일 형식 · 100자 이하 · 초기 비밀번호를 받는 주소</span>
                       <span class="err" data-show="dupmail" hidden><span data-icon="alert" data-icon-size="13"></span>이미 등록된 이메일입니다.</span>
                     </div>
                   </div>
@@ -268,13 +267,10 @@
                 </div>
               </section>
 
-              <!-- 관리 점포 — 등록하는 사람의 관리 범위 안에서만 -->
+              <!-- 점포 매핑 — 등록하는 사람의 관리 범위 안에서만. 수정 화면의 점포 매핑과 같은 모양 · 동작이다 -->
               <section class="panel">
                 <div class="panel__head">
-                  <h2 class="t-h2">관리 점포</h2>
-                  <span class="subtle" style="font-size: 12px" data-show-role="bm bpall plat">등록자 범위 · 전체 점포 11개점</span>
-                  <span class="subtle" style="font-size: 12px" data-show-role="bppart" hidden>등록자 범위 · 직영 4개점</span>
-                  <span class="subtle" style="font-size: 12px" data-show-role="fm" hidden>등록자 범위 · 모리커피 가맹 4개점</span>
+                  <h2 class="t-h2">점포 매핑</h2>
                 </div>
 
                 <!-- 전체 점포를 맡은 등록자 -->
@@ -284,8 +280,8 @@
                       <div class="field">
                         <label for="bscope">범위 <span class="req">*</span></label>
                         <select class="select" id="bscope" data-show="in dupid dupmail miss nogroup badgroup fail">
-                          <option selected>전체 점포</option>
-                          <option>일부 점포</option>
+                          <option>전체 점포</option>
+                          <option selected>일부 점포</option>
                         </select>
                         <select class="select" aria-label="범위" data-show="part nostore" hidden>
                           <option>전체 점포</option>
@@ -295,25 +291,25 @@
                           <option disabled>전체 점포</option>
                           <option selected>일부 점포</option>
                         </select>
-                        <span class="help" data-show="in dupid dupmail miss nogroup badgroup fail">㈜한강상회의 모든 점포를 관리합니다.</span>
-                        <span class="help" data-show="part nostore" hidden>아래에서 고른 점포만 관리합니다. 한 곳 이상 골라야 합니다.</span>
                         <span class="help" data-show="fmr" hidden>가맹 마스터는 점포를 골라서 맡습니다. ‘전체 점포’는 BP 관리자에게만 줄 수 있습니다.</span>
                       </div>
                     </div>
                   </div>
-                  <div class="panel__body" data-show="part">
+                  <div class="panel__body" data-show="in part dupid dupmail miss nogroup badgroup fail" data-spick-default>
                     <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포;ST000009|온기식당 둔산점|가맹점포;ST000010|온기식당 서면점|가맹점포;ST000011|온기식당 일산점|가맹점포" data-picked="ST000003 ST000004">
                       <div class="spick__find">
-                        <div class="spick__head"><b>점포 찾기</b><span class="subtle">㈜한강상회 전체 11개점 중에서</span></div>
-                        <div class="addr__q spick__q">
-                          <span data-icon="search" data-icon-size="15"></span>
-                          <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="관리할 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
-                          <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
+                        <div class="spick__head"><b>점포 찾기</b></div>
+                        <div class="spick__row">
+                          <div class="addr__q spick__q">
+                            <span data-icon="search" data-icon-size="15"></span>
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="관리할 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
+                          </div>
+                          <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
                         </div>
-                        <span class="help" style="display: block; margin-top: var(--s-2)">칸을 누르면 고를 수 있는 점포가 펼쳐지고, 글자를 넣으면 좁혀집니다. 고르면 아래 선택한 점포에 더해집니다.</span>
                       </div>
                       <div class="spick__box">
-                        <div class="spick__head"><b>선택한 점포</b><span class="badge badge--quiet" data-spick-count>2개점</span><button class="tlink" type="button" data-spick-clear>모두 빼기</button></div>
+                        <div class="spick__head"><b>선택한 점포</b><span class="badge badge--quiet" data-spick-count>2개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
                         <ul class="spick__picked" data-spick-list aria-label="선택한 점포"></ul>
                         <p class="spick__empty" data-spick-empty hidden>아직 고른 점포가 없습니다. 위에서 찾아 더하세요.</p>
                       </div>
@@ -322,16 +318,19 @@
                   <div class="panel__body" data-show="nostore" hidden>
                     <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포;ST000009|온기식당 둔산점|가맹점포;ST000010|온기식당 서면점|가맹점포;ST000011|온기식당 일산점|가맹점포" data-picked="">
                       <div class="spick__find">
-                        <div class="spick__head"><b>점포 찾기</b><span class="subtle">㈜한강상회 전체 11개점 중에서</span></div>
-                        <div class="addr__q spick__q">
-                          <span data-icon="search" data-icon-size="15"></span>
-                          <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="관리할 점포 찾기" aria-invalid="true" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
-                          <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
+                        <div class="spick__head"><b>점포 찾기</b></div>
+                        <div class="spick__row">
+                          <div class="addr__q spick__q">
+                            <span data-icon="search" data-icon-size="15"></span>
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="관리할 점포 찾기" aria-invalid="true" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
+                          </div>
+                          <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
                         </div>
                         <span class="err" style="margin-top: var(--s-2)"><span data-icon="alert" data-icon-size="13"></span>관리할 점포를 한 곳 이상 골라 주세요.</span>
                       </div>
                       <div class="spick__box">
-                        <div class="spick__head"><b>선택한 점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="tlink" type="button" data-spick-clear>모두 빼기</button></div>
+                        <div class="spick__head"><b>선택한 점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
                         <ul class="spick__picked" data-spick-list aria-label="선택한 점포"></ul>
                         <p class="spick__empty" data-spick-empty hidden>아직 고른 점포가 없습니다. 위에서 찾아 더하세요.</p>
                       </div>
@@ -340,16 +339,19 @@
                   <div class="panel__body" data-show="fmr" hidden>
                     <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포;ST000005|모리커피 을지로점|가맹점포|morinam01 담당;ST000006|모리커피 연남점|가맹점포|morinam01 담당;ST000007|모리커피 청담점|가맹점포|morinam01 담당;ST000008|모리커피 부평점|가맹점포|morinam01 담당;ST000009|온기식당 둔산점|가맹점포|ongifm 담당;ST000010|온기식당 서면점|가맹점포|ongifm 담당;ST000011|온기식당 일산점|가맹점포|ongifm 담당" data-picked="">
                       <div class="spick__find">
-                        <div class="spick__head"><b>점포 찾기</b><span class="subtle">㈜한강상회 전체 11개점 중에서</span></div>
-                        <div class="addr__q spick__q">
-                          <span data-icon="search" data-icon-size="15"></span>
-                          <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="관리할 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
-                          <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
+                        <div class="spick__head"><b>점포 찾기</b></div>
+                        <div class="spick__row">
+                          <div class="addr__q spick__q">
+                            <span data-icon="search" data-icon-size="15"></span>
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="관리할 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
+                          </div>
+                          <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
                         </div>
                         <span class="help" style="display: block; margin-top: var(--s-2)">직영을 포함한 전체 점포에서 고릅니다. 한 점포는 한 가맹 마스터만 맡아, 다른 가맹 마스터가 맡은 점포는 흐리게 보이고 고를 수 없습니다.</span>
                       </div>
                       <div class="spick__box">
-                        <div class="spick__head"><b>선택한 점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="tlink" type="button" data-spick-clear>모두 빼기</button></div>
+                        <div class="spick__head"><b>선택한 점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
                         <ul class="spick__picked" data-spick-list aria-label="선택한 점포"></ul>
                         <p class="spick__empty" data-spick-empty hidden>아직 고른 점포가 없습니다. 위에서 찾아 더하세요.</p>
                       </div>
@@ -373,16 +375,18 @@
                   <div class="panel__body">
                     <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포" data-picked="ST000001 ST000002">
                       <div class="spick__find">
-                        <div class="spick__head"><b>점포 찾기</b><span class="subtle">내 관리 점포 · 직영 4개점 중에서</span></div>
-                        <div class="addr__q spick__q">
-                          <span data-icon="search" data-icon-size="15"></span>
-                          <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="관리할 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
-                          <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
+                        <div class="spick__head"><b>점포 찾기</b></div>
+                        <div class="spick__row">
+                          <div class="addr__q spick__q">
+                            <span data-icon="search" data-icon-size="15"></span>
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="관리할 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
+                          </div>
+                          <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
                         </div>
-                        <span class="help" style="display: block; margin-top: var(--s-2)">칸을 누르면 고를 수 있는 점포가 펼쳐지고, 글자를 넣으면 좁혀집니다. 고르면 아래 선택한 점포에 더해집니다.</span>
                       </div>
                       <div class="spick__box">
-                        <div class="spick__head"><b>선택한 점포</b><span class="badge badge--quiet" data-spick-count>2개점</span><button class="tlink" type="button" data-spick-clear>모두 빼기</button></div>
+                        <div class="spick__head"><b>선택한 점포</b><span class="badge badge--quiet" data-spick-count>2개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
                         <ul class="spick__picked" data-spick-list aria-label="선택한 점포"></ul>
                         <p class="spick__empty" data-spick-empty hidden>아직 고른 점포가 없습니다. 위에서 찾아 더하세요.</p>
                       </div>
@@ -398,16 +402,18 @@
                   <div class="panel__body">
                     <div class="spick" data-spick data-pool="ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포" data-picked="ST000005">
                       <div class="spick__find">
-                        <div class="spick__head"><b>점포 찾기</b><span class="subtle">내 매핑 점포 · 모리커피 가맹 4개점 중에서</span></div>
-                        <div class="addr__q spick__q">
-                          <span data-icon="search" data-icon-size="15"></span>
-                          <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="관리할 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
-                          <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
+                        <div class="spick__head"><b>점포 찾기</b></div>
+                        <div class="spick__row">
+                          <div class="addr__q spick__q">
+                            <span data-icon="search" data-icon-size="15"></span>
+                            <input class="input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="관리할 점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                            <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
+                          </div>
+                          <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
                         </div>
-                        <span class="help" style="display: block; margin-top: var(--s-2)">칸을 누르면 고를 수 있는 점포가 펼쳐지고, 글자를 넣으면 좁혀집니다. 고르면 아래 선택한 점포에 더해집니다.</span>
                       </div>
                       <div class="spick__box">
-                        <div class="spick__head"><b>선택한 점포</b><span class="badge badge--quiet" data-spick-count>1개점</span><button class="tlink" type="button" data-spick-clear>모두 빼기</button></div>
+                        <div class="spick__head"><b>선택한 점포</b><span class="badge badge--quiet" data-spick-count>1개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>
                         <ul class="spick__picked" data-spick-list aria-label="선택한 점포"></ul>
                         <p class="spick__empty" data-spick-empty hidden>아직 고른 점포가 없습니다. 위에서 찾아 더하세요.</p>
                       </div>

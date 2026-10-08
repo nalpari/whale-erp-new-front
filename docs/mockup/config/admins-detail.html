@@ -9,7 +9,7 @@
   </head>
   <body data-root="../" data-page="config" data-sub="config/admins.html">
     <!-- BP 관리자 계정 상세 조회 · /settings/admins/:아이디 · S-EBIPGZ · 비밀번호 초기화 S-TKSRJX (F-OILWTZ) · 1팀
-         기본정보(등록일시·최종 수정일시는 일시 | 처리자명) · 소속 BP정보 · 점포 매핑 · 변경 이력을 나눠 보인다. 계정 상태·계정 역할·권한 그룹은 제목 줄 배지로 보인다(2026-10-07). 이 화면의 값은 모두 읽기 전용이고 고치는 일은 수정 화면이 맡는다.
+         기본정보(등록일시·최종 수정일시는 일시 | 처리자명) · 점포 매핑 · 변경 이력을 나눠 보인다. 계정 상태·계정 역할·권한 그룹은 제목 줄 배지로 보인다(2026-10-07). 이 화면의 값은 모두 읽기 전용이고 고치는 일은 수정 화면이 맡는다.
          수정 · 비밀번호 초기화는 수정 권한이 있고 관리 범위 안인 계정에만 보인다.
            BP 관리자 · 가맹 마스터 계정 = BP 마스터 · BP 관리자 · 플랫폼 사용자(수정 권한)가 한다.
            가맹 관리자 계정 = 연결된 가맹 마스터만 한다. 다른 역할에게는 두 실행 항목을 감추고 조회만 한다고 알린다.
@@ -195,7 +195,7 @@
 
             <!-- ===== BP 쪽 계정 (BP 관리자 · 가맹 마스터) ===== -->
             <div data-show="hr ops acct created morinam fmoff" data-show-role="bm bpall bppart plat view" style="display: contents">
-              <!-- 왼쪽: 기본정보 / 오른쪽: 소속 BP정보 · 점포 매핑 — 계정 상태·권한 그룹은 제목 줄 배지로 본다(2026-10-07). 점포 매핑은 왼쪽 높이에 맞추고 넘치면 그 안에서 스크롤 -->
+              <!-- 왼쪽: 기본정보 / 오른쪽: 점포 매핑 — 계정 상태·권한 그룹은 제목 줄 배지로 본다(2026-10-07). 점포 매핑은 왼쪽 높이에 맞추고 넘치면 그 안에서 스크롤 -->
               <div class="grid grid--2">
                 <div class="stack">
                   <section class="panel">
@@ -221,15 +221,6 @@
                   </section>
                 </div>
                 <div class="fillcol">
-                  <section class="panel">
-                    <div class="panel__head"><h2 class="t-h2">소속 BP정보</h2></div>
-                    <div class="panel__body">
-                      <dl class="kv">
-                        <dt>BP코드</dt><dd class="mono">BP000017</dd>
-                        <dt>BP상호명</dt><dd>㈜한강상회</dd>
-                      </dl>
-                    </div>
-                  </section>
                   <div class="fillcol__rest">
                     <section class="panel">
                       <div class="panel__head">
@@ -244,17 +235,17 @@
                       <div class="tblwrap" data-show="hr morinam fmoff">
                         <table class="tbl tbl--dense">
                           <thead>
-                            <tr><th scope="col">점포명</th><th scope="col">점포코드</th><th scope="col">점포 유형</th><th scope="col">점포 상태</th></tr>
+                            <tr><th scope="col">점포명</th><th scope="col" style="width: 1%">점포코드</th><th scope="col" style="width: 1%">점포 상태</th></tr>
                           </thead>
                           <tbody>
-                            <tr data-show="hr"><td class="k">모리커피 서초점</td><td class="mono">ST000001</td><td>직영점포</td><td><span class="badge badge--ok">운영</span></td></tr>
-                            <tr data-show="hr"><td class="k">모리커피 성수점</td><td class="mono">ST000002</td><td>직영점포</td><td><span class="badge badge--ok">운영</span></td></tr>
-                            <tr data-show="hr"><td class="k">온기식당 판교점</td><td class="mono">ST000003</td><td>직영점포</td><td><span class="badge badge--ok">운영</span></td></tr>
-                            <tr data-show="hr"><td class="k">온기식당 광화문점</td><td class="mono">ST000004</td><td>직영점포</td><td><span class="badge badge--ok">운영</span></td></tr>
-                            <tr data-show="morinam fmoff" hidden><td class="k">모리커피 을지로점</td><td class="mono">ST000005</td><td>가맹점포</td><td><span class="badge badge--ok">운영</span></td></tr>
-                            <tr data-show="morinam fmoff" hidden><td class="k">모리커피 연남점</td><td class="mono">ST000006</td><td>가맹점포</td><td><span class="badge badge--ok">운영</span></td></tr>
-                            <tr data-show="morinam fmoff" hidden><td class="k">모리커피 청담점</td><td class="mono">ST000007</td><td>가맹점포</td><td><span class="badge badge--ok">운영</span></td></tr>
-                            <tr data-show="morinam fmoff" hidden><td class="k">모리커피 부평점</td><td class="mono">ST000008</td><td>가맹점포</td><td><span class="badge badge--ok">운영</span></td></tr>
+                            <tr data-show="hr"><td class="k">모리커피 서초점</td><td class="mono">ST000001</td><td><span class="badge badge--ok">운영</span></td></tr>
+                            <tr data-show="hr"><td class="k">모리커피 성수점</td><td class="mono">ST000002</td><td><span class="badge badge--ok">운영</span></td></tr>
+                            <tr data-show="hr"><td class="k">온기식당 판교점</td><td class="mono">ST000003</td><td><span class="badge badge--ok">운영</span></td></tr>
+                            <tr data-show="hr"><td class="k">온기식당 광화문점</td><td class="mono">ST000004</td><td><span class="badge badge--ok">운영</span></td></tr>
+                            <tr data-show="morinam fmoff" hidden><td class="k">모리커피 을지로점</td><td class="mono">ST000005</td><td><span class="badge badge--ok">운영</span></td></tr>
+                            <tr data-show="morinam fmoff" hidden><td class="k">모리커피 연남점</td><td class="mono">ST000006</td><td><span class="badge badge--ok">운영</span></td></tr>
+                            <tr data-show="morinam fmoff" hidden><td class="k">모리커피 청담점</td><td class="mono">ST000007</td><td><span class="badge badge--ok">운영</span></td></tr>
+                            <tr data-show="morinam fmoff" hidden><td class="k">모리커피 부평점</td><td class="mono">ST000008</td><td><span class="badge badge--ok">운영</span></td></tr>
                           </tbody>
                         </table>
                       </div>
@@ -266,7 +257,6 @@
               <section class="panel">
                 <div class="panel__head">
                   <h2 class="t-h2">변경 이력</h2>
-                  <span class="badge badge--quiet">생성 · 정보 · 권한 그룹 · 점포 · 상태 · 비밀번호 초기화 · 최신순</span>
                 </div>
                 <div class="tblwrap">
                   <table class="tbl tbl--dense">
@@ -293,7 +283,7 @@
 
             <!-- ===== 가맹 관리자 계정 (moriyn) — 모든 역할이 볼 수 있다 ===== -->
             <div data-show="yn" style="display: contents" hidden>
-              <!-- 왼쪽: 기본정보 / 오른쪽: 소속 BP정보 · 점포 매핑 — 계정 상태·권한 그룹은 제목 줄 배지로 본다(2026-10-07). 점포 매핑은 왼쪽 높이에 맞추고 넘치면 그 안에서 스크롤 -->
+              <!-- 왼쪽: 기본정보 / 오른쪽: 점포 매핑 — 계정 상태·권한 그룹은 제목 줄 배지로 본다(2026-10-07). 점포 매핑은 왼쪽 높이에 맞추고 넘치면 그 안에서 스크롤 -->
               <div class="grid grid--2">
                 <div class="stack">
                   <section class="panel">
@@ -312,15 +302,6 @@
                   </section>
                 </div>
                 <div class="fillcol">
-                  <section class="panel">
-                    <div class="panel__head"><h2 class="t-h2">소속 BP정보</h2></div>
-                    <div class="panel__body">
-                      <dl class="kv">
-                        <dt>BP코드</dt><dd class="mono">BP000017</dd>
-                        <dt>BP상호명</dt><dd>㈜한강상회</dd>
-                      </dl>
-                    </div>
-                  </section>
                   <div class="fillcol__rest">
                     <section class="panel">
                       <div class="panel__head">
@@ -330,10 +311,10 @@
                       <div class="tblwrap">
                         <table class="tbl tbl--dense">
                           <thead>
-                            <tr><th scope="col">점포명</th><th scope="col">점포코드</th><th scope="col">점포 유형</th><th scope="col">점포 상태</th></tr>
+                            <tr><th scope="col">점포명</th><th scope="col" style="width: 1%">점포코드</th><th scope="col" style="width: 1%">점포 상태</th></tr>
                           </thead>
                           <tbody>
-                            <tr><td class="k">모리커피 연남점</td><td class="mono">ST000006</td><td>가맹점포</td><td><span class="badge badge--ok">운영</span></td></tr>
+                            <tr><td class="k">모리커피 연남점</td><td class="mono">ST000006</td><td><span class="badge badge--ok">운영</span></td></tr>
                           </tbody>
                         </table>
                       </div>
