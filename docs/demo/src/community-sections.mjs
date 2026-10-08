@@ -58,7 +58,7 @@ export function communitySections({ A, R }) {
         pager(A),
     },
     asks: {
-      filter: ui.filterPanel(A, [search(A, "제목", "제목으로 검색"), pick("상태", "ask-state", ["전체", "답변 대기", "답변 완료"])]),
+      filter: ui.filterPanel(A, [search(A, "제목", "제목으로 검색"), search(A, "보낸 곳", "BP·점포 또는 이름으로 검색"), pick("상태", "ask-state", ["전체", "답변 대기", "답변 완료"])]),
       content:
         ui.listToolbar(7, "") +
         ui.dataTable(

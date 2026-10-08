@@ -3,7 +3,7 @@ type: Area
 title: 고객지원·커뮤니티
 description: BP 사용자가 공지·FAQ 를 읽고 문의를 남기는 고객지원과, 플랫폼 운영자가 공지·FAQ·문의·도입문의를 관리하는 커뮤니티관리.
 tags: [mockup, support]
-generated: { by: claude-code/fable-5.1, at: 2026-09-11T02:24:13Z }
+generated: { by: claude-code/fable-5.1, at: 2026-10-08T01:29:22Z }
 ---
 
 근거: `docs/mockup/support/` (목업 · 1차 · R-PEQDDV)
@@ -47,6 +47,7 @@ generated: { by: claude-code/fable-5.1, at: 2026-09-11T02:24:13Z }
 
 * 고객지원은 **한 화면 세 탭**(공지사항·FAQ·문의하기)이고 탭이 곧 전체 목록이다. 상세만 따로 둔다. — `S-ITFILU` · `SUPPORT-4`
 * FAQ 답변은 목록에서 펼친다. 상세 페이지는 없다. — `S-KJEVVS`
+* 커뮤니티 관리 › 문의사항 목록의 필터는 제목·**보낸 곳**·상태다. 보낸 곳은 BP·점포 이름이나 보낸 사람 이름 어느 것으로도 찾는다(2026-10-08 재영). — `S-GRDOPW`
 
 ## 1차에서 뺀 것
 
