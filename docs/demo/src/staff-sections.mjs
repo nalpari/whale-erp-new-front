@@ -383,8 +383,9 @@ export function staffSections({ A, R }) {
         "근무",
         ui.formRow(ui.field("근무지", ui.select(["모리커피 서초점", "모리커피 성수점"])), ui.field("직원", ui.select(["서지안 · 바리스타", "오세라 · 점장", "권도윤 · 바리스타"], { name: "sched-staff" }))),
         ui.formRow(ui.field("근무일", ui.dateField(A, { label: "근무일", value: "2026-09-08" })), ui.field("근무 유형", ui.select(["오픈", "미들", "마감"]))),
-        // 계약 근무시간 띠(STAFF-14)는 계약이 있는 직원일 때, 미체결 경고는 미체결 직원(권도윤)을 골랐을 때만 보인다(data-when).
-        `<div class="flex flex-col gap-[12px]" data-when="sched-staff:!권도윤 · 바리스타">${p.band("근로계약 근무시간을 불러왔습니다 · 화·목·토 09:00–16:00 · 휴게 60분", { desc: "등록할 때 한 번만 반영됩니다. 계약이 나중에 바뀌어도 등록한 근무스케줄은 바뀌지 않습니다." })}<div class="flex justify-end">${offBtn("계약 값으로 되돌리기")}</div></div>`,
+        // 시작·종료·휴게는 계약 값으로 미리 채운다(STAFF-14). 안내 띠는 두지 않고 「계약 값으로 되돌리기」만 둔다(2026-10-08 재영).
+        // 버튼은 계약이 있는 직원일 때, 미체결 경고는 미체결 직원(권도윤)을 골랐을 때만 보인다(data-when).
+        `<div class="flex justify-end" data-when="sched-staff:!권도윤 · 바리스타">${offBtn("계약 값으로 되돌리기")}</div>`,
         ui.formRow(ui.field("시작", p.timeField("09:00", "시작")), ui.field("종료", p.timeField("16:00", "종료")), ui.field("휴게시간", ui.textField({ value: "60분" }))),
         `<div data-when="sched-staff:권도윤 · 바리스타">${p.band("권도윤 · 근로계약 미체결", { tone: "risk" })}</div>`,
       ) +
