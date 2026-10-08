@@ -184,6 +184,10 @@ DIAGRAMS.append(Diagram(
         E("access_log", "위치정보 확인자료", "location_access_logs", "history",
           ["#|확인자료 ID|id|access_log_id|", "→|계정|id|account_id|대상 직원", "|처리 구분|enum|action|수집·이용·제공", "|처리 일시|datetime|occurred_at|", "|수집 방법|text|method|기기 GPS · 휴대전화 안 판정", "|제공받는 자|text|recipient|제공일 때", "|제공 목적|text|purpose|제공일 때", "→|출퇴근 기록|id|attendance_record_id|있을 때 · 출퇴근 장"], 2, 608),
         E("admin", "관리자 계정", "admin_accounts", "ref", ["#|관리자 ID|id|admin_account_id|admin_accounts PK", "→|BP|id|bp_code_id|", "|역할|enum|role|BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼"], 0, 560, "1팀 영역(환경설정·권한). 1팀 ERD 의 admin_accounts 테이블."),
+        E("reset_link", "비밀번호 재설정 링크", "password_reset_links", "entity",
+          ["#|재설정 링크 ID|id|password_reset_link_id|", "→|계정|id|account_id|", "|토큰 해시|hash|token_hash|sha256, 원본 저장 안 함, 고유", "|발급 시각|datetime|issued_at|", "|만료 시각|datetime|expires_at|발급 + 24시간", "|닫힌 시각|datetime|closed_at|사용·새 링크로 대체 모두, 사유 칸 없음", "→|요청 관리자|id|requested_by|관리자 초기화 (2026-10-08)"], 2, 900),
+        E("email_find", "이메일 찾기 시도", "email_find_attempts", "history",
+          ["#|시도 ID|id|email_find_attempt_id|", "|휴대전화번호 키|hash|phone_key|HMAC, 원본 저장 안 함", "|성공 여부|bool|is_succeeded|", "|실패 횟수|int|failed_count|", "|잠금 해제 시각|datetime|lock_expires_at|", "|시도 시각|datetime|attempted_at|(2026-10-08)"], 3, 40),
     ],
     [
         R("account", "left", "identity", "right", "1", "N", "", at_a=120, at_b=120),
@@ -193,6 +197,8 @@ DIAGRAMS.append(Diagram(
         R("account", "right", "access_log", "left", "1", "N", "", at_a=316, at_b=660, mid=648),
         R("account", "bottom", "change", "top", "1", "N", ""),
         R("admin", "right", "change", "left", "1", "N", "초기화 요청", at_a=604, at_b=604),
+        R("account", "right", "reset_link", "left", "1", "N", "", at_a=280, at_b=940, mid=656),
+        R("admin", "bottom", "reset_link", "left", "1", "N", "링크 발급", at_a=200, at_b=1060),
     ],
     [
         ("coral", "중심", "로그인 아이디는 이메일", ["휴대전화번호는 초대 연결과 소속 확인의 매칭 키로만 쓴다", "이름·생년월일은 본인인증 값이라 누구도 고치지 못한다", "관리자는 비밀번호를 알 수 없고 초기화만 요청한다"]),
@@ -219,7 +225,7 @@ DIAGRAMS.append(Diagram(
           ["#|보류 ID|id|hold_id|", "→|초대|id|invitation_id|", "→|보류 계정|id|account_id|", "|불일치 사유|enum|mismatch_reason|번호 불일치·이름 불일치", "|처리 결과|enum|resolution|승인·번호 수정 후 재초대", "→|처리 관리자|id|resolved_by|", "|처리 일시|datetime|resolved_at|"], 2, 364),
         ref_admin(3, 404),
         E("retirement", "퇴직 처리 이력", "staff_member_retirement_logs", "history",
-          ["#|퇴직 처리 이력 ID|id|staff_member_retirement_log_id|", "→|직원 레코드|id|staff_member_id|", "|처리 종류|enum|action|처리·취소", "|퇴직일|date|retired_date|처리·취소한 퇴직일", "→|앞당긴 근로계약|id|contract_id|처리 행만, 계약마다 한 줄", "|원래 계약 종료일|date|previous_contract_end_date|취소 때 되돌림", "→|처리 관리자|id|processed_by|", "|처리 일시|datetime|processed_at|같은 처리는 같은 시각"], 1, 680),
+          ["#|퇴직 처리 이력 ID|id|staff_member_retirement_log_id|", "→|직원 레코드|id|staff_member_id|", "|처리 종류|enum|action|처리·취소", "|퇴직일|date|retired_date|처리·취소한 퇴직일", "→|퇴직일에 걸친 근로계약|id|contract_id|참고, 처리 행만, 계약마다 한 줄", "|처리 시점 계약 종료일|date|previous_contract_end_date|참고용 (2026-10-08)", "→|처리 관리자|id|processed_by|", "|처리 일시|datetime|processed_at|같은 처리는 같은 시각"], 1, 680),
     ],
     [
         R("store", "right", "staff_member", "left", "1", "N", "소속", at_a=108, at_b=108),

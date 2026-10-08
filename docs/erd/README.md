@@ -147,6 +147,29 @@ python3 docs/erd/_build.py
 | FK | BP | id | `bp_code_id` |  |
 |  | 역할 | enum | `role` | BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼 |
 
+### 비밀번호 재설정 링크 `password_reset_links` · 엔티티
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 재설정 링크 ID | id | `password_reset_link_id` |  |
+| FK | 계정 | id | `account_id` |  |
+|  | 토큰 해시 | hash | `token_hash` | sha256, 원본 저장 안 함, 고유 |
+|  | 발급 시각 | datetime | `issued_at` |  |
+|  | 만료 시각 | datetime | `expires_at` | 발급 + 24시간 |
+|  | 닫힌 시각 | datetime | `closed_at` | 사용·새 링크로 대체 모두, 사유 칸 없음 |
+| FK | 요청 관리자 | id | `requested_by` | 관리자 초기화 (2026-10-08) |
+
+### 이메일 찾기 시도 `email_find_attempts` · 이력
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 시도 ID | id | `email_find_attempt_id` |  |
+|  | 휴대전화번호 키 | hash | `phone_key` | HMAC, 원본 저장 안 함 |
+|  | 성공 여부 | bool | `is_succeeded` |  |
+|  | 실패 횟수 | int | `failed_count` |  |
+|  | 잠금 해제 시각 | datetime | `lock_expires_at` |  |
+|  | 시도 시각 | datetime | `attempted_at` | (2026-10-08) |
+
 **관계**
 
 - 계정 `1` — `N` 본인인증 이력
@@ -156,6 +179,8 @@ python3 docs/erd/_build.py
 - 계정 `1` — `N` 위치정보 확인자료
 - 계정 `1` — `N` 계정 변경 이력
 - 관리자 계정 `1` — `N` 계정 변경 이력 · 초기화 요청
+- 계정 `1` — `N` 비밀번호 재설정 링크
+- 관리자 계정 `1` — `N` 비밀번호 재설정 링크 · 링크 발급
 
 ## 채용과 초대
 
@@ -256,8 +281,8 @@ python3 docs/erd/_build.py
 | FK | 직원 레코드 | id | `staff_member_id` |  |
 |  | 처리 종류 | enum | `action` | 처리·취소 |
 |  | 퇴직일 | date | `retired_date` | 처리·취소한 퇴직일 |
-| FK | 앞당긴 근로계약 | id | `contract_id` | 처리 행만, 계약마다 한 줄 |
-|  | 원래 계약 종료일 | date | `previous_contract_end_date` | 취소 때 되돌림 |
+| FK | 퇴직일에 걸친 근로계약 | id | `contract_id` | 참고, 처리 행만, 계약마다 한 줄 |
+|  | 처리 시점 계약 종료일 | date | `previous_contract_end_date` | 참고용 (2026-10-08) |
 | FK | 처리 관리자 | id | `processed_by` |  |
 |  | 처리 일시 | datetime | `processed_at` | 같은 처리는 같은 시각 |
 
