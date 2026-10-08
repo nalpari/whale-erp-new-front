@@ -28,7 +28,7 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
       ["이름", "이서아"],
       ["휴대전화번호", "010-2290-5173"],
       ["이메일", "seoa.lee@hangang.co.kr"],
-      ["비밀번호", `<span class="tracking-[0.2em] text-erp-ink">••••••••</span>${x.dialogTrigger("초기화", resetId, "soft")}`],
+      ["비밀번호", x.dialogTrigger("초기화", resetId, "soft")],
       ["등록일시", ui.detailValues(["2025-04-01 09:12", "정하윤"])],
       ["최종 수정일시", ui.detailValues(["2026-02-03 15:10", "정하윤"])],
       ["최근 로그인", "2026-09-20 17:55"],
@@ -79,11 +79,11 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
 
   const editBtn = ui.slideTrigger("수정", "admin-edit-panel");
   const histBtn = x.dialogTrigger("변경 이력", histId, "soft");
-  // 패널: BP 마스터 계정 상세와 같다 — 이름은 맨 위에 혼자, 기능 버튼은 맨 아래로(2026-10-07 피드백). 전체 화면: 아래 버튼 줄.
-  const head = panel
-    ? `<div class="flex items-center justify-between gap-[12px]"><h2 class="text-[18px] font-semibold whitespace-nowrap text-erp-ink">${NAME_BADGES}</h2>${ui.button("닫기", { variant: "off", "data-close": true })}</div>`
+  // 패널: 이름은 맨 위에 혼자(닫기도 포함해 기능 버튼은 모두 맨 아래로, 2026-10-07 피드백). 전체 화면: 아래 버튼 줄.
+  const head = panel ? `<h2 class="text-[18px] font-semibold whitespace-nowrap text-erp-ink">${NAME_BADGES}</h2>` : "";
+  const bottomButtons = panel
+    ? `<div class="flex flex-wrap justify-center gap-[6px] border-t border-erp-panel-line pt-[16px]">${editBtn}${histBtn}${ui.button("닫기", { variant: "off", "data-close": true })}</div>`
     : "";
-  const bottomButtons = panel ? `<div class="flex flex-wrap justify-center gap-[6px] border-t border-erp-panel-line pt-[16px]">${editBtn}${histBtn}</div>` : "";
   const info = panel
     ? `<div class="flex flex-col gap-[24px]">${left}${right}</div>`
     : `<div class="grid grid-cols-2 items-start gap-[24px]"><div class="flex flex-col gap-[24px]">${left}</div><div class="flex flex-col gap-[24px]">${right}</div></div>`;

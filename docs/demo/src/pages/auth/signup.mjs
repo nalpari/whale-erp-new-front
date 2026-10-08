@@ -14,7 +14,7 @@ export default ({ A, R }) => {
       pwField("비밀번호", "whale-2026!", "new-password", "", "영문·숫자·특수문자를 조합하여 8~20자 입력해 주세요."),
       pwField("비밀번호 확인", "whale-2026!", "new-password"),
     ),
-    p.row(ui.field(req("이름"), ui.textField({ value: "정하윤" }) + p.help("한글 또는 영문 2~20자")), ui.field(req("연락처"), tel("010", "4821", "7730"))),
+    p.row(ui.field(req("이름"), ui.textField({ value: "정하윤", placeholder: "한글 또는 영문 2~20자" })), ui.field(req("연락처"), tel("010", "4821", "7730"))),
     ui.field(req("이메일"), ui.textField({ type: "email", value: "hayoon@hangang.co.kr" })),
     ui.field(req("상호명"), ui.textField({ value: "㈜한강상회", placeholder: "50자 이내로 입력해 주세요." })),
   );
@@ -22,8 +22,11 @@ export default ({ A, R }) => {
   const biz = ui.formGroup(
     "사업자정보 인증 (선택)",
     `<h4 class="text-[14px] font-semibold">사업자 번호 인증</h4>`,
-    ui.field("사업자등록번호", ui.textField({ value: "211-87-01234" })),
-    p.row(ui.field("대표자명", ui.textField({ value: "남도현" })), ui.field("개업일자", ui.dateField(A, { label: "개업일자", value: "2021-03-15" }))),
+    p.row(
+      ui.field("사업자등록번호", ui.textField({ value: "211-87-01234", placeholder: "000-00-00000" })),
+      ui.field("대표자명", ui.textField({ value: "남도현" })),
+      ui.field("개업일자", ui.dateField(A, { label: "개업일자", value: "2021-03-15" })),
+    ),
     `<div class="flex">${ui.button("인증하기")}</div>`,
   );
 

@@ -75,12 +75,12 @@ export function bizAuth(A, p, { start = "fold", values = ["", "", ""], input = v
       ) + help("대표자가 바뀌었을 때 새 이름으로 다시 확인합니다. 번호와 개업일자는 바꿀 수 없습니다.")
     : inline
       ? ui.formRow(
-          ui.field("사업자등록번호", ui.textField({ value: num })),
+          ui.field("사업자등록번호", ui.textField({ value: num, placeholder: "000-00-00000" })),
           ui.field("대표자명", ui.textField({ value: ceo })),
           group("개업일자", ui.dateField(A, { label: "개업일자", value: open })),
           `<div class="shrink-0 self-end">${authBtn}</div>`,
         )
-      : ui.field("사업자등록번호", ui.textField({ value: num })) +
+      : ui.field("사업자등록번호", ui.textField({ value: num, placeholder: "000-00-00000" })) +
         ui.field("대표자명", ui.textField({ value: ceo })) +
         group("개업일자", ui.dateField(A, { label: "개업일자", value: open }));
   const form = box(

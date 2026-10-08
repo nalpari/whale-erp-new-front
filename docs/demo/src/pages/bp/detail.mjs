@@ -33,7 +33,7 @@ export function bpDetailBody(A, R, { panel = false } = {}) {
     ["이름", "정하윤"],
     ["연락처", "010-4821-7730"],
     ["이메일", "hayoon@hangang.co.kr"],
-    ["비밀번호", `<span class="tracking-[0.2em] text-erp-ink">••••••••</span>${x.dialogTrigger("초기화", resetId, "soft")}`],
+    ["비밀번호", x.dialogTrigger("초기화", resetId, "soft")],
     ["BP 상태", `${ui.badge("on", "사용")}<span class="text-erp-label">2025-02-03 11:12</span>`],
     ["소속 점포", ui.link("11곳 · 점포 목록에서 보기", link(R, "stores/index.html"))],
     ["가입경로", "회원가입"],

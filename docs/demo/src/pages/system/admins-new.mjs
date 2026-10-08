@@ -32,7 +32,7 @@ export default ({ A, R }) => {
         req("아이디"),
         stack(ui.textField({ value: "platyoon", maxlength: 20, placeholder: "영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요." }), help("등록한 뒤에는 바꿀 수 없습니다")),
       ),
-      ui.field(req("이름"), stack(ui.textField({ value: "윤채원", maxlength: 20 }), help("한글 또는 영문 2~20자"))),
+      ui.field(req("이름"), ui.textField({ value: "윤채원", maxlength: 20, placeholder: "한글 또는 영문 2~20자" })),
     ),
     row(
       ui.field(req("연락처"), tel("010", "9013", "5528")),
