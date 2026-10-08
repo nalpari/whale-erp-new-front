@@ -724,36 +724,68 @@
   // ── 점포 하나 화면 근무스케줄: 요일 칩(data-wd-pick)은 그 요일 근무자만 남기고, 월간 달력(data-dayplan)은 날짜를 누르면 그날 근무스케줄을 보인다 ──
   function initDayPlan(root) {
     // crew 한 줄: [이름, 보조 글자, { 요일: "09:00~18:00" }, 배정 불가 사유]. all 이면 그날 재직자 전원(휴무·배정 불가 포함).
-    const { crew, holiday, today, month, all } = JSON.parse(root.dataset.dayplan);
+    // 달력 칸은 여기서 그린다. ‹ › 로 달을 바꾸면 그 달 1일(이번 달이면 오늘)을 고른다.
+    const { crew, holiday, today, all } = JSON.parse(root.dataset.dayplan);
     const WD = "일월화수목금토";
     const pane = root.firstElementChild;
     const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const work = (c, wd) => !c[3] && c[2][wd];
+    const t0 = new Date(`${today}T00:00:00`);
+    let ym = [t0.getFullYear(), t0.getMonth()];
     let cur = today;
+    const drawMonth = () => {
+      const [y, m] = ym;
+      $("[data-monthtitle]", root).textContent = `${y}년 ${m + 1}월`;
+      const lead = (new Date(y, m, 1).getDay() + 6) % 7;
+      const weeks = Math.ceil((lead + new Date(y, m + 1, 0).getDate()) / 7);
+      $("[data-monthcells]", root).innerHTML = Array.from({ length: weeks * 7 }, (_, i) => {
+        const d = new Date(y, m, 1 - lead + i);
+        if (d.getMonth() !== m) return `<div class="min-h-[64px] bg-erp-thead-bg px-[8px] py-[6px] text-[13px] text-erp-muted">${d.getDate()}</div>`;
+        const key = iso(d);
+        const tone = d.getDay() === 6 ? "text-erp-on" : d.getDay() === 0 ? "text-erp-off" : "text-erp-ink";
+        // 꼬리표 모양은 staff-parts tag("warn")·tag("quiet") 와 같다
+        const tag = holiday[key]
+          ? `<span class="inline-block rounded-[2px] px-[4px] py-[2px] text-center text-[14px] font-medium bg-erp-off-bg text-erp-off">${holiday[key]} · 휴무</span>`
+          : `<span class="inline-block rounded-[2px] px-[4px] py-[2px] text-center text-[14px] font-medium bg-erp-subtle text-erp-ink whitespace-nowrap">${crew.filter((c) => work(c, d.getDay())).length}명</span>`;
+        return `<button type="button" data-day="${key}" aria-pressed="false" class="flex min-h-[64px] flex-col items-start gap-[4px] bg-white px-[8px] py-[6px] text-left transition-colors duration-150 ease-out hover:bg-erp-on-bg aria-pressed:bg-erp-on-bg aria-pressed:shadow-[inset_0_0_0_2px_var(--color-erp-on)]"><b class="text-[13px] font-semibold ${tone}">${d.getDate()}</b>${tag}</button>`;
+      }).join("");
+    };
     const show = (key) => {
       const d = new Date(`${key}T00:00:00`);
-      if (d.getMonth() !== month) return; // 데모 달력은 한 달뿐
+      if (d.getFullYear() !== ym[0] || d.getMonth() !== ym[1]) {
+        ym = [d.getFullYear(), d.getMonth()];
+        drawMonth();
+      }
       cur = key;
       const off = Boolean(holiday[key]);
-      const work = (c) => !c[3] && c[2][d.getDay()];
-      const list = off ? [] : all ? crew : crew.filter(work);
+      const on = (c) => work(c, d.getDay());
+      const list = off ? [] : all ? crew : crew.filter(on);
       $("[data-daytitle]", pane).textContent = `${d.getMonth() + 1}월 ${d.getDate()}일 (${WD[d.getDay()]})`;
-      $("[data-daysum]", pane).innerHTML = off ? `${holiday[key]} 연휴 · 점포 휴무` : `근무 <b class="text-erp-ink">${list.filter(work).length}명</b> · ${key === today ? "오늘" : key < today ? "지난 날" : "예정"}`;
+      $("[data-daysum]", pane).innerHTML = off ? `${holiday[key]} 연휴 · 점포 휴무` : `근무 <b class="text-erp-ink">${list.filter(on).length}명</b> · ${key === today ? "오늘" : key < today ? "지난 날" : "예정"}`;
       $("[data-daylist]", pane).innerHTML = list.length
-        ? list.map((c) => `<li class="flex items-center gap-[8px] border-b border-erp-thead-line py-[8px]"><span class="flex-1">${c[0]} <span class="text-erp-muted">${c[1]}</span></span>${c[3] ? `<span class="text-right text-[13px] text-erp-off">배정 불가</span>` : work(c) ? `<span class="text-right text-[13px] text-erp-muted">${c[2][d.getDay()]}</span>` : `<span class="text-right text-[13px] text-erp-muted">휴무</span>`}</li>`).join("")
+        ? list.map((c) => `<li class="flex items-center gap-[8px] border-b border-erp-thead-line py-[8px]"><span class="flex-1">${c[0]} <span class="text-erp-muted">${c[1]}</span></span>${c[3] ? `<span class="text-right text-[13px] text-erp-off">배정 불가</span>` : on(c) ? `<span class="text-right text-[13px] text-erp-muted">${c[2][d.getDay()]}</span>` : `<span class="text-right text-[13px] text-erp-muted">휴무</span>`}</li>`).join("")
         : '<li class="py-[8px] text-[13px] text-erp-muted">근무 없음</li>';
       $$("[data-day]", root).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.day === key)));
     };
     root.addEventListener("click", (e) => {
       const day = e.target.closest("[data-day]");
       if (day) return show(day.dataset.day);
+      if (e.target.closest("[data-monthtoday]")) return show(today);
+      const mm = e.target.closest("[data-monthmove]");
+      if (mm) {
+        const d = new Date(ym[0], ym[1] + Number(mm.dataset.monthmove), 1);
+        return show(d.getFullYear() === t0.getFullYear() && d.getMonth() === t0.getMonth() ? today : iso(d));
+      }
       const move = e.target.closest("[data-daymove]");
       if (!move) return;
       const d = new Date(`${cur}T00:00:00`);
       d.setDate(d.getDate() + Number(move.dataset.daymove));
       show(iso(d));
     });
+    drawMonth();
     show(today);
   }
+
   document.addEventListener("click", (e) => {
     const chip = e.target.closest("[data-wd-pick]");
     if (!chip) return;
@@ -835,15 +867,17 @@
     if (f) $("input[readonly]", f.closest("[data-file]")).value = [...f.files].map((x) => x.name).join(", ");
   });
 
-  // ── 라디오에서 고른 값에 따라 칸을 보이고 숨긴다: data-when="라디오 name:고른 항목 글자" ──
+  // ── 라디오·선택칸에서 고른 값에 따라 칸을 보이고 숨긴다: data-when="name:고른 항목 글자", 「name:!글자」는 그 값이 아닐 때 ──
   function initWhen(els) {
-    const picked = (name) => $(`input[type="radio"][name="${CSS.escape(name)}"]:checked`)?.closest("label")?.textContent.trim();
+    const picked = (name) =>
+      $(`input[type="radio"][name="${CSS.escape(name)}"]:checked`)?.closest("label")?.textContent.trim() ??
+      $(`select[name="${CSS.escape(name)}"]`)?.selectedOptions[0]?.textContent.trim();
     const sync = () =>
       els.forEach((el) => {
         const [name, value] = el.dataset.when.split(":");
-        el.hidden = picked(name) !== value;
+        el.hidden = value.startsWith("!") ? picked(name) === value.slice(1) : picked(name) !== value;
       });
-    document.addEventListener("change", (e) => e.target.type === "radio" && sync());
+    document.addEventListener("change", (e) => (e.target.type === "radio" || e.target.tagName === "SELECT") && sync());
     sync();
   }
 

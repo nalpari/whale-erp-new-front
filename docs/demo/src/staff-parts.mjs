@@ -88,29 +88,19 @@ export function schedWeek(crew, { open, close, dates, pick, all = false, gap = "
   );
 }
 
-// 월간 보기: 달력 + 왼쪽에 고른 날의 근무자(erp.js initDayPlan). 달력 칸에는 인원만 둔다.
+// 월간 보기: 달력 + 왼쪽에 고른 날의 근무자. 달력 칸에는 인원만 둔다.
+// 달력 위 ‹ 이전 달 · 2026년 9월 · 다음 달 › · 이번 달 로 달을 바꾼다(2026-10-08 재영). 칸은 erp.js initDayPlan 이 그린다.
 // opts: { year, month(0부터), today, holiday: { 날짜: 이름 }, all }
 export function schedMonth(A, crew, { year, month, today, holiday = {}, all = false }) {
-  const pad = (n) => String(n).padStart(2, "0");
-  const first = new Date(year, month, 1);
-  const lead = (first.getDay() + 6) % 7;
-  const weeks = Math.ceil((lead + new Date(year, month + 1, 0).getDate()) / 7);
-  const cells = Array.from({ length: weeks * 7 }, (_, i) => {
-    const d = new Date(year, month, 1 - lead + i);
-    const iso = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-    const tone = d.getDay() === 6 ? "text-erp-on" : d.getDay() === 0 ? "text-erp-off" : "text-erp-ink";
-    if (d.getMonth() !== month) return `<div class="min-h-[64px] bg-erp-thead-bg px-[8px] py-[6px] text-[13px] text-erp-muted">${d.getDate()}</div>`;
-    const t = holiday[iso] ? tag("warn", `${holiday[iso]} · 휴무`) : tag("quiet", `${workers(crew, d.getDay()).length}명`);
-    return `<button type="button" data-day="${iso}" aria-pressed="${iso === today}" class="flex min-h-[64px] flex-col items-start gap-[4px] bg-white px-[8px] py-[6px] text-left transition-colors duration-150 ease-out hover:bg-erp-on-bg aria-pressed:bg-erp-on-bg aria-pressed:shadow-[inset_0_0_0_2px_var(--color-erp-on)]"><b class="text-[13px] font-semibold ${tone}">${d.getDate()}</b>${t}</button>`;
-  }).join("");
   // 하루 목록 한 줄: [이름, 보조 글자, { 요일: "09:00~18:00" }, 배정 불가 사유?]
-  const plan = { crew: crew.map((c) => [c[0], c[1], Object.fromEntries(Object.entries(c[2]).map(([wd, s]) => [wd, shiftText(s)])), c[3] || ""]), holiday, today, month, all };
+  const plan = { crew: crew.map((c) => [c[0], c[1], Object.fromEntries(Object.entries(c[2]).map(([wd, s]) => [wd, shiftText(s)])), c[3] || ""]), holiday, today, year, month, all };
+  const nav = `<div class="mb-[8px] flex items-center gap-[6px]"><span data-monthmove="-1">${iconButton(A, "prev.svg", "이전 달")}</span><b data-monthtitle class="min-w-[120px] text-center text-[15px] font-semibold">${year}년 ${month + 1}월</b><span data-monthmove="1">${iconButton(A, "next.svg", "다음 달")}</span>${ui.button("이번 달", { variant: "off", "data-monthtoday": true })}</div>`;
   return (
     `<div data-dayplan='${JSON.stringify(plan)}' class="grid grid-cols-[268px_minmax(0,1fr)] items-start gap-[18px]">` +
     `<div class="flex flex-col gap-[8px] rounded-[2px] border border-erp-thead-line p-[14px]"><div class="flex items-center justify-between"><button type="button" data-daymove="-1" aria-label="이전 날" class="grid size-[28px] place-items-center rounded-[2px] border border-erp-button-line">${ui.img(A, "prev.svg", 7, 12)}</button><b data-daytitle class="text-[15px] font-semibold"></b><button type="button" data-daymove="1" aria-label="다음 날" class="grid size-[28px] place-items-center rounded-[2px] border border-erp-button-line">${ui.img(A, "next.svg", 7, 12)}</button></div><p data-daysum class="text-[13px] text-erp-label"></p><ul data-daylist class="flex flex-col text-[14px]"></ul></div>` +
-    `<div><p class="mb-[8px] text-[15px] font-semibold">${year}년 ${month + 1}월</p><div class="grid grid-cols-7 gap-px overflow-hidden rounded-[2px] border border-erp-thead-line bg-erp-thead-line">${[..."월화수목금토일"]
+    `<div>${nav}<div class="grid grid-cols-7 gap-px overflow-hidden rounded-[2px] border border-erp-thead-line bg-erp-thead-line">${[..."월화수목금토일"]
       .map((d, i) => `<div class="bg-erp-thead-bg py-[6px] text-center text-[13px] ${i === 5 ? "text-erp-on" : i === 6 ? "text-erp-off" : "text-erp-thead-text"}">${d}</div>`)
-      .join("")}${cells}</div></div></div>`
+      .join("")}<div data-monthcells class="contents"></div></div></div></div>`
   );
 }
 

@@ -1,6 +1,6 @@
 /* 근무스케줄 관리 — 주간 보기와 월간 보기 (로그인 후 홈 근무스케줄과 같은 틀, STAFF-26 · 2026-10-08 재영).
    주간 보기: 날짜가 붙은 요일 칩을 누르면 그날의 막대·근무 인원 줄·공백 안내를 다시 그린다.
-   월간 보기: 2026년 8월 달력. 날짜를 누르면 왼쪽에 그날 재직자 전원(휴무·배정 불가 포함)이 나온다.
+   월간 보기: 달력(처음엔 2026년 8월, ‹ › 와 「이번 달」로 달을 바꾼다). 날짜를 누르면 왼쪽에 그날 재직자 전원(휴무·배정 불가 포함)이 나온다.
    목업이라 한 주치 데이터를 요일 규칙으로 한 달에 펼친다.
 
    운영시간 07:00-22:00 = 15칸. 1시간 = 100/15 %. */
@@ -95,40 +95,46 @@
     root.querySelector("[data-tl-note]").textContent = msg.join(" · ") || "공백도 단독 근무도 없다";
   }
 
-  /* 월간 보기: 8월 달력을 그리고, 고른 날의 재직자 전원을 왼쪽에 보인다. */
+  /* 월간 보기: 달력을 그리고, 고른 날의 재직자 전원을 왼쪽에 보인다.
+     ‹ › 로 달을 바꾸면 그 달 1일(이번 달이면 오늘)을 고른다. 목업이라 어느 달이든 같은 요일 규칙으로 펼친다. */
   function bootMonth() {
-    var cal = document.querySelector("[data-tl-root] [data-cal]");
-    var pane = document.querySelector("[data-tl-root] [data-daypane]");
+    var root = document.querySelector("[data-tl-root]");
+    var cal = root && root.querySelector("[data-cal]");
+    var pane = root && root.querySelector("[data-daypane]");
     if (!cal || !pane) return;
     var CELL = "min-height: 64px; padding: 6px 8px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; border: 0; text-align: left; font: inherit; ";
-    var html = "월화수목금토일".split("").map(function (d, i) {
-      return '<div style="padding: 6px 0; text-align: center; font-size: 12px; background: var(--canvas-soft); color: ' +
-        (i === 5 ? "var(--info)" : i === 6 ? "var(--risk-text)" : "var(--body)") + '">' + d + "</div>";
-    }).join("");
-    var first = new Date(2026, 7, 1), lead = (first.getDay() + 6) % 7;
-    var weeks = Math.ceil((lead + 31) / 7);
-    for (var i = 0; i < weeks * 7; i++) {
-      var d = new Date(2026, 7, 1 - lead + i);
-      if (d.getMonth() !== 7) {
-        html += '<div style="' + CELL + 'background: var(--canvas-soft)"><b class="mono" style="font-size: 12.5px; color: var(--muted-tert)">' + d.getDate() + "</b></div>";
-        continue;
-      }
-      var work = STAFF.filter(function (p) { return !p.blocked && dayOf(d.getDay()).shifts[p.name]; }).length;
-      var color = d.getDay() === 6 ? "var(--info)" : d.getDay() === 0 ? "var(--risk-text)" : "var(--ink)";
-      html += '<button type="button" data-day="' + iso(d) + '" style="' + CELL + 'background: var(--surface-card, #fff); cursor: pointer"><b class="mono" style="font-size: 12.5px; color: ' + color + '">' +
-        d.getDate() + '</b><span class="badge badge--quiet">' + work + "명</span></button>";
-    }
-    cal.innerHTML = html;
-    var cur = TODAY_ISO;
+    var t0 = new Date(TODAY_ISO + "T00:00:00");
+    var ym = [t0.getFullYear(), t0.getMonth()], cur = TODAY_ISO;
     function iso(x) { return x.getFullYear() + "-" + String(x.getMonth() + 1).padStart(2, "0") + "-" + String(x.getDate()).padStart(2, "0"); }
+    function work(day) { return STAFF.filter(function (p) { return !p.blocked && day.shifts[p.name]; }).length; }
+    function drawMonth() {
+      var y = ym[0], m = ym[1];
+      root.querySelector("[data-monthtitle]").textContent = y + "년 " + (m + 1) + "월";
+      var html = "월화수목금토일".split("").map(function (d, i) {
+        return '<div style="padding: 6px 0; text-align: center; font-size: 12px; background: var(--canvas-soft); color: ' +
+          (i === 5 ? "var(--info)" : i === 6 ? "var(--risk-text)" : "var(--body)") + '">' + d + "</div>";
+      }).join("");
+      var lead = (new Date(y, m, 1).getDay() + 6) % 7;
+      var weeks = Math.ceil((lead + new Date(y, m + 1, 0).getDate()) / 7);
+      for (var i = 0; i < weeks * 7; i++) {
+        var d = new Date(y, m, 1 - lead + i);
+        if (d.getMonth() !== m) {
+          html += '<div style="' + CELL + 'background: var(--canvas-soft)"><b class="mono" style="font-size: 12.5px; color: var(--muted-tert)">' + d.getDate() + "</b></div>";
+          continue;
+        }
+        var color = d.getDay() === 6 ? "var(--info)" : d.getDay() === 0 ? "var(--risk-text)" : "var(--ink)";
+        html += '<button type="button" data-day="' + iso(d) + '" style="' + CELL + 'background: var(--surface-card, #fff); cursor: pointer"><b class="mono" style="font-size: 12.5px; color: ' + color + '">' +
+          d.getDate() + '</b><span class="badge badge--quiet">' + work(dayOf(d.getDay())) + "명</span></button>";
+      }
+      cal.innerHTML = html;
+    }
     function show(key) {
       var dd = new Date(key + "T00:00:00");
-      if (dd.getMonth() !== 7) return;
+      if (dd.getFullYear() !== ym[0] || dd.getMonth() !== ym[1]) { ym = [dd.getFullYear(), dd.getMonth()]; drawMonth(); }
       cur = key;
       var day = dayOf(dd.getDay());
-      var work = STAFF.filter(function (p) { return !p.blocked && day.shifts[p.name]; }).length;
       pane.querySelector("[data-daytitle]").textContent = (dd.getMonth() + 1) + "월 " + dd.getDate() + "일 (" + DOW[dd.getDay()] + ")";
-      pane.querySelector("[data-daysum]").innerHTML = "근무 <b>" + work + "명</b>" + (key === TODAY_ISO ? " · 오늘" : key < TODAY_ISO ? " · 지난 날" : " · 예정");
+      pane.querySelector("[data-daysum]").innerHTML = "근무 <b>" + work(day) + "명</b>" + (key === TODAY_ISO ? " · 오늘" : key < TODAY_ISO ? " · 지난 날" : " · 예정");
       pane.querySelector("[data-daylist]").innerHTML = STAFF.map(function (p) {
         var s = day.shifts[p.name];
         var end = p.blocked ? '<span style="color: var(--risk-text)">배정 불가</span>' : s ? '<span class="mono subtle">' + shiftText(s) + "</span>" : '<span class="subtle">휴무</span>';
@@ -146,6 +152,13 @@
       var b = e.target.closest("[data-daymove]"); if (!b) return;
       var x = new Date(cur + "T00:00:00"); x.setDate(x.getDate() + Number(b.dataset.daymove)); show(iso(x));
     });
+    root.addEventListener("click", function (e) {
+      if (e.target.closest("[data-monthtoday]")) return show(TODAY_ISO);
+      var mm = e.target.closest("[data-monthmove]"); if (!mm) return;
+      var x = new Date(ym[0], ym[1] + Number(mm.dataset.monthmove), 1);
+      show(x.getFullYear() === t0.getFullYear() && x.getMonth() === t0.getMonth() ? TODAY_ISO : iso(x));
+    });
+    drawMonth();
     show(TODAY_ISO);
   }
 

@@ -796,7 +796,7 @@
                     </div>
                   </div>
                   <div data-panel="month" hidden>
-                    <div class="spread" style="margin-bottom: var(--s-3)"><b>2026년 8월</b><span class="subtle" style="font-size: 12px">날짜를 누르면 왼쪽에 그날 재직자의 근무스케줄이 나온다</span></div>
+                    <div class="spread" style="margin-bottom: var(--s-3)"><span class="inline"><button type="button" class="iconbtn" data-monthmove="-1" aria-label="이전 달" data-icon="left" data-icon-size="16"></button><b data-monthtitle style="min-width: 96px; text-align: center">2026년 8월</b><button type="button" class="iconbtn" data-monthmove="1" aria-label="다음 달" data-icon="right" data-icon-size="16"></button><button class="btn btn--secondary btn--sm" type="button" data-monthtoday>이번 달</button></span><span class="subtle" style="font-size: 12px">날짜를 누르면 왼쪽에 그날 재직자의 근무스케줄이 나온다</span></div>
                     <div style="display: grid; grid-template-columns: 268px minmax(0, 1fr); gap: var(--s-5); align-items: start">
                       <div data-daypane style="border: 1px solid var(--hairline-strong); border-radius: var(--r-xs); padding: 12px 14px">
                         <div class="spread"><button type="button" class="iconbtn" data-daymove="-1" aria-label="이전 날">‹</button><b data-daytitle>8월 22일 (토)</b><button type="button" class="iconbtn" data-daymove="1" aria-label="다음 날">›</button></div>
@@ -846,7 +846,7 @@
                     <div class="grid grid--2" style="gap: var(--s-4)">
                       <div class="field">
                         <label for="sd">근무일</label>
-                        <input class="input" id="sd" type="date" value="2026-09-07" />
+                        <input class="input" id="sd" type="date" value="2026-09-08" />
                       </div>
                       <div class="field">
                         <label for="sy">근무 유형</label>
@@ -858,11 +858,11 @@
                       </div>
                     </div>
                     <!-- STAFF-14 : 시작·종료·휴게는 이 직원의 근로계약 근무시간에서 미리 채워진다. 관리자는 고쳐 저장한다. -->
-                    <div class="band band--info" style="margin: 0 0 var(--s-3)">
+                    <div class="band band--info" style="margin: 0 0 var(--s-3)" data-sched-contract>
                       <span class="band__ic" data-icon="info" data-icon-size="18"></span>
                       <div class="band__body">
-                        <div class="band__title">근로계약의 근무시간에서 채웠다 — 화·목·토 09:00-16:00 · 휴게 60분</div>
-                        <p class="band__desc">등록할 때 한 번 반영된다. 고쳐 저장해도 되고, 계약을 나중에 바꿔도 이미 등록한 근무스케줄은 그대로다.</p>
+                        <div class="band__title">근로계약 근무시간을 불러왔습니다 · 화·목·토 09:00–16:00 · 휴게 60분</div>
+                        <p class="band__desc">등록할 때 한 번만 반영됩니다. 계약이 나중에 바뀌어도 등록한 근무스케줄은 바뀌지 않습니다.</p>
                       </div>
                       <div class="band__act">
                         <button class="btn btn--secondary btn--sm" type="button">계약 값으로 되돌리기</button>
@@ -883,7 +883,8 @@
                       </div>
                     </div>
 
-                    <div class="band band--warn" style="margin: var(--s-4) 0 0">
+                    <!-- 미체결 경고는 미체결 직원을 골랐을 때만, 계약 띠는 그때 빠진다 -->
+                    <div class="band band--warn" style="margin: var(--s-4) 0 0" data-sched-unsigned hidden>
                       <span class="band__ic" data-icon="warn" data-icon-size="18"></span>
                       <div class="band__body">
                         <div class="band__title">권도윤 · 근로계약 미체결</div>
@@ -1638,6 +1639,16 @@
     </div>
     <script src="../assets/app.js"></script>
     <script>
+      /* 목업 동작 — 근무스케줄 등록에서 직원을 바꾸면 계약 띠·미체결 경고를 바꿔 보인다(권도윤만 미체결). */
+      (function schedStaffPick() {
+        var se = document.getElementById("se");
+        if (!se) return;
+        se.addEventListener("change", function onSchedStaff() {
+          var unsigned = /권도윤/.test(se.value);
+          document.querySelector("[data-sched-contract]").hidden = unsigned;
+          document.querySelector("[data-sched-unsigned]").hidden = !unsigned;
+        });
+      })();
       /* 지난 주 복사 미리보기. 실제로는 비어 있는 주에서만 켜진다. */
       (function () {
         var b = document.getElementById("copybtn"), p = document.getElementById("copyprev");
@@ -1690,6 +1701,6 @@
         draw();
       })();
     </script>
-    <script src="../assets/timeline.js?v=20261008"></script>
+    <script src="../assets/timeline.js?v=20261008b"></script>
   </body>
 </html>

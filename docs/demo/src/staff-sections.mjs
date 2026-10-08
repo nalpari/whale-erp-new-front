@@ -381,19 +381,19 @@ export function staffSections({ A, R }) {
       p.radios("sched-mode", ["한 명", "여러 명 일괄"]) +
       ui.formGroup(
         "근무",
-        ui.formRow(ui.field("근무지", ui.select(["모리커피 서초점", "모리커피 성수점"])), ui.field("직원", ui.select(["서지안 · 바리스타", "오세라 · 점장", "권도윤 · 바리스타"]))),
-        ui.formRow(ui.field("근무일", ui.dateField(A, { label: "근무일", value: "2026-09-07" })), ui.field("근무 유형", ui.select(["오픈", "미들", "마감"]))),
-        p.band("근로계약의 근무시간에서 채웠다 — 화·목·토 09:00-16:00 · 휴게 60분"),
-        `<div class="flex justify-end">${offBtn("계약 값으로 되돌리기")}</div>`,
+        ui.formRow(ui.field("근무지", ui.select(["모리커피 서초점", "모리커피 성수점"])), ui.field("직원", ui.select(["서지안 · 바리스타", "오세라 · 점장", "권도윤 · 바리스타"], { name: "sched-staff" }))),
+        ui.formRow(ui.field("근무일", ui.dateField(A, { label: "근무일", value: "2026-09-08" })), ui.field("근무 유형", ui.select(["오픈", "미들", "마감"]))),
+        // 계약 근무시간 띠(STAFF-14)는 계약이 있는 직원일 때, 미체결 경고는 미체결 직원(권도윤)을 골랐을 때만 보인다(data-when).
+        `<div class="flex flex-col gap-[12px]" data-when="sched-staff:!권도윤 · 바리스타">${p.band("근로계약 근무시간을 불러왔습니다 · 화·목·토 09:00–16:00 · 휴게 60분", { desc: "등록할 때 한 번만 반영됩니다. 계약이 나중에 바뀌어도 등록한 근무스케줄은 바뀌지 않습니다." })}<div class="flex justify-end">${offBtn("계약 값으로 되돌리기")}</div></div>`,
         ui.formRow(ui.field("시작", p.timeField("09:00", "시작")), ui.field("종료", p.timeField("16:00", "종료")), ui.field("휴게시간", ui.textField({ value: "60분" }))),
-        p.band("권도윤 · 근로계약 미체결", { tone: "risk" }),
+        `<div data-when="sched-staff:권도윤 · 바리스타">${p.band("권도윤 · 근로계약 미체결", { tone: "risk" })}</div>`,
       ) +
       `<div class="flex justify-between gap-[6px]">${x.dialogTrigger("삭제", delId, "soft")}<span class="flex gap-[6px]">${offBtn("취소", { "data-close": true })}${ui.button("저장", { "data-close": true })}</span></div>`,
   );
   const delDialog = x.dialog(
     delId,
     "이 근무스케줄을 삭제하시겠습니까?",
-    "서지안 · 2026-09-07 근무스케줄을 삭제합니다.",
+    "서지안 · 2026-09-08 근무스케줄을 삭제합니다.",
     offBtn("취소", { "data-close": true }) + ui.button("삭제", { "data-close": true }),
   );
   const fixForm = ui.slidePanel(
