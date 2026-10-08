@@ -23,7 +23,7 @@
     editing = false;
     newBtn.disabled = false;
     mark();
-    show(cur);
+    show(cur || "empty");
   };
   rows.forEach((r) =>
     r.addEventListener("click", (e) => {

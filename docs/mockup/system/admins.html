@@ -10,7 +10,7 @@
   <body data-root="../" data-page="system" data-sub="system/admins.html">
     <!-- 플랫폼 관리자 목록 조회 · /platform/system/admins · S-YTKWGG (F-RVDLOW 플랫폼 관리자 관리) · 1팀
          대상은 플랫폼 마스터와 플랫폼 관리자 계정뿐이다. BP 측 관리자 계정과 점포 매핑은 나오지 않는다.
-         아이디·이름은 포함 검색, 권한·상태는 일치 검색, 등록일시는 시작일과 종료일을 모두 포함한다. 조건이 없으면 전체를 본다.
+         아이디·이름은 포함 검색, 권한·상태는 일치 검색이다. 등록일시 검색은 두지 않는다(2026-10-08). 조건이 없으면 전체를 본다.
          상태는 사용·미사용 두 값뿐이다(탈퇴 없음). 미사용 줄은 흐리게 하고 상태 꼬리표로 가른다.
          논리 삭제한 계정은 목록·검색에서 빠지고 상세로도 가지 않는다.
          표본 상세가 없는 줄(platlee · plathan)은 대표 상세(platpark)로 간다.
@@ -117,15 +117,6 @@
                     <option selected>미사용</option>
                   </select>
                 </div>
-                <!-- 등록일시 — 시작일과 종료일을 모두 포함한다. 비워 두면 기간 조건 없이 본다 -->
-                <div class="field">
-                  <label for="q-from">등록일시</label>
-                  <div class="inline" style="flex-wrap: nowrap; gap: var(--s-2)">
-                    <input class="input mono" id="q-from" type="date" aria-label="등록일시 시작일" />
-                    <span class="subtle">~</span>
-                    <input class="input mono" type="date" aria-label="등록일시 종료일" />
-                  </div>
-                </div>
               </div>
               <div class="inline" style="justify-content: flex-end">
                 <button class="btn btn--secondary" type="button" data-state-go="base">초기화</button>
@@ -144,7 +135,7 @@
               <span class="badge badge--quiet" data-show="deleted" hidden>6명 · 미사용 1</span>
               <div class="panel__end">
                 <a class="btn btn--primary btn--sm" href="admins-new.html" data-show-role="reg">
-                  <span data-icon="plus" data-icon-size="14"></span>관리자 등록
+                  <span data-icon="plus" data-icon-size="14"></span>등록
                 </a>
               </div>
             </div>

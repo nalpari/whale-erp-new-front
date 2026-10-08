@@ -116,7 +116,7 @@ export default ({ A, R }) => {
 
   const left = c.card(
     "min-w-0 flex-1",
-    ui.sectionHead(`권한 그룹 목록${c.sub(`${GROUPS.length}건`)}`, x.dialogTrigger("가맹마스터 보기", fmId, "soft") + newButton().replace(">신규 등록<", ">등록<")) +
+    ui.sectionHead(`권한 그룹 목록${c.sub(`${GROUPS.length}건`)}`, x.dialogTrigger("가맹마스터 보기", fmId, "soft") + newButton()) +
       table +
       `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
   );

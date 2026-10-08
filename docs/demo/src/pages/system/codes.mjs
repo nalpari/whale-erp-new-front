@@ -5,8 +5,6 @@ import * as x from "../../extra.mjs";
 import { platformHeader } from "../../site.mjs";
 import { band as riskBand } from "../../staff-parts.mjs";
 
-// 안내 띠(목업 band 의 제목 줄). 1팀 컴포넌트에 없어 표 머리와 같은 바탕·선으로 그린다.
-const band = (text) => `<p class="flex h-[42px] items-center rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[12px] text-[14px] font-medium text-erp-ink">${text}</p>`;
 // 두 카드 껍데기
 const card = (w, html) => `<section class="${w} flex flex-col gap-[12px] overflow-y-auto rounded-[4px] [&>*]:shrink-0 border border-erp-panel-line bg-white p-[25px]">${html}</section>`;
 // 고른 줄 표시(목업 surface-strong). dataTable 결과의 n 번째 줄에 표 머리 바탕을 얹는다.
@@ -22,7 +20,7 @@ const help = (t) => `<span class="text-[13px] leading-[1.5] whitespace-normal te
 const addRows = (id, cells, note) =>
   `<template id="${id}"><tr class="h-[46px] border-b border-erp-thead-line bg-erp-thead-bg" data-new-row>${cells
     .map(([c, left]) => `<td class="px-[10px] ${left ? "text-left" : "text-center"}">${c}</td>`)
-    .join("")}</tr><tr class="border-b border-erp-thead-line bg-erp-thead-bg"><td colspan="${cells.length}" class="px-[10px] py-[10px] text-left">${help(note)}</td></tr></template>`;
+    .join("")}</tr>${note ? `<tr class="border-b border-erp-thead-line bg-erp-thead-bg"><td colspan="${cells.length}" class="px-[10px] py-[10px] text-left">${help(note)}</td></tr>` : ""}</template>`;
 // 코드는 영문 대문자로만 — 소문자를 치면 대문자로 바꾼다
 const codeField = (placeholder, label) => ui.textField({ placeholder, maxlength: 20, "aria-label": label, "data-upper": true, title: "영문 대문자·숫자·밑줄, 영문으로 시작, 20자 이내 (소문자는 대문자로 바뀝니다)" });
 // 추가 버튼을 누르면 그 표에 새 행을 붙이고, 첫 칸으로 스크롤·포커스한다. 저장 전 새 행은 하나만 둔다(목업과 같다).
@@ -97,7 +95,7 @@ export default ({ A, R }) => {
   ]);
   const left = card(
     "w-[780px] shrink-0",
-    ui.sectionHead(`공통코드 그룹${sub(`${GROUPS.length}개`)}`, dim(ui.button("그룹 추가", { variant: "soft", "data-add-row": "new-group" })) + ui.button("저장")) +
+    ui.sectionHead(`공통코드 그룹${sub(`${GROUPS.length}개`)}`, dim(ui.button("추가", { variant: "soft", "data-add-row": "new-group" })) + ui.button("저장")) +
       markRow(ui.dataTable(groupCols, groupRows), 0) +
       addRows(
         "new-group",
@@ -108,8 +106,9 @@ export default ({ A, R }) => {
           ['<span class="text-erp-label" title="플랫폼제공 그룹은 미적용으로 저장합니다">미적용</span>'],
           [x.toggle("사용", true)],
         ],
-        "그룹 코드는 영문 대문자·숫자·밑줄, 영문으로 시작, 20자 이내 (소문자는 대문자로 바뀝니다). 새 그룹은 ‘사용’으로 시작합니다. 플랫폼제공 그룹은 ‘미적용’으로 저장되고, 상세 코드를 다 정리한 뒤 ‘BP에 적용’을 누를 때 BP들에게 배포됩니다.",
-      ),
+      ) +
+      // 목록 아래 페이지 이동 — BP 공통코드 관리 그룹 목록과 같다(2026-10-08)
+      `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
   );
 
   const codeCols = [
@@ -128,8 +127,7 @@ export default ({ A, R }) => {
   ]);
   const right = card(
     "min-w-0 flex-1",
-    band("서비스 그룹 — 상세 코드가 곧 서비스 코드입니다") +
-      ui.sectionHead(`상세 코드${sub("SERVICE · 서비스 · 플랫폼고정")}`, dim(ui.button("상세 코드 추가", { variant: "soft", "data-add-row": "new-code" })) + ui.button("저장")) +
+    ui.sectionHead(`상세 코드${sub("SERVICE · 서비스 · 플랫폼고정")}`, dim(ui.button("추가", { variant: "soft", "data-add-row": "new-code" })) + ui.button("저장")) +
       ui.dataTable(codeCols, codeRows) +
       addRows(
         "new-code",
@@ -140,7 +138,6 @@ export default ({ A, R }) => {
           [`<span title="맨 끝에 붙습니다. 저장한 뒤 끌어서 옮길 수 있습니다">${SERVICES.length + 1}</span>`],
           [x.toggle("사용", true)],
         ],
-        "서비스 코드는 자동으로 매기지 않습니다 — 영문 대문자·숫자·밑줄, 영문으로 시작, 20자 이내 (소문자는 대문자로 바뀝니다). 새 코드는 맨 끝 순서 · ‘사용’으로 시작합니다. 저장한 뒤에는 코드를 바꿀 수 없으니 확인하고 저장해 주세요.",
       ),
   );
 

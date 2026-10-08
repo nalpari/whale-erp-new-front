@@ -46,20 +46,17 @@
             <span class="badge badge--ok" data-show="park kim self yoon created mailfail">사용</span>
             <span class="badge badge--warn" data-show="choi" hidden>미사용</span>
             <span class="badge badge--info" data-show="kim self" hidden>플랫폼 마스터</span>
+            <span class="badge badge--info" data-show="park choi">고객지원 담당</span>
+            <span class="badge badge--info" data-show="yoon created mailfail" hidden>플랫폼 관리자</span>
             <span class="badge badge--warn">1팀 작업</span>
             <div class="titlebar__end">
               <span class="filters__count mono">S-BRSPGB · /platform/system/admins/<span data-show="park">platpark</span><span data-show="choi" hidden>platchoi</span><span data-show="kim" hidden>platkim</span><span data-show="self" hidden>platjung</span><span data-show="yoon created mailfail" hidden>platyoon</span><span data-show="gone" hidden>platseo</span></span>
 
-              <!-- 비밀번호 초기화 — 수정 권한. 플랫폼 마스터 계정은 플랫폼 마스터만. 본인 계정은 비활성 -->
-              <button class="btn btn--secondary btn--sm" type="button" data-open="pop-reset" data-show-role="pm pa" data-show="park choi yoon created mailfail">비밀번호 초기화</button>
-              <button class="btn btn--secondary btn--sm" type="button" data-open="pop-reset" data-show-role="pm" data-show="kim" hidden>비밀번호 초기화</button>
-              <button class="btn btn--secondary btn--sm" type="button" disabled data-show-role="pm" data-show="self" hidden title="본인 비밀번호는 내 정보에서 변경합니다">비밀번호 초기화</button>
-
               <!-- 계정 삭제 — 삭제 권한. 논리 삭제, 선행 조건 없음. 플랫폼 마스터 계정은 플랫폼 마스터만.
                    본인 계정은 흐리게 두고 이유를 말풍선으로 보인다. -->
-              <button class="btn btn--danger btn--sm" type="button" data-open="pop-delete" data-show-role="pm pa" data-show="park choi yoon created mailfail">계정 삭제</button>
-              <button class="btn btn--danger btn--sm" type="button" data-open="pop-delete" data-show-role="pm" data-show="kim" hidden>계정 삭제</button>
-              <span data-show-role="pm" data-show="self" hidden data-tip="본인 계정은 스스로 삭제할 수 없습니다." tabindex="0"><button class="btn btn--danger btn--sm" type="button" disabled>계정 삭제</button></span>
+              <button class="btn btn--danger btn--sm" type="button" data-open="pop-delete" data-show-role="pm pa" data-show="park choi yoon created mailfail">삭제</button>
+              <button class="btn btn--danger btn--sm" type="button" data-open="pop-delete" data-show-role="pm" data-show="kim" hidden>삭제</button>
+              <span data-show-role="pm" data-show="self" hidden data-tip="본인 계정은 스스로 삭제할 수 없습니다." tabindex="0"><button class="btn btn--danger btn--sm" type="button" disabled>삭제</button></span>
 
               <!-- 수정 — 수정 권한. 플랫폼 마스터 계정은 플랫폼 마스터만. 본인 계정은 기본정보만 고친다 -->
               <a class="btn btn--primary btn--sm" href="admins-edit.html" data-show-role="pm pa" data-show="park choi yoon created mailfail">수정</a>
@@ -153,7 +150,7 @@
             </div>
 
             <div data-show="park choi kim self yoon created mailfail" style="display: contents">
-              <div class="grid grid--2" style="align-items: start">
+              <div>
                 <section class="panel">
                   <div class="panel__head"><h2 class="t-h2">기본정보</h2></div>
                   <div class="panel__body">
@@ -166,45 +163,33 @@
                       <dd class="mono"><span data-show="park">010-7781-3302</span><span data-show="choi" hidden>010-6620-1185</span><span data-show="kim" hidden>010-3321-0981</span><span data-show="self" hidden>010-2011-4410</span><span data-show="yoon created mailfail" hidden>010-9013-5528</span></dd>
                       <dt>이메일</dt>
                       <dd class="mono"><span data-show="park">jiwoo.park@whale-erp.example</span><span data-show="choi" hidden>yuna.choi@whale-erp.example</span><span data-show="kim" hidden>seoyeon.kim@whale-erp.example</span><span data-show="self" hidden>minjae.jung@whale-erp.example</span><span data-show="yoon created mailfail" hidden>chaewon.yoon@whale-erp.example</span></dd>
+                      <!-- 비밀번호 초기화 — 이메일 아래 칸(BP 관리자 상세와 같다 · 2026-10-08). 수정 권한. 플랫폼 마스터 계정은 플랫폼 마스터만. 본인 계정은 비활성 -->
+                      <dt>비밀번호</dt>
+                      <dd>
+                        <button class="btn btn--secondary btn--sm" type="button" data-open="pop-reset" data-show-role="pm pa" data-show="park choi yoon created mailfail">초기화</button>
+                        <button class="btn btn--secondary btn--sm" type="button" data-open="pop-reset" data-show-role="pm" data-show="kim" hidden>초기화</button>
+                        <button class="btn btn--secondary btn--sm" type="button" disabled data-show-role="pm" data-show="self" hidden title="본인 비밀번호는 내 정보에서 변경합니다">초기화</button>
+                      </dd>
                       <dt>소속 부서</dt>
                       <dd><span data-show="park choi">고객지원팀</span><span data-show="kim self yoon created mailfail" hidden>플랫폼운영팀</span></dd>
                       <dt>직책</dt>
                       <dd><span data-show="park">매니저</span><span data-show="choi yoon created" hidden>사원</span><span data-show="kim" hidden>파트장</span><span data-show="self" hidden>팀장</span></dd>
                       <dt>주소</dt>
-                      <dd>
-                        <span data-show="park"><span class="mono">06236</span> 서울 강남구 테헤란로 152, 12층</span>
-                        <span data-show="yoon created mailfail" hidden><span class="mono">13529</span> 경기 성남시 분당구 판교역로 166, 7층</span>
+                      <dd style="padding: 6px 0; line-height: 1.6">
+                        <span data-show="park"><span class="mono">06236</span><br />서울 강남구 테헤란로 152<br />12층</span>
+                        <span data-show="yoon created mailfail" hidden><span class="mono">13529</span><br />경기 성남시 분당구 판교역로 166<br />7층</span>
                         <span class="nil" data-show="choi kim self" hidden></span>
                       </dd>
+                      <!-- 등록일시 · 최종수정일시 · 최근 로그인 — BP 관리자 상세와 같이 기본정보에 둔다(권한 · 상태 영역은 없앴다 · 2026-10-08) -->
+                      <dt>등록일시</dt>
+                      <dd class="mono"><span data-show="park">2025-06-02 10:11</span><span data-show="choi" hidden>2025-06-02 10:18</span><span data-show="kim" hidden>2025-01-06 09:05</span><span data-show="self" hidden>2025-01-06 09:00</span><span data-show="yoon created mailfail" hidden>2026-09-21 10:04</span></dd>
+                      <dt>최종수정일시</dt>
+                      <dd class="mono"><span data-show="park">2026-08-12 09:40 | platkim</span><span data-show="choi" hidden>2026-05-06 11:20 | platkim</span><span data-show="kim self yoon created mailfail" hidden>— <span class="subtle">· 등록 뒤 변경 없음</span></span></dd>
+                      <dt>최근 로그인</dt>
+                      <dd><span class="mono" data-show="park">2026-09-21 09:03</span><span class="mono" data-show="choi" hidden>2026-04-30 18:22</span><span class="mono" data-show="kim" hidden>2026-09-19 17:40</span><span class="mono" data-show="self" hidden>2026-09-21 08:52</span><span class="subtle" data-show="yoon created mailfail" hidden>로그인 기록 없음</span></dd>
                     </dl>
                   </div>
                   <div class="panel__note">소속 부서·직책·주소는 선택 입력이라 비어 있을 수 있다. 소속 BP·가맹점은 플랫폼 관리자 계정에 두지 않는다.</div>
-                </section>
-
-                <section class="panel">
-                  <div class="panel__head"><h2 class="t-h2">권한 · 상태</h2></div>
-                  <div class="panel__body">
-                    <dl class="kv">
-                      <dt>사용자 권한</dt>
-                      <dd>
-                        <span data-show="park choi">고객지원 담당 <span class="mono subtle">PA000002</span> <span class="subtle">· 플랫폼 관리자 추가 권한</span></span>
-                        <span data-show="kim self" hidden>플랫폼 마스터 <span class="mono subtle">PM000001</span></span>
-                        <span data-show="yoon created mailfail" hidden>플랫폼 관리자 <span class="mono subtle">PA000001</span> <span class="subtle">· 기본 권한</span></span>
-                      </dd>
-                      <dt>계정 상태</dt>
-                      <dd>
-                        <span data-show="park kim self yoon created mailfail"><span class="badge badge--ok">사용</span></span>
-                        <span data-show="choi" hidden><span class="badge badge--warn">미사용</span> <span class="mono subtle">2026-05-06 11:20</span></span>
-                      </dd>
-                      <dt>생성 일시</dt>
-                      <dd class="mono"><span data-show="park">2025-06-02 10:11</span><span data-show="choi" hidden>2025-06-02 10:18</span><span data-show="kim" hidden>2025-01-06 09:05</span><span data-show="self" hidden>2025-01-06 09:00</span><span data-show="yoon created mailfail" hidden>2026-09-21 10:04</span></dd>
-                      <dt>최근 로그인</dt>
-                      <dd><span class="mono" data-show="park">2026-09-21 09:03</span><span class="mono" data-show="choi" hidden>2026-04-30 18:22</span><span class="mono" data-show="kim" hidden>2026-09-19 17:40</span><span class="mono" data-show="self" hidden>2026-09-21 08:52</span><span class="subtle" data-show="yoon created mailfail" hidden>로그인 기록 없음</span></dd>
-                      <dt>강제 비밀번호 변경</dt>
-                      <dd><span data-show="park choi kim self">대상 아님</span><span data-show="yoon created" hidden>대상 <span class="subtle">· 초기 비밀번호 발급 <span class="mono">2026-09-21 10:04</span></span></span><span data-show="mailfail" hidden>대상 <span class="subtle">· 초기 비밀번호 발급 <span class="mono">2026-09-21 10:04</span></span> <span class="badge badge--warn">초기 비밀번호 미발송</span></span></dd>
-                    </dl>
-                  </div>
-                  <div class="panel__note">권한이나 상태를 바꾸면 재로그인을 기다리지 않고 그 계정의 다음 요청부터 반영된다. 권한 구성 자체는 플랫폼 권한 관리에서 정한다.</div>
                 </section>
               </div>
 

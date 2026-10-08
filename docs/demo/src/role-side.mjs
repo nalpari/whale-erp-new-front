@@ -1,19 +1,17 @@
-// 플랫폼 권한 관리의 오른쪽 칸(권한 상세·수정 / 신규 권한 등록). roles.mjs(플랫폼 관리자)·roles-master.mjs(플랫폼 마스터)가 함께 쓴다.
+// 플랫폼 권한 관리의 오른쪽 칸(권한 상세·수정 / 권한 등록). roles.mjs(플랫폼 관리자)·roles-master.mjs(플랫폼 마스터)가 함께 쓴다.
 // 목업 docs/mockup/system/roles.html 처럼 등록과 수정 모두 오른쪽 칸에서 한다 — 따로 열리는 패널이 없다.
 // 목록 줄을 누르면 그 권한 상세가, 신규 등록을 누르면 같은 칸이 등록 양식이 된다. 칸 바꾸기는 ROLE_SCRIPT 가 한다.
 import * as ui from "./ui.mjs";
 import { req } from "./biz-form.mjs";
 import * as x from "./extra.mjs";
+import * as c from "./config-parts.mjs";
 
-const note = (html) => `<p class="text-[14px] leading-[1.6] text-erp-label">${html}</p>`;
-const help = (t) => `<span class="text-[13px] leading-[1.5] text-erp-label">${t}</span>`;
-const sub = (t) => `<span class="text-erp-label">${t}</span>`;
 const band = (t) => `<div class="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[16px] py-[12px] text-[14px] font-medium text-erp-ink">${t}</div>`;
 
-// 고정 권한마다 상세 표에 더 보이는 줄(목업 kv)
-const EXTRA = {
-  PM000001: [["메뉴 권한", `전체 메뉴 허용으로 고정 ${sub("· 조회만")}`]],
-};
+// 제목 없는 상세 표 — 「기본 정보」 같은 제목 줄 없이 항목만(BP 권한 그룹 관리와 같다)
+const plainTable = (rows) =>
+  ui.detailTable("", rows).replace(/<h3[^>]*><\/h3>/, "").replace('<dl class="flex w-full flex-col">', '<dl class="flex w-full flex-col rounded-t-[2px] border-t border-erp-thead-line">');
+
 
 // 목록 표의 줄에 고른 권한을 가리키는 단서를 단다. 고른 줄은 바탕을 깐다.
 export function tagRows(table, roles, selected) {
@@ -24,39 +22,34 @@ export function tagRows(table, roles, selected) {
   });
 }
 
-// 신규 등록 버튼(목록 머리 오른쪽)
-export const newButton = () => ui.button("신규 등록", { "data-role-new": true }).replace('class="', 'class="disabled:pointer-events-none disabled:opacity-40 ');
+// 등록 버튼(목록 머리 오른쪽)
+export const newButton = () => ui.button("등록", { "data-role-new": true }).replace('class="', 'class="disabled:pointer-events-none disabled:opacity-40 ');
 
 // roles: [권한유형, 코드, 권한명, 구분, 설명, 최종수정일시, 수정자, 등록일, 등록자, 소속 고정 권한(추가 권한만), 기본 서비스, 아래 권한 그룹]
 // own: 보는 사람에게 연결된 권한(고칠 수 없다). master: 플랫폼 마스터로 보는지(추가 권한 삭제가 있다). del: { 권한코드: 삭제 확인창 id }
 export function roleSide({ roles, own, master, selected, del = {}, card }) {
   const view = (r) => {
-    const [type, code, name, kind, desc, mod, modBy, reg, regBy, , , lower] = r;
+    const [type, code, name, kind, desc, mod, modBy, reg, regBy] = r;
     const locked = code === own;
-    const rows = [["권한유형", type]];
-    rows.push(["권한코드", code], ...(EXTRA[code] || []), ["등록", ui.detailValues([reg, sub(regBy)])], ["최종 수정", ui.detailValues([mod, sub(modBy)])]);
-    const fields = locked
-      ? ui.field("권한명", ui.textField({ value: name, readonly: true })) + ui.field("설명", ui.textarea({ rows: 4, value: desc, readonly: true }))
-      : ui.field(req("권한명"), ui.textField({ value: name })) + ui.field("설명", ui.textarea({ rows: 4, value: desc }));
+    // BP 권한 그룹 수정과 같은 모양(2026-10-08): 제목 옆에 권한코드 · 권한유형, 입력칸 아래 제목 없는 표에 등록일시 · 최종수정일시.
+    // 본인 권한은 고칠 수 없어 권한 상세로 두고 권한명 · 설명을 표에 싣는다.
+    const rows = [
+      ...(locked ? [["권한명", name], ["설명", desc || c.muted("—")]] : []),
+      ["등록일시", `${reg} ${c.muted(`| ${regBy}`)}`],
+      ["최종수정일시", `${mod} ${c.muted(`| ${modBy}`)}`],
+    ];
+    const fields = locked ? "" : `<div class="flex flex-col gap-[18px]">${ui.field(req("권한명"), ui.textField({ value: name }))}${ui.field("설명", ui.textarea({ rows: 4, value: desc }))}</div>`;
     const canDelete = master && kind === "추가";
     const foot = locked
       ? ""
       : `<div class="flex gap-[6px]">${canDelete ? x.dialogTrigger("삭제", del[code], "soft") : ""}<span class="flex-1"></span>${ui.button("저장")}</div>`;
-    const notes = [];
-    if (kind === "고정") notes.push("고정 권한은 삭제 항목이 없습니다. 플랫폼 관리자 유형의 권한만 삭제할 수 있습니다.");
-    else if (!master) notes.push("권한 관리 메뉴의 삭제 권한이 없어 삭제 항목이 보이지 않습니다.");
-    if (lower && !locked) notes.push(`이 권한의 메뉴 설정이 ${lower}의 상한이 됩니다. 메뉴등록은 권한 관리 메뉴의 수정 권한만 있으면 열 수 있습니다.`);
     return (
       `<div data-role-view="${code}" class="flex flex-col gap-[18px]"${code === selected ? "" : " hidden"}>` +
-      ui.sectionHead("권한 상세", `<span class="text-[14px] text-erp-label">${kind} 권한${locked ? " · 본인" : ""}</span>`) +
-      (locked
-        ? band("본인이 연결된 권한이라 고칠 수 없습니다") +
-          note(`권한명·설명 수정과 메뉴 권한 저장이 모두 막힙니다. 다른 ${type}${code.startsWith("PM") ? "가" : "나 플랫폼 마스터가"} 처리해야 합니다.`)
-        : "") +
-      ui.detailTable("기본 정보", rows) +
-      `<div class="flex flex-col gap-[18px] pt-[6px]">${fields}</div>` +
+      ui.sectionHead(`${locked ? "권한 상세" : "권한 수정"}<span class="ml-[10px] inline-flex items-center gap-[6px] align-middle">${c.muted(code)}${c.tag(type)}</span>`) +
+      (locked ? band("본인이 연결된 권한이라 고칠 수 없습니다") : "") +
+      fields +
+      plainTable(rows) +
       foot +
-      notes.map(note).join("") +
       `</div>`
     );
   };
@@ -64,18 +57,21 @@ export function roleSide({ roles, own, master, selected, del = {}, card }) {
   // 신규 등록 — 마스터 유형 셋이 모두 있어 플랫폼 관리자만 고른다(목업 new 상태)
   const form =
     `<div data-role-view="new" class="flex flex-col gap-[18px]" hidden>` +
-    ui.sectionHead("신규 권한 등록") +
+    ui.sectionHead("권한 등록") +
     `<div class="flex flex-col gap-[18px]">` +
-    ui.field(req("권한유형"), ui.select(["플랫폼 관리자"]) + help("플랫폼 마스터·BP 마스터·가맹 마스터가 모두 등록되어 있어 플랫폼 관리자만 고를 수 있습니다.")) +
-    ui.field(`권한코드 ${help("자동 채번")}`, ui.textField({ value: "PA000005", readonly: true }) + help("등록할 때 확정됩니다. 같은 유형을 동시에 등록하면 겹치지 않는 다음 순번이 붙습니다.")) +
+    ui.field(req("권한유형"), ui.select(["플랫폼 관리자"])) +
     ui.field(req("권한명"), ui.textField({ placeholder: "예: 프로모션 담당", "data-role-name": true })) +
     ui.field("설명", ui.textarea({ rows: 4, placeholder: "이 권한으로 맡길 업무를 적습니다" })) +
     `</div>` +
-    `<div class="flex justify-end gap-[6px]">${ui.button("취소", { variant: "off", "data-role-cancel": true })}${ui.button("등록", { "data-role-save": true })}</div>` +
-    note("등록한 뒤 목록의 메뉴등록에서 메뉴별 권한을 정합니다. 설정하는 사람 본인이 가진 메뉴·CRUD 안에서만 고를 수 있습니다.") +
+    `<div class="flex justify-end gap-[6px]">${ui.button("취소", { variant: "off", "data-role-cancel": true })}${ui.button("저장", { "data-role-save": true })}</div>` +
     `</div>`;
 
-  return `<section class="${card} w-[464px] shrink-0" data-role-side>${roles.map(view).join("")}${form}</section>` + ROLE_SCRIPT;
+  // 처음 진입 · 고른 권한 없음 — 메뉴 관리의 빈 상세와 같은 안내(2026-10-08)
+  const empty =
+    `<div data-role-view="empty" class="flex flex-col gap-[18px]"${selected ? " hidden" : ""}>${ui.sectionHead("권한 수정")}` +
+    `<div class="flex flex-col items-center gap-[6px] rounded-[2px] border border-erp-thead-line px-[18px] py-[36px] text-center text-[14px] text-erp-muted"><p>왼쪽 목록에서 권한을 고르면 수정 화면이 여기에 섭니다.</p><p class="text-[13px]">아무것도 고르지 않고 등록을 누르면 플랫폼 관리자 유형의 새 권한을 등록합니다.</p></div></div>`;
+
+  return `<section class="${card} w-[464px] shrink-0" data-role-side>${empty}${roles.map(view).join("")}${form}</section>` + ROLE_SCRIPT;
 }
 
 // 오른쪽 칸 바꾸기(이 화면 전용 — 공통 erp.js 는 건드리지 않는다).
@@ -95,7 +91,7 @@ export const ROLE_SCRIPT = `<script>
     editing = false;
     newBtn.disabled = false;
     mark();
-    show(cur);
+    show(cur || "empty");
   };
   rows.forEach((r) =>
     r.addEventListener("click", (e) => {

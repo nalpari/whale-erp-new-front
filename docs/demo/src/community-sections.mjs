@@ -33,7 +33,7 @@ export function communitySections({ A, R }) {
     ["파트타이머 주휴수당이 계산되지 않습니다", "㈜한강상회 · 정하윤", "직원·근로", "답변 대기", "09-04"],
     ["가맹점 초대 메일이 반송됩니다", "㈜한강상회 · 정하윤", "가입·계정", "답변 완료", "08-30"],
     ["KIOSK 구독을 늘리고 싶습니다", "온기식당 · 배정숙", "요금·구독", "답변 대기", "09-02"],
-  ].map(([t, from, c, s, d]) => [ui.link(t, askDetail), from, c, answer(s), d]);
+  ].map(([t, from, c, s, d]) => [ui.link(t, s === "답변 완료" ? link(R, "support/inquiry-detail-done.html") : askDetail), from, c, answer(s), d]);
   const leadDetail = link(R, "support/lead-detail.html");
   const leads = [
     ["조민석 · 010-7741-2093", "모리커피 청담", "가맹점", "답변 대기", "09-06"],
@@ -58,7 +58,7 @@ export function communitySections({ A, R }) {
         pager(A),
     },
     asks: {
-      filter: ui.filterPanel(A, [search(A, "제목", "제목으로 검색"), pick("상태", "ask-state", ["전체", "답변 대기", "답변 완료"])]),
+      filter: ui.filterPanel(A, [search(A, "제목", "제목으로 검색"), search(A, "보낸 곳", "BP·점포 또는 이름으로 검색"), pick("상태", "ask-state", ["전체", "답변 대기", "답변 완료"])]),
       content:
         ui.listToolbar(7, "") +
         ui.dataTable(

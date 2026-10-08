@@ -270,6 +270,20 @@
                       <label for="q-body">내용</label>
                       <textarea class="textarea" id="q-body" rows="5" placeholder="어떤 화면에서 무엇을 하려다 막혔는지 적어 주시면 빨리 답할 수 있습니다."></textarea>
                     </div>
+                    <!-- 첨부파일 · 운영 정책 CNT-18 (2026-10-08 재영). 등록할 때만 붙이고 뒤에는 더하거나 빼지 않는다. -->
+                    <div class="field" style="margin-top: var(--s-3)" data-attach>
+                      <label for="q-file">첨부파일</label>
+                      <input class="input" id="q-file" type="file" multiple accept=".jpg,.jpeg,.png,.pdf" />
+                      <span class="help">이미지·PDF, 5개까지, 파일당 10MB</span>
+                      <ul style="list-style: none; margin: var(--s-2) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-1)" data-attach-list>
+                        <li class="spread"><span>주휴수당_0원_화면.png <span class="mono subtle">412 KB</span></span><button class="tbtn" type="button" data-attach-del>빼기</button></li>
+                        <li class="spread"><span>9월_급여명세서_배정숙.pdf <span class="mono subtle">1.2 MB</span></span><button class="tbtn" type="button" data-attach-del>빼기</button></li>
+                      </ul>
+                      <p class="note" style="margin: var(--s-2) 0 0" data-attach-err hidden>
+                        <span data-icon="alert" data-icon-size="14"></span>
+                        <span></span>
+                      </p>
+                    </div>
                     <button class="btn btn--primary btn--block" type="button" style="margin-top: var(--s-4)">문의 등록</button>
                   </div>
                   <div class="panel__note">
@@ -317,5 +331,38 @@
       </main>
     </div>
     <script src="../assets/app.js"></script>
+    <script>
+      /* 목업 동작 — 첨부파일. 고른 파일을 이름·크기로 더하고, 6번째·10MB 초과·이미지·PDF 가 아닌 파일은 그 파일만 거절한다.
+         입력한 내용과 이미 올린 파일은 그대로 둔다. 「빼기」는 한 줄씩 뺀다. */
+      (function attachDemo() {
+        var box = document.querySelector("[data-attach]");
+        if (!box) return;
+        var input = box.querySelector("input"), list = box.querySelector("[data-attach-list]"), err = box.querySelector("[data-attach-err]");
+        var size = function (n) { return n >= 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB"; };
+        input.addEventListener("change", function onAttachPick() {
+          var msg = [];
+          Array.prototype.forEach.call(input.files, function (f) {
+            if (list.children.length >= 5) msg.push(f.name + " — 5개까지 올릴 수 있습니다");
+            else if (!/\.(jpe?g|png|pdf)$/i.test(f.name)) msg.push(f.name + " — 이미지(jpg·png)와 PDF 만 올릴 수 있습니다");
+            else if (f.size > 10485760) msg.push(f.name + " — 파일당 10MB 까지입니다");
+            else {
+              var li = document.createElement("li");
+              li.className = "spread";
+              li.innerHTML = "<span></span><button class=\"tbtn\" type=\"button\" data-attach-del>빼기</button>";
+              li.firstChild.textContent = f.name + " ";
+              li.firstChild.insertAdjacentHTML("beforeend", "<span class=\"mono subtle\">" + size(f.size) + "</span>");
+              list.appendChild(li);
+            }
+          });
+          err.hidden = !msg.length;
+          err.lastElementChild.textContent = msg.join(" · ");
+          input.value = "";
+        });
+        list.addEventListener("click", function onAttachDelete(e) {
+          var b = e.target.closest("[data-attach-del]");
+          if (b) b.closest("li").remove();
+        });
+      })();
+    </script>
   </body>
 </html>

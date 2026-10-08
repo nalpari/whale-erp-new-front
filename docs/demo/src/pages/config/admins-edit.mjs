@@ -3,7 +3,7 @@
 // 목록·상세에서 슬라이드 패널로 연다(BP 마스터 계정 관리와 같다) — 전체 화면은 그대로 두고 직접 들어와도 쓸 수 있게 둔다.
 import * as ui from "../../ui.mjs";
 import * as c from "../../config-parts.mjs";
-import { erpHeader, link } from "../../site.mjs";
+import { erpHeader, link, STORES } from "../../site.mjs";
 
 const TITLE = `관리자 수정${c.sub("이서아 · hghr · BP 관리자")}`;
 
@@ -13,12 +13,13 @@ export function adminEditBody(A, R, { panel = false } = {}) {
   const row = panel ? (...cells) => cells.filter((x) => x !== c.blank).join("") : c.row;
 
   const basic = ui.formGroup(
-    `기본정보${c.sub("* 표시가 필수")}`,
+    "기본정보",
     row(
-      ui.field("아이디", c.stack(ui.textField({ value: "hghr", readonly: true }), c.help("아이디는 바꾸지 않습니다"))),
+      ui.field("아이디", ui.textField({ value: "hghr", readonly: true })),
       ui.field(c.req("이름"), ui.textField({ value: "이서아", maxlength: 20 })),
     ),
     row(ui.field(c.req("휴대전화번호"), c.tel("010", "2290", "5173")), ui.field(c.req("이메일"), ui.textField({ value: "seoa.lee@hangang.co.kr", maxlength: 100 }))),
+    row(ui.field(c.req("계정 상태"), ui.select(["사용", "미사용"])), c.blank),
     row(ui.field("등록일시", ui.textField({ value: "2025-04-01 09:12", readonly: true })), ui.field("최근 로그인", ui.textField({ value: "2026-09-20 17:55", readonly: true }))),
   );
 
@@ -28,21 +29,17 @@ export function adminEditBody(A, R, { panel = false } = {}) {
       ui.field("계정 역할", ui.textField({ value: "BP 관리자", readonly: true })),
       ui.field(
         "권한 그룹",
-        c.stack(
-          ui.select(["운영 총괄 · BA000003", "인사 담당 · BA000004", "정산 조회 · BA000005", "고객응대 · BA000006", "점포 조회 전용 · BA000007"], { value: "인사 담당 · BA000004" }),
-          c.help("바꾸면 다음 요청부터 새 권한으로 판정합니다."),
-        ),
+        ui.select(["운영 총괄 · BA000003", "인사 담당 · BA000004", "정산 조회 · BA000005", "고객응대 · BA000006", "점포 조회 전용 · BA000007"], { value: "인사 담당 · BA000004" }),
       ),
     ),
-    `<p class="text-[13px]">${ui.link("권한 그룹 구성은 BP 권한 그룹 관리에서", link(R, "config/roles.html"))}</p>`,
   );
 
   const stores = ui.formGroup(
-    `점포 매핑${c.sub("수정자 범위 · 전체 점포 11개점")}`,
-    row(ui.field("범위", c.stack(ui.select(["전체 점포", "일부 점포"], { value: "일부 점포" }), c.help("아래에서 고른 점포만 관리합니다."))), c.blank),
+    "점포 매핑",
+    row(ui.field("범위", ui.select(["전체 점포", "일부 점포"], { value: "일부 점포", "data-spick-scope": true })), c.blank),
     c.storePicker(A, {
-      pool: "㈜한강상회 전체 11개점 중에서",
-      hint: "칸을 누르면 고를 수 있는 점포가 펼쳐지고, 글자를 넣으면 좁혀집니다. 고르면 아래 선택한 점포에 더해집니다.",
+      clearLabel: "전체 제거",
+      bulk: [...STORES].sort((a, b) => a[0].localeCompare(b[0])).map(([code, name, type]) => [name, code, type]),
       picked: [
         ["모리커피 서초점", "ST000001", "직영점포"],
         ["모리커피 성수점", "ST000002", "직영점포"],
@@ -52,10 +49,14 @@ export function adminEditBody(A, R, { panel = false } = {}) {
     }),
   );
 
-  const state = ui.formGroup("계정 상태", row(ui.field(c.req("계정 상태"), ui.select(["사용", "미사용"])), c.blank));
 
   const cancel = panel ? ui.button("닫기", { variant: "off", "data-close": true }) : ui.button("취소", { variant: "off", href: detail });
-  return basic + role + stores + state + c.buttons(cancel, ui.button("저장", { href: detail }));
+  // 저장하면 상세 화면이 아니라 상세 슬라이드로 간다 — 패널은 수정 패널을 닫아 아래 상세 패널을 보이고(erp.js data-save-panel),
+  // 전체 화면은 목록으로 가서 상세 패널을 연다(?panel=).
+  const save = panel
+    ? ui.button("저장", { "data-save-panel": "admin-detail-panel" })
+    : ui.button("저장", { href: `${link(R, "config/admins.html")}?panel=admin-detail-panel` });
+  return basic + role + stores + c.buttons(cancel, save);
 }
 
 export function adminEditPanel(A, R) {
