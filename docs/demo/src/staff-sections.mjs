@@ -41,7 +41,7 @@ export function staffSections({ A, R }) {
     [who("남도현"), "010-9014-5563", "모리커피 성수점", "파트타이머", p.tag("warn", "초대 발송 · 08-31"), p.tag("quiet", "발송 대기"), "-", p.mark("subtle", "가입 대기")],
     [`<button type="button" aria-expanded="false" aria-controls="${holdPanel}" class="text-erp-link hover:underline">하준서</button>`, "010-3392-4418", "모리커피 성수점", "파트타이머", p.tag("risk", "연결 보류 · 4일"), p.tag("quiet", "발송 대기"), "-", p.mark("risk", "확인 필요")],
     [who("정유담"), "010-5518-7734", "온기식당 판교점", "파트타이머", p.tag("info", "소속 추가 확인"), p.tag("quiet", "발송 대기"), "-", p.mark("subtle", "응답 대기")],
-    [who("권도윤", D), "010-7742-1160", "모리커피 서초점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("warn", "서명 대기 · D-24"), "18.0h", p.mark("warn", "날인 대기")],
+    [who("권도윤", D), "010-7742-1160", "모리커피 서초점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("warn", "서명 대기 · D-24"), "-", p.mark("warn", "날인 대기")],
     [who("유하람", D), "010-2093-8875", "모리커피 연남점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("risk", "거부 · 09-02"), "-", p.mark("risk", "재발송 필요")],
     [p.sub("본사 제공 동의 없음"), "-", "모리커피 연남점", "-", "-", "-", "-", "-"],
     [who("민세하"), "010-7725-3390", "모리커피 성수점", "파트타이머", p.tag("risk", "가입 불가(만 19세 미만)"), p.tag("quiet", "발송 대기"), "-", p.mark("risk", "삭제 대상")],
@@ -71,6 +71,8 @@ export function staffSections({ A, R }) {
     ["하준서", "모리커피 성수점", "2026-09-14 ~ 무기한", "11,200 /h", "-", p.tag("quiet", "발송 대기"), offBtn("연결 확인", { href: L("staff/index.html") })],
     ["정유담", "온기식당 판교점", "2026-09-18 ~ 2027-03-17", "10,800 /h", "-", p.tag("quiet", "발송 대기"), p.sub("소속 확인 중")],
     ["권도윤", "모리커피 서초점", "2026-09-01 ~ 2027-08-31", "11,600 /h", "09-01", p.tag("warn", "서명 대기 · D-24"), p.ask("재발송", "off", "근로계약서를 재발송하시겠습니까?", "권도윤 님에게 서명 대기 중인 근로계약서를 다시 보냅니다.")],
+    // 권도윤은 앞 계약이 체결 완료라 08-23까지만 근무스케줄·출퇴근을 받는다(STAFF-29).
+    ["권도윤", "모리커피 서초점", "2025-08-24 ~ 2026-08-23", "11,200 /h", "2025-08-20", p.tag("ok", "체결 완료"), p.sub("재계약 서명 대기")],
     [ui.link("유하람", L("staff/contracts-detail.html")), "모리커피 연남점", "2026-08-28 ~ 2027-02-27", "10,800 /h", "08-28", p.tag("risk", "거부 · 09-02"), offBtn("상세", { href: L("staff/contracts-detail.html") })],
     ["서지안", "모리커피 서초점", "2026-03-01 ~ 무기한", "2,840,000 /월", "02-24", p.tag("ok", "체결 완료"), offBtn("새 계약", { href: N })],
     ["오세라", "모리커피 서초점", "2025-11-01 ~ 무기한", "3,420,000 /월", "10-27", p.tag("ok", "체결 완료"), offBtn("새 계약", { href: N })],
@@ -135,21 +137,18 @@ export function staffSections({ A, R }) {
     ["2026-09-06", [
       ["오세라", p.sub("09:00"), "08:54", p.sub("근무 중"), p.mark("ok", "정상")],
       ["서지안", p.sub("09:00"), "08:57", p.sub("근무 중"), p.mark("ok", "정상")],
-      ["권도윤", p.sub("13:00"), p.mark("warn", "13:18"), p.sub("근무 중"), p.mark("warn", "지각 18분")],
       ["유하람", p.sub("-"), "-", "-", p.mark("subtle", "휴무")],
       ["배정숙", p.sub("10:00"), p.sub("미기록"), "-", p.mark("risk", "미출근")],
     ]],
     ["2026-09-05", [
       ["오세라", p.sub("09:00"), "08:51", "18:02", p.mark("ok", "정상")],
       ["서지안", p.sub("13:00"), "12:58", p.sub("미기록"), p.mark("warn", "퇴근 미등록")],
-      ["권도윤", p.sub("-"), "-", "-", p.mark("subtle", "휴무")],
       ["유하람", p.sub("-"), "-", "-", p.mark("subtle", "휴무")],
       ["배정숙", p.sub("10:00"), "09:58", "16:01", p.mark("ok", "정상")],
     ]],
     ["2026-09-04", [
       ["오세라", p.sub("09:00"), "09:00", "18:00", p.mark("ok", "정상")],
       ["서지안", p.sub("13:00"), "12:55", "21:36", p.mark("ok", "정상")],
-      ["권도윤", p.sub("13:00"), "13:02", "21:30", p.mark("ok", "정상")],
       ["유하람", p.sub("-"), "-", "-", p.mark("subtle", "휴무")],
       ["배정숙", p.sub("10:00"), "09:55", "16:00", p.mark("ok", "정상")],
     ]],
@@ -221,7 +220,7 @@ export function staffSections({ A, R }) {
       ],
       [
         ["서지안", "09-05", "12:58", "-", p.tag("warn", "퇴근 미등록"), fixBtns()],
-        ["권도윤", "09-03", "-", "21:12", p.tag("warn", "출근 미등록"), fixBtns()],
+        ["권도윤", "08-21", "-", "21:12", p.tag("warn", "출근 미등록"), fixBtns()],
         ["배정숙", "09-02", "08:47", "23:58", p.tag("risk", "퇴근 시각 이상"), fixBtns()],
         ["남주호", "09-01", "09:04", "18:02", p.tag("risk", "위치 조작 감지"), fixBtns()],
         ["문태경", "08-29", "09:02", "18:30", `${p.tag("info", "수정됨")} ${p.sub("08-30 정하윤")}`, x.dialogTrigger("이력", histId.문태경, "off")],
@@ -375,17 +374,17 @@ export function staffSections({ A, R }) {
   const panelHead = (title, right = "") => `<div class="flex items-center gap-[6px]"><h2 class="flex-1 text-[18px] font-semibold text-erp-ink">${title}</h2>${right}</div>`;
   const delId = x.dialogId();
   // 여러 명 일괄(STAFF-27, 2026-10-08 재영): 근무지 재직자 체크 목록 → 고른 직원마다 줄. 줄은 그 직원의 계약 근무시간으로 채우고 줄마다 고친다.
-  // 미체결 직원 줄은 빈 값과 「근로계약 미체결」. 데모는 서지안·권도윤을 고른 장면 하나다.
+  // 체크 목록에는 근무일에 체결 완료 계약이 있는 직원만 나온다(STAFF-29). 데모는 서지안·오세라를 고른 장면 하나다.
   const bulkRow = (name, role, c) =>
-    `<div class="flex flex-col gap-[8px] border-b border-erp-divider pb-[12px]"><p class="flex items-center gap-[6px] text-[14px] font-medium">${name} <span class="font-normal text-erp-label">${role}</span>${c ? "" : p.tag("risk", "근로계약 미체결")}</p>` +
-    ui.formRow(ui.field("근무 유형", ui.select(["오픈", "미들", "마감"], { value: c ? c[0] : "오픈" })), ui.field("휴게시간", ui.textField({ value: c ? c[3] : "" }))) +
-    ui.formRow(ui.field("시작", p.timeField(c ? c[1] : "", "시작")), ui.field("종료", p.timeField(c ? c[2] : "", "종료"))) +
+    `<div class="flex flex-col gap-[8px] border-b border-erp-divider pb-[12px]"><p class="flex items-center gap-[6px] text-[14px] font-medium">${name} <span class="font-normal text-erp-label">${role}</span></p>` +
+    ui.formRow(ui.field("근무 유형", ui.select(["오픈", "미들", "마감"], { value: c[0] })), ui.field("휴게시간", ui.textField({ value: c[3] }))) +
+    ui.formRow(ui.field("시작", p.timeField(c[1], "시작")), ui.field("종료", p.timeField(c[2], "종료"))) +
     `</div>`;
   const bulkPane =
     `<div class="flex flex-col gap-[18px]" data-when="sched-mode:여러 명 일괄">` +
-    `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">직원 <span class="font-normal">· 모리커피 서초점 재직자</span></span><div class="flex flex-wrap gap-x-[18px] gap-y-[8px]">${ui.checkbox(A, "서지안 · 바리스타", true)}${ui.checkbox(A, "오세라 · 점장")}${ui.checkbox(A, "권도윤 · 바리스타", true)}</div></div>` +
+    `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">직원 <span class="font-normal">· 모리커피 서초점 재직자</span></span><div class="flex flex-wrap gap-x-[18px] gap-y-[8px]">${ui.checkbox(A, "서지안 · 바리스타", true)}${ui.checkbox(A, "오세라 · 점장", true)}</div></div>` +
     bulkRow("서지안", "바리스타", ["오픈", "09:00", "16:00", "60분"]) +
-    bulkRow("권도윤", "바리스타", null) +
+    bulkRow("오세라", "점장", ["미들", "09:00", "18:00", "60분"]) +
     p.note("일부가 실패해도 성공한 등록은 남고 실패 대상만 표시됩니다.") +
     `</div>`;
   const schedForm = ui.slidePanel(
@@ -398,12 +397,11 @@ export function staffSections({ A, R }) {
         // 근무지·근무일은 두 방식이 함께 쓴다. 여러 명 일괄도 근무일은 하루 하나(주 단위는 지난 주 복사, STAFF-27).
         ui.formRow(ui.field("근무지", ui.select(["모리커피 서초점", "모리커피 성수점"])), ui.field("근무일", ui.dateField(A, { label: "근무일", value: "2026-09-08" }))),
         `<div class="flex flex-col gap-[18px]" data-when="sched-mode:한 명">` +
-        ui.formRow(ui.field("직원", ui.select(["서지안 · 바리스타", "오세라 · 점장", "권도윤 · 바리스타"], { name: "sched-staff" })), ui.field("근무 유형", ui.select(["오픈", "미들", "마감"]))),
+        ui.formRow(ui.field("직원", ui.select(["서지안 · 바리스타", "오세라 · 점장"])), ui.field("근무 유형", ui.select(["오픈", "미들", "마감"]))),
         // 시작·종료·휴게는 계약 값으로 미리 채운다(STAFF-14). 안내 띠는 두지 않고 「계약 값으로 되돌리기」만 둔다(2026-10-08 재영).
-        // 버튼은 계약이 있는 직원일 때, 미체결 경고는 미체결 직원(권도윤)을 골랐을 때만 보인다(data-when).
-        `<div class="flex justify-end" data-when="sched-staff:!권도윤 · 바리스타">${offBtn("계약 값으로 되돌리기")}</div>`,
+        // 직원 선택지는 근무일에 체결 완료 계약이 있는 직원만이다(STAFF-29). 권도윤은 재계약 서명 대기라 빠졌다.
+        `<div class="flex justify-end">${offBtn("계약 값으로 되돌리기")}</div>`,
         ui.formRow(ui.field("시작", p.timeField("09:00", "시작")), ui.field("종료", p.timeField("16:00", "종료")), ui.field("휴게시간", ui.textField({ value: "60분" }))),
-        `<div data-when="sched-staff:권도윤 · 바리스타">${p.band("권도윤 · 근로계약 미체결", { tone: "risk" })}</div>` +
         `</div>`,
         bulkPane,
       ) +
@@ -428,6 +426,7 @@ export function staffSections({ A, R }) {
       ui.panelButtons("취소", "보정 저장"),
   );
   // 출퇴근 대신 등록(운영 정책 ATT-20): 직원 · 날짜 · 출근 · 퇴근 · 사유(필수). 직원 근무 앱에는 연필 표시로 보인다.
+  // 그 날짜에 체결 완료 계약이 없는 직원은 선택지에서 뺀다(STAFF-29) — 09-06의 권도윤은 재계약 서명 대기라 빠졌다.
   const proxyForm = ui.slidePanel(
     proxyPanel,
     "출퇴근 대신 등록",
@@ -435,7 +434,7 @@ export function staffSections({ A, R }) {
       ui.formGroup(
         "출퇴근 기록",
         ui.formRow(
-          p.fieldH(req("직원"), ui.select(["오세라", "서지안", "권도윤", "배정숙", "유하람"]), ""),
+          p.fieldH(req("직원"), ui.select(["오세라", "서지안", "배정숙", "유하람"]), ""),
           p.fieldH(req("날짜"), ui.dateField(A, { label: "날짜", value: "2026-09-06" }), ""),
         ),
         ui.formRow(p.fieldH(req("출근"), p.timeField("09:00", "출근"), ""), p.fieldH("퇴근", p.timeField("", "퇴근"), "")),

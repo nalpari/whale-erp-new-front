@@ -455,6 +455,14 @@
                           <td class="c"><button class="tbtn" type="button">재발송</button></td>
                         </tr>
                         <tr>
+                          <td class="k">권도윤</td>
+                          <td class="mono">2025-08-24 ~ 2026-08-23</td>
+                          <td class="n">11,200 /h</td>
+                          <td class="mono">2025-08-20</td>
+                          <td><span class="badge badge--ok">체결 완료</span></td>
+                          <td class="c"><span class="subtle">재계약 서명 대기</span></td>
+                        </tr>
+                        <tr>
                           <td class="k"><a class="tlink" href="contracts-detail.html">유하람</a></td>
                           <td class="mono">2026-08-28 ~ 2027-02-27</td>
                           <td class="n">10,800 /h</td>
@@ -623,7 +631,7 @@
                     <tbody>
                       <tr><td class="k">오세라</td><td class="mono">5일 · 40.0h</td><td class="mono">5일 · 40.0h</td><td><span class="badge badge--ok">복사</span></td></tr>
                       <tr><td class="k">서지안</td><td class="mono">5일 · 43.0h</td><td class="mono">5일 · 43.0h</td><td><span class="badge badge--ok">복사</span></td></tr>
-                      <tr><td class="k">권도윤</td><td class="mono">5일 · 45.0h</td><td class="mono">5일 · 45.0h</td><td><span class="badge badge--ok">복사</span> <span class="badge badge--warn">계약 미체결</span></td></tr>
+                      <tr class="is-read"><td class="k">권도윤</td><td class="mono">5일 · 45.0h</td><td class="subtle">—</td><td><span class="badge badge--quiet">제외 · 근로계약 미체결</span></td></tr>
                       <tr><td class="k">유하람</td><td class="mono">5일 · 34.0h</td><td class="mono">5일 · 34.0h</td><td><span class="badge badge--ok">복사</span></td></tr>
                       <tr class="is-read"><td class="k">배정숙</td><td class="mono">3일 · 18.0h</td><td class="subtle">—</td><td><span class="badge badge--quiet">제외 · 08-20 퇴직</span></td></tr>
                       <tr class="is-read"><td class="k">문태경</td><td class="subtle">—</td><td class="subtle">—</td><td><span class="badge badge--quiet">지난 주 없음 · 따로 넣는다</span></td></tr>
@@ -634,7 +642,7 @@
                   <span>복사하면 <b>바로 반영</b>되고 해당 직원에게 알림이 간다.</span>
                   <span style="margin-left: auto"></span>
                   <button class="btn btn--secondary btn--sm" type="button" data-copy-close>취소</button>
-                  <button class="btn btn--primary btn--sm" type="button" data-copy-close>4명 복사</button>
+                  <button class="btn btn--primary btn--sm" type="button" data-copy-close>3명 복사</button>
                 </div>
               </div>
 
@@ -657,7 +665,7 @@
                 </div>
                 <p class="gap__note">
                   문서에 없던 기능이라 여기서 정한다. 원본은 <b>직전 주</b>로 고정하고, 지난 주엔 있었지만 이번 주에 재직이 아닌 사람은 자동으로 빠지며
-                  새로 온 직원은 복사에 안 나오니 따로 넣는다. 계약 미체결자는 문서대로 경고만 달고 복사된다. 복사하면 바로 반영되고 해당 직원에게 알림이 간다(2026-10-08 재영, 확정 단계 없음).
+                  새로 온 직원은 복사에 안 나오니 따로 넣는다. 그 근무일에 체결 완료 근로계약이 없는 사람도 미리보기에서 「제외 · 근로계약 미체결」로 빠진다(STAFF-29). 복사하면 바로 반영되고 해당 직원에게 알림이 간다(2026-10-08 재영, 확정 단계 없음).
                 </p>
               </div>
 
@@ -680,9 +688,29 @@
                 </div>
                 <p class="gap__note">
                   자동 반영은 <b>등록하는 시점에 한 번</b>이다. 계약을 나중에 고쳐도 이미 등록된 근무스케줄은 바뀌지 않는다 — 근무스케줄은 급여 초안의 참고 정보라 등록된 뒤에 저절로 움직이면 안 된다.
-                  일괄 등록도 직원마다 자기 계약의 근무시간을 기본값으로 쓴다. 계약이 미체결이거나 근무시간이 없으면 빈 값으로 열고 경고만 단다.
-                  계약에서 왔다는 <b>안내 띠는 두지 않는다</b>. 시작·종료·휴게 위 오른쪽에 「계약 값으로 되돌리기」 버튼만 두고, 미체결 직원이면 숨긴다(2026-10-08 재영).
+                  일괄 등록도 직원마다 자기 계약의 근무시간을 기본값으로 쓴다. 근무일에 체결 완료 계약이 없는 직원은 고를 수 없다(STAFF-29).
+                  계약에서 왔다는 <b>안내 띠는 두지 않는다</b>. 시작·종료·휴게 위 오른쪽에 「계약 값으로 되돌리기」 버튼만 둔다(2026-10-08 재영).
                 </p>
+              </div>
+
+              <div class="gap is-decided">
+                <div class="gap__head">
+                  <span class="gap__no">STAFF-29</span>
+                  <b>근로계약 미체결 직원도 근무스케줄·출퇴근을 받는가</b>
+                  <span class="gap__decided">확정 · 근무일에 체결 완료 계약이 있는 직원만</span>
+                  <span class="gap__ref">S-WPGUXX · S-EITCPC</span>
+                </div>
+                <div class="gap__opts">
+                  <div class="gap__opt is-picked" data-side="a">
+                    <div class="gap__label">A · 근무일에 체결 완료 계약이 있는 직원만 받는다 · 확정</div>
+                    <p>그 근무일이 체결 완료 근로계약 기간 안에 있어야 한다. 계약이 아직 시작 전이거나 이미 끝났으면 막는다. 막힌 직원은 목록에서 아예 뺀다.</p>
+                  </div>
+                  <div class="gap__opt is-dropped" data-side="b">
+                    <div class="gap__label">B · 경고만 달고 받는다 · 지난 안</div>
+                    <p>미체결 직원도 고를 수 있고 「근로계약 미체결」 경고를 확인하면 등록한다. 빈 값으로 열었다.</p>
+                  </div>
+                </div>
+                <p class="gap__note">2026-10-08 재영 결정. 근무스케줄 등록(한 명·여러 명 일괄)의 직원 선택지, 지난 주 복사, 관리자 웹 출퇴근 대신 등록에 같이 적용한다. 흐리게 두지 않고 목록에서 뺀다. 지난 주 복사 미리보기에는 「제외 · 근로계약 미체결」로 보인다. 샘플의 권도윤은 앞 계약(2025-08-24 ~ 2026-08-23)이 체결 완료이고 재계약(2026-09-01 ~)이 서명 대기라, 08-24 이후 날짜에는 고를 수 없다.</p>
               </div>
 
               <div class="gap is-decided">
@@ -846,7 +874,6 @@
                         <select class="select" id="se">
                           <option>서지안 · 바리스타</option>
                           <option>오세라 · 점장</option>
-                          <option>권도윤 · 바리스타</option>
                         </select>
                       </div>
                       <div class="field">
@@ -859,10 +886,11 @@
                       </div>
                     </div>
                     <!-- STAFF-14 : 시작·종료·휴게는 이 직원의 근로계약 근무시간에서 미리 채워진다. 관리자는 고쳐 저장한다.
-                         안내 띠는 두지 않고 「계약 값으로 되돌리기」 버튼만 둔다. 미체결 직원이면 버튼을 숨긴다 (2026-10-08 재영). -->
+                         안내 띠는 두지 않고 「계약 값으로 되돌리기」 버튼만 둔다 (2026-10-08 재영).
+                         직원 선택지에는 근무일에 체결 완료 근로계약이 있는 직원만 나온다 (STAFF-29). 권도윤은 재계약 서명 대기라 빠졌다. -->
                     <div class="spread" style="margin: 0 0 var(--s-2)">
                       <span></span>
-                      <button class="btn btn--secondary btn--sm" type="button" data-sched-contract>계약 값으로 되돌리기</button>
+                      <button class="btn btn--secondary btn--sm" type="button">계약 값으로 되돌리기</button>
                     </div>
                     <div class="grid grid--3" style="gap: var(--s-4)">
                       <div class="field">
@@ -878,27 +906,15 @@
                         <input class="input mono" id="s3" value="60분" />
                       </div>
                     </div>
-
-                    <!-- 미체결 경고는 미체결 직원을 골랐을 때만, 계약 띠는 그때 빠진다 -->
-                    <div class="band band--warn" style="margin: var(--s-4) 0 0" data-sched-unsigned hidden>
-                      <span class="band__ic" data-icon="warn" data-icon-size="18"></span>
-                      <div class="band__body">
-                        <div class="band__title">권도윤 · 근로계약 미체결</div>
-                        <p class="band__desc">
-                          경고를 확인하면 등록할 수 있다. 계약이 없어도 근무스케줄과 출퇴근은 막지 않는다.
-                        </p>
-                      </div>
-                    </div>
                     </div>
 
                     <!-- 여러 명 일괄: 근무지 재직자 체크 목록 → 고른 직원이 줄로 쌓이고 줄마다 계약 근무시간으로 채운다 -->
                     <div data-sched-pane="many" hidden>
                       <div class="field">
-                        <label>직원 <span class="subtle">· 모리커피 서초점 재직자</span></label>
+                        <label>직원 <span class="subtle">· 모리커피 서초점 · 근무일에 체결 완료 계약이 있는 직원</span></label>
                         <div class="inline" style="flex-wrap: wrap; gap: var(--s-4)" data-bulk-pick>
                           <label class="inline"><span class="check" role="checkbox" aria-checked="true" tabindex="0" data-bulk="서지안" data-icon="check" data-icon-size="11"></span>서지안 <span class="subtle">바리스타</span></label>
-                          <label class="inline"><span class="check" role="checkbox" aria-checked="false" tabindex="0" data-bulk="오세라" data-icon="check" data-icon-size="11"></span>오세라 <span class="subtle">점장</span></label>
-                          <label class="inline"><span class="check" role="checkbox" aria-checked="true" tabindex="0" data-bulk="권도윤" data-icon="check" data-icon-size="11"></span>권도윤 <span class="subtle">바리스타 · 계약 미체결</span></label>
+                          <label class="inline"><span class="check" role="checkbox" aria-checked="true" tabindex="0" data-bulk="오세라" data-icon="check" data-icon-size="11"></span>오세라 <span class="subtle">점장</span></label>
                         </div>
                       </div>
                       <div class="tblwrap" style="margin-top: var(--s-3)">
@@ -1061,7 +1077,7 @@
                     <span class="badge badge--warn">5건</span>
                     <div class="panel__end">
                       <span class="filters__count">최근 3개월 이내만 수정 가능</span>
-                      <button class="btn btn--secondary btn--sm" type="button" data-tip="위치정보 동의를 거부·철회했거나 앱에서 위치 수집을 일시 중지한 직원에게만 열린다. 위치를 주는 직원은 앱으로 찍고 관리자는 보정만 한다.">
+                      <button class="btn btn--secondary btn--sm" type="button" data-tip="위치정보 동의를 거부·철회했거나 앱에서 위치 수집을 일시 중지한 직원에게만 열린다. 위치를 주는 직원은 앱으로 찍고 관리자는 보정만 한다. 그 날짜에 체결 완료 근로계약이 없는 직원은 고를 수 없다(STAFF-29).">
                         <span data-icon="plus" data-icon-size="14"></span>출퇴근 대신 등록
                       </button>
                     </div>
@@ -1092,7 +1108,7 @@
                         </tr>
                         <tr>
                           <td class="k">권도윤</td>
-                          <td class="mono">09-03</td>
+                          <td class="mono">08-21</td>
                           <td class="mono nil">—</td>
                           <td class="mono">21:12</td>
                           <td><span class="badge badge--warn">출근 미등록</span></td>
@@ -1186,7 +1202,7 @@
                   </div>
                   <div class="panel__note">
                     수정 이력은 원본과 분리해 보관한다 — 수정자·시각·사유·변경 전후 값.
-                    <b>대신 등록</b>은 이 자리에서 날짜까지 받는다. 최근 3개월 이내만 되고 사유는 보정과 마찬가지로 필수다.
+                    <b>대신 등록</b>은 이 자리에서 날짜까지 받는다. 최근 3개월 이내만 되고 사유는 보정과 마찬가지로 필수다. 그 날짜에 체결 완료 근로계약이 없는 직원은 직원 선택지에서 빠진다(STAFF-29).
                     확인 필요 건을 여기서 저장하면 꼬리표와 사유가 함께 사라진다.
                     <b>위치 판정 결과</b>(반경 안·밖, 오차)는 처음부터 저장하지 않는다. 남는 것은 확인 필요 사유 글자뿐이고 그것도 검토를 마치면 지운다.
                   </div>
@@ -1634,20 +1650,10 @@
     </div>
     <script src="../assets/app.js"></script>
     <script>
-      /* 목업 동작 — 근무스케줄 등록에서 직원을 바꾸면 계약 띠·미체결 경고를 바꿔 보인다(권도윤만 미체결). */
-      (function schedStaffPick() {
-        var se = document.getElementById("se");
-        if (!se) return;
-        se.addEventListener("change", function onSchedStaff() {
-          var unsigned = /권도윤/.test(se.value);
-          document.querySelector("[data-sched-contract]").hidden = unsigned;
-          document.querySelector("[data-sched-unsigned]").hidden = !unsigned;
-        });
-      })();
       /* 목업 동작 — 등록 패널의 한 명 / 여러 명 일괄 전환. 여러 명이면 체크한 직원마다 줄을 그리고 저장 버튼을 「n명 등록」으로. */
       (function schedBulk() {
-        var CONTRACT = { 서지안: ["오픈", "09:00", "16:00", "60분"], 오세라: ["미들", "09:00", "18:00", "60분"], 권도윤: null };
-        var ROLE = { 서지안: "바리스타", 오세라: "점장", 권도윤: "바리스타" };
+        var CONTRACT = { 서지안: ["오픈", "09:00", "16:00", "60분"], 오세라: ["미들", "09:00", "18:00", "60분"] };
+        var ROLE = { 서지안: "바리스타", 오세라: "점장" };
         var rows = document.querySelector("[data-bulk-rows]"), save = document.querySelector("[data-sched-save]");
         if (!rows) return;
         var mode = "one";
@@ -1658,8 +1664,8 @@
           var list = picked();
           rows.innerHTML = list.map(function (n) {
             var c = CONTRACT[n];
-            return "<tr><td class=\"k\">" + n + ' <span class="subtle">' + ROLE[n] + "</span>" + (c ? "" : ' <span class="badge badge--warn">근로계약 미체결</span>') + "</td>" +
-              "<td>" + sel(c && c[0]) + "</td><td>" + inp(c && c[1], 1) + "</td><td>" + inp(c && c[2], 1) + "</td><td>" + inp(c && c[3]) + "</td></tr>";
+            return "<tr><td class=\"k\">" + n + ' <span class="subtle">' + ROLE[n] + "</span></td>" +
+              "<td>" + sel(c[0]) + "</td><td>" + inp(c[1], 1) + "</td><td>" + inp(c[2], 1) + "</td><td>" + inp(c[3]) + "</td></tr>";
           }).join("") || '<tr><td colspan="5" class="subtle">직원을 고르면 줄이 생긴다.</td></tr>';
           save.textContent = mode === "many" ? list.length + "명 등록" : "저장";
         }
