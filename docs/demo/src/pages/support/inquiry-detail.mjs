@@ -30,6 +30,10 @@ const doneAnswer =
   fold("답변 수정", ui.field("내용", ui.textarea({ rows: 6, value: ANSWER })) + spread(note("고쳐도 상태는 답변 완료 그대로입니다. 문의자에게 알림은 다시 가지 않습니다."), ui.button("답변 저장"))) +
   fold("이전 답변 1개", `<p class="text-[13px] text-erp-label">09-04 15:02 · 이서준</p>` + prose("계약서의 소정근로시간이 주 14시간이라 주휴수당이 잡히지 않았습니다. 계약서를 다시 작성해 주세요."));
 
+// 첨부파일(운영 정책 CNT-18): 이미지는 작은 미리보기, PDF 는 이름 + 내려받기.
+const thumb = (name, size) => `<a href="#" title="${name} · ${size}" class="grid size-[64px] place-items-center rounded-[2px] border border-erp-panel-line bg-erp-thead-bg text-[12px] text-erp-label">PNG</a>`;
+const pdf = (name, size) => ui.detailValues([ui.link(name, "#"), `<span class="text-erp-label">${size}</span>`, ui.link("내려받기", "#")]);
+
 export const render = ({ A, R }, state = "wait") => {
   const done = state === "done";
   const left =
@@ -39,7 +43,8 @@ export const render = ({ A, R }, state = "wait") => {
           ["보낸 사람", "정하윤 · BP 마스터"],
           ["소속", "㈜한강상회"],
           ["접수 시각", "2026-09-04 10:32"],
-        ]),
+        ]) +
+        ui.detailTable("첨부파일", [["이미지", thumb("주휴수당_0원_화면.png", "412 KB")], ["PDF", pdf("9월_급여명세서_배정숙.pdf", "1.2 MB")]]),
     ) +
     box("답변", hint("문의한 사람에게 보입니다"), done ? doneAnswer :
       ui.field("내용", ui.textarea({ placeholder: "문의한 분이 그대로 읽습니다. 어떤 화면에서 무엇을 하면 되는지 적어 주세요." })) +

@@ -3,6 +3,10 @@ import * as ui from "../../ui.mjs";
 import * as p from "../../staff-parts.mjs";
 import { erpHeader, link } from "../../site.mjs";
 
+// 첨부파일(운영 정책 CNT-18): 이미지는 작은 미리보기, PDF 는 이름 + 내려받기.
+const thumb = (name, size) => `<a href="#" title="${name} · ${size}" class="grid size-[64px] place-items-center rounded-[2px] border border-erp-panel-line bg-erp-thead-bg text-[12px] text-erp-label">PNG</a>`;
+const pdf = (name, size) => ui.detailValues([ui.link(name, "#"), `<span class="text-erp-label">${size}</span>`, ui.link("내려받기", "#")]);
+
 export default ({ A, R }) => {
   const L = (path) => link(R, path);
   const prose = (...ps) => `<div class="flex flex-col gap-[12px] text-[14px] leading-[1.7] text-erp-ink">${ps.map((t) => `<p>${t}</p>`).join("")}</div>`;
@@ -19,6 +23,7 @@ export default ({ A, R }) => {
     prose("점포관리에서 가맹점 두 곳에 초대 메일을 보냈는데 둘 다 반송됩니다. 주소는 맞게 넣었고, 같은 주소로 제가 직접 보내면 잘 갑니다.", "반송 사유가 “발신 도메인 인증 실패”라고 나옵니다."),
     { pad: true },
   );
+  const files = ui.detailTable("첨부파일", [["이미지", thumb("반송_메일_화면.png", "286 KB")], ["PDF", pdf("반송_사유_원문.pdf", "96 KB")]]);
   const answers = p.box(
     "답변",
     "",
@@ -40,6 +45,6 @@ export default ({ A, R }) => {
       ],
     ),
   );
-  const body = ui.detailBody(`${head}${p.cols(mine + answers, progress)}`);
+  const body = ui.detailBody(`${head}${p.cols(mine + files + answers, progress)}`);
   return { title: "문의사항 상세", html: ui.erpFrame({ header: erpHeader(A, R), title: "문의하기", body }) };
 };

@@ -76,6 +76,12 @@ export function supportSections({ A, R }) {
     ) +
     pageNav(1);
 
+  // 첨부파일(운영 정책 CNT-18, 2026-10-08 재영): 이미지·PDF, 5개까지, 파일당 10MB. 등록할 때만 붙인다.
+  // 거절(6번째·10MB 초과·다른 종류)은 그 파일만 막고 쓴 내용과 올린 파일은 둔다 — 데모는 안내 문구로만 보인다.
+  const fileRow = (name, size) =>
+    `<li class="flex h-[34px] items-center gap-[10px] border-b border-erp-divider text-[14px]"><span class="flex-1 truncate">${name}</span><span class="text-erp-label">${size}</span><button type="button" class="text-erp-link hover:underline">빼기</button></li>`;
+  const attachField = `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">첨부파일</span><div class="flex gap-[6px]"><input readonly placeholder="이미지·PDF, 5개까지, 파일당 10MB" aria-label="첨부파일" class="${ui.FIELD}">${ui.button("파일 선택", { variant: "soft" })}</div><ul aria-label="올린 파일">${fileRow("주휴수당_0원_화면.png", "412 KB")}${fileRow("9월_급여명세서_배정숙.pdf", "1.2 MB")}</ul><p class="text-[13px] leading-[1.6] text-erp-label">6번째 파일, 10MB 가 넘는 파일, 이미지·PDF 가 아닌 파일은 그 파일만 올리지 않고 알려 줍니다. 쓴 내용과 올린 파일은 그대로 둡니다.</p></div>`;
+
   const askForm = ui.slidePanel(
     askPanel,
     "문의하기",
@@ -85,6 +91,7 @@ export function supportSections({ A, R }) {
         ui.field("분류", ui.select(["직원·근로", "요금·구독", "점포·설비", "기타"])),
         ui.field("제목", ui.textField({ placeholder: "한 줄로 적어 주세요" })),
         ui.field("내용", ui.textarea({ rows: 8, placeholder: "어떤 화면에서 무엇을 하려다 막혔는지 적어 주시면 빨리 답할 수 있습니다." })),
+        attachField,
       ) +
       ui.panelButtons("취소", "문의 등록"),
   );
