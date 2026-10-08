@@ -120,11 +120,9 @@ python3 docs/erd/_build.py
 | FK | 계정 | id | `account_id` |  |
 |  | 핀 검증값 | hash | `pin_hash` | 원본 저장 안 함 |
 |  | 발급 시각 | datetime | `issued_at` | 1분 재발급 제한, 하루 10회 |
-|  | 만료 시각 | datetime | `expires_at` | 15분 (ME-1) |
-|  | 시도 횟수 | int | `attempt_count` | 5회 |
-|  | 쿨다운 단계 | int | `cooldown_step` | 1·3·5분, 3회까지 |
-|  | 쿨다운 해제 시각 | datetime | `cooldown_until` |  |
-|  | 사용 시각 | datetime | `used_at` |  |
+|  | 만료 시각 | datetime | `expires_at` | 발급 시각부터 10분 (2026-10-08) |
+|  | 시도 횟수 | int | `attempt_count` | 5회 틀리면 그 핀은 닫힘, 새 핀을 받는다 |
+|  | 사용 시각 | datetime | `used_at` | 새 비밀번호 저장 때 핀을 다시 검증하고 남김 |
 
 ### 위치정보 확인자료 `location_access_logs` · 이력
 

@@ -180,7 +180,7 @@ DIAGRAMS.append(Diagram(
         E("login", "로그인 이력", "login_histories", "history",
           ["#|로그인 이력 ID|id|login_id|", "→|계정|id|account_id|없는 이메일이면 비움", "|시도 이메일|text|email|", "|성공 여부|bool|succeeded|", "|실패 사유|enum|failure_reason|안내 문구는 구분 안 함", "|시도 시각|datetime|attempted_at|"], 2, 40),
         E("pin", "비밀번호 재설정 핀", "password_reset_pins", "entity",
-          ["#|핀 ID|id|pin_id|", "→|계정|id|account_id|", "|핀 검증값|hash|pin_hash|원본 저장 안 함", "|발급 시각|datetime|issued_at|1분 재발급 제한, 하루 10회", "|만료 시각|datetime|expires_at|15분 (ME-1)", "|시도 횟수|int|attempt_count|5회", "|쿨다운 단계|int|cooldown_step|1·3·5분, 3회까지", "|쿨다운 해제 시각|datetime|cooldown_until|", "|사용 시각|datetime|used_at|"], 2, 312),
+          ["#|핀 ID|id|pin_id|", "→|계정|id|account_id|", "|핀 검증값|hash|pin_hash|원본 저장 안 함", "|발급 시각|datetime|issued_at|1분 재발급 제한, 하루 10회", "|만료 시각|datetime|expires_at|발급 시각부터 10분 (2026-10-08)", "|시도 횟수|int|attempt_count|5회 틀리면 그 핀은 닫힘, 새 핀을 받는다", "|사용 시각|datetime|used_at|새 비밀번호 저장 때 핀을 다시 검증하고 남김"], 2, 312),
         E("access_log", "위치정보 확인자료", "location_access_logs", "history",
           ["#|확인자료 ID|id|access_log_id|", "→|계정|id|account_id|대상 직원", "|처리 구분|enum|action|수집·이용·제공", "|처리 일시|datetime|occurred_at|", "|수집 방법|text|method|기기 GPS · 휴대전화 안 판정", "|제공받는 자|text|recipient|제공일 때", "|제공 목적|text|purpose|제공일 때", "→|출퇴근 기록|id|attendance_record_id|있을 때 · 출퇴근 장"], 2, 608),
         E("admin", "관리자 계정", "admin_accounts", "ref", ["#|관리자 ID|id|admin_account_id|admin_accounts PK", "→|BP|id|bp_code_id|", "|역할|enum|role|BP 마스터·BP 관리자·가맹마스터·가맹관리자·플랫폼"], 0, 560, "1팀 영역(환경설정·권한). 1팀 ERD 의 admin_accounts 테이블."),
