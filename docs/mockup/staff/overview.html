@@ -27,7 +27,7 @@
           <div class="band band--info">
             <span class="band__ic" data-icon="info" data-icon-size="20"></span>
             <div class="band__body">
-              <div class="band__title">이 영역에서 결정할 것은 27건, 25건이 정해졌다</div>
+              <div class="band__title">이 영역에서 결정할 것은 28건, 26건이 정해졌다</div>
               <p class="band__desc">
                 화면은 <b>manyfast 문서 기준</b>으로 그렸고, 기존 디자인 시안과 어긋나는 곳은 지우지 않고
                 보라색 쟁점 블록으로 남겼다. 각 쟁점은 해당 화면 안에도 같은 블록으로 붙어 있다.
@@ -168,8 +168,8 @@
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 관리자는 직원의 이메일·휴대전화번호·주소를 대신 고치지 않는다. 이름·생년월일은 본인인증 확정값, 소속·고용 형태는 계약으로만 바뀐다.</span><span class="pol__ref">S-PIXATL · STAFF-9</span></li>
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 비밀번호는 수정이 아니라 <b>초기화</b>만이다. 관리자는 값을 정하지 않고, <b>재설정 링크</b>가 직원의 이메일 아이디로 간다. 링크는 24시간 유효하고 <b>한 번만</b> 쓴다. 새 비밀번호를 정하면 무효가 되고, 초기화를 다시 요청하면 앞 링크가 바로 죽는다. 직원이 앱에서 이메일 핀으로 스스로 푸는 것이 기본이고 관리자 초기화는 보조 경로다.</span><span class="pol__ref">S-PIXATL · STAFF-9</span></li>
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 직원 상세는 현황 요약과 이동만이다. 처리는 각 관리 화면에서 한다. 예외로 직원 레코드의 <b>퇴직 처리</b>와 취소만 상세에서 한다(2026-10-07 재영).</span><span class="pol__ref">S-PIXATL · STAFF-6</span></li>
-                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> <b>퇴직 처리</b>는 직원 상세 머리의 「목록」 옆에서 한다. 퇴직일을 받는 확인창에 종료될 근로계약·지울 근무스케줄(퇴직일 다음 날부터)·배정을 풀 개인 TO-DO 를 건수로 미리 보이고, 지운 스케줄과 푼 배정은 되돌릴 수 없다고 알린다. 체결 완료 계약은 퇴직일에 종료되고 발송 대기·서명 대기 계약은 종료로 닫힌다. 목록에는 「퇴직 MM-DD」가 붙는다.</span><span class="pol__ref">운영 정책 CTR-24 · STAFF-6</span></li>
-                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 퇴직일은 오늘 이후이거나 최근 3개월 안의 지난 날짜다. 퇴직 처리 취소는 퇴직일 전날까지만 되고 재직 상태와 계약 종료일만 돌아온다. 퇴직일이 지난 뒤 다시 일하면 계약서 작성(복귀 확인)으로 처리한다. 버튼은 그 직원 근무지가 업무 범위 안이고 메뉴 권한 「직원 정보 관리」 수정이 켜진 관리자에게만 보인다. 계정은 막지 않는다.</span><span class="pol__ref">운영 정책 CTR-24·CTR-25 · 운영 정책 ACC-15 · STAFF-24</span></li>
+                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> <b>퇴직 처리</b>는 직원 상세 머리의 「목록」 옆에서 퇴직일만 저장한다. 재직 상태와 근로계약은 그대로라 <b>퇴직 예정</b>이 되고, 퇴직일 다음 날 시스템이 퇴직으로 바꾸며 그 뒤 근무스케줄 삭제·개인 TO-DO 배정 해제·발송 대기와 서명 대기 계약 종료를 한다. 지난 날짜로 처리하면 그 자리에서 정리한다. 확인창은 이 셋을 건수로 미리 보인다. 목록은 퇴직 예정이면 「퇴직 예정 MM-DD」(재직으로 셈), 퇴직이면 「퇴직 MM-DD」(집계 제외)다. 가입 전 레코드에는 버튼이 없다.</span><span class="pol__ref">운영 정책 CTR-24 · STAFF-6 · STAFF-28</span></li>
+                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 퇴직일은 오늘 이후이거나 최근 3개월 안의 지난 날짜다. 퇴직 예정인 동안(퇴직일 전날까지) 「퇴직 처리 취소」와 「퇴직일 변경」을 할 수 있다. 퇴직 예정 직원은 퇴직일 뒤 날짜에 근무스케줄을 등록할 수 없다. 퇴직일이 지난 뒤 다시 일하면 계약서 작성(복귀 확인)으로 처리한다. 버튼은 그 직원 근무지가 업무 범위 안이고 메뉴 권한 「직원 정보 관리」 수정이 켜진 관리자에게만 보인다. 계정은 막지 않는다.</span><span class="pol__ref">운영 정책 CTR-24·CTR-25 · 운영 정책 ACC-15 · STAFF-24</span></li>
                 <li><span class="pol__t">직원 자료는 언제든 <b>ZIP 하나로 한 번에</b> 받는다 — 계약서·출퇴근 기록·급여명세서·근무스케줄 넷이다. BP 가 보존 기간 안에 탈퇴하면 관리자 계정이 모두 미사용이 되어 자료를 볼 길이 없기 때문이다. 주민등록번호·신고 정보·확인자료·동의 기록은 담지 않고, 내려받은 파일의 보관 책임은 BP 에 있다. 쓰는 사람은 <b>BP 마스터와 가맹마스터</b>뿐이고 다른 역할에게는 진입점을 감추며, 만든 파일은 <b>7일</b> 동안 받을 수 있다.</span><span class="pol__ref">S-FDMTKR · 운영 정책 RET-09 · STAFF-21·22</span></li>
                 <li><span class="pol__t"><b>만 19세 미만</b>은 이 서비스로 관리하지 않는다. 근로계약서 초안에서 <b>생년월일을 필수로 받아</b> 계약 시작일 기준으로 판정하고, 미만이면 저장을 막고 초대도 보내지 않는다. 초안 값이 틀렸을 때를 대비해 가입 본인인증에서 한 번 더 확인하며, 여기서 막히면 <b>가입 불가(만 19세 미만)</b>가 되어 관리자에게 운영 알림이 간다. 그때도 생년월일은 보이지 않고, 관리자는 레코드와 초안을 지워 점포에서 따로 관리한다. 이미 계정이 있는 직원은 계정의 생년월일을 쓰고 관리자가 넣은 값과 다르면 값을 보여 주지 않고 확인만 경고한다.</span><span class="pol__ref">운영 정책 ACC-22 · 운영 정책 CTR-23 · 법무 확인 대기</span></li>
                 <li><span class="pol__t">로그인 5회 실패로 잠긴 직원은 비밀번호를 새로 정하면 잠금도 함께 풀린다. 관리자가 보낸 링크로 직원이 새로 정해도 마찬가지라 관리자 웹에 잠금 해제 버튼은 따로 없다.</span><span class="pol__ref">S-PHHICH · 직원 근무 앱 명세</span></li>
@@ -248,7 +248,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
-              <span class="badge badge--preview">27건 · 확정 25 · 보류 2</span>
+              <span class="badge badge--preview">28건 · 확정 26 · 보류 2</span>
             </div>
 
             <div class="gap is-decided">
@@ -990,6 +990,25 @@
                 </div>
               </div>
               <p class="gap__note">2026-10-08 재영 결정. 근무일은 하루 하나를 모든 줄이 함께 쓰고, 주 단위는 지난 주 복사로 채운다. 미체결 직원 줄은 빈 값과 「근로계약 미체결」을 보인다. 여러 명일 때는 「이 근무스케줄 삭제」를 숨기고 저장 버튼은 「n명 등록」이다. 일부가 실패해도 성공한 등록은 남고 실패 대상만 표시한다.</p>
+            </div>
+            <div class="gap is-decided">
+              <div class="gap__head">
+                <span class="gap__no">STAFF-28</span>
+                <b>퇴직 처리는 근로계약을 언제 건드리는가</b>
+                <span class="gap__decided">확정 · 처리 때는 퇴직일만 · 정리는 퇴직일 다음 날</span>
+                <span class="gap__ref">운영 정책 CTR-24·25</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt is-picked" data-side="a">
+                  <div class="gap__label">A · 근로계약과 분리 · 퇴직 예정 · 확정</div>
+                  <p>처리하면 퇴직일만 저장하고 재직 상태·계약 종료일은 그대로 둔다(퇴직 예정). 퇴직일 다음 날 시스템이 퇴직으로 바꾸고 근무스케줄·TO-DO 배정·발송 대기와 서명 대기 계약을 정리한다.</p>
+                </div>
+                <div class="gap__opt is-dropped" data-side="b">
+                  <div class="gap__label">B · 처리하는 즉시 정리 · 2026-10-07 안</div>
+                  <p>체결 완료 계약 종료일을 퇴직일로 앞당기고 근무스케줄·배정을 그 자리에서 지운다. 취소해도 지운 것은 돌아오지 않았다.</p>
+                </div>
+              </div>
+              <p class="gap__note">2026-10-08 재영 승인(노영주 정리안). 퇴직 예정인 동안에는 상세에 「퇴직 예정」과 퇴직일을 보이고, 버튼 자리에 「퇴직 처리 취소」와 「퇴직일 변경」을 둔다. 지난 날짜로 처리하면 그 자리에서 정리한다. 가입 전(초안·초대 발송) 레코드에는 버튼을 숨긴다. 같이 정한 것 — 비밀번호 초기화 확인창에 「계정 비밀번호는 여러 BP 가 함께 쓰므로 다른 BP 로그인에도 적용된다」를 보이고, 가입 전·퇴직·탈퇴 직원에게는 초기화 버튼을 숨긴다. 같은 계정 1분 안 재요청은 「잠시 뒤 다시」로 막는다.</p>
             </div>
           </section>
         </div>

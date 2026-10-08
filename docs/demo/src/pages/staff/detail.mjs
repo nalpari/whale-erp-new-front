@@ -112,16 +112,19 @@ export default ({ A, R }) => {
   const resetDialog = x.dialog(
     resetId,
     "비밀번호를 초기화하시겠습니까?",
-    "재설정 링크가 이메일 아이디 jian.seo@example.com 으로 발송됩니다. 링크는 24시간 동안 한 번만 쓸 수 있습니다.",
+    // 계정 비밀번호는 여러 BP 가 함께 쓴다. 가입 전·퇴직·탈퇴 직원에게는 초기화 버튼을 숨긴다(2026-10-08 재영).
+    "재설정 링크가 이메일 아이디 jian.seo@example.com 으로 발송됩니다. 링크는 24시간 동안 한 번만 쓸 수 있습니다. 계정 비밀번호는 여러 BP 가 함께 쓰므로 다른 BP 로그인에도 적용됩니다. 같은 계정에 1분 안에 다시 요청하면 「잠시 뒤 다시 시도해 주세요」로 막습니다.",
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("초기화", { "data-close": true }),
   );
 
   // 퇴직 처리(운영 정책 CTR-24·CTR-25). 퇴직일은 오늘 이후이거나 최근 3개월 안의 지난 날짜(STAFF-24).
-  // 근무지가 업무 범위 안이고 「직원 정보 관리」 수정 권한이 있을 때만 버튼이 보인다. 퇴직일 전이면 같은 자리에 「퇴직 처리 취소」.
+  // 근무지가 업무 범위 안이고 「직원 정보 관리」 수정 권한이 있을 때만, 가입 전(초안·초대 발송) 레코드가 아닐 때만 버튼이 보인다.
+  // 처리하면 퇴직일만 저장하고 재직 상태·근로계약은 그대로다(퇴직 예정). 퇴직일 다음 날 시스템이 퇴직으로 바꾸며 정리한다(2026-10-08 재영, STAFF-28).
+  // 퇴직 예정인 동안에는 같은 자리에 「퇴직일 변경」·「퇴직 처리 취소」. 데모는 재직 장면 하나다.
   const retireDialog = x.dialog(
     retireId,
     "퇴직 처리",
-    `<div class="flex flex-col gap-[12px]">${ui.dateField(A, { label: "퇴직일", value: "2026-09-10" })}<p class="text-[13px] text-erp-label">오늘 이후, 또는 최근 3개월 안의 지난 날짜를 받습니다.</p><ul class="list-disc pl-[18px]"><li>종료될 근로계약 1건</li><li>지울 근무스케줄 2건 (퇴직일 다음 날부터)</li><li>배정을 풀 개인 TO-DO 1건</li></ul><p>지운 근무스케줄과 푼 배정은 되돌릴 수 없습니다. 퇴직 처리 취소는 퇴직일 전날까지만 되고, 계정은 막지 않습니다.</p></div>`,
+    `<div class="flex flex-col gap-[12px]">${ui.dateField(A, { label: "퇴직일", value: "2026-09-10" })}<p class="text-[13px] text-erp-label">오늘 이후, 또는 최근 3개월 안의 지난 날짜를 받습니다.</p><p class="text-[13px] text-erp-label">퇴직일이 지나면 정리될 것</p><ul class="list-disc pl-[18px]"><li>지워질 근무스케줄 2건 (퇴직일 다음 날부터)</li><li>풀릴 개인 TO-DO 배정 1건</li><li>닫힐 발송 대기·서명 대기 계약 0건</li></ul><p>퇴직일이 지나면 되돌릴 수 없이 정리되고, 그 전까지는 취소할 수 있습니다. 처리하면 퇴직일만 저장되고 재직 상태와 근로계약은 그대로입니다(퇴직 예정). 지난 날짜로 처리하면 그 자리에서 정리됩니다. 계정은 막지 않습니다.</p></div>`,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("퇴직 처리", { variant: "danger", "data-close": true }),
   );
 
