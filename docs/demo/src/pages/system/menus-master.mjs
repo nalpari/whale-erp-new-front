@@ -1,6 +1,6 @@
 // 플랫폼 메뉴 관리(플랫폼 마스터 기준). 목업 docs/mockup/system/menus.html 의 「등록·수정」 권한 = 플랫폼 마스터로 본 것.
 // 끌기 손잡이·신규 메뉴·저장·위치 옮기기가 있고 상세를 고칠 수 있다. 신규 메뉴 등록과 수정은 목업처럼 트리 오른쪽 칸에서 한다.
-// 메뉴 삭제 버튼과 변경 이력은 목업처럼 두지 않는다(명세가 둘 다 제외) — 안 쓰는 메뉴는 사용중지로 돌린다.
+// 메뉴 삭제 버튼과 변경 이력은 목업처럼 두지 않는다(명세가 둘 다 제외) — 안 쓰는 메뉴는 미사용으로 돌린다.
 // 관리자 기준 menus.mjs 도 목업 기본 권한(등록·수정)에 맞춰 이 화면을 헤더만 바꿔 그린다.
 // 서비스별 트리는 탭으로 고른다. 서비스 목록은 두지 않고 첫 탭(Whale ERP)의 메뉴가 처음 보인다(2026-10-08).
 import * as ui from "../../ui.mjs";
@@ -15,8 +15,8 @@ const handle = '<span title="끌어서 옮기기" aria-label="끌어서 옮기�
 const stack = (...c) => `<div class="flex flex-col gap-[8px]">${c.join("")}</div>`;
 const ro = (value) => ui.textField({ value, readonly: true });
 // 사용 상태 고르기(목업 seg) — 라디오 둘
-const useRadios = (name, on) => `<div role="radiogroup" class="flex h-[34px] items-center gap-[18px]">${ui.radio("사용", name, on)}${ui.radio("사용중지", name, !on)}</div>`;
-const useBadge = (on) => (on ? ui.badge("on", "사용") : ui.badge("off", "사용중지"));
+const useRadios = (name, on) => `<div role="radiogroup" class="flex h-[34px] items-center gap-[18px]">${ui.radio("사용", name, on)}${ui.radio("미사용", name, !on)}</div>`;
+const useBadge = (on) => (on ? ui.badge("on", "사용") : ui.badge("off", "미사용"));
 
 // [메뉴 코드, 단계, 노출 메뉴명, 메뉴 URL, 사용] — 적은 순서가 메뉴 순서다.
 const SVC = {
@@ -101,7 +101,7 @@ function treeTab(key, s) {
   const sibs = (p) => nodes.filter((m) => m.parent === p);
   nodes.forEach((n) => (n.order = sibs(n.parent).indexOf(n) + 1));
   const path = (n) => (n ? `${path(n.parent)}${n.parent ? " › " : ""}${n.name}` : "");
-  // 자기나 그 위가 사용중지면 그 아래 메뉴는 사용자에게 보이지 않는다
+  // 자기나 그 위가 미사용이면 그 아래 메뉴는 사용자에게 보이지 않는다
   const hides = (n) => {
     for (let q = n; q; q = q.parent) if (!q.use) return true;
     return false;
@@ -278,7 +278,7 @@ const MENU_SCRIPT = `<script>
 </script>`;
 
 export const render = ({ A, R }, { master = true } = {}) => {
-  const tab = (k) => `${SVC[k].name}&nbsp;${sub(SVC[k].count)}${SVC[k].off ? `&nbsp;${ui.badge("off", "사용중지")}` : ""}`;
+  const tab = (k) => `${SVC[k].name}&nbsp;${sub(SVC[k].count)}${SVC[k].off ? `&nbsp;${ui.badge("off", "미사용")}` : ""}`;
   const body = ui.detailBody(
     x.tabs([
       { id: "erp", label: tab("erp"), html: treeTab("erp", SVC.erp) },

@@ -14,6 +14,8 @@ const OFFICIAL = { 24: "추석", 25: "추석", 26: "추석", 28: "대체공휴�
 // 날짜별 BP 휴일 이름(목록 보기 표본과 같다). 16일은 여러 건·긴 이름 표본(칸이 늘어나고 긴 이름은 말줄임)
 const NAMES = { 10: ["정전 점검 휴무"], 16: ["재고 실사 휴무", "매장 청소 휴무", "직원 교육", "정기 소독", "본사 전 직원 워크숍 및 매장 리뉴얼 공사로 인한 전 점포 임시 휴무", "설비 점검 휴무"], 21: ["정기휴무"], 25: ["추석 당일 휴무"], 28: ["정기휴무"], 29: ["내부 공사"] };
 // 공식 휴일 숨기기 — 스위치를 켜면 달력을 감싼 칸에 hide-official 을 달고, 공식 휴일 이름·빨간 날짜·바탕을 지운다(2026-10-07)
+// 달력 날짜 칸을 누르면 그 칸을 고른 칸으로 표시하고 오른쪽에 그날 휴일을 보인다(2026-10-08)
+const DAY_SCRIPT = `<script>document.addEventListener("click",(e)=>{const td=e.target.closest("td[data-day]");if(!td)return;const cal=td.closest("table");cal.querySelectorAll("td[data-sel]").forEach((x)=>x.removeAttribute("data-sel"));td.setAttribute("data-sel","");document.querySelectorAll("[data-day-view]").forEach((v)=>(v.hidden=v.dataset.dayView!==td.dataset.day));});</script>`;
 const HIDE_SCRIPT = `<script>document.addEventListener("change",(e)=>{const t=e.target.closest("[data-hide-official]");if(t)t.closest("[data-cal]").classList.toggle("hide-official",t.checked)});</script>`;
 
 // 월 달력(2026년 9월). 1팀 컴포넌트에 없어 표 선·표 머리 바탕으로 그린다(system 휴일 캘린더와 같은 모양).
@@ -32,7 +34,7 @@ function monthGrid() {
         : `<span class="text-[14px] ${off ? `font-semibold text-erp-off in-[.hide-official]:font-normal in-[.hide-official]:text-erp-ink` : "text-erp-ink"}">${d}</span>`;
     const name = off ? `<p class="mt-[6px] text-[13px] font-medium text-erp-off in-[.hide-official]:hidden">${off}</p>` : "";
     const hols = (NAMES[d] || []).map((n) => `<p title="${n}" class="mt-[6px] truncate rounded-[2px] bg-erp-on-bg px-[4px] py-[2px] text-[13px] font-medium text-erp-on">${n}</p>`).join("");
-    return `<td class="${line} ${off ? `bg-erp-off-bg in-[.hide-official]:bg-white` : ""}">${num}${name}${hols}</td>`;
+    return `<td data-day="${d}"${d === TODAY ? " data-sel" : ""} class="${line} cursor-pointer hover:bg-erp-thead-bg data-[sel]:shadow-[inset_0_0_0_2px_var(--color-erp-brand)] ${off ? `bg-erp-off-bg in-[.hide-official]:bg-white` : ""}">${num}${name}${hols}</td>`;
   };
   const rows = Array.from({ length: cells.length / 7 }, (_, r) => `<tr>${cells.slice(r * 7, r * 7 + 7).map(td).join("")}</tr>`).join("");
   const head = ["일", "월", "화", "수", "목", "금", "토"].map((w) => `<th scope="col" class="px-[10px] text-left font-medium text-erp-thead-text">${w}</th>`).join("");
@@ -76,9 +78,29 @@ export default ({ A, R }) => {
     "w-[96px]",
   )}${sel(["8월", "9월", "10월"], "9월", "월", "w-[80px]")}<span class="flex-1"></span>${x.dialogTrigger("변경 이력 보기", ids.hist, "soft")}${ui.slideTrigger("등록", PANEL.new)}</div>`;
 
-  const day =
-    ui.sectionHead(`9월 21일 (월)${c.sub("1건")}`) +
-    `<button type="button" aria-controls="${PANEL.detail}" aria-expanded="false" class="block w-full text-left hover:bg-erp-thead-bg">${itemRow(c.tag("일부 점포"), "정기휴무 - 온기식당 판교점", "매주 반복 · HD-0114", ui.img(A, "next.svg", 16, 16))}</button>`;
+  // 오른쪽 그날 칸 — 달력 날짜 칸을 누르면 그 날짜의 판으로 바뀐다(DAY_SCRIPT · 2026-10-08).
+  const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
+  // 날짜별 휴일 줄 정보 [적용 범위, 적용 대상] · 반복 형태. 없는 이름은 일부 점포 · 하루로 본다(16일 여러 건 표본)
+  const INFO = {
+    "정전 점검 휴무": ["일부 점포", "모리커피 서초점", "하루"],
+    정기휴무: ["일부 점포", "온기식당 판교점 외 5건", "매주 반복"],
+    "추석 당일 휴무": ["전체 점포", "㈜한강상회", "하루"],
+    "내부 공사": ["일부 점포", "모리커피 연남점", "하루"],
+  };
+  const dayView = (d) => {
+    const names = NAMES[d] || [];
+    // 줄 모양: 범위 꼬리표 · 휴일명, 아랫줄에는 반복 형태만 둔다(2026-10-08)
+    const list = names.length
+      ? names
+          .map((n) => {
+            const [scope, target, repeat] = INFO[n] || ["일부 점포", "모리커피 성수점", "하루"];
+            return `<button type="button" aria-controls="${PANEL.detail}" aria-expanded="false" class="block w-full text-left hover:bg-erp-thead-bg">${itemRow(c.tag(scope), n, repeat, ui.img(A, "next.svg", 16, 16))}</button>`;
+          })
+          .join("")
+      : `<p class="border-b border-erp-thead-line py-[24px] text-center text-[14px] text-erp-muted">등록된 휴일이 없습니다.</p>`;
+    return `<div data-day-view="${d}" class="flex flex-col gap-[12px]"${d === TODAY ? "" : " hidden"}>${ui.sectionHead(`9월 ${d}일 (${WEEK[new Date(2026, 8, d).getDay()]})${c.sub(`${names.length}건`)}`)}<div class="flex flex-col">${list}</div></div>`;
+  };
+  const day = Array.from({ length: 30 }, (_, i) => dayView(i + 1)).join("");
   // 달력 아래가 카드 선에 붙지 않게 아래 여백을 둔다(2026-10-08)
   const calendar = `<div class="flex items-start gap-[24px] pb-[24px]"><div data-cal class="flex min-w-0 flex-1 flex-col gap-[12px]">${ui.sectionHead(
     "2026년 9월",
@@ -154,19 +176,19 @@ export default ({ A, R }) => {
     "BP 휴일 상세",
     ui.sectionHead(TITLE + TAGS) +
       detailBody +
-      `<div class="flex flex-wrap justify-center gap-[6px] border-t border-erp-panel-line pt-[16px]">${x.dialogTrigger("삭제", ids.del, "soft")}${ui.slideTrigger("수정", PANEL.edit)}${x.dialogTrigger("변경 이력", histId, "soft")}${ui.button("닫기", { variant: "off", "data-close": true })}</div>`,
+      `<div class="flex flex-wrap items-center gap-[6px] border-t border-erp-panel-line pt-[16px]">${ui.button("닫기", { variant: "off", "data-close": true })}<span class="flex-1"></span>${x.dialogTrigger("삭제", ids.del, "soft")}${ui.slideTrigger("수정", PANEL.edit)}${x.dialogTrigger("변경 이력", histId, "soft")}</div>`,
   );
   const editPanel = ui.slidePanel(
     PANEL.edit,
     "BP 휴일 수정",
     ui.sectionHead("BP 휴일 수정") +
       `<div class="flex flex-col gap-[18px]">${editForm(A, { panel: true })}</div>` +
-      c.buttons(ui.button("닫기", { variant: "off", "data-close": true }), ui.button("저장", { "data-save-panel": PANEL.detail })),
+      c.buttons(ui.button("취소", { variant: "off", "data-close": true }), ui.button("저장", { "data-save-panel": PANEL.detail })),
   );
   const newPanel = ui.slidePanel(
     PANEL.new,
     "BP 휴일 등록",
-    ui.sectionHead("BP 휴일 등록") + `<div class="flex flex-col gap-[18px]">${newForm(A, { panel: true })}</div>` + c.buttons(ui.button("닫기", { variant: "off", "data-close": true }), ui.button("저장", { "data-save-panel": PANEL.detail })),
+    ui.sectionHead("BP 휴일 등록") + `<div class="flex flex-col gap-[18px]">${newForm(A, { panel: true })}</div>` + c.buttons(ui.button("취소", { variant: "off", "data-close": true }), ui.button("저장", { "data-save-panel": PANEL.detail })),
   );
 
   return {
@@ -174,7 +196,7 @@ export default ({ A, R }) => {
     html: ui.erpFrame({
       header: erpHeader(A, R),
       title: "BP 휴일 관리",
-      body: ui.listBody("", content) + histDialog + delDialog + detailHist + HIDE_SCRIPT + HOLIDAY_SCRIPT,
+      body: ui.listBody("", content) + histDialog + delDialog + detailHist + HIDE_SCRIPT + DAY_SCRIPT + HOLIDAY_SCRIPT,
       panels: newPanel + detailPanel + editPanel,
     }),
   };

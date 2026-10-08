@@ -44,13 +44,11 @@ export default ({ A, R }) => {
     { header: "그룹 코드", width: "w-[170px]", align: "left" },
     { header: "그룹명", align: "left" },
     { header: "관리 주체", width: "w-[110px]" },
-    { header: "사용 상태", width: "w-[90px]" },
   ];
   const groupRows = GROUPS.map(([code, name, owner, pick], i) => [
     i === SELECTED ? `<b class="font-semibold" aria-current="true">${code}</b>` : pick ? ui.link(code, "#") : code,
     name,
     c.tag(owner),
-    ui.badge("on", "사용"),
   ]);
   const left = c.card(
     "w-[560px] shrink-0",

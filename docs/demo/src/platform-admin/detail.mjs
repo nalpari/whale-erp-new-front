@@ -67,7 +67,7 @@ function platformAdminDetailBody(A, R) {
   const deleteDialog = x.dialog(
     deleteId,
     "플랫폼 관리자 계정 삭제",
-    `<div class="flex flex-col gap-[12px] break-keep">${WHO}<p>삭제하면 <b class="font-semibold">관리자 목록과 검색에서 빠지고</b>, 이 계정으로는 <b class="font-semibold">더 로그인할 수 없습니다</b>.</p><p class="text-erp-label">되돌릴 수 없습니다. 아이디는 다시 쓸 수 없고, 이메일은 다른 계정에 다시 쓸 수 있습니다. 이 계정이 남긴 처리 이력은 지우지 않습니다.</p></div>`,
+    `<div class="flex flex-col gap-[12px] break-keep">${WHO}<p>삭제하면 <b class="font-semibold">관리자 목록과 검색에서 빠지고</b>, 이 계정으로는 <b class="font-semibold">더 로그인할 수 없습니다</b>.</p></div>`,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("삭제", { href: link(R, "system/admins.html") }),
   );
 
@@ -85,7 +85,7 @@ function platformAdminDetailBody(A, R) {
   const actions = `${x.dialogTrigger("삭제", deleteId, "soft")}${editBtn}${x.dialogTrigger("변경 이력", histId, "soft")}`;
   // 이름은 맨 위에 혼자, 기능 버튼은 닫기까지 모두 맨 아래로(BP 관리자 상세 패널과 같다)
   const head = `<h2 class="text-[18px] font-semibold whitespace-nowrap text-erp-ink">${NAME}</h2>`;
-  const buttons = `<div class="flex flex-wrap justify-center gap-[6px] border-t border-erp-panel-line pt-[16px]">${actions}${ui.button("닫기", { variant: "off", "data-close": true })}</div>`;
+  const buttons = `<div class="flex flex-wrap items-center gap-[6px] border-t border-erp-panel-line pt-[16px]">${ui.button("닫기", { variant: "off", "data-close": true })}<span class="flex-1"></span>${actions}</div>`; // 닫기는 맨 왼쪽(상세 슬라이드 공통 · 2026-10-08)
 
   return head + info + buttons + resetDialog + deleteDialog + historyDialog;
 }

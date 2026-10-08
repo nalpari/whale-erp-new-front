@@ -15,17 +15,15 @@ export function bpDetailBody(A, R, { panel = false } = {}) {
   const cancel = ui.button("취소", { variant: "off", "data-close": true });
 
   const closeBtn = panel ? ui.button("닫기", { variant: "off", "data-close": true }) : ui.button("닫기", { variant: "off", href: link(R, "bp/index.html") });
+  // 상태변경은 기본정보의 ‘상태변경’ 칸으로 옮겼다(2026-10-08)
   const actionButtons =
-    x.dialogTrigger("상태변경", offId, "soft") +
     f.disabledButton("삭제", "삭제할 수 없습니다 — 로그인 기록이 있고(2026-09-20), 하위 관리자 4명과 등록 점포 11곳이 있습니다. 대신 BP 상태를 미사용으로 바꾸세요.") +
     ui.slideTrigger("수정", "bp-edit-panel", "soft") +
     x.dialogTrigger("변경 이력", histId, "soft");
 
-  // 패널 모드(464px)에서는 버튼을 한 줄에 다 두면 BP 이름이 밀려 글자 단위로 줄바꿈된다 — 이름은 맨 위에 혼자 두고, 기능 버튼은 맨 아래로 내린다(2026-10-07 피드백).
-  const head = panel
-    ? `<div class="flex items-center justify-between gap-[12px]"><h2 class="text-[18px] font-semibold whitespace-nowrap text-erp-ink">${BP.name}</h2>${closeBtn}</div>`
-    : ui.sectionHead(BP.name, actionButtons + closeBtn);
-  const bottomButtons = panel ? `<div class="flex flex-wrap justify-center gap-[6px] border-t border-erp-panel-line pt-[16px]">${actionButtons}</div>` : "";
+  // 이름 옆에 BP 상태를 꼬리표로 보이고, 기능 버튼은 닫기까지 모두 맨 아래로 내린다(패널 · 전체 화면 같다 · 2026-10-08).
+  const head = `<h2 class="text-[18px] font-semibold whitespace-nowrap text-erp-ink">${BP.name}<span class="ml-[10px] inline-flex align-middle">${ui.badge("on", "사용")}</span></h2>`;
+  const bottomButtons = `<div class="flex flex-wrap items-center gap-[6px] border-t border-erp-panel-line pt-[16px]">${closeBtn}<span class="flex-1"></span>${actionButtons}</div>`; // 닫기는 맨 왼쪽(상세 슬라이드 공통 · 2026-10-08)
 
   const basic = ui.detailTable("BP 마스터 기본정보", [
     ["BP 코드", BP.code],
@@ -34,25 +32,29 @@ export function bpDetailBody(A, R, { panel = false } = {}) {
     ["연락처", "010-4821-7730"],
     ["이메일", "hayoon@hangang.co.kr"],
     ["비밀번호", x.dialogTrigger("초기화", resetId, "soft")],
-    ["BP 상태", `${ui.badge("on", "사용")}<span class="text-erp-label">2025-02-03 11:12</span>`],
+    ["상태변경", x.dialogTrigger("상태변경", offId, "soft")],
     ["소속 점포", ui.link("11곳 · 점포 목록에서 보기", link(R, "stores/index.html"))],
     ["가입경로", "회원가입"],
-    ["등록 일시 · 등록자", ui.detailValues(["2025-02-03 11:12", "hangang01"])],
+    ["등록일시", ui.detailValues(["2025-02-03 11:12", "hangang01"])],
+    ["최종수정일시", ui.detailValues(["2026-08-14 10:31", "platkim"])],
     ["최근 로그인", "2026-09-20 08:41"],
     ["약관 동의", "동의"],
     ["강제 비밀번호 변경", "대상 아님"],
   ]);
-  const biz = ui.detailTable(f.titleBadge("BP 사업자정보", "on", "인증완료"), [
+  // 사업자주소는 플랫폼 관리자 상세의 주소처럼 우편번호 · 기본주소 · 상세주소를 줄을 바꿔 보이고, 그 줄만 내용만큼 늘어난다(2026-10-08)
+  const growAddress = (html) =>
+    html.replace(/<div class="flex w-full"><dt class="flex h-\[46px\]([^"]*)">사업자주소<\/dt><dd class="flex h-\[46px\]/, '<div class="flex w-full"><dt class="flex min-h-[46px]$1">사업자주소</dt><dd class="flex min-h-[46px]');
+  const biz = growAddress(ui.detailTable(f.titleBadge("BP 사업자정보", "on", "인증완료"), [
     ["상호명", BP.name],
     ["사업자등록번호", "211-87-01234"],
     ["대표자명", "남도현"],
     ["대표자 연락처", "010-5530-1182"],
     ["대표자 이메일", "ceo@hangang.co.kr"],
     ["개업일자", "2021-03-15"],
-    ["사업자주소", "04007 서울 마포구 망원로 42, 3층"],
+    ["사업자주소", `<div class="py-[2px] leading-[1.6]">${["04007", "서울 마포구 망원로 42", "3층"].join("<br>")}</div>`],
     ["업태 · 종목", ui.detailValues(["도소매업", "식자재 유통"])],
     ["최종 인증 일시", "2026-03-04 10:20"],
-  ]);
+  ]));
   const history = ui.dataTable(
     [{ header: "변경 일시", width: "w-[180px]" }, { header: "변경자", width: "w-[140px]" }, { header: "변경 항목", width: "w-[180px]" }, { header: "변경 전" }, { header: "변경 후" }],
     [
@@ -79,7 +81,7 @@ export function bpDetailBody(A, R, { panel = false } = {}) {
     resetId,
     "비밀번호 초기화",
     `<dl class="grid grid-cols-[60px_1fr] gap-y-[6px]"><dt class="text-erp-label">BP</dt><dd>${BP.name} <span class="text-erp-label">${BP.code}</span></dd><dt class="text-erp-label">계정</dt><dd>hangang01 · 정하윤</dd></dl>` +
-      `<p class="mt-[12px]">새 초기 비밀번호(12자 무작위)를 계정 이메일로 보냅니다. 메일은 「[WHALE ERP] 비밀번호가 초기화되었습니다」 초기화 전용 포맷으로 갑니다(BP 신규 등록 메일과 다른 포맷). 기존 비밀번호로는 더 로그인할 수 없고, 다음 로그인 때 비밀번호를 새로 정해야 합니다. 초기 비밀번호는 1시간 안에 로그인해야 하며, 지나면 로그인 화면의 비밀번호 찾기로 임시 비밀번호를 다시 받습니다.</p>`,
+      `<p class="mt-[12px]">새 초기 비밀번호(12자 무작위)를 계정 이메일로 보냅니다.</p>`,
     cancel + ui.button("초기화", { "data-close": true, "data-dialog": sentId }),
   );
   const sentDialog = x.dialog(

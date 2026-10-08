@@ -90,7 +90,8 @@ export default ({ A, R }) => {
     i === 0 ? `<b class="font-semibold" aria-current="true">${code}</b>` : ui.link(code, "#"),
     ui.textField({ value: name, "aria-label": "그룹명" }),
     owner,
-    bp === null ? '<span class="text-erp-muted">—</span>' : bp ? ui.badge("on", "적용") : x.dialogTrigger("BP에 적용", apply, "soft"),
+    // BP 적용 칸 — 관리 주체가 플랫폼제공인 그룹만 [BP 적용] 버튼, 나머지는 —(2026-10-08)
+    owner === "플랫폼제공" ? x.dialogTrigger("BP 적용", apply, "soft") : '<span class="text-erp-muted">—</span>',
     x.toggle("사용", true),
   ]);
   const left = card(
@@ -103,7 +104,7 @@ export default ({ A, R }) => {
           [codeField("그룹 코드", "그룹 코드"), true],
           [ui.textField({ placeholder: "그룹명", "aria-label": "그룹명" }), true],
           [ui.select(["선택", "플랫폼고정", "플랫폼제공"], { "aria-label": "관리 주체" })],
-          ['<span class="text-erp-label" title="플랫폼제공 그룹은 미적용으로 저장합니다">미적용</span>'],
+          [""],
           [x.toggle("사용", true)],
         ],
       ) +
@@ -123,7 +124,7 @@ export default ({ A, R }) => {
     code,
     ui.textField({ value: name, "aria-label": "코드명" }),
     i + 1,
-    x.toggle(on ? "사용" : "사용중지", on),
+    x.toggle("사용", on), // 켜고 끄는 상태는 스위치로 보이고 옆 글자는 늘 ‘사용’(2026-10-08)
   ]);
   const right = card(
     "min-w-0 flex-1",

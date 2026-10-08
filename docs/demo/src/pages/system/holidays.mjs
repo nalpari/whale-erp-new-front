@@ -77,7 +77,7 @@ export default ({ A, R }) => {
     monthGrid(2026, 9);
 
   const body = ui.detailBody(
-    `<div class="flex items-center gap-[12px]">${sel(["2000년", "…", "2025년", "2026년", "2027년", "…", "2100년"], "2026년", "연도", "w-[96px]")}<span class="text-[14px] text-erp-label">최종 동기화 2026-09-01 03:00 · 올해·다음 해 공식 휴일 동기화</span></div>` +
+    `<div class="flex items-center gap-[12px]">${sel(["2000년", "…", "2025년", "2026년", "2027년", "…", "2100년"], "2026년", "연도", "w-[96px]")}<span class="text-[14px] text-erp-label">최종 동기화 2026-09-01 03:00</span></div>` +
       `<div class="flex flex-col gap-[12px]">${x.tabs(
         [
           { id: "calendar", label: "캘린더", html: cal },
