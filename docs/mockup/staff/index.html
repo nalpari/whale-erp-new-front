@@ -818,13 +818,14 @@
                   <div class="panel__head">
                     <h2 class="t-h2">근무스케줄 등록·수정</h2>
                     <div class="panel__end">
-                      <div class="seg">
-                        <button type="button" aria-pressed="true">한 명</button>
-                        <button type="button" aria-pressed="false">여러 명 일괄</button>
+                      <div class="seg" data-sched-modes>
+                        <button type="button" aria-pressed="true" data-sched-mode="one">한 명</button>
+                        <button type="button" aria-pressed="false" data-sched-mode="many">여러 명 일괄</button>
                       </div>
                     </div>
                   </div>
                   <div class="panel__body">
+                    <!-- 근무지·근무일은 두 방식이 함께 쓴다. 여러 명 일괄도 근무일은 하루 하나 — 주 단위는 지난 주 복사로 채운다 (STAFF-27) -->
                     <div class="grid grid--2" style="gap: var(--s-4)">
                       <div class="field">
                         <label for="sw">근무지</label>
@@ -834,18 +835,19 @@
                         </select>
                       </div>
                       <div class="field">
+                        <label for="sd">근무일</label>
+                        <input class="input" id="sd" type="date" value="2026-09-08" />
+                      </div>
+                    </div>
+                    <div data-sched-pane="one">
+                    <div class="grid grid--2" style="gap: var(--s-4)">
+                      <div class="field">
                         <label for="se">직원</label>
                         <select class="select" id="se">
                           <option>서지안 · 바리스타</option>
                           <option>오세라 · 점장</option>
                           <option>권도윤 · 바리스타</option>
                         </select>
-                      </div>
-                    </div>
-                    <div class="grid grid--2" style="gap: var(--s-4)">
-                      <div class="field">
-                        <label for="sd">근무일</label>
-                        <input class="input" id="sd" type="date" value="2026-09-08" />
                       </div>
                       <div class="field">
                         <label for="sy">근무 유형</label>
@@ -887,6 +889,29 @@
                         </p>
                       </div>
                     </div>
+                    </div>
+
+                    <!-- 여러 명 일괄: 근무지 재직자 체크 목록 → 고른 직원이 줄로 쌓이고 줄마다 계약 근무시간으로 채운다 -->
+                    <div data-sched-pane="many" hidden>
+                      <div class="field">
+                        <label>직원 <span class="subtle">· 모리커피 서초점 재직자</span></label>
+                        <div class="inline" style="flex-wrap: wrap; gap: var(--s-4)" data-bulk-pick>
+                          <label class="inline"><span class="check" role="checkbox" aria-checked="true" tabindex="0" data-bulk="서지안" data-icon="check" data-icon-size="11"></span>서지안 <span class="subtle">바리스타</span></label>
+                          <label class="inline"><span class="check" role="checkbox" aria-checked="false" tabindex="0" data-bulk="오세라" data-icon="check" data-icon-size="11"></span>오세라 <span class="subtle">점장</span></label>
+                          <label class="inline"><span class="check" role="checkbox" aria-checked="true" tabindex="0" data-bulk="권도윤" data-icon="check" data-icon-size="11"></span>권도윤 <span class="subtle">바리스타 · 계약 미체결</span></label>
+                        </div>
+                      </div>
+                      <div class="tblwrap" style="margin-top: var(--s-3)">
+                        <table class="tbl tbl--dense">
+                          <thead><tr><th scope="col">직원</th><th scope="col">근무 유형</th><th scope="col">시작</th><th scope="col">종료</th><th scope="col">휴게</th></tr></thead>
+                          <tbody data-bulk-rows></tbody>
+                        </table>
+                      </div>
+                      <p class="note" style="margin: var(--s-3) 0 0">
+                        <span data-icon="info" data-icon-size="14"></span>
+                        <span>줄마다 그 직원의 계약 근무시간으로 채우고 줄마다 고친다. 일부가 실패해도 성공한 등록은 남고 실패 대상만 표시된다.</span>
+                      </p>
+                    </div>
 
                     <hr class="hr" />
                     <p class="note" style="margin: 0 0 var(--s-3)">
@@ -894,10 +919,11 @@
                       <span>저장하면 바로 직원 근무 앱에 반영되고, 바뀐 직원에게 알림이 갑니다.</span>
                     </p>
                     <div class="spread">
-                      <button class="btn btn--ghost btn--sm" type="button">
+                      <button class="btn btn--ghost btn--sm" type="button" data-sched-pane="one">
                         <span data-icon="trash" data-icon-size="14"></span>이 근무스케줄 삭제
                       </button>
-                      <button class="btn btn--primary" type="button">저장</button>
+                      <span data-sched-pane="many" hidden></span>
+                      <button class="btn btn--primary" type="button" data-sched-save>저장</button>
                     </div>
                   </div>
                   <div class="panel__note">
@@ -906,35 +932,6 @@
                 </section>
 
                 <section class="stack--lg" style="display: flex; flex-direction: column">
-                  <div class="panel">
-                    <div class="panel__head">
-                      <h2 class="t-h2">일괄 등록</h2>
-                      <span class="badge badge--quiet">여러 명 선택 시</span>
-                    </div>
-                    <div class="panel__body">
-                      <div class="rows">
-                        <div class="row">
-                          <span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="선택" data-icon="check" data-icon-size="11"></span>
-                          <div class="rowmain__text"><b>서지안</b><span>바리스타 · 주 38.5h</span></div>
-                        </div>
-                        <div class="row">
-                          <span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="선택" data-icon="check" data-icon-size="11"></span>
-                          <div class="rowmain__text"><b>권도윤</b><span>바리스타 · 주 18.0h</span></div>
-                          <span class="row__end warn">계약 미체결</span>
-                        </div>
-                        <div class="row">
-                          <span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="선택" data-icon="check" data-icon-size="11"></span>
-                          <div class="rowmain__text"><b>오세라</b><span>점장 · 주 40.0h</span></div>
-                        </div>
-                      </div>
-                      <hr class="hr" />
-                      <p class="note">
-                        <span data-icon="info" data-icon-size="14"></span>
-                        <span>일부가 실패해도 성공한 등록은 남고 실패 대상만 표시된다.</span>
-                      </p>
-                    </div>
-                  </div>
-
                   <div class="panel" style="flex: 1">
                     <div class="panel__head"><h2 class="t-h2">변경 이력</h2></div>
                     <div class="log log--flat">
@@ -947,7 +944,7 @@
                         <div class="log__row">
                           <span class="log__t">08-31 10:05</span>
                           <span class="log__tag">추가</span>
-                          <span class="log__msg">권도윤 09-01~09-06 일괄 등록 6건 · 정하윤</span>
+                          <span class="log__msg">09-08 일괄 등록 3명 · 정하윤</span>
                         </div>
                         <div class="log__row">
                           <span class="log__t">08-28 17:41</span>
@@ -1646,6 +1643,34 @@
           document.querySelector("[data-sched-contract]").hidden = unsigned;
           document.querySelector("[data-sched-unsigned]").hidden = !unsigned;
         });
+      })();
+      /* 목업 동작 — 등록 패널의 한 명 / 여러 명 일괄 전환. 여러 명이면 체크한 직원마다 줄을 그리고 저장 버튼을 「n명 등록」으로. */
+      (function schedBulk() {
+        var CONTRACT = { 서지안: ["오픈", "09:00", "16:00", "60분"], 오세라: ["미들", "09:00", "18:00", "60분"], 권도윤: null };
+        var ROLE = { 서지안: "바리스타", 오세라: "점장", 권도윤: "바리스타" };
+        var rows = document.querySelector("[data-bulk-rows]"), save = document.querySelector("[data-sched-save]");
+        if (!rows) return;
+        var mode = "one";
+        function picked() { return Array.prototype.map.call(document.querySelectorAll('[data-bulk][aria-checked="true"]'), function (c) { return c.dataset.bulk; }); }
+        function sel(v) { return '<select class="select select--sm">' + ["오픈", "미들", "마감"].map(function (o) { return "<option" + (o === v ? " selected" : "") + ">" + o + "</option>"; }).join("") + "</select>"; }
+        function inp(v, t) { return '<input class="input input--sm mono"' + (t ? ' type="time"' : "") + ' value="' + (v || "") + '" />'; }
+        function draw() {
+          var list = picked();
+          rows.innerHTML = list.map(function (n) {
+            var c = CONTRACT[n];
+            return "<tr><td class=\"k\">" + n + ' <span class="subtle">' + ROLE[n] + "</span>" + (c ? "" : ' <span class="badge badge--warn">근로계약 미체결</span>') + "</td>" +
+              "<td>" + sel(c && c[0]) + "</td><td>" + inp(c && c[1], 1) + "</td><td>" + inp(c && c[2], 1) + "</td><td>" + inp(c && c[3]) + "</td></tr>";
+          }).join("") || '<tr><td colspan="5" class="subtle">직원을 고르면 줄이 생긴다.</td></tr>';
+          save.textContent = mode === "many" ? list.length + "명 등록" : "저장";
+        }
+        document.querySelector("[data-sched-modes]").addEventListener("click", function onSchedMode(e) {
+          var b = e.target.closest("[data-sched-mode]"); if (!b) return;
+          mode = b.dataset.schedMode;
+          document.querySelectorAll("[data-sched-pane]").forEach(function (el) { el.hidden = el.dataset.schedPane !== mode; });
+          draw();
+        });
+        document.querySelector("[data-bulk-pick]").addEventListener("click", function () { setTimeout(draw); });
+        draw();
       })();
       /* 지난 주 복사 미리보기. 실제로는 비어 있는 주에서만 켜진다. */
       (function () {

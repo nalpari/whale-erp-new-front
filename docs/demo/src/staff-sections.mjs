@@ -124,7 +124,7 @@ export function staffSections({ A, R }) {
       [{ header: "일시", width: "w-[120px]" }, { header: "구분", width: "w-[80px]" }, { header: "내용", align: "left" }],
       [
         ["09-01 14:22", "수정", "서지안 09-04 13:00-21:30 → 09:00-17:00 · 정하윤"],
-        ["08-31 10:05", "추가", "권도윤 09-01~09-06 일괄 등록 6건 · 정하윤"],
+        ["08-31 10:05", "추가", "09-08 일괄 등록 3명 · 정하윤"],
         ["08-28 17:41", p.mark("risk", "삭제"), "배정숙 08-30 마감 삭제 · 정하윤"],
       ],
     ),
@@ -374,6 +374,20 @@ export function staffSections({ A, R }) {
   // ── 슬라이드 패널 ──
   const panelHead = (title, right = "") => `<div class="flex items-center gap-[6px]"><h2 class="flex-1 text-[18px] font-semibold text-erp-ink">${title}</h2>${right}</div>`;
   const delId = x.dialogId();
+  // 여러 명 일괄(STAFF-27, 2026-10-08 재영): 근무지 재직자 체크 목록 → 고른 직원마다 줄. 줄은 그 직원의 계약 근무시간으로 채우고 줄마다 고친다.
+  // 미체결 직원 줄은 빈 값과 「근로계약 미체결」. 데모는 서지안·권도윤을 고른 장면 하나다.
+  const bulkRow = (name, role, c) =>
+    `<div class="flex flex-col gap-[8px] border-b border-erp-divider pb-[12px]"><p class="flex items-center gap-[6px] text-[14px] font-medium">${name} <span class="font-normal text-erp-label">${role}</span>${c ? "" : p.tag("risk", "근로계약 미체결")}</p>` +
+    ui.formRow(ui.field("근무 유형", ui.select(["오픈", "미들", "마감"], { value: c ? c[0] : "오픈" })), ui.field("휴게시간", ui.textField({ value: c ? c[3] : "" }))) +
+    ui.formRow(ui.field("시작", p.timeField(c ? c[1] : "", "시작")), ui.field("종료", p.timeField(c ? c[2] : "", "종료"))) +
+    `</div>`;
+  const bulkPane =
+    `<div class="flex flex-col gap-[18px]" data-when="sched-mode:여러 명 일괄">` +
+    `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">직원 <span class="font-normal">· 모리커피 서초점 재직자</span></span><div class="flex flex-wrap gap-x-[18px] gap-y-[8px]">${ui.checkbox(A, "서지안 · 바리스타", true)}${ui.checkbox(A, "오세라 · 점장")}${ui.checkbox(A, "권도윤 · 바리스타", true)}</div></div>` +
+    bulkRow("서지안", "바리스타", ["오픈", "09:00", "16:00", "60분"]) +
+    bulkRow("권도윤", "바리스타", null) +
+    p.note("일부가 실패해도 성공한 등록은 남고 실패 대상만 표시됩니다.") +
+    `</div>`;
   const schedForm = ui.slidePanel(
     schedPanel,
     "근무스케줄 등록·수정",
@@ -381,16 +395,20 @@ export function staffSections({ A, R }) {
       p.radios("sched-mode", ["한 명", "여러 명 일괄"]) +
       ui.formGroup(
         "근무",
-        ui.formRow(ui.field("근무지", ui.select(["모리커피 서초점", "모리커피 성수점"])), ui.field("직원", ui.select(["서지안 · 바리스타", "오세라 · 점장", "권도윤 · 바리스타"], { name: "sched-staff" }))),
-        ui.formRow(ui.field("근무일", ui.dateField(A, { label: "근무일", value: "2026-09-08" })), ui.field("근무 유형", ui.select(["오픈", "미들", "마감"]))),
+        // 근무지·근무일은 두 방식이 함께 쓴다. 여러 명 일괄도 근무일은 하루 하나(주 단위는 지난 주 복사, STAFF-27).
+        ui.formRow(ui.field("근무지", ui.select(["모리커피 서초점", "모리커피 성수점"])), ui.field("근무일", ui.dateField(A, { label: "근무일", value: "2026-09-08" }))),
+        `<div class="flex flex-col gap-[18px]" data-when="sched-mode:한 명">` +
+        ui.formRow(ui.field("직원", ui.select(["서지안 · 바리스타", "오세라 · 점장", "권도윤 · 바리스타"], { name: "sched-staff" })), ui.field("근무 유형", ui.select(["오픈", "미들", "마감"]))),
         // 시작·종료·휴게는 계약 값으로 미리 채운다(STAFF-14). 안내 띠는 두지 않고 「계약 값으로 되돌리기」만 둔다(2026-10-08 재영).
         // 버튼은 계약이 있는 직원일 때, 미체결 경고는 미체결 직원(권도윤)을 골랐을 때만 보인다(data-when).
         `<div class="flex justify-end" data-when="sched-staff:!권도윤 · 바리스타">${offBtn("계약 값으로 되돌리기")}</div>`,
         ui.formRow(ui.field("시작", p.timeField("09:00", "시작")), ui.field("종료", p.timeField("16:00", "종료")), ui.field("휴게시간", ui.textField({ value: "60분" }))),
-        `<div data-when="sched-staff:권도윤 · 바리스타">${p.band("권도윤 · 근로계약 미체결", { tone: "risk" })}</div>`,
+        `<div data-when="sched-staff:권도윤 · 바리스타">${p.band("권도윤 · 근로계약 미체결", { tone: "risk" })}</div>` +
+        `</div>`,
+        bulkPane,
       ) +
       p.note("저장하면 바로 직원 근무 앱에 반영되고, 바뀐 직원에게 알림이 갑니다.") +
-      `<div class="flex justify-between gap-[6px]">${x.dialogTrigger("삭제", delId, "soft")}<span class="flex gap-[6px]">${offBtn("취소", { "data-close": true })}${ui.button("저장", { "data-close": true })}</span></div>`,
+      `<div class="flex justify-between gap-[6px]"><span data-when="sched-mode:한 명">${x.dialogTrigger("삭제", delId, "soft")}</span><span data-when="sched-mode:여러 명 일괄"></span><span class="flex gap-[6px]">${offBtn("취소", { "data-close": true })}<span data-when="sched-mode:한 명">${ui.button("저장", { "data-close": true })}</span><span data-when="sched-mode:여러 명 일괄">${ui.button("2명 등록", { "data-close": true })}</span></span></div>`,
   );
   const delDialog = x.dialog(
     delId,
