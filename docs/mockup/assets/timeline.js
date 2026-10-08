@@ -13,7 +13,7 @@
     { name: "오세라", role: "점장" },
     { name: "유하람", role: "바리스타" },
     { name: "서지안", role: "바리스타" },
-    { name: "권도윤", role: "바리스타" },
+    { name: "권도윤", role: "바리스타", term: ["2025-08-24", "2026-08-23"] }, /* 체결 완료 계약 기간. 월간 보기는 그 밖의 날에 뺀다(STAFF-29) */
     { name: "하준서", role: "바리스타", blocked: "계약 대기 · 배정 불가" }
   ];
 
@@ -106,7 +106,8 @@
     var t0 = new Date(TODAY_ISO + "T00:00:00");
     var ym = [t0.getFullYear(), t0.getMonth()], cur = TODAY_ISO;
     function iso(x) { return x.getFullYear() + "-" + String(x.getMonth() + 1).padStart(2, "0") + "-" + String(x.getDate()).padStart(2, "0"); }
-    function work(day) { return STAFF.filter(function (p) { return !p.blocked && day.shifts[p.name]; }).length; }
+    function staffOn(key) { return STAFF.filter(function (p) { return !p.term || (p.term[0] <= key && key <= p.term[1]); }); }
+    function work(day, key) { return staffOn(key).filter(function (p) { return !p.blocked && day.shifts[p.name]; }).length; }
     function drawMonth() {
       var y = ym[0], m = ym[1];
       root.querySelector("[data-monthtitle]").textContent = y + "년 " + (m + 1) + "월";
@@ -124,7 +125,7 @@
         }
         var color = d.getDay() === 6 ? "var(--info)" : d.getDay() === 0 ? "var(--risk-text)" : "var(--ink)";
         html += '<button type="button" data-day="' + iso(d) + '" style="' + CELL + 'background: var(--surface-card, #fff); cursor: pointer"><b class="mono" style="font-size: 12.5px; color: ' + color + '">' +
-          d.getDate() + '</b><span class="badge badge--quiet">' + work(dayOf(d.getDay())) + "명</span></button>";
+          d.getDate() + '</b><span class="badge badge--quiet">' + work(dayOf(d.getDay()), iso(d)) + "명</span></button>";
       }
       cal.innerHTML = html;
     }
@@ -134,8 +135,8 @@
       cur = key;
       var day = dayOf(dd.getDay());
       pane.querySelector("[data-daytitle]").textContent = (dd.getMonth() + 1) + "월 " + dd.getDate() + "일 (" + DOW[dd.getDay()] + ")";
-      pane.querySelector("[data-daysum]").innerHTML = "근무 <b>" + work(day) + "명</b>" + (key === TODAY_ISO ? " · 오늘" : key < TODAY_ISO ? " · 지난 날" : " · 예정");
-      pane.querySelector("[data-daylist]").innerHTML = STAFF.map(function (p) {
+      pane.querySelector("[data-daysum]").innerHTML = "근무 <b>" + work(day, key) + "명</b>" + (key === TODAY_ISO ? " · 오늘" : key < TODAY_ISO ? " · 지난 날" : " · 예정");
+      pane.querySelector("[data-daylist]").innerHTML = staffOn(key).map(function (p) {
         var s = day.shifts[p.name];
         var end = p.blocked ? '<span style="color: var(--risk-text)">배정 불가</span>' : s ? '<span class="mono subtle">' + shiftText(s) + "</span>" : '<span class="subtle">휴무</span>';
         return '<div class="row" style="padding: 8px 0"><div class="rowmain__text"><b>' + p.name + "</b><span>" + p.role + "</span></div>" +

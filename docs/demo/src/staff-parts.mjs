@@ -92,8 +92,8 @@ export function schedWeek(crew, { open, close, dates, pick, all = false, gap = "
 // 달력 위 ‹ 이전 달 · 2026년 9월 · 다음 달 › · 이번 달 로 달을 바꾼다(2026-10-08 재영). 칸은 erp.js initDayPlan 이 그린다.
 // opts: { year, month(0부터), today, holiday: { 날짜: 이름 }, all }
 export function schedMonth(A, crew, { year, month, today, holiday = {}, all = false }) {
-  // 하루 목록 한 줄: [이름, 보조 글자, { 요일: "09:00~18:00" }, 배정 불가 사유?]
-  const plan = { crew: crew.map((c) => [c[0], c[1], Object.fromEntries(Object.entries(c[2]).map(([wd, s]) => [wd, shiftText(s)])), c[3] || ""]), holiday, today, year, month, all };
+  // 하루 목록 한 줄: [이름, 보조 글자, { 요일: "09:00~18:00" }, 배정 불가 사유?, 체결 완료 계약 기간 [시작, 끝]?]
+  const plan = { crew: crew.map((c) => [c[0], c[1], Object.fromEntries(Object.entries(c[2]).map(([wd, s]) => [wd, shiftText(s)])), c[3] || "", c[4] || null]), holiday, today, year, month, all };
   const nav = `<div class="mb-[8px] flex items-center gap-[6px]"><span data-monthmove="-1">${iconButton(A, "prev.svg", "이전 달")}</span><b data-monthtitle class="min-w-[120px] text-center text-[15px] font-semibold">${year}년 ${month + 1}월</b><span data-monthmove="1">${iconButton(A, "next.svg", "다음 달")}</span>${ui.button("이번 달", { variant: "off", "data-monthtoday": true })}</div>`;
   return (
     `<div data-dayplan='${JSON.stringify(plan)}' class="grid grid-cols-[268px_minmax(0,1fr)] items-start gap-[18px]">` +
