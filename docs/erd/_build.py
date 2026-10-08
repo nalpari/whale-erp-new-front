@@ -142,7 +142,7 @@ DIAGRAMS.append(Diagram(
         E("payslip", "급여명세서", "payslips", "entity",
           ["#|급여명세서 ID|id|payslip_id|", "→|직원 레코드|id|staff_member_id|", "→|참조 근로계약|id|contract_id|", "|명세서 상태|enum|status|4종"], 3, 232),
         E("schedule", "근무스케줄", "work_schedules", "entity",
-          ["#|근무스케줄 ID|id|schedule_id|", "→|직원 레코드|id|staff_member_id|", "→|근무지|id|store_id|", "|근무 유형|enum|work_type|"], 0, 492),
+          ["#|근무스케줄 ID|id|schedule_id|", "→|직원 레코드|id|staff_member_id|", "→|근무지|id|store_id|", "|근무 시작 일시|datetime|start_at|"], 0, 492),
         E("attendance", "출퇴근 기록", "attendance_records", "entity",
           ["#|출퇴근 기록 ID|id|attendance_record_id|", "→|직원 레코드|id|staff_member_id|", "→|근무지|id|store_id|", "|위치 판정 결과|enum|location_result|"], 1, 492),
         E("todo", "TO-DO", "todos", "entity",
@@ -284,7 +284,7 @@ DIAGRAMS.append(Diagram(
     "근무스케줄은 관리자가 등록하면 바로 직원 근무 앱에 반영된다(확정 단계 없음, 2026-10-08). 출퇴근은 직원이 직원 근무 앱에서 GPS 판정으로 등록한다. 판정은 휴대전화에서 하고 좌표와 판정 결과(반경 안·밖, 오차)는 저장하지 않는다. 확인 필요 사유만 관리자 검토 때까지 남기며, 보정은 원본과 분리해 이력으로 쌓는다.",
     [
         E("schedule", "근무스케줄", "work_schedules", "entity",
-          ["#|근무스케줄 ID|id|schedule_id|", "→|직원 레코드|id|staff_member_id|", "→|근무지|id|store_id|", "|근무 시작 일시|datetime|start_at|", "|근무 종료 일시|datetime|end_at|같은 직원 겹침 차단", "|휴게시간|int|break_minutes|", "|근무 유형|enum|work_type|주간·오픈·미들·마감", "→|기본값 근로계약|id|source_contract_id|등록 때 한 번 반영", "→|등록 관리자|id|created_by|"], 0, 40),
+          ["#|근무스케줄 ID|id|schedule_id|", "→|직원 레코드|id|staff_member_id|", "→|근무지|id|store_id|", "|근무 시작 일시|datetime|start_at|", "|근무 종료 일시|datetime|end_at|같은 직원 겹침 차단", "|휴게시간|int|break_minutes|", "→|기본값 근로계약|id|source_contract_id|등록 때 한 번 반영", "→|등록 관리자|id|created_by|"], 0, 40),
         E("schedule_history", "근무스케줄 변경 이력", "work_schedule_histories", "history",
           ["#|변경 이력 ID|id|history_id|", "→|근무스케줄|id|schedule_id|", "|변경 유형|enum|change_type|등록·수정·삭제", "|변경 전 값|json|before_value|", "|변경 후 값|json|after_value|", "|변경 주체|id|changed_by|", "|변경 일시|datetime|changed_at|"], 0, 368),
         E("staff_member", "직원 레코드", "staff_members", "entity",

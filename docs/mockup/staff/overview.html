@@ -27,7 +27,7 @@
           <div class="band band--info">
             <span class="band__ic" data-icon="info" data-icon-size="20"></span>
             <div class="band__body">
-              <div class="band__title">이 영역에서 결정할 것은 29건, 27건이 정해졌다</div>
+              <div class="band__title">이 영역에서 결정할 것은 30건, 28건이 정해졌다</div>
               <p class="band__desc">
                 화면은 <b>manyfast 문서 기준</b>으로 그렸고, 기존 디자인 시안과 어긋나는 곳은 지우지 않고
                 보라색 쟁점 블록으로 남겼다. 각 쟁점은 해당 화면 안에도 같은 블록으로 붙어 있다.
@@ -249,7 +249,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
-              <span class="badge badge--preview">29건 · 확정 27 · 보류 2</span>
+              <span class="badge badge--preview">30건 · 확정 28 · 보류 2</span>
             </div>
 
             <div class="gap is-decided">
@@ -983,7 +983,7 @@
               <div class="gap__opts">
                 <div class="gap__opt is-picked" data-side="a">
                   <div class="gap__label">A · 등록 패널 안에서 줄로 쌓기 · 확정</div>
-                  <p>「여러 명 일괄」을 고르면 직원 칸이 근무지 재직자 체크 목록이 되고, 고른 직원마다 「근무 유형 · 시작 · 종료 · 휴게」 줄이 생긴다. 줄은 그 직원의 계약 근무시간으로 채우고 줄마다 고친다.</p>
+                  <p>「여러 명 일괄」을 고르면 직원 칸이 근무지 재직자 체크 목록이 되고, 고른 직원마다 「시작 · 종료 · 휴게」 줄이 생긴다. 줄은 그 직원의 계약 근무시간으로 채우고 줄마다 고친다.</p>
                 </div>
                 <div class="gap__opt is-dropped" data-side="b">
                   <div class="gap__label">B · 오른쪽 따로 놓인 일괄 등록 패널</div>
@@ -1029,6 +1029,25 @@
                 </div>
               </div>
               <p class="gap__note">2026-10-08 재영 결정. 근무스케줄 등록(한 명·여러 명 일괄)의 직원 선택지, 지난 주 복사, 관리자 웹 출퇴근 대신 등록에 같이 적용한다. 흐리게 두지 않고 목록에서 뺀다. 지난 주 복사 미리보기에는 「제외 · 근로계약 미체결」로 보인다. 샘플의 권도윤은 앞 계약(2025-08-24 ~ 2026-08-23)이 체결 완료이고 재계약(2026-09-01 ~)이 서명 대기라, 08-24 이후 날짜에는 고를 수 없다.</p>
+            </div>
+            <div class="gap is-decided">
+              <div class="gap__head">
+                <span class="gap__no">STAFF-30</span>
+                <b>근무스케줄에 근무 유형을 두는가</b>
+                <span class="gap__decided">확정 · 뺀다</span>
+                <span class="gap__ref">S-WPGUXX</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt is-picked" data-side="a">
+                  <div class="gap__label">A · 뺀다 · 확정</div>
+                  <p>근무스케줄은 근무일 · 시작 · 종료 · 휴게만 남는다. 시간 막대는 한 색이다.</p>
+                </div>
+                <div class="gap__opt is-dropped" data-side="b">
+                  <div class="gap__label">B · 주간 · 오픈 · 미들 · 마감을 둔다 · 지난 안</div>
+                  <p>등록 패널에서 근무 유형을 고르고 직원 상세 근무스케줄 표에 유형 칸을 두었다.</p>
+                </div>
+              </div>
+              <p class="gap__note">2026-10-08 재영 결정. 등록 패널(한 명 · 여러 명 일괄), 직원 상세 근무스케줄 표, 점포 하나 화면 근무스케줄에서 근무 유형을 뺐다. ERD 근무스케줄의 <code>work_type</code> 칸도 지웠다.</p>
             </div>
           </section>
         </div>

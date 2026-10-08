@@ -3663,8 +3663,7 @@ a.tile:hover {
   white-space: nowrap;
   overflow: hidden;
 }
-/* 근무 유형(오픈·미들·마감)은 막대 안 텍스트로만 구분한다.
-   채움을 달리하면 유형 사이에 없는 위계가 생긴다 — 근무는 하나의 상태다. */
+/* 근무 막대는 한 색이다. 근무스케줄에 근무 유형은 두지 않는다(STAFF-30). */
 .tl__bar--none {
   background: transparent;
   color: var(--muted-tert);

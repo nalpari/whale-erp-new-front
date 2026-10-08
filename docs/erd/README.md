@@ -409,7 +409,6 @@ python3 docs/erd/_build.py
 |  | 근무 시작 일시 | datetime | `start_at` |  |
 |  | 근무 종료 일시 | datetime | `end_at` | 같은 직원 겹침 차단 |
 |  | 휴게시간 | int | `break_minutes` |  |
-|  | 근무 유형 | enum | `work_type` | 주간·오픈·미들·마감 |
 | FK | 기본값 근로계약 | id | `source_contract_id` | 등록 때 한 번 반영 |
 | FK | 등록 관리자 | id | `created_by` |  |
 

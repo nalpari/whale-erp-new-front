@@ -712,6 +712,25 @@
                 </div>
                 <p class="gap__note">2026-10-08 재영 결정. 근무스케줄 등록(한 명·여러 명 일괄)의 직원 선택지, 지난 주 복사, 관리자 웹 출퇴근 대신 등록에 같이 적용한다. 흐리게 두지 않고 목록에서 뺀다. 지난 주 복사 미리보기에는 「제외 · 근로계약 미체결」로 보인다. 샘플의 권도윤은 앞 계약(2025-08-24 ~ 2026-08-23)이 체결 완료이고 재계약(2026-09-01 ~)이 서명 대기라, 08-24 이후 날짜에는 고를 수 없다.</p>
               </div>
+              <div class="gap is-decided">
+                <div class="gap__head">
+                  <span class="gap__no">STAFF-30</span>
+                  <b>근무스케줄에 근무 유형을 두는가</b>
+                  <span class="gap__decided">확정 · 뺀다</span>
+                  <span class="gap__ref">S-WPGUXX</span>
+                </div>
+                <div class="gap__opts">
+                  <div class="gap__opt is-picked" data-side="a">
+                    <div class="gap__label">A · 뺀다 · 확정</div>
+                    <p>근무스케줄은 근무일 · 시작 · 종료 · 휴게만 남는다. 시간 막대는 한 색이다.</p>
+                  </div>
+                  <div class="gap__opt is-dropped" data-side="b">
+                    <div class="gap__label">B · 주간 · 오픈 · 미들 · 마감을 둔다 · 지난 안</div>
+                    <p>등록 패널에서 근무 유형을 고르고 직원 상세 근무스케줄 표에 유형 칸을 두었다.</p>
+                  </div>
+                </div>
+                <p class="gap__note">2026-10-08 재영 결정. 등록 패널(한 명 · 여러 명 일괄), 직원 상세 근무스케줄 표, 점포 하나 화면 근무스케줄에서 근무 유형을 뺐다. ERD 근무스케줄의 <code>work_type</code> 칸도 지웠다.</p>
+              </div>
 
               <div class="gap is-decided">
                 <div class="gap__head">
@@ -876,14 +895,6 @@
                           <option>오세라 · 점장</option>
                         </select>
                       </div>
-                      <div class="field">
-                        <label for="sy">근무 유형</label>
-                        <select class="select" id="sy">
-                          <option>오픈</option>
-                          <option>미들</option>
-                          <option>마감</option>
-                        </select>
-                      </div>
                     </div>
                     <!-- STAFF-14 : 시작·종료·휴게는 이 직원의 근로계약 근무시간에서 미리 채워진다. 관리자는 고쳐 저장한다.
                          안내 띠는 두지 않고 「계약 값으로 되돌리기」 버튼만 둔다 (2026-10-08 재영).
@@ -919,7 +930,7 @@
                       </div>
                       <div class="tblwrap" style="margin-top: var(--s-3)">
                         <table class="tbl tbl--dense">
-                          <thead><tr><th scope="col">직원</th><th scope="col">근무 유형</th><th scope="col">시작</th><th scope="col">종료</th><th scope="col">휴게</th></tr></thead>
+                          <thead><tr><th scope="col">직원</th><th scope="col">시작</th><th scope="col">종료</th><th scope="col">휴게</th></tr></thead>
                           <tbody data-bulk-rows></tbody>
                         </table>
                       </div>
@@ -1652,21 +1663,20 @@
     <script>
       /* 목업 동작 — 등록 패널의 한 명 / 여러 명 일괄 전환. 여러 명이면 체크한 직원마다 줄을 그리고 저장 버튼을 「n명 등록」으로. */
       (function schedBulk() {
-        var CONTRACT = { 서지안: ["오픈", "09:00", "16:00", "60분"], 오세라: ["미들", "09:00", "18:00", "60분"] };
+        var CONTRACT = { 서지안: ["09:00", "16:00", "60분"], 오세라: ["09:00", "18:00", "60분"] };
         var ROLE = { 서지안: "바리스타", 오세라: "점장" };
         var rows = document.querySelector("[data-bulk-rows]"), save = document.querySelector("[data-sched-save]");
         if (!rows) return;
         var mode = "one";
         function picked() { return Array.prototype.map.call(document.querySelectorAll('[data-bulk][aria-checked="true"]'), function (c) { return c.dataset.bulk; }); }
-        function sel(v) { return '<select class="select select--sm">' + ["오픈", "미들", "마감"].map(function (o) { return "<option" + (o === v ? " selected" : "") + ">" + o + "</option>"; }).join("") + "</select>"; }
         function inp(v, t) { return '<input class="input input--sm mono"' + (t ? ' type="time"' : "") + ' value="' + (v || "") + '" />'; }
         function draw() {
           var list = picked();
           rows.innerHTML = list.map(function (n) {
             var c = CONTRACT[n];
             return "<tr><td class=\"k\">" + n + ' <span class="subtle">' + ROLE[n] + "</span></td>" +
-              "<td>" + sel(c[0]) + "</td><td>" + inp(c[1], 1) + "</td><td>" + inp(c[2], 1) + "</td><td>" + inp(c[3]) + "</td></tr>";
-          }).join("") || '<tr><td colspan="5" class="subtle">직원을 고르면 줄이 생긴다.</td></tr>';
+              "<td>" + inp(c[0], 1) + "</td><td>" + inp(c[1], 1) + "</td><td>" + inp(c[2]) + "</td></tr>";
+          }).join("") || '<tr><td colspan="4" class="subtle">직원을 고르면 줄이 생긴다.</td></tr>';
           save.textContent = mode === "many" ? list.length + "명 등록" : "저장";
         }
         document.querySelector("[data-sched-modes]").addEventListener("click", function onSchedMode(e) {

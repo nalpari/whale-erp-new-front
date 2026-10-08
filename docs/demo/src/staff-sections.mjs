@@ -378,14 +378,13 @@ export function staffSections({ A, R }) {
   // 체크 목록에는 근무일에 체결 완료 계약이 있는 직원만 나온다(STAFF-29). 데모는 서지안·오세라를 고른 장면 하나다.
   const bulkRow = (name, role, c) =>
     `<div class="flex flex-col gap-[8px] border-b border-erp-divider pb-[12px]"><p class="flex items-center gap-[6px] text-[14px] font-medium">${name} <span class="font-normal text-erp-label">${role}</span></p>` +
-    ui.formRow(ui.field("근무 유형", ui.select(["오픈", "미들", "마감"], { value: c[0] })), ui.field("휴게시간", ui.textField({ value: c[3] }))) +
-    ui.formRow(ui.field("시작", p.timeField(c[1], "시작")), ui.field("종료", p.timeField(c[2], "종료"))) +
+    ui.formRow(ui.field("시작", p.timeField(c[0], "시작")), ui.field("종료", p.timeField(c[1], "종료")), ui.field("휴게시간", ui.textField({ value: c[2] }))) +
     `</div>`;
   const bulkPane =
     `<div class="flex flex-col gap-[18px]" data-when="sched-mode:여러 명 일괄">` +
     `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">직원 <span class="font-normal">· 모리커피 서초점 재직자</span></span><div class="flex flex-wrap gap-x-[18px] gap-y-[8px]">${ui.checkbox(A, "서지안 · 바리스타", true)}${ui.checkbox(A, "오세라 · 점장", true)}</div></div>` +
-    bulkRow("서지안", "바리스타", ["오픈", "09:00", "16:00", "60분"]) +
-    bulkRow("오세라", "점장", ["미들", "09:00", "18:00", "60분"]) +
+    bulkRow("서지안", "바리스타", ["09:00", "16:00", "60분"]) +
+    bulkRow("오세라", "점장", ["09:00", "18:00", "60분"]) +
     p.note("일부가 실패해도 성공한 등록은 남고 실패 대상만 표시됩니다.") +
     `</div>`;
   const schedForm = ui.slidePanel(
@@ -398,7 +397,7 @@ export function staffSections({ A, R }) {
         // 근무지·근무일은 두 방식이 함께 쓴다. 여러 명 일괄도 근무일은 하루 하나(주 단위는 지난 주 복사, STAFF-27).
         ui.formRow(ui.field("근무지", ui.select(["모리커피 서초점", "모리커피 성수점"])), ui.field("근무일", ui.dateField(A, { label: "근무일", value: "2026-09-08" }))),
         `<div class="flex flex-col gap-[18px]" data-when="sched-mode:한 명">` +
-        ui.formRow(ui.field("직원", ui.select(["서지안 · 바리스타", "오세라 · 점장"])), ui.field("근무 유형", ui.select(["오픈", "미들", "마감"]))),
+        ui.field("직원", ui.select(["서지안 · 바리스타", "오세라 · 점장"])),
         // 시작·종료·휴게는 계약 값으로 미리 채운다(STAFF-14). 안내 띠는 두지 않고 「계약 값으로 되돌리기」만 둔다(2026-10-08 재영).
         // 직원 선택지는 근무일에 체결 완료 계약이 있는 직원만이다(STAFF-29). 권도윤은 재계약 서명 대기라 빠졌다.
         `<div class="flex justify-end">${offBtn("계약 값으로 되돌리기")}</div>`,
