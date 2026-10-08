@@ -112,9 +112,7 @@ export function staffSections({ A, R }) {
   };
   const tlRow = (name, role, left, width, label, tone = "on") =>
     `<div class="flex h-[46px] items-center border-b border-erp-thead-line"><span class="w-[140px] shrink-0 truncate px-[10px] text-[14px]">${name} <span class="text-erp-muted">${role}</span></span><div class="relative h-[34px] flex-1 rounded-[2px] bg-erp-thead-bg"><div class="absolute inset-y-0 flex items-center truncate rounded-[2px] px-[10px] text-[13px] ${BAR[tone]}" style="left:${left}%;width:${width}%">${label}</div></div></div>`;
-  const COVER = ["bg-erp-off-bg text-erp-off", "bg-erp-subtle text-erp-ink", "bg-erp-on-bg text-erp-on"];
   const cover = [0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1];
-  const swatch = (i, label) => `<span class="flex items-center gap-[6px]"><span class="size-[12px] rounded-[2px] ${COVER[i]}"></span>${label}</span>`;
   const timeline =
     `<div class="flex flex-col">` +
     `<div class="flex h-[42px] items-center border-y border-erp-thead-line bg-erp-thead-bg"><span class="w-[140px] shrink-0 px-[10px] text-[14px] font-medium text-erp-thead-text">직원</span><div class="grid flex-1 grid-cols-15 text-[12px] text-erp-thead-text">${ticks.map((t) => `<span>${t}</span>`).join("")}</div></div>` +
@@ -123,10 +121,8 @@ export function staffSections({ A, R }) {
     tlRow("서지안", "바리스타", 0, 100, "휴무", "none") +
     tlRow("권도윤", "바리스타", 0, 100, "휴무", "none") +
     tlRow("하준서", "바리스타", 0, 100, "계약 대기 · 배정 불가", "blocked") +
-    `<div class="flex h-[46px] items-center border-b border-erp-thead-line"><span class="w-[140px] shrink-0 px-[10px] text-[14px] text-erp-label">근무 인원</span><div class="grid h-[34px] flex-1 grid-cols-15 gap-px">${cover
-      .map((n) => `<span class="grid place-items-center text-[13px] font-medium ${COVER[Math.min(n, 2)]}">${n}</span>`)
-      .join("")}</div></div>` +
-    `<div class="flex items-center gap-[18px] pt-[12px] text-[13px] text-erp-label">${swatch(0, "아무도 없음")}${swatch(1, "혼자 근무 · 휴게 불가")}${swatch(2, "2명 이상")}</div>` +
+    p.coverRow(cover) +
+    p.coverLegend +
     `</div>`;
   const dayView =
     // 날짜 이동은 출퇴근 현황 일별과 같은 하루 이동(달력 · 오늘). 데모라 근무표 내용은 날짜를 바꿔도 그대로다.

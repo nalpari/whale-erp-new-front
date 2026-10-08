@@ -169,10 +169,15 @@ function oneStore(A, R) {
   const SPAN = 17;
   const ticks = Array.from({ length: SPAN }, (_, i) => (9 + i >= 24 ? `익일 ${String(9 + i - 24).padStart(2, "0")}` : String(9 + i).padStart(2, "0")));
   const count = (wd) => CREW.filter((c) => c[4].includes(wd)).length;
+  // 주 08-31 ~ 09-06 의 날짜(요일 → 날)
+  const DATE = { 1: 31, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 0: 6 };
+  // 근무 인원: 그 요일 근무자 중 h시~h+1시에 근무 중인 사람 수(근무스케줄 관리와 같은 계산)
+  const cover = (wd) => Array.from({ length: SPAN }, (_, i) => CREW.filter((c) => c[4].includes(wd) && c[2] <= 9 + i && 9 + i < c[3]).length);
+  const covers = [1, 2, 3, 4, 5, 6, 0].map((wd) => p.coverRow(cover(wd), ` data-wd-cover="${wd}"${wd === 4 ? "" : " hidden"}`)).join("");
   const chips = [1, 2, 3, 4, 5, 6, 0]
     .map(
       (wd) =>
-        `<button type="button" data-wd-pick="${wd}" aria-pressed="${wd === 4}" class="flex h-[34px] flex-1 items-center justify-center gap-[6px] rounded-[2px] border text-[14px] transition-colors duration-150 ease-out aria-pressed:border-erp-brand aria-pressed:bg-erp-brand aria-pressed:text-white border-erp-button-line bg-white text-erp-ink hover:border-erp-brand">${WD[wd]}<span class="text-[13px] opacity-70">${count(wd)}명</span></button>`,
+        `<button type="button" data-wd-pick="${wd}" aria-pressed="${wd === 4}" class="flex h-[34px] flex-1 items-center justify-center gap-[6px] rounded-[2px] border text-[14px] transition-colors duration-150 ease-out aria-pressed:border-erp-brand aria-pressed:bg-erp-brand aria-pressed:text-white border-erp-button-line bg-white text-erp-ink hover:border-erp-brand">${WD[wd]} ${DATE[wd]}<span class="text-[13px] opacity-70">${count(wd)}명</span></button>`,
     )
     .join("");
   const rows = CREW.map(
@@ -182,7 +187,8 @@ function oneStore(A, R) {
   const week =
     p.bar(p.weekNav(A, "", "2026-08-31"), `<span class="text-[14px] text-erp-label">근무 <b class="font-semibold text-erp-ink" data-wd-count>${count(4)}</b>명</span>`) +
     `<div class="flex gap-[6px]">${chips}</div>` +
-    `<div class="flex flex-col"><div class="flex h-[42px] items-center border-y border-erp-thead-line bg-erp-thead-bg"><span class="w-[140px] shrink-0 px-[10px] text-[14px] font-medium text-erp-thead-text">직원</span><div class="grid flex-1 grid-cols-[repeat(17,minmax(0,1fr))] text-[12px] text-erp-thead-text">${ticks.map((t) => `<span class="truncate">${t}</span>`).join("")}</div></div>${rows}</div>`;
+    `<div class="flex flex-col"><div class="flex h-[42px] items-center border-y border-erp-thead-line bg-erp-thead-bg"><span class="w-[140px] shrink-0 px-[10px] text-[14px] font-medium text-erp-thead-text">직원</span><div class="grid flex-1 grid-cols-[repeat(17,minmax(0,1fr))] text-[12px] text-erp-thead-text">${ticks.map((t) => `<span class="truncate">${t}</span>`).join("")}</div></div>${rows}${covers}</div>` +
+    p.coverLegend;
 
   // 근무스케줄 · 월간: 2026년 9월 달력. 날짜를 누르면 왼쪽에 그날 근무스케줄(erp.js initDayPlan).
   const first = new Date(2026, 8, 1);

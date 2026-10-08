@@ -20,6 +20,16 @@ export const sub = (text) => `<span class="text-erp-muted">${text}</span>`;
 export const note = (text) => `<p class="text-[13px] leading-[1.6] text-erp-label">${text}</p>`;
 
 // 입력칸 아래 도움말. ui.field 의 control 자리에 입력칸과 함께 넣는다.
+// 근무 인원 줄(근무스케줄 관리 일간 근무표). 칸마다 그 시간대에 근무 중인 인원 — 0 아무도 없음, 1 혼자 근무, 2 이상.
+// 로그인 후 홈 점포 하나 화면의 주간 보기도 같은 줄·같은 범례를 쓴다(2026-10-08 재영).
+export const COVER = ["bg-erp-off-bg text-erp-off", "bg-erp-subtle text-erp-ink", "bg-erp-on-bg text-erp-on"];
+export const coverRow = (counts, attrs = "") =>
+  `<div class="flex h-[46px] items-center border-b border-erp-thead-line"${attrs}><span class="w-[140px] shrink-0 px-[10px] text-[14px] text-erp-label">근무 인원</span><div class="grid h-[34px] flex-1 gap-px" style="grid-template-columns:repeat(${counts.length},minmax(0,1fr))">${counts
+    .map((n) => `<span class="grid place-items-center text-[13px] font-medium ${COVER[Math.min(n, 2)]}">${n}</span>`)
+    .join("")}</div></div>`;
+const swatch = (i, label) => `<span class="flex items-center gap-[6px]"><span class="size-[12px] rounded-[2px] ${COVER[i]}"></span>${label}</span>`;
+export const coverLegend = `<div class="flex items-center gap-[18px] pt-[12px] text-[13px] text-erp-label">${swatch(0, "아무도 없음")}${swatch(1, "혼자 근무 · 휴게 불가")}${swatch(2, "2명 이상")}</div>`;
+
 // 라벨 옆 ⓘ 툴팁. 헤더 서비스 바로가기 말풍선(ui.mjs tip)은 헤더 전용 알약형이라, 여기는 DESIGN.md 팝업 모양(2px·뜬 것 그림자)으로 그렸다.
 export const infoTip = (label, text) =>
   `<span tabindex="0" aria-label="${label} 설명" class="group relative inline-grid size-[16px] cursor-help place-items-center text-[13px] text-erp-label">ⓘ<span role="tooltip" class="pointer-events-none absolute top-[calc(100%+6px)] left-0 z-20 w-[280px] rounded-[2px] border border-[#ebebeb] bg-white px-[12px] py-[10px] text-[13px] leading-[1.6] font-normal whitespace-pre-line text-erp-ink opacity-0 shadow-[0_2px_6px_rgba(40,47,55,0.08)] transition-opacity duration-150 ease-out group-hover:opacity-100 group-focus-visible:opacity-100">${text}</span></span>`;

@@ -759,6 +759,7 @@
     $$("[data-wd-pick]").forEach((b) => b.setAttribute("aria-pressed", String(b === chip)));
     const rows = $$("[data-wd]");
     rows.forEach((r) => (r.hidden = !r.dataset.wd.split(",").includes(wd)));
+    $$("[data-wd-cover]").forEach((r) => (r.hidden = r.dataset.wdCover !== wd));
     const n = $("[data-wd-count]");
     if (n) n.textContent = rows.filter((r) => !r.hidden).length;
   });
