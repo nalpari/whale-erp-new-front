@@ -28,6 +28,8 @@ const BTN_TONE = {
   primary: "border-erp-brand bg-erp-brand text-white",
   soft: "border-erp-brand-soft bg-erp-brand-soft text-white",
   off: "border-erp-subtle bg-erp-subtle text-erp-ink",
+  // 퇴직 처리처럼 되돌리기 어려운 동작(2026-10-08 재영). 미운영 배지와 같은 상태 빨강 토큰을 쓴다. 공통 Button 에는 아직 없다.
+  danger: "border-erp-off bg-erp-off text-white",
 };
 const BTN_SHELL =
   "inline-flex h-[34px] shrink-0 items-center justify-center rounded-[2px] border px-[24px] text-[14px] font-medium whitespace-nowrap transition-[background-color,border-color,color] duration-150 ease-out hover:border-erp-brand hover:bg-white hover:text-erp-ink";
