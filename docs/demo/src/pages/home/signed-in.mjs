@@ -81,8 +81,7 @@ export default ({ A, R }) => {
 
 // ── 점포 하나 화면(HOME-6 B) ──
 // 데모라 어느 점포를 골라도 을지로점 예시 직원·근무스케줄을 보인다. 점포 이름과 운영 점포 정보만 고른 점포로 바뀐다.
-// 근무 막대는 근무스케줄 관리(staff-sections BAR.on)와 같은 색이고, 근무 유형(주간·오픈·미들·마감)은 보이지 않는다(2026-10-08 재영).
-const BAR_ON = "bg-erp-brand-soft text-white border-erp-brand-soft";
+// 근무 막대는 근무스케줄 관리와 같은 부품·색이고, 근무 유형(주간·오픈·미들·마감)은 보이지 않는다(2026-10-08 재영).
 // [이름, 고용 형태, 시작 시, 끝 시(익일은 24+), 근무요일(0=일)]
 const CREW = [
   ["김민재", "정직원", 9, 18, [1, 2, 3, 4, 5]],
@@ -165,49 +164,13 @@ function oneStore(A, R) {
         .join("")}</ul>`,
   );
 
-  // 근무스케줄 · 주간: 주 이동 + 요일 칩 + 09시~익일 02시 시간축(17칸). 요일 칩을 누르면 그 요일 근무자만 남는다.
-  const SPAN = 17;
-  const ticks = Array.from({ length: SPAN }, (_, i) => (9 + i >= 24 ? `익일 ${String(9 + i - 24).padStart(2, "0")}` : String(9 + i).padStart(2, "0")));
-  const count = (wd) => CREW.filter((c) => c[4].includes(wd)).length;
-  // 주 08-31 ~ 09-06 의 날짜(요일 → 날)
-  const DATE = { 1: 31, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 0: 6 };
-  // 근무 인원: 그 요일 근무자 중 h시~h+1시에 근무 중인 사람 수(근무스케줄 관리와 같은 계산)
-  const cover = (wd) => Array.from({ length: SPAN }, (_, i) => CREW.filter((c) => c[4].includes(wd) && c[2] <= 9 + i && 9 + i < c[3]).length);
-  const covers = [1, 2, 3, 4, 5, 6, 0].map((wd) => p.coverRow(cover(wd), ` data-wd-cover="${wd}"${wd === 4 ? "" : " hidden"}`)).join("");
-  const chips = [1, 2, 3, 4, 5, 6, 0]
-    .map(
-      (wd) =>
-        `<button type="button" data-wd-pick="${wd}" aria-pressed="${wd === 4}" class="flex h-[34px] flex-1 items-center justify-center gap-[6px] rounded-[2px] border text-[14px] transition-colors duration-150 ease-out aria-pressed:border-erp-brand aria-pressed:bg-erp-brand aria-pressed:text-white border-erp-button-line bg-white text-erp-ink hover:border-erp-brand">${WD[wd]} ${DATE[wd]}<span class="text-[13px] opacity-70">${count(wd)}명</span></button>`,
-    )
-    .join("");
-  const rows = CREW.map(
-    (c) =>
-      `<div data-wd="${c[4].join(",")}" class="flex h-[46px] items-center border-b border-erp-thead-line"${c[4].includes(4) ? "" : " hidden"}><span class="w-[140px] shrink-0 truncate px-[10px] text-[14px]">${c[0]} <span class="text-erp-muted">${c[1]}</span></span><div class="relative h-[34px] flex-1 rounded-[2px] bg-erp-thead-bg"><div class="absolute inset-y-0 flex items-center truncate rounded-[2px] border px-[10px] text-[13px] ${BAR_ON}" style="left:${(((c[2] - 9) / SPAN) * 100).toFixed(3)}%;width:${(((c[3] - c[2]) / SPAN) * 100).toFixed(3)}%">${span(c)}</div></div></div>`,
-  ).join("");
+  // 근무스케줄: 근무스케줄 관리와 같은 부품(staff-parts schedWeek·schedMonth, 2026-10-08 재영). 홈은 그날 근무자만 보인다.
+  // 주간 보기는 주 이동 + 날짜가 붙은 요일 칩 + 09시~익일 02시 시간축(17칸) + 근무 인원 줄. 월간 보기는 2026년 9월 달력.
+  const crew = CREW.map((c) => [c[0], c[1], Object.fromEntries(c[4].map((wd) => [wd, [c[2], c[3]]]))]);
   const week =
-    p.bar(p.weekNav(A, "", "2026-08-31"), `<span class="text-[14px] text-erp-label">근무 <b class="font-semibold text-erp-ink" data-wd-count>${count(4)}</b>명</span>`) +
-    `<div class="flex gap-[6px]">${chips}</div>` +
-    `<div class="flex flex-col"><div class="flex h-[42px] items-center border-y border-erp-thead-line bg-erp-thead-bg"><span class="w-[140px] shrink-0 px-[10px] text-[14px] font-medium text-erp-thead-text">직원</span><div class="grid flex-1 grid-cols-[repeat(17,minmax(0,1fr))] text-[12px] text-erp-thead-text">${ticks.map((t) => `<span class="truncate">${t}</span>`).join("")}</div></div>${rows}${covers}</div>` +
-    p.coverLegend;
-
-  // 근무스케줄 · 월간: 2026년 9월 달력. 날짜를 누르면 왼쪽에 그날 근무스케줄(erp.js initDayPlan).
-  const first = new Date(2026, 8, 1);
-  const lead = (first.getDay() + 6) % 7;
-  const cells = Array.from({ length: 35 }, (_, i) => {
-    const d = new Date(2026, 8, 1 - lead + i);
-    const iso = `2026-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    const tone = d.getDay() === 6 ? "text-erp-on" : d.getDay() === 0 ? "text-erp-off" : "text-erp-ink";
-    if (d.getMonth() !== 8) return `<div class="min-h-[64px] bg-erp-thead-bg px-[8px] py-[6px] text-[13px] text-erp-muted">${d.getDate()}</div>`;
-    const tag = HOLIDAY.includes(iso) ? p.tag("warn", "추석 · 휴무") : p.tag("quiet", `${count(d.getDay())}명`);
-    return `<button type="button" data-day="${iso}" aria-pressed="${iso === TODAY}" class="flex min-h-[64px] flex-col items-start gap-[4px] bg-white px-[8px] py-[6px] text-left transition-colors duration-150 ease-out hover:bg-erp-on-bg aria-pressed:bg-erp-on-bg aria-pressed:shadow-[inset_0_0_0_2px_var(--color-erp-on)]"><b class="text-[13px] font-semibold ${tone}">${d.getDate()}</b>${tag}</button>`;
-  }).join("");
-  const plan = { crew: CREW.map((c) => [c[0], c[1], span(c), c[4]]), holiday: HOLIDAY, today: TODAY };
-  const month =
-    `<div data-dayplan='${JSON.stringify(plan)}' class="grid grid-cols-[268px_minmax(0,1fr)] items-start gap-[18px]">` +
-    `<div class="flex flex-col gap-[8px] rounded-[2px] border border-erp-thead-line p-[14px]"><div class="flex items-center justify-between"><button type="button" data-daymove="-1" aria-label="이전 날" class="grid size-[28px] place-items-center rounded-[2px] border border-erp-button-line">${ui.img(A, "prev.svg", 7, 12)}</button><b data-daytitle class="text-[15px] font-semibold"></b><button type="button" data-daymove="1" aria-label="다음 날" class="grid size-[28px] place-items-center rounded-[2px] border border-erp-button-line">${ui.img(A, "next.svg", 7, 12)}</button></div><p data-daysum class="text-[13px] text-erp-label"></p><ul data-daylist class="flex flex-col text-[14px]"></ul></div>` +
-    `<div><p class="mb-[8px] text-[15px] font-semibold">2026년 9월</p><div class="grid grid-cols-7 gap-px overflow-hidden rounded-[2px] border border-erp-thead-line bg-erp-thead-line">${[..."월화수목금토일"]
-      .map((d, i) => `<div class="bg-erp-thead-bg py-[6px] text-center text-[13px] ${i === 5 ? "text-erp-on" : i === 6 ? "text-erp-off" : "text-erp-thead-text"}">${d}</div>`)
-      .join("")}${cells}</div></div></div>`;
+    p.bar(p.weekNav(A, "", "2026-08-31"), `<span class="text-[14px] text-erp-label">근무 <b class="font-semibold text-erp-ink" data-wd-count>${crew.filter((c) => c[2][4]).length}</b>명</span>`) +
+    p.schedWeek(crew, { open: 9, close: 26, dates: { 1: 31, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 0: 6 }, pick: 4 });
+  const month = p.schedMonth(A, crew, { year: 2026, month: 8, today: TODAY, holiday: Object.fromEntries(HOLIDAY.map((d) => [d, "추석"])) });
 
   const sched = card(
     head(

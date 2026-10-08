@@ -104,47 +104,18 @@ export function staffSections({ A, R }) {
   const schedPanel = "sched-form";
   const fixPanel = "fix-form";
   const proxyPanel = "proxy-form";
-  const ticks = Array.from({ length: 15 }, (_, i) => String(7 + i).padStart(2, "0"));
-  const BAR = {
-    on: "bg-erp-brand-soft text-white",
-    none: "bg-erp-subtle text-erp-muted",
-    blocked: "bg-erp-off-bg text-erp-off",
-  };
-  const tlRow = (name, role, left, width, label, tone = "on") =>
-    `<div class="flex h-[46px] items-center border-b border-erp-thead-line"><span class="w-[140px] shrink-0 truncate px-[10px] text-[14px]">${name} <span class="text-erp-muted">${role}</span></span><div class="relative h-[34px] flex-1 rounded-[2px] bg-erp-thead-bg"><div class="absolute inset-y-0 flex items-center truncate rounded-[2px] px-[10px] text-[13px] ${BAR[tone]}" style="left:${left}%;width:${width}%">${label}</div></div></div>`;
-  const cover = [0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1];
-  const timeline =
-    `<div class="flex flex-col">` +
-    `<div class="flex h-[42px] items-center border-y border-erp-thead-line bg-erp-thead-bg"><span class="w-[140px] shrink-0 px-[10px] text-[14px] font-medium text-erp-thead-text">직원</span><div class="grid flex-1 grid-cols-15 text-[12px] text-erp-thead-text">${ticks.map((t) => `<span>${t}</span>`).join("")}</div></div>` +
-    tlRow("오세라", "점장", 26.667, 60, "11:00-20:00 · 미들") +
-    tlRow("유하람", "바리스타", 33.333, 66.667, "12:00-22:00 · 마감") +
-    tlRow("서지안", "바리스타", 0, 100, "휴무", "none") +
-    tlRow("권도윤", "바리스타", 0, 100, "휴무", "none") +
-    tlRow("하준서", "바리스타", 0, 100, "계약 대기 · 배정 불가", "blocked") +
-    p.coverRow(cover) +
-    p.coverLegend +
-    `</div>`;
-  const dayView =
-    // 날짜 이동은 출퇴근 현황 일별과 같은 하루 이동(달력 · 오늘). 데모라 근무표 내용은 날짜를 바꿔도 그대로다.
-    p.bar(
-      p.weekNav(A, "", "2026-08-22", { day: true }) + p.tag("risk", "공백 4시간"),
-      `<span class="pl-[6px] text-[14px] text-erp-label">운영 07:00-22:00</span>`,
-    ) +
-    timeline +
-    p.bar(p.note("07:00-11:00 에 배정된 직원이 없습니다."), ui.slideTrigger("이 시간대에 배정", schedPanel, "soft"));
-  const wk = (...c) => c;
-  const weekView =
-    p.bar(`<h3 class="text-[16px] font-semibold text-erp-ink">주간 근무스케줄</h3>${p.tag("quiet", "모리커피 서초점 · 9명")}`) +
-    numbered(
-      [{ header: "직원", width: "w-[120px]" }, ...["월 17", "화 18", "수 19", "목 20", "금 21", "토 22", "일 23"].map((h) => ({ header: h })), { header: "주 합계", width: "w-[100px]" }],
-      [
-        wk("오세라", "09-18", "09-18", p.sub("휴무"), "09-18", "09-18", "11-20", p.sub("휴무"), "45.0h"),
-        wk("서지안", "07-16", "07-16", "07-16", "07-16", p.sub("휴무"), p.sub("휴무"), "10-19", "40.0h"),
-        wk("하준서", "-", "-", "-", "-", "-", "-", "-", p.sub("계약 대기")),
-        wk("권도윤", "13-22", p.sub("휴무"), "13-22", "13-22", "13-22", p.sub("휴무"), "13-22", "45.0h"),
-        wk("유하람", p.sub("휴무"), "16-22", "16-22", p.sub("휴무"), "16-22", "12-22", "12-22", "38.0h"),
-      ],
-    );
+  // 근무스케줄 보기는 로그인 후 홈과 같은 부품(staff-parts schedWeek·schedMonth)으로 그린다(2026-10-08 재영).
+  // 관리는 그날 재직자 전원(휴무·배정 불가 포함)을 보이고, 주간 보기 아래에 공백 안내와 「이 시간대에 배정」을 둔다.
+  // 주간 근무표(직원 × 요일 표, 주 합계)는 없앴다(STAFF-26). 운영 07:00-22:00, 주 08-17 ~ 08-23, 샘플의 오늘은 공백이 드러나는 토요일.
+  const schedCrew = [
+    ["오세라", "점장", { 1: [9, 18], 2: [9, 18], 4: [9, 18], 5: [9, 18], 6: [11, 20] }],
+    ["유하람", "바리스타", { 2: [16, 22], 3: [16, 22], 5: [16, 22], 6: [12, 22], 0: [12, 22] }],
+    ["서지안", "바리스타", { 1: [7, 16], 2: [7, 16], 3: [7, 16], 4: [7, 16], 0: [10, 19] }],
+    ["권도윤", "바리스타", { 1: [13, 22], 3: [13, 22], 4: [13, 22], 5: [13, 22], 0: [13, 22] }],
+    ["하준서", "바리스타", {}, "계약 대기 · 배정 불가"],
+  ];
+  const schedWeekView = p.schedWeek(schedCrew, { open: 7, close: 22, dates: { 1: 17, 2: 18, 3: 19, 4: 20, 5: 21, 6: 22, 0: 23 }, pick: 6, all: true, gap: schedPanel });
+  const schedMonthView = p.schedMonth(A, schedCrew, { year: 2026, month: 7, today: "2026-08-22", all: true });
 
   const schedLog = p.section(
     "변경 이력",
@@ -261,14 +232,20 @@ export function staffSections({ A, R }) {
   const schedTab =
     p.bar(
       // 날짜 선택은 직원 상세와 같은 주 이동(2026-10-02 재영). 데모라 근무표 내용은 주를 바꿔도 그대로다.
-      p.weekNav(A, "", "2026-08-17"),
+      p.weekNav(A, "", "2026-08-17") + p.tag("warn", "확정 전"),
       p.ask("지난 주 복사", "soft", "지난 주 근무스케줄을 복사하시겠습니까?", "지난 주 근무스케줄을 지금 보고 있는 주에 그대로 넣습니다.", "복사") +
         ui.slideTrigger("근무스케줄 등록", schedPanel, "soft") +
         p.ask("근무스케줄 확정", "primary", "이 주의 근무스케줄을 확정하시겠습니까?", "", "확정"),
     ) +
-    p.bar(x.segment("근무표 보기", [{ id: "sched-day", label: "일간 근무표" }, { id: "sched-week", label: "주간 근무표" }])) +
-    x.tabPanel("sched-day", dayView, true) +
-    x.tabPanel("sched-week", weekView) +
+    p.bar(
+      x.segment("근무스케줄 보기", [
+        { id: "sched-week", label: "주간 보기" },
+        { id: "sched-month", label: "월간 보기" },
+      ]),
+      `<span class="text-[14px] text-erp-label">모리커피 서초점 · 운영 07:00-22:00</span>`,
+    ) +
+    x.tabPanel("sched-week", schedWeekView, true) +
+    x.tabPanel("sched-month", schedMonthView) +
     `<div class="flex flex-col gap-[24px] pt-[12px]">${schedLog}</div>`;
   const attendTab = `<div class="flex flex-col gap-[24px]">${p.cols(today, summary, "grid-cols-2")}${fixList}</div>${histDialogs}`;
 

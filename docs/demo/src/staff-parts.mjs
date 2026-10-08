@@ -30,6 +30,90 @@ export const coverRow = (counts, attrs = "") =>
 const swatch = (i, label) => `<span class="flex items-center gap-[6px]"><span class="size-[12px] rounded-[2px] ${COVER[i]}"></span>${label}</span>`;
 export const coverLegend = `<div class="flex items-center gap-[18px] pt-[12px] text-[13px] text-erp-label">${swatch(0, "아무도 없음")}${swatch(1, "혼자 근무 · 휴게 불가")}${swatch(2, "2명 이상")}</div>`;
 
+// ── 근무스케줄 보기(주간·월간) ──
+// 로그인 후 홈 점포 하나 화면과 근무스케줄 관리가 같은 틀을 쓴다(2026-10-08 재영).
+// crew 한 줄: [이름, 보조 글자, { 요일(0=일): [시작 시, 끝 시] }, 배정 불가 사유?]. 익일은 24+ 로 적는다.
+// 공통 opts: all(그날 재직자 전원 — 관리) / 아니면 근무자만(홈).
+const SCHED_BAR = {
+  on: "bg-erp-brand-soft text-white",
+  none: "bg-erp-subtle text-erp-muted",
+  blocked: "bg-erp-off-bg text-erp-off",
+};
+const WDS = "일월화수목금토";
+const hh = (h) => String(h % 24).padStart(2, "0");
+const hm = (h) => `${h >= 24 ? "익일 " : ""}${hh(h)}:00`;
+const shiftText = ([s, e]) => `${hm(s)}~${hm(e)}`;
+const workers = (crew, wd) => crew.filter((c) => !c[3] && c[2][wd]);
+
+// 주간 보기: 날짜가 붙은 요일 칩 + 그날 시간축 막대 + 근무 인원 줄 + 범례. 칩을 누르면 그 요일 묶음(data-wd-day)만 보인다(erp.js).
+// opts: { open, close, dates: { 요일: 날 }, pick: 처음 요일, all, gap: 공백 안내의 「이 시간대에 배정」이 여는 패널 id(관리만) }
+export function schedWeek(crew, { open, close, dates, pick, all = false, gap = "" }) {
+  const span = close - open;
+  const order = [1, 2, 3, 4, 5, 6, 0];
+  const chips = order
+    .map(
+      (wd) =>
+        `<button type="button" data-wd-pick="${wd}" data-count="${workers(crew, wd).length}" aria-pressed="${wd === pick}" class="flex h-[34px] flex-1 items-center justify-center gap-[6px] rounded-[2px] border text-[14px] transition-colors duration-150 ease-out aria-pressed:border-erp-brand aria-pressed:bg-erp-brand aria-pressed:text-white border-erp-button-line bg-white text-erp-ink hover:border-erp-brand">${WDS[wd]} ${dates[wd]}<span class="text-[13px] opacity-70">${workers(crew, wd).length}명</span></button>`,
+    )
+    .join("");
+  const strip = (tone, left, width, text) =>
+    `<div class="absolute inset-y-0 flex items-center truncate rounded-[2px] px-[10px] text-[13px] ${SCHED_BAR[tone]}" style="left:${left.toFixed(3)}%;width:${width.toFixed(3)}%">${text}</div>`;
+  const row = (c, wd) => {
+    const s = c[2][wd];
+    const inner = c[3] ? strip("blocked", 0, 100, c[3]) : s ? strip("on", ((s[0] - open) / span) * 100, ((s[1] - s[0]) / span) * 100, shiftText(s)) : strip("none", 0, 100, "휴무");
+    return `<div class="flex h-[46px] items-center border-b border-erp-thead-line"><span class="w-[140px] shrink-0 truncate px-[10px] text-[14px]">${c[0]} <span class="text-erp-muted">${c[1]}</span></span><div class="relative h-[34px] flex-1 rounded-[2px] bg-erp-thead-bg">${inner}</div></div>`;
+  };
+  // 그 시간대(1시간 칸)에 근무 중인 인원
+  const cover = (wd) => Array.from({ length: span }, (_, i) => workers(crew, wd).filter((c) => c[2][wd][0] <= open + i && open + i < c[2][wd][1]).length);
+  // 비는 시간대를 구간으로 묶어 알린다(관리만)
+  const gapBar = (cov) => {
+    const runs = [];
+    cov.forEach((n, i) => (n ? null : runs.length && runs.at(-1)[1] === open + i ? (runs.at(-1)[1] += 1) : runs.push([open + i, open + i + 1])));
+    const hours = runs.reduce((t, [s, e]) => t + e - s, 0);
+    const msg = runs.length ? `${runs.map(([s, e]) => `${hm(s)}-${hm(e)}`).join(", ")} 에 배정된 직원이 없습니다.` : "비는 시간대가 없습니다.";
+    return bar(`${tag(hours ? "risk" : "ok", hours ? `공백 ${hours}시간` : "공백 없음")}${note(msg)}`, hours ? ui.slideTrigger("이 시간대에 배정", gap, "soft") : "");
+  };
+  const groups = order
+    .map((wd) => {
+      const list = all ? crew : crew.filter((c) => c[2][wd] && !c[3]);
+      const cov = cover(wd);
+      return `<div data-wd-day="${wd}"${wd === pick ? "" : " hidden"}>${list.map((c) => row(c, wd)).join("")}${coverRow(cov)}${gap ? gapBar(cov) : ""}</div>`;
+    })
+    .join("");
+  const ticks = Array.from({ length: span }, (_, i) => (open + i >= 24 ? `익일 ${hh(open + i)}` : hh(open + i)));
+  return (
+    `<div class="flex gap-[6px]">${chips}</div>` +
+    `<div class="flex flex-col"><div class="flex h-[42px] items-center border-y border-erp-thead-line bg-erp-thead-bg"><span class="w-[140px] shrink-0 px-[10px] text-[14px] font-medium text-erp-thead-text">직원</span><div class="grid flex-1 text-[12px] text-erp-thead-text" style="grid-template-columns:repeat(${span},minmax(0,1fr))">${ticks.map((t) => `<span class="truncate">${t}</span>`).join("")}</div></div>${groups}</div>` +
+    coverLegend
+  );
+}
+
+// 월간 보기: 달력 + 왼쪽에 고른 날의 근무자(erp.js initDayPlan). 달력 칸에는 인원만 둔다.
+// opts: { year, month(0부터), today, holiday: { 날짜: 이름 }, all }
+export function schedMonth(A, crew, { year, month, today, holiday = {}, all = false }) {
+  const pad = (n) => String(n).padStart(2, "0");
+  const first = new Date(year, month, 1);
+  const lead = (first.getDay() + 6) % 7;
+  const weeks = Math.ceil((lead + new Date(year, month + 1, 0).getDate()) / 7);
+  const cells = Array.from({ length: weeks * 7 }, (_, i) => {
+    const d = new Date(year, month, 1 - lead + i);
+    const iso = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const tone = d.getDay() === 6 ? "text-erp-on" : d.getDay() === 0 ? "text-erp-off" : "text-erp-ink";
+    if (d.getMonth() !== month) return `<div class="min-h-[64px] bg-erp-thead-bg px-[8px] py-[6px] text-[13px] text-erp-muted">${d.getDate()}</div>`;
+    const t = holiday[iso] ? tag("warn", `${holiday[iso]} · 휴무`) : tag("quiet", `${workers(crew, d.getDay()).length}명`);
+    return `<button type="button" data-day="${iso}" aria-pressed="${iso === today}" class="flex min-h-[64px] flex-col items-start gap-[4px] bg-white px-[8px] py-[6px] text-left transition-colors duration-150 ease-out hover:bg-erp-on-bg aria-pressed:bg-erp-on-bg aria-pressed:shadow-[inset_0_0_0_2px_var(--color-erp-on)]"><b class="text-[13px] font-semibold ${tone}">${d.getDate()}</b>${t}</button>`;
+  }).join("");
+  // 하루 목록 한 줄: [이름, 보조 글자, { 요일: "09:00~18:00" }, 배정 불가 사유?]
+  const plan = { crew: crew.map((c) => [c[0], c[1], Object.fromEntries(Object.entries(c[2]).map(([wd, s]) => [wd, shiftText(s)])), c[3] || ""]), holiday, today, month, all };
+  return (
+    `<div data-dayplan='${JSON.stringify(plan)}' class="grid grid-cols-[268px_minmax(0,1fr)] items-start gap-[18px]">` +
+    `<div class="flex flex-col gap-[8px] rounded-[2px] border border-erp-thead-line p-[14px]"><div class="flex items-center justify-between"><button type="button" data-daymove="-1" aria-label="이전 날" class="grid size-[28px] place-items-center rounded-[2px] border border-erp-button-line">${ui.img(A, "prev.svg", 7, 12)}</button><b data-daytitle class="text-[15px] font-semibold"></b><button type="button" data-daymove="1" aria-label="다음 날" class="grid size-[28px] place-items-center rounded-[2px] border border-erp-button-line">${ui.img(A, "next.svg", 7, 12)}</button></div><p data-daysum class="text-[13px] text-erp-label"></p><ul data-daylist class="flex flex-col text-[14px]"></ul></div>` +
+    `<div><p class="mb-[8px] text-[15px] font-semibold">${year}년 ${month + 1}월</p><div class="grid grid-cols-7 gap-px overflow-hidden rounded-[2px] border border-erp-thead-line bg-erp-thead-line">${[..."월화수목금토일"]
+      .map((d, i) => `<div class="bg-erp-thead-bg py-[6px] text-center text-[13px] ${i === 5 ? "text-erp-on" : i === 6 ? "text-erp-off" : "text-erp-thead-text"}">${d}</div>`)
+      .join("")}${cells}</div></div></div>`
+  );
+}
+
 // 라벨 옆 ⓘ 툴팁. 헤더 서비스 바로가기 말풍선(ui.mjs tip)은 헤더 전용 알약형이라, 여기는 DESIGN.md 팝업 모양(2px·뜬 것 그림자)으로 그렸다.
 export const infoTip = (label, text) =>
   `<span tabindex="0" aria-label="${label} 설명" class="group relative inline-grid size-[16px] cursor-help place-items-center text-[13px] text-erp-label">ⓘ<span role="tooltip" class="pointer-events-none absolute top-[calc(100%+6px)] left-0 z-20 w-[280px] rounded-[2px] border border-[#ebebeb] bg-white px-[12px] py-[10px] text-[13px] leading-[1.6] font-normal whitespace-pre-line text-erp-ink opacity-0 shadow-[0_2px_6px_rgba(40,47,55,0.08)] transition-opacity duration-150 ease-out group-hover:opacity-100 group-focus-visible:opacity-100">${text}</span></span>`;

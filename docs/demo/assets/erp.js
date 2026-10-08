@@ -723,21 +723,23 @@
 
   // ── 점포 하나 화면 근무스케줄: 요일 칩(data-wd-pick)은 그 요일 근무자만 남기고, 월간 달력(data-dayplan)은 날짜를 누르면 그날 근무스케줄을 보인다 ──
   function initDayPlan(root) {
-    const { crew, holiday, today } = JSON.parse(root.dataset.dayplan);
+    // crew 한 줄: [이름, 보조 글자, { 요일: "09:00~18:00" }, 배정 불가 사유]. all 이면 그날 재직자 전원(휴무·배정 불가 포함).
+    const { crew, holiday, today, month, all } = JSON.parse(root.dataset.dayplan);
     const WD = "일월화수목금토";
     const pane = root.firstElementChild;
     const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
     let cur = today;
     const show = (key) => {
       const d = new Date(`${key}T00:00:00`);
-      if (d.getMonth() !== 8) return; // 데모 달력은 2026년 9월뿐
+      if (d.getMonth() !== month) return; // 데모 달력은 한 달뿐
       cur = key;
-      const off = holiday.includes(key);
-      const list = off ? [] : crew.filter((c) => c[3].includes(d.getDay()));
+      const off = Boolean(holiday[key]);
+      const work = (c) => !c[3] && c[2][d.getDay()];
+      const list = off ? [] : all ? crew : crew.filter(work);
       $("[data-daytitle]", pane).textContent = `${d.getMonth() + 1}월 ${d.getDate()}일 (${WD[d.getDay()]})`;
-      $("[data-daysum]", pane).innerHTML = off ? "추석 연휴 · 점포 휴무" : `근무 <b class="text-erp-ink">${list.length}명</b> · ${key === today ? "오늘" : key < today ? "지난 날" : "예정"}`;
+      $("[data-daysum]", pane).innerHTML = off ? `${holiday[key]} 연휴 · 점포 휴무` : `근무 <b class="text-erp-ink">${list.filter(work).length}명</b> · ${key === today ? "오늘" : key < today ? "지난 날" : "예정"}`;
       $("[data-daylist]", pane).innerHTML = list.length
-        ? list.map((c) => `<li class="flex items-center gap-[8px] border-b border-erp-thead-line py-[8px]"><span class="flex-1">${c[0]} <span class="text-erp-muted">${c[1]}</span></span><span class="text-right text-[13px] text-erp-muted">${c[2]}</span></li>`).join("")
+        ? list.map((c) => `<li class="flex items-center gap-[8px] border-b border-erp-thead-line py-[8px]"><span class="flex-1">${c[0]} <span class="text-erp-muted">${c[1]}</span></span>${c[3] ? `<span class="text-right text-[13px] text-erp-off">배정 불가</span>` : work(c) ? `<span class="text-right text-[13px] text-erp-muted">${c[2][d.getDay()]}</span>` : `<span class="text-right text-[13px] text-erp-muted">휴무</span>`}</li>`).join("")
         : '<li class="py-[8px] text-[13px] text-erp-muted">근무 없음</li>';
       $$("[data-day]", root).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.day === key)));
     };
@@ -757,11 +759,9 @@
     if (!chip) return;
     const wd = chip.dataset.wdPick;
     $$("[data-wd-pick]").forEach((b) => b.setAttribute("aria-pressed", String(b === chip)));
-    const rows = $$("[data-wd]");
-    rows.forEach((r) => (r.hidden = !r.dataset.wd.split(",").includes(wd)));
-    $$("[data-wd-cover]").forEach((r) => (r.hidden = r.dataset.wdCover !== wd));
+    $$("[data-wd-day]").forEach((g) => (g.hidden = g.dataset.wdDay !== wd));
     const n = $("[data-wd-count]");
-    if (n) n.textContent = rows.filter((r) => !r.hidden).length;
+    if (n) n.textContent = chip.dataset.count;
   });
 
   // ── 근무 일정 입력(data-workplan) → 소정근로시간 표(data-hours)·주 시간(data-hours-sum) ──

@@ -1012,9 +1012,6 @@
   .grid-cols-7 {
     grid-template-columns: repeat(7, minmax(0, 1fr));
   }
-  .grid-cols-15 {
-    grid-template-columns: repeat(15, minmax(0, 1fr));
-  }
   .grid-cols-\[5fr_7fr\] {
     grid-template-columns: 5fr 7fr;
   }
@@ -1032,9 +1029,6 @@
   }
   .grid-cols-\[268px_minmax\(0\,1fr\)\] {
     grid-template-columns: 268px minmax(0,1fr);
-  }
-  .grid-cols-\[repeat\(17\,minmax\(0\,1fr\)\)\] {
-    grid-template-columns: repeat(17,minmax(0,1fr));
   }
   .grid-rows-\[0fr\] {
     grid-template-rows: 0fr;

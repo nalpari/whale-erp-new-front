@@ -1,7 +1,7 @@
-/* 일간 근무표 — 날짜 이동과 다시 그리기.
-   목업이지만 버튼이 눌리기만 하고 아무 일도 안 일어나면 이 화면의 값을
-   보여줄 수 없다. 주간 근무표에 있는 한 주치 데이터를 그대로 넣어 두고,
-   좌우 버튼·드롭다운으로 요일을 옮기면 막대와 인원 띠를 다시 그린다.
+/* 근무스케줄 관리 — 주간 보기와 월간 보기 (로그인 후 홈 근무스케줄과 같은 틀, STAFF-26 · 2026-10-08 재영).
+   주간 보기: 날짜가 붙은 요일 칩을 누르면 그날의 막대·근무 인원 줄·공백 안내를 다시 그린다.
+   월간 보기: 2026년 8월 달력. 날짜를 누르면 왼쪽에 그날 재직자 전원(휴무·배정 불가 포함)이 나온다.
+   목업이라 한 주치 데이터를 요일 규칙으로 한 달에 펼친다.
 
    운영시간 07:00-22:00 = 15칸. 1시간 = 100/15 %. */
 (function () {
@@ -17,30 +17,26 @@
     { name: "하준서", role: "바리스타", blocked: "계약 대기 · 배정 불가" }
   ];
 
-  /* [시작, 끝, 유형] · null 이면 휴무. 주간 근무표와 같은 값이다. */
+  /* [시작, 끝] · null 이면 휴무. 칩 순서(월~일)와 같다. */
   var DAYS = [
-    { date: "2026-08-17", label: "08-17 월", shifts: {
-      오세라: [9, 18, "미들"], 서지안: [7, 16, "오픈"], 권도윤: [13, 22, "마감"], 유하람: null } },
-    { date: "2026-08-18", label: "08-18 화", shifts: {
-      오세라: [9, 18, "미들"], 서지안: [7, 16, "오픈"], 권도윤: null, 유하람: [16, 22, "마감"] } },
-    { date: "2026-08-19", label: "08-19 수", shifts: {
-      오세라: null, 서지안: [7, 16, "오픈"], 권도윤: [13, 22, "마감"], 유하람: [16, 22, "마감"] } },
-    { date: "2026-08-20", label: "08-20 목", shifts: {
-      오세라: [9, 18, "미들"], 서지안: [7, 16, "오픈"], 권도윤: [13, 22, "마감"], 유하람: null } },
-    { date: "2026-08-21", label: "08-21 금", shifts: {
-      오세라: [9, 18, "미들"], 서지안: null, 권도윤: [13, 22, "마감"], 유하람: [16, 22, "마감"] } },
-    { date: "2026-08-22", label: "08-22 토", shifts: {
-      오세라: [11, 20, "미들"], 서지안: null, 권도윤: null, 유하람: [12, 22, "마감"] } },
-    { date: "2026-08-23", label: "08-23 일", shifts: {
-      오세라: null, 서지안: [10, 19, "오픈"], 권도윤: [13, 22, "마감"], 유하람: [12, 22, "마감"] } }
+    { date: "2026-08-17", shifts: { 오세라: [9, 18], 서지안: [7, 16], 권도윤: [13, 22], 유하람: null } },
+    { date: "2026-08-18", shifts: { 오세라: [9, 18], 서지안: [7, 16], 권도윤: null, 유하람: [16, 22] } },
+    { date: "2026-08-19", shifts: { 오세라: null, 서지안: [7, 16], 권도윤: [13, 22], 유하람: [16, 22] } },
+    { date: "2026-08-20", shifts: { 오세라: [9, 18], 서지안: [7, 16], 권도윤: [13, 22], 유하람: null } },
+    { date: "2026-08-21", shifts: { 오세라: [9, 18], 서지안: null, 권도윤: [13, 22], 유하람: [16, 22] } },
+    { date: "2026-08-22", shifts: { 오세라: [11, 20], 서지안: null, 권도윤: null, 유하람: [12, 22] } },
+    { date: "2026-08-23", shifts: { 오세라: null, 서지안: [10, 19], 권도윤: [13, 22], 유하람: [12, 22] } }
   ];
 
-  var DOW = ["일", "월", "화", "수", "목", "금", "토"];
+  var DOW = "일월화수목금토";
   var TODAY = 5; /* 샘플의 오늘. 공백이 드러나는 토요일이다 */
-  var cur = TODAY;
+  var TODAY_ISO = "2026-08-22";
 
   function pct(h) { return ((h - OPEN) / SPAN) * 100; }
   function hhmm(h) { return (h < 10 ? "0" : "") + h + ":00"; }
+  function shiftText(s) { return hhmm(s[0]) + "~" + hhmm(s[1]); }
+  /* 요일(0=일) → 그 요일의 하루 데이터 */
+  function dayOf(wd) { return DAYS[(wd + 6) % 7]; }
 
   /* 시간대별 인원 수 — 한 칸은 t ~ t+1 시간이다. */
   function coverage(day) {
@@ -59,49 +55,28 @@
   function rowHTML(p, day) {
     var s = day.shifts[p.name];
     var bar;
-    if (p.blocked) {
-      bar = '<div class="tl__bar tl__bar--blocked" style="left:0;width:100%">' + p.blocked + "</div>";
-    } else if (!s) {
-      bar = '<div class="tl__bar tl__bar--none" style="left:0;width:100%">휴무</div>';
-    } else {
-      bar = '<div class="tl__bar" style="left:' + pct(s[0]).toFixed(3) + "%;width:" +
-            (((s[1] - s[0]) / SPAN) * 100).toFixed(3) + '%">' +
-            hhmm(s[0]) + "-" + hhmm(s[1]) + " · " + s[2] + "</div>";
-    }
-    return '<div class="tl__row"><span class="tl__name">' + p.name +
-           "<span>" + p.role + "</span></span>" +
+    if (p.blocked) bar = '<div class="tl__bar tl__bar--blocked" style="left:0;width:100%">' + p.blocked + "</div>";
+    else if (!s) bar = '<div class="tl__bar tl__bar--none" style="left:0;width:100%">휴무</div>';
+    else bar = '<div class="tl__bar" style="left:' + pct(s[0]).toFixed(3) + "%;width:" + (((s[1] - s[0]) / SPAN) * 100).toFixed(3) + '%">' + shiftText(s) + "</div>";
+    return '<div class="tl__row"><span class="tl__name">' + p.name + "<span>" + p.role + "</span></span>" +
            '<div class="tl__track">' + bar + "</div></div>";
   }
 
-  function render(root) {
+  function renderWeek(root, cur) {
     var day = DAYS[cur], cov = coverage(day);
     var zero = cov.filter(function (n) { return n === 0; }).length;
     var alone = cov.filter(function (n) { return n === 1; }).length;
-
-    root.querySelector("[data-tl-rows]").innerHTML =
-      STAFF.map(function (p) { return rowHTML(p, day); }).join("");
-
+    root.querySelector("[data-tl-rows]").innerHTML = STAFF.map(function (p) { return rowHTML(p, day); }).join("");
     root.querySelector("[data-tl-cover]").innerHTML =
-      cov.map(function (n) { return '<span class="tl__cell" data-n="' + n + '">' + n + "</span>"; }).join("");
-
-    var d = new Date(day.date + "T00:00:00");
-    root.querySelector("[data-tl-title]").textContent =
-      day.date + " " + DOW[d.getDay()];
+      cov.map(function (n) { return '<span class="tl__cell" data-n="' + Math.min(n, 2) + '">' + n + "</span>"; }).join("");
+    root.querySelectorAll("[data-tl-chip]").forEach(function (b) { b.setAttribute("aria-pressed", String(Number(b.dataset.tlChip) === cur)); });
 
     var badge = root.querySelector("[data-tl-badge]");
-    if (zero) {
-      badge.className = "badge badge--risk";
-      badge.textContent = "공백 " + zero + "시간";
-    } else if (alone) {
-      badge.className = "badge badge--warn";
-      badge.textContent = "혼자 근무 " + alone + "시간";
-    } else {
-      badge.className = "badge badge--ok";
-      badge.textContent = "공백 없음";
-    }
+    if (zero) { badge.className = "badge badge--risk"; badge.textContent = "공백 " + zero + "시간"; }
+    else if (alone) { badge.className = "badge badge--warn"; badge.textContent = "혼자 근무 " + alone + "시간"; }
+    else { badge.className = "badge badge--ok"; badge.textContent = "공백 없음"; }
 
-    /* 언제가 비는지 문장으로도 남긴다. 숫자만으로는 눈에 안 들어온다.
-       흩어진 시간을 개수로 뭉뚱그리면 어디가 문제인지 알 수 없어 구간으로 묶는다. */
+    /* 언제가 비는지 구간으로 묶어 문장으로 남긴다. */
     function runs(match) {
       var out = [], run = null;
       cov.forEach(function (n, i) {
@@ -118,39 +93,70 @@
     if (gaps.length) msg.push(gaps.join(", ") + " 에 배정된 직원이 없다");
     if (solo.length) msg.push(solo.join(", ") + " 은 혼자 근무한다");
     root.querySelector("[data-tl-note]").textContent = msg.join(" · ") || "공백도 단독 근무도 없다";
+  }
 
-    var sel = root.querySelector("[data-tl-date]");
-    if (sel) sel.selectedIndex = cur;
-    root.querySelector('[data-tl-step="-1"]').disabled = cur === 0;
-    root.querySelector('[data-tl-step="1"]').disabled = cur === DAYS.length - 1;
-    var td = root.querySelector("[data-tl-today]");
-    if (td) td.disabled = cur === TODAY;
+  /* 월간 보기: 8월 달력을 그리고, 고른 날의 재직자 전원을 왼쪽에 보인다. */
+  function bootMonth() {
+    var cal = document.querySelector("[data-tl-root] [data-cal]");
+    var pane = document.querySelector("[data-tl-root] [data-daypane]");
+    if (!cal || !pane) return;
+    var CELL = "min-height: 64px; padding: 6px 8px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; border: 0; text-align: left; font: inherit; ";
+    var html = "월화수목금토일".split("").map(function (d, i) {
+      return '<div style="padding: 6px 0; text-align: center; font-size: 12px; background: var(--canvas-soft); color: ' +
+        (i === 5 ? "var(--info)" : i === 6 ? "var(--risk-text)" : "var(--body)") + '">' + d + "</div>";
+    }).join("");
+    var first = new Date(2026, 7, 1), lead = (first.getDay() + 6) % 7;
+    var weeks = Math.ceil((lead + 31) / 7);
+    for (var i = 0; i < weeks * 7; i++) {
+      var d = new Date(2026, 7, 1 - lead + i);
+      if (d.getMonth() !== 7) {
+        html += '<div style="' + CELL + 'background: var(--canvas-soft)"><b class="mono" style="font-size: 12.5px; color: var(--muted-tert)">' + d.getDate() + "</b></div>";
+        continue;
+      }
+      var work = STAFF.filter(function (p) { return !p.blocked && dayOf(d.getDay()).shifts[p.name]; }).length;
+      var color = d.getDay() === 6 ? "var(--info)" : d.getDay() === 0 ? "var(--risk-text)" : "var(--ink)";
+      html += '<button type="button" data-day="' + iso(d) + '" style="' + CELL + 'background: var(--surface-card, #fff); cursor: pointer"><b class="mono" style="font-size: 12.5px; color: ' + color + '">' +
+        d.getDate() + '</b><span class="badge badge--quiet">' + work + "명</span></button>";
+    }
+    cal.innerHTML = html;
+    var cur = TODAY_ISO;
+    function iso(x) { return x.getFullYear() + "-" + String(x.getMonth() + 1).padStart(2, "0") + "-" + String(x.getDate()).padStart(2, "0"); }
+    function show(key) {
+      var dd = new Date(key + "T00:00:00");
+      if (dd.getMonth() !== 7) return;
+      cur = key;
+      var day = dayOf(dd.getDay());
+      var work = STAFF.filter(function (p) { return !p.blocked && day.shifts[p.name]; }).length;
+      pane.querySelector("[data-daytitle]").textContent = (dd.getMonth() + 1) + "월 " + dd.getDate() + "일 (" + DOW[dd.getDay()] + ")";
+      pane.querySelector("[data-daysum]").innerHTML = "근무 <b>" + work + "명</b>" + (key === TODAY_ISO ? " · 오늘" : key < TODAY_ISO ? " · 지난 날" : " · 예정");
+      pane.querySelector("[data-daylist]").innerHTML = STAFF.map(function (p) {
+        var s = day.shifts[p.name];
+        var end = p.blocked ? '<span style="color: var(--risk-text)">배정 불가</span>' : s ? '<span class="mono subtle">' + shiftText(s) + "</span>" : '<span class="subtle">휴무</span>';
+        return '<div class="row" style="padding: 8px 0"><div class="rowmain__text"><b>' + p.name + "</b><span>" + p.role + "</span></div>" +
+          '<span class="row__end" style="text-align: right; font-size: 12px">' + end + "</span></div>";
+      }).join("");
+      cal.querySelectorAll("[data-day]").forEach(function (b) {
+        var on = b.dataset.day === key;
+        b.style.boxShadow = on ? "inset 0 0 0 2px var(--info)" : "";
+        b.style.background = on ? "var(--info-wash)" : "var(--surface-card, #fff)";
+      });
+    }
+    cal.addEventListener("click", function (e) { var b = e.target.closest("[data-day]"); if (b) show(b.dataset.day); });
+    pane.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-daymove]"); if (!b) return;
+      var x = new Date(cur + "T00:00:00"); x.setDate(x.getDate() + Number(b.dataset.daymove)); show(iso(x));
+    });
+    show(TODAY_ISO);
   }
 
   function boot() {
     var root = document.querySelector("[data-tl-root]");
     if (!root) return;
-
-    var sel = root.querySelector("[data-tl-date]");
-    if (sel) {
-      sel.innerHTML = DAYS.map(function (d) { return "<option>" + d.label + "</option>"; }).join("");
-      sel.addEventListener("change", function () { cur = sel.selectedIndex; render(root); });
-    }
-    root.querySelectorAll("[data-tl-step]").forEach(function (b) {
-      b.addEventListener("click", function () {
-        cur = Math.min(DAYS.length - 1, Math.max(0, cur + Number(b.dataset.tlStep)));
-        render(root);
-      });
+    root.querySelectorAll("[data-tl-chip]").forEach(function (b) {
+      b.addEventListener("click", function () { renderWeek(root, Number(b.dataset.tlChip)); });
     });
-    var today = root.querySelector("[data-tl-today]");
-    if (today) today.addEventListener("click", function () { cur = TODAY; render(root); });
-    /* 좌우 화살표로도 넘긴다 — 하루씩 훑어볼 때 편하다. */
-    root.addEventListener("keydown", function (e) {
-      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
-      cur = Math.min(DAYS.length - 1, Math.max(0, cur + (e.key === "ArrowRight" ? 1 : -1)));
-      render(root); e.preventDefault();
-    });
-    render(root);
+    renderWeek(root, TODAY);
+    bootMonth();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
