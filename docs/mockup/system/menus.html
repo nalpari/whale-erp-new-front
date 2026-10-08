@@ -9,8 +9,8 @@
   </head>
   <body data-root="../" data-page="system" data-sub="system/menus.html">
     <!-- 플랫폼 메뉴 관리 · /platform/system/menus · S-GXMZOU (F-CWWQUR) · 1팀
-         처음 들어오면 서비스 목록을 본다. 서비스 코드·이름·사용 상태는 공통코드 ‘서비스’(SERVICE) 그룹에서 읽고 여기서 바꾸지 않는다.
-         서비스를 고르면 왼쪽에 그 서비스의 메뉴 트리(최대 3단계), 오른쪽에 메뉴 상세가 선다. ?state=plat · ?state=erp 로 바로 들어온다.
+         서비스 목록은 두지 않는다(2026-10-08). 처음 들어오면 첫 탭(Whale ERP)의 메뉴 트리를 본다. 서비스 코드·이름·사용 상태는 공통코드 ‘서비스’(SERVICE) 그룹에서 읽고 여기서 바꾸지 않는다.
+         탭으로 서비스를 고르면 왼쪽에 그 서비스의 메뉴 트리(최대 3단계), 오른쪽에 메뉴 상세가 선다. ?state=plat · ?state=erp 로 바로 들어온다.
          이 목업은 실제로 움직인다 — 맨 아래 스크립트가 메뉴를 메모리에 들고 트리와 상세를 다시 그린다. 새로 고치면 처음 표본으로 돌아간다.
            · 행을 누르면 오른쪽에 상세가 선다. 고른 행을 한 번 더 누르면 고른 것을 푼다.
              상세 순서는 서비스 코드 → 상위 메뉴 → 메뉴 코드·메뉴 순서(한 줄) → 노출 메뉴명 · 메뉴 URL · 메뉴 사용 상태.
@@ -57,9 +57,8 @@
               <div class="demo" data-demo="menus">
                 <b>목업 상태</b>
                 <div class="seg">
-                  <button type="button" data-state="list" aria-pressed="true">서비스 목록</button>
+                  <button type="button" data-state="erp" aria-pressed="true">Whale ERP 트리(3단계)</button>
                   <button type="button" data-state="plat" aria-pressed="false">플랫폼 관리 트리</button>
-                  <button type="button" data-state="erp" aria-pressed="false">Whale ERP 트리(3단계)</button>
                   <button type="button" data-state="resv" aria-pressed="false">예약관리 트리(사용중지 서비스)</button>
                 </div>
               </div>
@@ -74,78 +73,13 @@
               </div>
             </div>
 
-            <!-- ============ 서비스 목록 (기본 화면) ============ -->
-            <section class="panel" data-show="list">
-              <div class="panel__head">
-                <h2 class="t-h2">서비스</h2>
-                <span class="badge badge--quiet">12개 · 사용 11 · 사용중지 1</span>
-                <span class="subtle" style="font-size: 12px">공통코드 표시 순서</span>
-              </div>
-              <div class="tblwrap">
-                <table class="tbl tbl--dense">
-                  <thead>
-                    <tr>
-                      <th scope="col" class="n">순서</th>
-                      <th scope="col">서비스 코드</th>
-                      <th scope="col">서비스명</th>
-                      <th scope="col">서비스 사용 상태</th>
-                      <th scope="col" class="n">등록 메뉴 수</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td class="n">1</td>
-                      <td class="mono"><button class="tlink" type="button" data-state-go="erp">WHALE_ERP</button></td>
-                      <td class="k"><button class="tlink" type="button" data-state-go="erp">Whale ERP</button></td>
-                      <td><span class="badge badge--ok">사용</span></td>
-                      <td class="n" id="mn-cnt-erp">48</td>
-                    </tr>
-                    <tr>
-                      <td class="n">2</td>
-                      <td class="mono"><button class="tlink" type="button" data-state-go="plat">PLATFORM</button></td>
-                      <td class="k"><button class="tlink" type="button" data-state-go="plat">Whale ERP 플랫폼 관리</button></td>
-                      <td><span class="badge badge--ok">사용</span></td>
-                      <td class="n" id="mn-cnt-plat">22</td>
-                    </tr>
-                    <tr><td class="n">3</td><td class="mono">POS</td><td>POS</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
-                    <tr><td class="n">4</td><td class="mono">KIOSK</td><td>KIOSK</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
-                    <tr><td class="n">5</td><td class="mono">TABLE_ORDER</td><td>Table Order</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
-                    <tr><td class="n">6</td><td class="mono">PICK_UP_ORDER</td><td>Pick Up Order</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
-                    <tr><td class="n">7</td><td class="mono">QR_ORDER</td><td>QR Order</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
-                    <tr><td class="n">8</td><td class="mono">RECIPE_MANAGEMENT</td><td>레시피관리</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
-                    <tr><td class="n">9</td><td class="mono">ORDER_MANAGEMENT</td><td>발주관리</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
-                    <tr><td class="n">10</td><td class="mono">STORE_INVENTORY</td><td>점포재고관리</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
-                    <tr><td class="n">11</td><td class="mono">WAITING_MANAGEMENT</td><td>대기순번관리</td><td><span class="badge badge--ok">사용</span></td><td class="n">0</td></tr>
-                    <!-- 사용중지 서비스도 골라 트리를 보고 메뉴를 편집한다 — 사용자 화면·신규 권한 부여에서만 빠진다 (확정 2026-09-29) -->
-                    <tr style="color: var(--muted)">
-                      <td class="n">12</td>
-                      <td class="mono"><button class="tlink" type="button" data-state-go="resv">RESERVATION</button></td>
-                      <td><button class="tlink" type="button" data-state-go="resv">예약관리</button></td>
-                      <td><span class="badge badge--warn">사용중지</span> <span class="subtle" style="font-size: 12px">사용자 화면·권한 부여 제외 · 메뉴는 편집 가능</span></td>
-                      <td class="n" id="mn-cnt-resv">3</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div class="panel__note">
-                서비스는 <a class="tlink" href="codes.html?state=service">플랫폼 공통코드 관리의 ‘서비스’ 그룹</a>에서 읽습니다. 이 화면에서는 서비스를 추가하거나 이름·상태를 바꾸지 않습니다.
-              </div>
-            </section>
 
             <!-- ============ 서비스 선택 뒤 — 트리 + 상세 ============
                  탭은 서비스 전환이자 ‘다른 서비스 영역’이다. 메뉴를 끄는 동안 다른 서비스 탭에 놓을 수 없음을 표시한다. -->
             <div class="tabs" data-show="plat erp resv" hidden>
-              <button type="button" data-state-go="list"><span data-icon="arrowleft" data-icon-size="14"></span>서비스 목록</button>
               <button type="button" data-state-go="erp" data-svc-tab="erp" aria-selected="false">Whale ERP <span class="count" data-tab-count>48</span><span data-noplace hidden>· 놓을 수 없음</span></button>
               <button type="button" data-state-go="plat" data-svc-tab="plat" aria-selected="false">Whale ERP 플랫폼 관리 <span class="count" data-tab-count>22</span><span data-noplace hidden>· 놓을 수 없음</span></button>
               <button type="button" data-state-go="resv" data-svc-tab="resv" aria-selected="false">예약관리 <span class="badge badge--warn">사용중지</span> <span class="count" data-tab-count>3</span><span data-noplace hidden>· 놓을 수 없음</span></button>
-            </div>
-            <div class="band band--warn" data-show="resv" hidden>
-              <span class="band__ic" data-icon="info" data-icon-size="20"></span>
-              <div class="band__body">
-                <div class="band__title">사용중지 서비스입니다 — 메뉴는 편집할 수 있지만 사용자 화면에는 보이지 않습니다</div>
-                <p class="band__desc">서비스 사용 상태는 플랫폼 공통코드 관리의 ‘서비스’ 그룹에서 바꿉니다. 다시 사용하면 여기서 준비한 메뉴가 그대로 나타나고, 권한은 권한 관리에서 줍니다.</p>
-              </div>
             </div>
 
             <!-- 결과 띠 — 이동·저장·거절·실패를 한 곳에서 알린다. 스크립트가 채우고, 화면을 내려도 따라온다. -->
@@ -157,10 +91,10 @@
                 <div class="panel__head">
                   <h2 class="t-h2" id="mn-tree-t">메뉴 트리</h2>
                   <span class="badge badge--quiet" id="mn-size">22개</span>
-                  <span class="subtle" id="mn-hint" style="font-size: 12px">상위 메뉴 · 순서대로 · 최대 3단계</span>
+                  <span class="subtle" id="mn-hint" style="font-size: 12px"></span>
                   <div class="panel__end" data-show-role="edit">
                     <button class="btn btn--primary btn--sm" type="button" id="mn-new">
-                      <span data-icon="plus" data-icon-size="14"></span>신규 메뉴
+                      <span data-icon="plus" data-icon-size="14"></span>등록
                     </button>
                   </div>
                 </div>
@@ -168,24 +102,11 @@
                   <table class="tbl tbl--dense tbl--fit" id="mn-tree"></table>
                   <div id="mn-drop" hidden aria-hidden="true" style="position: absolute; pointer-events: none"></div>
                 </div>
-                <div class="panel__note" data-show-role="edit">
-                  손잡이를 끌어 같은 서비스 안에서 순서·상위 메뉴·단계를 바꿉니다. 행의 위·아래 끝에 놓으면 그 앞·뒤로, 가운데에 놓으면 그 메뉴 안 맨 끝으로 들어갑니다.
-                  하위 메뉴는 함께 움직이고, 놓을 수 없는 자리는 빨간 점선으로 표시합니다. 사용중지 메뉴는 흐리게 보입니다.
-                  상위 메뉴가 사용중지면 그 아래 메뉴도 사용자 화면에 나오지 않습니다 — 하위의 사용 상태는 그대로 두어 상위를 다시 켜면 돌아옵니다.
-                </div>
-                <div class="panel__note" data-show-role="view" hidden>조회 권한만 있어 끌기 손잡이가 없습니다. 사용중지 메뉴는 흐리게 보입니다.</div>
               </section>
 
               <!-- 오른쪽 — 메뉴 상세·수정과 위치 옮기기. 스크립트가 고른 메뉴로 그린다. -->
               <div class="stack" id="mn-detail"></div>
             </div>
-
-            <p class="note">
-              <span data-icon="info" data-icon-size="14"></span>
-              <span>
-                메뉴 삭제 버튼과 변경 이력 영역은 일부러 두지 않았다 — 명세가 둘 다 제외한다. 권한 관리의 메뉴 등록 팝업은 이 트리를 그대로 읽고, 사용중지 메뉴와 사용중지 서비스는 새 권한 부여에서 뺀다.
-              </span>
-            </p>
           </div>
         </div>
       </main>
@@ -295,7 +216,8 @@
         function ic(name, sz) { return '<svg width="' + sz + '" height="' + sz + '" aria-hidden="true"><use href="#i-' + name + '"/></svg>'; }
 
         /* ---------- 화면 상태 ---------- */
-        var st = { svc: null, role: "edit", sel: { plat: SVC.plat.first, erp: SVC.erp.first, resv: SVC.resv.first }, draft: null, buf: null, band: null, moved: null, drag: null };
+        /* 처음 진입은 고른 메뉴 없이 오른쪽에 안내를 보인다(2026-10-08) */
+        var st = { svc: null, role: "edit", sel: { plat: null, erp: null, resv: null }, draft: null, buf: null, band: null, moved: null, drag: null };
         var root = document.getElementById("menus");
         var listBar = root.querySelector('[data-demo="menus"]:not([data-demo-key])');
         var roleBar = root.querySelector('[data-demo="menus"][data-demo-key="role"]');
@@ -443,6 +365,7 @@
             (edit ? '<td style="' + cell + mark + ' width: 30px; padding-right: 0">' + handle + "</td>" : "") +
             '<td style="' + cell + (edit ? "" : mark) + " padding-left: " + (10 + (L - 1) * 18) + 'px">' + nm + "</td>" +
             '<td class="mono" style="' + cell + '">' + n.code + "</td>" +
+            '<td class="subtle" style="' + cell + ' white-space: nowrap">' + L + "단계</td>" +
             (n.url ? '<td class="mono" style="' + cell + ' font-size: 12px; word-break: break-all">' + esc(n.url) + "</td>" : '<td class="nil" style="' + cell + '">—</td>') +
             '<td class="n" style="' + cell + '">' + (pos(S(), n) + 1) + "</td>" +
             '<td style="' + cell + '">' + (n.use ? '<span class="badge badge--ok">사용</span>' : '<span class="badge badge--warn">사용중지</span>') + "</td></tr>";
@@ -454,12 +377,13 @@
             '<td style="' + cell + " color: var(--info); padding-left: " + (10 + (L - 1) * 18) + 'px"><b id="mn-draft-name">' + (d.name.trim() ? esc(d.name) : "새 메뉴") + "</b> " +
             '<span class="badge badge--preview">작성 중</span></td>' +
             '<td class="mono" style="' + cell + '">' + nextCode() + "</td>" +
+            '<td class="subtle" style="' + cell + ' white-space: nowrap">' + L + "단계</td>" +
             '<td class="nil" style="' + cell + '">—</td>' +
             '<td class="n" style="' + cell + '">' + (sib(S(), d.parent).length + 1) + "</td>" +
             '<td class="nil" style="' + cell + '">—</td></tr>';
         }
         function renderTree() {
-          var s = S(), edit = st.role === "edit", cols = edit ? 6 : 5, out = [];
+          var s = S(), edit = st.role === "edit", cols = edit ? 7 : 6, out = []; /* 메뉴 계층 칸이 하나 늘었다 */
           (function go(list, parent, L) {
             list.forEach(function (n) { out.push(rowHTML(n, L, edit)); go(n.kids, n, L + 1); });
             if (st.draft && st.draft.parent === parent) out.push(draftHTML(edit));
@@ -469,7 +393,7 @@
           tree.innerHTML =
             "<thead><tr>" +
             (edit ? '<th scope="col" style="' + TH + '; width: 30px; padding-right: 0"><span class="subtle" title="끌어서 옮기기">이동</span></th>' : "") +
-            '<th scope="col" style="' + TH + '">노출 메뉴명</th><th scope="col" style="' + TH + '">메뉴 코드</th><th scope="col" style="' + TH + '">메뉴 URL</th>' +
+            '<th scope="col" style="' + TH + '">노출 메뉴명</th><th scope="col" style="' + TH + '">메뉴 코드</th><th scope="col" style="' + TH + '">메뉴 계층</th><th scope="col" style="' + TH + '">메뉴 URL</th>' +
             '<th scope="col" class="n" style="' + TH + '">순서</th><th scope="col" style="' + TH + '">사용 상태</th></tr></thead>' +
             "<tbody>" + out.join("") + "</tbody>";
         }
@@ -483,9 +407,9 @@
           var s = S(), d = st.draft, n = d ? null : selNode(), edit = st.role === "edit";
           if (!d && !n) {
             detail.innerHTML =
-              '<section class="panel"><div class="panel__head"><h2 class="t-h2">메뉴 상세</h2></div>' +
+              '<section class="panel"><div class="panel__head"><h2 class="t-h2">메뉴 수정</h2></div>' +
               '<div class="empty"><span class="empty__ic">' + ic("list", 22) + "</span><p>왼쪽 트리에서 메뉴를 고르면 상세가 여기에 섭니다.</p>" +
-              (edit ? '<p class="subtle" style="font-size: 12px">아무것도 고르지 않고 신규 메뉴를 누르면 최상위(1단계) 메뉴로 등록합니다.</p>' : "") +
+              (edit ? '<p class="subtle" style="font-size: 12px">아무것도 고르지 않고 등록을 누르면 최상위(1단계) 메뉴로 등록합니다.</p>' : "") +
               "</div></section>";
             return;
           }
@@ -493,9 +417,8 @@
           var order = d ? sib(s, p).length + 1 : pos(s, n) + 1, code = d ? nextCode() : n.code;
           var v = d || (st.buf && st.buf.code === n.code ? st.buf : n);
           var parentTxt = p ? p.code + " · " + path(p) : "없음 · 최상위(1단계) 메뉴";
-          var head = '<div class="panel__head"><h2 class="t-h2">' + (d ? "신규 메뉴 등록" : "메뉴 상세") + '</h2><span class="badge badge--quiet">' + L + "단계</span>" +
+          var head = '<div class="panel__head"><h2 class="t-h2">' + (d ? "메뉴 등록" : edit ? "메뉴 수정" : "메뉴 상세") + '</h2><span class="badge badge--quiet">' + L + "단계</span>" +
             "</div>";
-          var noDelete = '<div class="panel__note">메뉴는 지우지 않습니다. 쓰지 않는 메뉴는 사용중지로 돌립니다. 메뉴 등록·수정·이동 이력은 남기지 않습니다.</div>';
 
           if (!edit) {
             detail.innerHTML = '<section class="panel">' + head +
@@ -507,21 +430,17 @@
               "<dt>노출 메뉴명</dt><dd>" + esc(n.name) + "</dd>" +
               "<dt>메뉴 URL</dt><dd" + (n.url ? ' class="mono">' + esc(n.url) : ' class="nil">—') + "</dd>" +
               "<dt>메뉴 사용 상태</dt><dd>" + (n.use ? '<span class="badge badge--ok">사용</span>' : '<span class="badge badge--warn">사용중지</span>') + "</dd>" +
-              "</dl>" + noDelete + "</section>";
+              "</dl></section>";
             return;
           }
 
           /* 상위(또는 그 위)가 사용중지면 사용자에게 보이지 않는다 */
           var offUp = false;
           for (var q = p; q; q = q.parent) if (!q.use) offUp = true;
-          var hideHelp = offUp ? '<span class="help">상위가 사용중지라 사용자에게는 보이지 않습니다.</span>' : "";
-          var parentHelp = hideHelp + (d
-            ? (d.parent
-                ? '<button class="tbtn" type="button" data-top style="align-self: flex-start">최상위 메뉴로 바꾸기</button>'
-                : d.from ? '<button class="tbtn" type="button" data-back style="align-self: flex-start">‘' + esc(d.from.name) + "’ 아래로 되돌리기</button>" : '<span class="help">고른 메뉴가 없어 최상위에 등록합니다.</span>')
-            : '<span class="help">' + (L >= MAX ? "3단계 메뉴라 이 아래에는 하위 메뉴를 둘 수 없습니다. " : "") + "상위 메뉴와 순서는 트리에서 끌거나 아래 ‘위치 옮기기’로 바꿉니다.</span>");
+          var hideHelp = ""; /* 입력칸 아래 안내는 두지 않는다(2026-10-08) */
+          var parentHelp = hideHelp; /* 최상위 메뉴로 바꾸기 · 되돌리기는 두지 않는다(2026-10-08) */
           var err = v.err ? '<span class="err" id="mn-name-err">' + ic("alert", 14) + esc(v.err) + "</span>" : "";
-          var html = '<section class="panel" aria-label="' + (d ? "신규 메뉴 등록" : "메뉴 상세") + '">' + head +
+          var html = '<section class="panel" aria-label="' + (d ? "메뉴 등록" : "메뉴 수정") + '">' + head +
             '<div class="panel__body">' +
             field("mn-svc", "서비스 코드", s.code, "mono") +
             field("mn-parent", "상위 메뉴", parentTxt, "", parentHelp) +
@@ -529,35 +448,18 @@
             field("mn-code", "메뉴 코드" + (d ? ' <span class="badge badge--preview">자동 채번</span>' : ""), code, "mono") +
             field("mn-order", "메뉴 순서", String(order), "mono") +
             "</div>" +
-            (d ? '<span class="subtle" style="font-size: 12px; margin-top: calc(-1 * var(--s-2))">코드는 저장할 때 확정됩니다. 순서는 상위 메뉴의 맨 끝이고, 저장 뒤 트리에서 옮깁니다.</span>' : "") +
             '<div class="field"><label for="mn-name">노출 메뉴명 <span class="req">*</span></label>' +
             '<input class="input" id="mn-name" value="' + esc(v.name) + '" placeholder="' + esc(s.eg) + '"' + (v.err ? ' aria-invalid="true" aria-describedby="mn-name-err"' : "") + " />" + err + "</div>" +
-            '<div class="field"><label for="mn-url">메뉴 URL <span class="subtle" style="font-weight: 400">선택</span></label><input class="input mono" id="mn-url" value="' + esc(v.url) + '" placeholder="' + esc(s.urlEg) + '" />' +
-            '<span class="help">하위 메뉴를 묶기만 하는 메뉴는 비워 둘 수 있습니다. 넣으면 누를 때 그 화면으로 갑니다.</span></div>' +
+            '<div class="field"><label for="mn-url">메뉴 URL <span class="subtle" style="font-weight: 400">선택</span></label><input class="input mono" id="mn-url" value="' + esc(v.url) + '" placeholder="' + esc(s.urlEg) + '" /></div>' +
             '<div class="field"><label id="mn-use-l">메뉴 사용 상태</label>' +
             '<div class="seg" role="group" aria-labelledby="mn-use-l" style="align-self: flex-start">' +
             '<button type="button" data-use="1" aria-pressed="' + v.use + '">사용</button><button type="button" data-use="0" aria-pressed="' + !v.use + '">사용중지</button></div>' +
-            '<span class="help">사용중지하면 사용자 화면에서 빠지고 새로 권한을 줄 수 없습니다. 이미 준 권한은 남습니다.</span></div>' +
+            "</div>" +
             "</div>" +
             '<div class="panel__foot inline" style="justify-content: flex-end">' +
             (d ? '<button class="btn btn--ghost btn--sm" type="button" data-cancel>취소</button>' : "") +
             '<button class="btn btn--primary btn--sm" type="button" data-save>저장</button></div>' +
-            (d ? '<div class="panel__note">저장한 메뉴는 권한 관리의 메뉴 등록 팝업에 바로 나타납니다. 권한은 거기서 따로 줍니다.</div>' : noDelete) +
             "</section>";
-
-          if (!d) {
-            var t = steps(s, n);
-            var btn = function (key, icon, label) {
-              return t[key]
-                ? '<button class="btn btn--secondary btn--sm" type="button" data-mv="' + key + '" data-tip="' + esc(t[key].tip) + '">' + ic(icon, 14) + label + "</button>"
-                : '<button class="btn btn--secondary btn--sm" type="button" data-mv="' + key + '" disabled>' + ic(icon, 14) + label + "</button>";
-            };
-            html += '<section class="panel" aria-labelledby="mn-mv-t"><div class="panel__head"><h2 class="t-h2" id="mn-mv-t">위치 옮기기</h2>' +
-              '<span class="subtle" style="font-size: 12px">누르면 바로 반영 · 저장과 따로</span></div>' +
-              '<div class="panel__body"><div class="grid grid--2" style="gap: var(--s-2)">' +
-              btn("up", "up", "위로") + btn("down", "down", "아래로") + btn("out", "left", "상위로 올리기") + btn("into", "right", "위 메뉴 안으로 넣기") +
-              '</div><span class="subtle" style="font-size: 12px">끌어 놓기와 같은 규칙입니다 — 하위 메뉴가 함께 움직이고 3단계를 넘길 수 없습니다. 트리 행에서 Alt + ↑ ↓ ← → 로도 옮깁니다.</span></div></section>';
-          }
           detail.innerHTML = html;
         }
 

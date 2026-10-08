@@ -35,8 +35,8 @@
             <div class="titlebar__end">
               <span class="filters__count mono">S-FOJJKB · /platform/system/admins/new</span>
               <a class="btn btn--secondary btn--sm" href="admins.html">취소</a>
-              <a class="btn btn--primary btn--sm" href="admins-detail.html?state=created" data-show="in">등록</a>
-              <button class="btn btn--primary btn--sm" type="button" data-show="dupid dupmail miss denied fail" hidden>등록</button>
+              <a class="btn btn--primary btn--sm" href="admins-detail.html?state=created" data-show="in">저장</a>
+              <button class="btn btn--primary btn--sm" type="button" data-show="dupid dupmail miss denied fail" hidden>저장</button>
             </div>
           </div>
 
@@ -102,7 +102,6 @@
             <section class="panel">
               <div class="panel__head">
                 <h2 class="t-h2">기본정보</h2>
-                <span class="subtle" style="font-size: 12px">* 표시가 필수 · 소속 부서·직책·주소는 선택</span>
               </div>
               <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
                 <div class="grid grid--2">
@@ -110,14 +109,12 @@
                     <label for="nid">아이디 <span class="req">*</span></label>
                     <input class="input mono" id="nid" value="platyoon" maxlength="20" data-show="in dupmail miss denied fail" />
                     <input class="input mono" value="plathan" maxlength="20" aria-invalid="true" aria-label="아이디" data-show="dupid" hidden />
-                    <span class="help" data-show="in dupmail miss denied fail">영문 또는 영문·숫자 4~20자 · 등록한 뒤에는 바꿀 수 없습니다</span>
                     <span class="err" data-show="dupid" hidden><span data-icon="alert" data-icon-size="13"></span>이미 사용 중인 아이디입니다. 삭제된 계정의 아이디도 다시 쓸 수 없습니다.</span>
                   </div>
                   <div class="field">
                     <label for="nnm">이름 <span class="req">*</span></label>
                     <input class="input" id="nnm" value="윤채원" maxlength="20" data-show="in dupid dupmail denied fail" />
                     <input class="input" value="" maxlength="20" aria-invalid="true" aria-label="이름" data-show="miss" hidden />
-                    <span class="help" data-show="in dupid dupmail denied fail">한글 또는 영문 2~20자</span>
                     <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>이름을 입력해 주세요.</span>
                   </div>
                   <div class="field">
@@ -132,25 +129,21 @@
                       <input class="input mono" value="" inputmode="numeric" aria-invalid="true" aria-label="가운데자리" />
                       <input class="input mono" value="" inputmode="numeric" aria-invalid="true" aria-label="끝자리" />
                     </div>
-                    <span class="help" data-show="in dupid dupmail denied fail">세 칸을 합쳐 숫자 10~11자리</span>
                     <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>연락처를 입력해 주세요.</span>
                   </div>
                   <div class="field">
                     <label for="nmail">이메일 <span class="req">*</span></label>
                     <input class="input mono" id="nmail" value="chaewon.yoon@whale-erp.example" maxlength="100" data-show="in dupid miss denied fail" />
                     <input class="input mono" value="jiwoo.park@whale-erp.example" maxlength="100" aria-invalid="true" aria-label="이메일" data-show="dupmail" hidden />
-                    <span class="help" data-show="in dupid miss denied fail">100자 이하 · 초기 비밀번호가 이 주소로 갑니다</span>
                     <span class="err" data-show="dupmail" hidden><span data-icon="alert" data-icon-size="13"></span>사용 중이거나 미사용인 다른 관리자 계정의 이메일입니다.</span>
                   </div>
                   <div class="field">
                     <label for="ndept">소속 부서</label>
                     <input class="input" id="ndept" value="플랫폼운영팀" maxlength="30" />
-                    <span class="help">1~30자 · 비워 두어도 됩니다</span>
                   </div>
                   <div class="field">
                     <label for="npos">직책</label>
                     <input class="input" id="npos" value="사원" maxlength="30" />
-                    <span class="help">1~30자 · 비워 두어도 됩니다</span>
                   </div>
                 </div>
                 <!-- 주소 — 점포 등록과 같은 주소 검색 프로세스(data-addr). 검색 결과가 입력칸 아래로 펼쳐지고, 고른 우편번호·기본주소만 들어간다. -->
@@ -169,7 +162,6 @@
                     <input class="input" value="경기 성남시 분당구 판교역로 166" readonly placeholder="검색해서 고르면 채워집니다" aria-label="기본주소" data-addr-base />
                   </div>
                   <input class="input" value="7층" maxlength="100" placeholder="상세주소" aria-label="상세주소" data-addr-detail />
-                  <span class="help">검색 결과에서 고른 우편번호·기본주소만 들어갑니다. 상세주소는 직접 적습니다.</span>
                 </div>
               </div>
             </section>
@@ -179,7 +171,6 @@
               <div class="panel__head">
                 <h2 class="t-h2">사용자 권한</h2>
                 <div class="panel__end">
-                  <a class="tlink" href="roles.html" style="font-size: 12px">권한 구성은 플랫폼 권한 관리에서</a>
                 </div>
               </div>
               <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
@@ -208,25 +199,17 @@
                     <select class="select" aria-label="사용자 권한" aria-invalid="true" data-show="denied" hidden>
                       <option selected>플랫폼 마스터 · PM000001</option>
                     </select>
-                    <span class="help" data-show-role="pm" data-show="in dupid dupmail miss fail">플랫폼 마스터는 여러 명 둘 수 있습니다.</span>
-                    <span class="help" data-show-role="pa" data-show="in dupid dupmail miss fail" hidden>플랫폼 마스터 권한은 플랫폼 마스터만 부여할 수 있어 목록에 없습니다.</span>
                     <span class="err" data-show="denied" hidden><span data-icon="alert" data-icon-size="13"></span>플랫폼 관리자는 플랫폼 마스터 권한을 부여할 수 없습니다.</span>
                   </div>
                 </div>
-                <p class="help" style="margin: 0">BP 마스터·가맹 마스터 같은 BP 쪽 권한은 플랫폼 관리자 계정에 연결할 수 없습니다.</p>
               </div>
             </section>
 
-            <!-- 비밀번호 — 입력 항목 없이 안내만 -->
+            <!-- 비밀번호 — 입력 항목 없이 안내 한 줄만 둔다(설명 문단은 뺐다 · 2026-10-08) -->
             <div class="band band--info">
               <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
               <div class="band__body">
-                <div class="band__title">초기 비밀번호를 등록 이메일로 발송합니다</div>
-                <p class="band__desc">
-                  비밀번호는 여기서 입력하거나 정하지 않습니다. 등록하면 12자 무작위 초기 비밀번호를 만들어
-                  「[WHALE ERP] 플랫폼 관리자 계정이 생성되었습니다」 메일로만 보내고, 계정은 사용 상태·강제 비밀번호 변경 대상으로 생깁니다.
-                  메일이 나가지 못해도 계정과 초기 비밀번호는 그대로 두고 발송 실패만 남깁니다 — 상세에서 비밀번호 초기화로 다시 보냅니다.
-                </p>
+                <div class="band__title">초기 비밀번호를 등록 이메일로 발송합니다.</div>
               </div>
             </div>
           </div>
