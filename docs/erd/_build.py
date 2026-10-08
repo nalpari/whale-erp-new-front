@@ -397,6 +397,8 @@ DIAGRAMS.append(Diagram(
           ["#|템플릿 ID|id|notification_template_id|", "|템플릿 코드|text|template_code|고유. 등록 때 채널 접두를 채우고 운영자가 정함. 개발자는 이 코드로 부름", "|발송 채널|enum|channel|운영 알림·앱 푸시·메일·알림톡", "|템플릿 이름|text|template_name|예: 근로계약 날인 알림", "|수신 설정 묶음|enum|preference_category|앱 푸시만. 직원 수신 설정 기준", "|제목|text|title|알림톡은 비움", "|본문|text|body|#{변수}. 알림톡은 카카오 검수 문구와 같게", "|변수 목록|json|variables|[{이름, 표시 이름, 필수, 예시 값}] 순서대로. 저장 때 본문·제목의 #{변수}가 목록 안에 있는지 검사", "|카카오 템플릿 코드|text|kakao_template_code|알림톡만", "|사용 여부|bool|is_active|지우지 않고 끔", "→|수정 관리자|id|updated_by|", "|수정 시각|datetime|updated_at|"], 0, 560),
         E("template_history", "알림 템플릿 변경 이력", "notification_template_histories", "history",
           ["#|이력 ID|id|template_history_id|", "→|템플릿|id|notification_template_id|", "|이전 템플릿 코드|text|template_code|", "|이전 발송 채널|enum|channel|", "|이전 템플릿 이름|text|template_name|", "|이전 수신 설정 묶음|enum|preference_category|", "|이전 카카오 템플릿 코드|text|kakao_template_code|", "|이전 사용 여부|bool|is_active|", "|이전 제목|text|title|", "|이전 본문|text|body|", "|이전 변수 목록|json|variables|", "→|수정 관리자|id|changed_by|", "|수정 시각|datetime|changed_at|"], 0, 960),
+        E("alimtalk_log", "알림톡 발송 이력", "alimtalk_send_logs", "history",
+          ["#|알림톡 발송 이력 ID|id|alimtalk_send_log_id|", "|템플릿 코드|text|template_code|보낸 알림 템플릿", "|카카오 템플릿 코드|text|kakao_template_code|보낸 시점 값. 템플릿은 고쳐질 수 있음", "|수신 번호|text|to_phone|숫자만, 01X 휴대폰", "|관련 업무 유형|text|related_type|선택. 예: 초대", "|관련 업무 ID|id|related_id|선택. 유형과 함께만", "|보낸 본문|text|body|호출부가 지정한 값은 ********", "|발송 결과|enum|result|성공·실패 (비즈뿌리오 접수 기준)", "|실패 사유|text|failure_reason|비즈뿌리오 코드·HTTP 상태·메시지", "|요청 키|text|reference_key|결과 리포트의 REFKEY", "|메시지 키|text|message_key|비즈뿌리오가 붙인 키", "→|발송 관리자|id|sent_by|관리자가 대신 보냈을 때", "|발송 시각|datetime|sent_at|"], 3, 40),
     ],
     [
         R("notification", "right", "recipient", "left", "1", "N", "", at_a=300, at_b=300),
@@ -405,10 +407,11 @@ DIAGRAMS.append(Diagram(
         R("account", "top", "recipient", "bottom", "0..1", "N", ""),
         R("account", "right", "preference", "left", "1", "N", "", at_a=548, at_b=548),
         R("template", "bottom", "template_history", "top", "1", "N", ""),
+        R("admin", "right", "alimtalk_log", "left", "0..1", "N", "대신 발송", at_a=100, at_b=100),
     ],
     [
         ("coral", "중심", "알림 하나, 수신 여럿", ["읽음은 사람마다 따로라 수신 행에 둔다", "같은 사건으로 같은 사람에게 두 번 만들지 않는다", "처리했는지는 알림이 아니라 원래 업무의 상태가 안다"]),
-        ("ink", "", "채널과 보류", ["운영 알림은 알림함과 이메일, 모바일 푸시는 없다", "직원 알림은 앱 푸시가 기본이고 놓치면 안 되는 것은 알림톡으로 대체한다", "TO-DO 배정은 푸시 없이 알림함에만 남긴다"]),
+        ("ink", "", "채널과 보류", ["운영 알림은 알림함과 이메일, 모바일 푸시는 없다", "직원 알림은 앱 푸시가 기본이고 놓치면 안 되는 것은 알림톡으로 대체한다", "TO-DO 배정은 푸시 없이 알림함에만 남긴다", "알림톡은 계정 없는 사람(가입 초대)에게도 가서 수신 행 없이 알림톡 발송 이력에 남긴다 (2026-10-08)"]),
         ("muted", "미정", "남은 결정", ["알림톡을 보낼 상황과 템플릿 검수 범위(3팀, NOTI-2)", "앱 푸시 글자 수 제한, 메일 본문 편집 방식, 메뉴 위치(알림 템플릿 관리)"]),
     ],
 ))
