@@ -429,6 +429,8 @@ DIAGRAMS.append(Diagram(
         E("reply", "문의 답변", "inquiry_replies", "history",
           ["#|답변 ID|id|reply_id|", "→|문의사항|id|inquiry_id|답변 이력 전부 보관", "|답변 내용|text|body|", "→|답변 관리자|id|replied_by|", "|답변 시각|datetime|replied_at|"], 3, 40),
         ref_admin(2, 336),
+        E("inquiry_attachment", "문의 첨부파일", "inquiry_attachments", "entity",
+          ["#|첨부파일 ID|id|inquiry_attachment_id|", "→|문의사항|id|inquiry_id|등록할 때만, 뒤에 더하거나 빼지 않음", "|원래 파일 이름|text|file_name|", "|파일 종류|enum|file_type|JPG·PNG·PDF, 파일 내용으로 확인", "|파일 크기|int|size_bytes|10MB 이하", "|저장 위치|text|storage_key|공개 주소 아님", "|순서|int|sort_order|1~5, 문의당 5개", "|올린 시각|datetime|created_at|"], 1, 480),
         E("lead", "도입문의", "leads", "entity",
           ["#|도입문의 ID|id|lead_id|", "|문의자 이름|text|contact_name|", "|업종|enum|industry|목록 선택, 기타는 직접 입력", "|전화번호|text|phone|휴대전화 아닐 수 있음", "|이메일|text|email|접수 확인 발송", "|관심 서비스|enum|interests|매장운영·재무관리·프랜차이즈·기타", "|도입 예정 시기|enum|plan_period|목록 선택", "|문의 내용|text|body|", "|개인정보 동의 일시|datetime|privacy_agreed_at|필수", "|마케팅 동의 일시|datetime|marketing_agreed_at|선택", "|답변 상태|enum|status|", "|사용자 노출 답변|text|reply|이메일로 회신", "|운영자 내부 메모|text|internal_memo|", "|접수 일시|datetime|created_at|", "|상담 완료일|date|consulted_date|1년 뒤 파기"], 3, 300),
     ],
@@ -437,10 +439,11 @@ DIAGRAMS.append(Diagram(
         R("post", "right", "attachment", "left", "1", "0..5", "", at_a=292, at_b=292),
         R("inquiry", "right", "reply", "left", "1", "N", "", at_a=100, at_b=100),
         R("admin", "top", "inquiry", "bottom", "1", "N", "등록"),
+        R("inquiry", "left", "inquiry_attachment", "right", "1", "0..5", "", at_a=260, at_b=560),
     ],
     [
         ("coral", "중심", "노출 대상이 누가 보는지를 정한다", ["비회원이 들면 비로그인 홈까지 나간다", "개별 BP·점포는 고르지 않고 부가서비스만 상품별로 고른다", "직원 근무 앱에는 공지사항·FAQ를 노출하지 않는다"]),
-        ("ink", "", "답변과 메모는 한 칸에 쓰지 않는다", ["문의사항은 답변 이력을 모두 남긴다", "도입문의는 계정이 없어 이메일로 회신하고 상담 완료 1년 뒤 파기한다", "동시에 저장하면 덮어쓰지 않고 최신 내용을 다시 보게 한다"]),
+        ("ink", "", "답변과 메모는 한 칸에 쓰지 않는다", ["문의사항은 답변 이력을 모두 남긴다", "문의 첨부는 등록할 때만 붙이고, 문의자 본인과 플랫폼 운영자만 내려받는다 (운영 정책 CNT-18)", "도입문의는 계정이 없어 이메일로 회신하고 상담 완료 1년 뒤 파기한다", "동시에 저장하면 덮어쓰지 않고 최신 내용을 다시 보게 한다"]),
         ("muted", "", "1차에서 뺀 것", ["구독·청구·결제수단·정산 조회는 2차", "BP가 자기 조직에 쓰는 공지는 없다 (SUPPORT-3)"]),
     ],
 ))
