@@ -981,6 +981,27 @@
                 </section>
               </div>
 
+              <!-- 출퇴근 현황 필터 (STAFF-31). 유지하지 않는다 — 화면을 떠나면 처음 값으로 돌아간다. -->
+              <div class="filters" style="margin-top: var(--s-5)">
+                <input class="input" style="width: 160px" placeholder="점포" aria-label="점포" />
+                <input class="input" style="width: 180px" placeholder="이름 또는 휴대전화번호" aria-label="직원" />
+                <select class="select" style="width: 130px" aria-label="고용형태"><option>고용형태 전체</option><option>정직원</option><option>파트타이머</option></select>
+                <select class="select" style="width: 150px" aria-label="출퇴근 상태"><option>상태 전체</option><option>정상</option><option>지각</option><option>미출근</option><option>출근 미등록</option><option>퇴근 미등록</option><option>휴무</option></select>
+                <select class="select" style="width: 160px" aria-label="확인 필요 사유"><option>사유 전체</option><option>위치 오차 초과</option><option>반경 밖 퇴근</option><option>위치 조작 감지</option></select>
+                <select class="select" style="width: 140px" aria-label="기록 구분"><option>기록 전체</option><option>직원 등록</option><option>대신 등록</option><option>보정됨</option></select>
+                <select class="select" style="width: 110px" aria-label="재직 상태"><option>재직</option><option>퇴직</option><option>전체</option></select>
+                <div class="filters__end"><span class="filters__count">근태 요약에는 점포·고용형태·재직만</span></div>
+              </div>
+              <div class="gap is-decided">
+                <div class="gap__head">
+                  <span class="gap__no">STAFF-31</span>
+                  <b>출퇴근 현황은 무엇으로 걸러 보는가</b>
+                  <span class="gap__decided">확정 · 필터 7개 · 보정 목록만 기간 · 유지 안 함</span>
+                  <span class="gap__ref">F-NUXMTT</span>
+                </div>
+                <p class="gap__note">2026-10-08 재영 결정. 다른 관리 화면처럼 필터를 둔다 — 점포 · 직원(이름·휴대전화번호) · 고용형태 · 출퇴근 상태(정상·지각·미출근·출근 미등록·퇴근 미등록·휴무, 기본 모두 켬) · 확인 필요 사유 · 기록 구분(직원 등록·대신 등록·보정됨) · 재직 상태(기본 재직). 날짜는 필터에 넣지 않고 일별 출퇴근은 하루, 근태 요약은 한 주씩 넘긴다. 근태 요약에는 점포·고용형태·재직 상태만 걸린다. 보정이 필요한 기록에는 기간 지정 조회를 두고 최근 3개월 안에서 고른다(대신 등록과 같은 범위). 필터는 화면을 떠나면 처음 값으로 돌아간다(유지하지 않음). 미체결 직원(STAFF-29)과 본사 제공 동의가 없는 가맹 직원(운영 정책 ATT-30)은 필터와 관계없이 나오지 않는다.</p>
+              </div>
+
               <div class="grid grid--2" style="margin-top: var(--s-5)">
                 <section class="panel">
                   <div class="panel__head">
@@ -1083,7 +1104,8 @@
                     <h2 class="t-h2">보정이 필요한 기록</h2>
                     <span class="badge badge--warn">5건</span>
                     <div class="panel__end">
-                      <span class="filters__count">최근 3개월 이내만 수정 가능</span>
+                      <input class="input input--sm" type="date" value="2026-07-20" min="2026-05-20" aria-label="기간 시작" /> ~ <input class="input input--sm" type="date" value="2026-08-20" max="2026-08-20" aria-label="기간 끝" />
+                      <span class="filters__count">최근 3개월 안 · 이 안에서만 수정 가능</span>
                       <button class="btn btn--secondary btn--sm" type="button" data-tip="위치정보 동의를 거부·철회했거나 앱에서 위치 수집을 일시 중지한 직원에게만 열린다. 위치를 주는 직원은 앱으로 찍고 관리자는 보정만 한다. 그 날짜에 체결 완료 근로계약이 없는 직원은 고를 수 없다(STAFF-29).">
                         <span data-icon="plus" data-icon-size="14"></span>출퇴근 대신 등록
                       </button>

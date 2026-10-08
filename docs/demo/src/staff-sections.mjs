@@ -208,7 +208,8 @@ export function staffSections({ A, R }) {
   const fixBtns = () => `<span class="flex justify-center gap-[6px]">${ui.slideTrigger("보정", fixPanel, "off")}${p.ask("이상 없음", "off", "이상 없음으로 검토를 마치시겠습니까?", "확인 필요 꼬리표와 사유를 지웁니다.")}</span>`;
   const fixList = p.section(
     "보정이 필요한 기록",
-    ui.slideTrigger("출퇴근 대신 등록", proxyPanel, "soft"),
+    // 기간 지정 조회는 이 목록에만, 최근 3개월 안에서 고른다(STAFF-31).
+    `<span class="flex items-center gap-[6px]">${ui.dateField(A, { label: "기간 시작", value: "2026-08-06" })}<span>~</span>${ui.dateField(A, { label: "기간 끝", value: "2026-09-06" })}${ui.slideTrigger("출퇴근 대신 등록", proxyPanel, "soft")}</span>`,
     ui.dataTable(
       [
         { header: "직원", width: "w-[100px]" },
@@ -246,6 +247,16 @@ export function staffSections({ A, R }) {
     x.tabPanel("sched-week", schedWeekView, true) +
     x.tabPanel("sched-month", schedMonthView) +
     `<div class="flex flex-col gap-[24px] pt-[12px]">${schedLog}</div>`;
+  // 출퇴근 현황 필터 (STAFF-31, 2026-10-08 재영). 근태 요약에는 점포·고용형태·재직 상태만 걸린다. 유지하지 않는다.
+  const attendFilter = ui.filterPanel(A, [
+    storeFilter(),
+    ui.filterSection("직원", ui.searchField(A, { placeholder: "이름 또는 번호" }), { tight: true }),
+    ui.filterSection("고용형태", ui.checkbox(A, "정직원", true) + ui.checkbox(A, "파트타이머", true)),
+    ui.filterSection("출퇴근 상태", ["정상", "지각", "미출근", "출근 미등록", "퇴근 미등록", "휴무"].map((t) => ui.checkbox(A, t, true)).join("")),
+    ui.filterSection("확인 필요 사유", ["위치 오차 초과", "반경 밖 퇴근", "위치 조작 감지"].map((t) => ui.checkbox(A, t, true)).join("")),
+    ui.filterSection("기록 구분", ["직원 등록", "대신 등록", "보정됨"].map((t) => ui.checkbox(A, t, true)).join("")),
+    ui.filterSection("재직 상태", ui.select(["재직", "퇴직", "전체"], { "aria-label": "재직 상태" }), { tight: true, last: true }),
+  ]);
   const attendTab = `<div class="flex flex-col gap-[24px]">${p.cols(today, summary, "grid-cols-2")}${fixList}</div>${histDialogs}`;
 
   // ── 급여명세서 ──
@@ -531,5 +542,5 @@ export function staffSections({ A, R }) {
       ui.button("취소", { variant: "off", "data-close": true }) + ui.button("재초대", { "data-close": true }),
     );
 
-  return { L, N, holdPanel, holdForm, proxyForm, todoEdits, listFilter, contractsFilter, payslipsFilter, todosFilter, listTab, contractsTab, schedTab, attendTab, payrollTab, todoTab, schedForm, delDialog, fixForm, todoForm };
+  return { L, N, holdPanel, holdForm, proxyForm, todoEdits, listFilter, attendFilter, contractsFilter, payslipsFilter, todosFilter, listTab, contractsTab, schedTab, attendTab, payrollTab, todoTab, schedForm, delDialog, fixForm, todoForm };
 }

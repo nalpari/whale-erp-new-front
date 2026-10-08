@@ -11,7 +11,7 @@ export default ({ A, R }) => {
       header: erpHeader(A, R),
       title: "출·퇴근 현황 조회",
       titleRight: "",
-      body: ui.detailBody(s.attendTab),
+      body: ui.listBody(s.attendFilter, s.attendTab),
       panels: s.fixForm + s.proxyForm,
     }),
   };
