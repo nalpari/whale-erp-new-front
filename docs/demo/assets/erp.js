@@ -88,7 +88,6 @@
     swap(panel, open, "translate-x-0", "translate-x-full");
     panel.inert = !open;
     trigger.setAttribute("aria-expanded", String(open));
-    setBackdrop(open);
     if (open) {
       panel._entry = { root: panel, sticky: true, close: () => setPanel(trigger, panel, false) };
       push(panel._entry);
@@ -97,6 +96,8 @@
       panel._entry = null;
       trigger.focus();
     }
+    // 겹쳐 연 패널(상세 위 수정)을 닫을 때는 아래 패널이 아직 열려 있으니 바탕창을 걷지 않는다
+    setBackdrop(stack.some((entry) => entry.sticky));
   }
 
   // 바탕창을 누르면 열려 있는 패널을 모두 닫는다(2026-10-06 피드백) — 패널이 닫히기 전에는 바탕창이 뒤 버튼 클릭을 막는다.
