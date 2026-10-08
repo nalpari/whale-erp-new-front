@@ -14,12 +14,13 @@ const GROUPS = [
   ["BP 관리자", "BA000004", "인사 담당", "직원관리 중심", "2026-09-15 11:20", "hangang01", 14, "2025-03-28 15:30", "hangang01", null, ["hghr 이서아"]],
   ["BP 관리자", "BA000005", "정산 조회", "조회 위주", "2025-07-15 13:50", "hangang01", 4, "2025-07-15 13:48", "hangang01", null, ["hgacct 최민호(미사용)"]],
   ["BP 관리자", "BA000006", "고객응대", "고객 문의 응대용", "2026-09-18 09:05", "hangang01", 4, "2026-09-18 09:05", "hangang01", null, []],
-  ["BP 관리자", "BA000007", "점포 조회 전용", "점포 정보 조회만", "2026-06-30 17:10", "hangang01", 2, "2025-11-03 10:00", "hangang01", null, []],
+  ["BP 관리자", "BA000007", "점포 조회 전용", "점포 정보 조회만", "2026-06-30 17:10", "hangang01", 0, "2025-11-03 10:00", "hangang01", null, []],
   ["가맹 관리자", "FA000002", "모리 점장", "", "2026-09-02 14:15", "morinam01", 12, "2025-08-08 16:20", "morinam01", "morinam01 박서윤", ["moriyn 한지수"]],
   ["가맹 관리자", "FA000003", "모리 매니저", "", "2026-01-06 13:10", "morinam01", 8, "2026-01-05 18:00", "morinam01", "morinam01 박서윤", ["moricd 윤재희"]],
   ["가맹 관리자", "FA000004", "온기 점장", "", "2025-09-01 09:30", "ongifm", 5, "2025-08-29 11:00", "ongifm", "ongifm 오태민", ["ongids 서동현(미사용)"]],
 ];
-const SELECTED = 1;
+const SELECTED = null; // 처음 진입은 고른 그룹 없이 오른쪽에 안내를 보인다(플랫폼 메뉴·권한 관리와 같다 · 2026-10-08)
+const MENU_ROW = 1; // 메뉴등록 확인창 표본은 BA000004 인사 담당 줄
 
 // 메뉴 표. [계층, 메뉴명, 코드, 조회, 등록, 수정, 삭제] — 1 켜짐, 0 꺼짐, "m" 하위 일부만 켜짐
 const MENU_BA = [
@@ -64,7 +65,7 @@ const partial = (label) =>
 const cell = (A, v, label, ro) =>
   `<span class="inline-flex justify-center">${v === "m" ? partial(label) : ui.checkbox(A, "", !!v, { "aria-label": label, disabled: ro })}</span>`;
 const menuName = (lv, name, code) =>
-  `<span class="flex items-center gap-[6px]" style="padding-left:${(lv - 1) * 16}px">${lv > 1 ? c.muted("└") : ""}<span class="${lv === 1 ? "font-semibold" : ""}">${name}</span>${c.muted(code)}</span>`;
+  `<span class="flex items-center gap-[6px]" style="padding-left:${(lv - 1) * 16}px">${lv > 1 ? c.muted("└") : ""}<span class="${lv === 1 ? "font-semibold" : ""}">${name}</span></span>`;
 const headCheck = (A, t, ro) => `<span class="inline-flex justify-center">${ui.checkbox(A, t, false, { "aria-label": `${t} 전체 선택`, disabled: ro })}</span>`;
 function matrix(A, rows, ro) {
   const cols = [
@@ -102,17 +103,18 @@ export default ({ A, R }) => {
     { header: "메뉴 등록 여부", width: "w-[160px]" },
     { header: "메뉴등록", width: "w-[130px]" },
   ];
-  const rows = GROUPS.map(([type, code, name, desc, at, by], i) => [
+  const rows = GROUPS.map(([type, code, name, desc, at, by, n], i) => [
     code,
     type,
     name,
     desc || c.muted("—"),
     c.two(at, c.muted(by)),
-    ui.badge("on", "등록"),
-    i === SELECTED ? x.dialogTrigger("메뉴등록", menuId, "soft") : ui.button("메뉴등록", { variant: "soft" }),
+    // 메뉴 권한이 하나도 없으면 미등록(상태 빨강) — BA000007 이 미등록 표본(2026-10-08)
+    n ? ui.badge("on", "등록") : ui.badge("off", "미등록"),
+    i === MENU_ROW ? x.dialogTrigger("메뉴등록", menuId, "soft") : ui.button("메뉴등록", { variant: "soft" }),
   ]);
   // 줄을 누르면 오른쪽 칸이 그 그룹 상세로 바뀐다(ROLE_SCRIPT). 두 줄 칸이 46px 줄에 들어가게 줄 간격만 좁힌다.
-  const table = tagRows(ui.dataTable(cols, rows), GROUPS, GROUPS[SELECTED][1]).replaceAll('<td class="truncate px-[10px]', '<td class="truncate px-[10px] leading-[1.3]');
+  const table = tagRows(ui.dataTable(cols, rows), GROUPS, GROUPS[SELECTED]?.[1]).replaceAll('<td class="truncate px-[10px]', '<td class="truncate px-[10px] leading-[1.3]');
 
   const left = c.card(
     "min-w-0 flex-1",
@@ -180,7 +182,11 @@ export default ({ A, R }) => {
     ui.field("설명", ui.textarea({ rows: 4, placeholder: "이 그룹에 맡길 업무를 적습니다" })) +
     `<div class="flex justify-end gap-[6px]">${ui.button("취소", { variant: "off", "data-role-cancel": true })}${ui.button("저장", { "data-role-save": true })}</div>` +
     `</div>`;
-  const right = c.card("w-[464px] shrink-0", GROUPS.map(view).join("") + form).replace("<section ", "<section data-role-side ");
+  // 처음 진입 · 고른 그룹 없음 — 플랫폼 메뉴·권한 관리의 빈 칸과 같은 안내
+  const empty =
+    `<div data-role-view="empty" class="flex flex-col gap-[18px]"${SELECTED === null ? "" : " hidden"}>${ui.sectionHead("권한 그룹 수정")}` +
+    `<div class="flex flex-col items-center gap-[6px] rounded-[2px] border border-erp-thead-line px-[18px] py-[36px] text-center text-[14px] text-erp-muted"><p>왼쪽 목록에서 권한 그룹을 고르면 수정 화면이 여기에 섭니다.</p><p class="text-[13px]">아무것도 고르지 않고 등록을 누르면 BP 관리자 권한 그룹을 등록합니다.</p></div></div>`;
+  const right = c.card("w-[464px] shrink-0", empty + GROUPS.map(view).join("") + form).replace("<section ", "<section data-role-side ");
 
   // 권한 메뉴 등록(BA000004)
   const head = (rows) => c.kv(rows, 84);

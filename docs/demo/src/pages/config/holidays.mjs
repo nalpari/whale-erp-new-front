@@ -79,7 +79,8 @@ export default ({ A, R }) => {
   const day =
     ui.sectionHead(`9월 21일 (월)${c.sub("1건")}`) +
     `<button type="button" aria-controls="${PANEL.detail}" aria-expanded="false" class="block w-full text-left hover:bg-erp-thead-bg">${itemRow(c.tag("일부 점포"), "정기휴무 - 온기식당 판교점", "매주 반복 · HD-0114", ui.img(A, "next.svg", 16, 16))}</button>`;
-  const calendar = `<div class="flex items-start gap-[24px]"><div data-cal class="flex min-w-0 flex-1 flex-col gap-[12px]">${ui.sectionHead(
+  // 달력 아래가 카드 선에 붙지 않게 아래 여백을 둔다(2026-10-08)
+  const calendar = `<div class="flex items-start gap-[24px] pb-[24px]"><div data-cal class="flex min-w-0 flex-1 flex-col gap-[12px]">${ui.sectionHead(
     "2026년 9월",
     `<span class="flex items-center gap-[18px]">${legend("bg-erp-off", "공식 휴일 · 플랫폼 공식 휴일")}${legend("bg-erp-on", "BP 휴일")}${legend("border border-erp-brand", "선택한 날짜 · 오늘 2026-09-21")}${ui.checkbox(A, "공식 휴일 숨기기", false, { "data-hide-official": true })}</span>`,
   )}${monthGrid()}</div><div class="flex w-[340px] shrink-0 flex-col gap-[12px]">${day}</div></div>`;

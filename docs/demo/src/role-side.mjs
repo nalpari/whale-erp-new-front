@@ -69,7 +69,7 @@ export function roleSide({ roles, own, master, selected, del = {}, card }) {
   // 처음 진입 · 고른 권한 없음 — 메뉴 관리의 빈 상세와 같은 안내(2026-10-08)
   const empty =
     `<div data-role-view="empty" class="flex flex-col gap-[18px]"${selected ? " hidden" : ""}>${ui.sectionHead("권한 수정")}` +
-    `<div class="flex flex-col items-center gap-[6px] rounded-[2px] border border-erp-thead-line px-[18px] py-[36px] text-center text-[14px] text-erp-muted"><p>왼쪽 목록에서 권한을 고르면 수정 화면이 여기에 섭니다.</p><p class="text-[13px]">아무것도 고르지 않고 등록을 누르면 플랫폼 관리자 유형의 새 권한을 등록합니다.</p></div></div>`;
+    `<div class="flex flex-col items-center gap-[6px] rounded-[2px] border border-erp-thead-line px-[18px] py-[36px] text-center text-[14px] text-erp-muted"><p>왼쪽 목록에서 권한을 고르면 수정 화면이 여기에 섭니다.</p><p class="text-[13px]">아무것도 고르지 않고 등록을 누르면</p><p class="text-[13px]">플랫폼 관리자 유형의 새 권한을 등록합니다.</p></div></div>`;
 
   return `<section class="${card} w-[464px] shrink-0" data-role-side>${empty}${roles.map(view).join("")}${form}</section>` + ROLE_SCRIPT;
 }

@@ -65,7 +65,8 @@
               <div class="demo" data-demo="rg">
                 <b>목업 상태</b>
                 <div class="seg">
-                  <button type="button" data-state="view" aria-pressed="true">상세</button>
+                  <button type="button" data-state="none" aria-pressed="true">처음 진입 · 선택 없음</button>
+                  <button type="button" data-state="view" aria-pressed="false">상세</button>
                   <button type="button" data-state="new" aria-pressed="false">신규 등록</button>
                   <button type="button" data-state="created" aria-pressed="false">등록 완료</button>
                   <button type="button" data-state="dup" aria-pressed="false">권한명 중복</button>
@@ -290,7 +291,7 @@
           BA000004: { MN000001: "R", MN000002: "R", MN000004: "R", MN000005: "RCU", MN000006: "R", MN000007: "RCU", MN000008: "RCU", MN000009: "RCU", MN000010: "RCU", MN000011: "R", MN000012: "R", MN000013: "R", MN000014: "R", MN000015: "RCUD" },
           BA000005: { MN000001: "R", MN000002: "R", MN000004: "R", MN000009: "R" },
           BA000006: { MN000001: "R", MN000002: "R", MN000011: "R", MN000015: "R" },
-          BA000007: { MN000001: "R", MN000002: "R" },
+          BA000007: {}, /* 메뉴 미등록 표본(2026-10-08) */
           FA000002: { MN000001: "R", MN000002: "RU", MN000004: "R", MN000005: "RCU", MN000006: "R", MN000007: "RCU", MN000008: "RCU", MN000009: "R", MN000010: "RCU", MN000011: "R", MN000013: "R", MN000015: ALL },
           FA000003: { MN000001: "R", MN000002: "R", MN000004: "R", MN000005: "R", MN000010: "RCU", MN000011: "R", MN000013: "R", MN000015: "R" },
           FA000004: { MN000001: "R", MN000002: "RU", MN000004: "R", MN000005: "RCU", MN000010: "RCU" },
@@ -354,7 +355,7 @@
           var bp = v.side === "bp";
           if (st === "own") return v.own && v.own.indexOf("M0") < 0 ? v.own : (bp ? "BA000004" : "FA000003");
           if (st === "created") return newCode(v);
-          if (st === "new" || st === "dup" || st === "deleted" || st === "empty") return null;
+          if (st === "none" || st === "new" || st === "dup" || st === "deleted" || st === "empty") return null;
           return bp ? "BA000004" : "FA000003";
         }
 
@@ -407,7 +408,7 @@
         function regHTML(code) {
           var gr = GRANT[code] || {};
           var n = Object.keys(gr).filter(function (k) { return gr[k]; }).length;
-          return n ? '<span class="badge badge--ok">등록</span>' : '<span class="badge badge--warn">미등록</span>';
+          return n ? '<span class="badge badge--ok">등록</span>' : '<span class="badge badge--risk">미등록</span>';
         }
         function kvHTML(g) {
           var m = modOf(g);
@@ -479,6 +480,10 @@
           return '<section class="panel"><div class="empty"><span class="empty__ic">' + ic("lock", 22) + "</span><p><b>" + who + "는 권한 그룹을 등록하거나 고칠 수 없습니다</b><br />" + sub + "</p></div></section>";
         }
         function nonePanel(st, v) {
+          /* 처음 진입 · 선택 없음 — 플랫폼 메뉴·권한 관리의 빈 칸과 같은 안내(2026-10-08) */
+          if (st === "none")
+            return '<section class="panel"><div class="panel__head"><h2 class="t-h2">권한 그룹 수정</h2></div><div class="empty"><span class="empty__ic">' + ic("list", 22) +
+              "</span><p>왼쪽 목록에서 권한 그룹을 고르면 수정 화면이 여기에 섭니다.</p><p class=\"subtle\" style=\"font-size: 13px\">" + (v.manage ? "아무것도 고르지 않고 등록을 누르면 BP 관리자 권한 그룹을 등록합니다." : "") + "</p></div></section>";
           var msg = "왼쪽 목록에서 권한 그룹을 고르면 상세가 여기에 보입니다.";
           if (st === "deleted") msg = "삭제한 그룹은 목록과 관리자 계정의 권한 그룹 선택에서 빠졌습니다. 다른 권한 그룹을 고르세요.";
           if (st === "empty") msg = "보여 드릴 권한 그룹이 없습니다.";
@@ -498,7 +503,7 @@
 
         /* ---------- 상태 적용 — 목업 줄을 직접 누르면 표본으로 되돌리고, 화면 안 동작(go)은 이어서 쌓는다 ---------- */
         function apply() {
-          var st = stateBar.dataset.current || "view", v = viewer(), p = pending;
+          var st = stateBar.dataset.current || "none", v = viewer(), p = pending;
           pending = null;
           mode = st;
           if (!p) {
@@ -660,7 +665,6 @@
             var pad = (m[1] - 1) * 18;
             return "<tr>" +
               '<td><span style="padding-left: ' + pad + 'px">' + (m[1] > 1 ? '<span class="subtle">└ </span>' : "") + (m[1] === 1 ? "<b>" + m[2] + "</b>" : m[2]) + "</span>" +
-              ' <span class="mono subtle" style="font-size: 11px">' + m[0] + "</span>" +
               Object.keys(tags).map(function (k) { return ' <span class="badge badge--quiet">' + TAG[k] + "</span>"; }).join("") + "</td>" +
               '<td class="subtle" style="white-space: nowrap">' + m[1] + "단계</td>" + cells + "</tr>";
           }).join("");
