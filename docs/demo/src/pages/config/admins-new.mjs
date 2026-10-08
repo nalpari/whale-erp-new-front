@@ -3,24 +3,24 @@
 // 목록(config/admins.html)에서 슬라이드 패널로 연다(BP 마스터 계정 관리와 같다) — 전체 화면은 그대로 두고 직접 들어와도 쓸 수 있게 둔다.
 import * as ui from "../../ui.mjs";
 import * as c from "../../config-parts.mjs";
-import { erpHeader, link } from "../../site.mjs";
+import { erpHeader, link, STORES } from "../../site.mjs";
 
 export function adminNewBody(A, R, { panel = false } = {}) {
   // 패널(464px)에서는 두 칸 줄을 한 칸씩 세로로 쌓는다
   const row = panel ? (...cells) => cells.filter((x) => x !== c.blank).join("") : c.row;
 
   const basic = ui.formGroup(
-    `기본정보${c.sub("네 항목 모두 필수")}`,
+    "기본정보",
     row(
       ui.field(
         c.req("아이디"),
-        c.stack(ui.textField({ value: "hgcs", maxlength: 20, placeholder: "영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요." }), c.help("등록 뒤에는 바꾸지 못합니다")),
+        ui.textField({ value: "hgcs", maxlength: 20, placeholder: "영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요." }),
       ),
       ui.field(c.req("이름"), ui.textField({ value: "문가은", maxlength: 20, placeholder: "한글 또는 영문 2~20자" })),
     ),
     row(
       ui.field(c.req("휴대전화번호"), c.tel("010", "3308", "6214")),
-      ui.field(c.req("이메일"), c.stack(ui.textField({ value: "gaeun.moon@hangang.co.kr", maxlength: 100 }), c.help("이메일 형식 · 100자 이하 · 초기 비밀번호를 받는 주소"))),
+      ui.field(c.req("이메일"), ui.textField({ value: "gaeun.moon@hangang.co.kr", maxlength: 100 })),
     ),
   );
 
@@ -37,12 +37,23 @@ export function adminNewBody(A, R, { panel = false } = {}) {
   );
 
   const stores = ui.formGroup(
-    `관리 점포${c.sub("등록자 범위 · 전체 점포 11개점")}`,
-    row(ui.field(c.req("범위"), c.stack(ui.select(["전체 점포", "일부 점포"]), c.help("㈜한강상회의 모든 점포를 관리합니다."))), c.blank),
+    "점포 매핑",
+    row(ui.field(c.req("범위"), ui.select(["전체 점포", "일부 점포"], { value: "일부 점포", "data-spick-scope": true })), c.blank),
+    // 수정 화면의 점포 매핑과 같다 — 범위가 전체 점포면 숨는다(erp.js)
+    c.storePicker(A, {
+      clearLabel: "전체 제거",
+      bulk: [...STORES].sort((a, b) => a[0].localeCompare(b[0])).map(([code, name, type]) => [name, code, type]),
+      picked: [],
+    }),
   );
 
   const cancel = panel ? ui.button("닫기", { variant: "off", "data-close": true }) : ui.button("취소", { variant: "off", href: link(R, "config/admins.html") });
-  return basic + role + stores + c.band("초기 비밀번호는 등록 이메일로 갑니다") + c.buttons(cancel, ui.button("저장", { href: link(R, "config/admins-detail.html") }));
+  // 저장하면 상세 화면이 아니라 상세 슬라이드로 간다 — 패널은 등록 패널을 닫고 상세 패널을 열고(erp.js data-save-panel),
+  // 전체 화면은 목록으로 가서 상세 패널을 연다(?panel=).
+  const save = panel
+    ? ui.button("저장", { "data-save-panel": "admin-detail-panel" })
+    : ui.button("저장", { href: `${link(R, "config/admins.html")}?panel=admin-detail-panel` });
+  return basic + role + stores + c.band("초기 비밀번호는 등록 이메일로 갑니다") + c.buttons(cancel, save);
 }
 
 export function adminNewPanel(A, R) {

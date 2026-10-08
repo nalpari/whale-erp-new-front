@@ -123,6 +123,22 @@
     if (panel?._entry) panel._entry.close();
   });
 
+  // 저장하고 다른 슬라이드로 가기(data-save-panel="패널 id") — 자기 패널을 닫고, 그 패널이 아직 닫혀 있으면 연다.
+  // 상세 위에 겹쳐 연 수정 패널은 닫기만 해도 아래 상세 패널이 보인다. 주소의 ?panel=id 는 화면을 열 때 그 패널을 연다.
+  const openPanelById = (id) => {
+    const target = document.getElementById(id);
+    const t = $(`button[aria-controls="${CSS.escape(id)}"]`);
+    if (target && t && isPanel(target) && !target._entry) setPanel(t, target, true);
+  };
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-save-panel]");
+    if (!b) return;
+    b.closest("aside")?._entry?.close();
+    openPanelById(b.dataset.savePanel);
+  });
+  const wantPanel = new URLSearchParams(location.search).get("panel");
+  if (wantPanel) openPanelById(wantPanel);
+
   // ── Toast (저장 등 완료 안내). data-toast="문구" 버튼을 누르면 화면 아래에 잠깐 떴다가 사라진다 ──
   let toastEl, toastTimer;
   function showToast(msg) {
@@ -249,6 +265,275 @@
     if (!e.target.matches("[data-scope-pick]")) return;
     const dlg = e.target.closest("[data-scope-popup]");
     if (dlg) syncScopeDialog(dlg);
+  });
+
+  // ── 점포 일괄 검색 확인창(config-parts.mjs storeBulkDialog) — 관리 점포 고르기의 [일괄 검색] ──
+  // 왼쪽(L) 매핑 안 된 점포 ↔ 오른쪽(R) 매핑된 점포. 줄(label[data-bulk-item])을 두 목록 사이로 옮긴다.
+  // 열 때마다 지금 칩(선택한 점포)으로 두 목록을 다시 나누고 체크를 모두 푼다 — 취소하고 다시 열면 고치기 전으로 돌아간다.
+  // 옮기기: 체크 + [추가 ›]·[‹ 빼기], 또는 끌어서 반대쪽 목록에 놓기(체크한 줄을 끌면 같은 쪽 체크한 줄이 모두 간다).
+  // 옵션 체크(data-bulk-group: * 전체 · 유형)는 그 목록에서 묶음을 한꺼번에 체크한다. [적용]은 오른쪽 목록으로 칩을 다시 그린다.
+  const SPICK_CHIP = (name, code, type) =>
+    `<li data-code="${code}" title="${name} · ${code} · ${type}" class="flex h-[34px] items-center gap-[8px] rounded-[2px] border border-erp-field-line bg-white pr-[4px] pl-[10px] text-[14px]"><span class="font-medium">${name}</span><button type="button" aria-label="${name} 빼기" class="grid size-[26px] place-items-center rounded-[2px] text-erp-label hover:text-erp-ink"><svg viewBox="0 0 8 8" class="size-[8px] stroke-current" aria-hidden="true"><path d="M1 1l6 6M7 1L1 7" stroke-width="1.5" stroke-linecap="round" fill="none"></path></svg></button></li>`;
+  const bulkPane = (dlg, side) => $(`[data-bulk-pane="${side}"]`, dlg);
+  const bulkItems = (dlg, side) => $$("[data-bulk-item]", $("[data-bulk-list]", bulkPane(dlg, side)));
+  const bulkPicks = (dlg, side, key = "*") =>
+    bulkItems(dlg, side)
+      .map((it) => $("[data-bulk-pick]", it))
+      .filter((i) => !i.disabled && (key === "*" || i.dataset.bulkType === key));
+  // 줄을 목록에 넣을 때 처음 순서(data-order)를 지킨다
+  function bulkPlace(dlg, item, side) {
+    const list = $("[data-bulk-list]", bulkPane(dlg, side));
+    const after = bulkItems(dlg, side).find((it) => +it.dataset.order > +item.dataset.order);
+    list.insertBefore(item, after || $("[data-bulk-empty]", list));
+  }
+  function syncBulkDialog(dlg) {
+    for (const side of ["L", "R"]) {
+      const pane = bulkPane(dlg, side);
+      const n = bulkItems(dlg, side).length;
+      $("[data-bulk-count]", pane).textContent = `${n}곳`;
+      $("[data-bulk-empty]", pane).hidden = n > 0;
+      $$("[data-bulk-group]", pane).forEach((g) => {
+        const items = bulkPicks(dlg, side, g.dataset.bulkGroup);
+        const on = items.filter((i) => i.checked).length;
+        paintScopeGroup(g, !on ? "false" : on === items.length ? "true" : "mixed");
+        g.setAttribute("aria-disabled", String(!items.length));
+        g.tabIndex = items.length ? 0 : -1;
+        const cnt = $("[data-bulk-optcount]", g.parentElement);
+        if (cnt) cnt.textContent = ` ${items.length}`;
+      });
+      const k = bulkPicks(dlg, side).filter((i) => i.checked).length;
+      const btn = $(`[data-bulk-move="${side === "L" ? "R" : "L"}"]`, dlg);
+      btn.disabled = !k;
+      btn.textContent = side === "L" ? `추가${k ? ` ${k}` : ""} ›` : `‹ 빼기${k ? ` ${k}` : ""}`;
+    }
+    $("[data-bulk-apply]", dlg).textContent = `${bulkItems(dlg, "R").length}개점 적용`;
+  }
+  function bulkMove(dlg, items, to) {
+    items.filter((it) => it.getAttribute("draggable") === "true").forEach((it) => {
+      $("[data-bulk-pick]", it).checked = false;
+      bulkPlace(dlg, it, to);
+    });
+    syncBulkDialog(dlg);
+  }
+  document.addEventListener("click", (e) => {
+    const open = e.target.closest("[data-spick-open]");
+    if (open) {
+      const dlg = document.getElementById(open.dataset.spickOpen);
+      const codes = $$("[data-spick-list] > [data-code]", open.closest("[data-spick]")).map((li) => li.dataset.code);
+      $$("[data-bulk-item]", dlg).forEach((it) => {
+        $("[data-bulk-pick]", it).checked = false;
+        bulkPlace(dlg, it, it.getAttribute("draggable") === "true" && codes.includes(it.dataset.code) ? "R" : "L");
+      });
+      dlg._was = codes;
+      syncBulkDialog(dlg);
+      dlg.showModal();
+      return;
+    }
+    const opt = e.target.closest("[data-bulk-opt]");
+    if (opt) {
+      const g = $("[data-bulk-group]", opt);
+      const dlg = g.closest("[data-bulk-popup]");
+      const items = bulkPicks(dlg, g.dataset.bulkSide, g.dataset.bulkGroup);
+      if (!items.length) return;
+      const next = g.getAttribute("aria-checked") !== "true";
+      items.forEach((i) => (i.checked = next));
+      syncBulkDialog(dlg);
+      return;
+    }
+    const mv = e.target.closest("[data-bulk-move]");
+    if (mv) {
+      const dlg = mv.closest("[data-bulk-popup]");
+      const to = mv.dataset.bulkMove;
+      bulkMove(dlg, bulkPicks(dlg, to === "R" ? "L" : "R").filter((i) => i.checked).map((i) => i.closest("[data-bulk-item]")), to);
+      const next = $("[data-bulk-move]:not(:disabled)", dlg) || $("[data-bulk-apply]", dlg);
+      next.focus();
+      return;
+    }
+    const apply = e.target.closest("[data-bulk-apply]");
+    if (apply) {
+      const dlg = apply.closest("[data-bulk-popup]");
+      const box = dlg.closest("[data-spick]");
+      const right = bulkItems(dlg, "R").map((it) => $("[data-bulk-pick]", it));
+      const was = dlg._was || [];
+      const fresh = right.filter((i) => !was.includes(i.dataset.code));
+      const kept = was.map((c) => right.find((i) => i.dataset.code === c)).filter(Boolean);
+      $("[data-spick-list]", box).innerHTML = [...fresh, ...kept].map((i) => SPICK_CHIP(i.dataset.name, i.dataset.code, i.dataset.bulkType)).join("");
+      spickCount(box);
+      dlg.close();
+    }
+  });
+  document.addEventListener("keydown", (e) => {
+    const g = e.target.closest?.('[data-bulk-group][role="checkbox"]');
+    if (g && (e.key === " " || e.key === "Enter")) {
+      e.preventDefault();
+      g.click();
+    }
+  });
+  document.addEventListener("change", (e) => {
+    if (!e.target.matches("[data-bulk-pick]")) return;
+    syncBulkDialog(e.target.closest("[data-bulk-popup]"));
+  });
+  // 끌어서 옮기기
+  let bulkDrag = null;
+  const bulkOverOff = (dlg) => $$("[data-bulk-pane]", dlg).forEach((p) => p.removeAttribute("data-over"));
+  document.addEventListener("dragstart", (e) => {
+    const it = e.target.closest?.('[data-bulk-item][draggable="true"]');
+    if (!it) return;
+    const dlg = it.closest("[data-bulk-popup]");
+    const from = it.closest("[data-bulk-pane]").dataset.bulkPane;
+    const mine = $("[data-bulk-pick]", it);
+    const items = mine.checked ? bulkPicks(dlg, from).filter((i) => i.checked).map((i) => i.closest("[data-bulk-item]")) : [it];
+    bulkDrag = { dlg, from, items };
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", items.map((x) => x.dataset.code).join(" "));
+    items.forEach((x) => x.classList.add("opacity-40"));
+  });
+  document.addEventListener("dragover", (e) => {
+    const p = bulkDrag && e.target.closest?.("[data-bulk-pane]");
+    if (!p || p.dataset.bulkPane === bulkDrag.from) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (!p.hasAttribute("data-over")) {
+      bulkOverOff(bulkDrag.dlg);
+      p.setAttribute("data-over", "");
+    }
+  });
+  document.addEventListener("dragleave", (e) => {
+    const p = bulkDrag && e.target.closest?.("[data-bulk-pane]");
+    if (p && !p.contains(e.relatedTarget)) p.removeAttribute("data-over");
+  });
+  document.addEventListener("drop", (e) => {
+    const p = bulkDrag && e.target.closest?.("[data-bulk-pane]");
+    if (!p || p.dataset.bulkPane === bulkDrag.from) return;
+    e.preventDefault();
+    bulkMove(bulkDrag.dlg, bulkDrag.items, p.dataset.bulkPane);
+  });
+  document.addEventListener("dragend", () => {
+    if (!bulkDrag) return;
+    bulkDrag.items.forEach((x) => x.classList.remove("opacity-40"));
+    bulkOverOff(bulkDrag.dlg);
+    bulkDrag = null;
+  });
+
+  // ── 점포 찾기 목록(config-parts.mjs storePicker 의 data-spick-dd) — 목업 spick 자동완성 ──
+  // 칸에 포커스가 가면 아직 고르지 않은 점포(data-spick-pool 에서 칩에 없는 것)가 모두 펼쳐지고, 글자를 넣으면 점포명·점포코드로 좁힌다.
+  // 고르면(누르기 · Enter) 칩 맨 앞에 붙고 목록은 열린 채 다시 그린다. ↑↓ 로 고를 줄을 옮기고, Esc · Tab · 바깥 누르기로 닫는다.
+  const spickPool = (box) =>
+    (box.dataset.spickPool || "")
+      .split(";")
+      .filter(Boolean)
+      .map((t) => {
+        const [name, code, type] = t.split("|");
+        return { name, code, type };
+      });
+  const spickPicked = (box) => $$("[data-spick-list] > [data-code]", box).map((li) => li.dataset.code);
+  const spickCount = (box) => {
+    const n = spickPicked(box).length;
+    $("[data-spick-count]", box).textContent = `${n}개점`;
+    const none = $("[data-spick-none]", box);
+    if (none) none.hidden = n > 0;
+  };
+  function spickMark(dd, i) {
+    const opts = $$('[role="option"]', dd);
+    opts.forEach((o, k) => o.setAttribute("aria-selected", String(k === i)));
+    dd._at = i;
+    if (opts[i]) opts[i].scrollIntoView({ block: "nearest" });
+  }
+  function spickOpen(box) {
+    const input = $("[data-spick-find] input", box);
+    const dd = $("[data-spick-dd]", box);
+    const t = input.value.trim().toLowerCase();
+    const picked = spickPicked(box);
+    const found = spickPool(box).filter((s) => !picked.includes(s.code) && (!t || `${s.name} ${s.code}`.toLowerCase().includes(t)));
+    dd._found = found;
+    dd.innerHTML = found.length
+      ? found
+          .map(
+            (s, i) =>
+              `<button type="button" role="option" tabindex="-1" aria-selected="false" data-i="${i}" class="flex w-full items-center gap-[10px] rounded-[2px] px-[10px] py-[8px] text-left text-[14px] text-erp-ink hover:bg-erp-thead-bg aria-selected:bg-erp-thead-bg"><span class="min-w-0 flex-1 truncate">${s.name}</span><span class="shrink-0 text-[12px] text-erp-muted">${s.code}</span></button>`,
+          )
+          .join("")
+      : `<p class="px-[10px] py-[14px] text-center text-[13px] text-erp-label">${picked.length >= spickPool(box).length ? "고를 수 있는 점포를 모두 골랐습니다." : "맞는 점포가 없습니다."}</p>`;
+    dd.hidden = false;
+    input.setAttribute("aria-expanded", "true");
+    spickMark(dd, found.length ? 0 : -1);
+  }
+  function spickClose(box) {
+    const dd = $("[data-spick-dd]", box);
+    if (!dd || dd.hidden) return;
+    dd.hidden = true;
+    dd.innerHTML = "";
+    $("[data-spick-find] input", box).setAttribute("aria-expanded", "false");
+  }
+  function spickAdd(box, i) {
+    const s = ($("[data-spick-dd]", box)._found || [])[i];
+    if (!s) return;
+    $("[data-spick-list]", box).insertAdjacentHTML("afterbegin", SPICK_CHIP(s.name, s.code, s.type));
+    spickCount(box);
+    const input = $("[data-spick-find] input", box);
+    input.value = "";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.focus();
+    spickOpen(box);
+  }
+  $$("[data-spick-find] input").forEach((input) => {
+    const box = input.closest("[data-spick]");
+    input.setAttribute("role", "combobox");
+    input.setAttribute("aria-autocomplete", "list");
+    input.setAttribute("aria-expanded", "false");
+    input.autocomplete = "off";
+    input.addEventListener("focus", () => spickOpen(box));
+    input.addEventListener("click", () => $("[data-spick-dd]", box).hidden && spickOpen(box));
+    input.addEventListener("input", () => spickOpen(box));
+    input.addEventListener("keydown", (e) => {
+      const dd = $("[data-spick-dd]", box);
+      const n = (dd._found || []).length;
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (dd.hidden) spickOpen(box);
+        else if (n) spickMark(dd, Math.min(dd._at + 1, n - 1));
+      } else if (e.key === "ArrowUp" && !dd.hidden && n) {
+        e.preventDefault();
+        spickMark(dd, Math.max(dd._at - 1, 0));
+      } else if (e.key === "Enter" && !dd.hidden) {
+        e.preventDefault();
+        if (dd._at > -1) spickAdd(box, dd._at);
+      } else if (e.key === "Escape" && !dd.hidden) {
+        e.preventDefault();
+        e.stopPropagation();
+        spickClose(box);
+      } else if (e.key === "Tab") spickClose(box);
+    });
+    const dd = $("[data-spick-dd]", box);
+    dd.addEventListener("mousedown", (e) => e.preventDefault()); // 칸의 포커스를 잃지 않게
+    dd.addEventListener("click", (e) => {
+      const o = e.target.closest('[role="option"]');
+      if (o) spickAdd(box, +o.dataset.i);
+    });
+    dd.addEventListener("mousemove", (e) => {
+      const o = e.target.closest('[role="option"]');
+      if (o && +o.dataset.i !== dd._at) spickMark(dd, +o.dataset.i);
+    });
+  });
+  document.addEventListener("pointerdown", (e) => {
+    $$("[data-spick-find]").forEach((f) => !f.contains(e.target) && spickClose(f.closest("[data-spick]")));
+  });
+  // 범위 선택(data-spick-scope) — 전체 점포면 같은 묶음(section)의 점포 고르기 영역을 숨기고, 일부 점포일 때만 보인다
+  const spickScope = (sel) => {
+    const box = $("[data-spick]", sel.closest("section"));
+    if (box) box.hidden = sel.value === "전체 점포";
+  };
+  $$("select[data-spick-scope]").forEach((sel) => {
+    sel.addEventListener("change", () => spickScope(sel));
+    spickScope(sel);
+  });
+  // 전체 제거 — 칩을 모두 뺀다
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-spick-clear]");
+    if (!b) return;
+    const box = b.closest("[data-spick]");
+    $("[data-spick-list]", box).innerHTML = "";
+    spickCount(box);
   });
 
   // [적용] — 고른 BP·점포 범위를 세션에 남기고 웨일ERP 로 이동한다. 이동한 페이지는 initAppliedScope 가 이 값을 읽어 GNB 에 그린다.

@@ -36,14 +36,11 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
   ].join("");
 
   const storeTable = ui.dataTable(
-    [{ header: "점포명", align: "left" }, { header: "점포코드", width: "w-[110px]" }, { header: "점포 유형", width: "w-[100px]" }, { header: "점포 상태", width: "w-[90px]" }],
-    STORES.map(([n, code]) => [n, code, "직영점포", ui.badge("on", "운영")]),
+    [{ header: "점포명", align: "left" }, { header: "점포코드", width: "w-[110px]" }, { header: "점포 상태", width: "w-[90px]" }],
+    STORES.map(([n, code]) => [n, code, ui.badge("on", "운영")]),
   );
   const right =
-    ui.detailTable("소속 BP정보", [
-      ["BP코드", "BP000017"],
-      ["BP상호명", "㈜한강상회"],
-    ]) + `<div class="flex flex-col gap-[12px]">${ui.sectionHead(`점포 매핑${c.sub("일부 · 4개점")}`)}${panel ? `<div class="overflow-x-auto">${storeTable}</div>` : storeTable}</div>`;
+    `<div class="flex flex-col gap-[12px]">${ui.sectionHead(`점포 매핑${c.sub("일부 · 4개점")}`)}${panel ? `<div class="overflow-x-auto">${storeTable}</div>` : storeTable}</div>`;
 
   const history = ui.dataTable(
     [
@@ -70,7 +67,7 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
   const historyDialog = c.wide(
     x.dialog(
       histId,
-      `변경 이력${c.sub("생성 · 정보 · 권한 그룹 · 점포 · 상태 · 비밀번호 초기화 · 최신순")}`,
+      "변경 이력",
       `<div class="overflow-x-auto">${history}</div><div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
       ui.button("닫기", { variant: "off", "data-close": true }),
     ),
