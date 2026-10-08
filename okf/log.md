@@ -2,6 +2,7 @@
 
 ## 2026-10-08
 
+* **Update**: `2026-09-30-네이밍-규칙.md` 2026-10-08 고침을 [네이밍 규칙](/conventions/naming.md) 에 옮겼다 — 「근무 · 출퇴근」의 근무 유형 4종(`DAY`·`OPEN`·`MIDDLE`·`CLOSE`, enum `work_type`) 줄을 지웠다(재영).
 * **Update**: 퇴직 처리를 근로계약과 분리한 결정(퇴직 예정, STAFF-28, 운영 정책 CTR-24·25 v91)과 비밀번호 초기화 안내를 [직원 운영 관리](/staff.md) 에 넣었다. 목업·데모도 맞췄다.
 * **Update**: 근무스케줄 여러 명 일괄 등록 입력(STAFF-27, 2026-10-08 재영)을 [직원 운영 관리](/staff.md) 에 넣었다. 목업·데모의 오른쪽 일괄 등록 패널은 없앴다.
 * **Update**: `2026-09-30-네이밍-규칙.md` 2026-10-08 고침 두 줄을 [네이밍 규칙](/conventions/naming.md) 에 옮겼다 — `PUSH_SCHEDULE_CHANGED` 이름 「근무스케줄 변경」, (1팀) `mail_type_code` 비고를 알림 템플릿 `template_code` 로.

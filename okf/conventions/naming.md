@@ -5,7 +5,7 @@ description: DB·API·FRONT 세 계층이 같은 개념을 같은 영문 이름�
 tags: [convention, naming, shared]
 sources:
   - { id: naming-2026-09-30, resource: ../../docs/raw/2026-09-30-네이밍-규칙.md, title: WHALE ERP 네이밍 규칙 (DB · API · FRONT) }
-generated: { by: claude-code/opus-5.5, at: 2026-10-08T05:09:56Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-08T06:33:46Z }
 ---
 
 근거: `docs/raw/2026-09-30-네이밍-규칙.md` (3팀 기획 세션 · 2026-10-08 고침)
@@ -245,7 +245,6 @@ DB 테이블은 복수형, 모델·타입은 PascalCase 단수형으로 바꿔 �
 | 표준 표기 | 영문 식별자 | 비고 |
 |---|---|---|
 | 근무스케줄 | `work_schedule` | |
-| 근무 유형 4종 | `DAY` · `OPEN` · `MIDDLE` · `CLOSE` | 주간 · 오픈 · 미들 · 마감. enum `work_type` |
 | 출퇴근 기록 · 출퇴근 현황 | `attendance_record` · `attendance` | 현황은 화면·경로 이름 |
 | 출근 / 퇴근 | `CHECK_IN` / `CHECK_OUT` | |
 | 보정 | `correction` | |
