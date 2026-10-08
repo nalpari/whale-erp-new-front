@@ -7,39 +7,74 @@ import * as c from "../../config-parts.mjs";
 import { erpHeader, link } from "../../site.mjs";
 
 export const TITLE = "정기휴무";
-export const TAGS = `<span class="ml-[10px] inline-flex gap-[6px] align-middle">${c.tag("특정 점포")}${c.tag("매주 반복")}</span>`;
+export const TAGS = `<span class="ml-[10px] inline-flex gap-[6px] align-middle">${c.tag("일부 점포")}${c.tag("매주 반복")}</span>`;
 
-export function detailParts(R, delId, { panel = false } = {}) {
-  const body =
-    `<div class="${panel ? "flex flex-col" : "grid grid-cols-2 items-start"} gap-[24px]">${ui.detailTable("휴일 정보", [
-      ["적용 범위", c.tag("특정 점포")],
-      ["대상 점포", `온기식당 판교점 ${c.muted("ST000003")}`],
-      ["고른 날짜", `2026-09-28 ${c.muted("(월) · 반복 중 두 번째 날짜")}`],
-      ["휴일명", "정기휴무"],
-      ["설명", "월요일마다 쉬는 정기 휴무"],
-    ])}${ui.detailTable("반복 · 등록 정보", [
-      ["휴일 유형", "반복"],
-      ["반복 유형", "매주 · 시작일의 요일(월요일)"],
-      ["시작일", `2026-09-21 ${c.muted("(월)")}`],
-      ["종료 조건", "종료일 없음"],
-      ["다음 날짜", `2026-09-28, 2026-10-05, 2026-10-12 ${c.muted("…")}`],
-      ["휴일 번호", "HD-0114"],
-      ["등록", `hangang01 ${c.muted("2026-09-15 14:10")}`],
-      ["최종 수정", `hangang01 ${c.muted("2026-09-16 10:05")}`],
-    ])}</div>` +
-    `<div class="flex flex-col gap-[12px]">${ui.sectionHead("변경 이력")}<div class="${panel ? "overflow-x-auto" : ""}">${ui.dataTable(
-      [
-        { header: "변경 일시", width: "w-[160px]" },
-        { header: "변경자", width: "w-[110px]" },
-        { header: "변경 항목", width: "w-[100px]" },
-        { header: "변경 전", align: "left" },
-        { header: "변경 후", align: "left" },
-      ],
-      [
-        ["2026-09-16 10:05", "hangang01", "설명", "정기 휴무", "월요일마다 쉬는 정기 휴무"],
-        ["2026-09-15 14:10", "hangang01", "휴일", "", "정기휴무 · 온기식당 판교점 · 매주 반복 · 시작 2026-09-21 · 종료일 없음"],
-      ],
-    )}</div></div>`;
+// 등록 화면과 같은 순서로 묶는다 — 휴일 정보 · 반복 · 적용 대상 · 등록 정보(2026-10-08). 변경 이력은 BP 관리자 상세처럼 확인창으로 연다.
+// 패널(464px)은 한 줄로 쌓고, 전체 화면은 왼쪽(휴일 정보 · 반복) · 오른쪽(적용 대상 · 등록 정보) 두 칸이다.
+export function detailParts(A, R, delId, { panel = false } = {}) {
+  const histId = x.dialogId();
+  const info = ui.detailTable("휴일 정보", [
+    ["휴일명", "정기휴무"],
+    ["휴일 유형", "반복"],
+    ["고른 날짜", `2026-09-28 ${c.muted("(월)")}`],
+    ["설명", "월요일마다 쉬는 정기 휴무"],
+    // 등록일시 · 최종수정일시는 휴일 정보의 설명 아래에 둔다(2026-10-08)
+    ["등록일시", `2026-09-15 14:10 ${c.muted("| hangang01")}`],
+    ["최종수정일시", `2026-09-16 10:05 ${c.muted("| hangang01")}`],
+  ]);
+  const repeat = ui.detailTable("반복", [
+    ["시작일", `2026-09-21 ${c.muted("(월)")}`],
+    ["반복 유형", `매주 ${c.muted("· 월요일")}`],
+    ["종료 조건", "종료일 없음"],
+  ]);
+  // 적용 대상 — 적용 범위 아래에 BP 관리자 상세의 점포 매핑처럼 묶음 제목 + 점포 표를 둔다(2026-10-08).
+  // 일부 점포면 대상 점포, 전체 점포면 예외 점포를 싣는다. 점포가 없으면 표의 빈 줄로 보인다.
+  // 표본은 6개점 — 다섯 줄 높이까지 보이고 그 넘는 줄은 표 안에서 스크롤한다(2026-10-08)
+  const scopeStores = {
+    label: "대상 점포",
+    scope: "일부",
+    list: [
+      ["온기식당 판교점", "ST000003", "직영점포"],
+      ["모리커피 서초점", "ST000001", "직영점포"],
+      ["모리커피 성수점", "ST000002", "직영점포"],
+      ["온기식당 광화문점", "ST000004", "직영점포"],
+      ["모리커피 을지로점", "ST000005", "가맹점포"],
+      ["모리커피 연남점", "ST000006", "가맹점포"],
+    ],
+  };
+  const target = ui.detailTable("적용 대상", [["적용 범위", c.tag("일부 점포")]]);
+  const storeTable = ui.dataTable(
+    [{ header: "점포명", align: "left" }, { header: "점포코드", width: "w-[110px]" }, { header: "점포 유형", width: "w-[100px]" }],
+    scopeStores.list,
+    "등록한 점포가 없습니다.",
+  );
+  const stores = `<div class="flex flex-col gap-[12px]">${ui.sectionHead(`${scopeStores.label}${c.sub(`${scopeStores.scope} · ${scopeStores.list.length}개점`)}`)}<div class="max-h-[272px] overflow-auto">${storeTable}</div></div>`;
+  const body = panel
+    ? `<div class="flex flex-col gap-[24px]">${info}${repeat}${target}${stores}</div>`
+    : `<div class="grid grid-cols-2 items-start gap-[24px]"><div class="flex flex-col gap-[24px]">${info}${repeat}</div><div class="flex flex-col gap-[24px]">${target}${stores}</div></div>`;
+
+  // 변경 이력 확인창 — BP 관리자 상세와 같은 모양(넓은 창 · 표 · 페이지 이동)
+  const histDialog = c.wide(
+    x.dialog(
+      histId,
+      "변경 이력",
+      `<div class="overflow-x-auto">${ui.dataTable(
+        [
+          { header: "변경 일시", width: "w-[160px]" },
+          { header: "변경자", width: "w-[110px]" },
+          { header: "변경 항목", width: "w-[100px]" },
+          { header: "변경 전", align: "left" },
+          { header: "변경 후", align: "left" },
+        ],
+        [
+          ["2026-09-16 10:05", "hangang01", "설명", "정기 휴무", "월요일마다 쉬는 정기 휴무"],
+          ["2026-09-15 14:10", "hangang01", "휴일", "", "정기휴무 · 온기식당 판교점 · 매주 반복 · 시작 2026-09-21 · 종료일 없음"],
+        ],
+      )}</div><div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
+      ui.button("닫기", { variant: "off", "data-close": true }),
+    ),
+    "w-[720px] max-h-[calc(100dvh-48px)] overflow-y-auto",
+  );
 
   const delDialog = x.dialog(
     delId,
@@ -49,16 +84,15 @@ export function detailParts(R, delId, { panel = false } = {}) {
       ["고른 날짜", `2026-09-28 ${c.muted("(월)")}`],
       ["적용 대상", "온기식당 판교점"],
       ["반복", "매주 · 시작 2026-09-21 · 종료일 없음"],
-      ["삭제 범위", "2026-09-28 부터 이후 모두"],
-    ])}<p><b class="font-semibold">이 날짜부터 이후 휴일에 모두 적용됩니다.</b> 이 날짜 하나만 지우는 방법은 없습니다.</p><p>종료 조건을 <b class="font-semibold">‘2026-09-27까지’</b>로 바꿉니다. 그 앞의 2026-09-21 은 지난 날짜라 목록·캘린더에 그대로 남습니다.</p></div>`,
+    ])}</div>`,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("삭제", { href: link(R, "config/holidays.html") }),
   );
-  return { body, delDialog };
+  return { body, delDialog, histDialog, histId };
 }
 
 export default ({ A, R }) => {
   const delId = x.dialogId();
-  const { body, delDialog } = detailParts(R, delId);
+  const { body, delDialog, histDialog, histId } = detailParts(A, R, delId);
   return {
     title: "BP 휴일 상세",
     html: ui.erpFrame({
@@ -70,9 +104,11 @@ export default ({ A, R }) => {
           c.buttons(
             ui.button("목록", { variant: "off", href: link(R, "config/holidays.html") }),
             x.dialogTrigger("삭제", delId, "soft"),
+            x.dialogTrigger("변경 이력", histId, "soft"),
             ui.button("수정", { href: link(R, "config/holidays-edit.html") }),
           ) +
-          delDialog,
+          delDialog +
+          histDialog,
       ),
     }),
   };

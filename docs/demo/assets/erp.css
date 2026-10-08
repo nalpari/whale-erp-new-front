@@ -586,6 +586,9 @@
   .max-h-\[60dvh\] {
     max-height: 60dvh;
   }
+  .max-h-\[272px\] {
+    max-height: 272px;
+  }
   .max-h-\[273px\] {
     max-height: 273px;
   }
@@ -1178,6 +1181,9 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  .overflow-auto {
+    overflow: auto;
+  }
   .overflow-hidden {
     overflow: hidden;
   }
@@ -1588,6 +1594,9 @@
   }
   .pr-\[10px\] {
     padding-right: 10px;
+  }
+  .pr-\[12px\] {
+    padding-right: 12px;
   }
   .pr-\[20px\] {
     padding-right: 20px;

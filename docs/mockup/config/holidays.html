@@ -16,7 +16,7 @@
   </head>
   <body data-root="../" data-page="config" data-sub="config/holidays.html">
     <!-- BP 휴일 관리 (캘린더 · 목록) · /settings/holidays · S-YAFRYZ (F-YQTLQE BP 휴일 관리) · 1팀
-         보는 사람의 소속 BP(㈜한강상회)의 전체 점포 휴일과, 대상 점포 중 한 곳이라도 접근 범위 안인 특정 점포 휴일만 보인다. 다른 BP·범위 밖 점포만의 휴일은 아예 나오지 않는다.
+         보는 사람의 소속 BP(㈜한강상회)의 전체 점포 휴일과, 대상 점포 중 한 곳이라도 접근 범위 안인 일부 점포 휴일만 보인다. 다른 BP·범위 밖 점포만의 휴일은 아예 나오지 않는다.
          플랫폼 사용자(플랫폼 마스터·관리자)는 화면 상단에서 BP 를 고르면 그 BP 의 휴일을 BP 마스터와 같은 범위로 조회·등록·수정·삭제·예외 점포 지정 한다(메뉴 권한 필요). 목업 권한 ‘플랫폼 관리자’는 ㈜한강상회를 고른 상태다.
          들어오면 이번 달(2026년 9월) 캘린더다. 위 조작 줄은 플랫폼 휴일 관리(system/holidays.html)와 같다 — 오늘 · 이전달 · 다음달 · 연도·월 선택 · 캘린더/목록 전환.
          조회 기간 검색 조건은 없다. 기간은 조작 줄에서 고른 달 하나이고, 캘린더와 목록 모두 월 단위다.
@@ -27,10 +27,10 @@
          목록 열은 날짜(요일) · 휴일명 · 적용 대상 · 휴일 유형 · 최종 수정이다. 적용 대상은 ‘전체 점포’(예외가 있으면 ‘예외 N곳’을 붙인다) 또는 점포명(여러 곳이면 ‘첫 점포명 외 N곳’, 보는 사람 범위 안 점포만 센다)이다.
          휴일 유형은 하루 · 기간(‘n일 중 m일째’) · 반복 요약(매주 · 월요일, 매년 · 10월 1일 등)이다. 표본에는 예외 점포 · 여러 점포 · 기간 휴일이 없다.
          공식 휴일은 목록의 줄이 아니다 — 캘린더에서 날짜를 빨갛게 칠하고 휴일명을 적는 표시용이며, 플랫폼 공식 휴일 테이블(system/holidays.html 과 같은 값)에서 읽는다. BP·점포 휴일과 별개다.
-         특정 점포 휴일은 한 휴일에 여러 점포를 묶을 수 있고, 전체 점포 휴일은 예외 점포를 둘 수 있다 — 예외 점포는 그 휴일의 모든 날짜에서 빠진다.
+         일부 점포 휴일은 한 휴일에 여러 점포를 묶을 수 있고, 전체 점포 휴일은 예외 점포를 둘 수 있다 — 예외 점포는 그 휴일의 모든 날짜에서 빠진다.
          휴일 등록 · 상세 · 수정은 화면을 옮기지 않고 팝업으로 연다(app.js data-pagepop — 각 화면 파일을 팝업 안에 싣는다). 상세에서 수정으로, 수정 저장 뒤 상세로 가는 흐름은 팝업 안에서 이어진다.
-         캘린더는 BP 휴일이 있는 날짜에 건수 배지를 단다. 날짜를 누르면 오른쪽에 그날의 BP 휴일을 ‘휴일명 - 적용 대상명’으로 모두 보인다 — 전체 점포 휴일의 대상명은 BP 상호, 특정 점포 휴일은 점포명(여러 곳이면 보는 사람 범위 안 점포명).
-         10-01 은 전체 점포 휴일(창립기념일)과 특정 점포 휴일(광화문점 오후 휴무)이 겹치는 표본이다. 둘 다 보이고 광화문점 업무에는 특정 점포 휴일이 우선한다.
+         캘린더는 BP 휴일이 있는 날짜에 건수 배지를 단다. 날짜를 누르면 오른쪽에 그날의 BP 휴일을 ‘휴일명 - 적용 대상명’으로 모두 보인다 — 전체 점포 휴일의 대상명은 BP 상호, 일부 점포 휴일은 점포명(여러 곳이면 보는 사람 범위 안 점포명).
+         10-01 은 전체 점포 휴일(창립기념일)과 일부 점포 휴일(광화문점 오후 휴무)이 겹치는 표본이다. 둘 다 보이고 광화문점 업무에는 일부 점포 휴일이 우선한다.
          목록의 줄이나 캘린더 우측 항목을 누르면 상세로 간다. 수정·삭제는 상세에서만 한다 — 목록에는 수정·삭제 실행 항목이 없다(사용자 확정 규칙).
          지난 날짜 휴일은 흐린 줄 + ‘지난 날짜’ 꼬리표로 수정·삭제할 수 없음을 미리 알린다. 전체 점포 휴일을 바꿀 수 없는 사람에게는 ‘조회만’ 꼬리표를 단다.
          휴일 등록 버튼은 등록 권한이 있는 사람(BP 마스터·BP 관리자·가맹 마스터·가맹 관리자·플랫폼 사용자)에게만 보인다. 조회만 권한은 버튼이 없다.
@@ -172,7 +172,7 @@
                   <button type="button" style="display: inline-flex; align-items: center; gap: 6px" aria-pressed="true"><span data-icon="list" data-icon-size="13"></span> 목록</button>
                 </div>
                 <button class="btn btn--secondary btn--sm" type="button" data-open="pop-hist"><span data-icon="clock" data-icon-size="14"></span>변경 이력 보기</button>
-                <a class="btn btn--primary btn--sm" href="holidays-new.html" data-pagepop data-show-role="bm pf ba bp fm"><span data-icon="plus" data-icon-size="14"></span>휴일 등록</a>
+                <a class="btn btn--primary btn--sm" href="holidays-new.html" data-pagepop data-show-role="bm pf ba bp fm"><span data-icon="plus" data-icon-size="14"></span>등록</a>
               </div>
             </div>
           </section>
@@ -683,7 +683,7 @@
               </div>
               <div class="rows rows--hover" data-show-role="bm pf ba bp view">
                 <a class="row" href="holidays-detail.html?state=hd0114" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none" data-show-role="bm pf ba bp view">
-                  <span class="badge badge--quiet">특정 점포</span>
+                  <span class="badge badge--quiet">일부 점포</span>
                   <span class="stack" style="gap: 3px; min-width: 0">
                     <b style="font-size: 13px; font-weight: 600">정기휴무 - 온기식당 판교점</b>
                     <span class="subtle" style="font-size: 12px">매주 반복 · HD-0114 <span class="tag" data-show-role="view" hidden>조회만</span></span>
@@ -703,7 +703,7 @@
               </div>
               <div class="rows rows--hover" data-show-role="bm pf ba bp view">
                 <a class="row" href="holidays-detail.html?state=hd0101" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none" data-show-role="bm pf ba bp view">
-                  <span class="badge badge--quiet">특정 점포</span>
+                  <span class="badge badge--quiet">일부 점포</span>
                   <span class="stack" style="gap: 3px; min-width: 0">
                     <b style="font-size: 13px; font-weight: 600">정전 점검 휴무 - 모리커피 서초점</b>
                     <span class="subtle" style="font-size: 12px">HD-0101 <span class="tag">지난 날짜 · 수정·삭제 불가</span></span>
@@ -752,7 +752,7 @@
               </div>
               <div class="rows rows--hover" data-show-role="bm pf ba fm view">
                 <a class="row" href="holidays-detail.html?state=hd0121" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none" data-show-role="bm pf ba fm view">
-                  <span class="badge badge--quiet">특정 점포</span>
+                  <span class="badge badge--quiet">일부 점포</span>
                   <span class="stack" style="gap: 3px; min-width: 0">
                     <b style="font-size: 13px; font-weight: 600">내부 공사 - 모리커피 연남점</b>
                     <span class="subtle" style="font-size: 12px">HD-0121 <span class="tag" data-show-role="view" hidden>조회만</span></span>
@@ -772,7 +772,7 @@
               </div>
               <div class="rows rows--hover" data-show-role="bm pf ba bp view">
                 <a class="row" href="holidays-detail.html?state=hd0114" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none" data-show-role="bm pf ba bp view">
-                  <span class="badge badge--quiet">특정 점포</span>
+                  <span class="badge badge--quiet">일부 점포</span>
                   <span class="stack" style="gap: 3px; min-width: 0">
                     <b style="font-size: 13px; font-weight: 600">정기휴무 - 온기식당 판교점</b>
                     <span class="subtle" style="font-size: 12px">매주 반복 · HD-0114 <span class="tag" data-show-role="view" hidden>조회만</span></span>
@@ -810,7 +810,7 @@
                   <span class="row__end" style="color: var(--muted-tert)" data-icon="right" data-icon-size="14"></span>
                 </a>
                 <a class="row" href="holidays-detail.html?state=hd0123" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none" data-show-role="bm pf ba bp view">
-                  <span class="badge badge--quiet">특정 점포</span>
+                  <span class="badge badge--quiet">일부 점포</span>
                   <span class="stack" style="gap: 3px; min-width: 0">
                     <b style="font-size: 13px; font-weight: 600">오후 휴무(단축 운영) - 온기식당 광화문점</b>
                     <span class="subtle" style="font-size: 12px">HD-0123 <span class="tag" data-show-role="view" hidden>조회만</span></span>
@@ -826,7 +826,7 @@
               </div>
               <div class="rows rows--hover" data-show-role="bm pf ba bp view">
                 <a class="row" href="holidays-detail.html?state=hd0123" data-pagepop style="align-items: flex-start; color: inherit; text-decoration: none" data-show-role="bm pf ba bp view">
-                  <span class="badge badge--quiet">특정 점포</span>
+                  <span class="badge badge--quiet">일부 점포</span>
                   <span class="stack" style="gap: 3px; min-width: 0">
                     <b style="font-size: 13px; font-weight: 600">오후 휴무(단축 운영) - 온기식당 광화문점</b>
                     <span class="subtle" style="font-size: 12px">HD-0123 <span class="tag" data-show-role="view" hidden>조회만</span></span>
@@ -855,44 +855,44 @@
                     <th scope="col">휴일명</th>
                     <th scope="col">적용 대상</th>
                     <th scope="col">휴일 유형</th>
-                    <th scope="col">최종 수정</th>
+                    <th scope="col">최종수정일시</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr class="is-read" data-pagepop="holidays-detail.html?state=hd0101" style="cursor: pointer" data-show-role="bm pf ba bp view">
-                    <td style="white-space: nowrap"><span class="mono">2026-09-10</span> <span class="subtle">(목)</span> <span class="badge badge--quiet">지난 날짜</span></td>
+                    <td style="white-space: nowrap"><span class="mono">2026-09-10</span> <span class="subtle">(목)</span></td>
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0101" data-pagepop>정전 점검 휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td><span class="badge badge--quiet">특정 점포</span> 모리커피 서초점 <span class="mono subtle">ST000001</span></td>
+                    <td><span class="badge badge--quiet">일부 점포</span> 모리커피 서초점</td>
                     <td>하루</td>
-                    <td style="white-space: nowrap"><span class="mono">hgops</span> <span class="mono subtle">2026-09-01 09:40</span></td>
+                    <td style="white-space: nowrap"><span class="mono">2026-09-01 09:40</span> <span class="subtle">| hgops</span></td>
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap"><span class="mono">2026-09-21</span> <span class="subtle">(월)</span></td>
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td><span class="badge badge--quiet">일부 점포</span> 온기식당 판교점</td>
                     <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
-                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                    <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">| hangang01</span></td>
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0120" style="cursor: pointer">
                     <td style="white-space: nowrap"><span class="mono">2026-09-25</span> <span class="subtle">(금)</span></td>
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0120" data-pagepop>추석 당일 휴무</a> <span class="tag" data-show-role="bp fm view" hidden>조회만</span></td>
                     <td><span class="badge badge--info">전체 점포</span> <span class="subtle">예외 없음</span></td>
                     <td>하루</td>
-                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-02 11:00</span></td>
+                    <td style="white-space: nowrap"><span class="mono">2026-09-02 11:00</span> <span class="subtle">| hangang01</span></td>
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap"><span class="mono">2026-09-28</span> <span class="subtle">(월)</span></td>
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td><span class="badge badge--quiet">일부 점포</span> 온기식당 판교점</td>
                     <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
-                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                    <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">| hangang01</span></td>
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0121" style="cursor: pointer" data-show-role="bm pf ba fm view">
                     <td style="white-space: nowrap"><span class="mono">2026-09-29</span> <span class="subtle">(화)</span></td>
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0121" data-pagepop>내부 공사</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td><span class="badge badge--quiet">특정 점포</span> 모리커피 연남점 <span class="mono subtle">ST000006</span></td>
+                    <td><span class="badge badge--quiet">일부 점포</span> 모리커피 연남점</td>
                     <td>하루</td>
-                    <td style="white-space: nowrap"><span class="mono">morinam01</span> <span class="mono subtle">2026-09-08 16:20</span></td>
+                    <td style="white-space: nowrap"><span class="mono">2026-09-08 16:20</span> <span class="subtle">| morinam01</span></td>
                   </tr>
                 </tbody>
               </table>
@@ -914,7 +914,7 @@
                     <th scope="col">휴일명</th>
                     <th scope="col">적용 대상</th>
                     <th scope="col">휴일 유형</th>
-                    <th scope="col">최종 수정</th>
+                    <th scope="col">최종수정일시</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -923,42 +923,42 @@
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0122" data-pagepop>창립기념일</a> <span class="tag" data-show-role="bp fm view" hidden>조회만</span></td>
                     <td><span class="badge badge--info">전체 점포</span> <span class="subtle">예외 없음</span></td>
                     <td>매년 · 10월 1일 <span class="subtle">· 종료일 없음</span></td>
-                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-17 15:30</span></td>
+                    <td style="white-space: nowrap"><span class="mono">2026-09-17 15:30</span> <span class="subtle">| hangang01</span></td>
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0123" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap"><span class="mono">2026-10-01</span> <span class="subtle">(목)</span></td>
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0123" data-pagepop>오후 휴무(단축 운영)</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 광화문점 <span class="mono subtle">ST000004</span></td>
+                    <td><span class="badge badge--quiet">일부 점포</span> 온기식당 광화문점</td>
                     <td>하루</td>
-                    <td style="white-space: nowrap"><span class="mono">hghr</span> <span class="mono subtle">2026-09-14 09:15</span></td>
+                    <td style="white-space: nowrap"><span class="mono">2026-09-14 09:15</span> <span class="subtle">| hghr</span></td>
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap"><span class="mono">2026-10-05</span> <span class="subtle">(월)</span></td>
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td><span class="badge badge--quiet">일부 점포</span> 온기식당 판교점</td>
                     <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
-                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                    <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">| hangang01</span></td>
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap"><span class="mono">2026-10-12</span> <span class="subtle">(월)</span></td>
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td><span class="badge badge--quiet">일부 점포</span> 온기식당 판교점</td>
                     <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
-                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                    <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">| hangang01</span></td>
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap"><span class="mono">2026-10-19</span> <span class="subtle">(월)</span></td>
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td><span class="badge badge--quiet">일부 점포</span> 온기식당 판교점</td>
                     <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
-                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                    <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">| hangang01</span></td>
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap"><span class="mono">2026-10-26</span> <span class="subtle">(월)</span></td>
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td><span class="badge badge--quiet">일부 점포</span> 온기식당 판교점</td>
                     <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
-                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                    <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">| hangang01</span></td>
                   </tr>
                 </tbody>
               </table>
@@ -989,37 +989,37 @@
                     <th scope="col">휴일명</th>
                     <th scope="col">적용 대상</th>
                     <th scope="col">휴일 유형</th>
-                    <th scope="col">최종 수정</th>
+                    <th scope="col">최종수정일시</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr class="is-read" data-pagepop="holidays-detail.html?state=hd0101" style="cursor: pointer" data-show-role="bm pf ba bp view">
-                    <td style="white-space: nowrap"><span class="mono">2026-09-10</span> <span class="subtle">(목)</span> <span class="badge badge--quiet">지난 날짜</span></td>
+                    <td style="white-space: nowrap"><span class="mono">2026-09-10</span> <span class="subtle">(목)</span></td>
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0101" data-pagepop>정전 점검 휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td><span class="badge badge--quiet">특정 점포</span> 모리커피 서초점 <span class="mono subtle">ST000001</span></td>
+                    <td><span class="badge badge--quiet">일부 점포</span> 모리커피 서초점</td>
                     <td>하루</td>
-                    <td style="white-space: nowrap"><span class="mono">hgops</span> <span class="mono subtle">2026-09-01 09:40</span></td>
+                    <td style="white-space: nowrap"><span class="mono">2026-09-01 09:40</span> <span class="subtle">| hgops</span></td>
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap"><span class="mono">2026-09-21</span> <span class="subtle">(월)</span></td>
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td><span class="badge badge--quiet">일부 점포</span> 온기식당 판교점</td>
                     <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
-                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                    <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">| hangang01</span></td>
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0120" style="cursor: pointer">
                     <td style="white-space: nowrap"><span class="mono">2026-09-25</span> <span class="subtle">(금)</span></td>
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0120" data-pagepop>추석 당일 휴무</a> <span class="tag" data-show-role="bp fm view" hidden>조회만</span></td>
                     <td><span class="badge badge--info">전체 점포</span> <span class="subtle">예외 없음</span></td>
                     <td>하루</td>
-                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-02 11:00</span></td>
+                    <td style="white-space: nowrap"><span class="mono">2026-09-02 11:00</span> <span class="subtle">| hangang01</span></td>
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap"><span class="mono">2026-09-28</span> <span class="subtle">(월)</span></td>
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td><span class="badge badge--quiet">일부 점포</span> 온기식당 판교점</td>
                     <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
-                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                    <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">| hangang01</span></td>
                   </tr>
                 </tbody>
               </table>
@@ -1050,44 +1050,44 @@
                     <th scope="col">휴일명</th>
                     <th scope="col">적용 대상</th>
                     <th scope="col">휴일 유형</th>
-                    <th scope="col">최종 수정</th>
+                    <th scope="col">최종수정일시</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr data-pagepop="holidays-detail.html?state=hd0123" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap"><span class="mono">2026-10-01</span> <span class="subtle">(목)</span></td>
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0123" data-pagepop>오후 휴무(단축 운영)</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 광화문점 <span class="mono subtle">ST000004</span></td>
+                    <td><span class="badge badge--quiet">일부 점포</span> 온기식당 광화문점</td>
                     <td>하루</td>
-                    <td style="white-space: nowrap"><span class="mono">hghr</span> <span class="mono subtle">2026-09-14 09:15</span></td>
+                    <td style="white-space: nowrap"><span class="mono">2026-09-14 09:15</span> <span class="subtle">| hghr</span></td>
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap"><span class="mono">2026-10-05</span> <span class="subtle">(월)</span></td>
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td><span class="badge badge--quiet">일부 점포</span> 온기식당 판교점</td>
                     <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
-                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                    <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">| hangang01</span></td>
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap"><span class="mono">2026-10-12</span> <span class="subtle">(월)</span></td>
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td><span class="badge badge--quiet">일부 점포</span> 온기식당 판교점</td>
                     <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
-                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                    <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">| hangang01</span></td>
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap"><span class="mono">2026-10-19</span> <span class="subtle">(월)</span></td>
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td><span class="badge badge--quiet">일부 점포</span> 온기식당 판교점</td>
                     <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
-                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                    <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">| hangang01</span></td>
                   </tr>
                   <tr data-pagepop="holidays-detail.html?state=hd0114" style="cursor: pointer" data-show-role="bm pf ba bp view">
                     <td style="white-space: nowrap"><span class="mono">2026-10-26</span> <span class="subtle">(월)</span></td>
                     <td class="k"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무</a> <span class="tag" data-show-role="view" hidden>조회만</span></td>
-                    <td><span class="badge badge--quiet">특정 점포</span> 온기식당 판교점 <span class="mono subtle">ST000003</span></td>
+                    <td><span class="badge badge--quiet">일부 점포</span> 온기식당 판교점</td>
                     <td>매주 · 월요일 <span class="subtle">· 종료일 없음</span></td>
-                    <td style="white-space: nowrap"><span class="mono">hangang01</span> <span class="mono subtle">2026-09-16 10:05</span></td>
+                    <td style="white-space: nowrap"><span class="mono">2026-09-16 10:05</span> <span class="subtle">| hangang01</span></td>
                   </tr>
                 </tbody>
               </table>
@@ -1120,7 +1120,7 @@
                     <div class="row" style="align-items: flex-start; padding: 8px 0" data-show="deleted deletedlist" hidden>
                       <span class="badge badge--risk" style="flex: none">삭제</span>
                       <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600">창립기념일 - ㈜한강상회</b><span class="subtle" style="font-size: 12px">2026-10-01 부터 이후 모두 삭제 · 첫 날짜라 휴일 자체를 삭제</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px">2026-09-21 10:52 | hangang01</span>
+                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-21 10:52 | hangang01</span>
                     </div>
                   </div>
                   <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
@@ -1128,7 +1128,7 @@
                     <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
                       <span class="badge badge--risk" style="flex: none">삭제</span>
                       <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600">임시 휴무 - 모리커피 성수점</b><span class="subtle" style="font-size: 12px">휴일 날짜 2026-09-30 · 삭제되어 목록과 캘린더에 없음</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px">2026-09-18 17:05 | hgops</span>
+                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-18 17:05 | hgops</span>
                     </div>
                   </div>
                   <div class="stack" style="gap: 0">
@@ -1136,7 +1136,7 @@
                     <div class="row" style="align-items: flex-start; padding: 8px 0">
                       <span class="badge badge--info" style="flex: none">수정</span>
                       <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0122" data-pagepop>창립기념일 - ㈜한강상회</a></b><span class="subtle" style="font-size: 12px">설명 · 2026-10-01 부터 이후 모두(첫 날짜라 휴일 전체)</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px">2026-09-17 15:30 | hangang01</span>
+                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-17 15:30 | hangang01</span>
                     </div>
                   </div>
                   <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
@@ -1144,7 +1144,7 @@
                     <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
                       <span class="badge badge--info" style="flex: none">수정</span>
                       <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무 - 온기식당 판교점</a></b><span class="subtle" style="font-size: 12px">설명 · 2026-09-21 부터 이후 모두(첫 날짜라 휴일 전체)</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px">2026-09-16 10:05 | hangang01</span>
+                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-16 10:05 | hangang01</span>
                     </div>
                   </div>
                   <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
@@ -1152,7 +1152,7 @@
                     <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
                       <span class="badge badge--ok" style="flex: none">등록</span>
                       <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0114" data-pagepop>정기휴무 - 온기식당 판교점</a></b><span class="subtle" style="font-size: 12px">매주 반복 · 시작 2026-09-21 · 종료일 없음</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px">2026-09-15 14:10 | hangang01</span>
+                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-15 14:10 | hangang01</span>
                     </div>
                   </div>
                   <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
@@ -1160,7 +1160,7 @@
                     <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
                       <span class="badge badge--info" style="flex: none">수정</span>
                       <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0123" data-pagepop>오후 휴무(단축 운영) - 온기식당 광화문점</a></b><span class="subtle" style="font-size: 12px">설명</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px">2026-09-14 09:15 | hghr</span>
+                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-14 09:15 | hghr</span>
                     </div>
                   </div>
                   <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
@@ -1168,7 +1168,7 @@
                     <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
                       <span class="badge badge--info" style="flex: none">수정</span>
                       <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0123" data-pagepop>오후 휴무(단축 운영) - 온기식당 광화문점</a></b><span class="subtle" style="font-size: 12px">휴일명 · 오후 휴무 → 오후 휴무(단축 운영)</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px">2026-09-11 18:02 | hghr</span>
+                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-11 18:02 | hghr</span>
                     </div>
                   </div>
                   <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
@@ -1176,7 +1176,7 @@
                     <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
                       <span class="badge badge--ok" style="flex: none">등록</span>
                       <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0123" data-pagepop>오후 휴무(단축 운영) - 온기식당 광화문점</a></b><span class="subtle" style="font-size: 12px">휴일 날짜 2026-10-01</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px">2026-09-10 13:20 | hghr</span>
+                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-10 13:20 | hghr</span>
                     </div>
                   </div>
                   <div class="stack" style="gap: 0" data-show-role="bm pf ba fm view">
@@ -1184,7 +1184,7 @@
                     <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba fm view">
                       <span class="badge badge--ok" style="flex: none">등록</span>
                       <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0121" data-pagepop>내부 공사 - 모리커피 연남점</a></b><span class="subtle" style="font-size: 12px">휴일 날짜 2026-09-29</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px">2026-09-08 16:20 | morinam01</span>
+                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-08 16:20 | morinam01</span>
                     </div>
                   </div>
                   <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
@@ -1192,7 +1192,7 @@
                     <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
                       <span class="badge badge--ok" style="flex: none">등록</span>
                       <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600">임시 휴무 - 모리커피 성수점</b><span class="subtle" style="font-size: 12px">휴일 날짜 2026-09-30</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px">2026-09-05 11:30 | hgops</span>
+                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-05 11:30 | hgops</span>
                     </div>
                   </div>
                   <div class="stack" style="gap: 0">
@@ -1200,7 +1200,7 @@
                     <div class="row" style="align-items: flex-start; padding: 8px 0">
                       <span class="badge badge--ok" style="flex: none">등록</span>
                       <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0120" data-pagepop>추석 당일 휴무 - ㈜한강상회</a></b><span class="subtle" style="font-size: 12px">휴일 날짜 2026-09-25</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px">2026-09-02 11:00 | hangang01</span>
+                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-02 11:00 | hangang01</span>
                     </div>
                   </div>
                   <div class="stack" style="gap: 0" data-show-role="bm pf ba bp view">
@@ -1208,7 +1208,7 @@
                     <div class="row" style="align-items: flex-start; padding: 8px 0" data-show-role="bm pf ba bp view">
                       <span class="badge badge--ok" style="flex: none">등록</span>
                       <span class="stack" style="gap: 2px; min-width: 0"><b style="font-size: 13px; font-weight: 600"><a class="tlink" href="holidays-detail.html?state=hd0101" data-pagepop>정전 점검 휴무 - 모리커피 서초점</a></b><span class="subtle" style="font-size: 12px">휴일 날짜 2026-09-10</span></span>
-                      <span class="row__end mono subtle" style="font-size: 12px">2026-09-01 09:40 | hgops</span>
+                      <span class="row__end mono subtle" style="font-size: 12px; padding-right: 12px">2026-09-01 09:40 | hgops</span>
                     </div>
                   </div>
                 </div>
