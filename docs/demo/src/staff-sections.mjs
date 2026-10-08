@@ -107,7 +107,7 @@ export function staffSections({ A, R }) {
   const fixPanel = "fix-form";
   const proxyPanel = "proxy-form";
   // 근무스케줄 보기는 로그인 후 홈과 같은 부품(staff-parts schedWeek·schedMonth)으로 그린다(2026-10-08 재영).
-  // 관리는 그날 재직자 전원(휴무·배정 불가 포함)을 보이고, 주간 보기 아래에 공백 안내와 「이 시간대에 배정」을 둔다.
+  // 관리는 그날 체결 완료 근로계약이 있는 재직자 전원(휴무 포함)을 보이고(미체결 직원은 뺀다, STAFF-29), 주간 보기 아래에 공백 안내와 「이 시간대에 배정」을 둔다.
   // 주간 근무표(직원 × 요일 표, 주 합계)는 없앴다(STAFF-26). 운영 07:00-22:00, 주 08-17 ~ 08-23, 샘플의 오늘은 공백이 드러나는 토요일.
   const schedCrew = [
     ["오세라", "점장", { 1: [9, 18], 2: [9, 18], 4: [9, 18], 5: [9, 18], 6: [11, 20] }],
@@ -115,7 +115,6 @@ export function staffSections({ A, R }) {
     ["서지안", "바리스타", { 1: [7, 16], 2: [7, 16], 3: [7, 16], 4: [7, 16], 0: [10, 19] }],
     // 다섯째 칸은 체결 완료 계약 기간. 월간 보기는 그 밖의 날에 인원에서 뺀다(STAFF-29).
     ["권도윤", "바리스타", { 1: [13, 22], 3: [13, 22], 4: [13, 22], 5: [13, 22], 0: [13, 22] }, "", ["2025-08-24", "2026-08-23"]],
-    ["하준서", "바리스타", {}, "계약 대기 · 배정 불가"],
   ];
   const schedWeekView = p.schedWeek(schedCrew, { open: 7, close: 22, dates: { 1: 17, 2: 18, 3: 19, 4: 20, 5: 21, 6: 22, 0: 23 }, pick: 6, all: true, gap: schedPanel });
   const schedMonthView = p.schedMonth(A, schedCrew, { year: 2026, month: 7, today: "2026-08-22", all: true });
