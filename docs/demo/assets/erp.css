@@ -1270,6 +1270,9 @@
   .border-erp-field-line\! {
     border-color: var(--color-erp-field-line) !important;
   }
+  .border-erp-off {
+    border-color: var(--color-erp-off);
+  }
   .border-erp-off-bg {
     border-color: var(--color-erp-off-bg);
   }

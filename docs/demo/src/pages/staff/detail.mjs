@@ -122,11 +122,11 @@ export default ({ A, R }) => {
     retireId,
     "퇴직 처리",
     `<div class="flex flex-col gap-[12px]">${ui.dateField(A, { label: "퇴직일", value: "2026-09-10" })}<p class="text-[13px] text-erp-label">오늘 이후, 또는 최근 3개월 안의 지난 날짜를 받습니다.</p><ul class="list-disc pl-[18px]"><li>종료될 근로계약 1건</li><li>지울 근무스케줄 2건 (퇴직일 다음 날부터)</li><li>배정을 풀 개인 TO-DO 1건</li></ul><p>지운 근무스케줄과 푼 배정은 되돌릴 수 없습니다. 퇴직 처리 취소는 퇴직일 전날까지만 되고, 계정은 막지 않습니다.</p></div>`,
-    ui.button("취소", { variant: "off", "data-close": true }) + ui.button("퇴직 처리", { "data-close": true }),
+    ui.button("취소", { variant: "off", "data-close": true }) + ui.button("퇴직 처리", { variant: "danger", "data-close": true }),
   );
 
   const body = ui.detailBody(
-    `<div class="flex flex-col gap-[12px]">${p.detailHead("직원 상세", ui.button("목록", { href: L("staff/index.html") }) + x.dialogTrigger("퇴직 처리", retireId, "soft"))}${p.cols(basic + reset + contract, schedule + attendance + payslips + todo, "grid-cols-[5fr_7fr]")}</div>` + resetDialog + retireDialog,
+    `<div class="flex flex-col gap-[12px]">${p.detailHead("직원 상세", x.dialogTrigger("퇴직 처리", retireId, "danger") + ui.button("목록", { href: L("staff/index.html") }))}${p.cols(basic + reset + contract, schedule + attendance + payslips + todo, "grid-cols-[5fr_7fr]")}</div>` + resetDialog + retireDialog,
   );
   return { title: "직원 상세", html: ui.erpFrame({ header: erpHeader(A, R), title: "직원 정보 관리", body }) };
 };
