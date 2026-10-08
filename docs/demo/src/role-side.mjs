@@ -64,7 +64,7 @@ export function roleSide({ roles, own, master, selected, del = {}, card }) {
   // 신규 등록 — 마스터 유형 셋이 모두 있어 플랫폼 관리자만 고른다(목업 new 상태)
   const form =
     `<div data-role-view="new" class="flex flex-col gap-[18px]" hidden>` +
-    ui.sectionHead("신규 권한 등록", `<span class="text-[14px] text-erp-label">저장 전</span>`) +
+    ui.sectionHead("신규 권한 등록") +
     `<div class="flex flex-col gap-[18px]">` +
     ui.field(req("권한유형"), ui.select(["플랫폼 관리자"]) + help("플랫폼 마스터·BP 마스터·가맹 마스터가 모두 등록되어 있어 플랫폼 관리자만 고를 수 있습니다.")) +
     ui.field(`권한코드 ${help("자동 채번")}`, ui.textField({ value: "PA000005", readonly: true }) + help("등록할 때 확정됩니다. 같은 유형을 동시에 등록하면 겹치지 않는 다음 순번이 붙습니다.")) +
