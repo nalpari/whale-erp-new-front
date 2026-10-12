@@ -43,14 +43,14 @@ function staff(over: Partial<StaffRecord> & Pick<StaffRecord, "staffMemberId" | 
     joinState: "JOINED",
     invitation: null,
     linkHold: null,
-    contract: { contractId: over.staffMemberId, status: "SIGNED", signDeadlineAt: null, endDate: null },
+    contract: { contractId: over.staffMemberId, status: "SIGNED", signDeadlineAt: null, endDate: null, updatedAt: null },
       employmentStatus: "EMPLOYED",
     retiredDate: null,
     ...over,
   };
 }
 
-const pending = (id: number) => ({ contractId: id, status: "PENDING_SEND" as const, signDeadlineAt: null, endDate: null });
+const pending = (id: number) => ({ contractId: id, status: "PENDING_SEND" as const, signDeadlineAt: null, endDate: null, updatedAt: null });
 
 export function buildMockStaff(today: string): StaffRecord[] {
   // 데모의 열두 줄. id 를 가장 크게 주어 첫 쪽에 데모 순서대로 나온다.
@@ -60,37 +60,37 @@ export function buildMockStaff(today: string): StaffRecord[] {
     staff({ staffMemberId: 67, name: "문태경", phone: "01044712298", store: STORES.pangyo, employmentType: "FULL_TIME", retiredDate: day(today, 18) }),
     staff({
       staffMemberId: 66, name: "배정숙", phone: "01088203317", store: STORES.pangyo,
-      contract: { contractId: 66, status: "SIGNED", signDeadlineAt: null, endDate: day(today, 20) },
+      contract: { contractId: 66, status: "SIGNED", signDeadlineAt: null, endDate: day(today, 20), updatedAt: null },
     }),
     staff({
       staffMemberId: 65, name: "남도현", phone: "01090145563", store: STORES.seongsu, joinState: "INVITED", contract: pending(65),
-      invitation: { invitationType: "SIGNUP", status: "SENT", lastSentAt: at(today, -12), expiresAt: at(today, 18) },
+      invitation: { invitationType: "SIGNUP", status: "SENT", lastSentAt: at(today, -12), expiresAt: at(today, 18), canResend: true },
     }),
     staff({
       staffMemberId: 64, name: "하준서", phone: "01033924418", store: STORES.seongsu, joinState: "LINK_HOLD", contract: pending(64),
-      invitation: { invitationType: "SIGNUP", status: "ACCEPTED", lastSentAt: at(today, -6), expiresAt: at(today, 24) },
+      invitation: { invitationType: "SIGNUP", status: "ACCEPTED", lastSentAt: at(today, -6), expiresAt: at(today, 24), canResend: false },
       linkHold: { linkHoldId: 1, mismatchReason: "PHONE_MISMATCH", verifiedPhoneLast4: "4418", heldAt: at(today, -4) },
     }),
     staff({
       staffMemberId: 63, name: "정유담", phone: "01055187734", store: STORES.pangyo, joinState: "AFFILIATION_PENDING", contract: pending(63),
-      invitation: { invitationType: "AFFILIATION_CONFIRM", status: "SENT", lastSentAt: at(today, -2), expiresAt: at(today, 28) },
+      invitation: { invitationType: "AFFILIATION_CONFIRM", status: "SENT", lastSentAt: at(today, -2), expiresAt: at(today, 28), canResend: true },
     }),
     staff({
       staffMemberId: 62, name: "권도윤", phone: "01077421160", store: STORES.seocho,
-      contract: { contractId: 62, status: "PENDING_SIGNATURE", signDeadlineAt: at(today, 24), endDate: null },
+      contract: { contractId: 62, status: "PENDING_SIGNATURE", signDeadlineAt: at(today, 24), endDate: null, updatedAt: null },
     }),
     staff({
       staffMemberId: 61, name: "유하람", phone: "01020938875", store: STORES.seongsu,
-      contract: { contractId: 61, status: "REJECTED", signDeadlineAt: null, endDate: null },
+      contract: { contractId: 61, status: "REJECTED", signDeadlineAt: null, endDate: null, updatedAt: at(today, -10) },
     }),
     staff({ staffMemberId: 60, name: "이민서", phone: "01046602231", store: STORES.yeonnam, isMasked: true }),
     staff({
       staffMemberId: 59, name: "민세하", phone: "01077253390", store: STORES.seongsu, joinState: "UNDER_AGE", contract: pending(59),
-      invitation: { invitationType: "SIGNUP", status: "REJECTED_UNDER_AGE", lastSentAt: at(today, -9), expiresAt: at(today, 21) },
+      invitation: { invitationType: "SIGNUP", status: "REJECTED_UNDER_AGE", lastSentAt: at(today, -9), expiresAt: at(today, 21), canResend: false },
     }),
     staff({
       staffMemberId: 58, name: "임채운", phone: "01066130284", store: STORES.gwanghwamun, employmentStatus: "RETIRED", retiredDate: day(today, -73),
-      contract: { contractId: 58, status: "ENDED", signDeadlineAt: null, endDate: day(today, -73) },
+      contract: { contractId: 58, status: "ENDED", signDeadlineAt: null, endDate: day(today, -73), updatedAt: null },
     }),
   ];
 
@@ -108,8 +108,8 @@ export function buildMockStaff(today: string): StaffRecord[] {
       employmentStatus: retired ? "RETIRED" : "EMPLOYED",
       retiredDate: retired ? day(today, -30 - i) : null,
       contract: retired
-        ? { contractId: 57 - i, status: "ENDED", signDeadlineAt: null, endDate: day(today, -30 - i) }
-        : { contractId: 57 - i, status: "SIGNED", signDeadlineAt: null, endDate: null },
+        ? { contractId: 57 - i, status: "ENDED", signDeadlineAt: null, endDate: day(today, -30 - i), updatedAt: null }
+        : { contractId: 57 - i, status: "SIGNED", signDeadlineAt: null, endDate: null, updatedAt: null },
     });
   });
 

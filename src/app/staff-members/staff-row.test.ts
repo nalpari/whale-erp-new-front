@@ -15,13 +15,13 @@ const item = (over: Partial<StaffMemberListItem> = {}): StaffMemberListItem => (
   joinState: "JOINED",
   invitation: null,
   linkHold: null,
-  contract: { contractId: 1, status: "SIGNED", signDeadlineAt: null, endDate: null },
+  contract: { contractId: 1, status: "SIGNED", signDeadlineAt: null, endDate: null, updatedAt: null },
   employmentStatus: "EMPLOYED",
   retiredDate: null,
   ...over,
 });
 const contract = (status: NonNullable<StaffMemberListItem["contract"]>["status"], over = {}) => ({
-  contract: { contractId: 1, status, signDeadlineAt: null, endDate: null, ...over },
+  contract: { contractId: 1, status, signDeadlineAt: null, endDate: null, updatedAt: null, ...over },
 });
 
 test("번호는 3-4-4, 10자리는 3-3-4", () => {
@@ -33,7 +33,7 @@ test("번호는 3-4-4, 10자리는 3-3-4", () => {
 test("가입·인증 — 가입 완료 · 초대 발송 · 연결 보류", () => {
   assert.deepEqual(joinCell(item(), TODAY), { text: "가입 완료", style: "badge-on" });
   assert.deepEqual(
-    joinCell(item({ joinState: "INVITED", invitation: { invitationType: "SIGNUP", status: "SENT", lastSentAt: "2026-08-31T09:12:00+09:00", expiresAt: "2026-09-30T09:12:00+09:00" } }), TODAY),
+    joinCell(item({ joinState: "INVITED", invitation: { invitationType: "SIGNUP", status: "SENT", lastSentAt: "2026-08-31T09:12:00+09:00", expiresAt: "2026-09-30T09:12:00+09:00", canResend: true } }), TODAY),
     { text: "초대 발송 · 08-31", style: "badge-off" },
   );
   assert.deepEqual(
@@ -43,7 +43,7 @@ test("가입·인증 — 가입 완료 · 초대 발송 · 연결 보류", () =>
 });
 
 test("가입·인증 — 초대 발송일은 한국 날짜다(UTC 로 전날이어도)", () => {
-  const cell = joinCell(item({ joinState: "INVITED", invitation: { invitationType: "SIGNUP", status: "SENT", lastSentAt: "2026-08-30T15:30:00Z", expiresAt: "2026-09-29T15:30:00Z" } }), TODAY);
+  const cell = joinCell(item({ joinState: "INVITED", invitation: { invitationType: "SIGNUP", status: "SENT", lastSentAt: "2026-08-30T15:30:00Z", expiresAt: "2026-09-29T15:30:00Z", canResend: true } }), TODAY);
   assert.equal(cell.text, "초대 발송 · 08-31");
 });
 
@@ -83,6 +83,13 @@ test("서명 기한이 지났으면 D-day 없이 서명 대기 — 만료 배치
   assert.deepEqual(
     contractCell(item(contract("PENDING_SIGNATURE", { signDeadlineAt: "2026-10-11T09:00:00+09:00" })), TODAY),
     { text: "서명 대기", style: "badge-off" },
+  );
+});
+
+test("거부는 최종 수정일을 한국 날짜로 붙인다 — 거부일을 따로 저장하지 않는다", () => {
+  assert.deepEqual(
+    contractCell(item(contract("REJECTED", { updatedAt: "2026-09-01T15:30:00Z" })), TODAY),
+    { text: "거부 · 09-02", style: "badge-off" },
   );
 });
 

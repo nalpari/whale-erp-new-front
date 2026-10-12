@@ -56,3 +56,10 @@ test("날짜는 오늘을 기준으로 만든다 — 연결 보류 4일 전, 날
 test("번호는 숫자만 10~11자리", () => {
   for (const r of rows) if (r.phone !== null) assert.match(r.phone, /^\d{10,11}$/);
 });
+
+test("거부 계약은 최종 수정일이 있고, 재발송은 초대 발송 · 소속 추가 확인만", () => {
+  const rejected = rows.find((r) => r.contract?.status === "REJECTED");
+  assert.equal(rejected?.contract?.updatedAt?.slice(0, 10), "2026-10-02");
+  const canResend = Object.fromEntries(rows.filter((r) => r.invitation).map((r) => [r.joinState, r.invitation?.canResend]));
+  assert.deepEqual(canResend, { INVITED: true, LINK_HOLD: false, AFFILIATION_PENDING: true, UNDER_AGE: false });
+});

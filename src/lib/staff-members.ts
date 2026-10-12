@@ -28,9 +28,17 @@ export interface StaffMemberListItem {
   store: { storeId: number; name: string; storeType: StoreType };
   employmentType: EmploymentType | null;
   joinState: StaffJoinState | null;
-  invitation: { invitationType: string; status: string; lastSentAt: string; expiresAt: string } | null;
+  /** canResend — 재발송 버튼을 보일지. 간격 제한 없이 상태로만 정한다(api) */
+  invitation: { invitationType: string; status: string; lastSentAt: string; expiresAt: string; canResend: boolean } | null;
   linkHold: { linkHoldId: number; mismatchReason: string; verifiedPhoneLast4: string; heldAt: string } | null;
-  contract: { contractId: number; status: ContractStatus | null; signDeadlineAt: string | null; endDate: string | null } | null;
+  /** updatedAt — 최종 수정 일시. 거부일을 따로 저장하지 않아 「거부 · MM-DD」를 이 값으로 그린다 */
+  contract: {
+    contractId: number;
+    status: ContractStatus | null;
+    signDeadlineAt: string | null;
+    endDate: string | null;
+    updatedAt: string | null;
+  } | null;
   employmentStatus: EmploymentStatus | null;
   /** 퇴직일 YYYY-MM-DD. 재직이면서 값이 있으면 퇴직 예정 */
   retiredDate: string | null;
