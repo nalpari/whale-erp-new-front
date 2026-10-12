@@ -1,5 +1,6 @@
 // 직원 목록 한 줄을 화면 문구와 모양으로 바꾼다. 색과 문구는 데모(docs/demo/src/staff-sections.mjs)를 따른다.
-// 라벨은 목 단계라 여기 한 곳에 둔다 — api 를 붙일 때 getEnum 으로 바꾼다.
+// StaffJoinState · EmploymentType 라벨은 목 단계라 여기 둔다 — api 를 붙일 때 getEnum 으로 바꾼다. JOIN_GROUP_LABELS
+// 는 화면 묶음이라 여기 남는다.
 // 날짜는 모두 한국 날짜로 견준다. today 는 kstToday() 값(YYYY-MM-DD)을 받는다.
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
 import type { EmploymentType, JoinGroup, StaffMemberListItem } from "../../lib/staff-members.ts";

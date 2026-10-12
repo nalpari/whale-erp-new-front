@@ -1,6 +1,9 @@
 // 직원 목록 데이터 계층. 응답 모양은 whale-erp-api 의 GET /staff-members(StaffMemberListResponseDto)를 그대로 옮겼다.
-// 관리자 로그인(1팀)이 생기기 전이라 지금은 목 데이터를 거른다. api 를 붙일 때 getStaffMembers 의 안만 request() 로
-// 바꾸고(점포명 → storeIds, 묶음 → joinState 쉼표 목록, ALL → employmentStatus 생략), 함수 이름과 돌려주는 모양은 그대로다.
+// 관리자 로그인(1팀)이 생기기 전이라 지금은 목 데이터를 거른다. api 를 붙일 때 getStaffMembers 의 안을 request() 로
+// 바꾼다 — 점포명은 점포 조회로 storeIds 로, 묶음은 그 상태들을 joinState 쉼표 목록으로, 고용형태는 employmentType
+// 쉼표 목록으로(api 가 쉼표 목록을 받는다), 모두 고른 목록과 ALL 은 파라미터를 뺀다. 묶음 · 고용형태를 하나도 고르지
+// 않았거나 점포명에 맞는 점포가 없으면 api 를 부르지 않고 0건을 돌려준다 — 파라미터를 빼면 전체가 나온다.
+// 함수 이름과 돌려주는 모양은 그대로다.
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
 import { buildMockStaff } from "./staff-members.mock.ts";
 
@@ -106,7 +109,7 @@ function masked(r: StaffRecord): StaffMemberListItem {
   };
 }
 
-/** 목 거르기. api 와 같은 규칙으로 거르고 쪽을 나눈다. */
+/** 목 거르기. 가림 · 검색어 · 정렬 · 쪽 나누기는 api 와 같다. 점포명 검색은 화면 쪽 편의다(api 는 storeIds). */
 export function queryStaff(query: StaffListQuery, records: readonly StaffRecord[]): StaffMemberListResponse {
   const store = query.store.trim();
   const keyword = query.keyword.trim();

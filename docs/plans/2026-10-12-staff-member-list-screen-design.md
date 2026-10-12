@@ -5,7 +5,7 @@
 - 작업: WHALEERP-138 [관리자웹] 직원 목록의 초대·가입 상태와 재발송 (화면 부분)
 - 기준 화면: `docs/demo/staff/index.html` (원본 `docs/demo/src/staff-sections.mjs`)
 - API: `GET /staff-members` — whale-erp-api 브랜치 `jigglypuff`, 설계 `docs/plans/2026-10-12-staff-member-list-design.md`
-- 상태: 설계 확정, 구현 계획 전
+- 상태: 구현 완료(PR #3). 구현 중 바뀐 것은 이 문서에 고쳐 적었다 — 코드가 기준이다
 
 ## 목적
 
@@ -19,7 +19,7 @@
 |---|---|
 | 데이터 | 목. 관리자 로그인(1팀)이 없어 api 를 부를 수 없다. 개발용 토큰 경로는 만들지 않는다 |
 | 상태 보관 | URL 쿼리. 서버 컴포넌트 페이지가 `searchParams` 를 읽고, 필터 · 페이지 조작은 URL 만 바꾼다 |
-| 여러 개 선택 필터 | 데모대로 체크박스. 목 함수는 배열을 받는다. api 는 연결할 때 `joinState` · `employmentType` 을 쉼표 목록으로 넓힌다 |
+| 여러 개 선택 필터 | 데모대로 체크박스. 목 함수는 배열을 받는다. api 는 `joinState` · `employmentType` 을 쉼표 목록으로 받는다(api PR #13) |
 | enum 라벨 | 목 단계라 `staff-row.ts` 한 곳에 둔다. api 연결 때 `getEnum` 으로 바꾼다 |
 | 테스트 | 순수 함수만 `node --test`(이 저장소의 `date-math.test.ts` 방식, 도구를 따로 깔지 않는다) |
 
@@ -55,7 +55,9 @@
 | `pageSize` | 20 · 50 · 100 | 20 |
 
 - 체크를 하나도 고르지 않으면 값이 빈 파라미터(`joinGroup=`)로 남고, 결과는 0건이다.
-- 이상한 값(`pageSize=7`, 모르는 묶음, `page=0`)은 오류 없이 그 칸의 기본값으로 돌린다. 모르는 묶음 이름은 버린다.
+- 이상한 `page` · `pageSize` · `employmentStatus`(`pageSize=7`, `page=0`)는 오류 없이 그 칸의 기본값으로 돌린다. 체크 목록은
+  모르는 이름만 버린다 — 남는 게 없으면 하나도 고르지 않은 것(0건)이다.
+- 조작은 `router.replace` 라 기록을 쌓지 않는다. 뒤로 가기는 이 화면을 떠난다.
 - 필터나 건수를 바꾸면 `page` 를 지운다(1쪽).
 
 ### 가입·인증 묶음 → `StaffJoinState`
@@ -86,7 +88,7 @@
 
 | `joinState` | 표시 |
 |---|---|
-| `JOINED` | on 「가입 완료」, 퇴직이면 흐린 글자 |
+| `JOINED` | on 「가입 완료」, 퇴직이면 흐린 배지 |
 | `INVITED` | off 「초대 발송 · MM-DD」(`invitation.lastSentAt`) |
 | `EXPIRED` | off 「초대 만료」 |
 | `REJECTED` | off 「거절」 |
@@ -136,7 +138,7 @@
 | `src/app/staff-members/staff-list-controls.tsx` | 클라이언트. 페이지당 건수 `Select` 와 `Pagination` |
 | `src/app/staff-members/staff-table.tsx` | `DataTable` 8칸 정의와 셀 그리기 |
 | `src/lib/staff-members.ts` | api DTO 를 옮긴 타입, 묶음 → 상태 변환, `getStaffMembers(query)` |
-| `src/lib/staff-members.mock.ts` | 목 63건 |
+| `src/lib/staff-members.mock.ts` | 목 69건(기본 재직 필터 63건 = 20건에 4쪽) |
 
 ### `getStaffMembers`
 
@@ -148,8 +150,10 @@
 3. 재직 상태로 거른다(`ALL` 이면 거르지 않는다).
 4. `staffMemberId` 내림차순, 쪽 나누기. 마지막 쪽 너머면 `{ items: [], total }`.
 
-api 를 붙일 때: 점포명은 점포 조회로 ID 를 구해 `storeIds` 로, 묶음은 `joinState` 쉼표 목록으로, `ALL` 은
-`employmentStatus` 를 빼서 보낸다. 함수 이름과 돌려주는 모양은 그대로다.
+api 를 붙일 때: 점포명은 점포 조회로 ID 를 구해 `storeIds` 로, 묶음은 그 상태들을 `joinState` 쉼표 목록으로,
+고용형태는 `employmentType` 쉼표 목록으로 보낸다. 모두 고른 목록과 `ALL` 은 파라미터를 뺀다. 묶음 · 고용형태를
+하나도 고르지 않았거나 점포명에 맞는 점포가 없으면 api 를 부르지 않고 0건이다 — 파라미터를 빼면 전체가 나온다.
+함수 이름과 돌려주는 모양은 그대로다.
 
 ### 목 데이터
 
@@ -157,8 +161,8 @@ api 를 붙일 때: 점포명은 점포 조회로 ID 를 구해 `storeIds` 로, 
 - 보는 사람은 BP 마스터로 본다 — api 가 지금 가맹 점포 직원을 모두 가리므로 **목의 가맹 점포 직원은 모두 가린
   행**이다. 그래서 데모에서 가맹 점포(모리커피 연남점)에 있던 유하람(거부) · 임채운(퇴직)은 직영 점포로 옮겨,
   그 표시 예를 가린 행 때문에 잃지 않는다.
-- 나머지는 가입 완료 · 체결 완료 직원으로 채워 총 63건, 기본 20건에 4쪽이 되게 한다. 그중 몇은 퇴직이라 재직
-  기본 필터의 건수와 「전체」의 건수가 다르다.
+- 나머지는 가입 완료 · 체결 완료 직원으로 채워 총 69건(퇴직 6 · 가린 행 7)으로 한다. 기본 재직 필터에서 63건,
+  20건에 4쪽이고 「전체」는 69건이다.
 - 날짜는 오늘(한국)을 기준으로 만든다 — 「연결 보류 · 4일」, 「갱신 예정 D-20」, 「서명 대기 · D-24」가 늘 데모처럼 보이게.
 
 ## 테스트
@@ -180,5 +184,6 @@ api 를 붙일 때: 점포명은 점포 조회로 ID 를 구해 `storeIds` 로, 
 
 - api 연결(관리자 로그인 이후), `getEnum`, openapi 타입 생성.
 - 가입 연결 확인 시트(139), 직원 상세 · 일괄 저장 화면.
-- 재발송 버튼 — 재발송 간격 제한은 없고(2026-10-12 재영) api 가 `invitation.canResend` 를 준다. 버튼은 발송 동작 api(136)가
+- 재발송 버튼 — 재발송 간격 제한은 없고(2026-10-12 재영) api 가 `invitation.canResend` 를 준다(이미 수락한 초대는 다시 보내지
+  않는다 — 받은 링크로 다시 들어온다, 2026-10-12 yjnoh). 버튼은 발송 동작 api(136)가
   생긴 뒤 붙인다. 목은 지금부터 그 값을 갖고 있다.

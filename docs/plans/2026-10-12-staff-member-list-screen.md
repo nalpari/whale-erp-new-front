@@ -1,5 +1,8 @@
 # 직원 정보 관리 목록 화면 Implementation Plan
 
+> **구현 후 바뀐 것이 있다 — 코드가 기준이다.** 이 계획은 구현 전 기록이다. 이후 「이번 주」 칸 삭제, 「직원 초대」 버튼,
+> 순번 내림차순, `ErpRoot`, 낙관적 상태(`useOptimistic`), 거부일 · 재발송 가능 여부가 더해졌다(설계 문서 참고).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 로그인 없이 `/staff-members` 에 접속해 데모와 같은 직원 목록을 보고 필터 · 검색 · 페이지 이동을 쓸 수 있게 한다(목 데이터).

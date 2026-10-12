@@ -94,7 +94,7 @@ export function buildMockStaff(today: string): StaffRecord[] {
     }),
   ];
 
-  // 나머지 57건: 앞의 6건은 가맹 점포(가린 행), 9의 배수 번째 5건은 퇴직.
+  // 나머지 57건: 앞의 6건은 가맹 점포(가린 행), 인덱스 9 · 18 · 27 · 36 · 45 의 5건은 퇴직.
   const fillers = Array.from({ length: 57 }, (_, i): StaffRecord => {
     const franchise = i < 6;
     const retired = i > 0 && i % 9 === 0 && i <= 45;

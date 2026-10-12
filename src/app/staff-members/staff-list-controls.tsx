@@ -6,7 +6,10 @@ import { Pagination, Select } from "@/components/common";
 import { PAGE_SIZES, type PageSize, type StaffListQuery } from "@/lib/staff-members";
 import { toStaffListSearch, withFilter } from "./staff-list-query";
 
-/** 낙관적 쿼리로 URL 을 바꾼다 — 서버 응답 전에 한 번 더 바꿔도 앞의 변경을 잃지 않는다(필터와 같은 방식). */
+/**
+ * 낙관적 쿼리로 URL 을 바꾼다 — 같은 컴포넌트 안에서는 서버 응답 전에 한 번 더 바꿔도 앞의 변경을 잃지 않는다(필터와
+ * 같은 방식). 필터 · 건수 · 쪽은 각자 낙관적 쿼리를 들고 있어, 서로 다른 조작을 응답 전에 섞으면 앞의 것이 사라질 수 있다.
+ */
 function useStaffListNavigation(query: StaffListQuery) {
   const router = useRouter();
   const [, startTransition] = useTransition();

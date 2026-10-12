@@ -12,7 +12,7 @@ const toggle = <T,>(list: readonly T[], value: T) => (list.includes(value) ? lis
 // 직원 목록 왼쪽 필터. 값은 URL 에만 둔다 — 바꾸면 URL 을 바꾸고 서버가 목록을 다시 그린다.
 // 다음 URL 은 낙관적 쿼리에서 만든다. 받은 query 는 서버가 새 화면을 돌려줘야 바뀌므로, 그 전에 체크를 하나 더 누르면
 // 앞의 변경이 사라진다. 체크도 누르는 즉시 바뀌어 보인다.
-// 검색칸은 Enter 나 돋보기를 눌렀을 때 반영한다. key 에 URL 값과 초기화 횟수를 넣어 초기화 · 뒤로 가기 때 칸도 따라 바뀌게 한다
+// 검색칸은 Enter 나 돋보기를 눌렀을 때 반영한다. key 에 URL 값과 초기화 횟수를 넣어 초기화하거나 URL 이 바뀔 때(링크 이동 등) 칸도 따라 바뀌게 한다
 // (이미 기본값인 URL 에서 초기화하면 URL 이 그대로라 횟수가 없으면 친 글자가 남는다).
 export function StaffFilter({ query }: { query: StaffListQuery }) {
   const router = useRouter();
