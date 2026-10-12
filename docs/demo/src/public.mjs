@@ -37,7 +37,7 @@ export function authPage(A, R, { card, width = "w-[420px]", foot = "", home = li
   return `<div class="${ui.ERP_THEME}">${header}<div class="${header ? "h-[calc(100dvh-70px)]" : "h-[100dvh]"} overflow-y-auto bg-erp-thead-bg"><div class="flex min-h-full flex-col items-center justify-center gap-[24px] p-[24px]">${header ? "" : brand(A, home)}<main class="flex ${width} flex-col gap-[18px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">${card}</main>${foot}</div></div></div>`;
 }
 
-// 로그인 화면 맨 아래 약관 링크 줄. 누르면 전문을 확인창으로 연다. 확인창 폭은 회원가입 전문 보기와 같은 640px(2026-10-06 피드백).
+// 로그인 화면 맨 아래 약관 링크 줄. 누르면 전문을 확인창으로 연다. 확인창 폭은 회원가입 내용보기와 같은 640px(2026-10-06 피드백).
 export function legalFoot() {
   const use = x.dialogId();
   const policy = x.dialogId();

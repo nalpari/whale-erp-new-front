@@ -346,6 +346,9 @@
   .mt-\[6px\] {
     margin-top: 6px;
   }
+  .mt-\[8px\] {
+    margin-top: 8px;
+  }
   .mt-\[12px\] {
     margin-top: 12px;
   }
@@ -1745,6 +1748,9 @@
   .whitespace-pre-line {
     white-space: pre-line;
   }
+  .text-\[\#2e7d32\] {
+    color: #2e7d32;
+  }
   .text-\[\#111\] {
     color: #111;
   }
@@ -2096,6 +2102,12 @@
   }
   .disabled\:pointer-events-none:disabled {
     pointer-events: none;
+  }
+  .disabled\:bg-erp-thead-bg:disabled {
+    background-color: var(--color-erp-thead-bg);
+  }
+  .disabled\:text-erp-label:disabled {
+    color: var(--color-erp-label);
   }
   .disabled\:text-erp-thead-text:disabled {
     color: var(--color-erp-thead-text);
