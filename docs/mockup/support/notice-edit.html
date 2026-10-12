@@ -90,16 +90,9 @@
                     <div class="row" style="padding: 6px 0"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="회원" data-icon="check" data-icon-size="11"></span><span>회원 <span class="subtle">— 로그인한 모든 사용자</span></span></div>
                     <div class="row" style="padding: 6px 0"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="BP" data-icon="check" data-icon-size="11"></span><span>BP <span class="subtle">— 사업자 관리자</span></span></div>
                     <div class="row" style="padding: 6px 0"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="점포" data-icon="check" data-icon-size="11"></span><span>점포 <span class="subtle">— 점포 단위 관리자</span></span></div>
-                    <div class="row" style="padding: 6px 0"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="부가서비스" data-icon="check" data-icon-size="11"></span><span>부가서비스 <span class="subtle">— 고른 상품의 구독자</span></span></div>
+                    <div class="row" style="padding: 6px 0; opacity: .55"><span class="check" role="checkbox" aria-checked="false" aria-disabled="true" aria-label="부가서비스" data-icon="check" data-icon-size="11"></span><span>부가서비스 <span class="badge badge--quiet">1차 범위 밖</span></span></div>
                   </div>
-                  <!-- 부가서비스는 상품별이다. 체크하면 이 목록이 열린다 (SUPPORT-2). -->
-                  <div class="stack" style="margin: var(--s-2) 0 0 28px; padding-left: var(--s-3); border-left: 1px solid var(--hairline)">
-                    <div class="row" style="padding: 4px 0; border: 0"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="POS" data-icon="check" data-icon-size="11"></span><span>POS</span></div>
-                    <div class="row" style="padding: 4px 0; border: 0"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="KIOSK" data-icon="check" data-icon-size="11"></span><span>KIOSK</span></div>
-                    <div class="row" style="padding: 4px 0; border: 0"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="QR 주문" data-icon="check" data-icon-size="11"></span><span>QR 주문</span></div>
-                    <div class="row" style="padding: 4px 0; border: 0"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="예약" data-icon="check" data-icon-size="11"></span><span>예약</span></div>
-                    <div class="row" style="padding: 4px 0; border: 0"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="재고" data-icon="check" data-icon-size="11"></span><span>재고 <span class="subtle">· 레시피 · 발주 · 대기 순번 … 열셋</span></span></div>
-                  </div>
+                  <!-- 부가서비스는 1차에 없다(2026-10-12 재영). 상품별 목록(SUPPORT-2)은 부가서비스가 들어오는 차수에 연다. -->
                   <div class="band band--warn" style="margin-top: var(--s-4)">
                     <span class="band__ic" data-icon="eye" data-icon-size="18"></span>
                     <div class="band__body">
@@ -111,7 +104,7 @@
                   </div>
                 </div>
                 <div class="panel__note">
-                  <b>전체</b>는 비회원을 포함한 모든 대상을 뜻한다. 비회원이 빠지면 로그인 전 홈에는 서지 않고
+                  <b>전체</b>는 비회원·회원·BP·점포 넷을 뜻한다(부가서비스는 1차 범위 밖). 비회원이 빠지면 로그인 전 홈에는 서지 않고
                   해당 대상의 고객지원에만 선다.
                 </div>
               </div>
@@ -136,6 +129,7 @@
                 <p class="gap__note">
                   이 공지는 운영자가 쓰는 것이라 특정 BP 한 곳을 집을 일이 없다. 상품별 알림은 실제로 필요해서
                   부가서비스만 아래로 열린다 — 상품은 열셋이라 검색 없이 다 보인다.
+                  <b>1차에는 부가서비스가 없어</b> 부가서비스 대상과 상품 목록은 열지 않는다(2026-10-12 재영).
                 </p>
               </div>
 

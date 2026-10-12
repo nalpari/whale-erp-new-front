@@ -16,7 +16,6 @@ export function communitySections({ A, R }) {
   const notices = [
     [`<span class="flex items-center gap-[6px]">${tag("고정")}${ui.link("9월 정기 점검 안내 (09-14 02:00~05:00)", edit)}</span>`, "비회원 · 회원 · BP", ui.badge("on", "게시"), "2026-09-05"],
     [ui.link("근로계약 전자날인 기능이 열렸습니다", edit), "BP · 점포", ui.badge("on", "게시"), "2026-09-01"],
-    [ui.link("KIOSK 9월 업데이트 — 결제 화면이 바뀝니다", edit), "부가서비스 · KIOSK", ui.badge("on", "게시"), "2026-08-28"],
     [ui.link("10월 요금 PLAN 개편 사전 안내", edit), "-", tag("임시저장"), "-"],
     [ui.link("8월 점검 안내 (종료)", edit), "비회원", ui.badge("off", "비공개"), "2026-08-10"],
   ];
