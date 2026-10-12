@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react";
-import { addDays, firstOfMonth, iso, monthGrid, parse, shiftMonth } from "./date-math";
+import { addDays, firstOfMonth, hyphenateDate, iso, monthGrid, parse, shiftMonth } from "./date-math";
 import { EASE_OUT, FIELD_BOX } from "./theme";
 
 const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
@@ -35,10 +35,13 @@ export function DateField({
   defaultValue = "",
   onChange,
   disabled,
+  autoHyphen = false,
   "aria-label": label,
 }: {
   name?: string;
   disabled?: boolean;
+  /** 숫자만 쳐도 YYYY-MM-DD 로 하이픈을 넣는다(생년월일처럼 달력보다 치는 게 빠른 칸). 기본은 끔 — 2020-8-5 처럼 한 자리 달을 치는 칸이 깨지지 않게. */
+  autoHyphen?: boolean;
   "aria-label"?: string;
 } & (
   // 제어 모드는 고른 값을 되돌려 줄 onChange 와 짝으로만 쓸 수 있다.
@@ -146,7 +149,7 @@ export function DateField({
         disabled={disabled}
         aria-label={label}
         placeholder="YYYY-MM-DD"
-        onChange={(e) => emit(e.target.value)}
+        onChange={(e) => emit(autoHyphen ? hyphenateDate(e.target.value) : e.target.value)}
         onBlur={(e) => {
           // 2020/8/5 처럼 쳐도 받아 YYYY-MM-DD 로 맞춘다. 날짜로 안 읽히면 지운다 —
           // 반쯤 친 값을 그대로 두면 다음 조회에 그 값이 실려 간다.
