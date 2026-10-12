@@ -3,7 +3,7 @@
 
 모델(엔티티·관계)을 이 파일 한 곳에 두고, 여기서 SVG 를 담은 HTML 을
 함께 만든다. 그림을 손으로 고치지 말고 모델을 고친 뒤 다시 돌린다.
-물리 모델·schema.sql 과 페이지의 물리·논리+물리 보기는 _build_physical.py 가 만든다.
+물리 모델·schema.sql(api docs/raw)과 페이지의 물리·논리+물리 보기는 _build_physical.py 가 만든다.
 
   python3 _build.py
 
