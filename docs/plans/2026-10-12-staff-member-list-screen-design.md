@@ -69,7 +69,8 @@
 ## 한 줄 표시 (`staff-row.ts`)
 
 배지 색은 데모를 따른다 — 데모의 `ok` · `info` 는 `Badge tone="on"`, `warn` · `risk` 는 `Badge tone="off"`,
-`quiet` 는 흐린 글자(`text-erp-muted`). 날짜는 한국 날짜 `MM-DD`, D-day 는 한국 오늘 기준.
+`quiet` 는 회색 배지(데모 `staff-parts.mjs` 의 `NEUTRAL` — `bg-erp-subtle text-erp-ink`). 아래 표의 「흐린」 배지는
+이 회색 배지다. 직원 칸의 「본사 제공 동의 없음」과 재직 칸의 흐린 글자만 `text-erp-muted` 글자다. 날짜는 한국 날짜 `MM-DD`, D-day 는 한국 오늘 기준.
 
 **가린 행(`isMasked`)** — 직원 칸에 흐린 「본사 제공 동의 없음」, 점포만 보이고 나머지는 `-`.
 
