@@ -261,24 +261,8 @@ export function staffSections({ A, R }) {
 
   // ── 급여명세서 ──
   const PD = L("staff/payrolls-detail.html");
-  const review = (tone, label, detail) => `${p.tag(tone, label)} ${p.sub(detail)}`;
   // 급여명세서 관리는 달 단위로 넘겨 본다(2026-10-02 재영): ‹ 2026년 8월 › · 달 선택. 데모 데이터는 8월·7월, 나머지 달은 빈 목록.
-  const reviewList = (rows) =>
-    p.section(
-      "검토 대기",
-      p.tag(rows.length ? "warn" : "quiet", `${rows.length ? 9 : 0}건`),
-      numbered(
-        [
-          { header: "직원", width: "w-[110px]" },
-          { header: "근무지", width: "w-[140px]" },
-          { header: "급여 기간", width: "w-[110px]" },
-          { header: "검토 사유", align: "left" },
-          { header: "", width: "w-[120px]" },
-        ],
-        rows,
-        "검토 대기 중인 명세서가 없습니다.",
-      ),
-    );
+  // 검토 대기 목록은 두지 않는다 — 사유는 명세서 상세에서만 보인다(STAFF-32, 2026-10-12 재영).
   const payRow = (name, store, h, base, extra, ded, net, st) => [ui.link(name, PD), store, h, base, extra, ded, `<b class="font-semibold">${net}</b>`, st];
   const payList = (title, right, rows) =>
     p.section(
@@ -310,13 +294,6 @@ export function staffSections({ A, R }) {
     month(
       "2026-08-01",
       counts(52, 8, 3, 0) +
-        reviewList([
-          ["서지안", "모리커피 서초점", "2026-08", review("warn", "출퇴근 누락", "09-05 퇴근 미등록 등 2일"), offBtn("검토", { href: PD })],
-          ["유하람", "모리커피 연남점", "2026-08", review("risk", "계약 만료 후 기록 포함", "08-29 ~ 08-31 · 3일"), offBtn("검토", { href: PD })],
-          ["배정숙", "온기식당 판교점", "2026-08", review("info", "기간 중 계약 변경", "08-16 시급 조정"), offBtn("검토", { href: PD })],
-          ["권도윤", "모리커피 서초점", "2026-08", review("risk", "공제 미입력", "4대보험·소득세 비어 있음"), offBtn("검토", { href: PD })],
-          ["남도현", "모리커피 성수점", "2026-08", p.tag("risk", "근로계약 없음"), "-"],
-        ]) +
         payList("급여명세서", payButtons(3), [
           payRow("오세라", "모리커피 서초점", "180.0", "3,420,000", "184,000", "-", "3,604,000", p.tag("quiet", "작성 중")),
           payRow("서지안", "모리커피 서초점", "168.0", "2,840,000", "186,000", "-", "3,026,000", p.tag("warn", "검토 중")),
@@ -329,7 +306,6 @@ export function staffSections({ A, R }) {
     month(
       "2026-07-01",
       counts(0, 0, 0, 61) +
-        reviewList([]) +
         payList("급여명세서", payButtons(0), [
           payRow("오세라", "모리커피 서초점", "176.0", "3,420,000", "142,000", "241,800", "3,320,200", sent),
           payRow("서지안", "모리커피 서초점", "168.0", "2,840,000", "142,000", "241,800", "2,740,200", sent),
@@ -338,8 +314,8 @@ export function staffSections({ A, R }) {
           payRow("권도윤", "모리커피 서초점", "172.0", "1,926,400", "158,000", "68,780", "2,015,620", sent),
         ]),
     ) +
-    month("", counts(0, 0, 0, 0) + reviewList([]) + payList("급여명세서", payButtons(0), []));
-  // 급여명세서 관리: 왼쪽 필터(점포 · 직원 · 명세서 상태) + 달 이동 · 상태 건수 · 검토 대기 · 명세서 목록. 「급여 월」 선택칸은 달 이동으로 옮겼다.
+    month("", counts(0, 0, 0, 0) + payList("급여명세서", payButtons(0), []));
+  // 급여명세서 관리: 왼쪽 필터(점포 · 직원 · 명세서 상태) + 달 이동 · 상태 건수 · 명세서 목록. 「급여 월」 선택칸은 달 이동으로 옮겼다.
   const payslipsFilter = ui.filterPanel(A, [
     storeFilter(),
     ui.filterSection("직원", ui.searchField(A, { placeholder: "이름" }), { tight: true }),

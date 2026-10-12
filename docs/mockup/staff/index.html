@@ -1259,7 +1259,7 @@
                 </div>
                 <p class="gap__note">
                   1차 범위에서 시안과 문서의 간극이 가장 큰 곳이다. A 로 가면 주휴수당·연장근로 계산 정책과 4대보험 공제 기준을
-                  이번에 함께 확정해야 한다. 아래 화면은 <b>두 안을 겹쳐</b> 두었다 — 금액 컬럼은 A, 검토 대기 패널은 B 다.
+                  이번에 함께 확정해야 한다. 아래 화면은 <b>두 안을 겹쳐</b> 두었다 — 금액 컬럼은 A, 검토 대기 패널은 B 다. 검토 대기 패널은 2026-10-12 에 뺐다(STAFF-32).
                 </p>
             <div class="gap__block">
                 <b>확정 — 계산은 주휴·연장까지, 공제는 관리자 입력.</b>
@@ -1286,86 +1286,15 @@
                 </div>
               </div>
 
-              <!-- 검토 대기 : 문서가 급여 관리의 핵심으로 꼽는 자리다.
-                   출퇴근 누락 / 계약 만료 후 기록 / 기간 중 계약 변경 — 세 사유로 분류한다. -->
-              <section class="panel" style="margin-bottom: var(--s-5)">
-                <div class="panel__head">
-                  <h2 class="t-h2">검토 대기</h2>
-                  <span class="badge badge--warn">9건</span>
-                  <div class="panel__end">
-                    <span class="filters__count">확인 전에는 확정할 수 없다</span>
-                  </div>
+              <div class="gap is-decided" style="margin-bottom: var(--s-5)">
+                <div class="gap__head">
+                  <span class="gap__no">STAFF-32</span>
+                  <b>급여명세서 목록에 검토 대기 목록을 따로 두는가</b>
+                  <span class="gap__decided">확정 · 두지 않음 · 사유는 상세에서</span>
+                  <span class="gap__ref">S-DOVWAR</span>
                 </div>
-                <div class="tblwrap">
-                  <table class="tbl tbl--dense">
-                    <thead>
-                      <tr>
-                        <th scope="col">직원</th>
-                        <th scope="col">근무지</th>
-                        <th scope="col">급여 기간</th>
-                        <th scope="col">검토 사유</th>
-                        <th scope="col" style="width: 92px"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td class="k">서지안</td>
-                        <td>서초점</td>
-                        <td class="mono">2026-08</td>
-                        <td>
-                          <span class="badge badge--warn">출퇴근 누락</span>
-                          <span class="subtle">09-05 퇴근 미등록 등 2일</span>
-                        </td>
-                        <td class="c"><a class="tbtn" href="payrolls-detail.html">검토</a></td>
-                      </tr>
-                      <tr>
-                        <td class="k">유하람</td>
-                        <td>연남점</td>
-                        <td class="mono">2026-08</td>
-                        <td>
-                          <span class="badge badge--risk">계약 만료 후 기록</span>
-                          <span class="subtle">08-29 ~ 08-31 · 3일</span>
-                        </td>
-                        <td class="c"><a class="tbtn" href="payrolls-detail.html">검토</a></td>
-                      </tr>
-                      <tr>
-                        <td class="k">배정숙</td>
-                        <td>판교점</td>
-                        <td class="mono">2026-08</td>
-                        <td>
-                          <span class="badge badge--info">기간 중 계약 변경</span>
-                          <span class="subtle">08-16 시급 조정</span>
-                        </td>
-                        <td class="c"><a class="tbtn" href="payrolls-detail.html">검토</a></td>
-                      </tr>
-                      <tr>
-                        <td class="k">권도윤</td>
-                        <td>서초점</td>
-                        <td class="mono">2026-08</td>
-                        <td>
-                          <span class="badge badge--risk">공제 미입력</span>
-                          <span class="subtle">4대보험·소득세 비어 있음</span>
-                        </td>
-                        <td class="c"><a class="tbtn" href="payrolls-detail.html">검토</a></td>
-                      </tr>
-                      <tr>
-                        <td class="k">남도현</td>
-                        <td>성수점</td>
-                        <td class="mono">2026-08</td>
-                        <td>
-                          <span class="badge badge--risk">근로계약 없음</span>
-                          <span class="subtle">초안이 생성되지 않는다</span>
-                        </td>
-                        <td class="c"><span class="subtle">—</span></td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <div class="panel__note">
-경고가 있는 명세서도 관리자가 확인하면 확정할 수 있다. 확정 취소는 발송 후에도 가능하며 검토 중으로 되돌아간다.
-                  동의 없는 가맹 점포 직원의 명세서는 본사에게 금액까지 가려지고 건수만 남는다.
-                </div>
-              </section>
+                <p class="gap__note">2026-10-12 재영 결정. 목록 위의 「검토 대기」 목록을 뺐다. 검토 대기 분류(출퇴근 누락 · 계약 만료 후 기록 포함 · 기간 중 계약 변경 · 공제 미입력)와 공제가 비면 확정할 수 없는 규칙은 그대로 두고, 사유와 경고는 명세서 상세에서만 보인다. 목록에서는 상태 칸(검토 중)으로만 가린다.</p>
+              </div>
 
               <section class="panel">
                 <div class="panel__head">
