@@ -2,7 +2,8 @@
 
 ## 2026-10-12
 
-* **Update**: BP 회원가입·가입 완료 화면(`src/app/auth/`), 비활성 입력칸 회색 바탕(`theme.ts`), 회원가입 API 세 개 호출, `.env.development`·`.env.production` 추적을 [Whale ERP Frontend](/whale-erp-front.md) 에 적었다.
+* **Update**: `.env.development`·`.env.production` 추적을 되돌려 [Whale ERP Frontend](/whale-erp-front.md) 의 설명을 원래대로 고쳤다. 회원가입 PR 범위 밖이라 뺐다.
+* **Update**: BP 회원가입·가입 완료 화면(`src/app/auth/`), 비활성 입력칸 회색 바탕(`theme.ts`), 회원가입 API 세 개 호출을 [Whale ERP Frontend](/whale-erp-front.md) 에 적었다.
 
 ## 2026-10-08
 

@@ -35,8 +35,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-12T08:17:15Z }
 
 whale-erp-api 를 호출한다. 주소는 `API_BASE_URL` 로 주입한다
 (`.env.development` 는 `http://localhost:8000`, `.env.production` 은 비어 있고
-배포 환경이 주입한다). 두 파일은 시크릿이 없는 기본값이라 git 이 추적한다(2026-10-12).
-시크릿이나 개인 값은 추적하지 않는 `.env.local` 에 둔다.
+배포 환경이 주입한다). 두 파일 모두 git 이 추적하지 않는다.
 
 지금 부르는 엔드포인트는 회원가입 셋이다 — `POST /auth/signup`(가입, 중복이면 409),
 `POST /auth/signup/login-id-availability`·`POST /auth/signup/email-availability`(중복 확인, `{ available }`).
