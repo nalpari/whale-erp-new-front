@@ -134,9 +134,10 @@
                     <span class="help">비워 두면 기간의 정함이 없는 계약</span>
                   </div>
                   <div class="field">
-                    <label for="pay" id="pay-label">월급</label>
-                    <input class="input mono" id="pay" value="2,400,000" />
-                    <span class="help" id="pay-help">월 소정근로시간 기준 최저임금 이상</span>
+                    <!-- 급여는 고용 형태와 상관없이 시급 한 칸이다. 정직원 월급은 시급과 근로시간으로 셈한다 (2026-10-12 재영, api #12) -->
+                    <label for="pay" id="pay-label">시급</label>
+                    <input class="input mono" id="pay" value="11,500" />
+                    <span class="help" id="pay-help">2026년 최저임금 10,320원 이상</span>
                   </div>
                   <div class="field">
                     <label for="hol">주휴일</label>
@@ -342,7 +343,7 @@
     <script>
       /* 고용 형태와 계약 방식은 누르면 화면이 따라 바뀐다. 목업이라 값은 표본 두 벌을 오간다. */
       var WK = {
-        정직원: { label: "월급", pay: "2,400,000", help: "월 소정근로시간 기준 최저임금 이상", sum: "40.0",
+        정직원: { label: "시급", pay: "11,500", help: "2026년 최저임금 10,320원 이상", sum: "40.0",
                  days: { 월: 1, 화: 1, 수: 1, 목: 1, 금: 1, 토: 0, 일: 0 }, end: "18:00" },
         파트타이머: { label: "시급", pay: "11,200", help: "2026년 최저임금 10,320원 이상", sum: "20.0",
                    days: { 월: 0, 화: 1, 수: 0, 목: 1, 금: 0, 토: 1, 일: 0 }, end: "16:00" }
