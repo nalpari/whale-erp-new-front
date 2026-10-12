@@ -77,8 +77,9 @@ src/app/
 |---|---|
 | `src/components/site/site-nav.tsx` | 로그인 전 상단 메뉴(70px): 로고, 구획 메뉴 4개, LOGIN·도입문의·공지사항 |
 | `src/components/site/site-footer.tsx` | 인터플러그 푸터. 약관 링크는 팝업 |
-| `src/components/site/terms-dialog.tsx` | 약관 팝업(네이티브 `<dialog>`) |
-| `src/lib/menus.ts` | ERP·플랫폼 메뉴 상수(`HeaderMenu[]`). 화면이 없는 메뉴는 href 없음 |
+| `src/components/site/terms-link.tsx` | 약관 링크 + 팝업(네이티브 `<dialog>`) |
+| `src/components/site/admin-frame.tsx` | ERP·플랫폼 공통 틀(100dvh, 1720px, GlobalHeader) |
+| `src/lib/menus.ts` | ERP·플랫폼 메뉴 상수(`HeaderMenu[]`). 화면이 없는 메뉴는 `#`(`HeaderMenu` 의 href 가 필수) |
 | `src/lib/terms.ts` | 약관 문구 두 가지. 출처 목업 `auth.js` TERMS |
 | `src/lib/login-session.ts` | 헤더에 넣을 값. 이름·권한은 세션 쿠키에서, 점포 범위 목록은 견본(`shortcut:` 주석). `homeOf(roleTypeCode)`: PM·PA → `/platform`, 그 밖 → `/home` |
 
