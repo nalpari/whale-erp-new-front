@@ -4,6 +4,7 @@ import { test } from "node:test";
 import {
   EMPLOYMENT_TYPES,
   JOIN_GROUPS,
+  findStaff,
   kstToday,
   queryStaff,
   type StaffListQuery,
@@ -126,4 +127,21 @@ test("쪽을 나누고, 마지막 쪽 너머는 빈 items 와 total", () => {
 test("kstToday 는 한국 날짜 — UTC 로 전날 15시는 한국 0시", () => {
   assert.equal(kstToday(new Date("2026-10-11T15:00:00Z")), "2026-10-12");
   assert.equal(kstToday(new Date("2026-10-11T14:59:00Z")), "2026-10-11");
+});
+
+test("findStaff 는 한 명을 찾는다", () => {
+  const a = rec({ name: "가" });
+  const b = rec({ name: "나" });
+  assert.equal(findStaff(String(b.staffMemberId), [a, b])?.name, "나");
+});
+
+test("findStaff — 가린 직원은 상세로 들어가지 못한다(본사 제공 동의 없음)", () => {
+  const m = rec({ isMasked: true });
+  assert.equal(findStaff(String(m.staffMemberId), [m]), null);
+});
+
+test("findStaff — 이상한 id 나 없는 id 는 null", () => {
+  const a = rec();
+  for (const raw of ["abc", "0", "-1", "1.5", "2147483648", "", "007x"]) assert.equal(findStaff(raw, [a]), null, raw);
+  assert.equal(findStaff("999999", [a]), null);
 });
