@@ -75,8 +75,9 @@ export function FormRow({ children }: { children: ReactNode }) {
   return <div className="flex w-full gap-[6px]">{children}</div>;
 }
 
-// Figma Row group. 제목과 그 아래 입력칸 카드.
-export function FormGroup({ title, children }: { title: string; children: ReactNode }) {
+// Figma Row group. 제목과 그 아래 입력칸 카드. title 은 보통 글자 하나지만, 필수 표시 같은 꾸민 안내문구가
+// 섞일 수 있어 ReactNode 로 받는다(2026-10-12 코드리뷰 — 화면 변화 없는 타입 변경).
+export function FormGroup({ title, children }: { title: ReactNode; children: ReactNode }) {
   return (
     <section className="flex w-full flex-col gap-[10px]">
       <h3 className="text-[15px] font-semibold text-erp-ink">{title}</h3>

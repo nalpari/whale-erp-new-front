@@ -6,8 +6,10 @@ export const EASE_OUT = "ease-[cubic-bezier(0.23,1,0.32,1)]";
 // 입력칸. 모두 폭을 채우므로(w-full) 폭은 감싸는 요소로 정한다. 포커스 링 대신 테두리 색만 브랜드색으로 바꾼다.
 // 앱 전역 스타일이 포커스 링·캐럿을 덮어도 입력칸 모양이 유지되도록 ! 로 고정한다.
 // 높이와 안쪽 여백을 뺀 껍데기. 높이가 다른 입력칸(Textarea)이 같은 테두리·글자·포커스를 쓴다.
+// 바꿀 수 없는 값(disabled)은 바탕을 #f8f9fb(헤더 점포 선택칸과 같은 톤, 두 바탕 규칙의 둘째 색)로 깔아
+// 입력 가능한 칸과 한눈에 갈린다(2026-10-12 피드백, 1팀 영역 전체 적용).
 export const FIELD_BOX =
-  "w-full rounded-[2px] border border-erp-field-line bg-white text-[14px] text-erp-ink outline-none! caret-erp-ink! transition-[border-color] duration-150 ease-out placeholder:text-erp-label focus:border-erp-brand";
+  "w-full rounded-[2px] border border-erp-field-line bg-white text-[14px] text-erp-ink outline-none! caret-erp-ink! transition-[border-color] duration-150 ease-out placeholder:text-erp-label focus:border-erp-brand disabled:bg-erp-thead-bg disabled:text-erp-label";
 
 export const FIELD = `${FIELD_BOX} h-[34px] pl-[10px]`;
 

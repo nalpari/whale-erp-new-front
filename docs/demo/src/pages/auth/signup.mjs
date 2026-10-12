@@ -8,7 +8,8 @@ import { link } from "../../site.mjs";
 
 // 중복 확인 API 가 없어 형식만 본다 — 이 데모는 형식이 맞는 기본값을 쓰므로 통과한 상태를 그대로 보여준다.
 // 버튼 없이 칸을 벗어나면(blur) 자동으로 본다고 가정한 모습이라 데모도 버튼 없이 바로 통과 상태로 둔다(2026-10-12 피드백).
-const AVAILABLE = `<span class="mt-[8px] flex items-center gap-[4px] text-[13px] text-[#2e7d32]"><svg viewBox="0 0 20 20" class="size-[16px] shrink-0" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#2e7d32"/><path d="M6 10.3l2.6 2.6L14 7.3" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg> 사용가능합니다.</span>`;
+// 체크 표시는 운영 파랑(erp-on) — DESIGN.md 에 초록이 없어 "사용 가능"도 상태색을 쓴다(2026-10-12 피드백, 실제 화면과 맞춤).
+const AVAILABLE = `<span class="mt-[8px] flex items-center gap-[4px] text-[13px] text-erp-on"><svg viewBox="0 0 20 20" class="size-[16px] shrink-0" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#5e8ce9"/><path d="M6 10.3l2.6 2.6L14 7.3" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg> 사용가능합니다.</span>`;
 const blank = '<div class="min-w-px flex-1"></div>';
 
 export default ({ A, R }) => {
@@ -25,7 +26,7 @@ export default ({ A, R }) => {
     p.row(ui.field(req("상호명"), ui.textField({ value: "㈜한강상회", placeholder: "50자 이내로 입력해 주세요." })), blank),
   );
 
-  // 국세청 진위확인 API 가 없어 "인증하기"는 자리표시자다 — 인증완료됐다 치고 그 상태를 기본으로 보여준다(2026-10-13 피드백).
+  // 국세청 진위확인 API 가 없어 "인증하기"는 자리표시자다 — 인증완료됐다 치고 그 상태를 기본으로 보여준다(2026-10-12 피드백).
   // "재인증"·"지우기"는 생김새만 — 인증 전 상태(빈 칸 · 인증하기 버튼)로 돌아가는 토글은 실제 동작하지 않는다
   // (bizAuth 의 data-swap 토글을 처리하는 핸들러가 erp.js 에 아직 없다 — 다른 화면의 재인증 버튼도 같다).
   const biz = ui.formGroup(
@@ -54,9 +55,9 @@ export default ({ A, R }) => {
     `<div class="flex items-center justify-between">${ui.checkbox(A, "개인정보 수집·이용 동의 (필수)", false, { id: privacyChk })}${view(privacy)}</div>`,
   );
 
-  // 체크 둘 다 비어 있는 기본값이라, 제출을 시도하면 뜨는 오류 문구도 데모에 그대로 보여준다(2026-10-13 피드백).
+  // 체크 둘 다 비어 있는 기본값이라, 제출을 시도하면 뜨는 오류 문구도 데모에 그대로 보여준다(2026-10-12 피드백).
   // 실제 개발 화면과 같은 자리(약관동의 카드와 회원가입 버튼 사이) — 하나만 비었으면 그 이름만 말한다.
-  const agreeError = `<p role="alert" class="text-center text-[13px] text-[#e93737]">이용약관과 개인정보 수집·이용에 모두 동의해 주세요.</p>`;
+  const agreeError = `<span role="alert" class="text-[13px] text-[#e93737]">이용약관과 개인정보 수집·이용에 모두 동의해 주세요.</span>`;
 
   const card =
     p.cardTitle("회원가입") +

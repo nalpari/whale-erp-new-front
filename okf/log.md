@@ -1,5 +1,9 @@
 # Bundle history
 
+## 2026-10-12
+
+* **Update**: BP 회원가입·가입 완료 화면(`src/app/auth/`), 비활성 입력칸 회색 바탕(`theme.ts`), 회원가입 API 세 개 호출, `.env.development`·`.env.production` 추적을 [Whale ERP Frontend](/whale-erp-front.md) 에 적었다.
+
 ## 2026-10-08
 
 * **Update**: `2026-09-30-네이밍-규칙.md` 2026-10-08 고침을 [네이밍 규칙](/conventions/naming.md) 에 옮겼다 — 「근무 · 출퇴근」의 근무 유형 4종(`DAY`·`OPEN`·`MIDDLE`·`CLOSE`, enum `work_type`) 줄을 지웠다(재영).

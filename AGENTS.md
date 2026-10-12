@@ -54,5 +54,6 @@ git worktree add ~/.whale-erp-worktrees/whale-erp-front/machu-picchu -b pikachu 
 cp .env* ~/.whale-erp-worktrees/whale-erp-front/machu-picchu/ 2>/dev/null   # Windows: copy .env* <루트>\whale-erp-front\machu-picchu\
 ```
 
-`.env`, `.env.develop`, `.env.production` 등은 git 이 관리하지 않아 새 워크트리에
-따라오지 않는다. 서버를 띄우려면 워크트리를 만든 직후 메인 체크아웃에서 복사한다.
+`.env.development`, `.env.production` 은 시크릿이 없는 기본값이라 git 이 관리해 새 워크트리에
+따라온다(2026-10-12). `.env`, `.env.local` 등 나머지는 git 이 관리하지 않으므로, 쓰고 있다면 워크트리를
+만든 직후 메인 체크아웃에서 복사한다.

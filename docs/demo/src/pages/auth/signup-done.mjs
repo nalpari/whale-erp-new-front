@@ -7,6 +7,7 @@ export default ({ A, R }) => {
   const card =
     `<div class="flex flex-col items-center gap-[10px] py-[18px] text-center"><h1 class="text-[18px] font-semibold">회원가입이 완료되었습니다</h1><p class="text-[14px]">㈜한강상회 · 아이디 hangang01</p><p class="text-[13px] text-erp-label">가입 안내 메일을 <b class="font-semibold text-erp-ink">hayoon@hangang.co.kr</b> 로 보냈습니다.</p></div>` +
     p.block(ui.button("웨일ERP 시작하기", { href: link(R, "home/signed-in.html") })) +
-    p.note(`이 화면은 10분 동안만 열립니다. 시간이 지나면 ${ui.link("로그인 화면", link(R, "auth/login.html"))}에서 가입한 아이디로 들어오세요.`);
+    // 두 줄로 나눠 가운데 정렬한다(2026-10-12). p.note 는 다른 화면도 쓰는 왼쪽 정렬 안내라 여기만 따로 그린다.
+    `<p class="text-center text-[13px] leading-[1.6] text-erp-label">이 화면은 10분 동안만 열립니다.<br>시간이 지나면 ${ui.link("로그인 화면", link(R, "auth/login.html"))}에서 가입한 아이디로 들어오세요.</p>`;
   return { title: "가입 완료", html: p.authPage(A, R, { card }) };
 };
