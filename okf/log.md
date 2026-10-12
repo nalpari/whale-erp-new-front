@@ -1,7 +1,18 @@
 # Bundle history
 
+## 2026-10-12
+
+* **Update**: 근로계약서 작성의 휴대전화번호 · 생년월일에 하이픈 자동 입력을 더했다. 공통 `DateField` 에 켜는 칸만 쓰는 `autoHyphen` 을 더했다(기본 끔). [Whale ERP Frontend](/whale-erp-front.md).
+
 ## 2026-10-08
 
+* **Update**: 근로계약서 작성 · 이어 쓰기의 주휴일 칸을 숨겼다(7일 근무 협의 전, api 는 NULL 저장). [Whale ERP Frontend](/whale-erp-front.md).
+* **Update**: 근로계약서 작성의 주휴일을 고르는 칸에서 근무로 정해진 값을 보여 주는 칸으로 바꿨다. [Whale ERP Frontend](/whale-erp-front.md).
+* **Update**: 근로계약 목록 상태 칸에 판별한 초대 유형을 붙였다(발송 대기 · 가입 초대 등). [Whale ERP Frontend](/whale-erp-front.md).
+* **Update**: 임시저장 이어 쓰기 화면(`src/app/contracts/[contractId]/edit/`)과 목록의 「이어 쓰기」를 더했다. [Whale ERP Frontend](/whale-erp-front.md).
+* **Update**: main 을 합치고 근로계약서 작성의 임시저장을 직원 칸 · 근무지만 필수로 줄였다. 근무 장소 칸을 더했고 목록은 비어 있는 계약 칸을 「-」로 보인다. [Whale ERP Frontend](/whale-erp-front.md).
+* **Update**: 근로계약서 초안 작성에 「임시저장」 버튼(근로계약 상태 DRAFT)을 더했다. 목록 상태 필터에도 임시저장이 생긴다(enum 에서 받는다). [Whale ERP Frontend](/whale-erp-front.md).
+* **Update**: 근로계약서 초안 작성 화면(`src/app/contracts/new/`)을 만들고 목록의 「계약서 작성」을 이었다 — api `POST /contracts` · `GET /stores`. enum 한글 찾기를 클라이언트에서도 쓰려고 `src/lib/enums.ts` 로 뺐다. [Whale ERP Frontend](/whale-erp-front.md) 의 Layout · API 절을 맞췄다.
 * **Update**: 퇴직 처리를 근로계약과 분리한 결정(퇴직 예정, STAFF-28, 운영 정책 CTR-24·25 v91)과 비밀번호 초기화 안내를 [직원 운영 관리](/staff.md) 에 넣었다. 목업·데모도 맞췄다.
 * **Update**: 근무스케줄 여러 명 일괄 등록 입력(STAFF-27, 2026-10-08 재영)을 [직원 운영 관리](/staff.md) 에 넣었다. 목업·데모의 오른쪽 일괄 등록 패널은 없앴다.
 * **Update**: `2026-09-30-네이밍-규칙.md` 2026-10-08 고침 두 줄을 [네이밍 규칙](/conventions/naming.md) 에 옮겼다 — `PUSH_SCHEDULE_CHANGED` 이름 「근무스케줄 변경」, (1팀) `mail_type_code` 비고를 알림 템플릿 `template_code` 로.
@@ -15,6 +26,7 @@
 * **Update**: 문의사항 첨부파일(운영 정책 CNT-18, 2026-10-08 재영)을 [고객지원](/support.md) 에 넣었다 — 등록 폼의 첨부 칸·거절 안내, 내 문의·플랫폼 문의 상세의 첨부 보기. 목업·데모도 맞췄다.
 * **Update**: 문의사항 답변을 답변 완료 뒤에도 고치는 규칙(운영 정책 CNT-17, 2026-10-08 재영)을 [고객지원](/support.md) 에 넣었다 — 운영자 상세의 답변 수정·이전 답변, 문의자 상세의 마지막 답변·수정 시각. 목업·데모도 맞췄다.
 * **Update**: 커뮤니티 관리 문의사항 필터에 「보낸 곳」 검색(2026-10-08 재영)을 [고객지원](/support.md) 에 적었다. 데모만 고쳤고 목업은 필터 영역이 없어 그대로다.
+* **Update**: 근로계약 관리 목록(`src/app/contracts/`)을 하드코딩에서 api `GET /contracts` 로 바꾸고 `src/lib/api.ts` 에 `getEnum` · `labelOf` 를 더했다. [Whale ERP Frontend](/whale-erp-front.md) 의 Layout · API 절을 맞췄다. 논리 ERD(`docs/erd/_build.py`)의 근로계약 근무 조건 · 급여 조건을 `contract_work_days` 와 항목별 컬럼으로 풀었다(3팀 확인 전).
 
 ## 2026-10-07
 
