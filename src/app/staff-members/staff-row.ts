@@ -76,11 +76,11 @@ export function contractCell(item: StaffMemberListItem, today: string): Cell | n
   switch (c.status) {
     case "PENDING_SEND":
       return { text: "발송 대기", style: "badge-neutral" };
-    case "PENDING_SIGNATURE":
-      return {
-        text: c.signDeadlineAt ? `서명 대기 · D-${dayDiff(today, kstDate(c.signDeadlineAt))}` : "서명 대기",
-        style: "badge-off",
-      };
+    case "PENDING_SIGNATURE": {
+      const left = c.signDeadlineAt ? dayDiff(today, kstDate(c.signDeadlineAt)) : null;
+      // 기한이 지났는데 아직 서명 대기면 만료 배치 전의 잠깐이다. 「D--1」로 보이지 않게 날수를 뺀다.
+      return { text: left !== null && left >= 0 ? `서명 대기 · D-${left}` : "서명 대기", style: "badge-off" };
+    }
     case "SIGNED": {
       const left = c.endDate ? dayDiff(today, c.endDate) : null;
       // 종료일이 지난 체결 완료는 종료 배치 전의 잠깐이다. 갱신 예정이 아니다.

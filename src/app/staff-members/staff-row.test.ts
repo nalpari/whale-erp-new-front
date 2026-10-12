@@ -79,6 +79,13 @@ test("계약 — 서명 대기 D-day 는 한국 날짜로", () => {
   );
 });
 
+test("서명 기한이 지났으면 D-day 없이 서명 대기 — 만료 배치 전의 잠깐", () => {
+  assert.deepEqual(
+    contractCell(item(contract("PENDING_SIGNATURE", { signDeadlineAt: "2026-10-11T09:00:00+09:00" })), TODAY),
+    { text: "서명 대기", style: "badge-off" },
+  );
+});
+
 test("오늘이 기한이면 D-0", () => {
   assert.equal(contractCell(item(contract("PENDING_SIGNATURE", { signDeadlineAt: "2026-10-12T23:00:00+09:00" })), TODAY)?.text, "서명 대기 · D-0");
   assert.equal(contractCell(item(contract("SIGNED", { endDate: TODAY })), TODAY)?.text, "갱신 예정 D-0");
