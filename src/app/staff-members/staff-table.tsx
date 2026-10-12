@@ -1,0 +1,82 @@
+import Link from "next/link";
+import type { ReactNode } from "react";
+import { Badge, DataTable, type Column } from "@/components/common";
+import type { StaffMemberListItem } from "@/lib/staff-members";
+import { contractCell, EMPLOYMENT_TYPE_LABELS, formatPhone, joinCell, statusCells, type Cell } from "./staff-row";
+
+// 데모 staff-parts.mjs 의 회색 배지(quiet). 공통 Badge 에는 on · off 두 가지뿐이다.
+const NEUTRAL = "inline-block rounded-[2px] px-[4px] py-[2px] text-center text-[14px] font-medium bg-erp-subtle text-erp-ink whitespace-nowrap";
+const DASH = "-";
+
+function CellView({ cell }: { cell: Cell }) {
+  switch (cell.style) {
+    case "badge-on":
+      return <Badge tone="on">{cell.text}</Badge>;
+    case "badge-off":
+      return <Badge tone="off">{cell.text}</Badge>;
+    case "badge-neutral":
+      return <span className={NEUTRAL}>{cell.text}</span>;
+    case "mark-on":
+      return <span className="text-erp-on">{cell.text}</span>;
+    case "mark-off":
+      return <span className="text-erp-off">{cell.text}</span>;
+    case "muted":
+      return <span className="text-erp-muted">{cell.text}</span>;
+  }
+}
+
+type Row = { no: number; item: StaffMemberListItem };
+// 가린 행은 점포만 보이고 나머지는 「-」다. 각 칸이 같은 판단을 하지 않도록 여기서 한 번 가른다.
+const personal = (render: (item: StaffMemberListItem) => ReactNode) => (r: Row) => (r.item.isMasked ? DASH : render(r.item));
+
+export function StaffTable({ items, startNo, today }: { items: StaffMemberListItem[]; startNo: number; today: string }) {
+  const columns: Column<Row>[] = [
+    { header: "순번", width: "w-[60px]", cell: (r) => r.no },
+    {
+      header: "직원",
+      width: "w-[110px]",
+      cell: ({ item }) =>
+        item.isMasked ? (
+          <span className="text-erp-muted">본사 제공 동의 없음</span>
+        ) : item.joinState === "JOINED" && item.employmentStatus === "EMPLOYED" ? (
+          <Link href={`/staff-members/${item.staffMemberId}`} className="text-erp-link hover:underline">
+            {item.name}
+          </Link>
+        ) : (
+          item.name
+        ),
+    },
+    { header: "휴대전화번호", width: "w-[140px]", cell: personal((item) => (item.phone ? formatPhone(item.phone) : DASH)) },
+    { header: "점포", cell: (r) => r.item.store.name },
+    { header: "고용형태", width: "w-[110px]", cell: personal((item) => (item.employmentType ? EMPLOYMENT_TYPE_LABELS[item.employmentType] : DASH)) },
+    { header: "가입·인증", width: "w-[210px]", cell: personal((item) => <CellView cell={joinCell(item, today)} />) },
+    {
+      header: "계약 상태",
+      width: "w-[160px]",
+      cell: personal((item) => {
+        const cell = contractCell(item, today);
+        return cell ? <CellView cell={cell} /> : DASH;
+      }),
+    },
+    {
+      header: "재직",
+      width: "w-[110px]",
+      cell: personal((item) => (
+        <span className="inline-flex flex-wrap items-center justify-center gap-[4px]">
+          {statusCells(item).map((cell) => (
+            <CellView key={cell.text} cell={cell} />
+          ))}
+        </span>
+      )),
+    },
+  ];
+
+  return (
+    <DataTable
+      columns={columns}
+      rows={items.map((item, i) => ({ no: startNo + i, item }))}
+      rowKey={(r) => r.item.staffMemberId}
+      empty="조회된 직원이 없습니다."
+    />
+  );
+}
