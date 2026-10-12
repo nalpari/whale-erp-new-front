@@ -30,7 +30,10 @@
 - 화면 틀: `GlobalHeader`(디자인 견본의 메뉴 · 오른쪽 요소), `PageBar` 「직원 정보 관리」, 왼쪽 `FilterPanel`, 오른쪽 목록.
 - 필터: 점포(점포명 검색), 이름·휴대전화번호, 고용형태(체크 2), 가입·인증(체크 5), 재직 상태(재직 · 퇴직 · 전체, 기본 재직), 초기화.
 - 목록 도구 줄: 총 N건, 「일괄 저장」 버튼(`/staff-members/export` 링크만, 화면 없음), 페이지당 건수 20 · 50 · 100.
-- 표 9칸: 순번 · 직원 · 휴대전화번호 · 점포 · 고용형태 · 가입·인증 · 계약 상태 · 이번 주 · 재직. 빈 문구 「조회된 직원이 없습니다.」
+- 제목 줄 오른쪽 「직원 초대」 버튼 — 근로계약서 초안 작성(`/staff-members/contracts/new`) 링크만, 화면 없음. 초안을 저장하면 초대가
+  나가는 흐름이라 데모의 「계약서 작성」을 이름만 바꿨다(2026-10-12 yjnoh).
+- 표 8칸: 순번 · 직원 · 휴대전화번호 · 점포 · 고용형태 · 가입·인증 · 계약 상태 · 재직. 빈 문구 「조회된 직원이 없습니다.」
+  데모의 「이번 주」 칸은 뺐다(2026-10-12 yjnoh) — api 응답에서도 `weeklyScheduledMinutes` 를 뺐다.
 - 페이지 이동: `Pagination`.
 
 빼는 것.
@@ -106,8 +109,6 @@
 갱신 예정 기준 30일은 갱신 예정 알림과 같다 — 「갱신 예정 알림은 계약 종료일 30일 전에 한 번만 만든다」(`okf/notify.md`,
 `S-JUWPXF`). 홈 상단 경고 밴드의 7일(`okf/home.md`, `HOME-5`)과는 다른 표시다.
 
-**이번 주** — 계약이 체결 완료일 때만 `weeklyScheduledMinutes / 60` 을 소수 한 자리 + `h`(`34.5h`), 아니면 `-`.
-
 **재직 칸** — 데모처럼 한눈에 보는 요약. 위에서부터 처음 맞는 것.
 
 | 조건 | 표시 |
@@ -129,10 +130,10 @@
 |---|---|
 | `src/app/staff-members/page.tsx` | 서버 컴포넌트. `await searchParams` → `parseStaffListQuery` → `getStaffMembers` → 조립 |
 | `src/app/staff-members/staff-list-query.ts` | URL ↔ 쿼리 객체(`parseStaffListQuery` · `toStaffListSearch`). 순수 함수 |
-| `src/app/staff-members/staff-row.ts` | 한 줄 → 화면 문구 · 색(`joinCell` · `contractCell` · `weeklyCell` · `statusCell` · `formatPhone`). `today` 를 인자로 받는다 |
+| `src/app/staff-members/staff-row.ts` | 한 줄 → 화면 문구 · 색(`joinCell` · `contractCell` · `statusCells` · `formatPhone`). `today` 를 인자로 받는다 |
 | `src/app/staff-members/staff-filter.tsx` | 클라이언트. 필터 패널. 바꾸면 `router.replace` |
 | `src/app/staff-members/staff-list-controls.tsx` | 클라이언트. 페이지당 건수 `Select` 와 `Pagination` |
-| `src/app/staff-members/staff-table.tsx` | `DataTable` 9칸 정의와 셀 그리기 |
+| `src/app/staff-members/staff-table.tsx` | `DataTable` 8칸 정의와 셀 그리기 |
 | `src/lib/staff-members.ts` | api DTO 를 옮긴 타입, 묶음 → 상태 변환, `getStaffMembers(query)` |
 | `src/lib/staff-members.mock.ts` | 목 63건 |
 

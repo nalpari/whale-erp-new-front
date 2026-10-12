@@ -20,6 +20,7 @@ URL 변환 · 한 줄 표시는 순수 함수라 `node --test` 로 시험한다.
 - 응답 모양은 api `StaffMemberListResponseDto` 를 그대로 옮긴다(`{ items, total }`, 날짜는 ISO 문자열).
 - 순수 모듈(`src/lib/staff-members.ts`, `src/lib/staff-members.mock.ts`, `src/app/staff-members/staff-list-query.ts`, `src/app/staff-members/staff-row.ts`)은 `node --test` 가 직접 읽으므로 **서로를 상대 경로 + `.ts` 확장자로** import 하고 `@/` 별칭을 쓰지 않는다. 컴포넌트(`.tsx`)는 평소처럼 `@/` 를 쓴다.
 - Node 타입 벗기기가 못 읽는 문법(`enum`, 생성자 매개변수 속성, `namespace`)을 순수 모듈에 쓰지 않는다.
+- 표는 8칸(데모의 「이번 주」 칸은 뺐다), 제목 줄 버튼은 「직원 초대」(근로계약서 초안 작성 링크).
 - 화면은 `src/components/common/` 공통 컴포넌트를 먼저 쓴다. 색은 `--color-erp-*` 토큰.
 - 배지: 데모 `ok`·`info` → `Badge tone="on"`, `warn`·`risk` → `Badge tone="off"`, `quiet` → 회색 배지 `inline-block rounded-[2px] px-[4px] py-[2px] text-center text-[14px] font-medium bg-erp-subtle text-erp-ink whitespace-nowrap`. 글자: 초록 `text-erp-on`, 붉은 `text-erp-off`, 흐린 `text-erp-muted`.
 - 날짜는 한국 날짜 기준. 갱신 예정은 종료일까지 0~30일(갱신 예정 알림과 같은 30일, `okf/notify.md` `S-JUWPXF`).
@@ -88,7 +89,6 @@ const rec = (over: Partial<StaffRecord> = {}): StaffRecord => ({
   invitation: null,
   linkHold: null,
   contract: null,
-  weeklyScheduledMinutes: 0,
   employmentStatus: "EMPLOYED",
   retiredDate: null,
   ...over,
@@ -229,8 +229,6 @@ export interface StaffMemberListItem {
   invitation: { invitationType: string; status: string; lastSentAt: string; expiresAt: string } | null;
   linkHold: { linkHoldId: number; mismatchReason: string; verifiedPhoneLast4: string; heldAt: string } | null;
   contract: { contractId: number; status: ContractStatus | null; signDeadlineAt: string | null; endDate: string | null } | null;
-  /** 이번 주(한국 시간 월~일) 근무스케줄 합계, 휴게 뺀 분 */
-  weeklyScheduledMinutes: number | null;
   employmentStatus: EmploymentStatus | null;
   /** 퇴직일 YYYY-MM-DD. 재직이면서 값이 있으면 퇴직 예정 */
   retiredDate: string | null;
@@ -293,7 +291,6 @@ function masked(r: StaffRecord): StaffMemberListItem {
     invitation: null,
     linkHold: null,
     contract: null,
-    weeklyScheduledMinutes: null,
     employmentStatus: null,
     retiredDate: null,
   };
@@ -496,8 +493,7 @@ function staff(over: Partial<StaffRecord> & Pick<StaffRecord, "staffMemberId" | 
     invitation: null,
     linkHold: null,
     contract: { contractId: over.staffMemberId, status: "SIGNED", signDeadlineAt: null, endDate: null },
-    weeklyScheduledMinutes: 0,
-    employmentStatus: "EMPLOYED",
+      employmentStatus: "EMPLOYED",
     retiredDate: null,
     ...over,
   };
@@ -508,11 +504,11 @@ const pending = (id: number) => ({ contractId: id, status: "PENDING_SEND" as con
 export function buildMockStaff(today: string): StaffRecord[] {
   // 데모의 열두 줄. id 를 가장 크게 주어 첫 쪽에 데모 순서대로 나온다.
   const demo: StaffRecord[] = [
-    staff({ staffMemberId: 69, name: "서지안", phone: "01028417702", store: STORES.seocho, employmentType: "FULL_TIME", weeklyScheduledMinutes: 2070 }),
-    staff({ staffMemberId: 68, name: "오세라", phone: "01033924418", store: STORES.seocho, employmentType: "FULL_TIME", weeklyScheduledMinutes: 2400 }),
-    staff({ staffMemberId: 67, name: "문태경", phone: "01044712298", store: STORES.pangyo, employmentType: "FULL_TIME", weeklyScheduledMinutes: 2520, retiredDate: day(today, 18) }),
+    staff({ staffMemberId: 69, name: "서지안", phone: "01028417702", store: STORES.seocho, employmentType: "FULL_TIME" }),
+    staff({ staffMemberId: 68, name: "오세라", phone: "01033924418", store: STORES.seocho, employmentType: "FULL_TIME" }),
+    staff({ staffMemberId: 67, name: "문태경", phone: "01044712298", store: STORES.pangyo, employmentType: "FULL_TIME", retiredDate: day(today, 18) }),
     staff({
-      staffMemberId: 66, name: "배정숙", phone: "01088203317", store: STORES.pangyo, weeklyScheduledMinutes: 1440,
+      staffMemberId: 66, name: "배정숙", phone: "01088203317", store: STORES.pangyo,
       contract: { contractId: 66, status: "SIGNED", signDeadlineAt: null, endDate: day(today, 20) },
     }),
     staff({
@@ -536,7 +532,7 @@ export function buildMockStaff(today: string): StaffRecord[] {
       staffMemberId: 61, name: "유하람", phone: "01020938875", store: STORES.seongsu,
       contract: { contractId: 61, status: "REJECTED", signDeadlineAt: null, endDate: null },
     }),
-    staff({ staffMemberId: 60, name: "이민서", phone: "01046602231", store: STORES.yeonnam, isMasked: true, weeklyScheduledMinutes: 1200 }),
+    staff({ staffMemberId: 60, name: "이민서", phone: "01046602231", store: STORES.yeonnam, isMasked: true }),
     staff({
       staffMemberId: 59, name: "민세하", phone: "01077253390", store: STORES.seongsu, joinState: "UNDER_AGE", contract: pending(59),
       invitation: { invitationType: "SIGNUP", status: "REJECTED_UNDER_AGE", lastSentAt: at(today, -9), expiresAt: at(today, 21) },
@@ -558,7 +554,6 @@ export function buildMockStaff(today: string): StaffRecord[] {
       store: franchise ? FRANCHISE[i % FRANCHISE.length] : DIRECT[i % DIRECT.length],
       isMasked: franchise,
       employmentType: i % 3 === 0 ? "FULL_TIME" : "PART_TIME",
-      weeklyScheduledMinutes: retired ? 0 : 900 + (i % 7) * 120,
       employmentStatus: retired ? "RETIRED" : "EMPLOYED",
       retiredDate: retired ? day(today, -30 - i) : null,
       contract: retired
@@ -802,7 +797,6 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `formatPhone(phone: string): string`
   - `joinCell(item: StaffMemberListItem, today: string): Cell`
   - `contractCell(item: StaffMemberListItem, today: string): Cell | null` — null 이면 `-`
-  - `weeklyCell(item: StaffMemberListItem): string`
   - `statusCells(item: StaffMemberListItem): Cell[]`
 
 - [ ] **Step 1: 실패하는 테스트를 쓴다**
@@ -814,7 +808,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { StaffMemberListItem } from "../../lib/staff-members.ts";
-import { contractCell, formatPhone, joinCell, statusCells, weeklyCell } from "./staff-row.ts";
+import { contractCell, formatPhone, joinCell, statusCells } from "./staff-row.ts";
 
 const TODAY = "2026-10-12";
 const item = (over: Partial<StaffMemberListItem> = {}): StaffMemberListItem => ({
@@ -828,7 +822,6 @@ const item = (over: Partial<StaffMemberListItem> = {}): StaffMemberListItem => (
   invitation: null,
   linkHold: null,
   contract: { contractId: 1, status: "SIGNED", signDeadlineAt: null, endDate: null },
-  weeklyScheduledMinutes: 2070,
   employmentStatus: "EMPLOYED",
   retiredDate: null,
   ...over,
@@ -905,13 +898,6 @@ test("계약 — 종료일 30일 안이면 갱신 예정, 31일이면 체결 완
 
 test("종료일이 지났으면 체결 완료", () => {
   assert.equal(contractCell(item(contract("SIGNED", { endDate: "2026-10-11" })), TODAY)?.text, "체결 완료");
-});
-
-test("이번 주 — 체결 완료일 때만 시간, 아니면 -", () => {
-  assert.equal(weeklyCell(item()), "34.5h");
-  assert.equal(weeklyCell(item({ weeklyScheduledMinutes: 0 })), "0.0h");
-  assert.equal(weeklyCell(item(contract("PENDING_SIGNATURE"))), "-");
-  assert.equal(weeklyCell(item({ contract: null })), "-");
 });
 
 test("재직 칸 — 위에서부터 처음 맞는 것", () => {
@@ -1042,11 +1028,6 @@ export function contractCell(item: StaffMemberListItem, today: string): Cell | n
   }
 }
 
-export function weeklyCell(item: StaffMemberListItem): string {
-  if (item.contract?.status !== "SIGNED" || item.weeklyScheduledMinutes === null) return "-";
-  return `${(item.weeklyScheduledMinutes / 60).toFixed(1)}h`;
-}
-
 /** 재직 칸. 가입 · 계약 · 재직 상태를 한눈에 보는 요약이다(데모). 위에서부터 처음 맞는 것. */
 export function statusCells(item: StaffMemberListItem): Cell[] {
   if (item.employmentStatus === "RETIRED")
@@ -1068,7 +1049,7 @@ export function statusCells(item: StaffMemberListItem): Cell[] {
 - [ ] **Step 4: 통과하는지 본다**
 
 Run: `node --test src/app/staff-members/staff-row.test.ts`
-Expected: `# pass 12`, `# fail 0`
+Expected: `# pass 11`, `# fail 0`
 
 - [ ] **Step 5: 커밋한다**
 
@@ -1091,7 +1072,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Create: `src/app/staff-members/page.tsx`
 
 **Interfaces:**
-- Consumes: `getStaffMembers`, `kstToday`, `EMPLOYMENT_TYPES`, `JOIN_GROUPS`, `PAGE_SIZES`, `StaffListQuery`, `StaffMemberListItem` (Task 1) · `parseStaffListQuery`, `toStaffListSearch`, `withFilter` (Task 3) · `joinCell`, `contractCell`, `weeklyCell`, `statusCells`, `formatPhone`, `EMPLOYMENT_TYPE_LABELS`, `JOIN_GROUP_LABELS`, `Cell` (Task 4)
+- Consumes: `getStaffMembers`, `kstToday`, `EMPLOYMENT_TYPES`, `JOIN_GROUPS`, `PAGE_SIZES`, `StaffListQuery`, `StaffMemberListItem` (Task 1) · `parseStaffListQuery`, `toStaffListSearch`, `withFilter` (Task 3) · `joinCell`, `contractCell`, `statusCells`, `formatPhone`, `EMPLOYMENT_TYPE_LABELS`, `JOIN_GROUP_LABELS`, `Cell` (Task 4)
 - Produces: 경로 `/staff-members`
 
 이 Task 는 화면 조립이라 단위 테스트가 없다(이 저장소에 컴포넌트 테스트 도구가 없다). 검증은 `pnpm build` 와 개발 서버에서
@@ -1106,7 +1087,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Badge, DataTable, type Column } from "@/components/common";
 import type { StaffMemberListItem } from "@/lib/staff-members";
-import { contractCell, EMPLOYMENT_TYPE_LABELS, formatPhone, joinCell, statusCells, weeklyCell, type Cell } from "./staff-row";
+import { contractCell, EMPLOYMENT_TYPE_LABELS, formatPhone, joinCell, statusCells, type Cell } from "./staff-row";
 
 // 데모 staff-parts.mjs 의 회색 배지(quiet). 공통 Badge 에는 on · off 두 가지뿐이다.
 const NEUTRAL = "inline-block rounded-[2px] px-[4px] py-[2px] text-center text-[14px] font-medium bg-erp-subtle text-erp-ink whitespace-nowrap";
@@ -1162,7 +1143,6 @@ export function StaffTable({ items, startNo, today }: { items: StaffMemberListIt
         return cell ? <CellView cell={cell} /> : DASH;
       }),
     },
-    { header: "이번 주", width: "w-[90px]", cell: personal(weeklyCell) },
     {
       header: "재직",
       width: "w-[110px]",
@@ -1354,7 +1334,8 @@ export default async function StaffMembersPage({
           }
         />
         <PageBar title="직원 정보 관리">
-          <Button href="/staff-members/contracts/new">계약서 작성</Button>
+          {/* 초안을 저장하면 초대가 나간다 — 데모의 「계약서 작성」을 이름만 바꿨다(2026-10-12 yjnoh). */}
+          <Button href="/staff-members/contracts/new">직원 초대</Button>
         </PageBar>
         <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
           <StaffFilter query={query} />
@@ -1423,7 +1404,7 @@ node --test src/lib/staff-members.test.ts src/lib/staff-members.mock.test.ts src
 pnpm lint
 pnpm build
 ```
-Expected: `# fail 0`(pass 14 + 7 + 10 + 12 + 기존 date-math), 린트 · 빌드 성공.
+Expected: `# fail 0`(pass 14 + 7 + 10 + 11 + 기존 date-math), 린트 · 빌드 성공.
 
 - [ ] **Step 2: 개발 서버를 띄워 둔다**
 
