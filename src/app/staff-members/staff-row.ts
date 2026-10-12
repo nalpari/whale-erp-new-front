@@ -35,6 +35,11 @@ function dayDiff(from: string, to: string): number {
 }
 const mmdd = (date: string) => date.slice(5);
 
+/** 순번. 최근 등록이 먼저 오는 목록이라 전체 건수에서 거꾸로 센다(1쪽 첫 줄 = total). index 는 그 쪽 안의 0부터 순서다. */
+export function rowNumber(total: number, page: number, pageSize: number, index: number): number {
+  return total - (page - 1) * pageSize - index;
+}
+
 export function formatPhone(phone: string): string {
   if (/^\d{11}$/.test(phone)) return `${phone.slice(0, 3)}-${phone.slice(3, 7)}-${phone.slice(7)}`;
   if (/^\d{10}$/.test(phone)) return `${phone.slice(0, 3)}-${phone.slice(3, 6)}-${phone.slice(6)}`;

@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Badge, DataTable, type Column } from "@/components/common";
 import type { StaffMemberListItem } from "@/lib/staff-members";
-import { contractCell, EMPLOYMENT_TYPE_LABELS, formatPhone, joinCell, statusCells, type Cell } from "./staff-row";
+import { contractCell, EMPLOYMENT_TYPE_LABELS, formatPhone, joinCell, rowNumber, statusCells, type Cell } from "./staff-row";
 
 // 데모 staff-parts.mjs 의 회색 배지(quiet). 공통 Badge 에는 on · off 두 가지뿐이다.
 const NEUTRAL = "inline-block rounded-[2px] px-[4px] py-[2px] text-center text-[14px] font-medium bg-erp-subtle text-erp-ink whitespace-nowrap";
@@ -29,7 +29,19 @@ type Row = { no: number; item: StaffMemberListItem };
 // 가린 행은 점포만 보이고 나머지는 「-」다. 각 칸이 같은 판단을 하지 않도록 여기서 한 번 가른다.
 const personal = (render: (item: StaffMemberListItem) => ReactNode) => (r: Row) => (r.item.isMasked ? DASH : render(r.item));
 
-export function StaffTable({ items, startNo, today }: { items: StaffMemberListItem[]; startNo: number; today: string }) {
+export function StaffTable({
+  items,
+  total,
+  page,
+  pageSize,
+  today,
+}: {
+  items: StaffMemberListItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+  today: string;
+}) {
   const columns: Column<Row>[] = [
     { header: "순번", width: "w-[60px]", cell: (r) => r.no },
     {
@@ -74,7 +86,7 @@ export function StaffTable({ items, startNo, today }: { items: StaffMemberListIt
   return (
     <DataTable
       columns={columns}
-      rows={items.map((item, i) => ({ no: startNo + i, item }))}
+      rows={items.map((item, i) => ({ no: rowNumber(total, page, pageSize, i), item }))}
       rowKey={(r) => r.item.staffMemberId}
       empty="조회된 직원이 없습니다."
     />

@@ -46,7 +46,7 @@ export default async function StaffMembersPage({
               </Button>
               <StaffPageSize query={query} />
             </ListToolbar>
-            <StaffTable items={items} startNo={(query.page - 1) * query.pageSize + 1} today={kstToday()} />
+            <StaffTable items={items} total={total} page={query.page} pageSize={query.pageSize} today={kstToday()} />
             <div className="pt-[14px]">
               <StaffPagination query={query} totalPages={totalPages} />
             </div>

@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { StaffMemberListItem } from "../../lib/staff-members.ts";
-import { contractCell, formatPhone, joinCell, statusCells } from "./staff-row.ts";
+import { contractCell, formatPhone, joinCell, rowNumber, statusCells } from "./staff-row.ts";
 
 const TODAY = "2026-10-12";
 const item = (over: Partial<StaffMemberListItem> = {}): StaffMemberListItem => ({
@@ -116,4 +116,10 @@ test("재직 칸 — 위에서부터 처음 맞는 것", () => {
     [{ retiredDate: "2026-10-30" }, [{ text: "재직", style: "mark-on" }, { text: "퇴직 예정 10-30", style: "badge-off" }]],
   ];
   for (const [over, expected] of cases) assert.deepEqual(statusCells(item(over)), expected, JSON.stringify(over));
+});
+
+test("순번은 내림차순 — 전체 건수에서 거꾸로 센다", () => {
+  assert.equal(rowNumber(63, 1, 20, 0), 63);
+  assert.equal(rowNumber(63, 1, 20, 19), 44);
+  assert.equal(rowNumber(63, 4, 20, 2), 1);
 });
