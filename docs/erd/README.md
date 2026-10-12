@@ -345,7 +345,7 @@ python3 docs/erd/_build.py
 |  | 급여액 | money | `wage_amount` | 정직원은 월급, 파트타이머는 시급 |
 |  | 임금지급 월 | enum | `pay_month` | 당월·익월 |
 |  | 임금지급일 | int | `pay_day` | 1~31, 31은 말일 |
-|  | 계약 상태 | enum | `status` | 발송 대기·서명 대기·체결 완료·거부·만료·종료 |
+|  | 계약 상태 | enum | `status` | 임시저장·발송 대기·서명 대기·체결 완료·거부·만료·종료 |
 |  | 초안 처리 유형 | enum | `draft_action` | 가입 초대·소속 추가 확인·복귀 확인·즉시 발송 |
 |  | 발송 일시 | datetime | `sent_at` |  |
 |  | 날인 기한 | datetime | `sign_deadline_at` | 발송일부터 30일 |

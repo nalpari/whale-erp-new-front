@@ -138,7 +138,7 @@ DIAGRAMS.append(Diagram(
         E("staff_member", "직원 레코드", "staff_members", "focal",
           ["#|직원 레코드 ID|id|staff_member_id|", "→|점포|id|store_id|", "→|계정|id|account_id|가입 전에는 없음", "|재직 상태|enum|employment_status|", "|가입 상태|enum|join_status|초안·초대 발송·가입 완료"], 1, 232),
         E("contract", "근로계약", "contracts", "entity",
-          ["#|근로계약 ID|id|contract_id|", "→|직원 레코드|id|staff_member_id|", "|계약 상태|enum|status|6종", "|계약 기간|date|start_date·end_date|"], 2, 232),
+          ["#|근로계약 ID|id|contract_id|", "→|직원 레코드|id|staff_member_id|", "|계약 상태|enum|status|7종", "|계약 기간|date|start_date·end_date|"], 2, 232),
         E("payslip", "급여명세서", "payslips", "entity",
           ["#|급여명세서 ID|id|payslip_id|", "→|직원 레코드|id|staff_member_id|", "→|참조 근로계약|id|contract_id|", "|명세서 상태|enum|status|4종"], 3, 232),
         E("schedule", "근무스케줄", "work_schedules", "entity",
@@ -255,7 +255,7 @@ DIAGRAMS.append(Diagram(
         ref_store(0, 232),
         ref_admin(0, 388),
         E("contract", "근로계약", "contracts", "focal",
-          ["#|근로계약 ID|id|contract_id|", "→|직원 레코드|id|staff_member_id|", "→|근무지|id|store_id|", "→|직전 계약|id|previous_contract_id|재계약일 때", "|계약 유형|enum|contract_type|정직원·파트타이머", "|계약 방식|enum|contract_method|ELECTRONIC·PAPER (CTR-23)", "|계약 기간|date|start_date·end_date|종료일 비우면 무기한", "|건강보험·국민연금 가입|bool|is_health_pension_insured|", "|고용보험·산재보험 가입|bool|is_employment_injury_insured|", "|급여액|money|wage_amount|정직원은 월급, 파트타이머는 시급", "|임금지급 월|enum|pay_month|당월·익월", "|임금지급일|int|pay_day|1~31, 31은 말일", "|계약 상태|enum|status|발송 대기·서명 대기·체결 완료·거부·만료·종료", "|초안 처리 유형|enum|draft_action|가입 초대·소속 추가 확인·복귀 확인·즉시 발송", "|발송 일시|datetime|sent_at|", "|날인 기한|datetime|sign_deadline_at|발송일부터 30일", "|재발송 횟수|int|resend_count|", "|거부 사유|text|reject_reason|", "→|작성 관리자|id|created_by|"], 1, 40),
+          ["#|근로계약 ID|id|contract_id|", "→|직원 레코드|id|staff_member_id|", "→|근무지|id|store_id|", "→|직전 계약|id|previous_contract_id|재계약일 때", "|계약 유형|enum|contract_type|정직원·파트타이머", "|계약 방식|enum|contract_method|ELECTRONIC·PAPER (CTR-23)", "|계약 기간|date|start_date·end_date|종료일 비우면 무기한", "|건강보험·국민연금 가입|bool|is_health_pension_insured|", "|고용보험·산재보험 가입|bool|is_employment_injury_insured|", "|급여액|money|wage_amount|정직원은 월급, 파트타이머는 시급", "|임금지급 월|enum|pay_month|당월·익월", "|임금지급일|int|pay_day|1~31, 31은 말일", "|계약 상태|enum|status|임시저장·발송 대기·서명 대기·체결 완료·거부·만료·종료", "|초안 처리 유형|enum|draft_action|가입 초대·소속 추가 확인·복귀 확인·즉시 발송", "|발송 일시|datetime|sent_at|", "|날인 기한|datetime|sign_deadline_at|발송일부터 30일", "|재발송 횟수|int|resend_count|", "|거부 사유|text|reject_reason|", "→|작성 관리자|id|created_by|"], 1, 40),
         E("work_day", "계약 근무 요일", "contract_work_days", "entity",
           ["#→|근로계약|id|contract_id|", "#|요일|enum|weekday|근무하는 요일만 행으로 둔다", "|시업 시각|time|start_time|30분 단위", "|종업 시각|time|end_time|시업보다 뒤, 같은 날 안", "|휴게 시작|time|break_start_time|휴게가 없으면 비움", "|휴게 종료|time|break_end_time|"], 1, 548),
         E("party", "계약 당사자 정보", "contract_parties", "entity",
@@ -276,7 +276,7 @@ DIAGRAMS.append(Diagram(
     ],
     [
         ("coral", "중심", "체결된 계약은 고치지 않는다", ["조건을 바꾸려면 새 계약을 만들고 직전 계약을 가리킨다", "같은 점포에 진행 중인 계약이 있으면 대체 여부를 묻는다", "근무 조건은 근무스케줄 등록 때 기본값으로 한 번 쓰인다"]),
-        ("ink", "", "상태는 6종, 이력은 지우지 않는다", ["발송 대기에는 가입을 기다리는 초안도 들어간다", "날인 기한 30일이 지나면 만료, 재발송은 횟수와 이력으로 남긴다", "퇴직자 계약 이력은 퇴직일부터 3년 보존한다"]),
+        ("ink", "", "상태는 7종, 이력은 지우지 않는다", ["임시저장은 다 쓰기 전에 저장해 둔 것으로 초대·계약서를 보내지 않는다", "발송 대기에는 가입을 기다리는 초안도 들어간다", "날인 기한 30일이 지나면 만료, 재발송은 횟수와 이력으로 남긴다", "퇴직자 계약 이력은 퇴직일부터 3년 보존한다"]),
         ("muted", "미정", "남은 결정", ["근무 조건은 요일마다 한 행(계약 근무 요일), 급여 조건은 항목별 컬럼으로 풀었다 (2026-10-07, 3팀 확인 필요)", "전자서명 세부 기술과 파일 저장소는 범위 밖이다"]),
     ],
 ))
