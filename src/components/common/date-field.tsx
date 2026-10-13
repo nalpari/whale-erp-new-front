@@ -6,6 +6,7 @@ import { addDays, firstOfMonth, hyphenateDate, iso, monthGrid, parse, shiftMonth
 import { EASE_OUT, FIELD_BOX } from "./theme";
 
 const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
+const COMPLETE = /^\d{4}-\d{2}-\d{2}$/;
 
 // useSyncExternalStore 로 브라우저에서만 읽는 값들. 바뀌는 것을 구독할 대상이 없어 해지 함수만 돌려준다.
 const NO_SUBSCRIBE = () => () => {};
@@ -104,10 +105,12 @@ export function DateField({
     if (open) pop.current?.querySelector<HTMLElement>('[tabindex="0"]')?.focus();
   }, [open, cursor]);
 
-  // 날짜로 읽히는 값과 빈 값만 내보낸다. 치는 도중의 "2020-0" 이 조회 조건에 실려 가면 안 된다.
+  // 치는 중에는 빈 값과 YYYY-MM-DD 10자를 다 친 값만 내보낸다. "2020-0" 이 조회 조건에 실려 가면 안 되고,
+  // "1998-07-1" 처럼 덜 친 값도 날짜로 읽히지만 내보내면 제어 모드의 부모가 "1998-07-01" 로 되돌려 입력칸을
+  // 덮어써 10~31일을 칠 수 없다. 덜 친 값은 blur 때 맞춰 내보낸다.
   const emit = (next: string) => {
     setText(next);
-    const d = parse(next);
+    const d = COMPLETE.test(next) ? parse(next) : null;
     if (d) onChange?.(iso(d));
     else if (!next) onChange?.("");
   };
@@ -157,6 +160,7 @@ export function DateField({
           if (d) {
             setText(iso(d));
             setView(firstOfMonth(d));
+            onChange?.(iso(d));
           } else if (e.target.value) emit("");
         }}
         className={`${FIELD_BOX} h-[34px] ${canPopover ? "pr-[34px]" : "pr-[10px]"} pl-[10px]`}

@@ -4,6 +4,10 @@ import { redirect } from "next/navigation";
 import { ApiError, getSession, request } from "@/lib/api";
 import type { CreateContractBody } from "./contract-form-model";
 
+// 경로에 넣는 id — 1..2147483647 정수만. 서버 액션은 누구나 직접 부를 수 있어 TS 타입이 막아 주지 않는다.
+// "1/../../stores/5" 같은 값이 api 의 다른 경로로 쓰기 요청을 보내지 않게 한다(front #13 리뷰).
+const isContractId = (id: unknown): id is number => Number.isInteger(id) && (id as number) >= 1 && (id as number) <= 2_147_483_647;
+
 /**
  * 근로계약서 초안 저장. 성공하면 목록으로 간다. 실패하면 화면에 보일 문장을 돌려준다 —
  * api 의 400 · 404 · 409 문장(만 19세 미만, 같은 번호로 재직 중 등)을 그대로 쓴다.
@@ -14,6 +18,7 @@ export async function createContract(body: CreateContractBody): Promise<{ error:
 
 /** 임시저장 이어 쓰기. 임시저장이 아니게 된 계약이면 api 가 409 로 돌려준다 */
 export async function updateContract(contractId: number, body: CreateContractBody): Promise<{ error: string }> {
+  if (!isContractId(contractId)) return { error: "근로계약을 찾을 수 없습니다" };
   return save(`/contracts/${contractId}`, "PUT", body);
 }
 
