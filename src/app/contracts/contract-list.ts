@@ -1,31 +1,12 @@
 // 근로계약 목록의 순수 로직 — 주소 쿼리 ↔ API 쿼리, 칸 표기. 테스트: node --test src/app/contracts/contract-list.test.ts
 
+import type { components } from "@/lib/api-types.generated";
+
 export const PAGE_SIZE = 20;
 
-/** GET /contracts 의 한 줄. openapi-typescript 로 타입을 생성하기 전까지 api 의 ContractListItemDto 를 옮겨 적는다. */
-export interface ContractListItem {
-  contractId: number;
-  staffMemberId: number;
-  staffMemberName: string;
-  storeId: number;
-  storeName: string | null;
-  // 임시저장한 계약은 아래 칸이 비어 있을 수 있다(근로계약은 키만 NOT NULL).
-  employmentType: "FULL_TIME" | "PART_TIME" | null;
-  contractMethod: "ELECTRONIC" | "PAPER" | null;
-  startDate: string | null;
-  endDate: string | null;
-  wageAmount: number | null;
-  status: null | "DRAFT" | "PENDING_SEND" | "PENDING_SIGNATURE" | "SIGNED" | "REJECTED" | "EXPIRED" | "ENDED";
-  /** 초대 유형 판별 결과(초안 저장 때). 임시저장이면 null */
-  draftAction: null | "SIGNUP_INVITE" | "AFFILIATION_CONFIRM" | "RETURN_CONFIRM" | "IMMEDIATE_SEND";
-  sentAt: string | null;
-  signDeadlineAt: string | null;
-}
-
-export interface ContractListPage {
-  items: ContractListItem[];
-  total: number;
-}
+/** GET /contracts 의 한 줄과 한 페이지. api 의 openapi.json 에서 만든 타입을 쓴다(pnpm openapi:types). */
+export type ContractListItem = components["schemas"]["ContractListItemDto"];
+export type ContractListPage = components["schemas"]["ContractListResponseDto"];
 
 /** 화면 주소의 쿼리. 상태가 비어 있으면 전체다. */
 export interface ListQuery {
@@ -39,14 +20,22 @@ type SearchParams = { [key: string]: string | string[] | undefined };
 
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 
+const NAME_MAX = 50;
+
+/** 상태는 api 가 아는 값만 남긴다. 주소에 직접 넣은 ?status=FOO 를 그대로 보내면 api 가 400 이다. */
+export function withKnownStatus(q: ListQuery, known: { value: string }[]): ListQuery {
+  return { ...q, status: q.status.filter((v) => known.some((k) => k.value === v)) };
+}
+
 export function readListQuery(params: SearchParams): ListQuery {
   const page = Number.parseInt(first(params.page), 10);
   const status = params.status;
   return {
     // 숫자가 아니거나 1보다 작으면 첫 페이지. api 는 page=0 을 400 으로 돌려준다.
     page: Number.isInteger(page) && page >= 1 ? page : 1,
-    storeName: first(params.storeName).trim(),
-    staffMemberName: first(params.staffMemberName).trim(),
+    // api 는 50자를 넘으면 400 이다(@MaxLength(50)). 주소에 직접 넣은 긴 값은 잘라 보낸다.
+    storeName: first(params.storeName).trim().slice(0, NAME_MAX),
+    staffMemberName: first(params.staffMemberName).trim().slice(0, NAME_MAX),
     status: (Array.isArray(status) ? status : status ? [status] : []).filter(Boolean),
   };
 }

@@ -36,7 +36,7 @@ export default async function StaffMembersPage({
         />
         <PageBar title="직원 정보 관리">
           {/* 초안을 저장하면 초대가 나간다 — 데모의 「계약서 작성」을 이름만 바꿨다(2026-10-12 yjnoh). */}
-          <Button href="/staff-members/contracts/new">직원 초대</Button>
+          <Button href="/contracts/new">직원 초대</Button>
         </PageBar>
         <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
           <StaffFilter query={query} />

@@ -17,6 +17,8 @@ export class ApiError extends Error {
     message: string,
     /** 검증 실패(400)의 문장 목록. 배열이 아니면 message 하나다 — 화면이 줄마다 나눠 보일 때 쓴다. */
     readonly messages: string[] = [message],
+    /** 응답 본문 그대로. 409 의 code · 목록처럼 message 말고도 화면이 쓸 칸이 있다 */
+    readonly body: unknown = null,
   ) {
     super(message);
   }
@@ -42,8 +44,7 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
     cache: "no-store",
   });
 
-  if (!response.ok)
-    throw new ApiError(response.status, ...(await errorMessage(response)));
+  if (!response.ok) throw await apiError(response);
 
   // 204(로그아웃)는 본문이 없다. json() 을 부르면 파싱에서 터진다.
   return response.status === 204
@@ -51,12 +52,17 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
     : ((await response.json()) as T);
 }
 
-/** Nest 는 { statusCode, message, error } 를 주고, 검증 실패면 message 가 배열이다. [이은 문장, 문장 목록] 을 돌려준다. */
-async function errorMessage(response: Response): Promise<[string, string[]]> {
+/** 실패 응답을 ApiError 로. 본문은 한 번만 읽어 이은 문장 · 문장 목록 · 본문을 모두 싣는다 */
+async function apiError(response: Response): Promise<ApiError> {
   const body: unknown = await response.json().catch(() => null);
+  return new ApiError(response.status, ...messageOf(body, response.status), body);
+}
+
+/** Nest 는 { statusCode, message, error } 를 주고, 검증 실패면 message 가 배열이다. [이은 문장, 문장 목록] 을 돌려준다. */
+function messageOf(body: unknown, status: number): [string, string[]] {
   const message = (body as { message?: unknown } | null)?.message;
   if (Array.isArray(message)) return [message.join(", "), message.map(String)];
-  const text = typeof message === "string" ? message : `요청이 실패했습니다 (HTTP ${response.status})`;
+  const text = typeof message === "string" ? message : `요청이 실패했습니다 (HTTP ${status})`;
   return [text, [text]];
 }
 
@@ -69,8 +75,7 @@ export async function getEnum(name: string): Promise<EnumValue[]> {
   const response = await fetch(`${baseUrl()}/enums/${encodeURIComponent(name)}`, {
     next: { revalidate: 3600 },
   });
-  if (!response.ok)
-    throw new ApiError(response.status, ...(await errorMessage(response)));
+  if (!response.ok) throw await apiError(response);
   const body = (await response.json()) as { enums: Record<string, EnumValue[]> };
   return body.enums[name] ?? [];
 }
