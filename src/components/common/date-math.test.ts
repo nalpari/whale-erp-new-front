@@ -2,7 +2,7 @@
 // Node 24 가 타입을 벗겨 그대로 실행한다. 테스트 도구를 따로 깔지 않는다.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { addDays, iso, monthGrid, parse, shiftMonth } from "./date-math.ts";
+import { addDays, hyphenateDate, iso, monthGrid, parse, shiftMonth } from "./date-math.ts";
 
 test("parse 는 사람이 치는 모양까지 받고, 없는 날짜는 버린다", () => {
   assert.equal(iso(parse("2020-08-28")!), "2020-08-28");
@@ -39,4 +39,22 @@ test("monthGrid 는 일요일에서 시작하는 42칸이다", () => {
 test("addDays 는 달과 해를 넘긴다", () => {
   assert.equal(iso(addDays(parse("2020-12-31")!, 1)), "2021-01-01");
   assert.equal(iso(addDays(parse("2020-03-01")!, -1)), "2020-02-29");
+});
+
+test("hyphenateDate 는 숫자를 칠 때 YYYY-MM-DD 로 하이픈을 넣고, 다음 숫자가 와야 붙인다", () => {
+  assert.equal(hyphenateDate("1998"), "1998");
+  assert.equal(hyphenateDate("19980"), "1998-0");
+  assert.equal(hyphenateDate("199807"), "1998-07");
+  assert.equal(hyphenateDate("1998071"), "1998-07-1");
+  assert.equal(hyphenateDate("19980712"), "1998-07-12");
+  // 지울 때: "1998-07-" 에서 하나 지우면 "1998-07" 이 되고 하이픈이 다시 붙지 않는다
+  assert.equal(hyphenateDate("1998-07"), "1998-07");
+  assert.equal(hyphenateDate("1998-0712"), "1998-07-12");
+  assert.equal(hyphenateDate("199807123"), "1998-07-12");
+  assert.equal(hyphenateDate(""), "");
+});
+
+test("hyphenateDate 는 / · . 로 친 값은 그대로 둔다 (2020/8/5 를 parse 가 받는다)", () => {
+  assert.equal(hyphenateDate("2020/8/5"), "2020/8/5");
+  assert.equal(hyphenateDate("2020.08.05"), "2020.08.05");
 });
