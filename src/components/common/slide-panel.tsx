@@ -5,7 +5,7 @@ import { EASE_OUT } from "./theme";
 
 // Figma Slide. 목록 화면 오른쪽에서 밀려 나오는 등록·수정 패널(RNB).
 // 화면을 덮지 않고 옆에 겹쳐 서므로 뒤쪽 목록은 그대로 읽을 수 있다. 바깥을 눌러도 닫히지 않는다 — 입력 중인 내용이 날아가면 안 된다.
-// Esc 로는 닫는다. 안에서 열린 팝업이 있으면 그쪽이 먼저 닫히도록 useDismiss 와 같은 data-dismiss-open 규칙을 따른다.
+// Esc 로는 닫는다. 안에서 열린 팝업이 있으면 그쪽이 먼저 닫히도록 useDismiss 와 같은 data-dismiss-open 규칙을 따르고, 안쪽 칸이 preventDefault 한 Esc 도 넘긴다.
 // 닫히면 패널 안이 inert 가 되어 포커스가 body 로 떨어지므로 연 버튼으로 되돌린다.
 // 놓을 자리는 쓰는 쪽에서 정한다 — relative 와 함께 overflow-x-clip 을 줘야 한다.
 // 닫힌 패널은 화면 오른쪽 바깥에 서 있어서, 잘라 내지 않으면 그만큼 가로 스크롤이 생긴다.
@@ -37,7 +37,9 @@ export function SlidePanel({
     if (open) {
       wasOpen.current = true;
       const onKey = (e: KeyboardEvent) => {
-        if (e.key === "Escape" && !document.querySelector("[data-dismiss-open]")) close();
+        // 안쪽 칸이 Esc 를 먼저 써 버렸으면(preventDefault — 자동완성 층 닫기 등) 패널은 그대로 둔다.
+        // 그 칸이 층을 지우는 것이 이 처리보다 먼저 끝날 수 있어 data-dismiss-open 만으로는 못 막는다.
+        if (e.key === "Escape" && !e.defaultPrevented && !document.querySelector("[data-dismiss-open]")) close();
       };
       document.addEventListener("keydown", onKey);
       return () => document.removeEventListener("keydown", onKey);
