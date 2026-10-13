@@ -1,5 +1,13 @@
 # Bundle history
 
+## 2026-10-13
+
+* **Update**: 로그인 정보 브라우저 관리(login-info · 탭별 BP·점포·공통코드 · SessionGate · BFF)와 헤더의 메뉴·범위 선택기를 login-info 로 그리는 것을 [Whale ERP Frontend](/whale-erp-front.md) 에 반영했다. 메뉴 상수 `menus.ts` 와 견본 `login-session.ts` 는 지웠다.
+
+## 2026-10-12
+
+* **Update**: 관리자 로그인(BFF 쿠키 + proxy)과 레이아웃 3종(사이트형·ERP·플랫폼) 반영, 약관 전문 페이지 대신 팝업 — [Whale ERP Frontend](/whale-erp-front.md), [로그인](/auth.md).
+
 ## 2026-10-08
 
 * **Update**: `2026-09-30-네이밍-규칙.md` 2026-10-08 고침을 [네이밍 규칙](/conventions/naming.md) 에 옮겼다 — 「근무 · 출퇴근」의 근무 유형 4종(`DAY`·`OPEN`·`MIDDLE`·`CLOSE`, enum `work_type`) 줄을 지웠다(재영).
