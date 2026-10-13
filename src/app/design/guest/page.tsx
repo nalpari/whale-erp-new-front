@@ -1,65 +1,13 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Fragment, type ReactNode } from "react";
-import { GuestFooter } from "./guest-footer";
-import { GuestHeader } from "./guest-header";
-import { GUEST_FONTS } from "./fonts";
-import { ARROW_NUDGE, BUTTON_MOTION, HOVER } from "./theme";
+import { Fragment } from "react";
+import { Arrow, GuestButton, ICON_GRADIENT, SectionTitle, TitleRow, TRIM } from "./guest-ui";
+import { BUTTON_MOTION, HOVER } from "./theme";
 
 export const metadata: Metadata = { title: "Whale ERP · 비로그인 메인" };
 
 // Figma 「로그인전_Main」(8QSOuwFFBfCbFWR6RBUlps · 1:2). 1920 폭 데스크톱 시안이다.
-
-const TRIM = "[text-box:trim-both_cap_alphabetic]";
-// 시안의 제목은 모두 「옅은 첫 줄 + 굵은 둘째 줄」 52px 두 줄이다.
-function SectionTitle({ light, bold, dark = false }: { light: string; bold: string; dark?: boolean }) {
-  return (
-    <h2 className={`text-[52px] leading-[1.2] tracking-[-0.025em] ${dark ? "text-[#f5f5f5]" : "text-guest-ink"}`}>
-      <span className="block font-normal">{light}</span>
-      <span className="block font-bold">{bold}</span>
-    </h2>
-  );
-}
-
-// 화살표는 SVG 를 마스크로 써서 글자색을 따른다 — 호버로 글자색이 바뀌면 화살표도 같이 바뀐다.
-function Arrow() {
-  return (
-    <span
-      aria-hidden
-      className={`h-[15.0674px] w-[16.7004px] shrink-0 bg-current mask-[url(/guest/arrow.svg)] mask-contain mask-center mask-no-repeat ${ARROW_NUDGE}`}
-    />
-  );
-}
-
-// 호버는 ERP 버튼처럼 흰 바탕 + 남색 테두리·글자로 바꾼다. 테두리는 처음부터 같은 굵기로 깔아 크기가 흔들리지 않는다.
-const BUTTON_TONE = {
-  navy: "border-guest-navy bg-guest-navy text-white hover:bg-white hover:text-guest-navy",
-  soft: "border-guest-navy-soft bg-guest-navy-soft text-white hover:border-guest-navy hover:bg-white hover:text-guest-navy",
-  white: "border-white bg-white text-guest-navy text-[17px]! hover:border-guest-navy",
-  outline: "border-guest-button-line bg-white text-guest-ink hover:border-guest-navy hover:text-guest-navy",
-};
-function GuestButton({
-  tone,
-  arrow = false,
-  grow = false,
-  children,
-}: {
-  tone: keyof typeof BUTTON_TONE;
-  arrow?: boolean;
-  grow?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <Link
-      href="#"
-      className={`flex h-[48px] shrink-0 items-center justify-center gap-[12px] rounded-[6px] border px-[18px] text-[18px] leading-[1.5] font-semibold whitespace-nowrap ${BUTTON_MOTION} ${grow ? "flex-1" : ""} ${BUTTON_TONE[tone]}`}
-    >
-      {children}
-      {arrow && <Arrow />}
-    </Link>
-  );
-}
 
 // 세로선(11px)으로 나눈 짧은 낱말 줄 — 부가서비스 이름 등. 글자 위아래 여백 자르기(TRIM)는 flex 줄에 걸면 듣지 않아 낱말마다 건다.
 // 사이 간격은 1920 에서 12px, 1720 에서 9px 로 줄여 좁은 카드(가맹점주)에서도 한 줄에 든다. 더 좁으면 줄을 바꾼다.
@@ -76,7 +24,6 @@ function Divided({ items, className }: { items: string[]; className: string }) {
   );
 }
 
-const ICON_GRADIENT = "linear-gradient(114deg, rgba(174,190,206,0.8) 8.98%, rgba(32,96,154,0.8) 94.82%)";
 
 function CalendarIcon() {
   return (
@@ -185,7 +132,7 @@ function Billboard() {
 }
 
 const FEATURES = [
-  { title: "매장운영", lines: ["매장·장비 정보를 한곳에", "종이 없는 근로계약·급여명세서", "근무표 공유와 QR 출퇴근"] },
+  { title: "매장운영", href: "/design/guest/store-operations", lines: ["매장·장비 정보를 한곳에", "종이 없는 근로계약·급여명세서", "근무표 공유와 QR 출퇴근"] },
   { title: "재무관리", lines: ["통장 입출금을 한눈에", "현금 거래까지 빠짐없이", "돈이 나가는 곳을 비율로"] },
   { title: "프랜차이즈", lines: ["온라인으로 끝내는 가맹계약", "신메뉴·가격 한 번에 배포", "현장 점검 결과 바로 공유"] },
   { title: "부가서비스", lines: ["POS · KIOSK 주문·결제", "테이블·픽업·QR 주문", "발주·재고·레시피 관리"] },
@@ -208,7 +155,7 @@ function Features() {
                   </span>
                 ))}
               </p>
-              <GuestButton tone="white" arrow>
+              <GuestButton tone="white" href={f.href} arrow>
                 자세히 보기
               </GuestButton>
             </div>
@@ -227,6 +174,7 @@ const PERSONAS = [
     features: ["전자 근로계약서와 급여명세서", "근무표 공유와 QR 출퇴근", "오늘 매출 한눈에 확인"],
     services: ["POS", "QR Order", "예약 관리"],
     cta: "매장운영 상세보기",
+    href: "/design/guest/store-operations",
   },
   {
     head: "여러 매장을 직접 운영해요",
@@ -300,7 +248,7 @@ function Personas() {
                   </div>
                 </div>
                 <div className="mt-auto flex gap-[8px]">
-                  <GuestButton tone="navy" arrow grow>
+                  <GuestButton tone="navy" href={p.href} arrow grow>
                     {p.cta}
                   </GuestButton>
                   <GuestButton tone="soft">도입문의</GuestButton>
@@ -377,14 +325,6 @@ const STEPS = [
   { title: "직원 초대", desc: ["직원 휴대폰으로 초대 링크를 보내면, 앱 가입부터", "근로계약서 서명까지 자연스럽게 이어집니다."] },
 ];
 
-function TitleRow({ light, bold, action }: { light: string; bold: string; action: ReactNode }) {
-  return (
-    <div className="flex items-end justify-between">
-      <SectionTitle light={light} bold={bold} />
-      {action}
-    </div>
-  );
-}
 
 function Steps() {
   return (
@@ -592,8 +532,7 @@ function Boards() {
 
 export default function GuestMainPage() {
   return (
-    <div className={`${GUEST_FONTS} min-w-[1720px] bg-white break-keep`}>
-      <GuestHeader />
+    <>
       <Billboard />
       <Features />
       <Personas />
@@ -601,7 +540,6 @@ export default function GuestMainPage() {
       <Steps />
       <Plans />
       <Boards />
-      <GuestFooter />
-    </div>
+    </>
   );
 }

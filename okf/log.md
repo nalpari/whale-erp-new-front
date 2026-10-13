@@ -2,6 +2,7 @@
 
 ## 2026-10-13
 
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — Figma 「로그인전_Sub」를 `/design/guest/store-operations` 매장운영 화면으로 옮기고, 비로그인 머리말·푸터를 `design/guest/layout.tsx` 로 모았다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — Figma 「로그인전_Main」을 `/design/guest` 비로그인 메인으로 옮겼다(guest 색 토큰, Pretendard 700, REM·Inter Tight·Inter).
 * **Update**: 근로계약 화면 요건 변경(Plane #133 · #155 · #132). 목록의 임시저장 행은 이어 쓰기로 바로 가고, 임시저장 삭제를 상세에서 이어 쓰기 화면(취소와 임시저장 사이)으로 옮겨 공통 `ConfirmDialog` 로 묻는다. 목록에 고용 형태 칸을 더하고, 급여는 정직원도 시급으로 보인다(작성 · 상세의 칸 이름도 「시급」). [Whale ERP Frontend](/whale-erp-front.md).
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 상세 「재직 상태」를 목록 요약(`statusCells`) 대신 재직 · 퇴직 예정 · 퇴직만 보이도록 고쳤다(PR #4 머지 블로커, 2026-10-13 재영).

@@ -2,16 +2,24 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { EASE_OUT } from "@/components/common/theme";
 import { HOVER } from "./theme";
 
-const MENUS = ["매장운영", "재무관리", "프랜차이즈", "부가 서비스"];
+// 아직 화면이 없는 메뉴는 href 가 "#" 다. 화면이 생기면 경로를 채운다.
+const MENUS = [
+  { label: "매장운영", href: "/design/guest/store-operations" },
+  { label: "재무관리", href: "#" },
+  { label: "프랜차이즈", href: "#" },
+  { label: "부가 서비스", href: "#" },
+];
 
 // 비로그인 화면 머리말. 스크롤해도 위에 붙어 있다.
 // fixed 가 아니라 sticky 다 — 화면이 1720 보다 좁으면 가로로 스크롤하는데, fixed 는 가로로 따라오지 않아 오른쪽이 잘린다.
 // 맨 위에서는 시안대로 바탕 없이 Billboard 위에 겹치고, 스크롤하면 흰 바탕과 선을 깔아 어두운 섹션 위에서도 글자가 보이게 한다.
 export function GuestHeader() {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > 0);
@@ -41,11 +49,19 @@ export function GuestHeader() {
         </span>
       </Link>
       <nav className="flex flex-1 justify-center gap-[80px]">
-        {MENUS.map((menu) => (
-          <Link key={menu} href="#" className={`text-[20px] leading-[1.5] font-semibold text-guest-ink hover:text-guest-navy ${HOVER}`}>
-            {menu}
-          </Link>
-        ))}
+        {MENUS.map((menu) => {
+          const current = menu.href === pathname;
+          return (
+            <Link
+              key={menu.label}
+              href={menu.href}
+              aria-current={current ? "page" : undefined}
+              className={`text-[20px] leading-[1.5] font-semibold text-guest-ink hover:text-guest-navy aria-[current=page]:text-guest-navy ${HOVER}`}
+            >
+              {menu.label}
+            </Link>
+          );
+        })}
       </nav>
       <div className="flex items-center gap-[34px] text-[20px] font-semibold text-[#999]">
         <Link href="#" className={`flex items-center gap-[6px] uppercase hover:text-guest-ink ${HOVER}`}>
