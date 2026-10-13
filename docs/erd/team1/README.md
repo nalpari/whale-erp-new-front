@@ -4,7 +4,7 @@
 
 ## 물리 ERD
 
-`python3 _build.py` 한 번으로 영역별 ERD 페이지(`index.html` 등 5장)와 `schema.sql`(PostgreSQL 15+)을 만든다. 페이지마다 위쪽 보기 버튼으로 **논리 · 물리 · 논리+물리**(논리 속성명 옆에 물리 컬럼명·타입)를 고르고, 물리·논리+물리 보기에서는 그림 아래에 테이블 정의가 나온다. 물리 모델은 `_build_physical.py` 가 아래 카탈로그 표를 읽어 만든다.
+`python3 _build.py` 한 번으로 영역별 ERD 페이지(`index.html` 등 5장)를 만들고, DDL `schema.sql`(PostgreSQL 15+)과 테이블 정의서는 3팀처럼 whale-erp-api 의 `docs/raw/2026-10-12-1팀-schema.sql` · `2026-10-12-1팀-물리-ERD.md` 에 쓴다(api 는 front 옆에 두고, 다른 곳이면 `WHALE_API_DIR`). 페이지마다 위쪽 보기 버튼으로 **논리 · 물리 · 논리+물리**(논리 속성명 옆에 물리 컬럼명·타입)를 고르고, 물리·논리+물리 보기에서는 그림 아래에 테이블 정의가 나온다. 물리 모델은 `_build_physical.py` 가 아래 카탈로그 표를 읽어 만든다. 같은 실행에서 물리 보기만 뽑은 사본을 `physical/`(영역별 5장, 그림 + 테이블 정의)에 따로 쓴다.
 
 - 기본키는 네이밍 규칙(2026-10-02)대로 논리 이름 그대로 `{참조 단수}_id integer GENERATED ALWAYS AS IDENTITY` 다. 공통코드는 코드 PK, 매핑·1:1 테이블은 FK 를 묶은 PK 다.
 - 타입은 whale-erp-api 마이그레이션 형식을 따른다 — `timestamptz(6)`, 참·거짓은 NOT NULL boolean, 글자 수·형식 제한은 컬럼 타입이 아니라 CHECK 제약이다.
