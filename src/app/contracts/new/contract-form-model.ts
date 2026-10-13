@@ -74,7 +74,7 @@ export interface SaveResult {
 
 /**
  * api 409 본문에서 대체할 진행 중 계약 목록을 꺼낸다(code CONTRACT_IN_PROGRESS). 다른 409(근무 시간 겹침 ·
- * 재직 중)는 undefined — 그 문장(겹친 요일 · 시간 포함)을 그대로 보이면 된다.
+ * 재직 중)는 undefined — 그 문장을 그대로 보이면 된다(겹침은 다른 점포의 요일 · 시각을 싣지 않는다, CTR-26).
  */
 export function inProgressOf(body: unknown): InProgressContract[] | undefined {
   const b = body as { code?: unknown; contracts?: unknown } | null;
@@ -180,9 +180,12 @@ export function formatPhone(input: string): string {
 export const hm = (t: HourMinute) => `${t.hour}:${t.minute}`;
 const minutes = (t: HourMinute) => Number(t.hour) * 60 + Number(t.minute);
 
-/** 입력칸에 보이는 급여액. 숫자만 남기고 세 자리마다 쉼표 */
+/** 금액 칸 상한 — api integer 칸(2,147,483,647) */
+export const MAX_AMOUNT = 2147483647;
+
+/** 입력칸에 보이는 급여액. 숫자만 남기고 세 자리마다 쉼표. 10자리까지만 받는다(그 위는 숫자가 뭉개진다) */
 export function formatWage(input: string): string {
-  const d = digits(input).replace(/^0+(?=\d)/, "");
+  const d = digits(input).replace(/^0+(?=\d)/, "").slice(0, 10);
   return d ? Number(d).toLocaleString("ko-KR") : "";
 }
 
@@ -237,7 +240,7 @@ export function fullTimePay(f: ContractForm) {
 export const WEEKS_PER_MONTH = 4.345;
 
 /**
- * 파트타이머 급여. 요일 소계 = 시급 × 그날 시간, 주휴시간 = 주 시간 ÷ 40 × 8(주 15시간 이상, 8시간까지),
+ * 파트타이머 급여. 요일 소계 = 시급 × 그날 시간(원 미만 반올림), 근무 소계 = 요일 소계의 합, 주휴시간 = 주 시간 ÷ 40 × 8(주 15시간 이상, 8시간까지),
  * 주급 = 근무 소계 + 주휴수당, 월급여 = 주급 × 4.345. 견본의 「수당」 줄은 저장할 칸이 정해지지 않아 뺐다(2026-10-13).
  */
 export function partTimePay(f: ContractForm) {
@@ -248,7 +251,7 @@ export function partTimePay(f: ContractForm) {
     return { d, hours, amount: hours === null ? null : Math.round(hours * wage) };
   });
   const workHours = weeklyHours(f);
-  const workPay = Math.round(workHours * wage);
+  const workPay = days.reduce((sum, d) => sum + (d.amount ?? 0), 0);
   const holidayHours = workHours >= 15 ? Math.min(8, (workHours / 40) * 8) : 0;
   const holidayPay = Math.round(holidayHours * wage);
   const weekly = workPay + holidayPay;
@@ -307,7 +310,14 @@ export function problems(f: ContractForm, temporary = false): string[] {
     out.push("휴게시간은 근무시간 안이어야 합니다");
   const day = Number(f.payDay);
   if (f.payDay ? !(Number.isInteger(day) && day >= 1 && day <= 31) : !temporary) out.push("임금지급일은 1~31입니다");
-  if (f.employmentType === "FULL_TIME" && HOUR_FIELDS.some((k) => Number.isNaN(hoursOf(f[k])))) out.push("월 근로시간은 0 이상, 30분(0.5시간) 단위로 입력하세요");
+  if (f.employmentType === "FULL_TIME") {
+    if (HOUR_FIELDS.some((k) => Number.isNaN(hoursOf(f[k])))) out.push("월 근로시간은 0 이상, 30분(0.5시간) 단위로 입력하세요");
+    const base = hoursOf(f.baseHours), night = hoursOf(f.baseNightHours);
+    if (base !== null && night !== null && night > base) out.push("기본시간 중 야간근무는 월 기본시간보다 클 수 없습니다");
+    if ([f.mealAllowance, f.carAllowance, f.childcareAllowance].some((t) => Number(digits(t)) > MAX_AMOUNT))
+      out.push("비과세 수당은 2,147,483,647원 이하로 입력하세요");
+  }
+  if (Number(digits(f.wage)) > MAX_AMOUNT) out.push("시급은 2,147,483,647원 이하로 입력하세요");
   if (isMinor(f)) out.push("만 19세 미만 직원은 등록할 수 없습니다");
   return out;
 }

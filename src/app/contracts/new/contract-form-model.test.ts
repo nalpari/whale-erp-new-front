@@ -225,6 +225,22 @@ test("파트타이머 급여: 현업 견본(월~금 5시간, 시급 10,000)과 �
   assert.equal(monthlyWage(f), 1303500);
 });
 
+test("파트타이머 소계는 요일 소계의 합이다(주 시간 × 시급을 따로 반올림하지 않는다)", () => {
+  const f = filled({ employmentType: "PART_TIME", wage: "10,321", work: { start: { hour: "09", minute: "00" }, end: { hour: "14", minute: "30" } } }); // 하루 4.5시간
+  const pay = partTimePay(f);
+  assert.equal(pay.days[0].amount, 46445);
+  assert.equal(pay.workPay, 46445 * 5);
+});
+
+test("정직원 칸 검사: 야간근무 ≤ 월 기본시간, 금액은 api integer 이하", () => {
+  assert.ok(problems(filled({ baseHours: "100", baseNightHours: "120" })).includes("기본시간 중 야간근무는 월 기본시간보다 클 수 없습니다"));
+  assert.deepEqual(problems(filled({ baseHours: "100", baseNightHours: "100" })), []);
+  assert.ok(problems(filled({ mealAllowance: "2,147,483,648" })).includes("비과세 수당은 2,147,483,647원 이하로 입력하세요"));
+  assert.deepEqual(problems(filled({ mealAllowance: "2,147,483,647" })), []);
+  assert.ok(problems(filled({ wage: "9,999,999,999" })).includes("시급은 2,147,483,647원 이하로 입력하세요"));
+  assert.equal(formatWage("123456789012"), "1,234,567,890");
+});
+
 test("파트타이머 주휴: 주 15시간 미만이면 없고, 8시간까지만 준다", () => {
   const short = filled({ employmentType: "PART_TIME", days: ["MON", "TUE"] }); // 하루 8시간 × 2 = 16
   assert.equal(partTimePay(short).holidayHours, 3.2);
