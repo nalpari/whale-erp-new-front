@@ -54,8 +54,9 @@ test("빈 폼 · 잘못된 값은 이유를 말한다", () => {
   const p = problems(initialForm());
   assert.ok(p.includes("이름을 입력하세요"));
   assert.ok(p.includes("소속 근무지를 고르세요"));
-  assert.ok(p.includes("월급을 입력하세요"));
-  assert.ok(problems(filled({ employmentType: "PART_TIME", wage: "" })).includes("시급을 입력하세요"));
+  // 정직원도 시급이다
+  assert.ok(p.includes("시급을 입력하세요"));
+  assert.ok(problems(filled({ employmentType: "FULL_TIME", wage: "" })).includes("시급을 입력하세요"));
   // 7일 근무는 협의 중이라 막지 않는다
   assert.deepEqual(problems(filled({ days: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] })), []);
   assert.ok(problems(filled({ endDate: "2026-09-13" })).includes("계약 종료일은 시작일보다 앞설 수 없습니다"));

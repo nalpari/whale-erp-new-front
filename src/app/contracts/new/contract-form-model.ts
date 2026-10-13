@@ -212,7 +212,7 @@ export function problems(f: ContractForm, temporary = false): string[] {
   if (!f.jobTitle.trim()) out.push("직무를 입력하세요");
   need(!f.startDate, "계약 시작일을 입력하세요");
   if (f.startDate && f.endDate && f.endDate < f.startDate) out.push("계약 종료일은 시작일보다 앞설 수 없습니다");
-  if (digits(f.wage) ? !(Number(digits(f.wage)) > 0) : !temporary) out.push(f.employmentType === "FULL_TIME" ? "월급을 입력하세요" : "시급을 입력하세요");
+  if (digits(f.wage) ? !(Number(digits(f.wage)) > 0) : !temporary) out.push("시급을 입력하세요"); // 고용 형태와 상관없이 시급(2026-10-12 재영)
   need(f.days.length === 0, "근무요일을 하나 이상 고르세요");
   if (minutes(f.work.end) <= minutes(f.work.start)) out.push("근무시간은 끝이 시작보다 뒤여야 합니다");
   if (!(minutes(f.rest.start) >= minutes(f.work.start) && minutes(f.rest.end) > minutes(f.rest.start) && minutes(f.rest.end) <= minutes(f.work.end)))
