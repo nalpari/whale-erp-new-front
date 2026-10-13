@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 화면만 목 데이터로 만들었고, api 는 관리자 로그인 · 상세 요약 api 가 나온 뒤 붙인다. 붙일 때 바꿀 곳과 다시 작업할 것.
 tags: [staff, screen, mock]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-12T08:33:58Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-13T02:10:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -54,6 +54,9 @@ sources:
 * api 오류(403 · 400 · 네트워크)를 받을 화면(`error.tsx`)이 아직 없다. 붙일 때 같이 만든다.
 
 # 상세 — 다시 작업할 것
+
+상세는 틀과 기본 정보만이다. 기본 정보의 「재직 상태」는 `employmentStatusCells` 로 재직 · 퇴직 예정(퇴직일) · 퇴직만
+보인다 — 목록의 재직 칸(`statusCells`)은 가입 · 계약 상태를 섞은 요약이라 상세에 쓰지 않는다(2026-10-13 재영: 머지 블로커).
 
 상세는 틀과 기본 정보만이다. 상세 요약 api(#183)가 나오면 `getStaffMember(id)` 를 그 응답으로 바꾸고:
 
