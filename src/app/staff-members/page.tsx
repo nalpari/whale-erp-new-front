@@ -1,4 +1,5 @@
-import { AlarmLink, Button, GlobalHeader, ListToolbar, PageBar, ServiceLinks, StoreSelect, UserPop } from "@/components/common";
+import { Button, GlobalHeader, ListToolbar, PageBar, ServiceLinks, StoreSelect, UserPop } from "@/components/common";
+import { NotificationBellSlot } from "@/components/notifications/notification-bell-slot";
 import { getStaffMembers, kstToday } from "@/lib/staff-members";
 // 헤더 메뉴 · 사용자 메뉴는 아직 디자인 견본의 값뿐이다. 1팀 관리자 로그인 · 메뉴 권한이 생기면 그 값으로 바꾼다.
 import { MENUS, STORES, USER_ITEMS } from "../design/sample";
@@ -28,7 +29,7 @@ export default async function StaffMembersPage({
             <>
               <StoreSelect options={STORES} />
               <ServiceLinks />
-              <AlarmLink href="#" />
+              <NotificationBellSlot />
               <UserPop name="정하윤 (BP 마스터)" items={USER_ITEMS} />
             </>
           }

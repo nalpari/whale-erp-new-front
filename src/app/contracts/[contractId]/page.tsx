@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import {
-  AlarmLink,
   Button,
   DataTable,
   DetailTable,
@@ -12,6 +11,7 @@ import {
   StoreSelect,
   UserPop,
 } from "@/components/common";
+import { NotificationBellSlot } from "@/components/notifications/notification-bell-slot";
 import { ApiError, getEnum, getSession, request } from "@/lib/api";
 import { labelOf } from "@/lib/enums";
 import { MENUS, STORES, USER_ITEMS } from "../../design/sample";
@@ -110,7 +110,7 @@ export default async function ContractDetailPage({ params }: PageProps<"/contrac
             <>
               <StoreSelect options={STORES} />
               <ServiceLinks />
-              <AlarmLink href="#" />
+              <NotificationBellSlot />
               <UserPop name="김지영 (admin)" items={USER_ITEMS} />
             </>
           }

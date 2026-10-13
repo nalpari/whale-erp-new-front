@@ -1,4 +1,5 @@
-import { AlarmLink, GlobalHeader, PageBar, ServiceLinks, StoreSelect, UserPop } from "@/components/common";
+import { GlobalHeader, PageBar, ServiceLinks, StoreSelect, UserPop } from "@/components/common";
+import { NotificationBellSlot } from "@/components/notifications/notification-bell-slot";
 import { MENUS, STORES, USER_ITEMS } from "../../design/sample";
 import { ContractForm } from "./contract-form";
 import { loadFormData } from "./load-form-data";
@@ -17,7 +18,7 @@ export default async function NewContractPage() {
             <>
               <StoreSelect options={STORES} />
               <ServiceLinks />
-              <AlarmLink href="#" />
+              <NotificationBellSlot />
               <UserPop name="김지영 (admin)" items={USER_ITEMS} />
             </>
           }

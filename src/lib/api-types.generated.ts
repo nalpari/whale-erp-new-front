@@ -418,6 +418,128 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 목록과 미확인 건수. 종 팝오버는 pageSize=5 로 부른다. */
+        get: operations["NotificationsController_findAll"];
+        put?: never;
+        post?: never;
+        /** 선택 삭제. 내 것이 아닌 ID 는 조용히 빠진다. */
+        delete: operations["NotificationsController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 모두 읽음 */
+        post: operations["NotificationsController_readAll"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 알림을 눌러 이동할 때 읽음으로 바꾸고, 갈 곳(관련 업무)을 담은 그 한 줄을 준다. */
+        post: operations["NotificationsController_read"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notification-templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 채널 탭 하나의 목록. 템플릿 코드순 */
+        get: operations["NotificationTemplatesController_list"];
+        put?: never;
+        /** 등록. 기본 문구가 없어 되돌리기는 없다 */
+        post: operations["NotificationTemplatesController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notification-templates/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 상세 — 변수 목록과 변경 이력(최근 것부터) */
+        get: operations["NotificationTemplatesController_get"];
+        /** 수정 — 모든 칸(NOTIFY-10). 읽은 뒤 누가 고쳤으면 409 */
+        put: operations["NotificationTemplatesController_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notification-templates/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 기본 문구로 되돌리기 — 제목 · 본문 · 변수 목록(NOTIFY-18) */
+        post: operations["NotificationTemplatesController_restore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notification-templates/{id}/active": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** 사용 / 사용 안 함 */
+        patch: operations["NotificationTemplatesController_setActive"];
+        trace?: never;
+    };
     "/leads": {
         parameters: {
             query?: never;
@@ -1105,6 +1227,143 @@ export interface components {
             publishEndDate?: string | null;
             /** @description FAQ 카테고리 — 공통코드 FAQ_CATEGORY 의 플랫폼 원본 중 사용 중인 상세코드. FAQ 면 필수. */
             faqCategoryCode?: string | null;
+        };
+        /** @enum {string} */
+        NotificationRelatedType: "CONTRACT" | "INQUIRY" | "LEAD" | "STAFF_MEMBER";
+        NotificationItemDto: {
+            relatedType: components["schemas"]["NotificationRelatedType"] | null;
+            /** @description 알림 ID(받는 사람별). 읽음 · 삭제에 쓴다 */
+            id: number;
+            /** @description 만들 때 쓴 템플릿 코드(NTF_*) */
+            templateCode: string;
+            /** @description 구분 — 지금 템플릿 이름. 템플릿이 없으면 템플릿 코드 */
+            kind: string;
+            /** @description 제목 — 만들 때의 문구 */
+            title: string;
+            /** @description 둘째 줄 — 만들 때의 문구 */
+            body: string;
+            relatedId: number | null;
+            /** @description 알림을 눌러 갈 관리자 웹 경로. 알림을 만든 업무 쪽이 정했다. 없으면 갈 화면이 없다 */
+            link: string | null;
+            isRead: boolean;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        NotificationListResponseDto: {
+            items: components["schemas"]["NotificationItemDto"][];
+            total: number;
+            /** @description 미확인 건수 — 종 배지 */
+            unreadCount: number;
+        };
+        NotificationReadAllResponseDto: {
+            /** @description 이번에 읽음으로 바뀐 건수 */
+            updated: number;
+        };
+        /** @enum {string} */
+        NotificationTemplateChannel: "NOTIFICATION" | "PUSH" | "EMAIL" | "ALIMTALK";
+        /** @enum {string} */
+        PreferenceCategory: "CONTRACT" | "SCHEDULE" | "TODO" | "PAYSLIP";
+        TemplateListItemDto: {
+            channel: components["schemas"]["NotificationTemplateChannel"];
+            preferenceCategory: components["schemas"]["PreferenceCategory"] | null;
+            id: number;
+            templateCode: string;
+            templateName: string;
+            title: string | null;
+            /** @description 본문 앞 60자 — 알림톡 목록의 본문 요약 */
+            bodySummary: string;
+            kakaoTemplateCode: string | null;
+            isActive: boolean;
+            /** @description 기본 문구가 있는지(처음 넣은 40건) — 되돌리기를 보일지 */
+            hasDefault: boolean;
+            /** @description 마지막으로 고친 관리자 이름. 아무도 고치지 않았으면 null — 화면은 「기본 문구」 */
+            updatedByName: string | null;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        TemplateListResponseDto: {
+            items: components["schemas"]["TemplateListItemDto"][];
+            total: number;
+        };
+        TemplateVariableDto: {
+            /** @description 변수 이름 — 본문에 #{이름} 으로 쓴다. # · 중괄호 · 공백 없이, 한글 가능 */
+            name: string;
+            /** @description 표시 이름 */
+            label: string;
+            isRequired: boolean;
+            /** @description 미리보기에 넣는 예시 값 */
+            sampleValue: string;
+            /** @description 버튼 링크 — 메일 공통 틀 · 알림톡 버튼이 붙인다. 메일 · 알림톡에만 (NOTIFY-20) */
+            isButtonLink?: boolean;
+        };
+        TemplateHistoryDto: {
+            /** Format: date-time */
+            changedAt: string;
+            changedByName: string | null;
+            /** @description 이 변경에서 바뀐 것 — 예: 「제목 · 본문」 */
+            summary: string;
+        };
+        TemplateDetailDto: {
+            channel: components["schemas"]["NotificationTemplateChannel"];
+            preferenceCategory: components["schemas"]["PreferenceCategory"] | null;
+            id: number;
+            templateCode: string;
+            templateName: string;
+            title: string | null;
+            /** @description 본문 앞 60자 — 알림톡 목록의 본문 요약 */
+            bodySummary: string;
+            kakaoTemplateCode: string | null;
+            isActive: boolean;
+            /** @description 기본 문구가 있는지(처음 넣은 40건) — 되돌리기를 보일지 */
+            hasDefault: boolean;
+            /** @description 마지막으로 고친 관리자 이름. 아무도 고치지 않았으면 null — 화면은 「기본 문구」 */
+            updatedByName: string | null;
+            /** Format: date-time */
+            updatedAt: string;
+            body: string;
+            variables: components["schemas"]["TemplateVariableDto"][];
+            /** @description 최근 것부터 */
+            histories: components["schemas"]["TemplateHistoryDto"][];
+        };
+        CreateTemplateDto: {
+            channel: components["schemas"]["NotificationTemplateChannel"];
+            /** @description 수신 설정 묶음 — 앱 푸시만 */
+            preferenceCategory?: components["schemas"]["PreferenceCategory"] | null;
+            /** @description 제목 — 알림톡은 비운다 */
+            title?: string | null;
+            /** @description 카카오 템플릿 코드 — 알림톡만 */
+            kakaoTemplateCode?: string | null;
+            isActive: boolean;
+            templateName: string;
+            /** @description 템플릿 코드 — 발송 코드가 이 값으로 부른다. 고칠 수 있다 */
+            templateCode: string;
+            body: string;
+            variables: components["schemas"]["TemplateVariableDto"][];
+        };
+        UpdateTemplateDto: {
+            channel: components["schemas"]["NotificationTemplateChannel"];
+            /** @description 수신 설정 묶음 — 앱 푸시만 */
+            preferenceCategory?: components["schemas"]["PreferenceCategory"] | null;
+            /** @description 제목 — 알림톡은 비운다 */
+            title?: string | null;
+            /** @description 카카오 템플릿 코드 — 알림톡만 */
+            kakaoTemplateCode?: string | null;
+            /** @example 2026-10-13T01:02:03.456Z */
+            updatedAt: string;
+            templateName: string;
+            /** @description 템플릿 코드 — 발송 코드가 이 값으로 부른다. 고칠 수 있다 */
+            templateCode: string;
+            body: string;
+            variables: components["schemas"]["TemplateVariableDto"][];
+        };
+        TemplateVersionDto: {
+            /** @example 2026-10-13T01:02:03.456Z */
+            updatedAt: string;
+        };
+        SetTemplateActiveDto: {
+            /** @example 2026-10-13T01:02:03.456Z */
+            updatedAt: string;
+            isActive: boolean;
         };
         /**
          * @description 관심 서비스. 하나 이상, 겹치지 않게.
@@ -2287,6 +2546,394 @@ export interface operations {
                 content?: never;
             };
             /** @description 이미 지운 게시물 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_findAll: {
+        parameters: {
+            query?: {
+                /** @description 페이지, 1부터. 상한은 OFFSET 이 DB 정수 범위를 넘어 500 이 되지 않게 둔다 */
+                page?: number;
+                /** @description 페이지당 건수, 기본 20 · 최대 200 */
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationListResponseDto"];
+                };
+            };
+            /** @description 쿼리 형식 오류 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_remove: {
+        parameters: {
+            query: {
+                /** @description 빈 칸 · 숫자가 아닌 값 · 1..2147483647 밖의 값이 있거나 200개를 넘으면 400 이다 */
+                ids: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ids 형식 오류 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_readAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationReadAllResponseDto"];
+                };
+            };
+            /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_read: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationItemDto"];
+                };
+            };
+            /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 내 알림이 아니거나 지운 알림 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationTemplatesController_list: {
+        parameters: {
+            query: {
+                channel: components["schemas"]["NotificationTemplateChannel"];
+                page?: number;
+                /** @description 기본 20 · 최대 200 */
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateListResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationTemplatesController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTemplateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateDetailDto"];
+                };
+            };
+            /** @description 채널별 필수 칸 · #{변수} · 글자 수 검사 — message 에 고칠 문장 목록 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 템플릿 코드가 겹침 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationTemplatesController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateDetailDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 템플릿 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationTemplatesController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTemplateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateDetailDto"];
+                };
+            };
+            /** @description 등록과 같음 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 템플릿 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 그사이 다른 운영자가 고침 · 템플릿 코드가 겹침 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationTemplatesController_restore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TemplateVersionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateDetailDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 템플릿 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 등록한 템플릿이라 기본 문구가 없음 · 그사이 다른 운영자가 고침 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationTemplatesController_setActive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetTemplateActiveDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateDetailDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 템플릿 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 그사이 다른 운영자가 고침 */
             409: {
                 headers: {
                     [name: string]: unknown;

@@ -1,5 +1,4 @@
 import {
-  AlarmLink,
   Button,
   DataTable,
   GlobalHeader,
@@ -9,6 +8,7 @@ import {
   StoreSelect,
   UserPop,
 } from "@/components/common";
+import { NotificationBellSlot } from "@/components/notifications/notification-bell-slot";
 import { ApiError, getEnum, getSession, request } from "@/lib/api";
 import { MENUS, STORES, USER_ITEMS } from "../design/sample";
 import { contractColumns } from "./columns";
@@ -55,7 +55,7 @@ export default async function ContractsPage({ searchParams }: PageProps<"/contra
             <>
               <StoreSelect options={STORES} />
               <ServiceLinks />
-              <AlarmLink href="#" />
+              <NotificationBellSlot />
               <UserPop name="김지영 (admin)" items={USER_ITEMS} />
             </>
           }
