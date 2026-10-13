@@ -3,10 +3,44 @@
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import { STORES, erpHeader, link } from "../../site.mjs";
+import { storeFilter } from "../../store-filter.mjs";
+
+// 필터의 점포 고르기는 1팀 공통 부품(store-filter.mjs) — 휴일 등록 「대상 점포」처럼 찾아 고르면 「선택한 점포」에 쌓인다.
+
+// 고른 점포로 목록 거르기(이 화면 전용 — 칩 빼기·개수는 store-filter.mjs). 공통 erp.js 의 목록 거르기(hidden)와 겹치지 않게 data-store-out 으로 숨긴다.
+const STORE_FILTER_SCRIPT = `<style>[data-store-out]{display:none!important}</style><script>
+(() => {
+  const box = document.querySelector("[data-store-filter]");
+  const list = box.querySelector("[data-spick-list]");
+  const codeOf = (el) => (el.tagName === "TR" ? el.cells[1] && el.cells[1].textContent.trim() : JSON.parse(el.dataset.fields || "{}")["점포코드"]);
+  const apply = () => {
+    const picked = [...list.children].map((li) => li.dataset.code);
+    const items = [...document.querySelectorAll("[data-filter-items] > [data-fields]"), ...document.querySelectorAll("main table tbody tr")].filter((el) => codeOf(el));
+    items.forEach((el) => el.toggleAttribute("data-store-out", picked.length > 0 && !picked.includes(codeOf(el))));
+    // 목록 위 「총 N 건」 — 지금 보이는 보기(카드·표)에서 보이는 줄 수
+    // 화면에 실제로 보이는 것만 센다 — 숨은 보기(탭)나 걸러진 항목은 offsetParent 가 없다
+    const visible = items.filter((el) => el.offsetParent !== null).length;
+    const total = [...document.querySelectorAll("main p")].find((q) => /^총\\s/.test(q.textContent.trim()) && q.querySelector("b"));
+    if (total) total.querySelector("b").textContent = visible.toLocaleString("ko-KR");
+    // 빈 결과 안내 — 공통 거르기는 자기 조건만 보고 결과가 있다고 여기므로, 고른 점포로 숨긴 것까지 쳐서 다시 정한다
+    document.querySelectorAll("main [data-filter-items], main table tbody").forEach((set) => {
+      const empty = set.querySelector(":scope > [data-empty]");
+      if (!empty) return;
+      const rows = [...set.children].filter((el) => el !== empty && codeOf(el));
+      empty.hidden = !rows.length || rows.some((el) => !el.hidden && !el.hasAttribute("data-store-out"));
+    });
+  };
+  new MutationObserver(apply).observe(list, { childList: true });
+  // 보기(탭)를 바꾸거나 돋보기(검색)를 누르면 공통 거르기가 다시 돌므로 그 뒤에 다시 센다
+  document.addEventListener("click", (e) => { if (e.target.closest('[role="tab"], button[aria-label="검색"]')) setTimeout(apply); });
+  // 공통 목록 거르기가 입력·선택 때마다 「총 N 건」을 다시 쓰므로, 그 뒤에 한 번 더 센다
+  ["input", "change"].forEach((t) => document.addEventListener(t, () => setTimeout(apply)));
+})();
+</script>`;
 
 export default ({ A, R }) => {
   const filter = ui.filterPanel(A, [
-    ui.filterSection("점포", ui.searchField(A, { placeholder: "점포코드·점포명" }), { tight: true }),
+    ui.filterSection("점포", storeFilter(A), { tight: true }),
     ui.filterSection("사업자등록번호", ui.searchField(A, { placeholder: "하이픈 없이 10자리", label: "사업자등록번호" }), { tight: true }),
     ui.filterSection("점포상태", ui.checkbox(A, "미운영", true) + ui.checkbox(A, "운영", true) + ui.checkbox(A, "폐점")),
     ui.filterSection("점포유형", ui.checkbox(A, "직영점포", true) + ui.checkbox(A, "가맹점포", true), { last: true }),
@@ -70,7 +104,7 @@ export default ({ A, R }) => {
           x.tabPanel("cards", x.cardGrid(cards), true) +
           x.tabPanel("table", ui.dataTable(cols, rows, "조회된 점포가 없습니다."), false) +
           `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
-      ),
+      ) + STORE_FILTER_SCRIPT,
     }),
   };
 };

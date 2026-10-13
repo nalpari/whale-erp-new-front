@@ -58,20 +58,33 @@
             </div>
             <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
               <!-- 검색 조건 — 검색 기준+검색어 · 점포상태 · 점포유형을 한 줄 격자로, 초기화 · 조회는 아래 오른쪽 -->
-              <div class="grid grid--3" style="align-items: start; grid-template-columns: minmax(0, 1.6fr) repeat(2, minmax(0, 1fr))">
-                <!-- 검색어 — 검색 기준(점포명 · 점포코드 · 사업자등록번호)을 고르고 검색어 하나를 넣는다. 사업자등록번호는 하이픈을 빼고 비교한다 -->
-                <div class="field">
-                  <label for="q-word">검색어</label>
-                  <div class="inline" style="flex-wrap: nowrap; gap: var(--s-2)">
-                    <select class="select" id="q-key" aria-label="검색 기준" style="width: 150px; flex: none">
-                      <option selected>점포명</option>
-                      <option>점포코드</option>
-                      <option>사업자등록번호</option>
-                    </select>
-                    <div class="inputwrap" style="flex: 1">
-                      <span data-icon="search" data-icon-size="15"></span>
-                      <input class="input" id="q-word" placeholder="점포명 일부 · ST000001 · 하이픈 없는 사업자등록번호" />
+              <!-- 점포 — 휴일 등록 「대상 점포」처럼 점포명·점포코드로 찾아 고르면 아래 「선택한 점포」에 쌓이고, 목록은 고른 점포만 보인다. 고른 점포가 없으면 모두 본다(2026-10-12) -->
+              <div class="field">
+                <label for="q-store">점포</label>
+                <div class="spick" data-spick data-spick-nocode data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포;ST000009|온기식당 둔산점|가맹점포;ST000010|온기식당 서면점|가맹점포;ST000011|온기식당 일산점|가맹점포" data-picked="">
+                  <div class="spick__find">
+                    <div class="spick__row">
+                      <div class="addr__q spick__q">
+                        <span data-icon="search" data-icon-size="15"></span>
+                        <input class="input" id="q-store" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                        <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
+                      </div>
                     </div>
+                  </div>
+                  <div class="spick__box">
+                    <div class="spick__head"><b>선택한 점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>모두 빼기</button></div>
+                    <!-- 검색 조건 안이라 칩 영역을 두 줄 높이로 줄이고 넘치면 그 안에서 스크롤 -->
+                    <ul class="spick__picked" data-spick-list aria-label="선택한 점포" style="height: auto; min-height: 0; max-height: 92px"></ul>
+                  </div>
+                </div>
+              </div>
+              <div class="grid grid--3" style="align-items: start; grid-template-columns: repeat(3, minmax(0, 1fr))">
+                <!-- 사업자등록번호 — 하이픈을 빼고 비교한다. 점포명·점포코드는 위 「점포」에서 골라 찾는다(2026-10-12) -->
+                <div class="field">
+                  <label for="q-biz">사업자등록번호</label>
+                  <div class="inputwrap">
+                    <span data-icon="search" data-icon-size="15"></span>
+                    <input class="input" id="q-biz" placeholder="하이픈 없이 10자리" />
                   </div>
                 </div>
                 <div class="field">
