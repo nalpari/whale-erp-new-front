@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
-import { AlarmLink, DetailTable, GlobalHeader, PageBar, ServiceLinks, StoreSelect, UserPop } from "@/components/common";
+import { DetailTable, GlobalHeader, PageBar, ServiceLinks, StoreSelect, UserPop } from "@/components/common";
+import { NotificationBellSlot } from "@/components/notifications/notification-bell-slot";
 import { getStaffMember } from "@/lib/staff-members";
 // 헤더 메뉴 · 사용자 메뉴는 아직 디자인 견본의 값뿐이다(목록 화면과 같다).
 import { MENUS, STORES, USER_ITEMS } from "../../design/sample";
@@ -80,7 +81,7 @@ export default async function StaffMemberDetailPage({ params }: { params: Promis
             <>
               <StoreSelect options={STORES} />
               <ServiceLinks />
-              <AlarmLink href="#" />
+              <NotificationBellSlot />
               <UserPop name="정하윤 (BP 마스터)" items={USER_ITEMS} />
             </>
           }

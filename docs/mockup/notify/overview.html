@@ -180,7 +180,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
-              <span class="badge badge--preview">11건 · 확정 11</span>
+              <span class="badge badge--preview">16건 · 확정 16</span>
             </div>
 
             <div class="gap is-decided">
@@ -334,6 +334,101 @@
                 <span class="gap__ref">F-TZPHZT</span>
               </div>
               <p class="gap__note" style="margin: 0">2026-10-07 재영 확정 — 공통코드 NOTIFICATION_TYPE·SEND_PURPOSE 를 없애고 채널 + 템플릿 이름 + 템플릿 코드로 구분한다. 「같은 채널·유형에 하나만」 규칙을 걷고 코드가 겹칠 때만 막는다. 앱 푸시는 수신 설정 묶음을 고른다.</p>
+            </div>
+            <div class="gap is-decided">
+              <div class="gap__head">
+                <span class="gap__no">NOTIFY-12</span>
+                <b>운영 알림의 제목을 어디에 담을 것인가</b>
+                <span class="gap__decided">확정 · 제목 칸 추가</span>
+                <span class="gap__ref">S-JUWPXF</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt is-picked" data-side="a">
+                  <div class="gap__label">A · 제목 칸을 더한다 · 추천</div>
+                  <p><span class="mono">notifications</span> 에 <b>title</b> 칸을 더하고 템플릿의 제목과 본문을 따로 담는다. 직원 알림의 앱 푸시 제목도 같은 칸을 쓴다. 마이그레이션 하나가 든다.</p>
+                </div>
+                <div class="gap__opt is-dropped" data-side="b">
+                  <div class="gap__label">B · 본문에 두 줄로</div>
+                  <p>지금 칸 그대로 <span class="mono">body</span> 에 「제목 줄바꿈 둘째 줄」로 넣고, 화면이 첫 줄을 잘라 제목으로 쓴다. 칸은 늘지 않지만 본문에 줄바꿈이 있으면 경계가 흐려진다.</p>
+                </div>
+              </div>
+              <p class="gap__note">2026-10-13 재영 확정 — A. notifications 에 title 칸을 더해(api 20261013144718_team3_notification_title) 템플릿 제목을 박아 두고, 알림함 목록 · 종 팝오버가 쓴다.</p>
+            </div>
+            <div class="gap is-decided">
+              <div class="gap__head">
+                <span class="gap__no">NOTIFY-13</span>
+                <b>가맹 점포 계약 알림을 BP 마스터·BP 관리자도 받는가</b>
+                <span class="gap__decided">확정 · 동의한 직원만 본사도</span>
+                <span class="gap__ref">S-JUWPXF</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt is-dropped" data-side="a">
+                  <div class="gap__label">A · 가맹마스터·가맹관리자만 · 결정 전 임시</div>
+                  <p>가맹 점포 직원의 날인·거부·만료·갱신 예정은 그 점포를 맡은 가맹마스터·가맹관리자만 받는다. 본사는 직원 목록에서 이 직원을 가린 채 보므로 같은 선을 지킨다.</p>
+                </div>
+                <div class="gap__opt is-picked" data-side="b">
+                  <div class="gap__label">B · 본사 제공 동의한 직원만 본사도</div>
+                  <p>직원이 본사 제공 동의(운영 정책 ATT-30)를 했으면 BP 마스터·BP 관리자도 받고, 하지 않았으면 가맹 쪽만 받는다.</p>
+                </div>
+              </div>
+              <p class="gap__note">2026-10-13 재영 확정 — B. 가맹 점포 계약 알림은 가맹마스터 · 가맹관리자가 받고, BP 마스터 · BP 관리자는 그 직원이 본사 제공에 동의했을 때만 받는다. 판단은 직원 목록의 가림(hidesPersonalData)과 같다. 동의 화면이 아직 없어 당분간은 가맹 쪽만 받는다.</p>
+            </div>
+            <div class="gap is-decided">
+              <div class="gap__head">
+                <span class="gap__no">NOTIFY-14</span>
+                <b>템플릿 코드가 없는 운영 알림을 어떻게 할 것인가</b>
+                <span class="gap__decided">확정 · 운영 알림 아님</span>
+                <span class="gap__ref">S-VZBTHL · S-FDMTKR</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt is-dropped" data-side="a">
+                  <div class="gap__label">A · 유형을 더한다</div>
+                  <p>가입 불가(만 19세 미만), 직원 자료 일괄 저장 완료·실패를 운영 알림 유형에 더하고, NTF 템플릿을 마이그레이션으로 넣는다. 운영 정책 NTF-01의 「열 가지」를 고친다.</p>
+                </div>
+                <div class="gap__opt is-picked" data-side="b">
+                  <div class="gap__label">B · 운영 알림이 아닌 길로</div>
+                  <p>두 명세의 「운영 알림」 문구를 고친다. 가입 불가는 직원 목록 상태로 보이고, 일괄 저장은 그 화면의 상태로 보인다.</p>
+                </div>
+              </div>
+              <p class="gap__note">2026-10-13 재영 확정 — B. 운영 알림은 열 가지 그대로다. 만 19세 미만 가입 불가 · 직원 자료 일괄 저장 완료 · 실패는 운영 알림을 보내지 않고 각 화면 상태로 보인다(기획 세션이 명세 문구를 고침).</p>
+            </div>
+            <div class="gap is-decided">
+              <div class="gap__head">
+                <span class="gap__no">NOTIFY-15</span>
+                <b>템플릿을 읽지 못하면 보내지 않을 것인가, 기본 문구로 보낼 것인가</b>
+                <span class="gap__decided">확정 · 만들지 않고 로그</span>
+                <span class="gap__ref">S-AFYSUV · S-QQPYIU</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt is-picked" data-side="a">
+                  <div class="gap__label">A · 보내지 않고 기록 · 지금 코드</div>
+                  <p>템플릿이 없거나 꺼졌거나 읽다 실패하면 만들지 않고 서버 로그에 남긴다. 메일 발송 코드가 이미 이렇게 한다.</p>
+                </div>
+                <div class="gap__opt is-dropped" data-side="b">
+                  <div class="gap__label">B · 끈 것은 안 보내고, 읽기 실패만 기본 문구로</div>
+                  <p>운영자가 끈 것과 코드가 없는 것은 보내지 않는다(운영 정책 NTF-24). DB를 읽다 실패한 것만 기본 문구로 보낸다(운영 정책 NTF-25). 이렇게 하려면 기본 문구를 코드에도 한 벌 둔다.</p>
+                </div>
+              </div>
+              <p class="gap__note">2026-10-13 재영 확정 — 운영 알림은 템플릿을 못 읽으면(없음 · 사용 안 함 · 읽기 실패 모두) 만들지 않고 서버 로그만 남긴다. 운영 정책 NTF-25 를 이에 맞춰 고쳤다.</p>
+            </div>
+            <div class="gap is-decided">
+              <div class="gap__head">
+                <span class="gap__no">NOTIFY-16</span>
+                <b>알림을 눌러 갈 업무 화면을 누가 정하는가</b>
+                <span class="gap__decided">확정 · 업무 담당자가 링크를 넘긴다</span>
+                <span class="gap__ref">S-JUWPXF · S-GDUNIT</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt is-dropped" data-side="a">
+                  <div class="gap__label">A · 운영 알림 쪽 경로표</div>
+                  <p>관리자 웹이 템플릿 코드마다 갈 화면 경로를 표로 들고 있다. 업무 화면이 새로 생기면 운영 알림 쪽이 표를 고쳐야 한다.</p>
+                </div>
+                <div class="gap__opt is-picked" data-side="b">
+                  <div class="gap__label">B · 업무 담당자가 링크를 넘긴다</div>
+                  <p>업무 쪽이 공통 함수 notify 를 부를 때 자기 화면 경로(<span class="mono">/contracts/41</span> 등)를 함께 넘기고 알림에 저장한다. 운영 알림 쪽은 경로를 모른다.</p>
+                </div>
+              </div>
+              <p class="gap__note">2026-10-13 재영 확정 — B. 운영 알림은 업무 흐름을 건드리지 않고 업무 담당자가 notify 를 부른다(Plane #247)는 원칙과 맞춘다. notifications 에 링크 칸을 둔다(비어도 됨 — 갈 화면이 없으면 알림함에서 안내). 링크는 관리자 웹 안의 경로만 받는다. 알림함 · 종 · 메일 버튼(/notifications/{수신 ID}/open)은 읽음 처리 뒤 이 링크로 간다.</p>
             </div>
           </section>
         </div>

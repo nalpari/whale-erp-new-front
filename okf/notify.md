@@ -3,7 +3,23 @@ type: Area
 title: 운영 알림
 description: 문의·도입문의의 접수와 상태 변경, 직원 근로계약의 날인·거부·만료·갱신 예정을 관리자 웹 알림함과 이메일로 알린다.
 tags: [mockup, notify]
-generated: { by: claude-code/fable-5.1, at: 2026-10-07T05:20:26Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-13T06:30:00Z }
+sources:
+  - id: notifications-page
+    resource: ../src/app/notifications/page.tsx
+    title: 운영 알림함 /notifications
+  - id: notification-list
+    resource: ../src/app/notifications/notification-list.tsx
+    title: 목록 · 모두 읽음 · 선택 삭제
+  - id: open-notification
+    resource: ../src/app/notifications/[id]/open/open-notification.tsx
+    title: 눌러서 이동 — 화면에 뜬 뒤에만 읽음
+  - id: notification-bell
+    resource: ../src/components/notifications/notification-bell.tsx
+    title: 전역 종과 팝오버
+  - id: notification-view
+    resource: ../src/lib/notification-view.ts
+    title: safeLink · 관련 업무 · 쿼리 · 일시 · 배지
 ---
 
 근거: `docs/mockup/notify/` (목업 · 1차 · R-NKFSGI)
@@ -76,3 +92,22 @@ generated: { by: claude-code/fable-5.1, at: 2026-10-07T05:20:26Z }
 | `NOTIFY-10` | 알림 템플릿을 등록하고 모든 항목을 고칠 것인가 | 등록과 전체 수정 — 사용 여부로 끄고, 되돌리기는 기본 37건만 (2026-10-07 재영) |
 | `NOTIFY-9` | 1팀 관리자 메일 문구도 알림 템플릿에서 관리할 것인가 | 알림 템플릿에서 관리 — 메일 탭 발송 용도 8 추가, 1팀 꼬리표 (2026-10-07 재영) |
 | `NOTIFY-7` | 알림 템플릿 관리를 어느 메뉴 아래에 둘 것인가 | 플랫폼 시스템관리 아래, 공통코드 관리 다음 — 따로 한 줄 안은 버림 (2026-10-07 재영) |
+
+# 구현 (2026-10-13)
+
+계획: `docs/plans/2026-10-13-ops-notifications-screen.md`. api 는 whale-erp-api `/notifications`(목록 · 읽음 · 모두 읽음 · 선택 삭제).
+
+* `/notifications` — 데모 칸 구성(선택 · 미확인 점 · 알림 · 구분 · 일시)에 요건의 「내용」(제목 아래 둘째 줄)과 「관련 업무」(근로계약 #41 꼴) 칸을 더했다. 전체 선택은 툴바 체크박스(공통 `DataTable` 은 고치지 않는다), 모두 읽음 · 선택 삭제 확인창, 페이지당 20·50·100. 화면 상태는 URL.
+* `/notifications/[id]/open` — 알림 · 종 · 운영 알림 메일 버튼이 모두 여기로 온다. GET 으로는 아무것도 바꾸지 않고 화면에 뜬 뒤 서버 액션으로 읽음 처리하고 업무 화면으로 보낸다(브라우저 미리 불러오기 · 메일 검사기가 읽음을 일으키지 않게).
+* 갈 업무 화면은 알림을 만든 업무 쪽이 `notify` 의 `link` 로 넘긴 관리자 웹 경로다(NOTIFY-16, 2026-10-13 재영). 화면은 경로를 모르고 `safeLink` 로 관리자 웹 안의 경로인지만 다시 본다. 링크가 없으면 알림함으로 돌아와 「이동할 화면이 없습니다」를 보인다. 들어간 업무 화면은 그 시점 권한으로 판정한다 — 받은 알림은 받을 때 기준으로 계속 보인다(2026-10-13 재영).
+* 종 `NotificationBell` — 공통 GNB 가 아직 없어 헤더와 떨어진 조각이다. 지금은 헤더를 임시로 짜는 곳(플랫폼 레이아웃 · 직원 목록 · 직원 상세 · 근로계약 화면 넷)에 `<NotificationBellSlot />` 로 넣었다. 공통 헤더가 생기면 종 자리에 이것을 넣는다. 빨간 점이 박힌 `alarm.svg` 대신 점 없는 `alarm-bell.svg` 를 쓴다. `AlarmLink` 는 그대로 둔다(디자인 견본이 쓴다).
+* 읽음이 바뀌면 모든 화면을 다시 그린다 — 종이 화면마다 서버에서 그려진다.
+
+## 2026-10-13 결정 (NOTIFY-12~15, 재영)
+
+* NOTIFY-12 — 알림에 제목 칸(`notifications.title`)을 두고 목록 · 종 팝오버가 쓴다.
+* NOTIFY-13 — 가맹 점포 계약 알림은 가맹마스터 · 가맹관리자, BP 마스터 · BP 관리자는 그 직원이 본사 제공에 동의했을 때만.
+* NOTIFY-14 — 운영 알림은 열 가지 그대로. 만 19세 미만 가입 불가 · 일괄 저장 완료 · 실패는 각 화면 상태로 보인다.
+* NOTIFY-15 — 템플릿을 못 읽으면 운영 알림을 만들지 않고 서버 로그만 남긴다.
+* NOTIFY-16 — 알림을 눌러 갈 업무 화면은 알림을 만드는 업무 쪽이 링크로 넘긴다. 운영 알림 쪽 경로표는 두지 않는다.
+
