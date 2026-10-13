@@ -85,7 +85,7 @@
                 <span class="mk-card__route">/platform/notification-templates/[id]</span>
                 <span class="mk-card__name">알림 템플릿 수정</span>
                 <span class="mk-card__desc">
-                  모든 항목(채널·유형·코드·변수 목록·제목·본문)과 사용 여부, 채널 모양 미리보기, 변경 이력. 기본 문구로 되돌리기는 기본 37건에만.
+                  모든 항목(채널·유형·코드·변수 목록·제목·본문)과 사용 여부, 채널 모양 미리보기, 변경 이력. 기본 문구로 되돌리기는 기본 40건에만.
                 </span>
                 <span class="mk-card__end">
                   <span class="badge badge--quiet">S-QQPYIU</span>
@@ -162,16 +162,16 @@
                 <li><span class="pol__t">템플릿은 <b>채널 + 템플릿 이름 + 템플릿 코드</b>로 구분한다. 알림 유형·발송 용도 공통코드는 두지 않는다. 채널은 운영 알림·앱 푸시·메일·알림톡 넷이고, 템플릿 코드가 겹칠 때만 저장을 막는다.</span><span class="pol__ref">F-TZPHZT · NOTIFY-11</span></li>
                 <li><span class="pol__t">앱 푸시 템플릿은 <b>수신 설정 묶음</b>(근로계약서·근무스케줄·TO-DO·급여명세서) 하나를 고른다. 직원 알림 수신 설정이 이 묶음으로 켜고 끈다.</span><span class="pol__ref">F-TZPHZT · NOTIFY-11</span></li>
                 <li><span class="pol__t">플랫폼 마스터·플랫폼 관리자만 등록하고 고친다.</span><span class="pol__ref">S-QQPYIU</span></li>
-                <li><span class="pol__t"><b>등록</b>으로 새 템플릿을 더하고, 기본 37건과 등록한 것 모두 <b>모든 항목</b>(채널·유형·템플릿 코드·카카오 템플릿 코드·변수 목록·제목·본문)을 고친다. 지우지 않고 <b>사용 / 사용 안 함</b>으로 끄며, 사용 안 함은 목록에서 흐리게 보인다.</span><span class="pol__ref">F-TZPHZT · NOTIFY-10</span></li>
+                <li><span class="pol__t"><b>등록</b>으로 새 템플릿을 더하고, 기본 40건과 등록한 것 모두 <b>모든 항목</b>(채널·유형·템플릿 코드·카카오 템플릿 코드·변수 목록·제목·본문)을 고친다. 지우지 않고 <b>사용 / 사용 안 함</b>으로 끄며, 사용 안 함은 목록에서 흐리게 보인다.</span><span class="pol__ref">F-TZPHZT · NOTIFY-10</span></li>
                 <li><span class="pol__t">변수 목록은 화면에서 넣고 고친다 — 줄마다 변수 이름·표시 이름·필수·예시 값. 본문 위 변수 단추는 이 목록에서 그린다. 제목·본문에 목록에 없는 변수가 있거나 필수 변수가 빠지면 저장하지 않고 위치를 알려 준다. 저장할 때마다 바뀌기 전 문구를 변경 이력에 남긴다.</span><span class="pol__ref">S-QQPYIU · NOTIFY-10</span></li>
-                <li><span class="pol__t"><b>기본 문구로 되돌리기</b>는 기본 37건에만 보인다. 등록한 템플릿에는 없다.</span><span class="pol__ref">S-QQPYIU · NOTIFY-10</span></li>
+                <li><span class="pol__t"><b>기본 문구로 되돌리기</b>는 기본 40건에만 보인다. 제목 · 본문 · 변수 목록을 되돌린다(NOTIFY-17 · 18). 등록한 템플릿에는 없다.</span><span class="pol__ref">S-QQPYIU · NOTIFY-10</span></li>
                 <li><span class="pol__t">앱 푸시 탭은 직원 근무 앱 알림함에 쌓이는 문구까지 맡는다. TO-DO 배정은 푸시 없이 알림함에만 쌓인다.</span><span class="pol__ref">S-QQPYIU · 앱 NOTI-1</span></li>
                 <li><span class="pol__t">알림톡도 수정 화면에서 <b>본문을 고친다</b>. 카카오 검수를 받은 문구와 한 글자라도 다르면 발송되지 않아, 본문 위에 그 안내를 둔다. 제목은 없고 승인 상태도 두지 않는다. 배포는 필요 없다.</span><span class="pol__ref">S-HIBBDL · NOTIFY-6 · NOTIFY-8</span></li>
                 <li><span class="pol__t">운영 알림·앱 푸시·메일은 <b>제목과 본문이 필수</b>라 비우면 저장하지 않는다. 알림톡은 제목이 없고 본문만 필수다.</span><span class="pol__ref">S-QQPYIU · S-HIBBDL · NOTIFY-6</span></li>
                 <li><span class="pol__t">1팀 화면에서 나가는 관리자 메일 8종(회원가입 완료, 신규 BP 가입 알림, BP 신규 등록, 플랫폼 관리자 계정 생성, BP 관리자 계정 생성, 비밀번호 초기화, 임시 비밀번호 발급, 회원 탈퇴 완료)도 메일 탭의 템플릿으로 두고 문구를 여기서 고친다. 1팀 공통코드 메일 유형은 쓰지 않는다.</span><span class="pol__ref">F-TZPHZT · NOTIFY-9</span></li>
-                <li><span class="pol__t">템플릿마다 <b>템플릿 코드</b>를 둔다. 등록할 때 채널 접두(NTF_·PUSH_·EMAIL_·TALK_)만 채우고 나머지는 운영자가 넣는다. 기본 37건의 코드는 지금 값 그대로다. 이미 있는 템플릿의 코드를 바꾸면 「발송 코드에서 이 템플릿 코드를 쓰고 있으면 함께 바꿔야 합니다」 확인창을 띄운다. 알림톡의 카카오 템플릿 코드와는 다른 값이다.</span><span class="pol__ref">F-TZPHZT · NOTIFY-10 · NOTIFY-11</span></li>
+                <li><span class="pol__t">템플릿마다 <b>템플릿 코드</b>를 둔다. 등록할 때 채널 접두(NTF_·PUSH_·EMAIL_·TALK_)만 채우고 나머지는 운영자가 넣는다. 기본 40건의 코드는 지금 값 그대로다. 이미 있는 템플릿의 코드를 바꾸면 「발송 코드에서 이 템플릿 코드를 쓰고 있으면 함께 바꿔야 합니다」 확인창을 띄운다. 알림톡의 카카오 템플릿 코드와는 다른 값이다.</span><span class="pol__ref">F-TZPHZT · NOTIFY-10 · NOTIFY-11</span></li>
                 <li><span class="pol__t">앱 푸시는 <b>제목 40자·본문 100자</b>까지이고 넘으면 저장하지 않는다. 메일 본문은 <b>일반 글</b>만 쓰고 머리·꼬리·버튼은 공통 메일 틀이 붙인다.</span><span class="pol__ref">S-QQPYIU · NOTIFY-4 · NOTIFY-5</span></li>
-                <li><span class="pol__t">템플릿을 읽지 못해 기본 문구로 보낸 일은 서버 로그에만 남기고 화면에는 보이지 않는다.</span><span class="pol__ref">S-QQPYIU</span></li>
+                <li><span class="pol__t">템플릿을 읽지 못하면 그 알림은 보내지 않고 서버 로그에만 남긴다. 화면에는 보이지 않는다.</span><span class="pol__ref">S-QQPYIU · NOTIFY-19</span></li>
                 </ul>
               </div>
             </div>
@@ -180,7 +180,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
-              <span class="badge badge--preview">16건 · 확정 16</span>
+              <span class="badge badge--preview">20건 · 확정 20</span>
             </div>
 
             <div class="gap is-decided">
@@ -324,7 +324,7 @@
                 <span class="gap__decided">확정 · 등록과 전체 수정</span>
                 <span class="gap__ref">F-TZPHZT</span>
               </div>
-              <p class="gap__note" style="margin: 0">2026-10-07 재영 확정 — 등록을 넣고 기본 37건도 모든 항목을 고친다. 앞서 「템플릿 코드는 바꾸지 않는다」「변수 목록은 고치지 않는다」고 적은 것을 걷었다. 삭제는 두지 않고 사용 여부로 끈다.</p>
+              <p class="gap__note" style="margin: 0">2026-10-07 재영 확정 — 등록을 넣고 기본 템플릿(지금 40건)도 모든 항목을 고친다. 앞서 「템플릿 코드는 바꾸지 않는다」「변수 목록은 고치지 않는다」고 적은 것을 걷었다. 삭제는 두지 않고 사용 여부로 끈다.</p>
             </div>
             <div class="gap is-decided">
               <div class="gap__head">
@@ -429,6 +429,83 @@
                 </div>
               </div>
               <p class="gap__note">2026-10-13 재영 확정 — B. 운영 알림은 업무 흐름을 건드리지 않고 업무 담당자가 notify 를 부른다(Plane #247)는 원칙과 맞춘다. notifications 에 링크 칸을 둔다(비어도 됨 — 갈 화면이 없으면 알림함에서 안내). 링크는 관리자 웹 안의 경로만 받는다. 알림함 · 종 · 메일 버튼(/notifications/{수신 ID}/open)은 읽음 처리 뒤 이 링크로 간다.</p>
+            </div>
+            <div class="gap is-decided">
+              <div class="gap__head">
+                <span class="gap__no">NOTIFY-17</span>
+                <b>「기본 문구로 되돌리기」의 원본을 어디에 두나</b>
+                <span class="gap__decided">확정 · 템플릿 행에 기본값 칸</span>
+                <span class="gap__ref">S-QQPYIU · F-TZPHZT</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt is-picked" data-side="a">
+                  <div class="gap__label">A · 템플릿 행에 기본값 칸 · 추천</div>
+                  <p>notification_templates 에 기본 제목 · 기본 본문 · 기본 변수 목록 칸을 두고, 마이그레이션으로 지금 값(40건 모두 아무도 고치지 않음)을 복사한다. 칸이 비어 있으면 등록한 템플릿이라 되돌리기가 없다.</p>
+                </div>
+                <div class="gap__opt is-dropped" data-side="b">
+                  <div class="gap__label">B · api 코드에 상수로</div>
+                  <p>기본 문구 40건을 api 코드에 한 벌 두고 되돌릴 때 그것을 쓴다. 칸은 늘지 않지만 문구가 DB 와 코드 두 곳에 있다.</p>
+                </div>
+              </div>
+              <p class="gap__note">2026-10-13 재영 확정 — A. notification_templates 에 기본 제목 · 기본 본문 · 기본 변수 목록 칸을 두고, 마이그레이션으로 지금 값(40건)을 복사한다. 기본값이 비어 있는 템플릿(등록한 것)에는 되돌리기가 없다.</p>
+            </div>
+            <div class="gap is-decided">
+              <div class="gap__head">
+                <span class="gap__no">NOTIFY-18</span>
+                <b>되돌리면 무엇을 되돌리나</b>
+                <span class="gap__decided">확정 · 제목 · 본문 · 변수 목록</span>
+                <span class="gap__ref">S-QQPYIU</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt is-dropped" data-side="a">
+                  <div class="gap__label">A · 제목 · 본문만</div>
+                  <p>처음 배포된 제목과 본문으로만 바꾼다(목업 확인창 문구 그대로).</p>
+                </div>
+                <div class="gap__opt is-picked" data-side="b">
+                  <div class="gap__label">B · 제목 · 본문 · 변수 목록 · 추천</div>
+                  <p>변수 목록도 처음 것으로 돌린다. 운영자가 변수 이름을 바꿨으면 본문만 되돌릴 때 「목록에 없는 변수」로 저장 검사에 걸린다. 코드 · 이름 · 채널 · 사용 여부는 그대로 둔다.</p>
+                </div>
+              </div>
+              <p class="gap__note">2026-10-13 재영 확정 — B. 되돌리면 제목 · 본문 · 변수 목록을 처음 것으로 돌린다. 코드 · 이름 · 채널 · 사용 여부는 그대로 둔다.</p>
+              <p class="gap__note">2026-10-13 재영 — 알림톡도 카카오 템플릿 코드는 되돌리지 않는다. 되돌리기 확인창에 「카카오 템플릿 코드는 바뀌지 않으니, 검수받은 본문과 맞는지 확인해 주세요.」 안내를 띄운다(운영 정책 NTF-21 · NTF-24, v113).</p>
+            </div>
+            <div class="gap is-decided">
+              <div class="gap__head">
+                <span class="gap__no">NOTIFY-19</span>
+                <b>템플릿을 못 읽을 때 메일 · 앱 푸시 · 알림톡은 어떻게 하나</b>
+                <span class="gap__decided">확정 · 보내지 않고 로그</span>
+                <span class="gap__ref">S-QQPYIU · 운영 정책 NTF-25</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt is-picked" data-side="a">
+                  <div class="gap__label">A · 보내지 않고 로그 · 추천</div>
+                  <p>운영 알림(NOTIFY-15)과 같이 보내지 않고 서버 로그와 호출한 쪽 실패로 남긴다. 지금 메일 · 알림톡 코드가 이렇게 한다.</p>
+                </div>
+                <div class="gap__opt is-dropped" data-side="b">
+                  <div class="gap__label">B · 코드의 기본 문구로 보냄</div>
+                  <p>운영 정책 NTF-25 그대로 코드에 기본 문구 한 벌을 두고 그것으로 보낸다.</p>
+                </div>
+              </div>
+              <p class="gap__note">2026-10-13 재영 확정 — A. 메일 · 앱 푸시 · 알림톡도 운영 알림(NOTIFY-15)과 같이 템플릿을 못 읽으면 보내지 않고 서버 로그와 호출한 쪽 실패로 남긴다. 운영 정책 NTF-25 를 이에 맞춘다.</p>
+            </div>
+            <div class="gap is-decided">
+              <div class="gap__head">
+                <span class="gap__no">NOTIFY-20</span>
+                <b>변수 목록에 「버튼 링크」 표시 칸을 둘까</b>
+                <span class="gap__decided">확정 · 메일 · 알림톡에서만 체크 칸</span>
+                <span class="gap__ref">S-AFYSUV · S-QQPYIU</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt is-picked" data-side="a">
+                  <div class="gap__label">A · 메일 · 알림톡에서만 체크 칸 · 추천</div>
+                  <p>변수 목록 줄에 「버튼 링크」 체크 칸을 두되 메일 · 알림톡 채널에서만 보인다. 켠 변수는 필수 변수 검사에서 빠지고 공통 메일 틀 · 알림톡 버튼이 붙인다.</p>
+                </div>
+                <div class="gap__opt is-dropped" data-side="b">
+                  <div class="gap__label">B · 화면에 두지 않음</div>
+                  <p>기존 값은 그대로 지키고, 새로 만든 변수는 늘 버튼 링크가 아니다. 운영자가 링크 변수를 새로 만들 수 없다.</p>
+                </div>
+              </div>
+              <p class="gap__note">2026-10-13 재영 확정 — A. 변수 목록 줄에 「버튼 링크」 체크 칸을 두고 메일 · 알림톡 채널에서만 보인다.</p>
             </div>
           </section>
         </div>

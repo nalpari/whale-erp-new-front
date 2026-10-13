@@ -680,6 +680,9 @@ CREATE TABLE "notification_templates" (
     "body" TEXT NOT NULL,
     "variables" JSONB NOT NULL,
     "kakao_template_code" TEXT,
+    "default_title" TEXT,
+    "default_body" TEXT,
+    "default_variables" JSONB,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "updated_by" INTEGER,
     "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -780,6 +783,8 @@ CREATE TABLE "inquiries" (
     "title" TEXT NOT NULL,
     "body" TEXT NOT NULL,
     "status" "inquiry_status" NOT NULL DEFAULT 'RECEIVED',
+    "processing_started_by" INTEGER,
+    "processing_started_at" TIMESTAMPTZ(6),
     "internal_memo" TEXT,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -826,6 +831,8 @@ CREATE TABLE "leads" (
     "privacy_agreed_at" TIMESTAMPTZ(6) NOT NULL,
     "marketing_agreed_at" TIMESTAMPTZ(6),
     "status" "inquiry_status" NOT NULL DEFAULT 'RECEIVED',
+    "processing_started_by" INTEGER,
+    "processing_started_at" TIMESTAMPTZ(6),
     "reply" TEXT,
     "replied_by" INTEGER,
     "replied_at" TIMESTAMPTZ(6),
@@ -852,6 +859,8 @@ ALTER TABLE "staff_members" ADD CONSTRAINT "staff_members_retired_date_required"
 ALTER TABLE "staff_members" ADD CONSTRAINT "staff_members_hq_sharing_consent_fields" CHECK (NOT "is_hq_sharing_consented" OR ("hq_sharing_consent_version" IS NOT NULL AND "hq_sharing_agreed_at" IS NOT NULL AND "hq_sharing_withdrawn_at" IS NULL));
 ALTER TABLE "staff_members" ADD CONSTRAINT "staff_members_hq_sharing_not_consented_fields" CHECK ("is_hq_sharing_consented" OR ("hq_sharing_consent_version" IS NULL AND "hq_sharing_agreed_at" IS NULL AND "hq_sharing_withdrawn_at" IS NULL) OR ("hq_sharing_consent_version" IS NOT NULL AND "hq_sharing_agreed_at" IS NOT NULL AND "hq_sharing_withdrawn_at" IS NOT NULL));
 ALTER TABLE "staff_members" ADD CONSTRAINT "staff_members_hq_sharing_withdrawn_after_agreed" CHECK ("hq_sharing_withdrawn_at" IS NULL OR ("hq_sharing_agreed_at" IS NOT NULL AND "hq_sharing_withdrawn_at" >= "hq_sharing_agreed_at"));
+ALTER TABLE "inquiries" ADD CONSTRAINT "inquiries_processing_started_pair" CHECK (("processing_started_by" IS NULL) = ("processing_started_at" IS NULL));
+ALTER TABLE "leads" ADD CONSTRAINT "leads_processing_started_pair" CHECK (("processing_started_by" IS NULL) = ("processing_started_at" IS NULL));
 ALTER TABLE "invitations" ADD CONSTRAINT "invitations_token_required" CHECK ("invitation_type" NOT IN ('SIGNUP', 'REINVITE') OR "invitation_token" IS NOT NULL);
 ALTER TABLE "contracts" ADD CONSTRAINT "contracts_end_date_after_start" CHECK ("end_date" IS NULL OR "end_date" >= "start_date");
 ALTER TABLE "contracts" ADD CONSTRAINT "contracts_start_date_required_when_signed" CHECK ("status" <> 'SIGNED' OR "start_date" IS NOT NULL);
@@ -890,6 +899,8 @@ ALTER TABLE "notification_templates" ADD CONSTRAINT "notification_templates_temp
 ALTER TABLE "staff_member_retirement_logs" ADD CONSTRAINT "staff_member_retirement_logs_contract_only_on_retire" CHECK ("action" = 'RETIRE' OR ("contract_id" IS NULL AND "previous_contract_end_date" IS NULL));
 ALTER TABLE "staff_member_retirement_logs" ADD CONSTRAINT "staff_member_retirement_logs_end_date_needs_contract" CHECK ("previous_contract_end_date" IS NULL OR "contract_id" IS NOT NULL);
 ALTER TABLE "notification_templates" ADD CONSTRAINT "notification_templates_variables_array" CHECK (jsonb_typeof("variables") = 'array');
+ALTER TABLE "notification_templates" ADD CONSTRAINT "notification_templates_defaults_together" CHECK (("default_body" IS NULL) = ("default_variables" IS NULL) AND ("default_body" IS NOT NULL OR "default_title" IS NULL));
+ALTER TABLE "notification_templates" ADD CONSTRAINT "notification_templates_default_variables_array" CHECK ("default_variables" IS NULL OR jsonb_typeof("default_variables") = 'array');
 ALTER TABLE "notification_template_histories" ADD CONSTRAINT "notification_template_histories_variables_array" CHECK (jsonb_typeof("variables") = 'array');
 ALTER TABLE "notification_templates" ADD CONSTRAINT "notification_templates_title_by_channel" CHECK (("channel" = 'ALIMTALK') = ("title" IS NULL));
 ALTER TABLE "alimtalk_send_logs" ADD CONSTRAINT "alimtalk_send_logs_to_phone_format" CHECK ("to_phone" ~ '^01[0-9]{8,9}$');
@@ -996,9 +1007,11 @@ ALTER TABLE "post_attachments" ADD CONSTRAINT "post_attachments_post_id_fkey" FO
 ALTER TABLE "inquiries" ADD CONSTRAINT "inquiries_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "admin_accounts" ("admin_account_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE "inquiries" ADD CONSTRAINT "inquiries_bp_code_id_fkey" FOREIGN KEY ("bp_code_id") REFERENCES "bp_codes" ("bp_code_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE "inquiries" ADD CONSTRAINT "inquiries_store_id_fkey" FOREIGN KEY ("store_id") REFERENCES "stores" ("store_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+ALTER TABLE "inquiries" ADD CONSTRAINT "inquiries_processing_started_by_fkey" FOREIGN KEY ("processing_started_by") REFERENCES "admin_accounts" ("admin_account_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE "inquiry_replies" ADD CONSTRAINT "inquiry_replies_inquiry_id_fkey" FOREIGN KEY ("inquiry_id") REFERENCES "inquiries" ("inquiry_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE "inquiry_replies" ADD CONSTRAINT "inquiry_replies_replied_by_fkey" FOREIGN KEY ("replied_by") REFERENCES "admin_accounts" ("admin_account_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE "inquiry_attachments" ADD CONSTRAINT "inquiry_attachments_inquiry_id_fkey" FOREIGN KEY ("inquiry_id") REFERENCES "inquiries" ("inquiry_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+ALTER TABLE "leads" ADD CONSTRAINT "leads_processing_started_by_fkey" FOREIGN KEY ("processing_started_by") REFERENCES "admin_accounts" ("admin_account_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE "leads" ADD CONSTRAINT "leads_replied_by_fkey" FOREIGN KEY ("replied_by") REFERENCES "admin_accounts" ("admin_account_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 
 -- ── 조회 인덱스 ──
@@ -1435,6 +1448,9 @@ COMMENT ON COLUMN "notification_templates"."title" IS '제목 — 알림톡은 �
 COMMENT ON COLUMN "notification_templates"."body" IS '본문 — #{변수}. 알림톡은 카카오 검수 문구와 같게';
 COMMENT ON COLUMN "notification_templates"."variables" IS '변수 목록 — [{이름, 표시 이름, 필수, 예시 값}] 순서대로. 저장 때 본문·제목의 #{변수}가 목록 안에 있는지 검사';
 COMMENT ON COLUMN "notification_templates"."kakao_template_code" IS '카카오 템플릿 코드 — 알림톡만';
+COMMENT ON COLUMN "notification_templates"."default_title" IS '기본 제목 — 기본 문구로 되돌리기의 원본. 처음 넣은 40건만 (NOTIFY-17, 2026-10-13 재영)';
+COMMENT ON COLUMN "notification_templates"."default_body" IS '기본 본문 — 기본 문구로 되돌리기의 원본. 없으면 등록한 템플릿이라 되돌리기가 없다';
+COMMENT ON COLUMN "notification_templates"."default_variables" IS '기본 변수 목록 — 되돌리면 제목 · 본문과 함께 돌린다 (NOTIFY-18)';
 COMMENT ON COLUMN "notification_templates"."is_active" IS '사용 여부 — 지우지 않고 끔';
 COMMENT ON COLUMN "notification_templates"."updated_by" IS '수정 관리자';
 COMMENT ON COLUMN "notification_templates"."updated_at" IS '수정 시각';
@@ -1505,6 +1521,8 @@ COMMENT ON COLUMN "inquiries"."inquiry_category_code" IS '문의 유형 (논리 
 COMMENT ON COLUMN "inquiries"."title" IS '제목';
 COMMENT ON COLUMN "inquiries"."body" IS '문의 내용';
 COMMENT ON COLUMN "inquiries"."status" IS '답변 상태 — 접수·처리중·답변완료';
+COMMENT ON COLUMN "inquiries"."processing_started_by" IS '처리 시작 관리자 — 처리중으로 바꾼 관리자 (2026-10-13, Plane #274). 처리중을 거치지 않고 답변하면 NULL (물리에서 추가)';
+COMMENT ON COLUMN "inquiries"."processing_started_at" IS '처리 시작 일시 — 처리중으로 바꾼 시각 (2026-10-13, Plane #274). 처리중을 거치지 않고 답변하면 NULL (물리에서 추가)';
 COMMENT ON COLUMN "inquiries"."internal_memo" IS '운영자 내부 메모 — 사용자에게 안 보임';
 COMMENT ON COLUMN "inquiries"."created_at" IS '등록 시각';
 COMMENT ON COLUMN "inquiries"."updated_at" IS '최근 수정 일시 (물리에서 추가)';
@@ -1536,6 +1554,8 @@ COMMENT ON COLUMN "leads"."body" IS '문의 내용';
 COMMENT ON COLUMN "leads"."privacy_agreed_at" IS '개인정보 동의 일시 — 필수';
 COMMENT ON COLUMN "leads"."marketing_agreed_at" IS '마케팅 동의 일시 — 선택';
 COMMENT ON COLUMN "leads"."status" IS '답변 상태';
+COMMENT ON COLUMN "leads"."processing_started_by" IS '처리 시작 관리자 — 처리중으로 바꾼 관리자 (2026-10-13, Plane #274). 처리중을 거치지 않고 답변하면 NULL (물리에서 추가)';
+COMMENT ON COLUMN "leads"."processing_started_at" IS '처리 시작 일시 — 처리중으로 바꾼 시각 (2026-10-13, Plane #274). 처리중을 거치지 않고 답변하면 NULL (물리에서 추가)';
 COMMENT ON COLUMN "leads"."reply" IS '사용자 노출 답변 — 이메일로 회신';
 COMMENT ON COLUMN "leads"."replied_by" IS '답변 관리자 — 답변을 저장한 관리자 (2026-10-12 재영, Plane #274) (물리에서 추가)';
 COMMENT ON COLUMN "leads"."replied_at" IS '답변 일시 — 답변을 저장한 시각 (2026-10-12 재영, Plane #274) (물리에서 추가)';

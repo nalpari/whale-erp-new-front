@@ -12,6 +12,8 @@ export const PLATFORM_MENUS: HeaderMenu[] = [
       { label: "플랫폼 권한 관리", href: "/platform/system/roles" },
       { label: "플랫폼 메뉴 관리", href: "/platform/system/menus" },
       { label: "플랫폼 공통코드 관리", href: "/platform/system/codes" },
+      // 공통코드 관리 다음(NOTIFY-7, 1팀 전달 사항 14번). api 초기 데이터에는 아직 없어 손으로 더했다.
+      { label: "알림 템플릿 관리", href: "/platform/notification-templates" },
       { label: "플랫폼 휴일 관리", href: "/platform/system/holidays" },
     ],
   },
