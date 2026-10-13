@@ -7,8 +7,6 @@ import * as f from "../../biz-form.mjs";
 import { erpHeader, link } from "../../site.mjs";
 
 export default ({ A, R }) => {
-  const reauthText = `<p>지금 인증한 사업자등록번호·대표자명·개업일자가 지워지고 인증 전으로 돌아갑니다.</p>`;
-
   // 대표 이미지는 기본정보 맨 아래에 둬 오른쪽 사업자정보 묶음과 높이를 맞춘다.
   const image = f.group(
     "대표 이미지",
@@ -49,7 +47,7 @@ export default ({ A, R }) => {
 
   const biz = ui.formGroup(
     "점포 사업자정보",
-    f.bizAuth(A, "sbiz", { start: "open", inline: true, values: ["113-25-60418", "한지우", "2026-08-03"], input: ["", "", ""], confirmReauth: reauthText }),
+    f.bizAuth(A, "sbiz", { start: "open", inline: true, values: ["113-25-60418", "한지우", "2026-08-03"], input: ["", "", ""], clearable: true }),
     ui.formRow(
       ui.field("상호명", ui.textField({ maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })),
       f.group("대표자 연락처", f.tel()),

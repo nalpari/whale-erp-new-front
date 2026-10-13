@@ -59,12 +59,20 @@ export const SWAP_SCRIPT = `<script>document.addEventListener("click",(e)=>{cons
 // inline: 점포 등록·수정의 배치. 입력칸을 한 줄에 두고 [인증하기] 를 줄 끝(개업일자 옆)에 붙이며,
 //         인증을 마친 뒤의 사업자정보 상자도 같은 한 줄로 둔다 — 인증 전후로 생김새가 바뀌지 않게.
 //         상자 테두리·바탕도 뺀다. 바깥 「점포 사업자정보」 묶음이 이미 흰 상자라 테두리가 두 겹으로 보인다.
-export function bizAuth(A, p, { start = "fold", values = ["", "", ""], input = values, doneBadge = "인증 완료", reauthLocked = false, after = "", confirmReauth = false, inline = false } = {}) {
+// clearable: 등록 화면(BP·점포 등록). 회원가입처럼 [인증하기] 옆과 인증 뒤 [재인증] 옆에 [지우기] 를 둔다.
+//            재인증은 확인 창 없이 입력 상자로 돌아가고 세 값을 남긴다(2026-10-13 피드백). 지우기는 생김새만 —
+//            누르면 입력 상자로 돌아가지만 값을 비우는 동작은 데모에 없다(signup.mjs 와 같다).
+//            인증 전 지우기는 입력 상자에 처음 값이 있을 때만 그린다(값이 있을 때만 보인다는 규칙).
+//            clearable 이면 confirmReauth 는 쓰지 않는다 — 등록 화면은 재인증 확인 창이 없다.
+export function bizAuth(A, p, { start = "fold", values = ["", "", ""], input = values, doneBadge = "인증 완료", reauthLocked = false, after = "", confirmReauth = false, inline = false, clearable = false } = {}) {
   const ids = { fold: `${p}-fold`, form: `${p}-form`, done: `${p}-done` };
   const [num, ceo, open] = input;
   // 접기 버튼은 두지 않는다(2026-10-06 피드백) — 재인증 상자는 인증하기로만 넘어간다.
   const fold = start === "open" ? "" : `<div id="${ids.fold}"${start === "fold" ? "" : " hidden"}>${ui.button("사업자 번호 인증하기", { variant: "soft", ...swapAttr(ids.fold, ids.form) })}</div>`;
-  const authBtn = ui.button("인증하기", swapAttr(ids.form, ids.done));
+  const clearBtn = (from) => ui.button("지우기", { variant: "off", ...(from ? swapAttr(from, ids.form) : {}) });
+  const authBtn = clearable && input.some(Boolean)
+    ? `<div class="flex gap-[6px]">${ui.button("인증하기", swapAttr(ids.form, ids.done))}${clearBtn()}</div>`
+    : ui.button("인증하기", swapAttr(ids.form, ids.done));
   // inline 이 아니면(마이페이지 등) 사업자등록번호·대표자명·개업일자를 한 줄씩 세로로 쌓는다(2026-10-06 피드백).
   // inline 이면(점포 등록) 기존대로 한 줄에 두고 인증하기 버튼을 그 줄 끝에 붙여 상자 높이를 줄인다.
   const fields = reauthLocked
@@ -94,7 +102,8 @@ export function bizAuth(A, p, { start = "fold", values = ["", "", ""], input = v
   const [vn, vc, vo] = values;
   let reauth = ui.button("재인증", { variant: "soft", ...swapAttr(ids.done, ids.form) });
   let dialog = "";
-  if (confirmReauth) {
+  if (clearable) reauth = `<div class="flex gap-[6px]">${reauth}${clearBtn(ids.done)}</div>`;
+  else if (confirmReauth) {
     const d = `${p}-reauth`;
     reauth = x.dialogTrigger("재인증", d, "soft");
     dialog = x.dialog(
