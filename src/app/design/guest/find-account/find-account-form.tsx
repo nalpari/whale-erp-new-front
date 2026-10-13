@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { GuestButton } from "../guest-ui";
-import { BUTTON_MOTION, HOVER } from "../theme";
-import { INPUT, INPUT_BOX, SUBMIT } from "../login/login-form";
+import { FIELD_BUTTON, INPUT, INPUT_BOX, LABEL, SUBMIT } from "../guest-form";
+import { HOVER } from "../theme";
 
 // 인증번호 유효 시간(초). 시안의 「남은 시간 02:41」은 3분에서 줄어든 모습이다.
 const CODE_SECONDS = 180;
@@ -16,7 +16,7 @@ const TABS = [
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="flex flex-col gap-[10px]">
-      <span className="text-[16px] leading-[1.4] font-medium">{label}</span>
+      <span className={LABEL}>{label}</span>
       {children}
     </label>
   );
@@ -79,7 +79,7 @@ export function FindAccountForm() {
             </span>
           </Field>
           <div className="flex flex-col gap-[10px]">
-            <label htmlFor="verification-code" className="text-[16px] leading-[1.4] font-medium">
+            <label htmlFor="verification-code" className={LABEL}>
               인증번호
             </label>
             <div className="flex gap-[10px]">
@@ -89,7 +89,7 @@ export function FindAccountForm() {
               <button
                 type="button"
                 onClick={() => setLeft(CODE_SECONDS)}
-                className={`h-[56px] rounded-[6px] border border-guest-ink bg-white px-[18px] text-[18px] leading-[1.5] font-semibold hover:border-guest-navy hover:text-guest-navy ${BUTTON_MOTION}`}
+                className={FIELD_BUTTON}
               >
                 인증번호 받기
               </button>
