@@ -21,6 +21,9 @@ export default function DesignLayout({ children }: LayoutProps<"/design">) {
         <Link href="/design/detail" className="rounded-[2px] px-3 py-1.5 hover:bg-white/15">
           상세 페이지
         </Link>
+        <Link href="/design/guest" className="rounded-[2px] px-3 py-1.5 hover:bg-white/15">
+          비로그인
+        </Link>
       </nav>
     </ErpRoot>
   );

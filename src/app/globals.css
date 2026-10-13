@@ -41,6 +41,20 @@
   --font-erp: var(--font-pretendard), Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
 }
 
+/* 비로그인(로그인전) Figma 토큰. 관리자 화면과 다른 디자인이라 erp-* 와 섞지 않는다. 한 번만 나오는 색은 쓰는 곳에 적는다. */
+@theme {
+  --color-guest-ink: #0c0c0c;
+  --color-guest-navy: #3a5670;
+  --color-guest-navy-soft: #93a2b1;
+  --color-guest-step: #657c91;
+  --color-guest-body: #464646;
+  --color-guest-sub: #555555;
+  --color-guest-card: #f5f8fb;
+  --color-guest-line: #eeeeee;
+  --color-guest-list-line: #eff2f4;
+  --color-guest-button-line: #e0e5e9;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
