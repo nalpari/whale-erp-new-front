@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { type ComponentProps, type FormEvent, type ReactNode, type Ref, useRef, useState } from "react";
 import { CHECKBOX, FIELD_BUTTON, INPUT, INPUT_BOX, LABEL, SUBMIT } from "../guest-form";
 import { HOVER } from "../theme";
@@ -153,6 +154,7 @@ export function SignUpForm({ terms }: { terms: Record<AgreementKey, ReactNode> }
   const [error, setError] = useState("");
   const dialogs = useRef<Partial<Record<AgreementKey, HTMLDialogElement | null>>>({});
   const businessRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const allAgreed = agreed.service && agreed.privacy;
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -161,6 +163,9 @@ export function SignUpForm({ terms }: { terms: Record<AgreementKey, ReactNode> }
     if (form.get("password") !== form.get("passwordConfirm")) return setError("비밀번호가 서로 다릅니다.");
     if (!allAgreed) return setError("이용약관과 개인정보 수집·이용에 모두 동의해 주세요.");
     setError("");
+    // ponytail: 가입 API 가 없어 완료 화면에 보일 값을 주소로 넘긴다. API 가 생기면 서버가 가입 결과로 완료 화면을 그린다.
+    const shown = new URLSearchParams({ companyName: String(form.get("companyName")), loginId: String(form.get("loginId")), email: String(form.get("email")) });
+    router.push(`/design/guest/sign-up/complete?${shown}`);
   }
 
   // 사업자정보는 선택이라 회원가입 때는 검사하지 않고, 인증하기를 누를 때만 세 칸을 확인한다.

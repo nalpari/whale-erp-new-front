@@ -312,6 +312,24 @@
         ],
         "createdAt": "2026-10-13T07:54:32.028Z",
         "reason": "Figma 로그인전(8QSOuwFFBfCbFWR6RBUlps) 비로그인 시안 값 — 관리자 DESIGN.md 와 별개인 디자인"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "*",
+        "files": [
+          "src/app/design/guest/sign-up/complete/page.tsx"
+        ],
+        "createdAt": "2026-10-13T08:06:49.709Z",
+        "reason": "Figma 로그인전(8QSOuwFFBfCbFWR6RBUlps) 비로그인 시안 값 — 관리자 DESIGN.md 와 별개인 디자인"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "*",
+        "files": [
+          "src/app/design/guest/sign-up/complete/page.tsx"
+        ],
+        "createdAt": "2026-10-13T08:06:49.804Z",
+        "reason": "Figma 로그인전(8QSOuwFFBfCbFWR6RBUlps) 비로그인 시안 값 — 관리자 DESIGN.md 와 별개인 디자인"
       }
     ]
   }

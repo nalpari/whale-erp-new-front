@@ -15,7 +15,7 @@ const MENUS = [
   { label: "부가 서비스", href: "/design/guest/add-on-services" },
 ];
 
-const LINED_PATHS = ["/design/guest/login", "/design/guest/find-account", "/design/guest/sign-up"];
+const LINED_PATHS = ["/design/guest/login", "/design/guest/find-account", "/design/guest/sign-up", "/design/guest/sign-up/complete"];
 
 // 비로그인 화면 머리말. 스크롤해도 위에 붙어 있다.
 // fixed 가 아니라 sticky 다 — 화면이 1720 보다 좁으면 가로로 스크롤하는데, fixed 는 가로로 따라오지 않아 오른쪽이 잘린다.
