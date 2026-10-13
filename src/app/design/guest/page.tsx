@@ -135,7 +135,7 @@ const FEATURES = [
   { title: "매장운영", href: "/design/guest/store-operations", lines: ["매장·장비 정보를 한곳에", "종이 없는 근로계약·급여명세서", "근무표 공유와 QR 출퇴근"] },
   { title: "재무관리", lines: ["통장 입출금을 한눈에", "현금 거래까지 빠짐없이", "돈이 나가는 곳을 비율로"] },
   { title: "프랜차이즈", lines: ["온라인으로 끝내는 가맹계약", "신메뉴·가격 한 번에 배포", "현장 점검 결과 바로 공유"] },
-  { title: "부가서비스", lines: ["POS · KIOSK 주문·결제", "테이블·픽업·QR 주문", "발주·재고·레시피 관리"] },
+  { title: "부가서비스", href: "/design/guest/add-on-services", lines: ["POS · KIOSK 주문·결제", "테이블·픽업·QR 주문", "발주·재고·레시피 관리"] },
 ];
 
 function Features() {
@@ -386,6 +386,7 @@ const PLANS = [
   {
     kicker: "ADD-ONS",
     cta: "부가서비스 둘러보기",
+    href: "/design/guest/add-on-services",
     name: "부가서비스",
     summary: "매장에 필요한 서비스만 골라서",
     listTitle: "점포별 월 구독",
@@ -414,7 +415,7 @@ function Plans() {
               <div>
                 <div className="flex items-center justify-between gap-[18px]">
                   <p className={`text-[16px] leading-[1.6] font-semibold tracking-normal text-guest-navy ${TRIM}`}>{plan.kicker}</p>
-                  <GuestButton tone="outline" arrow>
+                  <GuestButton tone="outline" href={plan.href} arrow>
                     {plan.cta}
                   </GuestButton>
                 </div>

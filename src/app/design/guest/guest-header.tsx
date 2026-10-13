@@ -12,7 +12,7 @@ const MENUS = [
   { label: "매장운영", href: "/design/guest/store-operations" },
   { label: "재무관리", href: "#" },
   { label: "프랜차이즈", href: "#" },
-  { label: "부가 서비스", href: "#" },
+  { label: "부가 서비스", href: "/design/guest/add-on-services" },
 ];
 
 // 비로그인 화면 머리말. 스크롤해도 위에 붙어 있다.

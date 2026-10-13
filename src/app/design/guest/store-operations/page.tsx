@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { GuestButton, ICON_GRADIENT, SectionTitle, TitleRow, TRIM } from "../guest-ui";
+import { type IconPart, InventoryIcon, KioskIcon, LayeredIcon, OrderIcon, RecipeIcon, STAFF_ICON } from "../guest-icons";
+import { GuestButton, SectionTitle, TitleRow, TRIM } from "../guest-ui";
 import { BUTTON_MOTION } from "../theme";
 
 export const metadata: Metadata = { title: "Whale ERP · 매장운영" };
@@ -172,38 +173,31 @@ function Features() {
   );
 }
 
-// 흐름 아이콘. 선 굵기만큼 SVG 가 칸보다 커서, 시안 칸 위치에서 그만큼(2px) 당겨 놓는다.
-type IconPart = { src: string; width: number; height: number; left: number; top: number };
 const FLOW = [
   {
     title: "01 직원 초대",
     desc: "카톡·문자로 가입 링크 전송",
-    icon: [
-      { src: "flow-invite-1.svg", width: 41.3333, height: 20, left: 3.33, top: 38 },
-      { src: "flow-invite-2.svg", width: 25.3333, height: 25.3333, left: 11.33, top: 6 },
-      { src: "flow-invite-3.svg", width: 12.0005, height: 19.6538, left: 48.67, top: 38.35 },
-      { src: "flow-invite-4.svg", width: 12.0214, height: 24.6676, left: 40.67, top: 6.35 },
-    ],
+    icon: STAFF_ICON,
   },
-  { title: "02 계약서 서명", desc: "지원자 휴대폰으로 바로 전자서명", icon: [{ src: "flow-sign.svg", width: 64, height: 64, left: 0, top: 0 }] },
+  { title: "02 계약서 서명", desc: "지원자 휴대폰으로 바로 전자서명", icon: [{ src: `${ASSET}/flow-sign.svg`, width: 64, height: 64, left: 0, top: 0 }] },
   {
     title: "03 근무표 공유",
     desc: "나의 이번 주 스케줄을 한눈에",
     icon: [
-      { src: "flow-schedule-1.svg", width: 57.3682, height: 30.6686, left: 3.34, top: 3.33 },
-      { src: "flow-schedule-2.svg", width: 57.3334, height: 17.3282, left: 3.33, top: 30 },
-      { src: "flow-schedule-2.svg", width: 57.3334, height: 17.3282, left: 3.33, top: 43.33 },
+      { src: `${ASSET}/flow-schedule-1.svg`, width: 57.3682, height: 30.6686, left: 3.34, top: 3.33 },
+      { src: `${ASSET}/flow-schedule-2.svg`, width: 57.3334, height: 17.3282, left: 3.33, top: 30 },
+      { src: `${ASSET}/flow-schedule-2.svg`, width: 57.3334, height: 17.3282, left: 3.33, top: 43.33 },
     ],
   },
   {
     title: "04 QR 출퇴근",
     desc: "도착 후 매장 QR만 찍으면 끝",
     icon: [
-      { src: "flow-clock-1.svg", width: 57.3333, height: 57.3333, left: 3.33, top: 3.33 },
-      { src: "flow-clock-2.svg", width: 14.6671, height: 25.3338, left: 30, top: 14 },
+      { src: `${ASSET}/flow-clock-1.svg`, width: 57.3333, height: 57.3333, left: 3.33, top: 3.33 },
+      { src: `${ASSET}/flow-clock-2.svg`, width: 14.6671, height: 25.3338, left: 30, top: 14 },
     ],
   },
-  { title: "05 급여 명세서", desc: "근무 기록 그대로 정확하게", icon: [{ src: "flow-payslip.svg", width: 64, height: 64, left: 0, top: 0 }] },
+  { title: "05 급여 명세서", desc: "근무 기록 그대로 정확하게", icon: [{ src: `${ASSET}/flow-payslip.svg`, width: 64, height: 64, left: 0, top: 0 }] },
 ] satisfies { title: string; desc: string; icon: IconPart[] }[];
 
 function Flow() {
@@ -220,19 +214,7 @@ function Flow() {
             key={step.title}
             className="flex flex-col items-center gap-[24px] rounded-[16px] border border-white/10 py-[42px] text-center backdrop-blur-[12px]"
           >
-            <span className="relative size-[64px]">
-              {step.icon.map((part, i) => (
-                <Image
-                  key={i}
-                  src={`${ASSET}/${part.src}`}
-                  alt=""
-                  width={part.width}
-                  height={part.height}
-                  className="absolute max-w-none"
-                  style={{ left: part.left, top: part.top }}
-                />
-              ))}
-            </span>
+            <LayeredIcon parts={step.icon} />
             <div className="flex flex-col gap-[8px] leading-[1.5]">
               <h3 className="text-[24px] font-semibold text-[#fafafa]">{step.title}</h3>
               <p className="text-[18px] text-[#ccc]">{step.desc}</p>
@@ -244,69 +226,15 @@ function Flow() {
   );
 }
 
-// 부가서비스 아이콘 넷. 시안이 도형을 겹쳐 그린 것이라 같은 자리·크기로 겹친다.
-function KioskIcon() {
-  return (
-    <span className="relative block h-[74px] w-[70px]">
-      <span
-        className="absolute top-0 left-[7px] h-[63px] w-[56px] rounded-[10px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]"
-        style={{ backgroundImage: ICON_GRADIENT }}
-      />
-      <span
-        className="absolute top-[5px] left-[12px] h-[39px] w-[46px] rounded-[10px] shadow-[inset_0_1px_3.8px_rgba(255,255,255,0.05)]"
-        style={{ backgroundImage: "linear-gradient(108deg, rgba(255,255,255,0.04) 8.98%, rgba(255,255,255,0.24) 94.82%)" }}
-      />
-      <span className="absolute top-[14px] left-[21px] h-[8px] w-[29px] rounded-[2px] bg-white/90" />
-      <span className="absolute top-[27px] left-[21px] h-[2px] w-[24px] rounded-full bg-white/60" />
-      <span className="absolute top-[33px] left-[21px] h-[2px] w-[17px] rounded-full bg-white/40" />
-      <span className="absolute top-[49px] left-0 h-[25px] w-[70px] rounded-[10px] bg-white/40 shadow-[0_1.3px_13px_rgba(0,0,0,0.09),inset_0_5.2px_4px_rgba(255,255,255,0.55)] backdrop-blur-[4.9px]" />
-    </span>
-  );
-}
-
-function InventoryIcon() {
-  return (
-    <span className="relative block h-[74px] w-[67px]">
-      <Image src={`${ASSET}/addon-inventory.svg`} alt="" width={83.3356} height={91.3557} className="absolute top-[-9.18px] left-[-12.98px] max-w-none" />
-    </span>
-  );
-}
-
-function OrderIcon() {
-  return (
-    <span className="relative block h-[74px] w-[72px]">
-      <Image src={`${ASSET}/addon-mail-back.svg`} alt="" width={72.15} height={61.1035} className="absolute top-[12.89px] left-0 max-w-none" />
-      <span
-        className="absolute top-0 left-[10.31px] h-[64.75px] w-[51.27px] rounded-[9px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]"
-        style={{ backgroundImage: ICON_GRADIENT }}
-      />
-      <span className="absolute top-[14px] left-[21.2px] h-[2px] w-[29px] rounded-full bg-white/90" />
-      <span className="absolute top-[21px] left-[21.2px] h-[2px] w-[24px] rounded-full bg-white/60" />
-      <span className="absolute top-[28px] left-[21.2px] h-[2px] w-[17px] rounded-full bg-white/40" />
-      <Image src={`${ASSET}/addon-mail-front.svg`} alt="" width={72.15} height={40.7839} className="absolute top-[33.22px] left-0 max-w-none" />
-    </span>
-  );
-}
-
-function RecipeIcon() {
-  return (
-    <span className="relative block h-[74px] w-[68px]">
-      <span
-        className="absolute top-0 left-[13.87px] h-[52.42px] w-[53.96px] rounded-[8.9px] shadow-[inset_0_4px_4px_rgba(255,255,255,0.25)]"
-        style={{ backgroundImage: ICON_GRADIENT }}
-      />
-      <Image src={`${ASSET}/addon-bookmark.svg`} alt="" width={79.9233} height={83.7806} className="absolute top-[-1.21px] left-[-12.98px] max-w-none" />
-      <span className="absolute top-[30px] left-[19px] h-[2px] w-[17px] rounded-full bg-white/90" />
-      <span className="absolute top-[23px] left-[26.5px] h-[17px] w-[2px] rounded-full bg-white/90" />
-    </span>
-  );
-}
-
 const ADD_ONS = [
-  { name: "KIOSK", desc: "고객이 직접 터치로 주문·결제하는 비대면 무인 단말기", Icon: KioskIcon },
-  { name: "재고 관리", desc: "매장 내 식자재, 소모품 등의 재고를 실시간 확인 및 관리", Icon: InventoryIcon },
-  { name: "발주 관리", desc: "필요한 식자재나 물품을 본사나 거래처별로 손쉽게 발주", Icon: OrderIcon },
-  { name: "레시피 관리", desc: "가맹점의 메뉴 정보와 레시피를 본사에서 관리", Icon: RecipeIcon },
+  { name: "KIOSK", desc: "고객이 직접 터치로 주문·결제하는 비대면 무인 단말기", icon: <KioskIcon /> },
+  { name: "재고 관리", desc: "매장 내 식자재, 소모품 등의 재고를 실시간 확인 및 관리", icon: <InventoryIcon src={`${ASSET}/addon-inventory.svg`} /> },
+  {
+    name: "발주 관리",
+    desc: "필요한 식자재나 물품을 본사나 거래처별로 손쉽게 발주",
+    icon: <OrderIcon back={`${ASSET}/addon-mail-back.svg`} front={`${ASSET}/addon-mail-front.svg`} />,
+  },
+  { name: "레시피 관리", desc: "가맹점의 메뉴 정보와 레시피를 본사에서 관리", icon: <RecipeIcon bookmark={`${ASSET}/addon-bookmark.svg`} /> },
 ];
 
 function AddOns() {
@@ -316,19 +244,19 @@ function AddOns() {
         light="함께 쓰면"
         bold="더 편해지는 부가서비스"
         action={
-          <GuestButton tone="navy" arrow>
+          <GuestButton tone="navy" href="/design/guest/add-on-services" arrow>
             부가서비스 전체 보기
           </GuestButton>
         }
       />
       <ul className="grid grid-cols-4 gap-[16px]">
-        {ADD_ONS.map(({ name, desc, Icon }) => (
+        {ADD_ONS.map(({ name, desc, icon }) => (
           <li
             key={name}
             className="flex flex-col gap-[4px] rounded-[16px] border border-guest-line bg-white px-[42px] py-[40px] shadow-[0_8px_24px_rgba(0,0,0,0.02)]"
           >
             <span className="flex h-[88px] items-center pb-[14px]">
-              <Icon />
+              {icon}
             </span>
             <div className="flex flex-col gap-[10px] leading-[1.5]">
               <h3 className="text-[22px] font-bold text-[#222]">{name}</h3>
