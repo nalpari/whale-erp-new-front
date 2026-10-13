@@ -225,6 +225,114 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/platform-admins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 목록. 지우지 않은 플랫폼 마스터 · 플랫폼 관리자, 등록일시 최신순. */
+        get: operations["PlatformAdminsController_list"];
+        put?: never;
+        /** 등록. 늘 사용으로 만들고 1시간짜리 초기 비밀번호를 메일로만 보낸다. */
+        post: operations["PlatformAdminsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform-admins/role-groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 사용자 권한 선택지. 플랫폼 관리자에게는 플랫폼 마스터 권한을 빼고 준다. */
+        get: operations["PlatformAdminsController_roleGroups"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform-admins/login-id-availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 아이디 중복 확인. 등록 화면이 칸을 벗어나거나 Enter 를 칠 때 묻는다. 등록 권한이 필요하다.
+         *     `:id` 보다 먼저 둔다 — 뒤에 두면 이 경로가 상세(:id)로 잡힌다.
+         */
+        get: operations["PlatformAdminsController_loginIdAvailability"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform-admins/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 상세. 지운 계정은 404. */
+        get: operations["PlatformAdminsController_detail"];
+        /** 수정. 상세에서 받은 updatedAt 을 함께 보낸다 — 그 사이 다른 사람이 고쳤으면 409. */
+        put: operations["PlatformAdminsController_update"];
+        post?: never;
+        /** 계정 삭제(논리 삭제). 되살리지 않는다. */
+        delete: operations["PlatformAdminsController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform-admins/{id}/histories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 생성 · 변경 이력. 최신순. */
+        get: operations["PlatformAdminsController_histories"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform-admins/{id}/password-reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 비밀번호 초기화. 새 1시간짜리 초기 비밀번호를 그 계정 이메일로만 보낸다. 수정 권한이 필요하다. */
+        post: operations["PlatformAdminsController_resetPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/staff-members/{id}/retirement-preview": {
         parameters: {
             query?: never;
@@ -508,6 +616,210 @@ export interface components {
             itemCount: number;
             /** @description 실제로 넣은 행 수. BP 에 이미 있던 행은 건너뛰어 세지 않는다. */
             createdCount: number;
+        };
+        PlatformRoleGroupResponseDto: {
+            /**
+             * @description 권한 유형. 플랫폼 마스터 PM · 플랫폼 관리자 PA.
+             * @enum {string}
+             */
+            roleTypeCode: "PM" | "PA";
+            roleGroupId: number;
+            /**
+             * @description 권한 코드.
+             * @example PA000001
+             */
+            roleCode: string;
+            /** @description 권한명. */
+            name: string;
+        };
+        PlatformAdminSummaryResponseDto: {
+            /**
+             * @description 계정 상태. 사용 · 미사용.
+             * @enum {string}
+             */
+            accountStatus: "ACTIVE" | "INACTIVE";
+            adminAccountId: number;
+            /**
+             * @description 아이디.
+             * @example seojun01
+             */
+            loginId: string;
+            name: string | null;
+            /** @description 사용자 권한 */
+            roleGroup: components["schemas"]["PlatformRoleGroupResponseDto"];
+            phone: string | null;
+            email: string | null;
+            /**
+             * Format: date-time
+             * @description 최근 로그인. 없으면 null — 화면은 「로그인 기록 없음」.
+             */
+            lastLoginAt: string | null;
+            /**
+             * Format: date-time
+             * @description 등록일시
+             */
+            createdAt: string;
+            /** @description 초기 비밀번호 미발송 — 계정 생성 · 초기화 메일이 실패했다. 다시 초기화하면 보낸다. */
+            isInitialPasswordUnsent: boolean;
+        };
+        PlatformAdminListResponseDto: {
+            items: components["schemas"]["PlatformAdminSummaryResponseDto"][];
+            /** @description 조건에 맞는 전체 건수 */
+            total: number;
+            /** @description 그중 미사용 계정 수 — 목록 머리의 「미사용 N」 */
+            inactiveCount: number;
+        };
+        PlatformRoleGroupListResponseDto: {
+            items: components["schemas"]["PlatformRoleGroupResponseDto"][];
+        };
+        LoginIdAvailabilityResponseDto: {
+            /** @description 쓸 수 있는가. 삭제한 계정의 아이디도 쓸 수 없다. */
+            available: boolean;
+        };
+        PlatformAdminDetailResponseDto: {
+            /**
+             * @description 계정 상태. 사용 · 미사용.
+             * @enum {string}
+             */
+            accountStatus: "ACTIVE" | "INACTIVE";
+            adminAccountId: number;
+            /**
+             * @description 아이디.
+             * @example seojun01
+             */
+            loginId: string;
+            name: string | null;
+            /** @description 사용자 권한 */
+            roleGroup: components["schemas"]["PlatformRoleGroupResponseDto"];
+            phone: string | null;
+            email: string | null;
+            /**
+             * Format: date-time
+             * @description 최근 로그인. 없으면 null — 화면은 「로그인 기록 없음」.
+             */
+            lastLoginAt: string | null;
+            /**
+             * Format: date-time
+             * @description 등록일시
+             */
+            createdAt: string;
+            /** @description 초기 비밀번호 미발송 — 계정 생성 · 초기화 메일이 실패했다. 다시 초기화하면 보낸다. */
+            isInitialPasswordUnsent: boolean;
+            department: string | null;
+            jobTitle: string | null;
+            zipCode: string | null;
+            address: string | null;
+            addressDetail: string | null;
+            /**
+             * Format: date-time
+             * @description 계정 상태가 바뀐 일시 — 미사용이면 「언제부터 미사용」
+             */
+            statusChangedAt: string | null;
+            /** @description 등록자 이름. 시스템이 만든 계정이면 null. */
+            createdByName: string | null;
+            /**
+             * Format: date-time
+             * @description 최종수정일시. 수정할 때 그대로 돌려보낸다(동시 수정 확인).
+             */
+            updatedAt: string;
+            /** @description 최종수정자 이름. 등록 뒤 고친 적이 없으면 null. */
+            updatedByName: string | null;
+        };
+        PlatformAdminHistoryResponseDto: {
+            changeId: number;
+            /** @description 변경 항목. */
+            field: string;
+            beforeValue: string | null;
+            afterValue: string | null;
+            /** Format: date-time */
+            changedAt: string;
+            /** @description 처리자 이름. 시스템이 처리했으면 null. */
+            changedByName: string | null;
+        };
+        PlatformAdminHistoryListResponseDto: {
+            items: components["schemas"]["PlatformAdminHistoryResponseDto"][];
+            total: number;
+        };
+        CreatePlatformAdminDto: {
+            /**
+             * @description 아이디. 영문 또는 영문 · 숫자 4~20자. 삭제한 계정까지 포함해 겹칠 수 없고 바꿀 수 없다.
+             * @example seojun01
+             */
+            loginId: string;
+            /**
+             * @description 이름. 한글 · 영문 2~20자.
+             * @example 이서준
+             */
+            name: string;
+            /**
+             * @description 연락처. 하이픈 없이 숫자 10~11자리.
+             * @example 01012345678
+             */
+            phone: string;
+            /**
+             * Format: email
+             * @description 이메일. 소문자로 저장한다. 지우지 않은 사용 · 미사용 계정끼리 겹칠 수 없다.
+             * @example seojun@whale.test
+             */
+            email: string;
+            /** @description 소속 부서. 선택, 30자까지. */
+            department?: string | null;
+            /** @description 직책. 선택, 30자까지. */
+            jobTitle?: string | null;
+            /** @description 우편번호. 선택 — 주소 검색 결과로 채운다. */
+            zipCode?: string | null;
+            /** @description 기본주소. 선택 — 주소 검색 결과로 채운다. */
+            address?: string | null;
+            /** @description 상세주소. 선택, 100자까지. */
+            addressDetail?: string | null;
+            /** @description 사용자 권한 — 플랫폼 BP 의 PM · PA 권한 그룹 하나. 플랫폼 관리자는 PM 그룹을 줄 수 없다. */
+            roleGroupId: number;
+        };
+        CreatePlatformAdminResponseDto: {
+            adminAccountId: number;
+            /** @description 초기 비밀번호 메일을 보냈는가. 실패해도 계정은 만들어졌다 — 상세에서 비밀번호 초기화로 다시 보낸다. */
+            isMailSent: boolean;
+        };
+        UpdatePlatformAdminDto: {
+            /**
+             * @description 계정 상태. 사용 · 미사용. 미사용이면 바로 로그인 · ERP 접근이 막힌다.
+             * @enum {string}
+             */
+            accountStatus: "ACTIVE" | "INACTIVE";
+            /** @description 상세에서 받은 최종수정일시 그대로. 그 사이 다른 사람이 고쳤으면 저장하지 않고 409. */
+            updatedAt: string;
+            /**
+             * @description 이름. 한글 · 영문 2~20자.
+             * @example 이서준
+             */
+            name: string;
+            /**
+             * @description 연락처. 하이픈 없이 숫자 10~11자리.
+             * @example 01012345678
+             */
+            phone: string;
+            /**
+             * Format: email
+             * @description 이메일. 소문자로 저장한다. 지우지 않은 사용 · 미사용 계정끼리 겹칠 수 없다.
+             * @example seojun@whale.test
+             */
+            email: string;
+            /** @description 소속 부서. 선택, 30자까지. */
+            department?: string | null;
+            /** @description 직책. 선택, 30자까지. */
+            jobTitle?: string | null;
+            /** @description 우편번호. 선택 — 주소 검색 결과로 채운다. */
+            zipCode?: string | null;
+            /** @description 기본주소. 선택 — 주소 검색 결과로 채운다. */
+            address?: string | null;
+            /** @description 상세주소. 선택, 100자까지. */
+            addressDetail?: string | null;
+            /** @description 사용자 권한 — 플랫폼 BP 의 PM · PA 권한 그룹 하나. 플랫폼 관리자는 PM 그룹을 줄 수 없다. */
+            roleGroupId: number;
+        };
+        ResetPasswordResponseDto: {
+            /** @description 초기화 메일을 보냈는가. 실패해도 기존 비밀번호는 이미 막혔다 — 다시 초기화한다. */
+            isMailSent: boolean;
         };
         /**
          * @description 임시저장 · 발송 대기 · 서명 대기
@@ -922,6 +1234,350 @@ export interface operations {
                 content?: never;
             };
             /** @description 플랫폼제공 그룹이 아님 · 상세 코드가 없음 · 사용 중인 고객 BP 가 없음 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformAdminsController_list: {
+        parameters: {
+            query: {
+                /** @description 아이디 · 이름 중 하나에 들어 있으면 나온다. */
+                keyword?: string;
+                /** @description 사용자 권한(권한 그룹). */
+                roleGroupId?: number;
+                /** @description 계정 상태. 여러 개는 `statuses=ACTIVE&statuses=INACTIVE` 또는 쉼표로. 주지 않으면 둘 다. */
+                statuses?: ("ACTIVE" | "INACTIVE")[];
+                /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
+                page: number;
+                /** @description 한 쪽 건수. 기본 20, 최대 200. */
+                pageSize: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformAdminListResponseDto"];
+                };
+            };
+            /** @description 메뉴 권한 없음 · 마스터 보호 · 본인 보호 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformAdminsController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePlatformAdminDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatePlatformAdminResponseDto"];
+                };
+            };
+            /** @description 입력 형식 · 줄 수 없는 권한 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · 마스터 보호 · 본인 보호 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 아이디 · 이메일 중복 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformAdminsController_roleGroups: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformRoleGroupListResponseDto"];
+                };
+            };
+            /** @description 메뉴 권한 없음 · 마스터 보호 · 본인 보호 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformAdminsController_loginIdAvailability: {
+        parameters: {
+            query: {
+                /** @description 아이디. 영문 또는 영문 · 숫자 4~20자. */
+                loginId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginIdAvailabilityResponseDto"];
+                };
+            };
+            /** @description 아이디 형식 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · 마스터 보호 · 본인 보호 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformAdminsController_detail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformAdminDetailResponseDto"];
+                };
+            };
+            /** @description 메뉴 권한 없음 · 마스터 보호 · 본인 보호 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 계정 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformAdminsController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePlatformAdminDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · 마스터 보호 · 본인 보호 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 계정 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 이메일 중복 · 동시 수정 · 마지막 사용 중 플랫폼 마스터 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformAdminsController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · 마스터 보호 · 본인 보호 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 이미 지운 계정 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 마지막 사용 중 플랫폼 마스터 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformAdminsController_histories: {
+        parameters: {
+            query: {
+                /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
+                page: number;
+                /** @description 한 쪽 건수. 기본 20, 최대 200. */
+                pageSize: number;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformAdminHistoryListResponseDto"];
+                };
+            };
+            /** @description 메뉴 권한 없음 · 마스터 보호 · 본인 보호 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 계정 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformAdminsController_resetPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResetPasswordResponseDto"];
+                };
+            };
+            /** @description 메뉴 권한 없음 · 마스터 보호 · 본인 보호 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 계정 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 이메일이 없는 계정 */
             409: {
                 headers: {
                     [name: string]: unknown;
