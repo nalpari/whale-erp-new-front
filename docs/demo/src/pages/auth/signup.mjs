@@ -44,15 +44,18 @@ export default ({ A, R }) => {
   const privacy = x.dialogId();
   const view = (id) => `<button type="button" data-dialog="${id}" class="text-[14px] text-erp-link underline">내용보기</button>`;
   // 모두 동의합니다를 켜고 끄면 아래 두 개도 같이 켜지고 꺼진다(2026-10-06 피드백).
+  // 거꾸로 아래 둘 중 하나라도 끄면 모두 동의도 풀리고, 둘 다 켜면 다시 켜진다 — 개발 화면(agree-section.tsx)과 같다(2026-10-13 피드백).
+  const allChk = ui.uid("agree");
   const useChk = ui.uid("agree");
   const privacyChk = ui.uid("agree");
   const syncAll = `document.getElementById('${useChk}').checked=this.checked;document.getElementById('${privacyChk}').checked=this.checked;`;
+  const syncOne = `document.getElementById('${allChk}').checked=document.getElementById('${useChk}').checked&&document.getElementById('${privacyChk}').checked;`;
   const agree = ui.formGroup(
     "약관동의",
-    ui.checkbox(A, "모두 동의합니다.", false, { onchange: syncAll }),
+    ui.checkbox(A, "모두 동의합니다.", false, { id: allChk, onchange: syncAll }),
     `<hr class="border-erp-divider">`,
-    `<div class="flex items-center justify-between">${ui.checkbox(A, "이용약관 동의 (필수)", false, { id: useChk })}${view(use)}</div>`,
-    `<div class="flex items-center justify-between">${ui.checkbox(A, "개인정보 수집·이용 동의 (필수)", false, { id: privacyChk })}${view(privacy)}</div>`,
+    `<div class="flex items-center justify-between">${ui.checkbox(A, "이용약관 동의 (필수)", false, { id: useChk, onchange: syncOne })}${view(use)}</div>`,
+    `<div class="flex items-center justify-between">${ui.checkbox(A, "개인정보 수집·이용 동의 (필수)", false, { id: privacyChk, onchange: syncOne })}${view(privacy)}</div>`,
   );
 
   // 체크 둘 다 비어 있는 기본값이라, 제출을 시도하면 뜨는 오류 문구도 데모에 그대로 보여준다(2026-10-12 피드백).
