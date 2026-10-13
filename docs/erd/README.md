@@ -790,6 +790,9 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |  | 본문 | text | `body` | #{변수}. 알림톡은 카카오 검수 문구와 같게 |
 |  | 변수 목록 | json | `variables` | [{이름, 표시 이름, 필수, 예시 값}] 순서대로. 저장 때 본문·제목의 #{변수}가 목록 안에 있는지 검사 |
 |  | 카카오 템플릿 코드 | text | `kakao_template_code` | 알림톡만 |
+|  | 기본 제목 | text | `default_title` | 기본 문구로 되돌리기의 원본. 처음 넣은 40건만 (NOTIFY-17, 2026-10-13 재영) |
+|  | 기본 본문 | text | `default_body` | 기본 문구로 되돌리기의 원본. 없으면 등록한 템플릿이라 되돌리기가 없다 |
+|  | 기본 변수 목록 | json | `default_variables` | 되돌리면 제목 · 본문과 함께 돌린다 (NOTIFY-18) |
 |  | 사용 여부 | bool | `is_active` | 지우지 않고 끔 |
 | FK | 수정 관리자 | id | `updated_by` |  |
 |  | 수정 시각 | datetime | `updated_at` |  |
