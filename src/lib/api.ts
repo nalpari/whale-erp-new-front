@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import type { EnumValue } from "./enums";
 
 const SESSION_COOKIE = "session";
 
@@ -14,6 +15,8 @@ export class ApiError extends Error {
   constructor(
     readonly status: number,
     message: string,
+    /** 검증 실패(400)의 문장 목록. 배열이 아니면 message 하나다 — 화면이 줄마다 나눠 보일 때 쓴다. */
+    readonly messages: string[] = [message],
   ) {
     super(message);
   }
@@ -40,7 +43,7 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
   });
 
   if (!response.ok)
-    throw new ApiError(response.status, await errorMessage(response));
+    throw new ApiError(response.status, ...(await errorMessage(response)));
 
   // 204(로그아웃)는 본문이 없다. json() 을 부르면 파싱에서 터진다.
   return response.status === 204
@@ -48,13 +51,28 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
     : ((await response.json()) as T);
 }
 
-/** Nest 는 { statusCode, message, error } 를 주고, 검증 실패면 message 가 배열이다. */
-async function errorMessage(response: Response): Promise<string> {
+/** Nest 는 { statusCode, message, error } 를 주고, 검증 실패면 message 가 배열이다. [이은 문장, 문장 목록] 을 돌려준다. */
+async function errorMessage(response: Response): Promise<[string, string[]]> {
   const body: unknown = await response.json().catch(() => null);
   const message = (body as { message?: unknown } | null)?.message;
-  if (Array.isArray(message)) return message.join(", ");
-  if (typeof message === "string") return message;
-  return `요청이 실패했습니다 (HTTP ${response.status})`;
+  if (Array.isArray(message)) return [message.join(", "), message.map(String)];
+  const text = typeof message === "string" ? message : `요청이 실패했습니다 (HTTP ${response.status})`;
+  return [text, [text]];
+}
+
+/**
+ * enum 의 값·한글을 api 에서 받는다. 화면에 한글 대응표를 두지 않는다(네이밍 규칙 「API 타입·enum 공유」).
+ * enum 은 api 배포 때만 바뀌어 한 시간 캐시한다. 응답의 version 으로 바로 새로 받는 것은 아직 하지 않는다.
+ */
+export async function getEnum(name: string): Promise<EnumValue[]> {
+  // request() 는 cache: "no-store" 라 캐시 옵션과 함께 쓸 수 없다(둘 다 무시된다).
+  const response = await fetch(`${baseUrl()}/enums/${encodeURIComponent(name)}`, {
+    next: { revalidate: 3600 },
+  });
+  if (!response.ok)
+    throw new ApiError(response.status, ...(await errorMessage(response)));
+  const body = (await response.json()) as { enums: Record<string, EnumValue[]> };
+  return body.enums[name] ?? [];
 }
 
 export async function getSession(): Promise<Session | null> {

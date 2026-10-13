@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { AlarmLink, ErpRoot, GlobalHeader, ServiceLinks, UserPop } from "@/components/common";
+import { ErpRoot, GlobalHeader, ServiceLinks, UserPop } from "@/components/common";
+import { NotificationBellSlot } from "@/components/notifications/notification-bell-slot";
 import { PLATFORM_MENUS } from "./platform-menus";
 
 export const metadata: Metadata = {
@@ -25,7 +26,7 @@ export default function PlatformLayout({ children }: LayoutProps<"/platform">) {
             right={
               <>
                 <ServiceLinks />
-                <AlarmLink href="#" />
+                <NotificationBellSlot />
                 <UserPop name="플랫폼 관리자" items={[{ label: "로그아웃", href: "#", danger: true }]} />
               </>
             }

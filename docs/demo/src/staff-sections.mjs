@@ -10,8 +10,9 @@ import { req } from "./biz-form.mjs";
 export function staffSections({ A, R }) {
   const L = (path) => link(R, path);
   const offBtn = (label, a = {}) => ui.button(label, { variant: "off", ...a });
-  // 직원관리의 목록은 맨 앞에 순번(2026-10-02 재영)
-  const numbered = (columns, rows, empty) => ui.dataTable([{ header: "순번", width: "w-[60px]" }, ...columns], rows.map((r, i) => [i + 1, ...r]), empty);
+  // 직원관리의 목록은 맨 앞에 순번(2026-10-02 재영). 순번은 내림차순 — 첫 줄이 전체 건수다(2026-10-13 재영).
+  const numbered = (columns, rows, empty, total = rows.length) =>
+    ui.dataTable([{ header: "순번", width: "w-[60px]" }, ...columns], rows.map((r, i) => [total - i, ...r]), empty);
   const pageNav = (n) => `<div class="pt-[14px]">${ui.pagination(A, 1, n)}</div>`;
 
   // 필터의 점포 칸. 헤더 점포 선택이 점포 1개면 그 점포로 고정, 전체·일반·가맹 묶음이면 검색(erp.js initScopeStore, 2026-10-02 재영).
@@ -66,24 +67,29 @@ export function staffSections({ A, R }) {
 
   // ── 근로계약 ──
   const N = L("staff/contracts-new.html");
+  // 상태별 버튼(이어 쓰기 · 삭제 · 재발송 · 새 계약)은 상세 제목 줄로 옮겼다. 목록은 직원 이름으로 그 상태의 상세에 들어가고,
+  // 행 끝 칸에 있던 안내 문구는 상태 칸에 붙인다(2026-10-12). 상세는 상태마다 한 장이라 같은 상태의 다른 행도 그 견본으로 간다.
+  const C = (s) => L(`staff/contracts-${s}.html`);
+  const CDraft = C("draft");
   const contractRows = [
-    ["남도현", "모리커피 성수점", "2026-09-14 ~ 무기한", "11,200 /h", "-", p.tag("quiet", "발송 대기"), p.ask("초대 재발송", "off", "가입 초대를 다시 보내시겠습니까?", "남도현 님(010-9014-5563)에게 가입 초대를 다시 보냅니다.")],
-    ["하준서", "모리커피 성수점", "2026-09-14 ~ 무기한", "11,200 /h", "-", p.tag("quiet", "발송 대기"), offBtn("연결 확인", { href: L("staff/index.html") })],
-    ["정유담", "온기식당 판교점", "2026-09-18 ~ 2027-03-17", "10,800 /h", "-", p.tag("quiet", "발송 대기"), p.sub("소속 확인 중")],
-    ["권도윤", "모리커피 서초점", "2026-09-01 ~ 2027-08-31", "11,600 /h", "09-01", p.tag("warn", "서명 대기 · D-24"), p.ask("재발송", "off", "근로계약서를 재발송하시겠습니까?", "권도윤 님에게 서명 대기 중인 근로계약서를 다시 보냅니다.")],
+    [ui.link("한서윤", CDraft), "모리커피 성수점", "-", "-", "-", p.tag("quiet", "임시저장")],
+    [ui.link("남도현", C("pending")), "모리커피 성수점", "2026-09-14 ~ 무기한", "11,200 /h", "-", p.tag("quiet", "발송 대기")],
+    [ui.link("하준서", C("hold")), "모리커피 성수점", "2026-09-14 ~ 무기한", "11,200 /h", "-", p.tag("risk", "발송 대기 · 연결 보류")],
+    [ui.link("정유담", C("pending")), "온기식당 판교점", "2026-09-18 ~ 2027-03-17", "10,800 /h", "-", p.tag("quiet", "발송 대기 · 소속 확인 중")],
+    [ui.link("권도윤", C("signing")), "모리커피 서초점", "2026-09-01 ~ 2027-08-31", "11,600 /h", "09-01", p.tag("warn", "서명 대기 · D-24")],
     // 권도윤은 앞 계약이 체결 완료라 08-23까지만 근무스케줄·출퇴근을 받는다(STAFF-29).
-    ["권도윤", "모리커피 서초점", "2025-08-24 ~ 2026-08-23", "11,200 /h", "2025-08-20", p.tag("ok", "체결 완료"), p.sub("재계약 서명 대기")],
-    [ui.link("유하람", L("staff/contracts-detail.html")), "모리커피 연남점", "2026-08-28 ~ 2027-02-27", "10,800 /h", "08-28", p.tag("risk", "거부 · 09-02"), offBtn("상세", { href: L("staff/contracts-detail.html") })],
-    ["서지안", "모리커피 서초점", "2026-03-01 ~ 무기한", "2,840,000 /월", "02-24", p.tag("ok", "체결 완료"), offBtn("새 계약", { href: N })],
-    ["오세라", "모리커피 서초점", "2025-11-01 ~ 무기한", "3,420,000 /월", "10-27", p.tag("ok", "체결 완료"), offBtn("새 계약", { href: N })],
-    ["배정숙", "온기식당 판교점", "2026-02-10 ~ 2026-09-30", "11,600 /h", "02-06", p.tag("warn", "갱신 예정 · D-20"), offBtn("재계약", { href: N })],
-    ["임채운", "모리커피 연남점", "2025-08-01 ~ 2026-07-31", "10,400 /h", "07-28", p.tag("quiet", "종료"), p.sub("퇴직")],
+    [ui.link("권도윤", C("signed")), "모리커피 서초점", "2025-08-24 ~ 2026-08-23", "11,200 /h", "2025-08-20", p.tag("ok", "체결 완료 · 재계약 서명 대기")],
+    [ui.link("유하람", C("detail")), "모리커피 연남점", "2026-08-28 ~ 2027-02-27", "10,800 /h", "08-28", p.tag("risk", "거부 · 09-02")],
+    [ui.link("서지안", C("signed")), "모리커피 서초점", "2026-03-01 ~ 무기한", "2,840,000 /월", "02-24", p.tag("ok", "체결 완료")],
+    [ui.link("오세라", C("signed")), "모리커피 서초점", "2025-11-01 ~ 무기한", "3,420,000 /월", "10-27", p.tag("ok", "체결 완료")],
+    [ui.link("배정숙", C("signed")), "온기식당 판교점", "2026-02-10 ~ 2026-09-30", "11,600 /h", "02-06", p.tag("warn", "갱신 예정 · D-20")],
+    [ui.link("임채운", C("ended")), "모리커피 연남점", "2025-08-01 ~ 2026-07-31", "10,400 /h", "07-28", p.tag("quiet", "종료 · 퇴직")],
   ];
   // 근로계약 관리: 왼쪽 필터(점포 · 직원 · 상태) + 목록. 목업의 목록 위 상태 라디오를 필터의 상태 체크로 옮겼다.
   const contractsFilter = ui.filterPanel(A, [
     storeFilter(),
     ui.filterSection("직원", ui.searchField(A, { placeholder: "이름" }), { tight: true }),
-    ui.filterSection("상태", ["발송 대기", "서명 대기", "체결 완료", "거부", "갱신 예정", "종료"].map((t) => ui.checkbox(A, t, true)).join(""), { last: true }),
+    ui.filterSection("상태", ["임시저장", "발송 대기", "서명 대기", "체결 완료", "거부", "갱신 예정", "종료"].map((t) => ui.checkbox(A, t, true)).join(""), { last: true }),
   ]);
   const contractsTab =
     ui.listToolbar(contractRows.length, "") +
@@ -94,8 +100,7 @@ export function staffSections({ A, R }) {
         { header: "계약 기간" },
         { header: "급여", width: "w-[130px]" },
         { header: "발송일", width: "w-[80px]" },
-        { header: "상태", width: "w-[150px]" },
-        { header: "", width: "w-[140px]" },
+        { header: "상태", width: "w-[220px]" },
       ],
       contractRows,
       "조회된 근로계약이 없습니다.",
@@ -354,6 +359,7 @@ export function staffSections({ A, R }) {
         ["권도윤", "모리커피 서초점", "신메뉴 시식 교육 참석", "08-28 14:00", p.tag("ok", "완료"), ""],
       ],
       "등록된 TO-DO 가 없습니다.",
+      12,
     ) +
     pageNav(2);
 

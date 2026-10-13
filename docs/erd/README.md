@@ -719,7 +719,9 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |  | 템플릿 코드 | text | `template_code` | 만들 때 쓴 알림 템플릿. 문구는 이 알림에 박아 둠 |
 |  | 관련 업무 유형 | enum | `related_type` | 문의사항·도입문의·근로계약 등 |
 |  | 관련 업무 ID | id | `related_id` |  |
-|  | 알림 내용 | text | `body` |  |
+|  | 업무 링크 | text | `link` | 알림을 눌러 갈 관리자 웹 경로. 알림을 만드는 업무 쪽이 넘긴다, 없으면 알림함에서 안내 (NOTIFY-16, 2026-10-13 재영) |
+|  | 알림 제목 | text | `title` | 만들 때의 템플릿 제목을 박아 둠 — 알림함 목록 · 종 팝오버 (NOTIFY-12, 2026-10-13 재영) |
+|  | 알림 내용 | text | `body` | 템플릿 둘째 줄 |
 |  | 중복 방지 키 | text | `dedupe_key` | 같은 사건·수신자 1회 |
 |  | 긴급 여부 | bool | `urgent` |  |
 |  | 생성 시각 | datetime | `created_at` |  |
@@ -788,6 +790,9 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |  | 본문 | text | `body` | #{변수}. 알림톡은 카카오 검수 문구와 같게 |
 |  | 변수 목록 | json | `variables` | [{이름, 표시 이름, 필수, 예시 값}] 순서대로. 저장 때 본문·제목의 #{변수}가 목록 안에 있는지 검사 |
 |  | 카카오 템플릿 코드 | text | `kakao_template_code` | 알림톡만 |
+|  | 기본 제목 | text | `default_title` | 기본 문구로 되돌리기의 원본. 처음 넣은 40건만 (NOTIFY-17, 2026-10-13 재영) |
+|  | 기본 본문 | text | `default_body` | 기본 문구로 되돌리기의 원본. 없으면 등록한 템플릿이라 되돌리기가 없다 |
+|  | 기본 변수 목록 | json | `default_variables` | 되돌리면 제목 · 본문과 함께 돌린다 (NOTIFY-18) |
 |  | 사용 여부 | bool | `is_active` | 지우지 않고 끔 |
 | FK | 수정 관리자 | id | `updated_by` |  |
 |  | 수정 시각 | datetime | `updated_at` |  |

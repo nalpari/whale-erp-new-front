@@ -58,6 +58,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/account/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 로그인한 계정의 지금 정보. 로그인 응답의 account 와 같은 모양이다. 로그인 뒤 관리자가
+         *     가입 연결 보류를 풀거나 이메일이 바뀌어도 다시 로그인하지 않고 알 수 있게, 앱이 열릴 때 부른다.
+         *
+         *     요청 제한을 받지 않는다. 다른 인증된 API 처럼 가드가 접속 상태를 확인하고, scrypt 도 없는
+         *     읽기 하나다. 토큰 축(10분 10번)을 그대로 두면 앱을 자주 여는 사용자가 막힌다.
+         *     축 이름을 모두 적어야 한다 — 인자 없는 @SkipThrottle() 은 'default' 만 건너뛴다.
+         */
+        get: operations["AccountAuthController_me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/account/logout": {
         parameters: {
             query?: never;
@@ -134,6 +158,86 @@ export interface paths {
          *     규칙과 상관없이 401 이다.
          */
         post: operations["PasswordResetController_resetPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/account/email-find-attempts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 이름 · 휴대전화번호 · 생년월일로 로그인 이메일을 찾는다(WHALEERP-178). 계정의 본인인증 값과 모두 맞으면
+         *     가린 이메일 목록을 준다. 찾은 이메일을 메일이나 문자로 보내지 않는다.
+         *
+         *     맞는 계정이 없으면 어느 값이 틀렸든 같은 메시지의 404 다. 같은 휴대전화번호로 5번 틀리면 5분 동안 막히고,
+         *     막힌 동안은 값이 맞아도 429 와 해제 시각(`lockExpiresAt`)을 준다. 풀리거나 성공하면 횟수는 0 이 된다.
+         */
+        post: operations["EmailFindController_find"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/account/password-reset-links/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 관리자 초기화 재설정 링크가 쓸 수 있는지 확인한다(WHALEERP-172). 화면을 열 때 무효한 링크 안내를 먼저 보이려고
+         *     쓴다. 소진하지 않는다.
+         */
+        post: operations["PasswordResetLinkController_verify"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/account/password-reset-links/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 링크로 새 비밀번호를 정한다. 지금 비밀번호는 묻지 않는다. 성공하면 남은 링크 · 핀을 닫고 모든 기기의 접속을
+         *     끊으며 로그인 잠금을 푼다.
+         */
+        post: operations["PasswordResetLinkController_reset"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff-members/{id}/password-reset-links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 재설정 링크를 보낸다. 앞서 보낸 링크와 핀은 무효가 된다. 응답의 시각으로 「보낸 시각 · 기한」을 그린다. */
+        post: operations["PasswordResetLinkAdminController_issue"];
         delete?: never;
         options?: never;
         head?: never;
@@ -287,7 +391,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 상세. 지운 계정은 404. */
+        /** 상세. 지운 · 탈퇴한 계정과 BP 쪽 계정은 404. */
         get: operations["PlatformAdminsController_detail"];
         /** 수정. 상세에서 받은 updatedAt 을 함께 보낸다 — 그 사이 다른 사람이 고쳤으면 409. */
         put: operations["PlatformAdminsController_update"];
@@ -325,8 +429,27 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** 비밀번호 초기화. 새 1시간짜리 초기 비밀번호를 그 계정 이메일로만 보낸다. 수정 권한이 필요하다. */
+        /**
+         * 비밀번호 초기화. 새 1시간짜리 초기 비밀번호를 그 계정 이메일로만 보낸다. 수정 권한이 필요하다.
+         *     응답의 updatedAt 으로 다음 수정을 저장한다 — 초기화가 그 값을 올린다.
+         */
         post: operations["PlatformAdminsController_resetPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff-members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StaffMembersController_findAll"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -367,6 +490,236 @@ export interface paths {
         post: operations["RetirementController_retire"];
         /** 퇴직 취소. 퇴직 예정이고 퇴직일 전날까지만 된다(그 밖은 409). */
         delete: operations["RetirementController_cancel"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/contracts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ContractsController_list"];
+        put?: never;
+        /** 근로계약서 초안 저장 — 미가입 직원 레코드와 발송 대기 계약을 만든다 */
+        post: operations["ContractsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/contracts/{contractId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 작성 화면을 다시 채울 값 — 임시저장 이어 쓰기 */
+        get: operations["ContractsController_findOne"];
+        /** 임시저장 이어 쓰기. 폼 전체를 다시 보낸다. isTemporarySave 를 빼면 초안 저장(발송 대기)으로 넘어간다 */
+        put: operations["ContractsController_update"];
+        post?: never;
+        /** 임시저장 삭제. 계약 · 근무 요일 · 당사자 · 이력과 그 계약에만 쓰인 초안 직원 레코드를 지운다 */
+        delete: operations["ContractsController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stores": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StoresController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/posts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 공지사항 또는 FAQ 목록. 최근 수정일 내림차순. */
+        get: operations["PostsController_list"];
+        put?: never;
+        /** 등록. 임시저장 · 게시 · 비공개 어느 상태로든 만든다. 게시하려면 노출 대상이 있어야 한다. */
+        post: operations["PostsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/posts/{postId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PostsController_get"];
+        /**
+         * 수정. 게시 상태 · 상단 고정 · 노출 대상도 이 요청으로 바꾼다. 게시된 글이면 바로 사용자에게 보인다.
+         *     읽은 뒤 다른 관리자가 고쳤으면 409 — 다시 읽어 최신 내용을 본다.
+         */
+        put: operations["PostsController_update"];
+        post?: never;
+        /** 지운다(지움 표시). 사용자에게 보이지 않고 행은 남는다. */
+        delete: operations["PostsController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 목록과 미확인 건수. 종 팝오버는 pageSize=5 로 부른다. */
+        get: operations["NotificationsController_findAll"];
+        put?: never;
+        post?: never;
+        /** 선택 삭제. 내 것이 아닌 ID 는 조용히 빠진다. */
+        delete: operations["NotificationsController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 모두 읽음 */
+        post: operations["NotificationsController_readAll"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 알림을 눌러 이동할 때 읽음으로 바꾸고, 갈 곳(관련 업무)을 담은 그 한 줄을 준다. */
+        post: operations["NotificationsController_read"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notification-templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 채널 탭 하나의 목록. 템플릿 코드순 */
+        get: operations["NotificationTemplatesController_list"];
+        put?: never;
+        /** 등록. 기본 문구가 없어 되돌리기는 없다 */
+        post: operations["NotificationTemplatesController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notification-templates/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 상세 — 변수 목록과 변경 이력(최근 것부터) */
+        get: operations["NotificationTemplatesController_get"];
+        /** 수정 — 모든 칸(NOTIFY-10). 읽은 뒤 누가 고쳤으면 409 */
+        put: operations["NotificationTemplatesController_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notification-templates/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 기본 문구로 되돌리기 — 제목 · 본문 · 변수 목록(NOTIFY-18) */
+        post: operations["NotificationTemplatesController_restore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notification-templates/{id}/active": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** 사용 / 사용 안 함 */
+        patch: operations["NotificationTemplatesController_setActive"];
+        trace?: never;
+    };
+    "/leads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 도입문의 접수. 본문 없이 201 을 돌려준다 — 문의자가 상태를 조회하는 화면은 없다. */
+        post: operations["LeadsController_create"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -454,6 +807,60 @@ export interface components {
              *     긴 입력(scrypt 에 큰 값을 먹이는 일)만 막는다.
              */
             newPassword: string;
+        };
+        EmailFindDto: {
+            /** @description 본인인증 실명. 앞뒤 공백은 무시하고, 한글 자모가 풀려 와도(NFD) 같은 이름으로 본다. */
+            name: string;
+            /** @description 휴대전화번호. 하이픈 · 공백은 지우고 숫자 10~11자리만 받는다. */
+            phone: string;
+            /** @description 생년월일. YYYY-MM-DD 이고 있는 날짜여야 한다. */
+            birthDate: string;
+        };
+        EmailFindResponseDto: {
+            /**
+             * @description 맞는 계정의 로그인 이메일을 가린 것. 휴대전화번호는 고유하지 않아 여럿일 수 있고(탈퇴 계정은 뺀다),
+             *     가입 순서대로다. @ 앞은 처음 2글자와 마지막 1글자만 보이고(3글자 이하면 첫 글자만), 도메인은 그대로다.
+             *     예: st*****m@gmail.com
+             */
+            emails: string[];
+        };
+        EmailFindTooManyRequestsResponseDto: {
+            statusCode: number;
+            message: string;
+            error: string;
+            /**
+             * Format: date-time
+             * @description 번호 잠금이 풀리는 시각. 요청 제한의 429 에는 없다.
+             */
+            lockExpiresAt?: string;
+        };
+        VerifyPasswordResetLinkDto: {
+            /**
+             * @description 메일 링크 fragment(`#token=`)의 token 값. base64url 모양이 아니어도 400 이 아니라 쓸 수 없는 링크(401)다. 비었거나
+             *     문자열이 아니거나 200자를 넘으면 검증 단계의 400 이다.
+             */
+            token: string;
+        };
+        ResetPasswordWithLinkDto: {
+            /** @description 메일 링크 fragment(`#token=`)의 token 값 */
+            token: string;
+            /**
+             * @description 새 비밀번호. 문자 종류와 길이 규칙은 서버가 검사하고 어긋나면 사유를 준다(링크는 그대로). 여기서는 터무니없이
+             *     긴 입력(scrypt 에 큰 값을 먹이는 일)만 막는다.
+             */
+            newPassword: string;
+        };
+        PasswordResetLinkResponseDto: {
+            /**
+             * Format: date-time
+             * @description 링크를 보낸 시각
+             */
+            issuedAt: string;
+            /**
+             * Format: date-time
+             * @description 링크가 쓸 수 없게 되는 시각 — 보낸 때부터 24시간
+             */
+            expiresAt: string;
         };
         EnumValueDto: {
             /** @description 저장·전송 값. 예: PENDING_SEND */
@@ -666,7 +1073,7 @@ export interface components {
             items: components["schemas"]["PlatformAdminSummaryResponseDto"][];
             /** @description 조건에 맞는 전체 건수 */
             total: number;
-            /** @description 그중 미사용 계정 수 — 목록 머리의 「미사용 N」 */
+            /** @description 검색어 · 권한 조건에 맞는 미사용 계정 수 — 목록 머리의 「미사용 N」. 상태 조건은 보지 않는다(사용만 골라도 센다) */
             inactiveCount: number;
         };
         PlatformRoleGroupListResponseDto: {
@@ -782,7 +1189,7 @@ export interface components {
         };
         UpdatePlatformAdminDto: {
             /**
-             * @description 계정 상태. 사용 · 미사용. 미사용이면 바로 로그인 · ERP 접근이 막힌다.
+             * @description 계정 상태. 사용 · 미사용. 미사용이면 다음 요청부터 메뉴 권한을 보는 API 가 403 으로 막는다(이미 받은 토큰 · 세션은 그대로).
              * @enum {string}
              */
             accountStatus: "ACTIVE" | "INACTIVE";
@@ -820,12 +1227,85 @@ export interface components {
         ResetPasswordResponseDto: {
             /** @description 초기화 메일을 보냈는가. 실패해도 기존 비밀번호는 이미 막혔다 — 다시 초기화한다. */
             isMailSent: boolean;
+            /**
+             * Format: date-time
+             * @description 초기화 뒤의 최종수정일시. 초기화가 이 값을 올리므로, 상세 화면은 다음 수정 저장에 이 값을 쓴다.
+             */
+            updatedAt: string;
         };
-        /**
-         * @description 임시저장 · 발송 대기 · 서명 대기
-         * @enum {string}
-         */
+        /** @enum {string} */
+        EmploymentStatus: "EMPLOYED" | "RETIRED";
+        /** @enum {string} */
+        EmploymentType: "FULL_TIME" | "PART_TIME";
+        /** @enum {string} */
+        StaffJoinState: "JOINED" | "LINK_HOLD" | "UNDER_AGE" | "AFFILIATION_PENDING" | "RETURN_PENDING" | "INVITED" | "EXPIRED" | "REJECTED" | "DRAFT";
+        StaffMemberStoreDto: {
+            storeId: number;
+            name: string;
+            /** @description 공통코드 STORE_TYPE — DIRECT 직영 · FRANCHISE 가맹 */
+            storeType: string;
+        };
+        /** @enum {string} */
+        InvitationType: "SIGNUP" | "REINVITE" | "AFFILIATION_CONFIRM" | "RETURN_CONFIRM";
+        /** @enum {string} */
+        InvitationStatus: "SENT" | "ACCEPTED" | "EXPIRED" | "REJECTED" | "REJECTED_UNDER_AGE";
+        StaffMemberInvitationDto: {
+            invitationType: components["schemas"]["InvitationType"];
+            status: components["schemas"]["InvitationStatus"];
+            /**
+             * Format: date-time
+             * @description 이 초대를 보낸 일시
+             */
+            lastSentAt: string;
+            /** Format: date-time */
+            expiresAt: string;
+            /** @description 재발송 버튼을 보일지. 간격 제한 없이 상태로만 정한다 — 초대 발송 · 초대 만료 · 소속 추가 확인 · 복귀 확인 */
+            canResend: boolean;
+        };
+        /** @enum {string} */
+        LinkHoldMismatchReason: "PHONE_MISMATCH" | "NAME_MISMATCH";
+        StaffMemberLinkHoldDto: {
+            mismatchReason: components["schemas"]["LinkHoldMismatchReason"];
+            linkHoldId: number;
+            /** @description 가입자가 본인인증한 번호의 끝 4자리 */
+            verifiedPhoneLast4: string;
+            /** Format: date-time */
+            heldAt: string;
+        };
+        /** @enum {string} */
         ContractStatus: "DRAFT" | "PENDING_SEND" | "PENDING_SIGNATURE" | "SIGNED" | "REJECTED" | "EXPIRED" | "ENDED";
+        StaffMemberContractDto: {
+            status: components["schemas"]["ContractStatus"] | null;
+            contractId: number;
+            /** Format: date-time */
+            signDeadlineAt: string | null;
+            /** @description 계약 종료일(YYYY-MM-DD). 비면 무기한 */
+            endDate: string | null;
+            /**
+             * Format: date-time
+             * @description 최종 수정 일시. 거부일을 따로 저장하지 않아 「거부 · MM-DD」는 이 값으로 보인다
+             */
+            updatedAt: string | null;
+        };
+        StaffMemberListItemDto: {
+            employmentType: components["schemas"]["EmploymentType"] | null;
+            joinState: components["schemas"]["StaffJoinState"] | null;
+            employmentStatus: components["schemas"]["EmploymentStatus"] | null;
+            staffMemberId: number | null;
+            isMasked: boolean;
+            name: string | null;
+            phone: string | null;
+            store: components["schemas"]["StaffMemberStoreDto"];
+            invitation: components["schemas"]["StaffMemberInvitationDto"] | null;
+            linkHold: components["schemas"]["StaffMemberLinkHoldDto"] | null;
+            contract: components["schemas"]["StaffMemberContractDto"] | null;
+            /** @description 퇴직일(YYYY-MM-DD). 재직이면서 값이 있으면 퇴직 예정 */
+            retiredDate: string | null;
+        };
+        StaffMemberListResponseDto: {
+            items: components["schemas"]["StaffMemberListItemDto"][];
+            total: number;
+        };
         ContractToEndDto: {
             /** @description 임시저장 · 발송 대기 · 서명 대기 */
             status: components["schemas"]["ContractStatus"];
@@ -846,6 +1326,497 @@ export interface components {
              * @example 2026-10-31
              */
             retiredDate: string;
+        };
+        /** @enum {string} */
+        ContractMethod: "ELECTRONIC" | "PAPER";
+        /**
+         * @description 초대 유형 판별 결과(초안 저장 때). 임시저장이면 null
+         * @enum {string}
+         */
+        ContractDraftAction: "SIGNUP_INVITE" | "AFFILIATION_CONFIRM" | "RETURN_CONFIRM" | "IMMEDIATE_SEND";
+        ContractListItemDto: {
+            employmentType: components["schemas"]["EmploymentType"] | null;
+            contractMethod: components["schemas"]["ContractMethod"] | null;
+            /**
+             * @description YYYY-MM-DD
+             * @example 2026-09-01
+             */
+            startDate: string | null;
+            /**
+             * @description YYYY-MM-DD. 비어 있으면 기간의 정함이 없는 계약
+             * @example null
+             */
+            endDate: string | null;
+            /** @description 원. 시급 — 고용 형태와 상관없이 시급이다(2026-10-12) */
+            wageAmount: number | null;
+            status: components["schemas"]["ContractStatus"] | null;
+            /** @description 초대 유형 판별 결과(초안 저장 때). 임시저장이면 null */
+            draftAction: components["schemas"]["ContractDraftAction"] | null;
+            /** @description 발송 일시 (ISO 8601). 발송 전이면 null */
+            sentAt: string | null;
+            /** @description 날인 기한 (ISO 8601) */
+            signDeadlineAt: string | null;
+            contractId: number;
+            staffMemberId: number;
+            /** @description 직원 레코드의 이름(초안 입력값) */
+            staffMemberName: string;
+            storeId: number;
+            /** @description 점포가 지워졌어도 이름은 보인다 */
+            storeName: string | null;
+        };
+        ContractListResponseDto: {
+            items: components["schemas"]["ContractListItemDto"][];
+            /** @description 거른 결과 전체 건수 */
+            total: number;
+        };
+        /** @enum {string} */
+        Weekday: "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN";
+        ContractWorkDayDto: {
+            weekday: components["schemas"]["Weekday"];
+            /** @description 시업 HH:mm */
+            startTime: string;
+            /** @description 종업 HH:mm. 시업보다 뒤, 같은 날 안 */
+            endTime: string;
+            breakStartTime?: string;
+            breakEndTime?: string;
+        };
+        /** @enum {string} */
+        PayMonth: "CURRENT_MONTH" | "NEXT_MONTH";
+        CreateContractDto: {
+            employmentType: components["schemas"]["EmploymentType"];
+            /**
+             * @description 임시저장이면 비워도 된다
+             * @enum {string}
+             */
+            contractMethod?: "ELECTRONIC";
+            workDays?: components["schemas"]["ContractWorkDayDto"][];
+            payMonth?: components["schemas"]["PayMonth"];
+            /** @description 앞뒤 공백은 지운다(NFC) — 같은 사람의 가입 전 레코드를 이름으로 찾으므로 공백 하나로 갈리지 않게. */
+            name: string;
+            /** @description 숫자만 10~11자리 (예: 01090145563) */
+            phone: string;
+            /** @description YYYY-MM-DD. 계약 시작일 기준 만 19세 미만이면 저장하지 않는다 */
+            birthDate?: string;
+            storeId: number;
+            jobTitle: string;
+            /** @description YYYY-MM-DD */
+            startDate?: string;
+            /** @description YYYY-MM-DD. 비우면 기간의 정함이 없는 계약 */
+            endDate?: string;
+            /** @description 원. 시급 — 고용 형태와 상관없이 시급만 받는다(2026-10-12) */
+            wageAmount?: number;
+            mealAllowanceAmount?: number;
+            /** @description 자가운전보조금 — 원, 비과세 수당 */
+            carAllowanceAmount?: number;
+            /** @description 육아수당 — 원, 비과세 수당 */
+            childcareAllowanceAmount?: number;
+            /** @description 월 기본시간 — 시간, 30분 단위 */
+            baseHours?: number;
+            /** @description 월간 연장근무 — 시간, 30분 단위 */
+            monthlyOvertimeHours?: number;
+            /** @description 기본시간 중 야간근무 — 시간, 30분 단위 */
+            baseNightHours?: number;
+            /** @description 기본시간 중 휴일근무 — 시간, 30분 단위 */
+            baseHolidayHours?: number;
+            /** @description 월간 추가 휴일근무 — 시간, 30분 단위 */
+            monthlyExtraHolidayHours?: number;
+            /** @description 연차휴가 조항 문구. 기본 문구는 작성 화면이 채운다 */
+            annualLeaveTerms?: string;
+            /** @description 퇴직금 조항 문구. 기본 문구는 작성 화면이 채운다 */
+            severancePayTerms?: string;
+            /** @description 1~31. 31 은 말일 */
+            payDay?: number;
+            /** @description 계약서 근무 장소 조항에 적는 주소. 근무지 점포와 따로다 */
+            workLocation?: string;
+            isHealthPensionInsured?: boolean;
+            isEmploymentInjuryInsured?: boolean;
+            /** @description true 면 임시저장(DRAFT) — 초대 · 계약서를 보내지 않는다. 없으면 초안 저장(발송 대기) */
+            isTemporarySave?: boolean;
+            /**
+             * @description 대체할 진행 중 계약(WHALEERP-129). 같은 점포에 같은 번호의 진행 중 계약(임시저장 · 발송 대기 · 서명 대기)이
+             *     있으면 409(code CONTRACT_IN_PROGRESS)가 그 목록을 준다. 관리자가 대체를 확인하면 그 id 를 모두 넣어 다시 보낸다 —
+             *     임시저장은 지우고 발송 대기 · 서명 대기는 종료한다.
+             */
+            replaceContractIds?: number[];
+        };
+        CreatedContractResponseDto: {
+            contractId: number;
+            staffMemberId: number;
+        };
+        /** @enum {string} */
+        StatusChangeActor: "ADMIN" | "STAFF" | "SYSTEM";
+        ContractStatusHistoryDto: {
+            /** @description 처음 만든 줄은 null */
+            fromStatus: components["schemas"]["ContractStatus"] | null;
+            toStatus: components["schemas"]["ContractStatus"];
+            actor: components["schemas"]["StatusChangeActor"];
+            /** @description ISO 8601 */
+            changedAt: string;
+        };
+        ContractDetailWorkDayDto: {
+            weekday: components["schemas"]["Weekday"];
+            breakStartTime: string | null;
+            breakEndTime: string | null;
+            startTime: string;
+            endTime: string;
+        };
+        ContractDetailDto: {
+            status: components["schemas"]["ContractStatus"] | null;
+            employmentType: components["schemas"]["EmploymentType"];
+            /** @description 점포가 지워졌어도 이름은 보인다. 점포 행이 없으면 null */
+            storeName: string | null;
+            /** @description YYYY-MM-DD */
+            birthDate: string | null;
+            contractMethod: components["schemas"]["ContractMethod"] | null;
+            startDate: string | null;
+            endDate: string | null;
+            workLocation: string | null;
+            weeklyHoliday: components["schemas"]["Weekday"] | null;
+            /** @description 원. 시급 — 고용 형태와 상관없이 시급이다(2026-10-12) */
+            wageAmount: number | null;
+            /** @description 식대 — 원 */
+            mealAllowanceAmount: number | null;
+            /** @description 자가운전보조금 — 원 */
+            carAllowanceAmount: number | null;
+            /** @description 육아수당 — 원 */
+            childcareAllowanceAmount: number | null;
+            /** @description 월 기본시간 — 시간(0.5 단위) */
+            baseHours: number | null;
+            /** @description 월간 연장근무 — 시간 */
+            monthlyOvertimeHours: number | null;
+            /** @description 기본시간 중 야간근무 — 시간 */
+            baseNightHours: number | null;
+            /** @description 기본시간 중 휴일근무 — 시간 */
+            baseHolidayHours: number | null;
+            /** @description 월간 추가 휴일근무 — 시간 */
+            monthlyExtraHolidayHours: number | null;
+            /** @description 연차휴가 조항 문구 */
+            annualLeaveTerms: string | null;
+            /** @description 퇴직금 조항 문구 */
+            severancePayTerms: string | null;
+            payMonth: components["schemas"]["PayMonth"] | null;
+            payDay: number | null;
+            isHealthPensionInsured: boolean | null;
+            isEmploymentInjuryInsured: boolean | null;
+            /** @description 초대 유형 판별 결과(초안 저장 때). 임시저장이면 null */
+            draftAction: components["schemas"]["ContractDraftAction"] | null;
+            /** @description 상태 변경 이력. 최근 것부터 */
+            histories: components["schemas"]["ContractStatusHistoryDto"][];
+            workDays: components["schemas"]["ContractDetailWorkDayDto"][];
+            contractId: number;
+            staffMemberId: number;
+            name: string;
+            phone: string;
+            jobTitle: string;
+            storeId: number;
+        };
+        StoreOptionDto: {
+            storeId: number;
+            /** @description 점포명 */
+            name: string;
+        };
+        StoreListResponseDto: {
+            items: components["schemas"]["StoreOptionDto"][];
+            total: number;
+        };
+        /** @enum {string} */
+        PostContentType: "NOTICE" | "FAQ";
+        /** @enum {string} */
+        PostStatus: "DRAFT" | "PUBLISHED" | "PRIVATE";
+        /** @enum {string} */
+        NoticeType: "MAINTENANCE" | "FEATURE" | "TERMS" | "GENERAL";
+        PostListItemDto: {
+            contentType: components["schemas"]["PostContentType"];
+            status: components["schemas"]["PostStatus"];
+            noticeType: components["schemas"]["NoticeType"] | null;
+            postId: number;
+            title: string;
+            faqCategoryCode: string | null;
+            /** @description 상단 고정 표시. 관리자 목록은 고정 글을 위로 올리지 않는다 — 최근 수정일 순서 그대로다. */
+            isPinned: boolean;
+            /**
+             * Format: date-time
+             * @description 최근 수정 일시
+             */
+            updatedAt: string;
+            /** @description 최근 수정자 이름. 수정자가 없거나, 계정을 찾을 수 없거나, 이름이 비어 있으면 null. */
+            updatedByName: string | null;
+        };
+        PostListResponseDto: {
+            items: components["schemas"]["PostListItemDto"][];
+            total: number;
+        };
+        /** @enum {string} */
+        PostAudienceType: "GUEST" | "MEMBER" | "BP" | "STORE" | "ADDON";
+        PostResponseDto: {
+            contentType: components["schemas"]["PostContentType"];
+            status: components["schemas"]["PostStatus"];
+            noticeType: components["schemas"]["NoticeType"] | null;
+            audiences: components["schemas"]["PostAudienceType"][];
+            postId: number;
+            title: string;
+            body: string;
+            isPinned: boolean;
+            /** @description 게시 시작일(YYYY-MM-DD) */
+            publishStartDate: string | null;
+            /** @description 게시 종료일(YYYY-MM-DD) */
+            publishEndDate: string | null;
+            faqCategoryCode: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description 최근 수정 일시. 수정할 때 이 값을 그대로 보낸다.
+             */
+            updatedAt: string;
+            /** @description 최근 수정자(관리자 ID) */
+            updatedBy: number | null;
+            updatedByName: string | null;
+        };
+        CreatePostDto: {
+            /** @description 게시 상태. 게시하려면 노출 대상이 하나 이상 있어야 한다. */
+            status: components["schemas"]["PostStatus"];
+            /** @description 공지사항 유형. 공지사항이면 필수. */
+            noticeType?: components["schemas"]["NoticeType"] | null;
+            /** @description 노출 대상. 1차는 비회원 · 회원 · BP · 점포. 「전체」는 네 개를 모두 보낸다. */
+            audiences: ("GUEST" | "MEMBER" | "BP" | "STORE")[];
+            /** @description 공지사항 · FAQ. 등록 뒤 바꾸지 않는다. */
+            contentType: components["schemas"]["PostContentType"];
+            /** @description 제목. 200자까지. */
+            title: string;
+            /**
+             * @description 본문. 평문이다 — 서버는 정화하지 않고 그대로 저장 · 반환하며, 화면은 HTML 로 그리지 않고 이스케이프해 보인다
+             *     (2026-10-13 재영). 20,000자까지.
+             */
+            body: string;
+            /** @description 상단 고정. 공지사항만, 기본 false. */
+            isPinned?: boolean;
+            /**
+             * @description 게시 시작일(YYYY-MM-DD). 공지사항만. 여기서는 저장만 한다 — 사용자 쪽 노출은 이 기간 안에만 되고,
+             *     시작일이 없으면 등록 일시부터 보이며 게시일도 등록 일시로 본다(WHALEERP-273, 판정은 조회 API 몫).
+             * @example 2026-10-14
+             */
+            publishStartDate?: string | null;
+            /** @description 게시 종료일(YYYY-MM-DD). 공지사항만. 사용자 쪽에는 그날까지 보인다. 시작일보다 앞설 수 없다. */
+            publishEndDate?: string | null;
+            /** @description FAQ 카테고리 — 공통코드 FAQ_CATEGORY 의 플랫폼 원본 중 사용 중인 상세코드. FAQ 면 필수. */
+            faqCategoryCode?: string | null;
+        };
+        UpdatePostDto: {
+            /** @description 게시 상태. 게시하려면 노출 대상이 하나 이상 있어야 한다. */
+            status: components["schemas"]["PostStatus"];
+            /** @description 공지사항 유형. 공지사항이면 필수. */
+            noticeType?: components["schemas"]["NoticeType"] | null;
+            /** @description 노출 대상. 1차는 비회원 · 회원 · BP · 점포. 「전체」는 네 개를 모두 보낸다. */
+            audiences: ("GUEST" | "MEMBER" | "BP" | "STORE")[];
+            /**
+             * @description 고치기 전에 읽은 `updatedAt` 그대로. 그 뒤 누가 고쳤으면 409 이고, 상세를 다시 읽어 최신 내용을 본다.
+             * @example 2026-10-13T01:02:03.456Z
+             */
+            updatedAt: string;
+            /** @description 제목. 200자까지. */
+            title: string;
+            /**
+             * @description 본문. 평문이다 — 서버는 정화하지 않고 그대로 저장 · 반환하며, 화면은 HTML 로 그리지 않고 이스케이프해 보인다
+             *     (2026-10-13 재영). 20,000자까지.
+             */
+            body: string;
+            /** @description 상단 고정. 공지사항만, 기본 false. */
+            isPinned?: boolean;
+            /**
+             * @description 게시 시작일(YYYY-MM-DD). 공지사항만. 여기서는 저장만 한다 — 사용자 쪽 노출은 이 기간 안에만 되고,
+             *     시작일이 없으면 등록 일시부터 보이며 게시일도 등록 일시로 본다(WHALEERP-273, 판정은 조회 API 몫).
+             * @example 2026-10-14
+             */
+            publishStartDate?: string | null;
+            /** @description 게시 종료일(YYYY-MM-DD). 공지사항만. 사용자 쪽에는 그날까지 보인다. 시작일보다 앞설 수 없다. */
+            publishEndDate?: string | null;
+            /** @description FAQ 카테고리 — 공통코드 FAQ_CATEGORY 의 플랫폼 원본 중 사용 중인 상세코드. FAQ 면 필수. */
+            faqCategoryCode?: string | null;
+        };
+        /** @enum {string} */
+        NotificationRelatedType: "CONTRACT" | "INQUIRY" | "LEAD" | "STAFF_MEMBER";
+        NotificationItemDto: {
+            relatedType: components["schemas"]["NotificationRelatedType"] | null;
+            /** @description 알림 ID(받는 사람별). 읽음 · 삭제에 쓴다 */
+            id: number;
+            /** @description 만들 때 쓴 템플릿 코드(NTF_*) */
+            templateCode: string;
+            /** @description 구분 — 지금 템플릿 이름. 템플릿이 없으면 템플릿 코드 */
+            kind: string;
+            /** @description 제목 — 만들 때의 문구 */
+            title: string;
+            /** @description 둘째 줄 — 만들 때의 문구 */
+            body: string;
+            relatedId: number | null;
+            /** @description 알림을 눌러 갈 관리자 웹 경로. 알림을 만든 업무 쪽이 정했다. 없으면 갈 화면이 없다 */
+            link: string | null;
+            isRead: boolean;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        NotificationListResponseDto: {
+            items: components["schemas"]["NotificationItemDto"][];
+            total: number;
+            /** @description 미확인 건수 — 종 배지 */
+            unreadCount: number;
+        };
+        NotificationReadAllResponseDto: {
+            /** @description 이번에 읽음으로 바뀐 건수 */
+            updated: number;
+        };
+        /** @enum {string} */
+        NotificationTemplateChannel: "NOTIFICATION" | "PUSH" | "EMAIL" | "ALIMTALK";
+        /** @enum {string} */
+        PreferenceCategory: "CONTRACT" | "SCHEDULE" | "TODO" | "PAYSLIP";
+        TemplateListItemDto: {
+            channel: components["schemas"]["NotificationTemplateChannel"];
+            preferenceCategory: components["schemas"]["PreferenceCategory"] | null;
+            id: number;
+            templateCode: string;
+            templateName: string;
+            title: string | null;
+            /** @description 본문 앞 60자 — 알림톡 목록의 본문 요약 */
+            bodySummary: string;
+            kakaoTemplateCode: string | null;
+            isActive: boolean;
+            /** @description 기본 문구가 있는지(처음 넣은 40건) — 되돌리기를 보일지 */
+            hasDefault: boolean;
+            /** @description 마지막으로 고친 관리자 이름. 아무도 고치지 않았으면 null — 화면은 「기본 문구」 */
+            updatedByName: string | null;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        TemplateListResponseDto: {
+            items: components["schemas"]["TemplateListItemDto"][];
+            total: number;
+        };
+        TemplateVariableDto: {
+            /** @description 변수 이름 — 본문에 #{이름} 으로 쓴다. # · 중괄호 · 공백 없이, 한글 가능 */
+            name: string;
+            /** @description 표시 이름 */
+            label: string;
+            isRequired: boolean;
+            /** @description 미리보기에 넣는 예시 값 */
+            sampleValue: string;
+            /** @description 버튼 링크 — 메일 공통 틀 · 알림톡 버튼이 붙인다. 메일 · 알림톡에만 (NOTIFY-20) */
+            isButtonLink?: boolean;
+        };
+        TemplateHistoryDto: {
+            /** Format: date-time */
+            changedAt: string;
+            changedByName: string | null;
+            /** @description 이 변경에서 바뀐 것 — 예: 「제목 · 본문」 */
+            summary: string;
+        };
+        TemplateDetailDto: {
+            channel: components["schemas"]["NotificationTemplateChannel"];
+            preferenceCategory: components["schemas"]["PreferenceCategory"] | null;
+            id: number;
+            templateCode: string;
+            templateName: string;
+            title: string | null;
+            /** @description 본문 앞 60자 — 알림톡 목록의 본문 요약 */
+            bodySummary: string;
+            kakaoTemplateCode: string | null;
+            isActive: boolean;
+            /** @description 기본 문구가 있는지(처음 넣은 40건) — 되돌리기를 보일지 */
+            hasDefault: boolean;
+            /** @description 마지막으로 고친 관리자 이름. 아무도 고치지 않았으면 null — 화면은 「기본 문구」 */
+            updatedByName: string | null;
+            /** Format: date-time */
+            updatedAt: string;
+            body: string;
+            variables: components["schemas"]["TemplateVariableDto"][];
+            /** @description 최근 것부터 */
+            histories: components["schemas"]["TemplateHistoryDto"][];
+        };
+        CreateTemplateDto: {
+            channel: components["schemas"]["NotificationTemplateChannel"];
+            /** @description 수신 설정 묶음 — 앱 푸시만 */
+            preferenceCategory?: components["schemas"]["PreferenceCategory"] | null;
+            /** @description 제목 — 알림톡은 비운다 */
+            title?: string | null;
+            /** @description 카카오 템플릿 코드 — 알림톡만 */
+            kakaoTemplateCode?: string | null;
+            isActive: boolean;
+            templateName: string;
+            /** @description 템플릿 코드 — 발송 코드가 이 값으로 부른다. 고칠 수 있다 */
+            templateCode: string;
+            body: string;
+            variables: components["schemas"]["TemplateVariableDto"][];
+        };
+        UpdateTemplateDto: {
+            channel: components["schemas"]["NotificationTemplateChannel"];
+            /** @description 수신 설정 묶음 — 앱 푸시만 */
+            preferenceCategory?: components["schemas"]["PreferenceCategory"] | null;
+            /** @description 제목 — 알림톡은 비운다 */
+            title?: string | null;
+            /** @description 카카오 템플릿 코드 — 알림톡만 */
+            kakaoTemplateCode?: string | null;
+            /** @example 2026-10-13T01:02:03.456Z */
+            updatedAt: string;
+            templateName: string;
+            /** @description 템플릿 코드 — 발송 코드가 이 값으로 부른다. 고칠 수 있다 */
+            templateCode: string;
+            body: string;
+            variables: components["schemas"]["TemplateVariableDto"][];
+        };
+        TemplateVersionDto: {
+            /** @example 2026-10-13T01:02:03.456Z */
+            updatedAt: string;
+        };
+        SetTemplateActiveDto: {
+            /** @example 2026-10-13T01:02:03.456Z */
+            updatedAt: string;
+            isActive: boolean;
+        };
+        /**
+         * @description 관심 서비스. 하나 이상, 겹치지 않게.
+         * @enum {string}
+         */
+        LeadInterest: "STORE_OPERATION" | "FINANCE" | "FRANCHISE" | "OTHER";
+        CreateLeadDto: {
+            /** @description 관심 서비스. 하나 이상, 겹치지 않게. */
+            interests: components["schemas"]["LeadInterest"][];
+            /**
+             * @description 문의자 이름. 앞뒤 공백을 지우고 1~50자.
+             * @example 김도윤
+             */
+            contactName: string;
+            /**
+             * @description 업종 — 공통코드 `INDUSTRY` 의 상세 코드.
+             * @example CAFE
+             */
+            industryCode: string;
+            /**
+             * @description 업종 직접 입력. 업종이 기타(`ETC`)일 때만 필수이고, 아니면 저장하지 않는다.
+             * @example 꽃집
+             */
+            industryDetail?: string;
+            /**
+             * @description 전화번호. 점포 번호도 된다. 하이픈 · 공백은 지우고 숫자만 저장한다 — 0으로 시작하는 9~11자리,
+             *     또는 대표번호(15xx · 16xx · 18xx, 8자리).
+             *     10분 중복 접수는 전화번호나 이메일 중 하나라도 같으면 막는다.
+             * @example 02-1234-5678
+             */
+            phone: string;
+            /**
+             * Format: email
+             * @description 이메일. 소문자로 저장한다. 10분 중복 접수 판정에 전화번호와 함께 쓴다.
+             */
+            email: string;
+            /**
+             * @description 도입 예정 시기 — 공통코드 `PLAN_PERIOD` 의 상세 코드. 선택이며, 고르지 않으면 칸을 빼거나 null 로 보낸다(빈 문자열은 400).
+             * @example WITHIN_1M
+             */
+            planPeriodCode?: string | null;
+            /** @description 문의 내용. 앞뒤 공백을 지우고 1~2000자. */
+            body: string;
+            /** @description 개인정보 수집·이용 동의. 필수라 `true` 만 받는다. */
+            privacyAgreed: boolean;
+            /** @description 마케팅 정보 수신 동의. 선택. */
+            marketingAgreed?: boolean;
         };
     };
     responses: never;
@@ -917,6 +1888,25 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RefreshResponseDto"];
+                };
+            };
+        };
+    };
+    AccountAuthController_me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginAccountResponseDto"];
                 };
             };
         };
@@ -994,6 +1984,178 @@ export interface operations {
         };
         responses: {
             204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EmailFindController_find: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailFindDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailFindResponseDto"];
+                };
+            };
+            /** @description 이름이 비었거나 · 휴대전화번호가 숫자 10~11자리가 아니거나(하이픈 · 공백은 지운 뒤) · 생년월일이 YYYY-MM-DD 의 있는 날짜가 아니거나 · 모르는 칸이 있음. 번호 잠금의 실패로는 세지 않는다(요청 제한에는 센다) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 맞는 계정이 없음. 어느 값이 틀렸든 같은 메시지(「일치하는 계정이 없습니다」)이고 실패 1회로 센다 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `lockExpiresAt` 이 있으면 그 번호가 5번 틀려 그때까지 막힘(값이 맞아도), 없으면 요청 제한 */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailFindTooManyRequestsResponseDto"];
+                };
+            };
+        };
+    };
+    PasswordResetLinkController_verify: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyPasswordResetLinkDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 쓸 수 없는 링크 — 없음 · 만료 · 사용 · 새 링크로 대체 · 탈퇴를 가리지 않는다 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PasswordResetLinkController_reset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetPasswordWithLinkDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 비밀번호 규칙 위반 — 사유를 준다. 링크는 그대로라 다시 정할 수 있다 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 쓸 수 없는 링크(확인과 같은 문구) */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PasswordResetLinkAdminController_issue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PasswordResetLinkResponseDto"];
+                };
+            };
+            /** @description 토큰이 없거나 유효하지 않음, 또는 접속이 끝난 직원 앱 토큰 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 접속이 살아 있는 직원 앱 토큰 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 직원이거나 관리 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 가입 전 · 퇴직 · 탈퇴 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같은 계정에 1분 안에 다시 보냄 */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 링크 주소 · 발송기가 없거나 발송 실패 */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1270,7 +2432,7 @@ export interface operations {
                     "application/json": components["schemas"]["PlatformAdminListResponseDto"];
                 };
             };
-            /** @description 메뉴 권한 없음 · 마스터 보호 · 본인 보호 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님 · 마스터 보호 · 본인 보호 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -1307,7 +2469,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · 마스터 보호 · 본인 보호 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님 · 마스터 보호 · 본인 보호 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -1340,7 +2502,7 @@ export interface operations {
                     "application/json": components["schemas"]["PlatformRoleGroupListResponseDto"];
                 };
             };
-            /** @description 메뉴 권한 없음 · 마스터 보호 · 본인 보호 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님 · 마스터 보호 · 본인 보호 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -1376,7 +2538,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · 마스터 보호 · 본인 보호 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님 · 마스터 보호 · 본인 보호 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -1404,14 +2566,14 @@ export interface operations {
                     "application/json": components["schemas"]["PlatformAdminDetailResponseDto"];
                 };
             };
-            /** @description 메뉴 권한 없음 · 마스터 보호 · 본인 보호 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님 · 마스터 보호 · 본인 보호 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없거나 지운 계정 */
+            /** @description 없거나 지운 · 탈퇴한 계정, 플랫폼 관리자가 아닌 계정 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -1441,14 +2603,14 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · 마스터 보호 · 본인 보호 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님 · 마스터 보호 · 본인 보호 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없거나 지운 계정 */
+            /** @description 없거나 지운 · 탈퇴한 계정, 플랫폼 관리자가 아닌 계정 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -1481,21 +2643,21 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 메뉴 권한 없음 · 마스터 보호 · 본인 보호 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님 · 마스터 보호 · 본인 보호 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없거나 이미 지운 계정 */
+            /** @description 없거나 지운 · 탈퇴한 계정, 플랫폼 관리자가 아닌 계정 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 마지막 사용 중 플랫폼 마스터 */
+            /** @description 마지막 사용 중 플랫폼 마스터 · 그 사이 다른 관리자가 지우거나 권한 유형을 바꿈 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -1528,14 +2690,14 @@ export interface operations {
                     "application/json": components["schemas"]["PlatformAdminHistoryListResponseDto"];
                 };
             };
-            /** @description 메뉴 권한 없음 · 마스터 보호 · 본인 보호 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님 · 마스터 보호 · 본인 보호 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없거나 지운 계정 */
+            /** @description 없거나 지운 · 탈퇴한 계정, 플랫폼 관리자가 아닌 계정 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -1563,22 +2725,83 @@ export interface operations {
                     "application/json": components["schemas"]["ResetPasswordResponseDto"];
                 };
             };
-            /** @description 메뉴 권한 없음 · 마스터 보호 · 본인 보호 */
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님 · 마스터 보호 · 본인 보호 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 없거나 지운 계정 */
+            /** @description 없거나 지운 · 탈퇴한 계정, 플랫폼 관리자가 아닌 계정 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 이메일이 없는 계정 */
+            /** @description 이메일이 없는 계정 · 그 사이 다른 관리자가 지우거나 권한 유형 · 이메일을 바꿈 */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StaffMembersController_findAll: {
+        parameters: {
+            query?: {
+                /**
+                 * @description 쉼표로 구분한 점포 ID. 관리 범위 밖의 ID 는 조용히 빠진다. 없으면 관리 범위 전체.
+                 *     빈 칸 · 숫자가 아닌 값 · 1..2147483647 밖의 값이 하나라도 있거나 500개를 넘으면 400 이다.
+                 */
+                storeIds?: string;
+                /**
+                 * @description 쉼표로 구분한 고용형태. 없으면 전체. 화면은 둘 다 고르면 보내지 않는다.
+                 *     빈 값 · 모르는 값이 하나라도 있으면 400 이다.
+                 */
+                employmentType?: string;
+                /**
+                 * @description 쉼표로 구분한 가입·인증 상태(StaffJoinState). 고른 상태 중 하나라도 맞으면 나온다 — 화면의 묶음(초대 발송 =
+                 *     INVITED,EXPIRED,REJECTED)을 그대로 보낸다. 없으면 전체. 빈 값 · 모르는 값이 하나라도 있으면 400 이다.
+                 *     화면에서 하나도 고르지 않았으면 이 api 를 부르지 않고 0건으로 그린다.
+                 */
+                joinState?: string;
+                /** @description 없으면 재직 · 퇴직 전체 */
+                employmentStatus?: components["schemas"]["EmploymentStatus"];
+                /** @description 페이지, 1부터. 상한은 OFFSET 이 DB 정수 범위를 넘어 500 이 되지 않게 둔다(200건 × 100만 쪽) */
+                page?: number;
+                /** @description 페이지당 건수, 기본 20 · 최대 200 */
+                pageSize?: number;
+                /**
+                 * @description 이름 부분 일치, 또는 하이픈을 뺀 휴대전화번호 부분 일치. 앞뒤 공백을 지우고 비면 없는 것으로 본다 — 빈
+                 *     검색창을 보낸 것만으로 개인 칸 필터가 되어 본사 역할의 가맹 점포 행이 빠지면 안 된다.
+                 */
+                keyword?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffMemberListResponseDto"];
+                };
+            };
+            /** @description 쿼리 형식 오류 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님 */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1755,6 +2978,867 @@ export interface operations {
             };
             /** @description 가입 전 · 이미 퇴직 · 이미 퇴직 예정(처리) / 퇴직 예정이 아님 · 퇴직일 당일 이후 · 같은 날짜(취소 · 변경) */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ContractsController_list: {
+        parameters: {
+            query: {
+                /** @description 여러 개면 `?status=SIGNED&status=REJECTED`. 없으면 전체 */
+                status?: components["schemas"]["ContractStatus"][];
+                /** @description 1부터 */
+                page: number;
+                pageSize: number;
+                /** @description 점포 이름 일부 */
+                storeName?: string;
+                /** @description 직원 이름 일부 */
+                staffMemberName?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContractListResponseDto"];
+                };
+            };
+            /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님(목록) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ContractsController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateContractDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatedContractResponseDto"];
+                };
+            };
+            /** @description 입력 오류 · 만 19세 미만 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님(목록) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 근무지 점포가 없거나 폐점이거나 업무 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(같은 점포 진행 중 계약 — contracts 목록, replaceContractIds 로 대체) · WORK_TIME_OVERLAP(다른 점포 근무 시간 겹침, 초안 저장만) · 대체할 계약을 다른 요청이 먼저 고침 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ContractsController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contractId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContractDetailDto"];
+                };
+            };
+            /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님(목록) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 계약 · 업무 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ContractsController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contractId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateContractDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatedContractResponseDto"];
+                };
+            };
+            /** @description 입력 오류 · 만 19세 미만 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님(목록) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 계약 · 근무지 점포가 없거나 폐점 · 업무 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 임시저장이 아님 · 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ContractsController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contractId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 지웠다 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님(목록) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 계약 · 업무 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 임시저장이 아님 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StoresController_list: {
+        parameters: {
+            query: {
+                /** @description 1부터 */
+                page: number;
+                pageSize: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoreListResponseDto"];
+                };
+            };
+            /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PostsController_list: {
+        parameters: {
+            query: {
+                contentType: components["schemas"]["PostContentType"];
+                /** @description 게시 상태로 거른다. 없으면 전부. */
+                status?: components["schemas"]["PostStatus"];
+                /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
+                page?: number;
+                /** @description 한 쪽 건수. 기본 20, 최대 200. */
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostListResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PostsController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePostDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostResponseDto"];
+                };
+            };
+            /** @description 노출 대상 없이 게시 · 공지사항 유형 없음 · FAQ 카테고리 없음 · 게시 종료일이 시작일보다 앞섬 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PostsController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 게시물 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PostsController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePostDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostResponseDto"];
+                };
+            };
+            /** @description 등록과 같음 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 게시물 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 그사이 다른 관리자가 고침 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PostsController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 게시물 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 이미 지운 게시물 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_findAll: {
+        parameters: {
+            query?: {
+                /** @description 페이지, 1부터. 상한은 OFFSET 이 DB 정수 범위를 넘어 500 이 되지 않게 둔다 */
+                page?: number;
+                /** @description 페이지당 건수, 기본 20 · 최대 200 */
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationListResponseDto"];
+                };
+            };
+            /** @description 쿼리 형식 오류 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_remove: {
+        parameters: {
+            query: {
+                /** @description 빈 칸 · 숫자가 아닌 값 · 1..2147483647 밖의 값이 있거나 200개를 넘으면 400 이다 */
+                ids: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ids 형식 오류 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_readAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationReadAllResponseDto"];
+                };
+            };
+            /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_read: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationItemDto"];
+                };
+            };
+            /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 내 알림이 아니거나 지운 알림 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationTemplatesController_list: {
+        parameters: {
+            query: {
+                channel: components["schemas"]["NotificationTemplateChannel"];
+                page?: number;
+                /** @description 기본 20 · 최대 200 */
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateListResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationTemplatesController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTemplateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateDetailDto"];
+                };
+            };
+            /** @description 채널별 필수 칸 · #{변수} · 글자 수 검사 — message 에 고칠 문장 목록 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 템플릿 코드가 겹침 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationTemplatesController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateDetailDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 템플릿 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationTemplatesController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTemplateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateDetailDto"];
+                };
+            };
+            /** @description 등록과 같음 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 템플릿 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 그사이 다른 운영자가 고침 · 템플릿 코드가 겹침 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationTemplatesController_restore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TemplateVersionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateDetailDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 템플릿 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 등록한 템플릿이라 기본 문구가 없음 · 그사이 다른 운영자가 고침 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationTemplatesController_setActive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetTemplateActiveDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateDetailDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 템플릿 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 그사이 다른 운영자가 고침 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LeadsController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateLeadDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같은 IP 의 시간당 한도, 또는 같은 전화번호·이메일로 10분 안에 다시 접수 */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
