@@ -2,6 +2,7 @@
 
 ## 2026-10-13
 
+* **Update**: [운영 알림](/notify.md) — NOTIFY-12~15 확정(2026-10-13 재영)을 목업 쟁점과 결정 절에 반영했다. 논리 ERD 알림에 「알림 제목」 칸을 더해 그림 · 카탈로그 · 물리 그림을 다시 만들었다.
 * **Update**: [운영 알림](/notify.md) — 구현 절을 더했다. 운영 알림함 `/notifications`, 눌러서 이동 `/notifications/[id]/open`(화면에 뜬 뒤에만 읽음), 전역 종 `NotificationBell`(공통 GNB 전이라 임시 헤더 세 곳에), 경로표 `linkOf`. `DataTable` 의 `Column.header` 를 `ReactNode` 로 넓혔다(전체 선택 체크박스).
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 상세 「재직 상태」를 목록 요약(`statusCells`) 대신 재직 · 퇴직 예정 · 퇴직만 보이도록 고쳤다(PR #4 머지 블로커, 2026-10-13 재영).
 * **Update**: `2026-09-30-네이밍-규칙.md` 2026-10-13 고침을 [네이밍 규칙](/conventions/naming.md) 에 옮겼다 — 삭제 표시 예외에 노출 대상 연결 표 `post_audiences` 행 삭제를 더했다(재영, api #18).
