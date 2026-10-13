@@ -17,6 +17,9 @@
                             data-taken 에 적은 값이 목업의 ‘이미 있는 값’이다. 값을 고치면 결과를 지운다.
    data-dupgate             안의 [data-gate=go|block] 을 모든 확인(중복 확인 + [data-agree] 필수 약관)이 통과했을 때만 go 로 바꾼다.
    data-dup-keep            수정 화면용. 원래 값 그대로면 중복 확인 결과를 띄우지 않고 통과로 본다.
+   data-signup-try          회원가입 버튼. 늘 눌리고, 누를 때 아이디·이메일 확인과 [data-agree] 필수 약관을 본다.
+                            막히면 넘어가지 않고 칸마다 결과, [data-agree-err] 에 약관 안내를 띄운다(2026-10-13).
+   data-filled-in="id"      그 요소 안 입력칸에 값이 하나라도 있을 때만 보인다(사업자 인증 전 지우기).
    data-enable-when="id"    그 select 에 값이 있을 때만 버튼을 켠다. 고른 option 의 data-needs 칸도 채워져야 한다.
    data-sfilt               공통 점포 검색 필터. [data-sfilt-q] 검색칸, .sfilt__list 자동완성, .sfilt__chips 선택 점포.
    data-agree               약관 묶음. 전체 동의와 개별 항목을 서로 맞춘다. [data-opt] 줄은 선택 약관이라 가입 조건에서 뺀다.
@@ -181,6 +184,50 @@
   });
   /* 목업은 값이 채워진 채 열리므로 이미 한 번 확인한 상태로 보인다. */
   document.querySelectorAll("[data-dupcheck]").forEach(checkDup);
+
+  /* ---------- 회원가입 버튼 (S-RCJXIG, 2026-10-13 개발 화면 반영) ----------
+     버튼을 비활성으로 두지 않는다. 누르면 아직 통과하지 않은 아이디·이메일을 그때 확인해 칸 아래에 결과를 띄우고,
+     필수 약관이 비었으면 [data-agree-err] 에 안내를 띄운다. 하나라도 막히면 가입 완료로 넘어가지 않는다.
+     한 번 누른 뒤로는 약관을 체크할 때마다 안내가 따라 바뀐다. */
+  var signupTried = false;
+  function agreeErrorText() {
+    var need = [].slice.call(document.querySelectorAll("[data-agree] .agree:not(.agree--all):not([data-opt])"));
+    var missing = need.filter(function (row) { return row.querySelector(".check").getAttribute("aria-checked") !== "true"; });
+    if (!missing.length) return "";
+    if (missing.length === need.length) return "이용약관과 개인정보 수집·이용에 모두 동의해 주세요.";
+    return /개인정보/.test(missing[0].textContent) ? "개인정보 수집·이용에 동의해 주세요." : "이용약관에 동의해 주세요.";
+  }
+  function showAgreeError() {
+    var msg = signupTried ? agreeErrorText() : "";
+    document.querySelectorAll("[data-agree-err]").forEach(function (el) { el.textContent = msg; el.hidden = !msg; });
+    return !msg;
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-signup-try]");
+    if (b) {
+      signupTried = true;
+      var dupOk = true;
+      document.querySelectorAll("[data-dupcheck]").forEach(function (i) {
+        if (i.dataset.dupState !== "ok" && i.dataset.dupState !== "keep") checkDup(i);
+        if (i.dataset.dupState !== "ok" && i.dataset.dupState !== "keep") dupOk = false;
+      });
+      if (!showAgreeError() || !dupOk) e.preventDefault();
+      return;
+    }
+    /* 약관 체크는 app.js 가 먼저 뒤집으므로 한 틱 뒤에 읽는다. */
+    if (signupTried && e.target.closest && e.target.closest("[data-agree] .check")) setTimeout(showAgreeError, 0);
+  });
+
+  /* ---------- 값이 있을 때만 보이는 버튼 (data-filled-in) ---------- */
+  function syncFilled() {
+    document.querySelectorAll("[data-filled-in]").forEach(function (b) {
+      var box = document.getElementById(b.dataset.filledIn);
+      b.hidden = !box || ![].slice.call(box.querySelectorAll("input")).some(function (i) { return i.value.trim(); });
+    });
+  }
+  document.addEventListener("input", syncFilled);
+  document.addEventListener("click", function () { setTimeout(syncFilled, 0); });
+  syncFilled();
 
   /* ---------- 고른 값이 있어야 켜지는 버튼 ----------
      data-enable-when="select-id" — 그 select 에 값이 골라져 있을 때만 버튼을 켠다(회원 탈퇴 사유).
