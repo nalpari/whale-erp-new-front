@@ -3,7 +3,23 @@ type: Area
 title: 운영 알림
 description: 문의·도입문의의 접수와 상태 변경, 직원 근로계약의 날인·거부·만료·갱신 예정을 관리자 웹 알림함과 이메일로 알린다.
 tags: [mockup, notify]
-generated: { by: claude-code/fable-5.1, at: 2026-10-07T05:20:26Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-13T06:30:00Z }
+sources:
+  - id: notifications-page
+    resource: ../src/app/notifications/page.tsx
+    title: 운영 알림함 /notifications
+  - id: notification-list
+    resource: ../src/app/notifications/notification-list.tsx
+    title: 목록 · 모두 읽음 · 선택 삭제
+  - id: open-notification
+    resource: ../src/app/notifications/[id]/open/open-notification.tsx
+    title: 눌러서 이동 — 화면에 뜬 뒤에만 읽음
+  - id: notification-bell
+    resource: ../src/components/notifications/notification-bell.tsx
+    title: 전역 종과 팝오버
+  - id: notification-view
+    resource: ../src/lib/notification-view.ts
+    title: linkOf · 쿼리 · 일시 · 배지
 ---
 
 근거: `docs/mockup/notify/` (목업 · 1차 · R-NKFSGI)
@@ -76,3 +92,14 @@ generated: { by: claude-code/fable-5.1, at: 2026-10-07T05:20:26Z }
 | `NOTIFY-10` | 알림 템플릿을 등록하고 모든 항목을 고칠 것인가 | 등록과 전체 수정 — 사용 여부로 끄고, 되돌리기는 기본 37건만 (2026-10-07 재영) |
 | `NOTIFY-9` | 1팀 관리자 메일 문구도 알림 템플릿에서 관리할 것인가 | 알림 템플릿에서 관리 — 메일 탭 발송 용도 8 추가, 1팀 꼬리표 (2026-10-07 재영) |
 | `NOTIFY-7` | 알림 템플릿 관리를 어느 메뉴 아래에 둘 것인가 | 플랫폼 시스템관리 아래, 공통코드 관리 다음 — 따로 한 줄 안은 버림 (2026-10-07 재영) |
+
+# 구현 (2026-10-13)
+
+계획: `docs/plans/2026-10-13-ops-notifications-screen.md`. api 는 whale-erp-api `/notifications`(목록 · 읽음 · 모두 읽음 · 선택 삭제).
+
+* `/notifications` — 데모 칸 구성(선택 · 미확인 점 · 알림 · 구분 · 일시), 모두 읽음 · 선택 삭제 확인창, 페이지당 20·50·100. 화면 상태는 URL.
+* `/notifications/[id]/open` — 알림 · 종 · 운영 알림 메일 버튼이 모두 여기로 온다. GET 으로는 아무것도 바꾸지 않고 화면에 뜬 뒤 서버 액션으로 읽음 처리하고 업무 화면으로 보낸다(브라우저 미리 불러오기 · 메일 검사기가 읽음을 일으키지 않게).
+* 업무 화면 경로는 `linkOf`(`src/lib/notification-view.ts`) 한 곳에만 있다. 계약 상세 · 문의 상세 · 도입문의 상세는 아직 없어 404 다.
+* 종 `NotificationBell` — 공통 GNB 가 아직 없어 헤더와 떨어진 조각이다. 지금은 헤더를 임시로 짜는 세 곳(플랫폼 레이아웃 · 직원 목록 · 직원 상세)에 `<NotificationBellSlot />` 로 넣었다. 공통 헤더가 생기면 종 자리에 이것을 넣는다. 빨간 점이 박힌 `alarm.svg` 대신 점 없는 `alarm-bell.svg` 를 쓴다. `AlarmLink` 는 그대로 둔다(디자인 견본이 쓴다).
+* 읽음이 바뀌면 모든 화면을 다시 그린다 — 종이 화면마다 서버에서 그려진다.
+
