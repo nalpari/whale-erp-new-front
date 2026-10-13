@@ -1,5 +1,5 @@
 // 알림 템플릿 수정 · 알림톡. 목업 docs/mockup/notify/templates-edit.html 의 「가입 초대 · 알림톡」 예.
-// 알림톡도 화면에서 본문을 고친다(NOTIFY-8, 2026-10-07 재영). 제목은 없고, 카카오 템플릿 코드와 변수 목록은 고정.
+// 알림톡도 화면에서 본문을 고친다(NOTIFY-8, 2026-10-07 재영). 제목은 없고, 카카오 템플릿 코드와 변수 목록도 고친다(NOTIFY-10).
 import { templateEdit } from "../../template-edit.mjs";
 
 export default templateEdit({

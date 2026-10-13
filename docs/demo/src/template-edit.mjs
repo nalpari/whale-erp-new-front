@@ -1,5 +1,5 @@
 // 알림 템플릿 수정·등록 화면(목업 docs/mockup/notify/templates-edit.html · templates-new.html). 플랫폼 운영자 전용.
-// 등록한 것과 기본 37건 모두 모든 항목을 고친다(NOTIFY-10, 2026-10-07 재영): 채널·유형·템플릿 코드·카카오 템플릿 코드·변수 목록·사용 여부.
+// 등록한 것과 기본 40건 모두 모든 항목을 고친다(NOTIFY-10, 2026-10-07 재영): 채널·유형·템플릿 코드·카카오 템플릿 코드·변수 목록·사용 여부.
 // 템플릿은 채널 + 템플릿 이름 + 템플릿 코드로 구분하고(NOTIFY-11), 채널마다 미리보기 모양이 다르다.
 // 목업은 예시를 탭으로 오갔지만 데모는 상태 시연을 두지 않으므로 채널마다 한 장씩 만든다(notify/templates-edit*.mjs).
 // 제목·본문 필수(2026-10-07 재영). 앱 푸시는 제목 40자·본문 100자이고 넘으면 저장하지 않는다(NOTIFY-4).
@@ -36,7 +36,7 @@ const PREVIEW = {
 };
 
 // t: { mode("edit"|"new"), kind, type(템플릿 이름), pushGroup, channel, to, templateCode, kakaoCode, title, body, vars:[{name,label,required,example}], preview, count, history, notice, base }
-// kind 가 talk 면 제목 칸 대신 카카오 템플릿 코드 칸을 둔다. base 는 기본 37건(기본 문구로 되돌리기가 이때만 보인다).
+// kind 가 talk 면 제목 칸 대신 카카오 템플릿 코드 칸을 둔다. base 는 기본 40건(기본 문구로 되돌리기가 이때만 보인다. 되돌리기는 제목·본문·변수 목록만, NOTIFY-17·18).
 const field = (label, control, w) => ui.field(label, control, w ?? "min-w-px flex-1");
 
 export function templateEdit(t) {

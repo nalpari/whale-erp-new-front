@@ -1,4 +1,4 @@
-// 기본 알림 템플릿 37건의 템플릿 코드(네이밍 규칙 5장 「기본 템플릿 코드」, 2026-10-07 재영).
+// 기본 알림 템플릿 40건(운영 알림 10 · 앱 푸시 5 · 메일 24 · 알림톡 1)의 템플릿 코드(네이밍 규칙 5장 「기본 템플릿 코드」, 2026-10-07 재영).
 // 알림 유형·발송 용도 공통코드는 없다(NOTIFY-11). 템플릿은 채널 + 템플릿 이름 + 템플릿 코드로 구분하고,
 // 코드는 전체 문자열 그대로 둔다(접두를 조립하지 않는다 — EMAIL_CHANGE_PIN 처럼 접두와 겹치는 것이 있다).
 export const CHANNELS = [
@@ -32,6 +32,7 @@ export const CODES = {
     "근무스케줄 변경": "PUSH_SCHEDULE_CHANGED",
     "TO-DO 배정": "PUSH_TODO_ASSIGNED",
     "급여명세서 발송": "PUSH_PAYSLIP_SENT",
+    "급여명세서 다시 발송": "PUSH_PAYSLIP_RESENT",
   },
   EMAIL: {
     ...Object.fromEntries(OPS.map(([n, c]) => [n, `EMAIL_${c}`])),
@@ -39,6 +40,8 @@ export const CODES = {
     "관리자 초기화 재설정 링크": "EMAIL_STAFF_RESET_LINK",
     "로그인 이메일 변경 핀": "EMAIL_CHANGE_PIN",
     "도입문의 접수 확인": "EMAIL_LEAD_CONFIRMATION",
+    "급여명세서 발송 메일": "EMAIL_PAYSLIP_SENT",
+    "급여명세서 다시 발송 메일": "EMAIL_PAYSLIP_RESENT",
     "회원가입 완료": "EMAIL_SIGNUP_DONE",
     "신규 BP 가입 알림": "EMAIL_SIGNUP_ALERT",
     "BP 신규 등록": "EMAIL_BP_REGISTER",

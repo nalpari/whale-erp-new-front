@@ -2,6 +2,8 @@
 
 ## 2026-10-13
 
+* **Update**: [운영 알림](/notify.md) — 기본 템플릿 37건 → 40건, 되돌리기는 제목·본문·변수 목록만(NOTIFY-17·18), 알림톡 카카오 템플릿 코드·변수 목록도 고친다(NOTIFY-10)로 맞췄다. 데모 `template-codes.mjs` 에 빠진 세 코드를 더했다.
+* **Update**: [네이밍](/conventions/naming.md) — 기본 템플릿 코드 37건 → 40건. 표에 빠져 있던 `PUSH_PAYSLIP_RESENT` · `EMAIL_PAYSLIP_SENT` · `EMAIL_PAYSLIP_RESENT` 를 더했다(마이그레이션 `20261007000100_team3_initial_data` 와 맞춤).
 * **Update**: [운영 알림](/notify.md) — NOTIFY-16(2026-10-13 재영): 알림 이동은 api 가 주는 `link`(업무 쪽이 넘긴 경로)로 간다. 경로표 `linkOf` 를 지우고 `safeLink` 로 관리자 웹 안 경로만 보낸다. 논리 ERD 알림에 「업무 링크」 칸.
 * **Update**: [운영 알림](/notify.md) — front #14 리뷰 반영. 근로계약 알림은 `/contracts/{id}`, 문의 · 도입문의는 화면이 생길 때까지 알림함 안내. 목록 · 팝오버에 내용 · 관련 업무, 근로계약 화면 넷의 종, 서버 액션 알림 ID 정수 검사. `DataTable` 머리 칸 변경은 되돌리고 전체 선택을 툴바로.
 * **Update**: [운영 알림](/notify.md) — NOTIFY-12~15 확정(2026-10-13 재영)을 목업 쟁점과 결정 절에 반영했다. 논리 ERD 알림에 「알림 제목」 칸을 더해 그림 · 카탈로그 · 물리 그림을 다시 만들었다.
