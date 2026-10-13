@@ -69,7 +69,8 @@ export function GuestHeader() {
       </nav>
       <div className="flex items-center gap-[34px] text-[20px] font-semibold text-[#999]">
         <Link href="/design/guest/login" className={`flex items-center gap-[6px] uppercase hover:text-guest-ink ${HOVER}`}>
-          <Image src="/guest/user-circle.svg" alt="" width={24} height={24} />
+          {/* 아이콘을 마스크로 그려 글자색을 따르게 한다 — 호버하면 글자와 함께 먹색으로 바뀐다(Figma 1:1855). */}
+          <span aria-hidden className={`size-[24px] bg-current mask-[url(/guest/user-circle.svg)] mask-contain mask-center mask-no-repeat ${HOVER}`} />
           Login
         </Link>
         <Link href="#" className={`hover:text-guest-ink ${HOVER}`}>
