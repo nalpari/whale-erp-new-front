@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { StaffMemberListItem } from "../../lib/staff-members.ts";
-import { contractCell, formatPhone, joinCell, rowNumber, statusCells } from "./staff-row.ts";
+import { contractCell, employmentStatusCells, formatPhone, joinCell, rowNumber, statusCells } from "./staff-row.ts";
 
 const TODAY = "2026-10-12";
 const item = (over: Partial<StaffMemberListItem> = {}): StaffMemberListItem => ({
@@ -124,6 +124,22 @@ test("재직 칸 — 위에서부터 처음 맞는 것", () => {
     [{ retiredDate: "2026-10-30" }, [{ text: "재직", style: "mark-on" }, { text: "퇴직 예정 10-30", style: "badge-off" }]],
   ];
   for (const [over, expected] of cases) assert.deepEqual(statusCells(item(over)), expected, JSON.stringify(over));
+});
+
+test("상세 재직 상태 — 가입 · 계약 상태와 상관없이 재직 · 퇴직 예정 · 퇴직만", () => {
+  const cases: [Partial<StaffMemberListItem>, { text: string; style: string }[]][] = [
+    [{}, [{ text: "재직", style: "mark-on" }]],
+    [contract("PENDING_SIGNATURE"), [{ text: "재직", style: "mark-on" }]],
+    [contract("REJECTED"), [{ text: "재직", style: "mark-on" }]],
+    [{ joinState: "INVITED" }, [{ text: "재직", style: "mark-on" }]],
+    [{ joinState: "LINK_HOLD" }, [{ text: "재직", style: "mark-on" }]],
+    [{ joinState: "UNDER_AGE" }, [{ text: "재직", style: "mark-on" }]],
+    [{ retiredDate: "2026-10-30" }, [{ text: "재직", style: "mark-on" }, { text: "퇴직 예정 10-30", style: "badge-off" }]],
+    [{ employmentStatus: "RETIRED", retiredDate: "2026-07-31" }, [{ text: "퇴직 07-31", style: "muted" }]],
+    [{ employmentStatus: "RETIRED" }, [{ text: "퇴직", style: "muted" }]],
+    [{ employmentStatus: null }, []],
+  ];
+  for (const [over, expected] of cases) assert.deepEqual(employmentStatusCells(item(over)), expected, JSON.stringify(over));
 });
 
 test("순번은 내림차순 — 전체 건수에서 거꾸로 센다", () => {

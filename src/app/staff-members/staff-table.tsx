@@ -8,7 +8,7 @@ import { contractCell, EMPLOYMENT_TYPE_LABELS, formatPhone, joinCell, rowNumber,
 const NEUTRAL = "inline-block rounded-[2px] px-[4px] py-[2px] text-center text-[14px] font-medium bg-erp-subtle text-erp-ink whitespace-nowrap";
 const DASH = "-";
 
-function CellView({ cell }: { cell: Cell }) {
+export function CellView({ cell }: { cell: Cell }) {
   switch (cell.style) {
     case "badge-on":
       return <Badge tone="on">{cell.text}</Badge>;

@@ -139,6 +139,28 @@ export function queryStaff(query: StaffListQuery, records: readonly StaffRecord[
   };
 }
 
+const MAX_ID = 2_147_483_647;
+
+/**
+ * 직원 상세용 한 명 찾기. 경로의 id 를 그대로 받는다 — 숫자가 아니거나 1..2147483647 밖이면 null.
+ * 가린 직원(본사 제공 동의 없는 가맹 점포 직원)은 상세로 들어가지 못하므로 null 이다(WHALEERP-184).
+ */
+export function findStaff(rawId: string, records: readonly StaffRecord[]): StaffMemberListItem | null {
+  if (!/^[1-9]\d*$/.test(rawId)) return null;
+  const id = Number(rawId);
+  if (id > MAX_ID) return null;
+  const record = records.find((r) => r.staffMemberId === id);
+  return record && !record.isMasked ? record : null;
+}
+
+/**
+ * 직원 상세. 지금은 목이고 목록 한 줄과 같은 모양이다. 상세 요약 api(WHALEERP-183)가 나오면 이 함수 안을 api 로
+ * 바꾸고, 직무 · 입사일 · 생년월일 · 이메일 · 본인인증과 현황 영역을 그 응답으로 채운다.
+ */
+export async function getStaffMember(rawId: string): Promise<StaffMemberListItem | null> {
+  return findStaff(rawId, buildMockStaff(kstToday()));
+}
+
 /** 직원 목록. 지금은 목이다(관리자 로그인 전). */
 export async function getStaffMembers(query: StaffListQuery): Promise<StaffMemberListResponse> {
   return queryStaff(query, buildMockStaff(kstToday()));
