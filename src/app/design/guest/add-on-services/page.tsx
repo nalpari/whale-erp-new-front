@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import type { ReactNode } from "react";
 import { type IconPart, InventoryIcon, KioskIcon, LayeredIcon, OrderIcon, RecipeIcon, STAFF_ICON } from "../guest-icons";
-import { GuestButton, ICON_GRADIENT, SectionTitle } from "../guest-ui";
+import { GuestButton, GuestPage, ICON_GRADIENT, SectionTitle } from "../guest-ui";
 
 export const metadata: Metadata = { title: "Whale ERP · 부가서비스" };
 
@@ -282,7 +282,7 @@ function Subscription() {
 
 export default function AddOnServicesPage() {
   return (
-    <>
+    <GuestPage>
       <ServiceSection light="판매용" desc={["카운터, 테이블, 손님의 스마트폰까지.", "손님이 편한 방식으로 주문하고, 매출은 자동으로 한곳에 모입니다."]} services={SALES} />
       <ServiceSection
         light="관리용"
@@ -292,6 +292,6 @@ export default function AddOnServicesPage() {
       />
       <Expansions />
       <Subscription />
-    </>
+    </GuestPage>
   );
 }

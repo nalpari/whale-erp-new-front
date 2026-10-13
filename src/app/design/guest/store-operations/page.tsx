@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { type IconPart, InventoryIcon, KioskIcon, LayeredIcon, OrderIcon, RecipeIcon, STAFF_ICON } from "../guest-icons";
-import { GuestButton, SectionTitle, TitleRow, TRIM } from "../guest-ui";
+import { GuestButton, GuestPage, SectionTitle, TitleRow, TRIM } from "../guest-ui";
 import { BUTTON_MOTION } from "../theme";
 
 export const metadata: Metadata = { title: "Whale ERP · 매장운영" };
@@ -271,11 +271,11 @@ function AddOns() {
 
 export default function StoreOperationsPage() {
   return (
-    <>
+    <GuestPage>
       <Moments />
       <Features />
       <Flow />
       <AddOns />
-    </>
+    </GuestPage>
   );
 }

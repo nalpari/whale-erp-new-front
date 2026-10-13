@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Fragment } from "react";
-import { Arrow, GuestButton, ICON_GRADIENT, SectionTitle, TitleRow, TRIM } from "./guest-ui";
+import { Arrow, GuestButton, GuestPage, ICON_GRADIENT, SectionTitle, TitleRow, TRIM } from "./guest-ui";
 import { BUTTON_MOTION, HOVER } from "./theme";
 
 export const metadata: Metadata = { title: "Whale ERP · 비로그인 메인" };
@@ -533,7 +533,7 @@ function Boards() {
 
 export default function GuestMainPage() {
   return (
-    <>
+    <GuestPage>
       <Billboard />
       <Features />
       <Personas />
@@ -541,6 +541,6 @@ export default function GuestMainPage() {
       <Steps />
       <Plans />
       <Boards />
-    </>
+    </GuestPage>
   );
 }

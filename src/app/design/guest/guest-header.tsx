@@ -30,6 +30,8 @@ export function GuestHeader() {
 
   return (
     <header
+      // 화면을 옮기는 동안 머리말은 기준점으로 제자리에 둔다(globals.css 의 guest-header).
+      style={{ viewTransitionName: "guest-header" }}
       className={`sticky top-0 z-20 flex h-[110px] items-center border-b px-[80px] transition-[background-color,border-color] duration-150 ${EASE_OUT} motion-reduce:transition-none ${
         scrolled ? "border-guest-line bg-white/95 backdrop-blur-[8px]" : "border-transparent"
       }`}

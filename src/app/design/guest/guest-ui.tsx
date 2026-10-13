@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { type ReactNode, ViewTransition } from "react";
 import { ARROW_NUDGE, BUTTON_MOTION } from "./theme";
 
 // 비로그인 화면들이 함께 쓰는 조각 — 섹션 제목, 버튼, 화살표, 글자 위아래 여백 자르기.
@@ -67,3 +67,13 @@ export function TitleRow({ light, bold, action }: { light: string; bold: string;
 
 // 시안의 아이콘 그라데이션(옅은 회청 → 진한 청). 달력·봉투·책갈피 아이콘이 함께 쓴다.
 export const ICON_GRADIENT = "linear-gradient(114deg, rgba(174,190,206,0.8) 8.98%, rgba(32,96,154,0.8) 94.82%)";
+
+// 비로그인 화면 사이를 옮길 때 본문을 겹쳐 바꾼다(globals.css 의 guest-page). 레이아웃은 화면을 옮겨도 남아 있어
+// 들어오고 나가는 순간이 생기지 않으므로 각 page 가 이것으로 본문을 감싼다. 머리말은 움직이지 않는다.
+export function GuestPage({ children }: { children: ReactNode }) {
+  return (
+    <ViewTransition enter="guest-page" exit="guest-page" default="none">
+      <div>{children}</div>
+    </ViewTransition>
+  );
+}
