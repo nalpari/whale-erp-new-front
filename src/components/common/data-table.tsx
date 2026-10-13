@@ -1,8 +1,7 @@
 import type { ComponentProps, Key, ReactNode } from "react";
 
 export type Column<T> = {
-  /** 보통은 글자. 전체 선택 체크박스처럼 요소를 둘 수도 있다. */
-  header: ReactNode;
+  header: string;
   /** Tailwind 너비 클래스(w-[60px] 등). 없으면 남는 폭을 나눠 갖는다. */
   width?: `w-[${number}px]`;
   /** 본문 정렬. 헤더는 항상 가운데다. */

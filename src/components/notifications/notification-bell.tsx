@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import type { NotificationItem } from "@/lib/notifications";
-import { badgeText, formatAt } from "@/lib/notification-view";
+import { badgeText, formatAt, relatedLabel } from "@/lib/notification-view";
 
 // 전역 종(#253 · 목업 assets/app.js 의 종 팝오버). 미확인 건수 배지와 최근 알림 팝오버, 알림함 전체 보기.
 // 공통 GNB(공통 헤더 · 레이아웃)가 아직 없어 헤더와 떨어진 조각으로 둔다 — 공통 헤더가 생기면 종 자리에 <NotificationBellSlot /> 를 넣는다.
@@ -72,8 +72,9 @@ export function NotificationBell({ data }: { data: { unreadCount: number; recent
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className={`block truncate text-[14px] ${n.isRead ? "text-erp-muted" : "font-semibold"}`}>{n.title}</span>
+                      {n.body && <span className="block truncate text-[13px] text-erp-ink">{n.body}</span>}
                       <span className="mt-[2px] block text-[12px] text-erp-muted">
-                        {formatAt(n.createdAt)} · {n.kind}
+                        {formatAt(n.createdAt)} · {n.kind} · {relatedLabel(n.relatedType, n.relatedId)}
                       </span>
                     </span>
                   </a>

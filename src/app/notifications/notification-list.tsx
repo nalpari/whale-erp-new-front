@@ -4,7 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { Button, Checkbox, ConfirmDialog, DataTable, ListToolbar, Pagination, Select, useToast, type Column } from "@/components/common";
 import type { NotificationItem } from "@/lib/notifications";
-import { formatAt, type NotificationQuery } from "@/lib/notification-view";
+import { formatAt, relatedLabel, type NotificationQuery } from "@/lib/notification-view";
 import { PAGE_SIZES } from "@/lib/staff-members";
 import { deleteAction, readAllAction } from "./actions";
 
@@ -79,16 +79,7 @@ export function NotificationList({
 
   const columns: Column<NotificationItem>[] = [
     {
-      header: (
-        <span className="inline-flex justify-center">
-          <Checkbox
-            label=""
-            aria-label="이 쪽 알림 모두 선택"
-            checked={allPicked}
-            onChange={() => setPicked(allPicked ? new Set() : new Set(items.map((i) => i.id)))}
-          />
-        </span>
-      ),
+      header: "선택",
       width: "w-[48px]",
       cell: (n) => (
         <span className="inline-flex justify-center">
@@ -109,16 +100,16 @@ export function NotificationList({
     {
       header: "알림",
       align: "left",
-      // prefetch 가 이 GET 을 미리 불러 읽음이 되지 않게 <Link> 대신 <a> 로 건다.
+      // 제목 아래 둘째 줄에 내용(템플릿 둘째 줄)을 보인다(목업 notify/index.html 의 sub 줄). <Link> 대신 <a> 다 —
+      // 이동 페이지는 화면에 뜬 뒤에만 읽음 처리하지만, 미리 불러오기를 일으킬 까닭도 없다.
       cell: (n) => (
-        <a
-          href={`/notifications/${n.id}/open`}
-          className={`hover:underline ${n.isRead ? "text-erp-muted" : "font-semibold text-erp-ink"}`}
-        >
-          {n.title}
+        <a href={`/notifications/${n.id}/open`} className="block truncate py-[4px] hover:underline">
+          <span className={n.isRead ? "text-erp-muted" : "font-semibold text-erp-ink"}>{n.title}</span>
+          {n.body && <span className="block truncate text-[13px] text-erp-muted">{n.body}</span>}
         </a>
       ),
     },
+    { header: "관련 업무", width: "w-[140px]", cell: (n) => <span className="text-erp-muted">{relatedLabel(n.relatedType, n.relatedId)}</span> },
     { header: "구분", width: "w-[140px]", cell: (n) => <span className={NEUTRAL}>{n.kind}</span> },
     { header: "일시", width: "w-[130px]", cell: (n) => <span className="font-mono text-erp-muted">{formatAt(n.createdAt)}</span> },
   ];
@@ -126,6 +117,14 @@ export function NotificationList({
   return (
     <>
       <ListToolbar total={total}>
+        <span className="pl-[12px]">
+          <Checkbox
+            label="이 쪽 모두 선택"
+            checked={allPicked}
+            disabled={items.length === 0}
+            onChange={() => setPicked(allPicked ? new Set() : new Set(items.map((i) => i.id)))}
+          />
+        </span>
         <p className="mr-auto pl-[12px] text-[14px] text-erp-muted">
           미확인 <b className="font-semibold text-erp-ink">{unreadCount.toLocaleString("ko-KR")}</b> 건
         </p>
