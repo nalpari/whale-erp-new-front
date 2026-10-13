@@ -22,6 +22,9 @@
   --canvas-soft: #fafafa;
   --surface-card: #ffffff;
   --surface-strong: #f0f0f3;
+  /* 바꿀 수 없는 칸 — 관리자 웹 DESIGN.md 「바꿀 수 없는 칸」과 같은 색(2026-10-13) */
+  --field-locked-bg: #f8f9fb;
+  --field-locked-text: #888888;
   --surface-hover: #f7f7f9;
   --surface-dark: #171717;
   --surface-dark-elevated: #1a1a1a;
@@ -1870,29 +1873,21 @@ a.channel:hover {
 .input[aria-invalid="true"] {
   border-color: var(--risk-text);
 }
-/* 읽기 전용·잠긴 칸 — 입력할 수 있는 칸(흰 바탕·진한 테두리)과 한눈에 갈리게 회색 바탕·옅은 테두리로 둔다.
-   인증 상자·주소 검색의 회색 칸과 같은 말이다. 눌러도 입력 초점 테두리를 띄우지 않는다. */
+/* 읽기 전용·잠긴 칸 — 입력할 수 있는 칸과 한눈에 갈리게 바탕을 깐다. 인증 상자·주소 검색의 회색 칸과 같은 말이다.
+   눌러도 입력 초점 테두리를 띄우지 않는다. 색은 관리자 웹 디자인 시스템(DESIGN.md 「바꿀 수 없는 칸」)과 같은
+   #f8f9fb 바탕 · #888888 글자이고 테두리는 그대로 둔다(2026-10-13, 디자인 데모·개발 화면과 맞춤). */
 .input[readonly],
 .textarea[readonly],
 .input:disabled,
 .select:disabled,
 .textarea:disabled {
-  background-color: var(--surface-strong);
-  border-color: transparent;
-  color: var(--body);
+  background-color: var(--field-locked-bg);
+  color: var(--field-locked-text);
   cursor: default;
-}
-/* 읽기 전용 칸에는 오른쪽에 자물쇠를 붙여 ‘입력하는 칸이 아님’을 글자 없이도 알린다 */
-.input[readonly] {
-  padding-right: 34px;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23999999' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><rect x='5' y='11' width='14' height='9.5' rx='2'/><path d='M8 11V8a4 4 0 0 1 8 0v3'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 14px;
 }
 .input[readonly]:focus,
 .textarea[readonly]:focus {
-  border-color: transparent;
+  border-color: var(--hairline-strong);
   box-shadow: none;
 }
 /* 입력할 수 있는 칸 — 흰 바탕에 테두리가 보이고, 올리면 테두리가 진해진다 */
@@ -4033,12 +4028,10 @@ a.tile:hover {
   gap: var(--s-4);
 }
 .bizbox .input[readonly] {
-  background-color: var(--surface-strong);
-  color: var(--body);
-  /* 세 칸이 한 줄에 들어가 좁다 — 자물쇠 자리 때문에 사업자등록번호가 잘리지 않게 여백을 줄인다 */
+  /* 세 칸이 한 줄에 들어가 좁다 — 사업자등록번호가 잘리지 않게 여백을 줄인다.
+     자물쇠 아이콘은 회원가입 화면(디자인 데모·개발)과 맞추려고 뺐다(2026-10-13). */
   padding-left: 8px;
-  padding-right: 23px;
-  background-position: right 7px center;
+  padding-right: 8px;
   font-size: 12.5px;
 }
 
@@ -4168,8 +4161,8 @@ a.tile:hover {
   min-width: 0;
 }
 .addr [readonly] {
-  background-color: var(--surface-strong);
-  color: var(--body);
+  background-color: var(--field-locked-bg);
+  color: var(--field-locked-text);
 }
 
 /* 관리 점포 고르기 — 위는 내 관리 점포를 찾는 자동완성, 아래는 고른 점포 영역(칩을 옆으로 나열, 하나씩 빼기).
