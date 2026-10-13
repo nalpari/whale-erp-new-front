@@ -2,6 +2,7 @@
 
 ## 2026-10-13
 
+* **Update**: [운영 알림](/notify.md) — front #14 리뷰 반영. 근로계약 알림은 `/contracts/{id}`, 문의 · 도입문의는 화면이 생길 때까지 알림함 안내. 목록 · 팝오버에 내용 · 관련 업무, 근로계약 화면 넷의 종, 서버 액션 알림 ID 정수 검사. `DataTable` 머리 칸 변경은 되돌리고 전체 선택을 툴바로.
 * **Update**: [운영 알림](/notify.md) — NOTIFY-12~15 확정(2026-10-13 재영)을 목업 쟁점과 결정 절에 반영했다. 논리 ERD 알림에 「알림 제목」 칸을 더해 그림 · 카탈로그 · 물리 그림을 다시 만들었다.
 * **Update**: [운영 알림](/notify.md) — 구현 절을 더했다. 운영 알림함 `/notifications`, 눌러서 이동 `/notifications/[id]/open`(화면에 뜬 뒤에만 읽음), 전역 종 `NotificationBell`(공통 GNB 전이라 임시 헤더 세 곳에), 경로표 `linkOf`. `DataTable` 의 `Column.header` 를 `ReactNode` 로 넓혔다(전체 선택 체크박스).
 * **Update**: 근로계약 화면 요건 변경(Plane #133 · #155 · #132). 목록의 임시저장 행은 이어 쓰기로 바로 가고, 임시저장 삭제를 상세에서 이어 쓰기 화면(취소와 임시저장 사이)으로 옮겨 공통 `ConfirmDialog` 로 묻는다. 목록에 고용 형태 칸을 더하고, 급여는 정직원도 시급으로 보인다(작성 · 상세의 칸 이름도 「시급」). [Whale ERP Frontend](/whale-erp-front.md).
