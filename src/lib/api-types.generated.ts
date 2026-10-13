@@ -979,8 +979,11 @@ export interface components {
         PayMonth: "CURRENT_MONTH" | "NEXT_MONTH";
         CreateContractDto: {
             employmentType: components["schemas"]["EmploymentType"];
-            /** @enum {string} */
-            contractMethod: "ELECTRONIC";
+            /**
+             * @description 임시저장이면 비워도 된다
+             * @enum {string}
+             */
+            contractMethod?: "ELECTRONIC";
             workDays?: components["schemas"]["ContractWorkDayDto"][];
             payMonth?: components["schemas"]["PayMonth"];
             name: string;
@@ -996,6 +999,25 @@ export interface components {
             endDate?: string;
             /** @description 원. 시급 — 고용 형태와 상관없이 시급만 받는다(2026-10-12) */
             wageAmount?: number;
+            mealAllowanceAmount?: number;
+            /** @description 자가운전보조금 — 원, 비과세 수당 */
+            carAllowanceAmount?: number;
+            /** @description 육아수당 — 원, 비과세 수당 */
+            childcareAllowanceAmount?: number;
+            /** @description 월 기본시간 — 시간, 30분 단위 */
+            baseHours?: number;
+            /** @description 월간 연장근무 — 시간, 30분 단위 */
+            monthlyOvertimeHours?: number;
+            /** @description 기본시간 중 야간근무 — 시간, 30분 단위 */
+            baseNightHours?: number;
+            /** @description 기본시간 중 휴일근무 — 시간, 30분 단위 */
+            baseHolidayHours?: number;
+            /** @description 월간 추가 휴일근무 — 시간, 30분 단위 */
+            monthlyExtraHolidayHours?: number;
+            /** @description 연차휴가 조항 문구. 기본 문구는 작성 화면이 채운다 */
+            annualLeaveTerms?: string;
+            /** @description 퇴직금 조항 문구. 기본 문구는 작성 화면이 채운다 */
+            severancePayTerms?: string;
             /** @description 1~31. 31 은 말일 */
             payDay?: number;
             /** @description 계약서 근무 장소 조항에 적는 주소. 근무지 점포와 따로다 */
@@ -1004,6 +1026,12 @@ export interface components {
             isEmploymentInjuryInsured?: boolean;
             /** @description true 면 임시저장(DRAFT) — 초대 · 계약서를 보내지 않는다. 없으면 초안 저장(발송 대기) */
             isTemporarySave?: boolean;
+            /**
+             * @description 대체할 진행 중 계약(WHALEERP-129). 같은 점포에 같은 번호의 진행 중 계약(임시저장 · 발송 대기 · 서명 대기)이
+             *     있으면 409(code CONTRACT_IN_PROGRESS)가 그 목록을 준다. 관리자가 대체를 확인하면 그 id 를 모두 넣어 다시 보낸다 —
+             *     임시저장은 지우고 발송 대기 · 서명 대기는 종료한다.
+             */
+            replaceContractIds?: number[];
         };
         CreatedContractResponseDto: {
             contractId: number;
@@ -1040,6 +1068,26 @@ export interface components {
             weeklyHoliday: components["schemas"]["Weekday"] | null;
             /** @description 원. 시급 — 고용 형태와 상관없이 시급이다(2026-10-12) */
             wageAmount: number | null;
+            /** @description 식대 — 원 */
+            mealAllowanceAmount: number | null;
+            /** @description 자가운전보조금 — 원 */
+            carAllowanceAmount: number | null;
+            /** @description 육아수당 — 원 */
+            childcareAllowanceAmount: number | null;
+            /** @description 월 기본시간 — 시간(0.5 단위) */
+            baseHours: number | null;
+            /** @description 월간 연장근무 — 시간 */
+            monthlyOvertimeHours: number | null;
+            /** @description 기본시간 중 야간근무 — 시간 */
+            baseNightHours: number | null;
+            /** @description 기본시간 중 휴일근무 — 시간 */
+            baseHolidayHours: number | null;
+            /** @description 월간 추가 휴일근무 — 시간 */
+            monthlyExtraHolidayHours: number | null;
+            /** @description 연차휴가 조항 문구 */
+            annualLeaveTerms: string | null;
+            /** @description 퇴직금 조항 문구 */
+            severancePayTerms: string | null;
             payMonth: components["schemas"]["PayMonth"] | null;
             payDay: number | null;
             isHealthPensionInsured: boolean | null;

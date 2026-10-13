@@ -13,13 +13,14 @@ export async function loadFormData(): Promise<{
   signedIn: boolean;
   token: string | null;
 }> {
-  const [employmentType, weekday, payMonth, session] = await Promise.all([
+  const [employmentType, weekday, payMonth, contractStatus, session] = await Promise.all([
     getEnum("EmploymentType"),
     getEnum("Weekday"),
     getEnum("PayMonth"),
+    getEnum("ContractStatus"),
     getSession(),
   ]);
-  const labels = { employmentType, weekday, payMonth };
+  const labels = { employmentType, weekday, payMonth, contractStatus };
   if (!session) return { stores: [], labels, signedIn: false, token: null };
   try {
     const { items } = await request<{ items: StoreOption[] }>("/stores?pageSize=200", {

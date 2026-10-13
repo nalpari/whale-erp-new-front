@@ -1,7 +1,7 @@
 // node --test src/app/contracts/contract-list.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { deadlineNote, periodText, readListQuery, sentText, toSearch, wageText } from "./contract-list.ts";
+import { deadlineNote, periodText, readListQuery, sentText, toSearch, wageText, withKnownStatus } from "./contract-list.ts";
 
 test("readListQuery 는 빈 값 · 잘못된 page 를 기본값으로 바꾼다", () => {
   assert.deepEqual(readListQuery({}), { page: 1, storeName: "", staffMemberName: "", status: [] });
@@ -49,4 +49,13 @@ test("서명 대기만 남은 날을 붙인다", () => {
   assert.equal(deadlineNote({ ...row, signDeadlineAt: "2026-09-07T14:00:00.000Z" }, now), "D-0");
   assert.equal(deadlineNote({ ...row, signDeadlineAt: "2026-09-01T00:00:00.000Z" }, now), undefined);
   assert.equal(deadlineNote({ ...row, status: "SIGNED" }, now), undefined);
+});
+
+test("api 가 400 을 줄 주소 값은 보내기 전에 거른다", () => {
+  // 이름 검색어는 api @MaxLength(50) 에 맞춰 자른다
+  assert.equal(readListQuery({ staffMemberName: "가".repeat(60) }).staffMemberName.length, 50);
+  assert.equal(readListQuery({ storeName: "x".repeat(51) }).storeName.length, 50);
+  // 모르는 상태 값은 뺀다
+  const q = readListQuery({ status: ["SIGNED", "FOO"] });
+  assert.deepEqual(withKnownStatus(q, [{ value: "SIGNED" }, { value: "DRAFT" }]).status, ["SIGNED"]);
 });
