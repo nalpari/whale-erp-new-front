@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
-import { deleteNotifications, readAllNotifications, readNotification } from "@/lib/notifications";
+import { deleteNotifications, InvalidNotificationIdError, readAllNotifications, readNotification } from "@/lib/notifications";
 import { linkOf } from "@/lib/notification-view";
 
 // 모두 읽음 · 선택 삭제. 실패하면 화면이 고른 것을 그대로 두고 문구만 보인다(#252 「이전 상태를 그대로 두고 다시 하게」).
@@ -22,6 +22,7 @@ async function run(what: string, act: () => Promise<unknown>): Promise<ActionRes
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) return { ok: false, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if (error instanceof ApiError && error.status === 403) return { ok: false, message: "운영 알림을 볼 권한이 없습니다." };
+    if (error instanceof InvalidNotificationIdError) return { ok: false, message: "고른 알림을 다시 확인해 주세요." };
     console.error(`${what} 실패`, error);
     return { ok: false, message: `${what}에 실패했습니다. 잠시 후 다시 시도해 주세요.` };
   }
@@ -48,7 +49,7 @@ export async function openAction(id: number): Promise<string> {
     refreshBells();
     return target;
   } catch (error) {
-    if (error instanceof ApiError && error.status === 404) return "/notifications?gone=1";
+    if (error instanceof InvalidNotificationIdError || (error instanceof ApiError && error.status === 404)) return "/notifications?gone=1";
     console.error("운영 알림 읽음 처리 실패", error);
     return "/notifications?error=read";
   }
