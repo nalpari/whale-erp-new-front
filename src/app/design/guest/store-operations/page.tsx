@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import { type IconPart, InventoryIcon, KioskIcon, LayeredIcon, OrderIcon, RecipeIcon, STAFF_ICON } from "../guest-icons";
 import { GuestButton, GuestPage, SectionTitle, TitleRow, TRIM } from "../guest-ui";
-import { BUTTON_MOTION } from "../theme";
+import { FeatureShortcuts } from "./feature-shortcuts";
 
 export const metadata: Metadata = { title: "Whale ERP · 매장운영" };
 
@@ -126,18 +125,7 @@ function Features() {
         light="매장운영,"
         bold="이렇게 달라집니다"
         action={
-          // 같은 화면 안 기능 설명으로 바로 내려가는 바로가기다.
-          <nav className="flex gap-[8px]">
-            {FEATURES.map((f) => (
-              <Link
-                key={f.id}
-                href={`#${f.id}`}
-                className={`flex h-[48px] items-center rounded-[6px] border border-guest-button-line bg-white px-[18px] text-[18px] leading-[1.5] font-semibold text-guest-navy hover:border-guest-navy ${BUTTON_MOTION}`}
-              >
-                {f.tab}
-              </Link>
-            ))}
-          </nav>
+          <FeatureShortcuts items={FEATURES.map(({ id, tab }) => ({ id, tab }))} />
         }
       />
       <div className="flex flex-col gap-[120px]">
