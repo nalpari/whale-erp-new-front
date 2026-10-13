@@ -39,8 +39,10 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
     [{ header: "점포명", align: "left" }, { header: "점포코드", width: "w-[110px]" }, { header: "점포 상태", width: "w-[90px]" }],
     STORES.map(([n, code]) => [n, code, ui.badge("on", "운영")]),
   );
+  // 대상 점포 위에 적용 범위 — BP 휴일 상세의 적용 대상과 같은 모양(2026-10-08)
   const right =
-    `<div class="flex flex-col gap-[12px]">${ui.sectionHead(`점포 매핑${c.sub("일부 · 4개점")}`)}${panel ? `<div class="overflow-x-auto">${storeTable}</div>` : storeTable}</div>`;
+    ui.detailTable("적용 대상", [["적용 범위", c.tag("일부 점포")]]) +
+    `<div class="flex flex-col gap-[12px]">${ui.sectionHead(`대상 점포${c.sub("일부 · 4개점")}`)}${panel ? `<div class="overflow-x-auto">${storeTable}</div>` : storeTable}</div>`;
 
   const history = ui.dataTable(
     [
@@ -52,7 +54,7 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
     ],
     [
       ["2026-06-18 17:25", "hangang01", "초기 비밀번호", "—", `초기화 메일 발송 완료 ${c.muted("· 값은 남기지 않음")}`],
-      ["2026-02-03 15:10", "hangang01", "점포 매핑", "일부 · ST000001~002", "일부 · ST000001~004"],
+      ["2026-02-03 15:10", "hangang01", "대상 점포", "일부 · ST000001~002", "일부 · ST000001~004"],
       ["2025-09-15 11:02", "hangang01", "권한 그룹", `정산 조회 ${c.muted("BA000005")}`, `인사 담당 ${c.muted("BA000004")}`],
       ["2025-04-01 09:12", "hangang01", "계정", "", `사용 · BP 관리자 · 정산 조회 ${c.muted("BA000005")}`],
     ],
@@ -79,7 +81,7 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
   // 패널: 이름은 맨 위에 혼자(닫기도 포함해 기능 버튼은 모두 맨 아래로, 2026-10-07 피드백). 전체 화면: 아래 버튼 줄.
   const head = panel ? `<h2 class="text-[18px] font-semibold whitespace-nowrap text-erp-ink">${NAME_BADGES}</h2>` : "";
   const bottomButtons = panel
-    ? `<div class="flex flex-wrap justify-center gap-[6px] border-t border-erp-panel-line pt-[16px]">${editBtn}${histBtn}${ui.button("닫기", { variant: "off", "data-close": true })}</div>`
+    ? `<div class="flex flex-wrap items-center gap-[6px] border-t border-erp-panel-line pt-[16px]">${ui.button("닫기", { variant: "off", "data-close": true })}<span class="flex-1"></span>${editBtn}${histBtn}</div>`
     : "";
   const info = panel
     ? `<div class="flex flex-col gap-[24px]">${left}${right}</div>`

@@ -5,7 +5,9 @@
 PostgreSQL 물리 모델로 바꾸고, 다음을 만든다. `python3 _build.py` 가 이 파일을 부른다.
 
   *.html      영역별 ERD 한 장에 논리 · 물리 · 논리+물리 세 보기 (물리·논리+물리 보기 아래 테이블 정의)
-  schema.sql  CREATE TABLE · 제약 · 인덱스 · 주석
+  physical/*.html  같은 장에서 물리 보기만 뽑은 사본 (그림 + 테이블 정의)
+  api docs/raw/2026-10-12-1팀-schema.sql   CREATE TABLE · 제약 · 인덱스 · 주석 (3팀과 같은 자리)
+  api docs/raw/2026-10-12-1팀-물리-ERD.md   테이블 정의서 · 자체 검사 결과
 
 물리 규칙 (네이밍 규칙 2장 + whale-erp-api 마이그레이션 형식)
   - 기본키는 논리 이름 그대로 `{참조 단수}_id integer GENERATED ALWAYS AS IDENTITY` (네이밍 규칙 2026-10-02).
@@ -328,7 +330,8 @@ def sql_text(s):
 
 def build_sql(model):
     o = ["-- WHALE ERP 1팀 1차 물리 스키마 (PostgreSQL 15+)",
-         "-- _build_physical.py 가 README.md 카탈로그에서 만든다. 손으로 고치지 말 것.",
+         "-- front docs/erd/team1/_build_physical.py 가 README.md 카탈로그에서 만든다. 손으로 고치지 말 것.",
+         "-- 적용된 마이그레이션(20261006000000_team1_initial)은 이 파일로 다시 만들지 않는다 — 차이는 새 마이그레이션으로 낸다.",
          "-- whale-erp-api 로 옮길 때는 마이그레이션 SQL 로 나눠 넣는다. CHECK 제약과 부분 고유 인덱스는",
          "-- Prisma 스키마 언어로 표현되지 않으므로 마이그레이션 SQL 에만 남는다.",
          "-- 3팀 소유 테이블(accounts, staff_members)은 만들지 않는다.", ""]
@@ -690,9 +693,101 @@ def page(d, svgs, model):
         extra = '<div class="phys-only"><h2>테이블 정의</h2>' + "".join(spec_html(t) for t in tables) + "</div>"
     if d.slug == "index":
         extra = ('<div class="phys-only"><h2>스키마</h2><p class="subtitle">CREATE TABLE·제약·인덱스·주석은 '
-                 '<a href="schema.sql">schema.sql</a> 에 있다. 영역 장의 물리·논리+물리 보기 아래에 테이블 정의가 있다.</p></div>')
+                 f'<code>{RAW_SQL_LABEL}</code> 에 있다(테이블 정의서는 같은 폴더의 1팀-물리-ERD.md). 영역 장의 물리·논리+물리 보기 아래에 테이블 정의가 있다.</p></div>')
     html = html.replace('<div class="footer">', extra + '\n<div class="footer">', 1)
     html = html.replace("</body>", VIEW_JS + "</body>", 1)
+    if d.slug in DRAG_PAN_SLUGS:
+        html = html.replace("</style>", DRAG_PAN_CSS + "</style>", 1)
+        html = html.replace("</body>", DRAG_PAN_JS + "</body>", 1)
+    return html
+
+
+# 물리 보기만 모은 사본: physical/*.html. 보기 버튼 없이 물리 그림과 테이블 정의만 둔다.
+PHYS_DIR = os.path.join(HERE, "physical")
+
+# DDL 과 테이블 정의서는 3팀처럼 api 저장소 docs/raw 에 쓴다(front 에 두지 않는다).
+# api 는 front 옆에 둔다. 다른 곳이면 WHALE_API_DIR 로 알려 준다.
+API = os.environ.get("WHALE_API_DIR") or os.path.abspath(os.path.join(HERE, "..", "..", "..", "..", "whale-erp-api"))
+RAW_SQL = os.path.join(API, "docs", "raw", "2026-10-12-1팀-schema.sql")
+RAW_MD = os.path.join(API, "docs", "raw", "2026-10-12-1팀-물리-ERD.md")
+RAW_SQL_LABEL = "whale-erp-api docs/raw/2026-10-12-1팀-schema.sql"
+
+
+def md_cell(s):
+    return (s or "").replace("|", "\\|")
+
+
+def build_md(model, errs):
+    n_col = sum(len(t.cols) for t in model.values())
+    enum_names = {v[0] for v in ENUMS.values()}
+    area = {d.slug: d.nav for d in L.DIAGRAMS}
+    o = ["# WHALE ERP 1팀 1차 물리 ERD — 테이블 정의서", "",
+         "- 작성: claude-code/opus-5.5 · 2026-10-12 (front 세션 · 재영 지시)",
+         "- 상태: api 에 `20261006000000_team1_initial` 로 적용된 DDL 과 같은 모델이다. 카탈로그가 바뀌어 이 파일이 달라지면 적용된 마이그레이션은 고치지 않고 새 마이그레이션을 쓴다.",
+         "- 원본: front `docs/erd/team1/README.md`(1팀 논리 ERD 카탈로그) → front `docs/erd/team1/_build_physical.py` 로 생성. 손으로 고치지 않는다.",
+         "- DDL: `docs/raw/2026-10-12-1팀-schema.sql` · 화면: front `docs/erd/team1/physical/`(물리만) · `docs/erd/team1/`(논리 · 물리 · 논리+물리)", "",
+         "## 요약", "",
+         f"- 1팀 물리 테이블 **{len(model)}개** · 컬럼 {n_col}개 · enum 타입 {len(enum_names)}개",
+         f"- CHECK {len(CHECKS)}개 · 고유 {len(UNIQUES) + len(UNIQUES_NND)}개 · 조회 인덱스 {len(INDEXES)}개",
+         "- 3팀 소유 테이블(`accounts` · `staff_members`)은 만들지 않는다. 3팀 스키마(`2026-10-06-3팀-schema.sql`)는 이 스키마를 먼저 적용한 DB 에 얹는다.", "",
+         "## 물리 규칙", "",
+         "- 기본키 `{참조 단수}_id integer GENERATED ALWAYS AS IDENTITY`. 공통코드(`code_groups` · `code_items`)는 코드 PK, 매핑·1:1 테이블(" +
+         ", ".join(f"`{x}`" for x in sorted(KEEP_PK - {"code_groups", "code_items"})) + ")은 외래키를 묶은 PK.",
+         "- 외래키 `{참조 단수}_id integer`, 등록자·수정자·변경자는 `admin_accounts` 를 본다. 모두 `ON DELETE RESTRICT` — 삭제는 `is_deleted` 논리 삭제다.",
+         "- 시각 `timestamptz(6)`, 참·거짓은 NOT NULL boolean. 글자 수·형식 제한은 컬럼 타입이 아니라 CHECK 제약이다.",
+         "- 공통코드 값 컬럼(`*_code`)은 text 이고 외래키를 걸지 않는다(상세 코드가 복합키라서). 논리 타입 enum 은 PostgreSQL enum 이다.",
+         "- CHECK 제약과 부분 고유 인덱스는 Prisma 가 표현하지 못해 마이그레이션 SQL 에만 남는다.", "",
+         "## 자체 검사", "",
+         "- 그림 · 관계 검사: " + ("**통과**" if not errs else f"**{len(errs)}건**")]
+    o += [f"  - {e}" for e in errs]
+    o += ["", "## 테이블 정의", ""]
+    for slug in [d.slug for d in L.DIAGRAMS if d.slug != "index"]:
+        ts = home_tables(slug, model)
+        if not ts:
+            continue
+        o += [f"### {area[slug]}", ""]
+        for t in ts:
+            o += [f"#### {t.lt.name} `{t.name}`", "",
+                  "| 컬럼 | 타입 | NULL | 기본값 | 키 · 참조 | 속성 | 비고 |", "|---|---|---|---|---|---|---|"]
+            for c in t.cols:
+                key = " · ".join(x for x in ("PK" if c.pk else "", f"FK → {c.ref[0]}.{c.ref[1]}" if c.ref else "") if x)
+                note = c.lc.note
+                if c.ref:
+                    note = re.sub(r"^[a-z_]+(\.[a-z_]+)? FK(, ?|$)", "", note).strip()
+                if c.enum:
+                    note = (note + " · " if note else "") + " · ".join(c.enum[1])
+                o.append(f"| `{c.name}` | {c.type} | {'' if c.notnull else 'NULL'} | "
+                         f"{'IDENTITY' if c.identity else md_cell(c.default)} | {key} | {md_cell(c.lc.attr)} | {md_cell(note)} |")
+            extra = [f"UNIQUE ({', '.join(cs)})" + (f" WHERE {w}" if w else "") + f" — {nt}"
+                     for tt, cs, w, nt in UNIQUES + UNIQUES_NND if tt == t.name]
+            extra += [f"CHECK `{t.name}_{s}`: `{e}`" for tt, s, e in CHECKS if tt == t.name]
+            extra += [f"INDEX ({', '.join(cs)})" for tt, cs in INDEXES if tt == t.name]
+            if extra:
+                o += [""] + [f"- {x}" for x in extra]
+            o.append("")
+    return "\n".join(o)
+
+
+def physical_page(d, svg, model):
+    marker = "<!--SVG-->"
+    html = L.page(d, marker)
+    html = html.replace(marker, f'<p class="view-note">{esc(VIEW_NOTE["physical"])}</p>' + svg)
+    html = html.replace("WHALE ERP · LOGICAL ERD", "WHALE ERP · PHYSICAL ERD")
+    html = html.replace("</style>", EXTRA_CSS + "</style>", 1)
+    title = "WHALE ERP 1팀 1차 물리 ERD · 개요" if d.slug == "index" else f"{d.title} · 물리 ERD"
+    html = html.replace(f"<title>{esc(d.title)}</title>", f"<title>{esc(title)}</title>", 1)
+    html = html.replace(f"<h1>{esc(d.title)}</h1>", f"<h1>{esc(title)}</h1>", 1)
+    back = (f'<p class="subtitle">물리 보기만 모은 장이다. 논리 · 논리+물리 보기는 '
+            f'<a href="../{d.slug}.html">1팀 ERD</a> 에서 본다.</p>')
+    html = html.replace('</div>\n<div class="nav-row">', back + '</div>\n<div class="nav-row">', 1)
+    html = html.replace("속성의 제안 컬럼명과 비고는 README.md 카탈로그에 있다. 위 보기 버튼으로 논리·물리·논리+물리를 고른다.",
+                        "영역 장마다 그림 아래에 테이블 정의가 있다.")
+    tables = home_tables(d.slug, model)
+    extra = "<h2>테이블 정의</h2>" + "".join(spec_html(t) for t in tables) if tables else ""
+    if d.slug == "index":
+        extra = ('<h2>스키마</h2><p class="subtitle">CREATE TABLE·제약·인덱스·주석은 '
+                 f'<code>{RAW_SQL_LABEL}</code> 에 있다(테이블 정의서는 같은 폴더의 1팀-물리-ERD.md).</p>')
+    html = html.replace('<div class="footer">', extra + '\n<div class="footer">', 1)
     if d.slug in DRAG_PAN_SLUGS:
         html = html.replace("</style>", DRAG_PAN_CSS + "</style>", 1)
         html = html.replace("</body>", DRAG_PAN_JS + "</body>", 1)
@@ -703,7 +798,10 @@ def main():
     global ATTR_W
     cat = read_catalog()
     model = build_model(cat)
-    with open(os.path.join(HERE, "schema.sql"), "w", encoding="utf-8", newline="\n") as fh:
+    if not os.path.isdir(os.path.join(API, "docs", "raw")):
+        print(f"api 저장소를 찾지 못했다: {API} — front 옆에 두거나 WHALE_API_DIR 로 알려 준다")
+        return 1
+    with open(RAW_SQL, "w", encoding="utf-8", newline="\n") as fh:
         fh.write(build_sql(model))
 
     views = {"logical": L.DIAGRAMS, "physical": view_diagrams(model, "physical"), "both": view_diagrams(model, "both")}
@@ -720,8 +818,13 @@ def main():
                 errs += e
             with open(os.path.join(HERE, f"{d.slug}.html"), "w", encoding="utf-8", newline="\n") as fh:
                 fh.write(page(d, svgs, model))
+            os.makedirs(PHYS_DIR, exist_ok=True)
+            with open(os.path.join(PHYS_DIR, f"{d.slug}.html"), "w", encoding="utf-8", newline="\n") as fh:
+                fh.write(physical_page(d, svgs["physical"], model))
     finally:
         L.entity_svg = L._orig_entity_svg
+    with open(RAW_MD, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(build_md(model, errs))
     n_ent = len({e.table for d in L.DIAGRAMS for e in d.entities.values()})
     ncol = sum(len(t.cols) for t in model.values())
     print(f"ERD {len(L.DIAGRAMS)}장(논리·물리·논리+물리) · 고유 엔티티 {n_ent}개 · 물리 테이블 {len(model)}개 · 컬럼 {ncol}개 생성")

@@ -29,7 +29,7 @@ export function bpNewBody(A, R, { panel = false } = {}) {
     ui.formRow(ui.field("업태", ui.textField({ value: "제과점업", maxlength: 50 })), ui.field("종목", ui.textField({ value: "베이커리", maxlength: 50 }))),
   );
 
-  const cancel = panel ? ui.button("닫기", { variant: "off", "data-close": true }) : ui.button("취소", { variant: "off", href: link(R, "bp/index.html") });
+  const cancel = panel ? ui.button("취소", { variant: "off", "data-close": true }) : ui.button("취소", { variant: "off", href: link(R, "bp/index.html") });
   return basic + biz + f.formButtons(cancel, ui.button("등록", { href: link(R, "bp/detail.html") })) + f.SWAP_SCRIPT;
 }
 

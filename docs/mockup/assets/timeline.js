@@ -1,6 +1,6 @@
 /* 근무스케줄 관리 — 주간 보기와 월간 보기 (로그인 후 홈 근무스케줄과 같은 틀, STAFF-26 · 2026-10-08 재영).
    주간 보기: 날짜가 붙은 요일 칩을 누르면 그날의 막대·근무 인원 줄·공백 안내를 다시 그린다.
-   월간 보기: 달력(처음엔 2026년 8월, ‹ › 와 「이번 달」로 달을 바꾼다). 날짜를 누르면 왼쪽에 그날 재직자 전원(휴무·배정 불가 포함)이 나온다.
+   월간 보기: 달력(처음엔 2026년 8월, ‹ › 와 「이번 달」로 달을 바꾼다). 날짜를 누르면 왼쪽에 그날 체결 완료 근로계약이 있는 재직자 전원(휴무 포함)이 나온다. 미체결 직원은 나오지 않는다(STAFF-29).
    목업이라 한 주치 데이터를 요일 규칙으로 한 달에 펼친다.
 
    운영시간 07:00-22:00 = 15칸. 1시간 = 100/15 %. */
@@ -14,7 +14,6 @@
     { name: "유하람", role: "바리스타" },
     { name: "서지안", role: "바리스타" },
     { name: "권도윤", role: "바리스타", term: ["2025-08-24", "2026-08-23"] }, /* 체결 완료 계약 기간. 월간 보기는 그 밖의 날에 뺀다(STAFF-29) */
-    { name: "하준서", role: "바리스타", blocked: "계약 대기 · 배정 불가" }
   ];
 
   /* [시작, 끝] · null 이면 휴무. 칩 순서(월~일)와 같다. */
@@ -55,8 +54,7 @@
   function rowHTML(p, day) {
     var s = day.shifts[p.name];
     var bar;
-    if (p.blocked) bar = '<div class="tl__bar tl__bar--blocked" style="left:0;width:100%">' + p.blocked + "</div>";
-    else if (!s) bar = '<div class="tl__bar tl__bar--none" style="left:0;width:100%">휴무</div>';
+    if (!s) bar = '<div class="tl__bar tl__bar--none" style="left:0;width:100%">휴무</div>';
     else bar = '<div class="tl__bar" style="left:' + pct(s[0]).toFixed(3) + "%;width:" + (((s[1] - s[0]) / SPAN) * 100).toFixed(3) + '%">' + shiftText(s) + "</div>";
     return '<div class="tl__row"><span class="tl__name">' + p.name + "<span>" + p.role + "</span></span>" +
            '<div class="tl__track">' + bar + "</div></div>";
@@ -107,7 +105,7 @@
     var ym = [t0.getFullYear(), t0.getMonth()], cur = TODAY_ISO;
     function iso(x) { return x.getFullYear() + "-" + String(x.getMonth() + 1).padStart(2, "0") + "-" + String(x.getDate()).padStart(2, "0"); }
     function staffOn(key) { return STAFF.filter(function (p) { return !p.term || (p.term[0] <= key && key <= p.term[1]); }); }
-    function work(day, key) { return staffOn(key).filter(function (p) { return !p.blocked && day.shifts[p.name]; }).length; }
+    function work(day, key) { return staffOn(key).filter(function (p) { return day.shifts[p.name]; }).length; }
     function drawMonth() {
       var y = ym[0], m = ym[1];
       root.querySelector("[data-monthtitle]").textContent = y + "년 " + (m + 1) + "월";
@@ -138,7 +136,7 @@
       pane.querySelector("[data-daysum]").innerHTML = "근무 <b>" + work(day, key) + "명</b>" + (key === TODAY_ISO ? " · 오늘" : key < TODAY_ISO ? " · 지난 날" : " · 예정");
       pane.querySelector("[data-daylist]").innerHTML = staffOn(key).map(function (p) {
         var s = day.shifts[p.name];
-        var end = p.blocked ? '<span style="color: var(--risk-text)">배정 불가</span>' : s ? '<span class="mono subtle">' + shiftText(s) + "</span>" : '<span class="subtle">휴무</span>';
+        var end = s ? '<span class="mono subtle">' + shiftText(s) + "</span>" : '<span class="subtle">휴무</span>';
         return '<div class="row" style="padding: 8px 0"><div class="rowmain__text"><b>' + p.name + "</b><span>" + p.role + "</span></div>" +
           '<span class="row__end" style="text-align: right; font-size: 12px">' + end + "</span></div>";
       }).join("");

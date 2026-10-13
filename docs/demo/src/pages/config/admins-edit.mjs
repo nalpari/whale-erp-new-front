@@ -35,7 +35,7 @@ export function adminEditBody(A, R, { panel = false } = {}) {
   );
 
   const stores = ui.formGroup(
-    "점포 매핑",
+    "대상 점포",
     row(ui.field("범위", ui.select(["전체 점포", "일부 점포"], { value: "일부 점포", "data-spick-scope": true })), c.blank),
     c.storePicker(A, {
       clearLabel: "전체 제거",
@@ -50,7 +50,7 @@ export function adminEditBody(A, R, { panel = false } = {}) {
   );
 
 
-  const cancel = panel ? ui.button("닫기", { variant: "off", "data-close": true }) : ui.button("취소", { variant: "off", href: detail });
+  const cancel = panel ? ui.button("취소", { variant: "off", "data-close": true }) : ui.button("취소", { variant: "off", href: detail });
   // 저장하면 상세 화면이 아니라 상세 슬라이드로 간다 — 패널은 수정 패널을 닫아 아래 상세 패널을 보이고(erp.js data-save-panel),
   // 전체 화면은 목록으로 가서 상세 패널을 연다(?panel=).
   const save = panel

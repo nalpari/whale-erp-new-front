@@ -5,6 +5,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as ui from "./ui.mjs";
 import * as x from "./extra.mjs";
+import { platformMyPanel } from "./platform-admin/edit.mjs";
 import * as f from "./biz-form.mjs";
 
 const pages = join(dirname(fileURLToPath(import.meta.url)), "pages");
@@ -371,8 +372,9 @@ function platformScopeDialog(A, R, id) {
 export function platformHeader(A, R, { master = false } = {}) {
   const menus = PLATFORM_MENUS.map(([label, items]) => ({ label, items: items.map(([l, p]) => ({ label: l, href: to(R, p) })) }));
   const user = [
-    { label: "내정보 관리", href: to(R, "mypage/profile.html") },
-    { label: "비밀번호 변경", href: to(R, "mypage/password.html") },
+    // 내정보 관리 · 비밀번호 변경은 화면을 옮기지 않고 슬라이드에서 한다(ERP 헤더와 같다 · 2026-10-08)
+    { label: "내정보 관리", panel: "platform-mypage-panel" },
+    { label: "비밀번호 변경", panel: "password-panel" },
     { label: "로그아웃", href: to(R, "auth/login.html"), danger: true },
   ];
   const scopeId = ui.uid("scope-dlg");
@@ -385,6 +387,6 @@ export function platformHeader(A, R, { master = false } = {}) {
         ui.alarmLink(A, "#") +
         ui.userPop(A, master ? PLATFORM_MASTER : PLATFORM_USER, user),
       to(R, "bp/index.html"),
-    ) + platformScopeDialog(A, R, scopeId)
+    ) + platformScopeDialog(A, R, scopeId) + platformMyPanel(A, { master }) + passwordPanel(A)
   );
 }

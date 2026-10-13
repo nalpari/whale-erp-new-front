@@ -342,10 +342,10 @@ python3 docs/erd/_build.py
 |  | 계약 기간 | date | `start_date·end_date` | 종료일 비우면 무기한 |
 |  | 건강보험·국민연금 가입 | bool | `is_health_pension_insured` |  |
 |  | 고용보험·산재보험 가입 | bool | `is_employment_injury_insured` |  |
-|  | 급여액 | money | `wage_amount` | 정직원은 월급, 파트타이머는 시급 |
+|  | 급여액 | money | `wage_amount` | 시급 — 고용 형태와 상관없이 시급만 둔다. 월급은 근로시간으로 셈한다 (2026-10-12) |
 |  | 임금지급 월 | enum | `pay_month` | 당월·익월 |
 |  | 임금지급일 | int | `pay_day` | 1~31, 31은 말일 |
-|  | 계약 상태 | enum | `status` | 발송 대기·서명 대기·체결 완료·거부·만료·종료 |
+|  | 계약 상태 | enum | `status` | 임시저장·발송 대기·서명 대기·체결 완료·거부·만료·종료 |
 |  | 초안 처리 유형 | enum | `draft_action` | 가입 초대·소속 추가 확인·복귀 확인·즉시 발송 |
 |  | 발송 일시 | datetime | `sent_at` |  |
 |  | 날인 기한 | datetime | `sign_deadline_at` | 발송일부터 30일 |

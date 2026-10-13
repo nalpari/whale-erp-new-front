@@ -27,7 +27,7 @@ export default ({ A, R }) => {
   const dayChip = (d, on) =>
     `<button type="button" aria-pressed="${on}" class="grid size-[34px] place-items-center rounded-[2px] border border-erp-field-line bg-white text-[14px] text-erp-label transition-colors duration-150 ease-out aria-pressed:border-erp-brand-soft aria-pressed:bg-erp-brand-soft aria-pressed:text-white">${d}</button>`;
   // 칸 배치는 이 폼의 다른 항목과 같게(라벨 위 · 입력 아래, 구분선 없음).
-  // 근무요일은 월급·시급 옆(2026-10-02 재영). data-workplan 은 그 줄과 근무시간 줄을 함께 감싼다.
+  // 근무요일은 시급 옆(2026-10-02 재영). data-workplan 은 그 줄과 근무시간 줄을 함께 감싼다.
   const workDays = group("근무요일", `<span class="flex gap-[6px]">${["월", "화", "수", "목", "금", "토", "일"].map((d, i) => dayChip(d, i < 5)).join("")}</span>`);
   const workTimes = ui.formRow(group("근무시간", span("work", ["09", "00", "18", "00"], "근무시간")), group("휴게시간", span("rest", ["12", "00", "13", "00"], "휴게시간")));
 
@@ -60,9 +60,8 @@ export default ({ A, R }) => {
       ),
       `<div data-workplan class="flex flex-col gap-[18px]">` +
       ui.formRow(
-        // 고용 형태에 따라 월급(정직원)·시급(파트타이머) 중 하나가 보인다(목업과 같은 값, erp.js initWhen). 둘 다 필수(2026-10-02 재영).
-        p.fieldH(req("월급"), ui.textField({ value: "2,400,000", inputmode: "numeric" }), "월 소정근로시간 기준 최저임금 이상").replace("<div ", '<div data-when="employment:정직원" '),
-        p.fieldH(req("시급"), ui.textField({ value: "11,200", inputmode: "numeric" }), "2026년 최저임금 10,320원 이상").replace("<div ", '<div data-when="employment:파트타이머" '),
+        // 급여는 고용 형태와 상관없이 시급 한 칸(2026-10-12 재영, api #12). 정직원 월급은 시급과 근로시간으로 셈한다.
+        p.fieldH(req("시급"), ui.textField({ value: "11,200", inputmode: "numeric" }), "2026년 최저임금 10,320원 이상"),
         workDays,
       ).replace('class="flex w-full gap-[6px]"', 'class="flex w-full items-start gap-[6px]"') +
         workTimes +

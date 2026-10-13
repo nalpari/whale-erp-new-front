@@ -9,19 +9,19 @@
   </head>
   <body data-root="../" data-page="config" data-sub="config/admins.html">
     <!-- BP 관리자 계정 상세 조회 · /settings/admins/:아이디 · S-EBIPGZ · 비밀번호 초기화 S-TKSRJX (F-OILWTZ) · 1팀
-         기본정보(등록일시·최종 수정일시는 일시 | 처리자명) · 점포 매핑 · 변경 이력을 나눠 보인다. 계정 상태·계정 역할·권한 그룹은 제목 줄 배지로 보인다(2026-10-07). 이 화면의 값은 모두 읽기 전용이고 고치는 일은 수정 화면이 맡는다.
+         기본정보(등록일시·최종 수정일시는 일시 | 처리자명) · 대상 점포 · 변경 이력을 나눠 보인다. 계정 상태·계정 역할·권한 그룹은 제목 줄 배지로 보인다(2026-10-07). 이 화면의 값은 모두 읽기 전용이고 고치는 일은 수정 화면이 맡는다.
          수정 · 비밀번호 초기화는 수정 권한이 있고 관리 범위 안인 계정에만 보인다.
            BP 관리자 · 가맹 마스터 계정 = BP 마스터 · BP 관리자 · 플랫폼 사용자(수정 권한)가 한다.
            가맹 관리자 계정 = 연결된 가맹 마스터만 한다. 다른 역할에게는 두 실행 항목을 감추고 조회만 한다고 알린다.
          가맹 마스터 · 가맹 관리자는 BP 관리자 · 가맹 마스터 계정을 볼 수 없다 — 주소로 열어도 상세정보를 주지 않는다.
-         본인 계정은 비밀번호 초기화를 막는다(내 정보에서 직접 바꾼다). 수정은 열리지만 기본정보만 고치고 권한 그룹 · 계정 상태 · 점포 매핑은 읽기 전용이다 (확정 2026-09-29).
+         본인 계정은 비밀번호 초기화를 막는다(내 정보에서 직접 바꾼다). 수정은 열리지만 기본정보만 고치고 권한 그룹 · 계정 상태 · 대상 점포는 읽기 전용이다 (확정 2026-09-29).
          초기화한 비밀번호는 처리한 사람에게도 보이지 않고 계정 이메일로만 간다 — 계정 생성 메일이 아니라 플랫폼·BP 마스터와 같은 비밀번호 초기화 전용 양식을 쓴다(확정 2026-09-29). 계정 상태는 바뀌지 않는다.
          플랫폼 사용자에게는 관리 대상 BP 를 위에 띄운다.
          표본 수정 화면이 없는 계정(hgops · hgacct · hgcs)의 수정 버튼은 대표 수정(hghr)으로 간다.
          BP 마스터 계정은 이 메뉴의 관리 대상이 아니다 — 주소로 열면 상세정보 없이 안내만 보인다 (확정 2026-09-29).
          계정 회수 기능은 없다 — 상세 명세의 ‘계정 회수 업무의 기준 정보’ 문구는 뺀다 (확정 2026-09-29).
          비밀번호 초기화 이력은 변경 이력 표에 ‘비밀번호 초기화’ 한 줄로 함께 보인다 — 처리자·일시·발송 결과만, 비밀번호 값은 남기지 않는다 (확정 2026-09-29 · 플랫폼 관리자 상세와 같다).
-         점포 매핑이 ‘전체 점포’인 계정은 점포 목록으로 펼치지 않고 ‘전체 점포’ 한 줄로 보인다 (확정 2026-09-29).
+         대상 점포가 ‘전체 점포’인 계정은 점포 목록으로 펼치지 않고 ‘전체 점포’ 한 줄로 보인다 (확정 2026-09-29).
          가맹 마스터 미사용 직후(fmoff)는 수정 화면에서 morinam01 을 미사용으로 저장한 결과다 — 표본 값에는 없는 가정 상태다.
          위쪽 점선 줄 둘은 목업 전용이다 — 보는 사람의 역할과 대상 계정을 따로 바꾼다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
@@ -168,7 +168,7 @@
               <span class="band__ic" data-icon="info" data-icon-size="20"></span>
               <div class="band__body">
                 <div class="band__title">내 계정입니다</div>
-                <p class="band__desc">수정 화면에서는 기본정보와 점포 매핑만 바뀝니다. 권한 그룹과 계정 상태는 이 계정을 관리할 수 있는 다른 사용자가, 비밀번호는 내 정보에서 직접 바꿉니다.</p>
+                <p class="band__desc">수정 화면에서는 기본정보와 대상 점포만 바뀝니다. 권한 그룹과 계정 상태는 이 계정을 관리할 수 있는 다른 사용자가, 비밀번호는 내 정보에서 직접 바꿉니다.</p>
               </div>
             </div>
             <div class="band band--info" data-show="ops" data-show-role="bpall" hidden>
@@ -195,7 +195,7 @@
 
             <!-- ===== BP 쪽 계정 (BP 관리자 · 가맹 마스터) ===== -->
             <div data-show="hr ops acct created morinam fmoff" data-show-role="bm bpall bppart plat view" style="display: contents">
-              <!-- 왼쪽: 기본정보 / 오른쪽: 점포 매핑 — 계정 상태·권한 그룹은 제목 줄 배지로 본다(2026-10-07). 점포 매핑은 왼쪽 높이에 맞추고 넘치면 그 안에서 스크롤 -->
+              <!-- 왼쪽: 기본정보 / 오른쪽: 대상 점포 — 계정 상태·권한 그룹은 제목 줄 배지로 본다(2026-10-07). 대상 점포는 왼쪽 높이에 맞추고 넘치면 그 안에서 스크롤 -->
               <div class="grid grid--2">
                 <div class="stack">
                   <section class="panel">
@@ -224,7 +224,7 @@
                   <div class="fillcol__rest">
                     <section class="panel">
                       <div class="panel__head">
-                        <h2 class="t-h2">점포 매핑</h2>
+                        <h2 class="t-h2">대상 점포</h2>
                         <span class="badge badge--quiet" data-show="hr">일부 · 4개점</span>
                         <span class="badge badge--quiet" data-show="ops acct created" hidden>전체 점포</span>
                         <span class="badge badge--quiet" data-show="morinam fmoff" hidden>일부 · 4개점</span>
@@ -265,7 +265,7 @@
                     </thead>
                     <tbody>
                       <tr data-show="hr"><td class="mono">2026-06-18 17:25</td><td class="mono">hangang01</td><td>초기 비밀번호</td><td class="nil">—</td><td>초기화 메일 발송 완료 <span class="subtle">· 값은 남기지 않음</span></td></tr>
-                      <tr data-show="hr"><td class="mono">2026-02-03 15:10</td><td class="mono">hangang01</td><td>점포 매핑</td><td>일부 · ST000001~002</td><td>일부 · ST000001~004</td></tr>
+                      <tr data-show="hr"><td class="mono">2026-02-03 15:10</td><td class="mono">hangang01</td><td>대상 점포</td><td>일부 · ST000001~002</td><td>일부 · ST000001~004</td></tr>
                       <tr data-show="hr"><td class="mono">2025-09-15 11:02</td><td class="mono">hangang01</td><td>권한 그룹</td><td>정산 조회 <span class="mono subtle">BA000005</span></td><td>인사 담당 <span class="mono subtle">BA000004</span></td></tr>
                       <tr data-show="hr"><td class="mono">2025-04-01 09:12</td><td class="mono">hangang01</td><td>계정</td><td class="nil"></td><td>사용 · BP 관리자 · 정산 조회 <span class="mono subtle">BA000005</span></td></tr>
                       <tr data-show="ops" hidden><td class="mono">2025-02-10 10:20</td><td class="mono">hangang01</td><td>계정</td><td class="nil"></td><td>사용 · BP 관리자 · 운영 총괄 <span class="mono subtle">BA000003</span> · 전체 점포</td></tr>
@@ -283,7 +283,7 @@
 
             <!-- ===== 가맹 관리자 계정 (moriyn) — 모든 역할이 볼 수 있다 ===== -->
             <div data-show="yn" style="display: contents" hidden>
-              <!-- 왼쪽: 기본정보 / 오른쪽: 점포 매핑 — 계정 상태·권한 그룹은 제목 줄 배지로 본다(2026-10-07). 점포 매핑은 왼쪽 높이에 맞추고 넘치면 그 안에서 스크롤 -->
+              <!-- 왼쪽: 기본정보 / 오른쪽: 대상 점포 — 계정 상태·권한 그룹은 제목 줄 배지로 본다(2026-10-07). 대상 점포는 왼쪽 높이에 맞추고 넘치면 그 안에서 스크롤 -->
               <div class="grid grid--2">
                 <div class="stack">
                   <section class="panel">
@@ -305,7 +305,7 @@
                   <div class="fillcol__rest">
                     <section class="panel">
                       <div class="panel__head">
-                        <h2 class="t-h2">점포 매핑</h2>
+                        <h2 class="t-h2">대상 점포</h2>
                         <span class="badge badge--quiet">일부 · 1개점</span>
                       </div>
                       <div class="tblwrap">

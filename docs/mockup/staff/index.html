@@ -23,10 +23,10 @@
               <span data-icon="alert" data-icon-size="14"></span>가입 연결 확인
               <span class="badge badge--risk">2</span>
             </a>
-            <!-- STAFF-1 : 시안의 "직원 초대"가 여기 있었다. 문서 기준으로는 채용이
-                 계약서 작성에서 시작하므로 버튼을 바꿨다. -->
+            <!-- STAFF-1 : 채용은 계약서 작성에서 시작한다. 버튼 이름만 「직원 초대」로 둔다 —
+                 직원 목록 제목 줄에서만 쓰는 예외이고 누르면 근로계약서 초안 작성으로 간다 (2026-10-12 재영). -->
             <a class="btn btn--primary btn--sm" href="contracts-new.html">
-              <span data-icon="plus" data-icon-size="14"></span>계약서 작성
+              <span data-icon="plus" data-icon-size="14"></span>직원 초대
             </a>
           </div>
         </div>
@@ -61,7 +61,7 @@
               </div>
               <div class="gap__opt is-picked" data-side="b">
                 <div class="gap__label">B · manyfast 문서 · 이 화면</div>
-                <p>버튼이 <b>계약서 작성</b>. 초안 저장이 채용의 시작점이고, 날인 기한과 초대 유효기간은 모두 <b>30일</b>.</p>
+                <p>버튼이 <b>계약서 작성</b>. 초안 저장이 채용의 시작점이고, 날인 기한과 초대 유효기간은 모두 <b>30일</b>. 직원 목록 제목 줄의 버튼 이름만 「직원 초대」로 둔다 — 가는 곳은 그대로 초안 작성이다 (2026-10-12 재영).</p>
               </div>
             </div>
           </div>
@@ -112,7 +112,6 @@
                         <th scope="col">고용형태</th>
                         <th scope="col">가입·인증</th>
                         <th scope="col">계약 상태</th>
-                        <th scope="col" class="n">이번 주</th>
                         <th scope="col">재직</th>
                       </tr>
                     </thead>
@@ -130,7 +129,6 @@
                         <td><span class="badge badge--quiet">정직원</span></td>
                         <td><span class="badge badge--ok">가입 완료</span></td>
                         <td><span class="badge badge--ok">체결 완료</span></td>
-                        <td class="n">38.5h</td>
                         <td><span class="ok">재직</span></td>
                       </tr>
                       <tr>
@@ -146,7 +144,6 @@
                         <td><span class="badge badge--quiet">정직원</span></td>
                         <td><span class="badge badge--ok">가입 완료</span></td>
                         <td><span class="badge badge--ok">체결 완료</span></td>
-                        <td class="n">40.0h</td>
                         <td><span class="ok">재직</span></td>
                       </tr>
                       <tr>
@@ -162,7 +159,6 @@
                         <td><span class="badge badge--quiet">정직원</span></td>
                         <td><span class="badge badge--ok">가입 완료</span></td>
                         <td><span class="badge badge--ok">체결 완료</span></td>
-                        <td class="n">42.0h</td>
                         <td><span class="ok">재직</span> <span class="badge badge--warn" data-tip="퇴직일만 정해 둔 상태다. 퇴직일 다음 날 퇴직으로 바뀌기 전까지는 재직으로 센다 (2026-10-08 재영).">퇴직 예정 09-30</span></td>
                       </tr>
                       <tr>
@@ -178,7 +174,6 @@
                         <td><span class="badge">파트타이머</span></td>
                         <td><span class="badge badge--ok">가입 완료</span></td>
                         <td><span class="badge badge--warn">갱신 예정 D-20</span></td>
-                        <td class="n">24.0h</td>
                         <td><span class="ok">재직</span></td>
                       </tr>
                       <!-- 여기부터는 아직 계정이 없거나 연결되지 않은 사람들.
@@ -196,7 +191,6 @@
                         <td><span class="badge">파트타이머</span></td>
                         <td><span class="badge badge--warn">초대 발송 · 08-31</span></td>
                         <td><span class="badge badge--quiet">발송 대기</span></td>
-                        <td class="n nil">—</td>
                         <td><span class="subtle">가입 대기</span></td>
                       </tr>
                       <tr>
@@ -216,7 +210,6 @@
                           </a>
                         </td>
                         <td><span class="badge badge--quiet">발송 대기</span></td>
-                        <td class="n nil">—</td>
                         <td><span class="risk">확인 필요</span></td>
                       </tr>
                       <tr>
@@ -232,7 +225,6 @@
                         <td><span class="badge">파트타이머</span></td>
                         <td><span class="badge badge--info">소속 추가 확인</span></td>
                         <td><span class="badge badge--quiet">발송 대기</span></td>
-                        <td class="n nil">—</td>
                         <td><span class="subtle">응답 대기</span></td>
                       </tr>
                       <tr>
@@ -248,7 +240,6 @@
                         <td><span class="badge">파트타이머</span></td>
                         <td><span class="badge badge--ok">가입 완료</span></td>
                         <td><span class="badge badge--warn">서명 대기 · D-24</span></td>
-                        <td class="n">18.0h</td>
                         <td><span class="warn">날인 대기</span></td>
                       </tr>
                       <tr>
@@ -263,8 +254,7 @@
                         <td>모리커피 연남점</td>
                         <td><span class="badge">파트타이머</span></td>
                         <td><span class="badge badge--ok">가입 완료</span></td>
-                        <td><span class="badge badge--risk">거부 · 09-02</span></td>
-                        <td class="n nil">—</td>
+                        <td><span class="badge badge--risk" data-tip="날짜는 근로계약서의 최종 수정일이다 (2026-10-12 재영).">거부 · 09-02</span></td>
                         <td><span class="risk">재발송 필요</span></td>
                       </tr>
                       <tr>
@@ -280,7 +270,6 @@
                         <td class="nil">—</td>
                         <td class="nil">—</td>
                         <td class="nil">—</td>
-                        <td class="n nil">—</td>
                         <td class="nil">—</td>
                       </tr>
                       <tr>
@@ -296,7 +285,6 @@
                         <td><span class="badge">파트타이머</span></td>
                         <td><span class="badge badge--risk">가입 불가(만 19세 미만)</span></td>
                         <td><span class="badge badge--quiet">발송 대기</span></td>
-                        <td class="n nil">—</td>
                         <td><span class="risk">삭제 대상</span></td>
                       </tr>
                       <tr>
@@ -312,7 +300,6 @@
                         <td><span class="badge">파트타이머</span></td>
                         <td><span class="badge badge--quiet">가입 완료</span></td>
                         <td><span class="badge badge--quiet">종료</span></td>
-                        <td class="n nil">—</td>
                         <td><span class="subtle">퇴직 07-31</span></td>
                       </tr>
                     </tbody>
@@ -534,7 +521,7 @@
                           <b class="num">2</b>
                         </div>
                         <div class="spread">
-                          <span class="inline"><span class="badge badge--risk">거부</span>재발송 필요</span>
+                          <span class="inline"><span class="badge badge--risk" data-tip="날짜는 근로계약서의 최종 수정일이다 (2026-10-12 재영).">거부 · 09-02</span>재발송 필요</span>
                           <b class="num">1</b>
                         </div>
                         <div class="spread">
@@ -710,7 +697,7 @@
                     <p>미체결 직원도 고를 수 있고 「근로계약 미체결」 경고를 확인하면 등록한다. 빈 값으로 열었다.</p>
                   </div>
                 </div>
-                <p class="gap__note">2026-10-08 재영 결정. 근무스케줄 등록(한 명·여러 명 일괄)의 직원 선택지, 지난 주 복사, 관리자 웹 출퇴근 대신 등록에 같이 적용한다. 흐리게 두지 않고 목록에서 뺀다. 지난 주 복사 미리보기에는 「제외 · 근로계약 미체결」로 보인다. 샘플의 권도윤은 앞 계약(2025-08-24 ~ 2026-08-23)이 체결 완료이고 재계약(2026-09-01 ~)이 서명 대기라, 08-24 이후 날짜에는 고를 수 없다.</p>
+                <p class="gap__note">2026-10-08 재영 결정. 근무스케줄 등록(한 명·여러 명 일괄)의 직원 선택지, 지난 주 복사, 관리자 웹 출퇴근 대신 등록에 같이 적용한다. 흐리게 두지 않고 목록에서 뺀다. 근무스케줄 관리의 주간·월간 보기에도 미체결 직원은 나오지 않는다(「계약 대기 · 배정 불가」 줄 삭제, 2026-10-08 재영). 지난 주 복사 미리보기에는 「제외 · 근로계약 미체결」로 보인다. 샘플의 권도윤은 앞 계약(2025-08-24 ~ 2026-08-23)이 체결 완료이고 재계약(2026-09-01 ~)이 서명 대기라, 08-24 이후 날짜에는 고를 수 없다.</p>
               </div>
               <div class="gap is-decided">
                 <div class="gap__head">
@@ -758,7 +745,7 @@
 
               <!-- 근무스케줄 보기 · 로그인 후 홈 근무스케줄과 같은 틀(STAFF-26, 2026-10-08 재영)
                    주간 보기는 날짜가 붙은 요일 칩 + 그날 시간축 + 근무 인원 줄, 월간 보기는 달력 + 고른 날의 재직자.
-                   관리는 그날 재직자 전원(휴무·배정 불가 포함)을 보이고, 공백 안내와 「이 시간대에 배정」은 관리에만 있다.
+                   관리는 그날 체결 완료 근로계약이 있는 재직자 전원(휴무 포함)을 보이고, 미체결 직원은 보이지 않는다(STAFF-29), 공백 안내와 「이 시간대에 배정」은 관리에만 있다.
                    주간 근무표(직원 × 요일 표, 주 합계)는 없앴다. -->
               <section class="panel" data-tl-root tabindex="-1">
                 <div class="panel__head">
@@ -807,10 +794,6 @@
                             <span class="tl__name">권도윤<span>바리스타</span></span>
                             <div class="tl__track"><div class="tl__bar tl__bar--none" style="left: 0; width: 100%">휴무</div></div>
                           </div>
-                          <div class="tl__row">
-                            <span class="tl__name">하준서<span>바리스타</span></span>
-                            <div class="tl__track"><div class="tl__bar tl__bar--blocked" style="left: 0; width: 100%">계약 대기 · 배정 불가</div></div>
-                          </div>
                       </div>
                       <div class="tl__cover" data-tl-cover>
                           <span class="tl__cell" data-n="0">0</span>
@@ -854,7 +837,7 @@
                   </div>
                 </div>
                 <div class="panel__note">
-                  주 15시간 이상 근무자는 주휴수당 대상이다 — 급여명세서 초안에 자동 반영된다. 본사가 볼 때 동의 없는 가맹 점포 직원의 행은 비어 있다.
+                  1주 소정근로시간이 15시간 이상이고 그 주 소정근로일을 개근하면 주휴수당 대상이다 — 급여명세서 초안에 자동 반영된다. 본사가 볼 때 동의 없는 가맹 점포 직원의 행은 비어 있다.
                 </div>
               </section>
 
@@ -985,6 +968,27 @@
                 </section>
               </div>
 
+              <!-- 출퇴근 현황 필터 (STAFF-31). 유지하지 않는다 — 화면을 떠나면 처음 값으로 돌아간다. -->
+              <div class="filters" style="margin-top: var(--s-5)">
+                <input class="input" style="width: 160px" placeholder="점포" aria-label="점포" />
+                <input class="input" style="width: 180px" placeholder="이름 또는 휴대전화번호" aria-label="직원" />
+                <select class="select" style="width: 130px" aria-label="고용형태"><option>고용형태 전체</option><option>정직원</option><option>파트타이머</option></select>
+                <select class="select" style="width: 150px" aria-label="출퇴근 상태"><option>상태 전체</option><option>정상</option><option>지각</option><option>미출근</option><option>출근 미등록</option><option>퇴근 미등록</option><option>휴무</option></select>
+                <select class="select" style="width: 160px" aria-label="확인 필요 사유"><option>사유 전체</option><option>위치 오차 초과</option><option>반경 밖 퇴근</option><option>위치 조작 감지</option></select>
+                <select class="select" style="width: 140px" aria-label="기록 구분"><option>기록 전체</option><option>직원 등록</option><option>대신 등록</option><option>보정됨</option></select>
+                <select class="select" style="width: 110px" aria-label="재직 상태"><option>재직</option><option>퇴직</option><option>전체</option></select>
+                <div class="filters__end"><span class="filters__count">근태 요약에는 점포·고용형태·재직만</span></div>
+              </div>
+              <div class="gap is-decided">
+                <div class="gap__head">
+                  <span class="gap__no">STAFF-31</span>
+                  <b>출퇴근 현황은 무엇으로 걸러 보는가</b>
+                  <span class="gap__decided">확정 · 필터 7개 · 보정 목록만 기간 · 유지 안 함</span>
+                  <span class="gap__ref">F-NUXMTT</span>
+                </div>
+                <p class="gap__note">2026-10-08 재영 결정. 다른 관리 화면처럼 필터를 둔다 — 점포 · 직원(이름·휴대전화번호) · 고용형태 · 출퇴근 상태(정상·지각·미출근·출근 미등록·퇴근 미등록·휴무, 기본 모두 켬) · 확인 필요 사유 · 기록 구분(직원 등록·대신 등록·보정됨) · 재직 상태(기본 재직). 날짜는 필터에 넣지 않고 일별 출퇴근은 하루, 근태 요약은 한 주씩 넘긴다. 근태 요약에는 점포·고용형태·재직 상태만 걸린다. 보정이 필요한 기록에는 기간 지정 조회를 두고 최근 3개월 안에서 고른다(대신 등록과 같은 범위). 필터는 화면을 떠나면 처음 값으로 돌아간다(유지하지 않음). 미체결 직원(STAFF-29)과 본사 제공 동의가 없는 가맹 직원(운영 정책 ATT-30)은 필터와 관계없이 나오지 않는다.</p>
+              </div>
+
               <div class="grid grid--2" style="margin-top: var(--s-5)">
                 <section class="panel">
                   <div class="panel__head">
@@ -1087,7 +1091,8 @@
                     <h2 class="t-h2">보정이 필요한 기록</h2>
                     <span class="badge badge--warn">5건</span>
                     <div class="panel__end">
-                      <span class="filters__count">최근 3개월 이내만 수정 가능</span>
+                      <input class="input input--sm" type="date" value="2026-07-20" min="2026-05-20" aria-label="기간 시작" /> ~ <input class="input input--sm" type="date" value="2026-08-20" max="2026-08-20" aria-label="기간 끝" />
+                      <span class="filters__count">최근 3개월 안 · 이 안에서만 수정 가능</span>
                       <button class="btn btn--secondary btn--sm" type="button" data-tip="위치정보 동의를 거부·철회했거나 앱에서 위치 수집을 일시 중지한 직원에게만 열린다. 위치를 주는 직원은 앱으로 찍고 관리자는 보정만 한다. 그 날짜에 체결 완료 근로계약이 없는 직원은 고를 수 없다(STAFF-29).">
                         <span data-icon="plus" data-icon-size="14"></span>출퇴근 대신 등록
                       </button>
@@ -1241,7 +1246,7 @@
                 </div>
                 <p class="gap__note">
                   1차 범위에서 시안과 문서의 간극이 가장 큰 곳이다. A 로 가면 주휴수당·연장근로 계산 정책과 4대보험 공제 기준을
-                  이번에 함께 확정해야 한다. 아래 화면은 <b>두 안을 겹쳐</b> 두었다 — 금액 컬럼은 A, 검토 대기 패널은 B 다.
+                  이번에 함께 확정해야 한다. 아래 화면은 <b>두 안을 겹쳐</b> 두었다 — 금액 컬럼은 A, 검토 대기 패널은 B 다. 검토 대기 패널은 2026-10-12 에 뺐다(STAFF-32).
                 </p>
             <div class="gap__block">
                 <b>확정 — 계산은 주휴·연장까지, 공제는 관리자 입력.</b>
@@ -1268,86 +1273,15 @@
                 </div>
               </div>
 
-              <!-- 검토 대기 : 문서가 급여 관리의 핵심으로 꼽는 자리다.
-                   출퇴근 누락 / 계약 만료 후 기록 / 기간 중 계약 변경 — 세 사유로 분류한다. -->
-              <section class="panel" style="margin-bottom: var(--s-5)">
-                <div class="panel__head">
-                  <h2 class="t-h2">검토 대기</h2>
-                  <span class="badge badge--warn">9건</span>
-                  <div class="panel__end">
-                    <span class="filters__count">확인 전에는 확정할 수 없다</span>
-                  </div>
+              <div class="gap is-decided" style="margin-bottom: var(--s-5)">
+                <div class="gap__head">
+                  <span class="gap__no">STAFF-32</span>
+                  <b>급여명세서 목록에 검토 대기 목록을 따로 두는가</b>
+                  <span class="gap__decided">확정 · 두지 않음 · 사유는 상세에서</span>
+                  <span class="gap__ref">S-DOVWAR</span>
                 </div>
-                <div class="tblwrap">
-                  <table class="tbl tbl--dense">
-                    <thead>
-                      <tr>
-                        <th scope="col">직원</th>
-                        <th scope="col">근무지</th>
-                        <th scope="col">급여 기간</th>
-                        <th scope="col">검토 사유</th>
-                        <th scope="col" style="width: 92px"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td class="k">서지안</td>
-                        <td>서초점</td>
-                        <td class="mono">2026-08</td>
-                        <td>
-                          <span class="badge badge--warn">출퇴근 누락</span>
-                          <span class="subtle">09-05 퇴근 미등록 등 2일</span>
-                        </td>
-                        <td class="c"><a class="tbtn" href="payrolls-detail.html">검토</a></td>
-                      </tr>
-                      <tr>
-                        <td class="k">유하람</td>
-                        <td>연남점</td>
-                        <td class="mono">2026-08</td>
-                        <td>
-                          <span class="badge badge--risk">계약 만료 후 기록</span>
-                          <span class="subtle">08-29 ~ 08-31 · 3일</span>
-                        </td>
-                        <td class="c"><a class="tbtn" href="payrolls-detail.html">검토</a></td>
-                      </tr>
-                      <tr>
-                        <td class="k">배정숙</td>
-                        <td>판교점</td>
-                        <td class="mono">2026-08</td>
-                        <td>
-                          <span class="badge badge--info">기간 중 계약 변경</span>
-                          <span class="subtle">08-16 시급 조정</span>
-                        </td>
-                        <td class="c"><a class="tbtn" href="payrolls-detail.html">검토</a></td>
-                      </tr>
-                      <tr>
-                        <td class="k">권도윤</td>
-                        <td>서초점</td>
-                        <td class="mono">2026-08</td>
-                        <td>
-                          <span class="badge badge--risk">공제 미입력</span>
-                          <span class="subtle">4대보험·소득세 비어 있음</span>
-                        </td>
-                        <td class="c"><a class="tbtn" href="payrolls-detail.html">검토</a></td>
-                      </tr>
-                      <tr>
-                        <td class="k">남도현</td>
-                        <td>성수점</td>
-                        <td class="mono">2026-08</td>
-                        <td>
-                          <span class="badge badge--risk">근로계약 없음</span>
-                          <span class="subtle">초안이 생성되지 않는다</span>
-                        </td>
-                        <td class="c"><span class="subtle">—</span></td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <div class="panel__note">
-경고가 있는 명세서도 관리자가 확인하면 확정할 수 있다. 확정 취소는 발송 후에도 가능하며 검토 중으로 되돌아간다.
-                  동의 없는 가맹 점포 직원의 명세서는 본사에게 금액까지 가려지고 건수만 남는다.
-                </div>
-              </section>
+                <p class="gap__note">2026-10-12 재영 결정. 목록 위의 「검토 대기」 목록을 뺐다. 검토 대기 분류(출퇴근 누락 · 계약 만료 후 기록 포함 · 기간 중 계약 변경 · 공제 미입력)와 공제가 비면 확정할 수 없는 규칙은 그대로 두고, 사유와 경고는 명세서 상세에서만 보인다. 목록에서는 상태 칸(검토 중)으로만 가린다.</p>
+              </div>
 
               <section class="panel">
                 <div class="panel__head">
@@ -1740,6 +1674,6 @@
         draw();
       })();
     </script>
-    <script src="../assets/timeline.js?v=20261008c"></script>
+    <script src="../assets/timeline.js?v=20261008d"></script>
   </body>
 </html>

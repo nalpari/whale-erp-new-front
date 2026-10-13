@@ -56,7 +56,7 @@ function platformAdminEditBody(A) {
   );
 
   // 저장하면 수정 패널을 닫아 아래 상세 패널을 보인다
-  const buttons = `<div class="flex justify-center gap-[6px]">${ui.button("닫기", { variant: "off", "data-close": true })}${ui.button("저장", { "data-save-panel": "platform-admin-detail-panel" })}</div>`;
+  const buttons = `<div class="flex justify-center gap-[6px]">${ui.button("취소", { variant: "off", "data-close": true })}${ui.button("저장", { "data-save-panel": "platform-admin-detail-panel" })}</div>`;
   return basic + role + buttons;
 }
 
@@ -66,3 +66,26 @@ export const platformAdminEditPanel = (A, R) =>
     "플랫폼 관리자 수정",
     ui.sectionHead(`플랫폼 관리자 수정${sub("박지우 · platpark")}`) + platformAdminEditBody(A),
   );
+
+// 플랫폼 헤더 MY PAGE 「내정보 관리」 — 로그인한 플랫폼 사용자 본인의 정보를 슬라이드에서 고친다(2026-10-08).
+// 플랫폼 관리자 수정과 같은 입력칸이고, 본인 권한·계정 상태는 스스로 바꿀 수 없어 사용자 권한은 읽기 전용으로만 보인다.
+const ME = {
+  admin: { id: "platjiyoung", name: "김지영", tel: ["010", "5520", "3141"], mail: "jiyoung.kim@whale-erp.example", dept: "플랫폼운영팀", title: "매니저", role: "플랫폼 관리자 · PA000001" },
+  master: { id: "platkim", name: "김서연", tel: ["010", "3321", "0981"], mail: "seoyeon.kim@whale-erp.example", dept: "플랫폼운영팀", title: "파트장", role: "플랫폼 마스터 · PM000001" },
+};
+export const platformMyPanel = (A, { master = false } = {}) => {
+  const me = master ? ME.master : ME.admin;
+  const basic = ui.formGroup(
+    "기본정보",
+    ui.field(req("아이디"), ui.textField({ value: me.id, readonly: true })),
+    ui.field(req("이름"), ui.textField({ value: me.name, maxlength: 20, placeholder: "한글 또는 영문 2~20자" })),
+    ui.field(req("연락처"), tel(...me.tel)),
+    ui.field(req("이메일"), ui.textField({ value: me.mail, maxlength: 100 })),
+    ui.field("소속 부서", ui.textField({ value: me.dept, maxlength: 30 })),
+    ui.field("직책", ui.textField({ value: me.title, maxlength: 30 })),
+    address(A, "13529", "경기 성남시 분당구 판교역로 166", "7층"),
+  );
+  const role = ui.formGroup("사용자 권한", ui.field("사용자 권한", ui.textField({ value: me.role, readonly: true })));
+  const buttons = `<div class="flex justify-center gap-[6px]">${ui.button("취소", { variant: "off", "data-close": true })}${ui.button("저장", { "data-close": true })}</div>`;
+  return ui.slidePanel("platform-mypage-panel", "내 정보", ui.sectionHead(`내 정보${sub(`${me.name} · ${me.id}`)}`) + basic + role + buttons);
+};

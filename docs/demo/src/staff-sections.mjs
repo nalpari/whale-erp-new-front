@@ -27,25 +27,24 @@ export function staffSections({ A, R }) {
     { header: "고용형태", width: "w-[110px]" },
     { header: "가입·인증", width: "w-[210px]" },
     { header: "계약 상태", width: "w-[160px]" },
-    { header: "이번 주", width: "w-[90px]" },
     { header: "재직", width: "w-[110px]" },
   ];
   const D = L("staff/detail.html");
   const who = (name, href) => (href ? ui.link(name, href) : name);
   const holdPanel = "hold-form";
   const staffRows = [
-    [who("서지안", D), "010-2841-7702", "모리커피 서초점", "정직원", p.tag("ok", "가입 완료"), p.tag("ok", "체결 완료"), "34.5h", p.mark("ok", "재직")],
-    [who("오세라", D), "010-3392-4418", "모리커피 서초점", "정직원", p.tag("ok", "가입 완료"), p.tag("ok", "체결 완료"), "40.0h", p.mark("ok", "재직")],
-    [who("문태경", D), "010-4471-2298", "온기식당 판교점", "정직원", p.tag("ok", "가입 완료"), p.tag("ok", "체결 완료"), "42.0h", `${p.mark("ok", "재직")} ${p.tag("warn", "퇴직 예정 09-30")}`], // 퇴직 예정은 재직으로 센다(2026-10-08 재영)
-    [who("배정숙", D), "010-8820-3317", "온기식당 판교점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("warn", "갱신 예정 D-20"), "24.0h", p.mark("ok", "재직")],
-    [who("남도현"), "010-9014-5563", "모리커피 성수점", "파트타이머", p.tag("warn", "초대 발송 · 08-31"), p.tag("quiet", "발송 대기"), "-", p.mark("subtle", "가입 대기")],
-    [`<button type="button" aria-expanded="false" aria-controls="${holdPanel}" class="text-erp-link hover:underline">하준서</button>`, "010-3392-4418", "모리커피 성수점", "파트타이머", p.tag("risk", "연결 보류 · 4일"), p.tag("quiet", "발송 대기"), "-", p.mark("risk", "확인 필요")],
-    [who("정유담"), "010-5518-7734", "온기식당 판교점", "파트타이머", p.tag("info", "소속 추가 확인"), p.tag("quiet", "발송 대기"), "-", p.mark("subtle", "응답 대기")],
-    [who("권도윤", D), "010-7742-1160", "모리커피 서초점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("warn", "서명 대기 · D-24"), "-", p.mark("warn", "날인 대기")],
-    [who("유하람", D), "010-2093-8875", "모리커피 연남점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("risk", "거부 · 09-02"), "-", p.mark("risk", "재발송 필요")],
-    [p.sub("본사 제공 동의 없음"), "-", "모리커피 연남점", "-", "-", "-", "-", "-"],
-    [who("민세하"), "010-7725-3390", "모리커피 성수점", "파트타이머", p.tag("risk", "가입 불가(만 19세 미만)"), p.tag("quiet", "발송 대기"), "-", p.mark("risk", "삭제 대상")],
-    [who("임채운"), "010-6613-0284", "모리커피 연남점", "파트타이머", p.tag("quiet", "가입 완료"), p.tag("quiet", "종료"), "-", p.mark("subtle", "퇴직 07-31")],
+    [who("서지안", D), "010-2841-7702", "모리커피 서초점", "정직원", p.tag("ok", "가입 완료"), p.tag("ok", "체결 완료"), p.mark("ok", "재직")],
+    [who("오세라", D), "010-3392-4418", "모리커피 서초점", "정직원", p.tag("ok", "가입 완료"), p.tag("ok", "체결 완료"), p.mark("ok", "재직")],
+    [who("문태경", D), "010-4471-2298", "온기식당 판교점", "정직원", p.tag("ok", "가입 완료"), p.tag("ok", "체결 완료"), `${p.mark("ok", "재직")} ${p.tag("warn", "퇴직 예정 09-30")}`], // 퇴직 예정은 재직으로 센다(2026-10-08 재영)
+    [who("배정숙", D), "010-8820-3317", "온기식당 판교점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("warn", "갱신 예정 D-20"), p.mark("ok", "재직")],
+    [who("남도현"), "010-9014-5563", "모리커피 성수점", "파트타이머", p.tag("warn", "초대 발송 · 08-31"), p.tag("quiet", "발송 대기"), p.mark("subtle", "가입 대기")],
+    [`<button type="button" aria-expanded="false" aria-controls="${holdPanel}" class="text-erp-link hover:underline">하준서</button>`, "010-3392-4418", "모리커피 성수점", "파트타이머", p.tag("risk", "연결 보류 · 4일"), p.tag("quiet", "발송 대기"), p.mark("risk", "확인 필요")],
+    [who("정유담"), "010-5518-7734", "온기식당 판교점", "파트타이머", p.tag("info", "소속 추가 확인"), p.tag("quiet", "발송 대기"), p.mark("subtle", "응답 대기")],
+    [who("권도윤", D), "010-7742-1160", "모리커피 서초점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("warn", "서명 대기 · D-24"), p.mark("warn", "날인 대기")],
+    [who("유하람", D), "010-2093-8875", "모리커피 연남점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("risk", "거부 · 09-02"), p.mark("risk", "재발송 필요")],
+    [p.sub("본사 제공 동의 없음"), "-", "모리커피 연남점", "-", "-", "-", "-"],
+    [who("민세하"), "010-7725-3390", "모리커피 성수점", "파트타이머", p.tag("risk", "가입 불가(만 19세 미만)"), p.tag("quiet", "발송 대기"), p.mark("risk", "삭제 대상")],
+    [who("임채운"), "010-6613-0284", "모리커피 연남점", "파트타이머", p.tag("quiet", "가입 완료"), p.tag("quiet", "종료"), p.mark("subtle", "퇴직 07-31")],
   ];
   // 직원 정보 관리: 점포 목록처럼 왼쪽 필터 + 오른쪽 목록(목업의 목록 위 검색칸·선택칸을 필터로 옮겼다).
   const listFilter = ui.filterPanel(A, [
@@ -61,29 +60,35 @@ export function staffSections({ A, R }) {
       ui.button("일괄 저장", { variant: "soft", href: L("staff/export.html") }) +
         `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`,
     ) +
-    ui.dataTable(staffCols, staffRows.map((r, i) => [i + 1, ...r]), "조회된 직원이 없습니다.") +
+    // 순번은 내림차순 — 최근 등록이 먼저라 1쪽 첫 줄이 전체 건수다(2026-10-12).
+    ui.dataTable(staffCols, staffRows.map((r, i) => [63 - i, ...r]), "조회된 직원이 없습니다.") +
     pageNav(4);
 
   // ── 근로계약 ──
   const N = L("staff/contracts-new.html");
+  // 상태별 버튼(이어 쓰기 · 삭제 · 재발송 · 새 계약)은 상세 제목 줄로 옮겼다. 목록은 직원 이름으로 그 상태의 상세에 들어가고,
+  // 행 끝 칸에 있던 안내 문구는 상태 칸에 붙인다(2026-10-12). 상세는 상태마다 한 장이라 같은 상태의 다른 행도 그 견본으로 간다.
+  const C = (s) => L(`staff/contracts-${s}.html`);
+  const CDraft = C("draft");
   const contractRows = [
-    ["남도현", "모리커피 성수점", "2026-09-14 ~ 무기한", "11,200 /h", "-", p.tag("quiet", "발송 대기"), p.ask("초대 재발송", "off", "가입 초대를 다시 보내시겠습니까?", "남도현 님(010-9014-5563)에게 가입 초대를 다시 보냅니다.")],
-    ["하준서", "모리커피 성수점", "2026-09-14 ~ 무기한", "11,200 /h", "-", p.tag("quiet", "발송 대기"), offBtn("연결 확인", { href: L("staff/index.html") })],
-    ["정유담", "온기식당 판교점", "2026-09-18 ~ 2027-03-17", "10,800 /h", "-", p.tag("quiet", "발송 대기"), p.sub("소속 확인 중")],
-    ["권도윤", "모리커피 서초점", "2026-09-01 ~ 2027-08-31", "11,600 /h", "09-01", p.tag("warn", "서명 대기 · D-24"), p.ask("재발송", "off", "근로계약서를 재발송하시겠습니까?", "권도윤 님에게 서명 대기 중인 근로계약서를 다시 보냅니다.")],
+    [ui.link("한서윤", CDraft), "모리커피 성수점", "-", "-", "-", p.tag("quiet", "임시저장")],
+    [ui.link("남도현", C("pending")), "모리커피 성수점", "2026-09-14 ~ 무기한", "11,200 /h", "-", p.tag("quiet", "발송 대기")],
+    [ui.link("하준서", C("hold")), "모리커피 성수점", "2026-09-14 ~ 무기한", "11,200 /h", "-", p.tag("risk", "발송 대기 · 연결 보류")],
+    [ui.link("정유담", C("pending")), "온기식당 판교점", "2026-09-18 ~ 2027-03-17", "10,800 /h", "-", p.tag("quiet", "발송 대기 · 소속 확인 중")],
+    [ui.link("권도윤", C("signing")), "모리커피 서초점", "2026-09-01 ~ 2027-08-31", "11,600 /h", "09-01", p.tag("warn", "서명 대기 · D-24")],
     // 권도윤은 앞 계약이 체결 완료라 08-23까지만 근무스케줄·출퇴근을 받는다(STAFF-29).
-    ["권도윤", "모리커피 서초점", "2025-08-24 ~ 2026-08-23", "11,200 /h", "2025-08-20", p.tag("ok", "체결 완료"), p.sub("재계약 서명 대기")],
-    [ui.link("유하람", L("staff/contracts-detail.html")), "모리커피 연남점", "2026-08-28 ~ 2027-02-27", "10,800 /h", "08-28", p.tag("risk", "거부 · 09-02"), offBtn("상세", { href: L("staff/contracts-detail.html") })],
-    ["서지안", "모리커피 서초점", "2026-03-01 ~ 무기한", "2,840,000 /월", "02-24", p.tag("ok", "체결 완료"), offBtn("새 계약", { href: N })],
-    ["오세라", "모리커피 서초점", "2025-11-01 ~ 무기한", "3,420,000 /월", "10-27", p.tag("ok", "체결 완료"), offBtn("새 계약", { href: N })],
-    ["배정숙", "온기식당 판교점", "2026-02-10 ~ 2026-09-30", "11,600 /h", "02-06", p.tag("warn", "갱신 예정 · D-20"), offBtn("재계약", { href: N })],
-    ["임채운", "모리커피 연남점", "2025-08-01 ~ 2026-07-31", "10,400 /h", "07-28", p.tag("quiet", "종료"), p.sub("퇴직")],
+    [ui.link("권도윤", C("signed")), "모리커피 서초점", "2025-08-24 ~ 2026-08-23", "11,200 /h", "2025-08-20", p.tag("ok", "체결 완료 · 재계약 서명 대기")],
+    [ui.link("유하람", C("detail")), "모리커피 연남점", "2026-08-28 ~ 2027-02-27", "10,800 /h", "08-28", p.tag("risk", "거부 · 09-02")],
+    [ui.link("서지안", C("signed")), "모리커피 서초점", "2026-03-01 ~ 무기한", "2,840,000 /월", "02-24", p.tag("ok", "체결 완료")],
+    [ui.link("오세라", C("signed")), "모리커피 서초점", "2025-11-01 ~ 무기한", "3,420,000 /월", "10-27", p.tag("ok", "체결 완료")],
+    [ui.link("배정숙", C("signed")), "온기식당 판교점", "2026-02-10 ~ 2026-09-30", "11,600 /h", "02-06", p.tag("warn", "갱신 예정 · D-20")],
+    [ui.link("임채운", C("ended")), "모리커피 연남점", "2025-08-01 ~ 2026-07-31", "10,400 /h", "07-28", p.tag("quiet", "종료 · 퇴직")],
   ];
   // 근로계약 관리: 왼쪽 필터(점포 · 직원 · 상태) + 목록. 목업의 목록 위 상태 라디오를 필터의 상태 체크로 옮겼다.
   const contractsFilter = ui.filterPanel(A, [
     storeFilter(),
     ui.filterSection("직원", ui.searchField(A, { placeholder: "이름" }), { tight: true }),
-    ui.filterSection("상태", ["발송 대기", "서명 대기", "체결 완료", "거부", "갱신 예정", "종료"].map((t) => ui.checkbox(A, t, true)).join(""), { last: true }),
+    ui.filterSection("상태", ["임시저장", "발송 대기", "서명 대기", "체결 완료", "거부", "갱신 예정", "종료"].map((t) => ui.checkbox(A, t, true)).join(""), { last: true }),
   ]);
   const contractsTab =
     ui.listToolbar(contractRows.length, "") +
@@ -94,8 +99,7 @@ export function staffSections({ A, R }) {
         { header: "계약 기간" },
         { header: "급여", width: "w-[130px]" },
         { header: "발송일", width: "w-[80px]" },
-        { header: "상태", width: "w-[150px]" },
-        { header: "", width: "w-[140px]" },
+        { header: "상태", width: "w-[220px]" },
       ],
       contractRows,
       "조회된 근로계약이 없습니다.",
@@ -107,7 +111,7 @@ export function staffSections({ A, R }) {
   const fixPanel = "fix-form";
   const proxyPanel = "proxy-form";
   // 근무스케줄 보기는 로그인 후 홈과 같은 부품(staff-parts schedWeek·schedMonth)으로 그린다(2026-10-08 재영).
-  // 관리는 그날 재직자 전원(휴무·배정 불가 포함)을 보이고, 주간 보기 아래에 공백 안내와 「이 시간대에 배정」을 둔다.
+  // 관리는 그날 체결 완료 근로계약이 있는 재직자 전원(휴무 포함)을 보이고(미체결 직원은 뺀다, STAFF-29), 주간 보기 아래에 공백 안내와 「이 시간대에 배정」을 둔다.
   // 주간 근무표(직원 × 요일 표, 주 합계)는 없앴다(STAFF-26). 운영 07:00-22:00, 주 08-17 ~ 08-23, 샘플의 오늘은 공백이 드러나는 토요일.
   const schedCrew = [
     ["오세라", "점장", { 1: [9, 18], 2: [9, 18], 4: [9, 18], 5: [9, 18], 6: [11, 20] }],
@@ -115,7 +119,6 @@ export function staffSections({ A, R }) {
     ["서지안", "바리스타", { 1: [7, 16], 2: [7, 16], 3: [7, 16], 4: [7, 16], 0: [10, 19] }],
     // 다섯째 칸은 체결 완료 계약 기간. 월간 보기는 그 밖의 날에 인원에서 뺀다(STAFF-29).
     ["권도윤", "바리스타", { 1: [13, 22], 3: [13, 22], 4: [13, 22], 5: [13, 22], 0: [13, 22] }, "", ["2025-08-24", "2026-08-23"]],
-    ["하준서", "바리스타", {}, "계약 대기 · 배정 불가"],
   ];
   const schedWeekView = p.schedWeek(schedCrew, { open: 7, close: 22, dates: { 1: 17, 2: 18, 3: 19, 4: 20, 5: 21, 6: 22, 0: 23 }, pick: 6, all: true, gap: schedPanel });
   const schedMonthView = p.schedMonth(A, schedCrew, { year: 2026, month: 7, today: "2026-08-22", all: true });
@@ -209,7 +212,8 @@ export function staffSections({ A, R }) {
   const fixBtns = () => `<span class="flex justify-center gap-[6px]">${ui.slideTrigger("보정", fixPanel, "off")}${p.ask("이상 없음", "off", "이상 없음으로 검토를 마치시겠습니까?", "확인 필요 꼬리표와 사유를 지웁니다.")}</span>`;
   const fixList = p.section(
     "보정이 필요한 기록",
-    ui.slideTrigger("출퇴근 대신 등록", proxyPanel, "soft"),
+    // 기간 지정 조회는 이 목록에만, 최근 3개월 안에서 고른다(STAFF-31).
+    `<span class="flex items-center gap-[6px]">${ui.dateField(A, { label: "기간 시작", value: "2026-08-06" })}<span>~</span>${ui.dateField(A, { label: "기간 끝", value: "2026-09-06" })}${ui.slideTrigger("출퇴근 대신 등록", proxyPanel, "soft")}</span>`,
     ui.dataTable(
       [
         { header: "직원", width: "w-[100px]" },
@@ -247,28 +251,22 @@ export function staffSections({ A, R }) {
     x.tabPanel("sched-week", schedWeekView, true) +
     x.tabPanel("sched-month", schedMonthView) +
     `<div class="flex flex-col gap-[24px] pt-[12px]">${schedLog}</div>`;
+  // 출퇴근 현황 필터 (STAFF-31, 2026-10-08 재영). 근태 요약에는 점포·고용형태·재직 상태만 걸린다. 유지하지 않는다.
+  const attendFilter = ui.filterPanel(A, [
+    storeFilter(),
+    ui.filterSection("직원", ui.searchField(A, { placeholder: "이름 또는 번호" }), { tight: true }),
+    ui.filterSection("고용형태", ui.checkbox(A, "정직원", true) + ui.checkbox(A, "파트타이머", true)),
+    ui.filterSection("출퇴근 상태", ["정상", "지각", "미출근", "출근 미등록", "퇴근 미등록", "휴무"].map((t) => ui.checkbox(A, t, true)).join("")),
+    ui.filterSection("확인 필요 사유", ["위치 오차 초과", "반경 밖 퇴근", "위치 조작 감지"].map((t) => ui.checkbox(A, t, true)).join("")),
+    ui.filterSection("기록 구분", ["직원 등록", "대신 등록", "보정됨"].map((t) => ui.checkbox(A, t, true)).join("")),
+    ui.filterSection("재직 상태", ui.select(["재직", "퇴직", "전체"], { "aria-label": "재직 상태" }), { tight: true, last: true }),
+  ]);
   const attendTab = `<div class="flex flex-col gap-[24px]">${p.cols(today, summary, "grid-cols-2")}${fixList}</div>${histDialogs}`;
 
   // ── 급여명세서 ──
   const PD = L("staff/payrolls-detail.html");
-  const review = (tone, label, detail) => `${p.tag(tone, label)} ${p.sub(detail)}`;
   // 급여명세서 관리는 달 단위로 넘겨 본다(2026-10-02 재영): ‹ 2026년 8월 › · 달 선택. 데모 데이터는 8월·7월, 나머지 달은 빈 목록.
-  const reviewList = (rows) =>
-    p.section(
-      "검토 대기",
-      p.tag(rows.length ? "warn" : "quiet", `${rows.length ? 9 : 0}건`),
-      numbered(
-        [
-          { header: "직원", width: "w-[110px]" },
-          { header: "근무지", width: "w-[140px]" },
-          { header: "급여 기간", width: "w-[110px]" },
-          { header: "검토 사유", align: "left" },
-          { header: "", width: "w-[120px]" },
-        ],
-        rows,
-        "검토 대기 중인 명세서가 없습니다.",
-      ),
-    );
+  // 검토 대기 목록은 두지 않는다 — 사유는 명세서 상세에서만 보인다(STAFF-32, 2026-10-12 재영).
   const payRow = (name, store, h, base, extra, ded, net, st) => [ui.link(name, PD), store, h, base, extra, ded, `<b class="font-semibold">${net}</b>`, st];
   const payList = (title, right, rows) =>
     p.section(
@@ -300,13 +298,6 @@ export function staffSections({ A, R }) {
     month(
       "2026-08-01",
       counts(52, 8, 3, 0) +
-        reviewList([
-          ["서지안", "모리커피 서초점", "2026-08", review("warn", "출퇴근 누락", "09-05 퇴근 미등록 등 2일"), offBtn("검토", { href: PD })],
-          ["유하람", "모리커피 연남점", "2026-08", review("risk", "계약 만료 후 기록 포함", "08-29 ~ 08-31 · 3일"), offBtn("검토", { href: PD })],
-          ["배정숙", "온기식당 판교점", "2026-08", review("info", "기간 중 계약 변경", "08-16 시급 조정"), offBtn("검토", { href: PD })],
-          ["권도윤", "모리커피 서초점", "2026-08", review("risk", "공제 미입력", "4대보험·소득세 비어 있음"), offBtn("검토", { href: PD })],
-          ["남도현", "모리커피 성수점", "2026-08", p.tag("risk", "근로계약 없음"), "-"],
-        ]) +
         payList("급여명세서", payButtons(3), [
           payRow("오세라", "모리커피 서초점", "180.0", "3,420,000", "184,000", "-", "3,604,000", p.tag("quiet", "작성 중")),
           payRow("서지안", "모리커피 서초점", "168.0", "2,840,000", "186,000", "-", "3,026,000", p.tag("warn", "검토 중")),
@@ -319,7 +310,6 @@ export function staffSections({ A, R }) {
     month(
       "2026-07-01",
       counts(0, 0, 0, 61) +
-        reviewList([]) +
         payList("급여명세서", payButtons(0), [
           payRow("오세라", "모리커피 서초점", "176.0", "3,420,000", "142,000", "241,800", "3,320,200", sent),
           payRow("서지안", "모리커피 서초점", "168.0", "2,840,000", "142,000", "241,800", "2,740,200", sent),
@@ -328,8 +318,8 @@ export function staffSections({ A, R }) {
           payRow("권도윤", "모리커피 서초점", "172.0", "1,926,400", "158,000", "68,780", "2,015,620", sent),
         ]),
     ) +
-    month("", counts(0, 0, 0, 0) + reviewList([]) + payList("급여명세서", payButtons(0), []));
-  // 급여명세서 관리: 왼쪽 필터(점포 · 직원 · 명세서 상태) + 달 이동 · 상태 건수 · 검토 대기 · 명세서 목록. 「급여 월」 선택칸은 달 이동으로 옮겼다.
+    month("", counts(0, 0, 0, 0) + payList("급여명세서", payButtons(0), []));
+  // 급여명세서 관리: 왼쪽 필터(점포 · 직원 · 명세서 상태) + 달 이동 · 상태 건수 · 명세서 목록. 「급여 월」 선택칸은 달 이동으로 옮겼다.
   const payslipsFilter = ui.filterPanel(A, [
     storeFilter(),
     ui.filterSection("직원", ui.searchField(A, { placeholder: "이름" }), { tight: true }),
@@ -532,5 +522,5 @@ export function staffSections({ A, R }) {
       ui.button("취소", { variant: "off", "data-close": true }) + ui.button("재초대", { "data-close": true }),
     );
 
-  return { L, N, holdPanel, holdForm, proxyForm, todoEdits, listFilter, contractsFilter, payslipsFilter, todosFilter, listTab, contractsTab, schedTab, attendTab, payrollTab, todoTab, schedForm, delDialog, fixForm, todoForm };
+  return { L, N, holdPanel, holdForm, proxyForm, todoEdits, listFilter, attendFilter, contractsFilter, payslipsFilter, todosFilter, listTab, contractsTab, schedTab, attendTab, payrollTab, todoTab, schedForm, delDialog, fixForm, todoForm };
 }

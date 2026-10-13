@@ -24,15 +24,15 @@
              하위 메뉴는 함께 움직인다. 옮긴 뒤 옛 상위와 새 상위의 순서를 1부터 다시 매기고 단계를 다시 센다.
              다른 서비스(위 탭) · 3단계 초과 · 자기 자신이나 하위 메뉴 아래는 끄는 동안 놓을 수 없음을 표시하고, 놓으면 띠로 거절한다.
            · 점선 줄 ‘목업 저장’에서 ‘다음 저장 실패로 보기’를 켜면 다음 이동·저장 한 번이 실패하고 데이터는 그대로다.
-         메뉴 삭제와 메뉴 변경 이력은 없다 — 안 쓰는 메뉴는 사용중지로 돌린다. 사용중지 메뉴는 사용자 화면과 신규 권한 부여에서 빠진다.
+         메뉴 삭제와 메뉴 변경 이력은 없다 — 안 쓰는 메뉴는 미사용으로 돌린다. 미사용 메뉴는 사용자 화면과 신규 권한 부여에서 빠진다.
          이 트리가 권한 관리(roles.html) 메뉴 등록 팝업의 원본이다. Whale ERP 서비스는 48개 중 표본 15개만 그렸다.
          목업 권한 “등록·수정” 은 플랫폼 마스터로 본다 — 표본에서 플랫폼 관리자 PA000001 은 이 메뉴에 조회만 있다.
          조회만이면 끌기 손잡이 · 신규 메뉴 · 저장 · 위치 옮기기가 없고 상세는 읽기만 한다.
          트리에는 검색 칸을 두지 않는다 — 명세의 “검색 결과 없음” 예외도 함께 뺀다 (SYSTEM-7 확정).
-         사용중지 서비스(예약관리)도 목록에서 골라 트리를 보고 메뉴를 편집할 수 있다 — 재개 전 준비용이며 사용자 화면에는 보이지 않는다 (확정 2026-09-29).
-         상위 메뉴를 사용중지하면 하위 메뉴도 사용자 화면·신규 권한 부여에서 함께 빠진다. 하위의 사용 상태 값은 바꾸지 않아 상위를 다시 켜면 그대로 돌아온다 (확정 2026-09-29).
+         미사용 서비스(예약관리)도 목록에서 골라 트리를 보고 메뉴를 편집할 수 있다 — 재개 전 준비용이며 사용자 화면에는 보이지 않는다 (확정 2026-09-29).
+         상위 메뉴를 미사용으로 바꾸면 하위 메뉴도 사용자 화면·신규 권한 부여에서 함께 빠진다. 하위의 사용 상태 값은 바꾸지 않아 상위를 다시 켜면 그대로 돌아온다 (확정 2026-09-29).
          메뉴 URL 은 선택 입력이다 — 하위를 묶기만 하는 메뉴는 비워 두고, 넣으면 누를 때 그 화면으로 간다 (확정 2026-09-29).
-         사용중지 메뉴 아래에도 신규 메뉴를 만들 수 있다 — 상위가 사용중지라 사용자에게는 보이지 않는다고 알린다 (확정 2026-09-29). -->
+         미사용 메뉴 아래에도 신규 메뉴를 만들 수 있다 — 상위가 미사용이라 사용자에게는 보이지 않는다고 알린다 (확정 2026-09-29). -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
     <div class="shell">
       <main class="main" id="main">
@@ -59,7 +59,7 @@
                 <div class="seg">
                   <button type="button" data-state="erp" aria-pressed="true">Whale ERP 트리(3단계)</button>
                   <button type="button" data-state="plat" aria-pressed="false">플랫폼 관리 트리</button>
-                  <button type="button" data-state="resv" aria-pressed="false">예약관리 트리(사용중지 서비스)</button>
+                  <button type="button" data-state="resv" aria-pressed="false">예약관리 트리(미사용 서비스)</button>
                 </div>
               </div>
               <!-- 저장 실패 보기 — 켜 두면 다음 이동·저장 한 번만 실패한다. 한 번 쓰면 저절로 ‘정상 저장’으로 돌아간다. -->
@@ -79,7 +79,7 @@
             <div class="tabs" data-show="plat erp resv" hidden>
               <button type="button" data-state-go="erp" data-svc-tab="erp" aria-selected="false">Whale ERP <span class="count" data-tab-count>48</span><span data-noplace hidden>· 놓을 수 없음</span></button>
               <button type="button" data-state-go="plat" data-svc-tab="plat" aria-selected="false">Whale ERP 플랫폼 관리 <span class="count" data-tab-count>22</span><span data-noplace hidden>· 놓을 수 없음</span></button>
-              <button type="button" data-state-go="resv" data-svc-tab="resv" aria-selected="false">예약관리 <span class="badge badge--warn">사용중지</span> <span class="count" data-tab-count>3</span><span data-noplace hidden>· 놓을 수 없음</span></button>
+              <button type="button" data-state-go="resv" data-svc-tab="resv" aria-selected="false">예약관리 <span class="badge badge--warn">미사용</span> <span class="count" data-tab-count>3</span><span data-noplace hidden>· 놓을 수 없음</span></button>
             </div>
 
             <!-- 결과 띠 — 이동·저장·거절·실패를 한 곳에서 알린다. 스크립트가 채우고, 화면을 내려도 따라온다. -->
@@ -118,7 +118,7 @@
       (function () {
         "use strict";
         var MAX = 3;
-        /* [메뉴 코드, 단계, 노출 메뉴명, 메뉴 URL, 사용 1 · 사용중지 0] — 적은 순서가 곧 메뉴 순서다. */
+        /* [메뉴 코드, 단계, 노출 메뉴명, 메뉴 URL, 사용 1 · 미사용 0] — 적은 순서가 곧 메뉴 순서다. */
         var SVC = {
           plat: {
             code: "PLATFORM", name: "Whale ERP 플랫폼 관리", omitted: 0, first: "MN000214",
@@ -170,7 +170,7 @@
               ["MN000015", 2, "BP 휴일 관리", "/settings/holidays", 1]
             ]
           },
-          /* 사용중지 서비스 — 골라서 보고 편집한다 (확정 2026-09-29) */
+          /* 미사용 서비스 — 골라서 보고 편집한다 (확정 2026-09-29) */
           resv: {
             code: "RESERVATION", name: "예약관리", omitted: 0, first: "MN000302",
             eg: "예: 예약 알림 설정", urlEg: "/reservations/…",
@@ -343,7 +343,7 @@
             n.name = name; n.url = url; n.use = b.use;
             st.buf = null;
             band("info", "저장했습니다 · 변경 이력은 남기지 않습니다",
-              n.code + " ‘" + n.name + "’ — " + (off ? "사용중지로 돌려 사용자 화면과 신규 권한 부여에서 빠집니다. 이미 준 권한은 남습니다." : "노출 메뉴명 · URL · 사용 상태를 트리에 반영했습니다."));
+              n.code + " ‘" + n.name + "’ — " + (off ? "미사용으로 돌려 사용자 화면과 신규 권한 부여에서 빠집니다. 이미 준 권한은 남습니다." : "노출 메뉴명 · URL · 사용 상태를 트리에 반영했습니다."));
           }
           st.moved = null;
           render();
@@ -368,7 +368,7 @@
             '<td class="subtle" style="' + cell + ' white-space: nowrap">' + L + "단계</td>" +
             (n.url ? '<td class="mono" style="' + cell + ' font-size: 12px; word-break: break-all">' + esc(n.url) + "</td>" : '<td class="nil" style="' + cell + '">—</td>') +
             '<td class="n" style="' + cell + '">' + (pos(S(), n) + 1) + "</td>" +
-            '<td style="' + cell + '">' + (n.use ? '<span class="badge badge--ok">사용</span>' : '<span class="badge badge--warn">사용중지</span>') + "</td></tr>";
+            '<td style="' + cell + '">' + (n.use ? '<span class="badge badge--ok">사용</span>' : '<span class="badge badge--warn">미사용</span>') + "</td></tr>";
         }
         function draftHTML(edit) {
           var d = st.draft, L = (d.parent ? lvl(d.parent) : 0) + 1, cell = "padding: 8px 10px; background: var(--info-wash);";
@@ -429,12 +429,12 @@
               '<dt>메뉴 순서</dt><dd class="mono">' + order + "</dd>" +
               "<dt>노출 메뉴명</dt><dd>" + esc(n.name) + "</dd>" +
               "<dt>메뉴 URL</dt><dd" + (n.url ? ' class="mono">' + esc(n.url) : ' class="nil">—') + "</dd>" +
-              "<dt>메뉴 사용 상태</dt><dd>" + (n.use ? '<span class="badge badge--ok">사용</span>' : '<span class="badge badge--warn">사용중지</span>') + "</dd>" +
+              "<dt>메뉴 사용 상태</dt><dd>" + (n.use ? '<span class="badge badge--ok">사용</span>' : '<span class="badge badge--warn">미사용</span>') + "</dd>" +
               "</dl></section>";
             return;
           }
 
-          /* 상위(또는 그 위)가 사용중지면 사용자에게 보이지 않는다 */
+          /* 상위(또는 그 위)가 미사용이면 사용자에게 보이지 않는다 */
           var offUp = false;
           for (var q = p; q; q = q.parent) if (!q.use) offUp = true;
           var hideHelp = ""; /* 입력칸 아래 안내는 두지 않는다(2026-10-08) */
@@ -453,7 +453,7 @@
             '<div class="field"><label for="mn-url">메뉴 URL <span class="subtle" style="font-weight: 400">선택</span></label><input class="input mono" id="mn-url" value="' + esc(v.url) + '" placeholder="' + esc(s.urlEg) + '" /></div>' +
             '<div class="field"><label id="mn-use-l">메뉴 사용 상태</label>' +
             '<div class="seg" role="group" aria-labelledby="mn-use-l" style="align-self: flex-start">' +
-            '<button type="button" data-use="1" aria-pressed="' + v.use + '">사용</button><button type="button" data-use="0" aria-pressed="' + !v.use + '">사용중지</button></div>' +
+            '<button type="button" data-use="1" aria-pressed="' + v.use + '">사용</button><button type="button" data-use="0" aria-pressed="' + !v.use + '">미사용</button></div>' +
             "</div>" +
             "</div>" +
             '<div class="panel__foot inline" style="justify-content: flex-end">' +
@@ -480,11 +480,11 @@
             var s = SVC[k], all = 0, off = 0;
             each(s, function (n) { all++; if (!n.use) off++; });
             var total = all + s.omitted;
-            $("mn-cnt-" + k).innerHTML = total + (off && !s.omitted ? ' <span class="subtle">· 사용중지 ' + off + "</span>" : "");
+            $("mn-cnt-" + k).innerHTML = total + (off && !s.omitted ? ' <span class="subtle">· 미사용 ' + off + "</span>" : "");
             var tab = root.querySelector('[data-svc-tab="' + k + '"]');
             tab.setAttribute("aria-selected", String(st.svc === k));
             tab.querySelector("[data-tab-count]").textContent = total;
-            if (st.svc === k) $("mn-size").textContent = s.omitted ? total + "개 · 표본 " + all + "개" : total + "개 · 사용 " + (all - off) + " · 사용중지 " + off;
+            if (st.svc === k) $("mn-size").textContent = s.omitted ? total + "개 · 표본 " + all + "개" : total + "개 · 사용 " + (all - off) + " · 미사용 " + off;
           });
           var nb = $("mn-new");
           if (st.draft) nb.setAttribute("disabled", ""); else nb.removeAttribute("disabled");

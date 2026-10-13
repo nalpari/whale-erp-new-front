@@ -3,11 +3,26 @@
 ## 2026-10-13
 
 * **Update**: 근로계약 화면 요건 변경(Plane #133 · #155 · #132). 목록의 임시저장 행은 이어 쓰기로 바로 가고, 임시저장 삭제를 상세에서 이어 쓰기 화면(취소와 임시저장 사이)으로 옮겨 공통 `ConfirmDialog` 로 묻는다. 목록에 고용 형태 칸을 더하고, 급여는 정직원도 시급으로 보인다(작성 · 상세의 칸 이름도 「시급」). [Whale ERP Frontend](/whale-erp-front.md).
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 상세 「재직 상태」를 목록 요약(`statusCells`) 대신 재직 · 퇴직 예정 · 퇴직만 보이도록 고쳤다(PR #4 머지 블로커, 2026-10-13 재영).
+* **Update**: `2026-09-30-네이밍-규칙.md` 2026-10-13 고침을 [네이밍 규칙](/conventions/naming.md) 에 옮겼다 — 삭제 표시 예외에 노출 대상 연결 표 `post_audiences` 행 삭제를 더했다(재영, api #18).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통코드 [BP 적용]이 막혔을 때 「저장한 뒤 적용할 수 있습니다」 안내를 버튼을 감싼 칸에 달았다. 막힌 버튼은 호버를 받지 않아(Button disabled:pointer-events-none) 버튼에 단 안내가 뜨지 않았다(PR #9 리뷰).
+* **Update**: `2026-09-30-네이밍-규칙.md` 2026-10-13 고침을 [네이밍 규칙](/conventions/naming.md) 에 옮겼다 — 삭제 표시 예외에 임시저장(`DRAFT`) 근로계약 행 삭제를 더했다(재영).
 
 ## 2026-10-12
 
 * **Update**: 근로계약 목록의 행 끝 버튼 칸을 없애고 직원 이름으로 상세에 들어가게 했다. 상세 화면(`src/app/contracts/[contractId]/`)을 만들어 상태별 버튼을 위쪽으로 옮기고 임시저장 삭제를 더했다. [Whale ERP Frontend](/whale-erp-front.md).
 * **Update**: 근로계약서 작성의 휴대전화번호 · 생년월일에 하이픈 자동 입력을 더했다. 공통 `DateField` 에 켜는 칸만 쓰는 `autoHyphen` 을 더했다(기본 끔). [Whale ERP Frontend](/whale-erp-front.md).
+* **Add**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 직원 목록(#138) · 상세(#184)를 화면만 목 데이터로 만든 상태와, api(목록 #329 · 상세 요약 #183 · 관리자 로그인)를 붙일 때 바꿀 곳 · 다시 작업할 것. 공통 Button 의 danger 추가(1팀 확인 필요)도 적었다.
+* **Update**: `docs/mockup/stores/index.html` 의 점포 목록 검색 변경을 [점포 관리](/stores.md) 에 옮겼다 — 점포는 점포명·점포코드로 찾아 여러 곳 골라 보고(고른 점포만 · 고르지 않으면 전체), 사업자등록번호는 따로 넣는다.
+* **Update**: 점포 정보 관리 · BP 관리자 관리 목업 · 데모 — 필터 [초기화]가 고른 점포도 비운다. BP 관리자 관리 목업의 점포 검색도 같은 점포 고르기로 바꿨다. 고른 점포로 목록을 거르고 다른 조건에 모두 걸리면 「조회된 결과가 없습니다.」를 보이는 것은 데모 점포 정보 관리뿐이다(BP 관리자 관리 데모 · 두 목업은 칩만 쌓이고 목록은 그대로).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통코드 화면 리뷰 반영: 자기 패널 저장 뒤 입력 행이 남던 문제(새 그룹이 다음 쪽에 들어갈 때 · 공백만 고칠 때), [BP 적용]이 상세 코드 패널의 변경을 막도록, 요청 실패 · 상세 코드 조회 실패를 패널에서 알리고, 401 · 403 문구를 바꿨다. 저장 데이터 만들기를 `src/lib/code-drafts.ts` 로 빼 테스트하고 `pnpm test` 를 더했다.
+* **Update**: [시스템관리](/system.md) — 공통코드 목업 · 데모의 BP 적용 안내를 새 정책(다시 적용하면 뒤에 추가한 코드도 기존 BP에 들어감)으로 맞췄다. 화면은 한 패널을 저장해도 다른 패널의 고치던 값을 지우지 않는다. 이 화면이 부르는 whale-erp-api `/code-groups` 는 api main 에 머지됐다(PR #15).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통 토스트를 더했다(저장 · 수정 · 삭제 문구, 하단 가운데, 3초 · 2026-10-12 결정). 플랫폼 공통코드 저장 성공에 붙였다.
+* **Update**: [시스템관리](/system.md) — 상세 코드 새 행을 여러 개 만들어 한 번에 저장하고, 새 행끼리도 중복을 검사한다(2026-10-12 결정). 화면 · 목업 · 데모를 함께 고쳤다.
+* **Update**: [시스템관리](/system.md) — 공통코드 그룹 목록에서 끌어서 순서 바꾸기를 뺐다(상세 코드만 남김, 2026-10-12 결정).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통코드 화면을 목 데이터에서 실제 api(`/code-groups`) 호출로 바꿨다. 로그인 전에는 개발 서버에서만 `API_DEV_TOKEN` 을 싣는다.
+* **Update**: 플랫폼 공통코드 관리 2~8단계(검수까지) — [Whale ERP Frontend](/whale-erp-front.md) 공통 컴포넌트에 Tag · Toggle · ConfirmDialog 를 더하고 DataTable 줄 상태, 막힌 버튼 · 틀린 입력칸 모양을 적었다. 끌어서 순서 바꾸기는 `src/lib/reorder.ts`(`node --test src/lib/reorder.test.ts`).
+* **Update**: 플랫폼 공통코드 관리 개발 0·1단계 — [Whale ERP Frontend](/whale-erp-front.md) 에 플랫폼 화면 틀(`src/app/platform/`), 공통코드 데이터 함수(목, api 와 같은 모양), openapi 타입 생성(`pnpm openapi:types`)을 적었다. [시스템관리](/system.md) 의 BP 적용 정책을 「다시 적용 가능, 없는 행만 넣음」으로 고쳤다(2026-10-12 결정).
 
 ## 2026-10-08
 
@@ -18,6 +33,8 @@
 * **Update**: main 을 합치고 근로계약서 작성의 임시저장을 직원 칸 · 근무지만 필수로 줄였다. 근무 장소 칸을 더했고 목록은 비어 있는 계약 칸을 「-」로 보인다. [Whale ERP Frontend](/whale-erp-front.md).
 * **Update**: 근로계약서 초안 작성에 「임시저장」 버튼(근로계약 상태 DRAFT)을 더했다. 목록 상태 필터에도 임시저장이 생긴다(enum 에서 받는다). [Whale ERP Frontend](/whale-erp-front.md).
 * **Update**: 근로계약서 초안 작성 화면(`src/app/contracts/new/`)을 만들고 목록의 「계약서 작성」을 이었다 — api `POST /contracts` · `GET /stores`. enum 한글 찾기를 클라이언트에서도 쓰려고 `src/lib/enums.ts` 로 뺐다. [Whale ERP Frontend](/whale-erp-front.md) 의 Layout · API 절을 맞췄다.
+* **Update**: 근로계약 관리 목록(`src/app/contracts/`)을 하드코딩에서 api `GET /contracts` 로 바꾸고 `src/lib/api.ts` 에 `getEnum` · `labelOf` 를 더했다. [Whale ERP Frontend](/whale-erp-front.md) 의 Layout · API 절을 맞췄다. 논리 ERD(`docs/erd/_build.py`)의 근로계약 근무 조건 · 급여 조건을 `contract_work_days` 와 항목별 컬럼으로 풀었다(3팀 확인 전).
+* **Update**: `2026-09-30-네이밍-규칙.md` 2026-10-08 고침을 [네이밍 규칙](/conventions/naming.md) 에 옮겼다 — 「근무 · 출퇴근」의 근무 유형 4종(`DAY`·`OPEN`·`MIDDLE`·`CLOSE`, enum `work_type`) 줄을 지웠다(재영).
 * **Update**: 퇴직 처리를 근로계약과 분리한 결정(퇴직 예정, STAFF-28, 운영 정책 CTR-24·25 v91)과 비밀번호 초기화 안내를 [직원 운영 관리](/staff.md) 에 넣었다. 목업·데모도 맞췄다.
 * **Update**: 근무스케줄 여러 명 일괄 등록 입력(STAFF-27, 2026-10-08 재영)을 [직원 운영 관리](/staff.md) 에 넣었다. 목업·데모의 오른쪽 일괄 등록 패널은 없앴다.
 * **Update**: `2026-09-30-네이밍-규칙.md` 2026-10-08 고침 두 줄을 [네이밍 규칙](/conventions/naming.md) 에 옮겼다 — `PUSH_SCHEDULE_CHANGED` 이름 「근무스케줄 변경」, (1팀) `mail_type_code` 비고를 알림 템플릿 `template_code` 로.
@@ -31,7 +48,6 @@
 * **Update**: 문의사항 첨부파일(운영 정책 CNT-18, 2026-10-08 재영)을 [고객지원](/support.md) 에 넣었다 — 등록 폼의 첨부 칸·거절 안내, 내 문의·플랫폼 문의 상세의 첨부 보기. 목업·데모도 맞췄다.
 * **Update**: 문의사항 답변을 답변 완료 뒤에도 고치는 규칙(운영 정책 CNT-17, 2026-10-08 재영)을 [고객지원](/support.md) 에 넣었다 — 운영자 상세의 답변 수정·이전 답변, 문의자 상세의 마지막 답변·수정 시각. 목업·데모도 맞췄다.
 * **Update**: 커뮤니티 관리 문의사항 필터에 「보낸 곳」 검색(2026-10-08 재영)을 [고객지원](/support.md) 에 적었다. 데모만 고쳤고 목업은 필터 영역이 없어 그대로다.
-* **Update**: 근로계약 관리 목록(`src/app/contracts/`)을 하드코딩에서 api `GET /contracts` 로 바꾸고 `src/lib/api.ts` 에 `getEnum` · `labelOf` 를 더했다. [Whale ERP Frontend](/whale-erp-front.md) 의 Layout · API 절을 맞췄다. 논리 ERD(`docs/erd/_build.py`)의 근로계약 근무 조건 · 급여 조건을 `contract_work_days` 와 항목별 컬럼으로 풀었다(3팀 확인 전).
 
 ## 2026-10-07
 

@@ -322,6 +322,9 @@
   .m-auto {
     margin: auto;
   }
+  .mx-\[10px\] {
+    margin-inline: 10px;
+  }
   .mx-\[12px\] {
     margin-inline: 12px;
   }
@@ -390,9 +393,6 @@
   }
   .ml-\[10px\] {
     margin-left: 10px;
-  }
-  .ml-\[28px\] {
-    margin-left: 28px;
   }
   .ml-auto {
     margin-left: auto;
@@ -582,6 +582,9 @@
   }
   .max-h-\[60dvh\] {
     max-height: 60dvh;
+  }
+  .max-h-\[194px\] {
+    max-height: 194px;
   }
   .max-h-\[272px\] {
     max-height: 272px;
@@ -823,9 +826,6 @@
   .w-\[720px\] {
     width: 720px;
   }
-  .w-\[780px\] {
-    width: 780px;
-  }
   .w-\[800px\] {
     width: 800px;
   }
@@ -834,6 +834,9 @@
   }
   .w-\[880px\] {
     width: 880px;
+  }
+  .w-\[900px\] {
+    width: 900px;
   }
   .w-\[1200px\] {
     width: 1200px;
@@ -1610,9 +1613,6 @@
   .pl-\[10px\] {
     padding-left: 10px;
   }
-  .pl-\[12px\] {
-    padding-left: 12px;
-  }
   .pl-\[18px\] {
     padding-left: 18px;
   }
@@ -2171,6 +2171,10 @@
   .data-\[over\]\:border-erp-brand[data-over] {
     border-color: var(--color-erp-brand);
   }
+  .data-\[sel\]\:shadow-\[inset_0_0_0_2px_var\(--color-erp-brand\)\][data-sel] {
+    --tw-shadow: inset 0 0 0 2px var(--tw-shadow-color, var(--color-erp-brand));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
   @media (prefers-reduced-motion: reduce) {
     .motion-reduce\:translate-y-0 {
       --tw-translate-y: 0px;
@@ -2292,6 +2296,23 @@
     .hover\:\[\&\>img\]\:opacity-70:hover > img {
       opacity: 70%;
     }
+  }
+  .\[\&\>li\]\:min-w-0 > li {
+    min-width: 0px;
+  }
+  .\[\&\>li\]\:shrink-0 > li {
+    flex-shrink: 0;
+  }
+  .\[\&\>li\>span\]\:min-w-0 > li > span {
+    min-width: 0px;
+  }
+  .\[\&\>li\>span\]\:flex-1 > li > span {
+    flex: 1;
+  }
+  .\[\&\>li\>span\]\:truncate > li > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .\[\&\>span\:first-child\]\:transition-opacity > span:first-child {
     transition-property: opacity;

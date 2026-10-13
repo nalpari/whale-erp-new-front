@@ -4,6 +4,7 @@
 import * as ui from "../../ui.mjs";
 import * as c from "../../config-parts.mjs";
 import { erpHeader } from "../../site.mjs";
+import { storeFilter } from "../../store-filter.mjs";
 import { adminNewPanel } from "./admins-new.mjs";
 import { adminDetailPanel } from "./admins-detail.mjs";
 import { adminEditPanel } from "./admins-edit.mjs";
@@ -16,11 +17,11 @@ const ADMINS = [
   ["moricd", "윤재희", "가맹 관리자", "모리 매니저", "FA000003", "사용", "2", "2026-01-06 13:30", "2026-09-18 22:41"],
   ["ongids", "서동현", "가맹 관리자", "온기 점장", "FA000004", "미사용", "1", "2025-09-01 09:40", "2026-06-12 21:15"],
   ["moriyn", "한지수", "가맹 관리자", "모리 점장", "FA000002", "사용", "1", "2025-08-11 10:05", "2026-09-21 07:58"],
-  ["hgacct", "최민호", "BP 관리자", "정산 조회", "BA000005", "미사용", "전체 · 11", "2025-07-15 14:03", "2026-03-31 18:10"],
+  ["hgacct", "최민호", "BP 관리자", "정산 조회", "BA000005", "미사용", "전체", "2025-07-15 14:03", "2026-03-31 18:10"],
   ["ongifm", "오태민", "가맹 마스터", "가맹 마스터(고정)", "FM000001", "사용", "3", "2025-05-20 15:40", "2026-09-19 20:02"],
   ["hghr", "이서아", "BP 관리자", "인사 담당", "BA000004", "사용", "4", "2025-04-01 09:12", "2026-09-20 17:55"],
   ["morinam01", "박서윤", "가맹 마스터", "가맹 마스터(고정)", "FM000001", "사용", "4", "2025-03-03 11:00", "2026-09-21 09:12"],
-  ["hgops", "김도윤", "BP 관리자", "운영 총괄", "BA000003", "사용", "전체 · 11", "2025-02-10 10:20", "2026-09-21 08:30"],
+  ["hgops", "김도윤", "BP 관리자", "운영 총괄", "BA000003", "사용", "전체", "2025-02-10 10:20", "2026-09-21 08:30"],
 ];
 const GROUPS = [
   "전체",
@@ -37,7 +38,8 @@ const GROUPS = [
 
 export default ({ A, R }) => {
   const filter = ui.filterPanel(A, [
-    ui.filterSection("점포", ui.searchField(A, { placeholder: "점포코드 또는 점포명으로 찾기", label: "점포" }), { tight: true }),
+    // 점포 — 점포 정보 관리와 같은 점포 고르기(찾아 고르면 「선택한 점포」에 쌓임 · 5개 넘으면 스크롤)
+    ui.filterSection("점포", storeFilter(A), { tight: true }),
     ui.filterSection("아이디 · 이름", ui.searchField(A, { placeholder: "아이디 또는 이름 일부를 입력하세요", label: "아이디 · 이름" }), { tight: true }),
     ui.filterSection("권한 그룹", ui.select(GROUPS, { "aria-label": "권한 그룹" }), { tight: true }),
     ui.filterSection("계정 상태", ui.select(["전체", "사용", "미사용"], { "aria-label": "계정 상태" }), { tight: true, last: true }),
