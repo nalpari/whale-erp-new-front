@@ -244,7 +244,10 @@ export function TemplateForm({ detail, channels, categories }: { detail?: Templa
     startTransition(async () => {
       setDialog(null);
       finish(await restoreTemplateAction(saved.id, saved.updatedAt), (d) => {
-        reload(d);
+        // 되돌리기는 제목 · 본문 · 변수 목록만 바꾼다(NOTIFY-18) — 저장하지 않은 이름 · 코드 등 다른 입력은 그대로 둔다.
+        const restored = draftOf(d);
+        setSaved(d);
+        setDraft((prev) => ({ ...prev, title: restored.title, body: restored.body, variables: restored.variables }));
         toast("updated");
       });
     });
@@ -468,6 +471,7 @@ export function TemplateForm({ detail, channels, categories }: { detail?: Templa
         onCancel={() => setDialog(null)}
       >
         제목 · 본문 · 변수 목록이 처음 배포된 것으로 바뀝니다. 되돌린 것도 변경 이력에 남습니다.
+        {saved?.channel === "ALIMTALK" && " 카카오 템플릿 코드는 바뀌지 않으니, 검수받은 본문과 맞는지 확인해 주세요."}
       </ConfirmDialog>
     </>
   );
