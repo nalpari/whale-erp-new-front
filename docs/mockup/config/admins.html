@@ -79,20 +79,28 @@
               <span class="subtle" style="font-size: 12px" data-show-role="fm fa" hidden>매핑 점포가 하나라도 겹치는 가맹 관리자 계정만</span>
             </div>
             <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
-              <!-- 검색 조건 — 점포(왼쪽 위, 고른 점포는 아래 Chip) · 아이디·이름 · 권한 그룹 · 계정 상태를 한 줄 격자로, 초기화 · 검색은 아래 오른쪽 (BP 휴일 관리와 같은 구조) -->
-              <div class="grid grid--4" style="align-items: start; grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr))">
-                <!-- 점포 검색 필터 (S-WDJFWH) — 검색 영역 왼쪽 위. 여러 점포를 골라 Chip 으로 쌓는다 -->
-                <div class="field sfilt" data-sfilt>
-                  <label for="q-store">점포 <span class="sfilt__sum" aria-live="polite"></span></label>
-                  <div class="sfilt__box">
-                    <div class="inputwrap">
-                      <span data-icon="search" data-icon-size="15"></span>
-                      <input class="input" id="q-store" placeholder="점포코드 또는 점포명으로 찾기" autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list" data-sfilt-q />
+              <!-- 검색 조건 — 점포(맨 위, 고른 점포는 아래 「선택한 점포」) · 아이디·이름 · 권한 그룹 · 계정 상태 한 줄, 초기화 · 검색은 아래 오른쪽 (점포 정보 관리와 같은 구조) -->
+              <!-- 점포 — 점포 정보 관리와 같은 점포 고르기(S-WDJFWH). 점포명·점포코드로 찾아 고르면 아래 「선택한 점포」에 쌓인다(2026-10-12) -->
+              <div class="field">
+                <label for="q-store">점포</label>
+                <div class="spick" data-spick data-spick-nocode data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포;ST000009|온기식당 둔산점|가맹점포;ST000010|온기식당 서면점|가맹점포;ST000011|온기식당 일산점|가맹점포" data-picked="">
+                  <div class="spick__find">
+                    <div class="spick__row">
+                      <div class="addr__q spick__q">
+                        <span data-icon="search" data-icon-size="15"></span>
+                        <input class="input" id="q-store" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="점포 찾기" placeholder="점포명 또는 점포코드" autocomplete="off" data-spick-q />
+                        <div class="addr__list spick__list" role="listbox" aria-label="고를 수 있는 점포" hidden></div>
+                      </div>
                     </div>
-                    <div class="addr__list sfilt__list" role="listbox" aria-multiselectable="true" aria-label="점포 검색 결과" hidden></div>
                   </div>
-                  <div class="sfilt__chips" hidden></div>
+                  <div class="spick__box">
+                    <div class="spick__head"><b>선택한 점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>모두 빼기</button></div>
+                    <!-- 검색 조건 안이라 칩 영역을 두 줄 높이로 줄이고 넘치면 그 안에서 스크롤 -->
+                    <ul class="spick__picked" data-spick-list aria-label="선택한 점포" style="height: auto; min-height: 0; max-height: 92px"></ul>
+                  </div>
                 </div>
+              </div>
+              <div class="grid grid--3" style="align-items: start; grid-template-columns: repeat(3, minmax(0, 1fr))">
                 <div class="field">
                   <label for="q-word">아이디 · 이름</label>
                   <div class="inputwrap" title="아이디와 이름을 한꺼번에 찾습니다 — 둘 중 하나에 입력한 글자가 들어 있으면 나옵니다.">

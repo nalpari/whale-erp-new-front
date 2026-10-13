@@ -29,8 +29,8 @@ CREATE TYPE "staff_member_join_status" AS ENUM ('DRAFT', 'INVITED', 'JOINED');  
 COMMENT ON TYPE "staff_member_join_status" IS '초안 · 초대 발송 · 가입 완료';
 CREATE TYPE "invitation_type" AS ENUM ('SIGNUP', 'REINVITE', 'AFFILIATION_CONFIRM', 'RETURN_CONFIRM');  -- 가입 초대 · 재초대 · 소속 추가 확인 · 복귀 확인
 COMMENT ON TYPE "invitation_type" IS '가입 초대 · 재초대 · 소속 추가 확인 · 복귀 확인';
-CREATE TYPE "invitation_channel" AS ENUM ('SMS', 'ALIMTALK');  -- SMS · 알림톡
-COMMENT ON TYPE "invitation_channel" IS 'SMS · 알림톡';
+CREATE TYPE "invitation_channel" AS ENUM ('SMS', 'ALIMTALK', 'PUSH');  -- SMS · 알림톡 · 앱 푸시
+COMMENT ON TYPE "invitation_channel" IS 'SMS · 알림톡 · 앱 푸시';
 CREATE TYPE "invitation_status" AS ENUM ('SENT', 'ACCEPTED', 'EXPIRED', 'REJECTED', 'REJECTED_UNDER_AGE');  -- 발송 · 수락 · 만료 · 거절 · 가입 불가(만 19세 미만)
 COMMENT ON TYPE "invitation_status" IS '발송 · 수락 · 만료 · 거절 · 가입 불가(만 19세 미만)';
 CREATE TYPE "link_hold_mismatch_reason" AS ENUM ('PHONE_MISMATCH', 'NAME_MISMATCH');  -- 번호 불일치 · 이름 불일치
@@ -41,8 +41,10 @@ CREATE TYPE "contract_method" AS ENUM ('ELECTRONIC', 'PAPER');  -- 전자계약 
 COMMENT ON TYPE "contract_method" IS '전자계약 · 종이 계약';
 CREATE TYPE "weekday" AS ENUM ('MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN');  -- 월 · 화 · 수 · 목 · 금 · 토 · 일
 COMMENT ON TYPE "weekday" IS '월 · 화 · 수 · 목 · 금 · 토 · 일';
-CREATE TYPE "contract_status" AS ENUM ('PENDING_SEND', 'PENDING_SIGNATURE', 'SIGNED', 'REJECTED', 'EXPIRED', 'ENDED');  -- 발송 대기 · 서명 대기 · 체결 완료 · 거부 · 만료 · 종료
-COMMENT ON TYPE "contract_status" IS '발송 대기 · 서명 대기 · 체결 완료 · 거부 · 만료 · 종료';
+CREATE TYPE "pay_month" AS ENUM ('CURRENT_MONTH', 'NEXT_MONTH');  -- 당월 · 익월
+COMMENT ON TYPE "pay_month" IS '당월 · 익월';
+CREATE TYPE "contract_status" AS ENUM ('DRAFT', 'PENDING_SEND', 'PENDING_SIGNATURE', 'SIGNED', 'REJECTED', 'EXPIRED', 'ENDED');  -- 임시저장 · 발송 대기 · 서명 대기 · 체결 완료 · 거부 · 만료 · 종료
+COMMENT ON TYPE "contract_status" IS '임시저장 · 발송 대기 · 서명 대기 · 체결 완료 · 거부 · 만료 · 종료';
 CREATE TYPE "contract_draft_action" AS ENUM ('SIGNUP_INVITE', 'AFFILIATION_CONFIRM', 'RETURN_CONFIRM', 'IMMEDIATE_SEND');  -- 가입 초대 · 소속 추가 확인 · 복귀 확인 · 즉시 발송
 COMMENT ON TYPE "contract_draft_action" IS '가입 초대 · 소속 추가 확인 · 복귀 확인 · 즉시 발송';
 CREATE TYPE "contract_document_kind" AS ENUM ('SENT_ORIGINAL', 'SIGNED_COPY', 'PAPER_EMPLOYMENT_CONTRACT', 'WAGE_CONTRACT');  -- 발송 원본 · 날인 완료본 · 종이 계약 근로계약서 · 임금계약서
@@ -239,6 +241,10 @@ CREATE TABLE "staff_members" (
     "employment_status" "employment_status" NOT NULL DEFAULT 'EMPLOYED',
     "join_status" "staff_member_join_status" NOT NULL DEFAULT 'DRAFT',
     "retired_date" DATE,
+    "is_hq_sharing_consented" BOOLEAN NOT NULL DEFAULT false,
+    "hq_sharing_consent_version" TEXT,
+    "hq_sharing_agreed_at" TIMESTAMPTZ(6),
+    "hq_sharing_withdrawn_at" TIMESTAMPTZ(6),
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -313,11 +319,22 @@ CREATE TABLE "contracts" (
     "contract_method" "contract_method",
     "start_date" DATE,
     "end_date" DATE,
-    "work_terms" JSONB,
     "weekly_holiday" "weekday",
     "is_health_pension_insured" BOOLEAN DEFAULT false,
     "is_employment_injury_insured" BOOLEAN DEFAULT false,
-    "wage_terms" JSONB,
+    "wage_amount" INTEGER,
+    "meal_allowance_amount" INTEGER,
+    "car_allowance_amount" INTEGER,
+    "childcare_allowance_amount" INTEGER,
+    "base_hours" NUMERIC(5,1),
+    "monthly_overtime_hours" NUMERIC(5,1),
+    "base_night_hours" NUMERIC(5,1),
+    "base_holiday_hours" NUMERIC(5,1),
+    "monthly_extra_holiday_hours" NUMERIC(5,1),
+    "pay_month" "pay_month",
+    "pay_day" INTEGER,
+    "annual_leave_terms" TEXT,
+    "severance_pay_terms" TEXT,
     "status" "contract_status" DEFAULT 'PENDING_SEND',
     "draft_action" "contract_draft_action",
     "sent_at" TIMESTAMPTZ(6),
@@ -329,6 +346,18 @@ CREATE TABLE "contracts" (
     "updated_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "contracts_pkey" PRIMARY KEY ("contract_id")
+);
+
+-- 계약 근무 요일
+CREATE TABLE "contract_work_days" (
+    "contract_id" INTEGER NOT NULL,
+    "weekday" "weekday" NOT NULL,
+    "start_time" TIME NOT NULL,
+    "end_time" TIME NOT NULL,
+    "break_start_time" TIME,
+    "break_end_time" TIME,
+
+    CONSTRAINT "contract_work_days_pkey" PRIMARY KEY ("contract_id", "weekday")
 );
 
 -- 계약 당사자 정보
@@ -817,10 +846,27 @@ ALTER TABLE "email_find_attempts" ADD CONSTRAINT "email_find_attempts_failed_cou
 ALTER TABLE "location_access_logs" ADD CONSTRAINT "location_access_logs_provide_fields" CHECK ("action" <> 'PROVIDE' OR ("recipient" IS NOT NULL AND "purpose" IS NOT NULL));
 ALTER TABLE "staff_members" ADD CONSTRAINT "staff_members_phone_format" CHECK ("phone" ~ '^[0-9]{10,11}$');
 ALTER TABLE "staff_members" ADD CONSTRAINT "staff_members_retired_date_required" CHECK ("employment_status" <> 'RETIRED' OR "retired_date" IS NOT NULL);
+ALTER TABLE "staff_members" ADD CONSTRAINT "staff_members_hq_sharing_consent_fields" CHECK (NOT "is_hq_sharing_consented" OR ("hq_sharing_consent_version" IS NOT NULL AND "hq_sharing_agreed_at" IS NOT NULL AND "hq_sharing_withdrawn_at" IS NULL));
+ALTER TABLE "staff_members" ADD CONSTRAINT "staff_members_hq_sharing_not_consented_fields" CHECK ("is_hq_sharing_consented" OR ("hq_sharing_consent_version" IS NULL AND "hq_sharing_agreed_at" IS NULL AND "hq_sharing_withdrawn_at" IS NULL) OR ("hq_sharing_consent_version" IS NOT NULL AND "hq_sharing_agreed_at" IS NOT NULL AND "hq_sharing_withdrawn_at" IS NOT NULL));
+ALTER TABLE "staff_members" ADD CONSTRAINT "staff_members_hq_sharing_withdrawn_after_agreed" CHECK ("hq_sharing_withdrawn_at" IS NULL OR ("hq_sharing_agreed_at" IS NOT NULL AND "hq_sharing_withdrawn_at" >= "hq_sharing_agreed_at"));
 ALTER TABLE "invitations" ADD CONSTRAINT "invitations_token_required" CHECK ("invitation_type" NOT IN ('SIGNUP', 'REINVITE') OR "invitation_token" IS NOT NULL);
 ALTER TABLE "contracts" ADD CONSTRAINT "contracts_end_date_after_start" CHECK ("end_date" IS NULL OR "end_date" >= "start_date");
 ALTER TABLE "contracts" ADD CONSTRAINT "contracts_start_date_required_when_signed" CHECK ("status" <> 'SIGNED' OR "start_date" IS NOT NULL);
 ALTER TABLE "contracts" ADD CONSTRAINT "contracts_resend_count_nonnegative" CHECK ("resend_count" >= 0);
+ALTER TABLE "contracts" ADD CONSTRAINT "contracts_wage_amount_positive" CHECK ("wage_amount" > 0);
+ALTER TABLE "contracts" ADD CONSTRAINT "contracts_meal_allowance_amount_nonnegative" CHECK ("meal_allowance_amount" >= 0);
+ALTER TABLE "contracts" ADD CONSTRAINT "contracts_car_allowance_amount_nonnegative" CHECK ("car_allowance_amount" >= 0);
+ALTER TABLE "contracts" ADD CONSTRAINT "contracts_childcare_allowance_amount_nonnegative" CHECK ("childcare_allowance_amount" >= 0);
+ALTER TABLE "contracts" ADD CONSTRAINT "contracts_base_hours_nonnegative" CHECK ("base_hours" >= 0);
+ALTER TABLE "contracts" ADD CONSTRAINT "contracts_monthly_overtime_hours_nonnegative" CHECK ("monthly_overtime_hours" >= 0);
+ALTER TABLE "contracts" ADD CONSTRAINT "contracts_base_night_hours_nonnegative" CHECK ("base_night_hours" >= 0);
+ALTER TABLE "contracts" ADD CONSTRAINT "contracts_base_holiday_hours_nonnegative" CHECK ("base_holiday_hours" >= 0);
+ALTER TABLE "contracts" ADD CONSTRAINT "contracts_monthly_extra_holiday_hours_nonnegative" CHECK ("monthly_extra_holiday_hours" >= 0);
+ALTER TABLE "contracts" ADD CONSTRAINT "contracts_pay_day_range" CHECK ("pay_day" BETWEEN 1 AND 31);
+ALTER TABLE "contract_work_days" ADD CONSTRAINT "contract_work_days_end_after_start" CHECK ("end_time" > "start_time");
+ALTER TABLE "contract_work_days" ADD CONSTRAINT "contract_work_days_break_pair" CHECK (("break_start_time" IS NULL) = ("break_end_time" IS NULL));
+ALTER TABLE "contract_work_days" ADD CONSTRAINT "contract_work_days_break_within_work" CHECK ("break_start_time" IS NULL OR ("break_start_time" >= "start_time" AND "break_end_time" > "break_start_time" AND "break_end_time" <= "end_time"));
+ALTER TABLE "contract_work_days" ADD CONSTRAINT "contract_work_days_half_hour_unit" CHECK (EXTRACT(EPOCH FROM "start_time")::integer % 1800 = 0 AND EXTRACT(EPOCH FROM "end_time")::integer % 1800 = 0 AND ("break_start_time" IS NULL OR (EXTRACT(EPOCH FROM "break_start_time")::integer % 1800 = 0 AND EXTRACT(EPOCH FROM "break_end_time")::integer % 1800 = 0)));
 ALTER TABLE "work_schedules" ADD CONSTRAINT "work_schedules_end_after_start" CHECK ("end_at" > "start_at");
 ALTER TABLE "work_schedules" ADD CONSTRAINT "work_schedules_break_minutes_nonnegative" CHECK ("break_minutes" >= 0);
 ALTER TABLE "attendance_records" ADD CONSTRAINT "attendance_records_proxy_fields" CHECK ("entry_method" <> 'PROXY' OR ("proxy_by" IS NOT NULL AND "proxy_reason" IS NOT NULL));
@@ -893,6 +939,7 @@ ALTER TABLE "contracts" ADD CONSTRAINT "contracts_staff_member_id_fkey" FOREIGN 
 ALTER TABLE "contracts" ADD CONSTRAINT "contracts_store_id_fkey" FOREIGN KEY ("store_id") REFERENCES "stores" ("store_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE "contracts" ADD CONSTRAINT "contracts_previous_contract_id_fkey" FOREIGN KEY ("previous_contract_id") REFERENCES "contracts" ("contract_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE "contracts" ADD CONSTRAINT "contracts_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "admin_accounts" ("admin_account_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+ALTER TABLE "contract_work_days" ADD CONSTRAINT "contract_work_days_contract_id_fkey" FOREIGN KEY ("contract_id") REFERENCES "contracts" ("contract_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE "contract_parties" ADD CONSTRAINT "contract_parties_contract_id_fkey" FOREIGN KEY ("contract_id") REFERENCES "contracts" ("contract_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE "contract_documents" ADD CONSTRAINT "contract_documents_contract_id_fkey" FOREIGN KEY ("contract_id") REFERENCES "contracts" ("contract_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE "contract_status_histories" ADD CONSTRAINT "contract_status_histories_contract_id_fkey" FOREIGN KEY ("contract_id") REFERENCES "contracts" ("contract_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
@@ -1086,6 +1133,10 @@ COMMENT ON COLUMN "staff_members"."hired_date" IS '입사일';
 COMMENT ON COLUMN "staff_members"."employment_status" IS '재직 상태 — 재직·퇴직';
 COMMENT ON COLUMN "staff_members"."join_status" IS '가입 상태 — 초안·초대 발송·가입 완료';
 COMMENT ON COLUMN "staff_members"."retired_date" IS '퇴직일';
+COMMENT ON COLUMN "staff_members"."is_hq_sharing_consented" IS '본사 제공 동의 — 가맹 점포 직원을 BP 마스터 · BP 관리자에게 보일지 정한다 (#137, 2026-10-12 재영, 명세 「직원 초대와 가입 확인」). 철회하면 false (물리에서 추가)';
+COMMENT ON COLUMN "staff_members"."hq_sharing_consent_version" IS '본사 제공 동의 문구 버전 — 동의한 문구의 버전 (물리에서 추가)';
+COMMENT ON COLUMN "staff_members"."hq_sharing_agreed_at" IS '본사 제공 동의 일시 — 다시 동의하면 그 시각으로 바뀐다 (물리에서 추가)';
+COMMENT ON COLUMN "staff_members"."hq_sharing_withdrawn_at" IS '본사 제공 동의 철회 일시 — 철회하지 않았으면 NULL (물리에서 추가)';
 COMMENT ON COLUMN "staff_members"."created_at" IS '등록 일시 (물리에서 추가)';
 COMMENT ON COLUMN "staff_members"."updated_at" IS '최근 수정 일시 (물리에서 추가)';
 COMMENT ON TABLE "staff_tax_profiles" IS '신고 정보';
@@ -1135,12 +1186,23 @@ COMMENT ON COLUMN "contracts"."employment_type" IS '계약 유형 — 정직원�
 COMMENT ON COLUMN "contracts"."contract_method" IS '계약 방식 — ELECTRONIC·PAPER (CTR-23)';
 COMMENT ON COLUMN "contracts"."start_date" IS '계약 시작일 — 종료일 비우면 무기한 (논리 start_date·end_date)';
 COMMENT ON COLUMN "contracts"."end_date" IS '계약 종료일 — 종료일 비우면 무기한 (논리 start_date·end_date)';
-COMMENT ON COLUMN "contracts"."work_terms" IS '근무 조건 — 근무요일(월~일)·시작·종료·휴게, 30분 단위';
 COMMENT ON COLUMN "contracts"."weekly_holiday" IS '주휴일 — 근무요일과 함께 초안에서 정한다 (2026-10-06 재영, 컬럼 유지) (물리에서 추가)';
 COMMENT ON COLUMN "contracts"."is_health_pension_insured" IS '건강보험·국민연금 가입';
 COMMENT ON COLUMN "contracts"."is_employment_injury_insured" IS '고용보험·산재보험 가입';
-COMMENT ON COLUMN "contracts"."wage_terms" IS '급여 조건 — 시급·월급·지급일';
-COMMENT ON COLUMN "contracts"."status" IS '계약 상태 — 발송 대기·서명 대기·체결 완료·거부·만료·종료';
+COMMENT ON COLUMN "contracts"."wage_amount" IS '급여액 — 시급 — 고용 형태와 상관없이 시급만 둔다. 월급은 근로시간으로 셈한다 (2026-10-12)';
+COMMENT ON COLUMN "contracts"."meal_allowance_amount" IS '식대 — 원. 비과세 수당 — 계약서 임금 조항 (2026-10-12) (물리에서 추가)';
+COMMENT ON COLUMN "contracts"."car_allowance_amount" IS '자가운전보조금 — 원. 비과세 수당 — 계약서 임금 조항 (2026-10-12) (물리에서 추가)';
+COMMENT ON COLUMN "contracts"."childcare_allowance_amount" IS '육아수당 — 원. 비과세 수당 — 계약서 임금 조항 (2026-10-12) (물리에서 추가)';
+COMMENT ON COLUMN "contracts"."base_hours" IS '기본시간 — 월 소정근로시간 — 월 단위 시간, 소수 한 자리 (2026-10-12) (물리에서 추가)';
+COMMENT ON COLUMN "contracts"."monthly_overtime_hours" IS '월간 연장근무 — 기본시간 밖 연장근로 — 월 단위 시간, 소수 한 자리 (2026-10-12) (물리에서 추가)';
+COMMENT ON COLUMN "contracts"."base_night_hours" IS '기본시간 중 야간근무 — 기본시간에 든 야간근로(22~06시) — 월 단위 시간, 소수 한 자리 (2026-10-12) (물리에서 추가)';
+COMMENT ON COLUMN "contracts"."base_holiday_hours" IS '기본시간 중 휴일근무 — 기본시간에 든 휴일근로 — 월 단위 시간, 소수 한 자리 (2026-10-12) (물리에서 추가)';
+COMMENT ON COLUMN "contracts"."monthly_extra_holiday_hours" IS '월간 추가 휴일근무 — 기본시간 밖 휴일근로 — 월 단위 시간, 소수 한 자리 (2026-10-12) (물리에서 추가)';
+COMMENT ON COLUMN "contracts"."pay_month" IS '임금지급 월 — 당월·익월';
+COMMENT ON COLUMN "contracts"."pay_day" IS '임금지급일 — 1~31, 31은 말일';
+COMMENT ON COLUMN "contracts"."annual_leave_terms" IS '연차휴가 조항 — 계약서 연차휴가 조항. 작성 화면이 기본 문구를 채우고 관리자가 고친다 (2026-10-12) (물리에서 추가)';
+COMMENT ON COLUMN "contracts"."severance_pay_terms" IS '퇴직금 조항 — 계약서 퇴직금 조항. 작성 화면이 기본 문구를 채우고 관리자가 고친다 (2026-10-12) (물리에서 추가)';
+COMMENT ON COLUMN "contracts"."status" IS '계약 상태 — 임시저장·발송 대기·서명 대기·체결 완료·거부·만료·종료';
 COMMENT ON COLUMN "contracts"."draft_action" IS '초안 처리 유형 — 가입 초대·소속 추가 확인·복귀 확인·즉시 발송';
 COMMENT ON COLUMN "contracts"."sent_at" IS '발송 일시';
 COMMENT ON COLUMN "contracts"."sign_deadline_at" IS '날인 기한 — 발송일부터 30일';
@@ -1149,6 +1211,13 @@ COMMENT ON COLUMN "contracts"."reject_reason" IS '거부 사유';
 COMMENT ON COLUMN "contracts"."created_by" IS '작성 관리자';
 COMMENT ON COLUMN "contracts"."created_at" IS '등록 일시 (물리에서 추가)';
 COMMENT ON COLUMN "contracts"."updated_at" IS '최근 수정 일시 (물리에서 추가)';
+COMMENT ON TABLE "contract_work_days" IS '계약 근무 요일';
+COMMENT ON COLUMN "contract_work_days"."contract_id" IS '근로계약';
+COMMENT ON COLUMN "contract_work_days"."weekday" IS '요일 — 근무하는 요일만 행으로 둔다';
+COMMENT ON COLUMN "contract_work_days"."start_time" IS '시업 시각 — 30분 단위';
+COMMENT ON COLUMN "contract_work_days"."end_time" IS '종업 시각 — 시업보다 뒤, 같은 날 안';
+COMMENT ON COLUMN "contract_work_days"."break_start_time" IS '휴게 시작 — 휴게가 없으면 비움';
+COMMENT ON COLUMN "contract_work_days"."break_end_time" IS '휴게 종료';
 COMMENT ON TABLE "contract_parties" IS '계약 당사자 정보';
 COMMENT ON COLUMN "contract_parties"."contract_id" IS '근로계약 — 1:1';
 COMMENT ON COLUMN "contract_parties"."entered_name" IS '관리자 입력 이름 (논리 admin_name·admin_phone)';

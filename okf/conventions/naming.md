@@ -5,7 +5,7 @@ description: DB·API·FRONT 세 계층이 같은 개념을 같은 영문 이름�
 tags: [convention, naming, shared]
 sources:
   - { id: naming-2026-09-30, resource: ../../docs/raw/2026-09-30-네이밍-규칙.md, title: WHALE ERP 네이밍 규칙 (DB · API · FRONT) }
-generated: { by: claude-code/opus-5.5, at: 2026-10-08T06:33:46Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-13T02:11:21Z }
 ---
 
 근거: `docs/raw/2026-09-30-네이밍-규칙.md` (3팀 기획 세션 · 2026-10-08 고침)
@@ -116,6 +116,8 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-08T06:33:46Z }
 - 삭제 가능한 데이터는 행을 지우지 않고 `is_deleted = true` 로 표시한다. 표시는 `is_deleted` 하나뿐이다 — `deleted_at` 을 함께 두면 플래그와 시각이 어긋난 행이 생길 수 있다. 삭제 시각이 필요해지면 그때 `deleted_at` 을 더하고 CHECK 로 묶는다.
 - 남아야 하는 기록(`*_logs`, `*_histories`)에는 두지 않는다. 이 컬럼이 없는 테이블은 지우지 않는 테이블이다.
 - 예외: 두 표를 잇는 부속 관계 표 `todo_assignees` 는 `is_deleted` 없이 행을 DELETE 한다. 배정을 푼 사실은 `todo_status_histories` 에 남긴다(퇴직 처리의 배정 해제, 2026-10-07 재영).
+- 예외: 임시저장(`DRAFT`) 근로계약을 지우면 `contracts` 행을 DELETE 한다. 발송한 적이 없어 남길 기록이 없다(2026-10-13 재영). 발송 대기 이후의 계약은 지우지 않는다.
+- 예외: 공지사항·FAQ 의 노출 대상 연결 표 `post_audiences` 는 `is_deleted` 없이 글을 고칠 때마다 행을 DELETE 하고 다시 넣는다. 노출 대상 변경은 글의 최종 수정자·수정 시각으로 남긴다(2026-10-13 재영, api #18).
 - 모든 조회에 `is_deleted = false` 를 건다. 빠뜨려도 오류가 나지 않고 지운 행이 그대로 보인다 — 목록, id 조회, total 을 위한 count, insert 전 존재 확인 모두 해당한다.
 - 유니크 제약은 부분 인덱스(`WHERE NOT is_deleted`)로 만든다. 안 그러면 지운 행이 sku·email 을 붙잡아 같은 값으로 다시 만들 때 409 가 난다. Prisma 가 표현하지 못해 CHECK 제약처럼 마이그레이션 SQL 에만 남는다.
 - 기본키도 `{참조 단수}_id` 로 짓는다. 기본키가 `id` 였던 견본 테이블(`items`·`stock_movements`·`staff`·`customers`)은 2026-10-07 에 견본 로그인·`/items` API 와 함께 지웠다(재영).
@@ -223,8 +225,8 @@ DB 테이블은 복수형, 모델·타입은 PascalCase 단수형으로 바꿔 �
 
 | 표준 표기 | 영문 식별자 | 비고 |
 |---|---|---|
-| 근로계약(서) | `contract` | 초안은 상태 `PENDING_SEND`인 계약 |
-| 근로계약 상태 6종 | `PENDING_SEND` · `PENDING_SIGNATURE` · `SIGNED` · `REJECTED` · `EXPIRED` · `ENDED` | 발송 대기 · 서명 대기 · 체결 완료 · 거부 · 만료 · 종료 |
+| 근로계약(서) | `contract` | 초안은 상태 `PENDING_SEND`인 계약. 다 쓰기 전에 저장해 둔 것은 `DRAFT`(임시저장) |
+| 근로계약 상태 7종 | `DRAFT` · `PENDING_SEND` · `PENDING_SIGNATURE` · `SIGNED` · `REJECTED` · `EXPIRED` · `ENDED` | 임시저장 · 발송 대기 · 서명 대기 · 체결 완료 · 거부 · 만료 · 종료. 임시저장은 초대·계약서를 보내지 않는다 (2026-10-12 재영) |
 | 전자계약 / 종이 계약 | `ELECTRONIC` / `PAPER` | `contract_method` |
 | 임금계약서 | `wage_contract` | 종이 계약에서 따로 날인한 임금 약정 문서 |
 | 계약서 파일 구분 | `SENT_ORIGINAL` · `SIGNED_COPY` · `PAPER_EMPLOYMENT_CONTRACT` · `WAGE_CONTRACT` | `contract_documents.kind` — 발송 원본 · 날인 완료본 · 종이 계약 근로계약서 · 임금계약서 |
