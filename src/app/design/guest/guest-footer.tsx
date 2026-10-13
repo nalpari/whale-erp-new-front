@@ -10,11 +10,6 @@ const INFO_ROWS = [
   ["통신판매업신고번호: 2021-00000000000"],
 ];
 
-const SNS = [
-  { name: "Instagram", src: "/guest/sns-instagram.svg", width: 23.9859, height: 23.9953 },
-  { name: "YouTube", src: "/guest/sns-youtube.svg", width: 24, height: 16.8797 },
-  { name: "TikTok", src: "/guest/sns-tiktok.svg", width: 24, height: 24 },
-];
 
 function Bar() {
   return <span className="h-[8px] w-px bg-[#ddd]" />;
@@ -23,7 +18,7 @@ function Bar() {
 export function GuestFooter() {
   return (
     <footer className="bg-white pt-[60px]">
-      <div className="flex items-center justify-between border-t border-guest-line px-[80px] pt-[38px] pb-[32px]">
+      <div className="border-t border-guest-line px-[80px] pt-[38px] pb-[32px]">
         <div className="flex items-start gap-[100px]">
           <span className="relative h-[50px] w-[80px]">
             <Image src="/guest/footer-logo.svg" alt="인터플러그" width={80} height={49.9939} className="absolute top-0 left-0" />
@@ -53,18 +48,6 @@ export function GuestFooter() {
             </div>
             <p className="text-[#888]">Copyrights© 2026 INTERPLUG. All Rights Reserved.</p>
           </div>
-        </div>
-        <div className="flex gap-[8px]">
-          {SNS.map((sns) => (
-            <Link
-              key={sns.name}
-              href="#"
-              aria-label={sns.name}
-              className={`flex size-[44px] items-center justify-center rounded-full bg-[#ddd] hover:bg-guest-navy-soft ${HOVER}`}
-            >
-              <Image src={sns.src} alt="" width={sns.width} height={sns.height} />
-            </Link>
-          ))}
         </div>
       </div>
     </footer>
