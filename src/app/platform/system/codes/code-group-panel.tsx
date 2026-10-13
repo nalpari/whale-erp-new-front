@@ -234,14 +234,12 @@ export function CodeGroupPanel({
       // 플랫폼제공 그룹만 [BP 적용]. 이미 적용한 그룹도 다시 누를 수 있다(BP 에 없는 코드만 들어간다). 새 그룹은 저장 뒤에 적용한다.
       cell: (d) =>
         !d.added && d.manageOwnerCode === "PLATFORM_PROVIDED" && manage ? (
-          <Button
-            variant="soft"
-            onClick={() => setApplyTarget(d)}
-            disabled={applyBlocked || saving || applying}
-            title={applyBlocked ? "저장한 뒤 적용할 수 있습니다" : undefined}
-          >
-            BP 적용
-          </Button>
+          // 막힌 버튼은 호버를 받지 않으므로(Button 의 disabled:pointer-events-none) 이유 안내는 감싸는 칸에 단다
+          <span title={applyBlocked ? "저장한 뒤 적용할 수 있습니다" : undefined} className="inline-flex">
+            <Button variant="soft" onClick={() => setApplyTarget(d)} disabled={applyBlocked || saving || applying}>
+              BP 적용
+            </Button>
+          </span>
         ) : (
           <span className="text-erp-muted">{d.added ? "" : "—"}</span>
         ),

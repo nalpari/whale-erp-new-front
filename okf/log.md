@@ -1,5 +1,9 @@
 # Bundle history
 
+## 2026-10-13
+
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통코드 [BP 적용]이 막혔을 때 「저장한 뒤 적용할 수 있습니다」 안내를 버튼을 감싼 칸에 달았다. 막힌 버튼은 호버를 받지 않아(Button disabled:pointer-events-none) 버튼에 단 안내가 뜨지 않았다(PR #9 리뷰).
+
 ## 2026-10-12
 
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통코드 화면 리뷰 반영: 자기 패널 저장 뒤 입력 행이 남던 문제(새 그룹이 다음 쪽에 들어갈 때 · 공백만 고칠 때), [BP 적용]이 상세 코드 패널의 변경을 막도록, 요청 실패 · 상세 코드 조회 실패를 패널에서 알리고, 401 · 403 문구를 바꿨다. 저장 데이터 만들기를 `src/lib/code-drafts.ts` 로 빼 테스트하고 `pnpm test` 를 더했다.
