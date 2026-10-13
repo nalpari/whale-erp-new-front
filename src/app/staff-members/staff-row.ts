@@ -80,6 +80,8 @@ export function contractCell(item: StaffMemberListItem, today: string): Cell | n
   const c = item.contract;
   if (!c || !c.status) return null;
   switch (c.status) {
+    case "DRAFT":
+      return { text: "임시저장", style: "badge-neutral" };
     case "PENDING_SEND":
       return { text: "발송 대기", style: "badge-neutral" };
     case "PENDING_SIGNATURE": {

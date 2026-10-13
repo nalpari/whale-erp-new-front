@@ -19,7 +19,7 @@ export type StaffJoinState =
   | "DRAFT";
 export type EmploymentType = "FULL_TIME" | "PART_TIME";
 export type EmploymentStatus = "EMPLOYED" | "RETIRED";
-export type ContractStatus = "PENDING_SEND" | "PENDING_SIGNATURE" | "SIGNED" | "REJECTED" | "EXPIRED" | "ENDED";
+export type ContractStatus = "DRAFT" | "PENDING_SEND" | "PENDING_SIGNATURE" | "SIGNED" | "REJECTED" | "EXPIRED" | "ENDED";
 export type StoreType = "DIRECT" | "FRANCHISE";
 
 /** 직원 목록 한 줄. isMasked 면 staffMemberId · store 밖의 칸은 모두 null 이다(본사 제공 동의 없음). */

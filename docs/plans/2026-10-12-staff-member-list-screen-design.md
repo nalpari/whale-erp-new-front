@@ -102,6 +102,7 @@
 
 | `contract.status` | 표시 |
 |---|---|
+| `DRAFT` | 흐린 「임시저장」 — api main 이 근로계약에 임시저장 상태를 더했다(2026-10-12 재영) |
 | `PENDING_SEND` | 흐린 「발송 대기」 |
 | `PENDING_SIGNATURE` | off 「서명 대기 · D-N」(`signDeadlineAt`) |
 | `SIGNED` | 종료일이 30일 안이면 off 「갱신 예정 D-N」, 아니면 on 「체결 완료」 |
