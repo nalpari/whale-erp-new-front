@@ -122,17 +122,15 @@ const HIGHLIGHTS = [
   { no: "04", title: "All in One", desc: "매장 운영의 모든 것" },
 ];
 
+// 머리말(110px)이 Billboard 위에 겹치도록 그만큼 끌어올린다.
 function Billboard() {
   return (
-    <section className="relative h-[1080px] overflow-hidden">
+    <section className="relative -mt-[110px] h-[1080px] overflow-hidden">
       <Image src="/guest/billboard-bg.png" alt="" fill loading="eager" sizes="100vw" className="object-cover" />
       {/* 정사각 그림을 677×375 에 늘여 채운 것이 시안이다 — object-cover 로 바꾸면 고래가 잘린다.
           시안의 2px 흐림은 너무 뿌옇다는 요청(2026-10-13)으로 뺐다. */}
       <div className="absolute top-1/2 left-1/2 h-[375px] w-[677px] -translate-1/2">
         <Image src="/guest/billboard-whale.png" alt="" fill loading="eager" sizes="677px" />
-      </div>
-      <div className="relative">
-        <GuestHeader />
       </div>
       <div className="absolute top-[478px] left-1/2 flex w-[1520px] -translate-x-1/2 flex-col gap-[80px]">
         <div className="flex items-end justify-between">
@@ -595,6 +593,7 @@ function Boards() {
 export default function GuestMainPage() {
   return (
     <div className={`${GUEST_FONTS} min-w-[1720px] bg-white break-keep`}>
+      <GuestHeader />
       <Billboard />
       <Features />
       <Personas />

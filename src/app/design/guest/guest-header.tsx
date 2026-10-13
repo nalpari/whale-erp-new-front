@@ -1,13 +1,31 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { EASE_OUT } from "@/components/common/theme";
 import { HOVER } from "./theme";
 
 const MENUS = ["매장운영", "재무관리", "프랜차이즈", "부가 서비스"];
 
-// 비로그인 화면 머리말. 바탕이 없어 Billboard 위에 겹쳐 놓는다.
+// 비로그인 화면 머리말. 스크롤해도 위에 붙어 있다.
+// fixed 가 아니라 sticky 다 — 화면이 1720 보다 좁으면 가로로 스크롤하는데, fixed 는 가로로 따라오지 않아 오른쪽이 잘린다.
+// 맨 위에서는 시안대로 바탕 없이 Billboard 위에 겹치고, 스크롤하면 흰 바탕과 선을 깔아 어두운 섹션 위에서도 글자가 보이게 한다.
 export function GuestHeader() {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const update = () => setScrolled(window.scrollY > 0);
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, []);
+
   return (
-    <header className="flex h-[110px] items-center px-[80px]">
+    <header
+      className={`sticky top-0 z-20 flex h-[110px] items-center border-b px-[80px] transition-[background-color,border-color] duration-150 ${EASE_OUT} motion-reduce:transition-none ${
+        scrolled ? "border-guest-line bg-white/95 backdrop-blur-[8px]" : "border-transparent"
+      }`}
+    >
       <Link href="/design/guest" className="flex items-center gap-[8px] py-[5px]">
         <span className="relative size-[50px] opacity-95">
           <Image src="/guest/logo-whale.svg" alt="" width={49.6875} height={37.4997} className="absolute top-[12.5px] left-0" />
