@@ -1,5 +1,5 @@
 // 운영 알림함 화면의 순수 규칙 — 이동 경로 검사, 관련 업무 표시, URL 쿼리, 일시, 종 배지. 갈 업무 화면은 알림을 만든
-// 업무 쪽이 정한 link 다(NOTIFY-16). 화면 · 종 · 메일 버튼(api WHALEERP-249 의 /notifications/{id}/open)이 모두 그 link 로 간다.
+// 업무 쪽이 정한 link 다(NOTIFY-16). 화면 · 종이 /notifications/{id}/open 을 거쳐 그 link 로 간다.
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
 import { PAGE_SIZES, type PageSize } from "./staff-members.ts";
 
