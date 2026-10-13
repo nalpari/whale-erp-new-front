@@ -29,6 +29,7 @@
                             후보에 흐리게 보이되 고를 수 없다(예: 다른 가맹 마스터가 맡은 점포 — ‘ongifm 담당’).
                             위 [data-spick-q] 자동완성에서 고르면
                             아래 [data-spick-list] 에 더하고, 줄의 × 로 하나씩, [data-spick-clear] 로 모두 뺀다.
+                            data-spick-nocode 는 검색 필터용 — 펼친 목록에 점포코드를 보이지 않고(코드로 찾기는 된다), 같은 패널의 초기화로 비운다.
                             [data-spick-bulk] 일괄 검색 버튼은 고를 수 있는 점포 전체를 팝업에 펴고 체크로 한꺼번에 고른다.
    data-same-as="id" data-same-to="id"  ‘기본정보와 동일’ 체크. 켜면 원본 값(칸이 여럿이면 - 로 이어)을 대상 칸에
                             채우고 잠그며, 끄면 잠금만 푼다.
@@ -869,7 +870,7 @@
         list.innerHTML = '<div class="addr__note">' + (left ? "‘" + esc(q.value.trim()) + "’에 맞는 점포가 없습니다. 내 관리 점포 안에서만 찾습니다." : "고를 수 있는 점포를 모두 골랐습니다.") + "</div>";
       } else {
         list.innerHTML = found.map(function (s, i) {
-          return '<div class="spick__opt' + (s.lock ? " is-off" : "") + '" role="option" aria-selected="false"' + (s.lock ? ' aria-disabled="true"' : "") + ' id="' + list.id + "-" + i + '" data-i="' + i + '"><span>' + hi(s.name, t) + '</span><span class="mono spick__code">' + hi(s.code, t) + '</span>' + (s.lock ? '<span class="spick__type">' + esc(s.lock) + "</span>" : "") + "</div>";
+          return '<div class="spick__opt' + (s.lock ? " is-off" : "") + '" role="option" aria-selected="false"' + (s.lock ? ' aria-disabled="true"' : "") + ' id="' + list.id + "-" + i + '" data-i="' + i + '"><span>' + hi(s.name, t) + '</span>' + (box.hasAttribute("data-spick-nocode") ? "" : '<span class="mono spick__code">' + hi(s.code, t) + '</span>') + (s.lock ? '<span class="spick__type">' + esc(s.lock) + "</span>" : "") + "</div>";
         }).join("");
       }
       list.hidden = false;
@@ -921,6 +922,13 @@
       });
     });
     document.addEventListener("click", function (e) { if (!box.querySelector(".spick__q").contains(e.target)) close(); });
+    /* 검색 필터의 점포 고르기(data-spick-nocode) — 같은 패널의 [초기화]를 누르면 고른 점포와 검색어를 처음 값으로 되돌린다 */
+    var initial = picked.slice();
+    if (box.hasAttribute("data-spick-nocode")) document.addEventListener("click", function (e) {
+      var reset = e.target.closest && e.target.closest("[data-sfilt-reset], [data-state-go='base']");
+      var panel = box.closest(".panel");
+      if (reset && panel && panel.contains(reset)) { picked = initial.slice(); q.value = ""; draw(); close(); }
+    });
     draw();
   });
 

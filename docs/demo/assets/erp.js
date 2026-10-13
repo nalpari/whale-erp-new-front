@@ -451,7 +451,7 @@
       ? found
           .map(
             (s, i) =>
-              `<button type="button" role="option" tabindex="-1" aria-selected="false" data-i="${i}" class="flex w-full items-center gap-[10px] rounded-[2px] px-[10px] py-[8px] text-left text-[14px] text-erp-ink hover:bg-erp-thead-bg aria-selected:bg-erp-thead-bg"><span class="min-w-0 flex-1 truncate">${s.name}</span><span class="shrink-0 text-[12px] text-erp-muted">${s.code}</span></button>`,
+              `<button type="button" role="option" tabindex="-1" aria-selected="false" data-i="${i}" class="flex w-full items-center gap-[10px] rounded-[2px] px-[10px] py-[8px] text-left text-[14px] text-erp-ink hover:bg-erp-thead-bg aria-selected:bg-erp-thead-bg"><span class="min-w-0 flex-1 truncate">${s.name}</span>${box.hasAttribute("data-spick-nocode") ? "" : `<span class="shrink-0 text-[12px] text-erp-muted">${s.code}</span>`}</button>`,
           )
           .join("")
       : `<p class="px-[10px] py-[14px] text-center text-[13px] text-erp-label">${picked.length >= spickPool(box).length ? "고를 수 있는 점포를 모두 골랐습니다." : "맞는 점포가 없습니다."}</p>`;
@@ -641,13 +641,21 @@
   // ── FilterPanel (filter-panel.tsx). 226 ↔ 76 으로 접고 편다 ──
   function initFilter(btn) {
     const aside = btn.parentElement;
-    // 초기화: 처음 그려진 값으로 되돌린다(데모라 목록은 그대로).
+    // 초기화: 처음 그려진 값으로 되돌리고, 공통 목록 거르기는 바뀐 값으로 다시 돈다.
     aside.querySelector('button[aria-label$="초기화"]:not([disabled])')?.addEventListener("click", () => {
       $$("input", aside).forEach((i) => {
         if (i.readOnly) return; // 헤더 점포 선택으로 고정된 칸은 그대로
+        // 점포 찾기 칸은 비우기만 한다 — input 이벤트를 보내면 점포 목록이 펼쳐진다
+        if (i.closest("[data-spick-find]")) return void (i.value = "");
         if (i.type === "checkbox" || i.type === "radio") i.checked = i.defaultChecked;
         else i.value = i.defaultValue;
         i.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+      // 필터의 점포 고르기(store-filter.mjs) — 고른 점포도 비운다. 이 부품은 늘 빈 채로 그려진다.
+      $$("[data-store-filter]", aside).forEach((box) => {
+        $("[data-spick-list]", box).innerHTML = "";
+        spickCount(box);
+        spickClose(box);
       });
     });
     const inner = aside.firstElementChild;
