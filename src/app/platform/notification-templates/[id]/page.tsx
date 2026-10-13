@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
-import { Button, PageBar } from "@/components/common";
 import { ApiError, getEnum } from "@/lib/api";
 import { isNotificationId } from "@/lib/notification-view";
 import { getTemplate } from "@/lib/notification-templates";
+import { ForbiddenPanel } from "../forbidden-panel";
 import { TemplateForm } from "../template-form";
 
 // 알림 템플릿 수정(#576 · #579, 목업 notify/templates-edit.html). 기본 문구와 등록한 것 모두 모든 칸을 고친다(NOTIFY-10).
@@ -22,17 +22,5 @@ export default async function TemplateDetailPage({ params }: PageProps<"/platfor
     const [detail, channels, categories] = loaded;
     return <TemplateForm detail={detail} channels={channels} categories={categories} />;
   }
-  return (
-    <>
-      <PageBar title="알림 템플릿 수정" />
-      <div className="flex min-h-0 flex-1 p-[24px]">
-        <section className="flex flex-1 flex-col items-center justify-center gap-[16px] rounded-[4px] border border-erp-panel-line bg-white p-[25px] text-[14px] text-erp-muted">
-          <p>알림 템플릿을 볼 권한이 없습니다.</p>
-          <Button variant="off" href="/platform/notification-templates">
-            목록
-          </Button>
-        </section>
-      </div>
-    </>
-  );
+  return <ForbiddenPanel title="알림 템플릿 수정" />;
 }

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
 import type { TemplateInput } from "@/lib/notification-template-view";
+import { isNotificationId } from "@/lib/notification-view";
 import {
   createTemplate,
   restoreTemplate,
@@ -16,6 +17,9 @@ import {
 
 /** 실패면 띠에 한 줄씩 보일 문장 목록. 400 검증 실패는 api 가 준 문장 목록 그대로다. */
 export type TemplateResult = { ok: true; detail: TemplateDetail } | { ok: false; status?: number; messages: string[] };
+
+// 서버 액션은 누구나 아무 인자로 부를 수 있다 — api 경로에 붙이기 전에 id 범위(1..2147483647)를 본다.
+const NOT_FOUND: TemplateResult = { ok: false, status: 404, messages: ["알림 템플릿을 찾을 수 없습니다."] };
 
 const STALE = "다른 사람이 먼저 고쳤습니다. 새로 불러온 뒤 다시 저장해 주세요";
 
@@ -54,13 +58,16 @@ export async function createTemplateAction(input: TemplateInput, isActive: boole
 }
 
 export async function updateTemplateAction(id: number, input: TemplateInput, updatedAt: string): Promise<TemplateResult> {
+  if (!isNotificationId(id)) return NOT_FOUND;
   return run("저장", () => updateTemplate(id, { ...input, updatedAt }));
 }
 
 export async function restoreTemplateAction(id: number, updatedAt: string): Promise<TemplateResult> {
+  if (!isNotificationId(id)) return NOT_FOUND;
   return run("되돌리기", () => restoreTemplate(id, updatedAt));
 }
 
 export async function setTemplateActiveAction(id: number, isActive: boolean, updatedAt: string): Promise<TemplateResult> {
+  if (!isNotificationId(id)) return NOT_FOUND;
   return run("사용 여부 저장", () => setTemplateActive(id, isActive, updatedAt));
 }
