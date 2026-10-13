@@ -1,0 +1,20 @@
+// node --test src/lib/format.test.ts
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { formatDateTime, formatPhone } from "./format.ts";
+
+test("일시는 한국 시간으로 분까지", () => {
+  assert.equal(formatDateTime("2026-10-13T00:05:00.000Z"), "2026-10-13 09:05");
+  assert.equal(formatDateTime("2026-10-12T15:30:59Z"), "2026-10-13 00:30");
+  assert.equal(formatDateTime(null), "");
+  assert.equal(formatDateTime("깨진 값"), "");
+});
+
+test("전화번호에 하이픈을 넣는다", () => {
+  assert.equal(formatPhone("01077813302"), "010-7781-3302");
+  assert.equal(formatPhone("0311234567"), "031-123-4567");
+  assert.equal(formatPhone("0212345678"), "02-1234-5678");
+  assert.equal(formatPhone("021234567"), "02-123-4567");
+  assert.equal(formatPhone("010-1234"), "010-1234");
+  assert.equal(formatPhone(null), "");
+});

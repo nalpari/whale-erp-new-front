@@ -2,6 +2,7 @@
 
 ## 2026-10-13
 
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 관리 화면(`/platform/system/admins`)을 api `/platform-admins` 에 붙여 만들었다. 목록 · 필터, 상세 · 등록 · 수정 슬라이드 패널(겹치면 Esc 는 가장 위의 것만 닫는다), 비밀번호 초기화 · 삭제(404 · 409 · 결과 모름이면 상세를 다시 받는다) · 변경 이력. 등록의 아이디는 칸을 벗어나거나 Enter 때 `GET /platform-admins/login-id-availability` 로 중복 확인, 입력 · api 칸 오류는 그 칸 바로 아래. 주소는 행정안전부 도로명주소 API 자동완성(`JUSO_API_KEY`, 캐시 없음, `server-only`, 키 견본 `.env.example` — 카카오 우편번호보다 층 안 목록 모양이 화면과 맞아 이것으로 정했다). 공통: `Field required`(붉은 *), DetailTable `multiline`, SlidePanel 은 preventDefault 된 Esc 를 넘긴다. `pnpm test` 는 `src/**/*.test.ts` 를 돈다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통코드 [BP 적용]이 막혔을 때 「저장한 뒤 적용할 수 있습니다」 안내를 버튼을 감싼 칸에 달았다. 막힌 버튼은 호버를 받지 않아(Button disabled:pointer-events-none) 버튼에 단 안내가 뜨지 않았다(PR #9 리뷰).
 * **Update**: `2026-09-30-네이밍-규칙.md` 2026-10-13 고침을 [네이밍 규칙](/conventions/naming.md) 에 옮겼다 — 삭제 표시 예외에 임시저장(`DRAFT`) 근로계약 행 삭제를 더했다(재영).
 
