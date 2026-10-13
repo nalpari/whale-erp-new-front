@@ -10,7 +10,7 @@
    data-reveal="id"         그 요소를 보이게 한다 (사업자 인증 성공 뒤 사업자정보 영역).
    data-view-switch         목록 보기 전환. 안의 [data-view] 를 누르면 [data-view-pane] 중 같은 값만 보인다 (카드형 · 표).
    data-pick                큰 선택 카드. 같은 부모 안에서 누른 것만 aria-checked="true" 가 된다 (점포유형).
-   data-conceal="id"        그 요소를 숨긴다. data-clear="id" 는 그 안의 입력칸을 모두 비우고 ‘기본정보와 동일’을 끈다(재인증).
+   data-conceal="id"        그 요소를 숨긴다. data-clear="id" 는 그 안의 입력칸을 모두 비우고 ‘기본정보와 동일’을 끈다(재인증·지우기).
    data-step-to="값"         같은 모달 안의 [data-step] 단계를 바꾼다.
    data-state-go="값"        제출 버튼이 결과 상태로 넘긴다 — 자기를 감싼 상태 범위의 전환 줄을 누른 것과 같다.
    data-dupcheck="id|mail"  칸을 벗어날 때(포커스 아웃) 형식과 중복을 확인해 칸 아래 [data-dup] 결과를 보인다.
@@ -214,8 +214,6 @@
       if (!showAgreeError() || !dupOk) e.preventDefault();
       return;
     }
-    /* 약관 체크는 app.js 가 먼저 뒤집으므로 한 틱 뒤에 읽는다. */
-    if (signupTried && e.target.closest && e.target.closest("[data-agree] .check")) setTimeout(showAgreeError, 0);
   });
 
   /* ---------- 값이 있을 때만 보이는 버튼 (data-filled-in) ---------- */
@@ -244,9 +242,11 @@
   document.addEventListener("input", syncEnable);
   syncEnable();
 
-  /* ---------- 약관 전체 동의 ----------
-     [data-agree] 안에서 .agree--all 을 누르면 나머지가 같이 바뀌고, 나머지가 모두 체크되면 전체 동의도 켜진다.
-     app.js 가 체크 상태를 먼저 뒤집으므로 바뀐 뒤에 읽는다. */
+  /* ---------- 모두 동의합니다 ----------
+     [data-agree] 안에서 .agree--all 을 누르면 나머지가 같이 바뀌고, 나머지가 모두 체크되면 모두 동의도 켜진다.
+     나머지 중 하나라도 끄면 모두 동의도 풀린다(개발 화면과 같다).
+     app.js 가 체크 상태를 먼저 뒤집으므로 바뀐 뒤에 읽는다. 약관 안내(showAgreeError)는 칸을 다 맞춘 다음에 다시 계산한다 —
+     먼저 계산하면 모두 동의를 눌렀을 때 아직 꺼진 개별 칸을 보고 안내가 남는다(2026-10-13 코드리뷰). */
   function syncAgree(e) {
     if (e.type === "keydown" && e.key !== " " && e.key !== "Enter") return;
     var c = e.target.closest && e.target.closest("[data-agree] .check");
@@ -262,6 +262,7 @@
         all.setAttribute("aria-checked", String(items.every(function (i) { return i.getAttribute("aria-checked") === "true"; })));
       }
       gate();
+      showAgreeError();
     }, 0);
   }
   document.addEventListener("click", syncAgree);
