@@ -5,29 +5,50 @@ import { PAGE_SIZES, type PageSize } from "./staff-members.ts";
 
 type Target = { relatedType: string; path: (id: number) => string };
 
-const CONTRACT: Target = { relatedType: "CONTRACT", path: (id) => `/staff-members/contracts/${id}` };
+const CONTRACT: Target = { relatedType: "CONTRACT", path: (id) => `/contracts/${id}` };
 const STAFF: Target = { relatedType: "STAFF_MEMBER", path: (id) => `/staff-members/${id}` };
-const LEAD: Target = { relatedType: "LEAD", path: (id) => `/platform/community/leads/${id}` };
 
-/** 템플릿 코드 → 갈 곳. 같은 문의도 접수는 플랫폼 운영 화면, 답변은 등록한 사람의 고객지원 화면이다. */
-const TARGETS: Record<string, Target> = {
+/**
+ * 템플릿 코드 → 갈 곳. 화면이 아직 없는 문의 · 도입문의 넷은 null 이라 알림함으로 돌아와 「이동할 화면이 없습니다」를
+ * 보인다 — 읽음 뒤 404 로 보내지 않는다. 화면이 생기면 여기에 넣는다: 문의사항 접수 /platform/community/inquiries/{id},
+ * 문의사항 답변 /support/inquiries/{id}(등록한 사람의 고객지원), 도입문의 접수 · 처리 상태 변경 /platform/community/leads/{id}.
+ */
+const TARGETS: Record<string, Target | null> = {
   NTF_CONTRACT_SIGNED: CONTRACT,
   NTF_CONTRACT_REJECTED: CONTRACT,
   NTF_CONTRACT_EXPIRED: CONTRACT,
   NTF_CONTRACT_RENEWAL_DUE: CONTRACT,
   NTF_LINK_HOLD: STAFF,
   NTF_AFFILIATION_REJECTED: STAFF,
-  NTF_INQUIRY_RECEIVED: { relatedType: "INQUIRY", path: (id) => `/platform/community/inquiries/${id}` },
-  NTF_INQUIRY_ANSWERED: { relatedType: "INQUIRY", path: (id) => `/support/inquiries/${id}` },
-  NTF_LEAD_RECEIVED: LEAD,
-  NTF_LEAD_ANSWERED: LEAD,
+  NTF_INQUIRY_RECEIVED: null,
+  NTF_INQUIRY_ANSWERED: null,
+  NTF_LEAD_RECEIVED: null,
+  NTF_LEAD_ANSWERED: null,
 };
+
+const RELATED_LABELS: Record<string, string> = {
+  CONTRACT: "근로계약",
+  STAFF_MEMBER: "직원",
+  INQUIRY: "문의사항",
+  LEAD: "도입문의",
+};
+
+/** 관련 업무 식별 정보 — 「근로계약 #41」. 모르는 종류이거나 없으면 「-」. */
+export function relatedLabel(relatedType: string | null, relatedId: number | null): string {
+  const label = relatedType !== null && Object.hasOwn(RELATED_LABELS, relatedType) ? RELATED_LABELS[relatedType] : undefined;
+  return label && relatedId !== null ? `${label} #${relatedId}` : "-";
+}
+
+/** api 경로 · 쿼리에 넣을 알림 ID — integer 칸에 들어가는 1..2147483647 의 정수만. */
+export function isNotificationId(id: number): boolean {
+  return Number.isInteger(id) && id >= 1 && id <= 2147483647;
+}
 
 export type LinkSource = { templateCode: string; relatedType: string | null; relatedId: number | null };
 
 /** 알림이 갈 업무 화면. 모르는 코드이거나 관련 업무가 없거나 맞지 않으면 null — 엉뚱한 화면으로 보내지 않는다. */
 export function linkOf({ templateCode, relatedType, relatedId }: LinkSource): string | null {
-  const target = Object.hasOwn(TARGETS, templateCode) ? TARGETS[templateCode] : undefined;
+  const target = Object.hasOwn(TARGETS, templateCode) ? TARGETS[templateCode] : null;
   if (!target || relatedId === null || relatedType !== target.relatedType) return null;
   return target.path(relatedId);
 }
