@@ -262,7 +262,8 @@
 
             <!-- 점포 사업자정보 — 사업자 번호 인증은 회원가입의 ‘사업자정보 인증’과 같은 모양이다.
                  인증 전: ‘사업자 번호 인증하기’ 버튼 → 누르면 입력 상자가 패널 안에 펼쳐진다(× 로 접는다).
-                 인증 후: 같은 자리가 ‘사업자정보 · 인증 완료’ 카드로 바뀌고, 재인증은 확인을 한 번 받는다.
+                 인증 후: 같은 자리가 ‘사업자정보 · 인증 완료’ 카드로 바뀐다.
+                 재인증은 확인 창 없이 입력 상자로 돌아가고 세 값은 남겨 고쳐서 다시 인증한다. 지우기는 세 값과 인증 결과를 비우고 빈 입력 상자로 돌아간다(인증 전에는 값이 있을 때만 보인다). 회원가입과 같다(2026-10-13).
                  상호명·대표자 연락처·사업자주소·업태·종목은 인증과 상관없이 늘 입력할 수 있다. -->
             <section class="panel">
               <div class="panel__head">
@@ -328,6 +329,7 @@
                   </div>
                   <div>
                     <button class="btn btn--primary btn--sm" type="button" data-conceal="sbizform" data-reveal="sbizinfo">인증하기</button>
+                    <button class="btn btn--ghost btn--sm" type="button" data-clear="sbizform" data-filled-in="sbizform">지우기</button>
                   </div>
                 </div>
 
@@ -352,9 +354,10 @@
                     </div>
                   </div>
                   <div>
-                    <button class="btn btn--secondary btn--sm" type="button" data-open="sbizreset">
+                    <button class="btn btn--secondary btn--sm" type="button" data-conceal="sbizinfo" data-reveal="sbizform">
                       <span data-icon="refresh" data-icon-size="14"></span>재인증
                     </button>
+                    <button class="btn btn--ghost btn--sm" type="button" data-clear="sbizform" data-conceal="sbizinfo" data-reveal="sbizform">지우기</button>
                   </div>
                 </div>
 
@@ -408,24 +411,6 @@
                 </div>
               </div>
             </section>
-          </div>
-
-          <!-- 재인증 확인 — 지금 인증 결과를 버리고 입력 상자로 돌아간다 -->
-          <div class="modal" id="sbizreset" hidden role="dialog" aria-modal="true" aria-labelledby="sbizreset-t">
-            <div class="modal__box" style="max-width: 400px">
-              <div class="modal__head">
-                <h2 class="t-h2" id="sbizreset-t">사업자정보를 다시 인증할까요?</h2>
-                <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
-              </div>
-              <div class="modal__body">
-                <p style="margin: 0; font-size: 13.5px">지금 인증한 사업자등록번호·대표자명·개업일자가 지워지고 인증 전으로 돌아갑니다.</p>
-                <p class="subtle" style="margin: 0; font-size: 12.5px">상호명과 아래에 적은 사업자정보는 그대로 둡니다. 다시 인증하지 않고 등록해도 됩니다.</p>
-              </div>
-              <div class="modal__foot">
-                <button class="btn btn--ghost" type="button" data-close>취소</button>
-                <button class="btn btn--primary" type="button" data-close data-conceal="sbizinfo" data-reveal="sbizform">재인증</button>
-              </div>
-            </div>
           </div>
 
         </div>
