@@ -10,8 +10,9 @@ import { req } from "./biz-form.mjs";
 export function staffSections({ A, R }) {
   const L = (path) => link(R, path);
   const offBtn = (label, a = {}) => ui.button(label, { variant: "off", ...a });
-  // 직원관리의 목록은 맨 앞에 순번(2026-10-02 재영)
-  const numbered = (columns, rows, empty) => ui.dataTable([{ header: "순번", width: "w-[60px]" }, ...columns], rows.map((r, i) => [i + 1, ...r]), empty);
+  // 직원관리의 목록은 맨 앞에 순번(2026-10-02 재영). 순번은 내림차순 — 첫 줄이 전체 건수다(2026-10-13 재영).
+  const numbered = (columns, rows, empty, total = rows.length) =>
+    ui.dataTable([{ header: "순번", width: "w-[60px]" }, ...columns], rows.map((r, i) => [total - i, ...r]), empty);
   const pageNav = (n) => `<div class="pt-[14px]">${ui.pagination(A, 1, n)}</div>`;
 
   // 필터의 점포 칸. 헤더 점포 선택이 점포 1개면 그 점포로 고정, 전체·일반·가맹 묶음이면 검색(erp.js initScopeStore, 2026-10-02 재영).
@@ -358,6 +359,7 @@ export function staffSections({ A, R }) {
         ["권도윤", "모리커피 서초점", "신메뉴 시식 교육 참석", "08-28 14:00", p.tag("ok", "완료"), ""],
       ],
       "등록된 TO-DO 가 없습니다.",
+      12,
     ) +
     pageNav(2);
 
