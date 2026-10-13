@@ -47,14 +47,12 @@ export interface ContractForm {
   baseHours: string;
   monthlyOvertimeHours: string;
   baseNightHours: string;
-  baseHolidayHours: string;
-  monthlyExtraHolidayHours: string;
   annualLeaveTerms: string;
   severancePayTerms: string;
 }
 
-/** 월 근로시간 칸 — 폼 키와 api 칸 이름이 같다 */
-export const HOUR_FIELDS = ["baseHours", "monthlyOvertimeHours", "baseNightHours", "baseHolidayHours", "monthlyExtraHolidayHours"] as const;
+/** 월 근로시간 칸 — 폼 키와 api 칸 이름이 같다. 휴일근무 두 칸(baseHolidayHours · monthlyExtraHolidayHours)은 화면에서 뺐다(2026-10-13) */
+export const HOUR_FIELDS = ["baseHours", "monthlyOvertimeHours", "baseNightHours"] as const;
 export type HourField = (typeof HOUR_FIELDS)[number];
 
 /** 조항 기본 문구. DB 가 아니라 작성 화면이 채우고 관리자가 고친다(2026-10-12 재영) */
@@ -116,8 +114,6 @@ export function initialForm(storeId = ""): ContractForm {
     baseHours: "",
     monthlyOvertimeHours: "",
     baseNightHours: "",
-    baseHolidayHours: "",
-    monthlyExtraHolidayHours: "",
     annualLeaveTerms: DEFAULT_ANNUAL_LEAVE_TERMS,
     severancePayTerms: DEFAULT_SEVERANCE_PAY_TERMS,
   };
@@ -159,8 +155,6 @@ export function fromDetail(d: ContractDetail): ContractForm {
     baseHours: hoursText(d.baseHours),
     monthlyOvertimeHours: hoursText(d.monthlyOvertimeHours),
     baseNightHours: hoursText(d.baseNightHours),
-    baseHolidayHours: hoursText(d.baseHolidayHours),
-    monthlyExtraHolidayHours: hoursText(d.monthlyExtraHolidayHours),
     // 임시저장에서 조항을 비워 두었으면 비운 채로 연다 — 기본 문구는 새로 쓸 때만 채운다
     annualLeaveTerms: d.annualLeaveTerms ?? "",
     severancePayTerms: d.severancePayTerms ?? "",
@@ -205,21 +199,66 @@ export function hoursOf(text: string): number | null {
   return Number.isFinite(n) && n >= 0 && n <= 9999.5 && Number.isInteger(n * 2) ? n : NaN;
 }
 
-/**
- * 정직원 월급(참고). 급여는 고용 형태와 상관없이 시급만 저장하고, 정직원 월급은 시급 × 월 기본시간으로 셈해
- * 보인다(현업 요구사항, 2026-10-12 재영). 둘 중 하나가 비었거나 틀리면 null.
- */
-export function monthlyWage(f: Pick<ContractForm, "wage" | "baseHours">): number | null {
-  const wage = Number(digits(f.wage));
-  const hours = hoursOf(f.baseHours);
-  if (!wage || hours === null || Number.isNaN(hours)) return null;
-  return Math.round(wage * hours);
+/** 하루 소정근로시간(시간). 종업 - 시업 - 휴게 */
+export function dailyHours(f: Pick<ContractForm, "work" | "rest">): number {
+  return Math.max(0, minutes(f.work.end) - minutes(f.work.start) - (minutes(f.rest.end) - minutes(f.rest.start))) / 60;
 }
 
 /** 주 소정근로시간(시간). (종업 - 시업 - 휴게) × 근무 요일 수 */
 export function weeklyHours(f: Pick<ContractForm, "days" | "work" | "rest">): number {
-  const perDay = minutes(f.work.end) - minutes(f.work.start) - (minutes(f.rest.end) - minutes(f.rest.start));
-  return Math.max(0, perDay) * f.days.length / 60;
+  return dailyHours(f) * f.days.length;
+}
+
+// 급여 계산(현업 엑셀 견본, 2026-10-13). 저장하지 않고 화면에만 보인다 — api 는 시급과 입력 칸만 받는다.
+const wageOf = (f: Pick<ContractForm, "wage">) => Number(digits(f.wage)) || 0;
+const wonOf = (text: string) => Number(digits(text)) || 0;
+
+/** 정직원 급여항목의 시급 배율 — 기본시간 1, 연장 1.5, 야간 0.5(가산분) */
+export const PAY_RATES: Record<HourField, number> = {
+  baseHours: 1,
+  monthlyOvertimeHours: 1.5,
+  baseNightHours: 0.5,
+};
+
+/** 정직원 급여. 월급여 = 급여항목 합계 + 비과세 합계, 연봉 = 월급여 × 12. 칸이 비었거나 틀리면 그 줄은 0 원 */
+export function fullTimePay(f: ContractForm) {
+  const wage = wageOf(f);
+  const items = HOUR_FIELDS.map((key) => {
+    const hours = hoursOf(f[key]);
+    return { key, amount: hours === null || Number.isNaN(hours) ? 0 : Math.round(hours * wage * PAY_RATES[key]) };
+  });
+  const payTotal = items.reduce((sum, i) => sum + i.amount, 0);
+  const taxFree = wonOf(f.mealAllowance) + wonOf(f.carAllowance) + wonOf(f.childcareAllowance);
+  const monthly = payTotal + taxFree;
+  return { items, payTotal, taxFree, monthly, annual: monthly * 12 };
+}
+
+/** 월 환산 주 수(365 ÷ 7 ÷ 12) */
+export const WEEKS_PER_MONTH = 4.345;
+
+/**
+ * 파트타이머 급여. 요일 소계 = 시급 × 그날 시간, 주휴시간 = 주 시간 ÷ 40 × 8(주 15시간 이상, 8시간까지),
+ * 주급 = 근무 소계 + 주휴수당, 월급여 = 주급 × 4.345. 견본의 「수당」 줄은 저장할 칸이 정해지지 않아 뺐다(2026-10-13).
+ */
+export function partTimePay(f: ContractForm) {
+  const wage = wageOf(f);
+  const perDay = dailyHours(f);
+  const days = WEEKDAYS.map((d) => {
+    const hours = f.days.includes(d) ? perDay : null;
+    return { d, hours, amount: hours === null ? null : Math.round(hours * wage) };
+  });
+  const workHours = weeklyHours(f);
+  const workPay = Math.round(workHours * wage);
+  const holidayHours = workHours >= 15 ? Math.min(8, (workHours / 40) * 8) : 0;
+  const holidayPay = Math.round(holidayHours * wage);
+  const weekly = workPay + holidayPay;
+  return { days, workHours, workPay, holidayHours, holidayPay, weekly, monthly: Math.round(weekly * WEEKS_PER_MONTH) };
+}
+
+/** 시급 옆 월급 칸. 정직원은 월급여, 파트타이머는 주급 × 4.345. 시급이 비었으면 null */
+export function monthlyWage(f: ContractForm): number | null {
+  if (!wageOf(f)) return null;
+  return f.employmentType === "FULL_TIME" ? fullTimePay(f).monthly : partTimePay(f).monthly;
 }
 
 const FROM_SUNDAY: Weekday[] = ["SUN", "SAT", "FRI", "THU", "WED", "TUE", "MON"];
@@ -268,7 +307,7 @@ export function problems(f: ContractForm, temporary = false): string[] {
     out.push("휴게시간은 근무시간 안이어야 합니다");
   const day = Number(f.payDay);
   if (f.payDay ? !(Number.isInteger(day) && day >= 1 && day <= 31) : !temporary) out.push("임금지급일은 1~31입니다");
-  if (HOUR_FIELDS.some((k) => Number.isNaN(hoursOf(f[k])))) out.push("월 근로시간은 0 이상, 30분(0.5시간) 단위로 입력하세요");
+  if (f.employmentType === "FULL_TIME" && HOUR_FIELDS.some((k) => Number.isNaN(hoursOf(f[k])))) out.push("월 근로시간은 0 이상, 30분(0.5시간) 단위로 입력하세요");
   if (isMinor(f)) out.push("만 19세 미만 직원은 등록할 수 없습니다");
   return out;
 }
@@ -304,10 +343,15 @@ export function toBody(f: ContractForm, temporary = false): CreateContractBody {
     ...(f.payDay ? { payDay: Number(f.payDay) } : {}),
     isHealthPensionInsured: f.isHealthPensionInsured,
     isEmploymentInjuryInsured: f.isEmploymentInjuryInsured,
-    ...money("mealAllowanceAmount", f.mealAllowance),
-    ...money("carAllowanceAmount", f.carAllowance),
-    ...money("childcareAllowanceAmount", f.childcareAllowance),
-    ...Object.fromEntries(HOUR_FIELDS.flatMap((k) => (hoursOf(f[k]) === null ? [] : [[k, hoursOf(f[k])]]))),
+    // 비과세 수당 · 월 근로시간은 정직원 칸이다. 파트타이머로 바꾸면 화면에서 숨기고 보내지 않는다.
+    ...(f.employmentType === "FULL_TIME"
+      ? {
+          ...money("mealAllowanceAmount", f.mealAllowance),
+          ...money("carAllowanceAmount", f.carAllowance),
+          ...money("childcareAllowanceAmount", f.childcareAllowance),
+          ...Object.fromEntries(HOUR_FIELDS.flatMap((k) => (hoursOf(f[k]) === null ? [] : [[k, hoursOf(f[k])]]))),
+        }
+      : {}),
     ...(f.annualLeaveTerms.trim() ? { annualLeaveTerms: f.annualLeaveTerms.trim() } : {}),
     ...(f.severancePayTerms.trim() ? { severancePayTerms: f.severancePayTerms.trim() } : {}),
     ...(temporary ? { isTemporarySave: true } : {}),

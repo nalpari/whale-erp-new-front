@@ -8,9 +8,11 @@ import {
   formatHours,
   formatPhone,
   formatWage,
+  fullTimePay,
   initialForm,
   isMinor,
   monthlyWage,
+  partTimePay,
   problems,
   toBody,
   weeklyHolidayOf,
@@ -39,10 +41,30 @@ const HOURS_FIELDS: [HourField, string][] = [
   ["baseHours", "월 기본시간"],
   ["monthlyOvertimeHours", "월간 연장근무"],
   ["baseNightHours", "기본시간 중 야간근무"],
-  ["baseHolidayHours", "기본시간 중 휴일근무"],
-  ["monthlyExtraHolidayHours", "월간 추가 휴일근무"],
 ];
 const HELP = "text-[12px] leading-[1.5] text-erp-muted";
+const LABEL = "truncate text-[14px] font-medium text-erp-label";
+
+const won = (n: number | null) => (n === null ? "-" : n.toLocaleString("ko-KR"));
+const hoursLabel = (n: number | null) => (n === null ? "" : String(Number(n.toFixed(2))));
+
+// 셈해서 보이는 칸(현업 견본의 회색 칸). 입력칸과 같은 높이로 오른쪽에 붙인다.
+function Calc({ children, strong }: { children: ReactNode; strong?: boolean }) {
+  return <span className={`block rounded-[2px] bg-erp-thead-bg px-[10px] text-right leading-[34px] ${strong ? "font-semibold" : ""}`}>{children}</span>;
+}
+
+// 표 위 제목과 표. 급여 표가 둘씩 나란히 선다.
+function PayTable({ title, help, children }: { title: string; help?: string; children: ReactNode }) {
+  return (
+    <div className="flex min-w-px flex-1 flex-col gap-[8px]">
+      <span className={LABEL}>{title}</span>
+      {children}
+      {help && <span className={HELP}>{help}</span>}
+    </div>
+  );
+}
+
+type PayRow = { key: string; label: string; cells?: string[]; hours?: ReactNode; wage?: ReactNode; amount: ReactNode };
 
 // 라벨 · 입력 · 도움말 한 칸. 공통 Field 는 라벨이 글자뿐이라 필수 표시(*)를 달 수 없어 여기서 묶는다.
 // 필수 표시 색 #e93737 은 DESIGN.md 의 「위험」 한 번 쓰는 색이다(데모 biz-form REQ 와 같다).
@@ -79,11 +101,11 @@ function Group({ label, children, help }: { label: string; children: ReactNode; 
   );
 }
 
-// 시 00~23, 분 00 · 30 (운영 정책 CTR-20 30분 단위)
+// 시 00~23, 분 00 · 30 (운영 정책 CTR-20 30분 단위). 칸 폭을 꽉 채운다(근무요일 줄 3등분)
 function TimePick({ value, onChange, label }: { value: HourMinute; onChange: (v: HourMinute) => void; label: string }) {
   return (
-    <span className="flex items-center gap-[8px] text-[14px] text-erp-ink">
-      <span className="w-[72px]">
+    <span className="flex min-w-px flex-1 items-center gap-[8px] text-[14px] text-erp-ink">
+      <span className="min-w-[56px] flex-1">
         <Select aria-label={`${label} 시`} value={value.hour} onChange={(e) => onChange({ ...value, hour: e.target.value })}>
           {HOURS.map((h) => (
             <option key={h}>{h}</option>
@@ -91,7 +113,7 @@ function TimePick({ value, onChange, label }: { value: HourMinute; onChange: (v:
         </Select>
       </span>
       시
-      <span className="w-[72px]">
+      <span className="min-w-[56px] flex-1">
         <Select aria-label={`${label} 분`} value={value.minute} onChange={(e) => onChange({ ...value, minute: e.target.value as HourMinute["minute"] })}>
           <option>00</option>
           <option>30</option>
@@ -179,16 +201,48 @@ export function ContractForm({
 
   const toggleDay = (d: Weekday) => set("days", form.days.includes(d) ? form.days.filter((x) => x !== d) : [...form.days, d]);
 
-  const hourRows = WEEKDAYS.map((d) => {
+  // 월급은 저장하지 않고 고용 형태별 급여 표로 셈해 보인다(현업 엑셀 견본, 2026-10-13).
+  const monthly = monthlyWage(form);
+  const fullPay = fullTimePay(form);
+  const partPay = partTimePay(form);
+  const wageNumber = Number(form.wage.replace(/\D/g, "")) || 0;
+  const partTime = form.employmentType === "PART_TIME";
+
+  // 소정근로시간 표. 파트타이머면 같은 표에 근무시간 · 시급 · 소계 열과 주휴수당 · 주급 · 월급여 줄을 붙인다.
+  const hourRows: PayRow[] = WEEKDAYS.map((d, i) => {
     const on = form.days.includes(d);
     const t = (v: HourMinute) => (on ? `${v.hour}:${v.minute}` : "-");
-    return { d, cells: [t(form.work.start), t(form.work.end), t(form.rest.start), t(form.rest.end)] };
+    const day = partPay.days[i];
+    return { key: d, label: dayLabel(d), cells: [t(form.work.start), t(form.work.end), t(form.rest.start), t(form.rest.end)], hours: hoursLabel(day.hours), wage: won(wageNumber), amount: won(day.amount) };
   });
-  const cell = (i: number) => (r: (typeof hourRows)[number]) => r.cells[i];
-
-  // 정직원은 월급을 저장하지 않고 시급 × 월 기본시간으로 셈해 보인다(현업 요구사항, 2026-10-12 재영).
-  const monthly = form.employmentType === "FULL_TIME" ? monthlyWage(form) : null;
-  const wageHelp = monthly === null ? "2026년 최저임금 10,320원 이상" : `월급 ${monthly.toLocaleString("ko-KR")}원 (시급 × 월 기본시간)`;
+  const scheduleRows: PayRow[] = partTime
+    ? [
+        ...hourRows,
+        { key: "work", label: "소계", hours: <b>{hoursLabel(partPay.workHours)}</b>, amount: <b>{won(partPay.workPay)}</b> },
+        { key: "holiday", label: "주휴수당", hours: hoursLabel(partPay.holidayHours), amount: won(partPay.holidayPay) },
+        { key: "weekly", label: "주급", amount: <b>{won(partPay.weekly)}</b> },
+        { key: "monthly", label: "월급여", amount: <b>{won(partPay.monthly)}</b> },
+      ]
+    : hourRows;
+  const cell = (i: number) => (r: PayRow) => r.cells?.[i];
+  const money = (key: "mealAllowance" | "carAllowance" | "childcareAllowance", label: string) => (
+    <TextField aria-label={label} value={form[key]} inputMode="numeric" placeholder="0" onChange={(e) => set(key, formatWage(e.target.value))} />
+  );
+  const taxFreeRows: PayRow[] = [
+    { key: "meal", label: "식대", amount: money("mealAllowance", "식대") },
+    { key: "car", label: "자가운전보조금", amount: money("carAllowance", "자가운전보조금") },
+    { key: "child", label: "육아수당", amount: money("childcareAllowance", "육아수당") },
+    { key: "sum", label: "합계", amount: <Calc strong>{won(fullPay.taxFree)}</Calc> },
+  ];
+  const payRows: PayRow[] = [
+    ...HOURS_FIELDS.map(([key, label], i): PayRow => ({
+      key,
+      label,
+      hours: <TextField aria-label={`${label} 시간`} value={form[key]} inputMode="decimal" placeholder="0" onChange={(e) => set(key, formatHours(e.target.value))} />,
+      amount: <Calc>{won(fullPay.items[i].amount)}</Calc>,
+    })),
+    { key: "sum", label: "합계(계산용)", amount: <Calc strong>{won(fullPay.payTotal)}</Calc> },
+  ];
 
   const blocked = saving || !signedIn || minor;
   const saveButtons = (
@@ -273,38 +327,22 @@ export function ContractForm({
             </Item>
           </FormRow>
           <FormRow>
-            {/* 고용 형태와 상관없이 시급 한 칸이다(2026-10-12 재영). 정직원 월급은 시급 × 월 기본시간으로 셈한다. */}
-            <Item label="시급" required help={wageHelp}>
-              {(id) => <TextField id={id} value={form.wage} inputMode="numeric" onChange={(e) => set("wage", formatWage(e.target.value))} />}
-            </Item>
             <Group label="근무요일">
               <span className="flex gap-[6px]">
+                {/* 요일 단추는 칸 폭을 7등분해 채운다 */}
                 {WEEKDAYS.map((d) => (
                   <button
                     key={d}
                     type="button"
                     aria-pressed={form.days.includes(d)}
                     onClick={() => toggleDay(d)}
-                    className="grid size-[34px] place-items-center rounded-[2px] border border-erp-field-line bg-white text-[14px] text-erp-label transition-colors duration-150 ease-out aria-pressed:border-erp-brand-soft aria-pressed:bg-erp-brand-soft aria-pressed:text-white"
+                    className="grid h-[34px] min-w-[34px] flex-1 place-items-center rounded-[2px] border border-erp-field-line bg-white text-[14px] text-erp-label transition-colors duration-150 ease-out aria-pressed:border-erp-brand-soft aria-pressed:bg-erp-brand-soft aria-pressed:text-white"
                   >
                     {dayLabel(d)}
                   </button>
                 ))}
               </span>
             </Group>
-          </FormRow>
-          <FormRow>
-            <Item label="식대" help="비과세 수당 · 원">
-              {(id) => <TextField id={id} value={form.mealAllowance} inputMode="numeric" onChange={(e) => set("mealAllowance", formatWage(e.target.value))} />}
-            </Item>
-            <Item label="자가운전보조금" help="비과세 수당 · 원">
-              {(id) => <TextField id={id} value={form.carAllowance} inputMode="numeric" onChange={(e) => set("carAllowance", formatWage(e.target.value))} />}
-            </Item>
-            <Item label="육아수당" help="비과세 수당 · 원">
-              {(id) => <TextField id={id} value={form.childcareAllowance} inputMode="numeric" onChange={(e) => set("childcareAllowance", formatWage(e.target.value))} />}
-            </Item>
-          </FormRow>
-          <FormRow>
             <Group label="근무시간">
               <SpanPick label="근무시간" value={form.work} onChange={(v) => set("work", v)} />
             </Group>
@@ -321,24 +359,71 @@ export function ContractForm({
             </div>
             <DataTable
               columns={[
-                { header: "요일", width: "w-[70px]", cell: (r) => dayLabel(r.d) },
+                { header: "요일", width: partTime ? "w-[90px]" : "w-[70px]", cell: (r: PayRow) => r.label },
                 { header: "시업", cell: cell(0) },
                 { header: "종업", cell: cell(1) },
                 { header: "휴게 시작", cell: cell(2) },
                 { header: "휴게 종료", cell: cell(3) },
+                ...(partTime
+                  ? [
+                      { header: "근무시간", cell: (r: PayRow) => r.hours },
+                      { header: "시급", cell: (r: PayRow) => r.wage },
+                      { header: "소계", cell: (r: PayRow) => r.amount },
+                    ]
+                  : []),
               ]}
-              rows={hourRows}
-              rowKey={(r) => r.d}
+              rows={scheduleRows}
+              rowKey={(r) => r.key}
             />
-            <span className={HELP}>요일마다 같은 시간이 들어간다. 요일별로 다른 시간은 근무스케줄에서 고친다.</span>
+            <span className={HELP}>
+              요일마다 같은 시간이 들어간다. 요일별로 다른 시간은 근무스케줄에서 고친다.
+              {partTime && " 주휴시간은 주 15시간 이상일 때 주 시간 ÷ 40 × 8(8시간까지), 월급여는 주급 × 4.345."}
+            </span>
           </div>
+          {/* 급여 표 — 흰 칸은 입력, 회색 칸은 셈한 값이다(현업 엑셀 견본, 2026-10-13). */}
+          {/* 시급 · 월급 · 연봉은 생년월일 · 근무요일 줄처럼 3등분한다(파트타이머는 셋째 칸을 비운다). 시급은 고용 형태와 상관없이 한 칸이다(2026-10-12 재영). */}
           <FormRow>
-            {HOURS_FIELDS.map(([key, label]) => (
-              <Item key={key} label={label} help="월 · 시간, 30분(0.5) 단위">
-                {(id) => <TextField id={id} value={form[key]} inputMode="decimal" placeholder="0" onChange={(e) => set(key, formatHours(e.target.value))} />}
+            <Item label="시급" required help="2026년 최저임금 10,320원 이상">
+              {(id) => <TextField id={id} value={form.wage} inputMode="numeric" onChange={(e) => set("wage", formatWage(e.target.value))} />}
+            </Item>
+            <Item label="월급" help={form.employmentType === "FULL_TIME" ? "급여항목 합계 + 비과세 합계" : "주급 × 4.345"}>
+              {(id) => <TextField id={id} readOnly value={monthly === null ? "" : won(monthly)} />}
+            </Item>
+            {form.employmentType === "FULL_TIME" ? (
+              <Item label="연봉" help="월급 × 12">
+                {(id) => <TextField id={id} readOnly value={monthly === null ? "" : won(fullPay.annual)} />}
               </Item>
-            ))}
+            ) : (
+              <div className="min-w-px flex-1" />
+            )}
           </FormRow>
+          {!partTime && (
+            <>
+              <FormRow>
+                <PayTable title="비과세 항목" help="금액은 원 단위. 0 원도 값으로 저장한다.">
+                  <DataTable
+                    columns={[
+                      { header: "항목", align: "left", cell: (r: PayRow) => r.label },
+                      { header: "금액", cell: (r: PayRow) => r.amount },
+                    ]}
+                    rows={taxFreeRows}
+                    rowKey={(r) => r.key}
+                  />
+                </PayTable>
+                <PayTable title="급여항목" help="시간은 월 · 30분(0.5) 단위. 연장 1.5배 · 야간 0.5배(가산분)로 셈한다.">
+                  <DataTable
+                    columns={[
+                      { header: "항목", align: "left", cell: (r: PayRow) => r.label },
+                      { header: "시간", width: "w-[110px]", cell: (r: PayRow) => r.hours },
+                      { header: "금액", cell: (r: PayRow) => r.amount },
+                    ]}
+                    rows={payRows}
+                    rowKey={(r) => r.key}
+                  />
+                </PayTable>
+              </FormRow>
+            </>
+          )}
           <FormRow>
             <Group label="임금지급일" help="31 을 넣으면 말일로 본다">
               <span className="flex gap-[6px]">

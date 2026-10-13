@@ -14,6 +14,8 @@ import {
   inProgressOf,
   isMinor,
   monthlyWage,
+  fullTimePay,
+  partTimePay,
   problems,
   toBody,
   weeklyHolidayOf,
@@ -194,11 +196,48 @@ test("월 근로시간: 0 이상, 30분(0.5) 단위만 받는다", () => {
   assert.deepEqual(problems(filled({ baseHours: "209", baseNightHours: "0" })), []);
 });
 
-test("정직원 월급은 시급 × 월 기본시간으로 셈한다", () => {
-  assert.equal(monthlyWage({ wage: "10,320", baseHours: "209" }), 2156880);
-  assert.equal(monthlyWage({ wage: "10,320", baseHours: "" }), null);
-  assert.equal(monthlyWage({ wage: "", baseHours: "209" }), null);
-  assert.equal(monthlyWage({ wage: "10,320", baseHours: "12.3" }), null);
+test("정직원 급여: 현업 견본(시급 10,000)과 같게 셈한다", () => {
+  const f = filled({
+    employmentType: "FULL_TIME", wage: "10,000", mealAllowance: "200,000", carAllowance: "200,000", childcareAllowance: "100,000",
+    baseHours: "209", monthlyOvertimeHours: "52", baseNightHours: "20",
+  });
+  const pay = fullTimePay(f);
+  assert.deepEqual(pay.items.map((i) => i.amount), [2090000, 780000, 100000]);
+  assert.equal(pay.payTotal, 2970000);
+  assert.equal(pay.taxFree, 500000);
+  assert.equal(pay.monthly, 3470000);
+  assert.equal(pay.annual, 41640000);
+  assert.equal(monthlyWage(f), 3470000);
+  assert.equal(monthlyWage({ ...f, wage: "" }), null);
+  assert.equal(fullTimePay({ ...f, baseHours: "12.3" }).items[0].amount, 0);
+});
+
+test("파트타이머 급여: 현업 견본(월~금 5시간, 시급 10,000)과 같게 셈한다", () => {
+  const f = filled({ employmentType: "PART_TIME", wage: "10,000", work: { start: { hour: "09", minute: "00" }, end: { hour: "15", minute: "00" } } });
+  const pay = partTimePay(f);
+  assert.deepEqual(pay.days.map((d) => d.amount), [50000, 50000, 50000, 50000, 50000, null, null]);
+  assert.equal(pay.workHours, 25);
+  assert.equal(pay.workPay, 250000);
+  assert.equal(pay.holidayHours, 5);
+  assert.equal(pay.holidayPay, 50000);
+  assert.equal(pay.weekly, 300000);
+  assert.equal(pay.monthly, 1303500);
+  assert.equal(monthlyWage(f), 1303500);
+});
+
+test("파트타이머 주휴: 주 15시간 미만이면 없고, 8시간까지만 준다", () => {
+  const short = filled({ employmentType: "PART_TIME", days: ["MON", "TUE"] }); // 하루 8시간 × 2 = 16
+  assert.equal(partTimePay(short).holidayHours, 3.2);
+  assert.equal(partTimePay({ ...short, days: ["MON"] }).holidayHours, 0);
+  assert.equal(partTimePay(filled({ employmentType: "PART_TIME", days: ["MON", "TUE", "WED", "THU", "FRI", "SAT"] })).holidayHours, 8);
+});
+
+test("파트타이머는 비과세 수당 · 월 근로시간을 보내지도 따지지도 않는다", () => {
+  const f = filled({ employmentType: "PART_TIME", mealAllowance: "200,000", baseHours: "12.3" });
+  assert.deepEqual(problems(f), []);
+  const body = toBody(f);
+  assert.equal(body.mealAllowanceAmount, undefined);
+  assert.equal(body.baseHours, undefined);
 });
 
 test("이어 쓰기: api #12 칸을 폼으로 되돌린다. 비운 조항은 기본 문구로 채우지 않는다", () => {
