@@ -1,30 +1,7 @@
-// 운영 알림함 화면의 순수 규칙 — 알림 → 업무 화면 경로, URL 쿼리, 일시, 종 배지. 화면 · 종 · 메일 버튼 링크
-// (api WHALEERP-249 의 /notifications/{id}/open)가 모두 이 경로표 하나를 쓴다. api 는 업무별 화면 주소를 모른다.
+// 운영 알림함 화면의 순수 규칙 — 이동 경로 검사, 관련 업무 표시, URL 쿼리, 일시, 종 배지. 갈 업무 화면은 알림을 만든
+// 업무 쪽이 정한 link 다(NOTIFY-16). 화면 · 종 · 메일 버튼(api WHALEERP-249 의 /notifications/{id}/open)이 모두 그 link 로 간다.
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
 import { PAGE_SIZES, type PageSize } from "./staff-members.ts";
-
-type Target = { relatedType: string; path: (id: number) => string };
-
-const CONTRACT: Target = { relatedType: "CONTRACT", path: (id) => `/contracts/${id}` };
-const STAFF: Target = { relatedType: "STAFF_MEMBER", path: (id) => `/staff-members/${id}` };
-
-/**
- * 템플릿 코드 → 갈 곳. 화면이 아직 없는 문의 · 도입문의 넷은 null 이라 알림함으로 돌아와 「이동할 화면이 없습니다」를
- * 보인다 — 읽음 뒤 404 로 보내지 않는다. 화면이 생기면 여기에 넣는다: 문의사항 접수 /platform/community/inquiries/{id},
- * 문의사항 답변 /support/inquiries/{id}(등록한 사람의 고객지원), 도입문의 접수 · 처리 상태 변경 /platform/community/leads/{id}.
- */
-const TARGETS: Record<string, Target | null> = {
-  NTF_CONTRACT_SIGNED: CONTRACT,
-  NTF_CONTRACT_REJECTED: CONTRACT,
-  NTF_CONTRACT_EXPIRED: CONTRACT,
-  NTF_CONTRACT_RENEWAL_DUE: CONTRACT,
-  NTF_LINK_HOLD: STAFF,
-  NTF_AFFILIATION_REJECTED: STAFF,
-  NTF_INQUIRY_RECEIVED: null,
-  NTF_INQUIRY_ANSWERED: null,
-  NTF_LEAD_RECEIVED: null,
-  NTF_LEAD_ANSWERED: null,
-};
 
 const RELATED_LABELS: Record<string, string> = {
   CONTRACT: "근로계약",
@@ -44,13 +21,13 @@ export function isNotificationId(id: number): boolean {
   return Number.isInteger(id) && id >= 1 && id <= 2147483647;
 }
 
-export type LinkSource = { templateCode: string; relatedType: string | null; relatedId: number | null };
-
-/** 알림이 갈 업무 화면. 모르는 코드이거나 관련 업무가 없거나 맞지 않으면 null — 엉뚱한 화면으로 보내지 않는다. */
-export function linkOf({ templateCode, relatedType, relatedId }: LinkSource): string | null {
-  const target = Object.hasOwn(TARGETS, templateCode) ? TARGETS[templateCode] : null;
-  if (!target || relatedId === null || relatedType !== target.relatedType) return null;
-  return target.path(relatedId);
+/**
+ * 알림을 눌러 갈 경로. 알림을 만든 업무 쪽이 정한 link 를 그대로 쓴다(NOTIFY-16) — 운영 알림 쪽은 업무 화면 경로를 모른다.
+ * api 와 DB 도 막지만 리다이렉트 직전에 한 번 더, 관리자 웹 안의 경로(`/` 로 시작, `//` · 백슬래시 · 공백 없음)만 보낸다.
+ * 없거나 맞지 않으면 null — 알림함에서 「이동할 화면이 없습니다」를 보인다.
+ */
+export function safeLink(link: string | null): string | null {
+  return link && link.startsWith("/") && !link.startsWith("//") && !/[\\\s]/.test(link) ? link : null;
 }
 
 export type NotificationQuery = { page: number; pageSize: PageSize };

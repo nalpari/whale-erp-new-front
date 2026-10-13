@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
 import { deleteNotifications, InvalidNotificationIdError, readAllNotifications, readNotification } from "@/lib/notifications";
-import { linkOf } from "@/lib/notification-view";
+import { safeLink } from "@/lib/notification-view";
 
 // 모두 읽음 · 선택 삭제. 실패하면 화면이 고른 것을 그대로 두고 문구만 보인다(#252 「이전 상태를 그대로 두고 다시 하게」).
 /**
@@ -45,7 +45,7 @@ export async function deleteAction(ids: number[]): Promise<ActionResult> {
  */
 export async function openAction(id: number): Promise<string> {
   try {
-    const target = linkOf(await readNotification(id)) ?? "/notifications?gone=1";
+    const target = safeLink((await readNotification(id)).link) ?? "/notifications?gone=1";
     refreshBells();
     return target;
   } catch (error) {

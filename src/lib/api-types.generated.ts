@@ -470,6 +470,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/leads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 도입문의 접수. 본문 없이 201 을 돌려준다 — 문의자가 상태를 조회하는 화면은 없다. */
+        post: operations["LeadsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1108,6 +1125,8 @@ export interface components {
             /** @description 둘째 줄 — 만들 때의 문구 */
             body: string;
             relatedId: number | null;
+            /** @description 알림을 눌러 갈 관리자 웹 경로. 알림을 만든 업무 쪽이 정했다. 없으면 갈 화면이 없다 */
+            link: string | null;
             isRead: boolean;
             /** Format: date-time */
             createdAt: string;
@@ -1121,6 +1140,53 @@ export interface components {
         NotificationReadAllResponseDto: {
             /** @description 이번에 읽음으로 바뀐 건수 */
             updated: number;
+        };
+        /**
+         * @description 관심 서비스. 하나 이상, 겹치지 않게.
+         * @enum {string}
+         */
+        LeadInterest: "STORE_OPERATION" | "FINANCE" | "FRANCHISE" | "OTHER";
+        CreateLeadDto: {
+            /** @description 관심 서비스. 하나 이상, 겹치지 않게. */
+            interests: components["schemas"]["LeadInterest"][];
+            /**
+             * @description 문의자 이름. 앞뒤 공백을 지우고 1~50자.
+             * @example 김도윤
+             */
+            contactName: string;
+            /**
+             * @description 업종 — 공통코드 `INDUSTRY` 의 상세 코드.
+             * @example CAFE
+             */
+            industryCode: string;
+            /**
+             * @description 업종 직접 입력. 업종이 기타(`ETC`)일 때만 필수이고, 아니면 저장하지 않는다.
+             * @example 꽃집
+             */
+            industryDetail?: string;
+            /**
+             * @description 전화번호. 점포 번호도 된다. 하이픈 · 공백은 지우고 숫자만 저장한다 — 0으로 시작하는 9~11자리,
+             *     또는 대표번호(15xx · 16xx · 18xx, 8자리).
+             *     10분 중복 접수는 전화번호나 이메일 중 하나라도 같으면 막는다.
+             * @example 02-1234-5678
+             */
+            phone: string;
+            /**
+             * Format: email
+             * @description 이메일. 소문자로 저장한다. 10분 중복 접수 판정에 전화번호와 함께 쓴다.
+             */
+            email: string;
+            /**
+             * @description 도입 예정 시기 — 공통코드 `PLAN_PERIOD` 의 상세 코드. 선택이며, 고르지 않으면 칸을 빼거나 null 로 보낸다(빈 문자열은 400).
+             * @example WITHIN_1M
+             */
+            planPeriodCode?: string | null;
+            /** @description 문의 내용. 앞뒤 공백을 지우고 1~2000자. */
+            body: string;
+            /** @description 개인정보 수집·이용 동의. 필수라 `true` 만 받는다. */
+            privacyAgreed: boolean;
+            /** @description 마케팅 정보 수신 동의. 선택. */
+            marketingAgreed?: boolean;
         };
     };
     responses: never;
@@ -2390,6 +2456,34 @@ export interface operations {
             };
             /** @description 내 알림이 아니거나 지운 알림 */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LeadsController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateLeadDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같은 IP 의 시간당 한도, 또는 같은 전화번호·이메일로 10분 안에 다시 접수 */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
