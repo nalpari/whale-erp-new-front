@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { AlarmLink, Button, GlobalHeader, PageBar, ServiceLinks, StoreSelect, UserPop } from "@/components/common";
+import { Button, GlobalHeader, PageBar, ServiceLinks, StoreSelect, UserPop } from "@/components/common";
+import { NotificationBellSlot } from "@/components/notifications/notification-bell-slot";
 import { ApiError, request } from "@/lib/api";
 import { MENUS, STORES, USER_ITEMS } from "../../../design/sample";
 import { ContractForm } from "../../new/contract-form";
@@ -34,7 +35,7 @@ export default async function EditContractPage({ params }: PageProps<"/contracts
             <>
               <StoreSelect options={STORES} />
               <ServiceLinks />
-              <AlarmLink href="#" />
+              <NotificationBellSlot />
               <UserPop name="김지영 (admin)" items={USER_ITEMS} />
             </>
           }
