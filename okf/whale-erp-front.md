@@ -8,7 +8,7 @@ sources:
   - { id: package-json, resource: ../package.json, title: Dependency manifest }
   - { id: app-dir, resource: ../src/app, title: App Router entry }
   - { id: common-components, resource: ../src/components/common, title: 공통 ERP 컴포넌트 }
-generated: { by: claude-code/opus-5.5, at: 2026-10-13T02:30:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-13T02:20:09Z }
 ---
 
 # Stack
