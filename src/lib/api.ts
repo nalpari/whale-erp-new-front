@@ -15,6 +15,8 @@ export class ApiError extends Error {
   constructor(
     readonly status: number,
     message: string,
+    /** 검증 실패(400)의 문장 목록. 배열이 아니면 message 하나다 — 화면이 줄마다 나눠 보일 때 쓴다. */
+    readonly messages: string[] = [message],
   ) {
     super(message);
   }
@@ -41,7 +43,7 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
   });
 
   if (!response.ok)
-    throw new ApiError(response.status, await errorMessage(response));
+    throw new ApiError(response.status, ...(await errorMessage(response)));
 
   // 204(로그아웃)는 본문이 없다. json() 을 부르면 파싱에서 터진다.
   return response.status === 204
@@ -49,13 +51,13 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
     : ((await response.json()) as T);
 }
 
-/** Nest 는 { statusCode, message, error } 를 주고, 검증 실패면 message 가 배열이다. */
-async function errorMessage(response: Response): Promise<string> {
+/** Nest 는 { statusCode, message, error } 를 주고, 검증 실패면 message 가 배열이다. [이은 문장, 문장 목록] 을 돌려준다. */
+async function errorMessage(response: Response): Promise<[string, string[]]> {
   const body: unknown = await response.json().catch(() => null);
   const message = (body as { message?: unknown } | null)?.message;
-  if (Array.isArray(message)) return message.join(", ");
-  if (typeof message === "string") return message;
-  return `요청이 실패했습니다 (HTTP ${response.status})`;
+  if (Array.isArray(message)) return [message.join(", "), message.map(String)];
+  const text = typeof message === "string" ? message : `요청이 실패했습니다 (HTTP ${response.status})`;
+  return [text, [text]];
 }
 
 /**
@@ -68,7 +70,7 @@ export async function getEnum(name: string): Promise<EnumValue[]> {
     next: { revalidate: 3600 },
   });
   if (!response.ok)
-    throw new ApiError(response.status, await errorMessage(response));
+    throw new ApiError(response.status, ...(await errorMessage(response)));
   const body = (await response.json()) as { enums: Record<string, EnumValue[]> };
   return body.enums[name] ?? [];
 }
