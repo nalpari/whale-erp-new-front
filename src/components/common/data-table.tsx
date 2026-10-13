@@ -1,4 +1,4 @@
-import type { Key, ReactNode } from "react";
+import type { ComponentProps, Key, ReactNode } from "react";
 
 export type Column<T> = {
   header: string;
@@ -9,16 +9,29 @@ export type Column<T> = {
   cell: (row: T) => ReactNode;
 };
 
+/** 줄 상태. selected = 고른 줄, added = 저장 전 추가한 입력 줄. 둘 다 표 머리 바탕을 깐다(두 바탕 규칙). */
+export type RowState = "selected" | "added";
+
+const ROW_STATE: Record<RowState, string> = {
+  selected: "bg-erp-thead-bg",
+  added: "bg-erp-thead-bg",
+};
+
 // Figma TABLE. 열 정의(columns)와 행(rows)을 받아 목록을 그린다.
+// rowState 로 줄 바탕을, rowProps 로 줄 속성(끌기 이벤트 · aria 등)을 준다. 줄 모양(className · style)은 받지 않는다.
 export function DataTable<T>({
   columns,
   rows,
   rowKey,
+  rowState,
+  rowProps,
   empty = "데이터가 없습니다.",
 }: {
   columns: Column<T>[];
   rows: T[];
   rowKey: (row: T) => Key;
+  rowState?: (row: T) => RowState | undefined;
+  rowProps?: (row: T) => Omit<ComponentProps<"tr">, "className" | "style" | "children">;
   empty?: ReactNode;
 }) {
   return (
@@ -45,15 +58,22 @@ export function DataTable<T>({
             </td>
           </tr>
         ) : (
-          rows.map((row) => (
-            <tr key={rowKey(row)} className="h-[46px] border-b border-erp-thead-line">
-              {columns.map((c, i) => (
-                <td key={i} className={`truncate px-[10px] ${c.align === "left" ? "text-left" : "text-center"}`}>
-                  {c.cell(row)}
-                </td>
-              ))}
-            </tr>
-          ))
+          rows.map((row) => {
+            const state = rowState?.(row);
+            return (
+              <tr
+                key={rowKey(row)}
+                {...rowProps?.(row)}
+                className={`h-[46px] border-b border-erp-thead-line ${state ? ROW_STATE[state] : ""}`}
+              >
+                {columns.map((c, i) => (
+                  <td key={i} className={`truncate px-[10px] ${c.align === "left" ? "text-left" : "text-center"}`}>
+                    {c.cell(row)}
+                  </td>
+                ))}
+              </tr>
+            );
+          })
         )}
       </tbody>
     </table>
