@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import { GuestButton, GuestPage, TRIM } from "../guest-ui";
+import { GuestButton, GuestPage, GuestVisual, TRIM } from "../guest-ui";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = { title: "Whale ERP · 로그인" };
@@ -11,23 +10,19 @@ export default function LoginPage() {
   return (
     <GuestPage flush>
       <section className="grid grid-cols-2">
-        <div className="relative flex flex-col justify-end gap-[32px] overflow-hidden px-[60px] py-[74px]">
-          {/* 16:9 그림이 높이 730px 칸을 채우느라 폭 1300px 가까이로 그려진다. sizes 를 칸 폭(50vw)으로 주면
-              작은 사본을 받아 늘려 그려 흐려지므로, 실제로 그려지는 폭을 알려 준다. */}
-          <Image src="/guest/login/visual.png" alt="" fill loading="eager" sizes="max(50vw, 1300px)" className="object-cover" />
-          <div className="relative flex flex-col gap-[34px] font-[family-name:var(--font-rem)] uppercase">
-            <p className={`text-[24px] leading-none font-medium tracking-[-0.025em] text-[rgba(58,86,112,0.5)] ${TRIM}`}>Partner office</p>
-            <p className={`leading-[0.86] font-black tracking-[-0.038em] text-[rgba(58,86,112,0.6)] ${TRIM}`}>
+        <GuestVisual
+          eyebrow="Partner office"
+          title={
+            <p className={`font-[family-name:var(--font-rem)] leading-[0.86] font-black tracking-[-0.038em] text-[rgba(58,86,112,0.6)] ${TRIM}`}>
               <span className="block text-[42px]">Welcome back to</span>
               <span className="block text-[84px]">Whale ERP</span>
             </p>
-          </div>
-          <p className={`relative pl-[10px] text-[17px] leading-[1.4] text-[rgba(58,86,112,0.6)] ${TRIM}`}>
-            오늘도 매장을 가볍게. 사업자·가맹점·플랫폼 관리자 모두 여기서 시작합니다.
-            <br />
-            권한에 맞는 메뉴가 자동으로 열립니다.
-          </p>
-        </div>
+          }
+        >
+          오늘도 매장을 가볍게. 사업자·가맹점·플랫폼 관리자 모두 여기서 시작합니다.
+          <br />
+          권한에 맞는 메뉴가 자동으로 열립니다.
+        </GuestVisual>
         <div className="flex flex-col gap-[27px] px-[200px] py-[80px] text-guest-ink">
           <div className="flex flex-col gap-[8px]">
             <h1 className="text-[28px] leading-[1.2] font-bold">로그인</h1>

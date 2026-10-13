@@ -13,3 +13,5 @@ export const BUTTON_MOTION =
 
 // 버튼 화살표: 호버하면 가는 쪽으로 3px 밀린다. Tailwind 의 hover 는 마우스가 있는 기기에서만 걸린다.
 export const ARROW_NUDGE = `transition-[translate] duration-250 ${EASE_OUT} group-hover:translate-x-[3px] motion-reduce:transition-none motion-reduce:group-hover:translate-x-0`;
+// 되돌아가는 버튼(「로그인 이동」)의 화살표는 뒤집혀 있어 반대쪽으로 민다.
+export const ARROW_NUDGE_BACK = `transition-[translate] duration-250 ${EASE_OUT} group-hover:-translate-x-[3px] motion-reduce:transition-none motion-reduce:group-hover:translate-x-0`;

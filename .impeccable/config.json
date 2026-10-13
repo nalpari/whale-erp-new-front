@@ -204,6 +204,42 @@
         ],
         "createdAt": "2026-10-13T07:29:09.577Z",
         "reason": "Figma 로그인전(8QSOuwFFBfCbFWR6RBUlps) 비로그인 시안 값 — 관리자 DESIGN.md 와 별개인 디자인"
+      },
+      {
+        "rule": "font-size",
+        "value": "*",
+        "files": [
+          "src/app/design/guest/find-account/page.tsx"
+        ],
+        "createdAt": "2026-10-13T07:40:48.434Z",
+        "reason": "Figma 로그인전(8QSOuwFFBfCbFWR6RBUlps) 비로그인 시안 값 — 관리자 DESIGN.md 와 별개인 디자인"
+      },
+      {
+        "rule": "color",
+        "value": "*",
+        "files": [
+          "src/app/design/guest/find-account/page.tsx"
+        ],
+        "createdAt": "2026-10-13T07:40:48.549Z",
+        "reason": "Figma 로그인전(8QSOuwFFBfCbFWR6RBUlps) 비로그인 시안 값 — 관리자 DESIGN.md 와 별개인 디자인"
+      },
+      {
+        "rule": "font-size",
+        "value": "*",
+        "files": [
+          "src/app/design/guest/find-account/find-account-form.tsx"
+        ],
+        "createdAt": "2026-10-13T07:40:48.644Z",
+        "reason": "Figma 로그인전(8QSOuwFFBfCbFWR6RBUlps) 비로그인 시안 값 — 관리자 DESIGN.md 와 별개인 디자인"
+      },
+      {
+        "rule": "color",
+        "value": "*",
+        "files": [
+          "src/app/design/guest/find-account/find-account-form.tsx"
+        ],
+        "createdAt": "2026-10-13T07:40:48.744Z",
+        "reason": "Figma 로그인전(8QSOuwFFBfCbFWR6RBUlps) 비로그인 시안 값 — 관리자 DESIGN.md 와 별개인 디자인"
       }
     ]
   }

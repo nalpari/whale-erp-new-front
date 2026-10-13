@@ -2,6 +2,7 @@
 
 ## 2026-10-13
 
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — Figma 「아이디/비밀번호 찾기」를 `/design/guest/find-account` 로 옮겼다(인증 요청은 아직 보내지 않는다).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — Figma 「로그인전_로그인」을 `/design/guest/login` 으로 옮겼다(로그인 요청은 아직 보내지 않는다).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 사이 이동에 페이지 전환(ViewTransition)을 넣었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — Figma 「로그인전_부가서비스」를 `/design/guest/add-on-services` 로 옮기고, 비로그인 아이콘을 `guest-icons.tsx` 로 모았다.

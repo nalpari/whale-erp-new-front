@@ -21,8 +21,8 @@ const MENUS = [
 export function GuestHeader() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
-  // 로그인은 본문 왼쪽 그림과 머리말이 같은 흰 바탕이라 맨 위에서도 선을 그어 구분한다.
-  const lined = pathname === "/design/guest/login";
+  // 로그인·계정 찾기는 본문 왼쪽 그림과 머리말이 같은 흰 바탕이라 맨 위에서도 선을 그어 구분한다.
+  const lined = pathname === "/design/guest/login" || pathname === "/design/guest/find-account";
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > 0);
     update();
