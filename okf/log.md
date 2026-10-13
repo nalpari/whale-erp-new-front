@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-13
+* **Update**: [운영 알림](/notify.md) — 운영 알림 · 메일 분리(운영 정책 NTF-03 v114, 2026-10-13 재영): 목업 NOTIFY-16 쟁점 블록과 운영 알림 화면 계획에서 「메일 버튼도 /notifications/{id}/open 으로 들어온다」를 걷었다. 메일 버튼은 업무 화면으로 바로 가고 #249 는 취소됐다.
 
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `/design` 맨 위에 디자인 샘플 화면 목록 표를 더했다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 회원가입 완료 화면 `/design/guest/sign-up/complete` 를 더하고 가입 폼에서 잇는다.
