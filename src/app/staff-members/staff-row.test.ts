@@ -65,6 +65,7 @@ test("가입·인증 — 퇴직한 가입 완료는 회색", () => {
 
 test("계약 — 상태별 표시", () => {
   assert.equal(contractCell(item({ contract: null }), TODAY), null);
+  assert.deepEqual(contractCell(item(contract("DRAFT")), TODAY), { text: "임시저장", style: "badge-neutral" });
   assert.deepEqual(contractCell(item(contract("PENDING_SEND")), TODAY), { text: "발송 대기", style: "badge-neutral" });
   assert.deepEqual(contractCell(item(contract("SIGNED")), TODAY), { text: "체결 완료", style: "badge-on" });
   assert.deepEqual(contractCell(item(contract("REJECTED")), TODAY), { text: "거부", style: "badge-off" });
