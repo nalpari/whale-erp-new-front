@@ -93,6 +93,9 @@ components:
   field-focus:
     backgroundColor: "#ffffff"
     textColor: "{colors.ink}"
+  field-locked:
+    backgroundColor: "{colors.thead-bg}"
+    textColor: "{colors.label}"
   table-head:
     backgroundColor: "{colors.thead-bg}"
     textColor: "{colors.thead-text}"
@@ -236,6 +239,7 @@ components:
 ### Inputs / Fields
 - **Style:** 흰 바탕, 1px #ededee 테두리, 2px 모서리, 높이 34px, 왼쪽 여백 10px, 14px.
 - **Focus:** 포커스 링 대신 테두리만 브랜드색으로 바뀐다(150ms). 캐럿과 아웃라인을 `!` 로 고정해 앱 전역 스타일에 덮이지 않는다.
+- **바꿀 수 없는 칸(disabled · readonly):** 바탕을 #f8f9fb(두 바탕 규칙의 둘째 색)로 깔고 글자를 라벨 회색(#888888)으로 둔다. 테두리는 그대로 두고, 눌러도 브랜드색으로 바뀌지 않는다. 인증을 마친 사업자정보, 자동 채번 코드, 수정 화면의 아이디처럼 보여 주기만 하는 값이 모두 이 모양이다(2026-10-13).
 - **Select:** 같은 껍데기에 오른쪽 30px 화살표 아이콘.
 - **Textarea:** 같은 껍데기에 높이만 늘리고 안쪽 여백 16/12, 줄간 1.6.
 - **Checkbox / Radio:** 20px 사각/원. 체크 표시는 150ms 동안 살짝 커지며 나타난다.

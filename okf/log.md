@@ -2,6 +2,7 @@
 
 ## 2026-10-13
 
+* **Update**: 바꿀 수 없는 입력칸 모양(disabled 에 더해 readOnly 도 #f8f9fb 바탕·회색 글자)을 [Whale ERP Frontend](/whale-erp-front.md) 공통 컴포넌트 설명에 적었다.
 * **Update**: 로그인 개발 예정 안내를 "얼럿"이 아니라 body 로 포털한 디자인 시스템 dialog 로 [Whale ERP Frontend](/whale-erp-front.md) 에 고쳐 적었다(hydration 오류 수정).
 
 ## 2026-10-12

@@ -2313,6 +2313,15 @@
       opacity: 70%;
     }
   }
+  .\[\&\[readonly\]\]\:bg-erp-thead-bg[readonly] {
+    background-color: var(--color-erp-thead-bg);
+  }
+  .\[\&\[readonly\]\]\:text-erp-label[readonly] {
+    color: var(--color-erp-label);
+  }
+  .\[\&\[readonly\]\]\:focus\:border-erp-field-line[readonly]:focus {
+    border-color: var(--color-erp-field-line);
+  }
 }
 @font-face {
   font-family: "Pretendard";
