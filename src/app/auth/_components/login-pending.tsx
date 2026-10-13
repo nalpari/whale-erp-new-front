@@ -6,7 +6,7 @@ import { Button } from "@/components/common";
 import { ERP_THEME } from "@/components/common/theme";
 
 // 로그인 화면(/auth/login)이 아직 없다. 그리로 가는 자리(로고·로그인 링크·웨일ERP 시작하기)는 404 대신
-// 디자인 시스템 안내창(TermsDialog 와 같은 네이티브 dialog 틀)을 띄운다(2026-10-12, 코드리뷰 반영 — alert() 대신).
+// 디자인 시스템 안내창(TermsDialog 와 같은 생김새의 네이티브 dialog, 단 이쪽은 body 로 포털한다)을 띄운다(2026-10-12, 코드리뷰 반영 — alert() 대신).
 // 로그인 화면이 생기면 이 파일을 지우고 쓰는 곳을 href="/auth/login" 으로 되돌린다.
 
 // 서버 렌더와 hydration 첫 렌더에서는 false, 그 뒤 브라우저에서는 true. 그래서 서버·클라이언트 HTML 이 같다.
@@ -15,8 +15,8 @@ function useIsClient() {
   return useSyncExternalStore(noopSubscribe, () => true, () => false);
 }
 
-// 안내창은 document.body 로 포털해 띄운다. 이 링크는 <p> 안에도 들어가는데(가입 폼 「이미 계정이 있나요?」,
-// 가입 완료 안내 문단), <dialog>·<div> 는 <p> 안에 둘 수 없어 hydration 오류가 났다(2026-10-13).
+// 안내창은 document.body 로 포털해 띄운다. 쓰는 자리가 <p> 안일 수 있어(예: 가입 폼 「이미 계정이 있나요?」)
+// <dialog>·<div> 를 그 자리에 두면 hydration 오류가 난다(2026-10-13).
 // 포털하면 ErpRoot 밖이 되므로 ERP_THEME 을 dialog 에 직접 붙인다.
 function PendingDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -27,6 +27,7 @@ function PendingDialog({ open, onClose }: { open: boolean; onClose: () => void }
     if (!el) return;
     if (open && !el.open) el.showModal();
     if (!open && el.open) el.close();
+    // isClient: 포털이 붙은 뒤에야 ref 가 생긴다.
   }, [open, isClient]);
 
   if (!isClient) return null;
@@ -35,7 +36,8 @@ function PendingDialog({ open, onClose }: { open: boolean; onClose: () => void }
       ref={ref}
       onClose={onClose}
       onClick={(e) => {
-        // TermsDialog 와 같은 이유로 안쪽은 padding 없는 div 로 감싼다(2026-10-12 코드리뷰).
+        // dialog 는 p-0, 여백은 안쪽 div 가 갖는다. 그래야 안쪽 여백을 눌러도 e.target 이 dialog 가 아니고
+        // backdrop 을 누를 때만 닫힌다(TermsDialog 와 같음, 2026-10-12 코드리뷰).
         if (e.target === ref.current) onClose();
       }}
       className={`${ERP_THEME} m-auto w-[360px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] p-0 shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40`}

@@ -13,7 +13,7 @@ type SearchParams = Promise<{ tradeName?: string; loginId?: string; email?: stri
 // 로그인 세션이 아직 없어 상호명·아이디·이메일은 가입 성공 직후 URL 쿼리로 들고 온다(signup-form.tsx 참고).
 // 가입 안내 메일은 api squirtle 브랜치가 실제로 보낸다(EMAIL_SIGNUP_DONE, admin-signup.service.ts) — 둘 다 아직
 // main 에 안 들어가서, 서로 다른 환경에선 안 보일 수 있다(2026-10-12 확인).
-// "웨일ERP 시작하기"와 로그인 화면 링크는 로그인 화면이 아직 없어 개발 예정 얼럿을 띄운다(login-pending.tsx).
+// "웨일ERP 시작하기"와 로그인 화면 링크는 로그인 화면이 아직 없어 개발 예정 안내창을 띄운다(login-pending.tsx).
 // 로그인 세션이 생기면 쿼리 대신 서버 쪽 값으로 바꾼다.
 export default async function SignupDonePage({ searchParams }: { searchParams: SearchParams }) {
   const { tradeName, loginId, email } = await searchParams;

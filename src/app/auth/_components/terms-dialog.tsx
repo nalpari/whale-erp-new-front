@@ -77,7 +77,7 @@ export function TermsDialog({ open, onClose, doc }: { open: boolean; onClose: ()
       ref={ref}
       onClose={onClose}
       onClick={(e) => {
-        // dialog 자체(바깥 여백)를 눌렀을 때만 닫는다 — 안쪽 내용 영역은 padding 없는 별도 div 로 감싸서,
+        // dialog 자체(backdrop)를 눌렀을 때만 닫는다 — dialog 는 p-0 이고 여백은 안쪽 div 가 갖게 해서,
         // 안쪽 여백을 눌러도 e.target 이 dialog 가 되지 않게 한다(2026-10-12 코드리뷰 — 패딩 안쪽을 눌러도 닫히던 버그).
         if (e.target === ref.current) onClose();
       }}

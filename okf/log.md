@@ -1,5 +1,9 @@
 # Bundle history
 
+## 2026-10-13
+
+* **Update**: 로그인 개발 예정 안내를 "얼럿"이 아니라 body 로 포털한 디자인 시스템 dialog 로 [Whale ERP Frontend](/whale-erp-front.md) 에 고쳐 적었다(hydration 오류 수정).
+
 ## 2026-10-12
 
 * **Update**: `.env.development`·`.env.production` 추적을 되돌려 [Whale ERP Frontend](/whale-erp-front.md) 의 설명을 원래대로 고쳤다. 회원가입 PR 범위 밖이라 뺐다.
