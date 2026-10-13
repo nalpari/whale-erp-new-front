@@ -574,9 +574,6 @@
   .h-\[420px\] {
     height: 420px;
   }
-  .h-\[calc\(100dvh-70px\)\] {
-    height: calc(100dvh - 70px);
-  }
   .h-full {
     height: 100%;
   }
@@ -621,9 +618,6 @@
   }
   .min-h-\[100dvh\] {
     min-height: 100dvh;
-  }
-  .min-h-full {
-    min-height: 100%;
   }
   .w-\[6px\] {
     width: 6px;
@@ -837,9 +831,6 @@
   }
   .w-\[1200px\] {
     width: 1200px;
-  }
-  .w-\[1320px\] {
-    width: 1320px;
   }
   .w-fit {
     width: fit-content;
@@ -2237,15 +2228,6 @@
   }
   .\[\&_\:is\(a\[href\]\,button\:enabled\,select\:enabled\,label\:has\(input\:enabled\)\,input\[type\=checkbox\]\:enabled\)\]\:cursor-pointer :is(a[href], button:enabled, select:enabled, label:has(input:enabled), input[type=checkbox]:enabled) {
     cursor: pointer;
-  }
-  .\[\&_\[role\=tab\]\]\:shrink-0 [role=tab] {
-    flex-shrink: 0;
-  }
-  .\[\&_\[role\=tab\]\]\:whitespace-nowrap [role=tab] {
-    white-space: nowrap;
-  }
-  .\[\&_\[role\=tablist\]\]\:overflow-x-auto [role=tablist] {
-    overflow-x: auto;
   }
   .\[\&_\[role\=tabpanel\]\]\:gap-\[18px\] [role=tabpanel] {
     gap: 18px;
