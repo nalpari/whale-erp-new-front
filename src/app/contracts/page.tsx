@@ -19,7 +19,12 @@ import { PAGE_SIZE, readListQuery, toSearch, type ContractListPage } from "./con
 // 머리글의 메뉴·점포·사용자는 아직 디자인 견본 값이다(1팀 로그인 · 범위 선택기가 생기면 바꾼다).
 export default async function ContractsPage({ searchParams }: PageProps<"/contracts">) {
   const query = readListQuery(await searchParams);
-  const [statuses, draftActions, session] = await Promise.all([getEnum("ContractStatus"), getEnum("ContractDraftAction"), getSession()]);
+  const [statuses, draftActions, employmentTypes, session] = await Promise.all([
+    getEnum("ContractStatus"),
+    getEnum("ContractDraftAction"),
+    getEnum("EmploymentType"),
+    getSession(),
+  ]);
 
   // 관리자 로그인이 아직 없어 세션이 없으면 목록 대신 안내를 보인다. 만료된 토큰(401)도 같다.
   let page: ContractListPage | null = null;
@@ -59,7 +64,7 @@ export default async function ContractsPage({ searchParams }: PageProps<"/contra
           <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px]">
             <ListToolbar total={page?.total ?? 0} />
             <DataTable
-              columns={contractColumns(statuses, new Date(), draftActions)}
+              columns={contractColumns(statuses, new Date(), draftActions, employmentTypes)}
               rows={rows}
               rowKey={(r) => r.contractId}
               empty={page ? undefined : "로그인이 필요합니다."}

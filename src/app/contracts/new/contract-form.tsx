@@ -114,6 +114,7 @@ export function ContractForm({
   signedIn,
   contractId,
   initial,
+  deleteButton,
 }: {
   stores: { storeId: number; name: string }[];
   labels: ContractFormLabels;
@@ -121,6 +122,8 @@ export function ContractForm({
   /** 있으면 임시저장 이어 쓰기 — PUT 으로 저장한다 */
   contractId?: number;
   initial?: Form;
+  /** 이어 쓰기 화면의 임시저장 삭제. 취소와 임시저장 사이에 선다 */
+  deleteButton?: ReactNode;
 }) {
   const [form, setForm] = useState<Form>(() => initial ?? initialForm(stores.length === 1 ? String(stores[0].storeId) : ""));
   // 저장을 한 번 누른 뒤부터 막는 이유를 보인다. 처음부터 빨간 줄을 띄우지 않는다.
@@ -133,7 +136,6 @@ export function ContractForm({
   const [lastTemporary, setLastTemporary] = useState(false);
   const issues = problems(form, lastTemporary);
   const minor = isMinor(form);
-  const fullTime = form.employmentType === "FULL_TIME";
   const holiday = weeklyHolidayOf(form);
   const dayLabel = (d: Weekday) => labelOf(labels.weekday, d);
 
@@ -179,6 +181,7 @@ export function ContractForm({
         <Button variant="off" href="/contracts">
           취소
         </Button>
+        {deleteButton}
         {saveButtons}
       </div>
 
@@ -242,7 +245,8 @@ export function ContractForm({
             </Item>
           </FormRow>
           <FormRow>
-            <Item label={fullTime ? "월급" : "시급"} required help={fullTime ? "월 소정근로시간 기준 최저임금 이상" : "2026년 최저임금 10,320원 이상"}>
+            {/* 고용 형태와 상관없이 시급 한 칸이다(2026-10-12 재영). 정직원 월급은 시급 × 월 기본시간으로 셈한다. */}
+            <Item label="시급" required help="2026년 최저임금 10,320원 이상">
               {(id) => <TextField id={id} value={form.wage} inputMode="numeric" onChange={(e) => set("wage", formatWage(e.target.value))} />}
             </Item>
             <Group label="근무요일">

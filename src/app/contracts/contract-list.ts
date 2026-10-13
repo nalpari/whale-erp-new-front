@@ -68,10 +68,10 @@ export function periodText(row: Pick<ContractListItem, "startDate" | "endDate">)
   return `${row.startDate} ~ ${row.endDate ?? "무기한"}`;
 }
 
-/** 정직원은 월급, 파트타이머는 시급 — 급여액의 뜻은 고용 형태가 정한다. */
-export function wageText(row: Pick<ContractListItem, "wageAmount" | "employmentType">): string {
-  if (row.wageAmount === null || row.employmentType === null) return "-";
-  return `${row.wageAmount.toLocaleString("ko-KR")} ${row.employmentType === "FULL_TIME" ? "/월" : "/h"}`;
+/** 급여액은 고용 형태와 상관없이 시급이다(2026-10-12 재영). */
+export function wageText(row: Pick<ContractListItem, "wageAmount">): string {
+  if (row.wageAmount === null) return "-";
+  return `${row.wageAmount.toLocaleString("ko-KR")} /h`;
 }
 
 // 날짜는 한국 시간으로 끊는다. 서버(UTC)에서 그리면 오전 9시 전 발송이 전날로 보인다.

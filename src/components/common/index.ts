@@ -3,6 +3,7 @@
 export { ErpRoot } from "./erp-root";
 export { Badge } from "./badge";
 export { Button, type ButtonVariant } from "./button";
+export { ConfirmDialog } from "./confirm-dialog";
 export { Checkbox, Field, FormGroup, FormRow, Radio, Select, Textarea, TextField } from "./form";
 export { DateField } from "./date-field";
 export { SearchField } from "./search-field";

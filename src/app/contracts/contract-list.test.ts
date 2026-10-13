@@ -28,11 +28,11 @@ test("toSearch 는 기본값을 빼고, 상태는 같은 키를 되풀이한다"
 test("기간 · 급여 표기", () => {
   assert.equal(periodText({ startDate: "2026-09-14", endDate: null }), "2026-09-14 ~ 무기한");
   assert.equal(periodText({ startDate: "2026-09-01", endDate: "2027-08-31" }), "2026-09-01 ~ 2027-08-31");
-  assert.equal(wageText({ wageAmount: 11600, employmentType: "PART_TIME" }), "11,600 /h");
-  assert.equal(wageText({ wageAmount: 2840000, employmentType: "FULL_TIME" }), "2,840,000 /월");
+  // 정직원도 시급이다
+  assert.equal(wageText({ wageAmount: 11600 }), "11,600 /h");
   // 임시저장은 비어 있을 수 있다
   assert.equal(periodText({ startDate: null, endDate: null }), "-");
-  assert.equal(wageText({ wageAmount: null, employmentType: "PART_TIME" }), "-");
+  assert.equal(wageText({ wageAmount: null }), "-");
 });
 
 test("발송일은 한국 날짜로 끊는다", () => {

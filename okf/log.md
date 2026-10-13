@@ -1,7 +1,12 @@
 # Bundle history
 
+## 2026-10-13
+
+* **Update**: 근로계약 화면 요건 변경(Plane #133 · #155 · #132). 목록의 임시저장 행은 이어 쓰기로 바로 가고, 임시저장 삭제를 상세에서 이어 쓰기 화면(취소와 임시저장 사이)으로 옮겨 공통 `ConfirmDialog` 로 묻는다. 목록에 고용 형태 칸을 더하고, 급여는 정직원도 시급으로 보인다(작성 · 상세의 칸 이름도 「시급」). [Whale ERP Frontend](/whale-erp-front.md).
+
 ## 2026-10-12
 
+* **Update**: 근로계약 목록의 행 끝 버튼 칸을 없애고 직원 이름으로 상세에 들어가게 했다. 상세 화면(`src/app/contracts/[contractId]/`)을 만들어 상태별 버튼을 위쪽으로 옮기고 임시저장 삭제를 더했다. [Whale ERP Frontend](/whale-erp-front.md).
 * **Update**: 근로계약서 작성의 휴대전화번호 · 생년월일에 하이픈 자동 입력을 더했다. 공통 `DateField` 에 켜는 칸만 쓰는 `autoHyphen` 을 더했다(기본 끔). [Whale ERP Frontend](/whale-erp-front.md).
 
 ## 2026-10-08

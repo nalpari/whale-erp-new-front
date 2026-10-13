@@ -98,6 +98,7 @@ export interface ContractDetail {
   jobTitle: string;
   employmentType: EmploymentType;
   storeId: number;
+  storeName?: string | null;
   birthDate: string | null;
   startDate: string | null;
   endDate: string | null;
@@ -108,6 +109,9 @@ export interface ContractDetail {
   payDay: number | null;
   isHealthPensionInsured: boolean | null;
   isEmploymentInjuryInsured: boolean | null;
+  draftAction?: string | null;
+  /** 상태 변경 이력. 최근 것부터 */
+  histories?: { fromStatus: string | null; toStatus: string; actor: string; changedAt: string }[];
   workDays: { weekday: Weekday; startTime: string; endTime: string; breakStartTime: string | null; breakEndTime: string | null }[];
 }
 
