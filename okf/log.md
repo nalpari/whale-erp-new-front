@@ -1,5 +1,16 @@
 # Bundle history
 
+## 2026-10-12
+
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통코드 화면 리뷰 반영: 자기 패널 저장 뒤 입력 행이 남던 문제(새 그룹이 다음 쪽에 들어갈 때 · 공백만 고칠 때), [BP 적용]이 상세 코드 패널의 변경을 막도록, 요청 실패 · 상세 코드 조회 실패를 패널에서 알리고, 401 · 403 문구를 바꿨다. 저장 데이터 만들기를 `src/lib/code-drafts.ts` 로 빼 테스트하고 `pnpm test` 를 더했다.
+* **Update**: [시스템관리](/system.md) — 공통코드 목업 · 데모의 BP 적용 안내를 새 정책(다시 적용하면 뒤에 추가한 코드도 기존 BP에 들어감)으로 맞췄다. 화면은 한 패널을 저장해도 다른 패널의 고치던 값을 지우지 않는다. 이 화면이 부르는 whale-erp-api `/code-groups` 는 api main 에 머지됐다(PR #15).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통 토스트를 더했다(저장 · 수정 · 삭제 문구, 하단 가운데, 3초 · 2026-10-12 결정). 플랫폼 공통코드 저장 성공에 붙였다.
+* **Update**: [시스템관리](/system.md) — 상세 코드 새 행을 여러 개 만들어 한 번에 저장하고, 새 행끼리도 중복을 검사한다(2026-10-12 결정). 화면 · 목업 · 데모를 함께 고쳤다.
+* **Update**: [시스템관리](/system.md) — 공통코드 그룹 목록에서 끌어서 순서 바꾸기를 뺐다(상세 코드만 남김, 2026-10-12 결정).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통코드 화면을 목 데이터에서 실제 api(`/code-groups`) 호출로 바꿨다. 로그인 전에는 개발 서버에서만 `API_DEV_TOKEN` 을 싣는다.
+* **Update**: 플랫폼 공통코드 관리 2~8단계(검수까지) — [Whale ERP Frontend](/whale-erp-front.md) 공통 컴포넌트에 Tag · Toggle · ConfirmDialog 를 더하고 DataTable 줄 상태, 막힌 버튼 · 틀린 입력칸 모양을 적었다. 끌어서 순서 바꾸기는 `src/lib/reorder.ts`(`node --test src/lib/reorder.test.ts`).
+* **Update**: 플랫폼 공통코드 관리 개발 0·1단계 — [Whale ERP Frontend](/whale-erp-front.md) 에 플랫폼 화면 틀(`src/app/platform/`), 공통코드 데이터 함수(목, api 와 같은 모양), openapi 타입 생성(`pnpm openapi:types`)을 적었다. [시스템관리](/system.md) 의 BP 적용 정책을 「다시 적용 가능, 없는 행만 넣음」으로 고쳤다(2026-10-12 결정).
+
 ## 2026-10-08
 
 * **Update**: `2026-09-30-네이밍-규칙.md` 2026-10-08 고침을 [네이밍 규칙](/conventions/naming.md) 에 옮겼다 — 「근무 · 출퇴근」의 근무 유형 4종(`DAY`·`OPEN`·`MIDDLE`·`CLOSE`, enum `work_type`) 줄을 지웠다(재영).

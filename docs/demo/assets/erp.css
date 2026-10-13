@@ -826,9 +826,6 @@
   .w-\[720px\] {
     width: 720px;
   }
-  .w-\[780px\] {
-    width: 780px;
-  }
   .w-\[800px\] {
     width: 800px;
   }
@@ -837,6 +834,9 @@
   }
   .w-\[880px\] {
     width: 880px;
+  }
+  .w-\[900px\] {
+    width: 900px;
   }
   .w-\[1200px\] {
     width: 1200px;
