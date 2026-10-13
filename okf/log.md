@@ -4,6 +4,15 @@
 
 * **Update**: 근로계약서 작성 급여 칸을 현업 엑셀 견본대로 바꿨다 — 시급 옆 읽기 전용 월급 칸, 정직원은 연봉 · 비과세 항목 · 급여항목 표, 파트타이머는 요일별 소계 · 주휴수당 · 주급 · 월급여 표. 근무요일은 근무 · 휴게시간과 한 줄, 시급 · 월급 · 연봉은 급여 표 위 한 줄. 휴일근무 두 칸은 뺐고, 파트타이머 수당 칸은 정해지지 않아 뺐다. [Whale ERP Frontend](/whale-erp-front.md).
 * **Update**: 근로계약서 작성에 api #12 칸(수당 · 월 근로시간 · 조항)과 정직원 월급(시급 × 월 기본시간) 안내, 같은 점포 진행 중 계약 대체 확인창(WHALEERP-129)을 더했다. PR #13 리뷰 참고 항목 — 근로계약 화면 `error.tsx` · 목록 403 안내 · 주소 쿼리 거르기, `pnpm test` 가 `src` 전체 테스트를 돌린다, 근로계약 타입을 생성 타입으로, 메뉴 견본 「직원 정보 관리 · 근로계약 관리」 주소, 직원 목록 「직원 초대」를 `/contracts/new` 로. [Whale ERP Frontend](/whale-erp-front.md).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `/design` 맨 위에 디자인 샘플 화면 목록 표를 더했다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 회원가입 완료 화면 `/design/guest/sign-up/complete` 를 더하고 가입 폼에서 잇는다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 사업자 회원가입을 `/design/guest/sign-up` 으로 만들었다(기획 시안 항목 + Figma 비로그인 폼 규격, 가입 요청은 아직 보내지 않는다). 아이디·이메일 사용 가능 여부는 샘플 목록으로 보인다. 비로그인 폼 규격을 `guest-form.ts` 로 모았다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — Figma 「아이디/비밀번호 찾기」를 `/design/guest/find-account` 로 옮겼다(인증 요청은 아직 보내지 않는다). 머리말 Login 아이콘이 호버 때 글자와 함께 먹색으로 바뀐다(Figma 1:1855).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — Figma 「로그인전_로그인」을 `/design/guest/login` 으로 옮겼다(로그인 요청은 아직 보내지 않는다).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 사이 이동에 페이지 전환(ViewTransition)을 넣었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — Figma 「로그인전_부가서비스」를 `/design/guest/add-on-services` 로 옮기고, 비로그인 아이콘을 `guest-icons.tsx` 로 모았다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — Figma 「로그인전_Sub」를 `/design/guest/store-operations` 매장운영 화면으로 옮기고, 비로그인 머리말·푸터를 `design/guest/layout.tsx` 로 모았다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — Figma 「로그인전_Main」을 `/design/guest` 비로그인 메인으로 옮겼다(guest 색 토큰, Pretendard 700, REM·Inter Tight·Inter).
 * **Update**: [운영 알림](/notify.md) — 기본 템플릿 37건 → 40건, 되돌리기는 제목·본문·변수 목록만(NOTIFY-17·18), 알림톡 카카오 템플릿 코드·변수 목록도 고친다(NOTIFY-10)로 맞췄다. 데모 `template-codes.mjs` 에 빠진 세 코드를 더했다.
 * **Update**: [네이밍](/conventions/naming.md) — 기본 템플릿 코드 37건 → 40건. 표에 빠져 있던 `PUSH_PAYSLIP_RESENT` · `EMAIL_PAYSLIP_SENT` · `EMAIL_PAYSLIP_RESENT` 를 더했다(마이그레이션 `20261007000100_team3_initial_data` 와 맞춤).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 알림 템플릿 관리 화면(#575 · #576 · #579 · #582) 목록 · 등록 · 수정과 메뉴 한 줄. `ApiError.messages` 로 400 문장 목록을 남긴다.

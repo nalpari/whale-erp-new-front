@@ -22,7 +22,7 @@ import {
   StoreSelect,
   UserPop,
 } from "@/components/common";
-import { CONTRACT_ROWS, MENUS, STORE_COLUMNS, STORE_ROWS, STORES, USER_ITEMS } from "./sample";
+import { CONTRACT_ROWS, MENUS, PAGE_LINK_COLUMNS, PAGE_LINKS, STORE_COLUMNS, STORE_ROWS, STORES, USER_ITEMS } from "./sample";
 import { SamplePagination } from "./sample-pagination";
 import { StoreFilter } from "./store-filter";
 
@@ -59,6 +59,10 @@ export default function DesignUnitsPage() {
     <main className="mx-auto max-w-[1680px] px-6 py-12 sm:px-10">
       <h1 className="mb-2 text-[28px] font-extrabold">기본 유닛</h1>
       <p className="mb-10 text-[14px] text-erp-label">2026 Whale ERP 1차수정 · @/components/common</p>
+
+      <Section title="Pages">
+        <DataTable columns={PAGE_LINK_COLUMNS} rows={PAGE_LINKS} rowKey={(r) => r.href} />
+      </Section>
 
       <Section title="Color">
         <ul className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
