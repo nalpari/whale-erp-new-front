@@ -23,7 +23,8 @@ const addRows = (id, cells, note) =>
     .join("")}</tr>${note ? `<tr class="border-b border-erp-thead-line bg-erp-thead-bg"><td colspan="${cells.length}" class="px-[10px] py-[10px] text-left">${help(note)}</td></tr>` : ""}</template>`;
 // 코드는 영문 대문자로만 — 소문자를 치면 대문자로 바꾼다
 const codeField = (placeholder, label) => ui.textField({ placeholder, maxlength: 20, "aria-label": label, "data-upper": true, title: "영문 대문자·숫자·밑줄, 영문으로 시작, 20자 이내 (소문자는 대문자로 바뀝니다)" });
-// 추가 버튼을 누르면 그 표에 새 행을 붙이고, 첫 칸으로 스크롤·포커스한다. 저장 전 새 행은 하나만 둔다(목업과 같다).
+// 추가 버튼을 누르면 그 표에 새 행을 붙이고, 첫 칸으로 스크롤·포커스한다.
+// 그룹은 저장 전 새 행을 하나만 둔다. 상세 코드(data-multi)는 누를 때마다 한 줄씩 붙고 [×]로 뺀다 — 표시 순서는 마지막 다음부터 차례로(2026-10-12).
 const ADD_SCRIPT = `<script>
 (() => {
   document.querySelectorAll("[data-add-row]").forEach((btn) => {
@@ -31,11 +32,25 @@ const ADD_SCRIPT = `<script>
       const tpl = document.getElementById(btn.dataset.addRow);
       const body = btn.closest("section").querySelector("tbody");
       body.append(tpl.content.cloneNode(true));
-      btn.disabled = true;
-      const first = body.querySelector("[data-new-row] input");
+      if (!btn.hasAttribute("data-multi")) btn.disabled = true;
+      renumber(body);
+      const rows = body.querySelectorAll("[data-new-row]");
+      const first = rows[rows.length - 1].querySelector("input");
       first.scrollIntoView({ block: "nearest", behavior: "smooth" });
       first.focus({ preventScroll: true });
     });
+  });
+  // 새 행 표시 순서 — 저장된 행의 마지막 다음부터 차례로
+  function renumber(body) {
+    let n = body.querySelectorAll("tr:not([data-new-row])").length;
+    body.querySelectorAll("[data-new-row] [data-new-order]").forEach((o) => (o.textContent = ++n));
+  }
+  document.addEventListener("click", (e) => {
+    const rm = e.target.closest("[data-remove-row]");
+    if (!rm) return;
+    const body = rm.closest("tbody");
+    rm.closest("tr").remove();
+    renumber(body);
   });
   document.addEventListener("input", (e) => {
     if (e.target.matches("[data-upper]")) e.target.value = e.target.value.toUpperCase();
@@ -82,7 +97,7 @@ export default ({ A, R }) => {
   const groupCols = [
     { header: "그룹 코드", width: "w-[170px]", align: "left" },
     { header: "그룹명", align: "left" },
-    { header: "관리 주체", width: "w-[100px]" },
+    { header: "관리 주체", width: "w-[140px]" }, // 추가 행 선택칸에 ‘플랫폼고정’이 잘리지 않는 폭(2026-10-12)
     { header: "BP 적용", width: "w-[130px]" },
     { header: "사용 상태", width: "w-[100px]" },
   ];
@@ -95,7 +110,7 @@ export default ({ A, R }) => {
     x.toggle("사용", true),
   ]);
   const left = card(
-    "w-[780px] shrink-0",
+    "w-[900px] shrink-0", // 그룹 목록을 넓혔다(2026-10-12)
     ui.sectionHead(`공통코드 그룹${sub(`${GROUPS.length}개`)}`, dim(ui.button("추가", { variant: "soft", "data-add-row": "new-group" })) + ui.button("저장")) +
       markRow(ui.dataTable(groupCols, groupRows), 0) +
       addRows(
@@ -128,15 +143,16 @@ export default ({ A, R }) => {
   ]);
   const right = card(
     "min-w-0 flex-1",
-    ui.sectionHead(`상세 코드${sub("SERVICE · 서비스 · 플랫폼고정")}`, dim(ui.button("추가", { variant: "soft", "data-add-row": "new-code" })) + ui.button("저장")) +
+    ui.sectionHead(`상세 코드${sub("SERVICE · 서비스 · 플랫폼고정")}`, dim(ui.button("추가", { variant: "soft", "data-add-row": "new-code", "data-multi": true })) + ui.button("저장")) +
       ui.dataTable(codeCols, codeRows) +
       addRows(
         "new-code",
         [
-          [""],
+          // 새 행 빼기 — 저장 전 새 행만
+          ['<button type="button" data-remove-row title="이 새 행 빼기" aria-label="새 행 빼기" class="px-[6px] text-[16px] text-erp-label hover:text-erp-ink">×</button>'],
           [codeField("서비스 코드 직접 입력", "상세 코드"), true],
           [ui.textField({ placeholder: "서비스명", "aria-label": "코드명" }), true],
-          [`<span title="맨 끝에 붙습니다. 저장한 뒤 끌어서 옮길 수 있습니다">${SERVICES.length + 1}</span>`],
+          [`<span data-new-order title="맨 끝에 붙습니다. 저장한 뒤 끌어서 옮길 수 있습니다">${SERVICES.length + 1}</span>`],
           [x.toggle("사용", true)],
         ],
       ),
@@ -158,7 +174,7 @@ export default ({ A, R }) => {
         ]) +
         riskBand("사용 중인 모든 BP에 배포되며 되돌릴 수 없습니다", {
           tone: "risk",
-          desc: "적용하면 이 그룹과 상세 코드가 각 BP에 복사되고, 그룹의 BP 적용은 다시 미적용으로 바꿀 수 없습니다. 적용한 뒤 추가하는 상세 코드는 기존 BP에는 배포되지 않고 새로 가입하는 BP부터 적용됩니다.",
+          desc: "적용하면 이 그룹과 상세 코드가 각 BP에 복사되고, 그룹의 BP 적용은 다시 미적용으로 바꿀 수 없습니다. 적용한 뒤 추가한 상세 코드는 다시 BP에 적용하면 기존 BP에도 들어갑니다 — BP에 이미 있는 코드는 건너뛰어 BP가 고친 값은 그대로입니다.",
         }) +
         `</div>`,
       ui.button("취소", { variant: "off", "data-close": true }) + ui.button("적용", { "data-close": true }),
