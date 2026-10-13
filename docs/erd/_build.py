@@ -392,7 +392,7 @@ DIAGRAMS.append(Diagram(
     "관리자 웹의 운영 알림과 직원 근무 앱의 직원 알림은 같은 알림 구조를 쓴다. 읽음은 수신자마다 따로 두고 발송은 채널별 이력으로 남긴다. TO-DO 배정은 앱 푸시 없이 알림함에만 남긴다(2026-09-28).",
     [
         E("notification", "알림", "notifications", "focal",
-          ["#|알림 ID|id|notification_id|", "|알림 대상 구분|enum|audience|운영 알림·직원 알림", "|템플릿 코드|text|template_code|만들 때 쓴 알림 템플릿. 문구는 이 알림에 박아 둠", "|관련 업무 유형|enum|related_type|문의사항·도입문의·근로계약 등", "|관련 업무 ID|id|related_id|", "|알림 제목|text|title|만들 때의 템플릿 제목을 박아 둠 — 알림함 목록 · 종 팝오버 (NOTIFY-12, 2026-10-13 재영)", "|알림 내용|text|body|템플릿 둘째 줄", "|중복 방지 키|text|dedupe_key|같은 사건·수신자 1회", "|긴급 여부|bool|urgent|", "|생성 시각|datetime|created_at|"], 0, 240),
+          ["#|알림 ID|id|notification_id|", "|알림 대상 구분|enum|audience|운영 알림·직원 알림", "|템플릿 코드|text|template_code|만들 때 쓴 알림 템플릿. 문구는 이 알림에 박아 둠", "|관련 업무 유형|enum|related_type|문의사항·도입문의·근로계약 등", "|관련 업무 ID|id|related_id|", "|업무 링크|text|link|알림을 눌러 갈 관리자 웹 경로. 알림을 만드는 업무 쪽이 넘긴다, 없으면 알림함에서 안내 (NOTIFY-16, 2026-10-13 재영)", "|알림 제목|text|title|만들 때의 템플릿 제목을 박아 둠 — 알림함 목록 · 종 팝오버 (NOTIFY-12, 2026-10-13 재영)", "|알림 내용|text|body|템플릿 둘째 줄", "|중복 방지 키|text|dedupe_key|같은 사건·수신자 1회", "|긴급 여부|bool|urgent|", "|생성 시각|datetime|created_at|"], 0, 240),
         ref_admin(1, 40),
         E("recipient", "알림 수신", "notification_recipients", "entity",
           ["#|수신 ID|id|recipient_id|", "→|알림|id|notification_id|", "→|수신 계정|id|account_id|직원 알림", "→|수신 관리자|id|admin_account_id|운영 알림", "|읽음 여부|bool|is_read|", "|읽음 처리 시각|datetime|read_at|", "|삭제 표시|bool|is_deleted|받은 사람별로 지움"], 1, 240),
