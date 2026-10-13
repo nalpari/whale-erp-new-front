@@ -10,14 +10,13 @@ const INFO_ROWS = [
   ["통신판매업신고번호: 2021-00000000000"],
 ];
 
-
 function Bar() {
   return <span className="h-[8px] w-px bg-[#ddd]" />;
 }
 
 export function GuestFooter() {
   return (
-    <footer className="bg-white pt-[60px]">
+    <footer className="bg-white">
       <div className="border-t border-guest-line px-[80px] pt-[38px] pb-[32px]">
         <div className="flex items-start gap-[100px]">
           <span className="relative h-[50px] w-[80px]">

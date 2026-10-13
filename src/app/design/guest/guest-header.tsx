@@ -21,6 +21,8 @@ const MENUS = [
 export function GuestHeader() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
+  // 로그인은 본문 왼쪽 그림과 머리말이 같은 흰 바탕이라 맨 위에서도 선을 그어 구분한다.
+  const lined = pathname === "/design/guest/login";
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > 0);
     update();
@@ -33,7 +35,7 @@ export function GuestHeader() {
       // 화면을 옮기는 동안 머리말은 기준점으로 제자리에 둔다(globals.css 의 guest-header).
       style={{ viewTransitionName: "guest-header" }}
       className={`sticky top-0 z-20 flex h-[110px] items-center border-b px-[80px] transition-[background-color,border-color] duration-150 ${EASE_OUT} motion-reduce:transition-none ${
-        scrolled ? "border-guest-line bg-white/95 backdrop-blur-[8px]" : "border-transparent"
+        scrolled ? "border-guest-line bg-white/95 backdrop-blur-[8px]" : lined ? "border-guest-line" : "border-transparent"
       }`}
     >
       <Link href="/design/guest" className="flex items-center gap-[8px] py-[5px]">
@@ -66,7 +68,7 @@ export function GuestHeader() {
         })}
       </nav>
       <div className="flex items-center gap-[34px] text-[20px] font-semibold text-[#999]">
-        <Link href="#" className={`flex items-center gap-[6px] uppercase hover:text-guest-ink ${HOVER}`}>
+        <Link href="/design/guest/login" className={`flex items-center gap-[6px] uppercase hover:text-guest-ink ${HOVER}`}>
           <Image src="/guest/user-circle.svg" alt="" width={24} height={24} />
           Login
         </Link>

@@ -199,6 +199,7 @@ const PERSONAS = [
     features: ["본사가 발급한 계정으로 바로 로그인", "본사 메뉴·가격이 매장에 그대로", "직원 계약·출퇴근은 직접 관리"],
     services: ["POS · KIOSK", "점포 재고 관리", "대기 순번 관리"],
     cta: "본사 계정으로 로그인",
+    href: "/design/guest/login",
   },
 ];
 

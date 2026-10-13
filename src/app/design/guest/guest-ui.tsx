@@ -31,6 +31,7 @@ const BUTTON_TONE = {
   soft: "border-guest-navy-soft bg-guest-navy-soft text-white hover:border-guest-navy hover:bg-white hover:text-guest-navy",
   white: "border-white bg-white text-guest-navy text-[17px]! hover:border-guest-navy",
   outline: "border-guest-button-line bg-white text-guest-ink hover:border-guest-navy hover:text-guest-navy",
+  line: "border-guest-navy-soft bg-white text-guest-navy hover:border-guest-navy",
 };
 export function GuestButton({
   tone,
@@ -70,10 +71,11 @@ export const ICON_GRADIENT = "linear-gradient(114deg, rgba(174,190,206,0.8) 8.98
 
 // 비로그인 화면 사이를 옮길 때 본문을 겹쳐 바꾼다(globals.css 의 guest-page). 레이아웃은 화면을 옮겨도 남아 있어
 // 들어오고 나가는 순간이 생기지 않으므로 각 page 가 이것으로 본문을 감싼다. 머리말은 움직이지 않는다.
-export function GuestPage({ children }: { children: ReactNode }) {
+// 본문과 푸터 사이는 시안대로 60px 띄운다. 로그인처럼 푸터가 본문에 바로 붙는 화면은 flush 를 준다.
+export function GuestPage({ children, flush = false }: { children: ReactNode; flush?: boolean }) {
   return (
     <ViewTransition enter="guest-page" exit="guest-page" default="none">
-      <div>{children}</div>
+      <div className={flush ? "" : "pb-[60px]"}>{children}</div>
     </ViewTransition>
   );
 }
