@@ -41,6 +41,21 @@
   --font-erp: var(--font-pretendard), Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
 }
 
+/* 비로그인(로그인전) Figma 토큰. 관리자 화면과 다른 디자인이라 erp-* 와 섞지 않는다. 한 번만 나오는 색은 쓰는 곳에 적는다. */
+@theme {
+  --color-guest-ink: #0c0c0c;
+  --color-guest-navy: #3a5670;
+  --color-guest-navy-soft: #93a2b1;
+  --color-guest-step: #657c91;
+  --color-guest-slate: #72879a;
+  --color-guest-body: #464646;
+  --color-guest-sub: #555555;
+  --color-guest-card: #f5f8fb;
+  --color-guest-line: #eeeeee;
+  --color-guest-list-line: #eff2f4;
+  --color-guest-button-line: #e0e5e9;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
@@ -52,4 +67,45 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* 비로그인 화면 사이 이동(design/guest 의 GuestPage). 나가는 본문은 빠르게 흐려지고(150ms), 들어오는 본문은
+   그 뒤를 이어 10px 아래에서 떠오른다(300ms). 머리말은 기준점으로 제자리에 둔다. 곡선은 ERP 와 같은 감속 곡선이다. */
+::view-transition-old(.guest-page) {
+  animation: 150ms cubic-bezier(0.23, 1, 0.32, 1) both guest-fade reverse;
+}
+::view-transition-new(.guest-page) {
+  animation:
+    300ms cubic-bezier(0.23, 1, 0.32, 1) 100ms both guest-fade,
+    300ms cubic-bezier(0.23, 1, 0.32, 1) 100ms both guest-rise;
+}
+::view-transition-group(guest-header) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(guest-header) {
+  display: none;
+}
+::view-transition-new(guest-header) {
+  animation: none;
+}
+/* 전환 중에도 클릭이 아래 화면으로 가게 한다. */
+::view-transition {
+  pointer-events: none;
+}
+@keyframes guest-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes guest-rise {
+  from {
+    translate: 0 10px;
+  }
+}
+/* 움직임 줄이기: 떠오르는 움직임은 빼고 흐려지기만 남긴다. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-new(.guest-page) {
+    animation: 200ms ease both guest-fade;
+  }
 }

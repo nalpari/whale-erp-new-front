@@ -2,6 +2,15 @@
 
 ## 2026-10-13
 
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `/design` 맨 위에 디자인 샘플 화면 목록 표를 더했다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 회원가입 완료 화면 `/design/guest/sign-up/complete` 를 더하고 가입 폼에서 잇는다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 사업자 회원가입을 `/design/guest/sign-up` 으로 만들었다(기획 시안 항목 + Figma 비로그인 폼 규격, 가입 요청은 아직 보내지 않는다). 아이디·이메일 사용 가능 여부는 샘플 목록으로 보인다. 비로그인 폼 규격을 `guest-form.ts` 로 모았다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — Figma 「아이디/비밀번호 찾기」를 `/design/guest/find-account` 로 옮겼다(인증 요청은 아직 보내지 않는다). 머리말 Login 아이콘이 호버 때 글자와 함께 먹색으로 바뀐다(Figma 1:1855).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — Figma 「로그인전_로그인」을 `/design/guest/login` 으로 옮겼다(로그인 요청은 아직 보내지 않는다).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 사이 이동에 페이지 전환(ViewTransition)을 넣었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — Figma 「로그인전_부가서비스」를 `/design/guest/add-on-services` 로 옮기고, 비로그인 아이콘을 `guest-icons.tsx` 로 모았다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — Figma 「로그인전_Sub」를 `/design/guest/store-operations` 매장운영 화면으로 옮기고, 비로그인 머리말·푸터를 `design/guest/layout.tsx` 로 모았다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — Figma 「로그인전_Main」을 `/design/guest` 비로그인 메인으로 옮겼다(guest 색 토큰, Pretendard 700, REM·Inter Tight·Inter).
 * **Update**: [운영 알림](/notify.md) — 기본 템플릿 37건 → 40건, 되돌리기는 제목·본문·변수 목록만(NOTIFY-17·18), 알림톡 카카오 템플릿 코드·변수 목록도 고친다(NOTIFY-10)로 맞췄다. 데모 `template-codes.mjs` 에 빠진 세 코드를 더했다.
 * **Update**: [네이밍](/conventions/naming.md) — 기본 템플릿 코드 37건 → 40건. 표에 빠져 있던 `PUSH_PAYSLIP_RESENT` · `EMAIL_PAYSLIP_SENT` · `EMAIL_PAYSLIP_RESENT` 를 더했다(마이그레이션 `20261007000100_team3_initial_data` 와 맞춤).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 알림 템플릿 관리 화면(#575 · #576 · #579 · #582) 목록 · 등록 · 수정과 메뉴 한 줄. `ApiError.messages` 로 400 문장 목록을 남긴다.

@@ -92,3 +92,34 @@ export const CONTRACT_ROWS: DetailRow[] = [
     ),
   },
 ];
+
+// 디자인 샘플 화면 목록(유닛 맨 위 표). 화면을 더하면 여기에도 한 줄 더한다.
+type PageLink = { group: string; name: string; href: string; source: string; entry: string };
+export const PAGE_LINKS: PageLink[] = [
+  { group: "관리자", name: "기본 유닛", href: "/design", source: "Figma 2026 1차 수정 · 공통 컴포넌트", entry: "샘플 이동 메뉴 「유닛」" },
+  { group: "관리자", name: "점포정보 관리 목록", href: "/design/full", source: "Figma 2026 1차 수정", entry: "샘플 이동 메뉴 「전체 페이지」" },
+  { group: "관리자", name: "상세", href: "/design/detail", source: "Figma 03.프레임_상세", entry: "목록의 계약서보기 · 샘플 이동 메뉴 「상세 페이지」" },
+  { group: "비로그인", name: "메인", href: "/design/guest", source: "Figma 로그인전_Main (1:2)", entry: "샘플 이동 메뉴 「비로그인」 · 머리말 로고" },
+  { group: "비로그인", name: "매장운영", href: "/design/guest/store-operations", source: "Figma 로그인전_Sub (1:688)", entry: "머리말 매장운영 · 메인 매장운영 카드" },
+  { group: "비로그인", name: "부가서비스", href: "/design/guest/add-on-services", source: "Figma 로그인전_부가서비스 (1:1083)", entry: "머리말 부가 서비스 · 메인 「부가서비스 둘러보기」" },
+  { group: "비로그인", name: "로그인", href: "/design/guest/login", source: "Figma 로그인전_로그인 (1:1615)", entry: "머리말 Login · 메인 「본사 계정으로 로그인」" },
+  { group: "비로그인", name: "아이디/비밀번호 찾기", href: "/design/guest/find-account", source: "Figma 아이디/비밀번호 찾기 (1:1811)", entry: "로그인 「아이디/비밀번호 찾기」" },
+  { group: "비로그인", name: "회원가입", href: "/design/guest/sign-up", source: "기획 시안(Claude 아티팩트) + Figma 폼 규격", entry: "로그인 「사업자 회원가입」 · 계정 찾기 「회원가입」" },
+  { group: "비로그인", name: "가입 완료", href: "/design/guest/sign-up/complete", source: "기획 시안(Claude 아티팩트 signup-done)", entry: "회원가입 완료 후" },
+];
+export const PAGE_LINK_COLUMNS: Column<PageLink>[] = [
+  { header: "구분", width: "w-[100px]", cell: (r) => r.group },
+  { header: "화면", width: "w-[200px]", align: "left", cell: (r) => r.name },
+  {
+    header: "경로",
+    width: "w-[320px]",
+    align: "left",
+    cell: (r) => (
+      <Link href={r.href} className="text-erp-link hover:underline">
+        {r.href}
+      </Link>
+    ),
+  },
+  { header: "출처", align: "left", cell: (r) => r.source },
+  { header: "들어가는 곳", align: "left", cell: (r) => r.entry },
+];
