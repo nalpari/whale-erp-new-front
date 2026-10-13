@@ -37,7 +37,7 @@ export default function LoginPage() {
                   <p className="text-[20px] font-semibold">처음 오셨나요?</p>
                   <p className="text-[16px]">아직 계정이 없으신가요?</p>
                 </div>
-                <GuestButton tone="line" arrow>
+                <GuestButton tone="line" href="/design/guest/sign-up" arrow>
                   사업자 회원가입
                 </GuestButton>
               </div>

@@ -2,6 +2,7 @@
 
 ## 2026-10-13
 
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 사업자 회원가입을 `/design/guest/sign-up` 으로 만들었다(기획 시안 항목 + Figma 비로그인 폼 규격, 가입 요청은 아직 보내지 않는다). 아이디·이메일 사용 가능 여부는 샘플 목록으로 보인다. 비로그인 폼 규격을 `guest-form.ts` 로 모았다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — Figma 「아이디/비밀번호 찾기」를 `/design/guest/find-account` 로 옮겼다(인증 요청은 아직 보내지 않는다). 머리말 Login 아이콘이 호버 때 글자와 함께 먹색으로 바뀐다(Figma 1:1855).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — Figma 「로그인전_로그인」을 `/design/guest/login` 으로 옮겼다(로그인 요청은 아직 보내지 않는다).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 화면 사이 이동에 페이지 전환(ViewTransition)을 넣었다.

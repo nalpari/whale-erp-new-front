@@ -108,7 +108,7 @@ export function FindAccountForm() {
           <button type="submit" className={SUBMIT}>
             {current.submit}
           </button>
-          <GuestButton tone="soft" tall>
+          <GuestButton tone="soft" href="/design/guest/sign-up" tall>
             회원가입
           </GuestButton>
           <GuestButton tone="line" href="/design/guest/login" arrow="back" tall>

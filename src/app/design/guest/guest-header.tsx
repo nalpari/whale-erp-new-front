@@ -15,14 +15,16 @@ const MENUS = [
   { label: "부가 서비스", href: "/design/guest/add-on-services" },
 ];
 
+const LINED_PATHS = ["/design/guest/login", "/design/guest/find-account", "/design/guest/sign-up"];
+
 // 비로그인 화면 머리말. 스크롤해도 위에 붙어 있다.
 // fixed 가 아니라 sticky 다 — 화면이 1720 보다 좁으면 가로로 스크롤하는데, fixed 는 가로로 따라오지 않아 오른쪽이 잘린다.
 // 맨 위에서는 시안대로 바탕 없이 Billboard 위에 겹치고, 스크롤하면 흰 바탕과 선을 깔아 어두운 섹션 위에서도 글자가 보이게 한다.
 export function GuestHeader() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
-  // 로그인·계정 찾기는 본문 왼쪽 그림과 머리말이 같은 흰 바탕이라 맨 위에서도 선을 그어 구분한다.
-  const lined = pathname === "/design/guest/login" || pathname === "/design/guest/find-account";
+  // 로그인·계정 찾기·회원가입은 본문이 머리말과 같은 흰 바탕이라 맨 위에서도 선을 그어 구분한다.
+  const lined = LINED_PATHS.includes(pathname);
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > 0);
     update();
