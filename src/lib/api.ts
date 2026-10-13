@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import type { EnumValue } from "./enums";
 
 const SESSION_COOKIE = "session";
 
@@ -55,6 +56,21 @@ async function errorMessage(response: Response): Promise<string> {
   if (Array.isArray(message)) return message.join(", ");
   if (typeof message === "string") return message;
   return `요청이 실패했습니다 (HTTP ${response.status})`;
+}
+
+/**
+ * enum 의 값·한글을 api 에서 받는다. 화면에 한글 대응표를 두지 않는다(네이밍 규칙 「API 타입·enum 공유」).
+ * enum 은 api 배포 때만 바뀌어 한 시간 캐시한다. 응답의 version 으로 바로 새로 받는 것은 아직 하지 않는다.
+ */
+export async function getEnum(name: string): Promise<EnumValue[]> {
+  // request() 는 cache: "no-store" 라 캐시 옵션과 함께 쓸 수 없다(둘 다 무시된다).
+  const response = await fetch(`${baseUrl()}/enums/${encodeURIComponent(name)}`, {
+    next: { revalidate: 3600 },
+  });
+  if (!response.ok)
+    throw new ApiError(response.status, await errorMessage(response));
+  const body = (await response.json()) as { enums: Record<string, EnumValue[]> };
+  return body.enums[name] ?? [];
 }
 
 export async function getSession(): Promise<Session | null> {
