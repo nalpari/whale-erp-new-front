@@ -27,25 +27,24 @@ export function staffSections({ A, R }) {
     { header: "고용형태", width: "w-[110px]" },
     { header: "가입·인증", width: "w-[210px]" },
     { header: "계약 상태", width: "w-[160px]" },
-    { header: "이번 주", width: "w-[90px]" },
     { header: "재직", width: "w-[110px]" },
   ];
   const D = L("staff/detail.html");
   const who = (name, href) => (href ? ui.link(name, href) : name);
   const holdPanel = "hold-form";
   const staffRows = [
-    [who("서지안", D), "010-2841-7702", "모리커피 서초점", "정직원", p.tag("ok", "가입 완료"), p.tag("ok", "체결 완료"), "34.5h", p.mark("ok", "재직")],
-    [who("오세라", D), "010-3392-4418", "모리커피 서초점", "정직원", p.tag("ok", "가입 완료"), p.tag("ok", "체결 완료"), "40.0h", p.mark("ok", "재직")],
-    [who("문태경", D), "010-4471-2298", "온기식당 판교점", "정직원", p.tag("ok", "가입 완료"), p.tag("ok", "체결 완료"), "42.0h", `${p.mark("ok", "재직")} ${p.tag("warn", "퇴직 예정 09-30")}`], // 퇴직 예정은 재직으로 센다(2026-10-08 재영)
-    [who("배정숙", D), "010-8820-3317", "온기식당 판교점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("warn", "갱신 예정 D-20"), "24.0h", p.mark("ok", "재직")],
-    [who("남도현"), "010-9014-5563", "모리커피 성수점", "파트타이머", p.tag("warn", "초대 발송 · 08-31"), p.tag("quiet", "발송 대기"), "-", p.mark("subtle", "가입 대기")],
-    [`<button type="button" aria-expanded="false" aria-controls="${holdPanel}" class="text-erp-link hover:underline">하준서</button>`, "010-3392-4418", "모리커피 성수점", "파트타이머", p.tag("risk", "연결 보류 · 4일"), p.tag("quiet", "발송 대기"), "-", p.mark("risk", "확인 필요")],
-    [who("정유담"), "010-5518-7734", "온기식당 판교점", "파트타이머", p.tag("info", "소속 추가 확인"), p.tag("quiet", "발송 대기"), "-", p.mark("subtle", "응답 대기")],
-    [who("권도윤", D), "010-7742-1160", "모리커피 서초점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("warn", "서명 대기 · D-24"), "-", p.mark("warn", "날인 대기")],
-    [who("유하람", D), "010-2093-8875", "모리커피 연남점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("risk", "거부 · 09-02"), "-", p.mark("risk", "재발송 필요")],
-    [p.sub("본사 제공 동의 없음"), "-", "모리커피 연남점", "-", "-", "-", "-", "-"],
-    [who("민세하"), "010-7725-3390", "모리커피 성수점", "파트타이머", p.tag("risk", "가입 불가(만 19세 미만)"), p.tag("quiet", "발송 대기"), "-", p.mark("risk", "삭제 대상")],
-    [who("임채운"), "010-6613-0284", "모리커피 연남점", "파트타이머", p.tag("quiet", "가입 완료"), p.tag("quiet", "종료"), "-", p.mark("subtle", "퇴직 07-31")],
+    [who("서지안", D), "010-2841-7702", "모리커피 서초점", "정직원", p.tag("ok", "가입 완료"), p.tag("ok", "체결 완료"), p.mark("ok", "재직")],
+    [who("오세라", D), "010-3392-4418", "모리커피 서초점", "정직원", p.tag("ok", "가입 완료"), p.tag("ok", "체결 완료"), p.mark("ok", "재직")],
+    [who("문태경", D), "010-4471-2298", "온기식당 판교점", "정직원", p.tag("ok", "가입 완료"), p.tag("ok", "체결 완료"), `${p.mark("ok", "재직")} ${p.tag("warn", "퇴직 예정 09-30")}`], // 퇴직 예정은 재직으로 센다(2026-10-08 재영)
+    [who("배정숙", D), "010-8820-3317", "온기식당 판교점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("warn", "갱신 예정 D-20"), p.mark("ok", "재직")],
+    [who("남도현"), "010-9014-5563", "모리커피 성수점", "파트타이머", p.tag("warn", "초대 발송 · 08-31"), p.tag("quiet", "발송 대기"), p.mark("subtle", "가입 대기")],
+    [`<button type="button" aria-expanded="false" aria-controls="${holdPanel}" class="text-erp-link hover:underline">하준서</button>`, "010-3392-4418", "모리커피 성수점", "파트타이머", p.tag("risk", "연결 보류 · 4일"), p.tag("quiet", "발송 대기"), p.mark("risk", "확인 필요")],
+    [who("정유담"), "010-5518-7734", "온기식당 판교점", "파트타이머", p.tag("info", "소속 추가 확인"), p.tag("quiet", "발송 대기"), p.mark("subtle", "응답 대기")],
+    [who("권도윤", D), "010-7742-1160", "모리커피 서초점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("warn", "서명 대기 · D-24"), p.mark("warn", "날인 대기")],
+    [who("유하람", D), "010-2093-8875", "모리커피 연남점", "파트타이머", p.tag("ok", "가입 완료"), p.tag("risk", "거부 · 09-02"), p.mark("risk", "재발송 필요")],
+    [p.sub("본사 제공 동의 없음"), "-", "모리커피 연남점", "-", "-", "-", "-"],
+    [who("민세하"), "010-7725-3390", "모리커피 성수점", "파트타이머", p.tag("risk", "가입 불가(만 19세 미만)"), p.tag("quiet", "발송 대기"), p.mark("risk", "삭제 대상")],
+    [who("임채운"), "010-6613-0284", "모리커피 연남점", "파트타이머", p.tag("quiet", "가입 완료"), p.tag("quiet", "종료"), p.mark("subtle", "퇴직 07-31")],
   ];
   // 직원 정보 관리: 점포 목록처럼 왼쪽 필터 + 오른쪽 목록(목업의 목록 위 검색칸·선택칸을 필터로 옮겼다).
   const listFilter = ui.filterPanel(A, [
@@ -61,7 +60,8 @@ export function staffSections({ A, R }) {
       ui.button("일괄 저장", { variant: "soft", href: L("staff/export.html") }) +
         `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`,
     ) +
-    ui.dataTable(staffCols, staffRows.map((r, i) => [i + 1, ...r]), "조회된 직원이 없습니다.") +
+    // 순번은 내림차순 — 최근 등록이 먼저라 1쪽 첫 줄이 전체 건수다(2026-10-12).
+    ui.dataTable(staffCols, staffRows.map((r, i) => [63 - i, ...r]), "조회된 직원이 없습니다.") +
     pageNav(4);
 
   // ── 근로계약 ──
