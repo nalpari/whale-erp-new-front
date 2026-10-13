@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "openapi:types": "node scripts/openapi-types.mjs",
-    "test": "node --test src/lib/*.test.ts"
+    "test": "node --test \"src/**/*.test.ts\""
   },
   "dependencies": {
     "next": "16.3.3",
