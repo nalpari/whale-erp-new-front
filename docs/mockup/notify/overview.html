@@ -180,7 +180,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
-              <span class="badge badge--preview">15건 · 확정 15</span>
+              <span class="badge badge--preview">16건 · 확정 16</span>
             </div>
 
             <div class="gap is-decided">
@@ -410,6 +410,25 @@
                 </div>
               </div>
               <p class="gap__note">2026-10-13 재영 확정 — 운영 알림은 템플릿을 못 읽으면(없음 · 사용 안 함 · 읽기 실패 모두) 만들지 않고 서버 로그만 남긴다. 운영 정책 NTF-25 를 이에 맞춰 고쳤다.</p>
+            </div>
+            <div class="gap is-decided">
+              <div class="gap__head">
+                <span class="gap__no">NOTIFY-16</span>
+                <b>알림을 눌러 갈 업무 화면을 누가 정하는가</b>
+                <span class="gap__decided">확정 · 업무 담당자가 링크를 넘긴다</span>
+                <span class="gap__ref">S-JUWPXF · S-GDUNIT</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt is-dropped" data-side="a">
+                  <div class="gap__label">A · 운영 알림 쪽 경로표</div>
+                  <p>관리자 웹이 템플릿 코드마다 갈 화면 경로를 표로 들고 있다. 업무 화면이 새로 생기면 운영 알림 쪽이 표를 고쳐야 한다.</p>
+                </div>
+                <div class="gap__opt is-picked" data-side="b">
+                  <div class="gap__label">B · 업무 담당자가 링크를 넘긴다</div>
+                  <p>업무 쪽이 공통 함수 notify 를 부를 때 자기 화면 경로(<span class="mono">/contracts/41</span> 등)를 함께 넘기고 알림에 저장한다. 운영 알림 쪽은 경로를 모른다.</p>
+                </div>
+              </div>
+              <p class="gap__note">2026-10-13 재영 확정 — B. 운영 알림은 업무 흐름을 건드리지 않고 업무 담당자가 notify 를 부른다(Plane #247)는 원칙과 맞춘다. notifications 에 링크 칸을 둔다(비어도 됨 — 갈 화면이 없으면 알림함에서 안내). 링크는 관리자 웹 안의 경로만 받는다. 알림함 · 종 · 메일 버튼(/notifications/{수신 ID}/open)은 읽음 처리 뒤 이 링크로 간다.</p>
             </div>
           </section>
         </div>
