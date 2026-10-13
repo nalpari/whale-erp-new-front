@@ -6,7 +6,7 @@ import { AlarmLink, DetailTable, GlobalHeader, PageBar, ServiceLinks, StoreSelec
 import { getStaffMember } from "@/lib/staff-members";
 // 헤더 메뉴 · 사용자 메뉴는 아직 디자인 견본의 값뿐이다(목록 화면과 같다).
 import { MENUS, STORES, USER_ITEMS } from "../../design/sample";
-import { EMPLOYMENT_TYPE_LABELS, formatPhone, statusCells } from "../staff-row";
+import { EMPLOYMENT_TYPE_LABELS, employmentStatusCells, formatPhone } from "../staff-row";
 import { CellView } from "../staff-table";
 import { PasswordResetButton, StaffDetailActions } from "./staff-detail-actions";
 
@@ -56,6 +56,7 @@ const RIGHT_BOXES = [
 export default async function StaffMemberDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const staff = await getStaffMember((await params).id);
   if (!staff) notFound();
+  const employmentStatus = employmentStatusCells(staff);
 
   const basicRows = [
     { label: "이름", value: staff.name },
@@ -63,7 +64,7 @@ export default async function StaffMemberDetailPage({ params }: { params: Promis
     { label: "고용 형태", value: staff.employmentType ? EMPLOYMENT_TYPE_LABELS[staff.employmentType] : PENDING },
     { label: "소속 근무지", value: staff.store.name },
     { label: "입사일", value: PENDING },
-    { label: "재직 상태", value: statusCells(staff).map((cell) => <CellView key={cell.text} cell={cell} />) },
+    { label: "재직 상태", value: employmentStatus.length ? employmentStatus.map((cell) => <CellView key={cell.text} cell={cell} />) : PENDING },
     { label: "생년월일", value: PENDING },
     { label: "휴대전화번호", value: staff.phone ? formatPhone(staff.phone) : PENDING },
     { label: "본인인증", value: PENDING },

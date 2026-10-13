@@ -122,3 +122,13 @@ export function statusCells(item: StaffMemberListItem): Cell[] {
   if (item.retiredDate) cells.push({ text: `퇴직 예정 ${mmdd(item.retiredDate)}`, style: "badge-off" });
   return cells;
 }
+
+/** 상세의 재직 상태 칸. 목록 요약(statusCells)과 달리 재직 · 퇴직 예정 · 퇴직만 보인다 — 가입 · 계약 상태는 섞지 않는다. 값이 없으면(가림) 빈 배열. */
+export function employmentStatusCells(item: StaffMemberListItem): Cell[] {
+  if (item.employmentStatus === "RETIRED")
+    return [{ text: item.retiredDate ? `퇴직 ${mmdd(item.retiredDate)}` : "퇴직", style: "muted" }];
+  if (item.employmentStatus !== "EMPLOYED") return [];
+  const cells: Cell[] = [{ text: "재직", style: "mark-on" }];
+  if (item.retiredDate) cells.push({ text: `퇴직 예정 ${mmdd(item.retiredDate)}`, style: "badge-off" });
+  return cells;
+}
