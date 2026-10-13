@@ -17,9 +17,9 @@ const tel = (a, b, c) =>
     .join("")}</div>`;
 const BLANK = `<div class="min-w-px flex-1"></div>`;
 const stack = (...c) => `<div class="flex flex-col gap-[8px]">${c.join("")}</div>`;
-// 주소: 검색칸 + [주소 검색] / 우편번호·기본주소(검색 결과로만 채움) / 상세주소
+// 주소: 검색칸(치는 대로 바로 아래 층에 결과 — 앱 address-field.tsx, [주소 검색] 버튼 없음) / 우편번호·기본주소(검색 결과로만 채움) + [지우기] / 상세주소(주소를 고른 뒤에만 적는다) — 2026-10-13 앱 반영
 const address = (A, zip, base, detail) =>
-  `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">주소</span><div class="flex gap-[6px]"><div class="flex-1">${ui.searchField(A, { placeholder: "도로명, 건물명, 지번으로 검색", label: "주소 검색어" })}</div>${ui.button("주소 검색", { variant: "soft" })}</div><div class="flex gap-[6px]"><div class="w-[120px] shrink-0">${ui.textField({ value: zip, readonly: true, placeholder: "우편번호", "aria-label": "우편번호" })}</div>${ui.textField({ value: base, readonly: true, placeholder: "검색해서 고르면 채워집니다", "aria-label": "기본주소" })}</div>${ui.textField({ value: detail, maxlength: 100, placeholder: "상세주소", "aria-label": "상세주소" })}</div>`;
+  `<div class="flex flex-col gap-[8px]" data-addr-live><span class="text-[14px] font-medium text-erp-label">주소</span><div class="relative" data-addr-box>${ui.searchField(A, { placeholder: "도로명, 건물명, 지번으로 검색", label: "주소 검색어" })}</div><div class="flex gap-[6px]"><div class="w-[120px] shrink-0">${ui.textField({ value: zip, readonly: true, placeholder: "우편번호", "aria-label": "우편번호" })}</div>${ui.textField({ value: base, readonly: true, placeholder: "검색해서 고르면 채워집니다", "aria-label": "기본주소" })}<span data-addr-clear${zip ? "" : " hidden"}>${ui.button("지우기", { variant: "off" })}</span></div>${ui.textField(base ? { value: detail, maxlength: 100, placeholder: "상세주소", "aria-label": "상세주소" } : { value: detail, maxlength: 100, placeholder: "주소를 검색해 고른 뒤 적습니다", "aria-label": "상세주소", disabled: true })}</div>`;
 
 function platformAdminNewBody(A) {
   // 패널(464px)이라 두 칸 줄을 한 칸씩 세로로 쌓는다
@@ -29,7 +29,12 @@ function platformAdminNewBody(A) {
     row(
       ui.field(
         req("아이디"),
-        stack(ui.textField({ value: "platyoon", maxlength: 20, placeholder: "영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요." })),
+        // 칸을 벗어나거나 Enter 를 치면 형식 · 중복을 확인해 칸 아래에 알린다(erp.js data-dupcheck, 앱 admin-form-panel.tsx).
+        // 데모의 ‘이미 있는 아이디’는 data-taken 값이다. 쓸 수 있으면 아무것도 띄우지 않는다.
+        stack(
+          ui.textField({ value: "platyoon", maxlength: 20, placeholder: "영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요.", "data-dupcheck": "id", "data-taken": "plathan,whaleadmin" }),
+          `<p class="text-[13px] leading-[1.5] text-erp-off" role="alert" data-dup-message hidden></p>`,
+        ),
       ),
       ui.field(req("이름"), ui.textField({ value: "윤채원", maxlength: 20, placeholder: "한글 또는 영문 2~20자" })),
     ),
