@@ -3,9 +3,15 @@ import { Badge, DetailValues, type Column, type DetailRow, type HeaderMenu, type
 
 // /design 샘플 화면에 넣는 더미 데이터와, 그 값을 그리는 데 필요한 만큼의 표현(배지·링크). Figma 시안의 값을 그대로 옮겼다.
 
+// 화면이 생긴 메뉴만 실제 주소로 잇는다. 나머지는 아직 시안이라 "#".
+const ROUTES: Record<string, string> = {
+  "직원 정보 관리": "/staff-members",
+  "근로계약 관리": "/contracts",
+};
+
 const menu = (label: string, items: string[]): HeaderMenu => ({
   label,
-  items: items.map((item) => ({ label: item, href: "#" })),
+  items: items.map((item) => ({ label: item, href: ROUTES[item] ?? "#" })),
 });
 
 export const MENUS: HeaderMenu[] = [

@@ -1,21 +1,26 @@
 "use client";
 
 import { useId, useState, useTransition, type ReactNode } from "react";
-import { Button, Checkbox, DataTable, DateField, FormGroup, FormRow, Radio, Select, TextField } from "@/components/common";
+import { Button, Checkbox, ConfirmDialog, DataTable, DateField, FormGroup, FormRow, Radio, Select, Textarea, TextField } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { createContract, updateContract } from "./actions";
 import {
+  formatHours,
   formatPhone,
   formatWage,
   initialForm,
   isMinor,
+  monthlyWage,
   problems,
   toBody,
   weeklyHolidayOf,
   weeklyHours,
   WEEKDAYS,
   type ContractForm as Form,
+  type CreateContractBody,
+  type HourField,
   type HourMinute,
+  type InProgressContract,
   type TimeSpan,
   type Weekday,
 } from "./contract-form-model";
@@ -24,9 +29,19 @@ export interface ContractFormLabels {
   employmentType: EnumValue[];
   weekday: EnumValue[];
   payMonth: EnumValue[];
+  /** 대체할지 물을 때 진행 중 계약의 상태 이름 */
+  contractStatus: EnumValue[];
 }
 
 const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
+// 월 근로시간 칸 — 폼 키와 화면 이름(현업 요구사항, 2026-10-12 재영)
+const HOURS_FIELDS: [HourField, string][] = [
+  ["baseHours", "월 기본시간"],
+  ["monthlyOvertimeHours", "월간 연장근무"],
+  ["baseNightHours", "기본시간 중 야간근무"],
+  ["baseHolidayHours", "기본시간 중 휴일근무"],
+  ["monthlyExtraHolidayHours", "월간 추가 휴일근무"],
+];
 const HELP = "text-[12px] leading-[1.5] text-erp-muted";
 
 // 라벨 · 입력 · 도움말 한 칸. 공통 Field 는 라벨이 글자뿐이라 필수 표시(*)를 달 수 없어 여기서 묶는다.
@@ -130,6 +145,8 @@ export function ContractForm({
   const [tried, setTried] = useState(false);
   const [serverError, setServerError] = useState("");
   const [saving, startSaving] = useTransition();
+  // 같은 점포에 진행 중 계약이 있어 저장하지 못했을 때 — 대체를 확인받아 같은 본문에 그 목록을 실어 다시 보낸다.
+  const [replace, setReplace] = useState<{ body: CreateContractBody; list: InProgressContract[] } | null>(null);
   const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
 
   // 막는 이유는 마지막으로 누른 저장 방식 기준으로 보인다.
@@ -145,13 +162,20 @@ export function ContractForm({
     setLastTemporary(temporary);
     setServerError("");
     if (problems(form, temporary).length) return;
+    send(toBody(form, temporary));
+  };
+
+  const send = (body: CreateContractBody) =>
     startSaving(async () => {
       // 성공하면 액션이 목록으로 보낸다. 돌아왔다면 실패다.
-      const body = toBody(form, temporary);
-      const { error } = contractId ? await updateContract(contractId, body) : await createContract(body);
-      setServerError(error);
+      const result = contractId ? await updateContract(contractId, body) : await createContract(body);
+      if (result.inProgress) {
+        setReplace({ body, list: result.inProgress });
+        return;
+      }
+      setReplace(null);
+      setServerError(result.error);
     });
-  };
 
   const toggleDay = (d: Weekday) => set("days", form.days.includes(d) ? form.days.filter((x) => x !== d) : [...form.days, d]);
 
@@ -161,6 +185,10 @@ export function ContractForm({
     return { d, cells: [t(form.work.start), t(form.work.end), t(form.rest.start), t(form.rest.end)] };
   });
   const cell = (i: number) => (r: (typeof hourRows)[number]) => r.cells[i];
+
+  // 정직원은 월급을 저장하지 않고 시급 × 월 기본시간으로 셈해 보인다(현업 요구사항, 2026-10-12 재영).
+  const monthly = form.employmentType === "FULL_TIME" ? monthlyWage(form) : null;
+  const wageHelp = monthly === null ? "2026년 최저임금 10,320원 이상" : `월급 ${monthly.toLocaleString("ko-KR")}원 (시급 × 월 기본시간)`;
 
   const blocked = saving || !signedIn || minor;
   const saveButtons = (
@@ -246,7 +274,7 @@ export function ContractForm({
           </FormRow>
           <FormRow>
             {/* 고용 형태와 상관없이 시급 한 칸이다(2026-10-12 재영). 정직원 월급은 시급 × 월 기본시간으로 셈한다. */}
-            <Item label="시급" required help="2026년 최저임금 10,320원 이상">
+            <Item label="시급" required help={wageHelp}>
               {(id) => <TextField id={id} value={form.wage} inputMode="numeric" onChange={(e) => set("wage", formatWage(e.target.value))} />}
             </Item>
             <Group label="근무요일">
@@ -264,6 +292,17 @@ export function ContractForm({
                 ))}
               </span>
             </Group>
+          </FormRow>
+          <FormRow>
+            <Item label="식대" help="비과세 수당 · 원">
+              {(id) => <TextField id={id} value={form.mealAllowance} inputMode="numeric" onChange={(e) => set("mealAllowance", formatWage(e.target.value))} />}
+            </Item>
+            <Item label="자가운전보조금" help="비과세 수당 · 원">
+              {(id) => <TextField id={id} value={form.carAllowance} inputMode="numeric" onChange={(e) => set("carAllowance", formatWage(e.target.value))} />}
+            </Item>
+            <Item label="육아수당" help="비과세 수당 · 원">
+              {(id) => <TextField id={id} value={form.childcareAllowance} inputMode="numeric" onChange={(e) => set("childcareAllowance", formatWage(e.target.value))} />}
+            </Item>
           </FormRow>
           <FormRow>
             <Group label="근무시간">
@@ -294,6 +333,13 @@ export function ContractForm({
             <span className={HELP}>요일마다 같은 시간이 들어간다. 요일별로 다른 시간은 근무스케줄에서 고친다.</span>
           </div>
           <FormRow>
+            {HOURS_FIELDS.map(([key, label]) => (
+              <Item key={key} label={label} help="월 · 시간, 30분(0.5) 단위">
+                {(id) => <TextField id={id} value={form[key]} inputMode="decimal" placeholder="0" onChange={(e) => set(key, formatHours(e.target.value))} />}
+              </Item>
+            ))}
+          </FormRow>
+          <FormRow>
             <Group label="임금지급일" help="31 을 넣으면 말일로 본다">
               <span className="flex gap-[6px]">
                 <span className="w-[100px] shrink-0">
@@ -321,6 +367,17 @@ export function ContractForm({
               </span>
             </Group>
             </div>
+          </FormRow>
+        </FormGroup>
+
+        <FormGroup title="계약서 조항">
+          <FormRow>
+            <Item label="연차휴가" help="계약서 연차휴가 조항에 그대로 들어간다">
+              {(id) => <Textarea id={id} rows={2} maxLength={1000} value={form.annualLeaveTerms} onChange={(e) => set("annualLeaveTerms", e.target.value)} />}
+            </Item>
+            <Item label="퇴직금" help="계약서 퇴직금 조항에 그대로 들어간다">
+              {(id) => <Textarea id={id} rows={2} maxLength={1000} value={form.severancePayTerms} onChange={(e) => set("severancePayTerms", e.target.value)} />}
+            </Item>
           </FormRow>
         </FormGroup>
 
@@ -354,6 +411,27 @@ export function ContractForm({
           {saveButtons}
         </div>
       </div>
+
+      {/* 같은 점포 · 같은 번호의 진행 중 계약(WHALEERP-129). 대체하면 임시저장은 지우고, 발송 대기 · 서명 대기는 종료한다. */}
+      <ConfirmDialog
+        open={replace !== null}
+        title="기존 근로계약을 대체하시겠습니까?"
+        confirmLabel={saving ? "저장 중" : "대체하고 저장"}
+        busy={saving}
+        wide
+        onCancel={() => setReplace(null)}
+        onConfirm={() => replace && send({ ...replace.body, replaceContractIds: replace.list.map((c) => c.contractId) })}
+      >
+        <p>이 점포에 같은 휴대전화번호로 진행 중인 근로계약이 있습니다.</p>
+        <ul className="mt-[6px] list-disc pl-[18px]">
+          {replace?.list.map((c) => (
+            <li key={c.contractId}>
+              {labelOf(labels.contractStatus, c.status)} · 계약 {c.contractId}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-[6px]">대체하면 임시저장은 지우고, 발송 대기 · 서명 대기 계약은 종료합니다.</p>
+      </ConfirmDialog>
     </div>
   );
 }

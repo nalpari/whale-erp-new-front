@@ -1,6 +1,8 @@
 // 근로계약서 초안 폼의 순수 로직 — 입력값 → API 본문, 주 소정근로시간, 만 19세 판정.
 // 테스트: node --test src/app/contracts/new/contract-form-model.test.ts
 
+import type { components } from "../../../lib/api-types.generated";
+
 export const WEEKDAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] as const;
 export type Weekday = (typeof WEEKDAYS)[number];
 export type EmploymentType = "FULL_TIME" | "PART_TIME";
@@ -38,29 +40,52 @@ export interface ContractForm {
   isHealthPensionInsured: boolean;
   isEmploymentInjuryInsured: boolean;
   workLocation: string;
+  // 계약서 임금 · 근로시간 조항 (현업 요구사항, 2026-10-12 재영). 금액은 쉼표 넣은 글자, 시간은 글자 그대로.
+  mealAllowance: string;
+  carAllowance: string;
+  childcareAllowance: string;
+  baseHours: string;
+  monthlyOvertimeHours: string;
+  baseNightHours: string;
+  baseHolidayHours: string;
+  monthlyExtraHolidayHours: string;
+  annualLeaveTerms: string;
+  severancePayTerms: string;
 }
 
-/** POST /contracts 본문. openapi-typescript 로 타입을 생성하기 전까지 api 의 CreateContractDto 를 옮겨 적는다. */
-// 임시저장이면 계약 칸은 비워 보낼 수 있다(?). 직원 칸과 근무지는 늘 필수다.
-export interface CreateContractBody {
-  name: string;
-  phone: string;
-  birthDate?: string;
-  storeId: number;
-  jobTitle: string;
-  employmentType: EmploymentType;
-  contractMethod: "ELECTRONIC";
-  startDate?: string;
-  endDate?: string;
-  wageAmount?: number;
-  workDays?: { weekday: Weekday; startTime: string; endTime: string; breakStartTime?: string; breakEndTime?: string }[];
-  payMonth: PayMonth;
-  payDay?: number;
-  workLocation?: string;
-  isHealthPensionInsured: boolean;
-  isEmploymentInjuryInsured: boolean;
-  /** true 면 임시저장(DRAFT) — 초대 · 계약서를 보내지 않는다 */
-  isTemporarySave?: boolean;
+/** 월 근로시간 칸 — 폼 키와 api 칸 이름이 같다 */
+export const HOUR_FIELDS = ["baseHours", "monthlyOvertimeHours", "baseNightHours", "baseHolidayHours", "monthlyExtraHolidayHours"] as const;
+export type HourField = (typeof HOUR_FIELDS)[number];
+
+/** 조항 기본 문구. DB 가 아니라 작성 화면이 채우고 관리자가 고친다(2026-10-12 재영) */
+export const DEFAULT_ANNUAL_LEAVE_TERMS = "근로기준법 제50조에 의거하여 연차휴가를 제공함";
+export const DEFAULT_SEVERANCE_PAY_TERMS = "계속근로기간 1년에 대하여 30일분의 퇴직금을 지급함";
+
+/** POST · PUT /contracts 본문. api 의 openapi.json 에서 만든 타입을 쓴다(pnpm openapi:types). 임시저장이면 계약 칸은 비워 보낼 수 있다 */
+export type CreateContractBody = components["schemas"]["CreateContractDto"];
+
+/** 같은 점포 · 같은 번호의 진행 중 계약 — 대체할지 묻는 데 쓴다 */
+export type InProgressContract = { contractId: number; status: string };
+
+/** 저장 서버 액션의 결과. 성공하면 액션이 목록으로 보내므로 돌아왔다면 실패다 */
+export interface SaveResult {
+  error: string;
+  /** 있으면 같은 점포에 진행 중 계약이 있어 저장하지 않았다 — 대체를 확인받아 다시 보낸다 */
+  inProgress?: InProgressContract[];
+}
+
+/**
+ * api 409 본문에서 대체할 진행 중 계약 목록을 꺼낸다(code CONTRACT_IN_PROGRESS). 다른 409(근무 시간 겹침 ·
+ * 재직 중)는 undefined — 그 문장(겹친 요일 · 시간 포함)을 그대로 보이면 된다.
+ */
+export function inProgressOf(body: unknown): InProgressContract[] | undefined {
+  const b = body as { code?: unknown; contracts?: unknown } | null;
+  if (b?.code !== "CONTRACT_IN_PROGRESS" || !Array.isArray(b.contracts)) return undefined;
+  const list = b.contracts.filter(
+    (c): c is InProgressContract =>
+      typeof (c as InProgressContract)?.contractId === "number" && typeof (c as InProgressContract)?.status === "string",
+  );
+  return list.length ? list : undefined;
 }
 
 const span = (sh: string, eh: string): TimeSpan => ({ start: { hour: sh, minute: "00" }, end: { hour: eh, minute: "00" } });
@@ -85,35 +110,21 @@ export function initialForm(storeId = ""): ContractForm {
     isHealthPensionInsured: false,
     isEmploymentInjuryInsured: false,
     workLocation: "",
+    mealAllowance: "",
+    carAllowance: "",
+    childcareAllowance: "",
+    baseHours: "",
+    monthlyOvertimeHours: "",
+    baseNightHours: "",
+    baseHolidayHours: "",
+    monthlyExtraHolidayHours: "",
+    annualLeaveTerms: DEFAULT_ANNUAL_LEAVE_TERMS,
+    severancePayTerms: DEFAULT_SEVERANCE_PAY_TERMS,
   };
 }
 
-/** GET /contracts/:contractId. openapi-typescript 로 타입을 생성하기 전까지 api 의 ContractDetailDto 를 옮겨 적는다 */
-export interface ContractDetail {
-  contractId: number;
-  staffMemberId: number;
-  status: string | null;
-  name: string;
-  phone: string;
-  jobTitle: string;
-  employmentType: EmploymentType;
-  storeId: number;
-  storeName?: string | null;
-  birthDate: string | null;
-  startDate: string | null;
-  endDate: string | null;
-  workLocation: string | null;
-  weeklyHoliday: Weekday | null;
-  wageAmount: number | null;
-  payMonth: PayMonth | null;
-  payDay: number | null;
-  isHealthPensionInsured: boolean | null;
-  isEmploymentInjuryInsured: boolean | null;
-  draftAction?: string | null;
-  /** 상태 변경 이력. 최근 것부터 */
-  histories?: { fromStatus: string | null; toStatus: string; actor: string; changedAt: string }[];
-  workDays: { weekday: Weekday; startTime: string; endTime: string; breakStartTime: string | null; breakEndTime: string | null }[];
-}
+/** GET /contracts/:contractId. api 의 openapi.json 에서 만든 타입을 쓴다(pnpm openapi:types) */
+export type ContractDetail = components["schemas"]["ContractDetailDto"];
 
 const toHourMinute = (hhmm: string): HourMinute => ({ hour: hhmm.slice(0, 2), minute: hhmm.slice(3, 5) === "30" ? "30" : "00" });
 
@@ -142,8 +153,22 @@ export function fromDetail(d: ContractDetail): ContractForm {
     isHealthPensionInsured: d.isHealthPensionInsured ?? false,
     isEmploymentInjuryInsured: d.isEmploymentInjuryInsured ?? false,
     workLocation: d.workLocation ?? "",
+    mealAllowance: moneyText(d.mealAllowanceAmount),
+    carAllowance: moneyText(d.carAllowanceAmount),
+    childcareAllowance: moneyText(d.childcareAllowanceAmount),
+    baseHours: hoursText(d.baseHours),
+    monthlyOvertimeHours: hoursText(d.monthlyOvertimeHours),
+    baseNightHours: hoursText(d.baseNightHours),
+    baseHolidayHours: hoursText(d.baseHolidayHours),
+    monthlyExtraHolidayHours: hoursText(d.monthlyExtraHolidayHours),
+    // 임시저장에서 조항을 비워 두었으면 비운 채로 연다 — 기본 문구는 새로 쓸 때만 채운다
+    annualLeaveTerms: d.annualLeaveTerms ?? "",
+    severancePayTerms: d.severancePayTerms ?? "",
   };
 }
+
+const moneyText = (n: number | null | undefined) => (n == null ? "" : n.toLocaleString("ko-KR"));
+const hoursText = (n: number | null | undefined) => (n == null ? "" : String(n));
 
 export const digits = (s: string) => s.replace(/\D/g, "");
 
@@ -165,6 +190,30 @@ const minutes = (t: HourMinute) => Number(t.hour) * 60 + Number(t.minute);
 export function formatWage(input: string): string {
   const d = digits(input).replace(/^0+(?=\d)/, "");
   return d ? Number(d).toLocaleString("ko-KR") : "";
+}
+
+/** 근로시간 칸 글자. 숫자와 소수점 한 번만 남긴다 */
+export function formatHours(input: string): string {
+  const [whole, ...rest] = input.replace(/[^\d.]/g, "").split(".");
+  return rest.length ? `${whole}.${rest.join("").slice(0, 1)}` : whole;
+}
+
+/** 근로시간 글자를 시간으로. 비었으면 null, 0 이상 · 30분(0.5) 단위 · 9999.5 이하가 아니면 NaN */
+export function hoursOf(text: string): number | null {
+  if (!text.trim()) return null;
+  const n = Number(text);
+  return Number.isFinite(n) && n >= 0 && n <= 9999.5 && Number.isInteger(n * 2) ? n : NaN;
+}
+
+/**
+ * 정직원 월급(참고). 급여는 고용 형태와 상관없이 시급만 저장하고, 정직원 월급은 시급 × 월 기본시간으로 셈해
+ * 보인다(현업 요구사항, 2026-10-12 재영). 둘 중 하나가 비었거나 틀리면 null.
+ */
+export function monthlyWage(f: Pick<ContractForm, "wage" | "baseHours">): number | null {
+  const wage = Number(digits(f.wage));
+  const hours = hoursOf(f.baseHours);
+  if (!wage || hours === null || Number.isNaN(hours)) return null;
+  return Math.round(wage * hours);
 }
 
 /** 주 소정근로시간(시간). (종업 - 시업 - 휴게) × 근무 요일 수 */
@@ -219,6 +268,7 @@ export function problems(f: ContractForm, temporary = false): string[] {
     out.push("휴게시간은 근무시간 안이어야 합니다");
   const day = Number(f.payDay);
   if (f.payDay ? !(Number.isInteger(day) && day >= 1 && day <= 31) : !temporary) out.push("임금지급일은 1~31입니다");
+  if (HOUR_FIELDS.some((k) => Number.isNaN(hoursOf(f[k])))) out.push("월 근로시간은 0 이상, 30분(0.5시간) 단위로 입력하세요");
   if (isMinor(f)) out.push("만 19세 미만 직원은 등록할 수 없습니다");
   return out;
 }
@@ -254,6 +304,16 @@ export function toBody(f: ContractForm, temporary = false): CreateContractBody {
     ...(f.payDay ? { payDay: Number(f.payDay) } : {}),
     isHealthPensionInsured: f.isHealthPensionInsured,
     isEmploymentInjuryInsured: f.isEmploymentInjuryInsured,
+    ...money("mealAllowanceAmount", f.mealAllowance),
+    ...money("carAllowanceAmount", f.carAllowance),
+    ...money("childcareAllowanceAmount", f.childcareAllowance),
+    ...Object.fromEntries(HOUR_FIELDS.flatMap((k) => (hoursOf(f[k]) === null ? [] : [[k, hoursOf(f[k])]]))),
+    ...(f.annualLeaveTerms.trim() ? { annualLeaveTerms: f.annualLeaveTerms.trim() } : {}),
+    ...(f.severancePayTerms.trim() ? { severancePayTerms: f.severancePayTerms.trim() } : {}),
     ...(temporary ? { isTemporarySave: true } : {}),
   };
 }
+
+// 수당은 0 원도 값이다(비과세 수당 없음). 비운 칸만 보내지 않는다.
+const money = (key: "mealAllowanceAmount" | "carAllowanceAmount" | "childcareAllowanceAmount", text: string) =>
+  digits(text) ? { [key]: Number(digits(text)) } : {};
