@@ -2,6 +2,7 @@
 
 ## 2026-10-14
 
+* **Update**: PR #19 리뷰 반영 — 메뉴 판정을 조회 권한 있는 메뉴로 좁히고, 브라우저 저장 키에 버전(`whale-erp:v1:`)을 넣고, 세션 쿠키를 토큰·만료·권한 유형만 두도록 줄였다. [Whale ERP Frontend](/whale-erp-front.md) 의 영역·API·명령 서술도 코드에 맞췄다.
 * **Update**: 강제 비밀번호 변경 팝업, 영역별 메뉴(플랫폼은 /platform 아래), 하위 메뉴 없는 1단계 메뉴 바로 이동, 다른 탭 로그인·로그아웃 따라가기를 [Whale ERP Frontend](/whale-erp-front.md) 에 반영했다. 레이아웃 확인용 자리표시 `/bp`·`/config/admins` 는 지웠다.
 
 ## 2026-10-13

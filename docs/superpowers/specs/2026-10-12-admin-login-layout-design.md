@@ -107,19 +107,19 @@ api 가 `GET /auth/admin/login-info`·`/public-bp-codes/{bpCode}/code-items`·`/
 
 | 저장소 | 키 | 값 | 버리는 조건 |
 |---|---|---|---|
-| 쿠키 httpOnly | `session` | 토큰 · 로그인ID · 이름 · 권한 유형 · BP 코드. 만료 없음 | 로그아웃 · 갱신 401 |
+| 쿠키 httpOnly | `session` | 토큰 · 접근 토큰 만료 시각 · 권한 유형. 만료 없음 | 로그아웃 · 갱신 401 |
 | 쿠키 | `login-key` | 로그인마다 새 UUID | 로그아웃 |
-| localStorage | `whale-erp:login-info` | `{ loginKey, account, menus }` | loginKey 다름 |
-| localStorage | `whale-erp:login-bp-info` | `{ loginKey, bpCodeId, stores, codes }` — 자기 BP. 새 탭에 복사할 때만 읽는다 | loginKey 다름 |
-| localStorage | `whale-erp:selected-bp` | `{ loginKey, bpCodeId, bpCode, tradeName }` — 플랫폼 계정이 마지막으로 고른 BP | loginKey 다름 · 고른 BP 403/404 |
-| sessionStorage | `whale-erp:current-bp` | `{ loginKey, bpCodeId, bpCode, tradeName }` — 이 탭의 BP | loginKey 다르면 탭 값 전부 |
-| sessionStorage | `whale-erp:stores` · `codes` · `scope` | `{ bpCodeId, … }` — 화면은 이것만 읽는다 | bpCodeId 가 이 탭의 BP 와 다름 |
+| localStorage | `whale-erp:v1:login-info` | `{ loginKey, account, menus }` | loginKey 다름 |
+| localStorage | `whale-erp:v1:login-bp-info` | `{ loginKey, bpCodeId, stores, codes }` — 자기 BP. 새 탭에 복사할 때만 읽는다 | loginKey 다름 |
+| localStorage | `whale-erp:v1:selected-bp` | `{ loginKey, bpCodeId, bpCode, tradeName }` — 플랫폼 계정이 마지막으로 고른 BP | loginKey 다름 · 고른 BP 403/404 |
+| sessionStorage | `whale-erp:v1:current-bp` | `{ loginKey, bpCodeId, bpCode, tradeName }` — 이 탭의 BP | loginKey 다르면 탭 값 전부 |
+| sessionStorage | `whale-erp:v1:stores` · `codes` · `scope` | `{ bpCodeId, … }` — 화면은 이것만 읽는다 | bpCodeId 가 이 탭의 BP 와 다름 |
 
 로그인 후 BP 데이터는 `bpCodeId` 로 구분한다. 로그인 전 공개 공통코드만 `bpCode` 로 부른다(운영·개발 DB 의 식별자가 달라서).
 
-`SessionGate`(`src/components/site/session-gate.tsx`) 순서: login-key 확인(없으면 로그아웃) → login-info 가 없으면 BFF 로 받아 저장 → 이 탭의 BP 결정(`resolveBp`: 고객 BP 계정·플랫폼 화면은 자기 BP, 플랫폼 계정의 ERP 화면은 `?bp=` → current-bp → selected-bp → 자기 BP) → 점포·공통코드(자기 BP 면 login-bp-info 복사, 다른 BP 면 `/bp-codes/{bpCodeId}/…` 두 개) → 화면. 401 은 로그아웃, 다른 BP 403·404 는 안내 후 selected-bp 를 지우고 홈, 그 밖은 [다시 시도].
+`SessionGate`(`src/components/site/session-gate.tsx`) 순서: login-key 확인(없으면 로그아웃) → login-info 가 없으면 BFF 로 받아 저장 → 이 탭의 BP 결정(`resolveBp`: 고객 BP 계정·플랫폼 화면은 자기 BP, 플랫폼 계정의 ERP 화면은 `?bp=` → current-bp → selected-bp → 자기 BP) → 점포·공통코드(자기 BP 면 login-bp-info 복사, 다른 BP 면 `/bp-codes/{bpCodeId}/…` 두 개) → 화면. 401 은 `/login`(login-key 쿠키가 없으면 로그아웃 서버 액션), 로그인 정보 403·404 는 안내 후 로그아웃, 다른 BP 403·404 는 안내 후 selected-bp 를 지우고 홈, 그 밖은 [다시 시도]. 탭의 BP(current-bp)는 점포·공통코드를 받은 뒤에 쓴다.
 
-헤더 메뉴는 login-info 의 menus 를 2단계까지 그리고, 권한 판정은 3단계까지 본다. 범위 선택기(전체·직영·가맹·점포 하나)는 ERP 화면에만 두고, 바꾸면 홈으로 간다. 플랫폼 화면의 BP 선택기는 BP 목록 API 가 생긴 뒤 만든다(고르면 selected-bp 저장 후 `/home?bp={bpCodeId}` 새 탭).
+헤더 메뉴는 login-info 의 menus 를 메뉴의 `serviceCode`(WHALE_ERP · PLATFORM)로 영역에 맞게 걸러 2단계까지 그린다. 주소 판정은 조회 권한(read)이 있는 메뉴의 url 과 그 아래 주소만 열고 3단계까지 본다(`src/lib/menus.ts`). BP·가맹 계정이 플랫폼 화면에 오면 (platform) 레이아웃이 서버에서, 그 뒤 화면 이동은 SessionGate 가 `/home` 으로 보낸다. 범위 선택기(전체·직영·가맹·점포 하나)는 ERP 화면에만 두고, 바꾸면 홈으로 간다. 플랫폼 화면의 BP 선택기는 BP 목록 API 가 생긴 뒤 만든다(고르면 selected-bp 저장 후 `/home?bp={bpCodeId}` 새 탭).
 
 API 타입은 손으로 적는다(2026-10-13 결정, `src/lib/session.ts`).
 
