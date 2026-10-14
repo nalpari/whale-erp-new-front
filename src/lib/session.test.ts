@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { parseSession, sessionCookie, type Session } from "./session.ts";
+import { loginKeyCookie, parseSession, sessionCookie, type Session } from "./session.ts";
 
 const session: Session = {
   accessToken: "a",
@@ -32,4 +32,10 @@ test("sessionCookie: 속성과 왕복", () => {
   assert.equal(c.sameSite, "lax");
   assert.equal("maxAge" in c, false); // 브라우저를 닫으면 끝나는 세션 쿠키
   assert.deepEqual(parseSession(c.value), session);
+});
+
+test("login-key 쿠키는 화면 스크립트가 읽어야 해서 httpOnly 가 아니다", () => {
+  const c = loginKeyCookie("k");
+  assert.equal("httpOnly" in c && c.httpOnly, false);
+  assert.equal(c.path, "/");
 });
