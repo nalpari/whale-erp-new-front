@@ -4,7 +4,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { createContext, use, useEffect, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/components/common";
 import { logout } from "@/app/actions";
-import { bff, BffError } from "@/lib/bff";
+import { bff, BffError, PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
+import { ForcePasswordDialog } from "./force-password-dialog";
 import {
   clearSelectedBp,
   readCodes,
@@ -29,6 +30,7 @@ import { LOGIN_KEY_COOKIE, type AdminMenu, type AdminStore, type Codes, type Log
 type Area = "erp" | "platform";
 
 interface LoginState {
+  loginKey: string;
   account: LoginInfoAccount;
   menus: AdminMenu[];
   /** 이 탭의 BP. 플랫폼 계정이 고른 BP 면 자기 BP 와 다르다. */
@@ -112,10 +114,14 @@ export function SessionGate({ area, children }: { area: Area; children: ReactNod
         </Button>
       </Notice>
     );
-  return <Ready area={area} value={state.value} onScope={(scope) => setState({ status: "ready", value: { ...state.value, scope } })}>{children}</Ready>;
+  return (
+    <Ready area={area} value={state.value} onChange={(value) => setState({ status: "ready", value })}>
+      {children}
+    </Ready>
+  );
 }
 
-function Ready({ area, value, onScope, children }: { area: Area; value: LoginState; onScope: (s: Scope) => void; children: ReactNode }) {
+function Ready({ area, value, onChange, children }: { area: Area; value: LoginState; onChange: (v: LoginState) => void; children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const allowed = isAllowed(value.menus, pathname, area);
@@ -134,11 +140,35 @@ function Ready({ area, value, onScope, children }: { area: Area; value: LoginSta
 
   const setScope = (scope: Scope) => {
     writeScope(value.currentBp.bpCodeId, scope);
-    onScope(scope);
+    onChange({ ...value, scope });
     // 범위를 바꾸면 보던 화면에 남지 않고 홈으로 간다(okf/home.md 범위 선택기).
     router.push(HOME[area]);
   };
-  return <LoginContext value={{ ...value, setScope }}>{allowed ? children : null}</LoginContext>;
+  // 강제 변경 표시를 저장값에 쓰고 이 탭에 반영한다. 다른 탭은 새로고침하면 반영된다.
+  const setPasswordRequired = (required: boolean) => {
+    const account = required
+      ? { ...value.account, isPasswordChangeRequired: true }
+      : { ...value.account, isPasswordChangeRequired: false, isTermsAgreementRequired: false, temporaryPasswordExpiresAt: null };
+    writeLoginInfo({ loginKey: value.loginKey, account, menus: value.menus });
+    onChange({ ...value, account });
+  };
+  // 변경 전에는 api 가 403 「비밀번호를 변경한 뒤 이용할 수 있습니다」를 준다. 저장값이 어긋났으면 팝업을 다시 띄운다.
+  useEffect(() => {
+    const reopen = () => !value.account.isPasswordChangeRequired && setPasswordRequired(true);
+    addEventListener(PASSWORD_REQUIRED_EVENT, reopen);
+    return () => removeEventListener(PASSWORD_REQUIRED_EVENT, reopen);
+  });
+  const passwordChanged = () => {
+    setPasswordRequired(false);
+    // 바꾼 뒤에는 ERP(영역) 홈으로 간다. 다시 열면서 고른 BP 의 점포·공통코드도 이때 받는다.
+    location.assign(HOME[area]);
+  };
+  return (
+    <LoginContext value={{ ...value, setScope }}>
+      {allowed ? children : null}
+      {value.account.isPasswordChangeRequired && <ForcePasswordDialog account={value.account} onDone={passwordChanged} />}
+    </LoginContext>
+  );
 }
 
 function Notice({ children }: { children: ReactNode }) {
@@ -175,7 +205,8 @@ async function prepare(area: Area): Promise<LoginState> {
     url.searchParams.delete("bp");
     history.replaceState(null, "", url);
   }
-  const bp = resolveBp({
+  // 비밀번호를 바꾸기 전에는 다른 BP 조회가 403 이라 자기 BP 로 연다. 바꾼 뒤 다시 열 때 고른 BP 로 간다.
+  const bp = account.isPasswordChangeRequired ? ownBp : resolveBp({
     ownBp,
     isPlatform: account.bp.isPlatform,
     area,
@@ -206,7 +237,7 @@ async function prepare(area: Area): Promise<LoginState> {
     writeStores(bp.bpCodeId, stores);
     writeCodes(bp.bpCodeId, codes);
   }
-  return { account, menus: info.menus, currentBp: bp, stores, codes, scope: readScope(bp.bpCodeId) ?? ALL };
+  return { loginKey, account, menus: info.menus, currentBp: bp, stores, codes, scope: readScope(bp.bpCodeId) ?? ALL };
 }
 
 function findMenu(menus: AdminMenu[], match: (m: AdminMenu) => boolean): AdminMenu | undefined {
