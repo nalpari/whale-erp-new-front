@@ -154,7 +154,12 @@ function Ready({ value, onChange, children }: { value: LoginState; onChange: (v:
   const denied = useRef<string | null>(null);
 
   useEffect(() => {
-    if (allowed || denied.current === pathname) return;
+    // 틀은 화면을 옮겨도 그대로 있다. 열린 화면에 오면 기록을 비워야 같은 막힌 주소에 다시 와도 안내한다.
+    if (allowed) {
+      denied.current = null;
+      return;
+    }
+    if (denied.current === pathname) return;
     denied.current = pathname;
     // 메뉴에 없는 주소로 바로 들어왔다. 안내하고 들어오기 전 화면으로 돌아간다(2026-10-13 정책, 403 과 같다).
     // shortcut: 안내는 브라우저 alert 다. 공통 확인 팝업이 생기면 바꾼다.
