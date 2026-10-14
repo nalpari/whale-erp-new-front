@@ -31,7 +31,8 @@ for (const file of files) {
   const R = "../".repeat(depth); // 데모 루트까지
   const A = `${R}assets/`;
   resetIds();
-  const { title, html } = (await import(pathToFileURL(file).href)).default({ A, R, pages: built });
+  // head 는 화면이 더 싣는 머리 요소다(비로그인 화면의 영문 글꼴·화면 사이 전환·guest.js).
+  const { title, html, head = "" } = (await import(pathToFileURL(file).href)).default({ A, R, pages: built });
   built.push({ rel, title, out: join(here, rel) });
   const out = join(here, rel);
   mkdirSync(dirname(out), { recursive: true });
@@ -45,7 +46,7 @@ for (const file of files) {
 <title>${title} · Whale ERP 데모</title>
 <link rel="stylesheet" href="${A}erp.css?v=__V__">
 <script src="${A}erp.js?v=__V__" defer></script>
-</head>
+${head}</head>
 <body>
 ${html}
 </body>
@@ -59,17 +60,22 @@ ${html}
 const require = createRequire(realpathSync(join(root, "node_modules/@tailwindcss/postcss/package.json")));
 const postcss = require("postcss");
 const tailwind = require("@tailwindcss/postcss");
-const theme = readFileSync(join(root, "src/app/globals.css"), "utf8").match(/@theme \{[^}]*--color-erp-[^}]*\}/)?.[0];
+// 비로그인 화면(guest)은 Figma 로그인전 토큰을 따로 쓴다. 두 @theme 블록을 다 읽는다.
+const globals = readFileSync(join(root, "src/app/globals.css"), "utf8");
+const theme = globals.match(/@theme \{[^}]*--color-erp-[^}]*\}/)?.[0];
 if (!theme) throw new Error("globals.css 에서 ERP @theme 블록을 찾지 못했다");
+const guestTheme = globals.match(/@theme \{[^}]*--color-guest-[^}]*\}/)?.[0];
+if (!guestTheme) throw new Error("globals.css 에서 비로그인 @theme 블록을 찾지 못했다");
 const input = `@import "tailwindcss" source(none);
 @source "./";
 ${theme}
+${guestTheme}
 ${readFileSync(join(here, "assets/base.css"), "utf8")}`;
 const { css } = await postcss([tailwind()]).process(input, { from: join(here, "erp.input.css") });
 writeFileSync(join(here, "assets/erp.css"), css);
 console.log(`assets/erp.css ${(css.length / 1024).toFixed(1)}KB`);
 
-// 자원 주소에 erp.js·erp.css 내용의 짧은 해시를 붙인다. 미니 nginx 가 캐시 헤더를 주지 않아 브라우저가 옛 erp.js 를
+// 자원 주소에 erp.js·guest.js·erp.css 내용의 짧은 해시를 붙인다. 미니 nginx 가 캐시 헤더를 주지 않아 브라우저가 옛 erp.js 를
 // 새 HTML 과 함께 쓰면 화면이 깨진다(2026-10-08 홈 월간 보기 빈 목록). 내용이 같으면 값도 같아 HTML 이 괜히 바뀌지 않는다.
-const v = createHash("sha1").update(readFileSync(join(here, "assets/erp.js"))).update(css).digest("hex").slice(0, 8);
+const v = createHash("sha1").update(readFileSync(join(here, "assets/erp.js"))).update(readFileSync(join(here, "assets/guest.js"))).update(css).digest("hex").slice(0, 8);
 for (const { out } of built) writeFileSync(out, readFileSync(out, "utf8").replaceAll("__V__", v));

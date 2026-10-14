@@ -15,3 +15,128 @@ body { min-height: 100%; margin: 0; }
    데모 HTML 에 상대 경로를 쓴 배경 클래스를 새로 만들지 않는다. 앱의 Tailwind 가 docs/ 까지 훑어 그 클래스를 앱 CSS 에 넣고,
    앱 빌드가 그 경로의 파일을 못 찾아 깨진다(2026-10-02 실제로 깨졌다). 이 주석에도 그 클래스 모양을 적지 않는다. */
 select.bg-\[url\(\/icons\/select-arrow\.svg\)\] { background-image: url(icons/select-arrow.svg); }
+
+/* 비로그인 화면(guest) 사이 이동. 앱의 globals.css 와 같은 전환을 문서 사이 전환(@view-transition)으로 건다.
+   @view-transition 은 guest 화면 머리에만 둔다(src/guest.mjs 의 head) — 두 화면이 모두 켜야 전환한다. */
+::view-transition-old(.guest-page) { animation: 150ms cubic-bezier(0.23, 1, 0.32, 1) both guest-fade reverse; }
+::view-transition-new(.guest-page) {
+  animation: 300ms cubic-bezier(0.23, 1, 0.32, 1) 100ms both guest-fade, 300ms cubic-bezier(0.23, 1, 0.32, 1) 100ms both guest-rise;
+}
+::view-transition-group(guest-header) { animation: none; z-index: 100; }
+::view-transition-old(guest-header) { display: none; }
+::view-transition-new(guest-header) { animation: none; }
+::view-transition { pointer-events: none; }
+@keyframes guest-fade { from { opacity: 0; } }
+@keyframes guest-rise { from { translate: 0 10px; } }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-new(.guest-page) { animation: 200ms ease both guest-fade; }
+}
+
+/* 비로그인 폼 체크 상자(src/guest.mjs 의 CHECKBOX). 상대 경로 배경은 클래스로 만들지 않는다(위 Select 화살표 주석). */
+input.guest-checkbox:checked { background-image: url(icons/check.svg); }
+
+/* 비로그인 자주 묻는 질문(<details name="guest-faq">) 펼침. 하나를 열면 다른 하나가 동시에 닫히므로 열림·닫힘을 같은 시간·고른 곡선으로
+   맞춘다 — 시간이 다르거나 강한 감속 곡선이면 높이가 처음 수십 ms 에 몰려 목록이 툭 튀고 출렁인다(2026-10-14). 바탕색도 함께 바꾼다.
+   ::details-content 를 모르는 브라우저는 움직임 없이 바로 열고 닫는다. 앱(src/app/globals.css)에도 같은 규칙이 있다. */
+details[name="guest-faq"] {
+  interpolate-size: allow-keywords;
+  transition: background-color 280ms ease;
+}
+details[name="guest-faq"]::details-content {
+  block-size: 0;
+  overflow-y: clip;
+  transition:
+    block-size 280ms cubic-bezier(0.4, 0, 0.2, 1),
+    content-visibility 280ms allow-discrete;
+}
+details[name="guest-faq"][open]::details-content {
+  block-size: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  details[name="guest-faq"], details[name="guest-faq"]::details-content { transition: none; }
+}
+/* 비로그인 고르는 칸(도입문의, select.guest-select) 목록. 사용자 지정 select(appearance: base-select)로 그린다 —
+   모르는 브라우저는 기본 목록을 쓴다. 앱(src/app/globals.css)에도 같은 규칙이 있다. 판은 입력칸과 같은 테두리·6px 모서리에 관리자 화면 팝업 그림자(DESIGN.md)를 빌려 쓰고,
+   위에서 4px 내려오며 나타난다(150ms). 화살표는 감싼 칸이, 빈 값 회색은 select 의 Tailwind 클래스가 맡는다. */
+@supports (appearance: base-select) {
+  select.guest-select,
+  select.guest-select::picker(select) {
+    appearance: base-select;
+  }
+  /* 칸 높이(56px)로 늘린 select 안에서 고른 글자를 세로 가운데에 둔다. */
+  select.guest-select {
+    display: flex;
+    align-items: center;
+    border: 0;
+    background: transparent;
+  }
+  select.guest-select::picker-icon {
+    display: none;
+  }
+  /* 판은 감싼 56px 칸에 붙여 칸 테두리와 폭·위치를 맞춘다(select 는 테두리 안쪽만 덮는다). 칸마다 자기 판을 찾게 범위를 묶는다. */
+  :has(> select.guest-select) {
+    anchor-name: --guest-select;
+    anchor-scope: --guest-select;
+  }
+  select.guest-select::picker(select) {
+    position-anchor: --guest-select;
+    inset: auto;
+    top: anchor(bottom);
+    left: anchor(left);
+    width: anchor-size(width);
+    position-try-fallbacks: flip-block;
+    margin-block: 4px;
+    padding: 6px;
+    border: 1px solid #ebebeb;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(40, 47, 55, 0.08);
+    opacity: 0;
+    translate: 0 -4px;
+    transition:
+      opacity 150ms cubic-bezier(0.23, 1, 0.32, 1),
+      translate 150ms cubic-bezier(0.23, 1, 0.32, 1),
+      display 150ms allow-discrete,
+      overlay 150ms allow-discrete;
+  }
+  select.guest-select:open::picker(select) {
+    opacity: 1;
+    translate: 0 0;
+  }
+  @starting-style {
+    select.guest-select:open::picker(select) {
+      opacity: 0;
+      translate: 0 -4px;
+    }
+  }
+  select.guest-select option:not([hidden]) {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 0 12px;
+    border-radius: 4px;
+    font-size: 15px;
+    color: var(--color-guest-ink);
+    transition: background-color 150ms ease, color 150ms ease;
+  }
+  select.guest-select option:hover,
+  select.guest-select option:focus-visible {
+    outline: none;
+    background: var(--color-guest-card);
+    color: var(--color-guest-navy);
+  }
+  select.guest-select option:checked {
+    font-weight: 600;
+    color: var(--color-guest-navy);
+  }
+  select.guest-select option::checkmark {
+    order: 1;
+    margin-inline-start: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  select.guest-select::picker(select) {
+    transition: none;
+  }
+}
