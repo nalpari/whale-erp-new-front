@@ -1,5 +1,5 @@
 // 공지사항 · FAQ(비로그인). 목업 docs/mockup/home/notices.html 의 글을 비로그인 디자인(메인의 「새로운 소식」·「자주 묻는 질문」 판)으로 그렸다.
-// 탭은 erp.js 의 탭 동작(data-on · data-off)을 쓴다. #faq 로 FAQ 탭을 연다.
+// 탭은 erp.js 의 탭 동작(data-on · data-off)을 쓴다. #faq 로 FAQ 탭을 연다. 새 패널은 서서히 나타난다(guest-fade 는 assets/base.css).
 import * as g from "../../guest.mjs";
 import { link } from "../../site.mjs";
 
@@ -43,11 +43,11 @@ export default ({ A, R }) => {
   const faq = `<div class="flex flex-col gap-[8px] pt-[24px]">${faqs(R)
     .map(
       ([q, a], i) =>
-        `<details name="guest-faq"${i === 0 ? " open" : ""} class="group rounded-[3px] bg-[#fafafa] px-[20px] py-[22px] open:bg-[#f5f5f5]"><summary class="flex cursor-pointer list-none items-center gap-[11px] text-[17px] leading-[1.5] font-semibold text-guest-ink hover:text-guest-navy ${g.HOVER} [&::-webkit-details-marker]:hidden"><span class="flex size-[28px] shrink-0 items-center justify-center rounded-full bg-guest-navy text-[18px] font-bold tracking-normal text-white">Q</span><span class="flex-1">${q}</span>${g.gimg(A, "faq-plus.svg", 28, 28, "group-open:hidden")}${g.gimg(A, "faq-close.svg", 28, 28, "hidden group-open:block")}</summary><p class="pt-[18px] pl-[40px] text-[16px] leading-[1.6] text-guest-sub">${a}</p></details>`,
+        `<details name="guest-faq"${i === 0 ? " open" : ""} class="group rounded-[3px] bg-[#fafafa] pb-[4px] open:bg-[#f5f5f5]"><summary class="flex cursor-pointer px-[20px] pt-[22px] pb-[18px] list-none items-center gap-[11px] text-[17px] leading-[1.5] font-semibold text-guest-ink hover:text-guest-navy ${g.HOVER} [&::-webkit-details-marker]:hidden"><span class="flex size-[28px] shrink-0 items-center justify-center rounded-full bg-guest-navy text-[18px] font-bold tracking-normal text-white">Q</span><span class="flex-1">${q}</span>${g.gimg(A, "faq-plus.svg", 28, 28, "group-open:hidden")}${g.gimg(A, "faq-close.svg", 28, 28, "hidden group-open:block")}</summary><p class="pr-[20px] pb-[18px] pl-[60px] text-[16px] leading-[1.6] text-guest-sub">${a}</p></details>`,
     )
     .join("")}</div>`;
 
-  const main = `<section class="mx-auto flex w-[1200px] flex-col gap-[40px] pt-[80px] text-guest-ink"><div class="flex items-end justify-between gap-[24px]"><div class="flex flex-col gap-[8px]"><h1 class="text-[28px] leading-[1.2] font-bold">공지사항 · FAQ</h1><p class="text-[16px] leading-[1.5]">로그인하지 않아도 볼 수 있는 글만 모았습니다.</p></div>${g.button(A, "도입문의", { tone: "outline", href: link(R, "home/inquiry.html"), arrow: true })}</div><div><div role="tablist" class="flex border-b border-[#ebebeb]">${tab("notices", "공지사항", true)}${tab("faq", "FAQ", false)}</div><div role="tabpanel" id="notices" aria-labelledby="tab-notices">${notices}</div><div role="tabpanel" id="faq" aria-labelledby="tab-faq" hidden>${faq}</div></div></section>`;
+  const main = `<section class="mx-auto flex w-[1200px] flex-col gap-[40px] pt-[80px] text-guest-ink"><div class="flex items-end justify-between gap-[24px]"><div class="flex flex-col gap-[8px]"><h1 class="text-[28px] leading-[1.2] font-bold">공지사항 · FAQ</h1><p class="text-[16px] leading-[1.5]">로그인하지 않아도 볼 수 있는 글만 모았습니다.</p></div>${g.button(A, "도입문의", { tone: "outline", href: link(R, "home/inquiry.html"), arrow: true })}</div><div><div role="tablist" class="flex border-b border-[#ebebeb]">${tab("notices", "공지사항", true)}${tab("faq", "FAQ", false)}</div><div role="tabpanel" id="notices" aria-labelledby="tab-notices" class="animate-[guest-fade_220ms_ease] motion-reduce:animate-none">${notices}</div><div role="tabpanel" id="faq" aria-labelledby="tab-faq" hidden class="animate-[guest-fade_220ms_ease] motion-reduce:animate-none">${faq}</div></div></section>`;
 
   return { title: "공지사항 · FAQ", head: g.head(A), html: g.page(A, R, { current: "home/notices.html", main }) };
 };

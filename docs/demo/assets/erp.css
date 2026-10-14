@@ -1420,6 +1420,9 @@
   .transform {
     transform: var(--tw-rotate-x,) var(--tw-rotate-y,) var(--tw-rotate-z,) var(--tw-skew-x,) var(--tw-skew-y,);
   }
+  .animate-\[guest-fade_220ms_ease\] {
+    animation: guest-fade 220ms ease;
+  }
   .cursor-default {
     cursor: default;
   }
@@ -2332,6 +2335,9 @@
   .pt-\[18px\] {
     padding-top: 18px;
   }
+  .pt-\[22px\] {
+    padding-top: 22px;
+  }
   .pt-\[24px\] {
     padding-top: 24px;
   }
@@ -2458,14 +2464,14 @@
   .pl-\[26px\] {
     padding-left: 26px;
   }
-  .pl-\[40px\] {
-    padding-left: 40px;
-  }
   .pl-\[44px\] {
     padding-left: 44px;
   }
   .pl-\[48px\] {
     padding-left: 48px;
+  }
+  .pl-\[60px\] {
+    padding-left: 60px;
   }
   .pl-\[72px\] {
     padding-left: 72px;
@@ -3193,9 +3199,6 @@
   .checked\:bg-guest-navy:checked {
     background-color: var(--color-guest-navy);
   }
-  .invalid\:text-\[\#999\]:invalid {
-    color: #999;
-  }
   .empty\:hidden:empty {
     display: none;
   }
@@ -3311,6 +3314,9 @@
   .has-\[\:focus-visible\]\:border-erp-brand:has(:is(:focus-visible)) {
     border-color: var(--color-erp-brand);
   }
+  .has-\[option\[value\=\'\'\]\:checked\]\:text-\[\#999\]:has(:is(option[value='']:checked)) {
+    color: #999;
+  }
   .aria-checked\:border-erp-brand[aria-checked="true"] {
     border-color: var(--color-erp-brand);
   }
@@ -3371,6 +3377,9 @@
     }
     .motion-reduce\:transform-none {
       transform: none;
+    }
+    .motion-reduce\:animate-none {
+      animation: none;
     }
     .motion-reduce\:opacity-0 {
       opacity: 0%;

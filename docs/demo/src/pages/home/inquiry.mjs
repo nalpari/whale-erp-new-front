@@ -9,7 +9,7 @@ const input = (attrs) => `<span class="${g.INPUT_BOX}"><input ${attrs} class="${
 // 고르는 칸. 입력칸과 같은 껍데기에 오른쪽 화살표를 둔다.
 const CHEVRON = `<svg aria-hidden="true" class="pointer-events-none size-[16px] shrink-0 text-[#767676]" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m4 6 4 4 4-4"/></svg>`;
 const select = (name, options) =>
-  `<span class="${g.INPUT_BOX}"><select name="${name}" required class="${g.INPUT} appearance-none invalid:text-[#999]"><option value="" hidden selected>선택해 주세요</option>${options.map((o) => `<option class="text-guest-ink">${o}</option>`).join("")}</select>${CHEVRON}</span>`;
+  `<span class="${g.INPUT_BOX}"><select name="${name}" required class="${g.INPUT} appearance-none has-[option[value='']:checked]:text-[#999]"><option value="" hidden selected>선택해 주세요</option>${options.map((o) => `<option class="text-guest-ink">${o}</option>`).join("")}</select>${CHEVRON}</span>`;
 const TEXTAREA = `min-h-[180px] w-full resize-y rounded-[6px] border border-[#ebebeb] bg-white p-[16px] text-[15px] leading-[1.6] text-guest-ink outline-none! placeholder:text-[#999] focus:border-guest-navy ${g.HOVER}`;
 const section = (title, note, body) =>
   `<section class="flex flex-col gap-[24px] border-t border-[#ebebeb] pt-[32px]"><h2 class="text-[20px] leading-[1.4] font-semibold text-[#111]">${title}${note ? `<span class="ml-[10px] text-[15px] font-normal text-[#767676]">${note}</span>` : ""}</h2>${body}</section>`;
