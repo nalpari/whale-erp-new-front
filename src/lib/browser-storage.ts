@@ -38,6 +38,8 @@ const KEY = {
   scope: "whale-erp:scope",
 } as const;
 const TAB_KEYS = [KEY.currentBp, KEY.stores, KEY.codes, KEY.scope];
+/** 다른 탭이 로그인·로그아웃했는지 storage 이벤트로 알아챌 때 보는 키. */
+export const LOGIN_INFO_KEY = KEY.loginInfo;
 
 // 저장소를 못 쓰는 브라우저(사생활 보호 등)면 읽기는 null, 쓰기는 버린다 — SessionGate 가 login-info 를 다시 받아 화면은 그린다.
 function read<T>(storage: () => Storage, key: string): T | null {
