@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { ErpRoot } from "@/components/common";
+import { NotificationBellSlot } from "@/components/notifications/notification-bell-slot";
 import { AdminHeader } from "./admin-header";
 import { SessionGate } from "./session-gate";
 
@@ -12,7 +13,7 @@ export function AdminFrame({ area, children }: { area: "erp" | "platform"; child
       <div className="h-[100dvh] overflow-x-auto overflow-y-hidden bg-erp-thead-bg">
         <div className="relative flex h-full min-w-[1720px] flex-col overflow-x-clip">
           <SessionGate area={area}>
-            <AdminHeader area={area} />
+            <AdminHeader area={area} alarm={<NotificationBellSlot />} />
             {children}
           </SessionGate>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
-import { AlarmLink, GlobalHeader, ServiceLinks, StoreSelect, UserPop, type HeaderMenu, type UserPopItem } from "@/components/common";
+import type { ReactNode } from "react";
+import { GlobalHeader, ServiceLinks, StoreSelect, UserPop, type HeaderMenu, type UserPopItem } from "@/components/common";
 import { logout } from "@/app/actions";
 import { roleLabel } from "@/lib/auth-routes";
 import type { Scope } from "@/lib/browser-storage";
@@ -10,7 +11,8 @@ import { useAccount, useCurrentBp, useMenus, useScope, useStores } from "./sessi
 // ERP·플랫폼 헤더. 메뉴·점포·이름은 로그인 정보(SessionGate)에서 그린다.
 // 메뉴는 2단계까지만 그린다(3단계는 헤더에 보이지 않는다, 2026-10-13). 영역(ERP·플랫폼)에 맞는 메뉴만 보인다.
 // 플랫폼 화면의 BP 선택기는 BP 목록 API 가 없어 아직 두지 않는다.
-export function AdminHeader({ area }: { area: "erp" | "platform" }) {
+// alarm 은 알림 종(NotificationBellSlot, 서버 컴포넌트)이다. 클라이언트인 이 헤더가 직접 그릴 수 없어 AdminFrame 이 만들어 넘긴다.
+export function AdminHeader({ area, alarm }: { area: "erp" | "platform"; alarm: ReactNode }) {
   const account = useAccount();
   const ofArea = (m: AdminMenu) => m.serviceCode === SERVICE[area];
   const menus: HeaderMenu[] = useMenus()
@@ -36,7 +38,7 @@ export function AdminHeader({ area }: { area: "erp" | "platform" }) {
         <>
           {area === "erp" ? <ScopeSelect /> : <div className="flex-1" />}
           <ServiceLinks hrefs={{ erp: "/home", platform: "/platform" }} />
-          <AlarmLink href="#" />
+          {alarm}
           <UserPop name={`${account.name ?? account.loginId} (${roleLabel(account.roleTypeCode)})`} items={userItems} />
         </>
       }
