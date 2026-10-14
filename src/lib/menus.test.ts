@@ -69,3 +69,16 @@ test("menusOf: 그 서비스의 메뉴만 하위까지 남긴다", () => {
   assert.deepEqual(menusOf(platformAccount, "PLATFORM").map((m) => m.children[0].url), ["/platform/system/codes"]);
   assert.equal(menusOf(platformAccount, "WHALE_ERP").length, 2);
 });
+
+test("menusOf: 부모가 같은 서비스여도 다른 서비스의 하위 메뉴는 뺀다", () => {
+  const mixed = [menu(null, false, [menu("/home/x", true), menu("/platform/y", true, [], "PLATFORM")])];
+  assert.deepEqual(
+    menusOf(mixed, "WHALE_ERP")[0].children.map((m) => m.url),
+    ["/home/x"],
+  );
+  assert.equal(isAllowed(mixed, "/platform/y", "WHALE_ERP"), false);
+});
+
+test("serviceOfPath: 관리자 웹이 열지 않는 서비스(POS 등)는 모른다고 본다", () => {
+  assert.equal(serviceOfPath([menu("/pos", true, [], "POS")], "/pos"), null);
+});

@@ -14,6 +14,8 @@ export interface StoredBp {
 }
 /** 서비스 — 공통코드 SERVICE. 탭마다 하나이고 헤더 메뉴·홈·메뉴 권한 확인이 이것을 본다. */
 export type ServiceCode = "WHALE_ERP" | "PLATFORM";
+/** 공통코드 SERVICE 에는 POS·KIOSK 도 있다. 관리자 웹이 여는 두 서비스만 받는다. */
+const isServiceCode = (v: unknown): v is ServiceCode => v === "WHALE_ERP" || v === "PLATFORM";
 export type Scope = { type: "ALL" } | { type: "DIRECT" } | { type: "FRANCHISE" } | { type: "STORE"; storeId: number };
 
 export interface StoredLoginInfo {
@@ -88,7 +90,7 @@ export const clearSelectedBp = () => remove(local, [KEY.selectedBp]);
 /** 이 탭의 서비스와 BP. 앞 로그인의 것이거나 서비스가 없으면 탭 값(BP·점포·공통코드·범위)을 모두 지우고 null. */
 export function readCurrentBp(loginKey: string): TabContext | null {
   const v = read<StoredCurrentBp>(tab, KEY.currentBp);
-  if (v && v.loginKey === loginKey && v.serviceCode) return { serviceCode: v.serviceCode, bp: pickBp(v) };
+  if (v && v.loginKey === loginKey && isServiceCode(v.serviceCode) && typeof v.bpCodeId === "number") return { serviceCode: v.serviceCode, bp: pickBp(v) };
   if (v) remove(tab, TAB_KEYS);
   return null;
 }
@@ -115,9 +117,9 @@ function pickBp({ bpCodeId, bpCode, tradeName }: StoredBp): StoredBp {
 /**
  * 이 탭이 어느 서비스·BP 로 일할지. 고객 BP 계정은 늘 ERP · 자기 BP 다.
  * 플랫폼 계정은 ?bp= → 이 탭의 값(새로고침·탭 복제) → 주소가 속한 메뉴의 서비스 순서다.
- * - ?bp= 는 BP 선택기가 새 탭을 열 때 붙인다. 자기 BP 도 마지막으로 고른 BP 도 아니면 이름을 알 수 없어 무시한다(옛 북마크 등).
+ * - ?bp= 는 BP 선택기가 새 탭을 열 때 붙인다(BP 선택기는 BP 목록 API 가 생긴 뒤에 둔다). 자기 BP 도 마지막으로 고른 BP 도 아니면 이름을 알 수 없어 무시한다(옛 북마크 등).
  * - 탭 값이 없는 새 탭(주소 직접 입력·즐겨찾기)은 ERP 메뉴 주소면 마지막으로 고른 BP 의 ERP, 그 밖은 자기 BP 의 플랫폼이다.
- *   고른 BP 가 없는데 ERP 주소면 플랫폼으로 열려 메뉴 권한 확인이 막고 플랫폼 홈으로 보낸다.
+ *   고른 BP 가 없는데 ERP 주소면 플랫폼으로 열려 메뉴 권한 확인이 막고 이전 화면(없으면 플랫폼 홈)으로 보낸다.
  */
 export function resolveTab(o: {
   ownBp: StoredBp;

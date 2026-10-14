@@ -32,7 +32,9 @@ export function serviceOfPath(menus: AdminMenu[], pathname: string): ServiceCode
   for (const service of Object.keys(HOME) as ServiceCode[]) if (pathname === HOME[service]) return service;
   if (isUnder(pathname, PENDING_PLATFORM_MENU.url)) return "PLATFORM";
   const menu = findMenu(menus, (m) => m.permission.read && !!m.url && isUnder(pathname, m.url));
-  return (menu?.serviceCode as ServiceCode | undefined) ?? null;
+  // 공통코드 SERVICE 에는 POS·KIOSK 도 있다. 관리자 웹이 여는 서비스(HOME 에 있는 것)만 받는다.
+  const s = menu?.serviceCode;
+  return s && s in HOME ? (s as ServiceCode) : null;
 }
 
 /**
