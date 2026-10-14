@@ -37,7 +37,10 @@ export async function changeForcedPassword(input: {
     });
     return { status: 204 };
   } catch (e) {
-    if (e instanceof ApiError) return { status: e.status, message: e.message };
+    // 로그인 액션과 같은 규칙 — 4xx 는 api 문구, 스로틀러 429 와 5xx 는 영어 기본 문구라 한글로 바꾼다.
+    if (e instanceof ApiError && e.status === 429 && e.message.startsWith("ThrottlerException"))
+      return { status: 429, message: "요청이 많습니다. 잠시 뒤 다시 시도해 주세요" };
+    if (e instanceof ApiError && e.status < 500) return { status: e.status, message: e.message };
     console.error(e);
     return { status: 0, message: "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요" };
   }

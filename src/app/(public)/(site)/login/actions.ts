@@ -33,6 +33,11 @@ export async function login(_prev: LoginFormState, formData: FormData): Promise<
     return { error: "로그인 서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요", loginId };
   }
 
+  // 200 인데 계정이 없으면 세션을 만들 수 없다. 오류 화면 대신 폼에 연결 문구를 보인다.
+  if (!res?.accessToken || !res.account?.roleTypeCode) {
+    console.error("로그인 응답에 토큰·계정이 없습니다", res);
+    return { error: "로그인 서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요", loginId };
+  }
   const jar = await cookies();
   jar.set(
     sessionCookie({

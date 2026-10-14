@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { createContext, use, useEffect, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/components/common";
 import { logout } from "@/app/actions";
-import { bff, BffError, PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
+import { bff, BffError, PASSWORD_REQUIRED_EVENT, signOut } from "@/lib/bff";
 import { findMenu, HOME, isAllowed, menusOf, serviceOfPath } from "@/lib/menus";
 import { ForcePasswordDialog } from "./force-password-dialog";
 import {
@@ -34,7 +34,7 @@ import { LOGIN_KEY_COOKIE, type AdminMenu, type AdminStore, type Codes, type Log
 interface LoginState {
   loginKey: string;
   account: LoginInfoAccount;
-  /** 이 탭의 서비스. 플랫폼 계정은 자기 BP 탭이 PLATFORM, BP 선택기로 연 탭이 WHALE_ERP 다. 그 밖의 계정은 늘 WHALE_ERP. */
+  /** 이 탭의 서비스. 플랫폼 계정은 자기 BP 탭이 PLATFORM, 고른 BP 의 탭(BP 선택기로 연 탭, 또는 탭 값 없이 ERP 주소로 연 탭)이 WHALE_ERP 다. BP 선택기는 아직 없다. 그 밖의 계정은 늘 WHALE_ERP. */
   serviceCode: ServiceCode;
   /** 계정의 메뉴 전체(두 서비스). 화면에는 menusOf 로 이 탭의 서비스만 보인다. */
   menus: AdminMenu[];
@@ -80,6 +80,9 @@ const ALL: Scope = { type: "ALL" };
  * 로그인 후 화면의 문. 이 탭의 BP 와 그 BP 의 점포·공통코드가 준비될 때까지 로딩 화면을 보이고, 준비되면 children 을 그린다. 주소는 ?bp= 만 지운다.
  * 메뉴·점포·공통코드는 로그인할 때의 값을 쓰고 다시 로그인해야 바뀐다(okf/auth.md, 2026-10-13). 데이터 권한은 api 가 요청마다 다시 본다.
  */
+// 다시 시도하면 같은 길로 다시 로그아웃한다.
+const LOGOUT_FAILED = { status: "error", message: "로그아웃하지 못했습니다" } as const;
+
 export function SessionGate({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [state, setState] = useState<{ status: "loading" } | { status: "error"; message: string } | { status: "ready"; value: LoginState }>({
@@ -96,13 +99,13 @@ export function SessionGate({ children }: { children: ReactNode }) {
         if (e instanceof BffError && e.status === 401) {
           // 세션이 이미 끊겼으면(proxy·BFF 가 쿠키를 지움) 로그인 화면으로 바로 간다. login-key 가 없는 옛 세션만 로그아웃으로 끝낸다.
           if (readLoginKey()) router.replace("/login");
-          else await logout().catch(() => router.replace("/login"));
+          else if (!(await signOut(logout))) setState(LOGOUT_FAILED);
           return;
         }
         if (e instanceof LoginInfoDeniedError) {
           // 로그인 정보를 볼 수 없는 계정이다. 다시 시도해도 같으므로 안내하고 로그아웃한다.
           alert(e.message);
-          await logout().catch(() => router.replace("/login"));
+          if (!(await signOut(logout))) setState(LOGOUT_FAILED);
           return;
         }
         if (e instanceof OtherBpError) {
