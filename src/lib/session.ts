@@ -20,7 +20,7 @@ export interface Session {
   roleTypeCode: string;
 }
 
-// shortcut: api 응답 타입을 손으로 적었다(openapi-typescript 미도입, 1팀 동의 대기). api openapi.json 이 바뀌면 같이 고친다.
+// shortcut: 생성 타입(api-types.generated.ts)에 /auth/admin/* · code-items 가 아직 없어 api 응답 타입을 손으로 적었다. api openapi.json 에 들어오면 생성 타입으로 바꾼다.
 /** account.bp — 소속 BP. 로그인 뒤 브라우저에 두는 BP 데이터는 bpCodeId 로 구분한다. */
 export interface AccountBp {
   bpCodeId: number;

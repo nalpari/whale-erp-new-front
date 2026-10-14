@@ -3,7 +3,7 @@ import { ApiError, getSession, request, SESSION_COOKIE } from "@/lib/api";
 
 // 브라우저가 부르는 api 창구(BFF). 쿠키의 접근 토큰을 붙여 whale-erp-api 를 대신 부른다 — 토큰은 브라우저 스크립트에 나가지 않는다.
 // 토큰 갱신과 세션 없음(401)은 proxy 가 먼저 처리한다.
-// shortcut: 조회(GET)만 연다. 저장 화면이 생기면 그때 메서드를 더한다.
+// shortcut: 조회(GET)만 연다. 저장은 서버 액션이 한다 — 브라우저에서 BFF 로 저장할 일이 생기면 메서드를 더한다.
 export async function GET(req: NextRequest, ctx: RouteContext<"/api/[...path]">) {
   const { path } = await ctx.params;
   // fetch 가 . · .. 를 접어 API_BASE_URL 의 경로 밖으로 나가지 않게 막는다.

@@ -139,7 +139,7 @@ export function AlarmLink({ href }: { href: string }) {
 }
 
 // Figma Top2. 흰 윗줄(로고 + 오른쪽 컨트롤), 짙은 1depth 메뉴 줄, 그 아래 펼쳐지는 2depth 줄.
-// right 에는 StoreSelect, ServiceLinks, AlarmLink, UserPop 을 차례로 넣는다.
+// right 에는 StoreSelect, ServiceLinks, AlarmLink(또는 알림 종 슬롯), UserPop 을 차례로 넣는다. 선택기가 없으면 빈 flex-1 로 자리를 채운다.
 // StoreSelect 가 남는 폭을 차지해 나머지를 오른쪽으로 민다.
 export function GlobalHeader({ menus, right }: { menus: HeaderMenu[]; right?: ReactNode }) {
   const { ref, ...state } = useHeaderMenu();
