@@ -103,7 +103,7 @@ API 응답 타입은 손으로 적는다(로그인·갱신 두 개). `openapi-ty
 
 2026-10-14: 2절의 `(erp)`·`(platform)` 레이아웃을 없앴다. 로그인 후 화면은 폴더로 묶지 않고 루트 layout 의 `AdminLayout`(`src/components/site/admin-layout.tsx`)이 주소가 공개 경로(`isPublicPath`)가 아니면 공통 틀을 씌운다 — proxy 의 로그인 요구와 같은 기준이다. 틀이 같고, 서비스마다 다른 것(메뉴·홈·오른쪽 선택기)은 탭의 서비스로 가른다. 3팀 화면도 틀 안이라 화면 안의 헤더·틀을 빼야 한다.
 
-api 가 `GET /auth/admin/login-info`·`/public-bp-codes/{bpCode}/code-items`·`/bp-codes/{bpCodeId}/stores`·`/bp-codes/{bpCodeId}/code-items` 를 더해, 위의 `menus.ts`(메뉴 상수)·`login-session.ts`(견본 점포 목록)를 지우고 로그인 정보로 그린다.
+api 가 `GET /auth/admin/login-info`·`/public-code-items?groups=`(비로그인용. BP 는 api 가 플랫폼 BP 로 고정 — 2026-10-14 재영)·`/bp-codes/{bpCodeId}/stores`·`/bp-codes/{bpCodeId}/code-items` 를 더해, 위의 `menus.ts`(메뉴 상수)·`login-session.ts`(견본 점포 목록)를 지우고 로그인 정보로 그린다.
 
 정책: 메뉴·버튼·점포 선택지·공통코드는 로그인 때의 값을 쓰고 다시 로그인해야 바뀐다. 데이터 권한은 api 가 요청마다 본다. 403·404·메뉴에 없는 주소는 안내 후 브라우저 이전 화면(`history.back()`, 기록이 없으면 홈).
 
