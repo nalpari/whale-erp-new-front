@@ -38,8 +38,8 @@ export function communitySections({ A, R }) {
   // 도입문의 목록은 api GET /leads 의 칸(문의자 · 전화번호 · 업종 · 관심 서비스 · 상태 · 접수 일시). 상호 · 운영 형태는 접수 때 받지 않는다(WHALEERP-288).
   const leadDetail = link(R, "support/lead-detail.html");
   const leads = [
-    ["조민석 · 02-514-7741", "카페·음료", "매장운영", "답변 대기", "09-06"],
-    ["윤서린 · 010-3320-8814", "음식점", "매장운영 · 프랜차이즈", "답변 대기", "09-03"],
+    ["조민석 · 02-514-7741", "카페·음료", "매장운영 · 프랜차이즈", "답변 대기", "09-06"],
+    ["윤서린 · 010-3320-8814", "음식점", "매장운영", "답변 대기", "09-03"],
     ["한도윤 · 010-9902-1177", "기타 (꽃집)", "재무관리", "답변 완료", "08-27"],
   ].map(([who, ind, int, s, d]) => [ui.link(who, s === "답변 완료" ? link(R, "support/lead-detail-done.html") : leadDetail), ind, int, answer(s), d]);
 

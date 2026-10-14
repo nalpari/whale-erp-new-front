@@ -21,7 +21,7 @@
           <span class="badge badge--warn">답변 대기</span>
           <div class="titlebar__end">
             <!-- 처리중은 운영자가 상세에서 직접 바꾼다. 접수 상태에서만 되고 시각 · 운영자가 남는다.
-                 처리중 전환 · 답변 완료 때마다 플랫폼 운영자에게 「도입문의 처리 상태 변경」 운영 알림이 간다(NTF_LEAD_ANSWERED, WHALEERP-274). -->
+                 처리중으로 바꿀 때와 처음 답변 완료가 될 때 한 번씩 플랫폼 운영자에게 「도입문의 처리 상태 변경」 운영 알림이 간다(NTF_LEAD_ANSWERED, WHALEERP-274). 답변 수정은 알리지 않는다. -->
             <button class="btn btn--secondary btn--sm" type="button">처리 시작</button>
             <span class="filters__count mono">S-GRDOPW · /platform/community/leads/[id]</span>
           </div>
@@ -73,14 +73,14 @@
                   <div class="spread" style="margin-top: var(--s-4)">
                     <p class="note" style="margin: 0">
                       <span data-icon="info" data-icon-size="14"></span>
-                      <span>저장하면 상태가 <b>답변 완료</b>로 바뀌고 오늘이 상담 완료일로 남습니다. 처음 저장할 때만 문의자 이메일로 답변이 갑니다.</span>
+                      <span>저장하면 상태가 <b>답변 완료</b>로 바뀌고 오늘이 상담 완료일로 남습니다. 처음 저장할 때만 문의자 이메일로 답변이 갑니다(#588 뒤 — 지금은 보내지 않음).</span>
                     </p>
                     <button class="btn btn--primary" type="button">답변 저장</button>
                   </div>
                 </div>
                 <div class="panel__note">
                   도입문의 답변은 <b>하나</b>다. 답변 완료 뒤 「답변 수정」으로 고치면 지금 답변을 덮어쓰고 이전 답변은 남지 않는다(문의사항과 다르다).
-                  고쳐도 상태는 답변 완료 그대로이고 메일은 다시 가지 않는다(WHALEERP-588). 답변자 · 답변 시각이 남는다.
+                  고쳐도 상태는 답변 완료 그대로이고 운영 알림 · 메일은 다시 가지 않는다. 문의자 답변 메일은 #588 뒤에 붙는다 — 지금 api 는 보내지 않고 상세에 발송 칸도 없다. 답변자 · 답변 시각이 남는다.
                   다른 운영자가 먼저 저장했으면 덮어쓰지 않고 최신 내용을 다시 확인하게 한다.
                 </div>
               </div>
@@ -159,6 +159,7 @@
                 </div>
                 <div class="panel__note">
                   상담 완료일은 답변 완료가 되는 날 자동으로 기록되고, 그날부터 1년이 지나면 배치가 파기한다(WHALEERP-274 · 295).
+                  상담하지 않은 도입문의는 자동으로 지우지 않고 관리자가 직접 처리한다(운영 정책 CNT-11, 처리 방식은 기획에서 정리 중).
                 </div>
               </div>
 
@@ -185,7 +186,7 @@
                     <span class="step__ic" data-icon="eye" data-icon-size="15"></span>
                     <div class="step__body">
                       <span class="step__title">확인</span>
-                      <span class="step__meta">[처리 시작]을 누르면 처리중이 되고 시각 · 운영자가 남는다</span>
+                      <span class="step__meta">[처리 시작]을 누르면 처리중이 되고 시각 · 운영자가 남는다. 처리 시작 없이 바로 답하면(processingStartedAt 이 null) 이 줄을 숨긴다</span>
                     </div>
                   </div>
                   <div class="step is-wait">

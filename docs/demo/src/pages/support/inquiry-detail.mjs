@@ -36,15 +36,24 @@ const doneAnswer =
 const thumb = (name, size) => `<a href="#" title="${name} · ${size}" class="grid size-[64px] place-items-center rounded-[2px] border border-erp-panel-line bg-erp-thead-bg text-[12px] text-erp-label">PNG</a>`;
 const pdf = (name, size) => ui.detailValues([ui.link(name, "#"), `<span class="text-erp-label">${size}</span>`, ui.link("내려받기", "#")]);
 
+// 접수 상태 데모는 목록(community-sections)의 「KIOSK 구독을 늘리고 싶습니다」 건을 그린다. 처리중 · 답변 완료는 주휴수당 건.
+const KIOSK = {
+  title: "KIOSK 구독을 늘리고 싶습니다", hint: "요금·구독 · 2026-09-02 16:48 접수", at: "09-02 16:48",
+  body: "지금 KIOSK 1대를 쓰고 있는데 2호점 오픈에 맞춰 1대를 더 늘리고 싶습니다. 구독을 어디서 바꾸는지, 요금은 언제부터 붙는지 알려 주세요.",
+  sender: [["이름", "배정숙"], ["역할", "BP 마스터"], ["BP", "온기식당"]],
+};
+
 export const render = ({ A, R }, state = "wait") => {
   const done = state === "done";
   const received = state === "received";
   const left =
     // 보낸 사람 · 소속은 오른쪽 「보낸 곳」 한 표에만 둔다. 접수 시각은 제목 옆에.
-    box("파트타이머 주휴수당이 계산되지 않습니다", hint("직원·근로 · 2026-09-04 10:32 접수"),
-      prose("파트타이머 배정숙 직원의 9월 급여명세서를 만들었는데 주휴수당이 0원으로 나옵니다. 주 15시간 넘게 일했고 출퇴근 기록도 다 있는데 왜 안 잡히는지 모르겠습니다. 확인 부탁드립니다.") +
-        ui.detailTable("첨부파일", [["이미지", thumb("주휴수당_0원_화면.png", "412 KB")], ["PDF", pdf("9월_급여명세서_배정숙.pdf", "1.2 MB")]]),
-    ) +
+    (received
+      ? box(KIOSK.title, hint(KIOSK.hint), prose(KIOSK.body))
+      : box("파트타이머 주휴수당이 계산되지 않습니다", hint("직원·근로 · 2026-09-04 10:32 접수"),
+          prose("파트타이머 배정숙 직원의 9월 급여명세서를 만들었는데 주휴수당이 0원으로 나옵니다. 주 15시간 넘게 일했고 출퇴근 기록도 다 있는데 왜 안 잡히는지 모르겠습니다. 확인 부탁드립니다.") +
+            ui.detailTable("첨부파일", [["이미지", thumb("주휴수당_0원_화면.png", "412 KB")], ["PDF", pdf("9월_급여명세서_배정숙.pdf", "1.2 MB")]]),
+        )) +
     box("답변", hint("문의한 사람에게 보입니다"), done ? doneAnswer :
       ui.field("내용", ui.textarea({ placeholder: "문의한 분이 그대로 읽습니다. 어떤 화면에서 무엇을 하면 되는지 적어 주세요." })) +
         spread(note("저장하면 상태가 즉시 답변 완료로 바뀌고 문의자에게 알림함과 메일로 알립니다. 처리 시작을 거치지 않고 바로 답해도 됩니다. 그 뒤에도 답변은 고칠 수 있습니다. 다른 운영자가 먼저 저장했으면 막고 최신 내용을 다시 보입니다."), ui.button("답변 저장")),
@@ -52,7 +61,7 @@ export const render = ({ A, R }, state = "wait") => {
     box("운영자 메모", hint("문의자에게 보이지 않습니다"),
       ui.field(
         "내부 기록",
-        ui.textarea({ rows: 4, value: "계약서에 소정근로시간이 주 14시간으로 들어가 있음. 실제 근무는 16시간대.\n계약을 새로 써야 주휴가 잡힘 — 개발팀 확인 완료. 답변에는 계약 수정 절차만 안내할 것." }),
+        ui.textarea({ rows: 4, value: received ? "" : "계약서에 소정근로시간이 주 14시간으로 들어가 있음. 실제 근무는 16시간대.\n계약을 새로 써야 주휴가 잡힘 — 개발팀 확인 완료. 답변에는 계약 수정 절차만 안내할 것." }),
       ) + spread(note("다른 운영자와 함께 봅니다"), ui.button("메모 저장", { variant: "soft" })),
     );
 
@@ -60,9 +69,7 @@ export const render = ({ A, R }, state = "wait") => {
     plain(
       // 이름 · 역할 · BP · 점포는 api 상세의 senderName · senderRoleTypeCode · bpName · storeName.
       ui.detailTable("보낸 곳", [
-        ["이름", "정하윤"],
-        ["역할", "BP 마스터"],
-        ["BP", "㈜한강상회"],
+        ...(received ? KIOSK.sender : [["이름", "정하윤"], ["역할", "BP 마스터"], ["BP", "㈜한강상회"]]),
         ["점포", p.sub("BP 단위 문의")],
         ["운영 점포", ui.detailValues(["11개점", "직영 4 · 가맹 7"])],
         ["요금 PLAN", "FRANCHISE"],
@@ -71,7 +78,8 @@ export const render = ({ A, R }, state = "wait") => {
     ) +
     tbox("처리 이력", "",
       steps([
-        ["접수", "09-04 10:32 · 운영 알림 발송됨", true],
+        ["접수", `${received ? KIOSK.at : "09-04 10:32"} · 운영 알림 발송됨`, true],
+        // 「확인」 줄은 처리중을 거친 건만 완료로 그린다. 처리 시작 없이 바로 답했으면 api 가 processingStartedAt 을 null 로 주므로 이 줄을 숨긴다.
         received ? ["확인", "[처리 시작]을 누르면 처리중 · 시각 · 운영자가 남음", false] : ["확인", "09-04 11:15 · 이서준 · 처리중으로 바꿈", true],
         done ? ["답변", "09-04 15:02 · 이서준 · 09-05 14:20 김하린 수정", true] : ["답변", "저장하면 답변 완료 · 그 뒤에도 고칠 수 있음", false],
       ]),
