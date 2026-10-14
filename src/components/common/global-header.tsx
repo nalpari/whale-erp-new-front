@@ -6,7 +6,8 @@ import { useState, type ReactNode, type SyntheticEvent } from "react";
 import { useDismiss } from "./popup";
 import { EASE_OUT } from "./theme";
 
-export type HeaderMenu = { label: string; items: { label: string; href: string }[] };
+// href 를 주면 2depth 줄을 열지 않고 바로 그 주소로 간다(하위 메뉴가 없는 1depth).
+export type HeaderMenu = { label: string; href?: string; items: { label: string; href: string }[] };
 
 // 1depth 를 누르면 2depth 줄이 열리고, 같은 메뉴를 다시 누르거나 헤더 바깥을 누르거나 Esc 로 닫힌다.
 // ref 는 헤더 전체에 단다.
@@ -138,7 +139,7 @@ export function AlarmLink({ href }: { href: string }) {
 }
 
 // Figma Top2. 흰 윗줄(로고 + 오른쪽 컨트롤), 짙은 1depth 메뉴 줄, 그 아래 펼쳐지는 2depth 줄.
-// right 에는 StoreSelect, ServiceLinks, AlarmLink, UserPop 을 차례로 넣는다.
+// right 에는 StoreSelect, ServiceLinks, AlarmLink(또는 알림 종 슬롯), UserPop 을 차례로 넣는다. 선택기가 없으면 빈 flex-1 로 자리를 채운다.
 // StoreSelect 가 남는 폭을 차지해 나머지를 오른쪽으로 민다.
 export function GlobalHeader({ menus, right }: { menus: HeaderMenu[]; right?: ReactNode }) {
   const { ref, ...state } = useHeaderMenu();
@@ -150,19 +151,20 @@ export function GlobalHeader({ menus, right }: { menus: HeaderMenu[]; right?: Re
         {right && <div className="flex flex-1 items-center gap-[12px]">{right}</div>}
       </div>
       <nav className="flex h-[52px] items-center gap-[54px] bg-erp-nav px-[24px]">
-        {menus.map((m, i) => (
-          <button
-            key={m.label}
-            type="button"
-            aria-expanded={state.isOpen(i)}
-            onClick={() => state.toggle(i)}
-            className={`flex h-[52px] shrink-0 items-center text-[16px] font-semibold whitespace-nowrap transition-colors duration-150 ease-out hover:text-erp-brand-soft ${
-              i === 0 ? "pr-[20px]" : "px-[20px]"
-            } ${state.isOpen(i) ? "text-erp-brand-soft" : "text-white"}`}
-          >
-            {m.label}
-          </button>
-        ))}
+        {menus.map((m, i) => {
+          const cls = `flex h-[52px] shrink-0 items-center text-[16px] font-semibold whitespace-nowrap transition-colors duration-150 ease-out hover:text-erp-brand-soft ${
+            i === 0 ? "pr-[20px]" : "px-[20px]"
+          } ${state.isOpen(i) ? "text-erp-brand-soft" : "text-white"}`;
+          return m.href ? (
+            <Link key={m.label} href={m.href} onClick={() => state.setOpen(false)} className={cls}>
+              {m.label}
+            </Link>
+          ) : (
+            <button key={m.label} type="button" aria-expanded={state.isOpen(i)} onClick={() => state.toggle(i)} className={cls}>
+              {m.label}
+            </button>
+          );
+        })}
       </nav>
       <SubMenu menus={menus} state={state} />
     </header>

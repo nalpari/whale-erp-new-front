@@ -31,10 +31,11 @@ export const row = (...c) => `<div class="flex w-full items-start gap-[6px]">${c
 export const cardTitle = (t, lead = "") =>
   `<div class="flex flex-col gap-[6px]"><h1 class="text-[18px] font-semibold">${t}</h1>${lead ? `<p class="text-[14px] text-erp-label">${lead}</p>` : ""}</div>`;
 
-// 가운데 카드 하나짜리 화면(로그인·찾기·가입·약관)
-// header 를 주면(로그인 화면, 2026-10-07 피드백) 로그인전 홈화면의 GNB(siteNav)를 위에 얹는다 — 로고가 거기 이미 있어 가운데 칸의 brand 는 뺀다.
-export function authPage(A, R, { card, width = "w-[420px]", foot = "", home = link(R, "auth/login.html"), header = "" }) {
-  return `<div class="${ui.ERP_THEME}">${header}<div class="${header ? "h-[calc(100dvh-70px)]" : "h-[100dvh]"} overflow-y-auto bg-erp-thead-bg"><div class="flex min-h-full flex-col items-center justify-center gap-[24px] p-[24px]">${header ? "" : brand(A, home)}<main class="flex ${width} flex-col gap-[18px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">${card}</main>${foot}</div></div></div>`;
+// 가운데 카드 하나짜리 화면(로그인·찾기·가입·가입 완료·강제 비밀번호 변경). 2026-10-12 부터 카드형 틀 없이 사이트형(상단 메뉴 + 본문 + 푸터)이다 —
+// 흰 카드는 본문 안에 남는다. header·home 인자는 예전 호출과 맞추려고 받기만 한다.
+export function authPage(A, R, { card, width = "w-[420px]", foot = "" }) {
+  const main = `<div class="flex flex-col items-center gap-[24px] bg-erp-thead-bg p-[24px] py-[72px]"><main class="flex ${width} flex-col gap-[18px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">${card}</main>${foot}</div>`;
+  return `<div class="${ui.ERP_THEME}"><div class="h-[100dvh] overflow-y-auto bg-white">${siteNav(A, R)}${main}${siteFoot(A, R)}</div></div>`;
 }
 
 // 로그인 화면 맨 아래 약관 링크 줄. 누르면 전문을 확인창으로 연다. 확인창 폭은 회원가입 전문 보기와 같은 640px(2026-10-06 피드백).
@@ -95,6 +96,7 @@ export function siteNav(A, R, current = "") {
     quiet("공지사항", link(R, "home/notices.html"), current === "notices");
   return `<header class="sticky top-0 z-10 flex h-[70px] items-center gap-[54px] border-b border-erp-bar-line bg-white px-[24px]">${brand(A, home)}<nav aria-label="서비스 안내" class="flex flex-1 gap-[34px]">${nav}</nav><div class="flex items-center gap-[24px]">${right}</div></header>`;
 }
+// 이용약관·개인정보처리방침은 로그인 화면과 같은 팝업(2026-10-12).
 // 1팀 Figma 푸터(2026-10-07 피드백) — 인터플러그 로고 + 약관·사업자정보 + 소셜 아이콘 셋. 로고·아이콘 자산이 없어 인라인 SVG 로 그렸다.
 const INTERPLUG_MARK = `<svg viewBox="0 0 32 32" class="size-[32px] shrink-0" aria-hidden="true"><circle cx="16" cy="16" r="16" fill="#1a1a1a"/><text x="16" y="21" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">im</text></svg>`;
 const socialIcon = (label, path) =>
@@ -106,10 +108,13 @@ const SOCIAL =
 export function siteFoot(A, R) {
   const sep = '<span class="h-[11px] w-px bg-[#d9d9d9]"></span>';
   const row = (...items) => `<p class="flex flex-wrap items-center gap-[10px] text-[13px] text-erp-label">${items.join(sep)}</p>`;
-  return `<footer class="border-t border-erp-bar-line bg-white"><div class="mx-auto flex w-[1200px] items-start justify-between gap-[24px] px-[24px] py-[32px]"><div class="flex items-start gap-[18px]"><div class="flex flex-col items-center gap-[4px]">${INTERPLUG_MARK}<span class="text-[11px] whitespace-nowrap text-erp-label">INTERPLUG Co., Ltd.</span></div><div class="flex flex-col gap-[6px]">${row(quietLink("이용약관", link(R, "auth/terms.html#use")), quietLink("개인정보처리방침", "#"))}${row(
+  const use = x.dialogId();
+  const policy = x.dialogId();
+  const termsBtn = (id, label) => `<button type="button" data-dialog="${id}" class="text-erp-label transition-colors duration-150 ease-out hover:text-erp-ink">${label}</button>`;
+  return `<footer class="border-t border-erp-bar-line bg-white"><div class="mx-auto flex w-[1200px] items-start justify-between gap-[24px] px-[24px] py-[32px]"><div class="flex items-start gap-[18px]"><div class="flex flex-col items-center gap-[4px]">${INTERPLUG_MARK}<span class="text-[11px] whitespace-nowrap text-erp-label">INTERPLUG Co., Ltd.</span></div><div class="flex flex-col gap-[6px]">${row(termsBtn(use, "이용약관"), termsBtn(policy, "개인정보처리방침"))}${row(
     "상호: 인터플러그",
     "주소: 03787 서울특별시 서대문구 연세로 5다길 22-3, 발리빌딩 3층",
-  )}${row("이메일: help@interplug.co.kr", "전화번호: 6923-0028", "사업자등록번호 : 1233467890")}${row("통신판매업신고번호: 2021-00000000000")}<p class="mt-[6px] text-[12px] text-erp-muted">Copyrights© 2026 INTERPLUG. All Rights Reserved.</p></div></div><div class="flex items-center gap-[10px]">${SOCIAL}</div></div></footer>`;
+  )}${row("이메일: help@interplug.co.kr", "전화번호: 6923-0028", "사업자등록번호 : 1233467890")}${row("통신판매업신고번호: 2021-00000000000")}<p class="mt-[6px] text-[12px] text-erp-muted">Copyrights© 2026 INTERPLUG. All Rights Reserved.</p></div></div><div class="flex items-center gap-[10px]">${SOCIAL}</div></div></footer>${termsDialog(use, "use", "w-[640px]")}${termsDialog(policy, "policy", "w-[640px]")}`;
 }
 export const sitePage = (A, R, { current, main, foot }) =>
   `<div class="${ui.ERP_THEME}"><div class="h-[100dvh] overflow-y-auto bg-white">${siteNav(A, R, current)}<main>${main}</main>${foot}</div></div>`;
