@@ -15,7 +15,7 @@ const attrs = (a = {}) =>
 // theme.ts
 export const EASE_OUT = "ease-[cubic-bezier(0.23,1,0.32,1)]";
 export const FIELD_BOX =
-  "w-full rounded-[2px] border border-erp-field-line bg-white text-[14px] text-erp-ink outline-none! caret-erp-ink! transition-[border-color] duration-150 ease-out placeholder:text-erp-label focus:border-erp-brand";
+  "w-full rounded-[2px] border border-erp-field-line bg-white text-[14px] text-erp-ink outline-none! caret-erp-ink! transition-[border-color] duration-150 ease-out placeholder:text-erp-label focus:border-erp-brand disabled:bg-erp-thead-bg disabled:text-erp-label [&[readonly]]:bg-erp-thead-bg [&[readonly]]:text-erp-label [&[readonly]]:focus:border-erp-field-line";
 export const FIELD = `${FIELD_BOX} h-[34px] pl-[10px]`;
 export const ERP_THEME =
   "bg-white font-erp leading-[normal] tracking-[-0.025em] text-erp-ink scheme-light selection:bg-erp-brand selection:text-white [&_*:focus-visible]:outline-erp-brand! [&_:is(a[href],button:enabled,select:enabled,label:has(input:enabled),input[type=checkbox]:enabled)]:cursor-pointer [&_*]:[scrollbar-color:#cfd4da_transparent]! [&_*]:[scrollbar-width:thin]!";

@@ -1,6 +1,8 @@
 # Bundle history
 
 ## 2026-10-14
+* **Add**: BP 회원가입·가입 완료 화면(`src/app/auth/`)을 pikachu 브랜치에서 옮겨 왔다 — 기본정보·사업자정보 인증(선택)·약관동의·제출, 공개 화면 틀(GNB·푸터, `site-page.tsx`), 로그인 화면이 없어 LOGIN·로그인 링크 등은 개발 예정 안내창, 로고·"웨일ERP 시작하기"는 `/auth/signup` 으로. 디자인 데모(`docs/demo/src/pages/auth/signup*.mjs`)도 함께 옮겼다. [Whale ERP Frontend](/whale-erp-front.md).
+* **Update**: 바꿀 수 없는 입력칸 모양(disabled 에 더해 readOnly 도 #f8f9fb 바탕·회색 글자)을 [Whale ERP Frontend](/whale-erp-front.md) 공통 컴포넌트 설명과 DESIGN.md 「바꿀 수 없는 칸」 규칙에 적었다.
 * **Update**: `2026-09-30-네이밍-규칙.md` 2026-10-14 고침을 [네이밍 규칙](/conventions/naming.md) 에 옮겼다 — 메일 템플릿 표의 「운영 알림 짝」을 걷고 운영 알림 · 메일 분리(운영 정책 NTF-03), 알림 템플릿 줄에 기본 문구 칸(`default_*`)을 적었다(재영).
 * **Update**: [운영 알림](/notify.md) — 2026-10-13 결정으로 현행화. 운영 알림은 알림함에만 넣고 메일은 업무 쪽이 따로 보낸다(NTF-03 v114, NOTIFY-3 에 「바뀜」), 가맹 점포 계약 알림의 본사 제공 동의 조건(NOTIFY-13), 받을 때 기준(결정 A), 메일 탭 24건, 버튼 링크 칸은 메일 · 알림톡만, 저장 확인창 하나에 코드 경고, NTF-24 감수, 결정 표에 NOTIFY-17~20. 목업 · 데모 · 계획 · 논리 ERD · 플로우도 맞췄다.
 * **Update**: [직원 운영 관리](/staff.md) — 근로계약 상태 7종, 임시저장 필수 칸(고용 형태 포함, CTR-02) · 이어 쓰기에서 삭제(CTR-19) · 같은 점포 대체 확인 · 다른 점포 근무 시간 겹침 차단(CTR-26), 급여 칸은 현업 엑셀 견본(front #15), 일괄 등록 줄의 근무 유형을 뺐다. 목업 · 데모(임시저장 행은 이어 쓰기로 바로)도 맞췄다.

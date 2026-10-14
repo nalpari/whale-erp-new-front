@@ -271,11 +271,17 @@
   .right-\[32px\] {
     right: 32px;
   }
+  .right-\[40px\] {
+    right: 40px;
+  }
   .bottom-4 {
     bottom: calc(var(--spacing) * 4);
   }
   .bottom-\[32px\] {
     bottom: 32px;
+  }
+  .bottom-\[48px\] {
+    bottom: 48px;
   }
   .left-0 {
     left: 0px;
@@ -285,6 +291,9 @@
   }
   .left-\[2px\] {
     left: 2px;
+  }
+  .left-\[40px\] {
+    left: 40px;
   }
   .z-10 {
     z-index: 10;
@@ -345,6 +354,9 @@
   }
   .mt-\[6px\] {
     margin-top: 6px;
+  }
+  .mt-\[8px\] {
+    margin-top: 8px;
   }
   .mt-\[12px\] {
     margin-top: 12px;
@@ -577,6 +589,9 @@
   .h-\[calc\(100dvh-70px\)\] {
     height: calc(100dvh - 70px);
   }
+  .h-auto {
+    height: auto;
+  }
   .h-full {
     height: 100%;
   }
@@ -627,6 +642,9 @@
   }
   .min-h-full {
     min-height: 100%;
+  }
+  .w-1\/2 {
+    width: calc(1 / 2 * 100%);
   }
   .w-\[6px\] {
     width: 6px;
@@ -1322,6 +1340,9 @@
   .bg-\[\#d9dbe0\] {
     background-color: #d9dbe0;
   }
+  .bg-\[\#eceef0\] {
+    background-color: #eceef0;
+  }
   .bg-erp-bar {
     background-color: var(--color-erp-bar);
   }
@@ -1387,6 +1408,9 @@
   }
   .bg-white {
     background-color: var(--color-white);
+  }
+  .bg-\[linear-gradient\(to_bottom\,transparent_66\%\,\#eceef0_72\%\)\] {
+    background-image: linear-gradient(to bottom,transparent 66%,#eceef0 72%);
   }
   .bg-\[url\(\/icons\/select-arrow\.svg\)\] {
     background-image: url(/icons/select-arrow.svg);
@@ -1516,9 +1540,6 @@
   }
   .py-\[16px\] {
     padding-block: 16px;
-  }
-  .py-\[18px\] {
-    padding-block: 18px;
   }
   .py-\[20px\] {
     padding-block: 20px;
@@ -2106,6 +2127,12 @@
   .disabled\:pointer-events-none:disabled {
     pointer-events: none;
   }
+  .disabled\:bg-erp-thead-bg:disabled {
+    background-color: var(--color-erp-thead-bg);
+  }
+  .disabled\:text-erp-label:disabled {
+    color: var(--color-erp-label);
+  }
   .disabled\:text-erp-thead-text:disabled {
     color: var(--color-erp-thead-text);
   }
@@ -2329,6 +2356,15 @@
     .hover\:\[\&\>span\:first-child\]\:opacity-70:hover > span:first-child {
       opacity: 70%;
     }
+  }
+  .\[\&\[readonly\]\]\:bg-erp-thead-bg[readonly] {
+    background-color: var(--color-erp-thead-bg);
+  }
+  .\[\&\[readonly\]\]\:text-erp-label[readonly] {
+    color: var(--color-erp-label);
+  }
+  .\[\&\[readonly\]\]\:focus\:border-erp-field-line[readonly]:focus {
+    border-color: var(--color-erp-field-line);
   }
 }
 @font-face {
