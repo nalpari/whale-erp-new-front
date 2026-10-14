@@ -4,18 +4,22 @@ import * as p from "../../public.mjs";
 import { link } from "../../site.mjs";
 
 export default ({ A, R }) => {
+  // 업종 기타를 고르면 직접 입력 칸이 열린다(LEAD-1, api industryDetail 1~50자). 데모는 열린 모양을 함께 보인다.
   const who = ui.formGroup(
     "문의자 정보",
-    p.row(ui.field("이름", ui.textField({ placeholder: "홍길동" })), ui.field("업종", ui.select(["카페·음료", "음식점", "베이커리·디저트", "주점", "기타"], { "aria-label": "업종" }))),
-    p.row(ui.field("전화번호", ui.textField({ placeholder: "02-000-0000" })), ui.field("이메일", ui.textField({ type: "email", placeholder: "name@company.com" }) + p.help("접수 확인 메일을 이 주소로 보냅니다."))),
+    p.row(ui.field("이름", ui.textField({ placeholder: "홍길동" })), ui.field("업종", ui.select(["카페·음료", "음식점", "베이커리·디저트", "주점", "기타"], { "aria-label": "업종" }) + p.help("기타를 고르면 직접 적는 칸이 아래에 열립니다."))),
+    ui.field("업종 직접 입력", ui.textField({ placeholder: "예: 꽃집 (업종이 기타일 때만)" })),
+    p.row(
+      ui.field("전화번호", ui.textField({ placeholder: "02-000-0000" }) + p.help("점포 번호를 적어도 됩니다. 중복 접수는 이 번호와 이메일로 가립니다.")),
+      ui.field("이메일", ui.textField({ type: "email", placeholder: "name@company.com" }) + p.help("접수 확인 메일을 이 주소로 보냅니다.")),
+    ),
   );
+  // 관심 서비스는 하나 이상 여러 개(api interests 배열), 도입 예정 시기는 선택(api planPeriodCode 없어도 됨).
+  const interests = `<div class="flex min-w-px flex-1 flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">관심 서비스</span><div class="flex h-[34px] items-center gap-[18px]">${["매장운영", "재무관리", "프랜차이즈", "기타"].map((t, i) => ui.checkbox(A, t, i === 0)).join("")}</div>${p.help("하나 이상 고릅니다. 여러 개 골라도 됩니다.")}</div>`;
   const what = ui.formGroup(
     "도입 문의 내용",
-    p.row(
-      ui.field("관심 서비스", ui.select(["매장운영", "재무관리", "프랜차이즈", "기타"], { "aria-label": "관심 서비스" })),
-      ui.field("도입 예정 시기", ui.select(["1개월 안", "3개월 안", "6개월 안", "아직 정하지 않음"], { "aria-label": "도입 예정 시기" })),
-    ),
-    ui.field("어떤 점이 궁금하신가요", ui.textarea({ rows: 6, placeholder: "지금 쓰고 계신 방식과 불편한 점을 적어 주시면 그에 맞춰 안내해 드립니다." })),
+    p.row(interests, ui.field("도입 예정 시기 (선택)", ui.select(["고르지 않음", "1개월 안", "3개월 안", "6개월 안", "아직 정하지 않음"], { "aria-label": "도입 예정 시기" }))),
+    ui.field("어떤 점이 궁금하신가요", ui.textarea({ rows: 6, placeholder: "지금 쓰고 계신 방식과 불편한 점을 적어 주시면 그에 맞춰 안내해 드립니다. (2,000자까지)" })),
   );
   const consent = ui.formGroup(
     "개인정보 수집·이용 동의",

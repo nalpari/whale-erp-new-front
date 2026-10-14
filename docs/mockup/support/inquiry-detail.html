@@ -17,13 +17,16 @@
         <div class="titlebar">
           <a class="iconbtn" href="community.html#asks" aria-label="문의사항 목록으로" data-icon="arrowleft" data-icon-size="18"></a>
           <h1 class="t-h1">파트타이머 주휴수당이 계산되지 않습니다</h1>
-          <span class="badge badge--warn" data-st="wait">답변 대기</span>
+          <span class="badge badge--warn" data-st="new wait">답변 대기</span>
           <span class="badge badge--ok" data-st="done" hidden>답변 완료</span>
           <div class="titlebar__end">
             <div class="seg" title="목업 전용 — 상태 바꿔 보기">
-              <button type="button" aria-pressed="true" data-st-go="wait">답변 대기</button>
+              <button type="button" aria-pressed="false" data-st-go="new">접수</button>
+              <button type="button" aria-pressed="true" data-st-go="wait">처리중</button>
               <button type="button" aria-pressed="false" data-st-go="done">답변 완료</button>
             </div>
+            <!-- 처리중은 운영자가 상세에서 직접 바꾼다. 접수 상태에서만 되고, 바꾼 시각 · 운영자가 처리 이력 「확인」 줄에 남는다(WHALEERP-274). -->
+            <button class="btn btn--secondary btn--sm" type="button" data-st="new" hidden>처리 시작</button>
             <span class="filters__count mono">S-GRDOPW · /platform/community/inquiries/[id]</span>
           </div>
         </div>
@@ -35,6 +38,7 @@
                 <div class="panel__head">
                   <h2 class="t-h2">문의 내용</h2>
                   <span class="badge badge--quiet">직원·근로</span>
+                  <span class="mono subtle" style="font-size: 12px">2026-09-04 10:32 접수</span>
                 </div>
                 <div class="panel__body">
                   <p style="color: var(--body); line-height: 1.7">
@@ -42,14 +46,7 @@
                     주 15시간 넘게 일했고 출퇴근 기록도 다 있는데 왜 안 잡히는지 모르겠습니다.
                     확인 부탁드립니다.
                   </p>
-                  <dl class="kv" style="margin-top: var(--s-5)">
-                    <dt>보낸 사람</dt>
-                    <dd>정하윤 · BP Master</dd>
-                    <dt>소속</dt>
-                    <dd>㈜한강상회</dd>
-                    <dt>접수 시각</dt>
-                    <dd class="mono">2026-09-04 10:32</dd>
-                  </dl>
+                  <!-- 보낸 사람 · 소속은 오른쪽 「보낸 곳」에만 둔다. 접수 시각은 제목 옆. -->
                 </div>
                 <div class="panel__foot" style="flex-wrap: wrap; gap: var(--s-3)">
                   <a href="#" title="주휴수당_0원_화면.png · 412 KB — 누르면 크게 본다" style="display: grid; place-items: center; width: 64px; height: 64px; border: 1px solid var(--hairline); border-radius: var(--r-sm); background: var(--surface-strong); color: var(--muted); font-size: 11px">PNG</a>
@@ -103,7 +100,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="panel__body" data-st="wait">
+                <div class="panel__body" data-st="new wait">
                   <div class="field">
                     <label for="ans">내용</label>
                     <textarea class="textarea" id="ans" rows="8" placeholder="문의한 분이 그대로 읽습니다. 어떤 화면에서 무엇을 하면 되는지 적어 주세요."></textarea>
@@ -111,7 +108,7 @@
                   <div class="spread" style="margin-top: var(--s-4)">
                     <p class="note" style="margin: 0">
                       <span data-icon="info" data-icon-size="14"></span>
-                      <span>저장하면 상태가 <b>즉시 답변 완료</b>로 바뀌고 문의자에게 알림이 갑니다.</span>
+                      <span>저장하면 상태가 <b>즉시 답변 완료</b>로 바뀌고 문의자에게 알림함과 메일로 알립니다. 처리 시작을 거치지 않고 바로 답해도 됩니다.</span>
                     </p>
                     <button class="btn btn--primary" type="button">답변 저장</button>
                   </div>
@@ -156,16 +153,14 @@
                     </div>
                   </div>
                   <dl class="kv" style="margin-top: var(--s-4)">
-                    <dt>운영 점포</dt>
-                    <dd>11개점 <span class="subtle">직영 4 · 가맹 7</span></dd>
-                    <dt>요금 PLAN</dt>
-                    <dd>FRANCHISE</dd>
-                    <dt>이전 문의</dt>
-                    <dd>1건 <span class="subtle">답변 완료</span></dd>
+                    <dt>BP</dt>
+                    <dd>㈜한강상회</dd>
+                    <dt>점포</dt>
+                    <dd class="subtle">BP 단위 문의</dd>
                   </dl>
                 </div>
                 <div class="panel__note">
-                  같은 사람이 전에 무엇을 물었는지 보이면 같은 답을 반복하지 않는다.
+                  운영 점포 · 요금 PLAN · 이전 문의는 1차에 두지 않는다(2026-10-14 재영). 요금 PLAN 은 1팀 영역이다.
                 </div>
               </div>
 
@@ -181,14 +176,21 @@
                       <span class="step__meta">09-04 10:32 · 운영 알림 발송됨</span>
                     </div>
                   </div>
-                  <div class="step is-done">
+                  <div class="step is-wait" data-st="new" hidden>
                     <span class="step__ic" data-icon="eye" data-icon-size="15"></span>
                     <div class="step__body">
                       <span class="step__title">확인</span>
-                      <span class="step__meta">09-04 11:15 · 이서준</span>
+                      <span class="step__meta">[처리 시작]을 누르면 처리중이 되고 시각 · 운영자가 남는다</span>
                     </div>
                   </div>
-                  <div class="step is-wait" data-st="wait">
+                  <div class="step is-done" data-st="wait done">
+                    <span class="step__ic" data-icon="eye" data-icon-size="15"></span>
+                    <div class="step__body">
+                      <span class="step__title">확인</span>
+                      <span class="step__meta">09-04 11:15 · 이서준 · 처리중으로 바꿈 (처리 시작 없이 바로 답했으면 processingStartedAt 이 null 이라 이 줄을 숨긴다)</span>
+                    </div>
+                  </div>
+                  <div class="step is-wait" data-st="new wait">
                     <span class="step__ic" data-icon="message" data-icon-size="15"></span>
                     <div class="step__body">
                       <span class="step__title">답변</span>
@@ -215,13 +217,13 @@
     </div>
     <script src="../assets/app.js"></script>
     <script>
-      /* 목업 동작 — 위 상태 줄로 답변 대기·답변 완료를 바꿔 보고, 답변 완료에서 「답변 수정」을 누르면 입력칸, 저장·취소면 읽기 상태로 돌아간다. */
+      /* 목업 동작 — 위 상태 줄로 접수·처리중·답변 완료를 바꿔 보고(접수 · 처리중이 목록의 답변 대기), 답변 완료에서 「답변 수정」을 누르면 입력칸, 저장·취소면 읽기 상태로 돌아간다. */
       document.addEventListener("click", function onInquiryState(e) {
         var st = e.target.closest("[data-st-go]");
         if (st) {
           document.querySelectorAll("[data-st-go]").forEach(function (b) { b.setAttribute("aria-pressed", String(b === st)); });
           document.querySelectorAll("[data-st]").forEach(function (el) {
-            el.hidden = el.dataset.st !== st.dataset.stGo || el.dataset.ans === "edit";
+            el.hidden = el.dataset.st.split(" ").indexOf(st.dataset.stGo) < 0 || el.dataset.ans === "edit";
           });
         }
         var a = e.target.closest("[data-ans-go]");
