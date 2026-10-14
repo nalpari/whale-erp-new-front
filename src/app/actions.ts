@@ -11,7 +11,7 @@ export async function logout(): Promise<void> {
     await request("/auth/admin/logout", {
       method: "POST",
       headers: { Authorization: `Bearer ${session.accessToken}` },
-    }).catch(() => undefined);
+    }).catch((e: unknown) => console.warn("로그아웃 api 실패 — api 세션은 갱신 토큰 만료(최대 1시간)까지 남는다", e));
   const jar = await cookies();
   jar.delete(SESSION_COOKIE);
   jar.delete(LOGIN_KEY_COOKIE);

@@ -45,8 +45,8 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
       } else if (r.status === 409) {
         onDone(); // 이미 바꾼 계정이다. 팝업만 닫는다.
       } else if (r.status === 401) {
-        // 발급 비밀번호가 만료됐다. 문구가 비밀번호 찾기를 안내한다.
-        alert(r.message);
+        // 발급 비밀번호가 만료됐으면 api 문구가 비밀번호 찾기를 안내한다. 팝업을 오래 열어 둬 접근 토큰이 끝난 401 이면 세션 만료로 안내한다.
+        alert(r.message?.startsWith("발급받은 비밀번호") ? r.message : "세션이 만료되었습니다. 다시 로그인해 주세요");
         await logout().catch(() => router.replace("/login"));
       } else {
         const message = r.message ?? "비밀번호를 변경하지 못했습니다";
@@ -60,9 +60,10 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
     <dialog
       ref={ref}
       aria-labelledby="force-password-title"
-      onCancel={(e) => e.preventDefault()}
+      // React 는 cancel·close 를 트리 위로 올린다. 안쪽 약관 팝업의 Esc 까지 막지 않게 이 팝업의 것만 다룬다.
+      onCancel={(e) => e.target === e.currentTarget && e.preventDefault()}
       // Chrome 은 사용자 입력 뒤 cancel 막기를 한 번만 허용해 두 번째 Esc 는 그냥 닫는다. 닫히면 바로 다시 연다.
-      onClose={() => ref.current?.showModal()}
+      onClose={(e) => e.target === e.currentTarget && ref.current?.showModal()}
       className="m-auto w-[464px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
     >
       <form onSubmit={submit} className="flex flex-col gap-[18px]">
@@ -121,7 +122,7 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
           </fieldset>
         )}
         <div className="flex items-center justify-between text-[14px]">
-          <button type="button" onClick={() => logout()} className="text-erp-label transition-colors duration-150 ease-out hover:text-erp-ink">
+          <button type="button" onClick={() => logout().catch(() => router.replace("/login"))} className="text-erp-label transition-colors duration-150 ease-out hover:text-erp-ink">
             로그아웃
           </button>
           <Button type="submit" disabled={pending || !agreed}>
@@ -154,6 +155,7 @@ function TermsRow({ kind, label, checked, onChange }: { kind: "use" | "policy"; 
 
 // 임시 비밀번호 남은 시간. 다 되면 세션이 끝나므로 로그아웃해 로그인 화면으로 보낸다(S-QCNVFC).
 function Remaining({ expiresAt }: { expiresAt: string }) {
+  const router = useRouter();
   const end = Date.parse(expiresAt);
   const [now, setNow] = useState(() => Date.now());
   const left = Math.max(0, end - now);
@@ -163,8 +165,8 @@ function Remaining({ expiresAt }: { expiresAt: string }) {
     return () => clearInterval(id);
   }, []);
   useEffect(() => {
-    if (left === 0) void logout();
-  }, [left]);
+    if (left === 0) logout().catch(() => router.replace("/login"));
+  }, [left, router]);
 
   if (Number.isNaN(end)) return null; // 잘못된 시각이면 남은 시간을 보이지 않는다(만료는 api 가 끊는다).
   const m = Math.floor(left / 60_000);
