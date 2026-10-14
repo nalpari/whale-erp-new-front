@@ -1,5 +1,6 @@
 // 문의사항 상세·답변. 목업 docs/mockup/support/inquiry-detail.html 을 플랫폼 관리자로 본 것.
-// 답변 대기는 이 화면, 답변 완료(답변 수정)는 inquiry-detail-done 이 state 를 바꿔 그린다.
+// 처리중은 이 화면, 접수(처리 시작 전)는 inquiry-detail-received, 답변 완료(답변 수정)는 inquiry-detail-done 이 state 를 바꿔 그린다.
+// 처리중은 운영자가 상세에서 [처리 시작]으로 직접 바꾼다 — 접수 상태에서만 되고 바꾼 시각 · 운영자가 남는다(POST /inquiries/{id}/processing, WHALEERP-274).
 import * as ui from "../../ui.mjs";
 import * as p from "../../staff-parts.mjs";
 import { platformHeader, link } from "../../site.mjs";
@@ -37,19 +38,16 @@ const pdf = (name, size) => ui.detailValues([ui.link(name, "#"), `<span class="t
 
 export const render = ({ A, R }, state = "wait") => {
   const done = state === "done";
+  const received = state === "received";
   const left =
-    box("파트타이머 주휴수당이 계산되지 않습니다", hint("직원·근로"),
+    // 보낸 사람 · 소속은 오른쪽 「보낸 곳」 한 표에만 둔다. 접수 시각은 제목 옆에.
+    box("파트타이머 주휴수당이 계산되지 않습니다", hint("직원·근로 · 2026-09-04 10:32 접수"),
       prose("파트타이머 배정숙 직원의 9월 급여명세서를 만들었는데 주휴수당이 0원으로 나옵니다. 주 15시간 넘게 일했고 출퇴근 기록도 다 있는데 왜 안 잡히는지 모르겠습니다. 확인 부탁드립니다.") +
-        ui.detailTable("문의 정보", [
-          ["보낸 사람", "정하윤 · BP 마스터"],
-          ["소속", "㈜한강상회"],
-          ["접수 시각", "2026-09-04 10:32"],
-        ]) +
         ui.detailTable("첨부파일", [["이미지", thumb("주휴수당_0원_화면.png", "412 KB")], ["PDF", pdf("9월_급여명세서_배정숙.pdf", "1.2 MB")]]),
     ) +
     box("답변", hint("문의한 사람에게 보입니다"), done ? doneAnswer :
       ui.field("내용", ui.textarea({ placeholder: "문의한 분이 그대로 읽습니다. 어떤 화면에서 무엇을 하면 되는지 적어 주세요." })) +
-        spread(note("저장하면 상태가 즉시 답변 완료로 바뀌고 문의자에게 알림이 갑니다. 그 뒤에도 답변은 고칠 수 있습니다."), ui.button("답변 저장")),
+        spread(note("저장하면 상태가 즉시 답변 완료로 바뀌고 문의자에게 알림함과 메일로 알립니다. 처리 시작을 거치지 않고 바로 답해도 됩니다. 그 뒤에도 답변은 고칠 수 있습니다. 다른 운영자가 먼저 저장했으면 막고 최신 내용을 다시 보입니다."), ui.button("답변 저장")),
     ) +
     box("운영자 메모", hint("문의자에게 보이지 않습니다"),
       ui.field(
@@ -60,18 +58,21 @@ export const render = ({ A, R }, state = "wait") => {
 
   const right =
     plain(
+      // 이름 · 역할 · BP · 점포는 api 상세의 senderName · senderRoleTypeCode · bpName · storeName.
       ui.detailTable("보낸 곳", [
         ["이름", "정하윤"],
-        ["역할", "BP 마스터 · ㈜한강상회"],
+        ["역할", "BP 마스터"],
+        ["BP", "㈜한강상회"],
+        ["점포", p.sub("BP 단위 문의")],
         ["운영 점포", ui.detailValues(["11개점", "직영 4 · 가맹 7"])],
         ["요금 PLAN", "FRANCHISE"],
         ["이전 문의", ui.detailValues(["1건", "답변 완료"])],
-      ]),
+      ]) + note("운영 점포 · 요금 PLAN · 이전 문의는 api 상세에 없다 — 넣을지 재영 님 확인 대기."),
     ) +
     tbox("처리 이력", "",
       steps([
         ["접수", "09-04 10:32 · 운영 알림 발송됨", true],
-        ["확인", "09-04 11:15 · 이서준", true],
+        received ? ["확인", "[처리 시작]을 누르면 처리중 · 시각 · 운영자가 남음", false] : ["확인", "09-04 11:15 · 이서준 · 처리중으로 바꿈", true],
         done ? ["답변", "09-04 15:02 · 이서준 · 09-05 14:20 김하린 수정", true] : ["답변", "저장하면 답변 완료 · 그 뒤에도 고칠 수 있음", false],
       ]),
     );
@@ -82,7 +83,12 @@ export const render = ({ A, R }, state = "wait") => {
       header: platformHeader(A, R),
       title: "문의사항",
       // 직원 상세와 같은 틀: 첫 줄 「문의사항 상세」 + 목록, 묶음은 머리 칸 상자(2026-10-02 재영)
-      body: ui.detailBody(p.detailHead("문의사항 상세", ui.button("목록", { variant: "off", href: link(R, "support/community-asks.html") })) + p.cols(left, right)),
+      body: ui.detailBody(
+        p.detailHead(
+          "문의사항 상세",
+          `<div class="flex items-center gap-[6px]">${received ? ui.button("처리 시작", { variant: "soft" }) : ""}${ui.button("목록", { variant: "off", href: link(R, "support/community-asks.html") })}</div>`,
+        ) + p.cols(left, right),
+      ),
     }),
   };
 };

@@ -157,7 +157,7 @@
               <div class="panel">
                 <div class="panel__head">
                   <h3 class="t-h3">노출 대상과 상태</h3>
-                  <span class="badge badge--quiet">8</span>
+                  <span class="badge badge--quiet">12</span>
                 </div>
                 <ul class="pol">
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 노출 대상은 비회원·회원·BP·점포·부가서비스 다섯이고 <b>여러 개를 함께</b> 고른다. 개별 BP·점포는 집지 않고, 부가서비스만 상품별이다. <b>1차에는 부가서비스가 없어</b> 비회원·회원·BP·점포 넷만 고른다(2026-10-12 재영).</span><span class="pol__ref">S-GRDOPW · SUPPORT-2</span></li>
@@ -168,6 +168,10 @@
                 <li><span class="pol__t">문의 상태는 접수·처리 중·답변 완료 셋이다. 등록 때는 알림이 없고 <b>답변이 달릴 때만</b> 알림함으로 간다. 메일은 업무 쪽이 따로 보낸다(운영 정책 NTF-03).</span><span class="pol__ref">S-ITFILU</span></li>
                 <li><span class="pol__t">문의 등록 건수에 제한은 없다(429 접수 제한 없음). 같은 관리자가 제목·내용이 같은 문의를 5분 안에 다시 올리면 409 로 막는다.</span><span class="pol__ref">S-ITFILU · 2026-10-14 재영</span></li>
                 <li><span class="pol__t">공지·FAQ·내 문의 목록은 목록 공통 규칙대로 페이지로 나눈다.</span><span class="pol__ref">S-ITFILU · S-GRDOPW</span></li>
+                <li><span class="pol__t">공지사항에만 <b>유형</b>(점검·기능·약관·안내, 필수)·<b>게시 기간</b>(시작일·종료일)·상단 고정이 있다. 게시 기간이 있으면 사용자 쪽에는 그 기간에만 보이고, 시작일이 없으면 등록 일시부터 보이며 게시일도 등록 일시다. FAQ 는 공통코드 FAQ_CATEGORY 의 사용 중인 카테고리를 고른다.</span><span class="pol__ref">S-GRDOPW · WHALEERP-272 · 273</span></li>
+                <li><span class="pol__t">공지·FAQ 의 변경 이력은 <b>마지막 수정자·수정 시각</b>만 남긴다(이력 표 없음). 게시 상태는 임시저장·게시·비공개 어느 쪽으로든 바꾸고, 게시로 저장할 때만 노출 대상이 하나 이상 있어야 한다. 삭제는 지움 표시이고 이미 지운 글을 또 지우면 이미 지웠다고 알린다.</span><span class="pol__ref">S-GRDOPW · WHALEERP-272</span></li>
+                <li><span class="pol__t">커뮤니티관리 공지·FAQ 목록은 제목·유형(카테고리)·고정·상태·최근 수정이고 최근 수정일 내림차순, <b>게시 상태로만</b> 거른다. 도입문의 목록은 문의자·전화번호·업종·관심 서비스·상태·접수이고 답변 상태로만 거른다. 답변 대기는 접수와 처리중을 합친 것이다.</span><span class="pol__ref">S-GRDOPW · WHALEERP-332</span></li>
+                <li><span class="pol__t">처리중은 운영자가 상세에서 <b>[처리 시작]</b>으로 바꾼다(접수 상태에서만, 시각·운영자를 남긴다). 도입문의 답변은 하나라 고치면 덮어쓰고, 답변 완료가 되는 날 상담 완료일이 남아 그날부터 1년 뒤 파기한다. 문의자 이메일로는 처음 답할 때만 보낸다(#588).</span><span class="pol__ref">S-GRDOPW · WHALEERP-274 · 588</span></li>
                 </ul>
               </div>
               <div class="panel">
