@@ -115,10 +115,11 @@ export function SignupForm() {
   // 아이디·이메일은 버튼 없이 칸을 벗어날 때(blur) api 로 중복까지 확인하고, 쓸 수 있을 때만 "사용가능합니다."를
   // 띄운다. 값을 고치면 다시 확인해야 하므로 끈다(2026-10-12 피드백). 제출할 때 확인을 못 마친 칸은 한 번 더
   // 확인해 그 칸에서 막는다 — 가입 요청이 중복으로 거절되는 일이 없게 한다.
-  // 제출 중(pending)에는 이 두 칸을 disabled 로 잠근다. disabled 가 되는 순간 포커스가 있던 칸은 브라우저가
-  // 자동으로 blur 를 보낸다 — 그 blur 가 onBlur 를 다시 불러 제출이 기다리던 확인(run id)을 "오래된 응답"으로
-  // 만들어 버리면, 유효한 첫 제출이 아무 오류도 없이 조용히 멈춘 것처럼 보인다. onBlur 에 !pending 을 걸어
-  // disabled 로 인한 blur 가 새 확인을 더 만들지 않게 막는다(2026-10-14 코드리뷰, silent-failure-hunter).
+  // 제출 중(pending)에는 폼 전체가 <fieldset disabled> 로 잠긴다(아래 return 참고). 포커스가 있던 칸이
+  // disabled 가 되는 순간 브라우저가 자동으로 blur 를 보낸다 — 그 blur 가 onBlur 를 다시 불러 제출이
+  // 기다리던 확인(run id)을 "오래된 응답"으로 만들어 버리면, 유효한 첫 제출이 아무 오류도 없이 조용히
+  // 멈춘 것처럼 보인다. onBlur 에 !pending 을 걸어 disabled 로 인한 blur 가 새 확인을 더 만들지 않게
+  // 막는다(2026-10-14 코드리뷰, silent-failure-hunter).
   const [available, setAvailable] = useState<Record<AvailabilityKey, boolean>>({ loginId: false, email: false });
   // 확인 응답이 오기 전에 값을 고치거나 다시 확인하면 앞선 응답은 버린다.
   const availabilityRun = useRef<Record<AvailabilityKey, number>>({ loginId: 0, email: 0 });
@@ -217,11 +218,10 @@ export function SignupForm() {
         return;
       }
 
-      // 로그인 세션이 아직 없어 완료 화면에 보여줄 값을 쿼리로 들고 간다(signup-done/page.tsx 참고).
-      // signupToken 이 있어야 완료 화면이 상호명·아이디·이메일을 보인다 — 없으면(토큰 없는 주소를 직접
-      // 만들어 들어온 경우) 아무 값이나 보여주는 가짜 완료 화면이 될 수 있다(2026-10-14 코드리뷰).
-      const params = new URLSearchParams({ signupToken: result.signupToken, tradeName: result.tradeName, loginId: result.loginId, email: result.email });
-      router.push(`/auth/signup-done?${params}`);
+      // 로그인 세션이 아직 없어 완료 화면에 보여줄 값은 createSignup 이 이미 httpOnly 쿠키로 심어 뒀다
+      // (signup-done-cookie.ts 참고) — URL 쿼리로 넘기지 않는다. 쿼리로 넘기면 서버 로그·브라우저 기록에
+      // 남고, 아무 값이나 지어 넣은 주소도 진짜 완료 화면처럼 보일 수 있었다(2026-10-14 ip-code-review-claude).
+      router.push("/auth/signup-done");
       // pending 을 여기서 풀지 않는다 — 화면이 옮겨 가는 동안 버튼이 다시 눌릴 수 있는 틈을 없앤다
       // (이전엔 finally 가 성공 때도 풀어, 옮겨 가는 찰나에 다시 눌러 같은 요청을 한 번 더 보낼 수 있었다 — 2026-10-14 코드리뷰).
     } catch (e) {
@@ -234,6 +234,11 @@ export function SignupForm() {
 
   return (
     <form ref={formRef} onSubmit={handleSubmit} noValidate className="flex flex-col gap-[18px]">
+      {/* 제출 중(pending)에는 폼 전체를 잠근다 — 아이디·이메일만 잠그면 나머지 칸은 계속 고칠 수 있는데,
+          handleSubmit 은 이미 클로저로 캡처한 제출 시점 값을 보내고 있어서 고친 값이 조용히 버려진다
+          (가입은 되돌릴 수 없다 — 2026-10-14 ip-code-review-claude 블로커#1). fieldset 하나로 안의 모든
+          입력·버튼·체크박스를 한 번에 잠근다. className="contents" 로 레이아웃(gap-[18px])에 끼어들지 않는다. */}
+      <fieldset disabled={pending} className="contents">
       <FormGroup
         title={
           <>
@@ -252,7 +257,6 @@ export function SignupForm() {
               onBlur={() => !pending && !available.loginId && verifyAvailability("loginId", values.loginId).catch((e) => console.error("[signup] blur check failed", "loginId", e))}
               autoComplete="username"
               placeholder="영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요."
-              disabled={pending}
               aria-invalid={invalid("loginId")}
               aria-describedby={describe("loginId")}
             />
@@ -307,7 +311,6 @@ export function SignupForm() {
               value={values.email}
               onChange={(e) => handleAvailabilityChange("email", e.target.value)}
               onBlur={() => !pending && !available.email && verifyAvailability("email", values.email).catch((e) => console.error("[signup] blur check failed", "email", e))}
-              disabled={pending}
               aria-invalid={invalid("email")}
               aria-describedby={describe("email")}
             />
@@ -346,6 +349,7 @@ export function SignupForm() {
       <BizAuthSection value={biz} onChange={setBiz} />
 
       <AgreeSection value={agree} onChange={setAgree} />
+      </fieldset>
 
       {agreeError ? (
         <span role="alert" className="text-[13px] text-[#e93737]">
