@@ -76,7 +76,8 @@
     const select = (key) => {
       for (const t of tabs) {
         const on = t.dataset.findTab === key;
-        // 탭 줄 모양은 erp.js 가 data-on · data-off 로 바꾼다. 주소 #pw 로 열 때만 여기서 맞춘다.
+        // 클릭 때는 erp.js 가 data-on · data-off 로 이미 바꿔 두어 여기서 바뀌는 것이 없다. 주소 #pw 로 처음 열 때
+        // 탭 줄을 맞추려고 둔다(find 탭은 aria-controls 가 없어 erp.js 가 해시를 보지 않는다).
         t.setAttribute("aria-selected", String(on));
         t.className = t.className.replace(on ? t.dataset.off : t.dataset.on, on ? t.dataset.on : t.dataset.off);
       }

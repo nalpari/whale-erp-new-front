@@ -1,4 +1,4 @@
-// 비로그인 디자인으로 옮기지 않은 로그인 전 화면(새 비밀번호 설정·약관 전문)이 쓰는 틀. ERP 헤더가 없다.
+// 비로그인 디자인으로 옮기지 않은 로그인 전 화면(새 비밀번호 설정)이 쓰는 틀. ERP 헤더가 없다.
 // DESIGN.md 는 관리자 화면용이라 로그인 전 규칙이 따로 없다 — 같은 토큰·서체·2px/4px 모서리·1px 선으로 조용하게 만든다.
 // 여기 있는 부품은 1팀 공통 컴포넌트에 없는 것이고, 컴포넌트 제안의 대상이다.
 import { readFileSync } from "node:fs";
@@ -25,12 +25,12 @@ export const row = (...c) => `<div class="flex w-full items-start gap-[6px]">${c
 export const cardTitle = (t, lead = "") =>
   `<div class="flex flex-col gap-[6px]"><h1 class="text-[18px] font-semibold">${t}</h1>${lead ? `<p class="text-[14px] text-erp-label">${lead}</p>` : ""}</div>`;
 
-// 가운데 카드 하나짜리 화면(새 비밀번호 설정·약관 전문). 로그인·찾기·가입은 비로그인 디자인(src/guest.mjs)으로 옮겼다.
+// 가운데 카드 하나짜리 화면(새 비밀번호 설정). 로그인·찾기·가입·약관 전문은 비로그인 디자인(src/guest.mjs)으로 옮겼다.
 export function authPage(A, R, { card, width = "w-[420px]", foot = "", home = link(R, "auth/login.html") }) {
   return `<div class="${ui.ERP_THEME}"><div class="h-[100dvh] overflow-y-auto bg-erp-thead-bg"><div class="flex min-h-full flex-col items-center justify-center gap-[24px] p-[24px]">${brand(A, home)}<main class="flex ${width} flex-col gap-[18px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">${card}</main>${foot}</div></div></div>`;
 }
 
-// 약관 문구. 목업 auth.js 의 TERMS 한 곳에서 읽는다(두 곳에 적지 않는다).
+// 약관 전문 화면의 문구. 목업 auth.js 의 TERMS 에서 읽는다. 회원가입 내용보기는 앱 sign-up/terms.tsx 초안을 따로 옮겼다(signup.mjs).
 const here = dirname(fileURLToPath(import.meta.url));
 const src = readFileSync(join(here, "../../mockup/assets/auth.js"), "utf8");
 const from = src.indexOf("var TERMS = ") + "var TERMS = ".length;
@@ -52,8 +52,3 @@ export function termsBody(key) {
     .join("");
 }
 export const termsVer = (key) => `<p class="text-[12px] text-erp-label">${TERMS[key].ver}</p>`;
-// width 를 주면 확인창 기본 폭(420px) 대신 그 값을 쓴다(회원가입처럼 뒤 카드 폭에 맞출 때, 2026-10-06 피드백).
-export const termsDialog = (id, key, width) => {
-  const html = x.dialog(id, TERMS[key].title, `${termsVer(key)}<div class="mt-[12px] flex max-h-[60dvh] flex-col gap-[12px] overflow-y-auto pr-[10px]">${termsBody(key)}</div>`, ui.button("확인", { "data-close": true }));
-  return width ? html.replace("w-[420px]", width) : html;
-};

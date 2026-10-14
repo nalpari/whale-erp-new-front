@@ -132,7 +132,7 @@ function Features() {
       />
       <div className="flex flex-col gap-[120px]">
         {FEATURES.map((f, i) => (
-          // 사진과 글이 번갈아 좌우를 바꾼다. 바로가기로 내려왔을 때 고정 머리말(110px)에 가리지 않게 띄운다.
+          // 사진과 글이 번갈아 좌우를 바꾼다. 바로가기로 내려왔을 때 위에 붙는 머리말(110px)에 가리지 않게 띄운다.
           <article key={f.id} id={f.id} className={`flex scroll-mt-[130px] justify-center gap-[100px] ${i % 2 ? "flex-row-reverse" : ""}`}>
             <div className="relative h-[540px] w-[400px] shrink-0">
               <Image src={`${ASSET}/feature-photo.jpg`} alt="" fill sizes="400px" className="object-cover" />

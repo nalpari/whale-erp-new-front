@@ -79,7 +79,7 @@ const shortcuts = () =>
       `<button type="button" data-scroll-to="${f.id}" class="flex h-[48px] items-center rounded-[6px] border border-guest-button-line bg-white px-[18px] text-[18px] leading-[1.5] font-semibold text-guest-navy hover:border-guest-navy ${g.BUTTON_MOTION}">${f.tab}</button>`,
   ).join("")}</nav>`;
 
-// 사진과 글이 번갈아 좌우를 바꾼다. 바로가기로 내려왔을 때 고정 머리말(110px)에 가리지 않게 띄운다.
+// 사진과 글이 번갈아 좌우를 바꾼다. 바로가기로 내려왔을 때 위에 붙는 머리말(110px)에 가리지 않게 띄운다.
 const features = (A) =>
   `<section class="flex flex-col gap-[60px] px-[80px] py-[120px]">${g.titleRow("매장운영,", "이렇게 달라집니다", shortcuts())}<div class="flex flex-col gap-[120px]">${FEATURES.map(
     (f, i) =>
