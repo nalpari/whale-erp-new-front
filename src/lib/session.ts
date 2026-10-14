@@ -10,7 +10,7 @@ export const ACCESS_TOKEN_TTL_MS = 60 * 60 * 1000;
 
 /**
  * 쿠키에 담는 값. 토큰은 Next 서버만 읽는다(httpOnly). 계정 이름·BP 는 login-info 로 그리므로 여기 두지 않는다.
- * 권한 유형은 /login 에서 자기 홈을 고르고 platform 레이아웃이 BP 계정을 돌려보내는 데만 쓴다 — 데이터 권한은 api 가 토큰으로 다시 확인한다.
+ * 권한 유형은 /login 에서 자기 홈을 고르는 데만 쓴다 — 데이터 권한은 api 가 토큰으로 다시 확인한다.
  */
 export interface Session {
   accessToken: string;
@@ -75,7 +75,7 @@ export interface LoginInfoAccount {
 export interface AdminMenu {
   /** MN+6자리. 업무 API 의 메뉴 권한 판정도 이 코드로 한다. */
   menuCode: string;
-  /** 이 메뉴가 속한 서비스 — 공통코드 SERVICE(WHALE_ERP · PLATFORM). 헤더가 영역에 맞는 메뉴만 그릴 때 쓴다. */
+  /** 이 메뉴가 속한 서비스 — 공통코드 SERVICE(WHALE_ERP · PLATFORM). 탭의 서비스에 맞는 메뉴만 보일 때 쓴다. */
   serviceCode: string;
   name: string;
   url: string | null;

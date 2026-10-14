@@ -8,7 +8,7 @@ import {
   readScope,
   readSelectedBp,
   readStores,
-  resolveBp,
+  resolveTab,
   writeCodes,
   writeCurrentBp,
   writeLoginBpInfo,
@@ -20,28 +20,32 @@ import {
 const own = { bpCodeId: 1, bpCode: "BP000000", tradeName: "플랫폼" };
 const a = { bpCodeId: 17, bpCode: "BP000017", tradeName: "㈜한강상회" };
 const b = { bpCodeId: 21, bpCode: "BP000021", tradeName: "㈜모리푸드" };
-const base = { ownBp: own, isPlatform: true, area: "erp" as const, queryBpCodeId: null, currentBp: null, selectedBp: null };
+const erp = (bp: typeof own) => ({ serviceCode: "WHALE_ERP" as const, bp });
+const platform = { serviceCode: "PLATFORM" as const, bp: own };
+const base = { ownBp: own, isPlatform: true, pathService: null, queryBpCodeId: null, current: null, selectedBp: null };
 
-test("resolveBp: 고객 BP 계정은 무엇이 남아 있어도 자기 BP", () => {
-  assert.deepEqual(resolveBp({ ...base, isPlatform: false, queryBpCodeId: 17, currentBp: a, selectedBp: a }), own);
+test("resolveTab: 고객 BP 계정은 무엇이 남아 있어도 ERP · 자기 BP", () => {
+  assert.deepEqual(resolveTab({ ...base, isPlatform: false, pathService: "PLATFORM", queryBpCodeId: 17, current: erp(a), selectedBp: a }), erp(own));
 });
 
-test("resolveBp: 플랫폼 관리 화면은 자기 BP", () => {
-  assert.deepEqual(resolveBp({ ...base, area: "platform", currentBp: a, selectedBp: a }), own);
+test("resolveTab: ?bp= 가 마지막으로 고른 BP 면 이 탭 값보다 앞서 그 BP 의 ERP", () => {
+  assert.deepEqual(resolveTab({ ...base, queryBpCodeId: 21, current: erp(a), selectedBp: b }), erp(b));
 });
 
-test("resolveBp: ?bp= 가 마지막으로 고른 BP 면 이 탭의 BP 보다 앞선다", () => {
-  assert.deepEqual(resolveBp({ ...base, queryBpCodeId: 21, currentBp: a, selectedBp: b }), b);
+test("resolveTab: ?bp= 가 자기 BP 면 플랫폼", () => {
+  assert.deepEqual(resolveTab({ ...base, queryBpCodeId: 1, current: erp(a), selectedBp: b }), platform);
 });
 
-test("resolveBp: ?bp= 가 자기 BP 면 자기 BP", () => {
-  assert.deepEqual(resolveBp({ ...base, queryBpCodeId: 1, currentBp: a, selectedBp: b }), own);
+test("resolveTab: 이름을 모르는 ?bp= 는 무시하고 이 탭 값을 쓴다(새로고침 · 탭 복제)", () => {
+  assert.deepEqual(resolveTab({ ...base, queryBpCodeId: 99, current: erp(a), selectedBp: b }), erp(a));
+  assert.deepEqual(resolveTab({ ...base, pathService: "WHALE_ERP", current: platform, selectedBp: b }), platform);
 });
 
-test("resolveBp: 이름을 모르는 ?bp= 는 무시하고 이 탭 → 고른 BP → 자기 BP", () => {
-  assert.deepEqual(resolveBp({ ...base, queryBpCodeId: 99, currentBp: a, selectedBp: b }), a);
-  assert.deepEqual(resolveBp({ ...base, queryBpCodeId: 99, selectedBp: b }), b);
-  assert.deepEqual(resolveBp({ ...base, queryBpCodeId: 99 }), own);
+test("resolveTab: 탭 값이 없는 새 탭은 ERP 주소면 마지막으로 고른 BP, 그 밖은 플랫폼", () => {
+  assert.deepEqual(resolveTab({ ...base, pathService: "WHALE_ERP", selectedBp: b }), erp(b));
+  assert.deepEqual(resolveTab({ ...base, pathService: "WHALE_ERP" }), platform);
+  assert.deepEqual(resolveTab({ ...base, pathService: "PLATFORM", selectedBp: b }), platform);
+  assert.deepEqual(resolveTab({ ...base, pathService: null, selectedBp: b }), platform);
 });
 
 // 저장값 버리기 규칙. Node 에는 localStorage·sessionStorage 가 없어 Map 으로 만든 가짜를 넣는다(browser-storage 는 부를 때마다 전역을 읽는다).
@@ -61,7 +65,7 @@ const fresh = () => {
 
 test("readCurrentBp: 앞 로그인의 탭 BP 면 null 을 주고 탭 값을 모두 지운다", () => {
   const { tab } = fresh();
-  writeCurrentBp("old", a);
+  writeCurrentBp("old", erp(a));
   writeStores(a.bpCodeId, []);
   writeCodes(a.bpCodeId, {});
   writeScope(a.bpCodeId, { type: "ALL" });
@@ -69,10 +73,17 @@ test("readCurrentBp: 앞 로그인의 탭 BP 면 null 을 주고 탭 값을 모�
   assert.deepEqual(tab.keys(), []);
 });
 
-test("readCurrentBp: 같은 로그인이면 loginKey 를 뺀 BP 를 준다", () => {
+test("readCurrentBp: 같은 로그인이면 서비스와 loginKey 를 뺀 BP 를 준다", () => {
   fresh();
-  writeCurrentBp("k", a);
-  assert.deepEqual(readCurrentBp("k"), a);
+  writeCurrentBp("k", erp(a));
+  assert.deepEqual(readCurrentBp("k"), erp(a));
+});
+
+test("readCurrentBp: 서비스가 없는 옛 값은 버린다", () => {
+  const { tab } = fresh();
+  tab.setItem("whale-erp:v1:current-bp", JSON.stringify({ loginKey: "k", ...a }));
+  assert.equal(readCurrentBp("k"), null);
+  assert.deepEqual(tab.keys(), []);
 });
 
 test("탭 값은 bpCodeId 가 다르면 null", () => {
@@ -100,7 +111,7 @@ test("clearLoginStorage: 로그인 정보만 지우고 아이디 저장은 남�
   const { local, tab } = fresh();
   local.setItem("whale-erp:saved-login-id", "whaleadmin");
   writeSelectedBp("k", a);
-  writeCurrentBp("k", a);
+  writeCurrentBp("k", erp(a));
   clearLoginStorage();
   assert.deepEqual(local.keys(), ["whale-erp:saved-login-id"]);
   assert.deepEqual(tab.keys(), []);

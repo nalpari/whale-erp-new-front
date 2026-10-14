@@ -6,24 +6,22 @@ import { logout } from "@/app/actions";
 import { roleLabel } from "@/lib/auth-routes";
 import type { Scope } from "@/lib/browser-storage";
 import { findMenu, PENDING_PLATFORM_MENU } from "@/lib/menus";
-import type { AdminMenu, AdminStore } from "@/lib/session";
-import { useAccount, useCurrentBp, useMenus, useScope, useStores } from "./session-gate";
+import type { AdminStore } from "@/lib/session";
+import { useAccount, useCurrentBp, useMenus, useScope, useService, useStores } from "./session-gate";
 
-// ERP·플랫폼 헤더. 메뉴·점포·이름은 로그인 정보(SessionGate)에서 그린다.
-// 메뉴는 2단계까지만 그린다(3단계는 헤더에 보이지 않는다, 2026-10-13). 영역(ERP·플랫폼)에 맞는 메뉴만 보인다.
-// 플랫폼 화면의 BP 선택기는 BP 목록 API 가 없어 아직 두지 않는다.
+// 로그인 후 화면의 헤더 하나. 메뉴·점포·이름은 로그인 정보(SessionGate)에서 그린다.
+// 메뉴는 이 탭 서비스(useService)의 것만, 2단계까지 그린다(3단계는 헤더에 보이지 않는다, 2026-10-13).
+// 서비스마다 다른 것은 오른쪽 선택기뿐이다 — ERP 는 점포 범위 선택기, 플랫폼은 BP 선택기(BP 목록 API 가 없어 아직 두지 않는다).
 // alarm 은 알림 종(NotificationBellSlot, 서버 컴포넌트)이다. 클라이언트인 이 헤더가 직접 그릴 수 없어 AdminFrame 이 만들어 넘긴다.
-export function AdminHeader({ area, alarm }: { area: "erp" | "platform"; alarm: ReactNode }) {
+export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   const account = useAccount();
-  const ofArea = (m: AdminMenu) => m.serviceCode === SERVICE[area];
+  const service = useService();
   const all = useMenus();
-  const menus: HeaderMenu[] = all
-    .filter(ofArea)
-    .map((m) => {
-      const items = m.children.filter(ofArea).flatMap((c) => {
+  const menus: HeaderMenu[] = all.map((m) => {
+      const items = m.children.flatMap((c) => {
         const item = { label: c.name, href: c.url ?? "#" };
         const pending = PENDING_PLATFORM_MENU;
-        const missing = area === "platform" && c.url === pending.after && !findMenu(all, (x) => x.url === pending.url);
+        const missing = service === "PLATFORM" && c.url === pending.after && !findMenu(all, (x) => x.url === pending.url);
         return missing ? [item, { label: pending.name, href: pending.url }] : [item];
       });
       return { label: m.name, items, href: items.length === 0 && m.url ? m.url : undefined };
@@ -34,7 +32,7 @@ export function AdminHeader({ area, alarm }: { area: "erp" | "platform"; alarm: 
     { label: "비밀번호 변경", href: "#" },
   ];
   const userItems: UserPopItem[] =
-    area === "erp"
+    service === "WHALE_ERP"
       ? [...mine, { label: "회원 탈퇴", href: "#" }, { label: "로그아웃", action: logout, danger: true }]
       : [...mine, { label: "로그아웃", action: logout, danger: true }];
 
@@ -43,7 +41,7 @@ export function AdminHeader({ area, alarm }: { area: "erp" | "platform"; alarm: 
       menus={menus}
       right={
         <>
-          {area === "erp" ? <ScopeSelect /> : <div className="flex-1" />}
+          {service === "WHALE_ERP" ? <ScopeSelect /> : <div className="flex-1" />}
           <ServiceLinks hrefs={{ erp: "/home", platform: "/platform" }} />
           {alarm}
           <UserPop name={`${account.name ?? account.loginId} (${roleLabel(account.roleTypeCode)})`} items={userItems} />
@@ -90,5 +88,3 @@ function scopeOptions(stores: AdminStore[]): { label: string; scope: Scope }[] {
   ];
 }
 
-// 영역별 서비스(공통코드 SERVICE). 메뉴는 이 값으로 가른다 — 주소로 가르면 /platform 밖의 플랫폼 화면이 빠진다.
-const SERVICE = { erp: "WHALE_ERP", platform: "PLATFORM" } as const;

@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { isAllowed } from "./menus.ts";
+import { isAllowed, menusOf, serviceOfPath } from "./menus.ts";
 import type { AdminMenu } from "./session.ts";
 
-const menu = (url: string | null, read: boolean, children: AdminMenu[] = []): AdminMenu => ({
+const menu = (url: string | null, read: boolean, children: AdminMenu[] = [], serviceCode = "WHALE_ERP"): AdminMenu => ({
   menuCode: `MN${url}`,
-  serviceCode: "WHALE_ERP",
+  serviceCode,
   name: url ?? "그룹",
   url,
   depth: 1,
@@ -18,30 +18,54 @@ const menus = [
   menu("/settings", false, [menu("/settings/admins", true)]),
   menu(null, false, [menu(null, false, [menu("/staff/contracts", true)])]),
 ];
+// 플랫폼 계정은 두 서비스 메뉴를 모두 받는다.
+const platformAccount = [...menus, menu(null, false, [menu("/platform/system/codes", true, [], "PLATFORM")], "PLATFORM")];
 
-test("isAllowed: 영역 홈은 메뉴가 비어도 열린다", () => {
-  assert.equal(isAllowed([], "/home", "/home"), true);
+test("isAllowed: 서비스 홈은 메뉴가 비어도 열린다", () => {
+  assert.equal(isAllowed([], "/home", "WHALE_ERP"), true);
+  assert.equal(isAllowed([], "/platform", "PLATFORM"), true);
 });
 
 test("isAllowed: 조회 권한 있는 메뉴와 그 아래(상세·등록)는 열린다", () => {
-  for (const p of ["/settings/admins", "/settings/admins/12", "/settings/admins/new"]) assert.equal(isAllowed(menus, p, "/home"), true, p);
+  for (const p of ["/settings/admins", "/settings/admins/12", "/settings/admins/new"]) assert.equal(isAllowed(menus, p, "WHALE_ERP"), true, p);
 });
 
 test("isAllowed: 조회 권한 없는 상위 메뉴 url 아래의 다른 화면은 막힌다", () => {
-  for (const p of ["/settings", "/settings/roles"]) assert.equal(isAllowed(menus, p, "/home"), false, p);
+  for (const p of ["/settings", "/settings/roles"]) assert.equal(isAllowed(menus, p, "WHALE_ERP"), false, p);
 });
 
 test("isAllowed: 접두만 같은 주소는 막힌다", () => {
-  assert.equal(isAllowed(menus, "/settings/admins-x", "/home"), false);
+  assert.equal(isAllowed(menus, "/settings/admins-x", "WHALE_ERP"), false);
 });
 
-test("isAllowed: 알림 템플릿 관리는 api 메뉴에 없어도 플랫폼 화면에서만 임시로 열린다", () => {
+test("isAllowed: 권한이 있어도 탭의 서비스가 아닌 화면·홈은 막힌다", () => {
+  assert.equal(isAllowed(platformAccount, "/settings/admins", "PLATFORM"), false);
+  assert.equal(isAllowed(platformAccount, "/platform/system/codes", "WHALE_ERP"), false);
+  assert.equal(isAllowed(platformAccount, "/home", "PLATFORM"), false);
+  assert.equal(isAllowed(platformAccount, "/platform/system/codes", "PLATFORM"), true);
+});
+
+test("isAllowed: 알림 템플릿 관리는 api 메뉴에 없어도 플랫폼 서비스에서만 임시로 열린다", () => {
   for (const p of ["/platform/notification-templates", "/platform/notification-templates/new", "/platform/notification-templates/3"])
-    assert.equal(isAllowed([], p, "/platform"), true, p);
-  assert.equal(isAllowed([], "/platform/notification-templates", "/home"), false);
+    assert.equal(isAllowed([], p, "PLATFORM"), true, p);
+  assert.equal(isAllowed([], "/platform/notification-templates", "WHALE_ERP"), false);
 });
 
 test("isAllowed: 3단계에만 있는 주소도 열리고, url 없는 메뉴가 있어도 깨지지 않는다", () => {
-  assert.equal(isAllowed(menus, "/staff/contracts", "/home"), true);
-  assert.equal(isAllowed(menus, "/staff", "/home"), false);
+  assert.equal(isAllowed(menus, "/staff/contracts", "WHALE_ERP"), true);
+  assert.equal(isAllowed(menus, "/staff", "WHALE_ERP"), false);
+});
+
+test("serviceOfPath: 홈 · 메뉴 주소로 서비스를 고르고 모르면 null", () => {
+  assert.equal(serviceOfPath([], "/home"), "WHALE_ERP");
+  assert.equal(serviceOfPath([], "/platform"), "PLATFORM");
+  assert.equal(serviceOfPath(platformAccount, "/settings/admins/3"), "WHALE_ERP");
+  assert.equal(serviceOfPath(platformAccount, "/platform/system/codes"), "PLATFORM");
+  assert.equal(serviceOfPath([], "/platform/notification-templates/new"), "PLATFORM");
+  assert.equal(serviceOfPath(platformAccount, "/unknown"), null);
+});
+
+test("menusOf: 그 서비스의 메뉴만 하위까지 남긴다", () => {
+  assert.deepEqual(menusOf(platformAccount, "PLATFORM").map((m) => m.children[0].url), ["/platform/system/codes"]);
+  assert.equal(menusOf(platformAccount, "WHALE_ERP").length, 2);
 });

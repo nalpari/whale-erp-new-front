@@ -4,9 +4,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { createContext, use, useEffect, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/components/common";
 import { logout } from "@/app/actions";
-import { isPlatformRole } from "@/lib/auth-routes";
 import { bff, BffError, PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
-import { findMenu, isAllowed } from "@/lib/menus";
+import { findMenu, HOME, isAllowed, menusOf, serviceOfPath } from "@/lib/menus";
 import { ForcePasswordDialog } from "./force-password-dialog";
 import {
   clearSelectedBp,
@@ -18,7 +17,7 @@ import {
   readScope,
   readSelectedBp,
   readStores,
-  resolveBp,
+  resolveTab,
   writeCodes,
   writeCurrentBp,
   writeLoginBpInfo,
@@ -26,15 +25,18 @@ import {
   writeScope,
   writeStores,
   type Scope,
+  type ServiceCode,
   type StoredBp,
+  type TabContext,
 } from "@/lib/browser-storage";
 import { LOGIN_KEY_COOKIE, type AdminMenu, type AdminStore, type Codes, type LoginInfo, type LoginInfoAccount } from "@/lib/session";
-
-type Area = "erp" | "platform";
 
 interface LoginState {
   loginKey: string;
   account: LoginInfoAccount;
+  /** 이 탭의 서비스. 플랫폼 계정은 자기 BP 탭이 PLATFORM, BP 선택기로 연 탭이 WHALE_ERP 다. 그 밖의 계정은 늘 WHALE_ERP. */
+  serviceCode: ServiceCode;
+  /** 계정의 메뉴 전체(두 서비스). 화면에는 menusOf 로 이 탭의 서비스만 보인다. */
   menus: AdminMenu[];
   /** 이 탭의 BP. 플랫폼 계정이 고른 BP 면 자기 BP 와 다르다. */
   currentBp: StoredBp;
@@ -51,7 +53,13 @@ function useLogin() {
   return v;
 }
 export const useAccount = () => useLogin().account;
-export const useMenus = () => useLogin().menus;
+/** 이 탭의 서비스. 헤더 메뉴·홈·메뉴 권한 확인과 오른쪽 선택기(플랫폼이면 BP, ERP 면 점포 범위)가 이것을 본다. */
+export const useService = () => useLogin().serviceCode;
+/** 이 탭 서비스의 메뉴 트리(3단계까지). */
+export function useMenus() {
+  const { menus, serviceCode } = useLogin();
+  return menusOf(menus, serviceCode);
+}
 export const useCurrentBp = () => useLogin().currentBp;
 export const useStores = () => useLogin().stores;
 /** 그룹의 상세 코드. 없거나 사용하지 않는 그룹은 [] */
@@ -62,17 +70,17 @@ export function useScope() {
 }
 /** 메뉴 권한. 버튼을 보이거나 숨길 때 쓴다 — 실제 판정은 api 가 요청마다 다시 한다. */
 export function useMenuRole(menuCode: string, action: keyof AdminMenu["permission"]) {
-  return findMenu(useLogin().menus, (m) => m.menuCode === menuCode)?.permission[action] ?? false;
+  const { menus, serviceCode } = useLogin();
+  return findMenu(menusOf(menus, serviceCode), (m) => m.menuCode === menuCode)?.permission[action] ?? false;
 }
 
 const ALL: Scope = { type: "ALL" };
-const HOME: Record<Area, string> = { erp: "/home", platform: "/platform" };
 
 /**
  * 로그인 후 화면의 문. 이 탭의 BP 와 그 BP 의 점포·공통코드가 준비될 때까지 로딩 화면을 보이고, 준비되면 children 을 그린다. 주소는 ?bp= 만 지운다.
  * 메뉴·점포·공통코드는 로그인할 때의 값을 쓰고 다시 로그인해야 바뀐다(okf/auth.md, 2026-10-13). 데이터 권한은 api 가 요청마다 다시 본다.
  */
-export function SessionGate({ area, children }: { area: Area; children: ReactNode }) {
+export function SessionGate({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [state, setState] = useState<{ status: "loading" } | { status: "error"; message: string } | { status: "ready"; value: LoginState }>({
     status: "loading",
@@ -81,7 +89,7 @@ export function SessionGate({ area, children }: { area: Area; children: ReactNod
 
   useEffect(() => {
     let cancelled = false;
-    prepare(area).then(
+    prepare().then(
       (value) => !cancelled && setState({ status: "ready", value }),
       async (e: unknown) => {
         if (cancelled) return;
@@ -102,7 +110,7 @@ export function SessionGate({ area, children }: { area: Area; children: ReactNod
           // shortcut: 안내는 브라우저 alert 다. 공통 확인 팝업이 생기면 바꾼다.
           alert(e.message);
           clearSelectedBp();
-          location.replace(HOME[area]);
+          location.replace(HOME.PLATFORM); // 다른 BP 는 플랫폼 계정만 연다. 자기 BP(플랫폼)로 다시 연다.
           return;
         }
         console.error(e);
@@ -112,7 +120,7 @@ export function SessionGate({ area, children }: { area: Area; children: ReactNod
     return () => {
       cancelled = true;
     };
-  }, [area, attempt, router]);
+  }, [attempt, router]);
 
   if (state.status === "loading") return <Notice>불러오는 중입니다</Notice>;
   if (state.status === "error")
@@ -130,37 +138,36 @@ export function SessionGate({ area, children }: { area: Area; children: ReactNod
       </Notice>
     );
   return (
-    <Ready area={area} value={state.value} onChange={(value) => setState({ status: "ready", value })}>
+    <Ready value={state.value} onChange={(value) => setState({ status: "ready", value })}>
       {children}
     </Ready>
   );
 }
 
-function Ready({ area, value, onChange, children }: { area: Area; value: LoginState; onChange: (v: LoginState) => void; children: ReactNode }) {
+function Ready({ value, onChange, children }: { value: LoginState; onChange: (v: LoginState) => void; children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  // 플랫폼 화면에 BP·가맹 계정이 왔다(첫 진입은 platform 레이아웃이 서버에서 막고, 여기서는 그 뒤 화면 이동을 받는다). 안내 없이 /home 으로 보낸다.
-  const wrongArea = area === "platform" && !isPlatformRole(value.account.roleTypeCode);
-  const allowed = !wrongArea && isAllowed(value.menus, pathname, HOME[area]);
+  // 이 탭 서비스의 화면만 연다. BP·가맹 계정이 플랫폼 주소에 오거나 플랫폼 탭에서 ERP 주소를 치면 여기서 막힌다(데이터는 api 가 다시 막는다).
+  const home = HOME[value.serviceCode];
+  const allowed = isAllowed(value.menus, pathname, value.serviceCode);
   // 개발 모드(StrictMode)는 effect 를 두 번 돌린다. 같은 주소에 두 번 안내하고 두 번 뒤로 가지 않게 한다.
   const denied = useRef<string | null>(null);
 
   useEffect(() => {
-    if (wrongArea) return router.replace("/home");
     if (allowed || denied.current === pathname) return;
     denied.current = pathname;
     // 메뉴에 없는 주소로 바로 들어왔다. 안내하고 들어오기 전 화면으로 돌아간다(2026-10-13 정책, 403 과 같다).
     // shortcut: 안내는 브라우저 alert 다. 공통 확인 팝업이 생기면 바꾼다.
     alert("접근 권한이 없는 메뉴입니다");
     if (history.length > 1) history.back();
-    else router.replace(HOME[area]);
-  }, [allowed, area, pathname, router, wrongArea]);
+    else router.replace(home);
+  }, [allowed, home, pathname, router]);
 
   const setScope = (scope: Scope) => {
     writeScope(value.currentBp.bpCodeId, scope);
     onChange({ ...value, scope });
     // 범위를 바꾸면 보던 화면에 남지 않고 홈으로 간다(okf/home.md 범위 선택기).
-    router.push(HOME[area]);
+    router.push(home);
   };
   // 강제 변경 표시를 저장값에 쓰고 이 탭에 반영한다. 다른 탭은 새로고침하면 반영된다.
   const setPasswordRequired = (required: boolean) => {
@@ -190,8 +197,8 @@ function Ready({ area, value, onChange, children }: { area: Area; value: LoginSt
   });
   const passwordChanged = () => {
     setPasswordRequired(false);
-    // 바꾼 뒤에는 이 영역의 홈으로 다시 연다. 고른 BP 의 점포·공통코드도 이때 받는다.
-    location.assign(HOME[area]);
+    // 바꾼 뒤에는 이 탭 서비스의 홈으로 다시 연다.
+    location.assign(home);
   };
   return (
     <LoginContext value={{ ...value, setScope }}>
@@ -214,7 +221,7 @@ class LoginInfoDeniedError extends Error {}
 
 const readLoginKey = () => document.cookie.match(new RegExp(`(?:^|; )${LOGIN_KEY_COOKIE}=([^;]*)`))?.[1];
 
-async function prepare(area: Area): Promise<LoginState> {
+async function prepare(): Promise<LoginState> {
   const loginKey = readLoginKey();
   // 이 기능 전에 로그인했거나 쿠키가 지워졌다. 세션을 끝내고 다시 로그인하게 한다(/login 으로만 보내면 proxy 가 홈으로 되돌린다).
   if (!loginKey) throw new BffError(401, "다시 로그인해 주세요");
@@ -242,14 +249,18 @@ async function prepare(area: Area): Promise<LoginState> {
     history.replaceState(null, "", url);
   }
   // 비밀번호를 바꾸기 전에는 다른 BP 조회가 403 이라 자기 BP 로 연다.
-  const bp = account.isPasswordChangeRequired ? ownBp : resolveBp({
-    ownBp,
-    isPlatform: account.bp.isPlatform,
-    area,
-    queryBpCodeId: q && /^\d+$/.test(q) ? Number(q) : null,
-    currentBp: readCurrentBp(loginKey),
-    selectedBp: readSelectedBp(loginKey),
-  });
+  const tab: TabContext = account.isPasswordChangeRequired
+    ? { serviceCode: account.bp.isPlatform ? "PLATFORM" : "WHALE_ERP", bp: ownBp }
+    : resolveTab({
+        ownBp,
+        isPlatform: account.bp.isPlatform,
+        pathService: serviceOfPath(info.menus, url.pathname),
+        queryBpCodeId: q && /^\d+$/.test(q) ? Number(q) : null,
+        current: readCurrentBp(loginKey),
+        selectedBp: readSelectedBp(loginKey),
+      });
+  const { bp } = tab;
+
   let stores = readStores(bp.bpCodeId);
   let codes = readCodes(bp.bpCodeId);
   if (!stores || !codes) {
@@ -272,9 +283,9 @@ async function prepare(area: Area): Promise<LoginState> {
     writeCodes(bp.bpCodeId, codes);
   }
   // 점포·공통코드를 받은 뒤에 쓴다. 먼저 쓰면 받기가 실패한 BP 가 이 탭에 남아, 다시 열 때 같은 BP 를 또 골라 안내가 끝없이 반복된다.
-  writeCurrentBp(loginKey, bp);
+  writeCurrentBp(loginKey, tab);
   // 저장된 점포 범위의 점포가 목록에 없으면 전체로 되돌린다(선택기 표시와 실제 범위가 어긋나지 않게).
   const saved = readScope(bp.bpCodeId);
   const scope = saved?.type === "STORE" && !stores.some((s) => s.storeId === saved.storeId) ? ALL : (saved ?? ALL);
-  return { loginKey, account, menus: info.menus, currentBp: bp, stores, codes, scope };
+  return { loginKey, account, serviceCode: tab.serviceCode, menus: info.menus, currentBp: bp, stores, codes, scope };
 }
