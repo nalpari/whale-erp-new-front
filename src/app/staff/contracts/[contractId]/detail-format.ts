@@ -1,4 +1,4 @@
-// 근로계약 상세의 칸 표기. 테스트: node --test "src/app/contracts/[contractId]/detail-format.test.ts"
+// 근로계약 상세의 칸 표기. 테스트: node --test "src/app/staff/contracts/[contractId]/detail-format.test.ts"
 import type { ContractDetail } from "../new/contract-form-model";
 
 const minutes = (hm: string) => Number(hm.slice(0, 2)) * 60 + Number(hm.slice(3, 5));

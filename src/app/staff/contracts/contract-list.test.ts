@@ -1,4 +1,4 @@
-// node --test src/app/contracts/contract-list.test.ts
+// node --test src/app/staff/contracts/contract-list.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { deadlineNote, periodText, readListQuery, sentText, toSearch, wageText, withKnownStatus } from "./contract-list.ts";

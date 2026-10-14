@@ -22,7 +22,7 @@ export function contractColumns(statuses: EnumValue[], now: Date, draftActions: 
     {
       header: "직원",
       cell: (r) => (
-        <Link href={r.status === "DRAFT" ? `/contracts/${r.contractId}/edit` : `/contracts/${r.contractId}`} className="text-erp-link hover:underline">
+        <Link href={r.status === "DRAFT" ? `/staff/contracts/${r.contractId}/edit` : `/staff/contracts/${r.contractId}`} className="text-erp-link hover:underline">
           {r.staffMemberName}
         </Link>
       ),

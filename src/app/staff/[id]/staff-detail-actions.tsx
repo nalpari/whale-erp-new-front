@@ -12,7 +12,7 @@ export function StaffDetailActions() {
       <Button variant="danger" onClick={notReady}>
         퇴직 처리
       </Button>
-      <Button href="/staff-members">목록</Button>
+      <Button href="/staff">목록</Button>
     </>
   );
 }

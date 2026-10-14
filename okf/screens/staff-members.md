@@ -1,7 +1,7 @@
 ---
 type: Screen
 title: 직원 정보 관리 화면 (구현)
-description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 화면만 목 데이터로 만들었고, api 는 관리자 로그인 · 상세 요약 api 가 나온 뒤 붙인다. 붙일 때 바꿀 곳과 다시 작업할 것.
+description: /staff 목록과 /staff/[id] 상세의 구현 상태 — 화면만 목 데이터로 만들었고, api 는 관리자 로그인 · 상세 요약 api 가 나온 뒤 붙인다. 붙일 때 바꿀 곳과 다시 작업할 것.
 tags: [staff, screen, mock]
 status: draft
 generated: { by: claude-code/opus-5.5, at: 2026-10-13T02:10:00Z }
@@ -15,15 +15,15 @@ sources:
     title: 목 데이터 69건(기본 재직 필터 63건)
     last_modified: 2026-10-12T08:33:58Z
   - id: staff-list-page
-    resource: ../../src/app/staff-members/page.tsx
+    resource: ../../src/app/staff/page.tsx
     title: 직원 목록 화면
     last_modified: 2026-10-12T08:33:58Z
   - id: staff-detail-page
-    resource: ../../src/app/staff-members/[id]/page.tsx
+    resource: ../../src/app/staff/[id]/page.tsx
     title: 직원 상세 화면(틀 + 기본 정보)
     last_modified: 2026-10-12T08:33:58Z
   - id: staff-row
-    resource: ../../src/app/staff-members/staff-row.ts
+    resource: ../../src/app/staff/staff-row.ts
     title: 한 줄 표시 규칙(배지 · D-day · 재직 칸)
     last_modified: 2026-10-12T08:33:58Z
   - id: button
@@ -34,7 +34,7 @@ sources:
 
 # 화면만 있다
 
-직원 정보 관리의 목록(`/staff-members`, WHALEERP-138)과 상세(`/staff-members/[id]`, WHALEERP-184)는 **화면만 목
+직원 정보 관리의 목록(`/staff`, WHALEERP-138)과 상세(`/staff/[id]`, WHALEERP-184)는 **화면만 목
 데이터로 만든 상태**다. 관리자 로그인(1팀)이 아직 없어 관리자 토큰으로 api 를 부를 수 없고, 상세의 내용을 주는
 상세 요약 api(WHALEERP-183)는 이 작업 범위가 아니다. 그래서 둘 다 `src/lib/staff-members.ts` 의 함수가 목을 거른다
 — **api 를 붙일 때 그 함수의 안만 바꾸고 화면은 손대지 않게** 나눠 두었다. 배치는 데모

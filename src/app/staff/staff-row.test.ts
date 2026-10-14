@@ -1,4 +1,4 @@
-// node --test src/app/staff-members/staff-row.test.ts
+// node --test src/app/staff/staff-row.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { StaffMemberListItem } from "../../lib/staff-members.ts";

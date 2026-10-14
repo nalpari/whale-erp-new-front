@@ -7,7 +7,7 @@ okf_version: "0.2"
 * [Whale ERP Frontend](whale-erp-front.md) - Next.js 16 App Router frontend for Whale ERP.
 * [홈·계정 진입](home.md) - 로그인 선을 사이에 두고 갈리는 홈 영역. 목업 `docs/mockup/home/` 기준.
 * [직원 운영 관리](staff.md) - 직원 초대·근로계약·근무스케줄·출퇴근·급여·TO-DO. 채용은 근로계약서 초안에서 시작한다. 목업 `docs/mockup/staff/` 기준.
-* [직원 정보 관리 화면 (구현)](screens/staff-members.md) - `/staff-members` 목록 · 상세를 화면만 목 데이터로 만든 상태. api 를 붙일 때 바꿀 곳과 다시 작업할 것.
+* [직원 정보 관리 화면 (구현)](screens/staff-members.md) - `/staff` 목록 · 상세를 화면만 목 데이터로 만든 상태. api 를 붙일 때 바꿀 곳과 다시 작업할 것.
 * [고객지원·커뮤니티](support.md) - 사용자가 읽는 고객지원과 운영자가 쓰는 커뮤니티관리. 목업 `docs/mockup/support/` 기준.
 * [운영 알림](notify.md) - 문의·계약 사건을 관리자 웹 알림함으로 알린다(메일은 업무 쪽이 따로 보낸다). 목업 `docs/mockup/notify/` 기준.
 * [로그인](auth.md) - 로그인·계정 찾기·BP 회원가입·강제 비밀번호 변경·세션 만료. 목업 `docs/mockup/auth/` 기준.

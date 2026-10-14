@@ -1,4 +1,4 @@
-// node --test "src/app/contracts/[contractId]/detail-format.test.ts"
+// node --test "src/app/staff/contracts/[contractId]/detail-format.test.ts"
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { insuranceText, kstDateTime, payDayText, weeklyHoursOf, workDayLines } from "./detail-format.ts";

@@ -41,5 +41,5 @@ async function save(path: string, method: "POST" | "PUT", body: CreateContractBo
     throw e;
   }
   // 목록은 요청마다 새로 받는다(no-store). 따로 비울 캐시가 없다.
-  redirect("/contracts");
+  redirect("/staff/contracts");
 }

@@ -1,4 +1,4 @@
-// 근로계약 목록의 순수 로직 — 주소 쿼리 ↔ API 쿼리, 칸 표기. 테스트: node --test src/app/contracts/contract-list.test.ts
+// 근로계약 목록의 순수 로직 — 주소 쿼리 ↔ API 쿼리, 칸 표기. 테스트: node --test src/app/staff/contracts/contract-list.test.ts
 
 import type { components } from "@/lib/api-types.generated";
 

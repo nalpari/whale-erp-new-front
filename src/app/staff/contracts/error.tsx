@@ -13,7 +13,7 @@ export default function ContractsError({ reset }: { error: Error & { digest?: st
         <Button variant="soft" onClick={reset}>
           다시 시도
         </Button>
-        <Button variant="off" href="/contracts">
+        <Button variant="off" href="/staff/contracts">
           목록으로
         </Button>
       </div>

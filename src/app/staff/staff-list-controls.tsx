@@ -17,7 +17,7 @@ function useStaffListNavigation(query: StaffListQuery) {
   const navigate = (next: StaffListQuery) =>
     startTransition(() => {
       setCurrent(next);
-      router.replace(`/staff-members${toStaffListSearch(next)}`, { scroll: false });
+      router.replace(`/staff${toStaffListSearch(next)}`, { scroll: false });
     });
   return { current, navigate };
 }

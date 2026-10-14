@@ -2,11 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
-import { DetailTable, GlobalHeader, PageBar, ServiceLinks, StoreSelect, UserPop } from "@/components/common";
-import { NotificationBellSlot } from "@/components/notifications/notification-bell-slot";
+import { DetailTable, PageBar } from "@/components/common";
 import { getStaffMember } from "@/lib/staff-members";
-// 헤더 메뉴 · 사용자 메뉴는 아직 디자인 견본의 값뿐이다(목록 화면과 같다).
-import { MENUS, STORES, USER_ITEMS } from "../../design/sample";
 import { EMPLOYMENT_TYPE_LABELS, employmentStatusCells, formatPhone } from "../staff-row";
 import { CellView } from "../staff-table";
 import { PasswordResetButton, StaffDetailActions } from "./staff-detail-actions";
@@ -44,10 +41,10 @@ function NotReady() {
 }
 
 const RIGHT_BOXES = [
-  { title: "근무스케줄", manageHref: "/staff-members/work-schedules" },
-  { title: "출퇴근 현황", manageHref: "/staff-members/attendance" },
-  { title: "급여명세서", manageHref: "/staff-members/payslips" },
-  { title: "TO-DO", manageHref: "/staff-members/todos" },
+  { title: "근무스케줄", manageHref: "/staff/schedules" },
+  { title: "출퇴근 현황", manageHref: "/staff/attendance" },
+  { title: "급여명세서", manageHref: "/staff/payrolls" },
+  { title: "TO-DO", manageHref: "/staff/todos" },
 ];
 
 // 직원 상세(WHALEERP-184). 배치는 데모 docs/demo/staff/detail.html(원본 src/pages/staff/detail.mjs)과 같다 — 5:7 두 단,
@@ -73,50 +70,37 @@ export default async function StaffMemberDetailPage({ params }: { params: Promis
   ];
 
   return (
-    <div className="h-[100dvh] overflow-x-auto overflow-y-hidden bg-erp-thead-bg">
-      <div className="flex h-full min-w-[1720px] flex-col">
-        <GlobalHeader
-          menus={MENUS}
-          right={
-            <>
-              <StoreSelect options={STORES} />
-              <ServiceLinks />
-              <NotificationBellSlot />
-              <UserPop name="정하윤 (BP 마스터)" items={USER_ITEMS} />
-            </>
-          }
-        />
-        <PageBar title="직원 정보 관리" />
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
-          <div className="flex flex-1 flex-col gap-[24px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
-            <div className="flex flex-col gap-[12px]">
-              <div className="flex items-center gap-[6px]">
-                <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">직원 상세</h2>
-                <StaffDetailActions />
+    <>
+      <PageBar title="직원 정보 관리" />
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
+        <div className="flex flex-1 flex-col gap-[24px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
+          <div className="flex flex-col gap-[12px]">
+            <div className="flex items-center gap-[6px]">
+              <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">직원 상세</h2>
+              <StaffDetailActions />
+            </div>
+            <div className="grid grid-cols-[5fr_7fr] items-start gap-[24px]">
+              <div className="flex min-w-0 flex-col gap-[24px]">
+                <DetailTable title="기본 정보" rows={basicRows} />
+                <div className="flex items-center gap-[6px]">
+                  <span className="flex-1" />
+                  <PasswordResetButton />
+                </div>
+                <Box title="근로계약" manageHref="/staff/contracts">
+                  <NotReady />
+                </Box>
               </div>
-              <div className="grid grid-cols-[5fr_7fr] items-start gap-[24px]">
-                <div className="flex min-w-0 flex-col gap-[24px]">
-                  <DetailTable title="기본 정보" rows={basicRows} />
-                  <div className="flex items-center gap-[6px]">
-                    <span className="flex-1" />
-                    <PasswordResetButton />
-                  </div>
-                  <Box title="근로계약" manageHref="/staff-members/contracts">
+              <div className="flex min-w-0 flex-col gap-[24px]">
+                {RIGHT_BOXES.map((box) => (
+                  <Box key={box.title} title={box.title} manageHref={box.manageHref}>
                     <NotReady />
                   </Box>
-                </div>
-                <div className="flex min-w-0 flex-col gap-[24px]">
-                  {RIGHT_BOXES.map((box) => (
-                    <Box key={box.title} title={box.title} manageHref={box.manageHref}>
-                      <NotReady />
-                    </Box>
-                  ))}
-                </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

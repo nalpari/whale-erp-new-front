@@ -22,7 +22,7 @@ export function StaffFilter({ query }: { query: StaffListQuery }) {
   const navigate = (next: StaffListQuery) =>
     startTransition(() => {
       setCurrent(next);
-      router.replace(`/staff-members${toStaffListSearch(next)}`, { scroll: false });
+      router.replace(`/staff${toStaffListSearch(next)}`, { scroll: false });
     });
   const go = (next: Partial<StaffListQuery>) => navigate(withFilter(current, next));
   const reset = () => {

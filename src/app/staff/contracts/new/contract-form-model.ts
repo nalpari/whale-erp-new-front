@@ -1,7 +1,7 @@
 // 근로계약서 초안 폼의 순수 로직 — 입력값 → API 본문, 주 소정근로시간, 만 19세 판정.
-// 테스트: node --test src/app/contracts/new/contract-form-model.test.ts
+// 테스트: node --test src/app/staff/contracts/new/contract-form-model.test.ts
 
-import type { components } from "../../../lib/api-types.generated";
+import type { components } from "../../../../lib/api-types.generated";
 
 export const WEEKDAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] as const;
 export type Weekday = (typeof WEEKDAYS)[number];

@@ -39,7 +39,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-14T03:00:00Z }
 
 | 대상 | 규칙 | 예 |
 |---|---|---|
-| 라우트 폴더 | kebab-case 영문, API 자원 이름과 같게 | `app/staff-members/[id]/contracts/new/` |
+| 라우트 폴더 | kebab-case 영문, 관리자 웹은 DB 메뉴 url 과 같게(메뉴 권한 확인이 주소로 판정한다, 2026-10-14) | `app/staff/contracts/new/` |
 | 파일 | kebab-case | `contract-form.tsx`, `use-payslips.ts` |
 | 컴포넌트 | PascalCase | `ContractForm`, `PayslipStatusBadge` |
 | 훅 | `use` + 명사 | `usePayslips`, `useStoreScope` |

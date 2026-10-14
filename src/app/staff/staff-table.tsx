@@ -51,7 +51,7 @@ export function StaffTable({
         item.isMasked ? (
           <span className="text-erp-muted">본사 제공 동의 없음</span>
         ) : item.joinState === "JOINED" && item.employmentStatus === "EMPLOYED" ? (
-          <Link href={`/staff-members/${item.staffMemberId}`} className="text-erp-link hover:underline">
+          <Link href={`/staff/${item.staffMemberId}`} className="text-erp-link hover:underline">
             {item.name}
           </Link>
         ) : (

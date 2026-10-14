@@ -1,4 +1,4 @@
-// node --test src/app/staff-members/staff-list-query.test.ts
+// node --test src/app/staff/staff-list-query.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { DEFAULT_STAFF_LIST_QUERY, parseStaffListQuery, toStaffListSearch, withFilter } from "./staff-list-query.ts";

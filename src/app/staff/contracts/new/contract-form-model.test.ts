@@ -1,4 +1,4 @@
-// node --test src/app/contracts/new/contract-form-model.test.ts
+// node --test src/app/staff/contracts/new/contract-form-model.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {

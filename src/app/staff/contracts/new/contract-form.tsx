@@ -260,7 +260,7 @@ export function ContractForm({
     <div className="flex flex-col gap-[12px]">
       <div className="flex items-end gap-[6px]">
         <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">근로계약서</h2>
-        <Button variant="off" href="/contracts">
+        <Button variant="off" href="/staff/contracts">
           취소
         </Button>
         {deleteButton}
