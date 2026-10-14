@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-14
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 목록 · 상세를 공통 틀에 맞췄다(WHALEERP-593). page 의 바깥 틀 · 임시 헤더(견본 메뉴 · 점포 · 고정 이름)와 layout 의 `ErpRoot` 를 뺐고, 상세 「관리」 링크를 메뉴 url 결정(#592)의 한 단계 주소로 바꿨다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 디자인 샘플에 도입문의(`/design/guest/inquiry`) · 공지사항 · FAQ(`/design/guest/notices`)와 `FaqItem`, FAQ 펼침 · 고르는 칸 목록(globals.css)을 더했다.
 * **Update**: PR #19 리뷰 반영 — 헤더 2단계 메뉴는 조회 권한이 있는 메뉴(없으면 권한 있는 첫 하위 메뉴)로만 연결하고, 권한 이름은 공통코드 `ROLE_TYPE`(useCodes)에서 읽는다. 탭 서비스 값은 WHALE_ERP·PLATFORM 만 받는다. 로그아웃이 실패하면 안내하고 다시 시도하게 한다 — [Whale ERP Frontend](/whale-erp-front.md).
 * **Update**: 로그인 후 화면을 폴더로 묶지 않고 루트 layout 의 `AdminLayout` 이 공개 경로가 아니면 공통 틀을 씌운다(`(erp)`·`platform/layout.tsx` 삭제, 홈은 `src/app/home`). ERP·플랫폼은 탭의 서비스(sessionStorage `current-bp` 의 `serviceCode`)로 가르고 헤더 메뉴·홈·메뉴 권한 확인·오른쪽 선택기가 그 값을 본다. 3팀 화면도 틀 안에 들어가 자기 헤더를 빼야 한다 — [Whale ERP Frontend](/whale-erp-front.md).
