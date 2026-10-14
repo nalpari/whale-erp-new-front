@@ -34,7 +34,7 @@ export const STORES = [
 export const USER_ITEMS: UserPopItem[] = [
   { label: "내정보 관리", href: "#" },
   { label: "비밀번호 변경", href: "#" },
-  // 샘플이라 실제 로그아웃(logoutAction)을 연결하지 않는다. 실제 화면에서는 action: logoutAction(@/app/login/actions) 을 넘긴다.
+  // 샘플이라 실제 로그아웃(logout)을 연결하지 않는다. 실제 화면에서는 action: logout(@/app/actions) 을 넘긴다.
   { label: "로그아웃", href: "#", danger: true },
 ];
 

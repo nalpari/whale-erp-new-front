@@ -1,15 +1,9 @@
 import { cookies } from "next/headers";
 import type { EnumValue } from "./enums";
+import { parseSession, SESSION_COOKIE, type Session } from "./session";
 
-const SESSION_COOKIE = "session";
-
-/**
- * 쿠키에 담는 값. API 호출에 필요한 것은 액세스 토큰뿐이다.
- * 사용자 정보는 1팀 관리자 로그인이 정한다 — 견본 로그인(customers)은 2026-10-07 지웠다.
- */
-export interface Session {
-  accessToken: string;
-}
+// 세션 모양·쿠키 헬퍼는 next/headers 없이 proxy 도 쓰도록 session.ts 에 있다.
+export * from "./session";
 
 export class ApiError extends Error {
   constructor(
@@ -81,13 +75,7 @@ export async function getEnum(name: string): Promise<EnumValue[]> {
 }
 
 export async function getSession(): Promise<Session | null> {
-  const raw = (await cookies()).get(SESSION_COOKIE)?.value;
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw) as Session;
-  } catch {
-    return null; // 손상된 쿠키는 로그아웃으로 취급한다
-  }
+  return parseSession((await cookies()).get(SESSION_COOKIE)?.value);
 }
 
 /**

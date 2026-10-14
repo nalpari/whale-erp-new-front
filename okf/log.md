@@ -2,6 +2,11 @@
 
 ## 2026-10-14
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 디자인 샘플에 도입문의(`/design/guest/inquiry`) · 공지사항 · FAQ(`/design/guest/notices`)와 `FaqItem`, FAQ 펼침 · 고르는 칸 목록(globals.css)을 더했다.
+* **Update**: PR #19 리뷰 반영 — 헤더 2단계 메뉴는 조회 권한이 있는 메뉴(없으면 권한 있는 첫 하위 메뉴)로만 연결하고, 권한 이름은 공통코드 `ROLE_TYPE`(useCodes)에서 읽는다. 탭 서비스 값은 WHALE_ERP·PLATFORM 만 받는다. 로그아웃이 실패하면 안내하고 다시 시도하게 한다 — [Whale ERP Frontend](/whale-erp-front.md).
+* **Update**: 로그인 후 화면을 폴더로 묶지 않고 루트 layout 의 `AdminLayout` 이 공개 경로가 아니면 공통 틀을 씌운다(`(erp)`·`platform/layout.tsx` 삭제, 홈은 `src/app/home`). ERP·플랫폼은 탭의 서비스(sessionStorage `current-bp` 의 `serviceCode`)로 가르고 헤더 메뉴·홈·메뉴 권한 확인·오른쪽 선택기가 그 값을 본다. 3팀 화면도 틀 안에 들어가 자기 헤더를 빼야 한다 — [Whale ERP Frontend](/whale-erp-front.md).
+* **Update**: main 병합 뒤 플랫폼 화면(`/platform/system/*` · `/platform/notification-templates`)에 공통 틀을 씌웠다 — `platform/layout.tsx` 의 임시 헤더를 공통 틀로 바꾸고 `(platform)` 그룹 폴더는 없앴다(화면이 모두 `/platform` 아래라 필요 없음). 공통 헤더의 알림 종을 `NotificationBellSlot` 으로 바꿨다 — [Whale ERP Frontend](/whale-erp-front.md).
+* **Update**: PR #19 리뷰 반영 — 메뉴 판정을 조회 권한 있는 메뉴로 좁히고, 브라우저 저장 키에 버전(`whale-erp:v1:`)을 넣고, 세션 쿠키를 토큰·만료·권한 유형만 두도록 줄였다. [Whale ERP Frontend](/whale-erp-front.md) 의 영역·API·명령 서술도 코드에 맞췄다.
+* **Update**: 강제 비밀번호 변경 팝업, 영역별 메뉴(플랫폼은 /platform 아래), 하위 메뉴 없는 1단계 메뉴 바로 이동, 다른 탭 로그인·로그아웃 따라가기를 [Whale ERP Frontend](/whale-erp-front.md) 에 반영했다. 레이아웃 확인용 자리표시 `/bp`·`/config/admins` 는 지웠다.
 * **Update**: [고객지원·커뮤니티](/support.md) — 상담하지 않은 도입문의는 플랫폼 운영자가 상세의 [삭제]로 지운다(CNT-11 v120, WHALEERP-590). 목업 · 데모 도입문의 상세에 [삭제]를 넣었다(지우는 api 는 아직 없다).
 * **Update**: [고객지원·커뮤니티](/support.md) — front #21 확인 요청 두 건 재영 결정: 공지 · FAQ 목록 노출 대상 열은 뺀 대로, 문의 상세 「보낸 곳」의 운영 점포 · 요금 PLAN · 이전 문의는 1차에 넣지 않는다(목업 · 데모에서 걷음).
 * **Update**: [고객지원·커뮤니티](/support.md) · [홈·계정 진입](/home.md) — 내 api(`posts` · `leads` · `inquiries`)와 Plane #272 · 273 · 274 · 295 · 332 · 588 에 목업 · 데모를 맞췄다. 공지 유형 · 게시 기간 · 비공개 · 삭제, 변경 이력 표 대신 최근 수정, 커뮤니티관리 목록 칸 · 거르기(노출 대상 · 상호 · 운영 형태 열과 제목 · 담당자 검색을 뺐다), 문의 · 도입문의 [처리 시작], 도입문의 상세의 동의 일시 · 상담 완료일 · 답변 완료 상태, 도입문의 접수의 관심 서비스 여러 개 · 업종 직접 입력 · 도입 예정 시기 선택.
@@ -54,6 +59,14 @@
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통코드 화면을 목 데이터에서 실제 api(`/code-groups`) 호출로 바꿨다. 로그인 전에는 개발 서버에서만 `API_DEV_TOKEN` 을 싣는다.
 * **Update**: 플랫폼 공통코드 관리 2~8단계(검수까지) — [Whale ERP Frontend](/whale-erp-front.md) 공통 컴포넌트에 Tag · Toggle · ConfirmDialog 를 더하고 DataTable 줄 상태, 막힌 버튼 · 틀린 입력칸 모양을 적었다. 끌어서 순서 바꾸기는 `src/lib/reorder.ts`(`node --test src/lib/reorder.test.ts`).
 * **Update**: 플랫폼 공통코드 관리 개발 0·1단계 — [Whale ERP Frontend](/whale-erp-front.md) 에 플랫폼 화면 틀(`src/app/platform/`), 공통코드 데이터 함수(목, api 와 같은 모양), openapi 타입 생성(`pnpm openapi:types`)을 적었다. [시스템관리](/system.md) 의 BP 적용 정책을 「다시 적용 가능, 없는 행만 넣음」으로 고쳤다(2026-10-12 결정).
+
+## 2026-10-13
+
+* **Update**: 로그인 정보 브라우저 관리(login-info · 탭별 BP·점포·공통코드 · SessionGate · BFF)와 헤더의 메뉴·범위 선택기를 login-info 로 그리는 것을 [Whale ERP Frontend](/whale-erp-front.md) 에 반영했다. 메뉴 상수 `menus.ts` 와 견본 `login-session.ts` 는 지웠다.
+
+## 2026-10-12
+
+* **Update**: 관리자 로그인(BFF 쿠키 + proxy)과 레이아웃 3종(사이트형·ERP·플랫폼) 반영, 약관 전문 페이지 대신 팝업 — [Whale ERP Frontend](/whale-erp-front.md), [로그인](/auth.md).
 
 ## 2026-10-08
 
