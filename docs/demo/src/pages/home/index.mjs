@@ -191,5 +191,5 @@ const boards = (A, R) => `<section class="grid grid-cols-2 gap-[16px] px-[80px]"
 
 export default ({ A, R }) => {
   const main = billboard(A, R) + features(A, R) + personas(A, R) + connections(A) + steps(A) + plans(A, R) + boards(A, R);
-  return { title: "메인", head: g.head(A), html: g.page(A, R, { current: "home/index.html", main }) };
+  return { title: "비로그인 홈", head: g.head(A), html: g.page(A, R, { current: "home/index.html", main }) };
 };
