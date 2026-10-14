@@ -25,6 +25,6 @@ export default ({ pages }) => {
   const count = pages.filter((p) => !p.rel.startsWith("_check/")).length;
   return {
     title: "화면 목록",
-    html: `<div class="${ui.ERP_THEME} min-h-[100dvh] bg-erp-thead-bg! px-[24px] py-[40px]"><div class="mx-auto flex max-w-[1200px] flex-col gap-[24px]"><div class="flex flex-col gap-[6px]"><h1 class="text-[22px] font-semibold text-erp-ink">Whale ERP 데모 · 화면 ${count}장</h1><p class="text-[14px] text-erp-label">목업을 1팀 디자인 가이드(DESIGN.md) 생김새로 옮긴 정적 화면입니다. 값은 바뀌지 않고, 저장·검색은 흉내만 냅니다.</p></div><div class="grid grid-cols-2 gap-[12px]">${sections}</div></div></div>`,
+    html: `<div class="${ui.ERP_THEME} min-h-[100dvh] bg-erp-thead-bg! px-[24px] py-[40px]"><div class="mx-auto flex max-w-[1200px] flex-col gap-[24px]"><div class="flex flex-col gap-[6px]"><h1 class="text-[22px] font-semibold text-erp-ink">Whale ERP 데모 · 화면 ${count}장</h1><p class="text-[14px] text-erp-label">목업을 1팀 디자인 가이드(DESIGN.md) 생김새로 옮긴 정적 화면입니다(비로그인 화면은 Figma 로그인전 디자인). 값은 바뀌지 않고, 저장·검색은 흉내만 냅니다.</p></div><div class="grid grid-cols-2 gap-[12px]">${sections}</div></div></div>`,
   };
 };

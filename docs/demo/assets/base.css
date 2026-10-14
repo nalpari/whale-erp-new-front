@@ -15,3 +15,22 @@ body { min-height: 100%; margin: 0; }
    데모 HTML 에 상대 경로를 쓴 배경 클래스를 새로 만들지 않는다. 앱의 Tailwind 가 docs/ 까지 훑어 그 클래스를 앱 CSS 에 넣고,
    앱 빌드가 그 경로의 파일을 못 찾아 깨진다(2026-10-02 실제로 깨졌다). 이 주석에도 그 클래스 모양을 적지 않는다. */
 select.bg-\[url\(\/icons\/select-arrow\.svg\)\] { background-image: url(icons/select-arrow.svg); }
+
+/* 비로그인 화면(guest) 사이 이동. 앱의 globals.css 와 같은 전환을 문서 사이 전환(@view-transition)으로 건다.
+   @view-transition 은 guest 화면 머리에만 둔다(src/guest.mjs 의 head) — 두 화면이 모두 켜야 전환한다. */
+::view-transition-old(.guest-page) { animation: 150ms cubic-bezier(0.23, 1, 0.32, 1) both guest-fade reverse; }
+::view-transition-new(.guest-page) {
+  animation: 300ms cubic-bezier(0.23, 1, 0.32, 1) 100ms both guest-fade, 300ms cubic-bezier(0.23, 1, 0.32, 1) 100ms both guest-rise;
+}
+::view-transition-group(guest-header) { animation: none; z-index: 100; }
+::view-transition-old(guest-header) { display: none; }
+::view-transition-new(guest-header) { animation: none; }
+::view-transition { pointer-events: none; }
+@keyframes guest-fade { from { opacity: 0; } }
+@keyframes guest-rise { from { translate: 0 10px; } }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-new(.guest-page) { animation: 200ms ease both guest-fade; }
+}
+
+/* 비로그인 폼 체크 상자(src/guest.mjs 의 CHECKBOX). 상대 경로 배경은 클래스로 만들지 않는다(위 Select 화살표 주석). */
+input.guest-checkbox:checked { background-image: url(icons/check.svg); }
