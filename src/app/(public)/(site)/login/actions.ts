@@ -9,7 +9,7 @@ export type LoginState = { error?: string; loginId?: string };
 
 /**
  * api 로그인 → 쿠키 → 권한 유형별 홈. 실패 문구는 api 가 정한 것을 그대로 보인다(없는 아이디·불일치·탈퇴는 같은 문구, 미사용·잠금은 따로).
- * isPasswordChangeRequired 는 강제 비밀번호 변경 작업 전이라 지금은 쓰지 않는다.
+ * 강제 비밀번호 변경 여부(isPasswordChangeRequired)는 SessionGate 가 login-info 로 보고 팝업을 띄운다.
  */
 export async function login(_prev: LoginState, formData: FormData): Promise<LoginState> {
   const loginId = String(formData.get("loginId") ?? "").trim();
