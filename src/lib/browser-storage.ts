@@ -28,14 +28,17 @@ type StoredSelectedBp = StoredBp & { loginKey: string };
 // current-bp 에도 loginKey 를 둔다. 다시 로그인하면 다른 탭에 남은 앞 로그인의 BP·점포·공통코드를 버려야 한다.
 type StoredCurrentBp = StoredBp & { loginKey: string };
 
+// 저장 모양을 바꾸는 배포에서는 숫자를 올린다. 옛 값은 읽히지 않고 SessionGate 가 login-info 를 다시 받는다
+// (그때 플랫폼 계정이 다른 BP 로 연 탭은 자기 BP 로 돌아간다). 모양만 바꾸고 숫자를 그대로 두면 옛 값으로 화면이 깨진다.
+const PREFIX = "whale-erp:v1:";
 const KEY = {
-  loginInfo: "whale-erp:login-info",
-  loginBpInfo: "whale-erp:login-bp-info",
-  selectedBp: "whale-erp:selected-bp",
-  currentBp: "whale-erp:current-bp",
-  stores: "whale-erp:stores",
-  codes: "whale-erp:codes",
-  scope: "whale-erp:scope",
+  loginInfo: `${PREFIX}login-info`,
+  loginBpInfo: `${PREFIX}login-bp-info`,
+  selectedBp: `${PREFIX}selected-bp`,
+  currentBp: `${PREFIX}current-bp`,
+  stores: `${PREFIX}stores`,
+  codes: `${PREFIX}codes`,
+  scope: `${PREFIX}scope`,
 } as const;
 const TAB_KEYS = [KEY.currentBp, KEY.stores, KEY.codes, KEY.scope];
 /** 다른 탭이 로그인·로그아웃했는지 storage 이벤트로 알아챌 때 보는 키. */
