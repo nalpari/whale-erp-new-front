@@ -6,6 +6,8 @@ import { ApiError, getSession, request, SESSION_COOKIE } from "@/lib/api";
 // shortcut: 조회(GET)만 연다. 저장 화면이 생기면 그때 메서드를 더한다.
 export async function GET(req: NextRequest, ctx: RouteContext<"/api/[...path]">) {
   const { path } = await ctx.params;
+  // fetch 가 . · .. 를 접어 API_BASE_URL 의 경로 밖으로 나가지 않게 막는다.
+  if (path.some((s) => s === "." || s === "..")) return NextResponse.json({ message: "잘못된 경로입니다" }, { status: 400 });
   const session = await getSession();
   if (!session) return NextResponse.json({ message: "로그인이 필요합니다" }, { status: 401 });
   try {
