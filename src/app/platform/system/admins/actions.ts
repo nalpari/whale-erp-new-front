@@ -40,7 +40,7 @@ function failureOf(error: unknown, what: string): { ok: false; status?: number; 
 const validId = (id: number) => Number.isInteger(id) && id >= 1 && id <= 2_147_483_647;
 const NOT_FOUND = { ok: false as const, status: 404, message: "플랫폼 관리자 계정을 찾을 수 없습니다" };
 
-/** 저장 · 삭제가 끝났으면 목록 · 상세를 새로 받는다. 무효화가 실패해도 저장은 끝났으므로 성공으로 돌려준다. */
+/** 등록 · 수정 · 비밀번호 초기화가 끝났으면 목록 · 상세를 새로 받는다(삭제는 화면이 목록으로 옮기며 받는다). 무효화가 실패해도 저장은 끝났으므로 성공으로 돌려준다. */
 function refresh() {
   try {
     revalidatePath(PATH);
@@ -85,7 +85,8 @@ export async function deletePlatformAdminAction(id: number): Promise<ActionResul
   if (!validId(id)) return NOT_FOUND;
   try {
     await deletePlatformAdmin(id);
-    refresh();
+    // 여기서는 화면을 다시 그리지 않는다 — ?admin=<지운 계정> 이 남은 주소로 다시 그려져 상세에 「삭제되었거나 없는 계정」 띠가
+    // 잠깐 보였다. 성공하면 화면이 상세를 닫고 목록 주소로 옮기는데, 동적 화면이라 그 이동이 목록을 새로 받는다.
     return { ok: true };
   } catch (error) {
     return failureOf(error, "삭제");
