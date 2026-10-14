@@ -4,10 +4,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { createContext, use, useEffect, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/components/common";
 import { logout } from "@/app/actions";
+import { isPlatformRole } from "@/lib/auth-routes";
 import { bff, BffError, PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
 import { ForcePasswordDialog } from "./force-password-dialog";
 import {
   clearSelectedBp,
+  LOGIN_INFO_KEY,
   readCodes,
   readCurrentBp,
   readLoginBpInfo,
@@ -58,7 +60,7 @@ export function useScope() {
   return [scope, setScope] as const;
 }
 /** 메뉴 권한. 버튼을 보이거나 숨길 때 쓴다 — 실제 판정은 api 가 요청마다 다시 한다. */
-export function useCan(menuCode: string, action: keyof AdminMenu["permission"]) {
+export function useMenuRole(menuCode: string, action: keyof AdminMenu["permission"]) {
   return findMenu(useLogin().menus, (m) => m.menuCode === menuCode)?.permission[action] ?? false;
 }
 
@@ -124,11 +126,14 @@ export function SessionGate({ area, children }: { area: Area; children: ReactNod
 function Ready({ area, value, onChange, children }: { area: Area; value: LoginState; onChange: (v: LoginState) => void; children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const allowed = isAllowed(value.menus, pathname, area);
+  // 플랫폼 화면((platform) 레이아웃)에 BP·가맹 계정이 왔다. 안내 없이 자기 홈으로 보낸다(proxy 가 주소로 막던 것).
+  const wrongArea = area === "platform" && !isPlatformRole(value.account.roleTypeCode);
+  const allowed = !wrongArea && isAllowed(value.menus, pathname, area);
   // 개발 모드(StrictMode)는 effect 를 두 번 돌린다. 같은 주소에 두 번 안내하고 두 번 뒤로 가지 않게 한다.
   const denied = useRef<string | null>(null);
 
   useEffect(() => {
+    if (wrongArea) return router.replace("/home");
     if (allowed || denied.current === pathname) return;
     denied.current = pathname;
     // 메뉴에 없는 주소로 바로 들어왔다. 안내하고 들어오기 전 화면으로 돌아간다(2026-10-13 정책, 403 과 같다).
@@ -136,7 +141,7 @@ function Ready({ area, value, onChange, children }: { area: Area; value: LoginSt
     alert("접근 권한이 없는 메뉴입니다");
     if (history.length > 1) history.back();
     else router.replace(HOME[area]);
-  }, [allowed, area, pathname, router]);
+  }, [allowed, area, pathname, router, wrongArea]);
 
   const setScope = (scope: Scope) => {
     writeScope(value.currentBp.bpCodeId, scope);
@@ -152,6 +157,18 @@ function Ready({ area, value, onChange, children }: { area: Area; value: LoginSt
     writeLoginInfo({ loginKey: value.loginKey, account, menus: value.menus });
     onChange({ ...value, account });
   };
+  // 다른 탭에서 로그아웃하면 로그인 화면으로, 다시 로그인하면(다른 계정 포함) 새 로그인 정보로 다시 연다(정책 B-5).
+  // 로그인 화면이 저장값을 지우고, 새 로그인의 첫 탭이 login-info 를 쓰므로 그 키의 변화로 알아챈다. storage 이벤트는 다른 탭에만 온다.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== null && e.key !== LOGIN_INFO_KEY) return;
+      const loginKey = readLoginKey();
+      if (!loginKey) router.replace("/login");
+      else if (loginKey !== value.loginKey) location.reload();
+    };
+    addEventListener("storage", onStorage);
+    return () => removeEventListener("storage", onStorage);
+  }, [value.loginKey, router]);
   // 변경 전에는 api 가 403 「비밀번호를 변경한 뒤 이용할 수 있습니다」를 준다. 저장값이 어긋났으면 팝업을 다시 띄운다.
   useEffect(() => {
     const reopen = () => !value.account.isPasswordChangeRequired && setPasswordRequired(true);
@@ -181,8 +198,10 @@ function Notice({ children }: { children: ReactNode }) {
 
 class OtherBpError extends Error {}
 
+const readLoginKey = () => document.cookie.match(new RegExp(`(?:^|; )${LOGIN_KEY_COOKIE}=([^;]*)`))?.[1];
+
 async function prepare(area: Area): Promise<LoginState> {
-  const loginKey = document.cookie.match(new RegExp(`(?:^|; )${LOGIN_KEY_COOKIE}=([^;]*)`))?.[1];
+  const loginKey = readLoginKey();
   // 이 기능 전에 로그인했거나 쿠키가 지워졌다. 세션을 끝내고 다시 로그인하게 한다(/login 으로만 보내면 proxy 가 홈으로 되돌린다).
   if (!loginKey) throw new BffError(401, "다시 로그인해 주세요");
 

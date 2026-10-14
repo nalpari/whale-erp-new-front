@@ -78,6 +78,8 @@ export interface LoginInfoAccount {
 export interface AdminMenu {
   /** MN+6자리. 업무 API 의 메뉴 권한 판정도 이 코드로 한다. */
   menuCode: string;
+  /** 이 메뉴가 속한 서비스 — 공통코드 SERVICE(WHALE_ERP · PLATFORM). 헤더가 영역에 맞는 메뉴만 그릴 때 쓴다. */
+  serviceCode: string;
   name: string;
   url: string | null;
   depth: number;

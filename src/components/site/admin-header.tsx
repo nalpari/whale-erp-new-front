@@ -4,18 +4,21 @@ import { AlarmLink, GlobalHeader, ServiceLinks, StoreSelect, UserPop, type Heade
 import { logout } from "@/app/actions";
 import { roleLabel } from "@/lib/auth-routes";
 import type { Scope } from "@/lib/browser-storage";
-import type { AdminStore } from "@/lib/session";
+import type { AdminMenu, AdminStore } from "@/lib/session";
 import { useAccount, useCurrentBp, useMenus, useScope, useStores } from "./session-gate";
 
 // ERP·플랫폼 헤더. 메뉴·점포·이름은 로그인 정보(SessionGate)에서 그린다.
-// 메뉴는 2단계까지만 그린다(3단계는 헤더에 보이지 않는다, 2026-10-13).
+// 메뉴는 2단계까지만 그린다(3단계는 헤더에 보이지 않는다, 2026-10-13). 영역(ERP·플랫폼)에 맞는 메뉴만 보인다.
 // 플랫폼 화면의 BP 선택기는 BP 목록 API 가 없어 아직 두지 않는다.
 export function AdminHeader({ area }: { area: "erp" | "platform" }) {
   const account = useAccount();
-  const menus: HeaderMenu[] = useMenus().map((m) => ({
-    label: m.name,
-    items: m.children.map((c) => ({ label: c.name, href: c.url ?? "#" })),
-  }));
+  const ofArea = (m: AdminMenu) => m.serviceCode === SERVICE[area];
+  const menus: HeaderMenu[] = useMenus()
+    .filter(ofArea)
+    .map((m) => {
+      const items = m.children.filter(ofArea).map((c) => ({ label: c.name, href: c.url ?? "#" }));
+      return { label: m.name, items, href: items.length === 0 && m.url ? m.url : undefined };
+    });
   // 내정보·비밀번호·회원 탈퇴는 슬라이드 패널 작업 전이라 아직 아무 데도 가지 않는다.
   const mine: UserPopItem[] = [
     { label: "내정보 관리", href: "#" },
@@ -73,3 +76,6 @@ function scopeOptions(stores: AdminStore[]): { label: string; scope: Scope }[] {
     ...stores.map((s) => ({ label: s.name, scope: { type: "STORE", storeId: s.storeId } as const })),
   ];
 }
+
+// 영역별 서비스(공통코드 SERVICE). 메뉴는 이 값으로 가른다 — 주소로 가르면 /platform 밖의 플랫폼 화면이 빠진다.
+const SERVICE = { erp: "WHALE_ERP", platform: "PLATFORM" } as const;

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { areaOf, homeOf, isPlatformRole } from "@/lib/auth-routes";
+import { homeOf, isPublicPath } from "@/lib/auth-routes";
 import {
   ACCESS_TOKEN_TTL_MS,
   parseSession,
@@ -10,9 +10,9 @@ import {
 } from "@/lib/session";
 
 // 쿠키만 보는 가벼운 확인(Next 16 authentication 가이드의 optimistic check). 데이터 권한은 api 가 토큰으로 다시 본다.
-// - ERP·플랫폼 경로에 세션이 없으면 /login
+// - 공개 경로가 아닌데 세션이 없으면 /login
 // - 접근 토큰을 받은 지 10분이 지났으면(만료 50분 전부터) 갱신해 쿠키를 다시 쓴다. 갱신이 401 이면 /login, 그 밖의 실패는 토큰이 남아 있는 동안 현재 쿠키로 계속
-// - BP·가맹 계정이 플랫폼 경로에 오면 /home. 플랫폼 계정은 ERP 에도 들어간다(F-TLJOCK)
+// - BP·가맹 계정이 플랫폼 화면에 오는 것은 주소가 아니라 (platform) 레이아웃의 SessionGate 가 막는다. 플랫폼 계정은 ERP 에도 들어간다(F-TLJOCK)
 // - 로그인한 채 /login 에 오면 자기 홈
 // 정책은 「갱신 토큰은 마지막 사용부터 1시간」(쓰는 동안은 끊기지 않는다). api 세션은 갱신할 때만 연장되므로,
 // 만료 직전에만 갱신하면 계속 쓰던 사람도 1시간마다 끊긴다. 일찍 갱신해 마지막 요청부터 50~60분 동안 유지한다.
@@ -21,15 +21,13 @@ const REFRESH_EARLY_MS = 50 * 60_000;
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const area = areaOf(pathname);
   let session = parseSession(req.cookies.get(SESSION_COOKIE)?.value);
 
-  if (area === "public") {
+  if (isPublicPath(pathname)) {
     if (pathname === "/login" && req.method === "GET" && session) return NextResponse.redirect(new URL(homeOf(session.roleTypeCode), req.url));
     return NextResponse.next();
   }
   if (!session) return toLogin(req);
-  if (area === "platform" && !isPlatformRole(session.roleTypeCode)) return NextResponse.redirect(new URL("/home", req.url));
 
   if (session.accessTokenExpiresAt - REFRESH_EARLY_MS > Date.now()) return NextResponse.next();
   // 서버 액션 요청은 갱신하지 않는다. 50분 일찍 갱신하므로 토큰은 아직 유효하고, 여기서 쿠키를 쓰면
