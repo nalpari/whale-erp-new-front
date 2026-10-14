@@ -46,7 +46,7 @@ whale-erp-api 를 호출한다. 주소는 `API_BASE_URL` 로 주입한다
 배포 환경이 주입한다). 두 파일 모두 git 이 추적하지 않는다.
 
 부르는 엔드포인트는 `GET /enums/{name}`(공개)과 `GET` · `POST` · `PUT` · `DELETE /contracts` · `GET /stores`(관리자 토큰)다. 근로계약의 요청 · 응답 타입은 `src/lib/api-types.generated.ts`(`pnpm openapi:types`)에서 가져온다(`contract-list.ts` 의 `ContractListItem` · `ContractListPage`, `contract-form-model.ts` 의 `CreateContractBody` · `ContractDetail`). `ApiError` 는 응답 본문(`body`)도 들고 있어 409 의 `code` · 목록을 화면이 쓴다.
-회원가입은 `POST /auth/signup`(가입, 중복이면 409), `POST /auth/signup/login-id-availability`·`POST /auth/signup/email-availability`(중복 확인, `{ available }`) 셋을 부른다 — 셋 다 api main 에 아직 없다(api petra 워크트리에서 작업 중).
+회원가입은 `POST /auth/signup`(가입, 중복이면 409), `POST /auth/signup/login-id-availability`·`POST /auth/signup/email-availability`(중복 확인, `{ available }`) 셋을 부른다 — 셋 다 api main 에 아직 없다(api alhambra 워크트리, bulbasaur 브랜치에서 작업 중, 2026-10-14).
 api 의 견본(items·stock_movements·staff·customers)과 견본 로그인
 (`POST /auth/customer/login`, `GET /items`)은 2026-10-07 api 와 함께 지웠다(재영 결정).
 관리자 웹 로그인은 1팀이 새로 만든다.

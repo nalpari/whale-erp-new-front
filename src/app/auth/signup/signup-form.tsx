@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState, type FormEvent } from "react";
+import { useId, useRef, useState, type FormEvent } from "react";
 import { Button, FormGroup, TextField } from "@/components/common";
 import { Blank } from "../_components/blank";
 import { LoginPendingLink } from "../_components/login-pending";
@@ -60,6 +60,19 @@ function validateField(key: ErrorKey, v: Values): string | undefined {
 
 const ALL_KEYS: ErrorKey[] = ["loginId", "password", "passwordConfirm", "name", "phone", "email", "tradeName"];
 
+// Values 의 phone1~3 은 한 오류(phone)를 같이 쓴다 — 그 셋을 고치면 phone 오류를 지운다.
+const ERROR_KEY_FOR: Record<keyof Values, ErrorKey> = {
+  loginId: "loginId",
+  password: "password",
+  passwordConfirm: "passwordConfirm",
+  name: "name",
+  phone1: "phone",
+  phone2: "phone",
+  phone3: "phone",
+  email: "email",
+  tradeName: "tradeName",
+};
+
 // 중복 확인을 하는 두 칸. 형식이 맞을 때만 api 에 묻는다.
 type AvailabilityKey = "loginId" | "email";
 
@@ -90,6 +103,8 @@ function agreeErrorMessage(useAgreed: boolean, privacyAgreed: boolean): string |
 // 제출 때 모든 섹션 값이 한 번에 필요해서, 섹션마다 흩어져 있던 상태를 여기로 모았다.
 export function SignupForm() {
   const router = useRouter();
+  const ids = useId();
+  const formRef = useRef<HTMLFormElement>(null);
   const [values, setValues] = useState<Values>(INITIAL);
   const [errors, setErrors] = useState<Errors>({});
   const [biz, setBiz] = useState<BizAuthValue>(BIZ_AUTH_INITIAL);
@@ -140,7 +155,21 @@ export function SignupForm() {
   // 한 번 제출을 시도한 뒤로는 체크박스를 누를 때마다(아직 안 된 것만 이름을 들어) 바로 따라 바뀐다.
   const agreeError = triedSubmit ? agreeErrorMessage(agree.useAgreed, agree.privacyAgreed) : undefined;
 
-  const set = <K extends keyof Values>(key: K, value: Values[K]) => setValues((v) => ({ ...v, [key]: value }));
+  // 칸 오류 문구의 id — 입력칸이 aria-describedby 로 가리킨다(admin-form-panel.tsx 와 같은 짝, 2026-10-14 코드리뷰).
+  const messageId = (key: ErrorKey) => `${ids}-${key}`;
+  const invalid = (key: ErrorKey) => (errors[key] ? true : undefined);
+  const describe = (key: ErrorKey) => (errors[key] ? messageId(key) : undefined);
+  // 오류가 생기면 첫 오류 칸으로 커서를 옮긴다 — 아래 칸 오류는 스크롤해야 보일 수 있다.
+  const focusFirstError = () =>
+    requestAnimationFrame(() => (formRef.current?.querySelector('[aria-invalid="true"]') as HTMLElement | null)?.focus());
+
+  // 칸을 고치면 그 칸의 오류는 바로 지운다 — 중복 오류("이미 사용 중인 아이디입니다")를 보고 다시
+  // 타이핑해도 blur 전까지 오류가 그대로 남아 있던 문제를 고쳤다(2026-10-14 코드리뷰).
+  const clearError = (key: ErrorKey) => setErrors((e) => (key in e ? { ...e, [key]: undefined } : e));
+  const set = <K extends keyof Values>(key: K, value: Values[K]) => {
+    setValues((v) => ({ ...v, [key]: value }));
+    clearError(ERROR_KEY_FOR[key]);
+  };
   const check = (key: ErrorKey, next: Values = values) => setErrors((e) => ({ ...e, [key]: validateField(key, next) }));
 
   async function handleSubmit(e: FormEvent) {
@@ -155,7 +184,8 @@ export function SignupForm() {
     const hasFieldError = Object.values(fieldErrors).some(Boolean);
     const agreedRequired = agree.useAgreed && agree.privacyAgreed;
 
-    if (hasFieldError || !agreedRequired) return;
+    if (hasFieldError) return focusFirstError();
+    if (!agreedRequired) return;
 
     setPending(true);
     try {
@@ -163,7 +193,7 @@ export function SignupForm() {
       // 중복 확인을 아직 통과하지 못한 칸만 여기서 api 로 묻고, 걸리면 그 칸에 오류를 띄운다.
       const unchecked = (["loginId", "email"] as const).filter((key) => !available[key]);
       const checks = await Promise.all(unchecked.map((key) => verifyAvailability(key, values[key], fieldErrors[key])));
-      if (checks.includes(false)) return;
+      if (checks.includes(false)) return focusFirstError();
 
       const result = await createSignup({
         loginId: values.loginId,
@@ -182,7 +212,9 @@ export function SignupForm() {
       }
 
       // 로그인 세션이 아직 없어 완료 화면에 보여줄 값을 쿼리로 들고 간다(signup-done/page.tsx 참고).
-      const params = new URLSearchParams({ tradeName: result.tradeName, loginId: result.loginId, email: result.email });
+      // signupToken 이 있어야 완료 화면이 상호명·아이디·이메일을 보인다 — 없으면(토큰 없는 주소를 직접
+      // 만들어 들어온 경우) 아무 값이나 보여주는 가짜 완료 화면이 될 수 있다(2026-10-14 코드리뷰).
+      const params = new URLSearchParams({ signupToken: result.signupToken, tradeName: result.tradeName, loginId: result.loginId, email: result.email });
       router.push(`/auth/signup-done?${params}`);
     } catch (e) {
       // 서버 액션 호출 자체가 실패한 경우(네트워크 끊김, 배포로 액션 ID 가 바뀜 등). 버튼이 "처리 중..."에 멈추지 않게 한다.
@@ -194,7 +226,7 @@ export function SignupForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-[18px]">
+    <form ref={formRef} onSubmit={handleSubmit} noValidate className="flex flex-col gap-[18px]">
       <FormGroup
         title={
           <>
@@ -206,7 +238,7 @@ export function SignupForm() {
         }
       >
         <Row>
-          <RequiredField label="아이디" error={errors.loginId}>
+          <RequiredField label="아이디" error={errors.loginId} errorId={messageId("loginId")}>
             <TextField
               value={values.loginId}
               onChange={(e) => handleAvailabilityChange("loginId", e.target.value)}
@@ -214,6 +246,8 @@ export function SignupForm() {
               autoComplete="username"
               placeholder="영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요."
               disabled={pending}
+              aria-invalid={invalid("loginId")}
+              aria-describedby={describe("loginId")}
             />
             {available.loginId && !errors.loginId ? (
               <span className="flex items-center gap-[4px] text-[13px] text-erp-on">
@@ -221,8 +255,15 @@ export function SignupForm() {
               </span>
             ) : null}
           </RequiredField>
-          <RequiredField label="이름" error={errors.name}>
-            <TextField value={values.name} onChange={(e) => set("name", e.target.value)} onBlur={() => check("name")} placeholder="한글 또는 영문 2~20자로 입력해 주세요." />
+          <RequiredField label="이름" error={errors.name} errorId={messageId("name")}>
+            <TextField
+              value={values.name}
+              onChange={(e) => set("name", e.target.value)}
+              onBlur={() => check("name")}
+              placeholder="한글 또는 영문 2~20자로 입력해 주세요."
+              aria-invalid={invalid("name")}
+              aria-describedby={describe("name")}
+            />
           </RequiredField>
         </Row>
 
@@ -235,6 +276,9 @@ export function SignupForm() {
             autoComplete="new-password"
             placeholder="영문·숫자·특수문자를 조합하여 8~20자 입력해 주세요."
             error={errors.password}
+            errorId={messageId("password")}
+            aria-invalid={invalid("password")}
+            aria-describedby={describe("password")}
           />
           <PasswordField
             label="비밀번호 확인"
@@ -243,17 +287,22 @@ export function SignupForm() {
             onBlur={() => check("passwordConfirm")}
             autoComplete="new-password"
             error={errors.passwordConfirm}
+            errorId={messageId("passwordConfirm")}
+            aria-invalid={invalid("passwordConfirm")}
+            aria-describedby={describe("passwordConfirm")}
           />
         </Row>
 
         <Row>
-          <RequiredField label="이메일" error={errors.email}>
+          <RequiredField label="이메일" error={errors.email} errorId={messageId("email")}>
             <TextField
               type="email"
               value={values.email}
               onChange={(e) => handleAvailabilityChange("email", e.target.value)}
               onBlur={() => !available.email && verifyAvailability("email", values.email)}
               disabled={pending}
+              aria-invalid={invalid("email")}
+              aria-describedby={describe("email")}
             />
             {available.email && !errors.email ? (
               <span className="flex items-center gap-[4px] text-[13px] text-erp-on">
@@ -261,18 +310,27 @@ export function SignupForm() {
               </span>
             ) : null}
           </RequiredField>
-          <RequiredField label="연락처" error={errors.phone}>
+          <RequiredField label="연락처" error={errors.phone} errorId={messageId("phone")}>
             <PhoneField
               values={[values.phone1, values.phone2, values.phone3]}
               onChange={(i, v) => set((["phone1", "phone2", "phone3"] as const)[i], v)}
               onBlur={() => check("phone")}
+              invalid={invalid("phone")}
+              describedBy={describe("phone")}
             />
           </RequiredField>
         </Row>
 
         <Row>
-          <RequiredField label="상호명" error={errors.tradeName}>
-            <TextField value={values.tradeName} onChange={(e) => set("tradeName", e.target.value)} onBlur={() => check("tradeName")} placeholder="50자 이내로 입력해 주세요." />
+          <RequiredField label="상호명" error={errors.tradeName} errorId={messageId("tradeName")}>
+            <TextField
+              value={values.tradeName}
+              onChange={(e) => set("tradeName", e.target.value)}
+              onBlur={() => check("tradeName")}
+              placeholder="50자 이내로 입력해 주세요."
+              aria-invalid={invalid("tradeName")}
+              aria-describedby={describe("tradeName")}
+            />
           </RequiredField>
           <Blank />
         </Row>

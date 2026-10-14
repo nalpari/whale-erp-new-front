@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Badge, Button, DateField, Field, FormGroup, TextField } from "@/components/common";
 import { Row } from "../_components/row";
 import { validateBizRegistrationNumber } from "../_components/validators";
@@ -15,6 +15,9 @@ export const BIZ_AUTH_INITIAL: BizAuthValue = { bizRegistrationNumber: "", bizCe
 // "재인증"은 입력칸을 다시 열되 값은 그대로 두어(다른 값으로 바꿔 다시 인증받도록) 편집하게 하고,
 // "지우기"는 인증한 걸 아예 안 쓰기로 한 경우라 값까지 비운 전 상태로 되돌린다.
 export function BizAuthSection({ value, onChange }: { value: BizAuthValue; onChange: (value: BizAuthValue) => void }) {
+  // 사업자등록번호·대표자명 두 칸이 이 오류 하나를 같이 쓴다(개업일자는 DateField 가 aria-invalid 를
+  // 못 받는 공통 컴포넌트라 뺀다 — 공통 컴포넌트는 1팀과 맞추지 않고 고치지 않는다).
+  const errorId = useId();
   const [triedVerify, setTriedVerify] = useState(false);
   const [bizNumberTouched, setBizNumberTouched] = useState(false);
   // 지우기마다 올려 입력칸을 새로 그린다 — 개업일자는 날짜가 완성되기 전 글자를 DateField 안에만 들고 있어서,
@@ -95,17 +98,24 @@ export function BizAuthSection({ value, onChange }: { value: BizAuthValue; onCha
                 inputMode="numeric"
                 maxLength={10}
                 placeholder="숫자 10자리"
+                aria-invalid={error ? true : undefined}
+                aria-describedby={error ? errorId : undefined}
               />
             </Field>
             <Field label="대표자명">
-              <TextField value={value.bizCeoName} onChange={(e) => onChange({ ...value, bizCeoName: e.target.value })} />
+              <TextField
+                value={value.bizCeoName}
+                onChange={(e) => onChange({ ...value, bizCeoName: e.target.value })}
+                aria-invalid={error ? true : undefined}
+                aria-describedby={error ? errorId : undefined}
+              />
             </Field>
             <Field label="개업일자">
               <DateField aria-label="개업일자" value={value.bizOpenDate} onChange={(bizOpenDate) => onChange({ ...value, bizOpenDate })} />
             </Field>
           </Row>
           {error ? (
-            <span role="alert" className="text-[13px] text-[#e93737]">
+            <span id={errorId} role="alert" className="text-[13px] text-[#e93737]">
               {error}
             </span>
           ) : null}

@@ -10,10 +10,15 @@ export function PhoneField({
   values,
   onChange,
   onBlur,
+  invalid,
+  describedBy,
 }: {
   values: [string, string, string];
   onChange: (index: 0 | 1 | 2, value: string) => void;
   onBlur?: () => void;
+  // 세 칸이 한 오류를 같이 쓴다 — admin-form-panel.tsx 의 연락처 칸과 같은 짝(2026-10-14 코드리뷰).
+  invalid?: boolean;
+  describedBy?: string;
 }) {
   return (
     <div
@@ -29,6 +34,8 @@ export function PhoneField({
           onChange={(e) => onChange(i as 0 | 1 | 2, e.target.value.replace(/\D/g, ""))}
           inputMode="numeric"
           aria-label={LABELS[i]}
+          aria-invalid={invalid || undefined}
+          aria-describedby={describedBy}
           maxLength={4}
         />
       ))}

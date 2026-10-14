@@ -4,7 +4,21 @@ import type { ReactNode } from "react";
 // 칸 아래 오류 문구(빨간 글씨)를 보여주려고 따로 둔다. Field 의 label 은 string 만 받아 JSX 를 못 넣는다 —
 // 공통 컴포넌트는 고치지 않고(DESIGN.md 변경은 1팀과 맞춰야 함) 여기서 조합한다.
 // 입력창 아래에는 오류 문구만 보인다 — 안내 placeholder 는 칸 안에 있어 따로 두지 않는다.
-export function RequiredField({ label, width, error, children }: { label: string; width?: `w-[${number}px]`; error?: string; children: ReactNode }) {
+// errorId 는 오류 문구 <span> 의 id 다 — 입력칸의 aria-describedby 가 이 id 를 가리켜야 스크린리더가
+// 오류를 읽는다(admin-form-panel.tsx 의 describe() 와 같은 짝, 2026-10-14 코드리뷰로 더함).
+export function RequiredField({
+  label,
+  width,
+  error,
+  errorId,
+  children,
+}: {
+  label: string;
+  width?: `w-[${number}px]`;
+  error?: string;
+  errorId?: string;
+  children: ReactNode;
+}) {
   return (
     <label className={`flex flex-col justify-center gap-[8px] ${width ?? "min-w-px flex-1"}`}>
       <span className="truncate text-[14px] font-medium text-erp-label">
@@ -17,7 +31,7 @@ export function RequiredField({ label, width, error, children }: { label: string
       </span>
       {children}
       {error ? (
-        <span role="alert" className="text-[13px] text-[#e93737]">
+        <span id={errorId} role="alert" className="text-[13px] text-[#e93737]">
           {error}
         </span>
       ) : null}

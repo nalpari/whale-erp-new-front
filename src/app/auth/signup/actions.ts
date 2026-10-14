@@ -15,20 +15,24 @@ export type SignupPayload = {
 };
 
 // 완료 화면에 보여 줄 값. api 가 정규화한 값(아이디·이메일 소문자)이라 입력값 대신 이것을 쓴다.
-export type SignupResult = { ok: true; tradeName: string; loginId: string; email: string } | { ok: false; message: string };
+// signupToken 은 완료 화면 주소에 실어 보낸다 — 토큰 없이 들어온 주소는 가입 안 한 사람이 값만 지어
+// 만든 것일 수 있어, 완료 화면이 상호명·아이디·이메일을 안 보인다(signup-done/page.tsx, 2026-10-14 코드리뷰).
+export type SignupResult = { ok: true; signupToken: string; tradeName: string; loginId: string; email: string } | { ok: false; message: string };
 
-// 회원가입 제출. api squirtle 브랜치의 /auth/signup 은 아이디·이메일이 이미 쓰이면 409 를 준다 — api·front
+// 회원가입 제출. api bulbasaur 브랜치의 /auth/signup 은 아이디·이메일이 이미 쓰이면 409 를 준다 — api·front
 // 모두 아직 main 에 안 들어갔다(2026-10-12). 폼이 제출 전에 중복 확인을 마치므로, 확인과 제출 사이에
 // 누가 먼저 가입한 경우에만 여기까지 온다.
 export async function createSignup(payload: SignupPayload): Promise<SignupResult> {
   try {
-    // 응답의 signupToken(완료 화면용, 10분)은 아직 쓰지 않는다 — 완료 화면을 백엔드 기준으로 바꿀 때 쓴다.
-    const { tradeName, loginId, email } = await request<{ signupToken: string; tradeName: string; loginId: string; email: string }>("/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    return { ok: true, tradeName, loginId, email };
+    const { signupToken, tradeName, loginId, email } = await request<{ signupToken: string; tradeName: string; loginId: string; email: string }>(
+      "/auth/signup",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      },
+    );
+    return { ok: true, signupToken, tradeName, loginId, email };
   } catch (error) {
     if (error instanceof ApiError) return { ok: false, message: error.message };
     // 서버 액션은 Next 서버에서 돈다 — 여기서 로그를 안 남기면 실패가 어디에도 안 남는다(2026-10-12 코드리뷰).
