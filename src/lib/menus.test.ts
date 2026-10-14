@@ -35,6 +35,12 @@ test("isAllowed: 접두만 같은 주소는 막힌다", () => {
   assert.equal(isAllowed(menus, "/settings/admins-x", "/home"), false);
 });
 
+test("isAllowed: 알림 템플릿 관리는 api 메뉴에 없어도 플랫폼 화면에서만 임시로 열린다", () => {
+  for (const p of ["/platform/notification-templates", "/platform/notification-templates/new", "/platform/notification-templates/3"])
+    assert.equal(isAllowed([], p, "/platform"), true, p);
+  assert.equal(isAllowed([], "/platform/notification-templates", "/home"), false);
+});
+
 test("isAllowed: 3단계에만 있는 주소도 열리고, url 없는 메뉴가 있어도 깨지지 않는다", () => {
   assert.equal(isAllowed(menus, "/staff/contracts", "/home"), true);
   assert.equal(isAllowed(menus, "/staff", "/home"), false);

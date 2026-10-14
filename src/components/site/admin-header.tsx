@@ -5,6 +5,7 @@ import { GlobalHeader, ServiceLinks, StoreSelect, UserPop, type HeaderMenu, type
 import { logout } from "@/app/actions";
 import { roleLabel } from "@/lib/auth-routes";
 import type { Scope } from "@/lib/browser-storage";
+import { findMenu, PENDING_PLATFORM_MENU } from "@/lib/menus";
 import type { AdminMenu, AdminStore } from "@/lib/session";
 import { useAccount, useCurrentBp, useMenus, useScope, useStores } from "./session-gate";
 
@@ -15,10 +16,16 @@ import { useAccount, useCurrentBp, useMenus, useScope, useStores } from "./sessi
 export function AdminHeader({ area, alarm }: { area: "erp" | "platform"; alarm: ReactNode }) {
   const account = useAccount();
   const ofArea = (m: AdminMenu) => m.serviceCode === SERVICE[area];
-  const menus: HeaderMenu[] = useMenus()
+  const all = useMenus();
+  const menus: HeaderMenu[] = all
     .filter(ofArea)
     .map((m) => {
-      const items = m.children.filter(ofArea).map((c) => ({ label: c.name, href: c.url ?? "#" }));
+      const items = m.children.filter(ofArea).flatMap((c) => {
+        const item = { label: c.name, href: c.url ?? "#" };
+        const pending = PENDING_PLATFORM_MENU;
+        const missing = area === "platform" && c.url === pending.after && !findMenu(all, (x) => x.url === pending.url);
+        return missing ? [item, { label: pending.name, href: pending.url }] : [item];
+      });
       return { label: m.name, items, href: items.length === 0 && m.url ? m.url : undefined };
     });
   // 내정보·비밀번호·회원 탈퇴는 슬라이드 패널 작업 전이라 아직 아무 데도 가지 않는다.
