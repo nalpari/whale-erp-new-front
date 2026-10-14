@@ -3,6 +3,7 @@
 ## 2026-10-13
 
 * **Update**: 바꿀 수 없는 입력칸 모양(disabled 에 더해 readOnly 도 #f8f9fb 바탕·회색 글자)을 [Whale ERP Frontend](/whale-erp-front.md) 공통 컴포넌트 설명에 적었다.
+* **Update**: 회원가입·가입 완료를 GNB·푸터가 있는 공개 화면 틀(`site-page.tsx`)로 옮기고 기본정보 칸 순서를 바꾼 것을 [Whale ERP Frontend](/whale-erp-front.md) 에 적었다.
 * **Update**: 로그인 개발 예정 안내를 "얼럿"이 아니라 body 로 포털한 디자인 시스템 dialog 로 [Whale ERP Frontend](/whale-erp-front.md) 에 고쳐 적었다(hydration 오류 수정).
 
 ## 2026-10-12

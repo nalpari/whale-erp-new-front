@@ -15,6 +15,15 @@
         "rule": "design-system-font-size",
         "value": "12px",
         "createdAt": "2026-10-07T06:48:04.847Z"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "11px",
+        "files": [
+          "src/app/auth/_components/site-page.tsx"
+        ],
+        "createdAt": "2026-10-13T03:41:19.058Z",
+        "reason": "1팀 Figma 푸터(node 1-689)의 INTERPLUG 로고 아랫줄 크기, docs/demo/src/public.mjs siteFoot 와 같음(2026-10-07 데모 반영)"
       }
     ]
   }

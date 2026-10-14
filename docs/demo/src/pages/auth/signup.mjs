@@ -15,14 +15,19 @@ const blank = '<div class="min-w-px flex-1"></div>';
 export default ({ A, R }) => {
   const basic = ui.formGroup(
     `기본정보<span class="ml-[10px] text-[14px] font-normal text-erp-label">(<span class="text-[#e93737]">*</span> 표시는 필수 기재 항목입니다.)</span>`,
-    // 아이디·이메일·상호명도 비밀번호·이름처럼 반 폭으로 맞춘다(2026-10-12 피드백) — 남는 반은 blank 로 채운다.
-    p.row(ui.field(req("아이디"), ui.textField({ value: "hangang01", autocomplete: "username", placeholder: "영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요." }) + AVAILABLE), blank),
+    // 아이디|이름, 비밀번호|확인, 이메일|연락처, 상호명|빈칸 순서로 둔다(2026-10-13 피드백) — 남는 반은 blank 로 채운다.
+    p.row(
+      ui.field(req("아이디"), ui.textField({ value: "hangang01", autocomplete: "username", placeholder: "영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요." }) + AVAILABLE),
+      ui.field(req("이름"), ui.textField({ value: "정하윤", placeholder: "한글 또는 영문 2~20자" })),
+    ),
     p.row(
       pwField("비밀번호", "whale-2026!", "new-password", "", "영문·숫자·특수문자를 조합하여 8~20자 입력해 주세요."),
       pwField("비밀번호 확인", "whale-2026!", "new-password"),
     ),
-    p.row(ui.field(req("이름"), ui.textField({ value: "정하윤", placeholder: "한글 또는 영문 2~20자" })), ui.field(req("연락처"), tel("010", "4821", "7730"))),
-    p.row(ui.field(req("이메일"), ui.textField({ type: "email", value: "hayoon@hangang.co.kr" }) + AVAILABLE), blank),
+    p.row(
+      ui.field(req("이메일"), ui.textField({ type: "email", value: "hayoon@hangang.co.kr" }) + AVAILABLE),
+      ui.field(req("연락처"), tel("010", "4821", "7730")),
+    ),
     p.row(ui.field(req("상호명"), ui.textField({ value: "㈜한강상회", placeholder: "50자 이내로 입력해 주세요." })), blank),
   );
 
@@ -62,16 +67,17 @@ export default ({ A, R }) => {
   // 실제 개발 화면과 같은 자리(약관동의 카드와 회원가입 버튼 사이) — 하나만 비었으면 그 이름만 말한다.
   const agreeError = `<span role="alert" class="text-[13px] text-[#e93737]">이용약관과 개인정보 수집·이용에 모두 동의해 주세요.</span>`;
 
-  const card =
-    p.cardTitle("회원가입") +
+  // 도입문의와 같은 틀(2026-10-13 피드백) — 위에 GNB(로고 포함), 제목은 흰 폼 밖 위쪽 22px, 아래에 푸터.
+  const form =
     basic +
     biz +
     agree +
     agreeError +
     p.block(ui.button("회원가입", { href: link(R, "auth/signup-done.html") })) +
     `<p class="flex justify-center gap-[10px] text-[14px]"><span class="text-erp-label">이미 계정이 있나요?</span>${p.quietLink('<b class="font-semibold text-erp-ink">로그인</b>', link(R, "auth/login.html"))}</p>` +
-    // 내용보기 확인창 폭을 이 카드(w-[860px] · 도입문의 화면과 같은 폭, 2026-10-07 피드백)에 맞춘다.
+    // 내용보기 확인창 폭을 본문(w-[860px] · 도입문의 화면과 같은 폭, 2026-10-07 피드백)에 맞춘다.
     p.termsDialog(use, "use", "w-[860px]") +
     p.termsDialog(privacy, "privacy", "w-[860px]");
-  return { title: "회원가입", html: p.authPage(A, R, { card, width: "w-[860px]" }) };
+  const main = `<div class="mx-auto flex w-[860px] flex-col gap-[24px] px-[24px] py-[48px]"><h1 class="text-[22px] font-semibold">회원가입</h1><div class="flex flex-col gap-[18px]">${form}</div></div>`;
+  return { title: "회원가입", html: p.sitePage(A, R, { main, foot: p.siteFoot(A, R) }) };
 };

@@ -17,6 +17,9 @@ export const BIZ_AUTH_INITIAL: BizAuthValue = { bizRegistrationNumber: "", bizCe
 export function BizAuthSection({ value, onChange }: { value: BizAuthValue; onChange: (value: BizAuthValue) => void }) {
   const [triedVerify, setTriedVerify] = useState(false);
   const [bizNumberTouched, setBizNumberTouched] = useState(false);
+  // 지우기마다 올려 입력칸을 새로 그린다 — 개업일자는 날짜가 완성되기 전 글자를 DateField 안에만 들고 있어서,
+  // 값("")이 그대로면 치던 글자가 남는다.
+  const [clearCount, setClearCount] = useState(0);
 
   // 약관동의 오류와 같다 — 비어 있는 항목 이름만 말하고, 한 번 시도한 뒤로는 입력할 때마다 바로 따라 바뀐다.
   // 빈 칸이 없으면 사업자등록번호 형식을 본다 — 형식이 틀린 번호가 "인증완료"로 가입 요청에 실리지 않게 한다.
@@ -28,7 +31,10 @@ export function BizAuthSection({ value, onChange }: { value: BizAuthValue; onCha
   // 형식 오류는 "인증하기"를 누르기 전에도, 번호 칸을 한 번 벗어난 뒤로는 바로 보인다(2026-10-12 피드백).
   const error = triedVerify ? invalid : bizNumberTouched ? formatError : undefined;
   // 한 글자라도 들어간 칸이 있으면 — 인증 전이라도 "지우기"로 지울 게 있다는 뜻이다(2026-10-12 피드백).
+  // 오류 문구가 보일 때도 지우기를 보인다(2026-10-13 피드백) — 치는 도중인 개업일자처럼 값으로 안 잡히는 글자가 있거나,
+  // 빈 칸으로 인증하기를 눌러 오류만 떠 있을 때도 한 번에 처음으로 돌릴 수 있게 한다.
   const hasInput = !!(value.bizRegistrationNumber || value.bizCeoName || value.bizOpenDate);
+  const showClear = hasInput || !!error;
 
   function handleVerifyClick() {
     setTriedVerify(true);
@@ -44,6 +50,7 @@ export function BizAuthSection({ value, onChange }: { value: BizAuthValue; onCha
   function handleClearClick() {
     setTriedVerify(false);
     setBizNumberTouched(false);
+    setClearCount((n) => n + 1);
     onChange(BIZ_AUTH_INITIAL);
   }
 
@@ -78,7 +85,7 @@ export function BizAuthSection({ value, onChange }: { value: BizAuthValue; onCha
       ) : (
         <>
           <h4 className="text-[14px] font-semibold">사업자 번호 인증</h4>
-          <Row>
+          <Row key={clearCount}>
             <Field label="사업자등록번호">
               {/* 숫자만 받는다(연락처와 같다). 붙여 넣은 하이픈·공백도 걸러 낸다. */}
               <TextField
@@ -106,7 +113,7 @@ export function BizAuthSection({ value, onChange }: { value: BizAuthValue; onCha
             <Button type="button" onClick={handleVerifyClick}>
               인증하기
             </Button>
-            {hasInput ? (
+            {showClear ? (
               <Button type="button" variant="off" onClick={handleClearClick}>
                 지우기
               </Button>

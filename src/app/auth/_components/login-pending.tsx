@@ -18,7 +18,9 @@ function useIsClient() {
 // 안내창은 document.body 로 포털해 띄운다. 쓰는 자리가 <p> 안일 수 있어(예: 가입 폼 「이미 계정이 있나요?」)
 // <dialog>·<div> 를 그 자리에 두면 hydration 오류가 난다(2026-10-13).
 // 포털하면 ErpRoot 밖이 되므로 ERP_THEME 을 dialog 에 직접 붙인다.
-function PendingDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+const LOGIN_PENDING = "로그인 화면은 개발 예정입니다.";
+
+function PendingDialog({ open, onClose, message }: { open: boolean; onClose: () => void; message: string }) {
   const ref = useRef<HTMLDialogElement>(null);
   const isClient = useIsClient();
 
@@ -43,7 +45,7 @@ function PendingDialog({ open, onClose }: { open: boolean; onClose: () => void }
       className={`${ERP_THEME} m-auto w-[360px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] p-0 shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40`}
     >
       <div className="p-[23px]">
-        <p className="text-[14px]">로그인 화면은 개발 예정입니다.</p>
+        <p className="text-[14px]">{message}</p>
         <div className="mt-[18px] flex justify-end">
           <Button onClick={onClose}>확인</Button>
         </div>
@@ -63,20 +65,31 @@ export function LoginPendingButton({ children }: { children: ReactNode }) {
   return (
     <>
       <Button onClick={dialog.show}>{children}</Button>
-      <PendingDialog open={dialog.open} onClose={dialog.close} />
+      <PendingDialog open={dialog.open} onClose={dialog.close} message={LOGIN_PENDING} />
     </>
   );
 }
 
 // 글자 링크처럼 보이는 자리. 생김새는 쓰는 쪽이 className 으로 정한다(auth 전용이라 공통 컴포넌트 규칙 밖).
-export function LoginPendingLink({ className, children }: { className?: string; children: ReactNode }) {
+// message 를 주면 로그인이 아닌 다른 개발 예정 화면(GNB 메뉴·도입문의·공지사항 등) 안내로 쓴다(2026-10-13).
+export function LoginPendingLink({
+  className,
+  message = LOGIN_PENDING,
+  label,
+  children,
+}: {
+  className?: string;
+  message?: string;
+  label?: string;
+  children: ReactNode;
+}) {
   const dialog = usePendingDialog();
   return (
     <>
-      <button type="button" onClick={dialog.show} className={`cursor-pointer ${className ?? ""}`}>
+      <button type="button" onClick={dialog.show} aria-label={label} className={`cursor-pointer ${className ?? ""}`}>
         {children}
       </button>
-      <PendingDialog open={dialog.open} onClose={dialog.close} />
+      <PendingDialog open={dialog.open} onClose={dialog.close} message={message} />
     </>
   );
 }

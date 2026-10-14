@@ -221,7 +221,9 @@ export function SignupForm() {
               </span>
             ) : null}
           </RequiredField>
-          <Blank />
+          <RequiredField label="이름" error={errors.name}>
+            <TextField value={values.name} onChange={(e) => set("name", e.target.value)} onBlur={() => check("name")} placeholder="한글 또는 영문 2~20자" />
+          </RequiredField>
         </Row>
 
         <Row>
@@ -245,19 +247,6 @@ export function SignupForm() {
         </Row>
 
         <Row>
-          <RequiredField label="이름" error={errors.name}>
-            <TextField value={values.name} onChange={(e) => set("name", e.target.value)} onBlur={() => check("name")} placeholder="한글 또는 영문 2~20자" />
-          </RequiredField>
-          <RequiredField label="연락처" error={errors.phone}>
-            <PhoneField
-              values={[values.phone1, values.phone2, values.phone3]}
-              onChange={(i, v) => set((["phone1", "phone2", "phone3"] as const)[i], v)}
-              onBlur={() => check("phone")}
-            />
-          </RequiredField>
-        </Row>
-
-        <Row>
           <RequiredField label="이메일" error={errors.email}>
             <TextField
               type="email"
@@ -272,7 +261,13 @@ export function SignupForm() {
               </span>
             ) : null}
           </RequiredField>
-          <Blank />
+          <RequiredField label="연락처" error={errors.phone}>
+            <PhoneField
+              values={[values.phone1, values.phone2, values.phone3]}
+              onChange={(i, v) => set((["phone1", "phone2", "phone3"] as const)[i], v)}
+              onBlur={() => check("phone")}
+            />
+          </RequiredField>
         </Row>
 
         <Row>

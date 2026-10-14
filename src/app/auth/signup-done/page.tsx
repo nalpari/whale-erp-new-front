@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { ErpRoot } from "@/components/common";
-import { AuthCard } from "../_components/auth-card";
 import { LoginPendingButton, LoginPendingLink } from "../_components/login-pending";
+import { SitePage } from "../_components/site-page";
 
 export const metadata: Metadata = {
   title: "가입 완료 · Whale ERP",
@@ -19,10 +18,11 @@ export default async function SignupDonePage({ searchParams }: { searchParams: S
   const { tradeName, loginId, email } = await searchParams;
 
   return (
-    <ErpRoot>
-      <AuthCard>
-        <div className="flex flex-col items-center gap-[10px] py-[18px] text-center">
-          <h1 className="text-[18px] font-semibold">회원가입이 완료되었습니다</h1>
+    <SitePage>
+      {/* 회원가입과 같은 틀(2026-10-13 피드백). 가운데 카드는 쓰지 않는다. */}
+      <div className="mx-auto flex w-[420px] flex-col gap-[24px] py-[96px]">
+        <div className="flex flex-col items-center gap-[10px] text-center">
+          <h1 className="text-[22px] font-semibold">회원가입이 완료되었습니다</h1>
           {tradeName || loginId ? (
             <p className="text-[14px]">
               {tradeName}
@@ -46,7 +46,7 @@ export default async function SignupDonePage({ searchParams }: { searchParams: S
           <LoginPendingLink className="text-erp-link hover:underline">로그인 화면</LoginPendingLink>
           에서 가입한 아이디로 들어오세요.
         </p>
-      </AuthCard>
-    </ErpRoot>
+      </div>
+    </SitePage>
   );
 }
