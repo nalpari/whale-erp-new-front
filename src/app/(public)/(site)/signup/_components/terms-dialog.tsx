@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
-import { Button } from "@/components/common";
+import { SUBMIT } from "@/app/design/guest/guest-form";
 import type { TermsDoc, TermsSection } from "./terms";
 
 // [ ] 로 감싼 자리는 회사가 아직 정하지 못한 값이다 — 약관 문구 안에서만 빨갛게 눈에 띄게 한다(docs/mockup/assets/auth.js 의 markTBD 와 같다).
@@ -18,7 +18,7 @@ function markTbd(text: string): ReactNode {
   );
 }
 
-const CELL = "border border-erp-thead-line px-[10px] py-[6px] text-left align-top";
+const CELL = "border border-[#ebebeb] px-[12px] py-[8px] text-left align-top";
 
 function TermsSectionBody({ section }: { section: TermsSection }) {
   const [heading, content] = section;
@@ -32,11 +32,11 @@ function TermsSectionBody({ section }: { section: TermsSection }) {
           ))}
         </ol>
       ) : typeof content === "object" ? (
-        <table className="w-full border-collapse text-[13px]">
-          <thead>
+        <table className="w-full border-collapse text-[14px]">
+          <thead className="bg-guest-card text-guest-navy">
             <tr>
               {content.head.map((h) => (
-                <th key={h} className={`${CELL} bg-erp-thead-bg font-medium text-erp-thead-text`}>
+                <th key={h} className={`${CELL} font-medium`}>
                   {h}
                 </th>
               ))}
@@ -61,8 +61,8 @@ function TermsSectionBody({ section }: { section: TermsSection }) {
   );
 }
 
-// 약관 전문 확인창. 로그인 화면 약관 링크(components/site/terms-link.tsx)와 같은 방식(네이티브 <dialog>)이고, 폭은 카드(860px)에 맞춘다.
-// 약관도 다르다 — 회원가입은 이용약관 · 개인정보 수집·이용 동의(./terms.ts), 로그인 화면은 이용약관 · 개인정보처리방침(@/lib/terms).
+// 약관 전문 확인창. 네이티브 <dialog> 라 Esc 닫기와 바깥 포커스 막기는 브라우저가 맡는다. 1팀 비로그인
+// 폼 규격을 쓴다 — 폭·모서리·글자색은 design/guest/sign-up 의 TermsDialog 와 같다(2026-10-14).
 export function TermsDialog({ open, onClose, doc }: { open: boolean; onClose: () => void; doc: TermsDoc }) {
   const ref = useRef<HTMLDialogElement>(null);
 
@@ -76,25 +76,26 @@ export function TermsDialog({ open, onClose, doc }: { open: boolean; onClose: ()
   return (
     <dialog
       ref={ref}
+      aria-label={doc.title}
       onClose={onClose}
       onClick={(e) => {
-        // dialog 자체(backdrop)를 눌렀을 때만 닫는다 — dialog 는 p-0 이고 여백은 안쪽 div 가 갖게 해서,
-        // 안쪽 여백을 눌러도 e.target 이 dialog 가 되지 않게 한다(2026-10-12 코드리뷰 — 패딩 안쪽을 눌러도 닫히던 버그).
+        // dialog 자체(backdrop)를 눌렀을 때만 닫는다 — 안쪽 여백을 눌러도 e.target 이 dialog 가 되지 않게 한다.
         if (e.target === ref.current) onClose();
       }}
-      className="m-auto w-[860px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-0 font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
+      className="m-auto w-[860px] max-w-[calc(100vw-32px)] rounded-[6px] bg-white p-[32px] text-guest-ink backdrop:bg-black/40"
     >
-      <div className="p-[23px]">
-        <h2 className="text-[18px] font-semibold">{doc.title}</h2>
-        <p className="text-[12px] text-erp-label">{doc.ver}</p>
-        <div className="mt-[12px] flex max-h-[60dvh] flex-col gap-[12px] overflow-y-auto pr-[10px]">
-          {doc.body.map((section, i) => (
-            <TermsSectionBody key={i} section={section} />
-          ))}
-        </div>
-        <div className="mt-[24px] flex justify-end gap-[6px]">
-          <Button onClick={onClose}>확인</Button>
-        </div>
+      <h2 className="text-[22px] leading-[1.4] font-bold">{doc.title}</h2>
+      <p className="mt-[4px] text-[14px] text-[#767676]">{doc.ver}</p>
+      <div className="mt-[20px] flex max-h-[60dvh] flex-col gap-[16px] overflow-y-auto pr-[10px] text-[15px] leading-[1.6]">
+        {doc.body.map((section, i) => (
+          <TermsSectionBody key={i} section={section} />
+        ))}
+      </div>
+      {/* 회원가입 form 안에 있어 method="dialog" form 을 겹칠 수 없다. 단추가 직접 닫는다. */}
+      <div className="mt-[24px] flex justify-end">
+        <button type="button" onClick={onClose} className={`w-[180px] ${SUBMIT}`}>
+          확인
+        </button>
       </div>
     </dialog>
   );

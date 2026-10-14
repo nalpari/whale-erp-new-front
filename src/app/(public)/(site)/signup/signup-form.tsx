@@ -3,12 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useRef, useState, type FormEvent } from "react";
-import { Button, FormGroup, TextField } from "@/components/common";
-import { Blank } from "./_components/blank";
+import { INPUT, INPUT_BOX, SUBMIT } from "@/app/design/guest/guest-form";
+import { HOVER } from "@/app/design/guest/theme";
 import { PasswordField } from "./_components/password-field";
 import { PhoneField } from "./_components/phone-field";
 import { RequiredField } from "./_components/required-field";
-import { Row } from "./_components/row";
 import {
   validateEmail,
   validateLoginId,
@@ -84,7 +83,7 @@ const AVAILABILITY: Record<
   email: { validate: validateEmail, request: checkEmailAvailability, takenMessage: "이미 사용 중인 이메일입니다." },
 };
 
-// 체크 표시는 운영 파랑(erp-on) — "사용 가능"도 상태라 상태색을 쓴다(2026-10-12).
+// 체크 표시는 1팀 비로그인 폼의 확인 색(#5e8ce9) — design/guest/sign-up 의 CheckedInput 과 같다(2026-10-14).
 const CHECK_CIRCLE = (
   <svg viewBox="0 0 20 20" className="size-[16px] shrink-0" aria-hidden>
     <circle cx="10" cy="10" r="9" fill="currentColor" />
@@ -101,6 +100,9 @@ function agreeErrorMessage(useAgreed: boolean, privacyAgreed: boolean): string |
 
 // 회원가입 폼 전체. 1~4단계(기본정보·사업자정보 인증·약관동의·제출)를 한 컴포넌트가 들고 있다 —
 // 제출 때 모든 섹션 값이 한 번에 필요해서, 섹션마다 흩어져 있던 상태를 여기로 모았다.
+// 모양은 1팀 비로그인 폼 규격(guest-form.ts)을 쓴다 — docs/demo/src/pages/auth/signup.mjs 가
+// design/guest/sign-up(기획 시안 + Figma 폼 규격)을 기준으로 삼기로 하면서 맞췄다(2026-10-14).
+// 아이디·이메일 중복 확인, 사업자정보 인증, 약관 동의, 제출은 디자인 샘플과 달리 전부 실제로 동작한다.
 export function SignupForm() {
   const router = useRouter();
   const ids = useId();
@@ -233,147 +235,149 @@ export function SignupForm() {
   }
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} noValidate className="flex flex-col gap-[18px]">
+    <form ref={formRef} onSubmit={handleSubmit} noValidate className="flex flex-col gap-[40px]">
       {/* 제출 중(pending)에는 폼 전체를 잠근다 — 아이디·이메일만 잠그면 나머지 칸은 계속 고칠 수 있는데,
           handleSubmit 은 이미 클로저로 캡처한 제출 시점 값을 보내고 있어서 고친 값이 조용히 버려진다
           (가입은 되돌릴 수 없다 — 2026-10-14 ip-code-review-claude 블로커#1). fieldset 하나로 안의 모든
-          입력·버튼·체크박스를 한 번에 잠근다. className="contents" 로 레이아웃(gap-[18px])에 끼어들지 않는다. */}
+          입력·버튼·체크박스를 한 번에 잠근다. className="contents" 로 레이아웃(gap-[40px])에 끼어들지 않는다. */}
       <fieldset disabled={pending} className="contents">
-      <FormGroup
-        title={
-          <>
+        <section className="flex flex-col gap-[24px]">
+          <h2 className="text-[20px] leading-[1.4] font-semibold text-[#111]">
             기본정보
-            <span className="ml-[10px] text-[14px] font-normal text-erp-label">
+            <span className="ml-[10px] text-[15px] font-normal text-[#767676]">
               (<span className="text-[#e93737]">*</span> 표시는 필수 기재 항목입니다.)
             </span>
-          </>
-        }
-      >
-        <Row>
-          <RequiredField label="아이디" error={errors.loginId} errorId={messageId("loginId")}>
-            <TextField
-              value={values.loginId}
-              onChange={(e) => handleAvailabilityChange("loginId", e.target.value)}
-              onBlur={() => !pending && !available.loginId && verifyAvailability("loginId", values.loginId).catch((e) => console.error("[signup] blur check failed", "loginId", e))}
-              autoComplete="username"
-              placeholder="영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요."
-              aria-invalid={invalid("loginId")}
-              aria-describedby={describe("loginId")}
-            />
-            {available.loginId && !errors.loginId ? (
-              <span className="flex items-center gap-[4px] text-[13px] text-erp-on">
-                {CHECK_CIRCLE} 사용가능합니다.
+          </h2>
+          <div className="grid grid-cols-2 gap-x-[16px] gap-y-[24px]">
+            <RequiredField label="아이디" error={errors.loginId} errorId={messageId("loginId")}>
+              <span className={INPUT_BOX}>
+                <input
+                  value={values.loginId}
+                  onChange={(e) => handleAvailabilityChange("loginId", e.target.value)}
+                  onBlur={() =>
+                    !pending && !available.loginId && verifyAvailability("loginId", values.loginId).catch((e) => console.error("[signup] blur check failed", "loginId", e))
+                  }
+                  autoComplete="username"
+                  placeholder="영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요."
+                  aria-invalid={invalid("loginId")}
+                  aria-describedby={describe("loginId")}
+                  className={INPUT}
+                />
               </span>
-            ) : null}
-          </RequiredField>
-          <RequiredField label="이름" error={errors.name} errorId={messageId("name")}>
-            <TextField
-              value={values.name}
-              onChange={(e) => set("name", e.target.value)}
-              onBlur={() => check("name")}
-              placeholder="한글 또는 영문 2~20자로 입력해 주세요."
-              aria-invalid={invalid("name")}
-              aria-describedby={describe("name")}
-            />
-          </RequiredField>
-        </Row>
-
-        <Row>
-          <PasswordField
-            label="비밀번호"
-            value={values.password}
-            onChange={(e) => set("password", e.target.value)}
-            onBlur={() => check("password")}
-            autoComplete="new-password"
-            placeholder="영문·숫자·특수문자를 조합하여 8~20자 입력해 주세요."
-            error={errors.password}
-            errorId={messageId("password")}
-            aria-invalid={invalid("password")}
-            aria-describedby={describe("password")}
-          />
-          <PasswordField
-            label="비밀번호 확인"
-            value={values.passwordConfirm}
-            onChange={(e) => set("passwordConfirm", e.target.value)}
-            onBlur={() => check("passwordConfirm")}
-            autoComplete="new-password"
-            error={errors.passwordConfirm}
-            errorId={messageId("passwordConfirm")}
-            aria-invalid={invalid("passwordConfirm")}
-            aria-describedby={describe("passwordConfirm")}
-          />
-        </Row>
-
-        <Row>
-          <RequiredField label="이메일" error={errors.email} errorId={messageId("email")}>
-            <TextField
-              type="email"
-              value={values.email}
-              onChange={(e) => handleAvailabilityChange("email", e.target.value)}
-              onBlur={() => !pending && !available.email && verifyAvailability("email", values.email).catch((e) => console.error("[signup] blur check failed", "email", e))}
-              aria-invalid={invalid("email")}
-              aria-describedby={describe("email")}
-            />
-            {available.email && !errors.email ? (
-              <span className="flex items-center gap-[4px] text-[13px] text-erp-on">
-                {CHECK_CIRCLE} 사용가능합니다.
+              {available.loginId && !errors.loginId ? (
+                <span className="-mt-[2px] flex items-center gap-[4px] text-[14px] leading-[1.5] text-[#5e8ce9]">{CHECK_CIRCLE} 사용가능합니다.</span>
+              ) : null}
+            </RequiredField>
+            <RequiredField label="이름" error={errors.name} errorId={messageId("name")}>
+              <span className={INPUT_BOX}>
+                <input
+                  value={values.name}
+                  onChange={(e) => set("name", e.target.value)}
+                  onBlur={() => check("name")}
+                  placeholder="한글 또는 영문 2~20자로 입력해 주세요."
+                  aria-invalid={invalid("name")}
+                  aria-describedby={describe("name")}
+                  className={INPUT}
+                />
               </span>
-            ) : null}
-          </RequiredField>
-          <RequiredField label="연락처" error={errors.phone} errorId={messageId("phone")}>
-            <PhoneField
-              values={[values.phone1, values.phone2, values.phone3]}
-              onChange={(i, v) => set((["phone1", "phone2", "phone3"] as const)[i], v)}
-              onBlur={() => check("phone")}
-              invalid={invalid("phone")}
-              describedBy={describe("phone")}
+            </RequiredField>
+
+            <PasswordField
+              label="비밀번호"
+              value={values.password}
+              onChange={(e) => set("password", e.target.value)}
+              onBlur={() => check("password")}
+              autoComplete="new-password"
+              placeholder="영문·숫자·특수문자를 조합하여 8~20자 입력해 주세요."
+              error={errors.password}
+              errorId={messageId("password")}
+              aria-invalid={invalid("password")}
+              aria-describedby={describe("password")}
             />
-          </RequiredField>
-        </Row>
-
-        <Row>
-          <RequiredField label="상호명" error={errors.tradeName} errorId={messageId("tradeName")}>
-            <TextField
-              value={values.tradeName}
-              onChange={(e) => set("tradeName", e.target.value)}
-              onBlur={() => check("tradeName")}
-              placeholder="50자 이내로 입력해 주세요."
-              aria-invalid={invalid("tradeName")}
-              aria-describedby={describe("tradeName")}
+            <PasswordField
+              label="비밀번호 확인"
+              value={values.passwordConfirm}
+              onChange={(e) => set("passwordConfirm", e.target.value)}
+              onBlur={() => check("passwordConfirm")}
+              autoComplete="new-password"
+              placeholder="비밀번호를 한 번 더 입력해 주세요."
+              error={errors.passwordConfirm}
+              errorId={messageId("passwordConfirm")}
+              aria-invalid={invalid("passwordConfirm")}
+              aria-describedby={describe("passwordConfirm")}
             />
-          </RequiredField>
-          <Blank />
-        </Row>
-      </FormGroup>
 
-      <BizAuthSection value={biz} onChange={setBiz} />
+            <RequiredField label="이메일" error={errors.email} errorId={messageId("email")}>
+              <span className={INPUT_BOX}>
+                <input
+                  type="email"
+                  value={values.email}
+                  onChange={(e) => handleAvailabilityChange("email", e.target.value)}
+                  onBlur={() =>
+                    !pending && !available.email && verifyAvailability("email", values.email).catch((e) => console.error("[signup] blur check failed", "email", e))
+                  }
+                  placeholder="example@company.com"
+                  aria-invalid={invalid("email")}
+                  aria-describedby={describe("email")}
+                  className={INPUT}
+                />
+              </span>
+              {available.email && !errors.email ? (
+                <span className="-mt-[2px] flex items-center gap-[4px] text-[14px] leading-[1.5] text-[#5e8ce9]">{CHECK_CIRCLE} 사용가능합니다.</span>
+              ) : null}
+            </RequiredField>
+            <RequiredField label="연락처" error={errors.phone} errorId={messageId("phone")}>
+              <PhoneField
+                values={[values.phone1, values.phone2, values.phone3]}
+                onChange={(i, v) => set((["phone1", "phone2", "phone3"] as const)[i], v)}
+                onBlur={() => check("phone")}
+                invalid={invalid("phone")}
+                describedBy={describe("phone")}
+              />
+            </RequiredField>
 
-      <AgreeSection value={agree} onChange={setAgree} />
+            <RequiredField label="상호명" error={errors.tradeName} errorId={messageId("tradeName")}>
+              <span className={INPUT_BOX}>
+                <input
+                  value={values.tradeName}
+                  onChange={(e) => set("tradeName", e.target.value)}
+                  onBlur={() => check("tradeName")}
+                  placeholder="50자 이내로 입력해 주세요."
+                  aria-invalid={invalid("tradeName")}
+                  aria-describedby={describe("tradeName")}
+                  className={INPUT}
+                />
+              </span>
+            </RequiredField>
+          </div>
+        </section>
+
+        <BizAuthSection value={biz} onChange={setBiz} />
+
+        <AgreeSection value={agree} onChange={setAgree} />
       </fieldset>
 
-      {agreeError ? (
-        <span role="alert" className="text-[13px] text-[#e93737]">
-          {agreeError}
-        </span>
-      ) : null}
-
-      <div className="grid">
-        <Button type="submit" disabled={pending}>
+      <div className="flex flex-col gap-[16px]">
+        {agreeError ? (
+          <span role="alert" className="text-[15px] text-[#e93737]">
+            {agreeError}
+          </span>
+        ) : null}
+        <button type="submit" disabled={pending} className={SUBMIT}>
           {pending ? "처리 중..." : "회원가입"}
-        </Button>
-      </div>
-      {submitError ? (
-        <p role="alert" className="text-center text-[13px] text-[#e93737]">
-          {submitError}
+        </button>
+        {submitError ? (
+          <p role="alert" className="text-center text-[15px] text-[#e93737]">
+            {submitError}
+          </p>
+        ) : null}
+        <p className="flex justify-center gap-[10px] text-[16px] leading-[1.5] text-[#767676]">
+          이미 계정이 있나요?
+          <Link href="/login" className={`font-semibold text-guest-ink hover:text-guest-navy ${HOVER}`}>
+            로그인
+          </Link>
         </p>
-      ) : null}
-
-      <p className="flex justify-center gap-[10px] text-[14px]">
-        <span className="text-erp-label">이미 계정이 있나요?</span>
-        <Link href="/login" className="text-erp-label transition-colors duration-150 ease-out hover:text-erp-ink">
-          <b className="font-semibold text-erp-ink">로그인</b>
-        </Link>
-      </p>
+      </div>
     </form>
   );
 }

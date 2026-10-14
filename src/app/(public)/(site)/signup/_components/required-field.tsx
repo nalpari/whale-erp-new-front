@@ -1,37 +1,34 @@
 import type { ReactNode } from "react";
+import { LABEL } from "@/app/design/guest/guest-form";
 
-// Field(src/components/common/form.tsx)와 같은 생김새이지만, 라벨에 필수 표시(빨간 *)를 넣고
-// 칸 아래 오류 문구(빨간 글씨)를 보여주려고 따로 둔다. Field 의 label 은 string 만 받아 JSX 를 못 넣는다 —
-// 공통 컴포넌트는 고치지 않고(DESIGN.md 변경은 1팀과 맞춰야 함) 여기서 조합한다.
-// 입력창 아래에는 오류 문구만 보인다 — 안내 placeholder 는 칸 안에 있어 따로 두지 않는다.
+// 1팀 비로그인 폼 규격(guest-form.ts)을 쓴다 — 로그인 전 공개 화면은 ERP 관리자 화면과 다른 디자인
+// 시스템을 쓰기로 했다(docs/demo/src/pages/auth/signup.mjs, 2026-10-14). Field(공통 컴포넌트)는
+// label 이 string 만 받고 오류 문구도 못 그려서, 여기서 라벨+필수표시+오류문구를 조합한다.
 // errorId 는 오류 문구 <span> 의 id 다 — 입력칸의 aria-describedby 가 이 id 를 가리켜야 스크린리더가
-// 오류를 읽는다(admin-form-panel.tsx 의 describe() 와 같은 짝, 2026-10-14 코드리뷰로 더함).
+// 오류를 읽는다(2026-10-14 코드리뷰).
 export function RequiredField({
   label,
-  width,
   error,
   errorId,
   children,
 }: {
   label: string;
-  width?: `w-[${number}px]`;
   error?: string;
   errorId?: string;
   children: ReactNode;
 }) {
   return (
-    <label className={`flex flex-col justify-center gap-[8px] ${width ?? "min-w-px flex-1"}`}>
-      <span className="truncate text-[14px] font-medium text-erp-label">
+    <label className="flex flex-col gap-[10px]">
+      <span className={LABEL}>
         {label}
         <span aria-hidden className="text-[#e93737]">
-          {" "}
-          *
+          {" *"}
         </span>
         <span className="sr-only">(필수)</span>
       </span>
       {children}
       {error ? (
-        <span id={errorId} role="alert" className="text-[13px] text-[#e93737]">
+        <span id={errorId} role="alert" className="text-[14px] leading-[1.5] text-[#e93737]">
           {error}
         </span>
       ) : null}
