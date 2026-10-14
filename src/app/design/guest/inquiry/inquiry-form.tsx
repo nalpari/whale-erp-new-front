@@ -35,10 +35,12 @@ function Field({ label, required = false, help, children }: { label: string; req
 }
 
 // 입력칸과 같은 껍데기에 오른쪽 화살표. 처음엔 숨긴 빈 선택지가 「선택해 주세요」를 보인다.
+// 펼친 목록 생김새는 globals.css 의 select.guest-select 가 맡고, 열리면 화살표가 뒤집힌다.
+// select 는 칸의 여백까지 덮어 56px 칸 어디를 눌러도 열린다. 화살표는 그 위에 겹치고 클릭을 통과시킨다.
 function Select({ name, options, required = false, onChange }: { name: string; options: string[]; required?: boolean; onChange?: (value: string) => void }) {
   return (
-    <span className={INPUT_BOX}>
-      <select name={name} required={required} defaultValue="" onChange={(e) => onChange?.(e.target.value)} className={`${INPUT} appearance-none has-[option[value='']:checked]:text-[#999]`}>
+    <span className={`${INPUT_BOX} relative [&:has(select:open)_svg]:rotate-180`}>
+      <select name={name} required={required} defaultValue="" onChange={(e) => onChange?.(e.target.value)} className={`guest-select ${INPUT} -mx-[16px] cursor-pointer appearance-none self-stretch pr-[42px] pl-[16px] has-[option[value='']:checked]:text-[#999]`}>
         <option value="" hidden>
           선택해 주세요
         </option>
@@ -48,7 +50,7 @@ function Select({ name, options, required = false, onChange }: { name: string; o
           </option>
         ))}
       </select>
-      <svg aria-hidden className="pointer-events-none size-[16px] shrink-0 text-[#767676]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg aria-hidden className="pointer-events-none absolute right-[16px] size-[16px] text-[#767676] transition-[rotate] duration-150 motion-reduce:transition-none" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="m4 6 4 4 4-4" />
       </svg>
     </span>
@@ -141,7 +143,7 @@ export function InquiryForm() {
             name="message"
             rows={6}
             placeholder="지금 쓰고 계신 방식과 불편한 점을 적어 주시면 그에 맞춰 안내해 드립니다."
-            className={`min-h-[180px] w-full resize-y rounded-[6px] border border-[#ebebeb] bg-white p-[16px] text-[15px] leading-[1.6] text-guest-ink outline-none! placeholder:text-[#999] focus:border-guest-navy ${HOVER}`}
+            className={`min-h-[180px] w-full resize-none rounded-[6px] border border-[#ebebeb] bg-white p-[16px] text-[15px] leading-[1.6] text-guest-ink outline-none! placeholder:text-[#999] focus:border-guest-navy ${HOVER}`}
           />
         </Field>
       </Section>
