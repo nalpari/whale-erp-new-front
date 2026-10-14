@@ -55,3 +55,88 @@ details[name="guest-faq"][open]::details-content {
 @media (prefers-reduced-motion: reduce) {
   details[name="guest-faq"], details[name="guest-faq"]::details-content { transition: none; }
 }
+/* 비로그인 고르는 칸(도입문의, select.guest-select) 목록. 사용자 지정 select(appearance: base-select)로 그린다 —
+   모르는 브라우저는 기본 목록을 쓴다. 앱(src/app/globals.css)에도 같은 규칙이 있다. 판은 입력칸과 같은 테두리·6px 모서리에 떠 있는 것만 받는 그림자(DESIGN.md)를 쓰고,
+   위에서 4px 내려오며 나타난다(150ms). 화살표·빈 값 회색은 select 를 감싼 칸(Tailwind)이 맡는다. */
+@supports (appearance: base-select) {
+  select.guest-select,
+  select.guest-select::picker(select) {
+    appearance: base-select;
+  }
+  /* 칸 높이(56px)로 늘린 select 안에서 고른 글자를 세로 가운데에 둔다. */
+  select.guest-select {
+    display: flex;
+    align-items: center;
+    border: 0;
+    background: transparent;
+  }
+  select.guest-select::picker-icon {
+    display: none;
+  }
+  /* 판은 select 가 아니라 감싼 56px 칸에 붙인다 — select 는 칸의 안쪽 여백·화살표만큼 좁다. 칸마다 자기 판을 찾게 범위를 묶는다. */
+  :has(> select.guest-select) {
+    anchor-name: --guest-select;
+    anchor-scope: --guest-select;
+  }
+  select.guest-select::picker(select) {
+    position-anchor: --guest-select;
+    inset: auto;
+    top: anchor(bottom);
+    left: anchor(left);
+    width: anchor-size(width);
+    position-try-fallbacks: flip-block;
+    margin-block: 4px;
+    padding: 6px;
+    border: 1px solid #ebebeb;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(40, 47, 55, 0.08);
+    opacity: 0;
+    translate: 0 -4px;
+    transition:
+      opacity 150ms cubic-bezier(0.23, 1, 0.32, 1),
+      translate 150ms cubic-bezier(0.23, 1, 0.32, 1),
+      display 150ms allow-discrete,
+      overlay 150ms allow-discrete;
+  }
+  select.guest-select:open::picker(select) {
+    opacity: 1;
+    translate: 0 0;
+  }
+  @starting-style {
+    select.guest-select:open::picker(select) {
+      opacity: 0;
+      translate: 0 -4px;
+    }
+  }
+  select.guest-select option:not([hidden]) {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 0 12px;
+    border-radius: 4px;
+    font-size: 15px;
+    color: var(--color-guest-ink);
+    transition: background-color 150ms ease, color 150ms ease;
+  }
+  select.guest-select option:hover,
+  select.guest-select option:focus-visible {
+    outline: none;
+    background: var(--color-guest-card);
+    color: var(--color-guest-navy);
+  }
+  select.guest-select option:checked {
+    font-weight: 600;
+    color: var(--color-guest-navy);
+  }
+  select.guest-select option::checkmark {
+    order: 1;
+    margin-inline-start: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  select.guest-select::picker(select) {
+    transition: none;
+  }
+}

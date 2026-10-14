@@ -403,6 +403,9 @@
   .right-0 {
     right: 0px;
   }
+  .right-\[16px\] {
+    right: 16px;
+  }
   .right-\[18px\] {
     right: 18px;
   }
@@ -546,6 +549,9 @@
   }
   .m-auto {
     margin: auto;
+  }
+  .-mx-\[16px\] {
+    margin-inline: calc(16px * -1);
   }
   .mx-\[10px\] {
     margin-inline: 10px;
@@ -1444,9 +1450,6 @@
   .resize-none {
     resize: none;
   }
-  .resize-y {
-    resize: vertical;
-  }
   .scroll-mt-\[130px\] {
     scroll-margin-top: 130px;
   }
@@ -1709,6 +1712,9 @@
   }
   .self-end {
     align-self: flex-end;
+  }
+  .self-stretch {
+    align-self: stretch;
   }
   .truncate {
     overflow: hidden;
@@ -2389,6 +2395,9 @@
   .pr-\[34px\] {
     padding-right: 34px;
   }
+  .pr-\[42px\] {
+    padding-right: 42px;
+  }
   .pr-\[52px\] {
     padding-right: 52px;
   }
@@ -2451,6 +2460,9 @@
   }
   .pl-\[12px\] {
     padding-left: 12px;
+  }
+  .pl-\[16px\] {
+    padding-left: 16px;
   }
   .pl-\[18px\] {
     padding-left: 18px;
@@ -2988,6 +3000,11 @@
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
     transition-duration: var(--tw-duration, var(--default-transition-duration));
   }
+  .transition-\[rotate\] {
+    transition-property: rotate;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
   .transition-\[translate\] {
     transition-property: translate;
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
@@ -3483,6 +3500,9 @@
   .\[\&\:\:-webkit-search-cancel-button\]\:appearance-none::-webkit-search-cancel-button {
     appearance: none;
   }
+  .\[\&\:has\(select\:open\)_svg\]\:rotate-180:has(select:open) svg {
+    rotate: 180deg;
+  }
   .\[\&\>\*\]\:shrink-0 > * {
     flex-shrink: 0;
   }
@@ -3619,6 +3639,85 @@ details[name="guest-faq"][open]::details-content {
 }
 @media (prefers-reduced-motion: reduce) {
   details[name="guest-faq"], details[name="guest-faq"]::details-content {
+    transition: none;
+  }
+}
+@supports (appearance: base-select) {
+  select.guest-select,
+  select.guest-select::picker(select) {
+    appearance: base-select;
+  }
+  select.guest-select {
+    display: flex;
+    align-items: center;
+    border: 0;
+    background: transparent;
+  }
+  select.guest-select::picker-icon {
+    display: none;
+  }
+  :has(> select.guest-select) {
+    anchor-name: --guest-select;
+    anchor-scope: --guest-select;
+  }
+  select.guest-select::picker(select) {
+    position-anchor: --guest-select;
+    inset: auto;
+    top: anchor(bottom);
+    left: anchor(left);
+    width: anchor-size(width);
+    position-try-fallbacks: flip-block;
+    margin-block: 4px;
+    padding: 6px;
+    border: 1px solid #ebebeb;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(40, 47, 55, 0.08);
+    opacity: 0;
+    translate: 0 -4px;
+    transition: opacity 150ms cubic-bezier(0.23, 1, 0.32, 1),
+      translate 150ms cubic-bezier(0.23, 1, 0.32, 1),
+      display 150ms allow-discrete,
+      overlay 150ms allow-discrete;
+  }
+  select.guest-select:open::picker(select) {
+    opacity: 1;
+    translate: 0 0;
+  }
+  @starting-style {
+    select.guest-select:open::picker(select) {
+      opacity: 0;
+      translate: 0 -4px;
+    }
+  }
+  select.guest-select option:not([hidden]) {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 0 12px;
+    border-radius: 4px;
+    font-size: 15px;
+    color: var(--color-guest-ink);
+    transition: background-color 150ms ease, color 150ms ease;
+  }
+  select.guest-select option:hover,
+  select.guest-select option:focus-visible {
+    outline: none;
+    background: var(--color-guest-card);
+    color: var(--color-guest-navy);
+  }
+  select.guest-select option:checked {
+    font-weight: 600;
+    color: var(--color-guest-navy);
+  }
+  select.guest-select option::checkmark {
+    order: 1;
+    margin-inline-start: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  select.guest-select::picker(select) {
     transition: none;
   }
 }

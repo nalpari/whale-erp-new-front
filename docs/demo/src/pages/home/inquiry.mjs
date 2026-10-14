@@ -6,11 +6,12 @@ const REQUIRED = `<span aria-hidden="true" class="text-[#e93737]"> *</span><span
 const field = (label, body, { required = false, help = "" } = {}) =>
   `<label class="flex flex-col gap-[10px]"><span class="${g.LABEL}">${label}${required ? REQUIRED : ""}</span>${body}${help ? `<span class="-mt-[2px] text-[14px] leading-[1.5] text-[#767676]">${help}</span>` : ""}</label>`;
 const input = (attrs) => `<span class="${g.INPUT_BOX}"><input ${attrs} class="${g.INPUT}"></span>`;
-// 고르는 칸. 입력칸과 같은 껍데기에 오른쪽 화살표를 둔다.
-const CHEVRON = `<svg aria-hidden="true" class="pointer-events-none size-[16px] shrink-0 text-[#767676]" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m4 6 4 4 4-4"/></svg>`;
+// 고르는 칸. 입력칸과 같은 껍데기에 오른쪽 화살표를 둔다. 펼친 목록은 assets/base.css 의 select.guest-select 가 그리고, 열리면 화살표가 뒤집힌다.
+// select 는 칸의 여백까지 덮어 56px 칸 어디를 눌러도 열린다. 화살표는 그 위에 겹치고 클릭을 통과시킨다.
+const CHEVRON = `<svg aria-hidden="true" class="pointer-events-none absolute right-[16px] size-[16px] text-[#767676] transition-[rotate] duration-150 motion-reduce:transition-none" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m4 6 4 4 4-4"/></svg>`;
 const select = (name, options) =>
-  `<span class="${g.INPUT_BOX}"><select name="${name}" required class="${g.INPUT} appearance-none has-[option[value='']:checked]:text-[#999]"><option value="" hidden selected>선택해 주세요</option>${options.map((o) => `<option class="text-guest-ink">${o}</option>`).join("")}</select>${CHEVRON}</span>`;
-const TEXTAREA = `min-h-[180px] w-full resize-y rounded-[6px] border border-[#ebebeb] bg-white p-[16px] text-[15px] leading-[1.6] text-guest-ink outline-none! placeholder:text-[#999] focus:border-guest-navy ${g.HOVER}`;
+  `<span class="${g.INPUT_BOX} relative [&:has(select:open)_svg]:rotate-180"><select name="${name}" required class="guest-select ${g.INPUT} -mx-[16px] cursor-pointer appearance-none self-stretch pr-[42px] pl-[16px] has-[option[value='']:checked]:text-[#999]"><option value="" hidden selected>선택해 주세요</option>${options.map((o) => `<option class="text-guest-ink">${o}</option>`).join("")}</select>${CHEVRON}</span>`;
+const TEXTAREA = `min-h-[180px] w-full resize-none rounded-[6px] border border-[#ebebeb] bg-white p-[16px] text-[15px] leading-[1.6] text-guest-ink outline-none! placeholder:text-[#999] focus:border-guest-navy ${g.HOVER}`;
 const section = (title, note, body) =>
   `<section class="flex flex-col gap-[24px] border-t border-[#ebebeb] pt-[32px]"><h2 class="text-[20px] leading-[1.4] font-semibold text-[#111]">${title}${note ? `<span class="ml-[10px] text-[15px] font-normal text-[#767676]">${note}</span>` : ""}</h2>${body}</section>`;
 const grid = (...c) => `<div class="grid grid-cols-2 gap-[16px]">${c.join("")}</div>`;
