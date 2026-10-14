@@ -73,7 +73,11 @@ function scopeOptions(stores: AdminStore[]): { label: string; scope: Scope }[] {
     { label: `전체 ${stores.length}개점`, scope: { type: "ALL" } },
     ...(direct ? [{ label: `직영점포 전체 ${direct}개점`, scope: { type: "DIRECT" } as const }] : []),
     ...(franchise ? [{ label: `가맹점포 전체 ${franchise}개점`, scope: { type: "FRANCHISE" } as const }] : []),
-    ...stores.map((s) => ({ label: s.name, scope: { type: "STORE", storeId: s.storeId } as const })),
+    // 선택기는 문구로 항목을 가른다. 같은 이름의 점포는 점포코드를 붙여 서로 다른 항목이 되게 한다.
+    ...stores.map((s) => ({
+      label: stores.filter((t) => t.name === s.name).length > 1 ? `${s.name} (${s.storeCode})` : s.name,
+      scope: { type: "STORE", storeId: s.storeId } as const,
+    })),
   ];
 }
 
