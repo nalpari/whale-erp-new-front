@@ -117,7 +117,7 @@ export function InquiryForm() {
             <Select name="industry" options={INDUSTRIES} required onChange={handleIndustryChange} />
           </Field>
           {/* 잠겨 있는 동안은 검사·전송에서 빠진다. */}
-          <Field label="업종 직접 입력">
+          <Field label="업종 직접 입력" required>
             <span className={INPUT_BOX}>
               <input ref={otherRef} name="industryOther" required disabled={!otherIndustry} maxLength={50} placeholder="업종을 직접 입력해 주세요" className={INPUT} />
             </span>
