@@ -58,13 +58,36 @@ export function Radio({ label, ...props }: { label: string } & Omit<ComponentPro
   );
 }
 
+// 필수 표시 *. #e93737 은 DESIGN.md 의 위험 글자색으로 토큰이 없어 직접 적는다(데모 등록 · 수정 패널과 같다).
+// 화면 읽기는 별표를 읽지 않고, 입력칸의 required · aria-required 로 필수를 안다.
+export function RequiredMark() {
+  return (
+    <span aria-hidden className="ml-[2px] text-[#e93737]">
+      *
+    </span>
+  );
+}
+
 // Figma Form. 라벨과 입력칸 한 쌍. 라벨을 감싸므로 라벨을 눌러도 입력칸이 잡힌다(입력칸이 하나일 때만 쓴다).
-// width 로 고정폭(w-[120px] 등)을 주고, 없으면 한 줄에서 남는 폭을 나눠 가진다.
+// width 로 고정폭(w-[120px] 등)을 주고, 없으면 한 줄에서 남는 폭을 나눠 가진다. required 면 라벨 뒤에 붉은 * 를 붙인다 — 별표만 붙이므로, 화면 낭독기가 알도록 입력칸에 required 나 aria-required 를 따로 단다.
 // 폭 말고 다른 클래스는 받지 않는다 — 여기로 색이나 여백이 새면 폼 줄마다 모양이 달라진다.
-export function Field({ label, width, children }: { label: string; width?: `w-[${number}px]`; children: ReactNode }) {
+export function Field({
+  label,
+  width,
+  required,
+  children,
+}: {
+  label: string;
+  width?: `w-[${number}px]`;
+  required?: boolean;
+  children: ReactNode;
+}) {
   return (
     <label className={`flex flex-col justify-center gap-[8px] ${width ?? "min-w-px flex-1"}`}>
-      <span className="truncate text-[14px] font-medium text-erp-label">{label}</span>
+      <span className="truncate text-[14px] font-medium text-erp-label">
+        {label}
+        {required && <RequiredMark />}
+      </span>
       {children}
     </label>
   );

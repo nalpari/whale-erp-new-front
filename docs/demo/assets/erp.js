@@ -451,7 +451,7 @@
       ? found
           .map(
             (s, i) =>
-              `<button type="button" role="option" tabindex="-1" aria-selected="false" data-i="${i}" class="flex w-full items-center gap-[10px] rounded-[2px] px-[10px] py-[8px] text-left text-[14px] text-erp-ink hover:bg-erp-thead-bg aria-selected:bg-erp-thead-bg"><span class="min-w-0 flex-1 truncate">${s.name}</span><span class="shrink-0 text-[12px] text-erp-muted">${s.code}</span></button>`,
+              `<button type="button" role="option" tabindex="-1" aria-selected="false" data-i="${i}" class="flex w-full items-center gap-[10px] rounded-[2px] px-[10px] py-[8px] text-left text-[14px] text-erp-ink hover:bg-erp-thead-bg aria-selected:bg-erp-thead-bg"><span class="min-w-0 flex-1 truncate">${s.name}</span>${box.hasAttribute("data-spick-nocode") ? "" : `<span class="shrink-0 text-[12px] text-erp-muted">${s.code}</span>`}</button>`,
           )
           .join("")
       : `<p class="px-[10px] py-[14px] text-center text-[13px] text-erp-label">${picked.length >= spickPool(box).length ? "고를 수 있는 점포를 모두 골랐습니다." : "맞는 점포가 없습니다."}</p>`;
@@ -641,13 +641,21 @@
   // ── FilterPanel (filter-panel.tsx). 226 ↔ 76 으로 접고 편다 ──
   function initFilter(btn) {
     const aside = btn.parentElement;
-    // 초기화: 처음 그려진 값으로 되돌린다(데모라 목록은 그대로).
+    // 초기화: 처음 그려진 값으로 되돌리고, 공통 목록 거르기는 바뀐 값으로 다시 돈다.
     aside.querySelector('button[aria-label$="초기화"]:not([disabled])')?.addEventListener("click", () => {
       $$("input", aside).forEach((i) => {
         if (i.readOnly) return; // 헤더 점포 선택으로 고정된 칸은 그대로
+        // 점포 찾기 칸은 비우기만 한다 — input 이벤트를 보내면 점포 목록이 펼쳐진다
+        if (i.closest("[data-spick-find]")) return void (i.value = "");
         if (i.type === "checkbox" || i.type === "radio") i.checked = i.defaultChecked;
         else i.value = i.defaultValue;
         i.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+      // 필터의 점포 고르기(store-filter.mjs) — 고른 점포도 비운다. 이 부품은 늘 빈 채로 그려진다.
+      $$("[data-store-filter]", aside).forEach((box) => {
+        $("[data-spick-list]", box).innerHTML = "";
+        spickCount(box);
+        spickClose(box);
       });
     });
     const inner = aside.firstElementChild;
@@ -683,6 +691,204 @@
       input.focus();
     });
     sync();
+  }
+
+  // ── 주소 자동완성(data-addr-live) — 앱 address-field.tsx 와 같다(2026-10-13) ──
+  // 치는 대로 0.3초 쉬었다가 찾아 검색칸 바로 아래 층에 펼친다. ↑↓ · Enter 로 고르고 Esc · 바깥 누르기 · 포커스가 나가면 닫는다.
+  // 고르면 우편번호 · 기본주소를 채우고 상세주소를 비운 뒤 그 칸으로 간다. 주소를 고르기 전에는 상세주소를 막는다.
+  // 데모라 행정안전부 API 대신 아래 표본 주소에서 찾는다. 검색어에 ‘오류’가 들어가면 실패 문구를 보인다.
+  const ADDRESSES = [
+    ["04007", "서울 마포구 망원로 42", "서울 마포구 망원동 412-3", ""],
+    ["04009", "서울 마포구 망원로 48", "서울 마포구 망원동 415-1", "망원빌딩"],
+    ["03992", "서울 마포구 동교로 262", "서울 마포구 연남동 240-7", "연남하우스"],
+    ["06236", "서울 강남구 테헤란로 152", "서울 강남구 역삼동 737", "강남파이낸스센터"],
+    ["06164", "서울 강남구 테헤란로 521", "서울 강남구 삼성동 159", "파르나스타워"],
+    ["13529", "경기 성남시 분당구 판교역로 166", "경기 성남시 분당구 백현동 532", "카카오판교아지트"],
+    ["13487", "경기 성남시 분당구 판교역로 235", "경기 성남시 분당구 삼평동 681", "에이치스퀘어"],
+    ["48058", "부산 해운대구 해운대해변로 264", "부산 해운대구 우동 1411-1", ""],
+    ["61475", "광주 동구 금남로 245", "광주 동구 금남로1가 1-1", ""],
+  ];
+  const squash = (t) => String(t || "").replace(/\s+/g, "").toLowerCase();
+  function initAddress(root) {
+    const box = root.querySelector("[data-addr-box]");
+    const q = root.querySelector('input[aria-label="주소 검색어"]');
+    const zip = root.querySelector('input[aria-label="우편번호"]');
+    const base = root.querySelector('input[aria-label="기본주소"]');
+    const detail = root.querySelector('input[aria-label="상세주소"]');
+    const clearWrap = root.querySelector("[data-addr-clear]");
+    if (!box || !q || !zip || !base || !detail) return;
+    const layer = document.createElement("div");
+    // 떠 있는 층이라 팝업 그림자 하나만 쓴다(DESIGN.md 뜬 것만 그림자). #ebebeb 는 팝업 테두리 값이다.
+    layer.className =
+      "absolute top-[calc(100%+4px)] right-0 left-0 z-20 max-h-[288px] overflow-y-auto overscroll-contain rounded-[2px] border border-[#ebebeb] bg-white py-[6px] text-[14px] shadow-[0_2px_6px_rgba(40,47,55,0.08)]";
+    layer.hidden = true;
+    box.append(layer);
+    q.setAttribute("role", "combobox");
+    q.setAttribute("aria-autocomplete", "list");
+    q.setAttribute("aria-expanded", "false");
+    q.autocomplete = "off";
+    let found = [];
+    let at = -1;
+    let timer = 0;
+    // 열린 것 목록에는 검색칸까지 묶은 상자로 올린다 — 층만 올리면 검색칸에 포커스가 돌아오는 것도 「바깥」으로 보고 닫힌다
+    const entry = { root: box, close: () => close() };
+
+    const lock = () => {
+      detail.disabled = !base.value && !detail.value;
+      detail.placeholder = base.value ? "상세주소" : "주소를 검색해 고른 뒤 적습니다";
+      if (clearWrap) clearWrap.hidden = !(zip.value || base.value || detail.value);
+    };
+    const close = () => {
+      clearTimeout(timer);
+      timer = 0;
+      if (layer.hidden) return;
+      layer.hidden = true;
+      layer.innerHTML = "";
+      q.setAttribute("aria-expanded", "false");
+      q.removeAttribute("aria-activedescendant");
+      found = [];
+      at = -1;
+      drop(entry);
+    };
+    const show = (html) => {
+      layer.innerHTML = html;
+      if (layer.hidden) {
+        layer.hidden = false;
+        q.setAttribute("aria-expanded", "true");
+        push(entry);
+      }
+    };
+    const note = (text, tone = "text-erp-muted") => show(`<p class="px-[12px] py-[8px] ${tone}">${text}</p>`);
+    const mark = (i) => {
+      at = i;
+      $$('[role="option"]', layer).forEach((o, k) => {
+        o.setAttribute("aria-selected", String(k === i));
+        swap(o, k === i, "bg-erp-thead-bg", "");
+        if (k === i) {
+          o.scrollIntoView({ block: "nearest" });
+          q.setAttribute("aria-activedescendant", o.id);
+        }
+      });
+    };
+    const pick = (i) => {
+      const a = found[i];
+      if (!a) return;
+      zip.value = a[0];
+      base.value = a[1];
+      // 상세주소는 앞 주소의 것이라 비운다(동 · 호수가 새 주소에 그대로 붙으면 틀린 주소가 된다)
+      detail.value = "";
+      close();
+      q.value = "";
+      q.dispatchEvent(new Event("input", { bubbles: true }));
+      lock();
+      detail.focus();
+    };
+    const search = () => {
+      clearTimeout(timer);
+      // 0 이면 쉬는 중이 아니다 — Enter 가 떠 있는 결과를 골라도 된다
+      timer = 0;
+      const t = squash(q.value);
+      if (t.length < 2) return close();
+      if (t.includes("오류")) return note("주소 검색 서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.", "text-erp-off");
+      found = ADDRESSES.filter((a) => squash(a.join(" ")).includes(t));
+      if (!found.length) return note("검색 결과가 없습니다. 도로명 · 건물명 · 지번을 더 자세히 입력해 주세요.");
+      const id = q.id || (q.id = `addr-${Math.random().toString(36).slice(2, 8)}`);
+      show(
+        `<ul role="listbox" aria-label="주소 검색 결과" id="${id}-list">${found
+          .map(
+            (a, i) =>
+              `<li role="option" id="${id}-${i}" data-i="${i}" aria-selected="false" class="flex cursor-pointer flex-col gap-[2px] px-[12px] py-[8px]"><span class="flex gap-[8px] text-erp-ink"><span class="shrink-0 text-erp-label">${a[0]}</span><span>${a[1]}${a[3] ? `<span class="text-erp-label"> (${a[3]})</span>` : ""}</span></span><span class="pl-[48px] text-[13px] text-erp-label">지번 ${a[2]}</span></li>`,
+          )
+          .join("")}</ul><div class="flex items-center justify-between border-t border-erp-divider px-[12px] pt-[8px] text-[13px] text-erp-label"><span>${found.length}건 중 ${found.length}건</span></div>`,
+      );
+      q.setAttribute("aria-controls", `${id}-list`);
+      mark(0);
+    };
+
+    q.addEventListener("input", () => {
+      clearTimeout(timer);
+      if (squash(q.value).length < 2) return close();
+      if (layer.hidden) note("찾는 중입니다.");
+      timer = setTimeout(search, 300);
+    });
+    q.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !layer.hidden) {
+        // 슬라이드 패널까지 닫히지 않게 층만 닫는다
+        e.preventDefault();
+        e.stopPropagation();
+        close();
+      } else if (e.key === "ArrowDown" && found.length) {
+        e.preventDefault();
+        mark(Math.min(at + 1, found.length - 1));
+      } else if (e.key === "ArrowUp" && found.length) {
+        e.preventDefault();
+        mark(Math.max(at - 1, 0));
+      } else if (e.key === "Enter" && !e.isComposing) {
+        e.preventDefault();
+        // 지금 검색어의 결과가 떠 있으면 고르고, 아니면(쉬는 중) 바로 찾는다
+        if (found.length && at > -1 && !timer) pick(at);
+        else search();
+      }
+    });
+    // 누르는 동안 검색칸이 포커스를 잃어 층이 닫히지 않게 한다
+    layer.addEventListener("mousedown", (e) => e.preventDefault());
+    layer.addEventListener("click", (e) => {
+      const o = e.target.closest('[role="option"]');
+      if (o) pick(Number(o.dataset.i));
+    });
+    layer.addEventListener("mousemove", (e) => {
+      const o = e.target.closest('[role="option"]');
+      if (o && Number(o.dataset.i) !== at) mark(Number(o.dataset.i));
+    });
+    // Tab 등으로 포커스가 검색칸 · 층 밖으로 나가면 닫는다
+    box.addEventListener("focusout", (e) => {
+      if (!box.contains(e.relatedTarget)) close();
+    });
+    document.addEventListener("pointerdown", (e) => {
+      if (!box.contains(e.target)) close();
+    });
+    clearWrap?.querySelector("button")?.addEventListener("click", () => {
+      zip.value = base.value = detail.value = "";
+      lock();
+      q.focus();
+    });
+    lock();
+  }
+
+  // ── 아이디 · 이메일 중복 확인(data-dupcheck) — 칸을 벗어나거나 Enter 를 치면 형식과 중복을 보고 칸 아래 문구로 알린다 ──
+  // 앱 admin-form-panel.tsx 와 같다. 쓸 수 있으면 아무것도 띄우지 않는다. 데모의 ‘이미 있는 값’은 data-taken 이다.
+  const DUP = {
+    id: {
+      pattern: /^(?=.*[A-Za-z])[A-Za-z0-9]{4,20}$/,
+      format: "아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다.",
+      taken: "이미 사용 중인 아이디입니다. 삭제된 계정의 아이디도 다시 쓸 수 없습니다",
+    },
+  };
+  function initDupCheck(input) {
+    const rule = DUP[input.dataset.dupcheck];
+    const message = input.parentElement.querySelector("[data-dup-message]");
+    if (!rule || !message) return;
+    const say = (text) => {
+      message.textContent = text || "";
+      message.hidden = !text;
+      if (text) input.setAttribute("aria-invalid", "true");
+      else input.removeAttribute("aria-invalid");
+    };
+    const check = () => {
+      const v = input.value.trim();
+      if (!v) return say("");
+      if (!rule.pattern.test(v)) return say(rule.format);
+      const taken = (input.dataset.taken || "").toLowerCase().split(",");
+      say(taken.includes(v.toLowerCase()) ? rule.taken : "");
+    };
+    input.addEventListener("blur", check);
+    input.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" || e.isComposing) return;
+      e.preventDefault();
+      check();
+    });
+    // 고치면 그 칸의 오류는 바로 지운다
+    input.addEventListener("input", () => say(""));
   }
 
   // ── 필터의 점포 칸(data-scope-store). 헤더 점포 선택이 점포 1개면 그 점포로 고정하고,
@@ -1505,6 +1711,8 @@
     $$("header").forEach(initHeader);
     $$('button[aria-expanded][aria-label$="접기"], button[aria-expanded][aria-label$="펼치기"]').forEach(initFilter);
     $$('input[type="search"]').forEach(initSearch);
+    $$("[data-addr-live]").forEach(initAddress);
+    $$("input[data-dupcheck]").forEach(initDupCheck);
     $$("input[data-scope-store]").forEach(initScopeStore);
     initAppliedScope();
     const views = $$("[data-scope-view]");

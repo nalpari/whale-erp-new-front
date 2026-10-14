@@ -5,7 +5,7 @@ description: DB·API·FRONT 세 계층이 같은 개념을 같은 영문 이름�
 tags: [convention, naming, shared]
 sources:
   - { id: naming-2026-09-30, resource: ../../docs/raw/2026-09-30-네이밍-규칙.md, title: WHALE ERP 네이밍 규칙 (DB · API · FRONT) }
-generated: { by: claude-code/opus-5.5, at: 2026-10-08T06:33:46Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-13T06:43:17Z }
 ---
 
 근거: `docs/raw/2026-09-30-네이밍-규칙.md` (3팀 기획 세션 · 2026-10-08 고침)
@@ -53,7 +53,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-08T06:33:46Z }
 
 | 항목 | 규칙 |
 |---|---|
-| enum 원본 | api 가 관리한다. 값은 Prisma·DB enum, 한글은 물리 ERD 원본(api `docs/erd-physical/_model.py`)과 API 전용 enum 목록에서 api 배포 때 만든다 |
+| enum 원본 | api 가 관리한다. 값은 Prisma·DB enum 이다. DB enum 의 한글은 enum 타입 설명(`COMMENT ON TYPE "타입" IS '한글 · 한글'`, 값 순서대로)이 유일한 출처이고 api 가 `pnpm enums:generate` 로 읽어 만든다. enum 을 만들거나 값을 더하는 마이그레이션은 같은 파일에 이 설명을 전체 목록으로 다시 쓴다(api CLAUDE.md 「Migration rules」 6, 2026-10-12 1팀 합의). API 전용 enum 의 한글은 그 목록에 적는다 |
 | enum 조회 | front·staff 는 `GET /enums`(전체)·`GET /enums/{name}`(하나)로 값·한글·순서를 받아 쓴다. 응답 `{ version, enums: { ContractStatus: [{ value, label, order }] } }`. enum 이 바뀌어도 front·staff 는 따로 작업하지 않는다 |
 | front·staff 캐시 | 데이터 접근 계층 한 곳(`getEnum(name)`)에서 Next 서버 캐시로 받는다. enum 은 api 배포 때만 바뀌므로 오래 두고, `version` 이 바뀌면 새로 받는다 |
 | 화면 | 등록 화면 선택지와 목록·상세의 한글 표시는 조회한 목록으로 그린다. 특정 값에 따라 동작이 갈리는 코드(예: 서명 대기일 때만 재발송)는 값을 코드에 적고, 새 값이 생기면 그 코드는 고친다 |
@@ -116,6 +116,8 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-08T06:33:46Z }
 - 삭제 가능한 데이터는 행을 지우지 않고 `is_deleted = true` 로 표시한다. 표시는 `is_deleted` 하나뿐이다 — `deleted_at` 을 함께 두면 플래그와 시각이 어긋난 행이 생길 수 있다. 삭제 시각이 필요해지면 그때 `deleted_at` 을 더하고 CHECK 로 묶는다.
 - 남아야 하는 기록(`*_logs`, `*_histories`)에는 두지 않는다. 이 컬럼이 없는 테이블은 지우지 않는 테이블이다.
 - 예외: 두 표를 잇는 부속 관계 표 `todo_assignees` 는 `is_deleted` 없이 행을 DELETE 한다. 배정을 푼 사실은 `todo_status_histories` 에 남긴다(퇴직 처리의 배정 해제, 2026-10-07 재영).
+- 예외: 임시저장(`DRAFT`) 근로계약을 지우면 `contracts` 행을 DELETE 한다. 발송한 적이 없어 남길 기록이 없다(2026-10-13 재영). 발송 대기 이후의 계약은 지우지 않는다.
+- 예외: 공지사항·FAQ 의 노출 대상 연결 표 `post_audiences` 는 `is_deleted` 없이 글을 고칠 때마다 행을 DELETE 하고 다시 넣는다. 노출 대상 변경은 글의 최종 수정자·수정 시각으로 남긴다(2026-10-13 재영, api #18).
 - 모든 조회에 `is_deleted = false` 를 건다. 빠뜨려도 오류가 나지 않고 지운 행이 그대로 보인다 — 목록, id 조회, total 을 위한 count, insert 전 존재 확인 모두 해당한다.
 - 유니크 제약은 부분 인덱스(`WHERE NOT is_deleted`)로 만든다. 안 그러면 지운 행이 sku·email 을 붙잡아 같은 값으로 다시 만들 때 409 가 난다. Prisma 가 표현하지 못해 CHECK 제약처럼 마이그레이션 SQL 에만 남는다.
 - 기본키도 `{참조 단수}_id` 로 짓는다. 기본키가 `id` 였던 견본 테이블(`items`·`stock_movements`·`staff`·`customers`)은 2026-10-07 에 견본 로그인·`/items` API 와 함께 지웠다(재영).
@@ -223,8 +225,8 @@ DB 테이블은 복수형, 모델·타입은 PascalCase 단수형으로 바꿔 �
 
 | 표준 표기 | 영문 식별자 | 비고 |
 |---|---|---|
-| 근로계약(서) | `contract` | 초안은 상태 `PENDING_SEND`인 계약 |
-| 근로계약 상태 6종 | `PENDING_SEND` · `PENDING_SIGNATURE` · `SIGNED` · `REJECTED` · `EXPIRED` · `ENDED` | 발송 대기 · 서명 대기 · 체결 완료 · 거부 · 만료 · 종료 |
+| 근로계약(서) | `contract` | 초안은 상태 `PENDING_SEND`인 계약. 다 쓰기 전에 저장해 둔 것은 `DRAFT`(임시저장) |
+| 근로계약 상태 7종 | `DRAFT` · `PENDING_SEND` · `PENDING_SIGNATURE` · `SIGNED` · `REJECTED` · `EXPIRED` · `ENDED` | 임시저장 · 발송 대기 · 서명 대기 · 체결 완료 · 거부 · 만료 · 종료. 임시저장은 초대·계약서를 보내지 않는다 (2026-10-12 재영) |
 | 전자계약 / 종이 계약 | `ELECTRONIC` / `PAPER` | `contract_method` |
 | 임금계약서 | `wage_contract` | 종이 계약에서 따로 날인한 임금 약정 문서 |
 | 계약서 파일 구분 | `SENT_ORIGINAL` · `SIGNED_COPY` · `PAPER_EMPLOYMENT_CONTRACT` · `WAGE_CONTRACT` | `contract_documents.kind` — 발송 원본 · 날인 완료본 · 종이 계약 근로계약서 · 임금계약서 |
@@ -306,13 +308,13 @@ DB 테이블은 복수형, 모델·타입은 PascalCase 단수형으로 바꿔 �
 
 ### 기본 템플릿 코드 (2026-10-07 재영)
 
-마이그레이션으로 처음 넣는 37건의 템플릿 코드다. 운영자가 고칠 수 있지만, 발송 코드는 이 값으로 부르므로 고치면 발송 코드도 바꿔야 한다. 화면·문서에서 지어 쓰지 말고 이 값을 쓴다.
+마이그레이션으로 처음 넣는 40건의 템플릿 코드다(운영 알림 10 · 앱 푸시 5 · 메일 24 · 알림톡 1). 운영자가 고칠 수 있지만, 발송 코드는 이 값으로 부르므로 고치면 발송 코드도 바꿔야 한다. 화면·문서에서 지어 쓰지 말고 이 값을 쓴다.
 
 | 채널 | 템플릿 코드 | 템플릿 이름 |
 |---|---|---|
 | 운영 알림 10 | `NTF_INQUIRY_RECEIVED` · `NTF_LEAD_RECEIVED` · `NTF_INQUIRY_ANSWERED` · `NTF_LEAD_ANSWERED` · `NTF_CONTRACT_SIGNED` · `NTF_CONTRACT_REJECTED` · `NTF_CONTRACT_EXPIRED` · `NTF_LINK_HOLD` · `NTF_AFFILIATION_REJECTED` · `NTF_CONTRACT_RENEWAL_DUE` | 문의사항 접수 · 도입문의 접수 · 문의사항 답변 · 도입문의 처리 상태 변경 · 근로계약 날인 · 근로계약 거부 · 근로계약 만료 · 가입 연결 보류 · 소속 추가 확인 거절 · 계약 갱신 예정 |
-| 앱 푸시 4 | `PUSH_CONTRACT_SENT` · `PUSH_SCHEDULE_CHANGED` · `PUSH_TODO_ASSIGNED` · `PUSH_PAYSLIP_SENT` | 근로계약서 발송 · 근무스케줄 변경 · TO-DO 배정(알림함에만) · 급여명세서 발송 |
+| 앱 푸시 5 | `PUSH_CONTRACT_SENT` · `PUSH_SCHEDULE_CHANGED` · `PUSH_TODO_ASSIGNED` · `PUSH_PAYSLIP_SENT` · `PUSH_PAYSLIP_RESENT` | 근로계약서 발송 · 근무스케줄 변경 · TO-DO 배정(알림함에만) · 급여명세서 발송 · 급여명세서 다시 발송 |
 | 메일 · 운영 알림 짝 10 | `EMAIL_` + 운영 알림 열 코드(예 `EMAIL_CONTRACT_SIGNED`) | 운영 알림과 같은 이름 |
-| 메일 · 3팀 4 | `EMAIL_STAFF_PASSWORD_PIN` · `EMAIL_STAFF_RESET_LINK` · `EMAIL_CHANGE_PIN` · `EMAIL_LEAD_CONFIRMATION` | 비밀번호 찾기 핀 · 관리자 초기화 재설정 링크 · 로그인 이메일 변경 핀 · 도입문의 접수 확인 |
+| 메일 · 3팀 6 | `EMAIL_STAFF_PASSWORD_PIN` · `EMAIL_STAFF_RESET_LINK` · `EMAIL_CHANGE_PIN` · `EMAIL_LEAD_CONFIRMATION` · `EMAIL_PAYSLIP_SENT` · `EMAIL_PAYSLIP_RESENT` | 비밀번호 찾기 핀 · 관리자 초기화 재설정 링크 · 로그인 이메일 변경 핀 · 도입문의 접수 확인 · 급여명세서 발송 메일 · 급여명세서 다시 발송 메일 |
 | 메일 · 1팀 8 | `EMAIL_SIGNUP_DONE` · `EMAIL_SIGNUP_ALERT` · `EMAIL_BP_REGISTER` · `EMAIL_PLAT_ADMIN_CREATE` · `EMAIL_BP_ADMIN_CREATE` · `EMAIL_PASSWORD_RESET` · `EMAIL_TEMP_PASSWORD` · `EMAIL_WITHDRAW_DONE` | 회원가입 완료 · 신규 BP 가입 알림 · BP 신규 등록 · 플랫폼 관리자 계정 생성 · BP 관리자 계정 생성 · 비밀번호 초기화 · 임시 비밀번호 발급 · 회원 탈퇴 완료. 뒤 코드는 1팀 옛 MAIL_TYPE 값 그대로 |
 | 알림톡 1 | `TALK_STAFF_INVITATION` | 가입 초대 |

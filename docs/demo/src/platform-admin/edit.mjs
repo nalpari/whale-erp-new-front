@@ -15,8 +15,9 @@ const tel = (a, b, c) =>
     .map(([v, l]) => ui.textField({ value: v, inputmode: "numeric", "aria-label": l }))
     .join("")}</div>`;
 const stack = (...c) => `<div class="flex flex-col gap-[8px]">${c.join("")}</div>`;
+// 주소: 검색칸(치는 대로 바로 아래 층에 결과 — 앱 address-field.tsx, [주소 검색] 버튼 없음) / 우편번호·기본주소(검색 결과로만 채움) + [지우기] / 상세주소(주소를 고른 뒤에만 적는다) — 2026-10-13 앱 반영
 const address = (A, zip, base, detail) =>
-  `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">주소</span><div class="flex gap-[6px]"><div class="flex-1">${ui.searchField(A, { placeholder: "도로명, 건물명, 지번으로 검색", label: "주소 검색어" })}</div>${ui.button("주소 검색", { variant: "soft" })}</div><div class="flex gap-[6px]"><div class="w-[120px] shrink-0">${ui.textField({ value: zip, readonly: true, placeholder: "우편번호", "aria-label": "우편번호" })}</div>${ui.textField({ value: base, readonly: true, placeholder: "검색해서 고르면 채워집니다", "aria-label": "기본주소" })}</div>${ui.textField({ value: detail, maxlength: 100, placeholder: "상세주소", "aria-label": "상세주소" })}</div>`;
+  `<div class="flex flex-col gap-[8px]" data-addr-live><span class="text-[14px] font-medium text-erp-label">주소</span><div class="relative" data-addr-box>${ui.searchField(A, { placeholder: "도로명, 건물명, 지번으로 검색", label: "주소 검색어" })}</div><div class="flex gap-[6px]"><div class="w-[120px] shrink-0">${ui.textField({ value: zip, readonly: true, placeholder: "우편번호", "aria-label": "우편번호" })}</div>${ui.textField({ value: base, readonly: true, placeholder: "검색해서 고르면 채워집니다", "aria-label": "기본주소" })}<span data-addr-clear${zip ? "" : " hidden"}>${ui.button("지우기", { variant: "off" })}</span></div>${ui.textField(base ? { value: detail, maxlength: 100, placeholder: "상세주소", "aria-label": "상세주소" } : { value: detail, maxlength: 100, placeholder: "주소를 검색해 고른 뒤 적습니다", "aria-label": "상세주소", disabled: true })}</div>`;
 
 function platformAdminEditBody(A) {
   // 패널(464px)이라 두 칸 줄을 한 칸씩 세로로 쌓는다
@@ -67,6 +68,10 @@ export const platformAdminEditPanel = (A, R) =>
     ui.sectionHead(`플랫폼 관리자 수정${sub("박지우 · platpark")}`) + platformAdminEditBody(A),
   );
 
+// 「내 정보」 패널은 이번 변경(2026-10-13 플랫폼 관리자 등록 · 수정의 주소 자동완성) 대상이 아니라 원래 주소 칸 그대로 둔다
+const myAddress = (A, zip, base, detail) =>
+  `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">주소</span><div class="flex gap-[6px]"><div class="flex-1">${ui.searchField(A, { placeholder: "도로명, 건물명, 지번으로 검색", label: "주소 검색어" })}</div>${ui.button("주소 검색", { variant: "soft" })}</div><div class="flex gap-[6px]"><div class="w-[120px] shrink-0">${ui.textField({ value: zip, readonly: true, placeholder: "우편번호", "aria-label": "우편번호" })}</div>${ui.textField({ value: base, readonly: true, placeholder: "검색해서 고르면 채워집니다", "aria-label": "기본주소" })}</div>${ui.textField({ value: detail, maxlength: 100, placeholder: "상세주소", "aria-label": "상세주소" })}</div>`;
+
 // 플랫폼 헤더 MY PAGE 「내정보 관리」 — 로그인한 플랫폼 사용자 본인의 정보를 슬라이드에서 고친다(2026-10-08).
 // 플랫폼 관리자 수정과 같은 입력칸이고, 본인 권한·계정 상태는 스스로 바꿀 수 없어 사용자 권한은 읽기 전용으로만 보인다.
 const ME = {
@@ -83,7 +88,7 @@ export const platformMyPanel = (A, { master = false } = {}) => {
     ui.field(req("이메일"), ui.textField({ value: me.mail, maxlength: 100 })),
     ui.field("소속 부서", ui.textField({ value: me.dept, maxlength: 30 })),
     ui.field("직책", ui.textField({ value: me.title, maxlength: 30 })),
-    address(A, "13529", "경기 성남시 분당구 판교역로 166", "7층"),
+    myAddress(A, "13529", "경기 성남시 분당구 판교역로 166", "7층"),
   );
   const role = ui.formGroup("사용자 권한", ui.field("사용자 권한", ui.textField({ value: me.role, readonly: true })));
   const buttons = `<div class="flex justify-center gap-[6px]">${ui.button("취소", { variant: "off", "data-close": true })}${ui.button("저장", { "data-close": true })}</div>`;

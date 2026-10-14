@@ -1,9 +1,14 @@
 import type { ReactNode } from "react";
 
-export type DetailRow = { label: string; value: ReactNode };
+export type DetailRow = {
+  label: string;
+  value: ReactNode;
+  /** 값이 여러 줄인 줄(주소처럼). 높이를 46 최소로 두고 내용만큼 늘린다 — 이 줄만 고정 높이에서 잘리지 않는다. */
+  multiline?: boolean;
+};
 
 // Figma 03.프레임_상세의 TABLE. 목록(DataTable)과 달리 한 건을 세로로 펼쳐 보여 준다.
-// 왼쪽 라벨 칸은 180 고정, 오른쪽 값 칸이 남는 폭을 먹는다. 줄 높이는 46, 제목 줄은 42다.
+// 왼쪽 라벨 칸은 180 고정, 오른쪽 값 칸이 남는 폭을 먹는다. 줄 높이는 46(multiline 줄만 46 을 최소로 내용만큼 늘어난다), 제목 줄은 42다.
 // 라벨·값 사이에는 Figma 대로 세로선을 넣지 않는다. 그래서 테두리를 라벨은 왼쪽+아래, 값은 오른쪽+아래로 나눠
 // 제목 줄의 사방 테두리와 겹치지 않게 한다. 마지막 줄만 아래 모서리를 둥글린다.
 export function DetailTable({ title, rows }: { title: string; rows: DetailRow[] }) {
@@ -13,21 +18,22 @@ export function DetailTable({ title, rows }: { title: string; rows: DetailRow[] 
         {title}
       </h3>
       <dl className="flex w-full flex-col">
-        {rows.map(({ label, value }, i) => {
+        {rows.map(({ label, value, multiline }, i) => {
           const last = i === rows.length - 1;
+          const height = multiline ? "min-h-[46px]" : "h-[46px]";
           return (
             <div key={i} className="flex w-full">
               <dt
-                className={`flex h-[46px] w-[180px] shrink-0 items-center truncate border-b border-l border-erp-thead-line bg-white p-[12px] text-[14px] font-medium text-erp-label ${
+                className={`flex ${height} w-[180px] shrink-0 items-center truncate border-b border-l border-erp-thead-line bg-white p-[12px] text-[14px] font-medium text-erp-label ${
                   last ? "rounded-bl-[2px]" : ""
                 }`}
               >
                 {label}
               </dt>
               <dd
-                className={`flex h-[46px] min-w-px flex-1 items-center gap-[10px] overflow-hidden border-r border-b border-erp-thead-line bg-white p-[12px] text-[14px] text-erp-ink ${
+                className={`flex ${height} min-w-px flex-1 items-center gap-[10px] overflow-hidden border-r border-b border-erp-thead-line bg-white p-[12px] text-[14px] text-erp-ink ${
                   last ? "rounded-br-[2px]" : ""
-                }`}
+                } ${multiline ? "leading-[1.6] break-keep" : ""}`}
               >
                 {value}
               </dd>

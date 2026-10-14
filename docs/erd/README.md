@@ -340,17 +340,29 @@ python3 docs/erd/_build.py
 |  | 계약 유형 | enum | `contract_type` | 정직원·파트타이머 |
 |  | 계약 방식 | enum | `contract_method` | ELECTRONIC·PAPER (CTR-23) |
 |  | 계약 기간 | date | `start_date·end_date` | 종료일 비우면 무기한 |
-|  | 근무 조건 | json | `work_terms` | 근무요일(월~일)·시작·종료·휴게, 30분 단위 |
 |  | 건강보험·국민연금 가입 | bool | `is_health_pension_insured` |  |
 |  | 고용보험·산재보험 가입 | bool | `is_employment_injury_insured` |  |
-|  | 급여 조건 | json | `wage_terms` | 시급·월급·지급일 |
-|  | 계약 상태 | enum | `status` | 발송 대기·서명 대기·체결 완료·거부·만료·종료 |
+|  | 급여액 | money | `wage_amount` | 시급 — 고용 형태와 상관없이 시급만 둔다. 월급은 근로시간으로 셈한다 (2026-10-12) |
+|  | 임금지급 월 | enum | `pay_month` | 당월·익월 |
+|  | 임금지급일 | int | `pay_day` | 1~31, 31은 말일 |
+|  | 계약 상태 | enum | `status` | 임시저장·발송 대기·서명 대기·체결 완료·거부·만료·종료 |
 |  | 초안 처리 유형 | enum | `draft_action` | 가입 초대·소속 추가 확인·복귀 확인·즉시 발송 |
 |  | 발송 일시 | datetime | `sent_at` |  |
 |  | 날인 기한 | datetime | `sign_deadline_at` | 발송일부터 30일 |
 |  | 재발송 횟수 | int | `resend_count` |  |
 |  | 거부 사유 | text | `reject_reason` |  |
 | FK | 작성 관리자 | id | `created_by` |  |
+
+### 계약 근무 요일 `contract_work_days` · 엔티티
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK·FK | 근로계약 | id | `contract_id` |  |
+| PK | 요일 | enum | `weekday` | 근무하는 요일만 행으로 둔다 |
+|  | 시업 시각 | time | `start_time` | 30분 단위 |
+|  | 종업 시각 | time | `end_time` | 시업보다 뒤, 같은 날 안 |
+|  | 휴게 시작 | time | `break_start_time` | 휴게가 없으면 비움 |
+|  | 휴게 종료 | time | `break_end_time` |  |
 
 ### 계약 당사자 정보 `contract_parties` · 엔티티
 
@@ -394,6 +406,7 @@ python3 docs/erd/_build.py
 - 근로계약 `1` — `1` 계약 당사자 정보
 - 근로계약 `1` — `N` 계약서 파일
 - 근로계약 `1` — `N` 계약 상태 이력
+- 근로계약 `1` — `N` 계약 근무 요일 · 근무 요일
 
 ## 근무스케줄과 출퇴근
 
@@ -603,7 +616,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK | 근로계약 ID | id | `contract_id` |  |
-|  | 급여 조건 | json | `wage_terms` |  |
+|  | 급여액 | money | `wage_amount` |  |
 
 ### 급여명세서 `payslips` · 중심
 
@@ -706,7 +719,9 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |  | 템플릿 코드 | text | `template_code` | 만들 때 쓴 알림 템플릿. 문구는 이 알림에 박아 둠 |
 |  | 관련 업무 유형 | enum | `related_type` | 문의사항·도입문의·근로계약 등 |
 |  | 관련 업무 ID | id | `related_id` |  |
-|  | 알림 내용 | text | `body` |  |
+|  | 업무 링크 | text | `link` | 알림을 눌러 갈 관리자 웹 경로. 알림을 만드는 업무 쪽이 넘긴다, 없으면 알림함에서 안내 (NOTIFY-16, 2026-10-13 재영) |
+|  | 알림 제목 | text | `title` | 만들 때의 템플릿 제목을 박아 둠 — 알림함 목록 · 종 팝오버 (NOTIFY-12, 2026-10-13 재영) |
+|  | 알림 내용 | text | `body` | 템플릿 둘째 줄 |
 |  | 중복 방지 키 | text | `dedupe_key` | 같은 사건·수신자 1회 |
 |  | 긴급 여부 | bool | `urgent` |  |
 |  | 생성 시각 | datetime | `created_at` |  |
@@ -775,6 +790,9 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |  | 본문 | text | `body` | #{변수}. 알림톡은 카카오 검수 문구와 같게 |
 |  | 변수 목록 | json | `variables` | [{이름, 표시 이름, 필수, 예시 값}] 순서대로. 저장 때 본문·제목의 #{변수}가 목록 안에 있는지 검사 |
 |  | 카카오 템플릿 코드 | text | `kakao_template_code` | 알림톡만 |
+|  | 기본 제목 | text | `default_title` | 기본 문구로 되돌리기의 원본. 처음 넣은 40건만 (NOTIFY-17, 2026-10-13 재영) |
+|  | 기본 본문 | text | `default_body` | 기본 문구로 되돌리기의 원본. 없으면 등록한 템플릿이라 되돌리기가 없다 |
+|  | 기본 변수 목록 | json | `default_variables` | 되돌리면 제목 · 본문과 함께 돌린다 (NOTIFY-18) |
 |  | 사용 여부 | bool | `is_active` | 지우지 않고 끔 |
 | FK | 수정 관리자 | id | `updated_by` |  |
 |  | 수정 시각 | datetime | `updated_at` |  |

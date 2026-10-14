@@ -4,6 +4,7 @@
 import * as ui from "../../ui.mjs";
 import * as c from "../../config-parts.mjs";
 import { erpHeader } from "../../site.mjs";
+import { storeFilter } from "../../store-filter.mjs";
 import { adminNewPanel } from "./admins-new.mjs";
 import { adminDetailPanel } from "./admins-detail.mjs";
 import { adminEditPanel } from "./admins-edit.mjs";
@@ -37,7 +38,8 @@ const GROUPS = [
 
 export default ({ A, R }) => {
   const filter = ui.filterPanel(A, [
-    ui.filterSection("점포", ui.searchField(A, { placeholder: "점포코드 또는 점포명으로 찾기", label: "점포" }), { tight: true }),
+    // 점포 — 점포 정보 관리와 같은 점포 고르기(찾아 고르면 「선택한 점포」에 쌓임 · 5개 넘으면 스크롤)
+    ui.filterSection("점포", storeFilter(A), { tight: true }),
     ui.filterSection("아이디 · 이름", ui.searchField(A, { placeholder: "아이디 또는 이름 일부를 입력하세요", label: "아이디 · 이름" }), { tight: true }),
     ui.filterSection("권한 그룹", ui.select(GROUPS, { "aria-label": "권한 그룹" }), { tight: true }),
     ui.filterSection("계정 상태", ui.select(["전체", "사용", "미사용"], { "aria-label": "계정 상태" }), { tight: true, last: true }),
