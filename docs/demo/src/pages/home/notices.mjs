@@ -43,7 +43,7 @@ export default ({ A, R }) => {
   const faq = `<div class="flex flex-col gap-[8px] pt-[24px]">${faqs(R)
     .map(
       ([q, a], i) =>
-        `<details name="guest-faq"${i === 0 ? " open" : ""} class="group rounded-[3px] bg-[#fafafa] px-[20px] py-[22px] open:bg-[#f5f5f5]"><summary class="flex cursor-pointer list-none items-center gap-[11px] text-[17px] leading-[1.5] font-semibold text-guest-ink hover:text-guest-navy ${g.HOVER} [&::-webkit-details-marker]:hidden"><span class="flex size-[28px] shrink-0 items-center justify-center rounded-full bg-guest-navy text-[18px] font-bold tracking-normal text-white">Q</span><span class="flex-1">${q}</span>${g.gimg(A, "faq-plus.svg", 28, 28, "group-open:hidden")}${g.gimg(A, "faq-close.svg", 28, 28, "hidden group-open:block")}</summary><p class="mt-[18px] pl-[40px] text-[16px] leading-[1.6] text-guest-sub">${a}</p></details>`,
+        `<details name="guest-faq"${i === 0 ? " open" : ""} class="group rounded-[3px] bg-[#fafafa] px-[20px] py-[22px] open:bg-[#f5f5f5]"><summary class="flex cursor-pointer list-none items-center gap-[11px] text-[17px] leading-[1.5] font-semibold text-guest-ink hover:text-guest-navy ${g.HOVER} [&::-webkit-details-marker]:hidden"><span class="flex size-[28px] shrink-0 items-center justify-center rounded-full bg-guest-navy text-[18px] font-bold tracking-normal text-white">Q</span><span class="flex-1">${q}</span>${g.gimg(A, "faq-plus.svg", 28, 28, "group-open:hidden")}${g.gimg(A, "faq-close.svg", 28, 28, "hidden group-open:block")}</summary><p class="pt-[18px] pl-[40px] text-[16px] leading-[1.6] text-guest-sub">${a}</p></details>`,
     )
     .join("")}</div>`;
 
