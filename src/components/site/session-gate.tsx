@@ -256,6 +256,8 @@ async function prepare(): Promise<LoginState> {
     url.searchParams.delete("bp");
     history.replaceState(null, "", url);
   }
+  // 앞 로그인이 이 탭에 남긴 점포·공통코드·범위는 갈래와 상관없이 여기서 지운다(readCurrentBp). 점포 등은 bpCodeId 로만 갈려 같은 BP 의 다른 계정 값이 읽힌다.
+  const current = readCurrentBp(loginKey);
   // 비밀번호를 바꾸기 전에는 다른 BP 조회가 403 이라 자기 BP 로 연다.
   const tab: TabContext = account.isPasswordChangeRequired
     ? { serviceCode: account.bp.isPlatform ? "PLATFORM" : "WHALE_ERP", bp: ownBp }
@@ -264,7 +266,7 @@ async function prepare(): Promise<LoginState> {
         isPlatform: account.bp.isPlatform,
         pathService: serviceOfPath(info.menus, url.pathname),
         queryBpCodeId: q && /^\d+$/.test(q) ? Number(q) : null,
-        current: readCurrentBp(loginKey),
+        current,
         selectedBp: readSelectedBp(loginKey),
       });
   const { bp } = tab;
