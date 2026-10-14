@@ -5,7 +5,7 @@ description: DB·API·FRONT 세 계층이 같은 개념을 같은 영문 이름�
 tags: [convention, naming, shared]
 sources:
   - { id: naming-2026-09-30, resource: ../../docs/raw/2026-09-30-네이밍-규칙.md, title: WHALE ERP 네이밍 규칙 (DB · API · FRONT) }
-generated: { by: claude-code/opus-5.5, at: 2026-10-08T06:33:46Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-14T03:00:00Z }
 ---
 
 근거: `docs/raw/2026-09-30-네이밍-규칙.md` (3팀 기획 세션 · 2026-10-08 고침)
@@ -116,6 +116,8 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-08T06:33:46Z }
 - 삭제 가능한 데이터는 행을 지우지 않고 `is_deleted = true` 로 표시한다. 표시는 `is_deleted` 하나뿐이다 — `deleted_at` 을 함께 두면 플래그와 시각이 어긋난 행이 생길 수 있다. 삭제 시각이 필요해지면 그때 `deleted_at` 을 더하고 CHECK 로 묶는다.
 - 남아야 하는 기록(`*_logs`, `*_histories`)에는 두지 않는다. 이 컬럼이 없는 테이블은 지우지 않는 테이블이다.
 - 예외: 두 표를 잇는 부속 관계 표 `todo_assignees` 는 `is_deleted` 없이 행을 DELETE 한다. 배정을 푼 사실은 `todo_status_histories` 에 남긴다(퇴직 처리의 배정 해제, 2026-10-07 재영).
+- 예외: 임시저장(`DRAFT`) 근로계약을 지우면 `contracts` 행을 DELETE 한다. 발송한 적이 없어 남길 기록이 없다(2026-10-13 재영). 발송 대기 이후의 계약은 지우지 않는다.
+- 예외: 공지사항·FAQ 의 노출 대상 연결 표 `post_audiences` 는 `is_deleted` 없이 글을 고칠 때마다 행을 DELETE 하고 다시 넣는다. 노출 대상 변경은 글의 최종 수정자·수정 시각으로 남긴다(2026-10-13 재영, api #18).
 - 모든 조회에 `is_deleted = false` 를 건다. 빠뜨려도 오류가 나지 않고 지운 행이 그대로 보인다 — 목록, id 조회, total 을 위한 count, insert 전 존재 확인 모두 해당한다.
 - 유니크 제약은 부분 인덱스(`WHERE NOT is_deleted`)로 만든다. 안 그러면 지운 행이 sku·email 을 붙잡아 같은 값으로 다시 만들 때 409 가 난다. Prisma 가 표현하지 못해 CHECK 제약처럼 마이그레이션 SQL 에만 남는다.
 - 기본키도 `{참조 단수}_id` 로 짓는다. 기본키가 `id` 였던 견본 테이블(`items`·`stock_movements`·`staff`·`customers`)은 2026-10-07 에 견본 로그인·`/items` API 와 함께 지웠다(재영).
@@ -223,8 +225,8 @@ DB 테이블은 복수형, 모델·타입은 PascalCase 단수형으로 바꿔 �
 
 | 표준 표기 | 영문 식별자 | 비고 |
 |---|---|---|
-| 근로계약(서) | `contract` | 초안은 상태 `PENDING_SEND`인 계약 |
-| 근로계약 상태 6종 | `PENDING_SEND` · `PENDING_SIGNATURE` · `SIGNED` · `REJECTED` · `EXPIRED` · `ENDED` | 발송 대기 · 서명 대기 · 체결 완료 · 거부 · 만료 · 종료 |
+| 근로계약(서) | `contract` | 초안은 상태 `PENDING_SEND`인 계약. 다 쓰기 전에 저장해 둔 것은 `DRAFT`(임시저장) |
+| 근로계약 상태 7종 | `DRAFT` · `PENDING_SEND` · `PENDING_SIGNATURE` · `SIGNED` · `REJECTED` · `EXPIRED` · `ENDED` | 임시저장 · 발송 대기 · 서명 대기 · 체결 완료 · 거부 · 만료 · 종료. 임시저장은 초대·계약서를 보내지 않는다 (2026-10-12 재영) |
 | 전자계약 / 종이 계약 | `ELECTRONIC` / `PAPER` | `contract_method` |
 | 임금계약서 | `wage_contract` | 종이 계약에서 따로 날인한 임금 약정 문서 |
 | 계약서 파일 구분 | `SENT_ORIGINAL` · `SIGNED_COPY` · `PAPER_EMPLOYMENT_CONTRACT` · `WAGE_CONTRACT` | `contract_documents.kind` — 발송 원본 · 날인 완료본 · 종이 계약 근로계약서 · 임금계약서 |
@@ -297,7 +299,7 @@ DB 테이블은 복수형, 모델·타입은 PascalCase 단수형으로 바꿔 �
 | 게시 상태 | `PUBLISHED` · `DRAFT` · `PRIVATE` | 게시 · 임시저장 · 비공개 |
 | 문의 답변 상태 | `RECEIVED` · `IN_PROGRESS` · `ANSWERED` | 접수 · 처리중 · 답변완료 |
 | 운영 알림 · 앱 푸시 | `notification` · `push` | |
-| 알림 템플릿 | `notification_template` | 발송 채널 + 템플릿 이름 + 템플릿 코드로 구분하는 제목·본문 틀. 변경 이력은 `notification_template_history` |
+| 알림 템플릿 | `notification_template` | 발송 채널 + 템플릿 이름 + 템플릿 코드로 구분하는 제목·본문 틀. 변경 이력은 `notification_template_history`. 기본 템플릿 40건은 기본 제목 · 본문 · 변수 목록(`default_title` · `default_body` · `default_variables`)을 따로 두어 되돌리기에 쓴다. 운영자가 등록한 것은 비어 있다(NOTIFY-17 · 18, 2026-10-13) |
 | 발송 채널 4종 | `NOTIFICATION` · `PUSH` · `EMAIL` · `ALIMTALK` | 운영 알림 · 앱 푸시 · 메일 · 알림톡. enum `NotificationTemplateChannel` |
 | 템플릿 코드 | `template_code` | 등록할 때 채널 접두(`NTF` · `PUSH` · `EMAIL` · `TALK`)를 채우고 플랫폼 운영자가 정하며 고칠 수 있다. 형식 `^[A-Z][A-Z0-9_]*$`, 고유. 개발자는 이 코드로 템플릿을 불러 발송하고, 알림 기록(`notifications.template_code`)과 1팀 `mail_send_logs.mail_type_code` 도 이 값을 담는다. 알림톡의 카카오 템플릿 코드는 `kakao_template_code` 로 따로 둔다 |
 | 템플릿 사용 여부 · 변수 목록 | `is_active` · `variables` | 지우지 않고 `is_active = false` 로 끈다. 변수 목록은 JSON 배열 `[{ name, label, isRequired, sampleValue, isButtonLink? }]`. `isButtonLink: true` 인 변수는 메일 공통 틀의 버튼이나 알림톡 버튼이 붙이므로 「필수 변수는 제목·본문에 있어야 한다」 검사에서 뺀다. 키가 없으면 false. 변수 이름이 아니라 이 표시로 가른다 (2026-10-07 재영) |
@@ -306,13 +308,13 @@ DB 테이블은 복수형, 모델·타입은 PascalCase 단수형으로 바꿔 �
 
 ### 기본 템플릿 코드 (2026-10-07 재영)
 
-마이그레이션으로 처음 넣는 37건의 템플릿 코드다. 운영자가 고칠 수 있지만, 발송 코드는 이 값으로 부르므로 고치면 발송 코드도 바꿔야 한다. 화면·문서에서 지어 쓰지 말고 이 값을 쓴다.
+마이그레이션으로 처음 넣는 40건의 템플릿 코드다(운영 알림 10 · 앱 푸시 5 · 메일 24 · 알림톡 1). 운영자가 고칠 수 있지만, 발송 코드는 이 값으로 부르므로 고치면 발송 코드도 바꿔야 한다. 화면·문서에서 지어 쓰지 말고 이 값을 쓴다.
 
 | 채널 | 템플릿 코드 | 템플릿 이름 |
 |---|---|---|
 | 운영 알림 10 | `NTF_INQUIRY_RECEIVED` · `NTF_LEAD_RECEIVED` · `NTF_INQUIRY_ANSWERED` · `NTF_LEAD_ANSWERED` · `NTF_CONTRACT_SIGNED` · `NTF_CONTRACT_REJECTED` · `NTF_CONTRACT_EXPIRED` · `NTF_LINK_HOLD` · `NTF_AFFILIATION_REJECTED` · `NTF_CONTRACT_RENEWAL_DUE` | 문의사항 접수 · 도입문의 접수 · 문의사항 답변 · 도입문의 처리 상태 변경 · 근로계약 날인 · 근로계약 거부 · 근로계약 만료 · 가입 연결 보류 · 소속 추가 확인 거절 · 계약 갱신 예정 |
-| 앱 푸시 4 | `PUSH_CONTRACT_SENT` · `PUSH_SCHEDULE_CHANGED` · `PUSH_TODO_ASSIGNED` · `PUSH_PAYSLIP_SENT` | 근로계약서 발송 · 근무스케줄 변경 · TO-DO 배정(알림함에만) · 급여명세서 발송 |
-| 메일 · 운영 알림 짝 10 | `EMAIL_` + 운영 알림 열 코드(예 `EMAIL_CONTRACT_SIGNED`) | 운영 알림과 같은 이름 |
-| 메일 · 3팀 4 | `EMAIL_STAFF_PASSWORD_PIN` · `EMAIL_STAFF_RESET_LINK` · `EMAIL_CHANGE_PIN` · `EMAIL_LEAD_CONFIRMATION` | 비밀번호 찾기 핀 · 관리자 초기화 재설정 링크 · 로그인 이메일 변경 핀 · 도입문의 접수 확인 |
+| 앱 푸시 5 | `PUSH_CONTRACT_SENT` · `PUSH_SCHEDULE_CHANGED` · `PUSH_TODO_ASSIGNED` · `PUSH_PAYSLIP_SENT` · `PUSH_PAYSLIP_RESENT` | 근로계약서 발송 · 근무스케줄 변경 · TO-DO 배정(알림함에만) · 급여명세서 발송 · 급여명세서 다시 발송 |
+| 메일 · 운영 알림과 같은 이름 10 | `EMAIL_` + 운영 알림 열 코드(예 `EMAIL_CONTRACT_SIGNED`) | 운영 알림과 같은 이름. 운영 알림이 붙여 보내지 않고 업무 쪽이 필요할 때 따로 부른다(운영 정책 NTF-03, 2026-10-13) |
+| 메일 · 3팀 6 | `EMAIL_STAFF_PASSWORD_PIN` · `EMAIL_STAFF_RESET_LINK` · `EMAIL_CHANGE_PIN` · `EMAIL_LEAD_CONFIRMATION` · `EMAIL_PAYSLIP_SENT` · `EMAIL_PAYSLIP_RESENT` | 비밀번호 찾기 핀 · 관리자 초기화 재설정 링크 · 로그인 이메일 변경 핀 · 도입문의 접수 확인 · 급여명세서 발송 메일 · 급여명세서 다시 발송 메일 |
 | 메일 · 1팀 8 | `EMAIL_SIGNUP_DONE` · `EMAIL_SIGNUP_ALERT` · `EMAIL_BP_REGISTER` · `EMAIL_PLAT_ADMIN_CREATE` · `EMAIL_BP_ADMIN_CREATE` · `EMAIL_PASSWORD_RESET` · `EMAIL_TEMP_PASSWORD` · `EMAIL_WITHDRAW_DONE` | 회원가입 완료 · 신규 BP 가입 알림 · BP 신규 등록 · 플랫폼 관리자 계정 생성 · BP 관리자 계정 생성 · 비밀번호 초기화 · 임시 비밀번호 발급 · 회원 탈퇴 완료. 뒤 코드는 1팀 옛 MAIL_TYPE 값 그대로 |
 | 알림톡 1 | `TALK_STAFF_INVITATION` | 가입 초대 |

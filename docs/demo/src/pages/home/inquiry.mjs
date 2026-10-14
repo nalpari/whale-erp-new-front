@@ -26,7 +26,8 @@ export default ({ A, R }) => {
     ui.checkbox(A, "마케팅 정보 수신에 동의합니다 (선택)"),
   );
   const main = `<div class="mx-auto flex w-[860px] flex-col gap-[24px] px-[24px] py-[48px]"><div class="flex flex-col gap-[6px]"><h1 class="text-[22px] font-semibold">도입문의</h1><p class="text-[14px] text-erp-label">가입하지 않아도 남기실 수 있습니다. 담당자가 확인한 뒤 알려주신 전화번호나 이메일로 회신합니다.</p></div>${who}${what}${consent}<div class="flex items-center gap-[18px]"><div class="flex-1">${p.note(
-    "같은 전화번호나 이메일로 짧은 시간에 여러 번 보내면 잠시 접수가 막힙니다.",
+    // 중복 접수(429) 문구는 운영 정책 CNT-03 · 04 · 08 · 10 · 14 (2026-10-13).
+    "같은 전화번호나 이메일로 짧은 시간에 여러 번 보내면 잠시 접수가 막히고 「이미 접수된 문의가 있습니다. 담당자가 영업일 기준 1~2일 안에 연락드립니다」를 보입니다.",
   )}</div>${ui.button("문의 접수하기")}</div></div>`;
   return { title: "도입문의", html: p.sitePage(A, R, { current: "inquiry", main, foot: p.siteFoot(A, R) }) };
 };

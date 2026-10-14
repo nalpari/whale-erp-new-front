@@ -19,7 +19,7 @@
           <h1 class="t-h1">근로계약서 초안 작성</h1>
           <span class="badge badge--quiet">모리커피 성수점</span>
           <div class="titlebar__end">
-            <button class="btn btn--secondary btn--sm" type="button">임시저장</button>
+            <button class="btn btn--secondary btn--sm" type="button" title="이름·휴대전화번호·근무지·직무·고용 형태가 있어야 임시저장된다(운영 정책 CTR-02)">임시저장</button>
             <button class="btn btn--primary btn--sm" type="button">
               <span data-icon="check" data-icon-size="14"></span>초안 저장
             </button>
@@ -44,6 +44,23 @@
                 <p>근로계약서 초안이 <b>먼저</b>다. 저장하면 미가입 직원 레코드가 생기고 초대가 자동으로 나간다.</p>
               </div>
             </div>
+          </div>
+
+          <!-- 2026-10-13 확정 결정을 안내 수준으로 옮겼다. 급여 표 그림은 구현(src/app/contracts/new/contract-form.tsx)이 기준이다. -->
+          <div class="gap is-decided">
+            <p class="gap__note" style="margin: 0">
+              저장 규칙 · 확정 · 2026-10-13 재영.
+              <b>임시저장</b>은 이름·휴대전화번호·근무지·직무·고용 형태가 있어야 한다(운영 정책 CTR-02). 초대·계약서는 보내지 않고, 이어 쓰기 화면에서 확인한 뒤에만 지운다. 발송 대기부터는 지우지 않는다(CTR-19).
+              같은 점포에 진행 중 계약이 있으면 「기존 근로계약을 대체하시겠습니까?」로 확인받고 대체한다. 가입 전 레코드는 휴대전화번호와 이름이 같을 때만 다시 쓴다.
+              같은 휴대전화번호의 사람이 다른 점포에 발송 대기·서명 대기·체결 완료 계약이 있고 기간·요일·시간이 겹치면 초안 저장을 막고 「다른 점포 근로계약과 근무 시간이 겹칩니다」만 알린다. 다른 점포 이름·요일·시각은 보이지 않는다. 퇴직 직원 계약은 퇴직일까지만 본다(CTR-26).
+            </p>
+          </div>
+          <div class="gap is-decided">
+            <p class="gap__note" style="margin: 0">
+              급여 칸 · 확정 · 2026-10-13 재영(front #15, 현업 엑셀 견본). 아래 시급 한 칸 그림은 옛 것이다 — 바뀜.
+              정직원은 시급·월급(읽기 전용, 셈한 값)·연봉, 비과세 항목, 급여항목(기본·연장·야간) 표. 파트타이머는 요일별 소계·주휴수당·주급·월급여 표. 연차휴가·퇴직금 조항 칸을 둔다.
+              휴일근무 두 줄(기본시간 중 휴일근무·월간 추가 휴일근무)과 파트타이머 수당 줄은 화면에서 받지 않는다. 셈한 값(월급·주급 등)은 저장하지 않는다.
+            </p>
           </div>
 
           <div class="grid grid--7-5">
@@ -134,9 +151,10 @@
                     <span class="help">비워 두면 기간의 정함이 없는 계약</span>
                   </div>
                   <div class="field">
-                    <label for="pay" id="pay-label">월급</label>
-                    <input class="input mono" id="pay" value="2,400,000" />
-                    <span class="help" id="pay-help">월 소정근로시간 기준 최저임금 이상</span>
+                    <!-- 급여는 고용 형태와 상관없이 시급 한 칸이다. 정직원 월급은 시급과 근로시간으로 셈한다 (2026-10-12 재영, api #12). 바뀜(2026-10-13, front #15): 급여 표는 위 「급여 칸」 확정 블록과 구현을 따른다 -->
+                    <label for="pay" id="pay-label">시급</label>
+                    <input class="input mono" id="pay" value="11,500" />
+                    <span class="help" id="pay-help">2026년 최저임금 10,320원 이상</span>
                   </div>
                   <div class="field">
                     <label for="hol">주휴일</label>
@@ -342,7 +360,7 @@
     <script>
       /* 고용 형태와 계약 방식은 누르면 화면이 따라 바뀐다. 목업이라 값은 표본 두 벌을 오간다. */
       var WK = {
-        정직원: { label: "월급", pay: "2,400,000", help: "월 소정근로시간 기준 최저임금 이상", sum: "40.0",
+        정직원: { label: "시급", pay: "11,500", help: "2026년 최저임금 10,320원 이상", sum: "40.0",
                  days: { 월: 1, 화: 1, 수: 1, 목: 1, 금: 1, 토: 0, 일: 0 }, end: "18:00" },
         파트타이머: { label: "시급", pay: "11,200", help: "2026년 최저임금 10,320원 이상", sum: "20.0",
                    days: { 월: 0, 화: 1, 수: 0, 목: 1, 금: 0, 토: 1, 일: 0 }, end: "16:00" }

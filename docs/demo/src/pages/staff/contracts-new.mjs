@@ -1,11 +1,13 @@
 // 근로계약서 초안 작성. 목업 docs/mockup/staff/contracts-new.html 의 기본 상태(정직원 · 전자계약 · 남도현)를 BP 마스터로 본 것.
 // 목업의 고용 형태·계약 방식 전환 버튼은 라디오로 그렸고, 종이 계약을 골랐을 때의 칸은 기본 상태가 아니라 넣지 않았다.
+// 임시저장 이어 쓰기(contracts-draft.mjs)도 이 틀을 쓴다 — 목록에서 임시저장 행을 누르면 바로 온다(2026-10-13, 운영 정책 CTR-19).
 import * as ui from "../../ui.mjs";
 import * as p from "../../staff-parts.mjs";
 import { req, group } from "../../biz-form.mjs";
 import { erpHeader, link } from "../../site.mjs";
 
-export default ({ A, R }) => {
+// d: 이어 쓰기면 { name, phone } — 직원 칸 값과 제목 줄 「삭제」(확인 뒤 행 삭제)만 바뀐다.
+export const contractForm = (d) => ({ A, R }) => {
   const L = (path) => link(R, path);
   const choice = (label, name, options) =>
     `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">${label}</span>${p.radios(name, options)}</div>`;
@@ -27,7 +29,7 @@ export default ({ A, R }) => {
   const dayChip = (d, on) =>
     `<button type="button" aria-pressed="${on}" class="grid size-[34px] place-items-center rounded-[2px] border border-erp-field-line bg-white text-[14px] text-erp-label transition-colors duration-150 ease-out aria-pressed:border-erp-brand-soft aria-pressed:bg-erp-brand-soft aria-pressed:text-white">${d}</button>`;
   // 칸 배치는 이 폼의 다른 항목과 같게(라벨 위 · 입력 아래, 구분선 없음).
-  // 근무요일은 월급·시급 옆(2026-10-02 재영). data-workplan 은 그 줄과 근무시간 줄을 함께 감싼다.
+  // 근무요일은 시급 옆(2026-10-02 재영). data-workplan 은 그 줄과 근무시간 줄을 함께 감싼다.
   const workDays = group("근무요일", `<span class="flex gap-[6px]">${["월", "화", "수", "목", "금", "토", "일"].map((d, i) => dayChip(d, i < 5)).join("")}</span>`);
   const workTimes = ui.formRow(group("근무시간", span("work", ["09", "00", "18", "00"], "근무시간")), group("휴게시간", span("rest", ["12", "00", "13", "00"], "휴게시간")));
 
@@ -36,8 +38,8 @@ export default ({ A, R }) => {
       "직원 정보",
       // 직원 정보는 모두 필수(2026-10-02 재영). 표시는 1팀 폼과 같은 「라벨 *」.
       ui.formRow(
-        p.fieldH(req("이름"), ui.textField({ value: "남도현" }), ""),
-        p.fieldH(req("휴대전화번호"), ui.textField({ value: "010-9014-5563", inputmode: "tel" }), "초대 발송과 가입 연결의 기준값"),
+        p.fieldH(req("이름"), ui.textField({ value: d?.name ?? "남도현" }), ""),
+        p.fieldH(req("휴대전화번호"), ui.textField({ value: d?.phone ?? "010-9014-5563", inputmode: "tel" }), "초대 발송과 가입 연결의 기준값"),
       ),
       ui.formRow(
         p.fieldH(req("생년월일"), ui.dateField(A, { label: "생년월일", value: "1998-07-12" }), ""),
@@ -58,15 +60,19 @@ export default ({ A, R }) => {
         p.fieldH(req("계약 시작일"), ui.dateField(A, { label: "계약 시작일", value: "2026-09-14" }), ""),
         p.fieldH("계약 종료일", ui.dateField(A, { label: "계약 종료일" }), "비워 두면 기간의 정함이 없는 계약"),
       ),
-      `<div data-workplan class="flex flex-col gap-[18px]">` +
+      `<div data-workplan class="flex flex-col gap-[18px]">` + workDays + workTimes + `</div>`,
+      // 급여 칸은 현업 엑셀 견본(2026-10-13, front #15). 시급 · 월급(읽기 전용) · 연봉이 한 줄이고 그 아래 고용 형태별 급여 표가 선다.
+      // 데모는 표를 그리지 않고 안내로 갈음한다 — 실제 칸은 src/app/contracts/new/contract-form.tsx. 셈한 값은 저장하지 않는다.
       ui.formRow(
-        // 고용 형태에 따라 월급(정직원)·시급(파트타이머) 중 하나가 보인다(목업과 같은 값, erp.js initWhen). 둘 다 필수(2026-10-02 재영).
-        p.fieldH(req("월급"), ui.textField({ value: "2,400,000", inputmode: "numeric" }), "월 소정근로시간 기준 최저임금 이상").replace("<div ", '<div data-when="employment:정직원" '),
-        p.fieldH(req("시급"), ui.textField({ value: "11,200", inputmode: "numeric" }), "2026년 최저임금 10,320원 이상").replace("<div ", '<div data-when="employment:파트타이머" '),
-        workDays,
-      ).replace('class="flex w-full gap-[6px]"', 'class="flex w-full items-start gap-[6px]"') +
-        workTimes +
-        `</div>`,
+        p.fieldH(req("시급"), ui.textField({ value: "11,200", inputmode: "numeric" }), "2026년 최저임금 10,320원 이상"),
+        p.fieldH("월급", ui.textField({ value: "2,340,800", readonly: true }), "급여항목 합계 + 비과세 합계"),
+        p.fieldH("연봉", ui.textField({ value: "28,089,600", readonly: true }), "월급 × 12"),
+      ) +
+        p.note("정직원은 비과세 항목 · 급여항목(기본 · 연장 · 야간) 표, 파트타이머는 요일별 소계 · 주휴수당 · 주급 · 월급여 표를 둡니다. 휴일근무 두 줄은 받지 않고, 셈한 값은 저장하지 않습니다."),
+      ui.formRow(
+        p.fieldH("연차휴가", ui.textField({ value: "근로기준법에 따른다" }), "계약서 연차휴가 조항에 그대로 들어간다"),
+        p.fieldH("퇴직금", ui.textField({ value: "근로자퇴직급여 보장법에 따른다" }), "계약서 퇴직금 조항에 그대로 들어간다"),
+      ),
       `<div class="flex flex-col gap-[8px]"><div class="flex items-center"><span class="flex-1 text-[14px] font-medium text-erp-label">소정근로시간</span><span class="text-[14px] text-erp-label">주 <b data-hours-sum class="font-semibold text-erp-ink">40.0</b> 시간</span></div>${hours.replace("<table ", "<table data-hours ")}</div>`,
       ui.formRow(
         p.fieldH(
@@ -85,6 +91,8 @@ export default ({ A, R }) => {
     p.band("만 19세 미만 직원은 등록할 수 없습니다", {
       desc: "근로계약·출퇴근·급여는 점포에서 따로 관리해 주세요. 계약 시작일 기준으로 따지며, 만 19세 미만이면 저장이 막히고 초대도 나가지 않습니다.",
     }) +
+    // 같은 점포 진행 중 계약은 대체 확인, 다른 점포와 근무 시간이 겹치면 저장을 막는다(2026-10-13 재영, 운영 정책 CTR-26).
+    p.note("같은 점포에 진행 중 계약이 있으면 「기존 근로계약을 대체하시겠습니까?」를 묻습니다. 다른 점포 근로계약과 근무 시간이 겹치면 저장되지 않고 「다른 점포 근로계약과 근무 시간이 겹칩니다」를 알립니다.") +
     p.bar(
       "",
       ui.button("초안 저장하고 발송", { href: L("staff/contracts.html"), "data-when": "method:전자계약" }) +
@@ -94,8 +102,15 @@ export default ({ A, R }) => {
 
   const head = ui.sectionHead(
     `근로계약서 <span class="pl-[6px] text-[14px] font-normal text-erp-label">모리커피 성수점</span>`,
-    ui.button("취소", { variant: "off", href: L("staff/contracts.html") }) + p.ask("임시저장", "soft", "작성 중인 초안을 임시저장하시겠습니까?", "초대와 계약서는 보내지 않습니다.") + ui.button("초안 저장", { href: L("staff/contracts.html") }),
+    ui.button("취소", { variant: "off", href: L("staff/contracts.html") }) +
+      // 이어 쓰기에서만 삭제가 취소와 임시저장 사이에 선다. 확인 뒤 임시저장 행을 지운다(발송 대기부터는 지우지 않는다).
+      (d ? p.ask("삭제", "soft", "임시저장한 근로계약서를 삭제하시겠습니까?", `${d.name} 님의 임시저장을 지웁니다. 삭제하면 되돌릴 수 없습니다.`, "삭제") : "") +
+      p.ask("임시저장", "soft", "작성 중인 초안을 임시저장하시겠습니까?", "초대와 계약서는 보내지 않습니다. 이름 · 휴대전화번호 · 근무지 · 직무 · 고용 형태가 있어야 임시저장됩니다.") +
+      ui.button("초안 저장", { href: L("staff/contracts.html") }),
   );
   const body = ui.detailBody(`<div class="flex flex-col gap-[12px]">${head}${`<div class="flex flex-col gap-[24px]">${form}</div>`}</div>`);
-  return { title: "근로계약서 초안 작성", html: ui.erpFrame({ header: erpHeader(A, R), title: "근로계약서 초안 작성", body }) };
+  const title = d ? "근로계약서 이어 쓰기" : "근로계약서 초안 작성";
+  return { title, html: ui.erpFrame({ header: erpHeader(A, R), title, body }) };
 };
+
+export default contractForm();

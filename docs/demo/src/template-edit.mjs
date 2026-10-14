@@ -1,10 +1,12 @@
 // 알림 템플릿 수정·등록 화면(목업 docs/mockup/notify/templates-edit.html · templates-new.html). 플랫폼 운영자 전용.
-// 등록한 것과 기본 37건 모두 모든 항목을 고친다(NOTIFY-10, 2026-10-07 재영): 채널·유형·템플릿 코드·카카오 템플릿 코드·변수 목록·사용 여부.
+// 등록한 것과 기본 40건 모두 모든 항목을 고친다(NOTIFY-10, 2026-10-07 재영): 채널·유형·템플릿 코드·카카오 템플릿 코드·변수 목록·사용 여부.
 // 템플릿은 채널 + 템플릿 이름 + 템플릿 코드로 구분하고(NOTIFY-11), 채널마다 미리보기 모양이 다르다.
 // 목업은 예시를 탭으로 오갔지만 데모는 상태 시연을 두지 않으므로 채널마다 한 장씩 만든다(notify/templates-edit*.mjs).
 // 제목·본문 필수(2026-10-07 재영). 앱 푸시는 제목 40자·본문 100자이고 넘으면 저장하지 않는다(NOTIFY-4).
 // 메일 본문은 일반 글만 쓰고 머리·꼬리·버튼은 공통 메일 틀이 붙인다(NOTIFY-5).
-// 변수 단추 삽입·글자 수·변수 목록 편집·저장 전 검사·템플릿 코드 기본값과 바꿈 확인은 erp.js(initTemplateEdit).
+// 변수 단추 삽입·글자 수·변수 목록 편집·저장 전 검사·템플릿 코드 기본값과 바꿈 경고는 erp.js(initTemplateEdit).
+// 저장 확인창은 「저장하시겠습니까?」 하나다. 템플릿 코드를 바꿨으면 같은 확인창에 발송 코드 경고를 보인다(2026-10-13 재영).
+// 변수 목록의 「버튼 링크」 칸은 메일·알림톡에서만 보인다(NOTIFY-20). 켠 변수는 필수 변수 검사에서 빠진다.
 import * as ui from "./ui.mjs";
 import * as p from "./staff-parts.mjs";
 import { req } from "./biz-form.mjs";
@@ -18,6 +20,7 @@ const box = (title, right, body) => p.box(title, right, `<div class="flex flex-c
 const inboxLine = (title, sub) =>
   `<div class="flex flex-col gap-[4px] rounded-[2px] border border-erp-panel-line bg-white px-[16px] py-[12px]"><b class="text-[14px] font-semibold text-erp-ink">${title}</b><span class="text-[12px] text-erp-muted">${sub}</span></div>`;
 const caption = (t) => `<span class="text-[13px] font-medium text-erp-label">${t}</span>`;
+const BTN_CHANNELS = ["메일", "알림톡"];
 const PREVIEW = {
   ops: (v) => caption("관리자 웹 운영 알림함 한 줄") + inboxLine(v.title, v.sub),
   mail: (v) =>
@@ -36,7 +39,7 @@ const PREVIEW = {
 };
 
 // t: { mode("edit"|"new"), kind, type(템플릿 이름), pushGroup, channel, to, templateCode, kakaoCode, title, body, vars:[{name,label,required,example}], preview, count, history, notice, base }
-// kind 가 talk 면 제목 칸 대신 카카오 템플릿 코드 칸을 둔다. base 는 기본 37건(기본 문구로 되돌리기가 이때만 보인다).
+// kind 가 talk 면 제목 칸 대신 카카오 템플릿 코드 칸을 둔다. base 는 기본 40건(기본 문구로 되돌리기가 이때만 보인다. 되돌리기는 제목·본문·변수 목록만, NOTIFY-17·18).
 const field = (label, control, w) => ui.field(label, control, w ?? "min-w-px flex-1");
 
 export function templateEdit(t) {
@@ -44,7 +47,6 @@ export function templateEdit(t) {
     const isNew = t.mode === "new";
     const bodyId = ui.uid("tpl-body");
     const titleId = ui.uid("tpl-title");
-    const codeDlg = x.dialogId();
     const saveDlg = x.dialogId();
     const counted = (id, max) => (t.count ? ` <span class="text-[12px] font-normal text-erp-muted" data-count="${id}" data-max="${max}"></span>` : "");
     const channelName = t.channel ?? "운영 알림";
@@ -64,7 +66,7 @@ export function templateEdit(t) {
         ui.formRow(
           p.fieldH(
             req("템플릿 코드"),
-            ui.textField({ value: t.templateCode ?? "", "data-tpl-code": true, ...(isNew ? {} : { "data-code-original": t.templateCode, "data-code-dialog": codeDlg }), "aria-label": "템플릿 코드" }),
+            ui.textField({ value: t.templateCode ?? "", "data-tpl-code": true, ...(isNew ? {} : { "data-code-original": t.templateCode }), "aria-label": "템플릿 코드" }),
             isNew ? "채널을 고르면 접두(NTF_·PUSH_·EMAIL_·TALK_)가 채워지고, 나머지는 직접 넣습니다." : "바꾸면 발송 코드도 함께 바꿔야 할 수 있습니다.",
           ),
           `<div class="min-w-px flex-1" data-tpl-talk${talk ? "" : " hidden"}>${p.fieldH(req("카카오 템플릿 코드"), ui.textField({ value: t.kakaoCode ?? "", "aria-label": "카카오 템플릿 코드" }), "카카오에 등록한 코드입니다.", "w-full")}</div>`,
@@ -72,10 +74,12 @@ export function templateEdit(t) {
         (t.to ? p.help(`받는 사람 · ${t.to}`) : ""),
     );
 
-    // 변수 목록 — 줄마다 변수 이름·표시 이름·필수·예시 값. 본문 위 변수 단추는 이 목록에서 그린다(erp.js).
+    // 변수 목록 — 줄마다 변수 이름·표시 이름·필수·버튼 링크·예시 값. 본문 위 변수 단추는 이 목록에서 그린다(erp.js).
+    // 버튼 링크 칸은 메일·알림톡에서만 보인다(NOTIFY-20). 채널을 바꾸면 erp.js 가 다시 숨기거나 보인다.
+    const btnHidden = BTN_CHANNELS.includes(channelName) ? "" : " hidden";
     const varRow = (v = {}) =>
-      `<tr class="h-[46px] border-b border-erp-thead-line" data-var-row><td class="px-[6px]">${ui.textField({ value: v.name ?? "", "aria-label": "변수 이름", "data-var-name": true })}</td><td class="px-[6px]">${ui.textField({ value: v.label ?? "", "aria-label": "표시 이름" })}</td><td class="px-[6px]"><span class="flex justify-center">${ui.checkbox(A, "", v.required ?? false, { "aria-label": "필수", "data-var-required": true })}</span></td><td class="px-[6px]">${ui.textField({ value: v.example ?? "", "aria-label": "예시 값" })}</td><td class="px-[6px] text-center">${ui.button("삭제", { variant: "off", "data-var-del": true })}</td></tr>`;
-    const varTable = `<table class="w-full table-fixed border-collapse border-x border-erp-thead-line text-[14px]"><colgroup><col class="w-[22%]"><col class="w-[22%]"><col class="w-[64px]"><col><col class="w-[84px]"></colgroup><thead><tr class="h-[42px] border-y border-erp-thead-line bg-erp-thead-bg">${["변수 이름", "표시 이름", "필수", "예시 값", ""].map((h) => `<th scope="col" class="px-[10px] font-medium text-erp-thead-text">${h}</th>`).join("")}</tr></thead><tbody data-var-body>${(t.vars ?? []).map(varRow).join("")}</tbody></table><template data-var-template>${varRow()}</template>`;
+      `<tr class="h-[46px] border-b border-erp-thead-line" data-var-row><td class="px-[6px]">${ui.textField({ value: v.name ?? "", "aria-label": "변수 이름", "data-var-name": true })}</td><td class="px-[6px]">${ui.textField({ value: v.label ?? "", "aria-label": "표시 이름" })}</td><td class="px-[6px]"><span class="flex justify-center">${ui.checkbox(A, "", v.required ?? false, { "aria-label": "필수", "data-var-required": true })}</span></td><td class="px-[6px]" data-tpl-btnlink${btnHidden}><span class="flex justify-center">${ui.checkbox(A, "", v.buttonLink ?? false, { "aria-label": "버튼 링크", "data-var-button": true })}</span></td><td class="px-[6px]">${ui.textField({ value: v.example ?? "", "aria-label": "예시 값" })}</td><td class="px-[6px] text-center">${ui.button("삭제", { variant: "off", "data-var-del": true })}</td></tr>`;
+    const varTable = `<table class="w-full table-fixed border-collapse border-x border-erp-thead-line text-[14px]"><colgroup><col class="w-[22%]"><col class="w-[22%]"><col class="w-[64px]"><col class="w-[84px]" data-tpl-btnlink${btnHidden}><col><col class="w-[84px]"></colgroup><thead><tr class="h-[42px] border-y border-erp-thead-line bg-erp-thead-bg">${["변수 이름", "표시 이름", "필수", "버튼 링크", "예시 값", ""].map((h) => `<th scope="col" class="px-[10px] font-medium text-erp-thead-text"${h === "버튼 링크" ? ` data-tpl-btnlink${btnHidden}` : ""}>${h}</th>`).join("")}</tr></thead><tbody data-var-body>${(t.vars ?? []).map(varRow).join("")}</tbody></table><template data-var-template>${varRow()}</template>`;
     const varBox = p.box("변수 목록", ui.button("줄 추가", { variant: "off", "data-var-add": true }), varTable);
 
     const form = box(
@@ -94,19 +98,21 @@ export function templateEdit(t) {
 
     const list = link(R, "notify/templates.html");
     const revert = t.base
-      ? p.ask("기본 문구로 되돌리기", "soft", "기본 문구로 되돌리시겠습니까?", "처음 배포된 제목과 본문으로 바뀝니다. 되돌린 것도 변경 이력에 남습니다.", "되돌리기")
+      ? p.ask(
+          "기본 문구로 되돌리기",
+          "soft",
+          "기본 문구로 되돌리시겠습니까?",
+          // 되돌리기는 제목·본문·변수 목록만(NOTIFY-18). 알림톡은 카카오 템플릿 코드가 그대로라 검수 본문과 맞는지 확인을 청한다.
+          "제목 · 본문 · 변수 목록이 처음 배포된 것으로 바뀝니다. 되돌린 것도 변경 이력에 남습니다." +
+            (talk ? " 카카오 템플릿 코드는 바뀌지 않으니, 검수받은 본문과 맞는지 확인해 주세요." : ""),
+          "되돌리기",
+        )
       : "";
     // 저장은 먼저 erp.js 가 본문을 검사하고(목록에 없는 변수·빠진 필수 변수), 통과하면 확인창을 연다.
     const save =
       ui.button("저장", { "data-tpl-save": saveDlg, "data-toast": "" }) +
-      x.dialog(saveDlg, "저장하시겠습니까?", "", `${ui.button("취소", { variant: "off", "data-close": true })}${ui.button("저장", { "data-close": true })}`);
+      x.dialog(saveDlg, "저장하시겠습니까?", isNew ? "" : `<span data-code-warn hidden>템플릿 코드를 바꿨습니다. 발송 코드에서 이 템플릿 코드를 쓰고 있으면 함께 바꿔야 합니다.</span>`, `${ui.button("취소", { variant: "off", "data-close": true })}${ui.button("저장", { "data-close": true })}`);
     const right = `<div class="flex items-center gap-[6px]">${ui.button("목록", { variant: "off", href: list })}${revert}${save}</div>`;
-    const codeConfirm = x.dialog(
-      codeDlg,
-      "템플릿 코드를 바꾸시겠습니까?",
-      "발송 코드에서 이 템플릿 코드를 쓰고 있으면 함께 바꿔야 합니다.",
-      `${ui.button("되돌리기", { variant: "off", "data-close": true, "data-code-revert": true })}${ui.button("바꾸기", { "data-close": true })}`,
-    );
     const prefixes = JSON.stringify(Object.fromEntries(CHANNELS)).replaceAll('"', "&quot;");
     // 템플릿 코드 겹침 검사용(저장 전, erp.js). 고치는 템플릿 자신의 코드는 뺀다.
     const codes = JSON.stringify(ALL_CODES.filter((c) => c !== t.templateCode)).replaceAll('"', "&quot;");
@@ -121,7 +127,6 @@ export function templateEdit(t) {
           `<div class="flex flex-col gap-[24px]" data-tpl-root${isNew ? " data-tpl-new" : ""} data-prefixes="${prefixes}" data-codes="${codes}">` +
             p.detailHead(heading, right) +
             p.cols(info + form, preview + varBox + history) +
-            codeConfirm +
             `</div>`,
         ),
       }),

@@ -54,7 +54,7 @@
             </div>
             <div class="gap__opts">
               <div class="gap__opt is-dropped" data-side="a">
-                <div class="gap__label">A · 기본 37건의 제목·본문만</div>
+                <div class="gap__label">A · 기본 40건의 제목·본문만</div>
                 <p>코드·변수 목록은 고정하고 문구만 고친다.</p>
               </div>
               <div class="gap__opt is-picked" data-side="b">
@@ -62,7 +62,7 @@
                 <p>새로 등록하고, 모든 항목을 고치며, 사용 여부로 끈다.</p>
               </div>
             </div>
-            <p class="gap__note">알림 템플릿 등록과 전체 수정 · 확정 · 2026-10-07 재영. 기본 문구로 되돌리기는 기본 37건에만 보인다. 이미 있는 템플릿의 코드를 바꾸면 발송 코드도 함께 바꿔야 할 수 있어 확인창을 띄운다.</p>
+            <p class="gap__note">알림 템플릿 등록과 전체 수정 · 확정 · 2026-10-07 재영. 기본 문구로 되돌리기는 기본 40건에만 보인다(NOTIFY-17). 이미 있는 템플릿의 코드를 바꾸면 발송 코드도 함께 바꿔야 할 수 있어 확인창을 띄운다.</p>
           </div>
 
           <div class="gap is-decided">
@@ -87,8 +87,8 @@
 
           <div class="tabs" data-tabs="channel">
             <button data-tab="ops" aria-selected="true">운영 알림 <span class="count">10</span></button>
-            <button data-tab="push" aria-selected="false">앱 푸시 <span class="count">4</span></button>
-            <button data-tab="mail" aria-selected="false">메일 <span class="count">22</span></button>
+            <button data-tab="push" aria-selected="false">앱 푸시 <span class="count">5</span></button>
+            <button data-tab="mail" aria-selected="false">메일 <span class="count">24</span></button>
             <button data-tab="talk" aria-selected="false">알림톡 <span class="count">1</span></button>
           </div>
 
@@ -197,9 +197,9 @@
                   </table>
                 </div>
                 <div class="panel__note">
-                  <b>등록</b>으로 새 템플릿을 더하고, 기본 37건과 등록한 것 모두 모든 항목(채널·템플릿 이름·템플릿 코드·변수 목록·제목·본문)을 고친다(NOTIFY-10).
+                  <b>등록</b>으로 새 템플릿을 더하고, 기본 40건과 등록한 것 모두 모든 항목(채널·템플릿 이름·템플릿 코드·변수 목록·제목·본문)을 고친다(NOTIFY-10).
                   지우지 않고 <b>사용 / 사용 안 함</b>으로 끈다. 사용 안 함은 줄을 흐리게 보인다 — 표본의 「계약 갱신 예정」이 그 모양이다.
-                  템플릿은 <b>채널 + 템플릿 이름 + 템플릿 코드</b>로 구분한다. 알림 유형·발송 용도 공통코드는 두지 않는다(NOTIFY-11). <b>템플릿 코드</b>는 등록할 때 채널 접두(NTF·PUSH·EMAIL·TALK)만 채우고 나머지는 운영자가 넣으며, 코드가 겹칠 때만 저장을 막는다. 기본 37건의 코드는 지금 값 그대로다.
+                  템플릿은 <b>채널 + 템플릿 이름 + 템플릿 코드</b>로 구분한다. 알림 유형·발송 용도 공통코드는 두지 않는다(NOTIFY-11). <b>템플릿 코드</b>는 등록할 때 채널 접두(NTF·PUSH·EMAIL·TALK)만 채우고 나머지는 운영자가 넣으며, 코드가 겹칠 때만 저장을 막는다. 기본 40건의 코드는 지금 값 그대로다.
                   한 번도 고치지 않은 템플릿은 최근 수정 자리에 <b>기본 문구</b>가 선다.
                 </div>
               </div>
@@ -210,7 +210,7 @@
               <div class="panel">
                 <div class="panel__head">
                   <h2 class="t-h2">앱 푸시 · 직원 알림함 템플릿</h2>
-                  <span class="badge badge--quiet">템플릿 4</span>
+                  <span class="badge badge--quiet">템플릿 5</span>
                 </div>
                 <div class="tblwrap">
                   <table class="tbl">
@@ -257,6 +257,14 @@
                         <td class="subtle">기본 문구</td>
                         <td>사용</td>
                       </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html#push">급여명세서 다시 발송</a></td>
+                        <td class="mono">PUSH_PAYSLIP_RESENT</td>
+                        <td>직원</td>
+                        <td><span class="mono">#{지급월}</span> 급여명세서가 다시 발송되었습니다</td>
+                        <td class="subtle">기본 문구</td>
+                        <td>사용</td>
+                      </tr>
                     </tbody>
                   </table>
                 </div>
@@ -267,14 +275,14 @@
               </div>
             </div>
 
-            <!-- 메일 : 운영 알림의 메일과 그 밖의 메일 -->
+            <!-- 메일 : 운영 알림과 같은 이름의 메일과 그 밖의 메일 -->
             <div data-panel="mail" hidden>
               <div class="panel">
                 <div class="panel__head">
                   <h2 class="t-h2">메일 템플릿</h2>
-                  <span class="badge badge--quiet">템플릿 22</span>
+                  <span class="badge badge--quiet">템플릿 24</span>
                 </div>
-                <div class="tblwrap" data-pager="22">
+                <div class="tblwrap" data-pager="24">
                   <table class="tbl">
                     <thead>
                       <tr>
@@ -316,6 +324,22 @@
                         <td class="mono">EMAIL_LEAD_CONFIRMATION</td>
                         <td>도입문의를 남긴 사람</td>
                         <td>[WHALE ERP] 도입문의를 받았습니다</td>
+                        <td class="subtle">기본 문구</td>
+                        <td>사용</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">급여명세서 발송 메일</a></td>
+                        <td class="mono">EMAIL_PAYSLIP_SENT</td>
+                        <td>직원</td>
+                        <td>[WHALE ERP] <span class="mono">#{지급월}</span> 급여명세서가 도착했습니다</td>
+                        <td class="subtle">기본 문구</td>
+                        <td>사용</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink" href="templates-edit.html">급여명세서 다시 발송 메일</a></td>
+                        <td class="mono">EMAIL_PAYSLIP_RESENT</td>
+                        <td>직원</td>
+                        <td>[WHALE ERP] <span class="mono">#{지급월}</span> 급여명세서가 다시 발송되었습니다</td>
                         <td class="subtle">기본 문구</td>
                         <td>사용</td>
                       </tr>
@@ -403,8 +427,8 @@
                   </table>
                 </div>
                 <div class="panel__note">
-                  운영 알림은 알림함과 메일로 함께 나가므로 운영 알림 템플릿 10 이 여기에도 한 줄씩 있다. 같은 사건이라도 채널마다 템플릿이 따로라 메일 제목만 고칠 수 있다.
-                  메일 제목은 열지 않고도 어느 알림인지 알 수 있어야 해서 머리에 <b>[WHALE ERP]</b> 를 붙인다. 목록은 페이지로 나누고, 여기에는 열네 줄만 그렸다.
+                  운영 알림과 같은 이름의 메일 템플릿 10건. 업무 쪽이 필요할 때 따로 부른다(운영 정책 NTF-03, 2026-10-13). 운영 알림이 메일을 붙여 보내지 않는다.
+                  메일 제목은 열지 않고도 어느 알림인지 알 수 있어야 해서 머리에 <b>[WHALE ERP]</b> 를 붙인다. 목록은 페이지로 나누고, 여기에는 열여섯 줄만 그렸다.
                   <b>1팀</b> 꼬리표가 붙은 여덟은 1팀 화면(회원가입·BP·관리자 계정·비밀번호·탈퇴)에서 나가는 관리자 메일이다. 문구는 여기서 함께 고친다(NOTIFY-9).
                 </div>
               </div>

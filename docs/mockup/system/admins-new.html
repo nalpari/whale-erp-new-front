@@ -14,6 +14,8 @@
          아이디는 삭제한 계정까지 포함해 겹칠 수 없고, 이메일은 사용·미사용 계정과만 겹치지 않으면 된다. 중복 안내는 항목별로 따로 낸다.
          계정 상태 항목은 없다 — 새 계정은 늘 사용으로 생긴다. 비밀번호 입력도 없다 — 12자 무작위 초기 비밀번호를 등록 이메일로만 보낸다(S-WABHRE).
          우편번호·기본주소는 주소 검색 컴포넌트에서 고른 값만 들어가고 직접 칠 수 없다. 상세주소만 직접 적는다.
+         주소는 치는 대로 찾고(버튼 없음), 상세주소는 주소를 고른 뒤에만 적는다. 아이디 중복은 칸을 벗어나거나 Enter 때 확인한다.
+         입력 오류 · 중복 안내는 모두 그 입력칸 바로 아래에 낸다(2026-10-13, 앱 반영).
          플랫폼 관리자는 플랫폼 마스터 계정을 등록할 수 없다. BP 마스터·가맹 마스터 같은 BP 관련 권한은 누구도 부여할 수 없다.
          등록하면 상세(등록 직후)로 가서 첫 로그인 때 비밀번호를 바꿔야 한다고 알린다.
          플랫폼 관리자에게는 권한 선택지에서 플랫폼 마스터를 뺀다. 그래도 요청이 들어오면 서버가 거부한다 — ‘마스터 등록 시도’ 상태 (확정 2026-09-29).
@@ -107,7 +109,11 @@
                 <div class="grid grid--2">
                   <div class="field">
                     <label for="nid">아이디 <span class="req">*</span></label>
-                    <input class="input mono" id="nid" value="platyoon" maxlength="20" data-show="in dupmail miss denied fail" />
+                    <!-- 칸을 벗어나거나 Enter 를 치면 형식과 중복을 바로 확인해 칸 아래에 알린다(2026-10-13, 앱과 같다).
+                         목업의 ‘이미 있는 아이디’는 data-taken 값이다. 쓸 수 있으면 아무것도 띄우지 않는다. -->
+                    <input class="input mono" id="nid" value="platyoon" maxlength="20" data-show="in dupmail miss denied fail" data-dupcheck="id" data-dup-enter data-taken="plathan,whaleadmin" />
+                    <span class="err" data-dup="bad" hidden><span data-icon="alert" data-icon-size="13"></span>이미 사용 중인 아이디입니다. 삭제된 계정의 아이디도 다시 쓸 수 없습니다.</span>
+                    <span class="err" data-dup="fmt" hidden><span data-icon="alert" data-icon-size="13"></span>아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다.</span>
                     <input class="input mono" value="plathan" maxlength="20" aria-invalid="true" aria-label="아이디" data-show="dupid" hidden />
                     <span class="err" data-show="dupid" hidden><span data-icon="alert" data-icon-size="13"></span>이미 사용 중인 아이디입니다. 삭제된 계정의 아이디도 다시 쓸 수 없습니다.</span>
                   </div>
@@ -146,15 +152,16 @@
                     <input class="input" id="npos" value="사원" maxlength="30" />
                   </div>
                 </div>
-                <!-- 주소 — 점포 등록과 같은 주소 검색 프로세스(data-addr). 검색 결과가 입력칸 아래로 펼쳐지고, 고른 우편번호·기본주소만 들어간다. -->
-                <div class="field addr" data-addr>
+                <!-- 주소 — 점포 등록과 같은 주소 검색 컴포넌트(data-addr)에 data-addr-live 를 더했다(2026-10-13, 앱과 같다).
+                     [주소 검색] 버튼 없이 치는 대로 결과가 입력칸 아래로 펼쳐지고, 고른 우편번호·기본주소만 들어간다.
+                     주소를 고르기 전에는 상세주소를 막고, 새 주소를 고르면 상세주소를 비운다. 포커스가 나가면 목록을 닫는다. -->
+                <div class="field addr" data-addr data-addr-live>
                   <label for="nzq">주소</label>
                   <div class="addr__search">
                     <div class="addr__q">
                       <span data-icon="search" data-icon-size="14"></span>
                       <input class="input" id="nzq" type="search" placeholder="도로명, 건물명, 지번으로 검색" autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list" data-addr-q />
                     </div>
-                    <button class="btn btn--secondary" type="button" data-addr-go>주소 검색</button>
                     <div class="addr__list" role="listbox" aria-label="주소 검색 결과" hidden></div>
                   </div>
                   <div class="addr__picked">

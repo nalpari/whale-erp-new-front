@@ -580,6 +580,9 @@
   .max-h-\[60dvh\] {
     max-height: 60dvh;
   }
+  .max-h-\[194px\] {
+    max-height: 194px;
+  }
   .max-h-\[272px\] {
     max-height: 272px;
   }
@@ -817,9 +820,6 @@
   .w-\[720px\] {
     width: 720px;
   }
-  .w-\[780px\] {
-    width: 780px;
-  }
   .w-\[800px\] {
     width: 800px;
   }
@@ -828,6 +828,9 @@
   }
   .w-\[880px\] {
     width: 880px;
+  }
+  .w-\[900px\] {
+    width: 900px;
   }
   .w-\[1200px\] {
     width: 1200px;
@@ -1535,6 +1538,9 @@
   .pt-\[6px\] {
     padding-top: 6px;
   }
+  .pt-\[8px\] {
+    padding-top: 8px;
+  }
   .pt-\[10px\] {
     padding-top: 10px;
   }
@@ -1606,6 +1612,9 @@
   }
   .pl-\[24px\] {
     padding-left: 24px;
+  }
+  .pl-\[48px\] {
+    padding-left: 48px;
   }
   .text-center {
     text-align: center;
@@ -2275,6 +2284,23 @@
     .hover\:\[\&\>img\]\:opacity-70:hover > img {
       opacity: 70%;
     }
+  }
+  .\[\&\>li\]\:min-w-0 > li {
+    min-width: 0px;
+  }
+  .\[\&\>li\]\:shrink-0 > li {
+    flex-shrink: 0;
+  }
+  .\[\&\>li\>span\]\:min-w-0 > li > span {
+    min-width: 0px;
+  }
+  .\[\&\>li\>span\]\:flex-1 > li > span {
+    flex: 1;
+  }
+  .\[\&\>li\>span\]\:truncate > li > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .\[\&\>span\:first-child\]\:transition-opacity > span:first-child {
     transition-property: opacity;

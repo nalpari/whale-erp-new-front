@@ -31,6 +31,7 @@ const doneAnswer =
   fold("이전 답변 1개", `<p class="text-[13px] text-erp-label">09-04 15:02 · 이서준</p>` + prose("계약서의 소정근로시간이 주 14시간이라 주휴수당이 잡히지 않았습니다. 계약서를 다시 작성해 주세요."));
 
 // 첨부파일(운영 정책 CNT-18): 이미지는 작은 미리보기, PDF 는 이름 + 내려받기.
+// 첨부파일 저장소 결정 대기(Plane #587) — 정해질 때까지 1차 구현에서 첨부를 만들지 않는다.
 const thumb = (name, size) => `<a href="#" title="${name} · ${size}" class="grid size-[64px] place-items-center rounded-[2px] border border-erp-panel-line bg-erp-thead-bg text-[12px] text-erp-label">PNG</a>`;
 const pdf = (name, size) => ui.detailValues([ui.link(name, "#"), `<span class="text-erp-label">${size}</span>`, ui.link("내려받기", "#")]);
 

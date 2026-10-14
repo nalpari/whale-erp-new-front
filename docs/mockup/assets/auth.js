@@ -14,6 +14,7 @@
    data-step-to="값"         같은 모달 안의 [data-step] 단계를 바꾼다.
    data-state-go="값"        제출 버튼이 결과 상태로 넘긴다 — 자기를 감싼 상태 범위의 전환 줄을 누른 것과 같다.
    data-dupcheck="id|mail"  칸을 벗어날 때(포커스 아웃) 형식과 중복을 확인해 칸 아래 [data-dup] 결과를 보인다.
+                            data-dup-enter 를 더하면 Enter 때도 확인한다(플랫폼 관리자 등록).
                             data-taken 에 적은 값이 목업의 ‘이미 있는 값’이다. 값을 고치면 결과를 지운다.
    data-dupgate             안의 [data-gate=go|block] 을 모든 확인(중복 확인 + [data-agree] 필수 약관)이 통과했을 때만 go 로 바꾼다.
    data-dup-keep            수정 화면용. 원래 값 그대로면 중복 확인 결과를 띄우지 않고 통과로 본다.
@@ -23,12 +24,15 @@
    data-terms-doc="키"       약관 전문 화면에 TERMS 문구를 펼친다.
    data-addr                주소 검색 묶음. [data-addr-q] 검색어, [data-addr-go] 검색 버튼, .addr__list 결과 목록,
                             [data-addr-zip]·[data-addr-base]·[data-addr-detail] 채울 칸.
+   data-addr-live           data-addr 에 더하면 치는 대로(0.3초 쉬었다가) 찾고 [주소 검색] 버튼 없이 쓴다. 포커스가 묶음 밖으로
+                            나가면 목록을 닫고, 기본주소를 고르기 전에는 상세주소를 막는다(플랫폼 관리자 등록 · 수정, 2026-10-13).
    data-spick-default       범위를 ‘일부 점포’로 바꿨는데 보이는 점포 고르기 영역이 없을 때 여는 영역. ‘전체 점포’면 영역을 숨긴다.
    data-spick               관리 점포 고르기. data-pool="코드|점포명|유형;…" 은 고를 수 있는 점포(내 관리 범위),
                             data-picked="코드 코드" 는 처음 골라 둔 점포. 넷째 칸(코드|점포명|유형|사유)이 있으면
                             후보에 흐리게 보이되 고를 수 없다(예: 다른 가맹 마스터가 맡은 점포 — ‘ongifm 담당’).
                             위 [data-spick-q] 자동완성에서 고르면
                             아래 [data-spick-list] 에 더하고, 줄의 × 로 하나씩, [data-spick-clear] 로 모두 뺀다.
+                            data-spick-nocode 는 검색 필터용 — 펼친 목록에 점포코드를 보이지 않고(코드로 찾기는 된다), 같은 패널의 초기화로 비운다.
                             [data-spick-bulk] 일괄 검색 버튼은 고를 수 있는 점포 전체를 팝업에 펴고 체크로 한꺼번에 고른다.
    data-same-as="id" data-same-to="id"  ‘기본정보와 동일’ 체크. 켜면 원본 값(칸이 여럿이면 - 로 이어)을 대상 칸에
                             채우고 잠그며, 끄면 잠금만 푼다.
@@ -173,6 +177,12 @@
   document.addEventListener("focusout", function (e) {
     var inp = e.target.closest && e.target.closest("[data-dupcheck]");
     if (inp) checkDup(inp);
+  });
+  /* data-dup-enter 를 더한 칸은 Enter 로도 확인한다(한글 조합 중 Enter 는 글자 확정이라 넘긴다) — 플랫폼 관리자 등록(2026-10-13). */
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter" || e.isComposing) return;
+    var inp = e.target.closest && e.target.closest("[data-dupcheck][data-dup-enter]");
+    if (inp) { e.preventDefault(); checkDup(inp); }
   });
   document.addEventListener("input", function (e) {
     var inp = e.target.closest && e.target.closest("[data-dupcheck]");
@@ -558,6 +568,16 @@
     list.id = list.id || "addr-list-" + n;
     q.setAttribute("aria-controls", list.id);
     var found = [], at = -1, timer = 0;
+    var live = box.hasAttribute("data-addr-live"), liveTimer = 0;
+    var base = box.querySelector("[data-addr-base]");
+    var detail = box.querySelector("[data-addr-detail]");
+    /* data-addr-live — 상세주소는 기본주소에 딸린 값이라 주소를 고르기 전에는 막는다(이미 값이 있으면 고칠 수 있게 연다). */
+    function lockDetail() {
+      if (!live || !detail || !base) return;
+      detail.disabled = !base.value && !detail.value;
+      detail.placeholder = base.value ? "상세주소" : "주소를 검색해 고른 뒤 적습니다";
+    }
+    lockDetail();
 
     function close() {
       clearTimeout(timer);
@@ -590,13 +610,14 @@
       close();
       q.value = "";
       var d = box.querySelector("[data-addr-detail]");
-      if (d) { d.value = ""; d.focus(); }
+      if (d) { d.value = ""; lockDetail(); d.focus(); }
     }
     function search() {
       clearTimeout(timer);
+      clearTimeout(liveTimer);
       var t = norm(q.value);
       found = []; at = -1;
-      if (t.length < 2) { note("검색어를 두 글자 이상 입력해 주세요."); return; }
+      if (t.length < 2) { if (live) close(); else note("검색어를 두 글자 이상 입력해 주세요."); return; }
       note('<span class="addr__spin" aria-hidden="true"></span>주소를 찾는 중입니다…');
       timer = setTimeout(function () {
         if (t.indexOf("오류") > -1) { note("주소 검색 서비스에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.", "is-risk"); return; }
@@ -622,7 +643,19 @@
       else if (e.key === "ArrowUp" && open) { e.preventDefault(); mark(Math.max(at - 1, 0)); }
       else if (e.key === "Escape" && !list.hidden) { e.preventDefault(); close(); }
     });
-    q.addEventListener("input", function () { if (!list.hidden) close(); });
+    q.addEventListener("input", function () {
+      if (!live) { if (!list.hidden) close(); return; }
+      /* 치는 대로 찾는다 — 0.3초 쉬었다가 한 번만. 두 글자 미만이면 목록을 닫는다. */
+      clearTimeout(liveTimer);
+      if (norm(q.value).length < 2) { close(); return; }
+      liveTimer = setTimeout(search, 300);
+    });
+    /* data-addr-live — Tab 등으로 포커스가 검색칸 · 목록 밖으로 나가면 목록을 닫는다(열린 목록이 남으면 Esc 가 패널을 닫지 못한다).
+       바로 아래 우편번호 칸도 같은 data-addr 안이라, 묶음 전체가 아니라 검색 영역(.addr__search)으로 본다. */
+    var searchArea = q.closest(".addr__search") || box;
+    if (live) searchArea.addEventListener("focusout", function (e) {
+      if (!searchArea.contains(e.relatedTarget)) { clearTimeout(liveTimer); close(); }
+    });
     list.addEventListener("mousedown", function (e) { e.preventDefault(); }); /* 고르기 전에 입력칸 초점이 빠지지 않게 */
     list.addEventListener("click", function (e) {
       var o = e.target.closest(".addr__opt");
@@ -869,7 +902,7 @@
         list.innerHTML = '<div class="addr__note">' + (left ? "‘" + esc(q.value.trim()) + "’에 맞는 점포가 없습니다. 내 관리 점포 안에서만 찾습니다." : "고를 수 있는 점포를 모두 골랐습니다.") + "</div>";
       } else {
         list.innerHTML = found.map(function (s, i) {
-          return '<div class="spick__opt' + (s.lock ? " is-off" : "") + '" role="option" aria-selected="false"' + (s.lock ? ' aria-disabled="true"' : "") + ' id="' + list.id + "-" + i + '" data-i="' + i + '"><span>' + hi(s.name, t) + '</span><span class="mono spick__code">' + hi(s.code, t) + '</span>' + (s.lock ? '<span class="spick__type">' + esc(s.lock) + "</span>" : "") + "</div>";
+          return '<div class="spick__opt' + (s.lock ? " is-off" : "") + '" role="option" aria-selected="false"' + (s.lock ? ' aria-disabled="true"' : "") + ' id="' + list.id + "-" + i + '" data-i="' + i + '"><span>' + hi(s.name, t) + '</span>' + (box.hasAttribute("data-spick-nocode") ? "" : '<span class="mono spick__code">' + hi(s.code, t) + '</span>') + (s.lock ? '<span class="spick__type">' + esc(s.lock) + "</span>" : "") + "</div>";
         }).join("");
       }
       list.hidden = false;
@@ -921,6 +954,13 @@
       });
     });
     document.addEventListener("click", function (e) { if (!box.querySelector(".spick__q").contains(e.target)) close(); });
+    /* 검색 필터의 점포 고르기(data-spick-nocode) — 같은 패널의 [초기화]를 누르면 고른 점포와 검색어를 처음 값으로 되돌린다 */
+    var initial = picked.slice();
+    if (box.hasAttribute("data-spick-nocode")) document.addEventListener("click", function (e) {
+      var reset = e.target.closest && e.target.closest("[data-sfilt-reset], [data-state-go='base']");
+      var panel = box.closest(".panel");
+      if (reset && panel && panel.contains(reset)) { picked = initial.slice(); q.value = ""; draw(); close(); }
+    });
     draw();
   });
 
