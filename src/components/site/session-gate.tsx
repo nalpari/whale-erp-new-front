@@ -72,6 +72,7 @@ const HOME: Record<Area, string> = { erp: "/home", platform: "/platform" };
  * 메뉴·점포·공통코드는 로그인할 때의 값을 쓰고 다시 로그인해야 바뀐다(okf/auth.md, 2026-10-13). 데이터 권한은 api 가 요청마다 다시 본다.
  */
 export function SessionGate({ area, children }: { area: Area; children: ReactNode }) {
+  const router = useRouter();
   const [state, setState] = useState<{ status: "loading" } | { status: "error"; message: string } | { status: "ready"; value: LoginState }>({
     status: "loading",
   });
@@ -83,7 +84,12 @@ export function SessionGate({ area, children }: { area: Area; children: ReactNod
       (value) => !cancelled && setState({ status: "ready", value }),
       async (e: unknown) => {
         if (cancelled) return;
-        if (e instanceof BffError && e.status === 401) return void (await logout());
+        if (e instanceof BffError && e.status === 401) {
+          // 세션이 이미 끊겼으면(proxy·BFF 가 쿠키를 지움) 로그인 화면으로 바로 간다. login-key 가 없는 옛 세션만 로그아웃으로 끝낸다.
+          if (readLoginKey()) router.replace("/login");
+          else await logout().catch(() => router.replace("/login"));
+          return;
+        }
         if (e instanceof OtherBpError) {
           // 고른 BP 를 볼 수 없다(권한이 바뀌었거나 BP 가 지워졌다). 다음 탭이 같은 BP 를 다시 고르지 않게 지우고 자기 BP 로 다시 연다.
           // shortcut: 안내는 브라우저 alert 다. 공통 확인 팝업이 생기면 바꾼다.
@@ -99,7 +105,7 @@ export function SessionGate({ area, children }: { area: Area; children: ReactNod
     return () => {
       cancelled = true;
     };
-  }, [area, attempt]);
+  }, [area, attempt, router]);
 
   if (state.status === "loading") return <Notice>불러오는 중입니다</Notice>;
   if (state.status === "error")
@@ -224,7 +230,7 @@ async function prepare(area: Area): Promise<LoginState> {
     url.searchParams.delete("bp");
     history.replaceState(null, "", url);
   }
-  // 비밀번호를 바꾸기 전에는 다른 BP 조회가 403 이라 자기 BP 로 연다. 바꾼 뒤 다시 열 때 고른 BP 로 간다.
+  // 비밀번호를 바꾸기 전에는 다른 BP 조회가 403 이라 자기 BP 로 연다.
   const bp = account.isPasswordChangeRequired ? ownBp : resolveBp({
     ownBp,
     isPlatform: account.bp.isPlatform,
