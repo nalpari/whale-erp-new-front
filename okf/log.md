@@ -1,5 +1,9 @@
 # Bundle history
 
+## 2026-10-14
+
+* **Update**: 강제 비밀번호 변경 팝업, 영역별 메뉴(플랫폼은 /platform 아래), 하위 메뉴 없는 1단계 메뉴 바로 이동, 다른 탭 로그인·로그아웃 따라가기를 [Whale ERP Frontend](/whale-erp-front.md) 에 반영했다. 레이아웃 확인용 자리표시 `/bp`·`/config/admins` 는 지웠다.
+
 ## 2026-10-13
 
 * **Update**: 로그인 정보 브라우저 관리(login-info · 탭별 BP·점포·공통코드 · SessionGate · BFF)와 헤더의 메뉴·범위 선택기를 login-info 로 그리는 것을 [Whale ERP Frontend](/whale-erp-front.md) 에 반영했다. 메뉴 상수 `menus.ts` 와 견본 `login-session.ts` 는 지웠다.
