@@ -22,8 +22,8 @@ export default ({ A, R }) => {
     `(<span class="text-[#e93737]">*</span> 표시는 필수 기재 항목입니다.)`,
     grid(
       field("이름", input('name="name" required autocomplete="name" placeholder="홍길동"'), { required: true }),
-      field("전화번호", input('name="phone" type="tel" required inputmode="numeric" autocomplete="tel" placeholder="숫자만 입력해 주세요"'), { required: true }),
-      // 업종에서 「직접입력」을 고르면 옆 칸이 열린다(목업은 기타 → 직접 적는 칸). 잠겨 있는 동안은 검사·전송에서 빠진다.
+      field("전화번호", input('name="phone" type="tel" required inputmode="numeric" autocomplete="tel" placeholder="숫자만 입력해 주세요"'), { required: true, help: "점포 번호를 적어도 됩니다. 중복 접수는 이 번호와 이메일로 가립니다." }),
+      // 업종에서 「직접입력」을 고르면 옆 칸이 열린다(LEAD-1, api industryDetail 1~50자). 잠겨 있는 동안은 검사·전송에서 빠진다.
       field("업종", select("industry", ["카페·음료", "음식점", "베이커리·디저트", "주점", "직접입력"], true).replace("<select ", "<select data-other-select "), { required: true }),
       field("업종 직접 입력", input('name="industryOther" data-other-input required disabled maxlength="50" placeholder="업종을 직접 입력해 주세요"'), { required: true }),
       field("이메일", input('name="email" type="email" required autocomplete="email" placeholder="example@company.com"'), { required: true, help: "접수 확인 메일을 이 주소로 보냅니다." }),
@@ -32,10 +32,13 @@ export default ({ A, R }) => {
   const what = section(
     "도입 문의 내용",
     "",
-    grid(
-      field("관심 서비스", select("service", ["매장운영", "재무관리", "프랜차이즈", "부가서비스", "기타"], true), { required: true }),
-      field("도입 예정 시기", select("timing", ["1개월 안", "3개월 안", "6개월 안", "아직 정하지 않음"])),
-    ) + field("어떤 점이 궁금하신가요", `<textarea name="message" rows="6" placeholder="지금 쓰고 계신 방식과 불편한 점을 적어 주시면 그에 맞춰 안내해 드립니다." class="${TEXTAREA}"></textarea>`),
+    // 관심 서비스는 하나 이상 여러 개(api interests 배열) — 하나도 안 고르면 guest.js 「하나 이상 고르기」가 제출을 막는다.
+    `<fieldset data-check-group="관심 서비스를 하나 이상 골라 주세요." class="flex flex-col gap-[10px]"><legend class="${g.LABEL} mb-[10px]">관심 서비스${REQUIRED}</legend><div class="flex h-[56px] items-center gap-[32px] text-[16px] leading-[1.5]">${["매장운영", "재무관리", "프랜차이즈", "기타"]
+      .map((t) => `<label class="flex items-center gap-[8px] text-guest-ink"><input type="checkbox" name="interests" value="${t}" class="${g.CHECKBOX}">${t}</label>`)
+      .join("")}</div><span class="-mt-[2px] text-[14px] leading-[1.5] text-[#767676]">하나 이상 고릅니다. 여러 개 골라도 됩니다.</span></fieldset>` +
+      // 도입 예정 시기는 선택(api planPeriodCode 없어도 됨).
+      grid(field("도입 예정 시기", select("timing", ["1개월 안", "3개월 안", "6개월 안", "아직 정하지 않음"]))) +
+      field("어떤 점이 궁금하신가요", `<textarea name="message" rows="6" maxlength="2000" placeholder="지금 쓰고 계신 방식과 불편한 점을 적어 주시면 그에 맞춰 안내해 드립니다. (2,000자까지)" class="${TEXTAREA}"></textarea>`),
   );
   const consent = section(
     "개인정보 수집·이용 동의",

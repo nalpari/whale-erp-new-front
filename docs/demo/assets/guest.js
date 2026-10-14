@@ -115,6 +115,14 @@
     });
   }
 
+  // 하나 이상 고르기(도입문의 관심 서비스): 하나도 안 골랐으면 첫 체크 상자에 검사 오류를 걸어 제출을 막는다.
+  for (const group of $$("[data-check-group]")) {
+    const boxes = $$('input[type="checkbox"]', group);
+    const sync = () => boxes[0].setCustomValidity(boxes.some((b) => b.checked) ? "" : group.dataset.checkGroup);
+    for (const b of boxes) b.addEventListener("change", sync);
+    sync();
+  }
+
   // 데모 접수(도입문의): 브라우저 검사를 통과하면 보내지 않고 접수 안내만 보인다.
   for (const form of $$("[data-demo-submit]")) {
     form.addEventListener("submit", (e) => {

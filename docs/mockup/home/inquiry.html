@@ -64,10 +64,15 @@
                   </select>
                   <span class="help">기타를 고르면 직접 적는 칸이 아래에 열린다.</span>
                 </div>
+                <!-- 업종이 기타일 때만 열린다(LEAD-1). 1~50자, 기타가 아니면 저장하지 않는다(api industryDetail). -->
+                <div class="field" id="trade-etc" hidden>
+                  <label for="trade-detail">업종 직접 입력</label>
+                  <input class="input" id="trade-detail" placeholder="예: 꽃집" maxlength="50" />
+                </div>
                 <div class="field">
                   <label for="phone">전화번호</label>
                   <input class="input mono" id="phone" placeholder="02-000-0000" />
-                  <span class="help">점포 번호를 적어도 된다. 중복 접수는 이 번호로 가른다.</span>
+                  <span class="help">점포 번호를 적어도 된다. 중복 접수는 이 번호와 이메일로 가른다 — 둘 중 하나라도 같으면 10분 안 다시 보낸 것을 막는다.</span>
                 </div>
                 <div class="field">
                   <label for="mail">이메일</label>
@@ -84,18 +89,21 @@
             </div>
             <div class="panel__body">
               <div class="grid grid--2">
+                <!-- 관심 서비스는 하나 이상, 여러 개 고른다(api interests 배열). -->
                 <div class="field">
-                  <label for="svc">관심 서비스</label>
-                  <select class="select" id="svc">
-                    <option>매장운영</option>
-                    <option>재무관리</option>
-                    <option>프랜차이즈</option>
-                    <option>기타</option>
-                  </select>
+                  <label id="svc">관심 서비스</label>
+                  <div class="row" role="group" aria-labelledby="svc" style="gap: var(--s-4); flex-wrap: wrap; padding: 6px 0">
+                    <span class="row" style="gap: 6px"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="매장운영" data-icon="check" data-icon-size="11"></span>매장운영</span>
+                    <span class="row" style="gap: 6px"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="재무관리" data-icon="check" data-icon-size="11"></span>재무관리</span>
+                    <span class="row" style="gap: 6px"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="프랜차이즈" data-icon="check" data-icon-size="11"></span>프랜차이즈</span>
+                    <span class="row" style="gap: 6px"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="기타" data-icon="check" data-icon-size="11"></span>기타</span>
+                  </div>
+                  <span class="help">하나 이상 고른다. 여러 개 골라도 된다.</span>
                 </div>
                 <div class="field">
-                  <label for="when">도입 예정 시기</label>
+                  <label for="when">도입 예정 시기 <span class="subtle">(선택)</span></label>
                   <select class="select" id="when">
+                    <option>고르지 않음</option>
                     <option>1개월 안</option>
                     <option>3개월 안</option>
                     <option>6개월 안</option>
@@ -105,7 +113,8 @@
               </div>
               <div class="field" style="margin-top: var(--s-4)">
                 <label for="body">어떤 점이 궁금하신가요</label>
-                <textarea class="textarea" id="body" rows="6" placeholder="지금 쓰고 계신 방식과 불편한 점을 적어 주시면 그에 맞춰 안내해 드립니다."></textarea>
+                <textarea class="textarea" id="body" rows="6" placeholder="지금 쓰고 계신 방식과 불편한 점을 적어 주시면 그에 맞춰 안내해 드립니다." maxlength="2000"></textarea>
+                <span class="help">2,000자까지.</span>
               </div>
             </div>
           </div>
@@ -179,5 +188,11 @@
       </div>
     </footer>
     <script src="../assets/app.js"></script>
+    <script>
+      /* 업종 기타를 고르면 직접 적는 칸을 연다. */
+      document.getElementById("trade").addEventListener("change", function (e) {
+        document.getElementById("trade-etc").hidden = e.target.value !== "기타";
+      });
+    </script>
   </body>
 </html>

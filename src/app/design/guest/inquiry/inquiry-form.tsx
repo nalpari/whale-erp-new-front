@@ -1,13 +1,14 @@
 "use client";
 
-import { type FormEvent, type ReactNode, useRef, useState } from "react";
+import { type FormEvent, type ReactNode, useEffect, useRef, useState } from "react";
 import { CHECKBOX, INPUT, INPUT_BOX, LABEL, SUBMIT } from "../guest-form";
 import { HOVER } from "../theme";
 
-// 업종에서 이 값을 고르면 옆 「업종 직접 입력」칸 잠금을 푼다.
+// 업종에서 이 값을 고르면 옆 「업종 직접 입력」칸 잠금을 푼다(LEAD-1, api industryDetail 1~50자).
 const INDUSTRY_OTHER = "직접입력";
 const INDUSTRIES = ["카페·음료", "음식점", "베이커리·디저트", "주점", INDUSTRY_OTHER];
-const SERVICES = ["매장운영", "재무관리", "프랜차이즈", "부가서비스", "기타"];
+// 관심 서비스는 하나 이상 여러 개(api interests 배열), 도입 예정 시기는 선택(api planPeriodCode 없어도 됨).
+const INTERESTS = ["매장운영", "재무관리", "프랜차이즈", "기타"];
 const TIMINGS = ["1개월 안", "3개월 안", "6개월 안", "아직 정하지 않음"];
 
 function Required() {
@@ -69,6 +70,41 @@ function Section({ title, note, children }: { title: string; note?: ReactNode; c
   );
 }
 
+// 하나 이상 고르는 체크 상자 묶음. 하나도 안 골랐으면 첫 상자에 검사 오류를 걸어 브라우저가 제출을 막게 한다.
+function CheckGroup({ label, name, options, message }: { label: string; name: string; options: string[]; message: string }) {
+  const [checked, setChecked] = useState<string[]>([]);
+  const firstRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    firstRef.current?.setCustomValidity(checked.length ? "" : message);
+  }, [checked, message]);
+
+  return (
+    <fieldset className="flex flex-col gap-[10px]">
+      <legend className={`${LABEL} mb-[10px]`}>
+        {label}
+        <Required />
+      </legend>
+      <div className="flex h-[56px] items-center gap-[32px] text-[16px] leading-[1.5]">
+        {options.map((o, i) => (
+          <label key={o} className="flex items-center gap-[8px] text-guest-ink">
+            <input
+              ref={i === 0 ? firstRef : undefined}
+              type="checkbox"
+              name={name}
+              value={o}
+              checked={checked.includes(o)}
+              onChange={(e) => setChecked((prev) => (e.target.checked ? [...prev, o] : prev.filter((v) => v !== o)))}
+              className={CHECKBOX}
+            />
+            {o}
+          </label>
+        ))}
+      </div>
+      <span className="-mt-[2px] text-[14px] leading-[1.5] text-[#767676]">하나 이상 고릅니다. 여러 개 골라도 됩니다.</span>
+    </fieldset>
+  );
+}
+
 // 디자인 샘플이라 접수 요청은 보내지 않는다. 브라우저 검사를 통과하면 접수 안내만 보인다.
 // 받는 항목은 okf/home.md 도입문의(이름·업종·전화번호·이메일·관심 서비스·도입 예정 시기·문의 내용)를 따른다.
 export function InquiryForm() {
@@ -108,7 +144,7 @@ export function InquiryForm() {
               <input name="name" required autoComplete="name" placeholder="홍길동" className={INPUT} />
             </span>
           </Field>
-          <Field label="전화번호" required>
+          <Field label="전화번호" required help="점포 번호를 적어도 됩니다. 중복 접수는 이 번호와 이메일로 가립니다.">
             <span className={INPUT_BOX}>
               <input name="phone" type="tel" required inputMode="numeric" autoComplete="tel" placeholder="숫자만 입력해 주세요" className={INPUT} />
             </span>
@@ -130,10 +166,8 @@ export function InquiryForm() {
         </div>
       </Section>
       <Section title="도입 문의 내용">
+        <CheckGroup label="관심 서비스" name="interests" options={INTERESTS} message="관심 서비스를 하나 이상 골라 주세요." />
         <div className="grid grid-cols-2 gap-[16px]">
-          <Field label="관심 서비스" required>
-            <Select name="service" options={SERVICES} required />
-          </Field>
           <Field label="도입 예정 시기">
             <Select name="timing" options={TIMINGS} />
           </Field>
@@ -142,7 +176,8 @@ export function InquiryForm() {
           <textarea
             name="message"
             rows={6}
-            placeholder="지금 쓰고 계신 방식과 불편한 점을 적어 주시면 그에 맞춰 안내해 드립니다."
+            maxLength={2000}
+            placeholder="지금 쓰고 계신 방식과 불편한 점을 적어 주시면 그에 맞춰 안내해 드립니다. (2,000자까지)"
             className={`min-h-[180px] w-full resize-none rounded-[6px] border border-[#ebebeb] bg-white p-[16px] text-[15px] leading-[1.6] text-guest-ink outline-none! placeholder:text-[#999] focus:border-guest-navy ${HOVER}`}
           />
         </Field>
