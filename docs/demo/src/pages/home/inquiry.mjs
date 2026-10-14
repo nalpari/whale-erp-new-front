@@ -9,8 +9,8 @@ const input = (attrs) => `<span class="${g.INPUT_BOX}"><input ${attrs} class="${
 // 고르는 칸. 입력칸과 같은 껍데기에 오른쪽 화살표를 둔다. 펼친 목록은 assets/base.css 의 select.guest-select 가 그리고, 열리면 화살표가 뒤집힌다.
 // select 는 칸의 여백까지 덮어 56px 칸 어디를 눌러도 열린다. 화살표는 그 위에 겹치고 클릭을 통과시킨다.
 const CHEVRON = `<svg aria-hidden="true" class="pointer-events-none absolute right-[16px] size-[16px] text-[#767676] transition-[rotate] duration-150 motion-reduce:transition-none" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m4 6 4 4 4-4"/></svg>`;
-const select = (name, options) =>
-  `<span class="${g.INPUT_BOX} relative [&:has(select:open)_svg]:rotate-180"><select name="${name}" required class="guest-select ${g.INPUT} -mx-[16px] cursor-pointer appearance-none self-stretch pr-[42px] pl-[16px] has-[option[value='']:checked]:text-[#999]"><option value="" hidden selected>선택해 주세요</option>${options.map((o) => `<option class="text-guest-ink">${o}</option>`).join("")}</select>${CHEVRON}</span>`;
+const select = (name, options, required = false) =>
+  `<span class="${g.INPUT_BOX} relative [&:has(select:open)_svg]:rotate-180"><select name="${name}"${required ? " required" : ""} class="guest-select ${g.INPUT} -mx-[16px] cursor-pointer appearance-none self-stretch pr-[42px] pl-[16px] has-[option[value='']:checked]:text-[#999]"><option value="" hidden selected>선택해 주세요</option>${options.map((o) => `<option class="text-guest-ink">${o}</option>`).join("")}</select>${CHEVRON}</span>`;
 const TEXTAREA = `min-h-[180px] w-full resize-none rounded-[6px] border border-[#ebebeb] bg-white p-[16px] text-[15px] leading-[1.6] text-guest-ink outline-none! placeholder:text-[#999] focus:border-guest-navy ${g.HOVER}`;
 const section = (title, note, body) =>
   `<section class="flex flex-col gap-[24px] border-t border-[#ebebeb] pt-[32px]"><h2 class="text-[20px] leading-[1.4] font-semibold text-[#111]">${title}${note ? `<span class="ml-[10px] text-[15px] font-normal text-[#767676]">${note}</span>` : ""}</h2>${body}</section>`;
@@ -24,8 +24,8 @@ export default ({ A, R }) => {
       field("이름", input('name="name" required autocomplete="name" placeholder="홍길동"'), { required: true }),
       field("전화번호", input('name="phone" type="tel" required inputmode="numeric" autocomplete="tel" placeholder="숫자만 입력해 주세요"'), { required: true }),
       // 업종에서 「직접입력」을 고르면 옆 칸이 열린다(목업은 기타 → 직접 적는 칸). 잠겨 있는 동안은 검사·전송에서 빠진다.
-      field("업종", select("industry", ["카페·음료", "음식점", "베이커리·디저트", "주점", "직접입력"]).replace("<select ", "<select data-other-select "), { required: true }),
-      field("업종 직접 입력", input('name="industryOther" data-other-input required disabled maxlength="50" placeholder="업종을 직접 입력해 주세요"')),
+      field("업종", select("industry", ["카페·음료", "음식점", "베이커리·디저트", "주점", "직접입력"], true).replace("<select ", "<select data-other-select "), { required: true }),
+      field("업종 직접 입력", input('name="industryOther" data-other-input required disabled maxlength="50" placeholder="업종을 직접 입력해 주세요"'), { required: true }),
       field("이메일", input('name="email" type="email" required autocomplete="email" placeholder="example@company.com"'), { required: true, help: "접수 확인 메일을 이 주소로 보냅니다." }),
     ),
   );
@@ -33,7 +33,7 @@ export default ({ A, R }) => {
     "도입 문의 내용",
     "",
     grid(
-      field("관심 서비스", select("service", ["매장운영", "재무관리", "프랜차이즈", "부가서비스", "기타"]), { required: true }),
+      field("관심 서비스", select("service", ["매장운영", "재무관리", "프랜차이즈", "부가서비스", "기타"], true), { required: true }),
       field("도입 예정 시기", select("timing", ["1개월 안", "3개월 안", "6개월 안", "아직 정하지 않음"])),
     ) + field("어떤 점이 궁금하신가요", `<textarea name="message" rows="6" placeholder="지금 쓰고 계신 방식과 불편한 점을 적어 주시면 그에 맞춰 안내해 드립니다." class="${TEXTAREA}"></textarea>`),
   );
