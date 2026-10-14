@@ -94,7 +94,7 @@ export interface AdminStore {
   storeStatusCode: string;
 }
 
-/** GET /public-bp-codes/{bpCode}/code-items · GET /bp-codes/{bpCodeId}/code-items 의 codes 값 */
+/** GET /public-code-items?groups= · GET /bp-codes/{bpCodeId}/code-items 의 codes 값 */
 export interface CodeValue {
   value: string;
   label: string;
