@@ -4,12 +4,12 @@
 import * as g from "../../guest.mjs";
 import { link } from "../../site.mjs";
 
-// 탭 켜짐·꺼짐 클래스. guest.js 가 같은 글자로 바꾼다.
+// 탭 켜짐·꺼짐 클래스. 탭 줄은 erp.js 의 탭 동작(data-on · data-off)이 바꾼다.
 const TAB_ON = "border-guest-ink text-guest-ink";
 const TAB_OFF = "border-[#999] text-[#999] hover:text-guest-ink";
 
 const tab = (key, label, on) =>
-  `<button type="button" role="tab" data-find-tab="${key}" aria-selected="${on}" class="flex-1 border-b-2 p-[10px] text-[22px] leading-[1.4] font-medium ${g.HOVER} ${on ? TAB_ON : TAB_OFF}">${label}</button>`;
+  `<button type="button" role="tab" data-find-tab="${key}" aria-selected="${on}" data-on="${TAB_ON}" data-off="${TAB_OFF}" class="flex-1 border-b-2 p-[10px] text-[22px] leading-[1.4] font-medium ${g.HOVER} ${on ? TAB_ON : TAB_OFF}">${label}</button>`;
 
 const field = (label, input, only = "") =>
   `<label${only ? ` data-find-only="${only}"${only === "password" ? " hidden" : ""}` : ""} class="flex flex-col gap-[10px]"><span class="${g.LABEL}">${label}</span><span class="${g.INPUT_BOX}">${input}</span></label>`;

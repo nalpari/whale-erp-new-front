@@ -85,7 +85,7 @@ const MENUS = [
   ["부가 서비스", "home/add-on-services.html"],
 ];
 // 본문이 머리말과 같은 흰 바탕인 화면은 맨 위에서도 선을 긋는다. 스크롤하면 guest.js 가 흰 바탕과 선을 깐다.
-const LINED = ["auth/login.html", "auth/find.html", "auth/signup.html", "auth/signup-done.html"];
+const LINED = ["auth/login.html", "auth/find.html", "auth/signup.html", "auth/signup-done.html", "home/inquiry.html", "home/notices.html"];
 
 function header(A, R, current) {
   const lined = LINED.includes(current);
@@ -93,7 +93,8 @@ function header(A, R, current) {
     const on = path && path === current;
     return `<a href="${link(R, path)}"${on ? ' aria-current="page"' : ""} class="text-[20px] leading-[1.5] font-semibold text-guest-ink hover:text-guest-navy aria-[current=page]:text-guest-navy ${HOVER}">${label}</a>`;
   }).join("");
-  const side = (text, path) => `<a href="${link(R, path)}" class="hover:text-guest-ink ${HOVER}">${text}</a>`;
+  const side = (text, path) =>
+    `<a href="${link(R, path)}"${path === current ? ' aria-current="page"' : ""} class="hover:text-guest-ink aria-[current=page]:text-guest-navy ${HOVER}">${text}</a>`;
   return `<header data-guest-header${lined ? " data-lined" : ""} style="view-transition-name:guest-header" class="sticky top-0 z-20 flex h-[110px] items-center border-b px-[80px] transition-[background-color,border-color] duration-150 ${EASE_OUT} motion-reduce:transition-none ${lined ? "border-guest-line" : "border-transparent"}">
 <a href="${link(R, "home/index.html")}" class="flex items-center gap-[8px] py-[5px]"><span class="relative size-[50px] opacity-95">${gimg(A, "logo-whale.svg", 49.6875, 37.4997, "absolute top-[12.5px] left-0")}${gimg(A, "logo-star.svg", 24.1664, 17.5001, "absolute top-0 left-[7.57px]")}</span><span class="flex flex-col leading-[1.4] [text-box:trim-both_cap_alphabetic]"><span class="font-[family-name:var(--font-rem)] text-[20px] font-extrabold tracking-normal text-guest-ink uppercase">whale ERP</span><span class="font-[family-name:var(--font-inter-tight)] text-[13px] tracking-normal text-[#353535]">STORE MANAGEMENT SYSTEM</span></span></a>
 <nav class="flex flex-1 justify-center gap-[80px]">${menus}</nav>

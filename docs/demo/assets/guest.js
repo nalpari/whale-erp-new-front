@@ -76,11 +76,9 @@
     const select = (key) => {
       for (const t of tabs) {
         const on = t.dataset.findTab === key;
+        // 탭 줄 모양은 erp.js 가 data-on · data-off 로 바꾼다. 주소 #pw 로 열 때만 여기서 맞춘다.
         t.setAttribute("aria-selected", String(on));
-        // guest.mjs 의 TAB_ON · TAB_OFF 와 같은 클래스
-        t.classList.toggle("border-guest-ink", on);
-        t.classList.toggle("text-guest-ink", on);
-        for (const c of ["border-[#999]", "text-[#999]", "hover:text-guest-ink"]) t.classList.toggle(c, !on);
+        t.className = t.className.replace(on ? t.dataset.off : t.dataset.on, on ? t.dataset.on : t.dataset.off);
       }
       form.reset();
       for (const el of $$("[data-find-only]", form)) {
@@ -103,6 +101,27 @@
     });
     form.addEventListener("submit", (e) => e.preventDefault());
     select(location.hash === "#pw" ? "password" : "id");
+  }
+
+  // 고르는 칸에서 「직접입력」을 고르면 같은 폼의 직접 입력칸 잠금을 푼다(도입문의 업종).
+  for (const sel of $$("[data-other-select]")) {
+    const input = sel.form.querySelector("[data-other-input]");
+    sel.addEventListener("change", () => {
+      const other = sel.value === "직접입력";
+      input.disabled = !other;
+      if (other) input.focus();
+      else input.value = "";
+    });
+  }
+
+  // 데모 접수(도입문의): 브라우저 검사를 통과하면 보내지 않고 접수 안내만 보인다.
+  for (const form of $$("[data-demo-submit]")) {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const done = form.querySelector("[data-demo-done]");
+      done.hidden = false;
+      done.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    });
   }
 
   // 가입 완료: 회원가입 폼이 주소로 넘긴 값을 보인다. 바로 열면 시안의 예시 값이 남는다.
