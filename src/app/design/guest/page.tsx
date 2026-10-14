@@ -501,7 +501,7 @@ function Boards() {
                   <Image src="/guest/faq-plus.svg" alt="" width={28} height={28} className="group-open:hidden" />
                   <Image src="/guest/faq-close.svg" alt="" width={28} height={28} className="hidden group-open:block" />
                 </summary>
-                {faq.a && <p className="mt-[18px] pl-[40px] text-[16px] leading-[1.5] text-guest-sub">{faq.a}</p>}
+                {faq.a && <p className="pt-[18px] pl-[40px] text-[16px] leading-[1.5] text-guest-sub">{faq.a}</p>}
               </details>
             ))}
           </div>

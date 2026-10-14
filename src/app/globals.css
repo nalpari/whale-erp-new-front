@@ -109,3 +109,27 @@ body {
     animation: 200ms ease both guest-fade;
   }
 }
+
+/* 비로그인 자주 묻는 질문(<details name="guest-faq">) 펼침. 하나를 열면 다른 하나가 동시에 닫히므로 열림·닫힘을 같은 시간·고른 곡선으로
+   맞춘다 — 시간이 다르거나 강한 감속 곡선이면 높이가 처음 수십 ms 에 몰려 목록이 툭 튀고 출렁인다(2026-10-14). 바탕색도 함께 바꾼다.
+   ::details-content 를 모르는 브라우저는 움직임 없이 바로 열고 닫는다. 데모(docs/demo/assets/base.css)에도 같은 규칙이 있다. */
+details[name="guest-faq"] {
+  interpolate-size: allow-keywords;
+  transition: background-color 280ms ease;
+}
+details[name="guest-faq"]::details-content {
+  block-size: 0;
+  overflow-y: clip;
+  transition:
+    block-size 280ms cubic-bezier(0.4, 0, 0.2, 1),
+    content-visibility 280ms allow-discrete;
+}
+details[name="guest-faq"][open]::details-content {
+  block-size: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  details[name="guest-faq"],
+  details[name="guest-faq"]::details-content {
+    transition: none;
+  }
+}
