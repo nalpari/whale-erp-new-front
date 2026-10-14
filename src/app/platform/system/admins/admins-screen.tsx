@@ -35,7 +35,8 @@ export function AdminsScreen({
   const manage = permission === "manage";
   // 등록 · 수정 패널은 열 때마다 칸을 새로 채운다(admin-form-panel.tsx) — 다시 마운트하지 않아야 밀려 나오는 전환이 산다
   const [newOpen, setNewOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
+  /** 수정 중인 계정 — 열림 · 닫힘이 아니라 어느 계정인지를 쥐어, 주소 · 상세가 바뀌면 수정 패널이 저절로 닫힌 것이 된다 */
+  const [editingId, setEditingId] = useState<number | null>(null);
   const newTrigger = useRef<HTMLButtonElement>(null);
   const detailTrigger = useRef<HTMLElement | null>(null);
   const editTrigger = useRef<HTMLButtonElement | null>(null);
@@ -44,18 +45,21 @@ export function AdminsScreen({
   const [shown, setShown] = useState(detail);
   if (detail && detail !== shown) setShown(detail);
 
+  // 수정 패널은 그 계정의 상세가 지금 열려 있을 때만 선다. 뒤로 · 앞으로 가기, 필터 · 쪽 이동, 그 사이 다른 관리자가 지움(상세가
+  // 실패 띠로 바뀜)처럼 클릭 아닌 길로 상세가 바뀌면 수정도 접는다 — 남겨 두면 앞으로 가기에 저절로 다시 열리거나, 사라진 수정
+  // 패널 때문에 상세의 [닫기] · Esc 가 막힌다.
+  const editOpen = editingId !== null && editingId === query.admin && !!shown && "admin" in shown && shown.admin.adminAccountId === editingId;
+  if (editingId !== null && !editOpen && (editingId !== query.admin || (shown && !("admin" in shown)))) setEditingId(null);
+
   // 같은 쪽 · 조건으로 다른 화면 상태만 바꾸는 이동이라 스크롤을 맨 위로 올리지 않는다.
   const go = (next: Partial<AdminsQuery>) => router.push(adminsHref({ ...query, ...next }), { scroll: false });
 
   const openDetail = (id: number, from: HTMLElement) => {
     detailTrigger.current = from;
-    // 수정 중에 목록에서 다른 계정을 누르면 그 계정의 수정 폼이 열린 채 나타나지 않게 수정 패널을 접는다
-    // (목록 왼쪽은 패널에 덮이지 않아 계속 눌린다). 다른 계정이 아닌 같은 줄이면 그대로 둔다.
-    if (id !== query.admin) setEditOpen(false);
     go({ admin: id });
   };
   const closeDetail = () => {
-    setEditOpen(false);
+    setEditingId(null);
     go({ admin: undefined });
   };
   /**
@@ -126,7 +130,7 @@ export function AdminsScreen({
         editOpen={editOpen}
         onEdit={(from) => {
           editTrigger.current = from;
-          setEditOpen(true);
+          if (shown && "admin" in shown) setEditingId(shown.admin.adminAccountId);
         }}
         onDeleted={() => {
           toast("deleted");
@@ -141,13 +145,13 @@ export function AdminsScreen({
           id="platform-admin-edit-panel"
           mode="edit"
           admin={shown.admin}
-          open={editOpen && Boolean(query.admin)}
-          onClose={() => setEditOpen(false)}
+          open={editOpen}
+          onClose={() => setEditingId(null)}
           trigger={editTrigger}
           roleGroups={roleGroups}
           me={me}
           onSaved={() => {
-            setEditOpen(false);
+            setEditingId(null);
             toast("updated");
           }}
           // 최신 정보가 오면(updatedAt 이 바뀌면) 패널이 칸을 한 번 다시 채운다. 알림은 토스트로 남긴다.
