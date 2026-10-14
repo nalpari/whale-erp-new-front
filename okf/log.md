@@ -2,6 +2,7 @@
 
 ## 2026-10-14
 
+* **Update**: PR #19 리뷰 반영 — 헤더 2단계 메뉴는 조회 권한이 있는 메뉴(없으면 권한 있는 첫 하위 메뉴)로만 연결하고, 권한 이름은 공통코드 `ROLE_TYPE`(useCodes)에서 읽는다. 탭 서비스 값은 WHALE_ERP·PLATFORM 만 받는다. 로그아웃이 실패하면 안내하고 다시 시도하게 한다 — [Whale ERP Frontend](/whale-erp-front.md).
 * **Update**: 로그인 후 화면을 폴더로 묶지 않고 루트 layout 의 `AdminLayout` 이 공개 경로가 아니면 공통 틀을 씌운다(`(erp)`·`platform/layout.tsx` 삭제, 홈은 `src/app/home`). ERP·플랫폼은 탭의 서비스(sessionStorage `current-bp` 의 `serviceCode`)로 가르고 헤더 메뉴·홈·메뉴 권한 확인·오른쪽 선택기가 그 값을 본다. 3팀 화면도 틀 안에 들어가 자기 헤더를 빼야 한다 — [Whale ERP Frontend](/whale-erp-front.md).
 * **Update**: main 병합 뒤 플랫폼 화면(`/platform/system/*` · `/platform/notification-templates`)에 공통 틀을 씌웠다 — `platform/layout.tsx` 의 임시 헤더를 공통 틀로 바꾸고 `(platform)` 그룹 폴더는 없앴다(화면이 모두 `/platform` 아래라 필요 없음). 공통 헤더의 알림 종을 `NotificationBellSlot` 으로 바꿨다 — [Whale ERP Frontend](/whale-erp-front.md).
 * **Update**: PR #19 리뷰 반영 — 메뉴 판정을 조회 권한 있는 메뉴로 좁히고, 브라우저 저장 키에 버전(`whale-erp:v1:`)을 넣고, 세션 쿠키를 토큰·만료·권한 유형만 두도록 줄였다. [Whale ERP Frontend](/whale-erp-front.md) 의 영역·API·명령 서술도 코드에 맞췄다.

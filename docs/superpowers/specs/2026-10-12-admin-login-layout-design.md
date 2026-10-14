@@ -114,12 +114,12 @@ api 가 `GET /auth/admin/login-info`·`/public-bp-codes/{bpCode}/code-items`·`/
 | localStorage | `whale-erp:v1:login-info` | `{ loginKey, account, menus }` | loginKey 다름 |
 | localStorage | `whale-erp:v1:login-bp-info` | `{ loginKey, bpCodeId, stores, codes }` — 자기 BP. 새 탭에 복사할 때만 읽는다 | loginKey 다름 |
 | localStorage | `whale-erp:v1:selected-bp` | `{ loginKey, bpCodeId, bpCode, tradeName }` — 플랫폼 계정이 마지막으로 고른 BP | loginKey 다름 · 고른 BP 403/404 |
-| sessionStorage | `whale-erp:v1:current-bp` | `{ loginKey, bpCodeId, bpCode, tradeName }` — 이 탭의 BP | loginKey 다르면 탭 값 전부 |
+| sessionStorage | `whale-erp:v1:current-bp` | `{ loginKey, serviceCode, bpCodeId, bpCode, tradeName }` — 이 탭의 서비스와 BP | loginKey 다르면 탭 값 전부 |
 | sessionStorage | `whale-erp:v1:stores` · `codes` · `scope` | `{ bpCodeId, … }` — 화면은 이것만 읽는다 | bpCodeId 가 이 탭의 BP 와 다름 |
 
 로그인 후 BP 데이터는 `bpCodeId` 로 구분한다. 로그인 전 공개 공통코드만 `bpCode` 로 부른다(운영·개발 DB 의 식별자가 달라서).
 
-`SessionGate`(`src/components/site/session-gate.tsx`) 순서: login-key 확인(없으면 로그아웃) → login-info 가 없으면 BFF 로 받아 저장 → 이 탭의 BP 결정(`resolveBp`: 고객 BP 계정·플랫폼 화면은 자기 BP, 플랫폼 계정의 ERP 화면은 `?bp=` → current-bp → selected-bp → 자기 BP) → 점포·공통코드(자기 BP 면 login-bp-info 복사, 다른 BP 면 `/bp-codes/{bpCodeId}/…` 두 개) → 화면. 401 은 `/login`(login-key 쿠키가 없으면 로그아웃 서버 액션), 로그인 정보 403·404 는 안내 후 로그아웃, 다른 BP 403·404 는 안내 후 selected-bp 를 지우고 홈, 그 밖은 [다시 시도]. 탭의 BP(current-bp)는 점포·공통코드를 받은 뒤에 쓴다.
+`SessionGate`(`src/components/site/session-gate.tsx`) 순서: login-key 확인(없으면 로그아웃) → login-info 가 없으면 BFF 로 받아 저장 → 이 탭의 서비스·BP 결정(`resolveTab`: 고객 BP 계정은 ERP·자기 BP, 플랫폼 계정은 `?bp=`(자기 BP 면 플랫폼, 고른 BP 면 ERP) → current-bp → 주소 메뉴가 ERP 이고 고른 BP 가 있으면 ERP → 플랫폼·자기 BP) → 점포·공통코드(자기 BP 면 login-bp-info 복사, 다른 BP 면 `/bp-codes/{bpCodeId}/…` 두 개) → 화면. 401 은 `/login`(login-key 쿠키가 없으면 로그아웃 서버 액션), 로그인 정보 403·404 는 안내 후 로그아웃, 다른 BP 403·404 는 안내 후 selected-bp 를 지우고 홈, 그 밖은 [다시 시도]. 탭의 BP(current-bp)는 점포·공통코드를 받은 뒤에 쓴다.
 
 탭의 서비스(`serviceCode`: WHALE_ERP · PLATFORM)는 `current-bp` 에 BP 와 함께 둔다. BP·가맹 계정은 늘 ERP, 플랫폼 계정은 자기 BP 탭이 플랫폼이고 BP 선택기로 연 탭이 ERP 다. 탭 값이 없는 새 탭은 ?bp= → 주소가 속한 메뉴의 서비스(ERP 면 마지막으로 고른 BP, 그 밖은 자기 BP 의 플랫폼)로 정한다(`resolveTab`). 헤더 메뉴는 그 서비스의 메뉴만 2단계까지 그린다. 주소 판정은 그 서비스의 홈과, 그 서비스에서 조회 권한(read)이 있는 메뉴의 url 과 그 아래 주소만 열고 3단계까지 본다(`src/lib/menus.ts`) — BP 계정의 플랫폼 주소, 플랫폼 탭의 ERP 주소는 여기서 막힌다. 범위 선택기(전체·직영·가맹·점포 하나)는 ERP 화면에만 두고, 바꾸면 홈으로 간다. 플랫폼 화면의 BP 선택기는 BP 목록 API 가 생긴 뒤 만든다(고르면 selected-bp 저장 후 `/home?bp={bpCodeId}` 새 탭).
 
