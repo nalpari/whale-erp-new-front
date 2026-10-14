@@ -17,17 +17,3 @@ export function isPlatformRole(roleTypeCode: string): boolean {
 export function homeOf(roleTypeCode: string): "/platform" | "/home" {
   return isPlatformRole(roleTypeCode) ? "/platform" : "/home";
 }
-
-// shortcut: 공통코드 ROLE_TYPE 의 한글을 여기 적었다. naming.md 는 getCodes(group) 로 받으라 하지만 그 조회 API 가 아직 없다 — 생기면 지운다.
-const ROLE_LABEL: Record<string, string> = {
-  PM: "플랫폼 마스터",
-  PA: "플랫폼 관리자",
-  BM: "BP 마스터",
-  BA: "BP 관리자",
-  FM: "가맹 마스터",
-  FA: "가맹 관리자",
-};
-
-export function roleLabel(roleTypeCode: string): string {
-  return ROLE_LABEL[roleTypeCode] ?? roleTypeCode;
-}

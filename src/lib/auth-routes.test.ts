@@ -2,7 +2,7 @@
 // Node 24 가 타입을 벗겨 그대로 실행한다. 테스트 도구를 따로 깔지 않는다(date-math.test.ts 와 같다).
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { homeOf, isPlatformRole, isPublicPath, roleLabel } from "./auth-routes.ts";
+import { homeOf, isPlatformRole, isPublicPath } from "./auth-routes.ts";
 
 test("플랫폼 마스터·관리자는 플랫폼 홈, 나머지는 ERP 홈", () => {
   assert.equal(homeOf("PM"), "/platform");
@@ -18,7 +18,7 @@ test("공개 경로만 로그인 없이 열린다 — 접두가 경로 마디와
   for (const p of ["/loginx", "/designer"]) assert.equal(isPublicPath(p), false, p);
 });
 
-test("권한 이름", () => {
-  assert.equal(roleLabel("BM"), "BP 마스터");
-  assert.equal(roleLabel("ZZ"), "ZZ");
+
+test("BFF(/api/*)는 공개 경로가 아니다 — 세션 없이 열리면 안 된다", () => {
+  for (const p of ["/api", "/api/bp-codes/1/stores"]) assert.equal(isPublicPath(p), false, p);
 });
