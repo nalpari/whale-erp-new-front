@@ -379,6 +379,9 @@
   .top-\[86\.39px\] {
     top: 86.39px;
   }
+  .top-\[130px\] {
+    top: 130px;
+  }
   .top-\[478px\] {
     top: 478px;
   }
@@ -961,6 +964,9 @@
   .min-h-\[46px\] {
     min-height: 46px;
   }
+  .min-h-\[56px\] {
+    min-height: 56px;
+  }
   .min-h-\[64px\] {
     min-height: 64px;
   }
@@ -1216,6 +1222,9 @@
   .w-\[280px\] {
     width: 280px;
   }
+  .w-\[300px\] {
+    width: 300px;
+  }
   .w-\[304px\] {
     width: 304px;
   }
@@ -1272,9 +1281,6 @@
   }
   .w-\[1200px\] {
     width: 1200px;
-  }
-  .w-\[1320px\] {
-    width: 1320px;
   }
   .w-\[1520px\] {
     width: 1520px;
@@ -1835,6 +1841,10 @@
   .border-l {
     border-left-style: var(--tw-border-style);
     border-left-width: 1px;
+  }
+  .border-l-2 {
+    border-left-style: var(--tw-border-style);
+    border-left-width: 2px;
   }
   .border-\[\#999\] {
     border-color: #999;
@@ -3431,17 +3441,14 @@
   .\[\&_\:is\(a\[href\]\,button\:enabled\,select\:enabled\,label\:has\(input\:enabled\)\,input\[type\=checkbox\]\:enabled\)\]\:cursor-pointer :is(a[href], button:enabled, select:enabled, label:has(input:enabled), input[type=checkbox]:enabled) {
     cursor: pointer;
   }
-  .\[\&_\[role\=tab\]\]\:shrink-0 [role=tab] {
-    flex-shrink: 0;
-  }
-  .\[\&_\[role\=tab\]\]\:whitespace-nowrap [role=tab] {
-    white-space: nowrap;
-  }
-  .\[\&_\[role\=tablist\]\]\:overflow-x-auto [role=tablist] {
-    overflow-x: auto;
-  }
   .\[\&_button\]\:cursor-pointer button {
     cursor: pointer;
+  }
+  .\[\&_h3\]\:text-\[17px\] h3 {
+    font-size: 17px;
+  }
+  .\[\&_h3\]\:text-guest-ink h3 {
+    color: var(--color-guest-ink);
   }
   .\[\&_tbody_tr\:last-child\]\:border-b-0 tbody tr:last-child {
     border-bottom-style: var(--tw-border-style);

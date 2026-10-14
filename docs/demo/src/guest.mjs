@@ -85,7 +85,7 @@ const MENUS = [
   ["부가 서비스", "home/add-on-services.html"],
 ];
 // 본문이 머리말과 같은 흰 바탕인 화면은 맨 위에서도 선을 긋는다. 스크롤하면 guest.js 가 흰 바탕과 선을 깐다.
-const LINED = ["auth/login.html", "auth/find.html", "auth/signup.html", "auth/signup-done.html", "home/inquiry.html", "home/notices.html"];
+const LINED = ["auth/login.html", "auth/find.html", "auth/signup.html", "auth/signup-done.html", "home/inquiry.html", "home/notices.html", "auth/terms.html"];
 
 function header(A, R, current) {
   const lined = LINED.includes(current);
