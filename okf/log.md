@@ -3,6 +3,7 @@
 ## 2026-10-13
 * **Update**: [운영 알림](/notify.md) — 운영 알림 · 메일 분리(운영 정책 NTF-03 v114, 2026-10-13 재영): 목업 NOTIFY-16 쟁점 블록과 운영 알림 화면 계획에서 「메일 버튼도 /notifications/{id}/open 으로 들어온다」를 걷었다. 메일 버튼은 업무 화면으로 바로 가고 #249 는 취소됐다.
 
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 관리 화면(`/platform/system/admins`)을 api `/platform-admins` 에 붙여 만들었다. 목록 · 필터, 상세 · 등록 · 수정 슬라이드 패널(겹치면 Esc 는 가장 위의 것만 닫는다), 비밀번호 초기화 · 삭제(404 · 409 · 결과 모름이면 상세를 다시 받는다) · 변경 이력. 등록의 아이디는 칸을 벗어나거나 Enter 때 `GET /platform-admins/login-id-availability` 로 중복 확인, 입력 · api 칸 오류는 그 칸 바로 아래. 주소는 행정안전부 도로명주소 API 자동완성(`JUSO_API_KEY`, 캐시 없음, `server-only`, 키 견본 `.env.example` — 카카오 우편번호보다 층 안 목록 모양이 화면과 맞아 이것으로 정했다). 공통: `Field required`(붉은 *), DetailTable `multiline`, SlidePanel 은 preventDefault 된 Esc 를 넘긴다. `pnpm test` 는 `src/**/*.test.ts` 를 돈다.
 * **Update**: 근로계약서 작성 급여 칸을 현업 엑셀 견본대로 바꿨다 — 시급 옆 읽기 전용 월급 칸, 정직원은 연봉 · 비과세 항목 · 급여항목 표, 파트타이머는 요일별 소계 · 주휴수당 · 주급 · 월급여 표. 근무요일은 근무 · 휴게시간과 한 줄, 시급 · 월급 · 연봉은 급여 표 위 한 줄. 휴일근무 두 칸은 뺐고, 파트타이머 수당 칸은 정해지지 않아 뺐다. [Whale ERP Frontend](/whale-erp-front.md).
 * **Update**: 근로계약서 작성에 api #12 칸(수당 · 월 근로시간 · 조항)과 정직원 월급(시급 × 월 기본시간) 안내, 같은 점포 진행 중 계약 대체 확인창(WHALEERP-129)을 더했다. PR #13 리뷰 참고 항목 — 근로계약 화면 `error.tsx` · 목록 403 안내 · 주소 쿼리 거르기, `pnpm test` 가 `src` 전체 테스트를 돌린다, 근로계약 타입을 생성 타입으로, 메뉴 견본 「직원 정보 관리 · 근로계약 관리」 주소, 직원 목록 「직원 초대」를 `/contracts/new` 로. [Whale ERP Frontend](/whale-erp-front.md).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `/design` 맨 위에 디자인 샘플 화면 목록 표를 더했다.

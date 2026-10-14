@@ -7,7 +7,7 @@ export { ConfirmDialog } from "./confirm-dialog";
 export { useToast, TOAST_MESSAGE, type ToastKind } from "./toast";
 export { Toggle } from "./toggle";
 export { Button, type ButtonVariant } from "./button";
-export { Checkbox, Field, FormGroup, FormRow, Radio, Select, Textarea, TextField } from "./form";
+export { Checkbox, Field, FormGroup, FormRow, Radio, RequiredMark, Select, Textarea, TextField } from "./form";
 export { DateField } from "./date-field";
 export { SearchField } from "./search-field";
 export { DataTable, type Column, type RowState } from "./data-table";

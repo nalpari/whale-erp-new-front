@@ -174,15 +174,16 @@
                     <input class="input" value="파트장" maxlength="30" aria-label="직책" data-show="lastfail" hidden />
                   </div>
                 </div>
-                <!-- 주소 — 점포 등록과 같은 주소 검색 프로세스(data-addr). 검색 결과가 입력칸 아래로 펼쳐지고, 고른 우편번호·기본주소만 들어간다. -->
-                <div class="field addr" data-addr data-show="base off dupmail miss denied conflict fail">
+                <!-- 주소 — 점포 등록과 같은 주소 검색 컴포넌트(data-addr)에 data-addr-live 를 더했다(2026-10-13, 앱과 같다).
+                     [주소 검색] 버튼 없이 치는 대로 결과가 입력칸 아래로 펼쳐지고, 고른 우편번호·기본주소만 들어간다.
+                     주소를 고르기 전에는 상세주소를 막고, 새 주소를 고르면 상세주소를 비운다. 포커스가 나가면 목록을 닫는다. -->
+                <div class="field addr" data-addr data-addr-live data-show="base off dupmail miss denied conflict fail">
                   <label for="ezq">주소</label>
                   <div class="addr__search">
                     <div class="addr__q">
                       <span data-icon="search" data-icon-size="14"></span>
                       <input class="input" id="ezq" type="search" placeholder="도로명, 건물명, 지번으로 검색" autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list" data-addr-q />
                     </div>
-                    <button class="btn btn--secondary" type="button" data-addr-go>주소 검색</button>
                     <div class="addr__list" role="listbox" aria-label="주소 검색 결과" hidden></div>
                   </div>
                   <div class="addr__picked">
@@ -191,14 +192,13 @@
                   </div>
                   <input class="input" value="12층" maxlength="100" placeholder="상세주소" aria-label="상세주소" data-addr-detail />
                 </div>
-                <div class="field addr" data-addr data-show="self lastfail" hidden>
+                <div class="field addr" data-addr data-addr-live data-show="self lastfail" hidden>
                   <label for="ezq2">주소</label>
                   <div class="addr__search">
                     <div class="addr__q">
                       <span data-icon="search" data-icon-size="14"></span>
                       <input class="input" id="ezq2" type="search" placeholder="도로명, 건물명, 지번으로 검색" autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list" data-addr-q />
                     </div>
-                    <button class="btn btn--secondary" type="button" data-addr-go>주소 검색</button>
                     <div class="addr__list" role="listbox" aria-label="주소 검색 결과" hidden></div>
                   </div>
                   <div class="addr__picked">
