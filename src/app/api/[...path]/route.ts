@@ -20,7 +20,10 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/api/[...path]">)
       console.error(e);
       return NextResponse.json({ message: "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요" }, { status: 502 });
     }
-    const res = NextResponse.json({ message: e.message }, { status: e.status });
+    // 5xx 는 Nest 영문 문구라 화면에 그대로 보이지 않게 연결 문구로 바꾼다(로그인 액션과 같은 규칙).
+    if (e.status >= 500) console.error(e);
+    const message = e.status >= 500 ? "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요" : e.message;
+    const res = NextResponse.json({ message }, { status: e.status });
     // 토큰이 끊겼다. 지워야 /login 이 「로그인한 채 오면 홈으로」로 되돌려 보내지 않는다.
     if (e.status === 401) res.cookies.delete(SESSION_COOKIE);
     return res;

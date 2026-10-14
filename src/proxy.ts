@@ -12,7 +12,7 @@ import {
 // 쿠키만 보는 가벼운 확인(Next 16 authentication 가이드의 optimistic check). 데이터 권한은 api 가 토큰으로 다시 본다.
 // - 공개 경로가 아닌데 세션이 없으면 /login
 // - 접근 토큰을 받은 지 10분이 지났으면(만료 50분 전부터) 갱신해 쿠키를 다시 쓴다. 갱신이 401 이면 /login, 그 밖의 실패는 토큰이 남아 있는 동안 현재 쿠키로 계속
-// - BP·가맹 계정이 플랫폼 화면에 오는 것은 주소가 아니라 (platform) 레이아웃의 SessionGate 가 막는다. 플랫폼 계정은 ERP 에도 들어간다(F-TLJOCK)
+// - BP·가맹 계정이 플랫폼 화면에 오는 것은 주소가 아니라 (platform) 레이아웃이 서버에서 먼저, 그 뒤 화면 이동은 SessionGate 가 막는다. 플랫폼 계정은 ERP 에도 들어간다(F-TLJOCK)
 // - 로그인한 채 /login 에 오면 자기 홈
 // 정책은 「갱신 토큰은 마지막 사용부터 1시간」(쓰는 동안은 끊기지 않는다). api 세션은 갱신할 때만 연장되므로,
 // 만료 직전에만 갱신하면 계속 쓰던 사람도 1시간마다 끊긴다. 일찍 갱신해 마지막 요청부터 50~60분 동안 유지한다.
@@ -52,7 +52,10 @@ export async function proxy(req: NextRequest) {
 // "unauthorized": 갱신 토큰이 끝나 세션이 사라짐(401). null: 그 밖의 실패(상태 코드·시간 초과·네트워크·깨진 응답).
 async function refresh(session: Session): Promise<Session | "unauthorized" | null> {
   const base = process.env.API_BASE_URL;
-  if (!base) return null;
+  if (!base) {
+    console.error("토큰 갱신: API_BASE_URL 이 없다");
+    return null;
+  }
   try {
     const r = await fetch(`${base}/auth/admin/refresh`, {
       method: "POST",
@@ -62,11 +65,18 @@ async function refresh(session: Session): Promise<Session | "unauthorized" | nul
       signal: AbortSignal.timeout(5_000), // api 가 응답하지 않아도 갱신할 때 요청이 매달리지 않게 5초에서 끊는다.
     });
     if (r.status === 401) return "unauthorized";
-    if (!r.ok) return null;
+    if (!r.ok) {
+      console.warn("토큰 갱신 실패", r.status);
+      return null;
+    }
     const body = (await r.json()) as AdminRefreshResponse;
-    if (typeof body.accessToken !== "string") return null; // 깨진 응답으로 쿠키를 쓰지 않는다.
+    if (typeof body.accessToken !== "string") {
+      console.warn("토큰 갱신: 응답에 accessToken 이 없다");
+      return null; // 깨진 응답으로 쿠키를 쓰지 않는다.
+    }
     return { ...session, accessToken: body.accessToken, accessTokenExpiresAt: Date.now() + ACCESS_TOKEN_TTL_MS };
-  } catch {
+  } catch (e) {
+    console.warn("토큰 갱신 실패", e);
     return null; // 호출한 쪽이 토큰 만료 여부로 계속할지 로그아웃할지 가른다.
   }
 }
