@@ -84,10 +84,10 @@ export const render = ({ A, R }, state = "wait") => {
       ]),
     ) +
     // 상담 완료일은 답변 완료가 되는 날 자동으로 남고, 그날부터 1년 뒤 파기한다(WHALEERP-274 · 295).
-    // 상담하지 않은 도입문의는 자동으로 지우지 않고 관리자가 직접 처리한다(운영 정책 CNT-11, 처리 방식은 기획에서 정리 중).
+    // 상담하지 않은 도입문의(상담 완료일 없음)는 상세의 [삭제]로 지운다. 확인창을 띄우고, 지우면 행을 남기지 않는다(개인정보 파기). 상담을 마친 건은 지우지 못하고 1년 뒤 배치가 파기한다(CNT-11 v120, #590 — 지우는 api 는 아직 없다).
     plain(
       ui.detailTable("보관", [["상담 완료일", done ? "2026-08-28" : p.sub("답변을 저장하는 날 남습니다")], ["파기 예정", done ? "2027-08-28" : p.sub("상담 완료일로부터 1년")]]) +
-        note("상담하지 않은 도입문의는 자동으로 지우지 않고 관리자가 직접 처리합니다(CNT-11, 처리 방식은 기획에서 정리 중)."),
+        note(done ? "상담을 마친 건이라 지울 수 없고, 상담 완료일로부터 1년 뒤 배치가 파기합니다." : "상담하지 않은 건은 [삭제]로 지웁니다. 확인창을 띄우고, 지우면 기록이 남지 않습니다(#590 뒤)."),
     ) +
     tbox("처리 이력", "",
       steps([
@@ -109,7 +109,7 @@ export const render = ({ A, R }, state = "wait") => {
       body: ui.detailBody(
         p.detailHead(
           "도입문의 상세",
-          `<div class="flex items-center gap-[6px]">${done ? "" : ui.button("처리 시작", { variant: "soft" })}${ui.button("목록", { variant: "off", href: link(R, "support/community-leads.html") })}</div>`,
+          `<div class="flex items-center gap-[6px]">${done ? "" : ui.button("삭제", { variant: "soft" }) + ui.button("처리 시작", { variant: "soft" })}${ui.button("목록", { variant: "off", href: link(R, "support/community-leads.html") })}</div>`,
         ) + p.cols(left, right),
       ),
     }),
