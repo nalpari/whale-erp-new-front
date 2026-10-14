@@ -21,6 +21,10 @@
           <span class="badge badge--risk" data-notice-only>상단 고정</span>
           <div class="titlebar__end">
             <span class="mono subtle" style="font-size: 12px">최근 수정 09-05 14:20 · 이서준</span>
+            <!-- 게시 상태는 임시저장 · 게시 · 비공개 어느 쪽으로든 바꾼다. 게시로 저장할 때만 노출 대상이 하나 이상 있어야 한다.
+                 삭제는 지움 표시라 사용자에게서만 감추고 보관한다. 이미 지운 글을 또 지우면 이미 지웠다고 알린다(WHALEERP-272). -->
+            <button class="btn btn--secondary btn--sm" type="button">삭제</button>
+            <button class="btn btn--secondary btn--sm" type="button">비공개</button>
             <button class="btn btn--secondary btn--sm" type="button">임시저장</button>
             <button class="btn btn--primary btn--sm" type="button">게시</button>
           </div>
@@ -39,6 +43,16 @@
                 </div>
               </div>
               <div class="panel__body">
+                <!-- 공지사항 유형(점검 · 기능 · 약관 · 안내)은 공지면 필수 — 사용자 쪽 목록의 「구분」이다. FAQ 는 대신 카테고리(공통코드 FAQ_CATEGORY 의 사용 중인 것)를 고른다. -->
+                <div class="field" data-notice-only style="margin-bottom: var(--s-3)">
+                  <label for="nt">유형</label>
+                  <select class="select" id="nt"><option selected>점검</option><option>기능</option><option>약관</option><option>안내</option></select>
+                </div>
+                <div class="field" data-faq-only hidden style="margin-bottom: var(--s-3)">
+                  <label for="fc">카테고리</label>
+                  <select class="select" id="fc"><option>가입·계정</option><option selected>직원·근로</option><option>요금·구독</option><option>점포·설비</option></select>
+                  <span class="help">사용 중지된 카테고리의 FAQ 는 게시하거나 내용을 고칠 때 카테고리를 바꿔야 한다. 비공개 전환과 삭제는 그대로 된다.</span>
+                </div>
                 <div class="field">
                   <label for="ti">제목</label>
                   <input class="input" id="ti" value="9월 정기 점검 안내 (09-14 02:00~05:00)" />
@@ -55,7 +69,7 @@
                 <div class="field" style="margin-top: var(--s-3)">
                   <label for="fi">첨부파일</label>
                   <input class="input" id="fi" type="file" />
-                  <span class="help">이미지와 PDF 를 올릴 수 있습니다.</span>
+                  <span class="help">이미지와 PDF 를 올릴 수 있습니다. 첨부파일 저장소 결정 대기(Plane #587) — 정해질 때까지 1차 구현에서 첨부를 만들지 않는다.</span>
                 </div>
               </div>
             </section>
@@ -75,6 +89,16 @@
                     켜면 사용자 쪽 공지 목록 <b>맨 위</b>에 <b>고정</b> 표시와 함께 선다. 여러 개면 그 안에서 게시일 내림차순이다.
                     FAQ 에는 없다.
                   </span>
+                  <!-- 게시 기간(공지만, WHALEERP-273). 사용자 쪽에는 이 기간에만 보인다. -->
+                  <div class="field" style="margin-top: var(--s-4)">
+                    <label for="ps">게시 기간</label>
+                    <div class="row" style="gap: 6px">
+                      <input class="input" id="ps" type="date" value="2026-09-05" aria-label="게시 시작일" />
+                      <span class="subtle">~</span>
+                      <input class="input" id="pe" type="date" value="2026-09-14" aria-label="게시 종료일" />
+                    </div>
+                    <span class="help">비우면 등록한 때부터 기한 없이 보인다. 종료일은 시작일보다 앞설 수 없고 그날까지 보인다. 사용자 쪽 게시일은 시작일, 없으면 등록 일시다.</span>
+                  </div>
                 </div>
               </div>
 
@@ -133,33 +157,18 @@
                 </p>
               </div>
 
+              <!-- 변경 이력 표는 두지 않는다. 마지막 수정자 · 수정 시각만 남긴다(updated_by · updated_at). 변경 전후 내역 전체가
+                   필요해지면 post_histories 를 더한다(WHALEERP-272, 2026-10-12 재영 승인). -->
               <div class="panel">
                 <div class="panel__head">
-                  <h2 class="t-h2">변경 이력</h2>
+                  <h2 class="t-h2">최근 수정</h2>
                 </div>
-                <div class="tblwrap">
-                  <table class="tbl tbl--dense tbl--fit">
-                    <tbody>
-                      <tr>
-                        <td class="mono">09-05 14:20</td>
-                        <td>이서준</td>
-                        <td>본문 수정 · 상단 고정 켬</td>
-                      </tr>
-                      <tr>
-                        <td class="mono">09-05 11:02</td>
-                        <td>이서준</td>
-                        <td>임시저장 → 게시</td>
-                      </tr>
-                      <tr>
-                        <td class="mono">09-04 17:44</td>
-                        <td>이서준</td>
-                        <td>작성</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                <div class="panel__body">
+                  <span class="mono">2026-09-05 14:20 · 이서준</span>
                 </div>
                 <div class="panel__note">
-                  둘이 동시에 고치면 저장이 부딪힌다. 그때는 덮어쓰지 않고 <b>최신 내용을 다시 확인</b>하게 한다.
+                  둘이 동시에 고치면 저장이 부딪힌다. 그때는 덮어쓰지 않고 <b>최신 내용을 다시 확인</b>하게 한다(409).
+                  상단 고정을 바꾼 것도 이 수정으로 남는다.
                 </div>
               </div>
             </section>
@@ -169,12 +178,13 @@
     </div>
     <script src="../assets/app.js"></script>
     <script>
-      /* 공지사항 ↔ FAQ 를 바꾸면 고정핀 자리는 공지에만 보인다. FAQ 에는 상단 고정이 없다. */
+      /* 공지사항 ↔ FAQ 를 바꾸면 고정핀 · 게시 기간 · 유형은 공지에만, 카테고리는 FAQ 에만 보인다. */
       document.getElementById("kind").addEventListener("click", function (e) {
         var b = e.target.closest("button");
         if (!b) return;
         var faq = b.textContent.trim() === "FAQ";
         document.querySelectorAll("[data-notice-only]").forEach(function (el) { el.hidden = faq; });
+        document.querySelectorAll("[data-faq-only]").forEach(function (el) { el.hidden = !faq; });
       });
     </script>
   </body>
