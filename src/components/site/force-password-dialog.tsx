@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
 import { Button, Checkbox, Field, TextField } from "@/components/common";
 import { changeForcedPassword, logout } from "@/app/actions";
@@ -14,6 +15,7 @@ import { TermsLink } from "./terms-link";
 // 저장은 POST /auth/admin/password-change. 오류 문구는 화면이 만들지 않고 api 의 message 를 그대로 보인다.
 export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAccount; onDone: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [terms, setTerms] = useState({ use: false, policy: false });
@@ -45,7 +47,7 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
       } else if (r.status === 401) {
         // 발급 비밀번호가 만료됐다. 문구가 비밀번호 찾기를 안내한다.
         alert(r.message);
-        await logout();
+        await logout().catch(() => router.replace("/login"));
       } else {
         const message = r.message ?? "비밀번호를 변경하지 못했습니다";
         setError({ at: r.status === 400 && message.includes("약관") ? "terms" : "password", message });
@@ -59,6 +61,8 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
       ref={ref}
       aria-labelledby="force-password-title"
       onCancel={(e) => e.preventDefault()}
+      // Chrome 은 사용자 입력 뒤 cancel 막기를 한 번만 허용해 두 번째 Esc 는 그냥 닫는다. 닫히면 바로 다시 연다.
+      onClose={() => ref.current?.showModal()}
       className="m-auto w-[464px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
     >
       <form onSubmit={submit} className="flex flex-col gap-[18px]">
@@ -162,6 +166,7 @@ function Remaining({ expiresAt }: { expiresAt: string }) {
     if (left === 0) void logout();
   }, [left]);
 
+  if (Number.isNaN(end)) return null; // 잘못된 시각이면 남은 시간을 보이지 않는다(만료는 api 가 끊는다).
   const m = Math.floor(left / 60_000);
   const s = Math.floor((left % 60_000) / 1000);
   return (
