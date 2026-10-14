@@ -3,7 +3,7 @@ type: Area
 title: 고객지원·커뮤니티
 description: BP 사용자가 공지·FAQ 를 읽고 문의를 남기는 고객지원과, 플랫폼 운영자가 공지·FAQ·문의·도입문의를 관리하는 커뮤니티관리.
 tags: [mockup, support]
-generated: { by: claude-code/opus-5.5, at: 2026-10-14T06:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-14T07:00:00Z }
 ---
 
 근거: `docs/mockup/support/` (목업 · 1차 · R-PEQDDV)
@@ -60,6 +60,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-14T06:00:00Z }
 * 구독·청구·결제수단·정산 **조회**는 2차다. 화면에 자리도 남기지 않는다. — `S-ITFILU` · `SUPPORT-1`
 * 결제와 정산 **실행**, 사용자 간 게시판, 실시간 상담은 없다. — `F-MTIVMG`
 * BP 가 자기 조직에 쓰는 공지는 1차에 없다. — `S-GRDOPW` · `SUPPORT-3`
+* 문의 상세 「보낸 곳」에는 이름 · 역할 · BP · 점포만 둔다. 운영 점포 · 요금 PLAN · 이전 문의는 1차에 넣지 않는다 — 요금 PLAN 은 1팀 영역이다(2026-10-14 재영). 공지 · FAQ 관리 목록에도 노출 대상 열을 두지 않는다(같은 날 재영) — `S-GRDOPW`
 * 닫힌 문의에 이어 쓰는 기능은 없다. 답이 부족하면 새 문의로 묻는다. — `S-ITFILU`
 
 # 결정

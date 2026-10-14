@@ -68,13 +68,11 @@ export const render = ({ A, R }, state = "wait") => {
   const right =
     plain(
       // 이름 · 역할 · BP · 점포는 api 상세의 senderName · senderRoleTypeCode · bpName · storeName.
+      // 운영 점포 · 요금 PLAN · 이전 문의는 1차에 두지 않는다(2026-10-14 재영). 요금 PLAN 은 1팀 영역이다.
       ui.detailTable("보낸 곳", [
         ...(received ? KIOSK.sender : [["이름", "정하윤"], ["역할", "BP 마스터"], ["BP", "㈜한강상회"]]),
         ["점포", p.sub("BP 단위 문의")],
-        ["운영 점포", ui.detailValues(["11개점", "직영 4 · 가맹 7"])],
-        ["요금 PLAN", "FRANCHISE"],
-        ["이전 문의", ui.detailValues(["1건", "답변 완료"])],
-      ]) + note("운영 점포 · 요금 PLAN · 이전 문의는 api 상세에 없다 — 넣을지 재영 님 확인 대기."),
+      ]),
     ) +
     tbox("처리 이력", "",
       steps([
