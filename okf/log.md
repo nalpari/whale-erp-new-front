@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-14
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(1팀 관리자 로그인 · 공개 경로 · 비로그인 디자인). 회원가입 · 가입 완료를 `/auth/signup` · `/auth/signup-done` 에서 `(public)/(site)/signup` · `/signup/done` 으로 옮겨 로그인과 같은 로그인 전 틀을 쓰게 했다 — 공개 경로 목록이 `/signup` 이라 옛 경로는 로그인을 요구하게 됐다. 자체 GNB · 푸터(`site-page.tsx`)와 로그인 대기 안내창(`login-pending.tsx`)은 지우고, 로그인 링크와 「웨일ERP 시작하기」는 `/login` 으로 보낸다. 데모의 회원가입 · 가입 완료는 main 의 비로그인 디자인을 따랐다.
 * **Update**: 회원가입 코드리뷰 반영 — 입력칸에 `aria-invalid`·`aria-describedby` 를 걸어 오류 테두리·스크린리더 연결을 살리고, 칸을 고치면 바로 오류를 지우고(기존엔 blur 때만), 제출 때 첫 오류 칸으로 포커스를 옮긴다. 비밀번호 칸의 불필요한 `aria-label` 을 빼 "(필수)" 안내가 다시 들리게 했다. 가입 완료 화면은 `signupToken` 이 없으면 상호명·아이디·이메일을 보이지 않는다(주소에 값만 지어 넣는 위조 방지). `validators.ts` 에 테스트를 더했다. [Whale ERP Frontend](/whale-erp-front.md).
 * **Add**: BP 회원가입·가입 완료 화면(`src/app/auth/`)을 pikachu 브랜치에서 옮겨 왔다 — 기본정보·사업자정보 인증(선택)·약관동의·제출, 공개 화면 틀(GNB·푸터, `site-page.tsx`), 로그인 화면이 없어 LOGIN·로그인 링크 등은 개발 예정 안내창, 로고·"웨일ERP 시작하기"는 `/auth/signup` 으로. 디자인 데모(`docs/demo/src/pages/auth/signup*.mjs`)도 함께 옮겼다. [Whale ERP Frontend](/whale-erp-front.md).
 * **Update**: 바꿀 수 없는 입력칸 모양(disabled 에 더해 readOnly 도 #f8f9fb 바탕·회색 글자)을 [Whale ERP Frontend](/whale-erp-front.md) 공통 컴포넌트 설명과 DESIGN.md 「바꿀 수 없는 칸」 규칙에 적었다.

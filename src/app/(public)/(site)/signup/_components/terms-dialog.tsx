@@ -61,7 +61,8 @@ function TermsSectionBody({ section }: { section: TermsSection }) {
   );
 }
 
-// 약관 전문 확인창. docs/demo/src/public.mjs 의 termsDialog 와 같다 — 네이티브 <dialog>, 폭은 카드(860px)에 맞춘다.
+// 약관 전문 확인창. 로그인 화면 약관 링크(components/site/terms-link.tsx)와 같은 방식(네이티브 <dialog>)이고, 폭은 카드(860px)에 맞춘다.
+// 약관도 다르다 — 회원가입은 이용약관 · 개인정보 수집·이용 동의(./terms.ts), 로그인 화면은 이용약관 · 개인정보처리방침(@/lib/terms).
 export function TermsDialog({ open, onClose, doc }: { open: boolean; onClose: () => void; doc: TermsDoc }) {
   const ref = useRef<HTMLDialogElement>(null);
 

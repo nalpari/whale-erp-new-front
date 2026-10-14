@@ -1,14 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useRef, useState, type FormEvent } from "react";
 import { Button, FormGroup, TextField } from "@/components/common";
-import { Blank } from "../_components/blank";
-import { LoginPendingLink } from "../_components/login-pending";
-import { PasswordField } from "../_components/password-field";
-import { PhoneField } from "../_components/phone-field";
-import { RequiredField } from "../_components/required-field";
-import { Row } from "../_components/row";
+import { Blank } from "./_components/blank";
+import { PasswordField } from "./_components/password-field";
+import { PhoneField } from "./_components/phone-field";
+import { RequiredField } from "./_components/required-field";
+import { Row } from "./_components/row";
 import {
   validateEmail,
   validateLoginId,
@@ -17,7 +17,7 @@ import {
   validatePasswordConfirm,
   validatePhone,
   validateTradeName,
-} from "../_components/validators";
+} from "./_components/validators";
 import { checkEmailAvailability, checkLoginIdAvailability, createSignup, type AvailabilityResult } from "./actions";
 import { AGREE_INITIAL, AgreeSection, type AgreeValue } from "./agree-section";
 import { BIZ_AUTH_INITIAL, BizAuthSection, type BizAuthValue } from "./biz-auth-section";
@@ -221,7 +221,7 @@ export function SignupForm() {
       // 로그인 세션이 아직 없어 완료 화면에 보여줄 값은 createSignup 이 이미 httpOnly 쿠키로 심어 뒀다
       // (signup-done-cookie.ts 참고) — URL 쿼리로 넘기지 않는다. 쿼리로 넘기면 서버 로그·브라우저 기록에
       // 남고, 아무 값이나 지어 넣은 주소도 진짜 완료 화면처럼 보일 수 있었다(2026-10-14 ip-code-review-claude).
-      router.push("/auth/signup-done");
+      router.push("/signup/done");
       // pending 을 여기서 풀지 않는다 — 화면이 옮겨 가는 동안 버튼이 다시 눌릴 수 있는 틈을 없앤다
       // (이전엔 finally 가 성공 때도 풀어, 옮겨 가는 찰나에 다시 눌러 같은 요청을 한 번 더 보낼 수 있었다 — 2026-10-14 코드리뷰).
     } catch (e) {
@@ -370,10 +370,9 @@ export function SignupForm() {
 
       <p className="flex justify-center gap-[10px] text-[14px]">
         <span className="text-erp-label">이미 계정이 있나요?</span>
-        {/* 로그인 화면이 없고, 디자인 샘플로 보내면 돌아올 길이 없어 안내창으로 되돌린다(2026-10-14 피드백). */}
-        <LoginPendingLink className="text-erp-label transition-colors duration-150 ease-out hover:text-erp-ink">
+        <Link href="/login" className="text-erp-label transition-colors duration-150 ease-out hover:text-erp-ink">
           <b className="font-semibold text-erp-ink">로그인</b>
-        </LoginPendingLink>
+        </Link>
       </p>
     </form>
   );

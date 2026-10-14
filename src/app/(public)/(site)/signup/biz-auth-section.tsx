@@ -2,14 +2,14 @@
 
 import { useId, useState } from "react";
 import { Badge, Button, DateField, Field, FormGroup, TextField } from "@/components/common";
-import { Row } from "../_components/row";
-import { validateBizRegistrationNumber } from "../_components/validators";
+import { Row } from "./_components/row";
+import { validateBizRegistrationNumber } from "./_components/validators";
 
 // 필드 이름은 naming.md(BP · 점포)의 사업자정보 표기(biz_registration_number · biz_ceo_name · biz_open_date)를 그대로 따른다.
 export type BizAuthValue = { bizRegistrationNumber: string; bizCeoName: string; bizOpenDate: string; verified: boolean };
 export const BIZ_AUTH_INITIAL: BizAuthValue = { bizRegistrationNumber: "", bizCeoName: "", bizOpenDate: "", verified: false };
 
-// 사업자정보 인증 (선택). docs/demo/src/pages/auth/signup.mjs 의 biz 섹션과 같다.
+// 사업자정보 인증 (선택). 항목은 회원가입 데모(docs/demo/src/pages/auth/signup.mjs)와 같고, 모양은 ERP 디자인 시스템을 쓴다.
 // 국세청 사업자등록번호 진위확인 API 연동이 없다 — "인증하기"는 사업자등록번호·대표자명·개업일자
 // 셋이 모두 채워졌을 때만 화면을 "인증완료"로 바꾸는 자리표시자다(2026-10-12 피드백).
 // "재인증"은 입력칸을 다시 열되 값은 그대로 두어(다른 값으로 바꿔 다시 인증받도록) 편집하게 하고,

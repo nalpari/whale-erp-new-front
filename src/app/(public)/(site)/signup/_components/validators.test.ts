@@ -1,4 +1,4 @@
-// node --test src/app/auth/_components/validators.test.ts
+// node --test "src/app/(public)/(site)/signup/_components/validators.test.ts"
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
