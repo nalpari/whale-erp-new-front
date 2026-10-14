@@ -139,7 +139,7 @@ export function SessionGate({ area, children }: { area: Area; children: ReactNod
 function Ready({ area, value, onChange, children }: { area: Area; value: LoginState; onChange: (v: LoginState) => void; children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  // 플랫폼 화면에 BP·가맹 계정이 왔다(첫 진입은 (platform) 레이아웃이 서버에서 막고, 여기서는 그 뒤 화면 이동을 받는다). 안내 없이 /home 으로 보낸다.
+  // 플랫폼 화면에 BP·가맹 계정이 왔다(첫 진입은 platform 레이아웃이 서버에서 막고, 여기서는 그 뒤 화면 이동을 받는다). 안내 없이 /home 으로 보낸다.
   const wrongArea = area === "platform" && !isPlatformRole(value.account.roleTypeCode);
   const allowed = !wrongArea && isAllowed(value.menus, pathname, HOME[area]);
   // 개발 모드(StrictMode)는 effect 를 두 번 돌린다. 같은 주소에 두 번 안내하고 두 번 뒤로 가지 않게 한다.
