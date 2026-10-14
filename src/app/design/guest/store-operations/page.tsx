@@ -51,7 +51,9 @@ function Moments() {
             <GuestButton tone="navy" arrow>
               사업자 회원가입
             </GuestButton>
-            <GuestButton tone="soft">도입문의</GuestButton>
+            <GuestButton tone="soft" href="/design/guest/inquiry">
+              도입문의
+            </GuestButton>
           </div>
         }
       />

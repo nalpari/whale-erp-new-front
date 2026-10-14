@@ -143,7 +143,9 @@ function ServiceSection({
           <GuestButton tone="navy" arrow>
             요금 안내 보기
           </GuestButton>
-          <GuestButton tone="soft">도입문의</GuestButton>
+          <GuestButton tone="soft" href="/design/guest/inquiry">
+            도입문의
+          </GuestButton>
         </div>
       </div>
       <ul className="grid grid-cols-5 gap-[16px]">
