@@ -9,18 +9,15 @@ export const LOGIN_KEY_COOKIE = "login-key";
 export const ACCESS_TOKEN_TTL_MS = 60 * 60 * 1000;
 
 /**
- * 쿠키에 담는 값. 토큰은 Next 서버만 읽는다(httpOnly). 이름·권한은 헤더를 그리고 proxy 가 영역을 가르는 데 쓴다.
- * 권한은 쿠키 값이라 화면을 가르는 데만 믿는다 — 데이터 권한은 api 가 토큰으로 다시 확인한다.
+ * 쿠키에 담는 값. 토큰은 Next 서버만 읽는다(httpOnly). 계정 이름·BP 는 login-info 로 그리므로 여기 두지 않는다.
+ * 권한 유형은 /login 에서 자기 홈을 고르고 (platform) 레이아웃이 BP 계정을 돌려보내는 데만 쓴다 — 데이터 권한은 api 가 토큰으로 다시 확인한다.
  */
 export interface Session {
   accessToken: string;
   refreshToken: string;
   /** 접근 토큰이 끝나는 시각(ms). proxy 가 이보다 50분 앞서(받은 지 10분 뒤부터) 갱신한다. */
   accessTokenExpiresAt: number;
-  loginId: string;
-  name: string;
   roleTypeCode: string;
-  bpCode: string;
 }
 
 // shortcut: api 응답 타입을 손으로 적었다(openapi-typescript 미도입, 1팀 동의 대기). api openapi.json 이 바뀌면 같이 고친다.

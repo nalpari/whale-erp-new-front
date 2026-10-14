@@ -5,13 +5,13 @@ import { redirect } from "next/navigation";
 import { ACCESS_TOKEN_TTL_MS, ApiError, loginKeyCookie, request, sessionCookie, type AdminLoginResponse } from "@/lib/api";
 import { homeOf } from "@/lib/auth-routes";
 
-export type LoginState = { error?: string; loginId?: string };
+export type LoginFormState = { error?: string; loginId?: string };
 
 /**
  * api 로그인 → 쿠키 → 권한 유형별 홈. 실패 문구는 api 가 정한 것을 그대로 보인다(없는 아이디·불일치·탈퇴는 같은 문구, 미사용·잠금은 따로).
  * 강제 비밀번호 변경 여부(isPasswordChangeRequired)는 SessionGate 가 login-info 로 보고 팝업을 띄운다.
  */
-export async function login(_prev: LoginState, formData: FormData): Promise<LoginState> {
+export async function login(_prev: LoginFormState, formData: FormData): Promise<LoginFormState> {
   const loginId = String(formData.get("loginId") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   if (!loginId || !password) return { error: "아이디와 비밀번호를 입력해 주세요", loginId };
@@ -39,10 +39,7 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
       accessToken: res.accessToken,
       refreshToken: res.refreshToken,
       accessTokenExpiresAt: Date.now() + ACCESS_TOKEN_TTL_MS,
-      loginId: res.account.loginId,
-      name: res.account.name ?? res.account.loginId,
       roleTypeCode: res.account.roleTypeCode,
-      bpCode: res.account.bp.bpCode,
     }),
   );
   // 새 값이면 브라우저에 남은 앞 로그인의 메뉴·점포·공통코드를 버리고 login-info 를 다시 받는다(SessionGate). 같은 계정이 다시 로그인해도 갈린다.

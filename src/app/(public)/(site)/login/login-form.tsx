@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { Button, Checkbox, Field, TextField } from "@/components/common";
 import { clearLoginStorage } from "@/lib/browser-storage";
-import { login, type LoginState } from "./actions";
+import { login, type LoginFormState } from "./actions";
 
 // 아이디 저장은 이 브라우저에만 둔다(okf/auth.md — 로그인 유지 선택은 없다).
 const SAVED_ID = "whale-erp:saved-login-id";
@@ -12,7 +12,7 @@ const SAVED_ID = "whale-erp:saved-login-id";
 const QUIET = "text-erp-label transition-colors duration-150 ease-out hover:text-erp-ink";
 
 export function LoginForm() {
-  const [state, action, pending] = useActionState<LoginState, FormData>(login, {});
+  const [state, action, pending] = useActionState<LoginFormState, FormData>(login, {});
   const idRef = useRef<HTMLInputElement>(null);
   // 제어 입력 — 실패 뒤 React 가 비제어 폼을 비워도 체크가 남아야 다음 제출에서 저장값이 지워지지 않는다.
   const [save, setSave] = useState(false);

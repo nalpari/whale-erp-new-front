@@ -6,10 +6,7 @@ const session: Session = {
   accessToken: "a",
   refreshToken: "r",
   accessTokenExpiresAt: 1_000,
-  loginId: "admin1",
-  name: "홍길동",
   roleTypeCode: "BM",
-  bpCode: "BP000001",
 };
 
 test("parseSession: 유효한 JSON 은 Session", () => {
