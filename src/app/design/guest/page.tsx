@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Fragment } from "react";
-import { Arrow, GuestButton, GuestPage, ICON_GRADIENT, SectionTitle, TitleRow, TRIM } from "./guest-ui";
+import { Arrow, FaqItem, GuestButton, GuestPage, ICON_GRADIENT, SectionTitle, TitleRow, TRIM } from "./guest-ui";
 import { BUTTON_MOTION, HOVER } from "./theme";
 
 export const metadata: Metadata = { title: "Whale ERP · 비로그인 메인" };
@@ -108,7 +108,7 @@ function Billboard() {
               <Arrow />
             </Link>
             <Link
-              href="#"
+              href="/design/guest/inquiry"
               className={`flex h-[48px] w-[100px] items-center justify-center rounded-[6px] border border-transparent bg-white/90 text-[18px] leading-[1.5] font-semibold text-guest-navy hover:border-guest-navy hover:bg-white ${BUTTON_MOTION}`}
             >
               도입문의
@@ -252,7 +252,9 @@ function Personas() {
                   <GuestButton tone="navy" href={p.href} arrow grow>
                     {p.cta}
                   </GuestButton>
-                  <GuestButton tone="soft">도입문의</GuestButton>
+                  <GuestButton tone="soft" href="/design/guest/inquiry">
+                    도입문의
+                  </GuestButton>
                 </div>
               </div>
             </div>
@@ -467,11 +469,11 @@ const NEWS = [
   { badge: null, title: "추석 연휴 고객센터 운영 안내" },
 ];
 
-function BoardHead({ text, action }: { text: string; action: string }) {
+function BoardHead({ text, action, href }: { text: string; action: string; href: string }) {
   return (
     <div className="flex items-center justify-between gap-[18px]">
       <p className={`text-[22px] leading-[1.6] font-medium text-guest-ink ${TRIM}`}>{text}</p>
-      <GuestButton tone="outline" arrow>
+      <GuestButton tone="outline" href={href} arrow>
         {action}
       </GuestButton>
     </div>
@@ -484,25 +486,12 @@ function Boards() {
       <div className="flex flex-col gap-[60px]">
         <SectionTitle light="시작 전에," bold="가장 많이 묻는 질문" />
         <div className="flex flex-col gap-[34px] rounded-[6px] border border-guest-line bg-white p-[34px]">
-          <BoardHead text="궁금한 점이 더 있다면 언제든 편하게 물어보세요." action="전체 질문 보기" />
+          <BoardHead text="궁금한 점이 더 있다면 언제든 편하게 물어보세요." action="전체 질문 보기" href="/design/guest/notices#faq" />
           <div className="flex flex-col gap-[8px]">
             {FAQS.map((faq) => (
-              <details
-                key={faq.q}
-                name="guest-faq"
-                open={faq.a !== null}
-                className="group rounded-[3px] bg-[#fafafa] px-[20px] py-[22px] open:bg-[#f5f5f5]"
-              >
-                <summary className={`flex cursor-pointer list-none items-center gap-[11px] text-[17px] leading-[1.5] font-semibold text-guest-ink hover:text-guest-navy ${HOVER} [&::-webkit-details-marker]:hidden`}>
-                  <span className="flex size-[28px] shrink-0 items-center justify-center rounded-full bg-guest-navy text-[18px] font-bold tracking-normal text-white">
-                    Q
-                  </span>
-                  <span className="flex-1">{faq.q}</span>
-                  <Image src="/guest/faq-plus.svg" alt="" width={28} height={28} className="group-open:hidden" />
-                  <Image src="/guest/faq-close.svg" alt="" width={28} height={28} className="hidden group-open:block" />
-                </summary>
-                {faq.a && <p className="mt-[18px] pl-[40px] text-[16px] leading-[1.5] text-guest-sub">{faq.a}</p>}
-              </details>
+              <FaqItem key={faq.q} q={faq.q} open={faq.a !== null}>
+                {faq.a}
+              </FaqItem>
             ))}
           </div>
         </div>
@@ -510,7 +499,7 @@ function Boards() {
       <div className="flex flex-col gap-[60px]">
         <SectionTitle light="Whale ERP" bold="새로운 소식 안내" />
         <div className="flex flex-1 flex-col gap-[32px] rounded-[6px] border border-guest-line bg-white p-[34px]">
-          <BoardHead text="Whale ERP의 새로운 소식을 알려 드립니다." action="전체 보기" />
+          <BoardHead text="Whale ERP의 새로운 소식을 알려 드립니다." action="전체 보기" href="/design/guest/notices" />
           <ul className="border-t border-guest-list-line text-[17px] leading-[1.5]">
             {NEWS.map((n) => (
               <li key={n.title} className="flex items-center gap-[8px] border-b border-guest-list-line py-[18px] last:border-b-0">

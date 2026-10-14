@@ -13,47 +13,51 @@ const pager = (A) => `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`;
 
 export function communitySections({ A, R }) {
   const edit = link(R, "support/notice-edit.html");
+  // 공지 · FAQ 목록은 api GET /posts 의 칸(제목 · 유형/카테고리 · 고정 · 상태 · 최근 수정 일시 · 수정자)만 보인다.
+  // 최근 수정일 내림차순이고 고정 글을 위로 올리지 않는다(WHALEERP-332). 노출 대상은 편집 화면에서 본다.
   const notices = [
-    [`<span class="flex items-center gap-[6px]">${tag("고정")}${ui.link("9월 정기 점검 안내 (09-14 02:00~05:00)", edit)}</span>`, "비회원 · 회원 · BP", ui.badge("on", "게시"), "2026-09-05"],
-    [ui.link("근로계약 전자날인 기능이 열렸습니다", edit), "BP · 점포", ui.badge("on", "게시"), "2026-09-01"],
-    [ui.link("10월 요금 PLAN 개편 사전 안내", edit), "-", tag("임시저장"), "-"],
-    [ui.link("8월 점검 안내 (종료)", edit), "비회원", ui.badge("off", "비공개"), "2026-08-10"],
+    [`<span class="flex items-center gap-[6px]">${tag("고정")}${ui.link("9월 정기 점검 안내 (09-14 02:00~05:00)", edit)}</span>`, "점검", ui.badge("on", "게시"), "09-05 14:20 · 이서준"],
+    [ui.link("10월 요금 PLAN 개편 사전 안내", edit), "안내", tag("임시저장"), "09-04 18:02 · 김하린"],
+    [ui.link("근로계약 전자날인 기능이 열렸습니다", edit), "기능", ui.badge("on", "게시"), "09-01 10:00 · 이서준"],
+    [ui.link("8월 점검 안내 (종료)", edit), "점검", ui.badge("off", "비공개"), "08-11 09:30 · 이서준"],
   ];
   const faqEdit = link(R, "support/faq-edit.html");
   const faqs = [
-    ["가입은 누가 할 수 있나요?", "가입·계정", "비회원"],
-    ["직원도 이 사이트로 로그인하나요?", "가입·계정", "비회원"],
-    ["근로계약서를 보냈는데 직원이 못 받았다고 합니다", "직원·근로", "BP"],
-    ["퇴사한 직원의 급여명세서는 어떻게 보나요", "직원·근로", "BP · 점포"],
-  ].map(([q, c, t]) => [ui.link(q, faqEdit), c, t, ui.badge("on", "게시")]);
+    ["근로계약서를 보냈는데 직원이 못 받았다고 합니다", "직원·근로", "09-03 10:20 · 이서준"],
+    ["퇴사한 직원의 급여명세서는 어떻게 보나요", "직원·근로", "08-28 16:40 · 김하린"],
+    ["가입은 누가 할 수 있나요?", "가입·계정", "08-20 15:11 · 이서준"],
+    ["직원도 이 사이트로 로그인하나요?", "가입·계정", "08-20 15:02 · 이서준"],
+  ].map(([q, c, u]) => [ui.link(q, faqEdit), c, ui.badge("on", "게시"), u]);
   const answer = (s) => ui.badge(s === "답변 완료" ? "on" : "off", s);
-  const askDetail = link(R, "support/inquiry-detail.html");
   const asks = [
-    ["파트타이머 주휴수당이 계산되지 않습니다", "㈜한강상회 · 정하윤", "직원·근로", "답변 대기", "09-04"],
-    ["가맹점 초대 메일이 반송됩니다", "㈜한강상회 · 정하윤", "가입·계정", "답변 완료", "08-30"],
-    ["KIOSK 구독을 늘리고 싶습니다", "온기식당 · 배정숙", "요금·구독", "답변 대기", "09-02"],
-  ].map(([t, from, c, s, d]) => [ui.link(t, s === "답변 완료" ? link(R, "support/inquiry-detail-done.html") : askDetail), from, c, answer(s), d]);
+    // 답변 대기 = 접수 + 처리중(WHALEERP-332). 데모는 접수 건을 처리 시작 전 상세로 잇는다.
+    ["파트타이머 주휴수당이 계산되지 않습니다", "㈜한강상회 · 정하윤", "직원·근로", "답변 대기", "09-04", "support/inquiry-detail.html"],
+    ["KIOSK 구독을 늘리고 싶습니다", "온기식당 · 배정숙", "요금·구독", "답변 대기", "09-02", "support/inquiry-detail-received.html"],
+    ["가맹점 초대 메일이 반송됩니다", "㈜한강상회 · 정하윤", "점포·설비", "답변 완료", "08-30", "support/inquiry-detail-done.html"],
+  ].map(([t, from, c, s, d, to]) => [ui.link(t, link(R, to)), from, c, answer(s), d]);
+  // 도입문의 목록은 api GET /leads 의 칸(문의자 · 전화번호 · 업종 · 관심 서비스 · 상태 · 접수 일시). 상호 · 운영 형태는 접수 때 받지 않는다(WHALEERP-288).
   const leadDetail = link(R, "support/lead-detail.html");
   const leads = [
-    ["조민석 · 010-7741-2093", "모리커피 청담", "가맹점", "답변 대기", "09-06"],
-    ["윤서린 · 010-3320-8814", "㈜세움에프앤비", "프랜차이즈 본사", "답변 대기", "09-03"],
-    ["한도윤 · 010-9902-1177", "도윤상회", "단일 점포", "답변 완료", "08-27"],
-  ].map(([who, biz, type, s, d]) => [ui.link(who, leadDetail), biz, type, answer(s), d]);
+    ["조민석 · 02-514-7741", "카페·음료", "매장운영 · 프랜차이즈", "답변 대기", "09-06"],
+    ["윤서린 · 010-3320-8814", "음식점", "매장운영", "답변 대기", "09-03"],
+    ["한도윤 · 010-9902-1177", "기타 (꽃집)", "재무관리", "답변 완료", "08-27"],
+  ].map(([who, ind, int, s, d]) => [ui.link(who, s === "답변 완료" ? link(R, "support/lead-detail-done.html") : leadDetail), ind, int, answer(s), d]);
 
   const STATE = { header: "상태", width: "w-[110px]" };
   return {
     notices: {
-      filter: ui.filterPanel(A, [search(A, "제목", "제목으로 검색"), pick("상태", "notice-state", ["전체", "게시", "임시저장", "비공개"])]),
+      // api 는 게시 상태로만 거른다(WHALEERP-332).
+      filter: ui.filterPanel(A, [pick("상태", "notice-state", ["전체", "게시", "임시저장", "비공개"])]),
       content:
         ui.listToolbar(12, ui.button("새 공지", { href: edit })) +
-        ui.dataTable([{ header: "제목", align: "left" }, { header: "노출 대상", width: "w-[260px]" }, STATE, { header: "게시일", width: "w-[140px]" }], notices) +
+        ui.dataTable([{ header: "제목", align: "left" }, { header: "유형", width: "w-[120px]" }, STATE, { header: "최근 수정", width: "w-[200px]" }], notices) +
         pager(A),
     },
     faq: {
-      filter: ui.filterPanel(A, [search(A, "질문", "질문으로 검색"), pick("카테고리", "faq-cat", ["전체", "가입·계정", "직원·근로", "요금·구독", "점포·설비"])]),
+      filter: ui.filterPanel(A, [pick("상태", "faq-state", ["전체", "게시", "임시저장", "비공개"])]),
       content:
         ui.listToolbar(18, ui.button("새 FAQ", { href: faqEdit })) +
-        ui.dataTable([{ header: "질문", align: "left" }, { header: "카테고리", width: "w-[160px]" }, { header: "노출 대상", width: "w-[200px]" }, STATE], faqs) +
+        ui.dataTable([{ header: "질문", align: "left" }, { header: "카테고리", width: "w-[160px]" }, STATE, { header: "최근 수정", width: "w-[200px]" }], faqs) +
         pager(A),
     },
     asks: {
@@ -67,11 +71,12 @@ export function communitySections({ A, R }) {
         pager(A),
     },
     leads: {
-      filter: ui.filterPanel(A, [search(A, "담당자", "이름 또는 번호"), pick("상태", "lead-state", ["전체", "답변 대기", "답변 완료"])]),
+      // api 는 답변 상태로만 거른다(WHALEERP-332). 답변 대기 = 접수 + 처리중.
+      filter: ui.filterPanel(A, [pick("상태", "lead-state", ["전체", "답변 대기", "답변 완료"])]),
       content:
         ui.listToolbar(4, "") +
         ui.dataTable(
-          [{ header: "담당자", align: "left" }, { header: "사업자", width: "w-[220px]" }, { header: "운영 형태", width: "w-[160px]" }, STATE, { header: "접수", width: "w-[110px]" }],
+          [{ header: "문의자", align: "left" }, { header: "업종", width: "w-[160px]" }, { header: "관심 서비스", width: "w-[220px]" }, STATE, { header: "접수", width: "w-[110px]" }],
           leads,
         ) +
         pager(A),

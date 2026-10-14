@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { type ReactNode, ViewTransition } from "react";
-import { ARROW_NUDGE, ARROW_NUDGE_BACK, BUTTON_MOTION } from "./theme";
+import { ARROW_NUDGE, ARROW_NUDGE_BACK, BUTTON_MOTION, HOVER } from "./theme";
 
 // 비로그인 화면들이 함께 쓰는 조각 — 섹션 제목, 버튼, 화살표, 글자 위아래 여백 자르기.
 
@@ -100,5 +100,23 @@ export function GuestVisual({ eyebrow, title, children }: { eyebrow: string; tit
       </div>
       <p className={`relative pl-[10px] text-[17px] leading-[1.4] text-[rgba(58,86,112,0.6)] ${TRIM}`}>{children}</p>
     </div>
+  );
+}
+
+// 자주 묻는 질문 한 줄(메인 · 공지사항 FAQ). name 을 같이 준 <details> 라 하나를 열면 나머지가 닫힌다.
+// 펼침 움직임은 globals.css 의 details[name="guest-faq"] 가 맡는다.
+// 여백은 박스가 아니라 질문 줄(summary)에 둬서 박스 거의 전체가 눌린다. 박스에는 아래 4px 만 남긴다(위 22 · 아래 22 를 맞추려고).
+// 답변 간격도 margin 이 아니라 padding 이어야 펼침 높이에 함께 들어간다 — margin 이면 열 때 튄다.
+export function FaqItem({ q, open = false, children }: { q: string; open?: boolean; children?: ReactNode }) {
+  return (
+    <details name="guest-faq" open={open} className="group rounded-[3px] bg-[#fafafa] pb-[4px] open:bg-[#f5f5f5]">
+      <summary className={`flex cursor-pointer px-[20px] pt-[22px] pb-[18px] list-none items-center gap-[11px] text-[17px] leading-[1.5] font-semibold text-guest-ink hover:text-guest-navy ${HOVER} [&::-webkit-details-marker]:hidden`}>
+        <span className="flex size-[28px] shrink-0 items-center justify-center rounded-full bg-guest-navy text-[18px] font-bold tracking-normal text-white">Q</span>
+        <span className="flex-1">{q}</span>
+        <Image src="/guest/faq-plus.svg" alt="" width={28} height={28} className="group-open:hidden" />
+        <Image src="/guest/faq-close.svg" alt="" width={28} height={28} className="hidden group-open:block" />
+      </summary>
+      {children && <p className="pr-[20px] pb-[18px] pl-[60px] text-[16px] leading-[1.5] text-guest-sub">{children}</p>}
+    </details>
   );
 }
