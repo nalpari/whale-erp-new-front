@@ -21,16 +21,17 @@ const steps = (rows) =>
   );
 
 // 목록(community-sections)의 행과 같은 건을 그린다. 접수 = 조민석, 답변 완료 = 한도윤(처리 시작 없이 바로 답한 건).
+// [삭제]는 상담 완료일(consultedDate)이 없을 때만 선다(WHALEERP-590, 목업과 같은 조건).
 const CASES = {
   wait: {
     name: "조민석", industry: "카페·음료", phone: "02-514-7741", email: "ms.cho@example.com",
-    interests: ["매장운영", "프랜차이즈"], plan: "3개월 안", marketing: "동의 · 2026-09-06 15:47", at: "2026-09-06 15:47",
+    interests: ["매장운영", "프랜차이즈"], plan: "3개월 안", marketing: "동의 · 2026-09-06 15:47", at: "2026-09-06 15:47", consulted: null,
     body: "모리커피 가맹점을 준비 중입니다. 본사에서 WHALE ERP 를 쓴다고 해서 저희도 같이 써야 한다고 들었는데, 가맹점은 따로 요금을 내는 건지 본사가 내는 건지 궁금합니다. 개점은 10월 중순 예정이고 직원은 5명 정도입니다.",
     memo: "본사(㈜한강상회)가 이미 FRANCHISE PLAN 사용 중. 가맹점은 본사 초대로 들어오면\n별도 요금 없음. 본사 담당자에게 초대 발송 요청해 두는 편이 빠름.",
   },
   done: {
     name: "한도윤", industry: "기타 (꽃집)", phone: "010-9902-1177", email: "doyoon.han@example.com",
-    interests: ["재무관리"], plan: "아직 정하지 않음", marketing: p.sub("동의하지 않음"), at: "2026-08-27 11:20",
+    interests: ["재무관리"], plan: "아직 정하지 않음", marketing: p.sub("동의하지 않음"), at: "2026-08-27 11:20", consulted: "2026-08-28", purge: "2027-08-28",
     body: "꽃집을 혼자 운영하고 있습니다. 매출과 지출을 한곳에서 보고 싶은데 직원이 없어도 쓸 수 있는지, 요금이 어떻게 되는지 알고 싶습니다.",
     memo: "직원 없는 단일 점포. 재무관리 단독 PLAN 안내. 전화로 상담 끝냄(08-28).",
   },
@@ -86,8 +87,8 @@ export const render = ({ A, R }, state = "wait") => {
     // 상담 완료일은 답변 완료가 되는 날 자동으로 남고, 그날부터 1년 뒤 파기한다(WHALEERP-274 · 295).
     // 상담하지 않은 도입문의(상담 완료일 없음)는 상세의 [삭제]로 지운다. 확인창을 띄우고, 지우면 행을 남기지 않는다(개인정보 파기). 상담을 마친 건은 지우지 못하고 1년 뒤 배치가 파기한다(CNT-11 v120, #590 — 지우는 api 는 아직 없다).
     plain(
-      ui.detailTable("보관", [["상담 완료일", done ? "2026-08-28" : p.sub("답변을 저장하는 날 남습니다")], ["파기 예정", done ? "2027-08-28" : p.sub("상담 완료일로부터 1년")]]) +
-        note(done ? "상담을 마친 건이라 지울 수 없고, 상담 완료일로부터 1년 뒤 배치가 파기합니다." : "상담하지 않은 건은 [삭제]로 지웁니다. 확인창을 띄우고, 지우면 기록이 남지 않습니다(#590 뒤)."),
+      ui.detailTable("보관", [["상담 완료일", c.consulted ?? p.sub("답변을 저장하는 날 남습니다")], ["파기 예정", c.purge ?? p.sub("상담 완료일로부터 1년")]]) +
+        note(c.consulted ? "상담을 마친 건이라 지울 수 없고, 상담 완료일로부터 1년 뒤 배치가 파기합니다." : "상담하지 않은 건은 [삭제]로 지웁니다. 확인창을 띄우고, 지우면 기록이 남지 않습니다(#590 뒤)."),
     ) +
     tbox("처리 이력", "",
       steps([
@@ -109,7 +110,7 @@ export const render = ({ A, R }, state = "wait") => {
       body: ui.detailBody(
         p.detailHead(
           "도입문의 상세",
-          `<div class="flex items-center gap-[6px]">${done ? "" : ui.button("삭제", { variant: "soft" }) + ui.button("처리 시작", { variant: "soft" })}${ui.button("목록", { variant: "off", href: link(R, "support/community-leads.html") })}</div>`,
+          `<div class="flex items-center gap-[6px]">${c.consulted ? "" : ui.button("삭제", { variant: "soft" })}${done ? "" : ui.button("처리 시작", { variant: "soft" })}${ui.button("목록", { variant: "off", href: link(R, "support/community-leads.html") })}</div>`,
         ) + p.cols(left, right),
       ),
     }),

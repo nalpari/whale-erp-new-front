@@ -22,46 +22,64 @@ const steps = (rows) =>
 
 // 답변 완료: 읽기 상태 + 「답변 수정」(운영 정책 CNT-17, 2026-10-08 재영). 수정은 같은 입력칸을 연다.
 // 데모는 <details> 로 입력칸을 펼친다 — 저장하면 다시 읽기 상태로 돌아가는 것은 실제 화면의 동작이다.
-const ANSWER = "계약서의 소정근로시간이 주 14시간으로 들어가 있어 주휴수당이 잡히지 않았습니다. 직원 정보 관리 › 근로계약에서 계약서 작성으로 실제 근무시간(주 16시간)을 넣은 새 계약을 보내 주세요. 새 계약이 체결되면 다음 급여명세서부터 주휴수당이 계산됩니다.";
 const fold = (summary, body) =>
   `<details class="group rounded-[2px] border border-erp-panel-line"><summary class="flex h-[34px] cursor-pointer items-center px-[12px] text-[14px] font-medium text-erp-ink [&::-webkit-details-marker]:hidden">${summary}</summary><div class="flex flex-col gap-[12px] border-t border-erp-panel-line p-[12px]">${body}</div></details>`;
-const doneAnswer =
-  prose(ANSWER) +
-  `<p class="text-[13px] text-erp-label">수정됨 · 09-05 14:20 · 김하린</p>` +
-  fold("답변 수정", ui.field("내용", ui.textarea({ rows: 6, value: ANSWER })) + spread(note("고쳐도 상태는 답변 완료 그대로입니다. 문의자에게 알림은 다시 가지 않습니다."), ui.button("답변 저장"))) +
-  fold("이전 답변 1개", `<p class="text-[13px] text-erp-label">09-04 15:02 · 이서준</p>` + prose("계약서의 소정근로시간이 주 14시간이라 주휴수당이 잡히지 않았습니다. 계약서를 다시 작성해 주세요."));
+const doneAnswer = (c) =>
+  prose(c.answer) +
+  `<p class="text-[13px] text-erp-label">수정됨 · ${c.editedAt}</p>` +
+  fold("답변 수정", ui.field("내용", ui.textarea({ rows: 6, value: c.answer })) + spread(note("고쳐도 상태는 답변 완료 그대로입니다. 문의자에게 알림은 다시 가지 않습니다."), ui.button("답변 저장"))) +
+  fold("이전 답변 1개", `<p class="text-[13px] text-erp-label">${c.firstAt}</p>` + prose(c.firstAnswer));
 
 // 첨부파일(운영 정책 CNT-18): 이미지는 작은 미리보기, PDF 는 이름 + 내려받기.
 // 첨부파일 저장소 결정 대기(Plane #587) — 정해질 때까지 1차 구현에서 첨부를 만들지 않는다.
 const thumb = (name, size) => `<a href="#" title="${name} · ${size}" class="grid size-[64px] place-items-center rounded-[2px] border border-erp-panel-line bg-erp-thead-bg text-[12px] text-erp-label">PNG</a>`;
 const pdf = (name, size) => ui.detailValues([ui.link(name, "#"), `<span class="text-erp-label">${size}</span>`, ui.link("내려받기", "#")]);
 
-// 접수 상태 데모는 목록(community-sections)의 「KIOSK 구독을 늘리고 싶습니다」 건을 그린다. 처리중 · 답변 완료는 주휴수당 건.
-const KIOSK = {
-  title: "KIOSK 구독을 늘리고 싶습니다", hint: "요금·구독 · 2026-09-02 16:48 접수", at: "09-02 16:48",
-  body: "지금 KIOSK 1대를 쓰고 있는데 2호점 오픈에 맞춰 1대를 더 늘리고 싶습니다. 구독을 어디서 바꾸는지, 요금은 언제부터 붙는지 알려 주세요.",
-  sender: [["이름", "배정숙"], ["역할", "BP 마스터"], ["BP", "온기식당"]],
+// 목록(community-sections)의 행과 같은 건을 그린다. 처리중 = 주휴수당, 접수 = KIOSK, 답변 완료 = 가맹점 초대 메일(BP 쪽 내 문의 상세 inquiry-mine 과 같은 건).
+const SENDER_HANGANG = [["이름", "정하윤"], ["역할", "BP 마스터"], ["BP", "㈜한강상회"]];
+const CASES = {
+  wait: {
+    title: "파트타이머 주휴수당이 계산되지 않습니다", hint: "직원·근로 · 2026-09-04 10:32 접수", at: "09-04 10:32",
+    body: "파트타이머 배정숙 직원의 9월 급여명세서를 만들었는데 주휴수당이 0원으로 나옵니다. 주 15시간 넘게 일했고 출퇴근 기록도 다 있는데 왜 안 잡히는지 모르겠습니다. 확인 부탁드립니다.",
+    files: [["주휴수당_0원_화면.png", "412 KB"], ["9월_급여명세서_배정숙.pdf", "1.2 MB"]],
+    sender: SENDER_HANGANG, processing: "09-04 11:15 · 이서준",
+    memo: "계약서에 소정근로시간이 주 14시간으로 들어가 있음. 실제 근무는 16시간대.\n계약을 새로 써야 주휴가 잡힘 — 개발팀 확인 완료. 답변에는 계약 수정 절차만 안내할 것.",
+  },
+  received: {
+    title: "KIOSK 구독을 늘리고 싶습니다", hint: "요금·구독 · 2026-09-02 16:48 접수", at: "09-02 16:48",
+    body: "지금 KIOSK 1대를 쓰고 있는데 2호점 오픈에 맞춰 1대를 더 늘리고 싶습니다. 구독을 어디서 바꾸는지, 요금은 언제부터 붙는지 알려 주세요.",
+    files: null, sender: [["이름", "배정숙"], ["역할", "BP 마스터"], ["BP", "온기식당"]], processing: null, memo: "",
+  },
+  done: {
+    title: "가맹점 초대 메일이 반송됩니다", hint: "점포·설비 · 2026-08-30 16:12 접수", at: "08-30 16:12",
+    body: "점포관리에서 가맹점 두 곳에 초대 메일을 보냈는데 둘 다 반송됩니다. 주소는 맞게 넣었고, 같은 주소로 제가 직접 보내면 잘 갑니다. 반송 사유가 “발신 도메인 인증 실패”라고 나옵니다.",
+    files: [["반송_메일_화면.png", "286 KB"], ["반송_사유_원문.pdf", "96 KB"]],
+    sender: SENDER_HANGANG, processing: "08-31 09:12 · 이서준",
+    memo: "가맹점 메일 서버가 발신 도메인 검증을 새로 켬. 발신 도메인 인증(SPF · DKIM) 갱신 완료 — 효준 확인.",
+    answer: "원인이 확인되어 조치했습니다. 가맹점 메일 서버가 발신 도메인 검증을 새로 켜면서 반송된 것으로, 발신 도메인 인증 설정을 갱신했습니다. 점포관리에서 초대 다시 보내기를 눌러 주세요.",
+    editedAt: "09-02 11:05 · 김하린", firstAt: "08-31 09:40 · 이서준",
+    firstAnswer: "발신 도메인 인증 설정을 갱신했습니다. 초대를 다시 보내 주세요.",
+    replied: "08-31 09:40 · 이서준 · 09-02 11:05 김하린 수정",
+  },
 };
 
 export const render = ({ A, R }, state = "wait") => {
   const done = state === "done";
   const received = state === "received";
+  const c = CASES[state];
   const left =
     // 보낸 사람 · 소속은 오른쪽 「보낸 곳」 한 표에만 둔다. 접수 시각은 제목 옆에.
-    (received
-      ? box(KIOSK.title, hint(KIOSK.hint), prose(KIOSK.body))
-      : box("파트타이머 주휴수당이 계산되지 않습니다", hint("직원·근로 · 2026-09-04 10:32 접수"),
-          prose("파트타이머 배정숙 직원의 9월 급여명세서를 만들었는데 주휴수당이 0원으로 나옵니다. 주 15시간 넘게 일했고 출퇴근 기록도 다 있는데 왜 안 잡히는지 모르겠습니다. 확인 부탁드립니다.") +
-            ui.detailTable("첨부파일", [["이미지", thumb("주휴수당_0원_화면.png", "412 KB")], ["PDF", pdf("9월_급여명세서_배정숙.pdf", "1.2 MB")]]),
-        )) +
-    box("답변", hint("문의한 사람에게 보입니다"), done ? doneAnswer :
+    box(c.title, hint(c.hint),
+      prose(c.body) + (c.files ? ui.detailTable("첨부파일", [["이미지", thumb(...c.files[0])], ["PDF", pdf(...c.files[1])]]) : ""),
+    ) +
+    box("답변", hint("문의한 사람에게 보입니다"), done ? doneAnswer(c) :
       ui.field("내용", ui.textarea({ placeholder: "문의한 분이 그대로 읽습니다. 어떤 화면에서 무엇을 하면 되는지 적어 주세요." })) +
         spread(note("저장하면 상태가 즉시 답변 완료로 바뀌고 문의자에게 알림함과 메일로 알립니다. 처리 시작을 거치지 않고 바로 답해도 됩니다. 그 뒤에도 답변은 고칠 수 있습니다. 다른 운영자가 먼저 저장했으면 막고 최신 내용을 다시 보입니다."), ui.button("답변 저장")),
     ) +
     box("운영자 메모", hint("문의자에게 보이지 않습니다"),
       ui.field(
         "내부 기록",
-        ui.textarea({ rows: 4, value: received ? "" : "계약서에 소정근로시간이 주 14시간으로 들어가 있음. 실제 근무는 16시간대.\n계약을 새로 써야 주휴가 잡힘 — 개발팀 확인 완료. 답변에는 계약 수정 절차만 안내할 것." }),
+        ui.textarea({ rows: 4, value: c.memo }),
       ) + spread(note("다른 운영자와 함께 봅니다"), ui.button("메모 저장", { variant: "soft" })),
     );
 
@@ -70,16 +88,16 @@ export const render = ({ A, R }, state = "wait") => {
       // 이름 · 역할 · BP · 점포는 api 상세의 senderName · senderRoleTypeCode · bpName · storeName.
       // 운영 점포 · 요금 PLAN · 이전 문의는 1차에 두지 않는다(2026-10-14 재영). 요금 PLAN 은 1팀 영역이다.
       ui.detailTable("보낸 곳", [
-        ...(received ? KIOSK.sender : [["이름", "정하윤"], ["역할", "BP 마스터"], ["BP", "㈜한강상회"]]),
+        ...c.sender,
         ["점포", p.sub("BP 단위 문의")],
       ]),
     ) +
     tbox("처리 이력", "",
       steps([
-        ["접수", `${received ? KIOSK.at : "09-04 10:32"} · 운영 알림 발송됨`, true],
+        ["접수", `${c.at} · 운영 알림 발송됨`, true],
         // 「확인」 줄은 처리중을 거친 건만 완료로 그린다. 처리 시작 없이 바로 답했으면 api 가 processingStartedAt 을 null 로 주므로 이 줄을 숨긴다.
-        received ? ["확인", "[처리 시작]을 누르면 처리중 · 시각 · 운영자가 남음", false] : ["확인", "09-04 11:15 · 이서준 · 처리중으로 바꿈", true],
-        done ? ["답변", "09-04 15:02 · 이서준 · 09-05 14:20 김하린 수정", true] : ["답변", "저장하면 답변 완료 · 그 뒤에도 고칠 수 있음", false],
+        received ? ["확인", "[처리 시작]을 누르면 처리중 · 시각 · 운영자가 남음", false] : ["확인", `${c.processing} · 처리중으로 바꿈`, true],
+        done ? ["답변", c.replied, true] : ["답변", "저장하면 답변 완료 · 그 뒤에도 고칠 수 있음", false],
       ]),
     );
 

@@ -33,7 +33,7 @@ export function communitySections({ A, R }) {
     // 답변 대기 = 접수 + 처리중(WHALEERP-332). 데모는 접수 건을 처리 시작 전 상세로 잇는다.
     ["파트타이머 주휴수당이 계산되지 않습니다", "㈜한강상회 · 정하윤", "직원·근로", "답변 대기", "09-04", "support/inquiry-detail.html"],
     ["KIOSK 구독을 늘리고 싶습니다", "온기식당 · 배정숙", "요금·구독", "답변 대기", "09-02", "support/inquiry-detail-received.html"],
-    ["가맹점 초대 메일이 반송됩니다", "㈜한강상회 · 정하윤", "가입·계정", "답변 완료", "08-30", "support/inquiry-detail-done.html"],
+    ["가맹점 초대 메일이 반송됩니다", "㈜한강상회 · 정하윤", "점포·설비", "답변 완료", "08-30", "support/inquiry-detail-done.html"],
   ].map(([t, from, c, s, d, to]) => [ui.link(t, link(R, to)), from, c, answer(s), d]);
   // 도입문의 목록은 api GET /leads 의 칸(문의자 · 전화번호 · 업종 · 관심 서비스 · 상태 · 접수 일시). 상호 · 운영 형태는 접수 때 받지 않는다(WHALEERP-288).
   const leadDetail = link(R, "support/lead-detail.html");
