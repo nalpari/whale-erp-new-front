@@ -34,7 +34,12 @@ export async function createSignup(payload: SignupPayload): Promise<SignupResult
     );
     return { ok: true, signupToken, tradeName, loginId, email };
   } catch (error) {
-    if (error instanceof ApiError) return { ok: false, message: error.message };
+    if (error instanceof ApiError) {
+      // 400·409 처럼 예상한 거절은 문구만 돌려주면 된다. 500 등 뜻밖의 오류까지 그냥 넘기면 서버 쪽 어디에도
+      // 흔적이 안 남아 나중에 추적할 수 없다 — 4XX 밖은 로그를 남긴다(2026-10-14 코드리뷰).
+      if (error.status >= 500) console.error("[signup] createSignup api error", error.status, error.message, error.body);
+      return { ok: false, message: error.message };
+    }
     // 서버 액션은 Next 서버에서 돈다 — 여기서 로그를 안 남기면 실패가 어디에도 안 남는다(2026-10-12 코드리뷰).
     console.error("[signup] createSignup failed", error);
     return { ok: false, message: "회원가입 요청을 보내지 못했습니다. 잠시 후 다시 시도해 주세요." };
@@ -53,7 +58,10 @@ async function checkAvailability(path: string, body: Record<string, string>): Pr
     });
     return { ok: true, available };
   } catch (error) {
-    if (error instanceof ApiError) return { ok: false, message: error.message };
+    if (error instanceof ApiError) {
+      if (error.status >= 500) console.error("[signup] checkAvailability api error", path, error.status, error.message, error.body);
+      return { ok: false, message: error.message };
+    }
     console.error("[signup] checkAvailability failed", path, error);
     return { ok: false, message: "중복 확인을 하지 못했습니다. 잠시 후 다시 시도해 주세요." };
   }

@@ -56,7 +56,9 @@ export function validateEmail(value: string): string | undefined {
 }
 
 export function validateTradeName(value: string): string | undefined {
-  if (!value) return "상호명을 입력해 주세요.";
+  // api 는 앞뒤 공백을 지우고 본다 — 공백만 친 값을 여기서 거르지 않으면 제출할 때 api 400 으로만 걸려
+  // 이 칸이 아니라 제출 버튼 아래에 엉뚱하게 오류가 뜬다(2026-10-14 코드리뷰).
+  if (!value.trim()) return "상호명을 입력해 주세요.";
   if (value.length > 50) return "50자 이내로 입력해 주세요.";
   return undefined;
 }

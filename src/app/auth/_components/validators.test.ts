@@ -28,9 +28,14 @@ test("비밀번호 — 영문·숫자·특수문자를 모두 포함해 8~20자"
   assert.ok(validatePassword("abc12345"), "특수문자 없음");
   assert.ok(validatePassword("abcdefg!"), "숫자 없음");
   assert.ok(validatePassword("12345678!"), "영문 없음");
-  assert.ok(validatePassword("ab1!"), "7자");
+  assert.ok(validatePassword("a1!aaaa"), "7자");
   assert.ok(validatePassword(`a1!${"a".repeat(18)}`), "21자");
   assert.ok(validatePassword("ab 1!cde"), "공백 포함");
+  // 허용 특수문자 중 괄호·대괄호·중괄호·하이픈처럼 정규식 글자 집합에서 이스케이프를 깜빡하기 쉬운 것들.
+  assert.equal(validatePassword("a1(aaaaa"), undefined, "괄호");
+  assert.equal(validatePassword("a1[aaaaa"), undefined, "대괄호");
+  assert.equal(validatePassword("a1{aaaaa"), undefined, "중괄호");
+  assert.equal(validatePassword("a1-aaaaa"), undefined, "하이픈");
   assert.equal(validatePassword("whale-2026!"), undefined);
   assert.equal(validatePassword("a1!aaaaa"), undefined, "8자 경계값");
 });
@@ -54,6 +59,7 @@ test("연락처 — 숫자만, 세 칸 합쳐 10~11자리", () => {
   assert.equal(validatePhone("", "", ""), "연락처를 입력해 주세요.");
   assert.ok(validatePhone("010", "123", "456"), "9자리");
   assert.ok(validatePhone("010", "12345", "6789"), "12자리");
+  assert.ok(validatePhone("010", "12a4", "5678"), "숫자가 아닌 글자 섞임");
   assert.equal(validatePhone("010", "123", "4567"), undefined, "10자리 경계값");
   assert.equal(validatePhone("010", "1234", "5678"), undefined, "11자리 경계값");
 });
@@ -66,8 +72,9 @@ test("이메일 — 형식 검사", () => {
   assert.equal(validateEmail("hayoon@hangang.co.kr"), undefined);
 });
 
-test("상호명 — 비어 있으면 입력 요청, 50자 넘으면 오류", () => {
+test("상호명 — 비어 있으면 입력 요청, 50자 넘으면 오류, 공백만 있으면 입력 요청", () => {
   assert.equal(validateTradeName(""), "상호명을 입력해 주세요.");
+  assert.equal(validateTradeName("   "), "상호명을 입력해 주세요.", "api 가 trim 하고 보므로 공백만으론 안 됨");
   assert.ok(validateTradeName("가".repeat(51)));
   assert.equal(validateTradeName("가".repeat(50)), undefined, "50자 경계값");
   assert.equal(validateTradeName("㈜한강상회"), undefined);

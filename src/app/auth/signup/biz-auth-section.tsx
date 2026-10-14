@@ -33,6 +33,10 @@ export function BizAuthSection({ value, onChange }: { value: BizAuthValue; onCha
   const invalid = missing.length ? `${missing.join("·")} 항목을 입력해 주세요.` : formatError;
   // 형식 오류는 "인증하기"를 누르기 전에도, 번호 칸을 한 번 벗어난 뒤로는 바로 보인다(2026-10-12 피드백).
   const error = triedVerify ? invalid : bizNumberTouched ? formatError : undefined;
+  // error 는 묶음 전체 문구라 그대로 두 칸에 걸면, 한 칸만 틀려도 틀리지 않은 칸까지 빨간 테두리가 된다
+  // (예: 번호만 비웠는데 대표자명도 빨개짐). 칸마다 실제로 그 칸이 문제일 때만 aria-invalid 를 건다(2026-10-14 코드리뷰).
+  const numberInvalid = !!error && (!value.bizRegistrationNumber || !!formatError);
+  const ceoInvalid = triedVerify && !value.bizCeoName;
   // 한 글자라도 들어간 칸이 있으면 — 인증 전이라도 "지우기"로 지울 게 있다는 뜻이다(2026-10-12 피드백).
   // 오류 문구가 보일 때도 지우기를 보인다(2026-10-13 피드백) — 치는 도중인 개업일자처럼 값으로 안 잡히는 글자가 있거나,
   // 빈 칸으로 인증하기를 눌러 오류만 떠 있을 때도 한 번에 처음으로 돌릴 수 있게 한다.
@@ -98,7 +102,7 @@ export function BizAuthSection({ value, onChange }: { value: BizAuthValue; onCha
                 inputMode="numeric"
                 maxLength={10}
                 placeholder="숫자 10자리"
-                aria-invalid={error ? true : undefined}
+                aria-invalid={numberInvalid || undefined}
                 aria-describedby={error ? errorId : undefined}
               />
             </Field>
@@ -106,7 +110,7 @@ export function BizAuthSection({ value, onChange }: { value: BizAuthValue; onCha
               <TextField
                 value={value.bizCeoName}
                 onChange={(e) => onChange({ ...value, bizCeoName: e.target.value })}
-                aria-invalid={error ? true : undefined}
+                aria-invalid={ceoInvalid || undefined}
                 aria-describedby={error ? errorId : undefined}
               />
             </Field>

@@ -115,8 +115,10 @@ export function SignupForm() {
   // 아이디·이메일은 버튼 없이 칸을 벗어날 때(blur) api 로 중복까지 확인하고, 쓸 수 있을 때만 "사용가능합니다."를
   // 띄운다. 값을 고치면 다시 확인해야 하므로 끈다(2026-10-12 피드백). 제출할 때 확인을 못 마친 칸은 한 번 더
   // 확인해 그 칸에서 막는다 — 가입 요청이 중복으로 거절되는 일이 없게 한다.
-  // 제출 중(pending)에는 이 두 칸을 잠근다 — 안 잠그면 제출이 건 확인이 진행 중일 때 값을 고쳐서 그
-  // 확인 결과가 조용히 버려지고, 오류도 없이 "처리 중..."에서 그냥 멈춘 것처럼 보일 수 있다(2026-10-12 코드리뷰).
+  // 제출 중(pending)에는 이 두 칸을 disabled 로 잠근다. disabled 가 되는 순간 포커스가 있던 칸은 브라우저가
+  // 자동으로 blur 를 보낸다 — 그 blur 가 onBlur 를 다시 불러 제출이 기다리던 확인(run id)을 "오래된 응답"으로
+  // 만들어 버리면, 유효한 첫 제출이 아무 오류도 없이 조용히 멈춘 것처럼 보인다. onBlur 에 !pending 을 걸어
+  // disabled 로 인한 blur 가 새 확인을 더 만들지 않게 막는다(2026-10-14 코드리뷰, silent-failure-hunter).
   const [available, setAvailable] = useState<Record<AvailabilityKey, boolean>>({ loginId: false, email: false });
   // 확인 응답이 오기 전에 값을 고치거나 다시 확인하면 앞선 응답은 버린다.
   const availabilityRun = useRef<Record<AvailabilityKey, number>>({ loginId: 0, email: 0 });
@@ -193,7 +195,10 @@ export function SignupForm() {
       // 중복 확인을 아직 통과하지 못한 칸만 여기서 api 로 묻고, 걸리면 그 칸에 오류를 띄운다.
       const unchecked = (["loginId", "email"] as const).filter((key) => !available[key]);
       const checks = await Promise.all(unchecked.map((key) => verifyAvailability(key, values[key], fieldErrors[key])));
-      if (checks.includes(false)) return focusFirstError();
+      if (checks.includes(false)) {
+        setPending(false);
+        return focusFirstError();
+      }
 
       const result = await createSignup({
         loginId: values.loginId,
@@ -207,6 +212,7 @@ export function SignupForm() {
       });
 
       if (!result.ok) {
+        setPending(false);
         setSubmitError(result.message);
         return;
       }
@@ -216,11 +222,12 @@ export function SignupForm() {
       // 만들어 들어온 경우) 아무 값이나 보여주는 가짜 완료 화면이 될 수 있다(2026-10-14 코드리뷰).
       const params = new URLSearchParams({ signupToken: result.signupToken, tradeName: result.tradeName, loginId: result.loginId, email: result.email });
       router.push(`/auth/signup-done?${params}`);
+      // pending 을 여기서 풀지 않는다 — 화면이 옮겨 가는 동안 버튼이 다시 눌릴 수 있는 틈을 없앤다
+      // (이전엔 finally 가 성공 때도 풀어, 옮겨 가는 찰나에 다시 눌러 같은 요청을 한 번 더 보낼 수 있었다 — 2026-10-14 코드리뷰).
     } catch (e) {
       // 서버 액션 호출 자체가 실패한 경우(네트워크 끊김, 배포로 액션 ID 가 바뀜 등). 버튼이 "처리 중..."에 멈추지 않게 한다.
       console.error("[signup] handleSubmit failed", e);
       setSubmitError("회원가입 요청을 보내지 못했습니다. 잠시 후 다시 시도해 주세요.");
-    } finally {
       setPending(false);
     }
   }
@@ -242,7 +249,7 @@ export function SignupForm() {
             <TextField
               value={values.loginId}
               onChange={(e) => handleAvailabilityChange("loginId", e.target.value)}
-              onBlur={() => !available.loginId && verifyAvailability("loginId", values.loginId)}
+              onBlur={() => !pending && !available.loginId && verifyAvailability("loginId", values.loginId).catch((e) => console.error("[signup] blur check failed", "loginId", e))}
               autoComplete="username"
               placeholder="영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요."
               disabled={pending}
@@ -299,7 +306,7 @@ export function SignupForm() {
               type="email"
               value={values.email}
               onChange={(e) => handleAvailabilityChange("email", e.target.value)}
-              onBlur={() => !available.email && verifyAvailability("email", values.email)}
+              onBlur={() => !pending && !available.email && verifyAvailability("email", values.email).catch((e) => console.error("[signup] blur check failed", "email", e))}
               disabled={pending}
               aria-invalid={invalid("email")}
               aria-describedby={describe("email")}
