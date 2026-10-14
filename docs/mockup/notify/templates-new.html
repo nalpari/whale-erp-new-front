@@ -19,7 +19,7 @@
           <h1 class="t-h1">알림 템플릿 등록</h1>
           <div class="titlebar__end">
             <span class="filters__count mono">F-TZPHZT · /platform/notification-templates/new</span>
-            <button class="btn btn--primary btn--sm" type="button">저장</button>
+            <button class="btn btn--primary btn--sm" type="button" data-tip="저장 전 「저장하시겠습니까?」 확인창을 띄운다.">저장</button>
           </div>
         </div>
 
@@ -123,29 +123,20 @@
                         <th scope="col">변수 이름</th>
                         <th scope="col">표시 이름</th>
                         <th scope="col">필수</th>
+                        <th scope="col">버튼 링크 <span class="subtle">· 메일·알림톡만</span></th>
                         <th scope="col">예시 값</th>
                         <th scope="col"></th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <td><input class="input mono" value="직원이름" aria-label="변수 이름" /></td>
-                        <td><input class="input" value="직원 이름" aria-label="표시 이름" /></td>
-                        <td class="c"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="필수"></span></td>
-                        <td><input class="input" value="유하람" aria-label="예시 값" /></td>
-                        <td class="c"><button class="tbtn" type="button">삭제</button></td>
-                      </tr>
-                      <tr>
-                        <td><input class="input mono" value="근무지" aria-label="변수 이름" /></td>
-                        <td><input class="input" value="근무지" aria-label="표시 이름" /></td>
-                        <td class="c"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="필수"></span></td>
-                        <td><input class="input" value="모리커피 연남점" aria-label="예시 값" /></td>
-                        <td class="c"><button class="tbtn" type="button">삭제</button></td>
+                        <td colspan="6" class="c subtle">아직 변수가 없습니다. 「줄 추가」로 넣는다.</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
                 <div class="panel__note">
+                  변수 목록은 <b>빈 표</b>로 시작한다. <b>버튼 링크</b> 칸은 메일 · 알림톡 채널에서만 보인다(NOTIFY-20).
                   저장할 때 제목·본문에 목록에 없는 변수가 있거나 필수 변수가 빠졌으면 저장하지 않고 몇째 줄인지 알려 준다.
                 </div>
               </div>

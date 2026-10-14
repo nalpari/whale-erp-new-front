@@ -23,6 +23,8 @@ const PURPOSES = [
   ["관리자 초기화 재설정 링크", "직원", "[WHALE ERP] 비밀번호를 다시 정해 주세요"],
   ["로그인 이메일 변경 핀", "본인", "[WHALE ERP] 로그인 이메일 변경 인증번호"],
   ["도입문의 접수 확인", "도입문의를 남긴 사람", "[WHALE ERP] 도입문의를 받았습니다"],
+  ["급여명세서 발송 메일", "직원", "[WHALE ERP] #{지급월} 급여명세서가 도착했습니다"],
+  ["급여명세서 다시 발송 메일", "직원", "[WHALE ERP] #{지급월} 급여명세서가 다시 발송되었습니다"],
 ];
 // 1팀 화면에서 나가는 관리자 메일 8종. 1팀이 공통코드 MAIL_TYPE 을 빼고 메일 템플릿(이 화면)에서 관리한다(NOTIFY-9, 2026-10-07 재영).
 const TEAM1_MAILS = [
@@ -40,6 +42,7 @@ const PUSH = [
   ["근무스케줄 변경", "근무스케줄이 바뀌었습니다"],
   ["TO-DO 배정", "새 TO-DO 가 배정되었습니다", null, true],
   ["급여명세서 발송", "#{지급월} 급여명세서가 도착했습니다"],
+  ["급여명세서 다시 발송", "#{지급월} 급여명세서가 다시 발송되었습니다"],
 ];
 
 import { CODES } from "../../template-codes.mjs";
@@ -78,6 +81,7 @@ export default ({ A, R }) => {
   const mail = table("템플릿 이름", [
     ...PURPOSES.map(([t, to, title]) => [name(t, L("notify/templates-edit-mail.html") ), code("EMAIL", t), to, title, edited(), use()]),
     ...TEAM1_MAILS.map(([t, to, title]) => [name(t, L("notify/templates-edit-mail.html"), p.tag("info", "1팀")), code("EMAIL", t), to, title, edited(), use()]),
+    // 운영 알림과 같은 이름의 메일 10건. 운영 알림이 붙여 보내지 않고 업무 쪽이 필요할 때 따로 부른다(운영 정책 NTF-03, 2026-10-13).
     ...OPS.map(([t, to, title, e]) => [name(t, L("notify/templates-edit-mail.html")), code("EMAIL", t), to, `[WHALE ERP] ${title}`, edited(e), use()]),
   ]);
 

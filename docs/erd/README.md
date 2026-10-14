@@ -342,7 +342,7 @@ python3 docs/erd/_build.py
 |  | 계약 기간 | date | `start_date·end_date` | 종료일 비우면 무기한 |
 |  | 건강보험·국민연금 가입 | bool | `is_health_pension_insured` |  |
 |  | 고용보험·산재보험 가입 | bool | `is_employment_injury_insured` |  |
-|  | 급여액 | money | `wage_amount` | 시급 — 고용 형태와 상관없이 시급만 둔다. 월급은 근로시간으로 셈한다 (2026-10-12) |
+|  | 급여액 | money | `wage_amount` | 시급. 수당 · 월 근로시간 · 조항 칸은 따로 있다(api 기준). 월급 · 주급 등 계산 값은 저장하지 않는다 (2026-10-13, front #15) |
 |  | 임금지급 월 | enum | `pay_month` | 당월·익월 |
 |  | 임금지급일 | int | `pay_day` | 1~31, 31은 말일 |
 |  | 계약 상태 | enum | `status` | 임시저장·발송 대기·서명 대기·체결 완료·거부·만료·종료 |
@@ -721,7 +721,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |  | 관련 업무 ID | id | `related_id` |  |
 |  | 업무 링크 | text | `link` | 알림을 눌러 갈 관리자 웹 경로. 알림을 만드는 업무 쪽이 넘긴다, 없으면 알림함에서 안내 (NOTIFY-16, 2026-10-13 재영) |
 |  | 알림 제목 | text | `title` | 만들 때의 템플릿 제목을 박아 둠 — 알림함 목록 · 종 팝오버 (NOTIFY-12, 2026-10-13 재영) |
-|  | 알림 내용 | text | `body` | 템플릿 둘째 줄 |
+|  | 알림 내용 | text | `body` | 만들 때의 템플릿 본문을 박아 둠. 제목은 title 칸 (NOTIFY-12) |
 |  | 중복 방지 키 | text | `dedupe_key` | 같은 사건·수신자 1회 |
 |  | 긴급 여부 | bool | `urgent` |  |
 |  | 생성 시각 | datetime | `created_at` |  |
@@ -761,7 +761,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |---|---|---|---|---|
 | PK | 발송 이력 ID | id | `delivery_id` |  |
 | FK | 알림 수신 | id | `recipient_id` |  |
-|  | 발송 채널 | enum | `channel` | 앱 푸시·알림톡·이메일 |
+|  | 발송 채널 | enum | `channel` | 앱 푸시·알림톡. 운영 알림 메일 결과는 두지 않는다 (운영 정책 NTF-03, 2026-10-13) |
 |  | 발송 예정 시각 | datetime | `scheduled_at` | 쓰지 않음, 보류 없어짐 (NOTI-1) |
 |  | 발송 시각 | datetime | `sent_at` |  |
 |  | 발송 결과 | enum | `result` |  |
@@ -788,7 +788,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |  | 수신 설정 묶음 | enum | `preference_category` | 앱 푸시만. 직원 수신 설정 기준 |
 |  | 제목 | text | `title` | 알림톡은 비움 |
 |  | 본문 | text | `body` | #{변수}. 알림톡은 카카오 검수 문구와 같게 |
-|  | 변수 목록 | json | `variables` | [{이름, 표시 이름, 필수, 예시 값}] 순서대로. 저장 때 본문·제목의 #{변수}가 목록 안에 있는지 검사 |
+|  | 변수 목록 | json | `variables` | [{이름, 표시 이름, 필수, 예시 값, 버튼 링크(isButtonLink, 메일·알림톡만)}] 순서대로. 저장 때 본문·제목의 #{변수}가 목록 안에 있는지 검사 |
 |  | 카카오 템플릿 코드 | text | `kakao_template_code` | 알림톡만 |
 |  | 기본 제목 | text | `default_title` | 기본 문구로 되돌리기의 원본. 처음 넣은 40건만 (NOTIFY-17, 2026-10-13 재영) |
 |  | 기본 본문 | text | `default_body` | 기본 문구로 되돌리기의 원본. 없으면 등록한 템플릿이라 되돌리기가 없다 |
@@ -880,7 +880,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 | FK | 게시물 | id | `post_id` | 글당 5개 |
 |  | 파일 이름 | text | `file_name` |  |
 |  | 파일 크기 | int | `size_bytes` | 10MB 이하 |
-|  | 저장 위치 | text | `storage_key` |  |
+|  | 저장 위치 | text | `storage_key` | 첨부파일 저장소 결정 대기(Plane #587) |
 |  | 순서 | int | `sort_order` |  |
 
 ### 문의사항 `inquiries` · 엔티티
@@ -895,6 +895,8 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |  | 문의 내용 | text | `body` |  |
 |  | 답변 상태 | enum | `status` | 접수·처리중·답변완료 |
 |  | 운영자 내부 메모 | text | `internal_memo` | 사용자에게 안 보임 |
+| FK | 처리 시작 관리자 | id | `processing_started_by` | 처리중으로 바꾼 관리자 (api #26) |
+|  | 처리 시작 시각 | datetime | `processing_started_at` |  |
 |  | 등록 시각 | datetime | `created_at` |  |
 
 ### 문의 답변 `inquiry_replies` · 이력
@@ -926,7 +928,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |  | 원래 파일 이름 | text | `file_name` |  |
 |  | 파일 종류 | enum | `file_type` | JPG·PNG·PDF, 파일 내용으로 확인 |
 |  | 파일 크기 | int | `size_bytes` | 10MB 이하 |
-|  | 저장 위치 | text | `storage_key` | 공개 주소 아님 |
+|  | 저장 위치 | text | `storage_key` | 공개 주소 아님. 첨부파일 저장소 결정 대기(Plane #587), 정해질 때까지 첨부는 만들지 않음 |
 |  | 순서 | int | `sort_order` | 1~5, 문의당 5개 |
 |  | 올린 시각 | datetime | `created_at` |  |
 

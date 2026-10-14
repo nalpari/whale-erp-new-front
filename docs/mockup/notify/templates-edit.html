@@ -19,10 +19,10 @@
           <h1 class="t-h1">알림 템플릿 수정</h1>
           <div class="titlebar__end">
             <span class="filters__count mono">S-QQPYIU · /platform/notification-templates/[id]</span>
-            <button class="btn btn--secondary btn--sm" type="button" data-tip="처음 배포된 제목 · 본문 · 변수 목록으로 돌린다. 기본 40건에만 보이고 등록한 템플릿에는 없다. 되돌린 것도 변경 이력에 한 줄로 남는다.">
+            <button class="btn btn--secondary btn--sm" type="button" data-tip="처음 배포된 제목 · 본문 · 변수 목록으로 돌린다(코드 · 이름 · 채널 · 사용 여부는 그대로). 기본 40건에만 보이고 등록한 템플릿에는 없다. 확인창에 「제목 · 본문 · 변수 목록이 처음 배포된 것으로 바뀝니다」, 알림톡이면 「카카오 템플릿 코드는 바뀌지 않으니, 검수받은 본문과 맞는지 확인해 주세요.」를 함께 보인다. 채널이 바뀌어 기본 문구가 지금 채널에 맞지 않으면 되돌리지 않는다. 되돌린 것도 변경 이력에 한 줄로 남는다.">
               <span data-icon="refresh" data-icon-size="14"></span>기본 문구로 되돌리기
             </button>
-            <button class="btn btn--primary btn--sm" type="button">저장</button>
+            <button class="btn btn--primary btn--sm" type="button" data-tip="저장 전 「저장하시겠습니까?」 확인창을 띄운다. 템플릿 코드를 바꿨으면 같은 확인창에 발송 코드 경고를 함께 보인다.">저장</button>
           </div>
         </div>
 
@@ -62,7 +62,7 @@
                     <div class="field">
                       <label>템플릿 코드</label>
                       <input class="input mono" value="EMAIL_CONTRACT_REJECTED" />
-                      <span class="help">바꾸면 「발송 코드에서 이 템플릿 코드를 쓰고 있으면 함께 바꿔야 합니다」 확인창이 뜬다. 다른 템플릿과 겹치면 저장하지 않는다.</span>
+                      <span class="help">바꾸면 저장 확인창 「저장하시겠습니까?」에 「발송 코드에서 이 템플릿 코드를 쓰고 있으면 함께 바꿔야 합니다」 경고가 함께 뜬다. 다른 템플릿과 겹치면 저장하지 않는다.</span>
                     </div>
                     <div class="field">
                       <label for="m-title">제목 <span class="subtle">· 필수</span></label>
@@ -167,7 +167,7 @@
                     <div class="field">
                       <label>템플릿 코드</label>
                       <input class="input mono" value="PUSH_CONTRACT_SENT" />
-                      <span class="help">바꾸면 「발송 코드에서 이 템플릿 코드를 쓰고 있으면 함께 바꿔야 합니다」 확인창이 뜬다. 다른 템플릿과 겹치면 저장하지 않는다.</span>
+                      <span class="help">바꾸면 저장 확인창 「저장하시겠습니까?」에 「발송 코드에서 이 템플릿 코드를 쓰고 있으면 함께 바꿔야 합니다」 경고가 함께 뜬다. 다른 템플릿과 겹치면 저장하지 않는다.</span>
                     </div>
                     <div class="field">
                       <label>수신 설정 묶음 <span class="subtle">· 앱 푸시만</span></label>
@@ -271,7 +271,7 @@
                     <div class="field">
                       <label>템플릿 코드</label>
                       <input class="input mono" value="PUSH_TODO_ASSIGNED" />
-                      <span class="help">바꾸면 「발송 코드에서 이 템플릿 코드를 쓰고 있으면 함께 바꿔야 합니다」 확인창이 뜬다. 다른 템플릿과 겹치면 저장하지 않는다.</span>
+                      <span class="help">바꾸면 저장 확인창 「저장하시겠습니까?」에 「발송 코드에서 이 템플릿 코드를 쓰고 있으면 함께 바꿔야 합니다」 경고가 함께 뜬다. 다른 템플릿과 겹치면 저장하지 않는다.</span>
                     </div>
                     <div class="field">
                       <label>수신 설정 묶음 <span class="subtle">· 앱 푸시만</span></label>
@@ -335,7 +335,7 @@
                     <div class="field">
                       <label>템플릿 코드 <span class="subtle">· WHALE ERP 가 만든 코드</span></label>
                       <input class="input mono" value="TALK_STAFF_INVITATION" />
-                      <span class="help">바꾸면 「발송 코드에서 이 템플릿 코드를 쓰고 있으면 함께 바꿔야 합니다」 확인창이 뜬다. 다른 템플릿과 겹치면 저장하지 않는다.</span>
+                      <span class="help">바꾸면 저장 확인창 「저장하시겠습니까?」에 「발송 코드에서 이 템플릿 코드를 쓰고 있으면 함께 바꿔야 합니다」 경고가 함께 뜬다. 다른 템플릿과 겹치면 저장하지 않는다.</span>
                     </div>
                     <div class="field">
                       <label for="k-code">카카오 템플릿 코드 <span class="subtle">· 카카오에 등록한 코드</span></label>
@@ -401,6 +401,7 @@
                     <th scope="col">변수 이름</th>
                     <th scope="col">표시 이름</th>
                     <th scope="col">필수</th>
+                    <th scope="col">버튼 링크 <span class="subtle">· 메일·알림톡만</span></th>
                     <th scope="col">예시 값</th>
                     <th scope="col"></th>
                   </tr>
@@ -410,6 +411,7 @@
                     <td><input class="input mono" value="직원이름" aria-label="변수 이름" /></td>
                     <td><input class="input" value="직원 이름" aria-label="표시 이름" /></td>
                     <td class="c"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="필수"></span></td>
+                    <td class="c"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="버튼 링크"></span></td>
                     <td><input class="input" value="유하람" aria-label="예시 값" /></td>
                     <td class="c"><button class="tbtn" type="button">삭제</button></td>
                   </tr>
@@ -417,6 +419,7 @@
                     <td><input class="input mono" value="근무지" aria-label="변수 이름" /></td>
                     <td><input class="input" value="근무지" aria-label="표시 이름" /></td>
                     <td class="c"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="필수"></span></td>
+                    <td class="c"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="버튼 링크"></span></td>
                     <td><input class="input" value="모리커피 연남점" aria-label="예시 값" /></td>
                     <td class="c"><button class="tbtn" type="button">삭제</button></td>
                   </tr>
@@ -424,6 +427,7 @@
                     <td><input class="input mono" value="거부사유" aria-label="변수 이름" /></td>
                     <td><input class="input" value="거부 사유" aria-label="표시 이름" /></td>
                     <td class="c"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="필수"></span></td>
+                    <td class="c"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="버튼 링크"></span></td>
                     <td><input class="input" value="근무 시작 시각이 다릅니다" aria-label="예시 값" /></td>
                     <td class="c"><button class="tbtn" type="button">삭제</button></td>
                   </tr>
@@ -431,6 +435,7 @@
                     <td><input class="input mono" value="계약링크" aria-label="변수 이름" /></td>
                     <td><input class="input" value="계약 링크" aria-label="표시 이름" /></td>
                     <td class="c"><span class="check" role="checkbox" aria-checked="false" tabindex="0" aria-label="필수"></span></td>
+                    <td class="c"><span class="check" role="checkbox" aria-checked="true" tabindex="0" aria-label="버튼 링크"></span></td>
                     <td><input class="input" value="https://…" aria-label="예시 값" /></td>
                     <td class="c"><button class="tbtn" type="button">삭제</button></td>
                   </tr>
@@ -439,6 +444,7 @@
             </div>
             <div class="panel__note">
               변수 목록은 화면에서 넣고 고친다(NOTIFY-10). 줄마다 변수 이름·표시 이름·필수·예시 값을 두고, 본문 위 변수 단추는 이 목록에서 그린다. 예시 값은 미리보기를 채운다.
+              <b>버튼 링크</b> 칸은 메일 · 알림톡 채널에서만 보인다(NOTIFY-20). 켠 변수는 필수 변수 검사에서 빠지고 공통 메일 틀 · 알림톡 버튼이 붙인다.
               저장할 때 본문에 <b>목록에 없는 #{변수}</b> 가 있거나 <b>필수 변수가 빠졌으면</b> 저장하지 않고 몇째 줄인지 알려 준다.
             </div>
           </section>

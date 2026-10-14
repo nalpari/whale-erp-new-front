@@ -1,6 +1,6 @@
 // 근로계약 상세 틀. 상태마다 화면을 하나씩 두고(발송 대기 · 연결 보류 · 서명 대기 · 체결 완료 · 거부 · 종료) 내용만 바꿔 끼운다.
 // 상태별 버튼은 제목 줄에 선다(2026-10-12) — 발송 대기: 초대 재발송 / 서명 대기·만료: 재발송 / 체결 완료: 새 계약 / 거부·종료: 없음.
-// 임시저장은 계약 내용이 비어 틀이 달라 contracts-draft 가 따로 그린다.
+// 임시저장은 상세 없이 이어 쓰기 화면(contracts-draft, 작성 화면과 같은 틀)으로 바로 간다(2026-10-13).
 import * as ui from "./ui.mjs";
 import * as p from "./staff-parts.mjs";
 import { erpHeader, link } from "./site.mjs";

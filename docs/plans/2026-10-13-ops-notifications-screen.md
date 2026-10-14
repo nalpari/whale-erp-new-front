@@ -23,7 +23,7 @@
 
 **넣는 것**
 1. `src/app/notifications/` — `layout.tsx`, `page.tsx`, 표, 툴바, `actions.ts`(모두 읽음·선택 삭제), `[id]/open/route.ts`(읽음 뒤 이동)
-2. `src/lib/notifications.ts` — API 호출(`request()`), 쿼리 파싱, 알림 → 업무 화면 경로
+2. `src/lib/notifications.ts` — API 호출(`request()`), 쿼리 파싱, 알림 → 업무 화면 경로 (바뀜(NOTIFY-16): 경로표를 두지 않고 업무 쪽 `link` + `safeLink`)
 3. 종 `NotificationBell` 을 새 컴포넌트로 만들고(아래 「종」), 지금 헤더를 임시로 조립하는 세 곳(`platform/layout.tsx`, 직원 정보 관리 목록·상세)의 `AlarmLink href="#"` 를 바꾼다.
 
 **넣지 않는 것**
@@ -63,7 +63,7 @@
 
 `/notifications/[id]/open` 은 「알림을 여는 중입니다…」만 보이는 페이지다. **이 페이지를 불러오는 것(GET)으로는 아무것도 바꾸지 않는다.**
 1. 화면에 실제로 뜨면(`document.prerendering` 이면 `prerenderingchange` 까지 기다린다) 서버 액션 `openAction(id)` 가 api `POST /notifications/:id/read` 를 부른다.
-2. `linkOf(item)` 의 경로로 `router.replace` 한다. 경로가 없거나 남의 알림(404)이면 `/notifications?gone=1`, 읽음 처리가 실패하면 `/notifications?error=read` 로 돌려보내 토스트를 띄운다. 실패한 줄은 미확인 그대로라 다시 누를 수 있다.
+2. 바뀜(NOTIFY-16): 경로표를 두지 않고 업무 쪽 `link` + `safeLink`. `linkOf(item)` 의 경로로 `router.replace` 한다. 경로가 없거나 남의 알림(404)이면 `/notifications?gone=1`, 읽음 처리가 실패하면 `/notifications?error=read` 로 돌려보내 토스트를 띄운다. 실패한 줄은 미확인 그대로라 다시 누를 수 있다.
 3. 읽음이 바뀌면(이동 · 모두 읽음 · 선택 삭제) `revalidatePath("/", "layout")` 로 모든 화면을 다시 그리게 한다 — 종은 화면마다 서버가 그려서 알림함만 비우면 예전 숫자가 남는다.
 
 처음에는 route handler 의 GET 에서 바로 읽음 처리했다. 그런데 Chrome 이 종 팝오버의 링크를 미리 불러 들여(마우스가 지나가는 것만으로) 알림이 읽음이 됐다(2026-10-13 재영 확인). 메일 보안 검사기가 메일 링크를 열어 보는 것도 같은 문제라 GET 에서 떼었다. 링크는 `<Link>` 가 아니라 `<a>` 로 건다.
@@ -85,7 +85,7 @@
 | `NTF_INQUIRY_ANSWERED` | INQUIRY | `/support/inquiries/{id}` | 없음 |
 | `NTF_LEAD_RECEIVED` · `NTF_LEAD_ANSWERED` | LEAD | `/platform/community/leads/{id}` | 없음 |
 
-계약 상세는 main 의 실제 경로 `/contracts/{id}`(front #13)다. 화면이 없는 문의 · 도입문의 넷은 `linkOf` 가 null 을 돌려 알림함에서 안내한다(front #14 리뷰). 데모에서 날인 알림이 거부 상세(유하람)로 가던 문제는 이 표로 없어진다. 계약 ID로 가기 때문이다.
+바뀜(NOTIFY-16): 경로표를 두지 않고 업무 쪽 `link` + `safeLink`. 계약 상세는 main 의 실제 경로 `/contracts/{id}`(front #13)다. 화면이 없는 문의 · 도입문의 넷은 `linkOf` 가 null 을 돌려 알림함에서 안내한다(front #14 리뷰). 데모에서 날인 알림이 거부 상세(유하람)로 가던 문제는 이 표로 없어진다. 계약 ID로 가기 때문이다.
 
 ### 데이터와 개발 중 호출
 
@@ -104,12 +104,12 @@ api 계획의 NOTIFY-12~15를 `docs/mockup/notify/overview.html` 쟁점 절에 �
 
 | 파일 | 확인할 것 |
 |---|---|
-| `src/lib/notifications.test.ts` | `linkOf` 를 열 가지 코드마다 확인 / 모르는 코드·`relatedId` 없음이면 `null` / 쿼리 파싱(`page` 0·음수·문자, `pageSize` 20·50·100 밖이면 기본값) / 일시를 KST로 `MM-DD HH:mm` / 종 배지 글자(0이면 없음, 100 이상은 「99+」) |
+| `src/lib/notifications.test.ts` | 바뀜(NOTIFY-16): 경로표를 두지 않고 업무 쪽 `link` + `safeLink`. `linkOf` 를 열 가지 코드마다 확인 / 모르는 코드·`relatedId` 없음이면 `null` / 쿼리 파싱(`page` 0·음수·문자, `pageSize` 20·50·100 밖이면 기본값) / 일시를 KST로 `MM-DD HH:mm` / 종 배지 글자(0이면 없음, 100 이상은 「99+」) |
 
 화면은 개발 서버에서 직접 확인한다. 목록, 누르면 읽음과 이동, 모두 읽음, 선택 삭제, 빈 상태, API를 끈 상태의 오류 안내를 차례로 본다.
 
 ## 할 일 순서
-1. `notifications.ts` 테스트 → 구현(`linkOf`, 쿼리, 일시)
+1. `notifications.ts` 테스트 → 구현(`linkOf`, 쿼리, 일시) — 바뀜(NOTIFY-16): 경로표를 두지 않고 업무 쪽 `link` + `safeLink`
 2. api 타입 받기(`pnpm openapi:types`)
 3. `page.tsx`·표·툴바·`actions.ts`·`open/route.ts`
 4. `NotificationBell` 과 헤더 세 곳 바꾸기

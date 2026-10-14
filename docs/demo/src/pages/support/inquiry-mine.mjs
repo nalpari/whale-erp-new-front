@@ -4,6 +4,7 @@ import * as p from "../../staff-parts.mjs";
 import { erpHeader, link } from "../../site.mjs";
 
 // 첨부파일(운영 정책 CNT-18): 이미지는 작은 미리보기, PDF 는 이름 + 내려받기.
+// 첨부파일 저장소 결정 대기(Plane #587) — 정해질 때까지 1차 구현에서 첨부를 만들지 않는다.
 const thumb = (name, size) => `<a href="#" title="${name} · ${size}" class="grid size-[64px] place-items-center rounded-[2px] border border-erp-panel-line bg-erp-thead-bg text-[12px] text-erp-label">PNG</a>`;
 const pdf = (name, size) => ui.detailValues([ui.link(name, "#"), `<span class="text-erp-label">${size}</span>`, ui.link("내려받기", "#")]);
 

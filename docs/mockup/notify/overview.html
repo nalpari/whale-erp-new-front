@@ -118,14 +118,15 @@
               <div class="panel">
                 <div class="panel__head">
                   <h3 class="t-h3">누가 받는다</h3>
-                  <span class="badge badge--quiet">5</span>
+                  <span class="badge badge--quiet">6</span>
                 </div>
                 <ul class="pol">
                 <li><span class="pol__t">플랫폼 마스터·관리자는 <b>문의사항·도입문의</b>의 접수와 처리 상태 변경을 받는다.</span><span class="pol__ref">S-JUWPXF</span></li>
-                <li><span class="pol__t">BP·가맹의 마스터·관리자는 <b>소속 범위 직원</b>의 근로계약 날인·거부·<b>만료</b>·갱신 예정과 <b>자기가 등록한 문의</b>의 답변을 받는다.</span><span class="pol__ref">S-JUWPXF</span></li>
+                <li><span class="pol__t">BP·가맹의 마스터·관리자는 <b>소속 범위 직원</b>의 근로계약 날인·거부·<b>만료</b>·갱신 예정과 <b>자기가 등록한 문의</b>의 답변을 받는다. 가맹 점포 직원의 근로계약 알림은 가맹마스터·가맹관리자가 받고, BP 마스터·BP 관리자는 그 직원이 <b>본사 제공 동의</b>를 했을 때만 받는다.</span><span class="pol__ref">S-JUWPXF · NOTIFY-13</span></li>
                 <li><span class="pol__t">가입자 연결 확인 필요와 소속 확인 거절은 그 직원의 <b>근로계약서 초안을 쓴 관리자</b>가 받는다.</span><span class="pol__ref">S-JUWPXF</span></li>
                 <li><span class="pol__t">관리 권한이 있거나 당사자인 업무의 알림만 보인다. 권한이 없으면 알림함도, 이어지는 상세도 들어가지 못한다.</span><span class="pol__ref">S-GDUNIT</span></li>
-                <li><span class="pol__t">알림 유형은 열 가지로 한정한다 — 문의사항 접수, 도입문의 접수, 문의사항 답변, 도입문의 처리 상태 변경, 근로계약 날인·거부·<b>만료</b>, 가입 연결 보류, 소속 추가 확인 거절, 계약 갱신 예정. 만료는 날인 기한 30일이 지나 계약이 만료될 때 그 계약을 맡은 사업자 관리자에게 알림함과 이메일로 간다.</span><span class="pol__ref">S-JUWPXF · 2026-10-07 재영</span></li>
+                <li><span class="pol__t">받는 사람은 <b>알림이 생길 때</b> 정한다. 뒤에 매핑·권한·점포 유형이 바뀌어도 이미 받은 알림을 다시 거르지 않는다.</span><span class="pol__ref">결정 A · 2026-10-13 재영</span></li>
+                <li><span class="pol__t">알림 유형은 열 가지로 한정한다 — 문의사항 접수, 도입문의 접수, 문의사항 답변, 도입문의 처리 상태 변경, 근로계약 날인·거부·<b>만료</b>, 가입 연결 보류, 소속 추가 확인 거절, 계약 갱신 예정. 만료는 날인 기한 30일이 지나 계약이 만료될 때 그 계약을 맡은 사업자 관리자의 알림함으로 간다. 메일이 필요하면 업무 쪽이 따로 보낸다.</span><span class="pol__ref">S-JUWPXF · 2026-10-07 재영</span></li>
                 </ul>
               </div>
               <div class="panel">
@@ -148,7 +149,7 @@
                 </div>
                 <ul class="pol">
                 <li><span class="pol__t">갱신 예정 알림은 계약 종료일 <b>30일 전에 한 번</b>만 만든다.</span><span class="pol__ref">S-JUWPXF</span></li>
-                <li><span class="pol__t">웹 알림함과 <b>이메일</b>을 함께 보낸다. 이메일은 제목만 보고 어느 알림인지 알 수 있어야 한다.</span><span class="pol__ref">F-SYOZEO</span></li>
+                <li><span class="pol__t">운영 알림은 <b>알림함에 넣는 일만</b> 한다. 메일이 필요하면 업무 쪽이 따로 보내고, 메일 버튼은 업무 화면으로 바로 간다. 메일로 봐도 알림함 읽음은 맞추지 않는다.</span><span class="pol__ref">F-SYOZEO · 운영 정책 NTF-03 · 2026-10-13 재영</span></li>
                 <li><span class="pol__t">모바일 푸시는 없다 — 관리자 전용 앱이 없다. 문자 발송도 1차에 없다.</span><span class="pol__ref">F-SYOZEO</span></li>
                 <li><span class="pol__t">직원에게 가는 앱 푸시와 알림톡은 이 영역이 아니라 직원 알림 기능의 것이다.</span><span class="pol__ref">F-SYOZEO</span></li>
                 </ul>
@@ -156,7 +157,7 @@
               <div class="panel">
                 <div class="panel__head">
                   <h3 class="t-h3">알림 템플릿</h3>
-                  <span class="badge badge--quiet">13</span>
+                  <span class="badge badge--quiet">17</span>
                 </div>
                 <ul class="pol">
                 <li><span class="pol__t">템플릿은 <b>채널 + 템플릿 이름 + 템플릿 코드</b>로 구분한다. 알림 유형·발송 용도 공통코드는 두지 않는다. 채널은 운영 알림·앱 푸시·메일·알림톡 넷이고, 템플릿 코드가 겹칠 때만 저장을 막는다.</span><span class="pol__ref">F-TZPHZT · NOTIFY-11</span></li>
@@ -170,6 +171,10 @@
                 <li><span class="pol__t">운영 알림·앱 푸시·메일은 <b>제목과 본문이 필수</b>라 비우면 저장하지 않는다. 알림톡은 제목이 없고 본문만 필수다.</span><span class="pol__ref">S-QQPYIU · S-HIBBDL · NOTIFY-6</span></li>
                 <li><span class="pol__t">1팀 화면에서 나가는 관리자 메일 8종(회원가입 완료, 신규 BP 가입 알림, BP 신규 등록, 플랫폼 관리자 계정 생성, BP 관리자 계정 생성, 비밀번호 초기화, 임시 비밀번호 발급, 회원 탈퇴 완료)도 메일 탭의 템플릿으로 두고 문구를 여기서 고친다. 1팀 공통코드 메일 유형은 쓰지 않는다.</span><span class="pol__ref">F-TZPHZT · NOTIFY-9</span></li>
                 <li><span class="pol__t">템플릿마다 <b>템플릿 코드</b>를 둔다. 등록할 때 채널 접두(NTF_·PUSH_·EMAIL_·TALK_)만 채우고 나머지는 운영자가 넣는다. 기본 40건의 코드는 지금 값 그대로다. 이미 있는 템플릿의 코드를 바꾸면 「발송 코드에서 이 템플릿 코드를 쓰고 있으면 함께 바꿔야 합니다」 확인창을 띄운다. 알림톡의 카카오 템플릿 코드와는 다른 값이다.</span><span class="pol__ref">F-TZPHZT · NOTIFY-10 · NOTIFY-11</span></li>
+                <li><span class="pol__t">등록·수정 모두 저장 전에 <b>「저장하시겠습니까?」</b> 확인창을 띄운다. 템플릿 코드를 바꿨으면 같은 확인창에 발송 코드 경고를 함께 보인다. 등록 화면의 변수 목록은 <b>빈 표</b>로 시작한다.</span><span class="pol__ref">2026-10-13 재영</span></li>
+                <li><span class="pol__t">템플릿 코드를 바꾸면 지난 운영 알림의 구분 표시가 비어 보일 수 있다. 이는 감수한다.</span><span class="pol__ref">운영 정책 NTF-24</span></li>
+                <li><span class="pol__t">변수 목록 줄의 <b>「버튼 링크」</b> 체크 칸은 메일·알림톡 채널에서만 보인다. 켠 변수는 필수 변수 검사에서 빠지고 공통 메일 틀·알림톡 버튼이 붙인다.</span><span class="pol__ref">NOTIFY-20</span></li>
+                <li><span class="pol__t">알림톡을 되돌릴 때는 확인창에 「카카오 템플릿 코드는 바뀌지 않으니, 검수받은 본문과 맞는지 확인해 주세요.」를 보인다. 채널이 바뀌어 기본 문구가 지금 채널에 맞지 않으면 되돌리지 않는다.</span><span class="pol__ref">NOTIFY-18</span></li>
                 <li><span class="pol__t">앱 푸시는 <b>제목 40자·본문 100자</b>까지이고 넘으면 저장하지 않는다. 메일 본문은 <b>일반 글</b>만 쓰고 머리·꼬리·버튼은 공통 메일 틀이 붙인다.</span><span class="pol__ref">S-QQPYIU · NOTIFY-4 · NOTIFY-5</span></li>
                 <li><span class="pol__t">템플릿을 읽지 못하면 그 알림은 보내지 않고 서버 로그에만 남긴다. 화면에는 보이지 않는다.</span><span class="pol__ref">S-QQPYIU · NOTIFY-19</span></li>
                 </ul>
@@ -262,6 +267,7 @@
 발송 이력만 따로 보는 화면은 두지 않는다. 관리자가 실패를 알아야 하는 자리가 알림함 하나로 모인다.
                 직원 근무 앱의 <b>NOTI-4</b> 도 같은 답으로 닫혔다. 앱 알림함도 한 줄에 발송 결과를 담는다.
               </p>
+              <p class="gap__note">2026-10-13 재영 — 바뀜: 운영 알림은 메일을 붙이지 않는다. 메일은 업무 쪽이 따로 보내고 메일 발송 이력에 남는다(운영 정책 NTF-03 v114). 알림 줄에는 메일 결과를 담지 않는다.</p>
             </div>
             <div class="gap is-decided">
               <div class="gap__head">
@@ -307,6 +313,7 @@
                 <span class="gap__ref">F-TZPHZT</span>
               </div>
               <p class="gap__note" style="margin: 0">2026-10-07 재영 확정 — 1팀 메일 문구도 알림 템플릿에서 관리한다. 메일 탭에 1팀 꼬리표를 단 발송 용도 여덟이 더해져 22건이 된다. 1팀 메뉴는 건드리지 않는다.</p>
+              <p class="gap__note" style="margin: 0">2026-10-13 바뀜 — 급여명세서 발송 메일·다시 발송 메일 둘이 더해져 메일 탭은 24건이다(기본 40건).</p>
             </div>
             <div class="gap is-decided">
               <div class="gap__head">

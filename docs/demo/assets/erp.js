@@ -1574,12 +1574,16 @@
 
   // 알림 템플릿 수정·등록(NOTIFY-10). 변수 목록 줄에서 본문 위 변수 단추를 그리고, 단추를 누르면 본문 커서 자리에 #{변수} 를 넣는다.
   // 저장 전에 제목·본문을 검사해 목록에 없는 #{변수}와 빠진 필수 변수를 줄 번호와 함께 보이고, 통과하면 저장 확인창을 연다.
-  // 채널·유형을 고르면 등록 화면은 템플릿 코드 기본값(채널 접두 + 코드)을 채우고, 수정 화면은 코드를 바꿀 때 확인창을 띄운다.
+  // 채널·유형을 고르면 등록 화면은 템플릿 코드 기본값(채널 접두 + 코드)을 채우고, 수정 화면은 코드를 바꿨으면 저장 확인창에 발송 코드 경고를 함께 보인다.
+  // 버튼 링크(NOTIFY-20)를 켠 변수는 공통 메일 틀·알림톡 버튼이 붙이므로 필수 변수 검사에서 뺀다. 버튼 링크 칸은 메일·알림톡에서만 보인다.
   function initTemplateEdit(root) {
     const rows = () => $$("[data-var-row]", root);
     const vars = () =>
       rows()
-        .map((r) => ({ name: $("[data-var-name]", r).value.trim(), required: $("[data-var-required]", r).checked }))
+        .map((r) => {
+          const btn = $("[data-var-button]", r);
+          return { name: $("[data-var-name]", r).value.trim(), required: $("[data-var-required]", r).checked, button: !!btn && !btn.closest("[hidden]") && btn.checked };
+        })
         .filter((v) => v.name);
     const btnBox = $("[data-var-buttons]", root);
     const body = btnBox && document.getElementById(btnBox.dataset.target);
@@ -1608,6 +1612,7 @@
       }
       if (e.target.closest("[data-var-add]")) {
         $("[data-var-body]", root).append($("[data-var-template]", root).content.cloneNode(true));
+        sync();
         drawButtons();
       }
       const del = e.target.closest("[data-var-del]");
@@ -1638,16 +1643,18 @@
         if (JSON.parse(root.dataset.codes || "[]").includes(tplCode)) errs.push(`템플릿 코드 ${tplCode} 는 이미 있는 템플릿이 쓰고 있습니다.`);
         const text = fields.map((f) => f.value).join("\n");
         vars()
-          .filter((v) => v.required && !text.includes(`#{${v.name}}`))
+          .filter((v) => v.required && !v.button && !text.includes(`#{${v.name}}`))
           .forEach((v) => errs.push(`필수 변수 #{${v.name}} 가 제목·본문에 없습니다.`));
         const box = $("[data-tpl-errors]", root);
         box.replaceChildren(...errs.map((t) => Object.assign(document.createElement("p"), { textContent: t })));
         box.hidden = !errs.length;
-        if (!errs.length) document.getElementById(save.dataset.tplSave)?.showModal();
-      }
-      if (e.target.closest("[data-code-revert]")) {
-        const code = $("[data-code-original]", root);
-        code.value = code.dataset.codeOriginal;
+        if (!errs.length) {
+          const dlg = document.getElementById(save.dataset.tplSave);
+          const warn = dlg && $("[data-code-warn]", dlg);
+          const orig = $("[data-code-original]", root);
+          if (warn) warn.hidden = !orig || orig.value.trim() === orig.dataset.codeOriginal;
+          dlg?.showModal();
+        }
       }
     });
     root.addEventListener("input", (e) => e.target.matches("[data-var-name]") && drawButtons());
@@ -1662,14 +1669,12 @@
       $$("[data-tpl-talk]", root).forEach((el) => (el.hidden = !talk));
       $$("[data-tpl-title]", root).forEach((el) => (el.hidden = talk));
       $$("[data-tpl-push]", root).forEach((el) => (el.hidden = channel.value !== "앱 푸시"));
+      $$("[data-tpl-btnlink]", root).forEach((el) => (el.hidden = !(talk || channel.value === "메일")));
     };
     const fillCode = () => {
       if (root.hasAttribute("data-tpl-new") && prefixes[channel.value]) code.value = `${prefixes[channel.value]}_${code.value.replace(/^(NTF|PUSH|EMAIL|TALK)_?/, "")}`;
     };
     channel.addEventListener("change", () => (sync(), fillCode()));
-    code.addEventListener("change", () => {
-      if (code.dataset.codeOriginal && code.value !== code.dataset.codeOriginal) document.getElementById(code.dataset.codeDialog)?.showModal();
-    });
     drawButtons();
     sync();
 
