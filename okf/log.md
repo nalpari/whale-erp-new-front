@@ -2,6 +2,7 @@
 
 ## 2026-10-14
 
+* **Update**: 로그인 후 화면을 폴더로 묶지 않고 루트 layout 의 `AdminLayout` 이 공개 경로가 아니면 공통 틀을 씌운다(`(erp)`·`platform/layout.tsx` 삭제, 홈은 `src/app/home`). ERP·플랫폼은 탭의 서비스(sessionStorage `current-bp` 의 `serviceCode`)로 가르고 헤더 메뉴·홈·메뉴 권한 확인·오른쪽 선택기가 그 값을 본다. 3팀 화면도 틀 안에 들어가 자기 헤더를 빼야 한다 — [Whale ERP Frontend](/whale-erp-front.md).
 * **Update**: main 병합 뒤 플랫폼 화면(`/platform/system/*` · `/platform/notification-templates`)에 공통 틀을 씌웠다 — `platform/layout.tsx` 의 임시 헤더를 공통 틀로 바꾸고 `(platform)` 그룹 폴더는 없앴다(화면이 모두 `/platform` 아래라 필요 없음). 공통 헤더의 알림 종을 `NotificationBellSlot` 으로 바꿨다 — [Whale ERP Frontend](/whale-erp-front.md).
 * **Update**: PR #19 리뷰 반영 — 메뉴 판정을 조회 권한 있는 메뉴로 좁히고, 브라우저 저장 키에 버전(`whale-erp:v1:`)을 넣고, 세션 쿠키를 토큰·만료·권한 유형만 두도록 줄였다. [Whale ERP Frontend](/whale-erp-front.md) 의 영역·API·명령 서술도 코드에 맞췄다.
 * **Update**: 강제 비밀번호 변경 팝업, 영역별 메뉴(플랫폼은 /platform 아래), 하위 메뉴 없는 1단계 메뉴 바로 이동, 다른 탭 로그인·로그아웃 따라가기를 [Whale ERP Frontend](/whale-erp-front.md) 에 반영했다. 레이아웃 확인용 자리표시 `/bp`·`/config/admins` 는 지웠다.

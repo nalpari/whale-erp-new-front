@@ -101,7 +101,7 @@ API 응답 타입은 손으로 적는다(로그인·갱신 두 개). `openapi-ty
 
 ## 3-1. front — 로그인 정보 관리 (2026-10-13 추가)
 
-2026-10-14: 플랫폼 화면이 모두 `/platform` 아래로 모여 2절의 `(platform)` 그룹 폴더는 없앴다. 플랫폼 틀은 `src/app/platform/layout.tsx` 하나가 맡는다.
+2026-10-14: 2절의 `(erp)`·`(platform)` 레이아웃을 없앴다. 로그인 후 화면은 폴더로 묶지 않고 루트 layout 의 `AdminLayout`(`src/components/site/admin-layout.tsx`)이 주소가 공개 경로(`isPublicPath`)가 아니면 공통 틀을 씌운다 — proxy 의 로그인 요구와 같은 기준이다. 틀이 같고, 서비스마다 다른 것(메뉴·홈·오른쪽 선택기)은 탭의 서비스로 가른다. 3팀 화면도 틀 안이라 화면 안의 헤더·틀을 빼야 한다.
 
 api 가 `GET /auth/admin/login-info`·`/public-bp-codes/{bpCode}/code-items`·`/bp-codes/{bpCodeId}/stores`·`/bp-codes/{bpCodeId}/code-items` 를 더해, 위의 `menus.ts`(메뉴 상수)·`login-session.ts`(견본 점포 목록)를 지우고 로그인 정보로 그린다.
 
@@ -121,7 +121,7 @@ api 가 `GET /auth/admin/login-info`·`/public-bp-codes/{bpCode}/code-items`·`/
 
 `SessionGate`(`src/components/site/session-gate.tsx`) 순서: login-key 확인(없으면 로그아웃) → login-info 가 없으면 BFF 로 받아 저장 → 이 탭의 BP 결정(`resolveBp`: 고객 BP 계정·플랫폼 화면은 자기 BP, 플랫폼 계정의 ERP 화면은 `?bp=` → current-bp → selected-bp → 자기 BP) → 점포·공통코드(자기 BP 면 login-bp-info 복사, 다른 BP 면 `/bp-codes/{bpCodeId}/…` 두 개) → 화면. 401 은 `/login`(login-key 쿠키가 없으면 로그아웃 서버 액션), 로그인 정보 403·404 는 안내 후 로그아웃, 다른 BP 403·404 는 안내 후 selected-bp 를 지우고 홈, 그 밖은 [다시 시도]. 탭의 BP(current-bp)는 점포·공통코드를 받은 뒤에 쓴다.
 
-헤더 메뉴는 login-info 의 menus 를 메뉴의 `serviceCode`(WHALE_ERP · PLATFORM)로 영역에 맞게 걸러 2단계까지 그린다. 주소 판정은 조회 권한(read)이 있는 메뉴의 url 과 그 아래 주소만 열고 3단계까지 본다(`src/lib/menus.ts`). BP·가맹 계정이 플랫폼 화면에 오면 `platform/layout.tsx` 가 서버에서, 그 뒤 화면 이동은 SessionGate 가 `/home` 으로 보낸다. 범위 선택기(전체·직영·가맹·점포 하나)는 ERP 화면에만 두고, 바꾸면 홈으로 간다. 플랫폼 화면의 BP 선택기는 BP 목록 API 가 생긴 뒤 만든다(고르면 selected-bp 저장 후 `/home?bp={bpCodeId}` 새 탭).
+탭의 서비스(`serviceCode`: WHALE_ERP · PLATFORM)는 `current-bp` 에 BP 와 함께 둔다. BP·가맹 계정은 늘 ERP, 플랫폼 계정은 자기 BP 탭이 플랫폼이고 BP 선택기로 연 탭이 ERP 다. 탭 값이 없는 새 탭은 ?bp= → 주소가 속한 메뉴의 서비스(ERP 면 마지막으로 고른 BP, 그 밖은 자기 BP 의 플랫폼)로 정한다(`resolveTab`). 헤더 메뉴는 그 서비스의 메뉴만 2단계까지 그린다. 주소 판정은 그 서비스의 홈과, 그 서비스에서 조회 권한(read)이 있는 메뉴의 url 과 그 아래 주소만 열고 3단계까지 본다(`src/lib/menus.ts`) — BP 계정의 플랫폼 주소, 플랫폼 탭의 ERP 주소는 여기서 막힌다. 범위 선택기(전체·직영·가맹·점포 하나)는 ERP 화면에만 두고, 바꾸면 홈으로 간다. 플랫폼 화면의 BP 선택기는 BP 목록 API 가 생긴 뒤 만든다(고르면 selected-bp 저장 후 `/home?bp={bpCodeId}` 새 탭).
 
 API 타입은 손으로 적는다(2026-10-13 결정, `src/lib/session.ts`).
 
