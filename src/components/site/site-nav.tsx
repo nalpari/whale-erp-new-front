@@ -17,6 +17,7 @@ export function SiteNav() {
     <header className="sticky top-0 z-10 flex h-[70px] items-center gap-[54px] border-b border-erp-bar-line bg-white px-[24px]">
       <Link href="/" className="flex items-center gap-[10px]">
         <Image src="/icons/logo-whale.svg" alt="" width={53} height={40} />
+        {/* #252525 로고 글자: 공통 헤더 로고(global-header.tsx)와 같은 Figma 값 */}
         <p className="leading-[1.3] text-[#252525]">
           <span className="block text-[16px] font-extrabold uppercase">Whale ERP</span>
           <span className="block text-[12px]">Management System</span>

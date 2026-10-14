@@ -18,6 +18,7 @@ function Row({ items }: { items: React.ReactNode[] }) {
   );
 }
 
+// #d9dbe0 소셜 아이콘 바탕 · #1a1a1a 인터플러그 마크: 1팀 Figma 푸터(데모 public.mjs siteFoot)에만 한 번 나오는 색이라 직접 적는다.
 function Social({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <a href="#" aria-label={label} className="grid size-[32px] shrink-0 place-items-center rounded-full bg-[#d9dbe0] text-white transition-colors duration-150 ease-out hover:bg-erp-brand">
