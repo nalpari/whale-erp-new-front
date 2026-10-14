@@ -6,6 +6,7 @@ import { Button } from "@/components/common";
 import { logout } from "@/app/actions";
 import { isPlatformRole } from "@/lib/auth-routes";
 import { bff, BffError, PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
+import { findMenu, isAllowed } from "@/lib/menus";
 import { ForcePasswordDialog } from "./force-password-dialog";
 import {
   clearSelectedBp,
@@ -68,7 +69,7 @@ const ALL: Scope = { type: "ALL" };
 const HOME: Record<Area, string> = { erp: "/home", platform: "/platform" };
 
 /**
- * 로그인 후 화면의 문. 이 탭의 BP 와 그 BP 의 점포·공통코드가 준비될 때까지 로딩 화면을 보이고, 준비되면 children 을 그린다. 주소는 바꾸지 않는다.
+ * 로그인 후 화면의 문. 이 탭의 BP 와 그 BP 의 점포·공통코드가 준비될 때까지 로딩 화면을 보이고, 준비되면 children 을 그린다. 주소는 ?bp= 만 지운다.
  * 메뉴·점포·공통코드는 로그인할 때의 값을 쓰고 다시 로그인해야 바뀐다(okf/auth.md, 2026-10-13). 데이터 권한은 api 가 요청마다 다시 본다.
  */
 export function SessionGate({ area, children }: { area: Area; children: ReactNode }) {
@@ -88,6 +89,12 @@ export function SessionGate({ area, children }: { area: Area; children: ReactNod
           // 세션이 이미 끊겼으면(proxy·BFF 가 쿠키를 지움) 로그인 화면으로 바로 간다. login-key 가 없는 옛 세션만 로그아웃으로 끝낸다.
           if (readLoginKey()) router.replace("/login");
           else await logout().catch(() => router.replace("/login"));
+          return;
+        }
+        if (e instanceof LoginInfoDeniedError) {
+          // 로그인 정보를 볼 수 없는 계정이다. 다시 시도해도 같으므로 안내하고 로그아웃한다.
+          alert(e.message);
+          await logout().catch(() => router.replace("/login"));
           return;
         }
         if (e instanceof OtherBpError) {
@@ -132,9 +139,9 @@ export function SessionGate({ area, children }: { area: Area; children: ReactNod
 function Ready({ area, value, onChange, children }: { area: Area; value: LoginState; onChange: (v: LoginState) => void; children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  // 플랫폼 화면((platform) 레이아웃)에 BP·가맹 계정이 왔다. 안내 없이 자기 홈으로 보낸다(proxy 가 주소로 막던 것).
+  // 플랫폼 화면에 BP·가맹 계정이 왔다(첫 진입은 (platform) 레이아웃이 서버에서 막고, 여기서는 그 뒤 화면 이동을 받는다). 안내 없이 /home 으로 보낸다.
   const wrongArea = area === "platform" && !isPlatformRole(value.account.roleTypeCode);
-  const allowed = !wrongArea && isAllowed(value.menus, pathname, area);
+  const allowed = !wrongArea && isAllowed(value.menus, pathname, HOME[area]);
   // 개발 모드(StrictMode)는 effect 를 두 번 돌린다. 같은 주소에 두 번 안내하고 두 번 뒤로 가지 않게 한다.
   const denied = useRef<string | null>(null);
 
@@ -183,7 +190,7 @@ function Ready({ area, value, onChange, children }: { area: Area; value: LoginSt
   });
   const passwordChanged = () => {
     setPasswordRequired(false);
-    // 바꾼 뒤에는 ERP(영역) 홈으로 간다. 다시 열면서 고른 BP 의 점포·공통코드도 이때 받는다.
+    // 바꾼 뒤에는 이 영역의 홈으로 다시 연다. 고른 BP 의 점포·공통코드도 이때 받는다.
     location.assign(HOME[area]);
   };
   return (
@@ -203,6 +210,7 @@ function Notice({ children }: { children: ReactNode }) {
 }
 
 class OtherBpError extends Error {}
+class LoginInfoDeniedError extends Error {}
 
 const readLoginKey = () => document.cookie.match(new RegExp(`(?:^|; )${LOGIN_KEY_COOKIE}=([^;]*)`))?.[1];
 
@@ -215,7 +223,10 @@ async function prepare(area: Area): Promise<LoginState> {
   let bpInfo = readLoginBpInfo(loginKey);
   // 이 로그인에서 처음 열린 탭(또는 저장소가 지워진 브라우저)만 받는다. 그 뒤 탭은 저장한 값을 쓴다.
   if (!info || !bpInfo) {
-    const r = await bff<LoginInfo>("/auth/admin/login-info");
+    const r = await bff<LoginInfo>("/auth/admin/login-info").catch((e: unknown) => {
+      if (e instanceof BffError && (e.status === 403 || e.status === 404)) throw new LoginInfoDeniedError(e.message);
+      throw e;
+    });
     info = { loginKey, account: r.account, menus: r.menus };
     bpInfo = { loginKey, bpCodeId: r.account.bp.bpCodeId, stores: r.stores, codes: r.codes };
     writeLoginInfo(info);
@@ -239,8 +250,6 @@ async function prepare(area: Area): Promise<LoginState> {
     currentBp: readCurrentBp(loginKey),
     selectedBp: readSelectedBp(loginKey),
   });
-  writeCurrentBp(loginKey, bp);
-
   let stores = readStores(bp.bpCodeId);
   let codes = readCodes(bp.bpCodeId);
   if (!stores || !codes) {
@@ -262,19 +271,10 @@ async function prepare(area: Area): Promise<LoginState> {
     writeStores(bp.bpCodeId, stores);
     writeCodes(bp.bpCodeId, codes);
   }
-  return { loginKey, account, menus: info.menus, currentBp: bp, stores, codes, scope: readScope(bp.bpCodeId) ?? ALL };
-}
-
-function findMenu(menus: AdminMenu[], match: (m: AdminMenu) => boolean): AdminMenu | undefined {
-  for (const m of menus) {
-    if (match(m)) return m;
-    const found = findMenu(m.children, match);
-    if (found) return found;
-  }
-}
-
-/** 영역 홈이거나 menus 의 주소(그 아래 상세·등록 경로 포함)면 들어갈 수 있다. 헤더는 2단계까지 그리지만 판정은 3단계까지 본다. */
-function isAllowed(menus: AdminMenu[], pathname: string, area: Area) {
-  if (pathname === HOME[area]) return true;
-  return !!findMenu(menus, (m) => !!m.url && (pathname === m.url || pathname.startsWith(`${m.url}/`)));
+  // 점포·공통코드를 받은 뒤에 쓴다. 먼저 쓰면 받기가 실패한 BP 가 이 탭에 남아, 다시 열 때 같은 BP 를 또 골라 안내가 끝없이 반복된다.
+  writeCurrentBp(loginKey, bp);
+  // 저장된 점포 범위의 점포가 목록에 없으면 전체로 되돌린다(선택기 표시와 실제 범위가 어긋나지 않게).
+  const saved = readScope(bp.bpCodeId);
+  const scope = saved?.type === "STORE" && !stores.some((s) => s.storeId === saved.storeId) ? ALL : (saved ?? ALL);
+  return { loginKey, account, menus: info.menus, currentBp: bp, stores, codes, scope };
 }
