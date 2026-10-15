@@ -524,7 +524,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** BP에 적용. 플랫폼제공 그룹만. 각 BP 에 아직 없는 행만 넣는다 — 다시 눌러도 된다. */
+        /**
+         * BP에 적용. 플랫폼제공 그룹만. 각 BP 에 아직 없는 행만 넣는다 — 다시 눌러도 된다.
+         *     되돌릴 수 없지만 행을 지우지 않고 그룹의 적용 여부를 바꾸는 동작이라 수정 권한으로 본다.
+         */
         post: operations["CodeGroupsController_applyToBps"];
         delete?: never;
         options?: never;
@@ -914,6 +917,11 @@ export interface paths {
         /**
          * 대표 이미지 올리기 · 바꾸기(점포당 1장). multipart 의 `file` 한 개, JPG · PNG 5MB 이하 — 종류는 확장자가
          *     아니라 내용으로 본다. 등록 화면은 점포를 등록한 뒤 이 경로로 올린다. 수정 권한이 있어야 한다.
+         *
+         *     수정 권한은 가드(@MenuPermission)가 먼저 본다 — 가드는 인터셉터보다 먼저 돌므로, 권한 없는 관리자의 요청은
+         *     AttachmentsInterceptor 가 multipart 본문(최대 5MB)을 받기 전에 403 이다. 핸들러의 allow() 는 같은 판정을
+         *     한 번 더 하지만 지우지 않는다 — 서비스가 받는 MenuCaller(권한 유형 · 권한 그룹)를 그 판정이 돌려주고, 업로드를
+         *     받는 사이 권한이 거둬졌으면 그것도 여기서 막는다.
          */
         put: operations["StoresController_putImage"];
         post?: never;
@@ -1707,7 +1715,7 @@ export interface components {
             bizOpenDate: string;
         };
         SignupBusinessVerificationResponseDto: {
-            /** @description 10분짜리 인증 토큰. 가입할 때 bizVerificationToken 으로 한 번 보낸다 */
+            /** @description 10분짜리 인증 토큰. 그 안에 가입 요청의 bizVerificationToken 으로 보낸다 */
             verificationToken: string;
         };
         EmailAvailabilityDto: {
@@ -2229,7 +2237,11 @@ export interface components {
             /** @description 거른 결과 전체 건수 */
             total: number;
         };
-        /** @enum {string} */
+        /**
+         * @description 주휴일 — 근무하지 않는 요일 하나(노무사 확인 2026-10-14). 주 소정근로시간이 15시간 이상이면 넣어야 하고,
+         *     15시간 미만이면 주휴가 없어 비운다(contracts.service checkWeeklyHoliday).
+         * @enum {string}
+         */
         Weekday: "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN";
         ContractWorkDayDto: {
             weekday: components["schemas"]["Weekday"];
@@ -2242,6 +2254,11 @@ export interface components {
         };
         /** @enum {string} */
         PayMonth: "CURRENT_MONTH" | "NEXT_MONTH";
+        /**
+         * @description 급여 지급 방식 — 계좌 · 현금
+         * @enum {string}
+         */
+        PayMethod: "ACCOUNT" | "CASH";
         CreateContractDto: {
             employmentType: components["schemas"]["EmploymentType"];
             /**
@@ -2249,8 +2266,15 @@ export interface components {
              * @enum {string}
              */
             contractMethod?: "ELECTRONIC";
+            /**
+             * @description 주휴일 — 근무하지 않는 요일 하나(노무사 확인 2026-10-14). 주 소정근로시간이 15시간 이상이면 넣어야 하고,
+             *     15시간 미만이면 주휴가 없어 비운다(contracts.service checkWeeklyHoliday).
+             */
+            weeklyHoliday?: components["schemas"]["Weekday"];
             workDays?: components["schemas"]["ContractWorkDayDto"][];
             payMonth?: components["schemas"]["PayMonth"];
+            /** @description 급여 지급 방식 — 계좌 · 현금 */
+            payMethod?: components["schemas"]["PayMethod"];
             /** @description 앞뒤 공백은 지운다(NFC) — 같은 사람의 가입 전 레코드를 이름으로 찾으므로 공백 하나로 갈리지 않게. */
             name: string;
             /** @description 숫자만 10~11자리 (예: 01090145563) */
@@ -2286,6 +2310,13 @@ export interface components {
             severancePayTerms?: string;
             /** @description 1~31. 31 은 말일 */
             payDay?: number;
+            /**
+             * @description 수습 기간 — 개월, 1~3. 비우면 수습 없음. 정직원이고 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둔다
+             *     (노무사 확인 2026-10-14). 감액률과 함께 넣는다.
+             */
+            probationMonths?: number;
+            /** @description 수습 중 임금 감액률 — %, 0~10. 수습 중 시급 = 시급 × (1 − 감액률). 수습 기간과 함께 넣는다 */
+            probationWageReductionRate?: number;
             /** @description 계약서 근무 장소 조항에 적는 주소. 근무지 점포와 따로다 */
             workLocation?: string;
             isHealthPensionInsured?: boolean;
@@ -2356,6 +2387,12 @@ export interface components {
             severancePayTerms: string | null;
             payMonth: components["schemas"]["PayMonth"] | null;
             payDay: number | null;
+            /** @description 급여 지급 방식 — 계좌 · 현금 */
+            payMethod: components["schemas"]["PayMethod"] | null;
+            /** @description 수습 기간 — 개월(1~3). 수습이 없으면 null */
+            probationMonths: number | null;
+            /** @description 수습 중 임금 감액률 — %(0~10). 수습이 없으면 null */
+            probationWageReductionRate: number | null;
             isHealthPensionInsured: boolean | null;
             isEmploymentInjuryInsured: boolean | null;
             /** @description 초대 유형 판별 결과(초안 저장 때). 임시저장이면 null */
@@ -3918,7 +3955,7 @@ export interface operations {
                     "application/json": components["schemas"]["CodeGroupListResponseDto"];
                 };
             };
-            /** @description 플랫폼 관리자가 아님 */
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 플랫폼 관리자가 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -3946,7 +3983,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 플랫폼 관리자가 아님 */
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 플랫폼 관리자가 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -3988,7 +4025,7 @@ export interface operations {
                     "application/json": components["schemas"]["CodeItemListResponseDto"];
                 };
             };
-            /** @description 플랫폼 관리자가 아님 */
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 플랫폼 관리자가 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -4025,7 +4062,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 플랫폼 관리자가 아님 */
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 플랫폼 관리자가 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -4067,7 +4104,7 @@ export interface operations {
                     "application/json": components["schemas"]["BpApplicationResponseDto"];
                 };
             };
-            /** @description 플랫폼 관리자가 아님 */
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 플랫폼 관리자가 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
