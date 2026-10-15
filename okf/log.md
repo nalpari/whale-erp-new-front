@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-15
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 관리자 로그인이 들어온 main 을 받고 점포 화면을 공통 틀(AdminFrame) 안에 맞췄다(`StoreFrame` 은 제목 줄 · 본문만, `stores/layout.tsx` 의 ErpRoot 는 걷음 — 헤더 · 높이 · 테마는 공통 틀이 잡는다). 로그인 전에 쓰던 개발 토큰 `API_DEV_TOKEN` 을 지웠다 — api 가 토큰의 접속(sid)까지 확인해 서명만 맞춘 토큰은 더 통하지 않는다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — 점포 화면 2차 리뷰와 api 3팀 계약(mankey) 반영: 등록 BP 를 코드에 박지 않고 환경 변수 `STORE_REGISTER_BP_CODE_ID` 로(없으면 싣지 않음), 진위확인은 지금 칸 값과 같을 때만 인증으로 보고 인증 안 한 변경은 저장 전에 막음(`savedCeoName`), 카카오 좌표는 십진수 · 범위 안만, 운영 조건 한글은 `GET /enums/StoreOperationRequirement`(상수표 지움), 폐점 + 이미지 저장 결과 모름 문구, 잘린 엑셀은 저장하지 않음, 주소 승인키 만료(E0014) · 시스템 오류는 설정 오류로, 칸을 못 찾은 검증 오류는 띠로, 핸들러 이름 `handle` 접두. 생성 타입은 api mankey openapi 로 다시 만들었다. `stores.md` 에 `sources` 를 더했다.
 
 ## 2026-10-14

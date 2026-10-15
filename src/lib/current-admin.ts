@@ -1,4 +1,4 @@
-// 지금 로그인한 관리자. 관리자 웹 로그인(1팀)이 아직 없어, api 에 싣는 접속 토큰(세션 · 개발 토큰)의 sub 를 읽는다.
+// 지금 로그인한 관리자 — api 에 싣는 로그인 세션 접속 토큰의 sub 를 읽는다.
 // 화면이 버튼을 미리 숨기고 흐리게 하는 데만 쓴다 — 서명은 확인하지 않는다. 막는 것은 늘 api 다(마스터 보호 · 본인 보호).
 // 예외: storeRegisterBpCodeId 는 점포 등록 요청에 실제로 싣는 임시 값이다(아래 설명).
 // TODO(로그인): 로그인 세션이 사용자 id · 권한 유형을 주면 이 파일을 그것으로 바꾼다.
@@ -31,7 +31,7 @@ function subOf(authorization: string | undefined): number | null {
     const sub = (JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as { sub?: unknown }).sub;
     return typeof sub === "number" && Number.isInteger(sub) && sub > 0 ? sub : null;
   } catch (error) {
-    // 개발 토큰을 잘못 넣으면 원인을 찾기 어려워 개발 중에만 알린다
+    // 토큰 모양이 다르면 원인을 찾기 어려워 개발 중에만 알린다
     if (process.env.NODE_ENV === "development") console.warn("접속 토큰의 sub 를 읽지 못했습니다", error);
     return null;
   }

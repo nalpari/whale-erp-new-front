@@ -90,12 +90,11 @@ export async function getSession(): Promise<Session | null> {
 }
 
 /**
- * API 호출에 실을 Authorization 헤더. 세션 쿠키의 접속 토큰을 쓰고, 없으면 개발 서버(next dev)에서만
- * `API_DEV_TOKEN` 을 쓴다 — 관리자 웹 로그인(1팀)이 생기기 전까지 화면을 실제 api 에 붙여 보려는 임시 길이다.
- * 운영 빌드에서는 이 값을 읽지 않는다. TODO(로그인): 로그인이 생기면 API_DEV_TOKEN 을 지운다.
+ * API 호출에 실을 Authorization 헤더 — 로그인 세션 쿠키의 접속 토큰. 세션이 없으면 비운다(api 가 401 로 알린다).
+ * 로그인 전에 쓰던 개발 토큰(API_DEV_TOKEN)은 관리자 로그인이 생겨 2026-10-15 에 지웠다 — api 가 토큰의 접속(sid)까지 확인해
+ * 서명만 맞춘 토큰은 더 통하지 않는다.
  */
 export async function authHeaders(): Promise<Record<string, string>> {
-  const token =
-    (await getSession())?.accessToken ?? (process.env.NODE_ENV === "development" ? process.env.API_DEV_TOKEN : undefined);
+  const token = (await getSession())?.accessToken;
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
