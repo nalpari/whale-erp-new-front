@@ -377,6 +377,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/signup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * BP 회원가입. BP 와 BP 마스터 계정을 함께 만들고, 메일 설정이 있으면 가입 완료 메일을 보낸다(메일이
+         *     없거나 실패해도 가입은 완료다). 아이디·이메일이 이미 쓰이면 409 다.
+         */
+        post: operations["AdminSignupController_signup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/signup/login-id-availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 아이디 중복 확인. 탈퇴·삭제한 계정의 아이디도 쓸 수 없다. */
+        post: operations["AdminSignupController_loginIdAvailability"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/signup/email-availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 이메일 중복 확인. 탈퇴·삭제한 계정의 이메일은 다시 쓸 수 있다. */
+        post: operations["AdminSignupController_emailAvailability"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/enums": {
         parameters: {
             query?: never;
@@ -454,7 +508,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** BP에 적용. 플랫폼제공 그룹만. 각 BP 에 아직 없는 행만 넣는다 — 다시 눌러도 된다. */
+        /**
+         * BP에 적용. 플랫폼제공 그룹만. 각 BP 에 아직 없는 행만 넣는다 — 다시 눌러도 된다.
+         *     되돌릴 수 없지만 행을 지우지 않고 그룹의 적용 여부를 바꾸는 동작이라 수정 권한으로 본다.
+         */
         post: operations["CodeGroupsController_applyToBps"];
         delete?: never;
         options?: never;
@@ -844,6 +901,11 @@ export interface paths {
         /**
          * 대표 이미지 올리기 · 바꾸기(점포당 1장). multipart 의 `file` 한 개, JPG · PNG 5MB 이하 — 종류는 확장자가
          *     아니라 내용으로 본다. 등록 화면은 점포를 등록한 뒤 이 경로로 올린다. 수정 권한이 있어야 한다.
+         *
+         *     수정 권한은 가드(@MenuPermission)가 먼저 본다 — 가드는 인터셉터보다 먼저 돌므로, 권한 없는 관리자의 요청은
+         *     AttachmentsInterceptor 가 multipart 본문(최대 5MB)을 받기 전에 403 이다. 핸들러의 allow() 는 같은 판정을
+         *     한 번 더 하지만 지우지 않는다 — 서비스가 받는 MenuCaller(권한 유형 · 권한 그룹)를 그 판정이 돌려주고, 업로드를
+         *     받는 사이 권한이 거둬졌으면 그것도 여기서 막는다.
          */
         put: operations["StoresController_putImage"];
         post?: never;
@@ -1576,6 +1638,59 @@ export interface components {
             codes: {
                 [key: string]: components["schemas"]["CodeValueDto"][];
             };
+        };
+        SignupDto: {
+            /**
+             * @description 영문 또는 영문·숫자 4~20자. 소문자로 정규화해 저장한다. 관리자 웹 로그인은 대소문자를 구분하므로(1팀),
+             *     가입한 사람은 이 소문자 아이디로 로그인한다 — 가입 완료 화면이 응답의 loginId 를 보여 준다.
+             */
+            loginId: string;
+            /** @description 영문·숫자·특수문자(!@#$%^&*()-_=+[]{}?)를 모두 포함해 8~20자 */
+            password: string;
+            /** @description 한글 또는 영문 2~20자 */
+            name: string;
+            /** @description 숫자만 10~11자리. 화면의 세 칸을 이어 붙인 값이다 */
+            phone: string;
+            /**
+             * Format: email
+             * @description 아이디 찾기·임시 비밀번호가 이 주소로 간다. 소문자로 정규화한다(admin_accounts_email_lower)
+             */
+            email: string;
+            /** @description 상호명 1~50자. 사업자 인증 결과로 채우지 않고 직접 입력한다 */
+            tradeName: string;
+            /** @description 이용약관(TERMS_SERVICE) 동의. 필수라 true 만 받는다 */
+            agreeTermsOfUse: boolean;
+            /** @description 개인정보 수집·이용(PRIVACY_COLLECT) 동의. 필수라 true 만 받는다 */
+            agreePrivacy: boolean;
+        };
+        SignupResponseDto: {
+            /**
+             * @description 가입 완료 화면을 여는 토큰. 10분 동안만 쓸 수 있다. 액세스 토큰이 아니라 이것으로 API 를
+             *     부를 수 없다 — 「웨일ERP 시작하기」가 이 토큰을 로그인 접속으로 바꾸는 API 는 관리자 웹 로그인과
+             *     함께 만든다.
+             */
+            signupToken: string;
+            /** @description 가입한 BP 상호명 */
+            tradeName: string;
+            /** @description 가입한 아이디(소문자로 정규화한 값) */
+            loginId: string;
+            /** @description 가입한 이메일(소문자로 정규화한 값). 가입 안내 메일이 가는 주소다 */
+            email: string;
+        };
+        LoginIdAvailabilityDto: {
+            /** @description 가입 화면의 아이디. 가입과 같이 소문자로 정규화해 본다 */
+            loginId: string;
+        };
+        AvailabilityResponseDto: {
+            /** @description 쓸 수 있으면 true. 누가 쓰는지는 알려 주지 않는다 */
+            available: boolean;
+        };
+        EmailAvailabilityDto: {
+            /**
+             * Format: email
+             * @description 가입 화면의 이메일. 가입과 같이 소문자로 정규화해 본다
+             */
+            email: string;
         };
         EnumValueDto: {
             /** @description 저장·전송 값. 예: PENDING_SEND */
@@ -3611,6 +3726,82 @@ export interface operations {
             };
         };
     };
+    AdminSignupController_signup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignupDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignupResponseDto"];
+                };
+            };
+            /** @description 같은 IP 의 시간당 한도(5건) */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminSignupController_loginIdAvailability: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginIdAvailabilityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailabilityResponseDto"];
+                };
+            };
+        };
+    };
+    AdminSignupController_emailAvailability: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailAvailabilityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailabilityResponseDto"];
+                };
+            };
+        };
+    };
     EnumsController_findAll: {
         parameters: {
             query?: never;
@@ -3680,7 +3871,7 @@ export interface operations {
                     "application/json": components["schemas"]["CodeGroupListResponseDto"];
                 };
             };
-            /** @description 플랫폼 관리자가 아님 */
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 플랫폼 관리자가 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -3708,7 +3899,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 플랫폼 관리자가 아님 */
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 플랫폼 관리자가 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -3750,7 +3941,7 @@ export interface operations {
                     "application/json": components["schemas"]["CodeItemListResponseDto"];
                 };
             };
-            /** @description 플랫폼 관리자가 아님 */
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 플랫폼 관리자가 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -3787,7 +3978,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 플랫폼 관리자가 아님 */
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 플랫폼 관리자가 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -3829,7 +4020,7 @@ export interface operations {
                     "application/json": components["schemas"]["BpApplicationResponseDto"];
                 };
             };
-            /** @description 플랫폼 관리자가 아님 */
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 플랫폼 관리자가 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
