@@ -2,7 +2,7 @@ import { Button, ListToolbar, PageBar } from "@/components/common";
 import { getStaffMembers, kstToday } from "@/lib/staff-members";
 import { StaffFilter } from "./staff-filter";
 import { StaffPageSize, StaffPagination } from "./staff-list-controls";
-import { parseStaffListQuery } from "./staff-list-query";
+import { parseStaffListQuery, toStaffListSearch } from "./staff-list-query";
 import { StaffTable } from "./staff-table";
 
 // 직원 정보 관리 목록(WHALEERP-138). 데모 docs/demo/staff/index.html 을 공통 컴포넌트로 옮겼다.
@@ -32,7 +32,7 @@ export default async function StaffMembersPage({
             </Button>
             <StaffPageSize query={query} />
           </ListToolbar>
-          <StaffTable items={items} total={total} page={query.page} pageSize={query.pageSize} today={kstToday()} />
+          <StaffTable items={items} total={total} page={query.page} pageSize={query.pageSize} today={kstToday()} listSearch={toStaffListSearch(query)} />
           <div className="pt-[14px]">
             <StaffPagination query={query} totalPages={totalPages} />
           </div>

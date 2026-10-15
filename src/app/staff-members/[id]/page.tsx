@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { DetailTable, PageBar } from "@/components/common";
 import { getStaffMember } from "@/lib/staff-members";
+import { staffListHref } from "../staff-list-query";
 import { EMPLOYMENT_TYPE_LABELS, employmentStatusCells, formatPhone } from "../staff-row";
 import { CellView } from "../staff-table";
 import { PasswordResetButton, StaffDetailActions } from "./staff-detail-actions";
@@ -51,10 +52,17 @@ const RIGHT_BOXES = [
 // 왼쪽은 기본 정보 · 비밀번호 초기화 · 근로계약, 오른쪽은 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO.
 // 지금은 목록 한 줄에 있는 값만 채운다. 직무 · 입사일 · 생년월일 · 본인인증 · 이메일과 각 영역의 내용은 상세 요약
 // api(WHALEERP-183)가 나오면 다시 작업한다. 가린 직원 · 없는 직원 · 이상한 id 는 404 다.
-export default async function StaffMemberDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function StaffMemberDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const staff = await getStaffMember((await params).id);
   if (!staff) notFound();
   const employmentStatus = employmentStatusCells(staff);
+  const listHref = staffListHref(await searchParams);
 
   const basicRows = [
     { label: "이름", value: staff.name },
@@ -77,7 +85,7 @@ export default async function StaffMemberDetailPage({ params }: { params: Promis
           <div className="flex flex-col gap-[12px]">
             <div className="flex items-center gap-[6px]">
               <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">직원 상세</h2>
-              <StaffDetailActions />
+              <StaffDetailActions listHref={listHref} />
             </div>
             <div className="grid grid-cols-[5fr_7fr] items-start gap-[24px]">
               <div className="flex min-w-0 flex-col gap-[24px]">
