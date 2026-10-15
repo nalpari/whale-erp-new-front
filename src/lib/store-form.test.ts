@@ -27,10 +27,11 @@ test("필수는 점포유형(등록) · 점포명뿐이다", () => {
   assert.ok(validateStoreForm({ ...filled, name: "가".repeat(51) }, "create").name);
 });
 
-test("연락처 9~11자리 · 대표자 연락처는 휴대전화 10~11자리", () => {
+test("연락처 9~11자리 · 대표자 연락처는 숫자 10~11자리(api 와 같게 유선 번호도 받는다)", () => {
   assert.equal(validateStoreForm({ ...filled, phone: ["02", "123", "4567"] }, "create").phone, undefined);
   assert.ok(validateStoreForm({ ...filled, phone: ["02", "12", "34"] }, "create").phone);
   assert.equal(validateStoreForm({ ...filled, ceoPhone: ["010", "1234", "5678"] }, "create").ceoPhone, undefined);
+  assert.equal(validateStoreForm({ ...filled, ceoPhone: ["02", "1234", "5678"] }, "create").ceoPhone, undefined);
   assert.ok(validateStoreForm({ ...filled, ceoPhone: ["02", "123", "4567"] }, "create").ceoPhone);
 });
 

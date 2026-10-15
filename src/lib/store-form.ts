@@ -182,7 +182,8 @@ export function formOfStore(d: StoreDetail): StoreForm {
 }
 
 const PHONE_PATTERN = /^[0-9]{9,11}$/;
-const MOBILE_PATTERN = /^01[0-9]{8,9}$/;
+// api save-store.dto 와 같은 검사 — 휴대전화로 좁히면 api 로 저장된 유선 번호 점포를 고칠 수 없다
+const CEO_PHONE_PATTERN = /^[0-9]{10,11}$/;
 const BIZ_NUMBER_PATTERN = /^[0-9]{10}$/;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 /** 소수 자릿수 상한까지의 숫자(음수 허용 여부는 따로) */
@@ -250,7 +251,7 @@ export function validateStoreForm(f: StoreForm, mode: "create" | "edit"): StoreF
 
   if (f.tradeName.trim().length > 50) errors.tradeName = "상호명은 50자까지입니다.";
   const ceoPhone = joinPhone(f.ceoPhone);
-  if (ceoPhone && !MOBILE_PATTERN.test(ceoPhone)) errors.ceoPhone = "대표자 연락처는 휴대전화 10~11자리입니다.";
+  if (ceoPhone && !CEO_PHONE_PATTERN.test(ceoPhone)) errors.ceoPhone = "대표자 연락처는 숫자 10~11자리입니다.";
   if (!f.bizSameAsStore) {
     if (f.bizAddressDetail.trim().length > 100) errors.bizAddressDetail = "상세주소는 100자까지입니다.";
     else if (f.bizAddressDetail.trim() && !f.bizAddress) errors.bizAddressDetail = "사업자주소를 먼저 검색해 주세요.";
