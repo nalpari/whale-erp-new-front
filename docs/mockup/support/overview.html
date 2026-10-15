@@ -180,7 +180,7 @@
                   <span class="badge badge--quiet">2</span>
                 </div>
                 <ul class="pol">
-                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 고객지원은 <b>화면 셋, 메뉴 셋</b>(공지사항 <code>/support-notices</code> · FAQ <code>/support-faqs</code> · 문의하기 <code>/support-inquiries</code>, 이 순서)이고 화면이 곧 전체 목록이다. 상세만 따로 둔다. (2026-10-15 재영 A안)</span><span class="pol__ref">S-ITFILU · SUPPORT-4</span></li>
+                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 고객지원은 <b>화면 셋, 메뉴 셋</b>(공지사항 <code>/support-notices</code> · FAQ <code>/support-faqs</code> · 문의하기 <code>/support-inquiries</code>, 이 순서)이고 화면이 곧 전체 목록이다. 상세만 따로 둔다. (2026-10-15 재영 C안)</span><span class="pol__ref">S-ITFILU · SUPPORT-4</span></li>
                 <li><span class="pol__t">FAQ 답변은 목록에서 펼친다. 상세 페이지는 없다.</span><span class="pol__ref">S-KJEVVS</span></li>
                 </ul>
               </div>
@@ -340,7 +340,7 @@
               <div class="gap__head">
                 <span class="gap__no">SUPPORT-4</span>
                 <b>공지·문의의 전체 목록과 상세를 어디에 둘 것인가</b>
-                <span class="gap__decided">확정 · 화면 셋 · 메뉴 셋 (2026-10-15 재영 A안)</span>
+                <span class="gap__decided">확정 · 화면 셋 · 메뉴 셋 (2026-10-15 재영 C안)</span>
                 <span class="gap__ref">S-ITFILU</span>
               </div>
               <div class="gap__opts">
@@ -358,7 +358,7 @@
                 </div>
               </div>
               <p class="gap__note">
-                2026-10-15 <b>B 에서 C 로 바꿨다</b>(재영 A안, WHALEERP-596). 관리자 웹 공통 틀은 메뉴 url 경로로 화면 권한을 판정하고
+                2026-10-15 <b>B 에서 C 로 바꿨다</b>(재영 C안, WHALEERP-596). 관리자 웹 공통 틀은 메뉴 url 경로로 화면 권한을 판정하고
                 해시는 보지 않는다. 그래서 B 의 「LNB 가 해시로 탭을 연다」로는 메뉴와 화면을 잇지 못하고, FAQ 는 메뉴 행이 없어 권한을 따로 줄 수 없었다.
                 직원관리도 같은 이유로 메뉴마다 한 단계 경로로 나눴다(WHALEERP-594). 메뉴 데이터는 api 마이그레이션 <code>20261015150000_team3_support_menu_split</code> 이 바꾼다.
                 옛 기록 — 처음엔 A 로 그렸다가 <b>B 로 뒤집었다</b>. 고객지원은 공지·FAQ·문의 셋뿐이라 요약 홈을 따로 둘 만큼
