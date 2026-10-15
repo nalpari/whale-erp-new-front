@@ -35,12 +35,15 @@ export function StaffTable({
   page,
   pageSize,
   today,
+  listSearch,
 }: {
   items: StaffMemberListItem[];
   total: number;
   page: number;
   pageSize: number;
   today: string;
+  /** 지금 목록 조건(toStaffListSearch). 상세 링크에 붙여 상세의 「목록」이 같은 조건으로 돌아오게 한다. */
+  listSearch: string;
 }) {
   const columns: Column<Row>[] = [
     { header: "순번", width: "w-[60px]", cell: (r) => r.no },
@@ -51,7 +54,7 @@ export function StaffTable({
         item.isMasked ? (
           <span className="text-erp-muted">본사 제공 동의 없음</span>
         ) : item.joinState === "JOINED" && item.employmentStatus === "EMPLOYED" ? (
-          <Link href={`/staff-members/${item.staffMemberId}`} className="text-erp-link hover:underline">
+          <Link href={`/staff-members/${item.staffMemberId}${listSearch}`} className="text-erp-link hover:underline">
             {item.name}
           </Link>
         ) : (

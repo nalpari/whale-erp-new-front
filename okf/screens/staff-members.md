@@ -40,6 +40,16 @@ sources:
 — **api 를 붙일 때 그 함수의 안만 바꾸고 화면은 손대지 않게** 나눠 두었다. 배치는 데모
 `docs/demo/staff/index.html` · `detail.html` 과 같다(목록의 「이번 주」 칸만 뺐다).
 
+# 공통 틀 안에서 그린다
+
+로그인 후 화면이라 루트 layout 의 공통 틀(`AdminFrame` — 로그인 정보 게이트 · 공통 헤더 · 알림 종 · 메뉴 권한 확인)이
+바깥 틀과 `ErpRoot` 를 씌운다. 목록 · 상세 page 는 `PageBar`(제목 줄)부터 그리고, `layout.tsx` 는 탭 제목만 둔다
+(WHALEERP-593, 2026-10-14). 주소는 메뉴 url 과 같아야 열린다 — 「직원 정보 관리」(MN000005) 메뉴 url 을 `/staff` 에서
+`/staff-members` 로 바꾸는 것은 1팀 일이고(#592 결정), 반영 전에는 메뉴 권한 확인에서 막힌다. 상세의 「관리」 링크는 같은
+결정의 메뉴 url 로 건다. 지금은 화면이 있는 근로계약(`/contracts`)만 링크이고, 근무스케줄(`/work-schedules`) ·
+출퇴근 현황(`/attendance-records`) · 급여명세서(`/payslips`) · TO-DO(`/todos`)는 흐린 「관리」로 두었다 — 걸면 메뉴가
+없을 때 「접근 권한이 없는 메뉴」로 막혀 권한 문제처럼 보인다(front #26 리뷰). 화면이 생기면 링크로 바꾼다.
+
 # 목록 — api 를 붙일 때
 
 응답 모양은 api `GET /staff-members`(whale-erp-api PR #13)를 그대로 옮겼다. `getStaffMembers(query)` 안을
@@ -50,6 +60,7 @@ sources:
 * **묶음 · 고용형태를 하나도 고르지 않았거나 점포명에 맞는 점포가 없으면 api 를 부르지 않고 0건이다.** api 는 빈 값을
   400 으로 막고, 파라미터를 빼면 전체를 돌려준다 — 둘을 바꿔 쓰면 「하나도 안 고름」이 「전체」가 된다.
 * 점포 필터는 화면이 점포명 검색인데 api 는 `storeIds` 다. 점포 조회로 ID 를 구해 보낸다.
+* 조회 조건의 BP · 점포는 로그인 정보 훅(`useCurrentBp().bpCodeId` · `useStores`)에서 읽는다. 목 데이터인 동안은 쓰지 않는다.
 * 라벨(`StaffJoinState` · `EmploymentType`)은 `getEnum` 으로 바꾼다. 화면 묶음 라벨(`JOIN_GROUP_LABELS`)은 화면 것이라 남는다.
 * api 오류(403 · 400 · 네트워크)를 받을 화면(`error.tsx`)이 아직 없다. 붙일 때 같이 만든다.
 

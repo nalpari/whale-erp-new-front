@@ -64,6 +64,14 @@ export function toStaffListSearch(query: StaffListQuery): string {
   return search ? `?${search}` : "";
 }
 
+/**
+ * 상세의 「목록」 주소. 목록이 상세 링크에 붙여 보낸 조건을 그대로 돌려줘 검색 · 쪽이 풀리지 않게 한다.
+ * 받은 쿼리는 목록과 같은 규칙으로 걸러 다시 만든다 — 모르는 이름 · 이상한 값은 따라오지 않는다.
+ */
+export function staffListHref(raw: RawSearch): string {
+  return `/staff-members${toStaffListSearch(parseStaffListQuery(raw))}`;
+}
+
 /** 필터 · 건수를 바꾼다. 쪽은 1로 돌린다 — 4쪽에서 거르면 빈 쪽이 보인다. */
 export function withFilter(query: StaffListQuery, next: Partial<StaffListQuery>): StaffListQuery {
   return { ...query, ...next, page: 1 };
