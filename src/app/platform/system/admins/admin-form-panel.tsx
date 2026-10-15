@@ -17,7 +17,7 @@ import {
 } from "@/lib/platform-admin-form";
 import type { PlatformAdminDetail, PlatformRoleGroup } from "@/lib/platform-admins";
 import { checkLoginIdAvailableAction, createPlatformAdminAction, updatePlatformAdminAction } from "./actions";
-import { AddressField } from "./address-field";
+import { AddressField } from "@/components/address-field";
 import { FailedBand, FieldMessage, ROLE_TYPE_LABEL, unknownResult } from "./admin-parts";
 
 // 플랫폼 관리자 등록(S-FOJJKB) · 수정(S-CZGHBS) 슬라이드 패널. 패널 폭(464)이라 칸을 한 줄에 하나씩 쌓는다(데모와 같다).

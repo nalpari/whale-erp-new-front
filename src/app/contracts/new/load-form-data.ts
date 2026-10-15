@@ -23,7 +23,7 @@ export async function loadFormData(): Promise<{
   const labels = { employmentType, weekday, payMonth, contractStatus };
   if (!session) return { stores: [], labels, signedIn: false, token: null };
   try {
-    const { items } = await request<{ items: StoreOption[] }>("/stores?pageSize=200", {
+    const { items } = await request<{ items: StoreOption[] }>("/stores/options?pageSize=200", {
       headers: { Authorization: `Bearer ${session.accessToken}` },
     });
     return { stores: items, labels, signedIn: true, token: session.accessToken };

@@ -1,8 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactCompiler: true,
+  experimental: {
+    serverActions: {
+      // 점포 대표 이미지(5MB)를 서버 액션으로 받는다. 기본 한도(1MB)로는 모자라, 5MB 에 multipart 경계 · 머리말 여유 1MB 를 더해 6MB 로 둔다.
+      // 이 한도는 모든 서버 액션에 걸린다. TODO(로그인): 지금 서버 액션은 로그인 없이 부를 수 있으니, 로그인이 생기면 세션 확인을 함께 건다.
+      bodySizeLimit: "6mb",
+    },
+  },
   // 사내 와이파이(172.30.1.x)에서 개발 서버를 열어 볼 수 있게 한다. 없으면 HMR 연결이 막혀 화면이 클릭되지 않는다.
   allowedDevOrigins: ["172.30.1.*"],
 };
