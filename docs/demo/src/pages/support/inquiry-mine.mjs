@@ -16,7 +16,7 @@ export default ({ A, R }) => {
   // 직원 상세와 같은 틀: 첫 줄 「문의사항 상세」 + 버튼, 문의·답변·진행은 머리 칸이 있는 상자 안에(2026-10-02 재영).
   const head = p.detailHead(
     "문의사항 상세",
-    ui.button("새 문의", { variant: "soft", href: L("support/inquiries.html") }) + ui.button("목록", { href: L("support/inquiries.html") }),
+    ui.button("목록", { href: L("support/inquiries.html") }),
   );
   const mine = p.box(
     "가맹점 초대 메일이 반송됩니다",

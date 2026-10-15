@@ -47,6 +47,12 @@
                 <div class="panel__head">
                   <h2 class="t-h2">공지사항</h2>
                   <div class="panel__end">
+                    <div class="seg">
+                      <button type="button" aria-pressed="true">전체</button>
+                      <button type="button" aria-pressed="false">게시</button>
+                      <button type="button" aria-pressed="false">임시저장</button>
+                      <button type="button" aria-pressed="false">비공개</button>
+                    </div>
                     <a class="btn btn--primary btn--sm" href="notice-edit.html">
                       <span data-icon="plus" data-icon-size="14"></span>새 공지
                     </a>
@@ -57,49 +63,43 @@
                     <thead>
                       <tr>
                         <th scope="col">제목</th>
-                        <th scope="col">노출 대상</th>
+                        <th scope="col">유형</th>
                         <th scope="col">상태</th>
-                        <th scope="col">게시일</th>
+                        <th scope="col">최근 수정</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
                         <td class="k"><span class="badge badge--risk" style="margin-right: 6px">고정</span><a class="tlink" href="notice-edit.html">9월 정기 점검 안내 (09-14 02:00~05:00)</a></td>
-                        <td>
-                          <span class="badge badge--quiet">비회원</span>
-                          <span class="badge badge--quiet">회원</span>
-                          <span class="badge badge--quiet">BP</span>
-                        </td>
+                        <td>점검</td>
                         <td><span class="badge badge--ok">게시</span></td>
-                        <td class="mono">2026-09-05</td>
-                      </tr>
-                      <tr>
-                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">근로계약 전자날인 기능이 열렸습니다</a></td>
-                        <td>
-                          <span class="badge badge--quiet">BP</span>
-                          <span class="badge badge--quiet">점포</span>
-                        </td>
-                        <td><span class="badge badge--ok">게시</span></td>
-                        <td class="mono">2026-09-01</td>
+                        <td class="mono">09-05 14:20 · 이서준</td>
                       </tr>
                       <tr>
                         <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">10월 요금 PLAN 개편 사전 안내</a></td>
-                        <td><span class="subtle">—</span></td>
+                        <td>안내</td>
                         <td><span class="badge badge--quiet">임시저장</span></td>
-                        <td class="subtle">—</td>
+                        <td class="mono">09-04 18:02 · 김하린</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">근로계약 전자날인 기능이 열렸습니다</a></td>
+                        <td>기능</td>
+                        <td><span class="badge badge--ok">게시</span></td>
+                        <td class="mono">09-01 10:00 · 이서준</td>
                       </tr>
                       <tr>
                         <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">8월 점검 안내 (종료)</a></td>
-                        <td><span class="badge badge--quiet">비회원</span></td>
+                        <td>점검</td>
                         <td><span class="badge badge--quiet">비공개</span></td>
-                        <td class="mono">2026-08-10</td>
+                        <td class="mono">08-11 09:30 · 이서준</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
                 <div class="panel__note">
                   상태는 <b>임시저장 · 게시 · 비공개</b> 셋이다. 지운 것도 복구할 수 있게 보관하고 사용자 화면에서만 감춘다.
-                  <b>고정</b>은 편집 화면의 게시 설정에서 켜고, 사용자 쪽 목록에서 맨 위에 선다.
+                  <b>고정</b>은 편집 화면의 게시 설정에서 켜고, 사용자 쪽 목록에서 맨 위에 선다. 이 목록은 최근 수정일 내림차순이라 고정 글을 위로 올리지 않고 표시만 한다.
+                  목록 칸은 제목·유형·고정·상태·최근 수정(일시·수정자)이고 <b>게시 상태로만</b> 거른다. 노출 대상은 편집 화면에서 본다(WHALEERP-332).
                   부가서비스 대상(상품별, SUPPORT-2)은 1차에 없다(2026-10-12 재영).
                   BP 한 곳에만 쓰는 공지는 여기 없다. 그건 운영자가 아니라 그 BP 가 쓸 글이라 SUPPORT-3 으로 뗐다.
                 </div>
@@ -113,9 +113,9 @@
                   <div class="panel__end">
                     <div class="seg">
                       <button type="button" aria-pressed="true">전체</button>
-                      <button type="button" aria-pressed="false">직원·근로</button>
-                      <button type="button" aria-pressed="false">요금·구독</button>
-                      <button type="button" aria-pressed="false">점포·설비</button>
+                      <button type="button" aria-pressed="false">게시</button>
+                      <button type="button" aria-pressed="false">임시저장</button>
+                      <button type="button" aria-pressed="false">비공개</button>
                     </div>
                     <a class="btn btn--primary btn--sm" href="notice-edit.html#faq">
                       <span data-icon="plus" data-icon-size="14"></span>새 FAQ
@@ -128,37 +128,34 @@
                       <tr>
                         <th scope="col">질문</th>
                         <th scope="col">카테고리</th>
-                        <th scope="col">노출 대상</th>
                         <th scope="col">상태</th>
+                        <th scope="col">최근 수정</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">가입은 누가 할 수 있나요?</a></td>
-                        <td>가입·계정</td>
-                        <td><span class="badge badge--quiet">비회원</span></td>
-                        <td><span class="badge badge--ok">게시</span></td>
-                      </tr>
-                      <tr>
-                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">직원도 이 사이트로 로그인하나요?</a></td>
-                        <td>가입·계정</td>
-                        <td><span class="badge badge--quiet">비회원</span></td>
-                        <td><span class="badge badge--ok">게시</span></td>
-                      </tr>
-                      <tr>
                         <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">근로계약서를 보냈는데 직원이 못 받았다고 합니다</a></td>
                         <td>직원·근로</td>
-                        <td><span class="badge badge--quiet">BP</span></td>
                         <td><span class="badge badge--ok">게시</span></td>
+                        <td class="mono">09-03 10:20 · 이서준</td>
                       </tr>
                       <tr>
                         <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">퇴사한 직원의 급여명세서는 어떻게 보나요</a></td>
                         <td>직원·근로</td>
-                        <td>
-                          <span class="badge badge--quiet">BP</span>
-                          <span class="badge badge--quiet">점포</span>
-                        </td>
                         <td><span class="badge badge--ok">게시</span></td>
+                        <td class="mono">08-28 16:40 · 김하린</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">가입은 누가 할 수 있나요?</a></td>
+                        <td>가입·계정</td>
+                        <td><span class="badge badge--ok">게시</span></td>
+                        <td class="mono">08-20 15:11 · 이서준</td>
+                      </tr>
+                      <tr>
+                        <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">직원도 이 사이트로 로그인하나요?</a></td>
+                        <td>가입·계정</td>
+                        <td><span class="badge badge--ok">게시</span></td>
+                        <td class="mono">08-20 15:02 · 이서준</td>
                       </tr>
                     </tbody>
                   </table>
@@ -166,6 +163,7 @@
                 <div class="panel__note">
                   FAQ 는 공지와 <b>같은 편집 화면</b>을 쓴다. 다른 것은 카테고리를 갖는다는 점뿐이고,
                   노출 대상과 게시 상태는 그대로다. 비회원이 붙은 둘이 로그인 전 홈에 서 있는 그 FAQ 다.
+                  목록은 최근 수정일 내림차순이고 <b>게시 상태로만</b> 거른다. 노출 대상은 목록에 싣지 않고 편집 화면에서 본다(WHALEERP-332).
                 </div>
               </div>
             </div>
@@ -219,6 +217,8 @@
                 </div>
                 <div class="panel__note">
                   답변을 저장하면 상태가 <b>즉시 답변 완료</b>로 바뀐다. 따로 상태를 고르지 않는다.
+                  상태는 접수·처리중·답변 완료 셋이고, 목록은 <b>답변 대기(접수 + 처리중)</b>와 답변 완료로 나눈다(WHALEERP-332).
+                  처리중은 운영자가 상세에서 [처리 시작]으로 바꾼다(WHALEERP-274).
                 </div>
               </div>
             </div>
@@ -238,32 +238,32 @@
                   <table class="tbl">
                     <thead>
                       <tr>
-                        <th scope="col">담당자</th>
-                        <th scope="col">사업자</th>
-                        <th scope="col">운영 형태</th>
+                        <th scope="col">문의자</th>
+                        <th scope="col">업종</th>
+                        <th scope="col">관심 서비스</th>
                         <th scope="col">상태</th>
                         <th scope="col">접수</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <td class="k"><a class="tlink" href="lead-detail.html">조민석 · 010-7741-2093</a></td>
-                        <td>모리커피 청담</td>
-                        <td>가맹점</td>
+                        <td class="k"><a class="tlink" href="lead-detail.html">조민석 · 02-514-7741</a></td>
+                        <td>카페·음료</td>
+                        <td>매장운영 · 프랜차이즈</td>
                         <td><span class="badge badge--warn">답변 대기</span></td>
                         <td class="mono">09-06</td>
                       </tr>
                       <tr>
                         <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">윤서린 · 010-3320-8814</a></td>
-                        <td>㈜세움에프앤비</td>
-                        <td>프랜차이즈 본사</td>
+                        <td>음식점</td>
+                        <td>매장운영</td>
                         <td><span class="badge badge--warn">답변 대기</span></td>
                         <td class="mono">09-03</td>
                       </tr>
                       <tr>
                         <td class="k"><a class="tlink is-na" href="#" aria-disabled="true">한도윤 · 010-9902-1177</a></td>
-                        <td>도윤상회</td>
-                        <td>단일 점포</td>
+                        <td>기타 (꽃집)</td>
+                        <td>재무관리</td>
                         <td><span class="badge badge--ok">답변 완료</span></td>
                         <td class="mono">08-27</td>
                       </tr>
@@ -271,8 +271,10 @@
                   </table>
                 </div>
                 <div class="panel__note">
-                  <b>로그인하지 않은 방문자</b>가 남긴 건이다. 문의사항과 달리 계정이 없으므로 담당자 정보와
-                  사업자 정보가 그 자체로 신원이 된다. 개인정보는 상담 완료일로부터 <b>1년</b> 뒤 파기한다.
+                  <b>로그인하지 않은 방문자</b>가 남긴 건이다. 문의사항과 달리 계정이 없으므로 적어 준 이름·업종·전화번호·이메일이
+                  그 자체로 신원이 된다. 상호·사업자등록번호·운영 형태·점포 수는 접수 때 받지 않는다(WHALEERP-288).
+                  목록 칸은 문의자·전화번호·업종·관심 서비스·상태·접수 일시뿐이고 답변 상태로만 거른다(WHALEERP-332).
+                  개인정보는 상담 완료일로부터 <b>1년</b> 뒤 파기한다.
                 </div>
               </div>
             </div>

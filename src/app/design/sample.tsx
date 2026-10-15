@@ -35,7 +35,7 @@ export const STORES = [
 export const USER_ITEMS: UserPopItem[] = [
   { label: "내정보 관리", href: "#" },
   { label: "비밀번호 변경", href: "#" },
-  // 샘플이라 실제 로그아웃(logoutAction)을 연결하지 않는다. 실제 화면에서는 action: logoutAction(@/app/login/actions) 을 넘긴다.
+  // 샘플이라 실제 로그아웃(logout)을 연결하지 않는다. 실제 화면에서는 action: logout(@/app/actions) 을 넘긴다.
   { label: "로그아웃", href: "#", danger: true },
 ];
 
@@ -113,6 +113,8 @@ export const PAGE_LINKS: PageLink[] = [
   { group: "비로그인", name: "아이디/비밀번호 찾기", href: "/design/guest/find-account", source: "Figma 아이디/비밀번호 찾기 (1:1811)", entry: "로그인 「아이디/비밀번호 찾기」" },
   { group: "비로그인", name: "회원가입", href: "/design/guest/sign-up", source: "기획 시안(Claude 아티팩트) + Figma 폼 규격", entry: "로그인 「사업자 회원가입」 · 계정 찾기 「회원가입」" },
   { group: "비로그인", name: "가입 완료", href: "/design/guest/sign-up/complete", source: "기획 시안(Claude 아티팩트 signup-done)", entry: "회원가입 완료 후" },
+  { group: "비로그인", name: "도입문의", href: "/design/guest/inquiry", source: "목업 home/inquiry + 회원가입 폼 규격(Figma 시안 없음)", entry: "머리말 도입문의 · 화면마다 「도입문의」 버튼" },
+  { group: "비로그인", name: "공지사항 · FAQ", href: "/design/guest/notices", source: "목업 home/notices + 메인 소식·FAQ 판(Figma 시안 없음)", entry: "머리말 공지사항 · 메인 「전체 보기」 · 「전체 질문 보기」(#faq)" },
 ];
 export const PAGE_LINK_COLUMNS: Column<PageLink>[] = [
   { header: "구분", width: "w-[100px]", cell: (r) => r.group },
