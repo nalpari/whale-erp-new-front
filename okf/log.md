@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-15
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #33 3차 리뷰 반영(영주). `/contracts/paper` 의 Origin 검사를 Next 16.3 서버 액션(`parseHostHeader`)과 똑같이 했다 — `x-forwarded-host` 가 있으면 첫 값만 보고 `host` 로 다시 보지 않는다. `api-types.generated.ts` 를 api #49 4차 반영 openapi 로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — api #49 3차 리뷰에 맞췄다. 같은 점포 진행 중 계약 대체 확인창이 계약마다 직원 이름 · 계약 기간을 보인다(409 `contracts` 의 `name` · `startDate` · `endDate`, 없으면 뺀다). `api-types.generated.ts` 를 api #49 의 openapi 로 다시 만들었다(503 설명 · main 의 다른 변경 포함).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #33 재리뷰 반영(영주). `/contracts/paper` 의 Origin 검사를 서버 액션 기준으로 맞췄다(`x-forwarded-host` 첫 값 또는 `host`) — `src/lib/paper-request.ts` 로 옮기고 proxy 401 경로 판정(`answersWith401`)과 함께 단위 테스트를 더했다. 근로계약서 작성 · 이어 쓰기에서 저장하지 못하면 폼 맨 아래 안내로 화면을 옮긴다(위쪽 버튼을 누르면 안내가 화면 밖이라 제자리처럼 보였다).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #33 리뷰 반영(영주). 상세는 `documents` 가 없어도 깨지지 않는다(api #49 전 배포 대비). 세션이 끊긴 채 「종이 계약 등록」을 누르면 proxy 가 `/contracts/paper` 에는 401 JSON 을 줘 로그인으로 간다. 날인본 내려받기가 실패하면 상세로 돌아와 안내(`?document=`)를 띄우고, 401 이면 쿠키를 지우고 로그인으로. `/contracts/paper` 는 Origin 이 다르면 403. 종이 계약 대체 확인창에 체결 완료 종료를 적었다.

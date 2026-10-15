@@ -14,11 +14,14 @@ test("sameOrigin — host 가 Origin 과 같으면 통과(포트까지 본다)",
   assert.equal(sameOrigin("https://evil.example.com", null, "erp.example.com"), false);
 });
 
-test("sameOrigin — x-forwarded-host 는 쉼표 목록의 첫 값, 안 맞으면 host 로 다시 본다", () => {
+test("sameOrigin — x-forwarded-host 가 있으면 쉼표 목록의 첫 값만 본다(Next 서버 액션과 같다)", () => {
   assert.equal(sameOrigin("https://erp.example.com", "erp.example.com, internal-lb", "internal-lb"), true);
   assert.equal(sameOrigin("https://erp.example.com", " erp.example.com ", "10.0.0.1:3000"), true);
-  assert.equal(sameOrigin("https://erp.example.com", "proxy.internal", "erp.example.com"), true);
+  // forwarded 가 다르면 host 가 맞아도 막는다
+  assert.equal(sameOrigin("https://erp.example.com", "proxy.internal", "erp.example.com"), false);
   assert.equal(sameOrigin("https://erp.example.com", "internal-lb, erp.example.com", "10.0.0.1:3000"), false);
+  // 비어 있으면 없는 것으로 보고 host 를 본다
+  assert.equal(sameOrigin("https://erp.example.com", "", "erp.example.com"), true);
 });
 
 test("sameOrigin — Origin 이 없거나 null · 깨진 값이면 막는다", () => {

@@ -12,8 +12,8 @@ export function answersWith401(pathname: string): boolean {
 }
 
 /**
- * Origin 이 이 서버인가. Next 서버 액션과 같은 기준이다 — x-forwarded-host 는 쉼표 목록의 첫 값을 쓰고,
- * 그 값이나 host 중 하나가 Origin 의 host 와 같으면 통과한다. Origin 이 없거나 읽을 수 없으면(null 포함) 막는다.
+ * Origin 이 이 서버인가. Next 16.3 서버 액션과 같은 기준이다(action-handler 의 parseHostHeader) — x-forwarded-host 가
+ * 있으면 쉼표 목록의 첫 값만 보고, 없을 때만 host 를 본다. Origin 이 없거나 읽을 수 없으면(null 포함) 막는다.
  */
 export function sameOrigin(origin: string | null, forwardedHost: string | null, host: string | null): boolean {
   if (!origin) return false;
@@ -25,5 +25,6 @@ export function sameOrigin(origin: string | null, forwardedHost: string | null, 
   }
   if (!originHost) return false;
   const forwarded = forwardedHost?.split(",")[0]?.trim();
-  return (!!forwarded && forwarded === originHost) || (!!host && host === originHost);
+  const serverHost = forwarded || host;
+  return !!serverHost && serverHost === originHost;
 }
