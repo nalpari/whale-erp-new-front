@@ -1,32 +1,17 @@
 import type { ReactNode } from "react";
-import { GlobalHeader, PageBar, ServiceLinks, StoreSelect, UserPop } from "@/components/common";
-import { NotificationBellSlot } from "@/components/notifications/notification-bell-slot";
-// 헤더 메뉴 · 사용자 메뉴는 아직 디자인 견본의 값뿐이다. 1팀 관리자 로그인 · 메뉴 권한이 생기면 그 값으로 바꾼다.
-import { MENUS, STORES, USER_ITEMS } from "../design/sample";
+import { PageBar } from "@/components/common";
 
 /**
- * 점포 정보 관리 화면들의 바깥 틀 — 헤더 · 제목 줄(「점포 정보 관리」) · 본문. 화면 높이에 맞춰 두고 넘치는 내용은
- * 본문 안에서만 스크롤한다(DESIGN.md 「한 화면 규칙」). 목록은 필터 · 목록을 나란히, 상세 · 등록 · 수정은 흰 카드 하나를 둔다.
+ * 점포 정보 관리 화면들의 제목 줄(「점포 정보 관리」)과 본문. 헤더 · 화면 높이 · 가로 스크롤 · 밝은 테마는 로그인 후 공통 틀
+ * (AdminFrame)이 잡는다 — 여기서 헤더를 또 그리면 두 줄이 된다. 넘치는 내용은 본문 안에서만 스크롤한다(DESIGN.md 「한 화면 규칙」).
+ * 목록은 필터 · 목록을 나란히, 상세 · 등록 · 수정은 흰 카드 하나를 둔다.
  */
 export function StoreFrame({ children, actions }: { children: ReactNode; actions?: ReactNode }) {
   return (
-    <div className="h-[100dvh] overflow-x-auto overflow-y-hidden bg-erp-thead-bg">
-      <div className="relative flex h-full min-w-[1720px] flex-col overflow-x-clip">
-        <GlobalHeader
-          menus={MENUS}
-          right={
-            <>
-              <StoreSelect options={STORES} />
-              <ServiceLinks />
-              <NotificationBellSlot />
-              <UserPop name="정하윤 (BP 마스터)" items={USER_ITEMS} />
-            </>
-          }
-        />
-        <PageBar title="점포 정보 관리">{actions}</PageBar>
-        {children}
-      </div>
-    </div>
+    <>
+      <PageBar title="점포 정보 관리">{actions}</PageBar>
+      {children}
+    </>
   );
 }
 
