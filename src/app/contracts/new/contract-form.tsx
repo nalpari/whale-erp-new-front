@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useId, useRef, useState, useTransition, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
 import { Button, Checkbox, ConfirmDialog, DataTable, DateField, FormGroup, FormRow, Radio, Select, Textarea, TextField } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { createContract, updateContract } from "./actions";
@@ -227,6 +227,17 @@ export function ContractForm({
   const [tried, setTried] = useState(false);
   const [serverError, setServerError] = useState("");
   const [saving, startSaving] = useTransition();
+  // 저장하지 못하면 안내(폼 맨 아래)로 화면을 옮긴다 — 위쪽 버튼을 누르면 안내가 화면 밖에 떠 제자리인 것처럼 보였다.
+  // 같은 이유로 다시 실패해도 옮기도록 횟수로 센다.
+  const failureRef = useRef<HTMLDivElement>(null);
+  const [failures, setFailures] = useState(0);
+  useEffect(() => {
+    if (failures) failureRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [failures]);
+  const fail = (message: string) => {
+    setServerError(message);
+    setFailures((n) => n + 1);
+  };
   // 같은 점포에 진행 중 계약이 있어 저장하지 못했을 때 — 대체를 확인받아 같은 본문에 그 목록을 실어 다시 보낸다.
   // paper 면 종이 계약 등록(날인본과 함께)이었다.
   const [replace, setReplace] = useState<{ body: CreateContractBody; list: InProgressContract[]; paper: boolean } | null>(null);
@@ -254,7 +265,10 @@ export function ContractForm({
     setTried(true);
     setLastTemporary(temporary);
     setServerError("");
-    if (problems(form, temporary, files.employment !== null).length) return;
+    if (problems(form, temporary, files.employment !== null).length) {
+      setFailures((n) => n + 1);
+      return;
+    }
     // 종이 계약 등록은 날인본과 함께 보낸다. 임시저장은 종이 계약이어도 파일 없이 JSON 으로 둔다.
     if (paper && !temporary) sendPaper(toBody(form));
     else send(toBody(form, temporary));
@@ -269,7 +283,7 @@ export function ContractForm({
         return;
       }
       setReplace(null);
-      setServerError(result.error);
+      fail(result.error);
     });
 
   // 종이 계약 등록 — 날인본이 10MB 까지라 서버 액션(6MB 한도) 대신 라우트 핸들러(/contracts/paper)로 보낸다.
@@ -301,7 +315,7 @@ export function ContractForm({
         return;
       }
       setReplace(null);
-      setServerError(result.error);
+      fail(result.error);
     });
 
   // 요일을 켜고 끄면 그 요일의 표 시간은 위 근무시간 · 휴게시간으로 돌아간다(데모 확인 2026-10-15).
@@ -698,17 +712,19 @@ export function ContractForm({
           desc="근로계약·출퇴근·급여는 점포에서 따로 관리해 주세요. 계약 시작일 기준으로 따지며, 만 19세 미만이면 저장이 막히고 초대도 나가지 않습니다."
         />
         {(serverError || (tried && issues.length > 0)) && (
-          <Band
-            risk
-            title="저장하지 못했습니다"
-            desc={
-              <ul className="list-disc pl-[18px]">
-                {(serverError ? [serverError] : issues).map((m) => (
-                  <li key={m}>{m}</li>
-                ))}
-              </ul>
-            }
-          />
+          <div ref={failureRef}>
+            <Band
+              risk
+              title="저장하지 못했습니다"
+              desc={
+                <ul className="list-disc pl-[18px]">
+                  {(serverError ? [serverError] : issues).map((m) => (
+                    <li key={m}>{m}</li>
+                  ))}
+                </ul>
+              }
+            />
+          </div>
         )}
         <div className="flex items-center gap-[6px]">
           <span className="flex-1 text-[14px] text-erp-label">

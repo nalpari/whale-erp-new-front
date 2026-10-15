@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-15
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #33 재리뷰 반영(영주). `/contracts/paper` 의 Origin 검사를 서버 액션 기준으로 맞췄다(`x-forwarded-host` 첫 값 또는 `host`) — `src/lib/paper-request.ts` 로 옮기고 proxy 401 경로 판정(`answersWith401`)과 함께 단위 테스트를 더했다. 근로계약서 작성 · 이어 쓰기에서 저장하지 못하면 폼 맨 아래 안내로 화면을 옮긴다(위쪽 버튼을 누르면 안내가 화면 밖이라 제자리처럼 보였다).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #33 리뷰 반영(영주). 상세는 `documents` 가 없어도 깨지지 않는다(api #49 전 배포 대비). 세션이 끊긴 채 「종이 계약 등록」을 누르면 proxy 가 `/contracts/paper` 에는 401 JSON 을 줘 로그인으로 간다. 날인본 내려받기가 실패하면 상세로 돌아와 안내(`?document=`)를 띄우고, 401 이면 쿠키를 지우고 로그인으로. `/contracts/paper` 는 Origin 이 다르면 403. 종이 계약 대체 확인창에 체결 완료 종료를 적었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 종이 계약 등록(CTR-23, Plane #132): 계약 방식 「종이 계약」을 열고 날인본 칸(근로계약서 필수 · 임금계약서 선택)과 「종이 계약 등록」 버튼, 라우트 핸들러 `/contracts/paper` 로 multipart 를 api 에 넘긴다(서버 액션 한도 6MB 를 넘어서). proxy 본문 한도 21MB. 상세에 계약 방식 · 날인본 내려받기 링크(`/contracts/[contractId]/documents/[contractDocumentId]`).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #23 ⑤ 블로커 반영: 회원가입 아이디 칸을 입력하는 순간 소문자로 바꿔 보인다. api 는 소문자로 저장하고 관리자 웹 로그인은 대소문자를 구분해, 대문자로 가입한 사람이 같은 아이디로 로그인하지 못하던 것.
