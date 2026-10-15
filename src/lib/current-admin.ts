@@ -9,6 +9,7 @@ export type CurrentAdmin = { adminAccountId: number; roleTypeCode: PlatformRoleG
 
 /**
  * 플랫폼 관리자가 점포를 등록할 BP 의 bp_code_id — 환경 변수 STORE_REGISTER_BP_CODE_ID(개발 DB 는 BP000007 · 8).
+ * 개발 DB 전용이다. 운영 · 스테이징에 넣으면 플랫폼 관리자가 고객사를 위해 등록한 점포가 모두 이 BP 에 붙는다(api 는 받은 BP 를 그대로 쓴다).
  * api 는 플랫폼 관리자에게 BP 를 꼭 받는데, 원래는 로그인 세션에서 가져올 값이고 BP 목록 api 도 아직 없다.
  * id 는 DB 마다 달라 코드에 박아 두지 않는다 — 운영 DB 에서 8 은 다른 고객 BP 일 수 있어, 박아 두면 그 BP 에 점포가 조용히 붙는다.
  * 값이 없거나 양의 정수가 아니면 null — 등록 액션은 BP 를 싣지 않는다(BP 계정은 소속 BP 로 등록되고, 플랫폼 관리자는 api 가 막는다).
