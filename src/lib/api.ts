@@ -52,6 +52,14 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
     : ((await response.json()) as T);
 }
 
+/**
+ * 응답을 그대로 받는다 — 파일(엑셀)처럼 본문을 흘려보내야 할 때 쓴다. 실패해도 던지지 않으므로 status 를 직접 본다.
+ * 연결 실패만 던진다.
+ */
+export async function requestRaw(path: string, init: RequestInit = {}): Promise<Response> {
+  return fetch(`${baseUrl()}${path}`, { ...init, cache: "no-store" });
+}
+
 /** 실패 응답을 ApiError 로. 본문은 한 번만 읽어 이은 문장 · 문장 목록 · 본문을 모두 싣는다 */
 async function apiError(response: Response): Promise<ApiError> {
   const body: unknown = await response.json().catch(() => null);
@@ -77,7 +85,10 @@ export async function getEnum(name: string): Promise<EnumValue[]> {
   });
   if (!response.ok) throw await apiError(response);
   const body = (await response.json()) as { enums: Record<string, EnumValue[]> };
-  return body.enums[name] ?? [];
+  const values = body.enums[name];
+  // 이름이 바뀌었거나 빠졌으면 빈 목록이 된다 — 화면은 조용히 비므로 원인을 남긴다
+  if (!values) console.error(`enum 「${name}」이 GET /enums/${name} 응답에 없습니다`);
+  return values ?? [];
 }
 
 export async function getSession(): Promise<Session | null> {

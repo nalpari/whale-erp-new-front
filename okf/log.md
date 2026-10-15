@@ -1,6 +1,17 @@
 # Bundle history
 
+## 2026-10-15
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — 점포 화면 2차 리뷰와 api 3팀 계약(mankey) 반영: 등록 BP 를 코드에 박지 않고 환경 변수 `STORE_REGISTER_BP_CODE_ID` 로(없으면 싣지 않음), 진위확인은 지금 칸 값과 같을 때만 인증으로 보고 인증 안 한 변경은 저장 전에 막음(`savedCeoName`), 카카오 좌표는 십진수 · 범위 안만, 운영 조건 한글은 `GET /enums/StoreOperationRequirement`(상수표 지움), 폐점 + 이미지 저장 결과 모름 문구, 잘린 엑셀은 저장하지 않음, 주소 승인키 만료(E0014) · 시스템 오류는 설정 오류로, 칸을 못 찾은 검증 오류는 띠로, 핸들러 이름 `handle` 접두. 생성 타입은 api mankey openapi 로 다시 만들었다. `stores.md` 에 `sources` 를 더했다.
+
 ## 2026-10-14
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — 점포 화면 전체 리뷰(코드 · 테스트 · 주석 · 오류 처리 · 타입) 반영: 결과를 모를 때 등록은 저장을 잠그고 목록 확인 안내, 수정 · 삭제 · 폐점 전 이미지도 「모름」을 따로 알림, 플랫폼 관리자 등록은 BP 를 늘 먼저 싣고 막히면 빼고 다시 보냄, 층 줄 키 충돌과 모르는 층 구분 보존, 검증 오류를 칸마다 나눔, 엑셀은 4xx 문구 그대로 · xlsx 가 아니면 저장 안 함, 주소 · 좌표 키 오류는 서버 로그로, 찾지 못한 점포 id 는 조건에서 빼고 알림, 이력만 실패하면 이력 칸에만 알림. 대표 이미지 · 엑셀을 붙이며 구현 절의 「1차 범위 밖」(대표 이미지 · 엑셀)을 걷었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 점포 화면 코드 리뷰 반영: 상태 변경 왕복이 빈 사업자주소 · 층 구분만 있는 줄을 바꾸지 않게, 폐점과 이미지 변경을 함께 저장하면 이미지를 먼저, 주소를 바꾸거나 지우면 옛 좌표를 비움, 이력 표 갱신, 목록 조작이 한 낙관적 쿼리를 나눠 씀. 주소 server action 을 `src/lib/address-actions.ts` 로 옮겼다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — 점포 목록 엑셀 바로 받기를 api `GET /stores/excel` 에 붙였다(중계 경로 `/stores/excel`, 받는 동안 버튼이 「파일 만드는 중 · N%」).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — 점포 대표 이미지 올리기 · 바꾸기 · 지우기와 상세 · 카드 표시를 api `/stores/:id/image`(공통 S3 저장소)에 맞춰 붙였다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — 점포 주소를 고르면 카카오 로컬 API 로 위도 · 경도를 채운다(행정안전부 좌표제공 API 는 개발 키가 없어 쓰지 않는다).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 점포 타입을 api openapi 생성 타입으로 바꾸고, 플랫폼 관리자의 점포 등록에 BP000007(id 8)을 임시로 고정해 싣는다(로그인 전).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 점포 정보 관리 화면(`/stores` 목록 · `/stores/[storeId]` 상세 · `/stores/new` 등록 · `/stores/[storeId]/edit` 수정)을 api `/stores` 계약(2026-10-14)에 맞춰 만들었다. 주소 자동완성을 `src/components/address-field.tsx` 로 옮겨 플랫폼 관리자와 함께 쓰고(`label`), ConfirmDialog 에 `confirmDisabled` 를 더했다. 근로계약 근무지 선택지는 `GET /stores/options` 를 부른다. `pnpm test` 163건.
+* **Update**: [점포 관리](/stores.md) — 화면 주소를 `/stores/:storeId` 로 바꾸고(코드 대신 숫자 id · api 합의), 구현 절(api 계약 · 1차 범위 밖 · 409 구분)을 더했다.
 * **Update**: `2026-09-30-네이밍-규칙.md` 2026-10-14 고침을 [네이밍 규칙](/conventions/naming.md) 에 옮겼다 — 메일 템플릿 표의 「운영 알림 짝」을 걷고 운영 알림 · 메일 분리(운영 정책 NTF-03), 알림 템플릿 줄에 기본 문구 칸(`default_*`)을 적었다(재영).
 * **Update**: [운영 알림](/notify.md) — 2026-10-13 결정으로 현행화. 운영 알림은 알림함에만 넣고 메일은 업무 쪽이 따로 보낸다(NTF-03 v114, NOTIFY-3 에 「바뀜」), 가맹 점포 계약 알림의 본사 제공 동의 조건(NOTIFY-13), 받을 때 기준(결정 A), 메일 탭 24건, 버튼 링크 칸은 메일 · 알림톡만, 저장 확인창 하나에 코드 경고, NTF-24 감수, 결정 표에 NOTIFY-17~20. 목업 · 데모 · 계획 · 논리 ERD · 플로우도 맞췄다.
 * **Update**: [직원 운영 관리](/staff.md) — 근로계약 상태 7종, 임시저장 필수 칸(고용 형태 포함, CTR-02) · 이어 쓰기에서 삭제(CTR-19) · 같은 점포 대체 확인 · 다른 점포 근무 시간 겹침 차단(CTR-26), 급여 칸은 현업 엑셀 견본(front #15), 일괄 등록 줄의 근무 유형을 뺐다. 목업 · 데모(임시저장 행은 이어 쓰기로 바로)도 맞췄다.

@@ -5,6 +5,7 @@ import { Badge, DetailValues, type Column, type DetailRow, type HeaderMenu, type
 
 // 화면이 생긴 메뉴만 실제 주소로 잇는다. 나머지는 아직 시안이라 "#".
 const ROUTES: Record<string, string> = {
+  "점포 정보 관리": "/stores",
   "직원 정보 관리": "/staff-members",
   "근로계약 관리": "/contracts",
 };

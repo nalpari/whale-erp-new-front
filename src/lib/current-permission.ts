@@ -13,6 +13,12 @@ export function getCodePermission(searchParams: Record<string, string | string[]
   return searchParams.permission === "view" ? "view" : "manage";
 }
 
+/** 점포 정보 관리 권한. manage = 등록 · 수정 · 삭제 · 상태 변경. 공통코드와 같이 `?permission=view` 로 조회만을 본다. */
+export function getStorePermission(searchParams: Record<string, string | string[] | undefined>): Permission {
+  // TODO(로그인): 실제 권한 조회(메뉴 MN000002 의 등록 · 수정 · 삭제 따로, 가맹 역할은 등록 없음)로 바꾸고 ?permission 은 지운다.
+  return searchParams.permission === "view" ? "view" : "manage";
+}
+
 /** 플랫폼 관리자 관리 권한. manage = 등록 · 수정 · 삭제 · 비밀번호 초기화. 공통코드와 같이 `?permission=view` 로 조회만을 본다. */
 export function getPlatformAdminPermission(searchParams: Record<string, string | string[] | undefined>): Permission {
   // TODO(로그인): 실제 권한 조회(메뉴 MN000213 의 등록 · 수정 · 삭제 따로)로 바꾸고 ?permission 은 지운다.

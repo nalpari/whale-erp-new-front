@@ -3,7 +3,12 @@ type: Area
 title: 점포 관리
 description: BP 의 운영 단위인 점포를 등록·조회·수정하고 미운영→운영→폐점 한 방향으로 상태를 바꾸는 영역.
 tags: [mockup, stores]
-generated: { by: claude-code/opus-5.5, at: 2026-10-12T06:23:31Z }
+sources:
+  - { id: stores-app, resource: ../src/app/stores, title: 점포 정보 관리 화면 }
+  - { id: stores-data, resource: ../src/lib/stores.ts, title: 점포 데이터 접근 }
+  - { id: store-form, resource: ../src/lib/store-form.ts, title: 점포 등록 · 수정 폼 규칙 }
+  - { id: store-view, resource: ../src/lib/store-view.ts, title: 점포 표기 }
+generated: { by: claude-code/opus-5.5, at: 2026-10-15T01:30:00Z }
 ---
 
 근거: `docs/mockup/stores/` (목업 · 1차 · R-QTPRUQ)
@@ -17,9 +22,9 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-12T06:23:31Z }
 | 주소 | 이름 | 하는 일 | 스펙 |
 |------|------|---------|------|
 | `/stores` | 점포 목록 | 대표 이미지 썸네일을 단 카드 목록이 기본이고 표 보기로 바꿀 수 있다. 처음엔 폐점을 뺀다. 점포명을 누르면 상세로 간다. 엑셀 다운로드와 점포 등록으로 이어진다 | `S-BAYAJS` |
-| `/stores/:코드` | 점포 상세 · 삭제 · 상태 변경 | 기본정보·사업자정보·연계 관리정보·층별 기타 정보·변경 이력을 읽기 전용으로 보인다. 상태 변경과 삭제 확인은 이 화면의 팝업이다 | `S-AGGZZG` · `S-MNRZOM` |
+| `/stores/:storeId` | 점포 상세 · 삭제 · 상태 변경 | 기본정보·사업자정보·연계 관리정보·층별 기타 정보·변경 이력을 읽기 전용으로 보인다. 상태 변경과 삭제 확인은 이 화면의 팝업이다 | `S-AGGZZG` · `S-MNRZOM` |
 | `/stores/new` | 점포 등록 | 필수는 점포유형과 점포명뿐이고 미운영으로 생긴다. 대표 이미지 1장과 사업자 번호 인증은 선택이다 | `S-ALHLHW` · `S-VRNTHD` · `S-LEAAUT` |
-| `/stores/:코드/edit` | 점포 수정 | 번호가 없으면 최초 인증, 있으면 대표자명만 바꾸는 재인증을 한다. 점포상태도 여기서 바꾼다. 폐점·BP 미사용 점포는 막힌다 | `S-JEPOMK` |
+| `/stores/:storeId/edit` | 점포 수정 | 번호가 없으면 최초 인증, 있으면 대표자명만 바꾸는 재인증을 한다. 점포상태도 여기서 바꾼다. 폐점·BP 미사용 점포는 막힌다 | `S-JEPOMK` |
 
 # 정책
 
@@ -69,3 +74,17 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-12T06:23:31Z }
 * BP 상세의 소속 점포 수로 들어오면 그 BP 로 좁혀 보여 준다 — `S-BAYAJS`
 * 엑셀은 1만 건 미만이면 바로, 이상이면 예약 생성한다(24시간 보관, 등록한 이메일로 링크). 한 사람 1분 1회다 — `S-BAYAJS`
 * 엑셀에는 목록 항목과 사업자정보를 함께 담고 대표자 연락처만 가운데자리를 가린다. 화면에서는 가리지 않고, 파일에는 암호를 걸지 않는다 — `S-BAYAJS`
+
+# 구현 (2026-10-14)
+
+* 화면 주소의 식별자는 점포코드가 아니라 숫자 `storeId` 다 — api 의 다른 경로와 같게 두고 코드로 찾는 경로는 만들지 않는다(api 세션과 2026-10-14 합의). 화면에는 점포코드를 그대로 보인다
+* api 계약(2026-10-14): `GET /stores`(관리 목록 — keyword · storeIds · bizRegistrationNumber(포함 검색) · statuses · storeTypes · bpCodeId, pageSize 20/50/100), `GET /stores/:id`(상세 + transitions), `GET /stores/:id/transition-check`, `GET /stores/:id/histories`, `POST /stores`, `PUT /stores/:id`(화면 전체 + storeStatus + updatedAt — 상태 변경도 이것으로), `DELETE /stores/:id`, `POST /stores/business-verifications`. 근로계약 근무지 선택지는 `GET /stores/options` 로 옮겼다
+* BP 미사용 · 폐점 점포 쓰기는 403 이 아니라 409 다(권한이 아니라 점포 상태라서). 진행 중 근로계약은 임시저장 · 발송 대기 · 서명 대기 · 체결 완료다
+* 대표 이미지(2026-10-14): api `PUT /stores/:id/image`(multipart `file`, 공통 S3 저장소) · `DELETE /stores/:id/image`(없어도 204). 상세 `image` · 목록 `imageUrl` 은 5분짜리 서명 주소라 만료 · 저장소 없음이면 아이콘으로 돌아간다. 등록 · 수정 폼은 고르면 미리보기만 바꾸고 점포를 저장한 뒤 이어서 보낸다 — 이미지만 실패하면 점포 저장은 두고 알린다(등록은 상세 `?imageFailed=상태` 띠, 수정은 그 화면 띠). 허용 형식은 `GET /enums/StoreImageFileType`
+* 엑셀(2026-10-14): api `GET /stores/excel`(목록과 같은 조건 · 순서, 쪽 없음, 1만 건 이상 400 · 한 사람 1분 1회 429). front 는 중계 경로 `/stores/excel`(route handler)이 토큰을 붙여 파일을 그대로 흘려주고, 버튼은 받는 동안 「파일 만드는 중 · N%」로 바뀌어 잠긴다(만드는 동안은 비율 없이). 429 · 400 은 안내 띠, 그 밖의 4xx 는 api 문구 그대로, 5xx 는 실패 띠. xlsx 가 아닌 응답은 저장하지 않는다. 1만 건 이상의 예약 생성(이메일 링크)은 api 에 아직 없다
+* 좌표(2026-10-14): 주소로 좌표 계산은 front 가 한다 — 점포 주소를 고르면 앞 좌표를 비우고, 그 도로명주소(참고항목 뺌, 못 찾으면 지번주소)로 카카오 로컬 API 「주소 검색」(서버에서만 · `KAKAO_REST_API_KEY`)에 물어 위도 · 경도를 채운다. 못 받으면 비운 채 이유를 보이고 직접 적는다. 주소를 지우면 좌표도 지운다
+* 사업자 진위확인은 api 연동 전이라 503 을 칸 아래에 보인다
+* 결과를 모를 때(503 을 뺀 5xx · 연결 끊김 · 응답을 못 읽음): 등록은 「목록에서 확인」을 안내하고 저장을 잠근다(다시 저장하면 둘이 생길 수 있다). 수정은 최신 정보를 다시 받아 바뀌었으면 저장된 것으로 본다. 삭제는 목록으로 보내고 알린다
+* 플랫폼 관리자 등록: 로그인 전이라 환경 변수 `STORE_REGISTER_BP_CODE_ID`(개발 DB 는 BP000007 · 8)의 BP 를 먼저 싣고, BP 계정이라 api 가 「다른 BP 에 …」(400)로 막으면 빼고 다시 보낸다. 값이 없으면 BP 를 싣지 않는다(BP 계정은 소속 BP 로, 플랫폼 관리자는 api 가 막는다) — id 는 DB 마다 달라 코드에 박지 않는다
+* 상태만 바꾸는 저장(상세 [상태 변경])은 상세 값을 그대로 다시 보내는 왕복이다 — 빈 사업자주소 · 층 구분만 있는 줄 · 화면이 모르는 층 구분도 바꾸지 않고 돌려보낸다
+* 화면 코드는 [Whale ERP Frontend](/whale-erp-front.md) 의 `src/app/stores/` 항목
