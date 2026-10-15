@@ -15,7 +15,10 @@ test("공개 경로만 로그인 없이 열린다 — 접두가 경로 마디와
   for (const p of ["/", "/login", "/find", "/signup", "/inquiry", "/notices", "/design", "/design/full"]) assert.equal(isPublicPath(p), true, p);
   for (const p of ["/home", "/settings/admins", "/platform", "/platform/bp", "/staff-members/1"]) assert.equal(isPublicPath(p), false, p);
   // 마디 단위 비교. /loginx 는 /login 이 아니다.
-  for (const p of ["/loginx", "/designer"]) assert.equal(isPublicPath(p), false, p);
+  for (const p of ["/loginx", "/designer", "/signupx"]) assert.equal(isPublicPath(p), false, p);
+  // 가입 완료는 세션 없이 들어오는 하위 경로다. 옛 경로(/auth/signup)는 공개가 아니다 — 가입 화면은 /signup 아래에 둔다.
+  assert.equal(isPublicPath("/signup/done"), true);
+  assert.equal(isPublicPath("/auth/signup"), false);
 });
 
 

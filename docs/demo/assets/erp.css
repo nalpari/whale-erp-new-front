@@ -3350,6 +3350,9 @@
   .aria-disabled\:opacity-40[aria-disabled="true"] {
     opacity: 40%;
   }
+  .aria-invalid\:border-erp-off[aria-invalid="true"] {
+    border-color: var(--color-erp-off);
+  }
   .aria-pressed\:border-erp-brand[aria-pressed="true"] {
     border-color: var(--color-erp-brand);
   }
@@ -3559,6 +3562,9 @@
     .hover\:\[\&\>span\:first-child\]\:opacity-70:hover > span:first-child {
       opacity: 70%;
     }
+  }
+  .\[\&\[readonly\]\]\:bg-erp-thead-bg[readonly] {
+    background-color: var(--color-erp-thead-bg);
   }
 }
 @font-face {
