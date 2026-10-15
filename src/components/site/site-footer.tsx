@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { Fragment } from "react";
-import { HOVER } from "@/app/design/guest/theme";
 import { TermsLink } from "./terms-link";
 
 // 1팀 Figma 푸터(데모 guest.mjs footer, src/app/design/guest/guest-footer.tsx 샘플과 같은 모양) — 로그인 전 화면 전체가 공유한다.
@@ -27,7 +26,7 @@ export function SiteFooter() {
           <div className="flex flex-col gap-[8px] text-[16px] leading-[1.6] text-guest-sub">
             <div className="flex flex-col gap-[2px]">
               {/* <p> 가 아니라 <div>: 약관 <dialog> 는 <p> 안에 둘 수 없어 hydration 오류가 난다 */}
-              <div className={`flex items-center gap-[8px] leading-[1.5] ${HOVER}`}>
+              <div className="flex items-center gap-[8px] leading-[1.5]">
                 <TermsLink kind="use">이용약관</TermsLink>
                 <Bar />
                 <TermsLink kind="policy">개인정보처리방침</TermsLink>
