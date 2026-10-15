@@ -244,6 +244,139 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/admin/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 관리자 웹 로그인. 잠금 → 아이디 · 비밀번호 → 계정 상태 순으로 판정한다. 잠김 429, 미사용 403. */
+        post: operations["AdminAuthController_login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/admin/temporary-passwords": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 비밀번호 찾기. 이름 · 아이디 · 이메일이 모두 맞는 사용 중 계정에 임시 비밀번호(1시간)를 메일로 보낸다.
+         *     일치 여부 · 메일 발송 여부와 상관없이 같은 202 다(맞는 정보로 1시간 5번을 넘으면 429). 받으면 잠금이 풀리고, 그 비밀번호로 들어오면 강제 변경 대상이다.
+         */
+        post: operations["AdminAuthController_issueTemporaryPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/admin/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 접근 토큰 재발급. 세션은 마지막 사용부터 1시간으로 밀린다. 만료 · 종료 · 미사용 계정이면 401. */
+        post: operations["AdminAuthController_refresh"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/admin/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 이 브라우저의 세션을 종료한다. 다른 브라우저는 그대로다. */
+        post: operations["AdminAuthController_logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/admin/login-info": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 화면을 그릴 정보 — 계정 · 메뉴(+권한) · 관리 점포 · 공통코드. 부르는 시점의 값이다. 관리자 웹은 로그인
+         *     직후 한 번 받아 쓰고, 바뀐 값은 다시 로그인할 때 받는다. 업무 API 의 판정은 요청마다 현재 값으로 한다.
+         */
+        get: operations["AdminAuthController_getLoginInfo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/admin/password-change": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 강제 비밀번호 변경 — 초기 · 임시 비밀번호로 들어온 계정이 새 비밀번호를 정한다. 현재 비밀번호는 묻지 않는다.
+         *     정책 위반은 400 과 정책 문구 하나, 약관이 필요한 계정이 동의하지 않으면 400, 대상이 아니면 409, 로그인에 쓴
+         *     비밀번호가 만료됐으면 401. 바꿔도 모든 기기의 로그인은 이어진다. 끝나기 전에는 이 경로 · 로그인 정보 ·
+         *     로그아웃 말고는 403 이다.
+         */
+        post: operations["AdminAuthController_changeRequiredPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/public-code-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 플랫폼 BP 의 공통코드. `groups` 를 주면 그 그룹만, 없으면 전체. 사용 중인 그룹 · 상세만, 표시 순서대로.
+         *     부를 때의 현재 값이다 — 화면이 열릴 때 불러 쓴다.
+         */
+        get: operations["CodesController_findAll"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/enums": {
         parameters: {
             query?: never;
@@ -440,6 +573,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/bp-codes/{bpCodeId}/stores": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 그 BP 의 점포 전체 — 점포 선택 목록. 선택 목록이라 나눠 주지 않는다. 플랫폼 관리자(PM · PA)는 어느 고객 BP 든,
+         *     BP · 가맹 관리자는 자기 BP 만, 직원 앱은 가입 · 재직 중인 점포가 있는 BP 만이다. 볼 수 없는 BP 는 없는 BP 와
+         *     같이 404 — 다른 BP 가 있는지 드러내지 않는다. 플랫폼 BP 도 404. 사용 중인 관리자 계정이 아니면 403.
+         *     shortcut: 페이지 없이 전부 준다, 한 BP 의 점포가 수백을 넘으면 page · pageSize 를 붙인다.
+         */
+        get: operations["BpCodesController_findStores"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bp-codes/{bpCodeId}/code-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 그 BP 가 보는 공통코드 — 공개 `GET /public-code-items` 와 같은 `groups` · 응답 모양.
+         *     로그인한 누구나(관리자는 권한 유형과 상관없이, 직원 앱도) 부른다. 부를 때의 현재 값이다.
+         */
+        get: operations["BpCodesController_findCodeItems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/staff-members": {
         parameters: {
             query?: never;
@@ -531,6 +706,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/stores/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 근무지 선택지. 업무 범위 안에서 지우지 않았고 폐점이 아닌 점포, 이름순. `:id` 보다 먼저 둔다. */
+        get: operations["StoresController_options"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/stores": {
         parameters: {
             query?: never;
@@ -538,10 +730,125 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** 점포 정보 관리 목록. 등록일 최신순, 기본은 미운영 · 운영. */
         get: operations["StoresController_list"];
+        put?: never;
+        /** 등록. 늘 미운영으로 만들고 점포코드를 채번한다. 가맹 계정은 403. */
+        post: operations["StoresController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stores/excel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 엑셀 바로 받기(xlsx). 목록과 같은 검색 조건으로 전부 담고, 대표자 연락처만 가운데 자리를 가린다.
+         *     1만 건 이상은 400(예약 생성은 아직 없다), 한 사람 1분에 한 번(429). `:id` 보다 먼저 둔다.
+         */
+        get: operations["StoresController_excel"];
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stores/business-verifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 저장 전 사업자 인증 확인. 등록 또는 수정 권한이 있으면 된다. 저장할 때 서버가 다시 확인하므로 이 결과는
+         *     화면 안내용이다.
+         */
+        post: operations["StoresController_verifyBusiness"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stores/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StoresController_detail"];
+        /** 수정 · 상태 전환. 상세에서 받은 updatedAt 을 함께 보낸다 — 그 사이 다른 사람이 고쳤으면 409. */
+        put: operations["StoresController_update"];
+        post?: never;
+        /** 삭제(논리 삭제). 미운영이면서 진행 중인 근로계약이 없을 때만. */
+        delete: operations["StoresController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stores/{id}/histories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 변경 이력. 보존 기한(5년) 안의 것, 최신순. */
+        get: operations["StoresController_histories"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stores/{id}/transition-check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 운영 · 폐점 · 삭제를 지금 할 수 있는가. 수정 화면이 폐점을 고를 때 다시 묻는다. */
+        get: operations["StoresController_transitionCheck"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stores/{id}/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * 대표 이미지 올리기 · 바꾸기(점포당 1장). multipart 의 `file` 한 개, JPG · PNG 5MB 이하 — 종류는 확장자가
+         *     아니라 내용으로 본다. 등록 화면은 점포를 등록한 뒤 이 경로로 올린다. 수정 권한이 있어야 한다.
+         */
+        put: operations["StoresController_putImage"];
+        post?: never;
+        /** 대표 이미지 지우기. 이미지가 없어도 204. 수정 권한이 있어야 한다. */
+        delete: operations["StoresController_removeImage"];
         options?: never;
         head?: never;
         patch?: never;
@@ -715,10 +1022,187 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** 도입문의 목록. 접수 최신순. */
+        get: operations["LeadsAdminController_list"];
         put?: never;
         /** 도입문의 접수. 본문 없이 201 을 돌려준다 — 문의자가 상태를 조회하는 화면은 없다. */
         post: operations["LeadsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/leads/{leadId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 도입문의 상세 — 문의자 정보 · 동의 · 답변 · 처리 이력 · 내부 메모. */
+        get: operations["LeadsAdminController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/leads/{leadId}/processing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 처리중으로 바꾼다. 접수 상태에서만 된다. */
+        post: operations["LeadsAdminController_startProcessing"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/leads/{leadId}/reply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** 답변을 저장하고 답변 완료로 바꾼다. 고칠 때도 이것으로 덮어쓴다. */
+        put: operations["LeadsAdminController_reply"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/leads/{leadId}/internal-memo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** 운영자 내부 메모. 문의자에게 보이지 않는다. */
+        put: operations["LeadsAdminController_saveInternalMemo"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/inquiries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 문의사항 목록. 접수 최신순. */
+        get: operations["InquiriesController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/inquiries/{inquiryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 문의사항 상세 — 답변 이력 · 첨부파일 · 처리 이력 · 내부 메모. */
+        get: operations["InquiriesController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/inquiries/{inquiryId}/attachments/{inquiryAttachmentId}/download-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 첨부파일 내려받기 주소. 300초 동안 쓸 수 있는 서명 주소이고, 받으면 원래 파일 이름으로 저장된다. 저장소 설정이 없는
+         *     환경이면 503.
+         */
+        get: operations["InquiriesController_attachmentDownloadUrl"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/inquiries/{inquiryId}/processing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 처리중으로 바꾼다. 접수 상태에서만 된다. */
+        post: operations["InquiriesController_startProcessing"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/inquiries/{inquiryId}/replies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 답변을 저장하고 답변 완료로 바꾼다. 답변을 고칠 때도 이것으로 새 답변을 더한다. 첫 답변이면 등록한 관리자에게
+         *     운영 알림과 메일이 간다.
+         */
+        post: operations["InquiriesController_reply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/inquiries/{inquiryId}/internal-memo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** 운영자 내부 메모. 문의자에게 보이지 않는다. */
+        put: operations["InquiriesController_saveInternalMemo"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -861,6 +1345,172 @@ export interface components {
              * @description 링크가 쓸 수 없게 되는 시각 — 보낸 때부터 24시간
              */
             expiresAt: string;
+        };
+        AdminLoginDto: {
+            /** @description 관리자 로그인ID. 대소문자를 구분한다. 형식은 검사하지 않는다 — 틀리면 없는 아이디와 같이 답한다. */
+            loginId: string;
+            /** @description 기존 비밀번호 또는 메일로 받은 임시 · 초기 비밀번호. */
+            password: string;
+            /** @description 브라우저를 구분하는 값. 같은 값으로 다시 로그인하면 그 브라우저의 이전 세션만 종료된다. */
+            deviceInformation?: string;
+        };
+        AdminLoginInfoBpDto: {
+            bpCodeId: number;
+            /** @description BP+6자리. 플랫폼 BP 는 BP000000. */
+            bpCode: string;
+            tradeName: string;
+            /** @description true 면 플랫폼 관리 사이트 계정(PM · PA). */
+            isPlatform: boolean;
+        };
+        AdminLoginAccountResponseDto: {
+            adminAccountId: number;
+            loginId: string;
+            name: string | null;
+            /** @description 권한 유형 — 공통코드 `ROLE_TYPE`(PM · PA · BM · BA · FM · FA). */
+            roleTypeCode: string;
+            /** @description 소속 BP. front 는 로그인 뒤 브라우저에 두는 BP 데이터를 `bpCodeId` 로 구분한다. */
+            bp: components["schemas"]["AdminLoginInfoBpDto"];
+            /** @description true 면 닫을 수 없는 강제 비밀번호 변경 팝업을 띄운다. */
+            isPasswordChangeRequired: boolean;
+        };
+        AdminLoginResponseDto: {
+            /** @description Authorization: Bearer <accessToken> 으로 API 를 호출한다. 1시간 뒤 만료된다. */
+            accessToken: string;
+            /** @description 세션을 이어 갈 때 쓴다. 원문은 이 응답에만 있고 서버에는 해시만 남는다. */
+            refreshToken: string;
+            /**
+             * Format: date-time
+             * @description 마지막으로 사용한 때부터 1시간이 되는 시각. 임시 비밀번호로 들어왔으면 그 만료를 넘지 않는다.
+             */
+            refreshTokenExpiresAt: string;
+            account: components["schemas"]["AdminLoginAccountResponseDto"];
+        };
+        AdminTemporaryPasswordDto: {
+            /** @example 홍길동 */
+            name: string;
+            /** @example whale01 */
+            loginId: string;
+            /**
+             * Format: email
+             * @description 저장값은 소문자다(admin_accounts_email_lower).
+             */
+            email: string;
+        };
+        AdminTemporaryPasswordResponseDto: {
+            /** @description 정보가 맞든 아니든, 메일이 나갔든 아니든 같은 문구다 — 응답으로 계정 존재가 드러나지 않게. */
+            message: string;
+        };
+        AdminRefreshResponseDto: {
+            /** @description 새 접근 토큰. 1시간 뒤 만료된다. */
+            accessToken: string;
+            /**
+             * Format: date-time
+             * @description 갱신 토큰은 새로 주지 않는다. 쓰던 것의 새 만료 시각이다.
+             */
+            refreshTokenExpiresAt: string;
+        };
+        CodeValueDto: {
+            /** @description 상세코드. 저장 · 전송 값. 예: KB */
+            value: string;
+            /** @description 코드명. 화면에 보이는 값. 예: 국민은행 */
+            label: string;
+            /** @description 선택지 순서. 1부터. */
+            order: number;
+        };
+        AdminLoginInfoAccountDto: {
+            adminAccountId: number;
+            loginId: string;
+            name: string | null;
+            email: string | null;
+            /** @description 권한 유형 — 공통코드 `ROLE_TYPE`(PM · PA · BM · BA · FM · FA). */
+            roleTypeCode: string;
+            bp: components["schemas"]["AdminLoginInfoBpDto"];
+            /** @description true 면 닫을 수 없는 강제 비밀번호 변경 팝업을 띄운다. */
+            isPasswordChangeRequired: boolean;
+            /**
+             * Format: date-time
+             * @description 임시 비밀번호로 들어왔으면 그 만료 시각. 이때 세션도 끝난다. 아니면 null.
+             */
+            temporaryPasswordExpiresAt: string | null;
+            /** @description true 면 강제 변경 팝업 아래에 약관 동의를 붙인다(플랫폼등록 계정의 첫 로그인). */
+            isTermsAgreementRequired: boolean;
+        };
+        MenuPermissionDto: {
+            read: boolean;
+            create: boolean;
+            update: boolean;
+            delete: boolean;
+        };
+        AdminMenuDto: {
+            children: components["schemas"]["AdminMenuDto"][];
+            /** @description MN+6자리. 업무 API 의 메뉴 권한 판정도 이 코드로 한다. */
+            menuCode: string;
+            /** @description 이 메뉴가 속한 서비스 — 공통코드 `SERVICE`(예 `WHALE_ERP`). 사용 중인 서비스의 메뉴만 온다. */
+            serviceCode: string;
+            name: string;
+            url: string | null;
+            /** @description 1~3 */
+            depth: number;
+            /** @description 이 메뉴에서 할 수 있는 것. 하위 메뉴로 가는 길로만 들어간 상위 메뉴는 모두 false. */
+            permission: components["schemas"]["MenuPermissionDto"];
+        };
+        AdminStoreDto: {
+            storeId: number;
+            storeCode: string;
+            name: string;
+            /** @description 공통코드 `STORE_TYPE` */
+            storeTypeCode: string;
+            /** @description 공통코드 `STORE_STATUS` */
+            storeStatusCode: string;
+        };
+        AdminLoginInfoResponseDto: {
+            /**
+             * @description 그룹 코드 → 이 계정 BP 의 공통코드
+             * @example {
+             *       "STORE_TYPE": [
+             *         {
+             *           "value": "DIRECT",
+             *           "label": "직영점포",
+             *           "order": 1
+             *         }
+             *       ]
+             *     }
+             */
+            codes: {
+                [key: string]: components["schemas"]["CodeValueDto"][];
+            };
+            account: components["schemas"]["AdminLoginInfoAccountDto"];
+            /** @description 조회 권한이 있는 메뉴 트리(최대 3단계). 표시 순서대로. */
+            menus: components["schemas"]["AdminMenuDto"][];
+            /** @description 관리 점포 — 점포 선택 목록. 플랫폼 계정은 빈 목록이다(BP 를 골라 일한다). */
+            stores: components["schemas"]["AdminStoreDto"][];
+        };
+        AdminPasswordChangeDto: {
+            /** @description 새 비밀번호 — 영문 · 숫자 · 특수문자 각 1자 이상 8~20자. 규칙 위반은 400 과 정책 문구 하나. */
+            newPassword: string;
+            /** @description 새 비밀번호 확인. */
+            newPasswordConfirm: string;
+            /**
+             * @description 필수 약관(이용약관 · 개인정보 수집 · 이용) 둘 다 동의. `login-info.account.isTermsAgreementRequired` 가 true 인
+             *     계정만 보내고, 그때 true 가 아니면 비밀번호도 바꾸지 않고 400 이다.
+             */
+            isTermsAgreed?: boolean;
+        };
+        CodeItemsResponseDto: {
+            /**
+             * @example {
+             *       "BANK": [
+             *         {
+             *           "value": "KB",
+             *           "label": "국민은행",
+             *           "order": 1
+             *         }
+             *       ]
+             *     }
+             */
+            codes: {
+                [key: string]: components["schemas"]["CodeValueDto"][];
+            };
         };
         EnumValueDto: {
             /** @description 저장·전송 값. 예: PENDING_SEND */
@@ -1233,6 +1883,11 @@ export interface components {
              */
             updatedAt: string;
         };
+        BpStoreListResponseDto: {
+            /** @description 점포 이름순. 운영 상태와 상관없이 미삭제 점포 전체. 항목 모양은 로그인 정보의 `stores` 와 같다. */
+            items: components["schemas"]["AdminStoreDto"][];
+            total: number;
+        };
         /** @enum {string} */
         EmploymentStatus: "EMPLOYED" | "RETIRED";
         /** @enum {string} */
@@ -1416,9 +2071,9 @@ export interface components {
             monthlyOvertimeHours?: number;
             /** @description 기본시간 중 야간근무 — 시간, 30분 단위 */
             baseNightHours?: number;
-            /** @description 기본시간 중 휴일근무 — 시간, 30분 단위 */
+            /** @description 기본시간 중 휴일근무 — 시간, 30분 단위. 화면(front #15)에서는 받지 않는다. 칸은 남아 있다 */
             baseHolidayHours?: number;
-            /** @description 월간 추가 휴일근무 — 시간, 30분 단위 */
+            /** @description 월간 추가 휴일근무 — 시간, 30분 단위. 화면(front #15)에서는 받지 않는다. 칸은 남아 있다 */
             monthlyExtraHolidayHours?: number;
             /** @description 연차휴가 조항 문구. 기본 문구는 작성 화면이 채운다 */
             annualLeaveTerms?: string;
@@ -1486,9 +2141,9 @@ export interface components {
             monthlyOvertimeHours: number | null;
             /** @description 기본시간 중 야간근무 — 시간 */
             baseNightHours: number | null;
-            /** @description 기본시간 중 휴일근무 — 시간 */
+            /** @description 기본시간 중 휴일근무 — 시간. 화면(front #15)에서는 받지 않는다. 칸은 남아 있다 */
             baseHolidayHours: number | null;
-            /** @description 월간 추가 휴일근무 — 시간 */
+            /** @description 월간 추가 휴일근무 — 시간. 화면(front #15)에서는 받지 않는다. 칸은 남아 있다 */
             monthlyExtraHolidayHours: number | null;
             /** @description 연차휴가 조항 문구 */
             annualLeaveTerms: string | null;
@@ -1515,9 +2170,325 @@ export interface components {
             /** @description 점포명 */
             name: string;
         };
-        StoreListResponseDto: {
+        StoreOptionListResponseDto: {
             items: components["schemas"]["StoreOptionDto"][];
             total: number;
+        };
+        StoreSummaryResponseDto: {
+            /** @enum {string} */
+            storeTypeCode: "DIRECT" | "FRANCHISE";
+            /** @enum {string} */
+            storeStatusCode: "NOT_OPERATING" | "OPERATING" | "CLOSED";
+            storeId: number;
+            /**
+             * @description 점포코드.
+             * @example ST000001
+             */
+            storeCode: string;
+            /** @description 점포명 */
+            name: string;
+            /** @description 소속 BP */
+            bpCodeId: number;
+            /** @description 소속 BP 상호명 — 플랫폼 계정이 여러 BP 를 함께 볼 때 쓴다 */
+            bpTradeName: string;
+            /** @description 사업자등록번호(숫자 10자리). 없으면 미인증 — 화면은 「-」와 「사업자정보 미인증」. */
+            bizRegistrationNumber: string | null;
+            /** @description 점포 연락처 */
+            phone: string | null;
+            /**
+             * @description 지역 — 기본주소의 앞 두 마디.
+             * @example 서울특별시 서초구
+             */
+            region: string | null;
+            /** @description 근무직원 수 — 이 점포가 근무지인 재직 직원 */
+            staffCount: number;
+            /** @description 대표 이미지 썸네일 주소(5분 동안 유효). 이미지가 없거나 저장소를 쓸 수 없으면 null — 화면은 점포 아이콘. */
+            imageUrl: string | null;
+            /**
+             * Format: date-time
+             * @description 등록일시
+             */
+            createdAt: string;
+        };
+        StoreListResponseDto: {
+            items: components["schemas"]["StoreSummaryResponseDto"][];
+            total: number;
+        };
+        VerifyStoreBusinessDto: {
+            /** @description 수정 중인 점포. 등록 화면이면 보내지 않는다. */
+            storeId?: number;
+            /**
+             * @description 사업자등록번호 — 하이픈은 빼고 숫자 10자리로 저장한다.
+             * @example 123-45-67890
+             */
+            bizRegistrationNumber: string;
+            /** @description 대표자명 */
+            ceoName: string;
+            /**
+             * @description 개업일자.
+             * @example 2020-03-02
+             */
+            openDate: string;
+        };
+        /**
+         * @description 인증됨 · 확인 불가(국세청 정보와 다름) · 번호 중복(미운영 · 운영 점포가 쓰는 번호 — 누가 쓰는지는 알리지 않는다)
+         * @enum {string}
+         */
+        StoreBusinessVerificationResult: "VERIFIED" | "UNVERIFIABLE" | "DUPLICATE";
+        StoreBusinessVerificationResponseDto: {
+            /** @description 인증됨 · 확인 불가(국세청 정보와 다름) · 번호 중복(미운영 · 운영 점포가 쓰는 번호 — 누가 쓰는지는 알리지 않는다) */
+            result: components["schemas"]["StoreBusinessVerificationResult"];
+        };
+        StoreBusinessResponseDto: {
+            /** @description 인증 완료 — 사업자등록번호가 있으면 인증된 것이다 */
+            isVerified: boolean;
+            bizRegistrationNumber: string | null;
+            ceoName: string | null;
+            /** @description 개업일자 YYYY-MM-DD */
+            openDate: string | null;
+            /**
+             * Format: date-time
+             * @description 최종 인증일시
+             */
+            verifiedAt: string | null;
+            tradeName: string | null;
+            ceoPhone: string | null;
+            zipCode: string | null;
+            address: string | null;
+            addressDetail: string | null;
+            category: string | null;
+            item: string | null;
+        };
+        /** @enum {string} */
+        StoreImageFileType: "JPG" | "PNG";
+        StoreImageResponseDto: {
+            fileType: components["schemas"]["StoreImageFileType"];
+            fileId: number;
+            /** @description 올린 원래 파일 이름 */
+            fileName: string;
+            sizeBytes: number;
+            /** @description 보여 줄 주소(서명, 5분 동안 유효). 저장소를 쓸 수 없으면 null. */
+            url: string | null;
+        };
+        StoreFloorResponseDto: {
+            /** @enum {string|null} */
+            floorTypeCode: "GROUND" | "BASEMENT" | null;
+            storeFloorId: number;
+            floorNumber: number | null;
+            floorAreaPyeong: number | null;
+            floorAreaSqm: number | null;
+            seatCount: number | null;
+        };
+        /**
+         * @description 운영으로 바꾸는 데 모자란 것. 비어 있으면 운영할 수 있다. 한글은 GET /enums/StoreOperationRequirement.
+         * @enum {string}
+         */
+        StoreOperationRequirement: "BUSINESS_VERIFICATION" | "COORDINATES" | "BP_INACTIVE";
+        StoreTransitionCheckResponseDto: {
+            /** @description 운영으로 바꾸는 데 모자란 것. 비어 있으면 운영할 수 있다. 한글은 GET /enums/StoreOperationRequirement. */
+            missingForOperation: components["schemas"]["StoreOperationRequirement"][];
+            /** @description 진행 중인 근로계약 수 — 거부 · 만료 · 종료되지 않은 계약. 0 이어야 폐점 · 삭제된다. */
+            inProgressContractCount: number;
+            /** @description 폐점할 수 있는가 */
+            canClose: boolean;
+            /** @description 삭제할 수 있는가 — 미운영이면서 폐점 조건을 채울 때 */
+            canDelete: boolean;
+            /** @description 구독 · 정산 조건은 1차 범위 밖이라 보지 않는다 — 화면은 「1차 범위 밖」으로 보인다 */
+            isSubscriptionChecked: boolean;
+        };
+        StoreDetailResponseDto: {
+            /** @enum {string} */
+            storeTypeCode: "DIRECT" | "FRANCHISE";
+            /** @enum {string} */
+            storeStatusCode: "NOT_OPERATING" | "OPERATING" | "CLOSED";
+            storeId: number;
+            storeCode: string;
+            name: string;
+            /** @description 폐점일 YYYY-MM-DD. 폐점이 아니면 null. */
+            closedDate: string | null;
+            bpCodeId: number;
+            /**
+             * @description 소속 BP 코드.
+             * @example BP000001
+             */
+            bpCode: string;
+            bpTradeName: string;
+            /** @description 소속 BP 상태 — ACTIVE 가 아니면 조회만 된다(STORE-3) */
+            bpAccountStatusCode: string;
+            phone: string | null;
+            zipCode: string | null;
+            address: string | null;
+            addressDetail: string | null;
+            latitude: number | null;
+            longitude: number | null;
+            isLocationApplied: boolean;
+            staffCount: number;
+            business: components["schemas"]["StoreBusinessResponseDto"];
+            /** @description 대표 이미지. 없으면 null. */
+            image: components["schemas"]["StoreImageResponseDto"] | null;
+            floors: components["schemas"]["StoreFloorResponseDto"][];
+            transitions: components["schemas"]["StoreTransitionCheckResponseDto"];
+            /** Format: date-time */
+            createdAt: string;
+            /** @description 등록자 이름. 시스템이 만들었으면 null. */
+            createdByName: string | null;
+            /**
+             * Format: date-time
+             * @description 최종수정일시. 수정할 때 그대로 돌려보낸다(동시 수정 확인).
+             */
+            updatedAt: string;
+            /** @description 최종수정자 이름. 등록 뒤 고친 적이 없으면 null — 화면은 「-」. */
+            updatedByName: string | null;
+        };
+        StoreHistoryResponseDto: {
+            changeId: number;
+            /** @description 변경 항목. */
+            field: string;
+            beforeValue: string | null;
+            afterValue: string | null;
+            /** Format: date-time */
+            changedAt: string;
+            /** @description 변경자 이름. 시스템이 처리했으면 null. */
+            changedByName: string | null;
+        };
+        StoreHistoryListResponseDto: {
+            items: components["schemas"]["StoreHistoryResponseDto"][];
+            total: number;
+        };
+        StoreFloorInputDto: {
+            /**
+             * @description 지상 · 지하
+             * @enum {string|null}
+             */
+            floorTypeCode?: "GROUND" | "BASEMENT" | null;
+            /** @description 층수 */
+            floorNumber?: number | null;
+            /** @description 매장평수 — 소수 1자리 */
+            floorAreaPyeong?: number | null;
+            /** @description 전용면적(㎡) — 소수 2자리 */
+            floorAreaSqm?: number | null;
+            /** @description 좌석수 — 0 이상 */
+            seatCount?: number | null;
+        };
+        StoreBusinessInputDto: {
+            /** @description 상호명 — 국세청이 돌려주지 않아 직접 넣는다. 50자. */
+            tradeName?: string | null;
+            /** @description 대표자 연락처 — 숫자 10~11자리 */
+            ceoPhone?: string | null;
+            /** @description 사업자 우편번호 — 숫자 5자리 */
+            zipCode?: string | null;
+            /** @description 사업자 기본주소 — 주소 검색 결과 */
+            address?: string | null;
+            /** @description 사업자 상세주소 — 100자 */
+            addressDetail?: string | null;
+            /** @description 업태 — 50자 */
+            category?: string | null;
+            /** @description 종목 — 50자 */
+            item?: string | null;
+        };
+        BusinessIdentityInputDto: {
+            /**
+             * @description 사업자등록번호 — 하이픈은 빼고 숫자 10자리로 저장한다.
+             * @example 123-45-67890
+             */
+            bizRegistrationNumber: string;
+            /** @description 대표자명 */
+            ceoName: string;
+            /**
+             * @description 개업일자.
+             * @example 2020-03-02
+             */
+            openDate: string;
+        };
+        CreateStoreDto: {
+            /**
+             * @description 점포 유형 — 등록 뒤 바꾸지 않는다
+             * @enum {string}
+             */
+            storeTypeCode: "DIRECT" | "FRANCHISE";
+            /** @description 소속 BP. 플랫폼 계정만 보낸다(필수) — BP 쪽 계정은 자기 BP 로 정해진다. */
+            bpCodeId?: number;
+            /** @description 점포명 — 1~50자 */
+            name: string;
+            /** @description 점포 연락처 — 숫자 9~11자리 */
+            phone?: string | null;
+            /** @description 우편번호 — 숫자 5자리, 주소 검색 결과 */
+            zipCode?: string | null;
+            /** @description 기본주소 — 주소 검색 결과 */
+            address?: string | null;
+            /** @description 상세주소 — 100자 */
+            addressDetail?: string | null;
+            /** @description 위도 — −90~90, 소수 6자리 */
+            latitude?: number | null;
+            /** @description 경도 — −180~180, 소수 6자리 */
+            longitude?: number | null;
+            /**
+             * @description 위치 적용 여부 — 기본 사용. 3팀 출퇴근 위치 확인이 볼 자리다(아직 읽는 곳은 없다).
+             * @default true
+             */
+            isLocationApplied: boolean;
+            /**
+             * @description 층별 정보. 저장할 때마다 이 목록으로 바꾼다. 모든 칸이 빈 줄은 버린다.
+             * @default []
+             */
+            floors: components["schemas"]["StoreFloorInputDto"][];
+            /**
+             * @description 직접 넣는 사업자정보
+             * @default {}
+             */
+            business: components["schemas"]["StoreBusinessInputDto"];
+            /**
+             * @description 사업자 인증. 인증한 화면에서만 보낸다 — 서버가 다시 확인하고 맞으면 사업자등록번호 · 대표자명 · 개업일자를
+             *     저장한다. 이미 번호가 있는 점포는 재인증이라 번호 · 개업일자가 저장된 값과 같아야 한다.
+             */
+            businessVerification?: components["schemas"]["BusinessIdentityInputDto"];
+        };
+        CreateStoreResponseDto: {
+            storeId: number;
+            storeCode: string;
+        };
+        UpdateStoreDto: {
+            /** @description 상세에서 받은 updatedAt 그대로 — 그 사이 누가 고쳤으면 409. */
+            updatedAt: string;
+            /**
+             * @description 점포 상태. 미운영 → 운영 · 폐점, 운영 → 폐점만. 그대로 두려면 지금 값을 보낸다.
+             * @enum {string}
+             */
+            storeStatus: "NOT_OPERATING" | "OPERATING" | "CLOSED";
+            /** @description 점포명 — 1~50자 */
+            name: string;
+            /** @description 점포 연락처 — 숫자 9~11자리 */
+            phone?: string | null;
+            /** @description 우편번호 — 숫자 5자리, 주소 검색 결과 */
+            zipCode?: string | null;
+            /** @description 기본주소 — 주소 검색 결과 */
+            address?: string | null;
+            /** @description 상세주소 — 100자 */
+            addressDetail?: string | null;
+            /** @description 위도 — −90~90, 소수 6자리 */
+            latitude?: number | null;
+            /** @description 경도 — −180~180, 소수 6자리 */
+            longitude?: number | null;
+            /**
+             * @description 위치 적용 여부 — 기본 사용. 3팀 출퇴근 위치 확인이 볼 자리다(아직 읽는 곳은 없다).
+             * @default true
+             */
+            isLocationApplied: boolean;
+            /**
+             * @description 층별 정보. 저장할 때마다 이 목록으로 바꾼다. 모든 칸이 빈 줄은 버린다.
+             * @default []
+             */
+            floors: components["schemas"]["StoreFloorInputDto"][];
+            /**
+             * @description 직접 넣는 사업자정보
+             * @default {}
+             */
+            business: components["schemas"]["StoreBusinessInputDto"];
+            /**
+             * @description 사업자 인증. 인증한 화면에서만 보낸다 — 서버가 다시 확인하고 맞으면 사업자등록번호 · 대표자명 · 개업일자를
+             *     저장한다. 이미 번호가 있는 점포는 재인증이라 번호 · 개업일자가 저장된 값과 같아야 한다.
+             */
+            businessVerification?: components["schemas"]["BusinessIdentityInputDto"];
         };
         /** @enum {string} */
         PostContentType: "NOTICE" | "FAQ";
@@ -1817,6 +2788,207 @@ export interface components {
             privacyAgreed: boolean;
             /** @description 마케팅 정보 수신 동의. 선택. */
             marketingAgreed?: boolean;
+        };
+        /** @enum {string} */
+        InquiryAnswerStatus: "WAITING" | "ANSWERED";
+        /** @enum {string} */
+        InquiryStatus: "RECEIVED" | "IN_PROGRESS" | "ANSWERED";
+        LeadListItemDto: {
+            interests: components["schemas"]["LeadInterest"][];
+            status: components["schemas"]["InquiryStatus"];
+            leadId: number;
+            /** @description 문의자 이름 */
+            contactName: string;
+            phone: string;
+            /** @description 업종(공통코드 INDUSTRY 값) */
+            industryCode: string;
+            /** @description 업종 직접 입력 — 업종이 기타일 때 */
+            industryDetail: string | null;
+            /**
+             * Format: date-time
+             * @description 접수 일시
+             */
+            createdAt: string;
+        };
+        LeadListResponseDto: {
+            items: components["schemas"]["LeadListItemDto"][];
+            total: number;
+        };
+        LeadResponseDto: {
+            interests: components["schemas"]["LeadInterest"][];
+            status: components["schemas"]["InquiryStatus"];
+            leadId: number;
+            /** @description 문의자 이름 */
+            contactName: string;
+            phone: string;
+            /** @description 업종(공통코드 INDUSTRY 값) */
+            industryCode: string;
+            /** @description 업종 직접 입력 — 업종이 기타일 때 */
+            industryDetail: string | null;
+            /**
+             * Format: date-time
+             * @description 접수 일시
+             */
+            createdAt: string;
+            email: string;
+            /** @description 도입 예정 시기(공통코드 값) */
+            planPeriodCode: string | null;
+            /** @description 문의 내용 */
+            body: string;
+            /**
+             * Format: date-time
+             * @description 개인정보 동의 일시 — 필수라 늘 있다
+             */
+            privacyAgreedAt: string;
+            /**
+             * Format: date-time
+             * @description 마케팅 수신 동의 일시. 동의하지 않았으면 null.
+             */
+            marketingAgreedAt: string | null;
+            /**
+             * Format: date-time
+             * @description 처리중으로 바꾼 시각. 아직 접수 상태이거나, 처리중을 거치지 않고 답변했으면 null.
+             */
+            processingStartedAt: string | null;
+            processingStartedBy: number | null;
+            processingStartedByName: string | null;
+            /** @description 문의자에게 보낸 답변 */
+            reply: string | null;
+            /** Format: date-time */
+            repliedAt: string | null;
+            repliedBy: number | null;
+            repliedByName: string | null;
+            /** @description 운영자 내부 메모. 문의자에게 보이지 않는다. */
+            internalMemo: string | null;
+            /** @description 상담 완료일(YYYY-MM-DD) — 이날부터 1년 뒤 파기 */
+            consultedDate: string | null;
+            /**
+             * Format: date-time
+             * @description 최근 수정 일시
+             */
+            updatedAt: string;
+        };
+        LeadStateResponseDto: {
+            status: components["schemas"]["InquiryStatus"];
+            leadId: number;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        SaveLeadReplyDto: {
+            /**
+             * @description 답변하기 전에 읽은 도입문의의 `updatedAt` 그대로. 그사이 다른 운영자가 저장했으면 409 다.
+             * @example 2026-10-14T01:02:03.456Z
+             */
+            updatedAt: string;
+            /** @description 문의자에게 회신할 답변. 평문이고 20,000자까지. */
+            reply: string;
+        };
+        SaveInternalMemoDto: {
+            /** @description 메모. 2,000자까지. null · 빈 문자열 · 공백만 보내면 지운다. 키는 빼먹을 수 없다 — 빠진 키로 메모가 지워지지 않게. */
+            internalMemo: string | null;
+            /**
+             * @description 저장하기 전에 읽은 `updatedAt` 그대로. 그사이 다른 운영자가 저장했으면 409 다.
+             * @example 2026-10-14T01:02:03.456Z
+             */
+            updatedAt: string;
+        };
+        InquiryListItemDto: {
+            status: components["schemas"]["InquiryStatus"];
+            inquiryId: number;
+            title: string;
+            /** @description 문의 유형(공통코드 값) */
+            inquiryCategoryCode: string;
+            /**
+             * Format: date-time
+             * @description 접수 일시
+             */
+            createdAt: string;
+            /** @description BP 이름(상호). BP 를 찾을 수 없으면 null. */
+            bpName: string | null;
+            /** @description 점포 이름. 점포 대상 문의가 아니거나 점포를 찾을 수 없으면 null. */
+            storeName: string | null;
+            /** @description 보낸 사람(등록한 관리자) 이름. 계정을 찾을 수 없거나 이름 칸이 NULL 이면 null. */
+            senderName: string | null;
+        };
+        InquiryListResponseDto: {
+            items: components["schemas"]["InquiryListItemDto"][];
+            total: number;
+        };
+        InquiryReplyDto: {
+            inquiryReplyId: number;
+            body: string;
+            /** Format: date-time */
+            repliedAt: string;
+            repliedBy: number;
+            repliedByName: string | null;
+        };
+        /** @enum {string} */
+        AttachmentFileType: "JPG" | "PNG" | "PDF";
+        InquiryAttachmentDto: {
+            fileType: components["schemas"]["AttachmentFileType"];
+            inquiryAttachmentId: number;
+            fileName: string;
+            sizeBytes: number;
+        };
+        InquiryResponseDto: {
+            status: components["schemas"]["InquiryStatus"];
+            inquiryId: number;
+            title: string;
+            /** @description 문의 유형(공통코드 값) */
+            inquiryCategoryCode: string;
+            /**
+             * Format: date-time
+             * @description 접수 일시
+             */
+            createdAt: string;
+            /** @description BP 이름(상호). BP 를 찾을 수 없으면 null. */
+            bpName: string | null;
+            /** @description 점포 이름. 점포 대상 문의가 아니거나 점포를 찾을 수 없으면 null. */
+            storeName: string | null;
+            /** @description 보낸 사람(등록한 관리자) 이름. 계정을 찾을 수 없거나 이름 칸이 NULL 이면 null. */
+            senderName: string | null;
+            body: string;
+            /** @description 보낸 사람(등록한 관리자) ID */
+            createdBy: number;
+            /** @description 보낸 사람의 권한 유형(공통코드 ROLE_TYPE). 계정을 찾을 수 없으면 null. */
+            senderRoleTypeCode: string | null;
+            /**
+             * Format: date-time
+             * @description 처리중으로 바꾼 시각 — 처리 이력의 「확인」 줄. 아직 접수 상태이거나, 처리중을 거치지 않고 답변했으면 null.
+             */
+            processingStartedAt: string | null;
+            processingStartedBy: number | null;
+            processingStartedByName: string | null;
+            /** @description 답변 이력. 오래된 것부터. */
+            replies: components["schemas"]["InquiryReplyDto"][];
+            /** @description 첨부파일. 순서대로. */
+            attachments: components["schemas"]["InquiryAttachmentDto"][];
+            /** @description 운영자 내부 메모. 문의자에게 보이지 않는다. */
+            internalMemo: string | null;
+            /**
+             * Format: date-time
+             * @description 최근 수정 일시
+             */
+            updatedAt: string;
+        };
+        DownloadUrlResponseDto: {
+            url: string;
+        };
+        InquiryStateResponseDto: {
+            status: components["schemas"]["InquiryStatus"];
+            inquiryId: number;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        CreateInquiryReplyDto: {
+            /**
+             * @description 답변하기 전에 읽은 문의의 `updatedAt` 그대로. 그사이 다른 운영자가 처리중 전환 · 답변 · 메모를 저장했으면 409 이고,
+             *     다시 읽어 최신 내용을 본다.
+             * @example 2026-10-14T01:02:03.456Z
+             */
+            updatedAt: string;
+            /** @description 문의자에게 보이는 답변. 평문이고 20,000자까지. 첨부파일은 받지 않는다(CNT-18). */
+            body: string;
         };
     };
     responses: never;
@@ -2160,6 +3332,171 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    AdminAuthController_login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminLoginDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminLoginResponseDto"];
+                };
+            };
+        };
+    };
+    AdminAuthController_issueTemporaryPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminTemporaryPasswordDto"];
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminTemporaryPasswordResponseDto"];
+                };
+            };
+        };
+    };
+    AdminAuthController_refresh: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefreshDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRefreshResponseDto"];
+                };
+            };
+        };
+    };
+    AdminAuthController_logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminAuthController_getLoginInfo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminLoginInfoResponseDto"];
+                };
+            };
+        };
+    };
+    AdminAuthController_changeRequiredPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminPasswordChangeDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 비밀번호 정책 위반 · 필수 약관 미동의 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 강제 변경 대상이 아님 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CodesController_findAll: {
+        parameters: {
+            query?: {
+                /**
+                 * @description 쉼표로 구분한 그룹 코드. 없으면 공통코드 전체. 없거나 사용하지 않는 그룹은 빈 목록으로 온다.
+                 *     빈 칸 · 형식이 틀린 코드가 하나라도 있거나 50개를 넘으면 400 이다.
+                 */
+                groups?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CodeItemsResponseDto"];
+                };
             };
         };
     };
@@ -2746,6 +4083,82 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description 메일 설정(MAIL_* · ADMIN_WEB_URL)이 없는 환경 — 아무것도 바꾸지 않는다 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpCodesController_findStores: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bpCodeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BpStoreListResponseDto"];
+                };
+            };
+            /** @description 사용할 수 없는 관리자 계정 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 삭제된 BP */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpCodesController_findCodeItems: {
+        parameters: {
+            query?: {
+                /**
+                 * @description 쉼표로 구분한 그룹 코드. 없으면 공통코드 전체. 없거나 사용하지 않는 그룹은 빈 목록으로 온다.
+                 *     빈 칸 · 형식이 틀린 코드가 하나라도 있거나 50개를 넘으면 400 이다.
+                 */
+                groups?: string;
+            };
+            header?: never;
+            path: {
+                bpCodeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CodeItemsResponseDto"];
+                };
+            };
+            /** @description 없거나 삭제된 BP */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
     };
     StaffMembersController_findAll: {
@@ -3201,12 +4614,55 @@ export interface operations {
             };
         };
     };
+    StoresController_options: {
+        parameters: {
+            query: {
+                /** @description 쪽 번호. 1부터. */
+                page: number;
+                pageSize: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoreOptionListResponseDto"];
+                };
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     StoresController_list: {
         parameters: {
             query: {
-                /** @description 1부터 */
+                /** @description 고른 점포. 여러 개는 `storeIds=1&storeIds=2` 또는 쉼표로, 1000개까지. 주지 않으면 볼 수 있는 점포 전체. */
+                storeIds?: number[];
+                /** @description 점포명 · 점포코드에 들어 있으면 나온다. 점포 다중 선택의 후보를 찾는 데 쓴다. */
+                keyword?: string;
+                /** @description 사업자등록번호. 하이픈을 빼고 숫자만 견주며, 일부만 넣어도 찾는다. */
+                bizRegistrationNumber?: string;
+                /** @description 점포 상태. 주지 않으면 미운영 · 운영(폐점은 고를 때만 나온다). */
+                statuses?: ("NOT_OPERATING" | "OPERATING" | "CLOSED")[];
+                /** @description 점포 유형. 주지 않으면 둘 다. */
+                storeTypes?: ("DIRECT" | "FRANCHISE")[];
+                /** @description 소속 BP. BP 상세의 「소속 점포 수」에서 들어올 때 준다. */
+                bpCodeId?: number;
+                /** @description 쪽 번호. 1부터. */
                 page: number;
-                pageSize: number;
+                /** @description 한 쪽 건수. 20 · 50 · 100, 기본 20. */
+                pageSize: 20 | 50 | 100;
             };
             header?: never;
             path?: never;
@@ -3222,8 +4678,466 @@ export interface operations {
                     "application/json": components["schemas"]["StoreListResponseDto"];
                 };
             };
-            /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님 */
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · 가맹 계정의 등록 */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StoresController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateStoreDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateStoreResponseDto"];
+                };
+            };
+            /** @description 입력 형식 · 위도 · 경도 중 하나만 있음 · BP 를 고르지 않음(플랫폼) · 없는 BP(플랫폼 BP 포함) · 다른 BP 에 등록(BP · 가맹 계정) · 국세청 정보와 다름 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · 가맹 계정의 등록 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 소속 BP 미사용 · 사업자등록번호 중복 · 점포코드 채번이 겹침 · 점포코드(6자리)를 다 씀 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 사업자 인증을 보냈는데 진위확인 연동이 없거나 실패함 · 등록이 몰려 시간을 넘김 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StoresController_excel: {
+        parameters: {
+            query?: {
+                /** @description 고른 점포. 여러 개는 `storeIds=1&storeIds=2` 또는 쉼표로, 1000개까지. 주지 않으면 볼 수 있는 점포 전체. */
+                storeIds?: number[];
+                /** @description 점포명 · 점포코드에 들어 있으면 나온다. 점포 다중 선택의 후보를 찾는 데 쓴다. */
+                keyword?: string;
+                /** @description 사업자등록번호. 하이픈을 빼고 숫자만 견주며, 일부만 넣어도 찾는다. */
+                bizRegistrationNumber?: string;
+                /** @description 점포 상태. 주지 않으면 미운영 · 운영(폐점은 고를 때만 나온다). */
+                statuses?: ("NOT_OPERATING" | "OPERATING" | "CLOSED")[];
+                /** @description 점포 유형. 주지 않으면 둘 다. */
+                storeTypes?: ("DIRECT" | "FRANCHISE")[];
+                /** @description 소속 BP. BP 상세의 「소속 점포 수」에서 들어올 때 준다. */
+                bpCodeId?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 점포목록_YYYYMMDD.xlsx */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+            /** @description 검색 조건 형식 · 1만 건 이상 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · 가맹 계정의 등록 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 1분 안에 다시 받음 */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StoresController_verifyBusiness: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyStoreBusinessDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoreBusinessVerificationResponseDto"];
+                };
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · 가맹 계정의 등록 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 점포 · 볼 수 없는 점포 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 사업자 진위확인 연동이 없거나 실패함 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StoresController_detail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoreDetailResponseDto"];
+                };
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · 가맹 계정의 등록 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 점포 · 볼 수 없는 점포 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StoresController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateStoreDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 입력 형식 · 위도 · 경도 중 하나만 있음 · 바꿀 수 없는 상태 전환 · 운영 조건(인증 · 좌표) 미충족 · 국세청 정보와 다름 · 재인증 번호 불일치 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · 가맹 계정의 등록 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 점포 · 볼 수 없는 점포 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 동시 수정 · 폐점한 점포 · 소속 BP 미사용 · 진행 중인 근로계약(폐점) · 사업자등록번호 중복 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 사업자 인증을 보냈는데 진위확인 연동이 없거나 실패함 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StoresController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · 가맹 계정의 등록 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 점포 · 볼 수 없는 점포 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 미운영이 아님 · 진행 중인 근로계약 · 소속 BP 미사용 · 그 사이 상태가 바뀜 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StoresController_histories: {
+        parameters: {
+            query: {
+                page: number;
+                pageSize: number;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoreHistoryListResponseDto"];
+                };
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · 가맹 계정의 등록 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 점포 · 볼 수 없는 점포 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StoresController_transitionCheck: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoreTransitionCheckResponseDto"];
+                };
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · 가맹 계정의 등록 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 점포 · 볼 수 없는 점포 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StoresController_putImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoreImageResponseDto"];
+                };
+            };
+            /** @description 파일 없음 · JPG · PNG 가 아님 · 5MB 초과 · 파일 2개 이상 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · 가맹 계정의 등록 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 점포 · 볼 수 없는 점포 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 폐점한 점포 · 소속 BP 미사용 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 첨부파일 저장소가 설정되지 않았거나 올리기에 실패함 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StoresController_removeImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 메뉴 권한 없음 · 가맹 계정의 등록 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 점포 · 볼 수 없는 점포 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 폐점한 점포 · 소속 BP 미사용 */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3818,6 +5732,46 @@ export interface operations {
             };
         };
     };
+    LeadsAdminController_list: {
+        parameters: {
+            query: {
+                /** @description 답변 대기(접수 · 처리중) 또는 답변 완료. */
+                answerStatus?: components["schemas"]["InquiryAnswerStatus"];
+                /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
+                page: number;
+                /** @description 한 쪽 건수. 기본 20, 최대 200. */
+                pageSize: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadListResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 도입문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     LeadsController_create: {
         parameters: {
             query?: never;
@@ -3839,6 +5793,431 @@ export interface operations {
             };
             /** @description 같은 IP 의 시간당 한도, 또는 같은 전화번호·이메일로 10분 안에 다시 접수 */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LeadsAdminController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 도입문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LeadsAdminController_startProcessing: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadStateResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 도입문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 이미 처리중이거나 답변한 도입문의 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LeadsAdminController_reply: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveLeadReplyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadStateResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 도입문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 그사이 다른 운영자가 저장함 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LeadsAdminController_saveInternalMemo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveInternalMemoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadStateResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 도입문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 그사이 다른 운영자가 저장함 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    InquiriesController_list: {
+        parameters: {
+            query: {
+                /** @description 답변 대기(접수 · 처리중) 또는 답변 완료. */
+                answerStatus?: components["schemas"]["InquiryAnswerStatus"];
+                /** @description 제목에 들어 있으면 나온다. */
+                title?: string;
+                /** @description 보낸 곳 — BP 이름 · 점포 이름 · 보낸 사람 이름 중 하나에 들어 있으면 나온다. */
+                sender?: string;
+                /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
+                page: number;
+                /** @description 한 쪽 건수. 기본 20, 최대 200. */
+                pageSize: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InquiryListResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    InquiriesController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inquiryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InquiryResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    InquiriesController_attachmentDownloadUrl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inquiryId: string;
+                inquiryAttachmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DownloadUrlResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 문의이거나 그 문의의 첨부가 아님 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 첨부파일 저장소 설정 없음 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    InquiriesController_startProcessing: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inquiryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InquiryStateResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 이미 처리중이거나 답변한 문의 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    InquiriesController_reply: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inquiryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateInquiryReplyDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InquiryStateResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 그사이 다른 운영자가 저장함 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    InquiriesController_saveInternalMemo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inquiryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveInternalMemoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InquiryStateResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 그사이 다른 운영자가 저장함 */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -15,6 +15,7 @@ export function ConfirmDialog({
   confirmLabel = "확인",
   cancelLabel = "취소",
   busy,
+  confirmDisabled,
   wide,
   onConfirm,
   onCancel,
@@ -26,6 +27,8 @@ export function ConfirmDialog({
   cancelLabel?: string;
   /** 확인 동작이 도는 동안 두 버튼을 막는다. */
   busy?: boolean;
+  /** 확인 버튼만 막는다 — 조건을 못 채운 동작(예: 폐점 조건 미충족). 취소는 그대로 누를 수 있다. */
+  confirmDisabled?: boolean;
   /** 안내가 긴 창은 480 으로 넓힌다(기본 420). */
   wide?: boolean;
   onConfirm: () => void;
@@ -64,7 +67,7 @@ export function ConfirmDialog({
         <Button variant="off" onClick={onCancel} disabled={busy}>
           {cancelLabel}
         </Button>
-        <Button onClick={onConfirm} disabled={busy}>
+        <Button onClick={onConfirm} disabled={busy || confirmDisabled}>
           {confirmLabel}
         </Button>
       </div>
