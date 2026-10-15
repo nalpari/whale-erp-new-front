@@ -19,10 +19,10 @@ BP 회원가입(`/signup`)의 「사업자정보 인증(선택)」은 지금 빈
 
 | 저장소 | 워크트리 · 브랜치 | PR |
 |---|---|---|
-| front | stonehenge · `papaya` | #23 BP 회원가입·가입 완료 화면 |
-| api | alhambra · `bulbasaur` | #37 관리자 웹 BP 회원가입 · 가입 완료 API |
+| front | petra · `gyarados` (`papaya` 위) | 새 PR, base `papaya`(#23) |
+| api | taj-mahal · `lapras` (`bulbasaur` 위) | 새 PR, base `bulbasaur`(#37) |
 
-서비스 키는 `.env.local` 의 `NTS_SERVICE_KEY` 다. api 만 쓴다. alhambra 의 `.env.local` 에는 아직 없어서, 실행해 볼 때 api 메인 체크아웃에서 옮긴다.
+서비스 키는 `.env.local` 의 `NTS_SERVICE_KEY` 다. api 만 쓴다. taj-mahal 의 `.env.local` 에 메인 체크아웃에서 옮겨 두었다.
 
 ## 1. api
 
@@ -38,7 +38,7 @@ BP 회원가입(`/signup`)의 「사업자정보 인증(선택)」은 지금 빈
 
 1. **중복 검사를 먼저 한다**(`PL-OCJOFP`). 같은 번호를 쓰는 다음 행이 있으면 409 `이미 등록된 사업자등록번호입니다.` 를 돌려준다. 누가 쓰는지는 알리지 않는다.
    - `bp_codes`: `is_deleted = false` 이고 `account_status_code` 가 탈퇴가 아닌 행. 탈퇴·삭제한 BP 의 번호는 다시 쓸 수 있다.
-   - `store_business_profiles`: 삭제되지 않은 점포의 행.
+   - `store_business_profiles`: 삭제되지 않은 미운영 · 운영 점포의 행. 폐점한 점포의 번호는 다시 쓸 수 있다. 플랫폼 BP 는 뺀다.
 2. 국세청 `POST https://api.odcloud.kr/api/nts-businessman/v1/validate?serviceKey=…` 를 부른다. 본문은 `{ businesses: [{ b_no, start_dt, p_nm }] }` 다.
 3. `data[0].valid === "01"` 이면 성공이다. 10분짜리 JWT 를 `{ verificationToken }` 으로 돌려준다.
    - 페이로드: `{ typ: 'biz-verification', bizRegistrationNumber, bizCeoName, bizOpenDate }`
@@ -92,7 +92,7 @@ BP 회원가입(`/signup`)의 「사업자정보 인증(선택)」은 지금 빈
 
 - 인증했으면 `bizVerificationToken` 을 싣는다. 인증하지 않았으면 싣지 않는다.
 - 인증한 지 10분이 지났으면 가입 요청을 보내지 않는다. 인증 상태를 풀고 사업자정보 칸에 `인증 시간(10분)이 지났습니다. 다시 인증해 주세요.` 를 보인다.
-- 그래도 api 가 토큰을 거절하면(시계 차이 등), 다른 가입 실패와 같은 자리에 api 문구를 보인다.
+- 그래도 api 가 가입을 토큰 만료(400, 시계 차이 · 1회용 토큰 재사용 등)나 사업자번호 중복(409, 인증한 사이 다른 BP 가 먼저 가입)으로 거절하면, 인증 상태를 풀고 사업자정보 칸에 api 문구를 보인다. 같은 토큰으로 다시 내도 또 거절되기 때문이다(2026-10-15, api 세션이 토큰 1회용 가능성을 알림).
 
 ### 2-4. 테스트
 
@@ -103,7 +103,7 @@ api 응답을 화면 상태로 바꾸는 부분을 순수 함수로 빼고 단�
 - `okf/auth.md` 「가입」 절에서 「인증에 성공해야 대표자 연락처·…선택 입력이 열린다」를 회원가입에서 뺀다. 그 칸들은 마이페이지·점포의 일이다(근거: 2026-10-15 사용자 확인). 토큰·중복 규칙 줄은 실제 구현에 맞춘다.
 - `okf/whale-erp-front.md` 의 signup 설명에서 "진위확인 연동 전" 문구를 고친다. `generated.at` 을 갱신하고 `okf/log.md` 에 한 줄 남긴다.
 - api 쪽 okf 도 같은 규칙으로 고친다.
-- 코드 주석: `biz-auth-section.tsx` · `actions.ts` · api `admin-signup.service.ts` 의 "연동 없음" 주석을 현재 동작으로 바꾼다.
+- 코드 주석: `biz-auth-section.tsx` · `actions.ts` · `page.tsx` · `_components/validators.ts` · api `admin-signup.service.ts` 의 "연동 없음" 주석을 현재 동작으로 바꾼다.
 
 ## 정해진 것
 
