@@ -11,6 +11,7 @@ import { RequiredField } from "./_components/required-field";
 import { CHECK_FAILED_MESSAGE, UNKNOWN_RESULT_MESSAGE } from "./_components/api-failure";
 import {
   agreeErrorMessage,
+  normalizeLoginId,
   validateEmail,
   validateLoginId,
   validateName,
@@ -260,11 +261,19 @@ export function SignupForm() {
               <span className={INPUT_BOX}>
                 <input
                   value={values.loginId}
-                  onChange={(e) => handleAvailabilityChange("loginId", e.target.value)}
+                  onChange={(e) => {
+                    // 소문자로 바꾸면 React 가 값을 다시 써 커서가 끝으로 간다 — 아이디는 ASCII 라 길이가 그대로이니 자리를 되살린다.
+                    const { selectionStart, selectionEnd } = e.target;
+                    const input = e.target;
+                    handleAvailabilityChange("loginId", normalizeLoginId(input.value));
+                    requestAnimationFrame(() => input.setSelectionRange(selectionStart, selectionEnd));
+                  }}
                   onBlur={() =>
                     !pending && !available.loginId && verifyAvailability("loginId", values.loginId).catch((e) => console.error("[signup] blur check failed", "loginId", e))
                   }
                   autoComplete="username"
+                  autoCapitalize="none"
+                  spellCheck={false}
                   placeholder="영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요."
                   aria-invalid={invalid("loginId")}
                   aria-describedby={describe("loginId")}

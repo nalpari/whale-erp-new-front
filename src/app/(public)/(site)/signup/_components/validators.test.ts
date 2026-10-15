@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   agreeErrorMessage,
+  normalizeLoginId,
   validateBizRegistrationNumber,
   validateEmail,
   validateLoginId,
@@ -111,4 +112,11 @@ test("약관 미동의 문구 — 안 한 항목만 이름을 든다", () => {
   assert.equal(agreeErrorMessage(false, false), "이용약관과 개인정보 수집·이용에 모두 동의해 주세요.");
   assert.equal(agreeErrorMessage(false, true), "이용약관에 동의해 주세요.");
   assert.equal(agreeErrorMessage(true, false), "개인정보 수집·이용에 동의해 주세요.");
+});
+
+test("아이디 입력은 소문자로 바꿔 보인다 — api 가 소문자로 저장하고 관리자 웹 로그인은 대소문자를 구분하므로, 저장되는 그대로를 입력 단계부터 본다", () => {
+  assert.equal(normalizeLoginId("HanGang01"), "hangang01");
+  assert.equal(normalizeLoginId("hangang01"), "hangang01");
+  // 입력 중이라 공백은 지우지 않는다 — 형식 검사가 막는다.
+  assert.equal(normalizeLoginId("Ab 1"), "ab 1");
 });

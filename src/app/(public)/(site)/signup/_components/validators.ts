@@ -2,6 +2,12 @@
 // signup/actions.ts 가 api 로 한다. 사업자등록번호 중복(진위) 확인은 국세청 연동이 없어 아직 못 한다.
 // 메세지가 있으면 오류, undefined 면 통과.
 
+// 아이디는 입력하는 순간 소문자로 바꿔 보인다. api 가 소문자로 저장하고 관리자 웹 로그인은 대소문자를 구분하므로
+// (1팀), 대문자로 친 그대로 두면 가입한 아이디를 그대로 쳐서는 로그인할 수 없다 — 저장되는 그대로를 처음부터 보게 한다.
+export function normalizeLoginId(value: string): string {
+  return value.toLowerCase();
+}
+
 const LOGIN_ID = /^(?=.*[A-Za-z])[A-Za-z0-9]{4,20}$/;
 export function validateLoginId(value: string): string | undefined {
   if (!value) return "아이디를 입력해 주세요.";
