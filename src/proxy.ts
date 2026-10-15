@@ -94,7 +94,9 @@ function toLogin(req: NextRequest) {
 }
 
 export const config = {
-  // 빌드 산출물·이미지 최적화·public/ 의 파일(아이콘·favicon, 루트의 svg 등)은 건너뛴다.
+  // 빌드 산출물·이미지 최적화·public/ 의 파일(아이콘·favicon, 비로그인 화면이 쓰는 guest 자산, 루트의 svg 등)은 건너뛴다.
+  // guest/ 가 없으면 /signup·/login 처럼 세션 없이 보는 화면에서 비주얼 그림·푸터 로고가 /login 으로 307 리다이렉트된다
+  // — /design/guest 샘플은 보는 사람이 이미 로그인돼 있어 드러나지 않았다(2026-10-15).
   // 확장자 제외는 루트 한 단계 파일만 — /staff-members/1.png 같은 앞으로의 동적 경로까지 열어 두면 안 된다.
-  matcher: ["/((?!_next/static|_next/image|icons/|favicon.ico|[^/]+\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
+  matcher: ["/((?!_next/static|_next/image|icons/|guest/|favicon.ico|[^/]+\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
 };
