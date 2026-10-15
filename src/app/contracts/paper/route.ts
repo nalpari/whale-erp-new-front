@@ -11,7 +11,21 @@ const SERVER_DOWN = "서버에 연결하지 못했습니다. 잠시 뒤 다시 �
 // 경로에 넣는 id — 1..2147483647 정수만. 화면 밖에서 직접 부를 수 있어 api 의 다른 경로로 새지 않게 막는다.
 const isContractId = (raw: string) => /^[1-9][0-9]{0,9}$/.test(raw) && Number(raw) <= 2_147_483_647;
 
+// 상태를 바꾸는 라우트 핸들러라 다른 출처의 요청은 막는다. 쿠키 sameSite lax 는 교차 사이트만 막고, 같은 등록 도메인의 다른 서브도메인은 막지 못한다
+// (서버 액션이면 Next 가 하는 검사). 앞단 프록시가 Host 를 바꾸면 x-forwarded-host 를 본다 — Next 서버 액션과 같은 기준.
+function sameOrigin(req: NextRequest) {
+  const origin = req.headers.get("origin");
+  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
+  if (!origin || !host) return false;
+  try {
+    return new URL(origin).host === host;
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(req: NextRequest) {
+  if (!sameOrigin(req)) return NextResponse.json({ error: "허용되지 않은 요청입니다" }, { status: 403 });
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "로그인이 필요합니다" }, { status: 401 });
   let form: FormData;

@@ -283,6 +283,11 @@ export function ContractForm({
       let result: SaveResult & { ok?: boolean };
       try {
         const res = await fetch("/contracts/paper", { method: "POST", body: data });
+        // 세션이 끊겼다 — proxy · 핸들러가 쿠키를 지우고 401 을 준다. 로그인 화면으로 보낸다.
+        if (res.status === 401) {
+          router.push("/login");
+          return;
+        }
         result = (await res.json().catch(() => ({ error: `요청이 실패했습니다 (HTTP ${res.status})` }))) as SaveResult & { ok?: boolean };
       } catch {
         result = { error: "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요" };
@@ -715,7 +720,8 @@ export function ContractForm({
         </div>
       </div>
 
-      {/* 같은 점포 · 같은 번호의 진행 중 계약(WHALEERP-129). 대체하면 임시저장은 지우고, 발송 대기 · 서명 대기는 종료한다. */}
+      {/* 같은 점포 · 같은 번호의 진행 중 계약(WHALEERP-129). 대체하면 임시저장은 지우고, 발송 대기 · 서명 대기는 종료한다.
+          종이 계약 등록은 체결 완료도 묻고 종료한다 — 두 번 눌러 두 벌이 생기지 않게(api #49). */}
       <ConfirmDialog
         open={replace !== null}
         title="기존 근로계약을 대체하시겠습니까?"
@@ -738,7 +744,9 @@ export function ContractForm({
             </li>
           ))}
         </ul>
-        <p className="mt-[6px]">대체하면 임시저장은 지우고, 발송 대기 · 서명 대기 계약은 종료합니다.</p>
+        <p className="mt-[6px]">
+          대체하면 임시저장은 지우고, 발송 대기 · 서명 대기{replace?.paper ? " · 체결 완료" : ""} 계약은 종료합니다.
+        </p>
       </ConfirmDialog>
     </div>
   );

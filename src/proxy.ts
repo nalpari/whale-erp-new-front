@@ -82,9 +82,11 @@ async function refresh(session: Session): Promise<Session | "unauthorized" | nul
 }
 
 // 쿠키를 지워야 /login 의 「로그인한 채 오면 홈으로」가 다시 돌려보내지 않는다.
-// BFF(/api/*)는 fetch 가 부르므로 로그인 화면 HTML 대신 401 을 준다 — 화면이 받아 /login 으로 보낸다.
+// BFF(/api/*)와 종이 계약 등록(/contracts/paper)은 fetch 가 부르므로 로그인 화면 HTML 대신 401 을 준다 — 화면이 받아 /login 으로 보낸다.
+// 리다이렉트를 주면 fetch 가 따라가 날인본을 실은 채 /login 으로 다시 POST 하고, 화면은 로그인으로 가지 못한다.
 function toLogin(req: NextRequest) {
-  const res = req.nextUrl.pathname.startsWith("/api/")
+  const { pathname } = req.nextUrl;
+  const res = pathname.startsWith("/api/") || pathname === "/contracts/paper"
     ? NextResponse.json({ message: "로그인이 필요합니다" }, { status: 401 })
     : NextResponse.redirect(new URL("/login", req.url));
   res.cookies.delete(SESSION_COOKIE);

@@ -17,6 +17,7 @@ import { labelOf } from "@/lib/enums";
 import { MENUS, STORES, USER_ITEMS } from "../../design/sample";
 import { StatusBadge } from "../columns";
 import { formatPhone, type ContractDetail } from "../new/contract-form-model";
+import { documentNoticeOf } from "./document-notice";
 import { insuranceText, kstDateTime, payDayText, probationText, weeklyHoursOf, workDayLines } from "./detail-format";
 
 type Status = Parameters<typeof StatusBadge>[0]["status"];
@@ -31,8 +32,9 @@ const PENDING: Partial<Record<Status, string>> = {
 
 // 근로계약 상세. 데모 docs/demo/staff/contracts-detail 의 틀(제목 줄 + 계약 내용 + 상태 변경 이력).
 // 주휴일 · 급여 지급 방식 · 수습(정직원)도 보인다(데모 확인 2026-10-15).
-export default async function ContractDetailPage({ params }: PageProps<"/contracts/[contractId]">) {
+export default async function ContractDetailPage({ params, searchParams }: PageProps<"/contracts/[contractId]">) {
   const { contractId: raw } = await params;
+  const documentNotice = documentNoticeOf((await searchParams).document);
   const contractId = Number(raw);
   if (!Number.isInteger(contractId) || contractId < 1) notFound();
 
@@ -105,7 +107,8 @@ export default async function ContractDetailPage({ params }: PageProps<"/contrac
         { label: "근무 장소", value: c.workLocation ?? "-" },
         { label: "계약 방식", value: c.contractMethod ? labelOf(contractMethods, c.contractMethod) : "-" },
         // 종이 계약 날인본(CTR-23). 누르면 라우트 핸들러가 300초짜리 주소를 받아 원래 파일 이름으로 내려받게 한다
-        ...(c.documents.length
+        // documents 는 api #49 부터 온다 — 그 전 api 와 함께 떠도 상세가 깨지지 않게 없으면 빈 것으로 본다.
+        ...(c.documents?.length
           ? [
               {
                 label: "날인본",
@@ -148,6 +151,11 @@ export default async function ContractDetailPage({ params }: PageProps<"/contrac
                 {buttons}
                 <Button href="/contracts">목록</Button>
               </div>
+              {documentNotice && (
+                <p role="alert" className="rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] font-semibold text-erp-off">
+                  {documentNotice}
+                </p>
+              )}
               {c ? (
                 <DetailTable title="계약 내용" rows={rows} />
               ) : (
