@@ -423,13 +423,6 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * 사업자정보 인증(국세청 진위확인). 번호 중복을 먼저 본다(409). 불일치는 422, 국세청 장애는 503 이고,
-         *     일치하면 10분짜리 토큰을 준다. 따로 한도를 걸지 않는다 — 인증하기를 눌렀을 때만 불린다. 본문에 이메일 ·
-         *     아이디가 없어 계정 축(accountTracker)도 IP 로 세므로, 실제로는 같은 IP 10분에 10건이 먼저 걸린다. 번호를
-         *     바꿔 가며 409 로 가입 여부를 캐는 것도 이 한도가 늦춘다. TRUST_PROXY 가 관리자 웹 서버를 믿지 않으면 모든
-         *     가입자가 이 한 칸을 나눠 쓴다(가입과 같은 조건).
-         */
         post: operations["AdminSignupController_businessVerification"];
         delete?: never;
         options?: never;
@@ -1710,7 +1703,7 @@ export interface components {
             bizRegistrationNumber: string;
             /** @description 대표자명 1~50자 */
             bizCeoName: string;
-            /** @description 개업일자 YYYY-MM-DD */
+            /** @description 개업일자 YYYY-MM-DD. 실제로 있는 날짜만 받는다 */
             bizOpenDate: string;
         };
         SignupBusinessVerificationResponseDto: {
@@ -3802,6 +3795,34 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["SignupBusinessVerificationResponseDto"];
                 };
+            };
+            /** @description 이미 등록된 사업자등록번호 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 국세청 정보와 일치하지 않음 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같은 IP 의 시간당 한도(10건) */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 국세청 확인 실패(장애 · 키 없음) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
