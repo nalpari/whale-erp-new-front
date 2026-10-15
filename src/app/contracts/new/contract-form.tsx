@@ -11,6 +11,7 @@ import {
   formatWage,
   fullTimePay,
   initialForm,
+  inProgressLine,
   isMinor,
   MINIMUM_WAGE,
   monthlyHours,
@@ -755,9 +756,7 @@ export function ContractForm({
         <p>이 점포에 같은 휴대전화번호로 진행 중인 근로계약이 있습니다.</p>
         <ul className="mt-[6px] list-disc pl-[18px]">
           {replace?.list.map((c) => (
-            <li key={c.contractId}>
-              {labelOf(labels.contractStatus, c.status)} · 계약 {c.contractId}
-            </li>
+            <li key={c.contractId}>{inProgressLine(c, labelOf(labels.contractStatus, c.status))}</li>
           ))}
         </ul>
         <p className="mt-[6px]">

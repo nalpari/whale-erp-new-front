@@ -81,7 +81,8 @@ export const DEFAULT_SEVERANCE_PAY_TERMS = "계속근로기간 1년에 대하여
 export type CreateContractBody = components["schemas"]["CreateContractDto"];
 
 /** 같은 점포 · 같은 번호의 진행 중 계약 — 대체할지 묻는 데 쓴다 */
-export type InProgressContract = { contractId: number; status: string };
+// 이름 · 기간은 확인창에서 누구 계약인지 보이려고 api 가 싣는다(api #49) — 번호를 넘겨받은 다른 사람의 계약일 수 있다.
+export type InProgressContract = { contractId: number; status: string; name: string | null; startDate: string | null; endDate: string | null };
 
 /** 저장 서버 액션의 결과. 성공하면 액션이 목록으로 보내므로 돌아왔다면 실패다 */
 export interface SaveResult {
@@ -97,11 +98,17 @@ export interface SaveResult {
 export function inProgressOf(body: unknown): InProgressContract[] | undefined {
   const b = body as { code?: unknown; contracts?: unknown } | null;
   if (b?.code !== "CONTRACT_IN_PROGRESS" || !Array.isArray(b.contracts)) return undefined;
-  const list = b.contracts.filter(
-    (c): c is InProgressContract =>
-      typeof (c as InProgressContract)?.contractId === "number" && typeof (c as InProgressContract)?.status === "string",
-  );
+  const text = (v: unknown) => (typeof v === "string" && v ? v : null);
+  const list = b.contracts
+    .filter((c): c is { contractId: number; status: string } & Record<string, unknown> => typeof c?.contractId === "number" && typeof c?.status === "string")
+    .map((c) => ({ contractId: c.contractId, status: c.status, name: text(c.name), startDate: text(c.startDate), endDate: text(c.endDate) }));
   return list.length ? list : undefined;
+}
+
+/** 확인창의 한 줄 — 「남도현 · 2026-09-01 ~ 2026-10-01 · 체결 완료 · 계약 5」. 이름 · 기간이 없으면 뺀다 */
+export function inProgressLine(c: InProgressContract, statusLabel: string): string {
+  const period = c.startDate || c.endDate ? `${c.startDate ?? ""} ~ ${c.endDate ?? ""}`.trim() : null;
+  return [c.name, period, statusLabel, `계약 ${c.contractId}`].filter(Boolean).join(" · ");
 }
 
 const span = (sh: string, eh: string): TimeSpan => ({ start: { hour: sh, minute: "00" }, end: { hour: eh, minute: "00" } });

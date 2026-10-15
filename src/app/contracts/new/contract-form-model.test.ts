@@ -11,6 +11,7 @@ import {
   fromDetail,
   hoursOf,
   initialForm,
+  inProgressLine,
   inProgressOf,
   isMinor,
   monthlyWage,
@@ -274,8 +275,12 @@ test("이어 쓰기: api #12 칸을 폼으로 되돌린다. 비운 조항은 기
 });
 
 test("409 본문에서 대체할 진행 중 계약만 꺼낸다", () => {
-  const list = [{ contractId: 5, status: "PENDING_SEND" }];
+  const list = [{ contractId: 5, status: "PENDING_SEND", name: "남도현", startDate: "2026-11-01", endDate: null }];
   assert.deepEqual(inProgressOf({ statusCode: 409, code: "CONTRACT_IN_PROGRESS", message: "…", contracts: list }), list);
+  // 이름 · 기간이 없는 옛 api 본문도 받는다(빈 값은 null)
+  assert.deepEqual(inProgressOf({ code: "CONTRACT_IN_PROGRESS", contracts: [{ contractId: 5, status: "DRAFT", name: "" }] }), [
+    { contractId: 5, status: "DRAFT", name: null, startDate: null, endDate: null },
+  ]);
   // 근무 시간 겹침 · 재직 중은 문장만 보인다
   assert.equal(inProgressOf({ statusCode: 409, code: "WORK_TIME_OVERLAP", overlaps: [] }), undefined);
   assert.equal(inProgressOf({ statusCode: 409, message: "재직 중" }), undefined);
@@ -353,4 +358,11 @@ test("종이 계약 날인본 파일: 형식은 enum 값으로, 10MB 까지", ()
   assert.equal(paperFileError({ name: "a.hwp", type: "application/x-hwp", size: 10 }, types), "PDF · JPG · PNG 파일만 올릴 수 있습니다.");
   assert.equal(paperFileError({ name: "a.pdf", type: "application/pdf", size: 0 }, types), "빈 파일입니다. 다른 파일을 골라 주세요.");
   assert.equal(paperFileError({ name: "a.jpg", type: "image/jpeg", size: PAPER_FILE_MAX_BYTES + 1 }, types), "파일은 10MB까지 올릴 수 있습니다.");
+});
+
+test("확인창 한 줄 — 누구 계약인지 이름 · 기간을 앞에 둔다", () => {
+  const c = { contractId: 5, status: "SIGNED", name: "남도연", startDate: "2026-09-01", endDate: "2026-10-01" };
+  assert.equal(inProgressLine(c, "체결 완료"), "남도연 · 2026-09-01 ~ 2026-10-01 · 체결 완료 · 계약 5");
+  assert.equal(inProgressLine({ ...c, endDate: null }, "체결 완료"), "남도연 · 2026-09-01 ~ · 체결 완료 · 계약 5");
+  assert.equal(inProgressLine({ ...c, name: null, startDate: null, endDate: null }, "임시저장"), "임시저장 · 계약 5");
 });
