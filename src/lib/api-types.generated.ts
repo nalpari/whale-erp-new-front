@@ -377,6 +377,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/signup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * BP 회원가입. BP 와 BP 마스터 계정을 함께 만들고, 메일 설정이 있으면 가입 완료 메일을 보낸다(메일이
+         *     없거나 실패해도 가입은 완료다). 아이디·이메일이 이미 쓰이면 409 다.
+         */
+        post: operations["AdminSignupController_signup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/signup/login-id-availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 아이디 중복 확인. 탈퇴·삭제한 계정의 아이디도 쓸 수 없다. */
+        post: operations["AdminSignupController_loginIdAvailability"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/signup/email-availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 이메일 중복 확인. 탈퇴·삭제한 계정의 이메일은 다시 쓸 수 있다. */
+        post: operations["AdminSignupController_emailAvailability"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/enums": {
         parameters: {
             query?: never;
@@ -454,7 +508,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** BP에 적용. 플랫폼제공 그룹만. 각 BP 에 아직 없는 행만 넣는다 — 다시 눌러도 된다. */
+        /**
+         * BP에 적용. 플랫폼제공 그룹만. 각 BP 에 아직 없는 행만 넣는다 — 다시 눌러도 된다.
+         *     되돌릴 수 없지만 행을 지우지 않고 그룹의 적용 여부를 바꾸는 동작이라 수정 권한으로 본다.
+         */
         post: operations["CodeGroupsController_applyToBps"];
         delete?: never;
         options?: never;
@@ -844,6 +901,11 @@ export interface paths {
         /**
          * 대표 이미지 올리기 · 바꾸기(점포당 1장). multipart 의 `file` 한 개, JPG · PNG 5MB 이하 — 종류는 확장자가
          *     아니라 내용으로 본다. 등록 화면은 점포를 등록한 뒤 이 경로로 올린다. 수정 권한이 있어야 한다.
+         *
+         *     수정 권한은 가드(@MenuPermission)가 먼저 본다 — 가드는 인터셉터보다 먼저 돌므로, 권한 없는 관리자의 요청은
+         *     AttachmentsInterceptor 가 multipart 본문(최대 5MB)을 받기 전에 403 이다. 핸들러의 allow() 는 같은 판정을
+         *     한 번 더 하지만 지우지 않는다 — 서비스가 받는 MenuCaller(권한 유형 · 권한 그룹)를 그 판정이 돌려주고, 업로드를
+         *     받는 사이 권한이 거둬졌으면 그것도 여기서 막는다.
          */
         put: operations["StoresController_putImage"];
         post?: never;
@@ -888,6 +950,70 @@ export interface paths {
         post?: never;
         /** 지운다(지움 표시). 사용자에게 보이지 않고 행은 남는다. */
         delete: operations["PostsController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/public-posts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicPostsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/public-posts/{postId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicPostsController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/support-posts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SupportPostsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/support-posts/{postId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SupportPostsController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1044,7 +1170,8 @@ export interface paths {
         get: operations["LeadsAdminController_get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** 상담하지 않은(상담 완료일 없는) 도입문의를 지운다. 행을 남기지 않는다(개인정보 파기, CNT-11). */
+        delete: operations["LeadsAdminController_remove"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1511,6 +1638,59 @@ export interface components {
             codes: {
                 [key: string]: components["schemas"]["CodeValueDto"][];
             };
+        };
+        SignupDto: {
+            /**
+             * @description 영문 또는 영문·숫자 4~20자. 소문자로 정규화해 저장한다. 관리자 웹 로그인은 대소문자를 구분하므로(1팀),
+             *     가입한 사람은 이 소문자 아이디로 로그인한다 — 가입 완료 화면이 응답의 loginId 를 보여 준다.
+             */
+            loginId: string;
+            /** @description 영문·숫자·특수문자(!@#$%^&*()-_=+[]{}?)를 모두 포함해 8~20자 */
+            password: string;
+            /** @description 한글 또는 영문 2~20자 */
+            name: string;
+            /** @description 숫자만 10~11자리. 화면의 세 칸을 이어 붙인 값이다 */
+            phone: string;
+            /**
+             * Format: email
+             * @description 아이디 찾기·임시 비밀번호가 이 주소로 간다. 소문자로 정규화한다(admin_accounts_email_lower)
+             */
+            email: string;
+            /** @description 상호명 1~50자. 사업자 인증 결과로 채우지 않고 직접 입력한다 */
+            tradeName: string;
+            /** @description 이용약관(TERMS_SERVICE) 동의. 필수라 true 만 받는다 */
+            agreeTermsOfUse: boolean;
+            /** @description 개인정보 수집·이용(PRIVACY_COLLECT) 동의. 필수라 true 만 받는다 */
+            agreePrivacy: boolean;
+        };
+        SignupResponseDto: {
+            /**
+             * @description 가입 완료 화면을 여는 토큰. 10분 동안만 쓸 수 있다. 액세스 토큰이 아니라 이것으로 API 를
+             *     부를 수 없다 — 「웨일ERP 시작하기」가 이 토큰을 로그인 접속으로 바꾸는 API 는 관리자 웹 로그인과
+             *     함께 만든다.
+             */
+            signupToken: string;
+            /** @description 가입한 BP 상호명 */
+            tradeName: string;
+            /** @description 가입한 아이디(소문자로 정규화한 값) */
+            loginId: string;
+            /** @description 가입한 이메일(소문자로 정규화한 값). 가입 안내 메일이 가는 주소다 */
+            email: string;
+        };
+        LoginIdAvailabilityDto: {
+            /** @description 가입 화면의 아이디. 가입과 같이 소문자로 정규화해 본다 */
+            loginId: string;
+        };
+        AvailabilityResponseDto: {
+            /** @description 쓸 수 있으면 true. 누가 쓰는지는 알려 주지 않는다 */
+            available: boolean;
+        };
+        EmailAvailabilityDto: {
+            /**
+             * Format: email
+             * @description 가입 화면의 이메일. 가입과 같이 소문자로 정규화해 본다
+             */
+            email: string;
         };
         EnumValueDto: {
             /** @description 저장·전송 값. 예: PENDING_SEND */
@@ -2024,7 +2204,11 @@ export interface components {
             /** @description 거른 결과 전체 건수 */
             total: number;
         };
-        /** @enum {string} */
+        /**
+         * @description 주휴일 — 근무하지 않는 요일 하나(노무사 확인 2026-10-14). 주 소정근로시간이 15시간 이상이면 넣어야 하고,
+         *     15시간 미만이면 주휴가 없어 비운다(contracts.service checkWeeklyHoliday).
+         * @enum {string}
+         */
         Weekday: "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN";
         ContractWorkDayDto: {
             weekday: components["schemas"]["Weekday"];
@@ -2037,6 +2221,11 @@ export interface components {
         };
         /** @enum {string} */
         PayMonth: "CURRENT_MONTH" | "NEXT_MONTH";
+        /**
+         * @description 급여 지급 방식 — 계좌 · 현금
+         * @enum {string}
+         */
+        PayMethod: "ACCOUNT" | "CASH";
         CreateContractDto: {
             employmentType: components["schemas"]["EmploymentType"];
             /**
@@ -2044,8 +2233,15 @@ export interface components {
              * @enum {string}
              */
             contractMethod?: "ELECTRONIC";
+            /**
+             * @description 주휴일 — 근무하지 않는 요일 하나(노무사 확인 2026-10-14). 주 소정근로시간이 15시간 이상이면 넣어야 하고,
+             *     15시간 미만이면 주휴가 없어 비운다(contracts.service checkWeeklyHoliday).
+             */
+            weeklyHoliday?: components["schemas"]["Weekday"];
             workDays?: components["schemas"]["ContractWorkDayDto"][];
             payMonth?: components["schemas"]["PayMonth"];
+            /** @description 급여 지급 방식 — 계좌 · 현금 */
+            payMethod?: components["schemas"]["PayMethod"];
             /** @description 앞뒤 공백은 지운다(NFC) — 같은 사람의 가입 전 레코드를 이름으로 찾으므로 공백 하나로 갈리지 않게. */
             name: string;
             /** @description 숫자만 10~11자리 (예: 01090145563) */
@@ -2081,6 +2277,13 @@ export interface components {
             severancePayTerms?: string;
             /** @description 1~31. 31 은 말일 */
             payDay?: number;
+            /**
+             * @description 수습 기간 — 개월, 1~3. 비우면 수습 없음. 정직원이고 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둔다
+             *     (노무사 확인 2026-10-14). 감액률과 함께 넣는다.
+             */
+            probationMonths?: number;
+            /** @description 수습 중 임금 감액률 — %, 0~10. 수습 중 시급 = 시급 × (1 − 감액률). 수습 기간과 함께 넣는다 */
+            probationWageReductionRate?: number;
             /** @description 계약서 근무 장소 조항에 적는 주소. 근무지 점포와 따로다 */
             workLocation?: string;
             isHealthPensionInsured?: boolean;
@@ -2151,6 +2354,12 @@ export interface components {
             severancePayTerms: string | null;
             payMonth: components["schemas"]["PayMonth"] | null;
             payDay: number | null;
+            /** @description 급여 지급 방식 — 계좌 · 현금 */
+            payMethod: components["schemas"]["PayMethod"] | null;
+            /** @description 수습 기간 — 개월(1~3). 수습이 없으면 null */
+            probationMonths: number | null;
+            /** @description 수습 중 임금 감액률 — %(0~10). 수습이 없으면 null */
+            probationWageReductionRate: number | null;
             isHealthPensionInsured: boolean | null;
             isEmploymentInjuryInsured: boolean | null;
             /** @description 초대 유형 판별 결과(초안 저장 때). 임시저장이면 null */
@@ -2604,6 +2813,23 @@ export interface components {
             publishEndDate?: string | null;
             /** @description FAQ 카테고리 — 공통코드 FAQ_CATEGORY 의 플랫폼 원본 중 사용 중인 상세코드. FAQ 면 필수. */
             faqCategoryCode?: string | null;
+        };
+        PublishedPostResponseDto: {
+            contentType: components["schemas"]["PostContentType"];
+            noticeType: components["schemas"]["NoticeType"] | null;
+            postId: number;
+            title: string;
+            /** @description 평문. 화면은 HTML 로 그리지 않고 이스케이프해 보인다. */
+            body: string;
+            faqCategoryCode: string | null;
+            /** @description 상단 고정. 목록은 고정 글을 먼저 준다. */
+            isPinned: boolean;
+            /** @description 게시일(YYYY-MM-DD) — 게시 시작일, 없으면 등록 일시의 한국 날짜. */
+            postedDate: string;
+        };
+        PublishedPostListResponseDto: {
+            items: components["schemas"]["PublishedPostResponseDto"][];
+            total: number;
         };
         /** @enum {string} */
         NotificationRelatedType: "CONTRACT" | "INQUIRY" | "LEAD" | "STAFF_MEMBER";
@@ -3500,6 +3726,82 @@ export interface operations {
             };
         };
     };
+    AdminSignupController_signup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignupDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignupResponseDto"];
+                };
+            };
+            /** @description 같은 IP 의 시간당 한도(5건) */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminSignupController_loginIdAvailability: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginIdAvailabilityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailabilityResponseDto"];
+                };
+            };
+        };
+    };
+    AdminSignupController_emailAvailability: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailAvailabilityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailabilityResponseDto"];
+                };
+            };
+        };
+    };
     EnumsController_findAll: {
         parameters: {
             query?: never;
@@ -3569,7 +3871,7 @@ export interface operations {
                     "application/json": components["schemas"]["CodeGroupListResponseDto"];
                 };
             };
-            /** @description 플랫폼 관리자가 아님 */
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 플랫폼 관리자가 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -3597,7 +3899,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 플랫폼 관리자가 아님 */
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 플랫폼 관리자가 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -3639,7 +3941,7 @@ export interface operations {
                     "application/json": components["schemas"]["CodeItemListResponseDto"];
                 };
             };
-            /** @description 플랫폼 관리자가 아님 */
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 플랫폼 관리자가 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -3676,7 +3978,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 플랫폼 관리자가 아님 */
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 플랫폼 관리자가 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -3718,7 +4020,7 @@ export interface operations {
                     "application/json": components["schemas"]["BpApplicationResponseDto"];
                 };
             };
-            /** @description 플랫폼 관리자가 아님 */
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 플랫폼 관리자가 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -4892,7 +5194,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 입력 형식 · 위도 · 경도 중 하나만 있음 · 바꿀 수 없는 상태 전환 · 운영 조건(인증 · 좌표) 미충족 · 국세청 정보와 다름 · 재인증 번호 불일치 */
+            /** @description 입력 형식 · 위도 · 경도 중 하나만 있음 · 바꿀 수 없는 상태 전환 · 운영으로 바꿀 때 운영 조건(인증 · 좌표) 미충족 · 운영 중인 점포의 좌표 삭제 · 국세청 정보와 다름 · 재인증 번호 불일치 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -5337,6 +5639,138 @@ export interface operations {
             };
             /** @description 이미 지운 게시물 */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PublicPostsController_list: {
+        parameters: {
+            query: {
+                contentType: components["schemas"]["PostContentType"];
+                /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
+                page?: number;
+                /** @description 한 쪽 건수. 기본 20, 최대 200. */
+                pageSize?: number;
+                /** @description 공지사항 구분으로 거른다. FAQ 에는 쓰지 않는다. */
+                noticeType?: components["schemas"]["NoticeType"];
+                /** @description FAQ 카테고리(공통코드 FAQ_CATEGORY 상세코드)로 거른다. */
+                faqCategoryCode?: string;
+                /** @description 제목 또는 본문에 든 글자로 찾는다. 대소문자는 가리지 않는다. */
+                keyword?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublishedPostListResponseDto"];
+                };
+            };
+        };
+    };
+    PublicPostsController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublishedPostResponseDto"];
+                };
+            };
+            /** @description 없음 · 비공개 · 지움 · 게시 기간 밖 · 비회원 대상 아님 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SupportPostsController_list: {
+        parameters: {
+            query: {
+                contentType: components["schemas"]["PostContentType"];
+                /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
+                page?: number;
+                /** @description 한 쪽 건수. 기본 20, 최대 200. */
+                pageSize?: number;
+                /** @description 공지사항 구분으로 거른다. FAQ 에는 쓰지 않는다. */
+                noticeType?: components["schemas"]["NoticeType"];
+                /** @description FAQ 카테고리(공통코드 FAQ_CATEGORY 상세코드)로 거른다. */
+                faqCategoryCode?: string;
+                /** @description 제목 또는 본문에 든 글자로 찾는다. 대소문자는 가리지 않는다. */
+                keyword?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublishedPostListResponseDto"];
+                };
+            };
+            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SupportPostsController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublishedPostResponseDto"];
+                };
+            };
+            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없음 · 비공개 · 지움 · 게시 기간 밖 · 노출 대상 아님 */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5828,6 +6262,47 @@ export interface operations {
             };
             /** @description 없는 도입문의 */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LeadsAdminController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 지움 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 도입문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 상담을 마친 도입문의 */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

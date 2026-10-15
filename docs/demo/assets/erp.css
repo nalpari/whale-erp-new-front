@@ -2642,6 +2642,10 @@
     --tw-leading: 16px;
     line-height: 16px;
   }
+  .leading-\[34px\] {
+    --tw-leading: 34px;
+    line-height: 34px;
+  }
   .leading-\[normal\] {
     --tw-leading: normal;
     line-height: normal;
@@ -3469,6 +3473,12 @@
   }
   .\[\&_\:is\(a\[href\]\,button\:enabled\,select\:enabled\,label\:has\(input\:enabled\)\,input\[type\=checkbox\]\:enabled\)\]\:cursor-pointer :is(a[href], button:enabled, select:enabled, label:has(input:enabled), input[type=checkbox]:enabled) {
     cursor: pointer;
+  }
+  .\[\&_\:is\(input\,select\)\:disabled\]\:bg-erp-thead-bg :is(input, select):disabled {
+    background-color: var(--color-erp-thead-bg);
+  }
+  .\[\&_\:is\(input\,select\)\[readonly\]\]\:bg-erp-thead-bg :is(input, select)[readonly] {
+    background-color: var(--color-erp-thead-bg);
   }
   .\[\&_button\]\:cursor-pointer button {
     cursor: pointer;
