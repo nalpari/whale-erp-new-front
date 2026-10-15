@@ -3301,14 +3301,8 @@
   .disabled\:pointer-events-none:disabled {
     pointer-events: none;
   }
-  .disabled\:bg-erp-thead-bg:disabled {
-    background-color: var(--color-erp-thead-bg);
-  }
   .disabled\:text-\[\#767676\]:disabled {
     color: #767676;
-  }
-  .disabled\:text-erp-label:disabled {
-    color: var(--color-erp-label);
   }
   .disabled\:text-erp-thead-text:disabled {
     color: var(--color-erp-thead-text);
@@ -3355,6 +3349,9 @@
   }
   .aria-disabled\:opacity-40[aria-disabled="true"] {
     opacity: 40%;
+  }
+  .aria-invalid\:border-erp-off[aria-invalid="true"] {
+    border-color: var(--color-erp-off);
   }
   .aria-pressed\:border-erp-brand[aria-pressed="true"] {
     border-color: var(--color-erp-brand);
@@ -3568,12 +3565,6 @@
   }
   .\[\&\[readonly\]\]\:bg-erp-thead-bg[readonly] {
     background-color: var(--color-erp-thead-bg);
-  }
-  .\[\&\[readonly\]\]\:text-erp-label[readonly] {
-    color: var(--color-erp-label);
-  }
-  .\[\&\[readonly\]\]\:focus\:border-erp-field-line[readonly]:focus {
-    border-color: var(--color-erp-field-line);
   }
 }
 @font-face {
