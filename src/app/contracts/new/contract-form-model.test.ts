@@ -15,6 +15,10 @@ import {
   isMinor,
   monthlyWage,
   fullTimePay,
+  PAPER_FILE_MAX_BYTES,
+  paperFileAccept,
+  paperFileError,
+  paperFileTypesOf,
   partTimePay,
   probationWage,
   problems,
@@ -45,7 +49,7 @@ const detailOf = (over: Partial<ContractDetail> = {}): ContractDetail => ({
   monthlyOvertimeHours: null, baseNightHours: null, baseHolidayHours: null, monthlyExtraHolidayHours: null,
   annualLeaveTerms: null, severancePayTerms: null, payMonth: null, payDay: null, payMethod: null,
   probationMonths: null, probationWageReductionRate: null,
-  isHealthPensionInsured: null, isEmploymentInjuryInsured: null, draftAction: null, histories: [], workDays: [],
+  isHealthPensionInsured: null, isEmploymentInjuryInsured: null, draftAction: null, histories: [], workDays: [], documents: [],
   ...over,
 });
 
@@ -326,4 +330,27 @@ test("수습: 정직원만, 기간과 감액률을 함께 보내고 조건을 �
   assert.ok(problems(filled({ ...on, wage: "10,000" })).some((m) => m.startsWith("수습 중 시급은 최저임금의 90%")));
   // 수습을 끄면 보내지 않는다
   assert.equal("probationMonths" in toBody(filled({ ...on, probation: false })), false);
+});
+
+test("종이 계약: 등록은 근로계약서 날인본이 있어야 하고, 임시저장은 파일 없이 된다", () => {
+  const paper = filled({ contractMethod: "PAPER" });
+  assert.ok(problems(paper).includes("당사자가 모두 날인한 근로계약서 파일을 올려 주세요"));
+  assert.deepEqual(problems(paper, false, true), []);
+  assert.deepEqual(problems(paper, true), []);
+  // 전자계약은 파일을 묻지 않는다
+  assert.deepEqual(problems(filled()), []);
+  assert.equal(toBody(paper).contractMethod, "PAPER");
+  assert.equal(toBody(filled()).contractMethod, "ELECTRONIC");
+  assert.equal(fromDetail(detailOf({ contractMethod: "PAPER" })).contractMethod, "PAPER");
+  assert.equal(fromDetail(detailOf()).contractMethod, "ELECTRONIC");
+});
+
+test("종이 계약 날인본 파일: 형식은 enum 값으로, 10MB 까지", () => {
+  const types = paperFileTypesOf(["PDF", "JPG", "PNG", "GIF"]);
+  assert.deepEqual(types, ["PDF", "JPG", "PNG"]);
+  assert.equal(paperFileAccept(["PDF"]), "application/pdf,.pdf");
+  assert.equal(paperFileError({ name: "계약서.PDF", type: "", size: 10 }, types), null);
+  assert.equal(paperFileError({ name: "a.hwp", type: "application/x-hwp", size: 10 }, types), "PDF · JPG · PNG 파일만 올릴 수 있습니다.");
+  assert.equal(paperFileError({ name: "a.pdf", type: "application/pdf", size: 0 }, types), "빈 파일입니다. 다른 파일을 골라 주세요.");
+  assert.equal(paperFileError({ name: "a.jpg", type: "image/jpeg", size: PAPER_FILE_MAX_BYTES + 1 }, types), "파일은 10MB까지 올릴 수 있습니다.");
 });

@@ -36,13 +36,15 @@ export default async function ContractDetailPage({ params }: PageProps<"/contrac
   const contractId = Number(raw);
   if (!Number.isInteger(contractId) || contractId < 1) notFound();
 
-  const [statuses, draftActions, employmentTypes, weekdays, payMonths, payMethods, actors, session] = await Promise.all([
+  const [statuses, draftActions, employmentTypes, weekdays, payMonths, payMethods, contractMethods, documentKinds, actors, session] = await Promise.all([
     getEnum("ContractStatus"),
     getEnum("ContractDraftAction"),
     getEnum("EmploymentType"),
     getEnum("Weekday"),
     getEnum("PayMonth"),
     getEnum("PayMethod"),
+    getEnum("ContractMethod"),
+    getEnum("ContractDocumentKind"),
     getEnum("StatusChangeActor"),
     getSession(),
   ]);
@@ -101,6 +103,24 @@ export default async function ContractDetailPage({ params }: PageProps<"/contrac
         ...(c.employmentType === "FULL_TIME" ? [{ label: "수습", value: probationText(c.probationMonths, c.probationWageReductionRate, c.wageAmount) }] : []),
         { label: "4대보험", value: insuranceText(c.isHealthPensionInsured, c.isEmploymentInjuryInsured) },
         { label: "근무 장소", value: c.workLocation ?? "-" },
+        { label: "계약 방식", value: c.contractMethod ? labelOf(contractMethods, c.contractMethod) : "-" },
+        // 종이 계약 날인본(CTR-23). 누르면 라우트 핸들러가 300초짜리 주소를 받아 원래 파일 이름으로 내려받게 한다
+        ...(c.documents.length
+          ? [
+              {
+                label: "날인본",
+                value: (
+                  <DetailValues
+                    items={c.documents.map((d) => (
+                      <a key={d.contractDocumentId} href={`/contracts/${c.contractId}/documents/${d.contractDocumentId}`} className="text-erp-link hover:underline">
+                        {labelOf(documentKinds, d.kind)} · {d.fileName}
+                      </a>
+                    ))}
+                  />
+                ),
+              },
+            ]
+          : []),
       ]
     : [];
   const histories = c?.histories ?? [];

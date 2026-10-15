@@ -13,15 +13,17 @@ export async function loadFormData(): Promise<{
   signedIn: boolean;
   token: string | null;
 }> {
-  const [employmentType, weekday, payMonth, payMethod, contractStatus, session] = await Promise.all([
+  const [employmentType, weekday, payMonth, payMethod, contractStatus, contractMethod, attachmentFileType, session] = await Promise.all([
     getEnum("EmploymentType"),
     getEnum("Weekday"),
     getEnum("PayMonth"),
     getEnum("PayMethod"),
     getEnum("ContractStatus"),
+    getEnum("ContractMethod"),
+    getEnum("AttachmentFileType"),
     getSession(),
   ]);
-  const labels = { employmentType, weekday, payMonth, payMethod, contractStatus };
+  const labels = { employmentType, weekday, payMonth, payMethod, contractStatus, contractMethod, attachmentFileType };
   if (!session) return { stores: [], labels, signedIn: false, token: null };
   try {
     const { items } = await request<{ items: StoreOption[] }>("/stores/options?pageSize=200", {

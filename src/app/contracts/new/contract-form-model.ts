@@ -8,6 +8,7 @@ export type Weekday = (typeof WEEKDAYS)[number];
 export type EmploymentType = "FULL_TIME" | "PART_TIME";
 export type PayMonth = "CURRENT_MONTH" | "NEXT_MONTH";
 export type PayMethod = "ACCOUNT" | "CASH";
+export type ContractMethod = "ELECTRONIC" | "PAPER";
 
 /** 시 · 분 (분은 00 · 30) */
 export interface HourMinute {
@@ -60,6 +61,8 @@ export interface ContractForm {
   /** 관리자가 고른 주휴일. 비었거나 근무 요일이면 근무하지 않는 가장 뒤 요일로 본다(weeklyHolidayOf) */
   weeklyHoliday: Weekday | "";
   payMethod: PayMethod;
+  /** 전자계약 · 종이 계약. 종이 계약은 날인본 파일과 함께 등록하면 발송 · 날인 없이 체결 완료다(CTR-23) */
+  contractMethod: ContractMethod;
   /** 수습(정직원만) — 기간 1~3개월 · 임금 감액률 0~10% (노무사 확인 2026-10-14) */
   probation: boolean;
   probationMonths: "1" | "2" | "3";
@@ -134,6 +137,7 @@ export function initialForm(storeId = ""): ContractForm {
     dayTimes: {},
     weeklyHoliday: "",
     payMethod: "ACCOUNT",
+    contractMethod: "ELECTRONIC",
     probation: false,
     probationMonths: "3",
     probationRate: "10",
@@ -186,6 +190,7 @@ export function fromDetail(d: ContractDetail): ContractForm {
     dayTimes: d.employmentType === "PART_TIME" ? Object.fromEntries(d.workDays.map((w) => [w.weekday, timesFrom(w)])) : {},
     weeklyHoliday: d.weeklyHoliday ?? "",
     payMethod: d.payMethod ?? base.payMethod,
+    contractMethod: d.contractMethod ?? base.contractMethod,
     probation: d.probationMonths != null,
     probationMonths: d.probationMonths === 1 || d.probationMonths === 2 ? (String(d.probationMonths) as "1" | "2") : "3",
     probationRate: d.probationWageReductionRate == null ? base.probationRate : String(d.probationWageReductionRate),
@@ -213,6 +218,32 @@ const minutes = (t: HourMinute) => Number(t.hour) * 60 + Number(t.minute);
 
 /** 금액 칸 상한 — api integer 칸(2,147,483,647) */
 export const MAX_AMOUNT = 2147483647;
+
+// 종이 계약 날인본 파일(CTR-23). 허용 형식은 GET /enums/AttachmentFileType 값(PDF · JPG · PNG)을 받아 쓰고, 여기에는 형식별 MIME · 확장자만 둔다 —
+// 브라우저 파일 선택 창 규칙이라 코드에 둔다. api 가 내용으로 다시 판정한다.
+const PAPER_FORMAT: Record<string, { mime: string; extensions: string[] }> = {
+  PDF: { mime: "application/pdf", extensions: [".pdf"] },
+  JPG: { mime: "image/jpeg", extensions: [".jpg", ".jpeg"] },
+  PNG: { mime: "image/png", extensions: [".png"] },
+};
+/** 날인본 한 개의 상한 — api 첨부 저장소의 10MB */
+export const PAPER_FILE_MAX_BYTES = 10 * 1024 * 1024;
+
+/** enum 값 중 화면이 아는 형식만 — ["PDF", "JPG", "PNG"] */
+export const paperFileTypesOf = (values: readonly string[]) => values.filter((v) => Object.hasOwn(PAPER_FORMAT, v));
+
+/** 파일 선택 창의 accept — "application/pdf,.pdf,image/jpeg,.jpg,…" */
+export const paperFileAccept = (types: readonly string[]) => types.flatMap((t) => [PAPER_FORMAT[t].mime, ...PAPER_FORMAT[t].extensions]).join(",");
+
+/** 고른 날인본을 올릴 수 있는가. 문제가 없으면 null */
+export function paperFileError(file: { name: string; type: string; size: number }, types: readonly string[]): string | null {
+  const name = file.name.toLowerCase();
+  if (!types.some((t) => file.type === PAPER_FORMAT[t].mime || PAPER_FORMAT[t].extensions.some((e) => name.endsWith(e))))
+    return `${types.join(" · ")} 파일만 올릴 수 있습니다.`;
+  if (file.size === 0) return "빈 파일입니다. 다른 파일을 골라 주세요.";
+  if (file.size > PAPER_FILE_MAX_BYTES) return "파일은 10MB까지 올릴 수 있습니다.";
+  return null;
+}
 
 /** 입력칸에 보이는 급여액. 숫자만 남기고 세 자리마다 쉼표. 10자리까지만 받는다(그 위는 숫자가 뭉개진다) */
 export function formatWage(input: string): string {
@@ -368,7 +399,7 @@ export const isMinor = (f: Pick<ContractForm, "birthDate" | "startDate">) =>
  * 저장 전에 화면이 먼저 막는 것. api 도 같은 것을 다시 본다.
  * 임시저장은 직원 칸(이름 · 번호 · 직무)과 근무지만 필수이고, 비운 칸은 묻지 않되 넣은 값은 똑같이 본다.
  */
-export function problems(f: ContractForm, temporary = false): string[] {
+export function problems(f: ContractForm, temporary = false, hasEmploymentFile = false): string[] {
   const out: string[] = [];
   const need = (empty: boolean, message: string) => {
     if (empty && !temporary) out.push(message);
@@ -408,6 +439,8 @@ export function problems(f: ContractForm, temporary = false): string[] {
   }
   if (Number(digits(f.wage)) > MAX_AMOUNT) out.push("시급은 2,147,483,647원 이하로 입력하세요");
   if (isMinor(f)) out.push("만 19세 미만 직원은 등록할 수 없습니다");
+  // 종이 계약 등록은 당사자가 모두 날인한 근로계약서가 있어야 한다(CTR-23). 임시저장은 파일 없이 둔다
+  if (f.contractMethod === "PAPER" && !temporary && !hasEmploymentFile) out.push("당사자가 모두 날인한 근로계약서 파일을 올려 주세요");
   return out;
 }
 
@@ -422,7 +455,7 @@ export function toBody(f: ContractForm, temporary = false): CreateContractBody {
     storeId: Number(f.storeId),
     jobTitle: f.jobTitle.trim(),
     employmentType: f.employmentType,
-    contractMethod: "ELECTRONIC",
+    contractMethod: f.contractMethod,
     ...(f.startDate ? { startDate: f.startDate } : {}),
     ...(f.endDate ? { endDate: f.endDate } : {}),
     ...(digits(f.wage) ? { wageAmount: Number(digits(f.wage)) } : {}),
