@@ -1,7 +1,7 @@
 "use server";
 
 import { cookies, headers } from "next/headers";
-import { ApiError, request } from "@/lib/api";
+import { apiError, ApiError, baseUrl, request } from "@/lib/api";
 import { apiFailure, CHECK_FAILED_MESSAGE, UNKNOWN_RESULT_MESSAGE } from "./_components/api-failure";
 import { isSignupDoneValue, SIGNUP_DONE_COOKIE, SIGNUP_DONE_MAX_AGE, SIGNUP_DONE_PATH } from "./signup-done-cookie";
 
@@ -45,24 +45,29 @@ const isTimeout = (e: unknown) => e instanceof Error && (e.name === "TimeoutErro
 // 회원가입 제출. api 의 /auth/signup(api PR #37, bulbasaur 브랜치)은 아이디·이메일이 이미 쓰이면 409 를 준다.
 // 폼이 제출 전에 중복 확인을 마치므로, 확인과 제출 사이에 누가 먼저 가입한 경우에만 409 가 온다.
 export async function createSignup(payload: SignupPayload): Promise<SignupResult> {
-  // api 가 가입을 받은 뒤의 실패(응답 모양 · 쿠키)는 「보내지 못했다」가 아니다 — 계정은 이미 있다.
+  // api 가 가입을 받은 뒤의 실패(응답 모양 · 본문 파싱 · 쿠키)는 「보내지 못했다」가 아니다 — 계정은 이미 있다.
   let accepted = false;
   try {
     // signupToken(완료 화면용, 10분)은 쓰지 않는다 — api 쪽 검증 API 가 아직 없어 진위를 확인할 수 없다.
     // 대신 완료 화면에 보일 값을 이 서버 액션이 직접 httpOnly 쿠키로 심는다(signup-done-cookie.ts 참고).
-    const response = await request<unknown>("/auth/signup", {
+    // request() 대신 직접 fetch 한다 — 2xx 를 받은 순간 accepted 를 켜야 그 뒤 response.json() 이 던져도
+    // (본문이 JSON 이 아니거나 비어 있을 때) 「보내지 못했다」가 아니라 「결과를 모른다」로 안내한다.
+    const response = await fetch(`${baseUrl()}/auth/signup`, {
       method: "POST",
       headers: await apiHeaders(),
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(TIMEOUT_MS),
+      cache: "no-store",
     });
+    if (!response.ok) throw await apiError(response);
     accepted = true;
-    if (!isSignupDoneValue(response)) {
+    const body: unknown = await response.json();
+    if (!isSignupDoneValue(body)) {
       // api 버전이 어긋났다. 완료 화면에 아이디를 보일 수 없으니 로그인으로 안내한다.
-      console.error("[signup] createSignup unexpected response", response);
+      console.error("[signup] createSignup unexpected response", body);
       return { ok: false, message: UNKNOWN_RESULT_MESSAGE };
     }
-    const { tradeName, loginId, email } = response;
+    const { tradeName, loginId, email } = body;
     (await cookies()).set(SIGNUP_DONE_COOKIE, JSON.stringify({ tradeName, loginId, email }), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

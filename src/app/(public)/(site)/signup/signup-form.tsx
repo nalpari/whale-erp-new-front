@@ -110,6 +110,11 @@ export function SignupForm() {
   const [agree, setAgree] = useState<AgreeValue>(AGREE_INITIAL);
   const [triedSubmit, setTriedSubmit] = useState(false);
   const [submitError, setSubmitError] = useState<string>();
+  // 제출 결과를 모르는 채로 끝나면(시간 초과·응답 파싱 실패) 켠다 — 이미 가입됐을 수 있다. 그대로 다시 내면
+  // 방금 만든 자기 계정과 아이디·이메일이 겹쳐 409 가 오고, 그 칸이 "이미 사용 중"으로 바뀌어 남이 쓰는 줄 알고
+  // 값을 바꿔 다시 내면 BP 가 두 개 생긴다(되돌릴 수 없다, 2026-10-15 코드리뷰). 켜져 있는 동안은 다시 내지
+  // 않고 로그인으로 안내한 상태를 지킨다 — 칸을 고치면(set) 다시 내도 되는 새 시도로 보고 끈다.
+  const [uncertain, setUncertain] = useState(false);
   const [pending, setPending] = useState(false);
   // 아이디·이메일은 버튼 없이 칸을 벗어날 때(blur) api 로 중복까지 확인하고, 쓸 수 있을 때만 "사용가능합니다."를
   // 띄운다. 값을 고치면 다시 확인해야 하므로 끈다(2026-10-12 피드백). 제출할 때 확인을 못 마친 칸은 한 번 더
@@ -171,11 +176,14 @@ export function SignupForm() {
   const set = <K extends keyof Values>(key: K, value: Values[K]) => {
     setValues((v) => ({ ...v, [key]: value }));
     clearError(ERROR_KEY_FOR[key]);
+    setUncertain(false);
   };
   const check = (key: ErrorKey, next: Values = values) => setErrors((e) => ({ ...e, [key]: validateField(key, next) }));
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    // 결과를 모르는 채로 끝난 제출 뒤에는 그대로 다시 내지 않는다 — 칸을 고쳐야(set) 새 시도로 보고 풀린다.
+    if (uncertain) return;
     setSubmitError(undefined);
     setTriedSubmit(true);
 
@@ -213,6 +221,7 @@ export function SignupForm() {
 
       if (!result.ok) {
         setSubmitError(result.message);
+        if (result.message === UNKNOWN_RESULT_MESSAGE) setUncertain(true);
         if (result.conflict) {
           // 409 — 확인과 제출 사이에 누가 먼저 가입했다. 「사용가능합니다」를 그대로 두면 칸을 고치기 전까지 같은
           // 제출이 409 만 되풀이한다. 두 칸을 다시 확인해 걸린 칸에 오류를 띄운다. 다시 확인하는 동안은 폼을 잠가 둔다 —
@@ -238,6 +247,7 @@ export function SignupForm() {
       // 요청이 서버에 닿아 가입이 이미 됐을 수 있다 — 「보내지 못했다」 대신 로그인을 먼저 해 보라고 안내한다.
       console.error("[signup] handleSubmit failed", e);
       setSubmitError(UNKNOWN_RESULT_MESSAGE);
+      setUncertain(true);
       setPending(false);
     }
   }
@@ -379,7 +389,7 @@ export function SignupForm() {
             {agreeError}
           </span>
         ) : null}
-        <button type="submit" disabled={pending} className={SUBMIT}>
+        <button type="submit" disabled={pending || uncertain} className={SUBMIT}>
           {pending ? "처리 중..." : "회원가입"}
         </button>
         {submitError ? (
