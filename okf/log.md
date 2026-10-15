@@ -7,6 +7,7 @@
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — 점포 화면 2차 리뷰와 api 3팀 계약(mankey) 반영: 등록 BP 를 코드에 박지 않고 환경 변수 `STORE_REGISTER_BP_CODE_ID` 로(없으면 싣지 않음), 진위확인은 지금 칸 값과 같을 때만 인증으로 보고 인증 안 한 변경은 저장 전에 막음(`savedCeoName`), 카카오 좌표는 십진수 · 범위 안만, 운영 조건 한글은 `GET /enums/StoreOperationRequirement`(상수표 지움), 폐점 + 이미지 저장 결과 모름 문구, 잘린 엑셀은 저장하지 않음, 주소 승인키 만료(E0014) · 시스템 오류는 설정 오류로, 칸을 못 찾은 검증 오류는 띠로, 핸들러 이름 `handle` 접두. 생성 타입은 api mankey openapi 로 다시 만들었다. `stores.md` 에 `sources` 를 더했다.
 
 ## 2026-10-14
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 목록 · 상세를 공통 틀에 맞췄다(WHALEERP-593). page 의 바깥 틀 · 임시 헤더(견본 메뉴 · 점포 · 고정 이름)와 layout 의 `ErpRoot` 를 뺐고, 상세 「관리」 링크를 메뉴 url 결정(#592)의 한 단계 주소로 바꿨다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — 점포 화면 전체 리뷰(코드 · 테스트 · 주석 · 오류 처리 · 타입) 반영: 결과를 모를 때 등록은 저장을 잠그고 목록 확인 안내, 수정 · 삭제 · 폐점 전 이미지도 「모름」을 따로 알림, 플랫폼 관리자 등록은 BP 를 늘 먼저 싣고 막히면 빼고 다시 보냄, 층 줄 키 충돌과 모르는 층 구분 보존, 검증 오류를 칸마다 나눔, 엑셀은 4xx 문구 그대로 · xlsx 가 아니면 저장 안 함, 주소 · 좌표 키 오류는 서버 로그로, 찾지 못한 점포 id 는 조건에서 빼고 알림, 이력만 실패하면 이력 칸에만 알림. 대표 이미지 · 엑셀을 붙이며 구현 절의 「1차 범위 밖」(대표 이미지 · 엑셀)을 걷었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 점포 화면 코드 리뷰 반영: 상태 변경 왕복이 빈 사업자주소 · 층 구분만 있는 줄을 바꾸지 않게, 폐점과 이미지 변경을 함께 저장하면 이미지를 먼저, 주소를 바꾸거나 지우면 옛 좌표를 비움, 이력 표 갱신, 목록 조작이 한 낙관적 쿼리를 나눠 씀. 주소 server action 을 `src/lib/address-actions.ts` 로 옮겼다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — 점포 목록 엑셀 바로 받기를 api `GET /stores/excel` 에 붙였다(중계 경로 `/stores/excel`, 받는 동안 버튼이 「파일 만드는 중 · N%」).
