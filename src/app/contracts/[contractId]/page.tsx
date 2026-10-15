@@ -17,7 +17,7 @@ import { labelOf } from "@/lib/enums";
 import { MENUS, STORES, USER_ITEMS } from "../../design/sample";
 import { StatusBadge } from "../columns";
 import { formatPhone, type ContractDetail } from "../new/contract-form-model";
-import { insuranceText, kstDateTime, payDayText, weeklyHoursOf, workDayLines } from "./detail-format";
+import { insuranceText, kstDateTime, payDayText, probationText, weeklyHoursOf, workDayLines } from "./detail-format";
 
 type Status = Parameters<typeof StatusBadge>[0]["status"];
 
@@ -30,18 +30,19 @@ const PENDING: Partial<Record<Status, string>> = {
 };
 
 // 근로계약 상세. 데모 docs/demo/staff/contracts-detail 의 틀(제목 줄 + 계약 내용 + 상태 변경 이력).
-// 주휴일은 7일 근무를 협의하기 전까지 보이지 않는다(작성 화면과 같다).
+// 주휴일 · 급여 지급 방식 · 수습(정직원)도 보인다(데모 확인 2026-10-15).
 export default async function ContractDetailPage({ params }: PageProps<"/contracts/[contractId]">) {
   const { contractId: raw } = await params;
   const contractId = Number(raw);
   if (!Number.isInteger(contractId) || contractId < 1) notFound();
 
-  const [statuses, draftActions, employmentTypes, weekdays, payMonths, actors, session] = await Promise.all([
+  const [statuses, draftActions, employmentTypes, weekdays, payMonths, payMethods, actors, session] = await Promise.all([
     getEnum("ContractStatus"),
     getEnum("ContractDraftAction"),
     getEnum("EmploymentType"),
     getEnum("Weekday"),
     getEnum("PayMonth"),
+    getEnum("PayMethod"),
     getEnum("StatusChangeActor"),
     getSession(),
   ]);
@@ -94,7 +95,10 @@ export default async function ContractDetailPage({ params }: PageProps<"/contrac
             "-"
           ),
         },
+        { label: "주휴일", value: c.weeklyHoliday ? `${labelOf(weekdays, c.weeklyHoliday)}요일` : "-" },
         { label: "임금지급일", value: payDayText(c.payMonth ? labelOf(payMonths, c.payMonth) : null, c.payDay) },
+        { label: "급여 지급 방식", value: c.payMethod ? labelOf(payMethods, c.payMethod) : "-" },
+        ...(c.employmentType === "FULL_TIME" ? [{ label: "수습", value: probationText(c.probationMonths, c.probationWageReductionRate, c.wageAmount) }] : []),
         { label: "4대보험", value: insuranceText(c.isHealthPensionInsured, c.isEmploymentInjuryInsured) },
         { label: "근무 장소", value: c.workLocation ?? "-" },
       ]

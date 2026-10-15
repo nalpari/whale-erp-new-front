@@ -33,6 +33,13 @@ export function payDayText(payMonthLabel: string | null, payDay: number | null):
   return `${payMonthLabel} ${payDay === 31 ? "말일" : `${payDay}일`}`;
 }
 
+/** 수습. 「3개월 · 감액 10% (수습 중 시급 10,080원)」, 없으면 「없음」. 시급이 비었으면 수습 중 시급은 뺀다 */
+export function probationText(months: number | null, rate: number | null, wage: number | null): string {
+  if (months === null || rate === null) return "없음";
+  const during = wage === null ? "" : ` (수습 중 시급 ${Math.round(wage * (1 - rate / 100)).toLocaleString("ko-KR")}원)`;
+  return `${months}개월 · 감액 ${rate}%${during}`;
+}
+
 /** 4대보험. 가입한 묶음만, 없으면 「가입 안 함」, 정하지 않았으면 「-」 */
 export function insuranceText(healthPension: boolean | null, employmentInjury: boolean | null): string {
   if (healthPension === null && employmentInjury === null) return "-";

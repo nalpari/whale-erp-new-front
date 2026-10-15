@@ -1,7 +1,7 @@
 // node --test "src/app/contracts/[contractId]/detail-format.test.ts"
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { insuranceText, kstDateTime, payDayText, weeklyHoursOf, workDayLines } from "./detail-format.ts";
+import { insuranceText, kstDateTime, payDayText, probationText, weeklyHoursOf, workDayLines } from "./detail-format.ts";
 
 const label = (d: string) => ({ MON: "월", TUE: "화", WED: "수", THU: "목", FRI: "금", SAT: "토", SUN: "일" })[d] ?? d;
 const day = (weekday: "MON" | "TUE" | "WED", s: string, e: string, rest = true) => ({
@@ -36,4 +36,10 @@ test("임금지급일 · 4대보험 표기", () => {
 
 test("이력 시각은 한국 시간", () => {
   assert.equal(kstDateTime("2026-10-12T15:30:00.000Z"), "2026-10-13 00:30");
+});
+
+test("수습 표기 — 없음 · 기간과 감액률 · 수습 중 시급", () => {
+  assert.equal(probationText(null, null, 11200), "없음");
+  assert.equal(probationText(3, 10, 11200), "3개월 · 감액 10% (수습 중 시급 10,080원)");
+  assert.equal(probationText(1, 0, null), "1개월 · 감액 0%");
 });

@@ -244,6 +244,139 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/admin/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 관리자 웹 로그인. 잠금 → 아이디 · 비밀번호 → 계정 상태 순으로 판정한다. 잠김 429, 미사용 403. */
+        post: operations["AdminAuthController_login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/admin/temporary-passwords": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 비밀번호 찾기. 이름 · 아이디 · 이메일이 모두 맞는 사용 중 계정에 임시 비밀번호(1시간)를 메일로 보낸다.
+         *     일치 여부 · 메일 발송 여부와 상관없이 같은 202 다(맞는 정보로 1시간 5번을 넘으면 429). 받으면 잠금이 풀리고, 그 비밀번호로 들어오면 강제 변경 대상이다.
+         */
+        post: operations["AdminAuthController_issueTemporaryPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/admin/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 접근 토큰 재발급. 세션은 마지막 사용부터 1시간으로 밀린다. 만료 · 종료 · 미사용 계정이면 401. */
+        post: operations["AdminAuthController_refresh"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/admin/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 이 브라우저의 세션을 종료한다. 다른 브라우저는 그대로다. */
+        post: operations["AdminAuthController_logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/admin/login-info": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 화면을 그릴 정보 — 계정 · 메뉴(+권한) · 관리 점포 · 공통코드. 부르는 시점의 값이다. 관리자 웹은 로그인
+         *     직후 한 번 받아 쓰고, 바뀐 값은 다시 로그인할 때 받는다. 업무 API 의 판정은 요청마다 현재 값으로 한다.
+         */
+        get: operations["AdminAuthController_getLoginInfo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/admin/password-change": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 강제 비밀번호 변경 — 초기 · 임시 비밀번호로 들어온 계정이 새 비밀번호를 정한다. 현재 비밀번호는 묻지 않는다.
+         *     정책 위반은 400 과 정책 문구 하나, 약관이 필요한 계정이 동의하지 않으면 400, 대상이 아니면 409, 로그인에 쓴
+         *     비밀번호가 만료됐으면 401. 바꿔도 모든 기기의 로그인은 이어진다. 끝나기 전에는 이 경로 · 로그인 정보 ·
+         *     로그아웃 말고는 403 이다.
+         */
+        post: operations["AdminAuthController_changeRequiredPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/public-code-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 플랫폼 BP 의 공통코드. `groups` 를 주면 그 그룹만, 없으면 전체. 사용 중인 그룹 · 상세만, 표시 순서대로.
+         *     부를 때의 현재 값이다 — 화면이 열릴 때 불러 쓴다.
+         */
+        get: operations["CodesController_findAll"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/enums": {
         parameters: {
             query?: never;
@@ -434,6 +567,48 @@ export interface paths {
          *     응답의 updatedAt 으로 다음 수정을 저장한다 — 초기화가 그 값을 올린다.
          */
         post: operations["PlatformAdminsController_resetPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bp-codes/{bpCodeId}/stores": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 그 BP 의 점포 전체 — 점포 선택 목록. 선택 목록이라 나눠 주지 않는다. 플랫폼 관리자(PM · PA)는 어느 고객 BP 든,
+         *     BP · 가맹 관리자는 자기 BP 만, 직원 앱은 가입 · 재직 중인 점포가 있는 BP 만이다. 볼 수 없는 BP 는 없는 BP 와
+         *     같이 404 — 다른 BP 가 있는지 드러내지 않는다. 플랫폼 BP 도 404. 사용 중인 관리자 계정이 아니면 403.
+         *     shortcut: 페이지 없이 전부 준다, 한 BP 의 점포가 수백을 넘으면 page · pageSize 를 붙인다.
+         */
+        get: operations["BpCodesController_findStores"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bp-codes/{bpCodeId}/code-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 그 BP 가 보는 공통코드 — 공개 `GET /public-code-items` 와 같은 `groups` · 응답 모양.
+         *     로그인한 누구나(관리자는 권한 유형과 상관없이, 직원 앱도) 부른다. 부를 때의 현재 값이다.
+         */
+        get: operations["BpCodesController_findCodeItems"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -715,10 +890,187 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** 도입문의 목록. 접수 최신순. */
+        get: operations["LeadsAdminController_list"];
         put?: never;
         /** 도입문의 접수. 본문 없이 201 을 돌려준다 — 문의자가 상태를 조회하는 화면은 없다. */
         post: operations["LeadsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/leads/{leadId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 도입문의 상세 — 문의자 정보 · 동의 · 답변 · 처리 이력 · 내부 메모. */
+        get: operations["LeadsAdminController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/leads/{leadId}/processing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 처리중으로 바꾼다. 접수 상태에서만 된다. */
+        post: operations["LeadsAdminController_startProcessing"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/leads/{leadId}/reply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** 답변을 저장하고 답변 완료로 바꾼다. 고칠 때도 이것으로 덮어쓴다. */
+        put: operations["LeadsAdminController_reply"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/leads/{leadId}/internal-memo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** 운영자 내부 메모. 문의자에게 보이지 않는다. */
+        put: operations["LeadsAdminController_saveInternalMemo"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/inquiries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 문의사항 목록. 접수 최신순. */
+        get: operations["InquiriesController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/inquiries/{inquiryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 문의사항 상세 — 답변 이력 · 첨부파일 · 처리 이력 · 내부 메모. */
+        get: operations["InquiriesController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/inquiries/{inquiryId}/attachments/{inquiryAttachmentId}/download-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 첨부파일 내려받기 주소. 300초 동안 쓸 수 있는 서명 주소이고, 받으면 원래 파일 이름으로 저장된다. 저장소 설정이 없는
+         *     환경이면 503.
+         */
+        get: operations["InquiriesController_attachmentDownloadUrl"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/inquiries/{inquiryId}/processing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 처리중으로 바꾼다. 접수 상태에서만 된다. */
+        post: operations["InquiriesController_startProcessing"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/inquiries/{inquiryId}/replies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 답변을 저장하고 답변 완료로 바꾼다. 답변을 고칠 때도 이것으로 새 답변을 더한다. 첫 답변이면 등록한 관리자에게
+         *     운영 알림과 메일이 간다.
+         */
+        post: operations["InquiriesController_reply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/inquiries/{inquiryId}/internal-memo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** 운영자 내부 메모. 문의자에게 보이지 않는다. */
+        put: operations["InquiriesController_saveInternalMemo"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -861,6 +1213,172 @@ export interface components {
              * @description 링크가 쓸 수 없게 되는 시각 — 보낸 때부터 24시간
              */
             expiresAt: string;
+        };
+        AdminLoginDto: {
+            /** @description 관리자 로그인ID. 대소문자를 구분한다. 형식은 검사하지 않는다 — 틀리면 없는 아이디와 같이 답한다. */
+            loginId: string;
+            /** @description 기존 비밀번호 또는 메일로 받은 임시 · 초기 비밀번호. */
+            password: string;
+            /** @description 브라우저를 구분하는 값. 같은 값으로 다시 로그인하면 그 브라우저의 이전 세션만 종료된다. */
+            deviceInformation?: string;
+        };
+        AdminLoginInfoBpDto: {
+            bpCodeId: number;
+            /** @description BP+6자리. 플랫폼 BP 는 BP000000. */
+            bpCode: string;
+            tradeName: string;
+            /** @description true 면 플랫폼 관리 사이트 계정(PM · PA). */
+            isPlatform: boolean;
+        };
+        AdminLoginAccountResponseDto: {
+            adminAccountId: number;
+            loginId: string;
+            name: string | null;
+            /** @description 권한 유형 — 공통코드 `ROLE_TYPE`(PM · PA · BM · BA · FM · FA). */
+            roleTypeCode: string;
+            /** @description 소속 BP. front 는 로그인 뒤 브라우저에 두는 BP 데이터를 `bpCodeId` 로 구분한다. */
+            bp: components["schemas"]["AdminLoginInfoBpDto"];
+            /** @description true 면 닫을 수 없는 강제 비밀번호 변경 팝업을 띄운다. */
+            isPasswordChangeRequired: boolean;
+        };
+        AdminLoginResponseDto: {
+            /** @description Authorization: Bearer <accessToken> 으로 API 를 호출한다. 1시간 뒤 만료된다. */
+            accessToken: string;
+            /** @description 세션을 이어 갈 때 쓴다. 원문은 이 응답에만 있고 서버에는 해시만 남는다. */
+            refreshToken: string;
+            /**
+             * Format: date-time
+             * @description 마지막으로 사용한 때부터 1시간이 되는 시각. 임시 비밀번호로 들어왔으면 그 만료를 넘지 않는다.
+             */
+            refreshTokenExpiresAt: string;
+            account: components["schemas"]["AdminLoginAccountResponseDto"];
+        };
+        AdminTemporaryPasswordDto: {
+            /** @example 홍길동 */
+            name: string;
+            /** @example whale01 */
+            loginId: string;
+            /**
+             * Format: email
+             * @description 저장값은 소문자다(admin_accounts_email_lower).
+             */
+            email: string;
+        };
+        AdminTemporaryPasswordResponseDto: {
+            /** @description 정보가 맞든 아니든, 메일이 나갔든 아니든 같은 문구다 — 응답으로 계정 존재가 드러나지 않게. */
+            message: string;
+        };
+        AdminRefreshResponseDto: {
+            /** @description 새 접근 토큰. 1시간 뒤 만료된다. */
+            accessToken: string;
+            /**
+             * Format: date-time
+             * @description 갱신 토큰은 새로 주지 않는다. 쓰던 것의 새 만료 시각이다.
+             */
+            refreshTokenExpiresAt: string;
+        };
+        CodeValueDto: {
+            /** @description 상세코드. 저장 · 전송 값. 예: KB */
+            value: string;
+            /** @description 코드명. 화면에 보이는 값. 예: 국민은행 */
+            label: string;
+            /** @description 선택지 순서. 1부터. */
+            order: number;
+        };
+        AdminLoginInfoAccountDto: {
+            adminAccountId: number;
+            loginId: string;
+            name: string | null;
+            email: string | null;
+            /** @description 권한 유형 — 공통코드 `ROLE_TYPE`(PM · PA · BM · BA · FM · FA). */
+            roleTypeCode: string;
+            bp: components["schemas"]["AdminLoginInfoBpDto"];
+            /** @description true 면 닫을 수 없는 강제 비밀번호 변경 팝업을 띄운다. */
+            isPasswordChangeRequired: boolean;
+            /**
+             * Format: date-time
+             * @description 임시 비밀번호로 들어왔으면 그 만료 시각. 이때 세션도 끝난다. 아니면 null.
+             */
+            temporaryPasswordExpiresAt: string | null;
+            /** @description true 면 강제 변경 팝업 아래에 약관 동의를 붙인다(플랫폼등록 계정의 첫 로그인). */
+            isTermsAgreementRequired: boolean;
+        };
+        MenuPermissionDto: {
+            read: boolean;
+            create: boolean;
+            update: boolean;
+            delete: boolean;
+        };
+        AdminMenuDto: {
+            children: components["schemas"]["AdminMenuDto"][];
+            /** @description MN+6자리. 업무 API 의 메뉴 권한 판정도 이 코드로 한다. */
+            menuCode: string;
+            /** @description 이 메뉴가 속한 서비스 — 공통코드 `SERVICE`(예 `WHALE_ERP`). 사용 중인 서비스의 메뉴만 온다. */
+            serviceCode: string;
+            name: string;
+            url: string | null;
+            /** @description 1~3 */
+            depth: number;
+            /** @description 이 메뉴에서 할 수 있는 것. 하위 메뉴로 가는 길로만 들어간 상위 메뉴는 모두 false. */
+            permission: components["schemas"]["MenuPermissionDto"];
+        };
+        AdminStoreDto: {
+            storeId: number;
+            storeCode: string;
+            name: string;
+            /** @description 공통코드 `STORE_TYPE` */
+            storeTypeCode: string;
+            /** @description 공통코드 `STORE_STATUS` */
+            storeStatusCode: string;
+        };
+        AdminLoginInfoResponseDto: {
+            /**
+             * @description 그룹 코드 → 이 계정 BP 의 공통코드
+             * @example {
+             *       "STORE_TYPE": [
+             *         {
+             *           "value": "DIRECT",
+             *           "label": "직영점포",
+             *           "order": 1
+             *         }
+             *       ]
+             *     }
+             */
+            codes: {
+                [key: string]: components["schemas"]["CodeValueDto"][];
+            };
+            account: components["schemas"]["AdminLoginInfoAccountDto"];
+            /** @description 조회 권한이 있는 메뉴 트리(최대 3단계). 표시 순서대로. */
+            menus: components["schemas"]["AdminMenuDto"][];
+            /** @description 관리 점포 — 점포 선택 목록. 플랫폼 계정은 빈 목록이다(BP 를 골라 일한다). */
+            stores: components["schemas"]["AdminStoreDto"][];
+        };
+        AdminPasswordChangeDto: {
+            /** @description 새 비밀번호 — 영문 · 숫자 · 특수문자 각 1자 이상 8~20자. 규칙 위반은 400 과 정책 문구 하나. */
+            newPassword: string;
+            /** @description 새 비밀번호 확인. */
+            newPasswordConfirm: string;
+            /**
+             * @description 필수 약관(이용약관 · 개인정보 수집 · 이용) 둘 다 동의. `login-info.account.isTermsAgreementRequired` 가 true 인
+             *     계정만 보내고, 그때 true 가 아니면 비밀번호도 바꾸지 않고 400 이다.
+             */
+            isTermsAgreed?: boolean;
+        };
+        CodeItemsResponseDto: {
+            /**
+             * @example {
+             *       "BANK": [
+             *         {
+             *           "value": "KB",
+             *           "label": "국민은행",
+             *           "order": 1
+             *         }
+             *       ]
+             *     }
+             */
+            codes: {
+                [key: string]: components["schemas"]["CodeValueDto"][];
+            };
         };
         EnumValueDto: {
             /** @description 저장·전송 값. 예: PENDING_SEND */
@@ -1233,6 +1751,11 @@ export interface components {
              */
             updatedAt: string;
         };
+        BpStoreListResponseDto: {
+            /** @description 점포 이름순. 운영 상태와 상관없이 미삭제 점포 전체. 항목 모양은 로그인 정보의 `stores` 와 같다. */
+            items: components["schemas"]["AdminStoreDto"][];
+            total: number;
+        };
         /** @enum {string} */
         EmploymentStatus: "EMPLOYED" | "RETIRED";
         /** @enum {string} */
@@ -1369,7 +1892,11 @@ export interface components {
             /** @description 거른 결과 전체 건수 */
             total: number;
         };
-        /** @enum {string} */
+        /**
+         * @description 주휴일 — 근무하지 않는 요일 하나(노무사 확인 2026-10-14). 주 소정근로시간이 15시간 이상이면 넣어야 하고,
+         *     15시간 미만이면 주휴가 없어 비운다(contracts.service checkWeeklyHoliday).
+         * @enum {string}
+         */
         Weekday: "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN";
         ContractWorkDayDto: {
             weekday: components["schemas"]["Weekday"];
@@ -1382,6 +1909,11 @@ export interface components {
         };
         /** @enum {string} */
         PayMonth: "CURRENT_MONTH" | "NEXT_MONTH";
+        /**
+         * @description 급여 지급 방식 — 계좌 · 현금
+         * @enum {string}
+         */
+        PayMethod: "ACCOUNT" | "CASH";
         CreateContractDto: {
             employmentType: components["schemas"]["EmploymentType"];
             /**
@@ -1389,8 +1921,15 @@ export interface components {
              * @enum {string}
              */
             contractMethod?: "ELECTRONIC";
+            /**
+             * @description 주휴일 — 근무하지 않는 요일 하나(노무사 확인 2026-10-14). 주 소정근로시간이 15시간 이상이면 넣어야 하고,
+             *     15시간 미만이면 주휴가 없어 비운다(contracts.service checkWeeklyHoliday).
+             */
+            weeklyHoliday?: components["schemas"]["Weekday"];
             workDays?: components["schemas"]["ContractWorkDayDto"][];
             payMonth?: components["schemas"]["PayMonth"];
+            /** @description 급여 지급 방식 — 계좌 · 현금 */
+            payMethod?: components["schemas"]["PayMethod"];
             /** @description 앞뒤 공백은 지운다(NFC) — 같은 사람의 가입 전 레코드를 이름으로 찾으므로 공백 하나로 갈리지 않게. */
             name: string;
             /** @description 숫자만 10~11자리 (예: 01090145563) */
@@ -1416,9 +1955,9 @@ export interface components {
             monthlyOvertimeHours?: number;
             /** @description 기본시간 중 야간근무 — 시간, 30분 단위 */
             baseNightHours?: number;
-            /** @description 기본시간 중 휴일근무 — 시간, 30분 단위 */
+            /** @description 기본시간 중 휴일근무 — 시간, 30분 단위. 화면(front #15)에서는 받지 않는다. 칸은 남아 있다 */
             baseHolidayHours?: number;
-            /** @description 월간 추가 휴일근무 — 시간, 30분 단위 */
+            /** @description 월간 추가 휴일근무 — 시간, 30분 단위. 화면(front #15)에서는 받지 않는다. 칸은 남아 있다 */
             monthlyExtraHolidayHours?: number;
             /** @description 연차휴가 조항 문구. 기본 문구는 작성 화면이 채운다 */
             annualLeaveTerms?: string;
@@ -1426,6 +1965,13 @@ export interface components {
             severancePayTerms?: string;
             /** @description 1~31. 31 은 말일 */
             payDay?: number;
+            /**
+             * @description 수습 기간 — 개월, 1~3. 비우면 수습 없음. 정직원이고 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둔다
+             *     (노무사 확인 2026-10-14). 감액률과 함께 넣는다.
+             */
+            probationMonths?: number;
+            /** @description 수습 중 임금 감액률 — %, 0~10. 수습 중 시급 = 시급 × (1 − 감액률). 수습 기간과 함께 넣는다 */
+            probationWageReductionRate?: number;
             /** @description 계약서 근무 장소 조항에 적는 주소. 근무지 점포와 따로다 */
             workLocation?: string;
             isHealthPensionInsured?: boolean;
@@ -1486,9 +2032,9 @@ export interface components {
             monthlyOvertimeHours: number | null;
             /** @description 기본시간 중 야간근무 — 시간 */
             baseNightHours: number | null;
-            /** @description 기본시간 중 휴일근무 — 시간 */
+            /** @description 기본시간 중 휴일근무 — 시간. 화면(front #15)에서는 받지 않는다. 칸은 남아 있다 */
             baseHolidayHours: number | null;
-            /** @description 월간 추가 휴일근무 — 시간 */
+            /** @description 월간 추가 휴일근무 — 시간. 화면(front #15)에서는 받지 않는다. 칸은 남아 있다 */
             monthlyExtraHolidayHours: number | null;
             /** @description 연차휴가 조항 문구 */
             annualLeaveTerms: string | null;
@@ -1496,6 +2042,12 @@ export interface components {
             severancePayTerms: string | null;
             payMonth: components["schemas"]["PayMonth"] | null;
             payDay: number | null;
+            /** @description 급여 지급 방식 — 계좌 · 현금 */
+            payMethod: components["schemas"]["PayMethod"] | null;
+            /** @description 수습 기간 — 개월(1~3). 수습이 없으면 null */
+            probationMonths: number | null;
+            /** @description 수습 중 임금 감액률 — %(0~10). 수습이 없으면 null */
+            probationWageReductionRate: number | null;
             isHealthPensionInsured: boolean | null;
             isEmploymentInjuryInsured: boolean | null;
             /** @description 초대 유형 판별 결과(초안 저장 때). 임시저장이면 null */
@@ -1817,6 +2369,207 @@ export interface components {
             privacyAgreed: boolean;
             /** @description 마케팅 정보 수신 동의. 선택. */
             marketingAgreed?: boolean;
+        };
+        /** @enum {string} */
+        InquiryAnswerStatus: "WAITING" | "ANSWERED";
+        /** @enum {string} */
+        InquiryStatus: "RECEIVED" | "IN_PROGRESS" | "ANSWERED";
+        LeadListItemDto: {
+            interests: components["schemas"]["LeadInterest"][];
+            status: components["schemas"]["InquiryStatus"];
+            leadId: number;
+            /** @description 문의자 이름 */
+            contactName: string;
+            phone: string;
+            /** @description 업종(공통코드 INDUSTRY 값) */
+            industryCode: string;
+            /** @description 업종 직접 입력 — 업종이 기타일 때 */
+            industryDetail: string | null;
+            /**
+             * Format: date-time
+             * @description 접수 일시
+             */
+            createdAt: string;
+        };
+        LeadListResponseDto: {
+            items: components["schemas"]["LeadListItemDto"][];
+            total: number;
+        };
+        LeadResponseDto: {
+            interests: components["schemas"]["LeadInterest"][];
+            status: components["schemas"]["InquiryStatus"];
+            leadId: number;
+            /** @description 문의자 이름 */
+            contactName: string;
+            phone: string;
+            /** @description 업종(공통코드 INDUSTRY 값) */
+            industryCode: string;
+            /** @description 업종 직접 입력 — 업종이 기타일 때 */
+            industryDetail: string | null;
+            /**
+             * Format: date-time
+             * @description 접수 일시
+             */
+            createdAt: string;
+            email: string;
+            /** @description 도입 예정 시기(공통코드 값) */
+            planPeriodCode: string | null;
+            /** @description 문의 내용 */
+            body: string;
+            /**
+             * Format: date-time
+             * @description 개인정보 동의 일시 — 필수라 늘 있다
+             */
+            privacyAgreedAt: string;
+            /**
+             * Format: date-time
+             * @description 마케팅 수신 동의 일시. 동의하지 않았으면 null.
+             */
+            marketingAgreedAt: string | null;
+            /**
+             * Format: date-time
+             * @description 처리중으로 바꾼 시각. 아직 접수 상태이거나, 처리중을 거치지 않고 답변했으면 null.
+             */
+            processingStartedAt: string | null;
+            processingStartedBy: number | null;
+            processingStartedByName: string | null;
+            /** @description 문의자에게 보낸 답변 */
+            reply: string | null;
+            /** Format: date-time */
+            repliedAt: string | null;
+            repliedBy: number | null;
+            repliedByName: string | null;
+            /** @description 운영자 내부 메모. 문의자에게 보이지 않는다. */
+            internalMemo: string | null;
+            /** @description 상담 완료일(YYYY-MM-DD) — 이날부터 1년 뒤 파기 */
+            consultedDate: string | null;
+            /**
+             * Format: date-time
+             * @description 최근 수정 일시
+             */
+            updatedAt: string;
+        };
+        LeadStateResponseDto: {
+            status: components["schemas"]["InquiryStatus"];
+            leadId: number;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        SaveLeadReplyDto: {
+            /**
+             * @description 답변하기 전에 읽은 도입문의의 `updatedAt` 그대로. 그사이 다른 운영자가 저장했으면 409 다.
+             * @example 2026-10-14T01:02:03.456Z
+             */
+            updatedAt: string;
+            /** @description 문의자에게 회신할 답변. 평문이고 20,000자까지. */
+            reply: string;
+        };
+        SaveInternalMemoDto: {
+            /** @description 메모. 2,000자까지. null · 빈 문자열 · 공백만 보내면 지운다. 키는 빼먹을 수 없다 — 빠진 키로 메모가 지워지지 않게. */
+            internalMemo: string | null;
+            /**
+             * @description 저장하기 전에 읽은 `updatedAt` 그대로. 그사이 다른 운영자가 저장했으면 409 다.
+             * @example 2026-10-14T01:02:03.456Z
+             */
+            updatedAt: string;
+        };
+        InquiryListItemDto: {
+            status: components["schemas"]["InquiryStatus"];
+            inquiryId: number;
+            title: string;
+            /** @description 문의 유형(공통코드 값) */
+            inquiryCategoryCode: string;
+            /**
+             * Format: date-time
+             * @description 접수 일시
+             */
+            createdAt: string;
+            /** @description BP 이름(상호). BP 를 찾을 수 없으면 null. */
+            bpName: string | null;
+            /** @description 점포 이름. 점포 대상 문의가 아니거나 점포를 찾을 수 없으면 null. */
+            storeName: string | null;
+            /** @description 보낸 사람(등록한 관리자) 이름. 계정을 찾을 수 없거나 이름 칸이 NULL 이면 null. */
+            senderName: string | null;
+        };
+        InquiryListResponseDto: {
+            items: components["schemas"]["InquiryListItemDto"][];
+            total: number;
+        };
+        InquiryReplyDto: {
+            inquiryReplyId: number;
+            body: string;
+            /** Format: date-time */
+            repliedAt: string;
+            repliedBy: number;
+            repliedByName: string | null;
+        };
+        /** @enum {string} */
+        AttachmentFileType: "JPG" | "PNG" | "PDF";
+        InquiryAttachmentDto: {
+            fileType: components["schemas"]["AttachmentFileType"];
+            inquiryAttachmentId: number;
+            fileName: string;
+            sizeBytes: number;
+        };
+        InquiryResponseDto: {
+            status: components["schemas"]["InquiryStatus"];
+            inquiryId: number;
+            title: string;
+            /** @description 문의 유형(공통코드 값) */
+            inquiryCategoryCode: string;
+            /**
+             * Format: date-time
+             * @description 접수 일시
+             */
+            createdAt: string;
+            /** @description BP 이름(상호). BP 를 찾을 수 없으면 null. */
+            bpName: string | null;
+            /** @description 점포 이름. 점포 대상 문의가 아니거나 점포를 찾을 수 없으면 null. */
+            storeName: string | null;
+            /** @description 보낸 사람(등록한 관리자) 이름. 계정을 찾을 수 없거나 이름 칸이 NULL 이면 null. */
+            senderName: string | null;
+            body: string;
+            /** @description 보낸 사람(등록한 관리자) ID */
+            createdBy: number;
+            /** @description 보낸 사람의 권한 유형(공통코드 ROLE_TYPE). 계정을 찾을 수 없으면 null. */
+            senderRoleTypeCode: string | null;
+            /**
+             * Format: date-time
+             * @description 처리중으로 바꾼 시각 — 처리 이력의 「확인」 줄. 아직 접수 상태이거나, 처리중을 거치지 않고 답변했으면 null.
+             */
+            processingStartedAt: string | null;
+            processingStartedBy: number | null;
+            processingStartedByName: string | null;
+            /** @description 답변 이력. 오래된 것부터. */
+            replies: components["schemas"]["InquiryReplyDto"][];
+            /** @description 첨부파일. 순서대로. */
+            attachments: components["schemas"]["InquiryAttachmentDto"][];
+            /** @description 운영자 내부 메모. 문의자에게 보이지 않는다. */
+            internalMemo: string | null;
+            /**
+             * Format: date-time
+             * @description 최근 수정 일시
+             */
+            updatedAt: string;
+        };
+        DownloadUrlResponseDto: {
+            url: string;
+        };
+        InquiryStateResponseDto: {
+            status: components["schemas"]["InquiryStatus"];
+            inquiryId: number;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        CreateInquiryReplyDto: {
+            /**
+             * @description 답변하기 전에 읽은 문의의 `updatedAt` 그대로. 그사이 다른 운영자가 처리중 전환 · 답변 · 메모를 저장했으면 409 이고,
+             *     다시 읽어 최신 내용을 본다.
+             * @example 2026-10-14T01:02:03.456Z
+             */
+            updatedAt: string;
+            /** @description 문의자에게 보이는 답변. 평문이고 20,000자까지. 첨부파일은 받지 않는다(CNT-18). */
+            body: string;
         };
     };
     responses: never;
@@ -2160,6 +2913,171 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    AdminAuthController_login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminLoginDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminLoginResponseDto"];
+                };
+            };
+        };
+    };
+    AdminAuthController_issueTemporaryPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminTemporaryPasswordDto"];
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminTemporaryPasswordResponseDto"];
+                };
+            };
+        };
+    };
+    AdminAuthController_refresh: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefreshDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRefreshResponseDto"];
+                };
+            };
+        };
+    };
+    AdminAuthController_logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminAuthController_getLoginInfo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminLoginInfoResponseDto"];
+                };
+            };
+        };
+    };
+    AdminAuthController_changeRequiredPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminPasswordChangeDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 비밀번호 정책 위반 · 필수 약관 미동의 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 강제 변경 대상이 아님 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CodesController_findAll: {
+        parameters: {
+            query?: {
+                /**
+                 * @description 쉼표로 구분한 그룹 코드. 없으면 공통코드 전체. 없거나 사용하지 않는 그룹은 빈 목록으로 온다.
+                 *     빈 칸 · 형식이 틀린 코드가 하나라도 있거나 50개를 넘으면 400 이다.
+                 */
+                groups?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CodeItemsResponseDto"];
+                };
             };
         };
     };
@@ -2741,6 +3659,82 @@ export interface operations {
             };
             /** @description 이메일이 없는 계정 · 그 사이 다른 관리자가 지우거나 권한 유형 · 이메일을 바꿈 */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메일 설정(MAIL_* · ADMIN_WEB_URL)이 없는 환경 — 아무것도 바꾸지 않는다 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpCodesController_findStores: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bpCodeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BpStoreListResponseDto"];
+                };
+            };
+            /** @description 사용할 수 없는 관리자 계정 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 삭제된 BP */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpCodesController_findCodeItems: {
+        parameters: {
+            query?: {
+                /**
+                 * @description 쉼표로 구분한 그룹 코드. 없으면 공통코드 전체. 없거나 사용하지 않는 그룹은 빈 목록으로 온다.
+                 *     빈 칸 · 형식이 틀린 코드가 하나라도 있거나 50개를 넘으면 400 이다.
+                 */
+                groups?: string;
+            };
+            header?: never;
+            path: {
+                bpCodeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CodeItemsResponseDto"];
+                };
+            };
+            /** @description 없거나 삭제된 BP */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3818,6 +4812,46 @@ export interface operations {
             };
         };
     };
+    LeadsAdminController_list: {
+        parameters: {
+            query: {
+                /** @description 답변 대기(접수 · 처리중) 또는 답변 완료. */
+                answerStatus?: components["schemas"]["InquiryAnswerStatus"];
+                /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
+                page: number;
+                /** @description 한 쪽 건수. 기본 20, 최대 200. */
+                pageSize: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadListResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 도입문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     LeadsController_create: {
         parameters: {
             query?: never;
@@ -3839,6 +4873,431 @@ export interface operations {
             };
             /** @description 같은 IP 의 시간당 한도, 또는 같은 전화번호·이메일로 10분 안에 다시 접수 */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LeadsAdminController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 도입문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LeadsAdminController_startProcessing: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadStateResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 도입문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 이미 처리중이거나 답변한 도입문의 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LeadsAdminController_reply: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveLeadReplyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadStateResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 도입문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 그사이 다른 운영자가 저장함 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LeadsAdminController_saveInternalMemo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveInternalMemoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadStateResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 도입문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 그사이 다른 운영자가 저장함 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    InquiriesController_list: {
+        parameters: {
+            query: {
+                /** @description 답변 대기(접수 · 처리중) 또는 답변 완료. */
+                answerStatus?: components["schemas"]["InquiryAnswerStatus"];
+                /** @description 제목에 들어 있으면 나온다. */
+                title?: string;
+                /** @description 보낸 곳 — BP 이름 · 점포 이름 · 보낸 사람 이름 중 하나에 들어 있으면 나온다. */
+                sender?: string;
+                /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
+                page: number;
+                /** @description 한 쪽 건수. 기본 20, 최대 200. */
+                pageSize: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InquiryListResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    InquiriesController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inquiryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InquiryResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    InquiriesController_attachmentDownloadUrl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inquiryId: string;
+                inquiryAttachmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DownloadUrlResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 문의이거나 그 문의의 첨부가 아님 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 첨부파일 저장소 설정 없음 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    InquiriesController_startProcessing: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inquiryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InquiryStateResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 이미 처리중이거나 답변한 문의 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    InquiriesController_reply: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inquiryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateInquiryReplyDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InquiryStateResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 그사이 다른 운영자가 저장함 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    InquiriesController_saveInternalMemo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inquiryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveInternalMemoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InquiryStateResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 그사이 다른 운영자가 저장함 */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

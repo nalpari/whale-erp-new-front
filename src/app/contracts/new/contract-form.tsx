@@ -11,15 +11,21 @@ import {
   fullTimePay,
   initialForm,
   isMinor,
+  MINIMUM_WAGE,
+  monthlyHours,
   monthlyWage,
   partTimePay,
+  PROBATION_WAGE_FLOOR,
+  probationWage,
   problems,
+  timesOf,
   toBody,
   weeklyHolidayOf,
   weeklyHours,
   WEEKDAYS,
   type ContractForm as Form,
   type CreateContractBody,
+  type DayTimes,
   type HourField,
   type HourMinute,
   type InProgressContract,
@@ -31,6 +37,7 @@ export interface ContractFormLabels {
   employmentType: EnumValue[];
   weekday: EnumValue[];
   payMonth: EnumValue[];
+  payMethod: EnumValue[];
   /** 대체할지 물을 때 진행 중 계약의 상태 이름 */
   contractStatus: EnumValue[];
 }
@@ -64,7 +71,7 @@ function PayTable({ title, help, children }: { title: string; help?: string; chi
   );
 }
 
-type PayRow = { key: string; label: string; cells?: string[]; hours?: ReactNode; wage?: ReactNode; amount: ReactNode };
+type PayRow = { key: string; label: string; cells?: ReactNode[]; hours?: ReactNode; wage?: ReactNode; amount: ReactNode };
 
 // 라벨 · 입력 · 도움말 한 칸. 공통 Field 는 라벨이 글자뿐이라 필수 표시(*)를 달 수 없어 여기서 묶는다.
 // 필수 표시 색 #e93737 은 DESIGN.md 의 「위험」 한 번 쓰는 색이다(데모 biz-form REQ 와 같다).
@@ -91,10 +98,21 @@ function Item({ label, required, help, width, children }: { label: string; requi
 }
 
 // 입력이 여럿인 칸(라디오 · 요일 · 시각). <label> 하나로 묶을 수 없어 group 으로 둔다.
-function Group({ label, children, help }: { label: string; children: ReactNode; help?: string }) {
+function Group({ label, required, children, help }: { label: string; required?: boolean; children: ReactNode; help?: string }) {
   return (
     <div role="group" aria-label={label} className="flex min-w-px flex-1 flex-col gap-[8px]">
-      <span className="truncate text-[14px] font-medium text-erp-label">{label}</span>
+      <span className="truncate text-[14px] font-medium text-erp-label">
+        {label}
+        {required && (
+          <>
+            {" "}
+            <span aria-hidden className="text-[#e93737]">
+              *
+            </span>
+            <span className="sr-only">(필수)</span>
+          </>
+        )}
+      </span>
       {children}
       {help && <span className={HELP}>{help}</span>}
     </div>
@@ -199,7 +217,18 @@ export function ContractForm({
       setServerError(result.error);
     });
 
-  const toggleDay = (d: Weekday) => set("days", form.days.includes(d) ? form.days.filter((x) => x !== d) : [...form.days, d]);
+  // 요일을 켜고 끄면 그 요일의 표 시간은 위 근무시간 · 휴게시간으로 돌아간다(데모 확인 2026-10-15).
+  const toggleDay = (d: Weekday) =>
+    setForm((f) => {
+      const dayTimes = { ...f.dayTimes };
+      delete dayTimes[d];
+      return { ...f, days: f.days.includes(d) ? f.days.filter((x) => x !== d) : [...f.days, d], dayTimes };
+    });
+  // 위 근무시간 · 휴게시간을 바꾸면 켜진 요일을 모두 그 값으로 다시 채운다 — 표에서 요일별로 고친 시간은 덮어쓴다.
+  const setTop = (key: "work" | "rest", value: TimeSpan) => setForm((f) => ({ ...f, [key]: value, dayTimes: {} }));
+  // 파트타이머 표에서 한 요일의 시간을 고친다
+  const setDay = (d: Weekday, key: keyof DayTimes, value: TimeSpan) =>
+    setForm((f) => ({ ...f, dayTimes: { ...f.dayTimes, [d]: { ...timesOf(f, d), [key]: value } } }));
 
   // 월급은 저장하지 않고 고용 형태별 급여 표로 셈해 보인다(현업 엑셀 견본, 2026-10-13).
   const monthly = monthlyWage(form);
@@ -208,12 +237,29 @@ export function ContractForm({
   const wageNumber = Number(form.wage.replace(/\D/g, "")) || 0;
   const partTime = form.employmentType === "PART_TIME";
 
-  // 소정근로시간 표. 파트타이머면 같은 표에 근무시간 · 시급 · 소계 열과 주휴수당 · 주급 · 월급여 줄을 붙인다.
+  // 소정근로시간 표. 파트타이머면 같은 표에 근무시간 · 시급 · 소계 열과 주휴수당 · 주급 · 월급여 줄을 붙이고,
+  // 근무하는 요일의 시업 · 종업 · 휴게는 위 근무시간과 같은 시 · 분 상자로 요일마다 고친다(데모 확인 2026-10-15).
   const hourRows: PayRow[] = WEEKDAYS.map((d, i) => {
     const on = form.days.includes(d);
-    const t = (v: HourMinute) => (on ? `${v.hour}:${v.minute}` : "-");
+    const t = timesOf(form, d);
+    const text = (v: HourMinute) => (on ? `${v.hour}:${v.minute}` : "-");
+    const pick = (key: keyof DayTimes, end: "start" | "end", what: string) =>
+      on ? (
+        <TimePick label={`${dayLabel(d)}요일 ${what}`} value={t[key][end]} onChange={(v) => setDay(d, key, { ...t[key], [end]: v })} />
+      ) : (
+        "-"
+      );
     const day = partPay.days[i];
-    return { key: d, label: dayLabel(d), cells: [t(form.work.start), t(form.work.end), t(form.rest.start), t(form.rest.end)], hours: hoursLabel(day.hours), wage: won(wageNumber), amount: won(day.amount) };
+    return {
+      key: d,
+      label: dayLabel(d),
+      cells: partTime
+        ? [pick("work", "start", "시업"), pick("work", "end", "종업"), pick("rest", "start", "휴게 시작"), pick("rest", "end", "휴게 종료")]
+        : [text(t.work.start), text(t.work.end), text(t.rest.start), text(t.rest.end)],
+      hours: hoursLabel(day.hours),
+      wage: won(wageNumber),
+      amount: won(day.amount),
+    };
   });
   const scheduleRows: PayRow[] = partTime
     ? [
@@ -344,11 +390,28 @@ export function ContractForm({
               </span>
             </Group>
             <Group label="근무시간">
-              <SpanPick label="근무시간" value={form.work} onChange={(v) => set("work", v)} />
+              <SpanPick label="근무시간" value={form.work} onChange={(v) => setTop("work", v)} />
             </Group>
             <Group label="휴게시간">
-              <SpanPick label="휴게시간" value={form.rest} onChange={(v) => set("rest", v)} />
+              <SpanPick label="휴게시간" value={form.rest} onChange={(v) => setTop("rest", v)} />
             </Group>
+          </FormRow>
+          {/* 급여 표 — 흰 칸은 입력, 회색 칸은 셈한 값이다(현업 엑셀 견본, 2026-10-13). */}
+          {/* 시급 · 월급 · 연봉 한 줄이 소정근로시간 표 위에 있다(데모 확인 2026-10-15). 생년월일 · 근무요일 줄처럼 3등분한다(파트타이머는 셋째 칸을 비운다). 시급은 고용 형태와 상관없이 한 칸이다(2026-10-12 재영). */}
+          <FormRow>
+            <Item label="시급" required help={`2026년 최저임금 ${MINIMUM_WAGE.toLocaleString("ko-KR")}원 이상`}>
+              {(id) => <TextField id={id} value={form.wage} inputMode="numeric" onChange={(e) => set("wage", formatWage(e.target.value))} />}
+            </Item>
+            <Item label="월급" help={form.employmentType === "FULL_TIME" ? "급여항목 합계 + 비과세 합계" : "주급 × 4.345"}>
+              {(id) => <TextField id={id} readOnly value={monthly === null ? "" : won(monthly)} />}
+            </Item>
+            {form.employmentType === "FULL_TIME" ? (
+              <Item label="연봉" help="월급 × 12">
+                {(id) => <TextField id={id} readOnly value={monthly === null ? "" : won(fullPay.annual)} />}
+              </Item>
+            ) : (
+              <div className="min-w-px flex-1" />
+            )}
           </FormRow>
           <div className="flex flex-col gap-[8px]">
             <div className="flex items-center">
@@ -376,27 +439,19 @@ export function ContractForm({
               rowKey={(r) => r.key}
             />
             <span className={HELP}>
-              요일마다 같은 시간이 들어간다. 요일별로 다른 시간은 근무스케줄에서 고친다.
-              {partTime && " 주휴시간은 주 15시간 이상일 때 주 시간 ÷ 40 × 8(8시간까지), 월급여는 주급 × 4.345."}
+              {partTime
+                ? "요일마다 시업 · 종업 · 휴게를 고칠 수 있다. 위 근무시간 · 휴게시간을 바꾸거나 요일을 켜면 그 값으로 다시 채운다. 주휴시간은 주 15시간 이상일 때 주 시간 ÷ 5(8시간까지), 월급여는 주급 × 4.345."
+                : "요일마다 같은 시간이 들어간다. 요일별로 다른 시간은 근무스케줄에서 고친다."}
             </span>
           </div>
-          {/* 급여 표 — 흰 칸은 입력, 회색 칸은 셈한 값이다(현업 엑셀 견본, 2026-10-13). */}
-          {/* 시급 · 월급 · 연봉은 생년월일 · 근무요일 줄처럼 3등분한다(파트타이머는 셋째 칸을 비운다). 시급은 고용 형태와 상관없이 한 칸이다(2026-10-12 재영). */}
-          <FormRow>
-            <Item label="시급" required help="2026년 최저임금 10,320원 이상">
-              {(id) => <TextField id={id} value={form.wage} inputMode="numeric" onChange={(e) => set("wage", formatWage(e.target.value))} />}
-            </Item>
-            <Item label="월급" help={form.employmentType === "FULL_TIME" ? "급여항목 합계 + 비과세 합계" : "주급 × 4.345"}>
-              {(id) => <TextField id={id} readOnly value={monthly === null ? "" : won(monthly)} />}
-            </Item>
-            {form.employmentType === "FULL_TIME" ? (
-              <Item label="연봉" help="월급 × 12">
-                {(id) => <TextField id={id} readOnly value={monthly === null ? "" : won(fullPay.annual)} />}
-              </Item>
-            ) : (
-              <div className="min-w-px flex-1" />
-            )}
-          </FormRow>
+          {/* 급여 지급 방식은 소정근로시간 표 바로 밑(데모 확인 2026-10-15) */}
+          <Group label="급여 지급 방식" required>
+            <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
+              {(["ACCOUNT", "CASH"] as const).map((v) => (
+                <Radio key={v} name="payMethod" label={labelOf(labels.payMethod, v)} checked={form.payMethod === v} onChange={() => set("payMethod", v)} />
+              ))}
+            </div>
+          </Group>
           {!partTime && (
             <>
               <FormRow>
@@ -424,7 +479,32 @@ export function ContractForm({
               </FormRow>
             </>
           )}
+          {/* 계산 기준(노무사 확인 2026-10-14, 질문 1 · 2 · 12 · 13): 주휴는 주 15시간 이상이고 그 주 소정근로일을 다 나온 주에만, 주휴시간 = 주 근로시간 ÷ 5.
+              초과근무는 단시간근로자여도 1.5배(5인 미만 사업장은 1.0배 가능), 연장과 야간이 겹치면 2.0배, 계약하지 않은 요일 근무는 연장으로 1.5배. */}
+          <span className={HELP}>
+            주휴수당은 주 15시간 이상이고 그 주 소정근로일을 다 나온 주에만 주고, 주휴시간은 주 근로시간 ÷ 5 입니다. 연장과 야간이 겹치면 2.0배, 계약하지 않은 요일에 일한
+            시간은 연장(1.5배)으로 셉니다. 셈한 값은 저장하지 않습니다.
+          </span>
           <FormRow>
+            {/* 주휴일은 특정 요일로 정해 계약서 휴일 조항에 적는다(노무사 확인 2026-10-14, 질문 4). 주 15시간 미만이면 없음이라 고를 수 없다. */}
+            <Item label="주휴일" required={holiday !== null} help="특정 요일로 정해 계약서 휴일 조항에 적는다. 근무하는 요일은 고를 수 없고, 주 15시간 미만이면 주휴가 없다">
+              {(id) =>
+                holiday === null ? (
+                  <Select id={id} disabled value="">
+                    <option value="">없음 (주 15시간 미만)</option>
+                  </Select>
+                ) : (
+                  <Select id={id} value={holiday === "NO_DAY_OFF" ? "" : holiday} onChange={(e) => set("weeklyHoliday", e.target.value as Weekday)}>
+                    {holiday === "NO_DAY_OFF" && <option value="">쉬는 요일이 없습니다</option>}
+                    {WEEKDAYS.map((d) => (
+                      <option key={d} value={d} disabled={form.days.includes(d)}>
+                        {dayLabel(d)}
+                      </option>
+                    ))}
+                  </Select>
+                )
+              }
+            </Item>
             <Group label="임금지급일" help="31 을 넣으면 말일로 본다">
               <span className="flex gap-[6px]">
                 <span className="w-[100px] shrink-0">
@@ -444,14 +524,6 @@ export function ContractForm({
                 <TextField id={id} value={form.workLocation} maxLength={200} placeholder="예: 서울 성동구 연무장길 18, 1층" onChange={(e) => set("workLocation", e.target.value)} />
               )}
             </Item>
-            {/* 주휴일은 7일 근무를 협의하기 전까지 숨긴다 — 저장은 api 가 NULL 로 한다(2026-10-08). */}
-            <div hidden>
-            <Group label="주휴일" help="근무로 정해진다 — 주 15시간 이상이면 근무하지 않는 가장 뒤 요일, 미만이면 없음. 계약서 휴일 조항에 들어간다">
-              <span className="flex h-[34px] items-center text-[14px] text-erp-ink" aria-live="polite">
-                {holiday === "NO_DAY_OFF" ? "쉬는 요일이 없어 정할 수 없습니다" : holiday ? `${dayLabel(holiday)}요일` : "없음 (주 15시간 미만)"}
-              </span>
-            </Group>
-            </div>
           </FormRow>
         </FormGroup>
 
@@ -466,11 +538,55 @@ export function ContractForm({
           </FormRow>
         </FormGroup>
 
+        {/* 수습(노무사 확인 2026-10-14, 질문 19): 정직원만, 4대보험 가입 여부 위. 필수는 아니지만 수습 대상이면 계약서에 적는다.
+            계약 기간이 1년 이상(또는 기간의 정함 없음)일 때만, 기간은 최대 3개월, 감액해도 최저임금의 90% 이상. 급여명세서는 수습 기간이면 그렇다고 표기한다. */}
+        {!partTime && (
+          <FormGroup title="수습">
+            <Group label="수습 여부">
+              <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
+                <Radio name="probation" label="없음" checked={!form.probation} onChange={() => set("probation", false)} />
+                <Radio name="probation" label="적용" checked={form.probation} onChange={() => set("probation", true)} />
+              </div>
+            </Group>
+            {form.probation && (
+              <FormRow>
+                <Item label="수습 기간" required help="최대 3개월. 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둘 수 있다">
+                  {(id) => (
+                    <Select id={id} value={form.probationMonths} onChange={(e) => set("probationMonths", e.target.value as Form["probationMonths"])}>
+                      {(["1", "2", "3"] as const).map((m) => (
+                        <option key={m} value={m}>
+                          {m}개월
+                        </option>
+                      ))}
+                    </Select>
+                  )}
+                </Item>
+                <Item label="임금 감액률" required help="최대 10%. 감액하지 않으면 0">
+                  {(id) => (
+                    <span className="flex items-center gap-[8px] text-[14px] text-erp-ink">
+                      <TextField id={id} value={form.probationRate} inputMode="numeric" maxLength={2} onChange={(e) => set("probationRate", e.target.value.replace(/\D/g, ""))} />%
+                    </span>
+                  )}
+                </Item>
+                <Item label="수습 중 시급" help={`시급 × (1 − 감액률). 최저임금의 90%(${PROBATION_WAGE_FLOOR.toLocaleString("ko-KR")}원) 이상이어야 한다`}>
+                  {(id) => <TextField id={id} readOnly value={won(probationWage(form))} />}
+                </Item>
+              </FormRow>
+            )}
+          </FormGroup>
+        )}
+
         <FormGroup title="4대보험 가입 여부">
           <div className="flex gap-[24px]">
             <Checkbox label="건강보험 · 국민연금" checked={form.isHealthPensionInsured} onChange={(e) => set("isHealthPensionInsured", e.target.checked)} />
             <Checkbox label="고용보험 · 산재보험" checked={form.isEmploymentInjuryInsured} onChange={(e) => set("isEmploymentInjuryInsured", e.target.checked)} />
           </div>
+          {/* 월 60시간 이상이면 가입이 원칙(노무사 확인 2026-10-14, 질문 6). 3.3% 원천징수는 부과 기관이 달라 4대보험과 따로 공제한다. */}
+          <span className={HELP} aria-live="polite">
+            이 계약은 월 약 <b className="font-semibold text-erp-ink">{Math.round(monthlyHours(form))}</b>시간이라{" "}
+            <b className="font-semibold text-erp-ink">{monthlyHours(form) >= 60 ? "4대보험 가입 대상입니다" : "4대보험 가입 대상이 아닙니다"}</b>. 월 60시간 이상 일하면 가입이 원칙이고,
+            3.3% 원천징수와는 따로 공제합니다.
+          </span>
         </FormGroup>
 
         <Band

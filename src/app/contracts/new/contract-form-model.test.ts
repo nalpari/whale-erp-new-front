@@ -16,6 +16,7 @@ import {
   monthlyWage,
   fullTimePay,
   partTimePay,
+  probationWage,
   problems,
   toBody,
   weeklyHolidayOf,
@@ -42,7 +43,8 @@ const detailOf = (over: Partial<ContractDetail> = {}): ContractDetail => ({
   startDate: null, endDate: null, workLocation: null, weeklyHoliday: null, wageAmount: null,
   mealAllowanceAmount: null, carAllowanceAmount: null, childcareAllowanceAmount: null, baseHours: null,
   monthlyOvertimeHours: null, baseNightHours: null, baseHolidayHours: null, monthlyExtraHolidayHours: null,
-  annualLeaveTerms: null, severancePayTerms: null, payMonth: null, payDay: null,
+  annualLeaveTerms: null, severancePayTerms: null, payMonth: null, payDay: null, payMethod: null,
+  probationMonths: null, probationWageReductionRate: null,
   isHealthPensionInsured: null, isEmploymentInjuryInsured: null, draftAction: null, histories: [], workDays: [],
   ...over,
 });
@@ -90,8 +92,10 @@ test("빈 폼 · 잘못된 값은 이유를 말한다", () => {
   // 정직원도 시급이다
   assert.ok(p.includes("시급을 입력하세요"));
   assert.ok(problems(filled({ employmentType: "FULL_TIME", wage: "" })).includes("시급을 입력하세요"));
-  // 7일 근무는 협의 중이라 막지 않는다
-  assert.deepEqual(problems(filled({ days: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] })), []);
+  // 주 15시간 이상인데 7일 모두 근무하면 주휴일을 둘 요일이 없어 막는다(노무사 확인 2026-10-14, 임시저장은 된다)
+  const allWeek = filled({ days: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] });
+  assert.ok(problems(allWeek).includes("주 15시간 이상이면 근무하지 않는 요일이 있어야 주휴일을 정할 수 있습니다"));
+  assert.deepEqual(problems(allWeek, true), []);
   assert.ok(problems(filled({ endDate: "2026-09-13" })).includes("계약 종료일은 시작일보다 앞설 수 없습니다"));
   assert.ok(problems(filled({ payDay: "32" })).includes("임금지급일은 1~31입니다"));
   assert.ok(problems(filled({ rest: { start: { hour: "08", minute: "00" }, end: { hour: "09", minute: "00" } } })).includes("휴게시간은 근무시간 안이어야 합니다"));
@@ -149,7 +153,7 @@ test("주휴일은 주 15시간 이상이면 근무하지 않는 가장 뒤 요�
   const half = { ...f, work: { start: { hour: "09", minute: "00" as const }, end: { hour: "17", minute: "00" as const } }, rest: { start: { hour: "12", minute: "00" as const }, end: { hour: "12", minute: "30" as const } } };
   assert.equal(weeklyHolidayOf({ ...half, days: ["MON", "TUE"] }), "SUN");
   assert.equal(weeklyHolidayOf({ ...f, days: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] }), "NO_DAY_OFF");
-  assert.equal("weeklyHoliday" in toBody(filled()), false);
+  assert.equal(toBody(filled()).weeklyHoliday, "SUN");
 });
 
 test("API 본문: 번호는 숫자만, 급여는 정수, 요일은 월~일 순서로 같은 시간", () => {
@@ -273,4 +277,53 @@ test("409 본문에서 대체할 진행 중 계약만 꺼낸다", () => {
   assert.equal(inProgressOf({ statusCode: 409, message: "재직 중" }), undefined);
   assert.equal(inProgressOf(null), undefined);
   assert.equal(inProgressOf({ code: "CONTRACT_IN_PROGRESS", contracts: [{ contractId: "5" }] }), undefined);
+});
+
+test("주휴일은 고른 요일을 쓰고, 근무 요일이면 근무하지 않는 가장 뒤 요일로 본다", () => {
+  const f = initialForm();
+  assert.equal(weeklyHolidayOf({ ...f, weeklyHoliday: "SAT" }), "SAT");
+  assert.equal(weeklyHolidayOf({ ...f, weeklyHoliday: "MON" }), "SUN"); // 월요일은 근무
+  assert.equal(weeklyHolidayOf({ ...f, days: ["MON"], weeklyHoliday: "SAT" }), null); // 주 8시간이면 없음
+  assert.equal(toBody(filled({ weeklyHoliday: "SAT" })).weeklyHoliday, "SAT");
+  assert.equal("weeklyHoliday" in toBody(filled({ days: ["MON"] })), false);
+});
+
+test("파트타이머는 요일마다 시간을 고치고, 고친 시간으로 주 시간 · 급여 · 본문을 만든다", () => {
+  const span = (sh: string, eh: string) => ({ start: { hour: sh, minute: "00" as const }, end: { hour: eh, minute: "00" as const } });
+  const f = filled({ employmentType: "PART_TIME", wage: "10,000", dayTimes: { MON: { work: span("09", "15"), rest: span("12", "13") } } });
+  assert.equal(weeklyHours(f), 37); // 월 5시간 + 화~금 8시간
+  assert.equal(partTimePay(f).days[0].amount, 50000);
+  assert.equal(partTimePay(f).holidayHours, 7.4); // 주 시간 ÷ 5
+  const body = toBody(f);
+  assert.equal(body.workDays?.[0].endTime, "15:00");
+  assert.equal(body.workDays?.[1].endTime, "18:00");
+  // 정직원이면 요일별 시간을 쓰지 않는다
+  assert.equal(weeklyHours({ ...f, employmentType: "FULL_TIME" }), 40);
+  // 고친 요일의 시간도 검사한다
+  assert.ok(problems({ ...f, dayTimes: { MON: { work: span("15", "09"), rest: span("12", "13") } } }).includes("월요일 근무시간은 끝이 시작보다 뒤여야 합니다"));
+});
+
+test("급여 지급 방식은 늘 보낸다", () => {
+  assert.equal(toBody(filled()).payMethod, "ACCOUNT");
+  assert.equal(toBody(filled({ payMethod: "CASH" }), true).payMethod, "CASH");
+});
+
+test("수습: 정직원만, 기간과 감액률을 함께 보내고 조건을 본다", () => {
+  const on = { probation: true, probationMonths: "3" as const, probationRate: "10", wage: "11,200" };
+  assert.equal(probationWage(filled(on)), 10080);
+  const body = toBody(filled(on));
+  assert.equal(body.probationMonths, 3);
+  assert.equal(body.probationWageReductionRate, 10);
+  assert.deepEqual(problems(filled(on)), []);
+  // 파트타이머면 보내지 않는다
+  assert.equal("probationMonths" in toBody(filled({ ...on, employmentType: "PART_TIME" })), false);
+  // 계약 기간 1년 미만이면 막는다(딱 1년은 된다)
+  assert.ok(problems(filled({ ...on, endDate: "2027-09-12" })).includes("수습은 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둘 수 있습니다"));
+  assert.deepEqual(problems(filled({ ...on, endDate: "2027-09-13" })), []);
+  assert.ok(problems(filled({ ...on, probationRate: "11" })).includes("수습 임금 감액률은 0~10% 정수로 입력하세요"));
+  // 최저임금의 90%(9,288원) 아래면 막는다
+  assert.ok(problems(filled({ ...on, wage: "10,320" })).length === 0);
+  assert.ok(problems(filled({ ...on, wage: "10,000" })).some((m) => m.startsWith("수습 중 시급은 최저임금의 90%")));
+  // 수습을 끄면 보내지 않는다
+  assert.equal("probationMonths" in toBody(filled({ ...on, probation: false })), false);
 });
