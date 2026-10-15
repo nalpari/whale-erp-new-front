@@ -303,7 +303,8 @@ export function ContractForm({
   );
 
   return (
-    <div className="flex flex-col gap-[12px]">
+    // 막힌 입력칸(주휴일 등)은 이 화면에서만 회색 바탕이다(데모 확인 2026-10-15). 공통 FIELD 는 읽기 전용만 회색이라 1팀 화면은 그대로다.
+    <div className="flex flex-col gap-[12px] [&_:is(select,input:not([type=radio],[type=checkbox])):disabled]:bg-erp-thead-bg">
       <div className="flex items-end gap-[6px]">
         <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">근로계약서</h2>
         <Button variant="off" href="/contracts">

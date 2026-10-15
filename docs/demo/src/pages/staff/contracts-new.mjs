@@ -202,7 +202,8 @@ export const contractForm = (d) => ({ A, R }) => {
       p.ask("임시저장", "soft", "작성 중인 초안을 임시저장하시겠습니까?", "초대와 계약서는 보내지 않습니다. 이름 · 휴대전화번호 · 근무지 · 직무 · 고용 형태가 있어야 임시저장됩니다.") +
       ui.button("초안 저장", { href: L("staff/contracts.html") }),
   );
-  const body = ui.detailBody(`<div class="flex flex-col gap-[12px]">${head}${`<div class="flex flex-col gap-[24px]">${form}</div>`}</div>`);
+  // 읽기 전용 · 막힌 칸은 이 화면에서만 회색 바탕이다(데모 확인 2026-10-15). 공통 FIELD 는 건드리지 않는다.
+  const body = ui.detailBody(`<div class="flex flex-col gap-[12px] [&_:is(input,select)[readonly]]:bg-erp-thead-bg [&_:is(input,select):disabled]:bg-erp-thead-bg">${head}${`<div class="flex flex-col gap-[24px]">${form}</div>`}</div>`);
   const title = d ? "근로계약서 이어 쓰기" : "근로계약서 초안 작성";
   return { title, html: ui.erpFrame({ header: erpHeader(A, R), title, body }) };
 };

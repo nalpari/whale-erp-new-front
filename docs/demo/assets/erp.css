@@ -3301,9 +3301,6 @@
   .disabled\:pointer-events-none:disabled {
     pointer-events: none;
   }
-  .disabled\:bg-erp-thead-bg:disabled {
-    background-color: var(--color-erp-thead-bg);
-  }
   .disabled\:text-\[\#767676\]:disabled {
     color: #767676;
   }
@@ -3477,6 +3474,12 @@
   .\[\&_\:is\(a\[href\]\,button\:enabled\,select\:enabled\,label\:has\(input\:enabled\)\,input\[type\=checkbox\]\:enabled\)\]\:cursor-pointer :is(a[href], button:enabled, select:enabled, label:has(input:enabled), input[type=checkbox]:enabled) {
     cursor: pointer;
   }
+  .\[\&_\:is\(input\,select\)\:disabled\]\:bg-erp-thead-bg :is(input, select):disabled {
+    background-color: var(--color-erp-thead-bg);
+  }
+  .\[\&_\:is\(input\,select\)\[readonly\]\]\:bg-erp-thead-bg :is(input, select)[readonly] {
+    background-color: var(--color-erp-thead-bg);
+  }
   .\[\&_button\]\:cursor-pointer button {
     cursor: pointer;
   }
@@ -3556,9 +3559,6 @@
     .hover\:\[\&\>span\:first-child\]\:opacity-70:hover > span:first-child {
       opacity: 70%;
     }
-  }
-  .\[\&\[readonly\]\]\:bg-erp-thead-bg[readonly] {
-    background-color: var(--color-erp-thead-bg);
   }
 }
 @font-face {
