@@ -17,15 +17,22 @@ export const metadata: Metadata = {
 const PENDING = "-";
 
 // 데모 staff-parts.mjs 의 box — 제목 줄(오른쪽에 「관리」 링크) + 내용. 내용은 상세 요약 api 가 나온 뒤 채운다.
-function Box({ title, manageHref, children }: { title: string; manageHref: string; children: ReactNode }) {
+// manageHref 가 없으면 「관리」를 흐리게 두고 누를 수 없게 한다 — 그 화면이 아직 없다.
+function Box({ title, manageHref, children }: { title: string; manageHref?: string; children: ReactNode }) {
   return (
     <section className="min-w-0">
       <h3 className="flex h-[42px] items-center gap-[6px] rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[16px] font-medium text-erp-ink">
         <span className="flex-1">{title}</span>
         <span className="flex items-center gap-[6px] text-[14px] font-normal">
-          <Link href={manageHref} className="text-erp-link hover:underline">
-            관리
-          </Link>
+          {manageHref ? (
+            <Link href={manageHref} className="text-erp-link hover:underline">
+              관리
+            </Link>
+          ) : (
+            <span aria-disabled="true" title="준비 중입니다." className="cursor-default text-erp-muted">
+              관리
+            </span>
+          )}
         </span>
       </h3>
       {children}
@@ -41,11 +48,14 @@ function NotReady() {
   );
 }
 
-const RIGHT_BOXES = [
-  { title: "근무스케줄", manageHref: "/work-schedules" },
-  { title: "출퇴근 현황", manageHref: "/attendance-records" },
-  { title: "급여명세서", manageHref: "/payslips" },
-  { title: "TO-DO", manageHref: "/todos" },
+// 「관리」 대상 화면이 아직 없어 링크를 걸지 않는다. 걸면 메뉴 url 이 없을 때 공통 틀이 「접근 권한이 없는 메뉴」로
+// 막아 권한 문제처럼 보인다. 화면이 생기면 메뉴 url(#592 결정)을 manageHref 로 넣는다: 근무스케줄 /work-schedules ·
+// 출퇴근 현황 /attendance-records · 급여명세서 /payslips · TO-DO /todos.
+const RIGHT_BOXES: { title: string; manageHref?: string }[] = [
+  { title: "근무스케줄" },
+  { title: "출퇴근 현황" },
+  { title: "급여명세서" },
+  { title: "TO-DO" },
 ];
 
 // 직원 상세(WHALEERP-184). 배치는 데모 docs/demo/staff/detail.html(원본 src/pages/staff/detail.mjs)과 같다 — 5:7 두 단,
