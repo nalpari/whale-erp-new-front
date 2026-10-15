@@ -51,10 +51,10 @@
             </div>
             <div class="grid grid--3">
               <a class="mk-card" href="index.html">
-                <span class="mk-card__route">/support</span>
+                <span class="mk-card__route">/support-notices · /support-faqs · /support-inquiries</span>
                 <span class="mk-card__name">고객지원</span>
                 <span class="mk-card__desc">
-                  공지사항 · FAQ · 문의하기 세 탭. 검색·필터·페이저가 탭마다 있고, 문의 등록 폼은 문의하기 탭에 있다.
+                  공지사항 · FAQ · 문의하기 화면 셋(메뉴도 셋). 검색·필터·페이저가 화면마다 있고, 문의 등록 폼은 문의하기 화면에 있다. 목업은 한 파일에 탭으로 그렸다.
                 </span>
                 <span class="mk-card__end">
                   <span class="badge badge--quiet">S-ITFILU</span>
@@ -62,7 +62,7 @@
                 </span>
               </a>
               <a class="mk-card" href="notice-detail.html">
-                <span class="mk-card__route">/support/notices/[id]</span>
+                <span class="mk-card__route">/support-notices/[id]</span>
                 <span class="mk-card__name">공지 상세</span>
                 <span class="mk-card__desc">
                   제목·본문·첨부. 노출 대상과 이력은 운영자 편집 화면의 것이라 여기엔 없다.
@@ -73,7 +73,7 @@
                 </span>
               </a>
               <a class="mk-card" href="inquiry-mine.html">
-                <span class="mk-card__route">/support/inquiries/[id]</span>
+                <span class="mk-card__route">/support-inquiries/[id]</span>
                 <span class="mk-card__name">내 문의 상세</span>
                 <span class="mk-card__desc">
                   내 문의와 답변 이력. 운영자 쪽 상세와 달리 내부 메모는 보이지 않는다.
@@ -180,7 +180,7 @@
                   <span class="badge badge--quiet">2</span>
                 </div>
                 <ul class="pol">
-                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 고객지원은 <b>한 화면 세 탭</b>(공지사항·FAQ·문의하기)이고 탭이 곧 전체 목록이다. 상세만 따로 둔다.</span><span class="pol__ref">S-ITFILU · SUPPORT-4</span></li>
+                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 고객지원은 <b>화면 셋, 메뉴 셋</b>(공지사항 <code>/support-notices</code> · FAQ <code>/support-faqs</code> · 문의하기 <code>/support-inquiries</code>, 이 순서)이고 화면이 곧 전체 목록이다. 상세만 따로 둔다. (2026-10-15 재영 C안)</span><span class="pol__ref">S-ITFILU · SUPPORT-4</span></li>
                 <li><span class="pol__t">FAQ 답변은 목록에서 펼친다. 상세 페이지는 없다.</span><span class="pol__ref">S-KJEVVS</span></li>
                 </ul>
               </div>
@@ -340,7 +340,7 @@
               <div class="gap__head">
                 <span class="gap__no">SUPPORT-4</span>
                 <b>공지·문의의 전체 목록과 상세를 어디에 둘 것인가</b>
-                <span class="gap__decided">확정 · 고객지원 한 화면의 탭</span>
+                <span class="gap__decided">확정 · 화면 셋 · 메뉴 셋 (2026-10-15 재영 C안)</span>
                 <span class="gap__ref">S-ITFILU</span>
               </div>
               <div class="gap__opts">
@@ -348,13 +348,20 @@
                   <div class="gap__label">A · 요약 홈 + 별도 목록</div>
                   <p>고객지원 홈은 최신 몇 건과 <b>전체 보기</b>, 전체 목록은 따로 둔다. 로그인 전 화면과 같은 꼴이다.</p>
                 </div>
-                <div class="gap__opt is-picked" data-side="b">
-                  <div class="gap__label">B · 한 화면의 탭 · 지금 화면</div>
+                <div class="gap__opt is-dropped" data-side="b">
+                  <div class="gap__label">B · 한 화면의 탭</div>
                   <p>고객지원은 <b>공지사항 · FAQ · 문의하기</b> 세 탭이다. 탭이 곧 전체 목록이고 상세만 따로 둔다.</p>
+                </div>
+                <div class="gap__opt is-picked" data-side="c">
+                  <div class="gap__label">C · 화면 셋 · 메뉴 셋 · 지금 화면</div>
+                  <p>공지사항 <code>/support-notices</code> · FAQ <code>/support-faqs</code> · 문의하기 <code>/support-inquiries</code> 를 화면 셋, 메뉴 셋으로 둔다. 메뉴 순서는 공지사항 · FAQ · 문의하기.</p>
                 </div>
               </div>
               <p class="gap__note">
-                처음엔 A 로 그렸다가 <b>B 로 뒤집었다</b>. 고객지원은 공지·FAQ·문의 셋뿐이라 요약 홈을 따로 둘 만큼
+                2026-10-15 <b>B 에서 C 로 바꿨다</b>(재영 C안, WHALEERP-596). 관리자 웹 공통 틀은 메뉴 url 경로로 화면 권한을 판정하고
+                해시는 보지 않는다. 그래서 B 의 「LNB 가 해시로 탭을 연다」로는 메뉴와 화면을 잇지 못하고, FAQ 는 메뉴 행이 없어 권한을 따로 줄 수 없었다.
+                직원관리도 같은 이유로 메뉴마다 한 단계 경로로 나눴다(WHALEERP-594). 메뉴 데이터는 api 마이그레이션 <code>20261015150000_team3_support_menu_split</code> 이 바꾼다.
+                옛 기록 — 처음엔 A 로 그렸다가 <b>B 로 뒤집었다</b>. 고객지원은 공지·FAQ·문의 셋뿐이라 요약 홈을 따로 둘 만큼
                 내용이 없고, 요약과 전체 목록이 같은 공지를 두 번 보여 주게 된다. 직원관리가 한 화면에 탭을 두고
                 LNB 가 해시로 그 탭을 여는 것과 같은 꼴로 맞춘다. 문서의 “최신 공지 일부와 전체 목록 진입점”은
                 탭 하나가 둘 다 맡는 것으로 읽는다. 공지 상세는 문서가 “제목과 본문을 포함한 상세, 첨부 내려받기”를 요구해 세웠다.
@@ -362,8 +369,8 @@
               <div class="gap__block">
                 <b>딸린 것.</b>
                 <ul>
-                  <li>LNB 고객지원을 누르면 이 화면이고, 아래 공지사항·문의하기는 해시로 그 탭을 연다. FAQ 는 메뉴구조도에 없어 LNB 에 두지 않고 탭으로만 간다.</li>
-                  <li>세 탭 모두 목록 공통 규칙대로 검색·필터·페이저를 둔다. 문의 등록 폼은 문의하기 탭 옆에 선다.</li>
+                  <li>LNB 고객지원 아래에 공지사항 · FAQ · 문의하기 세 메뉴가 이 순서로 있고, 각각 자기 화면을 연다. 권한도 메뉴마다 준다(FAQ 는 처음에 공지사항과 같게).</li>
+                  <li>세 화면 모두 목록 공통 규칙대로 검색·필터·페이저를 둔다. 문의 등록 폼은 문의하기 화면에 선다.</li>
                   <li>로그인 전 공지 상세는 로그인 전 화면 쪽에 따로 서야 한다. 아직 그리지 않았다.</li>
                 </ul>
               </div>

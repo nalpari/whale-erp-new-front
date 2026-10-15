@@ -255,12 +255,14 @@
 
         { key: "support", text: "고객지원", team: "3팀", href: "support/index.html", items: [
           { text: "영역 개요", href: "support/overview.html", mock: 1 },
+          // 메뉴 셋, 한 단계 경로(SUPPORT-4 · 2026-10-15 재영 C안). 목업은 한 파일의 탭이라 해시로 연다.
+          { text: "공지사항", href: "support/index.html#notices" },
+          { text: "FAQ", href: "support/index.html#faq" },
+          { text: "문의하기", href: "support/index.html#inquiries" },
           { text: "부가서비스 구독 관리", phase: "2" },
           { text: "구독료 청구 및 납부 현황", phase: "2" },
           { text: "결제수단 관리", phase: "2" },
-          { text: "정산 현황 조회", phase: "2" },
-          { text: "공지사항", href: "support/index.html#notices" },
-          { text: "문의하기", href: "support/index.html#inquiries" }
+          { text: "정산 현황 조회", phase: "2" }
         ]},
 
         { key: "notify", text: "운영 알림", team: "3팀", items: [
