@@ -10,7 +10,7 @@ test("완료 화면 경로는 로그인 없이 열린다 — 세션 없이 들�
 });
 
 test("쿠키 값을 그대로 되돌린다 — 한글 상호명 포함", () => {
-  const value = { tradeName: "㈜한강상회", loginId: "hangang01", email: "hayoon@hangang.co.kr" };
+  const value = { tradeName: "㈜한강상회", loginId: "hangang01", email: "hayoon@hangang.co.kr", issuedAt: 1760000000000 };
   assert.deepEqual(parseSignupDone(JSON.stringify(value)), value);
 });
 
@@ -19,6 +19,15 @@ test("없거나 JSON 이 아니면 없는 것으로 본다", () => {
 });
 
 test("모양이 틀리면 없는 것으로 본다 — 객체가 화면에 그대로 그려져 완료 화면이 500 이 되지 않게", () => {
-  for (const raw of ["null", "123", "[]", '"abc"', '{"tradeName":{},"loginId":"a","email":"b"}', '{"tradeName":"a","loginId":1,"email":"b"}', '{"tradeName":"a","loginId":"b"}'])
+  for (const raw of [
+    "null",
+    "123",
+    "[]",
+    '"abc"',
+    '{"tradeName":{},"loginId":"a","email":"b","issuedAt":1}',
+    '{"tradeName":"a","loginId":1,"email":"b","issuedAt":1}',
+    '{"tradeName":"a","loginId":"b","email":"c"}',
+    '{"tradeName":"a","loginId":"b","email":"c","issuedAt":"1"}',
+  ])
     assert.equal(parseSignupDone(raw), null, raw);
 });

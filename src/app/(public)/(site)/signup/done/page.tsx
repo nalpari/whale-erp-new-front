@@ -4,7 +4,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { GuestButton, GuestPage, GuestVisual, TRIM } from "@/app/design/guest/guest-ui";
 import { HOVER } from "@/app/design/guest/theme";
-import { parseSignupDone, SIGNUP_DONE_COOKIE } from "../signup-done-cookie";
+import { parseSignupDone, remainingSignupDoneSeconds, SIGNUP_DONE_COOKIE } from "../signup-done-cookie";
+import { Countdown } from "./countdown";
 
 export const metadata: Metadata = {
   title: "가입 완료 · Whale ERP",
@@ -24,7 +25,8 @@ export default async function SignupDonePage() {
   const raw = (await cookies()).get(SIGNUP_DONE_COOKIE)?.value;
   const value = parseSignupDone(raw);
   if (!value) redirect("/login");
-  const { tradeName, loginId, email } = value;
+  const { tradeName, loginId, email, issuedAt } = value;
+  const remainingSeconds = remainingSignupDoneSeconds(issuedAt);
 
   return (
     <GuestPage flush>
@@ -54,7 +56,7 @@ export default async function SignupDonePage() {
               </GuestButton>
             </div>
             <p className="w-full rounded-[6px] bg-guest-card px-[32px] py-[24px] text-[16px] leading-[1.4] text-guest-navy">
-              이 화면은 10분 동안만 열립니다.
+              이 화면은 <Countdown initialSeconds={remainingSeconds} /> 뒤에 닫힙니다.
               <br />
               시간이 지나면{" "}
               <Link href="/login" className={`font-semibold underline underline-offset-[3px] hover:text-guest-ink ${HOVER}`}>

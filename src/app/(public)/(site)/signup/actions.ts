@@ -3,7 +3,16 @@
 import { cookies, headers } from "next/headers";
 import { apiError, ApiError, baseUrl, request } from "@/lib/api";
 import { apiFailure, CHECK_FAILED_MESSAGE, UNKNOWN_RESULT_MESSAGE } from "./_components/api-failure";
-import { isSignupDoneValue, SIGNUP_DONE_COOKIE, SIGNUP_DONE_MAX_AGE, SIGNUP_DONE_PATH } from "./signup-done-cookie";
+import { SIGNUP_DONE_COOKIE, SIGNUP_DONE_MAX_AGE, SIGNUP_DONE_PATH } from "./signup-done-cookie";
+
+// api 의 가입 응답 모양. 쿠키에 심는 SignupDoneValue(signup-done-cookie.ts)는 여기에 issuedAt 을 더한
+// front 전용 값이라 api 응답 자체는 이 타입을 따로 쓴다 — api 가 issuedAt 을 줄 일은 없다.
+type SignupApiResponse = { tradeName: string; loginId: string; email: string };
+function isSignupApiResponse(v: unknown): v is SignupApiResponse {
+  const o = v as Partial<Record<keyof SignupApiResponse, unknown>> | null;
+  return typeof o === "object" && o !== null && !Array.isArray(o)
+    && typeof o.tradeName === "string" && typeof o.loginId === "string" && typeof o.email === "string";
+}
 
 export type SignupPayload = {
   loginId: string;
@@ -62,13 +71,14 @@ export async function createSignup(payload: SignupPayload): Promise<SignupResult
     if (!response.ok) throw await apiError(response);
     accepted = true;
     const body: unknown = await response.json();
-    if (!isSignupDoneValue(body)) {
+    if (!isSignupApiResponse(body)) {
       // api 버전이 어긋났다. 완료 화면에 아이디를 보일 수 없으니 로그인으로 안내한다.
       console.error("[signup] createSignup unexpected response", body);
       return { ok: false, message: UNKNOWN_RESULT_MESSAGE };
     }
     const { tradeName, loginId, email } = body;
-    (await cookies()).set(SIGNUP_DONE_COOKIE, JSON.stringify({ tradeName, loginId, email }), {
+    // issuedAt 은 완료 화면의 남은 시간 표시(countdown.tsx)에만 쓴다.
+    (await cookies()).set(SIGNUP_DONE_COOKIE, JSON.stringify({ tradeName, loginId, email, issuedAt: Date.now() }), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
