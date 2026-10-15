@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  agreeErrorMessage,
   validateBizRegistrationNumber,
   validateEmail,
   validateLoginId,
@@ -21,6 +22,9 @@ test("아이디 — 영문 하나 이상 포함, 영문·숫자만, 4~20자", ()
   assert.equal(validateLoginId("abcd"), undefined);
   assert.equal(validateLoginId("hangang01"), undefined);
   assert.equal(validateLoginId("a".repeat(20)), undefined, "20자는 통과");
+  assert.ok(validateLoginId("한강01ab"), "한글");
+  // api 가 소문자로 바꿔 저장한다 — 화면이 대문자를 막으면 api 와 어긋난다.
+  assert.equal(validateLoginId("Hangang01"), undefined, "대문자는 통과");
 });
 
 test("비밀번호 — 영문·숫자·특수문자를 모두 포함해 8~20자", () => {
@@ -86,4 +90,25 @@ test("사업자등록번호 — 숫자 10자리만 통과", () => {
   assert.ok(validateBizRegistrationNumber("12345678901"), "11자리");
   assert.ok(validateBizRegistrationNumber("211-87-0123"), "하이픈 포함");
   assert.equal(validateBizRegistrationNumber("2118701234"), undefined);
+});
+
+test("비밀번호 — 경계값과 허용 특수문자 목록(api 와 같은 !@#$%^&*()-_=+[]{}?)", () => {
+  assert.equal(validatePassword(`a1!${"a".repeat(17)}`), undefined, "20자 경계값");
+  // 글자 집합 안에서 이스케이프가 가장 깨지기 쉬운 글자들.
+  for (const pw of ["a1]aaaaa", "a1}aaaaa", "a1?aaaaa", "a1-aaaaa", "a1[aaaaa"]) assert.equal(validatePassword(pw), undefined, pw);
+  for (const pw of ["a1~aaaaa", "a1.aaaaa", "a1<aaaaa", "a1 aaaaa"]) assert.ok(validatePassword(pw), pw);
+});
+
+test("이름 — 20자 경계값, 한글 · 영문 섞임은 통과, 공백은 거절(api 와 같은 정규식)", () => {
+  assert.equal(validateName("가".repeat(20)), undefined, "20자 경계값");
+  assert.ok(validateName("가".repeat(21)), "21자");
+  assert.equal(validateName("Kim지영"), undefined);
+  assert.ok(validateName("Kim Jiyoung"), "공백");
+});
+
+test("약관 미동의 문구 — 안 한 항목만 이름을 든다", () => {
+  assert.equal(agreeErrorMessage(true, true), undefined);
+  assert.equal(agreeErrorMessage(false, false), "이용약관과 개인정보 수집·이용에 모두 동의해 주세요.");
+  assert.equal(agreeErrorMessage(false, true), "이용약관에 동의해 주세요.");
+  assert.equal(agreeErrorMessage(true, false), "개인정보 수집·이용에 동의해 주세요.");
 });

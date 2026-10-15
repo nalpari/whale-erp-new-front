@@ -62,3 +62,11 @@ export function validateTradeName(value: string): string | undefined {
   if (value.length > 50) return "50자 이내로 입력해 주세요.";
   return undefined;
 }
+
+// 약관동의. 둘 다 안 했으면 둘 다 말하고, 하나만 안 했으면 그 항목 이름만 말한다 — api 의 거절 문구는 둘을
+// 가르지 않아 이 문구가 유일한 안내다.
+export function agreeErrorMessage(useAgreed: boolean, privacyAgreed: boolean): string | undefined {
+  if (useAgreed && privacyAgreed) return undefined;
+  if (!useAgreed && !privacyAgreed) return "이용약관과 개인정보 수집·이용에 모두 동의해 주세요.";
+  return !useAgreed ? "이용약관에 동의해 주세요." : "개인정보 수집·이용에 동의해 주세요.";
+}

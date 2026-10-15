@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-15
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 회원가입 PR 리뷰(pr-review-toolkit) 반영. 가입 완료 화면은 URL 쿼리(signupToken 등)를 읽지 않고 가입 성공 뒤 서버 액션이 심는 httpOnly 쿠키로 값을 받으며, 쿠키가 없으면 로그인으로 보낸다(`S-UUBGOD`). 서버 액션이 사용자 IP(`X-Forwarded-For`)를 api 로 넘기고, 10초 제한 · 응답 모양 검사 · 실패 문구 분리(400 · 409 만 api 문구, 429 는 「잠시 후 다시 시도해 주세요.」 — `S-RCJXIG`)를 넣었다. 409 면 아이디 · 이메일을 다시 확인한다. 완료 경로는 상수 하나(`SIGNUP_DONE_PATH`)로 쓰고 공개 경로 · 쿠키 모양 · 검사 경계값 테스트를 더했다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 회원가입(`/signup`)에 이어 가입 완료(`/signup/done`)도 guest 디자인으로 다시 맞췄다 — `design/guest/sign-up/complete` 샘플의 두 칸 틀(`GuestPage`·`GuestVisual`·`GuestButton`)을 그대로 가져와 가입 성공 쿠키 값(상호명·아이디·이메일)을 끼워 넣었다. `SiteFooter`(로그인 전 틀 전체가 공유)도 guest 디자인(`guest.mjs` footer)으로 전역 전환했다 — `/login`·홈 푸터도 같이 바뀐다(두 화면의 본문은 아직 ERP 스타일이라 디자인이 섞여 있다). 고치다가 `src/proxy.ts` 의 로그인 게이트 matcher 가 `/guest/*` 정적 자산(비주얼 그림·푸터 로고)을 빼먹어 비로그인 사용자에게 `/login` 으로 307 리다이렉트하던 버그를 찾아 `guest/` 를 matcher 제외 목록에 더했다 — `/design/guest` 샘플은 보는 사람이 이미 로그인돼 있어 드러나지 않았다.
 
 ## 2026-10-14

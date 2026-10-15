@@ -61,7 +61,7 @@ export function LoginForm() {
           {pending ? "로그인 중" : "로그인"}
         </Button>
       </div>
-      {/* 주소는 데모(auth/find.html#id·#pw, auth/signup.html)와 같다. 가입 화면(/signup)은 있고, 찾기 화면은 다음 작업. */}
+      {/* 데모 auth/find.html#id·#pw · auth/signup.html 에 대응한다(/auth 접두 없음). 가입 화면(/signup)은 있고, 찾기 화면은 다음 작업. */}
       <p className="flex items-center justify-center gap-[10px] text-[14px]">
         <Link href="/find#id" className={QUIET}>아이디 찾기</Link>
         <span className="h-[11px] w-px bg-[#d9d9d9]" />

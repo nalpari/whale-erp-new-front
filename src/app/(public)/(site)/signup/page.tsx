@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 // 회원가입. 위 메뉴·아래 푸터는 로그인 전 화면 틀((site)/layout.tsx)이 그린다 — 로그인 화면과 같은 틀이다.
 // 모양은 1팀 비로그인 폼 규격을 쓴다 — docs/demo/src/pages/auth/signup.mjs 가 design/guest/sign-up
 // (기획 시안 + Figma 폼 규격)을 기준으로 삼기로 하면서 맞췄다(2026-10-14). 제목·부제·폭(800px·pt-80)도 그대로다.
-// 4단계 모두 끝: 기본정보(검사 포함) + 사업자정보 인증(선택, 자리표시자 — 국세청 진위확인 연동은 별도 작업) + 약관동의 + 제출.
+// 기본정보(검사 포함) · 사업자정보 인증(선택, 자리표시자 — 국세청 진위확인 연동은 별도 작업) · 약관동의 · 제출.
 // 제출은 whale-erp-api 의 /auth/signup 을 실제로 부른다(api PR #37, bulbasaur 브랜치 — actions.ts 참고).
 export default function SignupPage() {
   return (

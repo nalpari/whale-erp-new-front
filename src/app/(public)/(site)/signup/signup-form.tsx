@@ -8,7 +8,9 @@ import { HOVER } from "@/app/design/guest/theme";
 import { PasswordField } from "./_components/password-field";
 import { PhoneField } from "./_components/phone-field";
 import { RequiredField } from "./_components/required-field";
+import { CHECK_FAILED_MESSAGE, UNKNOWN_RESULT_MESSAGE } from "./_components/api-failure";
 import {
+  agreeErrorMessage,
   validateEmail,
   validateLoginId,
   validateName,
@@ -20,6 +22,7 @@ import {
 import { checkEmailAvailability, checkLoginIdAvailability, createSignup, type AvailabilityResult } from "./actions";
 import { AGREE_INITIAL, AgreeSection, type AgreeValue } from "./agree-section";
 import { BIZ_AUTH_INITIAL, BizAuthSection, type BizAuthValue } from "./biz-auth-section";
+import { SIGNUP_DONE_PATH } from "./signup-done-cookie";
 
 type Values = {
   loginId: string;
@@ -91,13 +94,6 @@ const CHECK_CIRCLE = (
   </svg>
 );
 
-// 둘 다 안 했으면 둘 다 말하고, 하나만 안 했으면 그 항목 이름만 말한다.
-function agreeErrorMessage(useAgreed: boolean, privacyAgreed: boolean): string | undefined {
-  if (useAgreed && privacyAgreed) return undefined;
-  if (!useAgreed && !privacyAgreed) return "이용약관과 개인정보 수집·이용에 모두 동의해 주세요.";
-  return !useAgreed ? "이용약관에 동의해 주세요." : "개인정보 수집·이용에 동의해 주세요.";
-}
-
 // 회원가입 폼 전체. 1~4단계(기본정보·사업자정보 인증·약관동의·제출)를 한 컴포넌트가 들고 있다 —
 // 제출 때 모든 섹션 값이 한 번에 필요해서, 섹션마다 흩어져 있던 상태를 여기로 모았다.
 // 모양은 1팀 비로그인 폼 규격(guest-form.ts)을 쓴다 — docs/demo/src/pages/auth/signup.mjs 가
@@ -142,7 +138,7 @@ export function SignupForm() {
         return null;
       });
       if (run !== availabilityRun.current[key]) return false;
-      if (!result) message = "중복 확인을 하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+      if (!result) message = CHECK_FAILED_MESSAGE;
       else if (!result.ok) message = result.message;
       else if (!result.available) message = takenMessage;
     }
@@ -215,21 +211,32 @@ export function SignupForm() {
       });
 
       if (!result.ok) {
-        setPending(false);
         setSubmitError(result.message);
+        if (result.conflict) {
+          // 409 — 확인과 제출 사이에 누가 먼저 가입했다. 「사용가능합니다」를 그대로 두면 칸을 고치기 전까지 같은
+          // 제출이 409 만 되풀이한다. 두 칸을 다시 확인해 걸린 칸에 오류를 띄운다. 다시 확인하는 동안은 폼을 잠가 둔다 —
+          // 먼저 풀면 그사이 다시 낸 제출이 확인을 새로 시작해 이 확인 응답이 「오래된 응답」으로 버려진다.
+          setAvailable({ loginId: false, email: false });
+          await Promise.all((["loginId", "email"] as const).map((key) => verifyAvailability(key, values[key])));
+          setPending(false);
+          focusFirstError();
+          return;
+        }
+        setPending(false);
         return;
       }
 
       // 로그인 세션이 아직 없어 완료 화면에 보여줄 값은 createSignup 이 이미 httpOnly 쿠키로 심어 뒀다
       // (signup-done-cookie.ts 참고) — URL 쿼리로 넘기지 않는다. 쿼리로 넘기면 서버 로그·브라우저 기록에
       // 남고, 아무 값이나 지어 넣은 주소도 진짜 완료 화면처럼 보일 수 있었다(2026-10-14 ip-code-review-claude).
-      router.push("/signup/done");
+      router.push(SIGNUP_DONE_PATH);
       // pending 을 여기서 풀지 않는다 — 화면이 옮겨 가는 동안 버튼이 다시 눌릴 수 있는 틈을 없앤다
       // (이전엔 finally 가 성공 때도 풀어, 옮겨 가는 찰나에 다시 눌러 같은 요청을 한 번 더 보낼 수 있었다 — 2026-10-14 코드리뷰).
     } catch (e) {
       // 서버 액션 호출 자체가 실패한 경우(네트워크 끊김, 배포로 액션 ID 가 바뀜 등). 버튼이 "처리 중..."에 멈추지 않게 한다.
+      // 요청이 서버에 닿아 가입이 이미 됐을 수 있다 — 「보내지 못했다」 대신 로그인을 먼저 해 보라고 안내한다.
       console.error("[signup] handleSubmit failed", e);
-      setSubmitError("회원가입 요청을 보내지 못했습니다. 잠시 후 다시 시도해 주세요.");
+      setSubmitError(UNKNOWN_RESULT_MESSAGE);
       setPending(false);
     }
   }
