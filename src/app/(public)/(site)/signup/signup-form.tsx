@@ -9,6 +9,7 @@ import { PasswordField } from "./_components/password-field";
 import { PhoneField } from "./_components/phone-field";
 import { RequiredField } from "./_components/required-field";
 import { CHECK_FAILED_MESSAGE, UNKNOWN_RESULT_MESSAGE } from "./_components/api-failure";
+import { bizSubmitBlock } from "./_components/biz-verification";
 import {
   agreeErrorMessage,
   normalizeLoginId,
@@ -135,6 +136,8 @@ export function SignupForm() {
   const [values, setValues] = useState<Values>(INITIAL);
   const [errors, setErrors] = useState<Errors>({});
   const [biz, setBiz] = useState<BizAuthValue>(BIZ_AUTH_INITIAL);
+  // 사업자정보 진위확인 중에는 제출을 막는다 — 토큰을 받기 전에 가입되면 입력한 사업자정보가 조용히 빠진다.
+  const [bizVerifying, setBizVerifying] = useState(false);
   const [agree, setAgree] = useState<AgreeValue>(AGREE_INITIAL);
   const [triedSubmit, setTriedSubmit] = useState(false);
   const [explicitSubmitError, setSubmitError] = useState<string>();
@@ -203,6 +206,11 @@ export function SignupForm() {
   // 오류가 생기면 첫 오류 칸으로 커서를 옮긴다 — 아래 칸 오류는 스크롤해야 보일 수 있다.
   const focusFirstError = () =>
     requestAnimationFrame(() => (formRef.current?.querySelector('[aria-invalid="true"]') as HTMLElement | null)?.focus());
+  // 사업자정보 인증을 풀고 그 묶음에 문구를 보인다. 가입 버튼 아래가 아니라 위쪽 묶음이라 그리로 스크롤한다.
+  const rejectBiz = (notice: string) => {
+    setBiz((b) => ({ ...b, verification: null, notice }));
+    requestAnimationFrame(() => formRef.current?.querySelector("[data-biz-auth]")?.scrollIntoView({ block: "center" }));
+  };
 
   // 칸을 고치면 그 칸의 오류는 바로 지운다 — 중복 오류("이미 사용 중인 아이디입니다")를 보고 다시
   // 타이핑해도 blur 전까지 오류가 그대로 남아 있던 문제를 고쳤다(2026-10-14 코드리뷰).
@@ -229,6 +237,10 @@ export function SignupForm() {
 
     if (hasFieldError) return focusFirstError();
     if (!agreedRequired) return;
+    if (bizVerifying) return;
+    // 10분이 지난 토큰은 보내 봐야 400 이고, 인증 없이 채워진 칸은 조용히 빠진다 — 보내지 않고 사업자정보 묶음에서 막는다.
+    const bizBlock = bizSubmitBlock(biz, Date.now());
+    if (bizBlock) return rejectBiz(bizBlock);
 
     setPending(true);
     try {
@@ -248,11 +260,18 @@ export function SignupForm() {
         phone: `${values.phone1}${values.phone2}${values.phone3}`,
         email: values.email,
         tradeName: values.tradeName,
+        ...(biz.verification ? { bizVerificationToken: biz.verification.token } : {}),
         agreeTermsOfUse: agree.useAgreed,
         agreePrivacy: agree.privacyAgreed,
       });
 
       if (!result.ok) {
+        if (result.bizRejected) {
+          // 토큰 만료 400 · 인증 뒤 다른 BP 가 같은 번호로 가입한 409. 같은 토큰으로는 다시 내도 거절되니 인증을 푼다.
+          rejectBiz(result.message);
+          setPending(false);
+          return;
+        }
         setSubmitError(result.message);
         if (result.message === UNKNOWN_RESULT_MESSAGE) setUncertain(true);
         if (result.conflict) {
@@ -424,7 +443,7 @@ export function SignupForm() {
           </div>
         </section>
 
-        <BizAuthSection value={biz} onChange={setBiz} />
+        <BizAuthSection value={biz} onChange={setBiz} onVerifyingChange={setBizVerifying} />
 
         <AgreeSection value={agree} onChange={setAgree} />
       </fieldset>
@@ -435,7 +454,7 @@ export function SignupForm() {
             {agreeError}
           </span>
         ) : null}
-        <button type="submit" disabled={pending || uncertain} className={SUBMIT}>
+        <button type="submit" disabled={pending || uncertain || bizVerifying} className={SUBMIT}>
           {pending ? "처리 중..." : "회원가입"}
         </button>
         {submitError ? (

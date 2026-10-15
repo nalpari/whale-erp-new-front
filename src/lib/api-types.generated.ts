@@ -414,6 +414,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/signup/business-verifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminSignupController_businessVerification"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/signup/email-availability": {
         parameters: {
             query?: never;
@@ -1662,6 +1678,11 @@ export interface components {
             agreeTermsOfUse: boolean;
             /** @description 개인정보 수집·이용(PRIVACY_COLLECT) 동의. 필수라 true 만 받는다 */
             agreePrivacy: boolean;
+            /**
+             * @description 사업자정보 인증(선택)의 결과 토큰(POST /auth/signup/business-verifications, 10분). 사업자등록번호 ·
+             *     대표자명 · 개업일자는 이 토큰에서 꺼내 저장한다 — 값을 따로 받지 않는다
+             */
+            bizVerificationToken?: string;
         };
         SignupResponseDto: {
             /**
@@ -1684,6 +1705,18 @@ export interface components {
         AvailabilityResponseDto: {
             /** @description 쓸 수 있으면 true. 누가 쓰는지는 알려 주지 않는다 */
             available: boolean;
+        };
+        SignupBusinessVerificationDto: {
+            /** @description 숫자만 10자리. 화면이 하이픈을 걸러 보낸다 */
+            bizRegistrationNumber: string;
+            /** @description 대표자명 1~50자 */
+            bizCeoName: string;
+            /** @description 개업일자 YYYY-MM-DD. 실제로 있는 날짜만 받는다 */
+            bizOpenDate: string;
+        };
+        SignupBusinessVerificationResponseDto: {
+            /** @description 10분짜리 인증 토큰. 그 안에 가입 요청의 bizVerificationToken 으로 보낸다 */
+            verificationToken: string;
         };
         EmailAvailabilityDto: {
             /**
@@ -3776,6 +3809,57 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["AvailabilityResponseDto"];
                 };
+            };
+        };
+    };
+    AdminSignupController_businessVerification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignupBusinessVerificationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignupBusinessVerificationResponseDto"];
+                };
+            };
+            /** @description 이미 등록된 사업자등록번호 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 국세청 정보와 일치하지 않음 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같은 IP 의 시간당 한도(10건) */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 국세청 확인 실패(장애 · 키 없음) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
