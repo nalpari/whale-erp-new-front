@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useId, useRef, useState, type FormEvent } from "react";
+import { useId, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import { INPUT, INPUT_BOX, SUBMIT } from "@/app/design/guest/guest-form";
 import { HOVER } from "@/app/design/guest/theme";
 import { PasswordField } from "./_components/password-field";
@@ -38,6 +38,32 @@ type Values = {
 };
 
 const INITIAL: Values = { loginId: "", password: "", passwordConfirm: "", name: "", phone1: "", phone2: "", phone3: "", email: "", tradeName: "" };
+
+// 결과 불명 잠금을 새로고침에도 남긴다 — sessionStorage 가 없으면(서버 렌더 · 막힌 브라우저) 그냥 안 남는다.
+// useSyncExternalStore 로 읽는다 — 서버 렌더는 늘 false(getServerSnapshot)이고, 탭 안에서 setUncertain 이
+// 쓴 값은 구독자에게 직접 알려 다시 읽게 한다(sessionStorage 는 같은 탭에 변화 이벤트를 주지 않는다).
+const UNCERTAIN_KEY = "whale-erp-front:v1:signup-uncertain";
+const uncertainListeners = new Set<() => void>();
+function subscribeUncertain(onChange: () => void) {
+  uncertainListeners.add(onChange);
+  return () => uncertainListeners.delete(onChange);
+}
+function readUncertain(): boolean {
+  try {
+    return sessionStorage.getItem(UNCERTAIN_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+function writeUncertain(value: boolean) {
+  try {
+    if (value) sessionStorage.setItem(UNCERTAIN_KEY, "1");
+    else sessionStorage.removeItem(UNCERTAIN_KEY);
+  } catch {
+    // 세션 저장소를 못 쓰는 환경(시크릿 모드 등)에서도 이번 화면 안에서는 구독자가 그대로 알림을 받는다.
+  }
+  uncertainListeners.forEach((listener) => listener());
+}
 
 type ErrorKey = keyof Omit<Values, "phone1" | "phone2" | "phone3"> | "phone";
 type Errors = Partial<Record<ErrorKey, string>>;
@@ -109,12 +135,18 @@ export function SignupForm() {
   const [biz, setBiz] = useState<BizAuthValue>(BIZ_AUTH_INITIAL);
   const [agree, setAgree] = useState<AgreeValue>(AGREE_INITIAL);
   const [triedSubmit, setTriedSubmit] = useState(false);
-  const [submitError, setSubmitError] = useState<string>();
-  // 제출 결과를 모르는 채로 끝나면(시간 초과·응답 파싱 실패) 켠다 — 이미 가입됐을 수 있다. 그대로 다시 내면
-  // 방금 만든 자기 계정과 아이디·이메일이 겹쳐 409 가 오고, 그 칸이 "이미 사용 중"으로 바뀌어 남이 쓰는 줄 알고
-  // 값을 바꿔 다시 내면 BP 가 두 개 생긴다(되돌릴 수 없다, 2026-10-15 코드리뷰). 켜져 있는 동안은 다시 내지
-  // 않고 로그인으로 안내한 상태를 지킨다 — 칸을 고치면(set) 다시 내도 되는 새 시도로 보고 끈다.
-  const [uncertain, setUncertain] = useState(false);
+  const [explicitSubmitError, setSubmitError] = useState<string>();
+  // 제출 결과를 모르는 채로 끝나면(시간 초과·응답 파싱 실패·5xx) 켠다 — 이미 가입됐을 수 있다. 그대로 다시
+  // 내면 방금 만든 자기 계정과 아이디·이메일이 겹쳐 409 가 오고, 그 칸이 "이미 사용 중"으로 바뀌어 남이 쓰는
+  // 줄 알고 값을 바꿔 다시 내면 BP 가 두 개 생긴다(되돌릴 수 없다). 칸 편집으로는 풀지 않는다 — 상관없는
+  // 칸(이름 등)을 고치거나 같은 값으로 되돌려도 중복 확인 없이 그대로 다시 낼 수 있게 돼 버린다
+  // (2026-10-15 코드리뷰 2차). 「처음부터 다시 쓰기」(handleStartOver)만 끈다. sessionStorage 에서
+  // useSyncExternalStore 로 읽어 새로고침에도 남는다 — 서버 렌더는 늘 false(getServerSnapshot).
+  const uncertain = useSyncExternalStore(subscribeUncertain, readUncertain, () => false);
+  const setUncertain = writeUncertain;
+  // 잠겨 있는 동안은 저장된 오류 문구와 상관없이 늘 이 안내를 보인다 — 새로고침 직후(explicitSubmitError 가
+  // 비어 있을 때)에도 문구가 사라지지 않는다.
+  const submitError = uncertain ? UNKNOWN_RESULT_MESSAGE : explicitSubmitError;
   const [pending, setPending] = useState(false);
   // 아이디·이메일은 버튼 없이 칸을 벗어날 때(blur) api 로 중복까지 확인하고, 쓸 수 있을 때만 "사용가능합니다."를
   // 띄운다. 값을 고치면 다시 확인해야 하므로 끈다(2026-10-12 피드백). 제출할 때 확인을 못 마친 칸은 한 번 더
@@ -176,13 +208,12 @@ export function SignupForm() {
   const set = <K extends keyof Values>(key: K, value: Values[K]) => {
     setValues((v) => ({ ...v, [key]: value }));
     clearError(ERROR_KEY_FOR[key]);
-    setUncertain(false);
   };
   const check = (key: ErrorKey, next: Values = values) => setErrors((e) => ({ ...e, [key]: validateField(key, next) }));
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    // 결과를 모르는 채로 끝난 제출 뒤에는 그대로 다시 내지 않는다 — 칸을 고쳐야(set) 새 시도로 보고 풀린다.
+    // 결과를 모르는 채로 끝난 제출 뒤에는 그대로 다시 내지 않는다 — 「처음부터 다시 쓰기」(handleStartOver)만 푼다.
     if (uncertain) return;
     setSubmitError(undefined);
     setTriedSubmit(true);
@@ -250,6 +281,19 @@ export function SignupForm() {
       setUncertain(true);
       setPending(false);
     }
+  }
+
+  // 결과 불명 잠금을 푸는 유일한 길. 값·확인 상태를 전부 지워 처음부터 다시 쓰게 한다 — 일부만 지우면
+  // 중복 확인을 건너뛴 채 다시 낼 수 있는 틈이 남는다.
+  function handleStartOver() {
+    setValues(INITIAL);
+    setErrors({});
+    setBiz(BIZ_AUTH_INITIAL);
+    setAgree(AGREE_INITIAL);
+    setTriedSubmit(false);
+    setSubmitError(undefined);
+    setAvailable({ loginId: false, email: false });
+    setUncertain(false);
   }
 
   return (
@@ -396,6 +440,15 @@ export function SignupForm() {
           <p role="alert" className="text-center text-[15px] text-[#e93737]">
             {submitError}
           </p>
+        ) : null}
+        {uncertain ? (
+          <button
+            type="button"
+            onClick={handleStartOver}
+            className={`self-center font-semibold text-guest-ink underline underline-offset-[3px] hover:text-guest-navy ${HOVER}`}
+          >
+            처음부터 다시 쓰기
+          </button>
         ) : null}
         <p className="flex justify-center gap-[10px] text-[16px] leading-[1.5] text-[#767676]">
           이미 계정이 있나요?

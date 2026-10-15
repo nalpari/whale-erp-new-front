@@ -78,6 +78,14 @@ export async function createSignup(payload: SignupPayload): Promise<SignupResult
     return { ok: true, tradeName, loginId, email };
   } catch (error) {
     if (error instanceof ApiError) {
+      // 5xx(429 제외 — 요청 제한은 처리 전에 막는다)는 api 가 가입을 처리하다 실패한 것일 수 있다.
+      // AdminSignupService.signup 은 DB 커밋 뒤에 jwt.signAsync 를 부르므로, 거기서 던지면 계정은 이미
+      // 생겼는데 응답만 500(앞단 프록시의 502 · 504 도 같다)이다 — 「보내지 못했다」로 안내하면 안 된다
+      // (2026-10-15 코드리뷰 2차).
+      if (error.status >= 500) {
+        console.error("[signup] createSignup api 5xx", error.status, error.message, error.body);
+        return { ok: false, message: UNKNOWN_RESULT_MESSAGE };
+      }
       const failure = apiFailure(error.status, error.message, SEND_FAILED);
       if (failure.log) console.error("[signup] createSignup api error", error.status, error.message, error.body);
       return { ok: false, message: failure.message, conflict: failure.conflict };
