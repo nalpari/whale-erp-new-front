@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-15
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #30 ⑤ 블로커 반영: 사업자정보 칸에 값이 있는데 인증이 없으면(재인증 · 10분 경과 · 가입 거절 뒤) 가입 요청을 보내지 않고 인증하거나 비우게 한다. 보이던 사업자정보가 빠진 채 가입되던 것.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [로그인](/auth.md) — 회원가입 사업자정보 「인증하기」를 api 국세청 진위확인(`POST /auth/signup/business-verifications`, api lapras)에 이었다. 받은 10분 토큰을 가입 때 `bizVerificationToken` 으로 싣고, 10분 경과 · 가입이 토큰 만료(400) · 사업자번호 중복(409)으로 거절되면 인증을 풀고 다시 인증하게 한다. 회원가입의 사업자정보는 세 칸뿐이고 대표자 연락처 등은 마이페이지 · 점포에서 받는다고 `auth.md` 를 고쳤다(2026-10-15 사용자 확인).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #23 ⑤ 블로커 반영: 회원가입 아이디 칸을 입력하는 순간 소문자로 바꿔 보인다. api 는 소문자로 저장하고 관리자 웹 로그인은 대소문자를 구분해, 대문자로 가입한 사람이 같은 아이디로 로그인하지 못하던 것.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 회원가입 PR 리뷰(pr-review-toolkit) 반영. 가입 완료 화면은 URL 쿼리(signupToken 등)를 읽지 않고 가입 성공 뒤 서버 액션이 심는 httpOnly 쿠키로 값을 받으며, 쿠키가 없으면 로그인으로 보낸다(`S-UUBGOD`). 서버 액션이 사용자 IP(`X-Forwarded-For`)를 api 로 넘기고, 10초 제한 · 응답 모양 검사 · 실패 문구 분리(400 · 409 만 api 문구, 429 는 「잠시 후 다시 시도해 주세요.」 — `S-RCJXIG`)를 넣었다. 409 면 아이디 · 이메일을 다시 확인한다. 완료 경로는 상수 하나(`SIGNUP_DONE_PATH`)로 쓰고 공개 경로 · 쿠키 모양 · 검사 경계값 테스트를 더했다.

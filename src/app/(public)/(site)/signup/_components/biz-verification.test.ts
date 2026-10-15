@@ -3,8 +3,11 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { BUSY_MESSAGE } from "./api-failure.ts";
 import {
+  BIZ_UNVERIFIED_MESSAGE,
+  BIZ_VERIFICATION_EXPIRED_MESSAGE,
   BIZ_VERIFICATION_TTL_MS,
   BIZ_VERIFY_FAILED_MESSAGE,
+  bizSubmitBlock,
   bizVerificationFailure,
   hasApiMessage,
   isBizSignupRejection,
@@ -98,4 +101,18 @@ test("인증 10분 — 9분 59.999초는 유효, 10분이면 만료", () => {
   assert.equal(BIZ_VERIFICATION_TTL_MS, 10 * 60_000);
   assert.equal(isBizVerificationExpired(0, 9 * 60_000 + 59_999), false);
   assert.equal(isBizVerificationExpired(0, 10 * 60_000), true);
+});
+
+test("가입 전 사업자정보 — 비었으면 통과, 값만 있고 인증이 없으면 막는다", () => {
+  const empty = { bizRegistrationNumber: "", bizCeoName: "", bizOpenDate: "", verification: null };
+  assert.equal(bizSubmitBlock(empty, 0), undefined);
+  // 재인증 · 가입 거절로 인증이 풀려 값만 남은 경우, 한 칸만 채운 경우.
+  assert.equal(bizSubmitBlock({ ...empty, bizRegistrationNumber: "1234567890", bizCeoName: "정하윤", bizOpenDate: "2020-03-02" }, 0), BIZ_UNVERIFIED_MESSAGE);
+  assert.equal(bizSubmitBlock({ ...empty, bizCeoName: "정하윤" }, 0), BIZ_UNVERIFIED_MESSAGE);
+});
+
+test("가입 전 사업자정보 — 인증했으면 10분 안은 통과, 10분이면 만료로 막는다", () => {
+  const verified = { bizRegistrationNumber: "1234567890", bizCeoName: "정하윤", bizOpenDate: "2020-03-02", verification: { verifiedAt: 0 } };
+  assert.equal(bizSubmitBlock(verified, 9 * 60_000 + 59_999), undefined);
+  assert.equal(bizSubmitBlock(verified, 10 * 60_000), BIZ_VERIFICATION_EXPIRED_MESSAGE);
 });

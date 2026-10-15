@@ -9,7 +9,7 @@ import { PasswordField } from "./_components/password-field";
 import { PhoneField } from "./_components/phone-field";
 import { RequiredField } from "./_components/required-field";
 import { CHECK_FAILED_MESSAGE, UNKNOWN_RESULT_MESSAGE } from "./_components/api-failure";
-import { BIZ_VERIFICATION_EXPIRED_MESSAGE, isBizVerificationExpired } from "./_components/biz-verification";
+import { bizSubmitBlock } from "./_components/biz-verification";
 import {
   agreeErrorMessage,
   normalizeLoginId,
@@ -238,10 +238,9 @@ export function SignupForm() {
     if (hasFieldError) return focusFirstError();
     if (!agreedRequired) return;
     if (bizVerifying) return;
-    // api 토큰이 10분이라 지났으면 보내 봐야 400 이다. 보내지 않고 다시 인증하게 한다.
-    if (biz.verification && isBizVerificationExpired(biz.verification.verifiedAt, Date.now())) {
-      return rejectBiz(BIZ_VERIFICATION_EXPIRED_MESSAGE);
-    }
+    // 10분이 지난 토큰은 보내 봐야 400 이고, 인증 없이 채워진 칸은 조용히 빠진다 — 보내지 않고 사업자정보 묶음에서 막는다.
+    const bizBlock = bizSubmitBlock(biz, Date.now());
+    if (bizBlock) return rejectBiz(bizBlock);
 
     setPending(true);
     try {

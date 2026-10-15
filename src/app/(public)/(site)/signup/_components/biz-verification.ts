@@ -15,6 +15,21 @@ export const BIZ_VERIFY_FAILED_MESSAGE = "사업자정보를 확인하지 못했
 /** 인증한 뒤 10분이 지나 가입하려 할 때. */
 export const BIZ_VERIFICATION_EXPIRED_MESSAGE = "인증 시간(10분)이 지났습니다. 다시 인증해 주세요.";
 
+/** 사업자정보 칸에 값이 있는데 인증하지 않은 채 가입하려 할 때. */
+export const BIZ_UNVERIFIED_MESSAGE = "사업자정보를 인증하거나 지우기로 비운 뒤 가입해 주세요.";
+
+/**
+ * 가입 전에 사업자정보 묶음이 막아야 하는 이유. 토큰 없이 보내면 칸에 보이던 사업자정보가 빠진 채 가입되고 되돌릴 수 없어서,
+ * 값이 있으면 인증했을 때만 보낸다(재인증 · 10분 경과 · 가입 거절로 인증이 풀린 뒤 다시 누른 경우 포함). 비어 있으면 선택이라 통과.
+ */
+export function bizSubmitBlock(
+  biz: { bizRegistrationNumber: string; bizCeoName: string; bizOpenDate: string; verification: { verifiedAt: number } | null },
+  now: number,
+): string | undefined {
+  if (biz.verification) return isBizVerificationExpired(biz.verification.verifiedAt, now) ? BIZ_VERIFICATION_EXPIRED_MESSAGE : undefined;
+  return biz.bizRegistrationNumber || biz.bizCeoName || biz.bizOpenDate ? BIZ_UNVERIFIED_MESSAGE : undefined;
+}
+
 // 가입(POST /auth/signup)이 사업자정보 때문에 거절할 때의 api 문구. 오류 본문이 Nest 기본 형식이라 이 문구로만 다른
 // 400 · 409(아이디·이메일 중복)와 가를 수 있어서, api admin-signup/business-verification.service.ts 의 상수와 글자까지
 // 맞춘다 — api 테스트도 두 문구를 글자 그대로 고정한다(2026-10-15).
