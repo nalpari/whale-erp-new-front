@@ -3,7 +3,7 @@ type: Area
 title: 고객지원·커뮤니티
 description: BP 사용자가 공지·FAQ 를 읽고 문의를 남기는 고객지원과, 플랫폼 운영자가 공지·FAQ·문의·도입문의를 관리하는 커뮤니티관리.
 tags: [mockup, support]
-generated: { by: claude-code/opus-5.5, at: 2026-10-15T06:30:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-15T07:10:00Z }
 ---
 
 근거: `docs/mockup/support/` (목업 · 1차 · R-PEQDDV)
@@ -51,7 +51,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-15T06:30:00Z }
 
 ## 구조
 
-* 고객지원은 **화면 셋, 메뉴 셋**(공지사항 `/support-notices` · FAQ `/support-faqs` · 문의하기 `/support-inquiries`, 이 순서)이고 화면이 곧 전체 목록이다. 상세만 따로 둔다. 공통 틀의 메뉴 권한 판정이 해시를 보지 않아 한 화면 탭에서 바꿨다(2026-10-15 재영 A안, WHALEERP-596). — `S-ITFILU` · `SUPPORT-4`
+* 고객지원은 **화면 셋, 메뉴 셋**(공지사항 `/support-notices` · FAQ `/support-faqs` · 문의하기 `/support-inquiries`, 이 순서)이고 화면이 곧 전체 목록이다. 상세만 따로 둔다. 공통 틀의 메뉴 권한 판정이 해시를 보지 않아 한 화면 탭에서 바꿨다(2026-10-15 재영 C안, WHALEERP-596). — `S-ITFILU` · `SUPPORT-4`
 * FAQ 답변은 목록에서 펼친다. 상세 페이지는 없다. — `S-KJEVVS`
 * 커뮤니티 관리 › 문의사항 목록의 필터는 제목·**보낸 곳**·상태다. 보낸 곳은 BP·점포 이름이나 보낸 사람 이름 어느 것으로도 찾는다(2026-10-08 재영). — `S-GRDOPW`
 
@@ -70,4 +70,4 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-15T06:30:00Z }
 | `SUPPORT-1` | 구독·청구·결제수단·정산을 1차에 보여줄 것인가 | 넷 다 2차 |
 | `SUPPORT-2` | 공지·FAQ 의 노출 대상을 어디까지 고르게 할 것인가 | 유형까지, 부가서비스만 상품별 |
 | `SUPPORT-3` | BP 가 자기 조직에 쓰는 공지가 있어야 하는가 | 1차에는 없다 |
-| `SUPPORT-4` | 공지·문의의 전체 목록과 상세를 어디에 둘 것인가 | 화면 셋 · 메뉴 셋 (2026-10-15 재영 A안) |
+| `SUPPORT-4` | 공지·문의의 전체 목록과 상세를 어디에 둘 것인가 | 화면 셋 · 메뉴 셋 (2026-10-15 재영 C안) |

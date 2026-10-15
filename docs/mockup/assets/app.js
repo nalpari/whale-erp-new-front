@@ -255,7 +255,7 @@
 
         { key: "support", text: "고객지원", team: "3팀", href: "support/index.html", items: [
           { text: "영역 개요", href: "support/overview.html", mock: 1 },
-          // 메뉴 셋, 한 단계 경로(SUPPORT-4 · 2026-10-15 재영 A안). 목업은 한 파일의 탭이라 해시로 연다.
+          // 메뉴 셋, 한 단계 경로(SUPPORT-4 · 2026-10-15 재영 C안). 목업은 한 파일의 탭이라 해시로 연다.
           { text: "공지사항", href: "support/index.html#notices" },
           { text: "FAQ", href: "support/index.html#faq" },
           { text: "문의하기", href: "support/index.html#inquiries" },

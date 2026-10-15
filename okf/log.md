@@ -1,7 +1,7 @@
 # Bundle history
 
 ## 2026-10-15
-* **Update**: [고객지원](/support.md) — SUPPORT-4 를 「한 화면 세 탭」에서 「화면 셋 · 메뉴 셋」으로 바꿨다(2026-10-15 재영 A안, WHALEERP-596): 공지사항 `/support-notices` · FAQ `/support-faqs` · 문의하기 `/support-inquiries`, 메뉴 순서도 이대로. 공통 틀의 메뉴 권한 판정이 해시를 보지 않기 때문이다. 목업 · 유저플로우 문구와 목업 LNB 순서도 맞췄다. 메뉴 데이터는 api 마이그레이션이 바꾼다.
+* **Update**: [고객지원](/support.md) — SUPPORT-4 를 「한 화면 세 탭」에서 「화면 셋 · 메뉴 셋」으로 바꿨다(2026-10-15 재영 C안, WHALEERP-596): 공지사항 `/support-notices` · FAQ `/support-faqs` · 문의하기 `/support-inquiries`, 메뉴 순서도 이대로. 공통 틀의 메뉴 권한 판정이 해시를 보지 않기 때문이다. 목업 · 유저플로우 문구와 목업 LNB 순서도 맞췄다. 메뉴 데이터는 api 마이그레이션이 바꾼다.
 * **Update**: [운영 알림](/notify.md) — 운영 알림함(`/notifications`)을 공통 틀에 맞췄다. page 의 바깥 틀 · 임시 헤더(견본 메뉴 · 점포 · 고정 이름 · 종)와 layout 의 `ErpRoot` 를 뺐다. `[id]/open` 은 자체 틀이 없어 그대로다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — PR #27 2차 리뷰 블로커 반영: 주소 검색 · 좌표 액션이 쿠키 모양만 보지 않고 토큰을 `GET /auth/admin/login-info` 로 확인한 뒤 키를 쓴다(꾸민 쿠키로 통과하던 것), `STORE_REGISTER_BP_CODE_ID` 는 개발 DB 전용이라 운영 · 스테이징에 넣지 않는다고 적었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #27 리뷰 블로커 반영: 주소 검색 · 좌표 server action 이 로그인 세션 없이는 JUSO · 카카오 키를 쓰지 않게, 점포 대표자 연락처 검사를 api 와 같은 숫자 10~11자리로(유선 번호 점포도 수정 저장 가능).
