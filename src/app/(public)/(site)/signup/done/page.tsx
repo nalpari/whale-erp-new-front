@@ -28,7 +28,9 @@ export default async function SignupDonePage() {
 
   return (
     <GuestPage flush>
-      <section className="grid min-h-[730px] grid-cols-2">
+      {/* min-w: 샘플(design/guest/layout.tsx)의 1720px 최소폭을 이 화면만 그대로 가져온다 — 두 칸 틀 오른쪽에 px-[200px]
+          고정 여백이 있어, 최소폭 없이 좁은 화면에서 열면 버튼·안내 카드가 찌그러진다(2026-10-15 pr-review-toolkit). */}
+      <section className="grid min-h-[730px] min-w-[1720px] grid-cols-2">
         <GuestVisual
           eyebrow="Business membership"
           title={<p className={`text-[42px] leading-normal font-extrabold tracking-[-0.025em] text-[rgba(58,86,112,0.6)] ${TRIM}`}>내 매장의 첫 페이지를 열어보세요</p>}
