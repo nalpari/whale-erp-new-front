@@ -35,6 +35,8 @@
 
 데모와 같은 틀로 만든다: `GlobalHeader` → `PageBar title="운영 알림함"` → 흰 패널 안에 `ListToolbar` · 표 · 페이지 번호.
 
+바뀜(2026-10-15): 공통 틀(AdminFrame)이 공통 헤더 · 알림 종 · `ErpRoot` 를 씌우므로 화면은 `PageBar` 부터 그린다. `page.tsx` 의 바깥 틀 · `GlobalHeader` · 디자인 견본(`design/sample`) 값과 `layout.tsx` 의 `ErpRoot` 를 지우고 탭 제목만 둔다(1팀 10/14 「화면을 공통 틀에 맞추는 작업 안내」). `[id]/open` 은 공통 틀 안에서 열리고 자체 틀이 없어 그대로 둔다.
+
 | 칸 | 내용 |
 |---|---|
 | 선택 | `Checkbox`. 머리에는 전체 선택 |

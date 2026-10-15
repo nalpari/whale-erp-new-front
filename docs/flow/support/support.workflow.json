@@ -86,7 +86,7 @@
   "groups": [
     {
       "id": "g1",
-      "label": "SUPPORT-4 · 한 화면 세 탭",
+      "label": "SUPPORT-4 · 화면 셋 · 메뉴 셋",
       "lane": "user",
       "fromCol": 0,
       "toCol": 1,
@@ -107,7 +107,7 @@
       "col": 0,
       "type": "frontend",
       "label": "고객지원",
-      "sublabel": "공지사항 · FAQ · 문의하기 탭",
+      "sublabel": "공지사항 · FAQ · 문의하기 메뉴",
       "width": 150
     },
     {
@@ -242,7 +242,7 @@
       "dot": "emerald",
       "title": "확정된 결정",
       "items": [
-        "SUPPORT-1 구독·청구·결제·정산 조회는 2차, 자리 안 남김 · SUPPORT-4 세 탭이 곧 전체 목록 · 닫힌 문의에 이어 쓰기 없음"
+        "SUPPORT-1 구독·청구·결제·정산 조회는 2차, 자리 안 남김 · SUPPORT-4 공지사항·FAQ·문의하기 화면 셋이 곧 전체 목록 · 닫힌 문의에 이어 쓰기 없음"
       ]
     },
     {
