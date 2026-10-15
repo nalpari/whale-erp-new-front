@@ -46,6 +46,14 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
     : ((await response.json()) as T);
 }
 
+/**
+ * 응답을 그대로 받는다 — 파일(엑셀)처럼 본문을 흘려보내야 할 때 쓴다. 실패해도 던지지 않으므로 status 를 직접 본다.
+ * 연결 실패만 던진다.
+ */
+export async function requestRaw(path: string, init: RequestInit = {}): Promise<Response> {
+  return fetch(`${baseUrl()}${path}`, { ...init, cache: "no-store" });
+}
+
 /** 실패 응답을 ApiError 로. 본문은 한 번만 읽어 이은 문장 · 문장 목록 · 본문을 모두 싣는다 */
 async function apiError(response: Response): Promise<ApiError> {
   const body: unknown = await response.json().catch(() => null);
@@ -71,7 +79,10 @@ export async function getEnum(name: string): Promise<EnumValue[]> {
   });
   if (!response.ok) throw await apiError(response);
   const body = (await response.json()) as { enums: Record<string, EnumValue[]> };
-  return body.enums[name] ?? [];
+  const values = body.enums[name];
+  // 이름이 바뀌었거나 빠졌으면 빈 목록이 된다 — 화면은 조용히 비므로 원인을 남긴다
+  if (!values) console.error(`enum 「${name}」이 GET /enums/${name} 응답에 없습니다`);
+  return values ?? [];
 }
 
 export async function getSession(): Promise<Session | null> {
@@ -79,12 +90,11 @@ export async function getSession(): Promise<Session | null> {
 }
 
 /**
- * API 호출에 실을 Authorization 헤더. 세션 쿠키의 접속 토큰을 쓰고, 없으면 개발 서버(next dev)에서만
- * `API_DEV_TOKEN` 을 쓴다 — 관리자 웹 로그인(1팀)이 생기기 전까지 화면을 실제 api 에 붙여 보려는 임시 길이다.
- * 운영 빌드에서는 이 값을 읽지 않는다. TODO(로그인): 로그인이 생기면 API_DEV_TOKEN 을 지운다.
+ * API 호출에 실을 Authorization 헤더 — 로그인 세션 쿠키의 접속 토큰. 세션이 없으면 비운다(api 가 401 로 알린다).
+ * 로그인 전에 쓰던 개발 토큰(API_DEV_TOKEN)은 관리자 로그인이 생겨 2026-10-15 에 지웠다 — api 가 토큰의 접속(sid)까지 확인해
+ * 서명만 맞춘 토큰은 더 통하지 않는다.
  */
 export async function authHeaders(): Promise<Record<string, string>> {
-  const token =
-    (await getSession())?.accessToken ?? (process.env.NODE_ENV === "development" ? process.env.API_DEV_TOKEN : undefined);
+  const token = (await getSession())?.accessToken;
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
