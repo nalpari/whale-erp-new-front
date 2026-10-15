@@ -7,6 +7,7 @@ export const WEEKDAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] as con
 export type Weekday = (typeof WEEKDAYS)[number];
 export type EmploymentType = "FULL_TIME" | "PART_TIME";
 export type PayMonth = "CURRENT_MONTH" | "NEXT_MONTH";
+export type PayMethod = "ACCOUNT" | "CASH";
 
 /** 시 · 분 (분은 00 · 30) */
 export interface HourMinute {
@@ -17,10 +18,15 @@ export interface TimeSpan {
   start: HourMinute;
   end: HourMinute;
 }
+/** 한 요일의 근무시간 · 휴게시간 */
+export interface DayTimes {
+  work: TimeSpan;
+  rest: TimeSpan;
+}
 
 /**
  * 화면의 입력값. 근무시간 · 휴게시간은 고른 요일 모두에 같게 들어간다(데모 contracts-new, 2026-10-02 재영).
- * 요일마다 다른 시간은 근무스케줄에서 고친다.
+ * 파트타이머는 소정근로시간 표에서 요일마다 고칠 수 있다(dayTimes, 데모 확인 2026-10-15). 정직원의 요일별 시간은 근무스케줄에서 고친다.
  */
 export interface ContractForm {
   name: string;
@@ -49,6 +55,15 @@ export interface ContractForm {
   baseNightHours: string;
   annualLeaveTerms: string;
   severancePayTerms: string;
+  /** 파트타이머가 표에서 고친 요일의 시간. 없는 요일은 위 근무시간 · 휴게시간(work · rest)을 쓴다. 위 시간을 바꾸면 비운다 */
+  dayTimes: Partial<Record<Weekday, DayTimes>>;
+  /** 관리자가 고른 주휴일. 비었거나 근무 요일이면 근무하지 않는 가장 뒤 요일로 본다(weeklyHolidayOf) */
+  weeklyHoliday: Weekday | "";
+  payMethod: PayMethod;
+  /** 수습(정직원만) — 기간 1~3개월 · 임금 감액률 0~10% (노무사 확인 2026-10-14) */
+  probation: boolean;
+  probationMonths: "1" | "2" | "3";
+  probationRate: string;
 }
 
 /** 월 근로시간 칸 — 폼 키와 api 칸 이름이 같다. 휴일근무 두 칸(baseHolidayHours · monthlyExtraHolidayHours)은 화면에서 뺐다(2026-10-13) */
@@ -116,6 +131,12 @@ export function initialForm(storeId = ""): ContractForm {
     baseNightHours: "",
     annualLeaveTerms: DEFAULT_ANNUAL_LEAVE_TERMS,
     severancePayTerms: DEFAULT_SEVERANCE_PAY_TERMS,
+    dayTimes: {},
+    weeklyHoliday: "",
+    payMethod: "ACCOUNT",
+    probation: false,
+    probationMonths: "3",
+    probationRate: "10",
   };
 }
 
@@ -125,12 +146,16 @@ export type ContractDetail = components["schemas"]["ContractDetailDto"];
 const toHourMinute = (hhmm: string): HourMinute => ({ hour: hhmm.slice(0, 2), minute: hhmm.slice(3, 5) === "30" ? "30" : "00" });
 
 /**
- * 임시저장한 계약을 폼으로 되돌린다. 폼은 요일마다 같은 시간을 쓰므로 첫 근무 요일의 시각을 쓴다.
- * 비어 있는 칸은 처음 값(initialForm)을 둔다 — 근무시간 · 휴게 · 주휴일 · 지급 월처럼 늘 값이 있는 칸.
+ * 임시저장한 계약을 폼으로 되돌린다. 위 근무시간 · 휴게시간은 첫 근무 요일의 시각을 쓰고, 파트타이머는 요일마다 저장한 시각을
+ * 표의 요일별 시간(dayTimes)으로 연다. 비어 있는 칸은 처음 값(initialForm)을 둔다 — 근무시간 · 휴게 · 지급 월 · 지급 방식처럼 늘 값이 있는 칸.
  */
 export function fromDetail(d: ContractDetail): ContractForm {
   const base = initialForm(String(d.storeId));
   const first = d.workDays[0];
+  const timesFrom = (w: ContractDetail["workDays"][number]): DayTimes => ({
+    work: { start: toHourMinute(w.startTime), end: toHourMinute(w.endTime) },
+    rest: w.breakStartTime && w.breakEndTime ? { start: toHourMinute(w.breakStartTime), end: toHourMinute(w.breakEndTime) } : base.rest,
+  });
   return {
     ...base,
     name: d.name,
@@ -158,6 +183,12 @@ export function fromDetail(d: ContractDetail): ContractForm {
     // 임시저장에서 조항을 비워 두었으면 비운 채로 연다 — 기본 문구는 새로 쓸 때만 채운다
     annualLeaveTerms: d.annualLeaveTerms ?? "",
     severancePayTerms: d.severancePayTerms ?? "",
+    dayTimes: d.employmentType === "PART_TIME" ? Object.fromEntries(d.workDays.map((w) => [w.weekday, timesFrom(w)])) : {},
+    weeklyHoliday: d.weeklyHoliday ?? "",
+    payMethod: d.payMethod ?? base.payMethod,
+    probation: d.probationMonths != null,
+    probationMonths: d.probationMonths === 1 || d.probationMonths === 2 ? (String(d.probationMonths) as "1" | "2") : "3",
+    probationRate: d.probationWageReductionRate == null ? base.probationRate : String(d.probationWageReductionRate),
   };
 }
 
@@ -207,10 +238,21 @@ export function dailyHours(f: Pick<ContractForm, "work" | "rest">): number {
   return Math.max(0, minutes(f.work.end) - minutes(f.work.start) - (minutes(f.rest.end) - minutes(f.rest.start))) / 60;
 }
 
-/** 주 소정근로시간(시간). (종업 - 시업 - 휴게) × 근무 요일 수 */
-export function weeklyHours(f: Pick<ContractForm, "days" | "work" | "rest">): number {
-  return dailyHours(f) * f.days.length;
+/** 시간 계산에 쓰는 칸. 고용 형태 · 요일별 시간이 없으면 모든 요일이 위 근무시간 · 휴게시간이다 */
+type Schedule = Pick<ContractForm, "days" | "work" | "rest"> & Partial<Pick<ContractForm, "employmentType" | "dayTimes">>;
+
+/** 그 요일의 시간. 파트타이머가 표에서 고친 요일이면 그 값, 아니면 위 근무시간 · 휴게시간 */
+export function timesOf(f: Omit<Schedule, "days">, d: Weekday): DayTimes {
+  return (f.employmentType === "PART_TIME" && f.dayTimes?.[d]) || { work: f.work, rest: f.rest };
 }
+
+/** 주 소정근로시간(시간). 근무 요일마다 종업 - 시업 - 휴게를 더한다 */
+export function weeklyHours(f: Schedule): number {
+  return f.days.reduce((sum, d) => sum + dailyHours(timesOf(f, d)), 0);
+}
+
+/** 월 소정근로시간(시간) — 주 시간 × 4.345. 60시간 이상이면 4대보험 가입이 원칙이다(노무사 확인 2026-10-14, 질문 6) */
+export const monthlyHours = (f: Schedule) => weeklyHours(f) * WEEKS_PER_MONTH;
 
 // 급여 계산(현업 엑셀 견본, 2026-10-13). 저장하지 않고 화면에만 보인다 — api 는 시급과 입력 칸만 받는다.
 const wageOf = (f: Pick<ContractForm, "wage">) => Number(digits(f.wage)) || 0;
@@ -240,19 +282,18 @@ export function fullTimePay(f: ContractForm) {
 export const WEEKS_PER_MONTH = 4.345;
 
 /**
- * 파트타이머 급여. 요일 소계 = 시급 × 그날 시간(원 미만 반올림), 근무 소계 = 요일 소계의 합, 주휴시간 = 주 시간 ÷ 40 × 8(주 15시간 이상, 8시간까지),
- * 주급 = 근무 소계 + 주휴수당, 월급여 = 주급 × 4.345. 견본의 「수당」 줄은 저장할 칸이 정해지지 않아 뺐다(2026-10-13).
+ * 파트타이머 급여. 요일 소계 = 시급 × 그날 시간(원 미만 반올림), 근무 소계 = 요일 소계의 합, 주휴시간 = 주 시간 ÷ 5(주 15시간 이상, 8시간까지 —
+ * 노무사 확인 2026-10-14, 질문 1), 주급 = 근무 소계 + 주휴수당, 월급여 = 주급 × 4.345. 견본의 「수당」 줄은 저장할 칸이 정해지지 않아 뺐다(2026-10-13).
  */
 export function partTimePay(f: ContractForm) {
   const wage = wageOf(f);
-  const perDay = dailyHours(f);
   const days = WEEKDAYS.map((d) => {
-    const hours = f.days.includes(d) ? perDay : null;
+    const hours = f.days.includes(d) ? dailyHours(timesOf(f, d)) : null;
     return { d, hours, amount: hours === null ? null : Math.round(hours * wage) };
   });
   const workHours = weeklyHours(f);
   const workPay = days.reduce((sum, d) => sum + (d.amount ?? 0), 0);
-  const holidayHours = workHours >= 15 ? Math.min(8, (workHours / 40) * 8) : 0;
+  const holidayHours = workHours >= 15 ? Math.min(8, workHours / 5) : 0;
   const holidayPay = Math.round(holidayHours * wage);
   const weekly = workPay + holidayPay;
   return { days, workHours, workPay, holidayHours, holidayPay, weekly, monthly: Math.round(weekly * WEEKS_PER_MONTH) };
@@ -267,13 +308,49 @@ export function monthlyWage(f: ContractForm): number | null {
 const FROM_SUNDAY: Weekday[] = ["SUN", "SAT", "FRI", "THU", "WED", "TUE", "MON"];
 
 /**
- * 주휴일 규칙 — 7일 근무를 협의하기 전까지 화면에서 숨기고 api 는 NULL 로 저장한다(2026-10-08). 협의 뒤 다시 쓴다.
- * 주 15시간 이상이면 월~일 중 근무하지 않는 가장 뒤 요일,
- * 미만이면 null(주휴 대상 아님). 15시간 이상인데 7일 모두 근무하면 둘 요일이 없다(NO_DAY_OFF, 저장이 막힌다).
+ * 주휴일(노무사 확인 2026-10-14, 질문 4 — 특정 요일로 정해 계약서 휴일 조항에 적는다). 주 15시간 미만이면 null(주휴 대상 아님).
+ * 15시간 이상이면 관리자가 고른 요일, 고르지 않았거나 그 요일에 근무하면 월~일 중 근무하지 않는 가장 뒤 요일.
+ * 7일 모두 근무하면 둘 요일이 없다(NO_DAY_OFF, 초안 저장이 막힌다).
  */
-export function weeklyHolidayOf(f: Pick<ContractForm, "days" | "work" | "rest">): Weekday | null | "NO_DAY_OFF" {
+export function weeklyHolidayOf(f: Schedule & Partial<Pick<ContractForm, "weeklyHoliday">>): Weekday | null | "NO_DAY_OFF" {
   if (weeklyHours(f) < 15) return null;
+  if (f.weeklyHoliday && !f.days.includes(f.weeklyHoliday)) return f.weeklyHoliday;
   return FROM_SUNDAY.find((d) => !f.days.includes(d)) ?? "NO_DAY_OFF";
+}
+
+/** 최저임금(시급, 원). 시스템이 공통코드처럼 관리하기 전까지 화면에 둔다(2026-10-15) */
+export const MINIMUM_WAGE = 10320;
+/** 수습 중 시급의 하한 — 최저임금의 90%(노무사 확인 2026-10-14, 질문 19) */
+export const PROBATION_WAGE_FLOOR = Math.ceil(MINIMUM_WAGE * 0.9);
+
+/** 수습 중 시급 = 시급 × (1 − 감액률), 원 미만 반올림. 시급이 비었거나 감액률이 틀리면 null */
+export function probationWage(f: Pick<ContractForm, "wage" | "probationRate">): number | null {
+  const rate = Number(f.probationRate);
+  if (!wageOf(f) || !/^\d+$/.test(f.probationRate) || rate > 10) return null;
+  return Math.round(wageOf(f) * (1 - rate / 100));
+}
+
+/** start 부터 1년이 되는 날(그날 포함) — 2026-01-01 이면 2026-12-31. api 와 같다 */
+function oneYearLastDay(start: string): string {
+  const d = new Date(`${start}T00:00:00.000Z`);
+  d.setUTCFullYear(d.getUTCFullYear() + 1);
+  d.setUTCDate(d.getUTCDate() - 1);
+  return d.toISOString().slice(0, 10);
+}
+
+/** 수습을 둘 수 있는 계약 기간인가 — 1년 이상이거나 기간의 정함이 없을 때. 시작일이 비었으면 아직 따지지 않는다 */
+export const probationTermOk = (f: Pick<ContractForm, "startDate" | "endDate">) =>
+  !f.startDate || !f.endDate || f.endDate >= oneYearLastDay(f.startDate);
+
+const DAY_KO: Record<Weekday, string> = { MON: "월", TUE: "화", WED: "수", THU: "목", FRI: "금", SAT: "토", SUN: "일" };
+
+/** 근무시간 · 휴게시간 한 벌의 문제. who 는 「월요일 」처럼 요일을 앞에 붙일 때 */
+function timeProblems(t: DayTimes, who = ""): string[] {
+  const out: string[] = [];
+  if (minutes(t.work.end) <= minutes(t.work.start)) out.push(`${who}근무시간은 끝이 시작보다 뒤여야 합니다`);
+  if (!(minutes(t.rest.start) >= minutes(t.work.start) && minutes(t.rest.end) > minutes(t.rest.start) && minutes(t.rest.end) <= minutes(t.work.end)))
+    out.push(`${who}휴게시간은 근무시간 안이어야 합니다`);
+  return out;
 }
 
 /** on 날짜에 만 몇 살인지. 생일 당일에 한 살 는다. api ageOn 과 같다 */
@@ -305,9 +382,14 @@ export function problems(f: ContractForm, temporary = false): string[] {
   if (f.startDate && f.endDate && f.endDate < f.startDate) out.push("계약 종료일은 시작일보다 앞설 수 없습니다");
   if (digits(f.wage) ? !(Number(digits(f.wage)) > 0) : !temporary) out.push("시급을 입력하세요"); // 고용 형태와 상관없이 시급(2026-10-12 재영)
   need(f.days.length === 0, "근무요일을 하나 이상 고르세요");
-  if (minutes(f.work.end) <= minutes(f.work.start)) out.push("근무시간은 끝이 시작보다 뒤여야 합니다");
-  if (!(minutes(f.rest.start) >= minutes(f.work.start) && minutes(f.rest.end) > minutes(f.rest.start) && minutes(f.rest.end) <= minutes(f.work.end)))
-    out.push("휴게시간은 근무시간 안이어야 합니다");
+  out.push(...timeProblems(f));
+  // 파트타이머가 표에서 고친 요일은 그 요일 시간도 본다
+  if (f.employmentType === "PART_TIME")
+    for (const d of WEEKDAYS) {
+      const t = f.dayTimes[d];
+      if (t && f.days.includes(d)) out.push(...timeProblems(t, `${DAY_KO[d]}요일 `));
+    }
+  need(weeklyHolidayOf(f) === "NO_DAY_OFF", "주 15시간 이상이면 근무하지 않는 요일이 있어야 주휴일을 정할 수 있습니다");
   const day = Number(f.payDay);
   if (f.payDay ? !(Number.isInteger(day) && day >= 1 && day <= 31) : !temporary) out.push("임금지급일은 1~31입니다");
   if (f.employmentType === "FULL_TIME") {
@@ -316,6 +398,13 @@ export function problems(f: ContractForm, temporary = false): string[] {
     if (base !== null && night !== null && night > base) out.push("기본시간 중 야간근무는 월 기본시간보다 클 수 없습니다");
     if ([f.mealAllowance, f.carAllowance, f.childcareAllowance].some((t) => Number(digits(t)) > MAX_AMOUNT))
       out.push("비과세 수당은 2,147,483,647원 이하로 입력하세요");
+    if (f.probation) {
+      if (!/^\d+$/.test(f.probationRate) || Number(f.probationRate) > 10) out.push("수습 임금 감액률은 0~10% 정수로 입력하세요");
+      if (!probationTermOk(f)) out.push("수습은 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둘 수 있습니다");
+      const pw = probationWage(f);
+      if (pw !== null && pw < PROBATION_WAGE_FLOOR)
+        out.push(`수습 중 시급은 최저임금의 90%(${PROBATION_WAGE_FLOOR.toLocaleString("ko-KR")}원) 이상이어야 합니다`);
+    }
   }
   if (Number(digits(f.wage)) > MAX_AMOUNT) out.push("시급은 2,147,483,647원 이하로 입력하세요");
   if (isMinor(f)) out.push("만 19세 미만 직원은 등록할 수 없습니다");
@@ -325,6 +414,7 @@ export function problems(f: ContractForm, temporary = false): string[] {
 /** temporary 면 임시저장으로 보낸다. 비운 칸은 보내지 않는다. 지금은 어느 쪽도 초대를 보내지 않는다(초대 발송 전) */
 export function toBody(f: ContractForm, temporary = false): CreateContractBody {
   const days = WEEKDAYS.filter((d) => f.days.includes(d));
+  const holiday = weeklyHolidayOf(f);
   return {
     name: f.name.trim(),
     phone: digits(f.phone),
@@ -341,16 +431,22 @@ export function toBody(f: ContractForm, temporary = false): CreateContractBody {
     ...(days.length === 0
       ? {}
       : {
-          workDays: days.map((weekday) => ({
-      weekday,
-      startTime: hm(f.work.start),
-      endTime: hm(f.work.end),
-      breakStartTime: hm(f.rest.start),
-      breakEndTime: hm(f.rest.end),
-          })),
+          workDays: days.map((weekday) => {
+            const t = timesOf(f, weekday);
+            return {
+              weekday,
+              startTime: hm(t.work.start),
+              endTime: hm(t.work.end),
+              breakStartTime: hm(t.rest.start),
+              breakEndTime: hm(t.rest.end),
+            };
+          }),
         }),
+    // 주 15시간 미만이면 주휴일이 없어 보내지 않는다
+    ...(holiday && holiday !== "NO_DAY_OFF" ? { weeklyHoliday: holiday } : {}),
     payMonth: f.payMonth,
     ...(f.payDay ? { payDay: Number(f.payDay) } : {}),
+    payMethod: f.payMethod,
     isHealthPensionInsured: f.isHealthPensionInsured,
     isEmploymentInjuryInsured: f.isEmploymentInjuryInsured,
     // 비과세 수당 · 월 근로시간은 정직원 칸이다. 파트타이머로 바꾸면 화면에서 숨기고 보내지 않는다.
@@ -360,6 +456,8 @@ export function toBody(f: ContractForm, temporary = false): CreateContractBody {
           ...money("carAllowanceAmount", f.carAllowance),
           ...money("childcareAllowanceAmount", f.childcareAllowance),
           ...Object.fromEntries(HOUR_FIELDS.flatMap((k) => (hoursOf(f[k]) === null ? [] : [[k, hoursOf(f[k])]]))),
+          // 수습은 정직원만(노무사 확인 2026-10-14). 기간과 감액률을 함께 보낸다
+          ...(f.probation ? { probationMonths: Number(f.probationMonths), probationWageReductionRate: Number(f.probationRate) } : {}),
         }
       : {}),
     ...(f.annualLeaveTerms.trim() ? { annualLeaveTerms: f.annualLeaveTerms.trim() } : {}),
