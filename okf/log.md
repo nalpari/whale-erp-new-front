@@ -1,6 +1,20 @@
 # Bundle history
 
+## 2026-10-15
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — PR #27 2차 리뷰 블로커 반영: 주소 검색 · 좌표 액션이 쿠키 모양만 보지 않고 토큰을 `GET /auth/admin/login-info` 로 확인한 뒤 키를 쓴다(꾸민 쿠키로 통과하던 것), `STORE_REGISTER_BP_CODE_ID` 는 개발 DB 전용이라 운영 · 스테이징에 넣지 않는다고 적었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #27 리뷰 블로커 반영: 주소 검색 · 좌표 server action 이 로그인 세션 없이는 JUSO · 카카오 키를 쓰지 않게, 점포 대표자 연락처 검사를 api 와 같은 숫자 10~11자리로(유선 번호 점포도 수정 저장 가능).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 관리자 로그인이 들어온 main 을 받고 점포 화면을 공통 틀(AdminFrame) 안에 맞췄다(`StoreFrame` 은 제목 줄 · 본문만, `stores/layout.tsx` 의 ErpRoot 는 걷음 — 헤더 · 높이 · 테마는 공통 틀이 잡는다). 로그인 전에 쓰던 개발 토큰 `API_DEV_TOKEN` 을 지웠다 — api 가 토큰의 접속(sid)까지 확인해 서명만 맞춘 토큰은 더 통하지 않는다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — 점포 화면 2차 리뷰와 api 3팀 계약(mankey) 반영: 등록 BP 를 코드에 박지 않고 환경 변수 `STORE_REGISTER_BP_CODE_ID` 로(없으면 싣지 않음), 진위확인은 지금 칸 값과 같을 때만 인증으로 보고 인증 안 한 변경은 저장 전에 막음(`savedCeoName`), 카카오 좌표는 십진수 · 범위 안만, 운영 조건 한글은 `GET /enums/StoreOperationRequirement`(상수표 지움), 폐점 + 이미지 저장 결과 모름 문구, 잘린 엑셀은 저장하지 않음, 주소 승인키 만료(E0014) · 시스템 오류는 설정 오류로, 칸을 못 찾은 검증 오류는 띠로, 핸들러 이름 `handle` 접두. 생성 타입은 api mankey openapi 로 다시 만들었다. `stores.md` 에 `sources` 를 더했다.
+
 ## 2026-10-14
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — 점포 화면 전체 리뷰(코드 · 테스트 · 주석 · 오류 처리 · 타입) 반영: 결과를 모를 때 등록은 저장을 잠그고 목록 확인 안내, 수정 · 삭제 · 폐점 전 이미지도 「모름」을 따로 알림, 플랫폼 관리자 등록은 BP 를 늘 먼저 싣고 막히면 빼고 다시 보냄, 층 줄 키 충돌과 모르는 층 구분 보존, 검증 오류를 칸마다 나눔, 엑셀은 4xx 문구 그대로 · xlsx 가 아니면 저장 안 함, 주소 · 좌표 키 오류는 서버 로그로, 찾지 못한 점포 id 는 조건에서 빼고 알림, 이력만 실패하면 이력 칸에만 알림. 대표 이미지 · 엑셀을 붙이며 구현 절의 「1차 범위 밖」(대표 이미지 · 엑셀)을 걷었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 점포 화면 코드 리뷰 반영: 상태 변경 왕복이 빈 사업자주소 · 층 구분만 있는 줄을 바꾸지 않게, 폐점과 이미지 변경을 함께 저장하면 이미지를 먼저, 주소를 바꾸거나 지우면 옛 좌표를 비움, 이력 표 갱신, 목록 조작이 한 낙관적 쿼리를 나눠 씀. 주소 server action 을 `src/lib/address-actions.ts` 로 옮겼다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — 점포 목록 엑셀 바로 받기를 api `GET /stores/excel` 에 붙였다(중계 경로 `/stores/excel`, 받는 동안 버튼이 「파일 만드는 중 · N%」).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — 점포 대표 이미지 올리기 · 바꾸기 · 지우기와 상세 · 카드 표시를 api `/stores/:id/image`(공통 S3 저장소)에 맞춰 붙였다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — 점포 주소를 고르면 카카오 로컬 API 로 위도 · 경도를 채운다(행정안전부 좌표제공 API 는 개발 키가 없어 쓰지 않는다).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 점포 타입을 api openapi 생성 타입으로 바꾸고, 플랫폼 관리자의 점포 등록에 BP000007(id 8)을 임시로 고정해 싣는다(로그인 전).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 점포 정보 관리 화면(`/stores` 목록 · `/stores/[storeId]` 상세 · `/stores/new` 등록 · `/stores/[storeId]/edit` 수정)을 api `/stores` 계약(2026-10-14)에 맞춰 만들었다. 주소 자동완성을 `src/components/address-field.tsx` 로 옮겨 플랫폼 관리자와 함께 쓰고(`label`), ConfirmDialog 에 `confirmDisabled` 를 더했다. 근로계약 근무지 선택지는 `GET /stores/options` 를 부른다. `pnpm test` 163건.
+* **Update**: [점포 관리](/stores.md) — 화면 주소를 `/stores/:storeId` 로 바꾸고(코드 대신 숫자 id · api 합의), 구현 절(api 계약 · 1차 범위 밖 · 409 구분)을 더했다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 디자인 샘플에 도입문의(`/design/guest/inquiry`) · 공지사항 · FAQ(`/design/guest/notices`)와 `FaqItem`, FAQ 펼침 · 고르는 칸 목록(globals.css)을 더했다.
 * **Update**: PR #19 리뷰 반영 — 헤더 2단계 메뉴는 조회 권한이 있는 메뉴(없으면 권한 있는 첫 하위 메뉴)로만 연결하고, 권한 이름은 공통코드 `ROLE_TYPE`(useCodes)에서 읽는다. 탭 서비스 값은 WHALE_ERP·PLATFORM 만 받는다. 로그아웃이 실패하면 안내하고 다시 시도하게 한다 — [Whale ERP Frontend](/whale-erp-front.md).
 * **Update**: 로그인 후 화면을 폴더로 묶지 않고 루트 layout 의 `AdminLayout` 이 공개 경로가 아니면 공통 틀을 씌운다(`(erp)`·`platform/layout.tsx` 삭제, 홈은 `src/app/home`). ERP·플랫폼은 탭의 서비스(sessionStorage `current-bp` 의 `serviceCode`)로 가르고 헤더 메뉴·홈·메뉴 권한 확인·오른쪽 선택기가 그 값을 본다. 3팀 화면도 틀 안에 들어가 자기 헤더를 빼야 한다 — [Whale ERP Frontend](/whale-erp-front.md).
