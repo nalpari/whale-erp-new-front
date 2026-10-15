@@ -109,8 +109,10 @@ const AVAILABILITY: Record<
   AvailabilityKey,
   { validate: (value: string) => string | undefined; request: (value: string) => Promise<AvailabilityResult>; takenMessage: string }
 > = {
-  loginId: { validate: validateLoginId, request: checkLoginIdAvailability, takenMessage: "이미 사용 중인 아이디입니다." },
-  email: { validate: validateEmail, request: checkEmailAvailability, takenMessage: "이미 사용 중인 이메일입니다." },
+  // "이미 가입하셨다면 로그인해 주세요" 를 덧붙인다 — 결과 불명(uncertain) 제출 뒤 다시 냈을 때 이 문구만 보면
+  // 남이 쓰는 아이디·이메일로 오해해 값을 바꿔 다시 낼 수 있다(BP 중복 생성, 2026-10-15 코드리뷰 3차).
+  loginId: { validate: validateLoginId, request: checkLoginIdAvailability, takenMessage: "이미 사용 중인 아이디입니다. 이미 가입하셨다면 로그인해 주세요." },
+  email: { validate: validateEmail, request: checkEmailAvailability, takenMessage: "이미 사용 중인 이메일입니다. 이미 가입하셨다면 로그인해 주세요." },
 };
 
 // 체크 표시는 1팀 비로그인 폼의 확인 색(#5e8ce9) — design/guest/sign-up 의 CheckedInput 과 같다(2026-10-14).
