@@ -13,8 +13,8 @@
 ## Global Constraints
 
 - 국세청 연동은 회원가입 PR 들(front #23 · api #37)과 **별도 PR** 로 올린다(2026-10-15 사용자 결정).
-  - api: 워크트리 `C:\workspace\.whale-erp-worktrees\whale-erp-api\colosseum`, 브랜치 `magikarp`. 가입 코드(`admin-signup`)가 아직 #37 에만 있어서 `bulbasaur` 위에서 땄다. PR base 는 `bulbasaur` 로 열고, #37 이 머지되면 `main` 으로 바꾼다. alhambra·bulbasaur 는 다른 세션 담당이라 손대지 않는다.
-  - front: 워크트리 `C:\workspace\.whale-erp-worktrees\whale-erp-new-front\angkor-wat`, 브랜치 `slowpoke`(`main` 기준). 연동할 회원가입 화면은 PR #23 에 있다. 그래서 Part B 는 #23 이 머지된 뒤 `main` 을 받아 시작한다. stonehenge·papaya 는 다른 세션 담당이라 손대지 않는다.
+  - api: 워크트리 `C:\workspace\.whale-erp-worktrees\whale-erp-api\taj-mahal`, 브랜치 `lapras`(이전 taj-mahal·lapras 에서 옮김, 2026-10-15). 가입 코드(`admin-signup`)·점포 진위확인 인터페이스(`StoreBusinessVerifier`)가 아직 #37 에만 있어서 `bulbasaur` 위에서 땄다. PR base 는 `bulbasaur` 로 열고, #37 이 머지되면 `main` 으로 바꾼다. alhambra·bulbasaur 는 다른 세션 담당이라 손대지 않는다.
+  - front: 워크트리 `C:\workspace\.whale-erp-worktrees\whale-erp-new-front\petra`, 브랜치 `gyarados`(이전 petra (구 angkor-wat)·gyarados 에서 옮김, 2026-10-15 — `main` 기준은 컴파일이 안 돼 `papaya` 기준으로 바꿨다. `signup/_components/` 전체와 `api-failure.ts` 가 #23 에만 있다). PR base 는 `papaya` 로 열고, #23 이 머지되면 `main` 으로 바꾼다. stonehenge·papaya 는 다른 세션 담당이라 손대지 않는다.
 - 환경변수: `NTS_SERVICE_KEY`. 값을 출력·로그·커밋하지 않는다. 두 워크트리 모두 메인 체크아웃에서 `.env*` 를 복사해 키가 들어 있다(front 는 쓰지 않는다).
 - 국세청 엔드포인트: `POST https://api.odcloud.kr/api/nts-businessman/v1/validate?serviceKey=<키>`. 본문 `{ businesses: [{ b_no, start_dt, p_nm }] }`, 결과 `data[0].valid` 가 `"01"`(일치) 또는 `"02"`(불일치).
 - 토큰: `typ: 'biz-verification'`, 유효 10분(`expiresIn: '10m'`).
@@ -40,7 +40,7 @@
 
 ---
 
-## Part A — api (colosseum · magikarp)
+## Part A — api (taj-mahal · lapras)
 
 ### Task 1: `NtsBusinessClient`
 
@@ -164,13 +164,13 @@
   - `generated.at` 을 갱신하고 `okf/log.md` 에 한 줄 남긴다.
 - [ ] **Step 3: 실동작을 확인한다(①).**
   - `pnpm lint`, `pnpm build`, `pnpm test` 가 모두 통과한다.
-  - colosseum 에서 api 를 띄운다.
+  - taj-mahal 에서 api 를 띄운다.
   - 실제 사업자정보로 `curl -X POST localhost:<port>/auth/signup/business-verifications` → 200 `{ verificationToken }`.
   - 대표자명을 틀리게 보내면 → 422.
 - [ ] **Step 4: 커밋하고 리뷰한다.** 커밋 전에 ② `superpowers:requesting-code-review`, 그다음 ③ `pr-review-toolkit:review-pr` 을 돌리고 지적을 반영한다.
-- [ ] **Step 5: 푸시한다.** `git push -u origin magikarp` 후 PR 을 연다(base `bulbasaur`). 그다음 ④ `code-review:code-review`, ⑤ `ip-code-review-claude`(새 PR, magikarp) 를 돌린다.
+- [ ] **Step 5: 푸시한다.** `git push -u origin lapras` 후 PR 을 연다(base `bulbasaur`). 그다음 ④ `code-review:code-review`, ⑤ `ip-code-review-claude`(새 PR, lapras) 를 돌린다.
 
-## Part B — front (angkor-wat · slowpoke, PR #23 머지 뒤)
+## Part B — front (petra (구 angkor-wat) · gyarados, `papaya`(PR #23) 기준 — 2026-10-15 사용자 결정으로 머지 전에 시작)
 
 ### Task 5: 진위확인 서버 액션과 결과 해석
 
@@ -178,7 +178,7 @@
 - Create: `src/app/(public)/(site)/signup/_components/biz-verification.ts`
 - Test: `src/app/(public)/(site)/signup/_components/biz-verification.test.ts`
 - Modify: `src/app/(public)/(site)/signup/actions.ts`
-- Modify: `src/lib/api-types.generated.ts`(`pnpm openapi:types`, `WHALE_API_DIR` 을 colosseum 으로)
+- Modify: `src/lib/api-types.generated.ts`(`pnpm openapi:types`, `WHALE_API_DIR` 을 taj-mahal 으로)
 
 **Interfaces:**
 - Consumes: api 경로 `POST /auth/signup/business-verifications` → `{ verificationToken }`.
@@ -249,7 +249,7 @@
 - [ ] **Step 1: `handleSubmit` 에 만료 검사를 넣는다.** 칸 검사와 약관 검사를 통과한 뒤, `setPending(true)` 전에 둔다.
   - `biz.verification` 이 있고 `isBizVerificationExpired(biz.verification.verifiedAt, Date.now())` 이면, `setBiz({ ...biz, verification: null, notice: BIZ_VERIFICATION_EXPIRED_MESSAGE })` 하고 사업자정보 섹션으로 스크롤한 뒤 return 한다.
 - [ ] **Step 2: 토큰을 싣는다.** `createSignup` 페이로드에 `...(biz.verification ? { bizVerificationToken: biz.verification.token } : {})` 를 더한다.
-- [ ] **Step 3: 실동작을 확인한다(①).** api(colosseum)와 front 를 띄우고 `/signup` 에서 확인한다.
+- [ ] **Step 3: 실동작을 확인한다(①).** api(taj-mahal)와 front 를 띄우고 `/signup` 에서 확인한다.
   - [ ] 실제 사업자정보로 인증하기 → 「인증완료」
   - [ ] 대표자명을 틀리면 → 422 문구가 보이고 칸 테두리는 빨갛지 않다.
   - [ ] 이미 가입한 BP 의 번호 → 409 문구
@@ -275,4 +275,4 @@
 - [ ] **Step 2: `okf/whale-erp-front.md` 를 고친다.** signup 설명의 "국세청 진위확인 연동 전이라 … 싣지 않는다"를 지금 동작으로 바꾼다. 서버 액션 `verifyBusiness`, 10분 토큰, 가입 시 `bizVerificationToken` 을 적는다. `generated.at` 을 갱신한다.
 - [ ] **Step 3: `okf/log.md` 에 한 줄 남긴다.**
 - [ ] **Step 4: 리뷰를 돌린다.** ② `superpowers:requesting-code-review` → 커밋 `docs(okf): 회원가입 사업자정보 진위확인 반영` → ③ `pr-review-toolkit:review-pr` 을 돌리고 지적을 반영한다.
-- [ ] **Step 5: 푸시한다.** `git push -u origin slowpoke` 후 PR 을 연다(base `main`). 그다음 ④ `code-review:code-review`, ⑤ `ip-code-review-claude`(새 PR, slowpoke) 를 돌린다. PR 본문에 api PR(magikarp)이 먼저 머지돼야 한다는 점을 적는다.
+- [ ] **Step 5: 푸시한다.** `git push -u origin gyarados` 후 PR 을 연다(base `papaya`). 그다음 ④ `code-review:code-review`, ⑤ `ip-code-review-claude`(새 PR, gyarados) 를 돌린다. PR 본문에 front PR(papaya, #23)과 api PR(lapras, #37)이 먼저 머지돼야 한다는 점을 적는다. 둘 다 머지되면 이 브랜치를 `main` 위로 rebase 하고 base 를 `main` 으로 바꾼다.
