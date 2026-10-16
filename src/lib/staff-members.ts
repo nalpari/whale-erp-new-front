@@ -17,7 +17,7 @@ export type ContractStatus = Schemas["ContractStatus"];
  */
 export type StaffMemberListItem = Schemas["StaffMemberListItemDto"];
 export type StaffMemberListResponse = Schemas["StaffMemberListResponseDto"];
-/** 직원 상세(GET /staff-members/:id, WHALEERP-599). 목록 한 줄에 계정 이메일(email)을 더한 모양이다(WHALEERP-177). email 은 링크 발송과 같은 기준이라 가입 전 · 탈퇴, 본사 역할이 동의로만 보는 가맹 점포 직원이면 null. */
+/** 직원 상세(GET /staff-members/:id, WHALEERP-599). 목록 한 줄에 계정 이메일(email)을 더한 모양이다(WHALEERP-177). email 은 링크 발송과 같은 기준이라 가입 전 · 탈퇴 · 퇴직, 수정 권한 없음, 본사 역할이 동의로만 보는 가맹 점포 직원이면 null. */
 export type StaffMember = Schemas["StaffMemberDetailResponseDto"];
 /** 퇴직 확인창의 미리 보기 — 퇴직일이 지나면 정리될 건수 */
 export type RetirementPreview = Schemas["RetirementPreviewResponseDto"];

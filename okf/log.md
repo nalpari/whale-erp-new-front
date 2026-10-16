@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-16
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — api #56 이 상세 `email` 을 더 좁혔다(0ed2373: 퇴직 레코드 · 수정 권한 없는 관리자도 null). 주석 · 문서를 맞췄다. 기본 정보 「이메일」은 null 이면 「-」 그대로, ACC-17 은 「보일 때 고치지 못한다」로 읽는다(노영주, 재영 확인 전). 버튼 판정은 그대로다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `api-types.generated.ts` 를 api #56(rapidash 0ed2373, 머지 전) openapi 로 다시 만들었다. 상세 `email` 설명만 바뀌었다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — api #56 이 상세 `email` 을 링크 발송과 같은 기준으로 바꿨다(0d69bcf: 본사 역할이 동의로만 보는 가맹 점포 직원도 null). email null 전제를 적은 주석 · 문서를 고쳤다. 버튼 판정은 그대로다 — 본사 역할 + 직영 아님으로 이미 숨긴다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `api-types.generated.ts` 를 api #56(rapidash fa67545, 머지 전) openapi 로 다시 만들었다. 상세 `email` 설명만 바뀌었다.
