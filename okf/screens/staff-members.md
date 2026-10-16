@@ -1,19 +1,19 @@
 ---
 type: Screen
 title: 직원 정보 관리 화면 (구현)
-description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고(상세는 WHALEERP-599 대기), 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을 두었다. 남은 것.
-tags: [staff, screen, retirement]
+description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을 두었다. 남은 것.
+tags: [staff, screen, retirement, password-reset]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-16T05:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-16T09:00:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
     title: 타입(생성한 api 타입) · 조회 조건 → api 쿼리(staffListApiSearch) · 점포명 → 점포 id(storeIdsByName)
-    last_modified: 2026-10-15T10:00:00Z
+    last_modified: 2026-10-16T09:00:00Z
   - id: staff-members-api
     resource: ../../src/lib/staff-members-api.ts
-    title: api 호출 — 목록 · 상세 · 퇴직 미리 보기 · 처리 · 변경 · 취소
-    last_modified: 2026-10-15T10:00:00Z
+    title: api 호출 — 목록 · 상세 · 퇴직 미리 보기 · 처리 · 변경 · 취소 · 비밀번호 재설정 링크
+    last_modified: 2026-10-16T09:00:00Z
   - id: staff-list-query
     resource: ../../src/app/staff-members/staff-list-query.ts
     title: 목록 URL ↔ 조회 조건(점포명 + storeIds)
@@ -25,11 +25,11 @@ sources:
   - id: retirement-dialog
     resource: ../../src/app/staff-members/[id]/retirement-dialog.tsx
     title: 퇴직 처리 · 퇴직일 변경 · 취소 확인창
-    last_modified: 2026-10-15T10:00:00Z
+    last_modified: 2026-10-16T09:00:00Z
   - id: staff-detail-actions
     resource: ../../src/app/staff-members/[id]/staff-detail-actions.tsx
-    title: 상세 머리 버튼(퇴직 · 목록)
-    last_modified: 2026-10-15T10:00:00Z
+    title: 상세 머리 버튼(퇴직 · 목록) · 비밀번호 초기화 버튼
+    last_modified: 2026-10-16T09:00:00Z
   - id: confirm-dialog
     resource: ../../src/components/common/confirm-dialog.tsx
     title: 공통 확인창 — confirmVariant 추가
@@ -40,8 +40,24 @@ sources:
     last_modified: 2026-10-12T08:33:58Z
   - id: staff-detail-page
     resource: ../../src/app/staff-members/[id]/page.tsx
-    title: 직원 상세 화면(틀 + 기본 정보 + 퇴직일)
-    last_modified: 2026-10-15T10:00:00Z
+    title: 직원 상세 화면(틀 + 기본 정보 · 퇴직일 · 이메일 + 비밀번호 초기화 자리)
+    last_modified: 2026-10-16T09:00:00Z
+  - id: password-reset-dialog
+    resource: ../../src/app/staff-members/[id]/password-reset-dialog.tsx
+    title: 비밀번호 초기화 확인창(WHALEERP-177)
+    last_modified: 2026-10-16T09:00:00Z
+  - id: password-reset
+    resource: ../../src/lib/password-reset.ts
+    title: 비밀번호 초기화 판정 — 버튼 노출 · 받는 곳 문구 · 실패 문구
+    last_modified: 2026-10-16T09:00:00Z
+  - id: use-action-failure
+    resource: ../../src/app/staff-members/[id]/use-action-failure.ts
+    title: 상세 확인창 실패 처리(failureEffect) — 퇴직 처리는 모두, 비밀번호 초기화는 403 만 쓴다
+    last_modified: 2026-10-16T09:00:00Z
+  - id: staff-detail-server-actions
+    resource: ../../src/app/staff-members/[id]/actions.ts
+    title: 퇴직 · 재설정 링크 발송 서버 액션
+    last_modified: 2026-10-16T09:00:00Z
   - id: staff-row
     resource: ../../src/app/staff-members/staff-row.ts
     title: 한 줄 표시 규칙(배지 · D-day · 재직 칸)
@@ -65,8 +81,7 @@ sources:
 타입 · 조건 함수는 `staff-members.ts` 에 두어 node --test 가 바로 읽는다. 배치는 데모 `docs/demo/staff/index.html` ·
 `detail.html` 과 같다(목록의 「이번 주」 칸만 뺐다).
 
-**순서: api 599 머지 → front 585 머지.** 상세 api 가 없으면 상세가 모두 404 다. `:id` 가 무엇을 가리키는지는 599 설계가 정하고,
-지금은 목록의 `staffMemberId` 다(`getStaffMember` 의 TODO).
+상세 api(599)는 api main 에 머지됐고, `:id` 는 목록의 `staffMemberId` 다.
 
 # 공통 틀 안에서 그린다
 
@@ -100,15 +115,15 @@ sources:
 
 # 상세 — 다시 작업할 것
 
-상세는 틀과 기본 정보만이다. 기본 정보의 「재직 상태」는 `employmentStatusCells` 로 재직 · 퇴직 예정(퇴직일) · 퇴직만
+기본 정보의 「재직 상태」는 `employmentStatusCells` 로 재직 · 퇴직 예정(퇴직일) · 퇴직만
 보인다 — 목록의 재직 칸(`statusCells`)은 가입 · 계약 상태를 섞은 요약이라 상세에 쓰지 않는다(2026-10-13 재영: 머지 블로커).
 
-상세는 틀과 기본 정보(+ 퇴직 예정 · 퇴직이면 퇴직일 줄)만이다. 상세 요약 api(#183)가 나오면:
+상세는 틀과 기본 정보(+ 퇴직 예정 · 퇴직이면 퇴직일 줄, 이메일), 퇴직 처리 · 비밀번호 초기화 확인창만이다. 상세 요약 api(#183)가 나오면:
 
-* 기본 정보의 직무 · 입사일 · 생년월일 · 본인인증 · 이메일(지금 「-」)을 채운다.
+* 기본 정보의 직무 · 입사일 · 생년월일 · 본인인증(지금 「-」)을 채운다. 이메일은 상세 응답 `email` 로 채웠다(#177).
 * 근로계약 · 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO 영역(지금 「준비 중입니다.」)을 데모처럼 채운다.
-* 「비밀번호 초기화」(#177)는 지금 누르면 「준비 중입니다.」 알림만 띄운다.
 * 가린 직원(본사 제공 동의 없는 가맹 직원) · 업무 범위 밖 · 없는 직원은 상세 api 가 404 라 상세로 들어가지 못한다(#184 · #599).
+  본사 제공 동의한 가맹 직원은 본사 역할에게도 상세가 열리지만, 비밀번호 초기화는 범위가 달라 버튼이 없다(아래).
 
 # 퇴직 처리 (WHALEERP-585)
 
@@ -137,6 +152,36 @@ sources:
   화면으로(okf api admin-auth 「403 messages」). 400 · 404 · 409 · 401 은 확인창 안에 문구로, 결과를 모르는 실패(5xx · 연결)는
   화면을 새로 받는다.
 * 공통 `ConfirmDialog` 에 확인 버튼 색(`confirmVariant`)을 더했다 — 퇴직 처리 확인이 붉다(데모). 공통 컴포넌트라 1팀 확인이 필요하다.
+
+# 비밀번호 초기화 (WHALEERP-177)
+
+기본 정보 표 아래 줄 오른쪽에 둔다(데모 자리). 관리자는 비밀번호를 알 수도 정할 수도 없다 — 재설정 링크가 직원 계정 이메일
+(회원가입 때 쓴 것)로 가고, 직원이 링크를 열어 스스로 정한다. api 는 `POST /staff-members/:id/password-reset-links` 다.
+
+* 버튼(`canResetPassword`) — 가입 완료(`JOINED`) · 재직이고 「직원 정보 관리」 수정 권한이 있을 때만. 퇴직 예정(재직 + 퇴직일)은
+  보인다 — 아직 일하는 직원이고 api 도 퇴직(`RETIRED`)만 409 로 막는다(2026-10-16 노영주). 본사 역할(BM · BA, 로그인 정보의
+  `roleTypeCode`)은 직영 점포 직원에게만 보인다 — 본사 제공 동의한 가맹 직원은 상세가 열리지만 api 의 계정 조치 범위
+  (`canManageStaffAccount`)는 동의와 상관없이 점포 단위라 404 다(2026-10-14 재영, ATT-30). 점포 유형을 모르면 api 처럼 숨긴다
+  (PR 전 리뷰, 2026-10-16 노영주). 본사 역할이 아니면 점포 유형을 보지 않는다. 탈퇴 계정(가입 완료인데 `email` 이 null)에게도
+  숨긴다(데모 주석, 2026-10-16 노영주) — 상세 응답에 탈퇴 표시가 따로 없어 api #56 의 「email 은 가입 전 · 탈퇴면 null」 규칙에
+  기댄다. 놓친 경우는 api 409 다. 숨길 때는 줄째 뺀다.
+* 확인창 — 제목 「비밀번호를 초기화하시겠습니까?」, 취소 · 초기화(데모 `resetDialog`). 본문은 데모 뼈대에 관리자가 비밀번호를 모른다는
+  것(완료 조건 2) · 새 링크가 발송되면 앞 링크 무효(목업)를 더했다 — 받는 곳 · 24시간 한 번만 · 여러 BP 공통 · 1분 안에 다시 보낼 수 없음.
+* 받는 곳(`resetRecipientText`) — 상세 응답의 `email`(계정 이메일, 재설정 링크가 가는 곳)으로 「이메일 아이디 OOO 으로」, null 이면
+  「직원의 이메일 아이디로」. 상세 응답은 api #56 부터 `StaffMemberDetailResponseDto`(목록 한 줄 + `email`, 가입 전 · 탈퇴면 null)다.
+  기본 정보의 「이메일」 줄도 이 값으로 채운다(ACC-17: 보이되 고치지 못함). 타입은 머지 전이라 api 브랜치(rapidash)로 만들었다 —
+  api 머지 뒤 api main 기준으로 다시 만든다.
+* 실패(`resetFailureMessage`) — 404 · 409 · 429 · 503 은 api 문구 그대로, 401 은 로그인 만료 문구다. 429 는 데모의 「잠시 뒤 다시
+  시도해 주세요」가 아니라 api 의 「방금 재설정 링크를 보냈습니다. 1분 뒤에 다시 보낼 수 있습니다」다 — 결과 모름 뒤 다시 누른 경우가
+  많아 이미 보냈다는 사실을 알려야 다시 보내 직원의 링크를 무효로 만들지 않는다(2026-10-16 노영주, 데모와 다름). 서버가 api 결과를
+  모르면(5xx · 연결) 「직원이 메일을 받지 못했다면 1분 뒤 다시 보내 주세요」, 서버 액션 자체를 부르지 못하면(연결 끊김 · 배포 뒤 옛 화면)
+  「화면을 새로 고친 뒤 …」다. api 의 503(링크 주소 · 발송기 없음 · 발송 실패, 문구가 있는 Nest 본문 `{ statusCode: 503, message }`)은
+  보내지 않았다고 알린 것이라 결과 모름으로 묶지 않는다(`isApiSendRefusal`) — 프록시 · 로드밸런서의 503 은 결과 모름이다. 409 는
+  화면이 낡았다는 뜻이라 상세를 다시 받아 버튼을 거둔다(`refreshesAfterReset`). 403 은 퇴직 확인창과 같다(`use-action-failure.ts` 의
+  `useFailure`). 결과 모름은 서버 로그에 staffMemberId 를 함께 남긴다. 확인 버튼은 그리기 전 두 번째 클릭도 ref 로 막는다.
+* 보낸 시각 · 기한은 보이지 않는다 — 성공하면 토스트 「재설정 링크를 보냈습니다.」뿐이다. Plane 완료 조건 4(발송 시각 · 기한 24시간)는
+  발송 종류를 담는 이메일 발송 로그 테이블을 따로 만들어 발송 이력으로 다룬다(2026-10-16 노영주). api 응답의 `issuedAt` · `expiresAt`
+  은 지금 쓰지 않는다.
 
 # 아직 없는 것
 
