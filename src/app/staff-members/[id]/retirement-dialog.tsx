@@ -91,7 +91,7 @@ export function RetirementDialog({
   const ready = preview.status === "ok" && preview.date === date && !sameDate;
 
   // 확인창을 연 채 자정을 넘긴 경우는 서버 액션이 서버 시계로 판정한다(staleDayWarning) — 브라우저 시계는 빠르거나 늦을 수 있어 쓰지 않는다.
-  const confirm = async () => {
+  const handleConfirm = async () => {
     setBusy(true);
     setSubmitError(null);
     try {
@@ -133,7 +133,7 @@ export function RetirementDialog({
       confirmVariant={mode === "retire" ? "danger" : "primary"}
       busy={busy}
       confirmDisabled={!ready}
-      onConfirm={confirm}
+      onConfirm={handleConfirm}
       onCancel={onClose}
     >
       <div className="flex flex-col gap-[12px]">
@@ -192,7 +192,7 @@ export function CancelRetirementDialog({ staffMemberId, onClose }: { staffMember
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const confirm = async () => {
+  const handleConfirm = async () => {
     setBusy(true);
     setError(null);
     try {
@@ -219,7 +219,7 @@ export function CancelRetirementDialog({ staffMemberId, onClose }: { staffMember
       confirmLabel="퇴직 처리 취소"
       cancelLabel="닫기"
       busy={busy}
-      onConfirm={confirm}
+      onConfirm={handleConfirm}
       onCancel={onClose}
     >
       <p>퇴직 예정을 취소합니다. 퇴직일 전이라 정리된 것이 없어 그대로 재직입니다.</p>

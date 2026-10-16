@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-16
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — PR #37 리뷰 반영: 확인창 핸들러를 `handleConfirm` 으로(naming.md `handle` 접두).
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — PR #37 리뷰 반영: 서버 액션 「결과 모름」 로그에 기능 이름(퇴직 · 비밀번호 초기화)과 staffMemberId 를 남긴다(앞 변경에서 퇴직 접두가 빠졌다).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `api-types.generated.ts` 를 api #56(rapidash 4748961, 머지 전) openapi 로 다시 만들었다: 직원 상세 응답 `StaffMemberDetailResponseDto`(+ `email`), 재설정 링크 403 설명, main 의 다른 변경 포함. api 머지 뒤 api main 기준으로 다시 만든다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 비밀번호 초기화 2차 리뷰 반영(노영주): 429 는 api 문구(이미 보냈다는 사실), 탈퇴(가입 완료 + email null) 직원에게 버튼 숨김, 409 면 상세를 다시 받음, 서버 액션을 부르지 못하면 「화면을 새로 고친 뒤」, 결과 모름 로그에 staffMemberId. 599 대기 · TODO(599) 서술을 지웠다(api main 머지, `:id` = staffMemberId).

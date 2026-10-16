@@ -22,7 +22,7 @@ export function PasswordResetDialog({ staffMemberId, email, onClose }: { staffMe
   // busy 가 그려지기 전에 들어온 두 번째 클릭을 막는다 — 그대로 두면 두 번째 요청이 429 문구를 남긴다.
   const sending = useRef(false);
 
-  const confirm = async () => {
+  const handleConfirm = async () => {
     if (sending.current) return;
     sending.current = true;
     setBusy(true);
@@ -55,7 +55,7 @@ export function PasswordResetDialog({ staffMemberId, email, onClose }: { staffMe
   };
 
   return (
-    <ConfirmDialog open wide title="비밀번호를 초기화하시겠습니까?" confirmLabel="초기화" busy={busy} onConfirm={confirm} onCancel={onClose}>
+    <ConfirmDialog open wide title="비밀번호를 초기화하시겠습니까?" confirmLabel="초기화" busy={busy} onConfirm={handleConfirm} onCancel={onClose}>
       <div className="flex flex-col gap-[12px]">
         <p>
           재설정 링크가 {resetRecipientText(email)} 발송됩니다. 직원이 링크를 열어 새 비밀번호를 정하며, 관리자는 비밀번호를 알 수도 정할
