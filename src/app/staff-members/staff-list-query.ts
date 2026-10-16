@@ -36,10 +36,20 @@ function listOf<T extends string>(raw: string | undefined, allowed: readonly T[]
 }
 
 const MAX_ID = 2_147_483_647;
+/** api StaffMemberListQueryDto 상한. 넘긴 값은 400 이라 목록 전체가 오류 화면이 된다 — 여기서 먼저 막는다. */
+export const MAX_KEYWORD_LENGTH = 50;
+const MAX_PAGE = 1_000_000;
 
-/** 점포 id 쉼표 목록. 양의 정수만, 겹치면 하나만 남긴다. 점포명이 없으면 쓰지 않는다 — 점포 필터는 점포명이 연다. */
-function storeIdsOf(raw: string | undefined, store: string): number[] {
-  if (!store || !raw) return [];
+const textOf = (v: string | undefined) => v?.trim().slice(0, MAX_KEYWORD_LENGTH) ?? "";
+
+/**
+ * 점포 id 쉼표 목록. 양의 정수만, 겹치면 하나만 남긴다. 점포명이 없으면 쓰지 않는다 — 점포 필터는 점포명이 연다.
+ * 점포명은 있는데 storeIds 파라미터가 없으면 null(이 형식 전의 주소 · 손으로 친 주소) — 필터가 점포 목록에서 채운다.
+ */
+function storeIdsOf(raw: string | undefined, store: string): number[] | null {
+  if (!store) return [];
+  if (raw === undefined) return null;
+  if (!raw) return [];
   const ids = raw.split(",").filter((v) => /^[1-9]\d*$/.test(v)).map(Number).filter((n) => n <= MAX_ID);
   return [...new Set(ids)];
 }
@@ -48,15 +58,15 @@ export function parseStaffListQuery(raw: RawSearch): StaffListQuery {
   const page = Number(first(raw.page));
   const pageSize = Number(first(raw.pageSize));
   const status = first(raw.employmentStatus);
-  const store = first(raw.store)?.trim() ?? "";
+  const store = textOf(first(raw.store));
   return {
     store,
     storeIds: storeIdsOf(first(raw.storeIds), store),
-    keyword: first(raw.keyword)?.trim() ?? "",
+    keyword: textOf(first(raw.keyword)),
     employmentTypes: listOf(first(raw.employmentType), EMPLOYMENT_TYPES),
     joinGroups: listOf(first(raw.joinGroup), JOIN_GROUPS),
     employmentStatus: STATUS_FILTERS.find((s) => s === status) ?? DEFAULT_STAFF_LIST_QUERY.employmentStatus,
-    page: Number.isInteger(page) && page >= 1 ? page : 1,
+    page: Number.isInteger(page) && page >= 1 && page <= MAX_PAGE ? page : 1,
     pageSize: PAGE_SIZES.find((s) => s === pageSize) ?? DEFAULT_STAFF_LIST_QUERY.pageSize,
   };
 }
@@ -65,7 +75,8 @@ export function toStaffListSearch(query: StaffListQuery): string {
   const params = new URLSearchParams();
   if (query.store) {
     params.set("store", query.store);
-    params.set("storeIds", query.storeIds.join(","));
+    // 아직 찾지 않은 것(null)은 빈 값으로 굳히지 않는다 — 빈 값은 「맞는 점포 없음」이다
+    if (query.storeIds) params.set("storeIds", query.storeIds.join(","));
   }
   if (query.keyword) params.set("keyword", query.keyword);
   if (query.employmentTypes.length !== EMPLOYMENT_TYPES.length)

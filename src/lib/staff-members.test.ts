@@ -1,7 +1,7 @@
 // node --test src/lib/staff-members.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { EMPLOYMENT_TYPES, JOIN_GROUPS, kstToday, staffListApiSearch, storeIdsByName, type StaffListQuery } from "./staff-members.ts";
+import { EMPLOYMENT_TYPES, JOIN_GROUPS, MAX_STORE_IDS, kstToday, staffListApiSearch, storeIdsByName, tooManyStores, type StaffListQuery } from "./staff-members.ts";
 
 const base: StaffListQuery = {
   store: "",
@@ -50,6 +50,18 @@ test("api 를 부르지 않고 0건인 조건 — 빈 값은 api 가 400, 빼면
   assert.equal(staffListApiSearch({ ...base, joinGroups: [] }), null);
   assert.equal(staffListApiSearch({ ...base, employmentTypes: [] }), null);
   assert.equal(staffListApiSearch({ ...base, store: "없는점", storeIds: [] }), null);
+});
+
+test("점포 id 를 아직 못 찾았으면(null) api 를 부르지 않는다 — 필터가 채운 뒤 다시 그린다", () => {
+  assert.equal(staffListApiSearch({ ...base, store: "판교", storeIds: null }), null);
+});
+
+test("맞는 점포가 api 상한(500)을 넘으면 부르지 않고 좁혀 달라고 한다 — 잘라 보내면 일부 점포가 조용히 빠진다", () => {
+  const ids = Array.from({ length: MAX_STORE_IDS + 1 }, (_, i) => i + 1);
+  assert.equal(staffListApiSearch({ ...base, store: "점", storeIds: ids }), null);
+  assert.equal(tooManyStores({ ...base, store: "점", storeIds: ids }), true);
+  assert.equal(tooManyStores({ ...base, store: "점", storeIds: ids.slice(0, MAX_STORE_IDS) }), false);
+  assert.notEqual(staffListApiSearch({ ...base, store: "점", storeIds: ids.slice(0, MAX_STORE_IDS) }), null);
 });
 
 const stores = [

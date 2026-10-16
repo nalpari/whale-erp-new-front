@@ -108,3 +108,19 @@ test("점포명이 없으면 storeIds 는 쓰지 않는다", () => {
 test("storeIds 의 이상한 값 · 겹친 값은 버린다", () => {
   assert.deepEqual(parseStaffListQuery({ store: "서초", storeIds: "3,abc,0,-1,3,2147483648,1.5,9" }).storeIds, [3, 9]);
 });
+
+test("점포명만 있고 storeIds 가 없으면(이 PR 전 주소) null — 필터가 점포 목록에서 채운다", () => {
+  assert.equal(parseStaffListQuery({ store: "판교" }).storeIds, null);
+  // 아직 못 찾은 상태는 URL 에 빈 값으로 굳히지 않는다
+  assert.equal(new URLSearchParams(toStaffListSearch({ ...DEFAULT_STAFF_LIST_QUERY, store: "판교", storeIds: null })).has("storeIds"), false);
+});
+
+test("검색어는 api 상한 50자로 자른다", () => {
+  assert.equal(parseStaffListQuery({ keyword: "가".repeat(60) }).keyword, "가".repeat(50));
+  assert.equal(parseStaffListQuery({ store: "나".repeat(60) }).store, "나".repeat(50));
+});
+
+test("쪽은 api 상한 1,000,000 을 넘으면 1", () => {
+  assert.equal(parseStaffListQuery({ page: "1000000" }).page, 1_000_000);
+  assert.equal(parseStaffListQuery({ page: "1000001" }).page, 1);
+});

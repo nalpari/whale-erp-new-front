@@ -1,11 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useOptimistic, useState, useTransition } from "react";
+import { useEffect, useOptimistic, useState, useTransition } from "react";
 import { Checkbox, FilterPanel, FilterSection, SearchField, Select } from "@/components/common";
 import { useStores } from "@/components/site/session-gate";
 import { EMPLOYMENT_TYPES, JOIN_GROUPS, storeIdsByName, type EmploymentStatusFilter, type StaffListQuery } from "@/lib/staff-members";
-import { DEFAULT_STAFF_LIST_QUERY, toStaffListSearch, withFilter } from "./staff-list-query";
+import { DEFAULT_STAFF_LIST_QUERY, MAX_KEYWORD_LENGTH, toStaffListSearch, withFilter } from "./staff-list-query";
 import { EMPLOYMENT_TYPE_LABELS, JOIN_GROUP_LABELS } from "./staff-row";
 
 const toggle = <T,>(list: readonly T[], value: T) => (list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
@@ -29,6 +29,12 @@ export function StaffFilter({ query }: { query: StaffListQuery }) {
       router.replace(`/staff-members${toStaffListSearch(next)}`, { scroll: false });
     });
   const go = (next: Partial<StaffListQuery>) => navigate(withFilter(current, next));
+  // 점포명만 있고 점포 id 가 없는 주소(storeIds 를 싣기 전의 북마크 · 손으로 친 주소)는 들어오자마자 점포 목록에서 채운다.
+  // 그대로 두면 api 를 부르지 않아 검색칸에 점포명이 있는데도 0건으로 보인다. 쪽은 그대로 둔다 — 같은 조건이다.
+  useEffect(() => {
+    if (query.store && query.storeIds === null)
+      router.replace(`/staff-members${toStaffListSearch({ ...query, storeIds: storeIdsByName(stores, query.store) })}`, { scroll: false });
+  }, [query, router, stores]);
   const reset = () => {
     setResets((n) => n + 1);
     navigate(DEFAULT_STAFF_LIST_QUERY);
@@ -42,6 +48,7 @@ export function StaffFilter({ query }: { query: StaffListQuery }) {
           defaultValue={current.store}
           placeholder="점포명"
           aria-label="점포"
+          maxLength={MAX_KEYWORD_LENGTH}
           onSearch={(value) => go({ store: value.trim(), storeIds: value.trim() ? storeIdsByName(stores, value) : [] })}
         />
       </FilterSection>
@@ -51,6 +58,8 @@ export function StaffFilter({ query }: { query: StaffListQuery }) {
           defaultValue={current.keyword}
           placeholder="이름 또는 번호"
           aria-label="이름·휴대전화번호"
+          // api 상한(50자)을 넘기면 400 으로 목록 전체가 오류 화면이 된다
+          maxLength={MAX_KEYWORD_LENGTH}
           onSearch={(value) => go({ keyword: value.trim() })}
         />
       </FilterSection>

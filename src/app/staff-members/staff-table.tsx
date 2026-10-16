@@ -36,6 +36,7 @@ export function StaffTable({
   pageSize,
   today,
   listSearch,
+  empty = "조회된 직원이 없습니다.",
 }: {
   items: StaffMemberListItem[];
   total: number;
@@ -44,6 +45,8 @@ export function StaffTable({
   today: string;
   /** 지금 목록 조건(toStaffListSearch). 상세 링크에 붙여 상세의 「목록」이 같은 조건으로 돌아오게 한다. */
   listSearch: string;
+  /** 빈 목록 문구. 점포가 너무 많아 조회하지 않았을 때는 좁혀 달라고 바꾼다. */
+  empty?: string;
 }) {
   const columns: Column<Row>[] = [
     { header: "순번", width: "w-[60px]", cell: (r) => r.no },
@@ -93,7 +96,7 @@ export function StaffTable({
       rows={items.map((item, i) => ({ no: rowNumber(total, page, pageSize, i), item }))}
       // 가린 행은 api 가 staffMemberId 를 null 로 준다 — 순번으로 가른다(한 쪽 안에서 겹치지 않는다)
       rowKey={(r) => r.item.staffMemberId ?? `masked-${r.no}`}
-      empty="조회된 직원이 없습니다."
+      empty={empty}
     />
   );
 }

@@ -43,8 +43,11 @@ export type PageSize = (typeof PAGE_SIZES)[number];
 export interface StaffListQuery {
   /** 점포명 검색어 */
   store: string;
-  /** 점포명에 맞는 점포 id. 필터가 로그인 정보의 점포 목록에서 찾아 넣는다(storeIdsByName). store 가 비면 쓰지 않는다 */
-  storeIds: number[];
+  /**
+   * 점포명에 맞는 점포 id. 필터가 로그인 정보의 점포 목록에서 찾아 넣는다(storeIdsByName). store 가 비면 쓰지 않는다.
+   * null 은 점포명만 있고 아직 찾지 않은 것(storeIds 없이 들어온 주소) — 필터가 열리며 채운다.
+   */
+  storeIds: number[] | null;
   /** 이름 · 휴대전화번호 검색어 */
   keyword: string;
   employmentTypes: EmploymentType[];
@@ -70,16 +73,23 @@ export function storeIdsByName(stores: readonly { storeId: number; name: string 
   return stores.filter((s) => s.name.toLowerCase().includes(needle)).map((s) => s.storeId);
 }
 
+/** api 가 한 번에 받는 점포 id 수(StaffMemberListQueryDto @ArrayMaxSize). 넘으면 400 이다. */
+export const MAX_STORE_IDS = 500;
+
+/** 점포명에 맞는 점포가 api 상한을 넘었는가. 잘라 보내면 일부 점포가 조용히 빠지므로 목록 대신 좁혀 달라고 한다. */
+export const tooManyStores = (query: StaffListQuery) => !!query.store && (query.storeIds?.length ?? 0) > MAX_STORE_IDS;
+
 /**
  * GET /staff-members 쿼리. null 이면 api 를 부르지 않고 0건이다 — 묶음 · 고용형태를 하나도 고르지 않았거나 점포명에 맞는
  * 점포가 없을 때. api 는 빈 값을 400 으로 막고, 파라미터를 빼면 전체가 나와 「하나도 안 고름」이 「전체」가 된다.
+ * 점포 id 를 아직 찾지 않았거나(null) 상한을 넘어도 부르지 않는다(tooManyStores).
  * 모두 고른 체크와 재직 상태 「전체」는 파라미터를 뺀다.
  */
 export function staffListApiSearch(query: StaffListQuery): string | null {
   if (query.joinGroups.length === 0 || query.employmentTypes.length === 0) return null;
-  if (query.store && query.storeIds.length === 0) return null;
+  if (query.store && (!query.storeIds || query.storeIds.length === 0 || tooManyStores(query))) return null;
   const params = new URLSearchParams();
-  if (query.store) params.set("storeIds", query.storeIds.join(","));
+  if (query.store && query.storeIds) params.set("storeIds", query.storeIds.join(","));
   if (query.keyword) params.set("keyword", query.keyword);
   if (query.employmentTypes.length !== EMPLOYMENT_TYPES.length) params.set("employmentType", query.employmentTypes.join(","));
   if (query.joinGroups.length !== JOIN_GROUPS.length)
