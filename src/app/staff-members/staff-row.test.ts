@@ -1,7 +1,7 @@
 // node --test src/app/staff-members/staff-row.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { staffEmailText, type StaffMemberListItem } from "../../lib/staff-members.ts";
+import type { StaffMemberListItem } from "../../lib/staff-members.ts";
 import { contractCell, employmentStatusCells, formatPhone, joinCell, rowNumber, statusCells } from "./staff-row.ts";
 
 const TODAY = "2026-10-12";
@@ -146,10 +146,4 @@ test("순번은 내림차순 — 전체 건수에서 거꾸로 센다", () => {
   assert.equal(rowNumber(63, 1, 20, 0), 63);
   assert.equal(rowNumber(63, 1, 20, 19), 44);
   assert.equal(rowNumber(63, 4, 20, 2), 1);
-});
-
-test("상세 이메일 칸의 가입 상태 글자는 목록 「가입·인증」 칸(날짜 · 일수 없을 때)과 같다", () => {
-  for (const joinState of ["EXPIRED", "REJECTED", "LINK_HOLD", "AFFILIATION_PENDING", "RETURN_PENDING", "UNDER_AGE"] as const) {
-    assert.equal(staffEmailText({ email: null, joinState }), joinCell(item({ joinState }), TODAY).text, joinState);
-  }
 });

@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { DetailTable, PageBar } from "@/components/common";
+import { getEnum } from "@/lib/api";
+import type { EnumValue } from "@/lib/enums";
 import { kstToday, staffEmailText } from "@/lib/staff-members";
 import { getStaffMember } from "@/lib/staff-members-api";
 import { staffListHref } from "../staff-list-query";
@@ -59,6 +61,16 @@ const RIGHT_BOXES: { title: string; manageHref?: string }[] = [
   { title: "TO-DO" },
 ];
 
+// 가입 상태 한글(이메일 칸, WHALEERP-180). 받지 못해도 상세는 그린다 — 이메일 칸만 「-」가 되고 원인은 서버 로그에 남긴다.
+async function loadJoinStateLabels(): Promise<EnumValue[]> {
+  try {
+    return await getEnum("StaffJoinState");
+  } catch (error) {
+    console.error("직원 상세: GET /enums/StaffJoinState 를 받지 못했습니다", error);
+    return [];
+  }
+}
+
 // 직원 상세(WHALEERP-184). 배치는 데모 docs/demo/staff/detail.html(원본 src/pages/staff/detail.mjs)과 같다 — 5:7 두 단,
 // 왼쪽은 기본 정보 · 비밀번호 초기화 · 근로계약, 오른쪽은 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO.
 // 데이터는 상세 api(GET /staff-members/:id, WHALEERP-599)로 받고, 목록 한 줄에 계정 이메일을 더한 모양이라 그 값만 채운다. 직무 · 입사일 · 생년월일 · 본인인증과 각 영역의 내용은 상세 요약
@@ -70,7 +82,7 @@ export default async function StaffMemberDetailPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const staff = await getStaffMember((await params).id);
+  const [staff, joinStateLabels] = await Promise.all([getStaffMember((await params).id), loadJoinStateLabels()]);
   if (!staff) notFound();
   const employmentStatus = employmentStatusCells(staff);
   const listHref = staffListHref(await searchParams);
@@ -88,7 +100,7 @@ export default async function StaffMemberDetailPage({
     { label: "휴대전화번호", value: staff.phone ? formatPhone(staff.phone) : PENDING },
     { label: "본인인증", value: PENDING },
     // 계정 이메일(회원 ID) — 상세를 볼 수 있으면 보이고, 고치지 못한다(ACC-17, WHALEERP-180). 없을 때의 표시는 staffEmailText.
-    { label: "이메일", value: staffEmailText(staff) },
+    { label: "이메일", value: staffEmailText(staff, joinStateLabels) },
   ];
 
   return (

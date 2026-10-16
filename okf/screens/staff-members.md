@@ -4,12 +4,12 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-16T07:47:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-16T08:56:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
     title: 타입(생성한 api 타입) · 조회 조건 → api 쿼리(staffListApiSearch) · 점포명 → 점포 id(storeIdsByName) · 상세 이메일 칸(staffEmailText)
-    last_modified: 2026-10-16T07:47:00Z
+    last_modified: 2026-10-16T08:56:00Z
   - id: staff-members-api
     resource: ../../src/lib/staff-members-api.ts
     title: api 호출 — 목록 · 상세 · 퇴직 미리 보기 · 처리 · 변경 · 취소 · 비밀번호 재설정 링크
@@ -41,7 +41,7 @@ sources:
   - id: staff-detail-page
     resource: ../../src/app/staff-members/[id]/page.tsx
     title: 직원 상세 화면(틀 + 기본 정보 · 퇴직일 · 이메일 + 비밀번호 초기화 자리)
-    last_modified: 2026-10-16T07:47:00Z
+    last_modified: 2026-10-16T08:56:00Z
   - id: password-reset-dialog
     resource: ../../src/app/staff-members/[id]/password-reset-dialog.tsx
     title: 비밀번호 초기화 확인창(WHALEERP-177)
@@ -110,7 +110,8 @@ sources:
 * `store` 만 있고 `storeIds` 가 없는 주소(storeIds 를 싣기 전의 북마크 · 손으로 친 주소)는 파서가 `storeIds: null` 로 읽고, 필터가
   열리며 점포 목록에서 id 를 채워 주소를 바꾼다 — 그대로 두면 검색칸에 점포명이 있는데 0건이었다. 빈 값(`storeIds=`)은 「맞는 점포 없음」이다.
   채우기 전 첫 화면은 api 를 부르지 않으므로 빈 목록 자리에 「점포를 찾는 중입니다.」를 보인다(`staffListEmptyMessage`) — 「없음」이 깜빡이지 않게.
-* 라벨(`StaffJoinState` · `EmploymentType`)은 아직 화면 상수다. `getEnum` 으로 바꾸는 것은 남았다.
+* 목록 라벨(`joinCell` 의 `StaffJoinState` · `EmploymentType`)은 아직 화면 상수다. `getEnum` 으로 바꾸는 것은 남았다 — 상세
+  「이메일」 칸의 가입 상태 한글은 이미 `getEnum` 으로 받는다(아래 「이메일」).
 * api 오류(401 · 403 · 5xx)는 `error.tsx` 가 받는다. 404(상세)는 상세가 먼저 `notFound()` 로 받는다.
 
 # 상세 — 다시 작업할 것
@@ -132,13 +133,13 @@ sources:
 
 * 보이는 사람 — 상세를 볼 수 있는 관리자(「직원 정보 관리」 조회 권한)다. api 의 「수정 권한이 있을 때만」 조건을 뺐다(2026-10-16
   노영주, api kyoto · jolteon).
-* 없을 때(`staffEmailText`) — 초안 · 초대 발송은 「가입 전」이다. 나머지 가입 전 상태는 목록 「가입·인증」 칸(`joinCell`)의 글자를
-  날짜 · 일수 없이 쓴다(초대 만료 · 거절 · 연결 보류 · 소속 추가 확인 · 복귀 확인 · 가입 불가(만 19세 미만)). 초대 만료 · 거절은 api 가
-  초대 유형을 가리지 않아 이미 계정이 있는 직원의 소속 추가 확인 · 복귀 확인에서도 생기고(api `joinStateOf`), 연결 보류 · 소속 추가
-  확인 · 복귀 확인은 계정이 있는 직원이라 「가입 전」이라 하면 가입하라고 잘못 안내하게 된다(PR 전 리뷰, 2026-10-16 노영주). 두 글자가
-  어긋나면 `staff-row.test.ts` 가 잡는다. 가입 완료인데 없는 것(퇴직 · 탈퇴 · 본사 역할이 동의로만 보는 가맹 점포 직원)과 가입 상태를
-  모르는 것(타입을 다시 만들기 전 api 의 새 값 포함)은 「-」다. 퇴직은 재직 상태 줄이 말해 주고, 탈퇴와 본사 미제공은 응답만으로
-  확실히 가를 수 없어 짐작해 적지 않는다.
+* 없을 때(`staffEmailText`) — 초안 · 초대 발송은 「가입 전」이다(화면 문구). 나머지 가입 전 상태(초대 만료 · 거절 · 연결 보류 · 소속
+  추가 확인 · 복귀 확인 · 가입 불가(만 19세 미만))는 상세 페이지가 `getEnum("StaffJoinState")` 로 받은 한글을 쓴다 — front 에 enum 한글
+  대응표를 두지 않는다(naming.md, PR #42 리뷰). 초대 만료 · 거절은 api 가 초대 유형을 가리지 않아 이미 계정이 있는 직원의 소속 추가
+  확인 · 복귀 확인에서도 생기고(api `joinStateOf`), 연결 보류 · 소속 추가 확인 · 복귀 확인은 계정이 있는 직원이라 「가입 전」이라 하면
+  가입하라고 잘못 안내하게 된다(PR 전 리뷰, 2026-10-16 노영주). 가입 완료인데 없는 것(퇴직 · 탈퇴 · 본사 역할이 동의로만 보는 가맹
+  점포 직원)과 가입 상태를 모르는 것은 「-」다. 퇴직은 재직 상태 줄이 말해 주고, 탈퇴와 본사 미제공은 응답만으로 확실히 가를 수 없어
+  짐작해 적지 않는다. enum 을 받지 못하면 상세는 그대로 그리고 이 칸만 「-」다(영문 값을 보이지 않는다, 원인은 서버 로그).
 * 알려 주는 때(ACC-16) — 직원이 근무지에 직접 와서 물은 경우에만 알려 준다. 전화나 메시지로는 알려 주지 않는다. 목업
   (`docs/mockup/staff/detail.html` 안내 문단)에는 있고 데모에는 없어, 화면에 안내 문구를 두지 않고 운영 정책으로만 다룬다(2026-10-16 노영주).
 
