@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ConfirmDialog, DateField, useToast } from "@/components/common";
 import { PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
-import { checkRetiredDate, earliestRetiredDate, failureEffect, isSettledNow, settlesWithoutWarning } from "@/lib/retirement";
+import { checkRetiredDate, earliestRetiredDate, failureEffect, isSettledNow, settlesWithoutWarning, STALE_DAY_MESSAGE } from "@/lib/retirement";
 import { kstToday, type RetirementPreview } from "@/lib/staff-members";
 import { cancelRetirementAction, changeRetirementDateAction, previewRetirementAction, retireAction, type ActionFailure } from "./actions";
 
@@ -122,7 +122,7 @@ export function RetirementDialog({
       setToday(now);
       changeDate(date, now);
       if (settlesWithoutWarning(date, today, now)) {
-        setSubmitError("날짜가 바뀌어 퇴직일이 지난 날짜가 되었습니다. 처리하면 즉시 정리되니 다시 확인해 주세요.");
+        setSubmitError(STALE_DAY_MESSAGE);
         return;
       }
       if (checkRetiredDate(date, now)) return; // 3개월 범위를 벗어났다 — changeDate 가 문구를 띄웠다
@@ -130,10 +130,19 @@ export function RetirementDialog({
     setBusy(true);
     setSubmitError(null);
     try {
-      const result = mode === "retire" ? await retireAction(staffMemberId, date) : await changeRetirementDateAction(staffMemberId, date);
+      // 경고 여부를 정한 오늘을 함께 보낸다 — 서버 액션이 서버 시계로 다시 판정한다(브라우저 시계가 늦어도 막힌다)
+      const result =
+        mode === "retire" ? await retireAction(staffMemberId, date, today) : await changeRetirementDateAction(staffMemberId, date, today);
       if (result.ok) {
         toast(mode === "retire" ? "퇴직 처리되었습니다." : "퇴직일이 변경되었습니다.");
         onClose();
+        return;
+      }
+      // 서버 시계로 날짜가 바뀌어 막혔다 — 서버의 오늘로 경고 · 미리 보기를 다시 그리고, 다시 누르면 그 오늘로 판정받는다
+      if (result.today) {
+        setToday(result.today);
+        changeDate(date, result.today);
+        setSubmitError(result.message);
         return;
       }
       const message = onFailure(result);

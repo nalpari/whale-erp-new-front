@@ -1,7 +1,7 @@
 // node --test src/lib/retirement.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { checkRetiredDate, earliestRetiredDate, failureEffect, isSettledNow, retirementActions, settlesWithoutWarning } from "./retirement.ts";
+import { checkRetiredDate, earliestRetiredDate, failureEffect, isSettledNow, retirementActions, settlesWithoutWarning, staleDayWarning } from "./retirement.ts";
 
 test("가장 이른 퇴직일은 오늘에서 3개월 전 같은 날", () => {
   assert.equal(earliestRetiredDate("2026-10-15"), "2026-07-15");
@@ -92,4 +92,20 @@ test("날짜가 그대로거나, 이미 지난 날짜 경고를 본 경우는 �
   assert.equal(settlesWithoutWarning("2026-10-14", "2026-10-15", "2026-10-16"), false);
   // 자정을 넘겨도 퇴직일이 아직 오늘 이후면 다음 날 배치가 정리한다 — 그대로 처리한다
   assert.equal(settlesWithoutWarning("2026-10-20", "2026-10-15", "2026-10-16"), false);
+});
+
+test("서버 판정 — 확인창이 본 오늘과 서버의 오늘 사이에 퇴직일이 지난 날짜가 되면 경고 문구", () => {
+  assert.equal(
+    staleDayWarning("2026-10-15", "2026-10-15", "2026-10-16"),
+    "날짜가 바뀌어 퇴직일이 지난 날짜가 되었습니다. 처리하면 즉시 정리되니 다시 확인해 주세요.",
+  );
+});
+
+test("서버 판정 — 그대로거나 이미 지난 날짜 경고를 본 경우는 통과", () => {
+  assert.equal(staleDayWarning("2026-10-15", "2026-10-15", "2026-10-15"), null);
+  assert.equal(staleDayWarning("2026-10-14", "2026-10-15", "2026-10-16"), null);
+});
+
+test("서버 판정 — 확인창이 본 오늘이 날짜가 아니면 판단할 수 없어 다시 확인받는다", () => {
+  assert.notEqual(staleDayWarning("2026-10-15", "x", "2026-10-15"), null);
 });

@@ -46,6 +46,19 @@ export const isSettledNow = (retiredDate: string, today: string) => retiredDate 
 export const settlesWithoutWarning = (retiredDate: string, shownToday: string, now: string) =>
   !isSettledNow(retiredDate, shownToday) && isSettledNow(retiredDate, now);
 
+/** 자정을 넘겨 다시 확인받을 때의 문구. 확인창 · 서버 액션이 같은 문구를 쓴다. */
+export const STALE_DAY_MESSAGE = "날짜가 바뀌어 퇴직일이 지난 날짜가 되었습니다. 처리하면 즉시 정리되니 다시 확인해 주세요.";
+
+/**
+ * 서버 액션의 판정. 확인창이 경고 여부를 정할 때 쓴 오늘(shownToday)과 서버의 오늘(api 가 즉시 정리를 정하는 시계) 사이에
+ * 퇴직일이 지난 날짜가 됐으면 문구를 돌려준다 — 브라우저 시계가 늦어도 경고 없이 즉시 정리되지 않게 한다(PR #36 재리뷰).
+ * shownToday 가 날짜가 아니면 판단할 수 없으므로 다시 확인받는다.
+ */
+export function staleDayWarning(retiredDate: string, shownToday: string, serverToday: string): string | null {
+  if (!isDate(shownToday)) return STALE_DAY_MESSAGE;
+  return settlesWithoutWarning(retiredDate, shownToday, serverToday) ? STALE_DAY_MESSAGE : null;
+}
+
 /**
  * 상세 머리의 퇴직 버튼. retire = 「퇴직 처리」, scheduled = 「퇴직일 변경」 · 「퇴직 처리 취소」, null = 없음.
  * 가입 완료 레코드에만, 「직원 정보 관리」 수정 권한이 있을 때만 보인다. 업무 범위 밖 직원은 상세 api 가 404 라 여기 오지 않는다.

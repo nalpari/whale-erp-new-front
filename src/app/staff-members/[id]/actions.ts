@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
-import { checkRetiredDate } from "@/lib/retirement";
+import { checkRetiredDate, staleDayWarning } from "@/lib/retirement";
 import { kstToday, type RetirementPreview } from "@/lib/staff-members";
 import { cancelRetirement, changeRetirementDate, getRetirementPreview, retireStaffMember } from "@/lib/staff-members-api";
 
@@ -14,7 +14,8 @@ import { cancelRetirement, changeRetirementDate, getRetirementPreview, retireSta
  * 실패 결과. status 가 있으면 api 가 거절한 것이 확실하다. 없으면 결과를 모른다(5xx · 연결 실패) — 처리됐을 수도 있으니
  * 화면은 상세를 다시 받는다(failureEffect 의 refresh).
  */
-export type ActionFailure = { ok: false; status?: number; message: string };
+/** today 는 서버의 오늘 — 날짜가 바뀌어 막았을 때만 싣는다. 확인창이 이 값으로 경고 · 미리 보기를 다시 그린다. */
+export type ActionFailure = { ok: false; status?: number; message: string; today?: string };
 export type ActionResult<T = object> = ({ ok: true } & T) | ActionFailure;
 
 /** api 는 400 · 403 · 404 · 409 를 한국어로 알리므로 그대로 보인다. 401 은 할 일을 알 수 있게 고정 문구로 바꾼다. */
@@ -34,6 +35,16 @@ const NOT_FOUND: ActionFailure = { ok: false, status: 404, message: "직원을 �
 function badDate(retiredDate: unknown): ActionFailure | null {
   const message = typeof retiredDate === "string" ? checkRetiredDate(retiredDate, kstToday()) : "퇴직일을 입력해 주세요.";
   return message ? { ok: false, status: 400, message } : null;
+}
+
+/**
+ * 확인창이 경고를 정할 때 쓴 오늘과 서버의 오늘 사이에 퇴직일이 지난 날짜가 됐으면 막는다. 브라우저 시계가 늦어도 api 가 경고 없이
+ * 즉시 정리하지 않게 한다 — api 의 즉시 정리 판정은 서버 시계(kstToday)다.
+ */
+function staleDay(retiredDate: string, shownToday: unknown): ActionFailure | null {
+  const today = kstToday();
+  const message = staleDayWarning(retiredDate, typeof shownToday === "string" ? shownToday : "", today);
+  return message ? { ok: false, status: 409, message, today } : null;
 }
 
 /** 처리 뒤 상세 · 목록을 새로 받는다. 무효화가 실패해도 처리는 끝났으므로 성공으로 돌려준다 */
@@ -56,9 +67,9 @@ export async function previewRetirementAction(id: unknown, retiredDate: unknown)
   }
 }
 
-export async function retireAction(id: unknown, retiredDate: unknown): Promise<ActionResult> {
+export async function retireAction(id: unknown, retiredDate: unknown, shownToday: unknown): Promise<ActionResult> {
   if (!validId(id)) return NOT_FOUND;
-  const bad = badDate(retiredDate);
+  const bad = badDate(retiredDate) ?? staleDay(retiredDate as string, shownToday);
   if (bad) return bad;
   try {
     await retireStaffMember(id, retiredDate as string);
@@ -69,9 +80,9 @@ export async function retireAction(id: unknown, retiredDate: unknown): Promise<A
   }
 }
 
-export async function changeRetirementDateAction(id: unknown, retiredDate: unknown): Promise<ActionResult> {
+export async function changeRetirementDateAction(id: unknown, retiredDate: unknown, shownToday: unknown): Promise<ActionResult> {
   if (!validId(id)) return NOT_FOUND;
-  const bad = badDate(retiredDate);
+  const bad = badDate(retiredDate) ?? staleDay(retiredDate as string, shownToday);
   if (bad) return bad;
   try {
     await changeRetirementDate(id, retiredDate as string);
