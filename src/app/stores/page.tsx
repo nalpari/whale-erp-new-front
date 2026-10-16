@@ -1,8 +1,8 @@
 import { Button, ListToolbar } from "@/components/common";
-import { getStorePermission } from "@/lib/current-permission";
 import { STORE_STATUSES, STORE_TYPES } from "@/lib/store-types";
 import { getStores } from "@/lib/stores";
 import { StoreFilter } from "./store-filter";
+import { StorePermission } from "./store-permission";
 import { StoreFrame } from "./store-frame";
 import { StoreListNavigationProvider } from "./store-list-navigation";
 import { StorePageSizeSelect, StorePagination, StoreViewToggle } from "./store-list-controls";
@@ -18,7 +18,6 @@ import { StoreExcelButton, StoreExcelNotice, StoreExcelProvider } from "./store-
 export default async function StoresPage({ searchParams }: PageProps<"/stores">) {
   const raw = await searchParams;
   const parsed = parseStoresQuery(raw);
-  const manage = getStorePermission(raw) === "manage";
 
   // 고른 점포의 이름 — URL 에는 id 만 있다. 상태 · 유형과 상관없이 찾는다
   const pickedList = parsed.storeIds.length
@@ -51,7 +50,9 @@ export default async function StoresPage({ searchParams }: PageProps<"/stores">)
                 <StoreViewToggle />
                 <StoreExcelButton href={excelHref} empty={total === 0} />
                 {/* 가맹 마스터 · 가맹 관리자는 등록 권한이 켜져 있어도 등록하지 못한다 — api 가 403 으로 막는다 */}
-                {manage && <Button href="/stores/new">등록</Button>}
+                <StorePermission action="create">
+                  <Button href="/stores/new">등록</Button>
+                </StorePermission>
                 <StorePageSizeSelect />
               </ListToolbar>
               {query.view === "table" ? (

@@ -3,6 +3,13 @@
 import { cookies, headers } from "next/headers";
 import { apiError, ApiError, baseUrl, request } from "@/lib/api";
 import { apiFailure, CHECK_FAILED_MESSAGE, UNKNOWN_RESULT_MESSAGE } from "./_components/api-failure";
+import {
+  BIZ_VERIFY_FAILED_MESSAGE,
+  bizVerificationFailure,
+  hasApiMessage,
+  signupFailure,
+  verificationTokenOf,
+} from "./_components/biz-verification";
 import { SIGNUP_DONE_COOKIE, SIGNUP_DONE_MAX_AGE, SIGNUP_DONE_PATH } from "./signup-done-cookie";
 
 // api 의 가입 응답 모양. 쿠키에 심는 SignupDoneValue(signup-done-cookie.ts)는 여기에 issuedAt 을 더한
@@ -21,16 +28,20 @@ export type SignupPayload = {
   phone: string;
   email: string;
   tradeName: string;
-  // api SignupDto 는 사업자정보를 아직 받지 않는다(정해진 칸 밖의 값을 보내면 400). 사업자정보 인증은 화면에서만 하고 보내지 않는다.
+  // 사업자정보는 값이 아니라 진위확인(verifyBusiness)이 준 토큰으로 보낸다. api 가 토큰에서 번호·대표자명·개업일자를 꺼내 저장한다.
+  // 인증하지 않았으면 싣지 않는다 — 사업자정보 없이 가입한다.
+  bizVerificationToken?: string;
   agreeTermsOfUse: boolean;
   agreePrivacy: boolean;
 };
 
 // 완료 화면에 보여 줄 값. api 가 정규화한 값(아이디·이메일 소문자)이라 입력값 대신 이것을 쓴다.
 // conflict 는 409 — 확인과 제출 사이에 누가 먼저 가입했다. 폼이 두 칸을 다시 확인해 그 칸에 오류를 띄운다.
+// bizRejected 는 사업자정보 인증 때문에 거절됐다(토큰 만료 400, 인증 뒤 다른 BP 가 같은 번호로 가입한 409).
+// 폼이 인증을 풀고 사업자정보 칸에 문구를 보인다 — 같은 토큰으로 다시 내도 또 거절된다.
 export type SignupResult =
   | { ok: true; tradeName: string; loginId: string; email: string }
-  | { ok: false; message: string; conflict?: boolean };
+  | { ok: false; message: string; conflict?: boolean; bizRejected?: boolean };
 
 const SEND_FAILED = "회원가입 요청을 보내지 못했습니다. 잠시 후 다시 시도해 주세요.";
 const CHECK_FAILED = CHECK_FAILED_MESSAGE;
@@ -51,13 +62,14 @@ async function apiHeaders(): Promise<Record<string, string>> {
 
 const isTimeout = (e: unknown) => e instanceof Error && (e.name === "TimeoutError" || e.name === "AbortError");
 
-// 회원가입 제출. api 의 /auth/signup(api PR #37, bulbasaur 브랜치)은 아이디·이메일이 이미 쓰이면 409 를 준다.
-// 폼이 제출 전에 중복 확인을 마치므로, 확인과 제출 사이에 누가 먼저 가입한 경우에만 409 가 온다.
+// 회원가입 제출. api 의 /auth/signup(api PR #37, bulbasaur 브랜치)은 아이디·이메일이나, 인증한 사업자등록번호가 이미 쓰이면
+// 409 를 준다. 폼이 제출 전에 중복 확인을 마치므로, 확인(인증)과 제출 사이에 누가 먼저 가입한 경우에만 409 가 온다.
+// 사업자번호 409 와 토큰 만료 400 은 bizRejected 로 따로 돌려준다(signupFailure).
 export async function createSignup(payload: SignupPayload): Promise<SignupResult> {
   // api 가 가입을 받은 뒤의 실패(응답 모양 · 본문 파싱 · 쿠키)는 「보내지 못했다」가 아니다 — 계정은 이미 있다.
   let accepted = false;
   try {
-    // signupToken(완료 화면용, 10분)은 쓰지 않는다 — api 쪽 검증 API 가 아직 없어 진위를 확인할 수 없다.
+    // 응답의 signupToken(완료 화면용, 10분)은 쓰지 않는다 — 그 토큰을 확인하는 api 가 아직 없다.
     // 대신 완료 화면에 보일 값을 이 서버 액션이 직접 httpOnly 쿠키로 심는다(signup-done-cookie.ts 참고).
     // request() 대신 직접 fetch 한다 — 2xx 를 받은 순간 accepted 를 켜야 그 뒤 response.json() 이 던져도
     // (본문이 JSON 이 아니거나 비어 있을 때) 「보내지 못했다」가 아니라 「결과를 모른다」로 안내한다.
@@ -96,9 +108,10 @@ export async function createSignup(payload: SignupPayload): Promise<SignupResult
         console.error("[signup] createSignup api 5xx", error.status, error.message, error.body);
         return { ok: false, message: UNKNOWN_RESULT_MESSAGE };
       }
-      const failure = apiFailure(error.status, error.message, SEND_FAILED);
+      const failure = signupFailure(error.status, error.message, !!payload.bizVerificationToken, SEND_FAILED);
+      // 본문은 Nest 기본 { statusCode, message, error } 라 토큰 · 입력값이 들어 있지 않다.
       if (failure.log) console.error("[signup] createSignup api error", error.status, error.message, error.body);
-      return { ok: false, message: failure.message, conflict: failure.conflict };
+      return { ok: false, message: failure.message, conflict: failure.conflict, bizRejected: failure.bizRejected };
     }
     // 서버 액션은 Next 서버에서 돈다 — 여기서 로그를 안 남기면 실패가 어디에도 안 남는다(2026-10-12 코드리뷰).
     console.error("[signup] createSignup failed", error);
@@ -137,4 +150,35 @@ export async function checkLoginIdAvailability(loginId: string): Promise<Availab
 
 export async function checkEmailAvailability(email: string): Promise<AvailabilityResult> {
   return checkAvailability("/auth/signup/email-availability", { email });
+}
+
+export type BizVerificationInput = { bizRegistrationNumber: string; bizCeoName: string; bizOpenDate: string };
+export type BizVerificationResult = { ok: true; verificationToken: string } | { ok: false; message: string };
+
+// 사업자정보 진위확인. api 가 중복 검사 → 국세청 확인을 하고 10분짜리 토큰을 준다. 화면은 토큰을 들고 있다가 가입할 때 싣는다.
+export async function verifyBusiness(input: BizVerificationInput): Promise<BizVerificationResult> {
+  try {
+    const response = await request<unknown>("/auth/signup/business-verifications", {
+      method: "POST",
+      headers: await apiHeaders(),
+      body: JSON.stringify(input),
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+    const verificationToken = verificationTokenOf(response);
+    if (!verificationToken) {
+      // api 버전이 어긋났다. 「인증완료」로 바꾸면 가입할 때 사업자정보가 조용히 빠진다.
+      console.error("[signup] verifyBusiness unexpected response");
+      return { ok: false, message: BIZ_VERIFY_FAILED_MESSAGE };
+    }
+    return { ok: true, verificationToken };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      const failure = bizVerificationFailure(error.status, error.message, hasApiMessage(error.body));
+      // 입력값(대표자명 등)은 로그에 남기지 않는다.
+      if (failure.log) console.error("[signup] verifyBusiness api error", error.status, error.message);
+      return { ok: false, message: failure.message };
+    }
+    console.error("[signup] verifyBusiness failed", error);
+    return { ok: false, message: BIZ_VERIFY_FAILED_MESSAGE };
+  }
 }
