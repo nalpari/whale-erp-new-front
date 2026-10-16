@@ -1,7 +1,7 @@
 // node --test src/lib/role-form-sync.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { isChangedMeanwhile, isDirty, roleFieldOf, syncRoleForm, validateRoleForm } from "./role-form-sync.ts";
+import { afterConflict, isChangedMeanwhile, isDirty, roleFieldOf, syncRoleForm, validateRoleForm } from "./role-form-sync.ts";
 
 const base = { name: "고객지원 담당", description: "커뮤니티관리", updatedAt: "t1" };
 
@@ -56,4 +56,26 @@ test("api 문구를 붙일 칸 — 이름 중복은 권한명, 설명 형식은 
 test("동시 수정 409 만 칸을 다시 채운다", () => {
   assert.equal(isChangedMeanwhile("다른 관리자가 먼저 수정했습니다. 최신 정보를 불러온 뒤 다시 저장해 주세요"), true);
   assert.equal(isChangedMeanwhile("고정 권한은 지울 수 없습니다"), false);
+});
+
+test("고치던 중 최신 값을 먼저 받아 둔 뒤 409 — refresh 를 기다리지 않고 받아 둔 값으로 바로 다시 채운다", () => {
+  // 고치던 중이라 기준은 옛 updatedAt(t1)에 남고, 받아 둔 서버 값은 남이 바꾼 t2 다
+  const form = { name: "내가 고친 이름", description: "커뮤니티관리" };
+  const server = { name: "정산 담당", description: "커뮤니티관리", updatedAt: "t2" };
+  const kept = syncRoleForm(base, form, server);
+  assert.equal(kept.base.updatedAt, "t1");
+  // 저장 → 409. 다음 refresh 는 t2 그대로라 syncRoleForm 이 돌지 않는다 — 그래서 바로 맞춘다
+  const next = afterConflict(kept.base, kept.form, server);
+  assert.equal(next.waitForRefresh, false);
+  assert.deepEqual(next.base, server);
+  assert.deepEqual(next.form, { name: "정산 담당", description: "커뮤니티관리" });
+});
+
+test("아직 남의 변경을 못 받았으면 409 뒤 refresh 를 기다린다", () => {
+  const form = { name: "내가 고친 이름", description: "커뮤니티관리" };
+  const next = afterConflict(base, form, base);
+  assert.equal(next.waitForRefresh, true);
+  assert.deepEqual(next.form, form);
+  // refresh 로 새 값이 오면 다시 채운다
+  assert.deepEqual(syncRoleForm(next.base, next.form, { name: "정산 담당", description: "", updatedAt: "t2" }, true).form, { name: "정산 담당", description: "" });
 });

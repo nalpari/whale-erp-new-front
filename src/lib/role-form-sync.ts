@@ -34,6 +34,16 @@ export function syncRoleForm(
   return { base, form };
 }
 
+/**
+ * 동시 수정 409 를 받았을 때. 마지막으로 받은 서버 값(server)으로 바로 다시 채운다 — refresh 를 기다리면, 고치던 중에 최신 값을
+ * 이미 받아 둔 경우 새로 오는 값의 updatedAt 이 이미 본 값과 같아 다시 채우기가 돌지 않고 저장이 계속 409 가 된다.
+ * 받아 둔 값이 기준과 같은 updatedAt 이면(아직 남의 변경을 못 받았다) waitForRefresh — refresh 로 올 새 값으로 한 번 더 맞춘다.
+ */
+export function afterConflict(base: RoleFormBase, form: RoleFormValues, server: RoleFormBase): { base: RoleFormBase; form: RoleFormValues; waitForRefresh: boolean } {
+  if (server.updatedAt === base.updatedAt) return { base, form, waitForRefresh: true };
+  return { ...syncRoleForm(base, form, server, true), waitForRefresh: false };
+}
+
 /** 권한명 1~20자(필수) · 설명 100자 — api DTO(CreatePlatformRoleGroupDto)와 같은 규칙. 앞뒤 공백을 지우고 센다 */
 export const ROLE_NAME_MAX = 20;
 export const ROLE_DESCRIPTION_MAX = 100;

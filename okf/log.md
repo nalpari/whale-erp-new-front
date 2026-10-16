@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-10-16
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #35 블로커 반영: 권한 수정 폼이 고치던 중 최신 값을 먼저 받아 둔 뒤 동시 수정 409 를 받으면 refresh 를 기다리지 않고 받아 둔 값으로 바로 다시 채운다(`afterConflict`) — 전에는 다시 채우기가 돌지 않아 저장이 계속 409 였다.
+
 ## 2026-10-15
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [시스템관리](/system.md) — 전체 PR 리뷰 반영: 메뉴 권한 회수 확인창 Esc 가 팝업까지 닫던 것, 메뉴 저장 5xx 는 고친 칸을 두고 409 · 결과 모름 뒤 다시 채움을 알림, 조회가 잠긴 줄의 등록 막음, 동시 수정 409 만 칸 다시 채움, 공통코드 403 문구 그대로 · 저장 뒤 갱신 실패를 성공으로, 막힌 이유를 글자로(enum 을 못 받으면 일반 문구), 메뉴 코드 타입 · 권한 찾기 순수 함수(`menuPermissionOf`) · 권한 폼 검증(`role-form-sync`) 테스트. system.md 에 PA000001 이 api 에서 고정 권한이 아니라는 구현 메모를 더했다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 2차 코드 리뷰 반영: 권한 수정 폼이 기준값(`role-form-sync.ts`)으로 저장해 남의 변경을 덮어쓰지 않게(바뀐 것 없으면 [저장] 막음), 생성 타입을 giza 최신 openapi 로 다시 만들어 권한 목록은 `PlatformRoleGroupSummaryListResponseDto`, 플랫폼 관리자 권한 선택지는 생성 타입으로 되돌림, PA000001 고정 권한 문구 정리, 서비스 탭 휠 끝 · Tab 키 대상, 핸들러 이름 `handle` 접두.

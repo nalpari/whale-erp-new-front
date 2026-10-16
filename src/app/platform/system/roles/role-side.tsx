@@ -7,6 +7,7 @@ import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
 import { useMenuPermission } from "@/components/site/session-gate";
 import type { EnumValue } from "@/lib/enums";
 import {
+  afterConflict,
   isChangedMeanwhile,
   isDirty,
   ROLE_DESCRIPTION_MAX,
@@ -129,7 +130,8 @@ function RoleForm(
   const roleTypeLabel = useCodeLabel("ROLE_TYPE");
   // 기준값 — 마지막으로 맞춘 서버 값과 그때의 updatedAt. 저장은 이 updatedAt 으로 보내, 그 사이 다른 사람이 고쳤으면 api 가 409 로 알린다.
   // 같은 권한의 최신 정보가 와도 칸은 다시 그리지 않고(roles-screen 의 key) syncRoleForm 규칙으로 기준값 · 칸을 맞춘다 — 메뉴만 바뀌면
-  // updatedAt 만 올리고, 칸을 손대지 않았으면 새 값으로 채우고, 고치던 중이면 기준을 그대로 둔다. 409 뒤에 온 최신 값은 칸에 다시 채운다.
+  // updatedAt 만 올리고, 칸을 손대지 않았으면 새 값으로 채우고, 고치던 중이면 기준을 그대로 둔다. 동시 수정 409 를 받으면 받아 둔 최신 값으로
+  // 바로 다시 채우고(afterConflict), 아직 못 받았으면 refresh 로 올 값으로 맞춘다.
   const server: RoleFormBase | null =
     props.mode === "edit" ? { name: props.role.name, description: props.role.description ?? "", updatedAt: props.role.updatedAt } : null;
   const [base, setBase] = useState<RoleFormBase>(() => server ?? { name: "", description: "", updatedAt: "" });
@@ -194,7 +196,14 @@ function RoleForm(
     // 나중에 메뉴 저장으로 updatedAt 이 바뀔 때 고치던 칸을 덮어쓴다. 그 밖은 입력을 그대로 둔다
     const reload = result.status === 409 && props.mode === "edit" && isChangedMeanwhile(result.message);
     setFailure({ message: result.message, detail: reload ? "최신 정보로 칸을 다시 채웠습니다. 확인한 뒤 다시 저장해 주세요." : "입력한 값은 그대로 두었습니다." });
-    if (reload) setReloadOnRefresh(true);
+    if (reload && server) {
+      // 받아 둔 최신 값으로 바로 다시 채운다 — 아직 못 받았으면 refresh 로 올 값으로 맞춘다(afterConflict)
+      const next = afterConflict(base, form, server);
+      setBase(next.base);
+      setForm(next.form);
+      setErrors({});
+      setReloadOnRefresh(next.waitForRefresh);
+    }
     // 그 사이 바뀌었거나(409 동시 수정) 지워졌거나(404) 결과를 모르면 최신 정보를 받는다
     if (result.status === undefined || result.status === 404 || result.status === 409) router.refresh();
   };
