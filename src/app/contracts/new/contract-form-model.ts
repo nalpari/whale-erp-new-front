@@ -8,6 +8,8 @@ export type Weekday = (typeof WEEKDAYS)[number];
 export type EmploymentType = "FULL_TIME" | "PART_TIME";
 export type PayMonth = "CURRENT_MONTH" | "NEXT_MONTH";
 export type PayMethod = "ACCOUNT" | "CASH";
+export const GENDERS = ["MALE", "FEMALE"] as const;
+export type Gender = (typeof GENDERS)[number];
 export type ContractMethod = "ELECTRONIC" | "PAPER";
 
 /** 시 · 분 (분은 00 · 30) */
@@ -33,6 +35,10 @@ export interface ContractForm {
   name: string;
   phone: string;
   birthDate: string;
+  /** 성별 — 가입 값과 본인 대조(WHALEERP-125). 처음엔 고르지 않은 상태 */
+  gender: Gender | "";
+  /** 외국인 여부 — 체크하지 않으면 내국인 */
+  isForeigner: boolean;
   storeId: string;
   jobTitle: string;
   employmentType: EmploymentType;
@@ -119,6 +125,8 @@ export function initialForm(storeId = ""): ContractForm {
     name: "",
     phone: "",
     birthDate: "",
+    gender: "",
+    isForeigner: false,
     storeId,
     jobTitle: "",
     employmentType: "FULL_TIME",
@@ -172,6 +180,8 @@ export function fromDetail(d: ContractDetail): ContractForm {
     name: d.name,
     phone: formatPhone(d.phone),
     birthDate: d.birthDate ?? "",
+    gender: d.gender ?? "",
+    isForeigner: d.isForeigner,
     jobTitle: d.jobTitle,
     employmentType: d.employmentType,
     startDate: d.startDate ?? "",
@@ -414,6 +424,7 @@ export function problems(f: ContractForm, temporary = false, hasEmploymentFile =
   if (!f.name.trim()) out.push("이름을 입력하세요");
   if (!/^[0-9]{10,11}$/.test(digits(f.phone))) out.push("휴대전화번호는 숫자 10~11자리입니다");
   need(!f.birthDate, "생년월일을 입력하세요");
+  need(!f.gender, "성별을 고르세요");
   if (!f.storeId) out.push("소속 근무지를 고르세요");
   if (!f.jobTitle.trim()) out.push("직무를 입력하세요");
   need(!f.startDate, "계약 시작일을 입력하세요");
@@ -459,6 +470,8 @@ export function toBody(f: ContractForm, temporary = false): CreateContractBody {
     name: f.name.trim(),
     phone: digits(f.phone),
     ...(f.birthDate ? { birthDate: f.birthDate } : {}),
+    ...(f.gender ? { gender: f.gender } : {}),
+    isForeigner: f.isForeigner,
     storeId: Number(f.storeId),
     jobTitle: f.jobTitle.trim(),
     employmentType: f.employmentType,

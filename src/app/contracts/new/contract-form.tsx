@@ -7,6 +7,7 @@ import { labelOf, type EnumValue } from "@/lib/enums";
 import { createContract, updateContract } from "./actions";
 import {
   formatHours,
+  GENDERS,
   formatPhone,
   formatWage,
   fullTimePay,
@@ -44,6 +45,7 @@ export interface ContractFormLabels {
   weekday: EnumValue[];
   payMonth: EnumValue[];
   payMethod: EnumValue[];
+  gender: EnumValue[];
   /** 대체할지 물을 때 진행 중 계약의 상태 이름 */
   contractStatus: EnumValue[];
   contractMethod: EnumValue[];
@@ -432,6 +434,15 @@ export function ContractForm({
             <Item label="생년월일" required help="계약 시작일 기준 만 19세 미만이면 저장할 수 없다">
               {() => <DateField aria-label="생년월일" autoHyphen value={form.birthDate} onChange={(v) => set("birthDate", v)} />}
             </Item>
+            {/* 성별 · 외국인 여부 — 직원이 가입하며 넣는 값과 이름 · 번호 · 생년월일과 함께 대조해 본인만 날인한다(WHALEERP-125) */}
+            <Group label="성별" required help="가입 값과 대조해 본인만 날인한다">
+              <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
+                {GENDERS.map((v) => (
+                  <Radio key={v} name="gender" label={labelOf(labels.gender, v)} checked={form.gender === v} onChange={() => set("gender", v)} />
+                ))}
+                <Checkbox label="외국인" checked={form.isForeigner} onChange={(e) => set("isForeigner", e.target.checked)} />
+              </div>
+            </Group>
             <Item label="소속 근무지" required>
               {(id) => (
                 <Select id={id} value={form.storeId} onChange={(e) => set("storeId", e.target.value)}>

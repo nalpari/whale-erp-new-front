@@ -35,6 +35,7 @@ const filled = (over: Partial<ContractForm> = {}): ContractForm => ({
   name: " 남도현 ",
   phone: "010-9014-5563",
   birthDate: "1998-07-12",
+  gender: "MALE",
   jobTitle: "바리스타",
   startDate: "2026-09-14",
   wage: "12,000",
@@ -44,7 +45,7 @@ const filled = (over: Partial<ContractForm> = {}): ContractForm => ({
 /** 상세 응답 견본 — 비어 있는 임시저장. 테스트마다 필요한 칸만 덮는다 */
 const detailOf = (over: Partial<ContractDetail> = {}): ContractDetail => ({
   contractId: 7, staffMemberId: 3, status: "DRAFT", name: "남도현", phone: "01090145563", jobTitle: "바리스타",
-  employmentType: "PART_TIME", storeId: 11, storeName: "모리커피 성수점", birthDate: null, contractMethod: null,
+  employmentType: "PART_TIME", storeId: 11, storeName: "모리커피 성수점", birthDate: null, gender: null, isForeigner: false, contractMethod: null,
   startDate: null, endDate: null, workLocation: null, weeklyHoliday: null, wageAmount: null,
   mealAllowanceAmount: null, carAllowanceAmount: null, childcareAllowanceAmount: null, baseHours: null,
   monthlyOvertimeHours: null, baseNightHours: null, baseHolidayHours: null, monthlyExtraHolidayHours: null,
@@ -365,4 +366,24 @@ test("확인창 한 줄 — 누구 계약인지 이름 · 기간을 앞에 둔�
   assert.equal(inProgressLine(c, "체결 완료"), "남도연 · 2026-09-01 ~ 2026-10-01 · 체결 완료 · 계약 5");
   assert.equal(inProgressLine({ ...c, endDate: null }, "체결 완료"), "남도연 · 2026-09-01 ~ · 체결 완료 · 계약 5");
   assert.equal(inProgressLine({ ...c, name: null, startDate: null, endDate: null }, "임시저장"), "임시저장 · 계약 5");
+});
+
+test("성별 · 외국인 여부 — 초안 저장은 성별을 골라야 하고, 본문에 실린다(WHALEERP-125 본인 대조)", () => {
+  assert.ok(problems(filled({ gender: "" })).includes("성별을 고르세요"));
+  assert.ok(!problems(filled({ gender: "" }), true).includes("성별을 고르세요")); // 임시저장은 비워도 된다
+  assert.deepEqual(problems(filled()), []);
+  const body = toBody(filled({ gender: "FEMALE", isForeigner: true }));
+  assert.equal(body.gender, "FEMALE");
+  assert.equal(body.isForeigner, true);
+  // 고르지 않았으면 보내지 않는다. 외국인 여부는 늘 보낸다(체크하지 않으면 내국인)
+  const temp = toBody(filled({ gender: "" }), true);
+  assert.equal("gender" in temp, false);
+  assert.equal(temp.isForeigner, false);
+});
+
+test("성별 · 외국인 여부 — 이어 쓰기는 상세 값으로 다시 채운다", () => {
+  const f = fromDetail(detailOf({ gender: "FEMALE", isForeigner: true }));
+  assert.equal(f.gender, "FEMALE");
+  assert.equal(f.isForeigner, true);
+  assert.equal(fromDetail(detailOf()).gender, "");
 });

@@ -2625,6 +2625,11 @@ export interface components {
             total: number;
         };
         /**
+         * @description 성별 — 남 · 여. 가입 때 직원이 넣은 값과 본인 대조한다(WHALEERP-125). 임시저장은 비워도 된다
+         * @enum {string}
+         */
+        Gender: "MALE" | "FEMALE";
+        /**
          * @description 주휴일 — 근무하지 않는 요일 하나(노무사 확인 2026-10-14). 주 소정근로시간이 15시간 이상이면 넣어야 하고,
          *     15시간 미만이면 주휴가 없어 비운다(contracts.service checkWeeklyHoliday).
          * @enum {string}
@@ -2647,6 +2652,8 @@ export interface components {
          */
         PayMethod: "ACCOUNT" | "CASH";
         CreateContractDto: {
+            /** @description 성별 — 남 · 여. 가입 때 직원이 넣은 값과 본인 대조한다(WHALEERP-125). 임시저장은 비워도 된다 */
+            gender?: components["schemas"]["Gender"];
             employmentType: components["schemas"]["EmploymentType"];
             /**
              * @description 전자계약 · 종이 계약. 임시저장이면 비워도 된다. 종이 계약은 날인본 파일과 함께 `POST /contracts/paper`
@@ -2668,6 +2675,8 @@ export interface components {
             phone: string;
             /** @description YYYY-MM-DD. 계약 시작일 기준 만 19세 미만이면 저장하지 않는다 */
             birthDate?: string;
+            /** @description 외국인 여부 — 체크하지 않으면 내국인(false). 본인 대조에 쓴다(WHALEERP-125) */
+            isForeigner?: boolean;
             storeId: number;
             jobTitle: string;
             /** @description YYYY-MM-DD */
@@ -2759,6 +2768,7 @@ export interface components {
             storeName: string | null;
             /** @description YYYY-MM-DD */
             birthDate: string | null;
+            gender: components["schemas"]["Gender"] | null;
             contractMethod: components["schemas"]["ContractMethod"] | null;
             startDate: string | null;
             endDate: string | null;
@@ -2809,6 +2819,8 @@ export interface components {
             phone: string;
             jobTitle: string;
             storeId: number;
+            /** @description 외국인 여부 — 체크하지 않았으면 false */
+            isForeigner: boolean;
         };
         DownloadUrlResponseDto: {
             url: string;
@@ -6896,7 +6908,7 @@ export interface operations {
                     "application/json": components["schemas"]["PublishedPostListResponseDto"];
                 };
             };
-            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 */
+            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 · 그 글 종류 메뉴의 조회 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -6924,7 +6936,7 @@ export interface operations {
                     "application/json": components["schemas"]["PublishedPostResponseDto"];
                 };
             };
-            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 */
+            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 · 그 글 종류 메뉴의 조회 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
