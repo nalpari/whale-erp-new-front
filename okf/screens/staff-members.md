@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-16T09:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-16T12:00:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -178,7 +178,7 @@ sources:
   「화면을 새로 고친 뒤 …」다. api 의 503(링크 주소 · 발송기 없음 · 발송 실패, 문구가 있는 Nest 본문 `{ statusCode: 503, message }`)은
   보내지 않았다고 알린 것이라 결과 모름으로 묶지 않는다(`isApiSendRefusal`) — 프록시 · 로드밸런서의 503 은 결과 모름이다. 409 는
   화면이 낡았다는 뜻이라 상세를 다시 받아 버튼을 거둔다(`refreshesAfterReset`). 403 은 퇴직 확인창과 같다(`use-action-failure.ts` 의
-  `useFailure`). 결과 모름은 서버 로그에 staffMemberId 를 함께 남긴다. 확인 버튼은 그리기 전 두 번째 클릭도 ref 로 막는다.
+  `useFailure`). 결과 모름은 서버 로그에 기능 이름(퇴직 · 비밀번호 초기화)과 staffMemberId 를 함께 남긴다 — 퇴직 서버 액션도 같다. 확인 버튼은 그리기 전 두 번째 클릭도 ref 로 막는다.
 * 보낸 시각 · 기한은 보이지 않는다 — 성공하면 토스트 「재설정 링크를 보냈습니다.」뿐이다. Plane 완료 조건 4(발송 시각 · 기한 24시간)는
   발송 종류를 담는 이메일 발송 로그 테이블을 따로 만들어 발송 이력으로 다룬다(2026-10-16 노영주). api 응답의 `issuedAt` · `expiresAt`
   은 지금 쓰지 않는다.

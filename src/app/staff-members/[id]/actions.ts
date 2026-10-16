@@ -20,14 +20,17 @@ import { cancelRetirement, changeRetirementDate, getRetirementPreview, issuePass
 export type ActionFailure = { ok: false; status?: number; message: string; today?: string };
 export type ActionResult<T = object> = ({ ok: true } & T) | ActionFailure;
 
-/** api 는 400 · 403 · 404 · 409 를 한국어로 알리므로 그대로 보인다. 401 은 할 일을 알 수 있게 고정 문구로 바꾼다. */
-function failureOf(error: unknown, what: string, context?: Record<string, unknown>): ActionFailure {
+/**
+ * api 는 400 · 403 · 404 · 409 를 한국어로 알리므로 그대로 보인다. 401 은 할 일을 알 수 있게 고정 문구로 바꾼다.
+ * what 은 화면 문구에 들어가는 동작 이름, feature 는 로그에서 기능을 가르는 이름이다(퇴직 · 비밀번호 초기화).
+ */
+function failureOf(error: unknown, what: string, log: { feature: string; staffMemberId: number }): ActionFailure {
   if (error instanceof ApiError) {
     if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if (error.status < 500) return { ok: false, status: error.status, message: error.message };
   }
-  // 결과 모름은 api 로그와 맞춰 봐야 해 대상 id 를 함께 남긴다.
-  console.error(`${what} 결과 모름`, ...(context ? [context] : []), error);
+  // 결과 모름은 api 로그와 맞춰 봐야 해 기능 이름과 대상 id 를 함께 남긴다.
+  console.error(`${log.feature} ${what} 결과 모름`, { staffMemberId: log.staffMemberId }, error);
   return { ok: false, message: `${what} 결과를 확인하지 못했습니다. 화면을 새로 불러왔으니 확인해 주세요.` };
 }
 
@@ -66,7 +69,7 @@ export async function previewRetirementAction(id: unknown, retiredDate: unknown)
   try {
     return { ok: true, preview: await getRetirementPreview(id, retiredDate as string) };
   } catch (error) {
-    return failureOf(error, "미리 보기");
+    return failureOf(error, "미리 보기", { feature: "퇴직", staffMemberId: id });
   }
 }
 
@@ -79,7 +82,7 @@ export async function retireAction(id: unknown, retiredDate: unknown, shownToday
     refresh();
     return { ok: true };
   } catch (error) {
-    return failureOf(error, "처리");
+    return failureOf(error, "처리", { feature: "퇴직", staffMemberId: id });
   }
 }
 
@@ -92,7 +95,7 @@ export async function changeRetirementDateAction(id: unknown, retiredDate: unkno
     refresh();
     return { ok: true };
   } catch (error) {
-    return failureOf(error, "퇴직일 변경");
+    return failureOf(error, "퇴직일 변경", { feature: "퇴직", staffMemberId: id });
   }
 }
 
@@ -103,7 +106,7 @@ export async function cancelRetirementAction(id: unknown): Promise<ActionResult>
     refresh();
     return { ok: true };
   } catch (error) {
-    return failureOf(error, "취소");
+    return failureOf(error, "취소", { feature: "퇴직", staffMemberId: id });
   }
 }
 
@@ -119,6 +122,6 @@ export async function issuePasswordResetLinkAction(id: unknown): Promise<ActionR
     return { ok: true };
   } catch (error) {
     if (error instanceof ApiError && isApiSendRefusal(error.status, error.body)) return { ok: false, status: 503, message: error.message };
-    return failureOf(error, "재설정 링크 발송", { staffMemberId: id });
+    return failureOf(error, "재설정 링크 발송", { feature: "비밀번호 초기화", staffMemberId: id });
   }
 }
