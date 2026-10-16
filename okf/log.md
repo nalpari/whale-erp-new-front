@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-16
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — api #56 머지(api main b119919) 뒤 `api-types.generated.ts` 를 api main 기준으로 다시 만들어 머지 전 브랜치(rapidash 0ed2373) 기준과 차이가 없음을 확인했다. main(front #38) 병합 — okf/log.md 충돌만 풀었다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — PR #37 리뷰 반영: 409 면 문구를 토스트로 알리고 확인창을 닫은 뒤 상세를 다시 받는다(다시 받으면 확인창이 함께 내려가 문구가 사라졌다). 응답에 email 칸이 없으면 버튼을 숨긴다. 「이메일」 줄 표시 범위는 확정(api #56 5d671d6)으로 고쳤다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — api #56 이 상세 `email` 을 더 좁혔다(0ed2373: 퇴직 레코드 · 수정 권한 없는 관리자도 null). 주석 · 문서를 맞췄다. 기본 정보 「이메일」은 null 이면 「-」 그대로, ACC-17 은 「보일 때 고치지 못한다」로 읽는다(노영주, 재영 확인 전). 버튼 판정은 그대로다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `api-types.generated.ts` 를 api #56(rapidash 0ed2373, 머지 전) openapi 로 다시 만들었다. 상세 `email` 설명만 바뀌었다.
@@ -12,6 +13,7 @@
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 비밀번호 초기화 2차 리뷰 반영(노영주): 429 는 api 문구(이미 보냈다는 사실), 탈퇴(가입 완료 + email null) 직원에게 버튼 숨김, 409 면 상세를 다시 받음, 서버 액션을 부르지 못하면 「화면을 새로 고친 뒤」, 결과 모름 로그에 staffMemberId. 599 대기 · TODO(599) 서술을 지웠다(api main 머지, `:id` = staffMemberId).
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 비밀번호 초기화 PR 전 리뷰 반영: 본사 역할은 직영 점포 직원에게만 버튼(가맹 직원은 api 가 404), 프록시 503 은 결과 모름, 확인 버튼 이중 클릭 막기, 상세 확인창 실패 처리를 `use-action-failure.ts` 로 분리.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 비밀번호 초기화(WHALEERP-177)를 api 에 붙였다. 가입 완료 · 재직(퇴직 예정 포함) · 수정 권한일 때만 버튼, 데모 확인창, 429 · 503 · 결과 모름 문구. 받는 곳 이메일과 기본 정보 「이메일」 줄은 api #56 상세 응답 `email` 로 채웠고(타입은 api 브랜치로 생성, 머지 뒤 다시 만든다), 발송 시각 · 기한(완료 조건 4)은 이메일 발송 로그 테이블과 함께 따로 다룬다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약서 작성 · 이어 쓰기에 성별(남 · 여, 초안 저장부터 필수)과 외국인 체크, 상세에 「성별」 줄을 더했다(WHALEERP-125 본인 대조 · 132). api-types 를 api sandshrew 로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `api-types.generated.ts` 를 api #49 5차 반영(7a5ddec) openapi 로 다시 만들었다(`replaceContractIds` 상한 200, main 의 다른 변경 포함). 화면 동작은 그대로다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — PR #36 재리뷰(bfb3306) 반영: 퇴직 확인창이 확인할 때 브라우저 시계로 오늘을 바꾸지 않고, 서버 액션이 날짜 바뀜으로 막으며 돌려준 서버의 오늘로만 바꾼다(`todayAfterSubmit`) — 브라우저 시계가 빠를 때의 과잉 경고와 경고가 번갈아 보이던 것. api 시계와의 틈은 api 「기대한 오늘」 후속.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — PR #36 재리뷰 반영: 퇴직 확인창의 자정 넘김 재확인을 서버 액션이 서버 시계로 다시 판정한다(브라우저 시계가 늦으면 경고 없이 즉시 정리되던 틈). storeIds 없는 예전 주소는 첫 화면에 「점포를 찾는 중입니다.」를 보여 빈 목록이 깜빡이지 않는다.

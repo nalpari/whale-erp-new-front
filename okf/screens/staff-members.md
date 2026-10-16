@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-16T16:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-16T18:00:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -173,8 +173,7 @@ sources:
   나온다 — 가입 전 · 탈퇴 · 퇴직, 「직원 정보 관리」 수정 권한 없음, 본사 역할(BM · BA)이 동의로만 보는 가맹 점포 직원이면 null 이다
   (api #56 0ed2373). 그 경우 모두 다른 판정으로도 버튼이 없고, 기본 정보 「이메일」은 「-」다. ACC-17 은 「보일 때 고치지 못한다」로
   읽는다(2026-10-16 확정, api #56 5d671d6). 응답에 `email` 칸이 없으면(api #56 전 배포) 탈퇴인지 몰라 버튼을 숨긴다.
-  기본 정보의 「이메일」 줄도 이 값으로 채운다(ACC-17: 보이되 고치지 못함). 타입은 머지 전이라 api 브랜치(rapidash)로 만들었다 —
-  api 머지 뒤 api main 기준으로 다시 만든다.
+  기본 정보의 「이메일」 줄도 이 값으로 채운다(ACC-17: 보이되 고치지 못함). 타입은 api main(b119919, api #56 머지) 기준이다.
 * 실패(`resetFailureMessage`) — 404 · 409 · 429 · 503 은 api 문구 그대로, 401 은 로그인 만료 문구다. 429 는 데모의 「잠시 뒤 다시
   시도해 주세요」가 아니라 api 의 「방금 재설정 링크를 보냈습니다. 1분 뒤에 다시 보낼 수 있습니다」다 — 결과 모름 뒤 다시 누른 경우가
   많아 이미 보냈다는 사실을 알려야 다시 보내 직원의 링크를 무효로 만들지 않는다(2026-10-16 노영주, 데모와 다름). 서버가 api 결과를
