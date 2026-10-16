@@ -11,10 +11,15 @@ import {
   fromDetail,
   hoursOf,
   initialForm,
+  inProgressLine,
   inProgressOf,
   isMinor,
   monthlyWage,
   fullTimePay,
+  PAPER_FILE_MAX_BYTES,
+  paperFileAccept,
+  paperFileError,
+  paperFileTypesOf,
   partTimePay,
   probationWage,
   problems,
@@ -45,7 +50,7 @@ const detailOf = (over: Partial<ContractDetail> = {}): ContractDetail => ({
   monthlyOvertimeHours: null, baseNightHours: null, baseHolidayHours: null, monthlyExtraHolidayHours: null,
   annualLeaveTerms: null, severancePayTerms: null, payMonth: null, payDay: null, payMethod: null,
   probationMonths: null, probationWageReductionRate: null,
-  isHealthPensionInsured: null, isEmploymentInjuryInsured: null, draftAction: null, histories: [], workDays: [],
+  isHealthPensionInsured: null, isEmploymentInjuryInsured: null, draftAction: null, histories: [], workDays: [], documents: [],
   ...over,
 });
 
@@ -270,8 +275,12 @@ test("이어 쓰기: api #12 칸을 폼으로 되돌린다. 비운 조항은 기
 });
 
 test("409 본문에서 대체할 진행 중 계약만 꺼낸다", () => {
-  const list = [{ contractId: 5, status: "PENDING_SEND" }];
+  const list = [{ contractId: 5, status: "PENDING_SEND", name: "남도현", startDate: "2026-11-01", endDate: null }];
   assert.deepEqual(inProgressOf({ statusCode: 409, code: "CONTRACT_IN_PROGRESS", message: "…", contracts: list }), list);
+  // 이름 · 기간이 없는 옛 api 본문도 받는다(빈 값은 null)
+  assert.deepEqual(inProgressOf({ code: "CONTRACT_IN_PROGRESS", contracts: [{ contractId: 5, status: "DRAFT", name: "" }] }), [
+    { contractId: 5, status: "DRAFT", name: null, startDate: null, endDate: null },
+  ]);
   // 근무 시간 겹침 · 재직 중은 문장만 보인다
   assert.equal(inProgressOf({ statusCode: 409, code: "WORK_TIME_OVERLAP", overlaps: [] }), undefined);
   assert.equal(inProgressOf({ statusCode: 409, message: "재직 중" }), undefined);
@@ -326,4 +335,34 @@ test("수습: 정직원만, 기간과 감액률을 함께 보내고 조건을 �
   assert.ok(problems(filled({ ...on, wage: "10,000" })).some((m) => m.startsWith("수습 중 시급은 최저임금의 90%")));
   // 수습을 끄면 보내지 않는다
   assert.equal("probationMonths" in toBody(filled({ ...on, probation: false })), false);
+});
+
+test("종이 계약: 등록은 근로계약서 날인본이 있어야 하고, 임시저장은 파일 없이 된다", () => {
+  const paper = filled({ contractMethod: "PAPER" });
+  assert.ok(problems(paper).includes("당사자가 모두 날인한 근로계약서 파일을 올려 주세요"));
+  assert.deepEqual(problems(paper, false, true), []);
+  assert.deepEqual(problems(paper, true), []);
+  // 전자계약은 파일을 묻지 않는다
+  assert.deepEqual(problems(filled()), []);
+  assert.equal(toBody(paper).contractMethod, "PAPER");
+  assert.equal(toBody(filled()).contractMethod, "ELECTRONIC");
+  assert.equal(fromDetail(detailOf({ contractMethod: "PAPER" })).contractMethod, "PAPER");
+  assert.equal(fromDetail(detailOf()).contractMethod, "ELECTRONIC");
+});
+
+test("종이 계약 날인본 파일: 형식은 enum 값으로, 10MB 까지", () => {
+  const types = paperFileTypesOf(["PDF", "JPG", "PNG", "GIF"]);
+  assert.deepEqual(types, ["PDF", "JPG", "PNG"]);
+  assert.equal(paperFileAccept(["PDF"]), "application/pdf,.pdf");
+  assert.equal(paperFileError({ name: "계약서.PDF", type: "", size: 10 }, types), null);
+  assert.equal(paperFileError({ name: "a.hwp", type: "application/x-hwp", size: 10 }, types), "PDF · JPG · PNG 파일만 올릴 수 있습니다.");
+  assert.equal(paperFileError({ name: "a.pdf", type: "application/pdf", size: 0 }, types), "빈 파일입니다. 다른 파일을 골라 주세요.");
+  assert.equal(paperFileError({ name: "a.jpg", type: "image/jpeg", size: PAPER_FILE_MAX_BYTES + 1 }, types), "파일은 10MB까지 올릴 수 있습니다.");
+});
+
+test("확인창 한 줄 — 누구 계약인지 이름 · 기간을 앞에 둔다", () => {
+  const c = { contractId: 5, status: "SIGNED", name: "남도연", startDate: "2026-09-01", endDate: "2026-10-01" };
+  assert.equal(inProgressLine(c, "체결 완료"), "남도연 · 2026-09-01 ~ 2026-10-01 · 체결 완료 · 계약 5");
+  assert.equal(inProgressLine({ ...c, endDate: null }, "체결 완료"), "남도연 · 2026-09-01 ~ · 체결 완료 · 계약 5");
+  assert.equal(inProgressLine({ ...c, name: null, startDate: null, endDate: null }, "임시저장"), "임시저장 · 계약 5");
 });

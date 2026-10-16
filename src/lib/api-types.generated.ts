@@ -875,6 +875,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/contracts/paper": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 종이 계약 등록(CTR-23). 당사자가 모두 날인한 근로계약서(필수) · 임금계약서(선택) 파일과 근로계약서 내용(data,
+         *     JSON)을 multipart 한 번으로 받아 발송 · 날인 없이 체결 완료로 저장한다. 검사 · 대체 · 겹침 · 초대 유형 판별은
+         *     초안 저장과 같다. 저장이 실패하면 올린 파일도 지운다.
+         */
+        post: operations["ContractsController_createPaper"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/contracts/{contractId}": {
         parameters: {
             query?: never;
@@ -889,6 +910,40 @@ export interface paths {
         post?: never;
         /** 임시저장 삭제. 계약 · 근무 요일 · 당사자 · 이력과 그 계약에만 쓰인 초안 직원 레코드를 지운다 */
         delete: operations["ContractsController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/contracts/{contractId}/paper": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** 임시저장을 이어 써서 종이 계약으로 등록한다. 받는 것 · 하는 일은 POST /contracts/paper 와 같다 */
+        put: operations["ContractsController_updatePaper"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/contracts/{contractId}/documents/{contractDocumentId}/download-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 종이 계약 날인본 내려받기 주소(300초). 받으면 원래 파일 이름으로 저장된다 */
+        get: operations["ContractsController_documentDownloadUrl"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -2594,10 +2649,10 @@ export interface components {
         CreateContractDto: {
             employmentType: components["schemas"]["EmploymentType"];
             /**
-             * @description 임시저장이면 비워도 된다
-             * @enum {string}
+             * @description 전자계약 · 종이 계약. 임시저장이면 비워도 된다. 종이 계약은 날인본 파일과 함께 `POST /contracts/paper`
+             *     (이어 쓰기는 `PUT /contracts/:contractId/paper`)로 등록하고 체결 완료가 된다(CTR-23). 여기(JSON)로는 임시저장만 된다.
              */
-            contractMethod?: "ELECTRONIC";
+            contractMethod?: components["schemas"]["ContractMethod"];
             /**
              * @description 주휴일 — 근무하지 않는 요일 하나(노무사 확인 2026-10-14). 주 소정근로시간이 15시간 이상이면 넣어야 하고,
              *     15시간 미만이면 주휴가 없어 비운다(contracts.service checkWeeklyHoliday).
@@ -2657,8 +2712,10 @@ export interface components {
             isTemporarySave?: boolean;
             /**
              * @description 대체할 진행 중 계약(WHALEERP-129). 같은 점포에 같은 번호의 진행 중 계약(임시저장 · 발송 대기 · 서명 대기)이
-             *     있으면 409(code CONTRACT_IN_PROGRESS)가 그 목록을 준다. 관리자가 대체를 확인하면 그 id 를 모두 넣어 다시 보낸다 —
-             *     임시저장은 지우고 발송 대기 · 서명 대기는 종료한다.
+             *     있으면 409(code CONTRACT_IN_PROGRESS)가 그 목록(id · 상태 · 직원 이름 · 계약 기간)을 준다. 관리자가 대체를 확인하면
+             *     그 id 를 모두 넣어 다시 보낸다 — 임시저장은 지우고 발송 대기 · 서명 대기는 종료한다. 종이 계약 등록이면 체결 완료도
+             *     묻고 종료한다. 체결 완료는 같은 번호로 퇴직 · 재입사가 되풀이되면 쌓이므로 상한을 넉넉히 둔다 — 409 목록을 모두
+             *     다시 보낼 수 없으면 그 번호로는 종이 계약을 등록할 수 없다(api #49 리뷰, WHALEERP-600).
              */
             replaceContractIds?: number[];
         };
@@ -2675,6 +2732,18 @@ export interface components {
             actor: components["schemas"]["StatusChangeActor"];
             /** @description ISO 8601 */
             changedAt: string;
+        };
+        /**
+         * @description 종이 계약 근로계약서 · 임금계약서
+         * @enum {string}
+         */
+        ContractDocumentKind: "SENT_ORIGINAL" | "SIGNED_COPY" | "PAPER_EMPLOYMENT_CONTRACT" | "WAGE_CONTRACT";
+        ContractDocumentDto: {
+            /** @description 종이 계약 근로계약서 · 임금계약서 */
+            kind: components["schemas"]["ContractDocumentKind"];
+            contractDocumentId: number;
+            /** @description 올린 파일의 원래 이름 */
+            fileName: string;
         };
         ContractDetailWorkDayDto: {
             weekday: components["schemas"]["Weekday"];
@@ -2731,6 +2800,8 @@ export interface components {
             draftAction: components["schemas"]["ContractDraftAction"] | null;
             /** @description 상태 변경 이력. 최근 것부터 */
             histories: components["schemas"]["ContractStatusHistoryDto"][];
+            /** @description 종이 계약 날인본(근로계약서 · 임금계약서). 전자계약 · 임시저장이면 빈 배열 */
+            documents: components["schemas"]["ContractDocumentDto"][];
             workDays: components["schemas"]["ContractDetailWorkDayDto"][];
             contractId: number;
             staffMemberId: number;
@@ -2738,6 +2809,9 @@ export interface components {
             phone: string;
             jobTitle: string;
             storeId: number;
+        };
+        DownloadUrlResponseDto: {
+            url: string;
         };
         StoreOptionDto: {
             storeId: number;
@@ -3561,9 +3635,6 @@ export interface components {
              * @description 최근 수정 일시
              */
             updatedAt: string;
-        };
-        DownloadUrlResponseDto: {
-            url: string;
         };
         InquiryStateResponseDto: {
             status: components["schemas"]["InquiryStatus"];
@@ -5647,8 +5718,86 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(같은 점포 진행 중 계약 — contracts 목록, replaceContractIds 로 대체) · WORK_TIME_OVERLAP(다른 점포 근무 시간 겹침, 초안 저장만) · 대체할 계약을 다른 요청이 먼저 고침 */
+            /** @description 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(같은 점포 진행 중 계약 — contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP(다른 점포 근무 시간 겹침, 초안 저장만) · 대체할 계약을 다른 요청이 먼저 고침 */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같은 번호의 다른 저장이 길어져 시간 초과(잠시 뒤 다시) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ContractsController_createPaper: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** @description CreateContractDto 의 JSON. contractMethod 는 PAPER, isTemporarySave 는 넣지 않는다 */
+                    data: string;
+                    /**
+                     * Format: binary
+                     * @description 당사자가 모두 날인한 근로계약서(PDF · JPG · PNG, 10MB)
+                     */
+                    employmentContract: string;
+                    /**
+                     * Format: binary
+                     * @description 따로 날인한 임금계약서(선택)
+                     */
+                    wageContract?: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatedContractResponseDto"];
+                };
+            };
+            /** @description 입력 오류 · 만 19세 미만 · 근로계약서 날인본 없음 · 파일 종류 · 크기 · 개수 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님(목록) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 근무지 점포가 없거나 폐점이거나 업무 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 대체할 계약을 다른 요청이 먼저 고침 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 첨부파일 저장소가 설정되지 않음 · 저장소 오류 · 저장이 몰려 시간 초과(잠시 뒤 다시) */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5721,7 +5870,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님(목록) */
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 번호를 바꾸는데 점포 직원 관리 권한이 없음(동의로만 보이는 직원) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -5735,8 +5884,15 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 임시저장이 아님 · 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 */
+            /** @description 임시저장이 아님 · 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같은 번호의 다른 저장이 길어져 시간 초과(잠시 뒤 다시) */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5778,6 +5934,122 @@ export interface operations {
             };
             /** @description 임시저장이 아님 */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ContractsController_updatePaper: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contractId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** @description CreateContractDto 의 JSON. contractMethod 는 PAPER, isTemporarySave 는 넣지 않는다 */
+                    data: string;
+                    /**
+                     * Format: binary
+                     * @description 당사자가 모두 날인한 근로계약서(PDF · JPG · PNG, 10MB)
+                     */
+                    employmentContract: string;
+                    /**
+                     * Format: binary
+                     * @description 따로 날인한 임금계약서(선택)
+                     */
+                    wageContract?: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatedContractResponseDto"];
+                };
+            };
+            /** @description 입력 오류 · 만 19세 미만 · 근로계약서 날인본 없음 · 파일 종류 · 크기 · 개수 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 번호를 바꾸는데 점포 직원 관리 권한이 없음(동의로만 보이는 직원) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 계약 · 근무지 점포가 없거나 폐점 · 업무 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 임시저장이 아님 · 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 첨부파일 저장소가 설정되지 않음 · 저장소 오류 · 저장이 몰려 시간 초과(잠시 뒤 다시) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ContractsController_documentDownloadUrl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contractId: number;
+                contractDocumentId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DownloadUrlResponseDto"];
+                };
+            };
+            /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님(목록) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 계약 · 파일 · 업무 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 첨부파일 저장소가 설정되지 않음 */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

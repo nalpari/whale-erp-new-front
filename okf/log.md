@@ -1,12 +1,18 @@
 # Bundle history
 
 ## 2026-10-16
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `api-types.generated.ts` 를 api #49 5차 반영(7a5ddec) openapi 로 다시 만들었다(`replaceContractIds` 상한 200, main 의 다른 변경 포함). 화면 동작은 그대로다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — PR #36 재리뷰(bfb3306) 반영: 퇴직 확인창이 확인할 때 브라우저 시계로 오늘을 바꾸지 않고, 서버 액션이 날짜 바뀜으로 막으며 돌려준 서버의 오늘로만 바꾼다(`todayAfterSubmit`) — 브라우저 시계가 빠를 때의 과잉 경고와 경고가 번갈아 보이던 것. api 시계와의 틈은 api 「기대한 오늘」 후속.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — PR #36 재리뷰 반영: 퇴직 확인창의 자정 넘김 재확인을 서버 액션이 서버 시계로 다시 판정한다(브라우저 시계가 늦으면 경고 없이 즉시 정리되던 틈). storeIds 없는 예전 주소는 첫 화면에 「점포를 찾는 중입니다.」를 보여 빈 목록이 깜빡이지 않는다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — PR #36 리뷰 반영: 목록 검색어 50자 · 쪽 1,000,000 · 점포 500곳을 api 상한 안에서 화면이 먼저 막고(넘기면 목록 전체가 오류 화면이었다), storeIds 없는 예전 주소는 필터가 점포 id 를 채운다. 퇴직 확인창을 연 채 자정을 넘기면 확인할 때 오늘을 다시 세어, 경고 없이 즉시 정리될 날짜면 다시 확인받는다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #35 블로커 반영: 권한 수정 폼이 고치던 중 최신 값을 먼저 받아 둔 뒤 동시 수정 409 를 받으면 refresh 를 기다리지 않고 받아 둔 값으로 바로 다시 채운다(`afterConflict`) — 전에는 다시 채우기가 돌지 않아 저장이 계속 409 였다.
 
 ## 2026-10-15
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #33 3차 리뷰 반영(영주). `/contracts/paper` 의 Origin 검사를 Next 16.3 서버 액션(`parseHostHeader`)과 똑같이 했다 — `x-forwarded-host` 가 있으면 첫 값만 보고 `host` 로 다시 보지 않는다. `api-types.generated.ts` 를 api #49 4차 반영 openapi 로 다시 만들었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — api #49 3차 리뷰에 맞췄다. 같은 점포 진행 중 계약 대체 확인창이 계약마다 직원 이름 · 계약 기간을 보인다(409 `contracts` 의 `name` · `startDate` · `endDate`, 없으면 뺀다). `api-types.generated.ts` 를 api #49 의 openapi 로 다시 만들었다(503 설명 · main 의 다른 변경 포함).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #33 재리뷰 반영(영주). `/contracts/paper` 의 Origin 검사를 서버 액션 기준으로 맞췄다(`x-forwarded-host` 첫 값 또는 `host`) — `src/lib/paper-request.ts` 로 옮기고 proxy 401 경로 판정(`answersWith401`)과 함께 단위 테스트를 더했다. 근로계약서 작성 · 이어 쓰기에서 저장하지 못하면 폼 맨 아래 안내로 화면을 옮긴다(위쪽 버튼을 누르면 안내가 화면 밖이라 제자리처럼 보였다).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #33 리뷰 반영(영주). 상세는 `documents` 가 없어도 깨지지 않는다(api #49 전 배포 대비). 세션이 끊긴 채 「종이 계약 등록」을 누르면 proxy 가 `/contracts/paper` 에는 401 JSON 을 줘 로그인으로 간다. 날인본 내려받기가 실패하면 상세로 돌아와 안내(`?document=`)를 띄우고, 401 이면 쿠키를 지우고 로그인으로. `/contracts/paper` 는 Origin 이 다르면 403. 종이 계약 대체 확인창에 체결 완료 종료를 적었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 종이 계약 등록(CTR-23, Plane #132): 계약 방식 「종이 계약」을 열고 날인본 칸(근로계약서 필수 · 임금계약서 선택)과 「종이 계약 등록」 버튼, 라우트 핸들러 `/contracts/paper` 로 multipart 를 api 에 넘긴다(서버 액션 한도 6MB 를 넘어서). proxy 본문 한도 21MB. 상세에 계약 방식 · 날인본 내려받기 링크(`/contracts/[contractId]/documents/[contractDocumentId]`).
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — WHALEERP-585: 목록 · 상세를 목 데이터에서 api(`GET /staff-members` · `GET /staff-members/:id` #599)로 바꾸고 목 데이터를 지웠다. 점포명은 로그인 정보의 관리 점포로 점포 id 를 찾는다(점포 목록 api 는 점포 메뉴 권한이 필요해서). 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창(미리 보기 건수, 처리하면 퇴직 예정, 닫힐 근로계약에 임시저장 포함)을 두고, 공통 `ConfirmDialog` 에 `confirmVariant` 를 더했다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [시스템관리](/system.md) — 전체 PR 리뷰 반영: 메뉴 권한 회수 확인창 Esc 가 팝업까지 닫던 것, 메뉴 저장 5xx 는 고친 칸을 두고 409 · 결과 모름 뒤 다시 채움을 알림, 조회가 잠긴 줄의 등록 막음, 동시 수정 409 만 칸 다시 채움, 공통코드 403 문구 그대로 · 저장 뒤 갱신 실패를 성공으로, 막힌 이유를 글자로(enum 을 못 받으면 일반 문구), 메뉴 코드 타입 · 권한 찾기 순수 함수(`menuPermissionOf`) · 권한 폼 검증(`role-form-sync`) 테스트. system.md 에 PA000001 이 api 에서 고정 권한이 아니라는 구현 메모를 더했다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 2차 코드 리뷰 반영: 권한 수정 폼이 기준값(`role-form-sync.ts`)으로 저장해 남의 변경을 덮어쓰지 않게(바뀐 것 없으면 [저장] 막음), 생성 타입을 giza 최신 openapi 로 다시 만들어 권한 목록은 `PlatformRoleGroupSummaryListResponseDto`, 플랫폼 관리자 권한 선택지는 생성 타입으로 되돌림, PA000001 고정 권한 문구 정리, 서비스 탭 휠 끝 · Tab 키 대상, 핸들러 이름 `handle` 접두.
