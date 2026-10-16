@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { Button, ListToolbar, Pagination, useToast } from "@/components/common";
-import type { CurrentAdmin } from "@/lib/current-admin";
-import type { Permission } from "@/lib/current-permission";
+import { useMenuPermission } from "@/components/site/session-gate";
+import { MENU_CODE } from "@/lib/menus";
 import { ADMIN_PAGE_SIZE } from "@/lib/platform-admin-paging";
 import type { PlatformAdminDetail, PlatformAdminList, PlatformRoleGroup } from "@/lib/platform-admins";
 import { AdminDetailPanel } from "./admin-detail-panel";
@@ -18,21 +18,18 @@ import { adminsHref, type AdminsQuery } from "./admins-href";
 export function AdminsScreen({
   list,
   roleGroups,
-  me,
-  permission,
   query,
   detail,
 }: {
   list: PlatformAdminList;
   roleGroups: PlatformRoleGroup[];
-  me: CurrentAdmin | null;
-  permission: Permission;
   query: AdminsQuery;
   detail: { admin: PlatformAdminDetail } | { failed: string } | null;
 }) {
   const router = useRouter();
   const toast = useToast();
-  const manage = permission === "manage";
+  // 버튼을 보이거나 숨기는 메뉴 권한(로그인 정보) — 막는 것은 api 다. 수정 · 초기화는 update, 삭제는 delete(상세 패널).
+  const can = useMenuPermission(MENU_CODE.platformAdmins);
   // 등록 · 수정 패널은 열 때마다 칸을 새로 채운다(admin-form-panel.tsx) — 다시 마운트하지 않아야 밀려 나오는 전환이 산다
   const [newOpen, setNewOpen] = useState(false);
   /** 수정 중인 계정 — 열림 · 닫힘이 아니라 어느 계정인지를 쥐어, 주소 · 상세가 바뀌면 수정 패널이 저절로 닫힌 것이 된다 */
@@ -89,7 +86,7 @@ export function AdminsScreen({
       <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>*]:shrink-0">
         <ListToolbar total={list.total}>
           {list.inactiveCount > 0 && <p className="pr-[6px] text-[14px] text-erp-label">미사용 {list.inactiveCount.toLocaleString("ko-KR")}</p>}
-          {manage && (
+          {can.create && (
             <Button ref={newTrigger} aria-controls="platform-admin-new-panel" aria-expanded={newOpen} onClick={() => setNewOpen(true)}>
               등록
             </Button>
@@ -101,7 +98,7 @@ export function AdminsScreen({
         </div>
       </main>
 
-      {manage && (
+      {can.create && (
         <AdminFormPanel
           id="platform-admin-new-panel"
           mode="create"
@@ -109,7 +106,6 @@ export function AdminsScreen({
           onClose={dismissNew}
           trigger={newTrigger}
           roleGroups={roleGroups}
-          me={me}
           onSaved={(result) => {
             setNewOpen(false);
             // 초기 비밀번호 메일이 실패해도 계정은 만들어졌다 — 상세의 비밀번호 초기화로 다시 보낸다(SYSTEM-3).
@@ -125,8 +121,6 @@ export function AdminsScreen({
         detail={shown}
         onClose={dismissDetail}
         trigger={detailTrigger}
-        me={me}
-        manage={manage}
         editOpen={editOpen}
         onEdit={(from) => {
           editTrigger.current = from;
@@ -138,7 +132,7 @@ export function AdminsScreen({
         }}
       />
 
-      {manage && shown && "admin" in shown && (
+      {can.update && shown && "admin" in shown && (
         <AdminFormPanel
           // 다른 계정이면 새로 그린다. 같은 계정을 다시 열거나 최신 정보를 받으면 패널이 스스로 칸을 다시 채운다.
           key={shown.admin.adminAccountId}
@@ -149,7 +143,6 @@ export function AdminsScreen({
           onClose={() => setEditingId(null)}
           trigger={editTrigger}
           roleGroups={roleGroups}
-          me={me}
           onSaved={() => {
             setEditingId(null);
             toast("updated");

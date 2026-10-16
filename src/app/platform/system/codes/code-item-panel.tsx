@@ -5,7 +5,8 @@ import { Badge, Button, DataTable, TextField, Toggle, useToast, type Column } fr
 import { buildSaveItemsInput, conflictCode, itemChanged, type ItemDraft } from "@/lib/code-drafts";
 import { codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-validation";
 import type { CodeGroup, CodeItem } from "@/lib/codes";
-import type { Permission } from "@/lib/current-permission";
+import { MENU_CODE } from "@/lib/menus";
+import { useMenuPermission } from "@/components/site/session-gate";
 import { saveCodeItemsAction } from "./actions";
 import { CodePanel, FieldErrors, SaveFailedBand, UNREACHABLE } from "./code-panel";
 import { useUnsavedChanges } from "./unsaved-changes";
@@ -27,16 +28,18 @@ export function CodeItemPanel({
   items,
   ownerLabel,
   loadFailed,
-  permission,
 }: {
   group?: CodeGroup;
   items: CodeItem[];
   ownerLabel?: string;
   /** 고른 그룹의 상세 코드를 불러오지 못했다. 그룹 목록은 그대로 쓰고 이 패널만 막는다. */
   loadFailed?: boolean;
-  permission: Permission;
 }) {
-  const manage = permission === "manage" && !loadFailed;
+  // 메뉴 권한(로그인 정보)으로 보인다 — 막는 것은 api 다. api 는 패널 저장을 늘 수정으로 보고, 새 행이 있으면 등록까지 요구한다.
+  // 그래서 고치기 · 순서 옮기기 · 저장은 수정 권한, [추가]는 수정과 등록 권한이 둘 다 있을 때만.
+  const can = useMenuPermission(MENU_CODE.platformCodes);
+  const manage = can.update && !loadFailed;
+  const canAdd = manage && can.create;
   const isService = group?.groupCode === "SERVICE";
   const toast = useToast();
   const { setDirty } = useUnsavedChanges();
@@ -241,9 +244,11 @@ export function CodeItemPanel({
         manage &&
         group && (
           <>
-            <Button variant="soft" onClick={handleAdd} disabled={saving}>
-              추가
-            </Button>
+            {canAdd && (
+              <Button variant="soft" onClick={handleAdd} disabled={saving}>
+                추가
+              </Button>
+            )}
             <Button onClick={handleSave} disabled={!dirty || saving}>
               저장
             </Button>

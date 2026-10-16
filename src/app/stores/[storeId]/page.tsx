@@ -1,13 +1,14 @@
 import { notFound } from "next/navigation";
 import { DataTable, DetailTable, DetailValues, type DetailRow } from "@/components/common";
 import { ApiError, getEnum } from "@/lib/api";
-import { getStorePermission } from "@/lib/current-permission";
 import { formatDateTime, formatPhone } from "@/lib/format";
 import { storeImageFailureText } from "@/lib/store-image";
 import type { StoreFloor } from "@/lib/store-types";
 import { getStore, getStoreHistories } from "@/lib/stores";
-import { floorLabel, formatBizNumber, missingForOperationText, STORE_TYPE_LABEL } from "@/lib/store-view";
+import { CodeLabel } from "@/components/site/code-label";
+import { formatBizNumber, missingForOperationText } from "@/lib/store-view";
 import { StoreCardBody, StoreFrame } from "../store-frame";
+import { StoreFloorLabel } from "../store-floor-label";
 import { NoticeBand, StoreImage, StoreStatusBadge } from "../store-parts";
 import { backHrefOf } from "../stores-query";
 import { ImageFailedNotice } from "./image-failed-notice";
@@ -32,7 +33,6 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
   const [{ storeId: raw }, search] = await Promise.all([params, searchParams]);
   const storeId = /^\d{1,9}$/.test(raw) ? Number(raw) : 0;
   if (storeId < 1) notFound();
-  const manage = getStorePermission(search) === "manage";
   const backHref = backHrefOf(search.back);
 
   // 이력만 실패하면 상세는 그대로 보이고 이력 칸에만 알린다(전체를 오류 화면으로 보내지 않는다)
@@ -74,7 +74,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
       multiline: true,
     },
     { label: "점포코드", value: store.storeCode },
-    { label: "점포유형", value: STORE_TYPE_LABEL[store.storeTypeCode] },
+    { label: "점포유형", value: <CodeLabel group="STORE_TYPE" value={store.storeTypeCode} /> },
     {
       label: "점포상태",
       value: (
@@ -125,9 +125,9 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
           <div className="flex items-center gap-[6px]">
             <h2 className="flex min-w-0 flex-1 items-center gap-[10px] text-[18px] font-semibold text-erp-ink">
               <span className="truncate">{store.name}</span>
-              <span className="shrink-0 text-[14px] font-medium text-erp-label">{STORE_TYPE_LABEL[store.storeTypeCode]}</span>
+              <span className="shrink-0 text-[14px] font-medium text-erp-label"><CodeLabel group="STORE_TYPE" value={store.storeTypeCode} /></span>
             </h2>
-            <StoreDetailActions store={store} manage={manage} backHref={backHref} requirementLabels={requirementLabels} />
+            <StoreDetailActions store={store} backHref={backHref} requirementLabels={requirementLabels} />
           </div>
           <ImageFailedNotice message={imageFailure} />
           {bpInactive && <NoticeBand title="소속 BP 가 미사용 상태여서 이 업무를 할 수 없습니다." detail="조회만 됩니다. 등록 · 수정 · 상태 변경 · 삭제는 BP 를 다시 사용하면 할 수 있습니다." />}
@@ -144,7 +144,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
           <h3 className="text-[18px] font-semibold text-erp-ink">기타 정보 · 층별</h3>
           <DataTable<StoreFloor>
             columns={[
-              { header: "층", cell: (f) => floorLabel(f) },
+              { header: "층", cell: (f) => <StoreFloorLabel floor={f} /> },
               { header: "매장평수", cell: (f) => (f.floorAreaPyeong === null ? "-" : `${f.floorAreaPyeong}평`) },
               { header: "전용면적", cell: (f) => (f.floorAreaSqm === null ? "-" : `${f.floorAreaSqm}㎡`) },
               { header: "좌석수", cell: (f) => (f.seatCount === null ? "-" : `${f.seatCount.toLocaleString("ko-KR")}석`) },

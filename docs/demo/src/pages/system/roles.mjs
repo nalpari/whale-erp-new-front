@@ -7,7 +7,7 @@ import { req } from "../../biz-form.mjs";
 import * as x from "../../extra.mjs";
 import * as c from "../../config-parts.mjs";
 import { platformHeader, link } from "../../site.mjs";
-import { roleSide, tagRows, newButton } from "../../role-side.mjs";
+import { roleSide, tagRows, newButton, scrollTabs, SVC_TABS_SCRIPT } from "../../role-side.mjs";
 
 // 1팀 컴포넌트에 없는 것들. 토큰으로만 그린다.
 const sub = (t) => `<span class="text-erp-label">${t}</span>`;
@@ -64,7 +64,12 @@ const SELECTED = null; // 처음 진입은 고른 권한 없이 빈 안내를 �
 const has = (map, code, op) => !!map?.[code]?.includes(op);
 const TIP = { self: "본인 권한 범위 밖", bp: "BP 마스터·가맹 마스터 권한에는 플랫폼 관리 메뉴를 줄 수 없습니다" };
 // 메뉴 등록 팝업의 서비스 탭. POS 는 아직 메뉴가 없어 빈 표다
-const SVC_TABS = [["PLATFORM", "Whale ERP 플랫폼 관리"], ["ERP", "Whale ERP"], ["POS", "POS"]];
+// 공통코드 SERVICE 순서 그대로(2026-10-15). 탭이 팝업 폭을 넘으면 한 줄을 지키고 가로로 스크롤해 고른다(scrollTabs).
+// 메뉴가 아직 없는 서비스는 빈 표다
+const SVC_TABS = [
+  ["ERP", "Whale ERP"], ["PLATFORM", "Whale ERP 플랫폼 관리"], ["POS", "POS"], ["KIOSK", "KIOSK"], ["TABLE_ORDER", "Table Order"], ["PICK_UP_ORDER", "Pick Up Order"],
+  ["QR_ORDER", "QR Order"], ["RECIPE_MANAGEMENT", "레시피관리"], ["ORDER_MANAGEMENT", "발주관리"], ["STORE_INVENTORY", "점포재고관리"], ["WAITING_MANAGEMENT", "대기순번관리"], ["RESERVATION", "예약관리"],
+];
 
 // 메뉴 등록 확인창 하나(권한 하나). 목업 스크립트가 그리던 표를 빌드 때 그린다.
 function menuDialog(A, R, role, id) {
@@ -129,10 +134,10 @@ function menuDialog(A, R, role, id) {
     )}</div>`;
   };
   // 서비스는 표 위 탭으로 고른다(BP 권한 메뉴 등록과 같다 · 2026-10-08). 처음엔 그 권한의 기본 서비스 탭이 열린다
-  const tabs = x.tabs(
+  const tabs = scrollTabs(x.tabs(
     SVC_TABS.map(([key, label]) => ({ id: `${id}-${key}`, label, html: svcTable(key) })),
     `${id}-${svc}`,
-  );
+  ));
 
   const canSave = code !== "PM000001" && code !== OWN;
 
@@ -167,8 +172,9 @@ export default ({ A, R }) => {
       name,
       desc,
       // BP 권한 그룹 관리 목록처럼 한 칸에 두 줄(일시 / 아이디)
-      c.two(mod, c.muted(modBy)),
-      c.two(reg, c.muted(regBy)),
+      // 등록일시 · 최종수정일시 순서로, 한 칸에 「일시 | 사람」(상세와 같은 모양 · 2026-10-15)
+      `${reg} ${c.muted(`| ${regBy}`)}`,
+      `${mod} ${c.muted(`| ${modBy}`)}`,
       // 등록 / 미등록만 보인다. 미등록은 상태 빨강 배지
       n ? ui.badge("on", "등록") : ui.badge("off", "미등록"),
       x.dialogTrigger("메뉴등록", id, "soft"),
@@ -179,8 +185,8 @@ export default ({ A, R }) => {
     { header: "권한유형", width: "w-[110px]" },
     { header: "권한명", align: "left" },
     { header: "설명", align: "left" },
-    { header: "최종 수정일시 · 수정자", width: "w-[170px]" },
-    { header: "등록일시 · 등록자", width: "w-[170px]" },
+    { header: "등록일시", width: "w-[200px]" },
+    { header: "최종수정일시", width: "w-[200px]" },
     { header: "메뉴 등록 여부", width: "w-[130px]" },
     { header: "메뉴등록", width: "w-[124px]" },
   ];
@@ -200,7 +206,7 @@ export default ({ A, R }) => {
     html: ui.erpFrame({
       header: platformHeader(A, R),
       title: "플랫폼 권한 관리",
-      body: `<div class="flex min-h-0 flex-1 gap-[12px] p-[24px]">${left}${right}</div>` + dialogs.join(""),
+      body: `<div class="flex min-h-0 flex-1 gap-[12px] p-[24px]">${left}${right}</div>` + dialogs.join("") + SVC_TABS_SCRIPT,
     }),
   };
 };

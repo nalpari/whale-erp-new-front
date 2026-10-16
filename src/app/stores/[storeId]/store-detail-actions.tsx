@@ -6,7 +6,10 @@ import { Button, ConfirmDialog, Radio, useToast } from "@/components/common";
 import type { EnumValue } from "@/lib/enums";
 import { formOfStore, toUpdateStoreInput } from "@/lib/store-form";
 import type { StoreDetail, StoreStatus, StoreTransitions } from "@/lib/store-types";
-import { closeBlockText, missingForOperationText, nextStatuses, STORE_STATUS_LABEL } from "@/lib/store-view";
+import { useCodeLabel } from "@/components/site/code-label";
+import { useMenuPermission } from "@/components/site/session-gate";
+import { MENU_CODE } from "@/lib/menus";
+import { closeBlockText, missingForOperationText, nextStatuses } from "@/lib/store-view";
 import { deleteStoreAction, getStoreTransitionsAction, updateStoreAction, type ActionFailure } from "../actions";
 import { StoreStatusBadge } from "../store-parts";
 
@@ -32,22 +35,22 @@ const UNKNOWN =
  * 상태 변경 팝업은 열 때 운영 · 폐점 조건을 지금 기준으로 다시 받고, 갈 수 있는 상태만 보인다(미운영→운영 · 폐점, 운영→폐점).
  * 상태만 바꾸는 저장도 수정(PUT)으로 보낸다 — 화면 전체를 보내야 해서 상세 값을 그대로 싣고 상태만 바꾼다.
  * 폐점 점포는 수정 · 삭제 · 상태 변경이 없다. 소속 BP 가 미사용이면 쓰는 버튼을 막는다(api 도 409 로 막는다).
- * 권한이 조회만이면 [목록]만 보인다.
+ * 메뉴 권한(로그인 정보)으로 상태 변경 · 수정은 update, 삭제는 delete 가 있을 때 보인다 — 막는 것은 api 다.
  */
 export function StoreDetailActions({
   store,
-  manage,
   backHref,
   requirementLabels,
 }: {
   store: StoreDetail;
-  manage: boolean;
   backHref: string;
   /** 운영 조건 한글(GET /enums/StoreOperationRequirement). 못 받았으면 빈 목록 — 값을 그대로 보인다 */
   requirementLabels: EnumValue[];
 }) {
   const router = useRouter();
   const toast = useToast();
+  const can = useMenuPermission(MENU_CODE.stores);
+  const statusLabel = useCodeLabel("STORE_STATUS");
   const [dialog, setDialog] = useState<"status" | "delete" | null>(null);
   const [target, setTarget] = useState<StoreStatus | null>(null);
   const [transitions, setTransitions] = useState<StoreTransitions>(store.transitions);
@@ -95,7 +98,7 @@ export function StoreDetailActions({
       const result = await updateStoreAction(store.storeId, input).catch(UNKNOWN("상태 변경"));
       if (!result.ok) return fail(result.status, result.message);
       setDialog(null);
-      toast(`점포상태를 ${STORE_STATUS_LABEL[target]}(으)로 바꿨습니다.`);
+      toast(`점포상태를 ${statusLabel(target)}(으)로 바꿨습니다.`);
       router.refresh();
     });
 
@@ -116,48 +119,51 @@ export function StoreDetailActions({
 
   return (
     <>
-      {manage && !closed && (
+      {!closed && (
         <>
-          {targets.length > 0 && (
+          {can.update && targets.length > 0 && (
             <Blocked reason={blockedReason}>
               <Button variant="soft" onClick={handleStatusOpen} disabled={bpInactive}>
                 상태 변경
               </Button>
             </Blocked>
           )}
-          <Blocked reason={deleteReason}>
-            <Button
-              variant="soft"
-              onClick={() => {
-                setFailure(null);
-                setDialog("delete");
-              }}
-              disabled={Boolean(deleteReason)}
-            >
-              삭제
-            </Button>
-          </Blocked>
-          {bpInactive ? (
-            <Blocked reason={blockedReason}>
-              <Button variant="soft" disabled>
-                수정
+          {can.delete && (
+            <Blocked reason={deleteReason}>
+              <Button
+                variant="soft"
+                onClick={() => {
+                  setFailure(null);
+                  setDialog("delete");
+                }}
+                disabled={Boolean(deleteReason)}
+              >
+                삭제
               </Button>
             </Blocked>
-          ) : (
-            <Button variant="soft" href={`/stores/${store.storeId}/edit${backHref === "/stores" ? "" : `?back=${encodeURIComponent(backHref)}`}`}>
-              수정
-            </Button>
           )}
+          {can.update &&
+            (bpInactive ? (
+              <Blocked reason={blockedReason}>
+                <Button variant="soft" disabled>
+                  수정
+                </Button>
+              </Blocked>
+            ) : (
+              <Button variant="soft" href={`/stores/${store.storeId}/edit${backHref === "/stores" ? "" : `?back=${encodeURIComponent(backHref)}`}`}>
+                수정
+              </Button>
+            ))}
         </>
       )}
       <Button href={backHref}>목록</Button>
 
-      {manage && !closed && targets.length > 0 && (
+      {can.update && !closed && targets.length > 0 && (
         <ConfirmDialog
           open={dialog === "status"}
           title="상태 변경"
           wide
-          confirmLabel={target ? `${STORE_STATUS_LABEL[target]}(으)로 변경` : "변경"}
+          confirmLabel={target ? `${statusLabel(target)}(으)로 변경` : "변경"}
           busy={busy}
           confirmDisabled={!allowed}
           onConfirm={handleStatusChange}
@@ -170,7 +176,7 @@ export function StoreDetailActions({
             {targets.length > 1 && (
               <div role="radiogroup" aria-label="바꿀 상태" className="flex gap-[18px]">
                 {targets.map((s) => (
-                  <Radio key={s} name="storeStatus" label={STORE_STATUS_LABEL[s]} checked={target === s} onChange={() => setTarget(s)} />
+                  <Radio key={s} name="storeStatus" label={statusLabel(s)} checked={target === s} onChange={() => setTarget(s)} />
                 ))}
               </div>
             )}
@@ -198,7 +204,7 @@ export function StoreDetailActions({
         </ConfirmDialog>
       )}
 
-      {manage && !closed && (
+      {can.delete && !closed && (
         <ConfirmDialog
           open={dialog === "delete"}
           title="점포 삭제"

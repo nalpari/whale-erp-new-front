@@ -36,6 +36,7 @@ export function StaffTable({
   pageSize,
   today,
   listSearch,
+  empty = "조회된 직원이 없습니다.",
 }: {
   items: StaffMemberListItem[];
   total: number;
@@ -44,6 +45,8 @@ export function StaffTable({
   today: string;
   /** 지금 목록 조건(toStaffListSearch). 상세 링크에 붙여 상세의 「목록」이 같은 조건으로 돌아오게 한다. */
   listSearch: string;
+  /** 빈 목록 문구. 조회하지 않은 까닭이 있으면 바꾼다(staffListEmptyMessage). */
+  empty?: string;
 }) {
   const columns: Column<Row>[] = [
     { header: "순번", width: "w-[60px]", cell: (r) => r.no },
@@ -53,7 +56,7 @@ export function StaffTable({
       cell: ({ item }) =>
         item.isMasked ? (
           <span className="text-erp-muted">본사 제공 동의 없음</span>
-        ) : item.joinState === "JOINED" && item.employmentStatus === "EMPLOYED" ? (
+        ) : item.staffMemberId !== null && item.joinState === "JOINED" && item.employmentStatus === "EMPLOYED" ? (
           <Link href={`/staff-members/${item.staffMemberId}${listSearch}`} className="text-erp-link hover:underline">
             {item.name}
           </Link>
@@ -75,7 +78,8 @@ export function StaffTable({
     },
     {
       header: "재직",
-      width: "w-[110px]",
+      // 데모는 110 인데 「재직 · 퇴직 예정 MM-DD」가 두 줄로 꺾이며 잘린다 — 한 줄에 들어가게 넓혔다(WHALEERP-585 화면 확인)
+      width: "w-[180px]",
       cell: personal((item) => (
         <span className="inline-flex flex-wrap items-center justify-center gap-[4px]">
           {statusCells(item).map((cell) => (
@@ -90,8 +94,9 @@ export function StaffTable({
     <DataTable
       columns={columns}
       rows={items.map((item, i) => ({ no: rowNumber(total, page, pageSize, i), item }))}
-      rowKey={(r) => r.item.staffMemberId}
-      empty="조회된 직원이 없습니다."
+      // 가린 행은 api 가 staffMemberId 를 null 로 준다 — 순번으로 가른다(한 쪽 안에서 겹치지 않는다)
+      rowKey={(r) => r.item.staffMemberId ?? `masked-${r.no}`}
+      empty={empty}
     />
   );
 }

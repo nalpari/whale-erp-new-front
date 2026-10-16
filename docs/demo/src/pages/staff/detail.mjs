@@ -124,7 +124,7 @@ export default ({ A, R }) => {
   const retireDialog = x.dialog(
     retireId,
     "퇴직 처리",
-    `<div class="flex flex-col gap-[12px]">${ui.dateField(A, { label: "퇴직일", value: "2026-09-10" })}<p class="text-[13px] text-erp-label">오늘 이후, 또는 최근 3개월 안의 지난 날짜를 받습니다.</p><p class="text-[13px] text-erp-label">퇴직일이 지나면 정리될 것</p><ul class="list-disc pl-[18px]"><li>지워질 근무스케줄 2건 (퇴직일 다음 날부터)</li><li>풀릴 개인 TO-DO 배정 1건</li><li>닫힐 발송 대기·서명 대기 계약 0건</li></ul><p>퇴직일이 지나면 되돌릴 수 없이 정리되고, 그 전까지는 취소할 수 있습니다. 처리하면 퇴직일만 저장되고 재직 상태와 근로계약은 그대로입니다(퇴직 예정). 지난 날짜로 처리하면 그 자리에서 정리됩니다. 계정은 막지 않습니다.</p></div>`,
+    `<div class="flex flex-col gap-[12px]">${ui.dateField(A, { label: "퇴직일", value: "2026-09-10" })}<p class="text-[13px] text-erp-label">오늘 이후, 또는 최근 3개월 안의 지난 날짜를 받습니다.</p><p class="text-[13px] text-erp-label">퇴직일이 지나면 정리될 것</p><ul class="list-disc pl-[18px]"><li>지워질 근무스케줄 2건 (퇴직일 다음 날부터)</li><li>풀릴 개인 TO-DO 배정 1건</li><li>닫힐 임시저장·발송 대기·서명 대기 계약 0건</li></ul><p>퇴직일이 지나면 되돌릴 수 없이 정리되고, 그 전까지는 취소할 수 있습니다. 처리하면 퇴직일만 저장되고 재직 상태와 근로계약은 그대로입니다(퇴직 예정). 지난 날짜로 처리하면 그 자리에서 정리됩니다. 계정은 막지 않습니다.</p></div>`,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("퇴직 처리", { variant: "danger", "data-close": true }),
   );
 

@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useId, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
 import { Button, Field, FormGroup, FormRow, RequiredMark, Select, SlidePanel, TextField } from "@/components/common";
-import type { CurrentAdmin } from "@/lib/current-admin";
+import { useAccount, useCodes } from "@/components/site/session-gate";
+import { labelOf } from "@/lib/enums";
 import {
   EMPTY_FORM,
   formOf,
@@ -18,7 +19,7 @@ import {
 import type { PlatformAdminDetail, PlatformRoleGroup } from "@/lib/platform-admins";
 import { checkLoginIdAvailableAction, createPlatformAdminAction, updatePlatformAdminAction } from "./actions";
 import { AddressField } from "@/components/address-field";
-import { FailedBand, FieldMessage, ROLE_TYPE_LABEL, unknownResult } from "./admin-parts";
+import { FailedBand, FieldMessage, unknownResult } from "./admin-parts";
 
 // 플랫폼 관리자 등록(S-FOJJKB) · 수정(S-CZGHBS) 슬라이드 패널. 패널 폭(464)이라 칸을 한 줄에 하나씩 쌓는다(데모와 같다).
 // 등록에는 상태 · 비밀번호 칸이 없다 — 사용으로 생기고 초기 비밀번호가 등록 이메일로 간다.
@@ -35,15 +36,17 @@ type Props = {
   onClose: () => void;
   trigger: RefObject<HTMLElement | null>;
   roleGroups: PlatformRoleGroup[];
-  me: CurrentAdmin | null;
 } & (
   | { mode: "create"; admin?: never; onSaved: (result: { adminAccountId: number; isMailSent: boolean }) => void; onStale?: never }
   | { mode: "edit"; admin: PlatformAdminDetail; onSaved: () => void; onStale: () => void }
 );
 
 export function AdminFormPanel(props: Props) {
-  const { id, mode, open, onClose, trigger, roleGroups, me } = props;
-  const isSelf = mode === "edit" && me?.adminAccountId === props.admin.adminAccountId;
+  const { id, mode, open, onClose, trigger, roleGroups } = props;
+  const me = useAccount();
+  // 권한 유형 이름은 로그인 정보의 공통코드 ROLE_TYPE 에서 읽는다(네이밍 규칙 화면 문구)
+  const roleTypes = useCodes("ROLE_TYPE");
+  const isSelf = mode === "edit" && me.adminAccountId === props.admin.adminAccountId;
   const initialForm = () => (mode === "edit" ? formOf(props.admin) : EMPTY_FORM);
   const [form, setForm] = useState<AdminForm>(initialForm);
   const [errors, setErrors] = useState<Partial<Record<AdminFormField, string>>>({});
@@ -268,7 +271,7 @@ export function AdminFormPanel(props: Props) {
               {mode === "create" && <option value="">선택</option>}
               {options.map((r) => (
                 <option key={r.roleGroupId} value={r.roleGroupId}>
-                  {r.name} · {r.roleCode} ({ROLE_TYPE_LABEL[r.roleTypeCode]})
+                  {r.name} · {r.roleCode} ({labelOf(roleTypes, r.roleTypeCode)})
                 </option>
               ))}
             </Select>

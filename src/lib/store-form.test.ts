@@ -116,6 +116,7 @@ test("등록 요청 — 공백을 빼고 빈 칸은 null, 빈 층은 보내지 �
   const edited = toCreateStoreInput({ ...filled, bizNumber: "1234567890", ceoName: "김철수", openDate: "2020-01-02", verified: checked });
   assert.equal(edited.businessVerification, undefined);
   assert.equal("bpCodeId" in toCreateStoreInput(filled), false);
+  assert.equal(toCreateStoreInput(filled, 8).bpCodeId, 8);
 });
 
 test("사업자주소가 「점포 주소와 같음」이면 점포 주소를 싣는다", () => {

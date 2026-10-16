@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { Badge } from "@/components/common";
 import { formatPhone } from "@/lib/format";
 import type { StoreStatus, StoreSummary, StoreType } from "@/lib/store-types";
-import { STORE_STATUS_LABEL, STORE_TYPE_LABEL } from "@/lib/store-view";
+import { CodeLabel } from "@/components/site/code-label";
 import { StoreImagePicture } from "./store-image-picture";
 
 // 점포 화면들이 같이 쓰는 작은 조각. 공통 컴포넌트에 없는 것만 둔다 — 데모 docs/demo/src/extra.mjs 의 임시 부품(카드 ·
@@ -67,7 +67,7 @@ export function LineIcon({ name, size }: { name: keyof typeof PATHS; size: numbe
 
 /** 점포상태 배지 — 운영은 파랑, 미운영 · 폐점은 빨강. 색만으로 말하지 않게 글자를 함께 둔다(DESIGN.md) */
 export function StoreStatusBadge({ status }: { status: StoreStatus }) {
-  return <Badge tone={status === "OPERATING" ? "on" : "off"}>{STORE_STATUS_LABEL[status]}</Badge>;
+  return <Badge tone={status === "OPERATING" ? "on" : "off"}><CodeLabel group="STORE_STATUS" value={status} /></Badge>;
 }
 
 /** 대표 이미지 자리. 주소가 없거나(이미지 없음 · 저장소를 쓸 수 없음) 불러오지 못하면 점포 아이콘이 선다 */
@@ -107,7 +107,7 @@ export function StoreCard({ store, href }: { store: StoreSummary; href: string }
         <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
           <b className="truncate text-[15px] font-semibold text-erp-ink">{store.name}</b>
           <span className="truncate text-[13px] text-erp-label">
-            {store.storeCode} · {STORE_TYPE_LABEL[store.storeTypeCode]}
+            {store.storeCode} · <CodeLabel group="STORE_TYPE" value={store.storeTypeCode} />
           </span>
         </div>
         <StoreStatusBadge status={store.storeStatusCode} />
@@ -163,7 +163,7 @@ export function StoreTypeCards({
             <span className="grid size-[48px] place-items-center rounded-[4px] border border-transparent bg-erp-thead-bg text-erp-label transition-colors duration-150 group-has-[:checked]:border-erp-panel-line group-has-[:checked]:bg-white group-has-[:checked]:text-erp-ink">
               <LineIcon name="store" size={22} />
             </span>
-            <b className="text-[16px] font-semibold text-erp-ink">{STORE_TYPE_LABEL[type]}</b>
+            <b className="text-[16px] font-semibold text-erp-ink"><CodeLabel group="STORE_TYPE" value={type} /></b>
             <span className="text-[13px] text-erp-label">{desc}</span>
           </label>
         );
