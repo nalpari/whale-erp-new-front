@@ -377,6 +377,76 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/signup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * BP 회원가입. BP 와 BP 마스터 계정을 함께 만들고, 메일 설정이 있으면 가입 완료 메일을 보낸다(메일이
+         *     없거나 실패해도 가입은 완료다). 아이디·이메일이 이미 쓰이면 409 다.
+         */
+        post: operations["AdminSignupController_signup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/signup/login-id-availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 아이디 중복 확인. 탈퇴·삭제한 계정의 아이디도 쓸 수 없다. */
+        post: operations["AdminSignupController_loginIdAvailability"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/signup/business-verifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminSignupController_businessVerification"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/signup/email-availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 이메일 중복 확인. 탈퇴·삭제한 계정의 이메일은 다시 쓸 수 있다. */
+        post: operations["AdminSignupController_emailAvailability"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/enums": {
         parameters: {
             query?: never;
@@ -1680,6 +1750,76 @@ export interface components {
                 [key: string]: components["schemas"]["CodeValueDto"][];
             };
         };
+        SignupDto: {
+            /**
+             * @description 영문 또는 영문·숫자 4~20자. 소문자로 정규화해 저장한다. 관리자 웹 로그인은 대소문자를 구분하므로(1팀),
+             *     가입한 사람은 이 소문자 아이디로 로그인한다 — 가입 완료 화면이 응답의 loginId 를 보여 준다.
+             */
+            loginId: string;
+            /** @description 영문·숫자·특수문자(!@#$%^&*()-_=+[]{}?)를 모두 포함해 8~20자 */
+            password: string;
+            /** @description 한글 또는 영문 2~20자 */
+            name: string;
+            /** @description 숫자만 10~11자리. 화면의 세 칸을 이어 붙인 값이다 */
+            phone: string;
+            /**
+             * Format: email
+             * @description 아이디 찾기·임시 비밀번호가 이 주소로 간다. 소문자로 정규화한다(admin_accounts_email_lower)
+             */
+            email: string;
+            /** @description 상호명 1~50자. 사업자 인증 결과로 채우지 않고 직접 입력한다 */
+            tradeName: string;
+            /** @description 이용약관(TERMS_SERVICE) 동의. 필수라 true 만 받는다 */
+            agreeTermsOfUse: boolean;
+            /** @description 개인정보 수집·이용(PRIVACY_COLLECT) 동의. 필수라 true 만 받는다 */
+            agreePrivacy: boolean;
+            /**
+             * @description 사업자정보 인증(선택)의 결과 토큰(POST /auth/signup/business-verifications, 10분). 사업자등록번호 ·
+             *     대표자명 · 개업일자는 이 토큰에서 꺼내 저장한다 — 값을 따로 받지 않는다
+             */
+            bizVerificationToken?: string;
+        };
+        SignupResponseDto: {
+            /**
+             * @description 가입 완료 화면을 여는 토큰. 10분 동안만 쓸 수 있다. 액세스 토큰이 아니라 이것으로 API 를
+             *     부를 수 없다 — 「웨일ERP 시작하기」가 이 토큰을 로그인 접속으로 바꾸는 API 는 관리자 웹 로그인과
+             *     함께 만든다.
+             */
+            signupToken: string;
+            /** @description 가입한 BP 상호명 */
+            tradeName: string;
+            /** @description 가입한 아이디(소문자로 정규화한 값) */
+            loginId: string;
+            /** @description 가입한 이메일(소문자로 정규화한 값). 가입 안내 메일이 가는 주소다 */
+            email: string;
+        };
+        LoginIdAvailabilityDto: {
+            /** @description 가입 화면의 아이디. 가입과 같이 소문자로 정규화해 본다 */
+            loginId: string;
+        };
+        AvailabilityResponseDto: {
+            /** @description 쓸 수 있으면 true. 누가 쓰는지는 알려 주지 않는다 */
+            available: boolean;
+        };
+        SignupBusinessVerificationDto: {
+            /** @description 숫자만 10자리. 화면이 하이픈을 걸러 보낸다 */
+            bizRegistrationNumber: string;
+            /** @description 대표자명 1~50자 */
+            bizCeoName: string;
+            /** @description 개업일자 YYYY-MM-DD. 실제로 있는 날짜만 받는다 */
+            bizOpenDate: string;
+        };
+        SignupBusinessVerificationResponseDto: {
+            /** @description 10분짜리 인증 토큰. 그 안에 가입 요청의 bizVerificationToken 으로 보낸다 */
+            verificationToken: string;
+        };
+        EmailAvailabilityDto: {
+            /**
+             * Format: email
+             * @description 가입 화면의 이메일. 가입과 같이 소문자로 정규화해 본다
+             */
+            email: string;
+        };
         EnumValueDto: {
             /** @description 저장·전송 값. 예: PENDING_SEND */
             value: string;
@@ -2406,7 +2546,11 @@ export interface components {
             /** @description 거른 결과 전체 건수 */
             total: number;
         };
-        /** @enum {string} */
+        /**
+         * @description 주휴일 — 근무하지 않는 요일 하나(노무사 확인 2026-10-14). 주 소정근로시간이 15시간 이상이면 넣어야 하고,
+         *     15시간 미만이면 주휴가 없어 비운다(contracts.service checkWeeklyHoliday).
+         * @enum {string}
+         */
         Weekday: "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN";
         ContractWorkDayDto: {
             weekday: components["schemas"]["Weekday"];
@@ -2419,6 +2563,11 @@ export interface components {
         };
         /** @enum {string} */
         PayMonth: "CURRENT_MONTH" | "NEXT_MONTH";
+        /**
+         * @description 급여 지급 방식 — 계좌 · 현금
+         * @enum {string}
+         */
+        PayMethod: "ACCOUNT" | "CASH";
         CreateContractDto: {
             employmentType: components["schemas"]["EmploymentType"];
             /**
@@ -2426,8 +2575,15 @@ export interface components {
              * @enum {string}
              */
             contractMethod?: "ELECTRONIC";
+            /**
+             * @description 주휴일 — 근무하지 않는 요일 하나(노무사 확인 2026-10-14). 주 소정근로시간이 15시간 이상이면 넣어야 하고,
+             *     15시간 미만이면 주휴가 없어 비운다(contracts.service checkWeeklyHoliday).
+             */
+            weeklyHoliday?: components["schemas"]["Weekday"];
             workDays?: components["schemas"]["ContractWorkDayDto"][];
             payMonth?: components["schemas"]["PayMonth"];
+            /** @description 급여 지급 방식 — 계좌 · 현금 */
+            payMethod?: components["schemas"]["PayMethod"];
             /** @description 앞뒤 공백은 지운다(NFC) — 같은 사람의 가입 전 레코드를 이름으로 찾으므로 공백 하나로 갈리지 않게. */
             name: string;
             /** @description 숫자만 10~11자리 (예: 01090145563) */
@@ -2463,6 +2619,13 @@ export interface components {
             severancePayTerms?: string;
             /** @description 1~31. 31 은 말일 */
             payDay?: number;
+            /**
+             * @description 수습 기간 — 개월, 1~3. 비우면 수습 없음. 정직원이고 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 둔다
+             *     (노무사 확인 2026-10-14). 감액률과 함께 넣는다.
+             */
+            probationMonths?: number;
+            /** @description 수습 중 임금 감액률 — %, 0~10. 수습 중 시급 = 시급 × (1 − 감액률). 수습 기간과 함께 넣는다 */
+            probationWageReductionRate?: number;
             /** @description 계약서 근무 장소 조항에 적는 주소. 근무지 점포와 따로다 */
             workLocation?: string;
             isHealthPensionInsured?: boolean;
@@ -2533,6 +2696,12 @@ export interface components {
             severancePayTerms: string | null;
             payMonth: components["schemas"]["PayMonth"] | null;
             payDay: number | null;
+            /** @description 급여 지급 방식 — 계좌 · 현금 */
+            payMethod: components["schemas"]["PayMethod"] | null;
+            /** @description 수습 기간 — 개월(1~3). 수습이 없으면 null */
+            probationMonths: number | null;
+            /** @description 수습 중 임금 감액률 — %(0~10). 수습이 없으면 null */
+            probationWageReductionRate: number | null;
             isHealthPensionInsured: boolean | null;
             isEmploymentInjuryInsured: boolean | null;
             /** @description 초대 유형 판별 결과(초안 저장 때). 임시저장이면 null */
@@ -3895,6 +4064,133 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CodeItemsResponseDto"];
+                };
+            };
+        };
+    };
+    AdminSignupController_signup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignupDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignupResponseDto"];
+                };
+            };
+            /** @description 같은 IP 의 시간당 한도(5건) */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminSignupController_loginIdAvailability: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginIdAvailabilityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailabilityResponseDto"];
+                };
+            };
+        };
+    };
+    AdminSignupController_businessVerification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignupBusinessVerificationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignupBusinessVerificationResponseDto"];
+                };
+            };
+            /** @description 이미 등록된 사업자등록번호 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 국세청 정보와 일치하지 않음 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같은 IP 의 시간당 한도(10건) */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 국세청 확인 실패(장애 · 키 없음) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminSignupController_emailAvailability: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailAvailabilityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailabilityResponseDto"];
                 };
             };
         };

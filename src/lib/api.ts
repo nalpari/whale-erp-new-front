@@ -23,7 +23,7 @@ export class ApiError extends Error {
  * 아직 값이 없을 수 있고(.env.production 은 비어 있다), 서버 컴포넌트는 요청마다
  * 실행되므로 배포 환경이 주입한 값이 그때 보인다.
  */
-function baseUrl(): string {
+export function baseUrl(): string {
   const url = process.env.API_BASE_URL;
   // 빈 값은 없는 것과 같다. 여기서 멈추지 않으면 fetch("undefined/…") 같은
   // 엉뚱한 에러로 번져 원인을 찾기 어려워진다.
@@ -55,7 +55,7 @@ export async function requestRaw(path: string, init: RequestInit = {}): Promise<
 }
 
 /** 실패 응답을 ApiError 로. 본문은 한 번만 읽어 이은 문장 · 문장 목록 · 본문을 모두 싣는다 */
-async function apiError(response: Response): Promise<ApiError> {
+export async function apiError(response: Response): Promise<ApiError> {
   const body: unknown = await response.json().catch(() => null);
   return new ApiError(response.status, ...messageOf(body, response.status), body);
 }

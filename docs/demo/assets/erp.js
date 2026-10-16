@@ -1007,30 +1007,136 @@
   // ── 근무 일정 입력(data-workplan) → 소정근로시간 표(data-hours)·주 시간(data-hours-sum) ──
   // 근무요일(월~일)은 눌러서 켜고 끈다. 시·분은 선택칸.
   function initWorkPlan(root) {
-    const table = $("table[data-hours]");
-    const sum = $("[data-hours-sum]");
-    if (!table) return;
+    const tables = $$("table[data-hours]", root);
+    if (!tables.length) return;
+    const num = (s) => Number(String(s).replace(/[^\d.]/g, "")) || 0;
+    const won = (n) => Math.round(n).toLocaleString("ko-KR");
+    const hrs = (n) => String(Number(n.toFixed(2)));
+    const set = (el, v) => el && (el.value !== undefined && el.tagName === "INPUT" ? (el.value = v) : (el.textContent = v));
     const v = (k) => Math.min(59, Math.max(0, parseInt($(`[data-k="${k}"]`, root).value, 10) || 0));
     const at = (k) => `${pad(v(`${k}-sh`))}:${pad(v(`${k}-sm`))}`;
     const to = (k) => `${pad(v(`${k}-eh`))}:${pad(v(`${k}-em`))}`;
     const len = (k) => v(`${k}-eh`) * 60 + v(`${k}-em`) - (v(`${k}-sh`) * 60 + v(`${k}-sm`));
+    // 파트타이머 표는 요일마다 시업 · 종업 · 휴게 시작 · 휴게 종료(data-t)를 시 · 분 상자로 고친다(2026-10-14).
+    const partTable = $("table[data-hours-part]", root);
+    const partRow = (d) => partTable && [...partTable.tBodies[0].rows].find((tr) => tr.cells[0].textContent === d);
+    // 칸마다 시(data-h) · 분(data-m) 선택 상자 두 개다. 근무하지 않는 요일은 상자 없이 「-」.
+    const times = (tr) => $$("[data-t]", tr);
+    const mins = (w) => {
+      const h = $("[data-h]", w);
+      return h ? Number(h.value) * 60 + Number($("[data-m]", w).value) : 0;
+    };
+    const rowMinutes = (tr) => {
+      const [s, e, rs, re] = times(tr).map(mins);
+      return Math.max(0, e - s - Math.max(0, re - rs));
+    };
+    // 위 근무시간 · 휴게시간으로 그 요일 칸을 채운다(상자 모양은 위 근무시간 상자와 같다). 꺼진 요일은 「-」.
+    const pickClass = $('[data-k="work-sh"]', root).className;
+    const options = (list, value) => list.map((o) => `<option${o === value ? " selected" : ""}>${o}</option>`).join("");
+    const HOURS = Array.from({ length: 24 }, (_, i) => pad(i));
+    const WHAT = ["시업", "종업", "휴게 시작", "휴게 종료"];
+    const timePick = (d, k, t) =>
+      `<span class="w-[72px]"><select data-h aria-label="${d} ${WHAT[k]} 시" class="${pickClass}">${options(HOURS, t.slice(0, 2))}</select></span>시` +
+      `<span class="w-[72px]"><select data-m aria-label="${d} ${WHAT[k]} 분" class="${pickClass}">${options(["00", "30"], t.slice(3))}</select></span>분`;
+    const fill = (tr, f) =>
+      times(tr).forEach((w, k) => (w.innerHTML = f ? timePick(tr.cells[0].textContent, k, [at("work"), to("work"), at("rest"), to("rest")][k]) : "-"));
+    const isPart = () => $('input[name="employment"]:checked')?.closest("label")?.textContent.trim() === "파트타이머";
     const sync = () => {
       const on = Object.fromEntries($$("button[aria-pressed]", root).map((b) => [b.textContent, b.getAttribute("aria-pressed") === "true" ? 1 : 0]));
       const day = Math.max(0, len("work") - Math.max(0, len("rest")));
-      [...table.tBodies[0].rows].forEach((tr) => {
-        const d = (tr.dataset.day ||= tr.cells[0].textContent);
-        const f = on[d] || 0;
-        [at("work"), to("work"), at("rest"), to("rest")].forEach((t, i) => (tr.cells[i + 1].textContent = f ? t : "-"));
+      const partWeek = partTable ? Object.keys(on).reduce((n, d) => n + (on[d] ? rowMinutes(partRow(d)) : 0), 0) / 60 : 0;
+      // 주 시간 · 4대보험 · 주휴일은 지금 고른 고용 형태의 표로 셈한다.
+      const week = isPart() ? partWeek : (Object.values(on).reduce((n, f) => n + f, 0) * day) / 60;
+      tables.forEach((table) => {
+        // 파트타이머 표는 근무시간 · 시급 · 소계 열과 소계 · 주휴수당 · 주급 · 월급여 줄이 더 있다(front #15).
+        const part = table.hasAttribute("data-hours-part");
+        const wage = part ? num($("[data-pay=part] [data-wage]", root)?.value) : 0;
+        let workPay = 0;
+        [...table.tBodies[0].rows].forEach((tr) => {
+          const d = (tr.dataset.day ||= tr.cells[0].textContent);
+          if (!(d in on)) return;
+          const f = on[d] || 0;
+          if (!part) {
+            [at("work"), to("work"), at("rest"), to("rest")].forEach((t, i) => (tr.cells[i + 1].textContent = f ? t : "-"));
+            return;
+          }
+          const h = f ? rowMinutes(tr) / 60 : 0;
+          const sub = Math.round(h * wage);
+          workPay += sub;
+          tr.cells[5].textContent = f ? hrs(h) : "";
+          tr.cells[6].textContent = won(wage);
+          tr.cells[7].textContent = f ? won(sub) : "-";
+        });
+        if (!part) return;
+        // 주휴는 주 15시간 이상인 주에만, 주휴시간 = 주 근로시간 ÷ 5(8시간까지). 월급여 = 주급 × 4.345(노무사 확인 2026-10-14).
+        const holidayH = partWeek >= 15 ? Math.min(8, partWeek / 5) : 0;
+        const holidayPay = Math.round(holidayH * wage);
+        const weekly = workPay + holidayPay;
+        const monthly = Math.round(weekly * 4.345);
+        const row = (label) => [...table.tBodies[0].rows].find((tr) => tr.cells[0].textContent === label);
+        row("소계").cells[5].innerHTML = `<b>${hrs(partWeek)}</b>`;
+        row("소계").cells[7].innerHTML = `<b>${won(workPay)}</b>`;
+        row("주휴수당").cells[5].textContent = hrs(holidayH);
+        row("주휴수당").cells[7].textContent = won(holidayPay);
+        row("주급").cells[7].innerHTML = `<b>${won(weekly)}</b>`;
+        row("월급여").cells[7].innerHTML = `<b>${won(monthly)}</b>`;
+        set($("[data-pay=part] [data-month]", root), won(monthly));
       });
-      if (sum) sum.textContent = ((Object.values(on).reduce((n, f) => n + f, 0) * day) / 60).toFixed(1);
+      $$("[data-pay=full] [data-hours-sum]", root).forEach((el) => (el.textContent = ((Object.values(on).reduce((n, f) => n + f, 0) * day) / 60).toFixed(1)));
+      $$("[data-pay=part] [data-hours-sum]", root).forEach((el) => (el.textContent = partWeek.toFixed(1)));
+      // 정직원 급여: 급여항목 금액 = 시간 × 시급 × 배율, 월급 = 급여항목 합계 + 비과세 합계, 연봉 = 월급 × 12.
+      const full = $("[data-pay=full]", root);
+      if (full) {
+        const wage = num($("[data-wage]", full)?.value);
+        let paySum = 0;
+        $$("[data-pay-rate]", full).forEach((input) => {
+          const amount = Math.round(num(input.value) * wage * Number(input.dataset.payRate));
+          paySum += amount;
+          set(input.closest("tr").querySelector("[data-pay-amount]"), won(amount));
+        });
+        const taxFree = $$("[data-tax-free]", full).reduce((n, input) => n + num(input.value), 0);
+        set($("[data-pay-sum]", full), won(paySum));
+        set($("[data-tax-free-sum]", full), won(taxFree));
+        set($("[data-month]", full), won(paySum + taxFree));
+        set($("[data-year]", full), won((paySum + taxFree) * 12));
+        // 수습 중 시급 = 시급 × (1 − 감액률). 감액률은 0~10%(최저임금의 90% 보장, 노무사 확인 2026-10-14).
+        const rate = Math.min(10, Math.max(0, num($("[data-probation-rate]")?.value)));
+        set($("[data-probation-wage]"), won(wage * (1 - rate / 100)));
+      }
+      // 4대보험 안내: 월 시간 = 주 시간 × 4.345, 60시간 이상이면 가입 대상(노무사 확인 2026-10-14).
+      const month = $("[data-insure-month]");
+      if (month) month.textContent = String(Math.round(week * 4.345));
+      const need = $("[data-insure-need]");
+      if (need) need.textContent = week * 4.345 >= 60 ? "4대보험 가입 대상" : "4대보험 가입 대상 아님";
+      // 주휴일: 주 15시간 미만이면 주휴가 없어 「없음」으로 두고 고를 수 없게 막는다. 15시간 이상이면 풀고,
+      // 「없음」이었으면 근무하지 않는 가장 뒤 요일을 고른다(노무사 확인 2026-10-14).
+      const holiday = $("[data-weekly-holiday]");
+      if (holiday) {
+        const none = [...holiday.options].find((o) => o.textContent.startsWith("없음"));
+        none.hidden = week >= 15;
+        holiday.disabled = week < 15;
+        if (week < 15) holiday.value = none.value;
+        else if (holiday.value === none.value) holiday.value = ["일", "토", "금", "목", "수", "화", "월"].find((d) => !on[d]) ?? "일";
+      }
     };
     root.addEventListener("click", (e) => {
       const b = e.target.closest("button[aria-pressed]");
       if (!b) return;
       b.setAttribute("aria-pressed", String(b.getAttribute("aria-pressed") !== "true"));
+      const tr = partRow(b.textContent);
+      if (tr) fill(tr, b.getAttribute("aria-pressed") === "true");
       sync();
     });
+    // 위 근무시간 · 휴게시간을 바꾸면 파트타이머 표의 켜진 요일을 모두 그 값으로 다시 채운다. 요일 칸을 고친 것은 덮어쓴다.
+    root.addEventListener("change", (e) => {
+      if (!e.target.matches("[data-k]") || !partTable) return;
+      $$("button[aria-pressed='true']", root).forEach((b) => partRow(b.textContent) && fill(partRow(b.textContent), true));
+    });
     root.addEventListener("input", sync);
+    // 고용 형태를 바꾸면 주 시간 · 4대보험 · 주휴일을 그 표로 다시 셈한다.
+    document.addEventListener("change", (e) => e.target.name === "employment" && sync());
+    // 수습 감액률 칸은 급여 표 밖(4대보험 위)에 있어 따로 듣는다.
+    $("[data-probation-rate]")?.addEventListener("input", sync);
     root.addEventListener("change", sync);
     sync();
   }

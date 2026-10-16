@@ -2664,6 +2664,10 @@
     --tw-leading: 22px;
     line-height: 22px;
   }
+  .leading-\[34px\] {
+    --tw-leading: 34px;
+    line-height: 34px;
+  }
   .leading-\[normal\] {
     --tw-leading: normal;
     line-height: normal;
@@ -3371,6 +3375,9 @@
   .aria-disabled\:opacity-40[aria-disabled="true"] {
     opacity: 40%;
   }
+  .aria-invalid\:border-erp-off[aria-invalid="true"] {
+    border-color: var(--color-erp-off);
+  }
   .aria-pressed\:border-erp-brand[aria-pressed="true"] {
     border-color: var(--color-erp-brand);
   }
@@ -3495,6 +3502,12 @@
   .\[\&_\:is\(a\[href\]\,button\:enabled\,select\:enabled\,label\:has\(input\:enabled\)\,input\[type\=checkbox\]\:enabled\)\]\:cursor-pointer :is(a[href], button:enabled, select:enabled, label:has(input:enabled), input[type=checkbox]:enabled) {
     cursor: pointer;
   }
+  .\[\&_\:is\(input\,select\)\:disabled\]\:bg-erp-thead-bg :is(input, select):disabled {
+    background-color: var(--color-erp-thead-bg);
+  }
+  .\[\&_\:is\(input\,select\)\[readonly\]\]\:bg-erp-thead-bg :is(input, select)[readonly] {
+    background-color: var(--color-erp-thead-bg);
+  }
   .\[\&_button\]\:cursor-pointer button {
     cursor: pointer;
   }
@@ -3577,6 +3590,9 @@
     .hover\:\[\&\>span\:first-child\]\:opacity-70:hover > span:first-child {
       opacity: 70%;
     }
+  }
+  .\[\&\[readonly\]\]\:bg-erp-thead-bg[readonly] {
+    background-color: var(--color-erp-thead-bg);
   }
 }
 @font-face {

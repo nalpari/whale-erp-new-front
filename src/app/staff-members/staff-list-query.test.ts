@@ -1,7 +1,7 @@
 // node --test src/app/staff-members/staff-list-query.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { DEFAULT_STAFF_LIST_QUERY, parseStaffListQuery, toStaffListSearch, withFilter } from "./staff-list-query.ts";
+import { DEFAULT_STAFF_LIST_QUERY, parseStaffListQuery, staffListHref, toStaffListSearch, withFilter } from "./staff-list-query.ts";
 
 test("빈 URL 은 기본값 — 재직, 모든 체크, 1쪽, 20건", () => {
   assert.deepEqual(parseStaffListQuery({}), DEFAULT_STAFF_LIST_QUERY);
@@ -78,4 +78,11 @@ test("필터를 바꾸면 page 를 지운다 — 4쪽에서 거르면 빈 쪽이
   const q = withFilter({ ...DEFAULT_STAFF_LIST_QUERY, page: 4 }, { keyword: "서지안" });
   assert.equal(q.page, 1);
   assert.equal(q.keyword, "서지안");
+});
+
+test("상세의 「목록」 주소는 들고 온 조건을 거른 뒤 돌려준다", () => {
+  assert.equal(staffListHref({}), "/staff-members");
+  assert.equal(staffListHref({ keyword: "서지안", page: "3" }), "/staff-members?keyword=%EC%84%9C%EC%A7%80%EC%95%88&page=3");
+  // 모르는 이름 · 이상한 값은 따라오지 않는다
+  assert.equal(staffListHref({ next: "//evil.example", page: "-1", employmentStatus: "X" }), "/staff-members");
 });
