@@ -1,6 +1,8 @@
 # Bundle history
 
 ## 2026-10-16
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #41 리뷰 반영(영주). 발송 확인창이 접수 여부 모름(SEND_UNCONFIRMED · 코드 없는 502 · 504 · api 응답 전 끊김)과 409 상태 충돌 · 「다른 요청이 먼저 고침」이면 보내기를 막고 상세를 다시 읽는다(`send-model.ts`). 응답 전 끊김은 오류 화면 대신 확인창 문장. api-types 를 api #59 반영(2a826ee)으로 다시 만들었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세의 「발송」(발송 대기) · 「재발송」(서명 대기)을 켰다(WHALEERP-136, api psyduck). 확인창 → 서버 액션 `sendContract` → `POST /contracts/:id/send`, 실패 문장은 확인창에. api-types 를 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #40 리뷰 참고 반영. 수정 요청 모드에서 근무지 선택을 잠그고(api #58 이 근무지 변경을 400 으로 막음) 하단 안내를 수정 요청 문구로 바꿨다. 대체 확인창에 「수정 요청」을 더했다(api 의 대체 종료 대상과 같게). `api-types.generated.ts` 를 api #58 반영(71b0f20) openapi 로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 「수정 요청」 상태 표시와 날인 전 근로자 정보 수정 화면 `/contracts/[contractId]/worker`, 수정 요청 계약을 고치는 이어 쓰기 `correction` 모드(WHALEERP-125 · 126). 상세 제목 줄에 「근로자 정보 수정」 · 「계약서 수정」. api-types 를 api nidoran 으로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — api #56 머지(api main b119919) 뒤 `api-types.generated.ts` 를 api main 기준으로 다시 만들어 머지 전 브랜치(rapidash 0ed2373) 기준과 차이가 없음을 확인했다. main(front #38) 병합 — okf/log.md 충돌만 풀었다.
