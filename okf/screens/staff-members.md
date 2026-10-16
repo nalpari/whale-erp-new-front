@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-16T12:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-16T13:00:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -163,12 +163,14 @@ sources:
   `roleTypeCode`)은 직영 점포 직원에게만 보인다 — 본사 제공 동의한 가맹 직원은 상세가 열리지만 api 의 계정 조치 범위
   (`canManageStaffAccount`)는 동의와 상관없이 점포 단위라 404 다(2026-10-14 재영, ATT-30). 점포 유형을 모르면 api 처럼 숨긴다
   (PR 전 리뷰, 2026-10-16 노영주). 본사 역할이 아니면 점포 유형을 보지 않는다. 탈퇴 계정(가입 완료인데 `email` 이 null)에게도
-  숨긴다(데모 주석, 2026-10-16 노영주) — 상세 응답에 탈퇴 표시가 따로 없어 api #56 의 「email 은 가입 전 · 탈퇴면 null」 규칙에
+  숨긴다(데모 주석, 2026-10-16 노영주) — 상세 응답에 탈퇴 표시가 따로 없어 api #56 의 「email 은 발송과 같은 기준 — 가입 전 · 탈퇴,
+  본사 역할이 동의로만 보는 가맹 점포 직원이면 null」 규칙에
   기댄다. 놓친 경우는 api 409 다. 숨길 때는 줄째 뺀다.
 * 확인창 — 제목 「비밀번호를 초기화하시겠습니까?」, 취소 · 초기화(데모 `resetDialog`). 본문은 데모 뼈대에 관리자가 비밀번호를 모른다는
   것(완료 조건 2) · 새 링크가 발송되면 앞 링크 무효(목업)를 더했다 — 받는 곳 · 24시간 한 번만 · 여러 BP 공통 · 1분 안에 다시 보낼 수 없음.
 * 받는 곳(`resetRecipientText`) — 상세 응답의 `email`(계정 이메일, 재설정 링크가 가는 곳)으로 「이메일 아이디 OOO 으로」, null 이면
-  「직원의 이메일 아이디로」. 상세 응답은 api #56 부터 `StaffMemberDetailResponseDto`(목록 한 줄 + `email`, 가입 전 · 탈퇴면 null)다.
+  「직원의 이메일 아이디로」. 상세 응답은 api #56 부터 `StaffMemberDetailResponseDto`(목록 한 줄 + `email`)다. `email` 은 링크 발송과 같은 기준이라 가입 전 · 탈퇴, 본사 역할(BM · BA)이
+  동의로만 보는 가맹 점포 직원이면 null 이다(api #56 0d69bcf) — 그 직원은 본사 역할 판정으로도 버튼이 없고 기본 정보 「이메일」은 「-」다.
   기본 정보의 「이메일」 줄도 이 값으로 채운다(ACC-17: 보이되 고치지 못함). 타입은 머지 전이라 api 브랜치(rapidash)로 만들었다 —
   api 머지 뒤 api main 기준으로 다시 만든다.
 * 실패(`resetFailureMessage`) — 404 · 409 · 429 · 503 은 api 문구 그대로, 401 은 로그인 만료 문구다. 429 는 데모의 「잠시 뒤 다시

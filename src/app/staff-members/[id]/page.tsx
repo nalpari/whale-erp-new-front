@@ -87,7 +87,7 @@ export default async function StaffMemberDetailPage({
     { label: "생년월일", value: PENDING },
     { label: "휴대전화번호", value: staff.phone ? formatPhone(staff.phone) : PENDING },
     { label: "본인인증", value: PENDING },
-    // 계정 이메일(로그인 아이디) — 가리지 않고 보이되 고치지 못한다(ACC-17). 가입 전 · 탈퇴면 없다.
+    // 계정 이메일(로그인 아이디) — 가리지 않고 보이되 고치지 못한다(ACC-17). 가입 전 · 탈퇴, 본사 역할이 보는 가맹 점포 직원이면 없다(api #56).
     { label: "이메일", value: staff.email ?? PENDING },
   ];
 

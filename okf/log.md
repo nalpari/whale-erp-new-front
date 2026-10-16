@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-16
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — api #56 이 상세 `email` 을 링크 발송과 같은 기준으로 바꿨다(0d69bcf: 본사 역할이 동의로만 보는 가맹 점포 직원도 null). email null 전제를 적은 주석 · 문서를 고쳤다. 버튼 판정은 그대로다 — 본사 역할 + 직영 아님으로 이미 숨긴다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `api-types.generated.ts` 를 api #56(rapidash fa67545, 머지 전) openapi 로 다시 만들었다. 상세 `email` 설명만 바뀌었다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — PR #37 리뷰 반영: 확인창 핸들러를 `handleConfirm` 으로(naming.md `handle` 접두).
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — PR #37 리뷰 반영: 서버 액션 「결과 모름」 로그에 기능 이름(퇴직 · 비밀번호 초기화)과 staffMemberId 를 남긴다(앞 변경에서 퇴직 접두가 빠졌다).
