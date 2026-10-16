@@ -46,6 +46,15 @@ export const isSettledNow = (retiredDate: string, today: string) => retiredDate 
 export const settlesWithoutWarning = (retiredDate: string, shownToday: string, now: string) =>
   !isSettledNow(retiredDate, shownToday) && isSettledNow(retiredDate, now);
 
+/**
+ * 처리 · 변경을 보낸 뒤 확인창이 쓸 오늘. 서버가 날짜 바뀜으로 막으며 돌려준 오늘(서버 시계)로만 바꾸고, 그 밖에는 그대로 둔다.
+ * 브라우저 시계는 쓰지 않는다 — 빠르면 과잉 「즉시 정리」 경고가 뜨고, 받은 서버의 오늘을 브라우저 값으로 덮으면 경고가 번갈아
+ * 사라졌다 나타난다(PR #36 재리뷰 2). 날짜 바뀜 판정은 서버 액션(staleDayWarning)이 한다.
+ */
+export function todayAfterSubmit(shownToday: string, result: { ok: boolean; today?: string }): string {
+  return !result.ok && result.today !== undefined && isDate(result.today) ? result.today : shownToday;
+}
+
 /** 자정을 넘겨 다시 확인받을 때의 문구. 확인창 · 서버 액션이 같은 문구를 쓴다. */
 export const STALE_DAY_MESSAGE = "날짜가 바뀌어 퇴직일이 지난 날짜가 되었습니다. 처리하면 즉시 정리되니 다시 확인해 주세요.";
 

@@ -1,7 +1,7 @@
 // node --test src/lib/retirement.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { checkRetiredDate, earliestRetiredDate, failureEffect, isSettledNow, retirementActions, settlesWithoutWarning, staleDayWarning } from "./retirement.ts";
+import { checkRetiredDate, earliestRetiredDate, failureEffect, isSettledNow, retirementActions, settlesWithoutWarning, staleDayWarning, todayAfterSubmit } from "./retirement.ts";
 
 test("가장 이른 퇴직일은 오늘에서 3개월 전 같은 날", () => {
   assert.equal(earliestRetiredDate("2026-10-15"), "2026-07-15");
@@ -108,4 +108,21 @@ test("서버 판정 — 그대로거나 이미 지난 날짜 경고를 본 경�
 
 test("서버 판정 — 확인창이 본 오늘이 날짜가 아니면 판단할 수 없어 다시 확인받는다", () => {
   assert.notEqual(staleDayWarning("2026-10-15", "x", "2026-10-15"), null);
+});
+
+test("확인창의 오늘은 서버가 날짜 바뀜으로 막으며 돌려준 오늘로만 바뀐다", () => {
+  assert.equal(todayAfterSubmit("2026-10-15", { ok: false, today: "2026-10-16" }), "2026-10-16");
+});
+
+test("브라우저 시계가 빨라도 서버가 막지 않았으면 오늘은 그대로 — 과잉 「즉시 정리」 경고를 띄우지 않는다", () => {
+  // 서버 D 에 그린 화면, 브라우저는 이미 D+1 이어도 판단에 브라우저 시계를 쓰지 않는다
+  assert.equal(todayAfterSubmit("2026-10-15", { ok: true }), "2026-10-15");
+});
+
+test("서버의 오늘을 받은 뒤 다른 이유(409 등)로 실패해도 그 오늘을 지킨다 — 경고가 사라졌다 나타나지 않게", () => {
+  assert.equal(todayAfterSubmit("2026-10-16", { ok: false }), "2026-10-16");
+});
+
+test("서버가 돌려준 오늘이 날짜가 아니면 무시한다", () => {
+  assert.equal(todayAfterSubmit("2026-10-15", { ok: false, today: "x" }), "2026-10-15");
 });

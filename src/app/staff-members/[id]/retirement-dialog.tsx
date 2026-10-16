@@ -4,8 +4,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ConfirmDialog, DateField, useToast } from "@/components/common";
 import { PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
-import { checkRetiredDate, earliestRetiredDate, failureEffect, isSettledNow, settlesWithoutWarning, STALE_DAY_MESSAGE } from "@/lib/retirement";
-import { kstToday, type RetirementPreview } from "@/lib/staff-members";
+import { checkRetiredDate, earliestRetiredDate, failureEffect, isSettledNow, todayAfterSubmit } from "@/lib/retirement";
+import type { RetirementPreview } from "@/lib/staff-members";
 import { cancelRetirementAction, changeRetirementDateAction, previewRetirementAction, retireAction, type ActionFailure } from "./actions";
 
 // 퇴직 처리 · 퇴직일 변경 확인창과 퇴직 처리 취소 확인창(WHALEERP-585). 문구와 배치는 목업 docs/mockup/staff/detail.html ·
@@ -59,7 +59,7 @@ export function RetirementDialog({
   mode: "retire" | "change";
   /** 퇴직일 변경일 때 지금 퇴직일 */
   currentDate: string | null;
-  /** 화면을 그릴 때의 오늘(KST). 확인창을 연 채 자정을 넘기면 확인을 누를 때 다시 센다. */
+  /** 화면을 그릴 때 서버의 오늘(KST). 그 뒤로는 서버 액션이 날짜 바뀜으로 막으며 돌려준 오늘로만 바뀐다(todayAfterSubmit). */
   today: string;
   onClose: () => void;
 }) {
@@ -114,19 +114,8 @@ export function RetirementDialog({
   const sameDate = mode === "change" && date === currentDate;
   const ready = preview.status === "ok" && preview.date === date && !sameDate;
 
+  // 확인창을 연 채 자정을 넘긴 경우는 서버 액션이 서버 시계로 판정한다(staleDayWarning) — 브라우저 시계는 빠르거나 늦을 수 있어 쓰지 않는다.
   const confirm = async () => {
-    // 확인창을 연 채 자정을 넘겼으면 오늘을 다시 센다. 경고 없이 지난 날짜가 됐으면 처리하지 않고 경고를 띄워 다시 확인받는다 —
-    // api 는 지난 날짜를 그 자리에서 되돌릴 수 없게 정리한다. 미리 보기도 새 오늘 기준으로 다시 받는다.
-    const now = kstToday();
-    if (now !== today) {
-      setToday(now);
-      changeDate(date, now);
-      if (settlesWithoutWarning(date, today, now)) {
-        setSubmitError(STALE_DAY_MESSAGE);
-        return;
-      }
-      if (checkRetiredDate(date, now)) return; // 3개월 범위를 벗어났다 — changeDate 가 문구를 띄웠다
-    }
     setBusy(true);
     setSubmitError(null);
     try {
@@ -138,10 +127,12 @@ export function RetirementDialog({
         onClose();
         return;
       }
-      // 서버 시계로 날짜가 바뀌어 막혔다 — 서버의 오늘로 경고 · 미리 보기를 다시 그리고, 다시 누르면 그 오늘로 판정받는다
-      if (result.today) {
-        setToday(result.today);
-        changeDate(date, result.today);
+      // 서버 시계로 날짜가 바뀌어 막혔다 — 서버의 오늘로 경고 · 미리 보기를 다시 그리고, 다시 누르면 그 오늘로 판정받는다.
+      // 그 밖의 실패에서는 오늘을 그대로 둔다 — 받은 서버의 오늘을 지킨다.
+      const nextToday = todayAfterSubmit(today, result);
+      if (nextToday !== today) {
+        setToday(nextToday);
+        changeDate(date, nextToday);
         setSubmitError(result.message);
         return;
       }
