@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { DetailTable, PageBar } from "@/components/common";
+import { kstToday } from "@/lib/staff-members";
 import { getStaffMember } from "@/lib/staff-members-api";
 import { staffListHref } from "../staff-list-query";
 import { EMPLOYMENT_TYPE_LABELS, employmentStatusCells, formatPhone } from "../staff-row";
@@ -81,6 +82,8 @@ export default async function StaffMemberDetailPage({
     { label: "소속 근무지", value: staff.store.name },
     { label: "입사일", value: PENDING },
     { label: "재직 상태", value: employmentStatus.length ? employmentStatus.map((cell) => <CellView key={cell.text} cell={cell} />) : PENDING },
+    // 퇴직 예정 · 퇴직이면 퇴직일을 보인다(목업 detail.html)
+    ...(staff.retiredDate ? [{ label: "퇴직일", value: staff.retiredDate }] : []),
     { label: "생년월일", value: PENDING },
     { label: "휴대전화번호", value: staff.phone ? formatPhone(staff.phone) : PENDING },
     { label: "본인인증", value: PENDING },
@@ -95,7 +98,7 @@ export default async function StaffMemberDetailPage({
           <div className="flex flex-col gap-[12px]">
             <div className="flex items-center gap-[6px]">
               <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">직원 상세</h2>
-              <StaffDetailActions listHref={listHref} />
+              <StaffDetailActions staff={staff} today={kstToday()} listHref={listHref} />
             </div>
             <div className="grid grid-cols-[5fr_7fr] items-start gap-[24px]">
               <div className="flex min-w-0 flex-col gap-[24px]">
