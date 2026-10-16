@@ -1,8 +1,6 @@
 import { notFound } from "next/navigation";
-import { Button, GlobalHeader, PageBar, ServiceLinks, StoreSelect, UserPop } from "@/components/common";
-import { NotificationBellSlot } from "@/components/notifications/notification-bell-slot";
+import { Button, PageBar } from "@/components/common";
 import { ApiError, request } from "@/lib/api";
-import { MENUS, STORES, USER_ITEMS } from "../../../design/sample";
 import { ContractForm } from "../../new/contract-form";
 import { fromDetail, type ContractDetail } from "../../new/contract-form-model";
 import { loadFormData } from "../../new/load-form-data";
@@ -27,33 +25,20 @@ export default async function EditContractPage({ params }: PageProps<"/contracts
   }
 
   return (
-    <div className="h-[100dvh] overflow-x-auto overflow-y-hidden bg-erp-thead-bg">
-      <div className="flex h-full min-w-[1720px] flex-col">
-        <GlobalHeader
-          menus={MENUS}
-          right={
-            <>
-              <StoreSelect options={STORES} />
-              <ServiceLinks />
-              <NotificationBellSlot />
-              <UserPop name="김지영 (admin)" items={USER_ITEMS} />
-            </>
-          }
-        />
-        <PageBar title="근로계약서 이어 쓰기" />
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
-          <div className="rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
-            {!signedIn || !detail ? (
-              <Notice title="로그인이 필요합니다" />
-            ) : detail.status !== "DRAFT" ? (
-              <Notice title="임시저장한 근로계약서만 이어 쓸 수 있습니다" />
-            ) : (
-              <ContractForm stores={stores} labels={labels} signedIn contractId={contractId} initial={fromDetail(detail)} deleteButton={<DeleteDraftButton contractId={contractId} />} />
-            )}
-          </div>
+    <>
+      <PageBar title="근로계약서 이어 쓰기" />
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
+        <div className="rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
+          {!signedIn || !detail ? (
+            <Notice title="로그인이 필요합니다" />
+          ) : detail.status !== "DRAFT" ? (
+            <Notice title="임시저장한 근로계약서만 이어 쓸 수 있습니다" />
+          ) : (
+            <ContractForm stores={stores} labels={labels} signedIn contractId={contractId} initial={fromDetail(detail)} deleteButton={<DeleteDraftButton contractId={contractId} />} />
+          )}
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
