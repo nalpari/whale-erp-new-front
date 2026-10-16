@@ -6,11 +6,10 @@ import { req } from "../../biz-form.mjs";
 import * as x from "../../extra.mjs";
 import * as c from "../../config-parts.mjs";
 import { platformHeader, link } from "../../site.mjs";
-import { roleSide, tagRows, newButton } from "../../role-side.mjs";
+import { roleSide, tagRows, newButton, scrollTabs, SVC_TABS_SCRIPT } from "../../role-side.mjs";
 
 // 1팀 컴포넌트에 없는 것들. 토큰으로만 그린다.
 const note = (html) => `<p class="text-[14px] leading-[1.6] text-erp-label">${html}</p>`;
-const help = (t) => `<span class="text-[13px] leading-[1.5] text-erp-label">${t}</span>`;
 const sub = (t) => `<span class="text-erp-label">${t}</span>`;
 // 확인창 안의 짧은 항목·값 목록(목업 .kv). admins-detail 과 같은 모양.
 const kv = (rows) =>
@@ -72,7 +71,12 @@ const SELECTED = null; // 처음 진입은 고른 권한 없이 빈 안내를 �
 const has = (map, code, op) => !!map?.[code]?.includes(op);
 const TIP = { self: "본인 권한 범위 밖", bp: "BP 마스터·가맹 마스터 권한에는 플랫폼 관리 메뉴를 줄 수 없습니다" };
 // 메뉴 등록 팝업의 서비스 탭. POS 는 아직 메뉴가 없어 빈 표다
-const SVC_TABS = [["PLATFORM", "Whale ERP 플랫폼 관리"], ["ERP", "Whale ERP"], ["POS", "POS"]];
+// 공통코드 SERVICE 순서 그대로(2026-10-15). 탭이 팝업 폭을 넘으면 한 줄을 지키고 가로로 스크롤해 고른다(scrollTabs).
+// 메뉴가 아직 없는 서비스는 빈 표다
+const SVC_TABS = [
+  ["ERP", "Whale ERP"], ["PLATFORM", "Whale ERP 플랫폼 관리"], ["POS", "POS"], ["KIOSK", "KIOSK"], ["TABLE_ORDER", "Table Order"], ["PICK_UP_ORDER", "Pick Up Order"],
+  ["QR_ORDER", "QR Order"], ["RECIPE_MANAGEMENT", "레시피관리"], ["ORDER_MANAGEMENT", "발주관리"], ["STORE_INVENTORY", "점포재고관리"], ["WAITING_MANAGEMENT", "대기순번관리"], ["RESERVATION", "예약관리"],
+];
 
 // 메뉴 등록 확인창 하나(권한 하나). 목업 스크립트가 그리던 표를 빌드 때 그린다.
 function menuDialog(A, R, role, id) {
@@ -136,10 +140,10 @@ function menuDialog(A, R, role, id) {
     )}</div>`;
   };
   // 서비스는 표 위 탭으로 고른다(BP 권한 메뉴 등록과 같다 · 2026-10-08). 처음엔 그 권한의 기본 서비스 탭이 열린다
-  const tabs = x.tabs(
+  const tabs = scrollTabs(x.tabs(
     SVC_TABS.map(([key, label]) => ({ id: `${id}-${key}`, label, html: svcTable(key) })),
     `${id}-${svc}`,
-  );
+  ));
 
   const canSave = code !== "PM000001" && code !== OWN;
 
@@ -174,8 +178,9 @@ export default ({ A, R }) => {
       name,
       desc,
       // BP 권한 그룹 관리 목록처럼 한 칸에 두 줄(일시 / 아이디)
-      c.two(mod, c.muted(modBy)),
-      c.two(reg, c.muted(regBy)),
+      // 등록일시 · 최종수정일시 순서로, 한 칸에 「일시 | 사람」(상세와 같은 모양 · 2026-10-15)
+      `${reg} ${c.muted(`| ${regBy}`)}`,
+      `${mod} ${c.muted(`| ${modBy}`)}`,
       // 등록 / 미등록만 보인다. 미등록은 상태 빨강 배지
       n ? ui.badge("on", "등록") : ui.badge("off", "미등록"),
       x.dialogTrigger("메뉴등록", id, "soft"),
@@ -186,8 +191,8 @@ export default ({ A, R }) => {
     { header: "권한유형", width: "w-[110px]" },
     { header: "권한명", align: "left" },
     { header: "설명", align: "left" },
-    { header: "최종 수정일시 · 수정자", width: "w-[170px]" },
-    { header: "등록일시 · 등록자", width: "w-[170px]" },
+    { header: "등록일시", width: "w-[200px]" },
+    { header: "최종수정일시", width: "w-[200px]" },
     { header: "메뉴 등록 여부", width: "w-[130px]" },
     { header: "메뉴등록", width: "w-[124px]" },
   ];
@@ -200,8 +205,8 @@ export default ({ A, R }) => {
     `</section>`;
 
   // 권한 삭제 확인창(목업 pop-del 의 첫 단계) — 추가 권한마다 하나. 연결 사용자는 플랫폼 관리자 목록 표본(admins.mjs)을 따른다.
-  // 대체 권한은 다른 추가 권한만 고른다 — 고정 권한 PA000001 로 옮기면 권한이 플랫폼 관리자 기본 권한까지 넓어진다.
-  const USERS = { PA000002: ["platpark 박지우", "platchoi 최유나(미사용)"], PA000003: ["plathan 한승우"], PA000004: [] };
+  // 대체 권한은 같은 유형의 지우지 않은 다른 권한만 고른다(후보는 api 가 준다). 표본은 다른 추가 권한을 후보로 둔다.
+  const USERS = { PA000002: ["platpark 박지우", "platchoi 최유나(미사용)"], PA000003: ["plathan 한승우", "platlee 이도윤", "platkang 강서연", "platyoon 윤하준", "platjang 장민서", "platlim 임지호", "platseo 서예린(미사용)"], PA000004: [] };
   const del = {};
   const delDialogs = ROLES.filter((r) => r[3] === "추가")
     .map(([, code, name]) => {
@@ -211,9 +216,10 @@ export default ({ A, R }) => {
       const body = users.length
         ? kv([
             ["권한", `${name} ${sub(code)}`],
-            ["연결 사용자", `${users.length}명 ${sub(`· ${users.join(", ")}`)}`],
+            // 몇 명인지 먼저, 그 아래에 한 사람씩 「아이디 | 사용자명」으로 줄을 바꿔 보인다. 다섯 명까지 보이고 넘으면 목록 안에서 스크롤한다(2026-10-15)
+            ["연결 사용자", `<p>${users.length}명</p><ul class="mt-[4px] flex max-h-[118px] flex-col gap-[2px] overflow-y-auto text-erp-label">${users.map((u) => `<li class="h-[22px] shrink-0 truncate leading-[22px]">${u.replace(" ", " | ").replace("(미사용)", " (미사용)")}</li>`).join("")}</ul>`],
           ]) +
-          ui.field(req("대체 권한"), ui.select(["선택하세요", ...others]) + help(`변경 대상 사용자 ${users.length}명의 권한을 고른 권한으로 한꺼번에 바꾼 뒤 삭제합니다. 고정 권한 PA000001 플랫폼 관리자는 고를 수 없습니다 — 옮기면 권한이 플랫폼 관리자 기본 권한까지 넓어집니다.`)) +
+          ui.field(req("대체 권한"), ui.select(["선택하세요", ...others])) +
           band(`로그인 중인 사용자도 다음 요청부터 새 권한으로 판정됩니다`)
         : kv([
             ["권한", `${name} ${sub(code)}`],
@@ -231,7 +237,7 @@ export default ({ A, R }) => {
     html: ui.erpFrame({
       header: platformHeader(A, R, { master: true }),
       title: "플랫폼 권한 관리",
-      body: `<div class="flex min-h-0 flex-1 gap-[12px] p-[24px]">${left}${right}</div>` + dialogs.join("") + delDialogs,
+      body: `<div class="flex min-h-0 flex-1 gap-[12px] p-[24px]">${left}${right}</div>` + dialogs.join("") + delDialogs + SVC_TABS_SCRIPT,
     }),
   };
 };

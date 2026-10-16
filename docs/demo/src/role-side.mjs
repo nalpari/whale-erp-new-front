@@ -74,6 +74,85 @@ export function roleSide({ roles, own, master, selected, del = {}, card }) {
   return `<section class="${card} w-[464px] shrink-0" data-role-side>${empty}${roles.map(view).join("")}${form}</section>` + ROLE_SCRIPT;
 }
 
+// 메뉴 등록 팝업의 서비스 탭을 가로 스크롤 줄로(2026-10-15). 공통 x.tabs 는 다른 화면도 써서 그 결과의 탭 줄만 바꾼다.
+// 사용 중 서비스(공통코드 SERVICE)가 많아도 한 줄을 지키고, 스크롤바는 숨기고, 넘치는 쪽만 끝을 흐리게 한 뒤 ‹ › 를 둔다.
+// 탭 전환은 그대로 공통 erp.js 가 한다. 스크롤 · 흐림 · 화살표는 SVC_TABS_SCRIPT 가 맡는다.
+const ARROW = "grid h-[42px] w-[28px] shrink-0 place-items-center text-[18px] text-erp-label transition-colors duration-150 ease-out hover:text-erp-ink";
+export function scrollTabs(html) {
+  return html
+    .replace(
+      '<div role="tablist" class="flex shrink-0 border-b border-erp-bar-line">',
+      // 스크롤바는 잘라낸다 — 안쪽 줄을 42 + 24 높이로 두고(스크롤바는 그 아래 여백에 생긴다) 바깥 42 상자가 넘친 아래를 가린다.
+      // 데모 틀이 스크롤바를 얇게 덮어써도 보이지 않는다. 이동은 ‹ › · 휠 · 탭 고르기로 한다.
+      `<div class="flex shrink-0 items-stretch border-b border-erp-bar-line" data-svc-scroll><button type="button" tabindex="-1" aria-label="앞 서비스 보기" class="${ARROW}" data-svc-prev hidden>‹</button><div class="h-[42px] min-w-0 flex-1 overflow-hidden"><div role="tablist" aria-label="서비스" class="box-content flex h-[42px] overflow-x-auto overflow-y-hidden overscroll-x-contain pb-[24px] [-ms-overflow-style:none] [scrollbar-width:none]! [&::-webkit-scrollbar]:hidden">`,
+    )
+    .replace(/(<button type="button" role="tab"[^>]*?class=")/g, "$1shrink-0 whitespace-nowrap ")
+    .replace('</div><div role="tabpanel"', `</div></div><button type="button" tabindex="-1" aria-label="다음 서비스 보기" class="${ARROW}" data-svc-next hidden>›</button></div><div role="tabpanel"`);
+}
+
+export const SVC_TABS_SCRIPT = `<script>
+(() => {
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const MASK = {
+    left: "linear-gradient(to right, transparent, black 32px)",
+    right: "linear-gradient(to left, transparent, black 32px)",
+    both: "linear-gradient(to right, transparent, black 32px, black calc(100% - 32px), transparent)",
+  };
+  document.querySelectorAll("[data-svc-scroll]").forEach((box) => {
+    const list = box.querySelector('[role="tablist"]');
+    const prev = box.querySelector("[data-svc-prev]");
+    const next = box.querySelector("[data-svc-next]");
+    const measure = () => {
+      const left = list.scrollLeft > 1;
+      const right = list.scrollLeft + list.clientWidth < list.scrollWidth - 1;
+      prev.hidden = !left;
+      next.hidden = !right;
+      const m = left && right ? MASK.both : left ? MASK.left : right ? MASK.right : "";
+      list.style.maskImage = m;
+      list.style.webkitMaskImage = m;
+    };
+    // 팝업이 닫혀 있는 동안은 폭이 0 이라, 열려 폭이 생길 때 다시 잰다
+    new ResizeObserver(measure).observe(list);
+    list.addEventListener("scroll", measure, { passive: true });
+    // 가로 휠이 없는 마우스도 넘길 수 있게 세로 휠을 가로로 바꾼다
+    // 줄이 실제로 가로로 넘칠 때만 막는다 — 막지 않으면 팝업이 세로로 넘치는 작은 화면에서 팝업까지 내려간다
+    list.addEventListener("wheel", (e) => {
+      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+      // 그 방향으로 더 갈 수 있을 때만 막는다 — 끝까지 갔으면 휠이 팝업을 세로로 내리게 둔다
+      const canMove = e.deltaY > 0 ? list.scrollLeft + list.clientWidth < list.scrollWidth - 1 : list.scrollLeft > 1;
+      if (!canMove) return;
+      e.preventDefault();
+      list.scrollLeft += e.deltaY;
+    }, { passive: false });
+    const by = (dir) => list.scrollBy({ left: dir * list.clientWidth * 0.6, behavior: reduce ? "auto" : "smooth" });
+    prev.addEventListener("click", () => by(-1));
+    next.addEventListener("click", () => by(1));
+    // 고른 탭은 보이는 자리로 끌어오고, Tab 키는 고른 탭 하나에만 서게 한다(roving tabindex)
+    const tabs = [...list.querySelectorAll('[role="tab"]')];
+    const roving = () => tabs.forEach((t) => (t.tabIndex = t.getAttribute("aria-selected") === "true" ? 0 : -1));
+    roving();
+    // 주소 해시로 탭이 골라질 때(공통 erp.js 의 load · hashchange)도 Tab 키 자리를 다시 맞춘다
+    addEventListener("hashchange", () => requestAnimationFrame(roving));
+    addEventListener("load", () => requestAnimationFrame(roving));
+    list.addEventListener("click", (e) => {
+      const t = e.target.closest('[role="tab"]');
+      if (!t) return;
+      t.scrollIntoView({ block: "nearest", inline: "nearest", behavior: reduce ? "auto" : "smooth" });
+      requestAnimationFrame(roving);
+    });
+    // 좌우 화살표 · Home · End 로 옮겨 고른다
+    list.addEventListener("keydown", (e) => {
+      const at = Math.max(0, tabs.findIndex((t) => t.getAttribute("aria-selected") === "true"));
+      const next = e.key === "ArrowRight" ? (at + 1) % tabs.length : e.key === "ArrowLeft" ? (at - 1 + tabs.length) % tabs.length : e.key === "Home" ? 0 : e.key === "End" ? tabs.length - 1 : -1;
+      if (next < 0) return;
+      e.preventDefault();
+      tabs[next].click();
+      tabs[next].focus();
+    });
+  });
+})();
+</script>`;
+
 // 오른쪽 칸 바꾸기(이 화면 전용 — 공통 erp.js 는 건드리지 않는다).
 // 줄을 누르면 그 권한 상세. 신규 등록을 누르면 등록 양식이 되고 목록의 고른 줄 표시가 풀린다. 취소·등록하면 고르던 권한으로 돌아간다(데모라 목록에 넣지는 않는다).
 export const ROLE_SCRIPT = `<script>
