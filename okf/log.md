@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-16
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `api-types.generated.ts` 를 api #56(rapidash fa67545, 머지 전) openapi 로 다시 만들었다. 상세 `email` 설명만 바뀌었다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — PR #37 리뷰 반영: 확인창 핸들러를 `handleConfirm` 으로(naming.md `handle` 접두).
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — PR #37 리뷰 반영: 서버 액션 「결과 모름」 로그에 기능 이름(퇴직 · 비밀번호 초기화)과 staffMemberId 를 남긴다(앞 변경에서 퇴직 접두가 빠졌다).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `api-types.generated.ts` 를 api #56(rapidash 4748961, 머지 전) openapi 로 다시 만들었다: 직원 상세 응답 `StaffMemberDetailResponseDto`(+ `email`), 재설정 링크 403 설명, main 의 다른 변경 포함. api 머지 뒤 api main 기준으로 다시 만든다.
