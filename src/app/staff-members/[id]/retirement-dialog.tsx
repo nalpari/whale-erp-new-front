@@ -1,12 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ConfirmDialog, DateField, useToast } from "@/components/common";
-import { PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
-import { checkRetiredDate, earliestRetiredDate, failureEffect, isSettledNow, todayAfterSubmit } from "@/lib/retirement";
+import { checkRetiredDate, earliestRetiredDate, isSettledNow, todayAfterSubmit } from "@/lib/retirement";
 import type { RetirementPreview } from "@/lib/staff-members";
-import { cancelRetirementAction, changeRetirementDateAction, previewRetirementAction, retireAction, type ActionFailure } from "./actions";
+import { cancelRetirementAction, changeRetirementDateAction, previewRetirementAction, retireAction } from "./actions";
+import { useFailure } from "./use-action-failure";
 
 // 퇴직 처리 · 퇴직일 변경 확인창과 퇴직 처리 취소 확인창(WHALEERP-585). 문구와 배치는 목업 docs/mockup/staff/detail.html ·
 // 데모 detail.mjs 의 확인창이다. 「닫힐 근로계약」은 목업의 발송 대기 · 서명 대기에 임시저장을 더했다 — api 가 셋을 닫는다(2026-10-12 재영).
@@ -17,29 +16,6 @@ function nextDay(date: string): string {
   const d = new Date(`${date}T00:00:00Z`);
   d.setUTCDate(d.getUTCDate() + 1);
   return d.toISOString().slice(0, 10);
-}
-
-/** 실패를 받은 뒤 할 일. 확인창 안에 둘 문구면 돌려주고, 아니면 여기서 처리하고 null. */
-function useFailure() {
-  const router = useRouter();
-  return (failure: ActionFailure): string | null => {
-    switch (failureEffect(failure)) {
-      case "password":
-        dispatchEvent(new Event(PASSWORD_REQUIRED_EVENT));
-        return failure.message;
-      case "leave":
-        // 권한이 없거나 쓸 수 없는 계정 — 안내하고 들어오기 전 화면으로(공통 틀의 메뉴 권한 막기와 같다)
-        alert(failure.message);
-        if (history.length > 1) history.back();
-        else router.replace("/home");
-        return null;
-      case "refresh":
-        router.refresh();
-        return failure.message;
-      case "inline":
-        return failure.message;
-    }
-  };
 }
 
 type Preview = { status: "loading" } | { status: "ok"; date: string; value: RetirementPreview } | { status: "error"; message: string };
@@ -115,7 +91,7 @@ export function RetirementDialog({
   const ready = preview.status === "ok" && preview.date === date && !sameDate;
 
   // 확인창을 연 채 자정을 넘긴 경우는 서버 액션이 서버 시계로 판정한다(staleDayWarning) — 브라우저 시계는 빠르거나 늦을 수 있어 쓰지 않는다.
-  const confirm = async () => {
+  const handleConfirm = async () => {
     setBusy(true);
     setSubmitError(null);
     try {
@@ -157,7 +133,7 @@ export function RetirementDialog({
       confirmVariant={mode === "retire" ? "danger" : "primary"}
       busy={busy}
       confirmDisabled={!ready}
-      onConfirm={confirm}
+      onConfirm={handleConfirm}
       onCancel={onClose}
     >
       <div className="flex flex-col gap-[12px]">
@@ -216,7 +192,7 @@ export function CancelRetirementDialog({ staffMemberId, onClose }: { staffMember
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const confirm = async () => {
+  const handleConfirm = async () => {
     setBusy(true);
     setError(null);
     try {
@@ -243,7 +219,7 @@ export function CancelRetirementDialog({ staffMemberId, onClose }: { staffMember
       confirmLabel="퇴직 처리 취소"
       cancelLabel="닫기"
       busy={busy}
-      onConfirm={confirm}
+      onConfirm={handleConfirm}
       onCancel={onClose}
     >
       <p>퇴직 예정을 취소합니다. 퇴직일 전이라 정리된 것이 없어 그대로 재직입니다.</p>

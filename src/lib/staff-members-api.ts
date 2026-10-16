@@ -1,4 +1,4 @@
-// 직원 목록 · 상세 · 퇴직 처리 api. 토큰은 authHeaders() 가 로그인 세션에서 붙인다.
+// 직원 목록 · 상세 · 퇴직 처리 · 비밀번호 재설정 링크 api. 토큰은 authHeaders() 가 로그인 세션에서 붙인다.
 // 메뉴 권한 · 업무 범위 · 본사 제공 동의(가림)는 api 가 요청마다 본다 — 이 파일은 그대로 전한다.
 import { ApiError, authHeaders, request } from "./api";
 import { staffListApiSearch, type RetirementPreview, type StaffListQuery, type StaffMember, type StaffMemberListResponse } from "./staff-members";
@@ -26,8 +26,7 @@ export async function getStaffMembers(query: StaffListQuery): Promise<StaffMembe
 }
 
 /**
- * GET /staff-members/:id(WHALEERP-599). 없거나 · 업무 범위 밖 · 가린 직원은 404 라 null 이다 — 화면은 notFound().
- * TODO(599): :id 가 무엇을 가리키는지 599 설계가 확정되면 맞춘다. 지금은 목록의 staffMemberId 다.
+ * GET /staff-members/:id(WHALEERP-599) — :id 는 목록의 staffMemberId 다. 없거나 · 업무 범위 밖 · 가린 직원은 404 라 null 이다 — 화면은 notFound().
  */
 export async function getStaffMember(rawId: string): Promise<StaffMember | null> {
   const id = staffMemberIdOf(rawId);
@@ -58,4 +57,14 @@ export async function changeRetirementDate(id: number, retiredDate: string): Pro
 /** DELETE /staff-members/:id/retirement — 퇴직 처리 취소. 퇴직일 전날까지만. 204 */
 export async function cancelRetirement(id: number): Promise<void> {
   await request(`/staff-members/${id}/retirement`, await init("DELETE"));
+}
+
+/**
+ * POST /staff-members/:id/password-reset-links(WHALEERP-177) — 직원 계정 이메일로 재설정 링크를 보낸다. 201.
+ * 403 수정 권한 없음 · 사용 중이 아닌 관리자 계정 · 404 없는 직원 · 관리 범위 밖 · 409 가입 전 · 퇴직 · 탈퇴 · 429 1분 안에 다시 ·
+ * 503 링크 주소 · 발송기 없음 · 발송 실패. 응답의 보낸 시각 · 기한은 지금 쓰지 않는다 — 발송 이력은 이메일 발송 로그 테이블과 함께
+ * 따로 다룬다(2026-10-16 노영주).
+ */
+export async function issuePasswordResetLink(id: number): Promise<void> {
+  await request(`/staff-members/${id}/password-reset-links`, await init("POST"));
 }
