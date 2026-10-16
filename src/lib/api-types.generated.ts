@@ -454,7 +454,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** BP에 적용. 플랫폼제공 그룹만. 각 BP 에 아직 없는 행만 넣는다 — 다시 눌러도 된다. */
+        /**
+         * BP에 적용. 플랫폼제공 그룹만. 각 BP 에 아직 없는 행만 넣는다 — 다시 눌러도 된다.
+         *     되돌릴 수 없지만 행을 지우지 않고 그룹의 적용 여부를 바꾸는 동작이라 수정 권한으로 본다.
+         */
         post: operations["CodeGroupsController_applyToBps"];
         delete?: never;
         options?: never;
@@ -567,6 +570,101 @@ export interface paths {
          *     응답의 updatedAt 으로 다음 수정을 저장한다 — 초기화가 그 값을 올린다.
          */
         post: operations["PlatformAdminsController_resetPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform-role-groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 목록. 고정 권한 넷(PM · PA · BM · FM) 다음 플랫폼 관리자 추가 권한을 코드 순으로, 페이지 없이. */
+        get: operations["PlatformRoleGroupsController_list"];
+        put?: never;
+        /** 등록 — 플랫폼 관리자(PA) 추가 권한. 권한 코드는 PA + 6자리로 채번한다. */
+        post: operations["PlatformRoleGroupsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform-role-groups/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 상세. 권한명 · 설명을 고칠 수 있는지 · 지울 수 있는지와 막힌 이유를 함께 준다. */
+        get: operations["PlatformRoleGroupsController_detail"];
+        /** 권한명 · 설명 수정. 상세에서 받은 updatedAt 을 함께 보낸다 — 그 사이 다른 사람이 고쳤으면 409. */
+        put: operations["PlatformRoleGroupsController_update"];
+        post?: never;
+        /**
+         * 삭제 — 플랫폼 관리자 추가 권한만(논리 삭제). 연결 사용자가 있으면 대체 권한으로 한꺼번에 옮긴 뒤 지운다.
+         *     지운 권한 코드는 다시 쓰지 않는다.
+         */
+        delete: operations["PlatformRoleGroupsController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform-role-groups/{id}/menus": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 메뉴 등록 팝업의 트리 — 사용 중 서비스별, 칸마다 현재 값 · 바꿀 수 있는지 · 막힌 이유. */
+        get: operations["PlatformRoleGroupsController_menus"];
+        /**
+         * 메뉴 권한 저장. 메뉴별 네 칸 목록 + updatedAt. BP · 가맹 마스터에서 끈 칸은 모든 BP 의 BA · FA 그룹에서도
+         *     함께 꺼진다. 응답의 updatedAt 으로 다음 저장을 한다.
+         */
+        put: operations["PlatformRoleGroupsController_saveMenus"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform-role-groups/{id}/menus/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 회수 미리보기 — 저장할 목록으로 꺼지는 칸 · 함께 빠지는 하위 권한 그룹 · 연결 사용자를 센다. 쓰지 않는다. */
+        post: operations["PlatformRoleGroupsController_previewMenus"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform-role-groups/{id}/deletion-candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 삭제 대화상자 — 옮길 연결 사용자와 대체 권한 후보. */
+        get: operations["PlatformRoleGroupsController_deletionCandidates"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -844,6 +942,11 @@ export interface paths {
         /**
          * 대표 이미지 올리기 · 바꾸기(점포당 1장). multipart 의 `file` 한 개, JPG · PNG 5MB 이하 — 종류는 확장자가
          *     아니라 내용으로 본다. 등록 화면은 점포를 등록한 뒤 이 경로로 올린다. 수정 권한이 있어야 한다.
+         *
+         *     수정 권한은 가드(@MenuPermission)가 먼저 본다 — 가드는 인터셉터보다 먼저 돌므로, 권한 없는 관리자의 요청은
+         *     AttachmentsInterceptor 가 multipart 본문(최대 5MB)을 받기 전에 403 이다. 핸들러의 allow() 는 같은 판정을
+         *     한 번 더 하지만 지우지 않는다 — 서비스가 받는 MenuCaller(권한 유형 · 권한 그룹)를 그 판정이 돌려주고, 업로드를
+         *     받는 사이 권한이 거둬졌으면 그것도 여기서 막는다.
          */
         put: operations["StoresController_putImage"];
         post?: never;
@@ -888,6 +991,70 @@ export interface paths {
         post?: never;
         /** 지운다(지움 표시). 사용자에게 보이지 않고 행은 남는다. */
         delete: operations["PostsController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/public-posts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicPostsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/public-posts/{postId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicPostsController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/support-posts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SupportPostsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/support-posts/{postId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SupportPostsController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1044,7 +1211,8 @@ export interface paths {
         get: operations["LeadsAdminController_get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** 상담하지 않은(상담 완료일 없는) 도입문의를 지운다. 행을 남기지 않는다(개인정보 파기, CNT-11). */
+        delete: operations["LeadsAdminController_remove"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1883,6 +2051,220 @@ export interface components {
              */
             updatedAt: string;
         };
+        RoleGroupActorResponseDto: {
+            name: string | null;
+            loginId: string;
+        };
+        PlatformRoleGroupSummaryResponseDto: {
+            /**
+             * @description 권한 유형 — 플랫폼 마스터 PM · 플랫폼 관리자 PA · BP 마스터 BM · 가맹 마스터 FM. 한글은 공통코드 ROLE_TYPE.
+             * @enum {string}
+             */
+            roleTypeCode: "PM" | "PA" | "BM" | "FM";
+            roleGroupId: number;
+            /**
+             * @description 권한 코드 — 유형 + 6자리.
+             * @example PA000002
+             */
+            roleCode: string;
+            /** @description 권한명. */
+            name: string;
+            description: string | null;
+            /** @description 고정 권한(PM000001 · BM000001 · FM000001 같은 마이그레이션 시드). 지울 수 없다. */
+            isMaster: boolean;
+            /** @description 메뉴 등록 여부 — 서비스와 관계없이 조회가 켜진 메뉴가 하나라도 있으면 true. 아니면 「미등록」. */
+            isMenuRegistered: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["RoleGroupActorResponseDto"] | null;
+            /**
+             * Format: date-time
+             * @description 최종수정일시. 권한명 · 설명 수정, 메뉴 저장, 삭제가 그대로 돌려보낸다(동시 수정 확인).
+             */
+            updatedAt: string;
+            updatedBy: components["schemas"]["RoleGroupActorResponseDto"] | null;
+            /** @description 연결된 지우지 않은 관리자 수(미사용 포함) — 삭제 대화상자가 대체 권한을 고르게 할지 가른다. */
+            adminCount: number;
+        };
+        PlatformRoleGroupSummaryListResponseDto: {
+            /** @description 고정 권한 PM · PA · BM · FM 다음 플랫폼 관리자 추가 권한을 코드 순으로. BP 관리자 · 가맹 관리자 그룹은 싣지 않는다. */
+            items: components["schemas"]["PlatformRoleGroupSummaryResponseDto"][];
+            total: number;
+        };
+        CreatePlatformRoleGroupDto: {
+            /** @description 권한명. 앞뒤 공백을 지우고 1~20자. 플랫폼 권한(PM · PA · BM · FM) 안에서 겹칠 수 없다. */
+            name: string;
+            /**
+             * @description 설명. 선택, 앞뒤 공백을 지우고 100자까지. 비우면 null.
+             * @example 커뮤니티관리·BP 조회
+             */
+            description?: string | null;
+        };
+        CreatePlatformRoleGroupResponseDto: {
+            roleGroupId: number;
+            /**
+             * @description 채번한 권한 코드.
+             * @example PA000005
+             */
+            roleCode: string;
+        };
+        /**
+         * @description 고칠 수 없는 이유. 고칠 수 있으면 null. 한글은 GET /enums/PlatformRoleGroupLockReason.
+         * @enum {string}
+         */
+        PlatformRoleGroupLockReason: "FIXED_ROLE" | "NO_PERMISSION" | "SELF_LINKED";
+        PlatformRoleGroupDetailResponseDto: {
+            /**
+             * @description 권한 유형 — 플랫폼 마스터 PM · 플랫폼 관리자 PA · BP 마스터 BM · 가맹 마스터 FM. 한글은 공통코드 ROLE_TYPE.
+             * @enum {string}
+             */
+            roleTypeCode: "PM" | "PA" | "BM" | "FM";
+            /** @description 고칠 수 없는 이유. 고칠 수 있으면 null. 한글은 GET /enums/PlatformRoleGroupLockReason. */
+            editBlockedReason: components["schemas"]["PlatformRoleGroupLockReason"] | null;
+            deleteBlockedReason: components["schemas"]["PlatformRoleGroupLockReason"] | null;
+            /** @description 권한명 · 설명을 고칠 수 있는가. 메뉴 칸은 메뉴 트리의 칸별 값을 본다. */
+            isEditable: boolean;
+            /** @description 지울 수 있는가. 연결 사용자가 있는데 대체 후보가 없는 것은 삭제 후보 조회로 알린다. */
+            isDeletable: boolean;
+            roleGroupId: number;
+            /**
+             * @description 권한 코드 — 유형 + 6자리.
+             * @example PA000002
+             */
+            roleCode: string;
+            /** @description 권한명. */
+            name: string;
+            description: string | null;
+            /** @description 고정 권한(PM000001 · BM000001 · FM000001 같은 마이그레이션 시드). 지울 수 없다. */
+            isMaster: boolean;
+            /** @description 메뉴 등록 여부 — 서비스와 관계없이 조회가 켜진 메뉴가 하나라도 있으면 true. 아니면 「미등록」. */
+            isMenuRegistered: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["RoleGroupActorResponseDto"] | null;
+            /**
+             * Format: date-time
+             * @description 최종수정일시. 권한명 · 설명 수정, 메뉴 저장, 삭제가 그대로 돌려보낸다(동시 수정 확인).
+             */
+            updatedAt: string;
+            updatedBy: components["schemas"]["RoleGroupActorResponseDto"] | null;
+            /** @description 연결된 지우지 않은 관리자 수(미사용 포함) — 삭제 대화상자가 대체 권한을 고르게 할지 가른다. */
+            adminCount: number;
+        };
+        UpdatePlatformRoleGroupDto: {
+            /** @description 상세에서 받은 최종수정일시 그대로. 그 사이 다른 사람이 고쳤으면 저장하지 않고 409. */
+            updatedAt: string;
+            /** @description 권한명. 앞뒤 공백을 지우고 1~20자. 플랫폼 권한(PM · PA · BM · FM) 안에서 겹칠 수 없다. */
+            name: string;
+            /**
+             * @description 설명. 선택, 앞뒤 공백을 지우고 100자까지. 비우면 null.
+             * @example 커뮤니티관리·BP 조회
+             */
+            description?: string | null;
+        };
+        /**
+         * @description 바꿀 수 없는 이유. 한글은 GET /enums/PlatformRoleMenuBlockReason. 바꿀 수 있으면 null.
+         * @enum {string}
+         */
+        PlatformRoleMenuBlockReason: "PM_FIXED" | "READ_ONLY" | "SELF_LINKED" | "PLATFORM_MENU_FOR_BP" | "OUT_OF_SCOPE";
+        RoleGroupMenuCellResponseDto: {
+            /** @description 바꿀 수 없는 이유. 한글은 GET /enums/PlatformRoleMenuBlockReason. 바꿀 수 있으면 null. */
+            blockedReason: components["schemas"]["PlatformRoleMenuBlockReason"] | null;
+            value: boolean;
+            /** @description 바꿀 수 있는가. */
+            editable: boolean;
+        };
+        RoleGroupMenuNodeResponseDto: {
+            menuId: number;
+            /** @example MN000213 */
+            menuCode: string;
+            name: string;
+            /** @description 단계 1~3 */
+            depth: number;
+            /** @description 묶음 메뉴 — 보이는 하위가 있다. 칸은 서버가 하위에서 다시 정한다(하위에 조회가 있으면 조회만). */
+            isGroup: boolean;
+            read: components["schemas"]["RoleGroupMenuCellResponseDto"];
+            create: components["schemas"]["RoleGroupMenuCellResponseDto"];
+            update: components["schemas"]["RoleGroupMenuCellResponseDto"];
+            delete: components["schemas"]["RoleGroupMenuCellResponseDto"];
+            children: components["schemas"]["RoleGroupMenuNodeResponseDto"][];
+        };
+        RoleGroupMenuServiceResponseDto: {
+            /**
+             * @description 공통코드 SERVICE.
+             * @example PLATFORM
+             */
+            serviceCode: string;
+            name: string;
+            /** @description 보이는 메뉴 트리. 비면 「이 서비스에 등록된 메뉴가 없습니다」. */
+            menus: components["schemas"]["RoleGroupMenuNodeResponseDto"][];
+        };
+        RoleGroupMenuTreeResponseDto: {
+            /** @enum {string} */
+            roleTypeCode: "PM" | "PA" | "BM" | "FM";
+            roleGroupId: number;
+            roleCode: string;
+            name: string;
+            /**
+             * Format: date-time
+             * @description 저장할 때 그대로 돌려보낸다.
+             */
+            updatedAt: string;
+            /** @description 저장할 수 있는가 — 막힌 칸만 있으면 false(플랫폼 마스터 · 조회만 · 본인 연결). */
+            isSavable: boolean;
+            /** @description 사용 중인 서비스(공통코드 SERVICE 순서)별 메뉴. 숨겨진 메뉴는 빠진다. */
+            services: components["schemas"]["RoleGroupMenuServiceResponseDto"][];
+        };
+        RoleGroupMenuCellsDto: {
+            menuId: number;
+            read: boolean;
+            create: boolean;
+            update: boolean;
+            delete: boolean;
+        };
+        SaveRoleGroupMenusDto: {
+            /** @description 메뉴 트리 · 상세에서 받은 최종수정일시 그대로. 그 사이 다른 사람이 고쳤으면 저장하지 않고 409. */
+            updatedAt: string;
+            menus: components["schemas"]["RoleGroupMenuCellsDto"][];
+        };
+        SaveRoleGroupMenusResponseDto: {
+            /**
+             * Format: date-time
+             * @description 저장 뒤 최종수정일시. 이어서 권한명 · 설명이나 메뉴를 저장할 때 이 값을 보낸다.
+             */
+            updatedAt: string;
+        };
+        PreviewRoleGroupMenusDto: {
+            menus: components["schemas"]["RoleGroupMenuCellsDto"][];
+        };
+        RoleGroupMenuRevocationPreviewResponseDto: {
+            revokedCells: number;
+            affectedRoleGroupCount: number;
+            affectedAdminCount: number;
+        };
+        DeletionCandidateAdminResponseDto: {
+            adminAccountId: number;
+            loginId: string;
+            name: string | null;
+            /** @description 계정 상태 — 사용 ACTIVE · 미사용 INACTIVE */
+            accountStatusCode: string;
+        };
+        DeletionCandidateRoleGroupResponseDto: {
+            roleGroupId: number;
+            roleCode: string;
+            name: string;
+        };
+        RoleGroupDeletionCandidatesResponseDto: {
+            /** @description 옮겨야 할 연결 사용자 — 지우지 않은 관리자(미사용 포함). 비어 있으면 대체 권한 없이 지운다. */
+            admins: components["schemas"]["DeletionCandidateAdminResponseDto"][];
+            /** @description 대체 권한 후보 — 같은 유형(PA)의 지우지 않은 다른 추가 권한. 고정 권한은 빠진다. */
+            candidates: components["schemas"]["DeletionCandidateRoleGroupResponseDto"][];
+        };
+        DeletePlatformRoleGroupDto: {
+            updatedAt: string;
+            /** @description 대체 권한 — 같은 유형(PA)의 지우지 않은 다른 추가 권한. 고정 권한은 고를 수 없다. */
+            replacementRoleGroupId?: number;
+        };
         BpStoreListResponseDto: {
             /** @description 점포 이름순. 운영 상태와 상관없이 미삭제 점포 전체. 항목 모양은 로그인 정보의 `stores` 와 같다. */
             items: components["schemas"]["AdminStoreDto"][];
@@ -2604,6 +2986,23 @@ export interface components {
             publishEndDate?: string | null;
             /** @description FAQ 카테고리 — 공통코드 FAQ_CATEGORY 의 플랫폼 원본 중 사용 중인 상세코드. FAQ 면 필수. */
             faqCategoryCode?: string | null;
+        };
+        PublishedPostResponseDto: {
+            contentType: components["schemas"]["PostContentType"];
+            noticeType: components["schemas"]["NoticeType"] | null;
+            postId: number;
+            title: string;
+            /** @description 평문. 화면은 HTML 로 그리지 않고 이스케이프해 보인다. */
+            body: string;
+            faqCategoryCode: string | null;
+            /** @description 상단 고정. 목록은 고정 글을 먼저 준다. */
+            isPinned: boolean;
+            /** @description 게시일(YYYY-MM-DD) — 게시 시작일, 없으면 등록 일시의 한국 날짜. */
+            postedDate: string;
+        };
+        PublishedPostListResponseDto: {
+            items: components["schemas"]["PublishedPostResponseDto"][];
+            total: number;
         };
         /** @enum {string} */
         NotificationRelatedType: "CONTRACT" | "INQUIRY" | "LEAD" | "STAFF_MEMBER";
@@ -3569,7 +3968,7 @@ export interface operations {
                     "application/json": components["schemas"]["CodeGroupListResponseDto"];
                 };
             };
-            /** @description 플랫폼 관리자가 아님 */
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 플랫폼 관리자가 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -3597,7 +3996,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 플랫폼 관리자가 아님 */
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 플랫폼 관리자가 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -3639,7 +4038,7 @@ export interface operations {
                     "application/json": components["schemas"]["CodeItemListResponseDto"];
                 };
             };
-            /** @description 플랫폼 관리자가 아님 */
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 플랫폼 관리자가 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -3676,7 +4075,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 플랫폼 관리자가 아님 */
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 플랫폼 관리자가 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -3718,7 +4117,7 @@ export interface operations {
                     "application/json": components["schemas"]["BpApplicationResponseDto"];
                 };
             };
-            /** @description 플랫폼 관리자가 아님 */
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 플랫폼 관리자가 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -4085,6 +4484,382 @@ export interface operations {
             };
             /** @description 메일 설정(MAIL_* · ADMIN_WEB_URL)이 없는 환경 — 아무것도 바꾸지 않는다 */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformRoleGroupsController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformRoleGroupSummaryListResponseDto"];
+                };
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformRoleGroupsController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePlatformRoleGroupDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatePlatformRoleGroupResponseDto"];
+                };
+            };
+            /** @description 권한명 · 설명 형식 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같은 이름의 권한 · 권한 코드를 더 만들 수 없음 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformRoleGroupsController_detail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformRoleGroupDetailResponseDto"];
+                };
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 권한 · 플랫폼 권한(PM · PA · BM · FM)이 아닌 그룹 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformRoleGroupsController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePlatformRoleGroupDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 권한명 · 설명 형식 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 권한 · 플랫폼 권한(PM · PA · BM · FM)이 아닌 그룹 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같은 이름의 권한 · 동시 수정 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformRoleGroupsController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeletePlatformRoleGroupDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 연결 사용자가 있는데 대체 권한 없음 · 고를 수 없는 대체 권한(고정 권한 · 다른 유형 · 지운 권한 · 자기 자신) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 권한 · 플랫폼 권한(PM · PA · BM · FM)이 아닌 그룹 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 고정 권한 · 동시 수정 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformRoleGroupsController_menus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoleGroupMenuTreeResponseDto"];
+                };
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 권한 · 플랫폼 권한(PM · PA · BM · FM)이 아닌 그룹 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformRoleGroupsController_saveMenus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveRoleGroupMenusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaveRoleGroupMenusResponseDto"];
+                };
+            };
+            /** @description 숨긴 · 없는 메뉴, 조회 없는 등록 · 수정 · 삭제, BP 쪽 고정 권한의 플랫폼 메뉴, 본인 권한 범위 밖 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 권한 · 플랫폼 권한(PM · PA · BM · FM)이 아닌 그룹 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 마스터 권한(전체 허용 고정) · 동시 수정 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformRoleGroupsController_previewMenus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreviewRoleGroupMenusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoleGroupMenuRevocationPreviewResponseDto"];
+                };
+            };
+            /** @description 숨긴 · 없는 메뉴, 조회 없는 등록 · 수정 · 삭제 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 권한 · 플랫폼 권한(PM · PA · BM · FM)이 아닌 그룹 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformRoleGroupsController_deletionCandidates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoleGroupDeletionCandidatesResponseDto"];
+                };
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) · 본인이 연결된 권한 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 권한 · 플랫폼 권한(PM · PA · BM · FM)이 아닌 그룹 */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4892,7 +5667,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 입력 형식 · 위도 · 경도 중 하나만 있음 · 바꿀 수 없는 상태 전환 · 운영 조건(인증 · 좌표) 미충족 · 국세청 정보와 다름 · 재인증 번호 불일치 */
+            /** @description 입력 형식 · 위도 · 경도 중 하나만 있음 · 바꿀 수 없는 상태 전환 · 운영으로 바꿀 때 운영 조건(인증 · 좌표) 미충족 · 운영 중인 점포의 좌표 삭제 · 국세청 정보와 다름 · 재인증 번호 불일치 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -5337,6 +6112,138 @@ export interface operations {
             };
             /** @description 이미 지운 게시물 */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PublicPostsController_list: {
+        parameters: {
+            query: {
+                contentType: components["schemas"]["PostContentType"];
+                /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
+                page?: number;
+                /** @description 한 쪽 건수. 기본 20, 최대 200. */
+                pageSize?: number;
+                /** @description 공지사항 구분으로 거른다. FAQ 에는 쓰지 않는다. */
+                noticeType?: components["schemas"]["NoticeType"];
+                /** @description FAQ 카테고리(공통코드 FAQ_CATEGORY 상세코드)로 거른다. */
+                faqCategoryCode?: string;
+                /** @description 제목 또는 본문에 든 글자로 찾는다. 대소문자는 가리지 않는다. */
+                keyword?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublishedPostListResponseDto"];
+                };
+            };
+        };
+    };
+    PublicPostsController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublishedPostResponseDto"];
+                };
+            };
+            /** @description 없음 · 비공개 · 지움 · 게시 기간 밖 · 비회원 대상 아님 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SupportPostsController_list: {
+        parameters: {
+            query: {
+                contentType: components["schemas"]["PostContentType"];
+                /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
+                page?: number;
+                /** @description 한 쪽 건수. 기본 20, 최대 200. */
+                pageSize?: number;
+                /** @description 공지사항 구분으로 거른다. FAQ 에는 쓰지 않는다. */
+                noticeType?: components["schemas"]["NoticeType"];
+                /** @description FAQ 카테고리(공통코드 FAQ_CATEGORY 상세코드)로 거른다. */
+                faqCategoryCode?: string;
+                /** @description 제목 또는 본문에 든 글자로 찾는다. 대소문자는 가리지 않는다. */
+                keyword?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublishedPostListResponseDto"];
+                };
+            };
+            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SupportPostsController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublishedPostResponseDto"];
+                };
+            };
+            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없음 · 비공개 · 지움 · 게시 기간 밖 · 노출 대상 아님 */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5828,6 +6735,47 @@ export interface operations {
             };
             /** @description 없는 도입문의 */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LeadsAdminController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 지움 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 도입문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 상담을 마친 도입문의 */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
