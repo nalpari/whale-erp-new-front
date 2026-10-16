@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-16
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `api-types.generated.ts` 를 api #49 5차 반영(7a5ddec) openapi 로 다시 만들었다(`replaceContractIds` 상한 200, main 의 다른 변경 포함). 화면 동작은 그대로다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — PR #36 재리뷰(bfb3306) 반영: 퇴직 확인창이 확인할 때 브라우저 시계로 오늘을 바꾸지 않고, 서버 액션이 날짜 바뀜으로 막으며 돌려준 서버의 오늘로만 바꾼다(`todayAfterSubmit`) — 브라우저 시계가 빠를 때의 과잉 경고와 경고가 번갈아 보이던 것. api 시계와의 틈은 api 「기대한 오늘」 후속.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — PR #36 재리뷰 반영: 퇴직 확인창의 자정 넘김 재확인을 서버 액션이 서버 시계로 다시 판정한다(브라우저 시계가 늦으면 경고 없이 즉시 정리되던 틈). storeIds 없는 예전 주소는 첫 화면에 「점포를 찾는 중입니다.」를 보여 빈 목록이 깜빡이지 않는다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — PR #36 리뷰 반영: 목록 검색어 50자 · 쪽 1,000,000 · 점포 500곳을 api 상한 안에서 화면이 먼저 막고(넘기면 목록 전체가 오류 화면이었다), storeIds 없는 예전 주소는 필터가 점포 id 를 채운다. 퇴직 확인창을 연 채 자정을 넘기면 확인할 때 오늘을 다시 세어, 경고 없이 즉시 정리될 날짜면 다시 확인받는다.
