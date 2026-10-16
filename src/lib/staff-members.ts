@@ -17,8 +17,8 @@ export type ContractStatus = Schemas["ContractStatus"];
  */
 export type StaffMemberListItem = Schemas["StaffMemberListItemDto"];
 export type StaffMemberListResponse = Schemas["StaffMemberListResponseDto"];
-/** 직원 상세(GET /staff-members/:id, WHALEERP-599). 목록 한 줄과 같은 모양이다. */
-export type StaffMember = StaffMemberListItem;
+/** 직원 상세(GET /staff-members/:id, WHALEERP-599). 목록 한 줄에 계정 이메일(email, 가입 전 · 탈퇴면 null)을 더한 모양이다(WHALEERP-177). */
+export type StaffMember = Schemas["StaffMemberDetailResponseDto"];
 /** 퇴직 확인창의 미리 보기 — 퇴직일이 지나면 정리될 건수 */
 export type RetirementPreview = Schemas["RetirementPreviewResponseDto"];
 
