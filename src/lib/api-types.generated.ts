@@ -807,8 +807,9 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 직원 기본 정보. 목록 한 줄과 같은 모양이다. 없는 직원 · 관리 범위 밖 · 가려지는 직원(본사 제공 동의 없는 가맹
-         *     점포 직원)은 모두 같은 404 다 — 퇴직 처리와 같은 규칙이다. 그래서 isMasked 는 늘 false 다.
+         * 직원 기본 정보. 목록 한 줄에 계정 이메일을 더한 모양이다. 없는 직원 · 관리 범위 밖 · 가려지는
+         *     직원(본사 제공 동의 없는 가맹 점포 직원)은 모두 같은 404 다 — 퇴직 처리와 같은 규칙이다. 그래서 isMasked 는 늘
+         *     false 다.
          */
         get: operations["StaffMembersController_findOne"];
         put?: never;
@@ -2561,6 +2562,27 @@ export interface components {
             items: components["schemas"]["StaffMemberListItemDto"][];
             total: number;
         };
+        StaffMemberDetailResponseDto: {
+            employmentType: components["schemas"]["EmploymentType"] | null;
+            joinState: components["schemas"]["StaffJoinState"] | null;
+            employmentStatus: components["schemas"]["EmploymentStatus"] | null;
+            staffMemberId: number | null;
+            isMasked: boolean;
+            name: string | null;
+            phone: string | null;
+            store: components["schemas"]["StaffMemberStoreDto"];
+            invitation: components["schemas"]["StaffMemberInvitationDto"] | null;
+            linkHold: components["schemas"]["StaffMemberLinkHoldDto"] | null;
+            contract: components["schemas"]["StaffMemberContractDto"] | null;
+            /** @description 퇴직일(YYYY-MM-DD). 재직이면서 값이 있으면 퇴직 예정 */
+            retiredDate: string | null;
+            /**
+             * @description 직원 계정의 현재 이메일(로그인 아이디). 재설정 링크가 가는 곳이라 계정 조치까지 할 수 있는 관리자에게만, 발송과
+             *     같은 기준으로 낸다 — 직원 정보 관리 수정 권한이 없거나, 본사 역할(BM · BA)이 동의로만 보는 가맹 점포 직원이거나,
+             *     가입 전 · 탈퇴 계정 · 퇴직 레코드면 null. 화면에서 고치지 못한다.
+             */
+            email: string | null;
+        };
         ContractToEndDto: {
             /** @description 임시저장 · 발송 대기 · 서명 대기 */
             status: components["schemas"]["ContractStatus"];
@@ -2625,6 +2647,11 @@ export interface components {
             total: number;
         };
         /**
+         * @description 성별 — 남 · 여. 가입 때 직원이 넣은 값과 본인 대조한다(WHALEERP-125). 임시저장은 비워도 된다
+         * @enum {string}
+         */
+        Gender: "MALE" | "FEMALE";
+        /**
          * @description 주휴일 — 근무하지 않는 요일 하나(노무사 확인 2026-10-14). 주 소정근로시간이 15시간 이상이면 넣어야 하고,
          *     15시간 미만이면 주휴가 없어 비운다(contracts.service checkWeeklyHoliday).
          * @enum {string}
@@ -2647,6 +2674,8 @@ export interface components {
          */
         PayMethod: "ACCOUNT" | "CASH";
         CreateContractDto: {
+            /** @description 성별 — 남 · 여. 가입 때 직원이 넣은 값과 본인 대조한다(WHALEERP-125). 임시저장은 비워도 된다 */
+            gender?: components["schemas"]["Gender"];
             employmentType: components["schemas"]["EmploymentType"];
             /**
              * @description 전자계약 · 종이 계약. 임시저장이면 비워도 된다. 종이 계약은 날인본 파일과 함께 `POST /contracts/paper`
@@ -2668,6 +2697,8 @@ export interface components {
             phone: string;
             /** @description YYYY-MM-DD. 계약 시작일 기준 만 19세 미만이면 저장하지 않는다 */
             birthDate?: string;
+            /** @description 외국인 여부 — 체크하지 않으면 내국인(false). 본인 대조에 쓴다(WHALEERP-125) */
+            isForeigner?: boolean;
             storeId: number;
             jobTitle: string;
             /** @description YYYY-MM-DD */
@@ -2759,6 +2790,7 @@ export interface components {
             storeName: string | null;
             /** @description YYYY-MM-DD */
             birthDate: string | null;
+            gender: components["schemas"]["Gender"] | null;
             contractMethod: components["schemas"]["ContractMethod"] | null;
             startDate: string | null;
             endDate: string | null;
@@ -2809,6 +2841,8 @@ export interface components {
             phone: string;
             jobTitle: string;
             storeId: number;
+            /** @description 외국인 여부 — 체크하지 않았으면 false */
+            isForeigner: boolean;
         };
         DownloadUrlResponseDto: {
             url: string;
@@ -3960,7 +3994,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 접속이 살아 있는 직원 앱 토큰 */
+            /** @description 직원 정보 관리 수정 권한 없음 · 접속이 살아 있는 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -5417,7 +5451,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StaffMemberListItemDto"];
+                    "application/json": components["schemas"]["StaffMemberDetailResponseDto"];
                 };
             };
             /** @description 직원 정보 관리 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
@@ -6896,7 +6930,7 @@ export interface operations {
                     "application/json": components["schemas"]["PublishedPostListResponseDto"];
                 };
             };
-            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 */
+            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 · 그 글 종류 메뉴의 조회 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -6924,7 +6958,7 @@ export interface operations {
                     "application/json": components["schemas"]["PublishedPostResponseDto"];
                 };
             };
-            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 */
+            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 · 그 글 종류 메뉴의 조회 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;

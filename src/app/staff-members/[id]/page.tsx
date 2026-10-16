@@ -61,7 +61,7 @@ const RIGHT_BOXES: { title: string; manageHref?: string }[] = [
 
 // 직원 상세(WHALEERP-184). 배치는 데모 docs/demo/staff/detail.html(원본 src/pages/staff/detail.mjs)과 같다 — 5:7 두 단,
 // 왼쪽은 기본 정보 · 비밀번호 초기화 · 근로계약, 오른쪽은 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO.
-// 데이터는 상세 api(GET /staff-members/:id, WHALEERP-599)로 받고, 목록 한 줄과 같은 모양이라 그 값만 채운다. 직무 · 입사일 · 생년월일 · 본인인증 · 이메일과 각 영역의 내용은 상세 요약
+// 데이터는 상세 api(GET /staff-members/:id, WHALEERP-599)로 받고, 목록 한 줄에 계정 이메일을 더한 모양이라 그 값만 채운다. 직무 · 입사일 · 생년월일 · 본인인증과 각 영역의 내용은 상세 요약
 // api(WHALEERP-183)가 나오면 다시 작업한다. 가린 직원 · 없는 직원 · 이상한 id 는 404 다.
 export default async function StaffMemberDetailPage({
   params,
@@ -87,7 +87,9 @@ export default async function StaffMemberDetailPage({
     { label: "생년월일", value: PENDING },
     { label: "휴대전화번호", value: staff.phone ? formatPhone(staff.phone) : PENDING },
     { label: "본인인증", value: PENDING },
-    { label: "이메일", value: PENDING },
+    // 계정 이메일(로그인 아이디) — 보일 때 고치지 못한다(ACC-17). api #56 이 링크 발송과 같은 기준으로만 내서, 가입 전 · 탈퇴 · 퇴직,
+    // 수정 권한 없음, 본사 역할이 보는 가맹 점포 직원이면 없어 「-」다(2026-10-16 확정, api #56 5d671d6).
+    { label: "이메일", value: staff.email ?? PENDING },
   ];
 
   return (
@@ -103,10 +105,7 @@ export default async function StaffMemberDetailPage({
             <div className="grid grid-cols-[5fr_7fr] items-start gap-[24px]">
               <div className="flex min-w-0 flex-col gap-[24px]">
                 <DetailTable title="기본 정보" rows={basicRows} />
-                <div className="flex items-center gap-[6px]">
-                  <span className="flex-1" />
-                  <PasswordResetButton />
-                </div>
+                <PasswordResetButton staff={staff} />
                 <Box title="근로계약" manageHref="/contracts">
                   <NotReady />
                 </Box>

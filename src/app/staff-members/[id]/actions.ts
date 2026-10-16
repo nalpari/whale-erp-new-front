@@ -2,29 +2,35 @@
 
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
+import { isApiSendRefusal } from "@/lib/password-reset";
 import { checkRetiredDate, staleDayWarning } from "@/lib/retirement";
 import { kstToday, type RetirementPreview } from "@/lib/staff-members";
-import { cancelRetirement, changeRetirementDate, getRetirementPreview, retireStaffMember } from "@/lib/staff-members-api";
+import { cancelRetirement, changeRetirementDate, getRetirementPreview, issuePasswordResetLink, retireStaffMember } from "@/lib/staff-members-api";
 
-// 퇴직 처리 확인창의 미리 보기 · 처리 · 퇴직일 변경 · 취소(WHALEERP-585).
+// 퇴직 처리 확인창의 미리 보기 · 처리 · 퇴직일 변경 · 취소(WHALEERP-585)와 비밀번호 초기화(WHALEERP-177).
 // 메뉴 권한(직원 정보 관리 수정) · 업무 범위 · 상태 · 날짜는 api 가 동작마다 본다. server action 은 공개 엔드포인트라
 // id 와 날짜 모양만 다시 본다 — 화면을 거치지 않은 이상한 값을 api 까지 보내지 않는다.
 
 /**
- * 실패 결과. status 가 있으면 api 가 거절한 것이 확실하다. 없으면 결과를 모른다(5xx · 연결 실패) — 처리됐을 수도 있으니
- * 화면은 상세를 다시 받는다(failureEffect 의 refresh).
+ * 실패 결과. status 가 있으면 api 가 거절한 것이 확실하다. 없으면 결과를 모른다(5xx · 연결 실패) — 퇴직 확인창은 처리됐을 수도
+ * 있으니 상세를 다시 받는다(failureEffect 의 refresh). 비밀번호 초기화는 다시 받아도 발송 여부를 알 수 없어 고정 문구로 바꾼다
+ * (resetFailureMessage) — failureOf 의 「화면을 새로 불러왔으니」 문구는 그 확인창에 보이지 않는다.
  */
 /** today 는 서버의 오늘 — 날짜가 바뀌어 막았을 때만 싣는다. 확인창이 이 값으로 경고 · 미리 보기를 다시 그린다. */
 export type ActionFailure = { ok: false; status?: number; message: string; today?: string };
 export type ActionResult<T = object> = ({ ok: true } & T) | ActionFailure;
 
-/** api 는 400 · 403 · 404 · 409 를 한국어로 알리므로 그대로 보인다. 401 은 할 일을 알 수 있게 고정 문구로 바꾼다. */
-function failureOf(error: unknown, what: string): ActionFailure {
+/**
+ * api 는 400 · 403 · 404 · 409 를 한국어로 알리므로 그대로 보인다. 401 은 할 일을 알 수 있게 고정 문구로 바꾼다.
+ * what 은 화면 문구에 들어가는 동작 이름, feature 는 로그에서 기능을 가르는 이름이다(퇴직 · 비밀번호 초기화).
+ */
+function failureOf(error: unknown, what: string, log: { feature: string; staffMemberId: number }): ActionFailure {
   if (error instanceof ApiError) {
     if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if (error.status < 500) return { ok: false, status: error.status, message: error.message };
   }
-  console.error(`퇴직 ${what} 결과 모름`, error);
+  // 결과 모름은 api 로그와 맞춰 봐야 해 기능 이름과 대상 id 를 함께 남긴다.
+  console.error(`${log.feature} ${what} 결과 모름`, { staffMemberId: log.staffMemberId }, error);
   return { ok: false, message: `${what} 결과를 확인하지 못했습니다. 화면을 새로 불러왔으니 확인해 주세요.` };
 }
 
@@ -63,7 +69,7 @@ export async function previewRetirementAction(id: unknown, retiredDate: unknown)
   try {
     return { ok: true, preview: await getRetirementPreview(id, retiredDate as string) };
   } catch (error) {
-    return failureOf(error, "미리 보기");
+    return failureOf(error, "미리 보기", { feature: "퇴직", staffMemberId: id });
   }
 }
 
@@ -76,7 +82,7 @@ export async function retireAction(id: unknown, retiredDate: unknown, shownToday
     refresh();
     return { ok: true };
   } catch (error) {
-    return failureOf(error, "처리");
+    return failureOf(error, "처리", { feature: "퇴직", staffMemberId: id });
   }
 }
 
@@ -89,7 +95,7 @@ export async function changeRetirementDateAction(id: unknown, retiredDate: unkno
     refresh();
     return { ok: true };
   } catch (error) {
-    return failureOf(error, "퇴직일 변경");
+    return failureOf(error, "퇴직일 변경", { feature: "퇴직", staffMemberId: id });
   }
 }
 
@@ -100,6 +106,22 @@ export async function cancelRetirementAction(id: unknown): Promise<ActionResult>
     refresh();
     return { ok: true };
   } catch (error) {
-    return failureOf(error, "취소");
+    return failureOf(error, "취소", { feature: "퇴직", staffMemberId: id });
+  }
+}
+
+/**
+ * 비밀번호 재설정 링크 발송. 상세 화면에 바뀌는 값이 없어 다시 받지 않는다.
+ * api 의 503 은 보내지 않았다고 알린 것이라(링크 주소 · 발송기 없음 · 발송 실패, 앞선 링크는 그대로) 결과 모름이 아니다 — 문구를 그대로 보인다.
+ * 프록시 · 로드밸런서의 503 은 api 에 닿았는지 몰라 결과 모름으로 둔다(isApiSendRefusal).
+ */
+export async function issuePasswordResetLinkAction(id: unknown): Promise<ActionResult> {
+  if (!validId(id)) return NOT_FOUND;
+  try {
+    await issuePasswordResetLink(id);
+    return { ok: true };
+  } catch (error) {
+    if (error instanceof ApiError && isApiSendRefusal(error.status, error.body)) return { ok: false, status: 503, message: error.message };
+    return failureOf(error, "재설정 링크 발송", { feature: "비밀번호 초기화", staffMemberId: id });
   }
 }

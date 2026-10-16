@@ -26,7 +26,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
   const contractId = Number(raw);
   if (!Number.isInteger(contractId) || contractId < 1) notFound();
 
-  const [statuses, draftActions, employmentTypes, weekdays, payMonths, payMethods, contractMethods, documentKinds, actors, session] = await Promise.all([
+  const [statuses, draftActions, employmentTypes, weekdays, payMonths, payMethods, contractMethods, documentKinds, actors, genders, session] = await Promise.all([
     getEnum("ContractStatus"),
     getEnum("ContractDraftAction"),
     getEnum("EmploymentType"),
@@ -36,6 +36,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
     getEnum("ContractMethod"),
     getEnum("ContractDocumentKind"),
     getEnum("StatusChangeActor"),
+    getEnum("Gender"),
     getSession(),
   ]);
 
@@ -66,6 +67,8 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
   const rows = c
     ? [
         { label: "직원", value: <DetailValues items={[c.name, formatPhone(c.phone)]} /> },
+        // 가입 값과 본인 대조하는 성별 · 외국인 여부(WHALEERP-125)
+        { label: "성별", value: [c.gender ? labelOf(genders, c.gender) : "-", ...(c.isForeigner ? ["외국인"] : [])].join(" · ") },
         { label: "직무", value: c.jobTitle },
         { label: "근무지", value: c.storeName ?? "-" },
         { label: "고용 형태", value: labelOf(employmentTypes, c.employmentType) },
