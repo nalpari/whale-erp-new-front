@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-16
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세의 「발송」(발송 대기) · 「재발송」(서명 대기)을 켰다(WHALEERP-136, api psyduck). 확인창 → 서버 액션 `sendContract` → `POST /contracts/:id/send`, 실패 문장은 확인창에. api-types 를 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 「수정 요청」 상태 표시와 날인 전 근로자 정보 수정 화면 `/contracts/[contractId]/worker`, 수정 요청 계약을 고치는 이어 쓰기 `correction` 모드(WHALEERP-125 · 126). 상세 제목 줄에 「근로자 정보 수정」 · 「계약서 수정」. api-types 를 api nidoran 으로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약서 작성 · 이어 쓰기에 성별(남 · 여, 초안 저장부터 필수)과 외국인 체크, 상세에 「성별」 줄을 더했다(WHALEERP-125 본인 대조 · 132). api-types 를 api sandshrew 로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `api-types.generated.ts` 를 api #49 5차 반영(7a5ddec) openapi 로 다시 만들었다(`replaceContractIds` 상한 200, main 의 다른 변경 포함). 화면 동작은 그대로다.

@@ -50,3 +50,31 @@ export async function updateWorker(contractId: number, body: WorkerBody): Promis
   }
   redirect(`/contracts/${contractId}`);
 }
+
+/** 발송 · 재발송 결과. 실패면 화면에 보일 문장과 api 의 코드(SEND_CHANNEL_NOT_READY · SEND_FAILED · SEND_UNCONFIRMED 등) */
+export type SendContractResult = { ok: true } | { ok: false; error: string; code?: string };
+
+/**
+ * 근로계약 발송 · 재발송(WHALEERP-136). 계정이 없는 직원에게 가입 초대 알림톡을 보내고 서명 대기로 둔다.
+ * 기존 계정(소속 추가 · 복귀)은 앱 알림이 아직 없어 api 가 409 SEND_CHANNEL_NOT_READY 로 막는다.
+ */
+export async function sendContract(contractId: number): Promise<SendContractResult> {
+  if (!isContractId(contractId)) return { ok: false, error: "근로계약을 찾을 수 없습니다" };
+  const session = await getSession();
+  if (!session) return { ok: false, error: "로그인이 필요합니다" };
+  try {
+    await request(`/contracts/${contractId}/send`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${session.accessToken}` },
+    });
+  } catch (e) {
+    if (e instanceof ApiError) {
+      if (e.status === 401) return { ok: false, error: "로그인이 필요합니다" };
+      const code = (e.body as { code?: unknown } | null)?.code;
+      // 502 · 503 은 api 문장이 한글이라 그대로 둔다(발송 실패 · 접수 여부 모름 · 설정 없음)
+      return { ok: false, error: e.message, ...(typeof code === "string" ? { code } : {}) };
+    }
+    throw e;
+  }
+  return { ok: true };
+}
