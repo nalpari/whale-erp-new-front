@@ -8,7 +8,7 @@ sources:
   - { id: stores-data, resource: ../src/lib/stores.ts, title: 점포 데이터 접근 }
   - { id: store-form, resource: ../src/lib/store-form.ts, title: 점포 등록 · 수정 폼 규칙 }
   - { id: store-view, resource: ../src/lib/store-view.ts, title: 점포 표기 }
-generated: { by: claude-code/opus-5.5, at: 2026-10-15T08:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-15T16:00:00Z }
 ---
 
 근거: `docs/mockup/stores/` (목업 · 1차 · R-QTPRUQ)
@@ -85,6 +85,6 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-15T08:00:00Z }
 * 좌표(2026-10-14): 주소로 좌표 계산은 front 가 한다 — 점포 주소를 고르면 앞 좌표를 비우고, 그 도로명주소(참고항목 뺌, 못 찾으면 지번주소)로 카카오 로컬 API 「주소 검색」(서버에서만 · `KAKAO_REST_API_KEY`)에 물어 위도 · 경도를 채운다. 못 받으면 비운 채 이유를 보이고 직접 적는다. 주소를 지우면 좌표도 지운다
 * 사업자 진위확인은 api 연동 전이라 503 을 칸 아래에 보인다
 * 결과를 모를 때(503 을 뺀 5xx · 연결 끊김 · 응답을 못 읽음): 등록은 「목록에서 확인」을 안내하고 저장을 잠근다(다시 저장하면 둘이 생길 수 있다). 수정은 최신 정보를 다시 받아 바뀌었으면 저장된 것으로 본다. 삭제는 목록으로 보내고 알린다
-* 플랫폼 관리자 등록: 로그인 전이라 환경 변수 `STORE_REGISTER_BP_CODE_ID`(개발 DB 는 BP000007 · 8)의 BP 를 먼저 싣고, BP 계정이라 api 가 「다른 BP 에 …」(400)로 막으면 빼고 다시 보낸다. 값이 없으면 BP 를 싣지 않는다(BP 계정은 소속 BP 로, 플랫폼 관리자는 api 가 막는다) — id 는 DB 마다 달라 코드에 박지 않는다. 개발 DB 전용이라 운영 · 스테이징에는 넣지 않는다 — 넣으면 플랫폼 관리자가 등록하는 점포가 모두 그 BP 에 붙는다
+* 등록 BP: 이 탭의 BP 를 싣는다 — BP 계정은 소속 BP 다. 플랫폼 계정은 BP 를 고른 탭에서만 점포 메뉴(ERP)가 열리는데, 헤더의 BP 선택기가 아직 없어 **지금은 플랫폼 계정이 점포를 등록할 길이 없다**(환경 변수 `STORE_REGISTER_BP_CODE_ID` 를 걷은 2026-10-15 부터). BP 선택기가 생기면 그 탭의 BP 로 등록된다. 화면 버튼은 메뉴 MN000002 의 등록 · 수정 · 삭제 권한(로그인 정보)으로 보이고, 막는 것은 api 다
 * 상태만 바꾸는 저장(상세 [상태 변경])은 상세 값을 그대로 다시 보내는 왕복이다 — 빈 사업자주소 · 층 구분만 있는 줄 · 화면이 모르는 층 구분도 바꾸지 않고 돌려보낸다
 * 화면 코드는 [Whale ERP Frontend](/whale-erp-front.md) 의 `src/app/stores/` 항목

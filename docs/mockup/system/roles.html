@@ -6,6 +6,25 @@
     <title>플랫폼 권한 관리 · WHALE ERP</title>
     <link rel="icon" href="../assets/img/favicon.svg" />
     <link rel="stylesheet" href="../assets/whale.css" />
+    <style>
+      /* 메뉴 등록 팝업의 서비스 탭(2026-10-15) — 이 화면만 쓴다. 공통 .tabs 는 그대로 두고 한 줄 가로 스크롤로 바꾼다.
+         스크롤바는 숨기고, 넘치는 쪽만 끝을 흐리게(마스크) 한 뒤 ‹ › 를 둔다. 휠 · 화살표 · 고른 탭 끌어오기는 아래 스크립트가 한다. */
+      .svc-tabs { display: flex; align-items: stretch; border-bottom: 1px solid var(--hairline-strong); }
+      /* 스크롤바는 잘라낸다 — 안쪽 줄 아래에 여백(24px)을 두어 스크롤바가 그 여백에 생기게 하고, 바깥 상자가 탭 높이만큼만 보인다(높이는 스크립트가 탭에 맞춘다) */
+      .svc-tabs__clip { flex: 1; min-width: 0; overflow: hidden; }
+      .svc-tabs .tabs { border-bottom: 0; flex-wrap: nowrap; overflow-y: hidden; overscroll-behavior-x: contain; padding-bottom: 24px; scrollbar-width: none; -ms-overflow-style: none; }
+      .svc-tabs .tabs::-webkit-scrollbar { display: none; }
+      .svc-tabs .tabs button { flex: 0 0 auto; white-space: nowrap; margin-bottom: 0; }
+      .svc-tabs .tabs[data-edge="left"] { -webkit-mask-image: linear-gradient(to right, transparent, #000 32px); mask-image: linear-gradient(to right, transparent, #000 32px); }
+      .svc-tabs .tabs[data-edge="right"] { -webkit-mask-image: linear-gradient(to left, transparent, #000 32px); mask-image: linear-gradient(to left, transparent, #000 32px); }
+      .svc-tabs .tabs[data-edge="both"] {
+        -webkit-mask-image: linear-gradient(to right, transparent, #000 32px, #000 calc(100% - 32px), transparent);
+        mask-image: linear-gradient(to right, transparent, #000 32px, #000 calc(100% - 32px), transparent);
+      }
+      .svc-tabs__arrow { flex: 0 0 28px; padding: 0 0 10px; font-size: 18px; line-height: 1; color: var(--muted-tert); transition: color 150ms ease-out; }
+      .svc-tabs__arrow:hover { color: var(--ink); }
+      .svc-tabs__arrow[hidden] { display: none; }
+    </style>
   </head>
   <body data-root="../" data-page="system" data-sub="system/roles.html">
     <!-- 플랫폼 권한 관리 · /platform/system/roles · S-JDCOAG · 메뉴 등록 팝업 S-EFQREM (F-PPMWQI) · 1팀
@@ -109,8 +128,8 @@
                         <th scope="col">권한유형</th>
                         <th scope="col">권한명</th>
                         <th scope="col">설명</th>
-                        <th scope="col">최종 수정일시 · 수정자</th>
-                        <th scope="col">등록일시 · 등록자</th>
+                        <th scope="col">등록일시</th>
+                        <th scope="col">최종수정일시</th>
                         <th scope="col">메뉴 등록 여부</th>
                         <th scope="col">메뉴등록</th>
                       </tr>
@@ -122,7 +141,7 @@
                         <td style="white-space: nowrap">플랫폼 마스터</td>
                         <td class="k" style="white-space: nowrap">플랫폼 마스터</td>
                         <td>전체 메뉴 허용 고정 · 조회 전용</td>
-                        <td style="white-space: nowrap"><span class="mono">2025-01-06 09:00</span><br /><span class="subtle" style="font-size: 12px">시스템</span></td><td style="white-space: nowrap"><span class="mono">2025-01-06 09:00</span><br /><span class="subtle" style="font-size: 12px">시스템</span></td>
+                        <td style="white-space: nowrap"><span class="mono">2025-01-06 09:00</span> | <span class="subtle">시스템</span></td><td style="white-space: nowrap"><span class="mono">2025-01-06 09:00</span> | <span class="subtle">시스템</span></td>
                         <td style="white-space: nowrap" data-menu-reg="PM000001"></td>
                         <td><button class="btn btn--secondary btn--sm" type="button" data-open="pop-menu" data-role-code="PM000001">메뉴등록</button></td>
                       </tr>
@@ -131,7 +150,7 @@
                         <td style="white-space: nowrap">플랫폼 마스터</td>
                         <td class="k" style="white-space: nowrap">플랫폼 마스터</td>
                         <td>전체 메뉴 허용 고정 · 조회 전용</td>
-                        <td style="white-space: nowrap"><span class="mono">2025-01-06 09:00</span><br /><span class="subtle" style="font-size: 12px">시스템</span></td><td style="white-space: nowrap"><span class="mono">2025-01-06 09:00</span><br /><span class="subtle" style="font-size: 12px">시스템</span></td>
+                        <td style="white-space: nowrap"><span class="mono">2025-01-06 09:00</span> | <span class="subtle">시스템</span></td><td style="white-space: nowrap"><span class="mono">2025-01-06 09:00</span> | <span class="subtle">시스템</span></td>
                         <td style="white-space: nowrap" data-menu-reg="PM000001"></td>
                         <td><button class="btn btn--secondary btn--sm" type="button" data-open="pop-menu" data-role-code="PM000001">메뉴등록</button></td>
                       </tr>
@@ -140,7 +159,7 @@
                         <td style="white-space: nowrap">플랫폼 관리자</td>
                         <td class="k" style="white-space: nowrap">플랫폼 관리자</td>
                         <td>플랫폼 관리자 기본 권한 · 추가 권한의 상한</td>
-                        <td style="white-space: nowrap"><span class="mono">2026-08-12 14:20</span><br /><span class="subtle" style="font-size: 12px">platjung</span></td><td style="white-space: nowrap"><span class="mono">2025-01-06 09:00</span><br /><span class="subtle" style="font-size: 12px">시스템</span></td>
+                        <td style="white-space: nowrap"><span class="mono">2025-01-06 09:00</span> | <span class="subtle">시스템</span></td><td style="white-space: nowrap"><span class="mono">2026-08-12 14:20</span> | <span class="mono">platjung</span></td>
                         <td style="white-space: nowrap" data-menu-reg="PA000001"></td>
                         <td><button class="btn btn--secondary btn--sm" type="button" data-open="pop-menu" data-role-code="PA000001">메뉴등록</button></td>
                       </tr>
@@ -149,7 +168,7 @@
                         <td style="white-space: nowrap">BP 마스터</td>
                         <td class="k" style="white-space: nowrap">BP 마스터</td>
                         <td>BP 관리자 권한 그룹의 상한</td>
-                        <td style="white-space: nowrap"><span class="mono">2026-09-01 11:05</span><br /><span class="subtle" style="font-size: 12px">platkim</span></td><td style="white-space: nowrap"><span class="mono">2025-01-06 09:00</span><br /><span class="subtle" style="font-size: 12px">시스템</span></td>
+                        <td style="white-space: nowrap"><span class="mono">2025-01-06 09:00</span> | <span class="subtle">시스템</span></td><td style="white-space: nowrap"><span class="mono">2026-09-01 11:05</span> | <span class="mono">platkim</span></td>
                         <td style="white-space: nowrap" data-menu-reg="BM000001"></td>
                         <td><button class="btn btn--secondary btn--sm" type="button" data-open="pop-menu" data-role-code="BM000001">메뉴등록</button></td>
                       </tr>
@@ -158,7 +177,7 @@
                         <td style="white-space: nowrap">BP 마스터</td>
                         <td class="k" style="white-space: nowrap">BP 마스터</td>
                         <td>BP 관리자 권한 그룹의 상한</td>
-                        <td style="white-space: nowrap"><span class="mono">2026-09-01 11:05</span><br /><span class="subtle" style="font-size: 12px">platkim</span></td><td style="white-space: nowrap"><span class="mono">2025-01-06 09:00</span><br /><span class="subtle" style="font-size: 12px">시스템</span></td>
+                        <td style="white-space: nowrap"><span class="mono">2025-01-06 09:00</span> | <span class="subtle">시스템</span></td><td style="white-space: nowrap"><span class="mono">2026-09-01 11:05</span> | <span class="mono">platkim</span></td>
                         <td style="white-space: nowrap" data-menu-reg="BM000001"></td>
                         <td><button class="btn btn--secondary btn--sm" type="button" data-open="pop-menu" data-role-code="BM000001">메뉴등록</button></td>
                       </tr>
@@ -168,7 +187,7 @@
                         <td style="white-space: nowrap">가맹 마스터</td>
                         <td class="k" style="white-space: nowrap">가맹 마스터</td>
                         <td>가맹 관리자 권한 그룹의 상한</td>
-                        <td style="white-space: nowrap"><span class="mono">2026-07-15 16:30</span><br /><span class="subtle" style="font-size: 12px">platjung</span></td><td style="white-space: nowrap"><span class="mono">2025-01-06 09:00</span><br /><span class="subtle" style="font-size: 12px">시스템</span></td>
+                        <td style="white-space: nowrap"><span class="mono">2025-01-06 09:00</span> | <span class="subtle">시스템</span></td><td style="white-space: nowrap"><span class="mono">2026-07-15 16:30</span> | <span class="mono">platjung</span></td>
                         <td style="white-space: nowrap" data-menu-reg="FM000001"></td>
                         <td><button class="btn btn--secondary btn--sm" type="button" data-open="pop-menu" data-role-code="FM000001">메뉴등록</button></td>
                       </tr>
@@ -177,7 +196,7 @@
                         <td style="white-space: nowrap">플랫폼 관리자</td>
                         <td class="k" style="white-space: nowrap">고객지원 담당</td>
                         <td>커뮤니티관리·BP 조회</td>
-                        <td style="white-space: nowrap"><span class="mono">2026-09-10 10:42</span><br /><span class="subtle" style="font-size: 12px">platjung</span></td><td style="white-space: nowrap"><span class="mono">2025-06-02 10:05</span><br /><span class="subtle" style="font-size: 12px">platjung</span></td>
+                        <td style="white-space: nowrap"><span class="mono">2025-06-02 10:05</span> | <span class="mono">platjung</span></td><td style="white-space: nowrap"><span class="mono">2026-09-10 10:42</span> | <span class="mono">platjung</span></td>
                         <td style="white-space: nowrap" data-menu-reg="PA000002"></td>
                         <td><button class="btn btn--secondary btn--sm" type="button" data-open="pop-menu" data-role-code="PA000002">메뉴등록</button></td>
                       </tr>
@@ -186,7 +205,7 @@
                         <td style="white-space: nowrap">플랫폼 관리자</td>
                         <td class="k" style="white-space: nowrap">고객지원 담당</td>
                         <td>커뮤니티관리·BP 조회</td>
-                        <td style="white-space: nowrap"><span class="mono">2026-09-10 10:42</span><br /><span class="subtle" style="font-size: 12px">platjung</span></td><td style="white-space: nowrap"><span class="mono">2025-06-02 10:05</span><br /><span class="subtle" style="font-size: 12px">platjung</span></td>
+                        <td style="white-space: nowrap"><span class="mono">2025-06-02 10:05</span> | <span class="mono">platjung</span></td><td style="white-space: nowrap"><span class="mono">2026-09-10 10:42</span> | <span class="mono">platjung</span></td>
                         <td style="white-space: nowrap" data-menu-reg="PA000002"></td>
                         <td><button class="btn btn--secondary btn--sm" type="button" data-open="pop-menu" data-role-code="PA000002">메뉴등록</button></td>
                       </tr>
@@ -195,7 +214,7 @@
                         <td style="white-space: nowrap">플랫폼 관리자</td>
                         <td class="k" style="white-space: nowrap">정산 담당</td>
                         <td>서비스정산관리·BP 조회</td>
-                        <td style="white-space: nowrap"><span class="mono">2025-11-17 13:30</span><br /><span class="subtle" style="font-size: 12px">platkim</span></td><td style="white-space: nowrap"><span class="mono">2025-11-17 13:30</span><br /><span class="subtle" style="font-size: 12px">platkim</span></td>
+                        <td style="white-space: nowrap"><span class="mono">2025-11-17 13:30</span> | <span class="mono">platkim</span></td><td style="white-space: nowrap"><span class="mono">2025-11-17 13:30</span> | <span class="mono">platkim</span></td>
                         <td style="white-space: nowrap" data-menu-reg="PA000003"></td>
                         <td><button class="btn btn--secondary btn--sm" type="button" data-open="pop-menu" data-role-code="PA000003">메뉴등록</button></td>
                       </tr>
@@ -204,7 +223,7 @@
                         <td style="white-space: nowrap">플랫폼 관리자</td>
                         <td class="k" style="white-space: nowrap">기준정보 조회</td>
                         <td>시스템관리 조회만</td>
-                        <td style="white-space: nowrap"><span class="mono">2026-03-04 15:10</span><br /><span class="subtle" style="font-size: 12px">platjung</span></td><td style="white-space: nowrap"><span class="mono">2026-03-04 15:10</span><br /><span class="subtle" style="font-size: 12px">platjung</span></td>
+                        <td style="white-space: nowrap"><span class="mono">2026-03-04 15:10</span> | <span class="mono">platjung</span></td><td style="white-space: nowrap"><span class="mono">2026-03-04 15:10</span> | <span class="mono">platjung</span></td>
                         <td style="white-space: nowrap" data-menu-reg="PA000004"></td>
                         <td><button class="btn btn--secondary btn--sm" type="button" data-open="pop-menu" data-role-code="PA000004">메뉴등록</button></td>
                       </tr>
@@ -416,7 +435,7 @@
           <div data-step="ask" class="stack--lg" style="display: flex; flex-direction: column">
             <dl class="kv">
               <dt>권한</dt><dd>고객지원 담당 <span class="mono subtle">PA000002</span></dd>
-              <dt>연결 사용자</dt><dd>2명 <span class="subtle">· platpark 박지우, platchoi 최유나(미사용)</span></dd>
+              <dt>연결 사용자</dt><dd>2명<!-- 다섯 명까지 보이고 넘으면 이 목록 안에서 스크롤한다(2026-10-15) --><span style="display: block; max-height: 118px; overflow-y: auto; margin-top: 4px"><span class="subtle" style="display: block; line-height: 22px">platpark | 박지우</span><span class="subtle" style="display: block; line-height: 22px; margin-top: 2px">platchoi | 최유나 (미사용)</span></span></dd>
             </dl>
             <div class="field">
               <label for="del-alt">대체 권한 <span class="req">*</span></label>
@@ -425,8 +444,6 @@
                 <option>PA000003 · 정산 담당</option>
                 <option>PA000004 · 기준정보 조회</option>
               </select>
-              <span class="help">변경 대상 사용자 <b>2명</b>의 권한을 고른 권한으로 한꺼번에 바꾼 뒤 삭제합니다.
-                고정 권한 <span class="mono">PA000001</span> 플랫폼 관리자는 고를 수 없습니다 — 옮기면 권한이 플랫폼 관리자 기본 권한까지 넓어집니다.</span>
             </div>
             <div class="band band--warn">
               <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
@@ -507,7 +524,12 @@
           <div class="modal__body">
             <dl class="kv" id="pm-head" style="grid-template-columns: 96px minmax(0, 1fr) 96px minmax(0, 1fr)"></dl>
             <!-- 서비스는 표 위 탭으로 고른다(BP 권한 메뉴 등록과 같다 · 2026-10-08). 메뉴가 없는 서비스는 빈 표다 -->
-            <div class="tabs" id="pm-svc" role="tablist" aria-label="서비스"></div>
+            <!-- 서비스가 많으면 한 줄을 지키고 가로로 스크롤해 고른다(2026-10-15) -->
+            <div class="svc-tabs">
+              <button class="svc-tabs__arrow" type="button" tabindex="-1" aria-label="앞 서비스 보기" data-svc-prev hidden>‹</button>
+              <div class="svc-tabs__clip"><div class="tabs" id="pm-svc" role="tablist" aria-label="서비스"></div></div>
+              <button class="svc-tabs__arrow" type="button" tabindex="-1" aria-label="다음 서비스 보기" data-svc-next hidden>›</button>
+            </div>
             <div class="modal__scroll" style="height: 420px; overflow-y: auto">
               <table class="tbl tbl--dense tbl--fit">
                 <thead>
@@ -620,12 +642,12 @@
         var ALL = "RCUD";
         function full(svc) {
           var o = {};
-          TREE[svc].forEach(function (m) { o[m[0]] = m[4] ? "R" : ALL; });
+          (TREE[svc] || []).forEach(function (m) { o[m[0]] = m[4] ? "R" : ALL; });
           return o;
         }
         function fullUsed(svc) {
           var o = {};
-          TREE[svc].forEach(function (m) { if (m[3]) o[m[0]] = m[4] ? "R" : ALL; });
+          (TREE[svc] || []).forEach(function (m) { if (m[3]) o[m[0]] = m[4] ? "R" : ALL; });
           return o;
         }
         var GRANT = {
@@ -711,7 +733,7 @@
 
         function render() {
           var svc = cur.svc, map = cur.grants[svc] || (cur.grants[svc] = {});
-          var tree = vis = visible(TREE[svc]);
+          var tree = vis = visible(TREE[svc] || []);
           if (!tree.length) {
             rowsEl.innerHTML = '<tr><td colspan="6" class="subtle" style="text-align: center; padding: 28px">이 서비스에 등록된 메뉴가 없습니다.</td></tr>';
             return;
@@ -853,12 +875,59 @@
           var b = ev.target.closest("[data-role-code]");
           if (b) open(b.dataset.roleCode);
         });
-        var SVCS = [["PLATFORM", "Whale ERP 플랫폼 관리"], ["ERP", "Whale ERP"], ["EMPTY", "POS"]];
+        /* 공통코드 SERVICE 순서 그대로(2026-10-15). 메뉴가 아직 없는 서비스는 빈 표다 */
+        var SVCS = [
+          ["ERP", "Whale ERP"], ["PLATFORM", "Whale ERP 플랫폼 관리"], ["POS", "POS"], ["KIOSK", "KIOSK"], ["TABLE_ORDER", "Table Order"], ["PICK_UP_ORDER", "Pick Up Order"],
+          ["QR_ORDER", "QR Order"], ["RECIPE_MANAGEMENT", "레시피관리"], ["ORDER_MANAGEMENT", "발주관리"], ["STORE_INVENTORY", "점포재고관리"], ["WAITING_MANAGEMENT", "대기순번관리"], ["RESERVATION", "예약관리"]
+        ];
+        var svcPrev = document.querySelector("[data-svc-prev]"), svcNext = document.querySelector("[data-svc-next]");
+        var reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        /* 넘치는 쪽만 끝을 흐리게 하고 ‹ › 를 보인다. 팝업이 닫혀 폭이 0 이면 열려 폭이 생길 때 다시 잰다 */
+        function measureSvcTabs() {
+          var tab = svcEl.querySelector("button");
+          if (tab) svcEl.parentElement.style.height = tab.offsetHeight + "px";
+          var left = svcEl.scrollLeft > 1, right = svcEl.scrollLeft + svcEl.clientWidth < svcEl.scrollWidth - 1;
+          svcPrev.hidden = !left;
+          svcNext.hidden = !right;
+          svcEl.dataset.edge = left && right ? "both" : left ? "left" : right ? "right" : "";
+        }
+        new ResizeObserver(measureSvcTabs).observe(svcEl);
+        svcEl.addEventListener("scroll", measureSvcTabs, { passive: true });
+        /* 가로 휠이 없는 마우스도 넘길 수 있게 세로 휠을 가로로 바꾼다 */
+        /* 줄이 실제로 가로로 넘칠 때만 막는다 — 막지 않으면 팝업이 세로로 넘치는 작은 화면에서 팝업까지 내려간다 */
+        svcEl.addEventListener("wheel", function (e) {
+          if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+          /* 그 방향으로 더 갈 수 있을 때만 막는다 — 끝까지 갔으면 휠이 팝업을 세로로 내리게 둔다 */
+          var canMove = e.deltaY > 0 ? svcEl.scrollLeft + svcEl.clientWidth < svcEl.scrollWidth - 1 : svcEl.scrollLeft > 1;
+          if (!canMove) return;
+          e.preventDefault();
+          svcEl.scrollLeft += e.deltaY;
+        }, { passive: false });
+        function scrollSvcTabs(dir) { svcEl.scrollBy({ left: dir * svcEl.clientWidth * 0.6, behavior: reduceMotion ? "auto" : "smooth" }); }
+        svcPrev.addEventListener("click", function () { scrollSvcTabs(-1); });
+        svcNext.addEventListener("click", function () { scrollSvcTabs(1); });
         function renderSvcTabs() {
           svcEl.innerHTML = SVCS.map(function (t) {
-            return '<button type="button" role="tab" data-svc-tab="' + t[0] + '" aria-selected="' + (t[0] === cur.svc) + '">' + t[1] + "</button>";
+            /* Tab 키는 고른 탭 하나에만 선다(roving tabindex) */
+            return '<button type="button" role="tab" data-svc-tab="' + t[0] + '" aria-selected="' + (t[0] === cur.svc) + '" tabindex="' + (t[0] === cur.svc ? 0 : -1) + '">' + t[1] + "</button>";
           }).join("");
+          /* 고른 탭은 보이는 자리로 끌어온다 */
+          var on = svcEl.querySelector('[aria-selected="true"]');
+          if (on) on.scrollIntoView({ block: "nearest", inline: "nearest", behavior: reduceMotion ? "auto" : "smooth" });
+          measureSvcTabs();
         }
+        /* 좌우 화살표 · Home · End 로 옮겨 고른다 */
+        svcEl.addEventListener("keydown", function (e) {
+          var keys = SVCS.map(function (t) { return t[0]; });
+          var at = Math.max(0, keys.indexOf(cur.svc));
+          var next = e.key === "ArrowRight" ? (at + 1) % keys.length : e.key === "ArrowLeft" ? (at - 1 + keys.length) % keys.length : e.key === "Home" ? 0 : e.key === "End" ? keys.length - 1 : -1;
+          if (next < 0) return;
+          e.preventDefault();
+          cur.svc = keys[next];
+          renderSvcTabs();
+          render();
+          svcEl.querySelector('[data-svc-tab="' + keys[next] + '"]').focus();
+        });
         svcEl.addEventListener("click", function (e) {
           var t = e.target.closest("[data-svc-tab]");
           if (!t || t.dataset.svcTab === cur.svc) return;

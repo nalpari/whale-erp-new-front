@@ -1,6 +1,14 @@
 # Bundle history
 
+## 2026-10-16
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #35 블로커 반영: 권한 수정 폼이 고치던 중 최신 값을 먼저 받아 둔 뒤 동시 수정 409 를 받으면 refresh 를 기다리지 않고 받아 둔 값으로 바로 다시 채운다(`afterConflict`) — 전에는 다시 채우기가 돌지 않아 저장이 계속 409 였다.
+
 ## 2026-10-15
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [시스템관리](/system.md) — 전체 PR 리뷰 반영: 메뉴 권한 회수 확인창 Esc 가 팝업까지 닫던 것, 메뉴 저장 5xx 는 고친 칸을 두고 409 · 결과 모름 뒤 다시 채움을 알림, 조회가 잠긴 줄의 등록 막음, 동시 수정 409 만 칸 다시 채움, 공통코드 403 문구 그대로 · 저장 뒤 갱신 실패를 성공으로, 막힌 이유를 글자로(enum 을 못 받으면 일반 문구), 메뉴 코드 타입 · 권한 찾기 순수 함수(`menuPermissionOf`) · 권한 폼 검증(`role-form-sync`) 테스트. system.md 에 PA000001 이 api 에서 고정 권한이 아니라는 구현 메모를 더했다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 2차 코드 리뷰 반영: 권한 수정 폼이 기준값(`role-form-sync.ts`)으로 저장해 남의 변경을 덮어쓰지 않게(바뀐 것 없으면 [저장] 막음), 생성 타입을 giza 최신 openapi 로 다시 만들어 권한 목록은 `PlatformRoleGroupSummaryListResponseDto`, 플랫폼 관리자 권한 선택지는 생성 타입으로 되돌림, PA000001 고정 권한 문구 정리, 서비스 탭 휠 끝 · Tab 키 대상, 핸들러 이름 `handle` 접두.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — 코드 리뷰 반영: 공통코드 [추가]는 수정 + 등록 권한일 때만(api 가 패널 저장을 늘 수정으로 본다), 권한 화면 409 뒤 실패 문구 · 삭제 확인창이 사라지지 않게(최신 값은 409 뒤에만 다시 채움), 바꿀 수 없는 등록 · 수정 · 삭제가 켜진 줄은 조회도 막음, 서비스 탭 휠 · 방향키, 플랫폼 계정은 BP 선택기 전까지 점포 등록 불가를 적고 권한 화면의 api 머지 순서를 적었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 권한 관리(MN000214, `/platform/system/roles`) 화면을 더했다. api `/platform-role-groups`(giza 작업분 openapi)로 생성 타입을 다시 만들었다. api 에 같은 이름의 DTO(`PlatformRoleGroupListResponseDto`)가 둘이라 플랫폼 관리자 권한 선택지 응답은 임시로 손 타입을 쓴다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — 로그인이 생겨 플랫폼 관리자 · 플랫폼 공통코드 · 점포 정보 관리의 임시 장치를 걷었다: 화면 권한 `?permission=view`(`current-permission.ts`) 대신 로그인 메뉴 권한(`useMenuPermission`, 등록 · 수정 · 삭제 따로), 지금 사용자는 `current-admin.ts` 대신 로그인 정보 `account`, 점포 등록 BP 는 환경 변수 `STORE_REGISTER_BP_CODE_ID` 대신 이 탭의 BP, 점포 상태 · 유형 · 층 · 권한 유형 라벨은 상수표 대신 로그인 정보의 공통코드(`CodeLabel`), 점포 오류 화면은 공통 틀 안에 맞췄다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #30 ⑤ 블로커 반영: 사업자정보 칸에 값이 있는데 인증이 없으면(재인증 · 10분 경과 · 가입 거절 뒤) 가입 요청을 보내지 않고 인증하거나 비우게 한다. 보이던 사업자정보가 빠진 채 가입되던 것.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [로그인](/auth.md) — 회원가입 사업자정보 「인증하기」를 api 국세청 진위확인(`POST /auth/signup/business-verifications`, api lapras)에 이었다. 받은 10분 토큰을 가입 때 `bizVerificationToken` 으로 싣고, 10분 경과 · 가입이 토큰 만료(400) · 사업자번호 중복(409)으로 거절되면 인증을 풀고 다시 인증하게 한다. 회원가입의 사업자정보는 세 칸뿐이고 대표자 연락처 등은 마이페이지 · 점포에서 받는다고 `auth.md` 를 고쳤다(2026-10-15 사용자 확인).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #23 ⑤ 블로커 반영: 회원가입 아이디 칸을 입력하는 순간 소문자로 바꿔 보인다. api 는 소문자로 저장하고 관리자 웹 로그인은 대소문자를 구분해, 대문자로 가입한 사람이 같은 아이디로 로그인하지 못하던 것.

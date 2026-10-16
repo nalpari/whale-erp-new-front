@@ -330,7 +330,8 @@ function verificationBodyOf(f: StoreForm) {
 
 /**
  * 등록 요청. 점포유형이 비어 있으면 던진다 — validateStoreForm 을 먼저 통과해야 부른다.
- * BP 는 화면이 아니라 등록 액션이 싣는다(환경 변수 STORE_REGISTER_BP_CODE_ID) — bpCodeId 인자는 테스트에서만 쓴다.
+ * bpCodeId 는 이 탭의 BP(로그인 정보) — 플랫폼 계정은 BP 를 고른 탭에서만 점포 메뉴를 열고, api 가 꼭 받는다. BP 계정은 소속 BP 와 같다.
+ * 빈 값(0 · undefined)이면 싣지 않는다 — 그러면 api 가 BP 계정은 소속 BP 로 등록하고 플랫폼 계정은 400 으로 막는다.
  */
 export function toCreateStoreInput(f: StoreForm, bpCodeId?: number): CreateStoreInput {
   const storeTypeCode = f.storeTypeCode;

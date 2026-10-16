@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Checkbox, FilterPanel, FilterSection, SearchField } from "@/components/common";
 import { STORE_STATUSES, STORE_TYPES } from "@/lib/store-types";
-import { STORE_STATUS_LABEL, STORE_TYPE_LABEL } from "@/lib/store-view";
+import { useCodeLabel } from "@/components/site/code-label";
 import { useStoreListNavigation } from "./store-list-navigation";
 import { StorePicker, type PickedStore } from "./store-picker";
 import { DEFAULT_STORES_QUERY, withStoreFilter, type StoresQuery } from "./stores-query";
@@ -16,6 +16,8 @@ const toggle = <T,>(list: readonly T[], value: T) => (list.includes(value) ? lis
  * 고른 점포의 이름은 URL 에 없어(storeIds 만) 서버가 찾아 picked 로 넘긴다. 고르는 즉시 칩이 서도록 이 안에서도 쥔다.
  */
 export function StoreFilter({ picked }: { picked: PickedStore[] }) {
+  const statusLabel = useCodeLabel("STORE_STATUS");
+  const typeLabel = useCodeLabel("STORE_TYPE");
   const { current, navigate } = useStoreListNavigation();
   const [chips, setChips] = useState(picked);
   // 서버가 새로 찾아 준 이름으로 맞춘다(뒤로 가기 · 링크 이동으로 URL 이 바뀐 때)
@@ -59,7 +61,7 @@ export function StoreFilter({ picked }: { picked: PickedStore[] }) {
         {STORE_STATUSES.map((status) => (
           <Checkbox
             key={status}
-            label={STORE_STATUS_LABEL[status]}
+            label={statusLabel(status)}
             checked={current.statuses.includes(status)}
             onChange={() => go({ statuses: toggle(current.statuses, status) })}
           />
@@ -69,7 +71,7 @@ export function StoreFilter({ picked }: { picked: PickedStore[] }) {
         {STORE_TYPES.map((type) => (
           <Checkbox
             key={type}
-            label={STORE_TYPE_LABEL[type]}
+            label={typeLabel(type)}
             checked={current.storeTypes.includes(type)}
             onChange={() => go({ storeTypes: toggle(current.storeTypes, type) })}
           />

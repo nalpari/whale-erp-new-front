@@ -5,11 +5,12 @@ import { Badge, Button, DataTable, Pagination, Select, Tag, TextField, Toggle, u
 import { buildSaveGroupsInput, groupChanged, type GroupDraft } from "@/lib/code-drafts";
 import { codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-validation";
 import type { CodeGroup, ManageOwnerCode } from "@/lib/codes";
-import type { Permission } from "@/lib/current-permission";
+import { MENU_CODE } from "@/lib/menus";
+import { useMenuPermission } from "@/components/site/session-gate";
 import { applyCodeGroupToBpsAction, saveCodeGroupsAction } from "./actions";
 import { BpApplyDialog } from "./bp-apply-dialog";
 import { CodePanel, DoneNotice, FieldErrors, SaveFailedBand, UNREACHABLE } from "./code-panel";
-import { codesHref, type CodesQuery } from "./codes-href";
+import { codesHref } from "./codes-href";
 import { GuardedLink, useUnsavedChanges } from "./unsaved-changes";
 
 // 왼쪽 공통코드 그룹 목록. 그룹 코드를 누르면 오른쪽에 그 그룹의 상세 코드가 선다(?group=).
@@ -30,8 +31,6 @@ export function CodeGroupPanel({
   pageSize,
   selected,
   ownerLabels,
-  permission,
-  query,
 }: {
   groups: CodeGroup[];
   total: number;
@@ -40,10 +39,12 @@ export function CodeGroupPanel({
   selected?: string;
   /** 관리 주체 한글 — 공통코드 MANAGE_OWNER 에서 읽은 값. */
   ownerLabels: Record<string, string>;
-  permission: Permission;
-  query: CodesQuery;
 }) {
-  const manage = permission === "manage";
+  // 메뉴 권한(로그인 정보)으로 보인다 — 막는 것은 api 다. api 는 패널 저장을 늘 수정으로 보고, 새 행이 있으면 등록까지 요구한다.
+  // 그래서 고치기 · 저장 · BP 적용은 수정 권한, [추가]는 수정과 등록 권한이 둘 다 있을 때만.
+  const can = useMenuPermission(MENU_CODE.platformCodes);
+  const manage = can.update;
+  const canAdd = manage && can.create;
   const toast = useToast();
   const { setDirty, isDirty, navigate } = useUnsavedChanges();
   const [drafts, setDrafts] = useState(() => groups.map(toDraft));
@@ -182,7 +183,7 @@ export function CodeGroupPanel({
             {d.groupCode}
           </b>
         ) : (
-          <GuardedLink href={codesHref({ ...query, page, group: d.groupCode })} className="text-erp-link hover:underline">
+          <GuardedLink href={codesHref({ page, group: d.groupCode })} className="text-erp-link hover:underline">
             {d.groupCode}
           </GuardedLink>
         ),
@@ -269,9 +270,11 @@ export function CodeGroupPanel({
         manage && (
           <>
             {/* 저장 전 새 행은 하나만 둔다 */}
-            <Button variant="soft" onClick={handleAdd} disabled={Boolean(added) || saving}>
-              추가
-            </Button>
+            {canAdd && (
+              <Button variant="soft" onClick={handleAdd} disabled={Boolean(added) || saving}>
+                추가
+              </Button>
+            )}
             <Button onClick={handleSave} disabled={!dirty || saving}>
               저장
             </Button>
@@ -294,7 +297,7 @@ export function CodeGroupPanel({
         <Pagination
           page={page}
           totalPages={Math.max(1, Math.ceil(total / pageSize))}
-          onPageChange={(next) => navigate(codesHref({ ...query, page: next }))}
+          onPageChange={(next) => navigate(codesHref({ page: next }))}
         />
       </div>
     </CodePanel>

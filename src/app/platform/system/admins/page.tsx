@@ -1,7 +1,5 @@
 import { PageBar } from "@/components/common";
 import { ApiError } from "@/lib/api";
-import { getCurrentAdmin } from "@/lib/current-admin";
-import { getPlatformAdminPermission } from "@/lib/current-permission";
 import { getPlatformAdmin, getPlatformAdmins, getPlatformRoleGroups, type PlatformAdminDetail } from "@/lib/platform-admins";
 import { parseAdminsQuery } from "./admins-href";
 import { AdminsScreen } from "./admins-screen";
@@ -9,22 +7,21 @@ import { AdminsScreen } from "./admins-screen";
 // 플랫폼 관리자 관리 (S-YTKWGG · 상세 S-BRSPGB · 등록 S-FOJJKB · 수정 S-CZGHBS · 삭제 S-NLVXWJ · 초기화 S-XKYOND).
 // 왼쪽 필터, 오른쪽 목록. 상세 · 등록 · 수정은 목록 위로 밀려 나오는 슬라이드 패널이다(데모와 같다 · 2026-10-08).
 // 목록 조건과 연 상세는 주소에 둔다(admins-href.ts). 상세만 못 불러오면 목록은 그대로 두고 패널에서 알린다.
+// 지금 사용자와 메뉴 권한(등록 · 수정 · 삭제)은 로그인 정보에서 화면(클라이언트)이 읽는다(SessionGate).
 export default async function PlatformAdminsPage({ searchParams }: PageProps<"/platform/system/admins">) {
   const params = await searchParams;
   const query = parseAdminsQuery(params);
-  const permission = getPlatformAdminPermission(params);
 
-  const [list, roleGroups, me, detail] = await Promise.all([
+  const [list, roleGroups, detail] = await Promise.all([
     getPlatformAdmins({ page: query.page, keyword: query.keyword, roleGroupId: query.roleGroupId, statuses: query.status && [query.status] }),
     getPlatformRoleGroups(),
-    getCurrentAdmin(),
     query.admin ? loadDetail(query.admin) : null,
   ]);
 
   return (
     <>
       <PageBar title="플랫폼 관리자 관리" />
-      <AdminsScreen list={list} roleGroups={roleGroups} me={me} permission={permission} query={query} detail={detail} />
+      <AdminsScreen list={list} roleGroups={roleGroups} query={query} detail={detail} />
     </>
   );
 }

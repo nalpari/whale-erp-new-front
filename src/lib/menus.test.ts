@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { isAllowed, menusOf, serviceOfPath } from "./menus.ts";
+import { isAllowed, MENU_CODE, menuPermissionOf, menusOf, serviceOfPath } from "./menus.ts";
 import type { AdminMenu } from "./session.ts";
 
 const menu = (url: string | null, read: boolean, children: AdminMenu[] = [], serviceCode = "WHALE_ERP"): AdminMenu => ({
@@ -81,4 +81,19 @@ test("menusOf: 부모가 같은 서비스여도 다른 서비스의 하위 메�
 
 test("serviceOfPath: 관리자 웹이 열지 않는 서비스(POS 등)는 모른다고 본다", () => {
   assert.equal(serviceOfPath([menu("/pos", true, [], "POS")], "/pos"), null);
+});
+
+test("menuPermissionOf: 3단계 깊이의 메뉴도 코드로 찾아 칸별 권한을 돌려준다", () => {
+  const roles: AdminMenu = { ...menu("/platform/system/roles", true, [], "PLATFORM"), menuCode: MENU_CODE.platformRoles, depth: 3, permission: { read: true, create: false, update: true, delete: false } };
+  const tree = [menu(null, false, [menu(null, false, [roles], "PLATFORM")], "PLATFORM")];
+  assert.equal(menuPermissionOf(tree, "PLATFORM", MENU_CODE.platformRoles, "update"), true);
+  assert.equal(menuPermissionOf(tree, "PLATFORM", MENU_CODE.platformRoles, "delete"), false);
+});
+
+test("menuPermissionOf: 다른 서비스 탭의 메뉴와 없는 코드는 false", () => {
+  const stores: AdminMenu = { ...menu("/stores", true), menuCode: MENU_CODE.stores, permission: { read: true, create: true, update: true, delete: true } };
+  assert.equal(menuPermissionOf([stores], "WHALE_ERP", MENU_CODE.stores, "create"), true);
+  // 플랫폼 탭에서는 ERP 메뉴를 보지 않는다
+  assert.equal(menuPermissionOf([stores], "PLATFORM", MENU_CODE.stores, "create"), false);
+  assert.equal(menuPermissionOf([stores], "WHALE_ERP", MENU_CODE.platformCodes, "read"), false);
 });
