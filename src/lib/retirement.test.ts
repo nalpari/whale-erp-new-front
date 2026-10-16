@@ -1,7 +1,7 @@
 // node --test src/lib/retirement.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { checkRetiredDate, earliestRetiredDate, failureEffect, isSettledNow, retirementActions } from "./retirement.ts";
+import { checkRetiredDate, earliestRetiredDate, failureEffect, isSettledNow, retirementActions, settlesWithoutWarning } from "./retirement.ts";
 
 test("가장 이른 퇴직일은 오늘에서 3개월 전 같은 날", () => {
   assert.equal(earliestRetiredDate("2026-10-15"), "2026-07-15");
@@ -81,4 +81,15 @@ test("400 · 404 · 409 · 401 은 확인창 안에 문구로", () => {
 
 test("결과를 모르는 실패(status 없음)는 화면을 새로 받는다 — 저장됐을 수도 있다", () => {
   assert.equal(failureEffect({ message: "처리 결과를 확인하지 못했습니다." }), "refresh");
+});
+
+test("확인창을 연 채 자정을 넘겨 퇴직일이 어제가 되면 — 경고 없이 즉시 정리될 뻔했다", () => {
+  assert.equal(settlesWithoutWarning("2026-10-15", "2026-10-15", "2026-10-16"), true);
+});
+
+test("날짜가 그대로거나, 이미 지난 날짜 경고를 본 경우는 다시 확인하지 않는다", () => {
+  assert.equal(settlesWithoutWarning("2026-10-15", "2026-10-15", "2026-10-15"), false);
+  assert.equal(settlesWithoutWarning("2026-10-14", "2026-10-15", "2026-10-16"), false);
+  // 자정을 넘겨도 퇴직일이 아직 오늘 이후면 다음 날 배치가 정리한다 — 그대로 처리한다
+  assert.equal(settlesWithoutWarning("2026-10-20", "2026-10-15", "2026-10-16"), false);
 });

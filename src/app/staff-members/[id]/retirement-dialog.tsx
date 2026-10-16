@@ -4,8 +4,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ConfirmDialog, DateField, useToast } from "@/components/common";
 import { PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
-import { checkRetiredDate, earliestRetiredDate, failureEffect, isSettledNow } from "@/lib/retirement";
-import type { RetirementPreview } from "@/lib/staff-members";
+import { checkRetiredDate, earliestRetiredDate, failureEffect, isSettledNow, settlesWithoutWarning } from "@/lib/retirement";
+import { kstToday, type RetirementPreview } from "@/lib/staff-members";
 import { cancelRetirementAction, changeRetirementDateAction, previewRetirementAction, retireAction, type ActionFailure } from "./actions";
 
 // 퇴직 처리 · 퇴직일 변경 확인창과 퇴직 처리 취소 확인창(WHALEERP-585). 문구와 배치는 목업 docs/mockup/staff/detail.html ·
@@ -52,19 +52,21 @@ export function RetirementDialog({
   staffMemberId,
   mode,
   currentDate,
-  today,
+  today: initialToday,
   onClose,
 }: {
   staffMemberId: number;
   mode: "retire" | "change";
   /** 퇴직일 변경일 때 지금 퇴직일 */
   currentDate: string | null;
+  /** 화면을 그릴 때의 오늘(KST). 확인창을 연 채 자정을 넘기면 확인을 누를 때 다시 센다. */
   today: string;
   onClose: () => void;
 }) {
   const toast = useToast();
   const onFailure = useFailure();
-  const [date, setDate] = useState(currentDate ?? today);
+  const [today, setToday] = useState(initialToday);
+  const [date, setDate] = useState(currentDate ?? initialToday);
   const [preview, setPreview] = useState<Preview>(() => {
     const invalid = checkRetiredDate(date, today);
     return invalid ? { status: "error", message: invalid } : { status: "loading" };
@@ -96,10 +98,10 @@ export function RetirementDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 열릴 때 한 번만
   }, []);
 
-  const changeDate = (value: string) => {
+  const changeDate = (value: string, on: string = today) => {
     setDate(value);
     setSubmitError(null);
-    const invalid = checkRetiredDate(value, today);
+    const invalid = checkRetiredDate(value, on);
     if (invalid) {
       seq.current++; // 늦게 오는 앞 응답이 이 문구를 덮지 않게
       setPreview({ status: "error", message: invalid });
@@ -113,6 +115,18 @@ export function RetirementDialog({
   const ready = preview.status === "ok" && preview.date === date && !sameDate;
 
   const confirm = async () => {
+    // 확인창을 연 채 자정을 넘겼으면 오늘을 다시 센다. 경고 없이 지난 날짜가 됐으면 처리하지 않고 경고를 띄워 다시 확인받는다 —
+    // api 는 지난 날짜를 그 자리에서 되돌릴 수 없게 정리한다. 미리 보기도 새 오늘 기준으로 다시 받는다.
+    const now = kstToday();
+    if (now !== today) {
+      setToday(now);
+      changeDate(date, now);
+      if (settlesWithoutWarning(date, today, now)) {
+        setSubmitError("날짜가 바뀌어 퇴직일이 지난 날짜가 되었습니다. 처리하면 즉시 정리되니 다시 확인해 주세요.");
+        return;
+      }
+      if (checkRetiredDate(date, now)) return; // 3개월 범위를 벗어났다 — changeDate 가 문구를 띄웠다
+    }
     setBusy(true);
     setSubmitError(null);
     try {

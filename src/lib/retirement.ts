@@ -39,6 +39,14 @@ export function checkRetiredDate(value: string, today: string): string | null {
 export const isSettledNow = (retiredDate: string, today: string) => retiredDate < today;
 
 /**
+ * 확인창을 연 채 자정을 넘겨, 화면이 「즉시 정리」 경고를 보이지 않은 퇴직일이 이제 지난 날짜가 되었는가.
+ * 그대로 처리하면 api 는 그 자리에서 되돌릴 수 없게 정리한다 — 확인창은 처리하지 않고 경고를 띄워 다시 확인받는다.
+ * shownToday 는 확인창이 판단에 쓴 오늘, now 는 확인을 누른 순간의 오늘(KST).
+ */
+export const settlesWithoutWarning = (retiredDate: string, shownToday: string, now: string) =>
+  !isSettledNow(retiredDate, shownToday) && isSettledNow(retiredDate, now);
+
+/**
  * 상세 머리의 퇴직 버튼. retire = 「퇴직 처리」, scheduled = 「퇴직일 변경」 · 「퇴직 처리 취소」, null = 없음.
  * 가입 완료 레코드에만, 「직원 정보 관리」 수정 권한이 있을 때만 보인다. 업무 범위 밖 직원은 상세 api 가 404 라 여기 오지 않는다.
  * 변경 · 취소는 퇴직일 전날까지만 된다 — 당일부터는 배치가 돌 수 있어 api 가 409 다.
