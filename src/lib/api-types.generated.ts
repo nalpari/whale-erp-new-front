@@ -653,7 +653,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 목록. 고정 권한 넷(PM · PA · BM · FM) 다음 플랫폼 관리자 추가 권한을 코드 순으로, 페이지 없이. */
+        /** 목록. 고정 권한(PM · PA · BM · FM 순, 시드는 PA 없이 셋) 다음 플랫폼 관리자 추가 권한을 코드 순으로, 페이지 없이. */
         get: operations["PlatformRoleGroupsController_list"];
         put?: never;
         /** 등록 — 플랫폼 관리자(PA) 추가 권한. 권한 코드는 PA + 6자리로 채번한다. */
@@ -791,6 +791,26 @@ export interface paths {
             cookie?: never;
         };
         get: operations["StaffMembersController_findAll"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/staff-members/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 직원 기본 정보. 목록 한 줄과 같은 모양이다. 없는 직원 · 관리 범위 밖 · 가려지는 직원(본사 제공 동의 없는 가맹
+         *     점포 직원)은 모두 같은 404 다 — 퇴직 처리와 같은 규칙이다. 그래서 isMasked 는 늘 false 다.
+         */
+        get: operations["StaffMembersController_findOne"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2350,7 +2370,10 @@ export interface components {
              * @description 저장할 때 그대로 돌려보낸다.
              */
             updatedAt: string;
-            /** @description 저장할 수 있는가 — 막힌 칸만 있으면 false(플랫폼 마스터 · 조회만 · 본인 연결). */
+            /**
+             * @description 저장할 수 있는가 — 플랫폼 마스터 권한 · 권한 관리 수정 권한 없음 · 본인 연결이면 false. 칸이 본인 범위 밖으로
+             *     막힌 것은 여기서 보지 않는다(칸별 blockedReason).
+             */
             isSavable: boolean;
             /** @description 사용 중인 서비스(공통코드 SERVICE 순서)별 메뉴. 숨겨진 메뉴는 빠진다. */
             services: components["schemas"]["RoleGroupMenuServiceResponseDto"][];
@@ -3219,7 +3242,7 @@ export interface components {
             bodySummary: string;
             kakaoTemplateCode: string | null;
             isActive: boolean;
-            /** @description 기본 문구가 있는지(처음 넣은 40건) — 되돌리기를 보일지 */
+            /** @description 기본 문구가 있는지(마이그레이션으로 넣은 기본 템플릿 41건) — 되돌리기를 보일지 */
             hasDefault: boolean;
             /** @description 마지막으로 고친 관리자 이름. 아무도 고치지 않았으면 null — 화면은 「기본 문구」 */
             updatedByName: string | null;
@@ -3259,7 +3282,7 @@ export interface components {
             bodySummary: string;
             kakaoTemplateCode: string | null;
             isActive: boolean;
-            /** @description 기본 문구가 있는지(처음 넣은 40건) — 되돌리기를 보일지 */
+            /** @description 기본 문구가 있는지(마이그레이션으로 넣은 기본 템플릿 41건) — 되돌리기를 보일지 */
             hasDefault: boolean;
             /** @description 마지막으로 고친 관리자 이름. 아무도 고치지 않았으면 null — 화면은 「기본 문구」 */
             updatedByName: string | null;
@@ -4964,7 +4987,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 연결 사용자가 있는데 대체 권한 없음 · 고를 수 없는 대체 권한(고정 권한 · 다른 유형 · 지운 권한 · 자기 자신) */
+            /** @description 연결 사용자가 있는데 대체 권한 없음 · 고를 수 없는 대체 권한(없거나 지운 권한 · 플랫폼 BP 가 아닌 권한 · 고정 권한 · 다른 유형 · 자기 자신). 연결 사용자가 없어도 보낸 대체 권한은 검사한다 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -4985,7 +5008,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 고정 권한 · 동시 수정 */
+            /** @description 고정 권한 · 플랫폼 관리자 추가 권한이 아님 · 동시 수정 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -5052,7 +5075,7 @@ export interface operations {
                     "application/json": components["schemas"]["SaveRoleGroupMenusResponseDto"];
                 };
             };
-            /** @description 숨긴 · 없는 메뉴, 조회 없는 등록 · 수정 · 삭제, BP 쪽 고정 권한의 플랫폼 메뉴, 본인 권한 범위 밖 */
+            /** @description 숨긴 · 없는 메뉴, 같은 메뉴 두 번, 조회 없는 등록 · 수정 · 삭제, BP · 가맹 마스터의 플랫폼 메뉴 켜기(끄기는 받는다), 본인 권한 범위 밖 칸(조회를 끄면 함께 꺼지는 칸 포함) */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -5105,7 +5128,7 @@ export interface operations {
                     "application/json": components["schemas"]["RoleGroupMenuRevocationPreviewResponseDto"];
                 };
             };
-            /** @description 숨긴 · 없는 메뉴, 조회 없는 등록 · 수정 · 삭제 */
+            /** @description 숨긴 · 없는 메뉴, 같은 메뉴 두 번, 조회 없는 등록 · 수정 · 삭제, BP · 가맹 마스터의 플랫폼 메뉴 켜기, 본인 권한 범위 밖 칸 — 저장과 같은 검사 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -5121,6 +5144,13 @@ export interface operations {
             };
             /** @description 없거나 지운 권한 · 플랫폼 권한(PM · PA · BM · FM)이 아닌 그룹 */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 마스터 권한(전체 허용 고정) — 저장과 같다 */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5156,6 +5186,13 @@ export interface operations {
             };
             /** @description 없거나 지운 권한 · 플랫폼 권한(PM · PA · BM · FM)이 아닌 그룹 */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 지울 수 없는 권한 — 고정 권한 · 플랫폼 관리자 추가 권한이 아님 */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5284,8 +5321,43 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님 */
+            /** @description 직원 정보 관리 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StaffMembersController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffMemberListItemDto"];
+                };
+            };
+            /** @description 직원 정보 관리 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5320,6 +5392,13 @@ export interface operations {
             };
             /** @description 퇴직일 형식 오류 · 3개월보다 오래됨 · 입사일보다 앞섬 */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5369,6 +5448,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description 없는 직원이거나 관리 범위 밖 */
             404: {
                 headers: {
@@ -5413,6 +5499,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description 없는 직원이거나 관리 범위 밖 */
             404: {
                 headers: {
@@ -5448,6 +5541,13 @@ export interface operations {
             };
             /** @description 퇴직일 형식 오류 · 3개월보다 오래됨 · 입사일보다 앞섬 */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5800,6 +5900,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description 사업자 인증을 보냈는데 관리자의 국세청 호출이 시간당 10번을 넘음 */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description 사업자 인증을 보냈는데 진위확인 연동이 없거나 실패함 · 등록이 몰려 시간을 넘김 */
             503: {
                 headers: {
@@ -5898,6 +6005,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description IP · 계정의 시간당 한도(10건) */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description 사업자 진위확인 연동이 없거나 실패함 */
             503: {
                 headers: {
@@ -5986,6 +6100,13 @@ export interface operations {
             };
             /** @description 동시 수정 · 폐점한 점포 · 소속 BP 미사용 · 진행 중인 근로계약(폐점) · 사업자등록번호 중복 */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 사업자 인증을 보냈는데 관리자의 국세청 호출이 시간당 10번을 넘음 */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
