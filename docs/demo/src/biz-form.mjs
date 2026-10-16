@@ -32,16 +32,19 @@ export const tel = (a = "", b = "", c = "") =>
     .map(([v, l]) => ui.textField({ value: v, inputmode: "numeric", "aria-label": l, maxlength: 4 }))
     .join("")}</div>`;
 
-// 주소: 검색어 + [주소 검색] / 우편번호 · 기본주소(읽기 전용) / 상세주소
-export const address = (A, label, { zip = "", base = "", detail = "" } = {}, { top = "", bottom = "" } = {}) =>
-  group(
-    label,
+// 주소: 검색어 + [주소 검색] / 우편번호 · 기본주소(읽기 전용) / 상세주소.
+// labelExtra: 라벨 줄 바로 옆(같은 줄)에 붙이는 것 — "점포 주소와 같음" 체크박스 등(점포 등록 · 수정, 2026-10-16 점검).
+// 안 주면 기존 group() 그대로라 다른 화면은 그대로다.
+export const address = (A, label, { zip = "", base = "", detail = "" } = {}, { top = "", bottom = "", labelExtra = "" } = {}) => {
+  const body =
     top +
-      `<div class="flex gap-[6px]"><div class="flex-1">${ui.searchField(A, { placeholder: "도로명, 건물명, 지번으로 검색", label: `${label} 검색어` })}</div>${ui.button("주소 검색", { variant: "soft" })}</div>` +
-      `<div class="flex gap-[6px]"><div class="w-[120px] shrink-0">${ui.textField({ value: zip, readonly: true, placeholder: "우편번호", "aria-label": `${label} 우편번호` })}</div>${ui.textField({ value: base, readonly: true, placeholder: "검색해서 고르면 채워집니다", "aria-label": `${label} 기본주소` })}</div>` +
-      ui.textField({ value: detail, maxlength: 100, placeholder: "상세주소", "aria-label": `${label} 상세주소` }) +
-      bottom,
-  );
+    `<div class="flex gap-[6px]"><div class="flex-1">${ui.searchField(A, { placeholder: "지번/도로명을 입력해주세요.", label: `${label} 검색어` })}</div>${ui.button("주소 검색", { variant: "soft" })}</div>` +
+    `<div class="flex gap-[6px]"><div class="w-[120px] shrink-0 text-center">${ui.textField({ value: zip, readonly: true, placeholder: "우편번호", "aria-label": `${label} 우편번호` })}</div>${ui.textField({ value: base, readonly: true, placeholder: "기본주소", "aria-label": `${label} 기본주소` })}</div>` +
+    ui.textField({ value: detail, maxlength: 100, placeholder: base ? "상세주소" : "상세주소를 입력하세요.", "aria-label": `${label} 상세주소` }) +
+    bottom;
+  if (!labelExtra) return group(label, body);
+  return `<div role="group" aria-label="${label}" class="flex min-w-px flex-1 flex-col justify-center gap-[8px]"><span class="flex items-center gap-[10px] text-[14px] font-medium text-erp-label"><span>${label}</span>${labelExtra}</span>${body}</div>`;
+};
 
 // 안쪽 묶음 상자(사업자 번호 인증 상자 등). 두 바탕 규칙대로 #f8f9fb 바탕 + 패널 선.
 // flat: 테두리·바탕·안쪽 여백을 뺀다. 바깥 묶음(formGroup)이 이미 흰 상자라 테두리가 겹쳐 보일 때 쓴다.
@@ -75,8 +78,9 @@ export function bizAuth(A, p, { start = "fold", values = ["", "", ""], input = v
       ) + help("대표자가 바뀌었을 때 새 이름으로 다시 확인합니다. 번호와 개업일자는 바꿀 수 없습니다.")
     : inline
       ? ui.formRow(
-          ui.field("사업자등록번호", ui.textField({ value: num, placeholder: "000-00-00000" })),
-          ui.field("대표자명", ui.textField({ value: ceo })),
+          // 회원가입(biz-auth-section.tsx)과 같은 placeholder로 맞췄다(2026-10-16 점검, inline 은 점포 등록 · 수정만 쓴다)
+          ui.field("사업자등록번호", ui.textField({ value: num, placeholder: "숫자 10자리" })),
+          ui.field("대표자명", ui.textField({ value: ceo, placeholder: "대표자 이름" })),
           group("개업일자", ui.dateField(A, { label: "개업일자", value: open })),
           `<div class="shrink-0 self-end">${authBtn}</div>`,
         )
@@ -151,10 +155,17 @@ export const floorRow = ([pos, floor, py, m2, seats] = ["지상", "", "", "", ""
 };
 // 층별 정보 표 + [층 추가]. 추가·삭제는 erp.js 의 initFloors 가 아래 두 template 을 복제해 처리한다.
 // 표와 단추를 한 묶음으로 내는 것은 둘을 잇는 단서(data-floors)가 둘을 함께 감싸야 해서다.
-const FLOOR_COLUMNS = [{ header: "층" }, { header: "매장평수" }, { header: "전용면적" }, { header: "좌석수" }, { header: "삭제", width: "w-[100px]" }];
+const FLOOR_COLUMNS = [
+  { header: "층구분" },
+  { header: "매장평수(평)", width: "w-[120px]" },
+  { header: "전용면적(㎡)", width: "w-[120px]" },
+  { header: "좌석 수", width: "w-[100px]" },
+  { header: "삭제", width: "w-[100px]" },
+];
 export const floorTable = (rows) =>
   `<div data-floors class="flex flex-col gap-[18px]">` +
-  `<div class="flex justify-end">${ui.button("층 추가", { variant: "soft", "data-floor-add": true })}</div>` +
+  // [층 추가]는 맨 왼쪽(2026-10-16 점검 — justify-end 였다).
+  `<div>${ui.button("층 추가", { variant: "soft", "data-floor-add": true })}</div>` +
   ui.dataTable(FLOOR_COLUMNS, rows.map(floorRow)) +
   `<template data-floor-row>${ui.tableRow(FLOOR_COLUMNS, floorRow())}</template>` +
   `<template data-floor-empty>${ui.tableEmptyRow(FLOOR_COLUMNS)}</template>` +

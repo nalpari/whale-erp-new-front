@@ -604,6 +604,9 @@
   .mr-\[4px\] {
     margin-right: 4px;
   }
+  .mr-\[10px\] {
+    margin-right: 10px;
+  }
   .-mb-px {
     margin-bottom: -1px;
   }
@@ -640,8 +643,17 @@
   .ml-\[10px\] {
     margin-left: 10px;
   }
+  .ml-\[18px\] {
+    margin-left: 18px;
+  }
   .ml-auto {
     margin-left: auto;
+  }
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
   .block {
     display: block;
@@ -712,10 +724,6 @@
   .size-\[20px\] {
     width: 20px;
     height: 20px;
-  }
-  .size-\[22px\] {
-    width: 22px;
-    height: 22px;
   }
   .size-\[24px\] {
     width: 24px;
@@ -1237,6 +1245,9 @@
   .w-\[304px\] {
     width: 304px;
   }
+  .w-\[312px\] {
+    width: 312px;
+  }
   .w-\[320px\] {
     width: 320px;
   }
@@ -1431,9 +1442,6 @@
   }
   .animate-\[guest-fade_220ms_ease\] {
     animation: guest-fade 220ms ease;
-  }
-  .cursor-default {
-    cursor: default;
   }
   .cursor-grab {
     cursor: grab;
@@ -3137,15 +3145,6 @@
   }
   .group-focus-visible\:opacity-100:is(:where(.group):focus-visible *) {
     opacity: 100%;
-  }
-  .group-has-\[\:checked\]\:border-erp-panel-line:is(:where(.group):has(:is(:checked)) *) {
-    border-color: var(--color-erp-panel-line);
-  }
-  .group-has-\[\:checked\]\:bg-white:is(:where(.group):has(:is(:checked)) *) {
-    background-color: var(--color-white);
-  }
-  .group-has-\[\:checked\]\:text-erp-ink:is(:where(.group):has(:is(:checked)) *) {
-    color: var(--color-erp-ink);
   }
   .group-aria-selected\:inline:is(:where(.group)[aria-selected="true"] *) {
     display: inline;

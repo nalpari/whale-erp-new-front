@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
 import { Button, RequiredMark, SearchField, TextField } from "@/components/common";
 import type { AddressItem } from "@/lib/address-search";
 import { searchAddressAction } from "@/lib/address-actions";
@@ -23,6 +23,8 @@ export function AddressField({
   onChoose,
   label = "주소",
   required,
+  labelExtra,
+  disabled = false,
 }: {
   /** 묶음 이름 — 한 화면에 주소가 둘이면(점포 주소 · 사업자주소) 안쪽 칸 이름에도 붙여 화면 낭독기가 가르게 한다 */
   label?: string;
@@ -34,6 +36,10 @@ export function AddressField({
   detailError?: string;
   /** 검색 목록에서 주소를 고른 순간 — 고른 줄 그대로 받는다(점포 주소가 위도 · 경도를 채우는 데 쓴다) */
   onChoose?: (item: AddressItem) => void;
+  /** 라벨 줄 오른쪽에 붙이는 것 — "점포 주소와 같음" 체크박스 등(점포 등록 · 수정, 2026-10-16 점검) */
+  labelExtra?: ReactNode;
+  /** 다른 값(점포 주소 등)과 같아 이 칸은 보여주기만 한다 — 검색 · 지우기를 숨기고 상세주소도 읽기 전용이 된다 */
+  disabled?: boolean;
 }) {
   const listId = useId();
   // 기본 묶음(주소)은 안쪽 칸 이름을 그대로 두고, 다른 묶음은 앞에 묶음 이름을 붙인다(사업자주소 우편번호 …)
@@ -116,63 +122,70 @@ export function AddressField({
 
   return (
     <div role="group" aria-label={label} className="flex flex-col gap-[8px]">
-      <span className="text-[14px] font-medium text-erp-label">{label}{required && <RequiredMark />}</span>
-      <div
-        ref={box}
-        className="relative"
-        // Tab 등으로 포커스가 층 밖으로 나가면 닫는다 — 열린 층(data-dismiss-open)이 남으면 어느 패널도 Esc 로 닫히지 않는다
-        onBlur={(e) => {
-          if (!box.current?.contains(e.relatedTarget as Node | null)) setOpen(false);
-        }}
-      >
-        <SearchField
-          value={keyword}
-          onValueChange={(next) => {
-            setKeyword(next);
-            setOpen(true);
-            setFailure(null);
-            if (next.trim().length < 2) {
-              requestNumber.current++;
-              setItems([]);
-              setTotal(0);
-            }
+      <span className="flex items-center gap-[10px] text-[14px] font-medium text-erp-label">
+        <span>
+          {label}
+          {required && <RequiredMark />}
+        </span>
+        {labelExtra}
+      </span>
+      {!disabled && (
+        <div
+          ref={box}
+          className="relative"
+          // Tab 등으로 포커스가 층 밖으로 나가면 닫는다 — 열린 층(data-dismiss-open)이 남으면 어느 패널도 Esc 로 닫히지 않는다
+          onBlur={(e) => {
+            if (!box.current?.contains(e.relatedTarget as Node | null)) setOpen(false);
           }}
-          // 돋보기 · Enter(고른 줄이 없을 때) — 쉬는 시간 없이 바로 찾는다
-          onSearch={(text) => {
-            if (text.trim().length < 2) return;
-            setOpen(true);
-            search(text.trim(), 1);
-          }}
-          onFocus={() => setOpen(true)}
-          onKeyDown={(e) => {
-            if (e.key === "Escape" && showLayer) {
-              // 슬라이드 패널까지 닫히지 않게 한다(slide-panel.tsx 는 preventDefault 된 Esc 를 넘긴다)
-              e.preventDefault();
-              setOpen(false);
-            } else if (e.key === "ArrowDown" && items.length) {
-              e.preventDefault();
+        >
+          <SearchField
+            value={keyword}
+            onValueChange={(next) => {
+              setKeyword(next);
               setOpen(true);
-              setActive((i) => Math.min(i + 1, items.length - 1));
-            } else if (e.key === "ArrowUp" && items.length) {
-              e.preventDefault();
-              setActive((i) => Math.max(i - 1, 0));
-            } else if (e.key === "Enter" && !e.nativeEvent.isComposing && listShown && current && items[active]) {
-              e.preventDefault();
-              choose(items[active]);
-            }
-            // 그 밖의 Enter(이전 검색어의 흐린 목록 · 목록 없음)는 막지 않는다 — SearchField 가 onSearch 로 바로 찾는다
-          }}
-          placeholder="도로명, 건물명, 지번으로 검색"
-          aria-label={`${label} 검색어`}
-          role="combobox"
-          aria-autocomplete="list"
-          aria-expanded={showLayer}
-          // 목록이 그려져 있을 때만 가리킨다 — 없는 id 를 가리키면 화면 낭독기가 헤맨다
-          aria-controls={listShown ? listId : undefined}
-          aria-activedescendant={listShown && active >= 0 ? `${listId}-${active}` : undefined}
-          autoComplete="off"
-          maxLength={80}
-        />
+              setFailure(null);
+              if (next.trim().length < 2) {
+                requestNumber.current++;
+                setItems([]);
+                setTotal(0);
+              }
+            }}
+            // 돋보기 · Enter(고른 줄이 없을 때) — 쉬는 시간 없이 바로 찾는다
+            onSearch={(text) => {
+              if (text.trim().length < 2) return;
+              setOpen(true);
+              search(text.trim(), 1);
+            }}
+            onFocus={() => setOpen(true)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape" && showLayer) {
+                // 슬라이드 패널까지 닫히지 않게 한다(slide-panel.tsx 는 preventDefault 된 Esc 를 넘긴다)
+                e.preventDefault();
+                setOpen(false);
+              } else if (e.key === "ArrowDown" && items.length) {
+                e.preventDefault();
+                setOpen(true);
+                setActive((i) => Math.min(i + 1, items.length - 1));
+              } else if (e.key === "ArrowUp" && items.length) {
+                e.preventDefault();
+                setActive((i) => Math.max(i - 1, 0));
+              } else if (e.key === "Enter" && !e.nativeEvent.isComposing && listShown && current && items[active]) {
+                e.preventDefault();
+                choose(items[active]);
+              }
+              // 그 밖의 Enter(이전 검색어의 흐린 목록 · 목록 없음)는 막지 않는다 — SearchField 가 onSearch 로 바로 찾는다
+            }}
+            placeholder="지번/도로명을 입력해주세요."
+            aria-label={`${label} 검색어`}
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded={showLayer}
+            // 목록이 그려져 있을 때만 가리킨다 — 없는 id 를 가리키면 화면 낭독기가 헤맨다
+            aria-controls={listShown ? listId : undefined}
+            aria-activedescendant={listShown && active >= 0 ? `${listId}-${active}` : undefined}
+            autoComplete="off"
+            maxLength={80}
+          />
         {showLayer && (
           <div
             // 열려 있는 동안 Esc 가 이 층부터 닫도록 슬라이드 패널에 알린다(slide-panel.tsx 의 data-dismiss-open 규칙)
@@ -238,13 +251,14 @@ export function AddressField({
             )}
           </div>
         )}
-      </div>
+        </div>
+      )}
       <div className="flex gap-[6px]">
-        <div className="w-[120px] shrink-0">
+        <div className="w-[120px] shrink-0 text-center">
           <TextField value={value.zipCode} readOnly placeholder="우편번호" aria-label={`${prefix}우편번호`} />
         </div>
-        <TextField value={value.address} readOnly placeholder="검색해서 고르면 채워집니다" aria-label={`${prefix}기본주소`} />
-        {(value.zipCode || value.address || value.addressDetail) && (
+        <TextField value={value.address} readOnly placeholder="기본주소" aria-label={`${prefix}기본주소`} />
+        {!disabled && (value.zipCode || value.address || value.addressDetail) && (
           <Button variant="off" onClick={() => onChange({ zipCode: "", address: "", addressDetail: "" })}>
             지우기
           </Button>
@@ -255,14 +269,15 @@ export function AddressField({
         value={value.addressDetail}
         onChange={(e) => onChange({ ...value, addressDetail: e.target.value })}
         maxLength={100}
+        readOnly={disabled}
         // 상세주소는 기본주소에 딸린 값이라 주소를 고르기 전에는 막는다(예전 데이터처럼 값이 이미 있으면 고칠 수 있게 연다)
-        disabled={!value.address && !value.addressDetail}
-        placeholder={value.address ? "상세주소" : "주소를 검색해 고른 뒤 적습니다"}
+        disabled={!disabled && !value.address && !value.addressDetail}
+        placeholder={value.address ? "상세주소" : "상세주소를 입력하세요."}
         aria-label={`${prefix}상세주소`}
-        aria-invalid={detailError ? true : undefined}
-        aria-describedby={detailError ? `${listId}-detail-error` : undefined}
+        aria-invalid={!disabled && detailError ? true : undefined}
+        aria-describedby={!disabled && detailError ? `${listId}-detail-error` : undefined}
       />
-      {detailError && (
+      {!disabled && detailError && (
         <p id={`${listId}-detail-error`} role="alert" className="text-[13px] leading-[1.5] text-erp-off">
           {detailError}
         </p>

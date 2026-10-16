@@ -3,11 +3,13 @@
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as f from "../../biz-form.mjs";
+import { tag } from "../../config-parts.mjs";
 import { STORES, erpHeader, link } from "../../site.mjs";
 
 export default ({ A, R }) => {
   const [code, name, type, state, biz, phone, staff, date, , photo] = STORES.find((s) => s[0] === "ST000006");
   const statusId = x.dialogId();
+  const histId = x.dialogId();
 
   const head = ui.sectionHead(
     name,
@@ -17,52 +19,86 @@ export default ({ A, R }) => {
       ui.button("목록", { href: link(R, "stores/index.html") }),
   );
 
-  // 점포 기본정보: 위 네 줄(점포코드 · 유형 · 상태 · 근무직원 수) 왼쪽에 대표 이미지 칸을 두고, 그 아래 줄은 표 폭 그대로 이어 간다.
-  // 1팀 DetailTable 은 그대로 두고 그 머리글과 줄 묶음(dl)만 꺼내 이어 붙인다.
+  // 점포 기본정보: 사업자정보처럼 타이틀 줄 바로 옆(왼쪽)에 점포유형 · 점포상태 뱃지를 붙였다(상단 점포명 옆의
+  // 유형 표시는 빼고 여기로 옮겼다). 점포코드는 다시 표 안 줄로 내렸다(2026-10-16 점검).
   const part = (rows) => ui.detailTable("", rows).match(/<dl[\s\S]*<\/dl>/)[0];
-  const basicHead = ui.detailTable("점포 기본정보", []).match(/<h3[\s\S]*<\/h3>/)[0];
+  const basicHead = ui
+    .detailTable(`점포 기본정보<span class="ml-[18px] inline-flex items-center gap-[8px] align-middle text-[14px] font-medium text-erp-label">${tag(type)}${ui.badge("on", state)}</span>`, [])
+    .match(/<h3[\s\S]*<\/h3>/)[0];
   const photoCell = `<div class="h-[184px] w-[184px] shrink-0 border-l border-b border-erp-thead-line bg-white p-[8px]"><img src="${A}img/${photo}" alt="${name} 대표 이미지" class="size-full rounded-[2px] object-cover"></div>`;
   const basic =
+    // 등록 · 최종수정(변경이력)은 한 행으로 합쳤고, 재직직원은 좌표정보 · 위도 · 경도 아래 줄로 옮겼다(2026-10-16 점검).
     `<div class="w-full">${basicHead}<div class="flex">${photoCell}${part([
       ["점포코드", code],
-      ["점포유형", type],
-      ["점포상태", ui.badge("on", state)],
-      ["근무직원 수", `${staff}명 <span class="text-erp-label">재직 직원</span>`],
-    ])}</div>${part([
       ["점포 연락처", phone],
-      ["주소", "03991 서울 마포구 동교로 256, 1층"],
-    ])}<div class="flex">${part([["위도 · 경도", ui.detailValues(["37.562104", "126.925631"])]])}${part([["위치 적용 여부", "사용"]])}</div><div class="flex">${part([
-      // 값은 BP 상세와 같은 「일시 | 사람」, 라벨은 일시만 적는다. 등록과 최종 수정을 한 줄에 반씩 둔다(위도 · 경도 | 위치 적용 여부도 같은 방식). 등록 시각은 사업자 최초 인증(14:22) 직전으로 잡았다.
-      ["등록일시", ui.detailValues([`${date} 14:18`, "정하윤"])],
-    ])}${part([["최종수정일시", ui.detailValues(["2026-08-14 10:31", "정하윤"])]])}</div></div>`;
-  const bizInfo = ui.detailTable(f.titleBadge("점포 사업자정보", "on", "인증 완료"), [
-    ["사업자등록번호", biz],
-    ["대표자명", "박서윤"],
+      // 1줄 회색 「우편번호」 글자 + 값 · 2줄 「기본주소(볼드), 상세주소」(2026-10-16 점검).
+      [
+        "점포 주소",
+        `<span class="flex flex-col"><span><span class="mr-[10px] text-erp-label">우편번호</span>03991</span><span><b class="font-semibold">서울 마포구 동교로 256</b>, 1층</span></span>`,
+      ],
+    ])}${part([
+      // 변경이력과 같은 모양 — 위도 · 경도 · 출퇴근 위치 적용 여부 각각 라벨과 같은 회색 글자를 앞에 두고, 데이터와
+      // 한 단 더 떨어뜨렸다(2026-10-16 점검 — 그냥 띄어쓰기 한 칸은 너무 붙어 보였다).
+      [
+        "좌표정보",
+        ui.detailValues([
+          `<span class="mr-[10px] text-erp-label">위도</span>37.562104`,
+          `<span class="mr-[10px] text-erp-label">경도</span>126.925631`,
+          `<span class="mr-[10px] text-erp-label">출퇴근 위치 적용 여부</span>사용`,
+        ]),
+      ],
+    ])}${part([
+      ["재직직원", `${staff}명`],
+    ])}${part([
+      // 값은 BP 상세와 같은 「일시 | 사람」을 등록 · 최종수정 두 칸으로 나눠 한 행에 담는다. 등록 시각은
+      // 사업자 최초 인증(14:22) 직전으로 잡았다. 「등록」·「최종수정」 글자는 라벨과 같은 회색이다. [변경이력
+      // 보기] 버튼은 detailValues 밖에 따로 둬 앞에 구분선(|)이 안 붙게 하고, justify-between 으로 칸 맨
+      // 오른쪽에 고정한다 — 칸 자체의 12px 오른쪽 여백이 있어 따로 더 주지 않는다(2026-10-16 점검).
+      [
+        "변경이력",
+        `<span class="flex w-full items-center justify-between gap-[12px]">${ui.detailValues([
+          `<span class="mr-[10px] text-erp-label">등록</span>${date} 14:18 · 정하윤`,
+          `<span class="mr-[10px] text-erp-label">최종수정</span>2026-08-14 10:31 · 정하윤`,
+        ])}${x.dialogTrigger("변경이력", histId, "soft")}</span>`,
+      ],
+    ])}</div>`;
+  const bizInfo = ui.detailTable(f.titleBadge("사업자정보", "on", "인증 완료"), [
+    // 번호가 마지막으로 언제 인증됐는지 바로 옆에서 보이게 한 행으로 묶었고, 대표자명 · 대표자 연락처도 라벨과
+    // 같은 회색 글자를 앞에 두는 모양으로 맞췄다. 순서는 상호명 · 사업자등록번호 · 대표자정보 · 개업일자 ·
+    // 업태종목 · 사업자주소(2026-10-16 점검).
     ["상호명", "모리커피 연남"],
-    ["사업자주소", "03991 서울 마포구 동교로 256, 1층"],
-    ["업태 · 종목", ui.detailValues(["음식점업", "커피전문점"])],
+    ["사업자등록번호", ui.detailValues([biz, `<span class="mr-[10px] text-erp-label">최종 인증일시</span>2025-08-01 14:22`])],
+    [
+      "대표자정보",
+      ui.detailValues([
+        `<span class="mr-[10px] text-erp-label">대표자 이름</span>박서윤`,
+        `<span class="mr-[10px] text-erp-label">대표자 연락처</span>010-5521-3380`,
+      ]),
+    ],
     ["개업일자", "2019-05-10"],
-    ["대표자 연락처", "010-5521-3380"],
-    ["최종 인증일시", "2025-08-01 14:22"],
+    ["업태 · 종목", ui.detailValues(["음식점업", "커피전문점"])],
+    [
+      "사업자주소",
+      `<span class="flex flex-col"><span><span class="mr-[10px] text-erp-label">우편번호</span>03991</span><span><b class="font-semibold">서울 마포구 동교로 256</b>, 1층</span></span>`,
+    ],
   ]);
 
-  const floors = ui.dataTable(
-    [{ header: "층" }, { header: "매장평수" }, { header: "전용면적" }, { header: "좌석수" }],
-    [
-      ["지상 1층", "18평", "59.5㎡", "32석"],
-      ["지상 2층", "12평", "39.7㎡", "20석"],
-    ],
-    "등록한 층별 정보가 없습니다.",
-  );
+  // 점포 기본정보 · 사업자정보와 같은 DetailTable — 라벨은 "층구분"이고, 지상 1층 같은 값도 매장평수(평) ·
+  // 전용면적(㎡) · 좌석 수와 함께 오른쪽 데이터 줄에 구분선(|)으로 나열한다. 매장평수와 전용면적은 같은
+  // 면적의 단위 차이가 아니라 서로 다른 두 항목이다(okf/stores.md S-ALHLHW, 2026-10-16 점검).
+  const floors = ui.detailTable("점포 공간정보", [
+    ["층구분", ui.detailValues(["지상 1층", "18평", "59.5㎡", "32석"])],
+    ["층구분", ui.detailValues(["지상 2층", "12평", "39.7㎡", "20석"])],
+  ]);
   // 변경 이력: 한 쪽 10건, 2쪽(총 14건) 중 1쪽. 표는 5줄 높이(머리 42 + 줄 46×5)로 두고 넘치면 표 안에서 스크롤, 머리글은 고정.
   const history =
     `<div class="max-h-[273px] overflow-y-auto border-y border-erp-thead-line [&_thead]:sticky [&_thead]:top-0 [&_thead]:shadow-[0_1px_0_var(--color-erp-thead-line)] [&_thead_tr]:border-y-0 [&_tbody_tr:last-child]:border-b-0">${ui.dataTable(
-      [{ header: "변경 일시", width: "w-[180px]" }, { header: "변경자", width: "w-[140px]" }, { header: "변경 항목", width: "w-[180px]" }, { header: "변경 전" }, { header: "변경 후" }],
+      [{ header: "변경 일시", width: "w-[150px]" }, { header: "변경자", width: "w-[70px]" }, { header: "변경 항목", width: "w-[140px]" }, { header: "변경 전" }, { header: "변경 후" }],
       [
         ["2026-08-14 10:31", "정하윤", "점포 연락처", "02-322-1100", "02-322-1180"],
         ["2026-06-18 11:05", "박서윤", "대표 이미지", "없음", "등록"],
         ["2026-05-07 09:40", "정하윤", "층별 정보", "지상 1층 18평", "지상 1층 18평 · 지상 2층 12평"],
-        ["2026-03-02 16:45", "박서윤", "위치 적용 여부", "미사용", "사용"],
+        ["2026-03-02 16:45", "박서윤", "출퇴근 위치 적용 여부", "미사용", "사용"],
         ["2026-02-11 14:02", "정하윤", "위도 · 경도", "37.562000 · 126.925500", "37.562104 · 126.925631"],
         ["2025-12-04 10:18", "정하윤", "대표자 연락처", "010-5521-3300", "010-5521-3380"],
         ["2025-11-20 09:12", "박서윤", "대표자명", "박서연", "박서윤"],
@@ -82,12 +118,18 @@ export default ({ A, R }) => {
     ui.button("취소", { variant: "off", "data-close": true }) + f.disabledButton("폐점으로 변경", "폐점 조건을 채우지 못했습니다.", "primary"),
   );
 
-  const section = (title, body) => `<div class="flex flex-col gap-[12px]">${ui.sectionHead(title)}${body}</div>`;
+  // 변경이력 팝업(BP 상세 · 플랫폼 관리자 history-dialog 와 같은 생김새) — 기본정보의 [변경이력] 버튼으로 연다.
+  // 등록 · 최종수정은 기본정보의 변경이력 행에 이미 보이므로 팝업에는 표를 바로 둔다. 표가 넓어 이 창만
+  // 회원가입 약관동의 팝업(terms-dialog.tsx)과 같은 860 으로 넓힌다(2026-10-16 점검).
+  const historyDialog = x
+    .dialog(histId, "변경이력", history, ui.button("닫기", { variant: "off", "data-close": true }))
+    .replace("w-[420px]", "w-[860px] max-h-[calc(100dvh-48px)] overflow-y-auto");
+
   const body = ui.detailBody(
     `<div class="flex flex-col gap-[12px]">${head}<div class="grid grid-cols-2 items-start gap-[24px]">${basic}${bizInfo}</div></div>` +
-      section("기타 정보 · 층별", floors) +
-      section(`변경 이력 <span class="text-[14px] font-medium text-erp-label">총 14건</span>`, history) +
-      statusDialog,
+      floors +
+      statusDialog +
+      historyDialog,
   );
 
   return { title: "점포 상세", html: ui.erpFrame({ header: erpHeader(A, R), title: "점포 정보 관리", body }) };

@@ -11,19 +11,8 @@ export default ({ A, R }) => {
   // 재인증 확인 문구는 점포 등록 화면과 같다.
   const reauthText = `<p>지금 인증한 사업자등록번호·대표자명·개업일자가 지워지고 인증 전으로 돌아갑니다.</p>`;
 
-  // 점포 등록 화면과 같은 배치: 점포유형 카드 → [기본정보(이미지 포함) | 사업자정보] → 층별.
-  // 점포유형은 등록 때 정한 값을 같은 카드로 보이되 막아 둔다.
-  const typeCards = ui.formGroup(
-    "점포유형",
-    x.choiceCards(
-      "점포유형",
-      [
-        { label: "직영점포", desc: "직접 운영하는 매장이에요", icon: x.ICON.store, checked: type === "직영점포" },
-        { label: "가맹점포", desc: "가맹점주가 운영하는 매장이에요", icon: x.ICON.people, checked: type === "가맹점포" },
-      ],
-      { locked: true },
-    ),
-  );
+  // 점포유형은 등록 뒤 바꿀 수 없다 — 등록 화면의 큰 선택 카드를 여기 두지 않고, 제목 줄에 점포유형 · 점포코드로만
+  // 알린다(2026-10-16 점검).
 
   // 대표 이미지는 기본정보 맨 아래(등록 화면과 같은 자리).
   const image = f.group(
@@ -51,25 +40,36 @@ export default ({ A, R }) => {
     ui.formRow(
       ui.field("위도", ui.textField({ value: "37.562104" }), "w-[130px]"),
       ui.field("경도", ui.textField({ value: "126.925631" }), "w-[130px]"),
-      ui.field("위치 적용 여부", ui.select(["사용", "미사용"]), "w-[120px]"),
+      ui.field("출퇴근 위치 적용 여부", ui.select(["사용", "미사용"]), "w-[120px]"),
       `<div class="self-end">${ui.button("주소로 다시 계산", { variant: "soft" })}</div>`,
+    ),
+    // 이미지 올리기 도움말과 같은 줄간격이 되도록 한 줄(한 <span>) 안에서 <br> 로만 줄을 바꾼다(2026-10-16 점검).
+    f.help(
+      `점포주소가 입력되면 <b class="font-semibold">위도</b> · <b class="font-semibold">경도</b> 좌표값이 자동으로 표시됩니다.<br>` +
+        `<b class="font-semibold">출퇴근 위치 적용 여부</b>를 <b class="font-semibold">사용</b>으로 설정하면 이 좌표를 기준으로 직원의 출퇴근 위치를 확인할 수 있습니다.`,
     ),
     image,
   );
 
+  // 순서는 사업자등록번호 인증 라인 → 상호명 · 대표자 연락처 → 업태 · 종목 → 사업자주소(2026-10-16 점검).
+  // 상호명 · 대표자 연락처는 한 줄, 업태 · 종목도 한 줄 — 둘 다 반씩이다(상호명이 점포명과 같은 폭).
+  // 사업자주소는 체크박스를 라벨 바로 옆 같은 줄에 둔다.
   const biz = ui.formGroup(
-    "점포 사업자정보",
+    "사업자정보",
     f.bizAuth(A, "ebiz", { start: "open", inline: true, values: ["105-22-81934", "박서윤", "2019-05-10"], confirmReauth: reauthText }),
     ui.formRow(
       ui.field("상호명", ui.textField({ value: "모리커피 연남", maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })),
       f.group("대표자 연락처", f.tel("010", "5521", "3380")),
     ),
-    f.address(A, "사업자주소", { zip: "03991", base: "서울 마포구 동교로 256", detail: "1층" }, { top: ui.checkbox(A, "점포 주소와 같음", true) }),
-    ui.formRow(ui.field("업태", ui.textField({ value: "음식점업", maxlength: 30, placeholder: "30자 이내로 입력해주세요." })), ui.field("종목", ui.textField({ value: "커피전문점", maxlength: 30, placeholder: "30자 이내로 입력해주세요." }))),
+    ui.formRow(
+      ui.field("업태", ui.textField({ value: "음식점업", maxlength: 30, placeholder: "30자 이내로 입력해주세요." })),
+      ui.field("종목", ui.textField({ value: "커피전문점", maxlength: 30, placeholder: "30자 이내로 입력해주세요." })),
+    ),
+    f.address(A, "사업자주소", { zip: "03991", base: "서울 마포구 동교로 256", detail: "1층" }, { labelExtra: ui.checkbox(A, "점포 주소와 같음", true) }),
   );
 
   const floors = ui.formGroup(
-    "기타 정보 · 층별",
+    "점포 공간정보",
     f.floorTable([
       ["지상", "1", "18", "59.5", "32"],
       ["지상", "2", "12", "39.7", "20"],
@@ -86,8 +86,12 @@ export default ({ A, R }) => {
   );
 
   const body = ui.detailBody(
-    ui.sectionHead(`점포 수정 <span class="text-[14px] font-medium text-erp-label">${name} · ${code}</span>`) +
-      typeCards +
+    ui.sectionHead(
+      `점포 수정 <span class="ml-[10px] inline-flex align-middle text-[14px] font-medium text-erp-label">${ui.detailValues([
+        `<span class="mr-[10px]">점포코드</span>${code}`,
+        `<span class="mr-[10px]">점포유형</span>${type}`,
+      ])}</span>`,
+    ) +
       // 두 묶음은 각자 내용만큼의 높이로 둔다. 높이를 맞추려 늘리면 짧은 쪽 상자에 빈 자리가 남는다.
       `<div class="grid grid-cols-2 items-start gap-[24px]">${basic}${biz}</div>` +
       floors +
