@@ -16,10 +16,11 @@ test("사업자등록번호 표기 — 10자리만 하이픈", () => {
   assert.equal(formatBizNumber(null), "");
 });
 
-test("층 표기", () => {
-  assert.equal(floorLabel({ floorTypeCode: "BASEMENT", floorNumber: 2 }), "지하 2층");
-  assert.equal(floorLabel({ floorTypeCode: "GROUND", floorNumber: null }), "지상");
-  assert.equal(floorLabel({ floorTypeCode: null, floorNumber: null }), "-");
+test("층 표기 — 층 구분 한글은 부르는 쪽이 준다", () => {
+  const label = (t: string) => ({ GROUND: "지상", BASEMENT: "지하" })[t] ?? t;
+  assert.equal(floorLabel({ floorTypeCode: "BASEMENT", floorNumber: 2 }, label), "지하 2층");
+  assert.equal(floorLabel({ floorTypeCode: "GROUND", floorNumber: null }, label), "지상");
+  assert.equal(floorLabel({ floorTypeCode: null, floorNumber: null }, label), "-");
 });
 
 test("운영 · 폐점 조건 문구", () => {

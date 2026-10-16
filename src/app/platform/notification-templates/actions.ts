@@ -13,7 +13,7 @@ import {
 } from "@/lib/notification-templates";
 
 // 알림 템플릿 등록 · 수정 · 되돌리기 · 사용 여부. 실패하면 화면이 입력값을 그대로 두고 폼 위 빨간 띠에 문장을 보인다.
-// TODO(로그인): 권한(플랫폼 마스터 · 플랫폼 관리자)은 api 가 다시 본다. 로그인이 생기면 여기서도 세션을 확인한다.
+// 로그인 · 권한(플랫폼 마스터 · 플랫폼 관리자)은 api 가 본다 — 세션 토큰을 싣고, 없거나 끝났으면 api 가 401 을 준다.
 
 /** 실패면 띠에 한 줄씩 보일 문장 목록. 400 검증 실패는 api 가 준 문장 목록 그대로다. */
 export type TemplateResult = { ok: true; detail: TemplateDetail } | { ok: false; status?: number; messages: string[] };

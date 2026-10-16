@@ -3,12 +3,6 @@ import type { ReactNode } from "react";
 // 플랫폼 관리자 패널들이 같이 쓰는 작은 조각. 공통 컴포넌트에 없는 것만 둔다.
 
 /**
- * 공통코드 ROLE_TYPE 의 PM · PA 표시 이름(용어집 표준 표기). 네이밍 규칙은 front 에 상수 대응표를 두지 않고
- * getCodes(group) 로 받게 하지만, 그 조회가 아직 없어 임시로 둔다. TODO(getCodes): 조회한 label 로 바꾸고 지운다.
- */
-export const ROLE_TYPE_LABEL = { PM: "플랫폼 마스터", PA: "플랫폼 관리자" } as const;
-
-/**
  * server action 호출 자체가 거절됐을 때(응답을 못 받음). 요청이 서버에 닿지 않았다는 뜻은 아니다 — 받는 도중 끊겼거나
  * 배포가 어긋났을 수 있어, 이미 처리됐을 수도 있다고 말한다(다시 누르면 중복 등록 409 · 메일 두 번이 날 수 있다).
  */

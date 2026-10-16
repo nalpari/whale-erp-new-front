@@ -2,7 +2,8 @@ import Link from "next/link";
 import { DataTable, type Column } from "@/components/common";
 import { formatDateTime, formatPhone } from "@/lib/format";
 import type { StoreSummary } from "@/lib/store-types";
-import { formatBizNumber, STORE_TYPE_LABEL } from "@/lib/store-view";
+import { CodeLabel } from "@/components/site/code-label";
+import { formatBizNumber } from "@/lib/store-view";
 import { StoreStatusBadge } from "./store-parts";
 
 type Row = { no: number; store: StoreSummary };
@@ -23,7 +24,7 @@ export function StoreTable({ items, total, page, pageSize, detailHref }: { items
         </Link>
       ),
     },
-    { header: "점포유형", width: "w-[110px]", cell: (r) => STORE_TYPE_LABEL[r.store.storeTypeCode] },
+    { header: "점포유형", width: "w-[110px]", cell: (r) => <CodeLabel group="STORE_TYPE" value={r.store.storeTypeCode} /> },
     { header: "점포상태", width: "w-[98px]", cell: (r) => <StoreStatusBadge status={r.store.storeStatusCode} /> },
     {
       header: "사업자등록번호",

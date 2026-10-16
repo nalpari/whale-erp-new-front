@@ -37,7 +37,7 @@ export type FloorType = NonNullable<Schemas["StoreFloorInputDto"]["floorTypeCode
 
 /**
  * 화면에 늘어놓는 순서. 값마다 순서를 적게 해 두어(satisfies Record) 생성 타입에 값이 더해지거나 빠지면 컴파일이 깨진다 —
- * 목록에서 조용히 빠지지 않게. TODO(getCodes): 공통코드 조회가 생기면 그 순서를 쓴다.
+ * 목록에서 조용히 빠지지 않게. 서버(주소 쿼리 읽기)도 쓰므로 값 목록은 여기 두고, 한글은 화면이 공통코드에서 읽는다(code-label.tsx).
  */
 const orderOf = <T extends string>(order: Record<T, number>): readonly T[] =>
   (Object.keys(order) as T[]).sort((a, b) => order[a] - order[b]);

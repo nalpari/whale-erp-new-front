@@ -5,7 +5,7 @@ import { createContext, use, useEffect, useRef, useState, type ReactNode } from 
 import { Button } from "@/components/common";
 import { logout } from "@/app/actions";
 import { bff, BffError, PASSWORD_REQUIRED_EVENT, signOut } from "@/lib/bff";
-import { findMenu, HOME, isAllowed, menusOf, serviceOfPath } from "@/lib/menus";
+import { HOME, isAllowed, menuPermissionOf, menusOf, serviceOfPath, type MenuAction, type MenuCode } from "@/lib/menus";
 import { ForcePasswordDialog } from "./force-password-dialog";
 import {
   clearSelectedBp,
@@ -63,15 +63,24 @@ export function useMenus() {
 export const useCurrentBp = () => useLogin().currentBp;
 export const useStores = () => useLogin().stores;
 /** 그룹의 상세 코드. 없거나 사용하지 않는 그룹은 [] */
-export const useCodes = (group: string) => useLogin().codes[group] ?? [];
+export function useCodes(group: string) {
+  const codes = useLogin().codes[group];
+  // 그룹이 로그인 정보에 없으면 화면은 값(영문)을 그대로 보인다 — 원인을 찾기 어려워 개발 중에만 알린다
+  if (!codes && process.env.NODE_ENV === "development") console.warn(`공통코드 그룹 「${group}」이 로그인 정보에 없습니다`);
+  return codes ?? [];
+}
 export function useScope() {
   const { scope, setScope } = useLogin();
   return [scope, setScope] as const;
 }
 /** 메뉴 권한. 버튼을 보이거나 숨길 때 쓴다 — 실제 판정은 api 가 요청마다 다시 한다. */
-export function useMenuRole(menuCode: string, action: keyof AdminMenu["permission"]) {
+export function useMenuRole(menuCode: MenuCode, action: MenuAction) {
   const { menus, serviceCode } = useLogin();
-  return findMenu(menusOf(menus, serviceCode), (m) => m.menuCode === menuCode)?.permission[action] ?? false;
+  return menuPermissionOf(menus, serviceCode, menuCode, action);
+}
+/** 메뉴의 등록 · 수정 · 삭제 권한을 한 번에. 화면은 버튼을 보이거나 숨기기만 한다 — 막는 것은 api 다. */
+export function useMenuPermission(menuCode: MenuCode) {
+  return { create: useMenuRole(menuCode, "create"), update: useMenuRole(menuCode, "update"), delete: useMenuRole(menuCode, "delete") };
 }
 
 const ALL: Scope = { type: "ALL" };
