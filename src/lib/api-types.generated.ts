@@ -5918,7 +5918,7 @@ export interface operations {
                     "application/json": components["schemas"]["CreatedContractResponseDto"];
                 };
             };
-            /** @description 입력 오류 · 만 19세 미만 */
+            /** @description 입력 오류 · 만 19세 미만 · 수정 요청인데 임시저장 · 근무지 변경 · 가입한 직원의 번호 변경 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -6019,7 +6019,7 @@ export interface operations {
                     "application/json": components["schemas"]["CreatedContractResponseDto"];
                 };
             };
-            /** @description 입력 오류 · 만 19세 미만 */
+            /** @description 입력 오류 · 만 19세 미만 · 가입한 직원의 번호 변경 */
             400: {
                 headers: {
                     [name: string]: unknown;
