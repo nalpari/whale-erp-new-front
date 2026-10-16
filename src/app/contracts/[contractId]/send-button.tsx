@@ -7,10 +7,12 @@ import { sendContract } from "./actions";
 
 // 근로계약 발송 · 재발송(WHALEERP-136). 누르면 확인창으로 묻고, 보내면 상세를 다시 읽는다(서명 대기 · 기한이 바뀐다).
 // 지금은 계정이 없는 직원의 가입 초대 알림톡만 간다 — 기존 계정이면 api 가 「앱 알림 준비 중」으로 막는다.
+// 접수 여부를 모르거나 화면이 낡았으면(recheck) 보내기를 막고 상세를 다시 읽는다 — 다시 눌러 두 번 가지 않게(front #41 리뷰).
 export function SendContractButton({ contractId, resend }: { contractId: number; resend: boolean }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
+  const [locked, setLocked] = useState(false);
   const [pending, start] = useTransition();
   const label = resend ? "재발송" : "발송";
 
@@ -24,9 +26,11 @@ export function SendContractButton({ contractId, resend }: { contractId: number;
         title={resend ? "근로계약서를 다시 보내시겠습니까?" : "근로계약서를 보내시겠습니까?"}
         confirmLabel={pending ? "보내는 중" : label}
         busy={pending}
+        confirmDisabled={locked}
         onCancel={() => {
           setOpen(false);
           setError("");
+          setLocked(false);
         }}
         onConfirm={() =>
           start(async () => {
@@ -38,6 +42,10 @@ export function SendContractButton({ contractId, resend }: { contractId: number;
               return;
             }
             setError(result.error);
+            if (result.recheck) {
+              setLocked(true);
+              router.refresh();
+            }
           })
         }
       >
