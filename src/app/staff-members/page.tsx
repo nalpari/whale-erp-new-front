@@ -1,12 +1,13 @@
 import { Button, ListToolbar, PageBar } from "@/components/common";
-import { getStaffMembers, kstToday } from "@/lib/staff-members";
+import { kstToday } from "@/lib/staff-members";
+import { getStaffMembers } from "@/lib/staff-members-api";
 import { StaffFilter } from "./staff-filter";
 import { StaffPageSize, StaffPagination } from "./staff-list-controls";
 import { parseStaffListQuery, toStaffListSearch } from "./staff-list-query";
 import { StaffTable } from "./staff-table";
 
 // 직원 정보 관리 목록(WHALEERP-138). 데모 docs/demo/staff/index.html 을 공통 컴포넌트로 옮겼다.
-// 관리자 로그인이 생기기 전이라 데이터는 목이다(getStaffMembers). 화면 상태는 URL 에만 둔다.
+// 데이터는 GET /staff-members(getStaffMembers)다. 화면 상태는 URL 에만 둔다.
 // 바깥 틀 · 헤더는 공통 틀(AdminFrame)이 그린다. 이 화면은 제목 줄부터 그리고, 넘치는 내용은 필터와 목록 안에서만 스크롤한다.
 export default async function StaffMembersPage({
   searchParams,

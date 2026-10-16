@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { DetailTable, PageBar } from "@/components/common";
-import { getStaffMember } from "@/lib/staff-members";
+import { getStaffMember } from "@/lib/staff-members-api";
 import { staffListHref } from "../staff-list-query";
 import { EMPLOYMENT_TYPE_LABELS, employmentStatusCells, formatPhone } from "../staff-row";
 import { CellView } from "../staff-table";
@@ -60,7 +60,7 @@ const RIGHT_BOXES: { title: string; manageHref?: string }[] = [
 
 // 직원 상세(WHALEERP-184). 배치는 데모 docs/demo/staff/detail.html(원본 src/pages/staff/detail.mjs)과 같다 — 5:7 두 단,
 // 왼쪽은 기본 정보 · 비밀번호 초기화 · 근로계약, 오른쪽은 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO.
-// 지금은 목록 한 줄에 있는 값만 채운다. 직무 · 입사일 · 생년월일 · 본인인증 · 이메일과 각 영역의 내용은 상세 요약
+// 데이터는 상세 api(GET /staff-members/:id, WHALEERP-599)로 받고, 목록 한 줄과 같은 모양이라 그 값만 채운다. 직무 · 입사일 · 생년월일 · 본인인증 · 이메일과 각 영역의 내용은 상세 요약
 // api(WHALEERP-183)가 나오면 다시 작업한다. 가린 직원 · 없는 직원 · 이상한 id 는 404 다.
 export default async function StaffMemberDetailPage({
   params,

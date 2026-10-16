@@ -15,6 +15,7 @@ type RawSearch = Record<string, string | string[] | undefined>;
 
 export const DEFAULT_STAFF_LIST_QUERY: StaffListQuery = {
   store: "",
+  storeIds: [],
   keyword: "",
   employmentTypes: [...EMPLOYMENT_TYPES],
   joinGroups: [...JOIN_GROUPS],
@@ -34,12 +35,23 @@ function listOf<T extends string>(raw: string | undefined, allowed: readonly T[]
   return allowed.filter((a) => picked.has(a));
 }
 
+const MAX_ID = 2_147_483_647;
+
+/** 점포 id 쉼표 목록. 양의 정수만, 겹치면 하나만 남긴다. 점포명이 없으면 쓰지 않는다 — 점포 필터는 점포명이 연다. */
+function storeIdsOf(raw: string | undefined, store: string): number[] {
+  if (!store || !raw) return [];
+  const ids = raw.split(",").filter((v) => /^[1-9]\d*$/.test(v)).map(Number).filter((n) => n <= MAX_ID);
+  return [...new Set(ids)];
+}
+
 export function parseStaffListQuery(raw: RawSearch): StaffListQuery {
   const page = Number(first(raw.page));
   const pageSize = Number(first(raw.pageSize));
   const status = first(raw.employmentStatus);
+  const store = first(raw.store)?.trim() ?? "";
   return {
-    store: first(raw.store)?.trim() ?? "",
+    store,
+    storeIds: storeIdsOf(first(raw.storeIds), store),
     keyword: first(raw.keyword)?.trim() ?? "",
     employmentTypes: listOf(first(raw.employmentType), EMPLOYMENT_TYPES),
     joinGroups: listOf(first(raw.joinGroup), JOIN_GROUPS),
@@ -51,7 +63,10 @@ export function parseStaffListQuery(raw: RawSearch): StaffListQuery {
 
 export function toStaffListSearch(query: StaffListQuery): string {
   const params = new URLSearchParams();
-  if (query.store) params.set("store", query.store);
+  if (query.store) {
+    params.set("store", query.store);
+    params.set("storeIds", query.storeIds.join(","));
+  }
   if (query.keyword) params.set("keyword", query.keyword);
   if (query.employmentTypes.length !== EMPLOYMENT_TYPES.length)
     params.set("employmentType", EMPLOYMENT_TYPES.filter((t) => query.employmentTypes.includes(t)).join(","));

@@ -53,7 +53,7 @@ export function StaffTable({
       cell: ({ item }) =>
         item.isMasked ? (
           <span className="text-erp-muted">본사 제공 동의 없음</span>
-        ) : item.joinState === "JOINED" && item.employmentStatus === "EMPLOYED" ? (
+        ) : item.staffMemberId !== null && item.joinState === "JOINED" && item.employmentStatus === "EMPLOYED" ? (
           <Link href={`/staff-members/${item.staffMemberId}${listSearch}`} className="text-erp-link hover:underline">
             {item.name}
           </Link>
@@ -90,7 +90,8 @@ export function StaffTable({
     <DataTable
       columns={columns}
       rows={items.map((item, i) => ({ no: rowNumber(total, page, pageSize, i), item }))}
-      rowKey={(r) => r.item.staffMemberId}
+      // 가린 행은 api 가 staffMemberId 를 null 로 준다 — 순번으로 가른다(한 쪽 안에서 겹치지 않는다)
+      rowKey={(r) => r.item.staffMemberId ?? `masked-${r.no}`}
       empty="조회된 직원이 없습니다."
     />
   );

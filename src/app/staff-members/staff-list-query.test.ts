@@ -64,6 +64,7 @@ test("parse(toSearch(q)) 는 q", () => {
   const q = {
     ...DEFAULT_STAFF_LIST_QUERY,
     store: "판교",
+    storeIds: [3, 12],
     employmentTypes: ["PART_TIME" as const],
     joinGroups: ["INVITED" as const, "UNDER_AGE" as const],
     employmentStatus: "RETIRED" as const,
@@ -85,4 +86,25 @@ test("상세의 「목록」 주소는 들고 온 조건을 거른 뒤 돌려준
   assert.equal(staffListHref({ keyword: "서지안", page: "3" }), "/staff-members?keyword=%EC%84%9C%EC%A7%80%EC%95%88&page=3");
   // 모르는 이름 · 이상한 값은 따라오지 않는다
   assert.equal(staffListHref({ next: "//evil.example", page: "-1", employmentStatus: "X" }), "/staff-members");
+});
+
+test("점포명과 함께 맞는 점포 id 가 URL 에 남는다", () => {
+  const params = new URLSearchParams(toStaffListSearch({ ...DEFAULT_STAFF_LIST_QUERY, store: "서초", storeIds: [7, 1] }));
+  assert.equal(params.get("store"), "서초");
+  assert.equal(params.get("storeIds"), "7,1");
+});
+
+test("맞는 점포가 없으면 storeIds 가 빈 값으로 남는다 — 새로고침해도 0건", () => {
+  const search = toStaffListSearch({ ...DEFAULT_STAFF_LIST_QUERY, store: "없는점", storeIds: [] });
+  assert.equal(new URLSearchParams(search).get("storeIds"), "");
+  assert.deepEqual(parseStaffListQuery({ store: "없는점", storeIds: "" }).storeIds, []);
+});
+
+test("점포명이 없으면 storeIds 는 쓰지 않는다", () => {
+  assert.equal(new URLSearchParams(toStaffListSearch({ ...DEFAULT_STAFF_LIST_QUERY, storeIds: [1] })).has("storeIds"), false);
+  assert.deepEqual(parseStaffListQuery({ storeIds: "1,2" }).storeIds, []);
+});
+
+test("storeIds 의 이상한 값 · 겹친 값은 버린다", () => {
+  assert.deepEqual(parseStaffListQuery({ store: "서초", storeIds: "3,abc,0,-1,3,2147483648,1.5,9" }).storeIds, [3, 9]);
 });
