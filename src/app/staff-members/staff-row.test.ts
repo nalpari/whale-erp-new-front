@@ -105,6 +105,10 @@ test("계약 — 종료일 30일 안이면 갱신 예정, 31일이면 체결 완
   assert.equal(contractCell(item(contract("SIGNED", { endDate: "2026-11-12" })), TODAY)?.text, "체결 완료");
 });
 
+test("수정 요청 — 직원이 가입 값과 달라 수정을 요청한 계약(본인 대조, WHALEERP-125)", () => {
+  assert.deepEqual(contractCell(item(contract("CORRECTION_REQUESTED")), TODAY), { text: "수정 요청", style: "badge-off" });
+});
+
 test("종료일이 지났으면 체결 완료", () => {
   assert.equal(contractCell(item(contract("SIGNED", { endDate: "2026-10-11" })), TODAY)?.text, "체결 완료");
 });
@@ -118,6 +122,7 @@ test("재직 칸 — 위에서부터 처음 맞는 것", () => {
     [{ joinState: "RETURN_PENDING" }, [{ text: "응답 대기", style: "muted" }]],
     [{ joinState: "INVITED" }, [{ text: "가입 대기", style: "muted" }]],
     [contract("PENDING_SIGNATURE"), [{ text: "날인 대기", style: "mark-off" }]],
+    [contract("CORRECTION_REQUESTED"), [{ text: "수정 필요", style: "mark-off" }]],
     [contract("REJECTED"), [{ text: "재발송 필요", style: "mark-off" }]],
     [contract("EXPIRED"), [{ text: "재발송 필요", style: "mark-off" }]],
     [{}, [{ text: "재직", style: "mark-on" }]],

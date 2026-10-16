@@ -7,7 +7,9 @@ type Status = NonNullable<ContractListItem["status"]>;
 
 export function StatusBadge({ status, label }: { status: Status; label: string }) {
   if (status === "SIGNED") return <Badge tone="on">{label}</Badge>;
-  if (status === "PENDING_SIGNATURE" || status === "REJECTED" || status === "EXPIRED") return <Badge tone="off">{label}</Badge>;
+  // 수정 요청은 관리자가 고쳐 다시 보내야 하는 상태라 서명 대기 · 거부 · 만료처럼 눈에 띄게 둔다
+  if (status === "PENDING_SIGNATURE" || status === "CORRECTION_REQUESTED" || status === "REJECTED" || status === "EXPIRED")
+    return <Badge tone="off">{label}</Badge>;
   // 임시저장·발송 대기·종료는 주의가 필요 없는 상태라 색 없이 둔다. 공통 Badge 에 중립 톤이 없어 데모와 같은 모양을 여기서 그린다.
   return <span className="inline-block rounded-[2px] bg-erp-subtle px-[4px] py-[2px] text-[14px] font-medium whitespace-nowrap text-erp-ink">{label}</span>;
 }

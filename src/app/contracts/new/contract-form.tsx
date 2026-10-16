@@ -214,6 +214,7 @@ export function ContractForm({
   contractId,
   initial,
   deleteButton,
+  correction = false,
 }: {
   stores: { storeId: number; name: string }[];
   labels: ContractFormLabels;
@@ -223,6 +224,11 @@ export function ContractForm({
   initial?: Form;
   /** 이어 쓰기 화면의 임시저장 삭제. 취소와 임시저장 사이에 선다 */
   deleteButton?: ReactNode;
+  /**
+   * 직원이 수정을 요청한 계약(수정 요청, WHALEERP-125 · 126)을 고친다. 임시저장 · 종이 계약은 없고, 저장하면 발송 대기로
+   * 돌아가 다시 보낸다(api 가 같은 것을 다시 본다).
+   */
+  correction?: boolean;
 }) {
   const [form, setForm] = useState<Form>(() => initial ?? initialForm(stores.length === 1 ? String(stores[0].storeId) : ""));
   // 저장을 한 번 누른 뒤부터 막는 이유를 보인다. 처음부터 빨간 줄을 띄우지 않는다.
@@ -397,11 +403,13 @@ export function ContractForm({
   const blocked = saving || !signedIn || minor;
   const saveButtons = (
     <>
-      <Button variant="soft" onClick={() => save(true)} disabled={blocked}>
-        임시저장
-      </Button>
+      {!correction && (
+        <Button variant="soft" onClick={() => save(true)} disabled={blocked}>
+          임시저장
+        </Button>
+      )}
       <Button onClick={() => save(false)} disabled={blocked}>
-        {saving ? "저장 중" : paper ? "종이 계약 등록" : "초안 저장"}
+        {saving ? "저장 중" : correction ? "수정 저장" : paper ? "종이 계약 등록" : "초안 저장"}
       </Button>
     </>
   );
@@ -475,7 +483,14 @@ export function ContractForm({
           >
             <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
               {(["ELECTRONIC", "PAPER"] as const).map((v) => (
-                <Radio key={v} name="contractMethod" label={labelOf(labels.contractMethod, v)} checked={form.contractMethod === v} onChange={() => set("contractMethod", v)} />
+                <Radio
+                  key={v}
+                  name="contractMethod"
+                  label={labelOf(labels.contractMethod, v)}
+                  checked={form.contractMethod === v}
+                  disabled={correction && v === "PAPER"}
+                  onChange={() => set("contractMethod", v)}
+                />
               ))}
             </div>
           </Group>
