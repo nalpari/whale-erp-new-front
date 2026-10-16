@@ -50,8 +50,14 @@ export function PasswordResetDialog({ staffMemberId, email, onClose }: { staffMe
       if (message) setError(message);
       return;
     }
+    // 409 면 다시 받은 상세에서 버튼과 함께 이 확인창도 내려간다 — 문구가 사라지지 않게 토스트로 알리고 닫는다.
+    if (refreshesAfterReset(result)) {
+      toast(resetFailureMessage(result));
+      onClose();
+      router.refresh();
+      return;
+    }
     setError(resetFailureMessage(result));
-    if (refreshesAfterReset(result)) router.refresh();
   };
 
   return (

@@ -49,6 +49,11 @@ test("버튼 — 탈퇴 계정(가입 완료인데 계정 이메일 없음)에�
   assert.equal(canResetPassword({ ...joined, email: null }, "FM", true), false);
 });
 
+test("버튼 — 응답에 email 칸이 없으면(api #56 전 배포) 숨긴다. 탈퇴인지 알 수 없다", () => {
+  const withoutEmail = { joinState: joined.joinState, employmentStatus: joined.employmentStatus, store: joined.store };
+  assert.equal(canResetPassword(withoutEmail as typeof joined, "FM", true), false);
+});
+
 test("버튼 — 본사 역할이 아니면(플랫폼 · 모르는 코드 포함) 점포 유형을 보지 않는다. 막는 것은 api 다", () => {
   for (const role of ["PM", "PA", ""]) assert.equal(canResetPassword({ ...joined, store: franchise }, role, true), true, role);
 });

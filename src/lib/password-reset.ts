@@ -13,7 +13,8 @@ const HQ_ROLES: ReadonlySet<string> = new Set(["BM", "BA"]);
  * 탈퇴는 가입 완료인데 계정 이메일이 없는 것으로 가린다 — 상세 응답(api #56)은 링크 발송과 같은 기준으로 email 을 내서, 가입 전 ·
  * 탈퇴 · 퇴직이거나 수정 권한이 없거나 본사 역할이 동의로만 보는 가맹 점포 직원이면 null 이다. 어느 쪽이든 보낼 수 없으니 숨기는
  * 것이 맞다(나머지는 위 조건으로도 이미 숨는다).
- * 탈퇴 표시가 따로 오지 않으니 이 규칙이 바뀌면 함께 고친다. 놓친 경우는 api 가 409 로 막는다.
+ * 탈퇴 표시가 따로 오지 않으니 이 규칙이 바뀌면 함께 고친다. 놓친 경우는 api 가 409 로 막는다. 응답에 email 칸이 없으면(api #56 전
+ * 배포) 탈퇴인지 알 수 없어 숨긴다.
  * 본사 역할(BM · BA)은 직영 점포 직원에게만 보인다. 본사 제공 동의한 가맹 직원은 상세가 열리지만, 계정 조치는 동의와 상관없이
  * 점포 단위라 api 가 404 다 — 가맹 점포 직원은 가맹마스터 · 가맹관리자만 된다(api canManageStaffAccount, 2026-10-14 재영, ATT-30).
  * 점포 유형을 모르면 api 처럼 직영이 아닌 것으로 본다. 본사 역할이 아니면 점포 유형을 보지 않는다 — 범위는 api 가 본다.
@@ -23,7 +24,7 @@ export function canResetPassword(
   roleTypeCode: string,
   canUpdate: boolean,
 ): boolean {
-  if (!canUpdate || staff.joinState !== "JOINED" || staff.employmentStatus !== "EMPLOYED" || staff.email === null) return false;
+  if (!canUpdate || staff.joinState !== "JOINED" || staff.employmentStatus !== "EMPLOYED" || !staff.email) return false;
   return !HQ_ROLES.has(roleTypeCode) || staff.store.storeType === "DIRECT";
 }
 
@@ -54,7 +55,10 @@ export function resetFailureMessage(failure: { status?: number; message: string 
   return failure.status === undefined ? RESET_UNKNOWN_MESSAGE : failure.message;
 }
 
-/** 실패 뒤 상세를 다시 받는가. 409(가입 전 · 퇴직 · 탈퇴)는 화면이 낡았다는 뜻이라 다시 받아 버튼을 거둔다. */
+/**
+ * 실패 뒤 상세를 다시 받는가. 409(가입 전 · 퇴직 · 탈퇴)는 화면이 낡았다는 뜻이라 다시 받아 버튼을 거둔다. 다시 받으면 버튼과 함께
+ * 확인창도 내려가므로, 확인창은 문구를 토스트로 알리고 닫은 뒤 다시 받는다.
+ */
 export const refreshesAfterReset = (failure: { status?: number }) => failure.status === 409;
 
 /**

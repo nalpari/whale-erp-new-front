@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-16T15:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-16T16:00:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -172,7 +172,7 @@ sources:
   「직원의 이메일 아이디로」. 상세 응답은 api #56 부터 `StaffMemberDetailResponseDto`(목록 한 줄 + `email`)다. `email` 은 계정 조치까지 할 수 있는 관리자에게만 링크 발송과 같은 기준으로
   나온다 — 가입 전 · 탈퇴 · 퇴직, 「직원 정보 관리」 수정 권한 없음, 본사 역할(BM · BA)이 동의로만 보는 가맹 점포 직원이면 null 이다
   (api #56 0ed2373). 그 경우 모두 다른 판정으로도 버튼이 없고, 기본 정보 「이메일」은 「-」다. ACC-17 은 「보일 때 고치지 못한다」로
-  읽는다(2026-10-16 노영주, 재영 확인 전).
+  읽는다(2026-10-16 확정, api #56 5d671d6). 응답에 `email` 칸이 없으면(api #56 전 배포) 탈퇴인지 몰라 버튼을 숨긴다.
   기본 정보의 「이메일」 줄도 이 값으로 채운다(ACC-17: 보이되 고치지 못함). 타입은 머지 전이라 api 브랜치(rapidash)로 만들었다 —
   api 머지 뒤 api main 기준으로 다시 만든다.
 * 실패(`resetFailureMessage`) — 404 · 409 · 429 · 503 은 api 문구 그대로, 401 은 로그인 만료 문구다. 429 는 데모의 「잠시 뒤 다시
@@ -181,7 +181,8 @@ sources:
   모르면(5xx · 연결) 「직원이 메일을 받지 못했다면 1분 뒤 다시 보내 주세요」, 서버 액션 자체를 부르지 못하면(연결 끊김 · 배포 뒤 옛 화면)
   「화면을 새로 고친 뒤 …」다. api 의 503(링크 주소 · 발송기 없음 · 발송 실패, 문구가 있는 Nest 본문 `{ statusCode: 503, message }`)은
   보내지 않았다고 알린 것이라 결과 모름으로 묶지 않는다(`isApiSendRefusal`) — 프록시 · 로드밸런서의 503 은 결과 모름이다. 409 는
-  화면이 낡았다는 뜻이라 상세를 다시 받아 버튼을 거둔다(`refreshesAfterReset`). 403 은 퇴직 확인창과 같다(`use-action-failure.ts` 의
+  화면이 낡았다는 뜻이라 상세를 다시 받아 버튼을 거둔다(`refreshesAfterReset`) — 다시 받으면 확인창도 함께 내려가므로 문구를
+  토스트로 알리고 닫은 뒤 다시 받는다(PR #37 리뷰). 403 은 퇴직 확인창과 같다(`use-action-failure.ts` 의
   `useFailure`). 결과 모름은 서버 로그에 기능 이름(퇴직 · 비밀번호 초기화)과 staffMemberId 를 함께 남긴다 — 퇴직 서버 액션도 같다. 확인 버튼은 그리기 전 두 번째 클릭도 ref 로 막는다.
 * 보낸 시각 · 기한은 보이지 않는다 — 성공하면 토스트 「재설정 링크를 보냈습니다.」뿐이다. Plane 완료 조건 4(발송 시각 · 기한 24시간)는
   발송 종류를 담는 이메일 발송 로그 테이블을 따로 만들어 발송 이력으로 다룬다(2026-10-16 노영주). api 응답의 `issuedAt` · `expiresAt`
