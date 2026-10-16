@@ -75,7 +75,8 @@ export function StaffTable({
     },
     {
       header: "재직",
-      width: "w-[110px]",
+      // 데모는 110 인데 「재직 · 퇴직 예정 MM-DD」가 두 줄로 꺾이며 잘린다 — 한 줄에 들어가게 넓혔다(WHALEERP-585 화면 확인)
+      width: "w-[180px]",
       cell: personal((item) => (
         <span className="inline-flex flex-wrap items-center justify-center gap-[4px]">
           {statusCells(item).map((cell) => (
