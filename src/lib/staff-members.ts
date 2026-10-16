@@ -17,10 +17,38 @@ export type ContractStatus = Schemas["ContractStatus"];
  */
 export type StaffMemberListItem = Schemas["StaffMemberListItemDto"];
 export type StaffMemberListResponse = Schemas["StaffMemberListResponseDto"];
-/** 직원 상세(GET /staff-members/:id, WHALEERP-599). 목록 한 줄에 계정 이메일(email)을 더한 모양이다(WHALEERP-177). email 은 링크 발송과 같은 기준이라 가입 전 · 탈퇴 · 퇴직, 수정 권한 없음, 본사 역할이 동의로만 보는 가맹 점포 직원이면 null. */
+/** 직원 상세(GET /staff-members/:id, WHALEERP-599). 목록 한 줄에 계정 이메일(email)을 더한 모양이다(WHALEERP-177). email 은 상세를 볼 수 있는 관리자(조회 권한)에게 나오고, 가입 전 · 탈퇴 · 퇴직, 본사 역할이 동의로만 보는 가맹 점포 직원이면 null(WHALEERP-180, 2026-10-16 노영주). */
 export type StaffMember = Schemas["StaffMemberDetailResponseDto"];
 /** 퇴직 확인창의 미리 보기 — 퇴직일이 지나면 정리될 건수 */
 export type RetirementPreview = Schemas["RetirementPreviewResponseDto"];
+
+/**
+ * 이메일이 없을 때 가입 상태별 글자. 초안 · 초대 발송만 「가입 전」이고, 나머지는 목록 「가입·인증」 칸(joinCell)의 글자를 날짜 · 일수
+ * 없이 쓴다 — 초대 만료 · 거절은 이미 계정이 있는 직원의 소속 추가 확인 · 복귀 확인에서도 생기고, 연결 보류 · 소속 추가 확인 · 복귀
+ * 확인은 계정이 있는 직원이라 「가입 전」이라 하면 가입하라고 잘못 안내하게 된다. 가입 불가는 막힌 사유를 그대로 보인다.
+ * joinCell 글자를 고치면 함께 고친다(staff-row.test.ts 가 어긋나면 잡는다).
+ */
+const EMAIL_ABSENT_JOIN_TEXT: Record<Exclude<StaffJoinState, "JOINED">, string> = {
+  DRAFT: "가입 전",
+  INVITED: "가입 전",
+  EXPIRED: "초대 만료",
+  REJECTED: "거절",
+  LINK_HOLD: "연결 보류",
+  AFFILIATION_PENDING: "소속 추가 확인",
+  RETURN_PENDING: "복귀 확인",
+  UNDER_AGE: "가입 불가(만 19세 미만)",
+};
+
+/**
+ * 상세 기본 정보의 「이메일」 칸. 이메일은 회원 ID 라 보이기만 하고 어디에서도 고치지 못한다(ACC-17, WHALEERP-180).
+ * 없을 때 가입 완료가 아니면 가입 상태 글자(EMAIL_ABSENT_JOIN_TEXT), 가입 완료(퇴직 · 탈퇴 · 본사 역할이 보는 가맹 점포 직원)나
+ * 가입 상태를 모르면 「-」다 — 퇴직은 재직 상태 줄이 말해 주고, 탈퇴와 본사 미제공은 응답만으로 확실히 가를 수 없어 짐작해 적지
+ * 않는다(2026-10-16 노영주). 타입을 다시 만들기 전에 api 가 새 가입 상태를 보내도 「-」다.
+ */
+export function staffEmailText(staff: Pick<StaffMember, "email" | "joinState">): string {
+  if (staff.email) return staff.email;
+  return (staff.joinState && staff.joinState !== "JOINED" && EMAIL_ABSENT_JOIN_TEXT[staff.joinState]) || "-";
+}
 
 export const EMPLOYMENT_TYPES: readonly EmploymentType[] = ["FULL_TIME", "PART_TIME"];
 

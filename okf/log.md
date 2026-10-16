@@ -2,6 +2,7 @@
 
 ## 2026-10-16
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `api-types.generated.ts` 를 WHALEERP-180 api 변경(kyoto · jolteon, 커밋 전) openapi 로 다시 만들었다. 상세 `email` 설명만 바뀌었다(조회 권한이면 보인다). api 머지 뒤 api main 기준으로 다시 만든다.
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — WHALEERP-180: 상세 이메일은 조회 권한이면 보이고 고치지 못한다(회원 ID). 없을 때 초안 · 초대 발송은 「가입 전」, 초대 만료 · 거절 · 연결 보류 · 소속 추가 확인 · 복귀 확인 · 가입 불가는 목록의 가입 상태 글자(어긋나면 staff-row.test.ts 가 잡는다), 가입 완료 · 모르는 값이면 「-」(`staffEmailText`, PR 전 리뷰 두 차례). ACC-16(근무지에서 직접 물을 때만 알려 줌)은 화면에 넣지 않고 문서로만 둔다. 주석의 「수정 권한 없음이면 null」을 뺐다(2026-10-16 노영주).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — api #56 머지(api main b119919) 뒤 `api-types.generated.ts` 를 api main 기준으로 다시 만들어 머지 전 브랜치(rapidash 0ed2373) 기준과 차이가 없음을 확인했다. main(front #38) 병합 — okf/log.md 충돌만 풀었다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — PR #37 리뷰 반영: 409 면 문구를 토스트로 알리고 확인창을 닫은 뒤 상세를 다시 받는다(다시 받으면 확인창이 함께 내려가 문구가 사라졌다). 응답에 email 칸이 없으면 버튼을 숨긴다. 「이메일」 줄 표시 범위는 확정(api #56 5d671d6)으로 고쳤다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — api #56 이 상세 `email` 을 더 좁혔다(0ed2373: 퇴직 레코드 · 수정 권한 없는 관리자도 null). 주석 · 문서를 맞췄다. 기본 정보 「이메일」은 null 이면 「-」 그대로, ACC-17 은 「보일 때 고치지 못한다」로 읽는다(노영주, 재영 확인 전). 버튼 판정은 그대로다.

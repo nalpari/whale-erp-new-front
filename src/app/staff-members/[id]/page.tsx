@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { DetailTable, PageBar } from "@/components/common";
-import { kstToday } from "@/lib/staff-members";
+import { kstToday, staffEmailText } from "@/lib/staff-members";
 import { getStaffMember } from "@/lib/staff-members-api";
 import { staffListHref } from "../staff-list-query";
 import { EMPLOYMENT_TYPE_LABELS, employmentStatusCells, formatPhone } from "../staff-row";
@@ -87,9 +87,8 @@ export default async function StaffMemberDetailPage({
     { label: "생년월일", value: PENDING },
     { label: "휴대전화번호", value: staff.phone ? formatPhone(staff.phone) : PENDING },
     { label: "본인인증", value: PENDING },
-    // 계정 이메일(로그인 아이디) — 보일 때 고치지 못한다(ACC-17). api #56 이 링크 발송과 같은 기준으로만 내서, 가입 전 · 탈퇴 · 퇴직,
-    // 수정 권한 없음, 본사 역할이 보는 가맹 점포 직원이면 없어 「-」다(2026-10-16 확정, api #56 5d671d6).
-    { label: "이메일", value: staff.email ?? PENDING },
+    // 계정 이메일(회원 ID) — 상세를 볼 수 있으면 보이고, 고치지 못한다(ACC-17, WHALEERP-180). 없을 때의 표시는 staffEmailText.
+    { label: "이메일", value: staffEmailText(staff) },
   ];
 
   return (

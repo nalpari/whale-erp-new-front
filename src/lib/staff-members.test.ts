@@ -1,7 +1,7 @@
 // node --test src/lib/staff-members.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { EMPLOYMENT_TYPES, JOIN_GROUPS, MAX_STORE_IDS, kstToday, staffListApiSearch, staffListEmptyMessage, storeIdsByName, tooManyStores, type StaffListQuery } from "./staff-members.ts";
+import { EMPLOYMENT_TYPES, JOIN_GROUPS, MAX_STORE_IDS, kstToday, staffEmailText, staffListApiSearch, staffListEmptyMessage, storeIdsByName, tooManyStores, type StaffListQuery } from "./staff-members.ts";
 
 const base: StaffListQuery = {
   store: "",
@@ -94,4 +94,32 @@ test("맞는 점포가 없으면 빈 목록", () => {
 test("kstToday 는 한국 날짜 — UTC 로 전날 15시는 한국 0시", () => {
   assert.equal(kstToday(new Date("2026-10-11T15:00:00Z")), "2026-10-12");
   assert.equal(kstToday(new Date("2026-10-11T14:59:00Z")), "2026-10-11");
+});
+
+test("이메일 칸 — 값이 있으면 그대로 보인다(조회 권한이면 보인다, ACC-17)", () => {
+  assert.equal(staffEmailText({ email: "jian.seo@example.com", joinState: "JOINED" }), "jian.seo@example.com");
+});
+
+test("이메일 칸 — 초안 · 초대 발송은 「가입 전」", () => {
+  for (const joinState of ["DRAFT", "INVITED"] as const) {
+    assert.equal(staffEmailText({ email: null, joinState }), "가입 전", joinState);
+  }
+});
+
+test("이메일 칸 — 그 밖의 가입 전 상태는 목록의 가입 상태 글자. 초대 만료 · 거절은 소속 추가 확인 · 복귀 확인에서도 생겨 「가입 전」이라 하지 않는다", () => {
+  assert.equal(staffEmailText({ email: null, joinState: "EXPIRED" }), "초대 만료");
+  assert.equal(staffEmailText({ email: null, joinState: "REJECTED" }), "거절");
+  assert.equal(staffEmailText({ email: null, joinState: "LINK_HOLD" }), "연결 보류");
+  assert.equal(staffEmailText({ email: null, joinState: "AFFILIATION_PENDING" }), "소속 추가 확인");
+  assert.equal(staffEmailText({ email: null, joinState: "RETURN_PENDING" }), "복귀 확인");
+  assert.equal(staffEmailText({ email: null, joinState: "UNDER_AGE" }), "가입 불가(만 19세 미만)");
+});
+
+test("이메일 칸 — 가입 완료인데 없으면(퇴직 · 탈퇴 · 본사가 보는 가맹 직원) 「-」", () => {
+  assert.equal(staffEmailText({ email: null, joinState: "JOINED" }), "-");
+});
+
+test("이메일 칸 — 가입 상태를 모르면 「-」. 타입을 다시 만들기 전에 api 가 새 값을 보내도 빈칸이 되지 않는다", () => {
+  assert.equal(staffEmailText({ email: null, joinState: null }), "-");
+  assert.equal(staffEmailText({ email: null, joinState: "SOMETHING_NEW" as never }), "-");
 });
