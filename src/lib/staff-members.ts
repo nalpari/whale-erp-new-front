@@ -80,6 +80,16 @@ export const MAX_STORE_IDS = 500;
 export const tooManyStores = (query: StaffListQuery) => !!query.store && (query.storeIds?.length ?? 0) > MAX_STORE_IDS;
 
 /**
+ * 목록이 비었을 때 기본 문구 대신 보일 것. 점포 id 를 아직 찾지 않은 주소는 필터가 곧 채우므로 「없음」으로 깜빡이지 않게 찾는 중이라 하고,
+ * 점포가 너무 많으면 좁혀 달라고 한다. 그 밖은 undefined(표의 기본 문구).
+ */
+export function staffListEmptyMessage(query: StaffListQuery): string | undefined {
+  if (query.store && query.storeIds === null) return "점포를 찾는 중입니다.";
+  if (tooManyStores(query)) return `점포명에 맞는 점포가 ${MAX_STORE_IDS}곳을 넘습니다. 점포명을 더 좁혀 주세요.`;
+  return undefined;
+}
+
+/**
  * GET /staff-members 쿼리. null 이면 api 를 부르지 않고 0건이다 — 묶음 · 고용형태를 하나도 고르지 않았거나 점포명에 맞는
  * 점포가 없을 때. api 는 빈 값을 400 으로 막고, 파라미터를 빼면 전체가 나와 「하나도 안 고름」이 「전체」가 된다.
  * 점포 id 를 아직 찾지 않았거나(null) 상한을 넘어도 부르지 않는다(tooManyStores).

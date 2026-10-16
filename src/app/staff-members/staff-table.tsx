@@ -45,7 +45,7 @@ export function StaffTable({
   today: string;
   /** 지금 목록 조건(toStaffListSearch). 상세 링크에 붙여 상세의 「목록」이 같은 조건으로 돌아오게 한다. */
   listSearch: string;
-  /** 빈 목록 문구. 점포가 너무 많아 조회하지 않았을 때는 좁혀 달라고 바꾼다. */
+  /** 빈 목록 문구. 조회하지 않은 까닭이 있으면 바꾼다(staffListEmptyMessage). */
   empty?: string;
 }) {
   const columns: Column<Row>[] = [

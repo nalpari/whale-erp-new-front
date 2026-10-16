@@ -1,5 +1,5 @@
 import { Button, ListToolbar, PageBar } from "@/components/common";
-import { kstToday, MAX_STORE_IDS, tooManyStores } from "@/lib/staff-members";
+import { kstToday, staffListEmptyMessage } from "@/lib/staff-members";
 import { getStaffMembers } from "@/lib/staff-members-api";
 import { StaffFilter } from "./staff-filter";
 import { StaffPageSize, StaffPagination } from "./staff-list-controls";
@@ -40,7 +40,7 @@ export default async function StaffMembersPage({
             pageSize={query.pageSize}
             today={kstToday()}
             listSearch={toStaffListSearch(query)}
-            empty={tooManyStores(query) ? `점포명에 맞는 점포가 ${MAX_STORE_IDS}곳을 넘습니다. 점포명을 더 좁혀 주세요.` : undefined}
+            empty={staffListEmptyMessage(query)}
           />
           <div className="pt-[14px]">
             <StaffPagination query={query} totalPages={totalPages} />

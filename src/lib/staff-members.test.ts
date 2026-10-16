@@ -1,7 +1,7 @@
 // node --test src/lib/staff-members.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { EMPLOYMENT_TYPES, JOIN_GROUPS, MAX_STORE_IDS, kstToday, staffListApiSearch, storeIdsByName, tooManyStores, type StaffListQuery } from "./staff-members.ts";
+import { EMPLOYMENT_TYPES, JOIN_GROUPS, MAX_STORE_IDS, kstToday, staffListApiSearch, staffListEmptyMessage, storeIdsByName, tooManyStores, type StaffListQuery } from "./staff-members.ts";
 
 const base: StaffListQuery = {
   store: "",
@@ -62,6 +62,14 @@ test("맞는 점포가 api 상한(500)을 넘으면 부르지 않고 좁혀 달�
   assert.equal(tooManyStores({ ...base, store: "점", storeIds: ids }), true);
   assert.equal(tooManyStores({ ...base, store: "점", storeIds: ids.slice(0, MAX_STORE_IDS) }), false);
   assert.notEqual(staffListApiSearch({ ...base, store: "점", storeIds: ids.slice(0, MAX_STORE_IDS) }), null);
+});
+
+test("빈 목록 문구 — 점포 id 를 찾는 중 · 점포가 너무 많음 · 그 밖은 기본", () => {
+  assert.equal(staffListEmptyMessage({ ...base, store: "판교", storeIds: null }), "점포를 찾는 중입니다.");
+  const ids = Array.from({ length: MAX_STORE_IDS + 1 }, (_, i) => i + 1);
+  assert.equal(staffListEmptyMessage({ ...base, store: "점", storeIds: ids }), "점포명에 맞는 점포가 500곳을 넘습니다. 점포명을 더 좁혀 주세요.");
+  assert.equal(staffListEmptyMessage(base), undefined);
+  assert.equal(staffListEmptyMessage({ ...base, store: "없는점", storeIds: [] }), undefined);
 });
 
 const stores = [
