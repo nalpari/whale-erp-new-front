@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, type ReactNode } from "react";
-import { Button } from "./button";
+import { Button, type ButtonVariant } from "./button";
 
 const WIDTH = { base: "w-[420px]", wide: "w-[480px]" };
 
@@ -13,6 +13,7 @@ export function ConfirmDialog({
   title,
   children,
   confirmLabel = "확인",
+  confirmVariant,
   cancelLabel = "취소",
   busy,
   confirmDisabled,
@@ -24,6 +25,8 @@ export function ConfirmDialog({
   title: string;
   children: ReactNode;
   confirmLabel?: string;
+  /** 확인 버튼 색. 기본은 primary, 되돌리기 어려운 동작(퇴직 처리)은 danger. */
+  confirmVariant?: ButtonVariant;
   cancelLabel?: string;
   /** 확인 동작이 도는 동안 두 버튼을 막는다. */
   busy?: boolean;
@@ -67,7 +70,7 @@ export function ConfirmDialog({
         <Button variant="off" onClick={onCancel} disabled={busy}>
           {cancelLabel}
         </Button>
-        <Button onClick={onConfirm} disabled={busy || confirmDisabled}>
+        <Button variant={confirmVariant} onClick={onConfirm} disabled={busy || confirmDisabled}>
           {confirmLabel}
         </Button>
       </div>
