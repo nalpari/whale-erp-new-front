@@ -453,7 +453,8 @@ export function ContractForm({
             </Group>
             <Item label="소속 근무지" required>
               {(id) => (
-                <Select id={id} value={form.storeId} onChange={(e) => set("storeId", e.target.value)}>
+                // 수정 요청은 이미 보낸 계약이라 근무지를 바꾸지 않는다 — 다른 근무지는 새 근로계약서로(api #58)
+                <Select id={id} value={form.storeId} disabled={correction} onChange={(e) => set("storeId", e.target.value)}>
                   <option value="">선택</option>
                   {stores.map((s) => (
                     <option key={s.storeId} value={s.storeId}>
@@ -755,7 +756,9 @@ export function ContractForm({
         )}
         <div className="flex items-center gap-[6px]">
           <span className="flex-1 text-[14px] text-erp-label">
-            {paper
+            {correction
+              ? "직원이 수정을 요청한 근로계약서다. 다 채워 수정 저장하면 발송 대기로 돌아가고, 다시 발송하면 새 날인 기한으로 간다. 근무지는 바꿀 수 없다."
+              : paper
               ? "임시저장은 이름 · 휴대전화번호 · 근무지 · 직무만 있으면 되고 날인본은 올리지 않는다. 종이 계약 등록은 다 채우고 근로계약서 날인본을 올려야 하며 체결 완료로 남는다."
               : "임시저장은 이름 · 휴대전화번호 · 근무지 · 직무만 있으면 된다. 초안 저장은 다 채워야 하고 발송 대기로 남는다. 초대 발송은 아직 없다."}
           </span>
@@ -763,7 +766,7 @@ export function ContractForm({
         </div>
       </div>
 
-      {/* 같은 점포 · 같은 번호의 진행 중 계약(WHALEERP-129). 대체하면 임시저장은 지우고, 발송 대기 · 서명 대기는 종료한다.
+      {/* 같은 점포 · 같은 번호의 진행 중 계약(WHALEERP-129). 대체하면 임시저장은 지우고, 발송 대기 · 서명 대기 · 수정 요청은 종료한다.
           종이 계약 등록은 체결 완료도 묻고 종료한다 — 두 번 눌러 두 벌이 생기지 않게(api #49). */}
       <ConfirmDialog
         open={replace !== null}
@@ -786,7 +789,7 @@ export function ContractForm({
           ))}
         </ul>
         <p className="mt-[6px]">
-          대체하면 임시저장은 지우고, 발송 대기 · 서명 대기{replace?.paper ? " · 체결 완료" : ""} 계약은 종료합니다.
+          대체하면 임시저장은 지우고, 발송 대기 · 서명 대기 · 수정 요청{replace?.paper ? " · 체결 완료" : ""} 계약은 종료합니다.
         </p>
       </ConfirmDialog>
     </div>
