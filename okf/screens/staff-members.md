@@ -4,12 +4,12 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-16T18:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-16T08:56:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
-    title: 타입(생성한 api 타입) · 조회 조건 → api 쿼리(staffListApiSearch) · 점포명 → 점포 id(storeIdsByName)
-    last_modified: 2026-10-16T09:00:00Z
+    title: 타입(생성한 api 타입) · 조회 조건 → api 쿼리(staffListApiSearch) · 점포명 → 점포 id(storeIdsByName) · 상세 이메일 칸(staffEmailText)
+    last_modified: 2026-10-16T08:56:00Z
   - id: staff-members-api
     resource: ../../src/lib/staff-members-api.ts
     title: api 호출 — 목록 · 상세 · 퇴직 미리 보기 · 처리 · 변경 · 취소 · 비밀번호 재설정 링크
@@ -41,7 +41,7 @@ sources:
   - id: staff-detail-page
     resource: ../../src/app/staff-members/[id]/page.tsx
     title: 직원 상세 화면(틀 + 기본 정보 · 퇴직일 · 이메일 + 비밀번호 초기화 자리)
-    last_modified: 2026-10-16T09:00:00Z
+    last_modified: 2026-10-16T08:56:00Z
   - id: password-reset-dialog
     resource: ../../src/app/staff-members/[id]/password-reset-dialog.tsx
     title: 비밀번호 초기화 확인창(WHALEERP-177)
@@ -49,7 +49,7 @@ sources:
   - id: password-reset
     resource: ../../src/lib/password-reset.ts
     title: 비밀번호 초기화 판정 — 버튼 노출 · 받는 곳 문구 · 실패 문구
-    last_modified: 2026-10-16T09:00:00Z
+    last_modified: 2026-10-16T07:47:00Z
   - id: use-action-failure
     resource: ../../src/app/staff-members/[id]/use-action-failure.ts
     title: 상세 확인창 실패 처리(failureEffect) — 퇴직 처리는 모두, 비밀번호 초기화는 403 만 쓴다
@@ -110,7 +110,8 @@ sources:
 * `store` 만 있고 `storeIds` 가 없는 주소(storeIds 를 싣기 전의 북마크 · 손으로 친 주소)는 파서가 `storeIds: null` 로 읽고, 필터가
   열리며 점포 목록에서 id 를 채워 주소를 바꾼다 — 그대로 두면 검색칸에 점포명이 있는데 0건이었다. 빈 값(`storeIds=`)은 「맞는 점포 없음」이다.
   채우기 전 첫 화면은 api 를 부르지 않으므로 빈 목록 자리에 「점포를 찾는 중입니다.」를 보인다(`staffListEmptyMessage`) — 「없음」이 깜빡이지 않게.
-* 라벨(`StaffJoinState` · `EmploymentType`)은 아직 화면 상수다. `getEnum` 으로 바꾸는 것은 남았다.
+* 목록 라벨(`joinCell` 의 `StaffJoinState` · `EmploymentType`)은 아직 화면 상수다. `getEnum` 으로 바꾸는 것은 남았다 — 상세
+  「이메일」 칸의 가입 상태 한글은 이미 `getEnum` 으로 받는다(아래 「이메일」).
 * api 오류(401 · 403 · 5xx)는 `error.tsx` 가 받는다. 404(상세)는 상세가 먼저 `notFound()` 로 받는다.
 
 # 상세 — 다시 작업할 것
@@ -120,10 +121,27 @@ sources:
 
 상세는 틀과 기본 정보(+ 퇴직 예정 · 퇴직이면 퇴직일 줄, 이메일), 퇴직 처리 · 비밀번호 초기화 확인창만이다. 상세 요약 api(#183)가 나오면:
 
-* 기본 정보의 직무 · 입사일 · 생년월일 · 본인인증(지금 「-」)을 채운다. 이메일은 상세 응답 `email` 로 채웠다(#177, 없으면 「-」).
+* 기본 정보의 직무 · 입사일 · 생년월일 · 본인인증(지금 「-」)을 채운다. 이메일은 상세 응답 `email` 로 채웠다(#177 · #180, 아래 「이메일」).
 * 근로계약 · 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO 영역(지금 「준비 중입니다.」)을 데모처럼 채운다.
 * 가린 직원(본사 제공 동의 없는 가맹 직원) · 업무 범위 밖 · 없는 직원은 상세 api 가 404 라 상세로 들어가지 못한다(#184 · #599).
   본사 제공 동의한 가맹 직원은 본사 역할에게도 상세가 열리지만, 비밀번호 초기화는 범위가 달라 버튼이 없다(아래).
+
+# 이메일 (WHALEERP-180)
+
+이메일은 회원 ID 로 취급한다 — 기본 정보 「이메일」 줄은 보이기만 하고, 화면 어디에도 입력칸 · 수정 버튼 · 변경 요청 흐름을 두지
+않는다(ACC-17). 관리자 웹에 이메일 찾기 확인 화면은 따로 없고, 이메일 아이디 변경 요청 방식도 쓰지 않는다.
+
+* 보이는 사람 — 상세를 볼 수 있는 관리자(「직원 정보 관리」 조회 권한)다. api 의 「수정 권한이 있을 때만」 조건을 뺐다(2026-10-16
+  노영주, api kyoto · jolteon).
+* 없을 때(`staffEmailText`) — 초안 · 초대 발송은 「가입 전」이다(화면 문구). 나머지 가입 전 상태(초대 만료 · 거절 · 연결 보류 · 소속
+  추가 확인 · 복귀 확인 · 가입 불가(만 19세 미만))는 상세 페이지가 `getEnum("StaffJoinState")` 로 받은 한글을 쓴다 — front 에 enum 한글
+  대응표를 두지 않는다(naming.md, PR #42 리뷰). 초대 만료 · 거절은 api 가 초대 유형을 가리지 않아 이미 계정이 있는 직원의 소속 추가
+  확인 · 복귀 확인에서도 생기고(api `joinStateOf`), 연결 보류 · 소속 추가 확인 · 복귀 확인은 계정이 있는 직원이라 「가입 전」이라 하면
+  가입하라고 잘못 안내하게 된다(PR 전 리뷰, 2026-10-16 노영주). 가입 완료인데 없는 것(퇴직 · 탈퇴 · 본사 역할이 동의로만 보는 가맹
+  점포 직원)과 가입 상태를 모르는 것은 「-」다. 퇴직은 재직 상태 줄이 말해 주고, 탈퇴와 본사 미제공은 응답만으로 확실히 가를 수 없어
+  짐작해 적지 않는다. enum 을 받지 못하면 상세는 그대로 그리고 이 칸만 「-」다(영문 값을 보이지 않는다, 원인은 서버 로그).
+* 알려 주는 때(ACC-16) — 직원이 근무지에 직접 와서 물은 경우에만 알려 준다. 전화나 메시지로는 알려 주지 않는다. 목업
+  (`docs/mockup/staff/detail.html` 안내 문단)에는 있고 데모에는 없어, 화면에 안내 문구를 두지 않고 운영 정책으로만 다룬다(2026-10-16 노영주).
 
 # 퇴직 처리 (WHALEERP-585)
 
@@ -163,17 +181,15 @@ sources:
   `roleTypeCode`)은 직영 점포 직원에게만 보인다 — 본사 제공 동의한 가맹 직원은 상세가 열리지만 api 의 계정 조치 범위
   (`canManageStaffAccount`)는 동의와 상관없이 점포 단위라 404 다(2026-10-14 재영, ATT-30). 점포 유형을 모르면 api 처럼 숨긴다
   (PR 전 리뷰, 2026-10-16 노영주). 본사 역할이 아니면 점포 유형을 보지 않는다. 탈퇴 계정(가입 완료인데 `email` 이 null)에게도
-  숨긴다(데모 주석, 2026-10-16 노영주) — 상세 응답에 탈퇴 표시가 따로 없어 api #56 의 「email 은 발송과 같은 기준으로만 나온다」
-  규칙에
-  기댄다. 놓친 경우는 api 409 다. 숨길 때는 줄째 뺀다.
+  숨긴다(데모 주석, 2026-10-16 노영주) — 상세 응답에 탈퇴 표시가 따로 없어, 가입 완료 · 재직 · (본사 역할이면) 직영인데 `email` 이
+  null 이면 탈퇴뿐이라는 api 규칙(WHALEERP-180)에 기댄다. 놓친 경우는 api 409 다. 숨길 때는 줄째 뺀다.
 * 확인창 — 제목 「비밀번호를 초기화하시겠습니까?」, 취소 · 초기화(데모 `resetDialog`). 본문은 데모 뼈대에 관리자가 비밀번호를 모른다는
   것(완료 조건 2) · 새 링크가 발송되면 앞 링크 무효(목업)를 더했다 — 받는 곳 · 24시간 한 번만 · 여러 BP 공통 · 1분 안에 다시 보낼 수 없음.
 * 받는 곳(`resetRecipientText`) — 상세 응답의 `email`(계정 이메일, 재설정 링크가 가는 곳)으로 「이메일 아이디 OOO 으로」, null 이면
-  「직원의 이메일 아이디로」. 상세 응답은 api #56 부터 `StaffMemberDetailResponseDto`(목록 한 줄 + `email`)다. `email` 은 계정 조치까지 할 수 있는 관리자에게만 링크 발송과 같은 기준으로
-  나온다 — 가입 전 · 탈퇴 · 퇴직, 「직원 정보 관리」 수정 권한 없음, 본사 역할(BM · BA)이 동의로만 보는 가맹 점포 직원이면 null 이다
-  (api #56 0ed2373). 그 경우 모두 다른 판정으로도 버튼이 없고, 기본 정보 「이메일」은 「-」다. ACC-17 은 「보일 때 고치지 못한다」로
-  읽는다(2026-10-16 확정, api #56 5d671d6). 응답에 `email` 칸이 없으면(api #56 전 배포) 탈퇴인지 몰라 버튼을 숨긴다.
-  기본 정보의 「이메일」 줄도 이 값으로 채운다(ACC-17: 보이되 고치지 못함). 타입은 api main(b119919, api #56 머지) 기준이다.
+  「직원의 이메일 아이디로」. 상세 응답은 api #56 부터 `StaffMemberDetailResponseDto`(목록 한 줄 + `email`)다. `email` 은 조회 권한이면 나오고, 가입 전 · 탈퇴 · 퇴직, 본사 역할(BM · BA)이
+  동의로만 보는 가맹 점포 직원이면 null 이다(WHALEERP-180 — api #56 은 수정 권한 없음도 null 이었다). null 인 경우 모두 다른 판정으로도
+  버튼이 없다. 조회 권한만 있는 관리자에게는 email 이 와도 수정 권한 판정으로 버튼이 없다. 응답에 `email` 칸이 없으면(api #56 전 배포) 탈퇴인지 몰라 버튼을 숨긴다.
+  기본 정보의 「이메일」 줄도 이 값으로 채운다(위 「이메일」). 타입은 api main(9df02b7, api #60 머지) 기준이다.
 * 실패(`resetFailureMessage`) — 404 · 409 · 429 · 503 은 api 문구 그대로, 401 은 로그인 만료 문구다. 429 는 데모의 「잠시 뒤 다시
   시도해 주세요」가 아니라 api 의 「방금 재설정 링크를 보냈습니다. 1분 뒤에 다시 보낼 수 있습니다」다 — 결과 모름 뒤 다시 누른 경우가
   많아 이미 보냈다는 사실을 알려야 다시 보내 직원의 링크를 무효로 만들지 않는다(2026-10-16 노영주, 데모와 다름). 서버가 api 결과를
