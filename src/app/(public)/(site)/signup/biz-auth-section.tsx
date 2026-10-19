@@ -20,6 +20,12 @@ export type BizAuthValue = {
 };
 export const BIZ_AUTH_INITIAL: BizAuthValue = { bizRegistrationNumber: "", bizCeoName: "", bizOpenDate: "", verification: null };
 
+// 빈 네이티브 <input type="date">가 한국어 로캘로 그리는 "연도. 월. 일."은 브라우저가 그리는 글자라 placeholder
+// 속성으로도 CSS content 로도 글자(점 유무)를 바꿀 수 없다 — 색만 다른 칸의 placeholder(#999, guest-form.ts 의
+// INPUT)에 맞춘다. 값이 비어 있을 때만 :placeholder-shown 이 걸려, 날짜를 고르면 원래 글자색으로 돌아간다(2026-10-16).
+const DATE_PLACEHOLDER_COLOR =
+  "[&:placeholder-shown::-webkit-datetime-edit-fields-wrapper]:text-[#999] [&:placeholder-shown::-webkit-datetime-edit-text]:text-[#999] [&:placeholder-shown::-webkit-datetime-edit-year-field]:text-[#999] [&:placeholder-shown::-webkit-datetime-edit-month-field]:text-[#999] [&:placeholder-shown::-webkit-datetime-edit-day-field]:text-[#999]";
+
 const sameIdentity = (a: BizAuthValue, b: BizAuthValue) =>
   a.bizRegistrationNumber === b.bizRegistrationNumber && a.bizCeoName === b.bizCeoName && a.bizOpenDate === b.bizOpenDate;
 
@@ -39,7 +45,9 @@ function OptionalField({ label, children }: { label: string; children: ReactNode
 // 중복 검사 → 국세청 확인을 하고 10분짜리 토큰을 주면 "인증완료"로 바꾼다. 토큰은 가입할 때 signup-form 이 싣는다.
 // 확인하는 동안(verifying)은 세 칸과 버튼을 잠근다 — 값을 고치면 받은 토큰이 보이는 값과 어긋난다.
 // "재인증"은 입력칸을 다시 열되 값은 그대로 두어(다른 값으로 바꿔 다시 인증받도록) 편집하게 하고,
-// "지우기"는 인증한 걸 아예 안 쓰기로 한 경우라 값까지 비운 전 상태로 되돌린다.
+// 인증완료 뒤의 "사용안함"은 인증한 걸 아예 안 쓰기로 한 경우라 값까지 비운 전 상태로 되돌린다(handleClearClick,
+// 인증 전 칸에서 누르는 "지우기"와 같은 동작·같은 함수다 — 인증 전엔 "아직 아무것도 확정된 게 없어 지운다"는
+// 뜻이라 "지우기", 인증 뒤엔 "받아 둔 인증을 안 쓰기로 한다"는 뜻이라 "사용안함"으로만 문구를 가른다, 2026-10-16).
 // onChange 는 setState 를 그대로 받는다 — 늦게 온 응답을 그 사이 바뀐 값이 아니라 지금 값에 맞춰 적용하려고 함수형 갱신을 쓴다.
 // onVerifyingChange 는 폼이 확인 중 제출을 막는 데 쓴다(토큰을 받기 전에 가입되면 사업자정보가 빠진다).
 export function BizAuthSection({
@@ -137,9 +145,16 @@ export function BizAuthSection({
   }
 
   return (
-    <section data-biz-auth className="flex flex-col gap-[24px] border-t border-[#ebebeb] pt-[32px]">
+    <section data-biz-auth className="flex flex-col gap-[24px]">
       <h2 className="text-[20px] leading-[1.4] font-semibold text-[#111]">
         사업자정보 인증<span className="ml-[10px] text-[15px] font-normal text-[#767676]">(선택)</span>
+        {/* 인증완료 뱃지는 묶음 제목 쪽에 하나만 둔다 — 안쪽 "사업자 번호 인증" 줄에도 같은 뱃지를 두면
+            한 화면에 "인증완료"가 두 번 보인다(2026-10-16 디자인 반영). */}
+        {value.verification ? (
+          <span className="ml-[10px] rounded-[4px] bg-guest-card px-[8px] py-[2px] align-middle text-[14px] font-normal text-guest-navy">
+            인증완료
+          </span>
+        ) : null}
       </h2>
       {/* 인증하기를 누르면 화면이 통째로 바뀐다. 실패는 role="alert" 로 읽히니 성공도 읽히게 한다 — 화면 낭독기는 이미 있던
           live 영역의 글자가 바뀔 때만 읽는 경우가 많아, 두 화면에 늘 두는 칸 하나에 글자만 넣는다. */}
@@ -148,10 +163,6 @@ export function BizAuthSection({
       </span>
       {value.verification ? (
         <div className="flex flex-col gap-[24px]">
-          <p className="flex items-center gap-[8px] text-[16px] leading-[1.4] font-medium">
-            사업자 번호 인증
-            <span className="rounded-[4px] bg-guest-card px-[8px] py-[2px] text-[14px] text-guest-navy">인증완료</span>
-          </p>
           <div className="grid grid-cols-[repeat(3,minmax(0,1fr))_auto] items-end gap-[16px]">
             <OptionalField label="사업자등록번호">
               <span className={`${INPUT_BOX} has-disabled:bg-guest-card`}>
@@ -173,25 +184,25 @@ export function BizAuthSection({
                 재인증
               </button>
               <button type="button" onClick={handleClearClick} className={FIELD_BUTTON}>
-                지우기
+                사용안함
               </button>
             </div>
           </div>
         </div>
       ) : (
         <div key={clearCount} className="flex flex-col gap-[24px]">
-          <p className="text-[16px] leading-[1.4] font-medium">사업자 번호 인증</p>
           <div className="grid grid-cols-[repeat(3,minmax(0,1fr))_auto] items-end gap-[16px]">
             <OptionalField label="사업자등록번호">
-              {/* 숫자만 받는다(연락처와 같다). 붙여 넣은 하이픈·공백도 걸러 낸다. */}
+              {/* 숫자만 받는다(연락처와 같다). 붙여 넣은 하이픈·공백도 걸러 낸다 — maxLength 를 DOM 에 두면
+                  "105-87-63602"처럼 하이픈을 포함한 붙여넣기가 숫자로 거르기 전에 10자(하이픈 포함) 에서 잘려
+                  뒤 숫자가 사라진다. 10자리 제한은 숫자만 남긴 뒤 slice 로 건다. */}
               <span className={INPUT_BOX}>
                 <input
                   value={value.bizRegistrationNumber}
-                  onChange={(e) => edit({ bizRegistrationNumber: e.target.value.replace(/\D/g, "") })}
+                  onChange={(e) => edit({ bizRegistrationNumber: e.target.value.replace(/\D/g, "").slice(0, 10) })}
                   onBlur={() => setBizNumberTouched(true)}
                   disabled={verifying}
                   inputMode="numeric"
-                  maxLength={10}
                   placeholder="숫자 10자리"
                   aria-invalid={numberInvalid || undefined}
                   aria-describedby={message ? errorId : undefined}
@@ -220,7 +231,7 @@ export function BizAuthSection({
                   type="date"
                   disabled={verifying}
                   aria-label="개업일자"
-                  className={INPUT}
+                  className={`${INPUT} ${DATE_PLACEHOLDER_COLOR}`}
                 />
               </span>
             </OptionalField>
