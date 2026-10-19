@@ -42,5 +42,5 @@ export function adminsHref(query: Partial<AdminsQuery>): string {
   if (query.page && query.page > 1) params.set("page", String(query.page));
   if (query.admin) params.set("admin", String(query.admin));
   const search = params.toString();
-  return `/platform/system/admins${search ? `?${search}` : ""}`;
+  return `/platform-admins${search ? `?${search}` : ""}`;
 }

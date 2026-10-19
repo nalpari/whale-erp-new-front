@@ -181,7 +181,7 @@ function MenuForm(
   /**
    * 이 저장이 이 화면(MN000215)을 막는가 — 화면으로는 되돌릴 수 없다.
    * inactive: 이 메뉴나 그 아래에 이 화면이 있는데 미사용으로 돌린다. url: 이 화면 메뉴의 URL 을 바꾼다 — 메뉴 URL 이 실제 화면 주소와
-   * 어긋나면 다음 로그인부터 URL 막기(isAllowed)가 이 화면을 연다고 보지 않는다(1팀 메뉴 라우트는 아직 /platform/system/… 이다).
+   * 어긋나면 다음 로그인부터 URL 막기(isAllowed)가 이 화면을 연다고 보지 않는다(이 화면의 라우트는 /platform-menus 다).
    */
   const selfLockOf = (): SelfLock | null => {
     if (props.mode !== "edit") return null;
@@ -195,7 +195,7 @@ function MenuForm(
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
     if (saving || !dirty) return;
-    // 수정은 그대로 둔 URL 의 1뎁스 검사를 건너뛴다 — 1팀 시드의 여러 구간 URL 은 실제 화면 주소라 그대로 두고 이름 · 상태를 고친다
+    // 수정은 그대로 둔 URL 의 1뎁스 검사를 건너뛴다 — 아직 여러 구간인 메뉴(3팀 플랫폼 커뮤니티 · 사용중지 메뉴)도 이름 · 상태를 고친다
     const found = validateMenuForm(form, props.mode === "edit" ? base.url : undefined);
     setErrors(found);
     if (Object.keys(found).length) return;

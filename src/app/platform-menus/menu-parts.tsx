@@ -3,7 +3,7 @@ import type { ActionFailure } from "./actions";
 
 // 플랫폼 메뉴 관리 화면들이 같이 쓰는 작은 조각. 카드 · 띠 · 칸 오류는 권한 관리와 같이 쓴다(components/site/side-parts).
 
-export const PATH = "/platform/system/menus";
+export const PATH = "/platform-menus";
 
 /** 오른쪽 칸의 상세 — 고르지 않음(null) · 불러옴 · 실패. page · menus-screen · menu-side 가 같이 쓴다 */
 export type MenuDetailState = { menu: MenuDetail } | { failed: string } | null;

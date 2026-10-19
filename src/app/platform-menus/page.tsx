@@ -8,7 +8,7 @@ import { MenusScreen } from "./menus-screen";
 // docs/mockup/system/menus.html 을 따른다. 서비스 탭(공통코드 SERVICE 전부 — 사용중지 포함) 아래 왼쪽 메뉴 트리, 오른쪽 고정 칸에 고른 메뉴의
 // 수정(조회 권한만이면 상세) · 등록 양식. 서비스 목록 화면은 없고 처음 들어오면 첫 탭의 트리를 본다(2026-10-08).
 // 고른 서비스 · 메뉴는 주소(?service= · ?menu=)에 둔다. 상세만 못 불러오면 트리는 그대로 두고 오른쪽 칸에서 알린다.
-export default async function PlatformMenusPage({ searchParams }: PageProps<"/platform/system/menus">) {
+export default async function PlatformMenusPage({ searchParams }: PageProps<"/platform-menus">) {
   const params = await searchParams;
   const services = await getMenuServices();
   const service = services.find((s) => s.serviceCode === params.service) ?? services[0];

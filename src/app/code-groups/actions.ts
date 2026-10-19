@@ -34,7 +34,7 @@ function failureOf(error: unknown, what: string, fallback: string): { status?: n
 /** 저장이 끝났으면 화면을 새로 받는다. 무효화가 실패해도 저장은 끝났으므로 성공으로 돌려준다 — 던지면 화면이 「연결하지 못했다」로 보고 다시 저장해 409 가 난다 */
 function refresh() {
   try {
-    revalidatePath("/platform/system/codes");
+    revalidatePath("/code-groups");
   } catch (error) {
     console.error("공통코드 화면 갱신 실패", error);
   }

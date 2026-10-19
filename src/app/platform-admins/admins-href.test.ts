@@ -1,4 +1,4 @@
-// node --test src/app/platform/system/admins/admins-href.test.ts
+// node --test src/app/platform-admins/admins-href.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { adminsHref, parseAdminsQuery, type AdminsQuery } from "./admins-href.ts";
@@ -26,8 +26,8 @@ test("검색어는 앞뒤 공백을 빼고 20자까지 — 자른 끝의 공백�
 });
 
 test("주소 만들기 — 1쪽은 빼고 특수문자는 인코딩한다", () => {
-  assert.equal(adminsHref({}), "/platform/system/admins");
-  assert.equal(adminsHref({ page: 1, keyword: "a&b c" }), "/platform/system/admins?keyword=a%26b+c");
+  assert.equal(adminsHref({}), "/platform-admins");
+  assert.equal(adminsHref({ page: 1, keyword: "a&b c" }), "/platform-admins?keyword=a%26b+c");
 });
 
 test("만든 주소를 다시 읽으면 같은 조건 — 새로 고침 · 링크 공유에서 조건이 사라지지 않는다", () => {

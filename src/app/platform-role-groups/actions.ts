@@ -24,7 +24,7 @@ import {
 // 메뉴 권한 · 플랫폼 계정 여부 · 본인 연결 · 고정 권한 · 본인 범위 상한은 api 가 동작마다 본다(문구가 무엇이 막혔는지 말한다).
 // server action 은 공개 엔드포인트라 id 가 int4 양의 정수인지 · 목록 길이만 다시 본다. 로그인 판정도 api 가 한다 — 세션 토큰을 싣고, 없거나 끝났으면 api 가 401 을 준다.
 
-const PATH = "/platform/system/roles";
+const PATH = "/platform-role-groups";
 
 /**
  * 실패 결과. status 가 있으면 api 가 응답했다(4xx 거절 · 5xx 실패 — 저장은 한 트랜잭션이라 5xx 면 반영되지 않았다).

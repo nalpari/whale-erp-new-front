@@ -8,7 +8,7 @@ import { RolesScreen } from "./roles-screen";
 // 왼쪽 권한 목록(쪽 나눔 없음), 오른쪽 고정 칸에 고른 권한의 수정(고칠 수 없으면 상세) · 등록 양식. 메뉴 권한은 줄마다 [메뉴등록] 팝업이다.
 // 고른 권한은 주소(?role=)에 둔다. 상세만 못 불러오면 목록은 그대로 두고 오른쪽 칸에서 알린다.
 // 막힌 이유 한글은 api enum(PlatformRoleGroupLockReason · PlatformRoleMenuBlockReason)에서 읽는다 — 못 받으면 영문 값 대신 일반 문구를 보인다.
-export default async function PlatformRolesPage({ searchParams }: PageProps<"/platform/system/roles">) {
+export default async function PlatformRolesPage({ searchParams }: PageProps<"/platform-role-groups">) {
   const params = await searchParams;
   const selected = positiveInt(params.role);
   const [roles, lockReasons, menuReasons, detail] = await Promise.all([
