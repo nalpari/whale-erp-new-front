@@ -20,20 +20,22 @@ export interface TermsVersionDetail extends TermsVersion {
   content: string;
 }
 
-// 약관은 개정 때만 바뀐다. getEnum 처럼 한 시간 캐시한다 — 개정 공지 뒤 늦어도 한 시간 안에 화면에 반영된다.
-// request() 는 cache: "no-store" 라 캐시 옵션과 함께 쓸 수 없어 fetch 를 직접 쓴다.
-async function getCached<T>(path: string): Promise<T> {
-  const response = await fetch(`${baseUrl()}${path}`, { next: { revalidate: 3600 } });
+// 약관 전문 화면(/terms)은 읽기만 하므로 getEnum 처럼 한 시간 캐시한다 — 개정 뒤 늦어도 한 시간 안에 화면에 반영된다.
+// 동의를 받는 팝업(강제 비밀번호 변경 · 회원가입 내용보기, terms-actions.ts)은 fresh 로 캐시 없이 받는다 — 보여 준 버전과
+// api 가 동의를 기록하는 사용 중 버전이 어긋나지 않게.
+// request() 는 cache: "no-store" 를 고정해 캐시 옵션과 함께 쓸 수 없어 fetch 를 직접 쓴다.
+async function getTerms<T>(path: string, fresh: boolean): Promise<T> {
+  const response = await fetch(`${baseUrl()}${path}`, fresh ? { cache: "no-store" } : { next: { revalidate: 3600 } });
   if (!response.ok) throw await apiError(response);
   return (await response.json()) as T;
 }
 
-/** GET /public-terms-versions — 사용 중인 약관 6종, TERMS_TYPE 정렬 순서. */
+/** GET /public-terms-versions — 사용 중인 약관 6종, TERMS_TYPE 정렬 순서. 한 시간 캐시. */
 export async function getTermsVersions(): Promise<TermsVersion[]> {
-  return (await getCached<{ items: TermsVersion[]; total: number }>("/public-terms-versions")).items;
+  return (await getTerms<{ items: TermsVersion[]; total: number }>("/public-terms-versions", false)).items;
 }
 
-/** GET /public-terms-versions/{termsTypeCode} — 사용 중인 버전 하나와 본문. 없으면 404(ApiError). */
-export async function getTermsVersion(termsTypeCode: string): Promise<TermsVersionDetail> {
-  return getCached(`/public-terms-versions/${encodeURIComponent(termsTypeCode)}`);
+/** GET /public-terms-versions/{termsTypeCode} — 사용 중인 버전 하나와 본문. 없으면 404(ApiError). fresh 면 캐시 없이 받는다. */
+export async function getTermsVersion(termsTypeCode: string, { fresh = false } = {}): Promise<TermsVersionDetail> {
+  return getTerms(`/public-terms-versions/${encodeURIComponent(termsTypeCode)}`, fresh);
 }
