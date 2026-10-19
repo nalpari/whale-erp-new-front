@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { Badge, Button, DataTable, useToast, type Column } from "@/components/common";
+import { Badge, Button, ConfirmDialog, DataTable, useToast, type Column } from "@/components/common";
 import { ServiceTabs } from "@/components/site/service-tabs";
 import { useMenuPermission } from "@/components/site/session-gate";
 import { CARD, FailedBand } from "@/components/site/side-parts";
@@ -21,6 +21,24 @@ import { useTreeDrag } from "./use-tree-drag";
 
 type Row = { kind: "menu"; row: FlatRow<MenuNode> } | { kind: "draft" };
 
+const SELF_MENU_CODE = MENU_CODE.platformMenus;
+
+/**
+ * 옮기면 이 화면이 닫히는가 — 옮기는 메뉴(하위 포함)에 이 화면이 있고, 새 상위나 그 위가 미사용이다.
+ * login-info 의 메뉴 트리는 사용 중 메뉴만 이어, 미사용 상위 아래의 메뉴는 함께 빠진다(api buildMenuTree).
+ */
+function locksSelfByMove(nodes: MenuNode[], moved: MenuNode, parentMenuId: number | null): boolean {
+  const has = (n: MenuNode): boolean => n.menuCode === SELF_MENU_CODE || n.children.some(has);
+  if (!has(moved)) return false;
+  for (let id = parentMenuId; id !== null; ) {
+    const row = findRow(nodes, id);
+    if (!row) return false;
+    if (row.node.status !== "ACTIVE") return true;
+    id = row.parent?.menuId ?? null;
+  }
+  return false;
+}
+
 export function MenusScreen({ services, tree, selected, detail }: { services: MenuService[]; tree: MenuTree | null; selected?: number; detail: MenuDetailState }) {
   const router = useRouter();
   const toast = useToast();
@@ -31,6 +49,8 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
   const [draftName, setDraftName] = useState("");
   const [moveFailure, setMoveFailure] = useState<{ message: string; detail: string } | null>(null);
   const [moving, startMoving] = useTransition();
+  // 이 화면이 닫히는 옮기기 — 확인을 받는 동안 쥐고 있다
+  const [pendingMove, setPendingMove] = useState<{ menuId: number; spot: Spot; verdict: Extract<Verdict, { kind: "ok" }>; via: "drag" | "key" } | null>(null);
   // 옮긴 뒤 손잡이로 포커스를 돌려줄 메뉴 — 그리기와 상관없어 ref 로 둔다
   const focusAfterMove = useRef<number | null>(null);
   // 고른 줄이 트리에 없으면(지웠거나 다른 서비스) 고르지 않은 것으로 본다
@@ -66,6 +86,15 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
         detail: `‘${moved.name}’ 메뉴를 ${parent ? `‘${parent.name}’ 아래` : "최상위"}에 놓으면 ${verdict.level}단계${verdict.deep > verdict.level ? `, 그 하위 메뉴가 ${verdict.deep}단계` : ""}가 됩니다. 옮기지 않았습니다.`,
       });
     }
+    // 이 화면(MN000215)을 미사용 상위 아래로 옮기면 다음 로그인부터 메뉴 트리에서 빠져 화면으로는 되돌릴 수 없다 — 미사용으로 저장할 때처럼 확인받는다
+    if (locksSelfByMove(nodes, moved, spot.parentMenuId)) return setPendingMove({ menuId, spot, verdict, via });
+    saveMove(menuId, spot, verdict, via);
+  };
+
+  const saveMove = (menuId: number, spot: Spot, verdict: Extract<Verdict, { kind: "ok" }>, via: "drag" | "key") => {
+    setPendingMove(null);
+    const moved = findRow(nodes, menuId)?.node;
+    if (!moved) return;
     const where = `${placeLabel(nodes, spot.parentMenuId, verdict.index + 1)}(${verdict.level}단계)`;
     const carried = descendantCountOf(moved);
     startMoving(async () => {
@@ -238,6 +267,18 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
             router.refresh();
           }}
         />
+        <ConfirmDialog
+          open={pendingMove !== null}
+          title="이 화면이 닫힙니다"
+          confirmLabel="옮겨 저장"
+          busy={moving}
+          onConfirm={() => pendingMove && saveMove(pendingMove.menuId, pendingMove.spot, pendingMove.verdict, pendingMove.via)}
+          onCancel={() => setPendingMove(null)}
+        >
+          <p className="text-[14px] leading-[1.6]">
+            미사용 메뉴 아래로 옮기면 플랫폼 메뉴 관리({SELF_MENU_CODE})도 사용자 화면과 메뉴 권한에서 빠져, 다음 로그인부터 이 화면으로는 되돌릴 수 없습니다. 계속할까요?
+          </p>
+        </ConfirmDialog>
       </div>
     </div>
   );
