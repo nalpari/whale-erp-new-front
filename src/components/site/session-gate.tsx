@@ -207,8 +207,16 @@ function Ready({ value, onChange, children }: { value: LoginState; onChange: (v:
     // 메뉴에 없는 주소로 바로 들어왔다. 안내하고 들어오기 전 화면으로 돌아간다(2026-10-13 정책, 403 과 같다).
     // shortcut: 안내는 브라우저 alert 다. 공통 확인 팝업이 생기면 바꾼다.
     alert("접근 권한이 없는 메뉴입니다");
-    if (history.length > 1) history.back();
-    else router.replace(home);
+    if (history.length <= 1) {
+      router.replace(home);
+      return;
+    }
+    // 기록이 있어도 이 화면이 맨 앞이면(플랫폼관리로 플랫폼이 된 탭에서 뒤로 가기) back 은 아무 일도 하지 않아 빈 화면에 멈춘다.
+    // 잠시 뒤에도 그 주소면 이 탭 서비스의 홈으로 보낸다. 정리 함수로 지우지 않는다 — StrictMode 의 두 번째 실행은 위에서 돌아가 다시 걸리지 않는다.
+    history.back();
+    setTimeout(() => {
+      if (location.pathname === pathname) router.replace(home);
+    }, 500);
   }, [allowed, home, pathname, router]);
 
   const setScope = (scope: Scope) => {

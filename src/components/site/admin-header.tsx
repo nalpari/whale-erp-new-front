@@ -64,7 +64,8 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
 function serviceTargets(bp: AccountBp, service: ServiceCode, openBpSelect: () => void) {
   if (!bp.isPlatform) return { erp: "/home", platform: "/platform" };
   // 탭 준비(SessionGate)를 다시 돌리려고 일부러 전체 로드한다(router.push 로는 준비가 돌지 않는다).
-  const toPlatform = () => location.assign(bpSwitchUrl(bp.bpCodeId));
+  // replace — 이 탭은 플랫폼이 되므로, 지금 ERP 화면이 뒤로 가기에 남으면 「접근 권한이 없는 메뉴」로 막힌다. 그 앞의 ERP 기록은 남는다.
+  const toPlatform = () => location.replace(bpSwitchUrl(bp.bpCodeId));
   return { erp: openBpSelect, platform: service === "PLATFORM" ? "/platform" : toPlatform };
 }
 
