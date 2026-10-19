@@ -36,7 +36,7 @@ test("본문 — 이름은 앞뒤 공백을 지우고 번호는 숫자만, 대�
 });
 
 test("저장 뒤 상태 안내 — 서명 대기 · 수정 요청은 발송 대기로 돌아간다", () => {
-  assert.match(workerSaveNote("PENDING_SIGNATURE"), /발송 대기로 돌아가고/);
-  assert.match(workerSaveNote("CORRECTION_REQUESTED"), /발송 대기로 돌아가고/);
-  assert.match(workerSaveNote("PENDING_SEND"), /발송 대기 그대로/);
+  assert.match(workerSaveNote("PENDING_SIGNATURE"), /곧바로 다시 보낸다/);
+  assert.match(workerSaveNote("CORRECTION_REQUESTED"), /서명 대기로/);
+  assert.match(workerSaveNote("PENDING_SEND"), /가입 초대를 곧바로 다시 보낸다/);
 });

@@ -1,9 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { unstable_rethrow, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
 import { Button, Checkbox, ConfirmDialog, DataTable, DateField, FormGroup, FormRow, Radio, Select, Textarea, TextField } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
+import { callSave, SAVE_CALL_LOST, SAVE_UNKNOWN_NEW } from "../[contractId]/send-model";
 import { createContract, updateContract } from "./actions";
 import {
   formatHours,
@@ -225,8 +226,8 @@ export function ContractForm({
   /** 이어 쓰기 화면의 임시저장 삭제. 취소와 임시저장 사이에 선다 */
   deleteButton?: ReactNode;
   /**
-   * 직원이 수정을 요청한 계약(수정 요청, WHALEERP-125 · 126)을 고친다. 임시저장 · 종이 계약은 없고, 저장하면 발송 대기로
-   * 돌아가 다시 보낸다(api 가 같은 것을 다시 본다).
+   * 직원이 수정을 요청한 계약(수정 요청, WHALEERP-125 · 126)을 고친다. 임시저장 · 종이 계약은 없고, 저장하면 곧바로 서명
+   * 대기로 다시 보낸다(2026-10-19 재영, api 가 같은 것을 다시 본다).
    */
   correction?: boolean;
 }) {
@@ -236,6 +237,7 @@ export function ContractForm({
   const [tried, setTried] = useState(false);
   const [serverError, setServerError] = useState("");
   const [saving, startSaving] = useTransition();
+  const [locked, setLocked] = useState(false);
   // 저장하지 못하면 안내(폼 맨 아래)로 화면을 옮긴다 — 위쪽 버튼을 누르면 안내가 화면 밖에 떠 제자리인 것처럼 보였다.
   // 같은 이유로 다시 실패해도 옮기도록 횟수로 센다.
   const failureRef = useRef<HTMLDivElement>(null);
@@ -286,12 +288,26 @@ export function ContractForm({
   const send = (body: CreateContractBody) =>
     startSaving(async () => {
       // 성공하면 액션이 목록으로 보낸다. 돌아왔다면 실패다.
-      const result = contractId ? await updateContract(contractId, body) : await createContract(body);
+      // 액션의 redirect(성공 · 보내기 실패)는 callSave 가 다시 던져 그 목적지로 간다
+      const result = await callSave(() => (contractId ? updateContract(contractId, body) : createContract(body)), unstable_rethrow);
+      if (result === SAVE_CALL_LOST) {
+        // 서버 액션 호출 자체가 끊겼다(앞단 504 · 배포 중 재시작 · 네트워크) — 저장 = 발송이라 이미 저장 · 발송됐을 수 있다.
+        // 이어 쓰기는 상세로 옮겨 알리고, 새 계약은 같은 폼으로 다시 저장하지 못하게 막는다(front #50 재리뷰).
+        if (contractId) {
+          router.replace(`/contracts/${contractId}?send=unknown`);
+          return;
+        }
+        setLocked(true);
+        fail(SAVE_UNKNOWN_NEW);
+        return;
+      }
       if (result.inProgress) {
         setReplace({ body, list: result.inProgress, paper: false });
         return;
       }
       setReplace(null);
+      // 결과를 받지 못했다 — 저장 · 발송됐을 수 있어 이 폼으로는 다시 저장하지 않는다(front #50 리뷰)
+      if (result.locked) setLocked(true);
       fail(result.error);
     });
 
@@ -400,7 +416,7 @@ export function ContractForm({
     { key: "sum", label: "합계(계산용)", amount: <Calc strong>{won(fullPay.payTotal)}</Calc> },
   ];
 
-  const blocked = saving || !signedIn || minor;
+  const blocked = saving || !signedIn || minor || locked;
   const saveButtons = (
     <>
       {!correction && (
@@ -480,7 +496,7 @@ export function ContractForm({
           </Group>
           <Group
             label="계약 방식"
-            help={paper ? "당사자가 모두 날인한 근로계약서를 올려 등록하면 발송 · 날인 없이 체결 완료로 저장된다" : "초안 저장 뒤 근로계약서를 발송해 직원이 앱에서 날인한다"}
+            help={paper ? "당사자가 모두 날인한 근로계약서를 올려 등록하면 발송 · 날인 없이 체결 완료로 저장된다" : "초안 저장하면 곧바로 직원에게 보내고, 직원이 앱에서 날인한다"}
           >
             <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
               {(["ELECTRONIC", "PAPER"] as const).map((v) => (
@@ -757,10 +773,10 @@ export function ContractForm({
         <div className="flex items-center gap-[6px]">
           <span className="flex-1 text-[14px] text-erp-label">
             {correction
-              ? "직원이 수정을 요청한 근로계약서다. 다 채워 수정 저장하면 발송 대기로 돌아가고, 다시 발송하면 새 날인 기한으로 간다. 근무지는 바꿀 수 없다."
+              ? "직원이 수정을 요청한 근로계약서다. 다 채워 수정 저장하면 곧바로 서명 대기로 다시 보낸다(새 날인 기한 30일). 근무지는 바꿀 수 없다."
               : paper
               ? "임시저장은 이름 · 휴대전화번호 · 근무지 · 직무만 있으면 되고 날인본은 올리지 않는다. 종이 계약 등록은 다 채우고 근로계약서 날인본을 올려야 하며 체결 완료로 남는다."
-              : "임시저장은 이름 · 휴대전화번호 · 근무지 · 직무만 있으면 된다. 초안 저장은 다 채워야 하고 발송 대기로 남는다. 초대 발송은 아직 없다."}
+              : "임시저장은 이름 · 휴대전화번호 · 근무지 · 직무만 있으면 되고 보내지 않는다. 초안 저장은 다 채워야 하고 곧바로 직원에게 보낸다 — 계정이 없는 번호면 가입 초대 알림톡(발송 대기), 있으면 서명 대기."}
           </span>
           {saveButtons}
         </div>

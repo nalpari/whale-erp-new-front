@@ -1,4 +1,4 @@
-// 발송 · 재발송 실패를 화면이 다룰 모양으로 바꾼다(front #41 리뷰). 서버 액션과 테스트가 함께 쓴다.
+// 재발송 · 저장 뒤 보내기 실패를 화면이 다룰 모양으로 바꾼다(front #41 리뷰). 서버 액션 · 상세와 테스트가 함께 쓴다.
 
 /** 실패 결과. recheck 면 api 가 이미 쓰고 보냈을 수 있다 — 확인창의 보내기를 막고 상세를 다시 읽는다(두 번 가지 않게) */
 export type SendFailure = { ok: false; error: string; code?: string; recheck: boolean };
@@ -18,4 +18,63 @@ export function sendFailureOf(status: number | null, code: string | undefined, m
   if (status === null || ((status === 502 || status === 504) && !code)) return { ok: false, error: SEND_UNKNOWN, recheck: true };
   const recheck = code === "SEND_UNCONFIRMED" || (status === 409 && (!code || code === "CONTRACT_STATUS_CONFLICT"));
   return { ok: false, error: message, ...withCode, recheck };
+}
+
+/**
+ * 저장하면 곧바로 보낸다(2026-10-19 재영). 저장 · 고침은 끝났는데 가입 초대 알림톡이 실패하면 api 가 502 와 계약 ID 를
+ * 준다 — 그 계약 상세로 옮겨 알린다(새 계약은 임시저장으로 되돌아가 있어, 작성 화면에서 다시 저장하면 한 벌 더 생긴다).
+ * 쿼리에는 정해진 이름(failed · unconfirmed)만 싣는다.
+ */
+export function sendFailedTarget(status: number, body: unknown): string | null {
+  if (status !== 502) return null;
+  const { code, contractId } = (body ?? {}) as { code?: unknown; contractId?: unknown };
+  const kind = code === "SEND_FAILED" ? "failed" : code === "SEND_UNCONFIRMED" ? "unconfirmed" : null;
+  if (!kind || typeof contractId !== "number" || !Number.isInteger(contractId) || contractId < 1 || contractId > 2_147_483_647) return null;
+  return `/contracts/${contractId}?send=${kind}`;
+}
+
+/**
+ * 저장(= 보내기)의 결과를 받지 못했는가 — api 와의 연결이 응답 전에 끊겼거나(status null) 앞단이 코드 없이 502 · 504 를 줬다.
+ * api 는 이미 저장하고 보냈을 수 있어, 같은 화면에서 다시 저장하면 두 번 보내거나(고침) 한 벌 더 만든다(새 계약, front #50 리뷰).
+ */
+export const saveOutcomeUnknown = (status: number | null, code: string | undefined) =>
+  status === null || ((status === 502 || status === 504) && !code);
+
+/** 새 계약 저장의 결과를 받지 못했을 때 — 계약 ID 를 몰라 상세로 옮기지 못한다. 같은 폼으로 다시 저장하지 못하게 막는다 */
+export const SAVE_UNKNOWN_NEW =
+  "저장 요청의 결과를 받지 못했습니다. 저장 · 발송됐을 수 있으니 목록에서 확인해 주세요 — 이 화면에서 다시 저장하면 한 벌 더 만들어 두 번 보낼 수 있습니다";
+
+/**
+ * 상세 위쪽 안내(?send=). 되돌아간 상태에 맞춰 할 일을 알린다 — 임시저장이면 이어 쓰기에서 다시 저장, 수정 요청이면 「수정」에서
+ * 다시 저장(재발송은 수정 요청에서 할 수 없다, front #50 리뷰), 그 밖에는 재발송. unknown 은 저장 요청의 결과를 받지 못했을 때다.
+ */
+export function sendNoticeOf(raw: unknown, status: string | null): string | null {
+  if (raw === "unconfirmed")
+    return "저장했지만 가입 초대 알림톡이 접수됐는지 알 수 없습니다. 직원에게 받았는지 확인한 뒤 재발송해 주세요 — 다시 보내면 두 번 갈 수 있습니다";
+  if (raw === "unknown")
+    return "저장 요청의 결과를 받지 못했습니다. 아래 상태로 저장됐는지 확인하고, 보냈다면 직원에게 받았는지 확인한 뒤 필요할 때만 다시 보내 주세요";
+  if (raw !== "failed") return null;
+  if (status === "DRAFT")
+    return "가입 초대 알림톡을 보내지 못해 임시저장으로 두었습니다. 휴대전화번호를 확인하고 이어 쓰기에서 다시 저장해 주세요";
+  if (status === "CORRECTION_REQUESTED")
+    return "고친 내용은 저장했지만 가입 초대 알림톡을 보내지 못해 수정 요청으로 두었습니다. 휴대전화번호를 확인하고 「수정」에서 다시 저장해 주세요";
+  return "고친 내용은 저장했지만 가입 초대 알림톡을 보내지 못했습니다. 휴대전화번호를 확인하고 재발송해 주세요";
+}
+
+/** 저장 서버 액션을 부른 결과를 받지 못했다(호출 자체가 끊김) */
+export const SAVE_CALL_LOST = Symbol("save-call-lost");
+
+/**
+ * 저장 서버 액션을 부른다. 호출 자체가 끊기면(앞단 504 · 배포 중 재시작 · 네트워크) SAVE_CALL_LOST 를 돌려준다 — 저장 = 발송이라
+ * 이미 저장 · 발송됐을 수 있다. 액션의 redirect() · notFound() 는 Next 가 클라이언트 await 를 그 오류로 끝내 알리므로, rethrow 로
+ * 다시 던져 원래 목적지로 가게 한다(front #50 재리뷰 — 맨 catch 가 성공 redirect 까지 받으면 매번 「결과 모름」이 된다).
+ * rethrow 는 next/navigation 의 unstable_rethrow — 이 파일이 next 를 import 하지 않게 넘겨받는다(node --test).
+ */
+export async function callSave<T>(action: () => Promise<T>, rethrow: (e: unknown) => void): Promise<T | typeof SAVE_CALL_LOST> {
+  try {
+    return await action();
+  } catch (e) {
+    rethrow(e);
+    return SAVE_CALL_LOST;
+  }
 }

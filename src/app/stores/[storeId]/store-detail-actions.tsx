@@ -7,8 +7,7 @@ import { labelOf, type EnumValue } from "@/lib/enums";
 import { formOfStore, toUpdateStoreInput } from "@/lib/store-form";
 import type { StoreDetail, StoreStatus, StoreTransitions } from "@/lib/store-types";
 import { useCodeLabel } from "@/components/site/code-label";
-import { useMenuPermission } from "@/components/site/session-gate";
-import { MENU_CODE } from "@/lib/menus";
+import { usePagePermission } from "@/components/site/session-gate";
 import { closeBlockText, finalEuro, nextStatuses } from "@/lib/store-view";
 import { deleteStoreAction, getStoreTransitionsAction, updateStoreAction, type ActionFailure } from "../actions";
 import { StoreStatusBadge } from "../store-parts";
@@ -49,7 +48,7 @@ export function StoreDetailActions({
 }) {
   const router = useRouter();
   const toast = useToast();
-  const can = useMenuPermission(MENU_CODE.stores);
+  const can = usePagePermission();
   const statusLabel = useCodeLabel("STORE_STATUS");
   const [dialog, setDialog] = useState<"status" | "delete" | null>(null);
   const [target, setTarget] = useState<StoreStatus | null>(null);
