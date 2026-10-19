@@ -4,6 +4,7 @@
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #41 재리뷰 참고 반영(영주). 발송 확인창이 서버 액션 호출 자체가 끊겨도(브라우저 ↔ Next · 배포 중 재시작) 오류 화면 대신 「발송됐는지 알 수 없음」으로 보내기를 막고 상세를 다시 읽는다.
 
 ## 2026-10-16
+* **Update**: [Notifications](/notify.md) — 근로계약 화면(목록 · 작성 · 이어 쓰기 · 상세)의 임시 헤더(`GlobalHeader` · 샘플 메뉴 · `NotificationBellSlot`) · 바깥 틀과 `contracts/layout` 의 `ErpRoot` 를 걷었다 — 공통 틀(AdminFrame)이 헤더를 그려 헤더가 두 번 보이던 것(WHALEERP-592 재범위: 헤더 · 틀 정리). 화면은 `PageBar` 부터 그린다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #41 리뷰 반영(영주). 발송 확인창이 접수 여부 모름(SEND_UNCONFIRMED · 코드 없는 502 · 504 · api 응답 전 끊김)과 409 상태 충돌 · 「다른 요청이 먼저 고침」이면 보내기를 막고 상세를 다시 읽는다(`send-model.ts`). 응답 전 끊김은 오류 화면 대신 확인창 문장. api-types 를 api #59 반영(2a826ee)으로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세의 「발송」(발송 대기) · 「재발송」(서명 대기)을 켰다(WHALEERP-136, api psyduck). 확인창 → 서버 액션 `sendContract` → `POST /contracts/:id/send`, 실패 문장은 확인창에. api-types 를 다시 만들었다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — front #40 재리뷰 사소 반영(영주). 퇴직 확인창의 「닫힐 근로계약」 설명에 「수정 요청」을 더했다(api #58 이 퇴직 때 수정 요청도 닫는다). api-types 를 api #58(e57f334) openapi 로 다시 만들었다(설명 문구만).
