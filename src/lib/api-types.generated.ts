@@ -298,6 +298,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/admin/signup-session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 가입 완료 화면의 「웨일ERP 시작하기」. 비밀번호 없이 signupToken(가입 응답, 10분)으로 로그인 접속을
+         *     낸다. 토큰이 만료·위조됐거나 그 사이 계정 상태가 바뀌면 401 · 403 — front 는 로그인 화면으로 보낸다.
+         */
+        post: operations["AdminAuthController_signupSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/admin/logout": {
         parameters: {
             query?: never;
@@ -1441,6 +1461,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/leads/{leadId}/reply-mail/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 저장된 지금 답변을 문의자 이메일로 다시 보낸다. 답변완료만, 같은 도입문의는 1분에 한 번. SMTP 가 실패해도 200 이고
+         *     결과(`FAILED`)를 돌려준다 — 상세의 마지막 발송 결과에도 보통 같은 값이 남는다. 메일 발송 설정이 없으면 503.
+         */
+        post: operations["LeadsAdminController_resendReplyMail"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/leads/{leadId}/internal-memo": {
         parameters: {
             query?: never;
@@ -1765,6 +1805,12 @@ export interface components {
              * @description 갱신 토큰은 새로 주지 않는다. 쓰던 것의 새 만료 시각이다.
              */
             refreshTokenExpiresAt: string;
+        };
+        AdminSignupSessionDto: {
+            /** @description AdminSignupService.signup 이 가입 끝에 낸 10분짜리 토큰(signup.response.dto.ts 의 signupToken). */
+            signupToken: string;
+            /** @description 브라우저를 구분하는 값 — 로그인과 같다. 같은 값으로 다시 부르면 그 브라우저의 이전 세션만 종료된다. */
+            deviceInformation?: string;
         };
         CodeValueDto: {
             /** @description 상세코드. 저장 · 전송 값. 예: KB */
@@ -3576,22 +3622,20 @@ export interface components {
             items: components["schemas"]["LeadListItemDto"][];
             total: number;
         };
+        /**
+         * @description 마지막 답변 메일 결과(#597). 실패면 「답변 메일 다시 보내기」로 다시 보낸다. null 이면 보낸 적 없거나(시각도 null)
+         *     결과를 아직 모른다(시각만 있음 — 보내는 중이거나 결과를 남기지 못함).
+         * @enum {string}
+         */
+        ReplyMailResult: "SUCCEEDED" | "FAILED";
         LeadResponseDto: {
             interests: components["schemas"]["LeadInterest"][];
             status: components["schemas"]["InquiryStatus"];
-            leadId: number;
-            /** @description 문의자 이름 */
-            contactName: string;
-            phone: string;
-            /** @description 업종(공통코드 INDUSTRY 값) */
-            industryCode: string;
-            /** @description 업종 직접 입력 — 업종이 기타일 때 */
-            industryDetail: string | null;
             /**
-             * Format: date-time
-             * @description 접수 일시
+             * @description 마지막 답변 메일 결과(#597). 실패면 「답변 메일 다시 보내기」로 다시 보낸다. null 이면 보낸 적 없거나(시각도 null)
+             *     결과를 아직 모른다(시각만 있음 — 보내는 중이거나 결과를 남기지 못함).
              */
-            createdAt: string;
+            replyMailResult: components["schemas"]["ReplyMailResult"] | null;
             email: string;
             /** @description 도입 예정 시기(공통코드 값) */
             planPeriodCode: string | null;
@@ -3620,6 +3664,11 @@ export interface components {
             repliedAt: string | null;
             repliedBy: number | null;
             repliedByName: string | null;
+            /**
+             * Format: date-time
+             * @description 마지막으로 답변 메일을 보내려 한 시각. 보낸 적 없으면 null.
+             */
+            replyMailAttemptedAt: string | null;
             /** @description 운영자 내부 메모. 문의자에게 보이지 않는다. */
             internalMemo: string | null;
             /** @description 상담 완료일(YYYY-MM-DD) — 이날부터 1년 뒤 파기 */
@@ -3629,6 +3678,19 @@ export interface components {
              * @description 최근 수정 일시
              */
             updatedAt: string;
+            leadId: number;
+            /** @description 문의자 이름 */
+            contactName: string;
+            phone: string;
+            /** @description 업종(공통코드 INDUSTRY 값) */
+            industryCode: string;
+            /** @description 업종 직접 입력 — 업종이 기타일 때 */
+            industryDetail: string | null;
+            /**
+             * Format: date-time
+             * @description 접수 일시
+             */
+            createdAt: string;
         };
         LeadStateResponseDto: {
             status: components["schemas"]["InquiryStatus"];
@@ -3644,6 +3706,14 @@ export interface components {
             updatedAt: string;
             /** @description 문의자에게 회신할 답변. 평문이고 20,000자까지. */
             reply: string;
+        };
+        LeadReplyMailResponseDto: {
+            replyMailResult: components["schemas"]["ReplyMailResult"];
+            /**
+             * Format: date-time
+             * @description 보내려 한 시각. 같은 도입문의는 이 시각부터 1분이 지나면 다시 보낼 수 있다.
+             */
+            replyMailAttemptedAt: string;
         };
         SaveInternalMemoDto: {
             /** @description 메모. 2,000자까지. null · 빈 문자열 · 공백만 보내면 지운다. 키는 빼먹을 수 없다 — 빠진 키로 메모가 지워지지 않게. */
@@ -4159,6 +4229,29 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminRefreshResponseDto"];
+                };
+            };
+        };
+    };
+    AdminAuthController_signupSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSignupSessionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminLoginResponseDto"];
                 };
             };
         };
@@ -7765,6 +7858,55 @@ export interface operations {
             };
             /** @description 그사이 다른 운영자가 저장함 */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LeadsAdminController_resendReplyMail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadReplyMailResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 도입문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 답변완료가 아니거나, 1분 안에 이미 보냄 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메일 발송 설정(MAIL_*) 없음 */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

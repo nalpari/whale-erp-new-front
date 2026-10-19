@@ -21,7 +21,7 @@ export function AgreeSection({ value, onChange }: { value: AgreeValue; onChange:
   const setAll = (checked: boolean) => onChange({ useAgreed: checked, privacyAgreed: checked });
 
   return (
-    <section className="flex flex-col gap-[24px] border-t border-[#ebebeb] pt-[32px]">
+    <section className="flex flex-col gap-[24px]">
       <h2 className="text-[20px] leading-[1.4] font-semibold text-[#111]">약관동의</h2>
       <div className="flex flex-col gap-[18px] text-[16px] leading-[1.5] font-medium text-[#5e697b]">
         <label className="flex items-center gap-[8px] text-guest-ink">
