@@ -58,8 +58,8 @@ function DeleteTodoDialog({ detail, listHref, onClose }: { detail: TodoDetail; l
         }
         const message = onFailure(result);
         if (message) setError(message);
-        // 그사이 지워졌거나 범위 밖이 됐다 — 다시 받아 404 화면으로
-        if (result.status === 404) router.refresh();
+        // 404(그사이 지워졌거나 범위 밖)는 다시 받아 404 화면으로, 409(지울 대기 행이 없음 — 그사이 상태가 바뀜)는 문구와 함께 지금 상태를 다시 받는다
+        if (result.status === 404 || result.status === 409) router.refresh();
       } catch (e) {
         console.error("TO-DO 삭제 실패", e);
         setError("삭제 결과를 확인하지 못했습니다. 화면을 새로 불러와 확인해 주세요.");

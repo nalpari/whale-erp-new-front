@@ -9,7 +9,7 @@ import { MENU_CODE } from "@/lib/menus";
 import { useFailure } from "../staff-members/[id]/use-action-failure";
 import { createTodoAction, getAssignableStaffAction, updateTodoAction } from "./actions";
 import { fromDetail, initialForm, matchStaff, problems, staffChipText, toCreateBody, toUpdateBody, type PickedStaff, type TodoForm as Form } from "./todo-form-model";
-import type { TodoDetail } from "./todo-row";
+import { staffNameText, type TodoDetail } from "./todo-row";
 
 const HELP = "text-[12px] leading-[1.5] text-erp-muted";
 const STAFF_LOAD_FAILED = "직원 목록을 불러오지 못했습니다. 다시 시도해 주세요.";
@@ -91,7 +91,7 @@ function TodoFormFields({
 
   /**
    * 개인 배정일 때 그 근무지에서 배정할 수 있는 직원을 받는다. 이미 받은(받는 중인) 근무지면 다시 받지 않는다 — 실패했으면 다시 받는다.
-   * 실패는 이 칸에 고정 문구로 보인다. 403 만 useFailure 로 넘긴다 — 비밀번호 변경 요구 · 권한 없음(쫓아냄)을 공통으로 처리한다.
+   * 실패는 이 칸에 고정 문구로 보인다. 401 · 403 은 useFailure 로 넘긴다 — 로그인 만료 · 비밀번호 변경 요구 · 권한 없음(쫓아냄)을 공통으로 처리한다.
    */
   const loadStaff = (storeId: string, assigneeType: Form["assigneeType"]) => {
     if (!storeId || assigneeType !== "INDIVIDUAL" || (pool?.storeId === storeId && pool.state !== "error")) return;
@@ -101,7 +101,11 @@ function TodoFormFields({
       .then((result) => {
         if (n !== seq.current) return;
         if (result.ok) return setPool({ storeId, state: "ok", staff: result.staff });
-        if (result.status === 403 && onFailure(result) === null) return setPool(null);
+        // 401(로그인 만료) · 403(비밀번호 변경 요구 · 권한 없음)은 공통 처리로 넘긴다. 문구가 돌아오면 그 문구를 이 칸에 보인다
+        if (result.status === 401 || result.status === 403) {
+          const message = onFailure(result);
+          return setPool(message === null ? null : { storeId, state: "error", message });
+        }
         setPool({ storeId, state: "error", message: STAFF_LOAD_FAILED });
       })
       .catch((error: unknown) => {
@@ -202,7 +206,7 @@ function TodoFormFields({
                 <span className="text-[14px] text-erp-ink">
                   {labelOf(labels.assigneeType, detail.assigneeType)}
                   {detail.assigneeType === "ALL" ? ` · ${labelOf(labels.executionMode, detail.executionMode)}` : ""}
-                  {detail.assigneeType === "INDIVIDUAL" && detail.assignees.length ? ` · ${detail.assignees.map((a) => a.staffMemberName).join(", ")}` : ""}
+                  {detail.assigneeType === "INDIVIDUAL" && detail.assignees.length ? ` · ${detail.assignees.map(staffNameText).join(", ")}` : ""}
                 </span>
               </Group>
             </>

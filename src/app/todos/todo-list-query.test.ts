@@ -1,7 +1,7 @@
 // node --test src/app/todos/todo-list-query.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { DEFAULT_TODO_LIST_QUERY, hasTodoFilter, parseTodoListQuery, todoListApiSearch, todoListHref, toTodoListSearch, withFilter } from "./todo-list-query.ts";
+import { DEFAULT_TODO_LIST_QUERY, emptyPageHref, hasTodoFilter, parseTodoListQuery, todoListApiSearch, todoListHref, toTodoListSearch, withFilter } from "./todo-list-query.ts";
 
 test("빈 URL 은 기본값 — 근무지 전체, 상태 셋 다, 담당 전체, 1쪽, 20건", () => {
   assert.deepEqual(parseTodoListQuery({}), DEFAULT_TODO_LIST_QUERY);
@@ -80,4 +80,14 @@ test("거르는 조건이 있는가 — 쪽 · 건수는 조건이 아니다", (
   assert.equal(hasTodoFilter({ ...DEFAULT_TODO_LIST_QUERY, urgentOnly: true }), true);
   assert.equal(hasTodoFilter({ ...DEFAULT_TODO_LIST_QUERY, statuses: ["DONE"] }), true);
   assert.equal(hasTodoFilter({ ...DEFAULT_TODO_LIST_QUERY, dueDateTo: "2026-10-31" }), true);
+});
+
+test("빈 쪽 — 1쪽이 아니면 남은 마지막 쪽(없으면 1쪽)으로, 조건은 그대로", () => {
+  const q = { ...DEFAULT_TODO_LIST_QUERY, urgentOnly: true, page: 3 };
+  // 3쪽의 마지막 줄을 지워 41 → 40건이 됐다(20건씩 2쪽)
+  assert.equal(emptyPageHref(q, 0, 40), "/todos?urgent=1&page=2");
+  assert.equal(emptyPageHref(q, 0, 0), "/todos?urgent=1");
+  // 줄이 있거나 1쪽이면 그대로
+  assert.equal(emptyPageHref(q, 1, 41), null);
+  assert.equal(emptyPageHref({ ...q, page: 1 }, 0, 0), null);
 });

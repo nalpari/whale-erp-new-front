@@ -8,7 +8,7 @@ import { formatDateTime } from "@/lib/format";
 import { getTodo, type TodoDetail } from "@/lib/todos-api";
 import { CellView } from "../../staff-members/staff-table";
 import { todoListHref } from "../todo-list-query";
-import { historyText, statusCells } from "../todo-row";
+import { historyActorText, historyText, staffNameText, statusCells } from "../todo-row";
 import { TodoDetailActions, TodoStatusControl } from "./todo-detail-actions";
 
 export const metadata: Metadata = {
@@ -51,7 +51,7 @@ export default async function TodoDetailPage({
           : labelOf(assigneeTypeLabels, todo.assigneeType),
     },
     // 이 행의 배정 직원. 한 명 수행은 대상 전원, 퇴직으로 배정이 풀렸으면 비어 있다
-    { label: "직원", value: todo.assignees.map((a) => a.staffMemberName).join(", ") || "-", multiline: true },
+    { label: "직원", value: todo.assignees.map(staffNameText).join(", ") || "-", multiline: true },
     { label: "수행 예정 일시", value: todo.dueTime ? `${todo.dueDate} ${todo.dueTime}` : todo.dueDate },
     { label: "긴급", value: todo.isUrgent ? <Badge tone="off">긴급</Badge> : "아님" },
     {
@@ -87,8 +87,11 @@ export default async function TodoDetailPage({
                 columns={[
                   {
                     header: "직원",
+                    // 가린 직원은 흐린 글자로만 둔다(직원 목록과 같다) — 그 행으로 가는 링크를 걸지 않는다
                     cell: (r) =>
-                      r.todoId === todo.todoId ? (
+                      r.isMasked ? (
+                        <span className="text-erp-muted">{staffNameText(r)}</span>
+                      ) : r.todoId === todo.todoId ? (
                         <b className="font-medium">{r.staffMemberName ?? "배정 풀림"}</b>
                       ) : (
                         <Link href={`/todos/${r.todoId}${listSearch}`} className="text-erp-link hover:underline">
@@ -112,8 +115,7 @@ export default async function TodoDetailPage({
               columns={[
                 { header: "일시", width: "w-[180px]", cell: (h) => formatDateTime(h.changedAt) },
                 { header: "변경", align: "left", cell: (h) => historyText(h, statusLabels) },
-                // 관리자가 바꿨으면 관리자, 직원이 바꿨으면 직원 이름. 퇴직 배정 풀림은 시스템이 남긴다
-                { header: "바꾼 사람", width: "w-[180px]", cell: (h) => h.changedByName ?? h.staffMemberName ?? "-" },
+                { header: "바꾼 사람", width: "w-[180px]", cell: (h) => historyActorText(h) },
               ]}
               rows={todo.histories.map((h, i) => ({ ...h, key: i }))}
               rowKey={(h) => h.key}

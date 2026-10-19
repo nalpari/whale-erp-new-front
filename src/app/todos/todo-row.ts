@@ -11,12 +11,23 @@ export type TodoListItem = Schemas["TodoListItemDto"];
 export type TodoDetail = Schemas["TodoDetailDto"];
 type TodoStatus = Schemas["TodoStatus"];
 
+/**
+ * 가린 직원의 이름 자리. 직원 목록(staff-table)과 같은 글자다. api 는 본사 역할이 본사 제공 동의를 하지 않은 가맹 점포 직원을 볼 때
+ * id · 이름을 비우고 isMasked 를 준다(운영 정책 ATT-30). 화면은 흐린 글자로 두고 링크를 걸지 않는다.
+ */
+export const MASKED_STAFF = "본사 제공 동의 없음";
+
+/** 직원 이름 칸. 가렸으면 MASKED_STAFF, 이름이 없으면(퇴직으로 배정이 풀린 행 등) 「-」 */
+export function staffNameText(s: { staffMemberName: string | null; isMasked: boolean }): string {
+  return s.isMasked ? MASKED_STAFF : (s.staffMemberName ?? "-");
+}
+
 /** 담당 칸. 근무지 전체는 「전체 · 각자」 · 「전체 · 한 명」, 개인은 직원 이름(여러 명을 한 줄로 묶었으면 「누구 외 n명」) */
 export function assigneeText(item: Pick<TodoListItem, "assigneeType" | "executionMode" | "assignees">): string {
   if (item.assigneeType === "ALL") return item.executionMode === "ANY_ONE" ? "전체 · 한 명" : "전체 · 각자";
   const [head, ...rest] = item.assignees;
   if (!head) return "-";
-  return rest.length ? `${head.staffMemberName} 외 ${rest.length}명` : head.staffMemberName;
+  return rest.length ? `${staffNameText(head)} 외 ${rest.length}명` : staffNameText(head);
 }
 
 /** 수행 예정. 오늘과 같은 해면 MM-DD, 아니면 YYYY-MM-DD. 시간이 있으면 뒤에 붙인다. today 는 kstToday() */
@@ -31,7 +42,7 @@ const STATUS_STYLE: Record<TodoStatus, Cell["style"]> = { PENDING: "badge-neutra
 export function statusCells(item: Pick<TodoListItem, "status" | "todoCount" | "doneCount" | "performer">, labels: EnumValue[]): Cell[] {
   const label = labelOf(labels, item.status);
   const cells: Cell[] = [{ text: item.todoCount > 1 ? `${label} · ${item.doneCount}/${item.todoCount}` : label, style: STATUS_STYLE[item.status] }];
-  if (item.status === "DONE" && item.performer) cells.push({ text: item.performer.staffMemberName, style: "muted" });
+  if (item.status === "DONE" && item.performer) cells.push({ text: staffNameText(item.performer), style: "muted" });
   return cells;
 }
 
@@ -49,8 +60,16 @@ export function deleteResultMessage({ deleted, remaining }: Schemas["TodoDeleteR
 
 /** 상태 이력 한 줄의 「변경」 칸 */
 export function historyText(h: Schemas["TodoStatusHistoryDto"], labels: EnumValue[]): string {
+  if (h.isUnassignedStaffMemberMasked) return `배정 풀림 · ${MASKED_STAFF}(퇴직)`;
   if (h.unassignedStaffMemberName) return `배정 풀림 · ${h.unassignedStaffMemberName}(퇴직)`;
   if (h.isUrgentChanged) return "긴급 표시 변경";
   if (h.fromStatus === null) return `등록 · ${labelOf(labels, h.toStatus)}`;
   return `${labelOf(labels, h.fromStatus)} → ${labelOf(labels, h.toStatus)}`;
+}
+
+/** 상태 이력의 「바꾼 사람」. 관리자가 바꿨으면 관리자, 직원이 바꿨으면 직원 이름(가렸으면 MASKED_STAFF). 퇴직 배정 풀림은 시스템이 남겨 「-」 */
+export function historyActorText(h: Schemas["TodoStatusHistoryDto"]): string {
+  if (h.changedByName) return h.changedByName;
+  if (h.isStaffMemberMasked) return MASKED_STAFF;
+  return h.staffMemberName ?? "-";
 }

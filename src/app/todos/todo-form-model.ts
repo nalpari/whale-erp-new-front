@@ -10,7 +10,7 @@ type TodoDetail = Schemas["TodoDetailDto"];
 
 /**
  * 개인 배정으로 고를 · 고른 직원. GET /todos/assignable-staff 한 줄 그대로다 — 그 근무지에 체결 완료 근로계약이 있고 가입을 마친 재직 직원(퇴직 예정 포함)
- * (운영 정책 PAY-16 · CTR-29). 수정 화면에서는 배정을 글자로만 보여 번호 끝자리 · 직무가 비어 있다.
+ * (운영 정책 PAY-16 · CTR-29). 등록에서만 쓴다 — 수정 화면은 배정을 상세 값으로 글자만 그린다.
  */
 export type PickedStaff = Schemas["AssignableStaffItemDto"];
 
@@ -46,7 +46,8 @@ export function fromDetail(d: TodoDetail): TodoForm {
     body: d.body ?? "",
     storeId: String(d.storeId),
     assigneeType: d.assigneeType,
-    staff: d.assignees.map((a) => ({ staffMemberId: a.staffMemberId, name: a.staffMemberName, phoneLast4: "", jobTitle: "" })),
+    // 수정은 배정을 바꾸지 않는다 — 배정 글자는 화면이 상세 값으로 그린다(가린 직원은 id · 이름이 없다)
+    staff: [],
     executionMode: d.executionMode,
     dueDate: d.dueDate,
     dueTime: d.dueTime ?? "",

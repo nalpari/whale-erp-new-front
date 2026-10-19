@@ -1,10 +1,11 @@
+import { redirect } from "next/navigation";
 import { ListToolbar, PageBar } from "@/components/common";
 import { getEnum } from "@/lib/api";
 import { kstToday } from "@/lib/staff-members";
 import { getTodos } from "@/lib/todos-api";
 import { TodoFilter } from "./todo-filter";
 import { TodoCreateButton, TodoPageSize, TodoPagination } from "./todo-list-controls";
-import { hasTodoFilter, parseTodoListQuery, todoListApiSearch, toTodoListSearch } from "./todo-list-query";
+import { emptyPageHref, hasTodoFilter, parseTodoListQuery, todoListApiSearch, toTodoListSearch } from "./todo-list-query";
 import { TodoTable } from "./todo-table";
 
 // TO-DO 리스트 관리 목록(#116). 목업 docs/mockup/staff/index.html TO-DO 탭 · 데모 docs/demo/staff/todos.html 을 공통 컴포넌트로 옮겼다.
@@ -21,6 +22,9 @@ export default async function TodosPage({
     getEnum("TodoStatus"),
     getEnum("TodoAssigneeType"),
   ]);
+  // 상세에서 지우고 돌아온 쪽이 비었으면 남은 마지막 쪽으로 — 「등록된 TO-DO 가 없습니다」가 보이지 않게
+  const moveTo = emptyPageHref(query, items.length, total);
+  if (moveTo) redirect(moveTo);
   const totalPages = Math.max(1, Math.ceil(total / query.pageSize));
 
   return (

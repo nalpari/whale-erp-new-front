@@ -115,3 +115,12 @@ export function withFilter(query: TodoListQuery, next: Partial<TodoListQuery>): 
 export function hasTodoFilter(query: TodoListQuery): boolean {
   return toTodoListSearch({ ...query, page: 1, pageSize: DEFAULT_TODO_LIST_QUERY.pageSize }) !== "";
 }
+
+/**
+ * 쪽이 비었을 때 갈 주소. 1쪽이 아닌데 줄이 없으면(마지막 쪽의 마지막 줄을 지우고 돌아옴 · 손으로 친 쪽) 남은 마지막 쪽, 0건이면 1쪽.
+ * 그대로 두면 되는 경우는 null — 조건은 그대로 둔다.
+ */
+export function emptyPageHref(query: TodoListQuery, rowCount: number, total: number): string | null {
+  if (rowCount > 0 || query.page === 1) return null;
+  return `/todos${toTodoListSearch({ ...query, page: Math.max(1, Math.ceil(total / query.pageSize)) })}`;
+}

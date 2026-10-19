@@ -75,7 +75,7 @@ const detail: Detail = {
   createdBy: 1,
   createdAt: "2026-10-01T00:00:00Z",
   updatedAt: "2026-10-01T00:00:00Z",
-  assignees: [{ staffMemberId: 1, staffMemberName: "서지안", isCompleted: false, completedAt: null }],
+  assignees: [{ staffMemberId: 1, staffMemberName: "서지안", isCompleted: false, completedAt: null, isMasked: false }],
   groupTodos: [],
   histories: [],
 };
@@ -83,7 +83,8 @@ const detail: Detail = {
 test("수정 — 바꾼 칸만 보낸다. 지난 수행 예정 날짜도 그대로 두면 막지 않는다", () => {
   const f = fromDetail(detail);
   assert.equal(f.storeId, "3");
-  assert.deepEqual(f.staff, [{ staffMemberId: 1, name: "서지안", phoneLast4: "", jobTitle: "" }]);
+  // 수정은 배정을 바꾸지 않아 고른 직원을 채우지 않는다 — 배정 글자는 상세 값으로 그린다(가린 직원은 id · 이름이 없다)
+  assert.deepEqual(f.staff, []);
   assert.deepEqual(toUpdateBody(detail, f), {});
   assert.deepEqual(problems(f, TODAY, detail), []);
   assert.deepEqual(toUpdateBody(detail, { ...f, title: "냉장고 비우기", isUrgent: true }), { title: "냉장고 비우기", isUrgent: true });
