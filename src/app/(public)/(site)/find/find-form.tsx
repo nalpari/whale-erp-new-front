@@ -160,7 +160,7 @@ function PasswordPanel() {
   const [state, action, pending] = useActionState<TemporaryPasswordState, FormData>(issueTemporaryPassword, {});
   const [filled, handleInput] = useFilled();
 
-  // api 는 계정이 있는지 드러내지 않는다. 일치하지 않았거나 메일이 나가지 않았어도 이 안내가 뜬다.
+  // api 는 계정이 있는지 드러내지 않는다. 일치하지 않았거나, 메일이 나가지 않았거나, 응답이 10초를 넘겨도 이 안내가 뜬다.
   if (state.sent)
     return (
       <div className="flex flex-col gap-[24px]">
