@@ -95,6 +95,8 @@ export interface SaveResult {
   error: string;
   /** 있으면 같은 점포에 진행 중 계약이 있어 저장하지 않았다 — 대체를 확인받아 다시 보낸다 */
   inProgress?: InProgressContract[];
+  /** 저장 요청의 결과를 받지 못했다(저장 · 발송됐을 수 있음) — 같은 폼으로 다시 저장하지 못하게 막는다 */
+  locked?: boolean;
 }
 
 /**

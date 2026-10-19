@@ -1,5 +1,5 @@
 import { Button, DataTable, ListToolbar, PageBar } from "@/components/common";
-import { ApiError, getEnum, getSession, request } from "@/lib/api";
+import { ApiError, authHeaders, getEnum, request } from "@/lib/api";
 import { contractColumns } from "./columns";
 import { ContractFilters, ContractPagination } from "./contract-filters";
 import { PAGE_SIZE, readListQuery, toSearch, withKnownStatus, type ContractListPage } from "./contract-list";
@@ -7,11 +7,11 @@ import { PAGE_SIZE, readListQuery, toSearch, withKnownStatus, type ContractListP
 // 근로계약 관리 목록. docs/demo/staff/contracts.html 을 공통 컴포넌트로 옮겼고, 목록은 GET /contracts 에서 받는다.
 export default async function ContractsPage({ searchParams }: PageProps<"/contracts">) {
   const asked = readListQuery(await searchParams);
-  const [statuses, draftActions, employmentTypes, session] = await Promise.all([
+  const [statuses, draftActions, employmentTypes, headers] = await Promise.all([
     getEnum("ContractStatus"),
     getEnum("ContractDraftAction"),
     getEnum("EmploymentType"),
-    getSession(),
+    authHeaders(),
   ]);
 
   const query = withKnownStatus(asked, statuses);
@@ -20,10 +20,10 @@ export default async function ContractsPage({ searchParams }: PageProps<"/contra
   // 사용 중이 아닌 관리자 계정(403)은 api 문장을 그대로 보인다. 그 밖의 오류는 error.tsx 가 받는다.
   let page: ContractListPage | null = null;
   let notice = "로그인이 필요합니다.";
-  if (session) {
+  if (headers.Authorization) {
     try {
       page = await request<ContractListPage>(`/contracts${toSearch(query, { pageSize: String(PAGE_SIZE) })}`, {
-        headers: { Authorization: `Bearer ${session.accessToken}` },
+        headers,
       });
     } catch (e) {
       if (!(e instanceof ApiError && (e.status === 401 || e.status === 403))) throw e;
