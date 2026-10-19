@@ -58,8 +58,8 @@ export function SendContractButton({ contractId }: { contractId: number }) {
           })
         }
       >
-        <p>직원 휴대전화번호로 가입 초대 알림톡을 다시 보냅니다. 링크와 서명 기한은 보낸 날부터 30일입니다.</p>
-        <p className="mt-[6px]">앞서 보낸 링크는 쓸 수 없고, 서명 기한도 새로 잡힙니다.</p>
+        <p>직원 휴대전화번호로 가입 초대 알림톡(초대 코드 · 앱 설치 링크)을 다시 보냅니다. 초대 코드와 서명 기한은 보낸 날부터 30일입니다.</p>
+        <p className="mt-[6px]">앞서 보낸 초대 코드는 쓸 수 없고, 서명 기한도 새로 잡힙니다.</p>
         {error && (
           <p className="mt-[6px] text-erp-off" aria-live="polite">
             {error}

@@ -9,6 +9,7 @@
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 고른 BP 탭의 브라우저 탭 제목에 상호를 붙이던 것을 뺐다. 즐겨찾기 이름에 상호가 남아 다른 BP 로 열릴 때 헷갈린다(재영). BP 선택 팝업은 BP 만 고른다(점포 선택 제외) — 목업 · 데모도 맞췄다.
 
 ## 2026-10-19
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 가입 초대가 6자리 초대 코드로 바뀌어(2026-10-19 김민식, api #74) 재발송 확인창 · 당사자 정보 수정 안내의 「링크」를 「초대 코드」로 고쳤다. api-types 를 api #74 openapi 로 다시 만들었다(설명만).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 기획 정렬 결정(재영): BP 를 고르기 전에 플랫폼 탭에서 ERP 주소로 오면 「웨일ERP 바로가기에서 BP 를 먼저 골라 주세요」로 안내하고(강제 팝업 없음), 적용 안내는 토스트 대신 BP 이동 로딩 화면에 「상호(BP코드) · 전체 점포로 여는 중입니다」로 보인다. 데모 플랫폼 헤더의 BP 선택 드롭다운을 지웠다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #55 적대적 리뷰 반영(3번 A안): ERP 탭의 플랫폼관리 바로가기가 그 탭을 플랫폼으로 바꾸지 않고 `/platform` 을 새 탭으로 연다. ERP 화면을 여럿 본 탭에서 플랫폼관리 뒤 뒤로 가면 남은 ERP 화면마다 「접근 권한이 없는 메뉴」 안내가 연달아 떴다. 같은 탭을 바꾸려고 넣었던 `location.replace` 와 막힌 주소의 대체 이동(500ms)을 걷었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #55 3차 리뷰 반영: 플랫폼관리 바로가기가 `location.replace` 로 이동하고, 막힌 주소에서 `history.back()` 이 맨 앞 기록이라 돌아가지 못하면 그 서비스의 홈으로 보낸다(플랫폼이 된 탭에서 뒤로 가기가 빈 화면에 멈췄다). BP 선택 팝업은 쪽을 넘기면 고른 BP 를 비운다.
