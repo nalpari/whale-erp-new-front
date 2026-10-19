@@ -20,7 +20,7 @@ const orDash = (v: string | null | undefined) => (v ? v : muted("-"));
  * 위도 · 경도처럼 같은 표 안에서 짝을 이루는 줄들이 값이 비어 있을 때도 구분선(|)이 들쑥날쑥하지 않게 맞춘다
  * (2026-10-19 점검 — 실사용자 확인). 변경이력 줄은 이 너비를 쓰지 않는다 — flex-1 + 말줄임으로 따로 맞춘다
  * (아래 변경이력 주석 참고). */
-const FIRST_COL_WIDTH = "inline-block min-w-[140px]";
+const FIRST_COLUMN_WIDTH = "inline-block min-w-[140px]";
 /** 주소 한 줄 — 「[ 우편번호 04104 ] 기본주소(볼드), 상세주소」. 괄호·라벨은 라벨 색, 번호는 기존 데이터 색(검정)이다.
  * 없으면 「-」(2026-10-19 점검 — 두 줄이던 걸 한 줄로, 번호 색·괄호 안쪽 띄어쓰기는 뒤이은 요청으로 다시 손봄) */
 const addressLines = (zip: string | null, address: string | null, detail: string | null) => {
@@ -78,11 +78,11 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
       value: (
         <DetailValues
           items={[
-            <span key="lat" className={FIRST_COL_WIDTH}>
+            <span key="lat" className={FIRST_COLUMN_WIDTH}>
               <span className="mr-[10px] text-erp-label">위도</span>
               {store.latitude !== null ? store.latitude.toFixed(6) : muted("-")}
             </span>,
-            <span key="lng" className={FIRST_COL_WIDTH}>
+            <span key="lng" className={FIRST_COLUMN_WIDTH}>
               <span className="mr-[10px] text-erp-label">경도</span>
               {store.longitude !== null ? store.longitude.toFixed(6) : muted("-")}
             </span>,
@@ -131,11 +131,11 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
       label: "사업자등록번호",
       // 번호가 마지막으로 언제 인증됐는지 바로 옆에서 보이게 한 행으로 묶었다(2026-10-16 점검).
       // 첫 칸은 대표자정보 줄의 "대표자 이름 …" 칸과 너비를 맞춰, 둘 다 비어 있을 때도 세로선(|) 위치가
-      // 들쑥날쑥하지 않게 한다(2026-10-19 점검 — 실사용자 확인, FIRST_COL_WIDTH 참고).
+      // 들쑥날쑥하지 않게 한다(2026-10-19 점검 — 실사용자 확인, FIRST_COLUMN_WIDTH 참고).
       value: (
         <DetailValues
           items={[
-            <span key="n" className={FIRST_COL_WIDTH}>
+            <span key="n" className={FIRST_COLUMN_WIDTH}>
               {b.bizRegistrationNumber ? formatBizNumber(b.bizRegistrationNumber) : muted("-")}
             </span>,
             <span key="v">
@@ -151,7 +151,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
       value: (
         <DetailValues
           items={[
-            <span key="name" className={FIRST_COL_WIDTH}>
+            <span key="name" className={FIRST_COLUMN_WIDTH}>
               {orDash(b.ceoName)}
             </span>,
             <span key="phone">
@@ -197,11 +197,11 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
             ) : (
               <StoreImage size={48} />
             )}
-            <div className="flex min-w-0 flex-1 flex-col gap-[8px]">
+            <div className="flex min-w-0 flex-1 flex-col gap-[12px]">
               <h2 className="truncate text-[18px] font-semibold text-erp-ink">{store.name}</h2>
               {/* 운영 상태 배지는 여기 두지 않는다 — 점포 기본정보 표의 점포상태 줄과 정보가 겹쳐 보였다
                   (2026-10-19 점검 — 실사용자 확인). */}
-              <div className="flex items-center gap-[8px] text-[14px] font-medium text-erp-label">
+              <div className="flex items-center gap-[10px] text-[14px] font-medium text-erp-label">
                 <span>점포코드 {store.storeCode}</span>
                 {/* #d9d9d9 — DESIGN.md 의 값 구분선, Figma 전용 색이라 토큰이 없다 */}
                 <span className="h-[11px] w-px bg-[#d9d9d9]" />

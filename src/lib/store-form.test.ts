@@ -19,7 +19,7 @@ import type { StoreDetail } from "./store-types.ts";
 
 const filled: StoreForm = { ...EMPTY_STORE_FORM, storeTypeCode: "DIRECT", name: " 강남점 " };
 // 운영 조건 한글(GET /enums/StoreOperationRequirement) — 라벨 없이 부르면(빈 배열) 값 코드를 그대로 보인다
-const REQ_LABELS = [
+const REQUIREMENT_LABELS = [
   { value: "BUSINESS_VERIFICATION", label: "사업자정보 인증", order: 1 },
   { value: "COORDINATES", label: "위치정보(위도 · 경도)", order: 2 },
 ];
@@ -57,9 +57,9 @@ test("층별 칸 — 층수 정수 · 평 소수 1자리 · ㎡ 소수 2자리 �
 
 test("운영으로 바꾸려면 사업자 인증과 좌표가 있어야 한다 — 모자란 것을 한 문장에 모은다(상태 변경 팝업과 같은 라벨 출처)", () => {
   const operating = { ...filled, storeStatus: "OPERATING" as const };
-  assert.equal(validateStoreForm(operating, "edit", REQ_LABELS).storeStatus, "운영으로 바꾸려면 사업자정보 인증 · 위치정보(위도 · 경도)가 필요합니다.");
-  assert.equal(validateStoreForm({ ...operating, savedBizNumber: "1234567890" }, "edit", REQ_LABELS).storeStatus, "운영으로 바꾸려면 위치정보(위도 · 경도)가 필요합니다.");
-  assert.deepEqual(validateStoreForm({ ...operating, savedBizNumber: "1234567890", latitude: "37.5", longitude: "127.0" }, "edit", REQ_LABELS), {});
+  assert.equal(validateStoreForm(operating, "edit", REQUIREMENT_LABELS).storeStatus, "운영으로 바꾸려면 사업자정보 인증 · 위치정보(위도 · 경도)가 필요합니다.");
+  assert.equal(validateStoreForm({ ...operating, savedBizNumber: "1234567890" }, "edit", REQUIREMENT_LABELS).storeStatus, "운영으로 바꾸려면 위치정보(위도 · 경도)가 필요합니다.");
+  assert.deepEqual(validateStoreForm({ ...operating, savedBizNumber: "1234567890", latitude: "37.5", longitude: "127.0" }, "edit", REQUIREMENT_LABELS), {});
   // 라벨을 못 받으면(빈 배열) 값 코드를 그대로 보인다 — naming.md "모르는 값이면 값을 그대로"
   assert.equal(validateStoreForm(operating, "edit").storeStatus, "운영으로 바꾸려면 BUSINESS_VERIFICATION · COORDINATES이(가) 필요합니다.");
 });
@@ -90,8 +90,8 @@ test("인증 결과는 지금 칸 값과 같을 때만 인증으로 본다 — �
   const operating = { ...filled, storeStatus: "OPERATING" as const, latitude: "37.5", longitude: "127.0" };
   const checked = { bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02" };
   const now = { ...operating, bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02", verified: checked };
-  assert.equal(validateStoreForm(now, "edit", REQ_LABELS).storeStatus, undefined);
-  assert.equal(validateStoreForm({ ...now, ceoName: "김철수" }, "edit", REQ_LABELS).storeStatus, "운영으로 바꾸려면 사업자정보 인증이 필요합니다.");
+  assert.equal(validateStoreForm(now, "edit", REQUIREMENT_LABELS).storeStatus, undefined);
+  assert.equal(validateStoreForm({ ...now, ceoName: "김철수" }, "edit", REQUIREMENT_LABELS).storeStatus, "운영으로 바꾸려면 사업자정보 인증이 필요합니다.");
 });
 
 test("등록 요청 — 공백을 빼고 빈 칸은 null, 빈 층은 보내지 않고, 진위확인을 통과한 값만 싣는다", () => {
