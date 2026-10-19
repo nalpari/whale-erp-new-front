@@ -98,7 +98,7 @@ function Tip({ label }: { label: string }) {
   );
 }
 
-// size- 와 w- 를 같이 쓰면 둘 다 width 를 정해 어느 쪽이 이길지 보장되지 않는다. 높이만 여기서 정하고 폭은 링크마다 준다.
+// size- 와 w- 를 같이 쓰면 둘 다 width 를 정해 어느 쪽이 이길지 보장되지 않는다. 높이만 여기서 정하고 폭은 바로가기마다 준다.
 const ICON_HOVER = "group relative grid h-[32px] place-items-center rounded-full [&>img]:transition-opacity [&>img]:duration-150 hover:[&>img]:opacity-70 [&>span:first-child]:transition-opacity hover:[&>span:first-child]:opacity-70";
 
 /** 바로가기 하나가 할 일 — 주소면 링크, 함수면 버튼(팝업을 열거나 전체 로드로 옮길 때). */
@@ -124,18 +124,18 @@ function ServiceLink({ target, label, className, children }: { target?: ServiceT
 }
 
 // Figma Top2 의 서비스 바로가기. 둥근 테두리 안에 세 아이콘을 두고, 올리면 이름 툴팁이 뜬다.
-export function ServiceLinks({ hrefs = {} }: { hrefs?: { erp?: ServiceTarget; addon?: ServiceTarget; platform?: ServiceTarget } }) {
+export function ServiceLinks({ targets = {} }: { targets?: { erp?: ServiceTarget; addon?: ServiceTarget; platform?: ServiceTarget } }) {
   return (
     <div className="flex h-[42px] shrink-0 items-center gap-[18px] rounded-full border border-erp-field-line bg-white px-[24px]">
       <span className="text-[15px] font-medium whitespace-nowrap text-erp-ink">서비스 바로가기</span>
       <div className="flex items-center gap-[12px]">
-        <ServiceLink target={hrefs.erp} label="웨일ERP" className={`${ICON_HOVER} w-[32px]`}>
+        <ServiceLink target={targets.erp} label="웨일ERP" className={`${ICON_HOVER} w-[32px]`}>
           <Image src="/icons/service-erp.svg" alt="" width={32} height={32} />
         </ServiceLink>
-        <ServiceLink target={hrefs.addon} label="부가서비스 현황" className={`${ICON_HOVER} w-[32px] bg-white`}>
+        <ServiceLink target={targets.addon} label="부가서비스 현황" className={`${ICON_HOVER} w-[32px] bg-white`}>
           <Image src="/icons/service-chat.svg" alt="" width={19} height={19} />
         </ServiceLink>
-        <ServiceLink target={hrefs.platform} label="플랫폼관리" className={`${ICON_HOVER} w-[14px]`}>
+        <ServiceLink target={targets.platform} label="플랫폼관리" className={`${ICON_HOVER} w-[14px]`}>
           <span className="grid grid-cols-3 gap-[2.5px]">
             {Array.from({ length: 9 }, (_, i) => (
               <Image key={i} src="/icons/dot.svg" alt="" width={3} height={3} />
