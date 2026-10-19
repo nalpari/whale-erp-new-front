@@ -106,11 +106,13 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
         { label: "시급", value: c.wageAmount === null ? "-" : c.wageAmount.toLocaleString("ko-KR") },
         {
           label: "소정근로시간",
+          // 파트타이머 표는 여러 줄이라 고정 높이(46)에서 잘리지 않게 내용만큼 늘린다
+          multiline: c.employmentType === "PART_TIME" && c.workDays.length > 0,
           value: !c.workDays.length ? (
             "-"
           ) : c.employmentType === "PART_TIME" ? (
             // 파트타이머는 요일마다 시간이 다를 수 있어 작성 화면과 같은 표로 보인다 — 요일별 시각 · 근무시간 · 소계와 주휴수당 · 주급 · 월급여
-            <div className="flex flex-col gap-[8px] py-[4px]">
+            <div className="flex w-full min-w-px flex-col gap-[8px] py-[4px]">
               <span>주 {weeklyHoursOf(c.workDays).toFixed(1)}시간</span>
               <DataTable
                 columns={[
