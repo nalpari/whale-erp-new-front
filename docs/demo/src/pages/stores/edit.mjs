@@ -38,9 +38,9 @@ export default ({ A, R }) => {
     ),
     f.address(A, "점포 주소", { zip: "03991", base: "서울 마포구 동교로 256", detail: "1층" }),
     ui.formRow(
-      ui.field("위도", ui.textField({ value: "37.562104" }), "w-[130px]"),
-      ui.field("경도", ui.textField({ value: "126.925631" }), "w-[130px]"),
-      ui.field("출퇴근 위치 적용 여부", ui.select(["사용", "미사용"]), "w-[120px]"),
+      ui.field("위도", ui.textField({ value: "37.562104" }), "w-[160px]"),
+      ui.field("경도", ui.textField({ value: "126.925631" }), "w-[160px]"),
+      ui.field("출퇴근 위치 적용 여부", ui.select(["사용", "미사용"]), "w-[150px]"),
       `<div class="self-end">${ui.button("주소로 다시 계산", { variant: "soft" })}</div>`,
     ),
     // 이미지 올리기 도움말과 같은 줄간격이 되도록 한 줄(한 <span>) 안에서 <br> 로만 줄을 바꾼다(2026-10-16 점검).

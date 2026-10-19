@@ -37,10 +37,12 @@ export default ({ A, R }) => {
     ),
     f.address(A, "점포 주소"),
     ui.formRow(
-      // 좌표는 정수 3자리 + 소수 6자리, 출퇴근 위치 적용 여부는 「미사용」 세 글자가 들어갈 만큼만.
-      ui.field("위도", ui.textField({ placeholder: "예: 37.556312" }), "w-[130px]"),
-      ui.field("경도", ui.textField({ placeholder: "예: 126.901845" }), "w-[130px]"),
-      ui.field("출퇴근 위치 적용 여부", ui.select(["사용", "미사용"]), "w-[120px]"),
+      // 좌표는 정수 3자리 + 소수 6자리, 출퇴근 위치 적용 여부는 「미사용」 세 글자가 들어갈 만큼만. [주소로 다시
+      // 계산]은 수정 화면과 같다 — 자동 채워진 뒤 직접 고친 좌표를 주소 기준 값으로 되돌릴 때 쓴다(2026-10-19).
+      ui.field("위도", ui.textField({ placeholder: "예: 37.556312" }), "w-[160px]"),
+      ui.field("경도", ui.textField({ placeholder: "예: 126.901845" }), "w-[160px]"),
+      ui.field("출퇴근 위치 적용 여부", ui.select(["사용", "미사용"]), "w-[150px]"),
+      `<div class="self-end">${ui.button("주소로 다시 계산", { variant: "soft" })}</div>`,
     ),
     // 이미지 올리기 도움말과 같은 줄간격이 되도록 한 줄(한 <span>) 안에서 <br> 로만 줄을 바꾼다(2026-10-16 점검).
     f.help(

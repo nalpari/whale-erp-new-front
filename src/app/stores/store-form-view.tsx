@@ -11,6 +11,7 @@ import {
   Button,
   Checkbox,
   ConfirmDialog,
+  DataTable,
   DateField,
   Field,
   FormGroup,
@@ -19,6 +20,7 @@ import {
   Select,
   TextField,
   useToast,
+  type Column,
 } from "@/components/common";
 import {
   EMPTY_STORE_FORM,
@@ -198,11 +200,34 @@ export function StoreFormView(props: Props) {
     });
   };
 
+  /**
+   * [주소로 다시 계산] — 주소는 그대로 두고 지금 칸의 점포 주소로 좌표만 다시 받는다. 좌표는 주소를 고르면
+   * 자동으로 채워지지만 그 뒤 직접 고칠 수 있어, 등록 · 수정 화면 모두에 둔다(2026-10-19) — 직접 고친 값을
+   * 주소 기준 값으로 되돌리고 싶을 때 쓴다. 동작은 handleAddressChoose 와 같다.
+   */
+  const handleRecalculateCoordinate = () => {
+    const mine = ++locateNumber.current;
+    setCoordinateNote(null);
+    setForm((f) => ({ ...f, latitude: "", longitude: "" }));
+    startLocating(async () => {
+      const result = await getAddressCoordinateAction(form.address, "").catch((error: unknown) => {
+        console.error("좌표 조회 호출 실패", error);
+        return { ok: false as const, message: "좌표를 가져오지 못했습니다. 위도 · 경도를 직접 적어 주세요." };
+      });
+      if (mine !== locateNumber.current) return;
+      if (!result.ok) return setCoordinateNote(result.message);
+      setForm((f) => ({ ...f, latitude: String(result.latitude), longitude: String(result.longitude) }));
+      clearError("latitude");
+      clearError("longitude");
+    });
+  };
+
   /** 위도 · 경도를 직접 고친다 — 받는 중이던 좌표는 버려 직접 적은 값을 덮지 않게 한다 */
   const setCoordinate = (key: "latitude" | "longitude", value: string) => {
     locateNumber.current++;
     setCoordinateNote(null);
-    set(key, value.trim(), key);
+    // 숫자 · 마침표 · 마이너스만 받는다 — 문자는 칠 수 없다(2026-10-19).
+    set(key, value.replace(/[^0-9.-]/g, "").trim(), key);
   };
 
   /** 진위확인 칸을 고치면 이번 화면의 인증 결과는 무효다 */
@@ -532,7 +557,7 @@ export function StoreFormView(props: Props) {
           />
           <Stack>
             <FormRow>
-              <Field label="위도" width="w-[130px]">
+              <Field label="위도" width="w-[160px]">
                 <TextField
                   value={form.latitude}
                   onChange={(e) => setCoordinate("latitude", e.target.value)}
@@ -542,7 +567,7 @@ export function StoreFormView(props: Props) {
                   aria-describedby={describe("latitude")}
                 />
               </Field>
-              <Field label="경도" width="w-[130px]">
+              <Field label="경도" width="w-[160px]">
                 <TextField
                   value={form.longitude}
                   onChange={(e) => setCoordinate("longitude", e.target.value)}
@@ -552,12 +577,17 @@ export function StoreFormView(props: Props) {
                   aria-describedby={describe("longitude")}
                 />
               </Field>
-              <Field label="출퇴근 위치 적용 여부" width="w-[120px]">
+              <Field label="출퇴근 위치 적용 여부" width="w-[150px]">
                 <Select value={form.isLocationApplied ? "Y" : "N"} onChange={(e) => set("isLocationApplied", e.target.value === "Y")}>
                   <option value="Y">사용</option>
                   <option value="N">미사용</option>
                 </Select>
               </Field>
+              <div className="self-end">
+                <Button variant="soft" onClick={handleRecalculateCoordinate} disabled={!form.address.trim() || locating || closedOrBlocked}>
+                  주소로 다시 계산
+                </Button>
+              </div>
             </FormRow>
             {message("latitude")}
             {message("longitude")}
@@ -894,71 +924,88 @@ function FloorTable({
 }) {
   const floorTypeLabel = useCodeLabel("FLOOR_TYPE");
   const update = (key: string, patch: Partial<FloorRow>) => onChange(rows.map((r) => (r.key === key ? { ...r, ...patch } : r)));
-  const numberCell = (row: FloorRow, field: "floorNumber" | "floorAreaPyeong" | "floorAreaSqm" | "seatCount", label: string, unit: string, decimal: boolean) => (
-    <div className="flex items-center gap-[6px]">
-      <TextField
-        value={row[field]}
-        onChange={(e) => update(row.key, { [field]: e.target.value.replace(decimal ? /[^0-9.]/g : /[^0-9]/g, "") })}
-        inputMode={decimal ? "decimal" : "numeric"}
-        aria-label={label}
-        aria-invalid={invalid}
-        aria-describedby={describedBy}
-      />
+  const indexOf = (row: FloorRow) => rows.findIndex((r) => r.key === row.key);
+  const numberCell = (row: FloorRow, field: "floorAreaPyeong" | "floorAreaSqm" | "seatCount", width: `w-[${number}px]`, label: string, unit: string, decimal: boolean) => (
+    <div className="flex items-center justify-center gap-[6px]">
+      <div className={width}>
+        <TextField
+          value={row[field]}
+          onChange={(e) => update(row.key, { [field]: e.target.value.replace(decimal ? /[^0-9.]/g : /[^0-9]/g, "") })}
+          inputMode={decimal ? "decimal" : "numeric"}
+          aria-label={label}
+          aria-invalid={invalid}
+          aria-describedby={describedBy}
+        />
+      </div>
       <span className="shrink-0 text-[14px] text-erp-label">{unit}</span>
     </div>
   );
-  // 상세화면의 층구분 · 매장평수(평) · 전용면적(㎡) · 좌석 수와 같은 이름으로 맞춘 타이틀을 고정해 둔다.
-  // 매장평수와 전용면적은 같은 면적의 단위 차이가 아니라 서로 다른 두 항목이다(okf/stores.md S-ALHLHW) —
-  // 한때 둘 다 "전용면적(…)"으로 적었다가 단위 차이로 보여 혼동을 줘 되돌렸다(2026-10-16 코드리뷰).
-  // [층 추가]는 줄 목록 위, 맨 왼쪽에 둔다. 매장평수(평) · 전용면적(㎡) · 좌석 수 칸은 1fr 로 너무 넓어지길래
-  // 고정폭으로 좁혔고, 칸 사이는 더 띄워 둔다(6px→12px→24px, 12px 도 좁다는 피드백). 삭제 칸도 취소 버튼만큼
-  // 고정폭(90px)을 준다(2026-10-16 점검).
+  // 데모(docs/demo/src/biz-form.mjs 의 floorTable)와 같은 표 모양으로 되돌렸다 — 고정 그리드로 좁혔던
+  // 버전은 데모와 어긋나 데모 쪽을 기준으로 삼기로 했다(2026-10-19). [층 추가]는 표 위 왼쪽에 둔다.
+  // 다섯 칸 너비를 모두 같게 맞춘다 — 층구분 칸만 너비 지정이 없어 남는 폭을 혼자 다 먹고 있었다(2026-10-19).
+  const COLUMN_WIDTH = "w-[190px]";
+  const columns: Column<FloorRow>[] = [
+    {
+      header: "층구분",
+      width: COLUMN_WIDTH,
+      cell: (row) => (
+        <div className="flex items-center justify-center gap-[6px]">
+          <div className="w-[80px]">
+            <Select
+              value={row.floorTypeCode}
+              onChange={(e) => update(row.key, { floorTypeCode: e.target.value })}
+              aria-label={`${indexOf(row) + 1}번째 층 구분`}
+            >
+              {/* 저장된 줄의 빈 값 · 모르는 값도 그대로 보인다 — 선택지에 없으면 브라우저가 첫 항목(지상)을 보여 주지만 값은 그대로라 화면과 저장이 어긋난다 */}
+              {!row.floorTypeCode && <option value="">선택</option>}
+              {row.floorTypeCode && !floorTypeOf(row.floorTypeCode) && <option value={row.floorTypeCode}>{row.floorTypeCode}</option>}
+              {FLOOR_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {floorTypeLabel(t)}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div className="w-[64px]">
+            <TextField
+              value={row.floorNumber}
+              onChange={(e) => update(row.key, { floorNumber: e.target.value.replace(/[^0-9]/g, "") })}
+              inputMode="numeric"
+              aria-label={`${indexOf(row) + 1}번째 층수`}
+              aria-invalid={invalid}
+              aria-describedby={describedBy}
+            />
+          </div>
+          <span className="shrink-0 text-[14px] text-erp-label">층</span>
+        </div>
+      ),
+    },
+    { header: "매장평수(평)", width: COLUMN_WIDTH, cell: (row) => numberCell(row, "floorAreaPyeong", "w-[96px]", `${indexOf(row) + 1}번째 매장평수`, "평", true) },
+    { header: "전용면적(㎡)", width: COLUMN_WIDTH, cell: (row) => numberCell(row, "floorAreaSqm", "w-[96px]", `${indexOf(row) + 1}번째 전용면적`, "㎡", true) },
+    { header: "좌석 수", width: COLUMN_WIDTH, cell: (row) => numberCell(row, "seatCount", "w-[80px]", `${indexOf(row) + 1}번째 좌석수`, "석", false) },
+    {
+      header: "삭제",
+      width: COLUMN_WIDTH,
+      cell: (row) => (
+        <Button variant="off" onClick={() => onChange(rows.filter((r) => r.key !== row.key))}>
+          삭제
+        </Button>
+      ),
+    },
+  ];
   return (
-    <div className="flex flex-col gap-[10px]">
+    <div className="flex flex-col gap-[18px]">
       <div>
         <Button variant="soft" onClick={() => onChange([...rows, newFloorRow()])}>
           층 추가
         </Button>
       </div>
-      <div className="grid grid-cols-[100px_100px_120px_120px_100px_90px] gap-[24px] text-[13px] font-medium text-erp-label">
-        <span>층구분</span>
-        <span>층수</span>
-        <span>매장평수(평)</span>
-        <span>전용면적(㎡)</span>
-        <span>좌석 수</span>
-        <span aria-hidden="true" />
-      </div>
-      {rows.length === 0 ? (
-        <p className="text-[14px] text-erp-muted">등록된 층별 정보가 없습니다. ‘층 추가’를 눌러 면적과 좌석 수를 입력해 주세요.</p>
-      ) : (
-        <ul className="flex flex-col gap-[10px]">
-          {rows.map((row, i) => (
-            <li key={row.key} className="grid grid-cols-[100px_100px_120px_120px_100px_90px] items-center gap-[24px]">
-              <Select
-                value={row.floorTypeCode}
-                onChange={(e) => update(row.key, { floorTypeCode: e.target.value })}
-                aria-label={`${i + 1}번째 층 구분`}
-              >
-                {/* 저장된 줄의 빈 값 · 모르는 값도 그대로 보인다 — 선택지에 없으면 브라우저가 첫 항목(지상)을 보여 주지만 값은 그대로라 화면과 저장이 어긋난다 */}
-                {!row.floorTypeCode && <option value="">선택</option>}
-                {row.floorTypeCode && !floorTypeOf(row.floorTypeCode) && <option value={row.floorTypeCode}>{row.floorTypeCode}</option>}
-                {FLOOR_TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {floorTypeLabel(t)}
-                  </option>
-                ))}
-              </Select>
-              {numberCell(row, "floorNumber", `${i + 1}번째 층수`, "층", false)}
-              {numberCell(row, "floorAreaPyeong", `${i + 1}번째 매장평수`, "평", true)}
-              {numberCell(row, "floorAreaSqm", `${i + 1}번째 전용면적`, "㎡", true)}
-              {numberCell(row, "seatCount", `${i + 1}번째 좌석수`, "석", false)}
-              <Button variant="off" onClick={() => onChange(rows.filter((r) => r.key !== row.key))}>
-                삭제
-              </Button>
-            </li>
-          ))}
-        </ul>
-      )}
+      <DataTable
+        columns={columns}
+        rows={rows}
+        rowKey={(r) => r.key}
+        empty="등록된 층별 정보가 없습니다. ‘층 추가’를 눌러 면적과 좌석 수를 입력해 주세요."
+      />
     </div>
   );
 }

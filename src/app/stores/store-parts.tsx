@@ -172,9 +172,6 @@ export function StoreTypeCards({
             } ${locked ? `cursor-default ${checked ? "" : "opacity-40"}` : "cursor-pointer hover:border-erp-brand"}`}
           >
             <input type="radio" name="storeTypeCode" className="sr-only" checked={checked} disabled={locked} onChange={() => onChange?.(type)} />
-            <span className="grid size-[48px] place-items-center rounded-[4px] border border-transparent bg-erp-thead-bg text-erp-label transition-colors duration-150 group-has-[:checked]:border-erp-panel-line group-has-[:checked]:bg-white group-has-[:checked]:text-erp-ink">
-              <LineIcon name="store" size={22} />
-            </span>
             <b className="text-[16px] font-semibold text-erp-ink"><CodeLabel group="STORE_TYPE" value={type} /></b>
             <span className="text-[13px] text-erp-label">{desc}</span>
           </label>

@@ -155,12 +155,14 @@ export const floorRow = ([pos, floor, py, m2, seats] = ["지상", "", "", "", ""
 };
 // 층별 정보 표 + [층 추가]. 추가·삭제는 erp.js 의 initFloors 가 아래 두 template 을 복제해 처리한다.
 // 표와 단추를 한 묶음으로 내는 것은 둘을 잇는 단서(data-floors)가 둘을 함께 감싸야 해서다.
+// 다섯 칸을 모두 같은 너비로 둔다 — 층구분만 너비 지정이 없으면 남는 폭을 혼자 다 먹는다(2026-10-19 점검).
+const FLOOR_COLUMN_WIDTH = "w-[190px]";
 const FLOOR_COLUMNS = [
-  { header: "층구분" },
-  { header: "매장평수(평)", width: "w-[120px]" },
-  { header: "전용면적(㎡)", width: "w-[120px]" },
-  { header: "좌석 수", width: "w-[100px]" },
-  { header: "삭제", width: "w-[100px]" },
+  { header: "층구분", width: FLOOR_COLUMN_WIDTH },
+  { header: "매장평수(평)", width: FLOOR_COLUMN_WIDTH },
+  { header: "전용면적(㎡)", width: FLOOR_COLUMN_WIDTH },
+  { header: "좌석 수", width: FLOOR_COLUMN_WIDTH },
+  { header: "삭제", width: FLOOR_COLUMN_WIDTH },
 ];
 export const floorTable = (rows) =>
   `<div data-floors class="flex flex-col gap-[18px]">` +
