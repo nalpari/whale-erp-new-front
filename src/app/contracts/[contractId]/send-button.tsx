@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button, ConfirmDialog } from "@/components/common";
-import { sendContract } from "./actions";
+import { sendContract, type SendContractResult } from "./actions";
+import { sendFailureOf } from "./send-model";
 
 // 근로계약 발송 · 재발송(WHALEERP-136). 누르면 확인창으로 묻고, 보내면 상세를 다시 읽는다(서명 대기 · 기한이 바뀐다).
 // 지금은 계정이 없는 직원의 가입 초대 알림톡만 간다 — 기존 계정이면 api 가 「앱 알림 준비 중」으로 막는다.
@@ -34,7 +35,13 @@ export function SendContractButton({ contractId, resend }: { contractId: number;
         }}
         onConfirm={() =>
           start(async () => {
-            const result = await sendContract(contractId);
+            let result: SendContractResult;
+            try {
+              result = await sendContract(contractId);
+            } catch {
+              // 서버 액션 호출 자체가 끊겼다(브라우저 ↔ Next, 배포 중 재시작) — api 는 이미 보냈을 수 있어 「모름」으로 다룬다(front #41 재리뷰)
+              result = sendFailureOf(null, undefined, "");
+            }
             if (result.ok) {
               setOpen(false);
               setError("");
