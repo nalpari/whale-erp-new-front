@@ -87,7 +87,7 @@ export default ({ A, R }) => {
     [
       "대표자정보",
       ui.detailValues([
-        `<span class="${FIRST_COL}"><span class="mr-[10px] text-erp-label">대표자 이름</span>박서윤</span>`,
+        `<span class="${FIRST_COL}">박서윤</span>`,
         `<span class="mr-[10px] text-erp-label">대표자 연락처</span>010-5521-3380`,
       ]),
     ],

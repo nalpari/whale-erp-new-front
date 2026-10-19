@@ -148,7 +148,6 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
         <DetailValues
           items={[
             <span key="name" className={FIRST_COL_WIDTH}>
-              <span className="mr-[10px] text-erp-label">대표자 이름</span>
               {orDash(b.ceoName)}
             </span>,
             <span key="phone">
