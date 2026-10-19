@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { ApiError, getSession, request } from "@/lib/api";
+import { ApiError, authHeaders, request } from "@/lib/api";
 import { inProgressOf, type CreateContractBody, type SaveResult } from "./contract-form-model";
 
 // 경로에 넣는 id — 1..2147483647 정수만. 서버 액션은 누구나 직접 부를 수 있어 TS 타입이 막아 주지 않는다.
@@ -24,12 +24,12 @@ export async function updateContract(contractId: number, body: CreateContractBod
 }
 
 async function save(path: string, method: "POST" | "PUT", body: CreateContractBody): Promise<SaveResult> {
-  const session = await getSession();
-  if (!session) return { error: "로그인이 필요합니다" };
+  const headers = await authHeaders();
+  if (!headers.Authorization) return { error: "로그인이 필요합니다" };
   try {
     await request(path, {
       method,
-      headers: { Authorization: `Bearer ${session.accessToken}`, "Content-Type": "application/json" },
+      headers: { ...headers, "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
   } catch (e) {

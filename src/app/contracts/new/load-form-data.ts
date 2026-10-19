@@ -1,4 +1,4 @@
-import { ApiError, getEnum, getSession, request } from "@/lib/api";
+import { ApiError, authHeaders, getEnum, request } from "@/lib/api";
 import type { ContractFormLabels } from "./contract-form";
 
 export type StoreOption = { storeId: number; name: string };
@@ -11,9 +11,8 @@ export async function loadFormData(): Promise<{
   stores: StoreOption[];
   labels: ContractFormLabels;
   signedIn: boolean;
-  token: string | null;
 }> {
-  const [employmentType, weekday, payMonth, payMethod, contractStatus, contractMethod, attachmentFileType, gender, session] = await Promise.all([
+  const [employmentType, weekday, payMonth, payMethod, contractStatus, contractMethod, attachmentFileType, gender, headers] = await Promise.all([
     getEnum("EmploymentType"),
     getEnum("Weekday"),
     getEnum("PayMonth"),
@@ -22,17 +21,17 @@ export async function loadFormData(): Promise<{
     getEnum("ContractMethod"),
     getEnum("AttachmentFileType"),
     getEnum("Gender"),
-    getSession(),
+    authHeaders(),
   ]);
   const labels = { employmentType, weekday, payMonth, payMethod, contractStatus, contractMethod, attachmentFileType, gender };
-  if (!session) return { stores: [], labels, signedIn: false, token: null };
+  if (!headers.Authorization) return { stores: [], labels, signedIn: false };
   try {
     const { items } = await request<{ items: StoreOption[] }>("/stores/options?pageSize=200", {
-      headers: { Authorization: `Bearer ${session.accessToken}` },
+      headers,
     });
-    return { stores: items, labels, signedIn: true, token: session.accessToken };
+    return { stores: items, labels, signedIn: true };
   } catch (e) {
-    if (e instanceof ApiError && e.status === 401) return { stores: [], labels, signedIn: false, token: null };
+    if (e instanceof ApiError && e.status === 401) return { stores: [], labels, signedIn: false };
     throw e;
   }
 }
