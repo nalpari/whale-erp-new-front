@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
-import { storeRegisterBpCodeId } from "@/lib/current-admin";
 import type {
   BusinessVerificationInput,
   BusinessVerificationResult,
@@ -26,7 +25,7 @@ import {
 
 // 점포 등록 · 수정 · 삭제 · 상태 확인 · 사업자 진위확인 · 필터 자동완성 · 이력 쪽 넘기기.
 // 메뉴 권한 · 관리 점포 범위 · 폐점 / BP 미사용 막기는 api 가 동작마다 본다. server action 은 공개 엔드포인트라
-// id 범위 · 검색어 길이 · 파일 유무만 다시 본다(그 밖의 판정은 api). TODO(로그인): 로그인이 생기면 여기서도 세션을 확인한다.
+// id 범위 · 검색어 길이 · 파일 유무만 다시 본다. 로그인 판정도 api 가 한다 — 세션 토큰을 싣고, 없거나 끝났으면 api 가 401 을 준다.
 
 /**
  * 실패 결과. status 가 있으면 api 가 거절한 것이 확실하다(4xx · 503). status 가 없으면 결과를 확신할 수 없다
@@ -48,9 +47,6 @@ function failureOf(error: unknown, what: string): ActionFailure {
   console.error(`점포 ${what} 결과 모름`, error);
   return { ok: false, message: `${what} 결과를 확인하지 못했습니다.` };
 }
-
-/** 플랫폼 관리자용 고정 BP 를 BP 계정이 보냈을 때 api 가 돌려주는 400 문구 */
-const OTHER_BP = "다른 BP 에 점포를 등록할 수 없습니다";
 
 const validId = (id: number) => Number.isInteger(id) && id >= 1 && id <= 2_147_483_647;
 const NOT_FOUND = { ok: false as const, status: 404, message: "점포를 찾을 수 없습니다" };
@@ -76,18 +72,8 @@ export async function searchStoresAction(keyword: unknown): Promise<ActionResult
 
 export async function createStoreAction(input: CreateStoreInput): Promise<ActionResult<{ storeId: number; storeCode: string }>> {
   try {
-    // 로그인 전이라 누가 부르는지(플랫폼 · BP) 알 길이 없다 — 관리자 메뉴 조회로 가리면 그 권한이 없는 플랫폼 관리자가 등록을 못 한다.
-    // 그래서 환경 변수의 BP 를 먼저 싣고, BP 계정이라 api 가 「다른 BP 에 …」(400)로 막으면 BP 를 빼고 한 번 더 보낸다(api 가 소속 BP 를 쓴다).
-    // 첫 요청이 400 이면 아무것도 저장되지 않았으므로 다시 보내도 둘이 생기지 않는다. 환경 변수가 없으면 BP 없이 한 번만 보낸다.
-    // TODO(로그인): 세션의 BP 로 바꾸고 다시 보내기를 지운다.
-    const bpCodeId = storeRegisterBpCodeId();
-    const result =
-      bpCodeId === null
-        ? await createStore(input)
-        : await createStore({ ...input, bpCodeId }).catch((error: unknown) => {
-            if (error instanceof ApiError && error.status === 400 && error.message.includes(OTHER_BP)) return createStore(input);
-            throw error;
-          });
+    // BP 는 화면이 이 탭의 BP 를 싣는다(store-form-view). 플랫폼 계정이 다른 BP 를 고를 수 있는지 · BP 계정이 남의 BP 를 보냈는지는 api 가 본다.
+    const result = await createStore(input);
     refresh();
     return { ok: true, ...result };
   } catch (error) {

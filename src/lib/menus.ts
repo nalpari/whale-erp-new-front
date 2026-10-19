@@ -2,6 +2,11 @@
 import type { ServiceCode } from "./browser-storage";
 import type { AdminMenu } from "./session";
 
+/** 화면이 권한을 묻는 메뉴 코드(api 메뉴 시드). 업무 API 도 이 코드로 메뉴 권한을 판정한다. */
+export const MENU_CODE = { platformAdmins: "MN000213", platformRoles: "MN000214", platformCodes: "MN000216", stores: "MN000002", staffMembers: "MN000005" } as const;
+export type MenuCode = (typeof MENU_CODE)[keyof typeof MENU_CODE];
+export type MenuAction = keyof AdminMenu["permission"];
+
 /** 서비스마다의 홈. 메뉴에 없어도 늘 열린다. */
 export const HOME: Record<ServiceCode, string> = { WHALE_ERP: "/home", PLATFORM: "/platform" };
 
@@ -47,4 +52,12 @@ export function isAllowed(menus: AdminMenu[], pathname: string, service: Service
   if (pathname === HOME[service]) return true;
   if (service === "PLATFORM" && isUnder(pathname, PENDING_PLATFORM_MENU.url)) return true;
   return !!findMenu(menusOf(menus, service), (m) => m.permission.read && !!m.url && isUnder(pathname, m.url));
+}
+
+/**
+ * 메뉴 하나의 권한 칸(조회 · 등록 · 수정 · 삭제). 이 탭 서비스의 메뉴 트리에서 메뉴 코드로 찾고(3단계까지), 없으면 false.
+ * 화면은 버튼을 보이거나 숨기기만 한다 — 막는 것은 api 다.
+ */
+export function menuPermissionOf(menus: AdminMenu[], service: ServiceCode, menuCode: MenuCode, action: MenuAction): boolean {
+  return findMenu(menusOf(menus, service), (m) => m.menuCode === menuCode)?.permission[action] ?? false;
 }

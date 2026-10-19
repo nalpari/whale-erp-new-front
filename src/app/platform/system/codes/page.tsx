@@ -1,18 +1,15 @@
 import { PageBar } from "@/components/common";
 import { DEFAULT_PAGE_SIZE, getCodeGroups, getCodeItems } from "@/lib/codes";
-import { getCodePermission } from "@/lib/current-permission";
 import { CodeGroupPanel } from "./code-group-panel";
 import { CodeItemPanel } from "./code-item-panel";
 import { UnsavedChangesProvider } from "./unsaved-changes";
 
 // 플랫폼 공통코드 관리 (S-UQPNIH). 한 화면에 왼쪽 그룹 목록, 오른쪽 고른 그룹의 상세 코드를 둔다.
 // 쪽과 고른 그룹은 주소(?page · ?group)에 둔다. 고른 그룹이 이 쪽에 없으면 이 쪽의 첫 그룹을 고른다.
-// TODO(로그인): 메뉴 조회 권한이 없으면 메뉴에서 숨기고, 주소로 들어오면 권한 없음 안내 뒤 홈으로 보낸다(okf/system.md 공통).
+// 메뉴 조회 권한이 없으면 공통 틀이 메뉴에서 숨기고, 주소로 들어오면 안내 뒤 돌려보낸다(SessionGate). 고치기 · 추가 버튼은 패널이 메뉴 권한으로 가른다.
 export default async function PlatformCodesPage({ searchParams }: PageProps<"/platform/system/codes">) {
   const params = await searchParams;
-  const permission = getCodePermission(params);
   const page = positiveInt(params.page) ?? 1;
-  const query = permission === "view" ? ({ permission: "view" } as const) : {};
 
   const [groups, owners] = await Promise.all([
     getCodeGroups({ page, pageSize: DEFAULT_PAGE_SIZE }),
@@ -45,8 +42,6 @@ export default async function PlatformCodesPage({ searchParams }: PageProps<"/pl
             pageSize={DEFAULT_PAGE_SIZE}
             selected={selected?.groupCode}
             ownerLabels={ownerLabels}
-            permission={permission}
-            query={query}
           />
           <CodeItemPanel
             // 그룹을 바꾸면 입력 중이던 값이 다음 그룹으로 새지 않도록 새로 그린다
@@ -55,7 +50,6 @@ export default async function PlatformCodesPage({ searchParams }: PageProps<"/pl
             items={items?.items ?? []}
             ownerLabel={selected && ownerLabels[selected.manageOwnerCode]}
             loadFailed={items === null}
-            permission={permission}
           />
         </div>
       </UnsavedChangesProvider>

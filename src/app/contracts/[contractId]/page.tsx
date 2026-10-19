@@ -17,6 +17,7 @@ import { labelOf } from "@/lib/enums";
 import { MENUS, STORES, USER_ITEMS } from "../../design/sample";
 import { StatusBadge } from "../columns";
 import { formatPhone, type ContractDetail } from "../new/contract-form-model";
+import { documentNoticeOf } from "./document-notice";
 import { insuranceText, kstDateTime, payDayText, probationText, weeklyHoursOf, workDayLines } from "./detail-format";
 
 type Status = Parameters<typeof StatusBadge>[0]["status"];
@@ -31,19 +32,23 @@ const PENDING: Partial<Record<Status, string>> = {
 
 // 근로계약 상세. 데모 docs/demo/staff/contracts-detail 의 틀(제목 줄 + 계약 내용 + 상태 변경 이력).
 // 주휴일 · 급여 지급 방식 · 수습(정직원)도 보인다(데모 확인 2026-10-15).
-export default async function ContractDetailPage({ params }: PageProps<"/contracts/[contractId]">) {
+export default async function ContractDetailPage({ params, searchParams }: PageProps<"/contracts/[contractId]">) {
   const { contractId: raw } = await params;
+  const documentNotice = documentNoticeOf((await searchParams).document);
   const contractId = Number(raw);
   if (!Number.isInteger(contractId) || contractId < 1) notFound();
 
-  const [statuses, draftActions, employmentTypes, weekdays, payMonths, payMethods, actors, session] = await Promise.all([
+  const [statuses, draftActions, employmentTypes, weekdays, payMonths, payMethods, contractMethods, documentKinds, actors, genders, session] = await Promise.all([
     getEnum("ContractStatus"),
     getEnum("ContractDraftAction"),
     getEnum("EmploymentType"),
     getEnum("Weekday"),
     getEnum("PayMonth"),
     getEnum("PayMethod"),
+    getEnum("ContractMethod"),
+    getEnum("ContractDocumentKind"),
     getEnum("StatusChangeActor"),
+    getEnum("Gender"),
     getSession(),
   ]);
 
@@ -74,6 +79,8 @@ export default async function ContractDetailPage({ params }: PageProps<"/contrac
   const rows = c
     ? [
         { label: "직원", value: <DetailValues items={[c.name, formatPhone(c.phone)]} /> },
+        // 가입 값과 본인 대조하는 성별 · 외국인 여부(WHALEERP-125)
+        { label: "성별", value: [c.gender ? labelOf(genders, c.gender) : "-", ...(c.isForeigner ? ["외국인"] : [])].join(" · ") },
         { label: "직무", value: c.jobTitle },
         { label: "근무지", value: c.storeName ?? "-" },
         { label: "고용 형태", value: labelOf(employmentTypes, c.employmentType) },
@@ -101,6 +108,25 @@ export default async function ContractDetailPage({ params }: PageProps<"/contrac
         ...(c.employmentType === "FULL_TIME" ? [{ label: "수습", value: probationText(c.probationMonths, c.probationWageReductionRate, c.wageAmount) }] : []),
         { label: "4대보험", value: insuranceText(c.isHealthPensionInsured, c.isEmploymentInjuryInsured) },
         { label: "근무 장소", value: c.workLocation ?? "-" },
+        { label: "계약 방식", value: c.contractMethod ? labelOf(contractMethods, c.contractMethod) : "-" },
+        // 종이 계약 날인본(CTR-23). 누르면 라우트 핸들러가 300초짜리 주소를 받아 원래 파일 이름으로 내려받게 한다
+        // documents 는 api #49 부터 온다 — 그 전 api 와 함께 떠도 상세가 깨지지 않게 없으면 빈 것으로 본다.
+        ...(c.documents?.length
+          ? [
+              {
+                label: "날인본",
+                value: (
+                  <DetailValues
+                    items={c.documents.map((d) => (
+                      <a key={d.contractDocumentId} href={`/contracts/${c.contractId}/documents/${d.contractDocumentId}`} className="text-erp-link hover:underline">
+                        {labelOf(documentKinds, d.kind)} · {d.fileName}
+                      </a>
+                    ))}
+                  />
+                ),
+              },
+            ]
+          : []),
       ]
     : [];
   const histories = c?.histories ?? [];
@@ -128,6 +154,11 @@ export default async function ContractDetailPage({ params }: PageProps<"/contrac
                 {buttons}
                 <Button href="/contracts">목록</Button>
               </div>
+              {documentNotice && (
+                <p role="alert" className="rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] font-semibold text-erp-off">
+                  {documentNotice}
+                </p>
+              )}
               {c ? (
                 <DetailTable title="계약 내용" rows={rows} />
               ) : (

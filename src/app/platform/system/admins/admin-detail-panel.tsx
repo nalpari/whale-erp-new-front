@@ -3,16 +3,17 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type RefObject } from "react";
 import { Badge, Button, ConfirmDialog, DetailTable, DetailValues, SlidePanel, Tag, useToast, type DetailRow } from "@/components/common";
-import type { CurrentAdmin } from "@/lib/current-admin";
+import { useAccount, useMenuPermission } from "@/components/site/session-gate";
 import { formatDateTime, formatPhone } from "@/lib/format";
+import { MENU_CODE } from "@/lib/menus";
+import { adminActionsOf } from "@/lib/platform-admin-actions";
 import type { PlatformAdminDetail } from "@/lib/platform-admins";
 import { deletePlatformAdminAction, resetPlatformAdminPasswordAction } from "./actions";
 import { Blocked, FailedBand, ShieldIcon, unknownResult, WhoList } from "./admin-parts";
 import { HistoryButton } from "./history-dialog";
 
 // 플랫폼 관리자 상세(S-BRSPGB). 모두 읽기 전용이고, 상태 · 권한은 수정 패널에서만 바꾼다.
-// 관리 권한(manage)이면 수정 · 비밀번호 초기화 · 삭제를 보인다. 수정 · 삭제 권한을 따로 가르는 것은 로그인 뒤다
-// (current-permission.ts TODO) — api 는 지금도 update · delete 를 따로 본다.
+// 메뉴 권한(로그인 정보)으로 수정 · 비밀번호 초기화는 update, 삭제는 delete 가 있을 때 보인다 — api 도 같은 칸을 본다.
 // 플랫폼 관리자가 플랫폼 마스터 계정을 열면 셋 다 숨기고, 본인 계정이면 삭제 · 초기화만 흐리게 둔다(SYSTEM-1).
 // 화면은 미리 숨기거나 흐리게만 한다 — 막는 것은 api 다. 실행 버튼은 닫기만 맨 왼쪽, 나머지는 오른쪽 끝(BP 관리자 상세와 같다).
 
@@ -21,8 +22,6 @@ export function AdminDetailPanel({
   detail,
   onClose,
   trigger,
-  me,
-  manage,
   editOpen,
   onEdit,
   onDeleted,
@@ -31,8 +30,6 @@ export function AdminDetailPanel({
   detail: { admin: PlatformAdminDetail } | { failed: string } | null;
   onClose: () => void;
   trigger: RefObject<HTMLElement | null>;
-  me: CurrentAdmin | null;
-  manage: boolean;
   /** 수정 패널이 위에 떠 있으면 이 패널은 포커스를 받지 않는다 */
   editOpen: boolean;
   onEdit: (from: HTMLButtonElement) => void;
@@ -45,8 +42,6 @@ export function AdminDetailPanel({
           // 다른 계정을 열면 확인창 · 실패 띠를 새로 시작한다
           key={detail.admin.adminAccountId}
           admin={detail.admin}
-          me={me}
-          manage={manage}
           inert={editOpen}
           onClose={onClose}
           onEdit={onEdit}
@@ -68,16 +63,12 @@ export function AdminDetailPanel({
 
 function DetailBody({
   admin,
-  me,
-  manage,
   inert,
   onClose,
   onEdit,
   onDeleted,
 }: {
   admin: PlatformAdminDetail;
-  me: CurrentAdmin | null;
-  manage: boolean;
   inert: boolean;
   onClose: () => void;
   onEdit: (from: HTMLButtonElement) => void;
@@ -89,9 +80,10 @@ function DetailBody({
   const [failure, setFailure] = useState<string | null>(null);
   const [busy, startBusy] = useTransition();
 
-  // 플랫폼 마스터 계정은 플랫폼 마스터만 고친다(F-RVDLOW). 누가 보는지 모르면(me 없음) 숨기지 않고 api 에 맡긴다.
-  const canManage = manage && !(me?.roleTypeCode === "PA" && admin.roleGroup.roleTypeCode === "PM");
-  const isSelf = me?.adminAccountId === admin.adminAccountId;
+  const me = useAccount();
+  const can = useMenuPermission(MENU_CODE.platformAdmins);
+  // 플랫폼 마스터 계정은 플랫폼 마스터만 고친다(F-RVDLOW).
+  const { canUpdate, canDelete, isSelf } = adminActionsOf(me, { adminAccountId: admin.adminAccountId, roleTypeCode: admin.roleGroup.roleTypeCode }, can);
   const name = admin.name ?? admin.loginId;
 
   const handleReset = () =>
@@ -132,7 +124,7 @@ function DetailBody({
       label: "비밀번호",
       value: (
         <>
-          {canManage && (
+          {canUpdate && (
             <Blocked reason={isSelf ? "본인 비밀번호는 내 정보에서 바꿔 주세요" : undefined}>
               <Button variant="soft" onClick={() => setConfirm("reset")} disabled={isSelf || busy}>
                 초기화
@@ -192,14 +184,14 @@ function DetailBody({
           닫기
         </Button>
         <span className="flex-1" />
-        {canManage && (
+        {canDelete && (
           <Blocked reason={isSelf ? "본인 계정은 스스로 삭제할 수 없습니다" : undefined}>
             <Button variant="soft" onClick={() => setConfirm("delete")} disabled={isSelf || busy}>
               삭제
             </Button>
           </Blocked>
         )}
-        {canManage && (
+        {canUpdate && (
           <Button aria-controls="platform-admin-edit-panel" onClick={(e) => onEdit(e.currentTarget)} disabled={busy}>
             수정
           </Button>
@@ -208,7 +200,7 @@ function DetailBody({
       </div>
 
       {/* 고칠 수 없는 계정이면 확인창도 두지 않는다 */}
-      {canManage && (
+      {(canUpdate || canDelete) && (
         <>
           <ConfirmDialog
             open={confirm === "reset"}

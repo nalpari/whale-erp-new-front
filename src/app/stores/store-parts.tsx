@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { Badge, Tag } from "@/components/common";
 import { formatPhone } from "@/lib/format";
 import type { StoreStatus, StoreSummary, StoreType } from "@/lib/store-types";
-import { STORE_STATUS_LABEL, STORE_TYPE_LABEL } from "@/lib/store-view";
+import { CodeLabel } from "@/components/site/code-label";
 import { StoreImagePicture } from "./store-image-picture";
 
 // 점포 화면들이 같이 쓰는 작은 조각. 공통 컴포넌트에 없는 것만 둔다 — 데모 docs/demo/src/extra.mjs 의 임시 부품(카드 ·
@@ -73,7 +73,11 @@ const STORE_STATUS_TONE: Record<StoreStatus, "on" | "off" | "closed"> = {
   CLOSED: "closed",
 };
 export function StoreStatusBadge({ status }: { status: StoreStatus }) {
-  return <Badge tone={STORE_STATUS_TONE[status]}>{STORE_STATUS_LABEL[status]}</Badge>;
+  return (
+    <Badge tone={STORE_STATUS_TONE[status]}>
+      <CodeLabel group="STORE_STATUS" value={status} />
+    </Badge>
+  );
 }
 
 /** 대표 이미지 자리. 주소가 없거나(이미지 없음 · 저장소를 쓸 수 없음) 불러오지 못하면 점포 아이콘이 선다 */
@@ -114,7 +118,7 @@ export function StoreCard({ store, href }: { store: StoreSummary; href: string }
         <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
           <b className="line-clamp-2 text-[16px] font-semibold text-erp-ink">{store.name}</b>
           <span className="flex items-center gap-[6px] truncate text-[13px] text-erp-label">
-            <Tag>{STORE_TYPE_LABEL[store.storeTypeCode]}</Tag>
+            <Tag><CodeLabel group="STORE_TYPE" value={store.storeTypeCode} /></Tag>
             <span className="truncate">{store.storeCode}</span>
           </span>
         </div>
@@ -142,11 +146,13 @@ export function StoreCard({ store, href }: { store: StoreSummary; href: string }
 export function StoreTypeCards({
   value,
   onChange,
+  locked = false,
   invalid,
   describedBy,
 }: {
   value: StoreType | "";
   onChange?: (value: StoreType) => void;
+  locked?: boolean;
   invalid?: boolean;
   describedBy?: string;
 }) {
@@ -161,12 +167,15 @@ export function StoreTypeCards({
         return (
           <label
             key={type}
-            className={`group flex cursor-pointer flex-col items-center gap-[10px] rounded-[4px] border bg-white px-[18px] py-[14px] transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-erp-brand has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:focus-visible]:border-erp-brand ${
+            className={`group flex flex-col items-center gap-[10px] rounded-[4px] border bg-white px-[18px] py-[14px] transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:focus-visible]:border-erp-brand ${
               invalid ? "border-erp-off" : "border-erp-panel-line"
-            }`}
+            } ${locked ? `cursor-default ${checked ? "" : "opacity-40"}` : "cursor-pointer hover:border-erp-brand"}`}
           >
-            <input type="radio" name="storeTypeCode" className="sr-only" checked={checked} onChange={() => onChange?.(type)} />
-            <b className="text-[16px] font-semibold text-erp-ink">{STORE_TYPE_LABEL[type]}</b>
+            <input type="radio" name="storeTypeCode" className="sr-only" checked={checked} disabled={locked} onChange={() => onChange?.(type)} />
+            <span className="grid size-[48px] place-items-center rounded-[4px] border border-transparent bg-erp-thead-bg text-erp-label transition-colors duration-150 group-has-[:checked]:border-erp-panel-line group-has-[:checked]:bg-white group-has-[:checked]:text-erp-ink">
+              <LineIcon name="store" size={22} />
+            </span>
+            <b className="text-[16px] font-semibold text-erp-ink"><CodeLabel group="STORE_TYPE" value={type} /></b>
             <span className="text-[13px] text-erp-label">{desc}</span>
           </label>
         );

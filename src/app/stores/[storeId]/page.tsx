@@ -1,12 +1,13 @@
 import { notFound } from "next/navigation";
 import { Badge, DetailTable, DetailValues, Tag, type DetailRow } from "@/components/common";
 import { ApiError, getEnum } from "@/lib/api";
-import { getStorePermission } from "@/lib/current-permission";
 import { formatDateTime, formatPhone } from "@/lib/format";
 import { storeImageFailureText } from "@/lib/store-image";
 import { getStore } from "@/lib/stores";
-import { floorLabel, formatBizNumber, STORE_TYPE_LABEL } from "@/lib/store-view";
+import { CodeLabel } from "@/components/site/code-label";
+import { formatBizNumber } from "@/lib/store-view";
 import { StoreCardBody, StoreFrame } from "../store-frame";
+import { StoreFloorLabel } from "../store-floor-label";
 import { NoticeBand, StoreImage, StoreStatusBadge } from "../store-parts";
 import { backHrefOf } from "../stores-query";
 import { HistoryButton } from "./history-dialog";
@@ -46,7 +47,6 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
   const [{ storeId: raw }, search] = await Promise.all([params, searchParams]);
   const storeId = /^\d{1,9}$/.test(raw) ? Number(raw) : 0;
   if (storeId < 1) notFound();
-  const manage = getStorePermission(search) === "manage";
   const backHref = backHrefOf(search.back);
 
   // 운영 조건 한글(GET /enums/StoreOperationRequirement)을 못 받아도 상세는 연다 — 문구가 값 그대로 보일 뿐이다
@@ -176,7 +176,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
             <h2 className="flex min-w-0 flex-1 items-center gap-[10px] text-[18px] font-semibold text-erp-ink">
               <span className="truncate">{store.name}</span>
             </h2>
-            <StoreDetailActions store={store} manage={manage} backHref={backHref} requirementLabels={requirementLabels} />
+            <StoreDetailActions store={store} backHref={backHref} requirementLabels={requirementLabels} />
           </div>
           <ImageFailedNotice message={imageFailure} />
           {bpInactive && <NoticeBand title="소속 BP 가 미사용 상태여서 이 업무를 할 수 없습니다." detail="조회만 됩니다. 등록 · 수정 · 상태 변경 · 삭제는 BP 를 다시 사용하면 할 수 있습니다." />}
@@ -191,7 +191,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
                 <>
                   점포 기본정보
                   <span className="ml-[18px] inline-flex items-center gap-[8px] align-middle text-[14px] font-medium text-erp-label">
-                    <Tag>{STORE_TYPE_LABEL[store.storeTypeCode]}</Tag>
+                    <Tag><CodeLabel group="STORE_TYPE" value={store.storeTypeCode} /></Tag>
                     <StoreStatusBadge status={store.storeStatusCode} />
                     {store.closedDate && <span>폐점일 {store.closedDate}</span>}
                   </span>
@@ -225,7 +225,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
                   value: (
                     <DetailValues
                       items={[
-                        floorLabel(f),
+                        <StoreFloorLabel key="type" floor={f} />,
                         f.floorAreaPyeong === null ? muted("-") : `${f.floorAreaPyeong}평`,
                         f.floorAreaSqm === null ? muted("-") : `${f.floorAreaSqm}㎡`,
                         f.seatCount === null ? muted("-") : `${f.seatCount.toLocaleString("ko-KR")}석`,

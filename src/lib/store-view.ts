@@ -1,12 +1,9 @@
 // 점포 화면의 표기. 서버 · 클라이언트가 함께 쓰고 node --test 가 직접 읽는다(상대 경로 + .ts).
 import { labelOf, type EnumValue } from "./enums.ts";
-import { floorTypeOf, type FloorType, type StoreFloor, type StoreStatus, type StoreTransitions, type StoreType } from "./store-types.ts";
+import { floorTypeOf, type FloorType, type StoreFloor, type StoreStatus, type StoreTransitions } from "./store-types.ts";
 
-// 공통코드 STORE_STATUS · STORE_TYPE · FLOOR_TYPE 의 표시 이름. 네이밍 규칙은 front 에 상수 대응표를 두지 않고
-// getCodes(group) 로 받게 하지만, 그 조회가 아직 없어 임시로 둔다. TODO(getCodes): 조회한 label 로 바꾸고 지운다.
-export const STORE_STATUS_LABEL: Record<StoreStatus, string> = { NOT_OPERATING: "미운영", OPERATING: "운영", CLOSED: "폐점" };
-export const STORE_TYPE_LABEL: Record<StoreType, string> = { DIRECT: "직영점포", FRANCHISE: "가맹점포" };
-export const FLOOR_TYPE_LABEL: Record<FloorType, string> = { GROUND: "지상", BASEMENT: "지하" };
+// 점포 상태 · 유형 · 층 구분의 한글은 공통코드(STORE_STATUS · STORE_TYPE · FLOOR_TYPE)라 화면이 로그인 정보에서 읽는다
+// (components/site/code-label.tsx). 여기에 상수 대응표를 두지 않는다(네이밍 규칙 화면 문구).
 
 /** 지금 상태에서 고를 수 있는 점포상태(현재 상태 포함) — 미운영→운영 · 폐점, 운영→폐점. 되돌리지 않는다(S-MNRZOM) */
 export function nextStatuses(current: StoreStatus): StoreStatus[] {
@@ -21,11 +18,11 @@ export function formatBizNumber(value: string | null | undefined): string {
   return digits.length === 10 ? `${digits.slice(0, 3)}-${digits.slice(3, 5)}-${digits.slice(5)}` : (value ?? "");
 }
 
-/** 층 한 줄의 층 표기 — 지상 1층 · 지하 2층. 둘 다 없으면 "-" */
-export function floorLabel(floor: Pick<StoreFloor, "floorTypeCode" | "floorNumber">): string {
+/** 층 한 줄의 층 표기 — 지상 1층 · 지하 2층. 둘 다 없으면 "-". 층 구분 한글은 부르는 쪽이 공통코드에서 준다 */
+export function floorLabel(floor: Pick<StoreFloor, "floorTypeCode" | "floorNumber">, floorTypeLabel: (type: FloorType) => string): string {
   if (!floor.floorTypeCode && floor.floorNumber === null) return "-";
   const floorType = floorTypeOf(floor.floorTypeCode);
-  const type = floorType ? FLOOR_TYPE_LABEL[floorType] : "";
+  const type = floorType ? floorTypeLabel(floorType) : "";
   return `${type} ${floor.floorNumber ?? ""}${floor.floorNumber === null ? "" : "층"}`.trim();
 }
 

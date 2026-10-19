@@ -38,7 +38,9 @@ import {
   type StoreFormField,
 } from "@/lib/store-form";
 import { FLOOR_TYPES, floorTypeOf, type StoreDetail, type StoreImageFileType, type StoreStatus } from "@/lib/store-types";
-import { closeBlockText, FLOOR_TYPE_LABEL, formatBizNumber, nextStatuses, STORE_STATUS_LABEL, STORE_TYPE_LABEL } from "@/lib/store-view";
+import { closeBlockText, formatBizNumber, nextStatuses } from "@/lib/store-view";
+import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
+import { useCurrentBp } from "@/components/site/session-gate";
 import { storeImageAccept, storeImageFileError, storeImageTypesText } from "@/lib/store-image";
 import {
   createStoreAction,
@@ -94,6 +96,10 @@ type Props =
 export function StoreFormView(props: Props) {
   const { mode, backHref, imageTypes } = props;
   const router = useRouter();
+  // 선택지 글자는 <option> 에 글자로만 넣는다 — 공통코드 한글(로그인 정보)
+  const statusLabel = useCodeLabel("STORE_STATUS");
+  // 등록할 BP — 이 탭의 BP(플랫폼 계정이 고른 BP, 그 밖은 소속 BP)
+  const currentBp = useCurrentBp();
   const toast = useToast();
   const ids = useId();
   const initialForm = () => (props.mode === "edit" ? formOfStore(props.store) : EMPTY_STORE_FORM);
@@ -284,7 +290,7 @@ export function StoreFormView(props: Props) {
   const handleSaveConfirm = () =>
     startSaving(async () => {
       if (props.mode === "create") {
-        const result = await createStoreAction(toCreateStoreInput(form)).catch(unknownResult("등록"));
+        const result = await createStoreAction(toCreateStoreInput(form, currentBp.bpCodeId)).catch(unknownResult("등록"));
         if (!result.ok && result.status === undefined) {
           // 저장됐을 수도 있다 — 다시 저장하면 점포가 둘 생길 수 있으므로 목록에서 확인하게 하고 저장을 잠근다
           setCreateUncertain(true);
@@ -425,7 +431,7 @@ export function StoreFormView(props: Props) {
           {mode === "create" ? "점포 등록" : "점포 수정"}
           {store && (
             <span className="ml-[10px] text-[14px] font-medium text-erp-label">
-              {store.storeCode} · {STORE_TYPE_LABEL[store.storeTypeCode]}
+              {store.storeCode} · <CodeLabel group="STORE_TYPE" value={store.storeTypeCode} />
             </span>
           )}
         </h2>
@@ -461,7 +467,7 @@ export function StoreFormView(props: Props) {
                     >
                       {statusOptions.map((s) => (
                         <option key={s} value={s}>
-                          {STORE_STATUS_LABEL[s]}
+                          {statusLabel(s)}
                         </option>
                       ))}
                     </Select>
@@ -886,6 +892,7 @@ function FloorTable({
   invalid?: boolean;
   describedBy?: string;
 }) {
+  const floorTypeLabel = useCodeLabel("FLOOR_TYPE");
   const update = (key: string, patch: Partial<FloorRow>) => onChange(rows.map((r) => (r.key === key ? { ...r, ...patch } : r)));
   const numberCell = (row: FloorRow, field: "floorNumber" | "floorAreaPyeong" | "floorAreaSqm" | "seatCount", label: string, unit: string, decimal: boolean) => (
     <div className="flex items-center gap-[6px]">
@@ -937,7 +944,7 @@ function FloorTable({
                 {row.floorTypeCode && !floorTypeOf(row.floorTypeCode) && <option value={row.floorTypeCode}>{row.floorTypeCode}</option>}
                 {FLOOR_TYPES.map((t) => (
                   <option key={t} value={t}>
-                    {FLOOR_TYPE_LABEL[t]}
+                    {floorTypeLabel(t)}
                   </option>
                 ))}
               </Select>

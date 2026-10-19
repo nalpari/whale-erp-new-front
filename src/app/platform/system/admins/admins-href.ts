@@ -11,8 +11,6 @@ export type AdminsQuery = {
   status?: AdminStatus;
   /** 상세를 연 계정 */
   admin?: number;
-  /** 개발 중 조회만 권한 보기(current-permission.ts) */
-  permission?: "view";
 };
 
 type Params = Record<string, string | string[] | undefined>;
@@ -33,7 +31,6 @@ export function parseAdminsQuery(params: Params): AdminsQuery {
     roleGroupId: positiveInt(one(params.roleGroupId)),
     status: status === "ACTIVE" || status === "INACTIVE" ? status : undefined,
     admin: positiveInt(one(params.admin)),
-    permission: params.permission === "view" ? "view" : undefined,
   };
 }
 
@@ -44,7 +41,6 @@ export function adminsHref(query: Partial<AdminsQuery>): string {
   if (query.status) params.set("status", query.status);
   if (query.page && query.page > 1) params.set("page", String(query.page));
   if (query.admin) params.set("admin", String(query.admin));
-  if (query.permission) params.set("permission", query.permission);
   const search = params.toString();
   return `/platform/system/admins${search ? `?${search}` : ""}`;
 }

@@ -64,6 +64,7 @@ test("parse(toSearch(q)) 는 q", () => {
   const q = {
     ...DEFAULT_STAFF_LIST_QUERY,
     store: "판교",
+    storeIds: [3, 12],
     employmentTypes: ["PART_TIME" as const],
     joinGroups: ["INVITED" as const, "UNDER_AGE" as const],
     employmentStatus: "RETIRED" as const,
@@ -85,4 +86,41 @@ test("상세의 「목록」 주소는 들고 온 조건을 거른 뒤 돌려준
   assert.equal(staffListHref({ keyword: "서지안", page: "3" }), "/staff-members?keyword=%EC%84%9C%EC%A7%80%EC%95%88&page=3");
   // 모르는 이름 · 이상한 값은 따라오지 않는다
   assert.equal(staffListHref({ next: "//evil.example", page: "-1", employmentStatus: "X" }), "/staff-members");
+});
+
+test("점포명과 함께 맞는 점포 id 가 URL 에 남는다", () => {
+  const params = new URLSearchParams(toStaffListSearch({ ...DEFAULT_STAFF_LIST_QUERY, store: "서초", storeIds: [7, 1] }));
+  assert.equal(params.get("store"), "서초");
+  assert.equal(params.get("storeIds"), "7,1");
+});
+
+test("맞는 점포가 없으면 storeIds 가 빈 값으로 남는다 — 새로고침해도 0건", () => {
+  const search = toStaffListSearch({ ...DEFAULT_STAFF_LIST_QUERY, store: "없는점", storeIds: [] });
+  assert.equal(new URLSearchParams(search).get("storeIds"), "");
+  assert.deepEqual(parseStaffListQuery({ store: "없는점", storeIds: "" }).storeIds, []);
+});
+
+test("점포명이 없으면 storeIds 는 쓰지 않는다", () => {
+  assert.equal(new URLSearchParams(toStaffListSearch({ ...DEFAULT_STAFF_LIST_QUERY, storeIds: [1] })).has("storeIds"), false);
+  assert.deepEqual(parseStaffListQuery({ storeIds: "1,2" }).storeIds, []);
+});
+
+test("storeIds 의 이상한 값 · 겹친 값은 버린다", () => {
+  assert.deepEqual(parseStaffListQuery({ store: "서초", storeIds: "3,abc,0,-1,3,2147483648,1.5,9" }).storeIds, [3, 9]);
+});
+
+test("점포명만 있고 storeIds 가 없으면(이 PR 전 주소) null — 필터가 점포 목록에서 채운다", () => {
+  assert.equal(parseStaffListQuery({ store: "판교" }).storeIds, null);
+  // 아직 못 찾은 상태는 URL 에 빈 값으로 굳히지 않는다
+  assert.equal(new URLSearchParams(toStaffListSearch({ ...DEFAULT_STAFF_LIST_QUERY, store: "판교", storeIds: null })).has("storeIds"), false);
+});
+
+test("검색어는 api 상한 50자로 자른다", () => {
+  assert.equal(parseStaffListQuery({ keyword: "가".repeat(60) }).keyword, "가".repeat(50));
+  assert.equal(parseStaffListQuery({ store: "나".repeat(60) }).store, "나".repeat(50));
+});
+
+test("쪽은 api 상한 1,000,000 을 넘으면 1", () => {
+  assert.equal(parseStaffListQuery({ page: "1000000" }).page, 1_000_000);
+  assert.equal(parseStaffListQuery({ page: "1000001" }).page, 1);
 });
