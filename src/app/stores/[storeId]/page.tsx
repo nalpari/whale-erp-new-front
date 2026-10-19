@@ -253,7 +253,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
                     />
                   ),
                 }))
-              : [{ label: "-", value: muted("등록한 층별 정보가 없습니다.") }]
+              : [{ label: "층구분", value: muted("등록한 층별 정보가 없습니다.") }]
           }
         />
       </StoreCardBody>
