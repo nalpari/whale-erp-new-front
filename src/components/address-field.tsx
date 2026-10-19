@@ -25,6 +25,7 @@ export function AddressField({
   required,
   labelExtra,
   disabled = false,
+  hideClear = false,
 }: {
   /** 묶음 이름 — 한 화면에 주소가 둘이면(점포 주소 · 사업자주소) 안쪽 칸 이름에도 붙여 화면 낭독기가 가르게 한다 */
   label?: string;
@@ -40,6 +41,8 @@ export function AddressField({
   labelExtra?: ReactNode;
   /** 다른 값(점포 주소 등)과 같아 이 칸은 보여주기만 한다 — 검색 · 지우기를 숨기고 상세주소도 읽기 전용이 된다 */
   disabled?: boolean;
+  /** 검색은 그대로 두고 [지우기]만 숨긴다 — 비운 채로 둘 수 없는 값(운영 점포의 점포 주소 등)에 쓴다. 새 주소를 골라 바꾸는 것은 막지 않는다 */
+  hideClear?: boolean;
 }) {
   const listId = useId();
   // 기본 묶음(주소)은 안쪽 칸 이름을 그대로 두고, 다른 묶음은 앞에 묶음 이름을 붙인다(사업자주소 우편번호 …)
@@ -258,7 +261,7 @@ export function AddressField({
           <TextField value={value.zipCode} readOnly placeholder="우편번호" aria-label={`${prefix}우편번호`} />
         </div>
         <TextField value={value.address} readOnly placeholder="기본주소" aria-label={`${prefix}기본주소`} />
-        {!disabled && (value.zipCode || value.address || value.addressDetail) && (
+        {!disabled && !hideClear && (value.zipCode || value.address || value.addressDetail) && (
           <Button variant="off" onClick={() => onChange({ zipCode: "", address: "", addressDetail: "" })}>
             지우기
           </Button>

@@ -557,6 +557,10 @@ export function StoreFormView(props: Props) {
             }}
             detailError={errors.addressDetail}
             onChoose={handleAddressChoose}
+            // 운영 점포는 위도 · 경도가 있어야 하고 그 좌표는 이 주소에서 나온다 — 비워 둔 채로는 운영 상태를
+            // 유지할 수 없으니 [지우기]를 숨긴다. 새 주소로 바꾸는 것(검색해 고르기)은 그대로 된다(2026-10-19,
+            // 코드리뷰 — 지웠다가 새 주소를 고르면 위치 적용 여부가 미사용으로 남는 문제의 근본 원인을 막는다).
+            hideClear={mode === "edit" && form.storeStatus === "OPERATING"}
           />
           <Stack>
             <FormRow>
