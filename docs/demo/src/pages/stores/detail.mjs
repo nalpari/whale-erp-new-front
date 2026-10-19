@@ -22,11 +22,11 @@ export default ({ A, R }) => {
     <img src="${A}img/${photo}" alt="${name} 대표 이미지" class="size-[72px] shrink-0 rounded-[2px] object-cover">
     <div class="flex min-w-0 flex-1 flex-col gap-[8px]">
       <h2 class="truncate text-[18px] font-semibold text-erp-ink">${name}</h2>
+      <!-- 운영 상태 배지는 여기 두지 않는다 — 점포 기본정보 표의 점포상태 줄과 정보가 겹쳐 보였다(2026-10-19 점검). -->
       <div class="flex items-center gap-[8px] text-[14px] font-medium text-erp-label">
         <span>점포코드 ${code}</span>
         <span class="h-[11px] w-px bg-[#d9d9d9]"></span>
         ${tag(type)}
-        ${ui.badge("on", state)}
       </div>
     </div>
     <div class="flex shrink-0 gap-[6px]">

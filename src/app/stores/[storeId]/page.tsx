@@ -194,11 +194,12 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
             )}
             <div className="flex min-w-0 flex-1 flex-col gap-[8px]">
               <h2 className="truncate text-[18px] font-semibold text-erp-ink">{store.name}</h2>
+              {/* 운영 상태 배지는 여기 두지 않는다 — 점포 기본정보 표의 점포상태 줄과 정보가 겹쳐 보였다
+                  (2026-10-19 점검 — 실사용자 확인). */}
               <div className="flex items-center gap-[8px] text-[14px] font-medium text-erp-label">
                 <span>점포코드 {store.storeCode}</span>
                 <span className="h-[11px] w-px bg-[#d9d9d9]" />
                 <Tag><CodeLabel group="STORE_TYPE" value={store.storeTypeCode} /></Tag>
-                <StoreStatusBadge status={store.storeStatusCode} />
                 {store.closedDate && <span>폐점일 {store.closedDate}</span>}
               </div>
             </div>
