@@ -6,5 +6,5 @@ export function codesHref({ page, group }: CodesQuery): string {
   if (page && page > 1) params.set("page", String(page));
   if (group) params.set("group", group);
   const query = params.toString();
-  return `/platform/system/codes${query ? `?${query}` : ""}`;
+  return `/code-groups${query ? `?${query}` : ""}`;
 }

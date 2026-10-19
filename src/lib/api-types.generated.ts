@@ -834,6 +834,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/bp-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 플랫폼 계정이 고를 고객 BP — 서비스 바로가기 「웨일ERP」의 BP 선택. 미삭제 고객 BP 를 사용 · 미사용 · 탈퇴 모두
+         *     BP코드순으로 나눠 준다. 사용 중인 플랫폼 관리자(PM · PA)만 부르고, 그 밖의 관리자 · 직원 앱은 403.
+         */
+        get: operations["BpCodesController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/bp-codes/{bpCodeId}/stores": {
         parameters: {
             query?: never;
@@ -3223,6 +3243,26 @@ export interface components {
             /** @description 새 상위 아래의 자리 — 0 이 맨 앞, 형제 수 이상이면 맨 끝. */
             index: number;
         };
+        BpListItemResponseDto: {
+            bpCodeId: number;
+            /** @example BP000012 */
+            bpCode: string;
+            /**
+             * @description 상호.
+             * @example 고래커피
+             */
+            tradeName: string;
+            /**
+             * @description 공통코드 `ACCOUNT_STATUS` 값 그대로(사용 · 미사용 · 탈퇴).
+             * @example ACTIVE
+             */
+            accountStatusCode: string;
+        };
+        BpListResponseDto: {
+            /** @description BP코드순. 미삭제 고객 BP 를 상태와 상관없이. */
+            items: components["schemas"]["BpListItemResponseDto"][];
+            total: number;
+        };
         BpStoreListResponseDto: {
             /** @description 점포 이름순. 운영 상태와 상관없이 미삭제 점포 전체. 항목 모양은 로그인 정보의 `stores` 와 같다. */
             items: components["schemas"]["AdminStoreDto"][];
@@ -4445,6 +4485,32 @@ export interface components {
         PublishedPostListResponseDto: {
             items: components["schemas"]["PublishedPostResponseDto"][];
             total: number;
+        };
+        PostNeighborDto: {
+            postId: number;
+            title: string;
+            /** @description 게시일(YYYY-MM-DD). */
+            postedDate: string;
+        };
+        SupportPostResponseDto: {
+            contentType: components["schemas"]["PostContentType"];
+            noticeType: components["schemas"]["NoticeType"] | null;
+            postId: number;
+            title: string;
+            /** @description 평문. 화면은 HTML 로 그리지 않고 이스케이프해 보인다. */
+            body: string;
+            faqCategoryCode: string | null;
+            /** @description 상단 고정. 목록은 고정 글을 먼저 준다. */
+            isPinned: boolean;
+            /** @description 게시일(YYYY-MM-DD) — 게시 시작일, 없으면 등록 일시의 한국 날짜. */
+            postedDate: string;
+            /**
+             * @description 이전 — 목록에서 바로 아래 글(대개 더 오래된 글. 상단 고정 글의 맨 아래에서는 그보다 새 일반 글일 수 있다).
+             *     맨 아래이거나 FAQ 면 null.
+             */
+            prev: components["schemas"]["PostNeighborDto"] | null;
+            /** @description 다음 — 목록에서 바로 위 글(대개 더 새 글). 맨 위이거나 FAQ 면 null. */
+            next: components["schemas"]["PostNeighborDto"] | null;
         };
         /** @enum {string} */
         NotificationRelatedType: "CONTRACT" | "INQUIRY" | "LEAD" | "STAFF_MEMBER";
@@ -7025,6 +7091,39 @@ export interface operations {
             };
         };
     };
+    BpCodesController_list: {
+        parameters: {
+            query: {
+                /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
+                page: number;
+                /** @description 한 쪽 건수. 기본 20, 최대 200. */
+                pageSize: number;
+                /** @description 상호 · BP코드 중 하나에 들어 있으면 나온다(대소문자 무시). 앞뒤 공백은 자른다. */
+                keyword?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BpListResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 · 사용할 수 없는 관리자 계정 · 직원 앱 토큰 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     BpCodesController_findStores: {
         parameters: {
             query?: never;
@@ -9401,7 +9500,7 @@ export interface operations {
                 noticeType?: components["schemas"]["NoticeType"];
                 /** @description FAQ 카테고리(공통코드 FAQ_CATEGORY 상세코드)로 거른다. */
                 faqCategoryCode?: string;
-                /** @description 제목 또는 본문에 든 글자로 찾는다. 대소문자는 가리지 않는다. */
+                /** @description 제목(FAQ 는 제목 또는 본문)에 든 글자로 찾는다. 대소문자는 가리지 않는다. */
                 keyword?: string;
             };
             header?: never;
@@ -9460,7 +9559,7 @@ export interface operations {
                 noticeType?: components["schemas"]["NoticeType"];
                 /** @description FAQ 카테고리(공통코드 FAQ_CATEGORY 상세코드)로 거른다. */
                 faqCategoryCode?: string;
-                /** @description 제목 또는 본문에 든 글자로 찾는다. 대소문자는 가리지 않는다. */
+                /** @description 제목(FAQ 는 제목 또는 본문)에 든 글자로 찾는다. 대소문자는 가리지 않는다. */
                 keyword?: string;
             };
             header?: never;
@@ -9502,7 +9601,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PublishedPostResponseDto"];
+                    "application/json": components["schemas"]["SupportPostResponseDto"];
                 };
             };
             /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 · 그 글 종류 메뉴의 조회 권한 없음 */

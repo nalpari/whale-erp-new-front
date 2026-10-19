@@ -8,7 +8,7 @@ import { AdminsScreen } from "./admins-screen";
 // 왼쪽 필터, 오른쪽 목록. 상세 · 등록 · 수정은 목록 위로 밀려 나오는 슬라이드 패널이다(데모와 같다 · 2026-10-08).
 // 목록 조건과 연 상세는 주소에 둔다(admins-href.ts). 상세만 못 불러오면 목록은 그대로 두고 패널에서 알린다.
 // 지금 사용자와 메뉴 권한(등록 · 수정 · 삭제)은 로그인 정보에서 화면(클라이언트)이 읽는다(SessionGate).
-export default async function PlatformAdminsPage({ searchParams }: PageProps<"/platform/system/admins">) {
+export default async function PlatformAdminsPage({ searchParams }: PageProps<"/platform-admins">) {
   const params = await searchParams;
   const query = parseAdminsQuery(params);
 

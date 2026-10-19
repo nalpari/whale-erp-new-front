@@ -7,7 +7,7 @@ import { UnsavedChangesProvider } from "./unsaved-changes";
 // 플랫폼 공통코드 관리 (S-UQPNIH). 한 화면에 왼쪽 그룹 목록, 오른쪽 고른 그룹의 상세 코드를 둔다.
 // 쪽과 고른 그룹은 주소(?page · ?group)에 둔다. 고른 그룹이 이 쪽에 없으면 이 쪽의 첫 그룹을 고른다.
 // 메뉴 조회 권한이 없으면 공통 틀이 메뉴에서 숨기고, 주소로 들어오면 안내 뒤 돌려보낸다(SessionGate). 고치기 · 추가 버튼은 패널이 메뉴 권한으로 가른다.
-export default async function PlatformCodesPage({ searchParams }: PageProps<"/platform/system/codes">) {
+export default async function PlatformCodesPage({ searchParams }: PageProps<"/code-groups">) {
   const params = await searchParams;
   const page = positiveInt(params.page) ?? 1;
 
