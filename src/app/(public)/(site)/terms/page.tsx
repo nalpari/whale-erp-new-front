@@ -2,28 +2,30 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 import { TermsMarkdown } from "@/components/site/terms-markdown";
 import { getTermsVersion, getTermsVersions, type TermsVersionDetail } from "@/lib/terms";
+import { settleTerms } from "@/lib/terms-tab";
 import { TermsTabs } from "./terms-tabs";
 
 export const metadata: Metadata = { title: "약관 전문 · Whale ERP" };
 
 // 약관 목록과 여섯 본문을 한 번에 받는다 — 본문이 작고, 탭을 바꿀 때 기다리지 않게. 받은 응답은 lib/terms.ts 가 한 시간 캐시한다.
-// 본문 하나를 받지 못하면(사용 중 버전 없음 404 등) 그 탭만 빼고 나머지를 보인다. 목록을 받지 못했거나 본문을 하나도 받지 못했을 때만
-// 화면을 깨지 않고 본문 자리에 안내를 둔다. 원인은 서버 로그에 남긴다.
-async function loadTerms(): Promise<TermsVersionDetail[] | null> {
-  let versions;
+// 본문 하나를 받지 못하면(사용 중 버전 없음 404 등) 그 탭만 빼고 나머지를 보이며, 탭 위에 「일부를 불러오지 못했다」를 한 줄 둔다.
+// 목록을 받지 못했거나 비었거나 본문을 하나도 받지 못했을 때만 화면을 깨지 않고 본문 자리에 안내를 둔다. 원인은 서버 로그에 남긴다.
+async function loadTerms(): Promise<{ terms: TermsVersionDetail[]; partial: boolean } | null> {
+  // 응답 모양이 어긋나도(항목이 객체가 아님 등) 여기서 받아 안내로 바꾼다 — 목록 조회부터 본문 정리까지 모두 try 안이다.
   try {
-    versions = await getTermsVersions();
+    const versions = await getTermsVersions();
+    if (versions.length === 0) {
+      console.error("사용 중인 약관이 없습니다 — GET /public-terms-versions 가 빈 목록을 줬습니다");
+      return null;
+    }
+    const codes = versions.map((v) => v.termsTypeCode);
+    const { terms, failed } = settleTerms(codes, await Promise.allSettled(codes.map((code) => getTermsVersion(code))));
+    for (const { code, reason } of failed) console.error(`약관 「${code}」 본문을 받지 못해 탭에서 뺍니다`, reason);
+    return terms && { terms, partial: failed.length > 0 };
   } catch (error) {
     console.error("약관 목록을 받지 못했습니다", error);
     return null;
   }
-  const results = await Promise.allSettled(versions.map((v) => getTermsVersion(v.termsTypeCode)));
-  const terms = results.flatMap((result, i) => {
-    if (result.status === "fulfilled") return [result.value];
-    console.error(`약관 「${versions[i].termsTypeCode}」 본문을 받지 못해 탭에서 뺍니다`, result.reason);
-    return [];
-  });
-  return terms.length > 0 ? terms : null;
 }
 
 // 약관 전문(데모 auth/terms.html). 푸터의 이용약관·개인정보처리방침이 #TERMS_SERVICE · #PRIVACY_COLLECT 로 들어온다.
@@ -31,7 +33,7 @@ async function loadTerms(): Promise<TermsVersionDetail[] | null> {
 export default async function TermsPage() {
   // 요청마다 그린다 — 빌드 때 api 가 없어 안내 화면이 정적 페이지로 굳지 않게. api 응답 캐시(한 시간)는 그대로 쓴다.
   await connection();
-  const terms = await loadTerms();
+  const loaded = await loadTerms();
 
   return (
     <section className="mx-auto flex w-[1200px] flex-col gap-[40px] pt-[80px] pb-[60px] text-guest-ink">
@@ -39,26 +41,34 @@ export default async function TermsPage() {
         <h1 className="text-[28px] leading-[1.2] font-bold">약관 전문</h1>
         <p className="text-[16px] leading-[1.5]">Whale ERP 서비스 이용에 적용되는 약관과 개인정보 처리 기준입니다.</p>
       </div>
-      {terms ? (
-        <TermsTabs
-          tabs={terms.map((t) => ({
-            code: t.termsTypeCode,
-            label: t.label,
-            panel: (
-              <div className="flex flex-col gap-[32px]">
-                <div className="flex flex-col gap-[8px] border-b border-[#ebebeb] pb-[24px]">
-                  <h2 className="text-[22px] leading-[1.4] font-semibold text-guest-ink">{t.title}</h2>
-                  <p className="text-[15px] text-[#767676]">
-                    {t.version} · 시행일 {t.effectiveDate}
-                  </p>
+      {loaded ? (
+        <div className="flex flex-col gap-[18px]">
+          {loaded.partial && (
+            // #999 빈 값 회색: 아래 안내 문구와 같은 색. 받은 탭은 그대로 보이므로 조용히 알린다(status).
+            <p role="status" className="text-[15px] text-[#999]">
+              일부 약관을 불러오지 못했습니다.
+            </p>
+          )}
+          <TermsTabs
+            tabs={loaded.terms.map((t) => ({
+              code: t.termsTypeCode,
+              label: t.label,
+              panel: (
+                <div className="flex flex-col gap-[32px]">
+                  <div className="flex flex-col gap-[8px] border-b border-[#ebebeb] pb-[24px]">
+                    <h2 className="text-[22px] leading-[1.4] font-semibold text-guest-ink">{t.title}</h2>
+                    <p className="text-[15px] text-[#767676]">
+                      {t.version} · 시행일 {t.effectiveDate}
+                    </p>
+                  </div>
+                  <div className="text-[16px] leading-[1.7] text-guest-body [&_h3]:text-[17px] [&_h3]:text-guest-ink">
+                    <TermsMarkdown content={t.content} />
+                  </div>
                 </div>
-                <div className="text-[16px] leading-[1.7] text-guest-body [&_h3]:text-[17px] [&_h3]:text-guest-ink">
-                  <TermsMarkdown content={t.content} />
-                </div>
-              </div>
-            ),
-          }))}
-        />
+              ),
+            }))}
+          />
+        </div>
       ) : (
         // #999 빈 값 회색: DESIGN.md Neutral 의 「데이터가 없을 때의 안내 문구」
         <p role="alert" className="border-y border-[#ebebeb] py-[60px] text-center text-[16px] text-[#999]">

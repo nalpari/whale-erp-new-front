@@ -30,9 +30,12 @@ async function getTerms<T>(path: string, fresh: boolean): Promise<T> {
   return (await response.json()) as T;
 }
 
-/** GET /public-terms-versions — 사용 중인 약관 6종, TERMS_TYPE 정렬 순서. 한 시간 캐시. */
+/** GET /public-terms-versions — 사용 중인 약관 6종, TERMS_TYPE 정렬 순서. 한 시간 캐시. 응답에 items 배열이 없으면 던진다. */
 export async function getTermsVersions(): Promise<TermsVersion[]> {
-  return (await getTerms<{ items: TermsVersion[]; total: number }>("/public-terms-versions", false)).items;
+  const body = await getTerms<{ items?: unknown }>("/public-terms-versions", false);
+  // 모양이 어긋난 응답(프록시 오류 화면 · api 변경)이 화면 그리기까지 가서 터지지 않게 여기서 막는다 — 부르는 쪽이 안내로 바꾼다.
+  if (!Array.isArray(body?.items)) throw new Error("GET /public-terms-versions 응답에 items 배열이 없습니다");
+  return body.items as TermsVersion[];
 }
 
 /** GET /public-terms-versions/{termsTypeCode} — 사용 중인 버전 하나와 본문. 없으면 404(ApiError). fresh 면 캐시 없이 받는다. */
