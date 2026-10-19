@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { ApiError, getSession, request, SESSION_COOKIE } from "@/lib/api";
+import { ApiError, authHeaders, request, SESSION_COOKIE } from "@/lib/api";
 import type { DocumentNotice } from "../../document-notice";
 
 // 종이 계약 날인본 내려받기. api 가 업무 범위를 본 뒤 주는 300초짜리 서명 주소로 보낸다 — 받으면 원래 파일 이름으로 저장된다.
@@ -18,11 +18,11 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/contracts/[contr
     return res;
   };
   if (!isId(contractId) || !isId(contractDocumentId)) return back("missing");
-  const session = await getSession();
-  if (!session) return toLogin();
+  const headers = await authHeaders();
+  if (!headers.Authorization) return toLogin();
   try {
     const { url } = await request<{ url: string }>(`/contracts/${contractId}/documents/${contractDocumentId}/download-url`, {
-      headers: { Authorization: `Bearer ${session.accessToken}` },
+      headers,
     });
     return NextResponse.redirect(url);
   } catch (e) {

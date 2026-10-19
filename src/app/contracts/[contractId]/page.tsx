@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { Button, DataTable, DetailTable, DetailValues, PageBar } from "@/components/common";
-import { ApiError, getEnum, getSession, request } from "@/lib/api";
+import { ApiError, authHeaders, getEnum, request } from "@/lib/api";
 import { labelOf } from "@/lib/enums";
 import { StatusBadge } from "../columns";
 import { formatPhone, type ContractDetail } from "../new/contract-form-model";
@@ -29,7 +29,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
   const contractId = Number(raw);
   if (!Number.isInteger(contractId) || contractId < 1) notFound();
 
-  const [statuses, draftActions, employmentTypes, weekdays, payMonths, payMethods, contractMethods, documentKinds, actors, genders, session] = await Promise.all([
+  const [statuses, draftActions, employmentTypes, weekdays, payMonths, payMethods, contractMethods, documentKinds, actors, genders, headers] = await Promise.all([
     getEnum("ContractStatus"),
     getEnum("ContractDraftAction"),
     getEnum("EmploymentType"),
@@ -40,13 +40,13 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
     getEnum("ContractDocumentKind"),
     getEnum("StatusChangeActor"),
     getEnum("Gender"),
-    getSession(),
+    authHeaders(),
   ]);
 
   let c: ContractDetail | null = null;
-  if (session) {
+  if (headers.Authorization) {
     try {
-      c = await request<ContractDetail>(`/contracts/${contractId}`, { headers: { Authorization: `Bearer ${session.accessToken}` } });
+      c = await request<ContractDetail>(`/contracts/${contractId}`, { headers });
     } catch (e) {
       if (e instanceof ApiError && e.status === 404) notFound();
       if (!(e instanceof ApiError && e.status === 401)) throw e;

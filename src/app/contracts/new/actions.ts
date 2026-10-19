@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { ApiError, getSession, request } from "@/lib/api";
+import { ApiError, authHeaders, request } from "@/lib/api";
 import { SAVE_UNKNOWN_NEW, saveOutcomeUnknown, sendFailedTarget } from "../[contractId]/send-model";
 import { inProgressOf, type CreateContractBody, type SaveResult } from "./contract-form-model";
 
@@ -35,12 +35,12 @@ function unknownOutcome(contractId: number | null): SaveResult {
 }
 
 async function save(path: string, method: "POST" | "PUT", body: CreateContractBody, contractId: number | null): Promise<SaveResult> {
-  const session = await getSession();
-  if (!session) return { error: "로그인이 필요합니다" };
+  const headers = await authHeaders();
+  if (!headers.Authorization) return { error: "로그인이 필요합니다" };
   try {
     await request(path, {
       method,
-      headers: { Authorization: `Bearer ${session.accessToken}`, "Content-Type": "application/json" },
+      headers: { ...headers, "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
   } catch (e) {
