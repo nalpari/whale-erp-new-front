@@ -7,8 +7,10 @@ import {
   apiError,
   ApiError,
   baseUrl,
+  LOGIN_KEY_COOKIE,
   loginKeyCookie,
   request,
+  SESSION_COOKIE,
   sessionCookie,
   type AdminLoginResponse,
 } from "@/lib/api";
@@ -21,7 +23,7 @@ import {
   signupFailure,
   verificationTokenOf,
 } from "./_components/biz-verification";
-import { SIGNUP_DONE_COOKIE, SIGNUP_DONE_MAX_AGE, SIGNUP_DONE_PATH } from "./signup-done-cookie";
+import { parseSignupDone, SIGNUP_DONE_COOKIE, SIGNUP_DONE_MAX_AGE, SIGNUP_DONE_PATH } from "./signup-done-cookie";
 
 // api 의 가입 응답 모양. 쿠키에 심는 SignupDoneValue(signup-done-cookie.ts)는 여기에 issuedAt 을 더한
 // front 전용 값이라 api 응답 자체는 이 타입을 따로 쓴다 — api 가 issuedAt 을 줄 일은 없다.
@@ -199,22 +201,33 @@ export async function verifyBusiness(input: BizVerificationInput): Promise<BizVe
 // api 가 비밀번호 없이 로그인 접속을 낸다(POST /auth/admin/signup-session) — 방금 가입해 비밀번호를
 // 다시 묻지 않는다. 토큰이 만료·위조됐거나(401) 그 사이 계정이 미사용으로 바뀌었으면(403) 로그인 화면으로
 // 보낸다 — login/actions.ts 의 login 과 같은 모양으로 쿠키를 심는다.
-export async function startSessionFromSignup(signupToken: string): Promise<void> {
+//
+// signupToken 은 인자로 받지 않고 이 서버 액션이 직접 httpOnly 쿠키에서 읽는다 — .bind 로 넘긴 인자는
+// Next 가 암호화하지 않고(클로저로 붙잡은 변수만 암호화한다) 페이지의 RSC payload · 점진적 향상용 hidden
+// input 에 평문으로 실린다. 읽자마자(성공 · 실패와 상관없이) 쿠키를 지워 같은 토큰으로 두 번 못 쓰게 한다
+// — 로그인 성공·로그아웃 뒤에도 안 지워지면 10분 안에는 같은 브라우저의 다음 사람이 버튼 하나로 비밀번호
+// 없이 들어갈 수 있었다(2026-10-19 코드리뷰).
+export async function startSessionFromSignup(): Promise<void> {
+  const jar = await cookies();
+  const value = parseSignupDone(jar.get(SIGNUP_DONE_COOKIE)?.value);
+  jar.delete(SIGNUP_DONE_COOKIE);
+
   let res: AdminLoginResponse | null = null;
-  try {
-    res = await request<AdminLoginResponse>("/auth/admin/signup-session", {
-      method: "POST",
-      headers: await apiHeaders(),
-      body: JSON.stringify({ signupToken, deviceInformation: (await headers()).get("user-agent")?.slice(0, 200) }),
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-    });
-  } catch (e) {
-    // 401·403 은 흔한 결과다(10분이 지난 뒤 누르면 늘 이런다) — 그 밖(연결 실패 · 5xx)만 남긴다.
-    if (!(e instanceof ApiError) || e.status >= 500) console.error("[signup] startSessionFromSignup failed", e);
+  if (value) {
+    try {
+      res = await request<AdminLoginResponse>("/auth/admin/signup-session", {
+        method: "POST",
+        headers: await apiHeaders(),
+        body: JSON.stringify({ signupToken: value.signupToken, deviceInformation: (await headers()).get("user-agent")?.slice(0, 200) }),
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      });
+    } catch (e) {
+      // 401·403 은 흔한 결과다(10분이 지난 뒤 누르면 늘 이런다) — 그 밖(연결 실패 · 5xx)만 남긴다.
+      if (!(e instanceof ApiError) || e.status >= 500) console.error("[signup] startSessionFromSignup failed", e);
+    }
   }
 
   if (res?.accessToken && res.account?.roleTypeCode) {
-    const jar = await cookies();
     jar.set(
       sessionCookie({
         accessToken: res.accessToken,
@@ -226,7 +239,12 @@ export async function startSessionFromSignup(signupToken: string): Promise<void>
     jar.set(loginKeyCookie(crypto.randomUUID()));
     redirect(homeOf(res.account.roleTypeCode));
   }
-  // 토큰이 없거나 거절됐다 — 로그인 화면으로. redirect 는 try 밖(여기)에서만 부른다(createSignup 과 같은 이유 —
-  // try 안에서 부르면 그 catch 가 이동 신호를 오류로 삼킨다).
+  // 쿠키가 없거나(만료 · 재사용) 토큰이 거절됐다 — 로그인 화면으로. 다른 계정으로 이미 로그인돼 있으면
+  // 그 세션도 지운다 — 그대로 두면 proxy.ts 가 이 /login 요청을 조용히 그 계정 홈으로 돌려보내, 가입한
+  // 새 계정으로 들어간 줄 착각한 채 엉뚱한 계정으로 작업하게 된다(2026-10-19 코드리뷰).
+  jar.delete(SESSION_COOKIE);
+  jar.delete(LOGIN_KEY_COOKIE);
+  // redirect 는 try 밖(여기)에서만 부른다(createSignup 과 같은 이유 — try 안에서 부르면 그 catch 가 이동
+  // 신호를 오류로 삼킨다).
   redirect("/login");
 }

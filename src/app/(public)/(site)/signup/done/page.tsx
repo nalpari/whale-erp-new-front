@@ -22,7 +22,9 @@ export const metadata: Metadata = {
 // 명세 S-UUBGOD(「토큰이 만료됐으면 로그인 화면으로 보낸다」). 가입하지 않은 사람에게 「가입을 환영합니다」를 보이지 않는다.
 // 가입 안내 메일은 api 가 보낸다(EMAIL_SIGNUP_DONE — 메일 설정이 없는 환경에선 건너뛴다).
 // 「웨일ERP 시작하기」는 비밀번호 없이 자동 로그인한다(startSessionFromSignup, 2026-10-16) — 쿠키의
-// signupToken(10분)으로 홈까지 간다. 10분이 지났거나 거절됐으면 로그인(/login)으로 보낸다. 「로그인 화면」
+// signupToken(10분)으로 홈까지 간다. signupToken 은 폼에 실어 보내지 않는다 — 서버 액션이 같은 경로
+// (SIGNUP_DONE_PATH)로 오는 쿠키에서 직접 읽고 바로 지운다(2026-10-19 코드리뷰). 10분이 지났거나
+// 거절됐으면 로그인(/login)으로 보낸다. 「로그인 화면」
 // 글자 링크는 다른 계정 세션이 남아 있으면(가입 전부터 로그인해 있던 경우) 그 세션의 홈으로 바꾼다 —
 // /login 그대로 두면 proxy.ts의 "로그인한 채 /login 에 오면 자기 홈"에 걸려, 가입한 아이디로 들어가려고
 // 눌렀는데 설명 없이 옛 계정 홈으로 돌아간다(2026-10-16, site-nav.tsx 의 LOGIN 과 같은 문제). 세션이 없으면
@@ -33,11 +35,8 @@ export default async function SignupDonePage() {
   const raw = (await cookies()).get(SIGNUP_DONE_COOKIE)?.value;
   const value = parseSignupDone(raw);
   if (!value) redirect("/login");
-  const { tradeName, loginId, email, issuedAt, signupToken } = value;
+  const { tradeName, loginId, email, issuedAt } = value;
   const remainingSeconds = remainingSignupDoneSeconds(issuedAt);
-  // signupToken 을 .bind 로 서버 액션에 미리 묶는다 — hidden input 에 담으면 httpOnly 쿠키 값이 클라이언트
-  // DOM 에 그대로 드러난다. bind 는 Next 가 토큰을 암호화해 넣어 화면에는 보이지 않는다(2026-10-16).
-  const startSession = startSessionFromSignup.bind(null, signupToken);
   const session = await getSession();
   const loginLinkHref = session ? homeOf(session.roleTypeCode) : "/login";
 
@@ -63,7 +62,7 @@ export default async function SignupDonePage() {
                 가입 안내 메일을 <strong className="font-semibold text-guest-ink">{email}</strong>로 보냈습니다.
               </p>
             </div>
-            <form action={startSession} className="grid w-[280px]">
+            <form action={startSessionFromSignup} className="grid w-[280px]">
               <GuestButton tone="navy" submit arrow tall>
                 웨일ERP 시작하기
               </GuestButton>
