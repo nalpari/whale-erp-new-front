@@ -4,6 +4,7 @@ import { test } from "node:test";
 import {
   EMPTY_STORE_FORM,
   formOfStore,
+  hasCoordinateInput,
   newFloorRow,
   splitPhone,
   storeServerErrorField,
@@ -131,6 +132,13 @@ test("좌표 없이는 사용을 보내지 않는다 — 어느 칸을 거쳐 �
   assert.equal(toCreateStoreInput({ ...filled, isLocationApplied: true, latitude: "", longitude: "" }).isLocationApplied, false);
   assert.equal(toCreateStoreInput({ ...filled, isLocationApplied: true, latitude: "37.5", longitude: "" }).isLocationApplied, false);
   assert.equal(toCreateStoreInput({ ...filled, isLocationApplied: true, latitude: "37.5", longitude: "127" }).isLocationApplied, true);
+});
+
+test("좌표 입력칸 둘 다 있어야 있다고 본다 — bodyOf · 선택칸 표시값이 같은 규칙을 쓴다", () => {
+  assert.equal(hasCoordinateInput("37.5", "127"), true);
+  assert.equal(hasCoordinateInput("", "127"), false);
+  assert.equal(hasCoordinateInput("37.5", ""), false);
+  assert.equal(hasCoordinateInput("  ", "  "), false);
 });
 
 test("사업자주소가 「점포 주소와 같음」이면 점포 주소를 싣는다", () => {

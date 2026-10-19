@@ -30,6 +30,11 @@ export function floorLabel(floor: Pick<StoreFloor, "floorTypeCode" | "floorNumbe
  * 끝나도 그 앞의 마지막 한글 글자를 본다. 한글이 아예 없으면(모르는 값을 코드 그대로 보일 때) 「이(가)」로 그대로 둔다.
  * store-form.ts 의 수정 칸 아래 안내 문구가 쓴다.
  */
+/** 좌표(위도 · 경도)가 둘 다 있어야 저장된 출퇴근 위치 적용 여부를 그대로 믿을 수 있다 — formOfStore(store-form.ts) · 상세 화면이 같은 규칙을 쓴다 */
+export function hasStoreCoordinates(latitude: number | null, longitude: number | null): boolean {
+  return latitude !== null && longitude !== null;
+}
+
 export function finalJosa(text: string): string {
   const match = text.match(/[가-힣](?=[^가-힣]*$)/);
   if (!match) return "이(가)";

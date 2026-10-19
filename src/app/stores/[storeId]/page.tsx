@@ -5,7 +5,7 @@ import { formatDateTime, formatPhone } from "@/lib/format";
 import { storeImageFailureText } from "@/lib/store-image";
 import { getStore } from "@/lib/stores";
 import { CodeLabel } from "@/components/site/code-label";
-import { formatBizNumber } from "@/lib/store-view";
+import { formatBizNumber, hasStoreCoordinates } from "@/lib/store-view";
 import { StoreCardBody, StoreFrame } from "../store-frame";
 import { StoreFloorLabel } from "../store-floor-label";
 import { NoticeBand, StoreImage, StoreStatusBadge } from "../store-parts";
@@ -16,9 +16,10 @@ import { StoreDetailActions } from "./store-detail-actions";
 
 const muted = (text: string) => <span className="text-erp-muted">{text}</span>;
 const orDash = (v: string | null | undefined) => (v ? v : muted("-"));
-/** DetailValues 로 값을 여럿 늘어놓는 줄들의 첫 칸(들) 너비 — 사업자등록번호 · 대표자정보, 위치정보 ·
- * 변경이력처럼 같은 표 안에서 짝을 이루는 줄들이 값이 비어 있을 때도 구분선(|)이 들쑥날쑥하지 않게 맞춘다
- * (2026-10-19 점검 — 실사용자 확인). */
+/** DetailValues 로 값을 여럿 늘어놓는 줄들의 첫 칸(들) 너비 — 사업자등록번호 · 대표자정보, 위치정보의
+ * 위도 · 경도처럼 같은 표 안에서 짝을 이루는 줄들이 값이 비어 있을 때도 구분선(|)이 들쑥날쑥하지 않게 맞춘다
+ * (2026-10-19 점검 — 실사용자 확인). 변경이력 줄은 이 너비를 쓰지 않는다 — flex-1 + 말줄임으로 따로 맞춘다
+ * (아래 변경이력 주석 참고). */
 const FIRST_COL_WIDTH = "inline-block min-w-[140px]";
 /** 주소 한 줄 — 「[ 우편번호 04104 ] 기본주소(볼드), 상세주소」. 괄호·라벨은 라벨 색, 번호는 기존 데이터 색(검정)이다.
  * 없으면 「-」(2026-10-19 점검 — 두 줄이던 걸 한 줄로, 번호 색·괄호 안쪽 띄어쓰기는 뒤이은 요청으로 다시 손봄) */
@@ -89,7 +90,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
               <span className="mr-[10px] text-erp-label">출퇴근 위치 적용 여부</span>
               {/* 좌표가 없으면 저장된 값과 상관없이 미사용으로 보인다 — 주소가 아니라 좌표로 가린다(수정 화면 ·
                   bodyOf 와 같은 규칙, 2026-10-19 점검 — 실사용자 확인, 코드 리뷰로 주소에서 좌표로 바꿈). */}
-              {store.latitude !== null && store.longitude !== null && store.isLocationApplied ? "사용" : "미사용"}
+              {hasStoreCoordinates(store.latitude, store.longitude) && store.isLocationApplied ? "사용" : "미사용"}
             </span>,
           ]}
         />
@@ -111,6 +112,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
               <span className="mr-[10px] text-erp-label">등록</span>
               {formatDateTime(store.createdAt)} · {store.createdByName ?? "-"}
             </span>
+            {/* #d9d9d9 — DESIGN.md 의 값 구분선, Figma 전용 색이라 토큰이 없다 */}
             <span className="h-[11px] w-px shrink-0 bg-[#d9d9d9]" />
             <span className="min-w-0 flex-1 truncate">
               <span className="mr-[10px] text-erp-label">최종수정</span>
@@ -167,6 +169,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
         b.category || b.item ? (
           <span className="inline-flex items-center gap-[10px]">
             {b.category || muted("-")}
+            {/* #d9d9d9 — DESIGN.md 의 값 구분선, Figma 전용 색이라 토큰이 없다 */}
             <span className="h-[11px] w-px bg-[#d9d9d9]" />
             {b.item || muted("-")}
           </span>
@@ -184,9 +187,10 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
     <StoreFrame>
       <StoreCardBody>
         <div className="flex flex-col gap-[12px]">
-          {/* 대표 이미지 · 점포명 · 점포코드 · 유형 · 상태 · 실행 버튼을 한 머리 카드에 묶는다(2026-10-19 점검 —
-              실사용자 확인, 디자인 데모 1안 채택). 이미지가 없으면 48px 아이콘(목록 카드와 같은 크기)을 그대로
-              쓴다 — 머리 카드 전용 72px 칸 안에 작게 보인다. */}
+          {/* 대표 이미지 · 점포명 · 점포코드 · 유형 · 폐점일 · 실행 버튼을 한 머리 카드에 묶는다(2026-10-19 점검 —
+              실사용자 확인, 디자인 데모 1안 채택). 운영 상태는 아래 점포 기본정보 표의 점포상태 줄로만 보인다
+              (바로 아래 주석 참고). 이미지가 없으면 48px 아이콘(목록 카드와 같은 크기)을 그대로 쓴다 — 머리 카드
+              전용 72px 칸 안에 작게 보인다. */}
           <div className="flex items-center gap-[18px] rounded-[4px] border border-erp-panel-line bg-white p-[18px]">
             {store.image ? (
               <StoreImage size={72} url={store.image.url} name={store.name} />
@@ -199,6 +203,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
                   (2026-10-19 점검 — 실사용자 확인). */}
               <div className="flex items-center gap-[8px] text-[14px] font-medium text-erp-label">
                 <span>점포코드 {store.storeCode}</span>
+                {/* #d9d9d9 — DESIGN.md 의 값 구분선, Figma 전용 색이라 토큰이 없다 */}
                 <span className="h-[11px] w-px bg-[#d9d9d9]" />
                 <Tag><CodeLabel group="STORE_TYPE" value={store.storeTypeCode} /></Tag>
                 {store.closedDate && <span>폐점일 {store.closedDate}</span>}

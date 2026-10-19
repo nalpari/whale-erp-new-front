@@ -25,6 +25,7 @@ import {
 import {
   EMPTY_STORE_FORM,
   formOfStore,
+  hasCoordinateInput,
   isBusinessVerified,
   newFloorRow,
   storeServerErrors,
@@ -225,7 +226,8 @@ export function StoreFormView(props: Props) {
   /**
    * [주소로 다시 계산] — 주소는 그대로 두고 지금 칸의 점포 주소로 좌표만 다시 받는다. 좌표는 주소를 고르면
    * 자동으로 채워지지만 그 뒤 직접 고칠 수 있어, 등록 · 수정 화면 모두에 둔다(2026-10-19) — 직접 고친 값을
-   * 주소 기준 값으로 되돌리고 싶을 때 쓴다. 동작은 handleAddressChoose 와 같다.
+   * 주소 기준 값으로 되돌리고 싶을 때 쓴다. 요청을 보내고 늦게 온 응답을 버리는 흐름은 handleAddressChoose 와
+   * 같지만, 비우거나 실패했을 때 되돌리는 동작은 다르다(아래 주석 참고).
    */
   const handleRecalculateCoordinate = () => {
     const mine = ++locateNumber.current;
@@ -629,10 +631,10 @@ export function StoreFormView(props: Props) {
                     보내는 어긋남이 있었다. 상태를 고치는 대신 보이는 값을 저장 규칙과 맞춰 상태 변경 로직을
                     다시 건드리지 않는다(2026-10-19 코드 리뷰 반복 지적으로 고침). */}
                 <Select
-                  value={form.latitude.trim() && form.longitude.trim() && form.isLocationApplied ? "Y" : "N"}
+                  value={hasCoordinateInput(form.latitude, form.longitude) && form.isLocationApplied ? "Y" : "N"}
                   onChange={(e) => set("isLocationApplied", e.target.value === "Y")}
-                  disabled={!(form.latitude.trim() && form.longitude.trim())}
-                  title={form.latitude.trim() && form.longitude.trim() ? undefined : "위도 · 경도가 있어야 사용으로 고를 수 있습니다."}
+                  disabled={!hasCoordinateInput(form.latitude, form.longitude)}
+                  title={hasCoordinateInput(form.latitude, form.longitude) ? undefined : "위도 · 경도가 있어야 사용으로 고를 수 있습니다."}
                 >
                   <option value="Y">사용</option>
                   <option value="N">미사용</option>
@@ -743,7 +745,7 @@ export function StoreFormView(props: Props) {
                   <DateField value={form.openDate} onChange={(v) => setVerification("openDate", v)} disabled={closedOrBlocked} aria-label="개업일자" />
                 )}
               </Labeled>
-              <div className="flex shrink-0 gap-[8px] self-end">
+              <div className="flex shrink-0 gap-[6px] self-end">
                 {verifiedPending ? (
                   <>
                     <Button variant="soft" onClick={handleReverifyPending} disabled={closedOrBlocked}>
@@ -879,7 +881,7 @@ export function StoreFormView(props: Props) {
 
       <ConfirmDialog open={dialog === "close-blocked"} title="폐점할 수 없습니다" confirmLabel="확인" onConfirm={() => setDialog(null)} onCancel={() => setDialog(null)}>
         <p>{closeBlock}</p>
-        <p className="mt-[6px] text-erp-label">점포상태를 이전 값으로 되돌렸습니다. 이용 중인 구독 · 정산 대기는 1차 범위 밖이라 보지 않습니다.</p>
+        <p className="mt-[6px] text-erp-label">점포상태를 이전 값으로 되돌렸습니다.</p>
       </ConfirmDialog>
       <ConfirmDialog
         open={dialog === "close-confirm"}

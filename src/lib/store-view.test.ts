@@ -1,7 +1,7 @@
 // node --test src/lib/store-view.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { closeBlockText, finalEuro, finalJosa, floorLabel, formatBizNumber, nextStatuses } from "./store-view.ts";
+import { closeBlockText, finalEuro, finalJosa, floorLabel, formatBizNumber, hasStoreCoordinates, nextStatuses } from "./store-view.ts";
 
 test("상태는 한 방향 — 미운영→운영 · 폐점, 운영→폐점, 폐점은 그대로", () => {
   assert.deepEqual(nextStatuses("NOT_OPERATING"), ["NOT_OPERATING", "OPERATING", "CLOSED"]);
@@ -14,6 +14,13 @@ test("사업자등록번호 표기 — 10자리만 하이픈", () => {
   assert.equal(formatBizNumber("123-45-67890"), "123-45-67890");
   assert.equal(formatBizNumber("12345"), "12345");
   assert.equal(formatBizNumber(null), "");
+});
+
+test("좌표 둘 다 있어야 있다고 본다 — formOfStore · 상세 화면이 같은 규칙을 쓴다", () => {
+  assert.equal(hasStoreCoordinates(37.5, 127.0), true);
+  assert.equal(hasStoreCoordinates(null, 127.0), false);
+  assert.equal(hasStoreCoordinates(37.5, null), false);
+  assert.equal(hasStoreCoordinates(null, null), false);
 });
 
 test("층 표기 — 층 구분 한글은 부르는 쪽이 준다", () => {

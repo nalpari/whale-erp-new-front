@@ -2,7 +2,7 @@
 // 규칙은 okf stores.md · api 계약(2026-10-14)과 같다 — 서버가 다시 보지만 저장 전에 칸 아래에서 먼저 알린다.
 // node --test 가 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
 import { labelOf, type EnumValue } from "./enums.ts";
-import { finalJosa } from "./store-view.ts";
+import { finalJosa, hasStoreCoordinates } from "./store-view.ts";
 import type {
   CreateStoreInput,
   FloorType,
@@ -161,7 +161,7 @@ export function formOfStore(d: StoreDetail): StoreForm {
     // (상세 화면 · bodyOf 와 같은 규칙, 2026-10-19 점검 — 실사용자 확인. 수정 화면을 새로 열 때마다 바로잡힌다).
     // 좌표가 아니라 주소로 가렸던 처음 버전은 주소를 손으로 입력한 좌표만 있는 점포를 막고, 주소는 골랐는데
     // 지오코딩이 늦게 오거나 실패한 사이에는 여전히 좌표 없는 사용을 허용하는 틈이 있었다(코드 리뷰로 찾음).
-    isLocationApplied: d.latitude !== null && d.longitude !== null ? d.isLocationApplied : false,
+    isLocationApplied: hasStoreCoordinates(d.latitude, d.longitude) ? d.isLocationApplied : false,
     savedBizNumber: text(b.bizRegistrationNumber),
     savedCeoName: text(b.ceoName),
     bizNumber: text(b.bizRegistrationNumber),
@@ -233,6 +233,11 @@ export function verificationErrors(f: Pick<StoreForm, "savedBizNumber" | "bizNum
   else if (f.ceoName.trim().length > 50) errors.ceoName = "대표자명은 50자까지입니다.";
   if (!f.savedBizNumber && !DATE_PATTERN.test(f.openDate)) errors.openDate = f.openDate ? "개업일자는 YYYY-MM-DD 입니다." : "개업일자를 입력해 주세요.";
   return errors;
+}
+
+/** 좌표(위도 · 경도) 입력칸이 둘 다 채워졌는지 — bodyOf · 수정 화면의 선택칸 표시값이 같은 규칙을 쓴다 */
+export function hasCoordinateInput(latitude: string, longitude: string): boolean {
+  return Boolean(latitude.trim() && longitude.trim());
 }
 
 /** 칸별 오류. 없으면 빈 객체. requirementLabels — 운영 조건 한글(GET /enums/StoreOperationRequirement). 새 점포는 미운영으로만
@@ -323,7 +328,7 @@ function bodyOf(f: StoreForm) {
     longitude: optionalNumber(f.longitude),
     // 좌표 없이 사용을 저장하지 않는다 — 어느 칸(주소 지우기 · 좌표를 손으로 비움 · 지오코딩 실패)을 거쳐
     // 왔든 여기서 마지막으로 막는다(코드 리뷰로 찾은 구멍 — 2026-10-19).
-    isLocationApplied: f.latitude.trim() && f.longitude.trim() ? f.isLocationApplied : false,
+    isLocationApplied: hasCoordinateInput(f.latitude, f.longitude) ? f.isLocationApplied : false,
     // 새로 더했는데 칸이 모두 빈 줄은 보내지 않는다. 저장돼 있던 줄은 그대로 둔다(층 구분만 있는 줄이 지워지지 않게)
     floors: f.floors
       .filter((r) => r.isSaved || r.floorNumber || r.floorAreaPyeong || r.floorAreaSqm || r.seatCount)
