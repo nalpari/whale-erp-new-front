@@ -3,7 +3,7 @@ import { ApiError, authHeaders, getEnum, request } from "@/lib/api";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { kstToday } from "@/lib/staff-members";
 import { StatusBadge } from "../../contracts/columns";
-import { contractFailureOf, contractSummaryTexts, type ContractDetail } from "./contract-summary";
+import { contractFailureOf, contractSummaryTexts, labelsOrNull, type ContractDetail } from "./contract-summary";
 import { BoxMessage } from "./detail-box";
 import { RetryButton } from "./retry-button";
 
@@ -12,10 +12,11 @@ export function ContractBoxLoading() {
   return <BoxMessage>불러오는 중입니다.</BoxMessage>;
 }
 
-// enum 한글. 받지 못해도 칸은 그린다 — 그 값만 「-」가 되고 원인은 서버 로그에 남긴다(이메일 칸의 가입 상태와 같다).
+// enum 한글. 받지 못했거나 응답에 그 enum 이 빠져 비었어도 칸은 그린다 — 그 값만 「-」가 되고 원인은 서버 로그에 남긴다
+// (빈 목록은 getEnum 이 남긴다). 이메일 칸의 가입 상태와 같다.
 async function loadLabels(name: "ContractStatus" | "EmploymentType"): Promise<EnumValue[] | null> {
   try {
-    return await getEnum(name);
+    return labelsOrNull(await getEnum(name));
   } catch (error) {
     unstable_rethrow(error);
     console.error(`직원 상세 근로계약 칸: GET /enums/${name} 를 받지 못했습니다`, error);

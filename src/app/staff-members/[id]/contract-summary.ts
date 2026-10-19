@@ -2,6 +2,7 @@
 // 테스트는 pnpm test 로 함께 돈다. 이 파일만: node --test "src/**/contract-summary.test.ts" — 경로의 [id] 를 node 가 glob 으로 읽어 그대로 적으면 찾지 못한다.
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
 import type { components } from "../../../lib/api-types.generated.ts";
+import type { EnumValue } from "../../../lib/enums.ts";
 import { RENEWAL_NOTICE_DAYS } from "../staff-row.ts";
 
 /** 계약 상세(GET /contracts/:id) 응답 */
@@ -36,6 +37,14 @@ export function contractSummaryTexts(
     lastSent: "-",
     renewal: renewalDateOf(c.status, c.endDate, today) ?? "-",
   };
+}
+
+/**
+ * 받은 enum 목록. 비었으면 받지 못한 것과 같이 null 이다 — getEnum 은 응답에 그 enum 이 빠지면 throw 하지 않고 [] 를 주는데,
+ * 그대로 쓰면 labelOf 가 영문 값을 돌려준다(PR #47 리뷰).
+ */
+export function labelsOrNull(values: EnumValue[]): EnumValue[] | null {
+  return values.length ? values : null;
 }
 
 /**

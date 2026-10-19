@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { StaffMemberListItem } from "../../../lib/staff-members.ts";
 import { contractCell } from "../staff-row.ts";
-import { contractFailureOf, contractSummaryTexts, renewalDateOf } from "./contract-summary.ts";
+import { contractFailureOf, contractSummaryTexts, labelsOrNull, renewalDateOf } from "./contract-summary.ts";
 
 const contract = (status: Parameters<typeof renewalDateOf>[0], startDate: string | null, endDate: string | null) => ({
   status,
@@ -63,6 +63,12 @@ test("계약 유형은 고용 형태 라벨 + 근로계약이다", () => {
 
 test("고용 형태 한글을 받지 못했으면 계약 유형은 - 다 — 영문 값을 보이지 않는다", () => {
   assert.equal(contractSummaryTexts(contract("SIGNED", "2026-03-01", null), null, TODAY).type, "-");
+});
+
+test("enum 목록이 비면 받지 못한 것과 같다 — 응답에 그 enum 이 빠지면 getEnum 은 throw 없이 [] 를 준다", () => {
+  assert.equal(labelsOrNull([]), null);
+  const values = [{ value: "FULL_TIME", label: "정직원", order: 1 }];
+  assert.equal(labelsOrNull(values), values);
 });
 
 test("계약 기간은 시작일 ~ 종료일, 종료일이 없으면 무기한, 시작일이 없으면 -", () => {
