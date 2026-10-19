@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
 import { Button, Checkbox, ConfirmDialog, DataTable, DateField, FormGroup, FormRow, Radio, Select, Textarea, TextField } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
+import { SAVE_UNKNOWN_NEW } from "../[contractId]/send-model";
 import { createContract, updateContract } from "./actions";
 import {
   formatHours,
@@ -287,7 +288,20 @@ export function ContractForm({
   const send = (body: CreateContractBody) =>
     startSaving(async () => {
       // 성공하면 액션이 목록으로 보낸다. 돌아왔다면 실패다.
-      const result = contractId ? await updateContract(contractId, body) : await createContract(body);
+      let result: SaveResult;
+      try {
+        result = contractId ? await updateContract(contractId, body) : await createContract(body);
+      } catch {
+        // 서버 액션 호출 자체가 끊겼다(앞단 504 · 배포 중 재시작 · 네트워크) — 저장 = 발송이라 이미 저장 · 발송됐을 수 있다.
+        // 이어 쓰기는 상세로 옮겨 알리고, 새 계약은 같은 폼으로 다시 저장하지 못하게 막는다(front #50 재리뷰).
+        if (contractId) {
+          router.replace(`/contracts/${contractId}?send=unknown`);
+          return;
+        }
+        setLocked(true);
+        fail(SAVE_UNKNOWN_NEW);
+        return;
+      }
       if (result.inProgress) {
         setReplace({ body, list: result.inProgress, paper: false });
         return;

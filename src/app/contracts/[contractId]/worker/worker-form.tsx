@@ -1,9 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Button, Checkbox, ConfirmDialog, DateField, Field, FormGroup, FormRow, Radio, TextField } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
-import { formatPhone, GENDERS, inProgressLine, type InProgressContract } from "../../new/contract-form-model";
+import { formatPhone, GENDERS, inProgressLine, type InProgressContract, type SaveResult } from "../../new/contract-form-model";
 import { updateWorker } from "../actions";
 import { workerBody, workerProblems, workerSaveNote, type WorkerForm as Form } from "./worker-model";
 
@@ -20,6 +21,7 @@ export function WorkerForm({
   initial: Form;
   labels: { gender: EnumValue[]; contractStatus: EnumValue[] };
 }) {
+  const router = useRouter();
   const [form, setForm] = useState<Form>(initial);
   const [tried, setTried] = useState(false);
   const [serverError, setServerError] = useState("");
@@ -37,7 +39,14 @@ export function WorkerForm({
   const send = (replaceContractIds?: number[]) =>
     startSaving(async () => {
       // 성공하면 액션이 상세로 보낸다. 돌아왔다면 실패다.
-      const result = await updateWorker(contractId, workerBody(form, replaceContractIds));
+      let result: SaveResult;
+      try {
+        result = await updateWorker(contractId, workerBody(form, replaceContractIds));
+      } catch {
+        // 서버 액션 호출 자체가 끊겼다 — 저장하면 다시 보내므로 이미 보냈을 수 있다. 같은 폼으로 다시 저장하지 않게 상세로(front #50 재리뷰)
+        router.replace(`/contracts/${contractId}?send=unknown`);
+        return;
+      }
       if (result.inProgress) {
         setReplace(result.inProgress);
         return;
