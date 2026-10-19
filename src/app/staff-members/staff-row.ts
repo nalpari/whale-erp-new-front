@@ -21,7 +21,7 @@ export const JOIN_GROUP_LABELS: Record<JoinGroup, string> = {
 };
 
 /** 갱신 예정으로 보이는 종료일까지의 날수. 갱신 예정 알림과 같다(okf/notify.md, S-JUWPXF). */
-const RENEWAL_NOTICE_DAYS = 30;
+export const RENEWAL_NOTICE_DAYS = 30;
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
