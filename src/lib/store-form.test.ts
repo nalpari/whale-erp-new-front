@@ -49,10 +49,10 @@ test("층별 칸 — 층수 정수 · 평 소수 1자리 · ㎡ 소수 2자리 �
   assert.ok(validateStoreForm({ ...filled, floors: [{ ...row, floorNumber: "0" }] }, "create").floors);
 });
 
-test("운영으로 바꾸려면 사업자 인증과 좌표가 있어야 한다", () => {
+test("운영으로 바꾸려면 사업자 인증과 좌표가 있어야 한다 — 모자란 것을 한 문장에 모은다(상태 변경 팝업과 같은 문구)", () => {
   const operating = { ...filled, storeStatus: "OPERATING" as const };
-  assert.equal(validateStoreForm(operating, "edit").storeStatus, "운영으로 바꾸려면 사업자정보 인증이 필요합니다.");
-  assert.equal(validateStoreForm({ ...operating, savedBizNumber: "1234567890" }, "edit").storeStatus, "운영으로 바꾸려면 위도 · 경도가 필요합니다.");
+  assert.equal(validateStoreForm(operating, "edit").storeStatus, "운영으로 바꾸려면 사업자정보 인증 · 위치정보(위도 · 경도)가 필요합니다.");
+  assert.equal(validateStoreForm({ ...operating, savedBizNumber: "1234567890" }, "edit").storeStatus, "운영으로 바꾸려면 위치정보(위도 · 경도)가 필요합니다.");
   assert.deepEqual(validateStoreForm({ ...operating, savedBizNumber: "1234567890", latitude: "37.5", longitude: "127.0" }, "edit"), {});
 });
 
@@ -182,6 +182,12 @@ test("상세 → 수정 칸 → 수정 요청 왕복 — 아무것도 안 고치
   assert.equal(input.business.category, "음식점업");
   assert.deepEqual(input.floors, [{ floorTypeCode: "GROUND", floorNumber: 1, floorAreaPyeong: 30.5, floorAreaSqm: 100.83, seatCount: 40 }]);
   assert.equal(input.businessVerification, undefined);
+});
+
+test("점포 주소 없이 사용으로 저장된 옛 데이터는 수정 칸을 열 때 미사용으로 바로잡는다", () => {
+  const noAddress: StoreDetail = { ...detail, address: null, zipCode: null, addressDetail: null, isLocationApplied: true };
+  assert.equal(formOfStore(noAddress).isLocationApplied, false);
+  assert.equal(formOfStore({ ...detail, isLocationApplied: true }).isLocationApplied, true);
 });
 
 test("상태만 바꾸는 왕복 — 빈 사업자주소는 비운 채, 층 구분만 있는 저장된 줄은 그대로", () => {

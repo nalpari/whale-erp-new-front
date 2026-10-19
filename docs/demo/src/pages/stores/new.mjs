@@ -71,12 +71,13 @@ export default ({ A, R }) => {
     f.address(A, "사업자주소", {}, { labelExtra: ui.checkbox(A, "점포 주소와 같음", true) }),
   );
 
+  // 취소 · 저장은 제목 줄 오른쪽에 둔다 — 근로계약서 작성 화면(staff/contracts-new.mjs)과 같은 자리
+  // (2026-10-19 점검 — 실사용자 확인). 전에는 화면 맨 아래에 있어 긴 폼에서 저장하려면 끝까지 스크롤해야 했다.
   const body = ui.detailBody(
-    ui.sectionHead("점포 등록") +
+    ui.sectionHead("점포 등록", ui.button("취소", { variant: "off", href: link(R, "stores/index.html") }) + ui.button("저장", { href: link(R, "stores/detail.html") })) +
       // 두 묶음은 각자 내용만큼의 높이로 둔다. 높이를 맞추려 늘리면 짧은 쪽 상자에 빈 자리가 남는다.
       `<div class="grid grid-cols-2 items-start gap-[24px]">${basic}${biz}</div>` +
       floors +
-      f.formButtons(ui.button("취소", { variant: "off", href: link(R, "stores/index.html") }), ui.button("저장", { href: link(R, "stores/detail.html") })) +
       f.SWAP_SCRIPT,
   );
   return { title: "점포 등록", html: ui.erpFrame({ header: erpHeader(A, R), title: "점포 정보 관리", body }) };

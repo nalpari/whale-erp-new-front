@@ -454,6 +454,8 @@ export function StoreFormView(props: Props) {
 
   return (
     <div id={`${ids}-form`} className="flex flex-col gap-[24px]">
+      {/* 취소 · 저장은 제목 줄 오른쪽에 둔다 — 근로계약서 작성 화면(contract-form.tsx)과 같은 자리(2026-10-19 점검 — 실사용자 확인). 전에는
+          화면 맨 아래에 있어 긴 폼에서 저장하려면 끝까지 스크롤해야 했다. */}
       <div className="flex items-center gap-[6px]">
         <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">
           {mode === "create" ? "점포 등록" : "점포 수정"}
@@ -463,6 +465,12 @@ export function StoreFormView(props: Props) {
             </span>
           )}
         </h2>
+        <Button variant="off" href={store ? `/stores/${store.storeId}${backHref === "/stores" ? "" : `?back=${encodeURIComponent(backHref)}`}` : backHref}>
+          취소
+        </Button>
+        <Button onClick={handleSave} disabled={saving || closedOrBlocked || locating || checkingClose || createUncertain}>
+          저장
+        </Button>
       </div>
       {failure && <NoticeBand title={failure.title} detail={failure.detail} />}
       {store && store.storeStatusCode === "CLOSED" && <NoticeBand tone="info" title="폐점 점포는 수정할 수 없습니다." detail="다시 운영하려면 새 점포로 등록하세요." />}
@@ -545,17 +553,16 @@ export function StoreFormView(props: Props) {
             label="점포 주소"
             value={{ zipCode: form.zipCode, address: form.address, addressDetail: form.addressDetail }}
             onChange={(a) => {
-              // [지우기]로 주소를 비우면 그 주소에서 나온 좌표만 지운다. 출퇴근 위치 적용 여부는 건드리지
-              // 않는다 — 사용자가 끈 적 없는 값인데, 주소를 지웠다가 새로 고르면(handleAddressChoose 는
-              // 좌표만 다시 채우고 이 값은 모른다) 미사용으로 조용히 남는 문제가 있었다(2026-10-19 코드리뷰
-              // 두 번째 라운드 — 처음엔 운영 · 수정 화면만 막았는데 등록 화면과 미운영 상태에 같은 문제가
-              // 그대로 남아 있었다. 애초에 이 값을 건드리지 않는 쪽이 근본 수정이다).
+              // [지우기]로 주소를 비우면 그 주소에서 나온 좌표도, 출퇴근 위치 적용 여부도 함께 미사용으로
+              // 돌린다 — 주소 없이는 좌표도 없고, 좌표 없이 사용으로 남아 있으면 상세 화면에 잘못된 상태가
+              // 보인다(2026-10-19 재확인 — 실사용자 지시로 되돌림. 전에는 이 값을 건드리지 않는 쪽이 근본
+              // 수정이라 봤으나, 주소 없는 사용 상태 자체가 더 큰 문제로 판단해 다시 바꿨다).
               const cleared = !a.address && Boolean(form.address);
               if (cleared) {
                 locateNumber.current++;
                 setCoordinateNote(null);
               }
-              setForm((f) => ({ ...f, ...a, ...(cleared && { latitude: "", longitude: "" }) }));
+              setForm((f) => ({ ...f, ...a, ...(cleared && { latitude: "", longitude: "", isLocationApplied: false }) }));
               clearError("addressDetail");
             }}
             detailError={errors.addressDetail}
@@ -828,15 +835,6 @@ export function StoreFormView(props: Props) {
         />
         {message("floors")}
       </FormGroup>
-
-      <div className="flex justify-center gap-[6px]">
-        <Button variant="off" href={store ? `/stores/${store.storeId}${backHref === "/stores" ? "" : `?back=${encodeURIComponent(backHref)}`}` : backHref}>
-          취소
-        </Button>
-        <Button onClick={handleSave} disabled={saving || closedOrBlocked || locating || checkingClose || createUncertain}>
-          저장
-        </Button>
-      </div>
 
       <ConfirmDialog open={dialog === "close-blocked"} title="폐점할 수 없습니다" confirmLabel="확인" onConfirm={() => setDialog(null)} onCancel={() => setDialog(null)}>
         <p>{closeBlock}</p>

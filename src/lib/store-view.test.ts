@@ -1,7 +1,7 @@
 // node --test src/lib/store-view.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { closeBlockText, floorLabel, formatBizNumber, missingForOperationText, nextStatuses } from "./store-view.ts";
+import { closeBlockText, finalJosa, floorLabel, formatBizNumber, nextStatuses } from "./store-view.ts";
 
 test("상태는 한 방향 — 미운영→운영 · 폐점, 운영→폐점, 폐점은 그대로", () => {
   assert.deepEqual(nextStatuses("NOT_OPERATING"), ["NOT_OPERATING", "OPERATING", "CLOSED"]);
@@ -23,15 +23,13 @@ test("층 표기 — 층 구분 한글은 부르는 쪽이 준다", () => {
   assert.equal(floorLabel({ floorTypeCode: null, floorNumber: null }, label), "-");
 });
 
-test("운영 · 폐점 조건 문구", () => {
-  // 한글은 GET /enums/StoreOperationRequirement 의 label 을 쓴다 — 받지 못했거나 모르는 값이면 값을 그대로
-  const labels = [
-    { value: "BUSINESS_VERIFICATION", label: "사업자정보 인증", order: 1 },
-    { value: "COORDINATES", label: "좌표(위도 · 경도)", order: 2 },
-  ];
-  assert.equal(missingForOperationText([], labels), null);
-  assert.equal(missingForOperationText(["BUSINESS_VERIFICATION", "COORDINATES"], labels), "운영으로 바꾸려면 사업자정보 인증 · 좌표(위도 · 경도)이(가) 필요합니다.");
-  assert.equal(missingForOperationText(["BP_INACTIVE"], []), "운영으로 바꾸려면 BP_INACTIVE이(가) 필요합니다.");
+test("이 · 가 — 받침 있으면 이, 없으면 가. 괄호로 끝나도 그 앞 한글을 본다. 한글이 없으면 이(가) 그대로", () => {
+  assert.equal(finalJosa("사업자정보 인증"), "이");
+  assert.equal(finalJosa("위치정보(위도 · 경도)"), "가");
+  assert.equal(finalJosa("BP_INACTIVE"), "이(가)");
+});
+
+test("폐점 조건 문구", () => {
   assert.equal(closeBlockText({ inProgressContractCount: 0 }), null);
   assert.equal(closeBlockText({ inProgressContractCount: 1200 }), "진행 중인 근로계약이 1,200건 있습니다.");
 });

@@ -1,6 +1,7 @@
 // 점포 등록 · 수정 폼의 칸 값 · 검증 · 요청 만들기. 화면 칸은 모두 문자열로 쥐고, 보낼 때 숫자 · null 로 바꾼다.
 // 규칙은 okf stores.md · api 계약(2026-10-14)과 같다 — 서버가 다시 보지만 저장 전에 칸 아래에서 먼저 알린다.
 // node --test 가 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
+import { finalJosa } from "./store-view.ts";
 import type {
   CreateStoreInput,
   FloorType,
@@ -105,7 +106,8 @@ export const EMPTY_STORE_FORM: StoreForm = {
   addressDetail: "",
   latitude: "",
   longitude: "",
-  isLocationApplied: true,
+  // 새 점포는 주소가 없어 좌표도 없다 — 출퇴근 위치 적용 여부는 미사용이 기본이다(2026-10-19 점검 — 실사용자 확인).
+  isLocationApplied: false,
   savedBizNumber: "",
   savedCeoName: "",
   bizNumber: "",
@@ -154,7 +156,9 @@ export function formOfStore(d: StoreDetail): StoreForm {
     addressDetail: text(d.addressDetail),
     latitude: numText(d.latitude),
     longitude: numText(d.longitude),
-    isLocationApplied: d.isLocationApplied,
+    // 주소 없이 사용으로 저장된 옛 데이터가 있을 수 있다 — 주소가 없으면 저장값과 상관없이 미사용으로 연다
+    // (상세 화면과 같은 규칙, 2026-10-19 점검 — 실사용자 확인. 수정 화면을 새로 열 때마다 바로잡힌다).
+    isLocationApplied: d.address ? d.isLocationApplied : false,
     savedBizNumber: text(b.bizRegistrationNumber),
     savedCeoName: text(b.ceoName),
     bizNumber: text(b.bizRegistrationNumber),
@@ -269,12 +273,14 @@ export function validateStoreForm(f: StoreForm, mode: "create" | "edit"): StoreF
   );
   if (badFloor) errors.floors = "층수는 1 이상의 정수, 매장평수는 소수 1자리, 전용면적은 소수 2자리, 좌석수는 0 이상의 정수입니다.";
 
-  // 운영은 사업자정보 인증 · 좌표가 있어야 한다(S-MNRZOM). 서버도 다시 본다
+  // 운영은 사업자정보 인증 · 좌표가 있어야 한다(S-MNRZOM). 서버도 다시 본다. 모자란 것을 한 문장에 모아
+  // 보인다 — 상태 변경 팝업(missingForOperationText)과 같은 문구 꼴이다(2026-10-19 점검 — 실사용자 확인).
   if (mode === "edit" && f.storeStatus === "OPERATING") {
-    if (!isBusinessVerified(f)) errors.storeStatus = "운영으로 바꾸려면 사업자정보 인증이 필요합니다.";
-    else if (!lat || !lng) {
-      errors.storeStatus = "운영으로 바꾸려면 위도 · 경도가 필요합니다.";
-      errors.latitude ??= "운영 점포는 위도 · 경도가 있어야 합니다.";
+    const missing = [!isBusinessVerified(f) && "사업자정보 인증", (!lat || !lng) && "위치정보(위도 · 경도)"].filter((v): v is string => Boolean(v));
+    if (missing.length) {
+      const text = missing.join(" · ");
+      errors.storeStatus = `운영으로 바꾸려면 ${text}${finalJosa(text)} 필요합니다.`;
+      if (!lat || !lng) errors.latitude ??= "운영 점포는 위도 · 경도가 있어야 합니다.";
     }
   }
   return errors;

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { Badge, DetailTable, DetailValues, Tag, type DetailRow } from "@/components/common";
-import { ApiError, getEnum } from "@/lib/api";
+import { ApiError } from "@/lib/api";
 import { formatDateTime, formatPhone } from "@/lib/format";
 import { storeImageFailureText } from "@/lib/store-image";
 import { getStore } from "@/lib/stores";
@@ -16,8 +16,9 @@ import { StoreDetailActions } from "./store-detail-actions";
 
 const muted = (text: string) => <span className="text-erp-muted">{text}</span>;
 const orDash = (v: string | null | undefined) => (v ? v : muted("-"));
-/** 사업자등록번호 · 대표자정보 줄의 첫 칸 너비 — 두 값 모두 비었을 때도 DetailValues 의 구분선(|)이
- * 같은 자리에 오도록 맞춘다(2026-10-19 점검 — 실사용자 확인). */
+/** DetailValues 로 값을 여럿 늘어놓는 줄들의 첫 칸(들) 너비 — 사업자등록번호 · 대표자정보, 위치정보 ·
+ * 변경이력처럼 같은 표 안에서 짝을 이루는 줄들이 값이 비어 있을 때도 구분선(|)이 들쑥날쑥하지 않게 맞춘다
+ * (2026-10-19 점검 — 실사용자 확인). */
 const FIRST_COL_WIDTH = "inline-block min-w-[140px]";
 /** 주소 한 줄 — 「[ 우편번호 04104 ] 기본주소(볼드), 상세주소」. 괄호·라벨은 라벨 색, 번호는 기존 데이터 색(검정)이다.
  * 없으면 「-」(2026-10-19 점검 — 두 줄이던 걸 한 줄로, 번호 색·괄호 안쪽 띄어쓰기는 뒤이은 요청으로 다시 손봄) */
@@ -48,14 +49,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
   if (storeId < 1) notFound();
   const backHref = backHrefOf(search.back);
 
-  // 운영 조건 한글(GET /enums/StoreOperationRequirement)을 못 받아도 상세는 연다 — 문구가 값 그대로 보일 뿐이다
-  const [store, requirementLabels] = await Promise.all([
-    getStore(storeId),
-    getEnum("StoreOperationRequirement").catch((error: unknown) => {
-      console.error("운영 조건 한글 조회 실패", error);
-      return [];
-    }),
-  ]).catch((error: unknown) => {
+  const store = await getStore(storeId).catch((error: unknown) => {
     if (error instanceof ApiError && error.status === 404) notFound();
     throw error;
   });
@@ -76,24 +70,27 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
     },
     { label: "점포코드", value: store.storeCode },
     { label: "점포 연락처", value: store.phone ? formatPhone(store.phone) : muted("-") },
-    { label: "점포 주소", value: addressLines(store.zipCode, store.address, store.addressDetail), multiline: true },
+    { label: "점포주소", value: addressLines(store.zipCode, store.address, store.addressDetail), multiline: true },
     {
-      label: "좌표정보",
+      label: "위치정보",
       // 변경이력과 같은 모양 — 위도 · 경도 · 출퇴근 위치 적용 여부 각각 라벨과 같은 회색 글자를 앞에 둔다.
+      // 위도 · 경도 칸은 변경이력 줄의 등록 칸과 너비를 맞춰, 둘 다 비어 있을 때도 구분선(|)이 들쑥날쑥하지
+      // 않게 한다(2026-10-19 점검 — 실사용자 확인).
       value: (
         <DetailValues
           items={[
-            <span key="lat">
+            <span key="lat" className={FIRST_COL_WIDTH}>
               <span className="mr-[10px] text-erp-label">위도</span>
               {store.latitude !== null ? store.latitude.toFixed(6) : muted("-")}
             </span>,
-            <span key="lng">
+            <span key="lng" className={FIRST_COL_WIDTH}>
               <span className="mr-[10px] text-erp-label">경도</span>
               {store.longitude !== null ? store.longitude.toFixed(6) : muted("-")}
             </span>,
             <span key="loc">
               <span className="mr-[10px] text-erp-label">출퇴근 위치 적용 여부</span>
-              {store.isLocationApplied ? "사용" : "미사용"}
+              {/* 주소가 없으면 좌표도 없다 — 저장된 값과 상관없이 미사용으로 보인다(2026-10-19 점검 — 실사용자 확인). */}
+              {store.address && store.isLocationApplied ? "사용" : "미사용"}
             </span>,
           ]}
         />
@@ -105,15 +102,16 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
       // 고친 적 없으면 최종수정 값은 「-」(화면 정의서). 등록 · 최종수정 글자는 라벨과 같은 회색이다. [변경이력
       // 보기] 버튼은 DetailValues 밖에 따로 두어 앞에 구분선(|)이 안 붙게 하고, justify-between 으로 칸 맨
       // 오른쪽에 고정한다 — 칸 자체의 12px 오른쪽 여백(DetailTable dd)이 있어 따로 더 주지 않는다(2026-10-16 점검).
+      // 등록 · 최종수정 칸도 위치정보 줄의 위도 · 경도 칸과 너비를 맞췄다(2026-10-19 점검).
       value: (
         <span className="flex w-full items-center justify-between gap-[12px]">
           <DetailValues
             items={[
-              <span key="c">
+              <span key="c" className={FIRST_COL_WIDTH}>
                 <span className="mr-[10px] text-erp-label">등록</span>
                 {formatDateTime(store.createdAt)} · {store.createdByName ?? "-"}
               </span>,
-              <span key="u">
+              <span key="u" className={FIRST_COL_WIDTH}>
                 <span className="mr-[10px] text-erp-label">최종수정</span>
                 {store.updatedByName ? `${formatDateTime(store.updatedAt)} · ${store.updatedByName}` : muted("-")}
               </span>,
@@ -179,7 +177,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
             <h2 className="flex min-w-0 flex-1 items-center gap-[10px] text-[18px] font-semibold text-erp-ink">
               <span className="truncate">{store.name}</span>
             </h2>
-            <StoreDetailActions store={store} backHref={backHref} requirementLabels={requirementLabels} />
+            <StoreDetailActions store={store} backHref={backHref} />
           </div>
           <ImageFailedNotice message={imageFailure} />
           {bpInactive && <NoticeBand title="소속 BP 가 미사용 상태여서 이 업무를 할 수 없습니다." detail="조회만 됩니다. 등록 · 수정 · 상태 변경 · 삭제는 BP 를 다시 사용하면 할 수 있습니다." />}
@@ -187,7 +185,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
             <NoticeBand tone="info" title="폐점한 점포는 조회만 가능하며, 수정할 수 없습니다. 다시 운영하려면 신규 점포로 등록해 주세요." />
           )}
           {/* 미운영 점포에 "운영으로 바꾸려면 ~ 필요합니다" 띠를 여기 두지 않는다(2026-10-16 디자인 점검으로 뺐다) — 같은
-              안내는 상태 변경 팝업(StoreDetailActions)이 이미 missingForOperationText 로 보여준다. */}
+              안내는 상태 변경 팝업(StoreDetailActions)이 이미 운영 조건 체크리스트로 보여준다(2026-10-19 점검 — 실사용자 확인). */}
           <div className="grid grid-cols-2 items-start gap-[24px]">
             <DetailTable
               title={

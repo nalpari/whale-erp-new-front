@@ -3,13 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button, ConfirmDialog, Radio, useToast } from "@/components/common";
-import type { EnumValue } from "@/lib/enums";
 import { formOfStore, toUpdateStoreInput } from "@/lib/store-form";
 import type { StoreDetail, StoreStatus, StoreTransitions } from "@/lib/store-types";
 import { useCodeLabel } from "@/components/site/code-label";
 import { useMenuPermission } from "@/components/site/session-gate";
 import { MENU_CODE } from "@/lib/menus";
-import { closeBlockText, missingForOperationText, nextStatuses } from "@/lib/store-view";
+import { closeBlockText, nextStatuses } from "@/lib/store-view";
 import { deleteStoreAction, getStoreTransitionsAction, updateStoreAction, type ActionFailure } from "../actions";
 import { StoreStatusBadge } from "../store-parts";
 
@@ -40,12 +39,9 @@ const UNKNOWN =
 export function StoreDetailActions({
   store,
   backHref,
-  requirementLabels,
 }: {
   store: StoreDetail;
   backHref: string;
-  /** 운영 조건 한글(GET /enums/StoreOperationRequirement). 못 받았으면 빈 목록 — 값을 그대로 보인다 */
-  requirementLabels: EnumValue[];
 }) {
   const router = useRouter();
   const toast = useToast();
@@ -98,7 +94,8 @@ export function StoreDetailActions({
       const result = await updateStoreAction(store.storeId, input).catch(UNKNOWN("상태 변경"));
       if (!result.ok) return fail(result.status, result.message);
       setDialog(null);
-      toast(`점포상태를 ${statusLabel(target)}(으)로 바꿨습니다.`);
+      // 점포상태는 미운영 · 운영 · 폐점 셋뿐이고 셋 다 받침이 있어 "으로"만 쓴다(2026-10-19 점검 — 실사용자 확인).
+      toast(`점포상태를 ${statusLabel(target)}으로 바꿨습니다.`);
       router.refresh();
     });
 
@@ -163,7 +160,7 @@ export function StoreDetailActions({
           open={dialog === "status"}
           title="상태 변경"
           wide
-          confirmLabel={target ? `${statusLabel(target)}(으)로 변경` : "변경"}
+          confirmLabel={target ? `${statusLabel(target)}으로 변경` : "변경"}
           busy={busy}
           confirmDisabled={!allowed}
           onConfirm={handleStatusChange}
@@ -181,11 +178,21 @@ export function StoreDetailActions({
               </div>
             )}
             {target === "OPERATING" && (
-              <p className={transitions.missingForOperation.length ? "text-erp-off" : "text-erp-label"}>
-                {missingForOperationText(transitions.missingForOperation, requirementLabels) ?? "운영 조건을 모두 채웠습니다."}
-              </p>
+              <div className="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]">
+                <p className="font-semibold">운영 조건</p>
+                <ul className="mt-[6px] list-disc pl-[18px]">
+                  <li className={transitions.missingForOperation.includes("BUSINESS_VERIFICATION") ? "text-erp-off" : undefined}>
+                    사업자정보 인증 - {transitions.missingForOperation.includes("BUSINESS_VERIFICATION") ? "미인증" : "완료"}
+                  </li>
+                  <li className={transitions.missingForOperation.includes("COORDINATES") ? "text-erp-off" : undefined}>
+                    위치정보(위도 · 경도) 저장 - {transitions.missingForOperation.includes("COORDINATES") ? "미저장" : "완료"}
+                  </li>
+                </ul>
+              </div>
             )}
             {target === "CLOSED" && (
+              // 부가서비스 구독 · 정산 대기 금액은 1차 범위 밖이라 뺐다 — 그 기능을 만들 때 다시 더한다.
+              // 폐점일 안내 문구도 같이 뺐다(2026-10-19 점검 — 실사용자 확인).
               <div className="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]">
                 <p className="font-semibold">폐점 조건</p>
                 <ul className="mt-[6px] list-disc pl-[18px]">
@@ -193,10 +200,7 @@ export function StoreDetailActions({
                     진행 중인 근로계약 <b className="font-semibold">{transitions.inProgressContractCount.toLocaleString("ko-KR")}건</b>
                     {transitions.inProgressContractCount ? " — 정리해야 할 근로계약이 있습니다" : ""}
                   </li>
-                  <li className="text-erp-label">이용 중인 부가서비스 구독 — 1차 범위 밖</li>
-                  <li className="text-erp-label">정산 대기 금액 — 1차 범위 밖</li>
                 </ul>
-                <p className="mt-[10px] text-erp-label">폐점일은 오늘로 정해지고 되돌릴 수 없습니다. 다음 날부터 이 점포에는 BP 휴일이 적용되지 않습니다.</p>
               </div>
             )}
             {failure && <p role="alert" className="text-erp-off">{failure}</p>}

@@ -6,6 +6,10 @@ import * as f from "../../biz-form.mjs";
 import { tag } from "../../config-parts.mjs";
 import { STORES, erpHeader, link } from "../../site.mjs";
 
+// DetailValues 로 값을 여럿 늘어놓는 줄들의 첫 칸(들) 너비 — 위치정보 · 변경이력처럼 짝을 이루는 줄들이
+// 값이 비어 있을 때도 구분선(|)이 들쑥날쑥하지 않게 맞춘다(2026-10-19 점검 — 실사용자 확인).
+const FIRST_COL = "inline-block min-w-[140px]";
+
 export default ({ A, R }) => {
   const [code, name, type, state, biz, phone, staff, date, , photo] = STORES.find((s) => s[0] === "ST000006");
   const statusId = x.dialogId();
@@ -20,7 +24,7 @@ export default ({ A, R }) => {
   );
 
   // 점포 기본정보: 실제 앱(page.tsx)과 같은 한 표다 — 대표 이미지는 사이드 칸이 아니라 표의 첫 줄(multiline)이고,
-  // 그 아래로 점포코드 · 점포 연락처 · 점포 주소 · 좌표정보 · 재직직원 · 변경이력이 이어진다. 네 쪽 표를 <dl> 만
+  // 그 아래로 점포코드 · 점포 연락처 · 점포주소 · 위치정보 · 재직직원 · 변경이력이 이어진다. 네 쪽 표를 <dl> 만
   // 떼어 나란히 붙이던 이전 방식은 각 <dl> 이 w-full 이라 겹쳐 넓이가 깨졌다(2026-10-19 점검 — 실사용자 확인).
   const basic = ui.detailTable(
     `점포 기본정보<span class="ml-[18px] inline-flex items-center gap-[8px] align-middle text-[14px] font-medium text-erp-label">${tag(type)}${ui.badge("on", state)}</span>`,
@@ -35,17 +39,18 @@ export default ({ A, R }) => {
       // 한 줄 「[ 우편번호 04104 ] 기본주소(볼드), 상세주소」 — 괄호·라벨은 라벨 색, 번호는 기존 데이터 색(검정)이고
       // 괄호 안쪽은 한 칸씩 띄운다(2026-10-19 점검 — 두 줄이던 걸 한 줄로, 번호 색·괄호 안쪽 띄어쓰기는 뒤이은 요청으로 다시 손봄).
       [
-        "점포 주소",
+        "점포주소",
         `<span><span class="mr-[10px]"><span class="text-erp-label">[ 우편번호</span> 03991 <span class="text-erp-label">]</span></span><b class="font-semibold">서울 마포구 동교로 256</b>, 1층</span>`,
         true,
       ],
       // 위도 · 경도 · 출퇴근 위치 적용 여부 각각 라벨과 같은 회색 글자를 앞에 두고, 데이터와 한 단 더 떨어뜨렸다
-      // (2026-10-16 점검 — 그냥 띄어쓰기 한 칸은 너무 붙어 보였다).
+      // (2026-10-16 점검 — 그냥 띄어쓰기 한 칸은 너무 붙어 보였다). 위도 · 경도 칸은 변경이력 줄의 등록 ·
+      // 최종수정 칸과 너비(FIRST_COL)를 맞춰 값이 비어 있을 때도 구분선(|)이 들쑥날쑥하지 않게 한다(2026-10-19 점검).
       [
-        "좌표정보",
+        "위치정보",
         ui.detailValues([
-          `<span class="mr-[10px] text-erp-label">위도</span>37.562104`,
-          `<span class="mr-[10px] text-erp-label">경도</span>126.925631`,
+          `<span class="${FIRST_COL}"><span class="mr-[10px] text-erp-label">위도</span>37.562104</span>`,
+          `<span class="${FIRST_COL}"><span class="mr-[10px] text-erp-label">경도</span>126.925631</span>`,
           `<span class="mr-[10px] text-erp-label">출퇴근 위치 적용 여부</span>사용`,
         ]),
       ],
@@ -57,8 +62,8 @@ export default ({ A, R }) => {
       [
         "변경이력",
         `<span class="flex w-full items-center justify-between gap-[12px]">${ui.detailValues([
-          `<span class="mr-[10px] text-erp-label">등록</span>${date} 14:18 · 정하윤`,
-          `<span class="mr-[10px] text-erp-label">최종수정</span>2026-08-14 10:31 · 정하윤`,
+          `<span class="${FIRST_COL}"><span class="mr-[10px] text-erp-label">등록</span>${date} 14:18 · 정하윤</span>`,
+          `<span class="${FIRST_COL}"><span class="mr-[10px] text-erp-label">최종수정</span>2026-08-14 10:31 · 정하윤</span>`,
         ])}${x.dialogTrigger("변경이력", histId, "soft")}</span>`,
       ],
     ],
@@ -70,11 +75,11 @@ export default ({ A, R }) => {
     ["상호명", "모리커피 연남"],
     // 첫 칸은 대표자정보 줄의 "대표자 이름 …" 칸과 너비를 맞춰, 둘 다 비어 있을 때도 세로선(|) 위치가
     // 들쑥날쑥하지 않게 한다(2026-10-19 점검 — 실사용자 확인).
-    ["사업자등록번호", ui.detailValues([`<span class="inline-block min-w-[140px]">${biz}</span>`, `<span class="mr-[10px] text-erp-label">최종 인증일시</span>2025-08-01 14:22`])],
+    ["사업자등록번호", ui.detailValues([`<span class="${FIRST_COL}">${biz}</span>`, `<span class="mr-[10px] text-erp-label">최종 인증일시</span>2025-08-01 14:22`])],
     [
       "대표자정보",
       ui.detailValues([
-        `<span class="inline-block min-w-[140px]"><span class="mr-[10px] text-erp-label">대표자 이름</span>박서윤</span>`,
+        `<span class="${FIRST_COL}"><span class="mr-[10px] text-erp-label">대표자 이름</span>박서윤</span>`,
         `<span class="mr-[10px] text-erp-label">대표자 연락처</span>010-5521-3380`,
       ]),
     ],
@@ -113,11 +118,12 @@ export default ({ A, R }) => {
     )}</div>` + `<div class="pt-[12px]">${ui.pagination(A, 1, 2)}</div>`;
 
   // 운영 점포의 상태 변경: 갈 수 있는 곳은 폐점뿐이고, 기본 상태는 폐점 조건을 못 채운 경우다.
+  // 부가서비스 구독 · 정산 대기 금액은 1차 범위 밖이라 뺐다 — 그 기능을 만들 때 다시 더한다(2026-10-19 점검).
   const statusDialog = x.dialog(
     statusId,
     "상태 변경",
     `<p>현재 상태 ${ui.badge("on", "운영")}</p>` +
-      `<div class="mt-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]"><p class="font-semibold">폐점 조건</p><ul class="mt-[6px] list-disc pl-[18px]"><li>진행 중인 근로계약 <b class="font-semibold">6건</b> — 정리해야 할 근로계약이 있습니다</li><li class="text-erp-label">이용 중인 부가서비스 구독 — 1차 범위 밖</li><li class="text-erp-label">정산 대기 금액 — 1차 범위 밖</li></ul></div>`,
+      `<div class="mt-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]"><p class="font-semibold">폐점 조건</p><ul class="mt-[6px] list-disc pl-[18px]"><li>진행 중인 근로계약 <b class="font-semibold">6건</b> — 정리해야 할 근로계약이 있습니다</li></ul></div>`,
     ui.button("취소", { variant: "off", "data-close": true }) + f.disabledButton("폐점으로 변경", "폐점 조건을 채우지 못했습니다.", "primary"),
   );
 

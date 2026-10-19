@@ -85,17 +85,19 @@ export default ({ A, R }) => {
     ui.button("확인", { "data-close": true }),
   );
 
+  // 취소 · 저장은 제목 줄 오른쪽에 둔다 — 근로계약서 작성 화면과 같은 자리(2026-10-19 점검 — 실사용자 확인).
+  // 전에는 화면 맨 아래에 있어 긴 폼에서 저장하려면 끝까지 스크롤해야 했다.
   const body = ui.detailBody(
     ui.sectionHead(
       `점포 수정 <span class="ml-[10px] inline-flex align-middle text-[14px] font-medium text-erp-label">${ui.detailValues([
         `<span class="mr-[10px]">점포코드</span>${code}`,
         `<span class="mr-[10px]">점포유형</span>${type}`,
       ])}</span>`,
+      ui.button("취소", { variant: "off", href: link(R, "stores/detail.html") }) + ui.button("저장", { href: link(R, "stores/detail.html") }),
     ) +
       // 두 묶음은 각자 내용만큼의 높이로 둔다. 높이를 맞추려 늘리면 짧은 쪽 상자에 빈 자리가 남는다.
       `<div class="grid grid-cols-2 items-start gap-[24px]">${basic}${biz}</div>` +
       floors +
-      f.formButtons(ui.button("취소", { variant: "off", href: link(R, "stores/detail.html") }), ui.button("저장", { href: link(R, "stores/detail.html") })) +
       unmet +
       f.SWAP_SCRIPT,
   );
