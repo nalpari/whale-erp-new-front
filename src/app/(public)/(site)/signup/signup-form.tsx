@@ -129,7 +129,7 @@ const CHECK_CIRCLE = (
 // 모양은 1팀 비로그인 폼 규격(guest-form.ts)을 쓴다 — docs/demo/src/pages/auth/signup.mjs 가
 // design/guest/sign-up(기획 시안 + Figma 폼 규격)을 기준으로 삼기로 하면서 맞췄다(2026-10-14).
 // 아이디·이메일 중복 확인, 사업자정보 인증, 약관 동의, 제출은 디자인 샘플과 달리 전부 실제로 동작한다.
-export function SignupForm() {
+export function SignupForm({ loggedInHomeHref }: { loggedInHomeHref?: string }) {
   const router = useRouter();
   const ids = useId();
   const formRef = useRef<HTMLFormElement>(null);
@@ -472,9 +472,9 @@ export function SignupForm() {
           </button>
         ) : null}
         <p className="flex justify-center gap-[10px] text-[16px] leading-[1.5] text-[#767676]">
-          이미 계정이 있나요?
-          <Link href="/login" className={`font-semibold text-guest-ink hover:text-guest-navy ${HOVER}`}>
-            로그인
+          {loggedInHomeHref ? "이미 로그인한 계정이 있어요." : "이미 계정이 있나요?"}
+          <Link href={loggedInHomeHref ?? "/login"} className={`font-semibold text-guest-ink hover:text-guest-navy ${HOVER}`}>
+            {loggedInHomeHref ? "홈으로" : "로그인"}
           </Link>
         </p>
       </div>

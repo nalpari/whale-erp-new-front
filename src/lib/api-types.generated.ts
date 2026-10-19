@@ -761,6 +761,79 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/platform-menus/services": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 서비스 탭 — 공통코드 SERVICE 전부(사용중지 포함)와 서비스별 메뉴 수(사용 · 미사용). */
+        get: operations["PlatformMenusController_services"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform-menus": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 서비스 하나의 메뉴 트리 — 페이지 · 검색 없이 전부, 형제 순서대로 중첩. */
+        get: operations["PlatformMenusController_tree"];
+        put?: never;
+        /** 메뉴 등록 — 고른 상위(없으면 최상위)의 맨 끝에. 코드는 저장할 때 채번하고, 플랫폼 마스터 권한 행을 함께 넣는다. */
+        post: operations["PlatformMenusController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform-menus/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 메뉴 상세. */
+        get: operations["PlatformMenusController_detail"];
+        /** 노출 메뉴명 · URL · 사용 상태 저장 — 통째로 바꾼다(URL 을 빼면 비운다). */
+        put: operations["PlatformMenusController_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform-menus/{id}/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 위치 옮기기 — 같은 서비스 안에서, 하위가 함께 간다. 옮길 때마다 바로 저장된다. 어느 메뉴의 updatedAt · 수정자도
+         *     바꾸지 않아, 열어 둔 상세는 다시 불러오지 않고 저장해도 된다.
+         */
+        post: operations["PlatformMenusController_move"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/bp-codes/{bpCodeId}/stores": {
         parameters: {
             query?: never;
@@ -795,6 +868,40 @@ export interface paths {
          *     로그인한 누구나(관리자는 권한 유형과 상관없이, 직원 앱도) 부른다. 부를 때의 현재 값이다.
          */
         get: operations["BpCodesController_findCodeItems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/public-terms-versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 지금 시행 중인 약관 유형마다 한 건, 공통코드 `TERMS_TYPE` 순서대로. 본문은 없다. */
+        get: operations["TermsVersionsController_findAll"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/public-terms-versions/{termsTypeCode}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 그 유형의 지금 시행 중인 약관과 본문(Markdown). */
+        get: operations["TermsVersionsController_findOne"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1764,6 +1871,128 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/todos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 목록. 미완료 긴급 → 미완료 나머지 → 완료, 묶음 안은 수행 예정 일시 오름차순. 배정 그룹은 한 줄 */
+        get: operations["TodosController_list"];
+        put?: never;
+        /** 등록. 배정 그룹을 펼쳐 행을 만든다. 배정 알림은 없다 */
+        post: operations["TodosController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/todos/assignable-staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 등록의 직원 고르기 — 그 근무지에 체결 완료 계약이 있고 가입을 마쳤고 퇴직하지 않은 직원, 이름순 */
+        get: operations["TodosController_assignableStaff"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/todos/{todoId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 상세 — 배정 대상 · 상태 이력, 그룹이면 직원별 상태 */
+        get: operations["TodosController_findOne"];
+        put?: never;
+        post?: never;
+        /** 대기만 지운다. 그룹이면 그룹의 대기인 행만(T-2) */
+        delete: operations["TodosController_remove"];
+        options?: never;
+        head?: never;
+        /** 제목 · 내용 · 수행 예정 일시 · 긴급 수정. 그룹이면 그룹 전체. 배정 대상 · 수행 방식은 못 바꾼다(400) */
+        patch: operations["TodosController_update"];
+        trace?: never;
+    };
+    "/todos/{todoId}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** 관리자가 직원 대신 상태를 바꾼다(T-1). 그룹이면 그 행만 */
+        patch: operations["TodosController_changeStatus"];
+        trace?: never;
+    };
+    "/staff-members/{id}/todos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 그 직원에게 배정된 TO-DO. 정렬은 TO-DO 목록과 같다 */
+        get: operations["StaffMemberTodosController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/todos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 내 TO-DO. 근무지별로 묶을 때는 storeId 를 쓴다. 한 명 수행은 완료했으면 수행자 이름을 보인다(WORK-3) */
+        get: operations["MyTodosController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/todos/{todoId}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** 대기 ↔ 진행 중 ↔ 완료. 한 명 수행은 먼저 저장된 완료만 인정한다 */
+        patch: operations["MyTodosController_changeStatus"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2731,10 +2960,185 @@ export interface components {
             /** @description 대체 권한 — 같은 유형(PA)의 지우지 않은 다른 추가 권한. 고정 권한은 고를 수 없다. */
             replacementRoleGroupId?: number;
         };
+        PlatformMenuServiceResponseDto: {
+            /** @description 서비스 사용 상태. 사용중지 서비스도 고르고 편집할 수 있지만 사용자 화면에는 보이지 않는다. */
+            status: components["schemas"]["UseStatus"];
+            /**
+             * @description 서비스 코드.
+             * @example PLATFORM
+             */
+            serviceCode: string;
+            /** @description 서비스 이름(공통코드 표시명). */
+            name: string;
+            /** @description 지우지 않은 메뉴 수. */
+            menuCount: number;
+            /** @description 그중 사용 상태가 사용인 메뉴 수(상위가 사용중지라 숨은 것도 센다). */
+            activeMenuCount: number;
+            inactiveMenuCount: number;
+        };
+        PlatformMenuServiceListResponseDto: {
+            items: components["schemas"]["PlatformMenuServiceResponseDto"][];
+            total: number;
+        };
+        PlatformMenuServiceRefResponseDto: {
+            status: components["schemas"]["UseStatus"];
+            serviceCode: string;
+            name: string;
+        };
+        PlatformMenuNodeResponseDto: {
+            status: components["schemas"]["UseStatus"];
+            children: components["schemas"]["PlatformMenuNodeResponseDto"][];
+            menuId: number;
+            /**
+             * @description 메뉴 코드 — MN + 6자리.
+             * @example MN000215
+             */
+            menuCode: string;
+            /** @description 노출 메뉴명. */
+            name: string;
+            /** @description 메뉴 URL. 묶음 메뉴는 보통 null. */
+            url: string | null;
+            /** @description 메뉴 계층 1~3. */
+            depth: number;
+            /** @description 형제 안의 순서 — 1부터. */
+            sortOrder: number;
+            /** @description 하위가 있는 메뉴(묶음). */
+            isGroup: boolean;
+            /** @description 사용자 화면에 보이지 않는가 — 자신 · 조상 · 서비스 중 하나라도 사용중지. 자기 상태 값은 사용일 수 있다. */
+            isHidden: boolean;
+        };
+        PlatformMenuTreeResponseDto: {
+            service: components["schemas"]["PlatformMenuServiceRefResponseDto"];
+            items: components["schemas"]["PlatformMenuNodeResponseDto"][];
+            total: number;
+        };
+        PlatformMenuParentResponseDto: {
+            menuId: number;
+            menuCode: string;
+            name: string;
+        };
+        PlatformMenuActorResponseDto: {
+            name: string | null;
+            loginId: string;
+        };
+        PlatformMenuDetailResponseDto: {
+            status: components["schemas"]["UseStatus"];
+            menuId: number;
+            menuCode: string;
+            serviceCode: string;
+            serviceName: string;
+            /** @description 상위 메뉴. 최상위(1단계)면 null. */
+            parent: components["schemas"]["PlatformMenuParentResponseDto"] | null;
+            /**
+             * @description 최상위부터 이 메뉴까지의 노출 메뉴명.
+             * @example [
+             *       "시스템관리",
+             *       "플랫폼 메뉴 관리"
+             *     ]
+             */
+            path: string[];
+            name: string;
+            url: string | null;
+            depth: number;
+            sortOrder: number;
+            isGroup: boolean;
+            /** @description 사용자 화면에 보이지 않는가 — 자신 · 조상 · 서비스 중 하나라도 사용중지. 사용중지 상위 아래의 메뉴면 「사용자에게는 보이지 않는다」를 알린다. */
+            isHidden: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["PlatformMenuActorResponseDto"] | null;
+            /**
+             * Format: date-time
+             * @description 최종수정일시 — 저장할 때 그대로 돌려보낸다(동시 수정 확인).
+             */
+            updatedAt: string;
+            updatedBy: components["schemas"]["PlatformMenuActorResponseDto"] | null;
+        };
+        CreatePlatformMenuDto: {
+            /** @description 사용 상태. 생략하면 사용(ACTIVE). */
+            status?: components["schemas"]["UseStatus"];
+            /**
+             * @description 서비스 코드 — 공통코드 SERVICE 값(사용중지 서비스도 된다).
+             * @example PLATFORM
+             */
+            serviceCode: string;
+            /** @description 상위 메뉴. 생략하거나 null 이면 최상위(1단계). 같은 서비스의 2단계까지의 메뉴여야 한다. */
+            parentMenuId?: number | null;
+            /** @description 노출 메뉴명. 앞뒤 공백을 지우고 1~20자. 같은 상위 아래 같은 이름도 받는다. */
+            name: string;
+            /**
+             * @description 메뉴 URL. 선택 — 하위를 묶기만 하는 메뉴는 비운다(비우면 null). `/소문자-숫자` 구간, 200자까지. 새로 넣는 URL 은
+             *     1뎁스 한 구간만 받는다(`/staff/content` 가 아니라 `/staff-content` — 등록과, 수정에서 바꿀 때 400). 그대로 둔 기존 URL 은
+             *     여러 구간이어도 받는다. 사용 중 메뉴끼리 같거나 한쪽이 다른 쪽 아래 경로면 409.
+             * @example /staff-content
+             */
+            url?: string | null;
+        };
+        CreatePlatformMenuResponseDto: {
+            menuId: number;
+            /**
+             * @description 저장할 때 채번한 메뉴 코드.
+             * @example MN000223
+             */
+            menuCode: string;
+        };
+        UpdatePlatformMenuDto: {
+            /** @description 사용 상태. 미사용이면 사용자 화면과 신규 권한 부여에서 빠지고, 이미 준 권한은 남는다. */
+            status: components["schemas"]["UseStatus"];
+            /** @description 상세에서 받은 최종수정일시 그대로. 그 사이 다른 사람이 고쳤으면 저장하지 않고 409. */
+            updatedAt: string;
+            /** @description 노출 메뉴명. 앞뒤 공백을 지우고 1~20자. 같은 상위 아래 같은 이름도 받는다. */
+            name: string;
+            /**
+             * @description 메뉴 URL. 선택 — 하위를 묶기만 하는 메뉴는 비운다(비우면 null). `/소문자-숫자` 구간, 200자까지. 새로 넣는 URL 은
+             *     1뎁스 한 구간만 받는다(`/staff/content` 가 아니라 `/staff-content` — 등록과, 수정에서 바꿀 때 400). 그대로 둔 기존 URL 은
+             *     여러 구간이어도 받는다. 사용 중 메뉴끼리 같거나 한쪽이 다른 쪽 아래 경로면 409.
+             * @example /staff-content
+             */
+            url?: string | null;
+        };
+        MovePlatformMenuDto: {
+            /** @description 새 상위 메뉴. null 이면 최상위. */
+            parentMenuId: number | null;
+            /** @description 새 상위 아래의 자리 — 0 이 맨 앞, 형제 수 이상이면 맨 끝. */
+            index: number;
+        };
         BpStoreListResponseDto: {
             /** @description 점포 이름순. 운영 상태와 상관없이 미삭제 점포 전체. 항목 모양은 로그인 정보의 `stores` 와 같다. */
             items: components["schemas"]["AdminStoreDto"][];
             total: number;
+        };
+        TermsVersionResponseDto: {
+            /** @description 약관 유형 코드 — 공통코드 `TERMS_TYPE`. 예: PRIVACY_COLLECT */
+            termsTypeCode: string;
+            /** @description 탭 이름 — 공통코드 `TERMS_TYPE` 의 코드명. 예: 개인정보 수집·이용 동의(BP 사업자 회원가입용) */
+            label: string;
+            /** @description 본문 제목. 예: [필수] 개인정보 수집·이용 동의 */
+            title: string;
+            /** @description 버전 번호. 예: v1.0 */
+            version: string;
+            /** @description 시행일(YYYY-MM-DD). 예: 2026-10-01 */
+            effectiveDate: string;
+        };
+        TermsVersionListResponseDto: {
+            /** @description 약관 유형마다 지금 시행 중인 한 건, 공통코드 `TERMS_TYPE` 정렬 순서. 시행 중인 버전이 없는 유형은 빠진다. */
+            items: components["schemas"]["TermsVersionResponseDto"][];
+            /** @description items 개수(페이지를 나누지 않는다) */
+            total: number;
+        };
+        TermsVersionDetailResponseDto: {
+            /** @description 약관 유형 코드 — 공통코드 `TERMS_TYPE`. 예: PRIVACY_COLLECT */
+            termsTypeCode: string;
+            /** @description 탭 이름 — 공통코드 `TERMS_TYPE` 의 코드명. 예: 개인정보 수집·이용 동의(BP 사업자 회원가입용) */
+            label: string;
+            /** @description 본문 제목. 예: [필수] 개인정보 수집·이용 동의 */
+            title: string;
+            /** @description 버전 번호. 예: v1.0 */
+            version: string;
+            /** @description 시행일(YYYY-MM-DD). 예: 2026-10-01 */
+            effectiveDate: string;
+            /** @description 약관 본문(Markdown) */
+            content: string;
         };
         /** @enum {string} */
         EmploymentStatus: "EMPLOYED" | "RETIRED";
@@ -4308,6 +4712,208 @@ export interface components {
             reply: components["schemas"]["SupportInquiryReplyDto"] | null;
             /** @description 첨부파일. 순서대로. 내려받기는 `GET /support-inquiries/:inquiryId/attachments/:inquiryAttachmentId/download-url`. */
             attachments: components["schemas"]["InquiryAttachmentDto"][];
+        };
+        /** @enum {string} */
+        TodoStatus: "PENDING" | "IN_PROGRESS" | "DONE";
+        /** @enum {string} */
+        TodoAssigneeType: "INDIVIDUAL" | "ALL";
+        /** @enum {string} */
+        TodoExecutionMode: "EACH" | "ANY_ONE";
+        TodoStaffDto: {
+            staffMemberId: number | null;
+            staffMemberName: string | null;
+            isMasked: boolean;
+        };
+        TodoListItemDto: {
+            assigneeType: components["schemas"]["TodoAssigneeType"];
+            executionMode: components["schemas"]["TodoExecutionMode"];
+            /**
+             * @description YYYY-MM-DD
+             * @example 2026-10-20
+             */
+            dueDate: string;
+            /**
+             * @description HH:mm. 날짜만이면 null
+             * @example 18:00
+             */
+            dueTime: string | null;
+            /** @description 이 줄의 상태 — 그룹이면 모두 완료 = 완료, 모두 대기 = 대기, 그 밖은 진행 중 */
+            status: components["schemas"]["TodoStatus"];
+            /** @description 한 명 수행을 먼저 완료한 직원 */
+            performer: components["schemas"]["TodoStaffDto"] | null;
+            /** @description 그 줄에 남은 행(필터에 맞고 지우지 않은 행) 가운데 첫 행. 상세를 열 때 쓴다 */
+            todoId: number;
+            /** @description 그룹이 아니면 null */
+            assignmentGroupId: number | null;
+            storeId: number;
+            /** @description 점포가 지워졌어도 이름은 보인다 */
+            storeName: string | null;
+            title: string;
+            isUrgent: boolean;
+            /** @description 이 줄에 묶인 행 수 */
+            todoCount: number;
+            /** @description 그 가운데 완료한 행 수 */
+            doneCount: number;
+            /** @description 배정된 직원. 한 명 수행은 대상 전원 */
+            assignees: components["schemas"]["TodoStaffDto"][];
+            /** Format: date-time */
+            createdAt: string;
+        };
+        TodoListResponseDto: {
+            items: components["schemas"]["TodoListItemDto"][];
+            /** @description 거른 결과의 줄 수(그룹은 한 줄) */
+            total: number;
+        };
+        AssignableStaffItemDto: {
+            staffMemberId: number;
+            name: string;
+            /** @description 휴대전화번호 끝 4자리 — 이름이 같은 직원을 가른다 */
+            phoneLast4: string;
+            /** @description 직무(예: 바리스타) */
+            jobTitle: string;
+        };
+        AssignableStaffResponseDto: {
+            items: components["schemas"]["AssignableStaffItemDto"][];
+        };
+        TodoAssigneeDto: {
+            staffMemberId: number | null;
+            staffMemberName: string | null;
+            /** Format: date-time */
+            completedAt: string | null;
+            isCompleted: boolean;
+            isMasked: boolean;
+        };
+        TodoGroupRowDto: {
+            /** @description 퇴직으로 배정이 풀린 행 · 가린 직원은 null */
+            staffMemberId: number | null;
+            staffMemberName: string | null;
+            status: components["schemas"]["TodoStatus"];
+            /** Format: date-time */
+            completedAt: string | null;
+            todoId: number;
+            /** @description 가린 직원(TodoStaffDto.isMasked 와 같은 뜻) */
+            isMasked: boolean;
+        };
+        TodoStatusHistoryDto: {
+            /** @description 등록 때 줄은 null */
+            fromStatus: components["schemas"]["TodoStatus"] | null;
+            toStatus: components["schemas"]["TodoStatus"];
+            changedBy: number | null;
+            changedByName: string | null;
+            staffMemberId: number | null;
+            staffMemberName: string | null;
+            /** @description 퇴직으로 배정이 풀린 직원 */
+            unassignedStaffMemberId: number | null;
+            unassignedStaffMemberName: string | null;
+            /** @description 긴급 표시를 바꾼 줄 */
+            isUrgentChanged: boolean;
+            /** @description 바꾼 직원을 가렸으면 true — staffMemberId · staffMemberName 이 null */
+            isStaffMemberMasked: boolean;
+            /** @description 배정이 풀린 직원을 가렸으면 true */
+            isUnassignedStaffMemberMasked: boolean;
+            /** Format: date-time */
+            changedAt: string;
+        };
+        TodoDetailDto: {
+            assignmentGroupId: number | null;
+            storeName: string | null;
+            body: string | null;
+            assigneeType: components["schemas"]["TodoAssigneeType"];
+            executionMode: components["schemas"]["TodoExecutionMode"];
+            /** @example 2026-10-20 */
+            dueDate: string;
+            /** @example 18:00 */
+            dueTime: string | null;
+            status: components["schemas"]["TodoStatus"];
+            /** Format: date-time */
+            completedAt: string | null;
+            performer: components["schemas"]["TodoStaffDto"] | null;
+            createdByName: string | null;
+            todoId: number;
+            storeId: number;
+            title: string;
+            isUrgent: boolean;
+            createdBy: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            /** @description 이 행의 배정 대상 */
+            assignees: components["schemas"]["TodoAssigneeDto"][];
+            /** @description 그룹의 행들(이 행 포함). 그룹이 아니면 빈 배열 */
+            groupTodos: components["schemas"]["TodoGroupRowDto"][];
+            /** @description 이 행의 상태 이력, 최신순 */
+            histories: components["schemas"]["TodoStatusHistoryDto"][];
+        };
+        CreateTodoDto: {
+            /** @description 배정 대상 — 개인 · 근무지 전체. 등록 뒤 바꾸지 않는다 */
+            assigneeType: components["schemas"]["TodoAssigneeType"];
+            /** @description 수행 방식 — 각자 수행 · 한 명 수행. 근무지 전체면 필수, 개인이면 각자 수행만(빼면 각자 수행). 등록 뒤 바꾸지 않는다 */
+            executionMode?: components["schemas"]["TodoExecutionMode"];
+            /** @description 근무지 점포. 업무 범위 밖이면 404 */
+            storeId: number;
+            /** @description 개인 배정의 직원 레코드. 개인이면 1~200명, 근무지 전체면 넣지 않는다. 그 근무지의 재직 직원이어야 한다 */
+            staffMemberIds?: number[];
+            /** @description 제목. 100자까지 */
+            title: string;
+            /** @description 내용. 2,000자까지. 앞뒤 공백을 지우고, 비면(공백만이면) null */
+            body?: string | null;
+            /** @description 수행 예정 날짜 YYYY-MM-DD. 한국 날짜로 오늘 이후 */
+            dueDate: string;
+            /** @description 수행 시간 HH:mm(한국 시각). 없으면 날짜만 */
+            dueTime?: string | null;
+            /** @description 긴급. 기본 false */
+            isUrgent?: boolean;
+        };
+        CreatedTodoResponseDto: {
+            /** @description 만든 행. 개인 한 명 · 한 명 수행은 하나 */
+            todoIds: number[];
+            /** @description 배정 그룹 ID. 행이 하나면 null */
+            assignmentGroupId: number | null;
+        };
+        UpdateTodoDto: {
+            /** @description 제목. 100자까지 */
+            title?: string;
+            /** @description 내용. 2,000자까지. 앞뒤 공백을 지우고, 비면(공백만이면) null */
+            body?: string | null;
+            /** @description 수행 예정 날짜 YYYY-MM-DD. 한국 날짜로 오늘 이후 */
+            dueDate?: string;
+            /** @description 수행 시간 HH:mm(한국 시각). 없으면 날짜만 */
+            dueTime?: string | null;
+            /** @description 긴급. 기본 false */
+            isUrgent?: boolean;
+        };
+        ChangeTodoStatusDto: {
+            status: components["schemas"]["TodoStatus"];
+        };
+        TodoItemDto: {
+            storeName: string | null;
+            body: string | null;
+            assigneeType: components["schemas"]["TodoAssigneeType"];
+            executionMode: components["schemas"]["TodoExecutionMode"];
+            /** @example 2026-10-20 */
+            dueDate: string;
+            /** @example 18:00 */
+            dueTime: string | null;
+            status: components["schemas"]["TodoStatus"];
+            /** Format: date-time */
+            completedAt: string | null;
+            /** @description 한 명 수행을 완료한 직원 — 근무지 동료에게 이름을 보인다(WORK-3) */
+            performer: components["schemas"]["TodoStaffDto"] | null;
+            todoId: number;
+            storeId: number;
+            title: string;
+            isUrgent: boolean;
+        };
+        TodoDeleteResponseDto: {
+            /** @description 지운 행 수 */
+            deleted: number;
+            /** @description 그룹에 남은 행 수 — 진행 중 · 완료라 지우지 않은 것 */
+            remaining: number;
+        };
+        TodoItemListResponseDto: {
+            items: components["schemas"]["TodoItemDto"][];
+            total: number;
         };
     };
     responses: never;
@@ -5951,6 +6557,270 @@ export interface operations {
             };
         };
     };
+    PlatformMenusController_services: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformMenuServiceListResponseDto"];
+                };
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformMenusController_tree: {
+        parameters: {
+            query: {
+                /** @description 서비스 코드 — 공통코드 SERVICE 값(사용중지 서비스도 된다). */
+                serviceCode: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformMenuTreeResponseDto"];
+                };
+            };
+            /** @description 서비스 코드 형식 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 서비스 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformMenusController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePlatformMenuDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatePlatformMenuResponseDto"];
+                };
+            };
+            /** @description 형식(메뉴명 · URL · 서비스 코드) · 없는 서비스 · 고를 수 없는 상위(없음 · 다른 서비스) · 3단계 메뉴 아래 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같거나 겹치는 URL 을 쓰는 사용 중 메뉴 · 메뉴 코드를 더 만들 수 없음 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 쓰기가 몰려 트랜잭션 시간을 넘김 — 잠시 뒤 다시 시도 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformMenusController_detail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformMenuDetailResponseDto"];
+                };
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴를 찾을 수 없습니다 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformMenusController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePlatformMenuDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 형식(메뉴명 · URL · 상태 · updatedAt) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴를 찾을 수 없습니다 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같거나 겹치는 URL 을 쓰는 사용 중 메뉴 · 동시 수정 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 쓰기가 몰려 트랜잭션 시간을 넘김 — 잠시 뒤 다시 시도 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformMenusController_move: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MovePlatformMenuDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 자기 자신이나 하위 아래 · 3단계 초과(하위 높이 포함) · 다른 서비스나 없는 상위 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴를 찾을 수 없습니다 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 쓰기가 몰려 트랜잭션 시간을 넘김 — 잠시 뒤 다시 시도 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     BpCodesController_findStores: {
         parameters: {
             query?: never;
@@ -6012,6 +6882,53 @@ export interface operations {
                 };
             };
             /** @description 없거나 삭제된 BP */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TermsVersionsController_findAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TermsVersionListResponseDto"];
+                };
+            };
+        };
+    };
+    TermsVersionsController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                termsTypeCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TermsVersionDetailResponseDto"];
+                };
+            };
+            /** @description 없거나 사용하지 않는 유형, 시행 중인 버전 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -9153,6 +10070,444 @@ export interface operations {
             };
             /** @description 첨부파일 저장소 설정 없음 */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TodosController_list: {
+        parameters: {
+            query?: {
+                /** @description 1부터 */
+                page?: number;
+                pageSize?: number;
+                /** @description 여러 개면 `?status=PENDING&status=IN_PROGRESS`. 없으면 전체 */
+                status?: components["schemas"]["TodoStatus"][];
+                /** @description 담당 — 개인 · 근무지 전체 */
+                assigneeType?: components["schemas"]["TodoAssigneeType"];
+                /** @description 이 직원 레코드에 배정된 것 */
+                staffMemberId?: number;
+                /** @description true · false. 없으면 전체 */
+                isUrgent?: boolean;
+                /** @description 근무지 점포 */
+                storeId?: number;
+                /** @description 수행 예정 날짜 시작(그날 포함) YYYY-MM-DD */
+                dueDateFrom?: string;
+                /** @description 수행 예정 날짜 끝(그날 포함) YYYY-MM-DD */
+                dueDateTo?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoListResponseDto"];
+                };
+            };
+            /** @description 쿼리 형식 오류 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TodosController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTodoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatedTodoResponseDto"];
+                };
+            };
+            /** @description 입력 오류 · 지난 날짜 · 배정 대상과 수행 방식이 맞지 않음 · 퇴직했거나 체결 완료 계약이 없거나 가입 전이거나 다른 근무지 직원 · 그런 재직 직원 없음 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 근무지 점포가 없거나 업무 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TodosController_assignableStaff: {
+        parameters: {
+            query: {
+                /** @description 근무지 점포. 업무 범위 밖이면 404 */
+                storeId: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignableStaffResponseDto"];
+                };
+            };
+            /** @description storeId 형식 오류 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 근무지 점포가 없거나 업무 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TodosController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                todoId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoDetailDto"];
+                };
+            };
+            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 TO-DO · 지움 · 업무 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TodosController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                todoId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoDeleteResponseDto"];
+                };
+            };
+            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 TO-DO · 지움 · 업무 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 지울 대기 TO-DO 가 없음 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TodosController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                todoId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTodoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoDetailDto"];
+                };
+            };
+            /** @description 입력 오류 · 지난 날짜 · 바꿀 수 없는 칸 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 TO-DO · 지움 · 업무 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TodosController_changeStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                todoId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeTodoStatusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoItemDto"];
+                };
+            };
+            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 TO-DO · 지움 · 업무 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description TODO_ALREADY_DONE · TODO_STATUS_CONFLICT(그사이 상태가 바뀜) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StaffMemberTodosController_list: {
+        parameters: {
+            query?: {
+                /** @description 1부터 */
+                page?: number;
+                pageSize?: number;
+                /** @description 여러 개면 `?status=PENDING&status=IN_PROGRESS`. 없으면 전체 */
+                status?: components["schemas"]["TodoStatus"][];
+                /** @description 근무지 점포 */
+                storeId?: number;
+                /** @description 수행 예정 날짜 시작(그날 포함) YYYY-MM-DD */
+                dueDateFrom?: string;
+                /** @description 수행 예정 날짜 끝(그날 포함) YYYY-MM-DD */
+                dueDateTo?: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoItemListResponseDto"];
+                };
+            };
+            /** @description 직원 정보 관리 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MyTodosController_list: {
+        parameters: {
+            query?: {
+                /** @description 1부터 */
+                page?: number;
+                pageSize?: number;
+                /** @description 여러 개면 `?status=PENDING&status=IN_PROGRESS`. 없으면 전체 */
+                status?: components["schemas"]["TodoStatus"][];
+                /** @description 근무지 점포 */
+                storeId?: number;
+                /** @description 수행 예정 날짜 시작(그날 포함) YYYY-MM-DD */
+                dueDateFrom?: string;
+                /** @description 수행 예정 날짜 끝(그날 포함) YYYY-MM-DD */
+                dueDateTo?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoItemListResponseDto"];
+                };
+            };
+            /** @description 관리자 토큰 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MyTodosController_changeStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                todoId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeTodoStatusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoItemDto"];
+                };
+            };
+            /** @description 관리자 토큰 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 내게 배정되지 않았거나 지운 TO-DO · 내 직원 레코드가 대상 조건(체결 완료 계약 · 가입 · 퇴직) 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description TODO_ALREADY_DONE(다른 직원이 먼저 완료 — performer 에 그 직원, 또는 본인이 완료한 것이 아닌 한 명 수행을 다시 열려 함) · TODO_STATUS_CONFLICT(그사이 상태가 바뀜) */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

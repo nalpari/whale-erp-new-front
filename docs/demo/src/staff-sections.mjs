@@ -7,6 +7,47 @@ import * as p from "./staff-parts.mjs";
 import { link } from "./site.mjs";
 import { req } from "./biz-form.mjs";
 
+// 급여명세서 작성 팝업: 점포 · 이름으로 표 줄을 좁히고, 직원을 고르면 「작성」을 켠다. erp.js 목록 거르기는 dialog 안을 건너뛰어 이 부품에 붙여 둔다.
+const PICK_SCRIPT = `<script>
+(() => {
+  document.querySelectorAll("[data-staff-pick]").forEach((box) => {
+    const dlg = box.closest("dialog");
+    const store = box.querySelector("[data-pick-store]");
+    const name = box.querySelector("[data-pick-name]");
+    const ok = dlg.querySelector("[data-pick-ok]");
+    const none = box.querySelector("[data-pick-none]");
+    const rows = [...box.querySelectorAll("tbody tr")];
+    const setOk = (on) => {
+      ok.style.cssText = on ? "" : "opacity:.4;pointer-events:none";
+      ok.setAttribute("aria-disabled", on ? "false" : "true");
+    };
+    const run = () => {
+      const s = store.value === "전체 점포" ? "" : store.value;
+      const q = name.value.trim();
+      let shown = 0;
+      rows.forEach((tr) => {
+        const [, n, st] = tr.cells;
+        const hit = (!s || st.textContent === s) && (!q || n.textContent.includes(q));
+        tr.hidden = !hit;
+        if (hit) shown++;
+        const r = tr.querySelector("input");
+        if (!hit && r.checked) r.checked = false;
+      });
+      none.hidden = shown > 0;
+      setOk(rows.some((tr) => !tr.hidden && tr.querySelector("input").checked));
+    };
+    box.addEventListener("input", run);
+    box.addEventListener("change", run);
+    dlg.addEventListener("close", () => {
+      store.selectedIndex = 0;
+      name.value = "";
+      rows.forEach((tr) => (tr.querySelector("input").checked = false));
+      run();
+    });
+  });
+})();
+</script>`;
+
 export function staffSections({ A, R }) {
   const L = (path) => link(R, path);
   const offBtn = (label, a = {}) => ui.button(label, { variant: "off", ...a });
@@ -87,6 +128,8 @@ export function staffSections({ A, R }) {
     // 파트타이머를 반복 갱신해 기간제 2년을 넘기면 무기계약으로 바뀐다(노무사 확인 2026-10-14, 질문 24). 첫 계약 2024-10-01 부터 다음 갱신이면 2년을 넘는다.
     [ui.link("송다인", C("signed")), "모리커피 연남점", "2026-04-01 ~ 2026-09-30", "11,200 /h", "03-27", p.tag("warn", "갱신 예정 · D-20 · 무기계약 전환")],
     [ui.link("임채운", C("ended")), "모리커피 연남점", "2026-08-01 ~ 2027-07-31", "10,400 /h", "07-20", p.tag("quiet", "종료 · 퇴직")],
+    // 임채운은 앞 계약(체결 완료)으로 퇴직일 07-31까지 일했다. 퇴직은 체결 완료 계약을 닫지 않는다(운영 정책 CTR-24).
+    [ui.link("임채운", C("signed")), "모리커피 연남점", "2025-08-01 ~ 2026-07-31", "10,400 /h", "2025-07-28", p.tag("ok", "체결 완료")],
   ];
   // 근로계약 관리: 왼쪽 필터(점포 · 직원 · 상태) + 목록. 목업의 목록 위 상태 라디오를 필터의 상태 체크로 옮겼다.
   const contractsFilter = ui.filterPanel(A, [
@@ -295,8 +338,44 @@ export function staffSections({ A, R }) {
     );
   const counts = (a, b, c, d) =>
     `<p class="text-[14px] text-erp-label">작성 중 <b class="font-semibold text-erp-ink">${a}</b> · 검토 중 <b class="font-semibold text-erp-ink">${b}</b> · 확정 <b class="font-semibold text-erp-ink">${c}</b> · 발송 완료 <b class="font-semibold text-erp-ink">${d}</b></p>`;
-  // 목록 오른쪽 위 버튼: 「급여명세서 작성」은 어느 달이든 늘 보인다(2026-10-02 재영). 데모라 명세서 화면으로 간다.
-  const payButtons = (n) => ui.button("급여명세서 작성", { variant: "soft", href: PD }) + (n ? p.ask(`확정 ${n}건 발송`, "primary", `확정한 급여명세서 ${n}건을 발송하시겠습니까?`, "직원 근무 앱으로 보냅니다.", "발송") : "");
+  // 목록 오른쪽 위 버튼: 「급여명세서 작성」은 어느 달이든 늘 보인다(2026-10-02 재영). 누르면 점포·직원을 고르는 팝업이 뜨고, 고른 직원으로 작성하면 데모라 명세서 화면으로 간다.
+  // 근로계약이 없거나 이 달 명세서가 이미 있는 직원은 고를 수 없다(WHALEERP-226). 점포 · 이름으로 좁히기와 「작성」 켜기는 PICK_SCRIPT.
+  const pickId = x.dialogId();
+  const pickRow = (name, store, type, contract, slip) => {
+    const ok = contract === "유효" && slip === "미작성";
+    const pick = `<input type="radio" name="${pickId}-staff" aria-label="${name} 선택"${ok ? "" : " disabled"} class="size-[18px] accent-erp-brand disabled:opacity-30">`;
+    return [pick, name, store, type, contract === "유효" ? contract : p.tag("risk", contract), slip === "미작성" ? slip : p.tag("quiet", slip)];
+  };
+  const pickRows = [
+    pickRow("유하람", "모리커피 서초점", "정직원", "유효", "미작성"),
+    pickRow("하준서", "모리커피 서초점", "파트타이머", "유효", "미작성"),
+    pickRow("서지안", "모리커피 서초점", "정직원", "유효", "작성됨"),
+    pickRow("오세라", "모리커피 서초점", "정직원", "유효", "작성됨"),
+    pickRow("최다온", "온기식당 판교점", "파트타이머", "유효", "미작성"),
+    pickRow("문태경", "온기식당 판교점", "정직원", "유효", "작성됨"),
+    pickRow("남도현", "모리커피 성수점", "정직원", "계약 없음", "미작성"),
+  ];
+  const pickBody =
+    `<div data-staff-pick class="flex flex-col gap-[12px]">` +
+    `<p class="text-erp-label">근로계약이 있고 이 달 명세서가 없는 직원만 고를 수 있습니다.</p>` +
+    ui.formRow(
+      ui.field("점포", ui.select(["전체 점포", ...new Set(pickRows.map((r) => r[2]))], { "data-pick-store": true, "aria-label": "점포" }), "w-[220px]"),
+      ui.field("직원", ui.searchField(A, { placeholder: "이름" }).replace("<input ", "<input data-pick-name ")),
+    ) +
+    `<div class="max-h-[322px] overflow-y-auto">${ui.dataTable(
+      [{ header: "선택", width: "w-[60px]" }, { header: "직원" }, { header: "점포" }, { header: "계약 유형" }, { header: "근로계약" }, { header: "명세서" }],
+      pickRows,
+    )}<p data-pick-none hidden class="py-[24px] text-center text-erp-muted">조건에 맞는 직원이 없습니다.</p></div>` +
+    `</div>`;
+  const pickDialog =
+    x.dialog(
+      pickId,
+      "급여명세서 작성",
+      pickBody,
+      ui.button("취소", { variant: "off", "data-close": true }) + ui.button("작성", { href: PD, "data-pick-ok": true, "aria-disabled": "true", style: "opacity:.4;pointer-events:none" }),
+      "w-[720px]",
+    ) + PICK_SCRIPT;
+  const payButtons = (n) => x.dialogTrigger("급여명세서 작성", pickId, "soft") + (n ? p.ask(`확정 ${n}건 발송`, "primary", `확정한 급여명세서 ${n}건을 발송하시겠습니까?`, "직원 근무 앱으로 보냅니다.", "발송") : "");
   const month = (key, body) => `<div data-week="${key}" hidden class="flex flex-col gap-[24px]">${body}</div>`;
   const sent = p.tag("ok", "발송 완료");
   const months =
@@ -330,7 +409,8 @@ export function staffSections({ A, R }) {
     ui.filterSection("직원", ui.searchField(A, { placeholder: "이름" }), { tight: true }),
     ui.filterSection("명세서 상태", ["작성 중", "검토 중", "확정", "발송 완료"].map((t) => ui.checkbox(A, t, true)).join(""), { last: true }),
   ]);
-  const payrollTab = `<div class="flex flex-col gap-[12px]">${p.weekNav(A, "pay-months", "2026-08-01", { month: true })}<div id="pay-months">${months}</div></div>`;
+  // 직원 고르기 팝업은 달 묶음(hidden) 밖에 한 번만 둔다 — 숨긴 묶음 안의 dialog 는 열어도 보이지 않는다.
+  const payrollTab = `<div class="flex flex-col gap-[12px]">${p.weekNav(A, "pay-months", "2026-08-01", { month: true })}<div id="pay-months">${months}</div></div>${pickDialog}`;
 
   // ── TO-DO ──
   const todoPanel = "todo-form";
