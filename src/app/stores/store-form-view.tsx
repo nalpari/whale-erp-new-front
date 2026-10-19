@@ -208,9 +208,12 @@ export function StoreFormView(props: Props) {
   const handleRecalculateCoordinate = () => {
     const mine = ++locateNumber.current;
     setCoordinateNote(null);
-    setForm((f) => ({ ...f, latitude: "", longitude: "" }));
+    // handleAddressChoose 와 달리 주소가 바뀐 게 아니라 지금 좌표가 여전히 맞을 수 있다 — 실패해도 지우지 않는다.
+    // form.address 는 참고항목(동 이름 · 건물명)이 붙은 전체 도로명주소라 그대로 물으면 카카오가 못 찾는다
+    // (address-search.ts 의 roadAddressBase 설명과 같다) — 끝의 괄호를 떼고 묻는다.
+    const query = form.address.replace(/\s*\([^)]*\)\s*$/, "");
     startLocating(async () => {
-      const result = await getAddressCoordinateAction(form.address, "").catch((error: unknown) => {
+      const result = await getAddressCoordinateAction(query, "").catch((error: unknown) => {
         console.error("좌표 조회 호출 실패", error);
         return { ok: false as const, message: "좌표를 가져오지 못했습니다. 위도 · 경도를 직접 적어 주세요." };
       });
@@ -227,7 +230,7 @@ export function StoreFormView(props: Props) {
     locateNumber.current++;
     setCoordinateNote(null);
     // 숫자 · 마침표 · 마이너스만 받는다 — 문자는 칠 수 없다(2026-10-19).
-    set(key, value.replace(/[^0-9.-]/g, "").trim(), key);
+    set(key, value.replace(/[^0-9.-]/g, ""), key);
   };
 
   /** 진위확인 칸을 고치면 이번 화면의 인증 결과는 무효다 */

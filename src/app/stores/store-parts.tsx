@@ -146,13 +146,11 @@ export function StoreCard({ store, href }: { store: StoreSummary; href: string }
 export function StoreTypeCards({
   value,
   onChange,
-  locked = false,
   invalid,
   describedBy,
 }: {
   value: StoreType | "";
   onChange?: (value: StoreType) => void;
-  locked?: boolean;
   invalid?: boolean;
   describedBy?: string;
 }) {
@@ -167,11 +165,11 @@ export function StoreTypeCards({
         return (
           <label
             key={type}
-            className={`group flex flex-col items-center gap-[10px] rounded-[4px] border bg-white px-[18px] py-[14px] transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:focus-visible]:border-erp-brand ${
+            className={`group flex cursor-pointer flex-col items-center gap-[10px] rounded-[4px] border bg-white px-[18px] py-[14px] transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-erp-brand has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:focus-visible]:border-erp-brand ${
               invalid ? "border-erp-off" : "border-erp-panel-line"
-            } ${locked ? `cursor-default ${checked ? "" : "opacity-40"}` : "cursor-pointer hover:border-erp-brand"}`}
+            }`}
           >
-            <input type="radio" name="storeTypeCode" className="sr-only" checked={checked} disabled={locked} onChange={() => onChange?.(type)} />
+            <input type="radio" name="storeTypeCode" className="sr-only" checked={checked} onChange={() => onChange?.(type)} />
             <b className="text-[16px] font-semibold text-erp-ink"><CodeLabel group="STORE_TYPE" value={type} /></b>
             <span className="text-[13px] text-erp-label">{desc}</span>
           </label>
