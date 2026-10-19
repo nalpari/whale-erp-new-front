@@ -9,7 +9,8 @@ import { MENU_CODE } from "@/lib/menus";
 import { useFailure } from "../staff-members/[id]/use-action-failure";
 import { createTodoAction, getAssignableStaffAction, updateTodoAction } from "./actions";
 import { fromDetail, initialForm, matchStaff, problems, staffChipText, toCreateBody, toUpdateBody, type PickedStaff, type TodoForm as Form } from "./todo-form-model";
-import { staffNameText, type TodoDetail } from "./todo-row";
+import { StaffNames } from "./staff-names";
+import type { TodoDetail } from "./todo-row";
 
 const HELP = "text-[12px] leading-[1.5] text-erp-muted";
 const STAFF_LOAD_FAILED = "직원 목록을 불러오지 못했습니다. 다시 시도해 주세요.";
@@ -206,7 +207,12 @@ function TodoFormFields({
                 <span className="text-[14px] text-erp-ink">
                   {labelOf(labels.assigneeType, detail.assigneeType)}
                   {detail.assigneeType === "ALL" ? ` · ${labelOf(labels.executionMode, detail.executionMode)}` : ""}
-                  {detail.assigneeType === "INDIVIDUAL" && detail.assignees.length ? ` · ${detail.assignees.map(staffNameText).join(", ")}` : ""}
+                  {detail.assigneeType === "INDIVIDUAL" && detail.assignees.length > 0 && (
+                    <>
+                      {" · "}
+                      <StaffNames staff={detail.assignees} />
+                    </>
+                  )}
                 </span>
               </Group>
             </>

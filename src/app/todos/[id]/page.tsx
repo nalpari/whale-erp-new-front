@@ -8,6 +8,7 @@ import { formatDateTime } from "@/lib/format";
 import { getTodo, type TodoDetail } from "@/lib/todos-api";
 import { CellView } from "../../staff-members/staff-table";
 import { todoListHref } from "../todo-list-query";
+import { StaffName, StaffNames } from "../staff-names";
 import { historyActorText, historyText, staffNameText, statusCells } from "../todo-row";
 import { TodoDetailActions, TodoStatusControl } from "./todo-detail-actions";
 
@@ -51,7 +52,7 @@ export default async function TodoDetailPage({
           : labelOf(assigneeTypeLabels, todo.assigneeType),
     },
     // 이 행의 배정 직원. 한 명 수행은 대상 전원, 퇴직으로 배정이 풀렸으면 비어 있다
-    { label: "직원", value: todo.assignees.map(staffNameText).join(", ") || "-", multiline: true },
+    { label: "직원", value: <span><StaffNames staff={todo.assignees} /></span>, multiline: true },
     { label: "수행 예정 일시", value: todo.dueTime ? `${todo.dueDate} ${todo.dueTime}` : todo.dueDate },
     { label: "긴급", value: todo.isUrgent ? <Badge tone="off">긴급</Badge> : "아님" },
     {
@@ -115,7 +116,7 @@ export default async function TodoDetailPage({
               columns={[
                 { header: "일시", width: "w-[180px]", cell: (h) => formatDateTime(h.changedAt) },
                 { header: "변경", align: "left", cell: (h) => historyText(h, statusLabels) },
-                { header: "바꾼 사람", width: "w-[180px]", cell: (h) => historyActorText(h) },
+                { header: "바꾼 사람", width: "w-[180px]", cell: (h) => <StaffName text={historyActorText(h)} masked={!h.changedByName && h.isStaffMemberMasked} /> },
               ]}
               rows={todo.histories.map((h, i) => ({ ...h, key: i }))}
               rowKey={(h) => h.key}
