@@ -104,7 +104,7 @@ export function LoginForm() {
           <input type="checkbox" checked={save} onChange={(e) => setSave(e.target.checked)} className={CHECKBOX} />
           아이디 저장
         </label>
-        {/* 데모 auth/find.html 에 대응한다(/auth 접두 없음). 찾기 화면은 다음 작업 — 공개 경로라 로그인 화면으로 튕기지 않는다. */}
+        {/* 데모 auth/find.html 에 대응한다(/auth 접두 없음). 찾기 화면(/find)은 아이디 탭으로 열린다. */}
         <Link href={SITE_ROUTES.findAccount} className={`hover:text-guest-navy ${HOVER}`}>
           아이디/비밀번호 찾기
         </Link>
