@@ -71,9 +71,17 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
     startMoving(async () => {
       const result = await moveMenuAction(menuId, { parentMenuId: spot.parentMenuId, index: verdict.index }).catch(unknownResult("메뉴 이동 저장"));
       if (!result.ok) {
-        setMoveFailure({ message: result.message, detail: `‘${moved.name}’ 메뉴는 옮기기 전 자리 그대로입니다.` });
-        // 그 사이 지워졌거나(404) 결과를 모르면 최신 트리를 받는다
-        if (result.status === undefined || result.status === 404) router.refresh();
+        // 화면이 cycle · depth 를 미리 막으므로 api 의 400 · 409 는 이 트리가 낡았다는 뜻이다(남이 옮기거나 하위를 더함).
+        // 그 사이 지워졌거나(404) 결과를 모를 때와 함께 최신 트리를 받는다 — 안 받으면 같은 이동이 새로고침 전까지 계속 거절된다
+        const stale = result.status === undefined || result.status === 400 || result.status === 404 || result.status === 409;
+        setMoveFailure({
+          message: result.message,
+          detail:
+            result.status === undefined
+              ? `최신 트리를 다시 받았습니다. ‘${moved.name}’ 메뉴가 옮겨졌는지 확인해 주세요.`
+              : `‘${moved.name}’ 메뉴는 옮기기 전 자리 그대로입니다.${stale ? " 최신 트리를 다시 받았습니다." : ""}`,
+        });
+        if (stale) router.refresh();
         return;
       }
       setMoveFailure(null);
