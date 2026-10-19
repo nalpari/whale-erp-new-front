@@ -16,6 +16,7 @@ import {
   type AdminLoginResponse,
 } from "@/lib/api";
 import { homeOf } from "@/lib/auth-routes";
+import { apiHeaders } from "@/lib/forwarded-headers";
 import { apiFailure, CHECK_FAILED_MESSAGE, UNKNOWN_RESULT_MESSAGE } from "./api-failure";
 import {
   BIZ_VERIFY_FAILED_MESSAGE,
@@ -61,18 +62,6 @@ const SEND_FAILED = "회원가입 요청을 보내지 못했습니다. 잠시 �
 const CHECK_FAILED = CHECK_FAILED_MESSAGE;
 // api 가 멈추면 fetch 는 수 분을 기다린다 — 그동안 폼이 「처리 중」에 잠긴다.
 const TIMEOUT_MS = 10_000;
-
-/**
- * api 로 보낼 머리말. 사용자 IP 를 X-Forwarded-For 로 넘긴다 — 넘기지 않으면 api 가 이 Next 서버의 주소로 세어,
- * 모든 가입자가 요청 제한의 IP 칸 하나를 나눠 쓰고(한도에 닿으면 모두 429) 약관 동의 기록에도 이 서버 주소가 남는다.
- * Next 는 이 머리말이 없으면 소켓 주소로 채우지만, 있으면 그대로 둔다. 그래서 Next 앞에 이 머리말을 덧붙이거나
- * 덮어쓰는 프록시(로드밸런서)가 반드시 있어야 한다 — Next 가 인터넷에 바로 노출되면 브라우저가 지어 보낸 값이 api 까지
- * 가, IP 한도를 피하고 약관 동의 기록의 IP 를 지어낼 수 있다. api 는 TRUST_PROXY 에 적은 프록시(이 서버)를 믿을 때만 이 값을 쓴다.
- */
-async function apiHeaders(): Promise<Record<string, string>> {
-  const forwardedFor = (await headers()).get("x-forwarded-for");
-  return { "Content-Type": "application/json", ...(forwardedFor ? { "X-Forwarded-For": forwardedFor } : {}) };
-}
 
 const isTimeout = (e: unknown) => e instanceof Error && (e.name === "TimeoutError" || e.name === "AbortError");
 
