@@ -1,6 +1,8 @@
 # Bundle history
 
 ## 2026-10-19
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `/find` 화면과 `src/lib/forwarded-headers.ts`(회원가입 서버 액션의 `apiHeaders` 를 옮겨 찾기와 함께 쓴다)를 더했다. proxy 가 로그인한 채 `/find` 에 오면 홈으로 보낸다.
+* **Update**: [로그인](/auth.md) — `/find` 아이디·비밀번호 찾기 화면을 만들었다. 아이디 찾기에 요청 제한을 두기로 하고(「횟수 제한 없음」을 고침), 비밀번호 찾기 결과 안내를 하나로 정했다(api 단일 202). 목업 `auth/find.html` 의 비밀번호 탭 「일치 없음」 · 「메일 실패」 상태를 걷었다. 로그인한 채 `/find` 에 오면 자기 홈으로 보낸다. 아이디 찾기 api 는 1팀 요청 중이다(2026-10-19 재영).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #41 재리뷰 참고 반영(영주). 발송 확인창이 서버 액션 호출 자체가 끊겨도(브라우저 ↔ Next · 배포 중 재시작) 오류 화면 대신 「발송됐는지 알 수 없음」으로 보내기를 막고 상세를 다시 읽는다.
 
 ## 2026-10-16
