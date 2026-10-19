@@ -1,6 +1,10 @@
 # Bundle history
 
 ## 2026-10-19
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 회원가입 약관동의의 「내용보기」 팝업도 api 약관(`TERMS_SERVICE` · `PRIVACY_COLLECT`)을 받아 그린다. 목업 문구 사본 `signup/_components/terms.ts` 를 지웠다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 약관 문구를 api 공개 조회(`/public-terms-versions`)로 바꿨다. `/terms` 탭 해시가 약관 유형 코드(`#TERMS_SERVICE` · `#PRIVACY_COLLECT`)가 되고, 본문 Markdown 은 `react-markdown` + `remark-gfm`(`TermsMarkdown`)이 화면 · 팝업 함께 그린다. 목업 생성 파일(`src/lib/terms.ts` 의 TERMS)은 지웠다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 약관 전문 화면 `/terms`(데모 auth/terms.html, 세로 탭 6개 · 해시로 탭 선택)를 더하고 공개 경로에 넣었다. 비로그인 푸터의 이용약관 · 개인정보처리방침이 팝업 대신 `/terms#use` · `#privacy` 로 간다 — 개인정보처리방침은 개인정보 수집·이용 동의(BP 가입용)로 본다(재영). `src/lib/terms.ts` 를 목업 TERMS 일곱 개 전체로 다시 만들었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 로그인 전 실제 화면을 Figma 「로그인전」 디자인으로 바꿨다. `(site)` 틀이 `GuestHeader`·`GuestFooter` 를 쓰고(`SiteNav`·`SiteFooter` 삭제), 홈·`/store-operations`·`/add-on-services`·`/login` 틀을 `design/guest` 샘플과 한 구현으로 공유한다(링크는 `guest-routes.ts`). 두 소개 경로를 공개 경로에 더했다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #41 재리뷰 참고 반영(영주). 발송 확인창이 서버 액션 호출 자체가 끊겨도(브라우저 ↔ Next · 배포 중 재시작) 오류 화면 대신 「발송됐는지 알 수 없음」으로 보내기를 막고 상세를 다시 읽는다.
 
 ## 2026-10-16
