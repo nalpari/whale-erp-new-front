@@ -103,7 +103,12 @@ export function BpSelectDialog({ onClose }: { onClose: () => void }) {
                 rowProps={(r) => ({ onClick: () => setPicked(r) })}
               />
             </div>
-            <Pagination page={query.page} totalPages={totalPages} maxPages={5} onPageChange={(page) => setQuery({ ...query, page })} />
+            <Pagination page={query.page} totalPages={totalPages} maxPages={5} onPageChange={(page) => {
+                // 고른 줄이 보이지 않는 쪽에서 [이동]하지 않게, 검색할 때처럼 고른 것을 비운다.
+                setPicked(null);
+                setQuery({ ...query, page });
+              }}
+            />
           </>
         )}
       </div>
