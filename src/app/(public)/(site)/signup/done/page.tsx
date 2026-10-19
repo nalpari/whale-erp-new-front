@@ -4,6 +4,9 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { GuestButton, GuestPage, GuestVisual, TRIM } from "@/app/design/guest/guest-ui";
 import { HOVER } from "@/app/design/guest/theme";
+import { getSession } from "@/lib/api";
+import { homeOf } from "@/lib/auth-routes";
+import { startSessionFromSignup } from "../actions";
 import { parseSignupDone, remainingSignupDoneSeconds, SIGNUP_DONE_COOKIE } from "../signup-done-cookie";
 import { Countdown } from "./countdown";
 
@@ -18,15 +21,25 @@ export const metadata: Metadata = {
 // 블로커#2). 쿠키가 없으면(가입하지 않고 바로 들어왔거나 10분이 지났거나 값이 깨진 경우) 로그인 화면으로 보낸다 —
 // 명세 S-UUBGOD(「토큰이 만료됐으면 로그인 화면으로 보낸다」). 가입하지 않은 사람에게 「가입을 환영합니다」를 보이지 않는다.
 // 가입 안내 메일은 api 가 보낸다(EMAIL_SIGNUP_DONE — 메일 설정이 없는 환경에선 건너뛴다).
-// 「웨일ERP 시작하기」와 「로그인 화면」은 로그인(/login)으로 간다. 관리자 웹 로그인은 아이디의 대소문자를 구분하므로,
-// 여기 보이는 아이디(api 가 소문자로 정규화한 값) 그대로 들어와야 한다.
+// 「웨일ERP 시작하기」는 비밀번호 없이 자동 로그인한다(startSessionFromSignup, 2026-10-16) — 쿠키의
+// signupToken(10분)으로 홈까지 간다. 10분이 지났거나 거절됐으면 로그인(/login)으로 보낸다. 「로그인 화면」
+// 글자 링크는 다른 계정 세션이 남아 있으면(가입 전부터 로그인해 있던 경우) 그 세션의 홈으로 바꾼다 —
+// /login 그대로 두면 proxy.ts의 "로그인한 채 /login 에 오면 자기 홈"에 걸려, 가입한 아이디로 들어가려고
+// 눌렀는데 설명 없이 옛 계정 홈으로 돌아간다(2026-10-16, site-nav.tsx 의 LOGIN 과 같은 문제). 세션이 없으면
+// 그대로 /login 이고, 거기서 가입한 아이디로 손수 들어와야 한다 — 관리자 웹 로그인은 아이디의 대소문자를
+// 구분하므로 여기 보이는 아이디(api 가 소문자로 정규화한 값) 그대로 들어와야 한다.
 // 모양은 docs/demo/src/pages/auth/signup-done.mjs(design/guest/sign-up/complete 를 옮긴 것)와 같다(2026-10-15).
 export default async function SignupDonePage() {
   const raw = (await cookies()).get(SIGNUP_DONE_COOKIE)?.value;
   const value = parseSignupDone(raw);
   if (!value) redirect("/login");
-  const { tradeName, loginId, email, issuedAt } = value;
+  const { tradeName, loginId, email, issuedAt, signupToken } = value;
   const remainingSeconds = remainingSignupDoneSeconds(issuedAt);
+  // signupToken 을 .bind 로 서버 액션에 미리 묶는다 — hidden input 에 담으면 httpOnly 쿠키 값이 클라이언트
+  // DOM 에 그대로 드러난다. bind 는 Next 가 토큰을 암호화해 넣어 화면에는 보이지 않는다(2026-10-16).
+  const startSession = startSessionFromSignup.bind(null, signupToken);
+  const session = await getSession();
+  const loginLinkHref = session ? homeOf(session.roleTypeCode) : "/login";
 
   return (
     <GuestPage flush>
@@ -50,16 +63,16 @@ export default async function SignupDonePage() {
                 가입 안내 메일을 <strong className="font-semibold text-guest-ink">{email}</strong>로 보냈습니다.
               </p>
             </div>
-            <div className="grid w-[280px]">
-              <GuestButton tone="navy" href="/login" arrow tall>
+            <form action={startSession} className="grid w-[280px]">
+              <GuestButton tone="navy" submit arrow tall>
                 웨일ERP 시작하기
               </GuestButton>
-            </div>
+            </form>
             <p className="w-full rounded-[6px] bg-guest-card px-[32px] py-[24px] text-[16px] leading-[1.4] text-guest-navy">
               이 화면은 <Countdown initialSeconds={remainingSeconds} /> 뒤에 닫힙니다.
               <br />
               시간이 지나면{" "}
-              <Link href="/login" className={`font-semibold underline underline-offset-[3px] hover:text-guest-ink ${HOVER}`}>
+              <Link href={loginLinkHref} className={`font-semibold underline underline-offset-[3px] hover:text-guest-ink ${HOVER}`}>
                 로그인 화면
               </Link>
               에서 가입한 아이디로 들어오세요.
