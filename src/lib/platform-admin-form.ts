@@ -1,4 +1,4 @@
-// 플랫폼 관리자 등록 · 수정 입력칸 — 검사와 요청 만들기. 패널(src/app/platform/system/admins/)에서 뺀 순수 함수라
+// 플랫폼 관리자 등록 · 수정 입력칸 — 검사와 요청 만들기. 패널(src/app/platform-admins/)에서 뺀 순수 함수라
 // node --test 로 검사한다(platform-admin-form.test.ts).
 // 규칙은 api(platform-admin-format.ts · save-platform-admin.dto.ts)와 같다. api 가 다시 막으므로 화면은 저장 전에 칸 아래 먼저 알리기만 한다.
 import type { AdminStatus, CreatePlatformAdminInput, PlatformAdminDetail, UpdatePlatformAdminInput } from "./platform-admins";

@@ -34,10 +34,10 @@ const SVC = {
       ["MN000009", 2, "급여명세서 관리", "/staff/payrolls", 1],
       ["MN000010", 2, "근무스케줄 관리", "/staff/schedules", 1],
       ["MN000011", 1, "환경설정", "", 1],
-      ["MN000012", 2, "BP 관리자 관리", "/settings/admins", 1],
-      ["MN000013", 2, "BP 권한 그룹 관리", "/settings/roles", 1],
-      ["MN000014", 2, "BP 공통코드 관리", "/settings/codes", 1],
-      ["MN000015", 2, "BP 휴일 관리", "/settings/holidays", 1],
+      ["MN000012", 2, "BP 관리자 관리", "/bp-admins", 1],
+      ["MN000013", 2, "BP 권한 그룹 관리", "/bp-role-groups", 1],
+      ["MN000014", 2, "BP 공통코드 관리", "/bp-code-groups", 1],
+      ["MN000015", 2, "BP 휴일 관리", "/bp-holidays", 1],
     ],
   },
   plat: {
@@ -45,7 +45,7 @@ const SVC = {
     src: [
       ["MN000201", 1, "회원관리", "", 0],
       ["MN000202", 2, "회원 정보 관리", "", 0],
-      ["MN000203", 1, "BP 마스터 계정 관리", "/platform/bp", 1],
+      ["MN000203", 1, "BP 마스터 계정 관리", "/bp-masters", 1],
       ["MN000204", 1, "서비스정산관리", "", 0],
       ["MN000205", 2, "부가서비스 주문 내역", "", 0],
       ["MN000206", 2, "부가서비스 정산", "", 0],
@@ -55,11 +55,11 @@ const SVC = {
       ["MN000210", 2, "쿠폰 관리", "", 0],
       ["MN000211", 2, "포인트 관리", "", 0],
       ["MN000212", 1, "시스템관리", "", 1],
-      ["MN000213", 2, "플랫폼 관리자 관리", "/platform/system/admins", 1],
-      ["MN000214", 2, "플랫폼 권한 관리", "/platform/system/roles", 1],
-      ["MN000215", 2, "플랫폼 메뉴 관리", "/platform/system/menus", 1],
-      ["MN000216", 2, "플랫폼 공통코드 관리", "/platform/system/codes", 1],
-      ["MN000217", 2, "플랫폼 휴일 관리", "/platform/system/holidays", 1],
+      ["MN000213", 2, "플랫폼 관리자 관리", "/platform-admins", 1],
+      ["MN000214", 2, "플랫폼 권한 관리", "/platform-role-groups", 1],
+      ["MN000215", 2, "플랫폼 메뉴 관리", "/platform-menus", 1],
+      ["MN000216", 2, "플랫폼 공통코드 관리", "/code-groups", 1],
+      ["MN000217", 2, "플랫폼 휴일 관리", "/public-holidays", 1],
       ["MN000218", 1, "커뮤니티관리", "", 1],
       ["MN000219", 2, "공지사항", "/platform/community/notices", 1],
       ["MN000220", 2, "FAQ", "/platform/community/faq", 1],
@@ -80,9 +80,9 @@ const SVC = {
 
 // 서비스 하나의 트리 + 오른쪽 칸(메뉴 상세·수정 / 신규 메뉴 등록 / 위치 옮기기)
 // 목업처럼 등록과 수정 모두 오른쪽 칸에서 한다 — 따로 열리는 패널이 없다. 칸 바꾸기는 아래 MENU_SCRIPT 가 한다.
-// 메뉴 코드는 서비스를 가리지 않고 가장 큰 번호의 다음을 쓴다(목업 규칙).
-const NEXT_CODE = `MN${String(Math.max(...Object.values(SVC).flatMap((s) => s.src.map((r) => +r[0].slice(2)))) + 1).padStart(6, "0")}`;
-const EG = { erp: ["예: 근무 교대 요청", "/staff/…"], plat: ["예: 플랫폼 배치 관리", "/platform/system/…"], resv: ["예: 예약 알림 설정", "/reservations/…"] };
+// 메뉴 코드는 서비스를 가리지 않고 가장 큰 번호의 다음을 저장할 때 매긴다(api) — 등록 양식에는 미리 보이지 않는다(2026-10-16).
+const NEXT_CODE = "자동 채번";
+const EG = { erp: ["예: 근무 교대 요청", "예: /shift-requests"], plat: ["예: 플랫폼 배치 관리", "예: /platform-batches"], resv: ["예: 예약 알림 설정", "예: /reservation-alerts"] };
 // 갈 수 없는 쪽·작성 중에 누를 수 없는 버튼은 흐리게(1팀 버튼에 비활성 모양이 없어 덧붙인다)
 const dim = (b) => b.replace('class="', 'class="disabled:pointer-events-none disabled:opacity-40 ');
 const sideHead = (title, lvl, extra = "") =>
@@ -173,7 +173,7 @@ function treeTab(key, s) {
         `<span data-f="root" hidden></span>`,
       ),
     ) +
-    ui.formRow(ui.field(`메뉴 코드 ${help("자동 채번")}`, ro(NEXT_CODE)), ui.field("메뉴 순서", ui.textField({ value: "", readonly: true, "data-f": "order" }))) +
+    ui.formRow(ui.field(`메뉴 코드 ${help("자동 채번")}`, ui.textField({ value: "", placeholder: "저장할 때 매깁니다", readonly: true })), ui.field("메뉴 순서", ui.textField({ value: "", readonly: true, "data-f": "order" }))) +
     nameFields("", "", true, `new-${key}`, true) +
     `<div class="flex justify-end gap-[6px]">${ui.button("취소", { variant: "off", "data-cancel": true })}${ui.button("저장", { "data-save": true })}</div>` +
     `</section>`;
@@ -186,7 +186,7 @@ function treeTab(key, s) {
     )}${table}${
       s.count > nodes.length ? help(`… 외 ${s.count - nodes.length}개 메뉴 · 목업 표본에서 생략`) : ""
     }</section>` +
-    `<div class="flex w-[440px] shrink-0 flex-col" data-side="${key}" data-roots="${sibs(null).length}" data-next="${NEXT_CODE}">` +
+    `<div class="flex w-[464px] shrink-0 flex-col" data-side="${key}" data-roots="${sibs(null).length}" data-next="${NEXT_CODE}">` +
     nodes.map(detailOf).join("") +
     empty +
     form +

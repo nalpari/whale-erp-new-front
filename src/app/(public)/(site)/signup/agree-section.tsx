@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { CHECKBOX } from "@/app/design/guest/guest-form";
 import { HOVER } from "@/app/design/guest/theme";
-import { TERMS } from "./_components/terms";
 import { TermsDialog } from "./_components/terms-dialog";
 
 export type AgreeValue = { useAgreed: boolean; privacyAgreed: boolean };
@@ -21,7 +20,7 @@ export function AgreeSection({ value, onChange }: { value: AgreeValue; onChange:
   const setAll = (checked: boolean) => onChange({ useAgreed: checked, privacyAgreed: checked });
 
   return (
-    <section className="flex flex-col gap-[24px] border-t border-[#ebebeb] pt-[32px]">
+    <section className="flex flex-col gap-[24px]">
       <h2 className="text-[20px] leading-[1.4] font-semibold text-[#111]">약관동의</h2>
       <div className="flex flex-col gap-[18px] text-[16px] leading-[1.5] font-medium text-[#5e697b]">
         <label className="flex items-center gap-[8px] text-guest-ink">
@@ -62,8 +61,8 @@ export function AgreeSection({ value, onChange }: { value: AgreeValue; onChange:
         </div>
       </div>
 
-      <TermsDialog open={openDialog === "use"} onClose={() => setOpenDialog(null)} doc={TERMS.use} />
-      <TermsDialog open={openDialog === "privacy"} onClose={() => setOpenDialog(null)} doc={TERMS.privacy} />
+      <TermsDialog open={openDialog === "use"} onClose={() => setOpenDialog(null)} termsTypeCode="TERMS_SERVICE" />
+      <TermsDialog open={openDialog === "privacy"} onClose={() => setOpenDialog(null)} termsTypeCode="PRIVACY_COLLECT" />
     </section>
   );
 }

@@ -3,7 +3,7 @@ import type { ServiceCode } from "./browser-storage";
 import type { AdminMenu } from "./session";
 
 /** 화면이 권한을 묻는 메뉴 코드(api 메뉴 시드). 업무 API 도 이 코드로 메뉴 권한을 판정한다. */
-export const MENU_CODE = { platformAdmins: "MN000213", platformRoles: "MN000214", platformCodes: "MN000216", stores: "MN000002", staffMembers: "MN000005" } as const;
+export const MENU_CODE = { platformAdmins: "MN000213", platformRoles: "MN000214", platformMenus: "MN000215", platformCodes: "MN000216", stores: "MN000002", staffMembers: "MN000005", todos: "MN000026" } as const;
 export type MenuCode = (typeof MENU_CODE)[keyof typeof MENU_CODE];
 export type MenuAction = keyof AdminMenu["permission"];
 
@@ -27,7 +27,7 @@ export function menusOf(menus: AdminMenu[], service: ServiceCode): AdminMenu[] {
 
 // shortcut: 알림 템플릿 관리는 api 메뉴 데이터에 아직 없어(1팀 전달 사항 14번) 플랫폼 서비스에서 임시로 열고 헤더에도 공통코드 관리 다음에 넣는다.
 // api 에 메뉴 행이 생기면 이 상수와 쓰는 곳(isAllowed · serviceOfPath · admin-header)을 지운다. 메뉴에 이미 있으면 따로 더하지 않는다.
-export const PENDING_PLATFORM_MENU = { name: "알림 템플릿 관리", url: "/platform/notification-templates", after: "/platform/system/codes" };
+export const PENDING_PLATFORM_MENU = { name: "알림 템플릿 관리", url: "/platform/notification-templates", after: "/code-groups" };
 
 const isUnder = (pathname: string, url: string) => pathname === url || pathname.startsWith(`${url}/`);
 

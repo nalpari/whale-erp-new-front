@@ -11,13 +11,15 @@ export const SIGNUP_DONE_PATH = "/signup/done";
 
 // issuedAt(심은 시각, epoch ms)은 완료 화면의 남은 시간 표시(countdown.tsx)에만 쓴다 — 실제 만료는
 // 쿠키 자체의 Max-Age(SIGNUP_DONE_MAX_AGE)가 정하므로, 이 값이 지어낸 값이어도 보안에 영향은 없다.
-export type SignupDoneValue = { tradeName: string; loginId: string; email: string; issuedAt: number };
+// signupToken 은 api 의 가입 응답을 그대로 담는다 — 「웨일ERP 시작하기」(actions.ts 의 startSessionFromSignup)가
+// 비밀번호 없이 로그인 접속으로 바꾼다. 쿠키가 httpOnly 라 클라이언트 JS·DOM 에는 보이지 않는다(2026-10-16).
+export type SignupDoneValue = { tradeName: string; loginId: string; email: string; issuedAt: number; signupToken: string };
 
 export function isSignupDoneValue(v: unknown): v is SignupDoneValue {
   const o = v as Partial<Record<keyof SignupDoneValue, unknown>> | null;
   return typeof o === "object" && o !== null && !Array.isArray(o)
     && typeof o.tradeName === "string" && typeof o.loginId === "string" && typeof o.email === "string"
-    && typeof o.issuedAt === "number";
+    && typeof o.issuedAt === "number" && typeof o.signupToken === "string";
 }
 
 // 손상됐거나 모양이 틀린 쿠키는 없는 것으로 취급한다(session.ts 의 parseSession 처럼). 모양을 보지 않으면

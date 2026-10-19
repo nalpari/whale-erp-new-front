@@ -1,4 +1,4 @@
-// 플랫폼 공통코드 데이터 접근(/platform/system/codes). api 는 whale-erp-api `/code-groups` 다.
+// 플랫폼 공통코드 데이터 접근(/code-groups). api 는 whale-erp-api `/code-groups` 다.
 // api 는 관리자 토큰(플랫폼 관리자 PM · PA)만 받는다 — 토큰은 authHeaders() 가 붙인다(로그인 전에는 개발용 토큰).
 // 타입은 손으로 짓지 않고 api 의 openapi.json 에서 만든 것(api-types.generated.ts)을 쓴다.
 import type { components } from "./api-types.generated";
