@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-19
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 발송 흐름 정정(2026-10-19 재영). 저장하면 곧바로 보내 상세의 「발송」 버튼을 뺐다 — 발송 대기 · 서명 대기는 「재발송」과 「수정」(당사자 정보), 수정 요청은 「수정」(계약서 전체, CTR-19). 저장 · 고침 뒤 가입 초대 알림톡이 실패하면(api 502 + 계약 ID) 그 계약 상세로 옮겨 `?send=` 안내를 띄운다(`sendFailedTarget` · `sendNoticeOf`). 작성 · 수정 요청 · 당사자 정보 수정의 안내 문구를 「저장하면 곧바로 보낸다」로 고쳤다. api-types 를 api charmeleon(main + 이 변경) openapi 로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #41 재리뷰 참고 반영(영주). 발송 확인창이 서버 액션 호출 자체가 끊겨도(브라우저 ↔ Next · 배포 중 재시작) 오류 화면 대신 「발송됐는지 알 수 없음」으로 보내기를 막고 상세를 다시 읽는다.
 
 ## 2026-10-16

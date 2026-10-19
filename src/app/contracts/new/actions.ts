@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { ApiError, getSession, request } from "@/lib/api";
+import { sendFailedTarget } from "../[contractId]/send-model";
 import { inProgressOf, type CreateContractBody, type SaveResult } from "./contract-form-model";
 
 // 경로에 넣는 id — 1..2147483647 정수만. 서버 액션은 누구나 직접 부를 수 있어 TS 타입이 막아 주지 않는다.
@@ -12,6 +13,7 @@ const isContractId = (id: unknown): id is number => Number.isInteger(id) && (id 
  * 근로계약서 초안 저장. 성공하면 목록으로 간다. 실패하면 화면에 보일 문장을 돌려준다 —
  * api 의 400 · 404 · 409 문장(만 19세 미만, 같은 번호로 재직 중 등)을 그대로 쓴다. 같은 점포에 진행 중 계약이
  * 있으면(409 CONTRACT_IN_PROGRESS) 그 목록도 돌려줘 화면이 대체할지 묻는다(WHALEERP-129).
+ * 초안 저장은 곧바로 보낸다(2026-10-19 재영) — 저장은 됐는데 가입 초대 알림톡이 실패하면(502) 그 계약 상세로 옮겨 알린다.
  */
 export async function createContract(body: CreateContractBody): Promise<SaveResult> {
   return save("/contracts", "POST", body);
@@ -35,6 +37,8 @@ async function save(path: string, method: "POST" | "PUT", body: CreateContractBo
   } catch (e) {
     if (e instanceof ApiError) {
       if (e.status === 401) return { error: "로그인이 필요합니다" };
+      const sendFailed = sendFailedTarget(e.status, e.body);
+      if (sendFailed) redirect(sendFailed);
       const inProgress = e.status === 409 ? inProgressOf(e.body) : undefined;
       return inProgress ? { error: e.message, inProgress } : { error: e.message };
     }

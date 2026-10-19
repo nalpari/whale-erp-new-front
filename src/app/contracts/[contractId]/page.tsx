@@ -7,13 +7,14 @@ import { StatusBadge } from "../columns";
 import { formatPhone, type ContractDetail } from "../new/contract-form-model";
 import { documentNoticeOf } from "./document-notice";
 import { SendContractButton } from "./send-button";
-import { isWorkerEditable } from "./worker/worker-model";
+import { sendNoticeOf } from "./send-model";
 import { insuranceText, kstDateTime, payDayText, probationText, weeklyHoursOf, workDayLines } from "./detail-format";
 
 type Status = Parameters<typeof StatusBadge>[0]["status"];
 
-// 상태마다 위쪽에 서는 버튼. 발송 대기는 「발송」, 서명 대기는 「재발송」(WHALEERP-136, 가입 초대 알림톡).
-// 만료 재발송(WHALEERP-153) · 새 계약은 아직 API 가 없어 비활성으로 둔다. 거부 · 종료는 버튼이 없다.
+// 상태마다 위쪽에 서는 버튼(CTR-19, 2026-10-19 재영). 보내기는 저장할 때 곧바로 한다 — 「발송」 버튼은 없다.
+// 발송 대기 · 서명 대기는 「재발송」과 「수정」(당사자 정보), 수정 요청은 「수정」(계약서 전체). 만료 재발송(WHALEERP-153) ·
+// 새 계약은 아직 API 가 없어 비활성으로 둔다. 거부 · 종료는 버튼이 없다.
 const PENDING: Partial<Record<Status, string>> = {
   EXPIRED: "재발송",
   SIGNED: "새 계약",
@@ -23,7 +24,8 @@ const PENDING: Partial<Record<Status, string>> = {
 // 주휴일 · 급여 지급 방식 · 수습(정직원)도 보인다(데모 확인 2026-10-15).
 export default async function ContractDetailPage({ params, searchParams }: PageProps<"/contracts/[contractId]">) {
   const { contractId: raw } = await params;
-  const documentNotice = documentNoticeOf((await searchParams).document);
+  const query = await searchParams;
+  const documentNotice = documentNoticeOf(query.document);
   const contractId = Number(raw);
   if (!Number.isInteger(contractId) || contractId < 1) notFound();
 
@@ -52,6 +54,8 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
   }
 
   const status = (c?.status ?? null) as Status | null;
+  // 저장 · 고침 뒤 가입 초대 알림톡이 실패해 이 화면으로 왔다(?send=)
+  const sendNotice = sendNoticeOf(query.send, status);
   const statusCell = (s: string | null): ReactNode => (s ? <StatusBadge status={s as Status} label={labelOf(statuses, s)} /> : "-");
   const buttons: ReactNode =
     // 임시저장 삭제는 이어 쓰기 화면에만 둔다 — 삭제는 임시저장일 때만 할 수 있다.
@@ -61,20 +65,18 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
       </Button>
     ) : (
       <>
-        {/* 직원이 수정을 요청했다 — 계약서를 고치면 발송 대기로 돌아가 다시 보낸다(WHALEERP-125 · 126) */}
+        {(status === "PENDING_SEND" || status === "PENDING_SIGNATURE") && <SendContractButton contractId={contractId} />}
+        {/* 직원이 수정을 요청했다 — 계약서 전체를 고치면 곧바로 서명 대기로 다시 보낸다(WHALEERP-125 · 126) */}
         {status === "CORRECTION_REQUESTED" && (
           <Button variant="soft" href={`/contracts/${contractId}/edit`}>
-            계약서 수정
+            수정
           </Button>
         )}
-        {/* 날인 전 근로자 정보(이름 · 번호 · 생년월일 · 성별 · 외국인 여부) — 본인 대조 값 */}
-        {isWorkerEditable(status) && (
-          <Button variant="soft" href={`/contracts/${contractId}/worker`}>
-            근로자 정보 수정
-          </Button>
-        )}
+        {/* 날인 전 당사자 정보(이름 · 번호 · 생년월일 · 성별 · 외국인 여부) — 본인 대조 값. 저장하면 다시 보낸다 */}
         {(status === "PENDING_SEND" || status === "PENDING_SIGNATURE") && (
-          <SendContractButton contractId={contractId} resend={status === "PENDING_SIGNATURE"} />
+          <Button variant="soft" href={`/contracts/${contractId}/worker`}>
+            수정
+          </Button>
         )}
         {status && PENDING[status] && (
           <Button variant="soft" disabled title="준비 중">
@@ -150,6 +152,11 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
               {buttons}
               <Button href="/contracts">목록</Button>
             </div>
+            {sendNotice && (
+              <p role="alert" className="rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] font-semibold text-erp-off">
+                {sendNotice}
+              </p>
+            )}
             {documentNotice && (
               <p role="alert" className="rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] font-semibold text-erp-off">
                 {documentNotice}

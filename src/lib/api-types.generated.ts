@@ -298,6 +298,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/admin/signup-session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 가입 완료 화면의 「웨일ERP 시작하기」. 비밀번호 없이 signupToken(가입 응답, 10분)으로 로그인 접속을
+         *     낸다. 토큰이 만료·위조됐거나 그 사이 계정 상태가 바뀌면 401 · 403 — front 는 로그인 화면으로 보낸다.
+         */
+        post: operations["AdminAuthController_signupSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/admin/logout": {
         parameters: {
             query?: never;
@@ -868,7 +888,10 @@ export interface paths {
         };
         get: operations["ContractsController_list"];
         put?: never;
-        /** 근로계약서 초안 저장 — 미가입 직원 레코드와 발송 대기 계약을 만든다 */
+        /**
+         * 근로계약서 초안 저장 — 직원 레코드와 계약을 만들고 곧바로 보낸다(2026-10-19 재영). 계정이 없는 번호면 가입 초대
+         *     알림톡과 발송 대기, 계정이 있는 번호면 서명 대기(앱 알림은 아직 없다). 임시저장은 보내지 않는다.
+         */
         post: operations["ContractsController_create"];
         delete?: never;
         options?: never;
@@ -907,8 +930,9 @@ export interface paths {
         /** 작성 화면을 다시 채울 값 — 임시저장 이어 쓰기 */
         get: operations["ContractsController_findOne"];
         /**
-         * 임시저장 이어 쓰기. 폼 전체를 다시 보낸다. isTemporarySave 를 빼면 초안 저장(발송 대기)으로 넘어간다.
-         *     직원이 수정을 요청한 계약(수정 요청)도 고친다 — 고치면 발송 대기로 돌아가고, 임시저장은 할 수 없다(400).
+         * 임시저장 이어 쓰기. 폼 전체를 다시 보낸다. isTemporarySave 를 빼면 초안 저장으로 넘어가 곧바로 보낸다(POST 와 같다).
+         *     직원이 수정을 요청한 계약(수정 요청)도 고친다 — 고쳐 저장하면 곧바로 서명 대기 · 새 기한으로 다시 보내고(번호를 계정이
+         *     없는 번호로 고쳤으면 가입 초대 · 발송 대기), 임시저장은 할 수 없다(400).
          */
         put: operations["ContractsController_update"];
         post?: never;
@@ -933,8 +957,9 @@ export interface paths {
         options?: never;
         head?: never;
         /**
-         * 날인 전 근로자 정보 수정(WHALEERP-125 · 126). 발송 대기 · 서명 대기 · 수정 요청 계약의 이름 · 번호 · 생년월일 ·
-         *     성별 · 외국인 여부를 고친다. 서명 대기 · 수정 요청이면 발송 대기로 돌아가 다시 보낸다(서명 기한은 비운다).
+         * 날인 전 당사자 정보 수정(WHALEERP-125 · 126, CTR-28). 발송 대기 · 서명 대기 · 수정 요청 계약의 이름 · 번호 · 생년월일 ·
+         *     성별 · 외국인 여부를 고친다. 저장하면 곧바로 새 서명 기한으로 다시 보내고 앞서 나간 링크는 무효다 — 가입 초대면
+         *     발송 대기, 앱으로 받는 직원이면 서명 대기.
          */
         patch: operations["ContractsController_updateWorker"];
         trace?: never;
@@ -983,8 +1008,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * 발송(발송 대기 → 서명 대기) · 재발송(서명 대기 그대로, 새 링크 · 새 기한). 계정이 없는 직원에게 가입 초대 알림톡을
-         *     보낸다 — 링크 30일, 서명 기한도 발송일로부터 30일.
+         * 재발송 — 발송 대기(가입 초대를 받지 못함) · 서명 대기에서 가입 초대 알림톡을 새 링크 · 새 서명 기한(30일)으로 다시
+         *     보낸다. 상태는 그대로이고 앞서 나간 링크는 무효다. 앱으로 받는 직원(가입 · 계정 있음)은 앱 알림이 아직 없어 409.
          */
         post: operations["ContractSendController_send"];
         delete?: never;
@@ -1441,6 +1466,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/leads/{leadId}/reply-mail/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 저장된 지금 답변을 문의자 이메일로 다시 보낸다. 답변완료만, 같은 도입문의는 1분에 한 번. SMTP 가 실패해도 200 이고
+         *     결과(`FAILED`)를 돌려준다 — 상세의 마지막 발송 결과에도 보통 같은 값이 남는다. 메일 발송 설정이 없으면 503.
+         */
+        post: operations["LeadsAdminController_resendReplyMail"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/leads/{leadId}/internal-memo": {
         parameters: {
             query?: never;
@@ -1765,6 +1810,12 @@ export interface components {
              * @description 갱신 토큰은 새로 주지 않는다. 쓰던 것의 새 만료 시각이다.
              */
             refreshTokenExpiresAt: string;
+        };
+        AdminSignupSessionDto: {
+            /** @description AdminSignupService.signup 이 가입 끝에 낸 10분짜리 토큰(signup.response.dto.ts 의 signupToken). */
+            signupToken: string;
+            /** @description 브라우저를 구분하는 값 — 로그인과 같다. 같은 값으로 다시 부르면 그 브라우저의 이전 세션만 종료된다. */
+            deviceInformation?: string;
         };
         CodeValueDto: {
             /** @description 상세코드. 저장 · 전송 값. 예: KB */
@@ -3576,22 +3627,20 @@ export interface components {
             items: components["schemas"]["LeadListItemDto"][];
             total: number;
         };
+        /**
+         * @description 마지막 답변 메일 결과(#597). 실패면 「답변 메일 다시 보내기」로 다시 보낸다. null 이면 보낸 적 없거나(시각도 null)
+         *     결과를 아직 모른다(시각만 있음 — 보내는 중이거나 결과를 남기지 못함).
+         * @enum {string}
+         */
+        ReplyMailResult: "SUCCEEDED" | "FAILED";
         LeadResponseDto: {
             interests: components["schemas"]["LeadInterest"][];
             status: components["schemas"]["InquiryStatus"];
-            leadId: number;
-            /** @description 문의자 이름 */
-            contactName: string;
-            phone: string;
-            /** @description 업종(공통코드 INDUSTRY 값) */
-            industryCode: string;
-            /** @description 업종 직접 입력 — 업종이 기타일 때 */
-            industryDetail: string | null;
             /**
-             * Format: date-time
-             * @description 접수 일시
+             * @description 마지막 답변 메일 결과(#597). 실패면 「답변 메일 다시 보내기」로 다시 보낸다. null 이면 보낸 적 없거나(시각도 null)
+             *     결과를 아직 모른다(시각만 있음 — 보내는 중이거나 결과를 남기지 못함).
              */
-            createdAt: string;
+            replyMailResult: components["schemas"]["ReplyMailResult"] | null;
             email: string;
             /** @description 도입 예정 시기(공통코드 값) */
             planPeriodCode: string | null;
@@ -3620,6 +3669,11 @@ export interface components {
             repliedAt: string | null;
             repliedBy: number | null;
             repliedByName: string | null;
+            /**
+             * Format: date-time
+             * @description 마지막으로 답변 메일을 보내려 한 시각. 보낸 적 없으면 null.
+             */
+            replyMailAttemptedAt: string | null;
             /** @description 운영자 내부 메모. 문의자에게 보이지 않는다. */
             internalMemo: string | null;
             /** @description 상담 완료일(YYYY-MM-DD) — 이날부터 1년 뒤 파기 */
@@ -3629,6 +3683,19 @@ export interface components {
              * @description 최근 수정 일시
              */
             updatedAt: string;
+            leadId: number;
+            /** @description 문의자 이름 */
+            contactName: string;
+            phone: string;
+            /** @description 업종(공통코드 INDUSTRY 값) */
+            industryCode: string;
+            /** @description 업종 직접 입력 — 업종이 기타일 때 */
+            industryDetail: string | null;
+            /**
+             * Format: date-time
+             * @description 접수 일시
+             */
+            createdAt: string;
         };
         LeadStateResponseDto: {
             status: components["schemas"]["InquiryStatus"];
@@ -3644,6 +3711,14 @@ export interface components {
             updatedAt: string;
             /** @description 문의자에게 회신할 답변. 평문이고 20,000자까지. */
             reply: string;
+        };
+        LeadReplyMailResponseDto: {
+            replyMailResult: components["schemas"]["ReplyMailResult"];
+            /**
+             * Format: date-time
+             * @description 보내려 한 시각. 같은 도입문의는 이 시각부터 1분이 지나면 다시 보낼 수 있다.
+             */
+            replyMailAttemptedAt: string;
         };
         SaveInternalMemoDto: {
             /** @description 메모. 2,000자까지. null · 빈 문자열 · 공백만 보내면 지운다. 키는 빼먹을 수 없다 — 빠진 키로 메모가 지워지지 않게. */
@@ -4159,6 +4234,29 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminRefreshResponseDto"];
+                };
+            };
+        };
+    };
+    AdminAuthController_signupSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSignupSessionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminLoginResponseDto"];
                 };
             };
         };
@@ -5815,14 +5913,21 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(같은 점포 진행 중 계약 — contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP(다른 점포 근무 시간 겹침, 초안 저장만) · 대체할 계약을 다른 요청이 먼저 고침 */
+            /** @description 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(같은 점포 진행 중 계약 — contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP(다른 점포 근무 시간 겹침, 초안 저장만) · 대체할 계약을 다른 요청이 먼저 고침 · SEND_PHONE_NOT_MOBILE(가입 초대인데 휴대폰 번호가 아님) */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 같은 번호의 다른 저장이 길어져 시간 초과(잠시 뒤 다시) */
+            /** @description 저장했지만 가입 초대 알림톡이 실패(본문 contractId): SEND_FAILED(나가지 않아 보내기 직전으로 되돌림 — status, 새 계약 · 임시저장에서 넘긴 것은 임시저장) · SEND_UNCONFIRMED(접수 여부 모름 — 상세를 다시 읽을 것) */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같은 번호의 다른 저장이 길어져 시간 초과(잠시 뒤 다시) · 가입 초대를 보낼 수 없음(직원 앱 주소 STAFF_APP_URL · 대체 문자 발신번호 BIZPPURIO_SMS_FROM 없음, 가입 초대 템플릿 꺼짐 — 저장하지 않음) */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -5981,14 +6086,21 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 임시저장 · 수정 요청이 아님 · 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 */
+            /** @description 임시저장 · 수정 요청이 아님 · 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 · SEND_PHONE_NOT_MOBILE(가입 초대인데 휴대폰 번호가 아님) */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 같은 번호의 다른 저장이 길어져 시간 초과(잠시 뒤 다시) */
+            /** @description 저장했지만 가입 초대 알림톡이 실패(본문 contractId): SEND_FAILED(나가지 않아 보내기 직전으로 되돌림 — status, 새 계약 · 임시저장에서 넘긴 것은 임시저장) · SEND_UNCONFIRMED(접수 여부 모름 — 상세를 다시 읽을 것) */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같은 번호의 다른 저장이 길어져 시간 초과(잠시 뒤 다시) · 가입 초대를 보낼 수 없음(직원 앱 주소 STAFF_APP_URL · 대체 문자 발신번호 BIZPPURIO_SMS_FROM 없음, 가입 초대 템플릿 꺼짐 — 저장하지 않음) */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -6082,14 +6194,21 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description CONTRACT_STATUS_CONFLICT(발송 대기 · 서명 대기 · 수정 요청이 아님) · 새 번호로 이 점포에 재직 중 · CONTRACT_IN_PROGRESS(새 번호의 같은 점포 진행 중 계약 — replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 */
+            /** @description CONTRACT_STATUS_CONFLICT(발송 대기 · 서명 대기 · 수정 요청이 아님) · 새 번호로 이 점포에 재직 중 · CONTRACT_IN_PROGRESS(새 번호의 같은 점포 진행 중 계약 — replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 · SEND_PHONE_NOT_MOBILE(가입 초대인데 휴대폰 번호가 아님) */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 같은 번호의 다른 저장이 길어져 시간 초과(잠시 뒤 다시) */
+            /** @description 저장했지만 가입 초대 알림톡이 실패(본문 contractId): SEND_FAILED(나가지 않아 보내기 직전으로 되돌림 — status, 새 계약 · 임시저장에서 넘긴 것은 임시저장) · SEND_UNCONFIRMED(접수 여부 모름 — 상세를 다시 읽을 것) */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같은 번호의 다른 저장이 길어져 시간 초과(잠시 뒤 다시) · 가입 초대를 보낼 수 없음(직원 앱 주소 STAFF_APP_URL · 대체 문자 발신번호 BIZPPURIO_SMS_FROM 없음, 가입 초대 템플릿 꺼짐 — 저장하지 않음) */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -6225,7 +6344,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description { contractId, status: PENDING_SIGNATURE, sentAt, signDeadlineAt } */
+            /** @description { contractId, status(그대로 — PENDING_SEND · PENDING_SIGNATURE), sentAt, signDeadlineAt } */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -6246,14 +6365,14 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description CONTRACT_STATUS_CONFLICT(발송 대기 · 서명 대기가 아님) · SEND_CHANNEL_NOT_READY(기존 계정 — 앱 알림 준비 전) · SEND_PHONE_NOT_MOBILE(휴대폰 번호가 아님) · 다른 요청이 먼저 고침 */
+            /** @description CONTRACT_STATUS_CONFLICT(발송 대기 · 서명 대기가 아님) · SEND_CHANNEL_NOT_READY(가입한 직원 · 계정이 있는 번호 — 앱 알림 준비 전) · SEND_PHONE_NOT_MOBILE(휴대폰 번호가 아님) · 다른 요청이 먼저 고침 */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description SEND_FAILED(나가지 않음 — 거절 · 토큰 단계 · 요청 전 오류, 되돌렸고 다시 보낼 수 있음) · SEND_UNCONFIRMED(접수 여부 모름 또는 되돌리기 실패 — 상세를 다시 읽을 것) */
+            /** @description SEND_FAILED(나가지 않음 — 거절 · 토큰 단계 · 요청 전 오류, 되돌렸고 다시 보낼 수 있음, 본문 contractId · status) · SEND_UNCONFIRMED(접수 여부 모름 또는 되돌리기 실패 — 상세를 다시 읽을 것) */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -7765,6 +7884,55 @@ export interface operations {
             };
             /** @description 그사이 다른 운영자가 저장함 */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LeadsAdminController_resendReplyMail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadReplyMailResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 도입문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 답변완료가 아니거나, 1분 안에 이미 보냄 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메일 발송 설정(MAIL_*) 없음 */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

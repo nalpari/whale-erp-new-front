@@ -1,4 +1,4 @@
-// 발송 · 재발송 실패를 화면이 다룰 모양으로 바꾼다(front #41 리뷰). 서버 액션과 테스트가 함께 쓴다.
+// 재발송 · 저장 뒤 보내기 실패를 화면이 다룰 모양으로 바꾼다(front #41 리뷰). 서버 액션 · 상세와 테스트가 함께 쓴다.
 
 /** 실패 결과. recheck 면 api 가 이미 쓰고 보냈을 수 있다 — 확인창의 보내기를 막고 상세를 다시 읽는다(두 번 가지 않게) */
 export type SendFailure = { ok: false; error: string; code?: string; recheck: boolean };
@@ -18,4 +18,27 @@ export function sendFailureOf(status: number | null, code: string | undefined, m
   if (status === null || ((status === 502 || status === 504) && !code)) return { ok: false, error: SEND_UNKNOWN, recheck: true };
   const recheck = code === "SEND_UNCONFIRMED" || (status === 409 && (!code || code === "CONTRACT_STATUS_CONFLICT"));
   return { ok: false, error: message, ...withCode, recheck };
+}
+
+/**
+ * 저장하면 곧바로 보낸다(2026-10-19 재영). 저장 · 고침은 끝났는데 가입 초대 알림톡이 실패하면 api 가 502 와 계약 ID 를
+ * 준다 — 그 계약 상세로 옮겨 알린다(새 계약은 임시저장으로 되돌아가 있어, 작성 화면에서 다시 저장하면 한 벌 더 생긴다).
+ * 쿼리에는 정해진 이름(failed · unconfirmed)만 싣는다.
+ */
+export function sendFailedTarget(status: number, body: unknown): string | null {
+  if (status !== 502) return null;
+  const { code, contractId } = (body ?? {}) as { code?: unknown; contractId?: unknown };
+  const kind = code === "SEND_FAILED" ? "failed" : code === "SEND_UNCONFIRMED" ? "unconfirmed" : null;
+  if (!kind || typeof contractId !== "number" || !Number.isInteger(contractId) || contractId < 1 || contractId > 2_147_483_647) return null;
+  return `/contracts/${contractId}?send=${kind}`;
+}
+
+/** 상세 위쪽 안내(?send=). 되돌아간 상태가 임시저장이면 다시 저장하라고, 아니면 재발송하라고 한다 */
+export function sendNoticeOf(raw: unknown, status: string | null): string | null {
+  if (raw === "unconfirmed")
+    return "저장했지만 가입 초대 알림톡이 접수됐는지 알 수 없습니다. 직원에게 받았는지 확인한 뒤 재발송해 주세요 — 다시 보내면 두 번 갈 수 있습니다";
+  if (raw !== "failed") return null;
+  return status === "DRAFT"
+    ? "가입 초대 알림톡을 보내지 못해 임시저장으로 두었습니다. 휴대전화번호를 확인하고 이어 쓰기에서 다시 저장해 주세요"
+    : "고친 내용은 저장했지만 가입 초대 알림톡을 보내지 못했습니다. 휴대전화번호를 확인하고 재발송해 주세요";
 }
