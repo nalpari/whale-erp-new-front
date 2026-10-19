@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-19
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #51 2차 블로커 반영. 이 화면이 든 메뉴를 미사용 상위 아래로 옮기면 확인을 받는다(login-info 트리에서 빠져 화면으로 되돌릴 수 없다). 502 · 503 · 504 는 처리됐는지 모름으로 보고 등록 양식을 닫는다(중복 등록 방지). 1뎁스 예외의 api 변경을 main 기준 브랜치(wigglytuff)로 옮겨 그 openapi 로 생성 타입을 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [시스템관리](/system.md) — front #51 머지 블로커 반영. main 병합(`MENU_CODE` 합침, api-types 를 borobudur openapi 로 다시 만듦). 메뉴 URL 1뎁스 검사를 등록과 URL 을 바꾼 수정에만 걸고 그대로 둔 1팀 시드 URL 은 통과시킨다 — 바꾸면 실제 라우트와 어긋나 그 화면이 막혔다. 이 화면 메뉴의 URL 을 바꾸면 확인을 받는다. 등록 응답을 못 받으면 양식을 닫아 중복 등록을 막는다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 메뉴 관리에서 옮기기가 api 400 · 409 로 거절되면(화면 트리가 낡음) 최신 트리를 다시 받는다. 전에는 응답 없음 · 404 때만 받아, 새로고침 전까지 같은 이동이 계속 거절됐다. 응답을 못 받았을 때는 「그대로」라고 단정하지 않고 확인을 청한다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [시스템관리](/system.md) — 플랫폼 메뉴 관리의 메뉴 URL 을 등록 · 수정 모두 1뎁스 한 구간(`/staff-content`)만 받게 했다(`menu-form.ts` 의 `validateMenuForm`). api DTO 도 같은 규칙으로 바꿔(borobudur) 생성 타입을 다시 만들었다. 목업 · 데모의 URL 예시도 1뎁스로 바꿨다.
