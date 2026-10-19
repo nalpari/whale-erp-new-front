@@ -13,13 +13,11 @@ export const HOME: Record<ServiceCode, string> = { WHALE_ERP: "/home", PLATFORM:
 export const BP_SWITCH_PATH = "/bp-switch";
 
 /**
- * BP 이동 화면 주소. 바로가기 · BP 선택 팝업은 이것으로만 만든다(읽는 쪽은 bpOfSwitchUrl).
- * bpCode 는 그 BP 를 서버에서 찾을 때의 검색어다 — 상호 · 코드는 주소를 믿지 않고 서버에서 받는다. 자기 BP 로 돌아갈 때는 없다.
+ * BP 이동 화면 주소. BP 선택 팝업은 이것으로만 만든다(읽는 쪽은 bpOfSwitchUrl).
+ * bpCode 는 그 BP 를 서버에서 찾을 때의 검색어다 — 상호 · 코드는 주소를 믿지 않고 서버에서 받는다.
  */
-export function bpSwitchUrl(bpCodeId: number, bpCode?: string): string {
-  const query = new URLSearchParams({ bp: String(bpCodeId) });
-  if (bpCode) query.set("bpCode", bpCode);
-  return `${BP_SWITCH_PATH}?${query}`;
+export function bpSwitchUrl(bpCodeId: number, bpCode: string): string {
+  return `${BP_SWITCH_PATH}?${new URLSearchParams({ bp: String(bpCodeId), bpCode })}`;
 }
 
 /**

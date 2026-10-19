@@ -4,7 +4,7 @@ import { useState, type ReactNode } from "react";
 import { GlobalHeader, ServiceLinks, StoreSelect, UserPop, type HeaderMenu, type UserPopItem } from "@/components/common";
 import { logout } from "@/app/actions";
 import type { Scope, ServiceCode } from "@/lib/browser-storage";
-import { bpSwitchUrl, findMenu, PENDING_PLATFORM_MENU } from "@/lib/menus";
+import { findMenu, HOME, PENDING_PLATFORM_MENU } from "@/lib/menus";
 import type { AccountBp, AdminStore } from "@/lib/session";
 import { BpSelectDialog } from "./bp-select-dialog";
 import { useAccount, useCodes, useCurrentBp, useMenus, useScope, useService, useStores } from "./session-gate";
@@ -60,13 +60,13 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
 
 // 서비스 바로가기. BP · 가맹 계정은 늘 자기 BP 의 웨일ERP 다.
 // 플랫폼 계정의 웨일ERP 는 BP 선택 팝업이다 — ERP 탭에서 눌러도 다시 열어 다른 BP 를 고르게 한다(고른 BP 는 새 탭).
-// 플랫폼관리는 ERP 탭이면 자기 BP 로 BP 이동 화면을 거쳐 이 탭을 플랫폼으로 돌린다. 클라이언트 이동으로는 탭 준비가 다시 돌지 않아 전체 로드로 간다.
+// 플랫폼관리는 ERP 탭이면 그 탭은 두고 플랫폼을 새 탭으로 연다 — 웨일ERP 가 고른 BP 를 새 탭으로 여는 것과 같다.
+// 같은 탭을 플랫폼으로 바꾸면 앞서 본 ERP 화면이 뒤로 가기 기록에 남아, 뒤로 갈 때마다 「접근 권한이 없는 메뉴」로 막힌다.
+// noopener — 새 탭이 이 탭의 sessionStorage(ERP · 고른 BP)를 물려받지 않아, 주소(/platform)대로 자기 BP 의 플랫폼으로 열린다.
 function serviceTargets(bp: AccountBp, service: ServiceCode, openBpSelect: () => void) {
-  if (!bp.isPlatform) return { erp: "/home", platform: "/platform" };
-  // 탭 준비(SessionGate)를 다시 돌리려고 일부러 전체 로드한다(router.push 로는 준비가 돌지 않는다).
-  // replace — 이 탭은 플랫폼이 되므로, 지금 ERP 화면이 뒤로 가기에 남으면 「접근 권한이 없는 메뉴」로 막힌다. 그 앞의 ERP 기록은 남는다.
-  const toPlatform = () => location.replace(bpSwitchUrl(bp.bpCodeId));
-  return { erp: openBpSelect, platform: service === "PLATFORM" ? "/platform" : toPlatform };
+  if (!bp.isPlatform) return { erp: "/home", platform: HOME.PLATFORM };
+  const openPlatform = () => window.open(HOME.PLATFORM, "_blank", "noopener");
+  return { erp: openBpSelect, platform: service === "PLATFORM" ? HOME.PLATFORM : openPlatform };
 }
 
 // 범위 선택기 — 전체 · 직영 · 가맹 · 점포 하나 중 하나(okf/home.md). 점포가 없는 유형은 고를 것이 없어 뺀다.

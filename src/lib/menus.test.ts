@@ -101,8 +101,8 @@ test("menuPermissionOf: 다른 서비스 탭의 메뉴와 없는 코드는 false
 test("bpSwitchUrl · bpOfSwitchUrl: 만든 주소를 읽으면 같은 BP 다", () => {
   const read = (href: string) => bpOfSwitchUrl(new URL(href, "http://x"));
   assert.deepEqual(read(bpSwitchUrl(17, "BP000017")), { bpCodeId: 17, bpCode: "BP000017" });
-  // 플랫폼관리 바로가기 — 자기 BP 로 돌아갈 때는 검색어가 없다
-  assert.deepEqual(read(bpSwitchUrl(1)), { bpCodeId: 1, bpCode: null });
+  // 검색어 없이 손으로 친 주소도 BP 는 읽는다(그 BP 를 찾을 수 없어 SessionGate 가 안내한다)
+  assert.deepEqual(read("/bp-switch?bp=1"), { bpCodeId: 1, bpCode: null });
 });
 
 test("bpOfSwitchUrl: ?bp= 는 BP 이동 화면의 것만, 숫자일 때만 받는다", () => {
