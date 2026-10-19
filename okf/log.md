@@ -1,6 +1,11 @@
 # Bundle history
 
 ## 2026-10-19
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #52 리뷰 반영: `/terms` 는 목록 응답에 `items` 배열이 없거나 목록이 비면 안내로 가고(로그), 본문 일부만 받으면 탭 위에 「일부 약관을 불러오지 못했습니다.」를 한 줄 둔다(정리는 순수 함수 `settleTerms`, 테스트 포함). 비로그인 링크 표가 모두 공개 경로인지 테스트한다. 회원가입 단락의 「웨일ERP 시작하기」 설명을 실제 동작(`signup-session` 자동 로그인)으로 고쳤다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합: PR #44 의 로그인 중 「홈으로」(Login 자리에 자기 홈)를 `GuestHeader` 로 옮겼다 — `(site)/layout.tsx` 가 세션을 읽어 넘기고, 디자인 샘플은 늘 Login 이다. `site-nav.tsx` 는 지운 채로 둔다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 동의를 받는 약관 팝업(강제 비밀번호 변경 `TermsLink` · 회원가입 「내용보기」)도 api 약관(`TERMS_SERVICE` · `PRIVACY_COLLECT`)을 열 때 받아 `TermsMarkdown` 으로 그린다. 캐시 없이 사용 중 버전을 받아 보인 버전과 동의 기록 버전이 같다. 목업 문구 사본 `signup/_components/terms.ts` 를 지웠다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 약관 전문 화면 `/terms`(데모 auth/terms.html, 왼쪽 세로 탭 6개 · 고른 탭은 해시 = 약관 유형 코드)를 더하고 공개 경로에 넣었다. 목록 · 본문은 api 공개 조회 `/public-terms-versions` 에서 받아(한 시간 캐시) Markdown 을 `react-markdown` + `remark-gfm`(`TermsMarkdown`)으로 그리고, 본문 하나가 실패하면 그 탭만 뺀다. 비로그인 푸터의 이용약관 · 개인정보처리방침은 팝업 대신 `/terms#TERMS_SERVICE` · `#PRIVACY_COLLECT` 로 간다 — 개인정보처리방침은 개인정보 수집·이용 동의(BP 가입용)로 본다(재영). 목업 문구 사본(`src/lib/terms.ts` 의 TERMS)은 지웠다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 로그인 전 실제 화면을 Figma 「로그인전」 디자인으로 바꿨다. `(site)` 틀이 `GuestHeader`·`GuestFooter` 를 쓰고(`SiteNav`·`SiteFooter` 삭제), 홈·`/store-operations`·`/add-on-services`·`/login` 틀을 `design/guest` 샘플과 한 구현으로 공유한다(링크는 `guest-routes.ts`). 두 소개 경로를 공개 경로에 더했다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #51 2차 블로커 반영. 이 화면이 든 메뉴를 미사용 상위 아래로 옮기면 확인을 받는다(login-info 트리에서 빠져 화면으로 되돌릴 수 없다). 502 · 503 · 504 는 처리됐는지 모름으로 보고 등록 양식을 닫는다(중복 등록 방지). 1뎁스 예외의 api 변경을 main 기준 브랜치(wigglytuff)로 옮겨 그 openapi 로 생성 타입을 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [시스템관리](/system.md) — front #51 머지 블로커 반영. main 병합(`MENU_CODE` 합침, api-types 를 borobudur openapi 로 다시 만듦). 메뉴 URL 1뎁스 검사를 등록과 URL 을 바꾼 수정에만 걸고 그대로 둔 1팀 시드 URL 은 통과시킨다 — 바꾸면 실제 라우트와 어긋나 그 화면이 막혔다. 이 화면 메뉴의 URL 을 바꾸면 확인을 받는다. 등록 응답을 못 받으면 양식을 닫아 중복 등록을 막는다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 메뉴 관리에서 옮기기가 api 400 · 409 로 거절되면(화면 트리가 낡음) 최신 트리를 다시 받는다. 전에는 응답 없음 · 404 때만 받아, 새로고침 전까지 같은 이동이 계속 거절됐다. 응답을 못 받았을 때는 「그대로」라고 단정하지 않고 확인을 청한다.
