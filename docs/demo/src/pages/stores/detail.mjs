@@ -32,10 +32,11 @@ export default ({ A, R }) => {
       ],
       ["점포코드", code],
       ["점포 연락처", phone],
-      // 한 줄 「[우편번호 04104] 기본주소(볼드), 상세주소」(2026-10-19 점검 — 두 줄이던 걸 한 줄로).
+      // 한 줄 「[ 우편번호 04104 ] 기본주소(볼드), 상세주소」 — 괄호·라벨은 라벨 색, 번호는 기존 데이터 색(검정)이고
+      // 괄호 안쪽은 한 칸씩 띄운다(2026-10-19 점검 — 두 줄이던 걸 한 줄로, 번호 색·괄호 안쪽 띄어쓰기는 뒤이은 요청으로 다시 손봄).
       [
         "점포 주소",
-        `<span><span class="mr-[10px] text-erp-label">[우편번호 03991]</span><b class="font-semibold">서울 마포구 동교로 256</b>, 1층</span>`,
+        `<span><span class="mr-[10px]"><span class="text-erp-label">[ 우편번호</span> 03991 <span class="text-erp-label">]</span></span><b class="font-semibold">서울 마포구 동교로 256</b>, 1층</span>`,
         true,
       ],
       // 위도 · 경도 · 출퇴근 위치 적용 여부 각각 라벨과 같은 회색 글자를 앞에 두고, 데이터와 한 단 더 떨어뜨렸다
@@ -79,7 +80,7 @@ export default ({ A, R }) => {
     ["업태 · 종목", ui.detailValues(["음식점업", "커피전문점"])],
     [
       "사업자주소",
-      `<span><span class="mr-[10px] text-erp-label">[우편번호 03991]</span><b class="font-semibold">서울 마포구 동교로 256</b>, 1층</span>`,
+      `<span><span class="mr-[10px]"><span class="text-erp-label">[ 우편번호</span> 03991 <span class="text-erp-label">]</span></span><b class="font-semibold">서울 마포구 동교로 256</b>, 1층</span>`,
     ],
   ]);
 
