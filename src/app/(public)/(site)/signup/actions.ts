@@ -7,6 +7,7 @@ import {
   apiError,
   ApiError,
   baseUrl,
+  getSession,
   LOGIN_KEY_COOKIE,
   loginKeyCookie,
   request,
@@ -206,11 +207,23 @@ export async function verifyBusiness(input: BizVerificationInput): Promise<BizVe
 // Next 가 암호화하지 않고(클로저로 붙잡은 변수만 암호화한다) 페이지의 RSC payload · 점진적 향상용 hidden
 // input 에 평문으로 실린다. 읽자마자(성공 · 실패와 상관없이) 쿠키를 지워 같은 토큰으로 두 번 못 쓰게 한다
 // — 로그인 성공·로그아웃 뒤에도 안 지워지면 10분 안에는 같은 브라우저의 다음 사람이 버튼 하나로 비밀번호
-// 없이 들어갈 수 있었다(2026-10-19 코드리뷰).
+// 없이 들어갈 수 있었다(2026-10-19 코드리뷰). 지울 때도 심을 때와 같은 path(SIGNUP_DONE_PATH)를 줘야
+// 한다 — 이름·도메인·경로가 모두 같아야 브라우저가 같은 쿠키로 보고 덮어쓴다. path 없이 지우면 Next 가
+// 기본값 "/" 로 지우는 쿠키를 새로 내보낼 뿐이라, "/signup/done" 으로 심은 진짜 쿠키는 그대로 남는다
+// (2026-10-19 코드리뷰 재검토).
 export async function startSessionFromSignup(): Promise<void> {
   const jar = await cookies();
   const value = parseSignupDone(jar.get(SIGNUP_DONE_COOKIE)?.value);
-  jar.delete(SIGNUP_DONE_COOKIE);
+  jar.delete({ name: SIGNUP_DONE_COOKIE, path: SIGNUP_DONE_PATH });
+
+  // 이미 다른 계정으로 로그인돼 있으면 그 세션을 api 에서도 끝낸다(logout() 과 같은 이유) — 쿠키만
+  // 지우면 그 계정의 갱신 토큰이 마지막 사용부터 최대 1시간 api 에 그대로 남는다(2026-10-19 코드리뷰).
+  const existing = await getSession();
+  if (existing)
+    await request("/auth/admin/logout", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${existing.accessToken}` },
+    }).catch((e: unknown) => console.warn("[signup] 기존 세션 로그아웃 api 실패 — 갱신 토큰 만료(최대 1시간)까지 남는다", e));
 
   let res: AdminLoginResponse | null = null;
   if (value) {
