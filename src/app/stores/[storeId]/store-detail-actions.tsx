@@ -3,12 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button, ConfirmDialog, Radio, useToast } from "@/components/common";
-import type { EnumValue } from "@/lib/enums";
+import { labelOf, type EnumValue } from "@/lib/enums";
 import { formOfStore, toUpdateStoreInput } from "@/lib/store-form";
 import type { StoreDetail, StoreStatus, StoreTransitions } from "@/lib/store-types";
 import { useCodeLabel } from "@/components/site/code-label";
 import { usePagePermission } from "@/components/site/session-gate";
-import { closeBlockText, missingForOperationText, nextStatuses } from "@/lib/store-view";
+import { closeBlockText, finalEuro, nextStatuses } from "@/lib/store-view";
 import { deleteStoreAction, getStoreTransitionsAction, updateStoreAction, type ActionFailure } from "../actions";
 import { StoreStatusBadge } from "../store-parts";
 
@@ -97,7 +97,7 @@ export function StoreDetailActions({
       const result = await updateStoreAction(store.storeId, input).catch(UNKNOWN("상태 변경"));
       if (!result.ok) return fail(result.status, result.message);
       setDialog(null);
-      toast(`점포상태를 ${statusLabel(target)}(으)로 바꿨습니다.`);
+      toast(`점포상태를 ${statusLabel(target)}${finalEuro(statusLabel(target))} 바꿨습니다.`);
       router.refresh();
     });
 
@@ -162,7 +162,7 @@ export function StoreDetailActions({
           open={dialog === "status"}
           title="상태 변경"
           wide
-          confirmLabel={target ? `${statusLabel(target)}(으)로 변경` : "변경"}
+          confirmLabel={target ? `${statusLabel(target)}${finalEuro(statusLabel(target))} 변경` : "변경"}
           busy={busy}
           confirmDisabled={!allowed}
           onConfirm={handleStatusChange}
@@ -180,11 +180,39 @@ export function StoreDetailActions({
               </div>
             )}
             {target === "OPERATING" && (
-              <p className={transitions.missingForOperation.length ? "text-erp-off" : "text-erp-label"}>
-                {missingForOperationText(transitions.missingForOperation, requirementLabels) ?? "운영 조건을 모두 채웠습니다."}
-              </p>
+              // 라벨(타이틀)은 상태와 상관없이 기본 글자색 그대로 둔다 — 색은 뒤의 상태 글자에만 준다. 모자라면
+              // 빨강, 다 갖췄으면 기본색 볼드로 "완료"를 강조한다(2026-10-19 점검 — 실사용자 확인). 라벨 한글은
+              // 상세 화면과 같은 GET /enums/StoreOperationRequirement 출처를 쓴다. 목록에 없는 조건(BP_INACTIVE
+              // 등)은 혼자 더 뜨는 모자란 조건 줄로 보여 체크리스트 밖에서 조용히 막히지 않게 한다.
+              <div className="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]">
+                <p className="font-semibold">운영 조건</p>
+                <ul className="mt-[6px] list-disc pl-[18px]">
+                  {(
+                    [
+                      { code: "BUSINESS_VERIFICATION", missingWord: "미인증" },
+                      { code: "COORDINATES", missingWord: "미저장" },
+                    ] as const
+                  ).map(({ code, missingWord }) => {
+                    const missing = transitions.missingForOperation.includes(code);
+                    return (
+                      <li key={code}>
+                        {labelOf(requirementLabels, code)} - {missing ? <span className="text-erp-off">{missingWord}</span> : <b className="font-semibold">완료</b>}
+                      </li>
+                    );
+                  })}
+                  {transitions.missingForOperation
+                    .filter((m) => m !== "BUSINESS_VERIFICATION" && m !== "COORDINATES")
+                    .map((m) => (
+                      <li key={m}>
+                        {labelOf(requirementLabels, m)} - <span className="text-erp-off">미충족</span>
+                      </li>
+                    ))}
+                </ul>
+              </div>
             )}
             {target === "CLOSED" && (
+              // 부가서비스 구독 · 정산 대기 금액은 1차 범위 밖이라 뺐다 — 그 기능을 만들 때 다시 더한다.
+              // 폐점일 안내 문구도 같이 뺐다(2026-10-19 점검 — 실사용자 확인).
               <div className="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]">
                 <p className="font-semibold">폐점 조건</p>
                 <ul className="mt-[6px] list-disc pl-[18px]">
@@ -192,10 +220,7 @@ export function StoreDetailActions({
                     진행 중인 근로계약 <b className="font-semibold">{transitions.inProgressContractCount.toLocaleString("ko-KR")}건</b>
                     {transitions.inProgressContractCount ? " — 정리해야 할 근로계약이 있습니다" : ""}
                   </li>
-                  <li className="text-erp-label">이용 중인 부가서비스 구독 — 1차 범위 밖</li>
-                  <li className="text-erp-label">정산 대기 금액 — 1차 범위 밖</li>
                 </ul>
-                <p className="mt-[10px] text-erp-label">폐점일은 오늘로 정해지고 되돌릴 수 없습니다. 다음 날부터 이 점포에는 BP 휴일이 적용되지 않습니다.</p>
               </div>
             )}
             {failure && <p role="alert" className="text-erp-off">{failure}</p>}
