@@ -207,7 +207,13 @@ export function StoreFormView(props: Props) {
         return { ok: false as const, message: "좌표를 가져오지 못했습니다. 위도 · 경도를 직접 적어 주세요." };
       });
       if (mine !== locateNumber.current) return;
-      if (!result.ok) return setCoordinateNote(result.message);
+      if (!result.ok) {
+        // 좌표를 못 받으면 비워진 채로 남는다 — 선택칸은 막혀도 값은 그대로라 "사용"을 보이면서 저장은 조용히
+        // "미사용"을 보내는 어긋남이 생긴다. 못 받은 바로 이 순간에만 미사용으로 맞춘다(2026-10-19 코드 리뷰
+        // 3차 — 재선택마다 끄던 것과 달리, 좌표가 끝내 안 들어온 걸 확인한 뒤라 되살릴 성공 경로가 없다).
+        setForm((f) => ({ ...f, isLocationApplied: false }));
+        return setCoordinateNote(result.message);
+      }
       setForm((f) => ({ ...f, latitude: String(result.latitude), longitude: String(result.longitude) }));
       clearError("latitude");
       clearError("longitude");
