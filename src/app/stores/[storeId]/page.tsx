@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { notFound } from "next/navigation";
 import { Badge, DetailTable, DetailValues, Tag, type DetailRow } from "@/components/common";
 import { ApiError, getEnum } from "@/lib/api";
@@ -62,20 +63,9 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
   });
 
   const b = store.business;
+  // 대표 이미지 · 점포코드는 표에 두지 않고 제목 줄의 머리 카드로 옮겼다(2026-10-19 점검 — 실사용자 확인,
+  // 디자인 데모 1안 채택). 그만큼 점포 기본정보가 사업자정보와 같은 5행이 된다.
   const basicRows: DetailRow[] = [
-    {
-      label: "대표 이미지",
-      value: store.image ? (
-        <StoreImage size={184} url={store.image.url} name={store.name} />
-      ) : (
-        <span className="flex items-center gap-[10px]">
-          <StoreImage size={48} />
-          {muted("등록한 이미지가 없습니다")}
-        </span>
-      ),
-      multiline: true,
-    },
-    { label: "점포코드", value: store.storeCode },
     { label: "점포 연락처", value: store.phone ? formatPhone(store.phone) : muted("-") },
     { label: "점포주소", value: addressLines(store.zipCode, store.address, store.addressDetail), multiline: true },
     {
@@ -180,10 +170,21 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
               <span className="mr-[10px] text-erp-label">개업일자</span>
               {orDash(b.openDate)}
             </span>,
-            <span key="cat">
+            // DetailValues 는 바로 바깥이 flex 일 때만 한 줄로 늘어선다(dd 또는 이 DetailValues 자체) — 다른
+            // span 으로 한 번 더 감싸면 안쪽 두 값이 세로로 쌓이고 46px 줄 높이에서 잘린다(2026-10-19 코드
+            // 리뷰로 찾음). Fragment 로 감싸 바깥 DetailValues 의 flex 줄에 업태 · 종목 값이 그대로 들어가게 한다.
+            <Fragment key="cat">
               <span className="mr-[10px] text-erp-label">업태 · 종목</span>
-              {b.category || b.item ? <DetailValues items={[b.category ?? "-", b.item ?? "-"]} /> : muted("-")}
-            </span>,
+              {b.category || b.item ? (
+                <span className="inline-flex items-center gap-[10px]">
+                  {b.category || muted("-")}
+                  <span className="h-[11px] w-px bg-[#d9d9d9]" />
+                  {b.item || muted("-")}
+                </span>
+              ) : (
+                muted("-")
+              )}
+            </Fragment>,
           ]}
         />
       ),
@@ -198,11 +199,28 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
     <StoreFrame>
       <StoreCardBody>
         <div className="flex flex-col gap-[12px]">
-          <div className="flex items-center gap-[6px]">
-            <h2 className="flex min-w-0 flex-1 items-center gap-[10px] text-[18px] font-semibold text-erp-ink">
-              <span className="truncate">{store.name}</span>
-            </h2>
-            <StoreDetailActions store={store} backHref={backHref} requirementLabels={requirementLabels} />
+          {/* 대표 이미지 · 점포명 · 점포코드 · 유형 · 상태 · 실행 버튼을 한 머리 카드에 묶는다(2026-10-19 점검 —
+              실사용자 확인, 디자인 데모 1안 채택). 이미지가 없으면 48px 아이콘(목록 카드와 같은 크기)을 그대로
+              쓴다 — 머리 카드 전용 72px 칸 안에 작게 보인다. */}
+          <div className="flex items-center gap-[18px] rounded-[4px] border border-erp-panel-line bg-white p-[18px]">
+            {store.image ? (
+              <StoreImage size={72} url={store.image.url} name={store.name} />
+            ) : (
+              <StoreImage size={48} />
+            )}
+            <div className="flex min-w-0 flex-1 flex-col gap-[8px]">
+              <h2 className="truncate text-[18px] font-semibold text-erp-ink">{store.name}</h2>
+              <div className="flex items-center gap-[8px] text-[14px] font-medium text-erp-label">
+                <span>점포코드 {store.storeCode}</span>
+                <span className="h-[11px] w-px bg-[#d9d9d9]" />
+                <Tag><CodeLabel group="STORE_TYPE" value={store.storeTypeCode} /></Tag>
+                <StoreStatusBadge status={store.storeStatusCode} />
+                {store.closedDate && <span>폐점일 {store.closedDate}</span>}
+              </div>
+            </div>
+            <div className="flex shrink-0 gap-[6px]">
+              <StoreDetailActions store={store} backHref={backHref} requirementLabels={requirementLabels} />
+            </div>
           </div>
           <ImageFailedNotice message={imageFailure} />
           {bpInactive && <NoticeBand title="소속 BP 가 미사용 상태여서 이 업무를 할 수 없습니다." detail="조회만 됩니다. 등록 · 수정 · 상태 변경 · 삭제는 BP 를 다시 사용하면 할 수 있습니다." />}
@@ -212,19 +230,8 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
           {/* 미운영 점포에 "운영으로 바꾸려면 ~ 필요합니다" 띠를 여기 두지 않는다(2026-10-16 디자인 점검으로 뺐다) — 같은
               안내는 상태 변경 팝업(StoreDetailActions)이 이미 운영 조건 체크리스트로 보여준다(2026-10-19 점검 — 실사용자 확인). */}
           <div className="grid grid-cols-2 items-start gap-[24px]">
-            <DetailTable
-              title={
-                <>
-                  점포 기본정보
-                  <span className="ml-[18px] inline-flex items-center gap-[8px] align-middle text-[14px] font-medium text-erp-label">
-                    <Tag><CodeLabel group="STORE_TYPE" value={store.storeTypeCode} /></Tag>
-                    <StoreStatusBadge status={store.storeStatusCode} />
-                    {store.closedDate && <span>폐점일 {store.closedDate}</span>}
-                  </span>
-                </>
-              }
-              rows={basicRows}
-            />
+            {/* 유형 · 상태 배지는 위 머리 카드로 옮겨 여기서는 다시 적지 않는다(2026-10-19 점검). */}
+            <DetailTable title="점포 기본정보" rows={basicRows} />
             <DetailTable
               title={
                 <>

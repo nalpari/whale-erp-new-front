@@ -80,16 +80,18 @@ export function StoreStatusBadge({ status }: { status: StoreStatus }) {
   );
 }
 
-/** 대표 이미지 자리. 주소가 없거나(이미지 없음 · 저장소를 쓸 수 없음) 불러오지 못하면 점포 아이콘이 선다 */
-export function StoreImage({ size, onMuted = false, url, name }: { size: 48 | 184; onMuted?: boolean; url?: string | null; name?: string }) {
-  const sizeClass = size === 48 ? "size-[48px]" : "size-[184px]";
+/** 대표 이미지 자리. 주소가 없거나(이미지 없음 · 저장소를 쓸 수 없음) 불러오지 못하면 점포 아이콘이 선다.
+ * 72 는 상세 제목 줄의 머리 카드 전용(2026-10-19 점검 — 실사용자 확인, 1안 채택) — 목록 카드(48) · 상세 표
+ * 첫 줄(184) 과는 다른 자리라 셋째 크기로 더했다. */
+export function StoreImage({ size, onMuted = false, url, name }: { size: 48 | 72 | 184; onMuted?: boolean; url?: string | null; name?: string }) {
+  const sizeClass = size === 48 ? "size-[48px]" : size === 72 ? "size-[72px]" : "size-[184px]";
   const icon = (
     <span
       role="img"
       aria-label="대표 이미지 없음"
       className={`grid shrink-0 place-items-center rounded-[2px] text-erp-label ${onMuted ? "bg-white" : "bg-erp-thead-bg"} ${sizeClass}`}
     >
-      <LineIcon name="store" size={size === 48 ? 20 : 48} />
+      <LineIcon name="store" size={size === 184 ? 48 : size === 72 ? 28 : 20} />
     </span>
   );
   if (!url) return icon;

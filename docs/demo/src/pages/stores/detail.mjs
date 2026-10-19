@@ -15,26 +15,33 @@ export default ({ A, R }) => {
   const statusId = x.dialogId();
   const histId = x.dialogId();
 
-  const head = ui.sectionHead(
-    name,
-    x.dialogTrigger("상태 변경", statusId, "soft") +
-      f.disabledButton("삭제", "미운영 점포만 삭제할 수 있습니다. 운영을 끝내려면 상태 변경에서 폐점하세요.") +
-      ui.button("수정", { variant: "soft", href: link(R, "stores/edit.html") }) +
-      ui.button("목록", { href: link(R, "stores/index.html") }),
-  );
+  // 대표 이미지 · 점포명 · 점포코드 · 유형 · 상태 · 실행 버튼을 한 머리 카드에 묶는다(2026-10-19 점검 —
+  // 실사용자 확인, 디자인 데모 1안 채택). 그만큼 점포 기본정보 표에서 대표 이미지 · 점포코드가 빠져 사업자정보와
+  // 같은 5행이 된다.
+  const head = `<div class="flex items-center gap-[18px] rounded-[4px] border border-erp-panel-line bg-white p-[18px]">
+    <img src="${A}img/${photo}" alt="${name} 대표 이미지" class="size-[72px] shrink-0 rounded-[2px] object-cover">
+    <div class="flex min-w-0 flex-1 flex-col gap-[8px]">
+      <h2 class="truncate text-[18px] font-semibold text-erp-ink">${name}</h2>
+      <div class="flex items-center gap-[8px] text-[14px] font-medium text-erp-label">
+        <span>점포코드 ${code}</span>
+        <span class="h-[11px] w-px bg-[#d9d9d9]"></span>
+        ${tag(type)}
+        ${ui.badge("on", state)}
+      </div>
+    </div>
+    <div class="flex shrink-0 gap-[6px]">
+      ${x.dialogTrigger("상태 변경", statusId, "soft")}
+      ${f.disabledButton("삭제", "미운영 점포만 삭제할 수 있습니다. 운영을 끝내려면 상태 변경에서 폐점하세요.")}
+      ${ui.button("수정", { variant: "soft", href: link(R, "stores/edit.html") })}
+      ${ui.button("목록", { href: link(R, "stores/index.html") })}
+    </div>
+  </div>`;
 
-  // 점포 기본정보: 실제 앱(page.tsx)과 같은 한 표다 — 대표 이미지는 사이드 칸이 아니라 표의 첫 줄(multiline)이고,
-  // 그 아래로 점포코드 · 점포 연락처 · 점포주소 · 위치정보 · 재직직원 · 변경이력이 이어진다. 네 쪽 표를 <dl> 만
-  // 떼어 나란히 붙이던 이전 방식은 각 <dl> 이 w-full 이라 겹쳐 넓이가 깨졌다(2026-10-19 점검 — 실사용자 확인).
+  // 점포 기본정보: 대표 이미지 · 점포코드는 위 머리 카드로 옮겨 다시 적지 않는다. 그 아래 점포 연락처 ·
+  // 점포주소 · 위치정보 · 재직직원 · 변경이력이 이어진다(2026-10-19 점검 — 실사용자 확인).
   const basic = ui.detailTable(
-    `점포 기본정보<span class="ml-[18px] inline-flex items-center gap-[8px] align-middle text-[14px] font-medium text-erp-label">${tag(type)}${ui.badge("on", state)}</span>`,
+    "점포 기본정보",
     [
-      [
-        "대표 이미지",
-        `<img src="${A}img/${photo}" alt="${name} 대표 이미지" width="184" height="184" class="rounded-[2px] object-cover">`,
-        true,
-      ],
-      ["점포코드", code],
       ["점포 연락처", phone],
       // 한 줄 「[ 우편번호 04104 ] 기본주소(볼드), 상세주소」 — 괄호·라벨은 라벨 색, 번호는 기존 데이터 색(검정)이고
       // 괄호 안쪽은 한 칸씩 띄운다(2026-10-19 점검 — 두 줄이던 걸 한 줄로, 번호 색·괄호 안쪽 띄어쓰기는 뒤이은 요청으로 다시 손봄).
