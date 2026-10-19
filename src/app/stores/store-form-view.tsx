@@ -545,21 +545,23 @@ export function StoreFormView(props: Props) {
             label="점포 주소"
             value={{ zipCode: form.zipCode, address: form.address, addressDetail: form.addressDetail }}
             onChange={(a) => {
-              // [지우기]로 주소를 비우면 그 주소의 좌표도 지우고, 출퇴근 위치 적용 여부도 미사용으로 돌린다
-              // (좌표 없이는 켜 둘 수 없는 값이라, 2026-10-16 점검).
+              // [지우기]로 주소를 비우면 그 주소에서 나온 좌표만 지운다. 출퇴근 위치 적용 여부는 건드리지
+              // 않는다 — 사용자가 끈 적 없는 값인데, 주소를 지웠다가 새로 고르면(handleAddressChoose 는
+              // 좌표만 다시 채우고 이 값은 모른다) 미사용으로 조용히 남는 문제가 있었다(2026-10-19 코드리뷰
+              // 두 번째 라운드 — 처음엔 운영 · 수정 화면만 막았는데 등록 화면과 미운영 상태에 같은 문제가
+              // 그대로 남아 있었다. 애초에 이 값을 건드리지 않는 쪽이 근본 수정이다).
               const cleared = !a.address && Boolean(form.address);
               if (cleared) {
                 locateNumber.current++;
                 setCoordinateNote(null);
               }
-              setForm((f) => ({ ...f, ...a, ...(cleared && { latitude: "", longitude: "", isLocationApplied: false }) }));
+              setForm((f) => ({ ...f, ...a, ...(cleared && { latitude: "", longitude: "" }) }));
               clearError("addressDetail");
             }}
             detailError={errors.addressDetail}
             onChoose={handleAddressChoose}
             // 운영 점포는 위도 · 경도가 있어야 하고 그 좌표는 이 주소에서 나온다 — 비워 둔 채로는 운영 상태를
-            // 유지할 수 없으니 [지우기]를 숨긴다. 새 주소로 바꾸는 것(검색해 고르기)은 그대로 된다(2026-10-19,
-            // 코드리뷰 — 지웠다가 새 주소를 고르면 위치 적용 여부가 미사용으로 남는 문제의 근본 원인을 막는다).
+            // 유지할 수 없으니 [지우기]를 숨긴다. 새 주소로 바꾸는 것(검색해 고르기)은 그대로 된다(2026-10-19).
             hideClear={mode === "edit" && form.storeStatus === "OPERATING"}
           />
           <Stack>
