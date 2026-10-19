@@ -6,7 +6,7 @@ import { getTermsVersionAction } from "@/lib/terms-actions";
 import type { TermsVersionDetail } from "@/lib/terms";
 import { TermsMarkdown } from "./terms-markdown";
 
-// 약관 전문 팝업. 강제 비밀번호 변경 팝업의 약관 재동의가 쓴다(푸터는 약관 전문 화면 /terms 로 간다). 폭 640px — 2026-10-06 피드백. 데모 public.mjs termsDialog 와 같은 모양.
+// 약관 전문 팝업. 강제 비밀번호 변경 팝업의 약관 재동의가 쓴다(푸터는 약관 전문 화면 /terms 로 간다). 폭 640px — 2026-10-06 피드백.
 // 본문은 처음 열 때 api 에서 받는다(server action) — 대부분 열지 않고 동의만 하므로 미리 받지 않는다. 받은 본문은 팝업이 떠 있는 동안 다시 묻지 않는다.
 // 네이티브 <dialog>: Esc·포커스 가두기·바깥 inert 를 브라우저가 맡는다.
 export function TermsLink({ termsTypeCode, children }: { termsTypeCode: string; children: ReactNode }) {

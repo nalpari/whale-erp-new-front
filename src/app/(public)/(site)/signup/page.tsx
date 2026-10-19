@@ -14,8 +14,8 @@ export const metadata: Metadata = {
 // 제출은 whale-erp-api 의 /auth/signup 을 실제로 부른다(api PR #37, bulbasaur 브랜치 — actions.ts 참고).
 export default async function SignupPage() {
   // 세션이 있는 채로도 이 화면을 그대로 연다(다른 계정으로 로그인해 둔 채 새로 가입하는 경우). 그때는
-  // 아래 "이미 계정이 있나요? 로그인"도 guest-header.tsx 의 Login 과 같은 문제가 있다 — 눌러도 proxy.ts의
-  // "로그인한 채 /login 에 오면 자기 홈"에 걸려 설명 없이 자기 홈으로 돌아간다(2026-10-16).
+  // 아래 "이미 계정이 있나요? 로그인"을 그 세션의 홈으로 건다 — 머리말이 Login 대신 「홈으로」를 보이는 것(guest-header.tsx)과
+  // 같은 이유다. /login 그대로면 proxy.ts 의 "로그인한 채 /login 에 오면 자기 홈"에 걸려 설명 없이 자기 홈으로 돌아간다(2026-10-16).
   const session = await getSession();
   const loggedInHomeHref = session ? homeOf(session.roleTypeCode) : undefined;
   return (

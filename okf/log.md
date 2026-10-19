@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-19
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #52 리뷰 반영: `/terms` 는 목록 응답에 `items` 배열이 없거나 목록이 비면 안내로 가고(로그), 본문 일부만 받으면 탭 위에 「일부 약관을 불러오지 못했습니다.」를 한 줄 둔다(정리는 순수 함수 `settleTerms`, 테스트 포함). 비로그인 링크 표가 모두 공개 경로인지 테스트한다. 회원가입 단락의 「웨일ERP 시작하기」 설명을 실제 동작(`signup-session` 자동 로그인)으로 고쳤다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합: PR #44 의 로그인 중 「홈으로」(Login 자리에 자기 홈)를 `GuestHeader` 로 옮겼다 — `(site)/layout.tsx` 가 세션을 읽어 넘기고, 디자인 샘플은 늘 Login 이다. `site-nav.tsx` 는 지운 채로 둔다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 동의를 받는 약관 팝업(강제 비밀번호 변경 `TermsLink` · 회원가입 「내용보기」)도 api 약관(`TERMS_SERVICE` · `PRIVACY_COLLECT`)을 열 때 받아 `TermsMarkdown` 으로 그린다. 캐시 없이 사용 중 버전을 받아 보인 버전과 동의 기록 버전이 같다. 목업 문구 사본 `signup/_components/terms.ts` 를 지웠다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 약관 전문 화면 `/terms`(데모 auth/terms.html, 왼쪽 세로 탭 6개 · 고른 탭은 해시 = 약관 유형 코드)를 더하고 공개 경로에 넣었다. 목록 · 본문은 api 공개 조회 `/public-terms-versions` 에서 받아(한 시간 캐시) Markdown 을 `react-markdown` + `remark-gfm`(`TermsMarkdown`)으로 그리고, 본문 하나가 실패하면 그 탭만 뺀다. 비로그인 푸터의 이용약관 · 개인정보처리방침은 팝업 대신 `/terms#TERMS_SERVICE` · `#PRIVACY_COLLECT` 로 간다 — 개인정보처리방침은 개인정보 수집·이용 동의(BP 가입용)로 본다(재영). 목업 문구 사본(`src/lib/terms.ts` 의 TERMS)은 지웠다.
