@@ -24,7 +24,12 @@ const SIDE_MENUS: { label: string; route: keyof GuestRoutes }[] = [
 // 비로그인 화면 머리말. 스크롤해도 위에 붙어 있다.
 // fixed 가 아니라 sticky 다 — 화면이 1720 보다 좁으면 가로로 스크롤하는데, fixed 는 가로로 따라오지 않아 오른쪽이 잘린다.
 // 맨 위에서는 시안대로 바탕 없이 Billboard 위에 겹치고, 스크롤하면 흰 바탕과 선을 깔아 어두운 섹션 위에서도 글자가 보이게 한다.
-export function GuestHeader() {
+// homeHref: 로그인한 채 실제 비로그인 화면을 열면 (site)/layout.tsx 가 세션의 홈을 넘긴다 — 그때는 Login 대신 「홈으로」다(PR #44).
+// 이 화면들은 로그인 전용이 아니라 세션이 있는 채로도 연다(예: 다른 계정으로 로그인해 둔 채 새로 가입). Login 을 그대로 두면 눌러도
+// proxy.ts 의 "로그인한 채 /login 에 오면 자기 홈"에 걸려 아무 설명 없이 자기 홈으로 돌아가 로그인이 안 되는 것처럼 보인다(2026-10-16).
+// 세션이 있으면 실제로 가는 곳(자기 홈)을 그대로 보인다 — 다른 계정으로 로그인하려면 먼저 로그아웃해야 하는 건 여기서 바꾸지 않는다.
+// 디자인 샘플(design/guest/layout.tsx)은 넘기지 않아 늘 Login 이다.
+export function GuestHeader({ homeHref }: { homeHref?: string }) {
   const pathname = usePathname();
   // 실제 라우트와 디자인 샘플이 이 머리말을 함께 쓴다. 샘플 안에서는 링크도 샘플로 건다(guest-routes.ts).
   const routes = pathname.startsWith(SAMPLE_ROUTES.home) ? SAMPLE_ROUTES : SITE_ROUTES;
@@ -78,10 +83,10 @@ export function GuestHeader() {
         })}
       </nav>
       <div className="flex items-center gap-[34px] text-[20px] font-semibold text-[#999]">
-        <Link href={routes.login} className={`flex items-center gap-[6px] uppercase hover:text-guest-ink ${HOVER}`}>
+        <Link href={homeHref ?? routes.login} className={`flex items-center gap-[6px] uppercase hover:text-guest-ink ${HOVER}`}>
           {/* 아이콘을 마스크로 그려 글자색을 따르게 한다 — 호버하면 글자와 함께 먹색으로 바뀐다(Figma 1:1855). */}
           <span aria-hidden className={`size-[24px] bg-current mask-[url(/guest/user-circle.svg)] mask-contain mask-center mask-no-repeat ${HOVER}`} />
-          Login
+          {homeHref ? "홈으로" : "Login"}
         </Link>
         {SIDE_MENUS.map((menu) => (
           <Link

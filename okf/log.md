@@ -5,6 +5,10 @@
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 약관 문구를 api 공개 조회(`/public-terms-versions`)로 바꿨다. `/terms` 탭 해시가 약관 유형 코드(`#TERMS_SERVICE` · `#PRIVACY_COLLECT`)가 되고, 본문 Markdown 은 `react-markdown` + `remark-gfm`(`TermsMarkdown`)이 화면 · 팝업 함께 그린다. 목업 생성 파일(`src/lib/terms.ts` 의 TERMS)은 지웠다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 약관 전문 화면 `/terms`(데모 auth/terms.html, 세로 탭 6개 · 해시로 탭 선택)를 더하고 공개 경로에 넣었다. 비로그인 푸터의 이용약관 · 개인정보처리방침이 팝업 대신 `/terms#use` · `#privacy` 로 간다 — 개인정보처리방침은 개인정보 수집·이용 동의(BP 가입용)로 본다(재영). `src/lib/terms.ts` 를 목업 TERMS 일곱 개 전체로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 로그인 전 실제 화면을 Figma 「로그인전」 디자인으로 바꿨다. `(site)` 틀이 `GuestHeader`·`GuestFooter` 를 쓰고(`SiteNav`·`SiteFooter` 삭제), 홈·`/store-operations`·`/add-on-services`·`/login` 틀을 `design/guest` 샘플과 한 구현으로 공유한다(링크는 `guest-routes.ts`). 두 소개 경로를 공개 경로에 더했다.
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 리뷰 반영: 직원 상세 TO-DO 영역의 「관리」 · 제목 링크를 MN000026 조회 권한으로 가른다(없으면 글자).
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 직원 상세의 TO-DO 영역을 `GET /staff-members/:id/todos` 로 채우고 「관리」를 `/todos`(MN000026) 에 걸었다(#118, TO-DO 리스트 관리 화면 #116 · #117 과 함께).
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — PR #47 리뷰 반영: 응답에 enum 이 빠져 `getEnum` 이 빈 목록을 주면 받지 못한 것과 같이 근로계약 칸의 계약 유형 · 계약 상태를 「-」로 둔다(`labelsOrNull`). 영문 값이 보이던 경로였다.
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — WHALEERP-184 직원 상세의 근로계약 칸을 채웠다. 가장 최근 계약으로 `GET /contracts/:id` 를 따로 받아 계약 유형 · 기간 · 상태 · 갱신 예정일(종료일 30일 전)을 보이고, 못 받으면 이 칸만 안내 · 「다시 하기」. 최근 발송일은 발송 로그 테이블이 생길 때까지 「-」, 「관리」는 그 계약 상세로 간다(2026-10-19 노영주). 리뷰 반영: 종료일이 지난 체결 완료는 목록처럼 갱신 예정일 「-」. 2차 리뷰 반영: enum 을 못 받아도 칸은 그리고 그 값만 「-」, 403 은 경고 로그, 실패 로그에 상태 코드, 최근 발송일 근거(상세 응답에만 없음)와 「아직 없는 것」의 낡은 두 줄(발송 api · 관리 링크 대상)을 바로잡았다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #41 재리뷰 참고 반영(영주). 발송 확인창이 서버 액션 호출 자체가 끊겨도(브라우저 ↔ Next · 배포 중 재시작) 오류 화면 대신 「발송됐는지 알 수 없음」으로 보내기를 막고 상세를 다시 읽는다.
 
 ## 2026-10-16
