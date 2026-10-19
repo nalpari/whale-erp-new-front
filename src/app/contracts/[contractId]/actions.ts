@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { ApiError, authHeaders, request } from "@/lib/api";
 import { inProgressOf, type SaveResult } from "../new/contract-form-model";
-import { sendFailureOf, type SendFailure } from "./send-model";
+import { saveOutcomeUnknown, sendFailedTarget, sendFailureOf, type SendFailure } from "./send-model";
 import type { WorkerBody } from "./worker/worker-model";
 
 // 경로에 넣는 id — 1..2147483647 정수만. 서버 액션은 누구나 직접 부를 수 있어 TS 타입이 막아 주지 않는다.
@@ -28,7 +28,7 @@ export async function deleteContract(contractId: number): Promise<{ error: strin
 }
 
 /**
- * 날인 전 근로자 정보 수정(WHALEERP-125 · 126). 성공하면 상세로 간다. 실패하면 화면에 보일 문장을 돌려주고, 새 번호로
+ * 날인 전 당사자 정보 수정(WHALEERP-125 · 126). 저장하면 api 가 곧바로 다시 보낸다(2026-10-19 재영). 성공하면 상세로 간다. 실패하면 화면에 보일 문장을 돌려주고, 새 번호로
  * 같은 점포에 진행 중 계약이 있으면(409 CONTRACT_IN_PROGRESS) 그 목록도 돌려줘 화면이 대체할지 묻는다.
  */
 export async function updateWorker(contractId: number, body: WorkerBody): Promise<SaveResult> {
@@ -44,15 +44,22 @@ export async function updateWorker(contractId: number, body: WorkerBody): Promis
   } catch (e) {
     if (e instanceof ApiError) {
       if (e.status === 401) return { error: "로그인이 필요합니다" };
+      // 고친 내용은 저장했는데 다시 보내기(가입 초대 알림톡)가 실패했다 — 상세에서 알린다
+      const sendFailed = sendFailedTarget(e.status, e.body);
+      if (sendFailed) redirect(sendFailed);
+      // 결과를 받지 못했다(코드 없는 502 · 504) — 저장 · 다시 보내기가 됐을 수 있어 같은 폼으로 다시 저장하지 않게 상세로(front #50 리뷰)
+      const code = (e.body as { code?: unknown } | null)?.code;
+      if (saveOutcomeUnknown(e.status, typeof code === "string" ? code : undefined)) redirect(`/contracts/${contractId}?send=unknown`);
       const inProgress = e.status === 409 ? inProgressOf(e.body) : undefined;
       return inProgress ? { error: e.message, inProgress } : { error: e.message };
     }
-    throw e;
+    console.error("당사자 정보 저장 응답을 받지 못함", contractId, e);
+    redirect(`/contracts/${contractId}?send=unknown`);
   }
   redirect(`/contracts/${contractId}`);
 }
 
-/** 발송 · 재발송 결과. 실패면 화면에 보일 문장 · api 의 코드 · 다시 읽어야 하는지(send-model.ts) */
+/** 재발송 결과. 실패면 화면에 보일 문장 · api 의 코드 · 다시 읽어야 하는지(send-model.ts) */
 export type SendContractResult = { ok: true } | SendFailure;
 
 /**
