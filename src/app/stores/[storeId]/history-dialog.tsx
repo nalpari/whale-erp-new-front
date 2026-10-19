@@ -33,9 +33,12 @@ export function HistoryButton({ storeId }: { storeId: number }) {
   const requestNumber = useRef(0);
 
   // 실패하면 옛 줄을 남기지 않는다 — 옛 줄과 오류 띠가 같이 보이면 어느 쪽이 맞는지 헷갈린다(2026-10-16 코드리뷰).
+  // page 는 요청하는 즉시 바꾼다 — 성공할 때만 바꾸면 실패 뒤 [다시 불러오기]가 방금 실패한 쪽이 아니라
+  // 그 앞에 보던 쪽을 다시 받는다(코드 리뷰로 찾음). 실패하는 동안은 data 가 비어 쪽 번호가 화면에 보이지 않는다.
   const load = (next: number) => {
     const mine = ++requestNumber.current;
     setFailure(null);
+    setPage(next);
     startLoading(async () => {
       const result = await getStoreHistoriesAction(storeId, next).catch((error: unknown) => {
         console.error("점포 이력 조회 호출 실패", error);
@@ -46,7 +49,6 @@ export function HistoryButton({ storeId }: { storeId: number }) {
         setData(null);
         return setFailure(result.message);
       }
-      setPage(next);
       setData(result);
     });
   };
