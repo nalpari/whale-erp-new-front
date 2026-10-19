@@ -1,4 +1,4 @@
-// 플랫폼 메뉴 관리 데이터 접근(/platform/system/menus, 메뉴 MN000215). api 는 whale-erp-api `/platform-menus` 다.
+// 플랫폼 메뉴 관리 데이터 접근(/platform-menus, 메뉴 MN000215). api 는 whale-erp-api `/platform-menus` 다.
 // 메뉴 권한(조회 · 등록 · 수정 — 옮기기는 수정)과 플랫폼 계정 여부는 api 가 동작마다 판정한다. 메뉴 삭제는 없다(안 쓰는 메뉴는 미사용).
 // 타입은 손으로 짓지 않고 api 의 openapi.json 에서 만든 것(api-types.generated.ts)을 쓴다.
 import type { components } from "./api-types.generated";

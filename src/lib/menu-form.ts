@@ -47,7 +47,8 @@ export function afterConflict(base: MenuFormBase, form: MenuFormValues, server: 
 /**
  * 노출 메뉴명 1~20자(필수), URL 은 선택 · 200자. URL 은 1뎁스 한 구간만 받는다 — '/' 하나로 시작하는 소문자 · 숫자 · '-'
  * (예: /staff/content 가 아니라 /staff-content). 등록과, 수정에서 URL 을 바꿀 때 건다 — keptUrl(수정 전 URL)과 같으면 건너뛴다.
- * 1팀 시드의 여러 구간 URL 은 실제 화면 주소라, 1팀 메뉴 URL · 라우트를 1뎁스로 옮기기 전까지 그대로 둔 채 이름 · 상태를 고친다.
+ * 1팀 메뉴 10개는 2026-10-19 에 1뎁스로 옮겼지만(api 20261019144438), 3팀 플랫폼 커뮤니티 메뉴(/platform/community/…)와
+ * 사용중지 메뉴(/stores/contract-templates 등)는 아직 여러 구간이다 — 그 URL 을 그대로 둔 채 이름 · 상태를 고칠 수 있게 남겨 둔다.
  * api 서비스(platform-menus.service create · update)와 같은 규칙이다 — 화면에서 먼저 알리고, 화면을 거치지 않은 요청은 api 가 400 으로 막는다.
  */
 export const MENU_NAME_MAX = 20;
