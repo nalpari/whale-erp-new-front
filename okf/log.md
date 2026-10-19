@@ -1,7 +1,8 @@
 # Bundle history
 
 ## 2026-10-19
-* **Update**: [시스템관리](/system.md) — 플랫폼 메뉴 관리의 메뉴 URL 을 등록 · 수정 모두 1뎁스 한 구간(`/staff-content`)만 받게 했다(`menu-form.ts` 의 `validateMenuForm`). api DTO 도 같은 규칙으로 바꿔(borobudur) 생성 타입을 다시 만들었다. 목업 · 데모의 URL 예시도 1뎁스로 바꿨다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 메뉴 관리에서 옮기기가 api 400 · 409 로 거절되면(화면 트리가 낡음) 최신 트리를 다시 받는다. 전에는 응답 없음 · 404 때만 받아, 새로고침 전까지 같은 이동이 계속 거절됐다. 응답을 못 받았을 때는 「그대로」라고 단정하지 않고 확인을 청한다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [시스템관리](/system.md) — 플랫폼 메뉴 관리의 메뉴 URL 을 등록 · 수정 모두 1뎁스 한 구간(`/staff-content`)만 받게 했다(`menu-form.ts` 의 `validateMenuForm`). api DTO 도 같은 규칙으로 바꿔(borobudur) 생성 타입을 다시 만들었다. 목업 · 데모의 URL 예시도 1뎁스로 바꿨다.
 
 ## 2026-10-16
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [시스템관리](/system.md) — 플랫폼 메뉴 관리(MN000215, `/platform/system/menus`) 화면을 더했다. api `/platform-menus`(borobudur 작업분 openapi)로 생성 타입을 다시 만들고, 서비스 탭(`service-tabs.tsx`)과 카드 · 띠(`side-parts.tsx`)를 권한 관리와 같이 쓰게 꺼냈다. system.md 의 「처음 들어오면 서비스 목록」을 2026-10-08 변경대로 고치고 구현 메모를 더했다.
