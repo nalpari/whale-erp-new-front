@@ -461,8 +461,8 @@ export function PayslipReview({
         </Select>
         {failureText}
       </ConfirmDialog>
-      {/* 데모는 「닫기」 하나다. 공통 확인창은 버튼이 늘 둘이라 둘 다 닫기만 한다 */}
-      <ConfirmDialog open={dialog === "preview"} title="직원에게 보이는 급여명세서" confirmLabel="확인" cancelLabel="닫기" onConfirm={close} onCancel={close}>
+      {/* 보여 주기만 해서 확인 하나만 둔다 */}
+      <ConfirmDialog open={dialog === "preview"} title="직원에게 보이는 급여명세서" confirmLabel="확인" cancelLabel={null} onConfirm={close} onCancel={close}>
         <DetailTable
           title={`${payslip.staffName} · ${month}`}
           rows={[

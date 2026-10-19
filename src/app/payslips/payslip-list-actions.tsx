@@ -73,13 +73,13 @@ export function PayslipListActions({
           </p>
         )}
       </ConfirmDialog>
-      {/* 결과 창 — 공통 확인창은 버튼이 늘 둘이라 둘 다 닫기만 한다 */}
+      {/* 결과 창 — 알리기만 해서 확인 하나만 둔다 */}
       <ConfirmDialog
         open={result !== null}
         wide
         title={`${result?.sent.length ?? 0}건 발송, ${result?.failed.length ?? 0}건 실패`}
         confirmLabel="확인"
-        cancelLabel="닫기"
+        cancelLabel={null}
         onConfirm={() => setResult(null)}
         onCancel={() => setResult(null)}
       >
