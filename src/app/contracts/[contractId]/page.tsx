@@ -1,31 +1,20 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
-import {
-  Button,
-  DataTable,
-  DetailTable,
-  DetailValues,
-  GlobalHeader,
-  PageBar,
-  ServiceLinks,
-  StoreSelect,
-  UserPop,
-} from "@/components/common";
-import { NotificationBellSlot } from "@/components/notifications/notification-bell-slot";
+import { Button, DataTable, DetailTable, DetailValues, PageBar } from "@/components/common";
 import { ApiError, getEnum, getSession, request } from "@/lib/api";
 import { labelOf } from "@/lib/enums";
-import { MENUS, STORES, USER_ITEMS } from "../../design/sample";
 import { StatusBadge } from "../columns";
 import { formatPhone, type ContractDetail } from "../new/contract-form-model";
 import { documentNoticeOf } from "./document-notice";
+import { SendContractButton } from "./send-button";
+import { isWorkerEditable } from "./worker/worker-model";
 import { insuranceText, kstDateTime, payDayText, probationText, weeklyHoursOf, workDayLines } from "./detail-format";
 
 type Status = Parameters<typeof StatusBadge>[0]["status"];
 
-// 상태마다 위쪽에 서는 버튼. 재발송 · 새 계약은 아직 API 가 없어 비활성으로 둔다. 거부 · 종료는 버튼이 없다.
+// 상태마다 위쪽에 서는 버튼. 발송 대기는 「발송」, 서명 대기는 「재발송」(WHALEERP-136, 가입 초대 알림톡).
+// 만료 재발송(WHALEERP-153) · 새 계약은 아직 API 가 없어 비활성으로 둔다. 거부 · 종료는 버튼이 없다.
 const PENDING: Partial<Record<Status, string>> = {
-  PENDING_SEND: "초대 재발송",
-  PENDING_SIGNATURE: "재발송",
   EXPIRED: "재발송",
   SIGNED: "새 계약",
 };
@@ -70,11 +59,30 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
       <Button variant="soft" href={`/contracts/${contractId}/edit`}>
         이어 쓰기
       </Button>
-    ) : status && PENDING[status] ? (
-      <Button variant="soft" disabled title="준비 중">
-        {PENDING[status]}
-      </Button>
-    ) : null;
+    ) : (
+      <>
+        {/* 직원이 수정을 요청했다 — 계약서를 고치면 발송 대기로 돌아가 다시 보낸다(WHALEERP-125 · 126) */}
+        {status === "CORRECTION_REQUESTED" && (
+          <Button variant="soft" href={`/contracts/${contractId}/edit`}>
+            계약서 수정
+          </Button>
+        )}
+        {/* 날인 전 근로자 정보(이름 · 번호 · 생년월일 · 성별 · 외국인 여부) — 본인 대조 값 */}
+        {isWorkerEditable(status) && (
+          <Button variant="soft" href={`/contracts/${contractId}/worker`}>
+            근로자 정보 수정
+          </Button>
+        )}
+        {(status === "PENDING_SEND" || status === "PENDING_SIGNATURE") && (
+          <SendContractButton contractId={contractId} resend={status === "PENDING_SIGNATURE"} />
+        )}
+        {status && PENDING[status] && (
+          <Button variant="soft" disabled title="준비 중">
+            {PENDING[status]}
+          </Button>
+        )}
+      </>
+    );
 
   const rows = c
     ? [
@@ -132,57 +140,44 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
   const histories = c?.histories ?? [];
 
   return (
-    <div className="h-[100dvh] overflow-x-auto overflow-y-hidden bg-erp-thead-bg">
-      <div className="flex h-full min-w-[1720px] flex-col">
-        <GlobalHeader
-          menus={MENUS}
-          right={
-            <>
-              <StoreSelect options={STORES} />
-              <ServiceLinks />
-              <NotificationBellSlot />
-              <UserPop name="김지영 (admin)" items={USER_ITEMS} />
-            </>
-          }
-        />
-        <PageBar title="근로계약 관리" />
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
-          <div className="flex flex-1 flex-col gap-[24px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
-            <div className="flex flex-col gap-[12px]">
-              <div className="flex items-center gap-[6px]">
-                <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">근로계약 상세</h2>
-                {buttons}
-                <Button href="/contracts">목록</Button>
-              </div>
-              {documentNotice && (
-                <p role="alert" className="rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] font-semibold text-erp-off">
-                  {documentNotice}
-                </p>
-              )}
-              {c ? (
-                <DetailTable title="계약 내용" rows={rows} />
-              ) : (
-                <p className="text-[14px] font-semibold text-erp-ink">로그인이 필요합니다</p>
-              )}
+    <>
+      <PageBar title="근로계약 관리" />
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
+        <div className="flex flex-1 flex-col gap-[24px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
+          <div className="flex flex-col gap-[12px]">
+            <div className="flex items-center gap-[6px]">
+              <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">근로계약 상세</h2>
+              {buttons}
+              <Button href="/contracts">목록</Button>
             </div>
-            {c && (
-              <div className="flex flex-col gap-[12px]">
-                <h3 className="text-[15px] font-semibold text-erp-ink">상태 변경 이력</h3>
-                <DataTable
-                  columns={[
-                    { header: "일시", width: "w-[160px]", cell: (h) => kstDateTime(h.changedAt) },
-                    { header: "변경 전", width: "w-[140px]", cell: (h) => statusCell(h.fromStatus) },
-                    { header: "변경 후", width: "w-[140px]", cell: (h) => statusCell(h.toStatus) },
-                    { header: "처리 주체", cell: (h) => labelOf(actors, h.actor) },
-                  ]}
-                  rows={histories}
-                  rowKey={(h) => `${h.changedAt}-${h.toStatus}`}
-                />
-              </div>
+            {documentNotice && (
+              <p role="alert" className="rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] font-semibold text-erp-off">
+                {documentNotice}
+              </p>
+            )}
+            {c ? (
+              <DetailTable title="계약 내용" rows={rows} />
+            ) : (
+              <p className="text-[14px] font-semibold text-erp-ink">로그인이 필요합니다</p>
             )}
           </div>
+          {c && (
+            <div className="flex flex-col gap-[12px]">
+              <h3 className="text-[15px] font-semibold text-erp-ink">상태 변경 이력</h3>
+              <DataTable
+                columns={[
+                  { header: "일시", width: "w-[160px]", cell: (h) => kstDateTime(h.changedAt) },
+                  { header: "변경 전", width: "w-[140px]", cell: (h) => statusCell(h.fromStatus) },
+                  { header: "변경 후", width: "w-[140px]", cell: (h) => statusCell(h.toStatus) },
+                  { header: "처리 주체", cell: (h) => labelOf(actors, h.actor) },
+                ]}
+                rows={histories}
+                rowKey={(h) => `${h.changedAt}-${h.toStatus}`}
+              />
+            </div>
+          )}
         </div>
       </div>
-    </div>
+    </>
   );
 }
