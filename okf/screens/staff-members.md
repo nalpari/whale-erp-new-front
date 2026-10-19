@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-19T05:30:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-19T07:10:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -45,11 +45,11 @@ sources:
   - id: contract-box
     resource: ../../src/app/staff-members/[id]/contract-box.tsx
     title: 상세 근로계약 칸 — 계약 상세를 따로 받고 실패하면 이 칸만 안내 · 다시 하기(WHALEERP-184)
-    last_modified: 2026-10-19T05:30:00Z
+    last_modified: 2026-10-19T07:10:00Z
   - id: contract-summary
     resource: ../../src/app/staff-members/[id]/contract-summary.ts
     title: 근로계약 칸 줄 · 갱신 예정일 · 실패 표시 판정
-    last_modified: 2026-10-19T05:30:00Z
+    last_modified: 2026-10-19T07:10:00Z
   - id: password-reset-dialog
     resource: ../../src/app/staff-members/[id]/password-reset-dialog.tsx
     title: 비밀번호 초기화 확인창(WHALEERP-177)
@@ -141,7 +141,7 @@ sources:
   404 · 5xx · 연결 실패는 「근로계약을 불러오지 못했습니다.」 + 「다시 하기」(`router.refresh()` — 페이지를 다시 받고, 다른 칸은 값이 같으면
   그대로 보인다). 지금 근로계약 api 에는 메뉴 권한 검사가 없어 403 은 다른 까닭(직원 앱 토큰 등)으로만 오므로, 화면은 안내만 하고
   서버 로그에 경고를 남긴다. 실패 로그에는 상태 코드를 함께 남긴다.
-* enum(`ContractStatus` · `EmploymentType`)을 받지 못해도 칸은 그린다 — 계약 유형 · 계약 상태만 「-」이고(영문 값을 보이지 않는다)
+* enum(`ContractStatus` · `EmploymentType`)을 받지 못했거나 응답에 그 enum 이 빠져 빈 목록이어도 칸은 그린다 — 계약 유형 · 계약 상태만 「-」이고(영문 값을 보이지 않는다)
   원인은 서버 로그에 남긴다. 이메일 칸의 가입 상태와 같은 방식이다.
 * 줄은 목업대로 계약 유형(`{고용 형태} 근로계약`) · 계약 기간(`시작일 ~ 종료일`, 종료일이 없으면 무기한, 시작일이 없으면 「-」) ·
   계약 상태(근로계약 목록과 같은 배지 `contracts/columns.tsx` StatusBadge + `getEnum("ContractStatus")`) · 최근 발송일 · 갱신 예정일이고, 칸 아래에 「가장 최근 계약 1건만」 안내를 둔다.
