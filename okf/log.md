@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-19
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 버튼 권한을 메뉴 코드 없이 지금 주소로 찾는 `usePagePermission` 을 더했다(`menuOfPath` — 화면이 열리는 판정 `isAllowed` 와 같은 메뉴). 플랫폼 관리자 · 권한 · 메뉴 · 공통코드 관리와 점포 정보 관리(`store-permission.tsx` 포함)에 적용하고, 쓰지 않게 된 `MENU_CODE` 의 platformAdmins · platformRoles · platformCodes · stores 를 지웠다(platformMenus 는 메뉴 관리의 자기 잠금 확인에 남는다). 직원 · TO-DO 화면은 아직 메뉴 코드로 찾는다(`useMenuRole` · `useMenuPermission`). 직원 상세의 TO-DO 링크는 다른 메뉴(MN000026) 권한이라 코드로 남는다. [점포 관리](/stores.md)의 버튼 권한 문장도 주소 기준으로 고쳤다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #54 2차 블로커 반영: 로그아웃(`clearLoginStorage`)이 앞 버전(`whale-erp:v1:`) 저장 키도 지운다. v2 로 올린 뒤 공용 PC 에 v1 로그인 정보(아이디 · 이름 · 이메일 · 메뉴 권한 · 점포)가 남았다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #54 블로커 반영: 브라우저 저장 키 접두를 `whale-erp:v2:` 로 올렸다. 배포 전에 로그인한 세션이 저장된 옛 메뉴 url(`/platform/system/*`)을 계속 써서, 헤더 링크가 404 가 되고 새 주소가 「접근 권한이 없는 메뉴」로 막혔다. 올리면 다음 화면 진입 때 login-info 를 다시 받는다(플랫폼 계정이 다른 BP 로 연 탭은 자기 BP 로 돌아간다).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [시스템관리](/system.md) — api 가 1팀 메뉴 10개의 url 을 한 단계 경로로 바꿔(api #70, `20261019144438_team1_menu_single_level_urls`) 플랫폼 화면 라우트 넷을 옮겼다 — `/platform/system/admins` → `/platform-admins`, `roles` → `/platform-role-groups`, `menus` → `/platform-menus`, `codes` → `/code-groups`. 화면 안 주소 · `revalidatePath` · 알림 템플릿 임시 메뉴 위치(`PENDING_PLATFORM_MENU.after`)도 함께. 메뉴 URL 1뎁스 예외(그대로 둔 여러 구간 URL 통과)는 3팀 플랫폼 커뮤니티 · 사용중지 메뉴가 아직 여러 구간이라 남긴다. 목업 · 데모의 메뉴 표본 URL 도 새 주소로.
