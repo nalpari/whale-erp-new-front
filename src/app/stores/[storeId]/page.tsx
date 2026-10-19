@@ -1,4 +1,3 @@
-import { Fragment } from "react";
 import { notFound } from "next/navigation";
 import { Badge, DetailTable, DetailValues, Tag, type DetailRow } from "@/components/common";
 import { ApiError, getEnum } from "@/lib/api";
@@ -63,9 +62,10 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
   });
 
   const b = store.business;
-  // 대표 이미지 · 점포코드는 표에 두지 않고 제목 줄의 머리 카드로 옮겼다(2026-10-19 점검 — 실사용자 확인,
-  // 디자인 데모 1안 채택). 그만큼 점포 기본정보가 사업자정보와 같은 5행이 된다.
+  // 대표 이미지는 표에 두지 않고 제목 줄의 머리 카드로 옮겼다(2026-10-19 점검 — 실사용자 확인, 디자인 데모
+  // 1안 채택). 점포코드는 머리 카드에도 있지만 표 맨 위에도 다시 둔다(실사용자 재지시).
   const basicRows: DetailRow[] = [
+    { label: "점포코드", value: store.storeCode },
     { label: "점포 연락처", value: store.phone ? formatPhone(store.phone) : muted("-") },
     { label: "점포주소", value: addressLines(store.zipCode, store.address, store.addressDetail), multiline: true },
     {
@@ -159,35 +159,19 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
         />
       ),
     },
+    { label: "개업일자", value: orDash(b.openDate) },
     {
-      label: "등록정보",
-      // 개업일자 · 업태종목을 한 줄로 묶었다 — 사업자등록번호 · 대표자정보 줄과 같은 모양이다(2026-10-19 점검 —
-      // 실사용자 확인). 첫 칸은 그 줄들과 같은 FIRST_COL_WIDTH 로 맞춰 구분선(|)이 들쑥날쑥하지 않게 한다.
-      value: (
-        <DetailValues
-          items={[
-            <span key="open" className={FIRST_COL_WIDTH}>
-              <span className="mr-[10px] text-erp-label">개업일자</span>
-              {orDash(b.openDate)}
-            </span>,
-            // DetailValues 는 바로 바깥이 flex 일 때만 한 줄로 늘어선다(dd 또는 이 DetailValues 자체) — 다른
-            // span 으로 한 번 더 감싸면 안쪽 두 값이 세로로 쌓이고 46px 줄 높이에서 잘린다(2026-10-19 코드
-            // 리뷰로 찾음). Fragment 로 감싸 바깥 DetailValues 의 flex 줄에 업태 · 종목 값이 그대로 들어가게 한다.
-            <Fragment key="cat">
-              <span className="mr-[10px] text-erp-label">업태 · 종목</span>
-              {b.category || b.item ? (
-                <span className="inline-flex items-center gap-[10px]">
-                  {b.category || muted("-")}
-                  <span className="h-[11px] w-px bg-[#d9d9d9]" />
-                  {b.item || muted("-")}
-                </span>
-              ) : (
-                muted("-")
-              )}
-            </Fragment>,
-          ]}
-        />
-      ),
+      label: "업태 · 종목",
+      value:
+        b.category || b.item ? (
+          <span className="inline-flex items-center gap-[10px]">
+            {b.category || muted("-")}
+            <span className="h-[11px] w-px bg-[#d9d9d9]" />
+            {b.item || muted("-")}
+          </span>
+        ) : (
+          muted("-")
+        ),
     },
     { label: "사업자주소", value: addressLines(b.zipCode, b.address, b.addressDetail), multiline: true },
   ];
