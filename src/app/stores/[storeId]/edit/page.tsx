@@ -22,7 +22,7 @@ export default async function EditStorePage({ params, searchParams }: PageProps<
     getStoreImageTypes(),
     // 운영 조건 한글(GET /enums/StoreOperationRequirement) — 못 받아도 화면은 연다, 문구가 값 그대로 보일 뿐이다
     getEnum("StoreOperationRequirement").catch((error: unknown) => {
-      console.error("운영 조건 한글 조회 실패", error);
+      console.error("운영 조건 한글 조회 실패", storeId, error);
       return [];
     }),
   ]);

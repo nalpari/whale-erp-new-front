@@ -9,7 +9,7 @@ import type { StoreDetail, StoreStatus, StoreTransitions } from "@/lib/store-typ
 import { useCodeLabel } from "@/components/site/code-label";
 import { useMenuPermission } from "@/components/site/session-gate";
 import { MENU_CODE } from "@/lib/menus";
-import { closeBlockText, nextStatuses } from "@/lib/store-view";
+import { closeBlockText, finalEuro, nextStatuses } from "@/lib/store-view";
 import { deleteStoreAction, getStoreTransitionsAction, updateStoreAction, type ActionFailure } from "../actions";
 import { StoreStatusBadge } from "../store-parts";
 
@@ -98,8 +98,7 @@ export function StoreDetailActions({
       const result = await updateStoreAction(store.storeId, input).catch(UNKNOWN("상태 변경"));
       if (!result.ok) return fail(result.status, result.message);
       setDialog(null);
-      // 점포상태는 미운영 · 운영 · 폐점 셋뿐이고 셋 다 받침이 있어 "으로"만 쓴다(2026-10-19 점검 — 실사용자 확인).
-      toast(`점포상태를 ${statusLabel(target)}으로 바꿨습니다.`);
+      toast(`점포상태를 ${statusLabel(target)}${finalEuro(statusLabel(target))} 바꿨습니다.`);
       router.refresh();
     });
 
@@ -164,7 +163,7 @@ export function StoreDetailActions({
           open={dialog === "status"}
           title="상태 변경"
           wide
-          confirmLabel={target ? `${statusLabel(target)}으로 변경` : "변경"}
+          confirmLabel={target ? `${statusLabel(target)}${finalEuro(statusLabel(target))} 변경` : "변경"}
           busy={busy}
           confirmDisabled={!allowed}
           onConfirm={handleStatusChange}

@@ -94,7 +94,8 @@ type Props =
 
 /**
  * 점포 등록(S-ALHLHW) · 수정(S-JEPOMK) 공용 폼. 데모 docs/demo/stores/new · edit 의 배치 — 등록 화면에서만 점포유형
- * 큰 카드, 기본정보 · 사업자정보 나란히, 점포 공간정보, [취소] [저장]. 저장하면 상세로 간다.
+ * 큰 카드, 기본정보 · 사업자정보 나란히, 점포 공간정보. [취소] [저장]은 제목 줄 오른쪽(근로계약서 작성 화면과 같은
+ * 자리, 2026-10-19 점검). 저장하면 상세로 간다.
  * 필수는 점포유형 · 점포명뿐이다. 점포유형은 등록 뒤 바꿀 수 없어 수정 화면에는 그 카드를 두지 않고 위 제목 줄에
  * 점포유형 · 점포코드로만 알린다. 점포상태는 지금 상태에서 갈 수 있는 곳만 고른다.
  * 폐점을 고르는 순간 폐점 조건을 다시 확인하고, 못 채우면 팝업으로 알린 뒤 이전 상태로 되돌린다. 저장 때 확인 창을 한 번 더 거친다.
@@ -603,13 +604,16 @@ export function StoreFormView(props: Props) {
                 />
               </Field>
               <Field label="출퇴근 위치 적용 여부" width="w-[150px]">
-                {/* 주소가 없으면 사용으로 고를 수 없다 — 주소를 지우면 미사용으로 되돌리는 것과 같은 규칙이다.
-                    전에는 이 칸만 따로 "사용"으로 고를 수 있어 주소 없이 사용인 상태를 다시 만들 수 있었다
-                    (2026-10-19 코드 리뷰로 찾음). */}
+                {/* 좌표(위도 · 경도)가 없으면 사용으로 고를 수 없다 — 주소를 지우거나 좌표를 손으로 비우면
+                    미사용으로 되돌리는 것과 같은 규칙이다. 주소가 아니라 좌표로 가린다 — 주소는 골랐는데
+                    지오코딩이 늦거나 실패한 사이, 또는 주소 없이 좌표만 손으로 적은 점포를 놓치지 않는다
+                    (2026-10-19 코드 리뷰로 찾음). 막힌 이유는 아래 도움말에도 적는다(disabled 는 보통 마우스
+                    오버도 받지 않아 title 만으로는 부족하다 — 코드 리뷰 지적). */}
                 <Select
                   value={form.isLocationApplied ? "Y" : "N"}
                   onChange={(e) => set("isLocationApplied", e.target.value === "Y")}
-                  disabled={!form.address.trim()}
+                  disabled={!(form.latitude.trim() && form.longitude.trim())}
+                  title={form.latitude.trim() && form.longitude.trim() ? undefined : "위도 · 경도가 있어야 사용으로 고를 수 있습니다."}
                 >
                   <option value="Y">사용</option>
                   <option value="N">미사용</option>
@@ -630,6 +634,8 @@ export function StoreFormView(props: Props) {
               점포주소가 입력되면 <b className="font-semibold">위도</b> · <b className="font-semibold">경도</b> 좌표값이 자동으로 표시됩니다.
               <br />
               <b className="font-semibold">출퇴근 위치 적용 여부</b>를 <b className="font-semibold">사용</b>으로 설정하면 이 좌표를 기준으로 직원의 출퇴근 위치를 확인할 수 있습니다.
+              <br />
+              위도 · 경도가 없으면 <b className="font-semibold">출퇴근 위치 적용 여부</b>를 사용으로 고를 수 없습니다.
             </Note>
           </Stack>
           <Labeled label="대표 이미지">

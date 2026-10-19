@@ -157,9 +157,11 @@ export function formOfStore(d: StoreDetail): StoreForm {
     addressDetail: text(d.addressDetail),
     latitude: numText(d.latitude),
     longitude: numText(d.longitude),
-    // 주소 없이 사용으로 저장된 옛 데이터가 있을 수 있다 — 주소가 없으면 저장값과 상관없이 미사용으로 연다
-    // (상세 화면과 같은 규칙, 2026-10-19 점검 — 실사용자 확인. 수정 화면을 새로 열 때마다 바로잡힌다).
-    isLocationApplied: d.address ? d.isLocationApplied : false,
+    // 좌표 없이 사용으로 저장된 옛 데이터가 있을 수 있다 — 좌표가 없으면 저장값과 상관없이 미사용으로 연다
+    // (상세 화면 · bodyOf 와 같은 규칙, 2026-10-19 점검 — 실사용자 확인. 수정 화면을 새로 열 때마다 바로잡힌다).
+    // 좌표가 아니라 주소로 가렸던 처음 버전은 주소를 손으로 입력한 좌표만 있는 점포를 막고, 주소는 골랐는데
+    // 지오코딩이 늦게 오거나 실패한 사이에는 여전히 좌표 없는 사용을 허용하는 틈이 있었다(코드 리뷰로 찾음).
+    isLocationApplied: d.latitude !== null && d.longitude !== null ? d.isLocationApplied : false,
     savedBizNumber: text(b.bizRegistrationNumber),
     savedCeoName: text(b.ceoName),
     bizNumber: text(b.bizRegistrationNumber),
@@ -276,9 +278,10 @@ export function validateStoreForm(f: StoreForm, mode: "create" | "edit", require
   if (badFloor) errors.floors = "층수는 1 이상의 정수, 매장평수는 소수 1자리, 전용면적은 소수 2자리, 좌석수는 0 이상의 정수입니다.";
 
   // 운영은 사업자정보 인증 · 좌표가 있어야 한다(S-MNRZOM). 서버도 다시 본다. 모자란 것을 한 문장에 모아
-  // 보인다 — 상태 변경 팝업(store-detail-actions.tsx 의 운영 조건 체크리스트)과 같은 라벨 출처 ·
-  // 문구 꼴이다(2026-10-19 점검 — 실사용자 확인). 라벨 한글은 naming.md 규칙대로 getEnum 출처를 쓰고
-  // front 에 대응표를 두지 않는다 — requirementLabels 가 비어 있으면(못 받았거나 테스트) 값 코드를 그대로 보인다.
+  // 보인다 — 상태 변경 팝업(store-detail-actions.tsx 의 운영 조건 체크리스트)과 같은 라벨 출처(getEnum)를
+  // 쓴다. 보여주는 모양은 다르다 — 여기는 한 문장, 팝업은 체크리스트다(2026-10-19 점검 — 실사용자 확인).
+  // 라벨 한글은 naming.md 규칙대로 getEnum 출처를 쓰고 front 에 대응표를 두지 않는다 — requirementLabels 가
+  // 비어 있으면(못 받았거나 테스트) 값 코드를 그대로 보인다.
   if (mode === "edit" && f.storeStatus === "OPERATING") {
     const missing = [
       !isBusinessVerified(f) && labelOf(requirementLabels, "BUSINESS_VERIFICATION"),
@@ -318,7 +321,9 @@ function bodyOf(f: StoreForm) {
     addressDetail: optional(f.addressDetail),
     latitude: optionalNumber(f.latitude),
     longitude: optionalNumber(f.longitude),
-    isLocationApplied: f.isLocationApplied,
+    // 좌표 없이 사용을 저장하지 않는다 — 어느 칸(주소 지우기 · 좌표를 손으로 비움 · 지오코딩 실패)을 거쳐
+    // 왔든 여기서 마지막으로 막는다(코드 리뷰로 찾은 구멍 — 2026-10-19).
+    isLocationApplied: f.latitude.trim() && f.longitude.trim() ? f.isLocationApplied : false,
     // 새로 더했는데 칸이 모두 빈 줄은 보내지 않는다. 저장돼 있던 줄은 그대로 둔다(층 구분만 있는 줄이 지워지지 않게)
     floors: f.floors
       .filter((r) => r.isSaved || r.floorNumber || r.floorAreaPyeong || r.floorAreaSqm || r.seatCount)

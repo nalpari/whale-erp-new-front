@@ -36,6 +36,18 @@ export function finalJosa(text: string): string {
   return (match[0].charCodeAt(0) - 0xac00) % 28 === 0 ? "가" : "이";
 }
 
+/**
+ * 「으로」· 「로」를 문장 끝 한글 받침으로 가른다 — 받침이 없거나 ㄹ받침이면 「로」, 그 밖의 받침이면 「으로」
+ * (이/가와 받침 유무만으로 가르지 않는다 — ㄹ받침은 예외다). 점포상태 배지(미운영 · 운영 · 폐점)처럼 셋 다
+ * ㅇ · ㅁ받침이라 지금은 "으로"만 나오지만, 공통코드값이 바뀌어도 어긋나지 않게 상태 변경 문구에 쓴다.
+ */
+export function finalEuro(text: string): string {
+  const match = text.match(/[가-힣](?=[^가-힣]*$)/);
+  if (!match) return "(으)로";
+  const final = (match[0].charCodeAt(0) - 0xac00) % 28;
+  return final === 0 || final === 8 ? "로" : "으로";
+}
+
 /** 폐점 · 삭제를 막는 조건 — 1차에서는 진행 중 근로계약만 본다(구독 · 정산은 범위 밖) */
 export function closeBlockText(t: Pick<StoreTransitions, "inProgressContractCount">): string | null {
   return t.inProgressContractCount > 0 ? `진행 중인 근로계약이 ${t.inProgressContractCount.toLocaleString("ko-KR")}건 있습니다.` : null;

@@ -1,7 +1,7 @@
 // node --test src/lib/store-view.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { closeBlockText, finalJosa, floorLabel, formatBizNumber, nextStatuses } from "./store-view.ts";
+import { closeBlockText, finalEuro, finalJosa, floorLabel, formatBizNumber, nextStatuses } from "./store-view.ts";
 
 test("상태는 한 방향 — 미운영→운영 · 폐점, 운영→폐점, 폐점은 그대로", () => {
   assert.deepEqual(nextStatuses("NOT_OPERATING"), ["NOT_OPERATING", "OPERATING", "CLOSED"]);
@@ -27,6 +27,17 @@ test("이 · 가 — 받침 있으면 이, 없으면 가. 괄호로 끝나도 �
   assert.equal(finalJosa("사업자정보 인증"), "이");
   assert.equal(finalJosa("위치정보(위도 · 경도)"), "가");
   assert.equal(finalJosa("BP_INACTIVE"), "이(가)");
+});
+
+test("으로 · 로 — 받침 없거나 ㄹ받침이면 로, 그 밖의 받침이면 으로. 한글이 없으면 (으)로 그대로", () => {
+  // 점포상태(미운영 · 운영 · 폐점)는 셋 다 ㅇ · ㅁ받침이라 지금은 으로만 나온다
+  assert.equal(finalEuro("미운영"), "으로");
+  assert.equal(finalEuro("운영"), "으로");
+  assert.equal(finalEuro("폐점"), "으로");
+  // 받침 없음 · ㄹ받침은 예외로 로를 쓴다(이/가와 다른 규칙)
+  assert.equal(finalEuro("학교"), "로");
+  assert.equal(finalEuro("서울"), "로");
+  assert.equal(finalEuro("BP_INACTIVE"), "(으)로");
 });
 
 test("폐점 조건 문구", () => {

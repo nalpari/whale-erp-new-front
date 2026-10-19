@@ -53,7 +53,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
   const [store, requirementLabels] = await Promise.all([
     getStore(storeId),
     getEnum("StoreOperationRequirement").catch((error: unknown) => {
-      console.error("운영 조건 한글 조회 실패", error);
+      console.error("운영 조건 한글 조회 실패", storeId, error);
       return [];
     }),
   ]).catch((error: unknown) => {
@@ -96,8 +96,9 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
             </span>,
             <span key="loc">
               <span className="mr-[10px] text-erp-label">출퇴근 위치 적용 여부</span>
-              {/* 주소가 없으면 좌표도 없다 — 저장된 값과 상관없이 미사용으로 보인다(2026-10-19 점검 — 실사용자 확인). */}
-              {store.address && store.isLocationApplied ? "사용" : "미사용"}
+              {/* 좌표가 없으면 저장된 값과 상관없이 미사용으로 보인다 — 주소가 아니라 좌표로 가린다(수정 화면 ·
+                  bodyOf 와 같은 규칙, 2026-10-19 점검 — 실사용자 확인, 코드 리뷰로 주소에서 좌표로 바꿈). */}
+              {store.latitude !== null && store.longitude !== null && store.isLocationApplied ? "사용" : "미사용"}
             </span>,
           ]}
         />
