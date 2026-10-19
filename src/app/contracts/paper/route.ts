@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getSession, requestRaw, SESSION_COOKIE } from "@/lib/api";
+import { authHeaders, requestRaw, SESSION_COOKIE } from "@/lib/api";
 import { sameOrigin } from "@/lib/paper-request";
 import { inProgressOf } from "../new/contract-form-model";
 
@@ -16,8 +16,8 @@ export async function POST(req: NextRequest) {
   // 상태를 바꾸는 라우트 핸들러라 다른 출처의 요청은 막는다. 쿠키 sameSite lax 는 교차 사이트만 막고, 같은 등록 도메인의 다른 서브도메인은
   // 막지 못한다(서버 액션이면 Next 가 하는 검사). 기준은 서버 액션과 같다 — lib/paper-request.ts.
   if (!sameOrigin(req.headers.get("origin"), req.headers.get("x-forwarded-host"), req.headers.get("host"))) return NextResponse.json({ error: "허용되지 않은 요청입니다" }, { status: 403 });
-  const session = await getSession();
-  if (!session) return NextResponse.json({ error: "로그인이 필요합니다" }, { status: 401 });
+  const headers = await authHeaders();
+  if (!headers.Authorization) return NextResponse.json({ error: "로그인이 필요합니다" }, { status: 401 });
   let form: FormData;
   try {
     form = await req.formData();
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   try {
     response = await requestRaw(contractId ? `/contracts/${contractId}/paper` : "/contracts/paper", {
       method: contractId ? "PUT" : "POST",
-      headers: { Authorization: `Bearer ${session.accessToken}` },
+      headers,
       body: form,
     });
   } catch (e) {
