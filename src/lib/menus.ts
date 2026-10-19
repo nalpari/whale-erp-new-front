@@ -3,7 +3,7 @@ import type { ServiceCode } from "./browser-storage";
 import type { AdminMenu } from "./session";
 
 /** 화면이 권한을 묻는 메뉴 코드(api 메뉴 시드). 업무 API 도 이 코드로 메뉴 권한을 판정한다. */
-export const MENU_CODE = { platformAdmins: "MN000213", platformRoles: "MN000214", platformMenus: "MN000215", platformCodes: "MN000216", stores: "MN000002" } as const;
+export const MENU_CODE = { platformAdmins: "MN000213", platformRoles: "MN000214", platformMenus: "MN000215", platformCodes: "MN000216", stores: "MN000002", staffMembers: "MN000005", todos: "MN000026" } as const;
 export type MenuCode = (typeof MENU_CODE)[keyof typeof MENU_CODE];
 export type MenuAction = keyof AdminMenu["permission"];
 

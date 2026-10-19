@@ -1,19 +1,25 @@
 "use client";
 
-import { useId, useState, useTransition, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
 import { Button, Checkbox, ConfirmDialog, DataTable, DateField, FormGroup, FormRow, Radio, Select, Textarea, TextField } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { createContract, updateContract } from "./actions";
 import {
   formatHours,
+  GENDERS,
   formatPhone,
   formatWage,
   fullTimePay,
   initialForm,
+  inProgressLine,
   isMinor,
   MINIMUM_WAGE,
   monthlyHours,
   monthlyWage,
+  paperFileAccept,
+  paperFileError,
+  paperFileTypesOf,
   partTimePay,
   PROBATION_WAGE_FLOOR,
   probationWage,
@@ -29,6 +35,7 @@ import {
   type HourField,
   type HourMinute,
   type InProgressContract,
+  type SaveResult,
   type TimeSpan,
   type Weekday,
 } from "./contract-form-model";
@@ -38,8 +45,12 @@ export interface ContractFormLabels {
   weekday: EnumValue[];
   payMonth: EnumValue[];
   payMethod: EnumValue[];
+  gender: EnumValue[];
   /** 대체할지 물을 때 진행 중 계약의 상태 이름 */
   contractStatus: EnumValue[];
+  contractMethod: EnumValue[];
+  /** 첨부 파일 형식(PDF · JPG · PNG) — 날인본 파일 선택 창 · 안내 */
+  attachmentFileType: EnumValue[];
 }
 
 const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
@@ -94,6 +105,39 @@ function Item({ label, required, help, width, children }: { label: string; requi
       {children(id)}
       {help && <span className={HELP}>{help}</span>}
     </div>
+  );
+}
+
+// 종이 계약 날인본 한 칸 — 고른 파일 이름(읽기 전용) + 「파일 선택」(숨은 file 입력) + 고른 뒤 「빼기」. 데모 staff-parts fileField 와 같다.
+// 1팀 공통 컴포넌트에 파일 칸이 없어 여기 둔다. 형식 · 크기가 맞지 않으면 칸 아래 이유를 보이고 파일을 받지 않는다.
+function PaperFile({ id, label, file, error, accept, onPick }: { id: string; label: string; file: File | null; error?: string; accept: string; onPick: (file: File | undefined) => void }) {
+  const input = useRef<HTMLInputElement>(null);
+  return (
+    <span className="flex flex-col gap-[6px]">
+      <span className="flex gap-[6px]">
+        <TextField id={id} readOnly value={file?.name ?? ""} placeholder="PDF · JPG · PNG" aria-invalid={error ? true : undefined} />
+        <Button variant="soft" onClick={() => input.current?.click()}>
+          파일 선택
+        </Button>
+        {file && (
+          <Button variant="off" onClick={() => onPick(undefined)}>
+            빼기
+          </Button>
+        )}
+      </span>
+      {error && <span className="text-[12px] text-erp-off">{error}</span>}
+      <input
+        ref={input}
+        type="file"
+        hidden
+        accept={accept}
+        aria-label={`${label} 파일`}
+        onChange={(e) => {
+          onPick(e.target.files?.[0]);
+          e.target.value = ""; // 같은 파일을 다시 골라도 onChange 가 오게
+        }}
+      />
+    </span>
   );
 }
 
@@ -170,6 +214,7 @@ export function ContractForm({
   contractId,
   initial,
   deleteButton,
+  correction = false,
 }: {
   stores: { storeId: number; name: string }[];
   labels: ContractFormLabels;
@@ -179,19 +224,47 @@ export function ContractForm({
   initial?: Form;
   /** 이어 쓰기 화면의 임시저장 삭제. 취소와 임시저장 사이에 선다 */
   deleteButton?: ReactNode;
+  /**
+   * 직원이 수정을 요청한 계약(수정 요청, WHALEERP-125 · 126)을 고친다. 임시저장 · 종이 계약은 없고, 저장하면 발송 대기로
+   * 돌아가 다시 보낸다(api 가 같은 것을 다시 본다).
+   */
+  correction?: boolean;
 }) {
   const [form, setForm] = useState<Form>(() => initial ?? initialForm(stores.length === 1 ? String(stores[0].storeId) : ""));
   // 저장을 한 번 누른 뒤부터 막는 이유를 보인다. 처음부터 빨간 줄을 띄우지 않는다.
+  const router = useRouter();
   const [tried, setTried] = useState(false);
   const [serverError, setServerError] = useState("");
   const [saving, startSaving] = useTransition();
+  // 저장하지 못하면 안내(폼 맨 아래)로 화면을 옮긴다 — 위쪽 버튼을 누르면 안내가 화면 밖에 떠 제자리인 것처럼 보였다.
+  // 같은 이유로 다시 실패해도 옮기도록 횟수로 센다.
+  const failureRef = useRef<HTMLDivElement>(null);
+  const [failures, setFailures] = useState(0);
+  useEffect(() => {
+    if (failures) failureRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [failures]);
+  const fail = (message: string) => {
+    setServerError(message);
+    setFailures((n) => n + 1);
+  };
   // 같은 점포에 진행 중 계약이 있어 저장하지 못했을 때 — 대체를 확인받아 같은 본문에 그 목록을 실어 다시 보낸다.
-  const [replace, setReplace] = useState<{ body: CreateContractBody; list: InProgressContract[] } | null>(null);
+  // paper 면 종이 계약 등록(날인본과 함께)이었다.
+  const [replace, setReplace] = useState<{ body: CreateContractBody; list: InProgressContract[]; paper: boolean } | null>(null);
   const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
+  // 종이 계약 날인본(CTR-23). 근로계약서는 필수, 따로 날인한 임금계약서는 선택. 고르는 순간 형식 · 크기를 먼저 본다(api 가 내용으로 다시 본다).
+  const [files, setFiles] = useState<{ employment: File | null; wage: File | null }>({ employment: null, wage: null });
+  const [fileErrors, setFileErrors] = useState<{ employment?: string; wage?: string }>({});
+  const paperTypes = paperFileTypesOf(labels.attachmentFileType.map((v) => v.value));
+  const paper = form.contractMethod === "PAPER";
+  const pickFile = (key: "employment" | "wage", file: File | undefined) => {
+    const error = file ? paperFileError(file, paperTypes) : null;
+    setFileErrors((e) => ({ ...e, [key]: error ?? undefined }));
+    setFiles((f) => ({ ...f, [key]: file && !error ? file : null }));
+  };
 
   // 막는 이유는 마지막으로 누른 저장 방식 기준으로 보인다.
   const [lastTemporary, setLastTemporary] = useState(false);
-  const issues = problems(form, lastTemporary);
+  const issues = problems(form, lastTemporary, files.employment !== null);
   const minor = isMinor(form);
   const holiday = weeklyHolidayOf(form);
   const dayLabel = (d: Weekday) => labelOf(labels.weekday, d);
@@ -201,8 +274,13 @@ export function ContractForm({
     setTried(true);
     setLastTemporary(temporary);
     setServerError("");
-    if (problems(form, temporary).length) return;
-    send(toBody(form, temporary));
+    if (problems(form, temporary, files.employment !== null).length) {
+      setFailures((n) => n + 1);
+      return;
+    }
+    // 종이 계약 등록은 날인본과 함께 보낸다. 임시저장은 종이 계약이어도 파일 없이 JSON 으로 둔다.
+    if (paper && !temporary) sendPaper(toBody(form));
+    else send(toBody(form, temporary));
   };
 
   const send = (body: CreateContractBody) =>
@@ -210,11 +288,43 @@ export function ContractForm({
       // 성공하면 액션이 목록으로 보낸다. 돌아왔다면 실패다.
       const result = contractId ? await updateContract(contractId, body) : await createContract(body);
       if (result.inProgress) {
-        setReplace({ body, list: result.inProgress });
+        setReplace({ body, list: result.inProgress, paper: false });
         return;
       }
       setReplace(null);
-      setServerError(result.error);
+      fail(result.error);
+    });
+
+  // 종이 계약 등록 — 날인본이 10MB 까지라 서버 액션(6MB 한도) 대신 라우트 핸들러(/contracts/paper)로 보낸다.
+  const sendPaper = (body: CreateContractBody) =>
+    startSaving(async () => {
+      const data = new FormData();
+      data.set("data", JSON.stringify(body));
+      if (files.employment) data.set("employmentContract", files.employment);
+      if (files.wage) data.set("wageContract", files.wage);
+      if (contractId) data.set("contractId", String(contractId));
+      let result: SaveResult & { ok?: boolean };
+      try {
+        const res = await fetch("/contracts/paper", { method: "POST", body: data });
+        // 세션이 끊겼다 — proxy · 핸들러가 쿠키를 지우고 401 을 준다. 로그인 화면으로 보낸다.
+        if (res.status === 401) {
+          router.push("/login");
+          return;
+        }
+        result = (await res.json().catch(() => ({ error: `요청이 실패했습니다 (HTTP ${res.status})` }))) as SaveResult & { ok?: boolean };
+      } catch {
+        result = { error: "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요" };
+      }
+      if (result.ok) {
+        router.push("/contracts");
+        return;
+      }
+      if (result.inProgress) {
+        setReplace({ body, list: result.inProgress, paper: true });
+        return;
+      }
+      setReplace(null);
+      fail(result.error);
     });
 
   // 요일을 켜고 끄면 그 요일의 표 시간은 위 근무시간 · 휴게시간으로 돌아간다(데모 확인 2026-10-15).
@@ -293,11 +403,13 @@ export function ContractForm({
   const blocked = saving || !signedIn || minor;
   const saveButtons = (
     <>
-      <Button variant="soft" onClick={() => save(true)} disabled={blocked}>
-        임시저장
-      </Button>
+      {!correction && (
+        <Button variant="soft" onClick={() => save(true)} disabled={blocked}>
+          임시저장
+        </Button>
+      )}
       <Button onClick={() => save(false)} disabled={blocked}>
-        {saving ? "저장 중" : "초안 저장"}
+        {saving ? "저장 중" : correction ? "수정 저장" : paper ? "종이 계약 등록" : "초안 저장"}
       </Button>
     </>
   );
@@ -330,9 +442,19 @@ export function ContractForm({
             <Item label="생년월일" required help="계약 시작일 기준 만 19세 미만이면 저장할 수 없다">
               {() => <DateField aria-label="생년월일" autoHyphen value={form.birthDate} onChange={(v) => set("birthDate", v)} />}
             </Item>
+            {/* 성별 · 외국인 여부 — 직원이 가입하며 넣는 값과 이름 · 번호 · 생년월일과 함께 대조해 본인만 날인한다(WHALEERP-125) */}
+            <Group label="성별" required help="가입 값과 대조해 본인만 날인한다">
+              <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
+                {GENDERS.map((v) => (
+                  <Radio key={v} name="gender" label={labelOf(labels.gender, v)} checked={form.gender === v} onChange={() => set("gender", v)} />
+                ))}
+                <Checkbox label="외국인" checked={form.isForeigner} onChange={(e) => set("isForeigner", e.target.checked)} />
+              </div>
+            </Group>
             <Item label="소속 근무지" required>
               {(id) => (
-                <Select id={id} value={form.storeId} onChange={(e) => set("storeId", e.target.value)}>
+                // 수정 요청은 이미 보낸 계약이라 근무지를 바꾸지 않는다 — 다른 근무지는 새 근로계약서로(api #58)
+                <Select id={id} value={form.storeId} disabled={correction} onChange={(e) => set("storeId", e.target.value)}>
                   <option value="">선택</option>
                   {stores.map((s) => (
                     <option key={s.storeId} value={s.storeId}>
@@ -356,12 +478,34 @@ export function ContractForm({
               ))}
             </div>
           </Group>
-          <Group label="계약 방식" help="종이 계약(날인본 파일 등록)은 아직 준비 중이다">
+          <Group
+            label="계약 방식"
+            help={paper ? "당사자가 모두 날인한 근로계약서를 올려 등록하면 발송 · 날인 없이 체결 완료로 저장된다" : "초안 저장 뒤 근로계약서를 발송해 직원이 앱에서 날인한다"}
+          >
             <div role="radiogroup" className="flex flex-wrap items-center gap-x-[18px] gap-y-[8px]">
-              <Radio name="contractMethod" label="전자계약" checked readOnly />
-              <Radio name="contractMethod" label="종이 계약" disabled />
+              {(["ELECTRONIC", "PAPER"] as const).map((v) => (
+                <Radio
+                  key={v}
+                  name="contractMethod"
+                  label={labelOf(labels.contractMethod, v)}
+                  checked={form.contractMethod === v}
+                  disabled={correction && v === "PAPER"}
+                  onChange={() => set("contractMethod", v)}
+                />
+              ))}
             </div>
           </Group>
+          {/* 종이 계약 날인본(CTR-23, 데모 contracts-new 의 파일 칸). 근로계약서는 필수, 임금계약서는 따로 작성한 경우만 */}
+          {paper && (
+            <FormRow>
+              <Item label="근로계약서" required help={`당사자가 모두 날인한 파일. ${paperTypes.join(" · ")}, 10MB까지`}>
+                {(id) => <PaperFile id={id} label="근로계약서" file={files.employment} error={fileErrors.employment} accept={paperFileAccept(paperTypes)} onPick={(f) => pickFile("employment", f)} />}
+              </Item>
+              <Item label="임금계약서" help="임금 약정을 따로 날인한 경우. 없으면 비워 둔다">
+                {(id) => <PaperFile id={id} label="임금계약서" file={files.wage} error={fileErrors.wage} accept={paperFileAccept(paperTypes)} onPick={(f) => pickFile("wage", f)} />}
+              </Item>
+            </FormRow>
+          )}
         </FormGroup>
 
         <FormGroup title="계약 조건">
@@ -596,25 +740,34 @@ export function ContractForm({
           desc="근로계약·출퇴근·급여는 점포에서 따로 관리해 주세요. 계약 시작일 기준으로 따지며, 만 19세 미만이면 저장이 막히고 초대도 나가지 않습니다."
         />
         {(serverError || (tried && issues.length > 0)) && (
-          <Band
-            risk
-            title="저장하지 못했습니다"
-            desc={
-              <ul className="list-disc pl-[18px]">
-                {(serverError ? [serverError] : issues).map((m) => (
-                  <li key={m}>{m}</li>
-                ))}
-              </ul>
-            }
-          />
+          <div ref={failureRef}>
+            <Band
+              risk
+              title="저장하지 못했습니다"
+              desc={
+                <ul className="list-disc pl-[18px]">
+                  {(serverError ? [serverError] : issues).map((m) => (
+                    <li key={m}>{m}</li>
+                  ))}
+                </ul>
+              }
+            />
+          </div>
         )}
         <div className="flex items-center gap-[6px]">
-          <span className="flex-1 text-[14px] text-erp-label">임시저장은 이름 · 휴대전화번호 · 근무지 · 직무만 있으면 된다. 초안 저장은 다 채워야 하고 발송 대기로 남는다. 초대 발송은 아직 없다.</span>
+          <span className="flex-1 text-[14px] text-erp-label">
+            {correction
+              ? "직원이 수정을 요청한 근로계약서다. 다 채워 수정 저장하면 발송 대기로 돌아가고, 다시 발송하면 새 날인 기한으로 간다. 근무지는 바꿀 수 없다."
+              : paper
+              ? "임시저장은 이름 · 휴대전화번호 · 근무지 · 직무만 있으면 되고 날인본은 올리지 않는다. 종이 계약 등록은 다 채우고 근로계약서 날인본을 올려야 하며 체결 완료로 남는다."
+              : "임시저장은 이름 · 휴대전화번호 · 근무지 · 직무만 있으면 된다. 초안 저장은 다 채워야 하고 발송 대기로 남는다. 초대 발송은 아직 없다."}
+          </span>
           {saveButtons}
         </div>
       </div>
 
-      {/* 같은 점포 · 같은 번호의 진행 중 계약(WHALEERP-129). 대체하면 임시저장은 지우고, 발송 대기 · 서명 대기는 종료한다. */}
+      {/* 같은 점포 · 같은 번호의 진행 중 계약(WHALEERP-129). 대체하면 임시저장은 지우고, 발송 대기 · 서명 대기 · 수정 요청은 종료한다.
+          종이 계약 등록은 체결 완료도 묻고 종료한다 — 두 번 눌러 두 벌이 생기지 않게(api #49). */}
       <ConfirmDialog
         open={replace !== null}
         title="기존 근로계약을 대체하시겠습니까?"
@@ -622,17 +775,22 @@ export function ContractForm({
         busy={saving}
         wide
         onCancel={() => setReplace(null)}
-        onConfirm={() => replace && send({ ...replace.body, replaceContractIds: replace.list.map((c) => c.contractId) })}
+        onConfirm={() => {
+          if (!replace) return;
+          const body = { ...replace.body, replaceContractIds: replace.list.map((c) => c.contractId) };
+          if (replace.paper) sendPaper(body);
+          else send(body);
+        }}
       >
         <p>이 점포에 같은 휴대전화번호로 진행 중인 근로계약이 있습니다.</p>
         <ul className="mt-[6px] list-disc pl-[18px]">
           {replace?.list.map((c) => (
-            <li key={c.contractId}>
-              {labelOf(labels.contractStatus, c.status)} · 계약 {c.contractId}
-            </li>
+            <li key={c.contractId}>{inProgressLine(c, labelOf(labels.contractStatus, c.status))}</li>
           ))}
         </ul>
-        <p className="mt-[6px]">대체하면 임시저장은 지우고, 발송 대기 · 서명 대기 계약은 종료합니다.</p>
+        <p className="mt-[6px]">
+          대체하면 임시저장은 지우고, 발송 대기 · 서명 대기 · 수정 요청{replace?.paper ? " · 체결 완료" : ""} 계약은 종료합니다.
+        </p>
       </ConfirmDialog>
     </div>
   );

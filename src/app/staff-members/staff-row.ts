@@ -21,7 +21,7 @@ export const JOIN_GROUP_LABELS: Record<JoinGroup, string> = {
 };
 
 /** 갱신 예정으로 보이는 종료일까지의 날수. 갱신 예정 알림과 같다(okf/notify.md, S-JUWPXF). */
-const RENEWAL_NOTICE_DAYS = 30;
+export const RENEWAL_NOTICE_DAYS = 30;
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -89,6 +89,9 @@ export function contractCell(item: StaffMemberListItem, today: string): Cell | n
       // 기한이 지났는데 아직 서명 대기면 만료 배치 전의 잠깐이다. 「D--1」로 보이지 않게 날수를 뺀다.
       return { text: left !== null && left >= 0 ? `서명 대기 · D-${left}` : "서명 대기", style: "badge-off" };
     }
+    case "CORRECTION_REQUESTED":
+      // 직원이 가입 값과 계약서 값이 달라 수정을 요청했다(본인 대조, WHALEERP-125) — 관리자가 고쳐 다시 보낼 차례
+      return { text: "수정 요청", style: "badge-off" };
     case "SIGNED": {
       const left = c.endDate ? dayDiff(today, c.endDate) : null;
       // 종료일이 지난 체결 완료는 종료 배치 전의 잠깐이다. 갱신 예정이 아니다.
@@ -117,6 +120,7 @@ export function statusCells(item: StaffMemberListItem): Cell[] {
   if (item.joinState !== "JOINED") return [{ text: "가입 대기", style: "muted" }];
   const status = item.contract?.status;
   if (status === "PENDING_SIGNATURE") return [{ text: "날인 대기", style: "mark-off" }];
+  if (status === "CORRECTION_REQUESTED") return [{ text: "수정 필요", style: "mark-off" }];
   if (status === "REJECTED" || status === "EXPIRED") return [{ text: "재발송 필요", style: "mark-off" }];
   const cells: Cell[] = [{ text: "재직", style: "mark-on" }];
   if (item.retiredDate) cells.push({ text: `퇴직 예정 ${mmdd(item.retiredDate)}`, style: "badge-off" });

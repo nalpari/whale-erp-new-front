@@ -1,55 +1,44 @@
-// 직원 목록 데이터 계층. 응답 모양은 whale-erp-api 의 GET /staff-members(StaffMemberListResponseDto)를 그대로 옮겼다.
-// 관리자 로그인(1팀)이 생기기 전이라 지금은 목 데이터를 거른다. api 를 붙일 때 getStaffMembers 의 안을 request() 로
-// 바꾼다 — 점포명은 점포 조회로 storeIds 로, 묶음은 그 상태들을 joinState 쉼표 목록으로, 고용형태는 employmentType
-// 쉼표 목록으로(api 가 쉼표 목록을 받는다), 모두 고른 목록과 ALL 은 파라미터를 뺀다. 묶음 · 고용형태를 하나도 고르지
-// 않았거나 점포명에 맞는 점포가 없으면 api 를 부르지 않고 0건을 돌려준다 — 파라미터를 빼면 전체가 나온다.
-// 함수 이름과 돌려주는 모양은 그대로다.
+// 직원 목록 · 상세의 타입과 조회 조건. 응답 타입은 whale-erp-api openapi 에서 생성한 것을 그대로 쓴다.
+// api 를 부르는 함수는 staff-members-api.ts 에 있다 — 이 파일은 next/* 를 읽지 않아 node --test 가 바로 읽는다.
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
-import { buildMockStaff } from "./staff-members.mock.ts";
+import type { components } from "./api-types.generated.ts";
+import type { EnumValue } from "./enums.ts";
 
-export type StaffJoinState =
-  | "JOINED"
-  | "LINK_HOLD"
-  | "UNDER_AGE"
-  | "AFFILIATION_PENDING"
-  | "RETURN_PENDING"
-  | "INVITED"
-  | "EXPIRED"
-  | "REJECTED"
-  | "DRAFT";
-export type EmploymentType = "FULL_TIME" | "PART_TIME";
-export type EmploymentStatus = "EMPLOYED" | "RETIRED";
-export type ContractStatus = "DRAFT" | "PENDING_SEND" | "PENDING_SIGNATURE" | "SIGNED" | "REJECTED" | "EXPIRED" | "ENDED";
-export type StoreType = "DIRECT" | "FRANCHISE";
+type Schemas = components["schemas"];
 
-/** 직원 목록 한 줄. isMasked 면 staffMemberId · store 밖의 칸은 모두 null 이다(본사 제공 동의 없음). */
-export interface StaffMemberListItem {
-  staffMemberId: number;
-  isMasked: boolean;
-  name: string | null;
-  phone: string | null;
-  store: { storeId: number; name: string; storeType: StoreType };
-  employmentType: EmploymentType | null;
-  joinState: StaffJoinState | null;
-  /** canResend — 재발송 버튼을 보일지. 간격 제한 없이 상태로만 정한다(api) */
-  invitation: { invitationType: string; status: string; lastSentAt: string; expiresAt: string; canResend: boolean } | null;
-  linkHold: { linkHoldId: number; mismatchReason: string; verifiedPhoneLast4: string; heldAt: string } | null;
-  /** updatedAt — 최종 수정 일시. 거부일을 따로 저장하지 않아 「거부 · MM-DD」를 이 값으로 그린다 */
-  contract: {
-    contractId: number;
-    status: ContractStatus | null;
-    signDeadlineAt: string | null;
-    endDate: string | null;
-    updatedAt: string | null;
-  } | null;
-  employmentStatus: EmploymentStatus | null;
-  /** 퇴직일 YYYY-MM-DD. 재직이면서 값이 있으면 퇴직 예정 */
-  retiredDate: string | null;
-}
+export type StaffJoinState = Schemas["StaffJoinState"];
+export type EmploymentType = Schemas["EmploymentType"];
+export type EmploymentStatus = Schemas["EmploymentStatus"];
+export type ContractStatus = Schemas["ContractStatus"];
 
-export interface StaffMemberListResponse {
-  items: StaffMemberListItem[];
-  total: number;
+/**
+ * 직원 목록 한 줄(GET /staff-members). isMasked 면 store 밖의 칸은 모두 null 이다 — staffMemberId 도 null(본사 제공 동의 없음).
+ * invitation.canResend 는 재발송 버튼을 보일지, contract.updatedAt 은 「거부 · MM-DD」를 그리는 최종 수정 일시다.
+ * retiredDate 는 퇴직일 YYYY-MM-DD — 재직이면서 값이 있으면 퇴직 예정이다.
+ */
+export type StaffMemberListItem = Schemas["StaffMemberListItemDto"];
+export type StaffMemberListResponse = Schemas["StaffMemberListResponseDto"];
+/** 직원 상세(GET /staff-members/:id, WHALEERP-599). 목록 한 줄에 계정 이메일(email)을 더한 모양이다(WHALEERP-177). email 은 상세를 볼 수 있는 관리자(조회 권한)에게 나오고, 가입 전 · 탈퇴 · 퇴직, 본사 역할이 동의로만 보는 가맹 점포 직원이면 null(WHALEERP-180, 2026-10-16 노영주). */
+export type StaffMember = Schemas["StaffMemberDetailResponseDto"];
+/** 퇴직 확인창의 미리 보기 — 퇴직일이 지나면 정리될 건수 */
+export type RetirementPreview = Schemas["RetirementPreviewResponseDto"];
+
+/** 이메일이 없을 때 「가입 전」으로 묶는 가입 상태 — 계정이 아직 없는 초안 · 초대 발송. 화면 문구라 enum 한글을 쓰지 않는다. */
+const NOT_JOINED_YET: ReadonlySet<StaffJoinState> = new Set(["DRAFT", "INVITED"]);
+
+/**
+ * 상세 기본 정보의 「이메일」 칸. 이메일은 회원 ID 라 보이기만 하고 어디에서도 고치지 못한다(ACC-17, WHALEERP-180).
+ * 없을 때 초안 · 초대 발송은 「가입 전」, 나머지 가입 전 상태는 api enum(GET /enums/StaffJoinState)의 한글이다 — 초대 만료 · 거절은
+ * 이미 계정이 있는 직원의 소속 추가 확인 · 복귀 확인에서도 생기고, 연결 보류 · 소속 추가 확인 · 복귀 확인은 계정이 있는 직원이라
+ * 「가입 전」이라 하면 가입하라고 잘못 안내하게 된다. 가입 완료(퇴직 · 탈퇴 · 본사 역할이 보는 가맹 점포 직원)나 가입 상태를 모르면
+ * 「-」다 — 탈퇴와 본사 미제공은 응답만으로 확실히 가를 수 없어 짐작해 적지 않는다(2026-10-16 노영주). enum 을 받지 못했거나
+ * 목록에 없는 값도 영문 값 대신 「-」다.
+ */
+export function staffEmailText(staff: Pick<StaffMember, "email" | "joinState">, joinStateLabels: readonly EnumValue[]): string {
+  if (staff.email) return staff.email;
+  if (!staff.joinState || staff.joinState === "JOINED") return "-";
+  if (NOT_JOINED_YET.has(staff.joinState)) return "가입 전";
+  return joinStateLabels.find((v) => v.value === staff.joinState)?.label ?? "-";
 }
 
 export const EMPLOYMENT_TYPES: readonly EmploymentType[] = ["FULL_TIME", "PART_TIME"];
@@ -73,6 +62,11 @@ export type PageSize = (typeof PAGE_SIZES)[number];
 export interface StaffListQuery {
   /** 점포명 검색어 */
   store: string;
+  /**
+   * 점포명에 맞는 점포 id. 필터가 로그인 정보의 점포 목록에서 찾아 넣는다(storeIdsByName). store 가 비면 쓰지 않는다.
+   * null 은 점포명만 있고 아직 찾지 않은 것(storeIds 없이 들어온 주소) — 필터가 열리며 채운다.
+   */
+  storeIds: number[] | null;
   /** 이름 · 휴대전화번호 검색어 */
   keyword: string;
   employmentTypes: EmploymentType[];
@@ -82,9 +76,6 @@ export interface StaffListQuery {
   pageSize: PageSize;
 }
 
-/** 목 한 줄. 가린 행도 거르기에 쓸 값을 갖고 있다가 응답으로 낼 때 지운다 — api 는 서버에서 가린다. */
-export type StaffRecord = StaffMemberListItem;
-
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 
 /** 한국 날짜 YYYY-MM-DD. 서버가 UTC 로 돌아도 0시~9시에 날짜가 어긋나지 않게 한다. */
@@ -92,76 +83,48 @@ export function kstToday(now: Date = new Date()): string {
   return new Date(now.getTime() + KST_OFFSET_MS).toISOString().slice(0, 10);
 }
 
-function masked(r: StaffRecord): StaffMemberListItem {
-  return {
-    staffMemberId: r.staffMemberId,
-    isMasked: true,
-    name: null,
-    phone: null,
-    store: r.store,
-    employmentType: null,
-    joinState: null,
-    invitation: null,
-    linkHold: null,
-    contract: null,
-    employmentStatus: null,
-    retiredDate: null,
-  };
+/**
+ * 점포명 부분 일치로 점포 id 를 찾는다. 점포 목록은 로그인 정보의 관리 점포(useStores)다 — 점포 목록 api 는
+ * 「점포 정보 관리」 메뉴 권한이 있어야 열려 직원 정보 관리만 가진 관리자가 쓸 수 없다. 로그인 뒤 새로 생긴 점포는 다시 로그인해야 잡힌다.
+ */
+export function storeIdsByName(stores: readonly { storeId: number; name: string }[], name: string): number[] {
+  const needle = name.trim().toLowerCase();
+  return stores.filter((s) => s.name.toLowerCase().includes(needle)).map((s) => s.storeId);
 }
 
-/** 목 거르기. 가림 · 검색어 · 정렬 · 쪽 나누기는 api 와 같다. 점포명 검색은 화면 쪽 편의다(api 는 storeIds). */
-export function queryStaff(query: StaffListQuery, records: readonly StaffRecord[]): StaffMemberListResponse {
-  const store = query.store.trim();
-  const keyword = query.keyword.trim();
-  const digits = keyword.replace(/\D/g, "");
-  const allTypes = query.employmentTypes.length === EMPLOYMENT_TYPES.length;
-  const allGroups = query.joinGroups.length === JOIN_GROUPS.length;
-  const states = new Set<StaffJoinState>(query.joinGroups.flatMap((g) => JOIN_GROUP_STATES[g]));
-  // 가린 칸으로 거르면 건수가 그 값을 알려 준다 — api 처럼 가린 행을 뺀다. 재직 상태는 화면 기본 필터라 예외다.
-  const filtersPersonal = keyword !== "" || !allTypes || !allGroups;
+/** api 가 한 번에 받는 점포 id 수(StaffMemberListQueryDto @ArrayMaxSize). 넘으면 400 이다. */
+export const MAX_STORE_IDS = 500;
 
-  const hits = records
-    .filter((r) => {
-      if (r.isMasked && filtersPersonal) return false;
-      if (store && !r.store.name.includes(store)) return false;
-      if (keyword && !(r.name?.includes(keyword) || (digits !== "" && r.phone?.includes(digits)))) return false;
-      if (!allTypes && !(r.employmentType && query.employmentTypes.includes(r.employmentType))) return false;
-      if (!allGroups && !(r.joinState && states.has(r.joinState))) return false;
-      if (query.employmentStatus !== "ALL" && r.employmentStatus !== query.employmentStatus) return false;
-      return true;
-    })
-    .sort((a, b) => b.staffMemberId - a.staffMemberId);
-
-  const start = (query.page - 1) * query.pageSize;
-  return {
-    items: hits.slice(start, start + query.pageSize).map((r) => (r.isMasked ? masked(r) : r)),
-    total: hits.length,
-  };
-}
-
-const MAX_ID = 2_147_483_647;
+/** 점포명에 맞는 점포가 api 상한을 넘었는가. 잘라 보내면 일부 점포가 조용히 빠지므로 목록 대신 좁혀 달라고 한다. */
+export const tooManyStores = (query: StaffListQuery) => !!query.store && (query.storeIds?.length ?? 0) > MAX_STORE_IDS;
 
 /**
- * 직원 상세용 한 명 찾기. 경로의 id 를 그대로 받는다 — 숫자가 아니거나 1..2147483647 밖이면 null.
- * 가린 직원(본사 제공 동의 없는 가맹 점포 직원)은 상세로 들어가지 못하므로 null 이다(WHALEERP-184).
+ * 목록이 비었을 때 기본 문구 대신 보일 것. 점포 id 를 아직 찾지 않은 주소는 필터가 곧 채우므로 「없음」으로 깜빡이지 않게 찾는 중이라 하고,
+ * 점포가 너무 많으면 좁혀 달라고 한다. 그 밖은 undefined(표의 기본 문구).
  */
-export function findStaff(rawId: string, records: readonly StaffRecord[]): StaffMemberListItem | null {
-  if (!/^[1-9]\d*$/.test(rawId)) return null;
-  const id = Number(rawId);
-  if (id > MAX_ID) return null;
-  const record = records.find((r) => r.staffMemberId === id);
-  return record && !record.isMasked ? record : null;
+export function staffListEmptyMessage(query: StaffListQuery): string | undefined {
+  if (query.store && query.storeIds === null) return "점포를 찾는 중입니다.";
+  if (tooManyStores(query)) return `점포명에 맞는 점포가 ${MAX_STORE_IDS}곳을 넘습니다. 점포명을 더 좁혀 주세요.`;
+  return undefined;
 }
 
 /**
- * 직원 상세. 지금은 목이고 목록 한 줄과 같은 모양이다. 상세 요약 api(WHALEERP-183)가 나오면 이 함수 안을 api 로
- * 바꾸고, 직무 · 입사일 · 생년월일 · 이메일 · 본인인증과 현황 영역을 그 응답으로 채운다.
+ * GET /staff-members 쿼리. null 이면 api 를 부르지 않고 0건이다 — 묶음 · 고용형태를 하나도 고르지 않았거나 점포명에 맞는
+ * 점포가 없을 때. api 는 빈 값을 400 으로 막고, 파라미터를 빼면 전체가 나와 「하나도 안 고름」이 「전체」가 된다.
+ * 점포 id 를 아직 찾지 않았거나(null) 상한을 넘어도 부르지 않는다(tooManyStores).
+ * 모두 고른 체크와 재직 상태 「전체」는 파라미터를 뺀다.
  */
-export async function getStaffMember(rawId: string): Promise<StaffMemberListItem | null> {
-  return findStaff(rawId, buildMockStaff(kstToday()));
-}
-
-/** 직원 목록. 지금은 목이다(관리자 로그인 전). */
-export async function getStaffMembers(query: StaffListQuery): Promise<StaffMemberListResponse> {
-  return queryStaff(query, buildMockStaff(kstToday()));
+export function staffListApiSearch(query: StaffListQuery): string | null {
+  if (query.joinGroups.length === 0 || query.employmentTypes.length === 0) return null;
+  if (query.store && (!query.storeIds || query.storeIds.length === 0 || tooManyStores(query))) return null;
+  const params = new URLSearchParams();
+  if (query.store && query.storeIds) params.set("storeIds", query.storeIds.join(","));
+  if (query.keyword) params.set("keyword", query.keyword);
+  if (query.employmentTypes.length !== EMPLOYMENT_TYPES.length) params.set("employmentType", query.employmentTypes.join(","));
+  if (query.joinGroups.length !== JOIN_GROUPS.length)
+    params.set("joinState", query.joinGroups.flatMap((g) => JOIN_GROUP_STATES[g]).join(","));
+  if (query.employmentStatus !== "ALL") params.set("employmentStatus", query.employmentStatus);
+  params.set("page", String(query.page));
+  params.set("pageSize", String(query.pageSize));
+  return params.toString();
 }
