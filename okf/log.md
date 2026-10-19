@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-19
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 버튼 권한을 메뉴 코드 없이 지금 주소로 찾는 `usePagePermission` 을 더했다(`menuOfPath` — 화면이 열리는 판정 `isAllowed` 와 같은 메뉴). 플랫폼 관리자 · 권한 · 메뉴 · 공통코드 관리와 점포 정보 관리(`store-permission.tsx` 포함)에 적용하고, 쓰지 않게 된 `MENU_CODE` 의 platformAdmins · platformRoles · platformCodes · stores 를 지웠다(platformMenus 는 메뉴 관리의 자기 잠금 확인에 남는다). 직원 · TO-DO 화면은 아직 메뉴 코드로 찾는다(`useMenuRole` · `useMenuPermission`). 직원 상세의 TO-DO 링크는 다른 메뉴(MN000026) 권한이라 코드로 남는다. [점포 관리](/stores.md)의 버튼 권한 문장도 주소 기준으로 고쳤다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #50 3차 리뷰 반영(영주). 작성 · 이어 쓰기 · 당사자 정보 수정 폼의 「호출 끊김」 처리가 서버 액션의 redirect(성공 · 보내기 실패)까지 받아 매번 「결과 모름」으로 가던 것을 고쳤다 — `callSave`(send-model.ts)가 `unstable_rethrow` 로 Next 의 redirect · notFound 를 다시 던지고, 호출 자체가 끊긴 것만 `SAVE_CALL_LOST` 로 돌려준다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #50 재리뷰 반영(영주). 작성 · 이어 쓰기 폼과 당사자 정보 수정 폼이 서버 액션 호출 자체가 끊긴 경우(앞단 504 · 배포 중 재시작 · 네트워크)도 「결과 모름」으로 다룬다 — 이어 쓰기 · 당사자 정보 수정은 `?send=unknown` 상세로, 새 계약은 다시 저장을 막는다. 오류 화면의 「다시 시도」로 두 번 보내지 않게.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #50 리뷰 반영(영주). 수정 요청으로 되돌아간 보내기 실패는 「수정」에서 다시 저장하라고 안내한다(재발송할 수 없는 상태). 재발송에 성공하면 `?send=` 안내를 지운다. 저장의 결과를 받지 못하면(코드 없는 502 · 504 · 응답 전 끊김) 이어 쓰기 · 당사자 정보 수정은 상세로 옮겨 `?send=unknown` 을 띄우고, 새 계약은 같은 폼으로 다시 저장하지 못하게 막는다.
