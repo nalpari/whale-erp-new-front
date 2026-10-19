@@ -653,7 +653,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 목록. 고정 권한 넷(PM · PA · BM · FM) 다음 플랫폼 관리자 추가 권한을 코드 순으로, 페이지 없이. */
+        /** 목록. 고정 권한(PM · PA · BM · FM 순, 시드는 PA 없이 셋) 다음 플랫폼 관리자 추가 권한을 코드 순으로, 페이지 없이. */
         get: operations["PlatformRoleGroupsController_list"];
         put?: never;
         /** 등록 — 플랫폼 관리자(PA) 추가 권한. 권한 코드는 PA + 6자리로 채번한다. */
@@ -735,6 +735,76 @@ export interface paths {
         get: operations["PlatformRoleGroupsController_deletionCandidates"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform-menus/services": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 서비스 탭 — 공통코드 SERVICE 전부(사용중지 포함)와 서비스별 메뉴 수(사용 · 미사용). */
+        get: operations["PlatformMenusController_services"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform-menus": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 서비스 하나의 메뉴 트리 — 페이지 · 검색 없이 전부, 형제 순서대로 중첩. */
+        get: operations["PlatformMenusController_tree"];
+        put?: never;
+        /** 메뉴 등록 — 고른 상위(없으면 최상위)의 맨 끝에. 코드는 저장할 때 채번하고, 플랫폼 마스터 권한 행을 함께 넣는다. */
+        post: operations["PlatformMenusController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform-menus/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 메뉴 상세. */
+        get: operations["PlatformMenusController_detail"];
+        /** 노출 메뉴명 · URL · 사용 상태 저장 — 통째로 바꾼다(URL 을 빼면 비운다). */
+        put: operations["PlatformMenusController_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform-menus/{id}/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 위치 옮기기 — 같은 서비스 안에서, 하위가 함께 간다. 옮길 때마다 바로 저장된다. */
+        post: operations["PlatformMenusController_move"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2350,7 +2420,10 @@ export interface components {
              * @description 저장할 때 그대로 돌려보낸다.
              */
             updatedAt: string;
-            /** @description 저장할 수 있는가 — 막힌 칸만 있으면 false(플랫폼 마스터 · 조회만 · 본인 연결). */
+            /**
+             * @description 저장할 수 있는가 — 플랫폼 마스터 권한 · 권한 관리 수정 권한 없음 · 본인 연결이면 false. 칸이 본인 범위 밖으로
+             *     막힌 것은 여기서 보지 않는다(칸별 blockedReason).
+             */
             isSavable: boolean;
             /** @description 사용 중인 서비스(공통코드 SERVICE 순서)별 메뉴. 숨겨진 메뉴는 빠진다. */
             services: components["schemas"]["RoleGroupMenuServiceResponseDto"][];
@@ -2404,6 +2477,147 @@ export interface components {
             updatedAt: string;
             /** @description 대체 권한 — 같은 유형(PA)의 지우지 않은 다른 추가 권한. 고정 권한은 고를 수 없다. */
             replacementRoleGroupId?: number;
+        };
+        PlatformMenuServiceResponseDto: {
+            /** @description 서비스 사용 상태. 사용중지 서비스도 고르고 편집할 수 있지만 사용자 화면에는 보이지 않는다. */
+            status: components["schemas"]["UseStatus"];
+            /**
+             * @description 서비스 코드.
+             * @example PLATFORM
+             */
+            serviceCode: string;
+            /** @description 서비스 이름(공통코드 표시명). */
+            name: string;
+            /** @description 지우지 않은 메뉴 수. */
+            menuCount: number;
+            /** @description 그중 사용 상태가 사용인 메뉴 수(상위가 사용중지라 숨은 것도 센다). */
+            activeMenuCount: number;
+            inactiveMenuCount: number;
+        };
+        PlatformMenuServiceListResponseDto: {
+            items: components["schemas"]["PlatformMenuServiceResponseDto"][];
+            total: number;
+        };
+        PlatformMenuServiceRefResponseDto: {
+            status: components["schemas"]["UseStatus"];
+            serviceCode: string;
+            name: string;
+        };
+        PlatformMenuNodeResponseDto: {
+            status: components["schemas"]["UseStatus"];
+            children: components["schemas"]["PlatformMenuNodeResponseDto"][];
+            menuId: number;
+            /**
+             * @description 메뉴 코드 — MN + 6자리.
+             * @example MN000215
+             */
+            menuCode: string;
+            /** @description 노출 메뉴명. */
+            name: string;
+            /** @description 메뉴 URL. 묶음 메뉴는 보통 null. */
+            url: string | null;
+            /** @description 메뉴 계층 1~3. */
+            depth: number;
+            /** @description 형제 안의 순서 — 1부터. */
+            sortOrder: number;
+            /** @description 하위가 있는 메뉴(묶음). */
+            isGroup: boolean;
+            /** @description 사용자 화면에 보이지 않는가 — 자신 · 조상 · 서비스 중 하나라도 사용중지. 자기 상태 값은 사용일 수 있다. */
+            isHidden: boolean;
+        };
+        PlatformMenuTreeResponseDto: {
+            service: components["schemas"]["PlatformMenuServiceRefResponseDto"];
+            items: components["schemas"]["PlatformMenuNodeResponseDto"][];
+            total: number;
+        };
+        PlatformMenuParentResponseDto: {
+            menuId: number;
+            menuCode: string;
+            name: string;
+        };
+        PlatformMenuActorResponseDto: {
+            name: string | null;
+            loginId: string;
+        };
+        PlatformMenuDetailResponseDto: {
+            status: components["schemas"]["UseStatus"];
+            menuId: number;
+            menuCode: string;
+            serviceCode: string;
+            serviceName: string;
+            /** @description 상위 메뉴. 최상위(1단계)면 null. */
+            parent: components["schemas"]["PlatformMenuParentResponseDto"] | null;
+            /**
+             * @description 최상위부터 이 메뉴까지의 노출 메뉴명.
+             * @example [
+             *       "시스템관리",
+             *       "플랫폼 메뉴 관리"
+             *     ]
+             */
+            path: string[];
+            name: string;
+            url: string | null;
+            depth: number;
+            sortOrder: number;
+            isGroup: boolean;
+            /** @description 사용자 화면에 보이지 않는가 — 자신 · 조상 · 서비스 중 하나라도 사용중지. 사용중지 상위 아래의 메뉴면 「사용자에게는 보이지 않는다」를 알린다. */
+            isHidden: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["PlatformMenuActorResponseDto"] | null;
+            /**
+             * Format: date-time
+             * @description 최종수정일시 — 저장할 때 그대로 돌려보낸다(동시 수정 확인).
+             */
+            updatedAt: string;
+            updatedBy: components["schemas"]["PlatformMenuActorResponseDto"] | null;
+        };
+        CreatePlatformMenuDto: {
+            /** @description 사용 상태. 생략하면 사용(ACTIVE). */
+            status?: components["schemas"]["UseStatus"];
+            /**
+             * @description 서비스 코드 — 공통코드 SERVICE 값(사용중지 서비스도 된다).
+             * @example PLATFORM
+             */
+            serviceCode: string;
+            /** @description 상위 메뉴. 생략하거나 null 이면 최상위(1단계). 같은 서비스의 2단계까지의 메뉴여야 한다. */
+            parentMenuId?: number | null;
+            /** @description 노출 메뉴명. 앞뒤 공백을 지우고 1~20자. 같은 상위 아래 같은 이름도 받는다. */
+            name: string;
+            /**
+             * @description 메뉴 URL. 선택 — 하위를 묶기만 하는 메뉴는 비운다(비우면 null). 1뎁스 한 구간(`/소문자-숫자`)만, 200자까지 —
+             *     `/staff/content` 가 아니라 `/staff-content`. 사용 중 메뉴끼리 같거나 한쪽이 다른 쪽 아래 경로면 409.
+             * @example /staff-content
+             */
+            url?: string | null;
+        };
+        CreatePlatformMenuResponseDto: {
+            menuId: number;
+            /**
+             * @description 저장할 때 채번한 메뉴 코드.
+             * @example MN000223
+             */
+            menuCode: string;
+        };
+        UpdatePlatformMenuDto: {
+            /** @description 사용 상태. 미사용이면 사용자 화면과 신규 권한 부여에서 빠지고, 이미 준 권한은 남는다. */
+            status: components["schemas"]["UseStatus"];
+            /** @description 상세에서 받은 최종수정일시 그대로. 그 사이 다른 사람이 고쳤으면 저장하지 않고 409. */
+            updatedAt: string;
+            /** @description 노출 메뉴명. 앞뒤 공백을 지우고 1~20자. 같은 상위 아래 같은 이름도 받는다. */
+            name: string;
+            /**
+             * @description 메뉴 URL. 선택 — 하위를 묶기만 하는 메뉴는 비운다(비우면 null). 1뎁스 한 구간(`/소문자-숫자`)만, 200자까지 —
+             *     `/staff/content` 가 아니라 `/staff-content`. 사용 중 메뉴끼리 같거나 한쪽이 다른 쪽 아래 경로면 409.
+             * @example /staff-content
+             */
+            url?: string | null;
+        };
+        MovePlatformMenuDto: {
+            /** @description 새 상위 메뉴. null 이면 최상위. */
+            parentMenuId: number | null;
+            /** @description 새 상위 아래의 자리 — 0 이 맨 앞, 형제 수 이상이면 맨 끝. */
+            index: number;
         };
         BpStoreListResponseDto: {
             /** @description 점포 이름순. 운영 상태와 상관없이 미삭제 점포 전체. 항목 모양은 로그인 정보의 `stores` 와 같다. */
@@ -3219,7 +3433,7 @@ export interface components {
             bodySummary: string;
             kakaoTemplateCode: string | null;
             isActive: boolean;
-            /** @description 기본 문구가 있는지(처음 넣은 40건) — 되돌리기를 보일지 */
+            /** @description 기본 문구가 있는지(마이그레이션으로 넣은 기본 템플릿 41건) — 되돌리기를 보일지 */
             hasDefault: boolean;
             /** @description 마지막으로 고친 관리자 이름. 아무도 고치지 않았으면 null — 화면은 「기본 문구」 */
             updatedByName: string | null;
@@ -3259,7 +3473,7 @@ export interface components {
             bodySummary: string;
             kakaoTemplateCode: string | null;
             isActive: boolean;
-            /** @description 기본 문구가 있는지(처음 넣은 40건) — 되돌리기를 보일지 */
+            /** @description 기본 문구가 있는지(마이그레이션으로 넣은 기본 템플릿 41건) — 되돌리기를 보일지 */
             hasDefault: boolean;
             /** @description 마지막으로 고친 관리자 이름. 아무도 고치지 않았으면 null — 화면은 「기본 문구」 */
             updatedByName: string | null;
@@ -4964,7 +5178,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 연결 사용자가 있는데 대체 권한 없음 · 고를 수 없는 대체 권한(고정 권한 · 다른 유형 · 지운 권한 · 자기 자신) */
+            /** @description 연결 사용자가 있는데 대체 권한 없음 · 고를 수 없는 대체 권한(없거나 지운 권한 · 플랫폼 BP 가 아닌 권한 · 고정 권한 · 다른 유형 · 자기 자신). 연결 사용자가 없어도 보낸 대체 권한은 검사한다 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -4985,7 +5199,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 고정 권한 · 동시 수정 */
+            /** @description 고정 권한 · 플랫폼 관리자 추가 권한이 아님 · 동시 수정 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -5052,7 +5266,7 @@ export interface operations {
                     "application/json": components["schemas"]["SaveRoleGroupMenusResponseDto"];
                 };
             };
-            /** @description 숨긴 · 없는 메뉴, 조회 없는 등록 · 수정 · 삭제, BP 쪽 고정 권한의 플랫폼 메뉴, 본인 권한 범위 밖 */
+            /** @description 숨긴 · 없는 메뉴, 같은 메뉴 두 번, 조회 없는 등록 · 수정 · 삭제, BP · 가맹 마스터의 플랫폼 메뉴 켜기(끄기는 받는다), 본인 권한 범위 밖 칸(조회를 끄면 함께 꺼지는 칸 포함) */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -5105,7 +5319,7 @@ export interface operations {
                     "application/json": components["schemas"]["RoleGroupMenuRevocationPreviewResponseDto"];
                 };
             };
-            /** @description 숨긴 · 없는 메뉴, 조회 없는 등록 · 수정 · 삭제 */
+            /** @description 숨긴 · 없는 메뉴, 같은 메뉴 두 번, 조회 없는 등록 · 수정 · 삭제, BP · 가맹 마스터의 플랫폼 메뉴 켜기, 본인 권한 범위 밖 칸 — 저장과 같은 검사 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -5121,6 +5335,13 @@ export interface operations {
             };
             /** @description 없거나 지운 권한 · 플랫폼 권한(PM · PA · BM · FM)이 아닌 그룹 */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 마스터 권한(전체 허용 고정) — 저장과 같다 */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5155,6 +5376,256 @@ export interface operations {
                 content?: never;
             };
             /** @description 없거나 지운 권한 · 플랫폼 권한(PM · PA · BM · FM)이 아닌 그룹 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 지울 수 없는 권한 — 고정 권한 · 플랫폼 관리자 추가 권한이 아님 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformMenusController_services: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformMenuServiceListResponseDto"];
+                };
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformMenusController_tree: {
+        parameters: {
+            query: {
+                /** @description 서비스 코드 — 공통코드 SERVICE 값(사용중지 서비스도 된다). */
+                serviceCode: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformMenuTreeResponseDto"];
+                };
+            };
+            /** @description 서비스 코드 형식 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 서비스 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformMenusController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePlatformMenuDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatePlatformMenuResponseDto"];
+                };
+            };
+            /** @description 형식(메뉴명 · URL · 서비스 코드) · 없는 서비스 · 고를 수 없는 상위(없음 · 다른 서비스) · 3단계 메뉴 아래 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같거나 겹치는 URL 을 쓰는 사용 중 메뉴 · 메뉴 코드를 더 만들 수 없음 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformMenusController_detail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformMenuDetailResponseDto"];
+                };
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴를 찾을 수 없습니다 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformMenusController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePlatformMenuDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 형식(메뉴명 · URL · 상태 · updatedAt) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴를 찾을 수 없습니다 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같거나 겹치는 URL 을 쓰는 사용 중 메뉴 · 동시 수정 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlatformMenusController_move: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MovePlatformMenuDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 자기 자신이나 하위 아래 · 3단계 초과(하위 높이 포함) · 다른 서비스나 없는 상위 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴를 찾을 수 없습니다 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -5325,6 +5796,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description 없는 직원이거나 관리 범위 밖 */
             404: {
                 headers: {
@@ -5364,6 +5842,13 @@ export interface operations {
             };
             /** @description 퇴직일 형식 오류 · 3개월보다 오래됨 · 입사일보다 앞섬 */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5413,6 +5898,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description 없는 직원이거나 관리 범위 밖 */
             404: {
                 headers: {
@@ -5448,6 +5940,13 @@ export interface operations {
             };
             /** @description 퇴직일 형식 오류 · 3개월보다 오래됨 · 입사일보다 앞섬 */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5800,6 +6299,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description 사업자 인증을 보냈는데 관리자의 국세청 호출이 시간당 10번을 넘음 */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description 사업자 인증을 보냈는데 진위확인 연동이 없거나 실패함 · 등록이 몰려 시간을 넘김 */
             503: {
                 headers: {
@@ -5898,6 +6404,13 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description IP · 계정의 시간당 한도(10건) */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description 사업자 진위확인 연동이 없거나 실패함 */
             503: {
                 headers: {
@@ -5986,6 +6499,13 @@ export interface operations {
             };
             /** @description 동시 수정 · 폐점한 점포 · 소속 BP 미사용 · 진행 중인 근로계약(폐점) · 사업자등록번호 중복 */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 사업자 인증을 보냈는데 관리자의 국세청 호출이 시간당 10번을 넘음 */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
