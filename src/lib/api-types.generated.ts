@@ -1606,6 +1606,183 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/support-inquiries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 내 문의 목록. 등록 최신순. */
+        get: operations["SupportInquiriesController_list"];
+        put?: never;
+        /**
+         * 문의 등록. 텍스트 칸과 첨부파일(`files`, 선택)을 multipart 한 번으로 받는다. 첨부는 JPG · PNG · PDF, 5개까지,
+         *     파일당 10MB 이고 종류는 파일 내용으로 확인한다. 등록한 뒤에는 첨부를 더하거나 빼지 않는다.
+         */
+        post: operations["SupportInquiriesController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/support-inquiries/{inquiryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 내 문의 상세 — 마지막 답변만 보인다(운영 정책 CNT-17). */
+        get: operations["SupportInquiriesController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/support-inquiries/{inquiryId}/attachments/{inquiryAttachmentId}/download-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 첨부파일 내려받기 주소. 300초 동안 쓸 수 있는 서명 주소이고, 받으면 원래 파일 이름으로 저장된다. */
+        get: operations["SupportInquiriesController_attachmentDownloadUrl"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/todos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 목록. 미완료 긴급 → 미완료 나머지 → 완료, 묶음 안은 수행 예정 일시 오름차순. 배정 그룹은 한 줄 */
+        get: operations["TodosController_list"];
+        put?: never;
+        /** 등록. 배정 그룹을 펼쳐 행을 만든다. 배정 알림은 없다 */
+        post: operations["TodosController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/todos/assignable-staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 등록의 직원 고르기 — 그 근무지에 체결 완료 계약이 있고 가입을 마쳤고 퇴직하지 않은 직원, 이름순 */
+        get: operations["TodosController_assignableStaff"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/todos/{todoId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 상세 — 배정 대상 · 상태 이력, 그룹이면 직원별 상태 */
+        get: operations["TodosController_findOne"];
+        put?: never;
+        post?: never;
+        /** 대기만 지운다. 그룹이면 그룹의 대기인 행만(T-2) */
+        delete: operations["TodosController_remove"];
+        options?: never;
+        head?: never;
+        /** 제목 · 내용 · 수행 예정 일시 · 긴급 수정. 그룹이면 그룹 전체. 배정 대상 · 수행 방식은 못 바꾼다(400) */
+        patch: operations["TodosController_update"];
+        trace?: never;
+    };
+    "/todos/{todoId}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** 관리자가 직원 대신 상태를 바꾼다(T-1). 그룹이면 그 행만 */
+        patch: operations["TodosController_changeStatus"];
+        trace?: never;
+    };
+    "/staff-members/{id}/todos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 그 직원에게 배정된 TO-DO. 정렬은 TO-DO 목록과 같다 */
+        get: operations["StaffMemberTodosController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/todos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 내 TO-DO. 근무지별로 묶을 때는 storeId 를 쓴다. 한 명 수행은 완료했으면 수행자 이름을 보인다(WORK-3) */
+        get: operations["MyTodosController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/todos/{todoId}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** 대기 ↔ 진행 중 ↔ 완료. 한 명 수행은 먼저 저장된 완료만 인정한다 */
+        patch: operations["MyTodosController_changeStatus"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3818,6 +3995,273 @@ export interface components {
             updatedAt: string;
             /** @description 문의자에게 보이는 답변. 평문이고 20,000자까지. 첨부파일은 받지 않는다(CNT-18). */
             body: string;
+        };
+        CreatedSupportInquiryResponseDto: {
+            inquiryId: number;
+        };
+        SupportInquiryListItemDto: {
+            status: components["schemas"]["InquiryStatus"];
+            inquiryId: number;
+            title: string;
+            /** @description 문의 유형(공통코드 `INQUIRY_CATEGORY` 값) */
+            inquiryCategoryCode: string;
+            /**
+             * Format: date-time
+             * @description 등록 일시
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description 처음 답변한 시각. 답변이 없으면 null.
+             */
+            repliedAt: string | null;
+        };
+        SupportInquiryListResponseDto: {
+            items: components["schemas"]["SupportInquiryListItemDto"][];
+            total: number;
+        };
+        SupportInquiryReplyDto: {
+            /** @description 지금 답변(마지막 답변 행) */
+            body: string;
+            /**
+             * Format: date-time
+             * @description 처음 답변한 시각
+             */
+            repliedAt: string;
+            /**
+             * Format: date-time
+             * @description 고친 적이 있으면 마지막으로 고친 시각(「수정됨」), 없으면 null
+             */
+            editedAt: string | null;
+        };
+        SupportInquiryResponseDto: {
+            status: components["schemas"]["InquiryStatus"];
+            inquiryId: number;
+            title: string;
+            /** @description 문의 유형(공통코드 `INQUIRY_CATEGORY` 값) */
+            inquiryCategoryCode: string;
+            /**
+             * Format: date-time
+             * @description 등록 일시
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description 처음 답변한 시각. 답변이 없으면 null.
+             */
+            repliedAt: string | null;
+            body: string;
+            /**
+             * Format: date-time
+             * @description 처리중으로 바뀐 시각 — 진행 이력의 「처리 중」 줄. 처리중을 거치지 않았으면 null.
+             */
+            processingStartedAt: string | null;
+            /** @description 답변. 아직 없으면 null. */
+            reply: components["schemas"]["SupportInquiryReplyDto"] | null;
+            /** @description 첨부파일. 순서대로. 내려받기는 `GET /support-inquiries/:inquiryId/attachments/:inquiryAttachmentId/download-url`. */
+            attachments: components["schemas"]["InquiryAttachmentDto"][];
+        };
+        /** @enum {string} */
+        TodoStatus: "PENDING" | "IN_PROGRESS" | "DONE";
+        /** @enum {string} */
+        TodoAssigneeType: "INDIVIDUAL" | "ALL";
+        /** @enum {string} */
+        TodoExecutionMode: "EACH" | "ANY_ONE";
+        TodoStaffDto: {
+            staffMemberId: number | null;
+            staffMemberName: string | null;
+            isMasked: boolean;
+        };
+        TodoListItemDto: {
+            assigneeType: components["schemas"]["TodoAssigneeType"];
+            executionMode: components["schemas"]["TodoExecutionMode"];
+            /**
+             * @description YYYY-MM-DD
+             * @example 2026-10-20
+             */
+            dueDate: string;
+            /**
+             * @description HH:mm. 날짜만이면 null
+             * @example 18:00
+             */
+            dueTime: string | null;
+            /** @description 이 줄의 상태 — 그룹이면 모두 완료 = 완료, 모두 대기 = 대기, 그 밖은 진행 중 */
+            status: components["schemas"]["TodoStatus"];
+            /** @description 한 명 수행을 먼저 완료한 직원 */
+            performer: components["schemas"]["TodoStaffDto"] | null;
+            /** @description 그 줄에 남은 행(필터에 맞고 지우지 않은 행) 가운데 첫 행. 상세를 열 때 쓴다 */
+            todoId: number;
+            /** @description 그룹이 아니면 null */
+            assignmentGroupId: number | null;
+            storeId: number;
+            /** @description 점포가 지워졌어도 이름은 보인다 */
+            storeName: string | null;
+            title: string;
+            isUrgent: boolean;
+            /** @description 이 줄에 묶인 행 수 */
+            todoCount: number;
+            /** @description 그 가운데 완료한 행 수 */
+            doneCount: number;
+            /** @description 배정된 직원. 한 명 수행은 대상 전원 */
+            assignees: components["schemas"]["TodoStaffDto"][];
+            /** Format: date-time */
+            createdAt: string;
+        };
+        TodoListResponseDto: {
+            items: components["schemas"]["TodoListItemDto"][];
+            /** @description 거른 결과의 줄 수(그룹은 한 줄) */
+            total: number;
+        };
+        AssignableStaffItemDto: {
+            staffMemberId: number;
+            name: string;
+            /** @description 휴대전화번호 끝 4자리 — 이름이 같은 직원을 가른다 */
+            phoneLast4: string;
+            /** @description 직무(예: 바리스타) */
+            jobTitle: string;
+        };
+        AssignableStaffResponseDto: {
+            items: components["schemas"]["AssignableStaffItemDto"][];
+        };
+        TodoAssigneeDto: {
+            staffMemberId: number | null;
+            staffMemberName: string | null;
+            /** Format: date-time */
+            completedAt: string | null;
+            isCompleted: boolean;
+            isMasked: boolean;
+        };
+        TodoGroupRowDto: {
+            /** @description 퇴직으로 배정이 풀린 행 · 가린 직원은 null */
+            staffMemberId: number | null;
+            staffMemberName: string | null;
+            status: components["schemas"]["TodoStatus"];
+            /** Format: date-time */
+            completedAt: string | null;
+            todoId: number;
+            /** @description 가린 직원(TodoStaffDto.isMasked 와 같은 뜻) */
+            isMasked: boolean;
+        };
+        TodoStatusHistoryDto: {
+            /** @description 등록 때 줄은 null */
+            fromStatus: components["schemas"]["TodoStatus"] | null;
+            toStatus: components["schemas"]["TodoStatus"];
+            changedBy: number | null;
+            changedByName: string | null;
+            staffMemberId: number | null;
+            staffMemberName: string | null;
+            /** @description 퇴직으로 배정이 풀린 직원 */
+            unassignedStaffMemberId: number | null;
+            unassignedStaffMemberName: string | null;
+            /** @description 긴급 표시를 바꾼 줄 */
+            isUrgentChanged: boolean;
+            /** @description 바꾼 직원을 가렸으면 true — staffMemberId · staffMemberName 이 null */
+            isStaffMemberMasked: boolean;
+            /** @description 배정이 풀린 직원을 가렸으면 true */
+            isUnassignedStaffMemberMasked: boolean;
+            /** Format: date-time */
+            changedAt: string;
+        };
+        TodoDetailDto: {
+            assignmentGroupId: number | null;
+            storeName: string | null;
+            body: string | null;
+            assigneeType: components["schemas"]["TodoAssigneeType"];
+            executionMode: components["schemas"]["TodoExecutionMode"];
+            /** @example 2026-10-20 */
+            dueDate: string;
+            /** @example 18:00 */
+            dueTime: string | null;
+            status: components["schemas"]["TodoStatus"];
+            /** Format: date-time */
+            completedAt: string | null;
+            performer: components["schemas"]["TodoStaffDto"] | null;
+            createdByName: string | null;
+            todoId: number;
+            storeId: number;
+            title: string;
+            isUrgent: boolean;
+            createdBy: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            /** @description 이 행의 배정 대상 */
+            assignees: components["schemas"]["TodoAssigneeDto"][];
+            /** @description 그룹의 행들(이 행 포함). 그룹이 아니면 빈 배열 */
+            groupTodos: components["schemas"]["TodoGroupRowDto"][];
+            /** @description 이 행의 상태 이력, 최신순 */
+            histories: components["schemas"]["TodoStatusHistoryDto"][];
+        };
+        CreateTodoDto: {
+            /** @description 배정 대상 — 개인 · 근무지 전체. 등록 뒤 바꾸지 않는다 */
+            assigneeType: components["schemas"]["TodoAssigneeType"];
+            /** @description 수행 방식 — 각자 수행 · 한 명 수행. 근무지 전체면 필수, 개인이면 각자 수행만(빼면 각자 수행). 등록 뒤 바꾸지 않는다 */
+            executionMode?: components["schemas"]["TodoExecutionMode"];
+            /** @description 근무지 점포. 업무 범위 밖이면 404 */
+            storeId: number;
+            /** @description 개인 배정의 직원 레코드. 개인이면 1~200명, 근무지 전체면 넣지 않는다. 그 근무지의 재직 직원이어야 한다 */
+            staffMemberIds?: number[];
+            /** @description 제목. 100자까지 */
+            title: string;
+            /** @description 내용. 2,000자까지. 앞뒤 공백을 지우고, 비면(공백만이면) null */
+            body?: string | null;
+            /** @description 수행 예정 날짜 YYYY-MM-DD. 한국 날짜로 오늘 이후 */
+            dueDate: string;
+            /** @description 수행 시간 HH:mm(한국 시각). 없으면 날짜만 */
+            dueTime?: string | null;
+            /** @description 긴급. 기본 false */
+            isUrgent?: boolean;
+        };
+        CreatedTodoResponseDto: {
+            /** @description 만든 행. 개인 한 명 · 한 명 수행은 하나 */
+            todoIds: number[];
+            /** @description 배정 그룹 ID. 행이 하나면 null */
+            assignmentGroupId: number | null;
+        };
+        UpdateTodoDto: {
+            /** @description 제목. 100자까지 */
+            title?: string;
+            /** @description 내용. 2,000자까지. 앞뒤 공백을 지우고, 비면(공백만이면) null */
+            body?: string | null;
+            /** @description 수행 예정 날짜 YYYY-MM-DD. 한국 날짜로 오늘 이후 */
+            dueDate?: string;
+            /** @description 수행 시간 HH:mm(한국 시각). 없으면 날짜만 */
+            dueTime?: string | null;
+            /** @description 긴급. 기본 false */
+            isUrgent?: boolean;
+        };
+        ChangeTodoStatusDto: {
+            status: components["schemas"]["TodoStatus"];
+        };
+        TodoItemDto: {
+            storeName: string | null;
+            body: string | null;
+            assigneeType: components["schemas"]["TodoAssigneeType"];
+            executionMode: components["schemas"]["TodoExecutionMode"];
+            /** @example 2026-10-20 */
+            dueDate: string;
+            /** @example 18:00 */
+            dueTime: string | null;
+            status: components["schemas"]["TodoStatus"];
+            /** Format: date-time */
+            completedAt: string | null;
+            /** @description 한 명 수행을 완료한 직원 — 근무지 동료에게 이름을 보인다(WORK-3) */
+            performer: components["schemas"]["TodoStaffDto"] | null;
+            todoId: number;
+            storeId: number;
+            title: string;
+            isUrgent: boolean;
+        };
+        TodoDeleteResponseDto: {
+            /** @description 지운 행 수 */
+            deleted: number;
+            /** @description 그룹에 남은 행 수 — 진행 중 · 완료라 지우지 않은 것 */
+            remaining: number;
+        };
+        TodoItemListResponseDto: {
+            items: components["schemas"]["TodoItemDto"][];
+            total: number;
         };
     };
     responses: never;
@@ -8208,6 +8652,617 @@ export interface operations {
                 content?: never;
             };
             /** @description 그사이 다른 운영자가 저장함 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SupportInquiriesController_list: {
+        parameters: {
+            query: {
+                /**
+                 * @description 답변 상태 — 접수 · 처리중 · 답변완료. 고객지원 화면은 「답변 대기 · 처리 중 · 답변 완료」 탭을 따로 두어(front
+                 *     목업 S-ITFILU) 「답변 대기」가 접수 하나다 — 접수 · 처리중을 합친 커뮤니티 관리의 `answerStatus` 와 다르다.
+                 */
+                status?: components["schemas"]["InquiryStatus"];
+                /** @description 제목에 들어 있으면 나온다. */
+                title?: string;
+                /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
+                page: number;
+                /** @description 한 쪽 건수. 기본 20, 최대 200. */
+                pageSize: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupportInquiryListResponseDto"];
+                };
+            };
+            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 · 문의하기 메뉴 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SupportInquiriesController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** @example STAFF_LABOR */
+                    inquiryCategoryCode: string;
+                    title: string;
+                    body: string;
+                    files?: string[];
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatedSupportInquiryResponseDto"];
+                };
+            };
+            /** @description 입력 오류 · 사용 중이 아닌 문의 유형 · 파일 종류 · 크기 · 개수 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 · 문의하기 메뉴 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 5분 안에 제목 · 내용이 같은 문의를 이미 등록함 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 첨부가 있는데 저장소가 설정되지 않음 · 저장소 오류 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SupportInquiriesController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inquiryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupportInquiryResponseDto"];
+                };
+            };
+            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 · 문의하기 메뉴 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 문의이거나 남의 문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SupportInquiriesController_attachmentDownloadUrl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inquiryId: string;
+                inquiryAttachmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DownloadUrlResponseDto"];
+                };
+            };
+            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 · 문의하기 메뉴 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 문의 · 남의 문의 · 그 문의의 첨부가 아님 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 첨부파일 저장소 설정 없음 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TodosController_list: {
+        parameters: {
+            query?: {
+                /** @description 1부터 */
+                page?: number;
+                pageSize?: number;
+                /** @description 여러 개면 `?status=PENDING&status=IN_PROGRESS`. 없으면 전체 */
+                status?: components["schemas"]["TodoStatus"][];
+                /** @description 담당 — 개인 · 근무지 전체 */
+                assigneeType?: components["schemas"]["TodoAssigneeType"];
+                /** @description 이 직원 레코드에 배정된 것 */
+                staffMemberId?: number;
+                /** @description true · false. 없으면 전체 */
+                isUrgent?: boolean;
+                /** @description 근무지 점포 */
+                storeId?: number;
+                /** @description 수행 예정 날짜 시작(그날 포함) YYYY-MM-DD */
+                dueDateFrom?: string;
+                /** @description 수행 예정 날짜 끝(그날 포함) YYYY-MM-DD */
+                dueDateTo?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoListResponseDto"];
+                };
+            };
+            /** @description 쿼리 형식 오류 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TodosController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTodoDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatedTodoResponseDto"];
+                };
+            };
+            /** @description 입력 오류 · 지난 날짜 · 배정 대상과 수행 방식이 맞지 않음 · 퇴직했거나 체결 완료 계약이 없거나 가입 전이거나 다른 근무지 직원 · 그런 재직 직원 없음 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 근무지 점포가 없거나 업무 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TodosController_assignableStaff: {
+        parameters: {
+            query: {
+                /** @description 근무지 점포. 업무 범위 밖이면 404 */
+                storeId: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignableStaffResponseDto"];
+                };
+            };
+            /** @description storeId 형식 오류 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 근무지 점포가 없거나 업무 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TodosController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                todoId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoDetailDto"];
+                };
+            };
+            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 TO-DO · 지움 · 업무 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TodosController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                todoId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoDeleteResponseDto"];
+                };
+            };
+            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 TO-DO · 지움 · 업무 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 지울 대기 TO-DO 가 없음 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TodosController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                todoId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTodoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoDetailDto"];
+                };
+            };
+            /** @description 입력 오류 · 지난 날짜 · 바꿀 수 없는 칸 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 TO-DO · 지움 · 업무 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TodosController_changeStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                todoId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeTodoStatusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoItemDto"];
+                };
+            };
+            /** @description TO-DO 리스트 관리 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 TO-DO · 지움 · 업무 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description TODO_ALREADY_DONE · TODO_STATUS_CONFLICT(그사이 상태가 바뀜) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StaffMemberTodosController_list: {
+        parameters: {
+            query?: {
+                /** @description 1부터 */
+                page?: number;
+                pageSize?: number;
+                /** @description 여러 개면 `?status=PENDING&status=IN_PROGRESS`. 없으면 전체 */
+                status?: components["schemas"]["TodoStatus"][];
+                /** @description 근무지 점포 */
+                storeId?: number;
+                /** @description 수행 예정 날짜 시작(그날 포함) YYYY-MM-DD */
+                dueDateFrom?: string;
+                /** @description 수행 예정 날짜 끝(그날 포함) YYYY-MM-DD */
+                dueDateTo?: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoItemListResponseDto"];
+                };
+            };
+            /** @description 직원 정보 관리 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원 · ID 형식 오류 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MyTodosController_list: {
+        parameters: {
+            query?: {
+                /** @description 1부터 */
+                page?: number;
+                pageSize?: number;
+                /** @description 여러 개면 `?status=PENDING&status=IN_PROGRESS`. 없으면 전체 */
+                status?: components["schemas"]["TodoStatus"][];
+                /** @description 근무지 점포 */
+                storeId?: number;
+                /** @description 수행 예정 날짜 시작(그날 포함) YYYY-MM-DD */
+                dueDateFrom?: string;
+                /** @description 수행 예정 날짜 끝(그날 포함) YYYY-MM-DD */
+                dueDateTo?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoItemListResponseDto"];
+                };
+            };
+            /** @description 관리자 토큰 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MyTodosController_changeStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                todoId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeTodoStatusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoItemDto"];
+                };
+            };
+            /** @description 관리자 토큰 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 내게 배정되지 않았거나 지운 TO-DO · 내 직원 레코드가 대상 조건(체결 완료 계약 · 가입 · 퇴직) 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description TODO_ALREADY_DONE(다른 직원이 먼저 완료 — performer 에 그 직원, 또는 본인이 완료한 것이 아닌 한 명 수행을 다시 열려 함) · TODO_STATUS_CONFLICT(그사이 상태가 바뀜) */
             409: {
                 headers: {
                     [name: string]: unknown;

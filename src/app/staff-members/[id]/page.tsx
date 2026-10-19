@@ -1,17 +1,20 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { DetailTable, PageBar } from "@/components/common";
+import { Badge, DetailTable, PageBar } from "@/components/common";
 import { getEnum } from "@/lib/api";
 import type { EnumValue } from "@/lib/enums";
 import { kstToday, staffEmailText } from "@/lib/staff-members";
-import { getStaffMember } from "@/lib/staff-members-api";
+import { getStaffMember, staffMemberIdOf } from "@/lib/staff-members-api";
+import { getStaffMemberTodos, type TodoItemList } from "@/lib/todos-api";
+import { dueText, statusCells } from "../../todos/todo-row";
 import { staffListHref } from "../staff-list-query";
 import { EMPLOYMENT_TYPE_LABELS, employmentStatusCells, formatPhone } from "../staff-row";
 import { CellView } from "../staff-table";
 import { ContractBox, ContractBoxLoading } from "./contract-box";
 import { Box, BoxMessage } from "./detail-box";
 import { PasswordResetButton, StaffDetailActions } from "./staff-detail-actions";
+import { TodoManageLink, TodoTitleLink } from "./todo-links";
 
 export const metadata: Metadata = {
   title: "직원 상세 · Whale ERP",
@@ -26,13 +29,48 @@ function NotReady() {
 
 // 「관리」 대상 화면이 아직 없어 링크를 걸지 않는다. 걸면 메뉴 url 이 없을 때 공통 틀이 「접근 권한이 없는 메뉴」로
 // 막아 권한 문제처럼 보인다. 화면이 생기면 메뉴 url(#592 결정)을 manageHref 로 넣는다: 근무스케줄 /work-schedules ·
-// 출퇴근 현황 /attendance-records · 급여명세서 /payslips · TO-DO /todos.
+// 출퇴근 현황 /attendance-records · 급여명세서 /payslips. TO-DO 는 화면(#116)과 메뉴 url(MN000026 /todos)이 생겨 걸었다.
 const RIGHT_BOXES: { title: string; manageHref?: string }[] = [
   { title: "근무스케줄" },
   { title: "출퇴근 현황" },
   { title: "급여명세서" },
-  { title: "TO-DO" },
+  { title: "TO-DO", manageHref: "/todos" },
 ];
+
+/** 직원 상세 TO-DO 영역에 보일 건수. api 순서(미완료 긴급 → 미완료 → 완료)의 앞쪽이다 */
+const STAFF_TODO_COUNT = 5;
+
+// 직원 상세의 TO-DO(#118). 받지 못해도 상세는 그린다 — 이 칸만 안내를 보이고 원인은 서버 로그에 남긴다.
+async function loadStaffTodos(rawId: string): Promise<TodoItemList | null> {
+  const id = staffMemberIdOf(rawId);
+  if (id === null) return null;
+  try {
+    return await getStaffMemberTodos(id, STAFF_TODO_COUNT);
+  } catch (error) {
+    console.error("직원 상세: GET /staff-members/:id/todos 를 받지 못했습니다", error);
+    return null;
+  }
+}
+
+function StaffTodos({ todos, statusLabels, today }: { todos: TodoItemList | null; statusLabels: EnumValue[]; today: string }) {
+  const frame = "rounded-b-[2px] border border-erp-thead-line bg-white text-[14px]";
+  if (!todos) return <BoxMessage alert>TO-DO 를 불러오지 못했습니다.</BoxMessage>;
+  if (todos.items.length === 0) return <BoxMessage>배정된 TO-DO 가 없습니다.</BoxMessage>;
+  return (
+    <ul className={frame}>
+      {todos.items.map((t) => (
+        <li key={t.todoId} className="flex h-[46px] items-center gap-[10px] border-b border-erp-thead-line px-[12px] last:border-b-0">
+          <TodoTitleLink todoId={t.todoId} title={t.title} />
+          {t.isUrgent && <Badge tone="off">긴급</Badge>}
+          <span className="w-[90px] shrink-0 text-center text-erp-label">{dueText(t.dueDate, t.dueTime, today)}</span>
+          <span className="flex w-[110px] shrink-0 justify-center">
+            <CellView cell={statusCells({ ...t, todoCount: 1, doneCount: 0 }, statusLabels)[0]} />
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 // 가입 상태 한글(이메일 칸, WHALEERP-180). 받지 못해도 상세는 그린다 — 이메일 칸만 「-」가 되고 원인은 서버 로그에 남긴다.
 async function loadJoinStateLabels(): Promise<EnumValue[]> {
@@ -55,7 +93,17 @@ export default async function StaffMemberDetailPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const [staff, joinStateLabels] = await Promise.all([getStaffMember((await params).id), loadJoinStateLabels()]);
+  const { id: rawId } = await params;
+  const [staff, joinStateLabels, todos, todoStatusLabels] = await Promise.all([
+    getStaffMember(rawId),
+    loadJoinStateLabels(),
+    loadStaffTodos(rawId),
+    // 받지 못하면 상태가 영문 값으로 보일 뿐이라 상세는 그린다
+    getEnum("TodoStatus").catch((error: unknown) => {
+      console.error("직원 상세: GET /enums/TodoStatus 를 받지 못했습니다", error);
+      return [];
+    }),
+  ]);
   if (!staff) notFound();
   const employmentStatus = employmentStatusCells(staff);
   const listHref = staffListHref(await searchParams);
@@ -103,8 +151,13 @@ export default async function StaffMemberDetailPage({
               </div>
               <div className="flex min-w-0 flex-col gap-[24px]">
                 {RIGHT_BOXES.map((box) => (
-                  <Box key={box.title} title={box.title} manageHref={box.manageHref}>
-                    <NotReady />
+                  <Box
+                    key={box.title}
+                    title={box.title}
+                    manageHref={box.manageHref}
+                    manage={box.title === "TO-DO" && box.manageHref ? <TodoManageLink href={box.manageHref} /> : undefined}
+                  >
+                    {box.title === "TO-DO" ? <StaffTodos todos={todos} statusLabels={todoStatusLabels} today={kstToday()} /> : <NotReady />}
                   </Box>
                 ))}
               </div>
