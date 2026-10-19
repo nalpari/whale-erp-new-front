@@ -236,6 +236,7 @@ export function ContractForm({
   const [tried, setTried] = useState(false);
   const [serverError, setServerError] = useState("");
   const [saving, startSaving] = useTransition();
+  const [locked, setLocked] = useState(false);
   // 저장하지 못하면 안내(폼 맨 아래)로 화면을 옮긴다 — 위쪽 버튼을 누르면 안내가 화면 밖에 떠 제자리인 것처럼 보였다.
   // 같은 이유로 다시 실패해도 옮기도록 횟수로 센다.
   const failureRef = useRef<HTMLDivElement>(null);
@@ -292,6 +293,8 @@ export function ContractForm({
         return;
       }
       setReplace(null);
+      // 결과를 받지 못했다 — 저장 · 발송됐을 수 있어 이 폼으로는 다시 저장하지 않는다(front #50 리뷰)
+      if (result.locked) setLocked(true);
       fail(result.error);
     });
 
@@ -400,7 +403,7 @@ export function ContractForm({
     { key: "sum", label: "합계(계산용)", amount: <Calc strong>{won(fullPay.payTotal)}</Calc> },
   ];
 
-  const blocked = saving || !signedIn || minor;
+  const blocked = saving || !signedIn || minor || locked;
   const saveButtons = (
     <>
       {!correction && (

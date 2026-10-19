@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-19
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #50 리뷰 반영(영주). 수정 요청으로 되돌아간 보내기 실패는 「수정」에서 다시 저장하라고 안내한다(재발송할 수 없는 상태). 재발송에 성공하면 `?send=` 안내를 지운다. 저장의 결과를 받지 못하면(코드 없는 502 · 504 · 응답 전 끊김) 이어 쓰기 · 당사자 정보 수정은 상세로 옮겨 `?send=unknown` 을 띄우고, 새 계약은 같은 폼으로 다시 저장하지 못하게 막는다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세의 소정근로시간을 파트타이머면 작성 화면과 같은 표로 보인다(요일별 시업 · 종업 · 휴게 · 근무시간 · 시급 · 소계, 소계 · 주휴수당 · 주급 · 월급여 — `partTimeRows`). 요일마다 다르게 저장한 시간이 상세에서 한눈에 보이지 않던 것. 휴게가 없는 요일은 휴게 「-」이고 시간에서 빼지 않는다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 발송 흐름 정정(2026-10-19 재영). 저장하면 곧바로 보내 상세의 「발송」 버튼을 뺐다 — 발송 대기 · 서명 대기는 「재발송」과 「수정」(당사자 정보), 수정 요청은 「수정」(계약서 전체, CTR-19). 저장 · 고침 뒤 가입 초대 알림톡이 실패하면(api 502 + 계약 ID) 그 계약 상세로 옮겨 `?send=` 안내를 띄운다(`sendFailedTarget` · `sendNoticeOf`). 작성 · 수정 요청 · 당사자 정보 수정의 안내 문구를 「저장하면 곧바로 보낸다」로 고쳤다. api-types 를 api charmeleon(main + 이 변경) openapi 로 다시 만들었다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — PR #47 리뷰 반영: 응답에 enum 이 빠져 `getEnum` 이 빈 목록을 주면 받지 못한 것과 같이 근로계약 칸의 계약 유형 · 계약 상태를 「-」로 둔다(`labelsOrNull`). 영문 값이 보이던 경로였다.

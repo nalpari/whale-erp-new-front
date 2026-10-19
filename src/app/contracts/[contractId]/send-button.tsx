@@ -45,6 +45,8 @@ export function SendContractButton({ contractId }: { contractId: number }) {
             if (result.ok) {
               setOpen(false);
               setError("");
+              // 보내기 실패 안내(?send=)로 왔다면 쿼리를 지운다 — 남아 있으면 「보내지 못했습니다」를 보고 또 누른다(front #50 리뷰)
+              router.replace(`/contracts/${contractId}`);
               router.refresh();
               return;
             }

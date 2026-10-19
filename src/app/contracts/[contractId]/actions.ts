@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { ApiError, getSession, request } from "@/lib/api";
 import { inProgressOf, type SaveResult } from "../new/contract-form-model";
-import { sendFailedTarget, sendFailureOf, type SendFailure } from "./send-model";
+import { saveOutcomeUnknown, sendFailedTarget, sendFailureOf, type SendFailure } from "./send-model";
 import type { WorkerBody } from "./worker/worker-model";
 
 // 경로에 넣는 id — 1..2147483647 정수만. 서버 액션은 누구나 직접 부를 수 있어 TS 타입이 막아 주지 않는다.
@@ -47,10 +47,14 @@ export async function updateWorker(contractId: number, body: WorkerBody): Promis
       // 고친 내용은 저장했는데 다시 보내기(가입 초대 알림톡)가 실패했다 — 상세에서 알린다
       const sendFailed = sendFailedTarget(e.status, e.body);
       if (sendFailed) redirect(sendFailed);
+      // 결과를 받지 못했다(코드 없는 502 · 504) — 저장 · 다시 보내기가 됐을 수 있어 같은 폼으로 다시 저장하지 않게 상세로(front #50 리뷰)
+      const code = (e.body as { code?: unknown } | null)?.code;
+      if (saveOutcomeUnknown(e.status, typeof code === "string" ? code : undefined)) redirect(`/contracts/${contractId}?send=unknown`);
       const inProgress = e.status === 409 ? inProgressOf(e.body) : undefined;
       return inProgress ? { error: e.message, inProgress } : { error: e.message };
     }
-    throw e;
+    console.error("당사자 정보 저장 응답을 받지 못함", contractId, e);
+    redirect(`/contracts/${contractId}?send=unknown`);
   }
   redirect(`/contracts/${contractId}`);
 }

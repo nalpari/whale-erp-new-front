@@ -1,7 +1,7 @@
 // node --test "src/app/contracts/[contractId]/send-model.test.ts"
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { SEND_UNKNOWN, sendFailedTarget, sendFailureOf, sendNoticeOf } from "./send-model.ts";
+import { saveOutcomeUnknown, SEND_UNKNOWN, sendFailedTarget, sendFailureOf, sendNoticeOf } from "./send-model.ts";
 
 test("sendFailureOf — 접수 여부 모름은 보내기를 막고 상세를 다시 읽는다", () => {
   assert.deepEqual(sendFailureOf(502, "SEND_UNCONFIRMED", "알림톡이 접수됐는지 알 수 없습니다"), {
@@ -54,4 +54,20 @@ test("sendNoticeOf — 되돌아간 상태에 따라 다시 저장 · 재발송�
   assert.match(sendNoticeOf("failed", "PENDING_SEND") ?? "", /재발송해 주세요/);
   assert.match(sendNoticeOf("unconfirmed", "PENDING_SEND") ?? "", /두 번 갈 수 있습니다/);
   for (const raw of [undefined, "", "toString", ["failed"]]) assert.equal(sendNoticeOf(raw, "DRAFT"), null);
+});
+
+test("sendNoticeOf — 수정 요청으로 되돌아갔으면 재발송이 아니라 「수정」에서 다시 저장하라고 한다", () => {
+  const notice = sendNoticeOf("failed", "CORRECTION_REQUESTED") ?? "";
+  assert.match(notice, /「수정」에서 다시 저장/);
+  assert.doesNotMatch(notice, /재발송/);
+  assert.match(sendNoticeOf("unknown", "PENDING_SEND") ?? "", /결과를 받지 못했습니다/);
+});
+
+test("saveOutcomeUnknown — 응답 없음 · 코드 없는 502 · 504 만 결과 모름이다", () => {
+  assert.equal(saveOutcomeUnknown(null, undefined), true);
+  assert.equal(saveOutcomeUnknown(502, undefined), true);
+  assert.equal(saveOutcomeUnknown(504, undefined), true);
+  assert.equal(saveOutcomeUnknown(502, "SEND_FAILED"), false);
+  assert.equal(saveOutcomeUnknown(503, undefined), false);
+  assert.equal(saveOutcomeUnknown(409, undefined), false);
 });
