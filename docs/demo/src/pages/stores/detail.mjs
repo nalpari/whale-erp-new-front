@@ -68,11 +68,13 @@ export default ({ A, R }) => {
     // 같은 회색 글자를 앞에 두는 모양으로 맞췄다. 순서는 상호명 · 사업자등록번호 · 대표자정보 · 개업일자 ·
     // 업태종목 · 사업자주소(2026-10-16 점검).
     ["상호명", "모리커피 연남"],
-    ["사업자등록번호", ui.detailValues([biz, `<span class="mr-[10px] text-erp-label">최종 인증일시</span>2025-08-01 14:22`])],
+    // 첫 칸은 대표자정보 줄의 "대표자 이름 …" 칸과 너비를 맞춰, 둘 다 비어 있을 때도 세로선(|) 위치가
+    // 들쑥날쑥하지 않게 한다(2026-10-19 점검 — 실사용자 확인).
+    ["사업자등록번호", ui.detailValues([`<span class="inline-block min-w-[140px]">${biz}</span>`, `<span class="mr-[10px] text-erp-label">최종 인증일시</span>2025-08-01 14:22`])],
     [
       "대표자정보",
       ui.detailValues([
-        `<span class="mr-[10px] text-erp-label">대표자 이름</span>박서윤`,
+        `<span class="inline-block min-w-[140px]"><span class="mr-[10px] text-erp-label">대표자 이름</span>박서윤</span>`,
         `<span class="mr-[10px] text-erp-label">대표자 연락처</span>010-5521-3380`,
       ]),
     ],

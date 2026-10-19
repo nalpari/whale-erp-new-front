@@ -16,6 +16,9 @@ import { StoreDetailActions } from "./store-detail-actions";
 
 const muted = (text: string) => <span className="text-erp-muted">{text}</span>;
 const orDash = (v: string | null | undefined) => (v ? v : muted("-"));
+/** 사업자등록번호 · 대표자정보 줄의 첫 칸 너비 — 두 값 모두 비었을 때도 DetailValues 의 구분선(|)이
+ * 같은 자리에 오도록 맞춘다(2026-10-19 점검 — 실사용자 확인). */
+const FIRST_COL_WIDTH = "inline-block min-w-[140px]";
 /** 주소 한 줄 — 「[ 우편번호 04104 ] 기본주소(볼드), 상세주소」. 괄호·라벨은 라벨 색, 번호는 기존 데이터 색(검정)이다.
  * 없으면 「-」(2026-10-19 점검 — 두 줄이던 걸 한 줄로, 번호 색·괄호 안쪽 띄어쓰기는 뒤이은 요청으로 다시 손봄) */
 const addressLines = (zip: string | null, address: string | null, detail: string | null) => {
@@ -127,10 +130,14 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
     {
       label: "사업자등록번호",
       // 번호가 마지막으로 언제 인증됐는지 바로 옆에서 보이게 한 행으로 묶었다(2026-10-16 점검).
+      // 첫 칸은 대표자정보 줄의 "대표자 이름 …" 칸과 너비를 맞춰, 둘 다 비어 있을 때도 세로선(|) 위치가
+      // 들쑥날쑥하지 않게 한다(2026-10-19 점검 — 실사용자 확인, FIRST_COL_WIDTH 참고).
       value: (
         <DetailValues
           items={[
-            b.bizRegistrationNumber ? formatBizNumber(b.bizRegistrationNumber) : muted("-"),
+            <span key="n" className={FIRST_COL_WIDTH}>
+              {b.bizRegistrationNumber ? formatBizNumber(b.bizRegistrationNumber) : muted("-")}
+            </span>,
             <span key="v">
               <span className="mr-[10px] text-erp-label">최종 인증일시</span>
               {b.verifiedAt ? formatDateTime(b.verifiedAt) : muted("-")}
@@ -144,7 +151,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
       value: (
         <DetailValues
           items={[
-            <span key="name">
+            <span key="name" className={FIRST_COL_WIDTH}>
               <span className="mr-[10px] text-erp-label">대표자 이름</span>
               {orDash(b.ceoName)}
             </span>,
