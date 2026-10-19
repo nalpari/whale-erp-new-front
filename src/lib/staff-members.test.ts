@@ -1,7 +1,7 @@
 // node --test src/lib/staff-members.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { EMPLOYMENT_TYPES, JOIN_GROUPS, MAX_STORE_IDS, kstToday, staffListApiSearch, staffListEmptyMessage, storeIdsByName, tooManyStores, type StaffListQuery } from "./staff-members.ts";
+import { EMPLOYMENT_TYPES, JOIN_GROUPS, MAX_STORE_IDS, kstToday, staffEmailText, staffListApiSearch, staffListEmptyMessage, storeIdsByName, tooManyStores, type StaffListQuery } from "./staff-members.ts";
 
 const base: StaffListQuery = {
   store: "",
@@ -94,4 +94,55 @@ test("맞는 점포가 없으면 빈 목록", () => {
 test("kstToday 는 한국 날짜 — UTC 로 전날 15시는 한국 0시", () => {
   assert.equal(kstToday(new Date("2026-10-11T15:00:00Z")), "2026-10-12");
   assert.equal(kstToday(new Date("2026-10-11T14:59:00Z")), "2026-10-11");
+});
+
+// GET /enums/StaffJoinState 응답 모양(api STAFF_JOIN_STATE_LABELS).
+const JOIN_STATE_LABELS = [
+  { value: "JOINED", label: "가입 완료", order: 1 },
+  { value: "LINK_HOLD", label: "연결 보류", order: 2 },
+  { value: "UNDER_AGE", label: "가입 불가(만 19세 미만)", order: 3 },
+  { value: "AFFILIATION_PENDING", label: "소속 추가 확인", order: 4 },
+  { value: "RETURN_PENDING", label: "복귀 확인", order: 5 },
+  { value: "INVITED", label: "초대 발송", order: 6 },
+  { value: "EXPIRED", label: "초대 만료", order: 7 },
+  { value: "REJECTED", label: "거절", order: 8 },
+  { value: "DRAFT", label: "초안", order: 9 },
+];
+
+test("이메일 칸 — 값이 있으면 그대로 보인다(조회 권한이면 보인다, ACC-17)", () => {
+  assert.equal(staffEmailText({ email: "jian.seo@example.com", joinState: "JOINED" }, JOIN_STATE_LABELS), "jian.seo@example.com");
+});
+
+test("이메일 칸 — 초안 · 초대 발송은 「가입 전」(화면 문구, enum 한글이 아니다)", () => {
+  for (const joinState of ["DRAFT", "INVITED"] as const) {
+    assert.equal(staffEmailText({ email: null, joinState }, JOIN_STATE_LABELS), "가입 전", joinState);
+    assert.equal(staffEmailText({ email: null, joinState }, []), "가입 전", `${joinState} — enum 없이도`);
+  }
+});
+
+test("이메일 칸 — 그 밖의 가입 전 상태는 api enum(StaffJoinState)의 한글. 초대 만료 · 거절은 소속 추가 확인 · 복귀 확인에서도 생겨 「가입 전」이라 하지 않는다", () => {
+  const expected = {
+    EXPIRED: "초대 만료",
+    REJECTED: "거절",
+    LINK_HOLD: "연결 보류",
+    AFFILIATION_PENDING: "소속 추가 확인",
+    RETURN_PENDING: "복귀 확인",
+    UNDER_AGE: "가입 불가(만 19세 미만)",
+  } as const;
+  for (const [joinState, label] of Object.entries(expected)) {
+    assert.equal(staffEmailText({ email: null, joinState: joinState as keyof typeof expected }, JOIN_STATE_LABELS), label, joinState);
+  }
+});
+
+test("이메일 칸 — 가입 완료인데 없으면(퇴직 · 탈퇴 · 본사가 보는 가맹 직원) 「-」", () => {
+  assert.equal(staffEmailText({ email: null, joinState: "JOINED" }, JOIN_STATE_LABELS), "-");
+});
+
+test("이메일 칸 — 가입 상태를 모르면 「-」", () => {
+  assert.equal(staffEmailText({ email: null, joinState: null }, JOIN_STATE_LABELS), "-");
+});
+
+test("이메일 칸 — enum 을 받지 못했거나(빈 목록) 목록에 없는 값이면 영문 값 대신 「-」", () => {
+  assert.equal(staffEmailText({ email: null, joinState: "LINK_HOLD" }, []), "-");
+  assert.equal(staffEmailText({ email: null, joinState: "SOMETHING_NEW" as never }, JOIN_STATE_LABELS), "-");
 });
