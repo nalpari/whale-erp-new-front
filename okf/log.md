@@ -1,6 +1,8 @@
 # Bundle history
 
 ## 2026-10-19
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 리뷰 반영: 직원 상세 TO-DO 영역의 「관리」 · 제목 링크를 MN000026 조회 권한으로 가른다(없으면 글자).
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 직원 상세의 TO-DO 영역을 `GET /staff-members/:id/todos` 로 채우고 「관리」를 `/todos`(MN000026) 에 걸었다(#118, TO-DO 리스트 관리 화면 #116 · #117 과 함께).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #41 재리뷰 참고 반영(영주). 발송 확인창이 서버 액션 호출 자체가 끊겨도(브라우저 ↔ Next · 배포 중 재시작) 오류 화면 대신 「발송됐는지 알 수 없음」으로 보내기를 막고 상세를 다시 읽는다.
 
 ## 2026-10-16

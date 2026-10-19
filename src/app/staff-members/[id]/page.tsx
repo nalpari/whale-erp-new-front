@@ -2,15 +2,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
-import { DetailTable, PageBar } from "@/components/common";
+import { Badge, DetailTable, PageBar } from "@/components/common";
 import { getEnum } from "@/lib/api";
 import type { EnumValue } from "@/lib/enums";
 import { kstToday, staffEmailText } from "@/lib/staff-members";
-import { getStaffMember } from "@/lib/staff-members-api";
+import { getStaffMember, staffMemberIdOf } from "@/lib/staff-members-api";
+import { getStaffMemberTodos, type TodoItemList } from "@/lib/todos-api";
+import { dueText, statusCells } from "../../todos/todo-row";
 import { staffListHref } from "../staff-list-query";
 import { EMPLOYMENT_TYPE_LABELS, employmentStatusCells, formatPhone } from "../staff-row";
 import { CellView } from "../staff-table";
 import { PasswordResetButton, StaffDetailActions } from "./staff-detail-actions";
+import { TodoManageLink, TodoTitleLink } from "./todo-links";
 
 export const metadata: Metadata = {
   title: "직원 상세 · Whale ERP",
@@ -19,15 +22,15 @@ export const metadata: Metadata = {
 // 아직 값이 없는 칸. 상세 요약 api(WHALEERP-183)가 나오면 채운다.
 const PENDING = "-";
 
-// 데모 staff-parts.mjs 의 box — 제목 줄(오른쪽에 「관리」 링크) + 내용. 내용은 상세 요약 api 가 나온 뒤 채운다.
-// manageHref 가 없으면 「관리」를 흐리게 두고 누를 수 없게 한다 — 그 화면이 아직 없다.
-function Box({ title, manageHref, children }: { title: string; manageHref?: string; children: ReactNode }) {
+// 데모 staff-parts.mjs 의 box — 제목 줄(오른쪽에 「관리」 링크) + 내용. TO-DO 는 GET /staff-members/:id/todos 로 채웠고, 나머지 내용은 상세 요약 api 가 나온 뒤 채운다.
+// manageHref 가 없으면 「관리」를 흐리게 두고 누를 수 없게 한다 — 그 화면이 아직 없다. manage 를 주면 그것을 대신 그린다(권한으로 가르는 링크).
+function Box({ title, manageHref, manage, children }: { title: string; manageHref?: string; manage?: ReactNode; children: ReactNode }) {
   return (
     <section className="min-w-0">
       <h3 className="flex h-[42px] items-center gap-[6px] rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[16px] font-medium text-erp-ink">
         <span className="flex-1">{title}</span>
         <span className="flex items-center gap-[6px] text-[14px] font-normal">
-          {manageHref ? (
+          {manage ?? (manageHref ? (
             <Link href={manageHref} className="text-erp-link hover:underline">
               관리
             </Link>
@@ -35,7 +38,7 @@ function Box({ title, manageHref, children }: { title: string; manageHref?: stri
             <span aria-disabled="true" title="준비 중입니다." className="cursor-default text-erp-muted">
               관리
             </span>
-          )}
+          ))}
         </span>
       </h3>
       {children}
@@ -53,13 +56,48 @@ function NotReady() {
 
 // 「관리」 대상 화면이 아직 없어 링크를 걸지 않는다. 걸면 메뉴 url 이 없을 때 공통 틀이 「접근 권한이 없는 메뉴」로
 // 막아 권한 문제처럼 보인다. 화면이 생기면 메뉴 url(#592 결정)을 manageHref 로 넣는다: 근무스케줄 /work-schedules ·
-// 출퇴근 현황 /attendance-records · 급여명세서 /payslips · TO-DO /todos.
+// 출퇴근 현황 /attendance-records · 급여명세서 /payslips. TO-DO 는 화면(#116)과 메뉴 url(MN000026 /todos)이 생겨 걸었다.
 const RIGHT_BOXES: { title: string; manageHref?: string }[] = [
   { title: "근무스케줄" },
   { title: "출퇴근 현황" },
   { title: "급여명세서" },
-  { title: "TO-DO" },
+  { title: "TO-DO", manageHref: "/todos" },
 ];
+
+/** 직원 상세 TO-DO 영역에 보일 건수. api 순서(미완료 긴급 → 미완료 → 완료)의 앞쪽이다 */
+const STAFF_TODO_COUNT = 5;
+
+// 직원 상세의 TO-DO(#118). 받지 못해도 상세는 그린다 — 이 칸만 안내를 보이고 원인은 서버 로그에 남긴다.
+async function loadStaffTodos(rawId: string): Promise<TodoItemList | null> {
+  const id = staffMemberIdOf(rawId);
+  if (id === null) return null;
+  try {
+    return await getStaffMemberTodos(id, STAFF_TODO_COUNT);
+  } catch (error) {
+    console.error("직원 상세: GET /staff-members/:id/todos 를 받지 못했습니다", error);
+    return null;
+  }
+}
+
+function StaffTodos({ todos, statusLabels, today }: { todos: TodoItemList | null; statusLabels: EnumValue[]; today: string }) {
+  const frame = "rounded-b-[2px] border border-erp-thead-line bg-white text-[14px]";
+  if (!todos) return <p className={`${frame} flex h-[92px] items-center justify-center text-erp-muted`}>TO-DO 를 불러오지 못했습니다.</p>;
+  if (todos.items.length === 0) return <p className={`${frame} flex h-[92px] items-center justify-center text-erp-muted`}>배정된 TO-DO 가 없습니다.</p>;
+  return (
+    <ul className={frame}>
+      {todos.items.map((t) => (
+        <li key={t.todoId} className="flex h-[46px] items-center gap-[10px] border-b border-erp-thead-line px-[12px] last:border-b-0">
+          <TodoTitleLink todoId={t.todoId} title={t.title} />
+          {t.isUrgent && <Badge tone="off">긴급</Badge>}
+          <span className="w-[90px] shrink-0 text-center text-erp-label">{dueText(t.dueDate, t.dueTime, today)}</span>
+          <span className="flex w-[110px] shrink-0 justify-center">
+            <CellView cell={statusCells({ ...t, todoCount: 1, doneCount: 0 }, statusLabels)[0]} />
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 // 가입 상태 한글(이메일 칸, WHALEERP-180). 받지 못해도 상세는 그린다 — 이메일 칸만 「-」가 되고 원인은 서버 로그에 남긴다.
 async function loadJoinStateLabels(): Promise<EnumValue[]> {
@@ -82,7 +120,17 @@ export default async function StaffMemberDetailPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const [staff, joinStateLabels] = await Promise.all([getStaffMember((await params).id), loadJoinStateLabels()]);
+  const { id: rawId } = await params;
+  const [staff, joinStateLabels, todos, todoStatusLabels] = await Promise.all([
+    getStaffMember(rawId),
+    loadJoinStateLabels(),
+    loadStaffTodos(rawId),
+    // 받지 못하면 상태가 영문 값으로 보일 뿐이라 상세는 그린다
+    getEnum("TodoStatus").catch((error: unknown) => {
+      console.error("직원 상세: GET /enums/TodoStatus 를 받지 못했습니다", error);
+      return [];
+    }),
+  ]);
   if (!staff) notFound();
   const employmentStatus = employmentStatusCells(staff);
   const listHref = staffListHref(await searchParams);
@@ -123,8 +171,13 @@ export default async function StaffMemberDetailPage({
               </div>
               <div className="flex min-w-0 flex-col gap-[24px]">
                 {RIGHT_BOXES.map((box) => (
-                  <Box key={box.title} title={box.title} manageHref={box.manageHref}>
-                    <NotReady />
+                  <Box
+                    key={box.title}
+                    title={box.title}
+                    manageHref={box.manageHref}
+                    manage={box.title === "TO-DO" && box.manageHref ? <TodoManageLink href={box.manageHref} /> : undefined}
+                  >
+                    {box.title === "TO-DO" ? <StaffTodos todos={todos} statusLabels={todoStatusLabels} today={kstToday()} /> : <NotReady />}
                   </Box>
                 ))}
               </div>
