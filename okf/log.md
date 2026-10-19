@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-19
+* **Update**: [로그인](/auth.md) — 목업 · 데모를 실제 `/find` 에 맞췄다. 데모 `auth/find.html` 은 휴대폰 인증 시안 대신 이름 · 이메일(비밀번호는 아이디까지) 칸과 결과 안내를 보이고, 고객센터 카드를 뺐다. 목업 `auth/find.html` 은 결과 버튼을 회원가입 · 로그인 이동으로 바꾸고 비밀번호 탭 보조 안내를 지웠다. 화면정의서의 비밀번호 탭 · 이메일 · 아이디 찾기 정의를 결과 안내 하나 · 5xx · 형식 오류 · 요청 제한으로 고쳤다.
 * **Update**: [로그인](/auth.md) · [Whale ERP Frontend](/whale-erp-front.md) — PR #56 리뷰 2차 반영: 찾기 실패 판정을 `find-failure.ts` 로 빼 테스트하고, 예상하지 않은 4xx 는 api 원문 대신 연결 문구 · 로그로, 400 은 이메일 형식 안내로 바꿨다. 임시 비밀번호 5xx 안내를 세 경우 모두에 맞게 고치고, 발급 요청은 본문 파싱 없이 상태 코드만 본다.
 * **Update**: [로그인](/auth.md) · [Whale ERP Frontend](/whale-erp-front.md) — PR #56 리뷰 반영: 임시 비밀번호 요청이 api 5xx 면 「연결 실패」 대신 「처리 결과를 확인하지 못했다」로 안내한다(다시 받으면 앞의 것이 만료되므로).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main(로그인전 화면 Figma 적용) 병합 뒤 `/find` 를 데모 auth/find.html 디자인으로 바꿨다. 틀을 `GuestFindAccount`(디자인 샘플과 함께 씀)로 빼고, 칸은 정책대로 이름 · 이메일을 둔다. 그림 아래 문구는 정책에 맞추고 고객센터 안내 카드는 뺐다(2026-10-19 재영).
