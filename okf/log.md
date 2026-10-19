@@ -1,6 +1,10 @@
 # Bundle history
 
+## 2026-10-19
+* **Update**: [시스템관리](/system.md) — 플랫폼 메뉴 관리의 메뉴 URL 을 등록 · 수정 모두 1뎁스 한 구간(`/staff-content`)만 받게 했다(`menu-form.ts` 의 `validateMenuForm`). api DTO 도 같은 규칙으로 바꿔(borobudur) 생성 타입을 다시 만들었다. 목업 · 데모의 URL 예시도 1뎁스로 바꿨다.
+
 ## 2026-10-16
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [시스템관리](/system.md) — 플랫폼 메뉴 관리(MN000215, `/platform/system/menus`) 화면을 더했다. api `/platform-menus`(borobudur 작업분 openapi)로 생성 타입을 다시 만들고, 서비스 탭(`service-tabs.tsx`)과 카드 · 띠(`side-parts.tsx`)를 권한 관리와 같이 쓰게 꺼냈다. system.md 의 「처음 들어오면 서비스 목록」을 2026-10-08 변경대로 고치고 구현 메모를 더했다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #35 블로커 반영: 권한 수정 폼이 고치던 중 최신 값을 먼저 받아 둔 뒤 동시 수정 409 를 받으면 refresh 를 기다리지 않고 받아 둔 값으로 바로 다시 채운다(`afterConflict`) — 전에는 다시 채우기가 돌지 않아 저장이 계속 409 였다.
 
 ## 2026-10-15
