@@ -24,7 +24,15 @@ export function TermsDialog({ open, onClose, termsTypeCode }: { open: boolean; o
     if (!open && el.open) el.close();
     if (open && !requested.current) {
       requested.current = true;
-      startTransition(async () => setTerms(await getTermsVersionAction(termsTypeCode)));
+      startTransition(async () => {
+        // action 의 try/catch 는 서버 안의 실패만 잡는다. 연결이 끊기거나 배포로 action 이 바뀌면 여기서 reject 되므로 받아 안내로 바꾼다 — 놓치면 오류 경계까지 올라가 가입 폼이 사라진다.
+        try {
+          setTerms(await getTermsVersionAction(termsTypeCode));
+        } catch (error) {
+          console.error(`약관 「${termsTypeCode}」 요청이 서버에 닿지 못했습니다`, error);
+          setTerms(null);
+        }
+      });
     }
     if (!open && terms === null) requested.current = false;
   }, [open, terms, termsTypeCode]);

@@ -18,7 +18,16 @@ export function TermsLink({ termsTypeCode, children }: { termsTypeCode: string; 
   const handleOpen = () => {
     ref.current?.showModal();
     // 받지 못했으면 다시 열 때 한 번 더 묻는다.
-    if (!terms && !pending) startTransition(async () => setTerms(await getTermsVersionAction(termsTypeCode)));
+    if (terms || pending) return;
+    startTransition(async () => {
+      // action 의 try/catch 는 서버 안의 실패만 잡는다. 연결이 끊기거나 배포로 action 이 바뀌면 여기서 reject 되므로 받아 안내로 바꾼다 — 놓치면 오류 경계까지 올라가 화면이 깨진다.
+      try {
+        setTerms(await getTermsVersionAction(termsTypeCode));
+      } catch (error) {
+        console.error(`약관 「${termsTypeCode}」 요청이 서버에 닿지 못했습니다`, error);
+        setTerms(null);
+      }
+    });
   };
 
   return (
