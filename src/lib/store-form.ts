@@ -1,6 +1,7 @@
 // 점포 등록 · 수정 폼의 칸 값 · 검증 · 요청 만들기. 화면 칸은 모두 문자열로 쥐고, 보낼 때 숫자 · null 로 바꾼다.
 // 규칙은 okf stores.md · api 계약(2026-10-14)과 같다 — 서버가 다시 보지만 저장 전에 칸 아래에서 먼저 알린다.
 // node --test 가 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
+import { labelOf, type EnumValue } from "./enums.ts";
 import { finalJosa } from "./store-view.ts";
 import type {
   CreateStoreInput,
@@ -232,8 +233,9 @@ export function verificationErrors(f: Pick<StoreForm, "savedBizNumber" | "bizNum
   return errors;
 }
 
-/** 칸별 오류. 없으면 빈 객체 */
-export function validateStoreForm(f: StoreForm, mode: "create" | "edit"): StoreFormErrors {
+/** 칸별 오류. 없으면 빈 객체. requirementLabels — 운영 조건 한글(GET /enums/StoreOperationRequirement). 새 점포는 미운영으로만
+ * 생겨 이 검증을 타지 않으므로 등록(create) 화면은 빈 배열을 넘겨도 된다 */
+export function validateStoreForm(f: StoreForm, mode: "create" | "edit", requirementLabels: EnumValue[] = []): StoreFormErrors {
   const errors: StoreFormErrors = {};
   if (mode === "create" && !f.storeTypeCode) errors.storeTypeCode = "점포유형을 골라 주세요.";
 
@@ -274,9 +276,14 @@ export function validateStoreForm(f: StoreForm, mode: "create" | "edit"): StoreF
   if (badFloor) errors.floors = "층수는 1 이상의 정수, 매장평수는 소수 1자리, 전용면적은 소수 2자리, 좌석수는 0 이상의 정수입니다.";
 
   // 운영은 사업자정보 인증 · 좌표가 있어야 한다(S-MNRZOM). 서버도 다시 본다. 모자란 것을 한 문장에 모아
-  // 보인다 — 상태 변경 팝업(missingForOperationText)과 같은 문구 꼴이다(2026-10-19 점검 — 실사용자 확인).
+  // 보인다 — 상태 변경 팝업(store-detail-actions.tsx 의 운영 조건 체크리스트)과 같은 라벨 출처 ·
+  // 문구 꼴이다(2026-10-19 점검 — 실사용자 확인). 라벨 한글은 naming.md 규칙대로 getEnum 출처를 쓰고
+  // front 에 대응표를 두지 않는다 — requirementLabels 가 비어 있으면(못 받았거나 테스트) 값 코드를 그대로 보인다.
   if (mode === "edit" && f.storeStatus === "OPERATING") {
-    const missing = [!isBusinessVerified(f) && "사업자정보 인증", (!lat || !lng) && "위치정보(위도 · 경도)"].filter((v): v is string => Boolean(v));
+    const missing = [
+      !isBusinessVerified(f) && labelOf(requirementLabels, "BUSINESS_VERIFICATION"),
+      (!lat || !lng) && labelOf(requirementLabels, "COORDINATES"),
+    ].filter((v): v is string => Boolean(v));
     if (missing.length) {
       const text = missing.join(" · ");
       errors.storeStatus = `운영으로 바꾸려면 ${text}${finalJosa(text)} 필요합니다.`;

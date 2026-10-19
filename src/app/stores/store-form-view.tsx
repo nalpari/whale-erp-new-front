@@ -39,6 +39,7 @@ import {
   type StoreFormErrors,
   type StoreFormField,
 } from "@/lib/store-form";
+import type { EnumValue } from "@/lib/enums";
 import { FLOOR_TYPES, floorTypeOf, type StoreDetail, type StoreImageFileType, type StoreStatus } from "@/lib/store-types";
 import { closeBlockText, formatBizNumber, nextStatuses } from "@/lib/store-view";
 import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
@@ -82,7 +83,14 @@ type ImageChoice = { kind: "keep" } | { kind: "new"; file: File; previewUrl: str
 /** imageTypes — 올릴 수 있는 형식(GET /enums StoreImageFileType). 비면 이미지 칸만 막는다 */
 type Props =
   | { mode: "create"; store?: never; backHref: string; imageTypes: readonly StoreImageFileType[] }
-  | { mode: "edit"; store: StoreDetail; backHref: string; imageTypes: readonly StoreImageFileType[] };
+  | {
+      mode: "edit";
+      store: StoreDetail;
+      backHref: string;
+      imageTypes: readonly StoreImageFileType[];
+      /** 운영 조건 한글(GET /enums/StoreOperationRequirement). 새 점포는 미운영으로만 생겨 이 검증을 타지 않아 등록 화면엔 없다 */
+      requirementLabels: EnumValue[];
+    };
 
 /**
  * 점포 등록(S-ALHLHW) · 수정(S-JEPOMK) 공용 폼. 데모 docs/demo/stores/new · edit 의 배치 — 등록 화면에서만 점포유형
@@ -142,6 +150,7 @@ export function StoreFormView(props: Props) {
   }
 
   const store = props.mode === "edit" ? props.store : null;
+  const requirementLabels = props.mode === "edit" ? props.requirementLabels : [];
   const closedOrBlocked = store ? store.storeStatusCode === "CLOSED" || store.bpAccountStatusCode !== "ACTIVE" : false;
 
   const clearError = (key: StoreFormField) =>
@@ -398,7 +407,7 @@ export function StoreFormView(props: Props) {
     });
 
   const handleSave = () => {
-    const found = validateStoreForm(form, mode);
+    const found = validateStoreForm(form, mode, requirementLabels);
     setErrors(found);
     setFailure(null);
     if (Object.keys(found).length) return focusFirstError();
@@ -594,7 +603,14 @@ export function StoreFormView(props: Props) {
                 />
               </Field>
               <Field label="출퇴근 위치 적용 여부" width="w-[150px]">
-                <Select value={form.isLocationApplied ? "Y" : "N"} onChange={(e) => set("isLocationApplied", e.target.value === "Y")}>
+                {/* 주소가 없으면 사용으로 고를 수 없다 — 주소를 지우면 미사용으로 되돌리는 것과 같은 규칙이다.
+                    전에는 이 칸만 따로 "사용"으로 고를 수 있어 주소 없이 사용인 상태를 다시 만들 수 있었다
+                    (2026-10-19 코드 리뷰로 찾음). */}
+                <Select
+                  value={form.isLocationApplied ? "Y" : "N"}
+                  onChange={(e) => set("isLocationApplied", e.target.value === "Y")}
+                  disabled={!form.address.trim()}
+                >
                   <option value="Y">사용</option>
                   <option value="N">미사용</option>
                 </Select>

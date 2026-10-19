@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button, ConfirmDialog, Radio, useToast } from "@/components/common";
+import { labelOf, type EnumValue } from "@/lib/enums";
 import { formOfStore, toUpdateStoreInput } from "@/lib/store-form";
 import type { StoreDetail, StoreStatus, StoreTransitions } from "@/lib/store-types";
 import { useCodeLabel } from "@/components/site/code-label";
@@ -39,9 +40,12 @@ const UNKNOWN =
 export function StoreDetailActions({
   store,
   backHref,
+  requirementLabels,
 }: {
   store: StoreDetail;
   backHref: string;
+  /** 운영 조건 한글(GET /enums/StoreOperationRequirement). 못 받았으면 빈 목록 — 값을 그대로 보인다 */
+  requirementLabels: EnumValue[];
 }) {
   const router = useRouter();
   const toast = useToast();
@@ -178,15 +182,33 @@ export function StoreDetailActions({
               </div>
             )}
             {target === "OPERATING" && (
+              // 라벨(타이틀)은 상태와 상관없이 기본 글자색 그대로 둔다 — 색은 뒤의 상태 글자에만 준다. 모자라면
+              // 빨강, 다 갖췄으면 기본색 볼드로 "완료"를 강조한다(2026-10-19 점검 — 실사용자 확인). 라벨 한글은
+              // 상세 화면과 같은 GET /enums/StoreOperationRequirement 출처를 쓴다. 목록에 없는 조건(BP_INACTIVE
+              // 등)은 혼자 더 뜨는 모자란 조건 줄로 보여 체크리스트 밖에서 조용히 막히지 않게 한다.
               <div className="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[16px]">
                 <p className="font-semibold">운영 조건</p>
                 <ul className="mt-[6px] list-disc pl-[18px]">
-                  <li className={transitions.missingForOperation.includes("BUSINESS_VERIFICATION") ? "text-erp-off" : undefined}>
-                    사업자정보 인증 - {transitions.missingForOperation.includes("BUSINESS_VERIFICATION") ? "미인증" : "완료"}
-                  </li>
-                  <li className={transitions.missingForOperation.includes("COORDINATES") ? "text-erp-off" : undefined}>
-                    위치정보(위도 · 경도) 저장 - {transitions.missingForOperation.includes("COORDINATES") ? "미저장" : "완료"}
-                  </li>
+                  {(
+                    [
+                      { code: "BUSINESS_VERIFICATION", missingWord: "미인증" },
+                      { code: "COORDINATES", missingWord: "미저장" },
+                    ] as const
+                  ).map(({ code, missingWord }) => {
+                    const missing = transitions.missingForOperation.includes(code);
+                    return (
+                      <li key={code}>
+                        {labelOf(requirementLabels, code)} - {missing ? <span className="text-erp-off">{missingWord}</span> : <b className="font-semibold">완료</b>}
+                      </li>
+                    );
+                  })}
+                  {transitions.missingForOperation
+                    .filter((m) => m !== "BUSINESS_VERIFICATION" && m !== "COORDINATES")
+                    .map((m) => (
+                      <li key={m}>
+                        {labelOf(requirementLabels, m)} - <span className="text-erp-off">미충족</span>
+                      </li>
+                    ))}
                 </ul>
               </div>
             )}

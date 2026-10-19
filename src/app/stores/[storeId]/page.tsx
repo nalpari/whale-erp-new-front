@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { Badge, DetailTable, DetailValues, Tag, type DetailRow } from "@/components/common";
-import { ApiError } from "@/lib/api";
+import { ApiError, getEnum } from "@/lib/api";
 import { formatDateTime, formatPhone } from "@/lib/format";
 import { storeImageFailureText } from "@/lib/store-image";
 import { getStore } from "@/lib/stores";
@@ -49,7 +49,14 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
   if (storeId < 1) notFound();
   const backHref = backHrefOf(search.back);
 
-  const store = await getStore(storeId).catch((error: unknown) => {
+  // 운영 조건 한글(GET /enums/StoreOperationRequirement)을 못 받아도 상세는 연다 — 문구가 값 그대로 보일 뿐이다
+  const [store, requirementLabels] = await Promise.all([
+    getStore(storeId),
+    getEnum("StoreOperationRequirement").catch((error: unknown) => {
+      console.error("운영 조건 한글 조회 실패", error);
+      return [];
+    }),
+  ]).catch((error: unknown) => {
     if (error instanceof ApiError && error.status === 404) notFound();
     throw error;
   });
@@ -177,7 +184,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
             <h2 className="flex min-w-0 flex-1 items-center gap-[10px] text-[18px] font-semibold text-erp-ink">
               <span className="truncate">{store.name}</span>
             </h2>
-            <StoreDetailActions store={store} backHref={backHref} />
+            <StoreDetailActions store={store} backHref={backHref} requirementLabels={requirementLabels} />
           </div>
           <ImageFailedNotice message={imageFailure} />
           {bpInactive && <NoticeBand title="소속 BP 가 미사용 상태여서 이 업무를 할 수 없습니다." detail="조회만 됩니다. 등록 · 수정 · 상태 변경 · 삭제는 BP 를 다시 사용하면 할 수 있습니다." />}

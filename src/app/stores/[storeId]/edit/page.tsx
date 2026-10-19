@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { ApiError } from "@/lib/api";
+import { ApiError, getEnum } from "@/lib/api";
 import { getStore, getStoreImageTypes } from "@/lib/stores";
 import { StoreCardBody, StoreFrame } from "../../store-frame";
 import { StoreFormView } from "../../store-form-view";
@@ -14,19 +14,24 @@ export default async function EditStorePage({ params, searchParams }: PageProps<
   const storeId = /^\d{1,9}$/.test(raw) ? Number(raw) : 0;
   if (storeId < 1) notFound();
 
-  const [store, imageTypes] = await Promise.all([
+  const [store, imageTypes, requirementLabels] = await Promise.all([
     getStore(storeId).catch((error: unknown) => {
       if (error instanceof ApiError && error.status === 404) notFound();
       throw error;
     }),
     getStoreImageTypes(),
+    // 운영 조건 한글(GET /enums/StoreOperationRequirement) — 못 받아도 화면은 연다, 문구가 값 그대로 보일 뿐이다
+    getEnum("StoreOperationRequirement").catch((error: unknown) => {
+      console.error("운영 조건 한글 조회 실패", error);
+      return [];
+    }),
   ]);
 
   return (
     <StoreFrame>
       <StoreCardBody>
         <StorePermission action="update" fallback={<NoticeBand title="점포를 수정할 권한이 없습니다." />}>
-          <StoreFormView mode="edit" store={store} backHref={backHrefOf(search.back)} imageTypes={imageTypes} />
+          <StoreFormView mode="edit" store={store} backHref={backHrefOf(search.back)} imageTypes={imageTypes} requirementLabels={requirementLabels} />
         </StorePermission>
       </StoreCardBody>
     </StoreFrame>
