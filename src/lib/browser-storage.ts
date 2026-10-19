@@ -52,6 +52,9 @@ const KEY = {
   scope: `${PREFIX}scope`,
 } as const;
 const TAB_KEYS = [KEY.currentBp, KEY.stores, KEY.codes, KEY.scope];
+// 앞 버전의 키 — 읽지는 않지만 로그인 정보(아이디 · 이름 · 이메일 · 메뉴 권한 · 점포)가 들어 있어 로그아웃할 때 함께 지운다(공용 PC).
+const LEGACY_PREFIXES = ["whale-erp:v1:"];
+const LEGACY_KEYS = LEGACY_PREFIXES.flatMap((p) => Object.values(KEY).map((k) => p + k.slice(PREFIX.length)));
 /** 다른 탭이 로그인·로그아웃했는지 storage 이벤트로 알아챌 때 보는 키. */
 export const LOGIN_INFO_KEY = KEY.loginInfo;
 
@@ -105,10 +108,10 @@ export const writeCodes = (bpCodeId: number, codes: Codes) => write(tab, KEY.cod
 export const readScope = (bpCodeId: number) => ofBp(read<{ bpCodeId: number; scope: Scope }>(tab, KEY.scope), bpCodeId)?.scope ?? null;
 export const writeScope = (bpCodeId: number, scope: Scope) => write(tab, KEY.scope, { bpCodeId, scope });
 
-/** 로그인 화면에서 부른다. 이 탭과 공용 저장소의 로그인 정보를 지운다(아이디 저장 whale-erp:saved-login-id 는 남긴다). */
+/** 로그인 화면에서 부른다. 이 탭과 공용 저장소의 로그인 정보를 지운다(아이디 저장 whale-erp:saved-login-id 는 남긴다). 앞 버전 키도 지운다. */
 export function clearLoginStorage() {
-  remove(local, [KEY.loginInfo, KEY.loginBpInfo, KEY.selectedBp]);
-  remove(tab, TAB_KEYS);
+  remove(local, [KEY.loginInfo, KEY.loginBpInfo, KEY.selectedBp, ...LEGACY_KEYS]);
+  remove(tab, [...TAB_KEYS, ...LEGACY_KEYS]);
 }
 
 function pickBp({ bpCodeId, bpCode, tradeName }: StoredBp): StoredBp {
