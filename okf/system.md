@@ -3,7 +3,7 @@ type: Area
 title: 플랫폼 시스템 관리
 description: 플랫폼 운영 인력의 계정·권한과 모든 BP 가 함께 쓰는 기준정보(메뉴·공통코드·공식 휴일)를 다루는 영역.
 tags: [mockup, system]
-generated: { by: claude-code/opus-5.5, at: 2026-10-19T00:30:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-19T06:00:00Z }
 ---
 
 근거: `docs/mockup/system/` (목업 · 1차 · R-KJGJXP)
@@ -104,7 +104,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-19T00:30:00Z }
 * 사용중지 메뉴 아래에도 신규 메뉴를 만들 수 있고, 사용자에게는 보이지 않는다고 알린다 — `S-GXMZOU`
 * 조회 권한만 있으면 끌기·신규 메뉴·저장·위치 옮기기가 없고 상세는 읽기만 한다 — `S-GXMZOU`
 * 구현 메모(front 2026-10-16): 메뉴 코드는 api 가 저장할 때 매겨 등록 양식에 미리 보이지 않는다. 이 화면(MN000215)이나 그 상위를 미사용으로 저장하면 확인을 받는다 — api 는 막지 않고, 끄면 이 화면으로는 되돌릴 수 없다
-* 메뉴 URL 은 등록 · 수정 모두 1뎁스 한 구간만 받는다 — `/staff/content` 가 아니라 `/staff-content`(소문자 · 숫자 · '-'). api(`PlatformMenuFieldsDto`)도 같은 규칙으로 400 을 준다. 이 규칙 전에 넣은 여러 구간 URL 은 저장하려면 1뎁스로 고친다 (2026-10-19)
+* 메뉴 URL 은 새로 넣을 때 1뎁스 한 구간만 받는다 — `/staff/content` 가 아니라 `/staff-content`(소문자 · 숫자 · '-'). 등록과, 수정에서 URL 을 바꿀 때 건다. 그대로 둔 기존 URL 은 여러 구간이어도 받는다 — 1팀 시드 메뉴(`/platform/system/…` 등)의 URL 은 실제 화면 주소라, 1뎁스로 바꾸면 URL 막기(isAllowed)가 그 화면을 막는다(front #51 리뷰). 1팀 메뉴 URL · 라우트를 1뎁스로 옮기기 전까지 그대로 둔다. 이 화면(MN000215) 메뉴의 URL 을 바꾸면 확인을 받는다. api 서비스도 같은 규칙으로 400 을 준다 (2026-10-19)
 
 ## 플랫폼 공통코드 관리
 
