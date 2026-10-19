@@ -1,9 +1,9 @@
 # Bundle history
 
 ## 2026-10-19
-* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 회원가입 약관동의의 「내용보기」 팝업도 api 약관(`TERMS_SERVICE` · `PRIVACY_COLLECT`)을 받아 그린다. 목업 문구 사본 `signup/_components/terms.ts` 를 지웠다.
-* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 약관 문구를 api 공개 조회(`/public-terms-versions`)로 바꿨다. `/terms` 탭 해시가 약관 유형 코드(`#TERMS_SERVICE` · `#PRIVACY_COLLECT`)가 되고, 본문 Markdown 은 `react-markdown` + `remark-gfm`(`TermsMarkdown`)이 화면 · 팝업 함께 그린다. 목업 생성 파일(`src/lib/terms.ts` 의 TERMS)은 지웠다.
-* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 약관 전문 화면 `/terms`(데모 auth/terms.html, 세로 탭 6개 · 해시로 탭 선택)를 더하고 공개 경로에 넣었다. 비로그인 푸터의 이용약관 · 개인정보처리방침이 팝업 대신 `/terms#use` · `#privacy` 로 간다 — 개인정보처리방침은 개인정보 수집·이용 동의(BP 가입용)로 본다(재영). `src/lib/terms.ts` 를 목업 TERMS 일곱 개 전체로 다시 만들었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합: PR #44 의 로그인 중 「홈으로」(Login 자리에 자기 홈)를 `GuestHeader` 로 옮겼다 — `(site)/layout.tsx` 가 세션을 읽어 넘기고, 디자인 샘플은 늘 Login 이다. `site-nav.tsx` 는 지운 채로 둔다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 동의를 받는 약관 팝업(강제 비밀번호 변경 `TermsLink` · 회원가입 「내용보기」)도 api 약관(`TERMS_SERVICE` · `PRIVACY_COLLECT`)을 열 때 받아 `TermsMarkdown` 으로 그린다. 캐시 없이 사용 중 버전을 받아 보인 버전과 동의 기록 버전이 같다. 목업 문구 사본 `signup/_components/terms.ts` 를 지웠다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 약관 전문 화면 `/terms`(데모 auth/terms.html, 왼쪽 세로 탭 6개 · 고른 탭은 해시 = 약관 유형 코드)를 더하고 공개 경로에 넣었다. 목록 · 본문은 api 공개 조회 `/public-terms-versions` 에서 받아(한 시간 캐시) Markdown 을 `react-markdown` + `remark-gfm`(`TermsMarkdown`)으로 그리고, 본문 하나가 실패하면 그 탭만 뺀다. 비로그인 푸터의 이용약관 · 개인정보처리방침은 팝업 대신 `/terms#TERMS_SERVICE` · `#PRIVACY_COLLECT` 로 간다 — 개인정보처리방침은 개인정보 수집·이용 동의(BP 가입용)로 본다(재영). 목업 문구 사본(`src/lib/terms.ts` 의 TERMS)은 지웠다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 로그인 전 실제 화면을 Figma 「로그인전」 디자인으로 바꿨다. `(site)` 틀이 `GuestHeader`·`GuestFooter` 를 쓰고(`SiteNav`·`SiteFooter` 삭제), 홈·`/store-operations`·`/add-on-services`·`/login` 틀을 `design/guest` 샘플과 한 구현으로 공유한다(링크는 `guest-routes.ts`). 두 소개 경로를 공개 경로에 더했다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 리뷰 반영: 직원 상세 TO-DO 영역의 「관리」 · 제목 링크를 MN000026 조회 권한으로 가른다(없으면 글자).
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 직원 상세의 TO-DO 영역을 `GET /staff-members/:id/todos` 로 채우고 「관리」를 `/todos`(MN000026) 에 걸었다(#118, TO-DO 리스트 관리 화면 #116 · #117 과 함께).
