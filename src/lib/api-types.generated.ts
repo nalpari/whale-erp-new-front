@@ -4068,8 +4068,9 @@ export interface components {
         /** @enum {string} */
         TodoExecutionMode: "EACH" | "ANY_ONE";
         TodoStaffDto: {
-            staffMemberId: number;
-            staffMemberName: string;
+            staffMemberId: number | null;
+            staffMemberName: string | null;
+            isMasked: boolean;
         };
         TodoListItemDto: {
             assigneeType: components["schemas"]["TodoAssigneeType"];
@@ -4123,20 +4124,23 @@ export interface components {
             items: components["schemas"]["AssignableStaffItemDto"][];
         };
         TodoAssigneeDto: {
+            staffMemberId: number | null;
+            staffMemberName: string | null;
             /** Format: date-time */
             completedAt: string | null;
             isCompleted: boolean;
-            staffMemberId: number;
-            staffMemberName: string;
+            isMasked: boolean;
         };
         TodoGroupRowDto: {
-            /** @description 퇴직으로 배정이 풀린 행은 null */
+            /** @description 퇴직으로 배정이 풀린 행 · 가린 직원은 null */
             staffMemberId: number | null;
             staffMemberName: string | null;
             status: components["schemas"]["TodoStatus"];
             /** Format: date-time */
             completedAt: string | null;
             todoId: number;
+            /** @description 가린 직원(TodoStaffDto.isMasked 와 같은 뜻) */
+            isMasked: boolean;
         };
         TodoStatusHistoryDto: {
             /** @description 등록 때 줄은 null */
@@ -4151,6 +4155,10 @@ export interface components {
             unassignedStaffMemberName: string | null;
             /** @description 긴급 표시를 바꾼 줄 */
             isUrgentChanged: boolean;
+            /** @description 바꾼 직원을 가렸으면 true — staffMemberId · staffMemberName 이 null */
+            isStaffMemberMasked: boolean;
+            /** @description 배정이 풀린 직원을 가렸으면 true */
+            isUnassignedStaffMemberMasked: boolean;
             /** Format: date-time */
             changedAt: string;
         };
