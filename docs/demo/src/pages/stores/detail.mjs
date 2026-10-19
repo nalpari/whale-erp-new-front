@@ -32,10 +32,10 @@ export default ({ A, R }) => {
       ],
       ["점포코드", code],
       ["점포 연락처", phone],
-      // 1줄 회색 「우편번호」 글자 + 값 · 2줄 「기본주소(볼드), 상세주소」(2026-10-16 점검).
+      // 한 줄 「[우편번호 04104] 기본주소(볼드), 상세주소」(2026-10-19 점검 — 두 줄이던 걸 한 줄로).
       [
         "점포 주소",
-        `<span class="flex flex-col"><span><span class="mr-[10px] text-erp-label">우편번호</span>03991</span><span><b class="font-semibold">서울 마포구 동교로 256</b>, 1층</span></span>`,
+        `<span><span class="mr-[10px] text-erp-label">[우편번호 03991]</span><b class="font-semibold">서울 마포구 동교로 256</b>, 1층</span>`,
         true,
       ],
       // 위도 · 경도 · 출퇴근 위치 적용 여부 각각 라벨과 같은 회색 글자를 앞에 두고, 데이터와 한 단 더 떨어뜨렸다
@@ -79,7 +79,7 @@ export default ({ A, R }) => {
     ["업태 · 종목", ui.detailValues(["음식점업", "커피전문점"])],
     [
       "사업자주소",
-      `<span class="flex flex-col"><span><span class="mr-[10px] text-erp-label">우편번호</span>03991</span><span><b class="font-semibold">서울 마포구 동교로 256</b>, 1층</span></span>`,
+      `<span><span class="mr-[10px] text-erp-label">[우편번호 03991]</span><b class="font-semibold">서울 마포구 동교로 256</b>, 1층</span>`,
     ],
   ]);
 

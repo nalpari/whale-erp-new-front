@@ -16,24 +16,15 @@ import { StoreDetailActions } from "./store-detail-actions";
 
 const muted = (text: string) => <span className="text-erp-muted">{text}</span>;
 const orDash = (v: string | null | undefined) => (v ? v : muted("-"));
-/** 주소 두 줄 — 1줄 회색 「우편번호」 글자 + 값 · 2줄 「기본주소(볼드), 상세주소」. 없으면 「-」(2026-10-16 점검) */
+/** 주소 한 줄 — 「[우편번호 04104] 기본주소(볼드), 상세주소」. 없으면 「-」(2026-10-19 점검 — 두 줄이던 걸 한 줄로) */
 const addressLines = (zip: string | null, address: string | null, detail: string | null) => {
   if (!zip && !address && !detail) return muted("-");
   return (
-    <span className="flex flex-col">
-      {zip && (
-        <span>
-          <span className="mr-[10px] text-erp-label">우편번호</span>
-          {zip}
-        </span>
-      )}
-      {(address || detail) && (
-        <span>
-          {address && <b className="font-semibold">{address}</b>}
-          {address && detail && ", "}
-          {detail}
-        </span>
-      )}
+    <span>
+      {zip && <span className="mr-[10px] text-erp-label">[우편번호 {zip}]</span>}
+      {address && <b className="font-semibold">{address}</b>}
+      {address && detail && ", "}
+      {detail}
     </span>
   );
 };

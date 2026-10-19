@@ -601,16 +601,13 @@ export function StoreFormView(props: Props) {
             {message("latitude")}
             {message("longitude")}
             {coordinateNote && <FieldMessage id={`${ids}-coordinate`} message={coordinateNote} />}
-            {locating ? (
-              <Note>고른 주소의 위도 · 경도를 가져오는 중입니다.</Note>
-            ) : (
-              // 이미지 올리기 도움말과 같은 줄간격이 되도록 한 Note(한 <p>) 안에서 줄만 바꾼다(2026-10-16 점검).
-              <Note>
-                점포주소가 입력되면 <b className="font-semibold">위도</b> · <b className="font-semibold">경도</b> 좌표값이 자동으로 표시됩니다.
-                <br />
-                <b className="font-semibold">출퇴근 위치 적용 여부</b>를 <b className="font-semibold">사용</b>으로 설정하면 이 좌표를 기준으로 직원의 출퇴근 위치를 확인할 수 있습니다.
-              </Note>
-            )}
+            {/* "가져오는 중입니다" 로 바꿔 보였다가 되돌아오던 것을 뺐다 — 버튼(주소로 다시 계산)을 눌러도
+                도움말이 깜빡이지 않고 그대로 있는다(2026-10-19). 받는 동안 버튼·저장이 막히는 것으로 충분하다. */}
+            <Note>
+              점포주소가 입력되면 <b className="font-semibold">위도</b> · <b className="font-semibold">경도</b> 좌표값이 자동으로 표시됩니다.
+              <br />
+              <b className="font-semibold">출퇴근 위치 적용 여부</b>를 <b className="font-semibold">사용</b>으로 설정하면 이 좌표를 기준으로 직원의 출퇴근 위치를 확인할 수 있습니다.
+            </Note>
           </Stack>
           <Labeled label="대표 이미지">
             <div className="flex items-end gap-[18px]">
