@@ -169,8 +169,25 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
         />
       ),
     },
-    { label: "개업일자", value: orDash(b.openDate) },
-    { label: "업태 · 종목", value: b.category || b.item ? <DetailValues items={[b.category ?? "-", b.item ?? "-"]} /> : muted("-") },
+    {
+      label: "등록정보",
+      // 개업일자 · 업태종목을 한 줄로 묶었다 — 사업자등록번호 · 대표자정보 줄과 같은 모양이다(2026-10-19 점검 —
+      // 실사용자 확인). 첫 칸은 그 줄들과 같은 FIRST_COL_WIDTH 로 맞춰 구분선(|)이 들쑥날쑥하지 않게 한다.
+      value: (
+        <DetailValues
+          items={[
+            <span key="open" className={FIRST_COL_WIDTH}>
+              <span className="mr-[10px] text-erp-label">개업일자</span>
+              {orDash(b.openDate)}
+            </span>,
+            <span key="cat">
+              <span className="mr-[10px] text-erp-label">업태 · 종목</span>
+              {b.category || b.item ? <DetailValues items={[b.category ?? "-", b.item ?? "-"]} /> : muted("-")}
+            </span>,
+          ]}
+        />
+      ),
+    },
     { label: "사업자주소", value: addressLines(b.zipCode, b.address, b.addressDetail), multiline: true },
   ];
 

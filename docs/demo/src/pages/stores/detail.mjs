@@ -83,8 +83,15 @@ export default ({ A, R }) => {
         `<span class="mr-[10px] text-erp-label">대표자 연락처</span>010-5521-3380`,
       ]),
     ],
-    ["개업일자", "2019-05-10"],
-    ["업태 · 종목", ui.detailValues(["음식점업", "커피전문점"])],
+    // 개업일자 · 업태종목을 한 줄로 묶었다 — 사업자등록번호 · 대표자정보 줄과 같은 모양이다(2026-10-19 점검 —
+    // 실사용자 확인). 첫 칸은 그 줄들과 같은 FIRST_COL 로 맞춘다.
+    [
+      "등록정보",
+      ui.detailValues([
+        `<span class="${FIRST_COL}"><span class="mr-[10px] text-erp-label">개업일자</span>2019-05-10</span>`,
+        `<span class="mr-[10px] text-erp-label">업태 · 종목</span>${ui.detailValues(["음식점업", "커피전문점"])}`,
+      ]),
+    ],
     [
       "사업자주소",
       `<span><span class="mr-[10px]"><span class="text-erp-label">[ 우편번호</span> 03991 <span class="text-erp-label">]</span></span><b class="font-semibold">서울 마포구 동교로 256</b>, 1층</span>`,
