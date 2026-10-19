@@ -9,6 +9,8 @@ export type TemporaryPasswordState = { error?: string; name?: string; loginId?: 
 
 const CONNECT_FAILED = "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요";
 const THROTTLED = "요청이 많습니다. 잠시 뒤 다시 시도해 주세요";
+const TEMPORARY_PASSWORD_UNKNOWN =
+  "처리 결과를 확인하지 못했습니다. 메일이 왔다면 가장 최근 메일의 임시 비밀번호를 쓰고, 오지 않았다면 잠시 뒤 다시 요청해 주세요";
 // 임시 비밀번호는 api 가 메일 발송을 기다린 뒤 답한다. 멈춘 api 에 폼이 수 분 동안 「처리 중」으로 잠기지 않게 끊는다.
 const TIMEOUT_MS = 10_000;
 
@@ -69,6 +71,12 @@ export async function issueTemporaryPassword(_prev: TemporaryPasswordState, form
     if (isTimeout(e)) {
       console.error("[find] 임시 비밀번호 요청 시간 초과", e);
       return { sent: true };
+    }
+    // api 는 메일을 보낸 뒤 발급을 저장한다. 5xx 는 메일만 나가고 저장이 실패했을 수도(그 비밀번호는 못 쓴다), 발급을 마친 뒤
+    // 게이트웨이 502 · 504 일 수도 있다. 「연결 실패」로 다시 받게 하면 앞의 것을 만료시키므로 결과를 모른다고 안내한다.
+    if (e instanceof ApiError && e.status >= 500) {
+      console.error("[find] 임시 비밀번호 요청 api 5xx", e.status, e.message);
+      return { error: TEMPORARY_PASSWORD_UNKNOWN, name, loginId, email };
     }
     return { error: failureOf(e), name, loginId, email };
   }
