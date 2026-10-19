@@ -81,7 +81,7 @@ test("readCurrentBp: 같은 로그인이면 서비스와 loginKey 를 뺀 BP 를
 
 test("readCurrentBp: 서비스가 없는 옛 값은 버린다", () => {
   const { tab } = fresh();
-  tab.setItem("whale-erp:v1:current-bp", JSON.stringify({ loginKey: "k", ...a }));
+  tab.setItem("whale-erp:v2:current-bp", JSON.stringify({ loginKey: "k", ...a }));
   assert.equal(readCurrentBp("k"), null);
   assert.deepEqual(tab.keys(), []);
 });
@@ -112,6 +112,12 @@ test("clearLoginStorage: 로그인 정보만 지우고 아이디 저장은 남�
   local.setItem("whale-erp:saved-login-id", "whaleadmin");
   writeSelectedBp("k", a);
   writeCurrentBp("k", erp(a));
+  // 앞 버전(v1) 키도 남기지 않는다 — 로그인 정보가 들어 있다
+  local.setItem("whale-erp:v1:login-info", "{}");
+  local.setItem("whale-erp:v1:login-bp-info", "{}");
+  local.setItem("whale-erp:v1:selected-bp", "{}");
+  tab.setItem("whale-erp:v1:current-bp", "{}");
+  tab.setItem("whale-erp:v1:scope", "{}");
   clearLoginStorage();
   assert.deepEqual(local.keys(), ["whale-erp:saved-login-id"]);
   assert.deepEqual(tab.keys(), []);
