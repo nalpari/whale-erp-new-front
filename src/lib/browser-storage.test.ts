@@ -81,7 +81,7 @@ test("readCurrentBp: 같은 로그인이면 서비스와 loginKey 를 뺀 BP 를
 
 test("readCurrentBp: 서비스가 없는 옛 값은 버린다", () => {
   const { tab } = fresh();
-  tab.setItem("whale-erp:v1:current-bp", JSON.stringify({ loginKey: "k", ...a }));
+  tab.setItem("whale-erp:v2:current-bp", JSON.stringify({ loginKey: "k", ...a }));
   assert.equal(readCurrentBp("k"), null);
   assert.deepEqual(tab.keys(), []);
 });

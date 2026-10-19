@@ -40,7 +40,8 @@ export interface TabContext {
 
 // 저장 모양을 바꾸는 배포에서는 숫자를 올린다. 옛 값은 읽히지 않고 SessionGate 가 login-info 를 다시 받는다
 // (그때 플랫폼 계정이 다른 BP 로 연 탭은 자기 BP 로 돌아간다). 모양만 바꾸고 숫자를 그대로 두면 옛 값으로 화면이 깨진다.
-const PREFIX = "whale-erp:v1:";
+// v2(2026-10-19): 1팀 메뉴 url 이 한 단계 경로로 바뀌어(api #70) 옛 login-info 의 메뉴 url 로는 헤더 · 화면 권한이 맞지 않는다.
+const PREFIX = "whale-erp:v2:";
 const KEY = {
   loginInfo: `${PREFIX}login-info`,
   loginBpInfo: `${PREFIX}login-bp-info`,
