@@ -8,7 +8,7 @@ import { formatPhone, type ContractDetail } from "../new/contract-form-model";
 import { documentNoticeOf } from "./document-notice";
 import { SendContractButton } from "./send-button";
 import { sendNoticeOf } from "./send-model";
-import { insuranceText, kstDateTime, payDayText, probationText, weeklyHoursOf, workDayLines } from "./detail-format";
+import { insuranceText, kstDateTime, partTimeRows, payDayText, probationText, weeklyHoursOf, workDayLines, type PartTimeRow } from "./detail-format";
 
 type Status = Parameters<typeof StatusBadge>[0]["status"];
 
@@ -106,10 +106,29 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
         { label: "시급", value: c.wageAmount === null ? "-" : c.wageAmount.toLocaleString("ko-KR") },
         {
           label: "소정근로시간",
-          value: c.workDays.length ? (
-            <DetailValues items={[`주 ${weeklyHoursOf(c.workDays).toFixed(1)}시간`, ...workDayLines(c.workDays, (d) => labelOf(weekdays, d))]} />
-          ) : (
+          value: !c.workDays.length ? (
             "-"
+          ) : c.employmentType === "PART_TIME" ? (
+            // 파트타이머는 요일마다 시간이 다를 수 있어 작성 화면과 같은 표로 보인다 — 요일별 시각 · 근무시간 · 소계와 주휴수당 · 주급 · 월급여
+            <div className="flex flex-col gap-[8px] py-[4px]">
+              <span>주 {weeklyHoursOf(c.workDays).toFixed(1)}시간</span>
+              <DataTable
+                columns={[
+                  { header: "요일", width: "w-[90px]", cell: (r: PartTimeRow) => r.label },
+                  { header: "시업", cell: (r: PartTimeRow) => r.start },
+                  { header: "종업", cell: (r: PartTimeRow) => r.end },
+                  { header: "휴게 시작", cell: (r: PartTimeRow) => r.restStart },
+                  { header: "휴게 종료", cell: (r: PartTimeRow) => r.restEnd },
+                  { header: "근무시간", cell: (r: PartTimeRow) => r.hours },
+                  { header: "시급", cell: (r: PartTimeRow) => r.wage },
+                  { header: "소계", cell: (r: PartTimeRow) => r.amount },
+                ]}
+                rows={partTimeRows(c, (d) => labelOf(weekdays, d))}
+                rowKey={(r) => r.key}
+              />
+            </div>
+          ) : (
+            <DetailValues items={[`주 ${weeklyHoursOf(c.workDays).toFixed(1)}시간`, ...workDayLines(c.workDays, (d) => labelOf(weekdays, d))]} />
           ),
         },
         { label: "주휴일", value: c.weeklyHoliday ? `${labelOf(weekdays, c.weeklyHoliday)}요일` : "-" },
