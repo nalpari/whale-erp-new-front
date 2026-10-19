@@ -62,10 +62,10 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
   });
 
   const b = store.business;
-  // 대표 이미지는 표에 두지 않고 제목 줄의 머리 카드로 옮겼다(2026-10-19 점검 — 실사용자 확인, 디자인 데모
-  // 1안 채택). 점포코드는 머리 카드에도 있지만 표 맨 위에도 다시 둔다(실사용자 재지시).
+  // 대표 이미지 · 점포코드는 표에 두지 않고 제목 줄의 머리 카드로 옮겼다(2026-10-19 점검 — 실사용자 확인,
+  // 디자인 데모 1안 채택). 표 맨 위는 점포상태로 바꿔 머리 카드의 배지와 같은 값을 글자로도 보여 준다.
   const basicRows: DetailRow[] = [
-    { label: "점포코드", value: store.storeCode },
+    { label: "점포상태", value: <StoreStatusBadge status={store.storeStatusCode} /> },
     { label: "점포 연락처", value: store.phone ? formatPhone(store.phone) : muted("-") },
     { label: "점포주소", value: addressLines(store.zipCode, store.address, store.addressDetail), multiline: true },
     {
@@ -100,21 +100,22 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
       // 고친 적 없으면 최종수정 값은 「-」(화면 정의서). 등록 · 최종수정 글자는 라벨과 같은 회색이다. [변경이력
       // 보기] 버튼은 DetailValues 밖에 따로 두어 앞에 구분선(|)이 안 붙게 하고, justify-between 으로 칸 맨
       // 오른쪽에 고정한다 — 칸 자체의 12px 오른쪽 여백(DetailTable dd)이 있어 따로 더 주지 않는다(2026-10-16 점검).
-      // 등록 · 최종수정 칸도 위치정보 줄의 위도 · 경도 칸과 너비를 맞췄다(2026-10-19 점검).
+      // 등록 · 최종수정은 DetailValues(inline-block) 대신 flex-1 + truncate 로 직접 그린다 — 처리자 이름이
+      // 길면(예: 테스트 계정명) 고정폭을 넘어 [변경이력] 버튼을 dd 밖으로 밀어내 잘리는 문제가 있었다. 두 값이
+      // 남는 폭을 반씩 나눠 가지며 길면 말줄임되므로 버튼은 항상 자리를 지킨다(2026-10-19 점검 — 실사용자 확인).
       value: (
-        <span className="flex w-full items-center justify-between gap-[12px]">
-          <DetailValues
-            items={[
-              <span key="c" className={FIRST_COL_WIDTH}>
-                <span className="mr-[10px] text-erp-label">등록</span>
-                {formatDateTime(store.createdAt)} · {store.createdByName ?? "-"}
-              </span>,
-              <span key="u" className={FIRST_COL_WIDTH}>
-                <span className="mr-[10px] text-erp-label">최종수정</span>
-                {store.updatedByName ? `${formatDateTime(store.updatedAt)} · ${store.updatedByName}` : muted("-")}
-              </span>,
-            ]}
-          />
+        <span className="flex w-full items-center gap-[12px]">
+          <span className="flex min-w-0 flex-1 items-center gap-[10px]">
+            <span className="min-w-0 flex-1 truncate">
+              <span className="mr-[10px] text-erp-label">등록</span>
+              {formatDateTime(store.createdAt)} · {store.createdByName ?? "-"}
+            </span>
+            <span className="h-[11px] w-px shrink-0 bg-[#d9d9d9]" />
+            <span className="min-w-0 flex-1 truncate">
+              <span className="mr-[10px] text-erp-label">최종수정</span>
+              {store.updatedByName ? `${formatDateTime(store.updatedAt)} · ${store.updatedByName}` : muted("-")}
+            </span>
+          </span>
           <HistoryButton storeId={store.storeId} />
         </span>
       ),

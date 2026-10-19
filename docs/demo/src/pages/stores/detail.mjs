@@ -37,12 +37,12 @@ export default ({ A, R }) => {
     </div>
   </div>`;
 
-  // 점포 기본정보: 대표 이미지는 위 머리 카드로 옮겨 다시 적지 않는다. 점포코드는 머리 카드에도 있지만 표
-  // 맨 위에도 다시 둔다(2026-10-19 점검 — 실사용자 확인, 재지시).
+  // 점포 기본정보: 대표 이미지 · 점포코드는 위 머리 카드로 옮겨 다시 적지 않는다. 표 맨 위는 점포상태로
+  // 바꿔 머리 카드의 배지와 같은 값을 글자로도 보여 준다(2026-10-19 점검 — 실사용자 확인).
   const basic = ui.detailTable(
     "점포 기본정보",
     [
-      ["점포코드", code],
+      ["점포상태", ui.badge("on", state)],
       ["점포 연락처", phone],
       // 한 줄 「[ 우편번호 04104 ] 기본주소(볼드), 상세주소」 — 괄호·라벨은 라벨 색, 번호는 기존 데이터 색(검정)이고
       // 괄호 안쪽은 한 칸씩 띄운다(2026-10-19 점검 — 두 줄이던 걸 한 줄로, 번호 색·괄호 안쪽 띄어쓰기는 뒤이은 요청으로 다시 손봄).
@@ -66,13 +66,12 @@ export default ({ A, R }) => {
       // 값은 BP 상세와 같은 「일시 | 사람」을 등록 · 최종수정 두 칸으로 나눠 한 행에 담는다. 등록 시각은
       // 사업자 최초 인증(14:22) 직전으로 잡았다. 「등록」·「최종수정」 글자는 라벨과 같은 회색이다. [변경이력
       // 보기] 버튼은 detailValues 밖에 따로 둬 앞에 구분선(|)이 안 붙게 하고, justify-between 으로 칸 맨
-      // 오른쪽에 고정한다 — 칸 자체의 12px 오른쪽 여백이 있어 따로 더 주지 않는다(2026-10-16 점검).
+      // 오른쪽에 고정한다 — 칸 자체의 12px 오른쪽 여백이 있어 따로 더 주지 않는다(2026-10-16 점검). 등록 ·
+      // 최종수정은 detailValues(inline-block) 대신 flex-1 + truncate 로 직접 그린다 — 처리자 이름이 길면
+      // [변경이력] 버튼이 칸 밖으로 밀려 잘리는 문제가 있었다(2026-10-19 점검 — 실사용자 확인).
       [
         "변경이력",
-        `<span class="flex w-full items-center justify-between gap-[12px]">${ui.detailValues([
-          `<span class="${FIRST_COL}"><span class="mr-[10px] text-erp-label">등록</span>${date} 14:18 · 정하윤</span>`,
-          `<span class="${FIRST_COL}"><span class="mr-[10px] text-erp-label">최종수정</span>2026-08-14 10:31 · 정하윤</span>`,
-        ])}${x.dialogTrigger("변경이력", histId, "soft")}</span>`,
+        `<span class="flex w-full items-center gap-[12px]"><span class="flex min-w-0 flex-1 items-center gap-[10px]"><span class="min-w-0 flex-1 truncate"><span class="mr-[10px] text-erp-label">등록</span>${date} 14:18 · 정하윤</span><span class="h-[11px] w-px shrink-0 bg-[#d9d9d9]"></span><span class="min-w-0 flex-1 truncate"><span class="mr-[10px] text-erp-label">최종수정</span>2026-08-14 10:31 · 정하윤</span></span>${x.dialogTrigger("변경이력", histId, "soft")}</span>`,
       ],
     ],
   );

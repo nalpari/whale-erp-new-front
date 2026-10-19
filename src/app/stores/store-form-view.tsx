@@ -621,9 +621,13 @@ export function StoreFormView(props: Props) {
                     미사용으로 되돌리는 것과 같은 규칙이다. 주소가 아니라 좌표로 가린다 — 주소는 골랐는데
                     지오코딩이 늦거나 실패한 사이, 또는 주소 없이 좌표만 손으로 적은 점포를 놓치지 않는다
                     (2026-10-19 코드 리뷰로 찾음). 막힌 이유는 아래 도움말에도 적는다(disabled 는 보통 마우스
-                    오버도 받지 않아 title 만으로는 부족하다 — 코드 리뷰 지적). */}
+                    오버도 받지 않아 title 만으로는 부족하다 — 코드 리뷰 지적).
+                    보이는 값도 bodyOf 와 같은 조건으로 계산한다 — 좌표를 손으로 비우면(setCoordinate 는 이
+                    값을 건드리지 않는다) 칸은 막힌 채 "사용"을 그대로 보이는데 저장은 조용히 "미사용"을
+                    보내는 어긋남이 있었다. 상태를 고치는 대신 보이는 값을 저장 규칙과 맞춰 상태 변경 로직을
+                    다시 건드리지 않는다(2026-10-19 코드 리뷰 반복 지적으로 고침). */}
                 <Select
-                  value={form.isLocationApplied ? "Y" : "N"}
+                  value={form.latitude.trim() && form.longitude.trim() && form.isLocationApplied ? "Y" : "N"}
                   onChange={(e) => set("isLocationApplied", e.target.value === "Y")}
                   disabled={!(form.latitude.trim() && form.longitude.trim())}
                   title={form.latitude.trim() && form.longitude.trim() ? undefined : "위도 · 경도가 있어야 사용으로 고를 수 있습니다."}
