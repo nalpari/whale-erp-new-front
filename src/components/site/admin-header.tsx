@@ -1,21 +1,23 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { GlobalHeader, ServiceLinks, StoreSelect, UserPop, type HeaderMenu, type UserPopItem } from "@/components/common";
 import { logout } from "@/app/actions";
-import type { Scope } from "@/lib/browser-storage";
-import { findMenu, PENDING_PLATFORM_MENU } from "@/lib/menus";
-import type { AdminStore } from "@/lib/session";
+import type { Scope, ServiceCode } from "@/lib/browser-storage";
+import { BP_SWITCH_PATH, findMenu, PENDING_PLATFORM_MENU } from "@/lib/menus";
+import type { AccountBp, AdminStore } from "@/lib/session";
+import { BpSelectDialog } from "./bp-select-dialog";
 import { useAccount, useCodes, useCurrentBp, useMenus, useScope, useService, useStores } from "./session-gate";
 
 // 로그인 후 화면의 헤더 하나. 메뉴·점포·이름은 로그인 정보(SessionGate)에서 그린다.
 // 메뉴는 이 탭 서비스(useService)의 것만, 2단계까지 그린다(3단계는 헤더에 보이지 않는다, 2026-10-13).
-// 서비스마다 다른 것은 오른쪽 선택기뿐이다 — ERP 는 점포 범위 선택기, 플랫폼은 BP 선택기(BP 목록 API 가 없어 아직 두지 않는다).
+// 서비스마다 다른 것은 오른쪽 선택기뿐이다 — ERP 는 점포 범위 선택기, 플랫폼은 BP 선택기(아직 두지 않는다 — 지금은 서비스 바로가기의 웨일ERP 가 BP 를 고른다).
 // alarm 은 알림 종(NotificationBellSlot, 서버 컴포넌트)이다. 클라이언트인 이 헤더가 직접 그릴 수 없어 루트 layout 이 만들어 AdminLayout → AdminFrame 을 거쳐 넘긴다.
 export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   const account = useAccount();
   const service = useService();
   const all = useMenus();
+  const [bpSelectOpen, setBpSelectOpen] = useState(false);
   const role = useCodes("ROLE_TYPE").find((c) => c.value === account.roleTypeCode)?.label ?? account.roleTypeCode;
   const menus: HeaderMenu[] = all.map((m) => {
       const items = m.children.flatMap((c) => {
@@ -45,13 +47,24 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
       right={
         <>
           {service === "WHALE_ERP" ? <ScopeSelect /> : <div className="flex-1" />}
-          <ServiceLinks hrefs={{ erp: "/home", platform: "/platform" }} />
+          <ServiceLinks hrefs={serviceTargets(account.bp, service, () => setBpSelectOpen(true))} />
           {alarm}
           <UserPop name={`${account.name ?? account.loginId} (${role})`} items={userItems} />
+          {bpSelectOpen && <BpSelectDialog onClose={() => setBpSelectOpen(false)} />}
         </>
       }
     />
   );
+}
+
+// 서비스 바로가기. BP · 가맹 계정은 늘 자기 BP 의 웨일ERP 다.
+// 플랫폼 계정의 웨일ERP 는 BP 선택 팝업이다 — ERP 탭에서 눌러도 다시 열어 다른 BP 를 고르게 한다(고른 BP 는 새 탭).
+// 플랫폼관리는 ERP 탭이면 자기 BP 로 BP 이동 화면을 거쳐 이 탭을 플랫폼으로 돌린다. 클라이언트 이동으로는 탭 준비가 다시 돌지 않아 전체 로드로 간다.
+function serviceTargets(bp: AccountBp, service: ServiceCode, openBpSelect: () => void) {
+  if (!bp.isPlatform) return { erp: "/home", platform: "/platform" };
+  // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- 탭 준비(SessionGate)를 다시 돌리려고 일부러 전체 로드한다
+  const toPlatform = () => location.assign(`${BP_SWITCH_PATH}?bp=${bp.bpCodeId}`);
+  return { erp: openBpSelect, platform: service === "PLATFORM" ? "/platform" : toPlatform };
 }
 
 // 범위 선택기 — 전체 · 직영 · 가맹 · 점포 하나 중 하나(okf/home.md). 점포가 없는 유형은 고를 것이 없어 뺀다.

@@ -9,6 +9,8 @@ export type MenuAction = keyof AdminMenu["permission"];
 
 /** 서비스마다의 홈. 메뉴에 없어도 늘 열린다. */
 export const HOME: Record<ServiceCode, string> = { WHALE_ERP: "/home", PLATFORM: "/platform" };
+/** BP 이동 화면 — ?bp= 의 BP 로 이 탭을 준비하고 그 서비스의 홈으로 간다(SessionGate). 주소 자체로 이동해야(전체 로드) 준비가 돈다. */
+export const BP_SWITCH_PATH = "/bp-switch";
 
 export function findMenu(menus: AdminMenu[], match: (m: AdminMenu) => boolean): AdminMenu | undefined {
   for (const m of menus) {
