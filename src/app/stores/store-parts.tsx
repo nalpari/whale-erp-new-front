@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { Badge } from "@/components/common";
+import { Badge, Tag } from "@/components/common";
 import { formatPhone } from "@/lib/format";
 import type { StoreStatus, StoreSummary, StoreType } from "@/lib/store-types";
 import { CodeLabel } from "@/components/site/code-label";
@@ -65,21 +65,33 @@ export function LineIcon({ name, size }: { name: keyof typeof PATHS; size: numbe
   );
 }
 
-/** 점포상태 배지 — 운영은 파랑, 미운영 · 폐점은 빨강. 색만으로 말하지 않게 글자를 함께 둔다(DESIGN.md) */
+/** 점포상태 배지 — 운영은 파랑, 미운영은 빨강(손볼 일이 있는 상태), 폐점은 회색(더는 손댈 일이 없는 상태).
+    색만으로 말하지 않게 글자를 함께 둔다(DESIGN.md, 2026-10-16 점검 — 폐점이 미운영과 같은 색이라 가렸다). */
+const STORE_STATUS_TONE: Record<StoreStatus, "on" | "off" | "closed"> = {
+  OPERATING: "on",
+  NOT_OPERATING: "off",
+  CLOSED: "closed",
+};
 export function StoreStatusBadge({ status }: { status: StoreStatus }) {
-  return <Badge tone={status === "OPERATING" ? "on" : "off"}><CodeLabel group="STORE_STATUS" value={status} /></Badge>;
+  return (
+    <Badge tone={STORE_STATUS_TONE[status]}>
+      <CodeLabel group="STORE_STATUS" value={status} />
+    </Badge>
+  );
 }
 
-/** 대표 이미지 자리. 주소가 없거나(이미지 없음 · 저장소를 쓸 수 없음) 불러오지 못하면 점포 아이콘이 선다 */
-export function StoreImage({ size, onMuted = false, url, name }: { size: 48 | 184; onMuted?: boolean; url?: string | null; name?: string }) {
-  const sizeClass = size === 48 ? "size-[48px]" : "size-[184px]";
+/** 대표 이미지 자리. 주소가 없거나(이미지 없음 · 저장소를 쓸 수 없음) 불러오지 못하면 점포 아이콘이 선다.
+ * 72 는 상세 제목 줄의 머리 카드 전용(2026-10-19 점검 — 실사용자 확인, 1안 채택) — 목록 카드(48) · 등록 ·
+ * 수정 화면(184) 과는 다른 자리라 셋째 크기로 더했다. 상세 표에는 더는 이미지를 두지 않는다(머리 카드로 옮김). */
+export function StoreImage({ size, onMuted = false, url, name }: { size: 48 | 72 | 184; onMuted?: boolean; url?: string | null; name?: string }) {
+  const sizeClass = size === 48 ? "size-[48px]" : size === 72 ? "size-[72px]" : "size-[184px]";
   const icon = (
     <span
       role="img"
       aria-label="대표 이미지 없음"
       className={`grid shrink-0 place-items-center rounded-[2px] text-erp-label ${onMuted ? "bg-white" : "bg-erp-thead-bg"} ${sizeClass}`}
     >
-      <LineIcon name="store" size={size === 48 ? 20 : 48} />
+      <LineIcon name="store" size={size === 184 ? 48 : size === 72 ? 28 : 20} />
     </span>
   );
   if (!url) return icon;
@@ -93,21 +105,23 @@ export function StoreImage({ size, onMuted = false, url, name }: { size: 48 | 18
 export function StoreCard({ store, href }: { store: StoreSummary; href: string }) {
   const muted = store.storeStatusCode !== "OPERATING";
   const fields: [string, ReactNode, boolean?][] = [
-    ["근무직원", `${store.staffCount.toLocaleString("ko-KR")}명`],
-    ["연락처", store.phone ? formatPhone(store.phone) : "-"],
-    ["지역", store.region ?? "-", true],
+    ["점포 연락처", store.phone ? formatPhone(store.phone) : "-"],
+    ["재직직원", `${store.staffCount.toLocaleString("ko-KR")}명`],
+    ["점포주소", store.region ?? "-", true],
   ];
   return (
     <Link
       href={href}
+      // DESIGN.md 카드 규칙(4px)을 따른다 — 8px 로 키워 달라는 요청이 있었지만 1팀 확인 전이라 되돌렸다(2026-10-16 코드리뷰).
       className={`flex flex-col gap-[18px] rounded-[4px] border border-erp-panel-line p-[18px] transition-colors duration-150 ease-out hover:border-erp-brand ${muted ? "bg-erp-thead-bg" : "bg-white"}`}
     >
-      <div className="flex items-center gap-[12px]">
+      <div className="flex items-start gap-[12px]">
         <StoreImage size={48} onMuted={muted} url={store.imageUrl} name={store.name} />
         <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
-          <b className="truncate text-[15px] font-semibold text-erp-ink">{store.name}</b>
-          <span className="truncate text-[13px] text-erp-label">
-            {store.storeCode} · <CodeLabel group="STORE_TYPE" value={store.storeTypeCode} />
+          <b className="line-clamp-2 text-[16px] font-semibold text-erp-ink">{store.name}</b>
+          <span className="flex items-center gap-[6px] truncate text-[13px] text-erp-label">
+            <Tag><CodeLabel group="STORE_TYPE" value={store.storeTypeCode} /></Tag>
+            <span className="truncate">{store.storeCode}</span>
           </span>
         </div>
         <StoreStatusBadge status={store.storeStatusCode} />
@@ -128,19 +142,17 @@ export function StoreCard({ store, href }: { store: StoreSummary; href: string }
 }
 
 /**
- * 큰 선택 카드(라디오) — 점포유형. 고르면 선이 브랜드색, 바탕이 두 번째 바탕색으로 바뀐다. 선 두께는 바뀌지 않는다.
- * locked: 바꿀 수 없는 값(수정 화면). 라디오를 막고 고르지 않은 카드는 흐리게 둔다.
+ * 큰 선택 카드(라디오) — 점포유형(등록 화면 전용, 등록 뒤에는 바꿀 수 없어 수정 화면에는 두지 않는다).
+ * 고르면 선이 브랜드색, 바탕이 두 번째 바탕색으로 바뀐다. 선 두께는 바뀌지 않는다.
  */
 export function StoreTypeCards({
   value,
   onChange,
-  locked = false,
   invalid,
   describedBy,
 }: {
   value: StoreType | "";
   onChange?: (value: StoreType) => void;
-  locked?: boolean;
   invalid?: boolean;
   describedBy?: string;
 }) {
@@ -155,14 +167,11 @@ export function StoreTypeCards({
         return (
           <label
             key={type}
-            className={`group flex flex-col items-center gap-[10px] rounded-[4px] border bg-white px-[18px] py-[24px] transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:focus-visible]:border-erp-brand ${
+            className={`group flex cursor-pointer flex-col items-center gap-[10px] rounded-[4px] border bg-white px-[18px] py-[24px] transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-erp-brand has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:focus-visible]:border-erp-brand ${
               invalid ? "border-erp-off" : "border-erp-panel-line"
-            } ${locked ? `cursor-default ${checked ? "" : "opacity-40"}` : "cursor-pointer hover:border-erp-brand"}`}
+            }`}
           >
-            <input type="radio" name="storeTypeCode" className="sr-only" checked={checked} disabled={locked} onChange={() => onChange?.(type)} />
-            <span className="grid size-[48px] place-items-center rounded-[4px] border border-transparent bg-erp-thead-bg text-erp-label transition-colors duration-150 group-has-[:checked]:border-erp-panel-line group-has-[:checked]:bg-white group-has-[:checked]:text-erp-ink">
-              <LineIcon name="store" size={22} />
-            </span>
+            <input type="radio" name="storeTypeCode" className="sr-only" checked={checked} onChange={() => onChange?.(type)} />
             <b className="text-[16px] font-semibold text-erp-ink"><CodeLabel group="STORE_TYPE" value={type} /></b>
             <span className="text-[13px] text-erp-label">{desc}</span>
           </label>

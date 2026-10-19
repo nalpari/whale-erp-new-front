@@ -3,9 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button, ConfirmDialog, DataTable, useToast } from "@/components/common";
-import { useMenuRole } from "@/components/site/session-gate";
+import { usePagePermission } from "@/components/site/session-gate";
 import type { EnumValue } from "@/lib/enums";
-import { MENU_CODE } from "@/lib/menus";
 import type { PayslipListQuery, PayslipSendResult } from "@/lib/payslips";
 import { sendPayslips, type DraftFailure } from "./actions";
 import { PayslipDraftButton } from "./payslip-draft-dialog";
@@ -26,8 +25,9 @@ export function PayslipListActions({
 }) {
   const router = useRouter();
   const toast = useToast();
-  const canCreate = useMenuRole(MENU_CODE.payslips, "create");
-  const canUpdate = useMenuRole(MENU_CODE.payslips, "update");
+  const can = usePagePermission();
+  const canCreate = can.create;
+  const canUpdate = can.update;
   const [sending, setSending] = useState(false);
   const [busy, startBusy] = useTransition();
   const [failure, setFailure] = useState<DraftFailure | null>(null);

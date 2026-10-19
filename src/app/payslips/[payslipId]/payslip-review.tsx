@@ -3,8 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type ReactNode } from "react";
 import { Button, ConfirmDialog, DetailTable, Field, FormGroup, FormRow, Select, TextField, Toggle, useToast } from "@/components/common";
-import { useMenuRole } from "@/components/site/session-gate";
-import { MENU_CODE } from "@/lib/menus";
+import { usePagePermission } from "@/components/site/session-gate";
 import {
   formatAmount,
   isItemShown,
@@ -145,7 +144,7 @@ export function PayslipReview({
 }) {
   const router = useRouter();
   const toast = useToast();
-  const canUpdate = useMenuRole(MENU_CODE.payslips, "update");
+  const canUpdate = usePagePermission().update;
   const editable = canUpdate && (payslip.status === "DRAFTING" || payslip.status === "REVIEWING");
   const isPartTime = payslip.employmentType === "PART_TIME";
   const month = payslip.periodStartDate.slice(0, 7);
