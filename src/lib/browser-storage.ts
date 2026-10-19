@@ -1,6 +1,6 @@
 // 로그인 정보를 브라우저에 두는 곳. 키·모양·확인을 여기 한 곳에서 한다(2026-10-13 계획).
 // localStorage — 모든 탭이 같이 쓴다. loginKey 가 쿠키 login-key 와 다르면 앞 로그인 것이라 버린다.
-//   login-info: 계정·메뉴 / login-bp-info: 자기 BP 의 점포·공통코드(새 탭에 복사할 때만 읽는다) / selected-bp: 플랫폼 계정이 마지막으로 고른 BP
+//   login-info: 계정·메뉴 / login-bp-info: 자기 BP 의 점포·공통코드(탭에 자기 BP 값이 없을 때 — 새 탭, /bp-switch 로 자기 BP 에 돌아올 때 — 만 읽는다) / selected-bp: 플랫폼 계정이 마지막으로 고른 BP
 // sessionStorage — 탭마다 다르다. 화면은 이것만 읽는다.
 //   current-bp: 이 탭의 서비스(WHALE_ERP·PLATFORM)와 BP / stores·codes·scope: 그 BP 의 값. bpCodeId 가 이 탭의 BP 와 다르면 버린다.
 //   서비스와 BP 는 짝이 맞아야 해서(플랫폼 서비스 = 플랫폼 BP, ERP 서비스 = 고객 BP) 한 키에 함께 둔다.
@@ -114,18 +114,6 @@ export function clearLoginStorage() {
   remove(tab, [...TAB_KEYS, ...LEGACY_KEYS]);
 }
 
-/**
- * BP 이동 화면(/bp-switch) 주소의 고른 BP — ?bp=&bpCode=&tradeName=. 셋이 다 있고 bp 가 숫자일 때만, 아니면 null.
- * 고른 BP 를 주소에 싣는 것은 selected-bp 가 탭들이 같이 쓰는 값이라서다 — 새 탭이 읽기 전에 다른 탭에서 BP 를 또 고르면 바뀐다.
- * 그 BP 를 볼 수 있는지는 점포 조회(api)가 다시 막는다.
- */
-export function bpOfSwitchQuery(q: URLSearchParams): StoredBp | null {
-  const id = q.get("bp");
-  const bpCode = q.get("bpCode");
-  const tradeName = q.get("tradeName");
-  return id && /^\d+$/.test(id) && bpCode && tradeName ? { bpCodeId: Number(id), bpCode, tradeName } : null;
-}
-
 function pickBp({ bpCodeId, bpCode, tradeName }: StoredBp): StoredBp {
   return { bpCodeId, bpCode, tradeName };
 }
@@ -133,8 +121,9 @@ function pickBp({ bpCodeId, bpCode, tradeName }: StoredBp): StoredBp {
 /**
  * 이 탭이 어느 서비스·BP 로 일할지. 고객 BP 계정은 늘 ERP · 자기 BP 다.
  * 플랫폼 계정은 ?bp= → 이 탭의 값(새로고침·탭 복제) → 주소가 속한 메뉴의 서비스 순서다.
- * - ?bp= 는 BP 이동 화면(/bp-switch)의 것만 받는다 — BP 선택 팝업이 고른 BP 로, 서비스 바로가기(플랫폼관리)가 자기 BP 로 연다.
- *   자기 BP 도 마지막으로 고른 BP 도 아니면 이름을 알 수 없어 무시한다(옛 북마크 등).
+ * - queryBpCodeId 는 BP 이동 화면(/bp-switch)의 ?bp= 다(다른 주소의 것은 부르는 쪽 prepare 가 넘기지 않는다).
+ *   BP 선택 팝업이 연 주소는 서버에서 찾은 그 BP 가 selectedBp 로 함께 오고, 플랫폼관리 바로가기는 자기 BP 를 싣는다.
+ *   둘 다 아니면 이름을 알 수 없어 무시한다.
  * - 탭 값이 없는 새 탭(주소 직접 입력·즐겨찾기)은 ERP 메뉴 주소면 마지막으로 고른 BP 의 ERP, 그 밖은 자기 BP 의 플랫폼이다.
  *   고른 BP 가 없는데 ERP 주소면 플랫폼으로 열려 메뉴 권한 확인이 막고 이전 화면(없으면 플랫폼 홈)으로 보낸다.
  */

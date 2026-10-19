@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { isAllowed, MENU_CODE, menuPermissionOf, menusOf, serviceOfPath } from "./menus.ts";
+import { bpOfSwitchUrl, bpSwitchUrl, isAllowed, MENU_CODE, menuPermissionOf, menusOf, serviceOfPath } from "./menus.ts";
 import type { AdminMenu } from "./session.ts";
 
 const menu = (url: string | null, read: boolean, children: AdminMenu[] = [], serviceCode = "WHALE_ERP"): AdminMenu => ({
@@ -96,4 +96,23 @@ test("menuPermissionOf: 다른 서비스 탭의 메뉴와 없는 코드는 false
   // 플랫폼 탭에서는 ERP 메뉴를 보지 않는다
   assert.equal(menuPermissionOf([stores], "PLATFORM", MENU_CODE.stores, "create"), false);
   assert.equal(menuPermissionOf([stores], "WHALE_ERP", MENU_CODE.platformCodes, "read"), false);
+});
+
+test("bpSwitchUrl · bpOfSwitchUrl: 만든 주소를 읽으면 같은 BP 다", () => {
+  const read = (href: string) => bpOfSwitchUrl(new URL(href, "http://x"));
+  assert.deepEqual(read(bpSwitchUrl(17, "BP000017")), { bpCodeId: 17, bpCode: "BP000017" });
+  // 플랫폼관리 바로가기 — 자기 BP 로 돌아갈 때는 검색어가 없다
+  assert.deepEqual(read(bpSwitchUrl(1)), { bpCodeId: 1, bpCode: null });
+});
+
+test("bpOfSwitchUrl: ?bp= 는 BP 이동 화면의 것만, 숫자일 때만 받는다", () => {
+  const read = (href: string) => bpOfSwitchUrl(new URL(href, "http://x"));
+  assert.equal(read("/home?bp=17&bpCode=BP000017"), null);
+  assert.equal(read("/bp-switch"), null);
+  assert.equal(read("/bp-switch?bp=1x"), null);
+  assert.equal(read("/bp-switch?bp=12345678901"), null);
+  assert.deepEqual(read("/bp-switch?bp=17&bpCode="), { bpCodeId: 17, bpCode: null });
+  // BP 코드 형식이 아니면(잘렸거나 손으로 고친 값) 검색어로 쓰지 않는다
+  assert.deepEqual(read(`/bp-switch?bp=17&bpCode=${"X".repeat(60)}`), { bpCodeId: 17, bpCode: null });
+  assert.deepEqual(read("/bp-switch?bp=17&bpCode=BP00001"), { bpCodeId: 17, bpCode: null });
 });

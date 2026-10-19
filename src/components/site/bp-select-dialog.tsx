@@ -3,23 +3,16 @@
 import { useEffect, useState } from "react";
 import { ConfirmDialog, DataTable, Pagination, Radio, SearchField, type Column } from "@/components/common";
 import { bff, BffError } from "@/lib/bff";
-import { BP_SWITCH_PATH } from "@/lib/menus";
+import { bpSwitchUrl } from "@/lib/menus";
+import type { BpOption } from "@/lib/session";
 import { useCodeLabel } from "./code-label";
 import { useCurrentBp } from "./session-gate";
-
-/** GET /bp-codes 의 items — 플랫폼 계정이 고를 고객 BP(사용 · 미사용 · 탈퇴, 삭제 · 플랫폼 BP 제외). */
-interface BpOption {
-  bpCodeId: number;
-  bpCode: string;
-  tradeName: string;
-  accountStatusCode: string;
-}
 
 const PAGE_SIZE = 10;
 
 /**
  * 웨일ERP 바로가기의 BP 선택 팝업(플랫폼 계정). 상호 · BP코드로 찾아 한 줄을 고르고 [이동]하면 새 탭으로 BP 이동 화면(/bp-switch)을
- * 연다 — 고른 BP 는 주소에 싣고, 그 탭이 마지막으로 고른 BP(selected-bp)에 적은 뒤 점포 · 공통코드로 준비해 웨일ERP 홈으로 간다. 지금 탭은 그대로다.
+ * 연다 — 고른 BP 의 id 와 코드를 주소에 싣고, 그 탭이 서버에서 그 BP 를 확인해 점포 · 공통코드로 준비한 뒤 웨일ERP 홈으로 간다. 지금 탭은 그대로다.
  */
 export function BpSelectDialog({ onClose }: { onClose: () => void }) {
   const currentBp = useCurrentBp();
@@ -54,9 +47,8 @@ export function BpSelectDialog({ onClose }: { onClose: () => void }) {
 
   const handleMove = () => {
     if (!picked) return;
-    const query = new URLSearchParams({ bp: String(picked.bpCodeId), bpCode: picked.bpCode, tradeName: picked.tradeName });
     // noopener — 새 탭이 이 탭의 sessionStorage(서비스 · BP)를 물려받지 않고 BP 이동 화면에서 새로 준비한다.
-    window.open(`${BP_SWITCH_PATH}?${query}`, "_blank", "noopener");
+    window.open(bpSwitchUrl(picked.bpCodeId, picked.bpCode), "_blank", "noopener");
     onClose();
   };
 

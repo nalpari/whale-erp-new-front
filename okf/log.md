@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-19
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #55 2차 리뷰 반영: BP 이동 주소는 id 만 믿고 상호·코드는 서버(`GET /bp-codes`)에서 확인한다(손으로 고친 링크가 다른 BP 이름을 보이던 것). `selected-bp` 는 그 BP 의 점포·공통코드를 받은 뒤에 적어, 실패해도 앞서 고른 BP 가 남는다. 이동 주소를 읽지 못하면 안내한다. 주소를 만들고 읽는 함수를 `menus.ts`(`bpSwitchUrl`·`bpOfSwitchUrl`)에 모으고 테스트했다. 낡은 주석을 바로잡고 `ServiceLinks` 속성을 `targets` 로 바꿨다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #55 리뷰 반영: BP 선택 팝업이 고른 BP 를 `/bp-switch` 주소(bp · bpCode · tradeName)에 실어, 새 탭이 준비되기 전에 다른 BP 를 또 골라도 그 탭이 고른 BP 로 열린다(전에는 공용 `selected-bp` 가 바뀌어 플랫폼 홈으로 열렸다). 자기 BP 로 이동할 때 로그인 때 값을 쓴다고 주석을 바로잡았다.
 * **Update**: [점포 관리](/stores.md) — 등록 BP: 플랫폼 계정은 웨일ERP 바로가기로 BP 를 골라 연 탭의 점포관리에서 그 BP 로 등록한다(「등록할 길이 없다」 문장을 고쳤다).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 계정이 고른 BP 의 탭은 브라우저 탭 제목 앞에 BP 상호를 붙인다(여러 BP 탭 구분).
