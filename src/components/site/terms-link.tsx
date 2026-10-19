@@ -45,8 +45,7 @@ export function TermsLink({ termsTypeCode, children }: { termsTypeCode: string; 
             </div>
           </>
         ) : (
-          // #999 빈 값 회색: DESIGN.md Neutral 의 「데이터가 없을 때의 안내 문구」
-          <p role={terms === null && !pending ? "alert" : "status"} className="py-[24px] text-center text-[14px] text-[#999]">
+          <p role={terms === null && !pending ? "alert" : "status"} className="py-[24px] text-center text-[14px] text-erp-muted">
             {terms === null && !pending ? "약관을 불러오지 못했습니다. 잠시 뒤 다시 열어 주세요." : "약관을 불러오는 중입니다."}
           </p>
         )}
