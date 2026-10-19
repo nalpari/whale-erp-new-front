@@ -93,7 +93,7 @@ export default ({ A, R }) => {
   // 변경 이력: 한 쪽 10건, 2쪽(총 14건) 중 1쪽. 표는 5줄 높이(머리 42 + 줄 46×5)로 두고 넘치면 표 안에서 스크롤, 머리글은 고정.
   const history =
     `<div class="max-h-[273px] overflow-y-auto border-y border-erp-thead-line [&_thead]:sticky [&_thead]:top-0 [&_thead]:shadow-[0_1px_0_var(--color-erp-thead-line)] [&_thead_tr]:border-y-0 [&_tbody_tr:last-child]:border-b-0">${ui.dataTable(
-      [{ header: "변경 일시", width: "w-[150px]" }, { header: "변경자", width: "w-[70px]" }, { header: "변경 항목", width: "w-[140px]" }, { header: "변경 전" }, { header: "변경 후" }],
+      [{ header: "변경 일시", width: "w-[150px]" }, { header: "변경자", width: "w-[70px]" }, { header: "변경 항목", width: "w-[140px]", align: "left" }, { header: "변경 전", align: "left" }, { header: "변경 후", align: "left" }],
       [
         ["2026-08-14 10:31", "정하윤", "점포 연락처", "02-322-1100", "02-322-1180"],
         ["2026-06-18 11:05", "박서윤", "대표 이미지", "없음", "등록"],
