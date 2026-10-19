@@ -21,8 +21,10 @@ const TAKEN_MESSAGE = { loginId: "이미 사용 중인 아이디입니다.", ema
 const checkedInput = (A, kind, attrs) =>
   `${box(`<input ${attrs} name="${kind}" data-check="${kind}" aria-describedby="${kind}-status" class="${g.INPUT}">`)}<span id="${kind}-status" aria-live="polite" hidden class="-mt-[2px] flex items-center gap-[4px] text-[14px] leading-[1.5] empty:hidden"><span data-check-ok hidden class="flex items-center gap-[4px] text-[#5e8ce9]"><svg aria-hidden="true" class="size-[12px]" viewBox="0 0 12 9" fill="currentColor"><path d="M4.33 8.316a.64.64 0 0 1-.462-.188L.99 5.251a.64.64 0 0 1 .925-.926l2.43 2.415L10.114.985a.64.64 0 0 1 .926.926L4.808 8.128a.7.7 0 0 1-.477.188Z"/></svg>사용가능합니다.</span><span data-check-taken hidden class="text-[#e93737]">${TAKEN_MESSAGE[kind]}</span></span>`;
 
-const section = (title, note, body) =>
-  `<section class="flex flex-col gap-[24px] border-t border-[#ebebeb] pt-[32px]"><h2 class="text-[20px] leading-[1.4] font-semibold text-[#111]">${title}${note ? `<span class="ml-[10px] text-[15px] font-normal text-[#767676]">${note}</span>` : ""}</h2>${body}</section>`;
+// 묶음 사이는 테두리 없이 바깥 form 의 gap-[40px] 만으로 나눈다(2026-10-16 — 사업자정보·약관동의 앞에
+// 있던 border-t 는 중복이라 뺐다). badge 는 제목 줄 오른쪽에 하나만 두는 상태 표시(예: 사업자정보의 "인증완료").
+const section = (title, note, body, badge = "") =>
+  `<section class="flex flex-col gap-[24px]"><h2 class="text-[20px] leading-[1.4] font-semibold text-[#111]">${title}${note ? `<span class="ml-[10px] text-[15px] font-normal text-[#767676]">${note}</span>` : ""}${badge}</h2>${body}</section>`;
 
 // ── 약관 본문(앱 sign-up/terms.tsx v0.7 초안). [ ] 는 확정 전 자리값이다. ──
 const articles = (list) =>
@@ -207,17 +209,20 @@ ${field("상호명", box(`<input name="companyName" required maxlength="50" auto
 </div>`,
   );
 
-  // 사업자정보는 선택이라 인증하기를 누를 때만 세 칸을 확인한다. 인증되면 칸을 잠근다.
+  // 사업자정보는 선택이라 인증하기를 누를 때만 세 칸을 확인한다. 인증되면 칸을 잠근다. "인증완료" 뱃지는
+  // 제목 줄에 하나만 둔다 — 안쪽에도 두면 한 화면에 두 번 보인다(2026-10-16). 빈 날짜 칸의 "연도. 월. 일."은
+  // 브라우저가 그리는 글자라 placeholder 색(#999)을 webkit 의사 요소로 맞춘다.
   const biz = section(
     "사업자정보 인증",
     "(선택)",
-    `<div data-biz class="flex flex-col gap-[24px]"><p class="flex items-center gap-[8px] text-[16px] leading-[1.4] font-medium">사업자 번호 인증<span data-biz-badge hidden class="rounded-[4px] bg-guest-card px-[8px] py-[2px] text-[14px] text-guest-navy">인증완료</span></p>
+    `<div data-biz class="flex flex-col gap-[24px]">
 <div class="grid grid-cols-[repeat(3,minmax(0,1fr))_auto] items-end gap-[16px]">
 ${field("사업자등록번호", box(`<input name="bizRegistrationNumber" inputmode="numeric" pattern="[0-9]{3}-?[0-9]{2}-?[0-9]{5}" placeholder="000-00-00000" class="${g.INPUT}">`))}
 ${field("대표자명", box(`<input name="bizCeoName" placeholder="대표자 이름" class="${g.INPUT}">`))}
-${field("개업일자", box(`<input name="bizOpenDate" type="date" class="${g.INPUT}">`))}
-<div class="flex gap-[8px]"><button type="button" data-biz-reverify hidden class="${g.FIELD_BUTTON}">재인증</button><button type="button" data-biz-clear hidden class="${g.FIELD_BUTTON}">지우기</button><button type="button" data-biz-verify class="${g.FIELD_BUTTON}">인증하기</button></div>
+${field("개업일자", box(`<input name="bizOpenDate" type="date" class="${g.INPUT} [&:placeholder-shown::-webkit-datetime-edit-fields-wrapper]:text-[#999] [&:placeholder-shown::-webkit-datetime-edit-text]:text-[#999] [&:placeholder-shown::-webkit-datetime-edit-year-field]:text-[#999] [&:placeholder-shown::-webkit-datetime-edit-month-field]:text-[#999] [&:placeholder-shown::-webkit-datetime-edit-day-field]:text-[#999]">`))}
+<div class="flex gap-[8px]"><button type="button" data-biz-reverify hidden class="${g.FIELD_BUTTON}">재인증</button><button type="button" data-biz-clear hidden class="${g.FIELD_BUTTON}">사용안함</button><button type="button" data-biz-verify class="${g.FIELD_BUTTON}">인증하기</button></div>
 </div></div>`,
+    `<span data-biz-badge hidden class="ml-[10px] rounded-[4px] bg-guest-card px-[8px] py-[2px] align-middle text-[14px] font-normal text-guest-navy">인증완료</span>`,
   );
 
   const agree = section(

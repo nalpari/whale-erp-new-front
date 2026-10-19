@@ -3547,6 +3547,21 @@
   .\[\&\:has\(select\:open\)_svg\]\:rotate-180:has(select:open) svg {
     rotate: 180deg;
   }
+  .\[\&\:placeholder-shown\:\:-webkit-datetime-edit-day-field\]\:text-\[\#999\]:placeholder-shown::-webkit-datetime-edit-day-field {
+    color: #999;
+  }
+  .\[\&\:placeholder-shown\:\:-webkit-datetime-edit-fields-wrapper\]\:text-\[\#999\]:placeholder-shown::-webkit-datetime-edit-fields-wrapper {
+    color: #999;
+  }
+  .\[\&\:placeholder-shown\:\:-webkit-datetime-edit-month-field\]\:text-\[\#999\]:placeholder-shown::-webkit-datetime-edit-month-field {
+    color: #999;
+  }
+  .\[\&\:placeholder-shown\:\:-webkit-datetime-edit-text\]\:text-\[\#999\]:placeholder-shown::-webkit-datetime-edit-text {
+    color: #999;
+  }
+  .\[\&\:placeholder-shown\:\:-webkit-datetime-edit-year-field\]\:text-\[\#999\]:placeholder-shown::-webkit-datetime-edit-year-field {
+    color: #999;
+  }
   .\[\&\>\*\]\:shrink-0 > * {
     flex-shrink: 0;
   }

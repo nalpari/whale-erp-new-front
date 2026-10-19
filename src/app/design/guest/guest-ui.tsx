@@ -38,6 +38,7 @@ const BUTTON_TONE = {
 export function GuestButton({
   tone,
   href = "#",
+  submit = false,
   arrow = false,
   grow = false,
   tall = false,
@@ -45,6 +46,9 @@ export function GuestButton({
 }: {
   tone: keyof typeof BUTTON_TONE;
   href?: string;
+  // true 면 <Link> 대신 <button type="submit"> 로 그린다 — 감싼 <form action>(서버 액션)을 부를 때 쓴다
+  // (href 는 이때 쓰지 않는다). signup/done 의 「웨일ERP 시작하기」처럼 이동이 아니라 동작일 때.
+  submit?: boolean;
   // true 는 글 뒤에 나아가는 화살표, "back" 은 글 앞에 되돌아가는 화살표.
   arrow?: boolean | "back";
   grow?: boolean;
@@ -52,14 +56,23 @@ export function GuestButton({
   tall?: boolean;
   children: ReactNode;
 }) {
-  return (
-    <Link
-      href={href}
-      className={`flex ${tall ? "h-[66px]" : "h-[48px]"} shrink-0 items-center justify-center gap-[12px] rounded-[6px] border px-[18px] text-[18px] leading-[1.5] font-semibold whitespace-nowrap ${BUTTON_MOTION} ${grow ? "flex-1" : ""} ${BUTTON_TONE[tone]}`}
-    >
+  const className = `flex ${tall ? "h-[66px]" : "h-[48px]"} shrink-0 items-center justify-center gap-[12px] rounded-[6px] border px-[18px] text-[18px] leading-[1.5] font-semibold whitespace-nowrap ${BUTTON_MOTION} ${grow ? "flex-1" : ""} ${BUTTON_TONE[tone]}`;
+  const content = (
+    <>
       {arrow === "back" && <Arrow back />}
       {children}
       {arrow === true && <Arrow />}
+    </>
+  );
+  if (submit)
+    return (
+      <button type="submit" className={className}>
+        {content}
+      </button>
+    );
+  return (
+    <Link href={href} className={className}>
+      {content}
     </Link>
   );
 }

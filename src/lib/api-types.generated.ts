@@ -1611,6 +1611,61 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/support-inquiries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 내 문의 목록. 등록 최신순. */
+        get: operations["SupportInquiriesController_list"];
+        put?: never;
+        /**
+         * 문의 등록. 텍스트 칸과 첨부파일(`files`, 선택)을 multipart 한 번으로 받는다. 첨부는 JPG · PNG · PDF, 5개까지,
+         *     파일당 10MB 이고 종류는 파일 내용으로 확인한다. 등록한 뒤에는 첨부를 더하거나 빼지 않는다.
+         */
+        post: operations["SupportInquiriesController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/support-inquiries/{inquiryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 내 문의 상세 — 마지막 답변만 보인다(운영 정책 CNT-17). */
+        get: operations["SupportInquiriesController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/support-inquiries/{inquiryId}/attachments/{inquiryAttachmentId}/download-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 첨부파일 내려받기 주소. 300초 동안 쓸 수 있는 서명 주소이고, 받으면 원래 파일 이름으로 저장된다. */
+        get: operations["SupportInquiriesController_attachmentDownloadUrl"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3823,6 +3878,71 @@ export interface components {
             updatedAt: string;
             /** @description 문의자에게 보이는 답변. 평문이고 20,000자까지. 첨부파일은 받지 않는다(CNT-18). */
             body: string;
+        };
+        CreatedSupportInquiryResponseDto: {
+            inquiryId: number;
+        };
+        SupportInquiryListItemDto: {
+            status: components["schemas"]["InquiryStatus"];
+            inquiryId: number;
+            title: string;
+            /** @description 문의 유형(공통코드 `INQUIRY_CATEGORY` 값) */
+            inquiryCategoryCode: string;
+            /**
+             * Format: date-time
+             * @description 등록 일시
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description 처음 답변한 시각. 답변이 없으면 null.
+             */
+            repliedAt: string | null;
+        };
+        SupportInquiryListResponseDto: {
+            items: components["schemas"]["SupportInquiryListItemDto"][];
+            total: number;
+        };
+        SupportInquiryReplyDto: {
+            /** @description 지금 답변(마지막 답변 행) */
+            body: string;
+            /**
+             * Format: date-time
+             * @description 처음 답변한 시각
+             */
+            repliedAt: string;
+            /**
+             * Format: date-time
+             * @description 고친 적이 있으면 마지막으로 고친 시각(「수정됨」), 없으면 null
+             */
+            editedAt: string | null;
+        };
+        SupportInquiryResponseDto: {
+            status: components["schemas"]["InquiryStatus"];
+            inquiryId: number;
+            title: string;
+            /** @description 문의 유형(공통코드 `INQUIRY_CATEGORY` 값) */
+            inquiryCategoryCode: string;
+            /**
+             * Format: date-time
+             * @description 등록 일시
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description 처음 답변한 시각. 답변이 없으면 null.
+             */
+            repliedAt: string | null;
+            body: string;
+            /**
+             * Format: date-time
+             * @description 처리중으로 바뀐 시각 — 진행 이력의 「처리 중」 줄. 처리중을 거치지 않았으면 null.
+             */
+            processingStartedAt: string | null;
+            /** @description 답변. 아직 없으면 null. */
+            reply: components["schemas"]["SupportInquiryReplyDto"] | null;
+            /** @description 첨부파일. 순서대로. 내려받기는 `GET /support-inquiries/:inquiryId/attachments/:inquiryAttachmentId/download-url`. */
+            attachments: components["schemas"]["InquiryAttachmentDto"][];
         };
     };
     responses: never;
@@ -8235,6 +8355,179 @@ export interface operations {
             };
             /** @description 그사이 다른 운영자가 저장함 */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SupportInquiriesController_list: {
+        parameters: {
+            query: {
+                /**
+                 * @description 답변 상태 — 접수 · 처리중 · 답변완료. 고객지원 화면은 「답변 대기 · 처리 중 · 답변 완료」 탭을 따로 두어(front
+                 *     목업 S-ITFILU) 「답변 대기」가 접수 하나다 — 접수 · 처리중을 합친 커뮤니티 관리의 `answerStatus` 와 다르다.
+                 */
+                status?: components["schemas"]["InquiryStatus"];
+                /** @description 제목에 들어 있으면 나온다. */
+                title?: string;
+                /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
+                page: number;
+                /** @description 한 쪽 건수. 기본 20, 최대 200. */
+                pageSize: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupportInquiryListResponseDto"];
+                };
+            };
+            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 · 문의하기 메뉴 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SupportInquiriesController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** @example STAFF_LABOR */
+                    inquiryCategoryCode: string;
+                    title: string;
+                    body: string;
+                    files?: string[];
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatedSupportInquiryResponseDto"];
+                };
+            };
+            /** @description 입력 오류 · 사용 중이 아닌 문의 유형 · 파일 종류 · 크기 · 개수 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 · 문의하기 메뉴 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 5분 안에 제목 · 내용이 같은 문의를 이미 등록함 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 첨부가 있는데 저장소가 설정되지 않음 · 저장소 오류 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SupportInquiriesController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inquiryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupportInquiryResponseDto"];
+                };
+            };
+            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 · 문의하기 메뉴 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 문의이거나 남의 문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SupportInquiriesController_attachmentDownloadUrl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inquiryId: string;
+                inquiryAttachmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DownloadUrlResponseDto"];
+                };
+            };
+            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 · 문의하기 메뉴 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 문의 · 남의 문의 · 그 문의의 첨부가 아님 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 첨부파일 저장소 설정 없음 */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
