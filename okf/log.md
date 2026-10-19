@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-19
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 화면(목록 · 작성 · 이어 쓰기 · 상세 · 당사자 정보 수정 · 서버 액션 · 종이 계약 등록 · 날인본 내려받기)이 api 토큰을 공통 `authHeaders()`(src/lib/api.ts)로 싣는다. 세션에서 토큰을 꺼내 `Authorization` 을 직접 만들던 11곳을 바꿨고, 로그인 확인은 「헤더가 비었으면 로그인 전」으로 같다. 작성 화면 데이터(`loadFormData`)는 토큰을 더 넘기지 않는다. 동작은 그대로다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #54 2차 블로커 반영: 로그아웃(`clearLoginStorage`)이 앞 버전(`whale-erp:v1:`) 저장 키도 지운다. v2 로 올린 뒤 공용 PC 에 v1 로그인 정보(아이디 · 이름 · 이메일 · 메뉴 권한 · 점포)가 남았다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #54 블로커 반영: 브라우저 저장 키 접두를 `whale-erp:v2:` 로 올렸다. 배포 전에 로그인한 세션이 저장된 옛 메뉴 url(`/platform/system/*`)을 계속 써서, 헤더 링크가 404 가 되고 새 주소가 「접근 권한이 없는 메뉴」로 막혔다. 올리면 다음 화면 진입 때 login-info 를 다시 받는다(플랫폼 계정이 다른 BP 로 연 탭은 자기 BP 로 돌아간다).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [시스템관리](/system.md) — api 가 1팀 메뉴 10개의 url 을 한 단계 경로로 바꿔(api #70, `20261019144438_team1_menu_single_level_urls`) 플랫폼 화면 라우트 넷을 옮겼다 — `/platform/system/admins` → `/platform-admins`, `roles` → `/platform-role-groups`, `menus` → `/platform-menus`, `codes` → `/code-groups`. 화면 안 주소 · `revalidatePath` · 알림 템플릿 임시 메뉴 위치(`PENDING_PLATFORM_MENU.after`)도 함께. 메뉴 URL 1뎁스 예외(그대로 둔 여러 구간 URL 통과)는 3팀 플랫폼 커뮤니티 · 사용중지 메뉴가 아직 여러 구간이라 남긴다. 목업 · 데모의 메뉴 표본 URL 도 새 주소로.
