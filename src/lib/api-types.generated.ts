@@ -298,6 +298,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/admin/signup-session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 가입 완료 화면의 「웨일ERP 시작하기」. 비밀번호 없이 signupToken(가입 응답, 10분)으로 로그인 접속을
+         *     낸다. 토큰이 만료·위조됐거나 그 사이 계정 상태가 바뀌면 401 · 403 — front 는 로그인 화면으로 보낸다.
+         */
+        post: operations["AdminAuthController_signupSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/admin/logout": {
         parameters: {
             query?: never;
@@ -859,6 +879,109 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/payslips": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayslipsController_findAll"];
+        put?: never;
+        /** 직원 한 명의 초안. */
+        post: operations["PayslipsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payslips/candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 작성 대상 — 그 달(1일 ~ 말일) 관리 범위 직원의 유효 계약 · 이미 있는 명세서 · 출퇴근 기록 유무. `:id` 보다 먼저
+         *     선언해야 한다.
+         */
+        get: operations["PayslipsController_candidates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payslips/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 관리 범위 작성 대상 모두의 초안. 이미 있음 · 계약 없음은 건너뛰고 skipped 에 담는다. */
+        post: operations["PayslipsController_bulkCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payslips/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 없는 명세서 · 관리 범위 밖 · 가려지는 명세서(본사 제공 동의 없는 가맹 점포 직원)는 모두 같은 404 다. */
+        get: operations["PayslipsController_findOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/payslips": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MyPayslipsController_findAll"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/payslips/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MyPayslipsController_findOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/contracts": {
         parameters: {
             query?: never;
@@ -906,7 +1029,10 @@ export interface paths {
         };
         /** 작성 화면을 다시 채울 값 — 임시저장 이어 쓰기 */
         get: operations["ContractsController_findOne"];
-        /** 임시저장 이어 쓰기. 폼 전체를 다시 보낸다. isTemporarySave 를 빼면 초안 저장(발송 대기)으로 넘어간다 */
+        /**
+         * 임시저장 이어 쓰기. 폼 전체를 다시 보낸다. isTemporarySave 를 빼면 초안 저장(발송 대기)으로 넘어간다.
+         *     직원이 수정을 요청한 계약(수정 요청)도 고친다 — 고치면 발송 대기로 돌아가고, 임시저장은 할 수 없다(400).
+         */
         put: operations["ContractsController_update"];
         post?: never;
         /** 임시저장 삭제. 계약 · 근무 요일 · 당사자 · 이력과 그 계약에만 쓰인 초안 직원 레코드를 지운다 */
@@ -914,6 +1040,26 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/contracts/{contractId}/worker": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * 날인 전 근로자 정보 수정(WHALEERP-125 · 126). 발송 대기 · 서명 대기 · 수정 요청 계약의 이름 · 번호 · 생년월일 ·
+         *     성별 · 외국인 여부를 고친다. 서명 대기 · 수정 요청이면 발송 대기로 돌아가 다시 보낸다(서명 기한은 비운다).
+         */
+        patch: operations["ContractsController_updateWorker"];
         trace?: never;
     };
     "/contracts/{contractId}/paper": {
@@ -944,6 +1090,26 @@ export interface paths {
         get: operations["ContractsController_documentDownloadUrl"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/contracts/{contractId}/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 발송(발송 대기 → 서명 대기) · 재발송(서명 대기 그대로, 새 링크 · 새 기한). 계정이 없는 직원에게 가입 초대 알림톡을
+         *     보낸다 — 링크 30일, 서명 기한도 발송일로부터 30일.
+         */
+        post: operations["ContractSendController_send"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1398,6 +1564,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/leads/{leadId}/reply-mail/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 저장된 지금 답변을 문의자 이메일로 다시 보낸다. 답변완료만, 같은 도입문의는 1분에 한 번. SMTP 가 실패해도 200 이고
+         *     결과(`FAILED`)를 돌려준다 — 상세의 마지막 발송 결과에도 보통 같은 값이 남는다. 메일 발송 설정이 없으면 503.
+         */
+        post: operations["LeadsAdminController_resendReplyMail"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/leads/{leadId}/internal-memo": {
         parameters: {
             query?: never;
@@ -1516,6 +1702,61 @@ export interface paths {
         get?: never;
         /** 운영자 내부 메모. 문의자에게 보이지 않는다. */
         put: operations["InquiriesController_saveInternalMemo"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/support-inquiries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 내 문의 목록. 등록 최신순. */
+        get: operations["SupportInquiriesController_list"];
+        put?: never;
+        /**
+         * 문의 등록. 텍스트 칸과 첨부파일(`files`, 선택)을 multipart 한 번으로 받는다. 첨부는 JPG · PNG · PDF, 5개까지,
+         *     파일당 10MB 이고 종류는 파일 내용으로 확인한다. 등록한 뒤에는 첨부를 더하거나 빼지 않는다.
+         */
+        post: operations["SupportInquiriesController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/support-inquiries/{inquiryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 내 문의 상세 — 마지막 답변만 보인다(운영 정책 CNT-17). */
+        get: operations["SupportInquiriesController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/support-inquiries/{inquiryId}/attachments/{inquiryAttachmentId}/download-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 첨부파일 내려받기 주소. 300초 동안 쓸 수 있는 서명 주소이고, 받으면 원래 파일 이름으로 저장된다. */
+        get: operations["SupportInquiriesController_attachmentDownloadUrl"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -1722,6 +1963,12 @@ export interface components {
              * @description 갱신 토큰은 새로 주지 않는다. 쓰던 것의 새 만료 시각이다.
              */
             refreshTokenExpiresAt: string;
+        };
+        AdminSignupSessionDto: {
+            /** @description AdminSignupService.signup 이 가입 끝에 낸 10분짜리 토큰(signup.response.dto.ts 의 signupToken). */
+            signupToken: string;
+            /** @description 브라우저를 구분하는 값 — 로그인과 같다. 같은 값으로 다시 부르면 그 브라우저의 이전 세션만 종료된다. */
+            deviceInformation?: string;
         };
         CodeValueDto: {
             /** @description 상세코드. 저장 · 전송 값. 예: KB */
@@ -2529,7 +2776,7 @@ export interface components {
             heldAt: string;
         };
         /** @enum {string} */
-        ContractStatus: "DRAFT" | "PENDING_SEND" | "PENDING_SIGNATURE" | "SIGNED" | "REJECTED" | "EXPIRED" | "ENDED";
+        ContractStatus: "DRAFT" | "PENDING_SEND" | "PENDING_SIGNATURE" | "CORRECTION_REQUESTED" | "SIGNED" | "REJECTED" | "EXPIRED" | "ENDED";
         StaffMemberContractDto: {
             status: components["schemas"]["ContractStatus"] | null;
             contractId: number;
@@ -2584,7 +2831,7 @@ export interface components {
             email: string | null;
         };
         ContractToEndDto: {
-            /** @description 임시저장 · 발송 대기 · 서명 대기 */
+            /** @description 임시저장 · 발송 대기 · 서명 대기 · 수정 요청 */
             status: components["schemas"]["ContractStatus"];
             contractId: number;
         };
@@ -2593,7 +2840,7 @@ export interface components {
             schedulesToRemove: number;
             /** @description 개인으로 배정된 미완료 TO-DO 수 — 배정을 푼다 */
             todosToUnassign: number;
-            /** @description 임시저장 · 발송 대기 · 서명 대기 계약 — 종료로 닫는다 */
+            /** @description 임시저장 · 발송 대기 · 서명 대기 · 수정 요청 계약 — 종료로 닫는다 */
             contractsToEnd: components["schemas"]["ContractToEndDto"][];
         };
         RetirementDateDto: {
@@ -2603,6 +2850,273 @@ export interface components {
              * @example 2026-10-31
              */
             retiredDate: string;
+        };
+        /** @enum {string} */
+        PayslipStatus: "DRAFTING" | "REVIEWING" | "CONFIRMED" | "SENT";
+        PayslipListItemDto: {
+            employmentType: components["schemas"]["EmploymentType"] | null;
+            status: components["schemas"]["PayslipStatus"] | null;
+            payslipId: number | null;
+            isMasked: boolean;
+            staffName: string | null;
+            storeId: number;
+            storeName: string;
+            /** @description 급여 기간 시작일(YYYY-MM-DD) */
+            periodStartDate: string;
+            /** @description 급여 기간 종료일(YYYY-MM-DD) */
+            periodEndDate: string;
+            /**
+             * @description 출퇴근 확인 여부. 검토 대기 사유 「출퇴근 누락」(MISSING_ATTENDANCE)이 없거나 확인(acknowledgedAt)됐으면 true,
+             *     확인 전이면 false. 누락 일수는 스키마에 칸이 없어(사유 상세는 글자) 내지 않는다
+             */
+            isAttendanceConfirmed: boolean | null;
+            /**
+             * Format: date-time
+             * @description 발송일 — 성공한 발송 이력 중 가장 늦은 시각. 발송 전이면 null
+             */
+            lastSentAt: string | null;
+        };
+        PayslipStatusCountsDto: {
+            DRAFTING: number;
+            REVIEWING: number;
+            CONFIRMED: number;
+            SENT: number;
+        };
+        PayslipListResponseDto: {
+            items: components["schemas"]["PayslipListItemDto"][];
+            /** @description 상태 필터까지 건 건수(페이지 수 계산용) */
+            total: number;
+            /** @description 그 달 · 관리 범위 전체의 상태 건수. 상태 필터와 상관없고 가린 줄도 센다 */
+            statusCounts: components["schemas"]["PayslipStatusCountsDto"];
+        };
+        PayslipCandidateDto: {
+            /** @description 계약 유형 — 유효한 근로계약의 값, 없으면 직원 레코드의 값 */
+            employmentType: components["schemas"]["EmploymentType"];
+            staffMemberId: number;
+            staffName: string;
+            storeId: number;
+            storeName: string;
+            /** @description 급여 기간에 걸친 체결 완료 근로계약 중 가장 늦게 시작한 것. 없으면 null — 초안을 만들 수 없다 */
+            contractId: number | null;
+            /** @description 이 달 명세서가 이미 있으면 그 ID — 새로 만들지 않는다 */
+            payslipId: number | null;
+            /** @description 급여 기간에 출퇴근 기록이 한 건이라도 있는가. 없으면 초안에 「출퇴근 누락」 검토 사유가 붙는다 */
+            hasAttendance: boolean;
+        };
+        PayslipCandidatesResponseDto: {
+            /** @description 급여 기간 시작일(YYYY-MM-DD) */
+            periodStartDate: string;
+            /** @description 급여 기간 종료일(YYYY-MM-DD) */
+            periodEndDate: string;
+            items: components["schemas"]["PayslipCandidateDto"][];
+        };
+        CreatePayslipDto: {
+            /**
+             * @description 급여 월(YYYY-MM). 급여 기간은 그 달 1일 ~ 말일이다
+             * @example 2026-10
+             */
+            month: string;
+            staffMemberId: number;
+        };
+        PayslipCreatedDto: {
+            payslipId: number;
+        };
+        PayslipMonthDto: {
+            /** @example 2026-10 */
+            month: string;
+        };
+        PayslipBulkCreatedItemDto: {
+            payslipId: number;
+            staffMemberId: number;
+            staffName: string;
+            /** @description 출퇴근 기록이 없어 「출퇴근 누락」 검토 사유를 붙였는가 */
+            hasMissingAttendance: boolean;
+        };
+        /**
+         * @description EXISTS — 이 달 명세서가 이미 있음 · NO_CONTRACT — 급여 기간에 유효한 근로계약 없음
+         * @enum {string}
+         */
+        PayslipSkipReason: "EXISTS" | "NO_CONTRACT";
+        PayslipBulkSkippedItemDto: {
+            /** @description EXISTS — 이 달 명세서가 이미 있음 · NO_CONTRACT — 급여 기간에 유효한 근로계약 없음 */
+            reason: components["schemas"]["PayslipSkipReason"];
+            staffMemberId: number;
+            staffName: string;
+        };
+        PayslipBulkCreateResponseDto: {
+            created: components["schemas"]["PayslipBulkCreatedItemDto"][];
+            skipped: components["schemas"]["PayslipBulkSkippedItemDto"][];
+        };
+        PayslipContractDto: {
+            status: components["schemas"]["ContractStatus"] | null;
+            contractId: number;
+            wageAmount: number | null;
+        };
+        /** @enum {string} */
+        PayslipItemCategory: "EARNING" | "BASIC" | "ADDITIONAL" | "WITHHOLDING";
+        PayslipItemDto: {
+            itemCategory: components["schemas"]["PayslipItemCategory"];
+            payslipItemId: number;
+            payslipItemMasterId: number;
+            /** @description 급여 항목 코드(예: BASE_PAY) */
+            itemCode: string;
+            /** @description 발송 당시 항목 이름 */
+            itemName: string;
+            isTaxFree: boolean;
+            /** @description 시스템 계산값 — 지급 항목만 */
+            calculatedAmount: number | null;
+            /** @description 관리자 수정값 */
+            adjustedAmount: number | null;
+            /** @description 입력 여부 — 공제 미입력과 0 을 가른다 */
+            isEntered: boolean;
+        };
+        /** @enum {string} */
+        PayslipReviewReason: "MISSING_ATTENDANCE" | "AFTER_CONTRACT_END" | "CONTRACT_CHANGED" | "DEDUCTION_MISSING";
+        PayslipReviewReasonDto: {
+            reviewReason: components["schemas"]["PayslipReviewReason"];
+            payslipReviewReasonId: number;
+            /** @description 상세 — 누락 일수 등(글자) */
+            detail: string | null;
+            /** Format: date-time */
+            acknowledgedAt: string | null;
+        };
+        /** @enum {string} */
+        PayslipLogType: "DRAFT" | "EDIT" | "CONFIRM" | "CANCEL_CONFIRMATION" | "SEND";
+        PayslipLogDto: {
+            logType: components["schemas"]["PayslipLogType"];
+            fromStatus: components["schemas"]["PayslipStatus"] | null;
+            toStatus: components["schemas"]["PayslipStatus"] | null;
+            payslipLogId: number;
+            summary: string;
+            /** @description 처리한 관리자 ID. 시스템 처리는 null */
+            changedBy: number | null;
+            /** @description 처리한 관리자 이름. 시스템 처리 · 이름 없는 계정은 null */
+            changedByName: string | null;
+            /** Format: date-time */
+            changedAt: string;
+        };
+        /** @enum {string} */
+        PayslipDispatchChannel: "EMAIL" | "PUSH";
+        /** @enum {string} */
+        DispatchResult: "SUCCEEDED" | "FAILED";
+        PayslipDispatchDto: {
+            channel: components["schemas"]["PayslipDispatchChannel"];
+            status: components["schemas"]["DispatchResult"];
+            payslipDispatchId: number;
+            /** Format: date-time */
+            sentAt: string;
+        };
+        PayslipDetailResponseDto: {
+            employmentType: components["schemas"]["EmploymentType"];
+            status: components["schemas"]["PayslipStatus"];
+            payslipId: number;
+            staffMemberId: number;
+            staffName: string;
+            storeId: number;
+            storeName: string;
+            contractId: number;
+            /** @description YYYY-MM-DD */
+            periodStartDate: string;
+            /** @description YYYY-MM-DD */
+            periodEndDate: string;
+            isPremiumApplied: boolean;
+            isWithholdingApplied: boolean;
+            grossPayAmount: number;
+            totalDeductionAmount: number;
+            /** @description 실지급액 */
+            netPayAmount: number;
+            /** @description 출퇴근 참조 시작일(YYYY-MM-DD) */
+            attendanceStartDate: string;
+            /** @description 출퇴근 참조 종료일(YYYY-MM-DD) */
+            attendanceEndDate: string;
+            /** @description 목록과 같은 출퇴근 확인 여부 */
+            isAttendanceConfirmed: boolean;
+            /** Format: date-time */
+            confirmedAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            contract: components["schemas"]["PayslipContractDto"];
+            /** @description 지급 · 공제 항목, 급여 항목 순서 */
+            items: components["schemas"]["PayslipItemDto"][];
+            /** @description 검토 대기 사유 */
+            reviewReasons: components["schemas"]["PayslipReviewReasonDto"][];
+            /** @description 처리 이력, 최근 것이 위 */
+            logs: components["schemas"]["PayslipLogDto"][];
+            /** @description 발송 이력, 보낸 순서 */
+            dispatches: components["schemas"]["PayslipDispatchDto"][];
+        };
+        MyPayslipLogDto: {
+            /** @description SEND · CANCEL_CONFIRMATION 만 온다 */
+            logType: components["schemas"]["PayslipLogType"];
+            payslipLogId: number;
+            /** Format: date-time */
+            changedAt: string;
+        };
+        MyPayslipSummaryDto: {
+            employmentType: components["schemas"]["EmploymentType"];
+            /** @description 늘 SENT — 발송 완료 명세서만 보인다 */
+            status: components["schemas"]["PayslipStatus"];
+            payslipId: number;
+            /** @description YYYY-MM-DD */
+            periodStartDate: string;
+            /** @description YYYY-MM-DD */
+            periodEndDate: string;
+            grossPayAmount: number;
+            totalDeductionAmount: number;
+            netPayAmount: number;
+            /**
+             * Format: date-time
+             * @description 만든 일시 — 보존 기간(3년)의 기준
+             */
+            createdAt: string;
+            /** @description 근무지 점포 이름 */
+            storeName: string;
+            /** @description 발송 · 확정 취소 이력, 최근 것이 위 */
+            logs: components["schemas"]["MyPayslipLogDto"][];
+        };
+        MyPayslipListResponseDto: {
+            /** @description 급여 기간이 늦은 것이 위 */
+            items: components["schemas"]["MyPayslipSummaryDto"][];
+        };
+        MyPayslipItemDto: {
+            itemCategory: components["schemas"]["PayslipItemCategory"];
+            payslipItemId: number;
+            /** @description 급여 항목 코드(예: BASE_PAY) */
+            itemCode: string;
+            /** @description 발송 당시 항목 이름 */
+            itemName: string;
+            isTaxFree: boolean;
+            calculatedAmount: number | null;
+            adjustedAmount: number | null;
+            isEntered: boolean;
+        };
+        MyPayslipDetailResponseDto: {
+            employmentType: components["schemas"]["EmploymentType"];
+            /** @description 늘 SENT — 발송 완료 명세서만 보인다 */
+            status: components["schemas"]["PayslipStatus"];
+            payslipId: number;
+            /** @description YYYY-MM-DD */
+            periodStartDate: string;
+            /** @description YYYY-MM-DD */
+            periodEndDate: string;
+            grossPayAmount: number;
+            totalDeductionAmount: number;
+            netPayAmount: number;
+            /**
+             * Format: date-time
+             * @description 만든 일시 — 보존 기간(3년)의 기준
+             */
+            createdAt: string;
+            /** @description 근무지 점포 이름 */
+            storeName: string;
+            /** @description 발송 · 확정 취소 이력, 최근 것이 위 */
+            logs: components["schemas"]["MyPayslipLogDto"][];
+            /** @description 3.3% 원천징수 적용 — 원천징수 · 소득세 줄을 어떻게 보일지 화면이 정한다 */
+            isWithholdingApplied: boolean;
+            /** @description 지급 · 공제 항목, 급여 항목 순서 */
+            items: components["schemas"]["MyPayslipItemDto"][];
         };
         /** @enum {string} */
         ContractMethod: "ELECTRONIC" | "PAPER";
@@ -2742,9 +3256,9 @@ export interface components {
             /** @description true 면 임시저장(DRAFT) — 초대 · 계약서를 보내지 않는다. 없으면 초안 저장(발송 대기) */
             isTemporarySave?: boolean;
             /**
-             * @description 대체할 진행 중 계약(WHALEERP-129). 같은 점포에 같은 번호의 진행 중 계약(임시저장 · 발송 대기 · 서명 대기)이
+             * @description 대체할 진행 중 계약(WHALEERP-129). 같은 점포에 같은 번호의 진행 중 계약(임시저장 · 발송 대기 · 서명 대기 · 수정 요청)이
              *     있으면 409(code CONTRACT_IN_PROGRESS)가 그 목록(id · 상태 · 직원 이름 · 계약 기간)을 준다. 관리자가 대체를 확인하면
-             *     그 id 를 모두 넣어 다시 보낸다 — 임시저장은 지우고 발송 대기 · 서명 대기는 종료한다. 종이 계약 등록이면 체결 완료도
+             *     그 id 를 모두 넣어 다시 보낸다 — 임시저장은 지우고 발송 대기 · 서명 대기 · 수정 요청은 종료한다. 종이 계약 등록이면 체결 완료도
              *     묻고 종료한다. 체결 완료는 같은 번호로 퇴직 · 재입사가 되풀이되면 쌓이므로 상한을 넉넉히 둔다 — 409 목록을 모두
              *     다시 보낼 수 없으면 그 번호로는 종이 계약을 등록할 수 없다(api #49 리뷰, WHALEERP-600).
              */
@@ -2843,6 +3357,26 @@ export interface components {
             storeId: number;
             /** @description 외국인 여부 — 체크하지 않았으면 false */
             isForeigner: boolean;
+        };
+        UpdateWorkerDto: {
+            /** @description 성별 — 남 · 여. 가입 때 직원이 넣은 값과 본인 대조한다(WHALEERP-125). 임시저장은 비워도 된다 */
+            gender?: components["schemas"]["Gender"];
+            /** @description 앞뒤 공백은 지운다(NFC) — 같은 사람의 가입 전 레코드를 이름으로 찾으므로 공백 하나로 갈리지 않게. */
+            name: string;
+            /** @description 숫자만 10~11자리 (예: 01090145563) */
+            phone: string;
+            /** @description YYYY-MM-DD. 계약 시작일 기준 만 19세 미만이면 저장하지 않는다 */
+            birthDate?: string;
+            /** @description 외국인 여부 — 체크하지 않으면 내국인(false). 본인 대조에 쓴다(WHALEERP-125) */
+            isForeigner?: boolean;
+            /**
+             * @description 대체할 진행 중 계약(WHALEERP-129). 같은 점포에 같은 번호의 진행 중 계약(임시저장 · 발송 대기 · 서명 대기 · 수정 요청)이
+             *     있으면 409(code CONTRACT_IN_PROGRESS)가 그 목록(id · 상태 · 직원 이름 · 계약 기간)을 준다. 관리자가 대체를 확인하면
+             *     그 id 를 모두 넣어 다시 보낸다 — 임시저장은 지우고 발송 대기 · 서명 대기 · 수정 요청은 종료한다. 종이 계약 등록이면 체결 완료도
+             *     묻고 종료한다. 체결 완료는 같은 번호로 퇴직 · 재입사가 되풀이되면 쌓이므로 상한을 넉넉히 둔다 — 409 목록을 모두
+             *     다시 보낼 수 없으면 그 번호로는 종이 계약을 등록할 수 없다(api #49 리뷰, WHALEERP-600).
+             */
+            replaceContractIds?: number[];
         };
         DownloadUrlResponseDto: {
             url: string;
@@ -3513,22 +4047,20 @@ export interface components {
             items: components["schemas"]["LeadListItemDto"][];
             total: number;
         };
+        /**
+         * @description 마지막 답변 메일 결과(#597). 실패면 「답변 메일 다시 보내기」로 다시 보낸다. null 이면 보낸 적 없거나(시각도 null)
+         *     결과를 아직 모른다(시각만 있음 — 보내는 중이거나 결과를 남기지 못함).
+         * @enum {string}
+         */
+        ReplyMailResult: "SUCCEEDED" | "FAILED";
         LeadResponseDto: {
             interests: components["schemas"]["LeadInterest"][];
             status: components["schemas"]["InquiryStatus"];
-            leadId: number;
-            /** @description 문의자 이름 */
-            contactName: string;
-            phone: string;
-            /** @description 업종(공통코드 INDUSTRY 값) */
-            industryCode: string;
-            /** @description 업종 직접 입력 — 업종이 기타일 때 */
-            industryDetail: string | null;
             /**
-             * Format: date-time
-             * @description 접수 일시
+             * @description 마지막 답변 메일 결과(#597). 실패면 「답변 메일 다시 보내기」로 다시 보낸다. null 이면 보낸 적 없거나(시각도 null)
+             *     결과를 아직 모른다(시각만 있음 — 보내는 중이거나 결과를 남기지 못함).
              */
-            createdAt: string;
+            replyMailResult: components["schemas"]["ReplyMailResult"] | null;
             email: string;
             /** @description 도입 예정 시기(공통코드 값) */
             planPeriodCode: string | null;
@@ -3557,6 +4089,11 @@ export interface components {
             repliedAt: string | null;
             repliedBy: number | null;
             repliedByName: string | null;
+            /**
+             * Format: date-time
+             * @description 마지막으로 답변 메일을 보내려 한 시각. 보낸 적 없으면 null.
+             */
+            replyMailAttemptedAt: string | null;
             /** @description 운영자 내부 메모. 문의자에게 보이지 않는다. */
             internalMemo: string | null;
             /** @description 상담 완료일(YYYY-MM-DD) — 이날부터 1년 뒤 파기 */
@@ -3566,6 +4103,19 @@ export interface components {
              * @description 최근 수정 일시
              */
             updatedAt: string;
+            leadId: number;
+            /** @description 문의자 이름 */
+            contactName: string;
+            phone: string;
+            /** @description 업종(공통코드 INDUSTRY 값) */
+            industryCode: string;
+            /** @description 업종 직접 입력 — 업종이 기타일 때 */
+            industryDetail: string | null;
+            /**
+             * Format: date-time
+             * @description 접수 일시
+             */
+            createdAt: string;
         };
         LeadStateResponseDto: {
             status: components["schemas"]["InquiryStatus"];
@@ -3581,6 +4131,14 @@ export interface components {
             updatedAt: string;
             /** @description 문의자에게 회신할 답변. 평문이고 20,000자까지. */
             reply: string;
+        };
+        LeadReplyMailResponseDto: {
+            replyMailResult: components["schemas"]["ReplyMailResult"];
+            /**
+             * Format: date-time
+             * @description 보내려 한 시각. 같은 도입문의는 이 시각부터 1분이 지나면 다시 보낼 수 있다.
+             */
+            replyMailAttemptedAt: string;
         };
         SaveInternalMemoDto: {
             /** @description 메모. 2,000자까지. null · 빈 문자열 · 공백만 보내면 지운다. 키는 빼먹을 수 없다 — 빠진 키로 메모가 지워지지 않게. */
@@ -3685,6 +4243,71 @@ export interface components {
             updatedAt: string;
             /** @description 문의자에게 보이는 답변. 평문이고 20,000자까지. 첨부파일은 받지 않는다(CNT-18). */
             body: string;
+        };
+        CreatedSupportInquiryResponseDto: {
+            inquiryId: number;
+        };
+        SupportInquiryListItemDto: {
+            status: components["schemas"]["InquiryStatus"];
+            inquiryId: number;
+            title: string;
+            /** @description 문의 유형(공통코드 `INQUIRY_CATEGORY` 값) */
+            inquiryCategoryCode: string;
+            /**
+             * Format: date-time
+             * @description 등록 일시
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description 처음 답변한 시각. 답변이 없으면 null.
+             */
+            repliedAt: string | null;
+        };
+        SupportInquiryListResponseDto: {
+            items: components["schemas"]["SupportInquiryListItemDto"][];
+            total: number;
+        };
+        SupportInquiryReplyDto: {
+            /** @description 지금 답변(마지막 답변 행) */
+            body: string;
+            /**
+             * Format: date-time
+             * @description 처음 답변한 시각
+             */
+            repliedAt: string;
+            /**
+             * Format: date-time
+             * @description 고친 적이 있으면 마지막으로 고친 시각(「수정됨」), 없으면 null
+             */
+            editedAt: string | null;
+        };
+        SupportInquiryResponseDto: {
+            status: components["schemas"]["InquiryStatus"];
+            inquiryId: number;
+            title: string;
+            /** @description 문의 유형(공통코드 `INQUIRY_CATEGORY` 값) */
+            inquiryCategoryCode: string;
+            /**
+             * Format: date-time
+             * @description 등록 일시
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description 처음 답변한 시각. 답변이 없으면 null.
+             */
+            repliedAt: string | null;
+            body: string;
+            /**
+             * Format: date-time
+             * @description 처리중으로 바뀐 시각 — 진행 이력의 「처리 중」 줄. 처리중을 거치지 않았으면 null.
+             */
+            processingStartedAt: string | null;
+            /** @description 답변. 아직 없으면 null. */
+            reply: components["schemas"]["SupportInquiryReplyDto"] | null;
+            /** @description 첨부파일. 순서대로. 내려받기는 `GET /support-inquiries/:inquiryId/attachments/:inquiryAttachmentId/download-url`. */
+            attachments: components["schemas"]["InquiryAttachmentDto"][];
         };
     };
     responses: never;
@@ -4096,6 +4719,29 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminRefreshResponseDto"];
+                };
+            };
+        };
+    };
+    AdminAuthController_signupSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSignupSessionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminLoginResponseDto"];
                 };
             };
         };
@@ -5674,6 +6320,287 @@ export interface operations {
             };
         };
     };
+    PayslipsController_findAll: {
+        parameters: {
+            query: {
+                /** @description 급여 월(YYYY-MM). 급여 기간 시작일이 그 달인 명세서다 */
+                month: string;
+                /**
+                 * @description 쉼표로 구분한 명세서 상태. 없으면 전체. 빈 값 · 모르는 값이 하나라도 있으면 400 이다. 상태 건수(statusCounts)는
+                 *     이 값과 상관없이 그 달 전체로 센다.
+                 */
+                status?: string;
+                /**
+                 * @description 쉼표로 구분한 점포 ID(직원 목록과 같다). 관리 범위 밖의 ID 는 조용히 빠진다. 없으면 관리 범위 전체.
+                 *     빈 칸 · 숫자가 아닌 값 · 1..2147483647 밖의 값이 하나라도 있거나 500개를 넘으면 400 이다. 상태 건수도 이 점포로 센다.
+                 */
+                storeIds?: string;
+                /** @description 페이지당 건수 — 20 · 50 · 100, 기본 20 */
+                pageSize?: 20 | 50 | 100;
+                /**
+                 * @description 직원명 부분 일치(대소문자 무시, `%` · `_` 는 글자 그대로). 앞뒤 공백을 지우고 비면 없는 것으로 본다. 주면 본사 역할에게
+                 *     가린 줄(본사 제공 동의 없는 가맹 점포 직원)은 목록 · 상태 건수에서 빠진다 — 이름 검색으로 가린 직원이 드러나지 않게.
+                 */
+                staffName?: string;
+                /** @description 페이지, 1부터. 상한은 OFFSET 이 DB 정수 범위를 넘어 500 이 되지 않게 둔다 */
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayslipListResponseDto"];
+                };
+            };
+            /** @description 쿼리 형식 오류(month 누락 포함) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 급여명세서 관리 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PayslipsController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePayslipDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayslipCreatedDto"];
+                };
+            };
+            /** @description 본문 형식 오류 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 급여명세서 관리 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 직원 · 관리 범위 밖 · 가려지는 직원(본사 제공 동의 없음) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description PAYSLIP_EXISTS — 이 직원의 이 달 명세서가 이미 있음(본문 payslipId) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NO_VALID_CONTRACT — 급여 기간에 유효한 근로계약 없음 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PayslipsController_candidates: {
+        parameters: {
+            query: {
+                month: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayslipCandidatesResponseDto"];
+                };
+            };
+            /** @description 쿼리 형식 오류(month 누락 포함) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 급여명세서 관리 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PayslipsController_bulkCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PayslipMonthDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayslipBulkCreateResponseDto"];
+                };
+            };
+            /** @description 본문 형식 오류 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 급여명세서 관리 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PayslipsController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayslipDetailResponseDto"];
+                };
+            };
+            /** @description 급여명세서 관리 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 명세서 · 관리 범위 밖 · 가려지는 명세서 · ID 형식 오류 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MyPayslipsController_findAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyPayslipListResponseDto"];
+                };
+            };
+            /** @description 직원 근무 앱 토큰이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MyPayslipsController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyPayslipDetailResponseDto"];
+                };
+            };
+            /** @description 직원 근무 앱 토큰이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 명세서 · 남의 명세서 · 발송 전 · 보존 기간(3년) 지남 · ID 형식 오류 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     ContractsController_list: {
         parameters: {
             query: {
@@ -5897,7 +6824,7 @@ export interface operations {
                     "application/json": components["schemas"]["CreatedContractResponseDto"];
                 };
             };
-            /** @description 입력 오류 · 만 19세 미만 */
+            /** @description 입력 오류 · 만 19세 미만 · 수정 요청인데 임시저장 · 근무지 변경 · 가입한 직원의 번호 변경 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -5918,7 +6845,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 임시저장이 아님 · 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 */
+            /** @description 임시저장 · 수정 요청이 아님 · 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -5968,6 +6895,66 @@ export interface operations {
             };
             /** @description 임시저장이 아님 */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ContractsController_updateWorker: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contractId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateWorkerDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatedContractResponseDto"];
+                };
+            };
+            /** @description 입력 오류 · 만 19세 미만 · 가입한 직원의 번호 변경 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 번호를 바꾸는데 점포 직원 관리 권한이 없음(동의로만 보이는 직원) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 계약 · 업무 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description CONTRACT_STATUS_CONFLICT(발송 대기 · 서명 대기 · 수정 요청이 아님) · 새 번호로 이 점포에 재직 중 · CONTRACT_IN_PROGRESS(새 번호의 같은 점포 진행 중 계약 — replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같은 번호의 다른 저장이 길어져 시간 초과(잠시 뒤 다시) */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -6083,6 +7070,61 @@ export interface operations {
                 content?: never;
             };
             /** @description 첨부파일 저장소가 설정되지 않음 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ContractSendController_send: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contractId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description { contractId, status: PENDING_SIGNATURE, sentAt, signDeadlineAt } */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 계약 · 업무 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description CONTRACT_STATUS_CONFLICT(발송 대기 · 서명 대기가 아님) · SEND_CHANNEL_NOT_READY(기존 계정 — 앱 알림 준비 전) · SEND_PHONE_NOT_MOBILE(휴대폰 번호가 아님) · 다른 요청이 먼저 고침 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description SEND_FAILED(나가지 않음 — 거절 · 토큰 단계 · 요청 전 오류, 되돌렸고 다시 보낼 수 있음) · SEND_UNCONFIRMED(접수 여부 모름 또는 되돌리기 실패 — 상세를 다시 읽을 것) */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 주소(STAFF_APP_URL) · 대체 문자 발신번호(BIZPPURIO_SMS_FROM)가 없음 · 가입 초대 템플릿이 없거나 꺼짐 */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -7594,6 +8636,55 @@ export interface operations {
             };
         };
     };
+    LeadsAdminController_resendReplyMail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadReplyMailResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 도입문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 답변완료가 아니거나, 1분 안에 이미 보냄 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메일 발송 설정(MAIL_*) 없음 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     LeadsAdminController_saveInternalMemo: {
         parameters: {
             query?: never;
@@ -7889,6 +8980,179 @@ export interface operations {
             };
             /** @description 그사이 다른 운영자가 저장함 */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SupportInquiriesController_list: {
+        parameters: {
+            query: {
+                /**
+                 * @description 답변 상태 — 접수 · 처리중 · 답변완료. 고객지원 화면은 「답변 대기 · 처리 중 · 답변 완료」 탭을 따로 두어(front
+                 *     목업 S-ITFILU) 「답변 대기」가 접수 하나다 — 접수 · 처리중을 합친 커뮤니티 관리의 `answerStatus` 와 다르다.
+                 */
+                status?: components["schemas"]["InquiryStatus"];
+                /** @description 제목에 들어 있으면 나온다. */
+                title?: string;
+                /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
+                page: number;
+                /** @description 한 쪽 건수. 기본 20, 최대 200. */
+                pageSize: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupportInquiryListResponseDto"];
+                };
+            };
+            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 · 문의하기 메뉴 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SupportInquiriesController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** @example STAFF_LABOR */
+                    inquiryCategoryCode: string;
+                    title: string;
+                    body: string;
+                    files?: string[];
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatedSupportInquiryResponseDto"];
+                };
+            };
+            /** @description 입력 오류 · 사용 중이 아닌 문의 유형 · 파일 종류 · 크기 · 개수 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 · 문의하기 메뉴 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 5분 안에 제목 · 내용이 같은 문의를 이미 등록함 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 첨부가 있는데 저장소가 설정되지 않음 · 저장소 오류 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SupportInquiriesController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inquiryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupportInquiryResponseDto"];
+                };
+            };
+            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 · 문의하기 메뉴 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 문의이거나 남의 문의 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SupportInquiriesController_attachmentDownloadUrl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inquiryId: string;
+                inquiryAttachmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DownloadUrlResponseDto"];
+                };
+            };
+            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 · 문의하기 메뉴 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 문의 · 남의 문의 · 그 문의의 첨부가 아님 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 첨부파일 저장소 설정 없음 */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
