@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-19
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main(로그인전 화면 Figma 적용) 병합 뒤 `/find` 를 데모 auth/find.html 디자인으로 바꿨다. 틀을 `GuestFindAccount`(디자인 샘플과 함께 씀)로 빼고, 칸은 정책대로 이름 · 이메일을 둔다. 그림 아래 문구는 정책에 맞추고 고객센터 안내 카드는 뺐다(2026-10-19 재영).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `/find` 화면과 `src/lib/forwarded-headers.ts`(회원가입 서버 액션의 `apiHeaders` 를 옮겨 찾기와 함께 쓴다)를 더했다. proxy 가 로그인한 채 `/find` 에 오면 홈으로 보낸다.
 * **Update**: [로그인](/auth.md) — `/find` 아이디·비밀번호 찾기 화면을 만들었다. 아이디 찾기에 요청 제한을 두기로 하고(「횟수 제한 없음」을 고침), 비밀번호 찾기 결과 안내를 하나로 정했다(api 단일 202). 목업 `auth/find.html` 의 비밀번호 탭 「일치 없음」 · 「메일 실패」 상태를 걷었다. 로그인한 채 `/find` 에 오면 자기 홈으로 보낸다. 아이디 찾기 api 는 1팀 요청 중이다(2026-10-19 재영).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #54 2차 블로커 반영: 로그아웃(`clearLoginStorage`)이 앞 버전(`whale-erp:v1:`) 저장 키도 지운다. v2 로 올린 뒤 공용 PC 에 v1 로그인 정보(아이디 · 이름 · 이메일 · 메뉴 권한 · 점포)가 남았다.
