@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-19
+* **Update**: [점포 관리](/stores.md) — 등록 BP: 플랫폼 계정은 웨일ERP 바로가기로 BP 를 골라 연 탭의 점포관리에서 그 BP 로 등록한다(「등록할 길이 없다」 문장을 고쳤다).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 계정이 고른 BP 의 탭은 브라우저 탭 제목 앞에 BP 상호를 붙인다(여러 BP 탭 구분).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 계정의 웨일ERP 바로가기(A안). 바로가기가 BP 선택 팝업을 열고(ERP 탭에서도), 고른 BP 를 새 탭 BP 이동 화면 `/bp-switch` 가 탭 sessionStorage 에 채운 뒤 홈으로 보낸다. 플랫폼관리 바로가기는 ERP 탭에서 `/bp-switch?bp=<자기 BP>` 로 플랫폼에 돌아온다. BP 목록 `GET /bp-codes` 는 api 대기.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #41 재리뷰 참고 반영(영주). 발송 확인창이 서버 액션 호출 자체가 끊겨도(브라우저 ↔ Next · 배포 중 재시작) 오류 화면 대신 「발송됐는지 알 수 없음」으로 보내기를 막고 상세를 다시 읽는다.
