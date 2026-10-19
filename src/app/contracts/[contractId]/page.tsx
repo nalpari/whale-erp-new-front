@@ -6,14 +6,15 @@ import { labelOf } from "@/lib/enums";
 import { StatusBadge } from "../columns";
 import { formatPhone, type ContractDetail } from "../new/contract-form-model";
 import { documentNoticeOf } from "./document-notice";
+import { SendContractButton } from "./send-button";
+import { isWorkerEditable } from "./worker/worker-model";
 import { insuranceText, kstDateTime, payDayText, probationText, weeklyHoursOf, workDayLines } from "./detail-format";
 
 type Status = Parameters<typeof StatusBadge>[0]["status"];
 
-// 상태마다 위쪽에 서는 버튼. 재발송 · 새 계약은 아직 API 가 없어 비활성으로 둔다. 거부 · 종료는 버튼이 없다.
+// 상태마다 위쪽에 서는 버튼. 발송 대기는 「발송」, 서명 대기는 「재발송」(WHALEERP-136, 가입 초대 알림톡).
+// 만료 재발송(WHALEERP-153) · 새 계약은 아직 API 가 없어 비활성으로 둔다. 거부 · 종료는 버튼이 없다.
 const PENDING: Partial<Record<Status, string>> = {
-  PENDING_SEND: "초대 재발송",
-  PENDING_SIGNATURE: "재발송",
   EXPIRED: "재발송",
   SIGNED: "새 계약",
 };
@@ -58,11 +59,30 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
       <Button variant="soft" href={`/contracts/${contractId}/edit`}>
         이어 쓰기
       </Button>
-    ) : status && PENDING[status] ? (
-      <Button variant="soft" disabled title="준비 중">
-        {PENDING[status]}
-      </Button>
-    ) : null;
+    ) : (
+      <>
+        {/* 직원이 수정을 요청했다 — 계약서를 고치면 발송 대기로 돌아가 다시 보낸다(WHALEERP-125 · 126) */}
+        {status === "CORRECTION_REQUESTED" && (
+          <Button variant="soft" href={`/contracts/${contractId}/edit`}>
+            계약서 수정
+          </Button>
+        )}
+        {/* 날인 전 근로자 정보(이름 · 번호 · 생년월일 · 성별 · 외국인 여부) — 본인 대조 값 */}
+        {isWorkerEditable(status) && (
+          <Button variant="soft" href={`/contracts/${contractId}/worker`}>
+            근로자 정보 수정
+          </Button>
+        )}
+        {(status === "PENDING_SEND" || status === "PENDING_SIGNATURE") && (
+          <SendContractButton contractId={contractId} resend={status === "PENDING_SIGNATURE"} />
+        )}
+        {status && PENDING[status] && (
+          <Button variant="soft" disabled title="준비 중">
+            {PENDING[status]}
+          </Button>
+        )}
+      </>
+    );
 
   const rows = c
     ? [

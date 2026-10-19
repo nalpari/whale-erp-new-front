@@ -16,8 +16,8 @@ test("버튼 — 퇴직 예정(재직 + 퇴직일)에도 보인다. api 는 퇴�
   assert.equal(canResetPassword(scheduled, "FM", true), true);
 });
 
-test("버튼 — 수정 권한이 없으면 숨긴다", () => {
-  assert.equal(canResetPassword(joined, "FM", false), false);
+test("버튼 — 수정 권한이 없으면 숨긴다. 조회 권한만 있어도 email 은 오므로 email 로는 가릴 수 없다(WHALEERP-180)", () => {
+  assert.equal(canResetPassword({ ...joined, email: "jian.seo@example.com" }, "FM", false), false);
 });
 
 test("버튼 — 퇴직 직원에게는 숨긴다", () => {
