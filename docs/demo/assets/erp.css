@@ -961,6 +961,9 @@
   .max-h-\[288px\] {
     max-height: 288px;
   }
+  .max-h-\[322px\] {
+    max-height: 322px;
+  }
   .max-h-\[328px\] {
     max-height: 328px;
   }
@@ -1263,9 +1266,6 @@
   }
   .w-\[420px\] {
     width: 420px;
-  }
-  .w-\[440px\] {
-    width: 440px;
   }
   .w-\[445px\] {
     width: 445px;
@@ -2870,6 +2870,9 @@
   .caret-erp-ink\! {
     caret-color: var(--color-erp-ink) !important;
   }
+  .accent-erp-brand {
+    accent-color: var(--color-erp-brand);
+  }
   .scheme-light {
     color-scheme: light;
   }
@@ -3331,6 +3334,9 @@
   }
   .disabled\:text-erp-thead-text:disabled {
     color: var(--color-erp-thead-text);
+  }
+  .disabled\:opacity-30:disabled {
+    opacity: 30%;
   }
   .disabled\:opacity-40:disabled {
     opacity: 40%;

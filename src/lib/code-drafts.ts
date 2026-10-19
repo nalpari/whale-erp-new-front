@@ -1,5 +1,5 @@
 // 공통코드 화면 두 패널(그룹 목록 · 상세 코드)의 초안 다루기 — 바뀜 판정, 저장 요청 만들기, 409 문구 해석.
-// 패널(src/app/platform/system/codes/code-*-panel.tsx)에서 뺀 순수 함수라 node --test 로 검사한다(code-drafts.test.ts).
+// 패널(src/app/code-groups/code-*-panel.tsx)에서 뺀 순수 함수라 node --test 로 검사한다(code-drafts.test.ts).
 import type { CodeGroup, CodeItem, ManageOwnerCode, SaveCodeGroupsInput, SaveCodeItemsInput, UseStatus } from "./codes";
 import { CODE_PATTERN, normalizeCode } from "./code-validation.ts";
 

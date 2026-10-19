@@ -21,10 +21,10 @@ export function tabs(items, selected = items[0].id) {
 }
 
 // 확인창·팝업 창. 네이티브 <dialog> 로 띄운다(Esc 로 닫힘). 여는 버튼은 dialogTrigger, 닫는 버튼은 data-close.
-// buttons 를 비우면 [취소][확인] 을 둔다.
-export function dialog(id, title, body, buttons) {
+// buttons 를 비우면 [취소][확인] 을 둔다. width 는 표를 담는 넓은 팝업(직원 고르기 등)만 바꾼다.
+export function dialog(id, title, body, buttons, width = "w-[420px]") {
   const foot = buttons ?? `${button("취소", { variant: "off", "data-close": true })}${button("확인", { "data-close": true })}`;
-  return `<dialog id="${id}" aria-labelledby="${id}-title" class="m-auto w-[420px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"><h2 id="${id}-title" class="text-[18px] font-semibold">${title}</h2><div class="mt-[12px] text-[14px] leading-[1.6] text-erp-ink">${body}</div><div class="mt-[24px] flex justify-end gap-[6px]">${foot}</div></dialog>`;
+  return `<dialog id="${id}" aria-labelledby="${id}-title" class="m-auto ${width} max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"><h2 id="${id}-title" class="text-[18px] font-semibold">${title}</h2><div class="mt-[12px] text-[14px] leading-[1.6] text-erp-ink">${body}</div><div class="mt-[24px] flex justify-end gap-[6px]">${foot}</div></dialog>`;
 }
 export const dialogTrigger = (label, id, variant = "primary") => button(label, { variant, "data-dialog": id });
 export const dialogId = () => uid("dialog");

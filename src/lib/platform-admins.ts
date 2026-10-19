@@ -1,4 +1,4 @@
-// 플랫폼 관리자 계정 데이터 접근(/platform/system/admins). api 는 whale-erp-api `/platform-admins` 다.
+// 플랫폼 관리자 계정 데이터 접근(/platform-admins). api 는 whale-erp-api `/platform-admins` 다.
 // 메뉴 권한(조회 · 등록 · 수정 · 삭제)과 마스터 보호 · 본인 보호는 api 가 동작마다 판정한다 — 화면은 미리 숨기거나 흐리게만 한다.
 // 타입은 손으로 짓지 않고 api 의 openapi.json 에서 만든 것(api-types.generated.ts)을 쓴다.
 import type { components } from "./api-types.generated";
