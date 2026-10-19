@@ -146,7 +146,8 @@ function TermsRow({ kind, label, checked, onChange }: { kind: "use" | "policy"; 
     <div className="flex items-center justify-between pl-[28px]">
       <Checkbox label={label} checked={checked} onChange={(e) => onChange(e.target.checked)} />
       <span className="text-[13px] text-erp-label underline underline-offset-2">
-        <TermsLink kind={kind}>전문 보기</TermsLink>
+        {/* 약관 유형은 공통코드 TERMS_TYPE — 이용약관은 BP 사업자 회원가입용, 개인정보는 그 수집·이용 동의다. */}
+        <TermsLink termsTypeCode={kind === "use" ? "TERMS_SERVICE" : "PRIVACY_COLLECT"}>전문 보기</TermsLink>
       </span>
     </div>
   );
