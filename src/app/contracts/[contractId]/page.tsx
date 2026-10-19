@@ -18,6 +18,7 @@ import { MENUS, STORES, USER_ITEMS } from "../../design/sample";
 import { StatusBadge } from "../columns";
 import { formatPhone, type ContractDetail } from "../new/contract-form-model";
 import { documentNoticeOf } from "./document-notice";
+import { isWorkerEditable } from "./worker/worker-model";
 import { insuranceText, kstDateTime, payDayText, probationText, weeklyHoursOf, workDayLines } from "./detail-format";
 
 type Status = Parameters<typeof StatusBadge>[0]["status"];
@@ -70,11 +71,27 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
       <Button variant="soft" href={`/contracts/${contractId}/edit`}>
         이어 쓰기
       </Button>
-    ) : status && PENDING[status] ? (
-      <Button variant="soft" disabled title="준비 중">
-        {PENDING[status]}
-      </Button>
-    ) : null;
+    ) : (
+      <>
+        {/* 직원이 수정을 요청했다 — 계약서를 고치면 발송 대기로 돌아가 다시 보낸다(WHALEERP-125 · 126) */}
+        {status === "CORRECTION_REQUESTED" && (
+          <Button variant="soft" href={`/contracts/${contractId}/edit`}>
+            계약서 수정
+          </Button>
+        )}
+        {/* 날인 전 근로자 정보(이름 · 번호 · 생년월일 · 성별 · 외국인 여부) — 본인 대조 값 */}
+        {isWorkerEditable(status) && (
+          <Button variant="soft" href={`/contracts/${contractId}/worker`}>
+            근로자 정보 수정
+          </Button>
+        )}
+        {status && PENDING[status] && (
+          <Button variant="soft" disabled title="준비 중">
+            {PENDING[status]}
+          </Button>
+        )}
+      </>
+    );
 
   const rows = c
     ? [

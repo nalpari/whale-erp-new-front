@@ -906,7 +906,10 @@ export interface paths {
         };
         /** 작성 화면을 다시 채울 값 — 임시저장 이어 쓰기 */
         get: operations["ContractsController_findOne"];
-        /** 임시저장 이어 쓰기. 폼 전체를 다시 보낸다. isTemporarySave 를 빼면 초안 저장(발송 대기)으로 넘어간다 */
+        /**
+         * 임시저장 이어 쓰기. 폼 전체를 다시 보낸다. isTemporarySave 를 빼면 초안 저장(발송 대기)으로 넘어간다.
+         *     직원이 수정을 요청한 계약(수정 요청)도 고친다 — 고치면 발송 대기로 돌아가고, 임시저장은 할 수 없다(400).
+         */
         put: operations["ContractsController_update"];
         post?: never;
         /** 임시저장 삭제. 계약 · 근무 요일 · 당사자 · 이력과 그 계약에만 쓰인 초안 직원 레코드를 지운다 */
@@ -914,6 +917,26 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/contracts/{contractId}/worker": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * 날인 전 근로자 정보 수정(WHALEERP-125 · 126). 발송 대기 · 서명 대기 · 수정 요청 계약의 이름 · 번호 · 생년월일 ·
+         *     성별 · 외국인 여부를 고친다. 서명 대기 · 수정 요청이면 발송 대기로 돌아가 다시 보낸다(서명 기한은 비운다).
+         */
+        patch: operations["ContractsController_updateWorker"];
         trace?: never;
     };
     "/contracts/{contractId}/paper": {
@@ -2529,7 +2552,7 @@ export interface components {
             heldAt: string;
         };
         /** @enum {string} */
-        ContractStatus: "DRAFT" | "PENDING_SEND" | "PENDING_SIGNATURE" | "SIGNED" | "REJECTED" | "EXPIRED" | "ENDED";
+        ContractStatus: "DRAFT" | "PENDING_SEND" | "PENDING_SIGNATURE" | "CORRECTION_REQUESTED" | "SIGNED" | "REJECTED" | "EXPIRED" | "ENDED";
         StaffMemberContractDto: {
             status: components["schemas"]["ContractStatus"] | null;
             contractId: number;
@@ -2584,7 +2607,7 @@ export interface components {
             email: string | null;
         };
         ContractToEndDto: {
-            /** @description 임시저장 · 발송 대기 · 서명 대기 */
+            /** @description 임시저장 · 발송 대기 · 서명 대기 · 수정 요청 */
             status: components["schemas"]["ContractStatus"];
             contractId: number;
         };
@@ -2593,7 +2616,7 @@ export interface components {
             schedulesToRemove: number;
             /** @description 개인으로 배정된 미완료 TO-DO 수 — 배정을 푼다 */
             todosToUnassign: number;
-            /** @description 임시저장 · 발송 대기 · 서명 대기 계약 — 종료로 닫는다 */
+            /** @description 임시저장 · 발송 대기 · 서명 대기 · 수정 요청 계약 — 종료로 닫는다 */
             contractsToEnd: components["schemas"]["ContractToEndDto"][];
         };
         RetirementDateDto: {
@@ -2742,9 +2765,9 @@ export interface components {
             /** @description true 면 임시저장(DRAFT) — 초대 · 계약서를 보내지 않는다. 없으면 초안 저장(발송 대기) */
             isTemporarySave?: boolean;
             /**
-             * @description 대체할 진행 중 계약(WHALEERP-129). 같은 점포에 같은 번호의 진행 중 계약(임시저장 · 발송 대기 · 서명 대기)이
+             * @description 대체할 진행 중 계약(WHALEERP-129). 같은 점포에 같은 번호의 진행 중 계약(임시저장 · 발송 대기 · 서명 대기 · 수정 요청)이
              *     있으면 409(code CONTRACT_IN_PROGRESS)가 그 목록(id · 상태 · 직원 이름 · 계약 기간)을 준다. 관리자가 대체를 확인하면
-             *     그 id 를 모두 넣어 다시 보낸다 — 임시저장은 지우고 발송 대기 · 서명 대기는 종료한다. 종이 계약 등록이면 체결 완료도
+             *     그 id 를 모두 넣어 다시 보낸다 — 임시저장은 지우고 발송 대기 · 서명 대기 · 수정 요청은 종료한다. 종이 계약 등록이면 체결 완료도
              *     묻고 종료한다. 체결 완료는 같은 번호로 퇴직 · 재입사가 되풀이되면 쌓이므로 상한을 넉넉히 둔다 — 409 목록을 모두
              *     다시 보낼 수 없으면 그 번호로는 종이 계약을 등록할 수 없다(api #49 리뷰, WHALEERP-600).
              */
@@ -2843,6 +2866,26 @@ export interface components {
             storeId: number;
             /** @description 외국인 여부 — 체크하지 않았으면 false */
             isForeigner: boolean;
+        };
+        UpdateWorkerDto: {
+            /** @description 성별 — 남 · 여. 가입 때 직원이 넣은 값과 본인 대조한다(WHALEERP-125). 임시저장은 비워도 된다 */
+            gender?: components["schemas"]["Gender"];
+            /** @description 앞뒤 공백은 지운다(NFC) — 같은 사람의 가입 전 레코드를 이름으로 찾으므로 공백 하나로 갈리지 않게. */
+            name: string;
+            /** @description 숫자만 10~11자리 (예: 01090145563) */
+            phone: string;
+            /** @description YYYY-MM-DD. 계약 시작일 기준 만 19세 미만이면 저장하지 않는다 */
+            birthDate?: string;
+            /** @description 외국인 여부 — 체크하지 않으면 내국인(false). 본인 대조에 쓴다(WHALEERP-125) */
+            isForeigner?: boolean;
+            /**
+             * @description 대체할 진행 중 계약(WHALEERP-129). 같은 점포에 같은 번호의 진행 중 계약(임시저장 · 발송 대기 · 서명 대기 · 수정 요청)이
+             *     있으면 409(code CONTRACT_IN_PROGRESS)가 그 목록(id · 상태 · 직원 이름 · 계약 기간)을 준다. 관리자가 대체를 확인하면
+             *     그 id 를 모두 넣어 다시 보낸다 — 임시저장은 지우고 발송 대기 · 서명 대기 · 수정 요청은 종료한다. 종이 계약 등록이면 체결 완료도
+             *     묻고 종료한다. 체결 완료는 같은 번호로 퇴직 · 재입사가 되풀이되면 쌓이므로 상한을 넉넉히 둔다 — 409 목록을 모두
+             *     다시 보낼 수 없으면 그 번호로는 종이 계약을 등록할 수 없다(api #49 리뷰, WHALEERP-600).
+             */
+            replaceContractIds?: number[];
         };
         DownloadUrlResponseDto: {
             url: string;
@@ -5897,7 +5940,7 @@ export interface operations {
                     "application/json": components["schemas"]["CreatedContractResponseDto"];
                 };
             };
-            /** @description 입력 오류 · 만 19세 미만 */
+            /** @description 입력 오류 · 만 19세 미만 · 수정 요청인데 임시저장 · 근무지 변경 · 가입한 직원의 번호 변경 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -5918,7 +5961,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 임시저장이 아님 · 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 */
+            /** @description 임시저장 · 수정 요청이 아님 · 이 점포에 같은 번호로 재직 중 · CONTRACT_IN_PROGRESS(contracts 목록: contractId · status · name · startDate · endDate, replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -5968,6 +6011,66 @@ export interface operations {
             };
             /** @description 임시저장이 아님 */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ContractsController_updateWorker: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contractId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateWorkerDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatedContractResponseDto"];
+                };
+            };
+            /** @description 입력 오류 · 만 19세 미만 · 가입한 직원의 번호 변경 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 번호를 바꾸는데 점포 직원 관리 권한이 없음(동의로만 보이는 직원) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 계약 · 업무 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description CONTRACT_STATUS_CONFLICT(발송 대기 · 서명 대기 · 수정 요청이 아님) · 새 번호로 이 점포에 재직 중 · CONTRACT_IN_PROGRESS(새 번호의 같은 점포 진행 중 계약 — replaceContractIds 로 대체) · WORK_TIME_OVERLAP · 다른 요청이 먼저 고침 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같은 번호의 다른 저장이 길어져 시간 초과(잠시 뒤 다시) */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

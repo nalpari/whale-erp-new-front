@@ -1,6 +1,9 @@
 # Bundle history
 
 ## 2026-10-16
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — front #40 재리뷰 사소 반영(영주). 퇴직 확인창의 「닫힐 근로계약」 설명에 「수정 요청」을 더했다(api #58 이 퇴직 때 수정 요청도 닫는다). api-types 를 api #58(e57f334) openapi 로 다시 만들었다(설명 문구만).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #40 리뷰 참고 반영. 수정 요청 모드에서 근무지 선택을 잠그고(api #58 이 근무지 변경을 400 으로 막음) 하단 안내를 수정 요청 문구로 바꿨다. 대체 확인창에 「수정 요청」을 더했다(api 의 대체 종료 대상과 같게). `api-types.generated.ts` 를 api #58 반영(71b0f20) openapi 로 다시 만들었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 「수정 요청」 상태 표시와 날인 전 근로자 정보 수정 화면 `/contracts/[contractId]/worker`, 수정 요청 계약을 고치는 이어 쓰기 `correction` 모드(WHALEERP-125 · 126). 상세 제목 줄에 「근로자 정보 수정」 · 「계약서 수정」. api-types 를 api nidoran 으로 다시 만들었다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — PR #42 리뷰 반영: 상세 「이메일」 칸의 가입 상태 한글을 상수 대응표 대신 `getEnum("StaffJoinState")` 로 받는다(naming.md). 「가입 전」 · 「-」만 화면 문구로 남기고, enum 을 받지 못하면 상세는 그리고 이 칸만 「-」다. 목록 `joinCell` 의 상수는 남은 일 그대로다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `api-types.generated.ts` 를 api #60(jolteon 4935fe2, WHALEERP-180) openapi 로 다시 만들었다(PR #42 리뷰: 처음엔 커밋 전 작업 트리로 만들어 #60 head 와 email 설명 한 줄이 달랐다). 상세 `email` 설명만 바뀌었다(조회 권한이면 보인다). api #60 머지 뒤 api main(9df02b7) 기준으로 다시 만들어 차이가 없음을 확인했다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — WHALEERP-180: 상세 이메일은 조회 권한이면 보이고 고치지 못한다(회원 ID). 없을 때 초안 · 초대 발송은 「가입 전」, 초대 만료 · 거절 · 연결 보류 · 소속 추가 확인 · 복귀 확인 · 가입 불가는 목록의 가입 상태 글자(어긋나면 staff-row.test.ts 가 잡는다), 가입 완료 · 모르는 값이면 「-」(`staffEmailText`, PR 전 리뷰 두 차례). ACC-16(근무지에서 직접 물을 때만 알려 줌)은 화면에 넣지 않고 문서로만 둔다. 주석의 「수정 권한 없음이면 null」을 뺐다(2026-10-16 노영주).
