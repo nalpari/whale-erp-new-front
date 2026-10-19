@@ -196,10 +196,11 @@ export function StoreFormView(props: Props) {
   const handleAddressChoose = (item: AddressItem) => {
     const mine = ++locateNumber.current;
     setCoordinateNote(null);
-    // 좌표를 비우는 동안은 출퇴근 위치 적용 여부도 함께 미사용으로 둔다 — 그렇지 않으면 지오코딩이 늦거나
-    // 실패한 사이 칸은 "사용"을 그대로 보이는데 저장(bodyOf)은 조용히 "미사용"을 보내 화면과 어긋난다
-    // (코드 리뷰로 찾음). 새 좌표를 받아도 이 값은 다시 켜지 않는다 — 주소를 지울 때와 같은 규칙이다.
-    setForm((f) => ({ ...f, latitude: "", longitude: "", isLocationApplied: false }));
+    // 출퇴근 위치 적용 여부는 여기서 건드리지 않는다 — 같은 주소를 다시 고르거나 오타를 고치는 흔한 경우까지
+    // "사용"을 꺼 버려 운영 점포의 위치 확인이 조용히 멈추는 문제가 있었다(2026-10-19 코드 리뷰 2차 — 처음엔
+    // 화면·저장 어긋남을 막으려 껐는데, 그러면 새 좌표를 받아도 되살리지 않아 더 나쁜 쪽으로 지나쳤다). 좌표가
+    // 비는 동안은 선택칸이 막히고(disabled) 저장(bodyOf)도 좌표 없이는 사용을 보내지 않으니 이미 막혀 있다.
+    setForm((f) => ({ ...f, latitude: "", longitude: "" }));
     startLocating(async () => {
       const result = await getAddressCoordinateAction(item.roadAddressBase, item.jibunAddress).catch((error: unknown) => {
         console.error("좌표 조회 호출 실패", error);
@@ -243,14 +244,10 @@ export function StoreFormView(props: Props) {
     locateNumber.current++;
     setCoordinateNote(null);
     // 숫자 · 마침표 · 마이너스만 받는다 — 문자는 칠 수 없다(2026-10-19).
-    const next = value.replace(/[^0-9.-]/g, "");
-    setForm((f) => {
-      const updated = { ...f, [key]: next };
-      // 손으로 지워 위도 · 경도 중 하나라도 비면 그 자리에서 미사용으로 되돌린다 — bodyOf 와 같은 규칙을 입력
-      // 중에도 맞춰, 칸은 "사용"을 보이는데 저장은 조용히 "미사용"으로 바뀌는 어긋남을 막는다(코드 리뷰로 찾음).
-      return updated.latitude.trim() && updated.longitude.trim() ? updated : { ...updated, isLocationApplied: false };
-    });
-    clearError(key);
+    // 출퇴근 위치 적용 여부는 여기서 건드리지 않는다 — 오타를 고치려 한 칸을 지웠다 바로 채워도 "사용"이
+    // 꺼진 채 남는 문제가 있었다(2026-10-19 코드 리뷰 2차). 좌표가 비는 동안은 선택칸이 막히고 저장(bodyOf)도
+    // 좌표 없이는 사용을 보내지 않으니 이미 막혀 있다.
+    set(key, value.replace(/[^0-9.-]/g, ""), key);
   };
 
   /** 진위확인 칸을 고치면 이번 화면의 인증 결과는 무효다 */
