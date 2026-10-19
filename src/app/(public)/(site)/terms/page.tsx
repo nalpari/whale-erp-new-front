@@ -7,15 +7,23 @@ import { TermsTabs } from "./terms-tabs";
 export const metadata: Metadata = { title: "약관 전문 · Whale ERP" };
 
 // 약관 목록과 여섯 본문을 한 번에 받는다 — 본문이 작고, 탭을 바꿀 때 기다리지 않게. 받은 응답은 lib/terms.ts 가 한 시간 캐시한다.
-// 실패(api 장애 · 사용 중 버전 없음 404)는 화면을 깨지 않고 본문 자리에 안내를 둔다. 원인은 서버 로그에 남긴다.
+// 본문 하나를 받지 못하면(사용 중 버전 없음 404 등) 그 탭만 빼고 나머지를 보인다. 목록을 받지 못했거나 본문을 하나도 받지 못했을 때만
+// 화면을 깨지 않고 본문 자리에 안내를 둔다. 원인은 서버 로그에 남긴다.
 async function loadTerms(): Promise<TermsVersionDetail[] | null> {
+  let versions;
   try {
-    const versions = await getTermsVersions();
-    return await Promise.all(versions.map((v) => getTermsVersion(v.termsTypeCode)));
+    versions = await getTermsVersions();
   } catch (error) {
-    console.error("약관을 받지 못했습니다", error);
+    console.error("약관 목록을 받지 못했습니다", error);
     return null;
   }
+  const results = await Promise.allSettled(versions.map((v) => getTermsVersion(v.termsTypeCode)));
+  const terms = results.flatMap((result, i) => {
+    if (result.status === "fulfilled") return [result.value];
+    console.error(`약관 「${versions[i].termsTypeCode}」 본문을 받지 못해 탭에서 뺍니다`, result.reason);
+    return [];
+  });
+  return terms.length > 0 ? terms : null;
 }
 
 // 약관 전문(데모 auth/terms.html). 푸터의 이용약관·개인정보처리방침이 #TERMS_SERVICE · #PRIVACY_COLLECT 로 들어온다.
