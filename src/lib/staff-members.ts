@@ -2,6 +2,7 @@
 // api 를 부르는 함수는 staff-members-api.ts 에 있다 — 이 파일은 next/* 를 읽지 않아 node --test 가 바로 읽는다.
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
 import type { components } from "./api-types.generated.ts";
+import type { EnumValue } from "./enums.ts";
 
 type Schemas = components["schemas"];
 
@@ -17,10 +18,28 @@ export type ContractStatus = Schemas["ContractStatus"];
  */
 export type StaffMemberListItem = Schemas["StaffMemberListItemDto"];
 export type StaffMemberListResponse = Schemas["StaffMemberListResponseDto"];
-/** 직원 상세(GET /staff-members/:id, WHALEERP-599). 목록 한 줄에 계정 이메일(email)을 더한 모양이다(WHALEERP-177). email 은 링크 발송과 같은 기준이라 가입 전 · 탈퇴 · 퇴직, 수정 권한 없음, 본사 역할이 동의로만 보는 가맹 점포 직원이면 null. */
+/** 직원 상세(GET /staff-members/:id, WHALEERP-599). 목록 한 줄에 계정 이메일(email)을 더한 모양이다(WHALEERP-177). email 은 상세를 볼 수 있는 관리자(조회 권한)에게 나오고, 가입 전 · 탈퇴 · 퇴직, 본사 역할이 동의로만 보는 가맹 점포 직원이면 null(WHALEERP-180, 2026-10-16 노영주). */
 export type StaffMember = Schemas["StaffMemberDetailResponseDto"];
 /** 퇴직 확인창의 미리 보기 — 퇴직일이 지나면 정리될 건수 */
 export type RetirementPreview = Schemas["RetirementPreviewResponseDto"];
+
+/** 이메일이 없을 때 「가입 전」으로 묶는 가입 상태 — 계정이 아직 없는 초안 · 초대 발송. 화면 문구라 enum 한글을 쓰지 않는다. */
+const NOT_JOINED_YET: ReadonlySet<StaffJoinState> = new Set(["DRAFT", "INVITED"]);
+
+/**
+ * 상세 기본 정보의 「이메일」 칸. 이메일은 회원 ID 라 보이기만 하고 어디에서도 고치지 못한다(ACC-17, WHALEERP-180).
+ * 없을 때 초안 · 초대 발송은 「가입 전」, 나머지 가입 전 상태는 api enum(GET /enums/StaffJoinState)의 한글이다 — 초대 만료 · 거절은
+ * 이미 계정이 있는 직원의 소속 추가 확인 · 복귀 확인에서도 생기고, 연결 보류 · 소속 추가 확인 · 복귀 확인은 계정이 있는 직원이라
+ * 「가입 전」이라 하면 가입하라고 잘못 안내하게 된다. 가입 완료(퇴직 · 탈퇴 · 본사 역할이 보는 가맹 점포 직원)나 가입 상태를 모르면
+ * 「-」다 — 탈퇴와 본사 미제공은 응답만으로 확실히 가를 수 없어 짐작해 적지 않는다(2026-10-16 노영주). enum 을 받지 못했거나
+ * 목록에 없는 값도 영문 값 대신 「-」다.
+ */
+export function staffEmailText(staff: Pick<StaffMember, "email" | "joinState">, joinStateLabels: readonly EnumValue[]): string {
+  if (staff.email) return staff.email;
+  if (!staff.joinState || staff.joinState === "JOINED") return "-";
+  if (NOT_JOINED_YET.has(staff.joinState)) return "가입 전";
+  return joinStateLabels.find((v) => v.value === staff.joinState)?.label ?? "-";
+}
 
 export const EMPLOYMENT_TYPES: readonly EmploymentType[] = ["FULL_TIME", "PART_TIME"];
 
