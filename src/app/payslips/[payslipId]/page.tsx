@@ -107,6 +107,8 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
         <div className="flex flex-1 flex-col gap-[24px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
           <PayslipReview
+            // 저장 · 확정 뒤 다시 받은 값으로 화면 상태(금액 칸 · 스위치)를 새로 세운다
+            key={payslip.updatedAt}
             payslip={payslip}
             band={reviewBand(payslip.reviewReasons, reasonOf)}
             listHref={listHref}

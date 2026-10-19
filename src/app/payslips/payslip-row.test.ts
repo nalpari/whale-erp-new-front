@@ -52,6 +52,12 @@ test("경고 띠 — 출퇴근 누락은 데모 문구, 공제 미입력만 있�
   assert.equal(reviewBand([], label), null);
 });
 
+test("경고 띠 — 이미 확인한 사유(확정 때 확인됨)는 띠에 세우지 않는다", () => {
+  const acknowledged = { ...reason("MISSING_ATTENDANCE", "출퇴근 기록 2일 누락"), acknowledgedAt: "2026-10-19T01:00:00.000Z" };
+  assert.equal(reviewBand([acknowledged], label), null);
+  assert.equal(reviewBand([acknowledged, reason("CONTRACT_CHANGED", null)], label)?.title, "기간 중 계약 변경 사유로 검토 대기로 분류되었습니다");
+});
+
 test("경고 띠 — 다른 사유는 사유 한글로, 상세가 없으면 한글을 쓴다", () => {
   assert.deepEqual(reviewBand([reason("CONTRACT_CHANGED", null)], label), {
     title: "기간 중 계약 변경 사유로 검토 대기로 분류되었습니다",

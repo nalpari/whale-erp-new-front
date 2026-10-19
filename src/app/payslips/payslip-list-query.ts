@@ -73,3 +73,15 @@ export function payslipListHref(raw: RawSearch, today: string): string {
 export function withFilter(query: PayslipListQuery, next: Partial<PayslipListQuery>): PayslipListQuery {
   return { ...query, ...next, page: 1 };
 }
+
+/**
+ * 「확정 N건 발송」(POST /payslips/send) 대상 — 목록과 같은 달 · 점포 · 직원명. 건수(statusCounts)가 같은 조건으로 세므로 보이는
+ * N건과 보내는 대상이 같다. 점포명이 없으면 점포 id 는 싣지 않는다(관리 범위 전체).
+ */
+export function sendTargetOf(query: PayslipListQuery): { month: string; storeIds?: number[]; staffName?: string } {
+  return {
+    month: query.month,
+    ...(query.store && query.storeIds && { storeIds: query.storeIds }),
+    ...(query.staffName && { staffName: query.staffName }),
+  };
+}

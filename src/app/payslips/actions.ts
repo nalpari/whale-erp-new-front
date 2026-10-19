@@ -2,10 +2,10 @@
 
 import { redirect } from "next/navigation";
 import { ApiError, authHeaders, request } from "@/lib/api";
-import type { PayslipBulkResult, PayslipCandidates } from "@/lib/payslips";
+import type { PayslipBulkResult, PayslipCandidates, PayslipSendResult } from "@/lib/payslips";
 import { getPayslipCandidates } from "@/lib/payslips-api";
 
-// 급여명세서 작성 팝업(WHALEERP-226)의 작성 대상 조회 · 초안 작성 · 일괄 작성. 메뉴 권한(급여명세서 관리 등록) · 관리 범위 · 본사 제공 동의 · 계약 유효 · 중복은 api 가 본다.
+// 급여명세서 작성 팝업(WHALEERP-226)의 작성 대상 조회 · 초안 작성 · 일괄 작성과 목록의 「확정 N건 발송」(WHALEERP-231 · 237). 메뉴 권한(급여명세서 관리 등록) · 관리 범위 · 본사 제공 동의 · 계약 유효 · 중복은 api 가 본다.
 // server action 은 공개 엔드포인트라 id 와 달 모양만 다시 본다 — 화면을 거치지 않은 이상한 값을 api 까지 보내지 않는다.
 
 export type DraftFailure = { ok: false; message: string; /** 이미 있는 명세서(409 PAYSLIP_EXISTS) */ payslipId?: number };
@@ -65,5 +65,19 @@ export async function bulkCreatePayslips(month: string): Promise<{ ok: true; res
     return { ok: true, result: await request<PayslipBulkResult>("/payslips/bulk", await post({ month })) };
   } catch (error) {
     return failureOf(error, "일괄 작성");
+  }
+}
+
+/** 「확정 N건 발송」 — 그 달 · 점포 · 직원명의 확정 명세서를 보낸다. 일부가 실패해도 보낸 것은 그대로이고 실패 대상을 돌려준다. */
+export async function sendPayslips(target: {
+  month: string;
+  storeIds?: number[];
+  staffName?: string;
+}): Promise<{ ok: true; result: PayslipSendResult } | DraftFailure> {
+  if (!validMonth(target.month) || (target.storeIds && !target.storeIds.every(validId))) return BAD_INPUT;
+  try {
+    return { ok: true, result: await request<PayslipSendResult>("/payslips/send", await post(target)) };
+  } catch (error) {
+    return failureOf(error, "발송");
   }
 }

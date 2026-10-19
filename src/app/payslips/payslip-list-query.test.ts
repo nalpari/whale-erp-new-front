@@ -1,7 +1,7 @@
 // node --test src/app/payslips/payslip-list-query.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { defaultPayslipListQuery, parsePayslipListQuery, payslipListHref, toPayslipListSearch, withFilter } from "./payslip-list-query.ts";
+import { defaultPayslipListQuery, parsePayslipListQuery, payslipListHref, sendTargetOf, toPayslipListSearch, withFilter } from "./payslip-list-query.ts";
 
 const TODAY = "2026-10-19";
 
@@ -59,4 +59,15 @@ test("상세의 「목록」은 받은 조건을 다시 걸러 돌려준다", ()
 
 test("필터를 바꾸면 1쪽으로", () => {
   assert.equal(withFilter({ ...defaultPayslipListQuery(TODAY), page: 4 }, { month: "2026-07" }).page, 1);
+});
+
+test("일괄 발송 대상 — 목록과 같은 달 · 점포(점포명으로 찾은 id) · 직원명", () => {
+  assert.deepEqual(sendTargetOf(defaultPayslipListQuery(TODAY)), { month: "2026-09" });
+  assert.deepEqual(sendTargetOf({ ...defaultPayslipListQuery(TODAY), store: "서초", storeIds: [5], staffName: "서지안" }), {
+    month: "2026-09",
+    storeIds: [5],
+    staffName: "서지안",
+  });
+  // 점포명 없이 남은 id 는 쓰지 않는다
+  assert.deepEqual(sendTargetOf({ ...defaultPayslipListQuery(TODAY), storeIds: [5] }), { month: "2026-09" });
 });

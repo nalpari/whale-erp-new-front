@@ -27,6 +27,14 @@ export type PayslipCandidates = Schemas["PayslipCandidatesResponseDto"];
 export type PayslipCandidate = Schemas["PayslipCandidateDto"];
 /** 일괄 작성(POST /payslips/bulk) 결과 — 만든 것과 건너뛴 것(EXISTS 이미 있음 · NO_CONTRACT 계약 없음). */
 export type PayslipBulkResult = Schemas["PayslipBulkCreateResponseDto"];
+/** 「항목 추가」로 붙일 수 있는 추가 공제(GET /payslips/additional-items). */
+export type PayslipAdditionalItem = Schemas["PayslipAdditionalItemDto"];
+/** 지난 명세서 값(GET /payslips/:id/previous-values). 없으면 null. */
+export type PayslipPrevious = Schemas["PayslipPreviousDto"];
+/** 일괄 발송 결과(POST /payslips/send) — 보낸 것과 실패한 것(이유 · 문장). 가린 명세서는 이름 없이 MASKED. */
+export type PayslipSendResult = Schemas["PayslipSendResultDto"];
+/** 임시저장 본문(PUT /payslips/:id). */
+export type SavePayslipBody = Schemas["SavePayslipDto"];
 
 export const PAYSLIP_STATUSES: readonly PayslipStatus[] = ["DRAFTING", "REVIEWING", "CONFIRMED", "SENT"];
 

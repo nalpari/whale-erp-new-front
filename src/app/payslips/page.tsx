@@ -40,7 +40,7 @@ export default async function PayslipsPage({ searchParams }: PageProps<"/payslip
             ))}
           </p>
           <ListToolbar total={total}>
-            <PayslipListActions month={query.month} confirmedCount={statusCounts.CONFIRMED} employmentTypeLabels={employmentTypeLabels} />
+            <PayslipListActions query={query} confirmedCount={statusCounts.CONFIRMED} employmentTypeLabels={employmentTypeLabels} />
             <PayslipPageSize query={query} />
           </ListToolbar>
           <PayslipTable

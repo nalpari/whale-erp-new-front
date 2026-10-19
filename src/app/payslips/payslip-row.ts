@@ -46,9 +46,9 @@ export function earningHelp(item: Pick<PayslipItem, "itemCode" | "isTaxFree" | "
     : "계산값";
 }
 
-/** 위쪽 경고 띠. 공제 미입력은 금액 칸 아래 빨간 띠가 따로 말하므로 뺀다. 띠가 없으면 null. */
+/** 위쪽 경고 띠. 공제 미입력은 금액 칸 아래 빨간 띠가 따로 말하므로 뺀다. 이미 확인한 사유(확정 때 확인됨)도 뺀다. 띠가 없으면 null. */
 export function reviewBand(reasons: readonly PayslipReviewReason[], labelOf: (reason: string) => string): { title: string; desc: string } | null {
-  const shown = reasons.filter((r) => r.reviewReason !== "DEDUCTION_MISSING");
+  const shown = reasons.filter((r) => r.reviewReason !== "DEDUCTION_MISSING" && r.acknowledgedAt === null);
   if (!shown.length) return null;
   const [head] = shown;
   const title =
