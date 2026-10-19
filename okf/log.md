@@ -2,8 +2,18 @@
 
 ## 2026-10-19
 * **Update**: [점포 관리](/stores.md) — 변경 이력 팝업화, 등록 화면 전용 점포유형 카드, [주소로 다시 계산] 버튼(등록·수정 모두, 실패해도 기존 좌표를 지우지 않는다), 위도·경도 숫자 전용 입력, 사업자정보 인증 버튼 문구(지우기/사용안함) 구분, 주소를 지우면 위치 적용 여부도 미사용으로, 점포상태 배지 3톤(운영·미운영·폐점), 사업자주소 상시 입력 + "점포 주소와 같음" 토글, 층별 정보 표를 DataTable 형식·다섯 칸 동일 너비로 반영했다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #41 재리뷰 참고 반영(영주). 발송 확인창이 서버 액션 호출 자체가 끊겨도(브라우저 ↔ Next · 배포 중 재시작) 오류 화면 대신 「발송됐는지 알 수 없음」으로 보내기를 막고 상세를 다시 읽는다.
 
 ## 2026-10-16
+* **Update**: [Notifications](/notify.md) — 근로계약 화면(목록 · 작성 · 이어 쓰기 · 상세)의 임시 헤더(`GlobalHeader` · 샘플 메뉴 · `NotificationBellSlot`) · 바깥 틀과 `contracts/layout` 의 `ErpRoot` 를 걷었다 — 공통 틀(AdminFrame)이 헤더를 그려 헤더가 두 번 보이던 것(WHALEERP-592 재범위: 헤더 · 틀 정리). 화면은 `PageBar` 부터 그린다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #41 리뷰 반영(영주). 발송 확인창이 접수 여부 모름(SEND_UNCONFIRMED · 코드 없는 502 · 504 · api 응답 전 끊김)과 409 상태 충돌 · 「다른 요청이 먼저 고침」이면 보내기를 막고 상세를 다시 읽는다(`send-model.ts`). 응답 전 끊김은 오류 화면 대신 확인창 문장. api-types 를 api #59 반영(2a826ee)으로 다시 만들었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세의 「발송」(발송 대기) · 「재발송」(서명 대기)을 켰다(WHALEERP-136, api psyduck). 확인창 → 서버 액션 `sendContract` → `POST /contracts/:id/send`, 실패 문장은 확인창에. api-types 를 다시 만들었다.
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — front #40 재리뷰 사소 반영(영주). 퇴직 확인창의 「닫힐 근로계약」 설명에 「수정 요청」을 더했다(api #58 이 퇴직 때 수정 요청도 닫는다). api-types 를 api #58(e57f334) openapi 로 다시 만들었다(설명 문구만).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #40 리뷰 참고 반영. 수정 요청 모드에서 근무지 선택을 잠그고(api #58 이 근무지 변경을 400 으로 막음) 하단 안내를 수정 요청 문구로 바꿨다. 대체 확인창에 「수정 요청」을 더했다(api 의 대체 종료 대상과 같게). `api-types.generated.ts` 를 api #58 반영(71b0f20) openapi 로 다시 만들었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 「수정 요청」 상태 표시와 날인 전 근로자 정보 수정 화면 `/contracts/[contractId]/worker`, 수정 요청 계약을 고치는 이어 쓰기 `correction` 모드(WHALEERP-125 · 126). 상세 제목 줄에 「근로자 정보 수정」 · 「계약서 수정」. api-types 를 api nidoran 으로 다시 만들었다.
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — PR #42 리뷰 반영: 상세 「이메일」 칸의 가입 상태 한글을 상수 대응표 대신 `getEnum("StaffJoinState")` 로 받는다(naming.md). 「가입 전」 · 「-」만 화면 문구로 남기고, enum 을 받지 못하면 상세는 그리고 이 칸만 「-」다. 목록 `joinCell` 의 상수는 남은 일 그대로다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `api-types.generated.ts` 를 api #60(jolteon 4935fe2, WHALEERP-180) openapi 로 다시 만들었다(PR #42 리뷰: 처음엔 커밋 전 작업 트리로 만들어 #60 head 와 email 설명 한 줄이 달랐다). 상세 `email` 설명만 바뀌었다(조회 권한이면 보인다). api #60 머지 뒤 api main(9df02b7) 기준으로 다시 만들어 차이가 없음을 확인했다.
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — WHALEERP-180: 상세 이메일은 조회 권한이면 보이고 고치지 못한다(회원 ID). 없을 때 초안 · 초대 발송은 「가입 전」, 초대 만료 · 거절 · 연결 보류 · 소속 추가 확인 · 복귀 확인 · 가입 불가는 목록의 가입 상태 글자(어긋나면 staff-row.test.ts 가 잡는다), 가입 완료 · 모르는 값이면 「-」(`staffEmailText`, PR 전 리뷰 두 차례). ACC-16(근무지에서 직접 물을 때만 알려 줌)은 화면에 넣지 않고 문서로만 둔다. 주석의 「수정 권한 없음이면 null」을 뺐다(2026-10-16 노영주).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — api #56 머지(api main b119919) 뒤 `api-types.generated.ts` 를 api main 기준으로 다시 만들어 머지 전 브랜치(rapidash 0ed2373) 기준과 차이가 없음을 확인했다. main(front #38) 병합 — okf/log.md 충돌만 풀었다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — PR #37 리뷰 반영: 409 면 문구를 토스트로 알리고 확인창을 닫은 뒤 상세를 다시 받는다(다시 받으면 확인창이 함께 내려가 문구가 사라졌다). 응답에 email 칸이 없으면 버튼을 숨긴다. 「이메일」 줄 표시 범위는 확정(api #56 5d671d6)으로 고쳤다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — api #56 이 상세 `email` 을 더 좁혔다(0ed2373: 퇴직 레코드 · 수정 권한 없는 관리자도 null). 주석 · 문서를 맞췄다. 기본 정보 「이메일」은 null 이면 「-」 그대로, ACC-17 은 「보일 때 고치지 못한다」로 읽는다(노영주, 재영 확인 전). 버튼 판정은 그대로다.
