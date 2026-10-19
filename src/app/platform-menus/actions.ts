@@ -8,7 +8,7 @@ import { createMenu, moveMenu, updateMenu, type CreatedMenu, type CreateMenuInpu
 // 메뉴 권한 · 플랫폼 계정 여부 · 3단계 · 자기 하위 · URL 겹침은 api 가 동작마다 본다(문구가 무엇이 막혔는지 말한다).
 // server action 은 공개 엔드포인트라 id 가 int4 양의 정수인지 · 자리가 api 범위 안인지만 다시 본다. 로그인 판정도 api 가 한다.
 
-const PATH = "/platform/system/menus";
+const PATH = "/platform-menus";
 
 /**
  * 실패 결과. status 가 있으면 api 가 거절했거나 처리하지 못했다(4xx · 500 — 쓰기는 한 트랜잭션이라 반영되지 않았다).

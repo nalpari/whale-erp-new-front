@@ -19,7 +19,7 @@ const menus = [
   menu(null, false, [menu(null, false, [menu("/staff/contracts", true)])]),
 ];
 // 플랫폼 계정은 두 서비스 메뉴를 모두 받는다.
-const platformAccount = [...menus, menu(null, false, [menu("/platform/system/codes", true, [], "PLATFORM")], "PLATFORM")];
+const platformAccount = [...menus, menu(null, false, [menu("/code-groups", true, [], "PLATFORM")], "PLATFORM")];
 
 test("isAllowed: 서비스 홈은 메뉴가 비어도 열린다", () => {
   assert.equal(isAllowed([], "/home", "WHALE_ERP"), true);
@@ -40,9 +40,9 @@ test("isAllowed: 접두만 같은 주소는 막힌다", () => {
 
 test("isAllowed: 권한이 있어도 탭의 서비스가 아닌 화면·홈은 막힌다", () => {
   assert.equal(isAllowed(platformAccount, "/settings/admins", "PLATFORM"), false);
-  assert.equal(isAllowed(platformAccount, "/platform/system/codes", "WHALE_ERP"), false);
+  assert.equal(isAllowed(platformAccount, "/code-groups", "WHALE_ERP"), false);
   assert.equal(isAllowed(platformAccount, "/home", "PLATFORM"), false);
-  assert.equal(isAllowed(platformAccount, "/platform/system/codes", "PLATFORM"), true);
+  assert.equal(isAllowed(platformAccount, "/code-groups", "PLATFORM"), true);
 });
 
 test("isAllowed: 알림 템플릿 관리는 api 메뉴에 없어도 플랫폼 서비스에서만 임시로 열린다", () => {
@@ -60,13 +60,13 @@ test("serviceOfPath: 홈 · 메뉴 주소로 서비스를 고르고 모르면 nu
   assert.equal(serviceOfPath([], "/home"), "WHALE_ERP");
   assert.equal(serviceOfPath([], "/platform"), "PLATFORM");
   assert.equal(serviceOfPath(platformAccount, "/settings/admins/3"), "WHALE_ERP");
-  assert.equal(serviceOfPath(platformAccount, "/platform/system/codes"), "PLATFORM");
+  assert.equal(serviceOfPath(platformAccount, "/code-groups"), "PLATFORM");
   assert.equal(serviceOfPath([], "/platform/notification-templates/new"), "PLATFORM");
   assert.equal(serviceOfPath(platformAccount, "/unknown"), null);
 });
 
 test("menusOf: 그 서비스의 메뉴만 하위까지 남긴다", () => {
-  assert.deepEqual(menusOf(platformAccount, "PLATFORM").map((m) => m.children[0].url), ["/platform/system/codes"]);
+  assert.deepEqual(menusOf(platformAccount, "PLATFORM").map((m) => m.children[0].url), ["/code-groups"]);
   assert.equal(menusOf(platformAccount, "WHALE_ERP").length, 2);
 });
 
@@ -84,7 +84,7 @@ test("serviceOfPath: 관리자 웹이 열지 않는 서비스(POS 등)는 모른
 });
 
 test("menuPermissionOf: 3단계 깊이의 메뉴도 코드로 찾아 칸별 권한을 돌려준다", () => {
-  const roles: AdminMenu = { ...menu("/platform/system/roles", true, [], "PLATFORM"), menuCode: MENU_CODE.platformRoles, depth: 3, permission: { read: true, create: false, update: true, delete: false } };
+  const roles: AdminMenu = { ...menu("/platform-role-groups", true, [], "PLATFORM"), menuCode: MENU_CODE.platformRoles, depth: 3, permission: { read: true, create: false, update: true, delete: false } };
   const tree = [menu(null, false, [menu(null, false, [roles], "PLATFORM")], "PLATFORM")];
   assert.equal(menuPermissionOf(tree, "PLATFORM", MENU_CODE.platformRoles, "update"), true);
   assert.equal(menuPermissionOf(tree, "PLATFORM", MENU_CODE.platformRoles, "delete"), false);

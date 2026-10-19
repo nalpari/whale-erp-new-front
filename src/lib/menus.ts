@@ -25,7 +25,7 @@ export function menusOf(menus: AdminMenu[], service: ServiceCode): AdminMenu[] {
 
 // shortcut: 알림 템플릿 관리는 api 메뉴 데이터에 아직 없어(1팀 전달 사항 14번) 플랫폼 서비스에서 임시로 열고 헤더에도 공통코드 관리 다음에 넣는다.
 // api 에 메뉴 행이 생기면 이 상수와 쓰는 곳(isAllowed · serviceOfPath · admin-header)을 지운다. 메뉴에 이미 있으면 따로 더하지 않는다.
-export const PENDING_PLATFORM_MENU = { name: "알림 템플릿 관리", url: "/platform/notification-templates", after: "/platform/system/codes" };
+export const PENDING_PLATFORM_MENU = { name: "알림 템플릿 관리", url: "/platform/notification-templates", after: "/code-groups" };
 
 const isUnder = (pathname: string, url: string) => pathname === url || pathname.startsWith(`${url}/`);
 

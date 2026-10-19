@@ -7,7 +7,7 @@ import type { ActionFailure } from "./actions";
 
 export { CARD, FailedBand, FieldMessage, InfoBand } from "@/components/site/side-parts";
 
-export const PATH = "/platform/system/roles";
+export const PATH = "/platform-role-groups";
 
 /** 오른쪽 칸의 상세 — 고르지 않음(null) · 불러옴 · 실패. page · roles-screen · role-side 가 같이 쓴다 */
 export type RoleDetailState = { role: RoleGroupDetail } | { failed: string } | null;

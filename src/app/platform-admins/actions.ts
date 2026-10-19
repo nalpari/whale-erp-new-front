@@ -18,7 +18,7 @@ import {
 // 메뉴 권한 · 마스터 보호 · 본인 보호는 api 가 동작마다 본다(403 문구가 무엇이 막혔는지 말한다).
 // server action 은 공개 엔드포인트라 id 가 int4 양의 정수인지만 다시 본다. 로그인 판정도 api 가 한다 — 세션 토큰을 싣고, 없거나 끝났으면 api 가 401 을 준다.
 
-const PATH = "/platform/system/admins";
+const PATH = "/platform-admins";
 
 export type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; status?: number; message: string };
 

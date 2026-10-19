@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { afterConflict, bodyOf, isDirty, menuFieldOf, syncMenuForm, validateMenuForm, type MenuFormBase } from "./menu-form.ts";
 
-const base: MenuFormBase = { name: "플랫폼 메뉴 관리", url: "/platform/system/menus", status: "ACTIVE", updatedAt: "2026-10-16T01:00:00.000Z" };
+const base: MenuFormBase = { name: "플랫폼 메뉴 관리", url: "/platform-menus", status: "ACTIVE", updatedAt: "2026-10-16T01:00:00.000Z" };
 const values = ({ name, url, status }: MenuFormBase) => ({ name, url, status });
 
 test("isDirty — 앞뒤 공백은 고친 것으로 보지 않는다", () => {
@@ -28,11 +28,12 @@ test("validateMenuForm — 새 URL 은 1뎁스만, 수정에서 그대로 둔 �
   assert.ok(validateMenuForm({ name: "a", url: "//staff", status: "ACTIVE" }).url);
   assert.deepEqual(validateMenuForm({ name: "a", url: "/staff-content", status: "ACTIVE" }), {});
   // 등록(keptUrl 없음)은 여러 구간을 받지 않는다
-  assert.ok(validateMenuForm(values(base)).url);
-  // 수정: 1팀 시드의 여러 구간 URL 을 그대로 두면 이름 · 상태만 고칠 수 있고, 다른 여러 구간으로 바꾸면 막는다
-  assert.deepEqual(validateMenuForm({ ...values(base), name: "새 이름" }, base.url), {});
-  assert.deepEqual(validateMenuForm({ ...values(base), url: ` ${base.url} ` }, base.url), {});
-  assert.ok(validateMenuForm({ ...values(base), url: "/platform/system/roles" }, base.url).url);
+  const community = "/platform/community/notices";
+  assert.ok(validateMenuForm({ ...values(base), url: community }).url);
+  // 수정: 아직 여러 구간인 메뉴(3팀 플랫폼 커뮤니티 등)는 URL 을 그대로 두면 이름 · 상태만 고칠 수 있고, 다른 여러 구간으로 바꾸면 막는다
+  assert.deepEqual(validateMenuForm({ ...values(base), url: community, name: "새 이름" }, community), {});
+  assert.deepEqual(validateMenuForm({ ...values(base), url: ` ${community} ` }, community), {});
+  assert.ok(validateMenuForm({ ...values(base), url: "/platform/community/faq" }, community).url);
 });
 
 test("bodyOf — 공백을 지우고 빈 URL 은 null", () => {
