@@ -23,12 +23,16 @@ test("validateMenuForm — 이름 필수 · 20자, URL 선택 · 형식", () => 
   assert.deepEqual(validateMenuForm({ name: "a", url: " /staff-content-2 ", status: "ACTIVE" }), {});
 });
 
-test("validateMenuForm — URL 은 등록 · 수정 모두 1뎁스만", () => {
+test("validateMenuForm — 새 URL 은 1뎁스만, 수정에서 그대로 둔 여러 구간 URL 은 통과", () => {
   assert.ok(validateMenuForm({ name: "a", url: "/staff/content", status: "ACTIVE" }).url);
   assert.ok(validateMenuForm({ name: "a", url: "//staff", status: "ACTIVE" }).url);
   assert.deepEqual(validateMenuForm({ name: "a", url: "/staff-content", status: "ACTIVE" }), {});
-  // 이 규칙 전에 넣은 여러 구간 URL 도 그대로는 저장하지 않는다
+  // 등록(keptUrl 없음)은 여러 구간을 받지 않는다
   assert.ok(validateMenuForm(values(base)).url);
+  // 수정: 1팀 시드의 여러 구간 URL 을 그대로 두면 이름 · 상태만 고칠 수 있고, 다른 여러 구간으로 바꾸면 막는다
+  assert.deepEqual(validateMenuForm({ ...values(base), name: "새 이름" }, base.url), {});
+  assert.deepEqual(validateMenuForm({ ...values(base), url: ` ${base.url} ` }, base.url), {});
+  assert.ok(validateMenuForm({ ...values(base), url: "/platform/system/roles" }, base.url).url);
 });
 
 test("bodyOf — 공백을 지우고 빈 URL 은 null", () => {

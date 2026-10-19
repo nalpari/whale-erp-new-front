@@ -34,6 +34,8 @@ type Placement = ReturnType<typeof createPlacement<MenuNode>>;
 const ROOT_PARENT = "없음 · 최상위(1단계) 메뉴";
 // 이 화면의 메뉴 코드 — 끄면 메뉴 권한 판정이 이 화면까지 막아 화면으로는 되돌릴 수 없다(api 는 막지 않는다 · 2026-10-16 결정)
 const SELF_MENU_CODE = MENU_CODE.platformMenus;
+/** 이 화면을 막는 저장 — 미사용으로 돌리기 · 이 화면 메뉴의 URL 바꾸기 */
+type SelfLock = "inactive" | "url";
 
 export function MenuSide({
   serviceCode,
@@ -43,6 +45,7 @@ export function MenuSide({
   onDraftNameChange,
   onCancelCreate,
   onCreated,
+  onCreateUnknown,
 }: {
   serviceCode: string;
   nodes: MenuNode[];
@@ -51,13 +54,24 @@ export function MenuSide({
   onDraftNameChange: (name: string) => void;
   onCancelCreate: () => void;
   onCreated: (id: number) => void;
+  /** 등록 응답을 못 받았다(등록됐을 수도 있다) — 양식을 닫고 트리를 다시 받는다 */
+  onCreateUnknown: (message: string) => void;
 }) {
   const can = useMenuPermission(MENU_CODE.platformMenus);
   const menu = !placement && detail && "menu" in detail ? detail.menu : null;
   return (
     <section className={`${CARD} w-[464px] shrink-0`} aria-label={placement ? "메뉴 등록" : can.update ? "메뉴 수정" : "메뉴 상세"}>
       {placement ? (
-        <MenuForm mode="create" serviceCode={serviceCode} nodes={nodes} placement={placement} onDraftNameChange={onDraftNameChange} onCancel={onCancelCreate} onDone={onCreated} />
+        <MenuForm
+          mode="create"
+          serviceCode={serviceCode}
+          nodes={nodes}
+          placement={placement}
+          onDraftNameChange={onDraftNameChange}
+          onCancel={onCancelCreate}
+          onDone={onCreated}
+          onUnknown={onCreateUnknown}
+        />
       ) : menu ? (
         can.update ? (
           <MenuForm mode="edit" menu={menu} nodes={nodes} />
@@ -114,8 +128,18 @@ const readOnly = (value: string | number, placeholder?: string) => <TextField va
 
 function MenuForm(
   props:
-    | { mode: "create"; serviceCode: string; nodes: MenuNode[]; placement: Placement; onDraftNameChange: (name: string) => void; onCancel: () => void; onDone: (id: number) => void; menu?: never }
-    | { mode: "edit"; menu: MenuDetail; nodes: MenuNode[]; serviceCode?: never; placement?: never; onDraftNameChange?: never; onCancel?: never; onDone?: never },
+    | {
+        mode: "create";
+        serviceCode: string;
+        nodes: MenuNode[];
+        placement: Placement;
+        onDraftNameChange: (name: string) => void;
+        onCancel: () => void;
+        onDone: (id: number) => void;
+        onUnknown: (message: string) => void;
+        menu?: never;
+      }
+    | { mode: "edit"; menu: MenuDetail; nodes: MenuNode[]; serviceCode?: never; placement?: never; onDraftNameChange?: never; onCancel?: never; onDone?: never; onUnknown?: never },
 ) {
   const router = useRouter();
   const toast = useToast();
@@ -128,7 +152,7 @@ function MenuForm(
   const [form, setForm] = useState<MenuFormValues>(() => ({ name: base.name, url: base.url, status: base.status }));
   const [errors, setErrors] = useState<MenuFormErrors>({});
   const [failure, setFailure] = useState<{ message: string; detail: string } | null>(null);
-  const [confirmSelfLock, setConfirmSelfLock] = useState(false);
+  const [confirmSelfLock, setConfirmSelfLock] = useState<SelfLock | null>(null);
   const [saving, startSaving] = useTransition();
   const id = props.mode === "edit" ? `menu-${props.menu.menuId}` : "menu-new";
   const [seenUpdatedAt, setSeenUpdatedAt] = useState(server?.updatedAt ?? "");
@@ -154,30 +178,40 @@ function MenuForm(
     if (key !== "status" && errors[key as "name" | "url"]) setErrors((e) => ({ ...e, [key]: undefined }));
   };
 
-  /** 이 메뉴나 그 아래에 이 화면(MN000215)이 있는가 — 미사용으로 돌리면 화면으로는 되돌릴 수 없다 */
-  const locksSelf = () => {
-    if (props.mode !== "edit" || base.status !== "ACTIVE" || form.status !== "INACTIVE") return false;
+  /**
+   * 이 저장이 이 화면(MN000215)을 막는가 — 화면으로는 되돌릴 수 없다.
+   * inactive: 이 메뉴나 그 아래에 이 화면이 있는데 미사용으로 돌린다. url: 이 화면 메뉴의 URL 을 바꾼다 — 메뉴 URL 이 실제 화면 주소와
+   * 어긋나면 다음 로그인부터 URL 막기(isAllowed)가 이 화면을 연다고 보지 않는다(1팀 메뉴 라우트는 아직 /platform/system/… 이다).
+   */
+  const selfLockOf = (): SelfLock | null => {
+    if (props.mode !== "edit") return null;
+    if (props.menu.menuCode === SELF_MENU_CODE && form.url.trim() !== base.url.trim()) return "url";
+    if (base.status !== "ACTIVE" || form.status !== "INACTIVE") return null;
     const has = (n: MenuNode): boolean => n.menuCode === SELF_MENU_CODE || n.children.some(has);
     const row = findRow(props.nodes, props.menu.menuId);
-    return Boolean(row && has(row.node));
+    return row && has(row.node) ? "inactive" : null;
   };
 
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
     if (saving || !dirty) return;
-    const found = validateMenuForm(form);
+    // 수정은 그대로 둔 URL 의 1뎁스 검사를 건너뛴다 — 1팀 시드의 여러 구간 URL 은 실제 화면 주소라 그대로 두고 이름 · 상태를 고친다
+    const found = validateMenuForm(form, props.mode === "edit" ? base.url : undefined);
     setErrors(found);
     if (Object.keys(found).length) return;
-    if (locksSelf()) return setConfirmSelfLock(true);
+    const lock = selfLockOf();
+    if (lock) return setConfirmSelfLock(lock);
     save();
   };
 
   const save = () => {
-    setConfirmSelfLock(false);
+    setConfirmSelfLock(null);
     const body = bodyOf(form);
     startSaving(async () => {
       if (props.mode === "create") {
         const created = await createMenuAction({ ...body, serviceCode: props.serviceCode, parentMenuId: props.placement.parent?.menuId ?? null }).catch(unknownResult("등록"));
+        // 응답을 못 받았으면 등록됐을 수도 있다 — 양식을 닫는다(같은 입력으로 다시 저장하면 메뉴가 둘 생기고, 메뉴 삭제는 없다)
+        if (!created.ok && created.status === undefined) return props.onUnknown(created.message);
         if (!created.ok) return fail(created);
         setFailure(null);
         toast(`등록했습니다. 메뉴 코드 ${created.menuCode} — 권한은 플랫폼 권한 관리의 [메뉴등록]에서 줍니다.`);
@@ -285,9 +319,18 @@ function MenuForm(
           저장
         </Button>
       </div>
-      <ConfirmDialog open={confirmSelfLock} title="이 화면이 닫힙니다" confirmLabel="미사용으로 저장" busy={saving} onConfirm={save} onCancel={() => setConfirmSelfLock(false)}>
+      <ConfirmDialog
+        open={confirmSelfLock !== null}
+        title="이 화면이 닫힙니다"
+        confirmLabel={confirmSelfLock === "url" ? "URL 바꿔 저장" : "미사용으로 저장"}
+        busy={saving}
+        onConfirm={save}
+        onCancel={() => setConfirmSelfLock(null)}
+      >
         <p className="text-[14px] leading-[1.6]">
-          이 메뉴를 미사용으로 돌리면 플랫폼 메뉴 관리({SELF_MENU_CODE})도 사용자 화면과 메뉴 권한에서 빠져, 이 화면으로는 다시 켤 수 없습니다. 계속할까요?
+          {confirmSelfLock === "url"
+            ? `플랫폼 메뉴 관리(${SELF_MENU_CODE})의 URL 을 바꾸면 실제 화면 주소와 어긋나, 다음 로그인부터 이 화면에 들어올 수 없습니다. 계속할까요?`
+            : `이 메뉴를 미사용으로 돌리면 플랫폼 메뉴 관리(${SELF_MENU_CODE})도 사용자 화면과 메뉴 권한에서 빠져, 이 화면으로는 다시 켤 수 없습니다. 계속할까요?`}
         </p>
       </ConfirmDialog>
     </form>

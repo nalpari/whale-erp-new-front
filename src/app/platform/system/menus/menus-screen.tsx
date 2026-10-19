@@ -231,6 +231,12 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
           onDraftNameChange={setDraftName}
           onCancelCreate={() => setCreating(false)}
           onCreated={(id) => handleSelect(id)}
+          onCreateUnknown={(message) => {
+            // 등록됐는지 모른다 — 양식을 닫아 같은 입력으로 다시 저장해 메뉴가 둘 생기지 않게 하고(삭제가 없다) 최신 트리를 받는다
+            setCreating(false);
+            setMoveFailure({ message, detail: "최신 트리를 다시 받았습니다. 새 메뉴가 생겼는지 트리에서 확인한 뒤, 없으면 다시 등록해 주세요." });
+            router.refresh();
+          }}
         />
       </div>
     </div>
