@@ -1,6 +1,10 @@
 # Bundle history
 
 ## 2026-10-19
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #51 2차 블로커 반영. 이 화면이 든 메뉴를 미사용 상위 아래로 옮기면 확인을 받는다(login-info 트리에서 빠져 화면으로 되돌릴 수 없다). 502 · 503 · 504 는 처리됐는지 모름으로 보고 등록 양식을 닫는다(중복 등록 방지). 1뎁스 예외의 api 변경을 main 기준 브랜치(wigglytuff)로 옮겨 그 openapi 로 생성 타입을 다시 만들었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [시스템관리](/system.md) — front #51 머지 블로커 반영. main 병합(`MENU_CODE` 합침, api-types 를 borobudur openapi 로 다시 만듦). 메뉴 URL 1뎁스 검사를 등록과 URL 을 바꾼 수정에만 걸고 그대로 둔 1팀 시드 URL 은 통과시킨다 — 바꾸면 실제 라우트와 어긋나 그 화면이 막혔다. 이 화면 메뉴의 URL 을 바꾸면 확인을 받는다. 등록 응답을 못 받으면 양식을 닫아 중복 등록을 막는다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 메뉴 관리에서 옮기기가 api 400 · 409 로 거절되면(화면 트리가 낡음) 최신 트리를 다시 받는다. 전에는 응답 없음 · 404 때만 받아, 새로고침 전까지 같은 이동이 계속 거절됐다. 응답을 못 받았을 때는 「그대로」라고 단정하지 않고 확인을 청한다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [시스템관리](/system.md) — 플랫폼 메뉴 관리의 메뉴 URL 을 등록 · 수정 모두 1뎁스 한 구간(`/staff-content`)만 받게 했다(`menu-form.ts` 의 `validateMenuForm`). api DTO 도 같은 규칙으로 바꿔(borobudur) 생성 타입을 다시 만들었다. 목업 · 데모의 URL 예시도 1뎁스로 바꿨다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 리뷰 반영: 직원 상세 TO-DO 영역의 「관리」 · 제목 링크를 MN000026 조회 권한으로 가른다(없으면 글자).
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 직원 상세의 TO-DO 영역을 `GET /staff-members/:id/todos` 로 채우고 「관리」를 `/todos`(MN000026) 에 걸었다(#118, TO-DO 리스트 관리 화면 #116 · #117 과 함께).
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — PR #47 리뷰 반영: 응답에 enum 이 빠져 `getEnum` 이 빈 목록을 주면 받지 못한 것과 같이 근로계약 칸의 계약 유형 · 계약 상태를 「-」로 둔다(`labelsOrNull`). 영문 값이 보이던 경로였다.
@@ -8,6 +12,7 @@
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #41 재리뷰 참고 반영(영주). 발송 확인창이 서버 액션 호출 자체가 끊겨도(브라우저 ↔ Next · 배포 중 재시작) 오류 화면 대신 「발송됐는지 알 수 없음」으로 보내기를 막고 상세를 다시 읽는다.
 
 ## 2026-10-16
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [시스템관리](/system.md) — 플랫폼 메뉴 관리(MN000215, `/platform/system/menus`) 화면을 더했다. api `/platform-menus`(borobudur 작업분 openapi)로 생성 타입을 다시 만들고, 서비스 탭(`service-tabs.tsx`)과 카드 · 띠(`side-parts.tsx`)를 권한 관리와 같이 쓰게 꺼냈다. system.md 의 「처음 들어오면 서비스 목록」을 2026-10-08 변경대로 고치고 구현 메모를 더했다.
 * **Update**: [Notifications](/notify.md) — 근로계약 화면(목록 · 작성 · 이어 쓰기 · 상세)의 임시 헤더(`GlobalHeader` · 샘플 메뉴 · `NotificationBellSlot`) · 바깥 틀과 `contracts/layout` 의 `ErpRoot` 를 걷었다 — 공통 틀(AdminFrame)이 헤더를 그려 헤더가 두 번 보이던 것(WHALEERP-592 재범위: 헤더 · 틀 정리). 화면은 `PageBar` 부터 그린다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #41 리뷰 반영(영주). 발송 확인창이 접수 여부 모름(SEND_UNCONFIRMED · 코드 없는 502 · 504 · api 응답 전 끊김)과 409 상태 충돌 · 「다른 요청이 먼저 고침」이면 보내기를 막고 상세를 다시 읽는다(`send-model.ts`). 응답 전 끊김은 오류 화면 대신 확인창 문장. api-types 를 api #59 반영(2a826ee)으로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세의 「발송」(발송 대기) · 「재발송」(서명 대기)을 켰다(WHALEERP-136, api psyduck). 확인창 → 서버 액션 `sendContract` → `POST /contracts/:id/send`, 실패 문장은 확인창에. api-types 를 다시 만들었다.
