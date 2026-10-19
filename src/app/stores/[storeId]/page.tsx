@@ -62,8 +62,9 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
   });
 
   const b = store.business;
-  // 대표 이미지 · 점포코드는 표에 두지 않고 제목 줄의 머리 카드로 옮겼다(2026-10-19 점검 — 실사용자 확인,
-  // 디자인 데모 1안 채택). 표 맨 위는 점포상태로 바꿔 머리 카드의 배지와 같은 값을 글자로도 보여 준다.
+  // 대표 이미지만 표에 두지 않고 제목 줄의 머리 카드로 옮겼다(2026-10-19 점검 — 실사용자 확인, 디자인 데모
+  // 1안 채택). 표 맨 위는 점포코드에서 점포상태로 바꿨다 — 머리 카드에는 더는 상태 배지가 없어(정보 중복으로
+  // 뺐다) 이 표가 유일하게 상태를 보여준다.
   const basicRows: DetailRow[] = [
     { label: "점포상태", value: <StoreStatusBadge status={store.storeStatusCode} /> },
     { label: "점포 연락처", value: store.phone ? formatPhone(store.phone) : muted("-") },
@@ -215,7 +216,8 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
           {/* 미운영 점포에 "운영으로 바꾸려면 ~ 필요합니다" 띠를 여기 두지 않는다(2026-10-16 디자인 점검으로 뺐다) — 같은
               안내는 상태 변경 팝업(StoreDetailActions)이 이미 운영 조건 체크리스트로 보여준다(2026-10-19 점검 — 실사용자 확인). */}
           <div className="grid grid-cols-2 items-start gap-[24px]">
-            {/* 유형 · 상태 배지는 위 머리 카드로 옮겨 여기서는 다시 적지 않는다(2026-10-19 점검). */}
+            {/* 유형 태그는 위 머리 카드로 옮겨 여기서는 다시 적지 않는다. 상태는 배지 대신 표 맨 위 점포상태
+                줄로 보인다(2026-10-19 점검). */}
             <DetailTable title="점포 기본정보" rows={basicRows} />
             <DetailTable
               title={
