@@ -1,5 +1,4 @@
 // 점포 화면의 표기. 서버 · 클라이언트가 함께 쓰고 node --test 가 직접 읽는다(상대 경로 + .ts).
-import { labelOf, type EnumValue } from "./enums.ts";
 import { floorTypeOf, type FloorType, type StoreFloor, type StoreStatus, type StoreTransitions } from "./store-types.ts";
 
 // 점포 상태 · 유형 · 층 구분의 한글은 공통코드(STORE_STATUS · STORE_TYPE · FLOOR_TYPE)라 화면이 로그인 정보에서 읽는다
@@ -27,13 +26,31 @@ export function floorLabel(floor: Pick<StoreFloor, "floorTypeCode" | "floorNumbe
 }
 
 /**
- * 운영으로 바꾸려면 모자란 것을 한 문장으로. 다 갖췄으면 null.
- * 한글은 GET /enums/StoreOperationRequirement 로 받은 label 이다(api 전용 enum — front 에 대응표를 두지 않는다). 받지 못했거나
- * 모르는 값이면 값을 그대로 보인다.
+ * 「이」· 「가」를 문장 끝 한글 받침으로 가른다 — 받침 있으면 「이」, 없으면 「가」. 괄호 같은 한글이 아닌 글자로
+ * 끝나도 그 앞의 마지막 한글 글자를 본다. 한글이 아예 없으면(모르는 값을 코드 그대로 보일 때) 「이(가)」로 그대로 둔다.
+ * store-form.ts 의 수정 칸 아래 안내 문구가 쓴다.
  */
-export function missingForOperationText(missing: StoreTransitions["missingForOperation"], labels: EnumValue[]): string | null {
-  if (!missing.length) return null;
-  return `운영으로 바꾸려면 ${missing.map((m) => labelOf(labels, m)).join(" · ")}이(가) 필요합니다.`;
+/** 좌표(위도 · 경도)가 둘 다 있어야 저장된 출퇴근 위치 적용 여부를 그대로 믿을 수 있다 — formOfStore(store-form.ts) · 상세 화면이 같은 규칙을 쓴다 */
+export function hasStoreCoordinates(latitude: number | null, longitude: number | null): boolean {
+  return latitude !== null && longitude !== null;
+}
+
+export function finalJosa(text: string): string {
+  const match = text.match(/[가-힣](?=[^가-힣]*$)/);
+  if (!match) return "이(가)";
+  return (match[0].charCodeAt(0) - 0xac00) % 28 === 0 ? "가" : "이";
+}
+
+/**
+ * 「으로」· 「로」를 문장 끝 한글 받침으로 가른다 — 받침이 없거나 ㄹ받침이면 「로」, 그 밖의 받침이면 「으로」
+ * (이/가와 받침 유무만으로 가르지 않는다 — ㄹ받침은 예외다). 점포상태 배지(미운영 · 운영 · 폐점)처럼 셋 다
+ * ㅇ · ㅁ받침이라 지금은 "으로"만 나오지만, 공통코드값이 바뀌어도 어긋나지 않게 상태 변경 문구에 쓴다.
+ */
+export function finalEuro(text: string): string {
+  const match = text.match(/[가-힣](?=[^가-힣]*$)/);
+  if (!match) return "(으)로";
+  const final = (match[0].charCodeAt(0) - 0xac00) % 28;
+  return final === 0 || final === 8 ? "로" : "으로";
 }
 
 /** 폐점 · 삭제를 막는 조건 — 1차에서는 진행 중 근로계약만 본다(구독 · 정산은 범위 밖) */

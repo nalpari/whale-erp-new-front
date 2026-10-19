@@ -1,5 +1,5 @@
 // 근로계약 상세의 칸 표기. 테스트: node --test "src/app/contracts/[contractId]/detail-format.test.ts"
-import type { ContractDetail } from "../new/contract-form-model";
+import { WEEKDAYS, WEEKS_PER_MONTH, type ContractDetail } from "../new/contract-form-model.ts";
 
 const minutes = (hm: string) => Number(hm.slice(0, 2)) * 60 + Number(hm.slice(3, 5));
 
@@ -51,4 +51,64 @@ export function insuranceText(healthPension: boolean | null, employmentInjury: b
 export function kstDateTime(iso: string): string {
   const k = new Date(new Date(iso).getTime() + 9 * 3600_000).toISOString();
   return `${k.slice(0, 10)} ${k.slice(11, 16)}`;
+}
+
+/** 파트타이머 소정근로시간 표 한 줄. 요일 줄은 시각 · 근무시간 · 시급 · 소계, 합계 줄은 근무시간 · 금액만 */
+export type PartTimeRow = {
+  key: string;
+  label: string;
+  start?: string;
+  end?: string;
+  restStart?: string;
+  restEnd?: string;
+  hours?: string;
+  wage?: string;
+  amount: string;
+};
+
+const won = (n: number | null) => (n === null ? "-" : n.toLocaleString("ko-KR"));
+const hoursText = (n: number | null) => (n === null ? "" : String(Number(n.toFixed(2))));
+
+/**
+ * 파트타이머 상세의 소정근로시간 표 — 작성 화면의 표와 같은 줄 · 같은 셈(partTimePay: 요일 소계 = 시급 × 그날 시간, 주휴시간 =
+ * 주 15시간 이상일 때 주 시간 ÷ 5(8시간까지), 월급여 = 주급 × 4.345)을 저장한 시각으로 읽기 전용으로 보인다. 요일마다 저장한
+ * 시업 · 종업 · 휴게가 다를 수 있다(데모 확인 2026-10-15). 근무하지 않는 요일은 「-」, 맨 아래 소계 · 주휴수당 · 주급 · 월급여.
+ */
+export function partTimeRows(d: ContractDetail, dayLabel: (d: string) => string): PartTimeRow[] {
+  const rate = d.wageAmount ?? 0;
+  const wage = d.wageAmount === null ? "-" : won(d.wageAmount);
+  const days = WEEKDAYS.map((weekday) => {
+    const w = d.workDays.find((x) => x.weekday === weekday);
+    const hours = w ? weeklyHoursOf([w]) : null;
+    return { w, hours, amount: hours === null ? null : Math.round(hours * rate) };
+  });
+  const workHours = weeklyHoursOf(d.workDays);
+  const workPay = days.reduce((sum, x) => sum + (x.amount ?? 0), 0);
+  const holidayHours = workHours >= 15 ? Math.min(8, workHours / 5) : 0;
+  const holidayPay = Math.round(holidayHours * rate);
+  const weekly = workPay + holidayPay;
+  const pay = { days, workHours, workPay, holidayHours, holidayPay, weekly, monthly: Math.round(weekly * WEEKS_PER_MONTH) };
+  const dayRows = WEEKDAYS.map((weekday, i): PartTimeRow => {
+    const { w } = pay.days[i];
+    return w
+      ? {
+          key: weekday,
+          label: dayLabel(weekday),
+          start: w.startTime,
+          end: w.endTime,
+          restStart: w.breakStartTime ?? "-",
+          restEnd: w.breakEndTime ?? "-",
+          hours: hoursText(pay.days[i].hours),
+          wage,
+          amount: won(pay.days[i].amount),
+        }
+      : { key: weekday, label: dayLabel(weekday), start: "-", end: "-", restStart: "-", restEnd: "-", amount: "-" };
+  });
+  return [
+    ...dayRows,
+    { key: "work", label: "소계", hours: hoursText(pay.workHours), amount: won(pay.workPay) },
+    { key: "holiday", label: "주휴수당", hours: hoursText(pay.holidayHours), amount: won(pay.holidayPay) },
+    { key: "weekly", label: "주급", amount: won(pay.weekly) },
+    { key: "monthly", label: "월급여", amount: won(pay.monthly) },
+  ];
 }

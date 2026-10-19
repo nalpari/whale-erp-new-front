@@ -104,7 +104,8 @@ export function FormGroup({ title, children }: { title: ReactNode; children: Rea
   return (
     <section className="flex w-full flex-col gap-[10px]">
       <h3 className="text-[15px] font-semibold text-erp-ink">{title}</h3>
-      <div className="flex flex-col gap-[18px] rounded-[2px] border border-erp-panel-line bg-white px-[16px] py-[20px]">{children}</div>
+      {/* flex-1 로 둬 나란한 두 묶음이 그리드에서 같은 선에 맞춰 늘어나게 둔다(부모가 stretch 일 때만 뜻이 있다) */}
+      <div className="flex flex-1 flex-col gap-[18px] rounded-[2px] border border-erp-panel-line bg-white px-[16px] py-[20px]">{children}</div>
     </section>
   );
 }

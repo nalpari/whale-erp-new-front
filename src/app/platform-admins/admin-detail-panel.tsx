@@ -3,9 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type RefObject } from "react";
 import { Badge, Button, ConfirmDialog, DetailTable, DetailValues, SlidePanel, Tag, useToast, type DetailRow } from "@/components/common";
-import { useAccount, useMenuPermission } from "@/components/site/session-gate";
+import { useAccount, usePagePermission } from "@/components/site/session-gate";
 import { formatDateTime, formatPhone } from "@/lib/format";
-import { MENU_CODE } from "@/lib/menus";
 import { adminActionsOf } from "@/lib/platform-admin-actions";
 import type { PlatformAdminDetail } from "@/lib/platform-admins";
 import { deletePlatformAdminAction, resetPlatformAdminPasswordAction } from "./actions";
@@ -81,7 +80,7 @@ function DetailBody({
   const [busy, startBusy] = useTransition();
 
   const me = useAccount();
-  const can = useMenuPermission(MENU_CODE.platformAdmins);
+  const can = usePagePermission();
   // 플랫폼 마스터 계정은 플랫폼 마스터만 고친다(F-RVDLOW).
   const { canUpdate, canDelete, isSelf } = adminActionsOf(me, { adminAccountId: admin.adminAccountId, roleTypeCode: admin.roleGroup.roleTypeCode }, can);
   const name = admin.name ?? admin.loginId;

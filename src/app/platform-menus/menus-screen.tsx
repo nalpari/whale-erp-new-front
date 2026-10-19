@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Badge, Button, ConfirmDialog, DataTable, useToast, type Column } from "@/components/common";
 import { ServiceTabs } from "@/components/site/service-tabs";
-import { useMenuPermission } from "@/components/site/session-gate";
+import { usePagePermission } from "@/components/site/session-gate";
 import { CARD, FailedBand } from "@/components/site/side-parts";
 import { createPlacement, descendantCountOf, findRow, flatten, placeLabel, type FlatRow, type Spot, type Verdict } from "@/lib/menu-tree";
 import { MENU_CODE } from "@/lib/menus";
@@ -17,7 +17,8 @@ import { useTreeDrag } from "./use-tree-drag";
 // 서비스 탭 + 왼쪽 메뉴 트리 + 오른쪽 고정 칸(데모 system/menus). 오른쪽 칸은 슬라이드 패널이 아니라 늘 서 있다.
 // 줄을 누르면 오른쪽에 그 메뉴의 수정(수정 권한이 없으면 상세)이, 같은 줄을 다시 누르면 고른 것을 푼다. [등록]을 누르면 같은 칸이 등록 양식이 되고
 // 트리의 새 자리(고른 메뉴 안 맨 끝, 3단계를 고르면 그 상위 안 맨 끝, 고른 것이 없으면 최상위 맨 끝)에 「작성 중」 줄이 선다.
-// 손잡이로 끌어 옮기면 바로 저장된다(목업). 버튼은 메뉴 MN000215 의 권한(로그인 정보)으로 보인다 — 등록 create, 저장 · 옮기기 update. 막는 것은 api 다.
+// 손잡이로 끌어 옮기면 바로 저장된다(목업). 버튼은 지금 주소(/platform-menus)의 메뉴 권한(usePagePermission)으로 보인다 — 등록 create, 저장 · 옮기기 update. 막는 것은 api 다.
+// MN000215(SELF_MENU_CODE)는 권한이 아니라 자기 잠금 확인(이 화면이 닫히는 저장 · 옮기기)에만 쓴다.
 
 type Row = { kind: "menu"; row: FlatRow<MenuNode> } | { kind: "draft" };
 
@@ -42,7 +43,7 @@ function locksSelfByMove(nodes: MenuNode[], moved: MenuNode, parentMenuId: numbe
 export function MenusScreen({ services, tree, selected, detail }: { services: MenuService[]; tree: MenuTree | null; selected?: number; detail: MenuDetailState }) {
   const router = useRouter();
   const toast = useToast();
-  const can = useMenuPermission(MENU_CODE.platformMenus);
+  const can = usePagePermission();
   const nodes = tree?.items ?? [];
   const serviceCode = tree?.service.serviceCode ?? "";
   const [creating, setCreating] = useState(false);

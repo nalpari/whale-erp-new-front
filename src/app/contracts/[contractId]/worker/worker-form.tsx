@@ -1,10 +1,12 @@
 "use client";
 
+import { unstable_rethrow, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Button, Checkbox, ConfirmDialog, DateField, Field, FormGroup, FormRow, Radio, TextField } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { formatPhone, GENDERS, inProgressLine, type InProgressContract } from "../../new/contract-form-model";
 import { updateWorker } from "../actions";
+import { callSave, SAVE_CALL_LOST } from "../send-model";
 import { workerBody, workerProblems, workerSaveNote, type WorkerForm as Form } from "./worker-model";
 
 // 날인 전 근로자 정보 수정(WHALEERP-125 「본인 대조」 · 126). 링크를 못 받았다는 직원과 유선으로 번호를 확인했거나,
@@ -20,6 +22,7 @@ export function WorkerForm({
   initial: Form;
   labels: { gender: EnumValue[]; contractStatus: EnumValue[] };
 }) {
+  const router = useRouter();
   const [form, setForm] = useState<Form>(initial);
   const [tried, setTried] = useState(false);
   const [serverError, setServerError] = useState("");
@@ -37,7 +40,13 @@ export function WorkerForm({
   const send = (replaceContractIds?: number[]) =>
     startSaving(async () => {
       // 성공하면 액션이 상세로 보낸다. 돌아왔다면 실패다.
-      const result = await updateWorker(contractId, workerBody(form, replaceContractIds));
+      // 액션의 redirect(성공 · 보내기 실패)는 callSave 가 다시 던져 그 목적지로 간다
+      const result = await callSave(() => updateWorker(contractId, workerBody(form, replaceContractIds)), unstable_rethrow);
+      if (result === SAVE_CALL_LOST) {
+        // 서버 액션 호출 자체가 끊겼다 — 저장하면 다시 보내므로 이미 보냈을 수 있다. 같은 폼으로 다시 저장하지 않게 상세로(front #50 재리뷰)
+        router.replace(`/contracts/${contractId}?send=unknown`);
+        return;
+      }
       if (result.inProgress) {
         setReplace(result.inProgress);
         return;

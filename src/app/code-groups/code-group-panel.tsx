@@ -5,8 +5,7 @@ import { Badge, Button, DataTable, Pagination, Select, Tag, TextField, Toggle, u
 import { buildSaveGroupsInput, groupChanged, type GroupDraft } from "@/lib/code-drafts";
 import { codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-validation";
 import type { CodeGroup, ManageOwnerCode } from "@/lib/codes";
-import { MENU_CODE } from "@/lib/menus";
-import { useMenuPermission } from "@/components/site/session-gate";
+import { usePagePermission } from "@/components/site/session-gate";
 import { applyCodeGroupToBpsAction, saveCodeGroupsAction } from "./actions";
 import { BpApplyDialog } from "./bp-apply-dialog";
 import { CodePanel, DoneNotice, FieldErrors, SaveFailedBand, UNREACHABLE } from "./code-panel";
@@ -42,7 +41,7 @@ export function CodeGroupPanel({
 }) {
   // 메뉴 권한(로그인 정보)으로 보인다 — 막는 것은 api 다. api 는 패널 저장을 늘 수정으로 보고, 새 행이 있으면 등록까지 요구한다.
   // 그래서 고치기 · 저장 · BP 적용은 수정 권한, [추가]는 수정과 등록 권한이 둘 다 있을 때만.
-  const can = useMenuPermission(MENU_CODE.platformCodes);
+  const can = usePagePermission();
   const manage = can.update;
   const canAdd = manage && can.create;
   const toast = useToast();
