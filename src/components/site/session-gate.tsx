@@ -15,6 +15,7 @@ import {
   readLoginBpInfo,
   readLoginInfo,
   readScope,
+  bpOfSwitchQuery,
   readSelectedBp,
   readStores,
   resolveTab,
@@ -23,6 +24,7 @@ import {
   writeLoginBpInfo,
   writeLoginInfo,
   writeScope,
+  writeSelectedBp,
   writeStores,
   type Scope,
   type ServiceCode,
@@ -53,7 +55,6 @@ function useLogin() {
   return v;
 }
 export const useAccount = () => useLogin().account;
-export const useLoginKey = () => useLogin().loginKey;
 /** 이 탭의 서비스. 헤더 메뉴·홈·메뉴 권한 확인과 오른쪽 선택기(플랫폼이면 BP, ERP 면 점포 범위)가 이것을 본다. */
 export const useService = () => useLogin().serviceCode;
 /** 이 탭 서비스의 메뉴 트리(3단계까지). */
@@ -88,7 +89,7 @@ const ALL: Scope = { type: "ALL" };
 
 /**
  * 로그인 후 화면의 문. 이 탭의 BP 와 그 BP 의 점포·공통코드가 준비될 때까지 로딩 화면을 보이고, 준비되면 children 을 그린다.
- * /bp-switch?bp= 는 이 탭을 그 BP 로 새로 준비한 뒤(점포·공통코드를 다시 받고 범위는 전체) 그 서비스의 홈으로 보낸다.
+ * /bp-switch?bp= 는 이 탭을 그 BP 로 새로 준비한 뒤(탭에 남은 점포·공통코드를 쓰지 않고, 범위는 전체) 그 서비스의 홈으로 보낸다.
  * 메뉴·점포·공통코드는 로그인할 때의 값을 쓰고 다시 로그인해야 바뀐다(okf/auth.md, 2026-10-13). 데이터 권한은 api 가 요청마다 다시 본다.
  */
 // 다시 시도하면 같은 길로 다시 로그아웃한다.
@@ -288,6 +289,9 @@ async function prepare(): Promise<LoginState> {
   // 고른 BP 는 BP 이동 화면(/bp-switch?bp=)으로만 받는다. 다른 주소의 ?bp= 는 보지 않는다.
   const switching = url.pathname === BP_SWITCH_PATH;
   const q = switching ? url.searchParams.get("bp") : null;
+  // 팝업이 고른 BP 는 주소에 실려 온다(bpOfSwitchQuery). 다음에 주소로 여는 탭도 이 BP 를 쓰게 selected-bp 에 적는다.
+  const switchBp = switching ? bpOfSwitchQuery(url.searchParams) : null;
+  if (switchBp) writeSelectedBp(loginKey, switchBp);
   // 앞 로그인이 이 탭에 남긴 점포·공통코드·범위는 갈래와 상관없이 여기서 지운다(readCurrentBp). 점포 등은 bpCodeId 로만 갈려 같은 BP 의 다른 계정 값이 읽힌다.
   const current = readCurrentBp(loginKey);
   // 비밀번호를 바꾸기 전에는 다른 BP 조회가 403 이라 자기 BP 로 연다.
@@ -299,11 +303,11 @@ async function prepare(): Promise<LoginState> {
         pathService: serviceOfPath(info.menus, url.pathname),
         queryBpCodeId: q && /^\d+$/.test(q) ? Number(q) : null,
         current,
-        selectedBp: readSelectedBp(loginKey),
+        selectedBp: switchBp ?? readSelectedBp(loginKey),
       });
   const { bp } = tab;
 
-  // BP 로 이동할 때는 탭에 남은 값을 쓰지 않고 그 BP 의 지금 값을 받는다.
+  // BP 로 이동할 때는 탭에 남은 값을 쓰지 않는다 — 다른 BP 는 지금 값을 받고, 자기 BP 는 로그인할 때 받은 값(login-bp-info)이다.
   let stores = switching ? null : readStores(bp.bpCodeId);
   let codes = switching ? null : readCodes(bp.bpCodeId);
   if (!stores || !codes) {

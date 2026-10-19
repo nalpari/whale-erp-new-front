@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  bpOfSwitchQuery,
   clearLoginStorage,
   readCodes,
   readCurrentBp,
@@ -130,4 +131,15 @@ test("깨진 JSON 이나 저장소 예외는 null 로 받고 밖으로 던지지
   assert.equal(readSelectedBp("k"), null);
   Object.assign(globalThis, { localStorage: { getItem: () => { throw new Error("blocked"); } } });
   assert.equal(readSelectedBp("k"), null);
+});
+
+test("bpOfSwitchQuery: BP 이동 주소의 셋이 다 있고 bp 가 숫자일 때만 BP 로 읽는다", () => {
+  const q = (o: Record<string, string>) => new URLSearchParams(o);
+  assert.deepEqual(bpOfSwitchQuery(q({ bp: "17", bpCode: a.bpCode, tradeName: a.tradeName })), a);
+  // 팝업이 만든 주소 그대로(상호의 공백 · 기호가 인코딩된 채)
+  assert.deepEqual(bpOfSwitchQuery(new URLSearchParams(`?${q({ bp: "21", bpCode: b.bpCode, tradeName: "㈜모리 푸드 & Co" })}`)), { ...b, tradeName: "㈜모리 푸드 & Co" });
+  // 플랫폼관리 바로가기의 ?bp= 만 있는 주소, 숫자가 아닌 bp, 빈 상호는 고른 BP 가 아니다
+  assert.equal(bpOfSwitchQuery(q({ bp: "1" })), null);
+  assert.equal(bpOfSwitchQuery(q({ bp: "1x", bpCode: a.bpCode, tradeName: a.tradeName })), null);
+  assert.equal(bpOfSwitchQuery(q({ bp: "17", bpCode: a.bpCode, tradeName: "" })), null);
 });

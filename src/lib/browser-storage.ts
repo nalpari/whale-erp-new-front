@@ -114,6 +114,18 @@ export function clearLoginStorage() {
   remove(tab, [...TAB_KEYS, ...LEGACY_KEYS]);
 }
 
+/**
+ * BP 이동 화면(/bp-switch) 주소의 고른 BP — ?bp=&bpCode=&tradeName=. 셋이 다 있고 bp 가 숫자일 때만, 아니면 null.
+ * 고른 BP 를 주소에 싣는 것은 selected-bp 가 탭들이 같이 쓰는 값이라서다 — 새 탭이 읽기 전에 다른 탭에서 BP 를 또 고르면 바뀐다.
+ * 그 BP 를 볼 수 있는지는 점포 조회(api)가 다시 막는다.
+ */
+export function bpOfSwitchQuery(q: URLSearchParams): StoredBp | null {
+  const id = q.get("bp");
+  const bpCode = q.get("bpCode");
+  const tradeName = q.get("tradeName");
+  return id && /^\d+$/.test(id) && bpCode && tradeName ? { bpCodeId: Number(id), bpCode, tradeName } : null;
+}
+
 function pickBp({ bpCodeId, bpCode, tradeName }: StoredBp): StoredBp {
   return { bpCodeId, bpCode, tradeName };
 }
