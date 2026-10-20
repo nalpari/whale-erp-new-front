@@ -97,6 +97,50 @@
     select(location.hash === "#pw" ? "password" : "id");
   }
 
+  // 입력 검사: 브라우저 말풍선 대신 칸 아래 붉은 글씨로 알린다. 제출을 막는 것은 브라우저 검사가 그대로 맡는다.
+  // 글씨는 칸을 감싼 묶음(관심 서비스 fieldset · 연락처 group · 세로 label) 맨 아래에, 체크 상자 줄은 그 줄 바로 아래에 둔다.
+  const errorOf = (el) => {
+    const group = el.closest("fieldset") ?? el.closest("[role=group]")?.parentElement;
+    const label = el.closest("label");
+    const host = group ?? (el.type === "checkbox" ? null : label);
+    let p = host ? host.querySelector(":scope > [data-field-error]") : label?.nextElementSibling;
+    if (!p?.hasAttribute("data-field-error")) {
+      p = document.createElement("p");
+      p.dataset.fieldError = "";
+      p.className = "-mt-[2px] text-[14px] leading-[1.5] text-[#e93737]";
+      host ? host.append(p) : (label ?? el).after(p);
+    }
+    return p;
+  };
+  // 안내가 한 번 뜬 칸(aria-invalid 가 붙은 칸)만 다시 본다. 묶음은 아직 틀린 칸 하나의 안내를 보인다.
+  const syncError = (el, failed = false) => {
+    const scope = el.closest("fieldset, [role=group]");
+    if (failed) el.setAttribute("aria-invalid", "true");
+    const marked = (scope ? $$("input, select, textarea", scope) : [el]).filter((x) => x.hasAttribute("aria-invalid"));
+    if (!marked.length) return;
+    for (const x of marked) x.setAttribute("aria-invalid", String(!x.validity.valid));
+    const bad = marked.find((x) => !x.validity.valid);
+    const p = errorOf(el);
+    p.textContent = bad?.validationMessage ?? "";
+    p.hidden = !bad;
+  };
+  document.addEventListener(
+    "invalid",
+    (e) => {
+      e.preventDefault();
+      // 말풍선을 끄면 브라우저가 첫 틀린 칸으로 옮겨 주지 않는다. 처음 걸린 칸으로 옮긴다.
+      if (!document.activeElement?.matches(":invalid")) e.target.focus();
+      syncError(e.target, true);
+    },
+    true,
+  );
+  // 고치면 바로 지운다.
+  for (const type of ["input", "change"]) document.addEventListener(type, (e) => e.target.validity && syncError(e.target));
+  document.addEventListener("reset", (e) => {
+    for (const p of $$("[data-field-error]", e.target)) p.hidden = true;
+    for (const el of $$("[aria-invalid]", e.target)) el.removeAttribute("aria-invalid");
+  });
+
   // 고르는 칸에서 「직접입력」을 고르면 같은 폼의 직접 입력칸 잠금을 푼다(도입문의 업종).
   for (const sel of $$("[data-other-select]")) {
     const input = sel.form.querySelector("[data-other-input]");
