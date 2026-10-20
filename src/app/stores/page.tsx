@@ -1,6 +1,7 @@
 import { Button, ListToolbar } from "@/components/common";
 import { STORE_STATUSES, STORE_TYPES } from "@/lib/store-types";
 import { getStores } from "@/lib/stores";
+import type { StoreSummary } from "@/lib/store-types";
 import { StoreFilter } from "./store-filter";
 import { StorePermission } from "./store-permission";
 import { StoreFrame } from "./store-frame";
@@ -9,7 +10,7 @@ import { StorePageSizeSelect, StorePagination, StoreViewToggle } from "./store-l
 import { NoticeBand, StoreCard } from "./store-parts";
 import type { PickedStore } from "./store-picker";
 import { StoreTable } from "./store-table";
-import { detailHrefOf, parseStoresQuery, storesExcelHref, storesHref } from "./stores-query";
+import { detailHrefOf, parseStoresQuery, storesExcelHref, storesHref, type StoresQuery } from "./stores-query";
 import { StoreExcelButton, StoreExcelNotice, StoreExcelProvider } from "./store-excel";
 
 // 점포 정보 관리 목록(S-BAYAJS). 데모 docs/demo/stores/index.html 을 공통 컴포넌트로 옮겼다. api 는 GET /stores.
@@ -19,12 +20,9 @@ export default async function StoresPage({ searchParams }: PageProps<"/stores">)
   const raw = await searchParams;
   const parsed = parseStoresQuery(raw);
 
-  // 고른 점포의 이름 — URL 에는 id 만 있다. 상태 · 유형과 상관없이 찾는다
-  const pickedList = parsed.storeIds.length
-    ? await getStores({ ...parsed, page: 1, pageSize: 100, bizRegistrationNumber: "", statuses: [...STORE_STATUSES], storeTypes: [...STORE_TYPES] })
-    : { items: [], total: 0 };
+  const found = await pickedStoresOf(parsed);
   const picked: PickedStore[] = parsed.storeIds
-    .map((id) => pickedList.items.find((s) => s.storeId === id))
+    .map((id) => found.find((s) => s.storeId === id))
     .filter((s) => s !== undefined)
     .map(({ storeId, name, storeCode }) => ({ storeId, name, storeCode }));
   // 지워졌거나 볼 수 없게 된 점포는 조건에서 뺀다 — 남겨 두면 칩에도 없는 조건이 목록을 0건으로 만든다
@@ -80,4 +78,16 @@ export default async function StoresPage({ searchParams }: PageProps<"/stores">)
       </StoreListNavigationProvider>
     </StoreFrame>
   );
+}
+
+/** 고른 점포의 이름 — URL 에는 id 만 있다. 상태 · 유형과 상관없이 찾는다. 한 쪽이 100건까지라 100개씩 나눠 찾는다(헤더 직영 · 가맹 범위는 그 유형 점포를 모두 싣는다) */
+async function pickedStoresOf(query: StoresQuery): Promise<StoreSummary[]> {
+  const chunks: number[][] = [];
+  for (let i = 0; i < query.storeIds.length; i += 100) chunks.push(query.storeIds.slice(i, i + 100));
+  const lists = await Promise.all(
+    chunks.map((storeIds) =>
+      getStores({ storeIds, page: 1, pageSize: 100, bizRegistrationNumber: "", statuses: [...STORE_STATUSES], storeTypes: [...STORE_TYPES] }),
+    ),
+  );
+  return lists.flatMap((l) => l.items);
 }

@@ -81,7 +81,8 @@ function scopeDropdown(A) {
     sect(`직영 ${dir.length}`, dir.map(storeOpt)) +
     sect(`가맹 ${fr.length}`, fr.map(storeOpt));
 
-  const search = `<div class="mb-[6px] flex items-center gap-[8px] border-b border-erp-divider px-[12px] pb-[8px]">${ui.img(A, "search.svg", 12, 12)}<input type="search" placeholder="점포 이름으로 찾기" aria-label="점포 찾기" class="min-w-0 flex-1 border-0 bg-transparent text-[13px] text-erp-ink outline-none placeholder:text-erp-label" data-scope-q-input></div>`;
+  // 검색 줄 높이는 목업(pop__search · 36.5px)에 맞춘다 — 위 6 · 아래 8 여백, 입력칸 줄 높이 1.5 + 위아래 1px
+  const search = `<div class="mb-[6px] flex items-center gap-[8px] border-b border-erp-divider px-[10px] pt-[6px] pb-[8px]">${ui.img(A, "search.svg", 14, 14)}<input type="search" placeholder="점포 이름으로 찾기" aria-label="점포 찾기" class="min-w-0 flex-1 border-0 bg-transparent px-[2px] py-[1px] text-[13px] leading-[1.5] text-erp-ink outline-none placeholder:text-erp-label" data-scope-q-input></div>`;
 
   const trigger = `<button type="button" aria-expanded="false" aria-controls="${id}" aria-label="점포: ${initial}" class="flex h-[42px] w-[420px] items-center gap-[8px] rounded-full border border-erp-field-line bg-erp-thead-bg px-[18px] text-left text-[14px] text-erp-ink"><b class="shrink-0 font-semibold">${BP.name}</b><span class="text-erp-label">·</span><span class="flex-1 truncate" data-scope-value>${initial}</span>${ui.img(A, "chevron-small-brand.svg", 5, 8, `transition-transform duration-200 ${ui.EASE_OUT} -rotate-90`)}</button>`;
 
