@@ -24,7 +24,7 @@ const ICON = {
   mail: '<circle cx="12" cy="12" r="10.5"/><rect x="6.8" y="8.8" width="10.4" height="7.4" rx="1"/><path d="m7.3 9.6 4.7 3.7 4.7-3.7"/>',
 };
 const withIcon = (name, text) =>
-  `<span class="inline-flex items-center gap-[6px]"><svg viewBox="0 0 24 24" class="size-[13px] shrink-0 text-erp-label" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name]}</svg>${text}</span>`;
+  `<span class="inline-flex items-center gap-[6px]"><svg viewBox="0 0 24 24" class="size-[17px] shrink-0 text-erp-label" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name]}</svg>${text}</span>`;
 
 const ADMINS = [
   ["platyoon", "윤채원", "플랫폼 관리자", "사용", "010-9013-5528", "chaewon.yoon@whale-erp.example", "", "2026-09-21 10:04"],

@@ -157,10 +157,16 @@ export function AdminFormPanel(props: Props) {
 
   const title = mode === "create" ? "플랫폼 관리자 등록" : "플랫폼 관리자 수정";
 
+  // 저장하는 동안은 Esc · 바탕 클릭으로도 닫히지 않는다 — 취소 버튼의 disabled={saving} 과 같은 뜻이다.
+  // 닫히면 저장 결과(성공 · 실패 띠)를 사용자가 못 보고 패널이 먼저 사라진다(코드 리뷰로 찾음, 2026-10-20).
+  const safeClose = () => {
+    if (!saving) onClose();
+  };
+
   return (
     // 수정은 상세 위에 겹쳐 열려 잃을 입력이 적다고 보고 바탕 클릭으로도 닫히게 한다. 등록은 처음부터 쓰는
     // 빈 칸이라 그대로 기본값(false)을 둔다(2026-10-20 피드백).
-    <SlidePanel id={id} open={open} onClose={onClose} label={title} trigger={trigger} closeOnBackdrop={mode === "edit"}>
+    <SlidePanel id={id} open={open} onClose={safeClose} label={title} trigger={trigger} closeOnBackdrop={mode === "edit"}>
       <h2 className="text-[18px] font-semibold text-erp-ink">
         {title}
         {mode === "edit" && (

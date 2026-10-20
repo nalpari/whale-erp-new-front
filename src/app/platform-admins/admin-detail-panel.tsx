@@ -160,8 +160,7 @@ function DetailBody({
       value: admin.updatedByName ? <DetailValues items={[formatDateTime(admin.updatedAt), admin.updatedByName]} /> : muted("수정한 적 없음"),
     },
   ];
-  if (admin.accountStatus === "INACTIVE" && admin.statusChangedAt)
-    rows.push({ label: "미사용 전환일시", value: formatDateTime(admin.statusChangedAt) });
+  // 미사용 전환일시는 상세에 더 보이지 않는다 — 누가 바꿨는지까지는 변경이력에 이미 쌓인다(2026-10-20 피드백).
 
   const who = <WhoList rows={[["아이디", admin.loginId], ["이름", name]]} />;
 

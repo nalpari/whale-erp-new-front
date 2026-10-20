@@ -32,8 +32,13 @@ const topPanel = () => {
   return panels[panels.length - 1];
 };
 
-/** 가장 위(가장 나중에 연) 패널이 closeOnBackdrop 을 켰을 때만 닫는다 — PanelBackdrop 클릭 핸들러 전용. */
+/**
+ * 가장 위(가장 나중에 연) 패널이 closeOnBackdrop 을 켰을 때만 닫는다 — PanelBackdrop 클릭 핸들러 전용.
+ * Esc 와 같은 data-dismiss-open 규칙을 따른다 — 안에 열린 자동완성 등의 층이 있으면 그 층만 닫히게 패널은
+ * 그대로 둔다(코드 리뷰로 찾음, 2026-10-20).
+ */
 function closeTopPanel() {
+  if (document.querySelector("[data-dismiss-open]")) return;
   const top = topPanel();
   if (top?.closable) top.close();
 }

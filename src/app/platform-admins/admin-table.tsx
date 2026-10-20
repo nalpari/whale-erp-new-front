@@ -32,7 +32,7 @@ function WithIcon({ icon, children }: { icon: keyof typeof ICON; children: React
     <span className="inline-flex max-w-full items-center gap-[6px]">
       <svg
         viewBox="0 0 24 24"
-        className="size-[13px] shrink-0 text-erp-label"
+        className="size-[17px] shrink-0 text-erp-label"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.5"
