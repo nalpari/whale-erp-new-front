@@ -5,7 +5,7 @@ import { createContext, use, useEffect, useRef, useState, type ReactNode } from 
 import { Button } from "@/components/common";
 import { logout } from "@/app/actions";
 import { bff, BffError, PASSWORD_REQUIRED_EVENT, signOut } from "@/lib/bff";
-import { BP_SWITCH_PATH, bpOfSwitchUrl, HOME, isAllowed, menuPermissionOf, menusOf, serviceOfPath, type MenuAction, type MenuCode } from "@/lib/menus";
+import { BP_SWITCH_PATH, bpOfSwitchUrl, HOME, isAllowed, menuOfPath, menuPermissionOf, menusOf, serviceOfPath, type MenuAction, type MenuCode } from "@/lib/menus";
 import { ForcePasswordDialog } from "./force-password-dialog";
 import {
   clearSelectedBp,
@@ -79,9 +79,20 @@ export function useMenuRole(menuCode: MenuCode, action: MenuAction) {
   const { menus, serviceCode } = useLogin();
   return menuPermissionOf(menus, serviceCode, menuCode, action);
 }
-/** 메뉴의 등록 · 수정 · 삭제 권한을 한 번에. 화면은 버튼을 보이거나 숨기기만 한다 — 막는 것은 api 다. */
+/** 메뉴 코드로 찾은 메뉴의 등록 · 수정 · 삭제 권한. 화면 자기 버튼은 usePagePermission 을 쓰고, 이 훅은 다른 메뉴의 버튼이나 아직 옮기지 않은 화면에만 쓴다. 막는 것은 api 다. */
 export function useMenuPermission(menuCode: MenuCode) {
   return { create: useMenuRole(menuCode, "create"), update: useMenuRole(menuCode, "update"), delete: useMenuRole(menuCode, "delete") };
+}
+/**
+ * 지금 화면(주소)의 메뉴 권한 — 메뉴 코드를 적지 않고 주소로 메뉴를 찾는다(menuOfPath, 화면이 열리는 판정과 같은 메뉴).
+ * 메뉴가 아닌 화면(홈 · 알림 템플릿)이면 모두 false. 다른 메뉴의 버튼이 섞이면 그 버튼만 메뉴 코드로 찾는다(useMenuRole · useMenuPermission).
+ * 조회(read)는 돌려주지 않는다 — menuOfPath 가 조회 권한이 있는 메뉴만 고르므로, 화면이 열렸으면 늘 참이다.
+ * 화면은 버튼을 보이거나 숨기기만 한다 — 막는 것은 api 다.
+ */
+export function usePagePermission() {
+  const { menus, serviceCode } = useLogin();
+  const permission = menuOfPath(menus, usePathname(), serviceCode)?.permission;
+  return { create: !!permission?.create, update: !!permission?.update, delete: !!permission?.delete };
 }
 
 const ALL: Scope = { type: "ALL" };

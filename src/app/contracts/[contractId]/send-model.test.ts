@@ -1,7 +1,8 @@
 // node --test "src/app/contracts/[contractId]/send-model.test.ts"
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { SEND_UNKNOWN, sendFailureOf } from "./send-model.ts";
+import { redirect, unstable_rethrow } from "next/navigation.js";
+import { callSave, SAVE_CALL_LOST, saveOutcomeUnknown, SEND_UNKNOWN, sendFailedTarget, sendFailureOf, sendNoticeOf } from "./send-model.ts";
 
 test("sendFailureOf — 접수 여부 모름은 보내기를 막고 상세를 다시 읽는다", () => {
   assert.deepEqual(sendFailureOf(502, "SEND_UNCONFIRMED", "알림톡이 접수됐는지 알 수 없습니다"), {
@@ -33,4 +34,60 @@ test("sendFailureOf — 나가지 않은 실패는 api 문장 그대로, 다시 
     [404, undefined],
   ] as const)
     assert.equal(sendFailureOf(status, code, "x").recheck, false);
+});
+
+test("sendFailedTarget — 저장 뒤 보내기가 실패한 502 만 그 계약 상세로 옮긴다", () => {
+  assert.equal(sendFailedTarget(502, { code: "SEND_FAILED", contractId: 7 }), "/contracts/7?send=failed");
+  assert.equal(sendFailedTarget(502, { code: "SEND_UNCONFIRMED", contractId: 7 }), "/contracts/7?send=unconfirmed");
+  for (const [status, body] of [
+    [409, { code: "SEND_FAILED", contractId: 7 }],
+    [502, { code: "OTHER", contractId: 7 }],
+    [502, { code: "SEND_FAILED" }],
+    [502, { code: "SEND_FAILED", contractId: "7/../../stores" }],
+    [502, { code: "SEND_FAILED", contractId: 0 }],
+    [502, null],
+  ] as const)
+    assert.equal(sendFailedTarget(status, body), null, JSON.stringify(body));
+});
+
+test("sendNoticeOf — 되돌아간 상태에 따라 다시 저장 · 재발송을 안내하고, 정해진 이름만 받는다", () => {
+  assert.match(sendNoticeOf("failed", "DRAFT") ?? "", /임시저장으로 두었습니다/);
+  assert.match(sendNoticeOf("failed", "PENDING_SEND") ?? "", /재발송해 주세요/);
+  assert.match(sendNoticeOf("unconfirmed", "PENDING_SEND") ?? "", /두 번 갈 수 있습니다/);
+  for (const raw of [undefined, "", "toString", ["failed"]]) assert.equal(sendNoticeOf(raw, "DRAFT"), null);
+});
+
+test("sendNoticeOf — 수정 요청으로 되돌아갔으면 재발송이 아니라 「수정」에서 다시 저장하라고 한다", () => {
+  const notice = sendNoticeOf("failed", "CORRECTION_REQUESTED") ?? "";
+  assert.match(notice, /「수정」에서 다시 저장/);
+  assert.doesNotMatch(notice, /재발송/);
+  assert.match(sendNoticeOf("unknown", "PENDING_SEND") ?? "", /결과를 받지 못했습니다/);
+});
+
+test("saveOutcomeUnknown — 응답 없음 · 코드 없는 502 · 504 만 결과 모름이다", () => {
+  assert.equal(saveOutcomeUnknown(null, undefined), true);
+  assert.equal(saveOutcomeUnknown(502, undefined), true);
+  assert.equal(saveOutcomeUnknown(504, undefined), true);
+  assert.equal(saveOutcomeUnknown(502, "SEND_FAILED"), false);
+  assert.equal(saveOutcomeUnknown(503, undefined), false);
+  assert.equal(saveOutcomeUnknown(409, undefined), false);
+});
+
+test("callSave — 성공 · 발송 실패의 redirect 는 다시 던져 원래 목적지로 가고, 호출이 끊긴 것만 결과 모름이다", async () => {
+  const redirected = (path: string) => {
+    try {
+      redirect(path);
+    } catch (e) {
+      return e;
+    }
+  };
+  // 저장 성공(목록 · 상세) · 보내기 실패(?send=failed) — redirect 오류 그대로
+  for (const path of ["/contracts", "/contracts/7", "/contracts/7?send=failed"]) {
+    const error = redirected(path);
+    await assert.rejects(callSave(() => Promise.reject(error), unstable_rethrow), (e) => e === error);
+  }
+  // 호출 자체가 끊김
+  assert.equal(await callSave(() => Promise.reject(new TypeError("fetch failed")), unstable_rethrow), SAVE_CALL_LOST);
+  // 돌아온 결과(실패 문장)는 그대로
+  assert.deepEqual(await callSave(() => Promise.resolve({ error: "x" }), unstable_rethrow), { error: "x" });
 });

@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Badge, Button, ConfirmDialog, DetailTable, Field, FormRow, Radio, TextField, useToast, type DetailRow } from "@/components/common";
-import { useMenuPermission } from "@/components/site/session-gate";
+import { usePagePermission } from "@/components/site/session-gate";
 import { CARD, FailedBand, FieldMessage } from "@/components/site/side-parts";
 import {
   afterConflict,
@@ -57,7 +57,7 @@ export function MenuSide({
   /** 등록 응답을 못 받았다(등록됐을 수도 있다) — 양식을 닫고 트리를 다시 받는다 */
   onCreateUnknown: (message: string) => void;
 }) {
-  const can = useMenuPermission(MENU_CODE.platformMenus);
+  const can = usePagePermission();
   const menu = !placement && detail && "menu" in detail ? detail.menu : null;
   return (
     <section className={`${CARD} w-[464px] shrink-0`} aria-label={placement ? "메뉴 등록" : can.update ? "메뉴 수정" : "메뉴 상세"}>

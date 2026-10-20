@@ -76,12 +76,14 @@ export function dataTable(columns, rows, empty = "데이터가 없습니다.") {
   return `<table class="w-full table-fixed border-collapse border-x border-erp-thead-line text-[14px]"><colgroup>${cols}</colgroup><thead><tr class="h-[42px] border-y border-erp-thead-line bg-erp-thead-bg">${head}</tr></thead><tbody class="text-erp-ink">${body}</tbody></table>`;
 }
 
-// detail-table.tsx. rows: [label, valueHtml]
+// detail-table.tsx. rows: [label, valueHtml, multiline?] — multiline 은 값이 여러 줄인 줄(주소 · 대표 이미지처럼)만
+// 46 을 최소로 내용만큼 늘린다(real DetailRow.multiline 과 같다).
 export function detailTable(title, rows) {
   const items = rows
-    .map(([label, value], i) => {
+    .map(([label, value, multiline], i) => {
       const last = i === rows.length - 1;
-      return `<div class="flex w-full"><dt class="flex h-[46px] w-[180px] shrink-0 items-center truncate border-b border-l border-erp-thead-line bg-white p-[12px] text-[14px] font-medium text-erp-label ${last ? "rounded-bl-[2px]" : ""}">${label}</dt><dd class="flex h-[46px] min-w-px flex-1 items-center gap-[10px] overflow-hidden border-r border-b border-erp-thead-line bg-white p-[12px] text-[14px] text-erp-ink ${last ? "rounded-br-[2px]" : ""}">${value}</dd></div>`;
+      const height = multiline ? "min-h-[46px]" : "h-[46px]";
+      return `<div class="flex w-full"><dt class="flex ${height} w-[180px] shrink-0 items-center truncate border-b border-l border-erp-thead-line bg-white p-[12px] text-[14px] font-medium text-erp-label ${last ? "rounded-bl-[2px]" : ""}">${label}</dt><dd class="flex ${height} min-w-px flex-1 items-center gap-[10px] overflow-hidden border-r border-b border-erp-thead-line bg-white p-[12px] text-[14px] text-erp-ink ${last ? "rounded-br-[2px]" : ""} ${multiline ? "leading-[1.6] break-keep" : ""}">${value}</dd></div>`;
     })
     .join("");
   return `<div class="w-full"><h3 class="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[16px] font-medium text-erp-ink">${title}</h3><dl class="flex w-full flex-col">${items}</dl></div>`;

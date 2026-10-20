@@ -3,8 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { Button, ListToolbar, Pagination, useToast } from "@/components/common";
-import { useMenuPermission } from "@/components/site/session-gate";
-import { MENU_CODE } from "@/lib/menus";
+import { usePagePermission } from "@/components/site/session-gate";
 import { ADMIN_PAGE_SIZE } from "@/lib/platform-admin-paging";
 import type { PlatformAdminDetail, PlatformAdminList, PlatformRoleGroup } from "@/lib/platform-admins";
 import { AdminDetailPanel } from "./admin-detail-panel";
@@ -28,8 +27,8 @@ export function AdminsScreen({
 }) {
   const router = useRouter();
   const toast = useToast();
-  // 버튼을 보이거나 숨기는 메뉴 권한(로그인 정보) — 막는 것은 api 다. 수정 · 초기화는 update, 삭제는 delete(상세 패널).
-  const can = useMenuPermission(MENU_CODE.platformAdmins);
+  // 이 화면(지금 주소 /platform-admins)의 메뉴 권한으로 버튼을 보이거나 숨긴다 — 막는 것은 api 다. 수정 · 초기화는 update, 삭제는 delete(상세 패널).
+  const can = usePagePermission();
   // 등록 · 수정 패널은 열 때마다 칸을 새로 채운다(admin-form-panel.tsx) — 다시 마운트하지 않아야 밀려 나오는 전환이 산다
   const [newOpen, setNewOpen] = useState(false);
   /** 수정 중인 계정 — 열림 · 닫힘이 아니라 어느 계정인지를 쥐어, 주소 · 상세가 바뀌면 수정 패널이 저절로 닫힌 것이 된다 */

@@ -5,9 +5,8 @@ import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { Button, Checkbox, ConfirmDialog, useToast } from "@/components/common";
 import { CodeLabel } from "@/components/site/code-label";
 import { ServiceTabs } from "@/components/site/service-tabs";
-import { useMenuPermission } from "@/components/site/session-gate";
+import { usePagePermission } from "@/components/site/session-gate";
 import { labelOf, type EnumValue } from "@/lib/enums";
-import { MENU_CODE } from "@/lib/menus";
 import type { RevocationPreview, RoleGroup, RoleGroupMenuNode, RoleGroupMenuTree } from "@/lib/platform-role-groups";
 import { aggregate, blockedReasonsOf, changedMenus, editableOf, hasRevocation, initialValues, OPS, toggle, toggleAll, type Op, type Values } from "@/lib/role-menu-grid";
 import { getRoleGroupMenusAction, previewRoleGroupMenusAction, saveRoleGroupMenusAction } from "./actions";
@@ -57,7 +56,7 @@ export function RoleMenuDialog({ role, reasons, onClose }: { role: RoleGroup | n
 function MenuBody({ role, reasons, onClose }: { role: RoleGroup; reasons: EnumValue[]; onClose: () => void }) {
   const router = useRouter();
   const toast = useToast();
-  const can = useMenuPermission(MENU_CODE.platformRoles);
+  const can = usePagePermission();
   const [tree, setTree] = useState<RoleGroupMenuTree | null>(null);
   const [initial, setInitial] = useState<Values>({});
   const [values, setValues] = useState<Values>({});

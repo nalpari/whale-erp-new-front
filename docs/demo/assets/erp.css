@@ -604,6 +604,9 @@
   .mr-\[4px\] {
     margin-right: 4px;
   }
+  .mr-\[10px\] {
+    margin-right: 10px;
+  }
   .-mb-px {
     margin-bottom: -1px;
   }
@@ -645,6 +648,12 @@
   }
   .box-content {
     box-sizing: content-box;
+  }
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
   .block {
     display: block;
@@ -716,10 +725,6 @@
     width: 20px;
     height: 20px;
   }
-  .size-\[22px\] {
-    width: 22px;
-    height: 22px;
-  }
   .size-\[24px\] {
     width: 24px;
     height: 24px;
@@ -751,6 +756,10 @@
   .size-\[64px\] {
     width: 64px;
     height: 64px;
+  }
+  .size-\[72px\] {
+    width: 72px;
+    height: 72px;
   }
   .size-\[120px\] {
     width: 120px;
@@ -912,9 +921,6 @@
   }
   .h-\[150px\] {
     height: 150px;
-  }
-  .h-\[184px\] {
-    height: 184px;
   }
   .h-\[194px\] {
     height: 194px;
@@ -1204,9 +1210,6 @@
   .w-\[180px\] {
     width: 180px;
   }
-  .w-\[184px\] {
-    width: 184px;
-  }
   .w-\[188px\] {
     width: 188px;
   }
@@ -1248,6 +1251,9 @@
   }
   .w-\[304px\] {
     width: 304px;
+  }
+  .w-\[312px\] {
+    width: 312px;
   }
   .w-\[320px\] {
     width: 320px;
@@ -1345,6 +1351,9 @@
   .min-w-\[120px\] {
     min-width: 120px;
   }
+  .min-w-\[140px\] {
+    min-width: 140px;
+  }
   .min-w-\[190px\] {
     min-width: 190px;
   }
@@ -1440,9 +1449,6 @@
   }
   .animate-\[guest-fade_220ms_ease\] {
     animation: guest-fade 220ms ease;
-  }
-  .cursor-default {
-    cursor: default;
   }
   .cursor-grab {
     cursor: grab;
@@ -2169,9 +2175,6 @@
   }
   .p-\[6px\]\! {
     padding: 6px !important;
-  }
-  .p-\[8px\] {
-    padding: 8px;
   }
   .p-\[10px\] {
     padding: 10px;
@@ -3162,15 +3165,6 @@
   }
   .group-focus-visible\:opacity-100:is(:where(.group):focus-visible *) {
     opacity: 100%;
-  }
-  .group-has-\[\:checked\]\:border-erp-panel-line:is(:where(.group):has(:is(:checked)) *) {
-    border-color: var(--color-erp-panel-line);
-  }
-  .group-has-\[\:checked\]\:bg-white:is(:where(.group):has(:is(:checked)) *) {
-    background-color: var(--color-white);
-  }
-  .group-has-\[\:checked\]\:text-erp-ink:is(:where(.group):has(:is(:checked)) *) {
-    color: var(--color-erp-ink);
   }
   .group-aria-selected\:inline:is(:where(.group)[aria-selected="true"] *) {
     display: inline;

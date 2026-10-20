@@ -48,7 +48,7 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
     [
       { header: "일시", width: "w-[170px]" },
       { header: "처리자", width: "w-[130px]" },
-      { header: "항목", width: "w-[160px]" },
+      { header: "항목", width: "w-[160px]", align: "left" },
       { header: "변경 전", align: "left" },
       { header: "변경 후", align: "left" },
     ],

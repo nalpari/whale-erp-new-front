@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button, DetailTable, DetailValues, Field, Tag, Textarea, TextField, useToast, type DetailRow } from "@/components/common";
 import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
-import { useMenuPermission } from "@/components/site/session-gate";
+import { usePagePermission } from "@/components/site/session-gate";
 import type { EnumValue } from "@/lib/enums";
 import {
   afterConflict,
@@ -20,7 +20,6 @@ import {
   type RoleFormValues,
 } from "@/lib/role-form-sync";
 import { formatDateTime } from "@/lib/format";
-import { MENU_CODE } from "@/lib/menus";
 import type { RoleGroupDetail } from "@/lib/platform-role-groups";
 import { createRoleGroupAction, updateRoleGroupAction } from "./actions";
 import { RoleDeleteDialog } from "./role-delete-dialog";
@@ -75,7 +74,7 @@ export function RoleSide({
 }
 
 function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; lockReasons: EnumValue[]; onDeleted: () => void }) {
-  const can = useMenuPermission(MENU_CODE.platformRoles);
+  const can = usePagePermission();
   const editable = can.update && role.isEditable;
   const muted = (text: string) => <span className="text-erp-muted">{text}</span>;
   const rows: DetailRow[] = [

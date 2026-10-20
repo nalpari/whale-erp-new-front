@@ -4,9 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Badge, Button, DataTable, type Column } from "@/components/common";
 import { CodeLabel } from "@/components/site/code-label";
-import { useMenuPermission } from "@/components/site/session-gate";
+import { usePagePermission } from "@/components/site/session-gate";
 import type { EnumValue } from "@/lib/enums";
-import { MENU_CODE } from "@/lib/menus";
 import type { RoleGroup } from "@/lib/platform-role-groups";
 import { RoleMenuDialog } from "./role-menu-dialog";
 import { CARD, PATH, WhenWho, type RoleDetailState } from "./role-parts";
@@ -14,7 +13,7 @@ import { RoleSide } from "./role-side";
 
 // 왼쪽 권한 목록 + 오른쪽 고정 칸(데모 system/roles · role-side). 오른쪽 칸은 슬라이드 패널이 아니라 늘 서 있다.
 // 권한명을 누르면 오른쪽에 그 권한의 수정(고칠 수 없으면 상세)이, [등록]을 누르면 같은 칸에 등록 양식이 선다.
-// 버튼은 메뉴 MN000214 의 권한(로그인 정보)으로 보인다 — 등록 create, 권한명 · 설명 · 메뉴 저장 update, 삭제 delete. 막는 것은 api 다.
+// 버튼은 지금 주소(/platform-role-groups)의 메뉴 권한(usePagePermission)으로 보인다 — 등록 create, 권한명 · 설명 · 메뉴 저장 update, 삭제 delete. 막는 것은 api 다.
 export function RolesScreen({
   roles,
   selected,
@@ -29,7 +28,7 @@ export function RolesScreen({
   menuReasons: EnumValue[];
 }) {
   const router = useRouter();
-  const can = useMenuPermission(MENU_CODE.platformRoles);
+  const can = usePagePermission();
   const [creating, setCreating] = useState(false);
   const [menuFor, setMenuFor] = useState<RoleGroup | null>(null);
 

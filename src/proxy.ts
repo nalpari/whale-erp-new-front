@@ -14,7 +14,7 @@ import {
 // - 공개 경로가 아닌데 세션이 없으면 /login
 // - 접근 토큰을 받은 지 10분이 지났으면(만료 50분 전부터) 갱신해 쿠키를 다시 쓴다. 갱신이 401 이면 /login, 그 밖의 실패는 토큰이 남아 있는 동안 현재 쿠키로 계속
 // - BP·가맹 계정이 플랫폼 화면에 오는 것은 주소가 아니라 SessionGate 가 탭 서비스의 메뉴로 막는다. 플랫폼 계정은 ERP 에도 들어간다(F-TLJOCK)
-// - 로그인한 채 /login 에 오면 자기 홈
+// - 로그인한 채 /login · /find 에 오면 자기 홈
 // 정책은 「갱신 토큰은 마지막 사용부터 1시간」(쓰는 동안은 끊기지 않는다). api 세션은 갱신할 때만 연장되므로,
 // 만료 직전에만 갱신하면 계속 쓰던 사람도 1시간마다 끊긴다. 일찍 갱신해 마지막 요청부터 50~60분 동안 유지한다.
 // 알려진 한계: 마지막 갱신 뒤 50분 넘게 서버 액션만 보내면 갱신이 없어 60분에 로그아웃된다(지금은 감수).
@@ -25,7 +25,7 @@ export async function proxy(req: NextRequest) {
   let session = parseSession(req.cookies.get(SESSION_COOKIE)?.value);
 
   if (isPublicPath(pathname)) {
-    if (pathname === "/login" && req.method === "GET" && session) return NextResponse.redirect(new URL(homeOf(session.roleTypeCode), req.url));
+    if ((pathname === "/login" || pathname === "/find") && req.method === "GET" && session) return NextResponse.redirect(new URL(homeOf(session.roleTypeCode), req.url));
     return NextResponse.next();
   }
   if (!session) return toLogin(req);

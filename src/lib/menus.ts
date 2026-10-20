@@ -2,8 +2,12 @@
 import type { ServiceCode } from "./browser-storage";
 import type { AdminMenu } from "./session";
 
-/** 화면이 권한을 묻는 메뉴 코드(api 메뉴 시드). 업무 API 도 이 코드로 메뉴 권한을 판정한다. */
-export const MENU_CODE = { platformAdmins: "MN000213", platformRoles: "MN000214", platformMenus: "MN000215", platformCodes: "MN000216", stores: "MN000002", staffMembers: "MN000005", todos: "MN000026" } as const;
+/**
+ * 코드로 직접 찾는 메뉴(api 메뉴 시드 — 업무 API 도 이 코드로 메뉴 권한을 판정한다). 화면 자기 버튼의 권한은 코드 없이 주소로 찾는다(usePagePermission).
+ * 여기 남는 것: 아직 usePagePermission 으로 옮기지 않은 화면(staffMembers · todos), 다른 메뉴의 권한을 보는 버튼(직원 상세의 TO-DO 링크 → todos),
+ * 권한이 아닌 용도(메뉴 관리의 자기 잠금 확인 → platformMenus).
+ */
+export const MENU_CODE = { platformMenus: "MN000215", staffMembers: "MN000005", todos: "MN000026" } as const;
 export type MenuCode = (typeof MENU_CODE)[keyof typeof MENU_CODE];
 export type MenuAction = keyof AdminMenu["permission"];
 
@@ -64,15 +68,33 @@ export function serviceOfPath(menus: AdminMenu[], pathname: string): ServiceCode
 }
 
 /**
- * 이 탭(서비스)에서 이 주소를 열 수 있는가. 그 서비스의 홈이거나, 그 서비스에서 조회 권한이 있는 메뉴의 주소 또는 그 아래(상세·등록 등)면 연다.
+ * 이 탭(서비스)에서 이 주소를 열 수 있는가 — 그 서비스의 홈, 임시 플랫폼 메뉴(PENDING_PLATFORM_MENU), 또는 menuOfPath 가 메뉴를 찾는 주소.
  * 다른 서비스의 화면은 권한이 있어도 열지 않는다 — 플랫폼 탭에서 ERP 주소를 치면 BP 없이 ERP 화면이 열리게 된다.
  * 하위 메뉴로 가는 길로만 들어온 상위 메뉴는 조회 권한이 false 라, 그 url 아래의 권한 없는 화면을 열어 주지 않는다(2026-10-14).
- * 헤더는 2단계까지 그리지만 판정은 3단계까지 본다.
+ * 헤더는 2단계까지 그리지만 판정은 모든 깊이(메뉴는 최대 3단계)를 본다.
  */
 export function isAllowed(menus: AdminMenu[], pathname: string, service: ServiceCode): boolean {
   if (pathname === HOME[service]) return true;
   if (service === "PLATFORM" && isUnder(pathname, PENDING_PLATFORM_MENU.url)) return true;
-  return !!findMenu(menusOf(menus, service), (m) => m.permission.read && !!m.url && isUnder(pathname, m.url));
+  return menuOfPath(menus, pathname, service) !== null;
+}
+
+/**
+ * 이 주소가 어느 메뉴의 화면인가 — 이 탭 서비스에서 조회 권한이 있고, 주소가 그 url 이거나 그 아래(상세 · 등록 등)인 메뉴.
+ * 여럿이 맞으면 url 이 가장 긴(가장 구체적인) 메뉴다 — 같은 url 은 api 가 사용 중 메뉴끼리 막는다(생기면 트리 앞쪽 메뉴).
+ * 홈 · 알림 템플릿(메뉴 행 없음)처럼 메뉴가 아닌 화면이면 null.
+ * 화면이 열리는 판정(isAllowed)과 그 화면 버튼의 권한(usePagePermission)이 이 함수 하나를 본다.
+ */
+export function menuOfPath(menus: AdminMenu[], pathname: string, service: ServiceCode): AdminMenu | null {
+  let found: AdminMenu | null = null;
+  const walk = (list: AdminMenu[]) => {
+    for (const m of list) {
+      if (m.permission.read && m.url && isUnder(pathname, m.url) && (!found?.url || m.url.length > found.url.length)) found = m;
+      walk(m.children);
+    }
+  };
+  walk(menusOf(menus, service));
+  return found;
 }
 
 /**

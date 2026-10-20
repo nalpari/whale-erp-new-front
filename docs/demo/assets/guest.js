@@ -54,26 +54,24 @@
     });
   }
 
-  // 아이디/비밀번호 찾기: 탭을 바꾸면 그 탭의 칸만 보이고 입력값과 남은 시간을 비운다. 주소 #id · #pw 로 탭을 연다.
+  // 아이디/비밀번호 찾기: 탭을 바꾸면 그 탭의 칸만 보이고 입력값과 결과를 비운다. 주소 #id · #pw 로 탭을 연다.
+  // 데모라 요청은 보내지 않는다. 칸을 채워 제출하면 그 탭의 결과 안내를 보인다.
   const tabs = $$("[data-find-tab]");
   if (tabs.length) {
     const form = document.querySelector("[data-find-form]");
-    const timerText = form.querySelector("[data-timer]");
-    let left = null;
-    let timer;
-    const showTime = () => {
-      timerText.hidden = left === null;
-      if (left === null) return;
-      const mm = String(Math.floor(left / 60)).padStart(2, "0");
-      const ss = String(left % 60).padStart(2, "0");
-      timerText.textContent = left > 0 ? `남은 시간 ${mm}:${ss}` : "인증 시간이 지났습니다. 인증번호를 다시 받아 주세요.";
-    };
-    const stop = () => {
-      clearInterval(timer);
-      left = null;
-      showTime();
+    const submit = form.querySelector("[data-find-submit]");
+    const toPassword = form.querySelector("[data-find-to-password]");
+    let current = "id";
+    const showResult = (key) => {
+      form.querySelector("[data-find-fields]").hidden = Boolean(key);
+      submit.hidden = Boolean(key);
+      form.querySelector("[data-find-actions]").classList.toggle("grid-cols-3", !key);
+      form.querySelector("[data-find-actions]").classList.toggle("grid-cols-2", Boolean(key));
+      for (const el of $$("[data-find-result]", form)) el.hidden = el.dataset.findResult !== key;
+      toPassword.hidden = key !== "id";
     };
     const select = (key) => {
+      current = key;
       for (const t of tabs) {
         const on = t.dataset.findTab === key;
         // 클릭 때는 erp.js 가 data-on · data-off 로 이미 바꿔 두어 여기서 바뀌는 것이 없다. 주소 #pw 로 처음 열 때
@@ -86,21 +84,16 @@
         el.hidden = el.dataset.findOnly !== key;
         el.querySelector("input").disabled = el.hidden;
       }
-      form.querySelector("[data-find-submit]").textContent = key === "id" ? "아이디 확인" : "비밀번호 재설정";
-      stop();
+      submit.textContent = key === "id" ? "아이디 확인" : "임시 비밀번호 받기";
+      showResult(null);
     };
     for (const t of tabs) t.addEventListener("click", () => select(t.dataset.findTab));
-    form.querySelector("[data-send-code]").addEventListener("click", () => {
-      clearInterval(timer);
-      left = 180; // 인증번호 유효 시간 3분
-      showTime();
-      timer = setInterval(() => {
-        left -= 1;
-        showTime();
-        if (left <= 0) clearInterval(timer);
-      }, 1000);
+    // 「비밀번호도 잊으셨나요?」는 비밀번호 탭 버튼을 누른 것과 같다(탭 줄 색은 erp.js 가 클릭으로 바꾼다).
+    toPassword.addEventListener("click", () => tabs.find((t) => t.dataset.findTab === "password").click());
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      showResult(current);
     });
-    form.addEventListener("submit", (e) => e.preventDefault());
     select(location.hash === "#pw" ? "password" : "id");
   }
 
