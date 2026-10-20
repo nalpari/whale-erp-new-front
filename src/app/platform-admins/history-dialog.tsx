@@ -16,7 +16,7 @@ const empty = (v: string | null) => (v ? v : <span className="text-erp-muted">�
 const COLUMNS: Column<PlatformAdminHistory>[] = [
   { header: "일시", width: "w-[150px]", cell: (h) => formatDateTime(h.changedAt) },
   { header: "처리자", width: "w-[110px]", cell: (h) => h.changedByName ?? <span className="text-erp-muted">시스템</span> },
-  { header: "항목", width: "w-[120px]", cell: (h) => h.field },
+  { header: "항목", width: "w-[120px]", align: "left", cell: (h) => h.field },
   { header: "변경 전", align: "left", cell: (h) => empty(h.beforeValue) },
   { header: "변경 후", align: "left", cell: (h) => empty(h.afterValue) },
 ];
