@@ -7,7 +7,8 @@ import { platformAdminNewPanel } from "../../platform-admin/new.mjs";
 import { platformAdminDetailPanel } from "../../platform-admin/detail.mjs";
 import { platformAdminEditPanel } from "../../platform-admin/edit.mjs";
 
-// 아이디·이름은 상세를 슬라이드 패널로 연다(표본 상세는 platpark 하나라 모든 줄이 그 상세를 연다)
+// 이름만 눌러 상세를 슬라이드 패널로 연다(표본 상세는 platpark 하나라 모든 줄이 그 상세를 연다).
+// 아이디는 누를 수 없다 — 하이퍼링크를 떼고 기본 글자색으로 둔다(코드 리뷰 반영, 2026-10-20).
 const detailTrigger = (text) => `<button type="button" aria-controls="platform-admin-detail-panel" aria-expanded="false" class="text-erp-link hover:underline">${text}</button>`;
 
 // 미사용 계정 줄은 흐리게(목업 is-read). 행 단위 클래스를 받지 않는 dataTable 결과에서 n 번째 줄에 글자색을 얹는다.
@@ -52,7 +53,7 @@ export default ({ A, R }) => {
     { header: "등록일시", width: "w-[170px]" },
   ];
   const rows = ADMINS.map(([id, name, role, state, phone, mail, login, reg]) => [
-    detailTrigger(id),
+    id,
     detailTrigger(name),
     role,
     ui.badge(state === "사용" ? "on" : "off", state),

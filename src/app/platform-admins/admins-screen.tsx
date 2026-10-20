@@ -84,7 +84,6 @@ export function AdminsScreen({
       <AdminFilter query={query} roleGroups={roleGroups} onApply={(next) => go({ ...next, page: 1, admin: undefined })} />
       <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>*]:shrink-0">
         <ListToolbar total={list.total}>
-          {list.inactiveCount > 0 && <p className="pr-[6px] text-[14px] text-erp-label">미사용 {list.inactiveCount.toLocaleString("ko-KR")}</p>}
           {can.create && (
             <Button ref={newTrigger} aria-controls="platform-admin-new-panel" aria-expanded={newOpen} onClick={() => setNewOpen(true)}>
               등록
