@@ -167,10 +167,12 @@ export function AdminFormPanel(props: Props) {
     if (formatError) {
       setErrors((e) => ({ ...e, email: formatError }));
       setEmailValid(false);
-    } else {
-      clearError("email");
-      setEmailValid(true);
+      return;
     }
+    // 형식은 맞지만 이미 다른 오류(저장할 때 서버가 돌려준 중복 등)가 달려 있으면 그대로 둔다 — 고치지 않고
+    // 칸만 다시 벗어나는 것으로 그 안내가 사라지면 안 된다(고치면 onChange 가 먼저 지운다).
+    if (errors.email) return;
+    setEmailValid(true);
   };
 
   // 수정할 계정이 지금 권한 목록에 없으면(플랫폼 관리자가 보는 마스터 등) 그 권한도 선택지에 남겨 값이 비지 않게 한다
