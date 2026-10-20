@@ -1,9 +1,6 @@
 import type { ReactNode } from "react";
 import { GuestPage, GuestVisual, TRIM } from "../guest-ui";
 
-// Figma 「아이디/비밀번호 찾기」(8QSOuwFFBfCbFWR6RBUlps · 1:1811). 로그인 화면과 같은 틀에 오른쪽 폼만 다르다.
-// 실제 찾기((site)/find)와 디자인 샘플이 이 틀을 함께 쓰고, 폼과 그림 아래 문구만 각자 넣는다 —
-// 둘 다 시안의 휴대폰 인증 대신 정책대로 이름·이메일이고, 샘플은 요청을 보내지 않는다(okf/auth.md 계정 찾기).
 // 제목 줄. 안내 문구가 고른 탭에 따라 달라 폼(클라이언트)이 그린다.
 export function FindAccountHeading({ lead }: { lead: string }) {
   return (
@@ -14,6 +11,9 @@ export function FindAccountHeading({ lead }: { lead: string }) {
   );
 }
 
+// Figma 「아이디/비밀번호 찾기」(8QSOuwFFBfCbFWR6RBUlps · 1:1811). 로그인 화면과 같은 틀에 오른쪽 폼만 다르다.
+// 실제 찾기((site)/find)와 디자인 샘플이 이 틀을 함께 쓰고, 폼과 그림 아래 문구만 각자 넣는다 — 둘 다 시안의 휴대폰 인증 대신
+// 정책대로 이름 · 이메일(비밀번호는 아이디까지)이고, 샘플은 요청을 보내지 않는다(okf/auth.md 계정 찾기).
 export function GuestFindAccount({ lead, children }: { lead: ReactNode; children: ReactNode }) {
   return (
     <GuestPage flush>

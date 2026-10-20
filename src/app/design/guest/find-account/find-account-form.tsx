@@ -6,7 +6,8 @@ import { INPUT, INPUT_BOX, LABEL, SUBMIT } from "../guest-form";
 import { HOVER } from "../theme";
 import { FindAccountHeading } from "./find-account-screen";
 
-// 실제 찾기 화면((site)/find/find-form.tsx)과 같은 UI 다 — 칸은 시안의 휴대폰 인증 대신 정책대로 이름 · 이메일(비밀번호는 아이디까지).
+// 실제 찾기 화면((site)/find/find-form.tsx)과 같은 모양이다 — 해시로 탭 고르기 · 키보드 탭 이동 · 오류 안내는 없다.
+// 칸은 시안의 휴대폰 인증 대신 정책대로 이름 · 이메일(비밀번호는 아이디까지).
 // 디자인 샘플이라 요청은 보내지 않는다. 칸을 채워 제출하면 그 탭의 예시 결과만 보인다.
 const TABS = [
   { key: "id", label: "ID 찾기", submit: "아이디 확인", lead: "회원가입 시 등록한 이름, 이메일 주소를 입력해 주세요." },

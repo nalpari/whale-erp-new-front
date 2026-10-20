@@ -162,7 +162,7 @@ function PasswordPanel() {
   const [state, action, pending] = useActionState<TemporaryPasswordState, FormData>(issueTemporaryPassword, {});
   const [filled, handleInput] = useFilled();
 
-  // 응답이 10초를 넘겨도 이 안내가 뜬다. 지금 api 는 일치하지 않거나 메일이 나가지 않아도 202 라 그때도 뜬다(api 변경 요청 중).
+  // 응답이 10초를 넘겨도 이 안내가 뜬다. api #77 머지 전에는 일치하지 않거나 메일이 나가지 않아도 202 라 그때도 뜬다.
   if (state.sent)
     return (
       <div className="flex flex-col gap-[24px]">

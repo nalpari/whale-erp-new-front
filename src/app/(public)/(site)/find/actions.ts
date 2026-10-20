@@ -38,8 +38,8 @@ export async function findLoginId(_prev: FindLoginIdState, formData: FormData): 
 }
 
 /**
- * 임시 비밀번호 발급(S-EOMSRG). 일치하지 않으면 아이디 찾기처럼 일치 없음을 안내한다(2026-10-20 재영) — api 가 404 를 주면.
- * 지금 api 는 일치 여부 · 메일 발송 여부와 상관없이 202 라 늘 발송 안내다(api 변경 요청 중). 실패 판정은 find-failure.ts 의 temporaryPasswordOutcome.
+ * 임시 비밀번호 발급(S-EOMSRG). 일치하지 않으면 아이디 찾기처럼 일치 없음(404)을, 메일 발송 중 오류(503)면 메일이 오지 않을 때 다시 받으라고 안내한다
+ * (2026-10-20 재영). api #77 머지 전에는 일치 여부 · 메일 발송 여부와 상관없이 202 라 늘 발송 안내다. 실패 판정은 find-failure.ts 의 temporaryPasswordOutcome.
  */
 export async function issueTemporaryPassword(_prev: TemporaryPasswordState, formData: FormData): Promise<TemporaryPasswordState> {
   const name = String(formData.get("name") ?? "").trim();
