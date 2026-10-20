@@ -54,7 +54,7 @@ h2{font-family:var(--sans);font-size:20px;font-weight:600;letter-spacing:-.4px;m
 <div class="diagram">
 <svg viewBox="0 0 1328 1224" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="erd-account-title erd-account-desc" style="min-width:1328px">
 <title id="erd-account-title">계정과 접속</title>
-<desc id="erd-account-desc">계정과 접속 논리 ERD. 엔티티 10개와 관계 9개를 보여 준다: 본인인증 이력, 접속 상태, 계정, 계정 변경 이력, 로그인 이력, 비밀번호 재설정 핀, 위치정보 확인자료, 관리자 계정, 비밀번호 재설정 링크, 이메일 찾기 시도.</desc>
+<desc id="erd-account-desc">계정과 접속 논리 ERD. 엔티티 11개와 관계 10개를 보여 준다: 본인인증 이력, 접속 상태, 계정, 계정 변경 이력, 로그인 이력, 비밀번호 재설정 핀, 위치정보 확인자료, 관리자 계정, 비밀번호 재설정 링크, 이메일 찾기 시도, 이메일 변경 핀.</desc>
 <rect width="100%" height="100%" fill="#ffffff"/>
 <path d="M 376,120 L 280,120" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 376,300 L 336,300 Q 328,300 328,308 L 328,384 Q 328,392 320,392 L 280,392" fill="none" stroke="#60646c" stroke-width="1"/>
@@ -65,6 +65,7 @@ h2{font-family:var(--sans);font-size:20px;font-weight:600;letter-spacing:-.4px;m
 <path d="M 280,604 L 376,604" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 616,280 L 648,280 Q 656,280 656,288 L 656,932 Q 656,940 664,940 L 712,940" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 200,692 L 200,1052 Q 200,1060 208,1060 L 712,1060" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 616,260 L 992,260 Q 1000,260 1000,268 L 1000,412 Q 1000,420 1008,420 L 1048,420" fill="none" stroke="#60646c" stroke-width="1"/>
 <g id="ent-identity">
 <rect x="40" y="40" width="240" height="192" rx="6" fill="#ffffff"/>
 <rect x="40" y="40" width="240" height="192" rx="6" fill="rgba(23,23,23,0.02)" stroke="rgba(23,23,23,0.32)" stroke-width="1" stroke-dasharray="4,3"/>
@@ -302,6 +303,32 @@ h2{font-family:var(--sans);font-size:20px;font-weight:600;letter-spacing:-.4px;m
 <text x="1064" y="216" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">시도 시각</text>
 <text x="1272" y="216" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">datetime</text>
 </g>
+<g id="ent-email_pin">
+<rect x="1048" y="380" width="240" height="232" rx="6" fill="#ffffff"/>
+<rect x="1048" y="380" width="240" height="232" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
+<rect x="1049" y="381" width="238" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
+<line x1="1048" y1="432" x2="1288" y2="432" stroke="#171717" stroke-opacity="0.35" stroke-width="1"/>
+<text x="1064" y="400" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">ENTITY · email_change_pins</text>
+<text x="1064" y="420" fill="#171717" font-size="16" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">이메일 변경 핀</text>
+<text x="1064" y="456" fill="#8145b5" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">#</text>
+<text x="1078" y="456" fill="#171717" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">핀 ID</text>
+<text x="1272" y="456" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+<text x="1064" y="476" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="1078" y="476" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">계정</text>
+<text x="1272" y="476" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+<text x="1064" y="496" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">새 이메일</text>
+<text x="1272" y="496" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+<text x="1064" y="516" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">핀 검증값</text>
+<text x="1272" y="516" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">hash</text>
+<text x="1064" y="536" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">발급 시각</text>
+<text x="1272" y="536" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">datetime</text>
+<text x="1064" y="556" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">만료 시각</text>
+<text x="1272" y="556" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">datetime</text>
+<text x="1064" y="576" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">시도 횟수</text>
+<text x="1272" y="576" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">int</text>
+<text x="1064" y="596" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">사용 시각</text>
+<text x="1272" y="596" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">datetime</text>
+</g>
 <rect x="354" y="104" width="16" height="12" rx="2" fill="#ffffff"/>
 <text x="362" y="114" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
 <rect x="286" y="104" width="16" height="12" rx="2" fill="#ffffff"/>
@@ -342,6 +369,10 @@ h2{font-family:var(--sans);font-size:20px;font-weight:600;letter-spacing:-.4px;m
 <text x="698" y="1054" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
 <rect x="424" y="1068" width="64" height="16" rx="2" fill="#ffffff"/>
 <text x="456" y="1080" fill="#60646c" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="500" text-anchor="middle">링크 발급</text>
+<rect x="622" y="244" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="630" y="254" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
+<rect x="1026" y="404" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="1034" y="414" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
 <line x1="40" y1="1160" x2="1288" y2="1160" stroke="#dcdee0" stroke-width="0.8"/>
 <text x="40" y="1180" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.18em">LEGEND</text>
 <rect x="40" y="1196" width="16" height="12" rx="2" fill="rgba(129,69,181,0.04)" stroke="#8145b5"/>
