@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-19T08:30:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-20T13:30:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -44,8 +44,8 @@ sources:
     last_modified: 2026-10-19T05:30:00Z
   - id: contract-box
     resource: ../../src/app/staff-members/[id]/contract-box.tsx
-    title: 상세 근로계약 칸 — 계약 상세를 따로 받고 실패하면 이 칸만 안내 · 다시 하기(WHALEERP-184)
-    last_modified: 2026-10-19T07:10:00Z
+    title: 상세 근로계약 칸 — 계약 상세를 따로 받고 실패하면 이 칸만 안내 · 다시 하기(WHALEERP-184). 줄 라벨 칸은 DetailTable 과 같은 폭(110px)을 옮겨 쓴다.
+    last_modified: 2026-10-20T13:19:24Z
   - id: contract-summary
     resource: ../../src/app/staff-members/[id]/contract-summary.ts
     title: 근로계약 칸 줄 · 갱신 예정일 · 실패 표시 판정
