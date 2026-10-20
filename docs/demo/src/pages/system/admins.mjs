@@ -47,7 +47,7 @@ export default ({ A, R }) => {
     { header: "이름", width: "w-[110px]" },
     { header: "사용자 권한", width: "w-[140px]" },
     { header: "계정 상태", width: "w-[100px]" },
-    { header: "연락처", width: "w-[150px]" },
+    { header: "연락처", width: "w-[150px]", align: "left" },
     { header: "이메일", width: "w-[220px]", align: "left" },
     { header: "최근 로그인", width: "w-[170px]" },
     { header: "등록일시", width: "w-[170px]" },
