@@ -160,18 +160,18 @@
                   <span class="badge badge--quiet">12</span>
                 </div>
                 <ul class="pol">
-                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 노출 대상은 비회원·회원·BP·점포·부가서비스 다섯이고 <b>여러 개를 함께</b> 고른다. 개별 BP·점포는 집지 않고, 부가서비스만 상품별이다. <b>1차에는 부가서비스가 없어</b> 비회원·회원·BP·점포 넷만 고른다(2026-10-12 재영).</span><span class="pol__ref">S-GRDOPW · SUPPORT-2</span></li>
-                <li><span class="pol__t"><b>비회원</b>이 들면 로그인 전 홈에도 서고, 그 외 대상은 해당 사용자의 고객지원에만 선다. 전체는 비회원·회원·BP·점포 넷이다(부가서비스는 넣지 않는다, 2026-10-12 재영).</span><span class="pol__ref">S-GRDOPW</span></li>
+                <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 노출 대상은 비회원·회원·BP·점포 <b>넷</b>이고 <b>여러 개를 함께</b> 고른다. 개별 BP·점포는 집지 않는다. 부가서비스 대상은 1차에 쓰지 않는다(2026-10-12 재영 · #273).</span><span class="pol__ref">S-GRDOPW · SUPPORT-2</span></li>
+                <li><span class="pol__t"><b>비회원</b>을 고르면 로그인 전 홈에도 서고, 그 외 대상은 해당 사용자의 고객지원에만 선다. 「전체」 선택은 따로 없고 넷을 모두 고르면 전체다. 공지와 FAQ 편집 둘 다 비회원 공개를 알린다.</span><span class="pol__ref">S-GRDOPW · WHALEERP-276</span></li>
                 <li><span class="pol__t">상태는 임시저장·게시·비공개 셋이다. 지운 것은 복구할 수 있게 <b>무기한</b> 보관하고 사용자 화면에서만 감춘다.</span><span class="pol__ref">S-GRDOPW</span></li>
                 <li><span class="pol__t">게시된 글을 고치면 즉시 대상 사용자에게 반영된다. 둘이 동시에 고치면 덮어쓰지 않고 최신 내용을 다시 확인하게 한다.</span><span class="pol__ref">S-GRDOPW</span></li>
                 <li><span class="pol__t"><b>상단 고정</b>을 켠 공지는 사용자 쪽 목록 맨 위에 먼저 선다. FAQ 에는 없다.</span><span class="pol__ref">S-GRDOPW · S-KJEVVS</span></li>
                 <li><span class="pol__t">문의 상태는 접수·처리 중·답변 완료 셋이다. 등록 때는 알림이 없고 <b>답변이 달릴 때만</b> 알림함으로 간다. 메일은 업무 쪽이 따로 보낸다(운영 정책 NTF-03).</span><span class="pol__ref">S-ITFILU</span></li>
-                <li><span class="pol__t">문의 등록 건수에 제한은 없다(429 접수 제한 없음). 같은 관리자가 제목·내용이 같은 문의를 5분 안에 다시 올리면 409 로 막는다.</span><span class="pol__ref">S-ITFILU · 2026-10-14 재영</span></li>
+                <li><span class="pol__t">문의 등록 건수에 제한은 없다(429 접수 제한 없음). 같은 관리자가 제목·내용이 같은 문의를 5분 안에 다시 올리면 409 로 막는다. 분류는 공통코드 INQUIRY_CATEGORY(가입·계정 · 직원·근로 · 요금·구독 · 점포·설비 · 기타)다. 등록하면 토스트로 알리고, 409 나 실패 때는 쓴 내용과 파일을 두고 사유를 보인다. 첨부(이미지·PDF, 5개, 파일당 10MB)는 1차에서 만든다.</span><span class="pol__ref">S-ITFILU · 2026-10-14 재영 · WHALEERP-281 · 284</span></li>
                 <li><span class="pol__t">공지·FAQ·내 문의 목록은 목록 공통 규칙대로 페이지로 나눈다.</span><span class="pol__ref">S-ITFILU · S-GRDOPW</span></li>
-                <li><span class="pol__t">공지사항에만 <b>유형</b>(점검·기능·약관·안내, 필수)·<b>게시 기간</b>(시작일·종료일)·상단 고정이 있다. 게시 기간이 있으면 사용자 쪽에는 그 기간에만 보이고, 시작일이 없으면 등록 일시부터 보이며 게시일도 등록 일시다. FAQ 는 공통코드 FAQ_CATEGORY 의 사용 중인 카테고리를 고른다.</span><span class="pol__ref">S-GRDOPW · WHALEERP-272 · 273</span></li>
+                <li><span class="pol__t">공지사항에만 <b>유형</b>(점검·기능·약관·안내, 필수)·<b>게시 기간</b>(시작일·종료일)·상단 고정이 있다. 게시 기간이 있으면 사용자 쪽에는 그 기간에만 보이고, 시작일이 없으면 등록 일시부터 보이며 게시일도 등록 일시다. 유형 값은 그 넷뿐이다. FAQ 는 공통코드 FAQ_CATEGORY(가입·계정 · 직원·근로 · 요금·구독 · 점포·설비)의 사용 중인 카테고리를 고르고, 사용자 쪽 목록에도 카테고리를 보인다. 첨부는 공지에만 JPG·PNG·PDF 5개, 파일당 10MB 이고 FAQ 에는 없다. 저장에 성공하면 토스트로 알린다.</span><span class="pol__ref">S-GRDOPW · WHALEERP-272 · 273 · 276 · 282 · 283</span></li>
                 <li><span class="pol__t">공지·FAQ 의 변경 이력은 <b>마지막 수정자·수정 시각</b>만 남긴다(이력 표 없음). 게시 상태는 임시저장·게시·비공개 어느 쪽으로든 바꾸고, 게시로 저장할 때만 노출 대상이 하나 이상 있어야 한다. 삭제는 지움 표시이고 이미 지운 글을 또 지우면 이미 지웠다고 알린다.</span><span class="pol__ref">S-GRDOPW · WHALEERP-272</span></li>
                 <li><span class="pol__t">커뮤니티관리 공지·FAQ 목록은 제목·유형(카테고리)·고정·상태·최근 수정이고 최근 수정일 내림차순, <b>게시 상태로만</b> 거른다. 도입문의 목록은 문의자·전화번호·업종·관심 서비스·상태·접수이고 답변 상태로만 거른다. 답변 대기는 접수와 처리중을 합친 것이다.</span><span class="pol__ref">S-GRDOPW · WHALEERP-332</span></li>
-                <li><span class="pol__t">처리중은 운영자가 상세에서 <b>[처리 시작]</b>으로 바꾼다(접수 상태에서만, 시각·운영자를 남긴다). 도입문의 답변은 하나라 고치면 덮어쓰고, 답변 완료가 되는 날 상담 완료일이 남아 그날부터 1년 뒤 파기한다. 문의자 이메일로는 처음 답할 때만 보낸다(#588 뒤 — 지금 api 는 보내지 않는다). 처리 시작 없이 바로 답한 건은 처리 이력의 「확인」 줄을 숨긴다. 상담하지 않은 도입문의(상담 완료일 없음)는 상세의 [삭제]로 지운다. 확인창을 띄우고, 지우면 행을 남기지 않는다(개인정보 파기). 상담을 마친 건은 지우지 못하고 1년 뒤 배치가 파기한다(CNT-11 v120, #590 — 지우는 api 는 아직 없다).</span><span class="pol__ref">S-GRDOPW · WHALEERP-274 · 588</span></li>
+                <li><span class="pol__t">처리중은 운영자가 상세에서 <b>[처리 시작]</b>으로 바꾼다(접수 상태에서만, 시각·운영자를 남긴다). 도입문의 답변은 이력 없이 하나라 고치면 덮어쓰고(2026-10-19 재영), 답변 완료가 되는 날 상담 완료일이 남아 그날부터 1년 뒤 파기한다. 문의자 이메일로는 처음 답할 때만 보낸다(#588). 답변 완료 건 상세에는 마지막 답변 메일 결과·시각과 <b>[답변 메일 다시 보내기]</b>가 있다 — 저장된 지금 답변을 보내고, 같은 건은 1분 간격, 플랫폼 운영자만 쓴다(#597). 처리 시작 없이 바로 답한 건은 처리 이력의 「확인」 줄을 숨긴다. 상담하지 않은 도입문의(상담 완료일 없음)는 상세의 [삭제]로 지운다. 확인창을 띄우고, 지우면 행을 남기지 않는다(개인정보 파기). 상담을 마친 건은 지우지 못하고 1년 뒤 배치가 파기한다(CNT-11 v120, #590).</span><span class="pol__ref">S-GRDOPW · WHALEERP-274 · 588 · 590 · 597</span></li>
                 </ul>
               </div>
               <div class="panel">
@@ -250,13 +250,13 @@
               <div class="gap__head">
                 <span class="gap__no">SUPPORT-2</span>
                 <b>공지·FAQ 의 노출 대상을 어디까지 고르게 할 것인가</b>
-                <span class="gap__decided">확정 · 유형까지, 부가서비스만 상품별</span>
+                <span class="gap__decided">확정 · 유형까지, 1차는 넷</span>
                 <span class="gap__ref">S-GRDOPW</span>
               </div>
               <div class="gap__opts">
                 <div class="gap__opt is-picked" data-side="a">
                   <div class="gap__label">A · 대상 유형까지</div>
-                  <p>비회원 · 회원 · BP · 점포 · 부가서비스 <b>다섯 유형</b>을 여러 개 고른다. “BP 전체”까지다.</p>
+                  <p>비회원 · 회원 · BP · 점포 · 부가서비스 <b>대상 유형</b>을 여러 개 고른다. “BP 전체”까지다. 1차는 부가서비스를 뺀 넷이다.</p>
                 </div>
                 <div class="gap__opt is-dropped" data-side="b">
                   <div class="gap__label">B · 개별 대상까지</div>
@@ -270,6 +270,7 @@
                 BP·점포를 개별로 집을 이유가 그렇게 사라진다.
               
                 <b>1차에는 부가서비스가 없어</b> 부가서비스 대상과 상품 목록은 그 차수에 연다(2026-10-12 재영).
+                고르는 칸에 「전체」를 따로 두지 않고, 네 유형에 모두 체크한 것을 전체로 본다(2026-10-20 · #276).
               </p>
               <div class="gap__block">
                 <b>부가서비스만 예외다.</b>
