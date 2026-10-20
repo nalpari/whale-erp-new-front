@@ -15,6 +15,7 @@ import {
   readLoginBpInfo,
   readLoginInfo,
   readScope,
+  readStorePicks,
   readSelectedBp,
   readStores,
   resolveTab,
@@ -24,13 +25,16 @@ import {
   writeLoginInfo,
   writeScope,
   writeSelectedBp,
+  writeStorePicks,
   writeStores,
   type Scope,
+  type StorePicks,
   type ServiceCode,
   type StoredBp,
   type TabContext,
 } from "@/lib/browser-storage";
 import { LOGIN_KEY_COOKIE, type AdminMenu, type AdminStore, type BpOption, type Codes, type LoginInfo, type LoginInfoAccount } from "@/lib/session";
+import { restoredScope, usesStoreScope, withoutStoreIds } from "@/lib/store-scope";
 
 interface LoginState {
   loginKey: string;
@@ -44,9 +48,12 @@ interface LoginState {
   stores: AdminStore[];
   codes: Codes;
   scope: Scope;
+  /** 사용자가 점포 검색 컴포넌트를 쓰는 목록에서 고른 점포(store-scope.ts). 없으면 그 목록은 헤더 범위를 따른다 */
+  storePicks: StorePicks | null;
 }
 
-const LoginContext = createContext<(LoginState & { setScope: (scope: Scope) => void }) | null>(null);
+type LoginActions = { setScope: (scope: Scope) => void; setStorePicks: (picks: StorePicks | null) => void };
+const LoginContext = createContext<(LoginState & LoginActions) | null>(null);
 
 function useLogin() {
   const v = use(LoginContext);
@@ -74,6 +81,28 @@ export function useScope() {
   const { scope, setScope } = useLogin();
   return [scope, setScope] as const;
 }
+/**
+ * 사용자가 목록에서 고른 점포(빈 목록 포함)와 그 목록 메뉴 url. 값은 이 탭 sessionStorage 에 두고 탭을 열 때 한 번 읽는다(useScope 와 같다).
+ * 헤더 범위를 새로 고르거나(setScope) 그 메뉴를 떠나면(admin-header.tsx) 지우고, 등록 · 삭제 뒤에는 빈 목록으로 둔다(useResetStoreSearch).
+ */
+export function useStorePicks() {
+  const { storePicks, setStorePicks } = useLogin();
+  return [storePicks, setStorePicks] as const;
+}
+/**
+ * 등록 · 삭제가 끝난 뒤 목록의 점포 검색을 「전체」로 비운다 — 사용자가 고른 점포도, 헤더 범위도 따르지 않는다(2026-10-20). 수정은 쓰지 않는다.
+ * 성공한 자리에서 이동할 주소를 넘긴다: router.push(resetStoreSearch(backHref)). 지금 화면 메뉴가 점포 검색 컴포넌트를 쓰는 목록(store-scope.ts)이면
+ * 그 목록의 사용자 선택을 빈 목록으로 두고 주소에서 storeIds 를 뺀다. 아니면 주소를 그대로 돌려준다. 헤더 범위 값은 바꾸지 않는다.
+ */
+export function useResetStoreSearch() {
+  const url = usePageMenu()?.url;
+  const [, setStorePicks] = useStorePicks();
+  return (href: string) => {
+    if (!url || !usesStoreScope(url)) return href;
+    setStorePicks({ url, stores: [] });
+    return withoutStoreIds(href);
+  };
+}
 /** 메뉴 권한. 버튼을 보이거나 숨길 때 쓴다 — 실제 판정은 api 가 요청마다 다시 한다. */
 export function useMenuRole(menuCode: MenuCode, action: MenuAction) {
   const { menus, serviceCode } = useLogin();
@@ -90,12 +119,14 @@ export function useMenuPermission(menuCode: MenuCode) {
  * 화면은 버튼을 보이거나 숨기기만 한다 — 막는 것은 api 다.
  */
 export function usePagePermission() {
-  const { menus, serviceCode } = useLogin();
-  const permission = menuOfPath(menus, usePathname(), serviceCode)?.permission;
+  const permission = usePageMenu()?.permission;
   return { create: !!permission?.create, update: !!permission?.update, delete: !!permission?.delete };
 }
-
-const ALL: Scope = { type: "ALL" };
+/** 지금 화면(주소)의 메뉴(menuOfPath). 메뉴가 아닌 화면이면 null. 헤더 점포 범위가 어느 목록으로 갈지 정할 때도 쓴다. */
+export function usePageMenu() {
+  const { menus, serviceCode } = useLogin();
+  return menuOfPath(menus, usePathname(), serviceCode);
+}
 
 // 다시 시도하면 같은 길로 다시 로그아웃한다.
 const LOGOUT_FAILED = { status: "error", message: "로그아웃하지 못했습니다" } as const;
@@ -171,13 +202,14 @@ export function SessionGate({ children }: { children: ReactNode }) {
       </Notice>
     );
   return (
-    <Ready value={state.value} onChange={(value) => setState({ status: "ready", value })}>
+    <Ready value={state.value} onChange={(update) => setState((s) => (s.status === "ready" ? { status: "ready", value: update(s.value) } : s))}>
       {children}
     </Ready>
   );
 }
 
-function Ready({ value, onChange, children }: { value: LoginState; onChange: (v: LoginState) => void; children: ReactNode }) {
+// onChange 는 앞 값을 받아 고친다 — 한 조작에서 여러 값을 바꿔도 앞의 변경을 덮지 않는다.
+function Ready({ value, onChange, children }: { value: LoginState; onChange: (update: (v: LoginState) => LoginState) => void; children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const home = HOME[value.serviceCode];
@@ -213,9 +245,14 @@ function Ready({ value, onChange, children }: { value: LoginState; onChange: (v:
 
   const setScope = (scope: Scope) => {
     writeScope(value.currentBp.bpCodeId, scope);
-    onChange({ ...value, scope });
-    // 범위를 바꾸면 보던 화면에 남지 않고 홈으로 간다(okf/home.md 범위 선택기).
-    router.push(home);
+    // 범위를 새로 고르면 목록에서 고른 점포는 잊는다 — 다시 들어오면 새 범위를 따른다
+    writeStorePicks(value.currentBp.bpCodeId, null);
+    // 보던 화면은 그대로다. 점포 검색 컴포넌트를 쓰는 메뉴 화면이면 헤더 선택기가 그 목록으로 옮긴다(admin-header.tsx · okf/home.md 범위 선택기).
+    onChange((v) => ({ ...v, scope, storePicks: null }));
+  };
+  const setStorePicks = (storePicks: StorePicks | null) => {
+    writeStorePicks(value.currentBp.bpCodeId, storePicks);
+    onChange((v) => ({ ...v, storePicks }));
   };
   // 강제 변경 표시를 저장값에 쓰고 이 탭에 반영한다. 다른 탭은 새로고침하면 반영된다.
   const setPasswordRequired = (required: boolean) => {
@@ -223,7 +260,7 @@ function Ready({ value, onChange, children }: { value: LoginState; onChange: (v:
       ? { ...value.account, isPasswordChangeRequired: true }
       : { ...value.account, isPasswordChangeRequired: false, isTermsAgreementRequired: false, temporaryPasswordExpiresAt: null };
     writeLoginInfo({ loginKey: value.loginKey, account, menus: value.menus });
-    onChange({ ...value, account });
+    onChange((v) => ({ ...v, account }));
   };
   // 다른 탭에서 로그아웃하면 로그인 화면으로, 다시 로그인하면(다른 계정 포함) 새 로그인 정보로 다시 연다(정책 B-5).
   // 로그인 화면이 저장값을 지우고, 새 로그인의 첫 탭이 login-info 를 쓰므로 그 키의 변화로 알아챈다. storage 이벤트는 다른 탭에만 온다.
@@ -249,7 +286,7 @@ function Ready({ value, onChange, children }: { value: LoginState; onChange: (v:
     location.assign(home);
   };
   return (
-    <LoginContext value={{ ...value, setScope }}>
+    <LoginContext value={{ ...value, setScope, setStorePicks }}>
       {allowed && !switching ? children : null}
       {value.account.isPasswordChangeRequired && <ForcePasswordDialog account={value.account} onDone={passwordChanged} />}
     </LoginContext>
@@ -352,12 +389,14 @@ async function prepare(onSwitchBp: (bp: StoredBp) => void): Promise<LoginState> 
   writeCurrentBp(loginKey, tab);
   // 고른 BP 도 그 BP 의 값을 받은 뒤에 적는다 — 다음에 주소로 여는 탭이 이 BP 를 쓴다. 받기가 실패하면 앞서 고른 BP 가 그대로 남는다.
   if (switchBp) writeSelectedBp(loginKey, switchBp);
-  // BP 로 이동하면 범위는 전체에서 시작한다.
-  if (switching) writeScope(bp.bpCodeId, ALL);
-  // 저장된 점포 범위의 점포가 목록에 없으면 전체로 되돌린다(선택기 표시와 실제 범위가 어긋나지 않게).
-  const saved = readScope(bp.bpCodeId);
-  const scope = saved?.type === "STORE" && !stores.some((s) => s.storeId === saved.storeId) ? ALL : (saved ?? ALL);
-  return { loginKey, account, serviceCode: tab.serviceCode, menus: info.menus, currentBp: bp, stores, codes, scope };
+  // BP 로 이동하면 범위는 전체에서, 목록에서 고른 점포는 없이 시작한다.
+  if (switching) {
+    writeScope(bp.bpCodeId, { type: "ALL" });
+    writeStorePicks(bp.bpCodeId, null);
+  }
+  // 저장된 점포 범위가 이 탭의 점포 목록에 없으면 전체로 되돌린다(선택기 표시와 실제 범위가 어긋나지 않게)
+  const scope = restoredScope(readScope(bp.bpCodeId), stores);
+  return { loginKey, account, serviceCode: tab.serviceCode, menus: info.menus, currentBp: bp, stores, codes, scope, storePicks: readStorePicks(bp.bpCodeId) };
 }
 
 /**

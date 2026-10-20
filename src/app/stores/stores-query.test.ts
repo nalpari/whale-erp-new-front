@@ -1,7 +1,7 @@
 // node --test src/app/stores/stores-query.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { backHrefOf, DEFAULT_STORES_QUERY, detailHrefOf, parseStoresQuery, storesExcelHref, storesHref, withStoreFilter, type StoresQuery } from "./stores-query.ts";
+import { backHrefOf, DEFAULT_STORES_QUERY, detailHrefOf, MAX_PICKED_STORES, parseStoresQuery, storesExcelHref, storesHref, withStoreFilter, type StoresQuery } from "./stores-query.ts";
 
 test("기본값 — 폐점 제외 · 두 유형 · 카드 · 20건", () => {
   assert.deepEqual(parseStoresQuery({}), DEFAULT_STORES_QUERY);
@@ -73,4 +73,11 @@ test("상태 · 유형을 모두 끈 목록 왕복 — 새로 고침에 기본�
   assert.deepEqual(read.storeTypes, []);
   const excel = new URL(storesExcelHref({ ...DEFAULT_STORES_QUERY, statuses: [] }), "http://x").searchParams;
   assert.equal(excel.get("statuses"), "");
+});
+
+test("고른 점포는 api 상한(1000개)까지 받는다 — 헤더 직영 · 가맹 범위가 그 유형 점포를 모두 싣는다", () => {
+  const ids = Array.from({ length: 1200 }, (_, i) => i + 1);
+  assert.equal(MAX_PICKED_STORES, 1000);
+  assert.deepEqual(parseStoresQuery({ storeIds: ids.join(",") }).storeIds, ids.slice(0, 1000));
+  assert.deepEqual(parseStoresQuery({ storeIds: "3,3,1" }).storeIds, [3, 1]);
 });
