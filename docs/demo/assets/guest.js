@@ -98,17 +98,16 @@
   }
 
   // 입력 검사: 브라우저 말풍선 대신 칸 아래 붉은 글씨로 알린다. 제출을 막는 것은 브라우저 검사가 그대로 맡는다.
-  // 글씨는 칸을 감싼 묶음(관심 서비스 fieldset · 연락처 group · 세로 label) 맨 아래에, 체크 상자 줄은 그 줄 바로 아래에 둔다.
+  // 글씨는 칸을 감싼 묶음(관심 서비스 fieldset · 연락처 group · 세로 label) 맨 아래에 둔다.
+  // 체크 상자 한 줄(개인정보 동의)은 가로 label 이라 문구 오른쪽에 붙는다.
   const errorOf = (el) => {
-    const group = el.closest("fieldset") ?? el.closest("[role=group]")?.parentElement;
-    const label = el.closest("label");
-    const host = group ?? (el.type === "checkbox" ? null : label);
-    let p = host ? host.querySelector(":scope > [data-field-error]") : label?.nextElementSibling;
-    if (!p?.hasAttribute("data-field-error")) {
-      p = document.createElement("p");
+    const host = el.closest("fieldset") ?? el.closest("[role=group]")?.parentElement ?? el.closest("label") ?? el.parentElement;
+    let p = host.querySelector(":scope > [data-field-error]");
+    if (!p) {
+      p = document.createElement("span");
       p.dataset.fieldError = "";
-      p.className = "-mt-[2px] text-[14px] leading-[1.5] text-[#e93737]";
-      host ? host.append(p) : (label ?? el).after(p);
+      p.className = `${el.type === "checkbox" && host.tagName === "LABEL" ? "ml-[4px]" : "-mt-[2px]"} text-[14px] leading-[1.5] text-[#e93737]`;
+      host.append(p);
     }
     return p;
   };
