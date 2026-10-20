@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import { useId, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import { INPUT, INPUT_BOX, SUBMIT } from "@/app/design/guest/guest-form";
 import { HOVER } from "@/app/design/guest/theme";
-import { PasswordField } from "./_components/password-field";
-import { PhoneField } from "./_components/phone-field";
-import { RequiredField } from "./_components/required-field";
-import { CHECK_FAILED_MESSAGE, UNKNOWN_RESULT_MESSAGE } from "./_components/api-failure";
-import { bizSubmitBlock } from "./_components/biz-verification";
+import { PasswordField } from "./password-field";
+import { PhoneField } from "./phone-field";
+import { RequiredField } from "./required-field";
+import { CHECK_FAILED_MESSAGE, UNKNOWN_RESULT_MESSAGE } from "./api-failure";
+import { bizSubmitBlock } from "./biz-verification";
 import {
   agreeErrorMessage,
   normalizeLoginId,
@@ -20,7 +20,7 @@ import {
   validatePasswordConfirm,
   validatePhone,
   validateTradeName,
-} from "./_components/validators";
+} from "./validators";
 import { checkEmailAvailability, checkLoginIdAvailability, createSignup, type AvailabilityResult } from "./actions";
 import { AGREE_INITIAL, AgreeSection, type AgreeValue } from "./agree-section";
 import { BIZ_AUTH_INITIAL, BizAuthSection, type BizAuthValue } from "./biz-auth-section";

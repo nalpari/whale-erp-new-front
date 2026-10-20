@@ -1,6 +1,8 @@
 # Bundle history
 
 ## 2026-10-19
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 회원가입(`src/app/(public)/(site)/signup/`)의 `_components/` 하위 폴더를 걷었다. `stores`·`staff-members` 등 다른 화면 폴더는 모두 평평한 구조라 이 폴더만 유일하게 밑줄 접두 폴더를 썼다. 파일 10개(비밀번호·연락처·필수 입력칸, 약관 팝업, 사업자 진위확인, api 실패 문구, 검증 규칙과 각 테스트)를 `signup/` 바로 아래로 옮기고 import 경로를 고쳤다 — 동작은 그대로다.
+* **Update**: [점포 관리](/stores.md) — 코드 리뷰 반영: 위 회원가입 폴더 정리로 `src/app/stores/store-form-view.tsx` 의 주석 한 줄(`signup/_components/biz-verification.ts` → `signup/biz-verification.ts`)도 고쳤다 — 이 파일이 stores.md 의 sources 에 들어 있어 함께 기록한다.
 * **Update**: [로그인](/auth.md) — 목업 · 데모를 실제 `/find` 에 맞췄다. 데모 `auth/find.html` 은 휴대폰 인증 시안 대신 이름 · 이메일(비밀번호는 아이디까지) 칸과 결과 안내를 보이고, 고객센터 카드를 뺐다. 목업 `auth/find.html` 은 결과 버튼을 회원가입 · 로그인 이동으로 바꾸고 비밀번호 탭 보조 안내를 지웠다. 화면정의서의 비밀번호 탭 · 이메일 · 아이디 찾기 정의를 결과 안내 하나 · 5xx · 형식 오류 · 요청 제한으로 고쳤다.
 * **Update**: [로그인](/auth.md) · [Whale ERP Frontend](/whale-erp-front.md) — PR #56 리뷰 2차 반영: 찾기 실패 판정을 `find-failure.ts` 로 빼 테스트하고, 예상하지 않은 4xx 는 api 원문 대신 연결 문구 · 로그로, 400 은 이메일 형식 안내로 바꿨다. 임시 비밀번호 5xx 안내를 세 경우 모두에 맞게 고치고, 발급 요청은 본문 파싱 없이 상태 코드만 본다.
 * **Update**: [로그인](/auth.md) · [Whale ERP Frontend](/whale-erp-front.md) — PR #56 리뷰 반영: 임시 비밀번호 요청이 api 5xx 면 「연결 실패」 대신 「처리 결과를 확인하지 못했다」로 안내한다(다시 받으면 앞의 것이 만료되므로).

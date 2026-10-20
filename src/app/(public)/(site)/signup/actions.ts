@@ -17,14 +17,14 @@ import {
 } from "@/lib/api";
 import { homeOf } from "@/lib/auth-routes";
 import { apiHeaders } from "@/lib/forwarded-headers";
-import { apiFailure, CHECK_FAILED_MESSAGE, UNKNOWN_RESULT_MESSAGE } from "./_components/api-failure";
+import { apiFailure, CHECK_FAILED_MESSAGE, UNKNOWN_RESULT_MESSAGE } from "./api-failure";
 import {
   BIZ_VERIFY_FAILED_MESSAGE,
   bizVerificationFailure,
   hasApiMessage,
   signupFailure,
   verificationTokenOf,
-} from "./_components/biz-verification";
+} from "./biz-verification";
 import { parseSignupDone, SIGNUP_DONE_COOKIE, SIGNUP_DONE_MAX_AGE, SIGNUP_DONE_PATH } from "./signup-done-cookie";
 
 // api 의 가입 응답 모양. 쿠키에 심는 SignupDoneValue(signup-done-cookie.ts)는 여기에 issuedAt 을 더한
