@@ -297,6 +297,16 @@ python3 docs/erd/_build.py
 |  | 잠금 해제 시각 | datetime | `lock_expires_at` | 잠겨 있지 않으면 비움 |
 |  | 시도 시각 | datetime | `attempted_at` | (phone_key, attempted_at) 인덱스 · 재발송하면 실패 0 행을 쌓아 잠금을 푼다 (JOIN-7, 2026-10-20) |
 
+### 신고 정보 변경 이력 `staff_tax_profile_histories` · 이력
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 이력 ID | id | `staff_tax_profile_history_id` |  |
+| FK | 직원 레코드 | id | `staff_member_id` | 신고 정보는 레코드마다 하나라 이력도 레코드 기준 |
+|  | 바뀐 항목 | enum | `field` | 주민등록번호 · 급여 계좌(은행·계좌번호 함께) |
+| FK | 바꾼 계정 | id | `account_id` | 직원 본인만 고친다 (TAX-07) |
+|  | 바꾼 시각 | datetime | `changed_at` | (staff_member_id, changed_at) 인덱스 · 값(이전·새 값)은 남기지 않음 · 처음 작성도 항목마다 한 행 (#334, 2026-10-20) |
+
 **관계**
 
 - 점포 `1` — `N` 직원 레코드 · 소속
@@ -307,6 +317,7 @@ python3 docs/erd/_build.py
 - 계정 `1` — `N` 가입 연결 보류 · 보류 계정
 - 관리자 계정 `1` — `N` 가입 연결 보류 · 처리
 - 직원 레코드 `1` — `N` 퇴직 처리 이력
+- 신고 정보 `1` — `N` 신고 정보 변경 이력
 
 ## 근로계약
 
