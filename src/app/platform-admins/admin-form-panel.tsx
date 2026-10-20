@@ -294,6 +294,12 @@ export function AdminFormPanel(props: Props) {
                 set("email", e.target.value);
               }}
               onBlur={(e) => checkEmail(e.currentTarget.value)}
+              onKeyDown={(e) => {
+                // 한글 조합 중 Enter 는 글자 확정이라 넘긴다(아이디 칸과 같다)
+                if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
+                e.preventDefault();
+                checkEmail(e.currentTarget.value);
+              }}
               maxLength={100}
               aria-invalid={invalid("email")}
               aria-describedby={describe("email") ?? (emailValid ? messageId("email") : undefined)}
