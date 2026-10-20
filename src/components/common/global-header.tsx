@@ -98,31 +98,50 @@ function Tip({ label }: { label: string }) {
   );
 }
 
-// size- 와 w- 를 같이 쓰면 둘 다 width 를 정해 어느 쪽이 이길지 보장되지 않는다. 높이만 여기서 정하고 폭은 링크마다 준다.
+// size- 와 w- 를 같이 쓰면 둘 다 width 를 정해 어느 쪽이 이길지 보장되지 않는다. 높이만 여기서 정하고 폭은 바로가기마다 준다.
 const ICON_HOVER = "group relative grid h-[32px] place-items-center rounded-full [&>img]:transition-opacity [&>img]:duration-150 hover:[&>img]:opacity-70 [&>span:first-child]:transition-opacity hover:[&>span:first-child]:opacity-70";
 
+/** 바로가기 하나가 할 일 — 주소면 링크, 함수면 버튼(팝업을 열거나 전체 로드로 옮길 때). */
+type ServiceTarget = string | (() => void);
+
+// 링크와 버튼이 같은 모양 · 같은 툴팁을 쓰게 한다.
+function ServiceLink({ target, label, className, children }: { target?: ServiceTarget; label: string; className: string; children: ReactNode }) {
+  const body = (
+    <>
+      {children}
+      <Tip label={label} />
+    </>
+  );
+  return typeof target === "function" ? (
+    <button type="button" onClick={target} aria-label={label} className={className}>
+      {body}
+    </button>
+  ) : (
+    <Link href={target ?? "#"} aria-label={label} className={className}>
+      {body}
+    </Link>
+  );
+}
+
 // Figma Top2 의 서비스 바로가기. 둥근 테두리 안에 세 아이콘을 두고, 올리면 이름 툴팁이 뜬다.
-export function ServiceLinks({ hrefs = {} }: { hrefs?: { erp?: string; addon?: string; platform?: string } }) {
+export function ServiceLinks({ targets = {} }: { targets?: { erp?: ServiceTarget; addon?: ServiceTarget; platform?: ServiceTarget } }) {
   return (
     <div className="flex h-[42px] shrink-0 items-center gap-[18px] rounded-full border border-erp-field-line bg-white px-[24px]">
       <span className="text-[15px] font-medium whitespace-nowrap text-erp-ink">서비스 바로가기</span>
       <div className="flex items-center gap-[12px]">
-        <Link href={hrefs.erp ?? "#"} aria-label="웨일ERP" className={`${ICON_HOVER} w-[32px]`}>
+        <ServiceLink target={targets.erp} label="웨일ERP" className={`${ICON_HOVER} w-[32px]`}>
           <Image src="/icons/service-erp.svg" alt="" width={32} height={32} />
-          <Tip label="웨일ERP" />
-        </Link>
-        <Link href={hrefs.addon ?? "#"} aria-label="부가서비스 현황" className={`${ICON_HOVER} w-[32px] bg-white`}>
+        </ServiceLink>
+        <ServiceLink target={targets.addon} label="부가서비스 현황" className={`${ICON_HOVER} w-[32px] bg-white`}>
           <Image src="/icons/service-chat.svg" alt="" width={19} height={19} />
-          <Tip label="부가서비스 현황" />
-        </Link>
-        <Link href={hrefs.platform ?? "#"} aria-label="플랫폼관리" className={`${ICON_HOVER} w-[14px]`}>
+        </ServiceLink>
+        <ServiceLink target={targets.platform} label="플랫폼관리" className={`${ICON_HOVER} w-[14px]`}>
           <span className="grid grid-cols-3 gap-[2.5px]">
             {Array.from({ length: 9 }, (_, i) => (
               <Image key={i} src="/icons/dot.svg" alt="" width={3} height={3} />
             ))}
           </span>
-          <Tip label="플랫폼관리" />
-        </Link>
+        </ServiceLink>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-// node --test "src/app/(public)/(site)/signup/_components/biz-verification.test.ts"
+// node --test "src/app/(public)/(site)/signup/biz-verification.test.ts"
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { BUSY_MESSAGE } from "./api-failure.ts";
