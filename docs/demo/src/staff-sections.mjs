@@ -305,7 +305,7 @@ export function staffSections({ A, R }) {
     ui.filterSection("직원", ui.searchField(A, { placeholder: "이름 또는 번호" }), { tight: true }),
     ui.filterSection("고용형태", ui.checkbox(A, "정직원", true) + ui.checkbox(A, "파트타이머", true)),
     ui.filterSection("출퇴근 상태", ["정상", "지각", "미출근", "출근 미등록", "퇴근 미등록", "휴무"].map((t) => ui.checkbox(A, t, true)).join("")),
-    ui.filterSection("확인 필요 사유", ["위치 오차 초과", "반경 밖 퇴근", "위치 조작 감지"].map((t) => ui.checkbox(A, t, true)).join("")),
+    ui.filterSection("확인 필요 사유", ["위치 오차 초과", "반경 밖 출근", "반경 밖 퇴근", "위치 조작 감지"].map((t) => ui.checkbox(A, t, true)).join("")),
     ui.filterSection("기록 구분", ["직원 등록", "대신 등록", "보정됨"].map((t) => ui.checkbox(A, t, true)).join("")),
     ui.filterSection("재직 상태", ui.select(["재직", "퇴직", "전체"], { "aria-label": "재직 상태" }), { tight: true, last: true }),
   ]);
