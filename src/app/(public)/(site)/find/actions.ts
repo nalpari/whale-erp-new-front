@@ -2,7 +2,7 @@
 
 import { apiError, request, requestRaw } from "@/lib/api";
 import { apiHeaders } from "@/lib/forwarded-headers";
-import { CONNECT_FAILED, failureOf, maskedLoginIdOf, temporaryPasswordOutcome } from "./find-failure";
+import { CONNECT_FAILED, failureOf, LOGIN_ID_NOT_FOUND, maskedLoginIdOf, temporaryPasswordOutcome } from "./find-failure";
 
 // 입력값은 실패해도 폼에 남긴다 — 서버 액션이 끝나면 React 가 비제어 폼을 defaultValue 로 되돌린다.
 export type FindLoginIdState = { error?: string; name?: string; email?: string; maskedLoginId?: string };
@@ -31,15 +31,15 @@ export async function findLoginId(_prev: FindLoginIdState, formData: FormData): 
     }
     return { name, maskedLoginId };
   } catch (e) {
-    const failure = failureOf(e);
+    const failure = failureOf(e, LOGIN_ID_NOT_FOUND);
     if (failure.log) console.error("[find] 아이디 찾기 실패", e);
     return { error: failure.message, name, email };
   }
 }
 
 /**
- * 임시 비밀번호 발급(S-EOMSRG). api 는 계정이 있는지 드러내지 않으려고, 일치하지 않거나 메일이 나가지 않아도 같은 202 를 준다.
- * 예외는 정보가 맞는 계정의 1시간 5회 초과(429)뿐이다. 실패 판정은 find-failure.ts 의 temporaryPasswordOutcome.
+ * 임시 비밀번호 발급(S-EOMSRG). 일치하지 않으면 아이디 찾기처럼 일치 없음을 안내한다(2026-10-20 재영) — api 가 404 를 주면.
+ * 지금 api 는 일치 여부 · 메일 발송 여부와 상관없이 202 라 늘 발송 안내다(api 변경 요청 중). 실패 판정은 find-failure.ts 의 temporaryPasswordOutcome.
  */
 export async function issueTemporaryPassword(_prev: TemporaryPasswordState, formData: FormData): Promise<TemporaryPasswordState> {
   const name = String(formData.get("name") ?? "").trim();

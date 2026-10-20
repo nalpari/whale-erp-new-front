@@ -4,6 +4,12 @@
 export const CONNECT_FAILED = "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요";
 export const THROTTLED = "요청이 많습니다. 잠시 뒤 다시 시도해 주세요";
 export const INVALID_INPUT = "입력한 이메일 형식을 확인해 주세요";
+// 일치 없음(404). 미사용 · 탈퇴 계정과만 맞아도 같은 문구다. 줄바꿈은 화면이 그대로 보인다(whitespace-pre-line).
+export const LOGIN_ID_NOT_FOUND = "입력하신 정보와 일치하는 회원정보가 없습니다. 이름, 이메일 주소를 다시 확인해 주세요.";
+// 임시 비밀번호도 일치 여부를 확인해 알린다(2026-10-20 재영). 지금 api 는 일치 여부와 상관없이 202 라, api 가 일치 없음을
+// 404 로 주도록 바뀌어야 이 문구가 뜬다 — 그 전엔 늘 발송 안내다.
+export const TEMPORARY_PASSWORD_NOT_FOUND =
+  "회원정보를 찾을 수 없습니다.\n입력하신 정보와 일치하는 회원정보가 없습니다.\n이름, 아이디, 이메일 주소를 다시 확인해 주세요.";
 // 5xx 는 세 경우가 섞인다(api admin-temporary-password.service — 메일을 보낸 뒤 발급을 한 트랜잭션으로 저장한다).
 // 메일 전 실패(메일 없음) · 메일 뒤 저장 실패(온 메일은 못 쓰고 앞의 임시 비밀번호가 살아 있다) · 발급을 마친 뒤 게이트웨이
 // 502 · 504(온 메일이 유효). 셋 모두에 맞도록 「받은 것으로 안 되면 다시」로 안내한다 — 바로 다시 받게 하면 셋째의 유효한 것을 만료시킨다.
@@ -22,16 +28,16 @@ const messageOf = (e: unknown) => {
 };
 
 /**
- * 두 탭이 함께 쓰는 실패 문구. api 문구를 그대로 보이는 것은 예상한 거절뿐이다 — 아이디 찾기의 일치 없음(404)과
- * 임시 비밀번호의 1시간 5회 초과(429, 한글). log 가 true 면 화면이 모르는 실패라 서버 로그에 남긴다.
+ * 두 탭이 함께 쓰는 실패 문구. 예상한 거절만 따로 안내한다 — 일치 없음(404, 탭마다 다른 화면 문구 notFound)과
+ * 임시 비밀번호의 1시간 5회 초과(429, api 한글 문구 그대로). log 가 true 면 화면이 모르는 실패라 서버 로그에 남긴다.
  */
-export function failureOf(e: unknown): { message: string; log: boolean } {
+export function failureOf(e: unknown, notFound: string): { message: string; log: boolean } {
   const status = statusOf(e);
   const message = messageOf(e);
   // 스로틀러 429 는 영어 기본값이라 여기서만 바꾼다(login/actions.ts 와 같다).
   if (status === 429) return { message: message.startsWith("ThrottlerException") ? THROTTLED : message, log: false };
   // 라우트가 없는 404(「Cannot POST …」)는 api 가 아직 배포되지 않은 것이다 — 일치 없음으로 보이면 안 된다.
-  if (status === 404) return message.startsWith("Cannot ") ? { message: CONNECT_FAILED, log: true } : { message, log: false };
+  if (status === 404) return message.startsWith("Cannot ") ? { message: CONNECT_FAILED, log: true } : { message: notFound, log: false };
   // 칸 길이 · 필수는 폼이 막으므로 남는 400 은 이메일 형식이다. 브라우저 type="email" 은 a@b 를 통과시키지만 api @IsEmail 은
   // 거절하고, 그 문구는 영어 기본값이다.
   if (status === 400) return { message: INVALID_INPUT, log: false };
@@ -47,7 +53,7 @@ export function temporaryPasswordOutcome(e: unknown): { sent: true } | { message
   if (name === "TimeoutError" || name === "AbortError") return { sent: true };
   const status = statusOf(e);
   if (status !== undefined && status >= 500) return { message: TEMPORARY_PASSWORD_UNKNOWN, log: true };
-  return failureOf(e);
+  return failureOf(e, TEMPORARY_PASSWORD_NOT_FOUND);
 }
 
 /** 아이디 찾기 응답의 가린 아이디. 모양이 다르면(api 버전 어긋남) null — 화면에 undefined 를 아이디로 찍지 않게. */
