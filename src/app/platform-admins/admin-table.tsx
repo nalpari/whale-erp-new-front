@@ -5,7 +5,7 @@ import { Badge, DataTable, type Column } from "@/components/common";
 import { formatDateTime, formatPhone } from "@/lib/format";
 import type { PlatformAdmin } from "@/lib/platform-admins";
 
-// 플랫폼 관리자 목록 표(S-YTKWGG). 아이디 · 이름을 누르면 상세 패널이 열린다.
+// 플랫폼 관리자 목록 표(S-YTKWGG). 이름을 누르면 상세 패널이 열린다. 아이디는 글자일 뿐 누를 수 없다(코드 리뷰 반영, 2026-10-20).
 // 미사용 계정은 줄 글자를 흐리게 하고 상태 배지(Badge, 사용 · 미사용 글자)로 가른다 — 색만으로 말하지 않는다(DESIGN.md).
 
 // 연락처 · 이메일 칸 앞 아이콘. public/icons 에 없는 모양이라 데모(docs/demo/src/pages/system/admins.mjs)와 같은 선을 그대로 그린다.
