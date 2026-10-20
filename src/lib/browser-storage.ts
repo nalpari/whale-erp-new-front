@@ -3,6 +3,7 @@
 //   login-info: 계정·메뉴 / login-bp-info: 자기 BP 의 점포·공통코드(탭에 자기 BP 값이 없을 때 — 새 탭, /bp-switch 로 자기 BP 에 돌아올 때 — 만 읽는다) / selected-bp: 플랫폼 계정이 마지막으로 고른 BP
 // sessionStorage — 탭마다 다르다. 화면은 이것만 읽는다.
 //   current-bp: 이 탭의 서비스(WHALE_ERP·PLATFORM)와 BP / stores·codes·scope: 그 BP 의 값. bpCodeId 가 이 탭의 BP 와 다르면 버린다.
+//   store-picks: 사용자가 목록에서 고른 점포(빈 목록 포함)와 그 목록 메뉴 url — 그 메뉴 안을 오가는 동안 헤더 범위 대신 이것을 쓴다(store-scope.ts).
 //   서비스와 BP 는 짝이 맞아야 해서(플랫폼 서비스 = 플랫폼 BP, ERP 서비스 = 고객 BP) 한 키에 함께 둔다.
 // next/* 를 import 하지 않는다 — node --test 로 resolveTab 을 바로 돌리기 위해서다.
 import type { AdminMenu, AdminStore, Codes, LoginInfoAccount } from "./session";
@@ -50,8 +51,9 @@ const KEY = {
   stores: `${PREFIX}stores`,
   codes: `${PREFIX}codes`,
   scope: `${PREFIX}scope`,
+  storePicks: `${PREFIX}store-picks`,
 } as const;
-const TAB_KEYS = [KEY.currentBp, KEY.stores, KEY.codes, KEY.scope];
+const TAB_KEYS = [KEY.currentBp, KEY.stores, KEY.codes, KEY.scope, KEY.storePicks];
 // 앞 버전의 키 — 읽지는 않지만 로그인 정보(아이디 · 이름 · 이메일 · 메뉴 권한 · 점포)가 들어 있어 로그아웃할 때 함께 지운다(공용 PC).
 const LEGACY_PREFIXES = ["whale-erp:v1:"];
 const LEGACY_KEYS = LEGACY_PREFIXES.flatMap((p) => Object.values(KEY).map((k) => p + k.slice(PREFIX.length)));
@@ -107,6 +109,23 @@ export const readCodes = (bpCodeId: number) => ofBp(read<{ bpCodeId: number; cod
 export const writeCodes = (bpCodeId: number, codes: Codes) => write(tab, KEY.codes, { bpCodeId, codes });
 export const readScope = (bpCodeId: number) => ofBp(read<{ bpCodeId: number; scope: Scope }>(tab, KEY.scope), bpCodeId)?.scope ?? null;
 export const writeScope = (bpCodeId: number, scope: Scope) => write(tab, KEY.scope, { bpCodeId, scope });
+/** 사용자가 목록에서 고른 점포. 칩을 그리려고 이름 · 점포코드도 둔다 */
+export interface StorePicks {
+  url: string;
+  stores: { storeId: number; name: string; storeCode: string }[];
+}
+/**
+ * 화면은 이것을 직접 부르지 않고 useStorePicks(session-gate.tsx)를 쓴다. 다른 BP 의 값(같은 탭에서 BP 를 바꾼 때)이나
+ * 모양이 깨진 값은 null 로 버린다 — 헤더 링크 · 목록 필터가 stores 를 바로 읽는다.
+ */
+export function readStorePicks(bpCodeId: number): StorePicks | null {
+  const v = ofBp(read<{ bpCodeId: number } & StorePicks>(tab, KEY.storePicks), bpCodeId);
+  if (!v || typeof v.url !== "string" || !Array.isArray(v.stores)) return null;
+  return { url: v.url, stores: v.stores.filter((s) => typeof s?.storeId === "number") };
+}
+/** null 이면 지운다 */
+export const writeStorePicks = (bpCodeId: number, picks: StorePicks | null) =>
+  picks ? write(tab, KEY.storePicks, { bpCodeId, ...picks }) : remove(tab, [KEY.storePicks]);
 
 /** 로그인 화면에서 부른다. 이 탭과 공용 저장소의 로그인 정보를 지운다(아이디 저장 whale-erp:saved-login-id 는 남긴다). 앞 버전 키도 지운다. */
 export function clearLoginStorage() {
