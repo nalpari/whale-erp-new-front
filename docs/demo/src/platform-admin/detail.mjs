@@ -15,8 +15,9 @@ const kv = (rows) =>
     .join("")}</dl>`;
 const WHO = kv([["아이디", "platpark"], ["이름", "박지우"]]);
 // 권한명은 이름 옆에 계정 상태처럼 꼬리표로 보인다(BP 관리자 상세와 같은 방패 아이콘 · 2026-10-08). 본문의 권한 · 상태 표는 없앴다.
-const SHIELD = `<svg viewBox="0 0 24 24" class="mr-[4px] inline-block size-[12px] align-[-1px]" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.1 20 6v6.1c0 4.5-3.4 7.9-8 8.9-4.6-1-8-4.4-8-8.9V6z"/><path d="m8.9 12.1 2.1 2.1 4.1-4.2"/></svg>`;
-const NAME = `박지우 <span class="ml-[6px] inline-flex gap-[6px] align-middle">${ui.badge("on", "사용")}<span title="사용자 권한">${c.tag(`${SHIELD}고객지원 담당`)}</span></span>`;
+// 권한 꼬리표는 방패 아이콘 대신 라벨을 단다 — 값만으로는 안 보이던 것을 바로 알게 한다(점포코드 ST000123 처럼
+// 라벨+값, 2026-10-20 디자인 수정).
+const NAME = `박지우 <span class="ml-[6px] inline-flex gap-[6px] align-middle">${ui.badge("on", "사용")}${c.tag("사용자 권한 · 고객지원 담당")}</span>`;
 
 function platformAdminDetailBody(A, R) {
   const resetId = x.dialogId();
@@ -52,10 +53,10 @@ function platformAdminDetailBody(A, R) {
       { header: "변경 후", align: "left" },
     ],
     [
-      ["2026-08-12 09:40", "platkim", "초기 비밀번호", "-", `초기화 메일 발송 완료 ${muted("· 값은 남기지 않음")}`],
+      ["2026-08-12 09:40", "platkim", "초기 비밀번호", "", `초기화 메일 발송 완료 ${muted("· 값은 남기지 않음")}`],
       ["2026-03-02 14:20", "platkim", "직책", "사원", "매니저"],
       ["2025-07-01 09:30", "platjung", "사용자 권한", `플랫폼 관리자 ${muted("PA000001")}`, `고객지원 담당 ${muted("PA000002")}`],
-      ["2025-06-02 10:11", "platjung", "계정", "-", `사용 · 플랫폼 관리자 ${muted("PA000001")}`],
+      ["2025-06-02 10:11", "platjung", "계정", "", `사용 · 플랫폼 관리자 ${muted("PA000001")}`],
     ],
   );
 

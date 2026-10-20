@@ -8,7 +8,7 @@ import { formatDateTime, formatPhone } from "@/lib/format";
 import { adminActionsOf } from "@/lib/platform-admin-actions";
 import type { PlatformAdminDetail } from "@/lib/platform-admins";
 import { deletePlatformAdminAction, resetPlatformAdminPasswordAction } from "./actions";
-import { Blocked, FailedBand, ShieldIcon, unknownResult, WhoList } from "./admin-parts";
+import { Blocked, FailedBand, unknownResult, WhoList } from "./admin-parts";
 import { HistoryButton } from "./history-dialog";
 
 // 플랫폼 관리자 상세(S-BRSPGB). 모두 읽기 전용이고, 상태 · 권한은 수정 패널에서만 바꾼다.
@@ -119,8 +119,8 @@ function DetailBody({
   const rows: DetailRow[] = [
     { label: "아이디", value: admin.loginId },
     { label: "이름", value: name },
-    { label: "연락처", value: admin.phone ? formatPhone(admin.phone) : muted("-") },
-    { label: "이메일", value: admin.email ?? muted("-") },
+    { label: "연락처", value: admin.phone ? formatPhone(admin.phone) : null },
+    { label: "이메일", value: admin.email ?? null },
     {
       label: "비밀번호",
       value: (
@@ -136,8 +136,8 @@ function DetailBody({
         </>
       ),
     },
-    { label: "소속 부서", value: admin.department ?? muted("-") },
-    { label: "직책", value: admin.jobTitle ?? muted("-") },
+    { label: "소속 부서", value: admin.department ?? null },
+    { label: "직책", value: admin.jobTitle ?? null },
     // 우편번호 · 기본주소 · 상세주소를 줄을 바꿔 보인다(데모 상세와 같다). 이 줄만 내용만큼 늘어난다.
     {
       label: "주소",
@@ -149,7 +149,7 @@ function DetailBody({
           ))}
         </div>
       ) : (
-        muted("-")
+        null
       ),
     },
     // 최근 로그인 → 등록일시 → 최종 수정일시 순으로 둔다(2026-10-20 디자인 수정).
@@ -167,16 +167,12 @@ function DetailBody({
 
   return (
     <div inert={inert} className="flex flex-col gap-[16px]">
-      {/* 이름 옆에 계정 상태와 사용자 권한을 꼬리표로 둔다(데모 상세 · 2026-10-08) */}
+      {/* 이름 옆에 계정 상태와 사용자 권한을 꼬리표로 둔다(데모 상세 · 2026-10-08). 권한 꼬리표는 방패 아이콘 대신
+          라벨을 달아 값만으로는 안 보이던 것을 바로 알게 한다(점포코드 ST000123 처럼 라벨+값, 2026-10-20 디자인 수정). */}
       <h2 className="flex flex-wrap items-center gap-[6px] text-[18px] font-semibold text-erp-ink">
         <span className="mr-[4px]">{name}</span>
         {admin.accountStatus === "ACTIVE" ? <Badge tone="on">사용</Badge> : <Badge tone="off">미사용</Badge>}
-        <span title="사용자 권한">
-          <Tag>
-            <ShieldIcon />
-            {admin.roleGroup.name}
-          </Tag>
-        </span>
+        <Tag>사용자 권한 · {admin.roleGroup.name}</Tag>
       </h2>
       {failure && <FailedBand message={failure} />}
       <DetailTable title="기본정보" rows={rows} />

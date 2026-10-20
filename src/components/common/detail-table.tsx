@@ -8,7 +8,8 @@ export type DetailRow = {
 };
 
 // Figma 03.프레임_상세의 TABLE. 목록(DataTable)과 달리 한 건을 세로로 펼쳐 보여 준다.
-// 왼쪽 라벨 칸은 130 고정(값 칸이 너무 좁다는 피드백으로 180 → 150 → 130 으로 줄임, 2026-10-20 — DESIGN.md 도 맞춰 고쳤다),
+// 왼쪽 라벨 칸은 110 고정(값 칸이 너무 좁다는 피드백으로 180 → 150 → 130 → 110 으로 줄임, 2026-10-20 — DESIGN.md 도
+// 맞춰 고쳤다). truncate 가 있어 "미사용 전환일시"처럼 긴 라벨은 말줄임으로 잘릴 수 있다 — 더 줄이면 늘어난다.
 // 오른쪽 값 칸이 남는 폭을 먹는다. 줄 높이는 46(multiline 줄만 46 을 최소로 내용만큼 늘어난다), 제목 줄은 42다.
 // 라벨·값 사이에는 Figma 대로 세로선을 넣지 않는다. 그래서 테두리를 라벨은 왼쪽+아래, 값은 오른쪽+아래로 나눠
 // 제목 줄의 사방 테두리와 겹치지 않게 한다. 마지막 줄만 아래 모서리를 둥글린다.
@@ -25,7 +26,7 @@ export function DetailTable({ title, rows }: { title: ReactNode; rows: DetailRow
           return (
             <div key={i} className="flex w-full">
               <dt
-                className={`flex ${height} w-[130px] shrink-0 items-center truncate border-b border-l border-erp-thead-line bg-white p-[12px] text-[14px] font-medium text-erp-label ${
+                className={`flex ${height} w-[110px] shrink-0 items-center truncate border-b border-l border-erp-thead-line bg-white p-[12px] text-[14px] font-medium text-erp-label ${
                   last ? "rounded-bl-[2px]" : ""
                 }`}
               >
