@@ -216,7 +216,7 @@ export function PayslipReview({
           isWithholdingApplied: isPartTime && withholding,
           items: amounts,
         }),
-      "saved",
+      "임시저장했습니다.",
     );
   };
 
