@@ -140,12 +140,13 @@
     for (const el of $$("[aria-invalid]", e.target)) el.removeAttribute("aria-invalid");
   });
 
-  // 고르는 칸에서 「직접입력」을 고르면 같은 폼의 직접 입력칸 잠금을 푼다(도입문의 업종).
+  // 고르는 칸에서 「기타」를 고르면 같은 폼의 직접 입력칸을 아래에 연다(도입문의 업종).
   for (const sel of $$("[data-other-select]")) {
     const input = sel.form.querySelector("[data-other-input]");
     sel.addEventListener("change", () => {
-      const other = sel.value === "직접입력";
+      const other = sel.value === "기타";
       input.disabled = !other;
+      input.closest("[data-other-wrap]").hidden = !other;
       if (other) input.focus();
       else input.value = "";
     });
@@ -159,13 +160,20 @@
     sync();
   }
 
-  // 데모 접수(도입문의): 브라우저 검사를 통과하면 보내지 않고 접수 안내만 보인다.
+  // 데모 접수(도입문의): 브라우저 검사를 통과하면 보내지 않고 완료 팝업만 띄운다. [확인]은 팝업을 닫고 폼을 비운다.
   for (const form of $$("[data-demo-submit]")) {
+    const done = form.querySelector("[data-demo-done]");
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      const done = form.querySelector("[data-demo-done]");
-      done.hidden = false;
-      done.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      done.showModal();
+    });
+    done.querySelector("[data-dialog-close]").addEventListener("click", () => {
+      done.close();
+      form.reset();
+      for (const input of $$("[data-other-input]", form)) {
+        input.disabled = true;
+        input.closest("[data-other-wrap]").hidden = true;
+      }
     });
   }
 

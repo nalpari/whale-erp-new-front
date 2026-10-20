@@ -29,7 +29,7 @@ const HIGHLIGHTS = [
 const billboard = (A, R) => `<section class="relative -mt-[110px] h-[1080px] overflow-hidden">${g.cover(A, "billboard-bg.png", "object-cover", true)}
 <div class="absolute top-1/2 left-1/2 h-[375px] w-[677px] -translate-1/2">${g.cover(A, "billboard-whale.png", "", true)}</div>
 <div class="absolute top-[478px] left-1/2 flex w-[1520px] -translate-x-1/2 flex-col gap-[80px]"><div class="flex items-end justify-between"><div class="flex w-[445px] flex-col gap-[48px]"><p class="flex flex-col gap-[23px] bg-gradient-to-r from-[rgba(58,86,112,0.5)] to-[rgba(58,86,112,0.22)] bg-clip-text font-[family-name:var(--font-rem)] font-black text-transparent"><span class="text-[70px] tracking-[-0.025em] ${TRIM}">WHALE</span><span class="text-[216px] tracking-[-0.025em] ${TRIM}">ERP</span></p><div class="flex flex-col gap-[24px] pl-[12px] text-[rgba(58,86,112,0.4)]"><p class="font-[family-name:var(--font-inter-tight)] text-[32px] leading-[1.5] font-bold tracking-normal capitalize ${TRIM}">your smart choice</p><p class="text-[17px] leading-[1.4] ${TRIM}">매장에서 챙겨야 할 일, 이제 하나로 끝내세요.<br>직원 계약부터 매출·재무, 가맹점 관리까지 식당·카페 사장님을 위한<br>올인원 플랫폼입니다.</p></div></div>
-<div class="flex gap-[8px]"><a href="#" class="flex h-[48px] w-[176px] items-center justify-center gap-[12px] rounded-[6px] border border-transparent bg-[rgba(58,86,112,0.9)] text-[18px] leading-[1.5] font-semibold text-white hover:border-guest-navy hover:bg-white hover:text-guest-navy ${BUTTON_MOTION}">무료로 시작하기${g.arrow(A)}</a><a href="${link(R, "home/inquiry.html")}" class="flex h-[48px] w-[100px] items-center justify-center rounded-[6px] border border-transparent bg-white/90 text-[18px] leading-[1.5] font-semibold text-guest-navy hover:border-guest-navy hover:bg-white ${BUTTON_MOTION}">도입문의</a></div></div>
+<div class="flex gap-[8px]"><a href="${link(R, "auth/signup.html")}" class="flex h-[48px] w-[176px] items-center justify-center gap-[12px] rounded-[6px] border border-transparent bg-[rgba(58,86,112,0.9)] text-[18px] leading-[1.5] font-semibold text-white hover:border-guest-navy hover:bg-white hover:text-guest-navy ${BUTTON_MOTION}">무료로 시작하기${g.arrow(A)}</a><a href="${link(R, "home/inquiry.html")}" class="flex h-[48px] w-[100px] items-center justify-center rounded-[6px] border border-transparent bg-white/90 text-[18px] leading-[1.5] font-semibold text-guest-navy hover:border-guest-navy hover:bg-white ${BUTTON_MOTION}">도입문의</a></div></div>
 <ul class="flex justify-between border-t border-[rgba(130,151,168,0.15)] pt-[24px] pl-[2px] text-[rgba(58,86,112,0.7)]">${HIGHLIGHTS.map(
   (h) => `<li class="flex gap-[10px]"><span class="text-[16px] leading-[2.3] font-bold">${h.no}</span><span class="leading-[1.6]"><strong class="block text-[24px] font-bold">${h.title}</strong><span class="text-[18px]">${h.desc}</span></span></li>`,
 ).join("")}</ul></div></section>`;
@@ -127,7 +127,7 @@ const STEPS = [
 ];
 
 // 시안의 줄바꿈은 1920 폭에서만 둔다. 좁으면 그 줄이 한 번 더 꺾여 「끝.」 같은 낱말이 홀로 남는다.
-const steps = (A) => `<section class="flex flex-col gap-[60px] px-[80px] py-[120px]">${g.titleRow("시작은", "세 단계면 충분합니다", g.button(A, "가입하고 시작하기", { tone: "navy", arrow: true }))}<ol class="grid grid-cols-3 gap-[24px]">${STEPS.map(
+const steps = (A, R) => `<section class="flex flex-col gap-[60px] px-[80px] py-[120px]">${g.titleRow("시작은", "세 단계면 충분합니다", g.button(A, "가입하고 시작하기", { tone: "navy", href: link(R, "auth/signup.html"), arrow: true }))}<ol class="grid grid-cols-3 gap-[24px]">${STEPS.map(
   (s, i) => `<li class="flex gap-[42px] rounded-[16px] border border-guest-line bg-white px-[42px] pt-[48px] pb-[42px]"><div class="flex flex-1 flex-col items-start gap-[26px]"><span class="rounded-full bg-guest-step px-[14px] py-[12px] text-[16px] leading-[1.5] font-bold tracking-normal text-white ${TRIM}">STEP ${no(i)}</span><div class="flex flex-col gap-[20px] pl-[4px] leading-[1.5]"><h3 class="text-[24px] font-semibold text-guest-navy ${TRIM}">${s.title}</h3><p class="text-[17px] text-guest-body ${TRIM}">${s.desc.join(' <br class="hidden min-[1920px]:inline">')}</p></div></div><span class="self-end">${mailIcon(A)}</span></li>`,
 ).join("")}</ol></section>`;
 
@@ -135,6 +135,7 @@ const PLANS = [
   {
     kicker: "STARTER",
     cta: "사업자 회원가입",
+    href: "auth/signup.html",
     name: "기본 제공",
     summary: "가입하면 바로 쓰는 기본 범위",
     listTitle: "가입 시 제공",
@@ -186,10 +187,10 @@ const boardHead = (A, text, action, href = "#") =>
 const boards = (A, R) => `<section class="grid grid-cols-2 gap-[16px] px-[80px]"><div class="flex flex-col gap-[60px]">${g.sectionTitle("시작 전에,", "가장 많이 묻는 질문")}<div class="flex flex-col gap-[34px] rounded-[6px] border border-guest-line bg-white p-[34px]">${boardHead(A, "궁금한 점이 더 있다면 언제든 편하게 물어보세요.", "전체 질문 보기", link(R, "home/notices.html#faq"))}<div class="flex flex-col gap-[8px]">${FAQS.map(
   (faq) => `<details name="guest-faq"${faq.a !== null ? " open" : ""} class="group rounded-[3px] bg-[#fafafa] pb-[4px] open:bg-[#f5f5f5]"><summary class="flex cursor-pointer px-[20px] pt-[22px] pb-[18px] list-none items-center gap-[11px] text-[17px] leading-[1.5] font-semibold text-guest-ink hover:text-guest-navy ${HOVER} [&::-webkit-details-marker]:hidden"><span class="flex size-[28px] shrink-0 items-center justify-center rounded-full bg-guest-navy text-[18px] font-bold tracking-normal text-white">Q</span><span class="flex-1">${faq.q}</span>${g.gimg(A, "faq-plus.svg", 28, 28, "group-open:hidden")}${g.gimg(A, "faq-close.svg", 28, 28, "hidden group-open:block")}</summary>${faq.a ? `<p class="pr-[20px] pb-[18px] pl-[60px] text-[16px] leading-[1.5] text-guest-sub">${faq.a}</p>` : ""}</details>`,
 ).join("")}</div></div></div><div class="flex flex-col gap-[60px]">${g.sectionTitle("Whale ERP", "새로운 소식 안내")}<div class="flex flex-1 flex-col gap-[32px] rounded-[6px] border border-guest-line bg-white p-[34px]">${boardHead(A, "Whale ERP의 새로운 소식을 알려 드립니다.", "전체 보기", link(R, "home/notices.html"))}<ul class="border-t border-guest-list-line text-[17px] leading-[1.5]">${NEWS.map(
-  (n) => `<li class="flex items-center gap-[8px] border-b border-guest-list-line py-[18px] last:border-b-0">${n.badge ? `<span class="flex h-[30px] items-center rounded-[3px] px-[10px] text-[15px] leading-[1.4] font-semibold ${n.badge.cls}">${n.badge.text}</span>` : ""}<a href="#" class="flex-1 text-guest-ink hover:text-guest-navy ${HOVER}">${n.title}</a><span class="text-guest-sub">2026.10.30</span></li>`,
+  (n) => `<li class="flex items-center gap-[8px] border-b border-guest-list-line py-[18px] last:border-b-0">${n.badge ? `<span class="flex h-[30px] items-center rounded-[3px] px-[10px] text-[15px] leading-[1.4] font-semibold ${n.badge.cls}">${n.badge.text}</span>` : ""}<a href="${link(R, "home/notice-detail.html")}" class="flex-1 text-guest-ink hover:text-guest-navy ${HOVER}">${n.title}</a><span class="text-guest-sub">2026.10.30</span></li>`,
 ).join("")}</ul></div></div></section>`;
 
 export default ({ A, R }) => {
-  const main = billboard(A, R) + features(A, R) + personas(A, R) + connections(A) + steps(A) + plans(A, R) + boards(A, R);
+  const main = billboard(A, R) + features(A, R) + personas(A, R) + connections(A) + steps(A, R) + plans(A, R) + boards(A, R);
   return { title: "비로그인 홈", head: g.head(A), html: g.page(A, R, { current: "home/index.html", main }) };
 };
