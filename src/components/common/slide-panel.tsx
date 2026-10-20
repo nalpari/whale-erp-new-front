@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useEffectEvent, useRef, useSyncExternalStore, type ReactNode, type RefObject } from "react";
-import { flushSync } from "react-dom";
 import { EASE_OUT } from "./theme";
 
 // Figma Slide. 목록 화면 오른쪽에서 밀려 나오는 등록·수정 패널(RNB).
@@ -86,15 +85,17 @@ export function SlidePanel({
         document.removeEventListener("keydown", onKey);
         openPanels.delete(entry);
         entryRef.current = null;
-        // flushSync 로 감싼다 — 안 그러면 아래 트리거 focus() 가 이 알림이 만드는 리렌더보다 먼저 돌아,
-        // 트리거가 아직 지난 렌더의 inert 조상 안에 있어 focus() 가 조용히 실패한다(코드 리뷰로 찾음, 2026-10-20).
-        flushSync(() => notifyBackdrop());
+        notifyBackdrop();
       };
     }
     // 열렸다 닫힌 때만 되돌린다. 처음 그려질 때 다른 곳의 포커스를 빼앗으면 안 된다.
     if (wasOpen.current) {
       wasOpen.current = false;
-      trigger.current?.focus();
+      // rAF 로 미룬다 — 바로 위 notifyBackdrop() 이 만드는 리렌더(배경·다른 패널의 inert 를 벗기는 것)는
+      // 이 effect 와 같은 커밋 단계(passive effect flush) 안에서 끝나지 않는다. flushSync 로 먼저 끝내
+      // 보려 했지만 React 가 이미 커밋 중이라 조용히 무시되고 dev 콘솔에 경고만 남았다(코드 리뷰로 찾음,
+      // 2026-10-20) — admin-form-panel.tsx 의 focusFirstError 와 같은 방식으로 바꿨다.
+      requestAnimationFrame(() => trigger.current?.focus());
     }
     // closeOnBackdrop 은 여기 의존성에 넣지 않는다 — 넣으면 그 값만 바뀌어도 Set 에서 지웠다가 다시 더해
     // 맨 뒤로 가, "가장 나중에 연 패널 = 가장 위" 라는 전제가 실제 화면 순서와 어긋난다(코드 리뷰로 찾음,
