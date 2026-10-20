@@ -2,15 +2,15 @@
 // next/* 를 import 하지 않는다 — node --test 로 바로 돌리기 위해서다.
 
 export const PAPER_ROUTE = "/contracts/paper";
-/** 공지사항 · FAQ 등록 · 수정 창구(첨부 multipart, #276). 같은 까닭으로 401 을 준다. */
-export const POST_SAVE_ROUTE = "/platform/community/posts";
+/** 공지사항 등록 · 수정 창구(첨부 multipart, #276). 같은 까닭으로 401 을 준다. FAQ 는 첨부가 없어 서버 액션이다. */
+export const NOTICE_SAVE_ROUTE = "/platform-notices/save";
 
 /**
  * 로그인이 끊겼을 때 리다이렉트 대신 401 JSON 을 줄 경로 — fetch 가 부르는 BFF(/api/*)와 종이 계약 등록 · 공지사항 저장.
  * 리다이렉트를 주면 fetch 가 따라가 날인본을 실은 채 /login 으로 다시 POST 하고, 화면은 로그인으로 가지 못한다.
  */
 export function answersWith401(pathname: string): boolean {
-  return pathname.startsWith("/api/") || pathname === PAPER_ROUTE || pathname === POST_SAVE_ROUTE;
+  return pathname.startsWith("/api/") || pathname === PAPER_ROUTE || pathname === NOTICE_SAVE_ROUTE;
 }
 
 /**

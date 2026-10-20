@@ -13,9 +13,10 @@ export type AnswerStatus = Schemas["InquiryAnswerStatus"];
 export type Audience = Exclude<Schemas["PostAudienceType"], "ADDON">;
 export type PostAttachment = Schemas["PostAttachmentDto"];
 
-export const COMMUNITY = "/platform/community";
-/** 메뉴 URL(MN000219 · MN000220)과 같다. */
-export const POST_BASE: Record<PostKind, string> = { NOTICE: `${COMMUNITY}/notices`, FAQ: `${COMMUNITY}/faq` };
+// 화면 주소 = 메뉴 URL(MN000219 ~ MN000222) = api 자원 이름이다(한 단계 경로, 2026-10-20 api squirtle). 글 종류는 경로가 정한다.
+export const POST_BASE: Record<PostKind, string> = { NOTICE: "/platform-notices", FAQ: "/platform-faqs" };
+export const INQUIRY_BASE = "/platform-inquiries";
+export const LEAD_BASE = "/platform-leads";
 
 /** 1차 노출 대상 넷. 부가서비스(ADDON)는 그 차수에 연다(WHALEERP-273). 「전체」 선택은 따로 두지 않고 넷을 모두 고르면 전체다(#276). */
 export const AUDIENCES: readonly Audience[] = ["GUEST", "MEMBER", "BP", "STORE"];
@@ -117,7 +118,7 @@ export function validatePost(f: PostForm, status: PostStatus, kept: number, file
 }
 
 /**
- * 보낼 multipart 칸. api 가 문자열을 JSON 과 같은 값으로 바꾼다(post-fields.dto) — 배열은 같은 이름을 되풀이하고,
+ * 공지사항으로 보낼 multipart 칸. api 가 문자열을 JSON 과 같은 값으로 바꾼다(post-fields.dto) — 배열은 같은 이름을 되풀이하고,
  * 빈 선택 칸은 빈 문자열(null), 불리언은 'true' · 'false' 다. 파일과 수정용 updatedAt · removeAttachmentIds 는 부르는 쪽이 붙인다.
  */
 export function postFields(f: PostForm, status: PostStatus): [string, string][] {
@@ -137,6 +138,11 @@ export function postFields(f: PostForm, status: PostStatus): [string, string][] 
     );
   else fields.push(["faqCategoryCode", f.faqCategoryCode]);
   return fields;
+}
+
+/** FAQ 로 보내는 JSON(api CreatePostDto). FAQ 경로는 JSON 만 받고 공지사항 칸(유형 · 고정 · 게시 기간)을 보내지 않는다. */
+export function faqBody(f: PostForm, status: PostStatus) {
+  return { title: f.title, body: f.body, status, audiences: f.audiences, faqCategoryCode: f.faqCategoryCode };
 }
 
 /** 파일 크기 글자 — 1MB 넘으면 MB, 아니면 KB(올림). */

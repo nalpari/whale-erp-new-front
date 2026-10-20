@@ -4,8 +4,8 @@ import { test } from "node:test";
 import { answersWith401, sameOrigin } from "./paper-request.ts";
 
 test("answersWith401 — BFF · 종이 계약 등록 · 공지사항 저장만 401, 화면 경로는 로그인으로 리다이렉트", () => {
-  for (const p of ["/api/contracts", "/api/auth/admin/login-info", "/contracts/paper", "/platform/community/posts"]) assert.equal(answersWith401(p), true, p);
-  for (const p of ["/contracts", "/contracts/7", "/contracts/paper/x", "/contracts/7/documents/1", "/home", "/apix", "/platform/community/notices"]) assert.equal(answersWith401(p), false, p);
+  for (const p of ["/api/contracts", "/api/auth/admin/login-info", "/contracts/paper", "/platform-notices/save"]) assert.equal(answersWith401(p), true, p);
+  for (const p of ["/contracts", "/contracts/7", "/contracts/paper/x", "/contracts/7/documents/1", "/home", "/apix", "/platform-notices", "/platform-notices/1"]) assert.equal(answersWith401(p), false, p);
 });
 
 test("sameOrigin — host 가 Origin 과 같으면 통과(포트까지 본다)", () => {
