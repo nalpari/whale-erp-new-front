@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useEffectEvent, useRef, useSyncExternalStore, type ReactNode, type RefObject } from "react";
+import { flushSync } from "react-dom";
 import { EASE_OUT } from "./theme";
 
 // Figma Slide. 목록 화면 오른쪽에서 밀려 나오는 등록·수정 패널(RNB).
@@ -85,7 +86,9 @@ export function SlidePanel({
         document.removeEventListener("keydown", onKey);
         openPanels.delete(entry);
         entryRef.current = null;
-        notifyBackdrop();
+        // flushSync 로 감싼다 — 안 그러면 아래 트리거 focus() 가 이 알림이 만드는 리렌더보다 먼저 돌아,
+        // 트리거가 아직 지난 렌더의 inert 조상 안에 있어 focus() 가 조용히 실패한다(코드 리뷰로 찾음, 2026-10-20).
+        flushSync(() => notifyBackdrop());
       };
     }
     // 열렸다 닫힌 때만 되돌린다. 처음 그려질 때 다른 곳의 포커스를 빼앗으면 안 된다.
