@@ -12,15 +12,18 @@ import { EASE_OUT } from "./theme";
 // hidden 이 아니라 clip 이다 — hidden 은 세로축까지 auto 로 끌어올려 헤더 팝업·툴팁이 잘린다.
 // 트리거와 패널 사이 어느 요소에도 relative 를 주면 안 된다. 그 순간 패널이 그 안으로 들어가 잘린다.
 // 버튼 줄까지 내용에 들어 있어 함께 스크롤한다.
-// 열린 패널은 바탕창(PanelBackdrop)에 자신을 등록한다 — 바탕을 누르면 열려 있는 패널을 모두 닫는다(데모 erp.js setBackdrop 과 같다, 2026-10-20).
-
+// 열린 패널은 바탕창(PanelBackdrop)에 자신을 등록한다 — 바탕을 누르면 가장 나중에 연(가장 위) 패널 하나를 닫는다(2026-10-20).
+// 패널 하나만 닫는 것은 Esc 와 같은 규칙이다 — 상세 위에 겹쳐 연 수정 패널처럼, 안쪽 패널의 onClose 가 "더 안쪽이 열려
+// 있으면 넘긴다"는 자기 화면의 조건을 가질 수 있어(admins-screen.tsx dismissDetail 의 editOpen 검사), 등록된 onClose 를
+// 한 번에 다 불러 봐도 그 조건이 아직 최신 렌더를 보지 못해 걸러지지 않는다 — 한 번에 하나씩, 다시 누르면 다음 것이 닫힌다.
 const openPanels = new Set<() => void>();
 const backdropListeners = new Set<() => void>();
 const notifyBackdrop = () => backdropListeners.forEach((l) => l());
 
-/** 지금 열려 있는 패널을 모두 닫는다 — PanelBackdrop 클릭 핸들러 전용. */
-function closeAllPanels() {
-  [...openPanels].forEach((close) => close());
+/** 가장 위(가장 나중에 연) 패널 하나를 닫는다 — PanelBackdrop 클릭 핸들러 전용. */
+function closeTopPanel() {
+  const panels = [...openPanels];
+  panels[panels.length - 1]?.();
 }
 export function SlidePanel({
   id,
@@ -89,7 +92,7 @@ const anyPanelOpen = () => openPanels.size > 0;
 
 /**
  * 열린 패널이 있으면 화면 전체(헤더 포함)를 덮는 바탕창 — 데모(docs/demo/assets/erp.js setBackdrop)와 같다.
- * 누르면 열려 있는 패널을 모두 닫는다. AdminFrame 처럼 모든 패널의 relative 조상 안에 한 번만 둔다.
+ * 누르면 가장 위 패널을 닫는다(Esc 와 같은 한 번에 하나씩). AdminFrame 처럼 모든 패널의 relative 조상 안에 한 번만 둔다.
  */
 export function PanelBackdrop() {
   const open = useSyncExternalStore(subscribeBackdrop, anyPanelOpen, () => false);
@@ -97,7 +100,7 @@ export function PanelBackdrop() {
     <div
       aria-hidden="true"
       inert={!open}
-      onClick={closeAllPanels}
+      onClick={closeTopPanel}
       className={`fixed inset-0 z-[5] bg-erp-nav/40 transition-opacity duration-250 ${EASE_OUT} motion-reduce:transition-none ${open ? "opacity-100" : "opacity-0"}`}
     />
   );
