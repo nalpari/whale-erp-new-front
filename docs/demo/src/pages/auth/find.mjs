@@ -15,7 +15,7 @@ const tab = (key, label, on) =>
 const field = (label, input, only = "") =>
   `<label${only ? ` data-find-only="${only}"${only === "password" ? " hidden" : ""}` : ""} class="flex flex-col gap-[10px]"><span class="${g.LABEL}">${label}</span><span class="${g.INPUT_BOX}">${input}</span></label>`;
 
-// 결과 안내. 비밀번호 탭은 계정이 있든 없든, 메일이 나가지 않았어도 같은 안내다 — 계정이 있는지 드러내지 않는다.
+// 결과 안내 예시(찾음 · 발송 완료). 실제 화면은 일치하지 않으면 두 탭 모두 일치 없음을 따로 알린다 — 데모는 그 상태를 그리지 않는다.
 const results = `<div data-find-result="id" role="status" hidden class="${RESULT}"><p>정하윤님의 아이디를 확인했습니다.</p><p class="text-[28px] leading-[1.2] font-bold text-guest-ink">ha******1</p><p class="text-[15px] text-[#767676]">앞 2자와 뒤 1자만 보여 드립니다.</p></div><div data-find-result="password" role="status" hidden class="${RESULT}"><p class="text-[20px] font-semibold text-guest-ink">이메일을 확인해 주세요.</p><p>입력하신 이메일 주소로 임시 비밀번호를 발송했습니다.<br>임시 비밀번호는 발급 후 1시간 동안 사용할 수 있습니다.</p></div>`;
 
 export default ({ A, R }) => {
