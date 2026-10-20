@@ -43,7 +43,7 @@ export default ({ A, R }) => {
   ]);
 
   const cols = [
-    { header: "아이디", width: "w-[130px]", align: "left" },
+    { header: "아이디", width: "w-[130px]" },
     { header: "이름", width: "w-[110px]" },
     { header: "사용자 권한", width: "w-[140px]" },
     { header: "계정 상태", width: "w-[100px]" },
