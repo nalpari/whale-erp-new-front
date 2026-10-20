@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { GlobalHeader, ServiceLinks, StoreSelect, UserPop, type HeaderMenu, type UserPopItem } from "@/components/common";
+import { GlobalHeader, ServiceLinks, StoreSelect, useBackdropActive, UserPop, type HeaderMenu, type UserPopItem } from "@/components/common";
 import { logout } from "@/app/actions";
 import type { Scope, ServiceCode } from "@/lib/browser-storage";
 import { findMenu, HOME, PENDING_PLATFORM_MENU } from "@/lib/menus";
@@ -18,6 +18,7 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   const account = useAccount();
   const service = useService();
   const all = useMenus();
+  const backdropActive = useBackdropActive();
   const [bpSelectOpen, setBpSelectOpen] = useState(false);
   const role = useCodes("ROLE_TYPE").find((c) => c.value === account.roleTypeCode)?.label ?? account.roleTypeCode;
   const menus: HeaderMenu[] = all.map((m) => {
@@ -45,6 +46,7 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   return (
     <GlobalHeader
       menus={menus}
+      inert={backdropActive}
       right={
         <>
           {service === "WHALE_ERP" ? <ScopeSelect /> : <div className="flex-1" />}

@@ -107,11 +107,20 @@ export function SlidePanel({
     notifyBackdrop();
   }, [closeOnBackdrop]);
 
+  // 내가 맨 위가 아닌데 맨 위 패널이 closeOnBackdrop 을 켰으면(바탕창이 뜬 상태) 나도 inert — 바탕창은 클릭만
+  // 가로채고 포커스는 가두지 않아, 이것 없이는 Tab 이 바탕창을 건너뛰어 나(열려 있지만 뒤에 깔린 패널)에게로
+  // 넘어가고, 그 안에서 또 다른 패널을 열면 Set 순서가 실제 화면 순서와 어긋나 버린다(코드 리뷰로 찾음, 2026-10-20).
+  const blockedByModal = useSyncExternalStore(
+    subscribeBackdrop,
+    () => topPanelClosable() && topPanel() !== entryRef.current,
+    () => false,
+  );
+
   return (
     <aside
       id={id}
       aria-label={label}
-      inert={!open}
+      inert={!open || blockedByModal}
       className={`absolute inset-y-0 right-0 z-10 flex w-[464px] flex-col gap-[16px] overflow-y-auto border-x border-erp-panel-line bg-white p-[24px] transition-transform duration-250 ${EASE_OUT} motion-reduce:transition-none ${
         open ? "translate-x-0" : "translate-x-full"
       }`}
@@ -133,6 +142,15 @@ const subscribeBackdrop = (listener: () => void) => {
 const topPanelClosable = () => topPanel()?.closable ?? false;
 
 /**
+ * 가장 위 패널이 closeOnBackdrop 을 켰는지 — PanelBackdrop 이 뜰지와, 화면의 나머지(헤더·목록)를 inert 로
+ * 막을지를 같은 값으로 정한다. 바탕창은 클릭만 가로채고 포커스는 가두지 않으므로, 이 값으로 배경 쪽도 직접
+ * inert 를 줘야 Tab 이 바탕창을 건너뛰어 배경으로 넘어가는 것을 막는다(코드 리뷰로 찾음, 2026-10-20).
+ */
+export function useBackdropActive() {
+  return useSyncExternalStore(subscribeBackdrop, topPanelClosable, () => false);
+}
+
+/**
  * 가장 위 패널이 closeOnBackdrop 을 켰을 때만 화면 전체(헤더 포함)를 덮는 바탕창. 누르면 그 패널만 닫는다
  * (Esc 와 같은 한 번에 하나씩) — 데모(docs/demo/assets/erp.js setBackdrop)는 열린 패널이 하나라도 있으면
  * 항상 덮고 눌렀을 때 전부 닫아, 여기서는 다르게 간다(등록처럼 입력을 잃을 수 있는 패널은 바탕으로 안 닫는다).
@@ -140,7 +158,7 @@ const topPanelClosable = () => topPanel()?.closable ?? false;
  * 모든 패널의 relative 조상 안에 한 번만 둔다.
  */
 export function PanelBackdrop() {
-  const open = useSyncExternalStore(subscribeBackdrop, topPanelClosable, () => false);
+  const open = useBackdropActive();
   return (
     <div
       aria-hidden="true"

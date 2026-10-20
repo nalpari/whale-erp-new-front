@@ -19,4 +19,4 @@ export { GlobalHeader, ServiceLinks, AlarmLink, type HeaderMenu } from "./global
 export { StoreSelect } from "./store-select";
 export { UserPop, type UserPopItem } from "./user-pop";
 export { PageBar } from "./page-bar";
-export { PanelBackdrop, SlidePanel } from "./slide-panel";
+export { PanelBackdrop, SlidePanel, useBackdropActive } from "./slide-panel";
