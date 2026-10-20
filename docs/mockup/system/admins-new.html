@@ -141,7 +141,11 @@
                   </div>
                   <div class="field">
                     <label for="nmail">이메일 <span class="req">*</span></label>
-                    <input class="input mono" id="nmail" value="chaewon.yoon@whale-erp.example" maxlength="100" data-show="in dupid miss denied fail" />
+                    <!-- 아이디와 달리 바로 물어볼 중복확인 API 가 없어(등록 시점에만 api 가 409 로 막는다) 형식만 본다
+                         — data-taken 이 없어 auth.js checkDup 이 지연 없이 바로 답한다(2026-10-20). -->
+                    <input class="input mono" id="nmail" value="chaewon.yoon@whale-erp.example" maxlength="100" data-show="in dupid miss denied fail" data-dupcheck="mail" data-dup-enter />
+                    <span class="pass" data-dup="ok" hidden><span data-icon="check" data-icon-size="13"></span>올바른 이메일 형식입니다.</span>
+                    <span class="err" data-dup="fmt" hidden><span data-icon="alert" data-icon-size="13"></span>이메일 형식이 아닙니다.</span>
                     <input class="input mono" value="jiwoo.park@whale-erp.example" maxlength="100" aria-invalid="true" aria-label="이메일" data-show="dupmail" hidden />
                     <span class="err" data-show="dupmail" hidden><span data-icon="alert" data-icon-size="13"></span>사용 중이거나 미사용인 다른 관리자 계정의 이메일입니다.</span>
                   </div>

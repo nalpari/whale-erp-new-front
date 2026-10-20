@@ -75,6 +75,17 @@ export function loginIdError(loginId: string): string | undefined {
   return value ? "아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다." : "아이디를 입력해 주세요.";
 }
 
+/**
+ * 이메일 형식 오류 문구. 맞으면 undefined. 저장할 때와 칸을 벗어날 때 같이 쓴다.
+ * 아이디처럼 중복을 바로 물어볼 API 가 없어(등록 시점에만 api 가 409 로 막는다) 형식만 본다.
+ */
+export function emailError(email: string): string | undefined {
+  const value = email.trim();
+  if (!value) return "이메일을 입력해 주세요.";
+  if (value.length > 100 || !EMAIL_PATTERN.test(value)) return "이메일 형식이 아닙니다.";
+  return undefined;
+}
+
 /** 칸별 오류 문구. 없으면 빈 객체. 등록은 아이디도 본다(수정은 아이디를 바꾸지 않는다). */
 export function validateAdminForm(form: AdminForm, mode: "create" | "edit"): Partial<Record<AdminFormField, string>> {
   const errors: Partial<Record<AdminFormField, string>> = {};
@@ -83,9 +94,8 @@ export function validateAdminForm(form: AdminForm, mode: "create" | "edit"): Par
   if (!NAME_PATTERN.test(form.name.trim())) errors.name = form.name.trim() ? "이름은 한글 또는 영문 2~20자입니다." : "이름을 입력해 주세요.";
   const phone = phoneOf(form);
   if (!PHONE_PATTERN.test(phone)) errors.phone = phone ? "연락처는 숫자 10~11자리입니다." : "연락처를 입력해 주세요.";
-  const email = form.email.trim();
-  if (!email) errors.email = "이메일을 입력해 주세요.";
-  else if (email.length > 100 || !EMAIL_PATTERN.test(email)) errors.email = "이메일 형식이 아닙니다.";
+  const email = emailError(form.email);
+  if (email) errors.email = email;
   if (form.department.trim().length > 30) errors.department = "소속 부서는 30자까지입니다.";
   if (form.jobTitle.trim().length > 30) errors.jobTitle = "직책은 30자까지입니다.";
   if (form.addressDetail.trim().length > 100) errors.addressDetail = "상세주소는 100자까지입니다.";

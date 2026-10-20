@@ -41,7 +41,14 @@ function platformAdminNewBody(A) {
     ),
     row(
       ui.field(req("연락처"), tel("010", "9013", "5528")),
-      ui.field(req("이메일"), stack(ui.textField({ value: "chaewon.yoon@whale-erp.example", maxlength: 100 }))),
+      ui.field(
+        req("이메일"),
+        // 아이디와 달리 바로 물어볼 중복확인 API 가 없어 형식만 본다 — erp.js initDupCheck 가 지연 없이 바로 답한다(2026-10-20).
+        stack(
+          ui.textField({ value: "chaewon.yoon@whale-erp.example", maxlength: 100, type: "email", "data-dupcheck": "mail" }),
+          `<p data-dup-message hidden></p>`,
+        ),
+      ),
     ),
     row(
       ui.field("소속 부서", stack(ui.textField({ value: "플랫폼운영팀", maxlength: 30 }))),

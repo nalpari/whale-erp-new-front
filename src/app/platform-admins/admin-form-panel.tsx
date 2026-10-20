@@ -7,6 +7,7 @@ import { useAccount, useCodes } from "@/components/site/session-gate";
 import { labelOf } from "@/lib/enums";
 import {
   EMPTY_FORM,
+  emailError,
   formOf,
   loginIdError,
   serverErrorField,
@@ -19,7 +20,7 @@ import {
 import type { PlatformAdminDetail, PlatformRoleGroup } from "@/lib/platform-admins";
 import { checkLoginIdAvailableAction, createPlatformAdminAction, updatePlatformAdminAction } from "./actions";
 import { AddressField } from "@/components/address-field";
-import { FailedBand, FieldMessage, LoginIdAvailability, unknownResult } from "./admin-parts";
+import { EmailFormatValid, FailedBand, FieldMessage, LoginIdAvailability, unknownResult } from "./admin-parts";
 
 // 플랫폼 관리자 등록(S-FOJJKB) · 수정(S-CZGHBS) 슬라이드 패널. 패널 폭(464)이라 칸을 한 줄에 하나씩 쌓는다(데모와 같다).
 // 등록에는 상태 · 비밀번호 칸이 없다 — 사용으로 생기고 초기 비밀번호가 등록 이메일로 간다.
@@ -56,6 +57,8 @@ export function AdminFormPanel(props: Props) {
   /** 중복확인 대기·성공 상태(코드 리뷰 반영) — 오류는 기존대로 errors.loginId 에 둔다 */
   const [checkingLoginId, setCheckingLoginId] = useState(false);
   const [loginIdAvailable, setLoginIdAvailable] = useState(false);
+  /** 이메일 형식 확인 성공 — api 호출이 없어 아이디처럼 확인 중 차례를 둘 필요가 없다. 오류는 errors.email 에 둔다. */
+  const [emailValid, setEmailValid] = useState(false);
   /** 칸을 되돌릴 때마다 올라간다 — 아래 effect 가 이 값을 보고 중복확인 상태 · 차례를 함께 되돌린다 */
   const [resetSignal, setResetSignal] = useState(0);
 
@@ -79,6 +82,7 @@ export function AdminFormPanel(props: Props) {
       // ref 는 그리는 중에 건드릴 수 없어(react-hooks/refs) 아래 effect 에서만 차례를 올린다.
       setCheckingLoginId(false);
       setLoginIdAvailable(false);
+      setEmailValid(false);
       setResetSignal((n) => n + 1);
     }
   }
@@ -151,6 +155,22 @@ export function AdminFormPanel(props: Props) {
         setCheckingLoginId(false);
         console.warn("아이디 중복 확인 호출 실패 — 저장할 때 api 가 다시 본다", error);
       });
+  };
+
+  /**
+   * 이메일 형식 즉시 확인(등록 · 수정 모두) — 칸을 벗어날 때. 아이디와 달리 바로 물어볼 중복확인 API 가 없어
+   * (등록 시점에만 api 가 409 로 막는다) 형식만 본다 — 그래서 확인 중 차례나 네트워크 호출이 없다.
+   */
+  const checkEmail = (value: string) => {
+    if (!value.trim()) return;
+    const formatError = emailError(value);
+    if (formatError) {
+      setErrors((e) => ({ ...e, email: formatError }));
+      setEmailValid(false);
+    } else {
+      clearError("email");
+      setEmailValid(true);
+    }
   };
 
   // 수정할 계정이 지금 권한 목록에 없으면(플랫폼 관리자가 보는 마스터 등) 그 권한도 선택지에 남겨 값이 비지 않게 한다
@@ -264,9 +284,21 @@ export function AdminFormPanel(props: Props) {
         </Group>
         <div className="flex flex-col gap-[8px]">
           <Field label="이메일" required>
-            <TextField type="email" value={form.email} onChange={(e) => set("email", e.target.value)} maxLength={100} aria-invalid={invalid("email")} aria-describedby={describe("email")} aria-required />
+            <TextField
+              type="email"
+              value={form.email}
+              onChange={(e) => {
+                setEmailValid(false);
+                set("email", e.target.value);
+              }}
+              onBlur={(e) => checkEmail(e.currentTarget.value)}
+              maxLength={100}
+              aria-invalid={invalid("email")}
+              aria-describedby={describe("email") ?? (emailValid ? messageId("email") : undefined)}
+              aria-required
+            />
           </Field>
-          {message("email")}
+          <EmailFormatValid id={messageId("email")} valid={emailValid} message={errors.email} />
         </div>
         <div className="flex flex-col gap-[8px]">
           <Field label="소속 부서">

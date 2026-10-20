@@ -856,14 +856,22 @@
   }
 
   // ── 아이디 · 이메일 중복 확인(data-dupcheck) — 칸을 벗어나거나 Enter 를 치면 형식과 중복을 보고 칸 아래 문구로 알린다 ──
-  // 앱 admin-form-panel.tsx 와 같다. 확인 중 · 사용 가능 · 중복 세 상태를 보인다(코드 리뷰 반영, 2026-10-20 —
+  // 앱 admin-form-panel.tsx 와 같다. 아이디는 확인 중 · 사용 가능 · 중복 세 상태를 보인다(코드 리뷰 반영, 2026-10-20 —
   // 대기·성공 신호가 없어 "확인했는지조차 알 수 없는" 문제였다). 데모엔 실제 api 가 없어 짧은 지연으로 비동기
   // 확인을 흉내 낸다. 데모의 ‘이미 있는 값’은 data-taken 이다.
+  // 이메일은 바로 물어볼 중복확인 API 가 없어(등록 시점에만 api 가 409 로 막는다) 형식만 보고 지연 없이 바로
+  // 답한다(taken 없음) — 그래서 "사용 가능"이 아니라 "형식이 올바르다"고만 말한다(2026-10-20).
   const DUP = {
     id: {
       pattern: /^(?=.*[A-Za-z])[A-Za-z0-9]{4,20}$/,
       format: "아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다.",
       taken: "이미 사용 중인 아이디입니다. 삭제된 계정의 아이디도 다시 쓸 수 없습니다",
+      ok: "사용 가능한 아이디입니다.",
+    },
+    mail: {
+      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+      format: "이메일 형식이 아닙니다.",
+      ok: "올바른 이메일 형식입니다.",
     },
   };
   // DESIGN.md 토큰 erp-on(#5e8ce9)과 같은 체크 표시 — 앱 admin-parts.tsx 의 LoginIdAvailability 와 같은 svg.
@@ -888,7 +896,7 @@
       } else if (kind === "ok") {
         message.className = "flex items-center gap-[4px] text-[13px] leading-[1.5] text-erp-on";
         message.setAttribute("aria-live", "polite");
-        message.innerHTML = `${DUP_CHECK_SVG} 사용 가능한 아이디입니다.`;
+        message.innerHTML = `${DUP_CHECK_SVG} ${text}`;
         input.removeAttribute("aria-invalid");
         input.removeAttribute("aria-busy");
       } else if (kind === "error") {
@@ -907,10 +915,13 @@
       const v = input.value.trim();
       if (!v) return render("");
       if (!rule.pattern.test(v)) return render("error", rule.format);
+      // taken 이 없는 규칙(이메일)은 물어볼 중복확인 API 가 없다는 뜻 — 형식만 보고 지연 없이 바로 답한다.
+      if (!rule.taken) return render("ok", rule.ok);
       render("checking");
       timer = setTimeout(() => {
         const taken = (input.dataset.taken || "").toLowerCase().split(",");
-        render(taken.includes(v.toLowerCase()) ? "error" : "ok", rule.taken);
+        const isTaken = taken.includes(v.toLowerCase());
+        render(isTaken ? "error" : "ok", isTaken ? rule.taken : rule.ok);
       }, 400);
     };
     input.addEventListener("blur", check);
