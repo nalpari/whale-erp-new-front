@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { Button, PageBar } from "@/components/common";
-import { ApiError, request } from "@/lib/api";
+import { ApiError, authHeaders, request } from "@/lib/api";
 import { ContractForm } from "../../new/contract-form";
 import { fromDetail, type ContractDetail } from "../../new/contract-form-model";
 import { loadFormData } from "../../new/load-form-data";
@@ -14,11 +14,11 @@ export default async function EditContractPage({ params }: PageProps<"/contracts
   const contractId = Number(raw);
   if (!Number.isInteger(contractId) || contractId < 1) notFound();
 
-  const { stores, labels, signedIn, token } = await loadFormData();
+  const { stores, labels, signedIn } = await loadFormData();
   let detail: ContractDetail | null = null;
-  if (token) {
+  if (signedIn) {
     try {
-      detail = await request<ContractDetail>(`/contracts/${contractId}`, { headers: { Authorization: `Bearer ${token}` } });
+      detail = await request<ContractDetail>(`/contracts/${contractId}`, { headers: await authHeaders() });
     } catch (e) {
       if (e instanceof ApiError && e.status === 404) notFound();
       if (!(e instanceof ApiError && e.status === 401)) throw e;

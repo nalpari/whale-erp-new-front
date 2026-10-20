@@ -21,10 +21,10 @@ export function tabs(items, selected = items[0].id) {
 }
 
 // 확인창·팝업 창. 네이티브 <dialog> 로 띄운다(Esc 로 닫힘). 여는 버튼은 dialogTrigger, 닫는 버튼은 data-close.
-// buttons 를 비우면 [취소][확인] 을 둔다.
-export function dialog(id, title, body, buttons) {
+// buttons 를 비우면 [취소][확인] 을 둔다. width 는 표를 담는 넓은 팝업(직원 고르기 등)만 바꾼다.
+export function dialog(id, title, body, buttons, width = "w-[420px]") {
   const foot = buttons ?? `${button("취소", { variant: "off", "data-close": true })}${button("확인", { "data-close": true })}`;
-  return `<dialog id="${id}" aria-labelledby="${id}-title" class="m-auto w-[420px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"><h2 id="${id}-title" class="text-[18px] font-semibold">${title}</h2><div class="mt-[12px] text-[14px] leading-[1.6] text-erp-ink">${body}</div><div class="mt-[24px] flex justify-end gap-[6px]">${foot}</div></dialog>`;
+  return `<dialog id="${id}" aria-labelledby="${id}-title" class="m-auto ${width} max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"><h2 id="${id}-title" class="text-[18px] font-semibold">${title}</h2><div class="mt-[12px] text-[14px] leading-[1.6] text-erp-ink">${body}</div><div class="mt-[24px] flex justify-end gap-[6px]">${foot}</div></dialog>`;
 }
 export const dialogTrigger = (label, id, variant = "primary") => button(label, { variant, "data-dialog": id });
 export const dialogId = () => uid("dialog");
@@ -55,10 +55,13 @@ export const ICON = {
   store: '<path d="M4.6 9.6v10.7h14.8V9.6"/><path d="M3 9.6 4.7 3.9h14.6L21 9.6"/><path d="M3 9.6a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M9.6 20.3v-6.1h4.8v6.1"/>',
 };
 
-// 카드(점포 카드 등). 카드 전체가 링크다. 모서리 4px·1px 선·그림자 없음(카드·패널 규칙), 호버는 선 색만 바꾼다.
+// 카드(점포 카드 등). 카드 전체가 링크다. 모서리 4px·1px 선·그림자 없음(카드·패널 규칙 — DESIGN.md 는 카드
+// 모서리를 4px 로 고정해 둬서, 8px 로 키워 달라는 요청은 1팀 확인 전이라 되돌렸다, 2026-10-16 코드리뷰),
+// 호버는 선 색만 바꾼다.
 // image: 이미지 주소(없으면 아이콘 칸), fields: [[라벨, 값, wide?]]
 // data: 목록 거르기용 항목 { 열 이름: 값 }. 카드에 보이지 않는 값(사업자등록번호 등)도 넣는다 — 표 머리와 같은 이름이면 erp.js 가 그 열처럼 거른다.
 // muted: 미운영처럼 아직 쓰지 않는 카드. 바탕을 두 번째 바탕색(#f8f9fb)으로 깔고, 아이콘 칸은 흰색으로 뒤집어 묻히지 않게 한다.
+// title 은 16px·두 줄까지(line-clamp-2)로 키웠다 — 이름이 길면 두 줄, 그 아래 줄(sub)로 밀린다(2026-10-16 점검).
 export function card({ href, image, icon = ICON.store, title, sub, badge = "", fields = [], data, muted = false }) {
   const pic = image
     ? `<img src="${image}" alt="${title} 대표 이미지" class="size-[48px] shrink-0 rounded-[2px] object-cover">`
@@ -66,17 +69,17 @@ export function card({ href, image, icon = ICON.store, title, sub, badge = "", f
   const grid = fields
     .map(([k, v, wide]) => `<div class="${wide ? "col-span-2 " : ""}flex flex-col gap-[4px]"><dt class="text-[13px] text-erp-label">${k}</dt><dd class="truncate text-[14px] text-erp-ink">${v}</dd></div>`)
     .join("");
-  return `<a href="${href}"${data ? ` data-fields='${JSON.stringify(data)}'` : ""} class="flex flex-col gap-[18px] rounded-[4px] border border-erp-panel-line ${muted ? "bg-erp-thead-bg" : "bg-white"} p-[18px] transition-colors duration-150 ease-out hover:border-erp-brand"><div class="flex items-center gap-[12px]">${pic}<div class="flex min-w-0 flex-1 flex-col gap-[4px]"><b class="truncate text-[15px] font-semibold text-erp-ink">${title}</b><span class="truncate text-[13px] text-erp-label">${sub}</span></div>${badge}</div><dl class="grid grid-cols-2 gap-x-[12px] gap-y-[10px] border-t border-erp-divider pt-[12px]">${grid}</dl></a>`;
+  return `<a href="${href}"${data ? ` data-fields='${JSON.stringify(data)}'` : ""} class="flex flex-col gap-[18px] rounded-[4px] border border-erp-panel-line ${muted ? "bg-erp-thead-bg" : "bg-white"} p-[18px] transition-colors duration-150 ease-out hover:border-erp-brand"><div class="flex items-start gap-[12px]">${pic}<div class="flex min-w-0 flex-1 flex-col gap-[4px]"><b class="line-clamp-2 text-[16px] font-semibold text-erp-ink">${title}</b><span class="truncate text-[13px] text-erp-label">${sub}</span></div>${badge}</div><dl class="grid grid-cols-2 gap-x-[12px] gap-y-[10px] border-t border-erp-divider pt-[12px]">${grid}</dl></a>`;
 }
-// 큰 선택 카드(라디오). 아이콘 · 이름 · 한 줄 설명. 카드 규칙대로 4px 모서리 · 1px 선 · 그림자 없음,
-// 고르면 선이 브랜드색, 바탕이 두 번째 바탕색(#f8f9fb)으로 바뀌고 아이콘 칸은 흰색으로 뒤집힌다. 선 두께는 바뀌지 않는다.
-// items: [{ label, desc, icon, checked }]
-// locked: 바꿀 수 없는 값(수정 화면). 라디오를 막고 호버를 끄며, 고르지 않은 카드는 흐리게 둔다.
-export function choiceCards(name, items, { locked = false } = {}) {
+// 큰 선택 카드(라디오, 등록 화면 전용 — 등록 뒤 바꿀 수 없어 수정 화면에는 두지 않는다). 이름 · 한 줄 설명
+// (아이콘 없음 — 2026-10-16 점검, 아이콘이 의미 없이 들어가 있었다).
+// 카드 규칙대로 4px 모서리 · 1px 선 · 그림자 없음, 고르면 선이 브랜드색, 바탕이 두 번째 바탕색(#f8f9fb)으로 바뀐다. 선 두께는 바뀌지 않는다.
+// items: [{ label, desc, checked }] — icon 은 더 받지 않는다.
+export function choiceCards(name, items) {
   return `<div role="radiogroup" aria-label="${name}" class="grid grid-cols-2 gap-[12px]">${items
     .map(
-      ({ label, desc, icon, checked }) =>
-        `<label class="group flex ${locked ? `cursor-default${checked ? "" : " opacity-40"}` : "cursor-pointer hover:border-erp-brand"} flex-col items-center gap-[10px] rounded-[4px] border border-erp-panel-line bg-white px-[18px] py-[24px] transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:focus-visible]:border-erp-brand"><input type="radio" name="${name}" class="sr-only"${checked ? " checked" : ""}${locked ? " disabled" : ""}><span class="grid size-[48px] place-items-center rounded-[4px] border border-transparent bg-erp-thead-bg text-erp-label transition-colors duration-150 group-has-[:checked]:border-erp-panel-line group-has-[:checked]:bg-white group-has-[:checked]:text-erp-ink"><svg viewBox="0 0 24 24" class="size-[22px] fill-none stroke-current" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icon}</svg></span><b class="text-[16px] font-semibold text-erp-ink">${label}</b><span class="text-[13px] text-erp-label">${desc}</span></label>`,
+      ({ label, desc, checked }) =>
+        `<label class="group flex cursor-pointer hover:border-erp-brand flex-col items-center gap-[10px] rounded-[4px] border border-erp-panel-line bg-white px-[18px] py-[14px] transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] has-[:checked]:border-erp-brand has-[:checked]:bg-erp-thead-bg has-[:focus-visible]:border-erp-brand"><input type="radio" name="${name}" class="sr-only"${checked ? " checked" : ""}><b class="text-[16px] font-semibold text-erp-ink">${label}</b><span class="text-[13px] text-erp-label">${desc}</span></label>`,
     )
     .join("")}</div>`;
 }

@@ -15,56 +15,69 @@ export default ({ A, R }) => {
     `<div class="flex items-start gap-[18px]">${f.imageBox()}<div class="flex flex-col items-start gap-[10px]">${ui.button("이미지 올리기", { variant: "soft" })}</div></div>`,
   );
 
-  // 점포유형은 기본정보에서 빼서 큰 선택 카드로 따로 고른다(등록 후 바꿀 수 없어 맨 앞에서 정하게).
-  const type = ui.formGroup(
-    f.req("점포유형"),
-    x.choiceCards("점포유형", [
-      { label: "직영점포", desc: "직접 운영하는 매장이에요", icon: x.ICON.store, checked: true },
-      { label: "가맹점포", desc: "가맹점주가 운영하는 매장이에요", icon: x.ICON.people },
-    ]),
-  );
+  // 점포유형은 등록 뒤 바꿀 수 없다 — 기본정보 맨 위에 큰 선택 카드로 두어 맨 앞에서 정하게 한다(2026-10-16 점검).
+  const typeCards =
+    `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">${f.req("점포유형")}</span>${x.choiceCards("점포유형", [
+      { label: "직영점포", desc: "직접 운영하는 매장이에요", checked: true },
+      { label: "가맹점포", desc: "가맹점주가 운영하는 매장이에요" },
+    ])}</div>`;
 
   // 점포상태는 수정 화면과 같은 자리에 두되 고를 수 없다 — 새 점포는 미운영으로만 생기고,
   // 운영으로 바꾸는 것은 등록을 마친 뒤 수정 화면에서 한다(사업자 인증·좌표가 있어야 한다).
-  const status = ui.field("점포상태", `<div class="flex h-[34px] items-center">${ui.badge("off", "미운영")}</div>`);
+  const status = ui.field("점포상태", `<div class="flex h-[34px] items-center">${ui.badge("off", "미운영")}</div>`, "w-[160px]");
 
+  // 가로 입력칸이 너무 넓었다 — 점포명 · 점포 연락처를 좁은 고정폭으로 맞춘다(2026-10-16 점검).
   const basic = ui.formGroup(
     "점포 기본정보",
+    typeCards,
     status,
     ui.formRow(
-      ui.field(f.req("점포명"), ui.textField({ maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })),
-      f.group("점포 연락처", f.tel()),
+      ui.field(f.req("점포명"), ui.textField({ maxlength: 50, placeholder: "50자 이내로 입력해 주세요." }), "w-[240px]"),
+      f.group("점포 연락처", f.tel(), "w-[312px]"),
     ),
     f.address(A, "점포 주소"),
     ui.formRow(
-      // 좌표는 정수 3자리 + 소수 6자리, 위치 적용 여부는 「미사용」 세 글자가 들어갈 만큼만.
-      ui.field("위도", ui.textField({ placeholder: "37.556312" }), "w-[130px]"),
-      ui.field("경도", ui.textField({ placeholder: "126.901845" }), "w-[130px]"),
-      ui.field("위치 적용 여부", ui.select(["사용", "미사용"]), "w-[120px]"),
+      // 좌표는 정수 3자리 + 소수 6자리, 출퇴근 위치 적용 여부는 「미사용」 세 글자가 들어갈 만큼만. [주소로 다시
+      // 계산]은 수정 화면과 같다 — 자동 채워진 뒤 직접 고친 좌표를 주소 기준 값으로 되돌릴 때 쓴다(2026-10-19).
+      ui.field("위도", ui.textField({ placeholder: "예: 37.556312" }), "w-[160px]"),
+      ui.field("경도", ui.textField({ placeholder: "예: 126.901845" }), "w-[160px]"),
+      ui.field("출퇴근 위치 적용 여부", ui.select(["사용", "미사용"]), "w-[150px]"),
+      `<div class="self-end">${ui.button("주소로 다시 계산", { variant: "soft" })}</div>`,
+    ),
+    // 이미지 올리기 도움말과 같은 줄간격이 되도록 한 줄(한 <span>) 안에서 <br> 로만 줄을 바꾼다(2026-10-16 점검).
+    f.help(
+      `점포주소가 입력되면 <b class="font-semibold">위도</b> · <b class="font-semibold">경도</b> 좌표값이 자동으로 표시됩니다.<br>` +
+        `<b class="font-semibold">출퇴근 위치 적용 여부</b>를 <b class="font-semibold">사용</b>으로 설정하면 이 좌표를 기준으로 직원의 출퇴근 위치를 확인할 수 있습니다.`,
     ),
     image,
   );
 
-  const floors = ui.formGroup("기타 정보 · 층별", f.floorTable([undefined]));
+  const floors = ui.formGroup("점포 공간정보", f.floorTable([undefined]));
 
+  // 순서는 사업자등록번호 인증 라인 → 상호명 · 대표자 연락처 → 업태 · 종목 → 사업자주소(2026-10-16 점검).
+  // 상호명 · 대표자 연락처는 한 줄, 업태 · 종목도 한 줄 — 둘 다 반씩이다(상호명이 점포명과 같은 폭).
+  // 사업자주소는 체크박스를 라벨 바로 옆 같은 줄에 둔다.
   const biz = ui.formGroup(
-    "점포 사업자정보",
+    "사업자정보",
     f.bizAuth(A, "sbiz", { start: "open", inline: true, values: ["113-25-60418", "한지우", "2026-08-03"], input: ["", "", ""], confirmReauth: reauthText }),
     ui.formRow(
-      ui.field("상호명", ui.textField({ maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })),
-      f.group("대표자 연락처", f.tel()),
+      ui.field("상호명", ui.textField({ maxlength: 50, placeholder: "50자 이내로 입력해 주세요." }), "w-[240px]"),
+      f.group("대표자 연락처", f.tel(), "w-[312px]"),
     ),
-    f.address(A, "사업자주소", {}, { top: ui.checkbox(A, "점포 주소와 같음", true) }),
-    ui.formRow(ui.field("업태", ui.textField({ maxlength: 30, placeholder: "30자 이내로 입력해주세요." })), ui.field("종목", ui.textField({ maxlength: 30, placeholder: "30자 이내로 입력해주세요." }))),
+    ui.formRow(
+      ui.field("업태", ui.textField({ maxlength: 30, placeholder: "30자 이내로 입력해주세요." }), "w-[160px]"),
+      ui.field("종목", ui.textField({ maxlength: 30, placeholder: "30자 이내로 입력해주세요." }), "w-[160px]"),
+    ),
+    f.address(A, "사업자주소", {}, { labelExtra: ui.checkbox(A, "점포 주소와 같음", true) }),
   );
 
+  // 취소 · 저장은 제목 줄 오른쪽에 둔다 — 근로계약서 작성 화면(staff/contracts-new.mjs)과 같은 자리
+  // (2026-10-19 점검 — 실사용자 확인). 전에는 화면 맨 아래에 있어 긴 폼에서 저장하려면 끝까지 스크롤해야 했다.
   const body = ui.detailBody(
-    ui.sectionHead("점포 등록") +
-      type +
+    ui.sectionHead("점포 등록", ui.button("취소", { variant: "off", href: link(R, "stores/index.html") }) + ui.button("저장", { href: link(R, "stores/detail.html") })) +
       // 두 묶음은 각자 내용만큼의 높이로 둔다. 높이를 맞추려 늘리면 짧은 쪽 상자에 빈 자리가 남는다.
       `<div class="grid grid-cols-2 items-start gap-[24px]">${basic}${biz}</div>` +
       floors +
-      f.formButtons(ui.button("취소", { variant: "off", href: link(R, "stores/index.html") }), ui.button("저장", { href: link(R, "stores/detail.html") })) +
       f.SWAP_SCRIPT,
   );
   return { title: "점포 등록", html: ui.erpFrame({ header: erpHeader(A, R), title: "점포 정보 관리", body }) };

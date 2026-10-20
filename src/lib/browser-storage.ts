@@ -40,7 +40,8 @@ export interface TabContext {
 
 // 저장 모양을 바꾸는 배포에서는 숫자를 올린다. 옛 값은 읽히지 않고 SessionGate 가 login-info 를 다시 받는다
 // (그때 플랫폼 계정이 다른 BP 로 연 탭은 자기 BP 로 돌아간다). 모양만 바꾸고 숫자를 그대로 두면 옛 값으로 화면이 깨진다.
-const PREFIX = "whale-erp:v1:";
+// v2(2026-10-19): 1팀 메뉴 url 이 한 단계 경로로 바뀌어(api #70) 옛 login-info 의 메뉴 url 로는 헤더 · 화면 권한이 맞지 않는다.
+const PREFIX = "whale-erp:v2:";
 const KEY = {
   loginInfo: `${PREFIX}login-info`,
   loginBpInfo: `${PREFIX}login-bp-info`,
@@ -51,6 +52,9 @@ const KEY = {
   scope: `${PREFIX}scope`,
 } as const;
 const TAB_KEYS = [KEY.currentBp, KEY.stores, KEY.codes, KEY.scope];
+// 앞 버전의 키 — 읽지는 않지만 로그인 정보(아이디 · 이름 · 이메일 · 메뉴 권한 · 점포)가 들어 있어 로그아웃할 때 함께 지운다(공용 PC).
+const LEGACY_PREFIXES = ["whale-erp:v1:"];
+const LEGACY_KEYS = LEGACY_PREFIXES.flatMap((p) => Object.values(KEY).map((k) => p + k.slice(PREFIX.length)));
 /** 다른 탭이 로그인·로그아웃했는지 storage 이벤트로 알아챌 때 보는 키. */
 export const LOGIN_INFO_KEY = KEY.loginInfo;
 
@@ -104,10 +108,10 @@ export const writeCodes = (bpCodeId: number, codes: Codes) => write(tab, KEY.cod
 export const readScope = (bpCodeId: number) => ofBp(read<{ bpCodeId: number; scope: Scope }>(tab, KEY.scope), bpCodeId)?.scope ?? null;
 export const writeScope = (bpCodeId: number, scope: Scope) => write(tab, KEY.scope, { bpCodeId, scope });
 
-/** 로그인 화면에서 부른다. 이 탭과 공용 저장소의 로그인 정보를 지운다(아이디 저장 whale-erp:saved-login-id 는 남긴다). */
+/** 로그인 화면에서 부른다. 이 탭과 공용 저장소의 로그인 정보를 지운다(아이디 저장 whale-erp:saved-login-id 는 남긴다). 앞 버전 키도 지운다. */
 export function clearLoginStorage() {
-  remove(local, [KEY.loginInfo, KEY.loginBpInfo, KEY.selectedBp]);
-  remove(tab, TAB_KEYS);
+  remove(local, [KEY.loginInfo, KEY.loginBpInfo, KEY.selectedBp, ...LEGACY_KEYS]);
+  remove(tab, [...TAB_KEYS, ...LEGACY_KEYS]);
 }
 
 function pickBp({ bpCodeId, bpCode, tradeName }: StoredBp): StoredBp {

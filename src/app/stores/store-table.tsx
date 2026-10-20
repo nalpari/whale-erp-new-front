@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { DataTable, type Column } from "@/components/common";
+import { DataTable, Tag, type Column } from "@/components/common";
 import { formatDateTime, formatPhone } from "@/lib/format";
 import type { StoreSummary } from "@/lib/store-types";
 import { CodeLabel } from "@/components/site/code-label";
@@ -17,6 +17,7 @@ export function StoreTable({ items, total, page, pageSize, detailHref }: { items
     { header: "점포코드", width: "w-[110px]", cell: (r) => r.store.storeCode },
     {
       header: "점포명",
+      width: "w-[160px]",
       align: "left",
       cell: (r) => (
         <Link href={detailHref(r.store.storeId)} className="text-erp-link hover:underline">
@@ -24,15 +25,16 @@ export function StoreTable({ items, total, page, pageSize, detailHref }: { items
         </Link>
       ),
     },
-    { header: "점포유형", width: "w-[110px]", cell: (r) => <CodeLabel group="STORE_TYPE" value={r.store.storeTypeCode} /> },
+    { header: "점포유형", width: "w-[110px]", cell: (r) => <Tag><CodeLabel group="STORE_TYPE" value={r.store.storeTypeCode} /></Tag> },
     { header: "점포상태", width: "w-[98px]", cell: (r) => <StoreStatusBadge status={r.store.storeStatusCode} /> },
     {
       header: "사업자등록번호",
       width: "w-[150px]",
       cell: (r) => (r.store.bizRegistrationNumber ? formatBizNumber(r.store.bizRegistrationNumber) : <span className="text-erp-muted">미인증</span>),
     },
-    { header: "연락처", width: "w-[150px]", cell: (r) => (r.store.phone ? formatPhone(r.store.phone) : DASH) },
-    { header: "근무직원수", width: "w-[100px]", cell: (r) => r.store.staffCount.toLocaleString("ko-KR") },
+    { header: "점포 연락처", width: "w-[150px]", cell: (r) => (r.store.phone ? formatPhone(r.store.phone) : DASH) },
+    { header: "점포주소", width: "w-[150px]", align: "left", cell: (r) => r.store.region ?? DASH },
+    { header: "재직직원", width: "w-[100px]", cell: (r) => r.store.staffCount.toLocaleString("ko-KR") },
     { header: "등록일", width: "w-[120px]", cell: (r) => formatDateTime(r.store.createdAt).slice(0, 10) || DASH },
   ];
   const rows = items.map((store, i) => ({ no: total - ((page - 1) * pageSize + i), store }));

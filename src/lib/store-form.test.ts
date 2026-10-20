@@ -4,6 +4,7 @@ import { test } from "node:test";
 import {
   EMPTY_STORE_FORM,
   formOfStore,
+  hasCoordinateInput,
   newFloorRow,
   splitPhone,
   storeServerErrorField,
@@ -17,6 +18,11 @@ import {
 import type { StoreDetail } from "./store-types.ts";
 
 const filled: StoreForm = { ...EMPTY_STORE_FORM, storeTypeCode: "DIRECT", name: " 강남점 " };
+// 운영 조건 한글(GET /enums/StoreOperationRequirement) — 라벨 없이 부르면(빈 배열) 값 코드를 그대로 보인다
+const REQUIREMENT_LABELS = [
+  { value: "BUSINESS_VERIFICATION", label: "사업자정보 인증", order: 1 },
+  { value: "COORDINATES", label: "위치정보(위도 · 경도)", order: 2 },
+];
 
 test("필수는 점포유형(등록) · 점포명뿐이다", () => {
   assert.deepEqual(validateStoreForm(filled, "create"), {});
@@ -49,11 +55,13 @@ test("층별 칸 — 층수 정수 · 평 소수 1자리 · ㎡ 소수 2자리 �
   assert.ok(validateStoreForm({ ...filled, floors: [{ ...row, floorNumber: "0" }] }, "create").floors);
 });
 
-test("운영으로 바꾸려면 사업자 인증과 좌표가 있어야 한다", () => {
+test("운영으로 바꾸려면 사업자 인증과 좌표가 있어야 한다 — 모자란 것을 한 문장에 모은다(상태 변경 팝업과 같은 라벨 출처)", () => {
   const operating = { ...filled, storeStatus: "OPERATING" as const };
-  assert.equal(validateStoreForm(operating, "edit").storeStatus, "운영으로 바꾸려면 사업자정보 인증이 필요합니다.");
-  assert.equal(validateStoreForm({ ...operating, savedBizNumber: "1234567890" }, "edit").storeStatus, "운영으로 바꾸려면 위도 · 경도가 필요합니다.");
-  assert.deepEqual(validateStoreForm({ ...operating, savedBizNumber: "1234567890", latitude: "37.5", longitude: "127.0" }, "edit"), {});
+  assert.equal(validateStoreForm(operating, "edit", REQUIREMENT_LABELS).storeStatus, "운영으로 바꾸려면 사업자정보 인증 · 위치정보(위도 · 경도)가 필요합니다.");
+  assert.equal(validateStoreForm({ ...operating, savedBizNumber: "1234567890" }, "edit", REQUIREMENT_LABELS).storeStatus, "운영으로 바꾸려면 위치정보(위도 · 경도)가 필요합니다.");
+  assert.deepEqual(validateStoreForm({ ...operating, savedBizNumber: "1234567890", latitude: "37.5", longitude: "127.0" }, "edit", REQUIREMENT_LABELS), {});
+  // 라벨을 못 받으면(빈 배열) 값 코드를 그대로 보인다 — naming.md "모르는 값이면 값을 그대로"
+  assert.equal(validateStoreForm(operating, "edit").storeStatus, "운영으로 바꾸려면 BUSINESS_VERIFICATION · COORDINATES이(가) 필요합니다.");
 });
 
 test("진위확인 칸 — 처음은 세 칸, 재인증은 대표자명만", () => {
@@ -82,8 +90,8 @@ test("인증 결과는 지금 칸 값과 같을 때만 인증으로 본다 — �
   const operating = { ...filled, storeStatus: "OPERATING" as const, latitude: "37.5", longitude: "127.0" };
   const checked = { bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02" };
   const now = { ...operating, bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02", verified: checked };
-  assert.equal(validateStoreForm(now, "edit").storeStatus, undefined);
-  assert.equal(validateStoreForm({ ...now, ceoName: "김철수" }, "edit").storeStatus, "운영으로 바꾸려면 사업자정보 인증이 필요합니다.");
+  assert.equal(validateStoreForm(now, "edit", REQUIREMENT_LABELS).storeStatus, undefined);
+  assert.equal(validateStoreForm({ ...now, ceoName: "김철수" }, "edit", REQUIREMENT_LABELS).storeStatus, "운영으로 바꾸려면 사업자정보 인증이 필요합니다.");
 });
 
 test("등록 요청 — 공백을 빼고 빈 칸은 null, 빈 층은 보내지 않고, 진위확인을 통과한 값만 싣는다", () => {
@@ -105,6 +113,7 @@ test("등록 요청 — 공백을 빼고 빈 칸은 null, 빈 층은 보내지 �
   assert.equal(input.bpCodeId, 7);
   assert.equal(input.phone, "021234567");
   assert.equal(input.latitude, 37.5);
+  assert.equal(input.isLocationApplied, false); // 새 점포 기본값(EMPTY_STORE_FORM)
   assert.equal(input.address, null);
   assert.equal(input.business.tradeName, "웨일커피");
   assert.deepEqual(input.floors, [{ floorTypeCode: "BASEMENT", floorNumber: 1, floorAreaPyeong: null, floorAreaSqm: null, seatCount: 10 }]);
@@ -117,6 +126,19 @@ test("등록 요청 — 공백을 빼고 빈 칸은 null, 빈 층은 보내지 �
   assert.equal(edited.businessVerification, undefined);
   assert.equal("bpCodeId" in toCreateStoreInput(filled), false);
   assert.equal(toCreateStoreInput(filled, 8).bpCodeId, 8);
+});
+
+test("좌표 없이는 사용을 보내지 않는다 — 어느 칸을 거쳐 왔든 저장 직전에 막는다(bodyOf)", () => {
+  assert.equal(toCreateStoreInput({ ...filled, isLocationApplied: true, latitude: "", longitude: "" }).isLocationApplied, false);
+  assert.equal(toCreateStoreInput({ ...filled, isLocationApplied: true, latitude: "37.5", longitude: "" }).isLocationApplied, false);
+  assert.equal(toCreateStoreInput({ ...filled, isLocationApplied: true, latitude: "37.5", longitude: "127" }).isLocationApplied, true);
+});
+
+test("좌표 입력칸 둘 다 있어야 있다고 본다 — bodyOf · 선택칸 표시값이 같은 규칙을 쓴다", () => {
+  assert.equal(hasCoordinateInput("37.5", "127"), true);
+  assert.equal(hasCoordinateInput("", "127"), false);
+  assert.equal(hasCoordinateInput("37.5", ""), false);
+  assert.equal(hasCoordinateInput("  ", "  "), false);
 });
 
 test("사업자주소가 「점포 주소와 같음」이면 점포 주소를 싣는다", () => {
@@ -182,6 +204,15 @@ test("상세 → 수정 칸 → 수정 요청 왕복 — 아무것도 안 고치
   assert.equal(input.business.category, "음식점업");
   assert.deepEqual(input.floors, [{ floorTypeCode: "GROUND", floorNumber: 1, floorAreaPyeong: 30.5, floorAreaSqm: 100.83, seatCount: 40 }]);
   assert.equal(input.businessVerification, undefined);
+});
+
+test("좌표 없이 사용으로 저장된 옛 데이터는 수정 칸을 열 때 미사용으로 바로잡는다 — 주소가 아니라 좌표로 가린다", () => {
+  const noCoords: StoreDetail = { ...detail, latitude: null, longitude: null, isLocationApplied: true };
+  assert.equal(formOfStore(noCoords).isLocationApplied, false);
+  assert.equal(formOfStore({ ...detail, isLocationApplied: true }).isLocationApplied, true);
+  // 주소 없이 좌표만 손으로 적은 점포는 주소 기준이면 잘못 막혔을 것 — 좌표가 있으면 그대로 둔다
+  const coordsNoAddress: StoreDetail = { ...detail, address: null, zipCode: null, addressDetail: null, isLocationApplied: true };
+  assert.equal(formOfStore(coordsNoAddress).isLocationApplied, true);
 });
 
 test("상태만 바꾸는 왕복 — 빈 사업자주소는 비운 채, 층 구분만 있는 저장된 줄은 그대로", () => {

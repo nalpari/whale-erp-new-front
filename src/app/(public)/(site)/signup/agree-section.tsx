@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { CHECKBOX } from "@/app/design/guest/guest-form";
 import { HOVER } from "@/app/design/guest/theme";
-import { TERMS } from "./_components/terms";
 import { TermsDialog } from "./_components/terms-dialog";
 
 export type AgreeValue = { useAgreed: boolean; privacyAgreed: boolean };
@@ -62,8 +61,8 @@ export function AgreeSection({ value, onChange }: { value: AgreeValue; onChange:
         </div>
       </div>
 
-      <TermsDialog open={openDialog === "use"} onClose={() => setOpenDialog(null)} doc={TERMS.use} />
-      <TermsDialog open={openDialog === "privacy"} onClose={() => setOpenDialog(null)} doc={TERMS.privacy} />
+      <TermsDialog open={openDialog === "use"} onClose={() => setOpenDialog(null)} termsTypeCode="TERMS_SERVICE" />
+      <TermsDialog open={openDialog === "privacy"} onClose={() => setOpenDialog(null)} termsTypeCode="PRIVACY_COLLECT" />
     </section>
   );
 }

@@ -1,31 +1,38 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { useActionState, useEffect, useRef, useState } from "react";
-import { Button, Checkbox, Field, TextField } from "@/components/common";
+import { useActionState, useEffect, useState } from "react";
+import { CHECKBOX, INPUT, INPUT_BOX, SUBMIT } from "@/app/design/guest/guest-form";
+import { SITE_ROUTES } from "@/app/design/guest/guest-routes";
+import { HOVER } from "@/app/design/guest/theme";
 import { clearLoginStorage } from "@/lib/browser-storage";
 import { login, type LoginFormState } from "./actions";
 
 // 아이디 저장은 이 브라우저에만 둔다(okf/auth.md — 로그인 유지 선택은 없다).
 const SAVED_ID = "whale-erp:saved-login-id";
 
-const QUIET = "text-erp-label transition-colors duration-150 ease-out hover:text-erp-ink";
+const ICON_BUTTON = "flex size-[16px] items-center justify-center";
 
+// 모양은 Figma 「로그인전_로그인」 샘플(design/guest/login/login-form.tsx)의 폼 규격(guest-form.ts)을 쓴다(2026-10-19).
+// 샘플의 「로그인 상태 유지」 자리에는 아이디 저장을 둔다 — 로그인 유지 선택은 없다.
 export function LoginForm() {
   const [state, action, pending] = useActionState<LoginFormState, FormData>(login, {});
-  const idRef = useRef<HTMLInputElement>(null);
-  // 제어 입력 — 실패 뒤 React 가 비제어 폼을 비워도 체크가 남아야 다음 제출에서 저장값이 지워지지 않는다.
+  // 제어 입력 — 실패 뒤 React 가 비제어 폼을 비워도 아이디·체크가 남아야 다시 치지 않고, 다음 제출에서 저장값이 지워지지 않는다.
+  const [loginId, setLoginId] = useState("");
   const [save, setSave] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     // 로그아웃·세션 만료로 왔다. 앞 로그인의 메뉴·점포·공통코드를 지운다(남아 있어도 login-key 가 달라 쓰이지 않지만 이 브라우저에 두지 않는다).
     clearLoginStorage();
     try {
       const saved = localStorage.getItem(SAVED_ID);
-      if (saved && idRef.current && !idRef.current.value) {
-        idRef.current.value = saved;
+      if (saved) {
         // localStorage 는 클라이언트에만 있어 첫 렌더에 알 수 없다(초기값으로 읽으면 하이드레이션이 어긋난다).
+        // 그새 사용자가 친 아이디가 있으면 덮지 않는다.
         // eslint-disable-next-line react-hooks/set-state-in-effect
+        setLoginId((typed) => typed || saved);
         setSave(true);
       }
     } catch {
@@ -42,33 +49,66 @@ export function LoginForm() {
   };
 
   return (
-    <form action={remember} className="flex flex-col gap-[18px]">
-      <h1 className="text-[18px] font-semibold">웨일ERP 로그인</h1>
-      <Field label="아이디">
-        <TextField ref={idRef} name="loginId" autoComplete="username" placeholder="아이디" defaultValue={state.loginId} required maxLength={20} />
-      </Field>
-      <Field label="비밀번호">
-        <TextField name="password" type="password" autoComplete="current-password" placeholder="비밀번호" required maxLength={128} />
-      </Field>
-      <Checkbox label="아이디 저장" checked={save} onChange={(e) => setSave(e.target.checked)} />
+    <form action={remember} className="flex flex-col gap-[24px]">
+      <div className="flex flex-col gap-[10px]">
+        <label className={INPUT_BOX}>
+          <span className="sr-only">아이디</span>
+          <input
+            name="loginId"
+            autoComplete="username"
+            placeholder="User ID"
+            value={loginId}
+            onChange={(e) => setLoginId(e.target.value)}
+            required
+            maxLength={20}
+            className={INPUT}
+          />
+          {loginId && (
+            <button type="button" aria-label="아이디 지우기" onClick={() => setLoginId("")} className={ICON_BUTTON}>
+              <Image src="/guest/login/clear.svg" alt="" width={16} height={16} />
+            </button>
+          )}
+        </label>
+        <label className={INPUT_BOX}>
+          <span className="sr-only">비밀번호</span>
+          <input
+            name="password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="current-password"
+            placeholder="Password"
+            required
+            maxLength={128}
+            className={INPUT}
+          />
+          <button
+            type="button"
+            aria-label={showPassword ? "비밀번호 숨기기" : "비밀번호 보기"}
+            aria-pressed={showPassword}
+            onClick={() => setShowPassword((v) => !v)}
+            className={ICON_BUTTON}
+          >
+            <Image src={showPassword ? "/guest/login/eye-off.svg" : "/guest/login/eye-on.svg"} alt="" width={16} height={16} />
+          </button>
+        </label>
+      </div>
       {state.error && (
-        <p role="alert" className="text-[13px] text-erp-off">
+        <p role="alert" className="text-[15px] text-[#e93737]">
           {state.error}
         </p>
       )}
-      <div className="grid">
-        <Button type="submit" disabled={pending}>
-          {pending ? "로그인 중" : "로그인"}
-        </Button>
+      <button type="submit" disabled={pending} className={SUBMIT}>
+        {pending ? "로그인 중" : "LOGIN"}
+      </button>
+      <div className="flex items-center justify-between text-[15px] leading-[1.5] font-medium text-[#5e697b]">
+        <label className="flex items-center gap-[8px]">
+          <input type="checkbox" checked={save} onChange={(e) => setSave(e.target.checked)} className={CHECKBOX} />
+          아이디 저장
+        </label>
+        {/* 데모 auth/find.html 에 대응한다(/auth 접두 없음). 찾기 화면(/find)은 아이디 탭으로 열린다. */}
+        <Link href={SITE_ROUTES.findAccount} className={`hover:text-guest-navy ${HOVER}`}>
+          아이디/비밀번호 찾기
+        </Link>
       </div>
-      {/* 데모 auth/find.html#id·#pw · auth/signup.html 에 대응한다(/auth 접두 없음). 가입 화면(/signup)은 있고, 찾기 화면은 다음 작업. */}
-      <p className="flex items-center justify-center gap-[10px] text-[14px]">
-        <Link href="/find#id" className={QUIET}>아이디 찾기</Link>
-        <span className="h-[11px] w-px bg-[#d9d9d9]" />
-        <Link href="/find#pw" className={QUIET}>비밀번호 찾기</Link>
-        <span className="h-[11px] w-px bg-[#d9d9d9]" />
-        <Link href="/signup" className="font-semibold text-erp-brand transition-colors duration-150 ease-out hover:text-erp-ink">사업자회원가입</Link>
-      </p>
     </form>
   );
 }

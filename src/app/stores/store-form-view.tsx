@@ -7,9 +7,11 @@ import { getAddressCoordinateAction } from "@/lib/address-actions";
 import { AddressField } from "@/components/address-field";
 import type { AddressItem } from "@/lib/address-search";
 import {
+  Badge,
   Button,
   Checkbox,
   ConfirmDialog,
+  DataTable,
   DateField,
   Field,
   FormGroup,
@@ -18,10 +20,12 @@ import {
   Select,
   TextField,
   useToast,
+  type Column,
 } from "@/components/common";
 import {
   EMPTY_STORE_FORM,
   formOfStore,
+  hasCoordinateInput,
   isBusinessVerified,
   newFloorRow,
   storeServerErrors,
@@ -36,9 +40,10 @@ import {
   type StoreFormErrors,
   type StoreFormField,
 } from "@/lib/store-form";
+import type { EnumValue } from "@/lib/enums";
 import { FLOOR_TYPES, floorTypeOf, type StoreDetail, type StoreImageFileType, type StoreStatus } from "@/lib/store-types";
 import { closeBlockText, formatBizNumber, nextStatuses } from "@/lib/store-view";
-import { useCodeLabel } from "@/components/site/code-label";
+import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
 import { useCurrentBp } from "@/components/site/session-gate";
 import { storeImageAccept, storeImageFileError, storeImageTypesText } from "@/lib/store-image";
 import {
@@ -57,9 +62,12 @@ const STALE = "먼저 수정했습니다";
 /** 저장이 막혔을 때 띠 아래 줄 — 칸은 건드리지 않았다 */
 const KEPT = "입력한 값은 그대로 두었습니다.";
 
+// api 가 결과 코드(result)만 주고 문구는 안 준다(StoreBusinessVerificationResponseDto — 국세청이 준 말 자체가
+// 아니라 화면이 짓는 문구다). 회원가입 쪽은 같은 결과를 api 문구로 받으므로, 그 문구와 글자까지 맞춘다
+// (signup/_components/biz-verification.ts 의 MISMATCH · DUPLICATE_BIZ_REGISTRATION_NUMBER, 2026-10-16 점검).
 const VERIFY_MESSAGE = {
-  UNVERIFIABLE: "사업자정보를 확인할 수 없습니다. 사업자등록번호 · 대표자명 · 개업일자를 다시 확인해 주세요.",
-  DUPLICATE: "이미 다른 점포가 쓰고 있는 사업자등록번호입니다.",
+  UNVERIFIABLE: "입력한 사업자정보가 국세청 정보와 일치하지 않습니다.",
+  DUPLICATE: "이미 등록된 사업자등록번호입니다.",
 } as const;
 
 /** server action 호출 자체가 실패했다(연결 끊김 · 배포 어긋남) — 결과를 모른다(status 없음). 다시 받을지는 부르는 쪽이 정한다 */
@@ -76,12 +84,21 @@ type ImageChoice = { kind: "keep" } | { kind: "new"; file: File; previewUrl: str
 /** imageTypes — 올릴 수 있는 형식(GET /enums StoreImageFileType). 비면 이미지 칸만 막는다 */
 type Props =
   | { mode: "create"; store?: never; backHref: string; imageTypes: readonly StoreImageFileType[] }
-  | { mode: "edit"; store: StoreDetail; backHref: string; imageTypes: readonly StoreImageFileType[] };
+  | {
+      mode: "edit";
+      store: StoreDetail;
+      backHref: string;
+      imageTypes: readonly StoreImageFileType[];
+      /** 운영 조건 한글(GET /enums/StoreOperationRequirement). 새 점포는 미운영으로만 생겨 이 검증을 타지 않아 등록 화면엔 없다 */
+      requirementLabels: EnumValue[];
+    };
 
 /**
- * 점포 등록(S-ALHLHW) · 수정(S-JEPOMK) 공용 폼. 데모 docs/demo/stores/new · edit 의 배치 — 점포유형 큰 카드, 기본정보 ·
- * 사업자정보 나란히, 기타 정보 · 층별, [취소] [저장]. 저장하면 상세로 간다.
- * 필수는 점포유형 · 점포명뿐이다. 수정에서 점포유형은 잠기고, 점포상태는 지금 상태에서 갈 수 있는 곳만 고른다.
+ * 점포 등록(S-ALHLHW) · 수정(S-JEPOMK) 공용 폼. 데모 docs/demo/stores/new · edit 의 배치 — 등록 화면에서만 점포유형
+ * 큰 카드, 기본정보 · 사업자정보 나란히, 점포 공간정보. [취소] [저장]은 제목 줄 오른쪽(근로계약서 작성 화면과 같은
+ * 자리, 2026-10-19 점검). 저장하면 상세로 간다.
+ * 필수는 점포유형 · 점포명뿐이다. 점포유형은 등록 뒤 바꿀 수 없어 수정 화면에는 그 카드를 두지 않고 위 제목 줄에
+ * 점포유형 · 점포코드로만 알린다. 점포상태는 지금 상태에서 갈 수 있는 곳만 고른다.
  * 폐점을 고르는 순간 폐점 조건을 다시 확인하고, 못 채우면 팝업으로 알린 뒤 이전 상태로 되돌린다. 저장 때 확인 창을 한 번 더 거친다.
  * 사업자 진위확인은 이 화면에서 통과한 값만 저장할 때 함께 보낸다(서버가 국세청에 다시 확인). 연동 전이라 지금은 503 문구가 칸 아래에 뜬다.
  * 점포 주소를 검색해 고르면 카카오 로컬 API 로 위도 · 경도를 채운다(못 받으면 이유를 칸 아래에 두고 직접 적는다).
@@ -103,7 +120,6 @@ export function StoreFormView(props: Props) {
   const [failure, setFailure] = useState<{ title: string; detail?: ReactNode } | null>(null);
   // 등록 결과를 모르면(저장됐을 수도) 다시 저장해 둘이 생기지 않게 저장을 잠근다
   const [createUncertain, setCreateUncertain] = useState(false);
-  const [verifyNote, setVerifyNote] = useState<string | null>(null);
   const [dialog, setDialog] = useState<"close-blocked" | "close-confirm" | null>(null);
   const [closeBlock, setCloseBlock] = useState<string | null>(null);
   const [saving, startSaving] = useTransition();
@@ -136,6 +152,7 @@ export function StoreFormView(props: Props) {
   }
 
   const store = props.mode === "edit" ? props.store : null;
+  const requirementLabels = props.mode === "edit" ? props.requirementLabels : [];
   const closedOrBlocked = store ? store.storeStatusCode === "CLOSED" || store.bpAccountStatusCode !== "ACTIVE" : false;
 
   const clearError = (key: StoreFormField) =>
@@ -180,9 +197,47 @@ export function StoreFormView(props: Props) {
   const handleAddressChoose = (item: AddressItem) => {
     const mine = ++locateNumber.current;
     setCoordinateNote(null);
+    // 출퇴근 위치 적용 여부는 여기서 건드리지 않는다 — 같은 주소를 다시 고르거나 오타를 고치는 흔한 경우까지
+    // "사용"을 꺼 버려 운영 점포의 위치 확인이 조용히 멈추는 문제가 있었다(2026-10-19 코드 리뷰 2차 — 처음엔
+    // 화면·저장 어긋남을 막으려 껐는데, 그러면 새 좌표를 받아도 되살리지 않아 더 나쁜 쪽으로 지나쳤다). 좌표가
+    // 비는 동안은 선택칸이 막히고(disabled) 저장(bodyOf)도 좌표 없이는 사용을 보내지 않으니 이미 막혀 있다.
     setForm((f) => ({ ...f, latitude: "", longitude: "" }));
     startLocating(async () => {
       const result = await getAddressCoordinateAction(item.roadAddressBase, item.jibunAddress).catch((error: unknown) => {
+        console.error("좌표 조회 호출 실패", error);
+        return { ok: false as const, message: "좌표를 가져오지 못했습니다. 위도 · 경도를 직접 적어 주세요." };
+      });
+      if (mine !== locateNumber.current) return;
+      if (!result.ok) {
+        // 좌표를 못 받으면 비워진 채로 남는다 — 선택칸은 막혀도 값은 그대로라 "사용"을 보이면서 저장은 조용히
+        // "미사용"을 보내는 어긋남이 생긴다. 못 받은 바로 이 순간에만 미사용으로 맞춘다(2026-10-19 코드 리뷰
+        // 3차 — 재선택마다 끄던 것과 달리, 좌표가 끝내 안 들어온 걸 확인한 뒤다). [주소로 다시 계산] 이 나중에
+        // 좌표를 다시 채워도 이 값은 되살리지 않는다 — 선택칸이 저장 조건과 같은 값을 그려(4차) "미사용"으로
+        // 보이니, 다시 쓰려면 직접 고르게 둔다(2026-10-19 코드 리뷰 4차, 조용히 되돌리지 않는다는 뜻과 같다).
+        setForm((f) => ({ ...f, isLocationApplied: false }));
+        return setCoordinateNote(result.message);
+      }
+      setForm((f) => ({ ...f, latitude: String(result.latitude), longitude: String(result.longitude) }));
+      clearError("latitude");
+      clearError("longitude");
+    });
+  };
+
+  /**
+   * [주소로 다시 계산] — 주소는 그대로 두고 지금 칸의 점포 주소로 좌표만 다시 받는다. 좌표는 주소를 고르면
+   * 자동으로 채워지지만 그 뒤 직접 고칠 수 있어, 등록 · 수정 화면 모두에 둔다(2026-10-19) — 직접 고친 값을
+   * 주소 기준 값으로 되돌리고 싶을 때 쓴다. 요청을 보내고 늦게 온 응답을 버리는 흐름은 handleAddressChoose 와
+   * 같지만, 비우거나 실패했을 때 되돌리는 동작은 다르다(아래 주석 참고).
+   */
+  const handleRecalculateCoordinate = () => {
+    const mine = ++locateNumber.current;
+    setCoordinateNote(null);
+    // handleAddressChoose 와 달리 주소가 바뀐 게 아니라 지금 좌표가 여전히 맞을 수 있다 — 실패해도 지우지 않는다.
+    // form.address 는 참고항목(동 이름 · 건물명)이 붙은 전체 도로명주소라 그대로 물으면 카카오가 못 찾는다
+    // (address-search.ts 의 roadAddressBase 설명과 같다) — 끝의 괄호를 떼고 묻는다.
+    const query = form.address.replace(/\s*\([^)]*\)\s*$/, "");
+    startLocating(async () => {
+      const result = await getAddressCoordinateAction(query, "").catch((error: unknown) => {
         console.error("좌표 조회 호출 실패", error);
         return { ok: false as const, message: "좌표를 가져오지 못했습니다. 위도 · 경도를 직접 적어 주세요." };
       });
@@ -198,7 +253,11 @@ export function StoreFormView(props: Props) {
   const setCoordinate = (key: "latitude" | "longitude", value: string) => {
     locateNumber.current++;
     setCoordinateNote(null);
-    set(key, value.trim(), key);
+    // 숫자 · 마침표 · 마이너스만 받는다 — 문자는 칠 수 없다(2026-10-19).
+    // 출퇴근 위치 적용 여부는 여기서 건드리지 않는다 — 오타를 고치려 한 칸을 지웠다 바로 채워도 "사용"이
+    // 꺼진 채 남는 문제가 있었다(2026-10-19 코드 리뷰 2차). 좌표가 비는 동안은 선택칸이 막히고 저장(bodyOf)도
+    // 좌표 없이는 사용을 보내지 않으니 이미 막혀 있다.
+    set(key, value.replace(/[^0-9.-]/g, ""), key);
   };
 
   /** 진위확인 칸을 고치면 이번 화면의 인증 결과는 무효다 */
@@ -206,7 +265,6 @@ export function StoreFormView(props: Props) {
     verifyNumber.current++;
     setForm((f) => ({ ...f, [key]: value, verified: null }));
     clearError(key);
-    setVerifyNote(null);
   };
 
   const handleVerify = () => {
@@ -215,7 +273,6 @@ export function StoreFormView(props: Props) {
       const rest = Object.fromEntries(Object.entries(e).filter(([k]) => !["bizNumber", "ceoName", "openDate"].includes(k)));
       return { ...rest, ...found };
     });
-    setVerifyNote(null);
     if (Object.keys(found).length) return focusFirstError();
     const values = verificationValuesOf(form);
     const mine = ++verifyNumber.current;
@@ -232,8 +289,22 @@ export function StoreFormView(props: Props) {
       if (result.result === "DUPLICATE") return setErrors((e) => ({ ...e, bizNumber: VERIFY_MESSAGE.DUPLICATE }));
       if (result.result === "UNVERIFIABLE") return setErrors((e) => ({ ...e, ceoName: VERIFY_MESSAGE.UNVERIFIABLE }));
       setForm((f) => ({ ...f, verified: values }));
-      setVerifyNote("확인했습니다. 저장하면 사업자정보에 반영됩니다.");
     });
+  };
+
+  /** 저장 전 인증완료 상태의 "재인증" — 값은 그대로 두고 칸을 다시 연다(signup 의 재인증과 같다) */
+  const handleReverifyPending = () => {
+    verifyNumber.current++;
+    setForm((f) => ({ ...f, verified: null }));
+  };
+
+  /** 저장 전 칸을 비운다 — 인증 전(showBizClear 의 "지우기")과 인증완료 뒤("사용안함") 둘 다 같은 동작이다
+      (signup 의 지우기와 같다). 인증 전엔 "아직 확정된 게 없어 지운다"는 뜻이고 인증 뒤엔 "받아 둔 인증을
+      안 쓰기로 한다"는 뜻이라 문구만 가른다. */
+  const handleClearPending = () => {
+    verifyNumber.current++;
+    setForm((f) => ({ ...f, bizNumber: "", ceoName: "", openDate: "", verified: null }));
+    setErrors((e) => Object.fromEntries(Object.entries(e).filter(([k]) => !["bizNumber", "ceoName", "openDate"].includes(k))) as StoreFormErrors);
   };
 
   /** 대표 이미지 파일을 골랐다 — 형식 · 크기를 먼저 보고 미리보기만 바꾼다. 올리기는 저장할 때 */
@@ -354,7 +425,7 @@ export function StoreFormView(props: Props) {
     });
 
   const handleSave = () => {
-    const found = validateStoreForm(form, mode);
+    const found = validateStoreForm(form, mode, requirementLabels);
     setErrors(found);
     setFailure(null);
     if (Object.keys(found).length) return focusFirstError();
@@ -367,52 +438,77 @@ export function StoreFormView(props: Props) {
   const hasImage = image.kind === "new" || (image.kind === "keep" && Boolean(store?.image));
   const shownImageUrl = image.kind === "new" ? image.previewUrl : image.kind === "remove" ? null : (store?.image?.url ?? null);
   const imageLocked = saving || checkingClose || closedOrBlocked || imageTypes.length === 0;
-  const imageNote =
+  const imageNote: ReactNode =
     imageTypes.length === 0
       ? "올릴 수 있는 형식을 불러오지 못해 지금은 이미지를 바꿀 수 없습니다. 계속되면 관리자에게 알려 주세요."
       : image.kind === "new"
-        ? `${image.file.name} — 저장하면 올립니다.`
+        ? image.file.name
         : image.kind === "remove"
           ? "저장하면 대표 이미지를 지웁니다."
-          : `${storeImageTypesText(imageTypes)} 5MB 이하 1장. 고른 뒤 저장해야 반영됩니다.`;
+          : (
+              <>
+                {storeImageTypesText(imageTypes)} 파일 1장만 등록할 수 있습니다. (최대 5MB)
+                <br />
+                이미지를 선택한 후 ‘저장’을 눌러야 반영됩니다.
+              </>
+            );
   const verified = isBusinessVerified(form);
+  // 저장 전(새 점포, savedBizNumber 없음)에 이번 화면에서 막 인증받은 상태 — signup 화면의 인증완료 잠금과 같다.
+  // 저장 뒤(savedBizNumber 있음)는 사업자등록번호 · 개업일자가 naming.md 의 "저장 후 변경 불가" 규칙으로 이미
+  // 영구히 잠겨 있고 재인증만 가능해, 아래 "사용안함"은 이 저장 전 상태에만 둔다(2026-10-16 디자인 반영).
+  const verifiedPending = Boolean(form.verified) && !form.savedBizNumber;
+  // 저장 전, 아직 인증하지 않은 상태에서도 signup 화면처럼 한 글자라도 쳤으면(또는 인증 실패로 오류만 떠
+  // 있으면) "지우기"로 비울 수 있다 — 저장 뒤(savedBizNumber)는 번호·개업일자가 영구히 잠겨 지울 게 없다
+  // (2026-10-16 디자인 점검).
+  const showBizClear =
+    !form.savedBizNumber &&
+    !verifiedPending &&
+    Boolean(form.bizNumber || form.ceoName || form.openDate || errors.bizNumber || errors.ceoName || errors.openDate);
+  // 비어서 생긴 오류는 회원가입(biz-auth-section.tsx)처럼 한 줄로 묶는다 — 번호·개업일자 형식 오류처럼 칸이
+  // 채워진 뒤의 오류는 그대로 칸마다 보인다(2026-10-16 피드백). 칸별로 "비어서 생긴 오류"인지 가려야
+  // 형식 오류가 묶음 문구에 가려지지 않는다(2026-10-16 코드리뷰로 고침 — 전에는 하나라도 비었으면
+  // 다른 칸의 형식 오류까지 통째로 숨고, aria-describedby 도 엉뚱한 칸까지 묶음 id 를 가리켰다).
+  const bizNumberMissing = !form.savedBizNumber && !form.bizNumber.trim() && Boolean(errors.bizNumber);
+  const ceoNameMissing = !form.ceoName.trim() && Boolean(errors.ceoName);
+  const openDateMissing = !form.savedBizNumber && !form.openDate && Boolean(errors.openDate);
+  const missingVerifyFields = [
+    bizNumberMissing && "사업자등록번호",
+    ceoNameMissing && "대표자명",
+    openDateMissing && "개업일자",
+  ].filter((v): v is string => Boolean(v));
+  const verifyErrorId = `${ids}-verify-error`;
+  const verifyDescribedBy = (key: "bizNumber" | "ceoName", missing: boolean) => (missing ? verifyErrorId : describe(key));
 
   return (
     <div id={`${ids}-form`} className="flex flex-col gap-[24px]">
+      {/* 취소 · 저장은 제목 줄 오른쪽에 둔다 — 근로계약서 작성 화면(contract-form.tsx)과 같은 자리(2026-10-19 점검 — 실사용자 확인). 전에는
+          화면 맨 아래에 있어 긴 폼에서 저장하려면 끝까지 스크롤해야 했다. */}
       <div className="flex items-center gap-[6px]">
         <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">
           {mode === "create" ? "점포 등록" : "점포 수정"}
           {store && (
             <span className="ml-[10px] text-[14px] font-medium text-erp-label">
-              {store.name} · {store.storeCode}
+              {store.storeCode} · <CodeLabel group="STORE_TYPE" value={store.storeTypeCode} />
             </span>
           )}
         </h2>
+        <Button variant="off" href={store ? `/stores/${store.storeId}${backHref === "/stores" ? "" : `?back=${encodeURIComponent(backHref)}`}` : backHref}>
+          취소
+        </Button>
+        <Button onClick={handleSave} disabled={saving || closedOrBlocked || locating || checkingClose || createUncertain}>
+          저장
+        </Button>
       </div>
       {failure && <NoticeBand title={failure.title} detail={failure.detail} />}
       {store && store.storeStatusCode === "CLOSED" && <NoticeBand tone="info" title="폐점 점포는 수정할 수 없습니다." detail="다시 운영하려면 새 점포로 등록하세요." />}
       {store && store.bpAccountStatusCode !== "ACTIVE" && <NoticeBand title="소속 BP 가 미사용 상태여서 이 업무를 할 수 없습니다." />}
 
-      <FormGroup title="점포유형">
-        <div className="flex flex-col gap-[8px]">
-          <span className="text-[14px] font-medium text-erp-label">
-            점포유형<RequiredMark />
-            {mode === "edit" && <span className="ml-[6px] font-normal">등록 뒤에는 바꿀 수 없습니다</span>}
-          </span>
-          <StoreTypeCards
-            value={form.storeTypeCode}
-            locked={mode === "edit"}
-            onChange={(v) => set("storeTypeCode", v, "storeTypeCode")}
-            invalid={invalid("storeTypeCode")}
-            describedBy={describe("storeTypeCode")}
-          />
-          {message("storeTypeCode")}
-        </div>
-      </FormGroup>
-
-      {/* 두 묶음은 각자 내용만큼의 높이로 둔다 — 높이를 맞추려 늘리면 짧은 쪽에 빈 자리가 남는다 */}
-      <div className="grid grid-cols-2 items-start gap-[24px]">
+      {/* 두 묶음은 같은 선에서 끝나게 높이를 맞춘다(FormGroup 상자가 flex-1 로 늘어난다, 2026-10-16 점검) */}
+      <div className="grid grid-cols-2 gap-[24px]">
         <FormGroup title="점포 기본정보">
+          {/* 화면에서 고칠 수 없는 점포상태를 맨 위에 두고, 그다음 점포유형을 둔다(2026-10-16 점검). 점포유형은 등록
+              뒤 바꿀 수 없다 — 등록 화면에서만 큰 선택 카드로 고른다. 수정 화면에서는 이 카드를 보이지 않고, 위
+              제목 줄에 점포유형 · 점포코드로만 알린다(2026-10-16 디자인 점검). */}
           <Stack>
             {mode === "create" ? (
               <Labeled label="점포상태">
@@ -422,26 +518,44 @@ export function StoreFormView(props: Props) {
                 </div>
               </Labeled>
             ) : (
-              <>
-                <Field label="점포상태" required>
-                  <Select
-                    value={form.storeStatus}
-                    onChange={(e) => handleStatusSelect(e.target.value as StoreStatus)}
-                    disabled={closedOrBlocked || statusOptions.length < 2 || checkingClose}
-                    aria-invalid={invalid("storeStatus")}
-                    aria-describedby={describe("storeStatus")}
-                  >
-                    {statusOptions.map((s) => (
-                      <option key={s} value={s}>
-                        {statusLabel(s)}
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
-                {message("storeStatus")}
-              </>
+              <FormRow>
+                <Stack grow>
+                  <Field label="점포상태" required>
+                    <Select
+                      value={form.storeStatus}
+                      onChange={(e) => handleStatusSelect(e.target.value as StoreStatus)}
+                      disabled={closedOrBlocked || statusOptions.length < 2 || checkingClose}
+                      aria-invalid={invalid("storeStatus")}
+                      aria-describedby={describe("storeStatus")}
+                    >
+                      {statusOptions.map((s) => (
+                        <option key={s} value={s}>
+                          {statusLabel(s)}
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
+                  {message("storeStatus")}
+                </Stack>
+                {/* 점포명과 같은 폭으로 맞추려고 FormRow 로 반을 나눈다 — 오른쪽은 아직 짝이 없는 빈 자리다(2026-10-16) */}
+                <div className="min-w-0 flex-1" aria-hidden="true" />
+              </FormRow>
             )}
           </Stack>
+          {mode === "create" && (
+            <div className="flex flex-col gap-[8px]">
+              <span className="text-[14px] font-medium text-erp-label">
+                점포유형<RequiredMark />
+              </span>
+              <StoreTypeCards
+                value={form.storeTypeCode}
+                onChange={(v) => set("storeTypeCode", v, "storeTypeCode")}
+                invalid={invalid("storeTypeCode")}
+                describedBy={describe("storeTypeCode")}
+              />
+              {message("storeTypeCode")}
+            </div>
+          )}
           <FormRow>
             <Stack grow>
               <Field label="점포명" required>
@@ -466,54 +580,83 @@ export function StoreFormView(props: Props) {
             label="점포 주소"
             value={{ zipCode: form.zipCode, address: form.address, addressDetail: form.addressDetail }}
             onChange={(a) => {
-              // [지우기]로 주소를 비우면 그 주소의 좌표도 지운다 — 받는 중이던 좌표도 버린다
+              // [지우기]로 주소를 비우면 그 주소에서 나온 좌표도, 출퇴근 위치 적용 여부도 함께 미사용으로
+              // 돌린다 — 주소 없이는 좌표도 없고, 좌표 없이 사용으로 남아 있으면 상세 화면에 잘못된 상태가
+              // 보인다(2026-10-19 재확인 — 실사용자 지시로 되돌림. 전에는 이 값을 건드리지 않는 쪽이 근본
+              // 수정이라 봤으나, 주소 없는 사용 상태 자체가 더 큰 문제로 판단해 다시 바꿨다).
               const cleared = !a.address && Boolean(form.address);
               if (cleared) {
                 locateNumber.current++;
                 setCoordinateNote(null);
               }
-              setForm((f) => ({ ...f, ...a, ...(cleared && { latitude: "", longitude: "" }) }));
+              setForm((f) => ({ ...f, ...a, ...(cleared && { latitude: "", longitude: "", isLocationApplied: false }) }));
               clearError("addressDetail");
             }}
             detailError={errors.addressDetail}
             onChoose={handleAddressChoose}
+            // 운영 점포는 위도 · 경도가 있어야 하고 그 좌표는 이 주소에서 나온다 — 비워 둔 채로는 운영 상태를
+            // 유지할 수 없으니 [지우기]를 숨긴다. 새 주소로 바꾸는 것(검색해 고르기)은 그대로 된다(2026-10-19).
+            hideClear={mode === "edit" && form.storeStatus === "OPERATING"}
           />
           <Stack>
             <FormRow>
-              <Field label="위도" width="w-[130px]">
+              <Field label="위도" width="w-[160px]">
                 <TextField
                   value={form.latitude}
                   onChange={(e) => setCoordinate("latitude", e.target.value)}
                   inputMode="decimal"
-                  placeholder="37.556312"
+                  placeholder="예: 37.556312"
                   aria-invalid={invalid("latitude")}
                   aria-describedby={describe("latitude")}
                 />
               </Field>
-              <Field label="경도" width="w-[130px]">
+              <Field label="경도" width="w-[160px]">
                 <TextField
                   value={form.longitude}
                   onChange={(e) => setCoordinate("longitude", e.target.value)}
                   inputMode="decimal"
-                  placeholder="126.901845"
+                  placeholder="예: 126.901845"
                   aria-invalid={invalid("longitude")}
                   aria-describedby={describe("longitude")}
                 />
               </Field>
-              <Field label="위치 적용 여부" width="w-[120px]">
-                <Select value={form.isLocationApplied ? "Y" : "N"} onChange={(e) => set("isLocationApplied", e.target.value === "Y")}>
+              <Field label="출퇴근 위치 적용 여부" width="w-[150px]">
+                {/* 좌표(위도 · 경도)가 없으면 사용으로 고를 수 없다 — 주소를 지우거나 좌표를 손으로 비우면
+                    미사용으로 되돌리는 것과 같은 규칙이다. 주소가 아니라 좌표로 가린다 — 주소는 골랐는데
+                    지오코딩이 늦거나 실패한 사이, 또는 주소 없이 좌표만 손으로 적은 점포를 놓치지 않는다
+                    (2026-10-19 코드 리뷰로 찾음). 막힌 이유는 아래 도움말에도 적는다(disabled 는 보통 마우스
+                    오버도 받지 않아 title 만으로는 부족하다 — 코드 리뷰 지적).
+                    보이는 값도 bodyOf 와 같은 조건으로 계산한다 — 좌표를 손으로 비우면(setCoordinate 는 이
+                    값을 건드리지 않는다) 칸은 막힌 채 "사용"을 그대로 보이는데 저장은 조용히 "미사용"을
+                    보내는 어긋남이 있었다. 상태를 고치는 대신 보이는 값을 저장 규칙과 맞춰 상태 변경 로직을
+                    다시 건드리지 않는다(2026-10-19 코드 리뷰 반복 지적으로 고침). */}
+                <Select
+                  value={hasCoordinateInput(form.latitude, form.longitude) && form.isLocationApplied ? "Y" : "N"}
+                  onChange={(e) => set("isLocationApplied", e.target.value === "Y")}
+                  disabled={!hasCoordinateInput(form.latitude, form.longitude)}
+                  title={hasCoordinateInput(form.latitude, form.longitude) ? undefined : "위도 · 경도가 있어야 사용으로 고를 수 있습니다."}
+                >
                   <option value="Y">사용</option>
                   <option value="N">미사용</option>
                 </Select>
               </Field>
+              <div className="self-end">
+                <Button variant="soft" onClick={handleRecalculateCoordinate} disabled={!form.address.trim() || locating || closedOrBlocked}>
+                  주소로 다시 계산
+                </Button>
+              </div>
             </FormRow>
             {message("latitude")}
             {message("longitude")}
             {coordinateNote && <FieldMessage id={`${ids}-coordinate`} message={coordinateNote} />}
+            {/* "가져오는 중입니다" 로 바꿔 보였다가 되돌아오던 것을 뺐다 — 버튼(주소로 다시 계산)을 눌러도
+                도움말이 깜빡이지 않고 그대로 있는다(2026-10-19). 받는 동안 버튼·저장이 막히는 것으로 충분하다. */}
             <Note>
-              {locating
-                ? "고른 주소의 위도 · 경도를 가져오는 중입니다."
-                : "점포 주소를 검색해 고르면 위도 · 경도가 채워집니다. 직접 고칠 수도 있습니다. 운영 점포는 위도 · 경도가 있어야 합니다."}
+              점포주소가 입력되면 <b className="font-semibold">위도</b> · <b className="font-semibold">경도</b> 좌표값이 자동으로 표시됩니다.
+              <br />
+              <b className="font-semibold">출퇴근 위치 적용 여부</b>를 <b className="font-semibold">사용</b>으로 설정하면 이 좌표를 기준으로 직원의 출퇴근 위치를 확인할 수 있습니다.
+              <br />
+              위도 · 경도가 없으면 <b className="font-semibold">출퇴근 위치 적용 여부</b>를 사용으로 고를 수 없습니다.
             </Note>
           </Stack>
           <Labeled label="대표 이미지">
@@ -557,56 +700,98 @@ export function StoreFormView(props: Props) {
           </Labeled>
         </FormGroup>
 
-        <FormGroup title={`점포 사업자정보 · ${verified ? "인증 완료" : "미인증"}`}>
+        <FormGroup
+          title={
+            <>
+              사업자정보
+              <span className="ml-[10px] inline-flex align-middle">
+                <Badge tone={verified ? "on" : "off"}>{verified ? "인증 완료" : "미인증"}</Badge>
+              </span>
+            </>
+          }
+        >
+          {/* 순서는 사업자등록번호 인증 라인 → 상호명 → 대표자 연락처 → 업태 · 종목 → 사업자주소(2026-10-16 점검) */}
           <Stack>
-            <span className="text-[14px] font-medium text-erp-label">{form.savedBizNumber ? "사업자 번호 재인증" : "사업자 번호 인증"}</span>
             <FormRow>
               <Field label="사업자등록번호">
                 <TextField
                   value={form.savedBizNumber ? formatBizNumber(form.savedBizNumber) : form.bizNumber}
                   onChange={(e) => setVerification("bizNumber", e.target.value.replace(/[^0-9-]/g, ""))}
-                  disabled={Boolean(form.savedBizNumber) || closedOrBlocked}
-                  placeholder="000-00-00000"
+                  readOnly={Boolean(form.savedBizNumber) || verifiedPending}
+                  disabled={closedOrBlocked}
+                  // 회원가입(biz-auth-section.tsx)과 같은 placeholder로 맞췄다(2026-10-16 점검)
+                  placeholder="숫자 10자리"
                   maxLength={12}
                   aria-invalid={invalid("bizNumber")}
-                  aria-describedby={describe("bizNumber")}
+                  aria-describedby={verifyDescribedBy("bizNumber", bizNumberMissing)}
                 />
               </Field>
               <Field label="대표자명">
                 <TextField
                   value={form.ceoName}
                   onChange={(e) => setVerification("ceoName", e.target.value)}
+                  readOnly={verifiedPending}
                   disabled={closedOrBlocked}
+                  placeholder="대표자 이름"
                   maxLength={50}
                   aria-invalid={invalid("ceoName")}
-                  aria-describedby={describe("ceoName")}
+                  aria-describedby={verifyDescribedBy("ceoName", ceoNameMissing)}
                 />
               </Field>
               <Labeled label="개업일자">
-                {form.savedBizNumber ? (
-                  <TextField value={form.openDate} disabled aria-label="개업일자" />
+                {form.savedBizNumber || verifiedPending ? (
+                  <TextField value={form.openDate} readOnly aria-label="개업일자" />
                 ) : (
                   <DateField value={form.openDate} onChange={(v) => setVerification("openDate", v)} disabled={closedOrBlocked} aria-label="개업일자" />
                 )}
               </Labeled>
-              <div className="shrink-0 self-end">
-                <Button variant="soft" onClick={handleVerify} disabled={verifying || closedOrBlocked}>
-                  {form.savedBizNumber ? "재인증" : "인증하기"}
-                </Button>
+              <div className="flex shrink-0 gap-[6px] self-end">
+                {verifiedPending ? (
+                  <>
+                    <Button variant="soft" onClick={handleReverifyPending} disabled={closedOrBlocked}>
+                      재인증
+                    </Button>
+                    <Button variant="soft" onClick={handleClearPending} disabled={closedOrBlocked}>
+                      사용안함
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="soft" onClick={handleVerify} disabled={verifying || closedOrBlocked}>
+                      {form.savedBizNumber ? "재인증" : "인증하기"}
+                    </Button>
+                    {showBizClear ? (
+                      <Button variant="soft" onClick={handleClearPending} disabled={closedOrBlocked}>
+                        지우기
+                      </Button>
+                    ) : null}
+                  </>
+                )}
               </div>
             </FormRow>
-            {message("bizNumber")}
-            {message("ceoName")}
-            {message("openDate")}
-            {verifyNote && (
-              <p role="status" className="text-[13px] leading-[1.5] text-erp-on">
-                {verifyNote}
+            {missingVerifyFields.length > 0 && (
+              <p id={verifyErrorId} role="alert" className="text-[13px] leading-[1.5] text-erp-off">
+                {missingVerifyFields.join("·")} 항목을 입력해 주세요.
               </p>
             )}
+            {!bizNumberMissing && message("bizNumber")}
+            {!ceoNameMissing && message("ceoName")}
+            {!openDateMissing && message("openDate")}
+            {/* 회원가입(biz-auth-section.tsx)처럼 성공은 화면이 인증완료 모양으로 바뀌는 것으로 보여 주고, 화면
+                낭독기에만 알린다 — 성공 문구를 눈에 보이게 따로 띄우지 않는다(2026-10-16 점검). */}
+            <span role="status" className="sr-only">
+              {verified ? "사업자정보 인증이 완료되었습니다." : ""}
+            </span>
             <Note>
-              {form.savedBizNumber
-                ? "대표자가 바뀌었을 때 새 이름으로 다시 확인합니다. 번호와 개업일자는 바꿀 수 없고, 재인증에 실패해도 기존 사업자정보는 그대로입니다."
-                : "국세청에 사업자등록번호 · 대표자명 · 개업일자의 진위를 확인합니다. 등록 때는 선택이고 운영으로 바꿀 때 필요합니다."}
+              {form.savedBizNumber ? (
+                "대표자가 바뀌었을 때 새 이름으로 다시 확인합니다. 번호와 개업일자는 바꿀 수 없고, 재인증에 실패해도 기존 사업자정보는 그대로입니다."
+              ) : (
+                <>
+                  사업자등록번호·대표자명·개업일자가 국세청에 등록된 정보와 일치하는지 확인합니다.
+                  <br />
+                  점포 등록 시 사업자 인증은 선택사항이나, 점포상태를 ‘운영’으로 변경하려면 반드시 인증을 완료해야 합니다.
+                </>
+              )}
             </Note>
           </Stack>
           <FormRow>
@@ -628,20 +813,6 @@ export function StoreFormView(props: Props) {
               {message("ceoPhone")}
             </Stack>
           </FormRow>
-          <Stack>
-            <Checkbox label="사업자주소가 점포 주소와 같음" checked={form.bizSameAsStore} onChange={(e) => set("bizSameAsStore", e.target.checked, "bizAddressDetail")} />
-            {!form.bizSameAsStore && (
-              <AddressField
-                label="사업자주소"
-                value={{ zipCode: form.bizZipCode, address: form.bizAddress, addressDetail: form.bizAddressDetail }}
-                onChange={(a) => {
-                  setForm((f) => ({ ...f, bizZipCode: a.zipCode, bizAddress: a.address, bizAddressDetail: a.addressDetail }));
-                  clearError("bizAddressDetail");
-                }}
-                detailError={errors.bizAddressDetail}
-              />
-            )}
-          </Stack>
           <FormRow>
             <Stack grow>
               <Field label="업태">
@@ -670,10 +841,35 @@ export function StoreFormView(props: Props) {
               {message("bizItem")}
             </Stack>
           </FormRow>
+          {/* 늘 보이고, 체크하면(기본값) 점포 주소를 그대로 보여 주기만 한다 — 체크박스는 "사업자주소" 라벨 줄
+              바로 옆에 둔다(2026-10-16 점검). */}
+          <Stack>
+            <AddressField
+              label="사업자주소"
+              labelExtra={
+                <Checkbox
+                  label="점포 주소와 같음"
+                  checked={form.bizSameAsStore}
+                  onChange={(e) => set("bizSameAsStore", e.target.checked, "bizAddressDetail")}
+                />
+              }
+              value={
+                form.bizSameAsStore
+                  ? { zipCode: form.zipCode, address: form.address, addressDetail: form.addressDetail }
+                  : { zipCode: form.bizZipCode, address: form.bizAddress, addressDetail: form.bizAddressDetail }
+              }
+              onChange={(a) => {
+                setForm((f) => ({ ...f, bizZipCode: a.zipCode, bizAddress: a.address, bizAddressDetail: a.addressDetail }));
+                clearError("bizAddressDetail");
+              }}
+              detailError={errors.bizAddressDetail}
+              disabled={form.bizSameAsStore}
+            />
+          </Stack>
         </FormGroup>
       </div>
 
-      <FormGroup title="기타 정보 · 층별">
+      <FormGroup title="점포 공간정보">
         <FloorTable
           rows={form.floors}
           onChange={(rows) => set("floors", rows, "floors")}
@@ -683,18 +879,9 @@ export function StoreFormView(props: Props) {
         {message("floors")}
       </FormGroup>
 
-      <div className="flex justify-center gap-[6px]">
-        <Button variant="off" href={store ? `/stores/${store.storeId}${backHref === "/stores" ? "" : `?back=${encodeURIComponent(backHref)}`}` : backHref}>
-          취소
-        </Button>
-        <Button onClick={handleSave} disabled={saving || closedOrBlocked || locating || checkingClose || createUncertain}>
-          저장
-        </Button>
-      </div>
-
       <ConfirmDialog open={dialog === "close-blocked"} title="폐점할 수 없습니다" confirmLabel="확인" onConfirm={() => setDialog(null)} onCancel={() => setDialog(null)}>
         <p>{closeBlock}</p>
-        <p className="mt-[6px] text-erp-label">점포상태를 이전 값으로 되돌렸습니다. 이용 중인 구독 · 정산 대기는 1차 범위 밖이라 보지 않습니다.</p>
+        <p className="mt-[6px] text-erp-label">점포상태를 이전 값으로 되돌렸습니다.</p>
       </ConfirmDialog>
       <ConfirmDialog
         open={dialog === "close-confirm"}
@@ -784,57 +971,88 @@ function FloorTable({
 }) {
   const floorTypeLabel = useCodeLabel("FLOOR_TYPE");
   const update = (key: string, patch: Partial<FloorRow>) => onChange(rows.map((r) => (r.key === key ? { ...r, ...patch } : r)));
-  const numberCell = (row: FloorRow, field: "floorNumber" | "floorAreaPyeong" | "floorAreaSqm" | "seatCount", label: string, unit: string, decimal: boolean) => (
-    <div className="flex items-center gap-[6px]">
-      <TextField
-        value={row[field]}
-        onChange={(e) => update(row.key, { [field]: e.target.value.replace(decimal ? /[^0-9.]/g : /[^0-9]/g, "") })}
-        inputMode={decimal ? "decimal" : "numeric"}
-        aria-label={label}
-        aria-invalid={invalid}
-        aria-describedby={describedBy}
-      />
+  const indexOf = (row: FloorRow) => rows.findIndex((r) => r.key === row.key);
+  const numberCell = (row: FloorRow, field: "floorAreaPyeong" | "floorAreaSqm" | "seatCount", width: `w-[${number}px]`, label: string, unit: string, decimal: boolean) => (
+    <div className="flex items-center justify-center gap-[6px]">
+      <div className={width}>
+        <TextField
+          value={row[field]}
+          onChange={(e) => update(row.key, { [field]: e.target.value.replace(decimal ? /[^0-9.]/g : /[^0-9]/g, "") })}
+          inputMode={decimal ? "decimal" : "numeric"}
+          aria-label={label}
+          aria-invalid={invalid}
+          aria-describedby={describedBy}
+        />
+      </div>
       <span className="shrink-0 text-[14px] text-erp-label">{unit}</span>
     </div>
   );
+  // 데모(docs/demo/src/biz-form.mjs 의 floorTable)와 같은 표 모양으로 되돌렸다 — 고정 그리드로 좁혔던
+  // 버전은 데모와 어긋나 데모 쪽을 기준으로 삼기로 했다(2026-10-19). [층 추가]는 표 위 왼쪽에 둔다.
+  // 다섯 칸 너비를 모두 같게 맞춘다 — 층구분 칸만 너비 지정이 없어 남는 폭을 혼자 다 먹고 있었다(2026-10-19).
+  const COLUMN_WIDTH = "w-[190px]";
+  const columns: Column<FloorRow>[] = [
+    {
+      header: "층구분",
+      width: COLUMN_WIDTH,
+      cell: (row) => (
+        <div className="flex items-center justify-center gap-[6px]">
+          <div className="w-[80px]">
+            <Select
+              value={row.floorTypeCode}
+              onChange={(e) => update(row.key, { floorTypeCode: e.target.value })}
+              aria-label={`${indexOf(row) + 1}번째 층 구분`}
+            >
+              {/* 저장된 줄의 빈 값 · 모르는 값도 그대로 보인다 — 선택지에 없으면 브라우저가 첫 항목(지상)을 보여 주지만 값은 그대로라 화면과 저장이 어긋난다 */}
+              {!row.floorTypeCode && <option value="">선택</option>}
+              {row.floorTypeCode && !floorTypeOf(row.floorTypeCode) && <option value={row.floorTypeCode}>{row.floorTypeCode}</option>}
+              {FLOOR_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {floorTypeLabel(t)}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div className="w-[64px]">
+            <TextField
+              value={row.floorNumber}
+              onChange={(e) => update(row.key, { floorNumber: e.target.value.replace(/[^0-9]/g, "") })}
+              inputMode="numeric"
+              aria-label={`${indexOf(row) + 1}번째 층수`}
+              aria-invalid={invalid}
+              aria-describedby={describedBy}
+            />
+          </div>
+          <span className="shrink-0 text-[14px] text-erp-label">층</span>
+        </div>
+      ),
+    },
+    { header: "매장평수(평)", width: COLUMN_WIDTH, cell: (row) => numberCell(row, "floorAreaPyeong", "w-[96px]", `${indexOf(row) + 1}번째 매장평수`, "평", true) },
+    { header: "전용면적(㎡)", width: COLUMN_WIDTH, cell: (row) => numberCell(row, "floorAreaSqm", "w-[96px]", `${indexOf(row) + 1}번째 전용면적`, "㎡", true) },
+    { header: "좌석 수", width: COLUMN_WIDTH, cell: (row) => numberCell(row, "seatCount", "w-[80px]", `${indexOf(row) + 1}번째 좌석수`, "석", false) },
+    {
+      header: "삭제",
+      width: COLUMN_WIDTH,
+      cell: (row) => (
+        <Button variant="off" onClick={() => onChange(rows.filter((r) => r.key !== row.key))}>
+          삭제
+        </Button>
+      ),
+    },
+  ];
   return (
-    <div className="flex flex-col gap-[10px]">
-      {rows.length === 0 ? (
-        <p className="text-[14px] text-erp-muted">등록한 층별 정보가 없습니다. 층을 추가해 적어 주세요.</p>
-      ) : (
-        <ul className="flex flex-col gap-[10px]">
-          {rows.map((row, i) => (
-            <li key={row.key} className="grid grid-cols-[100px_100px_1fr_1fr_1fr_auto] items-center gap-[6px]">
-              <Select
-                value={row.floorTypeCode}
-                onChange={(e) => update(row.key, { floorTypeCode: e.target.value })}
-                aria-label={`${i + 1}번째 층 구분`}
-              >
-                {/* 저장된 줄의 빈 값 · 모르는 값도 그대로 보인다 — 선택지에 없으면 브라우저가 첫 항목(지상)을 보여 주지만 값은 그대로라 화면과 저장이 어긋난다 */}
-                {!row.floorTypeCode && <option value="">선택</option>}
-                {row.floorTypeCode && !floorTypeOf(row.floorTypeCode) && <option value={row.floorTypeCode}>{row.floorTypeCode}</option>}
-                {FLOOR_TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {floorTypeLabel(t)}
-                  </option>
-                ))}
-              </Select>
-              {numberCell(row, "floorNumber", `${i + 1}번째 층수`, "층", false)}
-              {numberCell(row, "floorAreaPyeong", `${i + 1}번째 매장평수`, "평", true)}
-              {numberCell(row, "floorAreaSqm", `${i + 1}번째 전용면적`, "㎡", true)}
-              {numberCell(row, "seatCount", `${i + 1}번째 좌석수`, "석", false)}
-              <Button variant="off" onClick={() => onChange(rows.filter((r) => r.key !== row.key))}>
-                삭제
-              </Button>
-            </li>
-          ))}
-        </ul>
-      )}
+    <div className="flex flex-col gap-[18px]">
       <div>
         <Button variant="soft" onClick={() => onChange([...rows, newFloorRow()])}>
           층 추가
         </Button>
       </div>
+      <DataTable
+        columns={columns}
+        rows={rows}
+        rowKey={(r) => r.key}
+        empty="등록된 층별 정보가 없습니다. ‘층 추가’를 눌러 면적과 좌석 수를 입력해 주세요."
+      />
     </div>
   );
 }
