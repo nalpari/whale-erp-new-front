@@ -7,7 +7,7 @@ import { labelOf, type EnumValue } from "@/lib/enums";
 import { formOfStore, toUpdateStoreInput } from "@/lib/store-form";
 import type { StoreDetail, StoreStatus, StoreTransitions } from "@/lib/store-types";
 import { useCodeLabel } from "@/components/site/code-label";
-import { usePagePermission } from "@/components/site/session-gate";
+import { usePagePermission, useResetStoreSearch } from "@/components/site/session-gate";
 import { closeBlockText, finalEuro, nextStatuses } from "@/lib/store-view";
 import { deleteStoreAction, getStoreTransitionsAction, updateStoreAction, type ActionFailure } from "../actions";
 import { StoreStatusBadge } from "../store-parts";
@@ -49,6 +49,7 @@ export function StoreDetailActions({
   const router = useRouter();
   const toast = useToast();
   const can = usePagePermission();
+  const resetStoreSearch = useResetStoreSearch();
   const statusLabel = useCodeLabel("STORE_STATUS");
   const [dialog, setDialog] = useState<"status" | "delete" | null>(null);
   const [target, setTarget] = useState<StoreStatus | null>(null);
@@ -101,6 +102,7 @@ export function StoreDetailActions({
       router.refresh();
     });
 
+  // 삭제 뒤 목록은 점포 검색을 「전체」로 비운다(지운 점포가 고른 점포 조건에 남지 않게). 다른 조건 · 보기는 그대로다
   const handleDelete = () =>
     startBusy(async () => {
       const result = await deleteStoreAction(store.storeId).catch(UNKNOWN("삭제"));
@@ -108,12 +110,12 @@ export function StoreDetailActions({
       if (!result.ok && (result.status === undefined || result.status === 404)) {
         setDialog(null);
         toast(result.status === 404 ? "이미 지워진 점포입니다." : "삭제 결과를 확인하지 못했습니다. 목록에서 확인해 주세요.");
-        return router.push(backHref);
+        return router.push(resetStoreSearch(backHref));
       }
       if (!result.ok) return fail(result.status, result.message);
       setDialog(null);
       toast("deleted");
-      router.push(backHref);
+      router.push(resetStoreSearch(backHref));
     });
 
   return (
