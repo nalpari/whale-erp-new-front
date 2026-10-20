@@ -176,7 +176,8 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
         <>
           <ServiceTabs services={tree.services} selected={tab} idPrefix={tabsId} onSelect={setTab} />
           <div id={`${tabsId}-panel`} role="tabpanel" aria-labelledby={service ? `${tabsId}-${service.serviceCode}` : undefined} className="h-[420px] overflow-y-auto">
-            <MenuTable nodes={service?.menus ?? []} values={values} reasons={reasons} locked={!savable || busy} onChange={setValues} />
+            {/* 통째로 잠긴 팝업은 위 띠가 이유를 한 번 말한다 — 줄마다 같은 이유를 되풀이하지 않는다 */}
+            <MenuTable nodes={service?.menus ?? []} values={values} reasons={savable ? reasons : []} locked={!savable || busy} onChange={setValues} />
           </div>
         </>
       )}
