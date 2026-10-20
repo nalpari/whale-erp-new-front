@@ -148,6 +148,11 @@ const topPanelClosable = () => topPanel()?.closable ?? false;
  * 가장 위 패널이 closeOnBackdrop 을 켰는지 — PanelBackdrop 이 뜰지와, 화면의 나머지(헤더·목록)를 inert 로
  * 막을지를 같은 값으로 정한다. 바탕창은 클릭만 가로채고 포커스는 가두지 않으므로, 이 값으로 배경 쪽도 직접
  * inert 를 줘야 Tab 이 바탕창을 건너뛰어 배경으로 넘어가는 것을 막는다(코드 리뷰로 찾음, 2026-10-20).
+ *
+ * AdminHeader 는 이미 이 값을 받아 스스로 inert 가 된다(모든 화면 공통). 그 아래 본문은 화면마다 다르므로
+ * 자동으로 막히지 않는다 — closeOnBackdrop 을 하나라도 켜는 화면을 새로 만들면, 그 화면 자신의 목록·필터처럼
+ * 패널이 아닌 영역을 `<div className="contents" inert={useBackdropActive()}>`로 감싸야 한다
+ * (admins-screen.tsx 참고). 빠뜨리면 헤더만 막히고 그 화면 본문으로는 Tab 이 새 나간다.
  */
 export function useBackdropActive() {
   return useSyncExternalStore(subscribeBackdrop, topPanelClosable, () => false);

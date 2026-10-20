@@ -126,7 +126,6 @@ export function AdminsScreen({
         detail={shown}
         onClose={dismissDetail}
         trigger={detailTrigger}
-        editOpen={editOpen}
         onEdit={(from) => {
           editTrigger.current = from;
           if (shown && "admin" in shown) setEditingId(shown.admin.adminAccountId);

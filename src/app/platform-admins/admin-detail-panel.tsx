@@ -21,7 +21,6 @@ export function AdminDetailPanel({
   detail,
   onClose,
   trigger,
-  editOpen,
   onEdit,
   onDeleted,
 }: {
@@ -29,21 +28,21 @@ export function AdminDetailPanel({
   detail: { admin: PlatformAdminDetail } | { failed: string } | null;
   onClose: () => void;
   trigger: RefObject<HTMLElement | null>;
-  /** 수정 패널이 위에 떠 있으면 이 패널은 포커스를 받지 않는다 */
-  editOpen: boolean;
   onEdit: (from: HTMLButtonElement) => void;
   onDeleted: () => void;
 }) {
   return (
     // 읽기 전용이라 잃을 입력이 없다 — 바탕창을 눌러도 닫힌다(등록·수정 패널과 다르다, SlidePanel 참고).
-    // 수정 패널이 위에 겹쳐 열려 있으면 onClose(dismissDetail)가 editOpen 을 보고 스스로 거른다.
+    // 수정 패널이 위에 겹쳐 열려 있으면 onClose(dismissDetail)가 admins-screen.tsx 자신의 editOpen 을 보고
+    // 스스로 거른다. 수정이 위에 있는 동안 이 패널 안이 눌리지 않는 것은 SlidePanel 의 blockedByModal 이
+    // 맡는다 — 전에는 여기서도 editOpen 을 받아 DetailBody 에 따로 inert 를 줬지만, 이제 바깥 aside 가 통째로
+    // inert 라 안쪽 값은 항상 가려져 중복이었다(코드 리뷰로 찾음, 2026-10-20).
     <SlidePanel id="platform-admin-detail-panel" open={open} onClose={onClose} label="플랫폼 관리자 상세" trigger={trigger} closeOnBackdrop>
       {detail && "admin" in detail ? (
         <DetailBody
           // 다른 계정을 열면 확인창 · 실패 띠를 새로 시작한다
           key={detail.admin.adminAccountId}
           admin={detail.admin}
-          inert={editOpen}
           onClose={onClose}
           onEdit={onEdit}
           onDeleted={onDeleted}
@@ -64,13 +63,11 @@ export function AdminDetailPanel({
 
 function DetailBody({
   admin,
-  inert,
   onClose,
   onEdit,
   onDeleted,
 }: {
   admin: PlatformAdminDetail;
-  inert: boolean;
   onClose: () => void;
   onEdit: (from: HTMLButtonElement) => void;
   onDeleted: () => void;
@@ -165,7 +162,7 @@ function DetailBody({
   const who = <WhoList rows={[["아이디", admin.loginId], ["이름", name]]} />;
 
   return (
-    <div inert={inert} className="flex flex-col gap-[16px]">
+    <div className="flex flex-col gap-[16px]">
       {/* 이름 옆에 계정 상태와 사용자 권한을 꼬리표로 둔다(데모 상세 · 2026-10-08). 권한 꼬리표는 방패 아이콘 대신
           라벨을 달아 값만으로는 안 보이던 것을 바로 알게 한다(점포코드 ST000123 처럼 라벨+값, 2026-10-20 디자인 수정). */}
       <h2 className="flex flex-wrap items-center gap-[6px] text-[18px] font-semibold text-erp-ink">
