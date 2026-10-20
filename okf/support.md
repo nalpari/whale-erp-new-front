@@ -17,10 +17,10 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-20T04:30:00Z }
 | `/support-notices` · `/support-faqs` · `/support-inquiries` | 공지사항 · FAQ · 문의하기 | 화면 셋, 메뉴 셋(이 순서). 검색·필터·페이저가 화면마다 있고, 문의 등록 폼은 문의하기 화면에 있다. 목업은 한 파일에 탭으로 그렸다. | `S-ITFILU` |
 | `/support-notices/[id]` | 공지 상세 | 제목·본문·첨부. 노출 대상과 이력은 운영자 편집 화면의 것이라 여기엔 없다. | `S-ITFILU` |
 | `/support-inquiries/[id]` | 내 문의 상세 | 내 문의와 마지막 답변. 고친 답변이면 수정 시각만 붙는다. 운영자 쪽 상세와 달리 내부 메모·이전 답변·고친 운영자는 보이지 않는다. | `S-ITFILU` |
-| `/platform/community` | 커뮤니티관리 | 플랫폼 관리자가 본다. 공지·FAQ·문의사항·도입문의를 네 갈래로 나눠 관리한다. | `S-GRDOPW` |
-| `/platform/community/notices/[id]` | 공지·FAQ 편집 | 제목·본문·게시 상태와 **노출 대상**을 정한다. 비회원을 넣으면 비로그인 홈까지 나간다. | `S-GRDOPW` |
-| `/platform/community/inquiries/[id]` | 문의 상세 · 답변 | 사용자에게 보이는 답변과 운영자끼리 보는 내부 메모를 갈라서 쓴다. 답변 완료 뒤에도 「답변 수정」으로 고친다. | `S-GRDOPW` |
-| `/platform/community/leads/[id]` | 도입문의 상세 | 비로그인 방문자가 남긴 건이다. 문의자 정보와 도입 문의 내용을 함께 놓고 답한다. | `S-GRDOPW` |
+| `/platform-notices` · `/platform-faqs` · `/platform-inquiries` · `/platform-leads` | 커뮤니티관리 | 플랫폼 관리자가 본다. 공지·FAQ·문의사항·도입문의를 메뉴 넷으로 나눠 관리한다(화면 주소 = 메뉴 URL = api 경로, 2026-10-20). | `S-GRDOPW` |
+| `/platform-notices/[id]` · `/platform-faqs/[id]` | 공지·FAQ 편집 | 제목·본문·게시 상태와 **노출 대상**을 정한다. 비회원을 넣으면 비로그인 홈까지 나간다. | `S-GRDOPW` |
+| `/platform-inquiries/[id]` | 문의 상세 · 답변 | 사용자에게 보이는 답변과 운영자끼리 보는 내부 메모를 갈라서 쓴다. 답변 완료 뒤에도 「답변 수정」으로 고친다. | `S-GRDOPW` |
+| `/platform-leads/[id]` | 도입문의 상세 | 비로그인 방문자가 남긴 건이다. 문의자 정보와 도입 문의 내용을 함께 놓고 답한다. | `S-GRDOPW` |
 
 # 정책
 

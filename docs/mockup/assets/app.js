@@ -316,7 +316,7 @@
         ]},
         { key: "community", text: "커뮤니티관리", team: "3팀", items: [
           { key: "cm-notices", text: "공지사항", href: "support/community.html", sub: [
-            { text: "공지 목록", href: "support/community.html", route: "/platform/community" },
+            { text: "공지 목록", href: "support/community.html", route: "/platform-notices" },
             { text: "공지·FAQ 편집", href: "support/notice-edit.html", route: "…/notices/[id]" }
           ]},
           { text: "FAQ", href: "support/community.html#faq" },

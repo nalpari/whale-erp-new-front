@@ -104,7 +104,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-19T09:00:00Z }
 * 사용중지 메뉴 아래에도 신규 메뉴를 만들 수 있고, 사용자에게는 보이지 않는다고 알린다 — `S-GXMZOU`
 * 조회 권한만 있으면 끌기·신규 메뉴·저장·위치 옮기기가 없고 상세는 읽기만 한다 — `S-GXMZOU`
 * 구현 메모(front 2026-10-16): 메뉴 코드는 api 가 저장할 때 매겨 등록 양식에 미리 보이지 않는다. 이 화면(MN000215)이나 그 상위를 미사용으로 저장하면 확인을 받는다 — api 는 막지 않고, 끄면 이 화면으로는 되돌릴 수 없다
-* 메뉴 URL 은 새로 넣을 때 1뎁스 한 구간만 받는다 — `/staff/content` 가 아니라 `/staff-content`(소문자 · 숫자 · '-'). 등록과, 수정에서 URL 을 바꿀 때 건다. 그대로 둔 기존 URL 은 여러 구간이어도 받는다. 1팀 메뉴 10개는 2026-10-19 에 1뎁스로 옮겼다(api `20261019144438_team1_menu_single_level_urls` — `/platform-admins` · `/platform-role-groups` · `/platform-menus` · `/code-groups` · `/public-holidays` · `/bp-masters` · `/bp-admins` · `/bp-role-groups` · `/bp-code-groups` · `/bp-holidays`, front 라우트도 같이 옮김). 3팀 플랫폼 커뮤니티 메뉴(`/platform/community/…`)와 사용중지 메뉴는 아직 여러 구간이라 예외를 남긴다. 이 화면(MN000215) 메뉴의 URL 을 바꾸면 확인을 받는다. api 서비스도 같은 규칙으로 400 을 준다 (2026-10-19)
+* 메뉴 URL 은 새로 넣을 때 1뎁스 한 구간만 받는다 — `/staff/content` 가 아니라 `/staff-content`(소문자 · 숫자 · '-'). 등록과, 수정에서 URL 을 바꿀 때 건다. 그대로 둔 기존 URL 은 여러 구간이어도 받는다. 1팀 메뉴 10개는 2026-10-19 에 1뎁스로 옮겼다(api `20261019144438_team1_menu_single_level_urls` — `/platform-admins` · `/platform-role-groups` · `/platform-menus` · `/code-groups` · `/public-holidays` · `/bp-masters` · `/bp-admins` · `/bp-role-groups` · `/bp-code-groups` · `/bp-holidays`, front 라우트도 같이 옮김). 3팀 커뮤니티 메뉴 넷은 2026-10-20 에 옮겼다(api `20261020161147_team3_community_menu_single_level_urls` — `/platform-notices` · `/platform-faqs` · `/platform-inquiries` · `/platform-leads`). 사용중지 메뉴는 아직 여러 구간이라 예외를 남긴다. 이 화면(MN000215) 메뉴의 URL 을 바꾸면 확인을 받는다. api 서비스도 같은 규칙으로 400 을 준다 (2026-10-19)
 
 ## 플랫폼 공통코드 관리
 

@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-20
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [고객지원·커뮤니티](/support.md) · [플랫폼 시스템 관리](/system.md) — 커뮤니티 화면 주소를 메뉴 URL · api 경로와 같은 한 단계로 옮겼다(`/platform-notices` · `/platform-faqs` · `/platform-inquiries` · `/platform-leads`, api squirtle). 공지사항 저장 창구는 `/platform-notices/save`, FAQ 는 JSON 서버 액션. 목업 · 데모 메뉴 URL 도 맞췄다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 커뮤니티 관리 목록 넷(공지사항 · FAQ · 문의사항 · 도입문의, #275)과 공지사항 · FAQ 등록 · 수정(#276)을 만들었다. 첨부 저장 창구 `/platform/community/posts` 를 더하고 proxy 본문 한도를 51MB 로 올렸다. api-types 를 api main openapi 로 다시 만들었다.
 * **Update**: [고객지원·커뮤니티](/support.md) · [홈·계정 진입](/home.md) — 목업을 Plane 에 맞추며 함께 고쳤다: 노출 대상 「전체」 선택 없음(#276), 도입문의 업종 기타 · 문의 내용 필수 · 완료 팝업(#297 · #298), 비로그인 공지 페이지 번호 · 상세 · FAQ 카테고리(#293 · #294).
 * **Update**: [고객지원·커뮤니티](/support.md) — Plane 기준으로 낡은 문구를 고쳤다: 문의 첨부는 1차에서 만든다(#281), 도입문의 답변 메일은 보내고(#588) 상세에서 결과 · 시각과 [답변 메일 다시 보내기]를 둔다(#597), 상담하지 않은 도입문의 지우기 api 가 생겼다(#590). 데모 · 논리 ERD 도 같이 맞췄다.
