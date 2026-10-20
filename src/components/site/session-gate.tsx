@@ -33,7 +33,7 @@ import {
   type TabContext,
 } from "@/lib/browser-storage";
 import { LOGIN_KEY_COOKIE, type AdminMenu, type AdminStore, type Codes, type LoginInfo, type LoginInfoAccount } from "@/lib/session";
-import { usesStoreScope, withoutStoreIds } from "@/lib/store-scope";
+import { restoredScope, usesStoreScope, withoutStoreIds } from "@/lib/store-scope";
 
 interface LoginState {
   loginKey: string;
@@ -82,7 +82,7 @@ export function useScope() {
 }
 /**
  * 사용자가 목록에서 고른 점포(빈 목록 포함)와 그 목록 메뉴 url. 값은 이 탭 sessionStorage 에 두고 탭을 열 때 한 번 읽는다(useScope 와 같다).
- * 헤더 범위를 새로 고르면(setScope) 함께 지운다.
+ * 헤더 범위를 새로 고르거나(setScope) 그 메뉴를 떠나면(admin-header.tsx) 지우고, 등록 · 삭제 뒤에는 빈 목록으로 둔다(useResetStoreSearch).
  */
 export function useStorePicks() {
   const { storePicks, setStorePicks } = useLogin();
@@ -126,8 +126,6 @@ export function usePageMenu() {
   const { menus, serviceCode } = useLogin();
   return menuOfPath(menus, usePathname(), serviceCode);
 }
-
-const ALL: Scope = { type: "ALL" };
 
 /**
  * 로그인 후 화면의 문. 이 탭의 BP 와 그 BP 의 점포·공통코드가 준비될 때까지 로딩 화면을 보이고, 준비되면 children 을 그린다. 주소는 ?bp= 만 지운다.
@@ -228,12 +226,12 @@ function Ready({ value, onChange, children }: { value: LoginState; onChange: (up
   const setScope = (scope: Scope) => {
     writeScope(value.currentBp.bpCodeId, scope);
     // 범위를 새로 고르면 목록에서 고른 점포는 잊는다 — 다시 들어오면 새 범위를 따른다
-    writeStorePicks(null);
+    writeStorePicks(value.currentBp.bpCodeId, null);
     // 보던 화면은 그대로다. 점포 검색 컴포넌트를 쓰는 메뉴 화면이면 헤더 선택기가 그 목록으로 옮긴다(admin-header.tsx · okf/home.md 범위 선택기).
     onChange((v) => ({ ...v, scope, storePicks: null }));
   };
   const setStorePicks = (storePicks: StorePicks | null) => {
-    writeStorePicks(storePicks);
+    writeStorePicks(value.currentBp.bpCodeId, storePicks);
     onChange((v) => ({ ...v, storePicks }));
   };
   // 강제 변경 표시를 저장값에 쓰고 이 탭에 반영한다. 다른 탭은 새로고침하면 반영된다.
@@ -353,8 +351,7 @@ async function prepare(): Promise<LoginState> {
   }
   // 점포·공통코드를 받은 뒤에 쓴다. 먼저 쓰면 받기가 실패한 BP 가 이 탭에 남아, 다시 열 때 같은 BP 를 또 골라 안내가 끝없이 반복된다.
   writeCurrentBp(loginKey, tab);
-  // 저장된 점포 범위의 점포가 목록에 없으면 전체로 되돌린다(선택기 표시와 실제 범위가 어긋나지 않게).
-  const saved = readScope(bp.bpCodeId);
-  const scope = saved?.type === "STORE" && !stores.some((s) => s.storeId === saved.storeId) ? ALL : (saved ?? ALL);
-  return { loginKey, account, serviceCode: tab.serviceCode, menus: info.menus, currentBp: bp, stores, codes, scope, storePicks: readStorePicks() };
+  // 저장된 점포 범위가 이 탭의 점포 목록에 없으면 전체로 되돌린다(선택기 표시와 실제 범위가 어긋나지 않게)
+  const scope = restoredScope(readScope(bp.bpCodeId), stores);
+  return { loginKey, account, serviceCode: tab.serviceCode, menus: info.menus, currentBp: bp, stores, codes, scope, storePicks: readStorePicks(bp.bpCodeId) };
 }

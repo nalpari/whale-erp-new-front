@@ -114,10 +114,18 @@ export interface StorePicks {
   url: string;
   stores: { storeId: number; name: string; storeCode: string }[];
 }
-/** 화면은 이것을 직접 부르지 않고 useStorePicks(session-gate.tsx)를 쓴다 */
-export const readStorePicks = () => read<StorePicks>(tab, KEY.storePicks);
+/**
+ * 화면은 이것을 직접 부르지 않고 useStorePicks(session-gate.tsx)를 쓴다. 다른 BP 의 값(같은 탭에서 BP 를 바꾼 때)이나
+ * 모양이 깨진 값은 null 로 버린다 — 헤더 링크 · 목록 필터가 stores 를 바로 읽는다.
+ */
+export function readStorePicks(bpCodeId: number): StorePicks | null {
+  const v = ofBp(read<{ bpCodeId: number } & StorePicks>(tab, KEY.storePicks), bpCodeId);
+  if (!v || typeof v.url !== "string" || !Array.isArray(v.stores)) return null;
+  return { url: v.url, stores: v.stores.filter((s) => typeof s?.storeId === "number") };
+}
 /** null 이면 지운다 */
-export const writeStorePicks = (picks: StorePicks | null) => (picks ? write(tab, KEY.storePicks, picks) : remove(tab, [KEY.storePicks]));
+export const writeStorePicks = (bpCodeId: number, picks: StorePicks | null) =>
+  picks ? write(tab, KEY.storePicks, { bpCodeId, ...picks }) : remove(tab, [KEY.storePicks]);
 
 /** 로그인 화면에서 부른다. 이 탭과 공용 저장소의 로그인 정보를 지운다(아이디 저장 whale-erp:saved-login-id 는 남긴다). 앞 버전 키도 지운다. */
 export function clearLoginStorage() {

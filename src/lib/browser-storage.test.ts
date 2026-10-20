@@ -71,7 +71,7 @@ test("readCurrentBp: 앞 로그인의 탭 BP 면 null 을 주고 탭 값을 모�
   writeStores(a.bpCodeId, []);
   writeCodes(a.bpCodeId, {});
   writeScope(a.bpCodeId, { type: "ALL" });
-  writeStorePicks({ url: "/stores", stores: [] });
+  writeStorePicks(a.bpCodeId, { url: "/stores", stores: [] });
   assert.equal(readCurrentBp("new"), null);
   assert.deepEqual(tab.keys(), []);
 });
@@ -102,14 +102,19 @@ test("탭 값은 bpCodeId 가 다르면 null", () => {
 
 test("사용자가 목록에서 고른 점포 — 이 탭에 두고(빈 목록도) null 이면 지운다", () => {
   const { tab } = fresh();
-  assert.equal(readStorePicks(), null);
+  assert.equal(readStorePicks(a.bpCodeId), null);
   const picks = { url: "/stores", stores: [{ storeId: 5, name: "강남점", storeCode: "ST000005" }] };
-  writeStorePicks(picks);
-  assert.deepEqual(readStorePicks(), picks);
-  writeStorePicks({ url: "/stores", stores: [] });
-  assert.deepEqual(readStorePicks(), { url: "/stores", stores: [] });
-  writeStorePicks(null);
-  assert.equal(readStorePicks(), null);
+  writeStorePicks(a.bpCodeId, picks);
+  assert.deepEqual(readStorePicks(a.bpCodeId), picks);
+  // 같은 탭에서 BP 를 바꾸면 앞 BP 의 선택은 쓰지 않는다
+  assert.equal(readStorePicks(b.bpCodeId), null);
+  writeStorePicks(a.bpCodeId, { url: "/stores", stores: [] });
+  assert.deepEqual(readStorePicks(a.bpCodeId), { url: "/stores", stores: [] });
+  // 모양이 깨진 값은 버린다
+  tab.setItem("whale-erp:v2:store-picks", JSON.stringify({ bpCodeId: a.bpCodeId, url: "/stores" }));
+  assert.equal(readStorePicks(a.bpCodeId), null);
+  writeStorePicks(a.bpCodeId, null);
+  assert.equal(readStorePicks(a.bpCodeId), null);
   assert.deepEqual(tab.keys(), []);
 });
 
@@ -128,7 +133,7 @@ test("clearLoginStorage: 로그인 정보만 지우고 아이디 저장은 남�
   local.setItem("whale-erp:saved-login-id", "whaleadmin");
   writeSelectedBp("k", a);
   writeCurrentBp("k", erp(a));
-  writeStorePicks({ url: "/stores", stores: [] });
+  writeStorePicks(a.bpCodeId, { url: "/stores", stores: [] });
   // 앞 버전(v1) 키도 남기지 않는다 — 로그인 정보가 들어 있다
   local.setItem("whale-erp:v1:login-info", "{}");
   local.setItem("whale-erp:v1:login-bp-info", "{}");

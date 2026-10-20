@@ -102,7 +102,7 @@ export function StoreDetailActions({
       router.refresh();
     });
 
-  // 삭제 뒤 목록은 점포 검색을 「전체」로 비운다(지운 점포가 고른 점포 조건에 남지 않게). 다른 조건 · 보기는 그대로다
+  // 삭제 뒤 목록은 점포 검색을 「전체」로 비운다(지운 점포가 고른 점포 조건에 남지 않게). 다른 조건 · 보기는 그대로다(쪽은 1로 돌린다)
   const handleDelete = () =>
     startBusy(async () => {
       const result = await deleteStoreAction(store.storeId).catch(UNKNOWN("삭제"));

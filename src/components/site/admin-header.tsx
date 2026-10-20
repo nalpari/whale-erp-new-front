@@ -4,10 +4,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, type ReactNode } from "react";
 import { GlobalHeader, ScopeSelect, ServiceLinks, UserPop, type HeaderMenu, type ScopeSelectSection, type UserPopItem } from "@/components/common";
 import { logout } from "@/app/actions";
-import type { Scope } from "@/lib/browser-storage";
 import { findMenu, PENDING_PLATFORM_MENU } from "@/lib/menus";
 import type { AdminStore } from "@/lib/session";
-import { isClosedStore, openStores, scopedListHref, usesStoreScope } from "@/lib/store-scope";
+import { isClosedStore, openStores, pickedListHref, scopedListHref, scopeKeyOf, scopeOfKey, usesStoreScope } from "@/lib/store-scope";
 import { useAccount, useCurrentBp, useMenus, usePageMenu, useScope, useService, useStorePicks, useStores } from "./session-gate";
 
 // 로그인 후 화면의 헤더 하나. 메뉴·점포·이름은 로그인 정보(SessionGate)에서 그린다.
@@ -26,7 +25,11 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   const linkOf = (url: string) => {
     if (!usesStoreScope(url)) return url;
     if (picks?.url !== url) return scopedListHref(url, scope, stores);
-    return picks.stores.length ? `${url}?storeIds=${picks.stores.map((s) => s.storeId).join(",")}` : url;
+    return pickedListHref(
+      url,
+      picks.stores.map((s) => s.storeId),
+      stores,
+    );
   };
   const menus: HeaderMenu[] = all.map((m) => {
       const items = m.children.flatMap((c) => {
@@ -66,7 +69,8 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
 }
 
 // 범위 선택기 — 전체 · 직영 · 가맹 · 점포 하나 중 하나(okf/home.md). 모양은 데모 scopeDropdown(칸은 「BP 이름 · 고른 값」, 목록은 BP 묶음 · 직영 · 가맹 묶음 + 검색).
-// 점포가 없는 유형은 고를 것이 없어 뺀다. 폐점 점포는 그 유형 묶음 끝에 회색으로 보이고 하나씩 고를 수 있지만, 개수와 직영 · 가맹 전체에는 넣지 않는다.
+// 폐점이 아닌 점포가 없는 유형은 「직영 · 가맹 전체」 항목을 뺀다(폐점 점포만 있으면 그 유형 묶음은 남고 회색 점포만 보인다).
+// 폐점 점포는 그 유형 묶음 끝에 회색으로 보이고 하나씩 고를 수 있지만, 개수와 직영 · 가맹 전체에는 넣지 않는다.
 // 바꾸면 지금 화면이 점포 검색 컴포넌트를 쓰는 메뉴(목록 · 상세 · 등록 · 수정)일 때 그 목록으로 가서 범위의 점포로 검색한다.
 // 다른 화면은 그대로 두고 범위만 바꾼다 — 그 뒤 그런 목록에 들어가면 이 범위로 검색한다.
 // 목록에서 사용자가 고른 점포의 기억(store-picks)은 범위를 새로 고르거나 그 메뉴를 떠나면 지운다 — 다시 들어오면 범위를 따른다.
@@ -87,20 +91,15 @@ function HeaderScopeSelect() {
     <ScopeSelect
       title={bp.tradeName}
       sections={scopeSections(bp.tradeName, stores)}
-      value={keyOf(scope)}
+      value={scopeKeyOf(scope)}
       onChange={(key) => {
-        const next = scopeOf(key);
+        const next = scopeOfKey(key);
+        if (!next) return;
         setScope(next);
         if (pageUrl && usesStoreScope(pageUrl)) router.push(scopedListHref(pageUrl, next, stores));
       }}
     />
   );
-}
-
-const keyOf = (scope: Scope) => (scope.type === "STORE" ? `STORE:${scope.storeId}` : scope.type);
-function scopeOf(key: string): Scope {
-  if (key.startsWith("STORE:")) return { type: "STORE", storeId: Number(key.slice("STORE:".length)) };
-  return key === "DIRECT" || key === "FRANCHISE" ? { type: key } : { type: "ALL" };
 }
 
 /**
