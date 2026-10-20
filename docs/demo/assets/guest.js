@@ -100,6 +100,8 @@
   }
 
   // 입력 검사: 브라우저 말풍선 대신 칸 아래 붉은 글씨로 알린다. 제출을 막는 것은 브라우저 검사가 그대로 맡는다.
+  // data-guest-validate 를 단 폼(3팀 도입문의)에만 건다. 1팀 회원가입 · 찾기 · 로그인은 자기 안내 문구가 따로 있다.
+  const guestForm = (el) => el.closest?.("form[data-guest-validate]");
   // 글씨는 칸을 감싼 묶음(관심 서비스 fieldset · 연락처 group · 세로 label) 맨 아래에 둔다.
   // 체크 상자 한 줄(개인정보 동의)은 가로 label 이라 문구 오른쪽에 붙는다.
   const errorOf = (el) => {
@@ -128,6 +130,7 @@
   document.addEventListener(
     "invalid",
     (e) => {
+      if (!guestForm(e.target)) return;
       e.preventDefault();
       // 말풍선을 끄면 브라우저가 첫 틀린 칸으로 옮겨 주지 않는다. 처음 걸린 칸으로 옮긴다.
       if (!document.activeElement?.matches(":invalid")) e.target.focus();
@@ -136,8 +139,9 @@
     true,
   );
   // 고치면 바로 지운다.
-  for (const type of ["input", "change"]) document.addEventListener(type, (e) => e.target.validity && syncError(e.target));
+  for (const type of ["input", "change"]) document.addEventListener(type, (e) => guestForm(e.target) && syncError(e.target));
   document.addEventListener("reset", (e) => {
+    if (!e.target.matches("form[data-guest-validate]")) return;
     for (const p of $$("[data-field-error]", e.target)) p.hidden = true;
     for (const el of $$("[aria-invalid]", e.target)) el.removeAttribute("aria-invalid");
   });
@@ -159,6 +163,8 @@
     const boxes = $$('input[type="checkbox"]', group);
     const sync = () => boxes[0].setCustomValidity(boxes.some((b) => b.checked) ? "" : group.dataset.checkGroup);
     for (const b of boxes) b.addEventListener("change", sync);
+    // 폼을 비우면(reset) 체크가 풀린 뒤에 다시 건다. reset 이벤트는 값을 되돌리기 전에 오므로 한 틱 미룬다.
+    group.form?.addEventListener("reset", () => setTimeout(sync));
     sync();
   }
 
