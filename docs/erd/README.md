@@ -869,8 +869,8 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK·FK | 게시물 | id | `post_id` |  |
-| PK | 대상 유형 | enum | `audience_type` | 비회원·회원·BP·점포·부가서비스 |
-|  | 부가서비스 | code | `service_code` | 공통코드 SERVICE(1팀), 부가서비스일 때 |
+| PK | 대상 유형 | enum | `audience_type` | 비회원·회원·BP·점포 (부가서비스는 1차 미사용) |
+|  | 부가서비스 | code | `service_code` | 공통코드 SERVICE(1팀), 1차 미사용 |
 
 ### 첨부파일 `post_attachments` · 엔티티
 
@@ -879,9 +879,10 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 | PK | 첨부파일 ID | id | `attachment_id` |  |
 | FK | 게시물 | id | `post_id` | 글당 5개 |
 |  | 파일 이름 | text | `file_name` |  |
+|  | 파일 종류 | enum | `file_type` | JPG·PNG·PDF (#272) |
 |  | 파일 크기 | int | `size_bytes` | 10MB 이하 |
-|  | 저장 위치 | text | `storage_key` | 첨부파일 저장소 결정 대기(Plane #587) |
-|  | 순서 | int | `sort_order` |  |
+|  | 저장 위치 | text | `storage_key` | 공개 주소 아님 |
+|  | 순서 | int | `sort_order` | 1~5, 글 안에서 겹치지 않음 |
 
 ### 문의사항 `inquiries` · 엔티티
 
@@ -928,7 +929,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |  | 원래 파일 이름 | text | `file_name` |  |
 |  | 파일 종류 | enum | `file_type` | JPG·PNG·PDF, 파일 내용으로 확인 |
 |  | 파일 크기 | int | `size_bytes` | 10MB 이하 |
-|  | 저장 위치 | text | `storage_key` | 공개 주소 아님. 첨부파일 저장소 결정 대기(Plane #587), 정해질 때까지 첨부는 만들지 않음 |
+|  | 저장 위치 | text | `storage_key` | 공개 주소 아님 |
 |  | 순서 | int | `sort_order` | 1~5, 문의당 5개 |
 |  | 올린 시각 | datetime | `created_at` |  |
 
@@ -947,9 +948,16 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |  | 개인정보 동의 일시 | datetime | `privacy_agreed_at` | 필수 |
 |  | 마케팅 동의 일시 | datetime | `marketing_agreed_at` | 선택 |
 |  | 답변 상태 | enum | `status` |  |
-|  | 사용자 노출 답변 | text | `reply` | 이메일로 회신 |
+|  | 사용자 노출 답변 | text | `reply` | 이메일로 회신, 이력 없이 하나 |
 |  | 운영자 내부 메모 | text | `internal_memo` |  |
+| FK | 처리 시작 관리자 | id | `processing_started_by` | 처리중으로 바꾼 관리자 |
+|  | 처리 시작 시각 | datetime | `processing_started_at` |  |
+| FK | 답변 관리자 | id | `replied_by` |  |
+|  | 답변 시각 | datetime | `replied_at` |  |
+|  | 마지막 답변 메일 결과 | enum | `reply_mail_result` | 성공·실패 (#597) |
+|  | 마지막 답변 메일 시각 | datetime | `reply_mail_attempted_at` |  |
 |  | 접수 일시 | datetime | `created_at` |  |
+|  | 최종 수정 일시 | datetime | `updated_at` |  |
 |  | 상담 완료일 | date | `consulted_date` | 1년 뒤 파기 |
 
 **관계**
