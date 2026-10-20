@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-10-20
+* **Update**: [고객지원·커뮤니티](/support.md) — Plane 기준으로 낡은 문구를 고쳤다: 문의 첨부는 1차에서 만든다(#281), 도입문의 답변 메일은 보내고(#588) 상세에서 결과 · 시각과 [답변 메일 다시 보내기]를 둔다(#597), 상담하지 않은 도입문의 지우기 api 가 생겼다(#590). 데모 · 논리 ERD 도 같이 맞췄다.
+
 ## 2026-10-19
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 회원가입(`src/app/(public)/(site)/signup/`)의 `_components/` 하위 폴더를 걷었다. `stores`·`staff-members` 등 다른 화면 폴더는 모두 평평한 구조라 이 폴더만 유일하게 밑줄 접두 폴더를 썼다. 파일 10개(비밀번호·연락처·필수 입력칸, 약관 팝업, 사업자 진위확인, api 실패 문구, 검증 규칙과 각 테스트)를 `signup/` 바로 아래로 옮기고 import 경로를 고쳤다 — 동작은 그대로다.
 * **Update**: [점포 관리](/stores.md) — 코드 리뷰 반영: 위 회원가입 폴더 정리로 `src/app/stores/store-form-view.tsx` 의 주석 한 줄(`signup/_components/biz-verification.ts` → `signup/biz-verification.ts`)도 고쳤다 — 이 파일이 stores.md 의 sources 에 들어 있어 함께 기록한다.
