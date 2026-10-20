@@ -182,22 +182,6 @@ function Ready({ value, onChange, children }: { value: LoginState; onChange: (v:
     if (switching) router.replace(home);
   }, [switching, home, router]);
 
-  // 플랫폼 계정이 고른 BP 의 탭은 브라우저 탭 제목 앞에 상호를 붙인다 — BP 탭을 여럿 띄워도 헷갈리지 않게.
-  // 화면을 옮기면 Next 가 그 화면의 제목으로 다시 쓰므로 <title> 이 바뀔 때마다 다시 붙인다.
-  const { tradeName, bpCodeId } = value.currentBp;
-  const isOtherBp = bpCodeId !== value.account.bp.bpCodeId;
-  useEffect(() => {
-    if (!isOtherBp) return;
-    const prefix = `${tradeName} · `;
-    const apply = () => {
-      if (!document.title.startsWith(prefix)) document.title = prefix + document.title;
-    };
-    apply();
-    const observer = new MutationObserver(apply);
-    observer.observe(document.head, { subtree: true, childList: true, characterData: true });
-    return () => observer.disconnect();
-  }, [isOtherBp, tradeName]);
-
   useEffect(() => {
     // 틀은 화면을 옮겨도 그대로 있다. 열린 화면에 오면 기록을 비워야 같은 막힌 주소에 다시 와도 안내한다.
     if (allowed) {
