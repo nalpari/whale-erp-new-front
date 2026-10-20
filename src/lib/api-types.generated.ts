@@ -1155,8 +1155,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * 재발송 — 발송 대기(가입 초대를 받지 못함) · 서명 대기에서 가입 초대 알림톡을 새 링크 · 새 서명 기한(30일)으로 다시
-         *     보낸다. 상태는 그대로이고 앞서 나간 링크는 무효다. 앱으로 받는 직원(가입 · 계정 있음)은 앱 알림이 아직 없어 409.
+         * 재발송 — 발송 대기(가입 초대를 받지 못함) · 서명 대기에서 가입 초대 알림톡을 새 초대 코드 · 새 서명 기한(30일)으로 다시
+         *     보낸다. 상태는 그대로이고 앞서 나간 초대 코드는 무효다. 앱으로 받는 직원(가입 · 계정 있음)은 앱 알림이 아직 없어 409.
          */
         post: operations["ContractSendController_send"];
         delete?: never;
@@ -1304,10 +1304,8 @@ export interface paths {
          * 대표 이미지 올리기 · 바꾸기(점포당 1장). multipart 의 `file` 한 개, JPG · PNG 5MB 이하 — 종류는 확장자가
          *     아니라 내용으로 본다. 등록 화면은 점포를 등록한 뒤 이 경로로 올린다. 수정 권한이 있어야 한다.
          *
-         *     수정 권한은 가드(@MenuPermission)가 먼저 본다 — 가드는 인터셉터보다 먼저 돌므로, 권한 없는 관리자의 요청은
-         *     AttachmentsInterceptor 가 multipart 본문(최대 5MB)을 받기 전에 403 이다. 핸들러의 allow() 는 같은 판정을
-         *     한 번 더 하지만 지우지 않는다 — 서비스가 받는 MenuCaller(권한 유형 · 권한 그룹)를 그 판정이 돌려주고, 업로드를
-         *     받는 사이 권한이 거둬졌으면 그것도 여기서 막는다.
+         *     가드는 인터셉터보다 먼저 돌므로, 권한 없는 관리자의 요청은 AttachmentsInterceptor 가 multipart 본문
+         *     (최대 5MB)을 받기 전에 403 이다.
          */
         put: operations["StoresController_putImage"];
         post?: never;
@@ -1411,6 +1409,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/support-notices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SupportNoticesController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/support-notices/{postId}": {
         parameters: {
             query?: never;
@@ -1418,7 +1432,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 권한을 확인한 뒤에 이전 · 다음을 읽어 붙인다 — 권한 없는 사람에게 다른 글 제목을 읽지 않는다. */
+        /** 가드가 권한을 본 뒤에 이전 · 다음을 읽어 붙인다 — 권한 없는 사람에게 다른 글 제목을 읽지 않는다. */
         get: operations["SupportNoticesController_get"];
         put?: never;
         post?: never;
@@ -1437,22 +1451,6 @@ export interface paths {
         };
         /** 첨부 내려받기 주소(#282). 그 관리자에게 보이는 공지사항(상세와 같은 판정)의 첨부가 아니면 404. */
         get: operations["SupportNoticesController_attachmentDownloadUrl"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/support-notices": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["SupportNoticesController_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4094,6 +4092,27 @@ export interface components {
         };
         /** @enum {string} */
         PostContentType: "NOTICE" | "FAQ";
+        PostListItemDto: {
+            contentType: components["schemas"]["PostContentType"];
+            status: components["schemas"]["PostStatus"];
+            noticeType: components["schemas"]["NoticeType"] | null;
+            postId: number;
+            title: string;
+            faqCategoryCode: string | null;
+            /** @description 상단 고정 표시. 관리자 목록은 고정 글을 위로 올리지 않는다 — 최근 수정일 순서 그대로다. */
+            isPinned: boolean;
+            /**
+             * Format: date-time
+             * @description 최근 수정 일시
+             */
+            updatedAt: string;
+            /** @description 최근 수정자 이름. 수정자가 없거나, 계정을 찾을 수 없거나, 이름이 비어 있으면 null. */
+            updatedByName: string | null;
+        };
+        PostListResponseDto: {
+            items: components["schemas"]["PostListItemDto"][];
+            total: number;
+        };
         /** @enum {string} */
         PostAudienceType: "GUEST" | "MEMBER" | "BP" | "STORE" | "ADDON";
         /** @enum {string} */
@@ -4132,54 +4151,6 @@ export interface components {
             updatedBy: number | null;
             updatedByName: string | null;
         };
-        PostListItemDto: {
-            contentType: components["schemas"]["PostContentType"];
-            status: components["schemas"]["PostStatus"];
-            noticeType: components["schemas"]["NoticeType"] | null;
-            postId: number;
-            title: string;
-            faqCategoryCode: string | null;
-            /** @description 상단 고정 표시. 관리자 목록은 고정 글을 위로 올리지 않는다 — 최근 수정일 순서 그대로다. */
-            isPinned: boolean;
-            /**
-             * Format: date-time
-             * @description 최근 수정 일시
-             */
-            updatedAt: string;
-            /** @description 최근 수정자 이름. 수정자가 없거나, 계정을 찾을 수 없거나, 이름이 비어 있으면 null. */
-            updatedByName: string | null;
-        };
-        PostListResponseDto: {
-            items: components["schemas"]["PostListItemDto"][];
-            total: number;
-        };
-        PostNeighborDto: {
-            postId: number;
-            title: string;
-            /** @description 게시일(YYYY-MM-DD). */
-            postedDate: string;
-        };
-        SupportPostResponseDto: {
-            contentType: components["schemas"]["PostContentType"];
-            noticeType: components["schemas"]["NoticeType"] | null;
-            /**
-             * @description 이전 — 목록에서 바로 아래 글(대개 더 오래된 글. 상단 고정 글의 맨 아래에서는 그보다 새 일반 글일 수 있다).
-             *     맨 아래면 null.
-             */
-            prev: components["schemas"]["PostNeighborDto"] | null;
-            /** @description 다음 — 목록에서 바로 위 글(대개 더 새 글). 맨 위면 null. */
-            next: components["schemas"]["PostNeighborDto"] | null;
-            attachments: components["schemas"]["PostAttachmentDto"][];
-            postId: number;
-            title: string;
-            /** @description 평문. 화면은 HTML 로 그리지 않고 이스케이프해 보인다. */
-            body: string;
-            faqCategoryCode: string | null;
-            /** @description 상단 고정. 목록은 고정 글을 먼저 준다. */
-            isPinned: boolean;
-            /** @description 게시일(YYYY-MM-DD) — 게시 시작일, 없으면 등록 일시의 한국 날짜. */
-            postedDate: string;
-        };
         PublishedPostResponseDto: {
             contentType: components["schemas"]["PostContentType"];
             noticeType: components["schemas"]["NoticeType"] | null;
@@ -4196,6 +4167,33 @@ export interface components {
         PublishedPostListResponseDto: {
             items: components["schemas"]["PublishedPostResponseDto"][];
             total: number;
+        };
+        PostNeighborDto: {
+            postId: number;
+            title: string;
+            /** @description 게시일(YYYY-MM-DD). */
+            postedDate: string;
+        };
+        SupportPostResponseDto: {
+            contentType: components["schemas"]["PostContentType"];
+            noticeType: components["schemas"]["NoticeType"] | null;
+            postId: number;
+            title: string;
+            /** @description 평문. 화면은 HTML 로 그리지 않고 이스케이프해 보인다. */
+            body: string;
+            faqCategoryCode: string | null;
+            /** @description 상단 고정. 목록은 고정 글을 먼저 준다. */
+            isPinned: boolean;
+            /** @description 게시일(YYYY-MM-DD) — 게시 시작일, 없으면 등록 일시의 한국 날짜. */
+            postedDate: string;
+            /**
+             * @description 이전 — 목록에서 바로 아래 글(대개 더 오래된 글. 상단 고정 글의 맨 아래에서는 그보다 새 일반 글일 수 있다).
+             *     맨 아래면 null.
+             */
+            prev: components["schemas"]["PostNeighborDto"] | null;
+            /** @description 다음 — 목록에서 바로 위 글(대개 더 새 글). 맨 위면 null. */
+            next: components["schemas"]["PostNeighborDto"] | null;
+            attachments: components["schemas"]["PostAttachmentDto"][];
         };
         PublishedPostDetailResponseDto: {
             contentType: components["schemas"]["PostContentType"];
@@ -7488,7 +7486,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 같은 번호의 다른 저장이 길어져 시간 초과(잠시 뒤 다시) · 가입 초대를 보낼 수 없음(직원 앱 주소 STAFF_APP_URL · 대체 문자 발신번호 BIZPPURIO_SMS_FROM 없음, 가입 초대 템플릿 꺼짐 — 저장하지 않음) */
+            /** @description 같은 번호의 다른 저장이 길어져 시간 초과(잠시 뒤 다시) · 가입 초대를 보낼 수 없음(직원 앱 주소 STAFF_APP_URL 없음, 대체 문자 발신번호 BIZPPURIO_SMS_FROM 없음, 가입 초대 템플릿 꺼짐 — 저장하지 않음) */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -7661,7 +7659,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 같은 번호의 다른 저장이 길어져 시간 초과(잠시 뒤 다시) · 가입 초대를 보낼 수 없음(직원 앱 주소 STAFF_APP_URL · 대체 문자 발신번호 BIZPPURIO_SMS_FROM 없음, 가입 초대 템플릿 꺼짐 — 저장하지 않음) */
+            /** @description 같은 번호의 다른 저장이 길어져 시간 초과(잠시 뒤 다시) · 가입 초대를 보낼 수 없음(직원 앱 주소 STAFF_APP_URL 없음, 대체 문자 발신번호 BIZPPURIO_SMS_FROM 없음, 가입 초대 템플릿 꺼짐 — 저장하지 않음) */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -7769,7 +7767,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 같은 번호의 다른 저장이 길어져 시간 초과(잠시 뒤 다시) · 가입 초대를 보낼 수 없음(직원 앱 주소 STAFF_APP_URL · 대체 문자 발신번호 BIZPPURIO_SMS_FROM 없음, 가입 초대 템플릿 꺼짐 — 저장하지 않음) */
+            /** @description 같은 번호의 다른 저장이 길어져 시간 초과(잠시 뒤 다시) · 가입 초대를 보낼 수 없음(직원 앱 주소 STAFF_APP_URL 없음, 대체 문자 발신번호 BIZPPURIO_SMS_FROM 없음, 가입 초대 템플릿 꺼짐 — 저장하지 않음) */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -7940,7 +7938,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 직원 앱 주소(STAFF_APP_URL) · 대체 문자 발신번호(BIZPPURIO_SMS_FROM)가 없음 · 가입 초대 템플릿이 없거나 꺼짐 */
+            /** @description 직원 앱 주소(STAFF_APP_URL)가 없음 · 대체 문자 발신번호(BIZPPURIO_SMS_FROM)가 없음 · 가입 초대 템플릿이 없거나 꺼짐 */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -8611,7 +8609,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 없거나 지운 게시물 */
+            /** @description 없거나 지운 공지사항 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -8711,14 +8709,14 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 없는 게시물 */
+            /** @description 없는 공지사항 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 이미 지운 게시물 */
+            /** @description 이미 지운 공지사항 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -8866,7 +8864,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 없거나 지운 게시물 */
+            /** @description 없거나 지운 FAQ */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -8952,15 +8950,52 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 없는 게시물 */
+            /** @description 없는 FAQ */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 이미 지운 게시물 */
+            /** @description 이미 지운 FAQ */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SupportNoticesController_list: {
+        parameters: {
+            query?: {
+                /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
+                page?: number;
+                /** @description 한 쪽 건수. 기본 20, 최대 200. */
+                pageSize?: number;
+                /** @description 공지사항 구분으로 거른다. FAQ 에는 쓰지 않는다. */
+                noticeType?: components["schemas"]["NoticeType"];
+                /** @description FAQ 카테고리(공통코드 FAQ_CATEGORY 상세코드)로 거른다. */
+                faqCategoryCode?: string;
+                /** @description 제목(FAQ 는 제목 또는 본문)에 든 글자로 찾는다. 대소문자는 가리지 않는다. */
+                keyword?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublishedPostListResponseDto"];
+                };
+            };
+            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 · 그 메뉴의 조회 권한 없음 */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -9039,43 +9074,6 @@ export interface operations {
             };
             /** @description 첨부파일 저장소 설정 없음 */
             503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    SupportNoticesController_list: {
-        parameters: {
-            query?: {
-                /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
-                page?: number;
-                /** @description 한 쪽 건수. 기본 20, 최대 200. */
-                pageSize?: number;
-                /** @description 공지사항 구분으로 거른다. FAQ 에는 쓰지 않는다. */
-                noticeType?: components["schemas"]["NoticeType"];
-                /** @description FAQ 카테고리(공통코드 FAQ_CATEGORY 상세코드)로 거른다. */
-                faqCategoryCode?: string;
-                /** @description 제목(FAQ 는 제목 또는 본문)에 든 글자로 찾는다. 대소문자는 가리지 않는다. */
-                keyword?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PublishedPostListResponseDto"];
-                };
-            };
-            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 · 그 메뉴의 조회 권한 없음 */
-            403: {
                 headers: {
                     [name: string]: unknown;
                 };
