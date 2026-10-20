@@ -10,8 +10,12 @@
   <body class="mkt" data-root="../">
     <!-- 로그인 전 홈 · / · S-DKPXLC
          셸이 없다. 좌측 메뉴도 점포 선택기도 로그인 뒤의 것이다.
-         상단 메뉴 넷(매장운영·재무관리·프랜차이즈·부가서비스)은 이 페이지 안의
-         구획으로 스크롤한다 — HOME-3 에서 정할 일이라 지금은 한 페이지로 두었다. -->
+         상단 메뉴 넷(매장운영·재무관리·프랜차이즈·부가 서비스)은 이 페이지 안의
+         구획으로 스크롤한다 — HOME-3 에서 정할 일이라 지금은 한 페이지로 두었다.
+         실제 화면(PR #52, 2026-10-19)은 데모대로 요금안내 자리를 「부가 서비스」로 두고, 매장운영(/store-operations)·부가 서비스(/add-on-services)는
+         따로 화면이 있다. 재무관리·프랜차이즈는 화면이 없어 링크를 비웠다. 오른쪽은 Login · 도입문의 · 공지사항 순이고,
+         로그인한 채 오면 Login 자리가 자기 홈으로 가는 「홈으로」가 된다.
+         푸터의 이용약관·개인정보처리방침은 약관 전문 화면의 그 탭으로 간다. 개인정보처리방침은 개인정보 수집·이용 동의(BP 가입용)를 연다(2026-10-19 재영). -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
 
     <header class="topnav">
@@ -23,12 +27,12 @@
         <a href="#ops">매장운영</a>
         <a href="#finance">재무관리</a>
         <a href="#franchise">프랜차이즈</a>
-        <a href="#addons">부가서비스</a>
+        <a href="#addons">부가 서비스</a>
       </nav>
       <div class="topnav__end">
-        <a class="tlink" href="notices.html">공지사항</a>
-        <a class="btn btn--secondary btn--sm" href="inquiry.html">도입문의</a>
         <a class="btn btn--primary btn--sm" href="login.html">로그인</a>
+        <a class="btn btn--secondary btn--sm" href="inquiry.html">도입문의</a>
+        <a class="tlink" href="notices.html">공지사항</a>
       </div>
     </header>
 
@@ -42,7 +46,7 @@
             직영과 가맹을 함께 운영해도 범위만 바꿔 같은 화면에서 봅니다.
           </p>
           <div class="hero__act">
-            <a class="btn btn--primary btn--lg" href="login.html">사업자 회원가입</a>
+            <a class="btn btn--primary btn--lg" href="../auth/signup.html">사업자 회원가입</a>
             <a class="btn btn--secondary btn--lg" href="inquiry.html">도입문의</a>
           </div>
           <p class="note" style="justify-content: center">
@@ -200,15 +204,15 @@
               <li><a href="#ops">매장운영</a></li>
               <li><a href="#finance">재무관리</a></li>
               <li><a href="#franchise">프랜차이즈</a></li>
-              <li><a href="#addons">부가서비스</a></li>
+              <li><a href="#addons">부가 서비스</a></li>
             </ul>
           </div>
           <div>
             <h4>계정</h4>
             <ul>
               <li><a href="login.html">로그인</a></li>
-              <li><a href="login.html#signup">사업자 회원가입</a></li>
-              <li><a href="login.html#find">아이디·비밀번호 찾기</a></li>
+              <li><a href="../auth/signup.html">사업자 회원가입</a></li>
+              <li><a href="login.html#find">아이디/비밀번호 찾기</a></li>
             </ul>
           </div>
           <div>
@@ -223,8 +227,8 @@
         <div class="mkt-foot__end">
           <span>상호 <a class="tlink is-na" href="#" aria-disabled="true" target="_blank" rel="noopener">인터플러그</a> · 사업자등록번호 105-87-63602</span>
           <span>서울특별시 서대문구 연세로 5다길 22-3 발리빌딩 3층</span>
-          <a class="tlink" href="../auth/terms.html#use" style="color: var(--link-legal)">이용약관</a>
-          <a class="tlink is-na" href="#" aria-disabled="true" style="color: var(--link-legal)">개인정보처리방침</a>
+          <a class="tlink" href="../auth/terms.html#TERMS_SERVICE" style="color: var(--link-legal)">이용약관</a>
+          <a class="tlink" href="../auth/terms.html#PRIVACY_COLLECT" style="color: var(--link-legal)"><b>개인정보처리방침</b></a>
         </div>
       </div>
     </footer>

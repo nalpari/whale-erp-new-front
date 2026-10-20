@@ -3,10 +3,17 @@
 ## 2026-10-20
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통 컴포넌트 `DetailTable` 의 왼쪽 라벨 칸을 180px 에서 줄였다(사용자 피드백 — 값 칸이 너무 좁았다, 1팀 확인 전). `src/app/staff-members/[id]/contract-box.tsx` 가 같은 줄 모양을 따로 옮겨 둔 곳이라 같이 고쳤다. `docs/demo/src/ui.mjs` 의 `detailTable` 과 DESIGN.md 의 고정값도 맞췄다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 위 `DetailTable` 라벨 칸 축소로 `contract-box` 소스도 같이 고쳐졌다. `generated.at` 과 `contract-box` 의 `last_modified` 를 갱신했다(코드 리뷰로 빠뜨린 것을 찾음).
+* **Update**: [로그인](/auth.md) — PR #52(로그인전 화면 Figma 전환 · 약관 api 조회)를 목업에 반영했다. 로그인은 찾기 링크 하나 · 사업자 회원가입 버튼 · 직원 안내, 푸터 약관 링크는 `/terms` 의 그 탭(개인정보처리방침은 `PRIVACY_COLLECT`), 목업 약관 키를 약관 유형 코드 6종으로 바꿨다. 전문 팝업은 처음 열 때 사용 중 버전을 받는다(구현 기준). 강제 변경 버튼 라벨은 약관을 붙여도 「변경」이다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #58 리뷰 반영(참고 1 · 2 · 3). 재발송 확인창에서 「앱 설치 링크」를 뺐다(링크는 알림톡 버튼이 아직 없어 대체 문자로만 간다). 서명 대기 계약의 재발송 버튼은 막아 두고 「앱 알림이 생기면 다시 보낼 수 있습니다」를 띄운다(앱으로 받는 직원이라 api 가 409 로 막는다). 당사자 정보 저장 안내는 「가입 초대 대상이면 곧바로 다시 보낸다」로 조건을 붙였다.
+* **Update**: [로그인](/auth.md) · [Whale ERP Frontend](/whale-erp-front.md) — 찾기 화면의 목업 · 화면정의서 · okf 를 구현에 맞췄다. 제목 「아이디/비밀번호 찾기」 · 탭 「ID 찾기」, 입력 화면에도 「주 동작 · 회원가입 · 로그인 이동」 버튼 줄(하단 글자 링크는 걷음), 두 탭의 버튼 막힘 조건, 비밀번호 탭 「메일 오류」(503) 상태, 로그인 상태 리다이렉트 · 형식 · 요청 제한 · 아이디 탭 연결 실패 문구를 적었다. 목업 오른쪽 안내 패널은 기획 설명용이라 남겼다.
+* **Update**: [로그인](/auth.md) · [Whale ERP Frontend](/whale-erp-front.md) — PR #60 리뷰 반영: 일치 없음은 api(Nest) 가 직접 준 404 일 때만으로 좁혀 게이트웨이 404 는 연결 실패 · 로그로 보낸다. 임시 비밀번호 메일 발송 오류(503 + code, api #77)를 「메일 발송을 확인하지 못했습니다. 몇 분 안에 메일이 오지 않으면 다시 요청」으로 안내한다(api 요청).
+* **Update**: [로그인](/auth.md) · [Whale ERP Frontend](/whale-erp-front.md) — 찾기 화면 문구를 고치고(탭마다 다른 안내 문구, 아이디 찾기 일치 없음, 발송 완료), 비밀번호 찾기도 일치 여부를 확인해 알리게 했다(api 가 일치 없음을 404 로 주도록 변경 요청 중). 목업 · 화면정의서 · 데모 · 디자인 샘플도 맞췄다(2026-10-20 재영).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 디자인 샘플 `/design/guest/find-account` 를 실제 `/find` UI 에 맞췄다(휴대폰 · 인증번호 대신 이름 · 이메일, 예시 결과, 그림 아래 문구).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — main 병합: `usePagePermission` 훅 · `/find` proxy 문장을 BP 선택 반영본에 합치고, 점포 등록 BP 는 웨일ERP 바로가기 문장을 남기며 버튼 권한을 주소 기준(`usePagePermission`)으로 맞췄다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 고른 BP 탭의 브라우저 탭 제목에 상호를 붙이던 것을 뺐다. 즐겨찾기 이름에 상호가 남아 다른 BP 로 열릴 때 헷갈린다(재영). BP 선택 팝업은 BP 만 고른다(점포 선택 제외) — 목업 · 데모도 맞췄다.
 
 ## 2026-10-19
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 가입 초대가 6자리 초대 코드로 바뀌어(2026-10-19 김민식, api #74) 재발송 확인창 · 당사자 정보 수정 안내의 「링크」를 「초대 코드」로 고쳤다. api-types 를 api #74 openapi 로 다시 만들었다(설명만).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 기획 정렬 결정(재영): BP 를 고르기 전에 플랫폼 탭에서 ERP 주소로 오면 「웨일ERP 바로가기에서 BP 를 먼저 골라 주세요」로 안내하고(강제 팝업 없음), 적용 안내는 토스트 대신 BP 이동 로딩 화면에 「상호(BP코드) · 전체 점포로 여는 중입니다」로 보인다. 데모 플랫폼 헤더의 BP 선택 드롭다운을 지웠다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #55 적대적 리뷰 반영(3번 A안): ERP 탭의 플랫폼관리 바로가기가 그 탭을 플랫폼으로 바꾸지 않고 `/platform` 을 새 탭으로 연다. ERP 화면을 여럿 본 탭에서 플랫폼관리 뒤 뒤로 가면 남은 ERP 화면마다 「접근 권한이 없는 메뉴」 안내가 연달아 떴다. 같은 탭을 바꾸려고 넣었던 `location.replace` 와 막힌 주소의 대체 이동(500ms)을 걷었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #55 3차 리뷰 반영: 플랫폼관리 바로가기가 `location.replace` 로 이동하고, 막힌 주소에서 `history.back()` 이 맨 앞 기록이라 돌아가지 못하면 그 서비스의 홈으로 보낸다(플랫폼이 된 탭에서 뒤로 가기가 빈 화면에 멈췄다). BP 선택 팝업은 쪽을 넘기면 고른 BP 를 비운다.

@@ -54,7 +54,7 @@ export const STORES = [
 export const USER = "정하윤 (BP 마스터)";
 
 // 헤더의 점포 범위 드롭다운 — 목업(F-TLJOCK)처럼 전체·직영·가맹 묶음 + 직영·가맹 점포 목록 + 이름 검색으로 그린다.
-// BP 변경 버튼은 넣지 않는다 — 실제로는 플랫폼 마스터·플랫폼 관리자에게만 있고, 이 데모는 BP 마스터(정하윤) 기준이다.
+// ERP 헤더에는 웨일ERP 바로가기의 BP 선택을 두지 않는다 — 실제로는 플랫폼 마스터·플랫폼 관리자에게만 열리고, 이 데모의 ERP 화면은 BP 마스터(정하윤) 기준이다.
 function scopeDropdown(A) {
   const id = ui.uid("scope");
   const dir = STORES.filter((s) => s[2] === "직영점포");
@@ -303,7 +303,7 @@ export function erpHeader(A, R) {
 
 export const link = to;
 
-// 플랫폼 콘솔(목업 Platform). 상단 선택칸은 BP 를 고른다(1팀 공통정책 2번의 BP 변경).
+// 플랫폼 콘솔(목업 Platform). BP 는 서비스 바로가기 「웨일ERP」의 BP 선택 확인창으로 골라 새 탭으로 연다(F-TLJOCK).
 const PLATFORM_MENUS = [
   ["회원관리", [["회원 정보 관리"]]],
   ["BP 마스터 계정 관리", [["BP 마스터 계정 목록", "bp/index.html"]]],
@@ -335,17 +335,36 @@ const PLATFORM_MENUS = [
 export const PLATFORM_USER = "김지영 (플랫폼 관리자)";
 export const PLATFORM_MASTER = "김서연 (플랫폼 마스터)"; // system/admins 목록의 platkim
 
-// 플랫폼 콘솔에서 "웨일ERP" 바로가기를 누르면 여는 "BP 선택" 확인창(F-TLJOCK) — 어떤 BP 의 ERP 콘솔에 들어갈지 고른다.
-// 점포는 고르지 않는다 — 고른 BP 의 전체 점포로 열고, 범위는 ERP 헤더의 점포 선택 드롭다운에서 바꾼다(2026-10-20 재영).
+// 플랫폼 콘솔에서 "웨일ERP" 바로가기를 누르면 여는 "BP 선택" 확인창(F-TLJOCK, 앱 bp-select-dialog.tsx) — 어떤 BP 의 웨일ERP 를 새 탭으로 열지 고른다.
+// 상호 · BP코드로 찾고([검색] 또는 Enter, 1쪽으로) 10건씩 넘긴다. 줄을 눌러도 고르고, 쪽을 넘기거나 검색하면 고른 것을 비운다. 고르기 전에는 [이동]이 막혀 있다.
+// 점포는 고르지 않는다 — 고른 BP 의 전체 점포로 열고, 범위는 ERP 헤더의 점포 선택 드롭다운에서 바꾼다(2026-10-20 재영). 거르기 · 쪽 넘김은 erp.js.
+// 줄: BP코드 · 상호 · 상태. BP 마스터 계정 목록(bp/index)의 BP 에 예시 BP 를 더해 2쪽이 생기게 했다. 플랫폼 탭의 지금 BP 는 플랫폼 BP 라 「(현재)」 줄이 없다.
+const PLATFORM_BPS = [
+  ["BP000003", "모리커피 본사", "사용"],
+  ["BP000008", "국밥24", "탈퇴"],
+  ["BP000010", "카페눈", "사용"],
+  ["BP000012", "솥밥상회", "미사용"],
+  ["BP000017", "㈜한강상회", "사용"],
+  ["BP000021", "㈜바다푸드", "사용"],
+  ["BP000030", "브레드랩", "사용"],
+  ["BP000031", "브레드랩 2호", "사용"],
+  ["BP000032", "하루국수", "미사용"],
+  ["BP000033", "㈜청솔푸드", "사용"],
+  ["BP000034", "소금빵공방", "사용"],
+  ["BP000035", "㈜온기에프앤비", "사용"],
+];
 function platformScopeDialog(A, R, id) {
+  const columns = [{ header: "BP코드", width: "w-[110px]" }, { header: "상호", align: "left" }, { header: "상태", width: "w-[80px]" }];
+  const rows = PLATFORM_BPS.map(([code, name, status]) => [code, ui.radio(name, `${id}-bp`, false, { "data-bp-code": code, "data-bp-name": name }), status]);
+  const table = ui.dataTable(columns, rows).replace("</tbody>", `${ui.tableEmptyRow(columns).replace("<tr ", "<tr hidden data-bp-none ")}</tbody>`);
   const body =
-    ui.field("BP", `<div class="w-full">${ui.select([`${BP.name} · ${BP.code}`, "㈜모리푸드 · BP000021", "㈜온기에프앤비 · BP000009"], { "aria-label": "BP" })}</div>`) +
-    `<p class="mt-[12px] text-[13px] text-erp-label">고른 BP 의 웨일ERP 가 새 탭에서 전체 ${STORES.length}개점으로 열립니다. 점포 범위는 그 탭의 점포 선택에서 바꿉니다.</p>`;
+    `<div class="flex flex-col gap-[12px]"><p>고른 BP 의 웨일ERP 가 새 탭으로 열립니다.</p>${ui.searchField(A, { placeholder: "상호 또는 BP코드", label: "BP 찾기" })}` +
+    `<div class="max-h-[506px] overflow-y-auto [&_tbody_tr]:cursor-pointer [&_tbody_tr:has(:checked)]:bg-erp-thead-bg" data-bp-table>${table}</div>${ui.pagination(A, 1, Math.ceil(PLATFORM_BPS.length / 10), 5)}</div>`;
 
-  return `<dialog id="${id}" data-scope-popup data-scope-all="전체 ${STORES.length}개점" aria-labelledby="${id}-t" class="m-auto w-[420px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"><h2 id="${id}-t" class="text-[18px] font-semibold">BP 선택</h2><div class="mt-[12px] text-[14px] leading-[1.6] text-erp-ink">${body}</div><div class="mt-[24px] flex justify-end gap-[6px]">${ui.button(
+  return `<dialog id="${id}" data-scope-popup data-scope-all="전체 ${STORES.length}개점" aria-labelledby="${id}-t" class="m-auto w-[480px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"><h2 id="${id}-t" class="text-[18px] font-semibold">BP 선택</h2><div class="mt-[12px] text-[14px] leading-[1.6] text-erp-ink">${body}</div><div class="mt-[24px] flex justify-end gap-[6px]">${ui.button(
     "취소",
     { variant: "off", "data-close": true },
-  )}${ui.button("이동", { "data-scope-apply": to(R, "home/signed-in.html") })}</div></dialog>`;
+  )}${ui.button("이동", { "data-scope-apply": to(R, "home/signed-in.html"), disabled: true }).replace('class="', 'class="disabled:pointer-events-none disabled:opacity-40 ')}</div></dialog>`;
 }
 
 // master: true 면 플랫폼 마스터로 로그인한 헤더(마스터 기준 화면용).
