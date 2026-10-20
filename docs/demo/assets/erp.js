@@ -208,8 +208,8 @@
     document.dispatchEvent(new CustomEvent("erp:scope", { detail: opt.dataset.scopeLabel }));
   });
 
-  // 점포 이름으로 찾기 — 묶음(전체·일반·가맹, 또는 직영·가맹 선택 확인창)과 이름·코드가 맞는 점포만 남기고, 빈 묶음은 숨긴다.
-  // role="option" 평평한 목록(scopeDropdown)과 라벨·체크박스 목록(BP·점포 선택 확인창) 모두 data-scope-q 를 들고 있어 같이 거른다.
+  // 점포 이름으로 찾기 — 묶음(전체·일반·가맹)과 이름·코드가 맞는 점포만 남기고, 빈 묶음은 숨긴다.
+  // 점포 범위 드롭다운(scopeDropdown)의 role="option" 버튼이 data-scope-q 를 들고 있다.
   document.addEventListener("input", (e) => {
     const q = e.target.closest("[data-scope-q-input]");
     if (!q) return;
@@ -229,43 +229,6 @@
     });
     const none = $("[data-scope-none]", pop);
     if (none) none.hidden = any;
-  });
-
-  // ── BP 및 점포 선택 확인창(platformScopeDialog, F-TLJOCK) — 묶음 체크 ↔ 개별 점포 체크 두 방향 동기화, 선택 결과 요약 ──
-  function paintScopeGroup(g, state) {
-    g.setAttribute("aria-checked", state);
-    g.classList.toggle("border-erp-brand", state !== "false");
-    g.classList.toggle("bg-erp-brand", state === "true");
-    const check = $("[data-group-check]", g);
-    const mixed = $("[data-group-mixed]", g);
-    if (check) check.classList.toggle("hidden", state !== "true");
-    if (mixed) mixed.classList.toggle("hidden", state !== "mixed");
-  }
-  function syncScopeDialog(dlg) {
-    $$("[data-scope-group]", dlg).forEach((g) => {
-      const items = $$(`[data-scope-pick][data-scope-type="${g.dataset.scopeGroup}"]`, dlg);
-      const on = items.filter((i) => i.checked).length;
-      paintScopeGroup(g, !on ? "false" : on === items.length ? "true" : "mixed");
-    });
-    const total = $$("[data-scope-pick]:checked", dlg).length;
-    const summary = $("[data-scope-summary]", dlg);
-    if (summary) {
-      const all = $$("[data-scope-pick]", dlg).length;
-      summary.textContent = total ? `선택 ${total}곳` : `선택 안 함 · 적용하면 전체 ${all}개점을 봅니다`;
-    }
-  }
-  document.addEventListener("click", (e) => {
-    const g = e.target.closest('[data-scope-group][role="checkbox"]');
-    if (!g) return;
-    const dlg = g.closest("[data-scope-popup]");
-    const next = g.getAttribute("aria-checked") !== "true";
-    $$(`[data-scope-pick][data-scope-type="${g.dataset.scopeGroup}"]`, dlg).forEach((i) => (i.checked = next));
-    syncScopeDialog(dlg);
-  });
-  document.addEventListener("change", (e) => {
-    if (!e.target.matches("[data-scope-pick]")) return;
-    const dlg = e.target.closest("[data-scope-popup]");
-    if (dlg) syncScopeDialog(dlg);
   });
 
   // ── 점포 일괄 검색 확인창(config-parts.mjs storeBulkDialog) — 관리 점포 고르기의 [일괄 검색] ──
@@ -537,33 +500,89 @@
     spickCount(box);
   });
 
+  // ── BP 선택 확인창(platformScopeDialog, F-TLJOCK · 앱 bp-select-dialog.tsx) ──
+  // [검색](또는 Enter)으로 상호 · BP코드를 거르고 1쪽으로 간다. 10건씩 쪽을 넘긴다. 줄을 눌러도 고른다.
+  // 쪽을 넘기거나 검색하면 고른 것을 비운다(보이지 않는 줄로 [이동]하지 않게). 고르기 전에는 [이동]이 막혀 있고, 닫으면 처음으로 돌아간다.
+  const BP_PAGE = 10;
+  function initBpDialog(dlg) {
+    const rows = $$("[data-bp-table] tbody tr:not([data-bp-none])", dlg);
+    const none = $("[data-bp-none]", dlg);
+    const input = $('input[type="search"]', dlg);
+    const nav = $('nav[aria-label="페이지"]', dlg);
+    const nums = $$("ol button", nav);
+    const [prev, next] = [nav.firstElementChild, nav.lastElementChild];
+    const move = $("[data-scope-apply]", dlg);
+    let hits = rows;
+    let page = 1;
+    const unpick = () => {
+      $$('input[type="radio"]', dlg).forEach((r) => (r.checked = false));
+      move.disabled = true;
+    };
+    const draw = () => {
+      const last = Math.max(1, Math.ceil(hits.length / BP_PAGE));
+      rows.forEach((r) => (r.hidden = true));
+      hits.slice((page - 1) * BP_PAGE, page * BP_PAGE).forEach((r) => (r.hidden = false));
+      none.hidden = hits.length > 0;
+      nav.hidden = !hits.length;
+      nums.forEach((b) => {
+        const n = Number(b.textContent);
+        b.parentElement.hidden = n > last;
+        swap(b, n === page, PAGE_ON, PAGE_OFF);
+        n === page ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current");
+      });
+      prev.disabled = page <= 1;
+      next.disabled = page >= last;
+    };
+    const search = () => {
+      const term = input.value.trim().toLowerCase();
+      hits = rows.filter((r) => `${r.cells[0].textContent} ${r.cells[1].textContent}`.toLowerCase().includes(term));
+      page = 1;
+      unpick();
+      draw();
+    };
+    // initPagination 이 번호 강조만 먼저 옮기고, 여기서 줄 · 번호 · 화살표를 다시 그린다.
+    nav.addEventListener("click", (e) => {
+      const b = e.target.closest("button");
+      if (!b || b.disabled) return;
+      page = b === prev ? page - 1 : b === next ? page + 1 : Number(b.textContent);
+      unpick();
+      draw();
+    });
+    dlg.addEventListener("click", (e) => {
+      if (e.target.closest('button[aria-label="검색"]')) return search();
+      const tr = e.target.closest("[data-bp-table] tbody tr:not([data-bp-none])");
+      if (!tr) return;
+      $('input[type="radio"]', tr).checked = true;
+      move.disabled = false;
+    });
+    input.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      search();
+    });
+    dlg.addEventListener("change", (e) => e.target.type === "radio" && (move.disabled = false));
+    dlg.addEventListener("close", () => {
+      input.value = "";
+      input.dispatchEvent(new Event("input")); // 검색칸 지우기 단추를 숨긴다(initSearch)
+      search();
+    });
+    draw();
+  }
+
   // [이동] — 고른 BP 를 세션에 남기고 웨일ERP 를 새 탭으로 연다(새 탭은 이 세션값을 물려받는다). 이동한 페이지는 initAppliedScope 가 이 값을 읽어 GNB 에 그린다.
-  // 점포를 고르지 않는 확인창(BP 선택)은 data-scope-all 의 전체 범위로 연다.
+  // 점포는 고르지 않으므로 data-scope-all 의 전체 범위로 연다. opening 은 새 탭이 처음 열릴 때 한 번만 로딩 문구를 보이게 하는 표시다.
   const SCOPE_KEY = "whale-applied-scope";
   document.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-scope-apply]");
     if (!btn) return;
     const dlg = btn.closest("[data-scope-popup]");
-    const bpSelect = $("select", dlg);
-    const bp = bpSelect ? bpSelect.value.split(" · ")[0] : "";
-    const groupTotal = {};
-    $$("[data-scope-group]", dlg).forEach((g) => (groupTotal[g.dataset.scopeGroup] = $$(`[data-scope-pick][data-scope-type="${g.dataset.scopeGroup}"]`, dlg).length));
-    const checked = $$("[data-scope-pick]:checked", dlg);
-    const all = $$("[data-scope-pick]", dlg).length;
-    let value;
-    if (!checked.length) value = dlg.dataset.scopeAll ?? `전체 ${all}개점`;
-    else if (checked.length === 1) value = checked[0].dataset.scopeName;
-    else {
-      const byType = {};
-      checked.forEach((c) => (byType[c.dataset.scopeType] = (byType[c.dataset.scopeType] || 0) + 1));
-      const types = Object.keys(byType);
-      value = types.length === 1 && byType[types[0]] === groupTotal[types[0]] ? `${types[0].replace("점포", "")} ${byType[types[0]]}개점` : `선택 ${checked.length}곳`;
-    }
+    const picked = $('input[type="radio"]:checked', dlg);
+    if (!picked) return;
     try {
-      sessionStorage.setItem(SCOPE_KEY, JSON.stringify({ bp, value }));
+      sessionStorage.setItem(SCOPE_KEY, JSON.stringify({ bp: picked.dataset.bpName, code: picked.dataset.bpCode, value: dlg.dataset.scopeAll, opening: true }));
     } catch (err) {}
     window.open(btn.dataset.scopeApply, "_blank");
-    btn.closest("dialog")?.close();
+    dlg.close();
   });
 
   // 위 세션값을 읽어 ERP 화면 GNB 의 점포 범위 드롭다운(scopeDropdown)에 그대로 반영한다.
@@ -583,6 +602,18 @@
     if (value) value.textContent = data.value;
     trigger.setAttribute("aria-label", `점포: ${data.value}`);
     document.dispatchEvent(new CustomEvent("erp:scope", { detail: data.value }));
+    // [이동]으로 막 연 탭 — 목업 bpSwitch() 처럼 로딩 문구를 잠깐 덮었다가 걷는다. 표시는 한 번만 쓴다.
+    if (!data.opening) return;
+    delete data.opening;
+    try {
+      sessionStorage.setItem(SCOPE_KEY, JSON.stringify(data));
+    } catch (err) {}
+    const cover = document.createElement("div");
+    cover.setAttribute("role", "status");
+    cover.style.cssText = "position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#fff;font-size:14px;color:var(--color-erp-muted,#999)";
+    cover.textContent = `${data.bp}(${data.code}) · 전체 점포로 여는 중입니다`;
+    document.body.append(cover);
+    setTimeout(() => cover.remove(), 900);
   }
 
   // ── GlobalHeader (global-header.tsx). 1depth 를 누르면 2depth 줄이 열린다 ──
@@ -678,7 +709,7 @@
   // ── SearchField (search-field.tsx). 값이 있을 때만 지우기 버튼 ──
   function initSearch(input) {
     const clear = input.parentElement.querySelector('button[aria-label="입력 지우기"]');
-    // 지우기 단추가 없는 검색칸(플랫폼 헤더 「BP 및 점포 선택」 창의 점포 찾기)은 건너뛴다.
+    // 지우기 단추가 없는 검색칸(ERP 헤더 점포 범위 드롭다운의 점포 찾기)은 건너뛴다.
     // 없으면 여기서 멈춰 그 뒤 초기화(페이지 번호·달력·주 이동)가 모든 플랫폼 화면에서 빠졌다.
     if (!clear) return;
     const sync = () => {
@@ -1828,6 +1859,7 @@
     $$("input[data-dupcheck]").forEach(initDupCheck);
     $$("input[data-scope-store]").forEach(initScopeStore);
     initAppliedScope();
+    $$("dialog[data-scope-popup]").forEach(initBpDialog);
     const views = $$("[data-scope-view]");
     if (views.length) initScopeView(views);
     $$("[data-dayplan]").forEach(initDayPlan);
