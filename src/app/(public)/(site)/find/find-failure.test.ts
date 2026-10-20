@@ -9,11 +9,15 @@ import {
   maskedLoginIdOf,
   temporaryPasswordOutcome,
   TEMPORARY_PASSWORD_NOT_FOUND,
+  TEMPORARY_PASSWORD_SEND_FAILED,
   TEMPORARY_PASSWORD_UNKNOWN,
   THROTTLED,
 } from "./find-failure.ts";
 
-const api = (status: number, message: string) => Object.assign(new Error(message), { status });
+// api(Nest) 가 준 오류 — ApiError 처럼 본문 { statusCode, message, … } 를 싣는다. gateway 는 본문 없는 앞단(HTML) 오류다.
+const api = (status: number, message: string, extra: Record<string, unknown> = {}) =>
+  Object.assign(new Error(message), { status, body: { statusCode: status, message, ...extra } });
+const gateway = (status: number) => Object.assign(new Error(`요청이 실패했습니다 (HTTP ${status})`), { status, body: null });
 const named = (name: string) => Object.assign(new Error(name), { name });
 
 test("예상한 거절 — 일치 없음 404 는 화면 문구, 1시간 5회 429 는 api 문구 그대로", () => {
@@ -68,4 +72,18 @@ test("가린 아이디는 비지 않은 문자열일 때만", () => {
 test("임시 비밀번호: 일치 없음(404)은 이름 · 아이디 · 이메일 안내 — 라우트가 없는 404 는 연결 실패", () => {
   assert.deepEqual(temporaryPasswordOutcome(api(404, "입력하신 정보와 일치하는 계정을 찾을 수 없습니다.")), { message: TEMPORARY_PASSWORD_NOT_FOUND, log: false });
   assert.deepEqual(temporaryPasswordOutcome(api(404, "Cannot POST /auth/admin/temporary-passwords")), { message: CONNECT_FAILED, log: true });
+});
+
+test("api 밖(게이트웨이 · 잘못된 주소)의 404 는 일치 없음이 아니라 연결 실패다 — 입력만 고치게 하지 않고 로그를 남긴다", () => {
+  assert.deepEqual(failureOf(gateway(404), LOGIN_ID_NOT_FOUND), { message: CONNECT_FAILED, log: true });
+  assert.deepEqual(temporaryPasswordOutcome(gateway(404)), { message: CONNECT_FAILED, log: true });
+});
+
+test("임시 비밀번호: 메일 발송 오류(503 + code)는 메일이 오지 않으면 다시 받게 안내 — 코드 없는 503 은 결과 모름", () => {
+  assert.deepEqual(temporaryPasswordOutcome(api(503, "임시 비밀번호를 보내지 못했습니다. 잠시 후 다시 시도해 주세요.", { code: "TEMPORARY_PASSWORD_SEND_FAILED" })), {
+    message: TEMPORARY_PASSWORD_SEND_FAILED,
+    log: true,
+  });
+  assert.deepEqual(temporaryPasswordOutcome(api(503, "Service Unavailable")), { message: TEMPORARY_PASSWORD_UNKNOWN, log: true });
+  assert.deepEqual(temporaryPasswordOutcome(gateway(503)), { message: TEMPORARY_PASSWORD_UNKNOWN, log: true });
 });
