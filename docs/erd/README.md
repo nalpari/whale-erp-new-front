@@ -785,7 +785,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |---|---|---|---|---|
 | PK·FK | 계정 | id | `account_id` |  |
 | PK | 수신 설정 묶음 | enum | `preference_category` | 근로계약서·근무스케줄·TO-DO·급여명세서 |
-|  | 수신 여부 | bool | `enabled` | 기본 켬, 계약·급여는 끌 수 없음 |
+|  | 수신 여부 | bool | `enabled` | 기본 켬, 네 묶음 모두 직원이 켜고 끔 (NOTI-8, 2026-10-20) |
 |  | 변경 시각 | datetime | `updated_at` |  |
 
 ### 알림 템플릿 `notification_templates` · 엔티티
