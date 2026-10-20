@@ -162,9 +162,9 @@ export function AdminFormPanel(props: Props) {
       <h2 className="text-[18px] font-semibold text-erp-ink">
         {title}
         {mode === "edit" && (
-          <span className="ml-[6px] text-[13px] font-normal text-erp-label">
-            {props.admin.name ?? props.admin.loginId} · {props.admin.loginId}
-          </span>
+          // 아이디 칸을 없앤 대신(위 FormGroup 주석) 제목 줄에 라벨을 달아 값만으로는 안 보이던 것을 바로
+          // 알게 한다(점포코드 ST000123 처럼 라벨+값, 2026-10-20 디자인 수정 — 이름은 중복이라 뺀다).
+          <span className="ml-[6px] text-[13px] font-normal text-erp-label">아이디 · {props.admin.loginId}</span>
         )}
       </h2>
       {failure && <FailedBand message={failure} detail="입력한 값은 그대로 두었습니다." />}

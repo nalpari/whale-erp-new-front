@@ -64,7 +64,9 @@ export const platformAdminEditPanel = (A, R) =>
   ui.slidePanel(
     "platform-admin-edit-panel",
     "플랫폼 관리자 수정",
-    ui.sectionHead(`플랫폼 관리자 수정${sub("박지우 · platpark")}`) + platformAdminEditBody(A),
+    // 아이디 칸을 없앤 대신 제목 줄에 라벨을 달아 값만으로는 안 보이던 것을 바로 알게 한다(이름은 중복이라
+    // 뺀다, 2026-10-20 디자인 수정).
+    ui.sectionHead(`플랫폼 관리자 수정${sub("아이디 · platpark")}`) + platformAdminEditBody(A),
   );
 
 // 「내 정보」 패널은 이번 변경(2026-10-13 플랫폼 관리자 등록 · 수정의 주소 자동완성) 대상이 아니라 원래 주소 칸 그대로 둔다

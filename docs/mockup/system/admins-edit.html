@@ -29,9 +29,11 @@
             <a class="iconbtn" href="admins-detail.html?state=self" aria-label="관리자 상세로" data-icon="arrowleft" data-icon-size="18" data-show="self" hidden></a>
             <a class="iconbtn" href="admins-detail.html?state=kim" aria-label="관리자 상세로" data-icon="arrowleft" data-icon-size="18" data-show="lastfail" hidden></a>
             <h1 class="t-h1">플랫폼 관리자 수정</h1>
-            <span class="badge badge--quiet" data-show="base off dupmail miss denied conflict fail">박지우 · platpark</span>
-            <span class="badge badge--quiet" data-show="self" hidden>정민재 · platjung · 본인</span>
-            <span class="badge badge--info" data-show="lastfail" hidden>김서연 · platkim · 플랫폼 마스터</span>
+            <!-- 아이디 칸을 없앤 대신 뱃지에 라벨을 달아 값만으로는 안 보이던 것을 바로 알게 한다(이름은 중복이라
+                 뺀다, 2026-10-20 디자인 수정). -->
+            <span class="badge badge--quiet" data-show="base off dupmail miss denied conflict fail">아이디 · platpark</span>
+            <span class="badge badge--quiet" data-show="self" hidden>아이디 · platjung · 본인</span>
+            <span class="badge badge--info" data-show="lastfail" hidden>아이디 · platkim · 플랫폼 마스터</span>
             <span class="badge badge--warn">1팀 작업</span>
             <div class="titlebar__end">
               <span class="filters__count mono">S-CZGHBS · /platform/system/admins/<span data-show="base off dupmail miss denied conflict fail">platpark</span><span data-show="self" hidden>platjung</span><span data-show="lastfail" hidden>platkim</span>/edit</span>
