@@ -286,6 +286,17 @@ python3 docs/erd/_build.py
 | FK | 처리 관리자 | id | `processed_by` |  |
 |  | 처리 일시 | datetime | `processed_at` | 같은 처리는 같은 시각 |
 
+### 초대 코드 입력 시도 `invitation_code_attempts` · 이력
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 시도 ID | id | `invitation_code_attempt_id` |  |
+|  | 휴대전화번호 키 | hash | `phone_key` | HMAC, 원본 저장 안 함, 초대가 없는 번호도 같은 기준으로 셈 |
+|  | 성공 여부 | bool | `is_succeeded` | 기본 false |
+|  | 실패 횟수 | int | `failed_count` | 기본 0, 5회면 30분 잠금 |
+|  | 잠금 해제 시각 | datetime | `lock_expires_at` | 잠겨 있지 않으면 비움 |
+|  | 시도 시각 | datetime | `attempted_at` | (phone_key, attempted_at) 인덱스 · 재발송하면 실패 0 행을 쌓아 잠금을 푼다 (JOIN-7, 2026-10-20) |
+
 **관계**
 
 - 점포 `1` — `N` 직원 레코드 · 소속

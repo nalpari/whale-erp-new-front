@@ -226,6 +226,8 @@ DIAGRAMS.append(Diagram(
         ref_admin(3, 404),
         E("retirement", "퇴직 처리 이력", "staff_member_retirement_logs", "history",
           ["#|퇴직 처리 이력 ID|id|staff_member_retirement_log_id|", "→|직원 레코드|id|staff_member_id|", "|처리 종류|enum|action|처리·취소", "|퇴직일|date|retired_date|처리·취소한 퇴직일", "→|퇴직일에 걸친 근로계약|id|contract_id|참고, 처리 행만, 계약마다 한 줄", "|처리 시점 계약 종료일|date|previous_contract_end_date|참고용 (2026-10-08)", "→|처리 관리자|id|processed_by|", "|처리 일시|datetime|processed_at|같은 처리는 같은 시각"], 1, 680),
+        E("invite_attempt", "초대 코드 입력 시도", "invitation_code_attempts", "history",
+          ["#|시도 ID|id|invitation_code_attempt_id|", "|휴대전화번호 키|hash|phone_key|HMAC, 원본 저장 안 함, 초대가 없는 번호도 같은 기준으로 셈", "|성공 여부|bool|is_succeeded|기본 false", "|실패 횟수|int|failed_count|기본 0, 5회면 30분 잠금", "|잠금 해제 시각|datetime|lock_expires_at|잠겨 있지 않으면 비움", "|시도 시각|datetime|attempted_at|(phone_key, attempted_at) 인덱스 · 재발송하면 실패 0 행을 쌓아 잠금을 푼다 (JOIN-7, 2026-10-20)"], 3, 40),
     ],
     [
         R("store", "right", "staff_member", "left", "1", "N", "소속", at_a=108, at_b=108),
