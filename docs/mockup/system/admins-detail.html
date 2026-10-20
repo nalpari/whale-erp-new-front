@@ -170,7 +170,7 @@
                         <button class="btn btn--secondary btn--sm" type="button" data-open="pop-reset" data-show-role="pm" data-show="kim" hidden>초기화</button>
                         <button class="btn btn--secondary btn--sm" type="button" disabled data-show-role="pm" data-show="self" hidden title="본인 비밀번호는 내 정보에서 변경합니다">초기화</button>
                       </dd>
-                      <dt>소속 부서</dt>
+                      <dt>소속부서</dt>
                       <dd><span data-show="park choi">고객지원팀</span><span data-show="kim self yoon created mailfail" hidden>플랫폼운영팀</span></dd>
                       <dt>직책</dt>
                       <dd><span data-show="park">매니저</span><span data-show="choi yoon created" hidden>사원</span><span data-show="kim" hidden>파트장</span><span data-show="self" hidden>팀장</span></dd>
@@ -189,19 +189,19 @@
                       <dd class="mono"><span data-show="park">2026-08-12 09:40 | platkim</span><span data-show="choi" hidden>2026-05-06 11:20 | platkim</span><span data-show="kim self yoon created mailfail" hidden><span class="subtle">· 등록 뒤 변경 없음</span></span></dd>
                     </dl>
                   </div>
-                  <div class="panel__note">소속 부서·직책·주소는 선택 입력이라 비어 있을 수 있다. 소속 BP·가맹점은 플랫폼 관리자 계정에 두지 않는다.</div>
+                  <div class="panel__note">소속부서·직책·주소는 선택 입력이라 비어 있을 수 있다. 소속 BP·가맹점은 플랫폼 관리자 계정에 두지 않는다.</div>
                 </section>
               </div>
 
               <section class="panel">
                 <div class="panel__head">
-                  <h2 class="t-h2">생성 · 변경 이력</h2>
+                  <h2 class="t-h2">변경이력</h2>
                   <span class="badge badge--quiet">생성 · 정보 · 권한 · 상태 · 비밀번호 초기화 · 최신순</span>
                 </div>
                 <div class="tblwrap">
                   <table class="tbl tbl--dense">
                     <thead>
-                      <tr><th scope="col">일시</th><th scope="col">처리자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
+                      <tr><th scope="col">변경일시</th><th scope="col">변경자</th><th scope="col">항목</th><th scope="col">변경 전</th><th scope="col">변경 후</th></tr>
                     </thead>
                     <tbody>
                       <tr data-show="park"><td class="mono">2026-08-12 09:40</td><td class="mono">platkim</td><td>초기 비밀번호</td><td class="nil"></td><td>초기화 메일 발송 완료 <span class="subtle">· 값은 남기지 않음</span></td></tr>
@@ -227,7 +227,7 @@
           <div class="modal" id="pop-reset" hidden role="dialog" aria-modal="true" aria-labelledby="pr-t">
             <div class="modal__box">
               <div class="modal__head">
-                <h2 class="t-h2" id="pr-t">비밀번호 초기화</h2>
+                <h2 class="t-h2" id="pr-t">비밀번호를 초기화하시겠습니까?</h2>
                 <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
               </div>
               <div class="modal__body">
@@ -236,14 +236,7 @@
                     <dt>아이디</dt><dd class="mono"><span data-show="park">platpark</span><span data-show="choi" hidden>platchoi</span><span data-show="kim" hidden>platkim</span><span data-show="yoon created mailfail" hidden>platyoon</span></dd>
                     <dt>이름</dt><dd><span data-show="park">박지우</span><span data-show="choi" hidden>최유나</span><span data-show="kim" hidden>김서연</span><span data-show="yoon created mailfail" hidden>윤채원</span></dd>
                   </dl>
-                  <p style="margin: 0; font-size: 13px">새 초기 비밀번호(12자 무작위)를 비밀번호 초기화 안내 메일로 계정 이메일에 보냅니다. 초기화하는 사람도 그 값을 볼 수 없습니다. 초기 비밀번호는 1시간 안에 로그인해야 하며, 지나면 로그인 화면의 비밀번호 찾기로 임시 비밀번호를 다시 받습니다.</p>
-                  <div class="band band--warn">
-                    <span class="band__ic" data-icon="warn" data-icon-size="20"></span>
-                    <div class="band__body">
-                      <div class="band__title">기존 비밀번호는 바로 무효가 되지만, 로그인 중인 세션은 끊지 않습니다</div>
-                      <p class="band__desc">계정 상태는 그대로입니다. 다음 로그인 때 비밀번호를 새로 정해야 합니다.</p>
-                    </div>
-                  </div>
+                  <p style="margin: 0; font-size: 13px">임시 비밀번호가 등록된 이메일로 발송되며, 기존 비밀번호는 즉시 무효화됩니다.<br>임시 비밀번호는 1시간 동안 유효하며, 로그인 시 비밀번호를 변경해야 합니다.<br>현재 로그인 중인 세션은 유지됩니다.</p>
                   <div class="inline" style="justify-content: flex-end">
                     <button class="btn btn--ghost" type="button" data-close>취소</button>
                     <button class="btn btn--secondary" type="button" data-step-to="fail" title="목업 전용 — 처리 오류 결과 보기">오류로 보기</button>

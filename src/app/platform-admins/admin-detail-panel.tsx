@@ -136,7 +136,7 @@ function DetailBody({
         </>
       ),
     },
-    { label: "소속 부서", value: admin.department ?? null },
+    { label: "소속부서", value: admin.department ?? null },
     { label: "직책", value: admin.jobTitle ?? null },
     // 우편번호 · 기본주소 · 상세주소를 줄을 바꿔 보인다(데모 상세와 같다). 이 줄만 내용만큼 늘어난다.
     {
@@ -172,7 +172,9 @@ function DetailBody({
       <h2 className="flex flex-wrap items-center gap-[6px] text-[18px] font-semibold text-erp-ink">
         <span className="mr-[4px]">{name}</span>
         {admin.accountStatus === "ACTIVE" ? <Badge tone="on">사용</Badge> : <Badge tone="off">미사용</Badge>}
-        <Tag>사용자 권한 · {admin.roleGroup.name}</Tag>
+        <Tag>
+          사용자 권한 · <b className="font-semibold">{admin.roleGroup.name}</b>
+        </Tag>
       </h2>
       {failure && <FailedBand message={failure} />}
       <DetailTable title="기본정보" rows={rows} />
@@ -202,7 +204,7 @@ function DetailBody({
         <>
           <ConfirmDialog
             open={confirm === "reset"}
-            title="비밀번호 초기화"
+            title="비밀번호를 초기화하시겠습니까?"
             confirmLabel="초기화"
             wide
             busy={busy}
@@ -212,12 +214,11 @@ function DetailBody({
             <div className="flex flex-col gap-[12px]">
               {who}
               <p>
-                새 초기 비밀번호(12자 무작위)를 비밀번호 초기화 안내 메일로 계정 이메일에 보냅니다. 초기화하는 사람도 그 값을 볼 수 없습니다. 초기 비밀번호는 1시간
-                안에 로그인해야 하며, 지나면 로그인 화면의 비밀번호 찾기로 임시 비밀번호를 다시 받습니다.
-              </p>
-              <p>
-                <b className="font-semibold">기존 비밀번호는 바로 무효가 되지만, 로그인 중인 세션은 끊지 않습니다.</b> 계정 상태는 그대로입니다. 다음 로그인 때
-                비밀번호를 새로 정해야 합니다.
+                임시 비밀번호가 등록된 이메일로 발송되며, 기존 비밀번호는 즉시 무효화됩니다.
+                <br />
+                임시 비밀번호는 1시간 동안 유효하며, 로그인 시 비밀번호를 변경해야 합니다.
+                <br />
+                현재 로그인 중인 세션은 유지됩니다.
               </p>
             </div>
           </ConfirmDialog>

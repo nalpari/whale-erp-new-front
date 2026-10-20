@@ -31,9 +31,9 @@
             <h1 class="t-h1">플랫폼 관리자 수정</h1>
             <!-- 아이디 칸을 없앤 대신 뱃지에 라벨을 달아 값만으로는 안 보이던 것을 바로 알게 한다(이름은 중복이라
                  뺀다, 2026-10-20 디자인 수정). -->
-            <span class="badge badge--quiet" data-show="base off dupmail miss denied conflict fail">아이디 · platpark</span>
-            <span class="badge badge--quiet" data-show="self" hidden>아이디 · platjung · 본인</span>
-            <span class="badge badge--info" data-show="lastfail" hidden>아이디 · platkim · 플랫폼 마스터</span>
+            <span class="badge badge--quiet" data-show="base off dupmail miss denied conflict fail">아이디 · <b>platpark</b></span>
+            <span class="badge badge--quiet" data-show="self" hidden>아이디 · <b>platjung</b> · 본인</span>
+            <span class="badge badge--info" data-show="lastfail" hidden>아이디 · <b>platkim</b> · 플랫폼 마스터</span>
             <span class="badge badge--warn">1팀 작업</span>
             <div class="titlebar__end">
               <span class="filters__count mono">S-CZGHBS · /platform/system/admins/<span data-show="base off dupmail miss denied conflict fail">platpark</span><span data-show="self" hidden>platjung</span><span data-show="lastfail" hidden>platkim</span>/edit</span>
@@ -110,8 +110,8 @@
             <div class="band band--info" data-show="self" hidden>
               <span class="band__ic" data-icon="info" data-icon-size="20"></span>
               <div class="band__body">
-                <div class="band__title">본인 계정은 권한과 상태를 스스로 바꿀 수 없습니다</div>
-                <p class="band__desc">기본정보만 고칠 수 있습니다. 권한·상태를 바꿔야 하면 이 계정을 관리할 수 있는 다른 플랫폼 마스터에게 요청하세요.</p>
+                <div class="band__title">본인 계정의 권한 및 상태는 변경할 수 없습니다</div>
+                <p class="band__desc">기본정보만 수정할 수 있습니다. 권한·상태를 바꿔야 하면 이 계정을 관리할 수 있는 다른 플랫폼 마스터에게 요청하세요.</p>
               </div>
             </div>
 
@@ -160,9 +160,9 @@
                     <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>이메일을 입력해 주세요.</span>
                   </div>
                   <div class="field">
-                    <label for="edept">소속 부서</label>
+                    <label for="edept">소속부서</label>
                     <input class="input" id="edept" value="고객지원팀" maxlength="30" data-show="base off dupmail miss denied conflict fail" />
-                    <input class="input" value="플랫폼운영팀" maxlength="30" aria-label="소속 부서" data-show="self lastfail" hidden />
+                    <input class="input" value="플랫폼운영팀" maxlength="30" aria-label="소속부서" data-show="self lastfail" hidden />
                   </div>
                   <div class="field">
                     <label for="epos">직책</label>

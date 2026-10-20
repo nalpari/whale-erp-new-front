@@ -2,6 +2,7 @@
 // 목업 제목 줄의 [취소][저장]은 화면 아래로 내렸다. 권한 선택의 묶음(optgroup)은 Select 가 받지 않아 한 줄 목록으로 폈다.
 // 상세·등록·수정은 따로 화면(주소)이 없고 목록(system/admins.html)의 슬라이드 패널로만 연다(2026-10-08). 저장하면 상세 패널로 간다(erp.js data-save-panel).
 import * as ui from "../ui.mjs";
+import * as c from "../config-parts.mjs";
 
 // 1팀 컴포넌트에 없는 것들: 필수 표시, 입력칸 아래 도움말, 안내 문구, 묶음 제목 옆 보조 글. (admins-new 와 같은 모양)
 const req = (label) => `${label} <span class="text-[#e93737]">*</span>`; // #e93737: DESIGN.md 위험 글자색
@@ -33,7 +34,7 @@ function platformAdminEditBody(A) {
       ui.field(req("이메일"), stack(ui.textField({ value: "jiwoo.park@whale-erp.example", maxlength: 100 }))),
     ),
     row(
-      ui.field("소속 부서", ui.textField({ value: "고객지원팀", maxlength: 30 })),
+      ui.field("소속부서", ui.textField({ value: "고객지원팀", maxlength: 30 })),
       ui.field("직책", ui.textField({ value: "매니저", maxlength: 30 })),
     ),
     address(A, "06236", "서울 강남구 테헤란로 152", "12층"),
@@ -65,8 +66,10 @@ export const platformAdminEditPanel = (A, R) =>
     "platform-admin-edit-panel",
     "플랫폼 관리자 수정",
     // 아이디 칸을 없앤 대신 제목 줄에 라벨을 달아 값만으로는 안 보이던 것을 바로 알게 한다(이름은 중복이라
-    // 뺀다, 2026-10-20 디자인 수정).
-    ui.sectionHead(`플랫폼 관리자 수정${sub("아이디 · platpark")}`) + platformAdminEditBody(A),
+    // 뺀다, 2026-10-20 디자인 수정). 상세 제목 줄의 사용자 권한 꼬리표와 같은 뱃지 모양으로 맞췄다.
+    ui.sectionHead(
+      `플랫폼 관리자 수정<span class="ml-[6px] inline-flex">${c.tag('아이디 · <b class="font-semibold">platpark</b>')}</span>`,
+    ) + platformAdminEditBody(A),
   );
 
 // 「내 정보」 패널은 이번 변경(2026-10-13 플랫폼 관리자 등록 · 수정의 주소 자동완성) 대상이 아니라 원래 주소 칸 그대로 둔다
@@ -87,7 +90,7 @@ export const platformMyPanel = (A, { master = false } = {}) => {
     ui.field(req("이름"), ui.textField({ value: me.name, maxlength: 20, placeholder: "한글 또는 영문 2~20자" })),
     ui.field(req("연락처"), tel(...me.tel)),
     ui.field(req("이메일"), ui.textField({ value: me.mail, maxlength: 100 })),
-    ui.field("소속 부서", ui.textField({ value: me.dept, maxlength: 30 })),
+    ui.field("소속부서", ui.textField({ value: me.dept, maxlength: 30 })),
     ui.field("직책", ui.textField({ value: me.title, maxlength: 30 })),
     myAddress(A, "13529", "경기 성남시 분당구 판교역로 166", "7층"),
   );

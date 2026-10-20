@@ -37,14 +37,14 @@ function platformAdminNewBody(A) {
           `<p class="text-[13px] leading-[1.5] text-erp-off" role="alert" data-dup-message hidden></p>`,
         ),
       ),
-      ui.field(req("이름"), ui.textField({ value: "윤채원", maxlength: 20, placeholder: "한글 또는 영문 2~20자" })),
+      ui.field(req("이름"), ui.textField({ value: "윤채원", maxlength: 20, placeholder: "한글 또는 영문 2~20자로 입력해 주세요." })),
     ),
     row(
       ui.field(req("연락처"), tel("010", "9013", "5528")),
       ui.field(req("이메일"), stack(ui.textField({ value: "chaewon.yoon@whale-erp.example", maxlength: 100 }))),
     ),
     row(
-      ui.field("소속 부서", stack(ui.textField({ value: "플랫폼운영팀", maxlength: 30 }))),
+      ui.field("소속부서", stack(ui.textField({ value: "플랫폼운영팀", maxlength: 30 }))),
       ui.field("직책", stack(ui.textField({ value: "사원", maxlength: 30 }))),
     ),
     address(A, "13529", "경기 성남시 분당구 판교역로 166", "7층"),
@@ -65,7 +65,7 @@ function platformAdminNewBody(A) {
 
   // 저장하면 등록 패널을 닫고 상세 패널을 연다
   const buttons = `<div class="flex justify-center gap-[6px]">${ui.button("취소", { variant: "off", "data-close": true })}${ui.button("저장", { "data-save-panel": "platform-admin-detail-panel" })}</div>`;
-  return basic + role + note("초기 비밀번호를 등록 이메일로 발송합니다.") + buttons;
+  return basic + role + note("관리자 계정의 초기 비밀번호는 등록된 이메일로 발송됩니다.") + buttons;
 }
 
 export const platformAdminNewPanel = (A, R) =>

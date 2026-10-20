@@ -18,9 +18,10 @@ const dimRows = (table, idx) => {
 };
 
 // 연락처·이메일 칸 앞 아이콘. 목업 app.js 의 phone·mail 모양을 그대로 옮겼다(앱 public/icons 에는 없는 아이콘이라 여기에만 둔다).
+// 동그라미를 두른 모양으로 바꿨다(2026-10-20 디자인 수정).
 const ICON = {
-  phone: '<rect x="6.4" y="2.6" width="11.2" height="18.8" rx="2.4"/><path d="M10.4 18.4h3.2"/>',
-  mail: '<rect x="3" y="5.4" width="18" height="13.2" rx="1.8"/><path d="m3.6 6.4 8.4 6.6 8.4-6.6"/>',
+  phone: '<circle cx="12" cy="12" r="10.5"/><rect x="9" y="6.5" width="6" height="11" rx="1.6"/><path d="M10.5 15.3h3"/>',
+  mail: '<circle cx="12" cy="12" r="10.5"/><rect x="6.8" y="8.8" width="10.4" height="7.4" rx="1"/><path d="m7.3 9.6 4.7 3.7 4.7-3.7"/>',
 };
 const withIcon = (name, text) =>
   `<span class="inline-flex items-center gap-[6px]"><svg viewBox="0 0 24 24" class="size-[13px] shrink-0 text-erp-label" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name]}</svg>${text}</span>`;
