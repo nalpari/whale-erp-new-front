@@ -364,8 +364,9 @@
   /* 상단 조회 범위 선택 (F-TLJOCK). 조회 범위는 BP 하나와 그 BP 안의 점포 범위다.
      점포는 직영점포 · 가맹점포 유형 그룹 또는 개별 점포로 여러 개를 고른다. 점포를 고르지 않고 적용하면 그 BP 전체 점포다.
      적용한 범위는 서버에 두지 않고 이 브라우저 세션 동안만 유지한다(sessionStorage) — 로그아웃하면 사라진다.
-     BP 목록에는 사용 · 미사용 BP 가 나오고 미사용에는 표시를 붙인다. 탈퇴 · 삭제 BP 와 플랫폼 BP 는 나오지 않는다 (확정 2026-09-30).
-     목업 전용 주소 값: ?scope=first 는 BP 가 적용되지 않은 플랫폼 사용자의 최초 진입(닫을 수 없는 팝업), ?scope=nostore 는 접근할 점포가 없는 사용자다. */
+     BP 목록에는 사용 · 미사용 · 탈퇴 BP 가 나오고 미사용 · 탈퇴에는 표시를 붙인다. 삭제 BP 와 플랫폼 BP 는 나오지 않는다 (2026-10-19 재영, 2026-09-30 확정에서 탈퇴 포함으로 바꿈).
+     플랫폼 사용자는 서비스 바로가기 「웨일ERP」로 BP 를 고르고, 고른 BP 의 웨일ERP 는 새 탭에서 로딩 문구를 보인 뒤 홈으로 열린다(?bpswitch=BP 코드).
+     목업 전용 주소 값: ?scope=first 는 BP 를 고르기 전에 ERP 주소로 들어온 플랫폼 사용자(강제 팝업 없이 안내만, 2026-10-19 재영), ?scope=nostore 는 접근할 점포가 없는 사용자다. */
   var BPS = [
     { code: "BP000017", name: "㈜한강상회", stores: [
       { id: "ST000001", name: "모리커피 서초점", type: "직영점포" },
@@ -393,6 +394,9 @@
     { code: "BP000024", name: "㈜한강푸드시스템", off: true, stores: [
       { id: "ST000051", name: "한강국밥 여의도점", type: "직영점포" },
       { id: "ST000052", name: "한강국밥 마포점", type: "가맹점포" }
+    ] },
+    { code: "BP000027", name: "㈜옛골상회", gone: true, stores: [
+      { id: "ST000071", name: "옛골국수 종로점", type: "직영점포" }
     ] },
     { code: "BP000030", name: "온기식당 본사", stores: [
       { id: "ST000061", name: "온기식당 을지로본점", type: "직영점포" }
@@ -437,15 +441,15 @@
       '<button class="iconbtn navtoggle" type="button" aria-label="메뉴 열기" aria-expanded="false" data-icon="menu" data-icon-size="18"></button>' +
       '<a class="brand" href="' + url("index.html") + '">' + mark(30) +
       '<span class="brand__name">WHALE <span>ERP</span></span></a>' +
-      /* 점포 선택 드롭다운 · BP 변경 (F-TLJOCK) — 업무 화면은 여기 적용한 BP · 점포 범위로 조회한다.
-         BP 변경 버튼은 실제로는 플랫폼 마스터 · 플랫폼 관리자에게만 있다. 목업에는 플랫폼 사용자로 들어오는 경로가 없어
-         우선 누구에게나 보이고, 팝업 안에 플랫폼 사용자 전용이라는 안내를 둔다. */
+      /* 점포 선택 드롭다운 · 서비스 바로가기 「웨일ERP」 (F-TLJOCK) — 업무 화면은 여기 적용한 BP · 점포 범위로 조회한다.
+         「웨일ERP」의 BP 선택은 실제로는 플랫폼 마스터 · 플랫폼 관리자에게만 열린다(그 밖의 계정은 자기 BP 홈 링크). 목업에는
+         플랫폼 사용자로 들어오는 경로가 없어 우선 누구에게나 열고, 팝업 안에 플랫폼 사용자 전용이라는 안내를 둔다. */
       (SCOPE_MODE === "nostore"
         ? /* 점포가 없으면 안내만 둔다. 점포 등록 안내와 링크는 홈 진입 팝업이 맡는다(3팀 · 점포 등록 권한이 있을 때만). */
           '<span class="scopebtn scopebtn--empty">' + ic("store", 14) + "<span>접근할 점포가 없습니다</span></span>"
         : '<button class="scopebtn" type="button" aria-haspopup="listbox" aria-expanded="false" title="점포 범위 선택">' +
           '<b class="scopebtn__bp"></b><span class="sep">·</span><span class="scopebtn__val"></span>' + ic("selector", 14) + "</button>" +
-          '<button class="scopebp" type="button" aria-haspopup="dialog" title="BP 및 점포 선택">' + ic("refresh", 14) + "BP 변경</button>") +
+          '<button class="scopebp" type="button" aria-haspopup="dialog" title="서비스 바로가기 · 웨일ERP — BP 를 골라 새 탭으로 엽니다">' + ic("whale", 14) + "웨일ERP</button>") +
       '<div class="topnav__end">' +
       '<button class="iconbtn bellbtn" type="button" aria-label="알림 3건" aria-haspopup="true" aria-expanded="false" data-dot="1" data-icon="bell" data-icon-size="18"></button>' +
       '<button class="iconbtn" type="button" aria-label="도움말" data-icon="help" data-icon-size="18"></button>' +
@@ -645,21 +649,32 @@
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
   }
 
-  /* ---------- 점포 선택 드롭다운 · BP 및 점포 선택 팝업 (F-TLJOCK) ----------
-     드롭다운은 지금 BP 안의 범위를 그 자리에서 바로 고른다. BP 를 바꿀 때만 BP 변경 버튼(플랫폼 사용자)이 팝업을 연다.
-     팝업 구성 — BP 선택(단일) · 점포명 검색 · 유형 그룹(직영점포 · 가맹점포, 그룹 체크와 점포 수) · 개별 점포 체크 · 선택 결과 · 적용 · 취소.
-     그룹과 개별 조합, 서로 다른 유형 간 복수 선택이 된다. 폐점 점포도 폐점 표시와 함께 보이되 고르지 않는다.
-     최초 진입(플랫폼 사용자 · 적용된 BP 없음)에는 취소 · 닫기가 없다. */
+  /* ---------- 점포 선택 드롭다운 · BP 선택 팝업 (F-TLJOCK) ----------
+     드롭다운은 지금 BP 안의 범위를 그 자리에서 바로 고른다. BP 를 바꿀 때만 서비스 바로가기 「웨일ERP」(플랫폼 사용자)가 BP 선택 팝업을 열고, 고른 BP 는 새 탭으로 연다.
+     팝업 구성 — BP 선택(단일) · 이동 · 취소. 점포는 고르지 않는다 — 고른 BP 의 전체 점포로 열고, 범위는 점포 선택 드롭다운에서 바꾼다(2026-10-20 재영).
+     BP 를 고르기 전에 ERP 주소로 들어오면 강제 팝업 없이 안내만 한다(2026-10-19 재영). */
+  /* 웨일ERP 바로가기로 연 새 탭(?bpswitch=BP 코드) — 로딩 문구를 보이고 그 BP 의 전체 점포로 범위를 바꾼 뒤 주소에서 값을 지운다.
+     브라우저 탭 제목에는 BP 상호를 붙이지 않는다(2026-10-20 재영 — 즐겨찾기 이름과 실제 BP 가 어긋날 수 있다). */
+  function bpSwitch() {
+    var code = Q0.get("bpswitch");
+    if (code) {
+      var bp = bpOf(code);
+      scopeSave({ bp: bp.code, all: true, ids: [] });
+      var cover = document.createElement("div");
+      cover.setAttribute("role", "status");
+      cover.style.cssText = "position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--bg,#fff);font-size:14px;color:var(--muted,#888)";
+      cover.textContent = bp.name + "(" + bp.code + ") · 전체 점포로 여는 중입니다";
+      document.body.appendChild(cover);
+      setTimeout(function () { cover.remove(); }, 900);
+      history.replaceState(null, "", location.pathname);
+    }
+  }
+
   function wireScope() {
     var btn = document.querySelector("button.scopebtn");
     if (!btn) return;
     var bpBtn = document.querySelector(".scopebp");
     function paint() {
-      if (forced) {
-        btn.querySelector(".scopebtn__bp").textContent = "BP 미적용";
-        btn.querySelector(".scopebtn__val").textContent = "BP 를 고르세요";
-        return;
-      }
       var v = scopeNow();
       btn.querySelector(".scopebtn__bp").textContent = bpOf(v.bp).name;
       btn.querySelector(".scopebtn__val").textContent = scopeLabel(v);
@@ -672,70 +687,41 @@
     m.setAttribute("aria-modal", "true");
     m.setAttribute("aria-labelledby", "scp-t");
     document.body.appendChild(m);
-    var st = null, forced = false, back = null;
+    var st = null, back = null;
     function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
     function draw(q) {
       q = q || "";
       var bp = bpOf(st.bp);
-      var open = bp.stores.filter(function (x) { return !x.closed; });
-      var hit = function (x) { return !q || (x.name + x.id).toLowerCase().indexOf(q.toLowerCase()) > -1; };
-      var groups = ["직영점포", "가맹점포"].map(function (t) {
-        var all = bp.stores.filter(function (x) { return x.type === t; });
-        var can = all.filter(function (x) { return !x.closed; }).length;
-        var sel = all.filter(function (x) { return !x.closed && st.ids.indexOf(x.id) > -1; }).length;
-        var shown = all.filter(hit);
-        if (!shown.length) return "";
-        var gs = !can ? "false" : sel === can ? "true" : sel ? "mixed" : "false";
-        return '<div class="scopepop__grp">' +
-          '<label class="scopepop__ghead"><span class="check" role="checkbox" tabindex="0" aria-checked="' + gs + '" aria-label="' + t + ' 전체" data-grp="' + t + '"' + (can ? "" : " disabled") + ">" + ic(gs === "mixed" ? "minus" : "check", 11) + "</span>" +
-          "<b>" + t + '</b><span class="subtle">' + all.length + "개점" + (all.length !== can ? " · 폐점 " + (all.length - can) : "") + "</span>" +
-          '<span class="scopepop__gsel">' + (sel ? sel + "곳 선택" : "") + "</span></label>" +
-          '<div class="scopepop__stores">' + shown.map(function (x) {
-            var on = st.ids.indexOf(x.id) > -1 && !x.closed;
-            return '<label class="scopepop__store' + (x.closed ? " is-closed" : "") + '"' + (x.closed ? ' title="폐점한 점포는 고를 수 없습니다"' : "") + '><span class="check" role="checkbox" tabindex="' + (x.closed ? "-1" : "0") + '" aria-checked="' + on + '" aria-label="' + esc(x.name) + '" data-id="' + x.id + '"' + (x.closed ? " disabled" : "") + ">" + ic("check", 11) + "</span>" +
-              '<span class="scopepop__name">' + esc(x.name) + '</span><span class="mono subtle">' + x.id + "</span>" + (x.closed ? '<span class="badge badge--quiet">폐점</span>' : "") + "</label>";
-          }).join("") + "</div></div>";
-      }).join("");
-      var n = st.ids.length;
-      var result = n ? "<b>선택 " + n + "곳</b> · " + esc(scopeLabel({ bp: st.bp, all: false, ids: st.ids })) : "<b>선택 안 함</b> · 적용하면 전체 " + open.length + "개점을 봅니다";
-      var noBp = forced && !st.picked;
-      /* 목업에는 플랫폼 사용자로 들어오는 경로가 없어 BP 변경 버튼을 늘 보이고, 팝업은 플랫폼 사용자 기준(BP 선택)으로 그린다.
+      /* 목업에는 플랫폼 사용자로 들어오는 경로가 없어 웨일ERP 바로가기를 누구에게나 열고, 팝업은 플랫폼 사용자 기준(BP 선택)으로 그린다.
          BP 는 자동완성으로 고른다 — 칸을 누르면 접근할 수 있는 BP 가 펼쳐지고, 상호명 · BP 코드 일부로 좁힌다. */
       var bpField = '<div class="addr__q scopepop__bpq"><span data-icon="search" data-icon-size="15"></span>' +
           '<input class="input" id="scp-bp" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="scp-bplist" autocomplete="off"' +
-          ' placeholder="BP 상호명 또는 BP 코드로 찾기" value="' + (noBp ? "" : esc(bp.name + " · " + bp.code)) + '" />' +
+          ' placeholder="BP 상호명 또는 BP 코드로 찾기" value="' + esc(bp.name + " · " + bp.code) + '" />' +
           '<div class="addr__list" id="scp-bplist" role="listbox" aria-label="고를 수 있는 BP" hidden></div></div>' +
-          '<span class="help">접근 권한이 있는 BP 만 나옵니다. 한 번에 하나만 고르고, 바꾸면 고른 점포는 비워집니다.</span>';
+          '<span class="help">접근 권한이 있는 BP 만 나옵니다. 한 번에 하나만 고릅니다.</span>';
       m.innerHTML = '<div class="modal__box scopepop__box">' +
-        '<div class="modal__head"><h2 class="t-h2" id="scp-t">BP 및 점포 선택</h2>' +
-        (forced ? "" : '<button class="iconbtn" type="button" data-scp-cancel aria-label="닫기">' + ic("x", 16) + "</button>") + "</div>" +
+        '<div class="modal__head"><h2 class="t-h2" id="scp-t">BP 선택</h2>' +
+        '<button class="iconbtn" type="button" data-scp-cancel aria-label="닫기">' + ic("x", 16) + "</button></div>" +
         '<div class="modal__body">' +
-        '<p class="note scopepop__only" style="margin:0">' + ic("lock", 14) + "<span>이 팝업과 BP 변경 버튼은 <b>플랫폼 마스터 · 플랫폼 관리자</b>에게만 노출됩니다. 고객 사용자(BP 측 관리자)는 본인 BP 로 고정되어 점포 선택 드롭다운만 씁니다.</span></p>" +
-        (forced ? '<p class="note" style="margin:0">' + ic("info", 14) + "<span>적용된 BP 가 없습니다. BP 와 점포 범위를 골라 적용해야 ERP 화면을 쓸 수 있습니다.</span></p>" : "") +
+        '<p class="note scopepop__only" style="margin:0">' + ic("lock", 14) + "<span>이 팝업(웨일ERP 바로가기의 BP 선택)은 <b>플랫폼 마스터 · 플랫폼 관리자</b>에게만 열립니다. 고객 사용자(BP 측 관리자)는 본인 BP 로 고정되어 점포 선택 드롭다운만 씁니다.</span></p>" +
         '<div class="field"><label for="scp-bp">BP</label>' + bpField + "</div>" +
-        (noBp ? '<div class="scopepop__wait">BP 를 고르면 그 BP 의 점포 목록이 나옵니다.</div>' :
-          '<div class="field"><label for="scp-q">점포</label><div class="inputwrap">' + ic("search", 15) +
-          '<input class="input" id="scp-q" placeholder="점포명으로 찾기" value="' + esc(q) + '" autocomplete="off" /></div>' +
-          '<span class="help">유형 전체를 고르거나 점포를 하나씩 고릅니다. 고르지 않고 적용하면 전체 점포입니다.</span></div>' +
-          '<div class="scopepop__list">' + (groups || '<p class="scopepop__none">‘' + esc(q) + "’에 맞는 점포가 없습니다.</p>") + "</div>" +
-          '<div class="scopepop__result"><span>' + result + "</span>" + (n ? '<button class="tlink" type="button" data-scp-clear>선택 지우기</button>' : "") + "</div>") +
+        '<p class="note" style="margin:0">' + ic("info", 14) + "<span>고른 BP 의 웨일ERP 가 새 탭에서 전체 점포로 열립니다. 점포 범위는 그 탭의 점포 선택 드롭다운에서 바꿉니다.</span></p>" +
         "</div>" +
-        '<div class="modal__foot">' + (forced ? "" : '<button class="btn btn--ghost" type="button" data-scp-cancel>취소</button>') +
-        '<button class="btn btn--primary" type="button" data-scp-apply' + (noBp ? " disabled" : "") + ">적용</button></div></div>";
+        '<div class="modal__foot"><button class="btn btn--ghost" type="button" data-scp-cancel>취소</button>' +
+        '<button class="btn btn--primary" type="button" data-scp-apply>이동</button></div></div>';
       hydrateIcons(m);
     }
     function openPop(fromBp) {
       var v = scopeNow();
-      st = { bp: v.bp, ids: v.all ? [] : v.ids.slice(), picked: !forced };
+      st = { bp: v.bp, ids: v.all ? [] : v.ids.slice(), picked: true };
       back = document.activeElement;
       draw("");
       m.hidden = false;
       btn.setAttribute("aria-expanded", "true");
-      var f = (fromBp || forced) ? m.querySelector("#scp-bp") : (m.querySelector("#scp-q") || m.querySelector("#scp-bp"));
+      var f = fromBp ? m.querySelector("#scp-bp") : (m.querySelector("#scp-q") || m.querySelector("#scp-bp"));
       if (f) f.focus();
     }
     function closePop() {
-      if (forced) return;
       m.hidden = true;
       btn.setAttribute("aria-expanded", "false");
       if (back && back.focus) back.focus();
@@ -764,13 +750,9 @@
       if (e.target.closest("[data-scp-cancel]")) return closePop();
       if (e.target.closest("[data-scp-clear]")) { st.ids = []; draw(qNow()); return; }
       if (e.target.closest("[data-scp-apply]")) {
-        if (forced && !st.picked) return;
-        scopeSave({ bp: st.bp, all: !st.ids.length, ids: st.ids.slice() });
-        forced = false;
-        paint();
-        m.hidden = true;
-        btn.setAttribute("aria-expanded", "false");
-        toast("조회 범위를 적용했습니다 · " + bpOf(st.bp).name + " · " + scopeLabel(scopeNow()));
+        /* 지금 탭은 그대로 두고 고른 BP 의 웨일ERP 를 새 탭으로 연다. 적용 안내는 토스트 대신 새 탭의 로딩 문구가 맡는다. */
+        window.open(url("home/signed-in.html") + "?bpswitch=" + encodeURIComponent(st.bp), "_blank");
+        closePop();
         return;
       }
       var lab = e.target.closest("label.scopepop__ghead, label.scopepop__store");
@@ -820,7 +802,7 @@
             var n = b.stores.filter(function (x) { return !x.closed; }).length;
             return '<div class="spick__opt" role="option" id="scp-bpo-' + i + '" data-i="' + i + '" aria-selected="false">' +
               "<span>" + bpHi(b.name, t) + '</span><span class="mono spick__code">' + bpHi(b.code, t) + '</span><span class="spick__type">점포 ' + n + "곳" +
-              (st.picked && b.code === st.bp ? " · 지금 BP" : "") + "</span>" + (b.off ? '<span class="badge badge--quiet">미사용</span>' : "") + "</div>";
+              (st.picked && b.code === st.bp ? " · 지금 BP" : "") + "</span>" + (b.off ? '<span class="badge badge--quiet">미사용</span>' : "") + (b.gone ? '<span class="badge badge--quiet">탈퇴</span>' : "") + "</div>";
           }).join("")
         : '<div class="addr__note">‘' + esc(raw) + "’에 맞는 BP 가 없습니다. 접근 권한이 있는 BP 안에서만 찾습니다.</div>";
       l.hidden = false;
@@ -896,7 +878,7 @@
         sect("가맹 " + fr.length, fr.map(function (x) { return ddOpt(x.id, x.name, x.id, cur === x.id); })) +
         '<p class="pop__none" hidden>맞는 점포가 없습니다.</p>' +
         "</div>" +
-        (!v.all && ids.length > 1 && !cur ? '<p class="pop__note">지금 범위는 BP 변경 팝업에서 여러 점포를 골라 적용한 것입니다.</p>' : "");
+        "";
     }
     function ddPick(key) {
       var v = scopeNow(), bp = bpOf(v.bp);
@@ -929,7 +911,8 @@
     }
     wirePop(btn, "left", ddHTML, function (i, o) { ddPick(o.dataset.scope); }, ddSearch);
     if (bpBtn) bpBtn.addEventListener("click", function () { openPop(true); });
-    if (SCOPE_MODE === "first") { forced = true; paint(); openPop(true); }
+    /* BP 를 고르기 전에 ERP 주소로 들어온 플랫폼 사용자 — 강제 팝업 없이 안내한다. 실제 화면은 안내 뒤 플랫폼 홈으로 보낸다. */
+    if (SCOPE_MODE === "first") toast("웨일ERP 바로가기에서 BP 를 먼저 골라 주세요");
   }
 
   /* 화면 아래 잠깐 뜨는 알림 — 조회 범위를 적용했을 때 */
@@ -1184,6 +1167,7 @@
       shell.insertAdjacentHTML("afterbegin", topnavHTML(page) + sideHTML(page, document.body.dataset.sub));
     }
     hydrateIcons(document);
+    bpSwitch();
     wireScope();
     wireMe();
     wireBell();

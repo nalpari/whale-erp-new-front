@@ -537,7 +537,8 @@
     spickCount(box);
   });
 
-  // [적용] — 고른 BP·점포 범위를 세션에 남기고 웨일ERP 로 이동한다. 이동한 페이지는 initAppliedScope 가 이 값을 읽어 GNB 에 그린다.
+  // [이동] — 고른 BP 를 세션에 남기고 웨일ERP 를 새 탭으로 연다(새 탭은 이 세션값을 물려받는다). 이동한 페이지는 initAppliedScope 가 이 값을 읽어 GNB 에 그린다.
+  // 점포를 고르지 않는 확인창(BP 선택)은 data-scope-all 의 전체 범위로 연다.
   const SCOPE_KEY = "whale-applied-scope";
   document.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-scope-apply]");
@@ -550,7 +551,7 @@
     const checked = $$("[data-scope-pick]:checked", dlg);
     const all = $$("[data-scope-pick]", dlg).length;
     let value;
-    if (!checked.length) value = `전체 ${all}개점`;
+    if (!checked.length) value = dlg.dataset.scopeAll ?? `전체 ${all}개점`;
     else if (checked.length === 1) value = checked[0].dataset.scopeName;
     else {
       const byType = {};
@@ -561,7 +562,8 @@
     try {
       sessionStorage.setItem(SCOPE_KEY, JSON.stringify({ bp, value }));
     } catch (err) {}
-    location.href = btn.dataset.scopeApply;
+    window.open(btn.dataset.scopeApply, "_blank");
+    btn.closest("dialog")?.close();
   });
 
   // 위 세션값을 읽어 ERP 화면 GNB 의 점포 범위 드롭다운(scopeDropdown)에 그대로 반영한다.

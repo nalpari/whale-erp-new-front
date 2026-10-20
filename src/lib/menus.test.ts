@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { isAllowed, MENU_CODE, menuOfPath, menuPermissionOf, menusOf, serviceOfPath } from "./menus.ts";
+import { bpOfSwitchUrl, bpSwitchUrl, isAllowed, MENU_CODE, menuOfPath, menuPermissionOf, menusOf, serviceOfPath } from "./menus.ts";
 import type { AdminMenu } from "./session.ts";
 
 const menu = (url: string | null, read: boolean, children: AdminMenu[] = [], serviceCode = "WHALE_ERP"): AdminMenu => ({
@@ -132,4 +132,23 @@ test("menuOfPath: 조회 권한이 없는 하위 메뉴는 고르지 않고 상�
   const child = menu("/stores/contract-templates", false);
   const parent = { ...menu("/stores", true), children: [child] };
   assert.equal(menuOfPath([parent], "/stores/contract-templates", "WHALE_ERP")?.url, parent.url);
+});
+
+test("bpSwitchUrl · bpOfSwitchUrl: 만든 주소를 읽으면 같은 BP 다", () => {
+  const read = (href: string) => bpOfSwitchUrl(new URL(href, "http://x"));
+  assert.deepEqual(read(bpSwitchUrl(17, "BP000017")), { bpCodeId: 17, bpCode: "BP000017" });
+  // 검색어 없이 손으로 친 주소도 BP 는 읽는다(그 BP 를 찾을 수 없어 SessionGate 가 안내한다)
+  assert.deepEqual(read("/bp-switch?bp=1"), { bpCodeId: 1, bpCode: null });
+});
+
+test("bpOfSwitchUrl: ?bp= 는 BP 이동 화면의 것만, 숫자일 때만 받는다", () => {
+  const read = (href: string) => bpOfSwitchUrl(new URL(href, "http://x"));
+  assert.equal(read("/home?bp=17&bpCode=BP000017"), null);
+  assert.equal(read("/bp-switch"), null);
+  assert.equal(read("/bp-switch?bp=1x"), null);
+  assert.equal(read("/bp-switch?bp=12345678901"), null);
+  assert.deepEqual(read("/bp-switch?bp=17&bpCode="), { bpCodeId: 17, bpCode: null });
+  // BP 코드 형식이 아니면(잘렸거나 손으로 고친 값) 검색어로 쓰지 않는다
+  assert.deepEqual(read(`/bp-switch?bp=17&bpCode=${"X".repeat(60)}`), { bpCodeId: 17, bpCode: null });
+  assert.deepEqual(read("/bp-switch?bp=17&bpCode=BP00001"), { bpCodeId: 17, bpCode: null });
 });
