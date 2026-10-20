@@ -105,8 +105,8 @@ const MARK_MOTION =
   "pointer-events-none relative scale-75 opacity-0 transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] peer-checked:scale-100 peer-checked:opacity-100 motion-reduce:scale-100";
 export const checkbox = (A, label, checked = false, a = {}) =>
   `<label class="flex items-center gap-[8px] text-[14px] text-erp-ink"><span class="relative grid size-[20px] shrink-0 place-items-center"><input${attrs(a)} type="checkbox" class="peer absolute inset-0 appearance-none rounded-[2px] border border-erp-field-line bg-white transition-[background-color,border-color] duration-150 ease-out checked:border-erp-brand checked:bg-erp-brand"${checked ? " checked" : ""}>${img(A, "check.svg", 12, 9, MARK_MOTION)}</span>${label}</label>`;
-export const radio = (label, name, checked = false) =>
-  `<label class="flex items-center gap-[8px] text-[14px] text-erp-ink"><span class="relative grid size-[20px] shrink-0 place-items-center"><input type="radio" name="${name}" class="peer absolute inset-0 appearance-none rounded-full border border-erp-field-line bg-white transition-[border-color] duration-150 ease-out checked:border-erp-brand"${checked ? " checked" : ""}><span class="size-[8px] rounded-full bg-erp-brand ${MARK_MOTION}"></span></span>${label}</label>`;
+export const radio = (label, name, checked = false, a = {}) =>
+  `<label class="flex items-center gap-[8px] text-[14px] text-erp-ink"><span class="relative grid size-[20px] shrink-0 place-items-center"><input${attrs(a)} type="radio" name="${name}" class="peer absolute inset-0 appearance-none rounded-full border border-erp-field-line bg-white transition-[border-color] duration-150 ease-out checked:border-erp-brand"${checked ? " checked" : ""}><span class="size-[8px] rounded-full bg-erp-brand ${MARK_MOTION}"></span></span>${label}</label>`;
 export const field = (label, control, width) =>
   `<label class="flex flex-col justify-center gap-[8px] ${width ?? "min-w-px flex-1"}"><span class="truncate text-[14px] font-medium text-erp-label">${label}</span>${control}</label>`;
 export const formRow = (...children) => `<div class="flex w-full gap-[6px]">${children.join("")}</div>`;
@@ -212,7 +212,7 @@ const ICON_HOVER =
   "group relative grid h-[32px] place-items-center rounded-full [&>img]:transition-opacity [&>img]:duration-150 hover:[&>img]:opacity-70 [&>span:first-child]:transition-opacity hover:[&>span:first-child]:opacity-70";
 const tip = (label) =>
   `<span class="pointer-events-none absolute top-[calc(100%+10px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[100px] border border-[#ebebeb] bg-white px-[12px] py-[10px] text-[14px] leading-[2] whitespace-nowrap text-erp-brand opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">${TAIL}${label}</span>`;
-// scopeDialog 를 주면(플랫폼 콘솔) 웨일ERP 아이콘이 바로 이동하지 않고 그 id 의 BP·점포 선택 확인창을 먼저 연다(F-TLJOCK).
+// scopeDialog 를 주면(플랫폼 콘솔) 웨일ERP 아이콘이 바로 이동하지 않고 그 id 의 BP 선택 확인창을 먼저 연다(F-TLJOCK).
 export const serviceLinks = (A, hrefs = {}) => {
   const erpLink = hrefs.scopeDialog
     ? `<button type="button" aria-label="웨일ERP" data-dialog="${hrefs.scopeDialog}" class="${ICON_HOVER} w-[32px]">${img(A, "service-erp.svg", 32, 32)}${tip("웨일ERP")}</button>`

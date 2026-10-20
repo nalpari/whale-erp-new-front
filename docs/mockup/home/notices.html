@@ -23,12 +23,12 @@
         <a href="index.html#ops">매장운영</a>
         <a href="index.html#finance">재무관리</a>
         <a href="index.html#franchise">프랜차이즈</a>
-        <a href="index.html#addons">부가서비스</a>
+        <a href="index.html#addons">부가 서비스</a>
       </nav>
       <div class="topnav__end">
-        <a class="tlink" href="notices.html" aria-current="true">공지사항</a>
-        <a class="btn btn--secondary btn--sm" href="inquiry.html">도입문의</a>
         <a class="btn btn--primary btn--sm" href="login.html">로그인</a>
+        <a class="btn btn--secondary btn--sm" href="inquiry.html">도입문의</a>
+        <a class="tlink" href="notices.html" aria-current="true">공지사항</a>
       </div>
     </header>
 
@@ -98,8 +98,9 @@
                   </table>
                 </div>
                 <div class="panel__note">
-                  노출 대상에 <b>비회원</b>이 포함되었거나 전체로 게시된 글만 보인다. 상단 고정 공지가 먼저, 나머지는 게시일 내림차순이다.
-                  로그인 사용자 전용으로 지정된 글은 목록에도 나오지 않는다.
+                  노출 대상에 <b>비회원</b>이 든 글만 보인다(넷을 모두 고른 전체 글도 여기 든다). 상단 고정 공지가 먼저, 나머지는 게시일 내림차순이다.
+                  로그인 사용자 전용으로 지정된 글은 목록에도 나오지 않는다. 목록은 <b>페이지 번호</b>로 나눈다.
+                  제목을 누르면 공지 상세로 간다 — 구분 · 제목 · 게시일 · 본문 아래 첨부를 내려받는다. 이전 · 다음 글은 없고 [목록]으로 돌아온다(WHALEERP-293).
                 </div>
               </div>
             </div>
@@ -108,35 +109,35 @@
               <div class="panel">
                 <div class="acclist" data-pager="5">
                 <details class="acc">
-                  <summary>가입은 누가 할 수 있나요?</summary>
+                  <summary><span class="badge badge--quiet">가입·계정</span> 가입은 누가 할 수 있나요?</summary>
                   <div class="acc__body">
                     식당·카페를 직접 운영하는 <b>일반 BP</b>와 가맹점을 두는 <b>본사 BP</b>가 직접 가입합니다.
                     가맹점은 가입하지 않고, 본사가 만들어 준 관리자 계정으로 로그인합니다.
                   </div>
                 </details>
                 <details class="acc">
-                  <summary>직원도 이 사이트로 로그인하나요?</summary>
+                  <summary><span class="badge badge--quiet">가입·계정</span> 직원도 이 사이트로 로그인하나요?</summary>
                   <div class="acc__body">
                     아닙니다. 직원은 <b>직원 전용 앱</b>으로 들어갑니다. 관리자가 근로계약서 초안을 저장하면
                     초대가 문자로 나가고, 직원은 앱에서 가입과 계약서 날인을 합니다.
                   </div>
                 </details>
                 <details class="acc">
-                  <summary>점포가 여러 개면 어떻게 보나요?</summary>
+                  <summary><span class="badge badge--quiet">점포·설비</span> 점포가 여러 개면 어떻게 보나요?</summary>
                   <div class="acc__body">
                     화면 위쪽에서 조회 범위를 고릅니다. 전체·직영·가맹 또는 점포 하나를 고르면
                     그 뒤의 모든 조회가 그 범위로 맞춰집니다.
                   </div>
                 </details>
                 <details class="acc">
-                  <summary>급여를 계산해 주나요?</summary>
+                  <summary><span class="badge badge--quiet">직원·근로</span> 급여를 계산해 주나요?</summary>
                   <div class="acc__body">
                     근로계약과 출퇴근 기록을 참조해 <b>초안</b>을 만들어 드립니다. 4대보험 같은 공제는
                     관리자가 직접 넣고, 급여 지급 자체는 제공하지 않습니다.
                   </div>
                 </details>
                 <details class="acc">
-                  <summary>요금은 어떻게 되나요?</summary>
+                  <summary><span class="badge badge--quiet">요금·구독</span> 요금은 어떻게 되나요?</summary>
                   <div class="acc__body">
                     점포 수와 직원 수에 따른 요금 PLAN이 있고, POS·KIOSK 같은 부가서비스는 따로 구독합니다.
                     자세한 내용은 <a class="tlink" href="inquiry.html">도입문의</a>로 물어보실 수 있습니다.
@@ -145,7 +146,7 @@
                 </div>
                 <div class="panel__note">
                   답변은 목록에서 펼치는 <b>아코디언</b>이다 — 문서의 정책 표가 정한 방식이다.
-                  별도 상세 페이지로 넘어가지 않는다.
+                  별도 상세 페이지로 넘어가지 않는다. 질문 앞에 카테고리(공통코드 FAQ_CATEGORY)를 보인다(WHALEERP-294).
                 </div>
               </div>
             </div>

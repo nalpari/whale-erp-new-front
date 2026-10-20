@@ -9,7 +9,7 @@ import { updateWorker } from "../actions";
 import { callSave, SAVE_CALL_LOST } from "../send-model";
 import { workerBody, workerProblems, workerSaveNote, type WorkerForm as Form } from "./worker-model";
 
-// 날인 전 근로자 정보 수정(WHALEERP-125 「본인 대조」 · 126). 링크를 못 받았다는 직원과 유선으로 번호를 확인했거나,
+// 날인 전 근로자 정보 수정(WHALEERP-125 「본인 대조」 · 126). 초대 코드를 못 받았다는 직원과 유선으로 번호를 확인했거나,
 // 직원이 가입 값과 달라 수정을 요청했을 때 쓴다. 다섯 칸은 직원이 가입하며 넣는 값과 대조된다.
 export function WorkerForm({
   contractId,

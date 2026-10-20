@@ -64,7 +64,7 @@ const KEPT = "입력한 값은 그대로 두었습니다.";
 
 // api 가 결과 코드(result)만 주고 문구는 안 준다(StoreBusinessVerificationResponseDto — 국세청이 준 말 자체가
 // 아니라 화면이 짓는 문구다). 회원가입 쪽은 같은 결과를 api 문구로 받으므로, 그 문구와 글자까지 맞춘다
-// (signup/_components/biz-verification.ts 의 MISMATCH · DUPLICATE_BIZ_REGISTRATION_NUMBER, 2026-10-16 점검).
+// (signup/biz-verification.ts 의 MISMATCH · DUPLICATE_BIZ_REGISTRATION_NUMBER, 2026-10-16 점검).
 const VERIFY_MESSAGE = {
   UNVERIFIABLE: "입력한 사업자정보가 국세청 정보와 일치하지 않습니다.",
   DUPLICATE: "이미 등록된 사업자등록번호입니다.",

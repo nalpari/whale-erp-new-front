@@ -36,7 +36,11 @@ test("본문 — 이름은 앞뒤 공백을 지우고 번호는 숫자만, 대�
 });
 
 test("저장 뒤 상태 안내 — 서명 대기 · 수정 요청은 발송 대기로 돌아간다", () => {
-  assert.match(workerSaveNote("PENDING_SIGNATURE"), /곧바로 다시 보낸다/);
+  // 가입 초대 대상일 때만 보낸다 — 가입했거나 계정이 있으면 앱 알림이 생길 때까지 보내지 않는다(front #58 리뷰)
+  for (const s of ["PENDING_SEND", "PENDING_SIGNATURE", "CORRECTION_REQUESTED"]) {
+    assert.match(workerSaveNote(s), /서명 기한은 새로 30일/, s);
+    assert.match(workerSaveNote(s), /가입 초대 대상이면 곧바로 다시 보내고/, s);
+  }
   assert.match(workerSaveNote("CORRECTION_REQUESTED"), /서명 대기로/);
-  assert.match(workerSaveNote("PENDING_SEND"), /가입 초대를 곧바로 다시 보낸다/);
+  assert.match(workerSaveNote("PENDING_SEND"), /계정이 있는 번호로 고치면 보내지 않고/);
 });

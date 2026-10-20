@@ -85,6 +85,17 @@ export interface AdminMenu {
   children: AdminMenu[];
 }
 
+/**
+ * GET /bp-codes 의 items — 플랫폼 계정이 고를 고객 BP(사용 · 미사용 · 탈퇴, 삭제 · 플랫폼 BP 제외).
+ * shortcut: api #72 가 openapi.json 에 싣기 전이라 손으로 적었다. 실린 뒤에는 api-types.generated.ts 의 타입으로 바꾼다.
+ */
+export interface BpOption {
+  bpCodeId: number;
+  bpCode: string;
+  tradeName: string;
+  accountStatusCode: string;
+}
+
 /** login-info 의 stores · GET /bp-codes/{bpCodeId}/stores 의 items */
 export interface AdminStore {
   storeId: number;

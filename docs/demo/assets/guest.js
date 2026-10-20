@@ -85,6 +85,8 @@
         el.querySelector("input").disabled = el.hidden;
       }
       submit.textContent = key === "id" ? "아이디 확인" : "임시 비밀번호 받기";
+      document.querySelector("[data-find-lead]").textContent =
+        key === "id" ? "회원가입 시 등록한 이름, 이메일 주소를 입력해 주세요." : "회원가입 시 등록한 이름, 아이디, 이메일 주소를 입력해 주세요.";
       showResult(null);
     };
     for (const t of tabs) t.addEventListener("click", () => select(t.dataset.findTab));
@@ -97,12 +99,60 @@
     select(location.hash === "#pw" ? "password" : "id");
   }
 
-  // 고르는 칸에서 「직접입력」을 고르면 같은 폼의 직접 입력칸 잠금을 푼다(도입문의 업종).
+  // 입력 검사: 브라우저 말풍선 대신 칸 아래 붉은 글씨로 알린다. 제출을 막는 것은 브라우저 검사가 그대로 맡는다.
+  // data-guest-validate 를 단 폼(3팀 도입문의)에만 건다. 1팀 회원가입 · 찾기 · 로그인은 자기 안내 문구가 따로 있다.
+  const guestForm = (el) => el.closest?.("form[data-guest-validate]");
+  // 글씨는 칸을 감싼 묶음(관심 서비스 fieldset · 연락처 group · 세로 label) 맨 아래에 둔다.
+  // 체크 상자 한 줄(개인정보 동의)은 가로 label 이라 문구 오른쪽에 붙는다.
+  const errorOf = (el) => {
+    const host = el.closest("fieldset") ?? el.closest("[role=group]")?.parentElement ?? el.closest("label") ?? el.parentElement;
+    let p = host.querySelector(":scope > [data-field-error]");
+    if (!p) {
+      p = document.createElement("span");
+      p.dataset.fieldError = "";
+      p.className = `${el.type === "checkbox" && host.tagName === "LABEL" ? "ml-[4px]" : "-mt-[2px]"} text-[14px] leading-[1.5] text-[#e93737]`;
+      host.append(p);
+    }
+    return p;
+  };
+  // 안내가 한 번 뜬 칸(aria-invalid 가 붙은 칸)만 다시 본다. 묶음은 아직 틀린 칸 하나의 안내를 보인다.
+  const syncError = (el, failed = false) => {
+    const scope = el.closest("fieldset, [role=group]");
+    if (failed) el.setAttribute("aria-invalid", "true");
+    const marked = (scope ? $$("input, select, textarea", scope) : [el]).filter((x) => x.hasAttribute("aria-invalid"));
+    if (!marked.length) return;
+    for (const x of marked) x.setAttribute("aria-invalid", String(!x.validity.valid));
+    const bad = marked.find((x) => !x.validity.valid);
+    const p = errorOf(el);
+    p.textContent = bad?.validationMessage ?? "";
+    p.hidden = !bad;
+  };
+  document.addEventListener(
+    "invalid",
+    (e) => {
+      if (!guestForm(e.target)) return;
+      e.preventDefault();
+      // 말풍선을 끄면 브라우저가 첫 틀린 칸으로 옮겨 주지 않는다. 처음 걸린 칸으로 옮긴다.
+      if (!document.activeElement?.matches(":invalid")) e.target.focus();
+      syncError(e.target, true);
+    },
+    true,
+  );
+  // 고치면 바로 지운다.
+  for (const type of ["input", "change"]) document.addEventListener(type, (e) => guestForm(e.target) && syncError(e.target));
+  document.addEventListener("reset", (e) => {
+    if (!e.target.matches("form[data-guest-validate]")) return;
+    for (const p of $$("[data-field-error]", e.target)) p.hidden = true;
+    for (const el of $$("[aria-invalid]", e.target)) el.removeAttribute("aria-invalid");
+  });
+
+  // 고르는 칸에서 「기타」를 고르면 같은 폼의 직접 입력칸을 아래에 연다(도입문의 업종).
   for (const sel of $$("[data-other-select]")) {
     const input = sel.form.querySelector("[data-other-input]");
     sel.addEventListener("change", () => {
-      const other = sel.value === "직접입력";
+      const other = sel.value === "기타";
       input.disabled = !other;
+      input.closest("[data-other-wrap]").hidden = !other;
       if (other) input.focus();
       else input.value = "";
     });
@@ -113,16 +163,25 @@
     const boxes = $$('input[type="checkbox"]', group);
     const sync = () => boxes[0].setCustomValidity(boxes.some((b) => b.checked) ? "" : group.dataset.checkGroup);
     for (const b of boxes) b.addEventListener("change", sync);
+    // 폼을 비우면(reset) 체크가 풀린 뒤에 다시 건다. reset 이벤트는 값을 되돌리기 전에 오므로 한 틱 미룬다.
+    group.form?.addEventListener("reset", () => setTimeout(sync));
     sync();
   }
 
-  // 데모 접수(도입문의): 브라우저 검사를 통과하면 보내지 않고 접수 안내만 보인다.
+  // 데모 접수(도입문의): 브라우저 검사를 통과하면 보내지 않고 완료 팝업만 띄운다. [확인]은 팝업을 닫고 폼을 비운다.
   for (const form of $$("[data-demo-submit]")) {
+    const done = form.querySelector("[data-demo-done]");
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      const done = form.querySelector("[data-demo-done]");
-      done.hidden = false;
-      done.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      done.showModal();
+    });
+    done.querySelector("[data-dialog-close]").addEventListener("click", () => {
+      done.close();
+      form.reset();
+      for (const input of $$("[data-other-input]", form)) {
+        input.disabled = true;
+        input.closest("[data-other-wrap]").hidden = true;
+      }
     });
   }
 

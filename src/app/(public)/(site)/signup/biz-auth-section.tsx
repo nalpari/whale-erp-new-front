@@ -2,8 +2,8 @@
 
 import { useId, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import { FIELD_BUTTON, INPUT, INPUT_BOX, LABEL } from "@/app/design/guest/guest-form";
-import { BIZ_VERIFY_FAILED_MESSAGE } from "./_components/biz-verification";
-import { validateBizRegistrationNumber } from "./_components/validators";
+import { BIZ_VERIFY_FAILED_MESSAGE } from "./biz-verification";
+import { validateBizRegistrationNumber } from "./validators";
 import { verifyBusiness } from "./actions";
 
 // 필드 이름은 naming.md(BP · 점포)의 사업자정보 표기(biz_registration_number · biz_ceo_name · biz_open_date)를 그대로 따른다.
