@@ -146,20 +146,34 @@
     var f = inp.closest(".field");
     inp.dataset.dupState = st;
     f.querySelectorAll("[data-dup]").forEach(function (el) { el.hidden = el.dataset.dup !== st; });
-    var help = f.querySelector(".help");
+    var help = f.querySelector(".help:not([data-dup])");
     if (help) help.hidden = !!st && st !== "keep";
     if (st === "bad" || st === "fmt") inp.setAttribute("aria-invalid", "true");
     else inp.removeAttribute("aria-invalid");
+    if (st === "checking") inp.setAttribute("aria-busy", "true");
+    else inp.removeAttribute("aria-busy");
     gate();
   }
+  /* 확인 중 상태는 [data-dup="checking"] 칸을 둔 화면에서만 보인다(플랫폼 관리자 등록, 코드 리뷰 반영 2026-10-20).
+     두지 않은 기존 화면(회원가입 · 내 정보)은 그대로 즉시 결과를 보인다 — 공유 로직이라 범위를 벗어난 화면은 건드리지 않는다. */
   function checkDup(inp) {
+    clearTimeout(inp._dupTimer);
     var v = inp.value.trim();
     /* data-dup-keep — 수정 화면에서 원래 값을 그대로 두면 확인 대상이 아니다(내 이메일). 결과를 띄우지 않고 통과로 본다. */
     if (inp.hasAttribute("data-dup-keep") && v === inp.defaultValue) return showDup(inp, "keep");
     if (!v) return showDup(inp, "");
     if (!FORMAT[inp.dataset.dupcheck].test(v)) return showDup(inp, "fmt");
-    var taken = (inp.dataset.taken || "").toLowerCase().split(",");
-    showDup(inp, taken.indexOf(v.toLowerCase()) > -1 ? "bad" : "ok");
+    var resolve = function () {
+      var taken = (inp.dataset.taken || "").toLowerCase().split(",");
+      showDup(inp, taken.indexOf(v.toLowerCase()) > -1 ? "bad" : "ok");
+    };
+    var f = inp.closest(".field");
+    if (f.querySelector('[data-dup="checking"]')) {
+      showDup(inp, "checking");
+      inp._dupTimer = setTimeout(resolve, 400);
+    } else {
+      resolve();
+    }
   }
   function gate() {
     var all = [].slice.call(document.querySelectorAll("[data-dupcheck]"));
@@ -186,7 +200,10 @@
   });
   document.addEventListener("input", function (e) {
     var inp = e.target.closest && e.target.closest("[data-dupcheck]");
-    if (inp && inp.dataset.dupState) showDup(inp, "");
+    if (inp && inp.dataset.dupState) {
+      clearTimeout(inp._dupTimer);
+      showDup(inp, "");
+    }
   });
   /* 목업은 값이 채워진 채 열리므로 이미 한 번 확인한 상태로 보인다. */
   document.querySelectorAll("[data-dupcheck]").forEach(checkDup);

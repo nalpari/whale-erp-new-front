@@ -856,7 +856,9 @@
   }
 
   // ── 아이디 · 이메일 중복 확인(data-dupcheck) — 칸을 벗어나거나 Enter 를 치면 형식과 중복을 보고 칸 아래 문구로 알린다 ──
-  // 앱 admin-form-panel.tsx 와 같다. 쓸 수 있으면 아무것도 띄우지 않는다. 데모의 ‘이미 있는 값’은 data-taken 이다.
+  // 앱 admin-form-panel.tsx 와 같다. 확인 중 · 사용 가능 · 중복 세 상태를 보인다(코드 리뷰 반영, 2026-10-20 —
+  // 대기·성공 신호가 없어 "확인했는지조차 알 수 없는" 문제였다). 데모엔 실제 api 가 없어 짧은 지연으로 비동기
+  // 확인을 흉내 낸다. 데모의 ‘이미 있는 값’은 data-taken 이다.
   const DUP = {
     id: {
       pattern: /^(?=.*[A-Za-z])[A-Za-z0-9]{4,20}$/,
@@ -864,22 +866,52 @@
       taken: "이미 사용 중인 아이디입니다. 삭제된 계정의 아이디도 다시 쓸 수 없습니다",
     },
   };
+  // DESIGN.md 토큰 erp-on(#5e8ce9)과 같은 체크 표시 — 앱 admin-parts.tsx 의 LoginIdAvailability 와 같은 svg.
+  const DUP_CHECK_SVG =
+    '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M6 10.5L8.5 13L14 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   function initDupCheck(input) {
     const rule = DUP[input.dataset.dupcheck];
     const message = input.parentElement.querySelector("[data-dup-message]");
     if (!rule || !message) return;
-    const say = (text) => {
-      message.textContent = text || "";
-      message.hidden = !text;
-      if (text) input.setAttribute("aria-invalid", "true");
-      else input.removeAttribute("aria-invalid");
+    let timer = null;
+    // kind: "" (지움) · "checking"(회색, 대기) · "ok"(파랑 erp-on, 체크) · "error"(빨강 erp-off, role=alert)
+    const render = (kind, text) => {
+      message.hidden = !kind;
+      message.removeAttribute("role");
+      message.removeAttribute("aria-live");
+      if (kind === "checking") {
+        message.className = "text-[13px] leading-[1.5] text-erp-label";
+        message.setAttribute("aria-live", "polite");
+        message.textContent = "확인 중입니다.";
+        input.removeAttribute("aria-invalid");
+        input.setAttribute("aria-busy", "true");
+      } else if (kind === "ok") {
+        message.className = "flex items-center gap-[4px] text-[13px] leading-[1.5] text-erp-on";
+        message.setAttribute("aria-live", "polite");
+        message.innerHTML = `${DUP_CHECK_SVG} 사용 가능한 아이디입니다.`;
+        input.removeAttribute("aria-invalid");
+        input.removeAttribute("aria-busy");
+      } else if (kind === "error") {
+        message.className = "text-[13px] leading-[1.5] text-erp-off";
+        message.setAttribute("role", "alert");
+        message.textContent = text;
+        input.setAttribute("aria-invalid", "true");
+        input.removeAttribute("aria-busy");
+      } else {
+        input.removeAttribute("aria-invalid");
+        input.removeAttribute("aria-busy");
+      }
     };
     const check = () => {
+      clearTimeout(timer);
       const v = input.value.trim();
-      if (!v) return say("");
-      if (!rule.pattern.test(v)) return say(rule.format);
-      const taken = (input.dataset.taken || "").toLowerCase().split(",");
-      say(taken.includes(v.toLowerCase()) ? rule.taken : "");
+      if (!v) return render("");
+      if (!rule.pattern.test(v)) return render("error", rule.format);
+      render("checking");
+      timer = setTimeout(() => {
+        const taken = (input.dataset.taken || "").toLowerCase().split(",");
+        render(taken.includes(v.toLowerCase()) ? "error" : "ok", rule.taken);
+      }, 400);
     };
     input.addEventListener("blur", check);
     input.addEventListener("keydown", (e) => {
@@ -887,8 +919,11 @@
       e.preventDefault();
       check();
     });
-    // 고치면 그 칸의 오류는 바로 지운다
-    input.addEventListener("input", () => say(""));
+    // 고치면 대기 중이던 확인은 버리고 그 칸의 상태도 바로 지운다
+    input.addEventListener("input", () => {
+      clearTimeout(timer);
+      render("");
+    });
   }
 
   // ── 필터의 점포 칸(data-scope-store). 헤더 점포 선택이 점포 1개면 그 점포로 고정하고,

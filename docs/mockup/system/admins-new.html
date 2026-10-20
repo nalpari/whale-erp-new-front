@@ -110,8 +110,10 @@
                   <div class="field">
                     <label for="nid">아이디 <span class="req">*</span></label>
                     <!-- 칸을 벗어나거나 Enter 를 치면 형식과 중복을 바로 확인해 칸 아래에 알린다(2026-10-13, 앱과 같다).
-                         목업의 ‘이미 있는 아이디’는 data-taken 값이다. 쓸 수 있으면 아무것도 띄우지 않는다. -->
+                         목업의 ‘이미 있는 아이디’는 data-taken 값이다. 확인 중 · 사용 가능 상태도 띄운다(코드 리뷰 반영, 2026-10-20). -->
                     <input class="input mono" id="nid" value="platyoon" maxlength="20" data-show="in dupmail miss denied fail" data-dupcheck="id" data-dup-enter data-taken="plathan,whaleadmin" />
+                    <span class="help" data-dup="checking" hidden>확인 중입니다.</span>
+                    <span class="pass" data-dup="ok" hidden><span data-icon="check" data-icon-size="13"></span>사용할 수 있는 아이디입니다.</span>
                     <span class="err" data-dup="bad" hidden><span data-icon="alert" data-icon-size="13"></span>이미 사용 중인 아이디입니다. 삭제된 계정의 아이디도 다시 쓸 수 없습니다.</span>
                     <span class="err" data-dup="fmt" hidden><span data-icon="alert" data-icon-size="13"></span>아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다.</span>
                     <input class="input mono" value="plathan" maxlength="20" aria-invalid="true" aria-label="아이디" data-show="dupid" hidden />

@@ -38,6 +38,31 @@ export function FieldMessage({ id, message }: { id: string; message?: string }) 
   );
 }
 
+/**
+ * 아이디 중복확인 세 상태 — 확인 중(address-field.tsx의 "찾는 중입니다." 와 같은 회색 대기 문구) · 사용 가능
+ * (signup-form.tsx 의 체크 표시 + 파란 문구와 같은 모양, ERP 토큰 erp-on 으로 맞춘다) · 오류(FieldMessage 그대로).
+ * 대기·성공은 조용히 사라지는 정보라 aria-live="polite" 로만 알리고(막는 오류가 아니므로 role=alert 는 쓰지 않는다).
+ */
+export function LoginIdAvailability({ id, checking, available, message }: { id: string; checking: boolean; available: boolean; message?: string }) {
+  if (message) return <FieldMessage id={id} message={message} />;
+  if (!checking && !available) return null;
+  return (
+    <p id={id} aria-live="polite" className="flex items-center gap-[4px] text-[13px] leading-[1.5]">
+      {checking ? (
+        <span className="text-erp-label">확인 중입니다.</span>
+      ) : (
+        <span className="flex items-center gap-[4px] text-erp-on">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M6 10.5L8.5 13L14 7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          사용 가능한 아이디입니다.
+        </span>
+      )}
+    </p>
+  );
+}
+
 /** 확인창 안에서 누구를 대상으로 하는지 — 짧은 항목 · 값 두 칸. */
 export function WhoList({ rows }: { rows: [string, ReactNode][] }) {
   return (

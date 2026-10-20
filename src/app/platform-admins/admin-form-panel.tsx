@@ -19,7 +19,7 @@ import {
 import type { PlatformAdminDetail, PlatformRoleGroup } from "@/lib/platform-admins";
 import { checkLoginIdAvailableAction, createPlatformAdminAction, updatePlatformAdminAction } from "./actions";
 import { AddressField } from "@/components/address-field";
-import { FailedBand, FieldMessage, unknownResult } from "./admin-parts";
+import { FailedBand, FieldMessage, LoginIdAvailability, unknownResult } from "./admin-parts";
 
 // 플랫폼 관리자 등록(S-FOJJKB) · 수정(S-CZGHBS) 슬라이드 패널. 패널 폭(464)이라 칸을 한 줄에 하나씩 쌓는다(데모와 같다).
 // 등록에는 상태 · 비밀번호 칸이 없다 — 사용으로 생기고 초기 비밀번호가 등록 이메일로 간다.
@@ -73,6 +73,9 @@ export function AdminFormPanel(props: Props) {
   const router = useRouter();
   /** 아이디 중복 확인 차례 — 고치거나 다시 물으면 올라가, 앞선 답을 버린다 */
   const checkNumber = useRef(0);
+  /** 중복확인 대기·성공 상태(코드 리뷰 반영) — 오류는 기존대로 errors.loginId 에 둔다 */
+  const [checkingLoginId, setCheckingLoginId] = useState(false);
+  const [loginIdAvailable, setLoginIdAvailable] = useState(false);
 
   const ids = useId();
   // 칸을 고치면 그 칸의 오류는 바로 지운다
@@ -113,16 +116,24 @@ export function AdminFormPanel(props: Props) {
       return;
     }
     const mine = ++checkNumber.current;
+    setLoginIdAvailable(false);
+    setCheckingLoginId(true);
     checkLoginIdAvailableAction(value.trim())
       .then((result) => {
         if (mine !== checkNumber.current) return;
+        setCheckingLoginId(false);
         if (result.ok) {
-          if (!result.available) setErrors((e) => ({ ...e, loginId: LOGIN_ID_TAKEN }));
+          if (result.available) setLoginIdAvailable(true);
+          else setErrors((e) => ({ ...e, loginId: LOGIN_ID_TAKEN }));
         } else if (result.status === 400) setErrors((e) => ({ ...e, loginId: result.message }));
         else if (result.status === 401) setFailure(result.message);
         else console.warn("아이디 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다", result.status, result.message);
       })
-      .catch((error: unknown) => console.warn("아이디 중복 확인 호출 실패 — 저장할 때 api 가 다시 본다", error));
+      .catch((error: unknown) => {
+        if (mine !== checkNumber.current) return;
+        setCheckingLoginId(false);
+        console.warn("아이디 중복 확인 호출 실패 — 저장할 때 api 가 다시 본다", error);
+      });
   };
 
   // 수정할 계정이 지금 권한 목록에 없으면(플랫폼 관리자가 보는 마스터 등) 그 권한도 선택지에 남겨 값이 비지 않게 한다
@@ -177,6 +188,8 @@ export function AdminFormPanel(props: Props) {
                 value={form.loginId}
                 onChange={(e) => {
                   checkNumber.current++;
+                  setCheckingLoginId(false);
+                  setLoginIdAvailable(false);
                   set("loginId", e.target.value);
                 }}
                 onBlur={(e) => checkLoginId(e.currentTarget.value)}
@@ -189,7 +202,8 @@ export function AdminFormPanel(props: Props) {
                 maxLength={20}
                 placeholder="영문 또는 영문·숫자 조합 4~20자"
                 aria-invalid={invalid("loginId")}
-                aria-describedby={describe("loginId")}
+                aria-describedby={describe("loginId") ?? (checkingLoginId || loginIdAvailable ? messageId("loginId") : undefined)}
+                aria-busy={checkingLoginId || undefined}
                 aria-required
                 autoComplete="off"
               />
@@ -197,7 +211,11 @@ export function AdminFormPanel(props: Props) {
               <TextField value={form.loginId} readOnly />
             )}
           </Field>
-          {message("loginId")}
+          {mode === "create" ? (
+            <LoginIdAvailability id={messageId("loginId")} checking={checkingLoginId} available={loginIdAvailable} message={errors.loginId} />
+          ) : (
+            message("loginId")
+          )}
         </div>
         <div className="flex flex-col gap-[8px]">
           <Field label="이름" required>
