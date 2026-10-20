@@ -13,6 +13,27 @@ export type MenuAction = keyof AdminMenu["permission"];
 
 /** 서비스마다의 홈. 메뉴에 없어도 늘 열린다. */
 export const HOME: Record<ServiceCode, string> = { WHALE_ERP: "/home", PLATFORM: "/platform" };
+/** BP 이동 화면 — ?bp= 의 BP 로 이 탭을 준비하고 그 서비스의 홈으로 간다(SessionGate). 주소 자체로 이동해야(전체 로드) 준비가 돈다. */
+export const BP_SWITCH_PATH = "/bp-switch";
+
+/**
+ * BP 이동 화면 주소. BP 선택 팝업은 이것으로만 만든다(읽는 쪽은 bpOfSwitchUrl).
+ * bpCode 는 그 BP 를 서버에서 찾을 때의 검색어다 — 상호 · 코드는 주소를 믿지 않고 서버에서 받는다.
+ */
+export function bpSwitchUrl(bpCodeId: number, bpCode: string): string {
+  return `${BP_SWITCH_PATH}?${new URLSearchParams({ bp: String(bpCodeId), bpCode })}`;
+}
+
+/**
+ * BP 이동 화면 주소의 BP. ?bp= 는 이 화면의 것만 받는다 — 다른 주소이거나 bp 가 숫자가 아니면 null.
+ * bpCode 는 형식(BP+6자리)이 맞을 때만 둔다. 틀린 값으로 찾으면 api 가 400 으로 막아, 안내 대신 다시 시도만 되풀이하게 된다.
+ */
+export function bpOfSwitchUrl(url: URL): { bpCodeId: number; bpCode: string | null } | null {
+  if (url.pathname !== BP_SWITCH_PATH) return null;
+  const id = url.searchParams.get("bp");
+  const code = url.searchParams.get("bpCode");
+  return id && /^\d{1,10}$/.test(id) ? { bpCodeId: Number(id), bpCode: code && /^BP\d{6}$/.test(code) ? code : null } : null;
+}
 
 export function findMenu(menus: AdminMenu[], match: (m: AdminMenu) => boolean): AdminMenu | undefined {
   for (const m of menus) {

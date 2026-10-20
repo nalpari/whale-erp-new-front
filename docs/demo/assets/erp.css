@@ -968,9 +968,6 @@
   .max-h-\[273px\] {
     max-height: 273px;
   }
-  .max-h-\[280px\] {
-    max-height: 280px;
-  }
   .max-h-\[288px\] {
     max-height: 288px;
   }
@@ -982,6 +979,9 @@
   }
   .max-h-\[440px\] {
     max-height: 440px;
+  }
+  .max-h-\[506px\] {
+    max-height: 506px;
   }
   .max-h-\[calc\(100dvh-48px\)\] {
     max-height: calc(100dvh - 48px);
@@ -3530,6 +3530,12 @@
   }
   .\[\&_h3\]\:text-guest-ink h3 {
     color: var(--color-guest-ink);
+  }
+  .\[\&_tbody_tr\]\:cursor-pointer tbody tr {
+    cursor: pointer;
+  }
+  .\[\&_tbody_tr\:has\(\:checked\)\]\:bg-erp-thead-bg tbody tr:has(:checked) {
+    background-color: var(--color-erp-thead-bg);
   }
   .\[\&_tbody_tr\:last-child\]\:border-b-0 tbody tr:last-child {
     border-bottom-style: var(--tw-border-style);

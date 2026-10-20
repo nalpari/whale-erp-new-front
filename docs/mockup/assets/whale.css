@@ -4890,108 +4890,24 @@ a.tile:hover {
 .scopepop__box {
   max-width: 560px;
 }
-.scopepop__list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-3);
-  max-height: min(34vh, 272px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding-right: 4px;
-  border-top: 1px solid var(--hairline);
-  border-bottom: 1px solid var(--hairline);
-  padding-top: var(--s-3);
-  padding-bottom: var(--s-3);
+/* BP 선택 팝업의 BP 표 — 줄을 눌러도 고르고, 고른 줄은 바탕으로 드러난다 */
+.scopepop__box .tbl {
+  min-width: 0;
 }
-/* 점포 목록을 내려도 유형 머리가 위에 붙어 있다 */
-.scopepop__ghead {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-}
-.scopepop__grp {
-  border: 1px solid var(--hairline);
-  border-radius: var(--r-md);
-  overflow: hidden;
-}
-.scopepop__ghead {
-  display: flex;
-  align-items: center;
-  gap: var(--s-2);
-  padding: 10px 12px;
-  background: var(--canvas-soft);
-  border-bottom: 1px solid var(--hairline);
-  font-size: 13px;
+.scopepop__row {
   cursor: pointer;
 }
-.scopepop__ghead b {
-  color: var(--ink);
-  font-weight: 600;
-}
-.scopepop__gsel {
-  margin-left: auto;
-  font-size: 12px;
-  color: var(--link);
-}
-.scopepop__stores {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-@media (max-width: 560px) {
-  .scopepop__stores { grid-template-columns: minmax(0, 1fr); }
-}
-.scopepop__store {
-  display: flex;
-  align-items: center;
-  gap: var(--s-2);
-  min-width: 0;
-  padding: 9px 12px;
-  font-size: 13px;
-  color: var(--ink);
-  cursor: pointer;
-}
-.scopepop__store:hover {
-  background: var(--surface-hover);
-}
-.scopepop__store .mono {
-  font-size: 11px;
-}
-.scopepop__name {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.scopepop__store.is-closed {
-  color: var(--muted);
-  cursor: not-allowed;
-}
-.scopepop__store.is-closed:hover {
-  background: none;
-}
-.scopepop__result {
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-  padding: 10px 12px;
-  border-radius: var(--r-md);
+.scopepop__row.is-on td {
   background: var(--surface-strong);
-  font-size: 13px;
-  color: var(--body);
 }
-.scopepop__result b {
+.scopepop__pick {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
   color: var(--ink);
-}
-.scopepop__result .tlink {
-  margin-left: auto;
-  font-size: 12px;
-  background: none;
-  border: 0;
-  padding: 0;
   cursor: pointer;
 }
-.scopepop__none,
-.scopepop__wait {
+.scopepop__none {
   margin: 0;
   padding: 24px 8px;
   text-align: center;
@@ -5094,9 +5010,6 @@ a.tile:hover {
 }
 .scopepop__only {
   color: var(--body);
-}
-.scopepop__bpq {
-  width: 100%;
 }
 
 /* 연락처 칸 — 전화·메일 두 줄을 촘촘히 붙이고 아이콘과 값 사이만 띄운다 */

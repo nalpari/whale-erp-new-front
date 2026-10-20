@@ -85,10 +85,8 @@
                       <td class="k">GNB 점포 전환: 선택 방식</td>
                       <td>
                         <ul style="margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 6px">
-                          <li>GNB 점포 선택 드롭다운과 <span class="mono">BP 변경</span> 팝업(플랫폼 마스터·관리자 전용)은 점포를 고르는 방식이 같다.</li>
-                          <li>점포명 검색, 직영점포·가맹점포 그룹 전체 선택, 개별 점포 단일·복수 선택, 그룹+개별 조합까지 된다.</li>
-                          <li>둘의 차이는 <b>폐점(미운영) 점포 표시 여부</b>뿐이다.</li>
-                          <li>BP 변경 팝업에는 폐점 점포도 보이지만 고를 수 없고, GNB 드롭다운에는 아예 나타나지 않는다.</li>
+                          <li>점포는 GNB 점포 선택 드롭다운에서만 고른다. 폐점(미운영) 점포는 드롭다운에 나타나지 않는다.</li>
+                          <li>BP 를 고르는 팝업(플랫폼 마스터·관리자 전용)은 <b>BP 만</b> 고른다. 고른 BP 는 전체 점포로 열린다(2026-10-20 재영).</li>
                           <li>GNB 에서 고른 값은 목록 화면에 들어갈 때의 <b>기본값</b>일 뿐이다.</li>
                           <li>목록 화면 왼쪽 필터에서는 GNB 범위 밖 점포도 자유롭게 검색해 바꿀 수 있다.</li>
                           <li>그 화면 조회는 필터 값을 따른다.</li>
@@ -99,7 +97,7 @@
                       <td>
                         <ul style="margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 6px">
                           <li>드롭다운 범위 요약은 전체면 <b>전체 N개점</b>, 한 유형 전체면 <b>직영점포 전체 N개점</b>, 점포 하나면 점포명으로 표시한다.</li>
-                          <li>BP 변경 팝업에서 <span class="mono">[취소]</span>를 누르면 기존 적용 범위를 그대로 유지한 채 닫는다.</li>
+                          <li>BP 를 고르는 팝업에서 <span class="mono">[취소]</span>를 누르면 지금 탭의 BP · 점포 범위를 그대로 둔 채 닫는다. <span class="mono">[이동]</span>하면 고른 BP 의 웨일ERP 가 새 탭에서 전체 점포로 열리고 지금 탭은 그대로다.</li>
                         </ul>
                       </td>
                       <td><span class="badge badge--ok">확정</span><br /><span class="mono">F-TLJOCK</span></td>
