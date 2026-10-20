@@ -22,6 +22,9 @@ export const DEFAULT_STORES_QUERY: StoresQuery = {
   view: "cards",
 };
 
+/** 고를 수 있는 점포 수 — api 상한(ListStoresQueryDto storeIds 1000개)과 같다. 헤더의 직영 · 가맹 범위가 그 유형 점포를 모두 싣는다 */
+export const MAX_PICKED_STORES = 1000;
+
 const first = (v: string | string[] | undefined) => (typeof v === "string" ? v : Array.isArray(v) ? v[0] : undefined);
 
 /** 쉼표 목록. 파라미터가 없으면 기본값, 빈 값이면 하나도 고르지 않은 것. 순서는 화면 순서로 맞춘다 */
@@ -41,14 +44,18 @@ export function parseStoresQuery(raw: RawSearch): StoresQuery {
   const page = positiveInt(first(raw.page) ?? "");
   const safePage = page !== null && page <= MAX_PAGE ? page : null;
   const pageSize = Number(first(raw.pageSize));
-  const storeIds = (first(raw.storeIds) ?? "")
-    .split(",")
-    .map(positiveInt)
-    .filter((id): id is number => id !== null);
+  const storeIds = [
+    ...new Set(
+      (first(raw.storeIds) ?? "")
+        .split(",")
+        .map(positiveInt)
+        .filter((id): id is number => id !== null),
+    ),
+  ].slice(0, MAX_PICKED_STORES);
   return {
     page: safePage ?? 1,
     pageSize: STORE_PAGE_SIZES.find((s) => s === pageSize) ?? DEFAULT_STORES_QUERY.pageSize,
-    storeIds: [...new Set(storeIds)].slice(0, 100),
+    storeIds,
     // 하이픈은 빼고 숫자만 — api 가 일부만 넣어도 찾는다
     bizRegistrationNumber: (first(raw.bizRegistrationNumber) ?? "").replace(/[^0-9]/g, "").slice(0, 10),
     statuses: listOf(first(raw.statuses), STORE_STATUSES, DEFAULT_STATUSES),

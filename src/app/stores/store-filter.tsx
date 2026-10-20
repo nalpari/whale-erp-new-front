@@ -1,12 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 import { Checkbox, FilterPanel, FilterSection, SearchField } from "@/components/common";
 import { STORE_STATUSES, STORE_TYPES } from "@/lib/store-types";
 import { useCodeLabel } from "@/components/site/code-label";
+import { useScope, useStorePicks, useStores } from "@/components/site/session-gate";
+import { includesClosedStore, scopeStores } from "@/lib/store-scope";
 import { useStoreListNavigation } from "./store-list-navigation";
 import { StorePicker, type PickedStore } from "./store-picker";
 import { DEFAULT_STORES_QUERY, withStoreFilter, type StoresQuery } from "./stores-query";
+
+/** 이 필터의 목록 메뉴 url(store-scope.ts 의 STORE_SCOPE_LIST_URLS) */
+const LIST_URL = "/stores";
 
 const toggle = <T,>(list: readonly T[], value: T) => (list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
 
@@ -14,12 +19,28 @@ const toggle = <T,>(list: readonly T[], value: T) => (list.includes(value) ? lis
  * 점포 목록 왼쪽 필터(데모 stores/index). 조건은 모두 AND 이고, 값은 URL 에만 둔다 — 바꾸면 URL 을 바꾸고 서버가 목록을 다시 그린다.
  * 점포는 고르는 즉시, 사업자등록번호는 Enter · 돋보기에 건다. 처음엔 폐점을 뺀다.
  * 고른 점포의 이름은 URL 에 없어(storeIds 만) 서버가 찾아 picked 로 넘긴다. 고르는 즉시 칩이 서도록 이 안에서도 쥔다.
+ * 목록에 들어올 때 주소에 고른 점포가 없으면 헤더 점포 범위의 점포로 채워 다시 검색한다(store-scope.ts). 목록에서 점포를 바꾸면
+ * (더하기 · 빼기 · 모두 지우기) 이 탭에 기억해(store-picks) 상세 · 수정을 오가다 어느 길로 돌아와도 그 값을 쓴다(등록 · 삭제 뒤에는
+ * 「전체」로 비운다 — useResetStoreSearch). 사용자가 바꾼 것은 헤더 범위를 다시 따르지 않는다. 헤더 범위를 새로 고르거나 다른 메뉴로
+ * 나가면 잊는다(admin-header.tsx). 초기화는 헤더 범위로 돌아간다. 채운 점포에 폐점이 있으면 점포상태를 「전체」로 함께 건다.
  */
 export function StoreFilter({ picked }: { picked: PickedStore[] }) {
   const statusLabel = useCodeLabel("STORE_STATUS");
   const typeLabel = useCodeLabel("STORE_TYPE");
   const { current, navigate } = useStoreListNavigation();
-  const [chips, setChips] = useState(picked);
+  const [scope] = useScope();
+  const [picks, setPicks] = useStorePicks();
+  const stores = useStores();
+  const scoped = () => scopeStores(scope, stores).map(({ storeId, name, storeCode }) => ({ storeId, name, storeCode }));
+  // 헤더 메뉴 링크 · 범위 바꾸기는 점포 조건이 있으면 처음부터 storeIds 를 싣는다. 이것은 storeIds 없이 온 때다
+  // (전체 범위 · 빈 선택 · 주소 직접 입력 · 홈 바로가기 · 등록 뒤 상세의 [목록]).
+  // 들어올 때 한 번만 정한다 — 이 목록의 사용자 선택 기억이 있으면(빈 목록이면 「전체」) 그것을, 없으면 범위의 점포를 칩으로 그리고,
+  // 주소는 마운트 뒤에 바꿔 다시 검색한다.
+  const [fill] = useState(() => {
+    if (current.storeIds.length) return [];
+    return picks?.url === LIST_URL ? picks.stores : scoped();
+  });
+  const [chips, setChips] = useState(fill.length ? fill : picked);
   // 서버가 새로 찾아 준 이름으로 맞춘다(뒤로 가기 · 링크 이동으로 URL 이 바뀐 때)
   const [shownPicked, setShownPicked] = useState(picked);
   if (picked !== shownPicked) {
@@ -28,13 +49,22 @@ export function StoreFilter({ picked }: { picked: PickedStore[] }) {
   }
   const [resets, setResets] = useState(0);
   const go = (next: Partial<StoresQuery>) => navigate(withStoreFilter(current, next));
+  /** 이 점포들로 거는 조건 — 폐점 점포가 들면 점포상태를 「전체」로(기본 상태가 폐점을 빼 0건이 되지 않게) */
+  const storeCondition = (ids: number[]): Partial<StoresQuery> =>
+    includesClosedStore(ids, stores) ? { storeIds: ids, statuses: [...STORE_STATUSES] } : { storeIds: ids };
+  const searchFill = useEffectEvent(() => {
+    if (fill.length) go(storeCondition(fill.map((s) => s.storeId)));
+  });
+  useEffect(() => searchFill(), []);
 
   return (
     <FilterPanel
       onReset={() => {
+        const next = scoped();
+        setPicks(null);
         setResets((n) => n + 1);
-        setChips([]);
-        navigate({ ...DEFAULT_STORES_QUERY, view: current.view, pageSize: current.pageSize });
+        setChips(next);
+        navigate({ ...DEFAULT_STORES_QUERY, ...storeCondition(next.map((s) => s.storeId)), view: current.view, pageSize: current.pageSize });
       }}
     >
       <FilterSection label="점포" tight>
@@ -42,6 +72,7 @@ export function StoreFilter({ picked }: { picked: PickedStore[] }) {
           picked={chips}
           onChange={(next) => {
             setChips(next);
+            setPicks({ url: LIST_URL, stores: next.map(({ storeId, name, storeCode }) => ({ storeId, name, storeCode })) });
             go({ storeIds: next.map((s) => s.storeId) });
           }}
         />

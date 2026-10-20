@@ -17,6 +17,7 @@ export { Pagination } from "./pagination";
 export { FilterPanel, FilterSection } from "./filter-panel";
 export { GlobalHeader, ServiceLinks, AlarmLink, type HeaderMenu } from "./global-header";
 export { StoreSelect } from "./store-select";
+export { ScopeSelect, type ScopeSelectOption, type ScopeSelectSection } from "./scope-select";
 export { UserPop, type UserPopItem } from "./user-pop";
 export { PageBar } from "./page-bar";
 export { PanelBackdrop, SlidePanel, useBackdropActive } from "./slide-panel";
