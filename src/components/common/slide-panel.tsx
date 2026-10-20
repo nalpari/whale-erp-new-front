@@ -60,10 +60,13 @@ export function SlidePanel({
 }) {
   const close = useEffectEvent(() => onClose());
   const wasOpen = useRef(false);
+  /** 열려 있는 동안의 내 Set 자리(entry) — closeOnBackdrop 이 바뀔 때 이 자리를 그대로 두고 값만 고친다. */
+  const entryRef = useRef<PanelEntry | null>(null);
 
   useEffect(() => {
     if (open) {
       const entry: PanelEntry = { close, closable: closeOnBackdrop };
+      entryRef.current = entry;
       openPanels.add(entry);
       notifyBackdrop();
       wasOpen.current = true;
@@ -76,6 +79,7 @@ export function SlidePanel({
       return () => {
         document.removeEventListener("keydown", onKey);
         openPanels.delete(entry);
+        entryRef.current = null;
         notifyBackdrop();
       };
     }
@@ -84,7 +88,19 @@ export function SlidePanel({
       wasOpen.current = false;
       trigger.current?.focus();
     }
-  }, [open, trigger, closeOnBackdrop]);
+    // closeOnBackdrop 은 여기 의존성에 넣지 않는다 — 넣으면 그 값만 바뀌어도 Set 에서 지웠다가 다시 더해
+    // 맨 뒤로 가, "가장 나중에 연 패널 = 가장 위" 라는 전제가 실제 화면 순서와 어긋난다(코드 리뷰로 찾음,
+    // 2026-10-20). 자리는 open·trigger 로만 바뀐다 — 값은 바로 아래 effect 가 자리를 안 옮기고 고친다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 위 이유로 의도적으로 뺐다
+  }, [open, trigger]);
+
+  // closeOnBackdrop 이 바뀌면 이미 등록된 자리의 값만 고친다 — 패널이 열린 동안 이 prop 이 바뀌는 호출부는
+  // 지금 없지만(admin-form-panel.tsx 의 create·edit 은 서로 다른 인스턴스), 공용 컴포넌트라 미리 막아 둔다.
+  useEffect(() => {
+    if (!entryRef.current) return;
+    entryRef.current.closable = closeOnBackdrop;
+    notifyBackdrop();
+  }, [closeOnBackdrop]);
 
   return (
     <aside
