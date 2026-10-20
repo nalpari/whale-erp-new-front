@@ -175,7 +175,7 @@
         { key: "auth", text: "로그인", team: "1팀", toggle: 1, items: [
           { text: "영역 개요", href: "auth/overview.html", mock: 1 },
           { key: "auth-screens", text: "로그인 화면", href: "auth/login.html", sub: [
-            { text: "아이디·비밀번호 찾기", href: "auth/find.html", route: "/find" },
+            { text: "아이디/비밀번호 찾기", href: "auth/find.html", route: "/find" },
             { text: "회원가입", href: "auth/signup.html", route: "/signup" },
             { text: "가입 완료", href: "auth/signup-done.html", route: "/signup/done" },
             { text: "약관 전문", href: "auth/terms.html", route: "/terms" },
