@@ -68,8 +68,8 @@ function platformAdminDetailBody(A, R) {
   );
   const deleteDialog = x.dialog(
     deleteId,
-    "플랫폼 관리자 계정 삭제",
-    `<div class="flex flex-col gap-[12px] break-keep">${WHO}<p>삭제하면 <b class="font-semibold">관리자 목록과 검색에서 빠지고</b>, 이 계정으로는 <b class="font-semibold">더 로그인할 수 없습니다</b>.</p></div>`,
+    "관리자 계정을 삭제하시겠습니까?",
+    `<div class="flex flex-col gap-[12px] break-keep">${WHO}<p>삭제한 계정은 <b class="font-semibold">관리자 목록 및 검색 결과에서 제외</b>되며, <b class="font-semibold">해당 계정으로 더 이상 로그인할 수 없습니다</b>.</p><p>삭제한 계정은 복구할 수 없습니다.</p></div>`,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("삭제", { href: link(R, "system/admins.html") }),
   );
 

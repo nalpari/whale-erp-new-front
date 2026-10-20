@@ -158,7 +158,9 @@ export function AdminFormPanel(props: Props) {
   const title = mode === "create" ? "플랫폼 관리자 등록" : "플랫폼 관리자 수정";
 
   return (
-    <SlidePanel id={id} open={open} onClose={onClose} label={title} trigger={trigger}>
+    // 수정은 상세 위에 겹쳐 열려 잃을 입력이 적다고 보고 바탕 클릭으로도 닫히게 한다. 등록은 처음부터 쓰는
+    // 빈 칸이라 그대로 기본값(false)을 둔다(2026-10-20 피드백).
+    <SlidePanel id={id} open={open} onClose={onClose} label={title} trigger={trigger} closeOnBackdrop={mode === "edit"}>
       <h2 className="text-[18px] font-semibold text-erp-ink">
         {title}
         {mode === "edit" && (
@@ -295,7 +297,10 @@ export function AdminFormPanel(props: Props) {
 
       {mode === "create" && <Note>초기 비밀번호를 등록 이메일로 발송합니다.</Note>}
       {mode === "edit" && form.accountStatus === "INACTIVE" && props.admin.accountStatus === "ACTIVE" && (
-        <Note>미사용으로 저장하면 바로 로그인 · ERP 접근이 막힙니다. 로그인 중인 세션은 끊지 않습니다.</Note>
+        <Note>
+          미사용으로 변경하면 해당 계정의 로그인 및 서비스 접근이 즉시 차단됩니다.
+          <br />단, 현재 로그인 중인 세션은 유지됩니다.
+        </Note>
       )}
 
       <div className="flex justify-center gap-[6px]">

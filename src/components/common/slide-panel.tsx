@@ -12,24 +12,28 @@ import { EASE_OUT } from "./theme";
 // hidden 이 아니라 clip 이다 — hidden 은 세로축까지 auto 로 끌어올려 헤더 팝업·툴팁이 잘린다.
 // 트리거와 패널 사이 어느 요소에도 relative 를 주면 안 된다. 그 순간 패널이 그 안으로 들어가 잘린다.
 // 버튼 줄까지 내용에 들어 있어 함께 스크롤한다.
-// 열린 패널은 바탕창(PanelBackdrop)에 자신을 등록한다 — 바탕을 누르면 가장 나중에 연(가장 위) 패널 하나를 닫으려
-// 한다(2026-10-20). 등록·수정처럼 입력 중인 내용이 있는 패널은 closeOnBackdrop 을 안 켜 바깥을 눌러도 그대로
-// 열려 있다(실수로 날리면 되돌릴 수 없다). 상세처럼 잃을 입력이 없는 패널만 이 값을 켠다 — 데모는 값이 고정이라
-// 이 위험이 없었다(코드 리뷰로 찾음, 2026-10-20).
-// 가장 위 패널이 꺼져 있으면(closeOnBackdrop 을 안 켬) 바탕을 눌러도 아무것도 닫지 않는다 — 더 아래의 닫을 수
-// 있는 패널까지 건너뛰어 닫지 않는다. 패널 하나만 닫는 것은 Esc 와 같은 규칙이다 — 상세 위에 겹쳐 연 수정
-// 패널처럼, 안쪽 패널의 onClose 가 "더 안쪽이 열려 있으면 넘긴다"는 자기 화면의 조건을 가질 수 있어
-// (admins-screen.tsx dismissDetail 의 editOpen 검사), 등록된 onClose 를 한 번에 다 불러 봐도 그 조건이 아직
-// 최신 렌더를 보지 못해 걸러지지 않는다 — 한 번에 하나씩, 다시 누르면 다음 것이 닫힌다.
+// 열린 패널은 바탕창(PanelBackdrop)에 자신을 등록한다. 등록·수정처럼 입력 중인 내용이 있는 패널은
+// closeOnBackdrop 을 안 켜 바깥을 눌러도 그대로 열려 있다(실수로 날리면 되돌릴 수 없다) — 그 패널이 가장
+// 위일 때는 바탕창 자체가 뜨지 않아 뒤 목록을 그대로 누를 수 있다(등록 패널을 연 채 목록 줄을 눌러 상세를
+// 그 위에 겹쳐 여는 흐름이 막히던 문제를 코드 리뷰로 찾아 고쳤다, 2026-10-20). 상세처럼 잃을 입력이 없는
+// 패널만 closeOnBackdrop 을 켠다 — 데모는 값이 고정이라 이 위험이 없었다.
+// 패널 하나만 닫는 것은 Esc 와 같은 규칙이다 — 상세 위에 겹쳐 연 수정 패널처럼, 안쪽 패널의 onClose 가
+// "더 안쪽이 열려 있으면 넘긴다"는 자기 화면의 조건을 가질 수 있어(admins-screen.tsx dismissDetail 의
+// editOpen 검사), 등록된 onClose 를 한 번에 다 불러 봐도 그 조건이 아직 최신 렌더를 보지 못해 걸러지지
+// 않는다 — 한 번에 하나씩, 다시 누르면 다음 것이 닫힌다.
 type PanelEntry = { close: () => void; closable: boolean };
 const openPanels = new Set<PanelEntry>();
 const backdropListeners = new Set<() => void>();
 const notifyBackdrop = () => backdropListeners.forEach((l) => l());
 
+const topPanel = () => {
+  const panels = [...openPanels];
+  return panels[panels.length - 1];
+};
+
 /** 가장 위(가장 나중에 연) 패널이 closeOnBackdrop 을 켰을 때만 닫는다 — PanelBackdrop 클릭 핸들러 전용. */
 function closeTopPanel() {
-  const panels = [...openPanels];
-  const top = panels[panels.length - 1];
+  const top = topPanel();
   if (top?.closable) top.close();
 }
 export function SlidePanel({
@@ -99,16 +103,21 @@ const subscribeBackdrop = (listener: () => void) => {
   backdropListeners.add(listener);
   return () => backdropListeners.delete(listener);
 };
-const anyPanelOpen = () => openPanels.size > 0;
+/**
+ * 가장 위 패널이 closeOnBackdrop 을 켰을 때만 참 — 등록·수정처럼 켜지 않은 패널이 혼자 열려 있을 때는 거짓이라
+ * 바탕창이 뜨지 않고 inert 로 빠진다. 그래야 등록 패널을 연 채로도 목록 줄을 눌러 상세를 그 위에 겹쳐 열 수 있다
+ * (admins-screen.tsx) — 전체를 덮는 바탕창이 그 클릭을 가로채던 문제를 고쳤다(코드 리뷰, 2026-10-20).
+ */
+const topPanelClosable = () => topPanel()?.closable ?? false;
 
 /**
- * 열린 패널이 있으면 화면 전체(헤더 포함)를 덮는 바탕창 — 데모(docs/demo/assets/erp.js setBackdrop)와 같다.
- * 누르면 가장 위 패널이 closeOnBackdrop 을 켰을 때만 닫는다(Esc 와 같은 한 번에 하나씩). 켜지 않은 패널(등록·수정)은
- * 바깥을 눌러도 그대로 열려 있다 — 뒤 조작을 막는 것(inert)은 그대로다. AdminFrame 처럼 모든 패널의 relative 조상
- * 안에 한 번만 둔다.
+ * 가장 위 패널이 closeOnBackdrop 을 켰을 때만 화면 전체(헤더 포함)를 덮는 바탕창 — 데모(docs/demo/assets/erp.js
+ * setBackdrop)와 같다. 누르면 그 패널을 닫는다(Esc 와 같은 한 번에 하나씩). 켜지 않은 패널(등록·수정)이 가장
+ * 위일 때는 바탕창이 뜨지 않아 뒤 목록을 그대로 누를 수 있다. AdminFrame 처럼 모든 패널의 relative 조상 안에
+ * 한 번만 둔다.
  */
 export function PanelBackdrop() {
-  const open = useSyncExternalStore(subscribeBackdrop, anyPanelOpen, () => false);
+  const open = useSyncExternalStore(subscribeBackdrop, topPanelClosable, () => false);
   return (
     <div
       aria-hidden="true"

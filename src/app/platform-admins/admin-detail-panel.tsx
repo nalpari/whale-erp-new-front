@@ -224,7 +224,7 @@ function DetailBody({
 
           <ConfirmDialog
             open={confirm === "delete"}
-            title="플랫폼 관리자 계정 삭제"
+            title="관리자 계정을 삭제하시겠습니까?"
             confirmLabel="삭제"
             busy={busy}
             onConfirm={handleDelete}
@@ -233,9 +233,9 @@ function DetailBody({
             <div className="flex flex-col gap-[12px]">
               {who}
               <p>
-                삭제하면 <b className="font-semibold">관리자 목록과 검색에서 빠지고</b>, 이 계정으로는 <b className="font-semibold">더 로그인할 수 없습니다</b>. 되살릴
-                수 없습니다.
+                삭제한 계정은 <b className="font-semibold">관리자 목록 및 검색 결과에서 제외</b>되며, <b className="font-semibold">해당 계정으로 더 이상 로그인할 수 없습니다</b>.
               </p>
+              <p>삭제한 계정은 복구할 수 없습니다.</p>
             </div>
           </ConfirmDialog>
         </>
