@@ -102,11 +102,13 @@ export function SessionGate({ children }: { children: ReactNode }) {
   const [state, setState] = useState<{ status: "loading" } | { status: "error"; message: string } | { status: "ready"; value: LoginState }>({
     status: "loading",
   });
+  // BP 이동 화면의 로딩 문구. 서버에서 BP 를 확인하면 그 상호와 범위로 바꾼다(적용 안내를 토스트 대신 여기서 한다, 2026-10-19 재영).
+  const [switchNotice, setSwitchNotice] = useState("BP 로 이동하는 중입니다");
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
-    prepare().then(
+    prepare((bp) => !cancelled && setSwitchNotice(`${bp.tradeName}(${bp.bpCode}) · 전체 점포로 여는 중입니다`)).then(
       (value) => !cancelled && setState({ status: "ready", value }),
       async (e: unknown) => {
         if (cancelled) return;
@@ -142,7 +144,7 @@ export function SessionGate({ children }: { children: ReactNode }) {
     };
   }, [attempt, router]);
 
-  if (state.status === "loading") return <Notice>{pathname === BP_SWITCH_PATH ? "BP 로 이동하는 중입니다" : "불러오는 중입니다"}</Notice>;
+  if (state.status === "loading") return <Notice>{pathname === BP_SWITCH_PATH ? switchNotice : "불러오는 중입니다"}</Notice>;
   if (state.status === "error")
     return (
       <Notice>
@@ -205,11 +207,14 @@ function Ready({ value, onChange, children }: { value: LoginState; onChange: (v:
     if (denied.current === pathname) return;
     denied.current = pathname;
     // 메뉴에 없는 주소로 바로 들어왔다. 안내하고 들어오기 전 화면으로 돌아간다(2026-10-13 정책, 403 과 같다).
+    // 플랫폼 탭에서 ERP 주소로 왔으면 권한이 없는 게 아니라 BP 를 고르지 않은 것이다 — 즐겨찾기 · 주소 입력으로 왔는데 마지막으로 고른 BP 가
+    // 없을 때다. 강제 팝업 대신 바로가기에서 고르라고 알린다(2026-10-19 재영).
     // shortcut: 안내는 브라우저 alert 다. 공통 확인 팝업이 생기면 바꾼다.
-    alert("접근 권한이 없는 메뉴입니다");
+    const needsBp = value.serviceCode === "PLATFORM" && serviceOfPath(value.menus, pathname) === "WHALE_ERP";
+    alert(needsBp ? "웨일ERP 바로가기에서 BP 를 먼저 골라 주세요" : "접근 권한이 없는 메뉴입니다");
     if (history.length > 1) history.back();
     else router.replace(home);
-  }, [allowed, home, pathname, router]);
+  }, [allowed, home, pathname, router, value.menus, value.serviceCode]);
 
   const setScope = (scope: Scope) => {
     writeScope(value.currentBp.bpCodeId, scope);
@@ -277,7 +282,8 @@ class LoginInfoDeniedError extends Error {}
 
 const readLoginKey = () => document.cookie.match(new RegExp(`(?:^|; )${LOGIN_KEY_COOKIE}=([^;]*)`))?.[1];
 
-async function prepare(): Promise<LoginState> {
+/** onSwitchBp — BP 이동 화면에서 서버로 확인한 BP 를 알린다(로딩 문구용). */
+async function prepare(onSwitchBp: (bp: StoredBp) => void): Promise<LoginState> {
   const loginKey = readLoginKey();
   // 이 기능 전에 로그인했거나 쿠키가 지워졌다. 세션을 끝내고 다시 로그인하게 한다(/login 으로만 보내면 proxy 가 홈으로 되돌린다).
   if (!loginKey) throw new BffError(401, "다시 로그인해 주세요");
@@ -309,6 +315,7 @@ async function prepare(): Promise<LoginState> {
   // 다른 탭에서 BP 를 또 골라도 이 탭은 주소의 BP 로 열린다. 비밀번호를 바꾸기 전에는 다른 BP 를 열지 않는다(아래).
   const switchBp =
     target && account.bp.isPlatform && !account.isPasswordChangeRequired && target.bpCodeId !== ownBp.bpCodeId ? await findBp(target) : null;
+  if (switchBp) onSwitchBp(switchBp);
   // 앞 로그인이 이 탭에 남긴 점포·공통코드·범위는 갈래와 상관없이 여기서 지운다(readCurrentBp). 점포 등은 bpCodeId 로만 갈려 같은 BP 의 다른 계정 값이 읽힌다.
   const current = readCurrentBp(loginKey);
   // 비밀번호를 바꾸기 전에는 다른 BP 조회가 403 이라 자기 BP 로 연다.
