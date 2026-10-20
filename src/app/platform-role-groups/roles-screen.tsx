@@ -7,12 +7,16 @@ import { CodeLabel } from "@/components/site/code-label";
 import { usePagePermission } from "@/components/site/session-gate";
 import type { EnumValue } from "@/lib/enums";
 import type { RoleGroup } from "@/lib/platform-role-groups";
-import { RoleMenuDialog } from "./role-menu-dialog";
+import { RoleMenuDialog, type MenuDialogActions } from "@/components/role-groups/role-menu-dialog";
+import { getRoleGroupMenusAction, previewRoleGroupMenusAction, saveRoleGroupMenusAction } from "./actions";
 import { CARD, PATH, WhenWho, type RoleDetailState } from "./role-parts";
 import { RoleSide } from "./role-side";
 
 // 왼쪽 권한 목록 + 오른쪽 고정 칸(데모 system/roles · role-side). 오른쪽 칸은 슬라이드 패널이 아니라 늘 서 있다.
 // 권한명을 누르면 오른쪽에 그 권한의 수정(고칠 수 없으면 상세)이, [등록]을 누르면 같은 칸에 등록 양식이 선다.
+// 메뉴 등록 팝업은 BP 권한 그룹 관리와 같이 쓴다(components/role-groups) — 이 화면의 action 을 넘긴다.
+const MENU_ACTIONS: MenuDialogActions = { load: getRoleGroupMenusAction, preview: previewRoleGroupMenusAction, save: saveRoleGroupMenusAction };
+
 // 버튼은 지금 주소(/platform-role-groups)의 메뉴 권한(usePagePermission)으로 보인다 — 등록 create, 권한명 · 설명 · 메뉴 저장 update, 삭제 delete. 막는 것은 api 다.
 export function RolesScreen({
   roles,
@@ -104,7 +108,7 @@ export function RolesScreen({
         onDeleted={() => handleSelect()}
       />
 
-      <RoleMenuDialog role={menuFor} reasons={menuReasons} onClose={() => setMenuFor(null)} />
+      <RoleMenuDialog role={menuFor} reasons={menuReasons} actions={MENU_ACTIONS} onClose={() => setMenuFor(null)} />
     </div>
   );
 }
