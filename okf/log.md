@@ -1,6 +1,18 @@
 # Bundle history
 
+## 2026-10-20
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — main 병합: `usePagePermission` 훅 · `/find` proxy 문장을 BP 선택 반영본에 합치고, 점포 등록 BP 는 웨일ERP 바로가기 문장을 남기며 버튼 권한을 주소 기준(`usePagePermission`)으로 맞췄다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 고른 BP 탭의 브라우저 탭 제목에 상호를 붙이던 것을 뺐다. 즐겨찾기 이름에 상호가 남아 다른 BP 로 열릴 때 헷갈린다(재영). BP 선택 팝업은 BP 만 고른다(점포 선택 제외) — 목업 · 데모도 맞췄다.
+
 ## 2026-10-19
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 기획 정렬 결정(재영): BP 를 고르기 전에 플랫폼 탭에서 ERP 주소로 오면 「웨일ERP 바로가기에서 BP 를 먼저 골라 주세요」로 안내하고(강제 팝업 없음), 적용 안내는 토스트 대신 BP 이동 로딩 화면에 「상호(BP코드) · 전체 점포로 여는 중입니다」로 보인다. 데모 플랫폼 헤더의 BP 선택 드롭다운을 지웠다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #55 적대적 리뷰 반영(3번 A안): ERP 탭의 플랫폼관리 바로가기가 그 탭을 플랫폼으로 바꾸지 않고 `/platform` 을 새 탭으로 연다. ERP 화면을 여럿 본 탭에서 플랫폼관리 뒤 뒤로 가면 남은 ERP 화면마다 「접근 권한이 없는 메뉴」 안내가 연달아 떴다. 같은 탭을 바꾸려고 넣었던 `location.replace` 와 막힌 주소의 대체 이동(500ms)을 걷었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #55 3차 리뷰 반영: 플랫폼관리 바로가기가 `location.replace` 로 이동하고, 막힌 주소에서 `history.back()` 이 맨 앞 기록이라 돌아가지 못하면 그 서비스의 홈으로 보낸다(플랫폼이 된 탭에서 뒤로 가기가 빈 화면에 멈췄다). BP 선택 팝업은 쪽을 넘기면 고른 BP 를 비운다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #55 2차 리뷰 반영: BP 이동 주소는 id 만 믿고 상호·코드는 서버(`GET /bp-codes`)에서 확인한다(손으로 고친 링크가 다른 BP 이름을 보이던 것). `selected-bp` 는 그 BP 의 점포·공통코드를 받은 뒤에 적어, 실패해도 앞서 고른 BP 가 남는다. 이동 주소를 읽지 못하면 안내한다. 주소를 만들고 읽는 함수를 `menus.ts`(`bpSwitchUrl`·`bpOfSwitchUrl`)에 모으고 테스트했다. 낡은 주석을 바로잡고 `ServiceLinks` 속성을 `targets` 로 바꿨다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #55 리뷰 반영: BP 선택 팝업이 고른 BP 를 `/bp-switch` 주소(bp · bpCode · tradeName)에 실어, 새 탭이 준비되기 전에 다른 BP 를 또 골라도 그 탭이 고른 BP 로 열린다(전에는 공용 `selected-bp` 가 바뀌어 플랫폼 홈으로 열렸다). 자기 BP 로 이동할 때 로그인 때 값을 쓴다고 주석을 바로잡았다.
+* **Update**: [점포 관리](/stores.md) — 등록 BP: 플랫폼 계정은 웨일ERP 바로가기로 BP 를 골라 연 탭의 점포관리에서 그 BP 로 등록한다(「등록할 길이 없다」 문장을 고쳤다).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 계정이 고른 BP 의 탭은 브라우저 탭 제목 앞에 BP 상호를 붙인다(여러 BP 탭 구분).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 계정의 웨일ERP 바로가기(A안). 바로가기가 BP 선택 팝업을 열고(ERP 탭에서도), 고른 BP 를 새 탭 BP 이동 화면 `/bp-switch` 가 탭 sessionStorage 에 채운 뒤 홈으로 보낸다. 플랫폼관리 바로가기는 ERP 탭에서 `/bp-switch?bp=<자기 BP>` 로 플랫폼에 돌아온다. BP 목록 `GET /bp-codes` 는 api 대기.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 회원가입(`src/app/(public)/(site)/signup/`)의 `_components/` 하위 폴더를 걷었다. `stores`·`staff-members` 등 다른 화면 폴더는 모두 평평한 구조라 이 폴더만 유일하게 밑줄 접두 폴더를 썼다. 파일 10개(비밀번호·연락처·필수 입력칸, 약관 팝업, 사업자 진위확인, api 실패 문구, 검증 규칙과 각 테스트)를 `signup/` 바로 아래로 옮기고 import 경로를 고쳤다 — 동작은 그대로다.
 * **Update**: [점포 관리](/stores.md) — 코드 리뷰 반영: 위 회원가입 폴더 정리로 `src/app/stores/store-form-view.tsx` 의 주석 한 줄(`signup/_components/biz-verification.ts` → `signup/biz-verification.ts`)도 고쳤다 — 이 파일이 stores.md 의 sources 에 들어 있어 함께 기록한다.
 * **Update**: [로그인](/auth.md) — 목업 · 데모를 실제 `/find` 에 맞췄다. 데모 `auth/find.html` 은 휴대폰 인증 시안 대신 이름 · 이메일(비밀번호는 아이디까지) 칸과 결과 안내를 보이고, 고객센터 카드를 뺐다. 목업 `auth/find.html` 은 결과 버튼을 회원가입 · 로그인 이동으로 바꾸고 비밀번호 탭 보조 안내를 지웠다. 화면정의서의 비밀번호 탭 · 이메일 · 아이디 찾기 정의를 결과 안내 하나 · 5xx · 형식 오류 · 요청 제한으로 고쳤다.
