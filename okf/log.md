@@ -1,5 +1,9 @@
 # Bundle history
 
+## 2026-10-20
+* **Update**: [로그인](/auth.md) · [Whale ERP Frontend](/whale-erp-front.md) — 찾기 화면 문구를 고치고(탭마다 다른 안내 문구, 아이디 찾기 일치 없음, 발송 완료), 비밀번호 찾기도 일치 여부를 확인해 알리게 했다(api 가 일치 없음을 404 로 주도록 변경 요청 중). 목업 · 화면정의서 · 데모 · 디자인 샘플도 맞췄다(2026-10-20 재영).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 디자인 샘플 `/design/guest/find-account` 를 실제 `/find` UI 에 맞췄다(휴대폰 · 인증번호 대신 이름 · 이메일, 예시 결과, 그림 아래 문구).
+
 ## 2026-10-19
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 회원가입(`src/app/(public)/(site)/signup/`)의 `_components/` 하위 폴더를 걷었다. `stores`·`staff-members` 등 다른 화면 폴더는 모두 평평한 구조라 이 폴더만 유일하게 밑줄 접두 폴더를 썼다. 파일 10개(비밀번호·연락처·필수 입력칸, 약관 팝업, 사업자 진위확인, api 실패 문구, 검증 규칙과 각 테스트)를 `signup/` 바로 아래로 옮기고 import 경로를 고쳤다 — 동작은 그대로다.
 * **Update**: [점포 관리](/stores.md) — 코드 리뷰 반영: 위 회원가입 폴더 정리로 `src/app/stores/store-form-view.tsx` 의 주석 한 줄(`signup/_components/biz-verification.ts` → `signup/biz-verification.ts`)도 고쳤다 — 이 파일이 stores.md 의 sources 에 들어 있어 함께 기록한다.
