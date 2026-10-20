@@ -35,7 +35,8 @@ export function AdminDetailPanel({
   onDeleted: () => void;
 }) {
   return (
-    <SlidePanel id="platform-admin-detail-panel" open={open} onClose={onClose} label="플랫폼 관리자 상세" trigger={trigger}>
+    // 읽기 전용이라 잃을 입력이 없다 — 바탕창을 눌러도 닫힌다(등록·수정 패널과 다르다, SlidePanel 참고).
+    <SlidePanel id="platform-admin-detail-panel" open={open} onClose={onClose} label="플랫폼 관리자 상세" trigger={trigger} closeOnBackdrop>
       {detail && "admin" in detail ? (
         <DetailBody
           // 다른 계정을 열면 확인창 · 실패 띠를 새로 시작한다
