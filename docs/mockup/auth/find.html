@@ -39,7 +39,6 @@
 
               <div class="stack">
                 <h2 class="t-md">아이디·비밀번호 찾기</h2>
-                <p class="lead">가입할 때 등록한 이름과 이메일로 확인합니다.</p>
               </div>
 
               <div class="tabs" data-tabs="fd">
@@ -50,6 +49,7 @@
               <div id="fd">
                 <!-- ── 아이디 찾기 ─────────────────────────── -->
                 <div data-panel="id" class="stack--lg" style="display: flex; flex-direction: column">
+                  <p class="lead" style="margin: 0">회원가입 시 등록한 이름, 이메일 주소를 입력해 주세요.</p>
                   <div class="demo" data-demo="idbox">
                     <b>목업 상태</b>
                     <div class="seg">
@@ -72,7 +72,7 @@
                       <div class="band band--risk" data-show="none" hidden>
                         <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
                         <div class="band__body">
-                          <div class="band__title">입력하신 정보와 일치하는 계정을 찾을 수 없습니다.</div>
+                          <div class="band__title">입력하신 정보와 일치하는 회원정보가 없습니다. 이름, 이메일 주소를 다시 확인해 주세요.</div>
                           <p class="band__desc">미사용·탈퇴 계정과만 일치해도 같은 문구다 — 계정이 있는지 드러내지 않는다.</p>
                         </div>
                       </div>
@@ -97,16 +97,18 @@
 
                 <!-- ── 비밀번호 찾기 = 임시 비밀번호 발급 ──────── -->
                 <div data-panel="pw" hidden class="stack--lg" style="display: flex; flex-direction: column">
+                  <p class="lead" style="margin: 0">회원가입 시 등록한 이름, 아이디, 이메일 주소를 입력해 주세요.</p>
                   <div class="demo" data-demo="pwbox">
                     <b>목업 상태</b>
                     <div class="seg">
                       <button type="button" data-state="in" aria-pressed="true">입력</button>
                       <button type="button" data-state="ok" aria-pressed="false">발송함</button>
+                      <button type="button" data-state="none" aria-pressed="false">일치 없음</button>
                       <button type="button" data-state="limit" aria-pressed="false">횟수 초과</button>
                     </div>
                   </div>
                   <div id="pwbox" class="stack--lg" style="display: flex; flex-direction: column">
-                    <div data-show="in limit" class="stack--lg" style="display: flex; flex-direction: column">
+                    <div data-show="in none limit" class="stack--lg" style="display: flex; flex-direction: column">
                       <div class="field">
                         <label for="pname">이름 <span class="req">*</span></label>
                         <input class="input" id="pname" value="정하윤" />
@@ -118,6 +120,14 @@
                       <div class="field">
                         <label for="pmail">이메일 <span class="req">*</span></label>
                         <input class="input" id="pmail" type="email" value="hayoon@hangang.co.kr" />
+                      </div>
+                      <div class="band band--risk" data-show="none" hidden>
+                        <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
+                        <div class="band__body">
+                          <div class="band__title">회원정보를 찾을 수 없습니다.</div>
+                          <p class="band__desc">입력하신 정보와 일치하는 회원정보가 없습니다.<br />이름, 아이디, 이메일 주소를 다시 확인해 주세요.</p>
+                          <p class="band__desc">미사용·탈퇴 계정과만 일치해도 같은 문구다. 이 안내는 api 가 일치 없음을 404 로 주도록 바뀌어야 뜬다(2026-10-20 재영, api 변경 요청 중).</p>
+                        </div>
                       </div>
                       <div class="band band--warn" data-show="limit" hidden>
                         <span class="band__ic" data-icon="clock" data-icon-size="20"></span>
@@ -131,9 +141,9 @@
 
                     <div data-show="ok" hidden class="card card--soft" style="align-items: center; text-align: center">
                       <span data-icon="check" data-icon-size="22" style="color: var(--ok)"></span>
-                      <p style="margin: 0"><b>메일을 확인해 주세요</b><br />입력한 이름·아이디·이메일이 맞으면 등록된 이메일로 임시 비밀번호를 보냈습니다.</p>
-                      <span class="subtle" style="font-size: 12px">임시 비밀번호는 <b>1시간</b> 동안만 쓸 수 있습니다.</span>
-                      <span class="subtle" style="font-size: 12px">일치하지 않거나 메일이 나가지 않아도 이 안내가 뜬다 — 계정이 있는지 드러내지 않는다(api 가 같은 202, 2026-10-19).</span>
+                      <p style="margin: 0"><b>이메일을 확인해 주세요.</b><br />입력하신 이메일 주소로 임시 비밀번호를 발송했습니다.</p>
+                      <span class="subtle" style="font-size: 12px">임시 비밀번호는 발급 후 <b>1시간</b> 동안 사용할 수 있습니다.</span>
+                      <span class="subtle" style="font-size: 12px">일치하는 계정일 때만 이 화면이다(2026-10-20 재영). 지금 api 는 일치 여부와 상관없이 202 라 api 변경 뒤 맞춰진다.</span>
                     </div>
                     <div data-show="ok" hidden>
                       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">

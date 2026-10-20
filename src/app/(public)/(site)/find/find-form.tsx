@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState, type ReactNode } from "react";
+import { FindAccountHeading } from "@/app/design/guest/find-account/find-account-screen";
 import { INPUT, INPUT_BOX, LABEL, SUBMIT } from "@/app/design/guest/guest-form";
 import { SITE_ROUTES } from "@/app/design/guest/guest-routes";
 import { GuestButton } from "@/app/design/guest/guest-ui";
@@ -11,15 +12,15 @@ import { findLoginId, issueTemporaryPassword, type FindLoginIdState, type Tempor
 // 칸은 시안의 휴대폰 인증 대신 정책대로 이름·이메일(비밀번호는 아이디까지)이다(okf/auth.md 계정 찾기).
 // #id · #pw 해시로 탭을 고른다(데모 auth/find.html).
 const TABS = [
-  { key: "id", label: "ID 찾기" },
-  { key: "pw", label: "비밀번호 찾기" },
+  { key: "id", label: "ID 찾기", lead: "회원가입 시 등록한 이름, 이메일 주소를 입력해 주세요." },
+  { key: "pw", label: "비밀번호 찾기", lead: "회원가입 시 등록한 이름, 아이디, 이메일 주소를 입력해 주세요." },
 ] as const;
 type Tab = (typeof TABS)[number]["key"];
 
 const tabOf = (hash: string): Tab => (hash === "#pw" ? "pw" : "id");
 
 // 로그인 폼과 같은 오류 글자. #e93737 은 위험 문구에만 쓰는 Figma 색이다(DESIGN.md).
-const ERROR = "text-[15px] text-[#e93737]";
+const ERROR = "text-[15px] whitespace-pre-line text-[#e93737]";
 const RESULT = "flex flex-col gap-[10px] rounded-[6px] bg-guest-card px-[32px] py-[24px] text-[16px] leading-[1.4] text-guest-navy";
 
 export function FindForm() {
@@ -51,6 +52,7 @@ export function FindForm() {
 
   return (
     <>
+      <FindAccountHeading lead={TABS.find((t) => t.key === tab)!.lead} />
       <div role="tablist" aria-label="찾을 항목" onKeyDown={handleKeyDown} className="flex">
         {TABS.map((t) => {
           const on = t.key === tab;
@@ -160,16 +162,16 @@ function PasswordPanel() {
   const [state, action, pending] = useActionState<TemporaryPasswordState, FormData>(issueTemporaryPassword, {});
   const [filled, handleInput] = useFilled();
 
-  // api 는 계정이 있는지 드러내지 않는다. 일치하지 않았거나, 메일이 나가지 않았거나, 응답이 10초를 넘겨도 이 안내가 뜬다.
+  // 응답이 10초를 넘겨도 이 안내가 뜬다. api #77 머지 전에는 일치하지 않거나 메일이 나가지 않아도 202 라 그때도 뜬다.
   if (state.sent)
     return (
       <div className="flex flex-col gap-[24px]">
         <div role="status" className={RESULT}>
-          <p className="text-[20px] font-semibold text-guest-ink">메일을 확인해 주세요</p>
+          <p className="text-[20px] font-semibold text-guest-ink">이메일을 확인해 주세요.</p>
           <p>
-            입력한 이름·아이디·이메일이 맞으면 등록된 이메일로 임시 비밀번호를 보냈습니다.
+            입력하신 이메일 주소로 임시 비밀번호를 발송했습니다.
             <br />
-            임시 비밀번호는 1시간 동안만 쓸 수 있습니다.
+            임시 비밀번호는 발급 후 1시간 동안 사용할 수 있습니다.
           </p>
         </div>
         <Actions />
