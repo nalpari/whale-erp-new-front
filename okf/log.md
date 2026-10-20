@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-20
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통 컴포넌트 `DetailTable` 의 왼쪽 라벨 칸을 180px 에서 줄였다(사용자 피드백 — 값 칸이 너무 좁았다, 1팀 확인 전). `src/app/staff-members/[id]/contract-box.tsx` 가 같은 줄 모양을 따로 옮겨 둔 곳이라 같이 고쳤다. `docs/demo/src/ui.mjs` 의 `detailTable` 과 DESIGN.md 의 고정값도 맞췄다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — main 병합: `usePagePermission` 훅 · `/find` proxy 문장을 BP 선택 반영본에 합치고, 점포 등록 BP 는 웨일ERP 바로가기 문장을 남기며 버튼 권한을 주소 기준(`usePagePermission`)으로 맞췄다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 고른 BP 탭의 브라우저 탭 제목에 상호를 붙이던 것을 뺐다. 즐겨찾기 이름에 상호가 남아 다른 BP 로 열릴 때 헷갈린다(재영). BP 선택 팝업은 BP 만 고른다(점포 선택 제외) — 목업 · 데모도 맞췄다.
 
