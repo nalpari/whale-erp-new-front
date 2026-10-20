@@ -117,8 +117,8 @@ function DetailBody({
   const rows: DetailRow[] = [
     { label: "아이디", value: admin.loginId },
     { label: "이름", value: name },
-    { label: "연락처", value: admin.phone ? formatPhone(admin.phone) : muted("—") },
-    { label: "이메일", value: admin.email ?? muted("—") },
+    { label: "연락처", value: admin.phone ? formatPhone(admin.phone) : muted("-") },
+    { label: "이메일", value: admin.email ?? muted("-") },
     {
       label: "비밀번호",
       value: (
@@ -134,8 +134,8 @@ function DetailBody({
         </>
       ),
     },
-    { label: "소속 부서", value: admin.department ?? muted("—") },
-    { label: "직책", value: admin.jobTitle ?? muted("—") },
+    { label: "소속 부서", value: admin.department ?? muted("-") },
+    { label: "직책", value: admin.jobTitle ?? muted("-") },
     // 우편번호 · 기본주소 · 상세주소를 줄을 바꿔 보인다(데모 상세와 같다). 이 줄만 내용만큼 늘어난다.
     {
       label: "주소",
@@ -147,15 +147,16 @@ function DetailBody({
           ))}
         </div>
       ) : (
-        muted("—")
+        muted("-")
       ),
     },
+    // 최근 로그인 → 등록일시 → 최종 수정일시 순으로 둔다(2026-10-20 디자인 수정).
+    { label: "최근 로그인", value: admin.lastLoginAt ? formatDateTime(admin.lastLoginAt) : muted("로그인 기록 없음") },
     { label: "등록일시", value: <DetailValues items={[formatDateTime(admin.createdAt), admin.createdByName ?? muted("시스템")]} /> },
     {
       label: "최종 수정일시",
       value: admin.updatedByName ? <DetailValues items={[formatDateTime(admin.updatedAt), admin.updatedByName]} /> : muted("수정한 적 없음"),
     },
-    { label: "최근 로그인", value: admin.lastLoginAt ? formatDateTime(admin.lastLoginAt) : muted("로그인 기록 없음") },
   ];
   if (admin.accountStatus === "INACTIVE" && admin.statusChangedAt)
     rows.push({ label: "미사용 전환일시", value: formatDateTime(admin.statusChangedAt) });

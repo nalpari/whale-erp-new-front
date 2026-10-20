@@ -16,19 +16,18 @@ const tel = (a, b, c) =>
     .join("")}</div>`;
 const stack = (...c) => `<div class="flex flex-col gap-[8px]">${c.join("")}</div>`;
 // 주소: 검색칸(치는 대로 바로 아래 층에 결과 — 앱 address-field.tsx, [주소 검색] 버튼 없음) / 우편번호·기본주소(검색 결과로만 채움) + [지우기] / 상세주소(주소를 고른 뒤에만 적는다) — 2026-10-13 앱 반영
+// 우편번호는 검색으로만 채워지는 숫자 5자리라 좁게 둔다 — 넓게 두면 옆 기본주소 칸이 너무 좁아진다(2026-10-20 디자인 수정, 앱 address-field.tsx 와 같다).
 const address = (A, zip, base, detail) =>
-  `<div class="flex flex-col gap-[8px]" data-addr-live><span class="text-[14px] font-medium text-erp-label">주소</span><div class="relative" data-addr-box>${ui.searchField(A, { placeholder: "도로명, 건물명, 지번으로 검색", label: "주소 검색어" })}</div><div class="flex gap-[6px]"><div class="w-[120px] shrink-0">${ui.textField({ value: zip, readonly: true, placeholder: "우편번호", "aria-label": "우편번호" })}</div>${ui.textField({ value: base, readonly: true, placeholder: "검색해서 고르면 채워집니다", "aria-label": "기본주소" })}<span data-addr-clear${zip ? "" : " hidden"}>${ui.button("지우기", { variant: "off" })}</span></div>${ui.textField(base ? { value: detail, maxlength: 100, placeholder: "상세주소", "aria-label": "상세주소" } : { value: detail, maxlength: 100, placeholder: "주소를 검색해 고른 뒤 적습니다", "aria-label": "상세주소", disabled: true })}</div>`;
+  `<div class="flex flex-col gap-[8px]" data-addr-live><span class="text-[14px] font-medium text-erp-label">주소</span><div class="relative" data-addr-box>${ui.searchField(A, { placeholder: "도로명, 건물명, 지번으로 검색", label: "주소 검색어" })}</div><div class="flex gap-[6px]"><div class="w-[80px] shrink-0">${ui.textField({ value: zip, readonly: true, placeholder: "우편번호", "aria-label": "우편번호" })}</div>${ui.textField({ value: base, readonly: true, placeholder: "검색해서 고르면 채워집니다", "aria-label": "기본주소" })}<span data-addr-clear${zip ? "" : " hidden"}>${ui.button("지우기", { variant: "off" })}</span></div>${ui.textField(base ? { value: detail, maxlength: 100, placeholder: "상세주소", "aria-label": "상세주소" } : { value: detail, maxlength: 100, placeholder: "주소를 검색해 고른 뒤 적습니다", "aria-label": "상세주소", disabled: true })}</div>`;
 
 function platformAdminEditBody(A) {
   // 패널(464px)이라 두 칸 줄을 한 칸씩 세로로 쌓는다
   const row = (...cells) => cells.join("");
 
+  // 아이디는 고칠 수 없고 패널 제목 줄에 이미 보이므로(sub) 칸을 다시 두지 않는다(2026-10-20 디자인 수정).
   const basic = ui.formGroup(
     "기본정보",
-    row(
-      ui.field(req("아이디"), stack(ui.textField({ value: "platpark", readonly: true }))),
-      ui.field(req("이름"), ui.textField({ value: "박지우", maxlength: 20, placeholder: "한글 또는 영문 2~20자" })),
-    ),
+    ui.field(req("이름"), ui.textField({ value: "박지우", maxlength: 20, placeholder: "한글 또는 영문 2~20자" })),
     row(
       ui.field(req("연락처"), tel("010", "7781", "3302")),
       ui.field(req("이메일"), stack(ui.textField({ value: "jiwoo.park@whale-erp.example", maxlength: 100 }))),

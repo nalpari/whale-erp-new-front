@@ -120,12 +120,7 @@
               </div>
               <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
                 <div class="grid grid--2">
-                  <div class="field">
-                    <label for="eid">아이디 <span class="req">*</span></label>
-                    <input class="input mono" id="eid" value="platpark" readonly data-show="base off dupmail miss denied conflict fail" />
-                    <input class="input mono" value="platjung" readonly aria-label="아이디" data-show="self" hidden />
-                    <input class="input mono" value="platkim" readonly aria-label="아이디" data-show="lastfail" hidden />
-                  </div>
+                  <!-- 아이디는 고칠 수 없고 위 제목 줄(박지우 · platpark)에 이미 보이므로 칸을 다시 두지 않는다(2026-10-20 디자인 수정). -->
                   <div class="field">
                     <label for="enm">이름 <span class="req">*</span></label>
                     <input class="input" id="enm" value="박지우" maxlength="20" data-show="base off dupmail denied conflict fail" />

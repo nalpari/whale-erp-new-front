@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useEffectEvent, useRef, type ReactNode, type RefObject } from "react";
+import { useEffect, useEffectEvent, useRef, useSyncExternalStore, type ReactNode, type RefObject } from "react";
 import { EASE_OUT } from "./theme";
 
 // Figma Slide. 목록 화면 오른쪽에서 밀려 나오는 등록·수정 패널(RNB).
-// 화면을 덮지 않고 옆에 겹쳐 서므로 뒤쪽 목록은 그대로 읽을 수 있다. 바깥을 눌러도 닫히지 않는다 — 입력 중인 내용이 날아가면 안 된다.
+// 화면을 덮지 않고 옆에 겹쳐 서므로 뒤쪽 목록은 그대로 읽을 수 있다.
 // Esc 로는 닫는다. 안에서 열린 팝업이 있으면 그쪽이 먼저 닫히도록 useDismiss 와 같은 data-dismiss-open 규칙을 따르고, 안쪽 칸이 preventDefault 한 Esc 도 넘긴다.
 // 닫히면 패널 안이 inert 가 되어 포커스가 body 로 떨어지므로 연 버튼으로 되돌린다.
 // 놓을 자리는 쓰는 쪽에서 정한다 — relative 와 함께 overflow-x-clip 을 줘야 한다.
@@ -12,6 +12,16 @@ import { EASE_OUT } from "./theme";
 // hidden 이 아니라 clip 이다 — hidden 은 세로축까지 auto 로 끌어올려 헤더 팝업·툴팁이 잘린다.
 // 트리거와 패널 사이 어느 요소에도 relative 를 주면 안 된다. 그 순간 패널이 그 안으로 들어가 잘린다.
 // 버튼 줄까지 내용에 들어 있어 함께 스크롤한다.
+// 열린 패널은 바탕창(PanelBackdrop)에 자신을 등록한다 — 바탕을 누르면 열려 있는 패널을 모두 닫는다(데모 erp.js setBackdrop 과 같다, 2026-10-20).
+
+const openPanels = new Set<() => void>();
+const backdropListeners = new Set<() => void>();
+const notifyBackdrop = () => backdropListeners.forEach((l) => l());
+
+/** 지금 열려 있는 패널을 모두 닫는다 — PanelBackdrop 클릭 핸들러 전용. */
+function closeAllPanels() {
+  [...openPanels].forEach((close) => close());
+}
 export function SlidePanel({
   id,
   open,
@@ -35,6 +45,8 @@ export function SlidePanel({
 
   useEffect(() => {
     if (open) {
+      openPanels.add(close);
+      notifyBackdrop();
       wasOpen.current = true;
       const onKey = (e: KeyboardEvent) => {
         // 안쪽 칸이 Esc 를 먼저 써 버렸으면(preventDefault — 자동완성 층 닫기 등) 패널은 그대로 둔다.
@@ -42,7 +54,11 @@ export function SlidePanel({
         if (e.key === "Escape" && !e.defaultPrevented && !document.querySelector("[data-dismiss-open]")) close();
       };
       document.addEventListener("keydown", onKey);
-      return () => document.removeEventListener("keydown", onKey);
+      return () => {
+        document.removeEventListener("keydown", onKey);
+        openPanels.delete(close);
+        notifyBackdrop();
+      };
     }
     // 열렸다 닫힌 때만 되돌린다. 처음 그려질 때 다른 곳의 포커스를 빼앗으면 안 된다.
     if (wasOpen.current) {
@@ -62,5 +78,27 @@ export function SlidePanel({
     >
       {children}
     </aside>
+  );
+}
+
+const subscribeBackdrop = (listener: () => void) => {
+  backdropListeners.add(listener);
+  return () => backdropListeners.delete(listener);
+};
+const anyPanelOpen = () => openPanels.size > 0;
+
+/**
+ * 열린 패널이 있으면 화면 전체(헤더 포함)를 덮는 바탕창 — 데모(docs/demo/assets/erp.js setBackdrop)와 같다.
+ * 누르면 열려 있는 패널을 모두 닫는다. AdminFrame 처럼 모든 패널의 relative 조상 안에 한 번만 둔다.
+ */
+export function PanelBackdrop() {
+  const open = useSyncExternalStore(subscribeBackdrop, anyPanelOpen, () => false);
+  return (
+    <div
+      aria-hidden="true"
+      inert={!open}
+      onClick={closeAllPanels}
+      className={`fixed inset-0 z-[5] bg-erp-nav/40 transition-opacity duration-250 ${EASE_OUT} motion-reduce:transition-none ${open ? "opacity-100" : "opacity-0"}`}
+    />
   );
 }

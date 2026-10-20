@@ -170,9 +170,10 @@ export function AdminFormPanel(props: Props) {
       {failure && <FailedBand message={failure} detail="입력한 값은 그대로 두었습니다." />}
 
       <FormGroup title="기본정보">
-        <div className="flex flex-col gap-[8px]">
-          <Field label="아이디" required>
-            {mode === "create" ? (
+        {/* 아이디는 고칠 수 없고 패널 제목 줄에 이미 보이므로(위 h2) 칸을 다시 두지 않는다(2026-10-20 디자인 수정). */}
+        {mode === "create" && (
+          <div className="flex flex-col gap-[8px]">
+            <Field label="아이디" required>
               <TextField
                 value={form.loginId}
                 onChange={(e) => {
@@ -193,12 +194,10 @@ export function AdminFormPanel(props: Props) {
                 aria-required
                 autoComplete="off"
               />
-            ) : (
-              <TextField value={form.loginId} readOnly />
-            )}
-          </Field>
-          {message("loginId")}
-        </div>
+            </Field>
+            {message("loginId")}
+          </div>
+        )}
         <div className="flex flex-col gap-[8px]">
           <Field label="이름" required>
             <TextField value={form.name} onChange={(e) => set("name", e.target.value)} maxLength={20} placeholder="한글 또는 영문 2~20자" aria-invalid={invalid("name")} aria-describedby={describe("name")} aria-required />

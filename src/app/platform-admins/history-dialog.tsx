@@ -11,7 +11,7 @@ import { FailedBand } from "./admin-parts";
 // 생성 · 변경 이력 팝업(S-BRSPGB). BP 관리자 상세처럼 버튼을 누르면 팝업으로 본다(2026-10-08). 최신순, 한 쪽 10건.
 // 변경 전후 값 · 처리자 · 일시만 있고 사유와 비밀번호 값은 남기지 않는다.
 // 확인창(ConfirmDialog)과 같은 네이티브 <dialog> 다 — 표가 넓어 이 창만 넓힌다.
-const empty = (v: string | null) => (v ? v : <span className="text-erp-muted">—</span>);
+const empty = (v: string | null) => (v ? v : <span className="text-erp-muted">-</span>);
 
 const COLUMNS: Column<PlatformAdminHistory>[] = [
   { header: "일시", width: "w-[150px]", cell: (h) => formatDateTime(h.changedAt) },

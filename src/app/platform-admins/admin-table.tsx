@@ -5,7 +5,7 @@ import { Badge, DataTable, type Column } from "@/components/common";
 import { formatDateTime, formatPhone } from "@/lib/format";
 import type { PlatformAdmin } from "@/lib/platform-admins";
 
-// 플랫폼 관리자 목록 표(S-YTKWGG). 아이디 · 이름을 누르면 상세 패널이 열린다.
+// 플랫폼 관리자 목록 표(S-YTKWGG). 이름을 누르면 상세 패널이 열린다. 아이디는 고칠 수 없는 값이라 링크로 두지 않는다(2026-10-20 디자인 수정).
 // 미사용 계정은 줄 글자를 흐리게 하고 상태 배지(Badge, 사용 · 미사용 글자)로 가른다 — 색만으로 말하지 않는다(DESIGN.md).
 
 // 연락처 · 이메일 칸 앞 아이콘. public/icons 에 없는 모양이라 데모(docs/demo/src/pages/system/admins.mjs)와 같은 선을 그대로 그린다.
@@ -68,7 +68,7 @@ export function AdminTable({
   );
 
   const columns: Column<PlatformAdmin>[] = [
-    { header: "아이디", width: "w-[130px]", cell: (a) => open(a, a.loginId) },
+    { header: "아이디", width: "w-[130px]", cell: (a) => dim(a, a.loginId) },
     { header: "이름", width: "w-[110px]", cell: (a) => open(a, a.name ?? a.loginId) },
     { header: "사용자 권한", width: "w-[150px]", cell: (a) => dim(a, a.roleGroup.name) },
     {
@@ -76,8 +76,8 @@ export function AdminTable({
       width: "w-[100px]",
       cell: (a) => (a.accountStatus === "ACTIVE" ? <Badge tone="on">사용</Badge> : <Badge tone="off">미사용</Badge>),
     },
-    { header: "연락처", width: "w-[150px]", cell: (a) => (a.phone ? dim(a, <WithIcon icon="phone">{formatPhone(a.phone)}</WithIcon>) : "—") },
-    { header: "이메일", align: "left", cell: (a) => (a.email ? dim(a, <WithIcon icon="mail">{a.email}</WithIcon>) : "—") },
+    { header: "연락처", width: "w-[150px]", cell: (a) => (a.phone ? dim(a, <WithIcon icon="phone">{formatPhone(a.phone)}</WithIcon>) : "-") },
+    { header: "이메일", width: "w-[220px]", align: "left", cell: (a) => (a.email ? dim(a, <WithIcon icon="mail">{a.email}</WithIcon>) : "-") },
     {
       header: "최근 로그인",
       width: "w-[180px]",
