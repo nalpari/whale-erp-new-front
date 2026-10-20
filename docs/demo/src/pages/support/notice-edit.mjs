@@ -28,7 +28,7 @@ export default ({ A, R }) => {
             "9월 14일(일) 새벽 2시부터 5시까지 정기 점검이 있습니다.\n점검 시간에는 관리자 웹과 직원 전용 앱을 모두 사용할 수 없습니다.\n직원 근무 앱의 출퇴근 등록은 점검 중에도 기기에 기록되고 점검이 끝나면 자동으로 반영됩니다.\n점검이 일찍 끝나면 공지 없이 서비스를 재개합니다.",
         }),
       ) +
-      `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">첨부파일</span>${fileField}${note("이미지와 PDF 를 올릴 수 있습니다.")}${note("첨부파일 저장소 결정 대기(Plane #587) — 정해질 때까지 1차 구현에서 첨부를 만들지 않습니다.")}</div>`,
+      `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">첨부파일</span>${fileField}${note("이미지(JPG · PNG)와 PDF 를 올릴 수 있습니다. 5개까지, 파일당 10MB.")}</div>`,
   );
 
   // 게시 기간(api publishStartDate · publishEndDate)은 공지에만. 사용자 쪽에는 이 기간에만 보이고, 시작일이 없으면 등록 일시부터 보이며 게시일도 등록 일시다(WHALEERP-273).
@@ -49,9 +49,10 @@ export default ({ A, R }) => {
     `<p class="text-[14px] text-erp-ink">2026-09-05 14:20 · 이서준</p>` +
       note("둘이 동시에 고치면 나중 저장이 막히고(409) 최신 내용을 다시 불러옵니다. 덮어쓰지 않습니다."),
   );
+  // 저장에 성공하면 토스트로 알리고 이 화면에 머문다(#276).
   // 게시 상태는 임시저장 · 게시 · 비공개 어느 쪽으로든 바꾼다. 게시로 저장할 때만 노출 대상이 하나 이상 있어야 한다(WHALEERP-272).
   // 삭제는 지움 표시라 사용자에게서만 감추고 보관한다. 이미 지운 글을 또 지우면 이미 지웠다고 알린다.
-  const right = `<div class="flex items-center gap-[6px]">${ui.button("목록", { variant: "off", href: link(R, "support/community-notices.html") })}${ui.button("삭제", { variant: "soft" })}${ui.button("비공개", { variant: "soft" })}${ui.button("임시저장", { variant: "soft" })}${ui.button("게시", { href: link(R, "support/community-notices.html") })}</div>`;
+  const right = `<div class="flex items-center gap-[6px]">${ui.button("목록", { variant: "off", href: link(R, "support/community-notices.html") })}${ui.button("삭제", { variant: "soft" })}${ui.button("비공개", { variant: "soft", "data-toast": "비공개로 저장했습니다." })}${ui.button("임시저장", { variant: "soft", "data-toast": "임시저장했습니다." })}${ui.button("게시", { "data-toast": "게시했습니다." })}</div>`;
 
   return {
     title: "공지사항 수정",

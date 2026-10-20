@@ -637,6 +637,9 @@
   .ml-\[2px\] {
     margin-left: 2px;
   }
+  .ml-\[4px\] {
+    margin-left: 4px;
+  }
   .ml-\[6px\] {
     margin-left: 6px;
   }
@@ -740,6 +743,10 @@
   .size-\[34px\] {
     width: 34px;
     height: 34px;
+  }
+  .size-\[36px\] {
+    width: 36px;
+    height: 36px;
   }
   .size-\[38px\] {
     width: 38px;
@@ -2380,6 +2387,9 @@
   .pt-\[38px\] {
     padding-top: 38px;
   }
+  .pt-\[40px\] {
+    padding-top: 40px;
+  }
   .pt-\[44px\] {
     padding-top: 44px;
   }
@@ -2650,6 +2660,10 @@
   .leading-\[1\.7\] {
     --tw-leading: 1.7;
     line-height: 1.7;
+  }
+  .leading-\[1\.8\] {
+    --tw-leading: 1.8;
+    line-height: 1.8;
   }
   .leading-\[2\.3\] {
     --tw-leading: 2.3;

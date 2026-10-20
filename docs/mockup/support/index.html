@@ -69,7 +69,7 @@
                       </tr>
                       <tr>
                         <td class="k"><a class="tlink" href="notice-detail.html">KIOSK 9월 업데이트 — 결제 화면이 바뀝니다</a></td>
-                        <td><span class="badge badge--info">KIOSK</span></td>
+                        <td><span class="badge badge--ok">기능</span></td>
                         <td class="mono">2026-08-28</td>
                       </tr>
                       <tr>
@@ -107,7 +107,7 @@
                 </div>
                 <div class="panel__note">
                   <b>노출 대상에 내가 들어간 것만</b> 보인다. 상단 고정 공지가 먼저, 나머지는 게시일 내림차순이다.
-                  KIOSK 건은 KIOSK 구독자에게만 보인다.
+                  구분은 공지 유형 넷(점검 · 기능 · 약관 · 안내)뿐이다(WHALEERP-282). 부가서비스 대상은 1차에 쓰지 않아 구독 상품별로 가르지 않는다.
                 </div>
               </div>
             </div>
@@ -122,40 +122,42 @@
                   <div class="panel__end">
                     <div class="seg">
                       <button type="button" aria-pressed="true">전체</button>
+                      <button type="button" aria-pressed="false">가입·계정</button>
                       <button type="button" aria-pressed="false">직원·근로</button>
-                      <button type="button" aria-pressed="false">계정·권한</button>
                       <button type="button" aria-pressed="false">요금·구독</button>
+                      <button type="button" aria-pressed="false">점포·설비</button>
                     </div>
                   </div>
                 </div>
                 <div class="acclist" data-pager="11">
                   <details class="acc">
-                    <summary>근로계약서를 보냈는데 직원이 못 받았다고 합니다</summary>
+                    <summary><span class="badge badge--quiet">직원·근로</span> 근로계약서를 보냈는데 직원이 못 받았다고 합니다</summary>
                     <div class="acc__body">계약 상세에서 <b>발송 이력</b>을 먼저 확인하세요. 직원이 아직 가입하지 않았다면 상태가 <b>발송 대기</b>로 남고, 가입이 끝나는 순간 자동으로 발송됩니다.</div>
                   </details>
                   <details class="acc">
-                    <summary>퇴사한 직원의 급여명세서는 어떻게 보나요</summary>
+                    <summary><span class="badge badge--quiet">직원·근로</span> 퇴사한 직원의 급여명세서는 어떻게 보나요</summary>
                     <div class="acc__body">급여명세서 목록에서 재직 상태 필터를 <b>전체</b>로 바꾸면 보입니다. 인사 기록은 법정 보존 기간인 3년 이상 보관합니다.</div>
                   </details>
                   <details class="acc">
-                    <summary>직원이 계약서를 거부하면 어떻게 되나요</summary>
+                    <summary><span class="badge badge--quiet">직원·근로</span> 직원이 계약서를 거부하면 어떻게 되나요</summary>
                     <div class="acc__body">계약은 <b>거부</b> 상태로 남고 알림이 옵니다. 사유를 보고 내용을 고쳐 재발송하면 새 서명 요청이 나갑니다.</div>
                   </details>
                   <details class="acc">
-                    <summary>점포를 더 늘리려면 어떻게 하나요</summary>
+                    <summary><span class="badge badge--quiet">점포·설비</span> 점포를 더 늘리려면 어떻게 하나요</summary>
                     <div class="acc__body">요금 PLAN 의 점포 수를 넘으면 등록이 막힙니다. 좌측 아래 <b>PLAN 사용량</b>에서 남은 수를 확인하고, 부족하면 점포수 추가 부가서비스를 구독하세요.</div>
                   </details>
                   <details class="acc">
-                    <summary>관리자를 한 명 더 두려면 어떻게 하나요</summary>
+                    <summary><span class="badge badge--quiet">가입·계정</span> 관리자를 한 명 더 두려면 어떻게 하나요</summary>
                     <div class="acc__body">환경설정의 <b>사용자·권한 관리</b>에서 초대합니다. 점포 단위 관리자는 그 점포의 직원만 봅니다.</div>
                   </details>
                   <details class="acc">
-                    <summary>비밀번호를 잊은 직원은 어떻게 하나요</summary>
+                    <summary><span class="badge badge--quiet">직원·근로</span> 비밀번호를 잊은 직원은 어떻게 하나요</summary>
                     <div class="acc__body">직원이 앱의 비밀번호 찾기에서 이메일 핀으로 직접 재설정할 수 있습니다. 그래도 안 되면 직원 상세에서 <b>비밀번호 초기화</b>를 누르세요. 재설정 링크가 직원 이메일로 가고 직원이 열어 새 비밀번호를 정합니다. 링크는 24시간 유효하고 한 번만 쓸 수 있습니다. 새 비밀번호를 정하면 그 링크는 무효가 되고, 초기화를 다시 누르면 앞서 보낸 링크도 바로 무효가 됩니다. 관리자는 그 값을 보지 못합니다.</div>
                   </details>
                 </div>
                 <div class="panel__note">
                   답변은 그 자리에서 펼친다. 상세 페이지는 없다. 카테고리로 갈라도 길어지면 표와 같은 페이저로 나눈다.
+                  카테고리는 공통코드 FAQ_CATEGORY(가입·계정 · 직원·근로 · 요금·구독 · 점포·설비)이고 질문마다 앞에 보인다(WHALEERP-283).
                 </div>
               </div>
             </div>
@@ -255,7 +257,9 @@
                   <div class="panel__body">
                     <div class="field">
                       <label for="q-cat">분류</label>
+                      <!-- 분류는 공통코드 INQUIRY_CATEGORY(WHALEERP-284). -->
                       <select class="select" id="q-cat">
+                        <option>가입·계정</option>
                         <option>직원·근로</option>
                         <option>요금·구독</option>
                         <option>점포·설비</option>
@@ -270,12 +274,11 @@
                       <label for="q-body">내용</label>
                       <textarea class="textarea" id="q-body" rows="5" placeholder="어떤 화면에서 무엇을 하려다 막혔는지 적어 주시면 빨리 답할 수 있습니다."></textarea>
                     </div>
-                    <!-- 첨부파일 · 운영 정책 CNT-18 (2026-10-08 재영). 등록할 때만 붙이고 뒤에는 더하거나 빼지 않는다. 첨부파일 저장소 결정 대기(Plane #587) — 정해질 때까지 1차 구현에서 첨부를 만들지 않는다. -->
+                    <!-- 첨부파일 · 운영 정책 CNT-18 (2026-10-08 재영). 등록할 때만 붙이고 뒤에는 더하거나 빼지 않는다. 저장소가 정해져(WHALEERP-587) 1차에서 첨부를 함께 만든다(WHALEERP-281, 2026-10-19 재영). -->
                     <div class="field" style="margin-top: var(--s-3)" data-attach>
                       <label for="q-file">첨부파일</label>
                       <input class="input" id="q-file" type="file" multiple accept=".jpg,.jpeg,.png,.pdf" />
                       <span class="help">이미지·PDF, 5개까지, 파일당 10MB</span>
-                      <span class="help"><span class="badge badge--warn">결정 대기</span> 첨부파일 저장소 결정 대기(Plane #587) — 정해질 때까지 1차 구현에서 첨부를 만들지 않는다.</span>
                       <ul style="list-style: none; margin: var(--s-2) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-1)" data-attach-list>
                         <li class="spread"><span>주휴수당_0원_화면.png <span class="mono subtle">412 KB</span></span><button class="tbtn" type="button" data-attach-del>빼기</button></li>
                         <li class="spread"><span>9월_급여명세서_배정숙.pdf <span class="mono subtle">1.2 MB</span></span><button class="tbtn" type="button" data-attach-del>빼기</button></li>
@@ -289,6 +292,7 @@
                   </div>
                   <div class="panel__note">
                     등록 건수에 제한은 없다(429 접수 제한 없음). 같은 관리자가 제목·내용이 같은 문의를 5분 안에 다시 올리면 409 로 막고 알린다(2026-10-14 재영).
+                    등록에 성공하면 「문의를 등록했습니다」 토스트를 띄운다. 409 나 저장 실패 때는 쓴 내용과 올린 파일을 그대로 두고 사유와 다시 [문의 등록]을 누르라는 안내를 보인다(WHALEERP-284).
                   </div>
                 </div>
                 </section>
