@@ -56,7 +56,7 @@ export function bpDetailBody(A, R, { panel = false } = {}) {
     ["최종 인증 일시", "2026-03-04 10:20"],
   ]));
   const history = ui.dataTable(
-    [{ header: "변경 일시", width: "w-[180px]" }, { header: "변경자", width: "w-[140px]" }, { header: "변경 항목", width: "w-[180px]" }, { header: "변경 전" }, { header: "변경 후" }],
+    [{ header: "변경 일시", width: "w-[180px]" }, { header: "변경자", width: "w-[140px]" }, { header: "변경 항목", width: "w-[180px]", align: "left" }, { header: "변경 전", align: "left" }, { header: "변경 후", align: "left" }],
     [
       ["2026-08-14 10:31", "platkim", "이메일", "hayoon@hangang.kr", "hayoon@hangang.co.kr"],
       ["2026-03-02 16:45", "hangang01", "사업자주소", "서울 마포구 망원로 42, 2층", "서울 마포구 망원로 42, 3층"],

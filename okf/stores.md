@@ -8,7 +8,7 @@ sources:
   - { id: stores-data, resource: ../src/lib/stores.ts, title: 점포 데이터 접근 }
   - { id: store-form, resource: ../src/lib/store-form.ts, title: 점포 등록 · 수정 폼 규칙 }
   - { id: store-view, resource: ../src/lib/store-view.ts, title: 점포 표기 }
-generated: { by: claude-code/sonnet-5.5, at: 2026-10-19T17:00:01Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-20T11:00:00Z }
 ---
 
 근거: `docs/mockup/stores/` (목업 · 1차 · R-QTPRUQ)
@@ -85,7 +85,7 @@ generated: { by: claude-code/sonnet-5.5, at: 2026-10-19T17:00:01Z }
 * 좌표(2026-10-14): 주소로 좌표 계산은 front 가 한다 — 점포 주소를 고르면 앞 좌표를 비우고, 그 도로명주소(참고항목 뺌, 못 찾으면 지번주소)로 카카오 로컬 API 「주소 검색」(서버에서만 · `KAKAO_REST_API_KEY`)에 물어 위도 · 경도를 채운다. 못 받으면 비운 채 이유를 보이고 직접 적는다. 주소를 지우면 좌표도 지운다
 * 사업자 진위확인은 api 연동 전이라 503 을 칸 아래에 보인다
 * 결과를 모를 때(503 을 뺀 5xx · 연결 끊김 · 응답을 못 읽음): 등록은 「목록에서 확인」을 안내하고 저장을 잠근다(다시 저장하면 둘이 생길 수 있다). 수정은 최신 정보를 다시 받아 바뀌었으면 저장된 것으로 본다. 삭제는 목록으로 보내고 알린다
-* 등록 BP: 이 탭의 BP 를 싣는다 — BP 계정은 소속 BP 다. 플랫폼 계정은 BP 를 고른 탭에서만 점포 메뉴(ERP)가 열리는데, 헤더의 BP 선택기가 아직 없어 **지금은 플랫폼 계정이 점포를 등록할 길이 없다**(환경 변수 `STORE_REGISTER_BP_CODE_ID` 를 걷은 2026-10-15 부터). BP 선택기가 생기면 그 탭의 BP 로 등록된다. 화면 버튼은 지금 주소(/stores 와 그 아래 등록 · 수정)의 메뉴 권한(`usePagePermission`, 메뉴 코드를 적지 않는다)으로 보이고, 막는 것은 api 다
+* 등록 BP: 이 탭의 BP 를 싣는다 — BP 계정은 소속 BP 다. 플랫폼 계정은 BP 를 고른 탭에서만 점포 메뉴(ERP)가 열린다 — 서비스 바로가기의 웨일ERP 로 BP 를 골라 연 새 탭(`/bp-switch`)의 점포관리에서 등록하면 그 탭의 BP 로 등록된다(2026-10-19. 환경 변수 `STORE_REGISTER_BP_CODE_ID` 는 2026-10-15 에 걷었다). 화면 버튼은 지금 주소(/stores 와 그 아래 등록 · 수정)의 메뉴 권한(`usePagePermission`, 메뉴 코드를 적지 않는다)으로 보이고, 막는 것은 api 다
 * 상태만 바꾸는 저장(상세 [상태 변경])은 상세 값을 그대로 다시 보내는 왕복이다 — 빈 사업자주소 · 층 구분만 있는 줄 · 화면이 모르는 층 구분도 바꾸지 않고 돌려보낸다
 * 화면 코드는 [Whale ERP Frontend](/whale-erp-front.md) 의 `src/app/stores/` 항목
 

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { CHECKBOX } from "@/app/design/guest/guest-form";
 import { HOVER } from "@/app/design/guest/theme";
-import { TermsDialog } from "./_components/terms-dialog";
+import { TermsDialog } from "./terms-dialog";
 
 export type AgreeValue = { useAgreed: boolean; privacyAgreed: boolean };
 export const AGREE_INITIAL: AgreeValue = { useAgreed: false, privacyAgreed: false };

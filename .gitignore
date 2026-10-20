@@ -51,3 +51,11 @@ docs/flow/**/*.visual-check.*.png
 # Plane 러너가 만드는 작업 id 짝. 사람마다 다르고 공유하지 않는다
 docs/plane/scripts/ids.json
 
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/
+/.ignore
+/.mcp.json
+/.claude/helpers/
+/.claude/skills/graft/
+/.claude/settings.local.json

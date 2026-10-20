@@ -85,6 +85,8 @@
         el.querySelector("input").disabled = el.hidden;
       }
       submit.textContent = key === "id" ? "아이디 확인" : "임시 비밀번호 받기";
+      document.querySelector("[data-find-lead]").textContent =
+        key === "id" ? "회원가입 시 등록한 이름, 이메일 주소를 입력해 주세요." : "회원가입 시 등록한 이름, 아이디, 이메일 주소를 입력해 주세요.";
       showResult(null);
     };
     for (const t of tabs) t.addEventListener("click", () => select(t.dataset.findTab));
