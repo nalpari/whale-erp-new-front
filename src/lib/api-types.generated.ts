@@ -272,7 +272,7 @@ export interface paths {
         put?: never;
         /**
          * 비밀번호 찾기. 이름 · 아이디 · 이메일이 모두 맞는 사용 중 계정에 임시 비밀번호(1시간)를 메일로 보낸다.
-         *     일치 여부 · 메일 발송 여부와 상관없이 같은 202 다(맞는 정보로 1시간 5번을 넘으면 429). 받으면 잠금이 풀리고, 그 비밀번호로 들어오면 강제 변경 대상이다.
+         *     받으면 잠금이 풀리고, 그 비밀번호로 들어오면 강제 변경 대상이다.
          */
         post: operations["AdminAuthController_issueTemporaryPassword"];
         delete?: never;
@@ -1398,8 +1398,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * 재발송 — 발송 대기(가입 초대를 받지 못함) · 서명 대기에서 가입 초대 알림톡을 새 초대 코드 · 새 서명 기한(30일)으로 다시
-         *     보낸다. 상태는 그대로이고 앞서 나간 초대 코드는 무효다. 앱으로 받는 직원(가입 · 계정 있음)은 앱 알림이 아직 없어 409.
+         * 재발송 — 발송 대기(가입 초대를 받지 못함) · 서명 대기에서 가입 초대 알림톡을 새 링크 · 새 서명 기한(30일)으로 다시
+         *     보낸다. 상태는 그대로이고 앞서 나간 링크는 무효다. 앱으로 받는 직원(가입 · 계정 있음)은 앱 알림이 아직 없어 409.
          */
         post: operations["ContractSendController_send"];
         delete?: never;
@@ -1571,7 +1571,10 @@ export interface paths {
         /** 공지사항 또는 FAQ 목록. 최근 수정일 내림차순. */
         get: operations["PostsController_list"];
         put?: never;
-        /** 등록. 임시저장 · 게시 · 비공개 어느 상태로든 만든다. 게시하려면 노출 대상이 있어야 한다. */
+        /**
+         * 등록. 임시저장 · 게시 · 비공개 어느 상태로든 만든다. 게시하려면 노출 대상이 있어야 한다.
+         *     JSON 이나, 첨부가 있으면 multipart(텍스트 칸 + `files`)로 보낸다. 첨부는 공지사항만이다.
+         */
         post: operations["PostsController_create"];
         delete?: never;
         options?: never;
@@ -1588,13 +1591,31 @@ export interface paths {
         };
         get: operations["PostsController_get"];
         /**
-         * 수정. 게시 상태 · 상단 고정 · 노출 대상도 이 요청으로 바꾼다. 게시된 글이면 바로 사용자에게 보인다.
+         * 수정. 게시 상태 · 상단 고정 · 노출 대상 · 첨부도 이 요청으로 바꾼다. 게시된 글이면 바로 사용자에게 보인다.
+         *     첨부는 `files` 로 더하고 `removeAttachmentIds` 로 뺀다 — 남는 것과 더한 것이 합쳐 5개까지다.
          *     읽은 뒤 다른 관리자가 고쳤으면 409 — 다시 읽어 최신 내용을 본다.
          */
         put: operations["PostsController_update"];
         post?: never;
         /** 지운다(지움 표시). 사용자에게 보이지 않고 행은 남는다. */
         delete: operations["PostsController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/posts/{postId}/attachments/{postAttachmentId}/download-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 첨부 내려받기 주소. 300초 동안 쓸 수 있는 서명 주소이고, 받으면 원래 파일 이름으로 저장된다. */
+        get: operations["PostsController_attachmentDownloadUrl"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1632,6 +1653,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/public-posts/{postId}/attachments/{postAttachmentId}/download-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 공지사항 첨부 내려받기 주소. 300초 동안 쓸 수 있고, 받으면 원래 파일 이름으로 저장된다. */
+        get: operations["PublicPostsController_attachmentDownloadUrl"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/support-posts": {
         parameters: {
             query?: never;
@@ -1656,6 +1694,26 @@ export interface paths {
             cookie?: never;
         };
         get: operations["SupportPostsController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/support-posts/{postId}/attachments/{postAttachmentId}/download-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 공지사항 첨부 내려받기 주소(#282). 첨부는 공지사항에만 있으므로 공지사항(MN000035) 조회 권한을 먼저 본다.
+         *     그 관리자에게 보이는 공지사항(상세와 같은 판정)의 첨부가 아니면 404.
+         */
+        get: operations["SupportPostsController_attachmentDownloadUrl"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2369,7 +2427,7 @@ export interface components {
             email: string;
         };
         AdminTemporaryPasswordResponseDto: {
-            /** @description 정보가 맞든 아니든, 메일이 나갔든 아니든 같은 문구다 — 응답으로 계정 존재가 드러나지 않게. */
+            /** @description 메일을 보낸 뒤에만 오는 응답이다. 맞는 계정이 없으면 404, 메일을 못 보내면 503 이다. */
             message: string;
         };
         AdminLoginIdFindDto: {
@@ -4418,66 +4476,30 @@ export interface components {
              */
             businessVerification?: components["schemas"]["BusinessIdentityInputDto"];
         };
-        /** @enum {string} */
-        PostContentType: "NOTICE" | "FAQ";
-        /** @enum {string} */
+        /**
+         * @description 게시 상태. 게시하려면 노출 대상이 하나 이상 있어야 한다.
+         * @enum {string}
+         */
         PostStatus: "DRAFT" | "PUBLISHED" | "PRIVATE";
-        /** @enum {string} */
+        /**
+         * @description 공지사항 유형. 공지사항이면 필수.
+         * @enum {string}
+         */
         NoticeType: "MAINTENANCE" | "FEATURE" | "TERMS" | "GENERAL";
-        PostListItemDto: {
-            contentType: components["schemas"]["PostContentType"];
-            status: components["schemas"]["PostStatus"];
-            noticeType: components["schemas"]["NoticeType"] | null;
-            postId: number;
-            title: string;
-            faqCategoryCode: string | null;
-            /** @description 상단 고정 표시. 관리자 목록은 고정 글을 위로 올리지 않는다 — 최근 수정일 순서 그대로다. */
-            isPinned: boolean;
-            /**
-             * Format: date-time
-             * @description 최근 수정 일시
-             */
-            updatedAt: string;
-            /** @description 최근 수정자 이름. 수정자가 없거나, 계정을 찾을 수 없거나, 이름이 비어 있으면 null. */
-            updatedByName: string | null;
-        };
-        PostListResponseDto: {
-            items: components["schemas"]["PostListItemDto"][];
-            total: number;
-        };
-        /** @enum {string} */
-        PostAudienceType: "GUEST" | "MEMBER" | "BP" | "STORE" | "ADDON";
-        PostResponseDto: {
-            contentType: components["schemas"]["PostContentType"];
-            status: components["schemas"]["PostStatus"];
-            noticeType: components["schemas"]["NoticeType"] | null;
-            audiences: components["schemas"]["PostAudienceType"][];
-            postId: number;
-            title: string;
-            body: string;
-            isPinned: boolean;
-            /** @description 게시 시작일(YYYY-MM-DD) */
-            publishStartDate: string | null;
-            /** @description 게시 종료일(YYYY-MM-DD) */
-            publishEndDate: string | null;
-            faqCategoryCode: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @description 최근 수정 일시. 수정할 때 이 값을 그대로 보낸다.
-             */
-            updatedAt: string;
-            /** @description 최근 수정자(관리자 ID) */
-            updatedBy: number | null;
-            updatedByName: string | null;
-        };
+        /**
+         * @description 공지사항 · FAQ. 등록 뒤 바꾸지 않는다.
+         * @enum {string}
+         */
+        PostContentType: "NOTICE" | "FAQ";
         CreatePostDto: {
             /** @description 게시 상태. 게시하려면 노출 대상이 하나 이상 있어야 한다. */
             status: components["schemas"]["PostStatus"];
             /** @description 공지사항 유형. 공지사항이면 필수. */
             noticeType?: components["schemas"]["NoticeType"] | null;
-            /** @description 노출 대상. 1차는 비회원 · 회원 · BP · 점포. 「전체」는 네 개를 모두 보낸다. */
+            /**
+             * @description 노출 대상. 1차는 비회원 · 회원 · BP · 점포. 「전체」는 네 개를 모두 보낸다. 빼면 빈 목록이다.
+             * @default []
+             */
             audiences: ("GUEST" | "MEMBER" | "BP" | "STORE")[];
             /** @description 공지사항 · FAQ. 등록 뒤 바꾸지 않는다. */
             contentType: components["schemas"]["PostContentType"];
@@ -4506,13 +4528,21 @@ export interface components {
             status: components["schemas"]["PostStatus"];
             /** @description 공지사항 유형. 공지사항이면 필수. */
             noticeType?: components["schemas"]["NoticeType"] | null;
-            /** @description 노출 대상. 1차는 비회원 · 회원 · BP · 점포. 「전체」는 네 개를 모두 보낸다. */
+            /**
+             * @description 노출 대상. 1차는 비회원 · 회원 · BP · 점포. 「전체」는 네 개를 모두 보낸다. 빼면 빈 목록이다.
+             * @default []
+             */
             audiences: ("GUEST" | "MEMBER" | "BP" | "STORE")[];
             /**
              * @description 고치기 전에 읽은 `updatedAt` 그대로. 그 뒤 누가 고쳤으면 409 이고, 상세를 다시 읽어 최신 내용을 본다.
              * @example 2026-10-13T01:02:03.456Z
              */
             updatedAt: string;
+            /**
+             * @description 뺄 첨부파일 ID. 공지사항만. 보내지 않으면 지금 첨부를 모두 남긴다 — 더할 파일은 같은 요청의 `files` 칸이다.
+             *     그 공지의 지우지 않은 첨부가 아니면 400.
+             */
+            removeAttachmentIds?: number[];
             /** @description 제목. 200자까지. */
             title: string;
             /**
@@ -4533,6 +4563,65 @@ export interface components {
             /** @description FAQ 카테고리 — 공통코드 FAQ_CATEGORY 의 플랫폼 원본 중 사용 중인 상세코드. FAQ 면 필수. */
             faqCategoryCode?: string | null;
         };
+        PostListItemDto: {
+            contentType: components["schemas"]["PostContentType"];
+            status: components["schemas"]["PostStatus"];
+            noticeType: components["schemas"]["NoticeType"] | null;
+            postId: number;
+            title: string;
+            faqCategoryCode: string | null;
+            /** @description 상단 고정 표시. 관리자 목록은 고정 글을 위로 올리지 않는다 — 최근 수정일 순서 그대로다. */
+            isPinned: boolean;
+            /**
+             * Format: date-time
+             * @description 최근 수정 일시
+             */
+            updatedAt: string;
+            /** @description 최근 수정자 이름. 수정자가 없거나, 계정을 찾을 수 없거나, 이름이 비어 있으면 null. */
+            updatedByName: string | null;
+        };
+        PostListResponseDto: {
+            items: components["schemas"]["PostListItemDto"][];
+            total: number;
+        };
+        /** @enum {string} */
+        PostAudienceType: "GUEST" | "MEMBER" | "BP" | "STORE" | "ADDON";
+        /** @enum {string} */
+        AttachmentFileType: "JPG" | "PNG" | "PDF";
+        PostAttachmentDto: {
+            fileType: components["schemas"]["AttachmentFileType"];
+            postAttachmentId: number;
+            /** @description 원래 파일 이름 */
+            fileName: string;
+            sizeBytes: number;
+        };
+        PostResponseDto: {
+            contentType: components["schemas"]["PostContentType"];
+            status: components["schemas"]["PostStatus"];
+            noticeType: components["schemas"]["NoticeType"] | null;
+            audiences: components["schemas"]["PostAudienceType"][];
+            postId: number;
+            title: string;
+            body: string;
+            isPinned: boolean;
+            /** @description 게시 시작일(YYYY-MM-DD) */
+            publishStartDate: string | null;
+            /** @description 게시 종료일(YYYY-MM-DD) */
+            publishEndDate: string | null;
+            faqCategoryCode: string | null;
+            /** @description 첨부파일. 올린 순서. FAQ 는 늘 빈 목록이다. */
+            attachments: components["schemas"]["PostAttachmentDto"][];
+            /** Format: date-time */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description 최근 수정 일시. 수정할 때 이 값을 그대로 보낸다.
+             */
+            updatedAt: string;
+            /** @description 최근 수정자(관리자 ID) */
+            updatedBy: number | null;
+            updatedByName: string | null;
+        };
         PublishedPostResponseDto: {
             contentType: components["schemas"]["PostContentType"];
             noticeType: components["schemas"]["NoticeType"] | null;
@@ -4549,6 +4638,20 @@ export interface components {
         PublishedPostListResponseDto: {
             items: components["schemas"]["PublishedPostResponseDto"][];
             total: number;
+        };
+        PublishedPostDetailResponseDto: {
+            contentType: components["schemas"]["PostContentType"];
+            noticeType: components["schemas"]["NoticeType"] | null;
+            postId: number;
+            title: string;
+            /** @description 평문. 화면은 HTML 로 그리지 않고 이스케이프해 보인다. */
+            body: string;
+            faqCategoryCode: string | null;
+            /** @description 상단 고정. 목록은 고정 글을 먼저 준다. */
+            isPinned: boolean;
+            /** @description 게시일(YYYY-MM-DD) — 게시 시작일, 없으면 등록 일시의 한국 날짜. */
+            postedDate: string;
+            attachments: components["schemas"]["PostAttachmentDto"][];
         };
         PostNeighborDto: {
             postId: number;
@@ -4568,6 +4671,7 @@ export interface components {
             isPinned: boolean;
             /** @description 게시일(YYYY-MM-DD) — 게시 시작일, 없으면 등록 일시의 한국 날짜. */
             postedDate: string;
+            attachments: components["schemas"]["PostAttachmentDto"][];
             /**
              * @description 이전 — 목록에서 바로 아래 글(대개 더 오래된 글. 상단 고정 글의 맨 아래에서는 그보다 새 일반 글일 수 있다).
              *     맨 아래이거나 FAQ 면 null.
@@ -4917,13 +5021,13 @@ export interface components {
             repliedBy: number;
             repliedByName: string | null;
         };
-        /** @enum {string} */
-        AttachmentFileType: "JPG" | "PNG" | "PDF";
         InquiryAttachmentDto: {
             fileType: components["schemas"]["AttachmentFileType"];
             inquiryAttachmentId: number;
             fileName: string;
             sizeBytes: number;
+            /** @description 작은 미리보기(이미지만, 300초 서명 주소). PDF · 저장소 설정 없음 · 서명 실패면 null. */
+            thumbnailUrl: string | null;
         };
         InquiryResponseDto: {
             status: components["schemas"]["InquiryStatus"];
@@ -5638,6 +5742,34 @@ export interface operations {
                     "application/json": components["schemas"]["AdminTemporaryPasswordResponseDto"];
                 };
             };
+            /** @description 이름 · 아이디가 비었거나 20자를 넘음 · 이메일 형식이 아니거나 254자를 넘음 · 모르는 칸이 있음 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 맞는 사용 중 계정이 없음. 미사용 · 탈퇴 · 삭제와만 맞아도 아이디 찾기와 같은 문구 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같은 계정 1시간 5번(한글 문구) 또는 요청 제한 — 같은 IP 1분 30번, 같은 이메일 10분 10번 */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description SMTP 로 메일을 보내지 못함 · 메일 설정 없음. `code: TEMPORARY_PASSWORD_SEND_FAILED`, 임시 비밀번호는 저장하지 않는다. 템플릿이 꺼진 것처럼 다시 시도해도 풀리지 않는 실패는 500 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
     };
     AdminAuthController_findLoginId: {
@@ -5675,7 +5807,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 요청 제한(임시) — 같은 IP 1분 30번, 같은 이메일 10분 10번 */
+            /** @description 요청 제한 — 같은 IP 1분 30번, 같은 이메일 10분 10번 */
             429: {
                 headers: {
                     [name: string]: unknown;
@@ -8441,7 +8573,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 같은 번호의 다른 저장이 길어져 시간 초과(잠시 뒤 다시) · 가입 초대를 보낼 수 없음(직원 앱 설치 주소 STAFF_APP_URL 없음, 가입 초대 템플릿 꺼짐 — 저장하지 않음) */
+            /** @description 같은 번호의 다른 저장이 길어져 시간 초과(잠시 뒤 다시) · 가입 초대를 보낼 수 없음(직원 앱 주소 STAFF_APP_URL · 대체 문자 발신번호 BIZPPURIO_SMS_FROM 없음, 가입 초대 템플릿 꺼짐 — 저장하지 않음) */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -8614,7 +8746,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 같은 번호의 다른 저장이 길어져 시간 초과(잠시 뒤 다시) · 가입 초대를 보낼 수 없음(직원 앱 설치 주소 STAFF_APP_URL 없음, 가입 초대 템플릿 꺼짐 — 저장하지 않음) */
+            /** @description 같은 번호의 다른 저장이 길어져 시간 초과(잠시 뒤 다시) · 가입 초대를 보낼 수 없음(직원 앱 주소 STAFF_APP_URL · 대체 문자 발신번호 BIZPPURIO_SMS_FROM 없음, 가입 초대 템플릿 꺼짐 — 저장하지 않음) */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -8722,7 +8854,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 같은 번호의 다른 저장이 길어져 시간 초과(잠시 뒤 다시) · 가입 초대를 보낼 수 없음(직원 앱 설치 주소 STAFF_APP_URL 없음, 가입 초대 템플릿 꺼짐 — 저장하지 않음) */
+            /** @description 같은 번호의 다른 저장이 길어져 시간 초과(잠시 뒤 다시) · 가입 초대를 보낼 수 없음(직원 앱 주소 STAFF_APP_URL · 대체 문자 발신번호 BIZPPURIO_SMS_FROM 없음, 가입 초대 템플릿 꺼짐 — 저장하지 않음) */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -8893,7 +9025,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 직원 앱 설치 주소(STAFF_APP_URL)가 없음 · 가입 초대 템플릿이 없거나 꺼짐 */
+            /** @description 직원 앱 주소(STAFF_APP_URL) · 대체 문자 발신번호(BIZPPURIO_SMS_FROM)가 없음 · 가입 초대 템플릿이 없거나 꺼짐 */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -9497,7 +9629,14 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreatePostDto"];
+                "application/json": components["schemas"]["CreatePostDto"] & {
+                    /** @description 첨부파일 — 공지사항만, JPG · PNG · PDF, 5개 · 파일당 10MB */
+                    files?: string[];
+                };
+                "multipart/form-data": components["schemas"]["CreatePostDto"] & {
+                    /** @description 첨부파일 — 공지사항만, JPG · PNG · PDF, 5개 · 파일당 10MB */
+                    files?: string[];
+                };
             };
         };
         responses: {
@@ -9509,7 +9648,7 @@ export interface operations {
                     "application/json": components["schemas"]["PostResponseDto"];
                 };
             };
-            /** @description 노출 대상 없이 게시 · 공지사항 유형 없음 · FAQ 카테고리 없음 · 게시 종료일이 시작일보다 앞섬 */
+            /** @description 노출 대상 없이 게시 · 공지사항 유형 없음 · FAQ 카테고리 없음 · 게시 종료일이 시작일보다 앞섬 · FAQ 에 첨부 · 파일 종류 · 크기 · 개수 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -9518,6 +9657,13 @@ export interface operations {
             };
             /** @description 플랫폼 관리자가 아님 */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 첨부가 있는데 저장소가 설정되지 않음 · 저장소 오류 */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -9571,7 +9717,14 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpdatePostDto"];
+                "application/json": components["schemas"]["UpdatePostDto"] & {
+                    /** @description 첨부파일 — 공지사항만, JPG · PNG · PDF, 5개 · 파일당 10MB */
+                    files?: string[];
+                };
+                "multipart/form-data": components["schemas"]["UpdatePostDto"] & {
+                    /** @description 첨부파일 — 공지사항만, JPG · PNG · PDF, 5개 · 파일당 10MB */
+                    files?: string[];
+                };
             };
         };
         responses: {
@@ -9583,7 +9736,7 @@ export interface operations {
                     "application/json": components["schemas"]["PostResponseDto"];
                 };
             };
-            /** @description 등록과 같음 */
+            /** @description 등록과 같음 · 그 공지의 첨부가 아닌 ID 를 뺌 · 합쳐 5개 넘음 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -9606,6 +9759,13 @@ export interface operations {
             };
             /** @description 그사이 다른 관리자가 고침 */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 첨부가 있는데 저장소가 설정되지 않음 · 저장소 오류 */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -9646,6 +9806,49 @@ export interface operations {
             };
             /** @description 이미 지운 게시물 */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PostsController_attachmentDownloadUrl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+                postAttachmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DownloadUrlResponseDto"];
+                };
+            };
+            /** @description 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 게시물 · 그 글의 첨부가 아님 · 뺀 첨부 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 첨부파일 저장소 설정 없음 */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -9700,11 +9903,47 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PublishedPostResponseDto"];
+                    "application/json": components["schemas"]["PublishedPostDetailResponseDto"];
                 };
             };
             /** @description 없음 · 비공개 · 지움 · 게시 기간 밖 · 비회원 대상 아님 */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PublicPostsController_attachmentDownloadUrl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+                postAttachmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DownloadUrlResponseDto"];
+                };
+            };
+            /** @description 글이 비회원에게 보이지 않음(상세와 같음) · 그 글의 첨부가 아님 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 첨부파일 저장소 설정 없음 */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -9778,6 +10017,49 @@ export interface operations {
             };
             /** @description 없음 · 비공개 · 지움 · 게시 기간 밖 · 노출 대상 아님 */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SupportPostsController_attachmentDownloadUrl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                postId: string;
+                postAttachmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DownloadUrlResponseDto"];
+                };
+            };
+            /** @description 관리자 토큰이 아니거나 사용 중인 관리자 계정이 아님 · 그 글 종류 메뉴의 조회 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 글이 보이지 않음(상세와 같음) · 그 글의 첨부가 아님 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 첨부파일 저장소 설정 없음 */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
