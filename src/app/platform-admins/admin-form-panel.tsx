@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useId, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
+import { useId, useLayoutEffect, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
 import { Button, Field, FormGroup, FormRow, RequiredMark, Select, SlidePanel, TextField } from "@/components/common";
 import { useAccount, useCodes } from "@/components/site/session-gate";
 import { labelOf } from "@/lib/enums";
@@ -51,6 +51,13 @@ export function AdminFormPanel(props: Props) {
   const [form, setForm] = useState<AdminForm>(initialForm);
   const [errors, setErrors] = useState<Partial<Record<AdminFormField, string>>>({});
   const [failure, setFailure] = useState<string | null>(null);
+  /** 아이디 중복 확인 차례 — 고치거나 다시 물으면(패널을 다시 열어도) 올라가, 앞선 답을 버린다 */
+  const checkNumber = useRef(0);
+  /** 중복확인 대기·성공 상태(코드 리뷰 반영) — 오류는 기존대로 errors.loginId 에 둔다 */
+  const [checkingLoginId, setCheckingLoginId] = useState(false);
+  const [loginIdAvailable, setLoginIdAvailable] = useState(false);
+  /** 칸을 되돌릴 때마다 올라간다 — 아래 effect 가 이 값을 보고 중복확인 상태 · 차례를 함께 되돌린다 */
+  const [resetSignal, setResetSignal] = useState(0);
 
   // 열 때마다(취소한 입력을 남기지 않는다) · 최신 정보를 다시 받았을 때(동시 수정 409 뒤) 칸을 새로 채운다.
   // 패널을 다시 마운트(key)하면 처음부터 열린 자리에 그려져 밀려 나오는 전환이 사라지므로, 그리는 중에 값만 되돌린다.
@@ -67,15 +74,22 @@ export function AdminFormPanel(props: Props) {
       setErrors({});
       // 최신 정보만 새로 받은 때는 띠를 남긴다 — 결과를 모른 채 새로 받은 경우 그 안내가 사라지면 안 된다
       if (reopened) setFailure(null);
+      // 아이디 중복확인 상태도 같이 되돌린다 — 안 그러면 되돌린 빈 칸에 이전에 확인했던 "사용 가능한 아이디입니다"가
+      // 그대로 남는다. 닫는 사이 떠 있던 요청이 늦게 도착해 새로 연 칸에 옛 결과를 칠하는 것은 ref 차례로 막는데,
+      // ref 는 그리는 중에 건드릴 수 없어(react-hooks/refs) 아래 effect 에서만 차례를 올린다.
+      setCheckingLoginId(false);
+      setLoginIdAvailable(false);
+      setResetSignal((n) => n + 1);
     }
   }
+  // DOM이 반영된 뒤 바로(페인트 전) 중복확인 차례만 올린다 — 그 사이 늦게 온 응답이 되돌린 칸에 옛 결과를 칠하지 못하게 한다.
+  // 상태는 위 그리는 중에 이미 지웠으므로 여기서는 ref 만 건드린다(react-hooks/set-state-in-effect).
+  useLayoutEffect(() => {
+    if (resetSignal === 0) return;
+    checkNumber.current++;
+  }, [resetSignal]);
   const [saving, startSaving] = useTransition();
   const router = useRouter();
-  /** 아이디 중복 확인 차례 — 고치거나 다시 물으면 올라가, 앞선 답을 버린다 */
-  const checkNumber = useRef(0);
-  /** 중복확인 대기·성공 상태(코드 리뷰 반영) — 오류는 기존대로 errors.loginId 에 둔다 */
-  const [checkingLoginId, setCheckingLoginId] = useState(false);
-  const [loginIdAvailable, setLoginIdAvailable] = useState(false);
 
   const ids = useId();
   // 칸을 고치면 그 칸의 오류는 바로 지운다
@@ -116,6 +130,9 @@ export function AdminFormPanel(props: Props) {
       return;
     }
     const mine = ++checkNumber.current;
+    // 같은 값을 다시 물을 때(Enter 재확인 등, 칸을 고치지 않아 onChange 의 초기화를 타지 않는다)도 앞서 달렸던
+    // 오류를 지운다 — 안 그러면 묻는 동안에도 "확인 중입니다." 대신 옛 오류 문구가 그대로 보인다.
+    clearError("loginId");
     setLoginIdAvailable(false);
     setCheckingLoginId(true);
     checkLoginIdAvailableAction(value.trim())
