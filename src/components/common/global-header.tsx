@@ -115,12 +115,9 @@ export function ServiceLinks({ hrefs = {} }: { hrefs?: { erp?: string; addon?: s
           <Image src="/icons/service-chat.svg" alt="" width={19} height={19} />
           <Tip label="부가서비스 현황" />
         </Link>
-        <Link href={hrefs.platform ?? "#"} aria-label="플랫폼관리" className={`${ICON_HOVER} w-[14px]`}>
-          <span className="grid grid-cols-3 gap-[2.5px]">
-            {Array.from({ length: 9 }, (_, i) => (
-              <Image key={i} src="/icons/dot.svg" alt="" width={3} height={3} />
-            ))}
-          </span>
+        {/* 플랫폼관리는 톱니바퀴(데모 service-platform.svg, 2026-10-20). 아홉 점 아이콘에서 바꿨다 */}
+        <Link href={hrefs.platform ?? "#"} aria-label="플랫폼관리" className={`${ICON_HOVER} w-[20px] bg-white`}>
+          <Image src="/icons/service-platform.svg" alt="" width={20} height={20} />
           <Tip label="플랫폼관리" />
         </Link>
       </div>
