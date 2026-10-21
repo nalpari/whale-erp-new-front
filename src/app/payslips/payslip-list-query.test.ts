@@ -70,4 +70,6 @@ test("일괄 발송 대상 — 목록과 같은 달 · 점포(점포명으로 �
   });
   // 점포명 없이 남은 id 는 쓰지 않는다
   assert.deepEqual(sendTargetOf({ ...defaultPayslipListQuery(TODAY), storeIds: [5] }), { month: "2026-09" });
+  // 점포명은 있는데 맞는 점포가 없으면 빈 점포 — 관리 범위 전체로 넓히지 않는다
+  assert.deepEqual(sendTargetOf({ ...defaultPayslipListQuery(TODAY), store: "없는점", storeIds: null }), { month: "2026-09", storeIds: [] });
 });

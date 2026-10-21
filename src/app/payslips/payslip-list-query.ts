@@ -81,7 +81,8 @@ export function withFilter(query: PayslipListQuery, next: Partial<PayslipListQue
 export function sendTargetOf(query: PayslipListQuery): { month: string; storeIds?: number[]; staffName?: string } {
   return {
     month: query.month,
-    ...(query.store && query.storeIds && { storeIds: query.storeIds }),
+    // 점포 이름은 있는데 맞는 점포를 못 찾았으면(null) 빈 배열 — 빼면 관리 범위 전체로 넓어진다
+    ...(query.store && { storeIds: query.storeIds ?? [] }),
     ...(query.staffName && { staffName: query.staffName }),
   };
 }
