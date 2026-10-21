@@ -269,7 +269,7 @@ DIAGRAMS.append(Diagram(
         E("party", "계약 당사자 정보", "contract_parties", "entity",
           ["#→|근로계약|id|contract_id|1:1", "|관리자 입력 이름·번호|text|admin_name·admin_phone|", "|관리자 입력 생년월일|date|admin_birth_date|만 19세 미만 차단용", "|본인인증 실명·생년월일|text|verified_name·birth_date|실명이 다르면 실명 반영", "|본인인증 휴대전화번호|text|verified_phone|", "|직원 입력 주소|text|address|", "|반영 일시|datetime|filled_at|가입 완료 시 채움"], 2, 40),
         E("document", "계약서 파일", "contract_documents", "entity",
-          ["#|파일 ID|id|contract_document_id|", "→|근로계약|id|contract_id|", "|파일 구분|enum|kind|발송 원본·날인 완료본·종이 계약 근로계약서·임금계약서", "|저장 위치|text|storage_key|", "|파일 해시|hash|checksum|", "|생성 일시|datetime|created_at|"], 2, 276),
+          ["#|파일 ID|id|contract_document_id|", "→|근로계약|id|contract_id|", "|파일 구분|enum|kind|발송 원본·날인 완료본·종이 계약 근로계약서·임금계약서·서명 이미지 — 서명 이미지는 날인 때 그린 필기 서명 PNG, 계약서와 같은 저장소·보존 기간 (WHALEERP-145)", "|저장 위치|text|storage_key|", "|파일 해시|hash|checksum|", "|생성 일시|datetime|created_at|"], 2, 276),
         E("status", "계약 상태 이력", "contract_status_histories", "history",
           ["#|상태 이력 ID|id|history_id|", "→|근로계약|id|contract_id|", "|변경 전 상태|enum|from_status|", "|변경 후 상태|enum|to_status|", "|처리 주체|enum|actor|관리자·직원·시스템", "|변경 일시|datetime|changed_at|"], 2, 512),
     ],

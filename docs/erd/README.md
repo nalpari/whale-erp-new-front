@@ -418,7 +418,7 @@ python3 docs/erd/_build.py
 |---|---|---|---|---|
 | PK | 파일 ID | id | `contract_document_id` |  |
 | FK | 근로계약 | id | `contract_id` |  |
-|  | 파일 구분 | enum | `kind` | 발송 원본·날인 완료본·종이 계약 근로계약서·임금계약서 |
+|  | 파일 구분 | enum | `kind` | 발송 원본·날인 완료본·종이 계약 근로계약서·임금계약서·서명 이미지 — 서명 이미지는 날인 때 그린 필기 서명 PNG, 계약서와 같은 저장소·보존 기간 (WHALEERP-145) |
 |  | 저장 위치 | text | `storage_key` |  |
 |  | 파일 해시 | hash | `checksum` |  |
 |  | 생성 일시 | datetime | `created_at` |  |
