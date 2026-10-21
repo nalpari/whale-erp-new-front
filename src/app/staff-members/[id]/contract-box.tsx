@@ -43,11 +43,9 @@ export async function ContractBox({ contractId }: { contractId: number }) {
     const { error } = result;
     unstable_rethrow(error);
     const status = error instanceof ApiError ? error.status : null;
-    if (contractFailureOf(status) === "forbidden") {
-      // 화면은 권한 안내만 — 지금 api 는 메뉴 권한 검사가 없어 403 이 오면 다른 까닭이라 흔적을 남긴다
-      console.warn(`직원 상세 근로계약 칸: GET /contracts/${contractId} 403`, error);
-      return <BoxMessage>근로계약을 볼 권한이 없습니다.</BoxMessage>;
-    }
+    // 근로계약 api 는 「근로계약 관리」 메뉴 조회 권한을 본다(api #97, WHALEERP-592) — 직원 정보 관리 권한만 있는 관리자에게
+    // 403 은 정상이라 로그를 남기지 않고 안내만 한다
+    if (contractFailureOf(status) === "forbidden") return <BoxMessage>근로계약을 볼 권한이 없습니다.</BoxMessage>;
     console.error(`직원 상세 근로계약 칸: GET /contracts/${contractId} 를 받지 못했습니다 (status ${status ?? "연결 실패"})`, error);
     return (
       <BoxMessage alert>
