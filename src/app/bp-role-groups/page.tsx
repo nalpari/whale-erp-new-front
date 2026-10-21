@@ -1,4 +1,5 @@
 import { PageBar } from "@/components/common";
+import { CARD, FailedBand } from "@/components/role-groups/role-parts";
 import { ApiError, getEnum } from "@/lib/api";
 import { BP_ROLE_PAGE_SIZE, getBpRoleGroup, getBpRoleGroups } from "@/lib/bp-role-groups";
 import type { BpRoleDetailState } from "./bp-actions";
@@ -13,11 +14,22 @@ export default async function BpRolesPage({ searchParams }: PageProps<"/bp-role-
   const page = positiveInt(params.page) ?? 1;
   const selected = positiveInt(params.role);
   const [list, lockReasons, menuReasons, detail] = await Promise.all([
-    getBpRoleGroups(page),
+    getBpRoleGroups(page).catch(listDenied),
     getEnum("PlatformRoleGroupLockReason").catch(enumFailed("PlatformRoleGroupLockReason")),
     getEnum("PlatformRoleMenuBlockReason").catch(enumFailed("PlatformRoleMenuBlockReason")),
     selected ? loadDetail(selected) : null,
   ]);
+  if ("denied" in list)
+    return (
+      <>
+        <PageBar title="BP 권한 그룹 관리" />
+        <div className="flex min-h-0 flex-1 p-[24px]">
+          <section className={`${CARD} flex-1`}>
+            <FailedBand message={list.denied} />
+          </section>
+        </div>
+      </>
+    );
   return (
     <>
       <PageBar title="BP 권한 그룹 관리" />
@@ -34,6 +46,20 @@ export default async function BpRolesPage({ searchParams }: PageProps<"/bp-role-
   );
 }
 
+/**
+ * 목록을 api 가 거절했다(BP 를 고르지 않음 400 · 다른 BP · 권한 없음 403 · 없는 BP 404) — 다시 시도해도 같으므로 오류 화면 대신 그 문장을 보인다.
+ * 거절이 아닌 것은 그대로 던져 error.tsx 가 받는다: 서버 장애 · 응답 없음, 검증 실패 400(message 가 배열 — 주소 · 계약이 어긋난 결함),
+ * 라우트가 없는 404(Nest 「Cannot GET …」 — api 배포가 어긋남).
+ */
+const listDenied = (error: unknown): { denied: string } => {
+  if (!(error instanceof ApiError)) throw error;
+  const validation = error.status === 400 && Array.isArray((error.body as { message?: unknown } | null)?.message);
+  const noRoute = error.status === 404 && error.message.startsWith("Cannot ");
+  if (![400, 403, 404].includes(error.status) || validation || noRoute) throw error;
+  console.warn("BP 권한 그룹 목록 거절", error.status, error.message);
+  return { denied: error.message };
+};
+
 /** 어느 enum 이 실패했는지 로그에 남기고 빈 목록으로 연다 — 화면은 일반 문구로 대신한다(reasonLabel) */
 const enumFailed = (name: string) => (error: unknown) => {
   console.error(`BP 권한 그룹 막힘 이유 한글(${name}) 조회 실패`, error);
@@ -46,6 +72,8 @@ async function loadDetail(id: number): Promise<NonNullable<BpRoleDetailState>> {
     return { role: await getBpRoleGroup(id) };
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) return { failed: "삭제되었거나 없는 권한 그룹입니다." };
+    // 볼 수 없는 BP · 권한이면 목록도 같은 이유로 거절돼 그쪽이 알린다 — 장애 로그를 남기지 않는다
+    if (error instanceof ApiError && error.status === 403) return { failed: error.message };
     console.error("BP 권한 그룹 상세 조회 실패", id, error);
     return { failed: "상세를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요." };
   }
