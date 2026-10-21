@@ -1,10 +1,10 @@
 ---
 type: Screen
 title: 직원 정보 관리 화면 (구현)
-description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을 두었다. 남은 것.
-tags: [staff, screen, retirement, password-reset]
+description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을 두었다. 남은 것.
+tags: [staff, screen, retirement, password-reset, invitation]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-21T09:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-21T12:00:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -34,14 +34,22 @@ sources:
     resource: ../../src/components/common/confirm-dialog.tsx
     title: 공통 확인창 — confirmVariant 추가
     last_modified: 2026-10-15T10:00:00Z
+  - id: resend-invitation-button
+    resource: ../../src/app/staff-members/resend-invitation-button.tsx
+    title: 가입 초대 재발송 버튼 · 확인창(WHALEERP-138) — 근로계약 관리 수정 권한(MN000006)으로 가린다
+    last_modified: 2026-10-21T12:00:00Z
+  - id: staff-table
+    resource: ../../src/app/staff-members/staff-table.tsx
+    title: 목록 표 — 가입·인증 칸의 재발송 버튼, 가린 행의 이름 자리
+    last_modified: 2026-10-21T12:00:00Z
   - id: staff-list-page
     resource: ../../src/app/staff-members/page.tsx
     title: 직원 목록 화면
     last_modified: 2026-10-12T08:33:58Z
   - id: staff-detail-page
     resource: ../../src/app/staff-members/[id]/page.tsx
-    title: 직원 상세 화면(틀 + 기본 정보 · 퇴직일 · 이메일 + 비밀번호 초기화 자리 + 근로계약 칸)
-    last_modified: 2026-10-19T05:30:00Z
+    title: 직원 상세 화면(틀 + 기본 정보 · 퇴직일 · 가입 상태 · 초대 · 이메일 + 비밀번호 초기화 자리 + 근로계약 칸)
+    last_modified: 2026-10-21T12:00:00Z
   - id: contract-box
     resource: ../../src/app/staff-members/[id]/contract-box.tsx
     title: 상세 근로계약 칸 — 계약 상세를 따로 받고 실패하면 이 칸만 안내 · 다시 하기(WHALEERP-184). 줄 라벨 칸은 DetailTable 과 같은 폭(110px)을 옮겨 쓴다.
@@ -68,8 +76,8 @@ sources:
     last_modified: 2026-10-16T09:00:00Z
   - id: staff-row
     resource: ../../src/app/staff-members/staff-row.ts
-    title: 한 줄 표시 규칙(배지 · D-day · 재직 칸). 갱신 예정 날수(RENEWAL_NOTICE_DAYS)를 상세 근로계약 칸과 함께 쓴다
-    last_modified: 2026-10-19T02:40:00Z
+    title: 한 줄 표시 규칙(배지 · D-day · 재직 칸 · 재발송 판정 · 상세 초대 줄). 갱신 예정 날수(RENEWAL_NOTICE_DAYS)를 상세 근로계약 칸과 함께 쓴다
+    last_modified: 2026-10-21T12:00:00Z
   - id: retirement
     resource: ../../src/lib/retirement.ts
     title: 퇴직 처리 판정 — 상세 머리 버튼 · 퇴직일 범위 검사(WHALEERP-585)
@@ -234,9 +242,35 @@ sources:
   발송 종류를 담는 이메일 발송 로그 테이블을 따로 만들어 발송 이력으로 다룬다(2026-10-16 노영주). api 응답의 `issuedAt` · `expiresAt`
   은 지금 쓰지 않는다.
 
+# 가입 초대 재발송 (WHALEERP-138)
+
+목록 「가입·인증」 칸의 배지 옆과 상세 기본 정보 「가입 상태」 줄에 soft 「재발송」을 둔다. 데모는 재발송을 근로계약 상세 제목 줄에만
+두고 목록 자리가 없어, 칸을 210px 에서 300px 로 넓혀 배지 옆에 세웠다(데모와 다름). 상세는 목록의 이름 링크가 가입 완료 · 재직
+직원에게만 걸려 실제로는 거의 쓰이지 않지만, 주소로 들어온 경우를 위해 같은 판정을 둔다.
+
+* 보일지(`canResendInvitation`) — 응답의 `invitation.canResend` 이면서 **계약이 발송 대기(`PENDING_SEND`)일 때만**이다. api 의
+  `canResend` 는 초대 발송 · 초대 만료 · 소속 추가 확인 · 복귀 확인(수락 전)에 참인데, 재발송 api(`POST /contracts/:id/send`, #136)는
+  계정이 없는 직원의 가입 초대 알림톡만 보낸다 — 서명 대기(앱으로 받는 직원, 소속 추가 확인 · 복귀 확인)는 앱 알림 전이라
+  409 `SEND_CHANNEL_NOT_READY`, 만료 · 거부 계약은 409 `CONTRACT_STATUS_CONFLICT` 다. 근로계약 상세의 재발송 버튼(`send-button.tsx`)과
+  같은 기준이다. 두 값이 맞지 않는 것은 api 쪽 정리 거리다.
+* 권한 — 근로계약 관리(MN000006) 수정 권한일 때만(`useMenuRole(MENU_CODE.contracts, "update")`). 다른 메뉴 화면에 놓인 버튼이라
+  메뉴 코드로 찾는다(front #57). api #97(WHALEERP-592)이 send 경로에 같은 수정 권한을 건다. `MENU_CODE.contracts` 는 front #79 와 같은
+  이름 · 값이다.
+* 보내기 — 확인창(가입 초대를 다시 보내시겠습니까?) 뒤 근로계약 상세와 같은 서버 액션(`sendContract`)과 실패 판정(`sendFailureOf`)을
+  쓴다. 성공하면 토스트 「가입 초대를 다시 보냈습니다.」와 함께 화면을 다시 받아 새 발송일(「초대 발송 · MM-DD」)을 보인다. 409 ·
+  502 · 503 은 api 문구 그대로다 — `SEND_FAILED`(되돌렸고 다시 보낼 수 있음) · `SEND_CHANNEL_NOT_READY` · `SEND_PHONE_NOT_MOBILE` 는
+  확인창 안에, 접수 여부를 모르거나(`SEND_UNCONFIRMED`, 코드 없는 502 · 504, 연결 끊김) 화면이 낡았으면(상태 충돌) 다시 받은 목록에서
+  버튼이 사라질 수 있어 토스트로 알리고 닫은 뒤 다시 받는다.
+
+# 상세 가입 상태 · 초대 (WHALEERP-138)
+
+기본 정보에 「가입 상태」(목록과 같은 `joinCell` 배지)와 「초대」(`invitationText` — 초대 유형 · 초대 상태 · 보낸 날)를 더했다.
+초대 유형 · 상태 한글은 `getEnum("InvitationType")` · `getEnum("InvitationStatus")` 이고, 받지 못하면 그 조각만 빠진다(영문 값을
+보이지 않는다). 가린 직원은 상세가 404 라 이 줄이 없다.
+
 # 아직 없는 것
 
-* 목록 가입 칸의 재발송 버튼 — api 가 `invitation.canResend` 를 준다. 발송 · 재발송 api(#136, `POST /contracts/:id/send`)는 생겨 근로계약 상세에 붙었지만(2026-10-16), 직원 목록에는 아직 붙이지 않았다.
+* 상세 기본 정보의 「본인인증」 — 가입할 때의 휴대폰 본인인증(`identity_verifications`, 계정 단위)인데 직원 목록 · 상세 응답에 값이 없다. 상세 요약 api(#183)를 기다린다.
 * 가입 연결 확인 시트(#139), 일괄 저장 · 직원 초대(근로계약서 초안), 상세 오른쪽 「관리」 링크의 대상 화면(근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO). 근로계약 화면은 있다.
 * 쪽 이동이 `router.replace` 라 뒤로 가기가 쪽을 거슬러 가지 않는다.
 

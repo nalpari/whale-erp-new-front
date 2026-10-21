@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-21
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 가입 초대 재발송(WHALEERP-138): 목록 가입·인증 칸과 상세 「가입 상태」 줄에 「재발송」을 두었다. `invitation.canResend` 이면서 계약이 발송 대기일 때만, 근로계약 관리(MN000006) 수정 권한일 때만 보이고, 성공하면 토스트와 함께 다시 받는다. 상세에 「가입 상태」 · 「초대」(유형 · 상태 · 보낸 날) 줄을 더했고, 가린 행 이름 자리를 「본사 제공 동의 없음 · 가맹 점포 직원」으로 바꿨다. 본인인증은 응답에 값이 없어 그대로 「-」다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #73 머지 때 받은 참고 반영: `proxyClientMaxBodySize`(51MB)가 모든 경로에 걸리던 것을 proxy 가 content-length 로 경로마다 다시 막는다(공지사항 저장 51MB · 종이 계약 등록 21MB · 나머지 10MB, 413). 문의 상세 PR 리뷰 반영: 서버 액션 요청이 닿지 않으면 오류 화면 대신 띠에 알리고, 답변 · 메모 입력칸 key 를 각자 저장된 값으로 바꿔 다른 동작 · 409 로 쓰던 글이 지워지지 않게 했다. 상세의 401 은 로그인 만료로, 세션이 끊겨도 화면을 옮기지 않고 띠로 알린다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 문의사항 · 도입문의 상세(#277)와 도입문의 답변 메일 다시 보내기 화면(#597)을 만들었다(`/platform-inquiries/[id]` · `/platform-leads/[id]`). 처리 시작 · 답변(문의사항은 이력 · 도입문의는 덮어쓰기) · 운영자 메모 · 첨부 내려받기 · 도입문의 삭제 · 마지막 답변 메일 결과와 다시 보내기. 커뮤니티 관리 권한 점검(#278) — BP 관리자는 메뉴가 없고 주소로 들어와도 권한 안내만 보인다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 직원 상세의 퇴직 처리 · 비밀번호 초기화 버튼 권한을 메뉴 코드(`useMenuRole(MENU_CODE.staffMembers)`)에서 지금 주소의 메뉴 권한(`usePagePermission().update`)으로 옮겼다(front #57 공지). 상세 안의 TO-DO 링크는 다른 메뉴라 메뉴 코드 그대로다.
