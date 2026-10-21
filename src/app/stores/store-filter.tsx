@@ -9,7 +9,7 @@ import { StorePicker, type PickedStore } from "@/components/site/store-picker";
 import type { Scope } from "@/lib/browser-storage";
 import { isUnusableScope, scopeKeyOf, scopeStores, toPickedStore } from "@/lib/store-scope";
 import { useStoreListNavigation } from "./store-list-navigation";
-import { DEFAULT_STORES_QUERY, fillScopeOf, withPickedStores, withScopeCondition, withStatuses, withStoreFilter } from "./stores-query";
+import { DEFAULT_STORES_QUERY, droppedStoreIds, fillScopeOf, withPickedStores, withScopeCondition, withStatuses, withStoreFilter } from "./stores-query";
 
 const toggle = <T,>(list: readonly T[], value: T) => (list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
 
@@ -25,7 +25,8 @@ const toggle = <T,>(list: readonly T[], value: T) => (list.includes(value) ? lis
  * 주소의 범위를 이 탭에서 쓸 수 없으면(다른 BP 탭에서 복사한 주소 — 고를 점포가 없다) 「전체」로 바꾸고 알린다.
  */
 /**
- * picked · scope 는 서버가 그린 조건(찾지 못한 점포를 뺀 뒤), requested 는 주소로 요청한 점포다 — 고른 점포를 서버가 빼서 조건이 그대로여도
+ * picked · scope 는 서버가 그린 조건(찾지 못한 점포를 뺀 뒤), requested 는 주소로 요청한 점포다 — 서버가 뺀 점포(requested 중 picked 에 없는
+ * 것)는 점포 고르기 후보에서 숨겨 다시 고르지 못하게 하고(같은 주소로 다시 가면 칩이 서버 값으로 돌아오지 않는다), 고른 점포를 서버가 빼서 조건이 그대로여도
  * (「전체」에서 지운 점포를 고른 때) 칩을 서버 값으로 되돌리려고 칩 동기화 키에 넣는다.
  */
 export function StoreFilter({ picked, scope, requested }: { picked: PickedStore[]; scope: Scope | null; requested: number[] }) {
@@ -53,7 +54,7 @@ export function StoreFilter({ picked, scope, requested }: { picked: PickedStore[
   // 점포상태를 사용자가 고치지 않았으면 서버가 그 범위에 맞는 기본값을 정한다(statusesDefault).
   // 마운트 뒤에도 점포 조건이 없는 주소로 오면(뒤로 · 앞으로 가기는 이 화면을 다시 그리지 않는다) 그때의 헤더 범위로 다시 채운다.
   // 다시 채울지는 주소(점포 조건이 있나)로만 정한다 — 헤더 범위가 바뀐 것으로 돌면 헤더의 이동(다른 조건 초기화 · 기록)을 이 replace 가 덮는다.
-  const noCondition = !current.storeIds.length && !current.scope;
+  const noCondition = !current.storeIds.length && !current.storesCleared && !current.scope;
   const fill = useEffectEvent(() => {
     const s = fillScopeOf(current, headerScope);
     if (s) navigate(withScopeCondition(current, s));
@@ -75,7 +76,7 @@ export function StoreFilter({ picked, scope, requested }: { picked: PickedStore[
         setChips(scopeChips(headerScope));
         navigate({
           ...DEFAULT_STORES_QUERY,
-          scope: headerScope.type === "ALL" ? { type: "ALL" } : headerScope,
+          scope: headerScope,
           view: current.view,
           pageSize: current.pageSize,
         });
@@ -83,6 +84,7 @@ export function StoreFilter({ picked, scope, requested }: { picked: PickedStore[
     >
       <FilterSection label="점포" tight>
         <StorePicker
+          hidden={droppedStoreIds(requested, picked)}
           picked={chips}
           onChange={(next) => {
             setChips(next);

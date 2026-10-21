@@ -11,20 +11,20 @@ import { STORE_PAGE_SIZES, STORE_STATUSES, STORE_TYPES, type StoreStatus, type S
 
 export type StoreView = "cards" | "table";
 /**
- * 점포 조건은 storeIds · scope 두 칸의 짝으로 네 가지다(바꾸는 것은 withPickedStores · withScopeCondition 만):
+ * 점포 조건은 storeIds · storesCleared · scope 세 칸의 짝으로 네 가지다(바꾸는 것은 withPickedStores · withScopeCondition 만):
  *
- * | storeIds | scope                    | 뜻                                              | 주소              |
- * |----------|--------------------------|-------------------------------------------------|-------------------|
- * | 1개 이상 | null                     | 목록에서 고른 점포                              | storeIds=3,7      |
- * | []       | ALL                      | 목록의 「전체」(비움 · 등록 · 삭제 뒤) — 헤더 범위가 아니다 | storeIds=   |
- * | []       | DIRECT · FRANCHISE · STORE | 헤더 범위                                     | scope=DIRECT      |
- * | []       | null                     | 정해지지 않음 — 필터가 헤더 범위로 채운다(fillScopeOf) | (없음)      |
+ * | storeIds | storesCleared | scope                          | 뜻                                                    | 주소           |
+ * |----------|---------------|--------------------------------|-------------------------------------------------------|----------------|
+ * | 1개 이상 | false         | null                           | 목록에서 고른 점포                                    | storeIds=3,7   |
+ * | []       | true          | null                           | 목록에서 비운 「전체」(비움 · 등록 · 삭제 뒤 · 찾지 못한 점포를 뺌) — 헤더 범위가 아니다 | storeIds= |
+ * | []       | false         | ALL · DIRECT · FRANCHISE · STORE | 헤더 범위(전체 포함 — 목록을 조작해도 scope 로 남아 뒤로 가기에 헤더가 따라온다) | scope=ALL |
+ * | []       | false         | null                           | 정해지지 않음 — 필터가 헤더 범위로 채운다(fillScopeOf) | (없음)         |
  *
  * api 에 보낼 조건은 storeListQueryOf 로 만든다.
  * statusesDefault 는 점포상태를 주소에 적지 않은 것 — 그 값은 서버가 고른 점포의 지금 상태로 정한다(withDefaultStatuses). 브라우저는
  * 폐점 여부를 세지 않는다: 로그인 정보의 점포 상태는 세션 동안 바뀌지 않아, 이 메뉴에서 폐점 처리한 점포를 서버와 다르게 본다.
  */
-export type StoresQuery = StoreListQuery & { view: StoreView; scope: Scope | null; statusesDefault: boolean };
+export type StoresQuery = StoreListQuery & { view: StoreView; scope: Scope | null; storesCleared: boolean; statusesDefault: boolean };
 /** 주소에서 읽은 그대로 — 점포상태가 주소에 없으면 null 이고, 고른 점포에 폐점이 있는지 알아야 기본값이 정해진다(withDefaultStatuses) */
 export type ParsedStoresQuery = Omit<StoresQuery, "statuses" | "statusesDefault"> & { statuses: StoreStatus[] | null };
 
@@ -42,6 +42,7 @@ export const DEFAULT_STORES_QUERY: StoresQuery = {
   storeTypes: [...STORE_TYPES],
   view: "cards",
   scope: null,
+  storesCleared: false,
   statusesDefault: true,
 };
 
@@ -91,8 +92,9 @@ export function parseStoresQuery(raw: RawSearch): ParsedStoresQuery {
     statuses: statuses === undefined ? null : listOf(statuses, STORE_STATUSES, DEFAULT_STATUSES),
     storeTypes: listOf<StoreType>(first(raw.storeTypes), STORE_TYPES, STORE_TYPES),
     view: first(raw.view) === "table" ? "table" : "cards",
-    // 목록에서 고른 점포가 있으면 범위는 쓰지 않는다. 빈 storeIds 는 목록에서 비운 것 — 「전체」다
-    scope: storeIds.length ? null : rawStoreIds !== undefined ? { type: "ALL" } : scopeOfParam(first(raw[SCOPE_PARAM])),
+    // 목록에서 고른 점포가 있으면 범위는 쓰지 않는다. 빈 storeIds 는 목록에서 비운 것 — 「전체」다(헤더 범위가 아니다)
+    storesCleared: rawStoreIds !== undefined && !storeIds.length,
+    scope: rawStoreIds !== undefined ? null : scopeOfParam(first(raw[SCOPE_PARAM])),
   };
 }
 
@@ -117,9 +119,15 @@ export function keepFoundStores(
   const fromScope = !query.storeIds.length && query.scope?.type === "STORE";
   if (kept.length === ids.length) return { query, missingCount: 0, fromScope };
   const storeIds = query.storeIds.length ? kept : [];
-  const scope = storeIds.length ? null : { type: "ALL" as const };
-  return { query: { ...query, storeIds, scope }, missingCount: ids.length - kept.length, fromScope };
+  return { query: { ...query, storeIds, scope: null, storesCleared: !storeIds.length }, missingCount: ids.length - kept.length, fromScope };
 }
+
+/**
+ * 서버가 찾지 못해 뺀 점포 — 주소로 요청했는데 칩(picked)에 없는 것. 지웠거나 볼 수 없게 됐는데 로그인 정보에는 아직 남아 점포 고르기에
+ * 나오므로 후보에서 숨긴다: 다시 고르면 같은 주소로 가 칩이 서버 값으로 돌아오지 않는다.
+ */
+export const droppedStoreIds = (requested: readonly number[], picked: readonly { storeId: number }[]) =>
+  requested.filter((id) => !picked.some((p) => p.storeId === id));
 
 /** 서버가 고른 점포를 찾아 본 결과 — 칩 이름과 폐점 여부에 쓴다 */
 export type FoundStore = { storeId: number; name: string; storeCode: string; storeStatusCode: string };
@@ -153,8 +161,8 @@ export const scopeTypeMismatch = (query: StoresQuery) => query.storeTypes.length
  * 필터가 헤더 범위로 채울 범위 — 주소에 점포 조건(고른 점포 · 빈 storeIds 「전체」 · scope)이 없고 헤더 범위가 「전체」가 아닐 때만.
  * 주소 직접 입력 · 즐겨찾기 · 그런 주소로 뒤로 가기에서 생긴다.
  */
-export const fillScopeOf = (query: Pick<StoresQuery, "storeIds" | "scope">, headerScope: Scope): Scope | null =>
-  query.storeIds.length || query.scope || headerScope.type === "ALL" ? null : headerScope;
+export const fillScopeOf = (query: Pick<StoresQuery, "storeIds" | "storesCleared" | "scope">, headerScope: Scope): Scope | null =>
+  query.storeIds.length || query.storesCleared || query.scope || headerScope.type === "ALL" ? null : headerScope;
 
 /** 이름을 찾아 칩으로 그릴 점포 — 목록에서 고른 점포, 없으면 범위가 점포 하나일 때 그 점포 */
 export const pickedIdsOf = (query: Pick<StoresQuery, "storeIds" | "scope">): number[] =>
@@ -169,12 +177,13 @@ export function storeListQueryOf(query: StoresQuery): StoreListQuery {
 }
 
 /**
- * 점포 조건 쿼리 — 고른 점포가 있으면 storeIds, 「전체」면 빈 storeIds, 아니면 범위(scope). 「전체」를 scope=ALL 로 적지 않는 것은
- * scope 가 헤더 범위를 뜻해서다 — 주소의 scope 로 헤더 범위를 맞추므로(admin-header.tsx) 목록에서 비운 것이 헤더까지 바꾸면 안 된다.
+ * 점포 조건 쿼리 — 고른 점포가 있으면 storeIds, 목록에서 비운 「전체」면 빈 storeIds, 아니면 헤더 범위(scope, 전체는 scope=ALL).
+ * 목록에서 비운 것을 scope=ALL 로 적지 않는 것은 scope 가 헤더 범위를 뜻해서다 — 주소의 scope 로 헤더 범위를 맞추므로(admin-header.tsx)
+ * 목록에서 비운 것이 헤더까지 바꾸면 안 된다. 거꾸로 헤더의 전체는 목록을 조작해도 scope=ALL 로 남겨, 뒤로 가기에 헤더가 따라오게 한다.
  */
-function setStoreCondition(params: URLSearchParams, query: Pick<StoresQuery, "storeIds" | "scope">) {
+function setStoreCondition(params: URLSearchParams, query: Pick<StoresQuery, "storeIds" | "storesCleared" | "scope">) {
   if (query.storeIds.length) params.set("storeIds", query.storeIds.join(","));
-  else if (query.scope?.type === "ALL") params.set("storeIds", "");
+  else if (query.storesCleared) params.set("storeIds", "");
   else if (query.scope) params.set(SCOPE_PARAM, scopeKeyOf(query.scope));
 }
 
@@ -229,11 +238,11 @@ export const withStoreFilter = (query: StoresQuery, next: Partial<Pick<StoresQue
 export const withStatuses = (query: StoresQuery, statuses: StoreStatus[]) => firstPageWith(query, { statuses, statusesDefault: false });
 
 /** 헤더 범위로 점포 조건을 건다(목록에서 고른 점포는 비운다). 점포상태를 고치지 않았으면 서버가 그 범위에 맞는 기본값을 정한다 */
-export const withScopeCondition = (query: StoresQuery, scope: Scope) => firstPageWith(query, { storeIds: [], scope });
+export const withScopeCondition = (query: StoresQuery, scope: Scope) => firstPageWith(query, { storeIds: [], storesCleared: false, scope });
 
 /**
  * 고른 점포를 바꾼다. 비면 「전체」(주소에는 빈 storeIds — 헤더 범위로 다시 채우지 않는다). 점포상태를 사용자가 고치지 않았으면 그대로
  * 기본값으로 두어, 서버가 바뀐 점포에 맞게 정한다(폐점 점포를 고르면 「전체」). 사용자가 고친 상태는 그대로 둔다.
  */
 export const withPickedStores = (query: StoresQuery, ids: number[]) =>
-  firstPageWith(query, { storeIds: ids, scope: ids.length ? null : { type: "ALL" } });
+  firstPageWith(query, { storeIds: ids, storesCleared: !ids.length, scope: null });

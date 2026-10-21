@@ -17,7 +17,16 @@ export type PickedStore = Pick<StoreSummary, "storeId" | "name" | "storeCode">;
  * 키보드: ↑ · ↓ 로 고르고 Enter 로 넣는다. Esc 는 층만 닫는다. 포커스가 층 밖으로 나가면 닫는다.
  * 칩 영역은 5개까지 보이고 그 뒤로는 이 안에서 스크롤한다.
  */
-export function StorePicker({ picked, onChange }: { picked: PickedStore[]; onChange: (next: PickedStore[]) => void }) {
+export function StorePicker({
+  picked,
+  hidden = [],
+  onChange,
+}: {
+  picked: PickedStore[];
+  /** 후보에서 숨길 점포 — 목록이 찾지 못해 조건에서 뺀 점포(지웠거나 볼 수 없게 됐는데 로그인 정보에는 아직 남은 것) */
+  hidden?: readonly number[];
+  onChange: (next: PickedStore[]) => void;
+}) {
   const listId = useId();
   const box = useRef<HTMLDivElement>(null);
   const stores = useStores();
@@ -25,7 +34,7 @@ export function StorePicker({ picked, onChange }: { picked: PickedStore[]; onCha
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
 
-  const pickedIds = new Set(picked.map((p) => p.storeId));
+  const pickedIds = new Set([...picked.map((p) => p.storeId), ...hidden]);
   const options: PickedStore[] = searchStoresByText(stores, keyword)
     .filter((s) => !pickedIds.has(s.storeId))
     .map(toPickedStore);
