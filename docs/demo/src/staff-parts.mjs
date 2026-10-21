@@ -25,7 +25,7 @@ export const note = (text) => `<p class="text-[13px] leading-[1.6] text-erp-labe
 export const COVER = ["bg-erp-off-bg text-erp-off", "bg-erp-subtle text-erp-ink", "bg-erp-on-bg text-erp-on"];
 export const coverRow = (counts, attrs = "") =>
   `<div class="flex h-[46px] items-center border-b border-erp-thead-line"${attrs}><span class="w-[140px] shrink-0 px-[10px] text-[14px] text-erp-label">근무 인원</span><div class="grid h-[34px] flex-1 gap-px" style="grid-template-columns:repeat(${counts.length},minmax(0,1fr))">${counts
-    .map((n) => `<span class="grid place-items-center text-[13px] font-medium ${COVER[Math.min(n, 2)]}">${n}</span>`)
+    .map((n) => (n === null ? "<span></span>" : `<span class="grid place-items-center text-[13px] font-medium ${COVER[Math.min(n, 2)]}">${n}</span>`))
     .join("")}</div></div>`;
 const swatch = (i, label) => `<span class="flex items-center gap-[6px]"><span class="size-[12px] rounded-[2px] ${COVER[i]}"></span>${label}</span>`;
 export const coverLegend = `<div class="flex items-center gap-[18px] pt-[12px] text-[13px] text-erp-label">${swatch(0, "아무도 없음")}${swatch(1, "혼자 근무 · 휴게 불가")}${swatch(2, "2명 이상")}</div>`;
@@ -60,11 +60,16 @@ export function schedWeek(crew, { open, close, dates, pick, all = false, gap = "
     `<div class="absolute inset-y-0 flex items-center truncate rounded-[2px] px-[10px] text-[13px] ${SCHED_BAR[tone]}" style="left:${left.toFixed(3)}%;width:${width.toFixed(3)}%">${text}</div>`;
   const row = (c, wd) => {
     const s = c[2][wd];
-    const inner = s ? strip("on", ((s[0] - open) / span) * 100, ((s[1] - s[0]) / span) * 100, shiftText(s)) : strip("none", 0, 100, "휴무");
+    // 자정을 넘는 근무는 시작한 날 줄에 그날 끝(24시)까지 그리고 글자로 「~익일 01:00」을 보인다(STAFF-33)
+    const inner = s ? strip("on", ((s[0] - open) / span) * 100, ((Math.min(s[1], close) - s[0]) / span) * 100, shiftText(s)) : strip("none", 0, 100, "휴무");
     return `<div class="flex h-[46px] items-center border-b border-erp-thead-line"><span class="w-[140px] shrink-0 truncate px-[10px] text-[14px]">${c[0]} <span class="text-erp-muted">${c[1]}</span></span><div class="relative h-[34px] flex-1 rounded-[2px] bg-erp-thead-bg">${inner}</div></div>`;
   };
-  // 그 시간대(1시간 칸)에 근무 중인 인원
-  const cover = (wd) => Array.from({ length: span }, (_, i) => workers(crew, wd).filter((c) => c[2][wd][0] <= open + i && open + i < c[2][wd][1]).length);
+  // 그 시간대(1시간 칸)에 근무 중인 인원. 그날 첫 근무 시작 전 · 마지막 근무 종료 뒤는 세지 않고 빈칸(null)이다(STAFF-37)
+  const cover = (wd) => {
+    const w = workers(crew, wd);
+    const first = Math.min(...w.map((c) => c[2][wd][0])), last = Math.max(...w.map((c) => c[2][wd][1]));
+    return Array.from({ length: span }, (_, i) => (open + i < first || open + i >= last ? null : w.filter((c) => c[2][wd][0] <= open + i && open + i < c[2][wd][1]).length));
+  };
   // 비는 시간대를 구간으로 묶어 알린다(관리만). 그날 첫 근무 시작부터 마지막 근무 종료 사이만 본다(STAFF-37, 2026-10-21 재영).
   const gapBar = (cov, wd) => {
     const w = workers(crew, wd);

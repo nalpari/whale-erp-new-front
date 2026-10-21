@@ -165,16 +165,17 @@ function oneStore(A, R) {
   );
 
   // 근무스케줄: 근무스케줄 관리와 같은 부품(staff-parts schedWeek·schedMonth, 2026-10-08 재영). 홈은 그날 근무자만 보인다.
-  // 주간 보기는 주 이동 + 날짜가 붙은 요일 칩 + 09시~익일 02시 시간축(17칸) + 근무 인원 줄. 월간 보기는 2026년 9월 달력.
+  // 주간 보기는 주 이동 + 날짜가 붙은 요일 칩 + 00~24시 시간축(24칸, 관리와 같다) + 근무 인원 줄. 근무일은 시작한 날이라 자정을 넘는
+  // 근무는 시작한 날 줄에 「~익일 01:00」으로 보인다(HOME-7, 2026-10-21 재영). 공백 안내는 관리에만 둔다. 월간 보기는 2026년 9월 달력.
   const crew = CREW.map((c) => [c[0], c[1], Object.fromEntries(c[4].map((wd) => [wd, [c[2], c[3]]]))]);
   const week =
     p.bar(p.weekNav(A, "", "2026-08-31"), `<span class="text-[14px] text-erp-label">근무 <b class="font-semibold text-erp-ink" data-wd-count>${crew.filter((c) => c[2][4]).length}</b>명</span>`) +
-    p.schedWeek(crew, { open: 9, close: 26, dates: { 1: 31, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 0: 6 }, pick: 4 });
+    p.schedWeek(crew, { open: 0, close: 24, dates: { 1: 31, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 0: 6 }, pick: 4 });
   const month = p.schedMonth(A, crew, { year: 2026, month: 8, today: TODAY, holiday: Object.fromEntries(HOLIDAY.map((d) => [d, "추석"])) });
 
   const sched = card(
     head(
-      `근무스케줄 <span class="ml-[6px] text-[14px] font-normal text-erp-label">영업일 기준 · 마감 익일 02:00</span>`,
+      "근무스케줄",
       x.segment("근무스케줄 보기", [
         { id: "home-week", label: "주간 보기" },
         { id: "home-month", label: "월간 보기" },

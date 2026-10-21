@@ -27,7 +27,8 @@ export function ConfirmDialog({
   confirmLabel?: string;
   /** 확인 버튼 색. 기본은 primary, 되돌리기 어려운 동작(퇴직 처리)은 danger. */
   confirmVariant?: ButtonVariant;
-  cancelLabel?: string;
+  /** null 이면 취소 버튼 없이 확인 하나만 둔다 — 알리기만 하는 결과 창. Esc 는 그대로 onCancel 이다. */
+  cancelLabel?: string | null;
   /** 확인 동작이 도는 동안 두 버튼을 막는다. */
   busy?: boolean;
   /** 확인 버튼만 막는다 — 조건을 못 채운 동작(예: 폐점 조건 미충족). 취소는 그대로 누를 수 있다. */
@@ -67,9 +68,11 @@ export function ConfirmDialog({
       </h2>
       <div className="mt-[12px] text-[14px] leading-[1.6] break-keep">{children}</div>
       <div className="mt-[24px] flex justify-end gap-[6px]">
-        <Button variant="off" onClick={onCancel} disabled={busy}>
-          {cancelLabel}
-        </Button>
+        {cancelLabel !== null && (
+          <Button variant="off" onClick={onCancel} disabled={busy}>
+            {cancelLabel}
+          </Button>
+        )}
         <Button variant={confirmVariant} onClick={onConfirm} disabled={busy || confirmDisabled}>
           {confirmLabel}
         </Button>
