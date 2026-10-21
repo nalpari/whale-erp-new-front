@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-21
+* **Update**: [Payslips](/screens/payslips.md) — 확정 취소 확인창의 직원 앱 표시 이름을 「검토 중」으로 바꿨다(2026-10-21 사용자 결정).
 * **Update**: [Payslips](/screens/payslips.md) — 발송 완료 명세서의 확정 취소 확인창 문구를 「직원 근무 앱에는 다시 보낼 때까지 「정정 중」으로 금액 없이 보입니다」로 바꿨다(api `correcting`, 2026-10-21 사용자 결정). api 타입을 다시 만들었다.
 * **Update**: [Payslips](/screens/payslips.md) — PR #78 리뷰 반영: 검토 화면 「그 밖의 사유」를 api 가 준 사유 목록(`GET /enums/PayslipReviewReason`)으로 그리고, 「출퇴근으로 다시 계산」 버튼의 간격을 감싸는 쪽으로 옮겼다(공통 Button 에 className 을 넘기지 않음, DESIGN.md).
 * **Update**: [Staff members](/screens/staff-members.md) — main 병합으로 `contractCell` 에 「수정 요청」 case 가 두 번 들어간 것을 하나(main 쪽)로 정리했다. 동작은 같다.
