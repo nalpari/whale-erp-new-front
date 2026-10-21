@@ -1,4 +1,5 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { BP_HEADER } from "./bp-path";
 import type { EnumValue } from "./enums";
 import { parseSession, SESSION_COOKIE, type Session } from "./session";
 
@@ -96,5 +97,14 @@ export async function getSession(): Promise<Session | null> {
  */
 export async function authHeaders(): Promise<Record<string, string>> {
   const token = (await getSession())?.accessToken;
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  return { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(await bpHeader()) };
+}
+
+/**
+ * 이 요청의 탭 BP — proxy 가 /bp/{id} 주소에서 넣은 x-bp-code-id 를 X-Bp-Code-Id 로 api 에 싣는다(탭 BP 경로 방식).
+ * 주소에 BP 가 없는 화면은 비고, api 는 소속 BP 로 동작한다. 판정은 api 가 한다.
+ */
+export async function bpHeader(): Promise<Record<string, string>> {
+  const bp = (await headers()).get(BP_HEADER);
+  return bp && /^\d{1,9}$/.test(bp) ? { "X-Bp-Code-Id": bp } : {};
 }

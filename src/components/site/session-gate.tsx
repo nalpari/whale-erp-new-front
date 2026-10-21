@@ -5,11 +5,16 @@ import { createContext, use, useEffect, useRef, useState, type ReactNode } from 
 import { Button } from "@/components/common";
 import { logout } from "@/app/actions";
 import { bff, BffError, PASSWORD_REQUIRED_EVENT, signOut } from "@/lib/bff";
+import { bpOfPath, bpPath, isBpPathScreen, stripBp } from "@/lib/bp-path";
 import { BP_SWITCH_PATH, bpOfSwitchUrl, HOME, isAllowed, menuOfPath, menuPermissionOf, menusOf, serviceOfPath, type MenuAction, type MenuCode } from "@/lib/menus";
 import { ForcePasswordDialog } from "./force-password-dialog";
 import {
+  clearBpFix,
   clearSelectedBp,
+  clearTabBp,
   LOGIN_INFO_KEY,
+  markBpFix,
+  takeBpFix,
   readCodes,
   readCurrentBp,
   readLoginBpInfo,
@@ -113,16 +118,36 @@ export function SessionGate({ children }: { children: ReactNode }) {
   const [state, setState] = useState<{ status: "loading" } | { status: "error"; message: string } | { status: "ready"; value: LoginState }>({
     status: "loading",
   });
-  // BP 이동 화면의 로딩 문구. 서버에서 BP 를 확인하면 그 상호와 범위로 바꾼다(적용 안내를 토스트 대신 여기서 한다, 2026-10-19 재영).
-  const [switchNotice, setSwitchNotice] = useState("BP 로 이동하는 중입니다");
+  // BP 를 바꿔 여는 동안(BP 이동 화면 · 다른 BP 의 /bp/{id} 주소)의 로딩 문구. 서버에서 BP 를 확인하면 그 상호와 범위로 바꾼다(적용 안내를 토스트 대신 여기서 한다, 2026-10-19 재영).
+  const [switchNotice, setSwitchNotice] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
+
+  // 주소의 탭 BP. 바뀌면(주소창 입력 · 뒤로 가기 · 다른 BP 링크) 그 BP 로 다시 준비하고, 옮긴 화면에 BP 없이 오면 다시 돌려 탭 BP 주소로 보낸다.
+  // usePathname 은 rewrite 아래에서 어느 주소를 줄지 정해져 있지 않아 브라우저 주소(location)로 본다 — 화면을 옮기면 usePathname 이 다시 그리게 한다.
+  // 서버 렌더에서는 null 이다(처음은 늘 로딩 화면이라 어긋나지 않는다).
+  const tabKey = typeof window === "undefined" ? null : tabKeyOf(location.pathname);
+  const readyBp = state.status === "ready" ? state.value.currentBp.bpCodeId : null;
+  // 준비한 BP 와 주소의 BP 가 다르면 다시 준비하는 동안 옛 BP 화면을 보이지 않는다. 옮긴 화면에 BP 없이 온 것("move")은 가리지 않는다 —
+  // 보낼 BP 가 없는 플랫폼 계정은 그대로 준비되어 Ready 가 「BP 를 먼저 골라 주세요」로 막아야 한다.
+  const stale = readyBp !== null && typeof tabKey === "number" && tabKey !== readyBp;
 
   useEffect(() => {
     let cancelled = false;
     prepare((bp) => !cancelled && setSwitchNotice(`${bp.tradeName}(${bp.bpCode}) · 전체 점포로 여는 중입니다`)).then(
-      (value) => !cancelled && setState({ status: "ready", value }),
+      (value) => {
+        if (cancelled) return;
+        setSwitchNotice(null);
+        setState({ status: "ready", value });
+      },
       async (e: unknown) => {
         if (cancelled) return;
+        if (e instanceof BpMismatchError) {
+          // 쿠키의 소속 BP 와 브라우저의 로그인 정보가 어긋났다(쿠키를 고쳤거나 다른 탭에서 다른 계정으로 로그인). proxy 와 서로 반대로 보내며
+          // 돌지 않게 다시 보내지 않고 로그아웃한다 — 두 값 모두 새로 만들어진다.
+          alert("로그인 정보가 맞지 않아 다시 로그인해 주세요");
+          if (!(await signOut(logout))) setState(LOGOUT_FAILED);
+          return;
+        }
         if (e instanceof BffError && e.status === 401) {
           // 세션이 이미 끊겼으면(proxy·BFF 가 쿠키를 지움) 로그인 화면으로 바로 간다. login-key 가 없는 옛 세션만 로그아웃으로 끝낸다.
           if (readLoginKey()) router.replace("/login");
@@ -143,6 +168,8 @@ export function SessionGate({ children }: { children: ReactNode }) {
           alert(e.message);
           const loginKey = readLoginKey();
           if (e.bpCodeId !== null && loginKey && readSelectedBp(loginKey)?.bpCodeId === e.bpCodeId) clearSelectedBp();
+          // 이 탭에 앞서 연 BP(ERP)가 남아 있으면 플랫폼 홈이 ERP 탭으로 열려 막히고 뒤로 간다 — 지우고 주소로 다시 정하게 한다.
+          clearTabBp();
           location.replace(HOME.PLATFORM); // 다른 BP 는 플랫폼 계정만 연다. 자기 BP(플랫폼)로 다시 연다.
           return;
         }
@@ -153,9 +180,10 @@ export function SessionGate({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [attempt, router]);
+    // tabKey: 주소의 탭 BP 가 바뀌면 다시 준비한다. 같은 BP 안의 이동이나 안 옮긴 화면끼리의 이동은 그대로다.
+  }, [attempt, router, tabKey]);
 
-  if (state.status === "loading") return <Notice>{pathname === BP_SWITCH_PATH ? switchNotice : "불러오는 중입니다"}</Notice>;
+  if (state.status === "loading" || stale) return <Notice>{switchNotice ?? (pathname === BP_SWITCH_PATH ? "BP 로 이동하는 중입니다" : "불러오는 중입니다")}</Notice>;
   if (state.status === "error")
     return (
       <Notice>
@@ -264,6 +292,11 @@ function Notice({ children }: { children: ReactNode }) {
   );
 }
 
+/** 탭 준비를 다시 해야 하는지 가르는 값 — 주소의 탭 BP(숫자), 옮긴 화면에 BP 없이 옴("move"), 그 밖("tab"). */
+function tabKeyOf(browserPath: string): number | "move" | "tab" {
+  return bpOfPath(browserPath) ?? (isBpPathScreen(browserPath) ? "move" : "tab");
+}
+
 /** 고른 BP 를 열 수 없다. bpCodeId 는 그 BP — 주소가 틀려 BP 를 모르면 null. */
 class OtherBpError extends Error {
   constructor(
@@ -274,6 +307,8 @@ class OtherBpError extends Error {
   }
 }
 class LoginInfoDeniedError extends Error {}
+/** 쿠키의 소속 BP 와 로그인 정보(login-info)가 어긋났다(fixBpPath). */
+class BpMismatchError extends Error {}
 
 const readLoginKey = () => document.cookie.match(new RegExp(`(?:^|; )${LOGIN_KEY_COOKIE}=([^;]*)`))?.[1];
 
@@ -299,36 +334,58 @@ async function prepare(onSwitchBp: (bp: StoredBp) => void): Promise<LoginState> 
 
   const { account } = info;
   const ownBp = { bpCodeId: account.bp.bpCodeId, bpCode: account.bp.bpCode, tradeName: account.bp.tradeName };
+  const platform = account.bp.isPlatform;
   const url = new URL(location.href);
-  // 고른 BP 는 BP 이동 화면(/bp-switch?bp=)으로만 받는다. 다른 주소의 ?bp= 는 보지 않는다(bpOfSwitchUrl).
+  // 앞 로그인이 이 탭에 남긴 점포·공통코드·범위는 갈래와 상관없이 여기서 지운다(readCurrentBp). 점포 등은 bpCodeId 로만 갈려 같은 BP 의 다른 계정 값이 읽힌다.
+  const current = readCurrentBp(loginKey);
+  // 탭 BP 주소(/bp/{id})의 BP. 주소가 이긴다 — 안 옮긴 화면은 지금처럼 current-bp 를 쓴다(탭 BP 경로 방식 전환 계획).
+  const pathBp = bpOfPath(url.pathname);
+  // BP · 가맹 계정은 소속 BP 하나만 연다. 남의 BP 주소는 proxy 가 쿠키로 이미 보냈어야 한다 — 쿠키에 BP 가 없는 옛 세션만 여기서 보낸다.
+  if (!platform && pathBp !== null && pathBp !== ownBp.bpCodeId) return fixBpPath(ownBp.bpCodeId, url);
+  // 옮긴 화면에 BP 없이 왔다(옛 즐겨찾기 · 알림 링크 · 아직 접두를 안 붙인 링크). 탭 BP 주소로 보낸다.
+  // 플랫폼 계정이 BP 를 고른 적이 없으면 플랫폼 탭으로 열려 Ready 가 「BP 를 먼저 골라 주세요」로 막는다.
+  if (pathBp === null && isBpPathScreen(url.pathname)) {
+    const to = !platform ? ownBp : current?.serviceCode === "WHALE_ERP" ? current.bp : readSelectedBp(loginKey);
+    if (to) return moveTo(bpPath(to.bpCodeId, url.pathname) + url.search + url.hash);
+  }
+  // 고른 BP 는 BP 이동 화면(/bp-switch?bp=)이나 탭 BP 주소로만 받는다. 다른 주소의 ?bp= 는 보지 않는다(bpOfSwitchUrl).
   const switching = url.pathname === BP_SWITCH_PATH;
   const target = bpOfSwitchUrl(url);
   // 이동 화면인데 BP 를 읽지 못했다(잘렸거나 손으로 고친 주소). 플랫폼 계정은 조용히 플랫폼으로 가지 않고 알린다.
   // 그 밖의 계정은 BP 를 고를 수 없어 늘 자기 BP 로 열리므로 그대로 둔다.
-  if (switching && !target && account.bp.isPlatform) throw new OtherBpError("BP 이동 주소가 올바르지 않습니다", null);
+  if (switching && !target && platform) throw new OtherBpError("BP 이동 주소가 올바르지 않습니다", null);
   // 다른 BP 로 가면 그 BP 를 서버에서 찾는다 — 주소는 id 만 믿는다. 탭들이 같이 쓰는 selected-bp 를 거치지 않아, 이 탭이 준비되는 사이
   // 다른 탭에서 BP 를 또 골라도 이 탭은 주소의 BP 로 열린다. 비밀번호를 바꾸기 전에는 다른 BP 를 열지 않는다(아래).
-  const switchBp =
-    target && account.bp.isPlatform && !account.isPasswordChangeRequired && target.bpCodeId !== ownBp.bpCodeId ? await findBp(target) : null;
-  if (switchBp) onSwitchBp(switchBp);
-  // 앞 로그인이 이 탭에 남긴 점포·공통코드·범위는 갈래와 상관없이 여기서 지운다(readCurrentBp). 점포 등은 bpCodeId 로만 갈려 같은 BP 의 다른 계정 값이 읽힌다.
-  const current = readCurrentBp(loginKey);
+  let switchBp: StoredBp | null = null;
+  if (platform && !account.isPasswordChangeRequired) {
+    if (target && target.bpCodeId !== ownBp.bpCodeId) switchBp = await findBp(target);
+    else if (pathBp !== null) {
+      // 플랫폼 BP 는 ERP 로 열지 않는다. 이 탭이 이미 연 BP 면 다시 찾지 않는다(새로고침 · 탭 안 이동)
+      if (pathBp === ownBp.bpCodeId) throw new OtherBpError(`BP(${pathBp})를 찾지 못했습니다`, pathBp);
+      switchBp = current?.bp.bpCodeId === pathBp ? current.bp : await findBpById(pathBp, readSelectedBp(loginKey));
+    }
+  }
+  if (switchBp && switchBp.bpCodeId !== current?.bp.bpCodeId) onSwitchBp(switchBp);
   // 비밀번호를 바꾸기 전에는 다른 BP 조회가 403 이라 자기 BP 로 연다.
   const tab: TabContext = account.isPasswordChangeRequired
-    ? { serviceCode: account.bp.isPlatform ? "PLATFORM" : "WHALE_ERP", bp: ownBp }
-    : resolveTab({
-        ownBp,
-        isPlatform: account.bp.isPlatform,
-        pathService: serviceOfPath(info.menus, url.pathname),
-        queryBpCodeId: target?.bpCodeId ?? null,
-        current,
-        selectedBp: switchBp ?? readSelectedBp(loginKey),
-      });
+    ? { serviceCode: platform ? "PLATFORM" : "WHALE_ERP", bp: ownBp }
+    : pathBp !== null
+      ? { serviceCode: "WHALE_ERP", bp: switchBp ?? ownBp }
+      : resolveTab({
+          ownBp,
+          isPlatform: platform,
+          pathService: serviceOfPath(info.menus, url.pathname),
+          queryBpCodeId: target?.bpCodeId ?? null,
+          current,
+          selectedBp: switchBp ?? readSelectedBp(loginKey),
+        });
   const { bp } = tab;
 
-  // BP 로 이동할 때는 탭에 남은 값을 쓰지 않는다 — 다른 BP 는 지금 값을 받고, 자기 BP 는 로그인할 때 받은 값(login-bp-info)이다.
-  let stores = switching ? null : readStores(bp.bpCodeId);
-  let codes = switching ? null : readCodes(bp.bpCodeId);
+  // BP 를 바꿔 열 때(BP 이동 화면 · 이 탭과 다른 BP 의 /bp/{id})는 탭에 남은 값을 쓰지 않고 범위는 전체에서 시작한다 —
+  // 다른 BP 는 지금 값을 받고, 자기 BP 는 로그인할 때 받은 값(login-bp-info)이다.
+  const fresh = switching || (pathBp !== null && current?.bp.bpCodeId !== bp.bpCodeId);
+  let stores = fresh ? null : readStores(bp.bpCodeId);
+  let codes = fresh ? null : readCodes(bp.bpCodeId);
   if (!stores || !codes) {
     if (bp.bpCodeId === bpInfo.bpCodeId) {
       ({ stores, codes } = bpInfo);
@@ -352,8 +409,10 @@ async function prepare(onSwitchBp: (bp: StoredBp) => void): Promise<LoginState> 
   writeCurrentBp(loginKey, tab);
   // 고른 BP 도 그 BP 의 값을 받은 뒤에 적는다 — 다음에 주소로 여는 탭이 이 BP 를 쓴다. 받기가 실패하면 앞서 고른 BP 가 그대로 남는다.
   if (switchBp) writeSelectedBp(loginKey, switchBp);
-  // BP 로 이동하면 범위는 전체에서 시작한다.
-  if (switching) writeScope(bp.bpCodeId, ALL);
+  // BP 를 바꿔 열면 범위는 전체에서 시작한다.
+  if (fresh) writeScope(bp.bpCodeId, ALL);
+  // 남의 BP 주소를 고쳐 보낸 표시는 제대로 열렸으니 지운다(fixBpPath).
+  clearBpFix();
   // 저장된 점포 범위의 점포가 목록에 없으면 전체로 되돌린다(선택기 표시와 실제 범위가 어긋나지 않게).
   const saved = readScope(bp.bpCodeId);
   const scope = saved?.type === "STORE" && !stores.some((s) => s.storeId === saved.storeId) ? ALL : (saved ?? ALL);
@@ -375,4 +434,40 @@ async function findBp({ bpCodeId, bpCode }: { bpCodeId: number; bpCode: string |
   const found = r.items.find((i) => i.bpCodeId === bpCodeId);
   if (!found) throw notFound;
   return { bpCodeId: found.bpCodeId, bpCode: found.bpCode, tradeName: found.tradeName };
+}
+
+/**
+ * 탭 BP 주소(/bp/{id})의 BP 를 찾는다 — 주소에는 id 만 있다. 마지막으로 고른 BP 와 같으면 그 상호 · 코드를 쓴다(표시용 — 데이터는 api 가 막는다).
+ * 아니면 BP 목록을 쪽마다 넘겨 id 로 찾는다. 없거나 볼 수 없으면(403 · 404) OtherBpError.
+ * shortcut: api 에 BP 한 건 조회(GET /bp-codes/{id})가 없어 목록을 넘긴다. BP 가 수천 개가 되기 전에 api 에 한 건 조회를 요청한다.
+ */
+async function findBpById(bpCodeId: number, selected: StoredBp | null): Promise<StoredBp> {
+  if (selected?.bpCodeId === bpCodeId) return selected;
+  const pageSize = 200;
+  for (let page = 1; ; page++) {
+    const query = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
+    const r = await bff<{ items: BpOption[]; total: number }>(`/bp-codes?${query}`).catch((e: unknown) => {
+      if (e instanceof BffError && (e.status === 403 || e.status === 404)) throw new OtherBpError(`BP(${bpCodeId}): ${e.message}`, bpCodeId);
+      throw e;
+    });
+    const found = r.items.find((i) => i.bpCodeId === bpCodeId);
+    if (found) return { bpCodeId: found.bpCodeId, bpCode: found.bpCode, tradeName: found.tradeName };
+    if (r.items.length < pageSize || page * pageSize >= r.total) throw new OtherBpError(`BP(${bpCodeId})를 찾지 못했습니다`, bpCodeId);
+  }
+}
+
+/**
+ * BP · 가맹 계정이 남의 BP 주소로 왔다. 한 번은 소속 BP 주소로 고쳐 보낸다(쿠키에 BP 가 없는 옛 세션 — proxy 가 보내지 못한다).
+ * 고쳐 보낸 주소로 다시 오면 proxy 가 쿠키의 BP 로 되돌린 것이다 — 쿠키와 로그인 정보가 어긋났으니 BpMismatchError(로그아웃).
+ */
+function fixBpPath(ownBpCodeId: number, url: URL): Promise<never> {
+  if (takeBpFix(url.pathname)) throw new BpMismatchError();
+  markBpFix(url.pathname);
+  return moveTo(bpPath(ownBpCodeId, stripBp(url.pathname)) + url.search + url.hash);
+}
+
+/** 주소를 바꿔 다시 연다(전체 로드 — proxy 가 새 주소의 헤더를 붙인다). 준비는 거기서 다시 하므로 이 준비는 끝나지 않고 로딩 화면이 남는다. */
+function moveTo(href: string): Promise<never> {
+  location.replace(href);
+  return new Promise<never>(() => {});
 }

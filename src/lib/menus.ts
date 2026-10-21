@@ -1,6 +1,8 @@
 // login-info 의 메뉴 트리를 읽는 판정. next/* 를 import 하지 않는다 — node --test 로 바로 돌리기 위해서다.
+// 주소는 탭 BP 접두(/bp/{id})를 떼고 메뉴 url 과 비교한다 — 메뉴 url 은 옛 경로 그대로다(bp-path.ts).
 import type { ServiceCode } from "./browser-storage";
 import type { AdminMenu } from "./session";
+import { stripBp } from "./bp-path.ts";
 
 /**
  * 코드로 직접 찾는 메뉴(api 메뉴 시드 — 업무 API 도 이 코드로 메뉴 권한을 판정한다). 화면 자기 버튼의 권한은 코드 없이 주소로 찾는다(usePagePermission).
@@ -58,7 +60,8 @@ const isUnder = (pathname: string, url: string) => pathname === url || pathname.
  * 이 주소가 어느 서비스 화면인가. 홈이거나 조회 권한이 있는 메뉴 주소(그 아래 포함)로 정하고, 모르면 null.
  * 탭 값이 없는 새 탭이 어느 서비스로 열릴지 정할 때 쓴다(resolveTab).
  */
-export function serviceOfPath(menus: AdminMenu[], pathname: string): ServiceCode | null {
+export function serviceOfPath(menus: AdminMenu[], path: string): ServiceCode | null {
+  const pathname = stripBp(path);
   for (const service of Object.keys(HOME) as ServiceCode[]) if (pathname === HOME[service]) return service;
   if (isUnder(pathname, PENDING_PLATFORM_MENU.url)) return "PLATFORM";
   const menu = findMenu(menus, (m) => m.permission.read && !!m.url && isUnder(pathname, m.url));
@@ -73,7 +76,8 @@ export function serviceOfPath(menus: AdminMenu[], pathname: string): ServiceCode
  * 하위 메뉴로 가는 길로만 들어온 상위 메뉴는 조회 권한이 false 라, 그 url 아래의 권한 없는 화면을 열어 주지 않는다(2026-10-14).
  * 헤더는 2단계까지 그리지만 판정은 모든 깊이(메뉴는 최대 3단계)를 본다.
  */
-export function isAllowed(menus: AdminMenu[], pathname: string, service: ServiceCode): boolean {
+export function isAllowed(menus: AdminMenu[], path: string, service: ServiceCode): boolean {
+  const pathname = stripBp(path);
   if (pathname === HOME[service]) return true;
   if (service === "PLATFORM" && isUnder(pathname, PENDING_PLATFORM_MENU.url)) return true;
   return menuOfPath(menus, pathname, service) !== null;
@@ -85,7 +89,8 @@ export function isAllowed(menus: AdminMenu[], pathname: string, service: Service
  * 홈 · 알림 템플릿(메뉴 행 없음)처럼 메뉴가 아닌 화면이면 null.
  * 화면이 열리는 판정(isAllowed)과 그 화면 버튼의 권한(usePagePermission)이 이 함수 하나를 본다.
  */
-export function menuOfPath(menus: AdminMenu[], pathname: string, service: ServiceCode): AdminMenu | null {
+export function menuOfPath(menus: AdminMenu[], path: string, service: ServiceCode): AdminMenu | null {
+  const pathname = stripBp(path);
   let found: AdminMenu | null = null;
   const walk = (list: AdminMenu[]) => {
     for (const m of list) {

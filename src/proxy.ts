@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { homeOf, isPublicPath } from "@/lib/auth-routes";
+import { homeOf, isPlatformRole, isPublicPath } from "@/lib/auth-routes";
+import { BP_HEADER, bpOfPath, bpPath, stripBp } from "@/lib/bp-path";
 import { answersWith401 } from "@/lib/paper-request";
 import {
   ACCESS_TOKEN_TTL_MS,
@@ -15,6 +16,7 @@ import {
 // - 접근 토큰을 받은 지 10분이 지났으면(만료 50분 전부터) 갱신해 쿠키를 다시 쓴다. 갱신이 401 이면 /login, 그 밖의 실패는 토큰이 남아 있는 동안 현재 쿠키로 계속
 // - BP·가맹 계정이 플랫폼 화면에 오는 것은 주소가 아니라 SessionGate 가 탭 서비스의 메뉴로 막는다. 플랫폼 계정은 ERP 에도 들어간다(F-TLJOCK)
 // - 로그인한 채 /login · /find 에 오면 자기 홈
+// - 탭 BP 주소 /bp/{id}/... 는 헤더 x-bp-code-id 를 붙여 옛 경로로 rewrite 한다. BP·가맹 계정의 남의 BP 주소는 소속 BP 로 보낸다(bpRoute)
 // 정책은 「갱신 토큰은 마지막 사용부터 1시간」(쓰는 동안은 끊기지 않는다). api 세션은 갱신할 때만 연장되므로,
 // 만료 직전에만 갱신하면 계속 쓰던 사람도 1시간마다 끊긴다. 일찍 갱신해 마지막 요청부터 50~60분 동안 유지한다.
 // 알려진 한계: 마지막 갱신 뒤 50분 넘게 서버 액션만 보내면 갱신이 없어 60분에 로그아웃된다(지금은 감수).
@@ -30,24 +32,54 @@ export async function proxy(req: NextRequest) {
   }
   if (!session) return toLogin(req);
 
-  if (session.accessTokenExpiresAt - REFRESH_EARLY_MS > Date.now()) return NextResponse.next();
+  const route = bpRoute(req, session);
+  if (route instanceof URL) return NextResponse.redirect(route);
+  // 요청 헤더(탭 BP · 갱신한 쿠키)를 바꿔 넘긴다. /bp/{id} 주소면 옛 경로(폴더)로 rewrite 한다 — 브라우저 주소는 그대로다.
+  const pass = () => (route ? NextResponse.rewrite(route.rewrite, { request: { headers: req.headers } }) : NextResponse.next({ request: { headers: req.headers } }));
+
+  if (session.accessTokenExpiresAt - REFRESH_EARLY_MS > Date.now()) return pass();
   // 서버 액션 요청은 갱신하지 않는다. 50분 일찍 갱신하므로 토큰은 아직 유효하고, 여기서 쿠키를 쓰면
   // 액션이 쓰는 쿠키(로그아웃의 삭제)와 같은 응답에 겹쳐 로그아웃이 무시될 수 있다.
-  if (req.headers.has("next-action")) return NextResponse.next();
+  if (req.headers.has("next-action")) return pass();
 
   const refreshed = await refresh(session);
   if (refreshed === "unauthorized") return toLogin(req);
   if (!refreshed) {
     // 일찍 갱신하므로 토큰은 아직 살아 있을 수 있다. api 재시작·시간 초과·429 로 로그아웃시키지 말고 다음 요청에서 다시 시도한다.
-    return session.accessTokenExpiresAt > Date.now() ? NextResponse.next() : toLogin(req);
+    return session.accessTokenExpiresAt > Date.now() ? pass() : toLogin(req);
   }
   session = refreshed;
   const cookie = sessionCookie(session);
   // 이 요청의 서버 컴포넌트도 새 토큰을 읽게 요청 쿠키를 바꿔 넘기고(req.cookies.set 이 req.headers 의 Cookie 를 고친다), 브라우저에는 Set-Cookie 로 준다.
   req.cookies.set(SESSION_COOKIE, cookie.value);
-  const res = NextResponse.next({ request: { headers: req.headers } });
+  const res = pass();
   res.cookies.set(cookie);
   return res;
+}
+
+/**
+ * 탭 BP 주소(/bp/{id}/...). 들어온 x-bp-code-id 는 늘 지우고 주소의 값으로만 다시 쓴다 — 「헤더 = 주소의 BP」.
+ * BFF(/api/*)는 주소에 BP 가 없어 브라우저(bff())가 실은 값을 숫자일 때만 남긴다. 판정은 api 가 한다(위조해도 소속 BP 와 대조).
+ * BP · 가맹 계정이 남의 BP 주소로 오면 쿠키의 소속 BP 로 보낸다(URL). BP 없는 주소는 어느 것이 ERP 인지 몰라 보내지 않는다(SessionGate 가 보낸다).
+ * 서버 액션 POST 는 보내면 액션이 깨지므로 GET 만 보낸다. 돌려주는 값: 보낼 주소(URL) · rewrite 할 주소 · 그대로(null).
+ */
+function bpRoute(req: NextRequest, session: Session): URL | { rewrite: URL } | null {
+  const { pathname, search } = req.nextUrl;
+  const sent = req.headers.get(BP_HEADER);
+  req.headers.delete(BP_HEADER);
+  if (pathname.startsWith("/api/")) {
+    if (sent && /^\d{1,9}$/.test(sent)) req.headers.set(BP_HEADER, sent);
+    return null;
+  }
+  const bp = bpOfPath(pathname);
+  if (bp === null) return null;
+  const own = session.bpCodeId;
+  if (own && own !== bp && !isPlatformRole(session.roleTypeCode) && req.method === "GET" && !req.headers.has("next-action"))
+    return new URL(bpPath(own, stripBp(pathname)) + search, req.url);
+  req.headers.set(BP_HEADER, String(bp));
+  const rewrite = req.nextUrl.clone();
+  rewrite.pathname = stripBp(pathname);
+  return { rewrite };
 }
 
 // "unauthorized": 갱신 토큰이 끝나 세션이 사라짐(401). null: 그 밖의 실패(상태 코드·시간 초과·네트워크·깨진 응답).

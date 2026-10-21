@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react";
 import { GlobalHeader, ServiceLinks, StoreSelect, UserPop, type HeaderMenu, type UserPopItem } from "@/components/common";
 import { logout } from "@/app/actions";
 import type { Scope, ServiceCode } from "@/lib/browser-storage";
+import { bpPath, isBpPathScreen } from "@/lib/bp-path";
 import { findMenu, HOME, PENDING_PLATFORM_MENU } from "@/lib/menus";
 import type { AccountBp, AdminStore } from "@/lib/session";
 import { BpSelectDialog } from "./bp-select-dialog";
@@ -20,17 +21,20 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   const all = useMenus();
   const [bpSelectOpen, setBpSelectOpen] = useState(false);
   const role = useCodes("ROLE_TYPE").find((c) => c.value === account.roleTypeCode)?.label ?? account.roleTypeCode;
+  const tabBp = useCurrentBp().bpCodeId;
+  // /bp/{id} 주소로 옮긴 ERP 화면에만 탭 BP 를 붙인다(BP_PATH_SCREENS). 메뉴 url 자체는 옛 경로 그대로다.
+  const linkOf = (url: string) => (service === "WHALE_ERP" && isBpPathScreen(url) ? bpPath(tabBp, url) : url);
   const menus: HeaderMenu[] = all.map((m) => {
       const items = m.children.flatMap((c) => {
         // 하위 메뉴로 가는 길로만 들어온 메뉴는 조회 권한이 없다(isAllowed 가 막는다). 권한 있는 첫 하위 메뉴로 보내고, 없으면 뺀다.
-        const href = c.permission.read && c.url ? c.url : findMenu(c.children, (x) => x.permission.read && !!x.url)?.url;
-        if (!href) return [];
-        const item = { label: c.name, href };
+        const url = c.permission.read && c.url ? c.url : findMenu(c.children, (x) => x.permission.read && !!x.url)?.url;
+        if (!url) return [];
+        const item = { label: c.name, href: linkOf(url) };
         const pending = PENDING_PLATFORM_MENU;
         const missing = service === "PLATFORM" && c.url === pending.after && !findMenu(all, (x) => x.url === pending.url);
         return missing ? [item, { label: pending.name, href: pending.url }] : [item];
       });
-      return { label: m.name, items, href: items.length === 0 && m.permission.read && m.url ? m.url : undefined };
+      return { label: m.name, items, href: items.length === 0 && m.permission.read && m.url ? linkOf(m.url) : undefined };
     });
   // 내정보·비밀번호·회원 탈퇴는 슬라이드 패널 작업 전이라 아직 아무 데도 가지 않는다.
   const mine: UserPopItem[] = [

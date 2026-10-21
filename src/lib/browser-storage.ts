@@ -50,8 +50,9 @@ const KEY = {
   stores: `${PREFIX}stores`,
   codes: `${PREFIX}codes`,
   scope: `${PREFIX}scope`,
+  bpFix: `${PREFIX}bp-fix`,
 } as const;
-const TAB_KEYS = [KEY.currentBp, KEY.stores, KEY.codes, KEY.scope];
+const TAB_KEYS = [KEY.currentBp, KEY.stores, KEY.codes, KEY.scope, KEY.bpFix];
 // 앞 버전의 키 — 읽지는 않지만 로그인 정보(아이디 · 이름 · 이메일 · 메뉴 권한 · 점포)가 들어 있어 로그아웃할 때 함께 지운다(공용 PC).
 const LEGACY_PREFIXES = ["whale-erp:v1:"];
 const LEGACY_KEYS = LEGACY_PREFIXES.flatMap((p) => Object.values(KEY).map((k) => p + k.slice(PREFIX.length)));
@@ -107,6 +108,18 @@ export const readCodes = (bpCodeId: number) => ofBp(read<{ bpCodeId: number; cod
 export const writeCodes = (bpCodeId: number, codes: Codes) => write(tab, KEY.codes, { bpCodeId, codes });
 export const readScope = (bpCodeId: number) => ofBp(read<{ bpCodeId: number; scope: Scope }>(tab, KEY.scope), bpCodeId)?.scope ?? null;
 export const writeScope = (bpCodeId: number, scope: Scope) => write(tab, KEY.scope, { bpCodeId, scope });
+
+// bp-fix: BP · 가맹 계정이 남의 BP 주소로 와 소속 BP 로 고쳐 보낸 주소(SessionGate fixBpPath). 같은 주소로 다시 오면 쿠키와 로그인 정보가 어긋난 것이다.
+export const markBpFix = (pathname: string) => write(tab, KEY.bpFix, pathname);
+/** 이 주소를 고쳐 보낸 적이 있는가 — 있으면 표시를 지우고 true. */
+export function takeBpFix(pathname: string): boolean {
+  const seen = read<string>(tab, KEY.bpFix) === pathname;
+  if (seen) remove(tab, [KEY.bpFix]);
+  return seen;
+}
+export const clearBpFix = () => remove(tab, [KEY.bpFix]);
+/** 이 탭의 BP · 점포 · 공통코드 · 범위를 지운다. 다음 준비가 주소로 다시 정한다(열 수 없는 BP 에서 플랫폼으로 돌아갈 때). */
+export const clearTabBp = () => remove(tab, TAB_KEYS);
 
 /** 로그인 화면에서 부른다. 이 탭과 공용 저장소의 로그인 정보를 지운다(아이디 저장 whale-erp:saved-login-id 는 남긴다). 앞 버전 키도 지운다. */
 export function clearLoginStorage() {
