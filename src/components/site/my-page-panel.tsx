@@ -165,16 +165,18 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
       ) : (
         <>
           {/* 점포정보 관리 상세화면(DetailTable)의 제목 줄과 같은 회색 바 — FormGroup 의 기본 제목(배경 없음)
-              대신 쓴다(사용자 디자인 피드백, 2026-10-21). 본문 카드는 FormGroup 과 같은 토큰으로 직접 짠다. */}
+              대신 쓴다(사용자 디자인 피드백, 2026-10-21). 본문 카드는 FormGroup 과 같은 토큰으로 직접 짠다.
+              아이콘을 넣어 봤지만 24px 로는 너무 작아 뺐다(사용자 지정, 2026-10-21). */}
           <div className="w-full">
             <h3 className="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[16px] font-medium text-erp-ink">계정 정보</h3>
             <div className="flex flex-col gap-[18px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white px-[16px] py-[20px]">
               <FormRow>
                 <ReadonlyField label="아이디" value={profile.loginId} bold />
-                <ReadonlyField label="최근 로그인" value={profile.lastLoginAt ? formatDateTime(profile.lastLoginAt) : "로그인 기록 없음"} />
+                <ReadonlyField label="사용자 권한" value={roleTypeLabel(profile.roleTypeCode)} bold />
               </FormRow>
+              <hr className="border-erp-divider" />
               <FormRow>
-                <ReadonlyField label="사용자 권한" value={roleTypeLabel(profile.roleTypeCode)} />
+                <ReadonlyField label="최근 로그인" value={profile.lastLoginAt ? formatDateTime(profile.lastLoginAt) : "로그인 기록 없음"} />
                 <ReadonlyField label="가입일" value={formatDateTime(profile.createdAt)} />
               </FormRow>
             </div>
@@ -228,6 +230,12 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
                   value={form.email}
                   onChange={(e) => set("email", e.target.value)}
                   onBlur={(e) => checkEmail(e.currentTarget.value)}
+                  onKeyDown={(e) => {
+                    // 한글 조합 중 Enter 는 글자 확정이라 넘긴다(admin-form-panel.tsx checkLoginId 와 같다).
+                    if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
+                    e.preventDefault();
+                    checkEmail(e.currentTarget.value);
+                  }}
                   maxLength={100}
                   placeholder="example@company.com"
                   aria-invalid={invalid("email")}
@@ -236,7 +244,7 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
                 />
               </Field>
               {!errors.email && !emailPassed && (
-                <p className="text-[13px] leading-[1.5] text-erp-label">{emailChecking ? "이메일을 확인하는 중입니다." : "이메일 확인을 통과해야 저장할 수 있습니다."}</p>
+                <p className="text-[13px] leading-[1.5] text-erp-label">{emailChecking ? "이메일을 확인하는 중입니다." : "중복되지 않은 이메일만 사용할 수 있습니다."}</p>
               )}
               {message("email")}
             </div>

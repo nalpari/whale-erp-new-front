@@ -105,11 +105,13 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
   const save = saveRow("저장", closeSave, "저장되었습니다.");
   // 계정 정보는 FormGroup 의 기본 제목(배경 없음) 대신 DetailTable 제목 줄과 같은 회색 바를 쓴다
   // (사용자 디자인 피드백, 2026-10-21). 본문 카드는 FormGroup 과 같은 토큰으로 직접 짠다.
+  // 아이콘을 넣어 봤지만 24px 로는 너무 작아 뺐다(사용자 지정, 2026-10-21).
   const accountInfo =
     `<div class="w-full"><h3 class="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[16px] font-medium text-erp-ink">계정 정보</h3>` +
     `<div class="flex flex-col gap-[18px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white px-[16px] py-[20px]">` +
-    ui.formRow(ui.readonlyField("아이디", "hangang01", true), ui.readonlyField("최근 로그인", "2026-09-22 09:12")) +
-    ui.formRow(ui.readonlyField("사용자 권한", "BP 마스터"), ui.readonlyField("가입일", "2026-03-04")) +
+    ui.formRow(ui.readonlyField("아이디", "hangang01", true), ui.readonlyField("사용자 권한", "BP 마스터", true)) +
+    `<hr class="border-erp-divider">` +
+    ui.formRow(ui.readonlyField("최근 로그인", "2026-09-22 09:12"), ui.readonlyField("가입일", "2026-03-04")) +
     `</div></div>`;
   const basic =
     accountInfo +
