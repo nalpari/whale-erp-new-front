@@ -15,7 +15,6 @@ import {
   toPickedStore,
   withoutStoreSearch,
   withScope,
-  withScopeChange,
 } from "./store-scope.ts";
 
 const store = (storeId: number, storeTypeCode: string): AdminStore => ({
@@ -42,16 +41,14 @@ test("폐점 점포는 직영 · 가맹 전체에 들지 않지만 점포 하나
   assert.deepEqual(scopeStores({ type: "STORE", storeId: 4 }, stores).map((s) => s.storeId), [4]);
 });
 
-test("withScope: 헤더가 메뉴로 갈 때 범위를 scope 하나로 싣는다 — 전체면 싣지 않고, 점포가 많아도 길어지지 않는다", () => {
-  assert.equal(withScope("/stores", { type: "ALL" }), "/stores");
+test("withScope: 헤더가 메뉴로 갈 때 범위를 scope 하나로 싣는다 — 전체도 적고, 점포가 많아도 길어지지 않는다", () => {
+  // 전체도 적는다 — 뒤로 · 앞으로 가기에도 헤더가 주소를 따라 전체로 돌아온다
+  assert.equal(withScope("/stores", { type: "ALL" }), "/stores?scope=ALL");
   assert.equal(withScope("/stores", { type: "DIRECT" }), "/stores?scope=DIRECT");
   assert.equal(withScope("/staff-members", { type: "STORE", storeId: 12 }), "/staff-members?scope=STORE%3A12");
-  // 메뉴 주소에 이미 쿼리가 있으면 이어 붙이고, 전체로 바꾸면 뺀다
+  // 메뉴 주소에 이미 쿼리가 있으면 이어 붙이고, 있던 범위는 바꾼다
   assert.equal(withScope("/stores?view=table", { type: "FRANCHISE" }), "/stores?view=table&scope=FRANCHISE");
-  assert.equal(withScope("/stores?scope=DIRECT", { type: "ALL" }), "/stores");
-  // 범위를 바꿔 이동할 때는 전체도 적는다 — 뒤로 · 앞으로 가기에도 헤더가 주소를 따라온다
-  assert.equal(withScopeChange("/stores?scope=DIRECT", { type: "ALL" }), "/stores?scope=ALL");
-  assert.equal(withScopeChange("/stores", { type: "FRANCHISE" }), "/stores?scope=FRANCHISE");
+  assert.equal(withScope("/stores?scope=DIRECT", { type: "ALL" }), "/stores?scope=ALL");
 });
 
 test("scopeOfParam: 주소의 scope 를 범위로 — 없거나 모르는 값은 null", () => {

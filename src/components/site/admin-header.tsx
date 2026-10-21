@@ -7,7 +7,7 @@ import { logout } from "@/app/actions";
 import type { ServiceCode } from "@/lib/browser-storage";
 import { findMenu, HOME, PENDING_PLATFORM_MENU } from "@/lib/menus";
 import type { AccountBp, AdminStore } from "@/lib/session";
-import { isClosedStore, openStores, SCOPE_PARAM, scopeFromAddress, scopeKeyOf, scopeOfKey, withScope, withScopeChange } from "@/lib/store-scope";
+import { isClosedStore, openStores, SCOPE_PARAM, scopeFromAddress, scopeKeyOf, scopeOfKey, withScope } from "@/lib/store-scope";
 import { BpSelectDialog } from "./bp-select-dialog";
 import { useAccount, useCurrentBp, useMenus, usePageMenu, useScope, useService, useStores } from "./session-gate";
 
@@ -103,7 +103,7 @@ function HeaderScopeSelect() {
           const next = scopeOfKey(key);
           if (!next) return;
           setScope(next);
-          if (pageUrl) router.push(withScopeChange(pageUrl, next));
+          if (pageUrl) router.push(withScope(pageUrl, next));
         }}
       />
     </>

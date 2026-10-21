@@ -1,6 +1,5 @@
 // 헤더 점포 범위(Scope)를 목록의 점포 검색 조건으로 옮긴다. 범위는 탭 안(sessionStorage)에만 있어 서버가 모르므로, 헤더가 메뉴로
-// 이동할 때 주소에 짧은 값 하나(?scope=DIRECT · FRANCHISE · STORE:12 — 전체는 메뉴 링크에는 싣지 않고, 범위를 「전체」로 바꿔 이동할 때만
-// scope=ALL)로 싣는다. 어느 메뉴에 점포 검색 필터가 있는지는 헤더가 모른다 —
+// 이동할 때 주소에 짧은 값 하나(?scope=ALL · DIRECT · FRANCHISE · STORE:12 — 전체도 적는다)로 싣는다. 어느 메뉴에 점포 검색 필터가 있는지는 헤더가 모른다 —
 // 필터가 있는 목록만 이 값을 읽고(서버에서 api 조건으로 바꾼다), 없는 목록은 모르는 값이라 무시한다. 그래서 메뉴 주소 · 코드를 적어 두는 목록이 없다.
 // 목록에서 사용자가 고른 점포는 그 목록 주소의 storeIds 에 두고, 있으면(빈 값 「전체」도) scope 보다 앞선다. scope 는 늘 헤더 범위만 뜻해서,
 // 주소에 scope 가 있으면 그 탭의 헤더 범위도 그 값으로 맞춘다(admin-header.tsx — 주소를 복사해 다른 탭에서 열 때).
@@ -75,15 +74,12 @@ function withParams(href: string, change: (params: URLSearchParams) => void): st
   return search ? `${path}?${search}` : path;
 }
 
-/** 헤더 메뉴 링크 — 범위를 scope 로 싣는다. 전체는 싣지 않는다(그 목록은 조건 없이 연다) */
-export const withScope = (href: string, scope: Scope) =>
-  withParams(href, (p) => (scope.type === "ALL" ? p.delete(SCOPE_PARAM) : p.set(SCOPE_PARAM, scopeKeyOf(scope))));
-
 /**
- * 헤더 범위를 바꿔 그 메뉴의 목록으로 갈 주소 — 전체도 scope=ALL 로 적는다. 그 주소로 뒤로 · 앞으로 가기를 해도 헤더가 주소를 따라
- * 그 범위로 돌아온다(scopeFromAddress).
+ * 헤더가 메뉴로 갈 주소(메뉴 링크 · 범위를 바꿔 그 메뉴의 목록으로) — 범위를 scope 로 싣는다. 전체도 scope=ALL 로 적는다: 헤더를 거친
+ * 기록 항목마다 범위가 남아, 뒤로 · 앞으로 가기를 해도 헤더가 주소를 따라 그 범위로 돌아온다(scopeFromAddress). 전체를 빼면 「전체로
+ * 메뉴에 들어옴 → 직영으로 바꿈 → 뒤로」에서 헤더가 직영에 남고, 필터가 다시 직영으로 채워 전체로 돌아갈 수 없었다.
  */
-export const withScopeChange = (href: string, scope: Scope) => withParams(href, (p) => p.set(SCOPE_PARAM, scopeKeyOf(scope)));
+export const withScope = (href: string, scope: Scope) => withParams(href, (p) => p.set(SCOPE_PARAM, scopeKeyOf(scope)));
 
 /**
  * 이 탭에서 쓸 수 없는 범위 — 고를 점포가 없다(점포 하나가 로그인 정보에 없음 · 직영 · 가맹에 폐점이 아닌 점포가 없음). 다른 BP 탭에서
