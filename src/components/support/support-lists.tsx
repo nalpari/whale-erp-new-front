@@ -90,7 +90,8 @@ export function SupportFaqList({ items, total, query }: { items: SupportPost[]; 
       }
     >
       {items.length === 0 ? (
-        <p className="border-t border-erp-thead-line py-[60px] text-center text-[14px] text-erp-muted">{query.keyword || query.faqCategoryCode ? "찾는 FAQ 가 없습니다." : "FAQ 가 없습니다."}</p>
+        // DataTable 의 빈 줄과 같은 92px 한 줄(DESIGN.md 빈 상태).
+        <p className="flex h-[92px] items-center justify-center border-y border-erp-thead-line text-[14px] text-erp-muted">{query.keyword || query.faqCategoryCode ? "찾는 FAQ 가 없습니다." : "FAQ 가 없습니다."}</p>
       ) : (
         <div className="border-t border-erp-thead-line">
           {items.map((f) => (

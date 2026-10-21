@@ -33,7 +33,7 @@ export function InquiryFormPanel({ id, open, onClose, trigger }: { id: string; o
   const nextKey = useRef(0);
   const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
 
-  const addFiles = (list: FileList | null) => {
+  const handleFiles = (list: FileList | null) => {
     const { accepted, rejected } = pickInquiryFiles(files.length, Array.from(list ?? []));
     setFiles((prev) => [...prev, ...accepted.map((file) => ({ key: nextKey.current++, file }))]);
     setRejected(rejected);
@@ -41,7 +41,7 @@ export function InquiryFormPanel({ id, open, onClose, trigger }: { id: string; o
     if (fileInput.current) fileInput.current.value = "";
   };
 
-  const submit = async () => {
+  const handleSubmit = async () => {
     const missing = [
       !form.inquiryCategoryCode && "문의 유형을 골라 주세요",
       !form.title.trim() && "제목을 입력해 주세요",
@@ -77,12 +77,12 @@ export function InquiryFormPanel({ id, open, onClose, trigger }: { id: string; o
   };
 
   // 등록 중에는 Esc 로도 닫히지 않는다 — 닫히면 결과(성공 · 실패 띠)를 못 본다.
-  const safeClose = () => {
+  const handleClose = () => {
     if (!saving) onClose();
   };
 
   return (
-    <SlidePanel id={id} open={open} onClose={safeClose} label="문의하기" trigger={trigger}>
+    <SlidePanel id={id} open={open} onClose={handleClose} label="문의하기" trigger={trigger}>
       <h2 className="text-[18px] font-semibold text-erp-ink">문의하기</h2>
       {errors.length > 0 && (
         <div role="alert" className="flex flex-col gap-[4px] rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] leading-[1.6] text-erp-off">
@@ -113,7 +113,7 @@ export function InquiryFormPanel({ id, open, onClose, trigger }: { id: string; o
             첨부파일 <span className="ml-[4px] text-[12px] font-normal text-erp-muted">{files.length} / {MAX_ATTACHMENTS}</span>
           </span>
           <div>
-            <input ref={fileInput} type="file" multiple accept={FILE_ACCEPT} hidden onChange={(e) => addFiles(e.target.files)} />
+            <input ref={fileInput} type="file" multiple accept={FILE_ACCEPT} hidden onChange={(e) => handleFiles(e.target.files)} />
             <Button variant="soft" disabled={saving || files.length >= MAX_ATTACHMENTS} onClick={() => fileInput.current?.click()}>
               파일 선택
             </Button>
@@ -146,7 +146,7 @@ export function InquiryFormPanel({ id, open, onClose, trigger }: { id: string; o
         <Button variant="off" onClick={onClose} disabled={saving}>
           취소
         </Button>
-        <Button onClick={submit} disabled={saving}>
+        <Button onClick={handleSubmit} disabled={saving}>
           문의 등록
         </Button>
       </div>

@@ -14,7 +14,6 @@ import { InquiryStatusBadge } from "./support-lists";
 // 고객지원 상세 둘 — 공지사항(#282, 데모 support/notice-detail)과 내 문의(#284, 데모 support/inquiry-mine).
 // 노출 대상 · 이력 · 내부 메모 · 이전 답변 · 운영자는 api 가 싣지 않는다(CNT-17). 첨부는 누를 때마다 5분짜리 서명 주소를 새로 받는다.
 
-const dt = formatDateTime;
 const Prose = ({ children }: { children: ReactNode }) => <p className="text-[14px] leading-[1.7] whitespace-pre-wrap break-keep text-erp-ink">{children}</p>;
 const Meta = ({ children }: { children: ReactNode }) => <span className="text-[13px] text-erp-label">{children}</span>;
 const Sub = ({ children }: { children: ReactNode }) => <span className="text-erp-muted">{children}</span>;
@@ -133,9 +132,9 @@ export function MyInquiryView({ inquiry: d, statuses }: { inquiry: SupportInquir
   const { error, busy, download } = useDownload();
   // 진행 — 최근 것부터. 처리중을 거치지 않고 답했으면 그 줄이 없다.
   const steps: Step[] = [
-    ...(d.reply ? [[dt(d.reply.repliedAt), "ANSWERED"] as Step] : []),
-    ...(d.processingStartedAt ? [[dt(d.processingStartedAt), "IN_PROGRESS"] as Step] : []),
-    [dt(d.createdAt), "RECEIVED"],
+    ...(d.reply ? [[formatDateTime(d.reply.repliedAt), "ANSWERED"] as Step] : []),
+    ...(d.processingStartedAt ? [[formatDateTime(d.processingStartedAt), "IN_PROGRESS"] as Step] : []),
+    [formatDateTime(d.createdAt), "RECEIVED"],
   ];
   const stepColumns: Column<Step>[] = [
     { header: "일시", cell: (s) => s[0] },
@@ -146,7 +145,7 @@ export function MyInquiryView({ inquiry: d, statuses }: { inquiry: SupportInquir
     <Frame menu="문의하기" title="문의사항 상세" listHref={SUPPORT_INQUIRY_BASE} error={error}>
       <div className="grid grid-cols-[7fr_5fr] items-start gap-[24px]">
         <div className="flex min-w-0 flex-col gap-[24px]">
-          <Box title={d.title} hint={`${dt(d.createdAt)} · ${categoryLabel(d.inquiryCategoryCode)}`}>
+          <Box title={d.title} hint={`${formatDateTime(d.createdAt)} · ${categoryLabel(d.inquiryCategoryCode)}`}>
             <Prose>{d.body}</Prose>
           </Box>
           {/* 첨부(CNT-18): 이미지는 작은 미리보기, PDF 는 이름 + 크기. 누르면 내려받는다. */}
@@ -180,7 +179,7 @@ export function MyInquiryView({ inquiry: d, statuses }: { inquiry: SupportInquir
             {d.reply ? (
               <>
                 <Meta>
-                  {dt(d.reply.repliedAt)} · WHALE ERP 운영팀{d.reply.editedAt && ` · 수정됨 ${dt(d.reply.editedAt)}`}
+                  {formatDateTime(d.reply.repliedAt)} · WHALE ERP 운영팀{d.reply.editedAt && ` · 수정됨 ${formatDateTime(d.reply.editedAt)}`}
                 </Meta>
                 <Prose>{d.reply.body}</Prose>
               </>
