@@ -46,3 +46,6 @@ export function storeImageFailureText(status: string | string[] | undefined): st
   if (status === "error") return "대표 이미지 저장 결과를 확인하지 못했습니다. 이 화면에 이미지가 없으면 수정에서 다시 올려 주세요.";
   return "대표 이미지를 저장하지 못했습니다. 수정에서 다시 올려 주세요.";
 }
+
+/** 서명을 뺀 이미지 주소 — api 가 조회할 때마다 서명(쿼리)을 새로 붙이므로 같은 이미지인지는 이것으로 가른다(이미지를 바꾸면 api 가 새 키로 올린다) */
+export const imageKeyOf = (url: string) => url.split("?")[0];
