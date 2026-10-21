@@ -73,18 +73,19 @@ export default async function EditContractPage({ params }: PageProps<"/contracts
   );
 }
 
-// 권한이 없어 막혔으면 상세로 보낸다 — 목록의 임시저장 행은 이 화면으로 바로 오므로, 조회 권한만 있어도 내용은 상세에서 본다
+// 권한이 없어 막혔으면 상세로 보낸다 — 목록의 임시저장 행은 이 화면으로 바로 오므로, 조회 권한만 있어도 내용은 상세에서 본다.
+// 그래도 할 수 있는 동작(임시저장 삭제)은 children 으로 받아 이동 버튼 뒤에 둔다
 function Notice({ title, contractId, children }: { title: string; contractId?: number; children?: ReactNode }) {
   return (
     <div className="flex items-center gap-[6px]">
       <p className="flex-1 text-[14px] font-semibold text-erp-ink">{title}</p>
-      {children}
       {contractId !== undefined && (
         <Button variant="soft" href={`/contracts/${contractId}`}>
           상세
         </Button>
       )}
       <Button href="/contracts">목록</Button>
+      {children}
     </div>
   );
 }
