@@ -4,7 +4,7 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-21T06:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-21T09:00:00Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
@@ -109,7 +109,7 @@ page 가 `updatedAt` 을 `PayslipReview` 의 key 로 줘 금액 칸 · 스위치
 * **확정**(`POST /payslips/:id/confirm`) — 저장하지 않은 바뀜이 있거나 보이는 공제가 비어 있으면 확인창의 확인이 막힌다(api 도
   422 `DEDUCTION_MISSING` 로 막는다). 검토 사유가 있으면 「확인한 것으로 남습니다」를 덧붙인다.
 * **확정 취소**(`POST /payslips/:id/cancel-confirmation`) — 확정 · 발송 완료에서 검토 중으로. 발송 완료에서 취소하면 확인창이
-  「직원 근무 앱에서는 다시 보낼 때까지 이 명세서가 보이지 않는다」고 알린다(직원 앱은 발송 완료만 보인다).
+  「직원 근무 앱에는 다시 보낼 때까지 「정정 중」으로 금액 없이 보인다」고 알린다(api 의 `correcting`, 2026-10-21 사용자 결정).
 * **발송**(`POST /payslips/:id/send`, 확정일 때) · **재발송**(`POST /payslips/:id/resend`, 발송 완료일 때) — 머리 버튼, 확인창을 거친다.
   직원 앱 계정 이메일로 간다. 메일 설정 없음 · 계정 없음 · 메일 실패 등은 api 문장을 확인창에 보인다(실패하면 확정 그대로).
 * 위쪽 경고 띠(`reviewBand`)는 이미 확인한 검토 사유(`acknowledgedAt` — 확정 때 확인됨)를 세우지 않는다.
