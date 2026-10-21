@@ -231,3 +231,18 @@ export function draftView(draft: Draft | undefined, saved: string): { text: stri
   if (draft.text === draft.base) return { text: undefined, stale: false };
   return { text: draft.text, stale: true };
 }
+
+/**
+ * 페이지 번호 줄(비로그인 공지사항 #293) — 지금 쪽이 든 10개 묶음(1~10, 11~20 …)과 앞 · 뒤 묶음으로 갈 쪽.
+ * 마지막 쪽을 넘어온 주소(?page=99)는 마지막 묶음을 보인다. 글이 없어도 1쪽은 있다.
+ */
+export function pageWindow(page: number, total: number, pageSize: number): { pages: number[]; prev: number | null; next: number | null } {
+  const last = Math.max(1, Math.ceil(total / pageSize));
+  const start = Math.floor((Math.min(page, last) - 1) / 10) * 10 + 1;
+  const end = Math.min(start + 9, last);
+  return {
+    pages: Array.from({ length: end - start + 1 }, (_, i) => start + i),
+    prev: start > 1 ? start - 1 : null,
+    next: end < last ? end + 1 : null,
+  };
+}

@@ -14,6 +14,7 @@ import {
   sizeLabel,
   validatePost,
   draftView,
+  pageWindow,
   type PostForm,
 } from "./community-view.ts";
 
@@ -159,4 +160,11 @@ test("draftView — 그사이 저장된 값이 바뀌면 손대지 않은 글은
   assert.deepEqual(draftView({ text: "A 고침", base: "A" }, "B"), { text: "A 고침", stale: true });
   // 처음 답변(저장된 값 없음)을 쓰던 중 다른 운영자가 먼저 답했다
   assert.deepEqual(draftView({ text: "내 답", base: "" }, "남의 답"), { text: "내 답", stale: true });
+});
+
+test("pageWindow — 10개 묶음과 앞 · 뒤 묶음", () => {
+  assert.deepEqual(pageWindow(1, 0, 20), { pages: [1], prev: null, next: null });
+  assert.deepEqual(pageWindow(3, 45, 20), { pages: [1, 2, 3], prev: null, next: null });
+  assert.deepEqual(pageWindow(12, 1000, 20), { pages: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20], prev: 10, next: 21 });
+  assert.deepEqual(pageWindow(99, 45, 20), { pages: [1, 2, 3], prev: null, next: null });
 });
