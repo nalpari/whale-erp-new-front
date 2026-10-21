@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, type ReactNode, type SyntheticEvent } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, type MouseEvent, type ReactNode, type SyntheticEvent } from "react";
 import { useDismiss } from "./popup";
 import { EASE_OUT } from "./theme";
 
@@ -75,9 +76,9 @@ function SubMenu({
   );
 }
 
-function Logo() {
+function Logo({ href = "/", onClick }: { href?: string; onClick?: (e: MouseEvent<HTMLAnchorElement>) => void }) {
   return (
-    <Link href="/" className="flex w-[177px] shrink-0 items-center gap-[10px]">
+    <Link href={href} onClick={onClick} className="flex w-[177px] shrink-0 items-center gap-[10px]">
       <Image src="/icons/logo-whale.svg" alt="" width={53} height={40} />
       <p className="leading-[1.3] text-[#252525]">
         <span className="block text-[16px] font-extrabold uppercase">Whale ERP</span>
@@ -135,10 +136,13 @@ export function ServiceLinks({ targets = {} }: { targets?: { erp?: ServiceTarget
         <ServiceLink target={targets.addon} label="부가서비스 현황" className={`${ICON_HOVER} w-[32px] bg-white`}>
           <Image src="/icons/service-chat.svg" alt="" width={19} height={19} />
         </ServiceLink>
-        {/* 플랫폼관리는 톱니바퀴(데모 service-platform.svg, 2026-10-20). 아홉 점 아이콘에서 바꿨다 */}
-        <ServiceLink target={targets.platform} label="플랫폼관리" className={`${ICON_HOVER} w-[20px] bg-white`}>
-          <Image src="/icons/service-platform.svg" alt="" width={20} height={20} />
-        </ServiceLink>
+        {/* 플랫폼관리는 톱니바퀴(데모 service-platform.svg, 2026-10-20). 아홉 점 아이콘에서 바꿨다.
+            플랫폼 계정에게만 보인다 — BP·가맹 계정은 자리 자체를 없앤다(사용자 지적, 2026-10-21). */}
+        {targets.platform && (
+          <ServiceLink target={targets.platform} label="플랫폼관리" className={`${ICON_HOVER} w-[20px] bg-white`}>
+            <Image src="/icons/service-platform.svg" alt="" width={20} height={20} />
+          </ServiceLink>
+        )}
       </div>
     </div>
   );
@@ -161,18 +165,32 @@ export function GlobalHeader({
   menus,
   right,
   inert,
+  logoHref,
 }: {
   menus: HeaderMenu[];
   right?: ReactNode;
   /** 바탕창이 뜬 동안 헤더를 Tab 에서 뺀다 — 바탕창은 클릭만 가로채 포커스를 가두지 않는다(AdminFrame, 코드 리뷰, 2026-10-20) */
   inert?: boolean;
+  /** 로고가 갈 주소 — 없으면 "/"(로그인 전 공개 홈, /design 화면 등). 로그인 뒤 화면은 이 탭 서비스의 홈을
+   * 준다(AdminHeader) — 이미 그 홈이면 새로고침한다(router.refresh), 로고가 로그인 전 공개 홈으로 가버리던
+   * 문제를 고친다(사용자 지적, 2026-10-21). */
+  logoHref?: string;
 }) {
   const { ref, ...state } = useHeaderMenu();
+  const pathname = usePathname();
+  const router = useRouter();
+  const handleLogoClick = logoHref
+    ? (e: MouseEvent<HTMLAnchorElement>) => {
+        if (pathname !== logoHref) return;
+        e.preventDefault();
+        router.refresh();
+      }
+    : undefined;
 
   return (
     <header ref={ref} inert={inert} className="bg-white">
       <div className="flex h-[70px] items-center gap-[34px] px-[24px]">
-        <Logo />
+        <Logo href={logoHref} onClick={handleLogoClick} />
         {right && <div className="flex flex-1 items-center gap-[12px]">{right}</div>}
       </div>
       <nav className="flex h-[52px] items-center gap-[54px] bg-erp-nav px-[24px]">

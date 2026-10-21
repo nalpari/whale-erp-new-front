@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { createContext, use, useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, use, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { Button, useBackdropActive } from "@/components/common";
 import { logout } from "@/app/actions";
 import { bff, BffError, PASSWORD_REQUIRED_EVENT, signOut } from "@/lib/bff";
@@ -63,6 +63,9 @@ type LoginActions = {
   /** GNB 「내정보 관리」 패널 열림 여부 — 패널 자체는 SessionGate 가 children 뒤에 그린다(DOM 순서 때문, 위 주석 참고). */
   myPageOpen: boolean;
   setMyPageOpen: (open: boolean) => void;
+  /** UserPop 의 이름 버튼 — MyPagePanel 의 SlidePanel trigger 로 써서 패널을 닫으면 포커스가 이 버튼으로
+   * 돌아오게 한다(코드 리뷰로 찾음, 2026-10-21 — 전에는 못 꺼내 body 로 빠졌다). AdminHeader 가 UserPop 에 넘긴다. */
+  myPageTrigger: RefObject<HTMLButtonElement | null>;
 };
 const LoginContext = createContext<(LoginState & LoginActions) | null>(null);
 
@@ -73,7 +76,12 @@ function useLogin() {
 }
 export const useAccount = () => useLogin().account;
 export const usePatchAccount = () => useLogin().patchAccount;
-export const useSetMyPageOpen = () => useLogin().setMyPageOpen;
+/** GNB 「내정보 관리」 패널 열림 여부 — useScope · useStorePicks 와 같은 모양(값 · 세터 튜플, naming.md). */
+export function useMyPageOpen() {
+  const { myPageOpen, setMyPageOpen } = useLogin();
+  return [myPageOpen, setMyPageOpen] as const;
+}
+export const useMyPageTrigger = () => useLogin().myPageTrigger;
 /** 이 탭의 서비스. 헤더 메뉴·홈·메뉴 권한 확인과 오른쪽 선택기(플랫폼이면 BP, ERP 면 점포 범위)가 이것을 본다. */
 export const useService = () => useLogin().serviceCode;
 /** 이 탭 서비스의 메뉴 트리(3단계까지). */
@@ -246,9 +254,9 @@ function Ready({
   // DOM 순서가 쌓임을 가른다(PanelBackdrop 의 같은 설명 참고). header 는 먼저, children 은 그다음, 패널은 가장
   // 뒤라야 화면이 자기 등록 패널을 열어 둔 채로 MY PAGE 를 열어도 그 패널 아래 깔리지 않는다(코드 리뷰로 찾음, 2026-10-21).
   const [myPageOpen, setMyPageOpen] = useState(false);
-  // UserPop 의 이름 버튼은 컴포넌트 안쪽이라 ref 를 밖으로 못 꺼낸다 — 패널이 닫힐 때 포커스를 그 버튼으로
-  // 되돌리지 못하고 body 로 빠진다. 다른 SlidePanel(목록 줄 · 버튼)처럼 실제 트리거를 잡게 하는 것은
-  // UserPop 공개 API 를 넓혀야 해 다음 단계(S-UOJVUR 등)에서 같이 본다.
+  // UserPop 의 이름 버튼 — AdminHeader 가 UserPop 에 triggerRef 로 넘겨 실제 DOM 버튼을 단다. 패널을
+  // 닫으면 SlidePanel 이 여기로 포커스를 되돌린다(DESIGN.md Slide Panel). 전엔 못 꺼내 body 로 빠졌다
+  // (코드 리뷰로 찾음, 2026-10-21 — UserPop 공개 API 를 triggerRef 로 넓혀 고쳤다).
   const myPageTrigger = useRef<HTMLButtonElement>(null);
   // 바탕창(closeOnBackdrop 켠 패널)이 떠 있는 동안 화면 본문을 inert 로 뺀다 — MY PAGE 는 어느 화면에서나
   // 열 수 있어 화면마다 따로 감싸 둘 수 없다. admins-screen.tsx 의 같은 처리(자기 등록 패널용)와 겹쳐도 무해하다.
@@ -326,7 +334,7 @@ function Ready({
     location.assign(home);
   };
   return (
-    <LoginContext value={{ ...value, setScope, setStorePicks, patchAccount, myPageOpen, setMyPageOpen }}>
+    <LoginContext value={{ ...value, setScope, setStorePicks, patchAccount, myPageOpen, setMyPageOpen, myPageTrigger }}>
       {allowed && !switching && (
         <>
           {header}

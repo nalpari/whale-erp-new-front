@@ -5,7 +5,7 @@ import { Button, Field, FormGroup, FormRow, RequiredMark, SlidePanel, TextField,
 import { formatDate, formatDateTime } from "@/lib/format";
 import { formOf, serverErrorField, toUpdateInput, validateMyProfileForm, type MyProfileForm, type MyProfileFormField } from "@/lib/my-profile-form";
 import type { MyProfile } from "@/lib/my-profile";
-import { checkMyEmailAvailableAction, getMyProfileAction, updateMyProfileAction, type ActionResult } from "./mypage-actions";
+import { checkMyEmailAvailableAction, getMyProfileAction, updateMyProfileAction, type ActionResult } from "./my-page-actions";
 import { useCodeLabel } from "./code-label";
 import { usePatchAccount } from "./session-gate";
 
@@ -23,7 +23,7 @@ function FieldMessage({ id, message }: { id: string; message?: string }) {
 
 function FailedBand({ message }: { message: string }) {
   return (
-    <div role="alert" className="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] leading-[1.6] text-erp-off">
+    <div role="alert" className="rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] leading-[1.6] text-erp-off">
       {message}
     </div>
   );
