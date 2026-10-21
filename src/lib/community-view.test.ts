@@ -13,6 +13,7 @@ import {
   queryString,
   sizeLabel,
   validatePost,
+  draftView,
   type PostForm,
 } from "./community-view.ts";
 
@@ -147,4 +148,15 @@ test("pickInquiryFiles — 6번째 · 10MB 초과 · 다른 종류는 그 파일
   assert.match(rejected[0], /^b\.hwp: /);
   assert.match(rejected[1], /^c\.pdf: .*10MB/);
   assert.match(rejected[2], /^e\.pdf: .*5개/);
+});
+
+test("draftView — 그사이 저장된 값이 바뀌면 손대지 않은 글은 버리고, 고쳐 쓰던 글은 남기되 알린다", () => {
+  assert.deepEqual(draftView(undefined, "A"), { text: undefined, stale: false });
+  assert.deepEqual(draftView({ text: "A 고침", base: "A" }, "A"), { text: "A 고침", stale: false });
+  // 「답변 수정」만 누르고 둔 사이 다른 운영자가 B 로 고쳤다 — 옛 A 로 덮어쓰지 않게 버린다
+  assert.deepEqual(draftView({ text: "A", base: "A" }, "B"), { text: undefined, stale: false });
+  // 고쳐 쓰던 중 다른 운영자가 B 로 저장했다 — 쓰던 글은 남기고 B 를 함께 보이게 한다
+  assert.deepEqual(draftView({ text: "A 고침", base: "A" }, "B"), { text: "A 고침", stale: true });
+  // 처음 답변(저장된 값 없음)을 쓰던 중 다른 운영자가 먼저 답했다
+  assert.deepEqual(draftView({ text: "내 답", base: "" }, "남의 답"), { text: "내 답", stale: true });
 });

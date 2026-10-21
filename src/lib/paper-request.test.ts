@@ -28,7 +28,7 @@ test("sameOrigin — Origin 이 없거나 null · 깨진 값이면 막는다", (
   for (const origin of [null, "", "null", "not a url"]) assert.equal(sameOrigin(origin, "erp.example.com", "erp.example.com"), false, String(origin));
 });
 
-test("tooLarge — 공지사항 저장 · 문의 등록 51MB · 종이 계약 21MB · 나머지 10MB 를 넘거나 길이 없는 chunked 면 막는다", () => {
+test("tooLarge — 공지사항 저장 · 문의 등록 51MB · 종이 계약 21MB · 나머지 10MB 를 넘거나, 업로드 창구에 길이 없는 chunked 면 막는다", () => {
   const MB = 1024 * 1024;
   assert.equal(tooLarge(NOTICE_SAVE_ROUTE, String(51 * MB)), false);
   assert.equal(tooLarge(NOTICE_SAVE_ROUTE, String(51 * MB + 1)), true);
@@ -40,9 +40,11 @@ test("tooLarge — 공지사항 저장 · 문의 등록 51MB · 종이 계약 21
   assert.equal(tooLarge("/platform-faqs/new", String(10 * MB + 1)), true);
   // 없거나 깨진 값은 Next 의 proxy 한도에 맡긴다
   for (const v of [null, "", "abc"]) assert.equal(tooLarge("/login", v), false, String(v));
-  // 길이 없이 나눠 보내면 크기를 미리 알 수 없어 막는다. 본문 없는 요청(길이 · 나눔 둘 다 없음)은 그대로.
+  // 업로드 창구에 길이 없이 나눠 보내면 크기를 미리 알 수 없어 막는다. 다른 경로 · 본문 없는 요청은 그대로.
   assert.equal(tooLarge(NOTICE_SAVE_ROUTE, null, "chunked"), true);
-  assert.equal(tooLarge("/login", null, "gzip, chunked"), true);
+  assert.equal(tooLarge(INQUIRY_SAVE_ROUTE, null, "gzip, chunked"), true);
+  assert.equal(tooLarge(PAPER_ROUTE, null, "Chunked"), true);
+  assert.equal(tooLarge("/login", null, "chunked"), false);
   assert.equal(tooLarge("/login", null, null), false);
   assert.equal(tooLarge(NOTICE_SAVE_ROUTE, String(MB), "chunked"), false);
 });

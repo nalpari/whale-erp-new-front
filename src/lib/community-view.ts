@@ -215,3 +215,19 @@ export function pickInquiryFiles<F extends NewFile>(had: number, picked: readonl
   }
   return { accepted, rejected };
 }
+
+/** 쓰던 답변 · 메모와, 쓰기 시작할 때 저장돼 있던 값(base). */
+export type Draft = { text: string; base: string };
+
+/**
+ * 쓰던 글을 지금 저장된 값(saved)과 견줘 무엇을 보일지 정한다(front #87 리뷰).
+ * - 그사이 저장된 값이 그대로면 쓰던 글을 그대로 보인다.
+ * - 바뀌었는데 손대지 않은 글(「답변 수정」만 누름)이면 버리고 새로 저장된 값을 보인다 — 옛 값으로 덮어쓰지 않게.
+ * - 바뀌었고 고쳐 쓰던 글이면 남기되 stale 로 알려, 화면이 새로 저장된 값을 함께 보이게 한다.
+ */
+export function draftView(draft: Draft | undefined, saved: string): { text: string | undefined; stale: boolean } {
+  if (!draft) return { text: undefined, stale: false };
+  if (draft.base === saved) return { text: draft.text, stale: false };
+  if (draft.text === draft.base) return { text: undefined, stale: false };
+  return { text: draft.text, stale: true };
+}

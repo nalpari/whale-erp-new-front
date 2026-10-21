@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-21
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #87 리뷰 반영: 쓰던 답변 · 메모를 쓰기 시작할 때의 저장값과 함께 쥐어, 그사이 다른 운영자가 저장했으면 손대지 않은 글은 버리고 고쳐 쓰던 글은 새 값을 함께 보인다(`draftView`). chunked 차단을 업로드 창구로 좁혔다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR 전 리뷰 반영: 문의 등록이 됐는데 결과만 못 읽은 경우 폼을 비우고 닫아 같은 문의가 두 번 생기지 않게 했다. 쓰던 답변 · 메모를 입력칸 대신 `useCommon` 의 `drafts` 가 쥐게 바꿨고(취소 · 저장 성공 때 비움), 409 안내는 쓰던 글이 있을 때만 「그대로 두었다」고 한다. 공지 상세의 이전 · 다음 없음 문구를 「목록의 맨 위 · 맨 아래」로, FAQ 검색 설명을 질문 · 답변으로 바로잡았다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #75 리뷰 참고 5건 반영: 쓰던 답변 · 메모를 화면이 따로 쥐어 409 로 다시 불러와도 남기고, 지워진 건(404)은 목록으로 보낸다. 도입문의 [삭제] 조건을 api 와 맞추고(답변 완료면 숨김), [답변 메일 다시 보내기]에 확인창을 두었다. proxy 는 길이 없는 chunked 본문을 413 으로 막는다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 로그인 후 고객지원 화면 셋을 만들었다(#282 공지사항 · #283 FAQ · #284 문의하기, `/support-notices` · `/support-faqs` · `/support-inquiries` 와 상세). 문의 등록 창구 `/support-inquiries/save`(첨부 multipart)를 proxy 의 401 · 51MB 경로에 더했다.

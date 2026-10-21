@@ -14,14 +14,15 @@ import {
   startProcessingAction,
   type ActResult,
 } from "@/lib/community-actions";
-import { INQUIRY_BASE, LEAD_BASE, PASSWORD_REQUIRED_PREFIX, sizeLabel } from "@/lib/community-view";
+import { draftView, INQUIRY_BASE, LEAD_BASE, PASSWORD_REQUIRED_PREFIX, sizeLabel, type Draft } from "@/lib/community-view";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { formatDateTime, formatPhone } from "@/lib/format";
 
 // 문의사항 · 도입문의 상세(#277, 목업 support/inquiry-detail · lead-detail, 데모 support/inquiry-detail* · lead-detail*). 플랫폼 관리자 전용.
 // 왼쪽은 문의 내용 · 답변 · 운영자 메모, 오른쪽은 보낸 곳(문의자) · 처리 이력이다. 바꾸는 동작은 서버 액션이 하고, 성공하면 router.refresh() 로 최신 상세를 받는다.
-// 쓰던 답변 · 메모는 입력칸이 아니라 useCommon 의 drafts 가 쥔다 — 다른 동작 · 최신 불러오기(409 포함)로 화면이 다시 그려져도 남고,
-// 그 칸을 저장하는 데 성공하거나 [취소]하면 비운다(front #75 리뷰). 비어 있으면 입력칸은 저장된 값을 보인다.
+// 쓰던 답변 · 메모는 입력칸이 아니라 useCommon 의 drafts 가 쓰기 시작할 때 저장돼 있던 값(base)과 함께 쥔다 — 다른 동작 · 최신
+// 불러오기(409 포함)로 화면이 다시 그려져도 남고, 그 칸을 저장하는 데 성공하거나 [취소]하면 비운다(front #75 리뷰). 그사이 다른 운영자가
+// 그 칸을 저장했으면 손대지 않은 글은 버리고, 고쳐 쓰던 글은 남기되 새로 저장된 값을 함께 보인다(draftView, front #87 리뷰).
 // 그사이 다른 운영자가 저장했으면(409) 까닭을 띠에 보이고 최신 내용을 다시 불러온다(#274). 그사이 지워졌으면(404) 목록으로 간다. 세션이 끊겨도(401) 화면을 옮기지 않고 띠로만 알린다(공지 폼과 같다).
 // 문의사항 답변은 이력이 남고(고치면 새 답변을 더함, 「수정됨 · 이전 답변」), 도입문의 답변은 하나를 덮어쓴다(CNT-17 v144).
 
@@ -32,6 +33,8 @@ const EDITED_TOAST = "답변을 고쳤습니다. 문의자에게 알림은 다�
 
 const dt = formatDateTime;
 const Note = ({ children }: { children: ReactNode }) => <p className="text-[14px] leading-[1.6] text-erp-label">{children}</p>;
+/** 쓰던 글이 그사이 저장된 값과 어긋났다는 알림(front #87 리뷰). */
+const Stale = ({ children }: { children: ReactNode }) => <p className="text-[14px] leading-[1.6] text-erp-off">{children}</p>;
 const Prose = ({ children }: { children: ReactNode }) => <p className="text-[14px] leading-[1.7] whitespace-pre-wrap break-keep text-erp-ink">{children}</p>;
 const Meta = ({ children }: { children: ReactNode }) => <p className="text-[13px] text-erp-label">{children}</p>;
 const Sub = ({ children }: { children: ReactNode }) => <span className="text-erp-muted">{children}</span>;
@@ -160,7 +163,7 @@ const StatusBadge = ({ status, statuses }: { status: InquiryDetail["status"]; st
 
 /**
  * 답변 상자. 답변 전이면 입력칸, 답변 완료면 읽기 + 「답변 수정」(CNT-17). 쓰던 글(draft)이 있으면 입력칸을 연다 — 저장에 성공하거나
- * [취소]하면 draft 가 비어 읽기로 돌아간다.
+ * [취소]하면 draft 가 비어 읽기로 돌아간다. 그사이 다른 운영자가 답변을 저장했으면 위 읽기(view)에 새 답변이 서고 입력칸 아래에 알린다.
  * view 는 답변 완료일 때 위에 늘 보일 읽기 내용(본문 · 시각 · 메일 결과 등)이다.
  */
 function AnswerBox({
@@ -184,23 +187,27 @@ function AnswerBox({
   busy: boolean;
   onSave: (body: string) => void;
   /** 쓰던 답변. 없으면(undefined) 저장된 답변을 읽기로 보인다. */
-  draft: string | undefined;
-  onDraft: (text: string | undefined) => void;
+  draft: Draft | undefined;
+  /** 쓰던 글을 바꾼다. base 는 지금 저장된 값 — 새로 쓰기 시작할 때만 남는다. undefined 면 비운다. */
+  onDraft: (text: string | undefined, base: string) => void;
 }) {
-  const editing = draft !== undefined || current === null;
-  const text = draft ?? current ?? "";
+  const saved = current ?? "";
+  const shown = draftView(draft, saved);
+  const editing = shown.text !== undefined || current === null;
+  const text = shown.text ?? saved;
   return (
     <Box title="답변" hint={hint}>
       {current !== null && view}
       {editing ? (
         <>
-          <Textarea rows={6} value={text} maxLength={ANSWER_MAX} placeholder={placeholder} aria-label="답변 내용" onChange={(e) => onDraft(e.target.value)} />
+          <Textarea rows={6} value={text} maxLength={ANSWER_MAX} placeholder={placeholder} aria-label="답변 내용" onChange={(e) => onDraft(e.target.value, saved)} />
+          {shown.stale && <Stale>그사이 다른 운영자가 답변을 저장했습니다(위). 확인한 뒤 고쳐 저장하거나 [취소]하세요.</Stale>}
           <div className="flex items-center gap-[12px]">
             <div className="flex-1">
               <Note>{current === null ? firstNote : editNote}</Note>
             </div>
             {current !== null && (
-              <Button variant="off" disabled={busy} onClick={() => onDraft(undefined)}>
+              <Button variant="off" disabled={busy} onClick={() => onDraft(undefined, saved)}>
                 취소
               </Button>
             )}
@@ -211,7 +218,7 @@ function AnswerBox({
         </>
       ) : (
         <div>
-          <Button variant="soft" onClick={() => onDraft(current ?? "")}>
+          <Button variant="soft" onClick={() => onDraft(saved, saved)}>
             답변 수정
           </Button>
         </div>
@@ -220,11 +227,36 @@ function AnswerBox({
   );
 }
 
-function MemoBox({ memo, busy, onSave, draft, onDraft }: { memo: string | null; busy: boolean; onSave: (memo: string) => void; draft: string | undefined; onDraft: (text: string) => void }) {
-  const text = draft ?? memo ?? "";
+function MemoBox({
+  memo,
+  busy,
+  onSave,
+  draft,
+  onDraft,
+}: {
+  memo: string | null;
+  busy: boolean;
+  onSave: (memo: string) => void;
+  draft: Draft | undefined;
+  onDraft: (text: string | undefined, base: string) => void;
+}) {
+  const saved = memo ?? "";
+  const shown = draftView(draft, saved);
+  const text = shown.text ?? saved;
   return (
     <Box title="운영자 메모" hint="문의자에게 보이지 않습니다">
-      <Textarea rows={4} value={text} maxLength={MEMO_MAX} aria-label="내부 기록" onChange={(e) => onDraft(e.target.value)} />
+      {/* 그사이 다른 운영자가 메모를 저장했다 — 쓰던 글로 덮어쓰기 전에 그 메모를 보인다. */}
+      {shown.stale && (
+        <Stale>
+          그사이 다른 운영자가 저장한 메모: {saved ? <span className="whitespace-pre-wrap text-erp-ink">{saved}</span> : "(비움)"}
+          <span className="ml-[6px]">
+            <Button variant="off" disabled={busy} onClick={() => onDraft(undefined, saved)}>
+              저장된 메모로 바꾸기
+            </Button>
+          </span>
+        </Stale>
+      )}
+      <Textarea rows={4} value={text} maxLength={MEMO_MAX} aria-label="내부 기록" onChange={(e) => onDraft(e.target.value, saved)} />
       <div className="flex items-center gap-[12px]">
         <div className="flex-1">
           <Note>다른 운영자와 함께 봅니다. 비우고 저장하면 지웁니다.</Note>
@@ -240,12 +272,20 @@ function MemoBox({ memo, busy, onSave, draft, onDraft }: { memo: string | null; 
 /** 처리 시작 · 답변 · 메모 — 두 상세가 같다. */
 function useCommon(target: Target, id: number, updatedAt: string, answered: boolean) {
   // 쓰던 답변 · 메모. 저장에 성공하면 그 칸만 비우고 최신 상세를 받는다.
-  const [drafts, setDrafts] = useState<{ answer?: string; memo?: string }>({});
-  const act = useAct(target === "inquiry" ? INQUIRY_BASE : LEAD_BASE, drafts.answer !== undefined || drafts.memo !== undefined);
+  const [drafts, setDrafts] = useState<{ answer?: Draft; memo?: Draft }>({});
+  // 409 안내의 「그대로 두었다」는 실제로 고쳐 쓰던 글이 있을 때만.
+  const edited = (["answer", "memo"] as const).some((f) => drafts[f] && drafts[f].text !== drafts[f].base);
+  const act = useAct(target === "inquiry" ? INQUIRY_BASE : LEAD_BASE, edited);
   const { run, setErrors } = act;
-  const setDraft = (field: "answer" | "memo") => (text: string | undefined) => setDrafts((d) => ({ ...d, [field]: text }));
+  // base 는 쓰기 시작할 때의 저장값 — 이어 쓰는 동안은 처음 base 를 지킨다. 버려진 글(draftView 가 undefined)에 이어 쓰면 새로 시작한다.
+  const setDraft = (field: "answer" | "memo") => (text: string | undefined, base: string) =>
+    setDrafts((d) => {
+      const prev = d[field];
+      if (text === undefined) return { ...d, [field]: undefined };
+      return { ...d, [field]: { text, base: prev && draftView(prev, base).text !== undefined ? prev.base : base } };
+    });
   const saved = (field: "answer" | "memo") => () => {
-    setDraft(field)(undefined);
+    setDrafts((d) => ({ ...d, [field]: undefined }));
     act.router.refresh();
   };
   return {

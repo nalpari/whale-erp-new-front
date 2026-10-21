@@ -16,6 +16,7 @@ export function answersWith401(pathname: string): boolean {
 }
 
 const MB = 1024 * 1024;
+const UPLOAD_ROUTES = [NOTICE_SAVE_ROUTE, INQUIRY_SAVE_ROUTE, PAPER_ROUTE];
 export const TOO_LARGE = "보낸 내용이 너무 큽니다. 첨부를 줄여서 다시 보내 주세요";
 
 /**
@@ -29,12 +30,13 @@ export function bodyLimitOf(pathname: string): number {
 }
 
 /**
- * content-length 가 그 경로의 상한을 넘는가. 길이 없이 나눠 보내면(transfer-encoding: chunked) 크기를 미리 알 수 없어 경로별 상한을
- * 건너뛰고 전역 51MB 만 걸리므로 막는다 — 화면(fetch · 서버 액션)은 늘 길이를 붙여 보낸다(front #75 리뷰). 본문이 없는 요청은 그대로 둔다.
+ * content-length 가 그 경로의 상한을 넘는가. 업로드 창구(공지사항 저장 · 문의 등록 · 종이 계약)에 길이 없이 나눠 보내면(transfer-encoding:
+ * chunked) 크기를 미리 알 수 없어 경로별 상한을 건너뛰므로 막는다 — 화면 fetch 는 늘 길이를 붙여 보낸다(front #75 리뷰). 다른 경로는
+ * 영향을 좁히려고 막지 않는다(front #87 리뷰) — 그쪽은 전역 한도가 자른다. 본문이 없는 요청은 그대로 둔다.
  * content-length 가 숫자가 아니면 넘지 않은 것으로 보고 전역 한도(proxyClientMaxBodySize)에 맡긴다.
  */
 export function tooLarge(pathname: string, contentLength: string | null, transferEncoding: string | null = null): boolean {
-  if (!contentLength) return !!transferEncoding?.toLowerCase().includes("chunked");
+  if (!contentLength) return UPLOAD_ROUTES.includes(pathname) && !!transferEncoding?.toLowerCase().includes("chunked");
   const size = Number(contentLength);
   return Number.isFinite(size) && size > bodyLimitOf(pathname);
 }
