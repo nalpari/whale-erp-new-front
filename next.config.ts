@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "6mb",
     },
     // proxy(src/proxy.ts)가 요청 본문을 버퍼에 담는 한도(기본 10MB). 넘으면 본문이 잘린 채 넘어간다. 라우트 핸들러로 한 번에 받는 것 중 가장 큰
-    // 공지사항 첨부(/platform/community/posts, 5개 × 10MB)에 multipart 여유 1MB 를 더한다 — 종이 계약 날인본(/contracts/paper, 2 × 10MB)도 이 안이다.
+    // 공지사항 첨부(/platform-notices/save, 5개 × 10MB)에 multipart 여유 1MB 를 더한다 — 종이 계약 날인본(/contracts/paper, 2 × 10MB)도 이 안이다.
     // 서버 액션 한도(위 6MB)와는 따로다.
     proxyClientMaxBodySize: "51mb",
   },

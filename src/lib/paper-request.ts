@@ -1,4 +1,4 @@
-// 종이 계약 등록 창구(/contracts/paper)의 요청 검사. proxy 와 라우트 핸들러가 같이 쓴다.
+// 종이 계약 등록(/contracts/paper) · 공지사항 저장(/platform-notices/save) 창구의 요청 검사. proxy 와 라우트 핸들러가 같이 쓴다.
 // next/* 를 import 하지 않는다 — node --test 로 바로 돌리기 위해서다.
 
 export const PAPER_ROUTE = "/contracts/paper";

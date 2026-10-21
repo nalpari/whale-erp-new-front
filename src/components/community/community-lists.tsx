@@ -24,14 +24,14 @@ function useGo<Q extends Query>(query: Q) {
   return (patch: Partial<Q>) => router.replace(`${path}${queryString({ ...query, page: 1, ...patch })}`, { scroll: false });
 }
 
-function Frame<Q extends Query>({
+function Frame({
   query,
   total,
   filter,
   action,
   children,
 }: {
-  query: Q;
+  query: Query;
   total: number;
   filter: ReactNode;
   action?: ReactNode;
@@ -45,7 +45,7 @@ function Frame<Q extends Query>({
         <ListToolbar total={total}>
           {action}
           <div className="w-[80px] shrink-0">
-            <Select aria-label="페이지당 건수" value={String(query.pageSize)} onChange={(e) => go({ pageSize: Number(e.target.value) as PageSize } as Partial<Q>)}>
+            <Select aria-label="페이지당 건수" value={String(query.pageSize)} onChange={(e) => go({ pageSize: Number(e.target.value) as PageSize })}>
               {PAGE_SIZES.map((size) => (
                 <option key={size} value={size}>
                   {size}
@@ -56,7 +56,7 @@ function Frame<Q extends Query>({
         </ListToolbar>
         {children}
         <div className="pt-[14px]">
-          <Pagination page={query.page} totalPages={Math.max(1, Math.ceil(total / query.pageSize))} onPageChange={(page) => go({ page } as Partial<Q>)} />
+          <Pagination page={query.page} totalPages={Math.max(1, Math.ceil(total / query.pageSize))} onPageChange={(page) => go({ page })} />
         </div>
       </main>
     </div>
@@ -154,7 +154,7 @@ export function PostList({
   );
 }
 
-/** 보낸 곳 — 「BP · 점포 · 보낸 사람」 중 있는 것. */
+/** 보낸 곳 — 「점포(점포 대상 문의가 아니면 BP) · 보낸 사람」 중 있는 것. */
 const senderText = (i: InquiryListItem) => [i.storeName ?? i.bpName, i.senderName].filter(Boolean).join(" · ") || "-";
 
 /** 문의사항 목록. 필터는 제목 · 보낸 곳(BP 이름 · 점포 이름 · 보낸 사람 이름) · 상태다(#275, 데모 front 5a0f586). */

@@ -2,7 +2,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  faqBody,
   parseInquiryQuery,
+  postIdOf,
   parsePostQuery,
   postFields,
   queryString,
@@ -37,6 +39,27 @@ test("parseInquiryQuery — 검색어는 다듬고 api 한도로 자른다", () 
   assert.equal(q.title, "주휴수당");
   assert.equal(q.sender.length, 100);
   assert.equal(q.answerStatus, "WAITING");
+});
+
+test("parseInquiryQuery — 주소의 NUL 은 뺀다(api 가 400 을 내 목록이 통째로 실패한다)", () => {
+  assert.equal(parseInquiryQuery({ title: "주휴\u0000수당", sender: "\u0000" }).title, "주휴수당");
+  assert.equal(parseInquiryQuery({ sender: "\u0000" }).sender, "");
+});
+
+test("postIdOf — 1..2147483647 정수만, 글자든 숫자든 같은 규칙", () => {
+  for (const ok of ["1", "2147483647", 1, 2147483647]) assert.equal(postIdOf(ok), Number(ok), String(ok));
+  // 경로에 붙는 값이라 경로 문자 · 공백 · 다른 꼴의 숫자는 모두 막는다.
+  for (const bad of ["0", "01", "-1", "1e3", "1.0", "2147483648", "1/2", "1/../x", "1?x=", " 1", "", null, undefined, 0, 1.5, NaN, 2 ** 31, {}])
+    assert.equal(postIdOf(bad), null, String(bad));
+});
+
+test("faqBody — FAQ JSON 에 공지사항 칸을 싣지 않는다", () => {
+  assert.deepEqual(Object.keys(faqBody(faq(), "DRAFT")).sort(), ["audiences", "body", "faqCategoryCode", "status", "title"]);
+});
+
+test("validatePost — 제목 200자 · 본문 20,000자 경계", () => {
+  assert.deepEqual(validatePost(notice({ title: "a".repeat(200), body: "a".repeat(20_000) }), "DRAFT", 0, []), []);
+  assert.deepEqual(validatePost(notice({ body: "a".repeat(20_001) }), "DRAFT", 0, []), ["본문은 20,000자까지 쓸 수 있습니다"]);
 });
 
 test("queryString — 빈 값과 기본값은 싣지 않는다", () => {

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition, type ReactNode } from "react";
 import { Badge, Button, Checkbox, ConfirmDialog, DateField, PageBar, Select, Tag, Textarea, TextField, Toggle, useToast } from "@/components/common";
 import { useCodes } from "@/components/site/session-gate";
-import { bff, BffError } from "@/lib/bff";
+import { bff, BffError, PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
 import type { PostDetail } from "@/lib/community";
 import {
   AUDIENCES,
@@ -12,8 +12,10 @@ import {
   faqBody,
   FILE_ACCEPT,
   MAX_ATTACHMENTS,
+  PASSWORD_REQUIRED_PREFIX,
   POST_BASE,
   postFields,
+  SESSION_EXPIRED,
   sizeLabel,
   TITLE_MAX,
   validatePost,
@@ -115,18 +117,30 @@ export function PostForm({
   const showErrors = (messages: string[], isStale = false) => {
     setErrors(messages);
     setStale(isStale);
+    // 비밀번호 강제 변경 403 이면 SessionGate 가 변경 팝업을 다시 띄운다(BFF 와 같은 이벤트).
+    if (messages[0]?.startsWith(PASSWORD_REQUIRED_PREFIX)) dispatchEvent(new Event(PASSWORD_REQUIRED_EVENT));
     // 띠가 화면 밖일 수 있어 띠로 올려 보인다.
     if (messages.length) requestAnimationFrame(() => errorRef.current?.scrollIntoView({ block: "nearest" }));
+  };
+
+  /** 서버 액션 호출 자체가 실패하면(연결 끊김 · 배포로 액션이 바뀜) 오류 화면으로 넘기지 않고 띠로 알린다 — 입력값을 지킨다. */
+  const callAction = async <T,>(act: () => Promise<T>): Promise<T | { ok: false; messages: string[] }> => {
+    try {
+      return await act();
+    } catch (e) {
+      console.error("공지사항 · FAQ 서버 액션 실패", e);
+      return { ok: false, messages: ["서버에 연결하지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요."] };
+    }
   };
 
   const save = (status: PostStatus) => {
     const messages = validatePost(form, status, kept.length, files.map((f) => f.file));
     if (messages.length) return showErrors(messages);
     startTransition(async () => {
-      const result = notice ? await sendNotice(status) : await saveFaqAction(detail?.postId ?? null, faqBody(form, status), detail?.updatedAt);
+      const edit = detail ? { postId: detail.postId, updatedAt: detail.updatedAt } : null;
+      const result: SaveResult = notice ? await sendNotice(status) : await callAction(() => saveFaqAction(edit, faqBody(form, status)));
       if (!result.ok) {
-        // 세션이 끊겼다 — 로그인 화면으로 보낸다.
-        if (result.status === 401) return router.push("/login");
+        // 세션이 끊겼으면(401) 화면을 옮기지 않고 띠로만 알린다 — 고치던 내용이 남는다. 쿠키는 핸들러 · 액션이 지웠다.
         // 그사이 다른 관리자가 고쳤거나 지웠다(409) — 덮어쓰지 않고 최신 내용을 다시 불러오게 한다.
         return showErrors(result.messages, result.status === 409);
       }
@@ -155,6 +169,8 @@ export function PostForm({
     }
     const body = (await res.json().catch(() => null)) as (PostDetail & { messages?: string[] }) | null;
     if (res.ok && body) return { ok: true, detail: body };
+    // proxy 가 먼저 막은 401 은 본문이 { message } 라 문구를 여기서 정한다.
+    if (res.status === 401) return { ok: false, status: 401, messages: [SESSION_EXPIRED] };
     return { ok: false, status: res.status, messages: body?.messages ?? [`저장하지 못했습니다 (HTTP ${res.status}). 잠시 뒤 다시 저장해 주세요.`] };
   };
 
@@ -162,8 +178,8 @@ export function PostForm({
     detail &&
     startTransition(async () => {
       setConfirmDelete(false);
-      const result = await deletePostAction(kind, detail.postId);
-      if (!result.ok) return showErrors([result.message]);
+      const result = await callAction(() => deletePostAction(kind, detail.postId));
+      if (!result.ok) return showErrors(result.messages);
       toast("deleted");
       router.push(listHref);
     });
@@ -176,7 +192,7 @@ export function PostForm({
         const { url } = await bff<{ url: string }>(`${listHref}/${detail.postId}/attachments/${attachmentId}/download-url`);
         window.location.assign(url);
       } catch (e) {
-        showErrors([e instanceof BffError ? e.message : "첨부파일을 받지 못했습니다."]);
+        showErrors([e instanceof BffError ? (e.status === 401 ? SESSION_EXPIRED : e.message) : "첨부파일을 받지 못했습니다."]);
       }
     });
 
@@ -277,7 +293,7 @@ export function PostForm({
                             {a.fileName}
                           </button>
                           <span className="text-erp-muted">{sizeLabel(a.sizeBytes)}</span>
-                          <Button variant="off" onClick={() => setRemoveIds((ids) => [...ids, a.postAttachmentId])}>
+                          <Button variant="off" disabled={busy} onClick={() => setRemoveIds((ids) => [...ids, a.postAttachmentId])}>
                             빼기
                           </Button>
                         </li>
@@ -287,7 +303,7 @@ export function PostForm({
                           <span className="min-w-0 flex-1 truncate text-erp-ink">{file.name}</span>
                           <Tag>새 파일</Tag>
                           <span className="text-erp-muted">{sizeLabel(file.size)}</span>
-                          <Button variant="off" onClick={() => setFiles((prev) => prev.filter((f) => f.key !== key))}>
+                          <Button variant="off" disabled={busy} onClick={() => setFiles((prev) => prev.filter((f) => f.key !== key))}>
                             빼기
                           </Button>
                         </li>
@@ -296,7 +312,7 @@ export function PostForm({
                   )}
                   <div>
                     <input ref={fileInput} type="file" multiple accept={FILE_ACCEPT} hidden onChange={(e) => addFiles(e.target.files)} />
-                    <Button variant="soft" disabled={kept.length + files.length >= MAX_ATTACHMENTS} onClick={() => fileInput.current?.click()}>
+                    <Button variant="soft" disabled={busy || kept.length + files.length >= MAX_ATTACHMENTS} onClick={() => fileInput.current?.click()}>
                       파일 선택
                     </Button>
                   </div>

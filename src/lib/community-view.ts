@@ -1,5 +1,6 @@
 // 커뮤니티 관리(공지사항 · FAQ · 문의사항 · 도입문의, #275 · #276) 화면의 순수 규칙 — URL 쿼리 · 노출 대상 · 저장 전 검사 · 보낼 본문.
-// 저장 전 검사는 api(posts.service · post-fields.dto)와 같은 규칙이다. api 가 최종으로 다시 보고, 화면은 먼저 띄울 뿐이다.
+// 저장 전 검사는 api(posts.service · post-fields.dto · upload-check)의 규칙에 맞췄다. api 가 최종으로 다시 보고, 화면은 먼저 띄울 뿐이다
+// (파일 종류는 화면이 확장자로만 보고, api 는 내용으로 본다).
 // 상태 · 유형 · 노출 대상의 한글은 여기 두지 않고 getEnum 으로 받는다(naming.md 화면 문구).
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
 import type { components } from "./api-types.generated.ts";
@@ -30,6 +31,20 @@ const FILE_EXT = /\.(jpe?g|png|pdf)$/i;
 export const TITLE_MAX = 200;
 export const BODY_MAX = 20_000;
 
+/** 세션이 끊겼을 때 폼 위 띠 문구. 화면을 옮기지 않아 고치던 내용은 남는다. */
+export const SESSION_EXPIRED = "로그인이 만료되었습니다. 고친 내용을 옮겨 둔 뒤 다시 로그인해 주세요.";
+/** api 403 중 비밀번호 강제 변경(bff.ts 와 같은 문장 앞부분). 권한 없음과 갈라 api 문장을 그대로 보이고 변경 팝업을 띄운다. */
+export const PASSWORD_REQUIRED_PREFIX = "비밀번호를 변경한 뒤 이용할 수 있습니다";
+
+/**
+ * 게시물 id — 1..2147483647 정수(api parseRouteId 와 같다). 서버 액션 · 라우트 핸들러 · 화면 주소가 api 경로에 붙이기 전에 본다 —
+ * 이것이 느슨하면 관리자 토큰을 실은 요청이 api 의 다른 경로로 샐 수 있다. 숫자로 오면 글자로 바꿔 같은 규칙을 탄다.
+ */
+export function postIdOf(raw: unknown): number | null {
+  const s = typeof raw === "number" ? String(raw) : raw;
+  return typeof s === "string" && /^[1-9][0-9]{0,9}$/.test(s) && Number(s) <= 2_147_483_647 ? Number(s) : null;
+}
+
 export type ListQuery = { page: number; pageSize: PageSize };
 export type PostQuery = ListQuery & { status: PostStatus | "" };
 export type InquiryQuery = ListQuery & { answerStatus: AnswerStatus | ""; title: string; sender: string };
@@ -52,8 +67,8 @@ function pageOf(raw: Raw): ListQuery {
   };
 }
 
-/** 검색어는 api 한도(제목 200자 · 보낸 곳 100자)로 자른다 — 넘기면 api 가 400 을 내 목록이 통째로 실패한다. */
-const textOf = (v: string | undefined, max: number) => (v ?? "").trim().slice(0, max);
+/** 검색어는 api 한도(제목 200자 · 보낸 곳 100자)로 자르고 NUL 을 뺀다 — 둘 다 api 가 400 을 내 목록이 통째로 실패한다. */
+const textOf = (v: string | undefined, max: number) => (v ?? "").replaceAll("\u0000", "").trim().slice(0, max);
 
 export const parsePostQuery = (raw: Raw): PostQuery => ({ ...pageOf(raw), status: oneOf(POST_STATUSES, first(raw.status)) });
 export const parseLeadQuery = (raw: Raw): LeadQuery => ({ ...pageOf(raw), answerStatus: oneOf(ANSWER_STATUSES, first(raw.answerStatus)) });
@@ -92,7 +107,8 @@ export type PostForm = {
 export type NewFile = { name: string; size: number };
 
 /**
- * 저장 전 검사. 고칠 문장 목록을 돌려주고, 비어 있으면 보내도 된다. 문구는 api 와 같다.
+ * 저장 전 검사. 고칠 문장 목록을 돌려주고, 비어 있으면 보내도 된다. 필수 · 유형 · 카테고리 · 노출 대상 · 게시 기간 · 첨부 개수 문구는
+ * api 와 같고, 길이 · 파일 종류 · 크기 문구는 화면 것이다(api 는 기본 문구이거나 파일 이름을 붙이지 않는다).
  * kept 는 남겨 둘 기존 첨부 수(수정), files 는 새로 더할 파일이다.
  */
 export function validatePost(f: PostForm, status: PostStatus, kept: number, files: readonly NewFile[]): string[] {
@@ -121,13 +137,14 @@ export function validatePost(f: PostForm, status: PostStatus, kept: number, file
  * 공지사항으로 보낼 multipart 칸. api 가 문자열을 JSON 과 같은 값으로 바꾼다(post-fields.dto) — 배열은 같은 이름을 되풀이하고,
  * 빈 선택 칸은 빈 문자열(null), 불리언은 'true' · 'false' 다. 파일과 수정용 updatedAt · removeAttachmentIds 는 부르는 쪽이 붙인다.
  */
-export function postFields(f: PostForm, status: PostStatus): [string, string][] {
+type Field = [keyof Schemas["UpdatePostDto"], string];
+export function postFields(f: PostForm, status: PostStatus): Field[] {
   const notice = f.kind === "NOTICE";
-  const fields: [string, string][] = [
+  const fields: Field[] = [
     ["title", f.title],
     ["body", f.body],
     ["status", status],
-    ...f.audiences.map((a): [string, string] => ["audiences", a]),
+    ...f.audiences.map((a): Field => ["audiences", a]),
   ];
   if (notice)
     fields.push(
@@ -140,8 +157,11 @@ export function postFields(f: PostForm, status: PostStatus): [string, string][] 
   return fields;
 }
 
-/** FAQ 로 보내는 JSON(api CreatePostDto). FAQ 경로는 JSON 만 받고 공지사항 칸(유형 · 고정 · 게시 기간)을 보내지 않는다. */
-export function faqBody(f: PostForm, status: PostStatus) {
+/**
+ * FAQ 로 보내는 JSON(api CreatePostDto, 수정은 updatedAt 을 더해 UpdatePostDto). FAQ 경로는 JSON 만 받고 공지사항 칸
+ * (유형 · 고정 · 게시 기간)을 보내지 않는다.
+ */
+export function faqBody(f: PostForm, status: PostStatus): Schemas["CreatePostDto"] {
   return { title: f.title, body: f.body, status, audiences: f.audiences, faqCategoryCode: f.faqCategoryCode };
 }
 

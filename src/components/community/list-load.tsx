@@ -1,18 +1,23 @@
 import { Button } from "@/components/common";
 import { ApiError } from "@/lib/api";
 
-// 커뮤니티 관리 목록을 불러오다 실패하면 목록 자리에 문장을 보인다. 권한 없음(401 · 403)은 다시 해도 같아 다시 시도를 두지 않는다.
+// 커뮤니티 관리 목록을 불러오다 실패하면 목록 자리에 문장을 보인다. 로그인 끊김(401) · 권한 없음(403)은 다시 해도 같아 다시 시도를 두지 않는다.
 
 export type Loaded<T> = { data: T } | { failure: string; denied: boolean };
+
+/** 401 은 권한 문제가 아니다 — 권한을 요청하러 가지 않게 로그인 만료로 따로 알린다. */
+export const deniedMessage = (status: 401 | 403, forbidden: string) =>
+  status === 401 ? "로그인이 만료되었습니다. 다시 로그인해 주세요." : forbidden;
 
 export async function loadList<T>(what: string, load: () => Promise<T>): Promise<Loaded<T>> {
   try {
     return { data: await load() };
   } catch (error) {
-    const denied = error instanceof ApiError && (error.status === 401 || error.status === 403);
-    if (!denied) console.error(`${what} 목록 조회 실패`, error);
     const object = `${what}${hasFinal(what) ? "을" : "를"}`;
-    return { failure: denied ? `${object} 볼 권한이 없습니다.` : `${object} 불러오지 못했습니다.`, denied };
+    if (error instanceof ApiError && (error.status === 401 || error.status === 403))
+      return { failure: deniedMessage(error.status, `${object} 볼 권한이 없습니다.`), denied: true };
+    console.error(`${what} 목록 조회 실패`, error);
+    return { failure: `${object} 불러오지 못했습니다.`, denied: false };
   }
 }
 
