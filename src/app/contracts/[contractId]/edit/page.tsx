@@ -17,13 +17,16 @@ export default async function EditContractPage({ params }: PageProps<"/contracts
   if (!Number.isInteger(contractId) || contractId < 1) notFound();
 
   const { stores, labels, signedIn } = await loadFormData();
+  // 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403)이면 api 문장을 그대로 보인다(목록과 같다)
   let detail: ContractDetail | null = null;
+  let notice = "로그인이 필요합니다";
   if (signedIn) {
     try {
       detail = await request<ContractDetail>(`/contracts/${contractId}`, { headers: await authHeaders() });
     } catch (e) {
       if (e instanceof ApiError && e.status === 404) notFound();
-      if (!(e instanceof ApiError && e.status === 401)) throw e;
+      if (!(e instanceof ApiError && (e.status === 401 || e.status === 403))) throw e;
+      if (e.status === 403) notice = e.message;
     }
   }
 
@@ -33,7 +36,7 @@ export default async function EditContractPage({ params }: PageProps<"/contracts
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
         <div className="rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
           {!signedIn || !detail ? (
-            <Notice title="로그인이 필요합니다" />
+            <Notice title={notice} />
           ) : detail.status === "CORRECTION_REQUESTED" ? (
             <ContractPermission action="update" fallback={<Notice title="근로계약서를 고칠 권한이 없습니다" contractId={contractId} />}>
               <ContractForm stores={stores} labels={labels} signedIn contractId={contractId} initial={fromDetail(detail)} correction />

@@ -44,13 +44,16 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
     authHeaders(),
   ]);
 
+  // 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403)이면 api 문장을 그대로 보인다(목록과 같다)
   let c: ContractDetail | null = null;
+  let notice = "로그인이 필요합니다";
   if (headers.Authorization) {
     try {
       c = await request<ContractDetail>(`/contracts/${contractId}`, { headers });
     } catch (e) {
       if (e instanceof ApiError && e.status === 404) notFound();
-      if (!(e instanceof ApiError && e.status === 401)) throw e;
+      if (!(e instanceof ApiError && (e.status === 401 || e.status === 403))) throw e;
+      if (e.status === 403) notice = e.message;
     }
   }
 
@@ -198,7 +201,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
             {c ? (
               <DetailTable title="계약 내용" rows={rows} />
             ) : (
-              <p className="text-[14px] font-semibold text-erp-ink">로그인이 필요합니다</p>
+              <p className="text-[14px] font-semibold text-erp-ink">{notice}</p>
             )}
           </div>
           {c && (
