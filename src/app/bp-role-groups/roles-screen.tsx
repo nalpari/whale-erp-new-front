@@ -146,10 +146,6 @@ function RolesBody({
           rowState={(r) => (!creating && r.roleGroupId === selected ? "selected" : undefined)}
         />
         <Pagination page={page} totalPages={totalPages} onPageChange={(p) => go({ page: p })} />
-        <p className="text-[13px] text-erp-label">
-          {/* shortcut: BP 관리자 관리 화면(/bp-admins)이 아직 없어 링크를 걸지 않는다. 화면이 생기면 메뉴 권한을 보고 링크로 바꾼다 */}
-          권한명을 누르면 오른쪽에 상세가 섭니다. 관리자 계정에 권한 그룹을 붙이거나 바꾸는 일은 BP 관리자 관리에서 합니다.
-        </p>
       </section>
 
       <BpRoleSide
