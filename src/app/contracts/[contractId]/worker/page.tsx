@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Button, PageBar } from "@/components/common";
 import { ApiError, authHeaders, getEnum, request } from "@/lib/api";
 import type { ContractDetail } from "../../new/contract-form-model";
+import { ContractPermission } from "../../contract-permission";
 import { WorkerForm } from "./worker-form";
 import { isWorkerEditable, workerOf } from "./worker-model";
 
@@ -33,7 +34,9 @@ export default async function ContractWorkerPage({ params }: PageProps<"/contrac
           ) : !isWorkerEditable(c.status) ? (
             <Notice title="발송 대기 · 서명 대기 · 수정 요청 근로계약만 근로자 정보를 고칠 수 있습니다" contractId={contractId} />
           ) : (
-            <WorkerForm contractId={contractId} status={c.status ?? ""} initial={workerOf(c)} labels={{ gender, contractStatus }} />
+            <ContractPermission action="update" fallback={<Notice title="근로자 정보를 고칠 권한이 없습니다" contractId={contractId} />}>
+              <WorkerForm contractId={contractId} status={c.status ?? ""} initial={workerOf(c)} labels={{ gender, contractStatus }} />
+            </ContractPermission>
           )}
         </div>
       </div>

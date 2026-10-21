@@ -4,6 +4,7 @@ import { Button, DataTable, DetailTable, DetailValues, PageBar } from "@/compone
 import { ApiError, authHeaders, getEnum, request } from "@/lib/api";
 import { labelOf } from "@/lib/enums";
 import { StatusBadge } from "../columns";
+import { ContractPermission } from "../contract-permission";
 import { formatPhone, type ContractDetail } from "../new/contract-form-model";
 import { documentNoticeOf } from "./document-notice";
 import { SendContractButton } from "./send-button";
@@ -59,24 +60,35 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
   const statusCell = (s: string | null): ReactNode => (s ? <StatusBadge status={s as Status} label={labelOf(statuses, s)} /> : "-");
   const buttons: ReactNode =
     // 임시저장 삭제는 이어 쓰기 화면에만 둔다 — 삭제는 임시저장일 때만 할 수 있다.
+    // 버튼은 근로계약 관리 메뉴 권한으로 가린다 — 이어 쓰기는 작성 또는 수정, 재발송 · 수정은 수정(WHALEERP-592)
     status === "DRAFT" ? (
-      <Button variant="soft" href={`/contracts/${contractId}/edit`}>
-        이어 쓰기
-      </Button>
+      <ContractPermission action={["create", "update"]}>
+        <Button variant="soft" href={`/contracts/${contractId}/edit`}>
+          이어 쓰기
+        </Button>
+      </ContractPermission>
     ) : (
       <>
-        {(status === "PENDING_SEND" || status === "PENDING_SIGNATURE") && <SendContractButton contractId={contractId} status={status} />}
+        {(status === "PENDING_SEND" || status === "PENDING_SIGNATURE") && (
+          <ContractPermission action="update">
+            <SendContractButton contractId={contractId} status={status} />
+          </ContractPermission>
+        )}
         {/* 직원이 수정을 요청했다 — 계약서 전체를 고치면 곧바로 서명 대기로 다시 보낸다(WHALEERP-125 · 126) */}
         {status === "CORRECTION_REQUESTED" && (
-          <Button variant="soft" href={`/contracts/${contractId}/edit`}>
-            수정
-          </Button>
+          <ContractPermission action="update">
+            <Button variant="soft" href={`/contracts/${contractId}/edit`}>
+              수정
+            </Button>
+          </ContractPermission>
         )}
         {/* 날인 전 당사자 정보(이름 · 번호 · 생년월일 · 성별 · 외국인 여부) — 본인 대조 값. 저장하면 다시 보낸다 */}
         {(status === "PENDING_SEND" || status === "PENDING_SIGNATURE") && (
-          <Button variant="soft" href={`/contracts/${contractId}/worker`}>
-            수정
-          </Button>
+          <ContractPermission action="update">
+            <Button variant="soft" href={`/contracts/${contractId}/worker`}>
+              수정
+            </Button>
+          </ContractPermission>
         )}
         {status && PENDING[status] && (
           <Button variant="soft" disabled title="준비 중">
