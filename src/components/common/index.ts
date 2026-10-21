@@ -20,4 +20,4 @@ export { StoreSelect } from "./store-select";
 export { ScopeSelect, type ScopeSelectOption, type ScopeSelectSection } from "./scope-select";
 export { UserPop, type UserPopItem } from "./user-pop";
 export { PageBar } from "./page-bar";
-export { SlidePanel } from "./slide-panel";
+export { PanelBackdrop, SlidePanel, useBackdropActive } from "./slide-panel";

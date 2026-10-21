@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useState, type ReactNode } from "react";
-import { GlobalHeader, ScopeSelect, ServiceLinks, UserPop, type HeaderMenu, type ScopeSelectSection, type UserPopItem } from "@/components/common";
+import { GlobalHeader, ScopeSelect, ServiceLinks, useBackdropActive, UserPop, type HeaderMenu, type ScopeSelectSection, type UserPopItem } from "@/components/common";
 import { logout } from "@/app/actions";
 import type { ServiceCode } from "@/lib/browser-storage";
 import { findMenu, HOME, PENDING_PLATFORM_MENU } from "@/lib/menus";
@@ -22,6 +22,7 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   const account = useAccount();
   const service = useService();
   const all = useMenus();
+  const backdropActive = useBackdropActive();
   const [bpSelectOpen, setBpSelectOpen] = useState(false);
   const [scope] = useScope();
   const stores = useStores();
@@ -60,6 +61,7 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   return (
     <GlobalHeader
       menus={menus}
+      inert={backdropActive}
       right={
         <>
           {service === "WHALE_ERP" ? <HeaderScopeSelect /> : <div className="flex-1" />}
