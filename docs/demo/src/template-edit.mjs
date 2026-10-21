@@ -31,7 +31,6 @@ const PREVIEW = {
     `<div class="grid grid-cols-[28px_1fr] gap-x-[12px] gap-y-[4px] rounded-[8px] border border-erp-panel-line bg-erp-thead-bg px-[16px] py-[12px]"><span class="row-span-2 size-[28px] rounded-[2px] bg-erp-nav" aria-hidden="true"></span><b class="text-[14px] font-semibold text-erp-ink">${v.title}</b><span class="text-[14px] leading-[1.5] text-erp-ink">${v.body}</span></div>` +
     caption("직원 근무 앱 알림함 한 줄") +
     inboxLine(v.title, v.sub),
-  inbox: (v) => caption("직원 근무 앱 알림함 한 줄") + inboxLine(v.title, v.sub),
   // 카카오 알림톡 말풍선. 대화창 바탕은 #f8f9fb, 머리 띠는 연한 파랑 바탕(상태 배지의 바탕 토큰)으로 나눈다.
   talk: (v) =>
     caption("카카오 알림톡") +
