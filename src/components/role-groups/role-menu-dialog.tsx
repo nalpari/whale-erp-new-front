@@ -23,11 +23,14 @@ const OP_LABEL: Record<Op, string> = { read: "조회", create: "등록", update:
 
 /** 팝업 위쪽에 보이는 권한 — 플랫폼 · BP 목록 항목이 다 이 모양을 갖는다 */
 export type MenuDialogRole = { roleGroupId: number; roleCode: string; roleTypeCode: string; name: string };
-export type MenuDialogActions = {
-  load: (id: number) => Promise<ActionResult<RoleGroupMenuTree>>;
-  preview?: (id: number, menus: RoleGroupMenuCells[]) => Promise<ActionResult<RevocationPreview>>;
-  save?: (id: number, menus: RoleGroupMenuCells[], updatedAt: string) => Promise<ActionResult<{ updatedAt: string }>>;
-};
+/** 저장(save)은 회수 미리보기(preview)와 함께만 준다 — 끈 칸이 함께 빠지는 하위 그룹 · 사용자를 확인받지 않고는 저장하지 않으므로, 미리보기 없이 저장만 주면 저장이 멈춘다. */
+export type MenuDialogActions = { load: (id: number) => Promise<ActionResult<RoleGroupMenuTree>> } & (
+  | { preview?: never; save?: never }
+  | {
+      preview: (id: number, menus: RoleGroupMenuCells[]) => Promise<ActionResult<RevocationPreview>>;
+      save: (id: number, menus: RoleGroupMenuCells[], updatedAt: string) => Promise<ActionResult<{ updatedAt: string }>>;
+    }
+);
 type BodyProps = { role: MenuDialogRole; reasons: EnumValue[]; actions: MenuDialogActions; note?: string | null; onClose: () => void };
 
 /** note 를 주면 잠긴 팝업의 안내를 그 문구로 바꾸고, null 이면 안내를 두지 않는다. */
@@ -144,7 +147,9 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
   const handleSave = () => {
     if (!changed.length) return onClose();
     setFailure(null);
-    if (!hasRevocation(initial, values) || !previewMenus) return handleConfirmSave();
+    if (!hasRevocation(initial, values)) return handleConfirmSave();
+    // 저장은 미리보기와 함께만 온다(MenuDialogActions). 없으면 확인 없이 저장하지 않고 멈춘다.
+    if (!previewMenus) return;
     startBusy(async () => {
       const result = await previewMenus(role.roleGroupId, changed).catch(unknownResult("회수 범위 확인", false));
       if (!result.ok) {
