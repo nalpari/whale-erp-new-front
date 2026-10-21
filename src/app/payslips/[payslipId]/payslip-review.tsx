@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { unstable_rethrow, useRouter } from "next/navigation";
 import { useState, useTransition, type ReactNode } from "react";
 import { Button, ConfirmDialog, DetailTable, Field, FormGroup, FormRow, Select, TextField, Toggle, useToast } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
@@ -483,7 +483,9 @@ export function PayslipReview({
 async function callAction<T extends { ok: boolean }>(call: () => Promise<T>): Promise<T | EditFailure> {
   try {
     return await call();
-  } catch {
+  } catch (error) {
+    unstable_rethrow(error); // redirect 같은 Next 제어 흐름은 그대로 넘긴다
+    console.error("급여명세서 action 호출이 끊겼습니다", error);
     return { ok: false, unknown: true, message: "결과를 확인하지 못했습니다. 화면을 새로 고쳐 확인해 주세요." };
   }
 }

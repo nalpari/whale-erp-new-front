@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { unstable_rethrow, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { Button, ConfirmDialog, DataTable, Field, FormRow, SearchField, Select, useToast, type Column } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
@@ -46,7 +46,9 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
       let result: Awaited<ReturnType<typeof getPayslipCandidatesAction>>;
       try {
         result = await getPayslipCandidatesAction(month);
-      } catch {
+      } catch (error) {
+        unstable_rethrow(error); // redirect 같은 Next 제어 흐름은 그대로 넘긴다
+        console.error("급여명세서 action 호출이 끊겼습니다", error);
         // 호출 자체가 끊겼다 — 조회라 결과 모름은 없고, 목록 전체를 오류 화면으로 덮지 않는다
         result = { ok: false, message: "작성 대상을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요." };
       }
@@ -76,10 +78,14 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
     setFailure(null);
     startBusy(async () => {
       // 성공하면 action 이 검토 화면으로 보낸다(redirect). 돌아온 것은 실패뿐이다.
-      // 호출 자체가 끊기면 이미 만들었을 수 있어 목록을 다시 받는다.
+      // 결과를 모르면(호출 자체가 끊긴 경우도) 이미 만들었을 수 있어 목록을 다시 받는다.
       try {
-        setFailure(await createPayslip(pickedShown, month));
-      } catch {
+        const result = await createPayslip(pickedShown, month);
+        setFailure(result);
+        if (result.unknown) router.refresh();
+      } catch (error) {
+        unstable_rethrow(error); // redirect 같은 Next 제어 흐름은 그대로 넘긴다
+        console.error("급여명세서 action 호출이 끊겼습니다", error);
         setFailure({ ok: false, unknown: true, message: "작성 결과를 확인하지 못했습니다. 목록을 새로 불러와 확인해 주세요." });
         router.refresh();
       }
@@ -90,7 +96,9 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
       let result: Awaited<ReturnType<typeof bulkCreatePayslips>>;
       try {
         result = await bulkCreatePayslips(month);
-      } catch {
+      } catch (error) {
+        unstable_rethrow(error); // redirect 같은 Next 제어 흐름은 그대로 넘긴다
+        console.error("급여명세서 action 호출이 끊겼습니다", error);
         result = { ok: false, unknown: true, message: "일괄 작성 결과를 확인하지 못했습니다. 목록을 새로 불러와 확인해 주세요." };
       }
       setConfirming(false);

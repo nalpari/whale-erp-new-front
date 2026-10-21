@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { unstable_rethrow, useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button, ConfirmDialog, DataTable, useToast } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
@@ -38,7 +38,9 @@ export function PayslipListActions({
       let response: Awaited<ReturnType<typeof sendPayslips>>;
       try {
         response = await sendPayslips(sendTargetOf(query));
-      } catch {
+      } catch (error) {
+        unstable_rethrow(error); // redirect 같은 Next 제어 흐름은 그대로 넘긴다
+        console.error("급여명세서 action 호출이 끊겼습니다", error);
         // 호출 자체가 끊겼다 — 이미 보냈을 수 있어 목록을 다시 받는다
         response = { ok: false, unknown: true, message: "발송 결과를 확인하지 못했습니다. 목록을 새로 불러와 확인해 주세요." };
       }
