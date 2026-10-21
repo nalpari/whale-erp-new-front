@@ -1,9 +1,11 @@
+import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { Button, PageBar } from "@/components/common";
 import { ApiError, authHeaders, request } from "@/lib/api";
 import { ContractForm } from "../../new/contract-form";
 import { fromDetail, type ContractDetail } from "../../new/contract-form-model";
 import { loadFormData } from "../../new/load-form-data";
+import { ContractPermission } from "../../contract-permission";
 import { DeleteDraftButton } from "../delete-button";
 
 // 임시저장한 근로계약서 이어 쓰기. 작성 화면과 같은 폼을 불러온 값으로 연다. 임시저장이 아니면 열지 않는다.
@@ -15,13 +17,16 @@ export default async function EditContractPage({ params }: PageProps<"/contracts
   if (!Number.isInteger(contractId) || contractId < 1) notFound();
 
   const { stores, labels, signedIn } = await loadFormData();
+  // 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403)이면 api 문장을 그대로 보인다(목록과 같다)
   let detail: ContractDetail | null = null;
+  let notice = "로그인이 필요합니다";
   if (signedIn) {
     try {
       detail = await request<ContractDetail>(`/contracts/${contractId}`, { headers: await authHeaders() });
     } catch (e) {
       if (e instanceof ApiError && e.status === 404) notFound();
-      if (!(e instanceof ApiError && e.status === 401)) throw e;
+      if (!(e instanceof ApiError && (e.status === 401 || e.status === 403))) throw e;
+      if (e.status === 403) notice = e.message;
     }
   }
 
@@ -31,13 +36,39 @@ export default async function EditContractPage({ params }: PageProps<"/contracts
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
         <div className="rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
           {!signedIn || !detail ? (
-            <Notice title="로그인이 필요합니다" />
+            <Notice title={notice} />
           ) : detail.status === "CORRECTION_REQUESTED" ? (
-            <ContractForm stores={stores} labels={labels} signedIn contractId={contractId} initial={fromDetail(detail)} correction />
+            <ContractPermission action="update" fallback={<Notice title="근로계약서를 고칠 권한이 없습니다" contractId={contractId} />}>
+              <ContractForm stores={stores} labels={labels} signedIn contractId={contractId} initial={fromDetail(detail)} correction />
+            </ContractPermission>
           ) : detail.status !== "DRAFT" ? (
             <Notice title="임시저장 · 수정 요청 근로계약서만 고칠 수 있습니다" />
           ) : (
-            <ContractForm stores={stores} labels={labels} signedIn contractId={contractId} initial={fromDetail(detail)} deleteButton={<DeleteDraftButton contractId={contractId} />} />
+            // 임시저장 이어 쓰기는 작성의 연장이라 작성 권한으로 연다(api 도 저장에 작성 권한을 본다). 삭제 버튼은 삭제 권한이 있을 때만 —
+            // 이어 쓸 수 없어도 삭제 권한이 있으면 안내 줄에서 지울 수 있다
+            <ContractPermission
+              action="create"
+              fallback={
+                <Notice title="근로계약서를 이어 쓸 권한이 없습니다" contractId={contractId}>
+                  <ContractPermission action="delete">
+                    <DeleteDraftButton contractId={contractId} />
+                  </ContractPermission>
+                </Notice>
+              }
+            >
+              <ContractForm
+                stores={stores}
+                labels={labels}
+                signedIn
+                contractId={contractId}
+                initial={fromDetail(detail)}
+                deleteButton={
+                  <ContractPermission action="delete">
+                    <DeleteDraftButton contractId={contractId} />
+                  </ContractPermission>
+                }
+              />
+            </ContractPermission>
           )}
         </div>
       </div>
@@ -45,11 +76,19 @@ export default async function EditContractPage({ params }: PageProps<"/contracts
   );
 }
 
-function Notice({ title }: { title: string }) {
+// 권한이 없어 막혔으면 상세로 보낸다 — 목록의 임시저장 행은 이 화면으로 바로 오므로, 조회 권한만 있어도 내용은 상세에서 본다.
+// 그래도 할 수 있는 동작(임시저장 삭제)은 children 으로 받아 이동 버튼 뒤에 둔다
+function Notice({ title, contractId, children }: { title: string; contractId?: number; children?: ReactNode }) {
   return (
     <div className="flex items-center gap-[6px]">
       <p className="flex-1 text-[14px] font-semibold text-erp-ink">{title}</p>
+      {contractId !== undefined && (
+        <Button variant="soft" href={`/contracts/${contractId}`}>
+          상세
+        </Button>
+      )}
       <Button href="/contracts">목록</Button>
+      {children}
     </div>
   );
 }

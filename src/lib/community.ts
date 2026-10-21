@@ -3,7 +3,22 @@
 // 공지사항 등록 · 수정은 첨부 때문에 multipart 라 라우트 핸들러(platform-notices/save)가 api 로 넘긴다. FAQ 는 JSON 이다(community-actions.ts).
 import type { components } from "./api-types.generated";
 import { authHeaders, request } from "./api";
-import { INQUIRY_BASE, LEAD_BASE, POST_BASE, queryString, type InquiryQuery, type LeadQuery, type PostKind, type PostQuery } from "./community-view";
+import {
+  INQUIRY_BASE,
+  LEAD_BASE,
+  POST_BASE,
+  queryString,
+  SUPPORT_FAQ_BASE,
+  SUPPORT_INQUIRY_BASE,
+  SUPPORT_NOTICE_BASE,
+  type InquiryQuery,
+  type LeadQuery,
+  type PostKind,
+  type PostQuery,
+  type SupportFaqQuery,
+  type SupportInquiryQuery,
+  type SupportNoticeQuery,
+} from "./community-view";
 
 type Schemas = components["schemas"];
 export type PostList = Schemas["PostListResponseDto"];
@@ -55,4 +70,81 @@ export async function getInquiries(q: InquiryQuery): Promise<InquiryList> {
 /** GET /platform-leads — 답변 상태로만 거른다. */
 export async function getLeads(q: LeadQuery): Promise<LeadList> {
   return request(`${LEAD_BASE}${queryString(q)}`, await init());
+}
+
+// 문의사항 · 도입문의 상세 · 답변(#277 · #597). 답변 · 메모는 읽은 updatedAt 을 함께 보내고, 그사이 누가 저장했으면 409 다. 처리 시작은 이미 처리중 · 답변 완료면 409 다.
+export type InquiryDetail = Schemas["InquiryResponseDto"];
+export type LeadDetail = Schemas["LeadResponseDto"];
+export type LeadReplyMail = Schemas["LeadReplyMailResponseDto"];
+export type Target = "inquiry" | "lead";
+const base = (target: Target) => (target === "inquiry" ? INQUIRY_BASE : LEAD_BASE);
+
+/** GET /platform-inquiries/{id} — 답변 이력(오래된 것부터) · 첨부(이미지는 5분짜리 미리보기 주소) · 내부 메모. */
+export async function getInquiry(inquiryId: number): Promise<InquiryDetail> {
+  return request(`${INQUIRY_BASE}/${inquiryId}`, await init());
+}
+
+/** GET /platform-leads/{id} — 문의자 정보 · 동의 · 답변 하나 · 마지막 답변 메일 결과 · 내부 메모. */
+export async function getLead(leadId: number): Promise<LeadDetail> {
+  return request(`${LEAD_BASE}/${leadId}`, await init());
+}
+
+/** POST …/{id}/processing — 접수 상태에서만 처리중으로. 아니면 409. */
+export async function startProcessing(target: Target, id: number): Promise<void> {
+  await request(`${base(target)}/${id}/processing`, await init("POST"));
+}
+
+/** 답변 저장 — 문의사항은 POST …/replies 로 새 답변을 더하고(이력이 남음), 도입문의는 PUT …/reply 로 하나를 덮어쓴다. */
+export async function saveReply(target: Target, id: number, body: string, updatedAt: string): Promise<void> {
+  if (target === "inquiry") await request(`${INQUIRY_BASE}/${id}/replies`, await init("POST", { body, updatedAt }));
+  else await request(`${LEAD_BASE}/${id}/reply`, await init("PUT", { reply: body, updatedAt }));
+}
+
+/** PUT …/{id}/internal-memo — 빈 글자 · 공백만이면 지운다. */
+export async function saveMemo(target: Target, id: number, internalMemo: string, updatedAt: string): Promise<void> {
+  await request(`${base(target)}/${id}/internal-memo`, await init("PUT", { internalMemo, updatedAt }));
+}
+
+/** DELETE /platform-leads/{id} — 상담하지 않은(상담 완료일 없는) 도입문의만. 행을 남기지 않는다. 상담을 마쳤으면 409. */
+export async function deleteLead(leadId: number): Promise<void> {
+  await request(`${LEAD_BASE}/${leadId}`, await init("DELETE"));
+}
+
+/** POST /platform-leads/{id}/reply-mail/resend — 저장된 답변을 다시 보낸다. SMTP 가 실패해도 200 에 FAILED. 1분 안에 또 보내면 409, 메일 설정이 없으면 503. */
+export async function resendLeadReplyMail(leadId: number): Promise<LeadReplyMail> {
+  return request(`${LEAD_BASE}/${leadId}/reply-mail/resend`, await init("POST"));
+}
+
+// 고객지원(#282 · 283 · 284). 로그인한 관리자에게 노출 대상에 든 게시 글과 자기 문의만 준다 — 거르는 것은 api 다. 그 메뉴의 조회 권한이 없으면 403.
+// 문의 등록은 첨부 때문에 multipart 라 라우트 핸들러(support-inquiries/save)가 api 로 넘긴다.
+export type SupportPostList = Schemas["PublishedPostListResponseDto"];
+export type SupportPost = Schemas["PublishedPostResponseDto"];
+export type SupportNotice = Schemas["SupportPostResponseDto"];
+export type SupportInquiryList = Schemas["SupportInquiryListResponseDto"];
+export type SupportInquiryListItem = Schemas["SupportInquiryListItemDto"];
+export type SupportInquiry = Schemas["SupportInquiryResponseDto"];
+
+/** GET /support-notices — 상단 고정 먼저, 나머지는 게시일 내림차순. 검색어는 제목만 본다. */
+export async function getSupportNotices(q: SupportNoticeQuery): Promise<SupportPostList> {
+  return request(`${SUPPORT_NOTICE_BASE}${queryString(q)}`, await init());
+}
+
+/** GET /support-notices/{postId} — 첨부 · 이전 · 다음까지. 보이지 않는 글이면 404. */
+export async function getSupportNotice(postId: number): Promise<SupportNotice> {
+  return request(`${SUPPORT_NOTICE_BASE}/${postId}`, await init());
+}
+
+/** GET /support-faqs — 펼쳐 읽으므로 답변 본문까지 싣는다. 검색어는 질문 · 답변을 본다. */
+export async function getSupportFaqs(q: SupportFaqQuery): Promise<SupportPostList> {
+  return request(`${SUPPORT_FAQ_BASE}${queryString(q)}`, await init());
+}
+
+/** GET /support-inquiries — 내가 등록한 문의만, 등록 최신순. */
+export async function getMyInquiries(q: SupportInquiryQuery): Promise<SupportInquiryList> {
+  return request(`${SUPPORT_INQUIRY_BASE}${queryString(q)}`, await init());
+}
+
+/** GET /support-inquiries/{id} — 마지막 답변 하나와 「수정됨」 시각만. 내부 메모 · 이전 답변 · 운영자는 없다(CNT-17). 남의 문의면 404. */
+export async function getMyInquiry(inquiryId: number): Promise<SupportInquiry> {
+  return request(`${SUPPORT_INQUIRY_BASE}/${inquiryId}`, await init());
 }

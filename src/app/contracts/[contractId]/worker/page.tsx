@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Button, PageBar } from "@/components/common";
 import { ApiError, authHeaders, getEnum, request } from "@/lib/api";
 import type { ContractDetail } from "../../new/contract-form-model";
+import { ContractPermission } from "../../contract-permission";
 import { WorkerForm } from "./worker-form";
 import { isWorkerEditable, workerOf } from "./worker-model";
 
@@ -13,13 +14,16 @@ export default async function ContractWorkerPage({ params }: PageProps<"/contrac
   if (!Number.isInteger(contractId) || contractId < 1) notFound();
 
   const [gender, contractStatus, headers] = await Promise.all([getEnum("Gender"), getEnum("ContractStatus"), authHeaders()]);
+  // 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403)이면 api 문장을 그대로 보인다(목록과 같다)
   let c: ContractDetail | null = null;
+  let notice = "로그인이 필요합니다";
   if (headers.Authorization) {
     try {
       c = await request<ContractDetail>(`/contracts/${contractId}`, { headers });
     } catch (e) {
       if (e instanceof ApiError && e.status === 404) notFound();
-      if (!(e instanceof ApiError && e.status === 401)) throw e;
+      if (!(e instanceof ApiError && (e.status === 401 || e.status === 403))) throw e;
+      if (e.status === 403) notice = e.message;
     }
   }
 
@@ -29,11 +33,13 @@ export default async function ContractWorkerPage({ params }: PageProps<"/contrac
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
         <div className="rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
           {!c ? (
-            <Notice title="로그인이 필요합니다" />
+            <Notice title={notice} />
           ) : !isWorkerEditable(c.status) ? (
             <Notice title="발송 대기 · 서명 대기 · 수정 요청 근로계약만 근로자 정보를 고칠 수 있습니다" contractId={contractId} />
           ) : (
-            <WorkerForm contractId={contractId} status={c.status ?? ""} initial={workerOf(c)} labels={{ gender, contractStatus }} />
+            <ContractPermission action="update" fallback={<Notice title="근로자 정보를 고칠 권한이 없습니다" contractId={contractId} />}>
+              <WorkerForm contractId={contractId} status={c.status ?? ""} initial={workerOf(c)} labels={{ gender, contractStatus }} />
+            </ContractPermission>
           )}
         </div>
       </div>
