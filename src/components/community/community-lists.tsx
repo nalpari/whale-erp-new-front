@@ -18,13 +18,13 @@ import { PAGE_SIZES, type PageSize } from "@/lib/staff-members";
 type Query = ListQuery & Record<string, string | number>;
 
 /** 조건을 바꾸면 주소만 바꾼다. 서버 화면이 그 주소로 다시 불러온다. */
-function useGo<Q extends Query>(query: Q) {
+export function useGo<Q extends Query>(query: Q) {
   const router = useRouter();
   const path = usePathname();
   return (patch: Partial<Q>) => router.replace(`${path}${queryString({ ...query, page: 1, ...patch })}`, { scroll: false });
 }
 
-function Frame({
+export function Frame({
   query,
   total,
   filter,
@@ -64,7 +64,7 @@ function Frame({
 }
 
 /** 「전체」 + 값 하나씩 고르는 라디오 묶음. 고르는 즉시 건다. */
-function Pick({ label, name, values, value, onPick, last }: { label: string; name: string; values: EnumValue[]; value: string; onPick: (v: string) => void; last?: boolean }) {
+export function Pick({ label, name, values, value, onPick, last }: { label: string; name: string; values: EnumValue[]; value: string; onPick: (v: string) => void; last?: boolean }) {
   return (
     <FilterSection label={label} last={last}>
       {[{ value: "", label: "전체" }, ...values].map((v) => (

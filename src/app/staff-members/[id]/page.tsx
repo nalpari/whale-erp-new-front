@@ -9,7 +9,8 @@ import { getStaffMember, staffMemberIdOf } from "@/lib/staff-members-api";
 import { getStaffMemberTodos, type TodoItemList } from "@/lib/todos-api";
 import { dueText, statusCells } from "../../todos/todo-row";
 import { staffListHref } from "../staff-list-query";
-import { EMPLOYMENT_TYPE_LABELS, employmentStatusCells, formatPhone } from "../staff-row";
+import { ResendInvitationButton } from "../resend-invitation-button";
+import { canResendInvitation, EMPLOYMENT_TYPE_LABELS, employmentStatusCells, formatPhone, invitationText, joinCell } from "../staff-row";
 import { CellView } from "../staff-table";
 import { ContractBox, ContractBoxLoading } from "./contract-box";
 import { Box, BoxMessage } from "./detail-box";
@@ -82,6 +83,16 @@ async function loadJoinStateLabels(): Promise<EnumValue[]> {
   }
 }
 
+// 초대 유형 · 상태 한글(「초대」 줄, WHALEERP-138). 받지 못해도 상세는 그린다 — 그 조각만 빠지고 원인은 서버 로그에 남긴다.
+async function loadEnumOrEmpty(name: string): Promise<EnumValue[]> {
+  try {
+    return await getEnum(name);
+  } catch (error) {
+    console.error(`직원 상세: GET /enums/${name} 를 받지 못했습니다`, error);
+    return [];
+  }
+}
+
 // 직원 상세(WHALEERP-184). 배치는 데모 docs/demo/staff/detail.html(원본 src/pages/staff/detail.mjs)과 같다 — 5:7 두 단,
 // 왼쪽은 기본 정보 · 비밀번호 초기화 · 근로계약, 오른쪽은 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO.
 // 데이터는 상세 api(GET /staff-members/:id, WHALEERP-599)로 받고, 목록 한 줄에 계정 이메일을 더한 모양이라 그 값만 채운다. 직무 · 입사일 · 생년월일 · 본인인증과 오른쪽 영역의 내용은 상세 요약
@@ -94,7 +105,7 @@ export default async function StaffMemberDetailPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { id: rawId } = await params;
-  const [staff, joinStateLabels, todos, todoStatusLabels] = await Promise.all([
+  const [staff, joinStateLabels, todos, todoStatusLabels, invitationTypeLabels, invitationStatusLabels] = await Promise.all([
     getStaffMember(rawId),
     loadJoinStateLabels(),
     loadStaffTodos(rawId),
@@ -103,6 +114,8 @@ export default async function StaffMemberDetailPage({
       console.error("직원 상세: GET /enums/TodoStatus 를 받지 못했습니다", error);
       return [];
     }),
+    loadEnumOrEmpty("InvitationType"),
+    loadEnumOrEmpty("InvitationStatus"),
   ]);
   if (!staff) notFound();
   const employmentStatus = employmentStatusCells(staff);
@@ -119,6 +132,18 @@ export default async function StaffMemberDetailPage({
     ...(staff.retiredDate ? [{ label: "퇴직일", value: staff.retiredDate }] : []),
     { label: "생년월일", value: PENDING },
     { label: "휴대전화번호", value: staff.phone ? formatPhone(staff.phone) : PENDING },
+    // 가입 상태 · 초대는 목록과 같은 함수다(staff-row.ts). 재발송도 목록과 같은 판정 · 버튼이다(WHALEERP-138)
+    {
+      label: "가입 상태",
+      value: (
+        <span className="inline-flex items-center gap-[6px]">
+          <CellView cell={joinCell(staff, kstToday())} />
+          {staff.contract && canResendInvitation(staff) && <ResendInvitationButton contractId={staff.contract.contractId} name={staff.name} />}
+        </span>
+      ),
+    },
+    { label: "초대", value: invitationText(staff.invitation, invitationTypeLabels, invitationStatusLabels) },
+    // 가입할 때의 휴대폰 본인인증(identity_verifications, 계정 단위) — 직원 상세 응답에 값이 없다. 상세 요약 api(WHALEERP-183)를 기다린다
     { label: "본인인증", value: PENDING },
     // 계정 이메일(회원 ID) — 상세를 볼 수 있으면 보이고, 고치지 못한다(ACC-17, WHALEERP-180). 없을 때의 표시는 staffEmailText.
     { label: "이메일", value: staffEmailText(staff, joinStateLabels) },

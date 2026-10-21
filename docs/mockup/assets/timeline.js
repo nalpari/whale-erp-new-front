@@ -3,11 +3,11 @@
    월간 보기: 달력(처음엔 2026년 8월, ‹ › 와 「이번 달」로 달을 바꾼다). 날짜를 누르면 왼쪽에 그날 체결 완료 근로계약이 있는 재직자 전원(휴무 포함)이 나온다. 미체결 직원은 나오지 않는다(STAFF-29).
    목업이라 한 주치 데이터를 요일 규칙으로 한 달에 펼친다.
 
-   운영시간 07:00-22:00 = 15칸. 1시간 = 100/15 %. */
+   시간축은 00~24시 = 24칸. 1시간 = 100/24 %. 공백·혼자 근무는 그날 첫 근무 시작부터 마지막 근무 종료 사이만 센다(STAFF-37 · 2026-10-21 재영). */
 (function () {
   "use strict";
 
-  var OPEN = 7, CLOSE = 22, SPAN = CLOSE - OPEN;
+  var OPEN = 0, CLOSE = 24, SPAN = CLOSE - OPEN;
 
   var STAFF = [
     { name: "오세라", role: "점장" },
@@ -23,7 +23,7 @@
     { date: "2026-08-19", shifts: { 오세라: null, 서지안: [7, 16], 권도윤: [13, 22], 유하람: [16, 22] } },
     { date: "2026-08-20", shifts: { 오세라: [9, 18], 서지안: [7, 16], 권도윤: [13, 22], 유하람: null } },
     { date: "2026-08-21", shifts: { 오세라: [9, 18], 서지안: null, 권도윤: [13, 22], 유하람: [16, 22] } },
-    { date: "2026-08-22", shifts: { 오세라: [11, 20], 서지안: null, 권도윤: null, 유하람: [12, 22] } },
+    { date: "2026-08-22", shifts: { 오세라: [10, 15], 서지안: null, 권도윤: null, 유하람: [17, 22] } },
     { date: "2026-08-23", shifts: { 오세라: null, 서지안: [10, 19], 권도윤: [13, 22], 유하람: [12, 22] } }
   ];
 
@@ -37,10 +37,12 @@
   /* 요일(0=일) → 그 요일의 하루 데이터 */
   function dayOf(wd) { return DAYS[(wd + 6) % 7]; }
 
-  /* 시간대별 인원 수 — 한 칸은 t ~ t+1 시간이다. */
+  /* 시간대별 인원 수 — 한 칸은 t ~ t+1 시간이다. 그날 첫 근무 시작 전·마지막 근무 종료 뒤는 null(세지 않음). */
   function coverage(day) {
-    var out = [];
+    var out = [], first = CLOSE, last = OPEN;
+    for (var k0 in day.shifts) { var s0 = day.shifts[k0]; if (s0) { first = Math.min(first, s0[0]); last = Math.max(last, s0[1]); } }
     for (var t = OPEN; t < CLOSE; t++) {
+      if (t < first || t >= last) { out.push(null); continue; }
       var n = 0;
       for (var k in day.shifts) {
         var s = day.shifts[k];
@@ -66,7 +68,7 @@
     var alone = cov.filter(function (n) { return n === 1; }).length;
     root.querySelector("[data-tl-rows]").innerHTML = STAFF.map(function (p) { return rowHTML(p, day); }).join("");
     root.querySelector("[data-tl-cover]").innerHTML =
-      cov.map(function (n) { return '<span class="tl__cell" data-n="' + Math.min(n, 2) + '">' + n + "</span>"; }).join("");
+      cov.map(function (n) { return n === null ? '<span class="tl__cell" data-n="out"></span>' : '<span class="tl__cell" data-n="' + Math.min(n, 2) + '">' + n + "</span>"; }).join("");
     root.querySelectorAll("[data-tl-chip]").forEach(function (b) { b.setAttribute("aria-pressed", String(Number(b.dataset.tlChip) === cur)); });
 
     var badge = root.querySelector("[data-tl-badge]");

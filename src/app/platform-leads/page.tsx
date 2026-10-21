@@ -5,7 +5,7 @@ import { LEAD_BASE, parseLeadQuery } from "@/lib/community-view";
 import { LeadList } from "@/components/community/community-lists";
 import { ListFailure, loadList } from "@/components/community/list-load";
 
-// 커뮤니티관리 › 도입문의 목록(#275, 데모 support/community-leads). 플랫폼 관리자 전용. 상세 · 답변은 #277.
+// 커뮤니티관리 › 도입문의 목록(#275, 데모 support/community-leads). 플랫폼 관리자 전용. 상세 · 답변은 [id](#277).
 export default async function LeadsPage({ searchParams }: PageProps<"/platform-leads">) {
   const query = parseLeadQuery(await searchParams);
   const loaded = await loadList("도입문의", () => Promise.all([getLeads(query), getEnum("InquiryAnswerStatus"), getEnum("LeadInterest")]));

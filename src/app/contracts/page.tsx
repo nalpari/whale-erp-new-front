@@ -1,6 +1,7 @@
 import { Button, DataTable, ListToolbar, PageBar } from "@/components/common";
 import { ApiError, authHeaders, getEnum, request } from "@/lib/api";
 import { contractColumns } from "./columns";
+import { ContractPermission } from "./contract-permission";
 import { ContractFilters, ContractPagination } from "./contract-filters";
 import { PAGE_SIZE, readListQuery, toSearch, withKnownStatus, type ContractListPage } from "./contract-list";
 
@@ -37,7 +38,9 @@ export default async function ContractsPage({ searchParams }: PageProps<"/contra
   return (
     <>
       <PageBar title="근로계약 관리">
-        <Button href="/contracts/new">계약서 작성</Button>
+        <ContractPermission action="create">
+          <Button href="/contracts/new">계약서 작성</Button>
+        </ContractPermission>
       </PageBar>
       <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
         {/* 주소가 바뀌면(뒤로 가기 포함) 입력칸을 주소 값으로 다시 맞춘다 */}

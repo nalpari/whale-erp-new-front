@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { StaffMemberListItem } from "../../lib/staff-members.ts";
-import { contractCell, employmentStatusCells, formatPhone, joinCell, rowNumber, statusCells } from "./staff-row.ts";
+import { canResendInvitation, contractCell, employmentStatusCells, formatPhone, invitationText, joinCell, rowNumber, statusCells } from "./staff-row.ts";
 
 const TODAY = "2026-10-12";
 const item = (over: Partial<StaffMemberListItem> = {}): StaffMemberListItem => ({
@@ -151,4 +151,33 @@ test("순번은 내림차순 — 전체 건수에서 거꾸로 센다", () => {
   assert.equal(rowNumber(63, 1, 20, 0), 63);
   assert.equal(rowNumber(63, 1, 20, 19), 44);
   assert.equal(rowNumber(63, 4, 20, 2), 1);
+});
+
+const invitation = (over: Partial<NonNullable<StaffMemberListItem["invitation"]>> = {}) => ({
+  invitationType: "SIGNUP" as const,
+  status: "SENT" as const,
+  lastSentAt: "2026-08-30T15:30:00Z",
+  expiresAt: "2026-09-29T15:30:00Z",
+  canResend: true,
+  ...over,
+});
+
+test("재발송 — canResend 이면서 계약이 발송 대기일 때만", () => {
+  assert.equal(canResendInvitation(item({ joinState: "INVITED", invitation: invitation(), ...contract("PENDING_SEND") })), true);
+  // api 가 다시 보낼 수 없다고 했다
+  assert.equal(canResendInvitation(item({ joinState: "INVITED", invitation: invitation({ canResend: false }), ...contract("PENDING_SEND") })), false);
+  // 서명 대기(앱으로 받는 직원 — 소속 추가 확인 · 복귀 확인) · 만료 · 거부는 api 가 409 로 막는다
+  for (const status of ["PENDING_SIGNATURE", "EXPIRED", "REJECTED", "DRAFT"] as const)
+    assert.equal(canResendInvitation(item({ joinState: "AFFILIATION_PENDING", invitation: invitation({ invitationType: "AFFILIATION_CONFIRM" }), ...contract(status) })), false, status);
+  // 초대 · 계약이 없으면 보내지 않는다
+  assert.equal(canResendInvitation(item({ invitation: null, ...contract("PENDING_SEND") })), false);
+  assert.equal(canResendInvitation(item({ joinState: "INVITED", invitation: invitation(), contract: null })), false);
+});
+
+test("상세 초대 줄 — 유형 · 상태 · 보낸 한국 날짜, 모르는 한글은 뺀다", () => {
+  const types = [{ value: "SIGNUP", label: "가입 초대", order: 1 }];
+  const statuses = [{ value: "SENT", label: "발송", order: 1 }];
+  assert.equal(invitationText(invitation(), types, statuses), "가입 초대 · 발송 · 보낸 날 2026-08-31");
+  assert.equal(invitationText(invitation(), [], []), "보낸 날 2026-08-31");
+  assert.equal(invitationText(null, types, statuses), "-");
 });
