@@ -1,12 +1,13 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { createContext, use, useEffect, useRef, useState, type ReactNode } from "react";
-import { Button } from "@/components/common";
+import { createContext, use, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import { Button, useBackdropActive } from "@/components/common";
 import { logout } from "@/app/actions";
 import { bff, BffError, PASSWORD_REQUIRED_EVENT, signOut } from "@/lib/bff";
 import { BP_SWITCH_PATH, bpOfSwitchUrl, HOME, isAllowed, menuOfPath, menuPermissionOf, menusOf, serviceOfPath, type MenuAction, type MenuCode } from "@/lib/menus";
 import { ForcePasswordDialog } from "./force-password-dialog";
+import { MyPagePanel } from "./my-page-panel";
 import {
   clearSelectedBp,
   LOGIN_INFO_KEY,
@@ -52,7 +53,20 @@ interface LoginState {
   storePicks: StorePicks | null;
 }
 
-type LoginActions = { setScope: (scope: Scope) => void; setStorePicks: (picks: StorePicks | null) => void };
+type LoginActions = {
+  setScope: (scope: Scope) => void;
+  setStorePicks: (picks: StorePicks | null) => void;
+  /** 내 정보(MY PAGE)에서 이름 · 이메일을 바꾸면 GNB 등 이 값을 쓰는 화면이 다시 로그인하지 않아도 바로 보이게 한다.
+   * 이름 · 이메일만 받고 둘 다 빈 값을 허락하지 않는다 — 소속 BP · 권한 · 비밀번호 변경 대기 같은 칸은 이 통로로
+   * 바뀌면 안 되고, 호출자(MyPagePanel)는 늘 toUpdateInput 이 다듬은 값만 준다. */
+  patchAccount: (partial: { name: string; email: string }) => void;
+  /** GNB 「내정보 관리」 패널 열림 여부 — 패널 자체는 SessionGate 가 children 뒤에 그린다(DOM 순서 때문, 위 주석 참고). */
+  myPageOpen: boolean;
+  setMyPageOpen: (open: boolean) => void;
+  /** UserPop 의 이름 버튼 — MyPagePanel 의 SlidePanel trigger 로 써서 패널을 닫으면 포커스가 이 버튼으로
+   * 돌아오게 한다(코드 리뷰로 찾음, 2026-10-21 — 전에는 못 꺼내 body 로 빠졌다). AdminHeader 가 UserPop 에 넘긴다. */
+  myPageTrigger: RefObject<HTMLButtonElement | null>;
+};
 const LoginContext = createContext<(LoginState & LoginActions) | null>(null);
 
 function useLogin() {
@@ -61,6 +75,13 @@ function useLogin() {
   return v;
 }
 export const useAccount = () => useLogin().account;
+export const usePatchAccount = () => useLogin().patchAccount;
+/** GNB 「내정보 관리」 패널 열림 여부 — useScope · useStorePicks 와 같은 모양(값 · 세터 튜플, naming.md). */
+export function useMyPageOpen() {
+  const { myPageOpen, setMyPageOpen } = useLogin();
+  return [myPageOpen, setMyPageOpen] as const;
+}
+export const useMyPageTrigger = () => useLogin().myPageTrigger;
 /** 이 탭의 서비스. 헤더 메뉴·홈·메뉴 권한 확인과 오른쪽 선택기(플랫폼이면 BP, ERP 면 점포 범위)가 이것을 본다. */
 export const useService = () => useLogin().serviceCode;
 /** 이 탭 서비스의 메뉴 트리(3단계까지). */
@@ -138,7 +159,7 @@ const LOGOUT_FAILED = { status: "error", message: "로그아웃하지 못했습�
  * 탭을 열 때마다 받는다. 데이터 권한은 api 가 요청마다 다시 본다.
  */
 
-export function SessionGate({ children }: { children: ReactNode }) {
+export function SessionGate({ header, children }: { header: ReactNode; children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [state, setState] = useState<{ status: "loading" } | { status: "error"; message: string } | { status: "ready"; value: LoginState }>({
@@ -202,14 +223,24 @@ export function SessionGate({ children }: { children: ReactNode }) {
       </Notice>
     );
   return (
-    <Ready value={state.value} onChange={(update) => setState((s) => (s.status === "ready" ? { status: "ready", value: update(s.value) } : s))}>
+    <Ready value={state.value} onChange={(update) => setState((s) => (s.status === "ready" ? { status: "ready", value: update(s.value) } : s))} header={header}>
       {children}
     </Ready>
   );
 }
 
 // onChange 는 앞 값을 받아 고친다 — 한 조작에서 여러 값을 바꿔도 앞의 변경을 덮지 않는다.
-function Ready({ value, onChange, children }: { value: LoginState; onChange: (update: (v: LoginState) => LoginState) => void; children: ReactNode }) {
+function Ready({
+  value,
+  onChange,
+  header,
+  children,
+}: {
+  value: LoginState;
+  onChange: (update: (v: LoginState) => LoginState) => void;
+  header: ReactNode;
+  children: ReactNode;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const home = HOME[value.serviceCode];
@@ -219,6 +250,17 @@ function Ready({ value, onChange, children }: { value: LoginState; onChange: (up
   const allowed = switching || isAllowed(value.menus, pathname, value.serviceCode);
   // 개발 모드(StrictMode)는 effect 를 두 번 돌린다. 같은 주소에 두 번 안내하고 두 번 뒤로 가지 않게 한다.
   const denied = useRef<string | null>(null);
+  // GNB 「내정보 관리」(MY PAGE). 패널은 children(화면 본문) 뒤에 그려야 한다 — SlidePanel 은 전부 같은 z-10 이라
+  // DOM 순서가 쌓임을 가른다(PanelBackdrop 의 같은 설명 참고). header 는 먼저, children 은 그다음, 패널은 가장
+  // 뒤라야 화면이 자기 등록 패널을 열어 둔 채로 MY PAGE 를 열어도 그 패널 아래 깔리지 않는다(코드 리뷰로 찾음, 2026-10-21).
+  const [myPageOpen, setMyPageOpen] = useState(false);
+  // UserPop 의 이름 버튼 — AdminHeader 가 UserPop 에 triggerRef 로 넘겨 실제 DOM 버튼을 단다. 패널을
+  // 닫으면 SlidePanel 이 여기로 포커스를 되돌린다(DESIGN.md Slide Panel). 전엔 못 꺼내 body 로 빠졌다
+  // (코드 리뷰로 찾음, 2026-10-21 — UserPop 공개 API 를 triggerRef 로 넓혀 고쳤다).
+  const myPageTrigger = useRef<HTMLButtonElement>(null);
+  // 바탕창(closeOnBackdrop 켠 패널)이 떠 있는 동안 화면 본문을 inert 로 뺀다 — MY PAGE 는 어느 화면에서나
+  // 열 수 있어 화면마다 따로 감싸 둘 수 없다. admins-screen.tsx 의 같은 처리(자기 등록 패널용)와 겹쳐도 무해하다.
+  const backdropActive = useBackdropActive();
 
   // BP 이동 화면은 준비가 끝났으니 그 서비스의 홈으로 바꿔 간다(뒤로 가기에 남지 않게 replace).
   useEffect(() => {
@@ -254,6 +296,12 @@ function Ready({ value, onChange, children }: { value: LoginState; onChange: (up
     writeStorePicks(value.currentBp.bpCodeId, storePicks);
     onChange((v) => ({ ...v, storePicks }));
   };
+  // 내 정보에서 이름 · 이메일을 바꾸면 저장값에 쓰고 이 탭에 바로 반영한다(GNB 이름 등). 다른 탭은 새로고침하면 반영된다.
+  const patchAccount = (partial: { name: string; email: string }) => {
+    const account = { ...value.account, ...partial };
+    writeLoginInfo({ loginKey: value.loginKey, account, menus: value.menus });
+    onChange((v) => ({ ...v, account }));
+  };
   // 강제 변경 표시를 저장값에 쓰고 이 탭에 반영한다. 다른 탭은 새로고침하면 반영된다.
   const setPasswordRequired = (required: boolean) => {
     const account = required
@@ -286,8 +334,21 @@ function Ready({ value, onChange, children }: { value: LoginState; onChange: (up
     location.assign(home);
   };
   return (
-    <LoginContext value={{ ...value, setScope, setStorePicks }}>
-      {allowed && !switching ? children : null}
+    <LoginContext value={{ ...value, setScope, setStorePicks, patchAccount, myPageOpen, setMyPageOpen, myPageTrigger }}>
+      {allowed && !switching && (
+        <>
+          {header}
+          {/* MY PAGE 패널이 맨 위일 때만 본문을 inert 로 뺀다 — 그냥 backdropActive 를 쓰면 화면 자신의
+              closeOnBackdrop 패널(platform-admins 상세·수정 등)이 맨 위일 때 그 패널까지 children 안에
+              있어 함께 inert 가 되어 버튼을 못 눌렀다(ip-code-review-claude 적대적 리뷰로 찾음, 2026-10-21).
+              MY PAGE 가 열려 있을 때는 그 패널이 다른 패널 뒤에 그려져(DOM 순서) 늘 맨 위이므로 이 조건으로
+              충분하다 — 바탕창이 뜬 상태로는 페이지 쪽에서 새 패널을 열 수 없다(전부 inert). */}
+          <div className="contents" inert={myPageOpen && backdropActive}>
+            {children}
+          </div>
+          <MyPagePanel id="mypage-panel" open={myPageOpen} onClose={() => setMyPageOpen(false)} trigger={myPageTrigger} />
+        </>
+      )}
       {value.account.isPasswordChangeRequired && <ForcePasswordDialog account={value.account} onDone={passwordChanged} />}
     </LoginContext>
   );
