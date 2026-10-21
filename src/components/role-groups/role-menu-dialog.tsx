@@ -28,9 +28,9 @@ export type MenuDialogActions = {
   preview?: (id: number, menus: RoleGroupMenuCells[]) => Promise<ActionResult<RevocationPreview>>;
   save?: (id: number, menus: RoleGroupMenuCells[], updatedAt: string) => Promise<ActionResult<{ updatedAt: string }>>;
 };
-type BodyProps = { role: MenuDialogRole; reasons: EnumValue[]; actions: MenuDialogActions; note?: string; onClose: () => void };
+type BodyProps = { role: MenuDialogRole; reasons: EnumValue[]; actions: MenuDialogActions; note?: string | null; onClose: () => void };
 
-/** note 를 주면 잠긴 팝업의 안내를 그 문구로 바꾼다. */
+/** note 를 주면 잠긴 팝업의 안내를 그 문구로 바꾸고, null 이면 안내를 두지 않는다. */
 export function RoleMenuDialog({
   role,
   title = "권한 메뉴 등록",
@@ -112,13 +112,14 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
   const savable = Boolean(tree?.isSavable) && can.update && Boolean(save);
   // 잠긴 팝업의 이유 — 칸마다 툴팁 · 작은 글자로 흩어진 이유를 위에 한 줄로 모은다(키보드 · 화면 낭독기도 읽는다)
   const lockedText =
-    note ??
-    (!can.update
-      ? "권한 관리 수정 권한이 없어 메뉴 권한을 볼 수만 있습니다."
-      : (() => {
-          const first = tree?.services.flatMap((sv) => sv.menus.flatMap((m) => blockedReasonsOf(m)))[0];
-          return first ? `${reasonLabel(reasons, first, "고칠 수 없는 권한")} — 메뉴 권한을 볼 수만 있습니다.` : "이 권한의 메뉴 권한은 볼 수만 있습니다.";
-        })());
+    note !== undefined
+      ? note
+      : !can.update
+        ? "권한 관리 수정 권한이 없어 메뉴 권한을 볼 수만 있습니다."
+        : (() => {
+            const first = tree?.services.flatMap((sv) => sv.menus.flatMap((m) => blockedReasonsOf(m)))[0];
+            return first ? `${reasonLabel(reasons, first, "고칠 수 없는 권한")} — 메뉴 권한을 볼 수만 있습니다.` : "이 권한의 메뉴 권한은 볼 수만 있습니다.";
+          })();
   const service = tree?.services.find((s) => s.serviceCode === tab);
   const changed = changedMenus(initial, values);
 
@@ -170,7 +171,7 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
         <dd>{role.name}</dd>
       </dl>
       {failure && <FailedBand message={failure.message} detail={failure.detail} />}
-      {tree && !savable && <InfoBand>{lockedText}</InfoBand>}
+      {tree && !savable && lockedText && <InfoBand>{lockedText}</InfoBand>}
 
       {tree && (
         <>

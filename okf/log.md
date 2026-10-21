@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-21
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 권한 그룹 상세의 [삭제]를 메뉴 삭제 권한만이 아니라 api `isDeletable` 로도 숨긴다. 플랫폼 계정 · BP 관리자처럼 조회만인 역할에게 누르면 거절되는 버튼이 보이던 것을 막았다. 디자인 피드백으로 목록 위 역할 안내 줄, 메뉴등록 · 가맹마스터 보기 팝업의 잠김 안내 띠(공용 팝업에 `note={null}` 을 더함)를 지우고, 관리계정ID 가 없으면 `-` 로, 아직 화면이 없는 「BP 관리자 관리」 링크는 글자로 바꿨다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 탭 BP 경로 방식(`/bp/{bpCodeId}/...`) 공통 장치를 넣고 BP 권한 그룹 관리를 시범 화면으로 옮겼다. proxy 가 탭 BP 를 `x-bp-code-id` 헤더로 붙여 옛 경로로 rewrite 하고(들어온 헤더는 지움), BP·가맹 계정의 남의 BP 주소는 세션 쿠키의 새 칸 `bpCodeId` 로 소속 BP 에 307 한다. 서버 호출(`authHeaders`) · BFF · `bff()` 가 `X-Bp-Code-Id` 를 싣고, 메뉴 판정은 접두를 떼고 본다. SessionGate 는 주소의 BP 가 바뀌면 다시 준비하고, 옮긴 화면에 BP 없이 오면 탭 BP 주소로 보낸다. 실험: 서버 렌더 · 서버 액션 · BFF 에 헤더가 실리고, `revalidatePath("/bp-role-groups")`(폴더 경로)로 목록이 새로 그려진다. api 의 헤더 판정(`MenuPermissionGuard` · `@TargetBp()`)은 api 머지 전 브랜치로 E2E 를 돌렸다 — BP 계정 등록 · 메뉴 저장 · 수정 · 삭제, 플랫폼 계정의 고객 BP 목록 조회, 옮기지 않은 화면 이동이 정상이다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 직원 상세의 퇴직 처리 · 비밀번호 초기화 버튼 권한을 메뉴 코드(`useMenuRole(MENU_CODE.staffMembers)`)에서 지금 주소의 메뉴 권한(`usePagePermission().update`)으로 옮겼다(front #57 공지). 상세 안의 TO-DO 링크는 다른 메뉴라 메뉴 코드 그대로다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #71 머지 블로커 반영: 공통코드 저장 중에 다른 패널 저장으로 같은 내용의 목록이 새 참조로 오면 저장 기준(`savingFrom`)을 그 참조로 옮긴다(`followSameRows`). 옮기지 않아 두 패널을 함께 저장하다 등록만 실패하면 실패 안내와 새 행이 함께 사라지던 것을 막는다.

@@ -72,7 +72,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
     {
       label: "관리계정ID",
       // BP 관리자 그룹은 관리계정ID 없이 BP 범위로만 구분한다(S-LYKAEI)
-      value: role.manager ? <DetailValues items={[role.manager.loginId, role.manager.name ?? "—"]} /> : muted("없음 — BP 범위로 구분합니다"),
+      value: role.manager ? <DetailValues items={[role.manager.loginId, role.manager.name ?? "—"]} /> : "-",
     },
     { label: "등록일시", value: <DetailValues items={[formatDateTime(role.createdAt), actorOf(role.createdBy)]} /> },
     { label: "최종수정일시", value: <DetailValues items={[formatDateTime(role.updatedAt), actorOf(role.updatedBy)]} /> },
@@ -86,12 +86,12 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
       </Tag>
     </h2>
   );
-  const deleteButton = can.delete ? (
+  // 지울 수 없는 그룹(역할 · 본인 연결)은 버튼을 숨긴다. 막힌 이유는 수정 권한이 있으면 위 띠(editBlockedReason, 같은 값)로 보인다.
+  const deleteButton = can.delete && role.isDeletable ? (
     <RoleDeleteDialog
       role={role}
       actions={actions.remove}
       noCandidateText={`옮길 대체 권한 그룹이 없어 지울 수 없습니다. 같은 ${role.roleTypeCode === "FA" ? "가맹 마스터의 가맹 관리자" : "BP 의 BP 관리자"} 권한 그룹을 하나 더 만든 뒤 다시 시도해 주세요.`}
-      blockedReason={role.deleteBlockedReason && reasonLabel(lockReasons, role.deleteBlockedReason, "지울 수 없는 권한 그룹입니다")}
       onDeleted={onDeleted}
     />
   ) : null;

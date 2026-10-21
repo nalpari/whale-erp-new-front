@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Badge, Button, DataTable, Pagination, Tag, type Column } from "@/components/common";
@@ -16,12 +15,6 @@ import { BpRoleSide } from "./role-side";
 
 // 왼쪽 권한 그룹 목록(쪽 나눔) + 오른쪽 고정 칸(S-LYKAEI · 데모 config/roles). 권한명을 누르면 오른쪽에 그 그룹의 수정(고칠 수 없으면 상세)이,
 // [신규 등록]을 누르면 같은 칸에 등록 양식이 선다. 버튼은 메뉴 권한(usePagePermission)과 api 가 준 creatableRoleTypeCode 로 보인다. 막는 것은 api 다.
-// 역할 안내 줄의 문구만 역할 값으로 고른다 — 무엇이 보이고 막히는지는 api 판정이다.
-const ROLE_GUIDE: Record<string, string> = {
-  BM: "BP 관리자 권한 그룹을 등록 · 수정 · 삭제하고, 가맹 관리자 권한 그룹은 조회만 합니다.",
-  FM: "본인이 만든 가맹 관리자 권한 그룹만 등록 · 수정 · 삭제합니다.",
-};
-const READ_ONLY_GUIDE = "권한 그룹을 조회만 합니다.";
 const BLANK_ROLE: MenuDialogRole = { roleGroupId: 0, roleCode: "FM000001", roleTypeCode: "FM", name: "" };
 
 export function BpRolesScreen(props: {
@@ -130,10 +123,6 @@ function RolesBody({
   return (
     <>
       <section className={`${CARD} min-w-0 flex-1`}>
-        <p className="text-[14px] text-erp-label">
-          <b className="font-medium text-erp-ink">{account.name ?? account.loginId}</b> ({account.loginId} · {roleTypeLabel(account.roleTypeCode)}) —{" "}
-          {ROLE_GUIDE[account.roleTypeCode] ?? READ_ONLY_GUIDE}
-        </p>
         <div className="flex items-end gap-[6px]">
           <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">
             권한 그룹 목록 <span className="ml-[6px] text-[14px] font-normal text-erp-label">{list.total.toLocaleString("ko-KR")}건</span>
@@ -158,11 +147,8 @@ function RolesBody({
         />
         <Pagination page={page} totalPages={totalPages} onPageChange={(p) => go({ page: p })} />
         <p className="text-[13px] text-erp-label">
-          권한명을 누르면 오른쪽에 상세가 섭니다. 관리자 계정에 권한 그룹을 붙이거나 바꾸는 일은{" "}
-          <Link href="/bp-admins" className="text-erp-link hover:underline">
-            BP 관리자 관리
-          </Link>
-          에서 합니다.
+          {/* shortcut: BP 관리자 관리 화면(/bp-admins)이 아직 없어 링크를 걸지 않는다. 화면이 생기면 메뉴 권한을 보고 링크로 바꾼다 */}
+          권한명을 누르면 오른쪽에 상세가 섭니다. 관리자 계정에 권한 그룹을 붙이거나 바꾸는 일은 BP 관리자 관리에서 합니다.
         </p>
       </section>
 
@@ -181,13 +167,14 @@ function RolesBody({
         onDeleted={() => handleSelect()}
       />
 
-      <RoleMenuDialog role={menuFor} reasons={menuReasons} actions={actions.menus} onClose={() => setMenuFor(null)} />
+      {/* 잠긴 팝업의 안내 띠는 두지 않는다 — 칸이 막히고 [닫기]만 보이는 것으로 알린다 */}
+      <RoleMenuDialog role={menuFor} reasons={menuReasons} actions={actions.menus} note={null} onClose={() => setMenuFor(null)} />
       <RoleMenuDialog
         title="가맹 마스터 권한 보기"
         role={franchiseMasterOpen ? { ...BLANK_ROLE, name: roleTypeLabel("FM") } : null}
         reasons={menuReasons}
         actions={actions.franchiseMaster}
-        note="가맹 마스터 고정 권한(FM000001)입니다. 가맹 관리자 권한 그룹은 이 범위를 넘지 못하며, 여기서는 볼 수만 있습니다."
+        note={null}
         onClose={() => setFranchiseMasterOpen(false)}
       />
     </>
