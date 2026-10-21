@@ -8,6 +8,7 @@ import {
   codePanelAccess,
   conflictCode,
   dropCreatedAdded,
+  followSameRows,
   groupChanged,
   itemChanged,
   renumberAdded,
@@ -104,6 +105,21 @@ test("새 목록 — 저장을 시작한 목록을 대신하면 새 행을 뒤�
   assert.equal(kept.at(-1)?.key, "new-1", "새 행은 키 그대로 뒤에 — 칸 오류가 제자리에 붙는다");
   assert.equal(kept.at(-1)?.sortOrder, Math.max(...items.map((i) => i.sortOrder)) + 1, "마지막 저장된 순서 다음 번호");
   assert.deepEqual(withKeptAdded(fresh, current, false), fresh, "다른 목록이면 새 행을 버린다");
+});
+
+test("같은 내용의 목록이 새 참조로 오면 저장 기준을 옮긴다 — 다음 진짜 목록에서 새 행을 이어 둔다", () => {
+  const started = [...items]; // 저장을 시작한 목록
+  const sameContent = [...items]; // 다른 패널 저장으로 온 같은 내용의 새 참조
+  const revalidated = items.map((i) => ({ ...i, label: `${i.label}!` })); // 이 패널 저장 뒤의 진짜 목록
+
+  // 옮기지 않으면 진짜 목록이 왔을 때 기준(started)이 지금 목록(sameContent)과 달라 새 행을 버린다
+  const followed = followSameRows(started, started, sameContent);
+  assert.equal(followed, sameContent);
+  const current = [itemDraft(items[0]), added("new-1", "INTERN")];
+  assert.equal(withKeptAdded(revalidated.map((i) => itemDraft(i)), current, followed === sameContent).at(-1)?.key, "new-1");
+
+  assert.equal(followSameRows(null, started, sameContent), null, "저장 중이 아니면 그대로");
+  assert.equal(followSameRows(started, sameContent, revalidated), started, "기준이 지금 목록이 아니면 그대로");
 });
 
 test("등록한 새 행은 뺀다 — 코드는 대문자 · 공백을 맞춰 견주고, 겹치지 않는 새 행은 남는다", () => {

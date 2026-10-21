@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { Badge, Button, DataTable, Pagination, Select, Tag, TextField, Toggle, useToast, type Column } from "@/components/common";
-import { buildSaveGroupsInput, codePanelAccess, groupChanged, withKeptAdded, type GroupDraft } from "@/lib/code-drafts";
+import { buildSaveGroupsInput, codePanelAccess, followSameRows, groupChanged, withKeptAdded, type GroupDraft } from "@/lib/code-drafts";
 import { failureView } from "@/lib/code-save";
 import { codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-validation";
 import type { CodeGroup, ManageOwnerCode } from "@/lib/codes";
@@ -67,7 +67,11 @@ export function CodeGroupPanel({
   if (groups !== shown.groups || selected !== shown.selected) {
     const sameRows = selected === shown.selected && JSON.stringify(groups) === JSON.stringify(shown.groups);
     setShown({ groups, selected });
-    if (!sameRows) {
+    // 저장 중에 같은 내용의 목록이 새 참조로 오면(오른쪽 패널 저장 등) 저장 기준도 그 참조로 옮긴다(followSameRows)
+    if (sameRows) {
+      const followed = followSameRows(savingFrom?.groups ?? null, shown.groups, groups);
+      if (savingFrom && followed !== savingFrom.groups) setSavingFrom({ ...savingFrom, groups });
+    } else {
       const keep = savingFrom?.groups === shown.groups && savingFrom.selected === selected;
       const next = withKeptAdded(groups.map(toDraft), drafts, keep);
       setSavingFrom(null);

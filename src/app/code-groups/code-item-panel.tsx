@@ -8,6 +8,7 @@ import {
   codePanelAccess,
   conflictCode,
   dropCreatedAdded,
+  followSameRows,
   itemChanged,
   renumberAdded,
   withKeptAdded,
@@ -68,7 +69,9 @@ export function CodeItemPanel({
   if (items !== shown) {
     const sameRows = JSON.stringify(items) === JSON.stringify(shown);
     setShown(items);
-    if (!sameRows) {
+    // 저장 중에 같은 내용의 목록이 새 참조로 오면(왼쪽 패널 저장 등) 저장 기준도 그 참조로 옮긴다(followSameRows)
+    if (sameRows) setSavingFrom(followSameRows(savingFrom, shown, items));
+    else {
       const next = renumberAdded(withKeptAdded(items.map(toDraft), drafts, savingFrom === shown));
       setSavingFrom(null);
       setDrafts(next);

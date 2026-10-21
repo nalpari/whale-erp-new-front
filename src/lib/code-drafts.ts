@@ -76,6 +76,15 @@ export function withKeptAdded<D extends { added: boolean }>(fresh: readonly D[],
   return [...fresh, ...(keep ? current.filter((d) => d.added) : [])];
 }
 
+/**
+ * 같은 내용의 목록이 새 참조로 왔을 때(다른 패널 저장 · 레이아웃 무효화 등) 저장 기준(savingFrom)을 그 참조로 옮긴다.
+ * 기준은 참조로 견주므로 옮기지 않으면 다음에 오는 진짜 목록에서 새 행을 잇지 못하고, 등록 실패 안내와 입력이 함께 사라진다.
+ * 기준이 지금 목록이 아니면(저장 중이 아니거나 이미 다른 목록) 그대로 둔다.
+ */
+export function followSameRows<L>(savingFrom: L | null, shown: L, next: L): L | null {
+  return savingFrom !== null && savingFrom === shown ? next : savingFrom;
+}
+
 /** 등록이 성공한 새 행을 뺀다 — 다시 받은 목록이 먼저 와서 이어 뒀거나, 무효화가 늦어 아직 새 행으로 남은 것. */
 export function dropCreatedAdded(rows: readonly ItemDraft[], createdCodes: readonly string[]): ItemDraft[] {
   const created = new Set(createdCodes);
