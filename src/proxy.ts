@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { homeOf, isPublicPath } from "@/lib/auth-routes";
-import { answersWith401 } from "@/lib/paper-request";
+import { answersWith401, TOO_LARGE, tooLarge } from "@/lib/paper-request";
 import {
   ACCESS_TOKEN_TTL_MS,
   parseSession,
@@ -23,6 +23,9 @@ const REFRESH_EARLY_MS = 50 * 60_000;
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   let session = parseSession(req.cookies.get(SESSION_COOKIE)?.value);
+  // proxyClientMaxBodySize(51MB)는 모든 경로에 걸린다 — 본문을 다 받기 전에 경로별 상한으로 막는다(paper-request.ts 의 bodyLimitOf).
+  // 받는 화면이 공지사항 저장은 messages, 종이 계약은 error 를 읽어 둘 다 싣는다.
+  if (tooLarge(pathname, req.headers.get("content-length"))) return NextResponse.json({ error: TOO_LARGE, messages: [TOO_LARGE] }, { status: 413 });
 
   if (isPublicPath(pathname)) {
     if ((pathname === "/login" || pathname === "/find") && req.method === "GET" && session) return NextResponse.redirect(new URL(homeOf(session.roleTypeCode), req.url));
