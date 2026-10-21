@@ -3642,11 +3642,11 @@ a.tile:hover {
   position: relative;
   flex: 1;
   height: var(--tl-h);
-  /* 시간 격자 — 07:00-22:00 15칸 */
+  /* 시간 격자 — 00~24시 24칸 (STAFF-37) */
   background-image: repeating-linear-gradient(
     to right,
     var(--hairline) 0 1px,
-    transparent 1px calc(100% / 15)
+    transparent 1px calc(100% / 24)
   );
 }
 .tl__bar {
@@ -3669,12 +3669,6 @@ a.tile:hover {
   color: var(--muted-tert);
   border: 1px dashed var(--hairline-strong);
 }
-/* 휴무는 정상이고 배정 불가는 문제다. 같아 보이면 안 된다. */
-.tl__bar--blocked {
-  background: var(--risk-wash);
-  color: var(--risk-text);
-  border: 1px dashed var(--risk-line);
-}
 .tl__cover {
   margin-top: var(--s-2);
 }
@@ -3691,6 +3685,9 @@ a.tile:hover {
 .tl__cell[data-n="1"] {
   background: var(--warn-wash);
   color: var(--warn);
+}
+.tl__cell[data-n="out"] {
+  background: transparent;
 }
 .tl__cell[data-n="0"] {
   background: var(--risk-wash);

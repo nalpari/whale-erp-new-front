@@ -1,6 +1,6 @@
 // 알림 템플릿 관리. 목업 docs/mockup/notify/templates.html. 플랫폼 운영자 전용이라 플랫폼 헤더로 그린다.
 // 채널 탭 넷. 줄 이름을 누르면 그 채널의 수정 화면으로 간다(채널마다 한 장, src/template-edit.mjs).
-// 템플릿은 채널 + 템플릿 이름 + 템플릿 코드로 구분한다(NOTIFY-11). TO-DO 배정은 푸시 없이 알림함에만 쌓인다(앱 NOTI-1). 알림톡도 본문을 화면에서 고치고(NOTIFY-8) 승인 상태는 두지 않는다(NOTIFY-6).
+// 템플릿은 채널 + 템플릿 이름 + 템플릿 코드로 구분한다(NOTIFY-11). TO-DO 배정 알림은 없고, TO-DO 수행 임박 알림은 앱 푸시와 알림함으로 간다(2026-10-19 재영). 알림톡도 본문을 화면에서 고치고(NOTIFY-8) 승인 상태는 두지 않는다(NOTIFY-6).
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as p from "../../staff-parts.mjs";
@@ -40,7 +40,7 @@ const TEAM1_MAILS = [
 const PUSH = [
   ["근로계약서 발송", "근로계약서가 도착했습니다", ["10-07 09:41", "김하린"]],
   ["근무스케줄 변경", "근무스케줄이 바뀌었습니다"],
-  ["TO-DO 배정", "새 TO-DO 가 배정되었습니다", null, true],
+  ["TO-DO 수행 임박 알림", "곧 수행할 TO-DO가 있습니다"],
   ["급여명세서 발송", "#{지급월} 급여명세서가 도착했습니다"],
   ["급여명세서 다시 발송", "#{지급월} 급여명세서가 다시 발송되었습니다"],
 ];
@@ -69,8 +69,8 @@ export default ({ A, R }) => {
     OPS.map(([t, to, title, e, on = true]) => dim([name(t, L("notify/templates-edit.html")), code("NTF", t), to, title, edited(e), use(on)], on)),
   );
   const push = table("템플릿 이름",
-    PUSH.map(([t, title, e, inboxOnly]) => [
-      name(t, L(inboxOnly ? "notify/templates-edit-inbox.html" : "notify/templates-edit-push.html"), inboxOnly ? p.tag("quiet", "알림함에만, 푸시 없음") : ""),
+    PUSH.map(([t, title, e]) => [
+      name(t, L("notify/templates-edit-push.html")),
       code("PUSH", t),
       "직원",
       title,
