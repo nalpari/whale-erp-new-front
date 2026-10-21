@@ -111,8 +111,9 @@ export const field = (label, control, width) =>
   `<label class="flex flex-col justify-center gap-[8px] ${width ?? "min-w-px flex-1"}"><span class="truncate text-[14px] font-medium text-erp-label">${label}</span>${control}</label>`;
 // 바꿀 수 없는 값 — 입력칸 테두리 없이 라벨 위 · 값 아래로만 보인다(사용자 디자인 참고, 2026-10-21. 내 정보 계정 정보 칸).
 // 글자 크기 · 색은 새로 짓지 않고 DetailTable 의 라벨 · 값 토큰을 그대로 쓴다(기존 정책, 2026-10-21 피드백).
-export const readonlyField = (label, value) =>
-  `<div class="flex min-w-px flex-1 flex-col gap-[4px]"><span class="text-[14px] font-medium text-erp-label">${label}</span><span class="text-[14px] text-erp-ink">${value}</span></div>`;
+// bold 는 아이디처럼 눈에 먼저 띄어야 하는 값에만 켠다.
+export const readonlyField = (label, value, bold) =>
+  `<div class="flex min-w-px flex-1 flex-col gap-[4px]"><span class="text-[14px] font-medium text-erp-label">${label}</span><span class="text-[14px] text-erp-ink ${bold ? "font-semibold" : ""}">${value}</span></div>`;
 export const formRow = (...children) => `<div class="flex w-full gap-[6px]">${children.join("")}</div>`;
 export const formGroup = (title, ...children) =>
   `<section class="flex w-full flex-col gap-[10px]"><h3 class="text-[15px] font-semibold text-erp-ink">${title}</h3><div class="flex flex-col gap-[18px] rounded-[2px] border border-erp-panel-line bg-white px-[16px] py-[20px]">${children.join("")}</div></section>`;

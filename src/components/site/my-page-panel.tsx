@@ -29,12 +29,13 @@ function FailedBand({ message }: { message: string }) {
 }
 
 /** 바꿀 수 없는 계정 정보 칸 — 입력칸 테두리 없이 라벨 위 · 값 아래로만 보인다(사용자 디자인 참고, 2026-10-21).
- * 글자 크기 · 색은 새로 짓지 않고 DetailTable 의 라벨 · 값 토큰을 그대로 쓴다(기존 정책, 2026-10-21 피드백). */
-function ReadonlyField({ label, value }: { label: string; value: string }) {
+ * 글자 크기 · 색은 새로 짓지 않고 DetailTable 의 라벨 · 값 토큰을 그대로 쓴다(기존 정책, 2026-10-21 피드백).
+ * bold 는 아이디처럼 눈에 먼저 띄어야 하는 값에만 켠다. */
+function ReadonlyField({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
   return (
     <div className="flex flex-1 flex-col gap-[4px]">
       <span className="text-[14px] font-medium text-erp-label">{label}</span>
-      <span className="text-[14px] text-erp-ink">{value}</span>
+      <span className={`text-[14px] text-erp-ink ${bold ? "font-semibold" : ""}`}>{value}</span>
     </div>
   );
 }
@@ -163,16 +164,21 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
         !loadFailure && <p className="text-erp-muted">불러오는 중입니다.</p>
       ) : (
         <>
-          <FormGroup title="계정 정보">
-            <FormRow>
-              <ReadonlyField label="아이디" value={profile.loginId} />
-              <ReadonlyField label="사용자 권한" value={roleTypeLabel(profile.roleTypeCode)} />
-            </FormRow>
-            <FormRow>
-              <ReadonlyField label="최근 로그인 일시" value={profile.lastLoginAt ? formatDateTime(profile.lastLoginAt) : "로그인 기록 없음"} />
-              <ReadonlyField label="가입일" value={formatDateTime(profile.createdAt)} />
-            </FormRow>
-          </FormGroup>
+          {/* 점포정보 관리 상세화면(DetailTable)의 제목 줄과 같은 회색 바 — FormGroup 의 기본 제목(배경 없음)
+              대신 쓴다(사용자 디자인 피드백, 2026-10-21). 본문 카드는 FormGroup 과 같은 토큰으로 직접 짠다. */}
+          <div className="w-full">
+            <h3 className="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[16px] font-medium text-erp-ink">계정 정보</h3>
+            <div className="flex flex-col gap-[18px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white px-[16px] py-[20px]">
+              <FormRow>
+                <ReadonlyField label="아이디" value={profile.loginId} bold />
+                <ReadonlyField label="최근 로그인" value={profile.lastLoginAt ? formatDateTime(profile.lastLoginAt) : "로그인 기록 없음"} />
+              </FormRow>
+              <FormRow>
+                <ReadonlyField label="사용자 권한" value={roleTypeLabel(profile.roleTypeCode)} />
+                <ReadonlyField label="가입일" value={formatDateTime(profile.createdAt)} />
+              </FormRow>
+            </div>
+          </div>
 
           <FormGroup title="기본정보">
             <div className="flex flex-col gap-[8px]">
