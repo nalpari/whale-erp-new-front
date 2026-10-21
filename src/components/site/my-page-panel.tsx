@@ -169,9 +169,11 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
         <>
           {/* 점포정보 관리 상세화면(DetailTable)의 제목 줄과 같은 회색 바 — FormGroup 의 기본 제목(배경 없음)
               대신 쓴다(사용자 디자인 피드백, 2026-10-21). 본문 카드는 FormGroup 과 같은 토큰으로 직접 짠다.
-              아이콘을 넣어 봤지만 24px 로는 너무 작아 뺐다(사용자 지정, 2026-10-21). */}
+              아이콘을 넣어 봤지만 24px 로는 너무 작아 뺐다(사용자 지정, 2026-10-21).
+              글자 크기 · 굵기는 DetailTable 이 아니라 바로 아래 「기본정보」(FormGroup) 제목과 맞춘다 — 같은 패널
+              안에서 두 제목이 달라 보인다는 피드백, 2026-10-21. 회색 바탕 · 테두리만 DetailTable 에서 가져온다. */}
           <div className="w-full">
-            <h3 className="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[16px] font-medium text-erp-ink">계정 정보</h3>
+            <h3 className="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">계정 정보</h3>
             <div className="flex flex-col gap-[18px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white px-[16px] py-[20px]">
               <FormRow>
                 <ReadonlyField label="아이디" value={profile.loginId} bold />
@@ -179,8 +181,8 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
               </FormRow>
               <hr className="border-erp-divider" />
               <FormRow>
-                <ReadonlyField label="최근 로그인" value={profile.lastLoginAt ? formatDateTime(profile.lastLoginAt) : "로그인 기록 없음"} />
-                <ReadonlyField label="가입일" value={formatDateTime(profile.createdAt)} />
+                <ReadonlyField label="최근 로그인" value={profile.lastLoginAt ? formatDateTime(profile.lastLoginAt) : "로그인 기록 없음"} bold />
+                <ReadonlyField label="가입일" value={formatDateTime(profile.createdAt)} bold />
               </FormRow>
             </div>
           </div>
