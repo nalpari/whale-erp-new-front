@@ -39,4 +39,9 @@ test("tooLarge — 공지사항 저장 51MB · 종이 계약 21MB · 나머지 1
   assert.equal(tooLarge("/platform-faqs/new", String(10 * MB + 1)), true);
   // 없거나 깨진 값은 Next 의 proxy 한도에 맡긴다
   for (const v of [null, "", "abc"]) assert.equal(tooLarge("/login", v), false, String(v));
+  // 길이 없이 나눠 보내면 크기를 미리 알 수 없어 막는다. 본문 없는 요청(길이 · 나눔 둘 다 없음)은 그대로.
+  assert.equal(tooLarge(NOTICE_SAVE_ROUTE, null, "chunked"), true);
+  assert.equal(tooLarge("/login", null, "gzip, chunked"), true);
+  assert.equal(tooLarge("/login", null, null), false);
+  assert.equal(tooLarge(NOTICE_SAVE_ROUTE, String(MB), "chunked"), false);
 });

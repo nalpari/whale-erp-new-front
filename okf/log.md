@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-21
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #75 리뷰 참고 5건 반영: 409 로 입력칸이 새로 그려져도 쓰던 답변 · 메모를 이어받고, 지워진 건(404)은 목록으로 보낸다. 도입문의 [삭제] 조건을 api 와 맞추고(답변 완료면 숨김), [답변 메일 다시 보내기]에 확인창을 두었다. proxy 는 길이 없는 chunked 본문을 413 으로 막는다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 로그인 후 고객지원 화면 셋을 만들었다(#282 공지사항 · #283 FAQ · #284 문의하기, `/support-notices` · `/support-faqs` · `/support-inquiries` 와 상세). 문의 등록 창구 `/support-inquiries/save`(첨부 multipart)를 proxy 의 401 · 51MB 경로에 더했다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #73 머지 때 받은 참고 반영: `proxyClientMaxBodySize`(51MB)가 모든 경로에 걸리던 것을 proxy 가 content-length 로 경로마다 다시 막는다(공지사항 저장 51MB · 종이 계약 등록 21MB · 나머지 10MB, 413). 문의 상세 PR 리뷰 반영: 서버 액션 요청이 닿지 않으면 오류 화면 대신 띠에 알리고, 답변 · 메모 입력칸 key 를 각자 저장된 값으로 바꿔 다른 동작 · 409 로 쓰던 글이 지워지지 않게 했다. 상세의 401 은 로그인 만료로, 세션이 끊겨도 화면을 옮기지 않고 띠로 알린다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 문의사항 · 도입문의 상세(#277)와 도입문의 답변 메일 다시 보내기 화면(#597)을 만들었다(`/platform-inquiries/[id]` · `/platform-leads/[id]`). 처리 시작 · 답변(문의사항은 이력 · 도입문의는 덮어쓰기) · 운영자 메모 · 첨부 내려받기 · 도입문의 삭제 · 마지막 답변 메일 결과와 다시 보내기. 커뮤니티 관리 권한 점검(#278) — BP 관리자는 메뉴가 없고 주소로 들어와도 권한 안내만 보인다.
