@@ -8,17 +8,18 @@ import type { PlatformAdminHistory, PlatformAdminHistoryList } from "@/lib/platf
 import { getPlatformAdminHistoriesAction } from "./actions";
 import { FailedBand } from "./admin-parts";
 
-// 생성 · 변경 이력 팝업(S-BRSPGB). BP 관리자 상세처럼 버튼을 누르면 팝업으로 본다(2026-10-08). 최신순, 한 쪽 10건.
-// 변경 전후 값 · 처리자 · 일시만 있고 사유와 비밀번호 값은 남기지 않는다.
+// 변경이력 팝업(S-BRSPGB). BP 관리자 상세처럼 버튼을 누르면 팝업으로 본다(2026-10-08). 최신순, 한 쪽 10건.
+// 변경 전후 값 · 변경자 · 변경일시만 있고 사유와 비밀번호 값은 남기지 않는다.
 // 확인창(ConfirmDialog)과 같은 네이티브 <dialog> 다 — 표가 넓어 이 창만 넓힌다.
-const empty = (v: string | null) => (v ? v : <span className="text-erp-muted">—</span>);
+// 미입력 값(변경 전후 값이 없을 때)은 빈 칸으로 둔다(대시 표시를 없앤 2026-10-20 디자인 수정 — 상세 표와 같다).
+// 제목·칸 이름은 1팀 영역 모두(점포·BP·휴일 등) 같은 말을 쓴다(2026-10-20 디자인 수정).
 
 const COLUMNS: Column<PlatformAdminHistory>[] = [
-  { header: "일시", width: "w-[150px]", cell: (h) => formatDateTime(h.changedAt) },
-  { header: "처리자", width: "w-[110px]", cell: (h) => h.changedByName ?? <span className="text-erp-muted">시스템</span> },
+  { header: "변경일시", width: "w-[140px]", cell: (h) => formatDateTime(h.changedAt) },
+  { header: "변경자", width: "w-[80px]", cell: (h) => h.changedByName ?? <span className="text-erp-muted">시스템</span> },
   { header: "항목", width: "w-[120px]", align: "left", cell: (h) => h.field },
-  { header: "변경 전", align: "left", cell: (h) => empty(h.beforeValue) },
-  { header: "변경 후", align: "left", cell: (h) => empty(h.afterValue) },
+  { header: "변경 전", align: "left", cell: (h) => h.beforeValue },
+  { header: "변경 후", align: "left", cell: (h) => h.afterValue },
 ];
 
 /** [변경 이력] 버튼과 그 팝업. 열 때마다 첫 쪽을 새로 받는다 — 방금 고친 내용이 이력에 바로 보여야 한다. */
@@ -68,7 +69,7 @@ export function HistoryButton({ adminId }: { adminId: number }) {
           load(1);
         }}
       >
-        변경 이력
+        변경이력
       </Button>
       <dialog
         ref={ref}
@@ -81,7 +82,7 @@ export function HistoryButton({ adminId }: { adminId: number }) {
         className="m-auto max-h-[calc(100dvh-48px)] w-[760px] max-w-[calc(100vw-32px)] overflow-y-auto rounded-[2px] border border-[#ebebeb] bg-white p-[23px] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
       >
         <h2 id={titleId} className="text-[18px] font-semibold">
-          생성 · 변경 이력
+          변경이력
         </h2>
         <div className="mt-[12px] flex flex-col gap-[12px]" aria-busy={loading}>
           {failure && <FailedBand message={failure} />}

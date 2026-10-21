@@ -170,6 +170,19 @@ python3 docs/erd/_build.py
 |  | 잠금 해제 시각 | datetime | `lock_expires_at` |  |
 |  | 시도 시각 | datetime | `attempted_at` | (2026-10-08) |
 
+### 이메일 변경 핀 `email_change_pins` · 엔티티
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 핀 ID | id | `pin_id` |  |
+| FK | 계정 | id | `account_id` |  |
+|  | 새 이메일 | text | `new_email` | 핀을 보낸 주소, 소문자. 확인되면 계정 이메일이 이 값이 된다 |
+|  | 핀 검증값 | hash | `pin_hash` | 원본 저장 안 함 |
+|  | 발급 시각 | datetime | `issued_at` | 1분 재발급 제한, 하루 10회 |
+|  | 만료 시각 | datetime | `expires_at` | 발급 시각부터 15분 |
+|  | 시도 횟수 | int | `attempt_count` | 5회 틀리면 그 핀은 닫힘, 새 핀을 받는다 |
+|  | 사용 시각 | datetime | `used_at` | 이메일을 바꾸면 남김. 새 핀 메일이 나가면 앞선 핀도 닫는다 (#191, 2026-10-20) |
+
 **관계**
 
 - 계정 `1` — `N` 본인인증 이력
@@ -181,6 +194,7 @@ python3 docs/erd/_build.py
 - 관리자 계정 `1` — `N` 계정 변경 이력 · 초기화 요청
 - 계정 `1` — `N` 비밀번호 재설정 링크
 - 관리자 계정 `1` — `N` 비밀번호 재설정 링크 · 링크 발급
+- 계정 `1` — `N` 이메일 변경 핀
 
 ## 채용과 초대
 

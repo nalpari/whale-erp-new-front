@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useId, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
-import { Button, Field, FormGroup, FormRow, RequiredMark, Select, SlidePanel, TextField } from "@/components/common";
+import { Button, Field, FormGroup, FormRow, RequiredMark, Select, SlidePanel, Tag, TextField } from "@/components/common";
 import { useAccount, useCodes } from "@/components/site/session-gate";
 import { labelOf } from "@/lib/enums";
 import {
@@ -157,22 +157,36 @@ export function AdminFormPanel(props: Props) {
 
   const title = mode === "create" ? "플랫폼 관리자 등록" : "플랫폼 관리자 수정";
 
+  // 저장하는 동안은 Esc · 바탕 클릭으로도 닫히지 않는다 — 취소 버튼의 disabled={saving} 과 같은 뜻이다.
+  // 닫히면 저장 결과(성공 · 실패 띠)를 사용자가 못 보고 패널이 먼저 사라진다(코드 리뷰로 찾음, 2026-10-20).
+  const safeClose = () => {
+    if (!saving) onClose();
+  };
+
   return (
-    <SlidePanel id={id} open={open} onClose={onClose} label={title} trigger={trigger}>
+    // 수정은 상세 위에 겹쳐 열려 잃을 입력이 적다고 보고 바탕 클릭으로도 닫히게 한다. 등록은 처음부터 쓰는
+    // 빈 칸이라 그대로 기본값(false)을 둔다(2026-10-20 피드백).
+    <SlidePanel id={id} open={open} onClose={safeClose} label={title} trigger={trigger} closeOnBackdrop={mode === "edit"}>
       <h2 className="text-[18px] font-semibold text-erp-ink">
         {title}
         {mode === "edit" && (
-          <span className="ml-[6px] text-[13px] font-normal text-erp-label">
-            {props.admin.name ?? props.admin.loginId} · {props.admin.loginId}
+          // 아이디 칸을 없앤 대신(위 FormGroup 주석) 제목 줄에 라벨을 달아 값만으로는 안 보이던 것을 바로
+          // 알게 한다(점포코드 ST000123 처럼 라벨+값, 2026-10-20 디자인 수정 — 이름은 중복이라 뺀다). 상세
+          // 제목 줄의 사용자 권한 꼬리표와 같은 뱃지 모양으로 맞췄다.
+          <span className="ml-[6px] inline-flex">
+            <Tag>
+              아이디 · <b className="font-semibold">{props.admin.loginId}</b>
+            </Tag>
           </span>
         )}
       </h2>
       {failure && <FailedBand message={failure} detail="입력한 값은 그대로 두었습니다." />}
 
       <FormGroup title="기본정보">
-        <div className="flex flex-col gap-[8px]">
-          <Field label="아이디" required>
-            {mode === "create" ? (
+        {/* 아이디는 고칠 수 없고 패널 제목 줄에 이미 보이므로(위 h2) 칸을 다시 두지 않는다(2026-10-20 디자인 수정). */}
+        {mode === "create" && (
+          <div className="flex flex-col gap-[8px]">
+            <Field label="아이디" required>
               <TextField
                 value={form.loginId}
                 onChange={(e) => {
@@ -187,21 +201,19 @@ export function AdminFormPanel(props: Props) {
                   checkLoginId(e.currentTarget.value);
                 }}
                 maxLength={20}
-                placeholder="영문 또는 영문·숫자 조합 4~20자"
+                placeholder="영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요."
                 aria-invalid={invalid("loginId")}
                 aria-describedby={describe("loginId")}
                 aria-required
                 autoComplete="off"
               />
-            ) : (
-              <TextField value={form.loginId} readOnly />
-            )}
-          </Field>
-          {message("loginId")}
-        </div>
+            </Field>
+            {message("loginId")}
+          </div>
+        )}
         <div className="flex flex-col gap-[8px]">
           <Field label="이름" required>
-            <TextField value={form.name} onChange={(e) => set("name", e.target.value)} maxLength={20} placeholder="한글 또는 영문 2~20자" aria-invalid={invalid("name")} aria-describedby={describe("name")} aria-required />
+            <TextField value={form.name} onChange={(e) => set("name", e.target.value)} maxLength={20} placeholder="한글 또는 영문 2~20자로 입력해 주세요." aria-invalid={invalid("name")} aria-describedby={describe("name")} aria-required />
           </Field>
           {message("name")}
         </div>
@@ -234,7 +246,7 @@ export function AdminFormPanel(props: Props) {
           {message("email")}
         </div>
         <div className="flex flex-col gap-[8px]">
-          <Field label="소속 부서">
+          <Field label="소속부서">
             <TextField value={form.department} onChange={(e) => set("department", e.target.value)} maxLength={30} aria-invalid={invalid("department")} aria-describedby={describe("department")} />
           </Field>
           {message("department")}
@@ -257,46 +269,53 @@ export function AdminFormPanel(props: Props) {
       </FormGroup>
 
       <FormGroup title={mode === "create" ? "사용자 권한" : "사용자 권한 · 계정 상태"}>
-        <div className="flex flex-col gap-[8px]">
-          <Field label="사용자 권한" required>
-            <Select
-              value={form.roleGroupId}
-              onChange={(e) => set("roleGroupId", e.target.value)}
-              disabled={isSelf}
-              title={isSelf ? "본인 계정의 권한은 바꿀 수 없습니다" : undefined}
-              aria-invalid={invalid("roleGroupId")}
-              aria-describedby={describe("roleGroupId")}
-              aria-required
-            >
-              {mode === "create" && <option value="">선택</option>}
-              {options.map((r) => (
-                <option key={r.roleGroupId} value={r.roleGroupId}>
-                  {r.name} · {r.roleCode} ({labelOf(roleTypes, r.roleTypeCode)})
-                </option>
-              ))}
-            </Select>
-          </Field>
-          {message("roleGroupId")}
+        {/* 본인 계정은 이 칸들을 고칠 수 없어 비활성 처리한다 — 흰 바탕과 구별되게 막힌 칸만 회색으로 그린다
+            (공통 입력칸 토큰은 그대로 두고 이 화면 테두리에서만 셈한다, contract-form.tsx 와 같은 방식). */}
+        <div className="flex flex-col gap-[12px] [&_select:disabled]:bg-erp-thead-bg">
+          <div className="flex flex-col gap-[8px]">
+            <Field label="사용자 권한" required>
+              <Select
+                value={form.roleGroupId}
+                onChange={(e) => set("roleGroupId", e.target.value)}
+                disabled={isSelf}
+                title={isSelf ? "본인 계정의 권한은 바꿀 수 없습니다" : undefined}
+                aria-invalid={invalid("roleGroupId")}
+                aria-describedby={describe("roleGroupId")}
+                aria-required
+              >
+                {mode === "create" && <option value="">선택</option>}
+                {options.map((r) => (
+                  <option key={r.roleGroupId} value={r.roleGroupId}>
+                    {r.name} · {r.roleCode} ({labelOf(roleTypes, r.roleTypeCode)})
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            {message("roleGroupId")}
+          </div>
+          {mode === "edit" && (
+            <Field label="계정 상태" required>
+              <Select
+                value={form.accountStatus}
+                onChange={(e) => set("accountStatus", e.target.value as AdminForm["accountStatus"])}
+                disabled={isSelf}
+                title={isSelf ? "본인 계정의 상태는 바꿀 수 없습니다" : undefined}
+              >
+                <option value="ACTIVE">사용</option>
+                <option value="INACTIVE">미사용</option>
+              </Select>
+            </Field>
+          )}
         </div>
-        {mode === "edit" && (
-          <Field label="계정 상태" required>
-            <Select
-              value={form.accountStatus}
-              onChange={(e) => set("accountStatus", e.target.value as AdminForm["accountStatus"])}
-              disabled={isSelf}
-              title={isSelf ? "본인 계정의 상태는 바꿀 수 없습니다" : undefined}
-            >
-              <option value="ACTIVE">사용</option>
-              <option value="INACTIVE">미사용</option>
-            </Select>
-          </Field>
-        )}
-        {isSelf && <Note>본인 계정의 권한 · 상태는 바꿀 수 없습니다. 기본정보는 고칠 수 있습니다.</Note>}
+        {isSelf && <Note>본인 계정의 권한 및 상태는 변경할 수 없으며, 기본정보만 수정할 수 있습니다.</Note>}
       </FormGroup>
 
-      {mode === "create" && <Note>초기 비밀번호를 등록 이메일로 발송합니다.</Note>}
+      {mode === "create" && <Note>관리자 계정의 초기 비밀번호는 등록된 이메일로 발송됩니다.</Note>}
       {mode === "edit" && form.accountStatus === "INACTIVE" && props.admin.accountStatus === "ACTIVE" && (
-        <Note>미사용으로 저장하면 바로 로그인 · ERP 접근이 막힙니다. 로그인 중인 세션은 끊지 않습니다.</Note>
+        <Note>
+          미사용으로 변경하면 해당 계정의 로그인 및 서비스 접근이 즉시 차단됩니다.
+          <br />단, 현재 로그인 중인 세션은 유지됩니다.
+        </Note>
       )}
 
       <div className="flex justify-center gap-[6px]">

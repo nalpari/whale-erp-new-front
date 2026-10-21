@@ -14,9 +14,9 @@ import { NoticeBand } from "../store-parts";
 const empty = (v: string | null) => (v ? v : <span className="text-erp-muted">-</span>);
 
 const COLUMNS: Column<StoreHistory>[] = [
-  { header: "변경 일시", width: "w-[150px]", cell: (h) => formatDateTime(h.changedAt) },
+  { header: "변경일시", width: "w-[140px]", cell: (h) => formatDateTime(h.changedAt) },
   { header: "변경자", width: "w-[70px]", cell: (h) => h.changedByName ?? <span className="text-erp-muted">시스템</span> },
-  { header: "변경 항목", width: "w-[140px]", align: "left", cell: (h) => h.field },
+  { header: "항목", width: "w-[140px]", align: "left", cell: (h) => h.field },
   { header: "변경 전", align: "left", cell: (h) => empty(h.beforeValue) },
   { header: "변경 후", align: "left", cell: (h) => empty(h.afterValue) },
 ];

@@ -188,6 +188,8 @@ DIAGRAMS.append(Diagram(
           ["#|재설정 링크 ID|id|password_reset_link_id|", "→|계정|id|account_id|", "|토큰 해시|hash|token_hash|sha256, 원본 저장 안 함, 고유", "|발급 시각|datetime|issued_at|", "|만료 시각|datetime|expires_at|발급 + 24시간", "|닫힌 시각|datetime|closed_at|사용·새 링크로 대체 모두, 사유 칸 없음", "→|요청 관리자|id|requested_by|관리자 초기화 (2026-10-08)"], 2, 900),
         E("email_find", "이메일 찾기 시도", "email_find_attempts", "history",
           ["#|시도 ID|id|email_find_attempt_id|", "|휴대전화번호 키|hash|phone_key|HMAC, 원본 저장 안 함", "|성공 여부|bool|is_succeeded|", "|실패 횟수|int|failed_count|", "|잠금 해제 시각|datetime|lock_expires_at|", "|시도 시각|datetime|attempted_at|(2026-10-08)"], 3, 40),
+        E("email_pin", "이메일 변경 핀", "email_change_pins", "entity",
+          ["#|핀 ID|id|pin_id|", "→|계정|id|account_id|", "|새 이메일|text|new_email|핀을 보낸 주소, 소문자. 확인되면 계정 이메일이 이 값이 된다", "|핀 검증값|hash|pin_hash|원본 저장 안 함", "|발급 시각|datetime|issued_at|1분 재발급 제한, 하루 10회", "|만료 시각|datetime|expires_at|발급 시각부터 15분", "|시도 횟수|int|attempt_count|5회 틀리면 그 핀은 닫힘, 새 핀을 받는다", "|사용 시각|datetime|used_at|이메일을 바꾸면 남김. 새 핀 메일이 나가면 앞선 핀도 닫는다 (#191, 2026-10-20)"], 3, 380),
     ],
     [
         R("account", "left", "identity", "right", "1", "N", "", at_a=120, at_b=120),
@@ -199,6 +201,7 @@ DIAGRAMS.append(Diagram(
         R("admin", "right", "change", "left", "1", "N", "초기화 요청", at_a=604, at_b=604),
         R("account", "right", "reset_link", "left", "1", "N", "", at_a=280, at_b=940, mid=656),
         R("admin", "bottom", "reset_link", "left", "1", "N", "링크 발급", at_a=200, at_b=1060),
+        R("account", "right", "email_pin", "left", "1", "N", "", at_a=260, at_b=420, mid=1000),
     ],
     [
         ("coral", "중심", "로그인 아이디는 이메일", ["휴대전화번호는 초대 연결과 소속 확인의 매칭 키로만 쓴다", "이름·생년월일은 본인인증 값이라 누구도 고치지 못한다", "관리자는 비밀번호를 알 수 없고 초기화만 요청한다"]),

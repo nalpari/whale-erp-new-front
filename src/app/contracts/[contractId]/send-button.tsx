@@ -9,7 +9,8 @@ import { sendFailureOf } from "./send-model";
 // 근로계약 재발송(WHALEERP-136). 보내기는 저장할 때 곧바로 하고(2026-10-19 재영), 이 버튼은 다시 보내기만 한다 — 발송 대기
 // (가입 초대를 받지 못함) · 서명 대기. 누르면 확인창으로 묻고, 보내면 상세를 다시 읽는다(기한이 바뀐다).
 // 지금은 계정이 없는 직원의 가입 초대 알림톡만 간다 — 가입했거나 계정이 있으면 api 가 「앱 알림 준비 중」으로 막는다.
-// 서명 대기는 앱으로 받는 직원(가입 · 계정 있음)이라 앱 알림이 생길 때까지 버튼을 막아 둔다(front #58 리뷰).
+// 서명 대기는 앱으로 받는 직원(가입 · 계정 있음)이라 앱 알림이 생길 때까지 버튼을 막아 둔다(front #58 리뷰). 막힌 버튼은
+// 마우스 · 키보드 · 터치 어느 쪽으로도 툴팁이 뜨지 않으므로 까닭을 버튼 옆 글자로 보인다(front #58 재리뷰).
 // 접수 여부를 모르거나 화면이 낡았으면(recheck) 보내기를 막고 상세를 다시 읽는다 — 다시 눌러 두 번 가지 않게(front #41 리뷰).
 export function SendContractButton({ contractId, status }: { contractId: number; status: string }) {
   const router = useRouter();
@@ -20,9 +21,14 @@ export function SendContractButton({ contractId, status }: { contractId: number;
 
   if (status === "PENDING_SIGNATURE")
     return (
-      <Button variant="soft" disabled title="앱 알림이 생기면 다시 보낼 수 있습니다">
-        재발송
-      </Button>
+      <>
+        <span id={`resend-note-${contractId}`} className="text-[13px] text-erp-label">
+          앱 알림이 생기면 다시 보낼 수 있습니다
+        </span>
+        <Button variant="soft" disabled aria-describedby={`resend-note-${contractId}`}>
+          재발송
+        </Button>
+      </>
     );
 
   return (

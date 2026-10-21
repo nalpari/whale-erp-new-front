@@ -39,6 +39,12 @@
     phone:
       '<rect x="6.4" y="2.6" width="11.2" height="18.8" rx="2.4"/><path d="M10.4 18.4h3.2"/>',
     mail: '<rect x="3" y="5.4" width="18" height="13.2" rx="1.8"/><path d="m3.6 6.4 8.4 6.6 8.4-6.6"/>',
+    // 동그라미를 두른 모양 — 플랫폼 관리자 목록의 연락처·이메일 칸 전용(2026-10-20 디자인 수정, 다른 화면의
+    // phone·mail 은 그대로 둔다).
+    "phone-circle":
+      '<circle cx="12" cy="12" r="10.5"/><rect x="9" y="6.5" width="6" height="11" rx="1.6"/><path d="M10.5 15.3h3"/>',
+    "mail-circle":
+      '<circle cx="12" cy="12" r="10.5"/><rect x="6.8" y="8.8" width="10.4" height="7.4" rx="1"/><path d="m7.3 9.6 4.7 3.7 4.7-3.7"/>',
     search: '<circle cx="11" cy="11" r="6.6"/><path d="m15.9 15.9 5.1 5.1"/>',
     filter: '<path d="M3.4 5.4h17.2l-6.7 7.7v5.9l-3.8 1.9v-7.8z"/>',
     plus: '<path d="M12 5.2v13.6"/><path d="M5.2 12h13.6"/>',
