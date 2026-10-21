@@ -14,7 +14,7 @@ export default function NoticesPage() {
   const notices = (
     <>
       <NoticeRows items={SAMPLE_NOTICES} typeLabel={sampleTypeLabel} hrefOf={() => `${SAMPLE_ROUTES.notices}/detail`} />
-      <Pager page={1} total={60} pageSize={20} hrefOf={() => SAMPLE_ROUTES.notices} />
+      <Pager page={1} total={30} pageSize={10} hrefOf={() => SAMPLE_ROUTES.notices} />
     </>
   );
 

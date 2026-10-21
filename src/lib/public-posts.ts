@@ -2,7 +2,6 @@
 // 노출 대상에 비회원(GUEST)이 든 게시 글만 오고, 거르는 것은 api 다. 응답 모양은 고객지원(SupportPost)과 같다.
 import type { components } from "./api-types.generated";
 import { request } from "./api";
-import { queryString, type ListQuery } from "./community-view";
 import type { Codes } from "./session";
 
 type Schemas = components["schemas"];
@@ -12,9 +11,12 @@ export type PublicNotice = Schemas["PublishedPostDetailResponseDto"];
 
 export const PUBLIC_NOTICE_BASE = "/public-notices";
 
+/** 비로그인 공지사항 한 쪽의 건수 — 관리 목록(20 · 50 · 100 고름)과 달리 10건으로 고정한다(2026-10-21 요청). */
+export const PUBLIC_NOTICE_PAGE_SIZE = 10;
+
 /** GET /public-notices — 상단 고정 먼저, 나머지는 게시일 내림차순. */
-export async function getPublicNotices(q: ListQuery): Promise<PublicPostList> {
-  return request(`${PUBLIC_NOTICE_BASE}${queryString(q)}`);
+export async function getPublicNotices(page: number): Promise<PublicPostList> {
+  return request(`${PUBLIC_NOTICE_BASE}?page=${page}&pageSize=${PUBLIC_NOTICE_PAGE_SIZE}`);
 }
 
 /** GET /public-notices/{postId} — 첨부까지. 이전 · 다음 글은 없다. 보이지 않는 글이면 404. */

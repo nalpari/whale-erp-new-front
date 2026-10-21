@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-21
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 공지사항을 한 쪽 10건으로 나눈다(요청).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 공지사항 · FAQ 화면(#293 · #294)을 만들었다: `/notices`(공지 목록 · 페이지 번호 · FAQ 탭)와 상세 `/notices/{id}`, 첨부 내려받기 경로. 디자인 샘플에 공지사항 상세(`/design/guest/notices/detail`)를 더하고 샘플과 실제 화면이 같은 그리기를 쓰게 했다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #87 리뷰 반영: 쓰던 답변 · 메모를 쓰기 시작할 때의 저장값과 함께 쥐어, 그사이 다른 운영자가 저장했으면 손대지 않은 글은 버리고 고쳐 쓰던 글은 새 값을 함께 보인다(`draftView`). chunked 차단을 업로드 창구로 좁혔다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR 전 리뷰 반영: 문의 등록이 됐는데 결과만 못 읽은 경우 폼을 비우고 닫아 같은 문의가 두 번 생기지 않게 했다. 쓰던 답변 · 메모를 입력칸 대신 `useCommon` 의 `drafts` 가 쥐게 바꿨고(취소 · 저장 성공 때 비움), 409 안내는 쓰던 글이 있을 때만 「그대로 두었다」고 한다. 공지 상세의 이전 · 다음 없음 문구를 「목록의 맨 위 · 맨 아래」로, FAQ 검색 설명을 질문 · 답변으로 바로잡았다.
