@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-21
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 공지 첨부가 없으면(404) 로그 없이 「찾을 수 없다」로 안내하고, 상세의 구분 조회 실패도 로그에 남긴다(옆 화면과 맞춤).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 공지사항을 한 쪽 10건으로 나눈다(요청).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 공지사항 · FAQ 화면(#293 · #294)을 만들었다: `/notices`(공지 목록 · 페이지 번호 · FAQ 탭)와 상세 `/notices/{id}`, 첨부 내려받기 경로. 디자인 샘플에 공지사항 상세(`/design/guest/notices/detail`)를 더하고 샘플과 실제 화면이 같은 그리기를 쓰게 했다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #87 리뷰 반영: 쓰던 답변 · 메모를 쓰기 시작할 때의 저장값과 함께 쥐어, 그사이 다른 운영자가 저장했으면 손대지 않은 글은 버리고 고쳐 쓰던 글은 새 값을 함께 보인다(`draftView`). chunked 차단을 업로드 창구로 좁혔다.
