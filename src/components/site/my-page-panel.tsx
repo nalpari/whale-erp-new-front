@@ -2,8 +2,8 @@
 
 import { useEffect, useId, useRef, useState, useTransition, type RefObject } from "react";
 import { Button, Field, FormGroup, FormRow, RequiredMark, SlidePanel, TextField, useToast } from "@/components/common";
-import { formatDateTime } from "@/lib/format";
-import { formOf, serverErrorField, validateMyProfileForm, type MyProfileForm, type MyProfileFormField } from "@/lib/my-profile-form";
+import { formatDate, formatDateTime } from "@/lib/format";
+import { formOf, serverErrorField, toUpdateInput, validateMyProfileForm, type MyProfileForm, type MyProfileFormField } from "@/lib/my-profile-form";
 import type { MyProfile } from "@/lib/my-profile";
 import { checkMyEmailAvailableAction, getMyProfileAction, updateMyProfileAction, type ActionResult } from "./mypage-actions";
 import { useCodeLabel } from "./code-label";
@@ -76,6 +76,7 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
 
   useEffect(() => {
     if (!open) return;
+    checkNumber.current++; // 지난 세션의 확인 응답이 뒤늦게 와도 새 세션 상태를 건드리지 않는다 — ref 는 effect 안에서만 건드린다
     let cancelled = false;
     getMyProfileAction().then((result) => {
       if (cancelled) return;
@@ -94,6 +95,8 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
   const set = <K extends keyof MyProfileForm>(key: K, value: MyProfileForm[K]) => {
     setForm((f) => (f ? { ...f, [key]: value } : f));
     clearError(key as MyProfileFormField);
+    // 이메일을 또 고치면 앞서 보낸 확인이 아직 안 왔더라도 버린다 — 늦게 와도 지금 값에 적용되지 않는다.
+    if (key === "email") checkNumber.current++;
   };
   const invalid = (key: MyProfileFormField) => (errors[key] ? true : undefined);
   const messageId = (key: MyProfileFormField) => `${ids}-${key}`;
@@ -110,11 +113,16 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
     focusFirstError();
   };
 
-  /** 이메일 형식 · 중복 확인 — 칸을 벗어날 때. 원래 값 그대로면 묻지 않는다(S-JXKHCM). */
+  /** 이메일 형식 · 중복 확인 — 칸을 벗어날 때. 원래 값 그대로면 묻지 않는다(S-JXKHCM).
+   * 형식이 틀리거나 비어 있으면 여기서 바로 칸 아래 안내로 보여준다 — handleSave 의 validateMyProfileForm 까지
+   * 기다리게 두면 Save 버튼만 안 눌리고 이유를 알 수 없다(코드 리뷰로 찾음, 2026-10-21).
+   * 중복 확인 자체가 실패(세션 만료 제외)하면 막지 않고 통과시킨다 — 저장 시점에 api 가 중복을 다시 본다. */
   const checkEmail = (value: string) => {
+    if (!form) return;
     const email = value.trim();
-    if (!email || email === profile?.email) return;
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 100) return; // 형식 오류는 validate 가 이미 보였다
+    if (email === profile?.email) return;
+    const formatError = validateMyProfileForm({ ...form, email }).email;
+    if (formatError) return setErrors((e) => ({ ...e, email: formatError }));
     const mine = ++checkNumber.current;
     setEmailChecking(true);
     checkMyEmailAvailableAction(email)
@@ -124,13 +132,18 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
         if (result.ok) {
           if (result.available) setEmailChecked(email);
           else setErrors((e) => ({ ...e, email: EMAIL_TAKEN }));
-        } else if (result.status === 401) setFailure(result.message);
-        else console.warn("이메일 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다", result.status, result.message);
+        } else if (result.status === 401) {
+          setFailure(result.message);
+        } else {
+          console.warn("이메일 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다", result.status, result.message);
+          setEmailChecked(email);
+        }
       })
       .catch((error: unknown) => {
         if (mine !== checkNumber.current) return;
         setEmailChecking(false);
         console.warn("이메일 중복 확인 호출 실패 — 저장할 때 api 가 다시 본다", error);
+        setEmailChecked(email);
       });
   };
 
@@ -145,7 +158,7 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
     if (!emailPassed) return;
 
     startSaving(async () => {
-      const updated = { name: form.name.trim(), phone: form.phone.map((p) => p.trim()).join(""), email: form.email.trim().toLowerCase() };
+      const updated = toUpdateInput(form);
       const result = await updateMyProfileAction(updated).catch((error: unknown) => {
         console.error("내 정보 저장 호출 실패", error);
         return { ok: false as const, status: undefined, message: "저장 결과를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요." };
@@ -182,7 +195,7 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
               <hr className="border-erp-divider" />
               <FormRow>
                 <ReadonlyField label="최근 로그인" value={profile.lastLoginAt ? formatDateTime(profile.lastLoginAt) : "로그인 기록 없음"} bold />
-                <ReadonlyField label="가입일" value={formatDateTime(profile.createdAt)} bold />
+                <ReadonlyField label="가입일" value={formatDate(profile.createdAt)} bold />
               </FormRow>
             </div>
           </div>

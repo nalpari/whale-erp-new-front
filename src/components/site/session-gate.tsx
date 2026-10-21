@@ -55,8 +55,9 @@ interface LoginState {
 type LoginActions = {
   setScope: (scope: Scope) => void;
   setStorePicks: (picks: StorePicks | null) => void;
-  /** 내 정보(MY PAGE)에서 이름 · 이메일을 바꾸면 GNB 등 이 값을 쓰는 화면이 다시 로그인하지 않아도 바로 보이게 한다. */
-  patchAccount: (partial: Partial<LoginInfoAccount>) => void;
+  /** 내 정보(MY PAGE)에서 이름 · 이메일을 바꾸면 GNB 등 이 값을 쓰는 화면이 다시 로그인하지 않아도 바로 보이게 한다.
+   * 이름 · 이메일만 받는다 — 소속 BP · 권한 · 비밀번호 변경 대기 같은 칸은 이 통로로 바뀌면 안 된다. */
+  patchAccount: (partial: Pick<LoginInfoAccount, "name" | "email">) => void;
 };
 const LoginContext = createContext<(LoginState & LoginActions) | null>(null);
 
@@ -261,7 +262,7 @@ function Ready({ value, onChange, children }: { value: LoginState; onChange: (up
     onChange((v) => ({ ...v, storePicks }));
   };
   // 내 정보에서 이름 · 이메일을 바꾸면 저장값에 쓰고 이 탭에 바로 반영한다(GNB 이름 등). 다른 탭은 새로고침하면 반영된다.
-  const patchAccount = (partial: Partial<LoginInfoAccount>) => {
+  const patchAccount = (partial: Pick<LoginInfoAccount, "name" | "email">) => {
     const account = { ...value.account, ...partial };
     writeLoginInfo({ loginKey: value.loginKey, account, menus: value.menus });
     onChange((v) => ({ ...v, account }));

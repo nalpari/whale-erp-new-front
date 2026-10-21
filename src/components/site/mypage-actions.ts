@@ -7,13 +7,6 @@ import { checkMyEmailAvailable, getMyProfile, updateMyProfile, type MyProfile, t
 
 export type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; status?: number; message: string };
 
-const unknownResult =
-  (what: string) =>
-  (error: unknown): { ok: false; status?: number; message: string } => {
-    console.error(`내 정보 ${what} 호출 실패`, error);
-    return { ok: false, status: undefined, message: `${what} 결과를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.` };
-  };
-
 function failureOf(error: unknown, what: string): { ok: false; status?: number; message: string } {
   if (error instanceof ApiError) {
     if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
@@ -45,6 +38,6 @@ export async function checkMyEmailAvailableAction(email: string): Promise<Action
   try {
     return { ok: true, available: await checkMyEmailAvailable(email) };
   } catch (error) {
-    return unknownResult("이메일 확인")(error);
+    return failureOf(error, "이메일 확인");
   }
 }

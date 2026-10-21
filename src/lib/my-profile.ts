@@ -1,6 +1,7 @@
 // 내 정보(MY PAGE) 데이터 접근 — manyfast F-AMTDCK > S-JXKHCM 「내 기본정보 조회 및 수정」.
-// api 에 아직 이 경로가 없다 — 타입을 openapi.json 에서 만들지 못해 손으로 적었다(api가 만들면 api-types.generated.ts 로 바꾼다).
-// GET /auth/admin/login-info 에는 연락처 · 가입일 · 최근 로그인 일시가 없어 이 기능은 새 경로가 필요하다.
+// api(whale-erp-api auth/admin-auth.controller.ts)에 경로가 있지만 아직 openapi.json 에 실리지 않아
+// 타입을 손으로 적었다(api가 openapi:export 에 포함하면 api-types.generated.ts 로 바꾼다).
+// GET /auth/admin/login-info 에는 연락처 · 가입일 · 최근 로그인 일시가 없어 이 기능은 새 경로를 쓴다.
 import { authHeaders, request } from "./api";
 
 export type MyProfile = {
@@ -27,17 +28,17 @@ const json = async (method: "GET" | "PATCH", body?: unknown): Promise<RequestIni
   body: body === undefined ? undefined : JSON.stringify(body),
 });
 
-/** GET /auth/admin/me (제안 — 아직 없음). */
+/** GET /auth/admin/me. */
 export async function getMyProfile(): Promise<MyProfile> {
   return request("/auth/admin/me", await json("GET"));
 }
 
-/** PATCH /auth/admin/me (제안 — 아직 없음). 이름 · 연락처 · 이메일만 받는다. */
+/** PATCH /auth/admin/me. 이름 · 연락처 · 이메일만 받는다. */
 export async function updateMyProfile(input: UpdateMyProfileInput): Promise<void> {
   return request("/auth/admin/me", await json("PATCH", input));
 }
 
-/** GET /auth/admin/me/email-availability (제안 — 아직 없음). 원래 이메일 그대로면 화면이 묻지 않는다. */
+/** GET /auth/admin/me/email-availability. 원래 이메일 그대로면 화면이 묻지 않는다. */
 export async function checkMyEmailAvailable(email: string): Promise<boolean> {
   const params = new URLSearchParams({ email });
   return (await request<{ available: boolean }>(`/auth/admin/me/email-availability?${params}`, await json("GET"))).available;
