@@ -195,7 +195,7 @@ function MenuForm(
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
     if (saving || !dirty) return;
-    // 수정은 그대로 둔 URL 의 1뎁스 검사를 건너뛴다 — 아직 여러 구간인 메뉴(3팀 플랫폼 커뮤니티 · 사용중지 메뉴)도 이름 · 상태를 고친다
+    // 수정은 그대로 둔 URL 의 1뎁스 검사를 건너뛴다 — 아직 여러 구간인 메뉴(사용중지 메뉴)도 이름 · 상태를 고친다
     const found = validateMenuForm(form, props.mode === "edit" ? base.url : undefined);
     setErrors(found);
     if (Object.keys(found).length) return;

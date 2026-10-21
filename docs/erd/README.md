@@ -170,6 +170,19 @@ python3 docs/erd/_build.py
 |  | 잠금 해제 시각 | datetime | `lock_expires_at` |  |
 |  | 시도 시각 | datetime | `attempted_at` | (2026-10-08) |
 
+### 이메일 변경 핀 `email_change_pins` · 엔티티
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 핀 ID | id | `pin_id` |  |
+| FK | 계정 | id | `account_id` |  |
+|  | 새 이메일 | text | `new_email` | 핀을 보낸 주소, 소문자. 확인되면 계정 이메일이 이 값이 된다 |
+|  | 핀 검증값 | hash | `pin_hash` | 원본 저장 안 함 |
+|  | 발급 시각 | datetime | `issued_at` | 1분 재발급 제한, 하루 10회 |
+|  | 만료 시각 | datetime | `expires_at` | 발급 시각부터 15분 |
+|  | 시도 횟수 | int | `attempt_count` | 5회 틀리면 그 핀은 닫힘, 새 핀을 받는다 |
+|  | 사용 시각 | datetime | `used_at` | 이메일을 바꾸면 남김. 새 핀 메일이 나가면 앞선 핀도 닫는다 (#191, 2026-10-20) |
+
 **관계**
 
 - 계정 `1` — `N` 본인인증 이력
@@ -181,6 +194,7 @@ python3 docs/erd/_build.py
 - 관리자 계정 `1` — `N` 계정 변경 이력 · 초기화 요청
 - 계정 `1` — `N` 비밀번호 재설정 링크
 - 관리자 계정 `1` — `N` 비밀번호 재설정 링크 · 링크 발급
+- 계정 `1` — `N` 이메일 변경 핀
 
 ## 채용과 초대
 
@@ -286,6 +300,27 @@ python3 docs/erd/_build.py
 | FK | 처리 관리자 | id | `processed_by` |  |
 |  | 처리 일시 | datetime | `processed_at` | 같은 처리는 같은 시각 |
 
+### 초대 코드 입력 시도 `invitation_code_attempts` · 이력
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 시도 ID | id | `invitation_code_attempt_id` |  |
+|  | 휴대전화번호 키 | hash | `phone_key` | HMAC, 원본 저장 안 함, 초대가 없는 번호도 같은 기준으로 셈 |
+|  | 성공 여부 | bool | `is_succeeded` | 기본 false |
+|  | 실패 횟수 | int | `failed_count` | 기본 0, 5회면 30분 잠금 |
+|  | 잠금 해제 시각 | datetime | `lock_expires_at` | 잠겨 있지 않으면 비움 |
+|  | 시도 시각 | datetime | `attempted_at` | (phone_key, attempted_at) 인덱스 · 재발송하면 실패 0 행을 쌓아 잠금을 푼다 (JOIN-7, 2026-10-20) |
+
+### 신고 정보 변경 이력 `staff_tax_profile_histories` · 이력
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 이력 ID | id | `staff_tax_profile_history_id` |  |
+| FK | 직원 레코드 | id | `staff_member_id` | 신고 정보는 레코드마다 하나라 이력도 레코드 기준 |
+|  | 바뀐 항목 | enum | `field` | 주민등록번호 · 급여 계좌(은행·계좌번호 함께) |
+| FK | 바꾼 계정 | id | `account_id` | 직원 본인만 고친다 (TAX-07) |
+|  | 바꾼 시각 | datetime | `changed_at` | (staff_member_id, changed_at) 인덱스 · 값(이전·새 값)은 남기지 않음 · 처음 작성도 항목마다 한 행 (#334, 2026-10-20) |
+
 **관계**
 
 - 점포 `1` — `N` 직원 레코드 · 소속
@@ -296,6 +331,7 @@ python3 docs/erd/_build.py
 - 계정 `1` — `N` 가입 연결 보류 · 보류 계정
 - 관리자 계정 `1` — `N` 가입 연결 보류 · 처리
 - 직원 레코드 `1` — `N` 퇴직 처리 이력
+- 신고 정보 `1` — `N` 신고 정보 변경 이력
 
 ## 근로계약
 
@@ -774,7 +810,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |---|---|---|---|---|
 | PK·FK | 계정 | id | `account_id` |  |
 | PK | 수신 설정 묶음 | enum | `preference_category` | 근로계약서·근무스케줄·TO-DO·급여명세서 |
-|  | 수신 여부 | bool | `enabled` | 기본 켬, 계약·급여는 끌 수 없음 |
+|  | 수신 여부 | bool | `enabled` | 기본 켬, 네 묶음 모두 직원이 켜고 끔 (NOTI-8, 2026-10-20) |
 |  | 변경 시각 | datetime | `updated_at` |  |
 
 ### 알림 템플릿 `notification_templates` · 엔티티
@@ -869,8 +905,8 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK·FK | 게시물 | id | `post_id` |  |
-| PK | 대상 유형 | enum | `audience_type` | 비회원·회원·BP·점포·부가서비스 |
-|  | 부가서비스 | code | `service_code` | 공통코드 SERVICE(1팀), 부가서비스일 때 |
+| PK | 대상 유형 | enum | `audience_type` | 비회원·회원·BP·점포 (부가서비스는 1차 미사용) |
+|  | 부가서비스 | code | `service_code` | 공통코드 SERVICE(1팀), 1차 미사용 |
 
 ### 첨부파일 `post_attachments` · 엔티티
 
@@ -879,9 +915,10 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 | PK | 첨부파일 ID | id | `attachment_id` |  |
 | FK | 게시물 | id | `post_id` | 글당 5개 |
 |  | 파일 이름 | text | `file_name` |  |
+|  | 파일 종류 | enum | `file_type` | JPG·PNG·PDF (#272) |
 |  | 파일 크기 | int | `size_bytes` | 10MB 이하 |
-|  | 저장 위치 | text | `storage_key` | 첨부파일 저장소 결정 대기(Plane #587) |
-|  | 순서 | int | `sort_order` |  |
+|  | 저장 위치 | text | `storage_key` | 공개 주소 아님 |
+|  | 순서 | int | `sort_order` | 1~5, 글 안에서 겹치지 않음 |
 
 ### 문의사항 `inquiries` · 엔티티
 
@@ -928,7 +965,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |  | 원래 파일 이름 | text | `file_name` |  |
 |  | 파일 종류 | enum | `file_type` | JPG·PNG·PDF, 파일 내용으로 확인 |
 |  | 파일 크기 | int | `size_bytes` | 10MB 이하 |
-|  | 저장 위치 | text | `storage_key` | 공개 주소 아님. 첨부파일 저장소 결정 대기(Plane #587), 정해질 때까지 첨부는 만들지 않음 |
+|  | 저장 위치 | text | `storage_key` | 공개 주소 아님 |
 |  | 순서 | int | `sort_order` | 1~5, 문의당 5개 |
 |  | 올린 시각 | datetime | `created_at` |  |
 
@@ -947,9 +984,16 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |  | 개인정보 동의 일시 | datetime | `privacy_agreed_at` | 필수 |
 |  | 마케팅 동의 일시 | datetime | `marketing_agreed_at` | 선택 |
 |  | 답변 상태 | enum | `status` |  |
-|  | 사용자 노출 답변 | text | `reply` | 이메일로 회신 |
+|  | 사용자 노출 답변 | text | `reply` | 이메일로 회신, 이력 없이 하나 |
 |  | 운영자 내부 메모 | text | `internal_memo` |  |
+| FK | 처리 시작 관리자 | id | `processing_started_by` | 처리중으로 바꾼 관리자 |
+|  | 처리 시작 시각 | datetime | `processing_started_at` |  |
+| FK | 답변 관리자 | id | `replied_by` |  |
+|  | 답변 시각 | datetime | `replied_at` |  |
+|  | 마지막 답변 메일 결과 | enum | `reply_mail_result` | 성공·실패 (#597) |
+|  | 마지막 답변 메일 시각 | datetime | `reply_mail_attempted_at` |  |
 |  | 접수 일시 | datetime | `created_at` |  |
+|  | 최종 수정 일시 | datetime | `updated_at` |  |
 |  | 상담 완료일 | date | `consulted_date` | 1년 뒤 파기 |
 
 **관계**

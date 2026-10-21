@@ -402,6 +402,18 @@
         ],
         "createdAt": "2026-10-14T06:14:46.370Z",
         "reason": "비로그인 영역은 Figma 로그인전 규격을 따른다 — 같은 폴더 다른 guest 파일과 같은 예외"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "11px",
+        "createdAt": "2026-10-20T01:21:59.430Z",
+        "reason": "헤더 점포 범위 드롭다운 묶음 제목: 데모 docs/demo/src/site.mjs scopeDropdown 값. 사용자가 데모와 같게 맞추라고 요청(2026-10-20)"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "11.5px",
+        "createdAt": "2026-10-20T01:22:00.780Z",
+        "reason": "헤더 점포 범위 드롭다운 항목 보조 줄: 데모 docs/demo/src/site.mjs scopeDropdown 값. 사용자가 데모와 같게 맞추라고 요청(2026-10-20)"
       }
     ]
   }

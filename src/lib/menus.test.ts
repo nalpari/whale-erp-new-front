@@ -106,6 +106,13 @@ test("menuPermissionOf: 다른 서비스 탭의 메뉴와 없는 코드는 false
   assert.equal(menuPermissionOf([staff], "WHALE_ERP", MENU_CODE.platformMenus, "read"), false);
 });
 
+test("menuOfPath: 직원 상세(/staff-members/12)는 직원 정보 관리 메뉴 — 상세 버튼 권한(usePagePermission)이 이 메뉴의 권한 칸이다", () => {
+  const staff: AdminMenu = { ...menu("/staff-members", true), menuCode: MENU_CODE.staffMembers, permission: { read: true, create: false, update: true, delete: false } };
+  assert.deepEqual(menuOfPath([staff], "/staff-members/12", "WHALE_ERP")?.permission, staff.permission);
+  const readOnly: AdminMenu = { ...staff, permission: { ...staff.permission, update: false } };
+  assert.equal(menuOfPath([readOnly], "/staff-members/12", "WHALE_ERP")?.permission.update, false);
+});
+
 test("menuOfPath: 지금 주소의 메뉴 — 그 url 이거나 그 아래, 이 탭 서비스, 조회 권한", () => {
   const admins: AdminMenu = { ...menu("/platform-admins", true, [], "PLATFORM"), permission: { read: true, create: true, update: false, delete: true } };
   const account = [...platformAccount, menu(null, false, [admins], "PLATFORM")];

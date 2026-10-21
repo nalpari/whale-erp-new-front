@@ -26,7 +26,9 @@ export default ({ A, R }) => {
   const targets = box(
     "노출 대상",
     "",
-    `<div class="flex flex-col gap-[12px]">${target("비회원", "", false)}${target("회원", "로그인한 모든 사용자", false)}${target("BP", "사업자 관리자", true)}${target("점포", "점포 단위 관리자", false)}</div>`,
+    `<div class="flex flex-col gap-[12px]">${target("비회원", "", false)}${target("회원", "로그인한 모든 사용자", false)}${target("BP", "사업자 관리자", true)}${target("점포", "점포 단위 관리자", false)}</div>` +
+      // 비회원을 고르면 로그인 전 홈 FAQ 에 공개된다(#276).
+      `<p class="text-[14px] leading-[1.6] text-erp-label">비회원을 고르면 로그인 전 홈에 공개됩니다.</p>`,
   );
 
   // 변경 이력 표는 두지 않는다 — 마지막 수정자 · 수정 시각만 남긴다(WHALEERP-272). 게시 기간 · 상단 고정 · 유형은 공지에만 있다.
@@ -36,7 +38,7 @@ export default ({ A, R }) => {
 
   // 카테고리는 공통코드 FAQ_CATEGORY 의 사용 중인 것만. 사용 중지된 카테고리의 FAQ 는 게시하거나 내용을 고칠 때 카테고리를 바꿔야 한다(비공개 · 삭제는 그대로 된다).
   const list = link(R, "support/community-faq.html");
-  const right = `<div class="flex items-center gap-[6px]">${ui.button("목록", { variant: "off", href: list })}${ui.button("삭제", { variant: "soft" })}${ui.button("비공개", { variant: "soft" })}${ui.button("임시저장", { variant: "soft" })}${ui.button("게시", { href: list })}</div>`;
+  const right = `<div class="flex items-center gap-[6px]">${ui.button("목록", { variant: "off", href: list })}${ui.button("삭제", { variant: "soft" })}${ui.button("비공개", { variant: "soft", "data-toast": "비공개로 저장했습니다." })}${ui.button("임시저장", { variant: "soft", "data-toast": "임시저장했습니다." })}${ui.button("게시", { "data-toast": "게시했습니다." })}</div>`;
 
   return {
     title: "FAQ 수정",

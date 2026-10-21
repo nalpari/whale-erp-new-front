@@ -9,8 +9,13 @@ export type CodeGroup = Schemas["CodeGroupResponseDto"];
 export type CodeGroupList = Schemas["CodeGroupListResponseDto"];
 export type CodeItem = Schemas["CodeItemResponseDto"];
 export type CodeItemList = Schemas["CodeItemListResponseDto"];
-export type SaveCodeGroupsInput = Schemas["SaveCodeGroupsDto"];
-export type SaveCodeItemsInput = Schemas["SaveCodeItemsDto"];
+export type CreateCodeGroupsInput = Schemas["CreateCodeGroupsDto"];
+export type UpdateCodeGroupsInput = Schemas["UpdateCodeGroupsDto"];
+export type CreateCodeItemsInput = Schemas["CreateCodeItemsDto"];
+export type UpdateCodeItemsInput = Schemas["UpdateCodeItemsDto"];
+/** 패널 하나의 저장 내용 — 바뀐 기존 행(updates)과 새 행(creates). api 에는 수정 · 등록 두 번으로 나눠 { items } 로 보낸다(front 전용 모양). */
+export type SaveCodeGroupsInput = { updates: UpdateCodeGroupsInput["items"]; creates: CreateCodeGroupsInput["items"] };
+export type SaveCodeItemsInput = { updates: UpdateCodeItemsInput["items"]; creates: CreateCodeItemsInput["items"] };
 export type BpApplication = Schemas["BpApplicationResponseDto"];
 export type UseStatus = Schemas["UseStatus"];
 export type ManageOwnerCode = CodeGroup["manageOwnerCode"];
@@ -33,13 +38,25 @@ export async function getCodeItems(groupCode: string): Promise<CodeItemList> {
   return request(`/code-groups/${encodeURIComponent(groupCode)}/items`, await json("GET"));
 }
 
-/** PUT /code-groups — 그룹 목록 패널 저장. 고칠 수 있는 것은 그룹명 · 사용 상태 · 표시 순서뿐이다. */
-export async function saveCodeGroups(input: SaveCodeGroupsInput): Promise<void> {
+// 등록 · 수정은 각자 한 트랜잭션이고 응답은 204 다. 한 요청 안에서 하나라도 막히면 아무것도 바뀌지 않는다.
+
+/** POST /code-groups — 새 그룹 등록(등록 권한). */
+export async function createCodeGroups(input: CreateCodeGroupsInput): Promise<void> {
+  await request("/code-groups", await json("POST", input));
+}
+
+/** PUT /code-groups — 기존 그룹 수정(수정 권한). 고칠 수 있는 것은 그룹명 · 사용 상태 · 표시 순서뿐이다. */
+export async function updateCodeGroups(input: UpdateCodeGroupsInput): Promise<void> {
   await request("/code-groups", await json("PUT", input));
 }
 
-/** PUT /code-groups/{groupCode}/items — 상세 코드 목록 패널 저장. 고칠 수 있는 것은 코드명 · 사용 상태 · 표시 순서뿐이다. */
-export async function saveCodeItems(groupCode: string, input: SaveCodeItemsInput): Promise<void> {
+/** POST /code-groups/{groupCode}/items — 새 상세 코드 등록(등록 권한). */
+export async function createCodeItems(groupCode: string, input: CreateCodeItemsInput): Promise<void> {
+  await request(`/code-groups/${encodeURIComponent(groupCode)}/items`, await json("POST", input));
+}
+
+/** PUT /code-groups/{groupCode}/items — 기존 상세 코드 수정(수정 권한). 고칠 수 있는 것은 코드명 · 사용 상태 · 표시 순서뿐이다. */
+export async function updateCodeItems(groupCode: string, input: UpdateCodeItemsInput): Promise<void> {
   await request(`/code-groups/${encodeURIComponent(groupCode)}/items`, await json("PUT", input));
 }
 

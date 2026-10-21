@@ -123,9 +123,9 @@
       "name": "Detail Table",
       "kind": "custom",
       "refersTo": "table-row",
-      "description": "한 건을 세로로 펼친 표. 라벨 180px 고정, 값이 여럿이면 11px 세로선으로 나눈다.",
+      "description": "한 건을 세로로 펼친 표. 라벨 110px 고정, 값이 여럿이면 11px 세로선으로 나눈다.",
       "html": "<div class=\"ds-detail\"><p class=\"ds-detail-title\">가맹점 계약</p><dl><div class=\"ds-detail-row\"><dt>계약 당사자</dt><dd><span>힘이나는 커피생활</span><i></i><span>을지로3가점</span></dd></div><div class=\"ds-detail-row\"><dt>계약정보</dt><dd><span>계약서 완료</span></dd></div></dl></div>",
-      "css": ".ds-detail { width: 520px; font-size: 14px; letter-spacing: -0.025em; } .ds-detail-title { display: flex; align-items: center; height: 42px; margin: 0; padding: 0 10px; border: 1px solid #e9edf5; border-radius: 2px 2px 0 0; background: #f8f9fb; color: #3c4046; font-size: 16px; font-weight: 500; } .ds-detail dl { margin: 0; } .ds-detail-row { display: flex; } .ds-detail dt { display: flex; align-items: center; width: 180px; height: 46px; padding: 12px; box-sizing: border-box; border-left: 1px solid #e9edf5; border-bottom: 1px solid #e9edf5; color: #888; font-weight: 500; } .ds-detail dd { display: flex; flex: 1; align-items: center; gap: 10px; height: 46px; margin: 0; padding: 12px; box-sizing: border-box; border-right: 1px solid #e9edf5; border-bottom: 1px solid #e9edf5; color: #3c4046; } .ds-detail dd i { width: 1px; height: 11px; background: #d9d9d9; }"
+      "css": ".ds-detail { width: 520px; font-size: 14px; letter-spacing: -0.025em; } .ds-detail-title { display: flex; align-items: center; height: 42px; margin: 0; padding: 0 10px; border: 1px solid #e9edf5; border-radius: 2px 2px 0 0; background: #f8f9fb; color: #3c4046; font-size: 16px; font-weight: 500; } .ds-detail dl { margin: 0; } .ds-detail-row { display: flex; } .ds-detail dt { display: flex; align-items: center; width: 110px; height: 46px; padding: 12px; box-sizing: border-box; border-left: 1px solid #e9edf5; border-bottom: 1px solid #e9edf5; color: #888; font-weight: 500; } .ds-detail dd { display: flex; flex: 1; align-items: center; gap: 10px; height: 46px; margin: 0; padding: 12px; box-sizing: border-box; border-right: 1px solid #e9edf5; border-bottom: 1px solid #e9edf5; color: #3c4046; } .ds-detail dd i { width: 1px; height: 11px; background: #d9d9d9; }"
     },
     {
       "name": "Popup",

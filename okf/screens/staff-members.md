@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-19T08:30:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-21T09:00:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -29,7 +29,7 @@ sources:
   - id: staff-detail-actions
     resource: ../../src/app/staff-members/[id]/staff-detail-actions.tsx
     title: 상세 머리 버튼(퇴직 · 목록) · 비밀번호 초기화 버튼
-    last_modified: 2026-10-16T09:00:00Z
+    last_modified: 2026-10-21T09:00:00Z
   - id: confirm-dialog
     resource: ../../src/components/common/confirm-dialog.tsx
     title: 공통 확인창 — confirmVariant 추가
@@ -44,8 +44,8 @@ sources:
     last_modified: 2026-10-19T05:30:00Z
   - id: contract-box
     resource: ../../src/app/staff-members/[id]/contract-box.tsx
-    title: 상세 근로계약 칸 — 계약 상세를 따로 받고 실패하면 이 칸만 안내 · 다시 하기(WHALEERP-184)
-    last_modified: 2026-10-19T07:10:00Z
+    title: 상세 근로계약 칸 — 계약 상세를 따로 받고 실패하면 이 칸만 안내 · 다시 하기(WHALEERP-184). 줄 라벨 칸은 DetailTable 과 같은 폭(110px)을 옮겨 쓴다.
+    last_modified: 2026-10-20T13:19:24Z
   - id: contract-summary
     resource: ../../src/app/staff-members/[id]/contract-summary.ts
     title: 근로계약 칸 줄 · 갱신 예정일 · 실패 표시 판정
@@ -182,7 +182,7 @@ sources:
 * **처리하면 퇴직이 아니라 퇴직 예정이다.** 퇴직일만 저장하고 재직 상태 · 근로계약은 그대로다. 재직 상태 칸은 「재직 ·
   퇴직 예정 MM-DD」, 기본 정보에 퇴직일 줄이 생긴다. 퇴직일 다음 날 0시 배치가 퇴직으로 바꾸며 정리하고, 그 뒤 목록은
   「퇴직 MM-DD」이고 기본 재직 필터에서 빠진다. Plane 완료 조건 3(처리하면 퇴직)은 이 차이로 문구 수정을 요청했다.
-* 버튼(`retirementActions`) — 가입 완료(`JOINED`) · 재직이고 「직원 정보 관리」(MN000005) 수정 권한(`useMenuRole`)이 있을 때만.
+* 버튼(`retirementActions`) — 가입 완료(`JOINED`) · 재직이고 지금 주소의 메뉴(`/staff-members` — 지금은 「직원 정보 관리」 MN000005) 수정 권한이 있을 때만. 메뉴 코드가 아니라 주소로 찾는다(`usePagePermission`).
   퇴직일이 없으면 붉은 「퇴직 처리」, 퇴직일이 오늘보다 뒤면 「퇴직일 변경」 · 「퇴직 처리 취소」(목업). 퇴직일 당일부터는 배치가
   돌 수 있어 api 가 변경 · 취소를 409 로 막으므로 버튼을 두지 않는다. 퇴직 · 가입 전 레코드도 버튼이 없다. 업무 범위 밖 직원은
   상세 api 가 404 라 판정에 오지 않는다.
@@ -207,7 +207,7 @@ sources:
 기본 정보 표 아래 줄 오른쪽에 둔다(데모 자리). 관리자는 비밀번호를 알 수도 정할 수도 없다 — 재설정 링크가 직원 계정 이메일
 (회원가입 때 쓴 것)로 가고, 직원이 링크를 열어 스스로 정한다. api 는 `POST /staff-members/:id/password-reset-links` 다.
 
-* 버튼(`canResetPassword`) — 가입 완료(`JOINED`) · 재직이고 「직원 정보 관리」 수정 권한이 있을 때만. 퇴직 예정(재직 + 퇴직일)은
+* 버튼(`canResetPassword`) — 가입 완료(`JOINED`) · 재직이고 지금 주소의 메뉴(`/staff-members`, 지금은 「직원 정보 관리」) 수정 권한(`usePagePermission`)이 있을 때만. 퇴직 예정(재직 + 퇴직일)은
   보인다 — 아직 일하는 직원이고 api 도 퇴직(`RETIRED`)만 409 로 막는다(2026-10-16 노영주). 본사 역할(BM · BA, 로그인 정보의
   `roleTypeCode`)은 직영 점포 직원에게만 보인다 — 본사 제공 동의한 가맹 직원은 상세가 열리지만 api 의 계정 조치 범위
   (`canManageStaffAccount`)는 동의와 상관없이 점포 단위라 404 다(2026-10-14 재영, ATT-30). 점포 유형을 모르면 api 처럼 숨긴다

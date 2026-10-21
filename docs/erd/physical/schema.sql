@@ -13,6 +13,10 @@ CREATE TYPE "identity_verification_result" AS ENUM ('SUCCEEDED', 'FAILED');  -- 
 COMMENT ON TYPE "identity_verification_result" IS '성공 · 실패';
 CREATE TYPE "account_status" AS ENUM ('JOINED', 'LINK_HOLD', 'WITHDRAWN');  -- 가입 완료 · 연결 보류 · 탈퇴
 COMMENT ON TYPE "account_status" IS '가입 완료 · 연결 보류 · 탈퇴';
+CREATE TYPE "gender" AS ENUM ('MALE', 'FEMALE');  -- 남 · 여
+COMMENT ON TYPE "gender" IS '남 · 여';
+CREATE TYPE "staff_tax_profile_field" AS ENUM ('RRN', 'PAYROLL_ACCOUNT');  -- 주민등록번호 · 급여 계좌
+COMMENT ON TYPE "staff_tax_profile_field" IS '주민등록번호 · 급여 계좌';
 CREATE TYPE "account_change_field" AS ENUM ('PHONE', 'EMAIL', 'ADDRESS', 'PASSWORD');  -- 휴대전화번호 · 이메일 · 주소 · 비밀번호
 COMMENT ON TYPE "account_change_field" IS '휴대전화번호 · 이메일 · 주소 · 비밀번호';
 CREATE TYPE "account_change_channel" AS ENUM ('SELF', 'PIN_RESET', 'ADMIN_RESET');  -- 본인 · 핀 재설정 · 관리자 초기화
@@ -43,8 +47,10 @@ CREATE TYPE "weekday" AS ENUM ('MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN');
 COMMENT ON TYPE "weekday" IS '월 · 화 · 수 · 목 · 금 · 토 · 일';
 CREATE TYPE "pay_month" AS ENUM ('CURRENT_MONTH', 'NEXT_MONTH');  -- 당월 · 익월
 COMMENT ON TYPE "pay_month" IS '당월 · 익월';
-CREATE TYPE "contract_status" AS ENUM ('DRAFT', 'PENDING_SEND', 'PENDING_SIGNATURE', 'SIGNED', 'REJECTED', 'EXPIRED', 'ENDED');  -- 임시저장 · 발송 대기 · 서명 대기 · 체결 완료 · 거부 · 만료 · 종료
-COMMENT ON TYPE "contract_status" IS '임시저장 · 발송 대기 · 서명 대기 · 체결 완료 · 거부 · 만료 · 종료';
+CREATE TYPE "pay_method" AS ENUM ('ACCOUNT', 'CASH');  -- 계좌 · 현금
+COMMENT ON TYPE "pay_method" IS '계좌 · 현금';
+CREATE TYPE "contract_status" AS ENUM ('DRAFT', 'PENDING_SEND', 'PENDING_SIGNATURE', 'CORRECTION_REQUESTED', 'SIGNED', 'REJECTED', 'EXPIRED', 'ENDED');  -- 임시저장 · 발송 대기 · 서명 대기 · 수정 요청 · 체결 완료 · 거부 · 만료 · 종료
+COMMENT ON TYPE "contract_status" IS '임시저장 · 발송 대기 · 서명 대기 · 수정 요청 · 체결 완료 · 거부 · 만료 · 종료';
 CREATE TYPE "contract_draft_action" AS ENUM ('SIGNUP_INVITE', 'AFFILIATION_CONFIRM', 'RETURN_CONFIRM', 'IMMEDIATE_SEND');  -- 가입 초대 · 소속 추가 확인 · 복귀 확인 · 즉시 발송
 COMMENT ON TYPE "contract_draft_action" IS '가입 초대 · 소속 추가 확인 · 복귀 확인 · 즉시 발송';
 CREATE TYPE "contract_document_kind" AS ENUM ('SENT_ORIGINAL', 'SIGNED_COPY', 'PAPER_EMPLOYMENT_CONTRACT', 'WAGE_CONTRACT');  -- 발송 원본 · 날인 완료본 · 종이 계약 근로계약서 · 임금계약서
@@ -101,6 +107,8 @@ CREATE TYPE "inquiry_status" AS ENUM ('RECEIVED', 'IN_PROGRESS', 'ANSWERED');  -
 COMMENT ON TYPE "inquiry_status" IS '접수 · 처리중 · 답변완료';
 CREATE TYPE "lead_interest" AS ENUM ('STORE_OPERATION', 'FINANCE', 'FRANCHISE', 'OTHER');  -- 매장운영 · 재무관리 · 프랜차이즈 · 기타
 COMMENT ON TYPE "lead_interest" IS '매장운영 · 재무관리 · 프랜차이즈 · 기타';
+CREATE TYPE "reply_mail_result" AS ENUM ('SUCCEEDED', 'FAILED');  -- 성공 · 실패
+COMMENT ON TYPE "reply_mail_result" IS '성공 · 실패';
 
 -- 본인인증 이력
 CREATE TABLE "identity_verifications" (
@@ -123,6 +131,7 @@ CREATE TABLE "auth_sessions" (
     "issued_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "last_used_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "expires_at" TIMESTAMPTZ(6) NOT NULL,
+    "is_remembered" BOOLEAN NOT NULL DEFAULT true,
     "revoked_at" TIMESTAMPTZ(6),
 
     CONSTRAINT "auth_sessions_pkey" PRIMARY KEY ("auth_session_id")
@@ -136,10 +145,16 @@ CREATE TABLE "accounts" (
     "real_name" TEXT NOT NULL,
     "birth_date" DATE NOT NULL,
     "phone" TEXT NOT NULL,
+    "gender" "gender",
+    "is_foreigner" BOOLEAN NOT NULL DEFAULT false,
     "connecting_information" TEXT,
     "zip_code" TEXT,
     "address" TEXT,
     "address_detail" TEXT,
+    "is_hq_sharing_consented" BOOLEAN NOT NULL DEFAULT false,
+    "hq_sharing_consent_version" TEXT,
+    "hq_sharing_agreed_at" TIMESTAMPTZ(6),
+    "hq_sharing_withdrawn_at" TIMESTAMPTZ(6),
     "status" "account_status" NOT NULL,
     "failed_login_count" INTEGER NOT NULL DEFAULT 0,
     "lock_expires_at" TIMESTAMPTZ(6),
@@ -227,6 +242,20 @@ CREATE TABLE "email_find_attempts" (
     CONSTRAINT "email_find_attempts_pkey" PRIMARY KEY ("email_find_attempt_id")
 );
 
+-- 이메일 변경 핀
+CREATE TABLE "email_change_pins" (
+    "email_change_pin_id" INTEGER GENERATED ALWAYS AS IDENTITY NOT NULL,
+    "account_id" INTEGER NOT NULL,
+    "new_email" TEXT NOT NULL,
+    "pin_hash" TEXT NOT NULL,
+    "issued_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "expires_at" TIMESTAMPTZ(6) NOT NULL,
+    "attempt_count" INTEGER NOT NULL DEFAULT 0,
+    "used_at" TIMESTAMPTZ(6),
+
+    CONSTRAINT "email_change_pins_pkey" PRIMARY KEY ("email_change_pin_id")
+);
+
 -- 직원 레코드
 CREATE TABLE "staff_members" (
     "staff_member_id" INTEGER GENERATED ALWAYS AS IDENTITY NOT NULL,
@@ -241,10 +270,6 @@ CREATE TABLE "staff_members" (
     "employment_status" "employment_status" NOT NULL DEFAULT 'EMPLOYED',
     "join_status" "staff_member_join_status" NOT NULL DEFAULT 'DRAFT',
     "retired_date" DATE,
-    "is_hq_sharing_consented" BOOLEAN NOT NULL DEFAULT false,
-    "hq_sharing_consent_version" TEXT,
-    "hq_sharing_agreed_at" TIMESTAMPTZ(6),
-    "hq_sharing_withdrawn_at" TIMESTAMPTZ(6),
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -270,6 +295,7 @@ CREATE TABLE "invitations" (
     "staff_member_id" INTEGER NOT NULL,
     "invitation_type" "invitation_type" NOT NULL,
     "invitation_token" TEXT,
+    "invitation_code_hash" TEXT,
     "channel" "invitation_channel" NOT NULL,
     "sent_at" TIMESTAMPTZ(6) NOT NULL,
     "expires_at" TIMESTAMPTZ(6) NOT NULL,
@@ -308,6 +334,29 @@ CREATE TABLE "staff_member_retirement_logs" (
     CONSTRAINT "staff_member_retirement_logs_pkey" PRIMARY KEY ("staff_member_retirement_log_id")
 );
 
+-- 초대 코드 입력 시도
+CREATE TABLE "invitation_code_attempts" (
+    "invitation_code_attempt_id" INTEGER GENERATED ALWAYS AS IDENTITY NOT NULL,
+    "phone_key" TEXT NOT NULL,
+    "is_succeeded" BOOLEAN NOT NULL DEFAULT false,
+    "failed_count" INTEGER NOT NULL DEFAULT 0,
+    "lock_expires_at" TIMESTAMPTZ(6),
+    "attempted_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "invitation_code_attempts_pkey" PRIMARY KEY ("invitation_code_attempt_id")
+);
+
+-- 신고 정보 변경 이력
+CREATE TABLE "staff_tax_profile_histories" (
+    "staff_tax_profile_history_id" INTEGER GENERATED ALWAYS AS IDENTITY NOT NULL,
+    "staff_member_id" INTEGER NOT NULL,
+    "field" "staff_tax_profile_field" NOT NULL,
+    "account_id" INTEGER NOT NULL,
+    "changed_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "staff_tax_profile_histories_pkey" PRIMARY KEY ("staff_tax_profile_history_id")
+);
+
 -- 근로계약
 CREATE TABLE "contracts" (
     "contract_id" INTEGER GENERATED ALWAYS AS IDENTITY NOT NULL,
@@ -335,6 +384,9 @@ CREATE TABLE "contracts" (
     "pay_day" INTEGER,
     "annual_leave_terms" TEXT,
     "severance_pay_terms" TEXT,
+    "pay_method" "pay_method",
+    "probation_months" INTEGER,
+    "probation_wage_reduction_rate" INTEGER,
     "status" "contract_status" DEFAULT 'PENDING_SEND',
     "draft_action" "contract_draft_action",
     "sent_at" TIMESTAMPTZ(6),
@@ -366,6 +418,8 @@ CREATE TABLE "contract_parties" (
     "entered_name" TEXT,
     "entered_phone" TEXT,
     "entered_birth_date" DATE,
+    "entered_gender" "gender",
+    "is_foreigner" BOOLEAN NOT NULL DEFAULT false,
     "verified_name" TEXT,
     "verified_birth_date" TEXT,
     "verified_phone" TEXT,
@@ -383,6 +437,7 @@ CREATE TABLE "contract_documents" (
     "contract_id" INTEGER NOT NULL,
     "kind" "contract_document_kind" NOT NULL,
     "storage_key" TEXT NOT NULL,
+    "file_name" TEXT NOT NULL,
     "checksum" TEXT NOT NULL,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -764,9 +819,10 @@ CREATE TABLE "post_attachments" (
     "post_attachment_id" INTEGER GENERATED ALWAYS AS IDENTITY NOT NULL,
     "post_id" INTEGER NOT NULL,
     "file_name" TEXT NOT NULL,
+    "file_type" "attachment_file_type" NOT NULL,
     "size_bytes" INTEGER NOT NULL,
     "storage_key" TEXT NOT NULL,
-    "sort_order" INTEGER NOT NULL DEFAULT 0,
+    "sort_order" INTEGER NOT NULL,
     "is_deleted" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -783,9 +839,9 @@ CREATE TABLE "inquiries" (
     "title" TEXT NOT NULL,
     "body" TEXT NOT NULL,
     "status" "inquiry_status" NOT NULL DEFAULT 'RECEIVED',
+    "internal_memo" TEXT,
     "processing_started_by" INTEGER,
     "processing_started_at" TIMESTAMPTZ(6),
-    "internal_memo" TEXT,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -831,12 +887,14 @@ CREATE TABLE "leads" (
     "privacy_agreed_at" TIMESTAMPTZ(6) NOT NULL,
     "marketing_agreed_at" TIMESTAMPTZ(6),
     "status" "inquiry_status" NOT NULL DEFAULT 'RECEIVED',
+    "reply" TEXT,
+    "internal_memo" TEXT,
     "processing_started_by" INTEGER,
     "processing_started_at" TIMESTAMPTZ(6),
-    "reply" TEXT,
     "replied_by" INTEGER,
     "replied_at" TIMESTAMPTZ(6),
-    "internal_memo" TEXT,
+    "reply_mail_result" "reply_mail_result",
+    "reply_mail_attempted_at" TIMESTAMPTZ(6),
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "consulted_date" DATE,
@@ -848,17 +906,21 @@ CREATE TABLE "leads" (
 ALTER TABLE "accounts" ADD CONSTRAINT "accounts_email_lower" CHECK ("email" = lower("email"));
 ALTER TABLE "accounts" ADD CONSTRAINT "accounts_phone_format" CHECK ("phone" ~ '^[0-9]{10,11}$');
 ALTER TABLE "accounts" ADD CONSTRAINT "accounts_failed_login_count_nonnegative" CHECK ("failed_login_count" >= 0);
+ALTER TABLE "accounts" ADD CONSTRAINT "accounts_hq_sharing_consent_fields" CHECK (NOT "is_hq_sharing_consented" OR ("hq_sharing_consent_version" IS NOT NULL AND "hq_sharing_agreed_at" IS NOT NULL AND "hq_sharing_withdrawn_at" IS NULL));
+ALTER TABLE "accounts" ADD CONSTRAINT "accounts_hq_sharing_not_consented_fields" CHECK ("is_hq_sharing_consented" OR ("hq_sharing_consent_version" IS NULL AND "hq_sharing_agreed_at" IS NULL AND "hq_sharing_withdrawn_at" IS NULL) OR ("hq_sharing_consent_version" IS NOT NULL AND "hq_sharing_agreed_at" IS NOT NULL AND "hq_sharing_withdrawn_at" IS NOT NULL));
+ALTER TABLE "accounts" ADD CONSTRAINT "accounts_hq_sharing_withdrawn_after_agreed" CHECK ("hq_sharing_withdrawn_at" IS NULL OR ("hq_sharing_agreed_at" IS NOT NULL AND "hq_sharing_withdrawn_at" >= "hq_sharing_agreed_at"));
 ALTER TABLE "password_reset_pins" ADD CONSTRAINT "password_reset_pins_attempt_count_range" CHECK ("attempt_count" BETWEEN 0 AND 5);
+ALTER TABLE "email_change_pins" ADD CONSTRAINT "email_change_pins_attempt_count_range" CHECK ("attempt_count" BETWEEN 0 AND 5);
+ALTER TABLE "email_change_pins" ADD CONSTRAINT "email_change_pins_new_email_lower" CHECK ("new_email" = lower("new_email"));
+ALTER TABLE "email_change_pins" ADD CONSTRAINT "email_change_pins_expires_after_issued" CHECK ("expires_at" > "issued_at");
 ALTER TABLE "password_reset_links" ADD CONSTRAINT "password_reset_links_token_hash_format" CHECK ("token_hash" ~ '^[0-9a-f]{64}$');
 ALTER TABLE "password_reset_links" ADD CONSTRAINT "password_reset_links_expires_after_issued" CHECK ("expires_at" > "issued_at");
 ALTER TABLE "email_find_attempts" ADD CONSTRAINT "email_find_attempts_failed_count_nonnegative" CHECK ("failed_count" >= 0);
+ALTER TABLE "invitation_code_attempts" ADD CONSTRAINT "invitation_code_attempts_failed_count_nonnegative" CHECK ("failed_count" >= 0);
 ALTER TABLE "location_access_logs" ADD CONSTRAINT "location_access_logs_provide_fields" CHECK ("action" <> 'PROVIDE' OR ("recipient" IS NOT NULL AND "purpose" IS NOT NULL));
 ALTER TABLE "notifications" ADD CONSTRAINT "notifications_link_internal_path" CHECK ("link" IS NULL OR ("link" LIKE '/%' AND "link" NOT LIKE '//%' AND "link" !~ '[\\[:space:]]'));
 ALTER TABLE "staff_members" ADD CONSTRAINT "staff_members_phone_format" CHECK ("phone" ~ '^[0-9]{10,11}$');
 ALTER TABLE "staff_members" ADD CONSTRAINT "staff_members_retired_date_required" CHECK ("employment_status" <> 'RETIRED' OR "retired_date" IS NOT NULL);
-ALTER TABLE "staff_members" ADD CONSTRAINT "staff_members_hq_sharing_consent_fields" CHECK (NOT "is_hq_sharing_consented" OR ("hq_sharing_consent_version" IS NOT NULL AND "hq_sharing_agreed_at" IS NOT NULL AND "hq_sharing_withdrawn_at" IS NULL));
-ALTER TABLE "staff_members" ADD CONSTRAINT "staff_members_hq_sharing_not_consented_fields" CHECK ("is_hq_sharing_consented" OR ("hq_sharing_consent_version" IS NULL AND "hq_sharing_agreed_at" IS NULL AND "hq_sharing_withdrawn_at" IS NULL) OR ("hq_sharing_consent_version" IS NOT NULL AND "hq_sharing_agreed_at" IS NOT NULL AND "hq_sharing_withdrawn_at" IS NOT NULL));
-ALTER TABLE "staff_members" ADD CONSTRAINT "staff_members_hq_sharing_withdrawn_after_agreed" CHECK ("hq_sharing_withdrawn_at" IS NULL OR ("hq_sharing_agreed_at" IS NOT NULL AND "hq_sharing_withdrawn_at" >= "hq_sharing_agreed_at"));
 ALTER TABLE "inquiries" ADD CONSTRAINT "inquiries_processing_started_pair" CHECK (("processing_started_by" IS NULL) = ("processing_started_at" IS NULL));
 ALTER TABLE "leads" ADD CONSTRAINT "leads_processing_started_pair" CHECK (("processing_started_by" IS NULL) = ("processing_started_at" IS NULL));
 ALTER TABLE "invitations" ADD CONSTRAINT "invitations_token_required" CHECK ("invitation_type" NOT IN ('SIGNUP', 'REINVITE') OR "invitation_token" IS NOT NULL);
@@ -875,6 +937,9 @@ ALTER TABLE "contracts" ADD CONSTRAINT "contracts_base_night_hours_nonnegative" 
 ALTER TABLE "contracts" ADD CONSTRAINT "contracts_base_holiday_hours_nonnegative" CHECK ("base_holiday_hours" >= 0);
 ALTER TABLE "contracts" ADD CONSTRAINT "contracts_monthly_extra_holiday_hours_nonnegative" CHECK ("monthly_extra_holiday_hours" >= 0);
 ALTER TABLE "contracts" ADD CONSTRAINT "contracts_pay_day_range" CHECK ("pay_day" BETWEEN 1 AND 31);
+ALTER TABLE "contracts" ADD CONSTRAINT "contracts_probation_months_range" CHECK ("probation_months" BETWEEN 1 AND 3);
+ALTER TABLE "contracts" ADD CONSTRAINT "contracts_probation_wage_reduction_rate_range" CHECK ("probation_wage_reduction_rate" BETWEEN 0 AND 10);
+ALTER TABLE "contracts" ADD CONSTRAINT "contracts_probation_pair" CHECK (("probation_months" IS NULL) = ("probation_wage_reduction_rate" IS NULL));
 ALTER TABLE "contract_work_days" ADD CONSTRAINT "contract_work_days_end_after_start" CHECK ("end_time" > "start_time");
 ALTER TABLE "contract_work_days" ADD CONSTRAINT "contract_work_days_break_pair" CHECK (("break_start_time" IS NULL) = ("break_end_time" IS NULL));
 ALTER TABLE "contract_work_days" ADD CONSTRAINT "contract_work_days_break_within_work" CHECK ("break_start_time" IS NULL OR ("break_start_time" >= "start_time" AND "break_end_time" > "break_start_time" AND "break_end_time" <= "end_time"));
@@ -892,8 +957,8 @@ ALTER TABLE "payslip_item_masters" ADD CONSTRAINT "payslip_item_masters_item_cod
 ALTER TABLE "post_attachments" ADD CONSTRAINT "post_attachments_size_bytes_range" CHECK ("size_bytes" BETWEEN 1 AND 10485760);
 ALTER TABLE "inquiry_attachments" ADD CONSTRAINT "inquiry_attachments_size_bytes_range" CHECK ("size_bytes" BETWEEN 1 AND 10485760);
 ALTER TABLE "inquiry_attachments" ADD CONSTRAINT "inquiry_attachments_sort_order_range" CHECK ("sort_order" BETWEEN 1 AND 5);
+ALTER TABLE "post_attachments" ADD CONSTRAINT "post_attachments_sort_order_range" CHECK ("sort_order" BETWEEN 1 AND 5);
 ALTER TABLE "notification_templates" ADD CONSTRAINT "notification_templates_preference_category_push_only" CHECK (("channel" = 'PUSH') = ("preference_category" IS NOT NULL));
-ALTER TABLE "notification_preferences" ADD CONSTRAINT "notification_preferences_mandatory_enabled" CHECK ("preference_category" NOT IN ('CONTRACT', 'PAYSLIP') OR "is_enabled");
 ALTER TABLE "notification_templates" ADD CONSTRAINT "notification_templates_alimtalk_fields" CHECK (("channel" = 'ALIMTALK') = ("kakao_template_code" IS NOT NULL));
 ALTER TABLE "notification_templates" ADD CONSTRAINT "notification_templates_template_code_format" CHECK ("template_code" ~ '^[A-Z][A-Z0-9_]*$');
 ALTER TABLE "staff_member_retirement_logs" ADD CONSTRAINT "staff_member_retirement_logs_contract_only_on_retire" CHECK ("action" = 'RETIRE' OR ("contract_id" IS NULL AND "previous_contract_end_date" IS NULL));
@@ -920,6 +985,7 @@ CREATE UNIQUE INDEX "payslips_staff_member_id_period_start_date_period_end_date_
 CREATE UNIQUE INDEX "payslip_items_payslip_id_payslip_item_master_id_key" ON "payslip_items" ("payslip_id", "payslip_item_master_id");  -- 명세서 한 장에 같은 항목 한 줄
 CREATE UNIQUE INDEX "payslip_item_masters_item_code_key" ON "payslip_item_masters" ("item_code");  -- 항목 코드 (2026-10-07 재영)
 CREATE UNIQUE INDEX "password_reset_links_token_hash_key" ON "password_reset_links" ("token_hash");  -- 링크는 토큰 해시로 찾는다
+CREATE UNIQUE INDEX "post_attachments_post_id_sort_order_key" ON "post_attachments" ("post_id", "sort_order") WHERE "is_deleted" = false;  -- 공지 하나에 지우지 않은 첨부의 자리 하나 — 자리 1~5 CHECK 와 함께 공지당 5개를 DB 가 막는다 (WHALEERP-272)
 CREATE UNIQUE INDEX "inquiry_attachments_inquiry_id_sort_order_key" ON "inquiry_attachments" ("inquiry_id", "sort_order");  -- 문의 하나에 순서 하나 — 순서 1~5 CHECK 와 함께 문의당 5개를 DB 가 막는다 (운영 정책 CNT-18)
 CREATE UNIQUE INDEX "payslip_review_reasons_payslip_id_review_reason_key" ON "payslip_review_reasons" ("payslip_id", "review_reason");  -- 명세서 한 장에 같은 사유 한 건
 CREATE UNIQUE INDEX "notifications_dedupe_key_key" ON "notifications" ("dedupe_key") WHERE "dedupe_key" IS NOT NULL;  -- 같은 사건·수신자 1회
@@ -938,6 +1004,7 @@ ALTER TABLE "location_access_logs" ADD CONSTRAINT "location_access_logs_account_
 ALTER TABLE "location_access_logs" ADD CONSTRAINT "location_access_logs_attendance_record_id_fkey" FOREIGN KEY ("attendance_record_id") REFERENCES "attendance_records" ("attendance_record_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE "password_reset_links" ADD CONSTRAINT "password_reset_links_account_id_fkey" FOREIGN KEY ("account_id") REFERENCES "accounts" ("account_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE "password_reset_links" ADD CONSTRAINT "password_reset_links_requested_by_fkey" FOREIGN KEY ("requested_by") REFERENCES "admin_accounts" ("admin_account_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+ALTER TABLE "email_change_pins" ADD CONSTRAINT "email_change_pins_account_id_fkey" FOREIGN KEY ("account_id") REFERENCES "accounts" ("account_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE "staff_members" ADD CONSTRAINT "staff_members_store_id_fkey" FOREIGN KEY ("store_id") REFERENCES "stores" ("store_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE "staff_members" ADD CONSTRAINT "staff_members_account_id_fkey" FOREIGN KEY ("account_id") REFERENCES "accounts" ("account_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE "staff_members" ADD CONSTRAINT "staff_members_candidate_account_id_fkey" FOREIGN KEY ("candidate_account_id") REFERENCES "accounts" ("account_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
@@ -949,6 +1016,8 @@ ALTER TABLE "link_holds" ADD CONSTRAINT "link_holds_resolved_by_fkey" FOREIGN KE
 ALTER TABLE "staff_member_retirement_logs" ADD CONSTRAINT "staff_member_retirement_logs_staff_member_id_fkey" FOREIGN KEY ("staff_member_id") REFERENCES "staff_members" ("staff_member_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE "staff_member_retirement_logs" ADD CONSTRAINT "staff_member_retirement_logs_contract_id_fkey" FOREIGN KEY ("contract_id") REFERENCES "contracts" ("contract_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE "staff_member_retirement_logs" ADD CONSTRAINT "staff_member_retirement_logs_processed_by_fkey" FOREIGN KEY ("processed_by") REFERENCES "admin_accounts" ("admin_account_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+ALTER TABLE "staff_tax_profile_histories" ADD CONSTRAINT "staff_tax_profile_histories_staff_member_id_fkey" FOREIGN KEY ("staff_member_id") REFERENCES "staff_members" ("staff_member_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+ALTER TABLE "staff_tax_profile_histories" ADD CONSTRAINT "staff_tax_profile_histories_account_id_fkey" FOREIGN KEY ("account_id") REFERENCES "accounts" ("account_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE "contracts" ADD CONSTRAINT "contracts_staff_member_id_fkey" FOREIGN KEY ("staff_member_id") REFERENCES "staff_members" ("staff_member_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE "contracts" ADD CONSTRAINT "contracts_store_id_fkey" FOREIGN KEY ("store_id") REFERENCES "stores" ("store_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE "contracts" ADD CONSTRAINT "contracts_previous_contract_id_fkey" FOREIGN KEY ("previous_contract_id") REFERENCES "contracts" ("contract_id") ON DELETE RESTRICT ON UPDATE NO ACTION;
@@ -1021,9 +1090,11 @@ CREATE INDEX "account_change_histories_account_id_changed_at_idx" ON "account_ch
 CREATE INDEX "login_histories_account_id_attempted_at_idx" ON "login_histories" ("account_id", "attempted_at");
 CREATE INDEX "password_reset_pins_account_id_idx" ON "password_reset_pins" ("account_id");
 CREATE INDEX "location_access_logs_account_id_occurred_at_idx" ON "location_access_logs" ("account_id", "occurred_at");
+CREATE INDEX "email_change_pins_account_id_idx" ON "email_change_pins" ("account_id");
 CREATE INDEX "staff_members_store_id_idx" ON "staff_members" ("store_id");
 CREATE INDEX "staff_members_account_id_idx" ON "staff_members" ("account_id");
 CREATE INDEX "invitations_staff_member_id_idx" ON "invitations" ("staff_member_id");
+CREATE INDEX "invitations_invitation_code_hash_idx" ON "invitations" ("invitation_code_hash");
 CREATE INDEX "link_holds_invitation_id_idx" ON "link_holds" ("invitation_id");
 CREATE INDEX "contracts_staff_member_id_idx" ON "contracts" ("staff_member_id");
 CREATE INDEX "contracts_store_id_status_idx" ON "contracts" ("store_id", "status");
@@ -1044,16 +1115,20 @@ CREATE INDEX "notification_recipients_account_id_idx" ON "notification_recipient
 CREATE INDEX "notification_recipients_admin_account_id_idx" ON "notification_recipients" ("admin_account_id");
 CREATE INDEX "notification_recipients_notification_id_idx" ON "notification_recipients" ("notification_id");
 CREATE INDEX "notification_deliveries_notification_recipient_id_idx" ON "notification_deliveries" ("notification_recipient_id");
+CREATE INDEX "notifications_related_type_related_id_idx" ON "notifications" ("related_type", "related_id");
 CREATE INDEX "notification_template_histories_notification_template_id_idx" ON "notification_template_histories" ("notification_template_id");
 CREATE INDEX "staff_member_retirement_logs_staff_member_id_processed_at_idx" ON "staff_member_retirement_logs" ("staff_member_id", "processed_at");
 CREATE INDEX "password_reset_links_account_id_idx" ON "password_reset_links" ("account_id");
 CREATE INDEX "email_find_attempts_phone_key_attempted_at_idx" ON "email_find_attempts" ("phone_key", "attempted_at");
+CREATE INDEX "invitation_code_attempts_phone_key_attempted_at_idx" ON "invitation_code_attempts" ("phone_key", "attempted_at");
+CREATE INDEX "staff_tax_profile_histories_staff_member_id_changed_at_idx" ON "staff_tax_profile_histories" ("staff_member_id", "changed_at");
 CREATE INDEX "alimtalk_send_logs_related_type_related_id_idx" ON "alimtalk_send_logs" ("related_type", "related_id");
 CREATE INDEX "alimtalk_send_logs_to_phone_sent_at_idx" ON "alimtalk_send_logs" ("to_phone", "sent_at");
 CREATE INDEX "alimtalk_send_logs_message_key_idx" ON "alimtalk_send_logs" ("message_key");
 CREATE INDEX "post_attachments_post_id_idx" ON "post_attachments" ("post_id");
 CREATE INDEX "inquiries_bp_code_id_idx" ON "inquiries" ("bp_code_id");
 CREATE INDEX "inquiry_replies_inquiry_id_idx" ON "inquiry_replies" ("inquiry_id");
+CREATE INDEX "leads_created_at_idx" ON "leads" ("created_at");
 
 -- ── 주석 ──
 COMMENT ON TABLE "identity_verifications" IS '본인인증 이력';
@@ -1071,6 +1146,7 @@ COMMENT ON COLUMN "auth_sessions"."refresh_token_hash" IS '갱신 토큰 해시 
 COMMENT ON COLUMN "auth_sessions"."issued_at" IS '발급 시각';
 COMMENT ON COLUMN "auth_sessions"."last_used_at" IS '마지막 사용 시각 — 만료는 마지막 사용 + 30일 (물리에서 추가)';
 COMMENT ON COLUMN "auth_sessions"."expires_at" IS '만료 시각 — 마지막 접속 후 30일';
+COMMENT ON COLUMN "auth_sessions"."is_remembered" IS '자동 로그인 — 켜면 마지막 사용 후 30일, 끄면 7일 (2026-10-20) (물리에서 추가)';
 COMMENT ON COLUMN "auth_sessions"."revoked_at" IS '종료 시각 — 재설정 시 모두 종료';
 COMMENT ON TABLE "accounts" IS '계정';
 COMMENT ON COLUMN "accounts"."account_id" IS '계정 ID';
@@ -1079,10 +1155,16 @@ COMMENT ON COLUMN "accounts"."password_hash" IS '비밀번호 해시';
 COMMENT ON COLUMN "accounts"."real_name" IS '실명 — 본인인증 값, 수정 불가';
 COMMENT ON COLUMN "accounts"."birth_date" IS '생년월일 — 본인인증 값, 수정 불가';
 COMMENT ON COLUMN "accounts"."phone" IS '휴대전화번호 — 본인인증, 변경 시 재인증';
+COMMENT ON COLUMN "accounts"."gender" IS '성별 — 남 · 여 — 가입 때 직원이 넣은 값, 계약서 값과 본인 대조 (WHALEERP-601, 2026-10-20) (물리에서 추가)';
+COMMENT ON COLUMN "accounts"."is_foreigner" IS '외국인 여부 — 체크하지 않으면 내국인 — 가입 때 직원이 넣은 값, 계약서 값과 본인 대조 (WHALEERP-601, 2026-10-20) (물리에서 추가)';
 COMMENT ON COLUMN "accounts"."connecting_information" IS '동일인 식별값 (논리 ci)';
 COMMENT ON COLUMN "accounts"."zip_code" IS '우편번호 — 외부 주소 검색 API 값 (ME-2) (물리에서 추가)';
 COMMENT ON COLUMN "accounts"."address" IS '기본주소 — 도로명 주소, 검색 API 값 (물리에서 추가)';
 COMMENT ON COLUMN "accounts"."address_detail" IS '상세주소 — 직접 입력 (물리에서 추가)';
+COMMENT ON COLUMN "accounts"."is_hq_sharing_consented" IS '본사 제공 동의 — 가맹 점포 직원을 BP 마스터 · BP 관리자에게 보일지 정한다. 계정에 하나 — 소속 가맹 점포 모두에 같이 적용 (2026-10-20). 철회하면 false (물리에서 추가)';
+COMMENT ON COLUMN "accounts"."hq_sharing_consent_version" IS '본사 제공 동의 문구 버전 — 동의한 문구의 버전 (물리에서 추가)';
+COMMENT ON COLUMN "accounts"."hq_sharing_agreed_at" IS '본사 제공 동의 일시 — 다시 동의하면 그 시각으로 바뀐다 (물리에서 추가)';
+COMMENT ON COLUMN "accounts"."hq_sharing_withdrawn_at" IS '본사 제공 동의 철회 일시 — 철회하지 않았으면 NULL (물리에서 추가)';
 COMMENT ON COLUMN "accounts"."status" IS '계정 상태 — 가입 완료·연결 보류·탈퇴, 휴면 없음';
 COMMENT ON COLUMN "accounts"."failed_login_count" IS '로그인 실패 횟수 — 5회 잠금';
 COMMENT ON COLUMN "accounts"."lock_expires_at" IS '잠금 해제 시각 — 재설정하면 해제 (논리 locked_until)';
@@ -1136,6 +1218,15 @@ COMMENT ON COLUMN "email_find_attempts"."is_succeeded" IS '성공 여부';
 COMMENT ON COLUMN "email_find_attempts"."failed_count" IS '실패 횟수';
 COMMENT ON COLUMN "email_find_attempts"."lock_expires_at" IS '잠금 해제 시각';
 COMMENT ON COLUMN "email_find_attempts"."attempted_at" IS '시도 시각 — (2026-10-08)';
+COMMENT ON TABLE "email_change_pins" IS '이메일 변경 핀';
+COMMENT ON COLUMN "email_change_pins"."email_change_pin_id" IS '핀 ID (논리 pin_id)';
+COMMENT ON COLUMN "email_change_pins"."account_id" IS '계정';
+COMMENT ON COLUMN "email_change_pins"."new_email" IS '새 이메일 — 핀을 보낸 주소, 소문자. 확인되면 계정 이메일이 이 값이 된다';
+COMMENT ON COLUMN "email_change_pins"."pin_hash" IS '핀 검증값 — 원본 저장 안 함';
+COMMENT ON COLUMN "email_change_pins"."issued_at" IS '발급 시각 — 1분 재발급 제한, 하루 10회';
+COMMENT ON COLUMN "email_change_pins"."expires_at" IS '만료 시각 — 발급 시각부터 15분';
+COMMENT ON COLUMN "email_change_pins"."attempt_count" IS '시도 횟수 — 5회 틀리면 그 핀은 닫힘, 새 핀을 받는다';
+COMMENT ON COLUMN "email_change_pins"."used_at" IS '사용 시각 — 이메일을 바꾸면 남김. 새 핀 메일이 나가면 앞선 핀도 닫는다 (#191, 2026-10-20)';
 COMMENT ON TABLE "staff_members" IS '직원 레코드';
 COMMENT ON COLUMN "staff_members"."staff_member_id" IS '직원 레코드 ID';
 COMMENT ON COLUMN "staff_members"."store_id" IS '점포';
@@ -1149,10 +1240,6 @@ COMMENT ON COLUMN "staff_members"."hired_date" IS '입사일';
 COMMENT ON COLUMN "staff_members"."employment_status" IS '재직 상태 — 재직·퇴직';
 COMMENT ON COLUMN "staff_members"."join_status" IS '가입 상태 — 초안·초대 발송·가입 완료';
 COMMENT ON COLUMN "staff_members"."retired_date" IS '퇴직일';
-COMMENT ON COLUMN "staff_members"."is_hq_sharing_consented" IS '본사 제공 동의 — 가맹 점포 직원을 BP 마스터 · BP 관리자에게 보일지 정한다 (#137, 2026-10-12 재영, 명세 「직원 초대와 가입 확인」). 철회하면 false (물리에서 추가)';
-COMMENT ON COLUMN "staff_members"."hq_sharing_consent_version" IS '본사 제공 동의 문구 버전 — 동의한 문구의 버전 (물리에서 추가)';
-COMMENT ON COLUMN "staff_members"."hq_sharing_agreed_at" IS '본사 제공 동의 일시 — 다시 동의하면 그 시각으로 바뀐다 (물리에서 추가)';
-COMMENT ON COLUMN "staff_members"."hq_sharing_withdrawn_at" IS '본사 제공 동의 철회 일시 — 철회하지 않았으면 NULL (물리에서 추가)';
 COMMENT ON COLUMN "staff_members"."created_at" IS '등록 일시 (물리에서 추가)';
 COMMENT ON COLUMN "staff_members"."updated_at" IS '최근 수정 일시 (물리에서 추가)';
 COMMENT ON TABLE "staff_tax_profiles" IS '신고 정보';
@@ -1168,6 +1255,7 @@ COMMENT ON COLUMN "invitations"."invitation_id" IS '초대 ID';
 COMMENT ON COLUMN "invitations"."staff_member_id" IS '직원 레코드 — 재초대로 여러 건';
 COMMENT ON COLUMN "invitations"."invitation_type" IS '초대 유형 — 가입 초대·재초대·소속 추가 확인·복귀 확인 (논리 type)';
 COMMENT ON COLUMN "invitations"."invitation_token" IS '초대 토큰 — 가입 초대·재초대만 (논리 token)';
+COMMENT ON COLUMN "invitations"."invitation_code_hash" IS '초대 코드 해시 — 초대 코드(8자리)의 HMAC-SHA256(JWT_SECRET) — 가입 초대·재초대만, 휴대전화번호와 함께 찾는다 (JOIN-7, 2026-10-19) (물리에서 추가)';
 COMMENT ON COLUMN "invitations"."channel" IS '수신 채널';
 COMMENT ON COLUMN "invitations"."sent_at" IS '발송 일시';
 COMMENT ON COLUMN "invitations"."expires_at" IS '만료 일시 — 30일';
@@ -1192,6 +1280,19 @@ COMMENT ON COLUMN "staff_member_retirement_logs"."contract_id" IS '퇴직일에 
 COMMENT ON COLUMN "staff_member_retirement_logs"."previous_contract_end_date" IS '처리 시점 계약 종료일 — 참고용 (2026-10-08)';
 COMMENT ON COLUMN "staff_member_retirement_logs"."processed_by" IS '처리 관리자';
 COMMENT ON COLUMN "staff_member_retirement_logs"."processed_at" IS '처리 일시 — 같은 처리는 같은 시각';
+COMMENT ON TABLE "invitation_code_attempts" IS '초대 코드 입력 시도';
+COMMENT ON COLUMN "invitation_code_attempts"."invitation_code_attempt_id" IS '시도 ID';
+COMMENT ON COLUMN "invitation_code_attempts"."phone_key" IS '휴대전화번호 키 — HMAC, 원본 저장 안 함, 초대가 없는 번호도 같은 기준으로 셈';
+COMMENT ON COLUMN "invitation_code_attempts"."is_succeeded" IS '성공 여부 — 기본 false';
+COMMENT ON COLUMN "invitation_code_attempts"."failed_count" IS '실패 횟수 — 기본 0, 5회면 30분 잠금';
+COMMENT ON COLUMN "invitation_code_attempts"."lock_expires_at" IS '잠금 해제 시각 — 잠겨 있지 않으면 비움';
+COMMENT ON COLUMN "invitation_code_attempts"."attempted_at" IS '시도 시각 — (phone_key, attempted_at) 인덱스 · 재발송하면 실패 0 행을 쌓아 잠금을 푼다 (JOIN-7, 2026-10-20)';
+COMMENT ON TABLE "staff_tax_profile_histories" IS '신고 정보 변경 이력';
+COMMENT ON COLUMN "staff_tax_profile_histories"."staff_tax_profile_history_id" IS '이력 ID';
+COMMENT ON COLUMN "staff_tax_profile_histories"."staff_member_id" IS '직원 레코드 — 신고 정보는 레코드마다 하나라 이력도 레코드 기준';
+COMMENT ON COLUMN "staff_tax_profile_histories"."field" IS '바뀐 항목 — 주민등록번호 · 급여 계좌(은행·계좌번호 함께)';
+COMMENT ON COLUMN "staff_tax_profile_histories"."account_id" IS '바꾼 계정 — 직원 본인만 고친다 (TAX-07)';
+COMMENT ON COLUMN "staff_tax_profile_histories"."changed_at" IS '바꾼 시각 — (staff_member_id, changed_at) 인덱스 · 값(이전·새 값)은 남기지 않음 · 처음 작성도 항목마다 한 행 (#334, 2026-10-20)';
 COMMENT ON TABLE "contracts" IS '근로계약';
 COMMENT ON COLUMN "contracts"."contract_id" IS '근로계약 ID';
 COMMENT ON COLUMN "contracts"."staff_member_id" IS '직원 레코드';
@@ -1202,7 +1303,7 @@ COMMENT ON COLUMN "contracts"."employment_type" IS '계약 유형 — 정직원�
 COMMENT ON COLUMN "contracts"."contract_method" IS '계약 방식 — ELECTRONIC·PAPER (CTR-23)';
 COMMENT ON COLUMN "contracts"."start_date" IS '계약 시작일 — 종료일 비우면 무기한 (논리 start_date·end_date)';
 COMMENT ON COLUMN "contracts"."end_date" IS '계약 종료일 — 종료일 비우면 무기한 (논리 start_date·end_date)';
-COMMENT ON COLUMN "contracts"."weekly_holiday" IS '주휴일 — 근무요일과 함께 초안에서 정한다 (2026-10-06 재영, 컬럼 유지) (물리에서 추가)';
+COMMENT ON COLUMN "contracts"."weekly_holiday" IS '주휴일 — 근무하지 않는 요일 하나를 관리자가 고른다. 주 소정근로시간 15시간 미만이면 NULL (노무사 확인 2026-10-14) (물리에서 추가)';
 COMMENT ON COLUMN "contracts"."is_health_pension_insured" IS '건강보험·국민연금 가입';
 COMMENT ON COLUMN "contracts"."is_employment_injury_insured" IS '고용보험·산재보험 가입';
 COMMENT ON COLUMN "contracts"."wage_amount" IS '급여액 — 시급 — 고용 형태와 상관없이 시급만 둔다. 월급은 근로시간으로 셈한다 (2026-10-12)';
@@ -1218,6 +1319,9 @@ COMMENT ON COLUMN "contracts"."pay_month" IS '임금지급 월 — 당월·익�
 COMMENT ON COLUMN "contracts"."pay_day" IS '임금지급일 — 1~31, 31은 말일';
 COMMENT ON COLUMN "contracts"."annual_leave_terms" IS '연차휴가 조항 — 계약서 연차휴가 조항. 작성 화면이 기본 문구를 채우고 관리자가 고친다 (2026-10-12) (물리에서 추가)';
 COMMENT ON COLUMN "contracts"."severance_pay_terms" IS '퇴직금 조항 — 계약서 퇴직금 조항. 작성 화면이 기본 문구를 채우고 관리자가 고친다 (2026-10-12) (물리에서 추가)';
+COMMENT ON COLUMN "contracts"."pay_method" IS '급여 지급 방식 — 계좌 · 현금 — 계약서 임금 조항 (2026-10-15) (물리에서 추가)';
+COMMENT ON COLUMN "contracts"."probation_months" IS '수습 기간 — 개월, 1~3. 비우면 수습 없음 — 정직원이고 계약 기간이 1년 이상이거나 기간의 정함이 없을 때만 (노무사 확인 2026-10-14) (물리에서 추가)';
+COMMENT ON COLUMN "contracts"."probation_wage_reduction_rate" IS '수습 임금 감액률 — %, 0~10. 수습 중 시급 = 시급 × (1 − 감액률) — 최저임금의 90% 이상 (노무사 확인 2026-10-14) (물리에서 추가)';
 COMMENT ON COLUMN "contracts"."status" IS '계약 상태 — 임시저장·발송 대기·서명 대기·체결 완료·거부·만료·종료';
 COMMENT ON COLUMN "contracts"."draft_action" IS '초안 처리 유형 — 가입 초대·소속 추가 확인·복귀 확인·즉시 발송';
 COMMENT ON COLUMN "contracts"."sent_at" IS '발송 일시';
@@ -1239,6 +1343,8 @@ COMMENT ON COLUMN "contract_parties"."contract_id" IS '근로계약 — 1:1';
 COMMENT ON COLUMN "contract_parties"."entered_name" IS '관리자 입력 이름 (논리 admin_name·admin_phone)';
 COMMENT ON COLUMN "contract_parties"."entered_phone" IS '관리자 입력 휴대전화번호 (논리 admin_name·admin_phone)';
 COMMENT ON COLUMN "contract_parties"."entered_birth_date" IS '관리자 입력 생년월일 — 만 19세 미만 차단용 (논리 admin_birth_date)';
+COMMENT ON COLUMN "contract_parties"."entered_gender" IS '관리자 입력 성별 — 남 · 여 — 가입 값과 본인 대조 (WHALEERP-125, 2026-10-16) (물리에서 추가)';
+COMMENT ON COLUMN "contract_parties"."is_foreigner" IS '관리자 입력 외국인 여부 — 체크하지 않으면 내국인 — 가입 값과 본인 대조 (WHALEERP-125, 2026-10-16) (물리에서 추가)';
 COMMENT ON COLUMN "contract_parties"."verified_name" IS '본인인증 실명 — 실명이 다르면 실명 반영 (논리 verified_name·birth_date)';
 COMMENT ON COLUMN "contract_parties"."verified_birth_date" IS '본인인증 생년월일 — 실명이 다르면 실명 반영 (논리 verified_name·birth_date)';
 COMMENT ON COLUMN "contract_parties"."verified_phone" IS '본인인증 휴대전화번호';
@@ -1251,6 +1357,7 @@ COMMENT ON COLUMN "contract_documents"."contract_document_id" IS '파일 ID';
 COMMENT ON COLUMN "contract_documents"."contract_id" IS '근로계약';
 COMMENT ON COLUMN "contract_documents"."kind" IS '파일 구분 — 발송 원본·날인 완료본·종이 계약 근로계약서·임금계약서';
 COMMENT ON COLUMN "contract_documents"."storage_key" IS '저장 위치';
+COMMENT ON COLUMN "contract_documents"."file_name" IS '원래 파일 이름 — 올린 파일의 원래 이름 — 내려받으면 이 이름으로 저장된다 (종이 계약 날인본, 2026-10-15) (물리에서 추가)';
 COMMENT ON COLUMN "contract_documents"."checksum" IS '파일 해시';
 COMMENT ON COLUMN "contract_documents"."created_at" IS '생성 일시';
 COMMENT ON TABLE "contract_status_histories" IS '계약 상태 이력';
@@ -1412,7 +1519,7 @@ COMMENT ON COLUMN "notifications"."related_type" IS '관련 업무 유형 — �
 COMMENT ON COLUMN "notifications"."related_id" IS '관련 업무 ID';
 COMMENT ON COLUMN "notifications"."link" IS '업무 링크 — 알림을 눌러 갈 관리자 웹 경로. 알림을 만드는 업무 쪽이 넘긴다, 없으면 알림함에서 안내 (NOTIFY-16, 2026-10-13 재영)';
 COMMENT ON COLUMN "notifications"."title" IS '알림 제목 — 만들 때의 템플릿 제목을 박아 둠 — 알림함 목록 · 종 팝오버 (NOTIFY-12, 2026-10-13 재영)';
-COMMENT ON COLUMN "notifications"."body" IS '알림 내용 — 템플릿 둘째 줄';
+COMMENT ON COLUMN "notifications"."body" IS '알림 내용 — 만들 때의 템플릿 본문을 박아 둠. 제목은 title 칸 (NOTIFY-12)';
 COMMENT ON COLUMN "notifications"."dedupe_key" IS '중복 방지 키 — 같은 사건·수신자 1회';
 COMMENT ON COLUMN "notifications"."is_urgent" IS '긴급 여부 (논리 urgent)';
 COMMENT ON COLUMN "notifications"."created_at" IS '생성 시각';
@@ -1428,7 +1535,7 @@ COMMENT ON COLUMN "notification_recipients"."created_at" IS '생성 일시 (물�
 COMMENT ON TABLE "notification_deliveries" IS '알림 발송 이력';
 COMMENT ON COLUMN "notification_deliveries"."notification_delivery_id" IS '발송 이력 ID (논리 delivery_id)';
 COMMENT ON COLUMN "notification_deliveries"."notification_recipient_id" IS '알림 수신 (논리 recipient_id)';
-COMMENT ON COLUMN "notification_deliveries"."channel" IS '발송 채널 — 앱 푸시·알림톡·이메일';
+COMMENT ON COLUMN "notification_deliveries"."channel" IS '발송 채널 — 앱 푸시·알림톡. 운영 알림 메일 결과는 두지 않는다 (운영 정책 NTF-03, 2026-10-13)';
 COMMENT ON COLUMN "notification_deliveries"."sent_at" IS '발송 시각';
 COMMENT ON COLUMN "notification_deliveries"."result" IS '발송 결과';
 COMMENT ON COLUMN "notification_deliveries"."is_fallback" IS '대체 발송 여부 — 푸시 실패 시 알림톡';
@@ -1436,7 +1543,7 @@ COMMENT ON COLUMN "notification_deliveries"."delivery_batch_id" IS '묶음 발�
 COMMENT ON TABLE "notification_preferences" IS '알림 수신 설정';
 COMMENT ON COLUMN "notification_preferences"."account_id" IS '계정';
 COMMENT ON COLUMN "notification_preferences"."preference_category" IS '수신 설정 묶음 — 근로계약서·근무스케줄·TO-DO·급여명세서';
-COMMENT ON COLUMN "notification_preferences"."is_enabled" IS '수신 여부 — 기본 켬, 계약·급여는 끌 수 없음 (논리 enabled)';
+COMMENT ON COLUMN "notification_preferences"."is_enabled" IS '수신 여부 — 기본 켬 — 네 묶음 모두 직원이 끈다. 꺼도 알림함에는 남는다 (NOTI-8, 2026-10-20 재영) (논리 enabled)';
 COMMENT ON COLUMN "notification_preferences"."updated_at" IS '변경 시각';
 COMMENT ON TABLE "notification_templates" IS '알림 템플릿';
 COMMENT ON COLUMN "notification_templates"."notification_template_id" IS '템플릿 ID';
@@ -1446,7 +1553,7 @@ COMMENT ON COLUMN "notification_templates"."template_name" IS '템플릿 이름 
 COMMENT ON COLUMN "notification_templates"."preference_category" IS '수신 설정 묶음 — 앱 푸시만. 직원 수신 설정 기준';
 COMMENT ON COLUMN "notification_templates"."title" IS '제목 — 알림톡은 비움';
 COMMENT ON COLUMN "notification_templates"."body" IS '본문 — #{변수}. 알림톡은 카카오 검수 문구와 같게';
-COMMENT ON COLUMN "notification_templates"."variables" IS '변수 목록 — [{이름, 표시 이름, 필수, 예시 값}] 순서대로. 저장 때 본문·제목의 #{변수}가 목록 안에 있는지 검사';
+COMMENT ON COLUMN "notification_templates"."variables" IS '변수 목록 — [{이름, 표시 이름, 필수, 예시 값, 버튼 링크(isButtonLink, 메일·알림톡만)}] 순서대로. 저장 때 본문·제목의 #{변수}가 목록 안에 있는지 검사';
 COMMENT ON COLUMN "notification_templates"."kakao_template_code" IS '카카오 템플릿 코드 — 알림톡만';
 COMMENT ON COLUMN "notification_templates"."default_title" IS '기본 제목 — 기본 문구로 되돌리기의 원본. 처음 넣은 40건만 (NOTIFY-17, 2026-10-13 재영)';
 COMMENT ON COLUMN "notification_templates"."default_body" IS '기본 본문 — 기본 문구로 되돌리기의 원본. 없으면 등록한 템플릿이라 되돌리기가 없다';
@@ -1501,15 +1608,16 @@ COMMENT ON COLUMN "posts"."created_at" IS '등록 일시 (물리에서 추가)';
 COMMENT ON TABLE "post_audiences" IS '노출 대상';
 COMMENT ON COLUMN "post_audiences"."post_audience_id" IS '노출 대상 ID — 대리키 — 부가서비스 상품을 여럿 고를 수 있게 (물리에서 추가)';
 COMMENT ON COLUMN "post_audiences"."post_id" IS '게시물';
-COMMENT ON COLUMN "post_audiences"."audience_type" IS '대상 유형 — 비회원·회원·BP·점포·부가서비스';
-COMMENT ON COLUMN "post_audiences"."service_code" IS '부가서비스 — 공통코드 SERVICE(1팀), 부가서비스일 때';
+COMMENT ON COLUMN "post_audiences"."audience_type" IS '대상 유형 — 비회원·회원·BP·점포 (부가서비스는 1차 미사용)';
+COMMENT ON COLUMN "post_audiences"."service_code" IS '부가서비스 — 공통코드 SERVICE(1팀), 1차 미사용';
 COMMENT ON TABLE "post_attachments" IS '첨부파일';
 COMMENT ON COLUMN "post_attachments"."post_attachment_id" IS '첨부파일 ID (논리 attachment_id)';
 COMMENT ON COLUMN "post_attachments"."post_id" IS '게시물 — 글당 5개';
 COMMENT ON COLUMN "post_attachments"."file_name" IS '파일 이름';
+COMMENT ON COLUMN "post_attachments"."file_type" IS '파일 종류 — JPG·PNG·PDF, 파일 내용으로 확인 (WHALEERP-272, 운영 정책 CNT-18 v144)';
 COMMENT ON COLUMN "post_attachments"."size_bytes" IS '파일 크기 — 10MB 이하';
-COMMENT ON COLUMN "post_attachments"."storage_key" IS '저장 위치';
-COMMENT ON COLUMN "post_attachments"."sort_order" IS '순서';
+COMMENT ON COLUMN "post_attachments"."storage_key" IS '저장 위치 — 공개 주소 아님 — 저장소 키(posts/{post_id}/…) (WHALEERP-272)';
+COMMENT ON COLUMN "post_attachments"."sort_order" IS '순서 — 자리 1~5 — 지우지 않은 첨부끼리 겹치지 않아 공지당 5개. 보이는 순서는 올린 순서 (WHALEERP-272)';
 COMMENT ON COLUMN "post_attachments"."is_deleted" IS '삭제 표시 (물리에서 추가)';
 COMMENT ON COLUMN "post_attachments"."created_at" IS '등록 일시 (물리에서 추가)';
 COMMENT ON TABLE "inquiries" IS '문의사항';
@@ -1521,9 +1629,9 @@ COMMENT ON COLUMN "inquiries"."inquiry_category_code" IS '문의 유형 (논리 
 COMMENT ON COLUMN "inquiries"."title" IS '제목';
 COMMENT ON COLUMN "inquiries"."body" IS '문의 내용';
 COMMENT ON COLUMN "inquiries"."status" IS '답변 상태 — 접수·처리중·답변완료';
-COMMENT ON COLUMN "inquiries"."processing_started_by" IS '처리 시작 관리자 — 처리중으로 바꾼 관리자 (2026-10-13, Plane #274). 처리중을 거치지 않고 답변하면 NULL (물리에서 추가)';
-COMMENT ON COLUMN "inquiries"."processing_started_at" IS '처리 시작 일시 — 처리중으로 바꾼 시각 (2026-10-13, Plane #274). 처리중을 거치지 않고 답변하면 NULL (물리에서 추가)';
 COMMENT ON COLUMN "inquiries"."internal_memo" IS '운영자 내부 메모 — 사용자에게 안 보임';
+COMMENT ON COLUMN "inquiries"."processing_started_by" IS '처리 시작 관리자 — 처리중으로 바꾼 관리자 (2026-10-13, Plane #274). 처리중을 거치지 않고 답변하면 NULL';
+COMMENT ON COLUMN "inquiries"."processing_started_at" IS '처리 시작 시각 — 처리중으로 바꾼 시각 (2026-10-13, Plane #274). 처리중을 거치지 않고 답변하면 NULL';
 COMMENT ON COLUMN "inquiries"."created_at" IS '등록 시각';
 COMMENT ON COLUMN "inquiries"."updated_at" IS '최근 수정 일시 (물리에서 추가)';
 COMMENT ON TABLE "inquiry_replies" IS '문의 답변';
@@ -1554,12 +1662,14 @@ COMMENT ON COLUMN "leads"."body" IS '문의 내용';
 COMMENT ON COLUMN "leads"."privacy_agreed_at" IS '개인정보 동의 일시 — 필수';
 COMMENT ON COLUMN "leads"."marketing_agreed_at" IS '마케팅 동의 일시 — 선택';
 COMMENT ON COLUMN "leads"."status" IS '답변 상태';
-COMMENT ON COLUMN "leads"."processing_started_by" IS '처리 시작 관리자 — 처리중으로 바꾼 관리자 (2026-10-13, Plane #274). 처리중을 거치지 않고 답변하면 NULL (물리에서 추가)';
-COMMENT ON COLUMN "leads"."processing_started_at" IS '처리 시작 일시 — 처리중으로 바꾼 시각 (2026-10-13, Plane #274). 처리중을 거치지 않고 답변하면 NULL (물리에서 추가)';
-COMMENT ON COLUMN "leads"."reply" IS '사용자 노출 답변 — 이메일로 회신';
-COMMENT ON COLUMN "leads"."replied_by" IS '답변 관리자 — 답변을 저장한 관리자 (2026-10-12 재영, Plane #274) (물리에서 추가)';
-COMMENT ON COLUMN "leads"."replied_at" IS '답변 일시 — 답변을 저장한 시각 (2026-10-12 재영, Plane #274) (물리에서 추가)';
+COMMENT ON COLUMN "leads"."reply" IS '사용자 노출 답변 — 이메일로 회신, 이력 없이 하나';
 COMMENT ON COLUMN "leads"."internal_memo" IS '운영자 내부 메모';
+COMMENT ON COLUMN "leads"."processing_started_by" IS '처리 시작 관리자 — 처리중으로 바꾼 관리자 (2026-10-13, Plane #274). 처리중을 거치지 않고 답변하면 NULL';
+COMMENT ON COLUMN "leads"."processing_started_at" IS '처리 시작 시각 — 처리중으로 바꾼 시각 (2026-10-13, Plane #274). 처리중을 거치지 않고 답변하면 NULL';
+COMMENT ON COLUMN "leads"."replied_by" IS '답변 관리자 — 답변을 저장한 관리자 (2026-10-12 재영, Plane #274)';
+COMMENT ON COLUMN "leads"."replied_at" IS '답변 시각 — 답변을 저장한 시각 (2026-10-12 재영, Plane #274)';
+COMMENT ON COLUMN "leads"."reply_mail_result" IS '마지막 답변 메일 결과 — 마지막 답변 메일의 결과 — 보낸 적 없거나 결과를 아직 모르면(보내는 중) NULL (WHALEERP-597, 2026-10-19 재영)';
+COMMENT ON COLUMN "leads"."reply_mail_attempted_at" IS '마지막 답변 메일 시각 — 마지막으로 답변 메일을 보내려 한 시각 — 다시 보내기 1분 간격의 기준 (WHALEERP-597, 2026-10-19 재영)';
 COMMENT ON COLUMN "leads"."created_at" IS '접수 일시';
-COMMENT ON COLUMN "leads"."updated_at" IS '최근 수정 일시 — 동시 저장 충돌 판정 (2026-10-12 재영, Plane #274) (물리에서 추가)';
+COMMENT ON COLUMN "leads"."updated_at" IS '최종 수정 일시 — 동시 저장 충돌 판정 (2026-10-12 재영, Plane #274)';
 COMMENT ON COLUMN "leads"."consulted_date" IS '상담 완료일 — 1년 뒤 파기';

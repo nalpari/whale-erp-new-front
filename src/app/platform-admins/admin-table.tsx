@@ -5,21 +5,24 @@ import { Badge, DataTable, type Column } from "@/components/common";
 import { formatDateTime, formatPhone } from "@/lib/format";
 import type { PlatformAdmin } from "@/lib/platform-admins";
 
-// 플랫폼 관리자 목록 표(S-YTKWGG). 아이디 · 이름을 누르면 상세 패널이 열린다.
+// 플랫폼 관리자 목록 표(S-YTKWGG). 이름을 누르면 상세 패널이 열린다. 아이디는 고칠 수 없는 값이라 링크로 두지 않는다(2026-10-20 디자인 수정).
 // 미사용 계정은 줄 글자를 흐리게 하고 상태 배지(Badge, 사용 · 미사용 글자)로 가른다 — 색만으로 말하지 않는다(DESIGN.md).
 
 // 연락처 · 이메일 칸 앞 아이콘. public/icons 에 없는 모양이라 데모(docs/demo/src/pages/system/admins.mjs)와 같은 선을 그대로 그린다.
+// 동그라미를 두른 모양으로 바꿨다(2026-10-20 디자인 수정).
 const ICON = {
   phone: (
     <>
-      <rect x="6.4" y="2.6" width="11.2" height="18.8" rx="2.4" />
-      <path d="M10.4 18.4h3.2" />
+      <circle cx="12" cy="12" r="10.5" />
+      <rect x="9" y="6.5" width="6" height="11" rx="1.6" />
+      <path d="M10.5 15.3h3" />
     </>
   ),
   mail: (
     <>
-      <rect x="3" y="5.4" width="18" height="13.2" rx="1.8" />
-      <path d="m3.6 6.4 8.4 6.6 8.4-6.6" />
+      <circle cx="12" cy="12" r="10.5" />
+      <rect x="6.8" y="8.8" width="10.4" height="7.4" rx="1" />
+      <path d="m7.3 9.6 4.7 3.7 4.7-3.7" />
     </>
   ),
 };
@@ -29,7 +32,7 @@ function WithIcon({ icon, children }: { icon: keyof typeof ICON; children: React
     <span className="inline-flex max-w-full items-center gap-[6px]">
       <svg
         viewBox="0 0 24 24"
-        className="size-[13px] shrink-0 text-erp-label"
+        className="size-[17px] shrink-0 text-erp-label"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.5"
@@ -68,7 +71,7 @@ export function AdminTable({
   );
 
   const columns: Column<PlatformAdmin>[] = [
-    { header: "아이디", width: "w-[130px]", cell: (a) => open(a, a.loginId) },
+    { header: "아이디", width: "w-[130px]", cell: (a) => dim(a, a.loginId) },
     { header: "이름", width: "w-[110px]", cell: (a) => open(a, a.name ?? a.loginId) },
     { header: "사용자 권한", width: "w-[150px]", cell: (a) => dim(a, a.roleGroup.name) },
     {
@@ -76,8 +79,8 @@ export function AdminTable({
       width: "w-[100px]",
       cell: (a) => (a.accountStatus === "ACTIVE" ? <Badge tone="on">사용</Badge> : <Badge tone="off">미사용</Badge>),
     },
-    { header: "연락처", width: "w-[150px]", cell: (a) => (a.phone ? dim(a, <WithIcon icon="phone">{formatPhone(a.phone)}</WithIcon>) : "—") },
-    { header: "이메일", align: "left", cell: (a) => (a.email ? dim(a, <WithIcon icon="mail">{a.email}</WithIcon>) : "—") },
+    { header: "연락처", width: "w-[150px]", align: "left", cell: (a) => (a.phone ? dim(a, <WithIcon icon="phone">{formatPhone(a.phone)}</WithIcon>) : "") },
+    { header: "이메일", width: "w-[220px]", align: "left", cell: (a) => (a.email ? dim(a, <WithIcon icon="mail">{a.email}</WithIcon>) : "") },
     {
       header: "최근 로그인",
       width: "w-[180px]",

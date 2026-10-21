@@ -135,12 +135,9 @@ export function ServiceLinks({ targets = {} }: { targets?: { erp?: ServiceTarget
         <ServiceLink target={targets.addon} label="부가서비스 현황" className={`${ICON_HOVER} w-[32px] bg-white`}>
           <Image src="/icons/service-chat.svg" alt="" width={19} height={19} />
         </ServiceLink>
-        <ServiceLink target={targets.platform} label="플랫폼관리" className={`${ICON_HOVER} w-[14px]`}>
-          <span className="grid grid-cols-3 gap-[2.5px]">
-            {Array.from({ length: 9 }, (_, i) => (
-              <Image key={i} src="/icons/dot.svg" alt="" width={3} height={3} />
-            ))}
-          </span>
+        {/* 플랫폼관리는 톱니바퀴(데모 service-platform.svg, 2026-10-20). 아홉 점 아이콘에서 바꿨다 */}
+        <ServiceLink target={targets.platform} label="플랫폼관리" className={`${ICON_HOVER} w-[20px] bg-white`}>
+          <Image src="/icons/service-platform.svg" alt="" width={20} height={20} />
         </ServiceLink>
       </div>
     </div>
@@ -160,11 +157,20 @@ export function AlarmLink({ href }: { href: string }) {
 // Figma Top2. 흰 윗줄(로고 + 오른쪽 컨트롤), 짙은 1depth 메뉴 줄, 그 아래 펼쳐지는 2depth 줄.
 // right 에는 StoreSelect, ServiceLinks, AlarmLink(또는 알림 종 슬롯), UserPop 을 차례로 넣는다. 선택기가 없으면 빈 flex-1 로 자리를 채운다.
 // StoreSelect 가 남는 폭을 차지해 나머지를 오른쪽으로 민다.
-export function GlobalHeader({ menus, right }: { menus: HeaderMenu[]; right?: ReactNode }) {
+export function GlobalHeader({
+  menus,
+  right,
+  inert,
+}: {
+  menus: HeaderMenu[];
+  right?: ReactNode;
+  /** 바탕창이 뜬 동안 헤더를 Tab 에서 뺀다 — 바탕창은 클릭만 가로채 포커스를 가두지 않는다(AdminFrame, 코드 리뷰, 2026-10-20) */
+  inert?: boolean;
+}) {
   const { ref, ...state } = useHeaderMenu();
 
   return (
-    <header ref={ref} className="bg-white">
+    <header ref={ref} inert={inert} className="bg-white">
       <div className="flex h-[70px] items-center gap-[34px] px-[24px]">
         <Logo />
         {right && <div className="flex flex-1 items-center gap-[12px]">{right}</div>}

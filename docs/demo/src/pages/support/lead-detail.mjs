@@ -3,6 +3,7 @@
 // 도입문의 답변은 하나다 — 고치면 덮어쓰고(PUT /leads/{id}/reply) 이전 답변은 남지 않는다. 문의사항과 다르다.
 import * as ui from "../../ui.mjs";
 import * as p from "../../staff-parts.mjs";
+import * as x from "../../extra.mjs";
 import { platformHeader, link } from "../../site.mjs";
 
 // 아래 부품은 1팀 공통 컴포넌트에 없어 토큰으로 그렸다(notice-edit 과 같은 모양).
@@ -43,6 +44,13 @@ const fold = (summary, inner) =>
 export const render = ({ A, R }, state = "wait") => {
   const done = state === "done";
   const c = CASES[done ? "done" : "wait"];
+  const delId = x.dialogId();
+  const delDialog = x.dialog(
+    delId,
+    "도입문의 삭제",
+    `${c.name} · ${c.at} 접수 건을 지웁니다. 지우면 기록이 남지 않고 되돌릴 수 없습니다.`,
+    ui.button("취소", { variant: "off", "data-close": true }) + ui.button("삭제", { href: link(R, "support/community-leads.html") }),
+  );
   const left =
     box(`${c.name} · ${c.industry}`, "",
       prose(c.body) +
@@ -54,10 +62,16 @@ export const render = ({ A, R }, state = "wait") => {
     box("답변", hint("적어 준 이메일로 나갑니다"), done
       ? prose(ANSWER) +
           `<p class="text-[13px] text-erp-label">08-28 14:05 · 이서준</p>` +
-          // 처음 답할 때만 문의자 이메일로 보낸다. 고쳐도 다시 보내지 않는다 — 메일은 #588 뒤에 붙는다(지금 api 는 보내지 않고, 상세에 발송 칸도 없다).
+          // 처음 답할 때만 문의자 이메일로 보낸다(#588). 고쳐도 다시 보내지 않는다.
+          // 마지막 답변 메일 결과 · 시각은 leads 칸(reply_mail_result · reply_mail_attempted_at)에서 읽는다(#597). 데모는 실패한 건.
+          // [다시 보내기]는 답변 완료 건에만, 저장된 지금 답변을 보낸다. 같은 도입문의는 1분 간격 제한.
+          spread(
+            ui.detailTable("답변 메일", [["마지막 발송", `${ui.badge("off", "실패")} 08-28 14:05`]]),
+            ui.button("답변 메일 다시 보내기", { variant: "soft", "data-toast": "답변 메일을 다시 보냈습니다." }),
+          ) +
           fold("답변 수정", ui.field("내용", ui.textarea({ rows: 6, value: ANSWER })) + spread(note("고치면 지금 답변을 덮어씁니다. 상태는 답변 완료 그대로이고 운영 알림 · 메일은 다시 가지 않습니다."), ui.button("답변 저장")))
       : ui.field("내용", ui.textarea({ placeholder: "계정이 없는 분이라 이 내용이 메일로 그대로 갑니다." })) +
-          spread(note("저장하면 상태가 답변 완료로 바뀌고 오늘이 상담 완료일로 남습니다. 처음 저장할 때만 문의자 이메일로 답변이 갑니다(#588 뒤 — 지금은 보내지 않음). 다른 운영자가 먼저 저장했으면 막고 최신 내용을 다시 보입니다."), ui.button("답변 저장")),
+          spread(note("저장하면 상태가 답변 완료로 바뀌고 오늘이 상담 완료일로 남습니다. 처음 저장할 때만 문의자 이메일로 답변이 갑니다. 다른 운영자가 먼저 저장했으면 막고 최신 내용을 다시 보입니다."), ui.button("답변 저장")),
     ) +
     box("운영자 메모", hint("문의자에게 보이지 않습니다"),
       ui.field(
@@ -85,10 +99,10 @@ export const render = ({ A, R }, state = "wait") => {
       ]),
     ) +
     // 상담 완료일은 답변 완료가 되는 날 자동으로 남고, 그날부터 1년 뒤 파기한다(WHALEERP-274 · 295).
-    // 상담하지 않은 도입문의(상담 완료일 없음)는 상세의 [삭제]로 지운다. 확인창을 띄우고, 지우면 행을 남기지 않는다(개인정보 파기). 상담을 마친 건은 지우지 못하고 1년 뒤 배치가 파기한다(CNT-11 v120, #590 — 지우는 api 는 아직 없다).
+    // 상담하지 않은 도입문의(상담 완료일 없음)는 상세의 [삭제]로 지운다. 확인창을 띄우고, 지우면 행을 남기지 않는다(개인정보 파기). 상담을 마친 건은 지우지 못하고 1년 뒤 배치가 파기한다(CNT-11 v120, #590).
     plain(
       ui.detailTable("보관", [["상담 완료일", c.consulted ?? p.sub("답변을 저장하는 날 남습니다")], ["파기 예정", c.purge ?? p.sub("상담 완료일로부터 1년")]]) +
-        note(c.consulted ? "상담을 마친 건이라 지울 수 없고, 상담 완료일로부터 1년 뒤 배치가 파기합니다." : "상담하지 않은 건은 [삭제]로 지웁니다. 확인창을 띄우고, 지우면 기록이 남지 않습니다(#590 뒤)."),
+        note(c.consulted ? "상담을 마친 건이라 지울 수 없고, 상담 완료일로부터 1년 뒤 배치가 파기합니다." : "상담하지 않은 건은 [삭제]로 지웁니다. 확인창을 띄우고, 지우면 기록이 남지 않습니다."),
     ) +
     tbox("처리 이력", "",
       steps([
@@ -97,7 +111,7 @@ export const render = ({ A, R }, state = "wait") => {
         // 「도입문의 처리 상태 변경」 운영 알림(NTF_LEAD_ANSWERED)은 처리중으로 바꿀 때와 처음 답변 완료가 될 때 한 번씩 간다. 답변 수정은 알리지 않는다.
         // 「확인」 줄은 처리중을 거친 건만 그린다 — 처리 시작 없이 바로 답했으면 api 가 processingStartedAt 을 null 로 주고 이 줄을 숨긴다(답변 완료 데모가 그 경우).
         ...(done ? [] : [["확인", "[처리 시작]을 누르면 처리중 · 시각 · 운영자가 남음", false]]),
-        done ? ["답변", "08-28 14:05 · 이서준 · 문의자 이메일은 #588 뒤", true] : ["답변", "-", false],
+        done ? ["답변", "08-28 14:05 · 이서준", true] : ["답변", "-", false],
       ]),
     );
 
@@ -110,8 +124,8 @@ export const render = ({ A, R }, state = "wait") => {
       body: ui.detailBody(
         p.detailHead(
           "도입문의 상세",
-          `<div class="flex items-center gap-[6px]">${c.consulted ? "" : ui.button("삭제", { variant: "soft" })}${done ? "" : ui.button("처리 시작", { variant: "soft" })}${ui.button("목록", { variant: "off", href: link(R, "support/community-leads.html") })}</div>`,
-        ) + p.cols(left, right),
+          `<div class="flex items-center gap-[6px]">${c.consulted ? "" : x.dialogTrigger("삭제", delId, "soft")}${done ? "" : ui.button("처리 시작", { variant: "soft" })}${ui.button("목록", { variant: "off", href: link(R, "support/community-leads.html") })}</div>`,
+        ) + p.cols(left, right) + (c.consulted ? "" : delDialog),
       ),
     }),
   };

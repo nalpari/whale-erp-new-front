@@ -9,7 +9,7 @@
   </head>
   <body data-root="../" data-page="system" data-sub="system/admins.html">
     <!-- 플랫폼 관리자 정보 등록 · /platform/system/admins/new · S-FOJJKB · 1팀
-         기본정보(아이디·이름·연락처·이메일 필수, 소속 부서·직책·주소 선택)와 사용자 권한 하나(필수)를 받는다.
+         기본정보(아이디·이름·연락처·이메일 필수, 소속부서·직책·주소 선택)와 사용자 권한 하나(필수)를 받는다.
          입력 형식과 길이는 식별정보 중복 검사 정책(PL-OCJOFP)의 계정 기본정보 입력 규칙을 따른다.
          아이디는 삭제한 계정까지 포함해 겹칠 수 없고, 이메일은 사용·미사용 계정과만 겹치지 않으면 된다. 중복 안내는 항목별로 따로 낸다.
          계정 상태 항목은 없다 — 새 계정은 늘 사용으로 생긴다. 비밀번호 입력도 없다 — 12자 무작위 초기 비밀번호를 등록 이메일로만 보낸다(S-WABHRE).
@@ -144,7 +144,7 @@
                     <span class="err" data-show="dupmail" hidden><span data-icon="alert" data-icon-size="13"></span>사용 중이거나 미사용인 다른 관리자 계정의 이메일입니다.</span>
                   </div>
                   <div class="field">
-                    <label for="ndept">소속 부서</label>
+                    <label for="ndept">소속부서</label>
                     <input class="input" id="ndept" value="플랫폼운영팀" maxlength="30" />
                   </div>
                   <div class="field">
@@ -216,7 +216,7 @@
             <div class="band band--info">
               <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
               <div class="band__body">
-                <div class="band__title">초기 비밀번호를 등록 이메일로 발송합니다.</div>
+                <div class="band__title">관리자 계정의 초기 비밀번호는 등록된 이메일로 발송됩니다.</div>
               </div>
             </div>
           </div>
