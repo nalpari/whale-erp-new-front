@@ -169,3 +169,65 @@ export function faqBody(f: PostForm, status: PostStatus): Schemas["CreatePostDto
 export function sizeLabel(bytes: number): string {
   return bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)}MB` : `${Math.max(1, Math.ceil(bytes / 1024))}KB`;
 }
+
+// ── 고객지원(#282 · 283 · 284) — 로그인한 관리자가 노출 대상에 든 공지 · FAQ 를 읽고 자기 문의를 남긴다. 화면 주소 = 메뉴 URL = api 경로다.
+export const SUPPORT_NOTICE_BASE = "/support-notices";
+export const SUPPORT_FAQ_BASE = "/support-faqs";
+export const SUPPORT_INQUIRY_BASE = "/support-inquiries";
+
+export type InquiryStatus = Schemas["InquiryStatus"];
+export type SupportNoticeQuery = ListQuery & { keyword: string; noticeType: NoticeType | "" };
+export type SupportFaqQuery = ListQuery & { keyword: string; faqCategoryCode: string };
+export type SupportInquiryQuery = ListQuery & { title: string; status: InquiryStatus | "" };
+
+const NOTICE_TYPES: readonly NoticeType[] = ["MAINTENANCE", "FEATURE", "TERMS", "GENERAL"];
+const INQUIRY_STATUSES: readonly InquiryStatus[] = ["RECEIVED", "IN_PROGRESS", "ANSWERED"];
+
+// 검색어 한도는 api 와 같다(공지 · FAQ keyword 100자, 문의 제목 200자). FAQ 카테고리는 공통코드 상세 코드 20자.
+export const parseSupportNoticeQuery = (raw: Raw): SupportNoticeQuery => ({
+  ...pageOf(raw),
+  keyword: textOf(first(raw.keyword), 100),
+  noticeType: oneOf(NOTICE_TYPES, first(raw.noticeType)),
+});
+export const parseSupportFaqQuery = (raw: Raw): SupportFaqQuery => ({
+  ...pageOf(raw),
+  keyword: textOf(first(raw.keyword), 100),
+  faqCategoryCode: textOf(first(raw.faqCategoryCode), 20),
+});
+export const parseSupportInquiryQuery = (raw: Raw): SupportInquiryQuery => ({
+  ...pageOf(raw),
+  title: textOf(first(raw.title), 200),
+  status: oneOf(INQUIRY_STATUSES, first(raw.status)),
+});
+
+/**
+ * 문의 첨부 고르기(CNT-18). 6번째 · 10MB 초과 · JPG · PNG · PDF 가 아닌 파일은 그 파일만 빼고 까닭을 돌려준다 —
+ * 이미 올린 파일과 쓴 내용은 그대로 둔다. had 는 이미 올린 파일 수다.
+ */
+export function pickInquiryFiles<F extends NewFile>(had: number, picked: readonly F[]): { accepted: F[]; rejected: string[] } {
+  const accepted: F[] = [];
+  const rejected: string[] = [];
+  for (const file of picked) {
+    if (!FILE_EXT.test(file.name)) rejected.push(`${file.name}: 이미지(JPG · PNG)와 PDF 만 올릴 수 있습니다`);
+    else if (file.size > MAX_FILE_BYTES) rejected.push(`${file.name}: 파일 하나는 10MB 까지 올릴 수 있습니다`);
+    else if (had + accepted.length >= MAX_ATTACHMENTS) rejected.push(`${file.name}: 첨부파일은 ${MAX_ATTACHMENTS}개까지 올릴 수 있습니다`);
+    else accepted.push(file);
+  }
+  return { accepted, rejected };
+}
+
+/** 쓰던 답변 · 메모와, 쓰기 시작할 때 저장돼 있던 값(base). */
+export type Draft = { text: string; base: string };
+
+/**
+ * 쓰던 글을 지금 저장된 값(saved)과 견줘 무엇을 보일지 정한다(front #87 리뷰).
+ * - 그사이 저장된 값이 그대로면 쓰던 글을 그대로 보인다.
+ * - 바뀌었는데 손대지 않은 글(「답변 수정」만 누름)이면 버리고 새로 저장된 값을 보인다 — 옛 값으로 덮어쓰지 않게.
+ * - 바뀌었고 고쳐 쓰던 글이면 남기되 stale 로 알려, 화면이 새로 저장된 값을 함께 보이게 한다.
+ */
+export function draftView(draft: Draft | undefined, saved: string): { text: string | undefined; stale: boolean } {
+  if (!draft) return { text: undefined, stale: false };
+  if (draft.base === saved) return { text: draft.text, stale: false };
+  if (draft.text === draft.base) return { text: undefined, stale: false };
+  return { text: draft.text, stale: true };
+}

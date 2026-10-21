@@ -14,14 +14,16 @@ import {
   startProcessingAction,
   type ActResult,
 } from "@/lib/community-actions";
-import { INQUIRY_BASE, LEAD_BASE, PASSWORD_REQUIRED_PREFIX, sizeLabel } from "@/lib/community-view";
+import { draftView, INQUIRY_BASE, LEAD_BASE, PASSWORD_REQUIRED_PREFIX, sizeLabel, type Draft } from "@/lib/community-view";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { formatDateTime, formatPhone } from "@/lib/format";
 
 // 문의사항 · 도입문의 상세(#277, 목업 support/inquiry-detail · lead-detail, 데모 support/inquiry-detail* · lead-detail*). 플랫폼 관리자 전용.
 // 왼쪽은 문의 내용 · 답변 · 운영자 메모, 오른쪽은 보낸 곳(문의자) · 처리 이력이다. 바꾸는 동작은 서버 액션이 하고, 성공하면 router.refresh() 로 최신 상세를 받는다.
-// 답변 입력칸은 마지막 답변, 메모 입력칸은 저장된 메모를 key 로 두어 그 값이 바뀔 때만 새로 시작한다 — 다른 동작 · 최신 불러오기로는 쓰던 글이 남는다.
-// 그사이 다른 운영자가 저장했으면(409) 까닭을 띠에 보이고 최신 내용을 다시 불러온다(#274). 세션이 끊겨도(401) 화면을 옮기지 않고 띠로만 알린다(공지 폼과 같다).
+// 쓰던 답변 · 메모는 입력칸이 아니라 useCommon 의 drafts 가 쓰기 시작할 때 저장돼 있던 값(base)과 함께 쥔다 — 다른 동작 · 최신
+// 불러오기(409 포함)로 화면이 다시 그려져도 남고, 그 칸을 저장하는 데 성공하거나 [취소]하면 비운다(front #75 리뷰). 그사이 다른 운영자가
+// 그 칸을 저장했으면 손대지 않은 글은 버리고, 고쳐 쓰던 글은 남기되 새로 저장된 값을 함께 보인다(draftView, front #87 리뷰).
+// 그사이 다른 운영자가 저장했으면(409) 까닭을 띠에 보이고 최신 내용을 다시 불러온다(#274). 그사이 지워졌으면(404) 목록으로 간다. 세션이 끊겨도(401) 화면을 옮기지 않고 띠로만 알린다(공지 폼과 같다).
 // 문의사항 답변은 이력이 남고(고치면 새 답변을 더함, 「수정됨 · 이전 답변」), 도입문의 답변은 하나를 덮어쓴다(CNT-17 v144).
 
 const ANSWER_MAX = 20_000;
@@ -31,6 +33,8 @@ const EDITED_TOAST = "답변을 고쳤습니다. 문의자에게 알림은 다�
 
 const dt = formatDateTime;
 const Note = ({ children }: { children: ReactNode }) => <p className="text-[14px] leading-[1.6] text-erp-label">{children}</p>;
+/** 쓰던 글이 그사이 저장된 값과 어긋났다는 알림(front #87 리뷰). */
+const Stale = ({ children }: { children: ReactNode }) => <p className="text-[14px] leading-[1.6] text-erp-off">{children}</p>;
 const Prose = ({ children }: { children: ReactNode }) => <p className="text-[14px] leading-[1.7] whitespace-pre-wrap break-keep text-erp-ink">{children}</p>;
 const Meta = ({ children }: { children: ReactNode }) => <p className="text-[13px] text-erp-label">{children}</p>;
 const Sub = ({ children }: { children: ReactNode }) => <span className="text-erp-muted">{children}</span>;
@@ -86,14 +90,22 @@ async function call<T>(action: () => Promise<T>): Promise<T | Failure> {
   }
 }
 
-/** 실패 띠 · 진행 중 · 서버 액션 부르기. 성공하면 토스트를 띄우고 최신 상세를 다시 받는다(done 이 있으면 그것을 대신 한다). */
-function useAct() {
+/**
+ * 실패 띠 · 진행 중 · 서버 액션 부르기. 성공하면 토스트를 띄우고 최신 상세를 다시 받는다(done 이 있으면 그것을 대신 한다).
+ * 그사이 다른 운영자가 지웠으면(404) 띠만 띄우면 화면이 그대로 남으므로 까닭을 토스트로 알리고 목록으로 보낸다.
+ */
+function useAct(listHref: string, hasDrafts: boolean) {
   const router = useRouter();
   const toast = useToast();
   const [errors, setErrors] = useState<string[]>([]);
   const [busy, startTransition] = useTransition();
   const fail = ({ status, messages }: Failure) => {
-    setErrors(status === 409 ? [...messages, "최신 내용을 다시 불러왔습니다. 확인한 뒤 다시 해 주세요."] : messages);
+    if (status === 404) {
+      toast(messages[0] ?? "이미 삭제되었습니다.");
+      return router.push(listHref);
+    }
+    const reloaded = `최신 내용을 다시 불러왔습니다.${hasDrafts ? " 쓰던 답변 · 메모는 그대로 두었습니다." : ""} 확인한 뒤 다시 해 주세요.`;
+    setErrors(status === 409 ? [...messages, reloaded] : messages);
     if (status === 409) router.refresh();
     // 비밀번호 강제 변경 403 이면 SessionGate 가 변경 팝업을 다시 띄운다(BFF 와 같은 이벤트).
     if (messages[0]?.startsWith(PASSWORD_REQUIRED_PREFIX)) dispatchEvent(new Event(PASSWORD_REQUIRED_EVENT));
@@ -150,7 +162,8 @@ const StatusBadge = ({ status, statuses }: { status: InquiryDetail["status"]; st
   status === "ANSWERED" ? <Badge tone="on">{labelOf(statuses, status)}</Badge> : status === "IN_PROGRESS" ? <Tag>{labelOf(statuses, status)}</Tag> : <Badge tone="off">{labelOf(statuses, status)}</Badge>;
 
 /**
- * 답변 상자. 답변 전이면 입력칸, 답변 완료면 읽기 + 「답변 수정」(CNT-17). 답변이 저장되면 key(마지막 답변)가 바뀌어 다시 읽기로 돌아간다.
+ * 답변 상자. 답변 전이면 입력칸, 답변 완료면 읽기 + 「답변 수정」(CNT-17). 쓰던 글(draft)이 있으면 입력칸을 연다 — 저장에 성공하거나
+ * [취소]하면 draft 가 비어 읽기로 돌아간다. 그사이 다른 운영자가 답변을 저장했으면 위 읽기(view)에 새 답변이 서고 입력칸 아래에 알린다.
  * view 는 답변 완료일 때 위에 늘 보일 읽기 내용(본문 · 시각 · 메일 결과 등)이다.
  */
 function AnswerBox({
@@ -162,6 +175,8 @@ function AnswerBox({
   editNote,
   busy,
   onSave,
+  draft,
+  onDraft,
 }: {
   hint: string;
   current: string | null;
@@ -171,32 +186,39 @@ function AnswerBox({
   editNote: string;
   busy: boolean;
   onSave: (body: string) => void;
+  /** 쓰던 답변. 없으면(undefined) 저장된 답변을 읽기로 보인다. */
+  draft: Draft | undefined;
+  /** 쓰던 글을 바꾼다. base 는 지금 저장된 값 — 새로 쓰기 시작할 때만 남는다. undefined 면 비운다. */
+  onDraft: (text: string | undefined, base: string) => void;
 }) {
-  const [editing, setEditing] = useState(current === null);
-  const [draft, setDraft] = useState(current ?? "");
+  const saved = current ?? "";
+  const shown = draftView(draft, saved);
+  const editing = shown.text !== undefined || current === null;
+  const text = shown.text ?? saved;
   return (
     <Box title="답변" hint={hint}>
       {current !== null && view}
       {editing ? (
         <>
-          <Textarea rows={6} value={draft} maxLength={ANSWER_MAX} placeholder={placeholder} aria-label="답변 내용" onChange={(e) => setDraft(e.target.value)} />
+          <Textarea rows={6} value={text} maxLength={ANSWER_MAX} placeholder={placeholder} aria-label="답변 내용" onChange={(e) => onDraft(e.target.value, saved)} />
+          {shown.stale && <Stale>그사이 다른 운영자가 답변을 저장했습니다(위). 확인한 뒤 고쳐 저장하거나 [취소]하세요.</Stale>}
           <div className="flex items-center gap-[12px]">
             <div className="flex-1">
               <Note>{current === null ? firstNote : editNote}</Note>
             </div>
             {current !== null && (
-              <Button variant="off" disabled={busy} onClick={() => (setEditing(false), setDraft(current))}>
+              <Button variant="off" disabled={busy} onClick={() => onDraft(undefined, saved)}>
                 취소
               </Button>
             )}
-            <Button disabled={busy} onClick={() => onSave(draft)}>
+            <Button disabled={busy} onClick={() => onSave(text)}>
               답변 저장
             </Button>
           </div>
         </>
       ) : (
         <div>
-          <Button variant="soft" onClick={() => setEditing(true)}>
+          <Button variant="soft" onClick={() => onDraft(saved, saved)}>
             답변 수정
           </Button>
         </div>
@@ -205,16 +227,41 @@ function AnswerBox({
   );
 }
 
-function MemoBox({ memo, busy, onSave }: { memo: string | null; busy: boolean; onSave: (memo: string) => void }) {
-  const [draft, setDraft] = useState(memo ?? "");
+function MemoBox({
+  memo,
+  busy,
+  onSave,
+  draft,
+  onDraft,
+}: {
+  memo: string | null;
+  busy: boolean;
+  onSave: (memo: string) => void;
+  draft: Draft | undefined;
+  onDraft: (text: string | undefined, base: string) => void;
+}) {
+  const saved = memo ?? "";
+  const shown = draftView(draft, saved);
+  const text = shown.text ?? saved;
   return (
     <Box title="운영자 메모" hint="문의자에게 보이지 않습니다">
-      <Textarea rows={4} value={draft} maxLength={MEMO_MAX} aria-label="내부 기록" onChange={(e) => setDraft(e.target.value)} />
+      {/* 그사이 다른 운영자가 메모를 저장했다 — 쓰던 글로 덮어쓰기 전에 그 메모를 보인다. */}
+      {shown.stale && (
+        <Stale>
+          그사이 다른 운영자가 저장한 메모: {saved ? <span className="whitespace-pre-wrap text-erp-ink">{saved}</span> : "(비움)"}
+          <span className="ml-[6px]">
+            <Button variant="off" disabled={busy} onClick={() => onDraft(undefined, saved)}>
+              저장된 메모로 바꾸기
+            </Button>
+          </span>
+        </Stale>
+      )}
+      <Textarea rows={4} value={text} maxLength={MEMO_MAX} aria-label="내부 기록" onChange={(e) => onDraft(e.target.value, saved)} />
       <div className="flex items-center gap-[12px]">
         <div className="flex-1">
           <Note>다른 운영자와 함께 봅니다. 비우고 저장하면 지웁니다.</Note>
         </div>
-        <Button variant="soft" disabled={busy} onClick={() => onSave(draft)}>
+        <Button variant="soft" disabled={busy} onClick={() => onSave(text)}>
           메모 저장
         </Button>
       </div>
@@ -224,16 +271,33 @@ function MemoBox({ memo, busy, onSave }: { memo: string | null; busy: boolean; o
 
 /** 처리 시작 · 답변 · 메모 — 두 상세가 같다. */
 function useCommon(target: Target, id: number, updatedAt: string, answered: boolean) {
-  const act = useAct();
+  // 쓰던 답변 · 메모. 저장에 성공하면 그 칸만 비우고 최신 상세를 받는다.
+  const [drafts, setDrafts] = useState<{ answer?: Draft; memo?: Draft }>({});
+  // 409 안내의 「그대로 두었다」는 실제로 고쳐 쓰던 글이 있을 때만.
+  const edited = (["answer", "memo"] as const).some((f) => drafts[f] && drafts[f].text !== drafts[f].base);
+  const act = useAct(target === "inquiry" ? INQUIRY_BASE : LEAD_BASE, edited);
   const { run, setErrors } = act;
+  // base 는 쓰기 시작할 때의 저장값 — 이어 쓰는 동안은 처음 base 를 지킨다. 버려진 글(draftView 가 undefined)에 이어 쓰면 새로 시작한다.
+  const setDraft = (field: "answer" | "memo") => (text: string | undefined, base: string) =>
+    setDrafts((d) => {
+      const prev = d[field];
+      if (text === undefined) return { ...d, [field]: undefined };
+      return { ...d, [field]: { text, base: prev && draftView(prev, base).text !== undefined ? prev.base : base } };
+    });
+  const saved = (field: "answer" | "memo") => () => {
+    setDrafts((d) => ({ ...d, [field]: undefined }));
+    act.router.refresh();
+  };
   return {
     ...act,
+    drafts,
+    setDraft,
     startProcessing: () => run(() => startProcessingAction(target, id), "처리중으로 바꿨습니다."),
     saveReply: (body: string) => {
       if (!body.trim()) return setErrors(["답변을 입력해 주세요"]);
-      run(() => saveReplyAction(target, id, body, updatedAt), answered ? EDITED_TOAST : ANSWERED_TOAST);
+      run(() => saveReplyAction(target, id, body, updatedAt), answered ? EDITED_TOAST : ANSWERED_TOAST, saved("answer"));
     },
-    saveMemo: (memo: string) => run(() => saveMemoAction(target, id, memo, updatedAt), "saved"),
+    saveMemo: (memo: string) => run(() => saveMemoAction(target, id, memo, updatedAt), "saved", saved("memo")),
   };
 }
 
@@ -283,7 +347,6 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
         )}
       </Box>
       <AnswerBox
-        key={`answer-${last?.inquiryReplyId}`}
         hint="문의한 사람에게 보입니다"
         current={last?.body ?? null}
         view={
@@ -317,8 +380,10 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
         editNote="고쳐도 상태는 답변 완료 그대로입니다. 문의자에게 알림은 다시 가지 않습니다."
         busy={c.busy}
         onSave={c.saveReply}
+        draft={c.drafts.answer}
+        onDraft={c.setDraft("answer")}
       />
-      <MemoBox key={`memo-${d.internalMemo}`} memo={d.internalMemo} busy={c.busy} onSave={c.saveMemo} />
+      <MemoBox memo={d.internalMemo} busy={c.busy} onSave={c.saveMemo} draft={c.drafts.memo} onDraft={c.setDraft("memo")} />
     </>
   );
 
@@ -368,14 +433,19 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
   const answered = d.reply !== null;
   const c = useCommon("lead", d.leadId, d.updatedAt, answered);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmResend, setConfirmResend] = useState(false);
+  // api 와 같은 조건 — 상담 완료일이 없어도 답변 완료면 못 지운다(상담 완료일 없이 답변 완료된 옛 행, front #75 리뷰).
+  const deletable = !d.consultedDate && d.status !== "ANSWERED";
   const industry = d.industryDetail ? `${industryLabel(d.industryCode)} (${d.industryDetail})` : industryLabel(d.industryCode);
   // 상담 완료일로부터 1년 뒤 파기(WHALEERP-274 · 295) — api 가 주지 않아 여기서 연도만 더해 보인다(2월 29일은 3월 1일로 읽는다). 실제 파기는 api 배치가 한다.
   const purge = d.consultedDate && (d.consultedDate.endsWith("-02-29") ? `${Number(d.consultedDate.slice(0, 4)) + 1}-03-01` : `${Number(d.consultedDate.slice(0, 4)) + 1}${d.consultedDate.slice(4)}`);
 
   // 저장된 지금 답변을 다시 보낸다(#597). 답변 완료면 지난 결과와 상관없이 누를 수 있다. SMTP 가 실패해도 200 에 FAILED 라 결과를 보고 알린다.
   // 1분 안에 또 보내면 api 가 409 — 띠에 까닭을 보이고 최신 상세를 다시 받는다.
+  // 문의자 메일함에 한 통 더 가므로 확인창을 거친다(front #75 리뷰).
   const resend = () =>
     c.startTransition(async () => {
+      setConfirmResend(false);
       const result = await call(() => resendLeadReplyMailAction(d.leadId));
       if (!result.ok) return c.fail(result);
       if (result.mail.replyMailResult === "SUCCEEDED") {
@@ -411,7 +481,6 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
         <Prose>{d.body}</Prose>
       </Box>
       <AnswerBox
-        key={`answer-${d.repliedAt}`}
         hint="적어 준 이메일로 나갑니다"
         current={d.reply}
         view={
@@ -425,7 +494,7 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
               <div className="flex-1">
                 <DetailTable title="답변 메일" rows={[{ label: "마지막 발송", value: mail }]} />
               </div>
-              <Button variant="soft" disabled={c.busy || d.status !== "ANSWERED"} onClick={resend}>
+              <Button variant="soft" disabled={c.busy || d.status !== "ANSWERED"} onClick={() => setConfirmResend(true)}>
                 답변 메일 다시 보내기
               </Button>
             </div>
@@ -436,8 +505,10 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
         editNote="고치면 지금 답변을 덮어씁니다. 상태는 답변 완료 그대로이고 운영 알림 · 메일은 다시 가지 않습니다."
         busy={c.busy}
         onSave={c.saveReply}
+        draft={c.drafts.answer}
+        onDraft={c.setDraft("answer")}
       />
-      <MemoBox key={`memo-${d.internalMemo}`} memo={d.internalMemo} busy={c.busy} onSave={c.saveMemo} />
+      <MemoBox memo={d.internalMemo} busy={c.busy} onSave={c.saveMemo} draft={c.drafts.memo} onDraft={c.setDraft("memo")} />
     </>
   );
 
@@ -470,7 +541,13 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
             { label: "파기 예정", value: purge || <Sub>상담 완료일로부터 1년</Sub> },
           ]}
         />
-        <Note>{d.consultedDate ? "상담을 마친 건이라 지울 수 없고, 상담 완료일로부터 1년 뒤 배치가 파기합니다." : "상담하지 않은 건은 [삭제]로 지웁니다. 지우면 기록이 남지 않습니다."}</Note>
+        <Note>
+          {deletable
+            ? "상담하지 않은 건은 [삭제]로 지웁니다. 지우면 기록이 남지 않습니다."
+            : d.consultedDate
+              ? "상담을 마친 건이라 지울 수 없고, 상담 완료일로부터 1년 뒤 배치가 파기합니다."
+              : "답변을 마친 건이라 지울 수 없습니다."}
+        </Note>
       </div>
       <History rows={steps(d, d.repliedAt && `${dt(d.repliedAt)} · ${d.repliedByName ?? "-"}`)} />
     </>
@@ -485,7 +562,7 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
       right={right}
       buttons={
         <div className="flex items-center gap-[6px]">
-          {!d.consultedDate && (
+          {deletable && (
             <Button variant="soft" disabled={c.busy} onClick={() => setConfirmDelete(true)}>
               삭제
             </Button>
@@ -503,6 +580,9 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
     >
       <ConfirmDialog open={confirmDelete} title="도입문의를 삭제하시겠습니까?" confirmLabel="삭제" confirmVariant="danger" busy={c.busy} onConfirm={remove} onCancel={() => setConfirmDelete(false)}>
         {d.contactName} · {dt(d.createdAt)} 접수 건을 지웁니다. 지우면 기록이 남지 않고 되돌릴 수 없습니다.
+      </ConfirmDialog>
+      <ConfirmDialog open={confirmResend} title="답변 메일을 다시 보내시겠습니까?" confirmLabel="보내기" busy={c.busy} onConfirm={resend} onCancel={() => setConfirmResend(false)}>
+        {d.email} 로 지금 저장된 답변을 한 번 더 보냅니다.
       </ConfirmDialog>
     </Frame>
   );
