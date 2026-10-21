@@ -91,7 +91,8 @@ export async function getSession(): Promise<Session | null> {
 }
 
 /**
- * API 호출에 실을 Authorization 헤더 — 로그인 세션 쿠키의 접속 토큰. 세션이 없으면 비운다(api 가 401 로 알린다).
+ * API 호출에 실을 헤더 — Authorization(로그인 세션 쿠키의 접속 토큰, 세션이 없으면 빼고 api 가 401 로 알린다)과
+ * 탭 BP(X-Bp-Code-Id, bpHeader — 세션과 상관없이 proxy 가 넣은 값이 있으면 싣는다).
  * 로그인 전에 쓰던 개발 토큰(API_DEV_TOKEN)은 관리자 로그인이 생겨 2026-10-15 에 지웠다 — api 가 토큰의 접속(sid)까지 확인해
  * 서명만 맞춘 토큰은 더 통하지 않는다.
  */

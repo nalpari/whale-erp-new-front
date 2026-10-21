@@ -4,6 +4,7 @@
 // sessionStorage — 탭마다 다르다. 화면은 이것만 읽는다.
 //   current-bp: 이 탭의 서비스(WHALE_ERP·PLATFORM)와 BP / stores·codes·scope: 그 BP 의 값. bpCodeId 가 이 탭의 BP 와 다르면 버린다.
 //   store-picks: 사용자가 목록에서 고른 점포(빈 목록 포함)와 그 목록 메뉴 url — 그 메뉴 안을 오가는 동안 헤더 범위 대신 이것을 쓴다(store-scope.ts).
+//   bp-fix: BP · 가맹 계정이 남의 BP 주소로 와서 소속 BP 로 고쳐 보낸 표시(들어온 주소). 같은 주소로 다시 오면 쿠키와 로그인 정보가 어긋난 것이다.
 //   서비스와 BP 는 짝이 맞아야 해서(플랫폼 서비스 = 플랫폼 BP, ERP 서비스 = 고객 BP) 한 키에 함께 둔다.
 // next/* 를 import 하지 않는다 — node --test 로 resolveTab 을 바로 돌리기 위해서다.
 import type { AdminMenu, AdminStore, Codes, LoginInfoAccount } from "./session";
@@ -137,7 +138,7 @@ export function takeBpFix(pathname: string): boolean {
   return seen;
 }
 export const clearBpFix = () => remove(tab, [KEY.bpFix]);
-/** 이 탭의 BP · 점포 · 공통코드 · 범위를 지운다. 다음 준비가 주소로 다시 정한다(열 수 없는 BP 에서 플랫폼으로 돌아갈 때). */
+/** 이 탭의 값(TAB_KEYS — BP · 점포 · 공통코드 · 범위 · 고른 점포 · bp-fix)을 모두 지운다. 다음 준비가 주소로 다시 정한다(열 수 없는 BP 에서 플랫폼으로 돌아갈 때). */
 export const clearTabBp = () => remove(tab, TAB_KEYS);
 
 /** 로그인 화면에서 부른다. 이 탭과 공용 저장소의 로그인 정보를 지운다(아이디 저장 whale-erp:saved-login-id 는 남긴다). 앞 버전 키도 지운다. */
