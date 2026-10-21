@@ -7,6 +7,7 @@ import { formOf, serverErrorField, validateMyProfileForm, type MyProfileForm, ty
 import type { MyProfile } from "@/lib/my-profile";
 import { checkMyEmailAvailableAction, getMyProfileAction, updateMyProfileAction, type ActionResult } from "./mypage-actions";
 import { useCodeLabel } from "./code-label";
+import { usePatchAccount } from "./session-gate";
 
 /** 저장할 때 api 가 주는 409 문구와 같게 둔다(serverErrorField 가 이 문구를 "이메일" 포함으로 가른다). */
 const EMAIL_TAKEN = "이미 등록된 이메일입니다.";
@@ -45,6 +46,7 @@ function ReadonlyField({ label, value, bold }: { label: string; value: string; b
 export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: boolean; onClose: () => void; trigger: RefObject<HTMLElement | null> }) {
   const toast = useToast();
   const roleTypeLabel = useCodeLabel("ROLE_TYPE");
+  const patchAccount = usePatchAccount();
   const [profile, setProfile] = useState<MyProfile | null>(null);
   const [form, setForm] = useState<MyProfileForm | null>(null);
   const [errors, setErrors] = useState<Partial<Record<MyProfileFormField, string>>>({});
@@ -143,15 +145,16 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
     if (!emailPassed) return;
 
     startSaving(async () => {
-      const result = await updateMyProfileAction({ name: form.name.trim(), phone: form.phone.map((p) => p.trim()).join(""), email: form.email.trim().toLowerCase() }).catch(
-        (error: unknown) => {
-          console.error("내 정보 저장 호출 실패", error);
-          return { ok: false as const, status: undefined, message: "저장 결과를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요." };
-        },
-      );
+      const updated = { name: form.name.trim(), phone: form.phone.map((p) => p.trim()).join(""), email: form.email.trim().toLowerCase() };
+      const result = await updateMyProfileAction(updated).catch((error: unknown) => {
+        console.error("내 정보 저장 호출 실패", error);
+        return { ok: false as const, status: undefined, message: "저장 결과를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요." };
+      });
       if (!result.ok) return applyServerError(result.status, result.message);
       toast("saved");
-      setProfile((p) => (p ? { ...p, name: form.name.trim(), phone: form.phone.map((p2) => p2.trim()).join(""), email: form.email.trim().toLowerCase() } : p));
+      setProfile((p) => (p ? { ...p, ...updated } : p));
+      // GNB 이름 등 로그인 정보를 쓰는 화면이 다시 로그인하지 않아도 바로 보이게 한다.
+      patchAccount({ name: updated.name, email: updated.email });
     });
   };
 

@@ -52,7 +52,12 @@ interface LoginState {
   storePicks: StorePicks | null;
 }
 
-type LoginActions = { setScope: (scope: Scope) => void; setStorePicks: (picks: StorePicks | null) => void };
+type LoginActions = {
+  setScope: (scope: Scope) => void;
+  setStorePicks: (picks: StorePicks | null) => void;
+  /** 내 정보(MY PAGE)에서 이름 · 이메일을 바꾸면 GNB 등 이 값을 쓰는 화면이 다시 로그인하지 않아도 바로 보이게 한다. */
+  patchAccount: (partial: Partial<LoginInfoAccount>) => void;
+};
 const LoginContext = createContext<(LoginState & LoginActions) | null>(null);
 
 function useLogin() {
@@ -61,6 +66,7 @@ function useLogin() {
   return v;
 }
 export const useAccount = () => useLogin().account;
+export const usePatchAccount = () => useLogin().patchAccount;
 /** 이 탭의 서비스. 헤더 메뉴·홈·메뉴 권한 확인과 오른쪽 선택기(플랫폼이면 BP, ERP 면 점포 범위)가 이것을 본다. */
 export const useService = () => useLogin().serviceCode;
 /** 이 탭 서비스의 메뉴 트리(3단계까지). */
@@ -254,6 +260,12 @@ function Ready({ value, onChange, children }: { value: LoginState; onChange: (up
     writeStorePicks(value.currentBp.bpCodeId, storePicks);
     onChange((v) => ({ ...v, storePicks }));
   };
+  // 내 정보에서 이름 · 이메일을 바꾸면 저장값에 쓰고 이 탭에 바로 반영한다(GNB 이름 등). 다른 탭은 새로고침하면 반영된다.
+  const patchAccount = (partial: Partial<LoginInfoAccount>) => {
+    const account = { ...value.account, ...partial };
+    writeLoginInfo({ loginKey: value.loginKey, account, menus: value.menus });
+    onChange((v) => ({ ...v, account }));
+  };
   // 강제 변경 표시를 저장값에 쓰고 이 탭에 반영한다. 다른 탭은 새로고침하면 반영된다.
   const setPasswordRequired = (required: boolean) => {
     const account = required
@@ -286,7 +298,7 @@ function Ready({ value, onChange, children }: { value: LoginState; onChange: (up
     location.assign(home);
   };
   return (
-    <LoginContext value={{ ...value, setScope, setStorePicks }}>
+    <LoginContext value={{ ...value, setScope, setStorePicks, patchAccount }}>
       {allowed && !switching ? children : null}
       {value.account.isPasswordChangeRequired && <ForcePasswordDialog account={value.account} onDone={passwordChanged} />}
     </LoginContext>
