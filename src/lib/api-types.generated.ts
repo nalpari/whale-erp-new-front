@@ -27,7 +27,12 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** whale-erp-staff(직원 근무 앱) 로그인. */
+        /**
+         * whale-erp-staff(직원 근무 앱) 로그인.
+         *
+         *     같은 계정에 연속으로 5번 틀리면 5분 동안 잠기고(다섯 번째 시도도 429), 잠긴 동안은 비밀번호가 맞아도 429 와
+         *     해제 시각(`lockExpiresAt`)을 준다. 없는 계정 · 탈퇴 계정은 실패를 세지 않아 401 이다(요청 제한의 429 는 별개다).
+         */
         post: operations["AccountAuthController_login"];
         delete?: never;
         options?: never;
@@ -2685,6 +2690,17 @@ export interface components {
             refreshTokenExpiresAt: string;
             account: components["schemas"]["LoginAccountResponseDto"];
         };
+        LoginTooManyRequestsResponseDto: {
+            statusCode: number;
+            message: string;
+            /** @description 잠금의 429 에만 있다(`Too Many Requests`). 요청 제한의 429 본문은 `statusCode` · `message` 뿐이다. */
+            error?: string;
+            /**
+             * Format: date-time
+             * @description 계정 잠금이 풀리는 시각. 요청 제한의 429 에는 없다.
+             */
+            lockExpiresAt?: string;
+        };
         RefreshDto: {
             /** @description 로그인 응답으로 받은 갱신 토큰. */
             refreshToken: string;
@@ -2742,7 +2758,8 @@ export interface components {
         EmailFindTooManyRequestsResponseDto: {
             statusCode: number;
             message: string;
-            error: string;
+            /** @description 번호 잠금의 429 에만 있다(`Too Many Requests`). 요청 제한의 429 본문은 `statusCode` · `message` 뿐이다. */
+            error?: string;
             /**
              * Format: date-time
              * @description 번호 잠금이 풀리는 시각. 요청 제한의 429 에는 없다.
@@ -6067,6 +6084,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LoginResponseDto"];
+                };
+            };
+            /** @description `lockExpiresAt` 이 있으면 그 계정이 연속 5번 틀려 그때까지 잠김(비밀번호가 맞아도), 없으면 요청 제한(본문은 `statusCode` · `message` 뿐) */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginTooManyRequestsResponseDto"];
                 };
             };
         };
