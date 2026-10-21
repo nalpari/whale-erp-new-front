@@ -27,13 +27,13 @@ import {
 } from "./actions";
 import { addAdditionalLine, applyPrevious, removeLine, saveItems } from "./payslip-edit";
 
-// 급여명세서 검토의 머리(목록 · 임시저장 · 확정)와 왼쪽 「지급 내역」. 데모 docs/demo/staff/payrolls-detail.html(원본
+// 급여명세서 검토의 머리(목록 · 임시저장 · 확정 · 발송)와 왼쪽 「지급 내역」. 데모 docs/demo/staff/payrolls-detail.html(원본
 // src/pages/staff/payrolls-detail.mjs)과 목업 docs/mockup/staff/payrolls-detail.html 의 3.3% 원천징수 칸을 옮겼다.
 // 데이터는 GET /payslips/:id 이고, 임시저장 · 지난 명세서 불러오기 · 항목 추가(WHALEERP-228)와 확정 · 확정 취소(WHALEERP-230)는
 // server action(actions.ts)으로 api 를 부른다. 확정이면 「발송」, 발송 완료면 「재발송」(확인창을 거친다, WHALEERP-231 · 237). 금액 칸 · 두 스위치 · 붙인 추가 공제는 임시저장해야 남고, 합계와 빨간 띠가 따라 바뀐다.
 // 성공하면 router.refresh() 로 상세를 다시 받는다 — page 가 updatedAt 을 key 로 줘 화면 상태도 새 값으로 다시 선다.
 // 「출퇴근으로 다시 계산」은 출퇴근 집계(WHALEERP-227)가 없어 「준비 중」이다.
-// 고칠 수 있는 것은 작성 중 · 검토 중이고 수정 권한이 있을 때뿐이다 — 확정 · 발송 완료는 읽기만 하고 「확정 취소」만 둔다(okf/staff.md 급여).
+// 고칠 수 있는 것은 작성 중 · 검토 중이고 수정 권한이 있을 때뿐이다 — 확정 · 발송 완료는 읽기만 하고 「확정 취소」와 「발송」 · 「재발송」만 둔다(okf/staff.md 급여).
 
 type Dialog = "save" | "confirm" | "cancel" | "send" | "resend" | "load" | "add" | "preview";
 
@@ -190,7 +190,7 @@ export function PayslipReview({
 
   const togglePremium = (on: boolean) => {
     setPremium(on);
-    // 끄면 연장수당을 계산하지 않는다(PAY-05). 켜면 처음 값으로 돌린다 — 다시 계산은 api 가 한다.
+    // 끄면 연장수당을 계산하지 않는다(PAY-05). 켜면 처음 받은 값으로 돌린다 — 다시 계산은 출퇴근 집계(WHALEERP-227) 뒤에 api 가 한다.
     const overtime = items.find((i) => i.itemCode === "OVERTIME_PAY");
     if (overtime) setText(overtime.payslipItemId, on ? textOf(itemAmount(overtime)) : "0");
   };
@@ -401,7 +401,7 @@ export function PayslipReview({
           ? "저장하지 않은 바뀐 내용이 있습니다. 임시저장한 뒤 확정해 주세요."
           : totals.blankDeductions > 0
             ? "비어 있는 공제 칸이 있어 확정할 수 없습니다. 공제 대상이 아닌 항목에는 0 을 넣으세요."
-            : `확정하면 수정할 수 없습니다. 확정 취소하면 검토 중으로 돌아옵니다. 발송은 급여명세서 목록에서 확정 건을 모아 보냅니다.${
+            : `확정하면 수정할 수 없습니다. 확정 취소하면 검토 중으로 돌아옵니다. 발송은 이 화면의 「발송」이나 급여명세서 목록에서 확정 건을 모아 보냅니다.${
                 band ? " 검토 사유는 확인한 것으로 남습니다." : ""
               }`}
         {failureText}
@@ -415,7 +415,7 @@ export function PayslipReview({
         onCancel={close}
       >
         {payslip.status === "SENT"
-          ? "검토 중으로 돌아옵니다. 이미 보낸 명세서라 직원 근무 앱에서는 다시 보낼 때까지 이 명세서가 보이지 않습니다. 고친 뒤 다시 확정해 보내면 「다시 발송」 문구로 갑니다."
+          ? "검토 중으로 돌아옵니다. 이미 보낸 명세서라 직원 근무 앱에서는 다시 보낼 때까지 이 명세서가 보이지 않습니다. 고친 뒤 다시 확정해 보내면 처음 발송과 같은 문구로 다시 갑니다."
           : "검토 중으로 돌아옵니다. 발송한 뒤에도 취소할 수 있습니다."}
         {failureText}
       </ConfirmDialog>
@@ -438,7 +438,7 @@ export function PayslipReview({
         onConfirm={() => run(() => resendPayslip(payslip.payslipId, payslip.updatedAt), "다시 발송했습니다.")}
         onCancel={close}
       >
-        {payslip.staffName} 님에게 「다시 발송되었습니다 · 금액이 바뀌었을 수 있습니다」 문구로 지금 값을 다시 보냅니다.
+        {payslip.staffName} 님에게 지금 값으로 명세서를 다시 보냅니다. 문구는 처음 발송과 같습니다.
         {failureText}
       </ConfirmDialog>
       <ConfirmDialog open={dialog === "load"} title="지난 명세서의 값을 불러오시겠습니까?" confirmLabel="불러오기" busy={busy} onConfirm={load} onCancel={close}>
