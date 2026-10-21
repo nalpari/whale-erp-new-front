@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-21
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #71 머지 블로커 반영: 공통코드 저장 중에 다른 패널 저장으로 같은 내용의 목록이 새 참조로 오면 저장 기준(`savingFrom`)을 그 참조로 옮긴다(`followSameRows`). 옮기지 않아 두 패널을 함께 저장하다 등록만 실패하면 실패 안내와 새 행이 함께 사라지던 것을 막는다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR 리뷰(5종) 반영: 공통코드 등록만 실패하면 띠에 수정분 저장을 먼저 적고, 요청이 끊기면 목록을 다시 받아 「결과를 확인하지 못했습니다」로 알리며, 서버 무효화가 실패하면 화면이 직접 다시 받는다. 새 행 잇기는 저장을 시작한 목록(그룹은 고른 그룹까지)을 대신하는 목록으로 한정했다(`savingFrom`). 요청 연결 · 권한 판정 · 새 행 잇기 · 빼기를 순수 함수로 빼 테스트했고, okf 의 403 설명(그대로 보인다)을 바로잡았다. 앞서 코드 리뷰 반영: 수정 → 등록 순서를 `src/lib/code-save.ts` 로 빼 `pnpm test` 로 검사한다. 플랫폼 관리자 화면 변경(미사용 계정 비밀번호 「—」 · 미사용 전환일시 · 미사용 계정 수 제거)을 본문에 적었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — api main(115ad5f, api #88)의 공통코드 등록 · 수정 분리에 맞춰 생성 타입을 다시 만들고, 본문을 `{ items }` 로 바꿨다(`CreateCodeGroupsDto` · `UpdateCodeGroupsDto` · `CreateCodeItemsDto` · `UpdateCodeItemsDto`, 응답 204). 동시 등록 경합 409 의 「: A, B」에서 첫 코드를 칸 오류로 붙인다.
 
