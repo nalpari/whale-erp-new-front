@@ -8,9 +8,8 @@ import { StoreFrame } from "./store-frame";
 import { StoreListNavigationProvider } from "./store-list-navigation";
 import { StorePageSizeSelect, StorePagination, StoreViewToggle } from "./store-list-controls";
 import { NoticeBand, StoreCard } from "./store-parts";
-import type { PickedStore } from "@/components/site/store-picker";
 import { StoreTable } from "./store-table";
-import { detailHrefOf, keepFoundStores, parseStoresQuery, pickedIdsOf, storeListQueryOf, storesExcelHref, storesHref, withBack, withDefaultStatuses } from "./stores-query";
+import { detailHrefOf, parseStoresQuery, pickedIdsOf, resolveStoresQuery, scopeTypeMismatch, storeListQueryOf, storesExcelHref, storesHref, withBack } from "./stores-query";
 import { StoreExcelButton, StoreExcelNotice, StoreExcelProvider } from "./store-excel";
 
 // 점포 정보 관리 목록(S-BAYAJS). 데모 docs/demo/stores/index.html 을 공통 컴포넌트로 옮겼다. api 는 GET /stores.
@@ -21,17 +20,9 @@ export default async function StoresPage({ searchParams }: PageProps<"/stores">)
   const raw = await searchParams;
   const parsed = parseStoresQuery(raw);
 
-  const ids = pickedIdsOf(parsed);
-  const found = (await pickedStoresOf(ids)).filter((s) => ids.includes(s.storeId));
-  const picked: PickedStore[] = ids
-    .map((id) => found.find((s) => s.storeId === id))
-    .filter((s) => s !== undefined)
-    .map(({ storeId, name, storeCode }) => ({ storeId, name, storeCode }));
-  // 고른 점포에 폐점이 있으면 점포상태 기본값이 「전체」다(stores-query.ts)
-  const hasClosedStore = found.some((s) => s.storeStatusCode === "CLOSED");
-  // 고른 점포(범위의 점포 하나 포함) 중 지워졌거나 볼 수 없게 된 점포는 조건에서 빼고 안내한다 — 남겨 두면 칩에도 없는 조건이 목록을 0건으로 만든다
-  const { query: kept, missing: missingCount } = keepFoundStores(parsed, picked.map((p) => p.storeId));
-  const query = withDefaultStatuses(kept, hasClosedStore);
+  // 고른 점포(범위의 점포 하나 포함)의 이름 · 상태를 찾는다. 찾지 못한 점포는 조건에서 빼고 안내하고(남겨 두면 칩에도 없는 조건이
+  // 목록을 0건으로 만든다), 폐점이 있으면 점포상태 기본값이 「전체」다(stores-query.ts 의 resolveStoresQuery)
+  const { query, picked, missingCount, fromScope } = resolveStoresQuery(parsed, await pickedStoresOf(pickedIdsOf(parsed)));
   const { items, total } = await getStores(storeListQueryOf(query));
   const totalPages = Math.max(1, Math.ceil(total / query.pageSize));
   const listHref = storesHref(query);
@@ -45,9 +36,12 @@ export default async function StoresPage({ searchParams }: PageProps<"/stores">)
           <StoreFilter picked={picked} scope={query.scope} />
           <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>*]:shrink-0">
             <StoreExcelProvider>
-              {missingCount > 0 && (
-                <NoticeBand tone="info" title={`고른 점포 ${missingCount}곳을 찾을 수 없어 조건에서 뺐습니다.`} detail="지워졌거나 볼 수 없게 된 점포입니다." />
-              )}
+              {missingCount > 0 &&
+                (fromScope ? (
+                  <NoticeBand tone="info" title="상단에서 고른 점포를 찾을 수 없어 전체로 조회했습니다." detail="지워졌거나 볼 수 없게 된 점포입니다." />
+                ) : (
+                  <NoticeBand tone="info" title={`고른 점포 ${missingCount}곳을 찾을 수 없어 조건에서 뺐습니다.`} detail="지워졌거나 볼 수 없게 된 점포입니다." />
+                ))}
               <StoreExcelNotice href={excelHref} />
               <ListToolbar total={total}>
                 <StoreViewToggle />
@@ -71,7 +65,7 @@ export default async function StoresPage({ searchParams }: PageProps<"/stores">)
               ) : (
                 // 빈 상태 — 표와 같은 92px 한 줄(DESIGN.md Tables)
                 <p className="grid h-[92px] place-items-center rounded-[4px] border border-erp-panel-line text-[14px] text-erp-muted">
-                  조회된 점포가 없습니다.
+                  {scopeTypeMismatch(query) ? "상단 범위와 고른 점포유형이 겹치지 않아 조회된 점포가 없습니다." : "조회된 점포가 없습니다."}
                 </p>
               )}
               <div className="pt-[14px]">

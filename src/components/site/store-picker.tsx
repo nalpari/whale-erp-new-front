@@ -2,7 +2,7 @@
 
 import { useId, useRef, useState } from "react";
 import { FIELD } from "@/components/common/theme";
-import { searchStoresByText } from "@/lib/store-scope";
+import { searchStoresByText, toPickedStore } from "@/lib/store-scope";
 import type { StoreSummary } from "@/lib/store-types";
 import { useStores } from "./session-gate";
 
@@ -28,7 +28,7 @@ export function StorePicker({ picked, onChange }: { picked: PickedStore[]; onCha
   const pickedIds = new Set(picked.map((p) => p.storeId));
   const options: PickedStore[] = searchStoresByText(stores, keyword)
     .filter((s) => !pickedIds.has(s.storeId))
-    .map(({ storeId, name, storeCode }) => ({ storeId, name, storeCode }));
+    .map(toPickedStore);
 
   const choose = (store: PickedStore) => {
     onChange([...picked, store]);
@@ -95,7 +95,11 @@ export function StorePicker({ picked, onChange }: { picked: PickedStore[]; onCha
             className="absolute top-[calc(100%+4px)] right-0 left-0 z-20 max-h-[288px] overflow-y-auto overscroll-contain rounded-[2px] border border-[#ebebeb] bg-white p-[6px] text-[14px] shadow-[0_2px_6px_rgba(40,47,55,0.08)]"
           >
             {options.length === 0 ? (
-              <p className="px-[6px] py-[6px] text-erp-muted">맞는 점포가 없습니다.</p>
+              <div className="flex flex-col gap-[6px] px-[6px] py-[6px]">
+                <p className="text-erp-muted">맞는 점포가 없습니다.</p>
+                {/* 찾기는 로그인 정보 안에서 한다 — 방금 등록한 점포를 「없음」으로 오해하지 않게 */}
+                <p className="text-[12px] text-erp-label">로그인 뒤 등록한 점포는 다시 로그인하면 찾을 수 있습니다.</p>
+              </div>
             ) : (
               <ul id={listId} role="listbox" aria-label="고를 수 있는 점포">
                 {options.map((store, i) => (

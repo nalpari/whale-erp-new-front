@@ -1,20 +1,26 @@
 // node --test src/app/stores/stores-query.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { withoutStoreSearch } from "../../lib/store-scope.ts";
 import {
   backHrefOf,
   DEFAULT_STORES_QUERY,
   detailHrefOf,
+  fillScopeOf,
   keepFoundStores,
   MAX_PICKED_STORES,
   parseStoresQuery,
   pickedIdsOf,
+  resolveStoresQuery,
+  scopeTypeMismatch,
   storeListQueryOf,
   storesExcelHref,
   storesHref,
   withBack,
   withDefaultStatuses,
   withPickedStores,
+  withScopeCondition,
+  withStatuses,
   withStoreFilter,
   type StoresQuery,
 } from "./stores-query.ts";
@@ -108,22 +114,92 @@ test("고른 점포 중 찾은 것만 남기고, 모두 없어졌으면 「전�
   const some = keepFoundStores(parsed, [7]);
   assert.deepEqual(some.query.storeIds, [7]);
   assert.equal(some.query.scope, null);
-  assert.equal(some.missing, 1);
+  assert.equal(some.missingCount, 1);
   const none = keepFoundStores(parsed, []);
   assert.deepEqual(none.query.storeIds, []);
   assert.deepEqual(none.query.scope, { type: "ALL" });
-  assert.equal(none.missing, 2);
+  assert.equal(none.missingCount, 2);
   assert.equal(storesHref(withDefaultStatuses(none.query, false)), "/stores?storeIds=");
   // 다 찾았으면 그대로
-  assert.equal(keepFoundStores(parsed, [3, 7]).missing, 0);
+  assert.equal(keepFoundStores(parsed, [3, 7]).missingCount, 0);
 });
 
 test("범위의 점포 하나를 찾을 수 없으면(다른 BP 탭에서 복사한 주소) 「전체」로 보고 안내한다", () => {
   const missing = keepFoundStores(parseStoresQuery({ scope: "STORE:99" }), []);
   assert.deepEqual(missing.query.scope, { type: "ALL" });
-  assert.equal(missing.missing, 1);
+  assert.equal(missing.missingCount, 1);
+  assert.equal(missing.fromScope, true);
   // 직영 · 가맹 범위는 점포를 찾지 않는다
-  assert.equal(keepFoundStores(parseStoresQuery({ scope: "DIRECT" }), []).missing, 0);
+  assert.equal(keepFoundStores(parseStoresQuery({ scope: "DIRECT" }), []).missingCount, 0);
+});
+
+test("목록 서버의 조합 — 찾은 점포로 칩 · 폐점 기본값 · 뺀 점포를 한 번에 정한다", () => {
+  const found = (storeId: number, storeStatusCode = "OPERATING") => ({ storeId, name: `점포${storeId}`, storeCode: `ST${storeId}`, storeStatusCode });
+  // 범위의 점포 하나가 폐점 — 점포상태 기본값 「전체」, api 는 그 점포
+  const closed = resolveStoresQuery(parseStoresQuery({ scope: "STORE:4" }), [found(4, "CLOSED")]);
+  assert.deepEqual(closed.query.statuses, ["NOT_OPERATING", "OPERATING", "CLOSED"]);
+  assert.deepEqual(storeListQueryOf(closed.query).storeIds, [4]);
+  assert.deepEqual(closed.picked, [{ storeId: 4, name: "점포4", storeCode: "ST4" }]);
+  // 고른 점포 3(폐점) · 7(없음) — 3만 남기고 상태 「전체」, 뺀 점포 1곳
+  const some = resolveStoresQuery(parseStoresQuery({ storeIds: "3,7" }), [found(3, "CLOSED")]);
+  assert.deepEqual(some.query.storeIds, [3]);
+  assert.deepEqual(some.query.statuses, ["NOT_OPERATING", "OPERATING", "CLOSED"]);
+  assert.equal(some.missingCount, 1);
+  assert.equal(some.fromScope, false);
+  // 범위의 점포를 못 찾음 — 「전체」, 상태는 기본값(폐점 제외), api 에 점포 조건 없음
+  const gone = resolveStoresQuery(parseStoresQuery({ scope: "STORE:99" }), []);
+  assert.deepEqual(gone.query.scope, { type: "ALL" });
+  assert.deepEqual(gone.query.statuses, ["NOT_OPERATING", "OPERATING"]);
+  assert.deepEqual(storeListQueryOf(gone.query).storeIds, []);
+  assert.equal(gone.fromScope, true);
+  // 고른 순서대로 칩을 그린다
+  assert.deepEqual(resolveStoresQuery(parseStoresQuery({ storeIds: "7,3" }), [found(3), found(7)]).picked.map((p) => p.storeId), [7, 3]);
+});
+
+test("필터가 헤더 범위로 채울지 — 주소에 점포 조건이 없고 헤더가 전체가 아닐 때만", () => {
+  const direct = { type: "DIRECT" } as const;
+  assert.deepEqual(fillScopeOf(read("/stores"), direct), direct);
+  assert.equal(fillScopeOf(read("/stores"), { type: "ALL" }), null);
+  // 목록에서 비운 「전체」 · 등록 · 삭제 뒤는 다시 채우지 않는다
+  assert.equal(fillScopeOf(read("/stores?storeIds="), direct), null);
+  // 주소의 범위 · 고른 점포가 앞선다
+  assert.equal(fillScopeOf(read("/stores?scope=FRANCHISE"), direct), null);
+  assert.equal(fillScopeOf(read("/stores?storeIds=3"), direct), null);
+});
+
+test("헤더 범위와 고른 점포유형이 겹치지 않으면 그 이유로 0건 — 유형을 하나도 안 고른 것과 가른다", () => {
+  assert.equal(scopeTypeMismatch({ ...DEFAULT_STORES_QUERY, scope: { type: "DIRECT" }, storeTypes: ["FRANCHISE"] }), true);
+  assert.equal(scopeTypeMismatch({ ...DEFAULT_STORES_QUERY, scope: { type: "DIRECT" } }), false);
+  assert.equal(scopeTypeMismatch({ ...DEFAULT_STORES_QUERY, scope: { type: "DIRECT" }, storeTypes: [] }), false);
+  // 목록에서 고른 점포가 있으면 범위를 쓰지 않는다
+  assert.equal(scopeTypeMismatch({ ...DEFAULT_STORES_QUERY, storeIds: [3], scope: null, storeTypes: ["FRANCHISE"] }), false);
+});
+
+test("점포상태 · 점포 조건은 전용 함수로 — 상태를 고치면 주소에 남고, 범위를 걸면 고른 점포를 비운다", () => {
+  const edited = withStatuses({ ...DEFAULT_STORES_QUERY, page: 3 }, ["OPERATING"]);
+  assert.equal(edited.page, 1);
+  assert.equal(edited.statusesDefault, false);
+  assert.equal(storesHref(edited), "/stores?statuses=OPERATING");
+  const scoped = withScopeCondition({ ...DEFAULT_STORES_QUERY, storeIds: [3], page: 2 }, { type: "DIRECT" });
+  assert.deepEqual(scoped.storeIds, []);
+  assert.deepEqual(scoped.scope, { type: "DIRECT" });
+  assert.equal(scoped.page, 1);
+  assert.equal(storesHref(scoped), "/stores?scope=DIRECT");
+});
+
+test("엑셀 중계 경로가 api 로 보내는 조건 — 범위는 점포유형 · 점포 하나는 storeIds, 「전체」는 빈 storeIds", () => {
+  const apiOf = (q: StoresQuery) => storeListQueryOf(read(storesExcelHref(q).replace("/stores/excel", "/stores")));
+  assert.deepEqual(apiOf({ ...DEFAULT_STORES_QUERY, scope: { type: "DIRECT" } }).storeTypes, ["DIRECT"]);
+  assert.deepEqual(apiOf({ ...DEFAULT_STORES_QUERY, scope: { type: "STORE", storeId: 7 } }).storeIds, [7]);
+  assert.ok(storesExcelHref({ ...DEFAULT_STORES_QUERY, scope: { type: "STORE", storeId: 7 } }).includes("scope=STORE%3A7"));
+  assert.ok(storesExcelHref({ ...DEFAULT_STORES_QUERY, scope: { type: "ALL" } }).includes("storeIds="));
+});
+
+test("등록 뒤 상세에 넘긴 목록 주소(?back=)가 두 번 인코딩돼도 점포 검색 「전체」로 돌아온다", () => {
+  const params = new URLSearchParams({ back: withoutStoreSearch("/stores?scope=DIRECT&view=table") });
+  const back = new URL(`/stores/1?${params}`, "http://x").searchParams.get("back") ?? undefined;
+  assert.equal(backHrefOf(back), "/stores?view=table&storeIds=");
+  assert.deepEqual(read(backHrefOf(back)).scope, { type: "ALL" });
 });
 
 test("필터를 바꾸면 1쪽으로", () => {

@@ -2,7 +2,21 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { AdminStore } from "./session.ts";
-import { openStores, restoredScope, searchStoresByText, scopeKeyOf, scopeOfKey, scopeOfParam, scopeStores, withoutStoreSearch, withScope } from "./store-scope.ts";
+import {
+  isUnusableScope,
+  openStores,
+  restoredScope,
+  scopeFromAddress,
+  scopeKeyOf,
+  scopeOfKey,
+  scopeOfParam,
+  scopeStores,
+  searchStoresByText,
+  toPickedStore,
+  withoutStoreSearch,
+  withScope,
+  withScopeChange,
+} from "./store-scope.ts";
 
 const store = (storeId: number, storeTypeCode: string): AdminStore => ({
   storeId,
@@ -35,8 +49,9 @@ test("withScope: 헤더가 메뉴로 갈 때 범위를 scope 하나로 싣는다
   // 메뉴 주소에 이미 쿼리가 있으면 이어 붙이고, 전체로 바꾸면 뺀다
   assert.equal(withScope("/stores?view=table", { type: "FRANCHISE" }), "/stores?view=table&scope=FRANCHISE");
   assert.equal(withScope("/stores?scope=DIRECT", { type: "ALL" }), "/stores");
-  // 범위를 전체로 바꿔 이동할 때는 적는다 — 뒤로 · 앞으로 가기에도 헤더가 주소를 따라온다
-  assert.equal(withScope("/stores?scope=DIRECT", { type: "ALL" }, true), "/stores?scope=ALL");
+  // 범위를 바꿔 이동할 때는 전체도 적는다 — 뒤로 · 앞으로 가기에도 헤더가 주소를 따라온다
+  assert.equal(withScopeChange("/stores?scope=DIRECT", { type: "ALL" }), "/stores?scope=ALL");
+  assert.equal(withScopeChange("/stores", { type: "FRANCHISE" }), "/stores?scope=FRANCHISE");
 });
 
 test("scopeOfParam: 주소의 scope 를 범위로 — 없거나 모르는 값은 null", () => {
@@ -44,6 +59,34 @@ test("scopeOfParam: 주소의 scope 를 범위로 — 없거나 모르는 값은
   assert.deepEqual(scopeOfParam("ALL"), { type: "ALL" });
   assert.equal(scopeOfParam(undefined), null);
   assert.equal(scopeOfParam("NOPE"), null);
+  // 주소에서 오므로 int4 양의 정수만 — 범위 밖 id 는 api 가 400 으로 막아 오류 화면이 된다
+  for (const bad of ["STORE:9999999999", "STORE:1e3", "STORE:0x10", "STORE: 12", "STORE:12 ", "STORE:-1", "STORE:"]) assert.equal(scopeOfParam(bad), null, bad);
+  assert.deepEqual(scopeOfParam("STORE:999999999"), { type: "STORE", storeId: 999_999_999 });
+});
+
+test("scopeFromAddress: 주소의 범위로 헤더를 바꿀 값 — 없거나 같거나 이 탭에서 쓸 수 없으면 그대로", () => {
+  const all = { type: "ALL" } as const;
+  assert.equal(scopeFromAddress(undefined, all, stores), null);
+  assert.equal(scopeFromAddress("DIRECT", { type: "DIRECT" }, stores), null);
+  assert.deepEqual(scopeFromAddress("DIRECT", all, stores), { type: "DIRECT" });
+  // 로그인 정보에 없는 점포 · 폐점만 남은 유형은 따르지 않는다
+  assert.equal(scopeFromAddress("STORE:99", all, stores), null);
+  const onlyClosedDirect = [store(2, "FRANCHISE"), { ...store(4, "DIRECT"), storeStatusCode: "CLOSED" }];
+  assert.equal(scopeFromAddress("DIRECT", all, onlyClosedDirect), null);
+  // 범위를 전체로 바꾼 주소로 돌아오면 전체로 · 폐점 점포 하나는 따른다
+  assert.deepEqual(scopeFromAddress("ALL", { type: "DIRECT" }, stores), all);
+  assert.deepEqual(scopeFromAddress("STORE:4", all, stores), { type: "STORE", storeId: 4 });
+});
+
+test("isUnusableScope: 이 탭에 고를 점포가 없는 범위", () => {
+  assert.equal(isUnusableScope({ type: "ALL" }, []), false);
+  assert.equal(isUnusableScope({ type: "DIRECT" }, stores), false);
+  assert.equal(isUnusableScope({ type: "DIRECT" }, [store(2, "FRANCHISE")]), true);
+  assert.equal(isUnusableScope({ type: "STORE", storeId: 99 }, stores), true);
+});
+
+test("toPickedStore: 칩에 쓰는 칸 셋만", () => {
+  assert.deepEqual(toPickedStore(stores[0]), { storeId: 1, name: "점포1", storeCode: "ST000001" });
 });
 
 test("withoutStoreSearch: 등록 · 삭제 뒤 점포 검색을 「전체」로 — 빈 storeIds, 범위 · 쪽은 빼고 다른 조건은 남긴다(헤더 범위는 그대로)", () => {

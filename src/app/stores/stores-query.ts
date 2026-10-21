@@ -11,7 +11,16 @@ import { STORE_PAGE_SIZES, STORE_STATUSES, STORE_TYPES, type StoreStatus, type S
 
 export type StoreView = "cards" | "table";
 /**
- * storeIds 는 목록에서 고른 점포, scope 는 헤더 범위(null 이면 주소에 없음). api 에 보낼 조건은 storeListQueryOf 로 만든다.
+ * 점포 조건은 storeIds · scope 두 칸의 짝으로 네 가지다(바꾸는 것은 withPickedStores · withScopeCondition 만):
+ *
+ * | storeIds | scope                    | 뜻                                              | 주소              |
+ * |----------|--------------------------|-------------------------------------------------|-------------------|
+ * | 1개 이상 | null                     | 목록에서 고른 점포                              | storeIds=3,7      |
+ * | []       | ALL                      | 목록의 「전체」(비움 · 등록 · 삭제 뒤) — 헤더 범위가 아니다 | storeIds=   |
+ * | []       | DIRECT · FRANCHISE · STORE | 헤더 범위                                     | scope=DIRECT      |
+ * | []       | null                     | 정해지지 않음 — 필터가 헤더 범위로 채운다(fillScopeOf) | (없음)      |
+ *
+ * api 에 보낼 조건은 storeListQueryOf 로 만든다.
  * statusesDefault 는 점포상태를 주소에 적지 않은 것 — 그 값은 서버가 고른 점포의 지금 상태로 정한다(withDefaultStatuses). 브라우저는
  * 폐점 여부를 세지 않는다: 로그인 정보의 점포 상태는 세션 동안 바뀌지 않아, 이 메뉴에서 폐점 처리한 점포를 서버와 다르게 본다.
  */
@@ -95,17 +104,57 @@ export const withDefaultStatuses = (query: ParsedStoresQuery, hasClosedStore: bo
 });
 
 /**
- * 고른 점포(목록에서 고른 것 · 범위의 점포 하나) 중 찾은 것만 남긴다 — 지워졌거나 볼 수 없게 된 점포(다른 BP 탭에서 복사한 주소 등)는 뺀다.
- * 모두 없어졌으면 「전체」로 적는다: 점포 조건이 비면 필터가 헤더 범위로 다시 채워, 뺐다는 안내도 함께 사라진다. missing 은 뺀 점포 수다.
+ * 고른 점포(목록에서 고른 것 · 범위의 점포 하나) 중 서버가 api 로 찾은 것만 남긴다 — 지워졌거나 볼 수 없게 된 점포(다른 BP 탭에서 복사한
+ * 주소 등)는 뺀다. 모두 없어졌으면 「전체」(scope ALL — 주소에는 빈 storeIds)로 적는다: 필터가 헤더 범위로 다시 채우지 않고, 뺐다는
+ * 안내가 남는다. missingCount 는 뺀 점포 수, fromScope 는 뺀 것이 헤더 범위의 점포 하나였는지다(안내 문구가 다르다).
  */
-export function keepFoundStores(query: ParsedStoresQuery, foundIds: readonly number[]): { query: ParsedStoresQuery; missing: number } {
+export function keepFoundStores(
+  query: ParsedStoresQuery,
+  foundIds: readonly number[],
+): { query: ParsedStoresQuery; missingCount: number; fromScope: boolean } {
   const ids = pickedIdsOf(query);
   const kept = ids.filter((id) => foundIds.includes(id));
-  if (kept.length === ids.length) return { query, missing: 0 };
+  const fromScope = !query.storeIds.length && query.scope?.type === "STORE";
+  if (kept.length === ids.length) return { query, missingCount: 0, fromScope };
   const storeIds = query.storeIds.length ? kept : [];
   const scope = storeIds.length ? null : { type: "ALL" as const };
-  return { query: { ...query, storeIds, scope }, missing: ids.length - kept.length };
+  return { query: { ...query, storeIds, scope }, missingCount: ids.length - kept.length, fromScope };
 }
+
+/** 서버가 고른 점포를 찾아 본 결과 — 칩 이름과 폐점 여부에 쓴다 */
+export type FoundStore = { storeId: number; name: string; storeCode: string; storeStatusCode: string };
+
+/**
+ * 목록 서버의 조회 조건 — 주소에서 읽은 조건에 서버가 찾은 점포를 맞춘다: 찾지 못한 점포는 빼고(keepFoundStores), 남은 점포에 폐점이
+ * 있으면 점포상태 기본값을 「전체」로(withDefaultStatuses). picked 는 칩에 그릴 이름(고른 순서대로)이다.
+ */
+export function resolveStoresQuery(parsed: ParsedStoresQuery, found: readonly FoundStore[]) {
+  const ids = pickedIdsOf(parsed);
+  const mine = found.filter((s) => ids.includes(s.storeId));
+  const picked = ids
+    .map((id) => mine.find((s) => s.storeId === id))
+    .filter((s) => s !== undefined)
+    .map(({ storeId, name, storeCode }) => ({ storeId, name, storeCode }));
+  const hasClosedStore = mine.some((s) => s.storeStatusCode === "CLOSED");
+  const { query, missingCount, fromScope } = keepFoundStores(
+    parsed,
+    picked.map((p) => p.storeId),
+  );
+  return { query: withDefaultStatuses(query, hasClosedStore), picked, missingCount, fromScope };
+}
+
+/**
+ * 헤더 범위(직영 · 가맹)와 고른 점포유형이 겹치지 않아 0건인가 — 「점포유형을 골라 주세요」가 아니라 이 이유로 알린다.
+ * 점포유형을 하나도 고르지 않은 것은 여기에 들지 않는다.
+ */
+export const scopeTypeMismatch = (query: StoresQuery) => query.storeTypes.length > 0 && storeListQueryOf(query).storeTypes.length === 0;
+
+/**
+ * 필터가 헤더 범위로 채울 범위 — 주소에 점포 조건(고른 점포 · 빈 storeIds 「전체」 · scope)이 없고 헤더 범위가 「전체」가 아닐 때만.
+ * 주소 직접 입력 · 즐겨찾기 · 그런 주소로 뒤로 가기에서 생긴다.
+ */
+export const fillScopeOf = (query: Pick<StoresQuery, "storeIds" | "scope">, headerScope: Scope): Scope | null =>
+  query.storeIds.length || query.scope || headerScope.type === "ALL" ? null : headerScope;
 
 /** 이름을 찾아 칩으로 그릴 점포 — 목록에서 고른 점포, 없으면 범위가 점포 하나일 때 그 점포 */
 export const pickedIdsOf = (query: Pick<StoresQuery, "storeIds" | "scope">): number[] =>
@@ -166,15 +215,25 @@ export function backHrefOf(raw: string | string[] | undefined): string {
   return /^\/stores(\?[^#]*)?$/.test(value) ? value : "/stores";
 }
 
-/** 필터 · 건수를 바꾼다. 쪽은 1로 돌린다 — 4쪽에서 거르면 빈 쪽이 보인다 */
-export function withStoreFilter(query: StoresQuery, next: Partial<StoresQuery>): StoresQuery {
-  return { ...query, ...next, page: 1 };
-}
+/** 쪽을 1로 돌리고 칸을 바꾼다 — 4쪽에서 거르면 빈 쪽이 보인다. 안에서만 쓴다: 점포 조건 · 점포상태는 짝이 맞아야 하는 칸이라 아래 전용 함수로만 바꾼다 */
+const firstPageWith = (query: StoresQuery, next: Partial<StoresQuery>): StoresQuery => ({ ...query, ...next, page: 1 });
+
+/**
+ * 필터 · 건수를 바꾼다. 쪽은 1로 돌린다. 점포 조건(withPickedStores · withScopeCondition)과 점포상태(withStatuses)는 받지 않는다 —
+ * 점포상태를 여기서 바꾸면 statusesDefault 가 남아 주소에서 조용히 빠진다.
+ */
+export const withStoreFilter = (query: StoresQuery, next: Partial<Pick<StoresQuery, "bizRegistrationNumber" | "storeTypes" | "pageSize">>) =>
+  firstPageWith(query, next);
+
+/** 사용자가 점포상태를 고친다 — 주소에 적는다(statusesDefault false) */
+export const withStatuses = (query: StoresQuery, statuses: StoreStatus[]) => firstPageWith(query, { statuses, statusesDefault: false });
+
+/** 헤더 범위로 점포 조건을 건다(목록에서 고른 점포는 비운다). 점포상태를 고치지 않았으면 서버가 그 범위에 맞는 기본값을 정한다 */
+export const withScopeCondition = (query: StoresQuery, scope: Scope) => firstPageWith(query, { storeIds: [], scope });
 
 /**
  * 고른 점포를 바꾼다. 비면 「전체」(주소에는 빈 storeIds — 헤더 범위로 다시 채우지 않는다). 점포상태를 사용자가 고치지 않았으면 그대로
  * 기본값으로 두어, 서버가 바뀐 점포에 맞게 정한다(폐점 점포를 고르면 「전체」). 사용자가 고친 상태는 그대로 둔다.
  */
-export function withPickedStores(query: StoresQuery, ids: number[]): StoresQuery {
-  return withStoreFilter(query, { storeIds: ids, scope: ids.length ? null : { type: "ALL" } });
-}
+export const withPickedStores = (query: StoresQuery, ids: number[]) =>
+  firstPageWith(query, { storeIds: ids, scope: ids.length ? null : { type: "ALL" } });

@@ -3,7 +3,7 @@
 //   login-info: 계정·메뉴 / login-bp-info: 자기 BP 의 점포·공통코드(탭에 자기 BP 값이 없을 때 — 새 탭, /bp-switch 로 자기 BP 에 돌아올 때 — 만 읽는다) / selected-bp: 플랫폼 계정이 마지막으로 고른 BP
 // sessionStorage — 탭마다 다르다. 화면은 이것만 읽는다.
 //   current-bp: 이 탭의 서비스(WHALE_ERP·PLATFORM)와 BP / stores·codes·scope: 그 BP 의 값. bpCodeId 가 이 탭의 BP 와 다르면 버린다.
-//   store-picks: 사용자가 목록에서 고른 점포(빈 목록 포함)와 그 목록 메뉴 url — 그 메뉴 안을 오가는 동안 헤더 범위 대신 이것을 쓴다(store-scope.ts).
+//   store-picks: 2026-10-21 에 없앴다(목록에서 고른 점포는 주소의 storeIds). 앞서 쓰던 값을 지우려고 키만 남긴다(TAB_KEYS).
 //   서비스와 BP 는 짝이 맞아야 해서(플랫폼 서비스 = 플랫폼 BP, ERP 서비스 = 고객 BP) 한 키에 함께 둔다.
 // next/* 를 import 하지 않는다 — node --test 로 resolveTab 을 바로 돌리기 위해서다.
 import type { AdminMenu, AdminStore, Codes, LoginInfoAccount } from "./session";
@@ -51,7 +51,7 @@ const KEY = {
   stores: `${PREFIX}stores`,
   codes: `${PREFIX}codes`,
   scope: `${PREFIX}scope`,
-  /** 지금은 쓰지 않는다 — 목록에서 고른 점포는 주소(storeIds)에 둔다(2026-10-21). 앞서 쓰던 값을 로그아웃할 때 지우려고 키만 둔다 */
+  /** 지금은 쓰지 않는다 — 목록에서 고른 점포는 주소(storeIds)에 둔다(2026-10-21). 로그아웃하거나 앞 로그인의 탭 값을 버릴 때 함께 지우려고 키만 둔다 */
   storePicks: `${PREFIX}store-picks`,
 } as const;
 const TAB_KEYS = [KEY.currentBp, KEY.stores, KEY.codes, KEY.scope, KEY.storePicks];

@@ -1,7 +1,7 @@
 // node --test src/lib/store-image.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { storeImageAccept, storeImageFailureText, storeImageFileError, storeImageTypesOf, storeImageTypesText } from "./store-image.ts";
+import { imageKeyOf, storeImageAccept, storeImageFailureText, storeImageFileError, storeImageTypesOf, storeImageTypesText } from "./store-image.ts";
 
 const TYPES = storeImageTypesOf(["JPG", "PNG"]);
 const MB = 1024 * 1024;
@@ -26,4 +26,12 @@ test("이미지만 실패한 상태 코드 → 고정 문구, 없으면 null", (
   assert.match(storeImageFailureText("error") ?? "", /확인하지 못했습니다/);
   assert.equal(storeImageFailureText(undefined), null);
   assert.equal(storeImageFailureText(["503"]), null);
+});
+
+test("imageKeyOf: 서명(쿼리)만 다른 주소는 같은 이미지 — 쿼리가 없으면 그대로", () => {
+  const a = "https://s3.example/stores/1/abc.thumb.jpg?X-Amz-Signature=1&X-Amz-Date=2";
+  const b = "https://s3.example/stores/1/abc.thumb.jpg?X-Amz-Signature=9&X-Amz-Date=3";
+  assert.equal(imageKeyOf(a), imageKeyOf(b));
+  assert.equal(imageKeyOf("https://s3.example/stores/1/abc.jpg"), "https://s3.example/stores/1/abc.jpg");
+  assert.notEqual(imageKeyOf(a), imageKeyOf("https://s3.example/stores/1/def.thumb.jpg?X-Amz-Signature=1"));
 });
