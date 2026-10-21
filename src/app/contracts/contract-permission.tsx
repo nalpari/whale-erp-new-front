@@ -17,8 +17,10 @@ export function ContractPermission({ action, children, fallback = null }: { acti
 
 /**
  * 다른 메뉴 화면에 놓인 근로계약 버튼(직원 정보 관리의 「직원 초대」 → 근로계약서 작성)용 — 지금 주소가 근로계약이 아니라
- * 메뉴 코드(근로계약 관리 MN000006)로 권한을 찾는다. 막는 것은 api 다.
+ * 메뉴 코드(근로계약 관리 MN000006)로 권한을 찾는다. 가는 화면은 조회 권한이 있어야 열리므로 조회도 본다. 막는 것은 api 다.
  */
 export function ContractMenuPermission({ action, children }: { action: Action; children: ReactNode }) {
-  return useMenuRole(MENU_CODE.contracts, action) ? children : null;
+  const canOpen = useMenuRole(MENU_CODE.contracts, "read");
+  const can = useMenuRole(MENU_CODE.contracts, action);
+  return canOpen && can ? children : null;
 }
