@@ -1,16 +1,18 @@
-// 종이 계약 등록(/contracts/paper) · 공지사항 저장(/platform-notices/save) 창구의 요청 검사. proxy 와 라우트 핸들러가 같이 쓴다.
+// 종이 계약 등록(/contracts/paper) · 공지사항 저장(/platform-notices/save) · 문의 등록(/support-inquiries/save) 창구의 요청 검사. proxy 와 라우트 핸들러가 같이 쓴다.
 // next/* 를 import 하지 않는다 — node --test 로 바로 돌리기 위해서다.
 
 export const PAPER_ROUTE = "/contracts/paper";
 /** 공지사항 등록 · 수정 창구(첨부 multipart, #276). 같은 까닭으로 401 을 준다. FAQ 는 첨부가 없어 서버 액션이다. */
 export const NOTICE_SAVE_ROUTE = "/platform-notices/save";
+/** 고객지원 문의 등록 창구(첨부 multipart, #284). */
+export const INQUIRY_SAVE_ROUTE = "/support-inquiries/save";
 
 /**
- * 로그인이 끊겼을 때 리다이렉트 대신 401 JSON 을 줄 경로 — fetch 가 부르는 BFF(/api/*)와 종이 계약 등록 · 공지사항 저장.
+ * 로그인이 끊겼을 때 리다이렉트 대신 401 JSON 을 줄 경로 — fetch 가 부르는 BFF(/api/*)와 종이 계약 등록 · 공지사항 저장 · 문의 등록.
  * 리다이렉트를 주면 fetch 가 따라가 날인본을 실은 채 /login 으로 다시 POST 하고, 화면은 로그인으로 가지 못한다.
  */
 export function answersWith401(pathname: string): boolean {
-  return pathname.startsWith("/api/") || pathname === PAPER_ROUTE || pathname === NOTICE_SAVE_ROUTE;
+  return pathname.startsWith("/api/") || pathname === PAPER_ROUTE || pathname === NOTICE_SAVE_ROUTE || pathname === INQUIRY_SAVE_ROUTE;
 }
 
 const MB = 1024 * 1024;
@@ -18,10 +20,10 @@ export const TOO_LARGE = "보낸 내용이 너무 큽니다. 첨부를 줄여서
 
 /**
  * 경로별 요청 본문 상한. next.config 의 proxyClientMaxBodySize(51MB)는 모든 경로에 걸리므로, proxy 가 content-length 로 경로마다 다시 막는다.
- * 공지사항 저장은 첨부 5 × 10MB, 종이 계약 등록은 날인본 2 × 10MB 에 multipart 여유 1MB 를 더한다. 나머지는 Next 기본 proxy 한도(10MB)다.
+ * 공지사항 저장 · 문의 등록은 첨부 5 × 10MB, 종이 계약 등록은 날인본 2 × 10MB 에 multipart 여유 1MB 를 더한다. 나머지는 Next 기본 proxy 한도(10MB)다.
  */
 export function bodyLimitOf(pathname: string): number {
-  if (pathname === NOTICE_SAVE_ROUTE) return 51 * MB;
+  if (pathname === NOTICE_SAVE_ROUTE || pathname === INQUIRY_SAVE_ROUTE) return 51 * MB;
   if (pathname === PAPER_ROUTE) return 21 * MB;
   return 10 * MB;
 }

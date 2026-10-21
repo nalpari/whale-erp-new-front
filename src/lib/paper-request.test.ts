@@ -1,10 +1,10 @@
 // node --test src/lib/paper-request.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { answersWith401, NOTICE_SAVE_ROUTE, PAPER_ROUTE, sameOrigin, tooLarge } from "./paper-request.ts";
+import { answersWith401, INQUIRY_SAVE_ROUTE, NOTICE_SAVE_ROUTE, PAPER_ROUTE, sameOrigin, tooLarge } from "./paper-request.ts";
 
 test("answersWith401 — BFF · 종이 계약 등록 · 공지사항 저장만 401, 화면 경로는 로그인으로 리다이렉트", () => {
-  for (const p of ["/api/contracts", "/api/auth/admin/login-info", "/contracts/paper", "/platform-notices/save"]) assert.equal(answersWith401(p), true, p);
+  for (const p of ["/api/contracts", "/api/auth/admin/login-info", "/contracts/paper", "/platform-notices/save", "/support-inquiries/save"]) assert.equal(answersWith401(p), true, p);
   for (const p of ["/contracts", "/contracts/7", "/contracts/paper/x", "/contracts/7/documents/1", "/home", "/apix", "/platform-notices", "/platform-notices/1"]) assert.equal(answersWith401(p), false, p);
 });
 
@@ -32,6 +32,7 @@ test("tooLarge — 공지사항 저장 51MB · 종이 계약 21MB · 나머지 1
   const MB = 1024 * 1024;
   assert.equal(tooLarge(NOTICE_SAVE_ROUTE, String(51 * MB)), false);
   assert.equal(tooLarge(NOTICE_SAVE_ROUTE, String(51 * MB + 1)), true);
+  assert.equal(tooLarge(INQUIRY_SAVE_ROUTE, String(51 * MB + 1)), true);
   assert.equal(tooLarge(PAPER_ROUTE, String(21 * MB)), false);
   assert.equal(tooLarge(PAPER_ROUTE, String(21 * MB + 1)), true);
   assert.equal(tooLarge("/platform-faqs/new", String(10 * MB)), false);
