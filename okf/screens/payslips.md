@@ -4,7 +4,7 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-19T09:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-21T01:40:00Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
@@ -94,7 +94,10 @@ sources:
 
 버튼은 server action(`[payslipId]/actions.ts`)으로 api 를 부른다. 성공하면 토스트 뒤 `router.refresh()` 로 상세를 다시 받고,
 page 가 `updatedAt` 을 `PayslipReview` 의 key 로 줘 금액 칸 · 스위치가 새 값으로 다시 선다. 실패하면 api 문장을 확인창 안에 보인다
-(409 그사이 고침 · 상태 다름, 422 비어 있는 공제 등).
+(409 그사이 고침 · 상태 다름, 422 비어 있는 공제 등). api 가 `code` 를 붙인 5xx(메일 · 직원 앱 주소 설정 없음 503, 메일 실패 502)도
+원인이 정해진 실패라 api 문장을 그대로 보인다. 그 밖의 5xx · 연결 실패 · server action 호출 끊김은 「결과를 확인하지 못했습니다」를
+확인창에 두고 상세를 다시 받는다(실제로 저장 · 발송됐으면 새 값으로 다시 서며 안내도 사라진다). 목록 「확정 N건 발송」과 작성 팝업도
+같은 규칙이고, 결과를 모르면 목록을 다시 받는다 — 오류 화면으로 가지 않아 입력하던 값이 남는다.
 
 * **임시저장**(`PUT /payslips/:id`) — 줄마다 급여 항목 id 와 금액(빈 칸 null — 0 과 다르다), 가산 · 3.3% 스위치, 상세의 `updatedAt`.
   숫자가 아닌 칸이 있으면 보내지 않고 그 이름을 알린다. 상태는 그대로다. 3.3% 는 파트타이머만 보낸다.

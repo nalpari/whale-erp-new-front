@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-10-21
+* **Update**: [Payslips](/screens/payslips.md) — 급여명세서 실패 안내를 정리했다. api 가 `code` 를 붙인 5xx(503 설정 없음 · 502 메일 실패)는 api 문장을 그대로 보이고, 그 밖의 5xx · 연결 실패 · server action 호출 끊김은 결과 모름으로 확인창에 남긴 채 상세 · 목록을 다시 받는다. 「확정 N건 발송」은 점포 이름에 맞는 점포가 없으면 빈 점포로 보낸다(관리 범위 전체로 넓히지 않는다). 기본급 · 주휴수당 · 연장수당의 출퇴근 데이터 연결은 아직 없다(추후 작업).
+
 ## 2026-10-20
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통 컴포넌트 `DetailTable` 의 왼쪽 라벨 칸을 180px 에서 줄였다(사용자 피드백 — 값 칸이 너무 좁았다, 1팀 확인 전). `src/app/staff-members/[id]/contract-box.tsx` 가 같은 줄 모양을 따로 옮겨 둔 곳이라 같이 고쳤다. `docs/demo/src/ui.mjs` 의 `detailTable` 과 DESIGN.md 의 고정값도 맞췄다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 위 `DetailTable` 라벨 칸 축소로 `contract-box` 소스도 같이 고쳐졌다. `generated.at` 과 `contract-box` 의 `last_modified` 를 갱신했다(코드 리뷰로 빠뜨린 것을 찾음).
