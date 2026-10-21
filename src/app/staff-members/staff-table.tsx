@@ -2,7 +2,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Badge, DataTable, type Column } from "@/components/common";
 import type { StaffMemberListItem } from "@/lib/staff-members";
-import { contractCell, EMPLOYMENT_TYPE_LABELS, formatPhone, joinCell, rowNumber, statusCells, type Cell } from "./staff-row";
+import { ResendInvitationButton } from "./resend-invitation-button";
+import { canResendInvitation, contractCell, EMPLOYMENT_TYPE_LABELS, formatPhone, joinCell, rowNumber, statusCells, type Cell } from "./staff-row";
 
 // 데모 staff-parts.mjs 의 회색 배지(quiet). 공통 Badge 에는 on · off 두 가지뿐이다.
 const NEUTRAL = "inline-block rounded-[2px] px-[4px] py-[2px] text-center text-[14px] font-medium bg-erp-subtle text-erp-ink whitespace-nowrap";
@@ -55,7 +56,11 @@ export function StaffTable({
       width: "w-[110px]",
       cell: ({ item }) =>
         item.isMasked ? (
-          <span className="text-erp-muted">본사 제공 동의 없음</span>
+          // 본사 역할에게 가린 가맹 점포 직원(STAFF-23 · ATT-30). 칸이 좁아 두 줄로 둔다 — 한 줄이면 말줄임으로 「가맹 점포 직원」이 잘린다
+          <span className="block whitespace-normal leading-[17px] text-erp-muted">
+            본사 제공 동의 없음 ·<br />
+            가맹 점포 직원
+          </span>
         ) : item.staffMemberId !== null && item.joinState === "JOINED" && item.employmentStatus === "EMPLOYED" ? (
           <Link href={`/staff-members/${item.staffMemberId}${listSearch}`} className="text-erp-link hover:underline">
             {item.name}
@@ -67,7 +72,17 @@ export function StaffTable({
     { header: "휴대전화번호", width: "w-[140px]", cell: personal((item) => (item.phone ? formatPhone(item.phone) : DASH)) },
     { header: "점포", cell: (r) => r.item.store.name },
     { header: "고용형태", width: "w-[110px]", cell: personal((item) => (item.employmentType ? EMPLOYMENT_TYPE_LABELS[item.employmentType] : DASH)) },
-    { header: "가입·인증", width: "w-[210px]", cell: personal((item) => <CellView cell={joinCell(item, today)} />) },
+    {
+      header: "가입·인증",
+      // 데모는 210 — 재발송 버튼(WHALEERP-138)이 배지 옆에 서도록 넓혔다. 데모에는 목록 재발송 자리가 없다
+      width: "w-[300px]",
+      cell: personal((item) => (
+        <span className="inline-flex items-center justify-center gap-[6px]">
+          <CellView cell={joinCell(item, today)} />
+          {item.contract && canResendInvitation(item) && <ResendInvitationButton contractId={item.contract.contractId} name={item.name} />}
+        </span>
+      )),
+    },
     {
       header: "계약 상태",
       width: "w-[160px]",

@@ -3,6 +3,7 @@
 // 는 화면 묶음이라 여기 남는다.
 // 날짜는 모두 한국 날짜로 견준다. today 는 kstToday() 값(YYYY-MM-DD)을 받는다.
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
+import type { EnumValue } from "../../lib/enums.ts";
 import type { EmploymentType, JoinGroup, StaffMemberListItem } from "../../lib/staff-members.ts";
 
 export type CellStyle = "badge-on" | "badge-off" | "badge-neutral" | "mark-on" | "mark-off" | "muted";
@@ -74,6 +75,31 @@ export function joinCell(item: StaffMemberListItem, today: string): Cell {
     default:
       return { text: "초안", style: "badge-neutral" };
   }
+}
+
+/**
+ * 재발송 버튼을 보일지(WHALEERP-138). api 의 invitation.canResend 에 더해 계약이 발송 대기일 때만이다 — 재발송 api
+ * (POST /contracts/:id/send)는 계정이 없는 직원의 가입 초대 알림톡만 보낸다. 서명 대기는 앱으로 받는 직원(가입 · 계정 있음)이라
+ * 앱 알림이 생기기 전까지 409 SEND_CHANNEL_NOT_READY, 만료 · 거부 계약은 409 CONTRACT_STATUS_CONFLICT 다. canResend 는 초대 만료 ·
+ * 소속 추가 확인 · 복귀 확인에도 참이라 그대로 따르면 누를 때마다 막힌다. 근로계약 상세의 재발송 버튼과 같은 기준이다(send-button.tsx).
+ */
+export function canResendInvitation(item: Pick<StaffMemberListItem, "invitation" | "contract">): boolean {
+  return !!item.invitation?.canResend && item.contract?.status === "PENDING_SEND";
+}
+
+/**
+ * 상세 「초대」 줄 — 초대 유형 · 초대 상태 · 보낸 날(한국 날짜). 한글은 api enum(InvitationType · InvitationStatus)이고, 받지 못했거나
+ * 목록에 없는 값은 영문 값 대신 그 조각을 뺀다. 초대가 없으면 「-」.
+ */
+export function invitationText(
+  invitation: StaffMemberListItem["invitation"],
+  typeLabels: readonly EnumValue[],
+  statusLabels: readonly EnumValue[],
+): string {
+  if (!invitation) return "-";
+  const label = (values: readonly EnumValue[], value: string) => values.find((v) => v.value === value)?.label;
+  const parts = [label(typeLabels, invitation.invitationType), label(statusLabels, invitation.status), `보낸 날 ${kstDate(invitation.lastSentAt)}`];
+  return parts.filter(Boolean).join(" · ");
 }
 
 export function contractCell(item: StaffMemberListItem, today: string): Cell | null {
