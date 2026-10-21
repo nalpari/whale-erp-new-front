@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { Button, PageBar } from "@/components/common";
 import { ApiError, authHeaders, request } from "@/lib/api";
@@ -40,8 +41,18 @@ export default async function EditContractPage({ params }: PageProps<"/contracts
           ) : detail.status !== "DRAFT" ? (
             <Notice title="임시저장 · 수정 요청 근로계약서만 고칠 수 있습니다" />
           ) : (
-            // 임시저장 이어 쓰기는 작성의 연장이라 작성 또는 수정 권한으로 연다. 삭제 버튼은 삭제 권한이 있을 때만
-            <ContractPermission action={["create", "update"]} fallback={<Notice title="근로계약서를 이어 쓸 권한이 없습니다" contractId={contractId} />}>
+            // 임시저장 이어 쓰기는 작성의 연장이라 작성 권한으로 연다(api 도 저장에 작성 권한을 본다). 삭제 버튼은 삭제 권한이 있을 때만 —
+            // 이어 쓸 수 없어도 삭제 권한이 있으면 안내 줄에서 지울 수 있다
+            <ContractPermission
+              action="create"
+              fallback={
+                <Notice title="근로계약서를 이어 쓸 권한이 없습니다" contractId={contractId}>
+                  <ContractPermission action="delete">
+                    <DeleteDraftButton contractId={contractId} />
+                  </ContractPermission>
+                </Notice>
+              }
+            >
               <ContractForm
                 stores={stores}
                 labels={labels}
@@ -63,10 +74,11 @@ export default async function EditContractPage({ params }: PageProps<"/contracts
 }
 
 // 권한이 없어 막혔으면 상세로 보낸다 — 목록의 임시저장 행은 이 화면으로 바로 오므로, 조회 권한만 있어도 내용은 상세에서 본다
-function Notice({ title, contractId }: { title: string; contractId?: number }) {
+function Notice({ title, contractId, children }: { title: string; contractId?: number; children?: ReactNode }) {
   return (
     <div className="flex items-center gap-[6px]">
       <p className="flex-1 text-[14px] font-semibold text-erp-ink">{title}</p>
+      {children}
       {contractId !== undefined && (
         <Button variant="soft" href={`/contracts/${contractId}`}>
           상세

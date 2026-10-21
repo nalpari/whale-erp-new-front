@@ -60,9 +60,9 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
   const statusCell = (s: string | null): ReactNode => (s ? <StatusBadge status={s as Status} label={labelOf(statuses, s)} /> : "-");
   const buttons: ReactNode =
     // 임시저장 삭제는 이어 쓰기 화면에만 둔다 — 삭제는 임시저장일 때만 할 수 있다.
-    // 버튼은 근로계약 관리 메뉴 권한으로 가린다 — 이어 쓰기는 작성 또는 수정, 재발송 · 수정은 수정(WHALEERP-592)
+    // 버튼은 근로계약 관리 메뉴 권한으로 가린다 — 이어 쓰기는 작성(api 가 임시저장 이어 쓰기 저장에 작성 권한을 본다), 재발송 · 수정은 수정(WHALEERP-592)
     status === "DRAFT" ? (
-      <ContractPermission action={["create", "update"]}>
+      <ContractPermission action="create">
         <Button variant="soft" href={`/contracts/${contractId}/edit`}>
           이어 쓰기
         </Button>
