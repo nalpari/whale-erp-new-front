@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-21T12:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-21T15:00:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -37,7 +37,7 @@ sources:
   - id: resend-invitation-button
     resource: ../../src/app/staff-members/resend-invitation-button.tsx
     title: 가입 초대 재발송 버튼 · 확인창(WHALEERP-138) — 근로계약 관리 수정 권한(MN000006)으로 가린다
-    last_modified: 2026-10-21T12:00:00Z
+    last_modified: 2026-10-21T15:00:00Z
   - id: staff-table
     resource: ../../src/app/staff-members/staff-table.tsx
     title: 목록 표 — 가입·인증 칸의 재발송 버튼, 가린 행의 이름 자리
@@ -259,8 +259,10 @@ sources:
 * 보내기 — 확인창(가입 초대를 다시 보내시겠습니까?) 뒤 근로계약 상세와 같은 서버 액션(`sendContract`)과 실패 판정(`sendFailureOf`)을
   쓴다. 성공하면 토스트 「가입 초대를 다시 보냈습니다.」와 함께 화면을 다시 받아 새 발송일(「초대 발송 · MM-DD」)을 보인다. 409 ·
   502 · 503 은 api 문구 그대로다 — `SEND_FAILED`(되돌렸고 다시 보낼 수 있음) · `SEND_CHANNEL_NOT_READY` · `SEND_PHONE_NOT_MOBILE` 는
-  확인창 안에, 접수 여부를 모르거나(`SEND_UNCONFIRMED`, 코드 없는 502 · 504, 연결 끊김) 화면이 낡았으면(상태 충돌) 다시 받은 목록에서
-  버튼이 사라질 수 있어 토스트로 알리고 닫은 뒤 다시 받는다.
+  확인창 안에 보인다. 접수 여부를 모르면(`SEND_UNCONFIRMED`, 코드 없는 502 · 504, 연결 끊김) 재발송은 계약 상태를 바꾸지 않아 다시 받은
+  화면에도 버튼이 그대로라, 확인창을 연 채 보내기를 잠그고(닫았다 열어도) 문구를 남긴 뒤 다시 받는다 — 바로 다시 눌러 알림톡이 두 번
+  가지 않게(근로계약 상세와 같다, PR #85 리뷰). 풀려면 화면을 새로 고친다. 문구는 근로계약 상세용 「상세를 다시 읽었으니」 대신 「화면을
+  다시 읽었으니」다. 화면이 낡았으면(상태 충돌) 다시 받은 화면에서 버튼이 사라지므로 토스트로 알리고 닫은 뒤 다시 받는다.
 
 # 상세 가입 상태 · 초대 (WHALEERP-138)
 
