@@ -120,7 +120,8 @@ function DetailBody({
     { label: "이메일", value: admin.email ?? null },
     {
       label: "비밀번호",
-      value: (
+      // 미사용 계정은 초기화 버튼 · 미발송 표시 없이 「—」만 둔다 — 화면에서만 숨긴다(api 는 미사용 계정 초기화를 막지 않는다)
+      value: admin.accountStatus === "INACTIVE" ? muted("—") : (
         <>
           {canUpdate && (
             <Blocked reason={isSelf ? "본인 비밀번호는 내 정보에서 바꿔 주세요" : undefined}>

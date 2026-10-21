@@ -28,12 +28,12 @@ test("validateMenuForm — 새 URL 은 1뎁스만, 수정에서 그대로 둔 �
   assert.ok(validateMenuForm({ name: "a", url: "//staff", status: "ACTIVE" }).url);
   assert.deepEqual(validateMenuForm({ name: "a", url: "/staff-content", status: "ACTIVE" }), {});
   // 등록(keptUrl 없음)은 여러 구간을 받지 않는다
-  const community = "/platform/community/notices";
-  assert.ok(validateMenuForm({ ...values(base), url: community }).url);
-  // 수정: 아직 여러 구간인 메뉴(3팀 플랫폼 커뮤니티 등)는 URL 을 그대로 두면 이름 · 상태만 고칠 수 있고, 다른 여러 구간으로 바꾸면 막는다
-  assert.deepEqual(validateMenuForm({ ...values(base), url: community, name: "새 이름" }, community), {});
-  assert.deepEqual(validateMenuForm({ ...values(base), url: ` ${community} ` }, community), {});
-  assert.ok(validateMenuForm({ ...values(base), url: "/platform/community/faq" }, community).url);
+  const legacy = "/stores/contract-templates";
+  assert.ok(validateMenuForm({ ...values(base), url: legacy }).url);
+  // 수정: 아직 여러 구간인 메뉴(사용중지 메뉴 등)는 URL 을 그대로 두면 이름 · 상태만 고칠 수 있고, 다른 여러 구간으로 바꾸면 막는다
+  assert.deepEqual(validateMenuForm({ ...values(base), url: legacy, name: "새 이름" }, legacy), {});
+  assert.deepEqual(validateMenuForm({ ...values(base), url: ` ${legacy} ` }, legacy), {});
+  assert.ok(validateMenuForm({ ...values(base), url: "/stores/other-templates" }, legacy).url);
 });
 
 test("bodyOf — 공백을 지우고 빈 URL 은 null", () => {

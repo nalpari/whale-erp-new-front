@@ -2,8 +2,16 @@
 
 ## 2026-10-21
 * **Update**: [Payslips](/screens/payslips.md) — 급여명세서 실패 안내를 정리했다. api 가 `code` 를 붙인 5xx(503 설정 없음 · 502 메일 실패)는 api 문장을 그대로 보이고, 그 밖의 5xx · 연결 실패 · server action 호출 끊김은 결과 모름으로 확인창에 남긴 채 상세 · 목록을 다시 받는다. 「확정 N건 발송」은 점포 이름에 맞는 점포가 없으면 빈 점포로 보낸다(관리 범위 전체로 넓히지 않는다). 기본급 · 주휴수당 · 연장수당의 출퇴근 데이터 연결은 아직 없다(추후 작업).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #71 머지 블로커 반영: 공통코드 저장 중에 다른 패널 저장으로 같은 내용의 목록이 새 참조로 오면 저장 기준(`savingFrom`)을 그 참조로 옮긴다(`followSameRows`). 옮기지 않아 두 패널을 함께 저장하다 등록만 실패하면 실패 안내와 새 행이 함께 사라지던 것을 막는다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR 리뷰(5종) 반영: 공통코드 등록만 실패하면 띠에 수정분 저장을 먼저 적고, 요청이 끊기면 목록을 다시 받아 「결과를 확인하지 못했습니다」로 알리며, 서버 무효화가 실패하면 화면이 직접 다시 받는다. 새 행 잇기는 저장을 시작한 목록(그룹은 고른 그룹까지)을 대신하는 목록으로 한정했다(`savingFrom`). 요청 연결 · 권한 판정 · 새 행 잇기 · 빼기를 순수 함수로 빼 테스트했고, okf 의 403 설명(그대로 보인다)을 바로잡았다. 앞서 코드 리뷰 반영: 수정 → 등록 순서를 `src/lib/code-save.ts` 로 빼 `pnpm test` 로 검사한다. 플랫폼 관리자 화면 변경(미사용 계정 비밀번호 「—」 · 미사용 전환일시 · 미사용 계정 수 제거)을 본문에 적었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — api main(115ad5f, api #88)의 공통코드 등록 · 수정 분리에 맞춰 생성 타입을 다시 만들고, 본문을 `{ items }` 로 바꿨다(`CreateCodeGroupsDto` · `UpdateCodeGroupsDto` · `CreateCodeItemsDto` · `UpdateCodeItemsDto`, 응답 204). 동시 등록 경합 409 의 「: A, B」에서 첫 코드를 칸 오류로 붙인다.
 
 ## 2026-10-20
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [고객지원·커뮤니티](/support.md) · [플랫폼 시스템 관리](/system.md) — 커뮤니티 화면 주소를 메뉴 URL · api 경로와 같은 한 단계로 옮겼다(`/platform-notices` · `/platform-faqs` · `/platform-inquiries` · `/platform-leads`, api squirtle). 공지사항 저장 창구는 `/platform-notices/save`, FAQ 는 JSON 서버 액션. 목업 · 데모 메뉴 URL 도 맞췄다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 커뮤니티 관리 목록 넷(공지사항 · FAQ · 문의사항 · 도입문의, #275)과 공지사항 · FAQ 등록 · 수정(#276)을 만들었다. 첨부 저장 창구(지금은 `/platform-notices/save`)를 더하고 proxy 본문 한도를 51MB 로 올렸다. api-types 를 api main openapi 로 다시 만들었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 공통코드 저장을 api 의 등록(`POST`) · 수정(`PUT`) 분리에 맞췄다. [추가]는 등록 권한만, [저장]은 등록 · 수정 중 하나만 있어도 보이고, 저장은 수정 → 등록 두 번 부른다. 수정 권한이 없으면 기존 행은 읽기 전용, 등록만 실패하면 새 행을 남긴다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — api main(db07bd8, api #84 — 1팀 메뉴 권한 판정을 `@MenuPermission` 가드로 통일)으로 `api-types.generated.ts` 를 다시 만들었다. 1팀 화면은 이미 `usePagePermission` 이라 코드는 그대로다. 플랫폼 권한 · 메뉴 관리의 「api 머지 뒤 다시 만든다」 문장을 지웠다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #58 재리뷰 참고 1: 서명 대기 계약의 막힌 「재발송」 옆에 「앱 알림이 생기면 다시 보낼 수 있습니다」를 글자로 보인다(`aria-describedby`). 공통 Button 이 막히면 마우스 반응을 꺼 title 툴팁이 뜨지 않고 키보드 · 터치로도 볼 수 없었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통 컴포넌트 `DetailTable` 의 왼쪽 라벨 칸을 180px 에서 줄였다(사용자 피드백 — 값 칸이 너무 좁았다, 1팀 확인 전). `src/app/staff-members/[id]/contract-box.tsx` 가 같은 줄 모양을 따로 옮겨 둔 곳이라 같이 고쳤다. `docs/demo/src/ui.mjs` 의 `detailTable` 과 DESIGN.md 의 고정값도 맞췄다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 위 `DetailTable` 라벨 칸 축소로 `contract-box` 소스도 같이 고쳐졌다. `generated.at` 과 `contract-box` 의 `last_modified` 를 갱신했다(코드 리뷰로 빠뜨린 것을 찾음).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합: 헤더에 main 의 BP 선택 팝업(`BpSelectDialog`) · 서비스 바로가기 동작(`serviceTargets`)과 이 브랜치의 점포 범위 선택기(`ScopeSelect`) · 톱니 아이콘을 함께 두었다. BP 로 이동하면(`/bp-switch`) 범위와 함께 목록에서 고른 점포(`store-picks`)도 비운다.

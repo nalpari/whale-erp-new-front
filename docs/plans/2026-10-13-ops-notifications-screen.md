@@ -83,9 +83,9 @@
 |---|---|---|---|
 | `NTF_CONTRACT_SIGNED` · `_REJECTED` · `_EXPIRED` · `_RENEWAL_DUE` | CONTRACT | `/contracts/{id}` | 있음(front #13) |
 | `NTF_LINK_HOLD` · `NTF_AFFILIATION_REJECTED` | STAFF_MEMBER | `/staff-members/{id}` | 있음 |
-| `NTF_INQUIRY_RECEIVED` | INQUIRY | `/platform/community/inquiries/{id}` | 없음 |
+| `NTF_INQUIRY_RECEIVED` | INQUIRY | `/platform-inquiries/{id}` | 없음 |
 | `NTF_INQUIRY_ANSWERED` | INQUIRY | `/support/inquiries/{id}` | 없음 |
-| `NTF_LEAD_RECEIVED` · `NTF_LEAD_ANSWERED` | LEAD | `/platform/community/leads/{id}` | 없음 |
+| `NTF_LEAD_RECEIVED` · `NTF_LEAD_ANSWERED` | LEAD | `/platform-leads/{id}` | 없음 |
 
 바뀜(NOTIFY-16): 경로표를 두지 않고 업무 쪽 `link` + `safeLink`. 계약 상세는 main 의 실제 경로 `/contracts/{id}`(front #13)다. 화면이 없는 문의 · 도입문의 넷은 `linkOf` 가 null 을 돌려 알림함에서 안내한다(front #14 리뷰). 데모에서 날인 알림이 거부 상세(유하람)로 가던 문제는 이 표로 없어진다. 계약 ID로 가기 때문이다.
 
