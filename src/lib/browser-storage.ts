@@ -51,6 +51,7 @@ const KEY = {
   stores: `${PREFIX}stores`,
   codes: `${PREFIX}codes`,
   scope: `${PREFIX}scope`,
+  /** 지금은 쓰지 않는다 — 목록에서 고른 점포는 주소(storeIds)에 둔다(2026-10-21). 앞서 쓰던 값을 로그아웃할 때 지우려고 키만 둔다 */
   storePicks: `${PREFIX}store-picks`,
 } as const;
 const TAB_KEYS = [KEY.currentBp, KEY.stores, KEY.codes, KEY.scope, KEY.storePicks];
@@ -109,24 +110,6 @@ export const readCodes = (bpCodeId: number) => ofBp(read<{ bpCodeId: number; cod
 export const writeCodes = (bpCodeId: number, codes: Codes) => write(tab, KEY.codes, { bpCodeId, codes });
 export const readScope = (bpCodeId: number) => ofBp(read<{ bpCodeId: number; scope: Scope }>(tab, KEY.scope), bpCodeId)?.scope ?? null;
 export const writeScope = (bpCodeId: number, scope: Scope) => write(tab, KEY.scope, { bpCodeId, scope });
-/** 사용자가 목록에서 고른 점포. 칩을 그리려고 이름 · 점포코드도 둔다 */
-export interface StorePicks {
-  url: string;
-  stores: { storeId: number; name: string; storeCode: string }[];
-}
-/**
- * 화면은 이것을 직접 부르지 않고 useStorePicks(session-gate.tsx)를 쓴다. 다른 BP 의 값(같은 탭에서 BP 를 바꾼 때)이나
- * 모양이 깨진 값은 null 로 버린다 — 헤더 링크 · 목록 필터가 stores 를 바로 읽는다.
- */
-export function readStorePicks(bpCodeId: number): StorePicks | null {
-  const v = ofBp(read<{ bpCodeId: number } & StorePicks>(tab, KEY.storePicks), bpCodeId);
-  if (!v || typeof v.url !== "string" || !Array.isArray(v.stores)) return null;
-  return { url: v.url, stores: v.stores.filter((s) => typeof s?.storeId === "number") };
-}
-/** null 이면 지운다 */
-export const writeStorePicks = (bpCodeId: number, picks: StorePicks | null) =>
-  picks ? write(tab, KEY.storePicks, { bpCodeId, ...picks }) : remove(tab, [KEY.storePicks]);
-
 /** 로그인 화면에서 부른다. 이 탭과 공용 저장소의 로그인 정보를 지운다(아이디 저장 whale-erp:saved-login-id 는 남긴다). 앞 버전 키도 지운다. */
 export function clearLoginStorage() {
   remove(local, [KEY.loginInfo, KEY.loginBpInfo, KEY.selectedBp, ...LEGACY_KEYS]);

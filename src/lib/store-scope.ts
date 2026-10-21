@@ -1,18 +1,11 @@
-// 헤더 점포 범위(Scope)를 목록의 점포 검색 조건으로 옮긴다. 점포 검색 컴포넌트(StorePicker)를 쓰는 목록 메뉴만 따른다.
-// 그 목록은 주소의 storeIds 로 고른 점포를 받는다 — 범위는 탭 안(sessionStorage)에만 있어 서버가 모르므로 주소로 넘긴다.
+// 헤더 점포 범위(Scope)를 목록의 점포 검색 조건으로 옮긴다. 범위는 탭 안(sessionStorage)에만 있어 서버가 모르므로, 헤더가 메뉴로
+// 이동할 때 주소에 짧은 값 하나(?scope=DIRECT · FRANCHISE · STORE:12)로 싣는다. 어느 메뉴에 점포 검색 필터가 있는지는 헤더가 모른다 —
+// 필터가 있는 목록만 이 값을 읽고(서버에서 api 조건으로 바꾼다), 없는 목록은 모르는 값이라 무시한다. 그래서 메뉴 주소 · 코드를 적어 두는 목록이 없다.
+// 목록에서 사용자가 고른 점포는 그 목록 주소의 storeIds 에 두고, 있으면(빈 값 「전체」도) scope 보다 앞선다. scope 는 늘 헤더 범위만 뜻해서,
+// 주소에 scope 가 있으면 그 탭의 헤더 범위도 그 값으로 맞춘다(admin-header.tsx — 주소를 복사해 다른 탭에서 열 때).
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
 import type { Scope } from "./browser-storage.ts";
 import type { AdminStore } from "./session.ts";
-import { STORE_STATUSES } from "./store-types.ts";
-
-/**
- * 점포 검색 컴포넌트를 쓰는 목록 메뉴의 url. 이 메뉴의 화면(목록 · 상세 · 등록 · 수정)에서 헤더 범위를 바꾸면 그 목록으로 가서
- * 범위의 점포로 검색하고, 헤더 메뉴 링크에도 범위(그 메뉴에서 사용자가 고른 점포가 있으면 그 점포)를 싣는다. 여기 없는 화면은 헤더 범위를
- * 바꿔도 그대로다. 그 목록은 주소의 storeIds 로 고른 점포를, statuses 로 점포상태를 받는다(점포 정보 관리 목록과 같은 이름).
- */
-export const STORE_SCOPE_LIST_URLS: readonly string[] = ["/stores"];
-
-export const usesStoreScope = (url: string | null | undefined) => !!url && STORE_SCOPE_LIST_URLS.includes(url);
 
 export const isClosedStore = (s: AdminStore) => s.storeStatusCode === "CLOSED";
 
@@ -35,38 +28,17 @@ export function scopeStores(scope: Scope, stores: readonly AdminStore[]): AdminS
   }
 }
 
-/** 목록 주소에서 고른 점포(storeIds)를 뺀다 — 점포 조건이 바뀌므로 쪽(page)도 1로 돌린다. 다른 조건은 그대로 둔다 */
-export function withoutStoreIds(href: string): string {
-  const at = href.indexOf("?");
-  if (at < 0) return href;
-  const params = new URLSearchParams(href.slice(at + 1));
-  params.delete("storeIds");
-  params.delete("page");
-  const search = params.toString();
-  return search ? `${href.slice(0, at)}?${search}` : href.slice(0, at);
+/** 점포 찾기 결과 수 — 필터의 펼친 목록이 이 이상 길어지지 않게 */
+const STORE_SEARCH_MAX = 20;
+
+/** 점포명 · 점포코드에 글자가 든 점포(대소문자 무시), 폐점 포함, 앞에서부터 20개. 빈 글자면 없음 — 필터의 점포 고르기(StorePicker)가 쓴다 */
+export function searchStoresByText(stores: readonly AdminStore[], text: string): AdminStore[] {
+  const word = text.trim().toLowerCase();
+  if (!word) return [];
+  return stores.filter((s) => s.name.toLowerCase().includes(word) || s.storeCode.toLowerCase().includes(word)).slice(0, STORE_SEARCH_MAX);
 }
 
-/** 고른 점포 중 폐점이 있는가 — 목록의 기본 점포상태가 폐점을 빼므로, 있으면 상태 조건을 「전체」로 넣어야 0건이 되지 않는다 */
-export const includesClosedStore = (ids: readonly number[], stores: readonly AdminStore[]) =>
-  stores.some((s) => isClosedStore(s) && ids.includes(s.storeId));
-
-/** 이 점포들로 검색하는 목록 주소. 없으면 조건 없는 목록, 폐점 점포가 들면 점포상태를 「전체」로 함께 싣는다 */
-export function pickedListHref(url: string, ids: readonly number[], stores: readonly AdminStore[]): string {
-  if (!ids.length) return url;
-  const params = new URLSearchParams({ storeIds: ids.join(",") });
-  if (includesClosedStore(ids, stores)) params.set("statuses", STORE_STATUSES.join(","));
-  return `${url}?${params}`;
-}
-
-/** 범위로 검색하는 목록 주소. 전체면 조건 없는 목록이다 */
-export const scopedListHref = (url: string, scope: Scope, stores: readonly AdminStore[]) =>
-  pickedListHref(
-    url,
-    scopeStores(scope, stores).map((s) => s.storeId),
-    stores,
-  );
-
-/** 선택기 항목 키 ↔ 범위. 점포 하나는 「STORE:id」 */
+/** 선택기 항목 키 ↔ 범위. 점포 하나는 「STORE:id」. 주소의 scope 값도 이 키다 */
 export const scopeKeyOf = (scope: Scope) => (scope.type === "STORE" ? `STORE:${scope.storeId}` : scope.type);
 /** 모르는 키면 null — 부르는 쪽이 범위를 바꾸지 않는다 */
 export function scopeOfKey(key: string): Scope | null {
@@ -84,3 +56,36 @@ export function restoredScope(saved: Scope | null, stores: readonly AdminStore[]
   if (saved.type !== "ALL" && !scopeStores(saved, stores).length) return { type: "ALL" };
   return saved;
 }
+
+/** 주소에 싣는 범위 조건의 이름 */
+export const SCOPE_PARAM = "scope";
+
+/** 주소의 scope 값 → 범위. 없거나 모르는 값이면 null(범위가 정해지지 않은 것) */
+export const scopeOfParam = (raw: string | undefined): Scope | null => (raw === undefined ? null : scopeOfKey(raw));
+
+function withParams(href: string, change: (params: URLSearchParams) => void): string {
+  const at = href.indexOf("?");
+  const params = new URLSearchParams(at < 0 ? "" : href.slice(at + 1));
+  change(params);
+  const path = at < 0 ? href : href.slice(0, at);
+  const search = params.toString();
+  return search ? `${path}?${search}` : path;
+}
+
+/**
+ * 헤더가 메뉴로 갈 주소 — 범위를 scope 로 싣는다. 전체는 메뉴 링크에는 싣지 않고(그 목록은 조건 없이 연다), 범위를 「전체」로 바꿔 이동할
+ * 때만 explicitAll 로 scope=ALL 을 적는다 — 그 주소로 뒤로 · 앞으로 가기를 해도 헤더가 주소를 따라 전체로 돌아온다(ScopeFromAddress).
+ */
+export const withScope = (href: string, scope: Scope, explicitAll = false) =>
+  withParams(href, (p) => (scope.type === "ALL" && !explicitAll ? p.delete(SCOPE_PARAM) : p.set(SCOPE_PARAM, scopeKeyOf(scope))));
+
+/**
+ * 등록 · 삭제 뒤 돌아갈 목록 주소 — 점포 검색을 「전체」로 비운다(2026-10-20). 빈 storeIds(목록에서 고른 점포 없음)를 적어 목록이 헤더 범위로
+ * 다시 채우지 않게 한다 — scope=ALL 로 적으면 헤더 범위까지 전체로 바뀐다. 점포 조건이 바뀌므로 쪽(page)도 뺀다. 다른 조건은 그대로 둔다.
+ */
+export const withoutStoreSearch = (href: string) =>
+  withParams(href, (p) => {
+    p.delete(SCOPE_PARAM);
+    p.delete("page");
+    p.set("storeIds", "");
+  });

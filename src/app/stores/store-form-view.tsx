@@ -44,7 +44,8 @@ import type { EnumValue } from "@/lib/enums";
 import { FLOOR_TYPES, floorTypeOf, type StoreDetail, type StoreImageFileType, type StoreStatus } from "@/lib/store-types";
 import { closeBlockText, formatBizNumber, nextStatuses } from "@/lib/store-view";
 import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
-import { useCurrentBp, useResetStoreSearch } from "@/components/site/session-gate";
+import { useCurrentBp } from "@/components/site/session-gate";
+import { withoutStoreSearch } from "@/lib/store-scope";
 import { storeImageAccept, storeImageFileError, storeImageTypesText } from "@/lib/store-image";
 import {
   createStoreAction,
@@ -108,7 +109,6 @@ type Props =
 export function StoreFormView(props: Props) {
   const { mode, backHref, imageTypes } = props;
   const router = useRouter();
-  const resetStoreSearch = useResetStoreSearch();
   // 선택지 글자는 <option> 에 글자로만 넣는다 — 공통코드 한글(로그인 정보)
   const statusLabel = useCodeLabel("STORE_STATUS");
   // 등록할 BP — 이 탭의 BP(플랫폼 계정이 고른 BP, 그 밖은 소속 BP)
@@ -367,8 +367,10 @@ export function StoreFormView(props: Props) {
         // 점포는 생겼다 — 이미지가 실패해도 등록을 되돌리지 않고 상세에서 알린다(상태 코드만 주소에 싣는다)
         const imageResult = await applyImage(result.storeId);
         toast("saved");
-        // 등록 뒤 목록에 돌아가면 점포 검색은 「전체」다 — 새 점포가 고른 점포 조건에 걸려 안 보이지 않게
-        return router.push(resetStoreSearch(`/stores/${result.storeId}${imageResult && !imageResult.ok ? `?imageFailed=${imageResult.status ?? "error"}` : ""}`));
+        // 등록 뒤 목록에 돌아가면 점포 검색은 「전체」다 — 새 점포가 고른 점포 조건에 걸려 안 보이지 않게(상세의 [목록]이 이 주소로 간다)
+        const params = new URLSearchParams({ back: withoutStoreSearch(backHref) });
+        if (imageResult && !imageResult.ok) params.set("imageFailed", String(imageResult.status ?? "error"));
+        return router.push(`/stores/${result.storeId}?${params}`);
       }
       const storeId = props.store.storeId;
       // 폐점한 점포는 이미지를 바꿀 수 없다(api 409) — 폐점으로 저장할 때는 이미지를 먼저 보내고, 실패하면 폐점하지 않는다.
