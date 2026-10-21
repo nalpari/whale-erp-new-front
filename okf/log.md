@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-21
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 화면 버튼을 메뉴 권한으로 가린다(WHALEERP-592): 지금 주소의 메뉴 권한(`usePagePermission`)을 읽는 `ContractPermission` 으로 「계약서 작성」(등록) · 「이어 쓰기」(등록 또는 수정) · 「재발송」 · 「수정」(수정) · 임시저장 「삭제」(삭제)와 작성 · 이어 쓰기 · 근로자 정보 수정 화면을 감쌌다. 직원 정보 관리 「직원 초대」는 메뉴 코드(MN000006) 등록 권한으로 가린다. 직원 상세 근로계약 칸의 403 은 이제 정상(근로계약 조회 권한 없음)이라 경고 로그를 남기지 않는다([직원 정보 관리 화면 (구현)](/screens/staff-members.md)). 막는 것은 api 다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 화면 버튼을 메뉴 권한으로 가린다(WHALEERP-592): 지금 주소의 메뉴 권한(`usePagePermission`)을 읽는 `ContractPermission` 으로 「계약서 작성」(등록) · 「이어 쓰기」(등록 또는 수정) · 「재발송」 · 「수정」(수정) · 임시저장 「삭제」(삭제)와 작성 · 이어 쓰기 · 근로자 정보 수정 화면을 감쌌다. 직원 정보 관리 「직원 초대」는 메뉴 코드(MN000006) 등록 권한으로 가린다. 막는 것은 api 다.
 * **Update**: [Staff](/staff.md) — 급여명세서 알림 문구를 「처음 발송과 다시 발송이 같다」로 고쳤다(NTF-20 · NOTI-6, #605). 옛 「다시 발송되었습니다」 설명이 남아 있었다.
 * **Update**: [Payslips](/screens/payslips.md) — 확정 취소 확인창의 직원 앱 표시 이름을 「검토 중」으로 바꿨다(2026-10-21 사용자 결정).
