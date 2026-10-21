@@ -338,7 +338,12 @@ function Ready({
       {allowed && !switching && (
         <>
           {header}
-          <div className="contents" inert={backdropActive}>
+          {/* MY PAGE 패널이 맨 위일 때만 본문을 inert 로 뺀다 — 그냥 backdropActive 를 쓰면 화면 자신의
+              closeOnBackdrop 패널(platform-admins 상세·수정 등)이 맨 위일 때 그 패널까지 children 안에
+              있어 함께 inert 가 되어 버튼을 못 눌렀다(ip-code-review-claude 적대적 리뷰로 찾음, 2026-10-21).
+              MY PAGE 가 열려 있을 때는 그 패널이 다른 패널 뒤에 그려져(DOM 순서) 늘 맨 위이므로 이 조건으로
+              충분하다 — 바탕창이 뜬 상태로는 페이지 쪽에서 새 패널을 열 수 없다(전부 inert). */}
+          <div className="contents" inert={myPageOpen && backdropActive}>
             {children}
           </div>
           <MyPagePanel id="mypage-panel" open={myPageOpen} onClose={() => setMyPageOpen(false)} trigger={myPageTrigger} />

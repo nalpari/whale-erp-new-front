@@ -39,8 +39,9 @@ export function validateMyProfileForm(form: MyProfileForm): Partial<Record<MyPro
   return errors;
 }
 
-export function toUpdateInput(form: MyProfileForm): UpdateMyProfileInput {
-  return { name: form.name.trim(), phone: phoneOf(form), email: form.email.trim().toLowerCase() };
+/** updatedAt 은 조회 응답 그대로 — 동시 수정 검사에 쓴다(api 쪽이 코드 리뷰로 더해짐, 2026-10-21). */
+export function toUpdateInput(form: MyProfileForm, updatedAt: string): UpdateMyProfileInput {
+  return { name: form.name.trim(), phone: phoneOf(form), email: form.email.trim().toLowerCase(), updatedAt };
 }
 
 /** api 가 거절한 이유를 붙일 칸 — 이 화면에서 중복이 날 수 있는 값은 이메일뿐이다. */

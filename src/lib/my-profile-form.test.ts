@@ -42,12 +42,18 @@ test("formOf — 프로필 값을 칸으로", () => {
     roleTypeCode: "BM",
     createdAt: "2026-01-01T00:00:00.000Z",
     lastLoginAt: null,
+    updatedAt: "2026-01-01T00:00:00.000Z",
   };
   assert.deepEqual(formOf(profile), { name: "이서준", phone: ["010", "1234", "5678"], email: "seojun@whale.test" });
 });
 
-test("toUpdateInput — 공백을 지우고 이메일은 소문자로", () => {
-  assert.deepEqual(toUpdateInput(filled), { name: "이서준", phone: "01012345678", email: "seojun@whale.test" });
+test("toUpdateInput — 공백을 지우고 이메일은 소문자로, updatedAt 은 그대로 싣는다", () => {
+  assert.deepEqual(toUpdateInput(filled, "2026-01-01T00:00:00.000Z"), {
+    name: "이서준",
+    phone: "01012345678",
+    email: "seojun@whale.test",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  });
 });
 
 test("serverErrorField — 이메일 문구만 그 칸, 나머지는 띠", () => {

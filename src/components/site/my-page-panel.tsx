@@ -168,7 +168,7 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
   const emailPassed = !!form && (form.email.trim() === emailChecked || form.email.trim() === profile?.email);
 
   const handleSave = () => {
-    if (!form) return;
+    if (!form || !profile) return;
     const found = validateMyProfileForm(form);
     setErrors(found);
     setFailure(null);
@@ -177,13 +177,20 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
 
     startSaving(async () => {
       try {
-        const updated = toUpdateInput(form);
+        const updated = toUpdateInput(form, profile.updatedAt);
         const result = await updateMyProfileAction(updated);
         if (!result.ok) return applyServerError(result.status, result.message);
         toast("saved");
-        setProfile((p) => (p ? { ...p, ...updated } : p));
         // GNB 이름 등 로그인 정보를 쓰는 화면이 다시 로그인하지 않아도 바로 보이게 한다.
         patchAccount({ name: updated.name, email: updated.email });
+        // PATCH 는 204 라 새 updatedAt 을 안 준다 — 다시 받아 두지 않으면 바로 이어 저장할 때
+        // 방금 쓴 값으로 동시 수정 검사가 409 를 낸다(코드 리뷰로 api 에 그 검사가 더해지며 같이 찾음).
+        const refreshed = await getMyProfileAction();
+        if (refreshed.ok) {
+          setProfile(refreshed.profile);
+          setForm(formOf(refreshed.profile));
+          setEmailChecked(refreshed.profile.email);
+        }
       } catch (error: unknown) {
         console.error("내 정보 저장 처리 실패", error);
         setFailure("저장 결과를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.");

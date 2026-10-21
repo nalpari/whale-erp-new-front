@@ -14,12 +14,16 @@ export type MyProfile = {
   roleTypeCode: string;
   createdAt: string;
   lastLoginAt: string | null;
+  /** 저장할 때 그대로 돌려준다 — 그사이 다른 관리자가 이 계정을 고쳤으면 api 가 409(코드 리뷰로
+   * api 에 더해짐, 2026-10-21). */
+  updatedAt: string;
 };
 
 export type UpdateMyProfileInput = {
   name: string;
   phone: string;
   email: string;
+  updatedAt: string;
 };
 
 const json = async (method: "GET" | "PATCH", body?: unknown): Promise<RequestInit> => ({
@@ -33,7 +37,7 @@ export async function getMyProfile(): Promise<MyProfile> {
   return request("/auth/admin/me", await json("GET"));
 }
 
-/** PATCH /auth/admin/me. 이름 · 연락처 · 이메일만 받는다. */
+/** PATCH /auth/admin/me. 이름 · 연락처 · 이메일과, 동시 수정 검사용 updatedAt(조회 응답 그대로)을 받는다. */
 export async function updateMyProfile(input: UpdateMyProfileInput): Promise<void> {
   return request("/auth/admin/me", await json("PATCH", input));
 }
