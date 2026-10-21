@@ -195,11 +195,15 @@ export function PayslipReview({
     if (overtime) setText(overtime.payslipItemId, on ? textOf(itemAmount(overtime)) : "0");
   };
 
-  /** api 를 부르고, 성공하면 확인창을 닫고 알린 뒤 상세를 다시 받는다. 실패하면 확인창에 남긴다. */
+  /** api 를 부르고, 성공하면 확인창을 닫고 알린 뒤 상세를 다시 받는다. 실패하면 확인창에 남기고, 결과를 모르면 상세도 다시 받는다. */
   const run = (call: () => Promise<{ ok: true } | EditFailure>, done: string) =>
     startBusy(async () => {
-      const result = await call();
-      if (!result.ok) return setFailure(result);
+      const result = await callAction(call);
+      if (!result.ok) {
+        setFailure(result);
+        if (result.unknown) router.refresh();
+        return;
+      }
       setDialog(null);
       setNotice(null);
       toast(done);
@@ -222,7 +226,7 @@ export function PayslipReview({
 
   const load = () =>
     startBusy(async () => {
-      const result = await getPreviousValues(payslip.payslipId);
+      const result = await callAction(() => getPreviousValues(payslip.payslipId));
       if (!result.ok) return setFailure(result);
       if (!result.previous) return setFailure({ ok: false, message: "불러올 지난 명세서가 없습니다." });
       const next = applyPrevious(items, texts, result.previous);
@@ -240,7 +244,7 @@ export function PayslipReview({
     setAdding("");
     if (addable) return;
     startBusy(async () => {
-      const result = await getAdditionalItems();
+      const result = await callAction(getAdditionalItems);
       if (!result.ok) return setFailure(result);
       setAddable(result.items);
     });
@@ -473,4 +477,13 @@ export function PayslipReview({
       </ConfirmDialog>
     </>
   );
+}
+
+/** server action 호출 자체가 끊기면(앞단 504 · 배포 중 재시작 · 네트워크) 오류 화면 대신 확인창에 결과 모름으로 남긴다 — 입력하던 값을 지키려고. */
+async function callAction<T extends { ok: boolean }>(call: () => Promise<T>): Promise<T | EditFailure> {
+  try {
+    return await call();
+  } catch {
+    return { ok: false, unknown: true, message: "결과를 확인하지 못했습니다. 화면을 새로 고쳐 확인해 주세요." };
+  }
 }

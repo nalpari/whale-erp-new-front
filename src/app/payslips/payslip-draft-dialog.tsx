@@ -43,7 +43,13 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
     setOpen(true);
     const mine = ++requestNumber.current;
     startLoading(async () => {
-      const result = await getPayslipCandidatesAction(month);
+      let result: Awaited<ReturnType<typeof getPayslipCandidatesAction>>;
+      try {
+        result = await getPayslipCandidatesAction(month);
+      } catch {
+        // 호출 자체가 끊겼다 — 조회라 결과 모름은 없고, 목록 전체를 오류 화면으로 덮지 않는다
+        result = { ok: false, message: "작성 대상을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요." };
+      }
       if (mine !== requestNumber.current) return;
       if (!result.ok) return setFailure(result);
       setItems(result.data.items);
@@ -70,14 +76,29 @@ export function PayslipDraftButton({ month, employmentTypeLabels }: { month: str
     setFailure(null);
     startBusy(async () => {
       // 성공하면 action 이 검토 화면으로 보낸다(redirect). 돌아온 것은 실패뿐이다.
-      setFailure(await createPayslip(pickedShown, month));
+      // 호출 자체가 끊기면 이미 만들었을 수 있어 목록을 다시 받는다.
+      try {
+        setFailure(await createPayslip(pickedShown, month));
+      } catch {
+        setFailure({ ok: false, unknown: true, message: "작성 결과를 확인하지 못했습니다. 목록을 새로 불러와 확인해 주세요." });
+        router.refresh();
+      }
     });
   };
   const createAll = () =>
     startBusy(async () => {
-      const result = await bulkCreatePayslips(month);
+      let result: Awaited<ReturnType<typeof bulkCreatePayslips>>;
+      try {
+        result = await bulkCreatePayslips(month);
+      } catch {
+        result = { ok: false, unknown: true, message: "일괄 작성 결과를 확인하지 못했습니다. 목록을 새로 불러와 확인해 주세요." };
+      }
       setConfirming(false);
-      if (!result.ok) return setFailure(result);
+      if (!result.ok) {
+        setFailure(result);
+        if (result.unknown) router.refresh();
+        return;
+      }
       toast(bulkSummary(result.result));
       close();
       router.refresh();

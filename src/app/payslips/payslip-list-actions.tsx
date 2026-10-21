@@ -35,8 +35,18 @@ export function PayslipListActions({
 
   const send = () =>
     startBusy(async () => {
-      const response = await sendPayslips(sendTargetOf(query));
-      if (!response.ok) return setFailure(response);
+      let response: Awaited<ReturnType<typeof sendPayslips>>;
+      try {
+        response = await sendPayslips(sendTargetOf(query));
+      } catch {
+        // 호출 자체가 끊겼다 — 이미 보냈을 수 있어 목록을 다시 받는다
+        response = { ok: false, unknown: true, message: "발송 결과를 확인하지 못했습니다. 목록을 새로 불러와 확인해 주세요." };
+      }
+      if (!response.ok) {
+        setFailure(response);
+        if (response.unknown) router.refresh();
+        return;
+      }
       setSending(false);
       router.refresh();
       if (response.result.failed.length === 0) toast(`${response.result.sent.length}건을 발송했습니다.`);
