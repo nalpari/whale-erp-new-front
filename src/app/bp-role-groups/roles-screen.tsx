@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Badge, Button, DataTable, Pagination, Tag, type Column } from "@/components/common";
 import { RoleMenuDialog, type MenuDialogRole } from "@/components/role-groups/role-menu-dialog";
 import { CARD, WhenWho } from "@/components/role-groups/role-parts";
 import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
 import { useAccount, useCurrentBp, usePagePermission } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import type { BpRoleGroup, BpRoleGroupList } from "@/lib/bp-role-groups";
 import type { EnumValue } from "@/lib/enums";
 import { PATH, useBpActions, type BpRoleDetailState } from "./bp-actions";
@@ -23,46 +24,23 @@ const ROLE_GUIDE: Record<string, string> = {
 const READ_ONLY_GUIDE = "권한 그룹을 조회만 합니다.";
 const BLANK_ROLE: MenuDialogRole = { roleGroupId: 0, roleCode: "FM000001", roleTypeCode: "FM", name: "" };
 
-export function BpRolesScreen({
-  bp,
-  page,
-  totalPages,
-  list,
-  selected,
-  detail,
-  lockReasons,
-  menuReasons,
-}: {
-  bp?: number;
+export function BpRolesScreen(props: {
   page: number;
   totalPages: number;
-  list: BpRoleGroupList | null;
+  list: BpRoleGroupList;
   selected?: number;
   detail: BpRoleDetailState;
   lockReasons: EnumValue[];
   menuReasons: EnumValue[];
 }) {
-  const router = useRouter();
-  const currentBp = useCurrentBp().bpCodeId;
-  // 주소의 BP 가 이 탭의 BP 와 다르면(처음 진입 · 다른 BP 로 바꾼 탭) 탭의 BP 로 옮긴다. 고른 그룹 · 쪽은 다른 BP 의 것이라 버린다.
-  const synced = bp === currentBp;
-  useEffect(() => {
-    if (!synced) router.replace(`${PATH}?bp=${currentBp}`, { scroll: false });
-  }, [synced, currentBp, router]);
-
   return (
     <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
-      {synced && list ? (
-        <RolesBody bp={currentBp} page={page} totalPages={totalPages} list={list} selected={selected} detail={detail} lockReasons={lockReasons} menuReasons={menuReasons} />
-      ) : (
-        <p className={`${CARD} flex-1 items-center justify-center text-[14px] text-erp-muted`}>불러오는 중입니다.</p>
-      )}
+      <RolesBody {...props} />
     </div>
   );
 }
 
 function RolesBody({
-  bp,
   page,
   totalPages,
   list,
@@ -71,7 +49,6 @@ function RolesBody({
   lockReasons,
   menuReasons,
 }: {
-  bp: number;
   page: number;
   totalPages: number;
   list: BpRoleGroupList;
@@ -91,11 +68,13 @@ function RolesBody({
   const [menuFor, setMenuFor] = useState<MenuDialogRole | null>(null);
   const [franchiseMasterOpen, setFranchiseMasterOpen] = useState(false);
 
+  const bp = useCurrentBp().bpCodeId;
   const go = (to: { role?: number; page?: number }) => {
-    const q = new URLSearchParams({ bp: String(bp) });
+    const q = new URLSearchParams();
     if (to.page && to.page > 1) q.set("page", String(to.page));
     if (to.role) q.set("role", String(to.role));
-    router.push(`${PATH}?${q}`, { scroll: false });
+    // 화면 주소는 탭 BP 를 붙인다 — proxy 가 이 폴더로 rewrite 하며 헤더에 싣는다
+    router.push(`${bpPath(bp, PATH)}${q.size ? `?${q}` : ""}`, { scroll: false });
   };
   const handleSelect = (id?: number) => {
     setCreating(false);

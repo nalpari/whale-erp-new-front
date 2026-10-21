@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-10-21
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 탭 BP 경로 방식(`/bp/{bpCodeId}/...`) 공통 장치를 넣고 BP 권한 그룹 관리를 시범 화면으로 옮겼다. proxy 가 탭 BP 를 `x-bp-code-id` 헤더로 붙여 옛 경로로 rewrite 하고(들어온 헤더는 지움), BP·가맹 계정의 남의 BP 주소는 세션 쿠키의 새 칸 `bpCodeId` 로 소속 BP 에 307 한다. 서버 호출(`authHeaders`) · BFF · `bff()` 가 `X-Bp-Code-Id` 를 싣고, 메뉴 판정은 접두를 떼고 본다. SessionGate 는 주소의 BP 가 바뀌면 다시 준비하고, 옮긴 화면에 BP 없이 오면 탭 BP 주소로 보낸다. 실험: 서버 렌더 · 서버 액션 · BFF 에 헤더가 실리고, `revalidatePath("/bp-role-groups")`(폴더 경로)로 목록이 새로 그려진다. api 의 헤더 판정(`MenuPermissionGuard` · `@TargetBp()`)은 api 머지 전 브랜치로 E2E 를 돌렸다 — BP 계정 등록 · 메뉴 저장 · 수정 · 삭제, 플랫폼 계정의 고객 BP 목록 조회, 옮기지 않은 화면 이동이 정상이다.
+
 ## 2026-10-20
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 권한 그룹 관리(`/bp-role-groups`)를 api 요청서 모양으로 먼저 만들고(api 미구현 · 손으로 적은 타입), 플랫폼 권한 관리의 메뉴등록 · 삭제 팝업과 권한명 · 설명 양식을 `src/components/role-groups/` 로 옮겨 두 화면이 같이 쓰게 했다. api 요청서 수정에 맞춰 목록의 `canCreate` 를 빼고 메뉴 등록 권한 + `creatableRoleTypeCode` 로 [신규 등록]을 보인다.
 * **Update**: [로그인](/auth.md) — PR #52(로그인전 화면 Figma 전환 · 약관 api 조회)를 목업에 반영했다. 로그인은 찾기 링크 하나 · 사업자 회원가입 버튼 · 직원 안내, 푸터 약관 링크는 `/terms` 의 그 탭(개인정보처리방침은 `PRIVACY_COLLECT`), 목업 약관 키를 약관 유형 코드 6종으로 바꿨다. 전문 팝업은 처음 열 때 사용 중 버전을 받는다(구현 기준). 강제 변경 버튼 라벨은 약관을 붙여도 「변경」이다.
