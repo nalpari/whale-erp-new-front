@@ -962,15 +962,15 @@
 
   // ── 점포 하나 화면 근무스케줄: 요일 칩(data-wd-pick)은 그 요일 근무자만 남기고, 월간 달력(data-dayplan)은 날짜를 누르면 그날 근무스케줄을 보인다 ──
   function initDayPlan(root) {
-    // crew 한 줄: [이름, 보조 글자, { 요일: "09:00~18:00" }, 배정 불가 사유, 계약 기간]. all 이면 그날 재직자 전원(휴무·배정 불가 포함).
+    // crew 한 줄: [이름, 보조 글자, { 요일: "09:00~18:00" }, 계약 기간]. all 이면 그날 재직자 전원(휴무 포함). 계약 기간 밖의 날에는 뺀다(STAFF-29).
     // 계약 기간 [시작, 끝]이 있으면 그 밖의 날에는 목록·인원에서 뺀다(STAFF-29).
     // 달력 칸은 여기서 그린다. ‹ › 로 달을 바꾸면 그 달 1일(이번 달이면 오늘)을 고른다.
     const { crew, holiday, today, all } = JSON.parse(root.dataset.dayplan);
     const WD = "일월화수목금토";
     const pane = root.firstElementChild;
     const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-    const work = (c, wd) => !c[3] && c[2][wd];
-    const crewOn = (key) => crew.filter((c) => !c[4] || (c[4][0] <= key && key <= c[4][1]));
+    const work = (c, wd) => c[2][wd];
+    const crewOn = (key) => crew.filter((c) => !c[3] || (c[3][0] <= key && key <= c[3][1]));
     const t0 = new Date(`${today}T00:00:00`);
     let ym = [t0.getFullYear(), t0.getMonth()];
     let cur = today;
@@ -1004,7 +1004,7 @@
       $("[data-daytitle]", pane).textContent = `${d.getMonth() + 1}월 ${d.getDate()}일 (${WD[d.getDay()]})`;
       $("[data-daysum]", pane).innerHTML = off ? `${holiday[key]} 연휴 · 점포 휴무` : `근무 <b class="text-erp-ink">${list.filter(on).length}명</b> · ${key === today ? "오늘" : key < today ? "지난 날" : "예정"}`;
       $("[data-daylist]", pane).innerHTML = list.length
-        ? list.map((c) => `<li class="flex items-center gap-[8px] border-b border-erp-thead-line py-[8px]"><span class="flex-1">${c[0]} <span class="text-erp-muted">${c[1]}</span></span>${c[3] ? `<span class="text-right text-[13px] text-erp-off">배정 불가</span>` : on(c) ? `<span class="text-right text-[13px] text-erp-muted">${c[2][d.getDay()]}</span>` : `<span class="text-right text-[13px] text-erp-muted">휴무</span>`}</li>`).join("")
+        ? list.map((c) => `<li class="flex items-center gap-[8px] border-b border-erp-thead-line py-[8px]"><span class="flex-1">${c[0]} <span class="text-erp-muted">${c[1]}</span></span>${on(c) ? `<span class="text-right text-[13px] text-erp-muted">${c[2][d.getDay()]}</span>` : `<span class="text-right text-[13px] text-erp-muted">휴무</span>`}</li>`).join("")
         : '<li class="py-[8px] text-[13px] text-erp-muted">근무 없음</li>';
       $$("[data-day]", root).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.day === key)));
     };

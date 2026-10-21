@@ -30,7 +30,6 @@
           <div class="tabs" data-tabs="example">
             <button data-tab="mail" aria-selected="true">예 · 근로계약 거부 · 메일</button>
             <button data-tab="push" aria-selected="false">예 · 근로계약서 발송 · 앱 푸시</button>
-            <button data-tab="inbox" aria-selected="false">예 · TO-DO 배정 · 알림함에만</button>
             <button data-tab="talk" aria-selected="false">예 · 가입 초대 · 알림톡</button>
           </div>
 
@@ -241,70 +240,6 @@
                   </div>
                 </div>
                 <p class="gap__note">2026-10-07 재영 확정. 수정 화면이 입력하는 대로 글자 수를 세고, 넘으면 저장하지 않는다.</p>
-              </div>
-            </div>
-
-            <!-- 알림함에만 -->
-            <div data-panel="inbox" hidden>
-              <div class="grid grid--7-5">
-                <section class="panel">
-                  <div class="panel__head">
-                    <h2 class="t-h2">TO-DO 배정</h2>
-                    <span class="badge badge--quiet">알림함에만, 푸시 없음</span>
-                    <span class="badge badge--quiet">받는 사람 · 직원</span>
-                  </div>
-                  <div class="panel__body">
-                    <div class="spread">
-                      <span class="eyebrow" style="margin: 0">템플릿</span>
-                      <label class="inline"><span class="toggle" role="switch" aria-pressed="true" tabindex="0"></span>사용</label>
-                    </div>
-                    <div class="grid grid--2" style="gap: var(--s-4)">
-                      <div class="field">
-                        <label>발송 채널</label>
-                        <select class="select"><option>운영 알림</option><option selected>앱 푸시</option><option>메일</option><option>알림톡</option></select>
-                      </div>
-                      <div class="field">
-                        <label>템플릿 이름 <span class="subtle">· 필수</span></label>
-                        <input class="input" value="TO-DO 배정" />
-                      </div>
-                    </div>
-                    <div class="field">
-                      <label>템플릿 코드</label>
-                      <input class="input mono" value="PUSH_TODO_ASSIGNED" />
-                      <span class="help">바꾸면 저장 확인창 「저장하시겠습니까?」에 「발송 코드에서 이 템플릿 코드를 쓰고 있으면 함께 바꿔야 합니다」 경고가 함께 뜬다. 다른 템플릿과 겹치면 저장하지 않는다.</span>
-                    </div>
-                    <div class="field">
-                      <label>수신 설정 묶음 <span class="subtle">· 앱 푸시만</span></label>
-                      <select class="select"><option>근로계약서</option><option>근무스케줄</option><option selected>TO-DO</option><option>급여명세서</option></select>
-                      <span class="help">직원 알림 수신 설정이 이 묶음으로 켜고 끈다.</span>
-                    </div>
-                    <div class="field">
-                      <label for="t-title">제목 <span class="subtle">· 필수</span></label>
-                      <input class="input" id="t-title" value="새 TO-DO 가 배정되었습니다" />
-                    </div>
-                    <div class="field">
-                      <label for="t-body">본문</label>
-                      <textarea class="textarea" id="t-body" rows="2">#{TO-DO제목} · #{수행예정일시}</textarea>
-                    </div>
-                  </div>
-                  <div class="panel__note">
-                    TO-DO 배정은 앱 푸시를 보내지 않는다(앱 NOTI-1). 직원 근무 앱 알림함에만 쌓이므로 미리보기도 알림함 줄 모양만 보인다.
-                  </div>
-                </section>
-                <section class="panel">
-                  <div class="panel__head">
-                    <h2 class="t-h2">미리보기</h2>
-                  </div>
-                  <div class="panel__body">
-                    <div class="eyebrow">직원 근무 앱 알림함 한 줄</div>
-                    <div class="tpl-mail">
-                      <div class="tpl-mail__body">
-                        <b>새 TO-DO 가 배정되었습니다</b>
-                        <div class="subtle" style="font-size: 12px">마감 정산표 확인 · 10-08 18:00</div>
-                      </div>
-                    </div>
-                  </div>
-                </section>
               </div>
             </div>
 
