@@ -4,7 +4,7 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-21T01:40:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-21T06:00:00Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
@@ -46,7 +46,7 @@ sources:
 
 # api 로 그린다
 
-목록은 `GET /payslips?month&status&page&pageSize`, 상세는 `GET /payslips/:id` 다(`src/lib/payslips-api.ts`, 직원 목록
+목록은 `GET /payslips?month&status&storeIds&staffName&page&pageSize`, 상세는 `GET /payslips/:id` 다(`src/lib/payslips-api.ts`, 직원 목록
 `staff-members-api.ts` 와 같은 `request()` · `authHeaders()` · `ApiError` 모양). 응답 타입은 `api-types.generated.ts` 의
 `PayslipListResponseDto` · `PayslipDetailResponseDto` 를 그대로 쓴다. 메뉴 권한(MN000009 조회) · 관리 범위 · 가림은 api 가 본다.
 상세의 없음 · 범위 밖 · 가림 · 이상한 id 는 404 → `notFound()`, 그 밖의 api 오류(꺼짐 · 401 · 403)는 `error.tsx` 가 받는다.
@@ -68,7 +68,7 @@ sources:
 * 칸은 순번 · 급여 기간 · 직원명 · 근무지 · 계약 유형 · 출퇴근 확인 여부 · 상태 · 발송일이다. 출퇴근 확인 여부는
   `isAttendanceConfirmed` — true 「확인」, false 「누락」, null(가린 줄) 「-」. api 에 누락 일수 칸이 없어 일수는 보이지 않는다.
   발송일은 `lastSentAt` 을 근로계약 목록처럼 MM-DD 로, 발송 전이면 「-」.
-* 상태 건수는 `statusCounts`(상태 필터와 상관없이 그 달 전체, 가린 줄 포함). 쪽 넘김은 `total` · `page` · `pageSize`,
+* 상태 건수는 `statusCounts`(상태 필터와 상관없이 점포 · 직원명 필터만 건 그 달 건수, 직원명으로 거르면 가린 줄은 뺀다). 쪽 넘김은 `total` · `page` · `pageSize`,
   건수는 20 · 50 · 100(기본 20, URL 에서 뺀다). 명세서가 없으면 「이 달의 급여명세서가 없습니다.」
 * 가린 줄(`isMasked`, 본사 제공 동의 없는 가맹 점포 직원, ATT-30)은 근무지 · 급여 기간 밖은 「-」, 직원명은
   「본사 제공 동의 없음」이며 링크가 없다(payslipId 가 null 이라 순번으로 줄을 가른다).
@@ -143,5 +143,5 @@ page 가 `updatedAt` 을 `PayslipReview` 의 key 로 줘 금액 칸 · 스위치
 
 # 메뉴 url
 
-공통 틀은 메뉴 url 아래 주소만 연다. api 초기 데이터의 MN000009 url 은 `/staff/payrolls` 라, `/payslips` 로 바꾸기 전에는
-「접근 권한이 없는 메뉴」로 막힌다(직원 정보 관리 `/staff` → `/staff-members` 와 같은 1팀 일, #592 결정).
+공통 틀은 메뉴 url 아래 주소만 연다. MN000009 url 은 api 마이그레이션 `20261015110333_team3_menu_single_level_urls` 로 `/payslips` 가 됐다(그 전 초기 데이터는
+`/staff/payrolls` 라 「접근 권한이 없는 메뉴」로 막혔다, #592 결정).
