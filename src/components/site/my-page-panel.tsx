@@ -34,9 +34,9 @@ function FailedBand({ message }: { message: string }) {
  * bold 는 아이디처럼 눈에 먼저 띄어야 하는 값에만 켠다. */
 function ReadonlyField({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
   return (
-    <div className="flex flex-1 flex-col gap-[4px]">
-      <span className="text-[14px] font-medium text-erp-label">{label}</span>
-      <span className={`text-[14px] text-erp-ink ${bold ? "font-semibold" : ""}`}>{value}</span>
+    <div className="flex min-w-px flex-1 flex-col gap-[4px]">
+      <span className="truncate text-[14px] font-medium text-erp-label">{label}</span>
+      <span className={`truncate text-[14px] text-erp-ink ${bold ? "font-semibold" : ""}`}>{value}</span>
     </div>
   );
 }
@@ -55,6 +55,8 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
   /** 확인을 통과한 이메일 값 — 이 값과 같으면 저장 버튼을 켠다. 원래 이메일도 통과로 친다(바꾸지 않았으면 확인 대상이 아니다). */
   const [emailChecked, setEmailChecked] = useState<string | null>(null);
   const [emailChecking, setEmailChecking] = useState(false);
+  /** 중복 확인 자체가 실패해 통과시킨 값 — "확인됨"과 다른 문구로 보여야 한다(코드 리뷰로 찾음, 2026-10-21). */
+  const [emailCheckSkipped, setEmailCheckSkipped] = useState(false);
   const [saving, startSaving] = useTransition();
   const checkNumber = useRef(0);
 
@@ -71,20 +73,29 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
       setFailure(null);
       setLoadFailure(null);
       setEmailChecked(null);
+      setEmailChecking(false); // 지난 세션에서 확인 중이던 흔적이 남아 "확인하는 중입니다" 가 계속 보이지 않게 한다
+      setEmailCheckSkipped(false);
     }
   }
 
   useEffect(() => {
     if (!open) return;
-    checkNumber.current++; // 지난 세션의 확인 응답이 뒤늦게 와도 새 세션 상태를 건드리지 않는다 — ref 는 effect 안에서만 건드린다
+    checkNumber.current++; // 지난 세션의 확인 응답이 뒤늦게 와도 새 세션 상태를 건드리지 않는다 — ref 는 렌더링 중이 아니라 effect · 이벤트 핸들러 안에서만 건드린다
     let cancelled = false;
-    getMyProfileAction().then((result) => {
-      if (cancelled) return;
-      if (!result.ok) return setLoadFailure(result.message);
-      setProfile(result.profile);
-      setForm(formOf(result.profile));
-      setEmailChecked(result.profile.email);
-    });
+    getMyProfileAction()
+      .then((result) => {
+        if (cancelled) return;
+        if (!result.ok) return setLoadFailure(result.message);
+        setProfile(result.profile);
+        setForm(formOf(result.profile));
+        setEmailChecked(result.profile.email);
+      })
+      .catch((error: unknown) => {
+        // 서버 액션 자체가 거부될 수 있다(배포 직후 낡은 참조 등) — handleSave 의 저장 호출과 같은 자리를 둔다.
+        if (cancelled) return;
+        console.error("내 정보 불러오기 호출 실패", error);
+        setLoadFailure("내 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
+      });
     return () => {
       cancelled = true;
     };
@@ -96,7 +107,11 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
     setForm((f) => (f ? { ...f, [key]: value } : f));
     clearError(key as MyProfileFormField);
     // 이메일을 또 고치면 앞서 보낸 확인이 아직 안 왔더라도 버린다 — 늦게 와도 지금 값에 적용되지 않는다.
-    if (key === "email") checkNumber.current++;
+    if (key === "email") {
+      checkNumber.current++;
+      setEmailChecking(false);
+      setEmailCheckSkipped(false);
+    }
   };
   const invalid = (key: MyProfileFormField) => (errors[key] ? true : undefined);
   const messageId = (key: MyProfileFormField) => `${ids}-${key}`;
@@ -125,6 +140,7 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
     if (formatError) return setErrors((e) => ({ ...e, email: formatError }));
     const mine = ++checkNumber.current;
     setEmailChecking(true);
+    setEmailCheckSkipped(false);
     checkMyEmailAvailableAction(email)
       .then((result: ActionResult<{ available: boolean }>) => {
         if (mine !== checkNumber.current) return;
@@ -137,6 +153,7 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
         } else {
           console.warn("이메일 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다", result.status, result.message);
           setEmailChecked(email);
+          setEmailCheckSkipped(true);
         }
       })
       .catch((error: unknown) => {
@@ -144,6 +161,7 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
         setEmailChecking(false);
         console.warn("이메일 중복 확인 호출 실패 — 저장할 때 api 가 다시 본다", error);
         setEmailChecked(email);
+        setEmailCheckSkipped(true);
       });
   };
 
@@ -155,19 +173,21 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
     setErrors(found);
     setFailure(null);
     if (Object.keys(found).length) return focusFirstError();
-    if (!emailPassed) return;
+    if (!emailPassed) return setFailure("이메일 확인이 끝난 뒤 저장할 수 있습니다."); // Save 가 꺼져 있어 보통 여기 안 온다(방어적 가드)
 
     startSaving(async () => {
-      const updated = toUpdateInput(form);
-      const result = await updateMyProfileAction(updated).catch((error: unknown) => {
-        console.error("내 정보 저장 호출 실패", error);
-        return { ok: false as const, status: undefined, message: "저장 결과를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요." };
-      });
-      if (!result.ok) return applyServerError(result.status, result.message);
-      toast("saved");
-      setProfile((p) => (p ? { ...p, ...updated } : p));
-      // GNB 이름 등 로그인 정보를 쓰는 화면이 다시 로그인하지 않아도 바로 보이게 한다.
-      patchAccount({ name: updated.name, email: updated.email });
+      try {
+        const updated = toUpdateInput(form);
+        const result = await updateMyProfileAction(updated);
+        if (!result.ok) return applyServerError(result.status, result.message);
+        toast("saved");
+        setProfile((p) => (p ? { ...p, ...updated } : p));
+        // GNB 이름 등 로그인 정보를 쓰는 화면이 다시 로그인하지 않아도 바로 보이게 한다.
+        patchAccount({ name: updated.name, email: updated.email });
+      } catch (error: unknown) {
+        console.error("내 정보 저장 처리 실패", error);
+        setFailure("저장 결과를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+      }
     });
   };
 
@@ -261,7 +281,10 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
                   aria-required
                 />
               </Field>
-              {!errors.email && !emailPassed && (
+              {!errors.email && emailCheckSkipped && (
+                <p className="text-[13px] leading-[1.5] text-erp-label">이메일 확인을 하지 못했습니다. 저장할 때 다시 확인합니다.</p>
+              )}
+              {!errors.email && !emailCheckSkipped && !emailPassed && (
                 <p className="text-[13px] leading-[1.5] text-erp-label">{emailChecking ? "이메일을 확인하는 중입니다." : "중복되지 않은 이메일만 사용할 수 있습니다."}</p>
               )}
               {message("email")}

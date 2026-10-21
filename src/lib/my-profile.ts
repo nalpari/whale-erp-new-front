@@ -10,7 +10,7 @@ export type MyProfile = {
   /** 하이픈 없는 숫자. */
   phone: string;
   email: string;
-  /** 공통코드 ROLE_TYPE 값 — 한글은 화면이 useCodes("ROLE_TYPE") 로 받는다(네이밍 규칙). */
+  /** 공통코드 ROLE_TYPE 값 — 한글은 화면이 useCodeLabel("ROLE_TYPE") 로 받는다(네이밍 규칙). */
   roleTypeCode: string;
   createdAt: string;
   lastLoginAt: string | null;
