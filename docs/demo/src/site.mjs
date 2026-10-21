@@ -106,8 +106,8 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
   const basic =
     ui.formGroup(
       "계정 정보",
-      ui.formRow(ui.field("아이디", ui.textField({ value: "hangang01", disabled: true })), ui.field("사용자 권한", ui.textField({ value: "BP 마스터", disabled: true }))),
-      ui.formRow(ui.field("가입일", ui.textField({ value: "2026-03-04", disabled: true })), ui.field("최근 로그인 일시", ui.textField({ value: "2026-09-22 09:12", disabled: true }))),
+      ui.formRow(ui.readonlyField("아이디", "hangang01"), ui.readonlyField("사용자 권한", "BP 마스터")),
+      ui.formRow(ui.readonlyField("최근 로그인 일시", "2026-09-22 09:12"), ui.readonlyField("가입일", "2026-03-04")),
     ) +
     ui.formGroup(
       "기본정보",

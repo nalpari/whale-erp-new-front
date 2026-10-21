@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useEffectEvent, useState, type ReactNode } from "react";
+import { useEffect, useEffectEvent, useRef, useState, type ReactNode } from "react";
 import { GlobalHeader, ScopeSelect, ServiceLinks, useBackdropActive, UserPop, type HeaderMenu, type ScopeSelectSection, type UserPopItem } from "@/components/common";
 import { logout } from "@/app/actions";
 import type { ServiceCode } from "@/lib/browser-storage";
@@ -9,6 +9,7 @@ import { findMenu, HOME, PENDING_PLATFORM_MENU } from "@/lib/menus";
 import type { AccountBp, AdminStore } from "@/lib/session";
 import { isClosedStore, openStores, pickedListHref, scopedListHref, scopeKeyOf, scopeOfKey, usesStoreScope } from "@/lib/store-scope";
 import { BpSelectDialog } from "./bp-select-dialog";
+import { MyPagePanel } from "./my-page-panel";
 import { useAccount, useCurrentBp, useMenus, usePageMenu, useScope, useService, useStorePicks, useStores } from "./session-gate";
 
 // 로그인 후 화면의 헤더 하나. 메뉴·점포·이름은 로그인 정보(SessionGate)에서 그린다.
@@ -24,6 +25,11 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   const all = useMenus();
   const backdropActive = useBackdropActive();
   const [bpSelectOpen, setBpSelectOpen] = useState(false);
+  const [myPageOpen, setMyPageOpen] = useState(false);
+  // UserPop 의 이름 버튼은 컴포넌트 안쪽이라 ref 를 밖으로 못 꺼낸다 — 패널이 닫힐 때 포커스를 그 버튼으로
+  // 되돌리지 못하고 body 로 빠진다. 다른 SlidePanel(목록 줄 · 버튼)처럼 실제 트리거를 잡게 하는 것은
+  // UserPop 공개 API 를 넓혀야 해 다음 단계(S-UOJVUR 등)에서 같이 본다.
+  const myPageTrigger = useRef<HTMLButtonElement>(null);
   const [scope] = useScope();
   const stores = useStores();
   const [picks] = useStorePicks();
@@ -48,9 +54,9 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
       });
       return { label: m.name, items, href: items.length === 0 && m.permission.read && m.url ? linkOf(m.url) : undefined };
     });
-  // 내정보·비밀번호·회원 탈퇴는 슬라이드 패널 작업 전이라 아직 아무 데도 가지 않는다.
+  // 비밀번호 변경·회원 탈퇴는 슬라이드 패널 작업 전이라 아직 아무 데도 가지 않는다(S-PTWREE·S-JHQQNR).
   const mine: UserPopItem[] = [
-    { label: "내정보 관리", href: "#" },
+    { label: "내정보 관리", onSelect: () => setMyPageOpen(true) },
     { label: "비밀번호 변경", href: "#" },
   ];
   const userItems: UserPopItem[] =
@@ -59,6 +65,7 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
       : [...mine, { label: "로그아웃", action: logout, danger: true }];
 
   return (
+    <>
     <GlobalHeader
       menus={menus}
       inert={backdropActive}
@@ -72,6 +79,8 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
         </>
       }
     />
+    <MyPagePanel id="mypage-panel" open={myPageOpen} onClose={() => setMyPageOpen(false)} trigger={myPageTrigger} />
+    </>
   );
 }
 

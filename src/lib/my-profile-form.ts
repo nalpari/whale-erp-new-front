@@ -1,0 +1,51 @@
+// 내 정보(MY PAGE) 기본정보 입력칸 — 검사와 요청 만들기. 패널(src/components/site/my-page-panel.tsx)에서 뺀 순수 함수라
+// node --test 로 검사한다(my-profile-form.test.ts). 규칙은 manyfast F-AMTDCK > S-JXKHCM 과 같다 — 플랫폼 관리자
+// 등록(platform-admin-form.ts)의 이름 · 연락처 규칙과 같은 값이지만, 서로 다른 기능이라 따로 둔다(코드가 아주 짧다).
+import type { MyProfile, UpdateMyProfileInput } from "./my-profile";
+
+export const NAME_PATTERN = /^[가-힣A-Za-z ]{2,20}$/;
+export const PHONE_PATTERN = /^[0-9]{10,11}$/;
+export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export type MyProfileForm = {
+  name: string;
+  phone: [string, string, string];
+  email: string;
+};
+
+export type MyProfileFormField = "name" | "phone" | "email";
+
+/** 하이픈 없는 번호를 세 칸으로 — 휴대전화(3-4-4) · 02 지역번호(2-3/4-4) · 그 밖 지역번호(3-3/4-4). */
+export function splitPhone(digits: string): [string, string, string] {
+  if (!digits) return ["", "", ""];
+  const head = digits.startsWith("02") ? 2 : 3;
+  return [digits.slice(0, head), digits.slice(head, digits.length - 4), digits.slice(-4)];
+}
+
+export function formOf(profile: MyProfile): MyProfileForm {
+  return { name: profile.name, phone: splitPhone(profile.phone), email: profile.email };
+}
+
+const phoneOf = (form: MyProfileForm) => form.phone.map((p) => p.trim()).join("");
+
+export function validateMyProfileForm(form: MyProfileForm): Partial<Record<MyProfileFormField, string>> {
+  const errors: Partial<Record<MyProfileFormField, string>> = {};
+  if (!NAME_PATTERN.test(form.name.trim())) errors.name = form.name.trim() ? "이름은 한글 또는 영문 2~20자입니다." : "이름을 입력해 주세요.";
+  const phone = phoneOf(form);
+  if (!PHONE_PATTERN.test(phone)) errors.phone = phone ? "연락처는 숫자 10~11자리입니다." : "연락처를 입력해 주세요.";
+  const email = form.email.trim();
+  if (!email) errors.email = "이메일을 입력해 주세요.";
+  else if (email.length > 100 || !EMAIL_PATTERN.test(email)) errors.email = "이메일 형식이 올바르지 않습니다.";
+  return errors;
+}
+
+export function toUpdateInput(form: MyProfileForm): UpdateMyProfileInput {
+  return { name: form.name.trim(), phone: phoneOf(form), email: form.email.trim().toLowerCase() };
+}
+
+/** api 가 거절한 이유를 붙일 칸 — 이 화면에서 중복이 날 수 있는 값은 이메일뿐이다. */
+export function serverErrorField(status: number | undefined, message: string): MyProfileFormField | null {
+  if (status !== 400 && status !== 409) return null;
+  if (message.includes("이메일")) return "email";
+  return null;
+}
