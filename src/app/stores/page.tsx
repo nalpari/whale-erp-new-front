@@ -33,7 +33,7 @@ export default async function StoresPage({ searchParams }: PageProps<"/stores">)
     <StoreFrame>
       <StoreListNavigationProvider query={query}>
         <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
-          <StoreFilter picked={picked} scope={query.scope} />
+          <StoreFilter picked={picked} scope={query.scope} requested={pickedIdsOf(parsed)} />
           <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>*]:shrink-0">
             <StoreExcelProvider>
               {missingCount > 0 &&

@@ -24,7 +24,11 @@ const toggle = <T,>(list: readonly T[], value: T) => (list.includes(value) ? lis
  * 초기화는 헤더 범위로 돌아간다. 고른 점포에 폐점이 있으면 점포상태 기본값이 「전체」다 — 폐점 여부는 서버가 지금 상태로 센다.
  * 주소의 범위를 이 탭에서 쓸 수 없으면(다른 BP 탭에서 복사한 주소 — 고를 점포가 없다) 「전체」로 바꾸고 알린다.
  */
-export function StoreFilter({ picked, scope }: { picked: PickedStore[]; scope: Scope | null }) {
+/**
+ * picked · scope 는 서버가 그린 조건(찾지 못한 점포를 뺀 뒤), requested 는 주소로 요청한 점포다 — 고른 점포를 서버가 빼서 조건이 그대로여도
+ * (「전체」에서 지운 점포를 고른 때) 칩을 서버 값으로 되돌리려고 칩 동기화 키에 넣는다.
+ */
+export function StoreFilter({ picked, scope, requested }: { picked: PickedStore[]; scope: Scope | null; requested: number[] }) {
   const statusLabel = useCodeLabel("STORE_STATUS");
   const typeLabel = useCodeLabel("STORE_TYPE");
   const { current, navigate } = useStoreListNavigation();
@@ -35,8 +39,8 @@ export function StoreFilter({ picked, scope }: { picked: PickedStore[]; scope: S
   const scopeChips = (s: Scope): PickedStore[] => scopeStores(s, stores).map(toPickedStore);
   /** 서버가 그린 조건의 칩 — 고른 점포 · 점포 하나 범위는 서버가 찾은 이름(picked), 직영 · 가맹 범위는 로그인 정보에서 */
   const chipsOf = (s: Scope | null): PickedStore[] => (s && (s.type === "DIRECT" || s.type === "FRANCHISE") ? scopeChips(s) : picked);
-  // 서버가 새로 그린 값(고른 점포 · 범위)이 바뀌면 칩을 그 값으로 맞춘다(뒤로 가기 · 링크 이동 · 헤더 범위 변경)
-  const shownKey = `${picked.map((p) => p.storeId).join(",")}|${scope ? scopeKeyOf(scope) : ""}`;
+  // 서버가 새로 그린 값(요청한 점포 · 고른 점포 · 범위)이 바뀌면 칩을 그 값으로 맞춘다(뒤로 가기 · 링크 이동 · 헤더 범위 변경 · 서버가 뺀 점포)
+  const shownKey = `${requested.join(",")}|${picked.map((p) => p.storeId).join(",")}|${scope ? scopeKeyOf(scope) : ""}`;
   // 점포 조건이 주소에 없으면(주소 직접 입력 · 즐겨찾기) 헤더 범위로 채운다 — 칩은 처음부터 그 범위로 그리고, 검색은 마운트 뒤에 다시 건다
   const [fillScope] = useState(() => fillScopeOf(current, headerScope));
   const [chips, setChips] = useState(() => (fillScope ? scopeChips(fillScope) : chipsOf(scope)));
