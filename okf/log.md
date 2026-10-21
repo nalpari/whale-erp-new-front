@@ -6,6 +6,8 @@
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — api main(115ad5f, api #88)의 공통코드 등록 · 수정 분리에 맞춰 생성 타입을 다시 만들고, 본문을 `{ items }` 로 바꿨다(`CreateCodeGroupsDto` · `UpdateCodeGroupsDto` · `CreateCodeItemsDto` · `UpdateCodeItemsDto`, 응답 204). 동시 등록 경합 409 의 「: A, B」에서 첫 코드를 칸 오류로 붙인다.
 
 ## 2026-10-20
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [고객지원·커뮤니티](/support.md) · [플랫폼 시스템 관리](/system.md) — 커뮤니티 화면 주소를 메뉴 URL · api 경로와 같은 한 단계로 옮겼다(`/platform-notices` · `/platform-faqs` · `/platform-inquiries` · `/platform-leads`, api squirtle). 공지사항 저장 창구는 `/platform-notices/save`, FAQ 는 JSON 서버 액션. 목업 · 데모 메뉴 URL 도 맞췄다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 커뮤니티 관리 목록 넷(공지사항 · FAQ · 문의사항 · 도입문의, #275)과 공지사항 · FAQ 등록 · 수정(#276)을 만들었다. 첨부 저장 창구(지금은 `/platform-notices/save`)를 더하고 proxy 본문 한도를 51MB 로 올렸다. api-types 를 api main openapi 로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 공통코드 저장을 api 의 등록(`POST`) · 수정(`PUT`) 분리에 맞췄다. [추가]는 등록 권한만, [저장]은 등록 · 수정 중 하나만 있어도 보이고, 저장은 수정 → 등록 두 번 부른다. 수정 권한이 없으면 기존 행은 읽기 전용, 등록만 실패하면 새 행을 남긴다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — api main(db07bd8, api #84 — 1팀 메뉴 권한 판정을 `@MenuPermission` 가드로 통일)으로 `api-types.generated.ts` 를 다시 만들었다. 1팀 화면은 이미 `usePagePermission` 이라 코드는 그대로다. 플랫폼 권한 · 메뉴 관리의 「api 머지 뒤 다시 만든다」 문장을 지웠다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #58 재리뷰 참고 1: 서명 대기 계약의 막힌 「재발송」 옆에 「앱 알림이 생기면 다시 보낼 수 있습니다」를 글자로 보인다(`aria-describedby`). 공통 Button 이 막히면 마우스 반응을 꺼 title 툴팁이 뜨지 않고 키보드 · 터치로도 볼 수 없었다.

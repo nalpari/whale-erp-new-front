@@ -2306,6 +2306,87 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/account/invitations/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 초대 확인(WHALEERP-141, 진입 · 가입 화면 가이드 ①·②). 초대 링크의 토큰, 또는 휴대전화번호와 초대 코드 가운데 하나로
+         *     살아 있는 가입 초대를 찾아 근무지 · 고용 형태 · 유효 기간 · 화면이 채울 번호를 준다.
+         */
+        post: operations["StaffSignupController_check"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/account/signup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 직원 앱 가입(WHALEERP-601 · 142, 가이드 ③·④). 초대를 다시 확인하고 계정을 만들어 직원 레코드에 잇고(가입 완료) 초대를
+         *     수락으로 둔다. 가입을 기다리던 근로계약서는 서명 대기가 된다. 계정 번호는 초대의 번호다. 마치면 로그인 응답과 같은
+         *     모양으로 접속 상태를 준다. 가입하는 날 만 19세 미만이면 계정을 만들지 않고 초대를 「가입 불가」로 둔 뒤 400 이다.
+         */
+        post: operations["StaffSignupController_signup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/invitations/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 초대 확인 — 앱 안에서 넣은 초대 코드(계정의 번호로 찾는다) 또는 로그인한 채 연 초대 링크의 토큰. 근무지 · 고용 형태 ·
+         *     유효 기간과 본사 제공 동의를 물을지(직영이 아니고 계정이 아직 동의하지 않았을 때) 준다.
+         */
+        post: operations["MyInvitationsController_check"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/invitations/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 근무지 더하기 — 초대를 다시 확인하고 그 근무지의 직원 레코드를 이 계정에 잇는다(가입 완료 · 초대 수락). 가입을 기다리던
+         *     근로계약서는 서명 대기가 된다.
+         */
+        post: operations["MyInvitationsController_accept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -5198,6 +5279,93 @@ export interface components {
             staffMemberId: number;
             /** @description 이 소속에 낸 신고 정보. 아직 내지 않았으면 null */
             taxProfile: components["schemas"]["MyTaxProfileDto"] | null;
+        };
+        InvitationLookupDto: {
+            /** @description 초대 링크의 토큰(base64url 43자) */
+            token?: string;
+            /** @description 초대를 받은 휴대전화번호 — 숫자 10~11자리(하이픈은 지운다) */
+            phone?: string;
+            /** @description 초대 코드 — 대문자 · 숫자 8자리, 0 · O · 1 · I 는 없다. 소문자로 넣어도 대문자로 맞춰 본다 */
+            code?: string;
+        };
+        InvitationCheckResponseDto: {
+            /**
+             * @description 고용 형태 — 정직원 · 파트타이머
+             * @enum {string}
+             */
+            employmentType: "FULL_TIME" | "PART_TIME";
+            /** @description 초대한 근무지(점포) 이름 */
+            storeName: string;
+            /**
+             * Format: date-time
+             * @description 초대가 끝나는 시각(보낸 때부터 30일)
+             */
+            expiresAt: string;
+            /** @description 가입 화면이 채울 휴대전화번호(읽기 전용) — 초대(근로계약서)의 번호 */
+            phone: string;
+            /** @description 본사 제공 동의를 물을지 — 직영이 아닌 점포이고 아직 동의하지 않았다(운영 정책 ATT-30) */
+            asksHqSharingConsent: boolean;
+        };
+        StaffSignupDto: {
+            /**
+             * @description 성별 — 남 · 여
+             * @enum {string}
+             */
+            gender?: "MALE" | "FEMALE";
+            /**
+             * Format: email
+             * @description 로그인 아이디. 소문자로 맞춰 저장한다(accounts_email_lower). 핀으로 확인하지 않는다
+             */
+            email: string;
+            /** @description 영문 대문자 · 소문자 · 숫자 · 특수문자 중 3가지 이상이면 8자, 2가지면 10자 이상, 20자까지 */
+            password: string;
+            name: string;
+            /** @description YYYY-MM-DD. 가입하는 날(한국 시간) 만 19세 미만이면 가입하지 않는다(운영 정책 ACC-22). 가입한 뒤 고칠 수 없다 */
+            birthDate: string;
+            /** @description 외국인 여부 — 체크하지 않으면 내국인(false) */
+            isForeigner?: boolean;
+            /** @description 우편번호 5자리 — 주소 검색 API 값(ACC-20) */
+            zipCode: string;
+            /** @description 기본주소(도로명) — 주소 검색 API 값 */
+            address: string;
+            /** @description 상세주소 — 직접 입력 */
+            addressDetail?: string;
+            /**
+             * @description 본사 제공 동의(운영 정책 ATT-30, 선택). 초대 확인의 asksHqSharingConsent 가 true 일 때만 쓴다 — 직영 점포면 보내도
+             *     저장하지 않는다. 동의는 계정에 하나다(api #78). 동의하지 않아도 가입과 근무는 그대로다
+             */
+            hqSharingConsented?: boolean;
+            /** @description 이 기기 — 로그인과 같다. 같은 기기의 앞 접속을 끝낸다 */
+            deviceIdentifier?: string;
+            /** @description 초대 링크의 토큰(base64url 43자) */
+            token?: string;
+            /** @description 초대를 받은 휴대전화번호 — 숫자 10~11자리(하이픈은 지운다) */
+            phone?: string;
+            /** @description 초대 코드 — 대문자 · 숫자 8자리, 0 · O · 1 · I 는 없다. 소문자로 넣어도 대문자로 맞춰 본다 */
+            code?: string;
+        };
+        MyInvitationLookupDto: {
+            /** @description 초대 링크의 토큰(base64url 43자) */
+            token?: string;
+            /** @description 초대 코드 — 대문자 · 숫자 8자리, 0 · O · 1 · I 는 없다. 소문자로 넣어도 대문자로 맞춰 본다 */
+            code?: string;
+        };
+        AcceptMyInvitationDto: {
+            /** @description 초대 링크의 토큰(base64url 43자) */
+            token?: string;
+            /** @description 초대 코드 — 대문자 · 숫자 8자리, 0 · O · 1 · I 는 없다. 소문자로 넣어도 대문자로 맞춰 본다 */
+            code?: string;
+            /**
+             * @description 본사 제공 동의(운영 정책 ATT-30, 선택). 확인의 asksHqSharingConsent 가 true 일 때만 쓴다 — 직영 점포이거나 계정이
+             *     이미 동의했으면 보내도 바꾸지 않는다. 동의는 계정에 하나다(api #78)
+             */
+            hqSharingConsented?: boolean;
+        };
+        AcceptMyInvitationResponseDto: {
+            /** @description 이 계정에 이어진 직원 레코드 */
+            staffMemberId: number;
+            /** @description 근무지(점포) 이름 */
+            storeName: string;
         };
     };
     responses: never;
@@ -11719,6 +11887,238 @@ export interface operations {
             };
             /** @description 지금 동의 상태에서 할 수 없는 동작 */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StaffSignupController_check: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvitationLookupDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitationCheckResponseDto"];
+                };
+            };
+            /** @description 형식 오류 · 토큰과 번호 · 코드를 함께 보내거나 둘 다 없음 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 맞는 초대가 없음(INVITATION_NOT_FOUND — 번호나 코드가 틀림) · 끝난 초대(INVITATION_ENDED — 기한 · 다시 보냄 · 번호 변경 · 퇴직 · 가입 불가) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 이미 가입을 마친 초대(INVITATION_ALREADY_JOINED) · 그 번호로 계정이 있음(ACCOUNT_EXISTS) — 둘 다 로그인으로 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같은 번호로 번호 + 코드를 5번 틀려 30분 잠김(INVITATION_CODE_LOCKED, 본문 lockExpiresAt — 재발송하면 풀림) · 공개 경로 기본 요청 제한 */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StaffSignupController_signup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffSignupDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginResponseDto"];
+                };
+            };
+            /** @description 형식 오류 · 비밀번호 규칙 · 만 19세 미만(SIGNUP_UNDER_AGE, 초대는 가입 불가가 됨) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description INVITATION_NOT_FOUND · INVITATION_ENDED — 초대 확인과 같다 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description INVITATION_ALREADY_JOINED · ACCOUNT_EXISTS · 이미 쓰는 이메일(ACCOUNT_EMAIL_TAKEN) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같은 번호로 번호 + 코드를 5번 틀려 30분 잠김(INVITATION_CODE_LOCKED, 본문 lockExpiresAt — 재발송하면 풀림) · 공개 경로 기본 요청 제한 */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MyInvitationsController_check: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MyInvitationLookupDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitationCheckResponseDto"];
+                };
+            };
+            /** @description 형식 오류 · 토큰과 코드를 함께 보내거나 둘 다 없음 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 토큰 없음 · 접속 종료 · 탈퇴 계정 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 관리자 토큰 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 맞는 초대가 없음(INVITATION_NOT_FOUND — 코드가 틀림, 링크의 초대 번호가 계정 번호와 다름) · 끝난 초대(INVITATION_ENDED) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 이미 가입을 마친 초대(INVITATION_ALREADY_JOINED) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 계정 번호로 코드를 5번 틀려 30분 잠김(INVITATION_CODE_LOCKED, 본문 lockExpiresAt — 재발송하면 풀림) · 기본 요청 제한 */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MyInvitationsController_accept: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptMyInvitationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AcceptMyInvitationResponseDto"];
+                };
+            };
+            /** @description 형식 오류 · 토큰과 코드를 함께 보내거나 둘 다 없음 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 토큰 없음 · 접속 종료 · 탈퇴 계정 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 관리자 토큰 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description INVITATION_NOT_FOUND · INVITATION_ENDED — 확인과 같다 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description INVITATION_ALREADY_JOINED — 먼저 더했거나 같은 초대로 동시에 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 계정 번호로 코드를 5번 틀려 30분 잠김(INVITATION_CODE_LOCKED, 본문 lockExpiresAt — 재발송하면 풀림) · 기본 요청 제한 */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
