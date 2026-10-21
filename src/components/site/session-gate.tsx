@@ -379,6 +379,9 @@ async function prepare(onSwitchBp: (bp: StoredBp) => void): Promise<LoginState> 
   const pathBp = bpOfPath(url.pathname);
   // BP · 가맹 계정은 소속 BP 하나만 연다. 남의 BP 주소는 proxy 가 쿠키로 이미 보냈어야 한다 — 쿠키에 BP 가 없는 옛 세션만 여기서 보낸다.
   if (!platform && pathBp !== null && pathBp !== ownBp.bpCodeId) return fixBpPath(ownBp.bpCodeId, url);
+  // 비밀번호를 바꾸기 전의 플랫폼 계정은 다른 BP 를 열지 않고 자기 BP 로 연다(아래 tab). 고객 BP 주소에 그대로 두면 주소의 BP 와 탭 BP 가
+  // 영영 달라 준비가 끝나지 않고(stale) 강제 변경 팝업도 뜨지 않는다 — 플랫폼 홈으로 보낸다.
+  if (platform && account.isPasswordChangeRequired && pathBp !== null) return moveTo(HOME.PLATFORM);
   // 옮긴 화면에 BP 없이 왔다(옛 즐겨찾기 · 알림 링크 · 아직 접두를 안 붙인 링크). 탭 BP 주소로 보낸다.
   // 플랫폼 계정이 BP 를 고른 적이 없으면 플랫폼 탭으로 열려 Ready 가 「BP 를 먼저 골라 주세요」로 막는다.
   if (pathBp === null && isBpPathScreen(url.pathname)) {
