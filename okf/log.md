@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-20
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #58 재리뷰 참고 1: 서명 대기 계약의 막힌 「재발송」 옆에 「앱 알림이 생기면 다시 보낼 수 있습니다」를 글자로 보인다(`aria-describedby`). 공통 Button 이 막히면 마우스 반응을 꺼 title 툴팁이 뜨지 않고 키보드 · 터치로도 볼 수 없었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통 컴포넌트 `DetailTable` 의 왼쪽 라벨 칸을 180px 에서 줄였다(사용자 피드백 — 값 칸이 너무 좁았다, 1팀 확인 전). `src/app/staff-members/[id]/contract-box.tsx` 가 같은 줄 모양을 따로 옮겨 둔 곳이라 같이 고쳤다. `docs/demo/src/ui.mjs` 의 `detailTable` 과 DESIGN.md 의 고정값도 맞췄다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 위 `DetailTable` 라벨 칸 축소로 `contract-box` 소스도 같이 고쳐졌다. `generated.at` 과 `contract-box` 의 `last_modified` 를 갱신했다(코드 리뷰로 빠뜨린 것을 찾음).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합: 헤더에 main 의 BP 선택 팝업(`BpSelectDialog`) · 서비스 바로가기 동작(`serviceTargets`)과 이 브랜치의 점포 범위 선택기(`ScopeSelect`) · 톱니 아이콘을 함께 두었다. BP 로 이동하면(`/bp-switch`) 범위와 함께 목록에서 고른 점포(`store-picks`)도 비운다.
