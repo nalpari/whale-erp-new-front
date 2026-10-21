@@ -9,7 +9,7 @@ import { findMenu, HOME, PENDING_PLATFORM_MENU } from "@/lib/menus";
 import type { AccountBp, AdminStore } from "@/lib/session";
 import { isClosedStore, openStores, SCOPE_PARAM, scopeFromAddress, scopeKeyOf, scopeOfKey, withScope } from "@/lib/store-scope";
 import { BpSelectDialog } from "./bp-select-dialog";
-import { useAccount, useCurrentBp, useMenus, usePageMenu, useScope, useService, useStores } from "./session-gate";
+import { useAccount, useCurrentBp, useMenus, useMyPageOpen, useMyPageTrigger, usePageMenu, useScope, useService, useStores } from "./session-gate";
 
 // 로그인 후 화면의 헤더 하나. 메뉴·점포·이름은 로그인 정보(SessionGate)에서 그린다.
 // 메뉴는 이 탭 서비스(useService)의 것만, 2단계까지 그린다(3단계는 헤더에 보이지 않는다, 2026-10-13).
@@ -23,6 +23,8 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   const all = useMenus();
   const backdropActive = useBackdropActive();
   const [bpSelectOpen, setBpSelectOpen] = useState(false);
+  const [, setMyPageOpen] = useMyPageOpen();
+  const myPageTrigger = useMyPageTrigger();
   const [scope] = useScope();
   const linkOf = (url: string) => withScope(url, scope);
   const menus: HeaderMenu[] = all.map((m) => {
@@ -37,9 +39,9 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
       });
       return { label: m.name, items, href: items.length === 0 && m.permission.read && m.url ? linkOf(m.url) : undefined };
     });
-  // 내정보·비밀번호·회원 탈퇴는 슬라이드 패널 작업 전이라 아직 아무 데도 가지 않는다.
+  // 비밀번호 변경·회원 탈퇴는 슬라이드 패널 작업 전이라 아직 아무 데도 가지 않는다(S-PTWREE·S-JHQQNR).
   const mine: UserPopItem[] = [
-    { label: "내정보 관리", href: "#" },
+    { label: "내정보 관리", onSelect: () => setMyPageOpen(true) },
     { label: "비밀번호 변경", href: "#" },
   ];
   const userItems: UserPopItem[] =
@@ -51,12 +53,13 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
     <GlobalHeader
       menus={menus}
       inert={backdropActive}
+      logoHref={HOME[service]}
       right={
         <>
           {service === "WHALE_ERP" ? <HeaderScopeSelect /> : <div className="flex-1" />}
           <ServiceLinks targets={serviceTargets(account.bp, service, () => setBpSelectOpen(true))} />
           {alarm}
-          <UserPop name={account.name ?? account.loginId} items={userItems} />
+          <UserPop name={account.name ?? account.loginId} items={userItems} triggerRef={myPageTrigger} />
           {bpSelectOpen && <BpSelectDialog onClose={() => setBpSelectOpen(false)} />}
         </>
       }
@@ -69,8 +72,10 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
 // 플랫폼관리는 ERP 탭이면 그 탭은 두고 플랫폼을 새 탭으로 연다 — 웨일ERP 가 고른 BP 를 새 탭으로 여는 것과 같다.
 // 같은 탭을 플랫폼으로 바꾸면 앞서 본 ERP 화면이 뒤로 가기 기록에 남아, 뒤로 갈 때마다 「접근 권한이 없는 메뉴」로 막힌다.
 // noopener — 새 탭이 이 탭의 sessionStorage(ERP · 고른 BP)를 물려받지 않아, 주소(/platform)대로 자기 BP 의 플랫폼으로 열린다.
+// 플랫폼관리 아이콘은 플랫폼 계정에게만 보인다 — BP·가맹 계정은 애초에 그 화면에 들어갈 권한이 없어
+// platform 자리를 비워 ServiceLinks 가 아이콘을 그리지 않게 한다(사용자 지적, 2026-10-21).
 function serviceTargets(bp: AccountBp, service: ServiceCode, openBpSelect: () => void) {
-  if (!bp.isPlatform) return { erp: "/home", platform: HOME.PLATFORM };
+  if (!bp.isPlatform) return { erp: "/home" };
   const openPlatform = () => window.open(HOME.PLATFORM, "_blank", "noopener");
   return { erp: openBpSelect, platform: service === "PLATFORM" ? HOME.PLATFORM : openPlatform };
 }

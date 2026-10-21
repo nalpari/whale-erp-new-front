@@ -10,7 +10,7 @@ sources:
   - { id: lib, resource: ../src/lib, title: 세션·공개 경로·메뉴 판정·api 호출 }
   - { id: proxy, resource: ../src/proxy.ts, title: 세션 확인·갱신 }
   - { id: common-components, resource: ../src/components/common, title: 공통 ERP 컴포넌트 }
-generated: { by: claude-code/opus-5.5, at: 2026-10-21T08:38:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-21T08:40:14Z }
 ---
 
 # Stack
@@ -59,7 +59,7 @@ whale-erp-api 를 호출한다. 주소는 `API_BASE_URL` 로 주입한다
 배포 환경이 주입한다). 두 파일 모두 git 이 추적하지 않는다.
 
 회원가입은 `POST /auth/signup`(가입, 중복이면 409), `POST /auth/signup/login-id-availability`·`POST /auth/signup/email-availability`(중복 확인, `{ available }`) 셋을 부른다 — api PR #37(bulbasaur 브랜치)에서 들어온다. 사업자정보 진위확인 `POST /auth/signup/business-verifications`(`{ verificationToken }`, 10분)와 가입의 `bizVerificationToken` 은 api lapras 브랜치(#37 위)에서 들어온다.
-지금 부르는 엔드포인트는 `POST /auth/admin/login`·`/auth/admin/refresh`·`/auth/admin/logout`·`/auth/admin/password-change`(서버에서만), 그리고 BFF `src/app/api/[...path]/route.ts`(GET 만, 쿠키의 토큰을 붙여 대신 부르고 api 401 이면 세션 쿠키를 지운다)를 거쳐 화면이 부르는 `GET /auth/admin/login-info`(로그인마다 첫 탭에서 한 번)·`/bp-codes/{bpCodeId}/stores`·`/bp-codes/{bpCodeId}/code-items`(플랫폼 계정이 고른 다른 BP 의 탭)다. api 의 견본(items·stock_movements·staff·customers)과 견본 로그인
+지금 부르는 엔드포인트는 `POST /auth/admin/login`·`/auth/admin/refresh`·`/auth/admin/logout`·`/auth/admin/password-change`(서버에서만), 그리고 BFF `src/app/api/[...path]/route.ts`(GET 만, 쿠키의 토큰을 붙여 대신 부르고 api 401 이면 세션 쿠키를 지운다)를 거쳐 화면이 부르는 `GET /auth/admin/login-info`(로그인마다 첫 탭에서 한 번)·`/bp-codes/{bpCodeId}/stores`·`/bp-codes/{bpCodeId}/code-items`(플랫폼 계정이 고른 다른 BP 의 탭)다. GNB 「내정보 관리」(MY PAGE, F-AMTDCK > S-JXKHCM)는 `src/lib/my-profile.ts`에서 `GET`·`PATCH /auth/admin/me`·`GET /auth/admin/me/email-availability`를 부른다 — 항상 `CurrentUser()`의 로그인 계정 자신만 보고 고치며, BP 선택(`/bp-switch`)으로 보고 있는 BP 는 건드리지 않는다. 저장은 조회 응답의 `updatedAt`을 함께 보낸다 — platform-admins 수정과 같은 동시 수정 검사(ip-code-review-claude 적대적 리뷰로 찾음, 2026-10-21)라, 저장 뒤 204 응답엔 새 `updatedAt`이 없어 다시 조회해 받는다(`my-page-panel.tsx`). 이메일을 바꿀 때만 「지금 비밀번호」 칸이 폼에 나타나 `currentPassword`로 함께 싣는다 — 탈취한 접근 토큰만으로 로그인 이메일을 공격자 주소로 바꿔 비밀번호 찾기를 가로채는 계정 탈취를 막는다(같은 리뷰로 찾음, my-profile(직원 앱) email-change 와 같은 통제). api 경로는 있지만 아직 `openapi.json`에 실리지 않아 타입은 손으로 적었다(`src/lib/my-profile-form.ts`가 검사·변환). api 의 견본(items·stock_movements·staff·customers)과 견본 로그인
 3팀 화면(main)이 서버 컴포넌트·서버 액션에서 부르는 엔드포인트는 `GET /enums/{name}`(공개)과 `GET` · `POST` · `PUT` · `DELETE /contracts` · `GET /stores/options`(관리자 토큰)다. 점포 화면이 부르는 `/stores` 경로는 위 Layout 의 `src/app/stores/` 항목과 [점포 관리](/stores.md) 구현 절에 적는다. 근로계약의 요청 · 응답 타입은 `src/lib/api-types.generated.ts`(`pnpm openapi:types`)에서 가져온다(`contract-list.ts` 의 `ContractListItem` · `ContractListPage`, `contract-form-model.ts` 의 `CreateContractBody` · `ContractDetail`). `ApiError` 는 응답 본문(`body`)도 들고 있어 409 의 `code` · 목록을 화면이 쓴다. api 의 견본(items·stock_movements·staff·customers)과 견본 로그인
 (`POST /auth/customer/login`, `GET /items`)은 2026-10-07 api 와 함께 지웠다(재영 결정).
 JWT 액세스 토큰은 `httpOnly` 세션 쿠키(`session`)에 담아 서버에서만 읽고, 매 호출에

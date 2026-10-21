@@ -10,11 +10,20 @@ const DATE_TIME = new Intl.DateTimeFormat("sv-SE", {
   hourCycle: "h23",
 });
 
+const DATE = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" });
+
 /** ISO 일시 → `2026-10-13 09:05`(한국 시간). 값이 없거나 깨졌으면 빈 문자열. */
 export function formatDateTime(iso: string | null | undefined): string {
   if (!iso) return "";
   const date = new Date(iso);
   return Number.isNaN(date.getTime()) ? "" : DATE_TIME.format(date);
+}
+
+/** ISO 일시 → `2026-10-13`(한국 시간, 날짜만). 값이 없거나 깨졌으면 빈 문자열. */
+export function formatDate(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? "" : DATE.format(date);
 }
 
 /** 하이픈 없는 전화번호 → `010-1234-5678` · `02-123-4567` · `031-123-4567`. 숫자 9~11자리(02 국번은 9자리부터)가 아니면 그대로 둔다. */
