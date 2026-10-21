@@ -13,6 +13,25 @@ export function answersWith401(pathname: string): boolean {
   return pathname.startsWith("/api/") || pathname === PAPER_ROUTE || pathname === NOTICE_SAVE_ROUTE;
 }
 
+const MB = 1024 * 1024;
+export const TOO_LARGE = "보낸 내용이 너무 큽니다. 첨부를 줄여서 다시 보내 주세요";
+
+/**
+ * 경로별 요청 본문 상한. next.config 의 proxyClientMaxBodySize(51MB)는 모든 경로에 걸리므로, proxy 가 content-length 로 경로마다 다시 막는다.
+ * 공지사항 저장은 첨부 5 × 10MB, 종이 계약 등록은 날인본 2 × 10MB 에 multipart 여유 1MB 를 더한다. 나머지는 Next 기본 proxy 한도(10MB)다.
+ */
+export function bodyLimitOf(pathname: string): number {
+  if (pathname === NOTICE_SAVE_ROUTE) return 51 * MB;
+  if (pathname === PAPER_ROUTE) return 21 * MB;
+  return 10 * MB;
+}
+
+/** content-length 가 그 경로의 상한을 넘는가. 없거나 숫자가 아니면 넘지 않은 것으로 본다 — 그때는 proxyClientMaxBodySize 가 자른다. */
+export function tooLarge(pathname: string, contentLength: string | null): boolean {
+  const size = Number(contentLength);
+  return !!contentLength && Number.isFinite(size) && size > bodyLimitOf(pathname);
+}
+
 /**
  * Origin 이 이 서버인가. Next 16.3 서버 액션과 같은 기준이다(action-handler 의 parseHostHeader) — x-forwarded-host 가
  * 있으면 쉼표 목록의 첫 값만 보고, 없을 때만 host 를 본다. Origin 이 없거나 읽을 수 없으면(null 포함) 막는다.

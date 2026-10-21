@@ -5,7 +5,7 @@ import { INQUIRY_BASE, parseInquiryQuery } from "@/lib/community-view";
 import { InquiryList } from "@/components/community/community-lists";
 import { ListFailure, loadList } from "@/components/community/list-load";
 
-// 커뮤니티관리 › 문의사항 목록(#275, 데모 support/community-asks). 플랫폼 관리자 전용. 상세 · 답변은 #277.
+// 커뮤니티관리 › 문의사항 목록(#275, 데모 support/community-asks). 플랫폼 관리자 전용. 상세 · 답변은 [id](#277).
 export default async function InquiriesPage({ searchParams }: PageProps<"/platform-inquiries">) {
   const query = parseInquiryQuery(await searchParams);
   const loaded = await loadList("문의사항", () => Promise.all([getInquiries(query), getEnum("InquiryAnswerStatus")]));
