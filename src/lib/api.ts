@@ -102,7 +102,7 @@ export async function authHeaders(): Promise<Record<string, string>> {
 }
 
 /**
- * 이 요청의 탭 BP — proxy 가 /bp/{id} 주소에서 넣은 x-bp-code-id 를 X-Bp-Code-Id 로 api 에 싣는다(탭 BP 경로 방식).
+ * 이 요청의 탭 BP — proxy 가 남긴 x-bp-code-id(화면 주소 /bp/{id} 의 값, BFF 면 브라우저 bff() 가 실은 숫자)를 X-Bp-Code-Id 로 api 에 싣는다.
  * 주소에 BP 가 없는 화면은 비고, api 는 소속 BP 로 동작한다. 판정은 api 가 한다.
  */
 export async function bpHeader(): Promise<Record<string, string>> {

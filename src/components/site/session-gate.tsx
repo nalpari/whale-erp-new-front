@@ -378,7 +378,7 @@ async function prepare(onSwitchBp: (bp: StoredBp) => void): Promise<LoginState> 
   const current = readCurrentBp(loginKey);
   // 탭 BP 주소(/bp/{id})의 BP. 주소가 이긴다 — 안 옮긴 화면은 지금처럼 current-bp 를 쓴다(탭 BP 경로 방식 전환 계획).
   const pathBp = bpOfPath(url.pathname);
-  // BP · 가맹 계정은 소속 BP 하나만 연다. 남의 BP 주소는 proxy 가 쿠키로 이미 보냈어야 한다 — 쿠키에 BP 가 없는 옛 세션만 여기서 보낸다.
+  // BP · 가맹 계정은 소속 BP 하나만 연다. 남의 BP 주소는 proxy 가 쿠키로 이미 보냈어야 한다 — 쿠키에 BP 가 없는 옛 세션이거나 쿠키의 BP 가 로그인 정보와 어긋난 경우에만 여기 온다.
   if (!platform && pathBp !== null && pathBp !== ownBp.bpCodeId) return fixBpPath(ownBp.bpCodeId, url);
   // 비밀번호를 바꾸기 전의 플랫폼 계정은 다른 BP 를 열지 않고 자기 BP 로 연다(아래 tab). 고객 BP 주소에 그대로 두면 주소의 BP 와 탭 BP 가
   // 영영 달라 준비가 끝나지 않고(stale) 강제 변경 팝업도 뜨지 않는다 — 플랫폼 홈으로 보낸다.
@@ -500,8 +500,9 @@ async function findBpById(bpCodeId: number, selected: StoredBp | null): Promise<
 }
 
 /**
- * BP · 가맹 계정이 남의 BP 주소로 왔다. 한 번은 소속 BP 주소로 고쳐 보낸다(쿠키에 BP 가 없는 옛 세션 — proxy 가 보내지 못한다).
- * 고쳐 보낸 주소로 다시 오면 proxy 가 쿠키의 BP 로 되돌린 것이다 — 쿠키와 로그인 정보가 어긋났으니 BpMismatchError(로그아웃).
+ * BP · 가맹 계정이 남의 BP 주소로 왔다. 한 번은 소속 BP 주소로 고쳐 보낸다(쿠키에 BP 가 없는 옛 세션이거나 쿠키와 로그인 정보가 어긋남 —
+ * proxy 가 보내지 못한다). 들어온 주소를 표시해 두고, 같은 남의 BP 주소로 다시 오면 proxy 가 쿠키의 BP 로 되돌린 것이다 — 쿠키와 로그인
+ * 정보가 어긋났으니 BpMismatchError(로그아웃).
  */
 function fixBpPath(ownBpCodeId: number, url: URL): Promise<never> {
   if (takeBpFix(url.pathname)) throw new BpMismatchError();

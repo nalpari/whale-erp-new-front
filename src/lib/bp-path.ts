@@ -1,7 +1,7 @@
 // 탭 BP 를 담는 화면 주소 /bp/{bpCodeId}/... (탭 BP 경로 방식 전환 계획). 폴더는 그대로이고 proxy 가 /bp/{id} 를 떼어 옛 경로로 rewrite 한다.
 // next/* 를 import 하지 않는다 — proxy · 클라이언트 · node --test 가 함께 쓴다.
 
-/** proxy 가 rewrite 하며 붙이는 요청 헤더. 서버 쪽 api 호출(authHeaders)과 BFF 가 X-Bp-Code-Id 로 api 에 싣는다. */
+/** 탭 BP 요청 헤더. 화면은 proxy 가 주소에서 붙이고, BFF 는 브라우저(bff())가 싣는다. 서버 쪽 api 호출(authHeaders · BFF route)이 X-Bp-Code-Id 로 넘긴다. */
 export const BP_HEADER = "x-bp-code-id";
 
 /**
@@ -12,7 +12,7 @@ export const BP_PATH_SCREENS = ["/bp-role-groups"] as const;
 
 const BP_PREFIX = /^\/bp\/(\d{1,9})(?=\/|$)/;
 
-/** 주소의 탭 BP. /bp/{id} 가 아니거나 int4 양의 정수가 아니면 null. */
+/** 주소의 탭 BP. /bp/{id} 가 아니거나 1~999,999,999(9자리) 밖이면 null — int4 를 넘지 않게 자릿수로 막는다. */
 export function bpOfPath(pathname: string): number | null {
   const id = Number(BP_PREFIX.exec(pathname)?.[1] ?? 0);
   return id >= 1 ? id : null;
@@ -34,7 +34,7 @@ const isUnder = (pathname: string, url: string) => pathname === url || pathname.
 export const isBpPathScreen = (pathname: string) => BP_PATH_SCREENS.some((url) => isUnder(stripBp(pathname), url));
 
 /**
- * proxy 의 탭 BP 판정(로그인한 요청). 들어온 x-bp-code-id 는 늘 버리고 주소의 값으로만 다시 쓴다 — 「헤더 = 주소의 BP」.
+ * proxy 의 탭 BP 판정(로그인한 요청). 화면 주소는 들어온 x-bp-code-id 를 버리고 주소의 값으로만 다시 쓴다 — 「헤더 = 주소의 BP」.
  * BFF(/api/*)는 주소에 BP 가 없어 브라우저(bff())가 실은 값을 숫자일 때만 남긴다. 판정은 api 가 한다(위조해도 소속 BP 와 대조).
  * BP · 가맹 계정이 남의 BP 주소로 오면 쿠키의 소속 BP 로 보낸다. BP 없는 주소는 어느 것이 ERP 인지 몰라 보내지 않는다(SessionGate 가 보낸다).
  * 서버 액션 POST 는 보내면 액션이 깨지므로 GET 만 보낸다.

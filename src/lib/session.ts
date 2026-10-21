@@ -10,7 +10,7 @@ export const ACCESS_TOKEN_TTL_MS = 60 * 60 * 1000;
 
 /**
  * 쿠키에 담는 값. 토큰은 Next 서버만 읽는다(httpOnly). 계정 이름·BP 상호는 login-info 로 그리므로 여기 두지 않는다.
- * 권한 유형 · 소속 BP 는 proxy 가 어디로 보낼지 고르는 데만 쓴다(자기 홈, BP · 가맹 계정의 남의 BP 주소 → 소속 BP) — 데이터 권한은 api 가 토큰으로 다시 확인한다.
+ * 권한 유형 · 소속 BP 는 어디로 보낼지 고르는 데만 쓴다(자기 홈 — proxy · 공개 화면 링크, BP · 가맹 계정의 남의 BP 주소 → 소속 BP) — 데이터 권한은 api 가 토큰으로 다시 확인한다.
  */
 export interface Session {
   accessToken: string;
