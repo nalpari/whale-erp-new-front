@@ -56,7 +56,7 @@
       }
     ],
     "viewBox": [
-      1150,
+      1210,
       668
     ]
   },
@@ -125,9 +125,10 @@
       "lane": "sch",
       "col": 0,
       "type": "frontend",
-      "label": "주간 근무스케줄",
-      "sublabel": "주 이동 · 직접 입력도 여기서",
-      "width": 140
+      "label": "주간·월간 보기",
+      "sublabel": "00~24시 · 체결 완료만",
+      "width": 140,
+      "tag": "STAFF-26"
     },
     {
       "id": "copy",
@@ -154,8 +155,9 @@
       "col": 3,
       "type": "backend",
       "label": "저장 · 바로 반영",
-      "sublabel": "지난 날짜면 급여 경고",
-      "width": 140
+      "sublabel": "같은 점포 겹침만 막음",
+      "width": 140,
+      "tag": "STAFF-29"
     },
     {
       "id": "todoNew",
@@ -212,6 +214,15 @@
       "label": "TO-DO 수행",
       "sublabel": "앱 홈에 뜸 · 상태만 바꿈",
       "width": 150
+    },
+    {
+      "id": "due",
+      "lane": "sys",
+      "col": 5,
+      "type": "messagebus",
+      "label": "수행 임박 알림",
+      "sublabel": "앱 푸시 · 알림함",
+      "width": 140
     }
   ],
   "edges": [
@@ -260,7 +271,7 @@
       "from": "assign",
       "to": "appTodo",
       "variant": "default",
-      "label": "푸시 없이 앱 홈에"
+      "label": "배정 알림 없음 · 앱 홈에"
     },
     {
       "id": "e9",
@@ -269,6 +280,13 @@
       "variant": "dashed",
       "label": "상태 변경",
       "role": "return"
+    },
+    {
+      "id": "e10",
+      "from": "due",
+      "to": "appTodo",
+      "variant": "default",
+      "label": "수행 예정 일시 전"
     }
   ],
   "cards": [
@@ -276,14 +294,14 @@
       "dot": "emerald",
       "title": "확정된 결정",
       "items": [
-        "STAFF-14 기본값은 계약 근무시간, 등록할 때 한 번 · STAFF-13 지난 주 복사는 빈 주에서만 · STAFF-4 TO-DO는 반복 없음 · TO-DO 배정은 푸시 없이 앱 홈과 알림함에 · 긴급은 맨 위로 강조"
+        "STAFF-14 기본값은 계약 근무시간, 등록할 때 한 번 · STAFF-29 근무일에 체결 완료 계약이 없으면 고를 수 없고 서버도 거부 · 겹침은 같은 점포의 같은 직원만 막고 쪼갠 근무·자정 넘김은 받음(근무일은 시작한 날) · STAFF-13 지난 주 복사는 빈 주에서만 · STAFF-4 TO-DO는 반복 없음 · TO-DO 배정 알림은 없고 수행 예정 일시 전에 수행 임박 알림 · 긴급은 맨 위로 강조"
       ]
     },
     {
       "dot": "slate",
       "title": "밖에 있는 것",
       "items": [
-        "출퇴근 기록의 등록은 직원 근무 앱(GPS)이 맡고 웹은 조회·보정만 · 근무스케줄은 급여 초안의 참고 정보"
+        "출퇴근 기록의 등록은 직원 근무 앱(GPS)이 맡고 웹은 조회·보정만 · 근무스케줄은 급여 계산에 쓰지 않음(운영 정책 PAY-12)"
       ]
     }
   ]
