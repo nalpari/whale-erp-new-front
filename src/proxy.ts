@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { homeOf, isPlatformRole, isPublicPath } from "@/lib/auth-routes";
-import { BP_HEADER, bpOfPath, bpPath, stripBp } from "@/lib/bp-path";
+import { BP_HEADER, bpRouteOf } from "@/lib/bp-path";
 import { answersWith401 } from "@/lib/paper-request";
 import {
   ACCESS_TOKEN_TTL_MS,
@@ -59,28 +59,23 @@ export async function proxy(req: NextRequest) {
   return res;
 }
 
-/**
- * 탭 BP 주소(/bp/{id}/...). 들어온 x-bp-code-id 는 늘 지우고 주소의 값으로만 다시 쓴다 — 「헤더 = 주소의 BP」.
- * BFF(/api/*)는 주소에 BP 가 없어 브라우저(bff())가 실은 값을 숫자일 때만 남긴다. 판정은 api 가 한다(위조해도 소속 BP 와 대조).
- * BP · 가맹 계정이 남의 BP 주소로 오면 쿠키의 소속 BP 로 보낸다(URL). BP 없는 주소는 어느 것이 ERP 인지 몰라 보내지 않는다(SessionGate 가 보낸다).
- * 서버 액션 POST 는 보내면 액션이 깨지므로 GET 만 보낸다. 돌려주는 값: 보낼 주소(URL) · rewrite 할 주소 · 그대로(null).
- */
+/** 탭 BP 주소(/bp/{id}/...) — 판정은 bpRouteOf. 요청 헤더를 고치고 돌려준다: 보낼 주소(URL) · rewrite 할 주소 · 그대로(null). */
 function bpRoute(req: NextRequest, session: Session): URL | { rewrite: URL } | null {
   const { pathname, search } = req.nextUrl;
-  const sent = req.headers.get(BP_HEADER);
+  const route = bpRouteOf({
+    pathname,
+    sent: req.headers.get(BP_HEADER),
+    isGet: req.method === "GET",
+    isAction: req.headers.has("next-action"),
+    ownBpCodeId: session.bpCodeId,
+    isPlatform: isPlatformRole(session.roleTypeCode),
+  });
   req.headers.delete(BP_HEADER);
-  if (pathname.startsWith("/api/")) {
-    if (sent && /^\d{1,9}$/.test(sent)) req.headers.set(BP_HEADER, sent);
-    return null;
-  }
-  const bp = bpOfPath(pathname);
-  if (bp === null) return null;
-  const own = session.bpCodeId;
-  if (own && own !== bp && !isPlatformRole(session.roleTypeCode) && req.method === "GET" && !req.headers.has("next-action"))
-    return new URL(bpPath(own, stripBp(pathname)) + search, req.url);
-  req.headers.set(BP_HEADER, String(bp));
+  if (route.header !== null) req.headers.set(BP_HEADER, route.header);
+  if (route.redirect) return new URL(route.redirect + search, req.url);
+  if (!route.rewrite) return null;
   const rewrite = req.nextUrl.clone();
-  rewrite.pathname = stripBp(pathname);
+  rewrite.pathname = route.rewrite;
   return { rewrite };
 }
 

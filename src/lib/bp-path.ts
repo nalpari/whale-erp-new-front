@@ -32,3 +32,26 @@ const isUnder = (pathname: string, url: string) => pathname === url || pathname.
 
 /** 옮긴 화면의 옛 경로인가(접두를 뗀 주소로 본다). */
 export const isBpPathScreen = (pathname: string) => BP_PATH_SCREENS.some((url) => isUnder(stripBp(pathname), url));
+
+/**
+ * proxy 의 탭 BP 판정(로그인한 요청). 들어온 x-bp-code-id 는 늘 버리고 주소의 값으로만 다시 쓴다 — 「헤더 = 주소의 BP」.
+ * BFF(/api/*)는 주소에 BP 가 없어 브라우저(bff())가 실은 값을 숫자일 때만 남긴다. 판정은 api 가 한다(위조해도 소속 BP 와 대조).
+ * BP · 가맹 계정이 남의 BP 주소로 오면 쿠키의 소속 BP 로 보낸다. BP 없는 주소는 어느 것이 ERP 인지 몰라 보내지 않는다(SessionGate 가 보낸다).
+ * 서버 액션 POST 는 보내면 액션이 깨지므로 GET 만 보낸다.
+ * header: 요청에 실을 값(null 이면 뺀다) · redirect: 보낼 경로 · rewrite: 그 경로(폴더)로 rewrite.
+ */
+export function bpRouteOf(o: {
+  pathname: string;
+  sent: string | null;
+  isGet: boolean;
+  isAction: boolean;
+  ownBpCodeId: number | undefined;
+  isPlatform: boolean;
+}): { header: string | null; redirect?: string; rewrite?: string } {
+  if (o.pathname.startsWith("/api/")) return { header: o.sent && /^\d{1,9}$/.test(o.sent) ? o.sent : null };
+  const bp = bpOfPath(o.pathname);
+  if (bp === null) return { header: null };
+  const own = o.ownBpCodeId;
+  if (own && own !== bp && !o.isPlatform && o.isGet && !o.isAction) return { header: null, redirect: bpPath(own, stripBp(o.pathname)) };
+  return { header: String(bp), rewrite: stripBp(o.pathname) };
+}
