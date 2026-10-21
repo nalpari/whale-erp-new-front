@@ -420,12 +420,31 @@
                 </section>
               </div>
 
-              <!-- 근무스케줄 : 시안의 주·요일 고르기, 주간/월간 보기, 익일 새벽까지의 시간축. 막대 색은 근무스케줄 관리와 같다(근무 유형은 두지 않는다, 2026-10-08 재영 · STAFF-30) -->
+              <div class="gap is-decided">
+                <div class="gap__head">
+                  <span class="gap__no">HOME-7</span>
+                  <b>홈 근무스케줄의 시간축과 자정을 넘는 근무는 어떻게 보이는가</b>
+                  <span class="gap__decided">확정 · 00~24시 · 근무일은 시작한 날</span>
+                  <span class="gap__ref">STAFF-33 · STAFF-37</span>
+                </div>
+                <div class="gap__opts">
+                  <div class="gap__opt is-picked" data-side="a">
+                    <div class="gap__label">A · 근무스케줄 관리와 같은 00~24시 · 확정</div>
+                    <p>시간축은 00~24시 24칸이다. 자정을 넘는 근무는 시작한 날 줄에 그날 끝까지 막대를 그리고 「18:00~익일 01:00」처럼 적는다. 근무 인원 줄은 그날 첫 근무 시작부터 마지막 근무 종료 사이만 센다.</p>
+                  </div>
+                  <div class="gap__opt is-dropped" data-side="b">
+                    <div class="gap__label">B · 영업일 기준 시간축 · 지난 안</div>
+                    <p>09시~익일 02시처럼 점포 영업 마감까지 시간축을 늘린다. 「영업일 기준 · 마감 익일 02:00」을 붙인다.</p>
+                  </div>
+                </div>
+                <p class="gap__note">2026-10-21 재영 결정. 근무스케줄 관리(STAFF-37)와 같은 시간축·격자를 쓰고, 근무일은 시작 일시의 날짜다(STAFF-33). 공백 안내는 지금처럼 홈에 두지 않는다.</p>
+              </div>
+
+              <!-- 근무스케줄 : 시안의 주·요일 고르기, 주간/월간 보기, 00~24시 시간축(HOME-7). 막대 색은 근무스케줄 관리와 같다(근무 유형은 두지 않는다, 2026-10-08 재영 · STAFF-30) -->
               <section class="panel">
                 <div class="panel__head">
                   <h2 class="t-h2">근무스케줄</h2>
                   <span class="badge badge--quiet">모리커피 을지로점 · 09-03 (목)</span>
-                  <span class="badge badge--info">영업일 기준 · 마감 익일 02:00</span>
                   <div class="panel__end">
                     <div class="seg" data-tabs="sched-view"><button type="button" data-tab="week" aria-selected="true" aria-pressed="true">주간 보기</button><button type="button" data-tab="month" aria-selected="false" aria-pressed="false">월간 보기</button></div>
                     <a class="tbtn" href="../staff/index.html#sched">근무스케줄 관리</a>
@@ -440,32 +459,41 @@
                   <div style="display: flex; gap: 6px; margin-bottom: var(--s-4)"><button type="button" class="btn btn--sm btn--secondary" style="flex: 1; justify-content: center" aria-pressed="false">월 31 <span class="subtle" style="margin-left: 6px">3명</span></button><button type="button" class="btn btn--sm btn--secondary" style="flex: 1; justify-content: center" aria-pressed="false">화 1 <span class="subtle" style="margin-left: 6px">3명</span></button><button type="button" class="btn btn--sm btn--secondary" style="flex: 1; justify-content: center" aria-pressed="false">수 2 <span class="subtle" style="margin-left: 6px">3명</span></button><button type="button" class="btn btn--sm btn--primary" style="flex: 1; justify-content: center" aria-pressed="true">목 3 <span class="subtle" style="margin-left: 6px">6명</span></button><button type="button" class="btn btn--sm btn--secondary" style="flex: 1; justify-content: center" aria-pressed="false">금 4 <span class="subtle" style="margin-left: 6px">6명</span></button><button type="button" class="btn btn--sm btn--secondary" style="flex: 1; justify-content: center" aria-pressed="false">토 5 <span class="subtle" style="margin-left: 6px">3명</span></button><button type="button" class="btn btn--sm btn--secondary" style="flex: 1; justify-content: center" aria-pressed="false">일 6 <span class="subtle" style="margin-left: 6px">2명</span></button></div>
                   <div class="subtle" style="font-size: 12.5px; margin-bottom: var(--s-3)"><b style="color: var(--ink)">배치 6명</b> · 근무 중 5명 · 미출근 1명 · <a class="tbtn" href="../staff/index.html#sched">출퇴근 현황</a></div>
                   <div class="tl">
-                    <div class="tl__head"><span class="tl__tick">09</span><span class="tl__tick">10</span><span class="tl__tick">11</span><span class="tl__tick">12</span><span class="tl__tick">13</span><span class="tl__tick">14</span><span class="tl__tick">15</span><span class="tl__tick">16</span><span class="tl__tick">17</span><span class="tl__tick">18</span><span class="tl__tick">19</span><span class="tl__tick">20</span><span class="tl__tick">21</span><span class="tl__tick">22</span><span class="tl__tick">23</span><span class="tl__tick">익일 00</span><span class="tl__tick">익일 01</span></div>
+                    <div class="tl__head"><span class="tl__tick">00</span><span class="tl__tick">01</span><span class="tl__tick">02</span><span class="tl__tick">03</span><span class="tl__tick">04</span><span class="tl__tick">05</span><span class="tl__tick">06</span><span class="tl__tick">07</span><span class="tl__tick">08</span><span class="tl__tick">09</span><span class="tl__tick">10</span><span class="tl__tick">11</span><span class="tl__tick">12</span><span class="tl__tick">13</span><span class="tl__tick">14</span><span class="tl__tick">15</span><span class="tl__tick">16</span><span class="tl__tick">17</span><span class="tl__tick">18</span><span class="tl__tick">19</span><span class="tl__tick">20</span><span class="tl__tick">21</span><span class="tl__tick">22</span><span class="tl__tick">23</span></div>
                       <div class="tl__row">
                         <span class="tl__name">김민재<span>정직원</span></span>
-                        <div class="tl__track" style="background-image: repeating-linear-gradient(to right, var(--hairline) 0 1px, transparent 1px calc(100% / 17))"><div class="tl__bar" style="left: 0.000%; width: 52.941%">09:00~18:00</div></div>
+                        <div class="tl__track"><div class="tl__bar" style="left: 37.500%; width: 37.500%">09:00~18:00</div></div>
                       </div>
                       <div class="tl__row">
                         <span class="tl__name">이수빈<span>파트타이머</span></span>
-                        <div class="tl__track" style="background-image: repeating-linear-gradient(to right, var(--hairline) 0 1px, transparent 1px calc(100% / 17))"><div class="tl__bar" style="left: 0.000%; width: 35.294%">09:00~15:00</div></div>
+                        <div class="tl__track"><div class="tl__bar" style="left: 37.500%; width: 25.000%">09:00~15:00</div></div>
                       </div>
                       <div class="tl__row">
                         <span class="tl__name">최유나<span>정직원</span></span>
-                        <div class="tl__track" style="background-image: repeating-linear-gradient(to right, var(--hairline) 0 1px, transparent 1px calc(100% / 17))"><div class="tl__bar" style="left: 11.765%; width: 52.941%">11:00~20:00</div></div>
+                        <div class="tl__track"><div class="tl__bar" style="left: 45.833%; width: 37.500%">11:00~20:00</div></div>
                       </div>
                       <div class="tl__row">
                         <span class="tl__name">강다은<span>파트타이머</span></span>
-                        <div class="tl__track" style="background-image: repeating-linear-gradient(to right, var(--hairline) 0 1px, transparent 1px calc(100% / 17))"><div class="tl__bar" style="left: 17.647%; width: 35.294%">12:00~18:00 · 미출근</div></div>
+                        <div class="tl__track"><div class="tl__bar" style="left: 50.000%; width: 25.000%">12:00~18:00 · 미출근</div></div>
                       </div>
                       <div class="tl__row">
                         <span class="tl__name">정우진<span>파트타이머</span></span>
-                        <div class="tl__track" style="background-image: repeating-linear-gradient(to right, var(--hairline) 0 1px, transparent 1px calc(100% / 17))"><div class="tl__bar" style="left: 23.529%; width: 35.294%">13:00~19:00</div></div>
+                        <div class="tl__track"><div class="tl__bar" style="left: 54.167%; width: 25.000%">13:00~19:00</div></div>
                       </div>
                       <div class="tl__row">
                         <span class="tl__name">한지원<span>파트타이머</span></span>
-                        <div class="tl__track" style="background-image: repeating-linear-gradient(to right, var(--hairline) 0 1px, transparent 1px calc(100% / 17))"><div class="tl__bar" style="left: 52.941%; width: 41.176%">18:00~익일 01:00</div></div>
+                        <div class="tl__track"><div class="tl__bar" style="left: 75.000%; width: 25.000%">18:00~익일 01:00</div></div>
                       </div>
                     <div class="tl__cover">
+                      <span class="tl__cell" data-n="out"></span>
+                      <span class="tl__cell" data-n="out"></span>
+                      <span class="tl__cell" data-n="out"></span>
+                      <span class="tl__cell" data-n="out"></span>
+                      <span class="tl__cell" data-n="out"></span>
+                      <span class="tl__cell" data-n="out"></span>
+                      <span class="tl__cell" data-n="out"></span>
+                      <span class="tl__cell" data-n="out"></span>
+                      <span class="tl__cell" data-n="out"></span>
                       <span class="tl__cell" data-n="2">2</span>
                       <span class="tl__cell" data-n="2">2</span>
                       <span class="tl__cell" data-n="2">3</span>
@@ -481,14 +509,12 @@
                       <span class="tl__cell" data-n="1">1</span>
                       <span class="tl__cell" data-n="1">1</span>
                       <span class="tl__cell" data-n="1">1</span>
-                      <span class="tl__cell" data-n="1">1</span>
-                      <span class="tl__cell" data-n="0">0</span>
                     </div>
                     <div class="tl__legend">
                       <b><span class="tl__swatch tl__swatch--0"></span>아무도 없음</b>
                       <b><span class="tl__swatch tl__swatch--1"></span>혼자 근무 · 휴게 불가</b>
                       <b><span class="tl__swatch tl__swatch--ok"></span>2명 이상</b>
-                      <span class="right">아래 줄은 그 시간에 점포에 있는 인원 수다 · 근무스케줄 관리와 같다</span>
+                      <span class="right">아래 줄은 그 시간에 점포에 있는 인원 수다 · 그날 첫 근무 시작부터 마지막 근무 종료 사이만 센다 · 근무스케줄 관리와 같다</span>
                     </div>
                   </div>
                   </div>
