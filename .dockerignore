@@ -1,0 +1,14 @@
+# 값 파일은 이미지에 넣지 않는다 — 배포 때 Jenkins 가 서버에 놓고 마운트한다.
+.env*
+!.env.example
+.git
+node_modules
+.next
+docs
+okf
+graft
+.agents
+.claude
+.codex
+.impeccable
+*.md

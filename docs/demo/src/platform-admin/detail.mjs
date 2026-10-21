@@ -14,9 +14,10 @@ const kv = (rows) =>
     .map(([k, v]) => `<dt class="text-erp-label">${k}</dt><dd>${v}</dd>`)
     .join("")}</dl>`;
 const WHO = kv([["아이디", "platpark"], ["이름", "박지우"]]);
-// 권한명은 이름 옆에 계정 상태처럼 꼬리표로 보인다(BP 관리자 상세와 같은 방패 아이콘 · 2026-10-08). 본문의 권한 · 상태 표는 없앴다.
-const SHIELD = `<svg viewBox="0 0 24 24" class="mr-[4px] inline-block size-[12px] align-[-1px]" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.1 20 6v6.1c0 4.5-3.4 7.9-8 8.9-4.6-1-8-4.4-8-8.9V6z"/><path d="m8.9 12.1 2.1 2.1 4.1-4.2"/></svg>`;
-const NAME = `박지우 <span class="ml-[6px] inline-flex gap-[6px] align-middle">${ui.badge("on", "사용")}<span title="사용자 권한">${c.tag(`${SHIELD}고객지원 담당`)}</span></span>`;
+// 권한명은 이름 옆에 계정 상태처럼 꼬리표로 보인다(BP 관리자 상세처럼 · 2026-10-08). 본문의 권한 · 상태 표는 없앴다.
+// 권한 꼬리표는 방패 아이콘 대신 라벨을 단다 — 값만으로는 안 보이던 것을 바로 알게 한다(점포코드 ST000123 처럼
+// 라벨+값, 2026-10-20 디자인 수정).
+const NAME = `박지우 <span class="ml-[6px] inline-flex gap-[6px] align-middle">${ui.badge("on", "사용")}${c.tag('사용자 권한 · <b class="font-semibold">고객지원 담당</b>')}</span>`;
 
 function platformAdminDetailBody(A, R) {
   const resetId = x.dialogId();
@@ -33,25 +34,26 @@ function platformAdminDetailBody(A, R) {
     ["이메일", "jiwoo.park@whale-erp.example"],
     // 비밀번호 초기화는 이메일 아래 칸에 둔다(BP 관리자 상세와 같다 · 2026-10-08)
     ["비밀번호", x.dialogTrigger("초기화", resetId, "soft")],
-    ["소속 부서", "고객지원팀"],
+    ["소속부서", "고객지원팀"],
     ["직책", "매니저"],
     // 주소는 우편번호 · 기본주소 · 상세주소를 줄을 바꿔 보이고, 위아래 선에 붙지 않게 여백을 준다
     ["주소", `<div class="py-[2px] leading-[1.6]">${["06236", "서울 강남구 테헤란로 152", "12층"].join("<br>")}</div>`],
+    // 최근 로그인 → 등록일시 → 최종 수정일시 순으로 둔다(2026-10-20 디자인 수정).
+    ["최근 로그인", "2026-09-21 09:03"],
     ["등록일시", ui.detailValues(["2025-06-02 10:11", "platjung"])],
     ["최종 수정일시", ui.detailValues(["2026-08-12 09:40", "platkim"])],
-    ["최근 로그인", "2026-09-21 09:03"],
   ]));
 
   const history = ui.dataTable(
     [
-      { header: "일시", width: "w-[170px]" },
-      { header: "처리자", width: "w-[130px]" },
+      { header: "변경일시", width: "w-[140px]" },
+      { header: "변경자", width: "w-[80px]" },
       { header: "항목", width: "w-[160px]" },
       { header: "변경 전", align: "left" },
       { header: "변경 후", align: "left" },
     ],
     [
-      ["2026-08-12 09:40", "platkim", "초기 비밀번호", "—", `초기화 메일 발송 완료 ${muted("· 값은 남기지 않음")}`],
+      ["2026-08-12 09:40", "platkim", "초기 비밀번호", "", `초기화 메일 발송 완료 ${muted("· 값은 남기지 않음")}`],
       ["2026-03-02 14:20", "platkim", "직책", "사원", "매니저"],
       ["2025-07-01 09:30", "platjung", "사용자 권한", `플랫폼 관리자 ${muted("PA000001")}`, `고객지원 담당 ${muted("PA000002")}`],
       ["2025-06-02 10:11", "platjung", "계정", "", `사용 · 플랫폼 관리자 ${muted("PA000001")}`],
@@ -60,29 +62,30 @@ function platformAdminDetailBody(A, R) {
 
   const resetDialog = x.dialog(
     resetId,
-    "비밀번호 초기화",
-    `<div class="flex flex-col gap-[12px] break-keep">${WHO}<p>새 초기 비밀번호(12자 무작위)를 비밀번호 초기화 안내 메일로 계정 이메일에 보냅니다. 초기화하는 사람도 그 값을 볼 수 없습니다. 초기 비밀번호는 1시간 안에 로그인해야 하며, 지나면 로그인 화면의 비밀번호 찾기로 임시 비밀번호를 다시 받습니다.</p><p><b class="font-semibold">기존 비밀번호는 바로 무효가 되지만, 로그인 중인 세션은 끊지 않습니다.</b> 계정 상태는 그대로입니다. 다음 로그인 때 비밀번호를 새로 정해야 합니다.</p></div>`,
+    "비밀번호를 초기화하시겠습니까?",
+    `<div class="flex flex-col gap-[12px] break-keep">${WHO}<p>임시 비밀번호가 등록된 이메일로 발송되며, 기존 비밀번호는 즉시 무효화됩니다.<br>임시 비밀번호는 1시간 동안 유효하며, 로그인 시 비밀번호를 변경해야 합니다.<br>현재 로그인 중인 세션은 유지됩니다.</p></div>`,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("초기화", { "data-close": true }),
   );
   const deleteDialog = x.dialog(
     deleteId,
-    "플랫폼 관리자 계정 삭제",
-    `<div class="flex flex-col gap-[12px] break-keep">${WHO}<p>삭제하면 <b class="font-semibold">관리자 목록과 검색에서 빠지고</b>, 이 계정으로는 <b class="font-semibold">더 로그인할 수 없습니다</b>.</p></div>`,
+    "관리자 계정을 삭제하시겠습니까?",
+    `<div class="flex flex-col gap-[12px] break-keep">${WHO}<p>삭제한 계정은 <b class="font-semibold">관리자 목록 및 검색 결과에서 제외</b>되며, <b class="font-semibold">해당 계정으로 더 이상 로그인할 수 없습니다</b>.</p><p>삭제한 계정은 복구할 수 없습니다.</p></div>`,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("삭제", { href: link(R, "system/admins.html") }),
   );
 
-  // 생성·변경 이력 — BP 관리자 상세처럼 버튼을 누르면 팝업으로 본다(2026-10-08). 표가 넓어 이 창만 넓힌다.
+  // 변경이력 — BP 관리자 상세처럼 버튼을 누르면 팝업으로 본다(2026-10-08). 표가 넓어 이 창만 넓힌다. 제목·칸
+  // 이름은 1팀 영역 모두(점포·BP·휴일 등) 같은 말을 쓴다(2026-10-20 디자인 수정).
   const historyDialog = x
     .dialog(
       histId,
-      "생성 · 변경 이력",
+      "변경이력",
       `<div class="overflow-x-auto">${history}</div><div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
       ui.button("닫기", { variant: "off", "data-close": true }),
     )
     .replace("w-[420px]", "w-[640px] max-h-[calc(100dvh-48px)] overflow-y-auto");
 
   const editBtn = ui.slideTrigger("수정", "platform-admin-edit-panel");
-  const actions = `${x.dialogTrigger("삭제", deleteId, "soft")}${editBtn}${x.dialogTrigger("변경 이력", histId, "soft")}`;
+  const actions = `${x.dialogTrigger("삭제", deleteId, "soft")}${editBtn}${x.dialogTrigger("변경이력", histId, "soft")}`;
   // 이름은 맨 위에 혼자, 기능 버튼은 닫기까지 모두 맨 아래로(BP 관리자 상세 패널과 같다)
   const head = `<h2 class="text-[18px] font-semibold whitespace-nowrap text-erp-ink">${NAME}</h2>`;
   const buttons = `<div class="flex flex-wrap items-center gap-[6px] border-t border-erp-panel-line pt-[16px]">${ui.button("닫기", { variant: "off", "data-close": true })}<span class="flex-1"></span>${actions}</div>`; // 닫기는 맨 왼쪽(상세 슬라이드 공통 · 2026-10-08)
