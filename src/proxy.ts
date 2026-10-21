@@ -28,7 +28,9 @@ export async function proxy(req: NextRequest) {
 
   if (isPublicPath(pathname)) {
     if ((pathname === "/login" || pathname === "/find") && req.method === "GET" && session) return NextResponse.redirect(new URL(homeOf(session.roleTypeCode), req.url));
-    return NextResponse.next();
+    // 공개 화면도 들어온 탭 BP 헤더는 버린다 — 헤더는 늘 proxy 가 주소에서 정한 값이다.
+    req.headers.delete(BP_HEADER);
+    return NextResponse.next({ request: { headers: req.headers } });
   }
   if (!session) return toLogin(req);
 
