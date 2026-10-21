@@ -1259,7 +1259,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 명세서 내보내기(PAY-2) — 상세와 같은 조건(본인 · 발송 완료 · 3년)의 명세서를 A4 PDF 로 내려준다. 파일 이름은
+         * 명세서 내보내기(PAY-2) — 상세와 같은 조건(본인 · 발송된 것 · 3년)의 명세서를 A4 PDF 로 내려준다. 파일 이름은
          *     `급여명세서_YYYY-MM_이름.pdf`(filename*), 한글을 못 읽는 곳에는 `payslip_YYYY-MM_id.pdf`(filename).
          */
         get: operations["MyPayslipsController_pdf"];
@@ -4232,7 +4232,7 @@ export interface components {
         MyPayslipThisMonthDto: {
             /** @description YYYY-MM — 한국 시간 기준 이번 달 */
             month: string;
-            /** @description 받은 명세서 수. 0 이면 앱이 「이번 달에 받은 명세서가 없습니다」를 적는다 */
+            /** @description 받은 명세서 수(정정 중인 것은 빼고). 0 이면 앱이 「이번 달에 받은 명세서가 없습니다」를 적는다 */
             count: number;
             /** @description 실지급액 합계 */
             totalNetPayAmount: number;
@@ -4252,16 +4252,21 @@ export interface components {
         };
         MyPayslipSummaryDto: {
             employmentType: components["schemas"]["EmploymentType"];
-            /** @description 늘 SENT — 발송 완료 명세서만 보인다 */
+            /** @description 보통 SENT. 발송 뒤 확정을 취소해 고치는 중이면 그때 상태(검토 중 · 확정) — correcting 이 true 다 */
             status: components["schemas"]["PayslipStatus"];
             payslipId: number;
             /** @description YYYY-MM-DD */
             periodStartDate: string;
             /** @description YYYY-MM-DD */
             periodEndDate: string;
-            grossPayAmount: number;
-            totalDeductionAmount: number;
-            netPayAmount: number;
+            /** @description 정정 중 — 보낸 뒤 확정을 취소해 관리자가 고치는 중이다. 금액 · 항목은 다시 보낼 때까지 싣지 않는다(null · 빈 목록) */
+            correcting: boolean;
+            /** @description 정정 중이면 null */
+            grossPayAmount: number | null;
+            /** @description 정정 중이면 null */
+            totalDeductionAmount: number | null;
+            /** @description 정정 중이면 null */
+            netPayAmount: number | null;
             /**
              * Format: date-time
              * @description 만든 일시 — 보존 기간(3년)의 기준
@@ -4300,16 +4305,21 @@ export interface components {
         };
         MyPayslipDetailResponseDto: {
             employmentType: components["schemas"]["EmploymentType"];
-            /** @description 늘 SENT — 발송 완료 명세서만 보인다 */
+            /** @description 보통 SENT. 발송 뒤 확정을 취소해 고치는 중이면 그때 상태(검토 중 · 확정) — correcting 이 true 다 */
             status: components["schemas"]["PayslipStatus"];
             payslipId: number;
             /** @description YYYY-MM-DD */
             periodStartDate: string;
             /** @description YYYY-MM-DD */
             periodEndDate: string;
-            grossPayAmount: number;
-            totalDeductionAmount: number;
-            netPayAmount: number;
+            /** @description 정정 중 — 보낸 뒤 확정을 취소해 관리자가 고치는 중이다. 금액 · 항목은 다시 보낼 때까지 싣지 않는다(null · 빈 목록) */
+            correcting: boolean;
+            /** @description 정정 중이면 null */
+            grossPayAmount: number | null;
+            /** @description 정정 중이면 null */
+            totalDeductionAmount: number | null;
+            /** @description 정정 중이면 null */
+            netPayAmount: number | null;
             /**
              * Format: date-time
              * @description 만든 일시 — 보존 기간(3년)의 기준
@@ -4328,7 +4338,7 @@ export interface components {
             logs: components["schemas"]["MyPayslipLogDto"][];
             /** @description 3.3% 원천징수 적용 — 원천징수 · 소득세 줄을 어떻게 보일지 화면이 정한다 */
             isWithholdingApplied: boolean;
-            /** @description 지급 · 공제 항목, 급여 항목 순서 */
+            /** @description 지급 · 공제 항목, 급여 항목 순서. 정정 중이면 빈 목록 */
             items: components["schemas"]["MyPayslipItemDto"][];
         };
         /** @enum {string} */
@@ -9222,6 +9232,13 @@ export interface operations {
             };
             /** @description 없는 명세서 · 남의 명세서 · 발송 전 · 보존 기간(3년) 지남 · ID 형식 오류 */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 정정 중(PAYSLIP_CORRECTING) — 보낸 뒤 확정을 취소해 관리자가 고치는 중. 다시 보내면 내려받을 수 있다 */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
