@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState, useTransition, type RefObject } from "react";
 import { Button, Field, FormGroup, FormRow, RequiredMark, SlidePanel, TextField, useToast } from "@/components/common";
 import { formatDate, formatDateTime } from "@/lib/format";
-import { formOf, serverErrorField, toUpdateInput, validateMyProfileForm, type MyProfileForm, type MyProfileFormField } from "@/lib/my-profile-form";
+import { formOf, serverErrorField, toUpdateInput, validateCurrentPassword, validateMyProfileForm, type MyProfileForm, type MyProfileFormField } from "@/lib/my-profile-form";
 import type { MyProfile } from "@/lib/my-profile";
 import { checkMyEmailAvailableAction, getMyProfileAction, updateMyProfileAction, type ActionResult } from "./my-page-actions";
 import { useCodeLabel } from "./code-label";
@@ -57,6 +57,9 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
   const [emailChecking, setEmailChecking] = useState(false);
   /** 중복 확인 자체가 실패해 통과시킨 값 — "확인됨"과 다른 문구로 보여야 한다(코드 리뷰로 찾음, 2026-10-21). */
   const [emailCheckSkipped, setEmailCheckSkipped] = useState(false);
+  /** 이메일을 바꿀 때만 쓰는 지금 비밀번호 — 계정 자체를 가리키는 값이 아니라 폼 칸으로 따로 둔다
+   * (api 가 코드 리뷰로 요구하게 됨, 2026-10-21). */
+  const [currentPassword, setCurrentPassword] = useState("");
   const [saving, startSaving] = useTransition();
   const checkNumber = useRef(0);
 
@@ -75,6 +78,7 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
       setEmailChecked(null);
       setEmailChecking(false); // 지난 세션에서 확인 중이던 흔적이 남아 "확인하는 중입니다" 가 계속 보이지 않게 한다
       setEmailCheckSkipped(false);
+      setCurrentPassword("");
     }
   }
 
@@ -166,10 +170,13 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
   };
 
   const emailPassed = !!form && (form.email.trim() === emailChecked || form.email.trim() === profile?.email);
+  const emailChanged = !!form && !!profile && form.email.trim().toLowerCase() !== profile.email;
 
   const handleSave = () => {
     if (!form || !profile) return;
     const found = validateMyProfileForm(form);
+    const passwordError = validateCurrentPassword(emailChanged, currentPassword);
+    if (passwordError) found.currentPassword = passwordError;
     setErrors(found);
     setFailure(null);
     if (Object.keys(found).length) return focusFirstError();
@@ -177,10 +184,11 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
 
     startSaving(async () => {
       try {
-        const updated = toUpdateInput(form, profile.updatedAt);
+        const updated = toUpdateInput(form, profile.updatedAt, emailChanged ? currentPassword : undefined);
         const result = await updateMyProfileAction(updated);
         if (!result.ok) return applyServerError(result.status, result.message);
         toast("saved");
+        setCurrentPassword(""); // 다 쓴 값을 화면에 남기지 않는다
         // GNB 이름 등 로그인 정보를 쓰는 화면이 다시 로그인하지 않아도 바로 보이게 한다.
         patchAccount({ name: updated.name, email: updated.email });
         // PATCH 는 204 라 새 updatedAt 을 안 준다 — 다시 받아 두지 않으면 바로 이어 저장할 때
@@ -296,6 +304,25 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
               )}
               {message("email")}
             </div>
+            {emailChanged && (
+              <div className="flex flex-col gap-[8px]">
+                <Field label="지금 비밀번호" required>
+                  <TextField
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => {
+                      setCurrentPassword(e.target.value);
+                      clearError("currentPassword");
+                    }}
+                    placeholder="이메일을 바꾸려면 지금 비밀번호를 입력해 주세요."
+                    aria-invalid={invalid("currentPassword")}
+                    aria-describedby={describe("currentPassword")}
+                    aria-required
+                  />
+                </Field>
+                {message("currentPassword")}
+              </div>
+            )}
           </FormGroup>
 
           <div className="flex justify-center gap-[6px]">

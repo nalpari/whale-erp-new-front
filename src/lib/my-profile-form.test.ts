@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { MyProfile } from "./my-profile";
-import { formOf, serverErrorField, splitPhone, toUpdateInput, validateMyProfileForm, type MyProfileForm } from "./my-profile-form.ts";
+import { formOf, serverErrorField, splitPhone, toUpdateInput, validateCurrentPassword, validateMyProfileForm, type MyProfileForm } from "./my-profile-form.ts";
 
 const filled: MyProfileForm = { name: " 이서준 ", phone: ["010", "1234", "5678"], email: " SeoJun@Whale.Test " };
 
@@ -56,8 +56,27 @@ test("toUpdateInput — 공백을 지우고 이메일은 소문자로, updatedAt
   });
 });
 
-test("serverErrorField — 이메일 문구만 그 칸, 나머지는 띠", () => {
+test("toUpdateInput — currentPassword 는 줄 때만 싣는다", () => {
+  assert.deepEqual(toUpdateInput(filled, "2026-01-01T00:00:00.000Z", "Current1!"), {
+    name: "이서준",
+    phone: "01012345678",
+    email: "seojun@whale.test",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+    currentPassword: "Current1!",
+  });
+  assert.ok(!("currentPassword" in toUpdateInput(filled, "2026-01-01T00:00:00.000Z")));
+});
+
+test("validateCurrentPassword — 이메일을 바꿀 때만, 비어 있으면 오류", () => {
+  assert.equal(validateCurrentPassword(false, ""), undefined);
+  assert.equal(validateCurrentPassword(true, ""), "이메일을 바꾸려면 지금 비밀번호를 입력해 주세요.");
+  assert.equal(validateCurrentPassword(true, "  "), "이메일을 바꾸려면 지금 비밀번호를 입력해 주세요.");
+  assert.equal(validateCurrentPassword(true, "Current1!"), undefined);
+});
+
+test("serverErrorField — 비밀번호 · 이메일 문구만 그 칸, 나머지는 띠", () => {
   assert.equal(serverErrorField(409, "이미 등록된 이메일입니다."), "email");
+  assert.equal(serverErrorField(400, "지금 비밀번호가 맞지 않습니다"), "currentPassword");
   assert.equal(serverErrorField(400, "형식이 올바르지 않습니다."), null);
   assert.equal(serverErrorField(401, "이메일"), null);
 });

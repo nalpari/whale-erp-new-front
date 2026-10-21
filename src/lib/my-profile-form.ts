@@ -13,7 +13,7 @@ export type MyProfileForm = {
   email: string;
 };
 
-export type MyProfileFormField = "name" | "phone" | "email";
+export type MyProfileFormField = "name" | "phone" | "email" | "currentPassword";
 
 /** 하이픈 없는 번호를 세 칸으로 — 휴대전화(3-4-4) · 02 지역번호(2-3/4-4) · 그 밖 지역번호(3-3/4-4). */
 export function splitPhone(digits: string): [string, string, string] {
@@ -39,14 +39,29 @@ export function validateMyProfileForm(form: MyProfileForm): Partial<Record<MyPro
   return errors;
 }
 
-/** updatedAt 은 조회 응답 그대로 — 동시 수정 검사에 쓴다(api 쪽이 코드 리뷰로 더해짐, 2026-10-21). */
-export function toUpdateInput(form: MyProfileForm, updatedAt: string): UpdateMyProfileInput {
-  return { name: form.name.trim(), phone: phoneOf(form), email: form.email.trim().toLowerCase(), updatedAt };
+/** 이메일을 바꿀 때만 지금 비밀번호를 받는다 — 비우면 400(api 가 코드 리뷰로 더함, 2026-10-21. 탈취한
+ * 접근 토큰만으로 로그인 이메일을 바꿔 비밀번호 찾기를 가로채는 계정 탈취를 막는다). */
+export function validateCurrentPassword(emailChanged: boolean, currentPassword: string): string | undefined {
+  if (emailChanged && !currentPassword.trim()) return "이메일을 바꾸려면 지금 비밀번호를 입력해 주세요.";
+  return undefined;
 }
 
-/** api 가 거절한 이유를 붙일 칸 — 이 화면에서 중복이 날 수 있는 값은 이메일뿐이다. */
+/** updatedAt 은 조회 응답 그대로 — 동시 수정 검사에 쓴다. currentPassword 는 이메일을 바꿀 때만 싣는다
+ * (둘 다 api 쪽이 코드 리뷰로 더해짐, 2026-10-21). */
+export function toUpdateInput(form: MyProfileForm, updatedAt: string, currentPassword?: string): UpdateMyProfileInput {
+  return {
+    name: form.name.trim(),
+    phone: phoneOf(form),
+    email: form.email.trim().toLowerCase(),
+    updatedAt,
+    ...(currentPassword ? { currentPassword } : {}),
+  };
+}
+
+/** api 가 거절한 이유를 붙일 칸. */
 export function serverErrorField(status: number | undefined, message: string): MyProfileFormField | null {
   if (status !== 400 && status !== 409) return null;
+  if (message.includes("비밀번호")) return "currentPassword";
   if (message.includes("이메일")) return "email";
   return null;
 }
