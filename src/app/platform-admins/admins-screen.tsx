@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { Button, ListToolbar, Pagination, useToast } from "@/components/common";
+import { Button, ListToolbar, Pagination, useBackdropActive, useToast } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
 import { ADMIN_PAGE_SIZE } from "@/lib/platform-admin-paging";
 import type { PlatformAdminDetail, PlatformAdminList, PlatformRoleGroup } from "@/lib/platform-admins";
@@ -79,22 +79,29 @@ export function AdminsScreen({
     setNewOpen(false);
   };
 
+  // 바탕창(closeOnBackdrop 켠 패널)이 떠 있는 동안 목록·필터를 inert 로 뺀다 — 바탕창은 클릭만 가로채고
+  // 포커스는 가두지 않아, 이것 없이는 Tab 으로 여기까지 넘어와 [등록]을 눌러 버린다(코드 리뷰로 찾음, 2026-10-20).
+  const backdropActive = useBackdropActive();
+
   return (
     <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
-      <AdminFilter query={query} roleGroups={roleGroups} onApply={(next) => go({ ...next, page: 1, admin: undefined })} />
-      <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>*]:shrink-0">
-        <ListToolbar total={list.total}>
-          {can.create && (
-            <Button ref={newTrigger} aria-controls="platform-admin-new-panel" aria-expanded={newOpen} onClick={() => setNewOpen(true)}>
-              등록
-            </Button>
-          )}
-        </ListToolbar>
-        <AdminTable rows={list.items} selected={query.admin} onOpen={openDetail} />
-        <div className="pt-[14px]">
-          <Pagination page={query.page} totalPages={Math.max(1, Math.ceil(list.total / ADMIN_PAGE_SIZE))} onPageChange={(page) => go({ page, admin: undefined })} />
-        </div>
-      </main>
+      {/* display:contents 로 레이아웃(gap-[12px])에 끼어들지 않으면서 둘을 함께 inert 로 뺀다 */}
+      <div className="contents" inert={backdropActive}>
+        <AdminFilter query={query} roleGroups={roleGroups} onApply={(next) => go({ ...next, page: 1, admin: undefined })} />
+        <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>*]:shrink-0">
+          <ListToolbar total={list.total}>
+            {can.create && (
+              <Button ref={newTrigger} aria-controls="platform-admin-new-panel" aria-expanded={newOpen} onClick={() => setNewOpen(true)}>
+                등록
+              </Button>
+            )}
+          </ListToolbar>
+          <AdminTable rows={list.items} selected={query.admin} onOpen={openDetail} />
+          <div className="pt-[14px]">
+            <Pagination page={query.page} totalPages={Math.max(1, Math.ceil(list.total / ADMIN_PAGE_SIZE))} onPageChange={(page) => go({ page, admin: undefined })} />
+          </div>
+        </main>
+      </div>
 
       {can.create && (
         <AdminFormPanel
@@ -119,7 +126,6 @@ export function AdminsScreen({
         detail={shown}
         onClose={dismissDetail}
         trigger={detailTrigger}
-        editOpen={editOpen}
         onEdit={(from) => {
           editTrigger.current = from;
           if (shown && "admin" in shown) setEditingId(shown.admin.adminAccountId);

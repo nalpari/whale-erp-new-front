@@ -68,7 +68,7 @@ export async function ContractBox({ contractId }: { contractId: number }) {
     { label: "갱신 예정일", value: texts.renewal },
   ];
 
-  // 제목 줄은 Box 가 그려 DetailTable 을 쓰지 않는다. 줄 모양은 DetailTable 의 줄을 옮겨 왔다 — 라벨 180 고정, 줄 46.
+  // 제목 줄은 Box 가 그려 DetailTable 을 쓰지 않는다. 줄 모양은 DetailTable 의 줄을 옮겨 왔다 — 라벨 110 고정, 줄 46.
   // DetailTable 의 줄 모양을 고치면 여기도 같이 고친다(공통 컴포넌트는 1팀과 맞춰 고치므로 줄만 따로 내보내지 않았다).
   return (
     <>
@@ -78,7 +78,7 @@ export async function ContractBox({ contractId }: { contractId: number }) {
           return (
             <div key={label} className="flex w-full">
               <dt
-                className={`flex h-[46px] w-[180px] shrink-0 items-center truncate border-b border-l border-erp-thead-line bg-white p-[12px] text-[14px] font-medium text-erp-label ${
+                className={`flex h-[46px] w-[110px] shrink-0 items-center truncate border-b border-l border-erp-thead-line bg-white p-[12px] text-[14px] font-medium text-erp-label ${
                   last ? "rounded-bl-[2px]" : ""
                 }`}
               >

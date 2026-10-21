@@ -7,7 +7,8 @@ import { platformAdminNewPanel } from "../../platform-admin/new.mjs";
 import { platformAdminDetailPanel } from "../../platform-admin/detail.mjs";
 import { platformAdminEditPanel } from "../../platform-admin/edit.mjs";
 
-// 아이디·이름은 상세를 슬라이드 패널로 연다(표본 상세는 platpark 하나라 모든 줄이 그 상세를 연다)
+// 이름은 상세를 슬라이드 패널로 연다(표본 상세는 platpark 하나라 모든 줄이 그 상세를 연다). 아이디는 고칠 수 없는 값이라
+// 링크로 두지 않는다(2026-10-20 디자인 수정).
 const detailTrigger = (text) => `<button type="button" aria-controls="platform-admin-detail-panel" aria-expanded="false" class="text-erp-link hover:underline">${text}</button>`;
 
 // 미사용 계정 줄은 흐리게(목업 is-read). 행 단위 클래스를 받지 않는 dataTable 결과에서 n 번째 줄에 글자색을 얹는다.
@@ -17,12 +18,13 @@ const dimRows = (table, idx) => {
 };
 
 // 연락처·이메일 칸 앞 아이콘. 목업 app.js 의 phone·mail 모양을 그대로 옮겼다(앱 public/icons 에는 없는 아이콘이라 여기에만 둔다).
+// 동그라미를 두른 모양으로 바꿨다(2026-10-20 디자인 수정).
 const ICON = {
-  phone: '<rect x="6.4" y="2.6" width="11.2" height="18.8" rx="2.4"/><path d="M10.4 18.4h3.2"/>',
-  mail: '<rect x="3" y="5.4" width="18" height="13.2" rx="1.8"/><path d="m3.6 6.4 8.4 6.6 8.4-6.6"/>',
+  phone: '<circle cx="12" cy="12" r="10.5"/><rect x="9" y="6.5" width="6" height="11" rx="1.6"/><path d="M10.5 15.3h3"/>',
+  mail: '<circle cx="12" cy="12" r="10.5"/><rect x="6.8" y="8.8" width="10.4" height="7.4" rx="1"/><path d="m7.3 9.6 4.7 3.7 4.7-3.7"/>',
 };
 const withIcon = (name, text) =>
-  `<span class="inline-flex items-center gap-[6px]"><svg viewBox="0 0 24 24" class="size-[13px] shrink-0 text-erp-label" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name]}</svg>${text}</span>`;
+  `<span class="inline-flex items-center gap-[6px]"><svg viewBox="0 0 24 24" class="size-[17px] shrink-0 text-erp-label" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name]}</svg>${text}</span>`;
 
 const ADMINS = [
   ["platyoon", "윤채원", "플랫폼 관리자", "사용", "010-9013-5528", "chaewon.yoon@whale-erp.example", "", "2026-09-21 10:04"],
@@ -46,13 +48,13 @@ export default ({ A, R }) => {
     { header: "이름", width: "w-[110px]" },
     { header: "사용자 권한", width: "w-[140px]" },
     { header: "계정 상태", width: "w-[100px]" },
-    { header: "연락처", width: "w-[150px]" },
-    { header: "이메일", align: "left" },
+    { header: "연락처", width: "w-[150px]", align: "left" },
+    { header: "이메일", width: "w-[220px]", align: "left" },
     { header: "최근 로그인", width: "w-[170px]" },
     { header: "등록일시", width: "w-[170px]" },
   ];
   const rows = ADMINS.map(([id, name, role, state, phone, mail, login, reg]) => [
-    detailTrigger(id),
+    id,
     detailTrigger(name),
     role,
     ui.badge(state === "사용" ? "on" : "off", state),

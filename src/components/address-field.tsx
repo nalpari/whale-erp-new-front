@@ -257,7 +257,8 @@ export function AddressField({
         </div>
       )}
       <div className="flex gap-[6px]">
-        <div className="w-[120px] shrink-0 text-center">
+        {/* 우편번호는 검색으로만 채워지는 숫자 5자리라 좁게 둔다 — 넓게 두면 옆 기본주소 칸이 너무 좁아진다(2026-10-20 디자인 수정). */}
+        <div className="w-[80px] shrink-0 text-center">
           <TextField value={value.zipCode} readOnly placeholder="우편번호" aria-label={`${prefix}우편번호`} />
         </div>
         <TextField value={value.address} readOnly placeholder="기본주소" aria-label={`${prefix}기본주소`} />

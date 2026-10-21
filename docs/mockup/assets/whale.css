@@ -4159,9 +4159,10 @@ a.tile:hover {
   display: flex;
   gap: var(--s-2);
 }
+/* 우편번호는 검색으로만 채워지는 숫자 5자리라 좁게 둔다 — 넓게 두면 옆 기본주소 칸이 너무 좁아진다(2026-10-20 디자인 수정, 앱 address-field.tsx 와 같다). */
 .addr__picked [data-addr-zip] {
   flex: none;
-  width: 110px;
+  width: 80px;
 }
 .addr__picked [data-addr-base] {
   flex: 1;
