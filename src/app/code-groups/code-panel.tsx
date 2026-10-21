@@ -37,6 +37,8 @@ export function CodePanel({
 
 /** 저장 · BP 적용 요청 자체가 닿지 않았을 때(연결 끊김 · 재배포로 action 을 못 찾음) 띠에 쓰는 문구. */
 export const UNREACHABLE = "서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+/** 저장 요청이 응답 없이 끊겼다 — 서버에서는 저장됐을 수 있어 목록을 다시 받고, 확인한 뒤 다시 저장하게 한다(다시 저장하면 등록이 409 일 수 있다). */
+export const UNKNOWN_RESULT = "저장 결과를 확인하지 못했습니다. 목록을 다시 불러왔으니 저장됐는지 확인한 뒤 다시 저장해 주세요.";
 
 // 실패 띠 — 표 위에 하나만 선다. 저장 실패면 입력값은 그대로 두었다는 것을 함께 말한다(목업 fail 상태).
 export function SaveFailedBand({ message, detail = "입력한 값은 그대로 두었습니다." }: { message: string; detail?: string | null }) {

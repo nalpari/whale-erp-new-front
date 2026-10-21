@@ -1,6 +1,13 @@
 # Bundle history
 
+## 2026-10-21
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #71 머지 블로커 반영: 공통코드 저장 중에 다른 패널 저장으로 같은 내용의 목록이 새 참조로 오면 저장 기준(`savingFrom`)을 그 참조로 옮긴다(`followSameRows`). 옮기지 않아 두 패널을 함께 저장하다 등록만 실패하면 실패 안내와 새 행이 함께 사라지던 것을 막는다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR 리뷰(5종) 반영: 공통코드 등록만 실패하면 띠에 수정분 저장을 먼저 적고, 요청이 끊기면 목록을 다시 받아 「결과를 확인하지 못했습니다」로 알리며, 서버 무효화가 실패하면 화면이 직접 다시 받는다. 새 행 잇기는 저장을 시작한 목록(그룹은 고른 그룹까지)을 대신하는 목록으로 한정했다(`savingFrom`). 요청 연결 · 권한 판정 · 새 행 잇기 · 빼기를 순수 함수로 빼 테스트했고, okf 의 403 설명(그대로 보인다)을 바로잡았다. 앞서 코드 리뷰 반영: 수정 → 등록 순서를 `src/lib/code-save.ts` 로 빼 `pnpm test` 로 검사한다. 플랫폼 관리자 화면 변경(미사용 계정 비밀번호 「—」 · 미사용 전환일시 · 미사용 계정 수 제거)을 본문에 적었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — api main(115ad5f, api #88)의 공통코드 등록 · 수정 분리에 맞춰 생성 타입을 다시 만들고, 본문을 `{ items }` 로 바꿨다(`CreateCodeGroupsDto` · `UpdateCodeGroupsDto` · `CreateCodeItemsDto` · `UpdateCodeItemsDto`, 응답 204). 동시 등록 경합 409 의 「: A, B」에서 첫 코드를 칸 오류로 붙인다.
+
 ## 2026-10-20
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 공통코드 저장을 api 의 등록(`POST`) · 수정(`PUT`) 분리에 맞췄다. [추가]는 등록 권한만, [저장]은 등록 · 수정 중 하나만 있어도 보이고, 저장은 수정 → 등록 두 번 부른다. 수정 권한이 없으면 기존 행은 읽기 전용, 등록만 실패하면 새 행을 남긴다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — api main(db07bd8, api #84 — 1팀 메뉴 권한 판정을 `@MenuPermission` 가드로 통일)으로 `api-types.generated.ts` 를 다시 만들었다. 1팀 화면은 이미 `usePagePermission` 이라 코드는 그대로다. 플랫폼 권한 · 메뉴 관리의 「api 머지 뒤 다시 만든다」 문장을 지웠다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #58 재리뷰 참고 1: 서명 대기 계약의 막힌 「재발송」 옆에 「앱 알림이 생기면 다시 보낼 수 있습니다」를 글자로 보인다(`aria-describedby`). 공통 Button 이 막히면 마우스 반응을 꺼 title 툴팁이 뜨지 않고 키보드 · 터치로도 볼 수 없었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통 컴포넌트 `DetailTable` 의 왼쪽 라벨 칸을 180px 에서 줄였다(사용자 피드백 — 값 칸이 너무 좁았다, 1팀 확인 전). `src/app/staff-members/[id]/contract-box.tsx` 가 같은 줄 모양을 따로 옮겨 둔 곳이라 같이 고쳤다. `docs/demo/src/ui.mjs` 의 `detailTable` 과 DESIGN.md 의 고정값도 맞췄다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 위 `DetailTable` 라벨 칸 축소로 `contract-box` 소스도 같이 고쳐졌다. `generated.at` 과 `contract-box` 의 `last_modified` 를 갱신했다(코드 리뷰로 빠뜨린 것을 찾음).
