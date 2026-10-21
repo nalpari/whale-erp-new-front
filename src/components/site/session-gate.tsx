@@ -154,9 +154,10 @@ export function SessionGate({ children }: { children: ReactNode }) {
   const [attempt, setAttempt] = useState(0);
 
   // 주소의 탭 BP. 바뀌면(주소창 입력 · 뒤로 가기 · 다른 BP 링크) 그 BP 로 다시 준비하고, 옮긴 화면에 BP 없이 오면 다시 돌려 탭 BP 주소로 보낸다.
-  // usePathname 은 rewrite 아래에서 어느 주소를 줄지 정해져 있지 않아 브라우저 주소(location)로 본다 — 화면을 옮기면 usePathname 이 다시 그리게 한다.
-  // 서버 렌더에서는 null 이다(처음은 늘 로딩 화면이라 어긋나지 않는다).
-  const tabKey = typeof window === "undefined" ? null : tabKeyOf(location.pathname);
+  // usePathname 은 클라이언트에서 브라우저 주소(/bp/8/...)를 준다(2026-10-21 확인). location 은 렌더 중에 읽지 않는다 — 앱 안 이동(Link ·
+  // router.push)은 Next 가 커밋한 뒤에 주소를 바꿔 렌더에서는 이전 주소다. 준비(prepare)는 effect 에서 돌아 그때의 location 을 읽는다.
+  // 서버 렌더에서는 rewrite 된 경로일 수 있으나, 처음은 늘 로딩 화면이고 stale 은 준비를 마친 뒤에만 보므로 어긋나지 않는다.
+  const tabKey = tabKeyOf(pathname);
   const readyBp = state.status === "ready" ? state.value.currentBp.bpCodeId : null;
   // 준비한 BP 와 주소의 BP 가 다르면 다시 준비하는 동안 옛 BP 화면을 보이지 않는다. 옮긴 화면에 BP 없이 온 것("move")은 가리지 않는다 —
   // 보낼 BP 가 없는 플랫폼 계정은 그대로 준비되어 Ready 가 「BP 를 먼저 골라 주세요」로 막아야 한다.
