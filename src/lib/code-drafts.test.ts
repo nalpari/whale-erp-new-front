@@ -2,7 +2,19 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { CodeGroup, CodeItem } from "./codes";
-import { buildSaveGroupsInput, buildSaveItemsInput, conflictCode, groupChanged, itemChanged, type GroupDraft, type ItemDraft } from "./code-drafts.ts";
+import {
+  buildSaveGroupsInput,
+  buildSaveItemsInput,
+  codePanelAccess,
+  conflictCode,
+  dropCreatedAdded,
+  groupChanged,
+  itemChanged,
+  renumberAdded,
+  withKeptAdded,
+  type GroupDraft,
+  type ItemDraft,
+} from "./code-drafts.ts";
 
 const items: CodeItem[] = [
   { itemCode: "FULL", label: "정직원", status: "ACTIVE", sortOrder: 1 },
@@ -65,6 +77,36 @@ test("관리 주체를 고르지 않은 새 그룹은 요청에 싣지 않는다
 test("409 문구에서 겹친 코드를 꺼낸다", () => {
   assert.equal(conflictCode("이 그룹에 이미 있는 상세 코드입니다: INTERN"), "INTERN");
   assert.equal(conflictCode("한 요청 안에서 상세 코드가 겹칩니다: PART_TIME"), "PART_TIME");
+  assert.equal(conflictCode("이 그룹에 이미 있는 상세 코드입니다: INTERN, PART_TIME"), "INTERN", "동시 등록 경합은 첫 코드");
   assert.equal(conflictCode("이미 있는 그룹 코드입니다"), undefined, "코드가 없는 꼴");
   assert.equal(conflictCode("겹칩니다: 인턴"), undefined, "코드 형식이 아니면 쓰지 않는다");
+  assert.equal(conflictCode("이미 있는 그룹 코드입니다: INTERN ,PART_TIME"), "INTERN", "쉼표 앞뒤 공백은 다듬는다");
+});
+
+test("권한 — [추가]는 등록, 기존 행 고치기는 수정, [저장]은 둘 중 하나. 상세를 못 불러왔으면 모두 막는다", () => {
+  const cases: [boolean, boolean, { manage: boolean; canAdd: boolean; canSave: boolean }][] = [
+    [false, true, { manage: false, canAdd: true, canSave: true }],
+    [true, false, { manage: true, canAdd: false, canSave: true }],
+    [true, true, { manage: true, canAdd: true, canSave: true }],
+    [false, false, { manage: false, canAdd: false, canSave: false }],
+  ];
+  for (const [update, create, expected] of cases) assert.deepEqual(codePanelAccess({ update, create }), expected, `수정 ${update} · 등록 ${create}`);
+  assert.deepEqual(codePanelAccess({ update: true, create: true, loadFailed: true }), { manage: false, canAdd: false, canSave: false });
+});
+
+const added = (key: string, itemCode: string): ItemDraft => ({ key, itemCode, label: key, status: "ACTIVE", sortOrder: 0, added: true });
+
+test("새 목록 — 저장을 시작한 목록을 대신하면 새 행을 뒤에 이어 두고 번호를 다시 매긴다", () => {
+  const current = [itemDraft(items[0]), added("new-1", "INTERN")];
+  const fresh = items.map((i) => itemDraft(i, { label: `${i.label}!` }));
+  const kept = renumberAdded(withKeptAdded(fresh, current, true));
+  assert.deepEqual(kept.slice(0, items.length), fresh, "새 목록 값으로 다시 시작");
+  assert.equal(kept.at(-1)?.key, "new-1", "새 행은 키 그대로 뒤에 — 칸 오류가 제자리에 붙는다");
+  assert.equal(kept.at(-1)?.sortOrder, Math.max(...items.map((i) => i.sortOrder)) + 1, "마지막 저장된 순서 다음 번호");
+  assert.deepEqual(withKeptAdded(fresh, current, false), fresh, "다른 목록이면 새 행을 버린다");
+});
+
+test("등록한 새 행은 뺀다 — 코드는 대문자 · 공백을 맞춰 견주고, 겹치지 않는 새 행은 남는다", () => {
+  const rows = [itemDraft(items[0]), added("new-1", " intern "), added("new-2", "TEMP")];
+  assert.deepEqual(dropCreatedAdded(rows, ["INTERN"]).map((d) => d.key), [items[0].itemCode, "new-2"]);
 });

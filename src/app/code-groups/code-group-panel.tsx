@@ -1,20 +1,22 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { Badge, Button, DataTable, Pagination, Select, Tag, TextField, Toggle, useToast, type Column } from "@/components/common";
-import { buildSaveGroupsInput, groupChanged, type GroupDraft } from "@/lib/code-drafts";
+import { buildSaveGroupsInput, codePanelAccess, groupChanged, withKeptAdded, type GroupDraft } from "@/lib/code-drafts";
+import { failureView } from "@/lib/code-save";
 import { codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-validation";
 import type { CodeGroup, ManageOwnerCode } from "@/lib/codes";
 import { usePagePermission } from "@/components/site/session-gate";
 import { applyCodeGroupToBpsAction, saveCodeGroupsAction } from "./actions";
 import { BpApplyDialog } from "./bp-apply-dialog";
-import { CodePanel, DoneNotice, FieldErrors, SaveFailedBand, UNREACHABLE } from "./code-panel";
+import { CodePanel, DoneNotice, FieldErrors, SaveFailedBand, UNKNOWN_RESULT, UNREACHABLE } from "./code-panel";
 import { codesHref } from "./codes-href";
 import { GuardedLink, useUnsavedChanges } from "./unsaved-changes";
 
 // 왼쪽 공통코드 그룹 목록. 그룹 코드를 누르면 오른쪽에 그 그룹의 상세 코드가 선다(?group=).
 // 기존 그룹은 그룹명 · 사용 상태만 고치고(코드 · 관리 주체는 바꾸지 않는다), [추가]는 맨 끝에 입력 행 하나를 붙인다.
-// 저장은 행마다가 아니라 이 패널에서 한 번이다. 그룹 순서는 화면에서 바꾸지 않는다(2026-10-12) — 표시 순서대로 보이기만 한다.
+// [저장] 한 번으로 바뀐 행과 새 행을 함께 보낸다(수정 → 등록 두 요청, actions.ts). 그룹 순서는 화면에서 바꾸지 않는다(2026-10-12) — 표시 순서대로 보이기만 한다.
 // 플랫폼제공 그룹은 [BP 적용]으로 사용 중인 모든 BP 에 복사한다 — BP 에 이미 있는 상세 코드는 건너뛰고 없는 것만 넣는다(2026-10-12).
 // 저장한 값으로 적용하므로 두 패널(이 패널 · 오른쪽 상세 코드) 어디든 저장하지 않은 변경이 있으면 막는다.
 
@@ -39,11 +41,10 @@ export function CodeGroupPanel({
   /** 관리 주체 한글 — 공통코드 MANAGE_OWNER 에서 읽은 값. */
   ownerLabels: Record<string, string>;
 }) {
-  // 메뉴 권한(로그인 정보)으로 보인다 — 막는 것은 api 다. api 는 패널 저장을 늘 수정으로 보고, 새 행이 있으면 등록까지 요구한다.
-  // 그래서 고치기 · 저장 · BP 적용은 수정 권한, [추가]는 수정과 등록 권한이 둘 다 있을 때만.
-  const can = usePagePermission();
-  const manage = can.update;
-  const canAdd = manage && can.create;
+  // 메뉴 권한(로그인 정보)으로 보인다 — 막는 것은 api 다. api 는 기존 행 수정(수정 권한)과 새 행 등록(등록 권한)이 따로다.
+  // 그래서 기존 행 고치기 · BP 적용은 수정 권한, [추가]와 새 행 입력은 등록 권한, [저장]은 둘 중 하나만 있어도 보인다.
+  const { manage, canAdd, canSave } = codePanelAccess(usePagePermission());
+  const router = useRouter();
   const toast = useToast();
   const { setDirty, isDirty, navigate } = useUnsavedChanges();
   const [drafts, setDrafts] = useState(() => groups.map(toDraft));
@@ -54,8 +55,12 @@ export function CodeGroupPanel({
   const [applying, startApplying] = useTransition();
   const [notice, setNotice] = useState<string | null>(null);
   const [applyError, setApplyError] = useState<string | null>(null);
+  // 저장을 시작한 목록과 고른 그룹. 저장할 때마다 두고, 다음에 오는 목록이 바로 그 목록을 대신하면 아직 저장하지 못한 새 행을
+  // 그 뒤에 이어 둔다(한 번 쓰고 지운다 — 등록만 실패했거나 결과를 모를 때 입력을 잃지 않게). 완전히 성공했으면 저장 처리가
+  // 이어 둔 새 행을 걷어 낸다. 다른 그룹으로 옮긴 뒤 온 목록에는 잇지 않는다. 다른 쪽으로 가면 패널이 새로 그려진다(key=page).
+  const [savingFrom, setSavingFrom] = useState<{ groups: CodeGroup[]; selected?: string } | null>(null);
 
-  // 저장 뒤 서버가 새 목록을 주면 그 값으로 다시 시작한다.
+  // 저장 뒤 서버가 새 목록을 주면 그 값으로 다시 시작한다. 새 행을 이어 둘 때(savingFrom)는 그 행의 오류 · 띠도 남긴다.
   // 다른 그룹으로 옮겨 가면(이동 전에 버릴지 물었다) 고치던 값도 버린다.
   // 오른쪽 패널이 저장해 화면 전체가 다시 그려진 것뿐이면(그룹 목록 값이 같으면) 고치던 값을 그대로 둔다.
   const [shown, setShown] = useState({ groups, selected });
@@ -63,9 +68,14 @@ export function CodeGroupPanel({
     const sameRows = selected === shown.selected && JSON.stringify(groups) === JSON.stringify(shown.groups);
     setShown({ groups, selected });
     if (!sameRows) {
-      setDrafts(groups.map(toDraft));
-      setErrors({});
-      setFailure(null);
+      const keep = savingFrom?.groups === shown.groups && savingFrom.selected === selected;
+      const next = withKeptAdded(groups.map(toDraft), drafts, keep);
+      setSavingFrom(null);
+      setDrafts(next);
+      if (!next.some((d) => d.added)) {
+        setErrors({});
+        setFailure(null);
+      }
     }
   }
 
@@ -77,7 +87,7 @@ export function CodeGroupPanel({
   const applyBlocked = dirty || isDirty("items");
 
   useEffect(() => setDirty("groups", dirty), [dirty, setDirty]);
-  // 다른 그룹 · 다른 쪽으로 가면 이 패널은 새로 그려진다. 사라질 때 변경 표시를 지운다.
+  // 다른 쪽으로 가면 이 패널은 새로 그려진다(key=page). 사라질 때 변경 표시를 지운다.
   useEffect(() => () => setDirty("groups", false), [setDirty]);
 
   const update = (key: string, patch: Partial<Draft>) =>
@@ -138,24 +148,36 @@ export function CodeGroupPanel({
     if (Object.keys(found).length) return;
 
     const input = buildSaveGroupsInput(drafts, groups);
+    setSavingFrom({ groups, selected });
     startSaving(async () => {
-      // 요청 자체가 실패하면(연결 끊김 · 재배포로 action 을 못 찾음) 오류 화면으로 넘기지 않고 띠로 알린다 — 입력값은 그대로 둔다
+      // 요청 자체가 끊기면(연결 끊김 · 재배포로 action 을 못 찾음) 서버에서는 저장됐을 수 있다 — 오류 화면으로 넘기지 않고
+      // 목록을 다시 받아 띠로 알린다. 저장 안 됐으면 목록이 같아 입력값이 그대로, 수정만 됐으면 새 행이 이어진다(savingFrom).
       const result = await saveCodeGroupsAction(input).catch((error: unknown) => {
         console.error("공통코드 그룹 저장 요청 실패", error);
-        return { ok: false as const, status: undefined, message: UNREACHABLE };
+        return null;
       });
+      if (!result) {
+        router.refresh();
+        return setFailure(UNKNOWN_RESULT);
+      }
+      // 저장했는데 서버가 화면을 무효화하지 못했으면 직접 다시 받는다 — 새 목록이 와야 이어 둔 새 행 · 바뀐 값이 정리된다
+      if ((result.ok || result.updatesSaved) && !result.refreshed) router.refresh();
       if (result.ok) {
         // 저장한 값으로 이 패널을 마무리한다. 새 그룹이 다음 쪽에 들어가 이 쪽 목록이 그대로여도(위 재설정이 돌지 않아도)
-        // 입력 행이 남지 않게 한다. 다시 그린 목록이 먼저 와서 재설정됐으면 남은 새 행이 없어 그대로다.
+        // 입력 행이 남지 않게 한다. 다시 그린 목록이 먼저 와서 새 행을 이어 뒀으면 그것도 여기서 빠진다.
+        setSavingFrom(null);
         setDrafts((rows) => rows.filter((d) => !d.added).map((d) => ({ ...d, groupName: d.groupName.trim() })));
         setErrors({});
         setFailure(null);
         // 새로 만든 것이 있으면 ‘저장되었습니다.’, 고치기만 했으면 ‘수정되었습니다.’(공통 토스트)
         return toast(input.creates.length ? "saved" : "updated");
       }
-      // 그룹 코드가 겹치면 칸 오류로, 그 밖은 띠로 알린다.
-      if (result.status === 409) setErrors({ code: result.message });
-      else setFailure(result.message);
+      // 아무것도 저장되지 않았으면 이어 둘 일이 없다. 수정만 저장됐으면 새 행은 다시 받은 목록 뒤에 남는다(savingFrom).
+      if (!result.updatesSaved) setSavingFrom(null);
+      // 그룹 코드가 겹치면 칸 오류로, 그 밖은 띠로 알린다. 수정분이 저장됐으면 띠에 그 사실을 먼저 적는다(failureView).
+      const view = failureView(result);
+      if (view.conflict) setErrors({ code: view.conflict });
+      setFailure(view.band);
     });
   };
 
@@ -191,7 +213,8 @@ export function CodeGroupPanel({
       header: "그룹명",
       align: "left",
       cell: (d) => {
-        if (!manage) return d.groupName;
+        // 기존 행은 수정 권한, 새 행은 등록 권한으로 고친다(새 행은 등록 권한이 있어야 생긴다)
+        if (!manage && !d.added) return d.groupName;
         const key = d.added ? "" : d.groupCode;
         return (
           <TextField
@@ -248,7 +271,7 @@ export function CodeGroupPanel({
       header: "사용 상태",
       width: "w-[100px]",
       cell: (d) =>
-        manage ? (
+        manage || d.added ? (
           <Toggle
             label="사용"
             checked={d.status === "ACTIVE"}
@@ -266,7 +289,7 @@ export function CodeGroupPanel({
       title="공통코드 그룹"
       sub={`${total}개`}
       actions={
-        manage && (
+        canSave && (
           <>
             {/* 저장 전 새 행은 하나만 둔다 */}
             {canAdd && (
