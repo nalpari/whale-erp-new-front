@@ -16,7 +16,6 @@ import {
   readLoginBpInfo,
   readLoginInfo,
   readScope,
-  readStorePicks,
   readSelectedBp,
   readStores,
   resolveTab,
@@ -26,16 +25,14 @@ import {
   writeLoginInfo,
   writeScope,
   writeSelectedBp,
-  writeStorePicks,
   writeStores,
   type Scope,
-  type StorePicks,
   type ServiceCode,
   type StoredBp,
   type TabContext,
 } from "@/lib/browser-storage";
 import { LOGIN_KEY_COOKIE, type AdminMenu, type AdminStore, type BpOption, type Codes, type LoginInfo, type LoginInfoAccount } from "@/lib/session";
-import { restoredScope, usesStoreScope, withoutStoreIds } from "@/lib/store-scope";
+import { restoredScope } from "@/lib/store-scope";
 
 interface LoginState {
   loginKey: string;
@@ -49,13 +46,10 @@ interface LoginState {
   stores: AdminStore[];
   codes: Codes;
   scope: Scope;
-  /** 사용자가 점포 검색 컴포넌트를 쓰는 목록에서 고른 점포(store-scope.ts). 없으면 그 목록은 헤더 범위를 따른다 */
-  storePicks: StorePicks | null;
 }
 
 type LoginActions = {
   setScope: (scope: Scope) => void;
-  setStorePicks: (picks: StorePicks | null) => void;
   /** 내 정보(MY PAGE)에서 이름 · 이메일을 바꾸면 GNB 등 이 값을 쓰는 화면이 다시 로그인하지 않아도 바로 보이게 한다.
    * 이름 · 이메일만 받고 둘 다 빈 값을 허락하지 않는다 — 소속 BP · 권한 · 비밀번호 변경 대기 같은 칸은 이 통로로
    * 바뀌면 안 되고, 호출자(MyPagePanel)는 늘 toUpdateInput 이 다듬은 값만 준다. */
@@ -76,7 +70,7 @@ function useLogin() {
 }
 export const useAccount = () => useLogin().account;
 export const usePatchAccount = () => useLogin().patchAccount;
-/** GNB 「내정보 관리」 패널 열림 여부 — useScope · useStorePicks 와 같은 모양(값 · 세터 튜플, naming.md). */
+/** GNB 「내정보 관리」 패널 열림 여부 — useScope 와 같은 모양(값 · 세터 튜플, naming.md). */
 export function useMyPageOpen() {
   const { myPageOpen, setMyPageOpen } = useLogin();
   return [myPageOpen, setMyPageOpen] as const;
@@ -101,28 +95,6 @@ export function useCodes(group: string) {
 export function useScope() {
   const { scope, setScope } = useLogin();
   return [scope, setScope] as const;
-}
-/**
- * 사용자가 목록에서 고른 점포(빈 목록 포함)와 그 목록 메뉴 url. 값은 이 탭 sessionStorage 에 두고 탭을 열 때 한 번 읽는다(useScope 와 같다).
- * 헤더 범위를 새로 고르거나(setScope) 그 메뉴를 떠나면(admin-header.tsx) 지우고, 등록 · 삭제 뒤에는 빈 목록으로 둔다(useResetStoreSearch).
- */
-export function useStorePicks() {
-  const { storePicks, setStorePicks } = useLogin();
-  return [storePicks, setStorePicks] as const;
-}
-/**
- * 등록 · 삭제가 끝난 뒤 목록의 점포 검색을 「전체」로 비운다 — 사용자가 고른 점포도, 헤더 범위도 따르지 않는다(2026-10-20). 수정은 쓰지 않는다.
- * 성공한 자리에서 이동할 주소를 넘긴다: router.push(resetStoreSearch(backHref)). 지금 화면 메뉴가 점포 검색 컴포넌트를 쓰는 목록(store-scope.ts)이면
- * 그 목록의 사용자 선택을 빈 목록으로 두고 주소에서 storeIds 를 뺀다. 아니면 주소를 그대로 돌려준다. 헤더 범위 값은 바꾸지 않는다.
- */
-export function useResetStoreSearch() {
-  const url = usePageMenu()?.url;
-  const [, setStorePicks] = useStorePicks();
-  return (href: string) => {
-    if (!url || !usesStoreScope(url)) return href;
-    setStorePicks({ url, stores: [] });
-    return withoutStoreIds(href);
-  };
 }
 /** 메뉴 권한. 버튼을 보이거나 숨길 때 쓴다 — 실제 판정은 api 가 요청마다 다시 한다. */
 export function useMenuRole(menuCode: MenuCode, action: MenuAction) {
@@ -287,14 +259,8 @@ function Ready({
 
   const setScope = (scope: Scope) => {
     writeScope(value.currentBp.bpCodeId, scope);
-    // 범위를 새로 고르면 목록에서 고른 점포는 잊는다 — 다시 들어오면 새 범위를 따른다
-    writeStorePicks(value.currentBp.bpCodeId, null);
-    // 보던 화면은 그대로다. 점포 검색 컴포넌트를 쓰는 메뉴 화면이면 헤더 선택기가 그 목록으로 옮긴다(admin-header.tsx · okf/home.md 범위 선택기).
-    onChange((v) => ({ ...v, scope, storePicks: null }));
-  };
-  const setStorePicks = (storePicks: StorePicks | null) => {
-    writeStorePicks(value.currentBp.bpCodeId, storePicks);
-    onChange((v) => ({ ...v, storePicks }));
+    // 메뉴 화면이면 헤더 선택기가 그 메뉴의 목록으로 옮기며 범위를 주소(?scope=)에 싣는다(admin-header.tsx · okf/home.md 범위 선택기).
+    onChange((v) => ({ ...v, scope }));
   };
   // 내 정보에서 이름 · 이메일을 바꾸면 저장값에 쓰고 이 탭에 바로 반영한다(GNB 이름 등). 다른 탭은 새로고침하면 반영된다.
   const patchAccount = (partial: { name: string; email: string }) => {
@@ -334,7 +300,7 @@ function Ready({
     location.assign(home);
   };
   return (
-    <LoginContext value={{ ...value, setScope, setStorePicks, patchAccount, myPageOpen, setMyPageOpen, myPageTrigger }}>
+    <LoginContext value={{ ...value, setScope, patchAccount, myPageOpen, setMyPageOpen, myPageTrigger }}>
       {allowed && !switching && (
         <>
           {header}
@@ -450,14 +416,11 @@ async function prepare(onSwitchBp: (bp: StoredBp) => void): Promise<LoginState> 
   writeCurrentBp(loginKey, tab);
   // 고른 BP 도 그 BP 의 값을 받은 뒤에 적는다 — 다음에 주소로 여는 탭이 이 BP 를 쓴다. 받기가 실패하면 앞서 고른 BP 가 그대로 남는다.
   if (switchBp) writeSelectedBp(loginKey, switchBp);
-  // BP 로 이동하면 범위는 전체에서, 목록에서 고른 점포는 없이 시작한다.
-  if (switching) {
-    writeScope(bp.bpCodeId, { type: "ALL" });
-    writeStorePicks(bp.bpCodeId, null);
-  }
+  // BP 로 이동하면 범위는 전체에서 시작한다.
+  if (switching) writeScope(bp.bpCodeId, { type: "ALL" });
   // 저장된 점포 범위가 이 탭의 점포 목록에 없으면 전체로 되돌린다(선택기 표시와 실제 범위가 어긋나지 않게)
   const scope = restoredScope(readScope(bp.bpCodeId), stores);
-  return { loginKey, account, serviceCode: tab.serviceCode, menus: info.menus, currentBp: bp, stores, codes, scope, storePicks: readStorePicks(bp.bpCodeId) };
+  return { loginKey, account, serviceCode: tab.serviceCode, menus: info.menus, currentBp: bp, stores, codes, scope };
 }
 
 /**
