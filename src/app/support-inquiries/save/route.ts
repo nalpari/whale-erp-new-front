@@ -35,14 +35,14 @@ export async function POST(req: NextRequest) {
   if (response.ok) {
     revalidatePath(SUPPORT_INQUIRY_BASE, "layout");
     if (body) return NextResponse.json(body);
-    // 등록은 됐다 — 실패로 보여 다시 누르면 같은 문의가 또 생기므로 목록에서 확인하게 한다.
+    // 등록은 됐다 — 실패로 보여 다시 누르면 같은 문의가 또 생기므로 registered 를 실어 화면이 다시 하라고 하지 않고 목록만 새로 받게 한다.
     console.error("문의 등록 응답을 읽지 못했습니다", response.status);
-    return fail(502, "등록했지만 결과를 읽지 못했습니다. 목록에서 등록된 문의를 확인해 주세요");
+    return NextResponse.json({ messages: ["등록했지만 결과를 읽지 못했습니다. 목록에서 등록된 문의를 확인해 주세요"], registered: true }, { status: 502 });
   }
 
   const message = (body as { message?: unknown } | null)?.message;
   const texts = Array.isArray(message) ? message.map(String) : typeof message === "string" ? [message] : [`요청이 실패했습니다 (HTTP ${response.status})`];
-  // 5xx 는 Nest 영문 문구라 연결 문구로 바꾼다. 503(저장소 없음 · 오류)은 api 문장이 한글이라 그대로 둔다.
+  // 5xx 는 Nest 영문 문구라 연결 문구로 바꾼다. 503(저장소 없음 · 저장 실패 · 등록 몰림)은 api 문장이 한글이라 그대로 둔다.
   if (response.status >= 500) console.error("문의 등록 실패", response.status, body);
   const res = fail(response.status, ...(response.status === 401 ? [SESSION_EXPIRED] : response.status >= 500 && response.status !== 503 ? [SERVER_DOWN] : texts));
   if (response.status === 401) res.cookies.delete(SESSION_COOKIE);

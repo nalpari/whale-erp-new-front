@@ -112,12 +112,12 @@ export function SupportNoticeView({ notice: n, noticeTypes }: { notice: SupportN
           }))}
         />
       )}
-      {/* 이전은 목록에서 바로 아래 글(대개 더 오래된 글), 다음은 바로 위 글이다(api SupportPostResponseDto). */}
+      {/* 이전은 목록에서 바로 아래 글, 다음은 바로 위 글이다(api SupportPostResponseDto). 상단 고정 글이 먼저 서므로 맨 위 · 맨 아래가 가장 최근 · 오래된 글과 다를 수 있다. */}
       <DetailTable
         title="이전 · 다음"
         rows={[
-          { label: "이전", value: neighbor(n.prev, "가장 오래된 공지입니다") },
-          { label: "다음", value: neighbor(n.next, "가장 최근 공지입니다") },
+          { label: "이전", value: neighbor(n.prev, "목록의 맨 아래 공지입니다") },
+          { label: "다음", value: neighbor(n.next, "목록의 맨 위 공지입니다") },
         ]}
       />
     </Frame>

@@ -31,6 +31,7 @@ export function bodyLimitOf(pathname: string): number {
 /**
  * content-length 가 그 경로의 상한을 넘는가. 길이 없이 나눠 보내면(transfer-encoding: chunked) 크기를 미리 알 수 없어 경로별 상한을
  * 건너뛰고 전역 51MB 만 걸리므로 막는다 — 화면(fetch · 서버 액션)은 늘 길이를 붙여 보낸다(front #75 리뷰). 본문이 없는 요청은 그대로 둔다.
+ * content-length 가 숫자가 아니면 넘지 않은 것으로 보고 전역 한도(proxyClientMaxBodySize)에 맡긴다.
  */
 export function tooLarge(pathname: string, contentLength: string | null, transferEncoding: string | null = null): boolean {
   if (!contentLength) return !!transferEncoding?.toLowerCase().includes("chunked");

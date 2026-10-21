@@ -54,8 +54,9 @@ export function InquiryFormPanel({ id, open, onClose, trigger }: { id: string; o
     setSaving(true);
     try {
       const res = await fetch(INQUIRY_SAVE_ROUTE, { method: "POST", body: data });
-      const body = (await res.json().catch(() => null)) as { messages?: string[] } | null;
-      if (!res.ok) {
+      const body = (await res.json().catch(() => null)) as { messages?: string[]; registered?: boolean } | null;
+      // 등록은 됐는데 결과만 못 읽었으면(registered) 성공처럼 칸을 비우고 닫는다 — 남겨 두면 다시 눌러 같은 문의가 또 생긴다.
+      if (!res.ok && !body?.registered) {
         // proxy 가 먼저 막은 401 은 본문이 { message } 라 문구를 여기서 정한다.
         const messages = res.status === 401 ? [SESSION_EXPIRED] : (body?.messages ?? [`등록하지 못했습니다 (HTTP ${res.status}).`]);
         // 비밀번호 강제 변경 403 이면 SessionGate 가 변경 팝업을 다시 띄운다(BFF 와 같은 이벤트).
@@ -67,7 +68,7 @@ export function InquiryFormPanel({ id, open, onClose, trigger }: { id: string; o
       setRejected([]);
       setErrors([]);
       onClose();
-      toast("문의를 등록했습니다.");
+      toast(res.ok ? "문의를 등록했습니다." : (body?.messages?.[0] ?? "등록했습니다. 목록에서 확인해 주세요."));
       router.refresh();
     } catch {
       setErrors(["서버에 연결하지 못했습니다. 연결을 확인해 주세요.", RETRY]);
