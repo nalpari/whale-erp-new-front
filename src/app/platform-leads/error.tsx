@@ -2,7 +2,7 @@
 
 import { Button, PageBar } from "@/components/common";
 
-// 도입문의 화면을 불러오지 못했을 때(api 가 꺼짐 · enum 조회 실패 등). 권한 없음(403)은 화면이 따로 안내한다. 헤더는 layout 이 그대로 둔다.
+// 도입문의 상세를 불러오지 못했을 때(api 가 꺼짐 · enum 조회 실패 등). 목록은 실패를 제자리에 보이고, 상세의 401 · 403 · 404 는 화면이 따로 안내한다. 헤더는 layout 이 그대로 둔다.
 // 운영 빌드에서는 서버 오류 문구가 가려져 오므로 개발 서버에서만 원인을 함께 보인다.
 export default function LeadsError({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
   return (

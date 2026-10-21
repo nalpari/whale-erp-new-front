@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition, type ReactNode } from "react";
 import { Badge, Button, ConfirmDialog, DataTable, DetailTable, DetailValues, PageBar, Tag, Textarea, useToast, type Column } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
-import { bff, BffError } from "@/lib/bff";
+import { bff, BffError, PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
 import type { InquiryDetail, LeadDetail, Target } from "@/lib/community";
 import {
   deleteLeadAction,
@@ -14,14 +14,14 @@ import {
   startProcessingAction,
   type ActResult,
 } from "@/lib/community-actions";
-import { INQUIRY_BASE, LEAD_BASE, sizeLabel } from "@/lib/community-view";
+import { INQUIRY_BASE, LEAD_BASE, PASSWORD_REQUIRED_PREFIX, sizeLabel } from "@/lib/community-view";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { formatDateTime, formatPhone } from "@/lib/format";
 
 // 문의사항 · 도입문의 상세(#277, 목업 support/inquiry-detail · lead-detail, 데모 support/inquiry-detail* · lead-detail*). 플랫폼 관리자 전용.
 // 왼쪽은 문의 내용 · 답변 · 운영자 메모, 오른쪽은 보낸 곳(문의자) · 처리 이력이다. 바꾸는 동작은 서버 액션이 하고, 성공하면 router.refresh() 로 최신 상세를 받는다.
-// 답변 · 메모 입력칸은 updatedAt 을 key 로 두어 저장 · 최신 불러오기 뒤 저장된 값으로 새로 시작한다. 실패 띠는 그 밖에 두어 남는다.
-// 그사이 다른 운영자가 저장했으면(409) 까닭을 띠에 보이고 최신 내용을 다시 불러온다(#274).
+// 답변 입력칸은 마지막 답변, 메모 입력칸은 저장된 메모를 key 로 두어 그 값이 바뀔 때만 새로 시작한다 — 다른 동작 · 최신 불러오기로는 쓰던 글이 남는다.
+// 그사이 다른 운영자가 저장했으면(409) 까닭을 띠에 보이고 최신 내용을 다시 불러온다(#274). 세션이 끊겨도(401) 화면을 옮기지 않고 띠로만 알린다(공지 폼과 같다).
 // 문의사항 답변은 이력이 남고(고치면 새 답변을 더함, 「수정됨 · 이전 답변」), 도입문의 답변은 하나를 덮어쓴다(CNT-17 v144).
 
 const ANSWER_MAX = 20_000;
@@ -74,28 +74,40 @@ function History({ rows }: { rows: Step[] }) {
   );
 }
 
+type Failure = { ok: false; status?: number; messages: string[] };
+
+/** 서버 액션을 부른다. 요청이 닿지 않으면(오프라인 · 배포 뒤 옛 화면 · 500) 던지지 않고 실패로 돌려 오류 화면 대신 띠에 보인다. */
+async function call<T>(action: () => Promise<T>): Promise<T | Failure> {
+  try {
+    return await action();
+  } catch (e) {
+    console.error("문의 상세 서버 액션 실패", e);
+    return { ok: false, messages: ["서버에 연결하지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요."] };
+  }
+}
+
 /** 실패 띠 · 진행 중 · 서버 액션 부르기. 성공하면 토스트를 띄우고 최신 상세를 다시 받는다(done 이 있으면 그것을 대신 한다). */
 function useAct() {
   const router = useRouter();
   const toast = useToast();
   const [errors, setErrors] = useState<string[]>([]);
   const [busy, startTransition] = useTransition();
+  const fail = ({ status, messages }: Failure) => {
+    setErrors(status === 409 ? [...messages, "최신 내용을 다시 불러왔습니다. 확인한 뒤 다시 해 주세요."] : messages);
+    if (status === 409) router.refresh();
+    // 비밀번호 강제 변경 403 이면 SessionGate 가 변경 팝업을 다시 띄운다(BFF 와 같은 이벤트).
+    if (messages[0]?.startsWith(PASSWORD_REQUIRED_PREFIX)) dispatchEvent(new Event(PASSWORD_REQUIRED_EVENT));
+  };
   const run = (action: () => Promise<ActResult>, message: string, done?: () => void) =>
     startTransition(async () => {
-      const result = await action();
-      if (!result.ok) {
-        // 세션이 끊겼다 — 로그인 화면으로 보낸다.
-        if (result.status === 401) return router.push("/login");
-        setErrors(result.status === 409 ? [...result.messages, "최신 내용을 다시 불러왔습니다. 확인한 뒤 다시 해 주세요."] : result.messages);
-        if (result.status === 409) router.refresh();
-        return;
-      }
+      const result = await call(action);
+      if (!result.ok) return fail(result);
       setErrors([]);
       toast(message);
       if (done) done();
       else router.refresh();
     });
-  return { errors, setErrors, busy, run, startTransition, router, toast };
+  return { errors, setErrors, busy, run, fail, startTransition, router, toast };
 }
 
 function Errors({ errors }: { errors: string[] }) {
@@ -138,8 +150,8 @@ const StatusBadge = ({ status, statuses }: { status: InquiryDetail["status"]; st
   status === "ANSWERED" ? <Badge tone="on">{labelOf(statuses, status)}</Badge> : status === "IN_PROGRESS" ? <Tag>{labelOf(statuses, status)}</Tag> : <Badge tone="off">{labelOf(statuses, status)}</Badge>;
 
 /**
- * 답변 상자. 답변 전이면 입력칸, 답변 완료면 읽기 + 「답변 수정」(CNT-17). 저장하면 key(updatedAt)가 바뀌어 다시 읽기로 돌아간다.
- * view 는 답변 완료일 때 입력칸 위에 보일 읽기 내용(본문 · 시각 · 메일 결과 등)이다.
+ * 답변 상자. 답변 전이면 입력칸, 답변 완료면 읽기 + 「답변 수정」(CNT-17). 답변이 저장되면 key(마지막 답변)가 바뀌어 다시 읽기로 돌아간다.
+ * view 는 답변 완료일 때 위에 늘 보일 읽기 내용(본문 · 시각 · 메일 결과 등)이다.
  */
 function AnswerBox({
   hint,
@@ -271,7 +283,7 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
         )}
       </Box>
       <AnswerBox
-        key={`answer-${d.updatedAt}`}
+        key={`answer-${last?.inquiryReplyId}`}
         hint="문의한 사람에게 보입니다"
         current={last?.body ?? null}
         view={
@@ -306,13 +318,12 @@ export function InquiryDetailView({ detail: d, statuses }: { detail: InquiryDeta
         busy={c.busy}
         onSave={c.saveReply}
       />
-      <MemoBox key={`memo-${d.updatedAt}`} memo={d.internalMemo} busy={c.busy} onSave={c.saveMemo} />
+      <MemoBox key={`memo-${d.internalMemo}`} memo={d.internalMemo} busy={c.busy} onSave={c.saveMemo} />
     </>
   );
 
   const right = (
     <>
-      {/* 이름 · 역할 · BP · 점포는 api 상세의 senderName · senderRoleTypeCode · bpName · storeName. */}
       <DetailTable
         title="보낸 곳"
         rows={[
@@ -358,17 +369,15 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
   const c = useCommon("lead", d.leadId, d.updatedAt, answered);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const industry = d.industryDetail ? `${industryLabel(d.industryCode)} (${d.industryDetail})` : industryLabel(d.industryCode);
-  // 상담 완료일로부터 1년 뒤 파기(WHALEERP-274 · 295). 날짜를 정하는 것은 api 배치이고 여기는 보이기만 한다.
-  const purge = d.consultedDate && `${Number(d.consultedDate.slice(0, 4)) + 1}${d.consultedDate.slice(4)}`;
+  // 상담 완료일로부터 1년 뒤 파기(WHALEERP-274 · 295) — api 가 주지 않아 여기서 연도만 더해 보인다(2월 29일은 3월 1일로 읽는다). 실제 파기는 api 배치가 한다.
+  const purge = d.consultedDate && (d.consultedDate.endsWith("-02-29") ? `${Number(d.consultedDate.slice(0, 4)) + 1}-03-01` : `${Number(d.consultedDate.slice(0, 4)) + 1}${d.consultedDate.slice(4)}`);
 
-  // 저장된 지금 답변을 다시 보낸다(#597). SMTP 가 실패해도 200 에 FAILED 라 결과를 보고 알린다. 1분 안에 또 보내면 api 가 409.
+  // 저장된 지금 답변을 다시 보낸다(#597). 답변 완료면 지난 결과와 상관없이 누를 수 있다. SMTP 가 실패해도 200 에 FAILED 라 결과를 보고 알린다.
+  // 1분 안에 또 보내면 api 가 409 — 띠에 까닭을 보이고 최신 상세를 다시 받는다.
   const resend = () =>
     c.startTransition(async () => {
-      const result = await resendLeadReplyMailAction(d.leadId);
-      if (!result.ok) {
-        if (result.status === 401) return c.router.push("/login");
-        return c.setErrors(result.messages);
-      }
+      const result = await call(() => resendLeadReplyMailAction(d.leadId));
+      if (!result.ok) return c.fail(result);
       if (result.mail.replyMailResult === "SUCCEEDED") {
         c.setErrors([]);
         c.toast("답변 메일을 다시 보냈습니다.");
@@ -402,7 +411,7 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
         <Prose>{d.body}</Prose>
       </Box>
       <AnswerBox
-        key={`answer-${d.updatedAt}`}
+        key={`answer-${d.repliedAt}`}
         hint="적어 준 이메일로 나갑니다"
         current={d.reply}
         view={
@@ -411,7 +420,7 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
             <Meta>
               {dt(d.repliedAt)} · {d.repliedByName ?? "-"}
             </Meta>
-            {/* 처음 답할 때만 메일이 가고 고쳐도 다시 가지 않는다. 실패했으면 [다시 보내기]로 저장된 지금 답변을 보낸다(같은 도입문의 1분 간격). */}
+            {/* 처음 답할 때만 메일이 가고 고쳐도 다시 가지 않는다. [다시 보내기]는 저장된 지금 답변을 보낸다(같은 도입문의 1분 간격). */}
             <div className="flex items-center gap-[12px]">
               <div className="flex-1">
                 <DetailTable title="답변 메일" rows={[{ label: "마지막 발송", value: mail }]} />
@@ -428,7 +437,7 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
         busy={c.busy}
         onSave={c.saveReply}
       />
-      <MemoBox key={`memo-${d.updatedAt}`} memo={d.internalMemo} busy={c.busy} onSave={c.saveMemo} />
+      <MemoBox key={`memo-${d.internalMemo}`} memo={d.internalMemo} busy={c.busy} onSave={c.saveMemo} />
     </>
   );
 

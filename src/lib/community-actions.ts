@@ -75,7 +75,7 @@ export async function deletePostAction(kind: PostKind, postId: number): Promise<
   return { ok: true };
 }
 
-/** 문의사항 · 도입문의 상세의 바꾸는 동작 결과. 성공하면 화면이 router.refresh() 로 최신 상세를 다시 받는다. */
+/** 문의사항 · 도입문의 상세의 바꾸는 동작 결과. 성공하면 화면이 router.refresh() 로 최신 상세를 다시 받는다(삭제는 목록으로 간다). */
 export type ActResult = { ok: true } | { ok: false; status?: number; messages: string[] };
 export type ResendResult = { ok: true; mail: LeadReplyMail } | { ok: false; status?: number; messages: string[] };
 

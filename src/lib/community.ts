@@ -57,7 +57,7 @@ export async function getLeads(q: LeadQuery): Promise<LeadList> {
   return request(`${LEAD_BASE}${queryString(q)}`, await init());
 }
 
-// 문의사항 · 도입문의 상세 · 답변(#277 · #597). 바꾸는 요청은 모두 읽은 updatedAt 을 함께 보내고, 그사이 누가 저장했으면 409 다.
+// 문의사항 · 도입문의 상세 · 답변(#277 · #597). 답변 · 메모는 읽은 updatedAt 을 함께 보내고, 그사이 누가 저장했으면 409 다. 처리 시작은 이미 처리중 · 답변 완료면 409 다.
 export type InquiryDetail = Schemas["InquiryResponseDto"];
 export type LeadDetail = Schemas["LeadResponseDto"];
 export type LeadReplyMail = Schemas["LeadReplyMailResponseDto"];
