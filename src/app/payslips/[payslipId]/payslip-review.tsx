@@ -321,9 +321,12 @@ export function PayslipReview({
             </span>
             {editable && (
               // 출퇴근 집계 · 계산(WHALEERP-227)이 아직 없다
-              <Button variant="soft" className="ml-[6px]" disabled title="준비 중입니다.">
-                출퇴근으로 다시 계산
-              </Button>
+              // 공통 Button 에 className 을 넘기지 않는다(DESIGN.md) — 간격은 감싸는 쪽이 준다
+              <span className="ml-[6px] inline-flex">
+                <Button variant="soft" disabled title="준비 중입니다.">
+                  출퇴근으로 다시 계산
+                </Button>
+              </span>
             )}
           </SectionHead>
           <div className="flex flex-col gap-[8px]">

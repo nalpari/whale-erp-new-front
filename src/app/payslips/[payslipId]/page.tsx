@@ -5,7 +5,7 @@ import { Badge, Button, DataTable, DetailTable, PageBar } from "@/components/com
 import { getEnum } from "@/lib/api";
 import { labelOf } from "@/lib/enums";
 import { formatDateTime } from "@/lib/format";
-import { formatAmount, type PayslipReviewReasonValue } from "@/lib/payslips";
+import { formatAmount } from "@/lib/payslips";
 import { getPayslip } from "@/lib/payslips-api";
 import { kstToday } from "@/lib/staff-members";
 import { payslipListHref } from "../payslip-list-query";
@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   title: "급여명세서 검토 · Whale ERP",
 };
 
-const REVIEW_REASONS: readonly PayslipReviewReasonValue[] = ["MISSING_ATTENDANCE", "AFTER_CONTRACT_END", "CONTRACT_CHANGED", "DEDUCTION_MISSING"];
 const muted = (text: string) => <span className="text-erp-muted">{text}</span>;
 
 // 급여명세서 검토. 데모 docs/demo/staff/payrolls-detail.html(원본 src/pages/staff/payrolls-detail.mjs)의 틀 — 머리(목록 · 임시저장 ·
@@ -32,7 +31,9 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
   if (!payslip) notFound();
   const listHref = payslipListHref(await searchParams, kstToday());
   const reasonOf = (value: string) => labelOf(reasonLabels, value);
-  const present = new Set(payslip.reviewReasons.map((r) => r.reviewReason));
+  const present = new Set<string>(payslip.reviewReasons.map((r) => r.reviewReason));
+  // 사유 목록은 api 가 준 것으로 그린다 — 새 사유가 생겨도 front 는 따로 고치지 않는다(naming.md 「조회한 목록으로 그린다」)
+  const absentReasons = reasonLabels.filter((r) => !present.has(r.value));
   const { contract } = payslip;
 
   const aside = (
@@ -48,11 +49,8 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
           rowKey={(r) => r.payslipReviewReasonId}
           empty="검토 사유가 없습니다."
         />
-        {present.size < REVIEW_REASONS.length && (
-          <DetailTable
-            title="그 밖의 사유"
-            rows={REVIEW_REASONS.filter((r) => !present.has(r)).map((r) => ({ label: reasonOf(r), value: muted("해당 없음") }))}
-          />
+        {absentReasons.length > 0 && (
+          <DetailTable title="그 밖의 사유" rows={absentReasons.map((r) => ({ label: r.label, value: muted("해당 없음") }))} />
         )}
       </section>
       <section className="flex min-w-0 flex-col gap-[12px]">

@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-21
+* **Update**: [Payslips](/screens/payslips.md) — PR #78 리뷰 반영: 검토 화면 「그 밖의 사유」를 api 가 준 사유 목록(`GET /enums/PayslipReviewReason`)으로 그리고, 「출퇴근으로 다시 계산」 버튼의 간격을 감싸는 쪽으로 옮겼다(공통 Button 에 className 을 넘기지 않음, DESIGN.md).
 * **Update**: [Staff members](/screens/staff-members.md) — main 병합으로 `contractCell` 에 「수정 요청」 case 가 두 번 들어간 것을 하나(main 쪽)로 정리했다. 동작은 같다.
 * **Update**: [Payslips](/screens/payslips.md) — PR 리뷰 반영: 작성 성공의 redirect 를 「결과 모름」으로 삼키던 것을 `unstable_rethrow` 로 넘기고, 단건 작성의 결과 모름도 목록을 다시 받는다. 재발송 · 확정 취소 확인창 문구를 처음 발송과 같은 문구(#605)에 맞췄고, 상태 건수 · 목록 쿼리 · 메뉴 url 설명을 지금 api 에 맞췄다.
 * **Update**: [Payslips](/screens/payslips.md) — 급여명세서 실패 안내를 정리했다. api 가 `code` 를 붙인 5xx(503 설정 없음 · 502 메일 실패)는 api 문장을 그대로 보이고, 그 밖의 5xx · 연결 실패 · server action 호출 끊김은 결과 모름으로 확인창에 남긴 채 상세 · 목록을 다시 받는다. 「확정 N건 발송」은 점포 이름에 맞는 점포가 없으면 빈 점포로 보낸다(관리 범위 전체로 넓히지 않는다). 기본급 · 주휴수당 · 연장수당의 출퇴근 데이터 연결은 아직 없다(추후 작업).
