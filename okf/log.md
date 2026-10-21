@@ -1,6 +1,9 @@
 # Bundle history
 
 ## 2026-10-21
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — api #113 응답 확정분 반영: 상세 응답 `hqSharingConsent` 로 가맹 점포 직원의 「본사 제공 동의」(동의 · 미동의) 줄을 더했다(직영은 줄 없음, 184 완료 조건 8). 근무스케줄 근무지는 늘 값이 와 「-」 처리를 뺐다.
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 184 코드 리뷰 반영: TO-DO 목록도 영역 규칙(`loadArea`)으로 받아 실패하면 다시 하기를 보이고 요약과 한 `Suspense` 로 묶었다. 영역 데이터 받기를 `summary-load.ts` 로 모았고, 주소 `weekStart` 를 1900~2999년으로 막았으며, 해를 넘는 급여 기간은 끝 날짜의 연도를 남긴다.
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 직원 상세(WHALEERP-184)를 상세 요약 api(#183)에 붙였다. 기본 정보에 직무 · 입사일 · 생년월일을 채우고 재직 상태를 이름 옆 칩으로 옮겼으며, 본인인증 줄은 1차 범위 밖이라 뺐다(2026-10-21 재영). 근로계약 칸은 `…/summary/contracts` 로 바꿔 최근 발송일 · 갱신 예정일을 api 값으로 채우고 계약이 없으면 작성 버튼을 둔다. 근무스케줄(주 넘김) · 급여명세서 영역과 TO-DO 요약 줄 · 최근 처리 이력을 더했다. 영역마다 따로 받아 403 「조회 권한이 없습니다.」면 그 영역만 권한 안내, 다른 실패는 그 영역만 다시 하기다(`summary-view.ts` · `summary-boxes.tsx`).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — api(whale-erp-api #102)가 PATCH /auth/admin/me 에 이메일 변경 시 「지금 비밀번호」 확인을 더하며(계정 탈취 경로를 막는 ip-code-review-claude 리뷰 반영), MY PAGE 기본정보 폼도 이메일을 바꿀 때만 비밀번호 칸을 보이고 `currentPassword`로 함께 싣게 고쳤다(`my-profile-form.ts`의 `validateCurrentPassword`, `my-page-panel.tsx`).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — ip-code-review-claude 적대적 리뷰(front #86) 반영. MY PAGE 패널이 어느 화면에서나 열리는데 `SessionGate`의 바탕창 inert 래퍼가 `backdropActive`만 보고 있어, 화면 자신의 등록·상세 패널(platform-admins 등, closeOnBackdrop)이 맨 위일 때도 함께 inert 가 되어 그 패널을 조작할 수 없던 회귀를 고쳤다 — `myPageOpen && backdropActive`로 좁혀 MY PAGE 가 맨 위일 때만 본문을 막는다. api(whale-erp-api #102)가 `PATCH /auth/admin/me`에 동시 수정 검사를 더하며 `updatedAt`을 필수로 받게 돼, `my-profile.ts`·`my-profile-form.ts`(`toUpdateInput` 시그니처)·`my-page-panel.tsx`도 같이 고쳤다(저장 뒤 204 라 새 `updatedAt`이 없어 다시 조회).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #87 리뷰 반영: 쓰던 답변 · 메모를 쓰기 시작할 때의 저장값과 함께 쥐어, 그사이 다른 운영자가 저장했으면 손대지 않은 글은 버리고 고쳐 쓰던 글은 새 값을 함께 보인다(`draftView`). chunked 차단을 업로드 창구로 좁혔다.
