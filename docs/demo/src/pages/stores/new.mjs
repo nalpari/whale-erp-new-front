@@ -7,7 +7,6 @@ import * as f from "../../biz-form.mjs";
 import { erpHeader, link } from "../../site.mjs";
 
 export default ({ A, R }) => {
-  const reauthText = `<p>지금 인증한 사업자등록번호·대표자명·개업일자가 지워지고 인증 전으로 돌아갑니다.</p>`;
 
   // 대표 이미지는 기본정보 맨 아래에 둬 오른쪽 사업자정보 묶음과 높이를 맞춘다.
   const image = f.group(
@@ -57,9 +56,15 @@ export default ({ A, R }) => {
   // 순서는 사업자등록번호 인증 라인 → 상호명 · 대표자 연락처 → 업태 · 종목 → 사업자주소(2026-10-16 점검).
   // 상호명 · 대표자 연락처는 한 줄, 업태 · 종목도 한 줄 — 둘 다 반씩이다(상호명이 점포명과 같은 폭).
   // 사업자주소는 체크박스를 라벨 바로 옆 같은 줄에 둔다.
+  // 인증 상자는 앱 공통 상자와 같다(S-VRNTHD) — 세 칸 한 줄, 인증 상태는 묶음 제목 배지(인증일은 저장 시점 값이라 등록 화면은 미인증)
   const biz = ui.formGroup(
-    "사업자정보",
-    f.bizAuth(A, "sbiz", { start: "open", inline: true, values: ["113-25-60418", "한지우", "2026-08-03"], input: ["", "", ""], confirmReauth: reauthText }),
+    f.titleBadge("사업자정보", "off", "미인증"),
+    f.bizVerifyBox(A, {
+      id: "sbiz",
+      row: true,
+      buttons: ui.button("인증하기", { variant: "soft" }),
+      guide: `${f.BIZ_GUIDE}<br>점포 등록 시 사업자 인증은 선택사항이나, 점포상태를 ‘운영’으로 변경하려면 반드시 인증을 완료해야 합니다.`,
+    }),
     ui.formRow(
       ui.field("상호명", ui.textField({ maxlength: 50, placeholder: "50자 이내로 입력해 주세요." }), "w-[240px]"),
       f.group("대표자 연락처", f.tel(), "w-[312px]"),

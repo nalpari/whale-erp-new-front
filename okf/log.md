@@ -1,9 +1,12 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — #109 리뷰: 이어 쓰기 · 수정 저장 뒤에도 저장한 점포가 목록의 고른 점포 밖이면 점포 조건을 「전체」로 비운다(임시저장은 점포를 바꿀 수 있다). api 타입은 api main(2bb32ab, #132 머지) 기준으로 다시 생성.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — #109 리뷰: 새 계약 저장 뒤 발송 실패로 상세에 갈 때도 점포 조건을 「전체」로 비운 목록을 넘기고, 예전 `?storeName=` 주소 · 칩 1000개 상한을 적었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — #109 리뷰 반영: 근로계약 목록의 쓸 수 없는 범위 판정을 헤더 · 칩과 같은 `isUnusableScope` 로 맞추고(`unusableScopeOf`, 폐점만 남은 점포 유형), 목록 주소(`?back=`)를 이어 쓰기 · 작성 · 근로자 정보 · 재발송 · 저장 · 삭제 뒤 이동까지 잇는다(새 계약 · 삭제 뒤는 점포 조건 「전체」).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 목록 점포 필터를 점포명 글자 검색에서 공통 점포 고르기(`StorePicker`)로 바꾸고 상단 점포 범위와 이었다(WHALEERP-133, 1팀 front #88 규칙). api 는 `storeIds` · `storeTypes` 로 거른다(api 짝 PR). 상세의 [목록]은 `?back=` 으로 같은 조건에 돌아온다. api 타입을 api main + 이 변경으로 다시 만들었다.
+* **Update**: [점포 관리](/stores.md) — 사업자정보 인증을 공통 인증 상자(S-VRNTHD)로 바꿨다. 인증 후 잠금 → [재인증]으로 해제, 저장한 점포는 대표자명만 열고 [재인증 취소]로 되돌린다, 비우는 버튼은 「지우기」 하나, 인증 10분 만료와 저장 때 국세청 재확인 실패는 인증을 풀고 버튼 위 한 줄로 알린다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 사업자정보 인증을 회원가입 · 점포 등록/수정이 같은 규칙 · 문구로 쓰게 했다(S-VRNTHD, 2026-10-22 사용자 확정). 공통 규칙 `lib/biz-verification-rules.ts` · 관리자 웹 상자 `components/site/biz-verification-box.tsx`. 하이픈 입력 허용, 인증 후 잠금 → 재인증으로 해제, 빈 칸 「·」 묶음, 「인증 완료 · 날짜」, 한도 초과는 일반 문구, 인증 10분 만료. MY PAGE 사업자정보 탭은 다른 작업(ekans)에서 같은 규칙으로 맞춘다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 로그인한 화면의 api 호출(`authHeaders()`)에도 사용자 IP 를 `X-Forwarded-For` 로 싣는다. 점포 진위확인(IP당 시간당 10건) · 내 정보 수정 · 이메일 중복 확인(분당 60건)이 모든 관리자에게 Next 서버 IP 한 칸으로 세어지던 것.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 직원 상세 급여명세서 칸을 데모 detail.html 에 맞췄다(WHALEERP-186): 응답이 `recent`(최근 3건) · `unsentCount` 로 바뀌어 열을 지급월(링크) · 기본급 · 수당 · 공제 · 실지급액 · 상태로 하고, 「구분」 열(이번 달 · 최근 확정)을 걷었다. 금액이 없거나 0 이면 「-」. 생성 타입은 API PR 머지 뒤 main 기준으로 다시 만든다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — TO-DO 목록(`/todos`)에 상단 점포 범위 연동을 붙였다(2026-10-22 재영). 근무지 선택을 점포 고르기(`StorePicker`, 주소 `storeIds`)로 바꾸고 헤더 범위(`scope`)를 따른다 — 점포 목록과 같은 네 가지 상태이고, api 에는 `storeIds` · `storeTypes` 로 보낸다. 상세 · 등록 · 수정은 `?back=` 으로 목록 주소를 받는다.

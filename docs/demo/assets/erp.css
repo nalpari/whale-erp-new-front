@@ -1532,9 +1532,6 @@
   .grid-cols-\[268px_minmax\(0\,1fr\)\] {
     grid-template-columns: 268px minmax(0,1fr);
   }
-  .grid-cols-\[repeat\(3\,minmax\(0\,1fr\)\)_auto\] {
-    grid-template-columns: repeat(3,minmax(0,1fr)) auto;
-  }
   .grid-rows-\[0fr\] {
     grid-template-rows: 0fr;
   }

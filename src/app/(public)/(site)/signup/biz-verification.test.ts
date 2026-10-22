@@ -1,12 +1,12 @@
 // node --test "src/app/(public)/(site)/signup/biz-verification.test.ts"
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { BUSY_MESSAGE } from "./api-failure.ts";
 import {
   BIZ_UNVERIFIED_MESSAGE,
   BIZ_VERIFICATION_EXPIRED_MESSAGE,
   BIZ_VERIFICATION_TTL_MS,
   BIZ_VERIFY_FAILED_MESSAGE,
+  bizNoticeField,
   bizSubmitBlock,
   bizVerificationFailure,
   hasApiMessage,
@@ -20,26 +20,28 @@ const TOKEN_REJECTED = "사업자정보 인증이 만료되었습니다. 다시 
 const NUMBER_TAKEN = "이미 등록된 사업자등록번호입니다.";
 const LOGIN_ID_TAKEN = "사용할 수 없는 아이디입니다."; // api admin-signup 의 실제 문구
 
-test("진위확인 실패 — 400 · 409 · 422 는 api 문구 그대로, 로그 없음", () => {
-  for (const status of [400, 409, 422]) {
-    assert.deepEqual(bizVerificationFailure(status, "api 문구"), { message: "api 문구", log: false }, String(status));
-  }
+test("진위확인 실패 — 네 화면 공통 문구. 중복만 번호 칸, 409 · 422 는 로그 없음", () => {
+  assert.deepEqual(bizVerificationFailure(409, "api 문구"), { message: "이미 등록된 사업자등록번호입니다.", log: false, field: "bizNumber" });
+  assert.deepEqual(bizVerificationFailure(422, "api 문구"), { message: "입력한 사업자정보가 국세청 정보와 일치하지 않습니다.", log: false, field: null });
 });
 
-test("진위확인 실패 — 503 은 api 문구를 보이고 로그를 남긴다", () => {
-  const message = "국세청 확인이 원활하지 않습니다. 잠시 후 다시 시도해 주세요.";
-  assert.deepEqual(bizVerificationFailure(503, message), { message, log: true });
+test("진위확인 실패 — 400 은 api 문구 그대로, 로그 없음", () => {
+  assert.deepEqual(bizVerificationFailure(400, "api 문구"), { message: "api 문구", log: false, field: null });
 });
 
-test("진위확인 실패 — 429 는 한도 문구, 로그", () => {
-  assert.deepEqual(bizVerificationFailure(429, "Too Many Requests"), { message: BUSY_MESSAGE, log: true });
+test("진위확인 실패 — 503 은 공통 장애 문구, 로그", () => {
+  assert.deepEqual(bizVerificationFailure(503, "api 문구"), { message: "국세청 확인이 원활하지 않습니다. 잠시 후 다시 시도해 주세요.", log: true, field: null });
+});
+
+test("진위확인 실패 — 429 는 일반 문구, 로그", () => {
+  assert.deepEqual(bizVerificationFailure(429, "Too Many Requests"), { message: "잠시 후 다시 시도해 주세요.", log: true, field: null });
 });
 
 test("진위확인 실패 — 그 밖(404 · 500)은 원문을 숨기고 정해진 문구, 로그", () => {
   for (const status of [404, 500]) {
     assert.deepEqual(
       bizVerificationFailure(status, "Internal server error"),
-      { message: BIZ_VERIFY_FAILED_MESSAGE, log: true },
+      { message: BIZ_VERIFY_FAILED_MESSAGE, log: true, field: null },
       String(status),
     );
   }
@@ -91,7 +93,7 @@ test("진위확인 실패 — api 문구가 없으면 상태와 상관없이 정
   for (const status of [400, 422, 503]) {
     assert.deepEqual(
       bizVerificationFailure(status, `요청이 실패했습니다 (HTTP ${status})`, false),
-      { message: BIZ_VERIFY_FAILED_MESSAGE, log: true },
+      { message: BIZ_VERIFY_FAILED_MESSAGE, log: true, field: null },
       String(status),
     );
   }
@@ -115,4 +117,11 @@ test("가입 전 사업자정보 — 인증했으면 10분 안은 통과, 10분�
   const verified = { bizRegistrationNumber: "1234567890", bizCeoName: "정하윤", bizOpenDate: "2020-03-02", verification: { verifiedAt: 0 } };
   assert.equal(bizSubmitBlock(verified, 9 * 60_000 + 59_999), undefined);
   assert.equal(bizSubmitBlock(verified, 10 * 60_000), BIZ_VERIFICATION_EXPIRED_MESSAGE);
+});
+
+test("가입 거절 문구의 자리 — api 의 사업자번호 중복 문구만 번호 칸 아래, 토큰 만료는 버튼 위 한 줄", () => {
+  // isBizSignupRejection 이 받는 api 문구 그대로 넣는다 — 공통 문구가 바뀌어 둘이 어긋나면 여기서 걸린다
+  assert.equal(isBizSignupRejection(409, NUMBER_TAKEN), true);
+  assert.equal(bizNoticeField(NUMBER_TAKEN), "bizNumber");
+  assert.equal(bizNoticeField(TOKEN_REJECTED), null);
 });
