@@ -54,9 +54,25 @@ export function CopyPreviewPanel({ query, today, preview }: { query: ScheduleQue
   const onFailure = useFailure();
   const [error, setError] = useState("");
   const [saving, startSaving] = useTransition();
+  const store = useStores().find((s) => s.storeId === query.storeId);
+  const closed = !!store && isClosedStore(store);
   const close = () => navigate({ ...query, copy: false });
   const data = "error" in preview ? null : preview;
   const count = data ? data.staff.filter((s) => s.copied.days > 0).length : 0;
+
+  // 폐점 점포는 주소에 copy=1 을 붙여 열어도(북마크 · 공유 링크) 표와 복사 버튼을 그리지 않는다 — api 가 아직 막지 않는다(WHALEERP-614, front #96 리뷰).
+  // 점포 상태는 로그인 정보(useStores)에만 있어 서버의 미리보기 읽기(GET, 쓰지 않음)는 막지 못한다
+  if (closed)
+    return (
+      <section id="schedule-copy" aria-label="지난 주 복사 미리보기" className="flex items-center gap-[8px] rounded-[2px] border border-erp-thead-line p-[16px]">
+        <p role="alert" className={`flex-1 ${NOTE}`}>
+          폐점 점포는 근무스케줄을 등록할 수 없어 지난 주 복사도 할 수 없습니다.
+        </p>
+        <Button variant="off" onClick={close}>
+          닫기
+        </Button>
+      </section>
+    );
 
   const handleCopy = () => {
     setError("");
@@ -147,9 +163,12 @@ export function CopyPreviewPanel({ query, today, preview }: { query: ScheduleQue
           </tbody>
         </table>
       ) : (
-        <p role="alert" className={NOTE}>
-          {"error" in preview ? preview.error : ""}
-        </p>
+        // 복사가 실패한 뒤 화면을 새로 받으면 미리보기도 같은 409 문장이 된다 — 아래 실패 문장이 있으면 두 번 적지 않는다(front #96 리뷰)
+        !error && (
+          <p role="alert" className={NOTE}>
+            {"error" in preview ? preview.error : ""}
+          </p>
+        )
       )}
       {error && (
         <p role="alert" className={NOTE}>
