@@ -8,7 +8,7 @@ import type { EnumValue } from "@/lib/enums";
 import { MENU_CODE } from "@/lib/menus";
 import { useFailure } from "../../staff-members/[id]/use-action-failure";
 import { changeTodoStatusAction, deleteTodoAction } from "../actions";
-import type { TodoStatus } from "../todo-list-query";
+import { withBack, type TodoStatus } from "../todo-list-query";
 import { deletePreview, deleteResultMessage, type TodoDetail } from "../todo-row";
 
 // 상세 제목 줄 오른쪽 — 수정(수정 권한) · 삭제(삭제 권한, 지울 대기 행이 있을 때) · 목록. 권한은 로그인 정보의 메뉴 권한으로 미리 가리고 막는 것은 api 다.
@@ -20,7 +20,7 @@ export function TodoDetailActions({ detail, listHref }: { detail: TodoDetail; li
   return (
     <>
       {can.update && (
-        <Button variant="soft" href={`/todos/${detail.todoId}/edit`}>
+        <Button variant="soft" href={withBack(`/todos/${detail.todoId}/edit`, listHref)}>
           수정
         </Button>
       )}
@@ -52,7 +52,7 @@ function DeleteTodoDialog({ detail, listHref, onClose }: { detail: TodoDetail; l
         const result = await deleteTodoAction(detail.todoId);
         if (result.ok) {
           toast(deleteResultMessage(result));
-          // 들어올 때의 목록 조건으로 돌아간다
+          // 들어올 때의 목록 조건으로 돌아간다 — TO-DO 하나를 지워도 점포 조건은 틀어지지 않아 점포 검색도 그대로 둔다(2026-10-22 재영)
           router.push(listHref);
           return;
         }
