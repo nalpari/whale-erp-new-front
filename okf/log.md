@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 권한 그룹의 손으로 적은 타입을 생성 타입 별칭으로 바꿨다. BP 메뉴 트리의 권한 유형이 `BA` · `FA` · `FM` 이라 플랫폼 트리 타입과 맞지 않던 것을 고쳐, 공용 메뉴 팝업이 두 트리를 함께 받는다. api #94 머지로 헤더 판정이 main 에 들어간 것도 반영했다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — api #113 머지(86f05e1)에 맞춰 `api-types.generated.ts` 를 api main 기준으로 다시 만들었다(front #90). 지운 스키마 · 경로는 없고 BP 권한 그룹 · 내 정보 쪽 스키마 8 · 경로 8 이 더해졌다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — api #113 이 TO-DO 목록 경로(`GET /staff-members/:id/todos`)에도 TO-DO 관리 조회 권한을 걸어 403 「조회 권한이 없습니다.」가 올 수 있게 됐다. 직원 상세 TO-DO 칸은 목록 · 요약 중 한 경로라도 그 403 이면 영역 전체를 막는다(`isAreaForbidden`).
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — front #90 리뷰 반영: 직원 상세 TO-DO 영역을 TO-DO 관리 조회 권한으로 목록까지 막고(요약 경로의 403 으로 판단, 2026-10-22 노영주), 근로계약 · TO-DO 칸 머리의 「관리」를 그 메뉴 조회 권한이 없으면 흐리게 둔다(`manage-link.tsx`).
