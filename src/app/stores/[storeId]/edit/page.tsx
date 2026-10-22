@@ -15,7 +15,7 @@ export default async function EditStorePage({ params, searchParams }: PageProps<
   if (storeId < 1) notFound();
 
   const [store, imageTypes, requirementLabels] = await Promise.all([
-    getStore(storeId).catch(storeDenied),
+    getStore(storeId).catch(storeDenied(storeId)),
     getStoreImageTypes(),
     // 운영 조건 한글(GET /enums/StoreOperationRequirement) — 못 받아도 화면은 연다, 문구가 값 그대로 보일 뿐이다
     getEnum("StoreOperationRequirement").catch((error: unknown) => {

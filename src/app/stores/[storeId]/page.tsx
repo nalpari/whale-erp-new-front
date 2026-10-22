@@ -52,7 +52,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
 
   // 운영 조건 한글(GET /enums/StoreOperationRequirement)을 못 받아도 상세는 연다 — 문구가 값 그대로 보일 뿐이다
   const [store, requirementLabels] = await Promise.all([
-    getStore(storeId).catch(storeDenied),
+    getStore(storeId).catch(storeDenied(storeId)),
     getEnum("StoreOperationRequirement").catch((error: unknown) => {
       console.error("운영 조건 한글 조회 실패", storeId, error);
       return [];
