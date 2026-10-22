@@ -7,12 +7,10 @@ import { getAddressCoordinateAction } from "@/lib/address-actions";
 import { AddressField } from "@/components/address-field";
 import type { AddressItem } from "@/lib/address-search";
 import {
-  Badge,
   Button,
   Checkbox,
   ConfirmDialog,
   DataTable,
-  DateField,
   Field,
   FormGroup,
   FormRow,
@@ -24,9 +22,9 @@ import {
 } from "@/components/common";
 import {
   EMPTY_STORE_FORM,
+  currentVerification,
   formOfStore,
   hasCoordinateInput,
-  isBusinessVerified,
   newFloorRow,
   storeServerErrors,
   toCreateStoreInput,
@@ -43,6 +41,9 @@ import {
 import type { EnumValue } from "@/lib/enums";
 import { FLOOR_TYPES, floorTypeOf, type StoreDetail, type StoreImageFileType, type StoreStatus } from "@/lib/store-types";
 import { closeBlockText, formatBizNumber, nextStatuses } from "@/lib/store-view";
+import { BizVerificationBox, BizVerifiedStatus } from "@/components/site/biz-verification-box";
+import { BIZ_MESSAGE, bizDigits, bizVerifyFailure, type BizVerifyField } from "@/lib/biz-verification-rules";
+import { formatDate } from "@/lib/format";
 import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
 import { useCurrentBp } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
@@ -65,13 +66,9 @@ const STALE = "먼저 수정했습니다";
 /** 저장이 막혔을 때 띠 아래 줄 — 칸은 건드리지 않았다 */
 const KEPT = "입력한 값은 그대로 두었습니다.";
 
-// api 가 결과 코드(result)만 주고 문구는 안 준다(StoreBusinessVerificationResponseDto — 국세청이 준 말 자체가
-// 아니라 화면이 짓는 문구다). 회원가입 쪽은 같은 결과를 api 문구로 받으므로, 그 문구와 글자까지 맞춘다
-// (signup/biz-verification.ts 의 MISMATCH · DUPLICATE_BIZ_REGISTRATION_NUMBER, 2026-10-16 점검).
-const VERIFY_MESSAGE = {
-  UNVERIFIABLE: "입력한 사업자정보가 국세청 정보와 일치하지 않습니다.",
-  DUPLICATE: "이미 등록된 사업자등록번호입니다.",
-} as const;
+/** 진위확인 세 칸과 상자의 버튼 위 한 줄 — 인증을 다시 시작할 때 함께 비운다 */
+const VERIFY_KEYS: StoreFormField[] = ["bizNumber", "ceoName", "openDate", "bizVerify"];
+const withoutVerifyErrors = (e: StoreFormErrors) => Object.fromEntries(Object.entries(e).filter(([k]) => !VERIFY_KEYS.includes(k as StoreFormField))) as StoreFormErrors;
 
 /** server action 호출 자체가 실패했다(연결 끊김 · 배포 어긋남) — 결과를 모른다(status 없음). 다시 받을지는 부르는 쪽이 정한다 */
 const unknownResult =
@@ -137,6 +134,8 @@ export function StoreFormView(props: Props) {
   const locateNumber = useRef(0);
   /** 진위확인 차례 — 진위확인 칸을 고치면 올라가, 기다리던 인증 응답을 버린다(옛 값이 「인증 완료」로 되살아나지 않게) */
   const verifyNumber = useRef(0);
+  /** 저장된 사업자정보를 재인증하려고 연 상태 — 대표자명 칸만 열린다(번호 · 개업일자는 저장 뒤 바꿀 수 없다). 인증을 마치면 다시 잠긴다 */
+  const [reopenSaved, setReopenSaved] = useState(false);
   const [image, setImage] = useState<ImageChoice>({ kind: "keep" });
   const [imageError, setImageError] = useState<string | null>(null);
   const imageInput = useRef<HTMLInputElement>(null);
@@ -155,6 +154,8 @@ export function StoreFormView(props: Props) {
     setFilledFor(updatedAt);
     setForm(initialForm());
     setErrors({});
+    // 저장된 사업자정보는 다시 잠긴 「인증 완료」로 연다 — 재인증하려고 열어 둔 상태를 새 값에 남기지 않는다
+    setReopenSaved(false);
   }
 
   const store = props.mode === "edit" ? props.store : null;
@@ -177,6 +178,9 @@ export function StoreFormView(props: Props) {
     requestAnimationFrame(() =>
       (document.getElementById(`${ids}-form`)?.querySelector('[aria-invalid="true"] input, [aria-invalid="true"]') as HTMLElement | null)?.focus(),
     );
+  /** 인증 상자의 버튼 위 한 줄(미인증 · 만료 · 국세청 실패)은 칸이 아니라 커서를 옮길 곳이 없다 — 상자를 화면 가운데로 끌어온다 */
+  const scrollToBizBox = () =>
+    requestAnimationFrame(() => document.getElementById(`${ids}-form`)?.querySelector('[aria-label="사업자 번호 인증"]')?.scrollIntoView({ block: "center" }));
 
   /** api 가 거절한 이유를 칸마다 나눠 붙이고(검증 실패는 문장이 여럿), 칸을 못 찾은 문장은 위 띠로 */
   const applyServerError = (failure: ActionFailure) => {
@@ -192,7 +196,15 @@ export function StoreFormView(props: Props) {
     if (rest.length) setFailure({ title: rest.join(" "), detail: KEPT });
     if (Object.keys(fields).length) {
       setErrors((e) => ({ ...e, ...fields }));
-      focusFirstError();
+      // 저장 때 서버가 다시 한 국세청 확인에 실패했거나 그 사이 다른 BP · 점포가 같은 번호를 먼저 저장했다 — 인증 결과를 풀어 상자가
+      // 「인증 완료」로 잠긴 채 남지 않게 하고(번호 칸이 다시 열린다) 바로 다시 인증할 수 있게 한다
+      if (fields.bizVerify || (fields.bizNumber && !form.savedBizNumber)) {
+        verifyNumber.current++;
+        setForm((f) => ({ ...f, verified: null }));
+        if (form.savedBizNumber) setReopenSaved(true);
+      }
+      if (fields.bizVerify && Object.keys(fields).length === 1) scrollToBizBox();
+      else focusFirstError();
     }
   };
 
@@ -267,21 +279,21 @@ export function StoreFormView(props: Props) {
   };
 
   /** 진위확인 칸을 고치면 이번 화면의 인증 결과는 무효다 */
-  const setVerification = (key: "bizNumber" | "ceoName" | "openDate", value: string) => {
+  const setVerification = (key: BizVerifyField, value: string) => {
     verifyNumber.current++;
     setForm((f) => ({ ...f, [key]: value, verified: null }));
     clearError(key);
+    clearError("bizVerify");
   };
 
   const handleVerify = () => {
     const found = verificationErrors(form);
-    setErrors((e) => {
-      const rest = Object.fromEntries(Object.entries(e).filter(([k]) => !["bizNumber", "ceoName", "openDate"].includes(k)));
-      return { ...rest, ...found };
-    });
+    setErrors((e) => ({ ...withoutVerifyErrors(e), ...found }));
     if (Object.keys(found).length) return focusFirstError();
     const values = verificationValuesOf(form);
     const mine = ++verifyNumber.current;
+    // 10분은 api 가 요청을 받을 때부터다 — 응답을 받은 시각으로 세면 끝자락 저장이 api 에서 거절된다
+    const startedAt = Date.now();
     startVerifying(async () => {
       const result = await verifyStoreBusinessAction({
         bizRegistrationNumber: values.bizNumber,
@@ -291,26 +303,45 @@ export function StoreFormView(props: Props) {
       }).catch(unknownResult("사업자정보 인증"));
       // 기다리는 사이 진위확인 칸을 고쳤으면 이 응답은 옛 값의 것이다 — 버린다(저장도 지금 칸 값과 같을 때만 인증으로 본다)
       if (mine !== verifyNumber.current) return;
-      if (!result.ok) return setErrors((e) => ({ ...e, bizNumber: result.message }));
-      if (result.result === "DUPLICATE") return setErrors((e) => ({ ...e, bizNumber: VERIFY_MESSAGE.DUPLICATE }));
-      if (result.result === "UNVERIFIABLE") return setErrors((e) => ({ ...e, ceoName: VERIFY_MESSAGE.UNVERIFIABLE }));
-      setForm((f) => ({ ...f, verified: values }));
+      // 문구 · 자리는 네 화면 공통(S-VRNTHD) — 중복은 번호 칸 아래, 나머지는 인증하기 버튼 바로 위 한 줄
+      if (!result.ok) {
+        // 로그인 만료 · 형식(400) · 권한(403) · 점포 없음(404)은 할 일을 알리는 api 문구라 그대로 보인다(회원가입의 400 과 같다)
+        const keepApiText = result.status === 400 || result.status === 401 || result.status === 403 || result.status === 404;
+        const failure = keepApiText ? { field: null, message: result.message } : bizVerifyFailure(result.status);
+        return setErrors((e) => ({ ...e, [failure.field ?? "bizVerify"]: failure.message }));
+      }
+      if (result.result === "DUPLICATE") return setErrors((e) => ({ ...e, bizNumber: BIZ_MESSAGE.DUPLICATE }));
+      if (result.result === "UNVERIFIABLE") return setErrors((e) => ({ ...e, bizVerify: BIZ_MESSAGE.MISMATCH }));
+      // 모르는 결과(api 버전 어긋남)를 「인증 완료」로 보지 않는다 — 회원가입의 토큰 없는 응답과 같다
+      if (result.result !== "VERIFIED") {
+        console.error("점포 사업자정보 인증 — 알 수 없는 결과", result.result);
+        return setErrors((e) => ({ ...e, bizVerify: BIZ_MESSAGE.FAILED }));
+      }
+      setForm((f) => ({ ...f, verified: { ...values, verifiedAt: startedAt } }));
     });
   };
 
-  /** 저장 전 인증완료 상태의 "재인증" — 값은 그대로 두고 칸을 다시 연다(signup 의 재인증과 같다) */
-  const handleReverifyPending = () => {
+  /** 인증 완료 상태의 "재인증" — 값은 그대로 두고 칸을 다시 연다(저장한 점포는 대표자명만). 인증하기로 다시 확인하면 다시 잠긴다 */
+  const handleReverify = () => {
     verifyNumber.current++;
     setForm((f) => ({ ...f, verified: null }));
+    if (form.savedBizNumber) setReopenSaved(true);
+    setErrors(withoutVerifyErrors);
   };
 
-  /** 저장 전 칸을 비운다 — 인증 전(showBizClear 의 "지우기")과 인증완료 뒤("사용안함") 둘 다 같은 동작이다
-      (signup 의 지우기와 같다). 인증 전엔 "아직 확정된 게 없어 지운다"는 뜻이고 인증 뒤엔 "받아 둔 인증을
-      안 쓰기로 한다"는 뜻이라 문구만 가른다. */
+  /** 저장된 사업자정보의 "재인증 취소" — 대표자명을 저장된 값으로 되돌리고 인증 완료(잠금)로 돌아간다 */
+  const handleRevertSaved = () => {
+    verifyNumber.current++;
+    setForm((f) => ({ ...f, ceoName: f.savedCeoName, verified: null }));
+    setReopenSaved(false);
+    setErrors(withoutVerifyErrors);
+  };
+
+  /** 저장 전 칸을 비운다 — 인증 전이든 인증 완료 뒤든 같은 "지우기"다(세 값과 인증 결과를 비운다) */
   const handleClearPending = () => {
     verifyNumber.current++;
     setForm((f) => ({ ...f, bizNumber: "", ceoName: "", openDate: "", verified: null }));
-    setErrors((e) => Object.fromEntries(Object.entries(e).filter(([k]) => !["bizNumber", "ceoName", "openDate"].includes(k))) as StoreFormErrors);
+    setErrors(withoutVerifyErrors);
   };
 
   /** 대표 이미지 파일을 골랐다 — 형식 · 크기를 먼저 보고 미리보기만 바꾼다. 올리기는 저장할 때 */
@@ -436,7 +467,15 @@ export function StoreFormView(props: Props) {
   const handleSave = () => {
     const found = validateStoreForm(form, mode, requirementLabels);
     setErrors(found);
+    // 인증 10분이 지났으면 인증을 풀어 둔다 — 값은 그대로 두고 상자가 「미인증」 · [인증하기]로 돌아가 바로 다시 인증할 수 있다
+    if (found.bizVerify === BIZ_MESSAGE.EXPIRED) {
+      verifyNumber.current++;
+      setForm((f) => ({ ...f, verified: null }));
+      if (form.savedBizNumber) setReopenSaved(true);
+    }
     setFailure(null);
+    // 막은 이유가 인증 상자의 한 줄뿐이면 커서를 옮길 칸이 없다 — 상자를 보이게 끌어온다
+    if (found.bizVerify && Object.keys(found).length === 1) return scrollToBizBox();
     if (Object.keys(found).length) return focusFirstError();
     // 폐점은 되돌릴 수 없어 한 번 더 묻는다. 조건은 저장(PUT)을 받은 api 가 다시 본다(화면은 고를 때 한 번 확인했다)
     if (store && form.storeStatus === "CLOSED" && store.storeStatusCode !== "CLOSED") return setDialog("close-confirm");
@@ -461,32 +500,24 @@ export function StoreFormView(props: Props) {
                 이미지를 선택한 후 ‘저장’을 눌러야 반영됩니다.
               </>
             );
-  const verified = isBusinessVerified(form);
-  // 저장 전(새 점포, savedBizNumber 없음)에 이번 화면에서 막 인증받은 상태 — signup 화면의 인증완료 잠금과 같다.
-  // 저장 뒤(savedBizNumber 있음)는 사업자등록번호 · 개업일자가 naming.md 의 "저장 후 변경 불가" 규칙으로 이미
-  // 영구히 잠겨 있고 재인증만 가능해, 아래 "사용안함"은 이 저장 전 상태에만 둔다(2026-10-16 디자인 반영).
-  const verifiedPending = Boolean(form.verified) && !form.savedBizNumber;
-  // 저장 전, 아직 인증하지 않은 상태에서도 signup 화면처럼 한 글자라도 쳤으면(또는 인증 실패로 오류만 떠
-  // 있으면) "지우기"로 비울 수 있다 — 저장 뒤(savedBizNumber)는 번호·개업일자가 영구히 잠겨 지울 게 없다
-  // (2026-10-16 디자인 점검).
-  const showBizClear =
-    !form.savedBizNumber &&
-    !verifiedPending &&
-    Boolean(form.bizNumber || form.ceoName || form.openDate || errors.bizNumber || errors.ceoName || errors.openDate);
-  // 비어서 생긴 오류는 회원가입(biz-auth-section.tsx)처럼 한 줄로 묶는다 — 번호·개업일자 형식 오류처럼 칸이
-  // 채워진 뒤의 오류는 그대로 칸마다 보인다(2026-10-16 피드백). 칸별로 "비어서 생긴 오류"인지 가려야
-  // 형식 오류가 묶음 문구에 가려지지 않는다(2026-10-16 코드리뷰로 고침 — 전에는 하나라도 비었으면
-  // 다른 칸의 형식 오류까지 통째로 숨고, aria-describedby 도 엉뚱한 칸까지 묶음 id 를 가리켰다).
-  const bizNumberMissing = !form.savedBizNumber && !form.bizNumber.trim() && Boolean(errors.bizNumber);
-  const ceoNameMissing = !form.ceoName.trim() && Boolean(errors.ceoName);
-  const openDateMissing = !form.savedBizNumber && !form.openDate && Boolean(errors.openDate);
-  const missingVerifyFields = [
-    bizNumberMissing && "사업자등록번호",
-    ceoNameMissing && "대표자명",
-    openDateMissing && "개업일자",
-  ].filter((v): v is string => Boolean(v));
-  const verifyErrorId = `${ids}-verify-error`;
-  const verifyDescribedBy = (key: "bizNumber" | "ceoName", missing: boolean) => (missing ? verifyErrorId : describe(key));
+  // 인증 상자 상태(S-VRNTHD — 인증하면 잠그고 재인증으로 연다, 2026-10-22 사용자 확정). 이번 화면에서 지금 칸 값으로
+  // 받은 인증(pending)이거나, 저장된 사업자정보를 아직 재인증하려고 열지 않았으면(savedLocked) 인증 완료로 잠근다.
+  // 저장 뒤의 사업자등록번호 · 개업일자는 naming.md 의 "저장 후 변경 불가" 규칙으로 늘 잠겨 있다.
+  const pending = currentVerification(form);
+  const savedLocked = Boolean(form.savedBizNumber) && !reopenSaved && !pending;
+  const verified = Boolean(pending) || savedLocked;
+  const savedVerifiedAt = props.mode === "edit" ? formatDate(props.store.business?.verifiedAt) : "";
+  // 인증일은 저장할 때 api 가 기록한다(store-management.service profileFields) — 저장 전 막 받은 인증은 날짜 없이 「인증 완료」만,
+  // 저장된 인증은 그 인증일을 보인다. 인증만 하고 지우거나 저장하지 않으면 인증일은 그대로다(2026-10-22 사용자 확인)
+  const verifiedDate = savedLocked ? savedVerifiedAt : "";
+  // 비어서 생긴 오류만 「·」 한 줄로 묶는다 — 채운 칸의 형식 오류는 그 칸 아래에 그대로 보인다
+  const verifyKeys: BizVerifyField[] = ["bizNumber", "ceoName", "openDate"];
+  // 번호는 숫자가 하나도 없으면(하이픈만 친 경우 포함) 빈 칸으로 본다 — verificationErrors 도 하이픈을 빼고 보아 「입력해 주세요」로 본다
+  const isEmpty = (key: BizVerifyField) => !(key === "bizNumber" ? bizDigits(form.bizNumber) : form[key].trim());
+  const missingVerify = verifyKeys.filter((key) => Boolean(errors[key]) && isEmpty(key) && !(form.savedBizNumber && key !== "ceoName"));
+  const verifyFieldErrors = Object.fromEntries(verifyKeys.filter((key) => !missingVerify.includes(key)).map((key) => [key, errors[key]]));
+  // 저장 전이면 한 글자라도 쳤거나 인증했을 때 지우기를 보인다 — 저장 뒤는 번호 · 개업일자가 잠겨 지울 게 없다
+  const showBizClear = !form.savedBizNumber && Boolean(form.bizNumber || form.ceoName || form.openDate || pending);
 
   return (
     <div id={`${ids}-form`} className="flex flex-col gap-[24px]">
@@ -711,98 +742,47 @@ export function StoreFormView(props: Props) {
 
         <FormGroup
           title={
-            <>
+            // 인증 상태는 상자 머리가 아니라 이 묶음 제목 옆에 둔다(2026-10-22 사용자 지정)
+            <span className="flex items-center gap-[10px]">
               사업자정보
-              <span className="ml-[10px] inline-flex align-middle">
-                <Badge tone={verified ? "on" : "off"}>{verified ? "인증 완료" : "미인증"}</Badge>
-              </span>
-            </>
+              <BizVerifiedStatus verified={verified} date={verifiedDate} />
+            </span>
           }
         >
-          {/* 순서는 사업자등록번호 인증 라인 → 상호명 → 대표자 연락처 → 업태 · 종목 → 사업자주소(2026-10-16 점검) */}
-          <Stack>
-            <FormRow>
-              <Field label="사업자등록번호">
-                <TextField
-                  value={form.savedBizNumber ? formatBizNumber(form.savedBizNumber) : form.bizNumber}
-                  onChange={(e) => setVerification("bizNumber", e.target.value.replace(/[^0-9-]/g, ""))}
-                  readOnly={Boolean(form.savedBizNumber) || verifiedPending}
-                  disabled={closedOrBlocked}
-                  // 회원가입(biz-auth-section.tsx)과 같은 placeholder로 맞췄다(2026-10-16 점검)
-                  placeholder="숫자 10자리"
-                  maxLength={12}
-                  aria-invalid={invalid("bizNumber")}
-                  aria-describedby={verifyDescribedBy("bizNumber", bizNumberMissing)}
-                />
-              </Field>
-              <Field label="대표자명">
-                <TextField
-                  value={form.ceoName}
-                  onChange={(e) => setVerification("ceoName", e.target.value)}
-                  readOnly={verifiedPending}
-                  disabled={closedOrBlocked}
-                  placeholder="대표자 이름"
-                  maxLength={50}
-                  aria-invalid={invalid("ceoName")}
-                  aria-describedby={verifyDescribedBy("ceoName", ceoNameMissing)}
-                />
-              </Field>
-              <Labeled label="개업일자">
-                {form.savedBizNumber || verifiedPending ? (
-                  <TextField value={form.openDate} readOnly aria-label="개업일자" />
-                ) : (
-                  <DateField value={form.openDate} onChange={(v) => setVerification("openDate", v)} disabled={closedOrBlocked} aria-label="개업일자" />
-                )}
-              </Labeled>
-              <div className="flex shrink-0 gap-[6px] self-end">
-                {verifiedPending ? (
-                  <>
-                    <Button variant="soft" onClick={handleReverifyPending} disabled={closedOrBlocked}>
-                      재인증
-                    </Button>
-                    <Button variant="soft" onClick={handleClearPending} disabled={closedOrBlocked}>
-                      사용안함
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button variant="soft" onClick={handleVerify} disabled={verifying || closedOrBlocked}>
-                      {form.savedBizNumber ? "재인증" : "인증하기"}
-                    </Button>
-                    {showBizClear ? (
-                      <Button variant="soft" onClick={handleClearPending} disabled={closedOrBlocked}>
-                        지우기
-                      </Button>
-                    ) : null}
-                  </>
-                )}
-              </div>
-            </FormRow>
-            {missingVerifyFields.length > 0 && (
-              <p id={verifyErrorId} role="alert" className="text-[13px] leading-[1.5] text-erp-off">
-                {missingVerifyFields.join("·")} 항목을 입력해 주세요.
-              </p>
-            )}
-            {!bizNumberMissing && message("bizNumber")}
-            {!ceoNameMissing && message("ceoName")}
-            {!openDateMissing && message("openDate")}
-            {/* 회원가입(biz-auth-section.tsx)처럼 성공은 화면이 인증완료 모양으로 바뀌는 것으로 보여 주고, 화면
-                낭독기에만 알린다 — 성공 문구를 눈에 보이게 따로 띄우지 않는다(2026-10-16 점검). */}
-            <span role="status" className="sr-only">
-              {verified ? "사업자정보 인증이 완료되었습니다." : ""}
-            </span>
-            <Note>
-              {form.savedBizNumber ? (
-                "대표자가 바뀌었을 때 새 이름으로 다시 확인합니다. 번호와 개업일자는 바꿀 수 없고, 재인증에 실패해도 기존 사업자정보는 그대로입니다."
-              ) : (
-                <>
-                  사업자등록번호·대표자명·개업일자가 국세청에 등록된 정보와 일치하는지 확인합니다.
-                  <br />
-                  점포 등록 시 사업자 인증은 선택사항이나, 점포상태를 ‘운영’으로 변경하려면 반드시 인증을 완료해야 합니다.
-                </>
-              )}
-            </Note>
-          </Stack>
+          {/* 순서는 사업자등록번호 인증 상자 → 상호명 → 대표자 연락처 → 업태 · 종목 → 사업자주소(2026-10-16 점검).
+              인증 상자는 네 화면 공통(BizVerificationBox, S-VRNTHD) — 점포만 다른 것은 저장 뒤 재인증에서 대표자명만 연다는 것 */}
+          <BizVerificationBox
+            layout="row"
+            showHeader={false}
+            values={{ bizNumber: form.bizNumber, ceoName: form.ceoName, openDate: form.openDate }}
+            onChange={setVerification}
+            locked={{ bizNumber: Boolean(form.savedBizNumber || pending), ceoName: verified, openDate: Boolean(form.savedBizNumber || pending) }}
+            lockedDisplay={form.savedBizNumber ? { bizNumber: formatBizNumber(form.savedBizNumber) } : {}}
+            verified={verified}
+            verifiedDate={verifiedDate}
+            verifying={verifying}
+            disabled={closedOrBlocked}
+            fieldErrors={verifyFieldErrors}
+            missing={missingVerify}
+            boxError={errors.bizVerify}
+            onVerify={verified ? handleReverify : handleVerify}
+            onClear={handleClearPending}
+            showClear={showBizClear}
+            // 재인증하려고 열었거나 새 대표자명으로 인증만 해 둔 상태에서 저장된 값으로 돌아가는 버튼(2026-10-22 사용자 지정)
+            onRevert={form.savedBizNumber && !savedLocked ? handleRevertSaved : undefined}
+            // 저장한 점포는 안내를 이 두 줄만 둔다(2026-10-22 사용자 지정) — 공통 안내 한 줄은 빼고 바꾼다
+            {...(form.savedBizNumber
+              ? {
+                  guide: (
+                    <>
+                      대표자 변경 시 새 대표자명으로 재인증해야 합니다.
+                      <br />
+                      사업자등록번호와 개업일자는 수정할 수 없으며, 인증 실패 시 기존 정보가 유지됩니다.
+                    </>
+                  ),
+                }
+              : { note: "점포 등록 시 사업자 인증은 선택사항이나, 점포상태를 ‘운영’으로 변경하려면 반드시 인증을 완료해야 합니다." })}
+          />
           <FormRow>
             <Stack grow>
               <Field label="상호명">
