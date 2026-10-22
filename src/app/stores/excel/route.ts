@@ -1,6 +1,6 @@
 import { errorMessageOf } from "@/lib/download";
 import { getStoresExcel } from "@/lib/stores";
-import { parseStoresQuery } from "../stores-query";
+import { parseStoresQuery, scopeTypeMismatch, storeListQueryOf, withDefaultStatuses } from "../stores-query";
 
 // 점포 목록 엑셀 내려받기 중계. 브라우저는 api 토큰을 모르므로 이 경로가 서버에서 토큰을 붙여 GET /stores/excel 을 부르고,
 // 파일은 그대로 흘려보낸다(Content-Length 를 넘겨 화면이 받은 비율을 그린다). 조건은 목록 주소와 같은 쿼리를 읽는다.
@@ -9,7 +9,10 @@ import { parseStoresQuery } from "../stores-query";
 const FAILED = "엑셀 파일을 만들지 못했습니다. 잠시 후 다시 시도해 주세요.";
 
 export async function GET(request: Request) {
-  const query = parseStoresQuery(Object.fromEntries(new URL(request.url).searchParams));
+  // 화면이 점포상태를 늘 적어 보낸다(storesExcelHref). 없으면 기본값(폐점 제외)이다
+  const parsed = withDefaultStatuses(parseStoresQuery(Object.fromEntries(new URL(request.url).searchParams)), false);
+  if (scopeTypeMismatch(parsed)) return Response.json({ message: "상단 범위와 고른 점포유형이 겹치지 않습니다" }, { status: 400 });
+  const query = storeListQueryOf(parsed);
   if (!query.statuses.length || !query.storeTypes.length) {
     return Response.json({ message: "점포상태 · 점포유형을 하나 이상 골라 주세요" }, { status: 400 });
   }

@@ -3,7 +3,8 @@
 //   login-info: 계정·메뉴 / login-bp-info: 자기 BP 의 점포·공통코드(탭에 자기 BP 값이 없을 때 — 새 탭, /bp-switch 로 자기 BP 에 돌아올 때 — 만 읽는다) / selected-bp: 플랫폼 계정이 마지막으로 고른 BP
 // sessionStorage — 탭마다 다르다. 화면은 이것만 읽는다.
 //   current-bp: 이 탭의 서비스(WHALE_ERP·PLATFORM)와 BP / stores·codes·scope: 그 BP 의 값. bpCodeId 가 이 탭의 BP 와 다르면 버린다.
-//   store-picks: 사용자가 목록에서 고른 점포(빈 목록 포함)와 그 목록 메뉴 url — 그 메뉴 안을 오가는 동안 헤더 범위 대신 이것을 쓴다(store-scope.ts).
+//   store-picks: 2026-10-21 에 없앴다(목록에서 고른 점포는 주소의 storeIds). 앞서 쓰던 값을 지우려고 키만 남긴다(TAB_KEYS).
+//   bp-fix: BP · 가맹 계정이 남의 BP 주소로 와서 소속 BP 로 고쳐 보낸 표시(들어온 주소). 같은 주소로 다시 오면 쿠키와 로그인 정보가 어긋난 것이다.
 //   서비스와 BP 는 짝이 맞아야 해서(플랫폼 서비스 = 플랫폼 BP, ERP 서비스 = 고객 BP) 한 키에 함께 둔다.
 // next/* 를 import 하지 않는다 — node --test 로 resolveTab 을 바로 돌리기 위해서다.
 import type { AdminMenu, AdminStore, Codes, LoginInfoAccount } from "./session";
@@ -51,9 +52,11 @@ const KEY = {
   stores: `${PREFIX}stores`,
   codes: `${PREFIX}codes`,
   scope: `${PREFIX}scope`,
+  /** 지금은 쓰지 않는다 — 목록에서 고른 점포는 주소(storeIds)에 둔다(2026-10-21). 로그아웃하거나 앞 로그인의 탭 값을 버릴 때 함께 지우려고 키만 둔다 */
   storePicks: `${PREFIX}store-picks`,
+  bpFix: `${PREFIX}bp-fix`,
 } as const;
-const TAB_KEYS = [KEY.currentBp, KEY.stores, KEY.codes, KEY.scope, KEY.storePicks];
+const TAB_KEYS = [KEY.currentBp, KEY.stores, KEY.codes, KEY.scope, KEY.storePicks, KEY.bpFix];
 // 앞 버전의 키 — 읽지는 않지만 로그인 정보(아이디 · 이름 · 이메일 · 메뉴 권한 · 점포)가 들어 있어 로그아웃할 때 함께 지운다(공용 PC).
 const LEGACY_PREFIXES = ["whale-erp:v1:"];
 const LEGACY_KEYS = LEGACY_PREFIXES.flatMap((p) => Object.values(KEY).map((k) => p + k.slice(PREFIX.length)));
@@ -109,23 +112,17 @@ export const readCodes = (bpCodeId: number) => ofBp(read<{ bpCodeId: number; cod
 export const writeCodes = (bpCodeId: number, codes: Codes) => write(tab, KEY.codes, { bpCodeId, codes });
 export const readScope = (bpCodeId: number) => ofBp(read<{ bpCodeId: number; scope: Scope }>(tab, KEY.scope), bpCodeId)?.scope ?? null;
 export const writeScope = (bpCodeId: number, scope: Scope) => write(tab, KEY.scope, { bpCodeId, scope });
-/** 사용자가 목록에서 고른 점포. 칩을 그리려고 이름 · 점포코드도 둔다 */
-export interface StorePicks {
-  url: string;
-  stores: { storeId: number; name: string; storeCode: string }[];
+// bp-fix: BP · 가맹 계정이 남의 BP 주소로 와 소속 BP 로 고쳐 보낸 주소(SessionGate fixBpPath). 같은 주소로 다시 오면 쿠키와 로그인 정보가 어긋난 것이다.
+export const markBpFix = (pathname: string) => write(tab, KEY.bpFix, pathname);
+/** 이 주소를 고쳐 보낸 적이 있는가 — 있으면 표시를 지우고 true. */
+export function takeBpFix(pathname: string): boolean {
+  const seen = read<string>(tab, KEY.bpFix) === pathname;
+  if (seen) remove(tab, [KEY.bpFix]);
+  return seen;
 }
-/**
- * 화면은 이것을 직접 부르지 않고 useStorePicks(session-gate.tsx)를 쓴다. 다른 BP 의 값(같은 탭에서 BP 를 바꾼 때)이나
- * 모양이 깨진 값은 null 로 버린다 — 헤더 링크 · 목록 필터가 stores 를 바로 읽는다.
- */
-export function readStorePicks(bpCodeId: number): StorePicks | null {
-  const v = ofBp(read<{ bpCodeId: number } & StorePicks>(tab, KEY.storePicks), bpCodeId);
-  if (!v || typeof v.url !== "string" || !Array.isArray(v.stores)) return null;
-  return { url: v.url, stores: v.stores.filter((s) => typeof s?.storeId === "number") };
-}
-/** null 이면 지운다 */
-export const writeStorePicks = (bpCodeId: number, picks: StorePicks | null) =>
-  picks ? write(tab, KEY.storePicks, { bpCodeId, ...picks }) : remove(tab, [KEY.storePicks]);
+export const clearBpFix = () => remove(tab, [KEY.bpFix]);
+/** 이 탭의 값(TAB_KEYS — BP · 점포 · 공통코드 · 범위 · 옛 store-picks · bp-fix)을 모두 지운다. 다음 준비가 주소로 다시 정한다(열 수 없는 BP 에서 플랫폼으로 돌아갈 때). */
+export const clearTabBp = () => remove(tab, TAB_KEYS);
 
 /** 로그인 화면에서 부른다. 이 탭과 공용 저장소의 로그인 정보를 지운다(아이디 저장 whale-erp:saved-login-id 는 남긴다). 앞 버전 키도 지운다. */
 export function clearLoginStorage() {

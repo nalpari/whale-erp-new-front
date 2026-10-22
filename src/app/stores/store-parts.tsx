@@ -4,6 +4,7 @@ import { Badge, Tag } from "@/components/common";
 import { formatPhone } from "@/lib/format";
 import type { StoreStatus, StoreSummary, StoreType } from "@/lib/store-types";
 import { CodeLabel } from "@/components/site/code-label";
+import { imageKeyOf } from "@/lib/store-image";
 import { StoreImagePicture } from "./store-image-picture";
 
 // 점포 화면들이 같이 쓰는 작은 조각. 공통 컴포넌트에 없는 것만 둔다 — 데모 docs/demo/src/extra.mjs 의 임시 부품(카드 ·
@@ -95,7 +96,7 @@ export function StoreImage({ size, onMuted = false, url, name }: { size: 48 | 72
     </span>
   );
   if (!url) return icon;
-  return <StoreImagePicture key={url} url={url} alt={name ? `${name} 대표 이미지` : "대표 이미지"} sizeClass={sizeClass} fallback={icon} />;
+  return <StoreImagePicture key={imageKeyOf(url)} url={url} alt={name ? `${name} 대표 이미지` : "대표 이미지"} sizeClass={sizeClass} fallback={icon} />;
 }
 
 /**
