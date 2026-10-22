@@ -6,6 +6,7 @@ import { formatDate, formatDateTime } from "@/lib/format";
 import { formOf, serverErrorField, toUpdateInput, validateCurrentPassword, validateMyProfileForm, type MyProfileForm, type MyProfileFormField } from "@/lib/my-profile-form";
 import type { MyProfile } from "@/lib/my-profile";
 import { checkMyEmailAvailableAction, getMyProfileAction, updateMyProfileAction, type ActionResult } from "./my-page-actions";
+import { BpProfileTab, type BpProfileTabHandle } from "./bp-profile-tab";
 import { useCodeLabel } from "./code-label";
 import { usePatchAccount } from "./session-gate";
 
@@ -25,6 +26,34 @@ function FailedBand({ message }: { message: string }) {
   return (
     <div role="alert" className="rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] leading-[1.6] text-erp-off">
       {message}
+    </div>
+  );
+}
+
+/** 「기본정보」 · 「사업자정보」 전환 — BP 마스터에게만 보인다(mockup data-show-role="bpm"). 둘뿐이라 ServiceTabs 의
+ * 가로 스크롤 · 화살표 없이 밑줄만 쓴다(service-tabs.tsx 의 탭 하나 모양과 같다, 2026-10-22). */
+function TabBar({ tab, onChange }: { tab: "basic" | "biz"; onChange: (next: "basic" | "biz") => void }) {
+  const items = [
+    { key: "basic" as const, label: "기본정보" },
+    { key: "biz" as const, label: "사업자정보" },
+  ];
+  return (
+    <div role="tablist" aria-label="내 정보" className="flex h-[42px] gap-[18px] border-b border-erp-thead-line">
+      {items.map((it) => {
+        const on = tab === it.key;
+        return (
+          <button
+            key={it.key}
+            type="button"
+            role="tab"
+            aria-selected={on}
+            onClick={() => onChange(it.key)}
+            className={`h-[42px] border-b-2 text-[14px] font-medium transition-colors duration-150 ease-out ${on ? "border-erp-brand text-erp-ink" : "border-transparent text-erp-label hover:text-erp-ink"}`}
+          >
+            {it.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -62,6 +91,12 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
   const [currentPassword, setCurrentPassword] = useState("");
   const [saving, startSaving] = useTransition();
   const checkNumber = useRef(0);
+  /** 「기본정보」 · 「사업자정보」 — BP 마스터가 아니면 탭 자체가 없어 늘 기본정보다. */
+  const [tab, setTab] = useState<"basic" | "biz">("basic");
+  /** 사업자정보 탭의 저장은 ref 로 부르고, 저장 중 여부는 이 상태로 받는다 — 「저장」·「닫기」를 기본정보 탭과
+   * 같은 자리(패널 맨 아래)에 두기 위해서다(사용자 디자인 피드백, 2026-10-22). */
+  const bpTab = useRef<BpProfileTabHandle>(null);
+  const [bizSaving, setBizSaving] = useState(false);
 
   // 열 때마다 새로 받는다 — 다른 기기에서 먼저 고쳤을 수 있다. 칸 비우기는 렌더 중에 해도 안전하지만(admin-form-panel.tsx
   // 와 같은 패턴), 실제 네트워크 호출(서버 액션)은 렌더 바깥에서 해야 한다 — 렌더 중에 부르면 "Cannot update a component
@@ -79,6 +114,7 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
       setEmailChecking(false); // 지난 세션에서 확인 중이던 흔적이 남아 "확인하는 중입니다" 가 계속 보이지 않게 한다
       setEmailCheckSkipped(false);
       setCurrentPassword("");
+      setTab("basic");
     }
   }
 
@@ -210,34 +246,41 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
     <SlidePanel id={id} open={open} onClose={onClose} label="내 정보" trigger={trigger} closeOnBackdrop>
       <h2 className="text-[18px] font-semibold text-erp-ink">내 정보</h2>
       {loadFailure && <FailedBand message={loadFailure} />}
-      {failure && <FailedBand message={failure} />}
+      {tab === "basic" && failure && <FailedBand message={failure} />}
       {!profile || !form ? (
         !loadFailure && <p className="text-erp-muted">불러오는 중입니다.</p>
       ) : (
         <>
-          {/* 점포정보 관리 상세화면(DetailTable)의 제목 줄과 같은 회색 바 — FormGroup 의 기본 제목(배경 없음)
-              대신 쓴다(사용자 디자인 피드백, 2026-10-21). 본문 카드는 FormGroup 과 같은 토큰으로 직접 짠다.
-              아이콘을 넣어 봤지만 24px 로는 너무 작아 뺐다(사용자 지정, 2026-10-21).
-              글자 크기 · 굵기는 DetailTable 이 아니라 바로 아래 「기본정보」(FormGroup) 제목과 맞춘다 — 같은 패널
-              안에서 두 제목이 달라 보인다는 피드백, 2026-10-21. 회색 바탕 · 테두리만 DetailTable 에서 가져온다. */}
-          <div className="w-full">
-            <h3 className="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">계정 정보</h3>
-            <div className="flex flex-col gap-[18px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white px-[16px] py-[20px]">
-              <FormRow>
-                <ReadonlyField label="아이디" value={profile.loginId} bold />
-                <ReadonlyField label="사용자 권한" value={roleTypeLabel(profile.roleTypeCode)} bold />
-              </FormRow>
-              <hr className="border-erp-divider" />
-              <FormRow>
-                <ReadonlyField label="최근 로그인" value={profile.lastLoginAt ? formatDateTime(profile.lastLoginAt) : "로그인 기록 없음"} bold />
-                <ReadonlyField label="가입일" value={formatDate(profile.createdAt)} bold />
-              </FormRow>
-            </div>
-          </div>
+          {/* 사업자정보 탭은 BP 마스터에게만 보인다(manyfast S-UOJVUR) — 그 밖의 권한은 탭 바 자체가 없다. */}
+          {profile.roleTypeCode === "BM" && <TabBar tab={tab} onChange={setTab} />}
 
-          <FormGroup title="기본정보">
-            <div className="flex flex-col gap-[8px]">
-              <Field label="이름" required>
+          {tab === "biz" ? (
+            <BpProfileTab ref={bpTab} onSavingChange={setBizSaving} basicPhone={profile.phone} basicEmail={profile.email} />
+          ) : (
+            <>
+              {/* 점포정보 관리 상세화면(DetailTable)의 제목 줄과 같은 회색 바 — FormGroup 의 기본 제목(배경 없음)
+                  대신 쓴다(사용자 디자인 피드백, 2026-10-21). 본문 카드는 FormGroup 과 같은 토큰으로 직접 짠다.
+                  아이콘을 넣어 봤지만 24px 로는 너무 작아 뺐다(사용자 지정, 2026-10-21).
+                  글자 크기 · 굵기는 DetailTable 이 아니라 바로 아래 「기본정보」(FormGroup) 제목과 맞춘다 — 같은 패널
+                  안에서 두 제목이 달라 보인다는 피드백, 2026-10-21. 회색 바탕 · 테두리만 DetailTable 에서 가져온다. */}
+              <div className="w-full">
+                <h3 className="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">계정 정보</h3>
+                <div className="flex flex-col gap-[18px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white px-[16px] py-[20px]">
+                  <FormRow>
+                    <ReadonlyField label="아이디" value={profile.loginId} bold />
+                    <ReadonlyField label="사용자 권한" value={roleTypeLabel(profile.roleTypeCode)} bold />
+                  </FormRow>
+                  <hr className="border-erp-divider" />
+                  <FormRow>
+                    <ReadonlyField label="최근 로그인" value={profile.lastLoginAt ? formatDateTime(profile.lastLoginAt) : "로그인 기록 없음"} bold />
+                    <ReadonlyField label="가입일" value={formatDate(profile.createdAt)} bold />
+                  </FormRow>
+                </div>
+              </div>
+
+              <FormGroup title="기본정보">
+                <div className="flex flex-col gap-[8px]">
+                  <Field label="이름" required>
                 <TextField
                   value={form.name}
                   onChange={(e) => set("name", e.target.value)}
@@ -323,15 +366,23 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
                 {message("currentPassword")}
               </div>
             )}
-          </FormGroup>
+              </FormGroup>
+            </>
+          )}
 
           <div className="flex justify-center gap-[6px]">
-            <Button variant="off" onClick={onClose} disabled={saving}>
+            <Button variant="off" onClick={onClose} disabled={saving || bizSaving}>
               닫기
             </Button>
-            <Button onClick={handleSave} disabled={saving || !emailPassed}>
-              저장
-            </Button>
+            {tab === "basic" ? (
+              <Button onClick={handleSave} disabled={saving || !emailPassed}>
+                저장
+              </Button>
+            ) : (
+              <Button onClick={() => bpTab.current?.save()} disabled={bizSaving}>
+                저장
+              </Button>
+            )}
           </div>
         </>
       )}

@@ -124,28 +124,48 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
       save,
     );
 
-  const biz = ui.formGroup(
-    f.titleBadge("사업자정보", "on", "인증 완료"),
-    f.bizAuth(A, `${idPrefix}-done`, { start: "done", values: ["211-87-01234", "남도현", "2021-03-15"], doneBadge: "인증 완료 · 2026-03-04" }),
-    ui.field(f.req("상호명"), ui.textField({ value: "㈜한강상회", maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })),
-    f.group("대표자 연락처", f.tel("010", "5530", "1182")),
-    ui.field("대표자 이메일", ui.textField({ type: "email", value: "ceo@hangang.co.kr", maxlength: 100 })),
-    f.address(A, "사업장 주소", { zip: "04007", base: "서울 마포구 망원로 42", detail: "3층" }),
-    ui.formRow(ui.field("업태", ui.textField({ value: "도소매업", maxlength: 50 })), ui.field("종목", ui.textField({ value: "식자재 유통", maxlength: 50 }))),
-    save,
-  );
+  // 사업자 번호 인증 칸은 접지 않는다 — 늘 펼쳐 있다(2026-10-22 사용자 지정). 순서는 상호명 → 사업자 번호
+  // 인증 → 대표자 연락처 · 이메일(기본정보와 동일 체크박스) → 사업장 주소 → 업태 · 종목.
+  //
+  // 인증은 검사만 하고, 저장(아래 「저장」 버튼)을 눌러야 반영된다(점포 사업자정보와 같은 두 단계, 2026-10-22
+  // 사용자 결정 — 「인증하자마자 바로 저장」하던 첫 버전을 고침). 인증이 끝나 있으면(locked) 세 칸이 읽기
+  // 전용으로 잠기고 [재인증][사용안함]만 보인다 — 「재인증」을 누르면 값은 그대로 둔 채 세 칸이 한꺼번에
+  // 열리고, 「인증하기」로 다시 검사해야 다시 잠긴다(signup biz-auth-section.tsx 의 토글과 같은 모양, BP는
+  // 점포와 달리 번호·개업일자도 재인증 때 함께 바뀔 수 있어 세 칸이 같이 열고 닫힌다). 「지우기」/「사용안함」은
+  // 서버를 부르지 않고 칸을 저장된 값으로 되돌릴 뿐이다.
+  const bizAuthRow = (num, ceo, open, locked) =>
+    ui.formRow(
+      ui.field("사업자등록번호", locked ? ui.textField({ value: num, readonly: true }) : ui.textField({ value: num, placeholder: "숫자 10자리", maxlength: 12 })),
+      ui.field("대표자명", locked ? ui.textField({ value: ceo, readonly: true }) : ui.textField({ value: ceo, placeholder: "대표자 이름", maxlength: 50 })),
+      locked ? ui.field("개업일자", ui.textField({ value: open, readonly: true })) : f.group("개업일자", ui.dateField(A, { label: "개업일자", value: open })),
+      `<div class="flex shrink-0 gap-[6px] self-end">${
+        locked ? ui.button("재인증", { variant: "soft" }) + ui.button("사용안함", { variant: "soft" }) : ui.button("인증하기", { variant: "soft" }) + ui.button("지우기", { variant: "soft" })
+      }</div>`,
+    ) + `<span class="text-[13px] text-erp-label">사업자정보가 국세청에 등록된 정보와 일치하는지 확인합니다.</span>`;
+  // sameAsBasic: 대표자 연락처 · 이메일 칸에 "기본정보와 동일" 체크박스 — 체크하면 기본정보(이름 탭) 값을 그대로 쓴다(2026-10-22 사용자 지정).
+  const ceoContact = (idp, checked) =>
+    `<div role="group" aria-label="대표자 연락처" class="flex min-w-px flex-1 flex-col gap-[8px]"><span class="flex items-center gap-[10px] text-[14px] font-medium text-erp-label"><span>대표자 연락처</span>${ui.checkbox(A, "기본정보와 동일", checked, { id: `${idp}-phone-same` })}</span>${f.tel(checked ? "010" : "010", "5530", "1182")}</div>` +
+    `<div role="group" aria-label="대표자 이메일" class="flex min-w-px flex-1 flex-col gap-[8px]"><span class="flex items-center gap-[10px] text-[14px] font-medium text-erp-label"><span>대표자 이메일</span>${ui.checkbox(A, "기본정보와 동일", checked, { id: `${idp}-email-same` })}</span>${ui.textField({ type: "email", value: "ceo@hangang.co.kr", maxlength: 100, disabled: checked })}</div>`;
+
+  // 기본정보 탭의 「계정 정보」와 같은 모양 — 타이틀을 회색 박스로 두르고 본문은 흰 박스로 아래에 잇는다
+  // (사용자 지정, 2026-10-22). 제목 줄에 인증 상태를 같이 둔다. 아래 상호명 묶음과는 다른 카드라 따로 둔다
+  // (사용자 지정, 2026-10-22).
+  const bizAuthBox = (locked, num, ceo, open, badge) =>
+    `<div class="w-full"><h3 class="flex h-[42px] items-center justify-between rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink"><span>사업자정보</span>${badge}</h3><div class="flex flex-col gap-[12px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white px-[16px] py-[20px]">${bizAuthRow(num, ceo, open, locked)}</div></div>`;
+  const bizRest = (idp) =>
+    `<section aria-label="상호명 등" class="flex flex-col gap-[18px] rounded-[2px] border border-erp-panel-line bg-white px-[16px] py-[20px]">` +
+    ui.field(f.req("상호명"), ui.textField({ value: "㈜한강상회", maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })) +
+    ceoContact(idp, false) +
+    f.address(A, "사업장 주소", { zip: "04007", base: "서울 마포구 망원로 42", detail: "3층" }) +
+    ui.formRow(ui.field("업태", ui.textField({ value: "도소매업", maxlength: 50 })), ui.field("종목", ui.textField({ value: "식자재 유통", maxlength: 50 }))) +
+    `</section>`;
+  const ON_BADGE = (date) => `<span class="text-[14px] font-medium text-erp-on">인증 완료 · ${date}</span>`;
+  const OFF_BADGE = `<span class="text-[14px] font-medium text-erp-off">미인증</span>`;
+
+  const biz = `<div class="flex flex-col gap-[18px]">${bizAuthBox(true, "211-87-01234", "남도현", "2021-03-15", ON_BADGE("2026-10-20"))}${bizRest(`${idPrefix}-done`)}</div>${save}`;
 
   // 가입 직후처럼 아직 사업자 인증을 받지 않은 초기 상태 — 인증완료 탭과 생김새를 견주어 보려고 따로 둔다(2026-10-07 피드백).
-  const bizNew = ui.formGroup(
-    f.titleBadge("사업자정보", "off", "미인증"),
-    f.bizAuth(A, `${idPrefix}-new`, { start: "open" }),
-    ui.field(f.req("상호명"), ui.textField({ value: "㈜한강상회", maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })),
-    f.group("대표자 연락처", f.tel("010", "5530", "1182")),
-    ui.field("대표자 이메일", ui.textField({ type: "email", value: "ceo@hangang.co.kr", maxlength: 100 })),
-    f.address(A, "사업장 주소", { zip: "04007", base: "서울 마포구 망원로 42", detail: "3층" }),
-    ui.formRow(ui.field("업태", ui.textField({ value: "도소매업", maxlength: 50 })), ui.field("종목", ui.textField({ value: "식자재 유통", maxlength: 50 }))),
-    save,
-  );
+  const bizNew = `<div class="flex flex-col gap-[18px]">${bizAuthBox(false, "", "", "", OFF_BADGE)}${bizRest(`${idPrefix}-new`)}</div>${save}`;
 
   return (
     x.tabs([
