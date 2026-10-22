@@ -44,6 +44,15 @@ test("동의 두 개는 각자 체크된 것만 true 다", () => {
   assert.equal(leadBodyOf(formOf(without("privacyAgreed"))).marketingAgreed, false);
 });
 
+test("문의 내용의 줄바꿈은 화면과 같이 1자(LF)로 보낸다 — 브라우저가 보낸 CRLF 를 되돌린다", () => {
+  const body = leadBodyOf(formOf(replaced("body", "첫 줄\r\n둘째 줄\r셋째 줄\n넷째 줄"))).body;
+  assert.equal(body, "첫 줄\n둘째 줄\n셋째 줄\n넷째 줄");
+  // 화면에서 2000자(줄바꿈 60개 포함)면 보내는 글도 2000자다.
+  const screen = `${"가".repeat(32)}\n`.repeat(60) + "가".repeat(20);
+  assert.equal(screen.length, 2000);
+  assert.equal(leadBodyOf(formOf(replaced("body", screen.replaceAll("\n", "\r\n")))).body.length, 2000);
+});
+
 test("업종 직접 입력은 업종이 기타(ETC)일 때만 싣는다", () => {
   assert.equal(leadBodyOf(formOf([...replaced("industryCode", "ETC"), ["industryDetail", " 꽃집 "]])).industryDetail, "꽃집");
   assert.equal("industryDetail" in leadBodyOf(formOf([...BASE, ["industryDetail", "꽃집"]])), false);

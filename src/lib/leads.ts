@@ -32,7 +32,9 @@ export function leadBodyOf(form: FormData): CreateLead {
     interests: form.getAll("interests").map(String) as CreateLead["interests"],
     // 고르지 않으면 null — 빈 문자열은 api 가 400 으로 거절한다.
     planPeriodCode: textOf(form, "planPeriodCode") || null,
-    body: textOf(form, "body"),
+    // 폼을 보내면 브라우저가 줄바꿈을 CRLF(2자)로 바꾼다. 화면(maxLength)은 1자로 세어, 줄을 많이 바꾼 2000자 가까운 글을
+    // api 가 길이 초과(영문 400)로 거절하므로 1자(LF)로 되돌린다(front #100 재영 참고, 2026-10-22 재현).
+    body: textOf(form, "body").replace(/\r\n?/g, "\n"),
     privacyAgreed: form.get("privacyAgreed") === "on",
     marketingAgreed: form.get("marketingAgreed") === "on",
   };
