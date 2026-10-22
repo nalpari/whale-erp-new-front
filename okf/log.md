@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-10-22
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — front #90 리뷰 반영: 직원 상세 TO-DO 영역을 TO-DO 관리 조회 권한으로 목록까지 막고(요약 경로의 403 으로 판단, 2026-10-22 노영주), 근로계약 · TO-DO 칸 머리의 「관리」를 그 메뉴 조회 권한이 없으면 흐리게 둔다(`manage-link.tsx`).
+
 ## 2026-10-21
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — api #113 응답 확정분 반영: 상세 응답 `hqSharingConsent` 로 가맹 점포 직원의 「본사 제공 동의」(동의 · 미동의) 줄을 더했다(직영은 줄 없음, 184 완료 조건 8). 근무스케줄 근무지는 늘 값이 와 「-」 처리를 뺐다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 184 코드 리뷰 반영: TO-DO 목록도 영역 규칙(`loadArea`)으로 받아 실패하면 다시 하기를 보이고 요약과 한 `Suspense` 로 묶었다. 영역 데이터 받기를 `summary-load.ts` 로 모았고, 주소 `weekStart` 를 1900~2999년으로 막았으며, 해를 넘는 급여 기간은 끝 날짜의 연도를 남긴다.

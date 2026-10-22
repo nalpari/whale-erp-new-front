@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 오른쪽에 근무스케줄 · 출퇴근 현황(준비 중) · 급여명세서 · TO-DO 영역을 상세 요약 api(#183)로 영역마다 따로 받아 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-21T19:30:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-22T09:00:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -70,6 +70,10 @@ sources:
     resource: ../../src/app/staff-members/[id]/summary-load.ts
     title: 상세 영역 데이터 받기 — loadArea(영역 실패 판정 · 로그) · loadLabels(enum 한글)
     last_modified: 2026-10-21T19:00:00Z
+  - id: manage-link
+    resource: ../../src/app/staff-members/[id]/manage-link.tsx
+    title: 상세 영역 머리의 「관리」 — 그 메뉴 조회 권한이 없으면 흐리게
+    last_modified: 2026-10-22T09:00:00Z
   - id: week-nav
     resource: ../../src/app/staff-members/[id]/week-nav.tsx
     title: 근무스케줄 영역 주 넘김(주소 weekStart)
@@ -121,7 +125,8 @@ sources:
 바깥 틀과 `ErpRoot` 를 씌운다. 목록 · 상세 page 는 `PageBar`(제목 줄)부터 그리고, `layout.tsx` 는 탭 제목만 둔다
 (WHALEERP-593, 2026-10-14). 주소는 메뉴 url 과 같아야 열린다 — 「직원 정보 관리」(MN000005) 메뉴 url 을 `/staff` 에서
 `/staff-members` 로 바꾸는 것은 1팀 일이고(#592 결정), 반영 전에는 메뉴 권한 확인에서 막힌다. 상세의 「관리」 링크는 같은
-결정의 메뉴 url 로 건다. 지금은 근로계약(그 계약 상세 `/contracts/{id}`, 계약이 없으면 `/contracts`) · TO-DO(`/todos`, MN000026)만 링크이고, 근무스케줄(`/work-schedules`) ·
+결정의 메뉴 url 로 건다. 지금은 근로계약(그 계약 상세 `/contracts/{id}`, 계약이 없으면 `/contracts`, MN000006) · TO-DO(`/todos`, MN000026)만 링크이고,
+그 메뉴 조회 권한이 없으면 흐린 「관리」로 둔다(`MenuManageLink`, `manage-link.tsx` — front #90 리뷰). 권한을 보지 않는 링크를 걸 길은 `Box` 에 두지 않았다. 근무스케줄(`/work-schedules`) ·
 출퇴근 현황(`/attendance-records`) · 급여명세서(`/payslips`)는 흐린 「관리」로 두었다 — 걸면 메뉴가
 없을 때 「접근 권한이 없는 메뉴」로 막혀 권한 문제처럼 보인다(front #26 리뷰). 각 관리 화면으로 가는 링크는 WHALEERP-186 몫이다.
 
@@ -181,12 +186,14 @@ sources:
 * **급여명세서**는 이번 달 · 최근 확정 명세서를 한 줄씩(같은 명세서면 「이번 달 · 최근 확정」 한 줄) 구분 · 급여 기간 · 지급 · 공제 · 실지급액 · 상태
   배지(`PayslipStatus` enum, 급여 목록과 같은 색 `STATUS_STYLE`)로 보이고 아래에 미발송 N건(발송 완료가 아닌 모두)이다. 두 줄도 미발송도 없으면
   「급여명세서가 없습니다.」. 데모는 최근 석 달 표지만 api 가 주는 것이 이 둘이다. 급여 기간은 같은 해면 끝 날짜의 연도를 줄인다(`payPeriodText`).
-* **TO-DO** 는 목록(`GET /staff-members/:id/todos`, #118 — 앞쪽 5건, 직원 정보 관리 조회만 본다)을 그대로 두고, 그 아래에 요약
+* **TO-DO** 는 목록(`GET /staff-members/:id/todos`, #118 — 앞쪽 5건)을 그대로 두고, 그 아래에 요약
   (`…/summary/todos`, TO-DO 관리 조회 권한)으로 「전체 N · 완료 n · 미완료 n」 줄과 「최근 처리 이력」 5건을 더했다. 이력은 api 순서(최신이 위)
   그대로이고, 문구는 등록(이전 상태 없음) · 긴급 표시 변경 · 「이전 → 이후」 상태(`TodoStatus` 한글), 바꾼 쪽은 `StatusChangeActor` 한글(관리자 · 직원 ·
-  시스템)이다 — 사람 이름은 오지 않는다(2026-10-21 노영주 A안). 목록도 다른 영역과 같은 규칙(`loadArea`)으로 받아 실패하면 목록 자리에 안내 · 다시 하기를 그린다. 목록은 보이고 요약만 막힐 수 있어, 요약을 못 받으면 요약 줄 자리에만 안내한다. 둘은 한 `Suspense` 로 묶어 칸 높이가 두 번 바뀌지 않게 했다.
-  배정이 없으면 목록의 빈 상태(「배정된 TO-DO 가 없습니다.」)가 말해 요약 줄을 그리지 않는다. 「관리」 · 제목 링크는 「TO-DO 리스트 관리」(MN000026)
-  조회 권한이 없으면 글자(「관리」는 흐리게)로 둔다(`todo-links.tsx`).
+  시스템)이다 — 사람 이름은 오지 않는다(2026-10-21 노영주 A안). **TO-DO 관리 조회 권한이 없으면 목록까지 영역 전체를 막는다**(2026-10-22 노영주, front #90 리뷰) — 목록 경로는 직원 정보 관리 조회만 보지만 다른 영역과
+  같은 규칙으로 맞췄다. 메뉴 권한은 서버가 모르므로 요약 경로의 403 「조회 권한이 없습니다.」로 판단하고, 그러면 목록을 그리지 않고 「TO-DO 를 볼 권한이
+  없습니다.」만 보인다(`TodoBox`). 그 밖에는 목록과 요약이 따로 실패한다 — 목록 자리 · 요약 줄 자리에 각각 안내 · 다시 하기. 한 `Suspense` 로 묶어 칸 높이가 두 번 바뀌지 않게 했다.
+  배정이 없으면 목록의 빈 상태(「배정된 TO-DO 가 없습니다.」)가 말해 요약 줄을 그리지 않는다. 제목 링크는 「TO-DO 리스트 관리」(MN000026)
+  조회 권한이 없으면 글자로 둔다(`todo-links.tsx`).
 
 # 근로계약 칸 (WHALEERP-184)
 
