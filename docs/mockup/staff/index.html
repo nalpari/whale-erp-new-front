@@ -77,7 +77,7 @@
           </div>
 
           <div id="sf">
-            <!-- 직원 목록 · 퇴직/재입사 (4.2.2) -->
+            <!-- 직원 목록 · 퇴직 (4.2.2). 재입사는 근로계약서 초안을 새로 써서 시작하고 새 레코드가 한 줄로 더해진다 — 목록은 묶거나 꼬리표를 붙이지 않는다(운영 정책 CTR-30, WHALEERP-615 C안) -->
             <div data-panel="list">
               <div class="filters">
                 <div class="inputwrap grow">
@@ -336,23 +336,8 @@
                     <div class="meter"><i style="width: 63%"></i></div>
                     <p class="note" style="margin-top: var(--s-2)">
                       <span data-icon="info" data-icon-size="14"></span>
-                      <span>퇴직으로 바뀐 직원은 카운트에서 빠진다. 퇴직 예정(퇴직일 전)은 재직으로 센다. 재입사하면 다시 들어온다.</span>
+                      <span>퇴직으로 바뀐 직원은 카운트에서 빠진다. 퇴직 예정(퇴직일 전)은 재직으로 센다. 재입사하면 새 레코드로 다시 센다.</span>
                     </p>
-                  </div>
-                </div>
-                <div class="card">
-                  <span class="eyebrow">재입사 대기</span>
-                  <div class="rows">
-                    <div class="row" style="padding: var(--s-2) 0; border: 0">
-                      <span class="avatar avatar--sm">임</span>
-                      <div class="rowmain__text"><b>임채운</b><span>07-31 퇴직 · 연남점</span></div>
-                      <button class="btn btn--secondary btn--sm row__end" type="button">재입사</button>
-                    </div>
-                    <div class="row" style="padding: var(--s-2) 0; border: 0">
-                      <span class="avatar avatar--sm">권</span>
-                      <div class="rowmain__text"><b>권나윤</b><span>06-14 퇴직 · 서초점</span></div>
-                      <button class="btn btn--secondary btn--sm row__end" type="button">재입사</button>
-                    </div>
                   </div>
                 </div>
               </div>
