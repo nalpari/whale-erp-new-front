@@ -3,6 +3,7 @@
 ## 2026-10-22
 * **Update**: [점포 관리](/stores.md) — 사업자정보 인증을 공통 인증 상자(S-VRNTHD)로 바꿨다. 인증 후 잠금 → [재인증]으로 해제, 저장한 점포는 대표자명만 열고 [재인증 취소]로 되돌린다, 비우는 버튼은 「지우기」 하나, 인증 10분 만료와 저장 때 국세청 재확인 실패는 인증을 풀고 버튼 위 한 줄로 알린다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 사업자정보 인증을 회원가입 · 점포 등록/수정이 같은 규칙 · 문구로 쓰게 했다(S-VRNTHD, 2026-10-22 사용자 확정). 공통 규칙 `lib/biz-verification-rules.ts` · 관리자 웹 상자 `components/site/biz-verification-box.tsx`. 하이픈 입력 허용, 인증 후 잠금 → 재인증으로 해제, 빈 칸 「·」 묶음, 「인증 완료 · 날짜」, 한도 초과는 일반 문구, 인증 10분 만료. MY PAGE 사업자정보 탭은 다른 작업(ekans)에서 같은 규칙으로 맞춘다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — TO-DO 목록(`/todos`)에 상단 점포 범위 연동을 붙였다(2026-10-22 재영). 근무지 선택을 점포 고르기(`StorePicker`, 주소 `storeIds`)로 바꾸고 헤더 범위(`scope`)를 따른다 — 점포 목록과 같은 네 가지 상태이고, api 에는 `storeIds` · `storeTypes` 로 보낸다. 상세 · 등록 · 수정은 `?back=` 으로 목록 주소를 받는다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 도입문의 문의 내용의 줄바꿈을 1자로 보낸다. 브라우저가 CRLF 로 바꿔 화면 1990자(줄바꿈 60)가 api 에서 2000자를 넘어 거절되던 것을 재현하고 고쳤다(front #100 재영 참고 1).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 도입문의 접수 실패 문구: api 400 문장 중 하나라도 영문이면 한글과 섞여 있어도 입력 확인 문구로 바꾼다(front #100 재영 참고 2).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 로그인 전 홈 리뷰 반영: 로그인한 채 `/` 에 오면 접근 토큰이 살아 있을 때만 자기 홈으로 보낸다(끝난 로그인은 로그인 전 홈을 그대로, `redirectsSignedIn` 시험 추가). 긴 소식 제목 전체 보기, 회사 링크의 「(새 창)」 안내, 주석 바로잡기.

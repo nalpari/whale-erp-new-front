@@ -47,7 +47,7 @@ export function TodoPagination({ query, totalPages }: { query: TodoListQuery; to
 }
 
 // 「TO-DO 등록」 — 등록 권한일 때만 보인다. 막는 것은 api 다.
-export function TodoCreateButton() {
+export function TodoCreateButton({ href }: { href: string }) {
   const canCreate = useMenuRole(MENU_CODE.todos, "create");
-  return canCreate ? <Button href="/todos/new">TO-DO 등록</Button> : null;
+  return canCreate ? <Button href={href}>TO-DO 등록</Button> : null;
 }
