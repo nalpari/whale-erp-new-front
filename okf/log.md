@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [BP 환경설정](/config.md) · [플랫폼 시스템관리](/system.md) — 공통코드 리뷰 반영: 수정은 저장되고 삭제가 실패해도 지울 행 표시와 실패 띠가 남는다(`withKeptPending` · `hasPending`). 삭제 실패로 보내지 않은 등록은 띠에 「새 행도 등록하지 않았습니다」로 알린다(`SaveResult.skipped`). `updatesSaved` 를 `anySaved` 로, 토스트 판단을 `savedToast` 로 바꿨다. okf 의 옛 저장 순서(`saveUpdateThenCreate`) · BP 다시 켜기 금지 · 사용중지 그룹 표시 설명을 바로잡았다.
 * **Update**: [BP 환경설정](/config.md) · [플랫폼 시스템관리](/system.md) · [Whale ERP Frontend](/whale-erp-front.md) — 상세 코드 삭제 정책을 고쳤다: 플랫폼 공통코드는 중복 검사에서 지운 코드를 빼고 지운 코드를 다시 등록하면 삭제를 풀어 되살린다(api 작업 중). BP 공통코드는 플랫폼제공 · BP전용 코드를 모두 지운다(`bpDeletable`). 저장 409 에서 표에 없는 코드와 겹치면 「이 그룹에서 사용할 수 없는 상세 코드입니다: CODE」로 보인다(`unusableCodeMessage`).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [BP 환경설정](/config.md) · [플랫폼 시스템관리](/system.md) — 공통코드 상세 코드 삭제를 넣었다(api `DELETE …/items { itemCodes }`). 플랫폼은 어느 코드든, BP 는 BP전용만 지운다. 행마다 [삭제]로 표시해 두고 [저장] 때 수정 → 삭제 → 등록 순서로 보낸다(`saveUpdateThenCreate` → `saveInOrder`). BP 는 플랫폼제공 코드의 사용 상태를 자유롭게 바꾼다 — 다시 켜기 잠금 · 안내 띠(`activationLocked`)를 지웠다. 지운 코드 재등록은 지금은 409 그대로다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 공통코드 관리에 BP 공통코드 관리와 같은 왼쪽 필터(그룹 코드 · 그룹명)를 더했다. 필터는 공용 `CodeGroupFilter`(code-editor)로 빼서 두 화면이 함께 쓰고, api `GET /code-groups` 의 `groupCode` · `groupName` 검색을 부른다. 검색 조건은 주소에 두고 그룹 · 쪽을 옮겨도 이어 간다. 검색어 다듬기(`searchTerm`)는 `code-drafts.ts` 로 옮겼다.

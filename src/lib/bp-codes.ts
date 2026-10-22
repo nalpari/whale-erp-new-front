@@ -1,6 +1,6 @@
 // BP 공통코드 데이터 접근(/bp-code-groups). api 는 whale-erp-api `/bp-code-groups` 다(메뉴 MN000014 · 메뉴 권한은 api 가 본다).
 // 대상 BP 는 탭 BP 다 — 화면 주소(/bp/{id}/bp-code-groups)에서 proxy 가 헤더로 싣고 authHeaders() 가 api 에 X-Bp-Code-Id 로 넘긴다.
-// 그룹은 플랫폼이 만든다 — BP 는 상세 코드만 등록 · 수정한다(그룹 추가 · 수정 · 삭제 api 가 없다). 상세 코드 삭제도 없다.
+// 그룹은 플랫폼이 만든다 — BP 는 상세 코드만 등록 · 수정 · 삭제한다(그룹 추가 · 수정 · 삭제 api 는 없다). 지울 수 있는 것은 플랫폼제공 · BP전용 코드다.
 // 타입은 손으로 짓지 않고 api 의 openapi.json 에서 만든 것(api-types.generated.ts)을 쓴다. 저장 요청 모양은 플랫폼 공통코드와 같다.
 import type { components } from "./api-types.generated";
 import { authHeaders, request } from "./api";

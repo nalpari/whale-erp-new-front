@@ -36,8 +36,7 @@ const json = async (method: string, body?: unknown): Promise<RequestInit> => ({
   body: body === undefined ? undefined : JSON.stringify(body),
 });
 
-/** GET /code-groups — 플랫폼고정 · 플랫폼제공 그룹을 표시 순서대로 한 쪽씩. */
-/** GET /code-groups — 한 쪽씩. 그룹 코드 · 그룹명은 일부 일치(대소문자 무시)이고 빈 값은 보내지 않는다. */
+/** GET /code-groups — 플랫폼고정 · 플랫폼제공 그룹을 표시 순서대로 한 쪽씩. 그룹 코드 · 그룹명은 일부 일치(대소문자 무시)이고 빈 값은 보내지 않는다. */
 export async function getCodeGroups({
   page = 1,
   pageSize = DEFAULT_PAGE_SIZE,
@@ -55,7 +54,7 @@ export async function getCodeItems(groupCode: string): Promise<CodeItemList> {
   return request(`/code-groups/${encodeURIComponent(groupCode)}/items`, await json("GET"));
 }
 
-// 등록 · 수정은 각자 한 트랜잭션이고 응답은 204 다. 한 요청 안에서 하나라도 막히면 아무것도 바뀌지 않는다.
+// 등록 · 수정 · 삭제는 각자 한 트랜잭션이고 응답은 204 다. 한 요청 안에서 하나라도 막히면 아무것도 바뀌지 않는다.
 
 /** POST /code-groups — 새 그룹 등록(등록 권한). */
 export async function createCodeGroups(input: CreateCodeGroupsInput): Promise<void> {

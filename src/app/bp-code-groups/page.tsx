@@ -9,7 +9,7 @@ import { BpCodeGroupPanel } from "./bp-code-group-panel";
 import { BpCodeItemPanel } from "./bp-code-item-panel";
 
 // BP 공통코드 관리(MN000014 · S-FHVSAV · okf/config.md 공통코드). 데모 docs/demo/config/codes.html 의 배치 — 왼쪽 필터(그룹 코드 · 그룹명),
-// 그룹 목록 카드(읽기만 — 그룹은 플랫폼이 만든다), 고른 그룹의 상세 코드 카드. BP 는 상세 코드만 더하고 고친다(삭제 없음).
+// 그룹 목록 카드(읽기만 — 그룹은 플랫폼이 만든다), 고른 그룹의 상세 코드 카드. BP 는 상세 코드만 더하고 고치고 지운다(플랫폼제공 · BP전용, bpDeletable).
 // 화면 주소는 /bp/{탭 BP}/bp-code-groups 다 — proxy 가 이 폴더로 rewrite 하며 탭 BP 를 헤더에 싣고, api 호출(authHeaders)이 그 헤더를 넘긴다.
 // 검색 · 쪽 · 고른 그룹은 주소(?groupCode · ?groupName · ?page · ?group)에 둔다. 고른 그룹이 이 쪽에 없으면 이 쪽의 첫 그룹을 고른다.
 // 상세 코드만 못 불러오면 화면 전체를 오류로 넘기지 않고 오른쪽 패널만 실패를 보인다(플랫폼 공통코드와 같다).

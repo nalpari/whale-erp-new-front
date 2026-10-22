@@ -4,7 +4,10 @@
 import type { BpCodeGroup, BpCodeItem, BpManageOwnerCode } from "./bp-codes";
 import { codePanelAccess, type ItemDraft } from "./code-drafts.ts";
 
-/** 상세 코드 패널의 한 행 — 플랫폼 행에 관리 주체와 플랫폼 사용중지가 더 있다. 새 행은 BP전용으로 저장된다(api 가 정한다). */
+/**
+ * 상세 코드 패널의 한 행 — 플랫폼 행에 관리 주체와 플랫폼 사용중지가 더 있다. 새 행은 BP전용으로 저장된다(api 가 정한다).
+ * 플랫폼 사용중지(isPlatformInactive)는 api 응답에 있어 그대로 담지만 화면은 쓰지 않는다 — BP 가 다시 켤 수 있다(2026-10-22 잠금 제거).
+ */
 export type BpItemDraft = ItemDraft & { manageOwnerCode: BpManageOwnerCode; isPlatformInactive: boolean };
 
 export const toBpItemDraft = (i: BpCodeItem): BpItemDraft => ({ ...i, key: i.itemCode, added: false });
