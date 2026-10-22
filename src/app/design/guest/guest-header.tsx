@@ -17,7 +17,7 @@ const MENUS: { label: string; route?: keyof GuestRoutes }[] = [
 ];
 
 const SIDE_MENUS: { label: string; route: keyof GuestRoutes }[] = [
-  { label: "도입문의", route: "inquiry" },
+  { label: "도입문의", route: "leads" },
   { label: "공지사항", route: "notices" },
 ];
 
