@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
-import { Badge, Button, DataTable, FilterPanel, FilterSection, ListToolbar, Pagination, Radio, SearchField, Select, Tag, type Column } from "@/components/common";
+import { Badge, Button, Checkbox, DataTable, FilterPanel, FilterSection, ListToolbar, Pagination, SearchField, Select, Tag, type Column } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import type { InquiryListItem, LeadListItem, PostListItem } from "@/lib/community";
 import { INQUIRY_BASE, LEAD_BASE, POST_BASE, queryString, type InquiryQuery, type LeadQuery, type ListQuery, type PostKind, type PostQuery } from "@/lib/community-view";
@@ -15,7 +15,7 @@ import { PAGE_SIZES, type PageSize } from "@/lib/staff-members";
 // 커뮤니티 관리 목록 넷(#275, 데모 src/community-sections.mjs). 헤더 커뮤니티관리 소메뉴마다 화면을 나눴다(2026-10-02 재영).
 // 왼쪽 필터 + 목록. 조건 · 쪽 · 건수는 주소에만 둔다 — 새로 고쳐도, 링크를 나눠도 같은 화면이다.
 
-type Query = ListQuery & Record<string, string | number>;
+type Query = ListQuery & Record<string, string | number | readonly string[]>;
 
 /** 조건을 바꾸면 주소만 바꾼다. 서버 화면이 그 주소로 다시 불러온다. */
 export function useGo<Q extends Query>(query: Q) {
@@ -63,12 +63,14 @@ export function Frame({
   );
 }
 
-/** 「전체」 + 값 하나씩 고르는 라디오 묶음. 고르는 즉시 건다. */
-export function Pick({ label, name, values, value, onPick, last }: { label: string; name: string; values: EnumValue[]; value: string; onPick: (v: string) => void; last?: boolean }) {
+/** 여러 값을 함께 고르는 체크박스 묶음. 고르는 즉시 건다. 아무것도 고르지 않으면 전체다(다른 목록과 같다, 2026-10-22 재영). */
+export function Checks<T extends string>({ label, values, value, onPick, last }: { label: string; values: EnumValue[]; value: readonly T[]; onPick: (next: T[]) => void; last?: boolean }) {
+  // 고른 순서가 아니라 보이는 순서로 둔다 — 같은 조건이면 주소도 같다.
+  const toggle = (v: string, on: boolean) => onPick(values.map((x) => x.value as T).filter((x) => (x === v ? on : value.includes(x))));
   return (
     <FilterSection label={label} last={last}>
-      {[{ value: "", label: "전체" }, ...values].map((v) => (
-        <Radio key={v.value} name={name} label={v.label} checked={value === v.value} onChange={() => onPick(v.value)} />
+      {values.map((v) => (
+        <Checkbox key={v.value} label={v.label} checked={value.includes(v.value as T)} onChange={(e) => toggle(v.value, e.target.checked)} />
       ))}
     </FilterSection>
   );
@@ -143,8 +145,8 @@ export function PostList({
       total={total}
       // api 는 게시 상태로만 거른다(WHALEERP-332).
       filter={
-        <FilterPanel onReset={() => go({ status: "" })}>
-          <Pick label="상태" name="post-status" values={statuses} value={query.status} onPick={(status) => go({ status: status as PostQuery["status"] })} last />
+        <FilterPanel onReset={() => go({ status: [] })}>
+          <Checks label="상태" values={statuses} value={query.status} onPick={(status) => go({ status })} last />
         </FilterPanel>
       }
       action={<Button href={`${base}/new`}>{notice ? "새 공지" : "새 FAQ"}</Button>}
@@ -184,14 +186,14 @@ export function InquiryList({ items, total, query, answers }: { items: InquiryLi
       query={query}
       total={total}
       filter={
-        <FilterPanel onReset={() => go({ title: "", sender: "", answerStatus: "" })}>
+        <FilterPanel onReset={() => go({ title: "", sender: "", answerStatus: [] })}>
           <FilterSection label="제목" tight>
             <SearchField value={title} onValueChange={setTitle} onSearch={(v) => go({ title: v.trim() })} placeholder="제목으로 검색" aria-label="제목" maxLength={200} />
           </FilterSection>
           <FilterSection label="보낸 곳" tight>
             <SearchField value={sender} onValueChange={setSender} onSearch={(v) => go({ sender: v.trim() })} placeholder="BP·점포 또는 이름으로 검색" aria-label="보낸 곳" maxLength={100} />
           </FilterSection>
-          <Pick label="상태" name="inquiry-status" values={answers} value={query.answerStatus} onPick={(v) => go({ answerStatus: v as InquiryQuery["answerStatus"] })} last />
+          <Checks label="상태" values={answers} value={query.answerStatus} onPick={(answerStatus) => go({ answerStatus })} last />
         </FilterPanel>
       }
     >
@@ -218,8 +220,8 @@ export function LeadList({ items, total, query, answers, interests }: { items: L
       query={query}
       total={total}
       filter={
-        <FilterPanel onReset={() => go({ answerStatus: "" })}>
-          <Pick label="상태" name="lead-status" values={answers} value={query.answerStatus} onPick={(v) => go({ answerStatus: v as LeadQuery["answerStatus"] })} last />
+        <FilterPanel onReset={() => go({ answerStatus: [] })}>
+          <Checks label="상태" values={answers} value={query.answerStatus} onPick={(answerStatus) => go({ answerStatus })} last />
         </FilterPanel>
       }
     >

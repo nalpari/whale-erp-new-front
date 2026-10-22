@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { Badge, Button, DataTable, FilterPanel, FilterSection, SearchField, Tag, type Column } from "@/components/common";
-import { Frame, Pick, useGo } from "@/components/community/community-lists";
+import { Checks, Frame, useGo } from "@/components/community/community-lists";
 import { useCodeLabel } from "@/components/site/code-label";
 import { useCodes, useCurrentBp, usePagePermission } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
@@ -65,9 +65,9 @@ export function SupportNoticeList({ items, total, query, noticeTypes }: { items:
       query={query}
       total={total}
       filter={
-        <FilterPanel onReset={() => go({ keyword: "", noticeType: "" })}>
+        <FilterPanel onReset={() => go({ keyword: "", noticeType: [] })}>
           <Search label="제목" placeholder="제목으로 검색" value={query.keyword} maxLength={100} onSearch={(keyword) => go({ keyword })} />
-          <Pick label="구분" name="notice-type" values={noticeTypes} value={query.noticeType} onPick={(v) => go({ noticeType: v as SupportNoticeQuery["noticeType"] })} last />
+          <Checks label="구분" values={noticeTypes} value={query.noticeType} onPick={(noticeType) => go({ noticeType })} last />
         </FilterPanel>
       }
     >
@@ -86,15 +86,15 @@ export function SupportFaqList({ items, total, query }: { items: SupportPost[]; 
       query={query}
       total={total}
       filter={
-        <FilterPanel onReset={() => go({ keyword: "", faqCategoryCode: "" })}>
+        <FilterPanel onReset={() => go({ keyword: "", faqCategoryCode: [] })}>
           <Search label="질문" placeholder="질문으로 검색" value={query.keyword} maxLength={100} onSearch={(keyword) => go({ keyword })} />
-          <Pick label="카테고리" name="faq-category" values={categories} value={query.faqCategoryCode} onPick={(faqCategoryCode) => go({ faqCategoryCode })} last />
+          <Checks label="카테고리" values={categories} value={query.faqCategoryCode} onPick={(faqCategoryCode) => go({ faqCategoryCode })} last />
         </FilterPanel>
       }
     >
       {items.length === 0 ? (
         // DataTable 의 빈 줄과 같은 92px 한 줄(DESIGN.md 빈 상태).
-        <p className="flex h-[92px] items-center justify-center border-y border-erp-thead-line text-[14px] text-erp-muted">{query.keyword || query.faqCategoryCode ? "찾는 FAQ 가 없습니다." : "FAQ 가 없습니다."}</p>
+        <p className="flex h-[92px] items-center justify-center border-y border-erp-thead-line text-[14px] text-erp-muted">{query.keyword || query.faqCategoryCode.length ? "찾는 FAQ 가 없습니다." : "FAQ 가 없습니다."}</p>
       ) : (
         <div className="border-t border-erp-thead-line">
           {items.map((f) => (
@@ -157,9 +157,9 @@ export function MyInquiryList({ items, total, query, statuses }: { items: Suppor
           query={query}
           total={total}
           filter={
-            <FilterPanel onReset={() => go({ title: "", status: "" })}>
+            <FilterPanel onReset={() => go({ title: "", status: [] })}>
               <Search label="제목" placeholder="제목으로 검색" value={query.title} maxLength={200} onSearch={(title) => go({ title })} />
-              <Pick label="상태" name="inquiry-status" values={statuses} value={query.status} onPick={(v) => go({ status: v as SupportInquiryQuery["status"] })} last />
+              <Checks label="상태" values={statuses} value={query.status} onPick={(status) => go({ status })} last />
             </FilterPanel>
           }
           action={
@@ -170,7 +170,7 @@ export function MyInquiryList({ items, total, query, statuses }: { items: Suppor
             )
           }
         >
-          <DataTable columns={columns} rows={items} rowKey={(i) => i.inquiryId} empty={query.title || query.status ? "찾는 문의가 없습니다." : "등록한 문의사항이 없습니다."} />
+          <DataTable columns={columns} rows={items} rowKey={(i) => i.inquiryId} empty={query.title || query.status.length ? "찾는 문의가 없습니다." : "등록한 문의사항이 없습니다."} />
       </Frame>
       {can.create && <InquiryFormPanel id="support-inquiry-new-panel" open={open} onClose={() => setOpen(false)} trigger={trigger} />}
     </>

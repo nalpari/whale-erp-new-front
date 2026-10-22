@@ -10,7 +10,8 @@ export function supportSections({ A, R }) {
   const pageNav = (n) => `<div class="pt-[14px]">${ui.pagination(A, 1, n)}</div>`;
   const ND = L("support/notice-detail.html");
   // 라디오는 필터 안에 세로로 둔다.
-  const radioGroup = (name, items) => items.map((t, i) => ui.radio(t, name, i === 0)).join("");
+  // 구분 · 카테고리 · 상태 필터는 다른 목록처럼 체크박스로 여러 개를 함께 고른다. 아무것도 고르지 않으면 전체다(2026-10-22 재영, #282~284).
+  const checks = (items) => items.map((t) => ui.checkbox(A, t)).join("");
   const IM = L("support/inquiry-mine.html");
 
   const notice = (title, kind, date, pinned) => [`${pinned ? `${p.tag("quiet", "고정")} ` : ""}${ui.link(title, ND)}`, kind, date];
@@ -101,10 +102,10 @@ export function supportSections({ A, R }) {
       `<div class="flex justify-center gap-[6px]">${ui.button("취소", { variant: "off", "data-close": true })}${ui.button("문의 등록", { "data-close": true, "data-toast": "문의를 등록했습니다." })}</div>`,
   );
 
-  const radioFilter = (search, name, items) =>
-    ui.filterPanel(A, [ui.filterSection(search[0], ui.searchField(A, { placeholder: search[1] }), { tight: true }), ui.filterSection(search[2], radioGroup(name, items), { last: true })]);
-  const noticeFilter = radioFilter(["제목", "제목으로 검색", "구분"], "notice-kind", ["전체", "점검", "기능", "약관", "안내"]);
-  const faqFilter = radioFilter(["질문", "질문으로 검색", "분류"], "faq-kind", ["전체", "가입·계정", "직원·근로", "요금·구독", "점포·설비"]);
-  const inquiryFilter = radioFilter(["제목", "제목으로 검색", "상태"], "inquiry-state", ["전체 7", "접수 1", "처리중 1", "답변완료 5"]);
+  const checkFilter = (search, items) =>
+    ui.filterPanel(A, [ui.filterSection(search[0], ui.searchField(A, { placeholder: search[1] }), { tight: true }), ui.filterSection(search[2], checks(items), { last: true })]);
+  const noticeFilter = checkFilter(["제목", "제목으로 검색", "구분"], ["점검", "기능", "약관", "안내"]);
+  const faqFilter = checkFilter(["질문", "질문으로 검색", "카테고리"], ["가입·계정", "직원·근로", "요금·구독", "점포·설비"]);
+  const inquiryFilter = checkFilter(["제목", "제목으로 검색", "상태"], ["접수", "처리중", "답변완료"]);
   return { notices, faq, inquiries, askForm, noticeFilter, faqFilter, inquiryFilter };
 }

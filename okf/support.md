@@ -3,7 +3,7 @@ type: Area
 title: 고객지원·커뮤니티
 description: BP 사용자가 공지·FAQ 를 읽고 문의를 남기는 고객지원과, 플랫폼 운영자가 공지·FAQ·문의·도입문의를 관리하는 커뮤니티관리.
 tags: [mockup, support]
-generated: { by: claude-code/opus-5.5, at: 2026-10-20T04:30:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-22T04:00:00Z }
 ---
 
 근거: `docs/mockup/support/` (목업 · 1차 · R-PEQDDV)
@@ -54,6 +54,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-20T04:30:00Z }
 * 고객지원은 **화면 셋, 메뉴 셋**(공지사항 `/support-notices` · FAQ `/support-faqs` · 문의하기 `/support-inquiries`, 이 순서)이고 화면이 곧 전체 목록이다. 상세만 따로 둔다. 공통 틀의 메뉴 권한 판정이 해시를 보지 않아 한 화면 탭에서 바꿨다(2026-10-15 재영 C안, WHALEERP-596). — `S-ITFILU` · `SUPPORT-4`
 * FAQ 답변은 목록에서 펼친다. 상세 페이지는 없다. — `S-KJEVVS`
 * 커뮤니티 관리 › 문의사항 목록의 필터는 제목·**보낸 곳**·상태다. 보낸 곳은 BP·점포 이름이나 보낸 사람 이름 어느 것으로도 찾는다(2026-10-08 재영). — `S-GRDOPW`
+* 상태 · 구분 · 카테고리 필터(고객지원의 공지사항 구분 · FAQ 카테고리 · 문의하기 상태, 커뮤니티 관리의 게시 상태 · 답변 상태)는 다른 목록처럼 **체크박스로 여러 개를 함께** 고른다. 아무것도 고르지 않으면 전체다(2026-10-22 재영, #275 · #282~284). — `S-ITFILU` · `S-GRDOPW`
 
 ## 1차에서 뺀 것
 
