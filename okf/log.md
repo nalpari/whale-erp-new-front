@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 적대적 리뷰(ip-code-review-claude, front #107) 반영: 플랫폼 관리자 수정 패널을 세울 때 메뉴 수정 권한만이 아니라 상세의 [수정] 버튼과 같은 계정별 판정(`adminActionsOf`)을 본다 — 플랫폼 관리자가 주소(`?edit=1`)로 플랫폼 마스터 계정의 수정 폼을 열 수 있었다(저장은 api 가 막는다). main 병합으로 생긴 okf 충돌을 양쪽 서술을 살려 풀었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR 리뷰(pr-review-toolkit) 반영: 새로 고침 · 앞으로 가기로 다시 연 플랫폼 관리자 수정을 닫아도 상세 기록이 겹치지 않게 수정 기록에 `history.state` 꼬리표를 단다. 다른 계정을 거쳐 돌아와도 포커스가 상세의 [수정]으로 돌아간다. 수정 패널을 세우는 조건을 `isEditOpen` 으로 떼어 테스트했다. SlidePanel 등 낡은 주석과 SlidePanel 설명의 `flushSync` 서술(코드는 rAF)을 고쳤다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 상세 패널이 닫히면(브라우저 뒤로 가기 등) 비밀번호 초기화 · 삭제 확인창과 변경이력 팝업도 닫는다(사용자 요청). 네이티브 `<dialog>` 라 패널과 함께 밀려 나가지 않고 남아 있었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 화면에서 바탕을 누르면 열린 패널(등록 · 상세 · 수정)을 모두 닫고 목록으로 간다(사용자 요청 — 한 단계씩 닫혀 뒤로 가기처럼 보였다). 공통 `SlidePanel` 에 바탕 클릭 전용 `onBackdropClose`(선택, 없으면 `onClose`)를 더했다 — 다른 화면은 그대로다.
