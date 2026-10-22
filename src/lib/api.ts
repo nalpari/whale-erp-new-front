@@ -104,9 +104,14 @@ export async function bpHeader(): Promise<Record<string, string>> {
 
 /**
  * 서버 컴포넌트가 그리는 화면 주소를 만드는 함수. 이 요청이 탭 BP 주소(/bp/{id}/...)로 왔으면 옛 경로(폴더) path 에 같은 BP 를 붙인다.
- * 주소에 BP 가 없으면 그대로 두고, 옮긴 화면이면 SessionGate 가 탭 BP 주소로 보낸다.
+ * 주소에 BP 가 없으면 그대로 두고, 옮긴 화면이면 SessionGate 가 탭 BP 주소로 보낸다. 링크를 여럿 그리는 화면(점포 목록)이 한 번 받아 쓴다.
  */
 export async function screenPath(): Promise<(path: string) => string> {
   const bp = (await bpHeader())["X-Bp-Code-Id"];
   return (path) => (bp ? bpPath(Number(bp), path) : path);
+}
+
+/** 서버 화면이 그리는 링크(다시 시도 · 목록) 하나. 탭 BP 주소로 들어온 요청이면 같은 BP 를 붙인다 — 옛 경로로 가 SessionGate 가 한 번 더 보내지 않게. */
+export async function bpHref(path: string): Promise<string> {
+  return (await screenPath())(path);
 }

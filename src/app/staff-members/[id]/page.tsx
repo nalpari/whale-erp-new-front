@@ -16,7 +16,7 @@ import { AreaLoading, Box, BoxMessage } from "./detail-box";
 import { MenuManageLink } from "./manage-link";
 import { PasswordResetButton, StaffDetailActions } from "./staff-detail-actions";
 import { PayslipBox, ScheduleBox, TodoBox } from "./summary-boxes";
-import { mondayOf, weekStartParam } from "./summary-view";
+import { scheduleWeekOf } from "./summary-view";
 import { WeekNav } from "./week-nav";
 
 export const metadata: Metadata = {
@@ -30,10 +30,9 @@ function NotReady() {
   return <BoxMessage>준비 중입니다.</BoxMessage>;
 }
 
-// 오른쪽 영역의 「관리」. 출퇴근 현황 · 급여명세서는 아직 링크를 걸지 않는다 — 각 관리 화면으로 가는 링크는
-// WHALEERP-186(현황 영역의 관리 화면 이동) 몫이다. 메뉴 url(#592 결정)은 출퇴근 현황 /attendance-records · 급여명세서 /payslips.
-// TO-DO 는 화면(#116)과 메뉴 url(MN000026 /todos)이, 근무스케줄은 화면(#202)과 메뉴 url(MN000010 /work-schedules)이 생겨 걸었다 —
-// 근무스케줄은 그 직원의 근무지 · 영역이 보던 주로 연다.
+// 오른쪽 영역의 「관리」. 출퇴근 현황은 아직 링크를 걸지 않는다 — 화면이 없다(메뉴 url #592 결정 /attendance-records).
+// TO-DO 는 화면(#116)과 메뉴 url(MN000026 /todos)이, 근무스케줄은 화면(#202)과 메뉴 url(MN000010 /work-schedules)이, 급여명세서는 화면과
+// 메뉴 url(MN000009 /payslips)이 있어 걸었다 — 근무스케줄은 그 직원의 근무지 · 칸이 보던 주로 연다.
 
 // 가입 상태 한글(이메일 칸, WHALEERP-180). 받지 못해도 상세는 그린다 — 이메일 칸만 「-」가 되고 원인은 서버 로그에 남긴다.
 async function loadJoinStateLabels(): Promise<EnumValue[]> {
@@ -81,9 +80,9 @@ export default async function StaffMemberDetailPage({
   const employmentStatus = employmentStatusCells(staff);
   const hqConsent = hqSharingConsentText(staff, hqConsentLabels);
   const listHref = staffListHref(search);
-  // 근무스케줄 영역이 볼 주. 주소에 없거나 날짜가 아니면 이번 주(api 도 빼면 이번 주다)
-  const weekStart = weekStartParam(search.weekStart);
-  const monday = mondayOf(weekStart ?? kstToday());
+  const today = kstToday();
+  // 근무스케줄 영역이 볼 주(월요일). 주소 week 가 없거나 날짜가 아니면 이번 주(데모 weekNav, 2026-10-22 노영주 — WHALEERP-185 기간 선택을 걷었다)
+  const monday = scheduleWeekOf(search, today);
 
   const basicRows = [
     // 재직 상태는 이름 옆 칩이다(184 완료 조건 2 「이름 아래」 — 줄 높이 46 이 고정이라 옆에 둔다). 본인인증은 1차 범위 밖이라(WHALEERP-612 → 2차)
@@ -114,7 +113,7 @@ export default async function StaffMemberDetailPage({
       label: "가입 상태",
       value: (
         <span className="inline-flex items-center gap-[6px]">
-          <CellView cell={joinCell(staff, kstToday())} />
+          <CellView cell={joinCell(staff, today)} />
           {staff.contract && canResendInvitation(staff) && <ResendInvitationButton contractId={staff.contract.contractId} name={staff.name} />}
         </span>
       ),
@@ -134,7 +133,7 @@ export default async function StaffMemberDetailPage({
           <div className="flex flex-col gap-[12px]">
             <div className="flex items-center gap-[6px]">
               <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">직원 상세</h2>
-              <StaffDetailActions staff={staff} today={kstToday()} listHref={listHref} />
+              <StaffDetailActions staff={staff} today={today} listHref={listHref} />
             </div>
             <div className="grid grid-cols-[5fr_7fr] items-start gap-[24px]">
               <div className="flex min-w-0 flex-col gap-[24px]">
@@ -160,12 +159,12 @@ export default async function StaffMemberDetailPage({
               <div className="flex min-w-0 flex-col gap-[24px]">
                 <Box
                   title="근무스케줄"
-                  tools={<WeekNav monday={monday} search={search} />}
+                  tools={<WeekNav monday={monday} search={search} today={today} />}
                   manage={
                     <MenuManageLink
                       menuCode={MENU_CODE.workSchedules}
                       menuName="근무스케줄 관리"
-                      href={`/work-schedules?store=${staff.store.storeId}&week=${monday}`}
+                      href={`/work-schedules?${new URLSearchParams({ store: String(staff.store.storeId), week: monday })}`}
                     />
                   }
                 >
@@ -178,7 +177,7 @@ export default async function StaffMemberDetailPage({
                 <Box title="출퇴근 현황">
                   <NotReady />
                 </Box>
-                <Box title="급여명세서">
+                <Box title="급여명세서" manage={<MenuManageLink menuCode={MENU_CODE.payslips} menuName="급여명세서 관리" href="/payslips" />}>
                   <Suspense fallback={<AreaLoading />}>
                     <PayslipBox staffMemberId={staffMemberId} />
                   </Suspense>

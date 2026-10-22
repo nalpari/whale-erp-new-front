@@ -63,3 +63,12 @@ test("isBpPathScreen 은 옮긴 화면만", () => {
   assert.equal(isBpPathScreen("/stores/excel"), true);
   assert.equal(isBpPathScreen("/staff-members"), false);
 });
+
+test("isBpPathScreen 은 고객지원 셋과 문의 등록 창구도", () => {
+  assert.equal(isBpPathScreen("/support-notices"), true);
+  assert.equal(isBpPathScreen("/bp/8/support-faqs"), true);
+  assert.equal(isBpPathScreen("/support-inquiries/12"), true);
+  assert.equal(isBpPathScreen("/support-inquiries/save"), true);
+  assert.equal(isBpPathScreen("/support-notices-x"), false);
+  assert.equal(isBpPathScreen("/platform-notices"), false);
+});
