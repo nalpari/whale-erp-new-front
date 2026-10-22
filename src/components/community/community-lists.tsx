@@ -65,11 +65,13 @@ export function Frame({
 
 /** 여러 값을 함께 고르는 체크박스 묶음. 고르는 즉시 건다. 아무것도 고르지 않으면 전체다(다른 목록과 같다, 2026-10-22 재영). */
 export function Checks<T extends string>({ label, values, value, onPick, last }: { label: string; values: EnumValue[]; value: readonly T[]; onPick: (next: T[]) => void; last?: boolean }) {
+  // 주소에는 있는데 목록에 없는 값(사용 중지한 FAQ 카테고리 · 옛 즐겨찾기)도 체크된 칸으로 보인다 — 숨은 조건으로 목록이 비지 않게.
+  const shown = [...values, ...value.filter((v) => !values.some((x) => x.value === v)).map((v) => ({ value: v, label: `${v} (사용 중지)` }))];
   // 고른 순서가 아니라 보이는 순서로 둔다 — 같은 조건이면 주소도 같다.
-  const toggle = (v: string, on: boolean) => onPick(values.map((x) => x.value as T).filter((x) => (x === v ? on : value.includes(x))));
+  const toggle = (v: string, on: boolean) => onPick(shown.map((x) => x.value as T).filter((x) => (x === v ? on : value.includes(x))));
   return (
     <FilterSection label={label} last={last}>
-      {values.map((v) => (
+      {shown.map((v) => (
         <Checkbox key={v.value} label={v.label} checked={value.includes(v.value as T)} onChange={(e) => toggle(v.value, e.target.checked)} />
       ))}
     </FilterSection>
