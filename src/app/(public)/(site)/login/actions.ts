@@ -4,6 +4,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { ACCESS_TOKEN_TTL_MS, ApiError, loginKeyCookie, request, sessionCookie, type AdminLoginResponse } from "@/lib/api";
 import { homeOf } from "@/lib/auth-routes";
+import { apiHeaders } from "@/lib/forwarded-headers";
 
 export type LoginFormState = { error?: string };
 
@@ -20,7 +21,8 @@ export async function login(_prev: LoginFormState, formData: FormData): Promise<
   try {
     res = await request<AdminLoginResponse>("/auth/admin/login", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      // 사용자 IP 를 넘긴다 — 없으면 api 가 모든 로그인을 이 서버 주소로 세어, 로그인 이력의 접속 IP 가 모두 같고 IP 한도를 전원이 나눠 쓴다.
+      headers: await apiHeaders(),
       body: JSON.stringify({ loginId, password, deviceInformation: (await headers()).get("user-agent")?.slice(0, 200) }),
     });
   } catch (e) {
