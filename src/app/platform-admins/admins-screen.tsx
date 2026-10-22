@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Button, ListToolbar, Pagination, useBackdropActive, useToast } from "@/components/common";
-import { usePagePermission } from "@/components/site/session-gate";
+import { useAccount, usePagePermission } from "@/components/site/session-gate";
+import { adminActionsOf } from "@/lib/platform-admin-actions";
 import { ADMIN_PAGE_SIZE } from "@/lib/platform-admin-paging";
 import type { PlatformAdminDetail, PlatformAdminList, PlatformRoleGroup } from "@/lib/platform-admins";
 import { AdminDetailPanel } from "./admin-detail-panel";
@@ -50,7 +51,14 @@ export function AdminsScreen({
   if (detail && detail !== shown) setShown(detail);
 
   // 수정 패널은 주소에 ?edit=1 이 있고 그 계정의 상세가 지금 열려 있을 때만 선다(admins-href.ts isEditOpen).
-  const editOpen = isEditOpen(query, can.update, shown);
+  // 고칠 수 있는지는 상세의 [수정] 버튼과 같은 판정이다 — 메뉴 수정 권한이 있어도 플랫폼 관리자(PA)는 플랫폼 마스터(PM)
+  // 계정을 고치지 못한다(F-RVDLOW). 메뉴 권한만 보면 버튼이 없는 계정의 수정 폼이 주소(?edit=1)로 열렸다(적대적 리뷰, 2026-10-22).
+  const me = useAccount();
+  const canUpdateShown =
+    !!shown &&
+    "admin" in shown &&
+    adminActionsOf(me, { adminAccountId: shown.admin.adminAccountId, roleTypeCode: shown.admin.roleGroup.roleTypeCode }, can).canUpdate;
+  const editOpen = isEditOpen(query, canUpdateShown, shown);
 
   // 지금 수정 · 상세가 열려 있는지를 최신 값으로 본다. 저장 · 삭제 결과는 누른 때의 화면(클로저)으로 돌아오므로, 그 사이
   // 브라우저 뒤로 가기로 이미 닫혔으면 다시 뒤로 가거나 목록 주소를 쌓지 않아야 한다 — 바로 들어온 상세에서는 그 뒤로 가기가
