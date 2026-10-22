@@ -18,6 +18,9 @@ import { useAccount, useCurrentBp, useMenus, useMyPageOpen, useMyPageTrigger, us
 // 서비스 바로가기의 웨일ERP 로 고른다). 바로가기는 serviceTargets 참고.
 // 메뉴 링크는 점포 범위를 주소(?scope=)에 싣는다(store-scope.ts) — 점포 검색 필터가 있는 목록은 처음부터 그 범위로 검색하고, 없는 목록은 무시한다.
 // alarm 은 알림 종(NotificationBellSlot, 서버 컴포넌트)이다. 클라이언트인 이 헤더가 직접 그릴 수 없어 루트 layout 이 만들어 AdminLayout → AdminFrame 을 거쳐 넘긴다.
+/** ERP 메뉴 url 의 화면 주소 — /bp/{id} 주소로 옮긴 화면에만 탭 BP 를 붙인다(BP_PATH_SCREENS). 메뉴 url 자체는 옛 경로 그대로다. */
+const screenOf = (url: string, tabBp: number) => (isBpPathScreen(url) ? bpPath(tabBp, url) : url);
+
 export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   const account = useAccount();
   const service = useService();
@@ -28,8 +31,7 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   const myPageTrigger = useMyPageTrigger();
   const tabBp = useCurrentBp().bpCodeId;
   const [scope] = useScope();
-  // /bp/{id} 주소로 옮긴 ERP 화면에만 탭 BP 를 붙인다(BP_PATH_SCREENS). 메뉴 url 자체는 옛 경로 그대로다.
-  const linkOf = (url: string) => (service === "WHALE_ERP" && isBpPathScreen(url) ? bpPath(tabBp, url) : withScope(url, scope));
+  const linkOf = (url: string) => withScope(service === "WHALE_ERP" ? screenOf(url, tabBp) : url, scope);
   const menus: HeaderMenu[] = all.map((m) => {
       const items = m.children.flatMap((c) => {
         // 하위 메뉴로 가는 길로만 들어온 메뉴는 조회 권한이 없다(isAllowed 가 막는다). 권한 있는 첫 하위 메뉴로 보내고, 없으면 뺀다.
@@ -111,7 +113,7 @@ function HeaderScopeSelect() {
           const next = scopeOfKey(key);
           if (!next) return;
           setScope(next);
-          if (pageUrl) router.push(withScope(pageUrl, next));
+          if (pageUrl) router.push(withScope(screenOf(pageUrl, bp.bpCodeId), next));
         }}
       />
     </>

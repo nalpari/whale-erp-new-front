@@ -45,6 +45,7 @@ import { FLOOR_TYPES, floorTypeOf, type StoreDetail, type StoreImageFileType, ty
 import { closeBlockText, formatBizNumber, nextStatuses } from "@/lib/store-view";
 import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
 import { useCurrentBp } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import { withoutStoreSearch } from "@/lib/store-scope";
 import { storeImageAccept, storeImageFileError, storeImageTypesText } from "@/lib/store-image";
 import {
@@ -57,6 +58,7 @@ import {
   type ActionFailure,
 } from "./actions";
 import { FieldMessage, NoticeBand, StoreImage, StoreStatusBadge, StoreTypeCards } from "./store-parts";
+import { withBack } from "./stores-query";
 
 /** 동시 수정 409 문구(api). 이때만 최신 정보를 다시 불러온다 */
 const STALE = "먼저 수정했습니다";
@@ -111,8 +113,11 @@ export function StoreFormView(props: Props) {
   const router = useRouter();
   // 선택지 글자는 <option> 에 글자로만 넣는다 — 공통코드 한글(로그인 정보)
   const statusLabel = useCodeLabel("STORE_STATUS");
-  // 등록할 BP — 이 탭의 BP(플랫폼 계정이 고른 BP, 그 밖은 소속 BP)
+  // 등록할 BP — 이 탭의 BP(플랫폼 계정이 고른 BP, 그 밖은 소속 BP). 주소 /bp/{id} 의 BP 와 같다(SessionGate 가 주소로 정한다) —
+  // 본문의 bpCodeId 가 proxy 가 실은 헤더와 다르면 api 가 400 이다
   const currentBp = useCurrentBp();
+  // 화면 주소는 탭 BP 를 붙인다. backHref 는 옛 경로(목록 쿼리)다
+  const at = (path: string) => bpPath(currentBp.bpCodeId, path);
   const toast = useToast();
   const ids = useId();
   const initialForm = () => (props.mode === "edit" ? formOfStore(props.store) : EMPTY_STORE_FORM);
@@ -355,7 +360,7 @@ export function StoreFormView(props: Props) {
             detail: (
               <>
                 점포가 이미 생겼을 수 있습니다.{" "}
-                <Link href={backHref} className="text-erp-link underline">
+                <Link href={at(backHref)} className="text-erp-link underline">
                   목록에서 확인
                 </Link>
                 한 뒤, 없으면 새로고침해 다시 등록해 주세요.
@@ -370,7 +375,7 @@ export function StoreFormView(props: Props) {
         // 등록 뒤 목록에 돌아가면 점포 검색은 「전체」다 — 새 점포가 고른 점포 조건에 걸려 안 보이지 않게(상세의 [목록]이 이 주소로 간다)
         const params = new URLSearchParams({ back: withoutStoreSearch(backHref) });
         if (imageResult && !imageResult.ok) params.set("imageFailed", String(imageResult.status ?? "error"));
-        return router.push(`/stores/${result.storeId}?${params}`);
+        return router.push(at(`/stores/${result.storeId}?${params}`));
       }
       const storeId = props.store.storeId;
       // 폐점한 점포는 이미지를 바꿀 수 없다(api 409) — 폐점으로 저장할 때는 이미지를 먼저 보내고, 실패하면 폐점하지 않는다.
@@ -411,7 +416,7 @@ export function StoreFormView(props: Props) {
           });
         }
         toast("updated");
-        return router.push(`/stores/${props.store.storeId}${backHref === "/stores" ? "" : `?back=${encodeURIComponent(backHref)}`}`);
+        return router.push(at(withBack(`/stores/${props.store.storeId}`, backHref)));
       }
       // 다른 사람이 먼저 고쳤거나 결과를 모르면 최신 정보를 불러온다 — 저장됐으면 updatedAt 이 바뀌어 칸이 새 값으로 다시 채워진다
       if (result.status === undefined) {
@@ -496,7 +501,7 @@ export function StoreFormView(props: Props) {
             </span>
           )}
         </h2>
-        <Button variant="off" href={store ? `/stores/${store.storeId}${backHref === "/stores" ? "" : `?back=${encodeURIComponent(backHref)}`}` : backHref}>
+        <Button variant="off" href={at(store ? withBack(`/stores/${store.storeId}`, backHref) : backHref)}>
           취소
         </Button>
         <Button onClick={handleSave} disabled={saving || closedOrBlocked || locating || checkingClose || createUncertain}>

@@ -1,5 +1,5 @@
 import { cookies, headers } from "next/headers";
-import { BP_HEADER } from "./bp-path";
+import { BP_HEADER, bpPath } from "./bp-path";
 import type { EnumValue } from "./enums";
 import { parseSession, SESSION_COOKIE, type Session } from "./session";
 
@@ -108,4 +108,25 @@ export async function authHeaders(): Promise<Record<string, string>> {
 export async function bpHeader(): Promise<Record<string, string>> {
   const bp = (await headers()).get(BP_HEADER);
   return bp && /^\d{1,9}$/.test(bp) ? { "X-Bp-Code-Id": bp } : {};
+}
+
+/**
+ * api 가 요청을 거절한 문장(BP 를 고르지 않음 400 · 다른 BP · 권한 없음 403 · 없는 BP 404) — 다시 시도해도 같으므로 화면은 오류 화면 대신
+ * 이 문장을 보인다. 거절이 아니면 null: 서버 장애 · 응답 없음, 검증 실패 400(message 가 배열 — 주소 · 계약이 어긋난 결함),
+ * 라우트가 없는 404(Nest 「Cannot GET …」 — api 배포가 어긋남). 탭 BP 주소로 옮긴 화면이 함께 쓴다.
+ */
+export function deniedMessageOf(error: unknown): string | null {
+  if (!(error instanceof ApiError)) return null;
+  const validation = error.status === 400 && Array.isArray((error.body as { message?: unknown } | null)?.message);
+  const noRoute = error.status === 404 && error.message.startsWith("Cannot ");
+  return [400, 403, 404].includes(error.status) && !validation && !noRoute ? error.message : null;
+}
+
+/**
+ * 서버 컴포넌트가 그리는 화면 주소를 만드는 함수. 이 요청이 탭 BP 주소(/bp/{id}/...)로 왔으면 옛 경로(폴더) path 에 같은 BP 를 붙인다.
+ * 주소에 BP 가 없으면 그대로 두고, 옮긴 화면이면 SessionGate 가 탭 BP 주소로 보낸다.
+ */
+export async function screenPath(): Promise<(path: string) => string> {
+  const bp = (await bpHeader())["X-Bp-Code-Id"];
+  return (path) => (bp ? bpPath(Number(bp), path) : path);
 }

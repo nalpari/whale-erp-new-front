@@ -55,5 +55,8 @@ test("isBpPathScreen 은 옮긴 화면만", () => {
   assert.equal(isBpPathScreen("/bp-role-groups"), true);
   assert.equal(isBpPathScreen("/bp/8/bp-role-groups"), true);
   assert.equal(isBpPathScreen("/bp-role-groups-x"), false);
-  assert.equal(isBpPathScreen("/stores"), false);
+  assert.equal(isBpPathScreen("/stores"), true);
+  assert.equal(isBpPathScreen("/bp/8/stores/3/edit"), true);
+  assert.equal(isBpPathScreen("/stores-x"), false);
+  assert.equal(isBpPathScreen("/staff-members"), false);
 });
