@@ -6,7 +6,8 @@ import { useRef, useState } from "react";
 import { Badge, Button, DataTable, FilterPanel, FilterSection, SearchField, Tag, type Column } from "@/components/common";
 import { Frame, Pick, useGo } from "@/components/community/community-lists";
 import { useCodeLabel } from "@/components/site/code-label";
-import { useCodes, usePagePermission } from "@/components/site/session-gate";
+import { useCodes, useCurrentBp, usePagePermission } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import type { SupportInquiryListItem, SupportPost } from "@/lib/community";
 import {
   SUPPORT_INQUIRY_BASE,
@@ -22,6 +23,7 @@ import { InquiryFormPanel } from "./inquiry-form";
 
 // 고객지원 목록 셋(#282 · 283 · 284, 데모 src/support-sections.mjs). 메뉴 셋 · 화면 셋이고 화면이 곧 전체 목록이다(SUPPORT-4).
 // 왼쪽 필터 + 목록은 커뮤니티 관리 목록과 같은 틀이다. 조건 · 쪽 · 건수는 주소에만 둔다.
+// ERP 메뉴라 화면 주소에 탭 BP 를 싣는다(/bp/{bpCodeId}/…, front #82) — 상세로 가는 링크도 bpPath 로 만든다.
 
 /** 검색칸 하나. 초기화 · 뒤로 가기로 주소의 검색어가 바뀌면 칸도 따라간다. */
 function Search({ label, placeholder, value, maxLength, onSearch }: { label: string; placeholder: string; value: string; maxLength: number; onSearch: (v: string) => void }) {
@@ -41,6 +43,7 @@ function Search({ label, placeholder, value, maxLength, onSearch }: { label: str
 /** 공지사항 — 상단 고정 먼저, 나머지는 게시일 내림차순(api 순서 그대로). 제목 검색 · 구분 필터(#282). */
 export function SupportNoticeList({ items, total, query, noticeTypes }: { items: SupportPost[]; total: number; query: SupportNoticeQuery; noticeTypes: EnumValue[] }) {
   const go = useGo(query);
+  const bp = useCurrentBp().bpCodeId;
   const columns: Column<SupportPost>[] = [
     {
       header: "제목",
@@ -48,7 +51,7 @@ export function SupportNoticeList({ items, total, query, noticeTypes }: { items:
       cell: (p) => (
         <span className="flex min-w-0 items-center gap-[6px]">
           {p.isPinned && <Tag>고정</Tag>}
-          <Link href={`${SUPPORT_NOTICE_BASE}/${p.postId}`} className="truncate text-erp-link hover:underline">
+          <Link href={bpPath(bp, `${SUPPORT_NOTICE_BASE}/${p.postId}`)} className="truncate text-erp-link hover:underline">
             {p.title}
           </Link>
         </span>
@@ -128,6 +131,7 @@ const day = (iso: string | null) => (iso ? formatDateTime(iso).slice(0, 10) : "-
 /** 문의하기 — 내가 올린 문의 목록과 등록 폼(오른쪽 패널)을 한 화면에(#284). 등록 버튼은 등록 권한이 있을 때만 — 막는 것은 api 다. */
 export function MyInquiryList({ items, total, query, statuses }: { items: SupportInquiryListItem[]; total: number; query: SupportInquiryQuery; statuses: EnumValue[] }) {
   const go = useGo(query);
+  const bp = useCurrentBp().bpCodeId;
   const can = usePagePermission();
   const categoryLabel = useCodeLabel("INQUIRY_CATEGORY");
   const [open, setOpen] = useState(false);
@@ -137,7 +141,7 @@ export function MyInquiryList({ items, total, query, statuses }: { items: Suppor
       header: "제목",
       align: "left",
       cell: (i) => (
-        <Link href={`${SUPPORT_INQUIRY_BASE}/${i.inquiryId}`} className="truncate text-erp-link hover:underline">
+        <Link href={bpPath(bp, `${SUPPORT_INQUIRY_BASE}/${i.inquiryId}`)} className="truncate text-erp-link hover:underline">
           {i.title}
         </Link>
       ),

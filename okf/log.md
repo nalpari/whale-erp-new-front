@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 고객지원 화면 셋(공지사항 · FAQ · 문의하기)을 탭 BP 주소(`/bp/{bpCodeId}/…`, front #82 · api #94)로 옮겼다. 화면 안 링크와 문의 등록 창구에 탭 BP 를 붙인다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main(#88) 병합: proxy 의 본문 크기 상한(`tooLarge`)도 `/bp/{id}` 를 뗀 주소로 판정한다. main 이 없앤 store-picks(목록에서 고른 점포)는 따르고, 탭 BP 의 bp-fix 표시 · 헤더 링크(`withScope` 앞에 `bpPath`)는 남겼다.
 
 ## 2026-10-21
