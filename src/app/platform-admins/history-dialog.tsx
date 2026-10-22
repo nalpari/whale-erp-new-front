@@ -23,10 +23,12 @@ const COLUMNS: Column<PlatformAdminHistory>[] = [
 ];
 
 /** [변경 이력] 버튼과 그 팝업. 열 때마다 첫 쪽을 새로 받는다 — 방금 고친 내용이 이력에 바로 보여야 한다. */
-export function HistoryButton({ adminId }: { adminId: number }) {
+export function HistoryButton({ adminId, panelOpen }: { adminId: number; /** 감싼 상세 패널이 열려 있는가 — 닫히면 팝업도 닫는다 */ panelOpen: boolean }) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const [open, setOpen] = useState(false);
+  // 상세 패널이 닫히면(뒤로 가기 · 바탕 클릭 등) 팝업도 닫는다 — <dialog> 는 최상위 레이어라 패널과 함께 밀려 나가지 않는다
+  if (!panelOpen && open) setOpen(false);
   const [page, setPage] = useState(1);
   const [data, setData] = useState<PlatformAdminHistoryList | null>(null);
   const [failure, setFailure] = useState<string | null>(null);

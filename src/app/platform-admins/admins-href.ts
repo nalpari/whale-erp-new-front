@@ -1,7 +1,8 @@
 import type { AdminStatus } from "@/lib/platform-admins";
 
 // 목록 조건 · 쪽 · 연 상세는 주소(?keyword · roleGroupId · status · page · admin)에 둔다 — 새로 고쳐도, 링크를 나눠도 같은 화면이다.
-// 상세 · 등록 · 수정은 따로 주소가 없는 슬라이드 패널이다(2026-10-08) — 상세만 ?admin= 으로 어느 계정인지 남긴다.
+// 상세 · 등록 · 수정은 따로 주소가 없는 슬라이드 패널이다(2026-10-08) — 상세는 ?admin= 으로 어느 계정인지 남기고,
+// 그 위에 겹친 수정은 ?edit=1 로 남겨 브라우저 뒤로 가기가 수정 → 상세로 돌아오게 한다(2026-10-22 사용자 요청). 등록은 남기지 않는다.
 
 export type AdminsQuery = {
   page: number;
@@ -11,6 +12,8 @@ export type AdminsQuery = {
   status?: AdminStatus;
   /** 상세를 연 계정 */
   admin?: number;
+  /** 상세 위에 수정 패널을 열었다 — admin 이 있을 때만 참이다 */
+  edit?: boolean;
 };
 
 type Params = Record<string, string | string[] | undefined>;
@@ -25,12 +28,14 @@ export function parseAdminsQuery(params: Params): AdminsQuery {
   const status = one(params.status);
   // api 는 20자까지 받는다. 넘는 검색어는 400 이 되므로 잘라 둔다.
   const keyword = one(params.keyword)?.trim().slice(0, 20).trim() || undefined;
+  const admin = positiveInt(one(params.admin));
   return {
     page: positiveInt(one(params.page)) ?? 1,
     keyword,
     roleGroupId: positiveInt(one(params.roleGroupId)),
     status: status === "ACTIVE" || status === "INACTIVE" ? status : undefined,
-    admin: positiveInt(one(params.admin)),
+    admin,
+    edit: admin !== undefined && one(params.edit) === "1" ? true : undefined,
   };
 }
 
@@ -41,6 +46,7 @@ export function adminsHref(query: Partial<AdminsQuery>): string {
   if (query.status) params.set("status", query.status);
   if (query.page && query.page > 1) params.set("page", String(query.page));
   if (query.admin) params.set("admin", String(query.admin));
+  if (query.admin && query.edit) params.set("edit", "1");
   const search = params.toString();
   return `/platform-admins${search ? `?${search}` : ""}`;
 }
