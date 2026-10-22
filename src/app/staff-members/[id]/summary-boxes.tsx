@@ -4,13 +4,15 @@ import { labelOf } from "@/lib/enums";
 import { formatDateTime } from "@/lib/format";
 import { formatAmount } from "@/lib/payslips";
 import { kstToday } from "@/lib/staff-members";
-import { getStaffMemberPayslipSummary, getStaffMemberTodoSummary, getStaffMemberWeekSchedule } from "@/lib/staff-members-api";
+import { getStaffMemberPayslipSummary, getStaffMemberTodoSummary, getStaffMemberWorkSchedules } from "@/lib/staff-members-api";
 import { getStaffMemberTodos } from "@/lib/todos-api";
 import { STATUS_STYLE } from "../../payslips/payslip-row";
 import { dueText, statusCells } from "../../todos/todo-row";
+import { endLabel } from "../../work-schedules/work-schedule-view";
 import { CellView } from "../staff-table";
 import { AreaFailure, BoxMessage } from "./detail-box";
 import { RetryButton } from "./retry-button";
+import { SchedulePagination } from "./schedule-controls";
 import { loadArea, loadLabels } from "./summary-load";
 import { TodoTitleLink } from "./todo-links";
 import {
@@ -21,11 +23,15 @@ import {
   todoFootText,
   todoHistoryText,
   payPeriodText,
+  scheduleEmptyText,
+  schedulePageCount,
+  scheduleTotalLabel,
   workDateText,
-  type WeekSchedule,
+  type ScheduleQuery,
+  type StaffWorkScheduleItem,
 } from "./summary-view";
 
-// 직원 상세 오른쪽 영역(WHALEERP-184, api #183 GET /staff-members/:id/summary/…). 영역마다 Suspense 안의 서버 컴포넌트라
+// 직원 상세 오른쪽 영역(WHALEERP-184, api #183 GET /staff-members/:id/summary/… · 근무스케줄은 GET /staff-members/:id/work-schedules, WHALEERP-185). 영역마다 Suspense 안의 서버 컴포넌트라
 // 기본 정보 · 다른 영역은 먼저 그려지고, 한 영역을 못 받으면 그 영역에만 안내를 그리고 throw 하지 않는다.
 
 /** 표 아래 요약 한 줄 — 데모 detail.mjs 의 foot(오른쪽 끝에 이름 + 값) */
@@ -50,30 +56,36 @@ function FootMessage({ children, alert = false }: { children: ReactNode; alert?:
   );
 }
 
-type ScheduleRow = WeekSchedule["items"][number];
-
 /**
- * 「근무스케줄」 영역 — 한 주(월~일)의 근무스케줄 표 + 주간 근무시간 합계. 주 넘김은 영역 머리(page.tsx)가 주소의 weekStart 로 한다.
- * 표 모양은 데모 그대로의 네 칸이다. 근무스케줄 화면과 맞춘 표 모양은 WHALEERP-185 에서 다시 본다.
+ * 「근무스케줄」 영역(WHALEERP-185) — 고른 기간의 근무스케줄 표(근무일 최신순, 같은 날은 시작 시각 순) + 기간 근무시간 합계 줄 + 페이지 번호. 기간 · 건수는 영역 머리(page.tsx, schedule-controls.tsx)가
+ * 주소의 schedulePeriod · schedulePageSize 로, 쪽은 표 아래 페이지 번호가 schedulePage 로 바꾼다.
  */
-export async function ScheduleBox({ staffMemberId, weekStart }: { staffMemberId: number; weekStart: string | null }) {
-  const result = await loadArea("근무스케줄 영역", () => getStaffMemberWeekSchedule(staffMemberId, weekStart));
+export async function ScheduleBox({ staffMemberId, query }: { staffMemberId: number; query: ScheduleQuery }) {
+  const result = await loadArea("근무스케줄 영역", () => getStaffMemberWorkSchedules(staffMemberId, query));
   if (result.kind !== "ok") return <AreaFailure kind={result.kind} subject="근무스케줄을" />;
-  const { items, totalWorkMinutes } = result.data;
+  const { items, total, totalWorkMinutes } = result.data;
+  const today = kstToday();
   return (
     <>
-      <DataTable<ScheduleRow>
+      <DataTable<StaffWorkScheduleItem>
         columns={[
-          { header: "날짜", cell: (r) => workDateText(r.workDate) },
+          { header: "날짜", cell: (r) => workDateText(r.workDate, today) },
           { header: "근무지", cell: (r) => <span className="block truncate">{r.storeName}</span> },
           { header: "시작", cell: (r) => r.startTime },
-          { header: "종료", cell: (r) => r.endTime },
+          // 근무스케줄 화면과 같은 글자 — 다음 날이면 「익일 02:00」, 다음 날 0시면 「24:00」
+          { header: "종료", cell: (r) => endLabel(r.startTime, r.endTime) },
         ]}
         rows={items}
         rowKey={(r) => r.workScheduleId}
-        empty="이 주에 잡힌 근무스케줄이 없습니다."
+        empty={scheduleEmptyText(query.period)}
       />
-      <Foot label="주간 근무시간 합계">{hoursText(totalWorkMinutes)}</Foot>
+      {/* 합계는 고른 기간 전체(쪽과 무관). 빈 기간에도 0.0h 를 보인다(2026-10-22 노영주) */}
+      <Foot label={scheduleTotalLabel(query.period)}>{hoursText(totalWorkMinutes)}</Foot>
+      {total > 0 && (
+        <div className="pt-[14px]">
+          <SchedulePagination totalPages={schedulePageCount(total, query.pageSize)} />
+        </div>
+      )}
     </>
   );
 }
