@@ -1,9 +1,15 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — api #113 머지(86f05e1)에 맞춰 `api-types.generated.ts` 를 api main 기준으로 다시 만들었다(front #90). 지운 스키마 · 경로는 없고 BP 권한 그룹 · 내 정보 쪽 스키마 8 · 경로 8 이 더해졌다.
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — api #113 이 TO-DO 목록 경로(`GET /staff-members/:id/todos`)에도 TO-DO 관리 조회 권한을 걸어 403 「조회 권한이 없습니다.」가 올 수 있게 됐다. 직원 상세 TO-DO 칸은 목록 · 요약 중 한 경로라도 그 403 이면 영역 전체를 막는다(`isAreaForbidden`).
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — front #90 리뷰 반영: 직원 상세 TO-DO 영역을 TO-DO 관리 조회 권한으로 목록까지 막고(요약 경로의 403 으로 판단, 2026-10-22 노영주), 근로계약 · TO-DO 칸 머리의 「관리」를 그 메뉴 조회 권한이 없으면 흐리게 둔다(`manage-link.tsx`).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main(#88) 병합: proxy 의 본문 크기 상한(`tooLarge`)도 `/bp/{id}` 를 뗀 주소로 판정한다. main 이 없앤 store-picks(목록에서 고른 점포)는 따르고, 탭 BP 의 bp-fix 표시 · 헤더 링크(`withScope` 앞에 `bpPath`)는 남겼다.
 
 ## 2026-10-21
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — api #113 응답 확정분 반영: 상세 응답 `hqSharingConsent` 로 가맹 점포 직원의 「본사 제공 동의」(동의 · 미동의) 줄을 더했다(직영은 줄 없음, 184 완료 조건 8). 근무스케줄 근무지는 늘 값이 와 「-」 처리를 뺐다.
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 184 코드 리뷰 반영: TO-DO 목록도 영역 규칙(`loadArea`)으로 받아 실패하면 다시 하기를 보이고 요약과 한 `Suspense` 로 묶었다. 영역 데이터 받기를 `summary-load.ts` 로 모았고, 주소 `weekStart` 를 1900~2999년으로 막았으며, 해를 넘는 급여 기간은 끝 날짜의 연도를 남긴다.
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 직원 상세(WHALEERP-184)를 상세 요약 api(#183)에 붙였다. 기본 정보에 직무 · 입사일 · 생년월일을 채우고 재직 상태를 이름 옆 칩으로 옮겼으며, 본인인증 줄은 1차 범위 밖이라 뺐다(2026-10-21 재영). 근로계약 칸은 `…/summary/contracts` 로 바꿔 최근 발송일 · 갱신 예정일을 api 값으로 채우고 계약이 없으면 작성 버튼을 둔다. 근무스케줄(주 넘김) · 급여명세서 영역과 TO-DO 요약 줄 · 최근 처리 이력을 더했다. 영역마다 따로 받아 403 「조회 권한이 없습니다.」면 그 영역만 권한 안내, 다른 실패는 그 영역만 다시 하기다(`summary-view.ts` · `summary-boxes.tsx`).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 공지 첨부가 없으면(404) 로그 없이 「찾을 수 없다」로 안내하고, 상세의 구분 조회 실패도 로그에 남긴다(옆 화면과 맞춤).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 공지사항을 한 쪽 10건으로 나눈다(요청).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 공지사항 · FAQ 화면(#293 · #294)을 만들었다: `/notices`(공지 목록 · 페이지 번호 · FAQ 탭)와 상세 `/notices/{id}`, 첨부 내려받기 경로. 디자인 샘플에 공지사항 상세(`/design/guest/notices/detail`)를 더하고 샘플과 실제 화면이 같은 그리기를 쓰게 했다.
