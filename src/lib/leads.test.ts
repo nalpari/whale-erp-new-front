@@ -62,9 +62,11 @@ test("빈칸만 적은 칸과 api 가 받지 않는 전화번호를 확인 창 �
 
 test("429 · 한글 400 은 api 문구를, 영문 400 은 입력 확인 문구를, 응답 없음은 결과 모름을, 그 밖은 접수 실패를 보인다", () => {
   const dup = "이미 접수된 문의가 있습니다. 담당자가 영업일 기준 1~2일 안에 연락드립니다";
-  assert.deepEqual(leadFailureOf(429, dup), { message: dup, log: false });
-  assert.deepEqual(leadFailureOf(400, "전화번호 형식이 올바르지 않습니다"), { message: "전화번호 형식이 올바르지 않습니다", log: false });
-  assert.deepEqual(leadFailureOf(400, "email must be an email"), { message: LEAD_INVALID, log: true });
-  assert.deepEqual(leadFailureOf(null, ""), { message: LEAD_UNKNOWN, log: true });
-  assert.deepEqual(leadFailureOf(500, "Internal server error"), { message: LEAD_FAILED, log: true });
+  assert.deepEqual(leadFailureOf(429, [dup]), { message: dup, log: false });
+  assert.deepEqual(leadFailureOf(400, ["전화번호 형식이 올바르지 않습니다"]), { message: "전화번호 형식이 올바르지 않습니다", log: false });
+  assert.deepEqual(leadFailureOf(400, ["email must be an email"]), { message: LEAD_INVALID, log: true });
+  // 한글 · 영문이 섞이면 영문을 보이지 않는다.
+  assert.deepEqual(leadFailureOf(400, ["전화번호 형식이 올바르지 않습니다", "email must be an email"]), { message: LEAD_INVALID, log: true });
+  assert.deepEqual(leadFailureOf(null, []), { message: LEAD_UNKNOWN, log: true });
+  assert.deepEqual(leadFailureOf(500, ["Internal server error"]), { message: LEAD_FAILED, log: true });
 });

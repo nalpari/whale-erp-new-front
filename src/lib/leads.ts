@@ -51,11 +51,13 @@ export function leadInputProblem(form: FormData): { name: string; message: strin
 }
 
 // 429(10분 안 중복 접수 「이미 접수된 문의가 있습니다…」 · IP 시간당 한도 「잠시 후 다시 시도해 주세요」)는 api 문구가 안내라 그대로 보인다.
-// 400 은 한글 문구만 그대로 보이고, 영문 기본 문구(이메일 · 길이 · 관심 서비스 값)는 정해진 문구로 바꾸고 로그에 남긴다 — front · api 규칙이 어긋났을 수 있다.
+// 400 은 문장(api 검증은 칸마다 하나)이 모두 한글일 때만 그대로 보인다. 하나라도 영문 기본 문구(이메일 · 길이 · 관심 서비스 값)면
+// 섞어 보이지 않고 정해진 문구로 바꾸며 로그에 남긴다 — front · api 규칙이 어긋났을 수 있다.
 // 그 밖은 정해진 문구를 보이고 로그에 남긴다. status 가 null 이면 응답을 받기 전에 끊겨 결과를 모른다.
-export function leadFailureOf(status: number | null, message: string): { message: string; log: boolean } {
+export function leadFailureOf(status: number | null, messages: string[]): { message: string; log: boolean } {
+  const message = messages.join(" ");
   if (status === 429) return { message, log: false };
-  if (status === 400) return HANGUL.test(message) ? { message, log: false } : { message: LEAD_INVALID, log: true };
+  if (status === 400) return messages.every((m) => HANGUL.test(m)) ? { message, log: false } : { message: LEAD_INVALID, log: true };
   if (status === null) return { message: LEAD_UNKNOWN, log: true };
   return { message: LEAD_FAILED, log: true };
 }
