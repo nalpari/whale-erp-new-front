@@ -1,6 +1,8 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [점포 관리](/stores.md) — 사업자정보 인증을 공통 인증 상자(S-VRNTHD)로 바꿨다. 인증 후 잠금 → [재인증]으로 해제, 저장한 점포는 대표자명만 열고 [재인증 취소]로 되돌린다, 비우는 버튼은 「지우기」 하나, 인증 10분 만료와 저장 때 국세청 재확인 실패는 인증을 풀고 버튼 위 한 줄로 알린다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 사업자정보 인증을 회원가입 · 점포 등록/수정이 같은 규칙 · 문구로 쓰게 했다(S-VRNTHD, 2026-10-22 사용자 확정). 공통 규칙 `lib/biz-verification-rules.ts` · 관리자 웹 상자 `components/site/biz-verification-box.tsx`. 하이픈 입력 허용, 인증 후 잠금 → 재인증으로 해제, 빈 칸 「·」 묶음, 「인증 완료 · 날짜」, 한도 초과는 일반 문구, 인증 10분 만료. MY PAGE 사업자정보 탭은 다른 작업(ekans)에서 같은 규칙으로 맞춘다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 강제 비밀번호 변경(`changeForcedPassword`)도 사용자 IP 를 api 로 넘긴다. api 가 약관 동의 이력에 접속 IP 를 남기는데 Next 서버 주소가 찍히고 있었다(front #97 리뷰). 로그인 설명에 `X-Forwarded-For` 를 믿을 수 있는 배포 전제(앞단 프록시 · api `TRUST_PROXY`)를 더했다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 로그인 서버 액션이 사용자 IP(`X-Forwarded-For`)를 api 로 넘긴다(`apiHeaders()`). 전에는 넘기지 않아 로그인 이력의 접속 IP 가 모두 Next 서버 주소였고 IP 한도를 전원이 나눠 썼다(WHALEERP-392 점검).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 권한 메뉴 등록 팝업의 머리칸 · 묶음 칸이 일부만 켜졌으면 「–」로 보인다(S-KUDELB, 공용 `Checkbox` 에 `indeterminate`). BP 권한 그룹에서 그 쪽의 마지막 한 건을 지우면 앞쪽으로 간다.

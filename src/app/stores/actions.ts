@@ -140,7 +140,11 @@ export async function getStoreHistoriesAction(id: number, page: number): Promise
   }
 }
 
-/** 사업자 진위확인. 연동 전이라 지금은 503 이 온다 — 화면이 그 문구를 칸 아래에 보인다 */
+/**
+ * 사업자 진위확인. 실패 문구는 화면이 네 화면 공통 문구로 바꿔 인증 상자에 보인다(S-VRNTHD).
+ * 503(국세청 장애) · 429(한도) · 그 밖의 예상 밖 상태는 자주 나면 알아야 하므로 로그를 남긴다 — 회원가입 verifyBusiness 와 같다.
+ * 입력값(대표자명)은 남기지 않는다.
+ */
 export async function verifyStoreBusinessAction(
   input: BusinessVerificationInput,
 ): Promise<ActionResult<BusinessVerificationResult>> {
@@ -148,6 +152,7 @@ export async function verifyStoreBusinessAction(
   try {
     return { ok: true, ...(await verifyStoreBusiness(input)) };
   } catch (error) {
+    if (error instanceof ApiError && ![400, 401, 403, 404].includes(error.status)) console.error("점포 사업자정보 인증 api 오류", error.status, error.message);
     return failureOf(error, "사업자정보 인증");
   }
 }
