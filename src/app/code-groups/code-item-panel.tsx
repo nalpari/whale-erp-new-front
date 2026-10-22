@@ -9,8 +9,9 @@ import {
   conflictCode,
   dropCreatedAdded,
   followSameRows,
-  itemChanged,
+  itemsDirty,
   renumberAdded,
+  unusableCodeMessage,
   withKeptAdded,
   type ItemDraft,
 } from "@/lib/code-drafts";
@@ -19,14 +20,16 @@ import { codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-valid
 import type { CodeGroup, CodeItem } from "@/lib/codes";
 import { usePagePermission } from "@/components/site/session-gate";
 import { saveCodeItemsAction } from "./actions";
-import { CodePanel, FieldErrors, SaveFailedBand, UNKNOWN_RESULT } from "./code-panel";
-import { useUnsavedChanges } from "./unsaved-changes";
-import { useRowReorder } from "./use-row-reorder";
+import { CodePanel, FieldErrors, SaveFailedBand, UNKNOWN_RESULT } from "@/components/site/code-editor/code-panel";
+import { useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
+import { useRowReorder } from "@/components/site/code-editor/use-row-reorder";
+import { DeletePending, DeleteToggle, Struck } from "@/components/site/code-editor/delete-mark";
 
 // 오른쪽 상세 코드 목록 — 고른 그룹의 플랫폼 원본 상세 코드. BP전용 코드는 api 가 빼고 준다.
 // 상세 코드에는 관리 주체 칸이 없다 — 소속 그룹을 따른다(PL-VOCZCE). SERVICE 그룹이면 상세 코드가 서비스 코드, 코드명이 서비스명이다.
 // 기존 코드는 코드명 · 사용 상태만 고친다. 서비스 코드 사용 끄기도 확인창 없이 저장할 때 반영한다.
-// [추가]를 누를 때마다 맨 끝에 입력 행이 하나씩 생기고, [저장] 한 번으로 바뀐 행과 새 행을 함께 보낸다(수정 → 등록 두 요청, actions.ts).
+// 기존 코드는 어느 것이든 [삭제]로 지울 행으로 표시해 두고 [저장] 때 지운다(삭제 권한, 논리 삭제). 지운 코드를 다시 등록하면 api 가 그 행의 삭제를 풀어 되살린다(2026-10-22).
+// [추가]를 누를 때마다 맨 끝에 입력 행이 하나씩 생기고, [저장] 한 번으로 바뀐 행 · 지울 행 · 새 행을 함께 보낸다(수정 → 삭제 → 등록, actions.ts).
 // 새 코드는 기존 코드와도, 다른 새 행과도 겹칠 수 없다. 새 행은 저장 전에 [빼기]로 지울 수 있다.
 // 표시 순서는 숫자로만 보이고 직접 입력하지 않는다. 손잡이로 끌거나 ↑ · ↓ 로 옮기면 1부터 다시 매긴다.
 
@@ -47,8 +50,8 @@ export function CodeItemPanel({
   loadFailed?: boolean;
 }) {
   // 메뉴 권한(로그인 정보)으로 보인다 — 막는 것은 api 다. api 는 기존 행 수정(수정 권한)과 새 행 등록(등록 권한)이 따로다.
-  // 그래서 기존 행 고치기 · 순서 옮기기는 수정 권한, [추가]와 새 행 입력 · 빼기는 등록 권한, [저장]은 둘 중 하나만 있어도 보인다.
-  const { manage, canAdd, canSave } = codePanelAccess({ ...usePagePermission(), loadFailed });
+  // 그래서 기존 행 고치기 · 순서 옮기기는 수정 권한, [추가]와 새 행 입력 · 빼기는 등록 권한, [삭제]는 삭제 권한, [저장]은 셋 중 하나만 있어도 보인다.
+  const { manage, canAdd, canDelete, canSave } = codePanelAccess({ ...usePagePermission(), loadFailed });
   const isService = group?.groupCode === "SERVICE";
   const router = useRouter();
   const toast = useToast();
@@ -83,9 +86,8 @@ export function CodeItemPanel({
   }
 
   const original = new Map(items.map((i) => [i.itemCode, i]));
-  const changed = (d: Draft) => itemChanged(d, original.get(d.itemCode));
   const addedRows = drafts.filter((d) => d.added);
-  const dirty = addedRows.length > 0 || drafts.some(changed);
+  const dirty = itemsDirty(drafts, items);
 
   useEffect(() => setDirty("items", dirty), [dirty, setDirty]);
   // 그룹을 바꾸면 이 패널은 새로 그려진다. 사라질 때 변경 표시를 지운다.
@@ -114,7 +116,7 @@ export function CodeItemPanel({
   const validate = (rows: Draft[] = drafts): Record<string, string> => {
     const next: Record<string, string> = {};
     const addedRows = rows.filter((d) => d.added);
-    for (const d of rows) if (!d.label.trim()) next[`label:${d.key}`] = `${rowName(d, rows)} — ${labelName}을 입력해 주세요.`;
+    for (const d of rows) if (!d.deleted && !d.label.trim()) next[`label:${d.key}`] = `${rowName(d, rows)} — ${labelName}을 입력해 주세요.`;
 
     // 기존 코드와 겹치는 것, 새 행끼리 겹치는 것을 한 번에 찾는다.
     const codes = addedRows.map((d) => normalizeCode(d.itemCode));
@@ -165,8 +167,8 @@ export function CodeItemPanel({
         setDrafts((rows) => dropCreatedAdded(rows, input.creates.map((c) => c.itemCode)).map((d) => ({ ...d, label: d.label.trim() })));
         setErrors({});
         setFailure(null);
-        // 새로 만든 것이 있으면 ‘저장되었습니다.’, 고치기만 했으면 ‘수정되었습니다.’(공통 토스트)
-        return toast(input.creates.length ? "saved" : "updated");
+        // 새로 만든 것이 있으면 ‘저장되었습니다.’, 지우기만 했으면 ‘삭제되었습니다.’, 고치기만 했으면 ‘수정되었습니다.’(공통 토스트)
+        return toast(input.creates.length ? "saved" : input.deletes.length && !input.updates.length ? "deleted" : "updated");
       }
       // 아무것도 저장되지 않았으면 이어 둘 일이 없다. 수정만 저장됐으면 새 행은 다시 받은 목록 뒤에 남는다(savingFrom).
       if (!result.updatesSaved) setSavingFrom(null);
@@ -176,7 +178,12 @@ export function CodeItemPanel({
       if (view.conflict) {
         const code = conflictCode(view.conflict);
         const row = addedRows.find((d) => normalizeCode(d.itemCode) === code);
-        setErrors({ [`code:${row?.key ?? "server"}`]: view.conflict });
+        // 화면에 없는 BP 행(BP전용 등)과 겹쳤으면 「이 그룹에서 사용할 수 없는 상세 코드입니다」로 보인다
+        const message = unusableCodeMessage(
+          view.conflict,
+          items.map((i) => i.itemCode),
+        );
+        setErrors({ [`code:${row?.key ?? "server"}`]: message });
       }
       setFailure(view.band);
     });
@@ -203,7 +210,7 @@ export function CodeItemPanel({
                 >
                   ×
                 </button>
-              ) : manage ? (
+              ) : manage && !d.deleted ? (
                 reorder.handle(d)
               ) : null,
           } satisfies Column<Draft>,
@@ -214,7 +221,9 @@ export function CodeItemPanel({
       width: "w-[220px]",
       align: "left",
       cell: (d) =>
-        d.added ? (
+        d.deleted ? (
+          <Struck>{d.itemCode}</Struck>
+        ) : d.added ? (
           <TextField
             value={d.itemCode}
             onChange={(e) => update(d.key, { itemCode: e.target.value.toUpperCase() })}
@@ -233,7 +242,9 @@ export function CodeItemPanel({
       align: "left",
       // 기존 행은 수정 권한, 새 행은 등록 권한으로 고친다(새 행은 등록 권한이 있어야 생긴다)
       cell: (d) =>
-        manage || d.added ? (
+        d.deleted ? (
+          <Struck>{d.label}</Struck>
+        ) : manage || d.added ? (
           <TextField
             value={d.label}
             onChange={(e) => update(d.key, { label: e.target.value })}
@@ -252,7 +263,9 @@ export function CodeItemPanel({
       header: "사용 상태",
       width: "w-[120px]",
       cell: (d) =>
-        manage || d.added ? (
+        d.deleted ? (
+          <DeletePending />
+        ) : manage || d.added ? (
           <Toggle
             label="사용"
             checked={d.status === "ACTIVE"}
@@ -263,6 +276,17 @@ export function CodeItemPanel({
           <Badge tone={d.status === "ACTIVE" ? "on" : "off"}>{d.status === "ACTIVE" ? "사용" : "미사용"}</Badge>
         ),
     },
+    // 플랫폼 공통코드에서는 저장된 상세 코드 어느 것이든 지운다(삭제 권한). 새 행은 이동 칸의 [×]로 뺀다.
+    ...(canDelete
+      ? [
+          {
+            header: "삭제",
+            width: "w-[70px]",
+            cell: (d: Draft) =>
+              d.added ? null : <DeleteToggle deleted={Boolean(d.deleted)} name={d.itemCode} onToggle={() => update(d.key, { deleted: !d.deleted })} />,
+          } satisfies Column<Draft>,
+        ]
+      : []),
   ];
 
   return (

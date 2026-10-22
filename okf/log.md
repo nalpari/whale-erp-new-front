@@ -1,6 +1,11 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [BP 환경설정](/config.md) · [플랫폼 시스템관리](/system.md) · [Whale ERP Frontend](/whale-erp-front.md) — 상세 코드 삭제 정책을 고쳤다: 플랫폼 공통코드는 중복 검사에서 지운 코드를 빼고 지운 코드를 다시 등록하면 삭제를 풀어 되살린다(api 작업 중). BP 공통코드는 플랫폼제공 · BP전용 코드를 모두 지운다(`bpDeletable`). 저장 409 에서 표에 없는 코드와 겹치면 「이 그룹에서 사용할 수 없는 상세 코드입니다: CODE」로 보인다(`unusableCodeMessage`).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [BP 환경설정](/config.md) · [플랫폼 시스템관리](/system.md) — 공통코드 상세 코드 삭제를 넣었다(api `DELETE …/items { itemCodes }`). 플랫폼은 어느 코드든, BP 는 BP전용만 지운다. 행마다 [삭제]로 표시해 두고 [저장] 때 수정 → 삭제 → 등록 순서로 보낸다(`saveUpdateThenCreate` → `saveInOrder`). BP 는 플랫폼제공 코드의 사용 상태를 자유롭게 바꾼다 — 다시 켜기 잠금 · 안내 띠(`activationLocked`)를 지웠다. 지운 코드 재등록은 지금은 409 그대로다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 공통코드 관리에 BP 공통코드 관리와 같은 왼쪽 필터(그룹 코드 · 그룹명)를 더했다. 필터는 공용 `CodeGroupFilter`(code-editor)로 빼서 두 화면이 함께 쓰고, api `GET /code-groups` 의 `groupCode` · `groupName` 검색을 부른다. 검색 조건은 주소에 두고 그룹 · 쪽을 옮겨도 이어 간다. 검색어 다듬기(`searchTerm`)는 `code-drafts.ts` 로 옮겼다.
+* **Update**: [BP 환경설정](/config.md) · [Whale ERP Frontend](/whale-erp-front.md) — BP 공통코드 그룹 노출 기준을 바꿨다(api 반영, A안): 사용 중인 플랫폼고정 · 플랫폼제공 그룹 전부를 BP 에게 보이고(BP 적용 여부를 보지 않음) 사용중지 그룹은 뺀다. 회원가입하면 플랫폼제공 그룹 전부의 원본 상세 코드를 새 BP 로 복사한다. front 는 사용중지 그룹 처리(그룹명 옆 「사용중지」 태그 · 잠금 띠, `bpPanelLock` 의 `inactive`)를 지우고 타입을 다시 만들었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [BP 환경설정](/config.md) — BP 공통코드 관리 화면(`/bp/{id}/bp-code-groups`, MN000014)을 만들었다. 그룹 목록은 읽기만, 상세 코드는 플랫폼 공통코드 패널과 같은 틀로 추가 · 수정하고 관리 주체를 보인다. 플랫폼 사용자 · 플랫폼고정 그룹은 조회만, 사용중지 그룹은 잠그고, 플랫폼이 사용 중지한 코드는 다시 켜지 못한다. 공통코드 패널 조각(`CodePanel` · 저장 안 한 변경 확인 · 행 끌어 옮기기)을 `src/components/site/code-editor/` 로 옮겨 두 화면이 함께 쓴다. config.md 의 화면 주소를 메뉴 URL `/bp-code-groups` 로 맞췄다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main(#88) 병합: proxy 의 본문 크기 상한(`tooLarge`)도 `/bp/{id}` 를 뗀 주소로 판정한다. main 이 없앤 store-picks(목록에서 고른 점포)는 따르고, 탭 BP 의 bp-fix 표시 · 헤더 링크(`withScope` 앞에 `bpPath`)는 남겼다.
 
 ## 2026-10-21

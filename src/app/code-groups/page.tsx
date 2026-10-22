@@ -1,18 +1,22 @@
 import { PageBar } from "@/components/common";
+import { searchTerm } from "@/lib/code-drafts";
 import { DEFAULT_PAGE_SIZE, getCodeGroups, getCodeItems } from "@/lib/codes";
+import { CodeFilter } from "./code-filter";
 import { CodeGroupPanel } from "./code-group-panel";
 import { CodeItemPanel } from "./code-item-panel";
-import { UnsavedChangesProvider } from "./unsaved-changes";
+import { UnsavedChangesProvider } from "@/components/site/code-editor/unsaved-changes";
 
-// 플랫폼 공통코드 관리 (S-UQPNIH). 한 화면에 왼쪽 그룹 목록, 오른쪽 고른 그룹의 상세 코드를 둔다.
-// 쪽과 고른 그룹은 주소(?page · ?group)에 둔다. 고른 그룹이 이 쪽에 없으면 이 쪽의 첫 그룹을 고른다.
+// 플랫폼 공통코드 관리 (S-UQPNIH). 한 화면에 왼쪽 필터(그룹 코드 · 그룹명 — BP 공통코드 관리와 같다), 그룹 목록, 고른 그룹의 상세 코드를 둔다.
+// 검색 · 쪽 · 고른 그룹은 주소(?groupCode · ?groupName · ?page · ?group)에 둔다. 고른 그룹이 이 쪽에 없으면 이 쪽의 첫 그룹을 고른다.
 // 메뉴 조회 권한이 없으면 공통 틀이 메뉴에서 숨기고, 주소로 들어오면 안내 뒤 돌려보낸다(SessionGate). 고치기 · 추가 버튼은 패널이 메뉴 권한으로 가른다.
 export default async function PlatformCodesPage({ searchParams }: PageProps<"/code-groups">) {
   const params = await searchParams;
   const page = positiveInt(params.page) ?? 1;
+  const groupCode = searchTerm(params.groupCode, 20);
+  const groupName = searchTerm(params.groupName, 50);
 
   const [groups, owners] = await Promise.all([
-    getCodeGroups({ page, pageSize: DEFAULT_PAGE_SIZE }),
+    getCodeGroups({ page, pageSize: DEFAULT_PAGE_SIZE, groupCode, groupName }),
     // 관리 주체 한글은 화면에 상수로 두지 않고 공통코드 MANAGE_OWNER 에서 읽는다(naming.md 화면 문구).
     getCodeItems("MANAGE_OWNER"),
   ]);
@@ -32,14 +36,16 @@ export default async function PlatformCodesPage({ searchParams }: PageProps<"/co
       <PageBar title="플랫폼 공통코드 관리" />
       <UnsavedChangesProvider>
         <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
+          <CodeFilter key={`${groupCode}|${groupName}`} groupCode={groupCode} groupName={groupName} />
           <CodeGroupPanel
-            // 다른 쪽으로 가면 새로 그린다. 그룹만 바꿀 때는 그대로 두어 목록 스크롤 위치를 지킨다 —
+            // 다른 쪽 · 다른 검색으로 가면 새로 그린다. 그룹만 바꿀 때는 그대로 두어 목록 스크롤 위치를 지킨다 —
             // 버리기로 한 변경은 패널이 고른 그룹이 바뀔 때 스스로 지운다.
-            key={page}
+            key={`${page}|${groupCode}|${groupName}`}
             groups={groups.items}
             total={groups.total}
             page={page}
             pageSize={DEFAULT_PAGE_SIZE}
+            search={{ groupCode, groupName }}
             selected={selected?.groupCode}
             ownerLabels={ownerLabels}
           />

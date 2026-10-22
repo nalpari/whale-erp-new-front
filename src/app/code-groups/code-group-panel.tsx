@@ -10,11 +10,12 @@ import type { CodeGroup, ManageOwnerCode } from "@/lib/codes";
 import { usePagePermission } from "@/components/site/session-gate";
 import { applyCodeGroupToBpsAction, saveCodeGroupsAction } from "./actions";
 import { BpApplyDialog } from "./bp-apply-dialog";
-import { CodePanel, DoneNotice, FieldErrors, SaveFailedBand, UNKNOWN_RESULT, UNREACHABLE } from "./code-panel";
+import { CodePanel, DoneNotice, FieldErrors, SaveFailedBand, UNKNOWN_RESULT, UNREACHABLE } from "@/components/site/code-editor/code-panel";
 import { codesHref } from "./codes-href";
-import { GuardedLink, useUnsavedChanges } from "./unsaved-changes";
+import { searchedEmpty } from "@/components/site/code-editor/code-group-filter";
+import { GuardedLink, useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
 
-// 왼쪽 공통코드 그룹 목록. 그룹 코드를 누르면 오른쪽에 그 그룹의 상세 코드가 선다(?group=).
+// 가운데 공통코드 그룹 목록. 그룹 코드를 누르면 오른쪽에 그 그룹의 상세 코드가 선다(?group=). 그룹 · 쪽을 옮겨도 왼쪽 필터의 검색 조건은 이어 간다.
 // 기존 그룹은 그룹명 · 사용 상태만 고치고(코드 · 관리 주체는 바꾸지 않는다), [추가]는 맨 끝에 입력 행 하나를 붙인다.
 // [저장] 한 번으로 바뀐 행과 새 행을 함께 보낸다(수정 → 등록 두 요청, actions.ts). 그룹 순서는 화면에서 바꾸지 않는다(2026-10-12) — 표시 순서대로 보이기만 한다.
 // 플랫폼제공 그룹은 [BP 적용]으로 사용 중인 모든 BP 에 복사한다 — BP 에 이미 있는 상세 코드는 건너뛰고 없는 것만 넣는다(2026-10-12).
@@ -30,6 +31,7 @@ export function CodeGroupPanel({
   total,
   page,
   pageSize,
+  search,
   selected,
   ownerLabels,
 }: {
@@ -37,13 +39,17 @@ export function CodeGroupPanel({
   total: number;
   page: number;
   pageSize: number;
+  /** 왼쪽 필터의 검색 조건 — 그룹 · 쪽을 옮겨도 이어 간다. */
+  search: { groupCode: string; groupName: string };
   selected?: string;
   /** 관리 주체 한글 — 공통코드 MANAGE_OWNER 에서 읽은 값. */
   ownerLabels: Record<string, string>;
 }) {
   // 메뉴 권한(로그인 정보)으로 보인다 — 막는 것은 api 다. api 는 기존 행 수정(수정 권한)과 새 행 등록(등록 권한)이 따로다.
   // 그래서 기존 행 고치기 · BP 적용은 수정 권한, [추가]와 새 행 입력은 등록 권한, [저장]은 둘 중 하나만 있어도 보인다.
-  const { manage, canAdd, canSave } = codePanelAccess(usePagePermission());
+  // 그룹에는 삭제가 없어 삭제 권한은 넘기지 않는다 — [저장]이 삭제 권한만으로 보이지 않게.
+  const permission = usePagePermission();
+  const { manage, canAdd, canSave } = codePanelAccess({ update: permission.update, create: permission.create });
   const router = useRouter();
   const toast = useToast();
   const { setDirty, isDirty, navigate } = useUnsavedChanges();
@@ -208,7 +214,7 @@ export function CodeGroupPanel({
             {d.groupCode}
           </b>
         ) : (
-          <GuardedLink href={codesHref({ page, group: d.groupCode })} className="text-erp-link hover:underline">
+          <GuardedLink href={codesHref({ ...search, page, group: d.groupCode })} className="text-erp-link hover:underline">
             {d.groupCode}
           </GuardedLink>
         ),
@@ -316,6 +322,7 @@ export function CodeGroupPanel({
         rows={drafts}
         rowKey={(d) => (d.added ? "__added" : d.groupCode)}
         rowState={(d) => (d.added ? "added" : d.groupCode === selected ? "selected" : undefined)}
+        empty={searchedEmpty(search) ?? "등록한 공통코드 그룹이 없습니다."}
       />
       <FieldErrors messages={Object.values(errors)} />
       {manage && <BpApplyDialog group={applyTarget} busy={applying} onConfirm={handleApply} onCancel={() => setApplyTarget(null)} />}
@@ -323,7 +330,7 @@ export function CodeGroupPanel({
         <Pagination
           page={page}
           totalPages={Math.max(1, Math.ceil(total / pageSize))}
-          onPageChange={(next) => navigate(codesHref({ page: next }))}
+          onPageChange={(next) => navigate(codesHref({ ...search, page: next }))}
         />
       </div>
     </CodePanel>
