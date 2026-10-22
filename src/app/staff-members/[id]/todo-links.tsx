@@ -11,10 +11,10 @@ import { MENU_CODE } from "@/lib/menus";
 export function TodoTitleLink({ todoId, title }: { todoId: number; title: string }) {
   const canRead = useMenuRole(MENU_CODE.todos, "read");
   return canRead ? (
-    <Link href={`/todos/${todoId}`} className="min-w-0 flex-1 truncate text-erp-link hover:underline">
+    <Link href={`/todos/${todoId}`} className="min-w-0 truncate text-erp-link hover:underline">
       {title}
     </Link>
   ) : (
-    <span className="min-w-0 flex-1 truncate">{title}</span>
+    <span className="min-w-0 truncate">{title}</span>
   );
 }
