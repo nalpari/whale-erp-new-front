@@ -4,11 +4,11 @@ import type { AdminMenu } from "./session";
 
 /**
  * 코드로 직접 찾는 메뉴(api 메뉴 시드 — 업무 API 도 이 코드로 메뉴 권한을 판정한다). 화면 자기 버튼의 권한은 코드 없이 주소로 찾는다(usePagePermission).
- * 여기 남는 것: 아직 usePagePermission 으로 옮기지 않은 화면(todos), 다른 메뉴의 권한을 보는 버튼(직원 상세의 TO-DO 링크 → todos,
+ * 여기 남는 것: 아직 usePagePermission 으로 옮기지 않은 화면(todos), 다른 메뉴의 권한을 보는 버튼(직원 상세의 TO-DO · 근무스케줄 링크 → todos · workSchedules,
  * 직원 정보 관리의 「직원 초대」 → contracts 등록, 직원 목록 · 상세의 가입 초대 재발송 → contracts 수정),
  * 권한이 아닌 용도(메뉴 관리의 자기 잠금 확인 → platformMenus). staffMembers 는 화면에서 쓰지 않는다 — 메뉴 판정 테스트가 MenuCode 로 쓰는 시드 값이다.
  */
-export const MENU_CODE = { platformMenus: "MN000215", staffMembers: "MN000005", contracts: "MN000006", todos: "MN000026" } as const;
+export const MENU_CODE = { platformMenus: "MN000215", staffMembers: "MN000005", contracts: "MN000006", workSchedules: "MN000010", todos: "MN000026" } as const;
 export type MenuCode = (typeof MENU_CODE)[keyof typeof MENU_CODE];
 export type MenuAction = keyof AdminMenu["permission"];
 

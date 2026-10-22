@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-21T15:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-21T09:21:20Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -49,7 +49,7 @@ sources:
   - id: staff-detail-page
     resource: ../../src/app/staff-members/[id]/page.tsx
     title: 직원 상세 화면(틀 + 기본 정보 · 퇴직일 · 가입 상태 · 초대 · 이메일 + 비밀번호 초기화 자리 + 근로계약 칸)
-    last_modified: 2026-10-21T12:00:00Z
+    last_modified: 2026-10-21T09:21:20Z
   - id: contract-box
     resource: ../../src/app/staff-members/[id]/contract-box.tsx
     title: 상세 근로계약 칸 — 계약 상세를 따로 받고 실패하면 이 칸만 안내 · 다시 하기(WHALEERP-184). 줄 라벨 칸은 DetailTable 과 같은 폭(110px)을 옮겨 쓴다.
@@ -105,7 +105,7 @@ sources:
 바깥 틀과 `ErpRoot` 를 씌운다. 목록 · 상세 page 는 `PageBar`(제목 줄)부터 그리고, `layout.tsx` 는 탭 제목만 둔다
 (WHALEERP-593, 2026-10-14). 주소는 메뉴 url 과 같아야 열린다 — 「직원 정보 관리」(MN000005) 메뉴 url 을 `/staff` 에서
 `/staff-members` 로 바꾸는 것은 1팀 일이고(#592 결정), 반영 전에는 메뉴 권한 확인에서 막힌다. 상세의 「관리」 링크는 같은
-결정의 메뉴 url 로 건다. 지금은 화면이 있는 근로계약(그 계약 상세 `/contracts/{id}`, 계약이 없으면 `/contracts`) · TO-DO(`/todos`, MN000026)만 링크이고, 근무스케줄(`/work-schedules`) ·
+결정의 메뉴 url 로 건다. 지금은 화면이 있는 근로계약(그 계약 상세 `/contracts/{id}`, 계약이 없으면 `/contracts`) · TO-DO(`/todos`, MN000026) · 근무스케줄(`/work-schedules?store=<그 직원 근무지>`, MN000010 — 조회 권한이 없으면 흐린 글자, `todo-links.tsx` 의 `menu="workSchedules"`)만 링크이고,
 출퇴근 현황(`/attendance-records`) · 급여명세서(`/payslips`)는 흐린 「관리」로 두었다 — 걸면 메뉴가
 없을 때 「접근 권한이 없는 메뉴」로 막혀 권한 문제처럼 보인다(front #26 리뷰). 화면이 생기면 링크로 바꾼다.
 
@@ -273,7 +273,7 @@ sources:
 # 아직 없는 것
 
 * 상세 기본 정보의 「본인인증」 — 가입할 때의 휴대폰 본인인증(`identity_verifications`, 계정 단위)인데 직원 목록 · 상세 응답에 값이 없다. 상세 요약 api(#183)를 기다린다.
-* 가입 연결 확인 시트(#139), 일괄 저장 · 직원 초대(근로계약서 초안), 상세 오른쪽 「관리」 링크의 대상 화면(근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO). 근로계약 화면은 있다.
+* 가입 연결 확인 시트(#139), 일괄 저장 · 직원 초대(근로계약서 초안), 상세 오른쪽 「관리」 링크의 대상 화면(출퇴근 현황 · 급여명세서). 근로계약 · TO-DO · 근무스케줄 화면은 있다(근무스케줄 칸 안은 아직 「준비 중입니다.」).
 * 쪽 이동이 `router.replace` 라 뒤로 가기가 쪽을 거슬러 가지 않는다.
 
 # 공통 Button 의 danger

@@ -29,10 +29,11 @@ function NotReady() {
 }
 
 // 「관리」 대상 화면이 아직 없어 링크를 걸지 않는다. 걸면 메뉴 url 이 없을 때 공통 틀이 「접근 권한이 없는 메뉴」로
-// 막아 권한 문제처럼 보인다. 화면이 생기면 메뉴 url(#592 결정)을 manageHref 로 넣는다: 근무스케줄 /work-schedules ·
-// 출퇴근 현황 /attendance-records · 급여명세서 /payslips. TO-DO 는 화면(#116)과 메뉴 url(MN000026 /todos)이 생겨 걸었다.
+// 막아 권한 문제처럼 보인다. 화면이 생기면 메뉴 url(#592 결정)을 manageHref 로 넣는다: 출퇴근 현황 /attendance-records ·
+// 급여명세서 /payslips. TO-DO 는 화면(#116)과 메뉴 url(MN000026 /todos)이, 근무스케줄은 화면(#202)과 메뉴 url(MN000010 /work-schedules)이
+// 생겨 걸었다 — 근무스케줄은 그 직원의 근무지로 연다(아래 storeHref).
 const RIGHT_BOXES: { title: string; manageHref?: string }[] = [
-  { title: "근무스케줄" },
+  { title: "근무스케줄", manageHref: "/work-schedules" },
   { title: "출퇴근 현황" },
   { title: "급여명세서" },
   { title: "TO-DO", manageHref: "/todos" },
@@ -180,7 +181,13 @@ export default async function StaffMemberDetailPage({
                     key={box.title}
                     title={box.title}
                     manageHref={box.manageHref}
-                    manage={box.title === "TO-DO" && box.manageHref ? <TodoManageLink href={box.manageHref} /> : undefined}
+                    manage={
+                      box.title === "TO-DO" && box.manageHref ? (
+                        <TodoManageLink href={box.manageHref} />
+                      ) : box.title === "근무스케줄" ? (
+                        <TodoManageLink href={`/work-schedules?store=${staff.store.storeId}`} menu="workSchedules" />
+                      ) : undefined
+                    }
                   >
                     {box.title === "TO-DO" ? <StaffTodos todos={todos} statusLabels={todoStatusLabels} today={kstToday()} /> : <NotReady />}
                   </Box>

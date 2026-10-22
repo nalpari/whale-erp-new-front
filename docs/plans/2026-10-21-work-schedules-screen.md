@@ -1,0 +1,62 @@
+# 근무스케줄 관리 화면 계획
+
+**목표:** 관리자 웹에 근무스케줄 관리(`/work-schedules`)를 만든다 — 주간 · 월간 보기, 한 명 · 여러 명 등록과 수정 · 삭제, 지난 주 복사 미리보기, 변경 이력. 직원 상세의 근무스케줄 「관리」 링크를 잇는다.
+
+**Plane 일감 (#196 근무스케줄 관리 아래):** #202 주간 근무스케줄 화면 · #343 주간 · 월간 보기 · #203 등록 인라인 폼 · #204 지난 주 복사 미리보기 · #608 변경 이력(화면). 재영 결정(2026-10-21): #608 화면은 단독 페이지로 먼저 만들지 않고 이 화면과 묶는다.
+
+**짝 문서:** api `docs/plans/2026-10-21-work-schedules.md` — API 는 모두 머지됐다(api #100 · #103 · #106 · #109 · #110 · #111 · #112 · #114).
+
+**작업 위치:** worktree `~/.whale-erp-worktrees/whale-erp-front/colosseum`, 브랜치 `clefable` (origin/main `b3d531da`)
+
+## 근거
+
+| 근거 | 쓰는 곳 |
+|---|---|
+| 목업 `docs/mockup/staff/index.html` 근무스케줄 탭(600–1205행) · 쟁점 STAFF-13 · 26 · 29 · 33~42 | 화면 구성 · 규칙 |
+| 데모 `docs/demo/staff/work-schedules.html` (원본 `src/staff-sections.mjs` `schedTab` · `src/staff-parts.mjs` `schedWeek` · `schedMonth` · `schedForm`) | 1팀 컴포넌트로 옮길 때의 배치 · 크기 |
+| api 결정 Q1~Q13 (2026-10-21 재영) | 30분 단위 · 자정 넘김 · 가입 완료자만 · 본사 가림 · 복사 409 · 이력 기간 |
+| 메뉴 `MN000010` 「근무스케줄 관리」 url `/work-schedules` | 공통 틀 · 권한(`usePagePermission`) |
+
+## API (모두 `/work-schedules`)
+
+| 화면 | 경로 |
+|---|---|
+| 주간 · 월간 | `GET /work-schedules?storeId=&from=&to=` (42일 이하) — `staff`(행 · `schedulableDates` · `isMasked`) · `items` · `days`(`headcount` · `coverage[48]`) |
+| 등록 패널 | `GET /assignable-staff?storeId=&workDate=` · `GET /defaults?staffMemberId=&workDate=` · `POST /` · `POST /bulk` |
+| 수정 · 삭제 | `PATCH /:id` · `DELETE /:id` |
+| 지난 주 복사 | `GET /copy-last-week?storeId=&weekStart=` · `POST /copy-last-week` (409 `WORK_SCHEDULE_WEEK_NOT_EMPTY` · `WORK_SCHEDULE_COPY_HIDDEN_STAFF`) |
+| 변경 이력 | `GET /histories?storeId=&from=&to=&staffMemberId=&page=&pageSize=` |
+
+## 화면
+
+1. **틀** — `src/app/work-schedules/`: `page.tsx`(서버 컴포넌트) · `layout.tsx` · `error.tsx` · `actions.ts` · `src/lib/work-schedules-api.ts`. 화면 상태는 URL 에만 둔다: `?store=&week=YYYY-MM-DD(월요일)&view=week|month&day=&month=YYYY-MM`. 점포는 관리하는 점포 `Select`(TO-DO 와 같은 `useStores()`), 기본은 첫 점포.
+2. **도구 줄** — 주 이동 ‹ › · 날짜 고르면 그 주 · 「이번 주」. 오른쪽에 「변경 이력」 · 「지난 주 복사」(그 주가 비었을 때만) · 「근무스케줄 등록」. 버튼은 권한(create · read)으로 가린다.
+3. **주간 보기**(#202 · #343, STAFF-26 · 29 · 33 · 37 · 39) — 요일 칩 7개(「토 22 3명」, `aria-pressed`) → 고른 요일의 시간축 24칸(00~23).
+   - 직원 줄은 그날 `schedulableDates` 에 든 직원만(휴무 포함). 막대는 시작 · 길이 비율, 자정을 넘으면 24시에서 자르고 글자로 「~익일 02:00」. 쪼갠 근무는 한 줄에 막대 여럿. 막대를 누르면 수정 패널.
+   - 가린 행(`isMasked`)은 줄은 두되 이름 · 막대를 비운다. key 는 순번.
+   - 근무 인원 줄 24칸 — 한 시간 칸 값은 API 의 30분 두 칸 중 **작은 값**(30분 공백도 0 으로 보이게). 그날 첫 근무 시작 전 · 마지막 근무 종료 뒤는 빈칸. 0 빨강 · 1 회색 · 2 이상 파랑, 글자로도 숫자.
+   - 공백 줄: 첫 근무 시작~마지막 근무 종료 사이 0 인 구간마다 「공백 n시간 · 15:00-17:00」과 「이 시간대에 배정」(등록 패널을 그 근무일 · 시각으로 연다).
+4. **월간 보기**(#343) — 왼쪽: 고른 날 · ‹ › · 그날 근무자(이름 · 고용 형태 · 시간). 오른쪽: 달 이동 · 「이번 달」 · 월~일 달력, 칸에는 `headcount` 만. 달력 6주를 한 번에(42일) 읽는다.
+5. **등록 · 수정 패널**(#203) — `SlidePanel`, 바깥 눌러 닫지 않음.
+   - 방식 「한 명 / 여러 명 일괄」(라디오). 공통: 근무일(하루).
+   - 한 명: 직원 `Select`(`assignable-staff`), 고르면 `defaults` 로 시작 · 종료 · 휴게를 채움, 「계약 값으로 되돌리기」. 시각은 30분 단위 `Select`(00:00~24:00), 휴게는 분 숫자.
+   - 여러 명: 체크 목록 → 직원마다 줄(기본값 미리 채움). 저장은 `POST /bulk`, 결과의 `failed` 를 줄마다 사유로 보이고 성공한 줄은 닫는다.
+   - 수정은 같은 패널(한 명, 직원 고정) + 「삭제」(확인창).
+   - 서버 코드별 문구: `WORK_SCHEDULE_OVERLAP` 「같은 직원의 근무스케줄과 시간이 겹칩니다」 등 API 문장을 그대로.
+6. **지난 주 복사 미리보기**(#204, STAFF-13) — 도구 줄 아래 패널. 표: 직원 · 지난 주(`5일 · 40.0h`) · 이번 주 · 처리(「복사」 · 「제외 · 근로계약 미체결」 · 「제외 · 08-20 퇴직」 · 「일부 제외」 · 「지난 주 없음 · 따로 넣는다」). 409 는 안내만(빈 주 아님 · 「가맹 점포 관리자가 복사해 주세요」). 「n명 복사」 → `POST`.
+7. **변경 이력**(#608) — 「변경 이력」 버튼으로 여는 `SlidePanel`. 필터: 기간(`DateField` 둘) · 직원. 줄: 일시 · 구분(추가 · 수정 · 삭제 — 삭제는 빨강 꼬리표 + 글자) · 「서지안 09-04 13:00-21:30 → 09:00-17:00 · 정하윤」. 페이지당 20 · 50 · 100 + `Pagination`.
+8. **직원 상세** — 근무스케줄 칸 `manageHref` 를 `/work-schedules?store=<근무지>` 로(`MENU_CODE` 에 MN000010 추가, 읽기 권한 없으면 글자).
+
+## PR 나눔
+
+1. 틀 · 주간 · 월간 보기 · 변경 이력(읽기만) · 직원 상세 링크
+2. 등록 · 수정 · 삭제 패널(한 명 · 여러 명)
+3. 지난 주 복사 미리보기 · 복사
+
+## 순서와 확인
+
+1. 타입: `WHALE_API_DIR=<api main> pnpm openapi:types` 로 근무스케줄 DTO 를 받는다.
+2. 순수 함수 먼저 시험(`node --test`): URL ↔ 조회 조건, 주 · 달 계산, 막대 위치 · 자정 자르기, 30분 → 1시간 칸(작은 값), 공백 구간, 이력 한 줄 문구, 복사 처리 배지.
+3. `pnpm lint` · `tsc` · `pnpm build`.
+4. 로컬 API 로 실제 동작(테스트 강남점 store 7, test.staff02 · test.todo01, bpmaster) — 공용 DB 쓰기는 재영 확인 뒤.
+5. 커밋 · PR 은 재영 확인.
