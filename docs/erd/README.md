@@ -306,7 +306,7 @@ python3 docs/erd/_build.py
 |---|---|---|---|---|
 | PK | 시도 ID | id | `invitation_code_attempt_id` |  |
 |  | 휴대전화번호 키 | hash | `phone_key` | HMAC, 원본 저장 안 함, 초대가 없는 번호도 같은 기준으로 셈 |
-|  | 다시 세기 기준 | bool | `is_succeeded` | 기본 false. 맞는 코드 · 재발송 잠금 해제 행이 true — 이 행부터 실패를 다시 센다 (api #93) |
+|  | 다시 세기 기준 | bool | `is_succeeded` | 기본 false. 살아 있는 초대에 맞은 코드 · 재발송 잠금 해제 행이 true(끝난 초대에 맞은 코드는 false) — 이 행부터 실패를 다시 센다 (api #93) |
 |  | 실패 횟수 | int | `failed_count` | 기본 0, 5회면 30분 잠금 |
 |  | 잠금 해제 시각 | datetime | `lock_expires_at` | 잠겨 있지 않으면 비움 |
 |  | 시도 시각 | datetime | `attempted_at` | (phone_key, attempted_at) 인덱스 · 재발송하면 실패 0 행을 쌓아 잠금을 푼다 (JOIN-7, 2026-10-20) |
