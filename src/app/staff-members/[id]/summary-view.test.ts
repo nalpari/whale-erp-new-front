@@ -4,6 +4,7 @@ import { test } from "node:test";
 import {
   AREA_READ_DENIED_MESSAGE,
   areaFailureOf,
+  isAreaForbidden,
   hoursText,
   isPayslipSummaryEmpty,
   mondayOf,
@@ -138,4 +139,13 @@ test("TO-DO 상태 한글을 받지 못했으면 상태 변경은 이름 없이 
 test("급여 기간은 같은 해면 끝 날짜의 연도를 줄이고, 해를 넘으면 남긴다", () => {
   assert.equal(payPeriodText({ periodStartDate: "2026-10-01", periodEndDate: "2026-10-31" }), "2026-10-01 ~ 10-31");
   assert.equal(payPeriodText({ periodStartDate: "2025-12-21", periodEndDate: "2026-01-20" }), "2025-12-21 ~ 2026-01-20");
+});
+
+test("TO-DO 칸은 목록 · 요약 중 한 경로라도 영역 권한 403 이면 영역 전체를 막는다", () => {
+  assert.equal(isAreaForbidden({ kind: "forbidden" }, { kind: "ok" }), true);
+  assert.equal(isAreaForbidden({ kind: "ok" }, { kind: "forbidden" }), true);
+  assert.equal(isAreaForbidden({ kind: "forbidden" }, { kind: "forbidden" }), true);
+  // 권한이 아닌 실패는 막지 않는다 — 그 자리에 다시 하기
+  assert.equal(isAreaForbidden({ kind: "error" }, { kind: "ok" }), false);
+  assert.equal(isAreaForbidden({ kind: "ok" }, { kind: "ok" }), false);
 });

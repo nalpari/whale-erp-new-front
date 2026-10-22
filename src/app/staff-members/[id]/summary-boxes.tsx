@@ -15,6 +15,7 @@ import { loadArea, loadLabels } from "./summary-load";
 import { TodoTitleLink } from "./todo-links";
 import {
   hoursText,
+  isAreaForbidden,
   isPayslipSummaryEmpty,
   payslipRows,
   todoFootText,
@@ -120,9 +121,9 @@ type TodoSummary = Awaited<ReturnType<typeof getStaffMemberTodoSummary>>;
 
 /**
  * 「TO-DO」 영역 — 목록(GET /staff-members/:id/todos, #118) 앞쪽 5건 + 요약 줄(전체 · 완료 · 미완료) + 최근 처리 이력 5건.
- * 목록 경로는 직원 정보 관리 조회만 보지만, 이 영역은 다른 영역과 같이 그 영역 메뉴(TO-DO 관리) 조회 권한으로 막는다(2026-10-22 노영주,
- * front #90 리뷰). 메뉴 권한은 서버가 모르므로 요약 경로(…/summary/todos)의 403 「조회 권한이 없습니다.」로 판단한다 — 그러면 목록도
- * 그리지 않고 영역 전체에 권한 안내만 보인다. 그 밖에는 목록과 요약이 따로 실패한다(각자 그 자리에 다시 하기).
+ * 다른 영역과 같이 그 영역 메뉴(TO-DO 관리) 조회 권한으로 막는다(2026-10-22 노영주, front #90 리뷰). api 가 목록 · 요약 두 경로에 같은 영역
+ * 권한을 걸어(api #113) 권한이 없으면 둘 다 403 「조회 권한이 없습니다.」다 — 한쪽이라도 그러면 영역 전체에 권한 안내만 보인다(isAreaForbidden).
+ * 그 밖에는 목록과 요약이 따로 실패한다(각자 그 자리에 다시 하기).
  */
 export async function TodoBox({ staffMemberId }: { staffMemberId: number }) {
   const [summary, list, statuses, actors] = await Promise.all([
@@ -131,7 +132,7 @@ export async function TodoBox({ staffMemberId }: { staffMemberId: number }) {
     loadLabels("TodoStatus"),
     loadLabels("StatusChangeActor"),
   ]);
-  if (summary.kind === "forbidden") return <AreaFailure kind="forbidden" subject="TO-DO 를" />;
+  if (isAreaForbidden(summary, list)) return <AreaFailure kind="forbidden" subject="TO-DO 를" />;
   const statusLabel = statuses ? (status: string) => labelOf(statuses, status) : null;
   return (
     <>

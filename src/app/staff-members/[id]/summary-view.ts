@@ -27,6 +27,14 @@ export function areaFailureOf(status: number | null, message: string | null): "f
   return status === 403 && message === AREA_READ_DENIED_MESSAGE ? "forbidden" : "error";
 }
 
+/**
+ * 한 영역을 여러 경로로 받을 때(TO-DO 칸 = 목록 + 요약) 영역 전체를 권한 안내로 막을지. 한 경로라도 영역 권한 403 이면 막는다 — api 는 두 경로에
+ * 같은 영역 권한(TO-DO 관리 조회)을 걸지만(api #113), 한쪽만 403 이어도 다른 쪽 내용을 그리지 않는다.
+ */
+export function isAreaForbidden(...results: readonly Pick<AreaResult<unknown>, "kind">[]): boolean {
+  return results.some((r) => r.kind === "forbidden");
+}
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
