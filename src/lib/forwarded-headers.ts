@@ -9,6 +9,11 @@ import { headers } from "next/headers";
  * 가, IP 한도를 피하고 약관 동의 기록의 IP 를 지어낼 수 있다. api 는 TRUST_PROXY 에 적은 프록시(이 서버)를 믿을 때만 이 값을 쓴다.
  */
 export async function apiHeaders(): Promise<Record<string, string>> {
+  return { "Content-Type": "application/json", ...(await forwardedForHeader()) };
+}
+
+/** 이 요청의 사용자 IP 머리말만. 로그인한 화면의 api 호출(api.ts 의 authHeaders)도 이것을 싣는다 — 믿는 조건은 위와 같다. */
+export async function forwardedForHeader(): Promise<Record<string, string>> {
   const forwardedFor = (await headers()).get("x-forwarded-for");
-  return { "Content-Type": "application/json", ...(forwardedFor ? { "X-Forwarded-For": forwardedFor } : {}) };
+  return forwardedFor ? { "X-Forwarded-For": forwardedFor } : {};
 }

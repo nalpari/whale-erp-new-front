@@ -1,6 +1,7 @@
 import { cookies, headers } from "next/headers";
 import { ApiError } from "./api-error";
 import { BP_HEADER, bpPath } from "./bp-path";
+import { forwardedForHeader } from "./forwarded-headers";
 import type { EnumValue } from "./enums";
 import { parseSession, SESSION_COOKIE, type Session } from "./session";
 
@@ -92,12 +93,6 @@ export async function getSession(): Promise<Session | null> {
 export async function authHeaders(): Promise<Record<string, string>> {
   const token = (await getSession())?.accessToken;
   return { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(await bpHeader()), ...(await forwardedForHeader()) };
-}
-
-/** 이 요청의 사용자 IP — Next 가 채운(또는 앞단 프록시가 붙인) x-forwarded-for 를 그대로 api 에 넘긴다. */
-async function forwardedForHeader(): Promise<Record<string, string>> {
-  const forwardedFor = (await headers()).get("x-forwarded-for");
-  return forwardedFor ? { "X-Forwarded-For": forwardedFor } : {};
 }
 
 /**
