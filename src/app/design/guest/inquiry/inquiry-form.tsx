@@ -1,15 +1,14 @@
 "use client";
 
-import { type FormEvent, type ReactNode, useEffect, useRef, useState } from "react";
+import { type FormEvent, type ReactNode, useEffect, useId, useRef, useState, useTransition } from "react";
+import { INDUSTRY_OTHER, LEAD_FAILED, type LeadResult } from "@/lib/leads";
 import { CHECKBOX, INPUT, INPUT_BOX, LABEL, SUBMIT } from "../guest-form";
+import { GuestButton } from "../guest-ui";
 import { HOVER } from "../theme";
 
-// 업종에서 이 값을 고르면 옆 「업종 직접 입력」칸 잠금을 푼다(LEAD-1, api industryDetail 1~50자).
-const INDUSTRY_OTHER = "직접입력";
-const INDUSTRIES = ["카페·음료", "음식점", "베이커리·디저트", "주점", INDUSTRY_OTHER];
-// 관심 서비스는 하나 이상 여러 개(api interests 배열), 도입 예정 시기는 선택(api planPeriodCode 없어도 됨).
-const INTERESTS = ["매장운영", "재무관리", "프랜차이즈", "기타"];
-const TIMINGS = ["1개월 안", "3개월 안", "6개월 안", "아직 정하지 않음"];
+export type LeadOption = { value: string; label: string };
+/** 업종(공통코드 INDUSTRY) · 관심 서비스(enum LeadInterest) · 도입 예정 시기(공통코드 PLAN_PERIOD). 실제 화면은 api 에서, 샘플은 예시로 받는다. */
+export type LeadOptions = { industries: LeadOption[]; interests: LeadOption[]; periods: LeadOption[] };
 
 function Required() {
   return (
@@ -38,7 +37,7 @@ function Field({ label, required = false, help, children }: { label: string; req
 // 입력칸과 같은 껍데기에 오른쪽 화살표. 처음엔 숨긴 빈 선택지가 「선택해 주세요」를 보인다.
 // 펼친 목록 생김새는 globals.css 의 select.guest-select 가 맡고, 열리면 화살표가 뒤집힌다.
 // select 는 칸의 여백까지 덮어 56px 칸 어디를 눌러도 열린다. 화살표는 그 위에 겹치고 클릭을 통과시킨다.
-function Select({ name, options, required = false, onChange }: { name: string; options: string[]; required?: boolean; onChange?: (value: string) => void }) {
+function Select({ name, options, required = false, onChange }: { name: string; options: LeadOption[]; required?: boolean; onChange?: (value: string) => void }) {
   return (
     <span className={`${INPUT_BOX} relative [&:has(select:open)_svg]:rotate-180`}>
       <select name={name} required={required} defaultValue="" onChange={(e) => onChange?.(e.target.value)} className={`guest-select ${INPUT} -mx-[16px] cursor-pointer appearance-none self-stretch pr-[42px] pl-[16px] has-[option[value='']:checked]:text-[#999]`}>
@@ -46,8 +45,8 @@ function Select({ name, options, required = false, onChange }: { name: string; o
           선택해 주세요
         </option>
         {options.map((o) => (
-          <option key={o} className="text-guest-ink">
-            {o}
+          <option key={o.value} value={o.value} className="text-guest-ink">
+            {o.label}
           </option>
         ))}
       </select>
@@ -71,7 +70,7 @@ function Section({ title, note, children }: { title: string; note?: ReactNode; c
 }
 
 // 하나 이상 고르는 체크 상자 묶음. 하나도 안 골랐으면 첫 상자에 검사 오류를 걸어 브라우저가 제출을 막게 한다.
-function CheckGroup({ label, name, options, message }: { label: string; name: string; options: string[]; message: string }) {
+function CheckGroup({ label, name, options, message }: { label: string; name: string; options: LeadOption[]; message: string }) {
   const [checked, setChecked] = useState<string[]>([]);
   const firstRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -86,17 +85,17 @@ function CheckGroup({ label, name, options, message }: { label: string; name: st
       </legend>
       <div className="flex h-[56px] items-center gap-[32px] text-[16px] leading-[1.5]">
         {options.map((o, i) => (
-          <label key={o} className="flex items-center gap-[8px] text-guest-ink">
+          <label key={o.value} className="flex items-center gap-[8px] text-guest-ink">
             <input
               ref={i === 0 ? firstRef : undefined}
               type="checkbox"
               name={name}
-              value={o}
-              checked={checked.includes(o)}
-              onChange={(e) => setChecked((prev) => (e.target.checked ? [...prev, o] : prev.filter((v) => v !== o)))}
+              value={o.value}
+              checked={checked.includes(o.value)}
+              onChange={(e) => setChecked((prev) => (e.target.checked ? [...prev, o.value] : prev.filter((v) => v !== o.value)))}
               className={CHECKBOX}
             />
-            {o}
+            {o.label}
           </label>
         ))}
       </div>
@@ -105,116 +104,217 @@ function CheckGroup({ label, name, options, message }: { label: string; name: st
   );
 }
 
-// 디자인 샘플이라 접수 요청은 보내지 않는다. 브라우저 검사를 통과하면 접수 안내만 보인다.
-// 받는 항목은 okf/home.md 도입문의(이름·업종·전화번호·이메일·관심 서비스·도입 예정 시기·문의 내용)를 따른다.
-export function InquiryForm() {
-  const [otherIndustry, setOtherIndustry] = useState(false);
-  const [done, setDone] = useState(false);
-  const otherRef = useRef<HTMLInputElement>(null);
-  const doneRef = useRef<HTMLParagraphElement>(null);
+// 접수 확인 · 완료 창. 네이티브 <dialog> 라 Esc 닫기와 바깥 포커스 막기는 브라우저가 맡는다(signup/terms-dialog.tsx 와 같은 틀).
+function LeadDialog({ open, title, onClose, actions, children }: { open: boolean; title: string; onClose: () => void; actions: ReactNode; children: ReactNode }) {
+  const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (open && !el.open) el.showModal();
+    if (!open && el.open) el.close();
+  }, [open]);
 
-  function handleIndustryChange(value: string) {
-    const other = value === INDUSTRY_OTHER;
-    setOtherIndustry(other);
-    if (!other && otherRef.current) otherRef.current.value = "";
-    // 잠금이 풀린 뒤에 커서를 옮긴다.
-    if (other) requestAnimationFrame(() => otherRef.current?.focus());
-  }
+  return (
+    <dialog ref={ref} aria-labelledby={titleId} onClose={onClose} className="m-auto w-[520px] max-w-[calc(100vw-32px)] rounded-[6px] bg-white p-[32px] text-guest-ink backdrop:bg-black/40">
+      <h2 id={titleId} className="text-[22px] leading-[1.4] font-bold">
+        {title}
+      </h2>
+      <div className="mt-[12px] flex flex-col gap-[8px] text-[16px] leading-[1.6] text-guest-sub">{children}</div>
+      <div className="mt-[24px] flex justify-end gap-[8px]">{actions}</div>
+    </dialog>
+  );
+}
+
+// 도입문의 화면 머리 + 본문(폼, 또는 선택지를 못 받았을 때의 안내). 실제 화면((site)/leads)과 샘플이 함께 쓴다.
+export function InquiryScreen({ children }: { children: ReactNode }) {
+  return (
+    <section className="mx-auto flex w-[800px] flex-col gap-[40px] pt-[80px] text-guest-ink">
+      <div className="flex flex-col gap-[8px]">
+        <h1 className="text-[28px] leading-[1.2] font-bold">도입문의</h1>
+        <p className="text-[16px] leading-[1.5]">가입하지 않아도 남기실 수 있습니다. 담당자가 확인한 뒤 알려주신 전화번호나 이메일로 회신합니다.</p>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+// 샘플은 접수 요청을 보내지 않고 늘 성공한다.
+const sampleSubmit = async (): Promise<LeadResult> => ({ ok: true });
+
+/**
+ * 도입문의(#297 · #298). 받는 항목은 okf/home.md 도입문의(이름·업종·전화번호·이메일·관심 서비스·도입 예정 시기·문의 내용)를 따른다.
+ * [문의 접수하기] → 브라우저 검사 → 확인 창(접수 대상 · 연락 일정) → 접수. 성공하면 완료 창을 띄우고 폼을 비운다.
+ * 실패하면 적은 내용을 그대로 두고 오류와 다시 하는 방법을 버튼 위에 보인다 — 서버 액션을 form action 이 아니라 직접 불러 폼이 초기화되지 않는다.
+ */
+export function InquiryForm({ options, submit = sampleSubmit }: { options: LeadOptions; submit?: (form: FormData) => Promise<LeadResult> }) {
+  const formRef = useRef<HTMLFormElement>(null);
+  const errorRef = useRef<HTMLParagraphElement>(null);
+  // 성공하면 key 를 바꿔 폼을 새로 그린다 — 체크 상자 상태 · 열린 직접 입력칸까지 처음으로 돌아간다.
+  const [formKey, setFormKey] = useState(0);
+  const [otherIndustry, setOtherIndustry] = useState(false);
+  const [confirming, setConfirming] = useState<{ phone: string; email: string } | null>(null);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setDone(true);
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    requestAnimationFrame(() => doneRef.current?.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" }));
+    const form = new FormData(e.currentTarget);
+    setConfirming({ phone: String(form.get("phone")).trim(), email: String(form.get("email")).trim() });
+  }
+
+  function send() {
+    setConfirming(null);
+    if (!formRef.current) return;
+    const data = new FormData(formRef.current);
+    setError(null);
+    startTransition(async () => {
+      let result: LeadResult;
+      // 서버 액션 전송 자체가 실패(연결 끊김 · 배포로 action 이 바뀜)해도 폼을 지키고 안내한다.
+      try {
+        result = await submit(data);
+      } catch (err) {
+        console.error("도입문의 접수 요청이 서버에 닿지 못했습니다", err);
+        result = { ok: false, error: LEAD_FAILED };
+      }
+      if (result.ok) {
+        setFormKey((k) => k + 1);
+        setOtherIndustry(false);
+        setDone(true);
+        return;
+      }
+      setError(result.error);
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      requestAnimationFrame(() => errorRef.current?.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" }));
+    });
   }
 
   return (
-    <form className="flex flex-col gap-[40px]" onSubmit={handleSubmit}>
-      <Section
-        title="문의자 정보"
-        note={
+    <>
+      <form key={formKey} ref={formRef} className="flex flex-col gap-[40px]" onSubmit={handleSubmit}>
+        <Section
+          title="문의자 정보"
+          note={
+            <>
+              (<span className="text-[#e93737]">*</span> 표시는 필수 기재 항목입니다.)
+            </>
+          }
+        >
+          <div className="grid grid-cols-2 gap-[16px]">
+            <Field label="이름" required>
+              <span className={INPUT_BOX}>
+                <input name="contactName" required maxLength={50} autoComplete="name" placeholder="홍길동" className={INPUT} />
+              </span>
+            </Field>
+            <Field label="전화번호" required help="점포 번호를 적어도 됩니다. 중복 접수는 이 번호와 이메일로 가립니다.">
+              <span className={INPUT_BOX}>
+                <input name="phone" type="tel" required inputMode="numeric" autoComplete="tel" placeholder="숫자만 입력해 주세요" className={INPUT} />
+              </span>
+            </Field>
+            <Field label="업종" required>
+              <Select name="industryCode" options={options.industries} required onChange={(v) => setOtherIndustry(v === INDUSTRY_OTHER)} />
+            </Field>
+            <Field label="이메일" required help="접수 확인 메일을 이 주소로 보냅니다.">
+              <span className={INPUT_BOX}>
+                <input name="email" type="email" required autoComplete="email" placeholder="example@company.com" className={INPUT} />
+              </span>
+            </Field>
+            {/* 업종이 기타일 때만 업종 아래에 연다(LEAD-1). 다른 업종으로 바꾸면 칸이 사라지며 적은 값도 버린다. */}
+            {otherIndustry && (
+              <div className="col-start-1">
+                <Field label="업종 직접 입력" required>
+                  <span className={INPUT_BOX}>
+                    <input name="industryDetail" required autoFocus maxLength={50} placeholder="업종을 직접 입력해 주세요" className={INPUT} />
+                  </span>
+                </Field>
+              </div>
+            )}
+          </div>
+        </Section>
+        <Section title="도입 문의 내용">
+          <CheckGroup label="관심 서비스" name="interests" options={options.interests} message="관심 서비스를 하나 이상 골라 주세요." />
+          <div className="grid grid-cols-2 gap-[16px]">
+            <Field label="도입 예정 시기">
+              <Select name="planPeriodCode" options={options.periods} />
+            </Field>
+          </div>
+          <Field label="어떤 점이 궁금하신가요" required>
+            <textarea
+              name="body"
+              rows={6}
+              required
+              maxLength={2000}
+              placeholder="지금 쓰고 계신 방식과 불편한 점을 적어 주시면 그에 맞춰 안내해 드립니다. (2,000자까지)"
+              className={`min-h-[180px] w-full resize-none rounded-[6px] border border-[#ebebeb] bg-white p-[16px] text-[15px] leading-[1.6] text-guest-ink outline-none! placeholder:text-[#999] focus:border-guest-navy ${HOVER}`}
+            />
+          </Field>
+        </Section>
+        <Section title="개인정보 수집·이용 동의">
+          <dl className="grid grid-cols-[max-content_1fr] gap-x-[24px] gap-y-[8px] rounded-[6px] bg-guest-card px-[32px] py-[24px] text-[16px] leading-[1.6] text-guest-navy">
+            <dt className="font-semibold">수집 항목</dt>
+            <dd>이름 · 업종 · 전화번호 · 이메일 · 관심 서비스 · 도입 예정 시기 · 문의 내용</dd>
+            <dt className="font-semibold">이용 목적</dt>
+            <dd>도입 문의 확인과 상담 회신</dd>
+            <dt className="font-semibold">보유 기간</dt>
+            <dd>상담이 끝난 날로부터 1년간 보관한 뒤 파기</dd>
+          </dl>
+          <div className="flex flex-col gap-[16px] text-[16px] leading-[1.5]">
+            <label className="flex items-center gap-[8px] text-guest-ink">
+              <input type="checkbox" name="privacyAgreed" required className={CHECKBOX} />
+              개인정보 수집·이용에 동의합니다 (필수)
+            </label>
+            <label className="flex items-center gap-[8px] text-guest-ink">
+              <input type="checkbox" name="marketingAgreed" className={CHECKBOX} />
+              마케팅 정보 수신에 동의합니다 (선택)
+            </label>
+            <p className="text-[15px] leading-[1.5] text-[#767676]">개인정보 수집·이용에 동의하지 않으시면 문의를 접수할 수 없습니다.</p>
+          </div>
+        </Section>
+        <div className="flex flex-col gap-[16px]">
+          {error && (
+            <p ref={errorRef} role="alert" className="rounded-[6px] border border-[#f3c4c4] bg-[#fdf3f3] px-[32px] py-[24px] text-[16px] leading-[1.6] text-[#c62828]">
+              {error}
+            </p>
+          )}
+          <button type="submit" disabled={pending} className={`${SUBMIT} disabled:pointer-events-none disabled:opacity-60`}>
+            {pending ? "접수하는 중…" : "문의 접수하기"}
+          </button>
+        </div>
+      </form>
+      <LeadDialog
+        open={confirming !== null}
+        title="도입문의를 접수할까요?"
+        onClose={() => setConfirming(null)}
+        actions={
           <>
-            (<span className="text-[#e93737]">*</span> 표시는 필수 기재 항목입니다.)
+            <GuestButton tone="outline" onClick={() => setConfirming(null)}>
+              취소
+            </GuestButton>
+            <GuestButton tone="navy" onClick={send}>
+              접수하기
+            </GuestButton>
           </>
         }
       >
-        <div className="grid grid-cols-2 gap-[16px]">
-          <Field label="이름" required>
-            <span className={INPUT_BOX}>
-              <input name="name" required autoComplete="name" placeholder="홍길동" className={INPUT} />
-            </span>
-          </Field>
-          <Field label="전화번호" required help="점포 번호를 적어도 됩니다. 중복 접수는 이 번호와 이메일로 가립니다.">
-            <span className={INPUT_BOX}>
-              <input name="phone" type="tel" required inputMode="numeric" autoComplete="tel" placeholder="숫자만 입력해 주세요" className={INPUT} />
-            </span>
-          </Field>
-          <Field label="업종" required>
-            <Select name="industry" options={INDUSTRIES} required onChange={handleIndustryChange} />
-          </Field>
-          {/* 잠겨 있는 동안은 검사·전송에서 빠진다. */}
-          <Field label="업종 직접 입력" required>
-            <span className={INPUT_BOX}>
-              <input ref={otherRef} name="industryOther" required disabled={!otherIndustry} maxLength={50} placeholder="업종을 직접 입력해 주세요" className={INPUT} />
-            </span>
-          </Field>
-          <Field label="이메일" required help="접수 확인 메일을 이 주소로 보냅니다.">
-            <span className={INPUT_BOX}>
-              <input name="email" type="email" required autoComplete="email" placeholder="example@company.com" className={INPUT} />
-            </span>
-          </Field>
-        </div>
-      </Section>
-      <Section title="도입 문의 내용">
-        <CheckGroup label="관심 서비스" name="interests" options={INTERESTS} message="관심 서비스를 하나 이상 골라 주세요." />
-        <div className="grid grid-cols-2 gap-[16px]">
-          <Field label="도입 예정 시기">
-            <Select name="timing" options={TIMINGS} />
-          </Field>
-        </div>
-        <Field label="어떤 점이 궁금하신가요">
-          <textarea
-            name="message"
-            rows={6}
-            maxLength={2000}
-            placeholder="지금 쓰고 계신 방식과 불편한 점을 적어 주시면 그에 맞춰 안내해 드립니다. (2,000자까지)"
-            className={`min-h-[180px] w-full resize-none rounded-[6px] border border-[#ebebeb] bg-white p-[16px] text-[15px] leading-[1.6] text-guest-ink outline-none! placeholder:text-[#999] focus:border-guest-navy ${HOVER}`}
-          />
-        </Field>
-      </Section>
-      <Section title="개인정보 수집·이용 동의">
-        <p className="rounded-[6px] bg-guest-card px-[32px] py-[24px] text-[16px] leading-[1.6] text-guest-navy">
-          문의 응대를 위해 이름·업종·전화번호·이메일과 문의 내용을 받습니다. 사업자등록번호나 점포 수는 받지 않습니다.
-          <br />
-          <strong className="font-semibold">상담이 끝난 날로부터 1년간 보관</strong>한 뒤 파기합니다. 동의를 거부하시면 접수가 되지 않습니다.
+        <p>웨일ERP 도입을 알아보시는 분의 문의를 받습니다. 이미 쓰고 계신 계정의 문의는 로그인한 뒤 고객지원의 문의하기로 남겨 주세요.</p>
+        <p>
+          접수하면 담당자가 영업일 기준 1~2일 안에 <strong className="font-semibold text-guest-ink">{confirming?.phone}</strong> 또는{" "}
+          <strong className="font-semibold text-guest-ink">{confirming?.email}</strong>(으)로 연락드립니다.
         </p>
-        <div className="flex flex-col gap-[16px] text-[16px] leading-[1.5]">
-          <label className="flex items-center gap-[8px] text-guest-ink">
-            <input type="checkbox" name="privacy" required className={CHECKBOX} />
-            개인정보 수집·이용에 동의합니다 (필수)
-          </label>
-          <label className="flex items-center gap-[8px] text-guest-ink">
-            <input type="checkbox" name="marketing" className={CHECKBOX} />
-            마케팅 정보 수신에 동의합니다 (선택)
-          </label>
-        </div>
-      </Section>
-      <div className="flex flex-col gap-[16px]">
-        {done && (
-          <p ref={doneRef} role="status" className="rounded-[6px] bg-guest-card px-[32px] py-[24px] text-[16px] leading-[1.6] text-guest-navy">
-            <strong className="font-semibold">문의가 접수되었습니다.</strong>
-            <br />
-            담당자가 영업일 기준 1~2일 안에 알려주신 전화번호나 이메일로 연락드립니다.
-          </p>
-        )}
-        <button type="submit" className={SUBMIT}>
-          문의 접수하기
-        </button>
-        {/* 중복 접수(429) 문구는 운영 정책 CNT-03 · 04 · 08 · 10 · 14 (2026-10-13). */}
-        <p className="text-[15px] leading-[1.5] text-[#767676]">
-          같은 전화번호나 이메일로 짧은 시간에 여러 번 보내면 잠시 접수가 막히고 「이미 접수된 문의가 있습니다. 담당자가 영업일 기준 1~2일 안에 연락드립니다」를 보입니다.
-        </p>
-      </div>
-    </form>
+      </LeadDialog>
+      <LeadDialog
+        open={done}
+        title="문의가 접수되었습니다"
+        onClose={() => setDone(false)}
+        actions={
+          <GuestButton tone="navy" onClick={() => setDone(false)}>
+            확인
+          </GuestButton>
+        }
+      >
+        <p>담당자가 영업일 기준 1~2일 안에 알려주신 전화번호나 이메일로 연락드립니다.</p>
+      </LeadDialog>
+    </>
   );
 }
