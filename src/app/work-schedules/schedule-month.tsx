@@ -1,40 +1,42 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/common";
-import type { EnumValue } from "@/lib/enums";
 import type { WorkScheduleList } from "@/lib/work-schedules-api";
-import { addDays, addMonths, monthRange, moved, toScheduleSearch, type ScheduleQuery } from "./work-schedule-query";
+import { addDays, addMonths, monthCells, moved, toScheduleSearch, type ScheduleQuery } from "./work-schedule-query";
 import { shiftLabel } from "./work-schedule-view";
 
-// 월간 보기(#343). 데모 schedMonth — 왼쪽에 고른 날의 근무자, 오른쪽에 달력(칸에는 인원만). 달력 6주(42일)를 한 번에 읽는다.
-// 본사에게 가려진 직원은 인원에는 들고 목록에는 이름 없이 「그 밖에 n명」으로만 남는다(STAFF-39).
+// 월간 보기(#343). 데모 schedMonth · erp.js initDayPlan — 왼쪽에 고른 날의 재직자(근무 시각 · 휴무), 오른쪽에 달력(칸에는 인원만).
+// 달력 6주(42일)를 한 번에 읽고, 그리기는 그 달이 걸친 주만 한다. 본사에게 가려진 직원은 인원에는 들고 목록에는 이름 없이 「그 밖에 n명」으로만 남는다(STAFF-39).
 
 const HEAD = ["월", "화", "수", "목", "금", "토", "일"];
 const WEEKDAY = ["일", "월", "화", "수", "목", "금", "토"];
+const ICON_BUTTON =
+  "grid size-[34px] shrink-0 place-items-center rounded-[2px] border border-erp-button-line bg-white transition-[border-color] duration-150 ease-out hover:border-erp-brand";
+const DAY_BUTTON = "grid size-[28px] place-items-center rounded-[2px] border border-erp-button-line";
 
 export function ScheduleMonth({
   data,
   query,
   today,
-  employmentLabels,
 }: {
   data: WorkScheduleList;
   query: ScheduleQuery;
   today: string;
-  employmentLabels: EnumValue[];
 }) {
   const href = (next: Parameters<typeof moved>[1]) => `/work-schedules${toScheduleSearch(moved(query, next), today)}`;
-  const { from } = monthRange(query.month);
-  const cells = Array.from({ length: 42 }, (_, i) => addDays(from, i));
+  const cells = monthCells(query.month);
+  // 달을 옮기면 그 달 1일, 이번 달이면 오늘을 고른다(데모 initDayPlan)
+  const toMonth = (month: string) => ({ month, day: month === today.slice(0, 7) ? today : `${month}-01` });
   const countOf = (d: string) => data.days.find((x) => x.workDate === d)?.headcount ?? 0;
   const [y, m] = query.month.split("-").map(Number);
   const picked = query.day;
-  const label = (code: string | null) => employmentLabels.find((e) => e.value === code)?.label ?? code ?? "";
-  const workers = data.staff
-    .filter((s) => !s.isMasked)
-    .map((s) => ({ s, shifts: data.items.filter((it) => it.staffMemberId === s.staffMemberId && it.workDate === picked) }))
-    .filter((w) => w.shifts.length > 0);
+  // 그날 받을 수 있는 직원 전원(휴무 포함, 데모 all · STAFF-29) — 주간 보기의 직원 줄과 같다
+  const rows = data.staff
+    .filter((s) => !s.isMasked && s.schedulableDates.includes(picked))
+    .map((s) => ({ s, shifts: data.items.filter((it) => it.staffMemberId === s.staffMemberId && it.workDate === picked) }));
   const headcount = countOf(picked);
-  const hidden = headcount - workers.length;
+  const hidden = headcount - rows.filter((r) => r.shifts.length > 0).length;
+  const when = picked === today ? "오늘" : picked < today ? "지난 날" : "예정";
   const prevDay = addDays(picked, -1);
   const nextDay = addDays(picked, 1);
   const wd = new Date(`${picked}T00:00:00Z`).getUTCDay();
@@ -47,56 +49,58 @@ export function ScheduleMonth({
             href={href({ day: prevDay, month: prevDay.slice(0, 7) })}
             aria-label="이전 날"
             scroll={false}
-            className="grid size-[28px] place-items-center rounded-[2px] border border-erp-button-line"
+            className={DAY_BUTTON}
           >
-            ‹
+            <Image src="/icons/prev.svg" alt="" width={7} height={12} />
           </Link>
           <b className="text-[15px] font-semibold">
-            {Number(picked.slice(5, 7))}월 {Number(picked.slice(8))}일({WEEKDAY[wd]})
+            {Number(picked.slice(5, 7))}월 {Number(picked.slice(8))}일 ({WEEKDAY[wd]})
           </b>
           <Link
             href={href({ day: nextDay, month: nextDay.slice(0, 7) })}
             aria-label="다음 날"
             scroll={false}
-            className="grid size-[28px] place-items-center rounded-[2px] border border-erp-button-line"
+            className={DAY_BUTTON}
           >
-            ›
+            <Image src="/icons/next.svg" alt="" width={7} height={12} />
           </Link>
         </div>
-        <p className="text-[13px] text-erp-label">근무 {headcount}명</p>
+        <p className="text-[13px] text-erp-label">
+          근무 <b className="text-erp-ink">{headcount}명</b> · {when}
+        </p>
         <ul className="flex flex-col text-[14px]">
-          {workers.map(({ s, shifts }) => (
-            <li key={s.staffMemberId} className="flex flex-col border-b border-erp-thead-line py-[6px] last:border-b-0">
-              <span>
-                {s.name} <span className="text-erp-muted">{label(s.employmentType)}</span>
+          {rows.map(({ s, shifts }) => (
+            <li key={s.staffMemberId} className="flex items-center gap-[8px] border-b border-erp-thead-line py-[8px]">
+              <span className="flex-1">
+                {s.name} <span className="text-erp-muted">{s.jobTitle}</span>
               </span>
-              <span className="text-[13px] text-erp-label">{shifts.map(shiftLabel).join(", ")}</span>
+              <span className="text-right text-[13px] text-erp-muted">{shifts.length ? shifts.map(shiftLabel).join(", ") : "휴무"}</span>
             </li>
           ))}
-          {hidden > 0 && <li className="py-[6px] text-[13px] text-erp-muted">그 밖에 {hidden}명(본사 제공 동의 없음)</li>}
-          {headcount === 0 && <li className="py-[6px] text-[13px] text-erp-muted">근무자가 없습니다.</li>}
+          {hidden > 0 && <li className="py-[8px] text-[13px] text-erp-muted">그 밖에 {hidden}명(본사 제공 동의 없음)</li>}
+          {rows.length === 0 && hidden <= 0 && <li className="py-[8px] text-[13px] text-erp-muted">근무 없음</li>}
         </ul>
       </section>
       <div>
         <div className="mb-[8px] flex items-center gap-[6px]">
           <Link
-            href={href({ month: addMonths(query.month, -1), day: `${addMonths(query.month, -1)}-01` })}
+            href={href(toMonth(addMonths(query.month, -1)))}
             aria-label="이전 달"
             scroll={false}
-            className="grid size-[34px] place-items-center rounded-[2px] border border-erp-button-line"
+            className={ICON_BUTTON}
           >
-            ‹
+            <Image src="/icons/prev.svg" alt="" width={16} height={16} />
           </Link>
           <b className="min-w-[120px] text-center text-[15px] font-semibold">
             {y}년 {m}월
           </b>
           <Link
-            href={href({ month: addMonths(query.month, 1), day: `${addMonths(query.month, 1)}-01` })}
+            href={href(toMonth(addMonths(query.month, 1)))}
             aria-label="다음 달"
             scroll={false}
-            className="grid size-[34px] place-items-center rounded-[2px] border border-erp-button-line"
+            className={ICON_BUTTON}
           >
-            ›
+            <Image src="/icons/next.svg" alt="" width={16} height={16} />
           </Link>
           <Button variant="off" href={href({ month: today.slice(0, 7), day: today })} scroll={false}>
             이번 달
