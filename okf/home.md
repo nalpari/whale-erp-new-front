@@ -5,7 +5,7 @@ description: 로그인 선을 사이에 두고 갈리는 홈 영역 — 앞은 �
 tags: [mockup, home]
 sources:
   - { id: scope-filter-policy, resource: ../docs/raw/2026-10-21-상단-점포-필터-정책.md, title: 상단 점포 검색 필터 — 점포 선택 시 동작 }
-generated: { by: claude-code/opus-5.5, at: 2026-10-22T05:36:56Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-22T05:36:49Z }
 ---
 
 근거: `docs/mockup/home/` (목업 · 1차 · R-PSQNKC)

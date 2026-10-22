@@ -49,6 +49,7 @@ export function GuestFooter() {
                       {i === 0 && j === 0 && COMPANY_URL ? (
                         <a href={COMPANY_URL} target="_blank" rel="noopener noreferrer" className={`hover:text-guest-ink ${HOVER}`}>
                           {text}
+                          <span className="sr-only">(새 창)</span>
                         </a>
                       ) : (
                         <span>{text}</span>

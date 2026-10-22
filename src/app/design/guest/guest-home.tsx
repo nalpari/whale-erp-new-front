@@ -453,7 +453,7 @@ function Plans({ routes }: { routes: GuestRoutes }) {
 
 type NoticePost = Pick<components["schemas"]["PublishedPostResponseDto"], "postId" | "title" | "isPinned" | "noticeType" | "postedDate">;
 
-/** 메인 「가장 많이 묻는 질문」 목록. a 가 있는 질문은 펼쳐 둔다(시안). */
+/** 메인 「가장 많이 묻는 질문」 목록. open 을 준 질문만 펼쳐 둔다 — 샘플은 시안대로 둘째를 펼치고, 실제 홈은 모두 닫는다. */
 export function HomeFaqList({ items }: { items: { key: string | number; q: string; a: string | null; open?: boolean }[] }) {
   if (!items.length) return <p className="py-[18px] text-[17px] text-guest-sub">등록된 질문이 없습니다.</p>;
   return (
@@ -475,7 +475,7 @@ export function HomeNewsList({ items, typeLabel, hrefOf }: { items: NoticePost[]
       {items.map((n) => (
         <li key={n.postId} className="flex items-center gap-[8px] border-b border-guest-list-line py-[18px] last:border-b-0">
           <Badges post={n} typeLabel={typeLabel} />
-          <Link href={hrefOf(n.postId)} className={`flex-1 truncate text-guest-ink hover:text-guest-navy ${HOVER}`}>
+          <Link href={hrefOf(n.postId)} title={n.title} className={`flex-1 truncate text-guest-ink hover:text-guest-navy ${HOVER}`}>
             {n.title}
           </Link>
           <span className="text-guest-sub">{dotDate(n.postedDate)}</span>

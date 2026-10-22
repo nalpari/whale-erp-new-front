@@ -14,7 +14,7 @@ type NoticeType = Schemas["NoticeType"];
 type Post = Schemas["PublishedPostResponseDto"];
 type Attachment = Schemas["PostAttachmentDto"];
 
-// 구분 배지 색은 메인 「새로운 소식」과 같다. 고정 글은 남색 배지를 앞에 단다. 글자는 api enum(NoticeType)의 한글이다.
+// 메인 「새로운 소식」(guest-home.tsx 의 HomeNewsList)도 이 Badges 를 쓴다. 고정 글은 남색 배지를 앞에 단다. 글자는 api enum(NoticeType)의 한글이다.
 const BADGE_TONE: Record<NoticeType | "PINNED", string> = {
   PINNED: "bg-guest-navy text-white",
   GENERAL: "bg-[#f2f6ff] text-[#366fe3]",
