@@ -152,7 +152,8 @@ export async function verifyStoreBusinessAction(
   try {
     return { ok: true, ...(await verifyStoreBusiness(input)) };
   } catch (error) {
-    if (error instanceof ApiError && ![400, 401, 403, 404].includes(error.status)) console.error("점포 사업자정보 인증 api 오류", error.status, error.message);
+    // 예상한 거절(400 형식 · 409 중복 · 422 불일치)과 화면이 할 일을 알리는 401 · 403 · 404 는 남기지 않는다
+    if (error instanceof ApiError && ![400, 401, 403, 404, 409, 422].includes(error.status)) console.error("점포 사업자정보 인증 api 오류", error.status, error.message);
     return failureOf(error, "사업자정보 인증");
   }
 }
