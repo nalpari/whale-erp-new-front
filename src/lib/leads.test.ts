@@ -44,6 +44,15 @@ test("동의 두 개는 각자 체크된 것만 true 다", () => {
   assert.equal(leadBodyOf(formOf(without("privacyAgreed"))).marketingAgreed, false);
 });
 
+test("문의 내용의 줄바꿈은 화면과 같이 1자(LF)로 보낸다 — 브라우저가 보낸 CRLF 를 되돌린다", () => {
+  const body = leadBodyOf(formOf(replaced("body", "첫 줄\r\n둘째 줄\r셋째 줄\n넷째 줄"))).body;
+  assert.equal(body, "첫 줄\n둘째 줄\n셋째 줄\n넷째 줄");
+  // 화면에서 2000자(줄바꿈 60개 포함)면 보내는 글도 2000자다.
+  const screen = `${"가".repeat(32)}\n`.repeat(60) + "가".repeat(20);
+  assert.equal(screen.length, 2000);
+  assert.equal(leadBodyOf(formOf(replaced("body", screen.replaceAll("\n", "\r\n")))).body.length, 2000);
+});
+
 test("업종 직접 입력은 업종이 기타(ETC)일 때만 싣는다", () => {
   assert.equal(leadBodyOf(formOf([...replaced("industryCode", "ETC"), ["industryDetail", " 꽃집 "]])).industryDetail, "꽃집");
   assert.equal("industryDetail" in leadBodyOf(formOf([...BASE, ["industryDetail", "꽃집"]])), false);
@@ -62,9 +71,11 @@ test("빈칸만 적은 칸과 api 가 받지 않는 전화번호를 확인 창 �
 
 test("429 · 한글 400 은 api 문구를, 영문 400 은 입력 확인 문구를, 응답 없음은 결과 모름을, 그 밖은 접수 실패를 보인다", () => {
   const dup = "이미 접수된 문의가 있습니다. 담당자가 영업일 기준 1~2일 안에 연락드립니다";
-  assert.deepEqual(leadFailureOf(429, dup), { message: dup, log: false });
-  assert.deepEqual(leadFailureOf(400, "전화번호 형식이 올바르지 않습니다"), { message: "전화번호 형식이 올바르지 않습니다", log: false });
-  assert.deepEqual(leadFailureOf(400, "email must be an email"), { message: LEAD_INVALID, log: true });
-  assert.deepEqual(leadFailureOf(null, ""), { message: LEAD_UNKNOWN, log: true });
-  assert.deepEqual(leadFailureOf(500, "Internal server error"), { message: LEAD_FAILED, log: true });
+  assert.deepEqual(leadFailureOf(429, [dup]), { message: dup, log: false });
+  assert.deepEqual(leadFailureOf(400, ["전화번호 형식이 올바르지 않습니다"]), { message: "전화번호 형식이 올바르지 않습니다", log: false });
+  assert.deepEqual(leadFailureOf(400, ["email must be an email"]), { message: LEAD_INVALID, log: true });
+  // 한글 · 영문이 섞이면 영문을 보이지 않는다.
+  assert.deepEqual(leadFailureOf(400, ["전화번호 형식이 올바르지 않습니다", "email must be an email"]), { message: LEAD_INVALID, log: true });
+  assert.deepEqual(leadFailureOf(null, []), { message: LEAD_UNKNOWN, log: true });
+  assert.deepEqual(leadFailureOf(500, ["Internal server error"]), { message: LEAD_FAILED, log: true });
 });
