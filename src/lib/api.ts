@@ -1,5 +1,5 @@
 import { cookies, headers } from "next/headers";
-import { BP_HEADER } from "./bp-path";
+import { BP_HEADER, bpPath } from "./bp-path";
 import type { EnumValue } from "./enums";
 import { parseSession, SESSION_COOKIE, type Session } from "./session";
 
@@ -108,4 +108,10 @@ export async function authHeaders(): Promise<Record<string, string>> {
 export async function bpHeader(): Promise<Record<string, string>> {
   const bp = (await headers()).get(BP_HEADER);
   return bp && /^\d{1,9}$/.test(bp) ? { "X-Bp-Code-Id": bp } : {};
+}
+
+/** 서버 화면이 그리는 링크(다시 시도 · 목록). 탭 BP 주소로 들어온 요청이면 같은 BP 를 붙인다 — 옛 경로로 가 SessionGate 가 한 번 더 보내지 않게. */
+export async function bpHref(path: string): Promise<string> {
+  const bp = (await bpHeader())["X-Bp-Code-Id"];
+  return bp ? bpPath(Number(bp), path) : path;
 }

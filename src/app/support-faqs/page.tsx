@@ -1,4 +1,5 @@
 import { PageBar } from "@/components/common";
+import { bpHref } from "@/lib/api";
 import { getSupportFaqs } from "@/lib/community";
 import { parseSupportFaqQuery, SUPPORT_FAQ_BASE } from "@/lib/community-view";
 import { ListFailure, loadList } from "@/components/community/list-load";
@@ -11,7 +12,7 @@ export default async function SupportFaqsPage({ searchParams }: PageProps<"/supp
   return (
     <>
       <PageBar title="FAQ" />
-      {"data" in loaded ? <SupportFaqList items={loaded.data.items} total={loaded.data.total} query={query} /> : <ListFailure {...loaded} retryHref={SUPPORT_FAQ_BASE} />}
+      {"data" in loaded ? <SupportFaqList items={loaded.data.items} total={loaded.data.total} query={query} /> : <ListFailure {...loaded} retryHref={await bpHref(SUPPORT_FAQ_BASE)} />}
     </>
   );
 }

@@ -46,13 +46,19 @@ export function postIdOf(raw: unknown): number | null {
 }
 
 export type ListQuery = { page: number; pageSize: PageSize };
-export type PostQuery = ListQuery & { status: PostStatus | "" };
-export type InquiryQuery = ListQuery & { answerStatus: AnswerStatus | ""; title: string; sender: string };
-export type LeadQuery = ListQuery & { answerStatus: AnswerStatus | "" };
+// 상태 · 구분 · 카테고리 필터는 체크박스라 여러 값을 함께 고른다. 빈 배열이 전체다(2026-10-22 재영, #275 · #282~284).
+export type PostQuery = ListQuery & { status: PostStatus[] };
+export type InquiryQuery = ListQuery & { answerStatus: AnswerStatus[]; title: string; sender: string };
+export type LeadQuery = ListQuery & { answerStatus: AnswerStatus[] };
 
 type Raw = Record<string, string | string[] | undefined>;
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
-const oneOf = <T extends string>(values: readonly T[], v: string | undefined): T | "" => (values.includes(v as T) ? (v as T) : "");
+const all = (v: string | string[] | undefined) => (Array.isArray(v) ? v : v === undefined ? [] : [v]);
+/** 주소에 되풀이된 값 중 아는 것만, 정해 둔 순서로 한 번씩. 모르는 값은 오류 없이 버린다. */
+const someOf = <T extends string>(values: readonly T[], v: string | string[] | undefined): T[] => {
+  const got = all(v);
+  return values.filter((x) => got.includes(x));
+};
 
 const POST_STATUSES: readonly PostStatus[] = ["DRAFT", "PUBLISHED", "PRIVATE"];
 const ANSWER_STATUSES: readonly AnswerStatus[] = ["WAITING", "ANSWERED"];
@@ -70,21 +76,22 @@ function pageOf(raw: Raw): ListQuery {
 /** 검색어는 api 한도(제목 200자 · 보낸 곳 100자)로 자르고 NUL 을 뺀다 — 둘 다 api 가 400 을 내 목록이 통째로 실패한다. */
 const textOf = (v: string | undefined, max: number) => (v ?? "").replaceAll("\u0000", "").trim().slice(0, max);
 
-export const parsePostQuery = (raw: Raw): PostQuery => ({ ...pageOf(raw), status: oneOf(POST_STATUSES, first(raw.status)) });
-export const parseLeadQuery = (raw: Raw): LeadQuery => ({ ...pageOf(raw), answerStatus: oneOf(ANSWER_STATUSES, first(raw.answerStatus)) });
+export const parsePostQuery = (raw: Raw): PostQuery => ({ ...pageOf(raw), status: someOf(POST_STATUSES, raw.status) });
+export const parseLeadQuery = (raw: Raw): LeadQuery => ({ ...pageOf(raw), answerStatus: someOf(ANSWER_STATUSES, raw.answerStatus) });
 export const parseInquiryQuery = (raw: Raw): InquiryQuery => ({
   ...pageOf(raw),
-  answerStatus: oneOf(ANSWER_STATUSES, first(raw.answerStatus)),
+  answerStatus: someOf(ANSWER_STATUSES, raw.answerStatus),
   title: textOf(first(raw.title), 200),
   sender: textOf(first(raw.sender), 100),
 });
 
-/** 화면 주소 · api 쿼리. 빈 값과 기본값(1쪽 · 20건)은 싣지 않는다. */
-export function queryString(q: ListQuery & Record<string, string | number>): string {
+/** 화면 주소 · api 쿼리. 빈 값과 기본값(1쪽 · 20건)은 싣지 않는다. 여러 값은 같은 이름을 되풀이한다(`?status=A&status=B`, api 의 다른 목록과 같다). */
+export function queryString(q: ListQuery & Record<string, string | number | readonly string[]>): string {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(q)) {
     if (value === "" || (key === "page" && value === 1) || (key === "pageSize" && value === 20)) continue;
-    params.set(key, String(value));
+    if (Array.isArray(value)) for (const v of value) params.append(key, v);
+    else params.set(key, String(value));
   }
   const s = params.toString();
   return s ? `?${s}` : "";
@@ -176,9 +183,9 @@ export const SUPPORT_FAQ_BASE = "/support-faqs";
 export const SUPPORT_INQUIRY_BASE = "/support-inquiries";
 
 export type InquiryStatus = Schemas["InquiryStatus"];
-export type SupportNoticeQuery = ListQuery & { keyword: string; noticeType: NoticeType | "" };
-export type SupportFaqQuery = ListQuery & { keyword: string; faqCategoryCode: string };
-export type SupportInquiryQuery = ListQuery & { title: string; status: InquiryStatus | "" };
+export type SupportNoticeQuery = ListQuery & { keyword: string; noticeType: NoticeType[] };
+export type SupportFaqQuery = ListQuery & { keyword: string; faqCategoryCode: string[] };
+export type SupportInquiryQuery = ListQuery & { title: string; status: InquiryStatus[] };
 
 const NOTICE_TYPES: readonly NoticeType[] = ["MAINTENANCE", "FEATURE", "TERMS", "GENERAL"];
 const INQUIRY_STATUSES: readonly InquiryStatus[] = ["RECEIVED", "IN_PROGRESS", "ANSWERED"];
@@ -187,17 +194,18 @@ const INQUIRY_STATUSES: readonly InquiryStatus[] = ["RECEIVED", "IN_PROGRESS", "
 export const parseSupportNoticeQuery = (raw: Raw): SupportNoticeQuery => ({
   ...pageOf(raw),
   keyword: textOf(first(raw.keyword), 100),
-  noticeType: oneOf(NOTICE_TYPES, first(raw.noticeType)),
+  noticeType: someOf(NOTICE_TYPES, raw.noticeType),
 });
 export const parseSupportFaqQuery = (raw: Raw): SupportFaqQuery => ({
   ...pageOf(raw),
   keyword: textOf(first(raw.keyword), 100),
-  faqCategoryCode: textOf(first(raw.faqCategoryCode), 20),
+  // 카테고리는 공통코드라 목록을 모른다 — 다듬어 빈 값 · 겹친 값만 빼고, api 가 400 을 내는 값(20자 넘음 · 50개 넘음)은 버린다.
+  faqCategoryCode: [...new Set(all(raw.faqCategoryCode).map((v) => textOf(v, 21)))].filter((v) => v && v.length <= 20).slice(0, 50),
 });
 export const parseSupportInquiryQuery = (raw: Raw): SupportInquiryQuery => ({
   ...pageOf(raw),
   title: textOf(first(raw.title), 200),
-  status: oneOf(INQUIRY_STATUSES, first(raw.status)),
+  status: someOf(INQUIRY_STATUSES, raw.status),
 });
 
 /**
@@ -230,4 +238,19 @@ export function draftView(draft: Draft | undefined, saved: string): { text: stri
   if (draft.base === saved) return { text: draft.text, stale: false };
   if (draft.text === draft.base) return { text: undefined, stale: false };
   return { text: draft.text, stale: true };
+}
+
+/**
+ * 페이지 번호 줄(비로그인 공지사항 #293) — 지금 쪽이 든 10개 묶음(1~10, 11~20 …)과 앞 · 뒤 묶음으로 갈 쪽.
+ * 마지막 쪽을 넘어온 주소(?page=99)는 마지막 묶음을 보인다. 글이 없어도 1쪽은 있다.
+ */
+export function pageWindow(page: number, total: number, pageSize: number): { pages: number[]; prev: number | null; next: number | null } {
+  const last = Math.max(1, Math.ceil(total / pageSize));
+  const start = Math.floor((Math.min(page, last) - 1) / 10) * 10 + 1;
+  const end = Math.min(start + 9, last);
+  return {
+    pages: Array.from({ length: end - start + 1 }, (_, i) => start + i),
+    prev: start > 1 ? start - 1 : null,
+    next: end < last ? end + 1 : null,
+  };
 }

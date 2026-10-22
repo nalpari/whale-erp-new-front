@@ -240,10 +240,12 @@ export function ContractForm({
   const [locked, setLocked] = useState(false);
   // 저장하지 못하면 안내(폼 맨 아래)로 화면을 옮긴다 — 위쪽 버튼을 누르면 안내가 화면 밖에 떠 제자리인 것처럼 보였다.
   // 같은 이유로 다시 실패해도 옮기도록 횟수로 센다.
+  // nearest — 안내는 폼 맨 끝이라 center 로는 본문 스크롤이 끝나도 못 미쳐, 남은 만큼 바깥 틀(AdminFrame 의 overflow-y-hidden
+  // 상자)까지 밀어 올려 화면 아래가 빈 공간으로 남았다. nearest 는 본문 안에서 보일 만큼만 옮긴다.
   const failureRef = useRef<HTMLDivElement>(null);
   const [failures, setFailures] = useState(0);
   useEffect(() => {
-    if (failures) failureRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+    if (failures) failureRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [failures]);
   const fail = (message: string) => {
     setServerError(message);

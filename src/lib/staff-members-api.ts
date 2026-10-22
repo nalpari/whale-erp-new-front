@@ -2,6 +2,9 @@
 // 메뉴 권한 · 업무 범위 · 본사 제공 동의(가림)는 api 가 요청마다 본다 — 이 파일은 그대로 전한다.
 import { ApiError, authHeaders, request } from "./api";
 import { staffListApiSearch, type RetirementPreview, type StaffListQuery, type StaffMember, type StaffMemberListResponse } from "./staff-members";
+import type { components } from "./api-types.generated";
+
+type Schemas = components["schemas"];
 
 const MAX_ID = 2_147_483_647;
 
@@ -37,6 +40,37 @@ export async function getStaffMember(rawId: string): Promise<StaffMember | null>
     if (error instanceof ApiError && error.status === 404) return null;
     throw error;
   }
+}
+
+// 직원 상세 요약(api #183, WHALEERP-183). 영역마다 경로가 따로라 한 영역이 실패해도 나머지는 온다. 직원 정보 관리 조회 + 그 영역
+// 메뉴 조회 권한이 필요하고, 영역 권한이 없으면 그 영역만 403 「조회 권한이 없습니다.」다. 없는 직원 · 범위 밖 · 가려지는 직원은 404.
+
+/** GET /staff-members/:id/summary/contracts — 가장 최근 계약 하나. 없으면 { contract: null }. 근로계약 관리 조회 권한 */
+export async function getStaffMemberContractSummary(id: number): Promise<Schemas["StaffMemberContractSummaryResponseDto"]> {
+  return request(`/staff-members/${id}/summary/contracts`, await init("GET"));
+}
+
+/**
+ * GET /staff-members/:id/work-schedules(WHALEERP-185) — 그 직원의 근무스케줄 한 쪽(근무일 최신순, 같은 날은 시작 시각 순)과 전체 건수 · 기간 근무시간 합계.
+ * 3년 지난 것은 파기 배치가 지워 남지 않는다.
+ * 근무스케줄 관리 조회 권한이 없으면 403 「조회 권한이 없습니다.」(영역 권한), 없는 직원 · 범위 밖은 404, 이상한 값은 400.
+ */
+export async function getStaffMemberWorkSchedules(
+  id: number,
+  query: { period: Schemas["StaffWorkSchedulePeriod"]; page: number; pageSize: number },
+): Promise<Schemas["StaffMemberWorkScheduleListResponseDto"]> {
+  const search = new URLSearchParams({ period: query.period, page: String(query.page), pageSize: String(query.pageSize) });
+  return request(`/staff-members/${id}/work-schedules?${search}`, await init("GET"));
+}
+
+/** GET /staff-members/:id/summary/payslips — 최근 확정 · 이번 달 명세서와 미발송 건수. 급여명세서 관리 조회 권한 */
+export async function getStaffMemberPayslipSummary(id: number): Promise<Schemas["StaffMemberPayslipSummaryResponseDto"]> {
+  return request(`/staff-members/${id}/summary/payslips`, await init("GET"));
+}
+
+/** GET /staff-members/:id/summary/todos — 배정된 TO-DO 의 전체 · 완료 · 미완료 건수와 최근 처리 이력. TO-DO 관리 조회 권한 */
+export async function getStaffMemberTodoSummary(id: number): Promise<Schemas["StaffMemberTodoSummaryResponseDto"]> {
+  return request(`/staff-members/${id}/summary/todos`, await init("GET"));
 }
 
 /** GET /staff-members/:id/retirement-preview — 퇴직일이 지나면 정리될 건수. 날짜 · 입사일 · 가입 전 · 이미 퇴직이면 400 · 409 */
