@@ -30,9 +30,10 @@ function NotReady() {
   return <BoxMessage>준비 중입니다.</BoxMessage>;
 }
 
-// 오른쪽 영역의 「관리」. 근무스케줄 · 출퇴근 현황 · 급여명세서는 아직 링크를 걸지 않는다 — 각 관리 화면으로 가는 링크는
-// WHALEERP-186(현황 영역의 관리 화면 이동) 몫이다. 메뉴 url(#592 결정)은 근무스케줄 /work-schedules · 출퇴근 현황
-// /attendance-records · 급여명세서 /payslips. TO-DO 는 화면(#116)과 메뉴 url(MN000026 /todos)이 생겨 걸었다.
+// 오른쪽 영역의 「관리」. 출퇴근 현황 · 급여명세서는 아직 링크를 걸지 않는다 — 각 관리 화면으로 가는 링크는
+// WHALEERP-186(현황 영역의 관리 화면 이동) 몫이다. 메뉴 url(#592 결정)은 출퇴근 현황 /attendance-records · 급여명세서 /payslips.
+// TO-DO 는 화면(#116)과 메뉴 url(MN000026 /todos)이, 근무스케줄은 화면(#202)과 메뉴 url(MN000010 /work-schedules)이 생겨 걸었다 —
+// 근무스케줄은 그 직원의 근무지 · 영역이 보던 주로 연다.
 
 // 가입 상태 한글(이메일 칸, WHALEERP-180). 받지 못해도 상세는 그린다 — 이메일 칸만 「-」가 되고 원인은 서버 로그에 남긴다.
 async function loadJoinStateLabels(): Promise<EnumValue[]> {
@@ -157,7 +158,17 @@ export default async function StaffMemberDetailPage({
               </div>
               {/* 영역마다 따로 받는다 — 한 영역이 실패해도 그 영역에만 안내 · 다시 하기를 그리고 나머지는 그대로다 */}
               <div className="flex min-w-0 flex-col gap-[24px]">
-                <Box title="근무스케줄" tools={<WeekNav monday={monday} search={search} />}>
+                <Box
+                  title="근무스케줄"
+                  tools={<WeekNav monday={monday} search={search} />}
+                  manage={
+                    <MenuManageLink
+                      menuCode={MENU_CODE.workSchedules}
+                      menuName="근무스케줄 관리"
+                      href={`/work-schedules?store=${staff.store.storeId}&week=${monday}`}
+                    />
+                  }
+                >
                   {/* 주를 바꾸면 이 영역만 다시 기다린다 */}
                   <Suspense key={monday} fallback={<AreaLoading />}>
                     <ScheduleBox staffMemberId={staffMemberId} weekStart={monday} />
