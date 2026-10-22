@@ -11,7 +11,7 @@ import type { WorkScheduleHistoryList } from "@/lib/work-schedules-api";
 import { mondayOf, moved, toScheduleSearch, type ScheduleQuery } from "./work-schedule-query";
 import { CHANGE_LABEL, historyLine } from "./work-schedule-view";
 
-function useScheduleNavigation(today: string) {
+export function useScheduleNavigation(today: string) {
   const router = useRouter();
   const [, startTransition] = useTransition();
   return (next: ScheduleQuery) => startTransition(() => router.replace(`/work-schedules${toScheduleSearch(next, today)}`, { scroll: false }));
@@ -33,7 +33,7 @@ export function SchedulePicker({ query, today }: { query: ScheduleQuery; today: 
     return <p className="text-[14px] text-erp-label">{stores.length ? "점포를 고르는 중입니다…" : "관리하는 점포가 없습니다."}</p>;
   return (
     <div className="w-[220px] shrink-0">
-      <Select aria-label="근무지" value={query.storeId} onChange={(e) => navigate({ ...query, storeId: Number(e.target.value), history: false })}>
+      <Select aria-label="근무지" value={query.storeId} onChange={(e) => navigate({ ...query, storeId: Number(e.target.value), history: false, copy: false })}>
         {stores.map((s) => (
           <option key={s.storeId} value={s.storeId}>
             {s.name}

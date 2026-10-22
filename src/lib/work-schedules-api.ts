@@ -11,6 +11,7 @@ export type ScheduleStaff = Schemas["WorkScheduleStaffItemDto"];
 export type ScheduleDefaults = Schemas["WorkScheduleDefaultsDto"];
 export type ScheduleFields = Schemas["UpdateWorkScheduleDto"];
 export type BulkResult = Schemas["BulkCreateWorkSchedulesResponseDto"];
+export type CopyPreview = Schemas["CopyLastWeekResponseDto"];
 
 const get = async (): Promise<RequestInit> => ({ method: "GET", headers: await authHeaders() });
 const send = async (method: "POST" | "PATCH" | "DELETE", body?: unknown): Promise<RequestInit> => ({
@@ -68,4 +69,14 @@ export async function updateSchedule(id: number, body: ScheduleFields): Promise<
 /** DELETE /work-schedules/:id */
 export async function deleteSchedule(id: number): Promise<void> {
   await request(`/work-schedules/${id}`, await send("DELETE"));
+}
+
+/** GET /work-schedules/copy-last-week — 지난 주 복사 미리보기(쓰지 않음). 409 WORK_SCHEDULE_WEEK_NOT_EMPTY · WORK_SCHEDULE_COPY_HIDDEN_STAFF */
+export async function getCopyPreview(storeId: number, weekStart: string): Promise<CopyPreview> {
+  return request(`/work-schedules/copy-last-week?${new URLSearchParams({ storeId: String(storeId), weekStart })}`, await get());
+}
+
+/** POST /work-schedules/copy-last-week — 지난 주 복사(빈 주에서만). 넣을 때 다시 판정한다 */
+export async function copyLastWeek(storeId: number, weekStart: string): Promise<CopyPreview> {
+  return request("/work-schedules/copy-last-week", await send("POST", { storeId, weekStart }));
 }

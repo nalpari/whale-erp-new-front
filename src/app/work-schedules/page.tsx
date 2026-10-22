@@ -1,23 +1,38 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button, PageBar } from "@/components/common";
-import { getEnum } from "@/lib/api";
+import { ApiError, getEnum } from "@/lib/api";
 import { kstToday } from "@/lib/staff-members";
-import { getWorkScheduleHistories, getWorkSchedules } from "@/lib/work-schedules-api";
+import { getCopyPreview, getWorkScheduleHistories, getWorkSchedules } from "@/lib/work-schedules-api";
 import { SchedulePicker, ScheduleHistory, WeekJump } from "./schedule-controls";
+import { CopyButton, CopyPreviewPanel, type CopyPreviewResult } from "./schedule-copy";
 import { NewScheduleButton, SchedulePanel } from "./schedule-form";
 import { ScheduleMonth } from "./schedule-month";
 import { ScheduleWeek } from "./schedule-week";
 import { addDays, historyApiSearch, mondayOf, moved, parseScheduleQuery, scheduleApiSearch, toScheduleSearch, type ScheduleQuery } from "./work-schedule-query";
 
 // 근무스케줄 관리(#202 · #343 · #608). 목업 docs/mockup/staff/index.html 근무스케줄 탭 · 데모 docs/demo/staff/work-schedules.html 을 공통 컴포넌트로 옮겼다.
-// 데이터는 GET /work-schedules(주간 8일 — 전주 일요일 포함 · 월간 42일)와 GET /work-schedules/histories(변경 이력 패널이 열렸을 때)다. 화면 상태는 주소에만 둔다.
-// 등록 · 수정 · 삭제는 오른쪽 패널(schedule-form.tsx, #203)이고, 지난 주 복사는 다음 PR 이다(계획 문서 「PR 나눔」).
+// 데이터는 GET /work-schedules(주간 8일 — 전주 일요일 포함 · 월간 42일), GET /work-schedules/histories(변경 이력 패널이 열렸을 때),
+// GET /work-schedules/copy-last-week(지난 주 복사 미리보기가 열렸을 때, #204)다. 화면 상태는 주소에만 둔다.
+// 등록 · 수정 · 삭제는 오른쪽 패널(schedule-form.tsx, #203)이고, 지난 주 복사는 도구 줄 아래 미리보기다(schedule-copy.tsx).
 
 const tab = (active: boolean) =>
   `flex h-[34px] items-center rounded-[2px] border px-[16px] text-[14px] transition-colors duration-150 ease-out ${
     active ? "border-erp-brand bg-erp-brand text-white" : "border-erp-button-line bg-white text-erp-ink hover:border-erp-brand"
   }`;
+
+/** 지난 주 복사 미리보기. 409(빈 주 아님 · 본사에게 가려진 직원) · 다른 4xx 는 문장을 미리보기 자리에 보이고, 5xx · 끊김은 고정 문구로 */
+async function loadCopyPreview(storeId: number, weekStart: string): Promise<CopyPreviewResult> {
+  try {
+    return await getCopyPreview(storeId, weekStart);
+  } catch (error) {
+    // 로그인 만료(401)는 화면 전체의 일이라 그대로 올린다
+    if (error instanceof ApiError && error.status === 401) throw error;
+    if (error instanceof ApiError && error.status >= 400 && error.status < 500) return { error: error.message };
+    console.error("근무스케줄: GET /work-schedules/copy-last-week 를 받지 못했습니다", error);
+    return { error: "지난 주 복사 미리보기를 불러오지 못했습니다. 잠시 뒤 다시 열어 주세요." };
+  }
+}
 
 export default async function WorkSchedulesPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const today = kstToday();
@@ -35,7 +50,7 @@ export default async function WorkSchedulesPage({ searchParams }: { searchParams
     );
 
   const withStore = { ...query, storeId: query.storeId };
-  const [data, history, employmentLabels] = await Promise.all([
+  const [data, history, employmentLabels, copyPreview] = await Promise.all([
     getWorkSchedules(scheduleApiSearch(withStore)),
     // 이력을 받지 못해도 화면은 그린다 — 패널 안에만 안내하고 원인은 서버 로그에 남긴다(front #93 리뷰)
     query.history
@@ -45,8 +60,11 @@ export default async function WorkSchedulesPage({ searchParams }: { searchParams
         })
       : Promise.resolve(null),
     getEnum("EmploymentType"),
+    query.copy ? loadCopyPreview(query.storeId, query.week) : Promise.resolve(null),
   ]);
   if (!data) notFound();
+  // 그 주(월~일)에 근무스케줄이 한 건이라도 있으면 복사를 끈다(STAFF-13). 전주 일요일은 넘어온 근무용이라 세지 않는다
+  const weekEmpty = !data.items.some((it) => it.workDate >= query.week && it.workDate <= addDays(query.week, 6));
   const staffOptions = data.staff.flatMap((s) => (s.staffMemberId !== null && s.name !== null ? [{ staffMemberId: s.staffMemberId, name: s.name }] : []));
 
   return (
@@ -84,8 +102,10 @@ export default async function WorkSchedulesPage({ searchParams }: { searchParams
               </div>
             )}
             <span className="ml-auto text-[13px] text-erp-label">00~24시 · 근무일은 시작한 날</span>
+            {query.view === "week" && <CopyButton query={withStore} today={today} weekEmpty={weekEmpty} />}
             <NewScheduleButton workDate={query.day} />
           </div>
+          {copyPreview && <CopyPreviewPanel query={withStore} today={today} preview={copyPreview} />}
           {query.view === "week" ? (
             <ScheduleWeek data={data} query={query} today={today} />
           ) : (

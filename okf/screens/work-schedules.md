@@ -1,7 +1,7 @@
 ---
 type: Screen
 title: 근무스케줄 관리 화면 (구현)
-description: /work-schedules 주간 · 월간 보기, 변경 이력 패널, 등록 · 수정 · 삭제 패널(한 명 · 여러 명 일괄). 데이터는 근무스케줄 api 다. 지난 주 복사는 다음 PR.
+description: /work-schedules 주간 · 월간 보기, 변경 이력 패널, 등록 · 수정 · 삭제 패널(한 명 · 여러 명 일괄), 지난 주 복사 미리보기. 데이터는 근무스케줄 api 다.
 tags: [staff, work-schedule, screen]
 status: draft
 generated: { by: claude-code/opus-5.5, at: 2026-10-22T11:00:00Z }
@@ -38,6 +38,10 @@ sources:
     resource: ../../src/app/work-schedules/schedule-form-model.ts
     title: 시각 선택지 · 근무 길이 · 화면에서 막는 것 · 계약 값 → 입력칸
     last_modified: 2026-10-22T11:00:00Z
+  - id: copy
+    resource: ../../src/app/work-schedules/schedule-copy.tsx
+    title: 「지난 주 복사」 버튼 · 미리보기(#204)
+    last_modified: 2026-10-22T11:00:00Z
   - id: actions
     resource: ../../src/app/work-schedules/actions.ts
     title: 등록 · 일괄 · 수정 · 삭제 · 받을 수 있는 직원 · 계약 값 server action
@@ -54,7 +58,7 @@ sources:
 데모 `docs/demo/staff/work-schedules.html`(원본 `docs/demo/src/staff-parts.mjs` 의 `schedWeek` · `schedMonth` · `coverRow`)을 공통 컴포넌트로 옮겼다.
 계획은 `docs/plans/2026-10-21-work-schedules-screen.md`, api 결정은 api `docs/plans/2026-10-21-work-schedules.md` 다.
 
-화면 상태는 주소에만 둔다: `?store=&view=week|month&week=<월요일>&day=&month=YYYY-MM&history=1&hfrom=&hto=&hstaff=&hpage=&hsize=`. 기본값(이번 주 · 오늘 · 이번 달)은 주소에서 뺀다.
+화면 상태는 주소에만 둔다: `?store=&view=week|month&week=<월요일>&day=&month=YYYY-MM&history=1&hfrom=&hto=&hstaff=&hpage=&hsize=&copy=1`. 기본값(이번 주 · 오늘 · 이번 달)은 주소에서 뺀다.
 근무스케줄은 점포 하나씩 본다 — 주소에 점포가 없으면 헤더 범위가 점포 하나일 때 그 점포(`?scope=STORE:12` 도 읽는다), 아니면 폐점이 아닌 첫 점포로 옮긴다(`SchedulePicker`).
 
 # 주간 보기
@@ -75,6 +79,13 @@ sources:
 * 수정은 직원 고정, 근무일 · 시각 · 휴게. 「삭제」는 확인창 뒤(삭제 권한). 결과를 모르면(5xx · 끊김) 토스트로 알리고 화면을 새로 받아 닫는다 — 다시 저장하면 겹칠 수 있다.
 * 폐점 점포(운영 정책 ATT-33, 2026-10-22 재영)는 점포 고르기에 그대로 있되 「근무스케줄 등록」을 막고 옆에 「폐점 점포는 근무스케줄을 등록할 수 없습니다.」, 「이 시간대에 배정」은 숨긴다. 수정 · 삭제는 막지 않는다. api 쪽 거절은 WHALEERP-614.
 
+# 지난 주 복사(#204, STAFF-13)
+
+* 주간 보기 도구 줄의 「지난 주 복사」(등록 권한). 그 주(월~일)에 근무스케줄이 한 건이라도 있으면 끄고 옆에 「이미 근무스케줄이 있는 주 · 덧붙일 때는 여러 명 일괄 등록」, 폐점 점포도 끈다.
+* 누르면 도구 줄 아래에 미리보기(주소 `copy=1` — 서버가 `GET /copy-last-week` 를 읽는다). 주 · 점포 · 보기를 바꾸면 닫히고 같은 주의 다른 날로 가면 남는다(`moved`).
+* 표: 직원 · 지난 주 · 이번 주(「5일 · 40.0h」, 휴게를 뺀 시간) · 처리(`copyStatus`) — 「복사」, 「일부 제외」와 빠진 날 · 사유, 「제외 · 근로계약 미체결 / 10-20 퇴직 / 가입 전 / 시간 겹침 / 본사 제공 동의 없음」, 지난 주에 없던 직원은 「지난 주 없음 · 따로 넣는다」.
+* 409(빈 주 아님 · 본사에게 가려진 직원) · 다른 4xx 는 api 문장을 미리보기 자리에 그대로. 「n명 복사」(복사할 날이 있는 직원 수, 0 이면 끔) → `POST /copy-last-week` → 토스트 「n명의 근무스케줄을 복사했습니다.」 · 미리보기를 닫고 화면을 새로 받는다. 넣을 때 api 가 다시 판정한다.
+
 # 월간 보기
 
 * 달력 6주(그 달 1일이 든 주의 월요일부터 42일)를 한 번에 읽는다(api 상한 42일). 칸에는 `headcount` 만, 그 달 밖의 날은 흐린 칸.
@@ -88,5 +99,4 @@ sources:
 
 # 아직 없는 것
 
-* 지난 주 복사 미리보기(#204) — 다음 PR(계획 문서 「PR 나눔」 3).
-* 직원 상세의 근무스케줄 칸 안(지금 「준비 중입니다.」). 「관리」 링크는 걸었다(`/work-schedules?store=<근무지>`).
+* api 쪽 폐점 점포 등록 거절(WHALEERP-614) — 지금은 화면만 막는다. 직원 상세 근무스케줄 영역은 상세 요약 api 로 채워져 있고(front #90), 「관리」는 그 직원의 근무지 · 주로 연다.
