@@ -402,6 +402,62 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/admin/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * MY PAGE 내 정보 (S-JXKHCM). 플랫폼 · BP 여섯 역할 모두 쓴다. AllowPasswordChangePending 을
+         *     달지 않는다 — 강제 비밀번호 변경 대상이면 이 경로도 403 이다(위 changeRequiredPassword 주석과 같다).
+         */
+        get: operations["AdminAuthController_getProfile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * 내 기본정보 저장 — 이름 · 연락처 · 이메일만. 이메일을 바꾸면 지금 비밀번호(currentPassword)도
+         *     받아 맞는지 본다(틀리거나 없으면 400) — 탈취한 접근 토큰만으로 로그인 이메일을 공격자 주소로
+         *     바꿔 비밀번호 찾기를 가로채는 계정 탈취를 막는다(ip-code-review-claude 적대적 리뷰로 찾음,
+         *     2026-10-21). 이메일이 다른 관리자 계정과 겹치면 409.
+         *     계정 축 기본 추적은 본문의 email 로 센다(throttle.ts accountTracker) — 저장할 새 이메일을
+         *     호출자가 그대로 고를 수 있어, 매번 다른 값을 보내면 버킷을 계속 새로 만들어 계정 한도를
+         *     비울 수 있었다(코드 리뷰로 찾음, 2026-10-21). my-profile.controller.ts 의 비밀번호 · 이메일
+         *     변경과 같이 signedInUserTracker 로 로그인한 계정 자신으로 고정한다.
+         */
+        patch: operations["AdminAuthController_updateProfile"];
+        trace?: never;
+    };
+    "/auth/admin/me/email-availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 이메일 중복 확인 — 칸을 벗어나거나 Enter 를 칠 때 부른다. 원래 이메일 그대로면 화면이 부르지 않는다.
+         *     중복 확인 경로는 한도를 끄지 않는다 — 가입(admin-signup)의 같은 종류 경로도 기본 한도를 그대로
+         *     쓰기로 정했다(api #37 머지, 2026-10-15). SkipThrottle 을 달았던 것을 걷는다(코드 리뷰로 찾음,
+         *     2026-10-21) — 이 경로는 다른 관리자 계정의 이메일 등록 여부를 그대로 알려줘 한도까지 꺼두면
+         *     플랫폼 전체를 대상으로 쓸어볼 수 있다. GET 이라 본문이 없어 기본 계정 축(AUTH_THROTTLERS)은
+         *     Bearer 토큰으로 센다(10분 10건, 토큰은 15분마다 바뀌어 매번 새 버킷) — IP 축(분당 60건)만
+         *     걸린다던 주석은 틀렸었다(코드 리뷰로 찾음). 정상 사용자가 10분 안에 11번 넘게 고쳐 볼 일은
+         *     드물다고 보고 지금은 그대로 둔다.
+         */
+        get: operations["AdminAuthController_checkProfileEmail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/public-code-items": {
         parameters: {
             query?: never;
@@ -693,6 +749,115 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/bp-role-groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 목록 — 권한 코드 순(BA 다음 FA), 쪽 나눔. creatableRoleTypeCode 는 역할로 정한 등록 유형이다. */
+        get: operations["BpRoleGroupsController_list"];
+        put?: never;
+        /** 등록 — BM 은 BA, FM 은 FA(관리계정 = 본인). 유형은 받지 않는다. */
+        post: operations["BpRoleGroupsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bp-role-groups/franchise-master/menus": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 가맹마스터 보기 — FM000001 메뉴 트리, 모든 칸 읽기 전용. 가맹 관리자는 403. `:id` 보다 먼저 둔다. */
+        get: operations["BpRoleGroupsController_franchiseMasterMenus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bp-role-groups/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 상세 — 역할로 고칠 수 있는지 · 지울 수 있는지와 막힌 이유. */
+        get: operations["BpRoleGroupsController_detail"];
+        /** 권한명 · 설명 수정. 상세의 updatedAt 을 함께 보낸다 — 그 사이 고쳐졌으면 409. */
+        put: operations["BpRoleGroupsController_update"];
+        post?: never;
+        /** 삭제(논리 삭제). 연결 사용자가 있으면 대체 그룹으로 옮긴 뒤 지운다. 지운 권한 코드는 다시 쓰지 않는다. */
+        delete: operations["BpRoleGroupsController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bp-role-groups/{id}/menus": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 메뉴 등록 팝업의 트리 — WHALE_ERP 메뉴, 칸마다 현재 값 · 바꿀 수 있는지 · 막힌 이유. */
+        get: operations["BpRoleGroupsController_menus"];
+        /** 메뉴 권한 저장 — 메뉴별 네 칸 + updatedAt. 응답의 updatedAt 으로 다음 저장을 한다. */
+        put: operations["BpRoleGroupsController_saveMenus"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bp-role-groups/{id}/menus/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 회수 미리보기 — 꺼지는 칸과 이 그룹의 관리자 수. 하위 그룹이 없어 affectedRoleGroupCount 는 0. 쓰지 않는다. 저장과
+         *     같은 400 검사만 하고 역할 · 본인 연결 · updatedAt 은 보지 않는다.
+         */
+        post: operations["BpRoleGroupsController_previewMenus"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bp-role-groups/{id}/deletion-candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 삭제 대화상자 — 옮길 연결 사용자와 대체 후보(같은 BP · 유형 · 관리계정). */
+        get: operations["BpRoleGroupsController_deletionCandidates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/platform-role-groups": {
         parameters: {
             query?: never;
@@ -911,8 +1076,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 그 BP 가 보는 공통코드 — 공개 `GET /public-code-items` 와 같은 `groups` · 응답 모양.
-         *     로그인한 누구나(관리자는 권한 유형과 상관없이, 직원 앱도) 부른다. 부를 때의 현재 값이다.
+         * 그 BP 가 보는 공통코드 — 공개 `GET /public-code-items` 와 같은 `groups` · 응답 모양. 부를 때의 현재 값이다.
+         *     볼 수 있는 BP 는 점포 목록과 같다(bpStoresAccess) — 플랫폼 관리자는 어느 BP 든, BP · 가맹 관리자는 자기 BP 만,
+         *     직원 앱은 가입 · 재직 중인 점포가 있는 BP 만. 볼 수 없는 BP 는 없는 BP 와 같이 404, 사용 중인 관리자 계정이
+         *     아니면 403.
          */
         get: operations["BpCodesController_findCodeItems"];
         put?: never;
@@ -3226,6 +3393,72 @@ export interface components {
              */
             isTermsAgreed?: boolean;
         };
+        AdminProfileResponseDto: {
+            /** @description 아이디. 바꿀 수 없다. */
+            loginId: string;
+            /** @description 이름. */
+            name: string;
+            /** @description 연락처 — 하이픈 없이 숫자 10~11자리. */
+            phone: string;
+            /** @description 이메일. */
+            email: string;
+            /**
+             * @description 권한 유형 — 공통코드 `ROLE_TYPE`(PM · PA · BM · BA · FM · FA). 한글은 enum 이 아니라
+             *     공통코드라 `GET /enums`로 못 받는다(아직 공통코드 조회 API 가 없다, naming.md) — 틀린
+             *     주석을 바로잡는다(코드 리뷰로 찾음, 2026-10-21).
+             */
+            roleTypeCode: string;
+            /**
+             * Format: date-time
+             * @description 가입일시.
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description 최근 로그인 일시 — 로그인한 적 없으면 null.
+             */
+            lastLoginAt: string | null;
+            /**
+             * Format: date-time
+             * @description 저장할 때 동시 수정 검사에 그대로 돌려줘야 하는 값(PATCH 의 updatedAt).
+             */
+            updatedAt: string;
+        };
+        AdminProfileUpdateDto: {
+            /**
+             * @description 내 정보 조회 응답의 updatedAt 그대로. 그사이 다른 관리자가 이 계정을 고쳤으면 409
+             *     (platform-admins update 와 같은 동시 수정 검사 — 코드 리뷰로 찾음, 2026-10-21. 전에는
+             *     이 칸이 없어 동시에 고치면 먼저 연 쪽이 조용히 덮어썼다).
+             */
+            updatedAt: string;
+            /**
+             * @description 이름. 한글 · 영문 2~20자.
+             * @example 이서준
+             */
+            name: string;
+            /**
+             * @description 연락처. 하이픈 없이 숫자 10~11자리.
+             * @example 01012345678
+             */
+            phone: string;
+            /**
+             * Format: email
+             * @description 이메일. 소문자로 저장한다. 원래 값과 같으면 중복 검사를 하지 않는다.
+             * @example seojun@whale.test
+             */
+            email: string;
+            /**
+             * @description 이메일을 바꿀 때만 받는다(원래 값과 같으면 비워도 된다) — 토큰만 가진 사람이 비밀번호 없이
+             *     로그인 이메일을 자기 것으로 바꿔, 비밀번호 찾기로 새 임시 비밀번호를 가로채는 계정 탈취를
+             *     막는다(ip-code-review-claude 적대적 리뷰로 찾음, 2026-10-21 — my-profile(직원 앱)의
+             *     email-change 와 같은 통제다).
+             */
+            currentPassword?: string;
+        };
+        AdminProfileEmailAvailabilityResponseDto: {
+            /** @description true 면 이 이메일로 저장할 수 있다. */
+            available: boolean;
+        };
         CodeItemsResponseDto: {
             /**
              * @example {
@@ -3691,16 +3924,27 @@ export interface components {
              */
             updatedAt: string;
         };
+        BpRoleGroupManagerResponseDto: {
+            adminAccountId: number;
+            loginId: string;
+            name: string | null;
+        };
         RoleGroupActorResponseDto: {
             name: string | null;
             loginId: string;
         };
-        PlatformRoleGroupSummaryResponseDto: {
+        BpRoleGroupSummaryResponseDto: {
             /**
-             * @description 권한 유형 — 플랫폼 마스터 PM · 플랫폼 관리자 PA · BP 마스터 BM · 가맹 마스터 FM. 한글은 공통코드 ROLE_TYPE.
+             * @description 권한 유형 — BP 관리자 BA · 가맹 관리자 FA. 한글은 공통코드 ROLE_TYPE.
              * @enum {string}
              */
-            roleTypeCode: "PM" | "PA" | "BM" | "FM";
+            roleTypeCode: "BA" | "FA";
+            /** @description 관리계정 — FA 그룹을 만든 가맹 마스터. BA 는 null. */
+            manager: components["schemas"]["BpRoleGroupManagerResponseDto"] | null;
+            /** @description 호출자 본인이 연결된 그룹인가 — 「본인」 배지. */
+            isSelfLinked: boolean;
+            /** @description 조회가 켜진 메뉴 수(묶음 메뉴 포함) — 「등록 N개」. 0 이면 「미등록」. */
+            menuCount: number;
             roleGroupId: number;
             /**
              * @description 권한 코드 — 유형 + 6자리.
@@ -3726,9 +3970,15 @@ export interface components {
             /** @description 연결된 지우지 않은 관리자 수(미사용 포함) — 삭제 대화상자가 대체 권한을 고르게 할지 가른다. */
             adminCount: number;
         };
-        PlatformRoleGroupSummaryListResponseDto: {
-            /** @description 고정 권한 PM · PA · BM · FM 다음 플랫폼 관리자 추가 권한을 코드 순으로. BP 관리자 · 가맹 관리자 그룹은 싣지 않는다. */
-            items: components["schemas"]["PlatformRoleGroupSummaryResponseDto"][];
+        BpRoleGroupListResponseDto: {
+            /**
+             * @description 이 호출자가 등록할 때 만들어지는 유형 — BP 마스터 BA, 가맹 마스터 FA, 나머지 null(등록 불가). 메뉴 등록 권한은
+             *     보지 않는다 — 화면은 메뉴 권한과 합쳐 버튼을 보인다.
+             * @enum {string|null}
+             */
+            creatableRoleTypeCode: "BA" | "FA" | null;
+            /** @description 권한 코드 순(BA 다음 FA). 고정 권한 · 지운 그룹은 싣지 않는다. */
+            items: components["schemas"]["BpRoleGroupSummaryResponseDto"][];
             total: number;
         };
         CreatePlatformRoleGroupDto: {
@@ -3747,60 +3997,6 @@ export interface components {
              * @example PA000005
              */
             roleCode: string;
-        };
-        /**
-         * @description 고칠 수 없는 이유. 고칠 수 있으면 null. 한글은 GET /enums/PlatformRoleGroupLockReason.
-         * @enum {string}
-         */
-        PlatformRoleGroupLockReason: "FIXED_ROLE" | "NO_PERMISSION" | "SELF_LINKED";
-        PlatformRoleGroupDetailResponseDto: {
-            /**
-             * @description 권한 유형 — 플랫폼 마스터 PM · 플랫폼 관리자 PA · BP 마스터 BM · 가맹 마스터 FM. 한글은 공통코드 ROLE_TYPE.
-             * @enum {string}
-             */
-            roleTypeCode: "PM" | "PA" | "BM" | "FM";
-            /** @description 고칠 수 없는 이유. 고칠 수 있으면 null. 한글은 GET /enums/PlatformRoleGroupLockReason. */
-            editBlockedReason: components["schemas"]["PlatformRoleGroupLockReason"] | null;
-            deleteBlockedReason: components["schemas"]["PlatformRoleGroupLockReason"] | null;
-            /** @description 권한명 · 설명을 고칠 수 있는가. 메뉴 칸은 메뉴 트리의 칸별 값을 본다. */
-            isEditable: boolean;
-            /** @description 지울 수 있는가. 연결 사용자가 있는데 대체 후보가 없는 것은 삭제 후보 조회로 알린다. */
-            isDeletable: boolean;
-            roleGroupId: number;
-            /**
-             * @description 권한 코드 — 유형 + 6자리.
-             * @example PA000002
-             */
-            roleCode: string;
-            /** @description 권한명. */
-            name: string;
-            description: string | null;
-            /** @description 고정 권한(PM000001 · BM000001 · FM000001 같은 마이그레이션 시드). 지울 수 없다. */
-            isMaster: boolean;
-            /** @description 메뉴 등록 여부 — 서비스와 관계없이 조회가 켜진 메뉴가 하나라도 있으면 true. 아니면 「미등록」. */
-            isMenuRegistered: boolean;
-            /** Format: date-time */
-            createdAt: string;
-            createdBy: components["schemas"]["RoleGroupActorResponseDto"] | null;
-            /**
-             * Format: date-time
-             * @description 최종수정일시. 권한명 · 설명 수정, 메뉴 저장, 삭제가 그대로 돌려보낸다(동시 수정 확인).
-             */
-            updatedAt: string;
-            updatedBy: components["schemas"]["RoleGroupActorResponseDto"] | null;
-            /** @description 연결된 지우지 않은 관리자 수(미사용 포함) — 삭제 대화상자가 대체 권한을 고르게 할지 가른다. */
-            adminCount: number;
-        };
-        UpdatePlatformRoleGroupDto: {
-            /** @description 상세에서 받은 최종수정일시 그대로. 그 사이 다른 사람이 고쳤으면 저장하지 않고 409. */
-            updatedAt: string;
-            /** @description 권한명. 앞뒤 공백을 지우고 1~20자. 플랫폼 권한(PM · PA · BM · FM) 안에서 겹칠 수 없다. */
-            name: string;
-            /**
-             * @description 설명. 선택, 앞뒤 공백을 지우고 100자까지. 비우면 null.
-             * @example 커뮤니티관리·BP 조회
-             */
-            description?: string | null;
         };
         /**
          * @description 바꿀 수 없는 이유. 한글은 GET /enums/PlatformRoleMenuBlockReason. 바꿀 수 있으면 null.
@@ -3839,9 +4035,9 @@ export interface components {
             /** @description 보이는 메뉴 트리. 비면 「이 서비스에 등록된 메뉴가 없습니다」. */
             menus: components["schemas"]["RoleGroupMenuNodeResponseDto"][];
         };
-        RoleGroupMenuTreeResponseDto: {
+        BpRoleGroupMenuTreeResponseDto: {
             /** @enum {string} */
-            roleTypeCode: "PM" | "PA" | "BM" | "FM";
+            roleTypeCode: "BA" | "FA" | "FM";
             roleGroupId: number;
             roleCode: string;
             name: string;
@@ -3857,6 +4053,72 @@ export interface components {
             isSavable: boolean;
             /** @description 사용 중인 서비스(공통코드 SERVICE 순서)별 메뉴. 숨겨진 메뉴는 빠진다. */
             services: components["schemas"]["RoleGroupMenuServiceResponseDto"][];
+        };
+        /**
+         * @description 고칠 수 없는 이유. 한글은 GET /enums/PlatformRoleGroupLockReason.
+         * @enum {string}
+         */
+        PlatformRoleGroupLockReason: "FIXED_ROLE" | "NO_PERMISSION" | "SELF_LINKED";
+        BpRoleGroupDetailResponseDto: {
+            /**
+             * @description 권한 유형 — BP 관리자 BA · 가맹 관리자 FA. 한글은 공통코드 ROLE_TYPE.
+             * @enum {string}
+             */
+            roleTypeCode: "BA" | "FA";
+            /** @description 고칠 수 없는 이유. 한글은 GET /enums/PlatformRoleGroupLockReason. */
+            editBlockedReason: components["schemas"]["PlatformRoleGroupLockReason"] | null;
+            deleteBlockedReason: components["schemas"]["PlatformRoleGroupLockReason"] | null;
+            /**
+             * @description 역할로 권한명 · 설명 · 메뉴를 고칠 수 있고 본인이 연결된 그룹도 아닌가 — BM 은 그 BP 의 BA, FM 은 본인 FA. false 의
+             *     이유는 editBlockedReason. 메뉴 권한은 화면이 합친다.
+             */
+            isEditable: boolean;
+            /**
+             * @description 역할로 지울 수 있고 본인이 연결된 그룹도 아닌가. false 의 이유는 deleteBlockedReason. 연결 사용자가 있는데 대체
+             *     후보가 없는 것은 삭제 후보 조회로 알린다.
+             */
+            isDeletable: boolean;
+            /** @description 관리계정 — FA 그룹을 만든 가맹 마스터. BA 는 null. */
+            manager: components["schemas"]["BpRoleGroupManagerResponseDto"] | null;
+            /** @description 호출자 본인이 연결된 그룹인가 — 「본인」 배지. */
+            isSelfLinked: boolean;
+            /** @description 조회가 켜진 메뉴 수(묶음 메뉴 포함) — 「등록 N개」. 0 이면 「미등록」. */
+            menuCount: number;
+            roleGroupId: number;
+            /**
+             * @description 권한 코드 — 유형 + 6자리.
+             * @example PA000002
+             */
+            roleCode: string;
+            /** @description 권한명. */
+            name: string;
+            description: string | null;
+            /** @description 고정 권한(PM000001 · BM000001 · FM000001 같은 마이그레이션 시드). 지울 수 없다. */
+            isMaster: boolean;
+            /** @description 메뉴 등록 여부 — 서비스와 관계없이 조회가 켜진 메뉴가 하나라도 있으면 true. 아니면 「미등록」. */
+            isMenuRegistered: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["RoleGroupActorResponseDto"] | null;
+            /**
+             * Format: date-time
+             * @description 최종수정일시. 권한명 · 설명 수정, 메뉴 저장, 삭제가 그대로 돌려보낸다(동시 수정 확인).
+             */
+            updatedAt: string;
+            updatedBy: components["schemas"]["RoleGroupActorResponseDto"] | null;
+            /** @description 연결된 지우지 않은 관리자 수(미사용 포함) — 삭제 대화상자가 대체 권한을 고르게 할지 가른다. */
+            adminCount: number;
+        };
+        UpdatePlatformRoleGroupDto: {
+            /** @description 상세에서 받은 최종수정일시 그대로. 그 사이 다른 사람이 고쳤으면 저장하지 않고 409. */
+            updatedAt: string;
+            /** @description 권한명. 앞뒤 공백을 지우고 1~20자. 플랫폼 권한(PM · PA · BM · FM) 안에서 겹칠 수 없다. */
+            name: string;
+            /**
+             * @description 설명. 선택, 앞뒤 공백을 지우고 100자까지. 비우면 null.
+             * @example 커뮤니티관리·BP 조회
+             */
+            description?: string | null;
         };
         RoleGroupMenuCellsDto: {
             menuId: number;
@@ -3907,6 +4169,99 @@ export interface components {
             updatedAt: string;
             /** @description 대체 권한 — 같은 유형(PA)의 지우지 않은 다른 추가 권한. 고정 권한은 고를 수 없다. */
             replacementRoleGroupId?: number;
+        };
+        PlatformRoleGroupSummaryResponseDto: {
+            /**
+             * @description 권한 유형 — 플랫폼 마스터 PM · 플랫폼 관리자 PA · BP 마스터 BM · 가맹 마스터 FM. 한글은 공통코드 ROLE_TYPE.
+             * @enum {string}
+             */
+            roleTypeCode: "PM" | "PA" | "BM" | "FM";
+            roleGroupId: number;
+            /**
+             * @description 권한 코드 — 유형 + 6자리.
+             * @example PA000002
+             */
+            roleCode: string;
+            /** @description 권한명. */
+            name: string;
+            description: string | null;
+            /** @description 고정 권한(PM000001 · BM000001 · FM000001 같은 마이그레이션 시드). 지울 수 없다. */
+            isMaster: boolean;
+            /** @description 메뉴 등록 여부 — 서비스와 관계없이 조회가 켜진 메뉴가 하나라도 있으면 true. 아니면 「미등록」. */
+            isMenuRegistered: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["RoleGroupActorResponseDto"] | null;
+            /**
+             * Format: date-time
+             * @description 최종수정일시. 권한명 · 설명 수정, 메뉴 저장, 삭제가 그대로 돌려보낸다(동시 수정 확인).
+             */
+            updatedAt: string;
+            updatedBy: components["schemas"]["RoleGroupActorResponseDto"] | null;
+            /** @description 연결된 지우지 않은 관리자 수(미사용 포함) — 삭제 대화상자가 대체 권한을 고르게 할지 가른다. */
+            adminCount: number;
+        };
+        PlatformRoleGroupSummaryListResponseDto: {
+            /** @description 고정 권한 PM · PA · BM · FM 다음 플랫폼 관리자 추가 권한을 코드 순으로. BP 관리자 · 가맹 관리자 그룹은 싣지 않는다. */
+            items: components["schemas"]["PlatformRoleGroupSummaryResponseDto"][];
+            total: number;
+        };
+        PlatformRoleGroupDetailResponseDto: {
+            /**
+             * @description 권한 유형 — 플랫폼 마스터 PM · 플랫폼 관리자 PA · BP 마스터 BM · 가맹 마스터 FM. 한글은 공통코드 ROLE_TYPE.
+             * @enum {string}
+             */
+            roleTypeCode: "PM" | "PA" | "BM" | "FM";
+            /** @description 고칠 수 없는 이유. 고칠 수 있으면 null. 한글은 GET /enums/PlatformRoleGroupLockReason. */
+            editBlockedReason: components["schemas"]["PlatformRoleGroupLockReason"] | null;
+            deleteBlockedReason: components["schemas"]["PlatformRoleGroupLockReason"] | null;
+            /** @description 권한명 · 설명을 고칠 수 있는가. 메뉴 칸은 메뉴 트리의 칸별 값을 본다. */
+            isEditable: boolean;
+            /** @description 지울 수 있는가. 연결 사용자가 있는데 대체 후보가 없는 것은 삭제 후보 조회로 알린다. */
+            isDeletable: boolean;
+            roleGroupId: number;
+            /**
+             * @description 권한 코드 — 유형 + 6자리.
+             * @example PA000002
+             */
+            roleCode: string;
+            /** @description 권한명. */
+            name: string;
+            description: string | null;
+            /** @description 고정 권한(PM000001 · BM000001 · FM000001 같은 마이그레이션 시드). 지울 수 없다. */
+            isMaster: boolean;
+            /** @description 메뉴 등록 여부 — 서비스와 관계없이 조회가 켜진 메뉴가 하나라도 있으면 true. 아니면 「미등록」. */
+            isMenuRegistered: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: components["schemas"]["RoleGroupActorResponseDto"] | null;
+            /**
+             * Format: date-time
+             * @description 최종수정일시. 권한명 · 설명 수정, 메뉴 저장, 삭제가 그대로 돌려보낸다(동시 수정 확인).
+             */
+            updatedAt: string;
+            updatedBy: components["schemas"]["RoleGroupActorResponseDto"] | null;
+            /** @description 연결된 지우지 않은 관리자 수(미사용 포함) — 삭제 대화상자가 대체 권한을 고르게 할지 가른다. */
+            adminCount: number;
+        };
+        RoleGroupMenuTreeResponseDto: {
+            /** @enum {string} */
+            roleTypeCode: "PM" | "PA" | "BM" | "FM";
+            roleGroupId: number;
+            roleCode: string;
+            name: string;
+            /**
+             * Format: date-time
+             * @description 저장할 때 그대로 돌려보낸다.
+             */
+            updatedAt: string;
+            /**
+             * @description 저장할 수 있는가 — 플랫폼 마스터 권한 · 권한 관리 수정 권한 없음 · 본인 연결이면 false. 칸이 본인 범위 밖으로
+             *     막힌 것은 여기서 보지 않는다(칸별 blockedReason).
+             */
+            isSavable: boolean;
+            /** @description 사용 중인 서비스(공통코드 SERVICE 순서)별 메뉴. 숨겨진 메뉴는 빠진다. */
+            services: components["schemas"]["RoleGroupMenuServiceResponseDto"][];
         };
         PlatformMenuServiceResponseDto: {
             /** @description 서비스 사용 상태. 사용중지 서비스도 고르고 편집할 수 있지만 사용자 화면에는 보이지 않는다. */
@@ -4207,7 +4562,7 @@ export interface components {
             /** @description 입사일(YYYY-MM-DD) — 그 점포에서 처음 체결 완료된 근로계약의 시작일. 채우기 전 레코드는 null */
             hiredDate: string | null;
             /**
-             * @description 생년월일(YYYY-MM-DD). 가입한 계정 값이고, 가입 전 · 탈퇴 계정이면 가장 최근 계약에 관리자가 적은 값이다. 둘 다 없으면
+             * @description 생년월일(YYYY-MM-DD). 가입한 계정 값이고, 가입 전 · 탈퇴 계정이면 생년월일이 적힌 가장 최근 계약의 값이다. 둘 다 없으면
              *     null
              */
             birthDate: string | null;
@@ -6905,7 +7260,10 @@ export interface operations {
     PasswordResetLinkAdminController_issue: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -7207,6 +7565,81 @@ export interface operations {
             };
         };
     };
+    AdminAuthController_getProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProfileResponseDto"];
+                };
+            };
+        };
+    };
+    AdminAuthController_updateProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminProfileUpdateDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 형식 위반 · 동시 수정 토큰 형식 오류 · 이메일 변경 시 지금 비밀번호 틀림(없음 포함) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 이미 등록된 이메일 · 동시 수정(다른 관리자가 먼저 저장) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminAuthController_checkProfileEmail: {
+        parameters: {
+            query: {
+                email: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProfileEmailAvailabilityResponseDto"];
+                };
+            };
+        };
+    };
     CodesController_findAll: {
         parameters: {
             query?: {
@@ -7414,7 +7847,10 @@ export interface operations {
                 /** @description 한 쪽 건수. 기본 20, 최대 200. */
                 pageSize: number;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -7440,7 +7876,10 @@ export interface operations {
     CodeGroupsController_updateGroups: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -7482,7 +7921,10 @@ export interface operations {
     CodeGroupsController_createGroups: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -7517,7 +7959,10 @@ export interface operations {
     CodeGroupsController_listItems: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 groupCode: string;
             };
@@ -7552,7 +7997,10 @@ export interface operations {
     CodeGroupsController_updateItems: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 groupCode: string;
             };
@@ -7596,7 +8044,10 @@ export interface operations {
     CodeGroupsController_createItems: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 groupCode: string;
             };
@@ -7640,7 +8091,10 @@ export interface operations {
     CodeGroupsController_applyToBps: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 groupCode: string;
             };
@@ -7693,7 +8147,10 @@ export interface operations {
                 /** @description 한 쪽 건수. 기본 20, 최대 200. */
                 pageSize: number;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -7719,7 +8176,10 @@ export interface operations {
     PlatformAdminsController_create: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -7763,7 +8223,10 @@ export interface operations {
     PlatformAdminsController_roleGroups: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -7792,7 +8255,10 @@ export interface operations {
                 /** @description 아이디. 영문 또는 영문 · 숫자 4~20자. */
                 loginId: string;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -7825,7 +8291,10 @@ export interface operations {
     PlatformAdminsController_detail: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -7860,7 +8329,10 @@ export interface operations {
     PlatformAdminsController_update: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -7904,7 +8376,10 @@ export interface operations {
     PlatformAdminsController_remove: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -7949,7 +8424,10 @@ export interface operations {
                 /** @description 한 쪽 건수. 기본 20, 최대 200. */
                 pageSize: number;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -7984,7 +8462,10 @@ export interface operations {
     PlatformAdminsController_resetPassword: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -8030,10 +8511,506 @@ export interface operations {
             };
         };
     };
+    BpRoleGroupsController_list: {
+        parameters: {
+            query: {
+                /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
+                page: number;
+                /** @description 한 쪽 건수. 기본 20, 최대 200. */
+                pageSize: number;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BpRoleGroupListResponseDto"];
+                };
+            };
+            /** @description 플랫폼 사용자의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 사용자의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) — `:id` 경로는 그룹 404 도 있다 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpRoleGroupsController_create: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePlatformRoleGroupDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatePlatformRoleGroupResponseDto"];
+                };
+            };
+            /** @description 플랫폼 사용자의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 사용자의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) — `:id` 경로는 그룹 404 도 있다 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같은 이름의 권한(같은 BP · 같은 관리계정) · 권한 코드 소진 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpRoleGroupsController_franchiseMasterMenus: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BpRoleGroupMenuTreeResponseDto"];
+                };
+            };
+            /** @description 플랫폼 사용자의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 사용자의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) — `:id` 경로는 그룹 404 도 있다 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpRoleGroupsController_detail: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BpRoleGroupDetailResponseDto"];
+                };
+            };
+            /** @description 플랫폼 사용자의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 권한 · 호출자 범위 밖 그룹(고정 권한 · 플랫폼 권한 · 다른 가맹 마스터의 FA 포함) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpRoleGroupsController_update: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePlatformRoleGroupDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 사용자의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 권한 · 호출자 범위 밖 그룹(고정 권한 · 플랫폼 권한 · 다른 가맹 마스터의 FA 포함) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 같은 이름의 권한 · 동시 수정 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpRoleGroupsController_remove: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeletePlatformRoleGroupDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 연결 사용자가 있는데 대체 권한 없음 · 후보가 아닌 대체 권한 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 권한 · 호출자 범위 밖 그룹(고정 권한 · 플랫폼 권한 · 다른 가맹 마스터의 FA 포함) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 동시 수정 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpRoleGroupsController_menus: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BpRoleGroupMenuTreeResponseDto"];
+                };
+            };
+            /** @description 플랫폼 사용자의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 권한 · 호출자 범위 밖 그룹(고정 권한 · 플랫폼 권한 · 다른 가맹 마스터의 FA 포함) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpRoleGroupsController_saveMenus: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveRoleGroupMenusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaveRoleGroupMenusResponseDto"];
+                };
+            };
+            /** @description 숨긴 · 없는 메뉴, 같은 메뉴 두 번, 조회 없는 등록 · 수정 · 삭제, 상한(기준 고정 권한 ∩ 본인 권한) 밖 칸 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 권한 · 호출자 범위 밖 그룹(고정 권한 · 플랫폼 권한 · 다른 가맹 마스터의 FA 포함) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 동시 수정 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpRoleGroupsController_previewMenus: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreviewRoleGroupMenusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoleGroupMenuRevocationPreviewResponseDto"];
+                };
+            };
+            /** @description 저장과 같은 검사 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 권한 · 호출자 범위 밖 그룹(고정 권한 · 플랫폼 권한 · 다른 가맹 마스터의 FA 포함) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpRoleGroupsController_deletionCandidates: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoleGroupDeletionCandidatesResponseDto"];
+                };
+            };
+            /** @description 플랫폼 사용자의 X-Bp-Code-Id 누락 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 역할로 쓸 수 없음 · 연결 가맹 마스터 없는 가맹 관리자(공용 문구) · 본인이 연결된 권한 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 지운 권한 · 호출자 범위 밖 그룹(고정 권한 · 플랫폼 권한 · 다른 가맹 마스터의 FA 포함) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     PlatformRoleGroupsController_list: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -8059,7 +9036,10 @@ export interface operations {
     PlatformRoleGroupsController_create: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -8103,7 +9083,10 @@ export interface operations {
     PlatformRoleGroupsController_detail: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -8138,7 +9121,10 @@ export interface operations {
     PlatformRoleGroupsController_update: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -8189,7 +9175,10 @@ export interface operations {
     PlatformRoleGroupsController_remove: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -8240,7 +9229,10 @@ export interface operations {
     PlatformRoleGroupsController_menus: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -8275,7 +9267,10 @@ export interface operations {
     PlatformRoleGroupsController_saveMenus: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -8328,7 +9323,10 @@ export interface operations {
     PlatformRoleGroupsController_previewMenus: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -8381,7 +9379,10 @@ export interface operations {
     PlatformRoleGroupsController_deletionCandidates: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -8423,7 +9424,10 @@ export interface operations {
     PlatformMenusController_services: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -8452,7 +9456,10 @@ export interface operations {
                 /** @description 서비스 코드 — 공통코드 SERVICE 값(사용중지 서비스도 된다). */
                 serviceCode: string;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -8492,7 +9499,10 @@ export interface operations {
     PlatformMenusController_create: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -8543,7 +9553,10 @@ export interface operations {
     PlatformMenusController_detail: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -8578,7 +9591,10 @@ export interface operations {
     PlatformMenusController_update: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -8636,7 +9652,10 @@ export interface operations {
     PlatformMenusController_move: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -8777,6 +9796,13 @@ export interface operations {
                     "application/json": components["schemas"]["CodeItemsResponseDto"];
                 };
             };
+            /** @description 사용할 수 없는 관리자 계정 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description 없거나 삭제된 BP */
             404: {
                 headers: {
@@ -8864,7 +9890,10 @@ export interface operations {
                  */
                 keyword?: string;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -8897,7 +9926,10 @@ export interface operations {
     StaffMembersController_findOne: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -8932,7 +9964,10 @@ export interface operations {
     StaffMemberSummaryController_contract: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -8970,7 +10005,10 @@ export interface operations {
                 /** @description 볼 주의 아무 날짜(YYYY-MM-DD). 그 주 월요일로 맞춘다. 빼면 이번 주(한국 날짜) */
                 weekStart?: string;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -9012,7 +10050,10 @@ export interface operations {
     StaffMemberSummaryController_payslips: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -9047,7 +10088,10 @@ export interface operations {
     StaffMemberSummaryController_todos: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -9088,7 +10132,10 @@ export interface operations {
                  */
                 retiredDate: string;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -9137,7 +10184,10 @@ export interface operations {
     RetirementController_changeDate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -9188,7 +10238,10 @@ export interface operations {
     RetirementController_retire: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -9239,7 +10292,10 @@ export interface operations {
     RetirementController_cancel: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -9308,7 +10364,10 @@ export interface operations {
                 /** @description 페이지, 1부터. 상한은 OFFSET 이 DB 정수 범위를 넘어 500 이 되지 않게 둔다 */
                 page?: number;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -9341,7 +10400,10 @@ export interface operations {
     PayslipsController_create: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -9401,7 +10463,10 @@ export interface operations {
             query: {
                 month: string;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -9434,7 +10499,10 @@ export interface operations {
     PayslipsController_bulkCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -9471,7 +10539,10 @@ export interface operations {
     PayslipsController_sendMany: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -9508,7 +10579,10 @@ export interface operations {
     PayslipsController_additionalItems: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -9534,7 +10608,10 @@ export interface operations {
     PayslipsController_findOne: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -9569,7 +10646,10 @@ export interface operations {
     PayslipsController_save: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -9622,7 +10702,10 @@ export interface operations {
     PayslipsController_previousValues: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -9657,7 +10740,10 @@ export interface operations {
     PayslipsController_confirm: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -9710,7 +10796,10 @@ export interface operations {
     PayslipsController_cancelConfirmation: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -9756,7 +10845,10 @@ export interface operations {
     PayslipsController_send: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -9823,7 +10915,10 @@ export interface operations {
     PayslipsController_resend: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -10009,7 +11104,10 @@ export interface operations {
                 /** @description 직원 이름 일부 */
                 staffMemberName?: string;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -10035,7 +11133,10 @@ export interface operations {
     ContractsController_create: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -10100,7 +11201,10 @@ export interface operations {
     ContractsController_createPaper: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -10171,7 +11275,10 @@ export interface operations {
     ContractsController_findOne: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 contractId: number;
             };
@@ -10206,7 +11313,10 @@ export interface operations {
     ContractsController_update: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 contractId: number;
             };
@@ -10273,7 +11383,10 @@ export interface operations {
     ContractsController_remove: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 contractId: number;
             };
@@ -10314,7 +11427,10 @@ export interface operations {
     ContractsController_updateWorker: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 contractId: number;
             };
@@ -10381,7 +11497,10 @@ export interface operations {
     ContractsController_updatePaper: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 contractId: number;
             };
@@ -10454,7 +11573,10 @@ export interface operations {
     ContractsController_documentDownloadUrl: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 contractId: number;
                 contractDocumentId: number;
@@ -10497,7 +11619,10 @@ export interface operations {
     ContractSendController_send: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 contractId: number;
             };
@@ -10807,7 +11932,10 @@ export interface operations {
                 /** @description 한 쪽 건수. 20 · 50 · 100, 기본 20. */
                 pageSize: 20 | 50 | 100;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -10833,7 +11961,10 @@ export interface operations {
     StoresController_create: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -10904,7 +12035,10 @@ export interface operations {
                 /** @description 소속 BP. BP 상세의 「소속 점포 수」에서 들어올 때 준다. */
                 bpCodeId?: number;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -10945,7 +12079,10 @@ export interface operations {
     StoresController_verifyBusiness: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -10996,7 +12133,10 @@ export interface operations {
     StoresController_detail: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -11031,7 +12171,10 @@ export interface operations {
     StoresController_update: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -11096,7 +12239,10 @@ export interface operations {
     StoresController_remove: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -11139,7 +12285,10 @@ export interface operations {
                 page: number;
                 pageSize: number;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -11174,7 +12323,10 @@ export interface operations {
     StoresController_transitionCheck: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -11209,7 +12361,10 @@ export interface operations {
     StoresController_putImage: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -11272,7 +12427,10 @@ export interface operations {
     StoresController_removeImage: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -11319,7 +12477,10 @@ export interface operations {
                 /** @description 한 쪽 건수. 기본 20, 최대 200. */
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -11345,7 +12506,10 @@ export interface operations {
     PlatformNoticesController_create: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -11396,7 +12560,10 @@ export interface operations {
     PlatformNoticesController_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 postId: string;
             };
@@ -11431,7 +12598,10 @@ export interface operations {
     PlatformNoticesController_update: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 postId: string;
             };
@@ -11498,7 +12668,10 @@ export interface operations {
     PlatformNoticesController_remove: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 postId: string;
             };
@@ -11538,7 +12711,10 @@ export interface operations {
     PlatformNoticesController_attachmentDownloadUrl: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 postId: string;
                 postAttachmentId: string;
@@ -11588,7 +12764,10 @@ export interface operations {
                 /** @description 한 쪽 건수. 기본 20, 최대 200. */
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -11614,7 +12793,10 @@ export interface operations {
     PlatformFaqsController_create: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -11651,7 +12833,10 @@ export interface operations {
     PlatformFaqsController_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 postId: string;
             };
@@ -11686,7 +12871,10 @@ export interface operations {
     PlatformFaqsController_update: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 postId: string;
             };
@@ -11739,7 +12927,10 @@ export interface operations {
     PlatformFaqsController_remove: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 postId: string;
             };
@@ -11790,7 +12981,10 @@ export interface operations {
                 /** @description 제목(FAQ 는 제목 또는 본문)에 든 글자로 찾는다. 대소문자는 가리지 않는다. */
                 keyword?: string;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -11816,7 +13010,10 @@ export interface operations {
     SupportNoticesController_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 postId: string;
             };
@@ -11851,7 +13048,10 @@ export interface operations {
     SupportNoticesController_attachmentDownloadUrl: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 postId: string;
                 postAttachmentId: string;
@@ -11905,7 +13105,10 @@ export interface operations {
                 /** @description 제목(FAQ 는 제목 또는 본문)에 든 글자로 찾는다. 대소문자는 가리지 않는다. */
                 keyword?: string;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -12478,7 +13681,10 @@ export interface operations {
                 /** @description 한 쪽 건수. 기본 20, 최대 200. */
                 pageSize: number;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -12511,7 +13717,10 @@ export interface operations {
     LeadsAdminController_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 leadId: string;
             };
@@ -12546,7 +13755,10 @@ export interface operations {
     LeadsAdminController_remove: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 leadId: string;
             };
@@ -12587,7 +13799,10 @@ export interface operations {
     LeadsAdminController_startProcessing: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 leadId: string;
             };
@@ -12629,7 +13844,10 @@ export interface operations {
     LeadsAdminController_reply: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 leadId: string;
             };
@@ -12675,7 +13893,10 @@ export interface operations {
     LeadsAdminController_resendReplyMail: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 leadId: string;
             };
@@ -12724,7 +13945,10 @@ export interface operations {
     LeadsAdminController_saveInternalMemo: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 leadId: string;
             };
@@ -12781,7 +14005,10 @@ export interface operations {
                 /** @description 한 쪽 건수. 기본 20, 최대 200. */
                 pageSize: number;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -12814,7 +14041,10 @@ export interface operations {
     InquiriesController_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 inquiryId: string;
             };
@@ -12849,7 +14079,10 @@ export interface operations {
     InquiriesController_attachmentDownloadUrl: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 inquiryId: string;
                 inquiryAttachmentId: string;
@@ -12892,7 +14125,10 @@ export interface operations {
     InquiriesController_startProcessing: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 inquiryId: string;
             };
@@ -12934,7 +14170,10 @@ export interface operations {
     InquiriesController_reply: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 inquiryId: string;
             };
@@ -12980,7 +14219,10 @@ export interface operations {
     InquiriesController_saveInternalMemo: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 inquiryId: string;
             };
@@ -13038,7 +14280,10 @@ export interface operations {
                 /** @description 한 쪽 건수. 기본 20, 최대 200. */
                 pageSize: number;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13064,7 +14309,10 @@ export interface operations {
     SupportInquiriesController_create: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13121,7 +14369,10 @@ export interface operations {
     SupportInquiriesController_get: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 inquiryId: string;
             };
@@ -13156,7 +14407,10 @@ export interface operations {
     SupportInquiriesController_attachmentDownloadUrl: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 inquiryId: string;
                 inquiryAttachmentId: string;
@@ -13217,7 +14471,10 @@ export interface operations {
                 /** @description 수행 예정 날짜 끝(그날 포함) YYYY-MM-DD */
                 dueDateTo?: string;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13250,7 +14507,10 @@ export interface operations {
     TodosController_create: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13297,7 +14557,10 @@ export interface operations {
                 /** @description 근무지 점포. 업무 범위 밖이면 404 */
                 storeId: number;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13337,7 +14600,10 @@ export interface operations {
     TodosController_findOne: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 todoId: number;
             };
@@ -13372,7 +14638,10 @@ export interface operations {
     TodosController_remove: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 todoId: number;
             };
@@ -13414,7 +14683,10 @@ export interface operations {
     TodosController_update: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 todoId: number;
             };
@@ -13460,7 +14732,10 @@ export interface operations {
     TodosController_changeStatus: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 todoId: number;
             };
@@ -13518,7 +14793,10 @@ export interface operations {
                 /** @description 수행 예정 날짜 끝(그날 포함) YYYY-MM-DD */
                 dueDateTo?: string;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -13534,7 +14812,7 @@ export interface operations {
                     "application/json": components["schemas"]["TodoItemListResponseDto"];
                 };
             };
-            /** @description 직원 정보 관리 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            /** @description 직원 정보 관리 · TO-DO 관리 조회 권한 없음(TO-DO 관리는 「조회 권한이 없습니다.」) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13644,7 +14922,10 @@ export interface operations {
                 /** @description 끝 근무일 YYYY-MM-DD(포함). 시작부터 42일 이하 — 월간 달력 6주 */
                 to: string;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13684,7 +14965,10 @@ export interface operations {
     WorkSchedulesController_create: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13748,7 +15032,10 @@ export interface operations {
                 /** @description 페이지, 1부터. 상한은 OFFSET 이 DB 정수 범위를 넘어 500 이 되지 않게 둔다 */
                 page?: number;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13793,7 +15080,10 @@ export interface operations {
                 /** @description 근무일 YYYY-MM-DD */
                 workDate: string;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13838,7 +15128,10 @@ export interface operations {
                 /** @description 근무일 YYYY-MM-DD */
                 workDate: string;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13878,7 +15171,10 @@ export interface operations {
     WorkSchedulesController_bulkCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13920,7 +15216,10 @@ export interface operations {
                 /** @description 복사해 넣을 주의 월요일 YYYY-MM-DD. 원본은 그 직전 주(월~일)다 */
                 weekStart: string;
             };
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13967,7 +15266,10 @@ export interface operations {
     WorkSchedulesController_copyLastWeek: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14018,7 +15320,10 @@ export interface operations {
     WorkSchedulesController_remove: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 workScheduleId: number;
             };
@@ -14053,7 +15358,10 @@ export interface operations {
     WorkSchedulesController_update: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
             path: {
                 workScheduleId: number;
             };
