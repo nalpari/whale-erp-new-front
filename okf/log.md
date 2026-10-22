@@ -3,6 +3,8 @@
 ## 2026-10-22
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 강제 비밀번호 변경(`changeForcedPassword`)도 사용자 IP 를 api 로 넘긴다. api 가 약관 동의 이력에 접속 IP 를 남기는데 Next 서버 주소가 찍히고 있었다(front #97 리뷰). 로그인 설명에 `X-Forwarded-For` 를 믿을 수 있는 배포 전제(앞단 프록시 · api `TRUST_PROXY`)를 더했다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 로그인 서버 액션이 사용자 IP(`X-Forwarded-For`)를 api 로 넘긴다(`apiHeaders()`). 전에는 넘기지 않아 로그인 이력의 접속 IP 가 모두 Next 서버 주소였고 IP 한도를 전원이 나눠 썼다(WHALEERP-392 점검).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 권한 메뉴 등록 팝업의 머리칸 · 묶음 칸이 일부만 켜졌으면 「–」로 보인다(S-KUDELB, 공용 `Checkbox` 에 `indeterminate`). BP 권한 그룹에서 그 쪽의 마지막 한 건을 지우면 앞쪽으로 간다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 권한 그룹의 손으로 적은 타입을 생성 타입 별칭으로 바꿨다. BP 메뉴 트리의 권한 유형이 `BA` · `FA` · `FM` 이라 플랫폼 트리 타입과 맞지 않던 것을 고쳐, 공용 메뉴 팝업이 두 트리를 함께 받는다. api #94 머지로 헤더 판정이 main 에 들어간 것도 반영했다.
 * **Update**: [근무스케줄 관리 화면 (구현)](/screens/work-schedules.md) — 지난 주 복사 미리보기(#204): 빈 주에서만 켜지는 「지난 주 복사」, 직원별 지난 주 · 이번 주 · 처리(복사 · 일부 제외 · 제외 사유 · 지난 주 없음), 「n명 복사」. 폐점 점포는 끈다.
 * **Update**: [근무스케줄 관리 화면 (구현)](/screens/work-schedules.md) — 등록 · 수정 · 삭제 패널(#203): 한 명 · 여러 명 일괄, 계약 값 채우기 · 되돌리기, 막대로 수정, 「이 시간대에 배정」, 일괄 일부 실패 표시. 폐점 점포는 등록을 막는다(운영 정책 ATT-33). 근무 인원 줄은 근무 앞뒤도 빈칸 없이 0 으로 보인다(2026-10-22 재영).
 * **Update**: [근무스케줄 관리 화면 (구현)](/screens/work-schedules.md) — front #93 리뷰 반영: 고른 날의 주소 기본값을 읽기 · 쓰기가 같은 함수(`defaultDay`)로 보게 해 이번 주 월요일 · 이번 달 1일을 고를 수 있게 했다. 거꾸로 된 변경 이력 기간은 비우고, 이력을 받지 못하면 패널 안에만 안내한다. 자정을 넘어온 전날 근무는 인원 줄 · 공백에서 따로 본다(2026-10-22 재영, `carryOver`) — 주간은 전주 일요일부터 8일을 받는다.

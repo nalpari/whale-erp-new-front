@@ -62,14 +62,18 @@ export function toggleAll(values: Values, nodes: MenuNode[], op: Op, on: boolean
 }
 
 /**
- * 묶음 칸 · 머리칸이 보일 상태. 아래 잎의 바꿀 수 있는 칸이 모두 켜졌으면 켜짐.
+ * 묶음 칸 · 머리칸이 보일 상태. 아래 잎의 바꿀 수 있는 칸이 모두 켜졌으면 켜짐, 일부만 켜졌으면 mixed(–, S-KUDELB).
  * 바꿀 수 있는 칸이 없으면 흐리게(disabled) — 값은 잎이 모두 켜졌는지로 보인다. 아래 잎이 하나도 없을 때만 fallback(묶음이 서버에서 받은 값)을 쓴다.
  */
-export function aggregate(values: Values, nodes: MenuNode[], op: Op, fallback = false): { checked: boolean; disabled: boolean } {
+export function aggregate(values: Values, nodes: MenuNode[], op: Op, fallback = false): { checked: boolean; mixed: boolean; disabled: boolean } {
   const leaves = leavesOf(nodes);
   const open = leaves.filter((l) => editableOf(l, op));
-  if (open.length) return { checked: open.every((l) => values[l.menuId]?.[op]), disabled: false };
-  return { checked: leaves.length ? leaves.every((l) => values[l.menuId]?.[op]) : fallback, disabled: true };
+  const of = (list: MenuNode[], disabled: boolean) => {
+    const on = list.filter((l) => values[l.menuId]?.[op]).length;
+    return { checked: on === list.length, mixed: on > 0 && on < list.length, disabled };
+  };
+  if (open.length) return of(open, false);
+  return leaves.length ? of(leaves, true) : { checked: fallback, mixed: false, disabled: true };
 }
 
 /** 처음과 달라진 잎만 — api 는 보내지 않은 메뉴를 그대로 둔다 */
