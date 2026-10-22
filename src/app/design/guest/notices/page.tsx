@@ -36,7 +36,7 @@ export default function NoticesPage() {
       </FaqItem>
       <FaqItem q="요금은 어떻게 되나요?" category="요금·구독">
         점포 수와 직원 수에 따른 요금 PLAN이 있고, POS·KIOSK 같은 부가서비스는 따로 구독합니다. 자세한 내용은{" "}
-        <Link href={SAMPLE_ROUTES.inquiry} className={`font-semibold text-guest-navy underline underline-offset-[3px] hover:text-guest-ink ${HOVER}`}>
+        <Link href={SAMPLE_ROUTES.leads} className={`font-semibold text-guest-navy underline underline-offset-[3px] hover:text-guest-ink ${HOVER}`}>
           도입문의
         </Link>
         로 물어보실 수 있습니다.
@@ -44,5 +44,5 @@ export default function NoticesPage() {
     </div>
   );
 
-  return <NoticesScreen inquiryHref={SAMPLE_ROUTES.inquiry} notices={notices} faq={faq} />;
+  return <NoticesScreen inquiryHref={SAMPLE_ROUTES.leads} notices={notices} faq={faq} />;
 }

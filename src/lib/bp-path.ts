@@ -6,9 +6,10 @@ export const BP_HEADER = "x-bp-code-id";
 
 /**
  * /bp/{id} 주소로 옮긴 ERP 화면(메뉴 url). 헤더 메뉴가 이 주소에만 bpPath() 를 씌우고, SessionGate 가 BP 없이 들어온 이 주소를 탭 BP 로 보낸다.
+ * 그 아래 경로(/stores/…)도 옮긴 화면으로 본다 — 같은 접두의 다른 메뉴 url 이 있으면 함께 옮겨진다.
  * 화면을 옮기면 한 줄 더한다 — 모두 옮기면 이 목록과 확인을 지운다.
  */
-export const BP_PATH_SCREENS = ["/bp-role-groups", "/bp-code-groups", "/support-notices", "/support-faqs", "/support-inquiries"] as const;
+export const BP_PATH_SCREENS = ["/bp-role-groups", "/bp-code-groups", "/stores", "/support-notices", "/support-faqs", "/support-inquiries"] as const;
 
 const BP_PREFIX = /^\/bp\/(\d{1,9})(?=\/|$)/;
 

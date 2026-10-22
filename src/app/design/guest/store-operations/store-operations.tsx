@@ -50,7 +50,7 @@ function Moments({ routes }: { routes: GuestRoutes }) {
             <GuestButton tone="navy" href={routes.signUp} arrow>
               사업자 회원가입
             </GuestButton>
-            <GuestButton tone="soft" href={routes.inquiry}>
+            <GuestButton tone="soft" href={routes.leads}>
               도입문의
             </GuestButton>
           </div>

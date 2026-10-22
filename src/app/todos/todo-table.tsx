@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Badge, DataTable, type Column } from "@/components/common";
 import type { EnumValue } from "@/lib/enums";
 import { CellView } from "../staff-members/staff-table";
+import { withBack } from "./todo-list-query";
 import { assigneeText, dueText, statusCells, type TodoListItem } from "./todo-row";
 
 type Row = { no: number; item: TodoListItem };
@@ -14,7 +15,7 @@ export function TodoTable({
   pageSize,
   today,
   statusLabels,
-  listSearch,
+  listHref,
   filtered,
 }: {
   items: TodoListItem[];
@@ -22,8 +23,8 @@ export function TodoTable({
   pageSize: number;
   today: string;
   statusLabels: EnumValue[];
-  /** 지금 목록 조건. 상세 링크에 붙여 상세의 「목록」이 같은 조건으로 돌아오게 한다 */
-  listSearch: string;
+  /** 지금 목록 주소. 상세 링크에 ?back= 으로 붙여 상세의 「목록」이 같은 조건으로 돌아오게 한다 */
+  listHref: string;
   /** 거르는 조건이 있으면 빈 목록 문구를 「조건에 맞는」으로 바꾼다(hasTodoFilter) */
   filtered: boolean;
 }) {
@@ -41,7 +42,7 @@ export function TodoTable({
       align: "left",
       cell: ({ item }) => (
         <span className="inline-flex max-w-full items-center gap-[6px]">
-          <Link href={`/todos/${item.todoId}${listSearch}`} className="truncate text-erp-link hover:underline">
+          <Link href={withBack(`/todos/${item.todoId}`, listHref)} className="truncate text-erp-link hover:underline">
             {item.title}
           </Link>
           {item.isUrgent && <Badge tone="off">긴급</Badge>}

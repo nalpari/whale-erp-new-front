@@ -20,6 +20,7 @@ export function AdminDetailPanel({
   open,
   detail,
   onClose,
+  onBackdropClose,
   trigger,
   onEdit,
   onDeleted,
@@ -27,22 +28,33 @@ export function AdminDetailPanel({
   open: boolean;
   detail: { admin: PlatformAdminDetail } | { failed: string } | null;
   onClose: () => void;
+  /** 바탕창 클릭 — 겹친 패널을 모두 닫는다(admins-screen.tsx closeAll) */
+  onBackdropClose: () => void;
   trigger: RefObject<HTMLElement | null>;
   onEdit: (from: HTMLButtonElement) => void;
   onDeleted: () => void;
 }) {
   return (
-    // 읽기 전용이라 잃을 입력이 없다 — 바탕창을 눌러도 닫힌다(등록·수정 패널과 다르다, SlidePanel 참고).
+    // 읽기 전용이라 잃을 입력이 없다 — 바탕창을 누르면 닫힌다(밑에 깔린 등록이 있으면 함께, closeAll).
     // 수정 패널이 위에 겹쳐 열려 있으면 onClose(dismissDetail)가 admins-screen.tsx 자신의 editOpen 을 보고
     // 스스로 거른다. 수정이 위에 있는 동안 이 패널 안이 눌리지 않는 것은 SlidePanel 의 blockedByModal 이
     // 맡는다 — 전에는 여기서도 editOpen 을 받아 DetailBody 에 따로 inert 를 줬지만, 이제 바깥 aside 가 통째로
     // inert 라 안쪽 값은 항상 가려져 중복이었다(코드 리뷰로 찾음, 2026-10-20).
-    <SlidePanel id="platform-admin-detail-panel" open={open} onClose={onClose} label="플랫폼 관리자 상세" trigger={trigger} closeOnBackdrop>
+    <SlidePanel
+      id="platform-admin-detail-panel"
+      open={open}
+      onClose={onClose}
+      onBackdropClose={onBackdropClose}
+      label="플랫폼 관리자 상세"
+      trigger={trigger}
+      closeOnBackdrop
+    >
       {detail && "admin" in detail ? (
         <DetailBody
           // 다른 계정을 열면 확인창 · 실패 띠를 새로 시작한다
           key={detail.admin.adminAccountId}
           admin={detail.admin}
+          panelOpen={open}
           onClose={onClose}
           onEdit={onEdit}
           onDeleted={onDeleted}
@@ -63,11 +75,14 @@ export function AdminDetailPanel({
 
 function DetailBody({
   admin,
+  panelOpen,
   onClose,
   onEdit,
   onDeleted,
 }: {
   admin: PlatformAdminDetail;
+  /** 상세 패널이 열려 있는가 — 닫히면 이 안에서 띄운 팝업도 닫는다 */
+  panelOpen: boolean;
   onClose: () => void;
   onEdit: (from: HTMLButtonElement) => void;
   onDeleted: () => void;
@@ -75,6 +90,10 @@ function DetailBody({
   const toast = useToast();
   const router = useRouter();
   const [confirm, setConfirm] = useState<"reset" | "delete" | null>(null);
+  // 확인창 · 이력창은 네이티브 <dialog>(최상위 레이어)라 패널이 밀려 나가도 혼자 남는다. 브라우저 뒤로 가기처럼 클릭 아닌 길로
+  // 패널이 닫히면 함께 닫는다(2026-10-22 사용자 요청). 진행 중인 초기화 · 삭제 요청은 그대로 끝까지 간다.
+  // 이력창은 HistoryButton 이 panelOpen 으로 같은 방식으로 닫는다.
+  if (!panelOpen && confirm) setConfirm(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [busy, startBusy] = useTransition();
 
@@ -193,7 +212,7 @@ function DetailBody({
             수정
           </Button>
         )}
-        <HistoryButton adminId={admin.adminAccountId} />
+        <HistoryButton adminId={admin.adminAccountId} panelOpen={panelOpen} />
       </div>
 
       {/* 고칠 수 없는 계정이면 확인창도 두지 않는다 */}
