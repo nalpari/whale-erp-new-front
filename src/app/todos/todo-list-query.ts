@@ -104,7 +104,7 @@ export function toTodoListSearch(query: TodoListQuery): string {
 
 /**
  * GET /todos 쿼리. 점포는 고른 점포 · 점포 하나 범위면 storeIds(쉼표), 직영 · 가맹 범위면 storeTypes, 전체 · 비운 「전체」면 싣지 않는다 —
- * 업무 범위 밖 점포는 api 가 뺀다. 상태는 `status=A&status=B` 로 되풀이하고 셋 다면 뺀다. 0건이 확실한 조건(상태를 하나도 안 고름 · 기간이 거꾸로)이면
+ * 업무 범위 밖 점포와 직영 · 가맹 범위의 폐점 점포는 api 가 뺀다(칩과 같은 점포 — 2026-10-22 재영). 상태는 `status=A&status=B` 로 되풀이하고 셋 다면 뺀다. 0건이 확실한 조건(상태를 하나도 안 고름 · 기간이 거꾸로)이면
  * null — api 는 빈 상태를 「전체」로 읽어 반대가 된다.
  */
 export function todoListApiSearch(query: TodoListQuery): string | null {
