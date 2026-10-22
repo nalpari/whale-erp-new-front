@@ -614,7 +614,7 @@ export interface paths {
         post: operations["CodeGroupsController_createItems"];
         /**
          * 상세 코드 삭제(논리) — 여러 개를 한 번에, 하나라도 막히면 아무것도 지우지 않는다. 플랫폼 원본만 지우고 BP 에 복사된
-         *     행은 건드리지 않는다. 지운 코드는 다시 쓰지 않는다.
+         *     행은 건드리지 않는다. 같은 코드로 다시 등록하면 되살아난다 — 단 어느 BP 에 복사본이 살아 있으면 등록이 409 다.
          */
         delete: operations["CodeGroupsController_deleteItems"];
         options?: never;
@@ -672,7 +672,7 @@ export interface paths {
         put: operations["BpCodeGroupsController_updateItems"];
         /** 상세 코드 등록 — BP전용 코드 여러 개를 한 번에. 하나라도 막히면 아무것도 생기지 않는다. */
         post: operations["BpCodeGroupsController_createItems"];
-        /** 상세 코드 삭제(논리) — 이 BP 의 BP전용 코드 여러 개를 한 번에. 하나라도 막히면 아무것도 지우지 않는다. */
+        /** 상세 코드 삭제(논리) — 이 BP 의 행(BP전용 · 복사된 플랫폼제공) 여러 개를 한 번에. 하나라도 막히면 아무것도 지우지 않는다. */
         delete: operations["BpCodeGroupsController_deleteItems"];
         options?: never;
         head?: never;
@@ -3979,9 +3979,8 @@ export interface components {
             /** @description 표시 순서. */
             sortOrder: number;
             /**
-             * @description 플랫폼 원본이 사용중지인가. BP전용은 늘 거짓. 참이면서 지금 사용중지인 코드는 BP 가 사용으로 켤 수 없다(409).
-             *     플랫폼제공 그룹에서는 참이어도 지금 사용 중인 코드는 끌 수 있고 그대로 저장해도 된다 — 화면은 「참이고 사용중지일
-             *     때」만 켜기를 막는다. 플랫폼고정 그룹은 모든 칸이 읽기 전용이다.
+             * @description 플랫폼 원본이 사용중지인가(안내용). BP전용은 늘 거짓. 플랫폼제공 그룹에서 BP 는 이 값과 관계없이 사용 상태를
+             *     자유롭게 바꾼다(2026-10-22 결정). 플랫폼고정 그룹은 모든 칸이 읽기 전용이다.
              */
             isPlatformInactive: boolean;
         };
@@ -8548,7 +8547,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 한 요청에 같은 상세 코드가 두 번 */
+            /** @description 한 요청에 같은 상세 코드가 두 번 · 확인 뒤 다른 관리자가 먼저 지운 코드 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -8595,7 +8594,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 이 그룹에 이미 있는(BP별 · BP전용 · 지운 행 포함) 상세 코드 · 요청 안에서 겹친 상세 코드 */
+            /** @description 이 그룹의 살아 있는 행(플랫폼 원본 · BP별 · BP전용)과 겹친 상세 코드 · 요청 안에서 겹친 상세 코드 · 확인 뒤 다른 관리자가 같은 코드를 먼저 등록 · 되살림 — 지운 원본과 같은 코드는 되살린다 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -8725,7 +8724,7 @@ export interface operations {
                     "application/json": components["schemas"]["BpCodeGroupListResponseDto"];
                 };
             };
-            /** @description 본문 · 쿼리 검증 실패 · (조회) 플랫폼 사용자의 X-Bp-Code-Id 누락 — 등록 · 수정은 그 전에 403 */
+            /** @description 본문 · 쿼리 검증 실패 · (조회) 플랫폼 사용자의 X-Bp-Code-Id 누락 — 등록 · 수정 · 삭제는 그 전에 403 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -8770,7 +8769,7 @@ export interface operations {
                     "application/json": components["schemas"]["BpCodeItemListResponseDto"];
                 };
             };
-            /** @description 본문 · 쿼리 검증 실패 · (조회) 플랫폼 사용자의 X-Bp-Code-Id 누락 — 등록 · 수정은 그 전에 403 */
+            /** @description 본문 · 쿼리 검증 실패 · (조회) 플랫폼 사용자의 X-Bp-Code-Id 누락 — 등록 · 수정 · 삭제는 그 전에 403 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -8817,7 +8816,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 본문 · 쿼리 검증 실패 · (조회) 플랫폼 사용자의 X-Bp-Code-Id 누락 — 등록 · 수정은 그 전에 403 */
+            /** @description 본문 · 쿼리 검증 실패 · (조회) 플랫폼 사용자의 X-Bp-Code-Id 누락 — 등록 · 수정 · 삭제는 그 전에 403 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -8838,7 +8837,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 플랫폼고정 그룹 · 플랫폼이 사용 중지한 코드를 사용으로 켬 · 그 사이 다른 관리자가 끈 코드 · 한 요청에 같은 코드가 두 번 */
+            /** @description 플랫폼고정 그룹 · 한 요청에 같은 코드가 두 번 · 확인 뒤 다른 관리자가 먼저 지운 코드(「다른 관리자가 먼저 지운…저장해 주세요」) */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -8871,7 +8870,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 본문 · 쿼리 검증 실패 · (조회) 플랫폼 사용자의 X-Bp-Code-Id 누락 — 등록 · 수정은 그 전에 403 */
+            /** @description 본문 · 쿼리 검증 실패 · (조회) 플랫폼 사용자의 X-Bp-Code-Id 누락 — 등록 · 수정 · 삭제는 그 전에 403 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -8892,7 +8891,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 플랫폼고정 그룹 · 같은 그룹의 플랫폼 원본이나 이 BP 의 행(지운 것 포함)과 겹친 코드 · 요청 안에서 겹친 코드 */
+            /** @description 플랫폼고정 그룹 · 같은 그룹의 살아 있는 플랫폼 원본(「플랫폼이 등록한…」)이나 이 BP 의 살아 있는 행(「이미 있는…」)과 겹친 코드 · 요청 안에서 겹친 코드 · 확인 뒤 다른 관리자가 같은 코드를 먼저 등록하거나 되살림 — 이 BP 의 지운 행과 같은 코드는 BP전용으로 되살린다 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -8925,7 +8924,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 본문 · 쿼리 검증 실패 · (조회) 플랫폼 사용자의 X-Bp-Code-Id 누락 — 등록 · 수정은 그 전에 403 */
+            /** @description 본문 · 쿼리 검증 실패 · (조회) 플랫폼 사용자의 X-Bp-Code-Id 누락 — 등록 · 수정 · 삭제는 그 전에 403 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -8946,7 +8945,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 플랫폼고정 그룹 · 플랫폼이 등록한 상세 코드(BP전용이 아님) · 한 요청에 같은 코드가 두 번 · 확인 뒤 다른 관리자가 먼저 지움 */
+            /** @description 플랫폼고정 그룹 · 한 요청에 같은 코드가 두 번 · 확인 뒤 다른 관리자가 먼저 지움 */
             409: {
                 headers: {
                     [name: string]: unknown;
