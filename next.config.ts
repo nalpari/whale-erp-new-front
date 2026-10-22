@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
     },
     // proxy(src/proxy.ts)가 요청 본문을 버퍼에 담는 한도(기본 10MB). 넘으면 본문이 잘린 채 넘어간다. 라우트 핸들러로 한 번에 받는 것 중 가장 큰
     // 공지사항 첨부(/platform-notices/save, 5개 × 10MB)에 multipart 여유 1MB 를 더한다 — 종이 계약 날인본(/contracts/paper, 2 × 10MB)도 이 안이다.
-    // 서버 액션 한도(위 6MB)와는 따로다.
+    // 서버 액션 한도(위 6MB)와는 따로다. 이 한도는 모든 경로에 걸리므로 proxy 가 content-length 로 경로마다 다시 막는다(lib/paper-request.ts 의 bodyLimitOf).
     proxyClientMaxBodySize: "51mb",
   },
   // 사내 와이파이(172.30.1.x)에서 개발 서버를 열어 볼 수 있게 한다. 없으면 HMR 연결이 막혀 화면이 클릭되지 않는다.

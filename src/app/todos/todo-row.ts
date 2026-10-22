@@ -12,7 +12,8 @@ export type TodoDetail = Schemas["TodoDetailDto"];
 type TodoStatus = Schemas["TodoStatus"];
 
 /**
- * 가린 직원의 이름 자리. 직원 목록(staff-table)과 같은 글자다. api 는 본사 역할이 본사 제공 동의를 하지 않은 가맹 점포 직원을 볼 때
+ * 가린 직원의 이름 자리. 급여명세서와 같은 글자다 — 직원 목록(staff-table)만 「본사 제공 동의 없음 · 가맹 점포 직원」 두 줄이다(WHALEERP-138
+ * 완료 조건 7). 여기는 「외 1명」 · 「(퇴직)」을 이어 붙여 짧은 글자를 쓴다. api 는 본사 역할이 본사 제공 동의를 하지 않은 가맹 점포 직원을 볼 때
  * id · 이름을 비우고 isMasked 를 준다(운영 정책 ATT-30). 화면은 흐린 글자로 두고 링크를 걸지 않는다.
  */
 export const MASKED_STAFF = "본사 제공 동의 없음";

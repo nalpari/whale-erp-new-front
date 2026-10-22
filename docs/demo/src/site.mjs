@@ -103,12 +103,19 @@ const saveRow = (label, closeSave, toast) =>
 // tabPrefix: 탭 id 접두. closeSave: 저장 버튼이 패널을 닫을지(패널에서는 닫는다, 전체 화면에서는 그대로 머문다).
 export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = false } = {}) {
   const save = saveRow("저장", closeSave, "저장되었습니다.");
+  // 계정 정보는 FormGroup 의 기본 제목(배경 없음) 대신 DetailTable 제목 줄과 같은 회색 바를 쓴다
+  // (사용자 디자인 피드백, 2026-10-21). 본문 카드는 FormGroup 과 같은 토큰으로 직접 짠다.
+  // 아이콘을 넣어 봤지만 24px 로는 너무 작아 뺐다(사용자 지정, 2026-10-21).
+  // 글자 크기 · 굵기는 DetailTable 이 아니라 바로 아래 「기본정보」(FormGroup) 제목과 맞춘다(2026-10-21 피드백).
+  const accountInfo =
+    `<div class="w-full"><h3 class="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">계정 정보</h3>` +
+    `<div class="flex flex-col gap-[18px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white px-[16px] py-[20px]">` +
+    ui.formRow(ui.readonlyField("아이디", "hangang01", true), ui.readonlyField("사용자 권한", "BP 마스터", true)) +
+    `<hr class="border-erp-divider">` +
+    ui.formRow(ui.readonlyField("최근 로그인", "2026-09-22 09:12", true), ui.readonlyField("가입일", "2026-03-04", true)) +
+    `</div></div>`;
   const basic =
-    ui.formGroup(
-      "계정 정보",
-      ui.formRow(ui.field("아이디", ui.textField({ value: "hangang01", disabled: true })), ui.field("사용자 권한", ui.textField({ value: "BP 마스터", disabled: true }))),
-      ui.formRow(ui.field("가입일", ui.textField({ value: "2026-03-04", disabled: true })), ui.field("최근 로그인 일시", ui.textField({ value: "2026-09-22 09:12", disabled: true }))),
-    ) +
+    accountInfo +
     ui.formGroup(
       "기본정보",
       ui.field(f.req("이름"), ui.textField({ value: "정하윤", maxlength: 20, placeholder: "한글 또는 영문 2~20자" })),

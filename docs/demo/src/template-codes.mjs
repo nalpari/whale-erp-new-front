@@ -30,7 +30,7 @@ export const CODES = {
   PUSH: {
     "근로계약서 발송": "PUSH_CONTRACT_SENT",
     "근무스케줄 변경": "PUSH_SCHEDULE_CHANGED",
-    "TO-DO 배정": "PUSH_TODO_ASSIGNED",
+    "TO-DO 수행 임박 알림": "PUSH_TODO_DUE_SOON",
     "급여명세서 발송": "PUSH_PAYSLIP_SENT",
     "급여명세서 다시 발송": "PUSH_PAYSLIP_RESENT",
   },

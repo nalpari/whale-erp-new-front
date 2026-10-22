@@ -4,12 +4,16 @@ import { test } from "node:test";
 import {
   faqBody,
   parseInquiryQuery,
+  parseSupportInquiryQuery,
+  parseSupportNoticeQuery,
+  pickInquiryFiles,
   postIdOf,
   parsePostQuery,
   postFields,
   queryString,
   sizeLabel,
   validatePost,
+  draftView,
   type PostForm,
 } from "./community-view.ts";
 
@@ -122,4 +126,37 @@ test("sizeLabel", () => {
   assert.equal(sizeLabel(10), "1KB");
   assert.equal(sizeLabel(2048), "2KB");
   assert.equal(sizeLabel(3.5 * 1024 * 1024), "3.5MB");
+});
+
+test("고객지원 쿼리 — 모르는 구분 · 상태는 전체로, 검색어는 api 한도로 자른다", () => {
+  assert.deepEqual(parseSupportNoticeQuery({ noticeType: "ADDON", keyword: ` ${"가".repeat(150)} ` }), { page: 1, pageSize: 20, keyword: "가".repeat(100), noticeType: "" });
+  assert.deepEqual(parseSupportInquiryQuery({ status: "IN_PROGRESS", title: "주휴", page: "2" }), { page: 2, pageSize: 20, title: "주휴", status: "IN_PROGRESS" });
+  assert.equal(parseSupportInquiryQuery({ status: "WAITING" }).status, "");
+});
+
+test("pickInquiryFiles — 6번째 · 10MB 초과 · 다른 종류는 그 파일만 뺀다", () => {
+  const MB = 1024 * 1024;
+  const { accepted, rejected } = pickInquiryFiles(3, [
+    { name: "a.png", size: MB },
+    { name: "b.hwp", size: MB },
+    { name: "c.pdf", size: 11 * MB },
+    { name: "d.JPG", size: MB },
+    { name: "e.pdf", size: MB },
+  ]);
+  assert.deepEqual(accepted.map((f) => f.name), ["a.png", "d.JPG"]);
+  assert.equal(rejected.length, 3);
+  assert.match(rejected[0], /^b\.hwp: /);
+  assert.match(rejected[1], /^c\.pdf: .*10MB/);
+  assert.match(rejected[2], /^e\.pdf: .*5개/);
+});
+
+test("draftView — 그사이 저장된 값이 바뀌면 손대지 않은 글은 버리고, 고쳐 쓰던 글은 남기되 알린다", () => {
+  assert.deepEqual(draftView(undefined, "A"), { text: undefined, stale: false });
+  assert.deepEqual(draftView({ text: "A 고침", base: "A" }, "A"), { text: "A 고침", stale: false });
+  // 「답변 수정」만 누르고 둔 사이 다른 운영자가 B 로 고쳤다 — 옛 A 로 덮어쓰지 않게 버린다
+  assert.deepEqual(draftView({ text: "A", base: "A" }, "B"), { text: undefined, stale: false });
+  // 고쳐 쓰던 중 다른 운영자가 B 로 저장했다 — 쓰던 글은 남기고 B 를 함께 보이게 한다
+  assert.deepEqual(draftView({ text: "A 고침", base: "A" }, "B"), { text: "A 고침", stale: true });
+  // 처음 답변(저장된 값 없음)을 쓰던 중 다른 운영자가 먼저 답했다
+  assert.deepEqual(draftView({ text: "내 답", base: "" }, "남의 답"), { text: "내 답", stale: true });
 });

@@ -1,13 +1,14 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { createContext, use, useEffect, useRef, useState, type ReactNode } from "react";
-import { Button } from "@/components/common";
+import { createContext, use, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import { Button, useBackdropActive } from "@/components/common";
 import { logout } from "@/app/actions";
 import { bff, BffError, PASSWORD_REQUIRED_EVENT, signOut } from "@/lib/bff";
 import { bpOfPath, bpPath, isBpPathScreen, stripBp } from "@/lib/bp-path";
 import { BP_SWITCH_PATH, bpOfSwitchUrl, HOME, isAllowed, menuOfPath, menuPermissionOf, menusOf, serviceOfPath, type MenuAction, type MenuCode } from "@/lib/menus";
 import { ForcePasswordDialog } from "./force-password-dialog";
+import { MyPagePanel } from "./my-page-panel";
 import {
   clearBpFix,
   clearSelectedBp,
@@ -20,7 +21,6 @@ import {
   readLoginBpInfo,
   readLoginInfo,
   readScope,
-  readStorePicks,
   readSelectedBp,
   readStores,
   resolveTab,
@@ -30,16 +30,14 @@ import {
   writeLoginInfo,
   writeScope,
   writeSelectedBp,
-  writeStorePicks,
   writeStores,
   type Scope,
-  type StorePicks,
   type ServiceCode,
   type StoredBp,
   type TabContext,
 } from "@/lib/browser-storage";
 import { LOGIN_KEY_COOKIE, type AdminMenu, type AdminStore, type BpOption, type Codes, type LoginInfo, type LoginInfoAccount } from "@/lib/session";
-import { restoredScope, usesStoreScope, withoutStoreIds } from "@/lib/store-scope";
+import { restoredScope } from "@/lib/store-scope";
 
 interface LoginState {
   loginKey: string;
@@ -53,11 +51,21 @@ interface LoginState {
   stores: AdminStore[];
   codes: Codes;
   scope: Scope;
-  /** 사용자가 점포 검색 컴포넌트를 쓰는 목록에서 고른 점포(store-scope.ts). 없으면 그 목록은 헤더 범위를 따른다 */
-  storePicks: StorePicks | null;
 }
 
-type LoginActions = { setScope: (scope: Scope) => void; setStorePicks: (picks: StorePicks | null) => void };
+type LoginActions = {
+  setScope: (scope: Scope) => void;
+  /** 내 정보(MY PAGE)에서 이름 · 이메일을 바꾸면 GNB 등 이 값을 쓰는 화면이 다시 로그인하지 않아도 바로 보이게 한다.
+   * 이름 · 이메일만 받고 둘 다 빈 값을 허락하지 않는다 — 소속 BP · 권한 · 비밀번호 변경 대기 같은 칸은 이 통로로
+   * 바뀌면 안 되고, 호출자(MyPagePanel)는 늘 toUpdateInput 이 다듬은 값만 준다. */
+  patchAccount: (partial: { name: string; email: string }) => void;
+  /** GNB 「내정보 관리」 패널 열림 여부 — 패널 자체는 SessionGate 가 children 뒤에 그린다(DOM 순서 때문, 위 주석 참고). */
+  myPageOpen: boolean;
+  setMyPageOpen: (open: boolean) => void;
+  /** UserPop 의 이름 버튼 — MyPagePanel 의 SlidePanel trigger 로 써서 패널을 닫으면 포커스가 이 버튼으로
+   * 돌아오게 한다(코드 리뷰로 찾음, 2026-10-21 — 전에는 못 꺼내 body 로 빠졌다). AdminHeader 가 UserPop 에 넘긴다. */
+  myPageTrigger: RefObject<HTMLButtonElement | null>;
+};
 const LoginContext = createContext<(LoginState & LoginActions) | null>(null);
 
 function useLogin() {
@@ -66,6 +74,13 @@ function useLogin() {
   return v;
 }
 export const useAccount = () => useLogin().account;
+export const usePatchAccount = () => useLogin().patchAccount;
+/** GNB 「내정보 관리」 패널 열림 여부 — useScope 와 같은 모양(값 · 세터 튜플, naming.md). */
+export function useMyPageOpen() {
+  const { myPageOpen, setMyPageOpen } = useLogin();
+  return [myPageOpen, setMyPageOpen] as const;
+}
+export const useMyPageTrigger = () => useLogin().myPageTrigger;
 /** 이 탭의 서비스. 헤더 메뉴·홈·메뉴 권한 확인과 오른쪽 선택기(플랫폼이면 BP, ERP 면 점포 범위)가 이것을 본다. */
 export const useService = () => useLogin().serviceCode;
 /** 이 탭 서비스의 메뉴 트리(3단계까지). */
@@ -85,28 +100,6 @@ export function useCodes(group: string) {
 export function useScope() {
   const { scope, setScope } = useLogin();
   return [scope, setScope] as const;
-}
-/**
- * 사용자가 목록에서 고른 점포(빈 목록 포함)와 그 목록 메뉴 url. 값은 이 탭 sessionStorage 에 두고 탭을 열 때 한 번 읽는다(useScope 와 같다).
- * 헤더 범위를 새로 고르거나(setScope) 그 메뉴를 떠나면(admin-header.tsx) 지우고, 등록 · 삭제 뒤에는 빈 목록으로 둔다(useResetStoreSearch).
- */
-export function useStorePicks() {
-  const { storePicks, setStorePicks } = useLogin();
-  return [storePicks, setStorePicks] as const;
-}
-/**
- * 등록 · 삭제가 끝난 뒤 목록의 점포 검색을 「전체」로 비운다 — 사용자가 고른 점포도, 헤더 범위도 따르지 않는다(2026-10-20). 수정은 쓰지 않는다.
- * 성공한 자리에서 이동할 주소를 넘긴다: router.push(resetStoreSearch(backHref)). 지금 화면 메뉴가 점포 검색 컴포넌트를 쓰는 목록(store-scope.ts)이면
- * 그 목록의 사용자 선택을 빈 목록으로 두고 주소에서 storeIds 를 뺀다. 아니면 주소를 그대로 돌려준다. 헤더 범위 값은 바꾸지 않는다.
- */
-export function useResetStoreSearch() {
-  const url = usePageMenu()?.url;
-  const [, setStorePicks] = useStorePicks();
-  return (href: string) => {
-    if (!url || !usesStoreScope(url)) return href;
-    setStorePicks({ url, stores: [] });
-    return withoutStoreIds(href);
-  };
 }
 /** 메뉴 권한. 버튼을 보이거나 숨길 때 쓴다 — 실제 판정은 api 가 요청마다 다시 한다. */
 export function useMenuRole(menuCode: MenuCode, action: MenuAction) {
@@ -143,7 +136,7 @@ const LOGOUT_FAILED = { status: "error", message: "로그아웃하지 못했습�
  * 탭을 열 때마다 받는다. 데이터 권한은 api 가 요청마다 다시 본다.
  */
 
-export function SessionGate({ children }: { children: ReactNode }) {
+export function SessionGate({ header, children }: { header: ReactNode; children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [state, setState] = useState<{ status: "loading" } | { status: "error"; message: string } | { status: "ready"; value: LoginState }>({
@@ -231,14 +224,24 @@ export function SessionGate({ children }: { children: ReactNode }) {
       </Notice>
     );
   return (
-    <Ready value={state.value} onChange={(update) => setState((s) => (s.status === "ready" ? { status: "ready", value: update(s.value) } : s))}>
+    <Ready value={state.value} onChange={(update) => setState((s) => (s.status === "ready" ? { status: "ready", value: update(s.value) } : s))} header={header}>
       {children}
     </Ready>
   );
 }
 
 // onChange 는 앞 값을 받아 고친다 — 한 조작에서 여러 값을 바꿔도 앞의 변경을 덮지 않는다.
-function Ready({ value, onChange, children }: { value: LoginState; onChange: (update: (v: LoginState) => LoginState) => void; children: ReactNode }) {
+function Ready({
+  value,
+  onChange,
+  header,
+  children,
+}: {
+  value: LoginState;
+  onChange: (update: (v: LoginState) => LoginState) => void;
+  header: ReactNode;
+  children: ReactNode;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const home = HOME[value.serviceCode];
@@ -248,6 +251,17 @@ function Ready({ value, onChange, children }: { value: LoginState; onChange: (up
   const allowed = switching || isAllowed(value.menus, pathname, value.serviceCode);
   // 개발 모드(StrictMode)는 effect 를 두 번 돌린다. 같은 주소에 두 번 안내하고 두 번 뒤로 가지 않게 한다.
   const denied = useRef<string | null>(null);
+  // GNB 「내정보 관리」(MY PAGE). 패널은 children(화면 본문) 뒤에 그려야 한다 — SlidePanel 은 전부 같은 z-10 이라
+  // DOM 순서가 쌓임을 가른다(PanelBackdrop 의 같은 설명 참고). header 는 먼저, children 은 그다음, 패널은 가장
+  // 뒤라야 화면이 자기 등록 패널을 열어 둔 채로 MY PAGE 를 열어도 그 패널 아래 깔리지 않는다(코드 리뷰로 찾음, 2026-10-21).
+  const [myPageOpen, setMyPageOpen] = useState(false);
+  // UserPop 의 이름 버튼 — AdminHeader 가 UserPop 에 triggerRef 로 넘겨 실제 DOM 버튼을 단다. 패널을
+  // 닫으면 SlidePanel 이 여기로 포커스를 되돌린다(DESIGN.md Slide Panel). 전엔 못 꺼내 body 로 빠졌다
+  // (코드 리뷰로 찾음, 2026-10-21 — UserPop 공개 API 를 triggerRef 로 넓혀 고쳤다).
+  const myPageTrigger = useRef<HTMLButtonElement>(null);
+  // 바탕창(closeOnBackdrop 켠 패널)이 떠 있는 동안 화면 본문을 inert 로 뺀다 — MY PAGE 는 어느 화면에서나
+  // 열 수 있어 화면마다 따로 감싸 둘 수 없다. admins-screen.tsx 의 같은 처리(자기 등록 패널용)와 겹쳐도 무해하다.
+  const backdropActive = useBackdropActive();
 
   // BP 이동 화면은 준비가 끝났으니 그 서비스의 홈으로 바꿔 간다(뒤로 가기에 남지 않게 replace).
   useEffect(() => {
@@ -274,14 +288,14 @@ function Ready({ value, onChange, children }: { value: LoginState; onChange: (up
 
   const setScope = (scope: Scope) => {
     writeScope(value.currentBp.bpCodeId, scope);
-    // 범위를 새로 고르면 목록에서 고른 점포는 잊는다 — 다시 들어오면 새 범위를 따른다
-    writeStorePicks(value.currentBp.bpCodeId, null);
-    // 보던 화면은 그대로다. 점포 검색 컴포넌트를 쓰는 메뉴 화면이면 헤더 선택기가 그 목록으로 옮긴다(admin-header.tsx · okf/home.md 범위 선택기).
-    onChange((v) => ({ ...v, scope, storePicks: null }));
+    // 메뉴 화면이면 헤더 선택기가 그 메뉴의 목록으로 옮기며 범위를 주소(?scope=)에 싣는다(admin-header.tsx · okf/home.md 범위 선택기).
+    onChange((v) => ({ ...v, scope }));
   };
-  const setStorePicks = (storePicks: StorePicks | null) => {
-    writeStorePicks(value.currentBp.bpCodeId, storePicks);
-    onChange((v) => ({ ...v, storePicks }));
+  // 내 정보에서 이름 · 이메일을 바꾸면 저장값에 쓰고 이 탭에 바로 반영한다(GNB 이름 등). 다른 탭은 새로고침하면 반영된다.
+  const patchAccount = (partial: { name: string; email: string }) => {
+    const account = { ...value.account, ...partial };
+    writeLoginInfo({ loginKey: value.loginKey, account, menus: value.menus });
+    onChange((v) => ({ ...v, account }));
   };
   // 강제 변경 표시를 저장값에 쓰고 이 탭에 반영한다. 다른 탭은 새로고침하면 반영된다.
   const setPasswordRequired = (required: boolean) => {
@@ -315,8 +329,21 @@ function Ready({ value, onChange, children }: { value: LoginState; onChange: (up
     location.assign(home);
   };
   return (
-    <LoginContext value={{ ...value, setScope, setStorePicks }}>
-      {allowed && !switching ? children : null}
+    <LoginContext value={{ ...value, setScope, patchAccount, myPageOpen, setMyPageOpen, myPageTrigger }}>
+      {allowed && !switching && (
+        <>
+          {header}
+          {/* MY PAGE 패널이 맨 위일 때만 본문을 inert 로 뺀다 — 그냥 backdropActive 를 쓰면 화면 자신의
+              closeOnBackdrop 패널(platform-admins 상세·수정 등)이 맨 위일 때 그 패널까지 children 안에
+              있어 함께 inert 가 되어 버튼을 못 눌렀다(ip-code-review-claude 적대적 리뷰로 찾음, 2026-10-21).
+              MY PAGE 가 열려 있을 때는 그 패널이 다른 패널 뒤에 그려져(DOM 순서) 늘 맨 위이므로 이 조건으로
+              충분하다 — 바탕창이 뜬 상태로는 페이지 쪽에서 새 패널을 열 수 없다(전부 inert). */}
+          <div className="contents" inert={myPageOpen && backdropActive}>
+            {children}
+          </div>
+          <MyPagePanel id="mypage-panel" open={myPageOpen} onClose={() => setMyPageOpen(false)} trigger={myPageTrigger} />
+        </>
+      )}
       {value.account.isPasswordChangeRequired && <ForcePasswordDialog account={value.account} onDone={passwordChanged} />}
     </LoginContext>
   );
@@ -450,16 +477,13 @@ async function prepare(onSwitchBp: (bp: StoredBp) => void): Promise<LoginState> 
   writeCurrentBp(loginKey, tab);
   // 고른 BP 도 그 BP 의 값을 받은 뒤에 적는다 — 다음에 주소로 여는 탭이 이 BP 를 쓴다. 받기가 실패하면 앞서 고른 BP 가 그대로 남는다.
   if (switchBp) writeSelectedBp(loginKey, switchBp);
-  // BP 를 바꿔 열면(BP 이동 화면 · 다른 BP 의 /bp/{id}) 범위는 전체에서, 목록에서 고른 점포는 없이 시작한다.
-  if (fresh) {
-    writeScope(bp.bpCodeId, { type: "ALL" });
-    writeStorePicks(bp.bpCodeId, null);
-  }
+  // BP 를 바꿔 열면(BP 이동 화면 · 다른 BP 의 /bp/{id}) 범위는 전체에서 시작한다.
+  if (fresh) writeScope(bp.bpCodeId, { type: "ALL" });
   // 남의 BP 주소를 고쳐 보낸 표시는 제대로 열렸으니 지운다(fixBpPath).
   clearBpFix();
   // 저장된 점포 범위가 이 탭의 점포 목록에 없으면 전체로 되돌린다(선택기 표시와 실제 범위가 어긋나지 않게)
   const scope = restoredScope(readScope(bp.bpCodeId), stores);
-  return { loginKey, account, serviceCode: tab.serviceCode, menus: info.menus, currentBp: bp, stores, codes, scope, storePicks: readStorePicks(bp.bpCodeId) };
+  return { loginKey, account, serviceCode: tab.serviceCode, menus: info.menus, currentBp: bp, stores, codes, scope };
 }
 
 /**
