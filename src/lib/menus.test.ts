@@ -21,6 +21,14 @@ const menus = [
 // 플랫폼 계정은 두 서비스 메뉴를 모두 받는다.
 const platformAccount = [...menus, menu(null, false, [menu("/code-groups", true, [], "PLATFORM")], "PLATFORM")];
 
+test("탭 BP 접두(/bp/{id})는 떼고 메뉴와 비교한다", () => {
+  const menus = [menu("/bp-role-groups", true)];
+  assert.equal(isAllowed(menus, "/bp/8/bp-role-groups", "WHALE_ERP"), true);
+  assert.equal(isAllowed([], "/bp/8/home", "WHALE_ERP"), true);
+  assert.equal(menuOfPath(menus, "/bp/8/bp-role-groups", "WHALE_ERP")?.url, "/bp-role-groups");
+  assert.equal(serviceOfPath(menus, "/bp/8/bp-role-groups"), "WHALE_ERP");
+});
+
 test("isAllowed: 서비스 홈은 메뉴가 비어도 열린다", () => {
   assert.equal(isAllowed([], "/home", "WHALE_ERP"), true);
   assert.equal(isAllowed([], "/platform", "PLATFORM"), true);

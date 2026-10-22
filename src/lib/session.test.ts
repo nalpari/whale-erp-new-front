@@ -13,6 +13,12 @@ test("parseSession: 유효한 JSON 은 Session", () => {
   assert.deepEqual(parseSession(JSON.stringify(session)), session);
 });
 
+test("parseSession: 소속 BP 는 양의 정수만 남기고, 없거나 틀려도 세션은 살린다(옛 세션)", () => {
+  assert.deepEqual(parseSession(JSON.stringify({ ...session, bpCodeId: 8 })), { ...session, bpCodeId: 8 });
+  assert.deepEqual(parseSession(JSON.stringify({ ...session, bpCodeId: "8" })), session);
+  assert.deepEqual(parseSession(JSON.stringify({ ...session, bpCodeId: 0 })), session);
+});
+
 test("parseSession: 없거나 깨졌거나 토큰이 없으면 null", () => {
   assert.equal(parseSession(undefined), null);
   assert.equal(parseSession("garbage"), null);
