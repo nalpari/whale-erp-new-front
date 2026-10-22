@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { WorkScheduleList } from "@/lib/work-schedules-api";
 import { addDays, moved, toScheduleSearch, type ScheduleQuery } from "./work-schedule-query";
+import { AssignGapButton, ScheduleBar } from "./schedule-form";
 import { barOf, carryOver, coverTone, durationLabel, gapsOf, hourCells } from "./work-schedule-view";
 
 // 주간 보기(#202 · #343, STAFF-26). 데모 schedWeek — 요일 칩 7개 → 고른 요일의 시간축 24칸(00~23시) · 직원 줄 · 근무 인원 줄 · 공백.
@@ -31,9 +32,9 @@ export function ScheduleWeek({ data, query, today }: { data: WorkScheduleList; q
   const dayOf = (d: string) => data.days.find((x) => x.workDate === d);
   const day = dayOf(query.day);
   const rows = data.staff.filter((s) => s.schedulableDates.includes(query.day));
-  // 전날에서 넘어온 근무 — 주간은 전주 일요일부터 받는다(weekRange)
+  // 전날에서 넘어온 근무 — 공백에서 뺀다. 주간은 전주 일요일부터 받는다(weekRange)
   const carry = carryOver(data.items.filter((s) => s.workDate === addDays(query.day, -1)));
-  const cells = hourCells(day?.coverage ?? [], carry);
+  const cells = hourCells(day?.coverage ?? []);
   const gaps = gapsOf(day?.coverage ?? [], carry);
   const gapMinutes = gaps.reduce((t, g) => t + g.minutes, 0);
 
@@ -87,14 +88,17 @@ export function ScheduleWeek({ data, query, today }: { data: WorkScheduleList; q
                 {shifts.map((it) => {
                   const bar = barOf(it);
                   return (
-                    <div
+                    // 누르면 수정 패널(수정 권한이 있을 때, #203)
+                    <ScheduleBar
                       key={it.workScheduleId}
+                      item={it}
+                      staffName={s.name ?? ""}
                       className="absolute inset-y-0 flex items-center truncate rounded-[2px] bg-erp-brand-soft px-[10px] text-[13px] text-white"
                       style={{ left: `${bar.left}%`, width: `${bar.width}%` }}
                       title={bar.label}
                     >
                       {bar.label}
-                    </div>
+                    </ScheduleBar>
                   );
                 })}
               </div>
@@ -104,15 +108,11 @@ export function ScheduleWeek({ data, query, today }: { data: WorkScheduleList; q
         <div className="flex h-[46px] items-center border-b border-erp-thead-line">
           <span className="w-[140px] shrink-0 px-[10px] text-[14px] text-erp-label">근무 인원</span>
           <div className="grid h-[34px] flex-1 grid-cols-24 gap-px">
-            {cells.map((n, h) =>
-              n === null ? (
-                <span key={h} />
-              ) : (
-                <span key={h} className={`grid place-items-center text-[13px] font-medium ${COVER[coverTone(n)]}`} aria-label={`${HOURS[h]}시 ${n}명`}>
-                  {n}
-                </span>
-              ),
-            )}
+            {cells.map((n, h) => (
+              <span key={h} className={`grid place-items-center text-[13px] font-medium ${COVER[coverTone(n)]}`} aria-label={`${HOURS[h]}시 ${n}명`}>
+                {n}
+              </span>
+            ))}
           </div>
         </div>
       </div>
@@ -127,6 +127,10 @@ export function ScheduleWeek({ data, query, today }: { data: WorkScheduleList; q
           <p className="text-[13px] leading-[1.6] text-erp-label">
             {gaps.length ? `${gaps.map((g) => `${g.from}-${g.to}`).join(", ")} 에 배정된 직원이 없습니다.` : "비는 시간대가 없습니다."}
           </p>
+          {/* 공백마다 그 시각으로 등록을 연다 */}
+          {gaps.map((g) => (
+            <AssignGapButton key={g.from} workDate={query.day} startTime={g.from} endTime={g.to} />
+          ))}
         </div>
       )}
     </div>

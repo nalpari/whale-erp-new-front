@@ -45,31 +45,22 @@ export function carryOver(prevDayShifts: readonly { startTime: string; endTime: 
 }
 
 /**
- * 그날 세는 칸 — 넘어온 근무가 덮는 앞쪽 칸과, 그날 시작한 근무의 첫 칸~마지막 칸(2026-10-22 재영). 그 사이 · 앞뒤는 세지 않는다.
- * 그날 시작한 근무는 api coverage 에서 넘어온 인원을 뺀 값으로 본다 — 가린 직원의 근무는 items 에 없어 넘어온 근무로 빼지 못하고 그날 근무로 센다.
+ * 그날 시작한 근무의 [첫 칸, 마지막 칸](30분 칸 번호). 없으면 null — 공백은 이 사이만 센다(STAFF-37, 2026-10-22 재영).
+ * 그날 시작한 근무는 api coverage 에서 넘어온 인원(carryOver)을 뺀 값으로 본다 — 가린 직원의 근무는 items 에 없어 넘어온 근무로 빼지 못하고 그날 근무로 센다.
  */
-function countedSpan(coverage: readonly number[], carry: readonly number[]) {
+function ownSpan(coverage: readonly number[], carry: readonly number[]): { first: number; last: number } | null {
   const own = coverage.map((n, i) => n - (carry[i] ?? 0));
   const first = own.findIndex((n) => n > 0);
-  const last = own.length - 1 - [...own].reverse().findIndex((n) => n > 0);
-  return {
-    /** 그날 시작한 근무의 [첫 칸, 마지막 칸]. 없으면 null */
-    own: first < 0 ? null : { first, last },
-    counted: (i: number) => (carry[i] ?? 0) > 0 || (first >= 0 && i >= first && i <= last),
-  };
+  if (first < 0) return null;
+  return { first, last: own.length - 1 - [...own].reverse().findIndex((n) => n > 0) };
 }
 
 /**
  * 근무 인원 줄 24칸. 한 시간 칸은 그 안의 30분 두 칸 중 작은 값이다 — 30분짜리 공백도 0 으로 드러나게(계획 문서).
- * 세지 않는 칸(countedSpan 밖)은 빈칸(null)이다(STAFF-37). 걸친 시간(09:30 시작)은 세는 칸만 본다.
- * api 의 coverage 는 전날 시작해 자정을 넘어온 근무도 새벽 칸에 센다(Q4) — carry 는 그 몫이다(carryOver).
+ * 근무 앞뒤도 빈칸 없이 0 으로 보인다(2026-10-22 재영). api 의 coverage 는 전날 시작해 자정을 넘어온 근무도 새벽 칸에 센다(Q4).
  */
-export function hourCells(coverage: readonly number[], carry: readonly number[] = []): (number | null)[] {
-  const { counted } = countedSpan(coverage, carry);
-  return Array.from({ length: 24 }, (_, h) => {
-    const halves = [2 * h, 2 * h + 1].filter(counted);
-    return halves.length ? Math.min(...halves.map((i) => coverage[i])) : null;
-  });
+export function hourCells(coverage: readonly number[]): number[] {
+  return Array.from({ length: 24 }, (_, h) => Math.min(coverage[2 * h] ?? 0, coverage[2 * h + 1] ?? 0));
 }
 
 export interface Gap {
@@ -80,7 +71,7 @@ export interface Gap {
 
 /** 그날 시작한 근무의 첫 시작부터 마지막 종료 사이에 아무도 없는 구간(30분 칸 단위, STAFF-37). 넘어온 근무 뒤의 빈 새벽은 공백이 아니다 */
 export function gapsOf(coverage: readonly number[], carry: readonly number[] = []): Gap[] {
-  const span = countedSpan(coverage, carry).own;
+  const span = ownSpan(coverage, carry);
   if (!span) return [];
   const gaps: Gap[] = [];
   for (let i = span.first; i <= span.last; i += 1) {
