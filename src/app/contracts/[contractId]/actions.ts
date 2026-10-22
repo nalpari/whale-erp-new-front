@@ -28,7 +28,7 @@ export async function deleteContract(contractId: number, back?: string): Promise
     if (e instanceof ApiError) return { error: e.status === 401 ? "로그인이 필요합니다" : e.message };
     throw e;
   }
-  redirect(listAfterSave(back, true));
+  redirect(listAfterSave(back, null));
 }
 
 /**

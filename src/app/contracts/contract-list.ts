@@ -141,13 +141,16 @@ export function withBack(href: string, back: string | string[] | undefined): str
 }
 
 /**
- * 저장 · 삭제 뒤 돌아갈 목록. 새로 만들었거나(등록) 지웠으면 점포 조건을 「전체」로 비운다(1팀 withoutStoreSearch — 새 계약의 점포가 고른
- * 점포 밖일 수 있다). 이어 쓰기 · 수정 저장은 같은 계약이라 그대로 돌아간다.
+ * 저장 · 삭제 뒤 돌아갈 목록. 새로 만들었거나(등록) 지웠으면(savedStoreId null) 점포 조건을 「전체」로 비운다(1팀 withoutStoreSearch — 새
+ * 계약의 점포가 고른 점포 밖일 수 있다). 이어 쓰기 · 수정 저장은 저장한 점포가 목록의 고른 점포(점포 하나 범위 포함) 밖이면 비운다 — 임시저장
+ * 이어 쓰기는 점포를 바꿀 수 있어 그대로 돌아가면 방금 저장한 계약이 안 보인다(#109 리뷰). 직영 · 가맹 범위는 점포 유형을 몰라 그대로 둔다.
  */
-export const listAfterSave = (back: string | string[] | undefined, created: boolean) => {
+export function listAfterSave(back: string | string[] | undefined, savedStoreId: number | null): string {
   const list = backHrefOf(back);
-  return created ? withoutStoreSearch(list) : list;
-};
+  if (savedStoreId === null) return withoutStoreSearch(list);
+  const picked = pickedIdsOf(readListQuery(Object.fromEntries(new URLSearchParams(list.split("?")[1] ?? ""))));
+  return picked.length && !picked.includes(savedStoreId) ? withoutStoreSearch(list) : list;
+}
 
 /** 돌아갈 목록 주소. 근로계약 목록 주소가 아니면(다른 곳으로 보내려는 값) 기본 목록으로 — 서버 액션에 온 값도 이것으로 거른다 */
 export function backHrefOf(raw: string | string[] | undefined): string {

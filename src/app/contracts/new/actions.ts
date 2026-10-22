@@ -50,7 +50,7 @@ async function save(path: string, method: "POST" | "PUT", body: CreateContractBo
       if (e.status === 401) return { error: "로그인이 필요합니다" };
       const sendFailed = sendFailedTarget(e.status, e.body);
       // 저장은 됐다 — 성공과 같이 새 계약이면 점포 조건을 「전체」로 비운 목록을 넘긴다(#109 리뷰)
-      if (sendFailed) redirect(withBack(sendFailed, listAfterSave(back, contractId === null)));
+      if (sendFailed) redirect(withBack(sendFailed, listAfterSave(back, contractId === null ? null : body.storeId)));
       const code = (e.body as { code?: unknown } | null)?.code;
       if (saveOutcomeUnknown(e.status, typeof code === "string" ? code : undefined)) return unknownOutcome(contractId, back);
       const inProgress = e.status === 409 ? inProgressOf(e.body) : undefined;
@@ -61,5 +61,5 @@ async function save(path: string, method: "POST" | "PUT", body: CreateContractBo
     return unknownOutcome(contractId, back);
   }
   // 목록은 요청마다 새로 받는다(no-store). 따로 비울 캐시가 없다. 새 계약이면 점포 조건을 「전체」로 비운다
-  redirect(listAfterSave(back, contractId === null));
+  redirect(listAfterSave(back, contractId === null ? null : body.storeId));
 }

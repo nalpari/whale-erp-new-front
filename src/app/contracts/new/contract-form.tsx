@@ -338,7 +338,7 @@ export function ContractForm({
         result = { error: "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요" };
       }
       if (result.ok) {
-        router.push(listAfterSave(back, !contractId));
+        router.push(listAfterSave(back, contractId ? body.storeId : null));
         return;
       }
       if (result.inProgress) {

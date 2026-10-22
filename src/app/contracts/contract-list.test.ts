@@ -104,9 +104,14 @@ test("목록에서 나가는 주소는 쿼리가 있어도 back 을 잇고, 근�
 });
 
 test("저장 · 삭제 뒤 목록 — 새로 만들었거나 지웠으면 점포 조건을 「전체」로 비우고, 이어 쓰기 저장은 그대로", () => {
-  assert.equal(listAfterSave("/contracts?scope=DIRECT&page=3&staffMemberName=%EA%B9%80", true), "/contracts?staffMemberName=%EA%B9%80&storeIds=");
-  assert.equal(listAfterSave("/contracts?storeIds=3,7", false), "/contracts?storeIds=3,7");
-  assert.equal(listAfterSave("/stores", false), "/contracts");
+  assert.equal(listAfterSave("/contracts?scope=DIRECT&page=3&staffMemberName=%EA%B9%80", null), "/contracts?staffMemberName=%EA%B9%80&storeIds=");
+  // 이어 쓰기 · 수정 — 저장한 점포가 고른 점포 안이면 그대로, 밖이면 비운다(임시저장은 점포를 바꿀 수 있다)
+  assert.equal(listAfterSave("/contracts?storeIds=3,7", 7), "/contracts?storeIds=3,7");
+  assert.equal(listAfterSave("/contracts?storeIds=3,7", 9), "/contracts?storeIds=");
+  assert.equal(listAfterSave("/contracts?scope=STORE%3A3", 9), "/contracts?storeIds=");
+  assert.equal(listAfterSave("/contracts?scope=STORE%3A3", 3), "/contracts?scope=STORE%3A3");
+  assert.equal(listAfterSave("/contracts?scope=FRANCHISE", 9), "/contracts?scope=FRANCHISE");
+  assert.equal(listAfterSave("/stores", 3), "/contracts");
 });
 
 test("쓸 수 없는 범위는 헤더 · 칩과 같은 판정이다 — 폐점만 남은 점포 유형도 쓸 수 없다", () => {
