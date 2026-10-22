@@ -164,7 +164,7 @@ export function InquiryForm({ options, submit = sampleSubmit }: { options: LeadO
     setConfirming({ phone: String(form.get("phone")).trim(), email: String(form.get("email")).trim() });
   }
 
-  function send() {
+  function handleConfirm() {
     setConfirming(null);
     if (!formRef.current) return;
     const data = new FormData(formRef.current);
@@ -273,7 +273,7 @@ export function InquiryForm({ options, submit = sampleSubmit }: { options: LeadO
         </Section>
         <div className="flex flex-col gap-[16px]">
           {error && (
-            <p ref={errorRef} role="alert" className="rounded-[6px] border border-[#f3c4c4] bg-[#fdf3f3] px-[32px] py-[24px] text-[16px] leading-[1.6] text-[#c62828]">
+            <p ref={errorRef} role="alert" className="text-center text-[15px] leading-[1.5] text-[#e93737]">
               {error}
             </p>
           )}
@@ -291,7 +291,7 @@ export function InquiryForm({ options, submit = sampleSubmit }: { options: LeadO
             <GuestButton tone="outline" onClick={() => setConfirming(null)}>
               취소
             </GuestButton>
-            <GuestButton tone="navy" onClick={send}>
+            <GuestButton tone="navy" onClick={handleConfirm}>
               접수하기
             </GuestButton>
           </>
