@@ -18,26 +18,17 @@ import { copyStatus, totalsLabel } from "./work-schedule-view";
 
 const NOTE = "text-[13px] text-erp-off";
 
-/** 도구 줄 「지난 주 복사」 — 등록 권한이 없으면 두지 않는다. 근무스케줄이 있는 주 · 폐점 점포면 끄고 까닭을 옆에 적는다 */
+/** 도구 줄 「지난 주 복사」(데모 soft 버튼) — 등록 권한이 없으면 두지 않는다. 근무스케줄이 있는 주 · 폐점 점포면 끈다(안내 글자는 두지 않는다, 2026-10-22 재영) */
 export function CopyButton({ query, today, weekEmpty }: { query: ScheduleQuery & { storeId: number }; today: string; weekEmpty: boolean }) {
   const navigate = useScheduleNavigation(today);
   const store = useStores().find((s) => s.storeId === query.storeId);
   const closed = !!store && isClosedStore(store);
   if (!usePagePermission().create) return null;
-  // 막힌 버튼은 마우스를 받지 않아 title 이 뜨지 않는다 — 까닭은 글자로 둔다. 폐점은 등록 버튼 옆 안내가 함께 말한다
+  // 폐점은 등록 버튼 옆 안내가 함께 말한다
   return (
-    <>
-      {!weekEmpty && !closed && <span className={NOTE}>이미 근무스케줄이 있는 주 · 덧붙일 때는 여러 명 일괄 등록</span>}
-      <Button
-        variant="off"
-        aria-expanded={query.copy}
-        aria-controls="schedule-copy"
-        disabled={!weekEmpty || closed}
-        onClick={() => navigate({ ...query, copy: !query.copy, history: false })}
-      >
-        지난 주 복사
-      </Button>
-    </>
+    <Button variant="soft" aria-expanded={query.copy} aria-controls="schedule-copy" disabled={!weekEmpty || closed} onClick={() => navigate({ ...query, copy: !query.copy })}>
+      지난 주 복사
+    </Button>
   );
 }
 

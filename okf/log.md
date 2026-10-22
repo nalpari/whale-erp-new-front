@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [근무스케줄 관리 화면 (구현)](/screens/work-schedules.md) — 데모 work-schedules.html 에 맞췄다(2026-10-22 재영): 카드 틀 · 도구 줄 두 줄(근무지 · ‹ 주 › · 날짜 고르기 · 「이번 주」 | 「지난 주 복사」 · 「근무스케줄 등록」 / 주간 · 월간 segment), 공백 줄을 근무 인원 줄 바로 아래로, 월간 왼쪽 목록을 재직자 전원 · 직무 · 휴무로, 달력은 걸친 주만. 변경 이력은 패널을 걷고 근무표 아래 표로 늘 보인다(`history=1` 없앰). 안내 글자 「00~24시 · 근무일은 시작한 날」 · 「이미 근무스케줄이 있는 주 …」를 뺐다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — #109 리뷰: 이어 쓰기 · 수정 저장 뒤에도 저장한 점포가 목록의 고른 점포 밖이면 점포 조건을 「전체」로 비운다(임시저장은 점포를 바꿀 수 있다). api 타입은 api main(2bb32ab, #132 머지) 기준으로 다시 생성.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — #109 리뷰: 새 계약 저장 뒤 발송 실패로 상세에 갈 때도 점포 조건을 「전체」로 비운 목록을 넘기고, 예전 `?storeName=` 주소 · 칩 1000개 상한을 적었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — #109 리뷰 반영: 근로계약 목록의 쓸 수 없는 범위 판정을 헤더 · 칩과 같은 `isUnusableScope` 로 맞추고(`unusableScopeOf`, 폐점만 남은 점포 유형), 목록 주소(`?back=`)를 이어 쓰기 · 작성 · 근로자 정보 · 재발송 · 저장 · 삭제 뒤 이동까지 잇는다(새 계약 · 삭제 뒤는 점포 조건 「전체」).

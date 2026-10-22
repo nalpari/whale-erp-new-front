@@ -1,11 +1,12 @@
 import Link from "next/link";
+import { Badge } from "@/components/common";
 import type { WorkScheduleList } from "@/lib/work-schedules-api";
 import { addDays, moved, toScheduleSearch, type ScheduleQuery } from "./work-schedule-query";
 import { AssignGapButton, ScheduleBar } from "./schedule-form";
 import { barOf, carryOver, coverTone, durationLabel, gapsOf, hourCells } from "./work-schedule-view";
 
 // 주간 보기(#202 · #343, STAFF-26). 데모 schedWeek — 요일 칩 7개 → 고른 요일의 시간축 24칸(00~23시) · 직원 줄 · 근무 인원 줄 · 공백.
-// 직원 줄은 그날 받을 수 있는 직원만(휴무 포함, STAFF-29). 본사에게 가려진 직원은 줄은 두되 이름 · 막대를 비운다(STAFF-39).
+// 공백 줄은 근무 인원 줄 바로 아래, 범례는 맨 아래다(데모 순서). 직원 줄은 그날 받을 수 있는 직원만(휴무 포함, STAFF-29). 본사에게 가려진 직원은 줄은 두되 이름 · 막대를 비운다(STAFF-39).
 
 const WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"];
 const COVER = { empty: "bg-erp-off-bg text-erp-off", alone: "bg-erp-subtle text-erp-ink", many: "bg-erp-on-bg text-erp-on" } as const;
@@ -115,24 +116,22 @@ export function ScheduleWeek({ data, query, today }: { data: WorkScheduleList; q
             ))}
           </div>
         </div>
+        {/* 공백 줄 — 데모 gapBar 처럼 근무 인원 줄 바로 아래, 「이 시간대에 배정」은 오른쪽 끝 */}
+        {day && day.headcount > 0 && (
+          <div className="flex items-center gap-[6px]">
+            <Badge tone={gapMinutes ? "off" : "on"}>{gapMinutes ? `공백 ${durationLabel(gapMinutes)}` : "공백 없음"}</Badge>
+            <p className="text-[13px] leading-[1.6] text-erp-label">
+              {gaps.length ? `${gaps.map((g) => `${g.from}-${g.to}`).join(", ")} 에 배정된 직원이 없습니다.` : "비는 시간대가 없습니다."}
+            </p>
+            <span className="flex-1" />
+            {/* 공백마다 그 시각으로 등록을 연다 */}
+            {gaps.map((g) => (
+              <AssignGapButton key={g.from} workDate={query.day} startTime={g.from} endTime={g.to} label={gaps.length > 1 ? `${g.from}-${g.to} 배정` : "이 시간대에 배정"} />
+            ))}
+          </div>
+        )}
       </div>
       <CoverLegend />
-      {day && day.headcount > 0 && (
-        <div className="flex items-center gap-[8px] rounded-[2px] border border-erp-thead-line px-[14px] py-[10px]">
-          {gapMinutes ? (
-            <span className="inline-block rounded-[2px] bg-erp-off-bg px-[4px] py-[2px] text-[14px] font-medium text-erp-off">공백 {durationLabel(gapMinutes)}</span>
-          ) : (
-            <span className="inline-block rounded-[2px] bg-erp-on-bg px-[4px] py-[2px] text-[14px] font-medium text-erp-on">공백 없음</span>
-          )}
-          <p className="text-[13px] leading-[1.6] text-erp-label">
-            {gaps.length ? `${gaps.map((g) => `${g.from}-${g.to}`).join(", ")} 에 배정된 직원이 없습니다.` : "비는 시간대가 없습니다."}
-          </p>
-          {/* 공백마다 그 시각으로 등록을 연다 */}
-          {gaps.map((g) => (
-            <AssignGapButton key={g.from} workDate={query.day} startTime={g.from} endTime={g.to} />
-          ))}
-        </div>
-      )}
     </div>
   );
 }

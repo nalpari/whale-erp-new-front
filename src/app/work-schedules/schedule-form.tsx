@@ -49,38 +49,24 @@ const CLOSED_STORE = "폐점 점포는 근무스케줄을 등록할 수 없습�
 
 /**
  * 화면에서 고른 점포의 등록 · 수정 패널. 안쪽 버튼(막대 · 공백 · 등록)은 useSchedulePanel 로 연다.
- * 연 채 점포를 바꾸면 닫는다 — 남겨 두면 앞 점포 직원으로 저장이 나간다(front #95 리뷰). 변경 이력 패널과는 하나만 연다(같은 층이라 겹친다).
+ * 연 채 점포를 바꾸면 닫는다 — 남겨 두면 앞 점포 직원으로 저장이 나간다(front #95 리뷰).
  */
-export function SchedulePanel({
-  storeId,
-  historyOpen,
-  closeHistoryHref,
-  children,
-}: {
-  storeId: number;
-  /** 변경 이력 패널이 열렸는가(주소 history=1) */
-  historyOpen: boolean;
-  /** 변경 이력을 닫은 주소 */
-  closeHistoryHref: string;
-  children: ReactNode;
-}) {
-  const router = useRouter();
+export function SchedulePanel({ storeId, children }: { storeId: number; children: ReactNode }) {
   const store = useStores().find((s) => s.storeId === storeId);
   const closed = !!store && isClosedStore(store);
   const [opening, setOpening] = useState<Opening | null>(null);
   // 열 때마다 칸을 새로 그린다(같은 근무스케줄을 다시 열어도 처음 값부터)
   const [round, setRound] = useState(0);
   const trigger = useRef<HTMLElement | null>(null);
-  // 점포가 바뀌거나 변경 이력이 열리면 닫는다 — 렌더 중에 앞 값과 견준다(effect 로 한 박자 늦게 닫지 않게)
-  const [seen, setSeen] = useState({ storeId, historyOpen });
-  if (seen.storeId !== storeId || seen.historyOpen !== historyOpen) {
-    setSeen({ storeId, historyOpen });
-    if (seen.storeId !== storeId || historyOpen) setOpening(null);
+  // 점포가 바뀌면 닫는다 — 렌더 중에 앞 값과 견준다(effect 로 한 박자 늦게 닫지 않게)
+  const [seenStoreId, setSeenStoreId] = useState(storeId);
+  if (seenStoreId !== storeId) {
+    setSeenStoreId(storeId);
+    setOpening(null);
   }
   const open = (o: Opening) => {
     if (o.kind === "new" && closed) return;
     trigger.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    if (historyOpen) router.replace(closeHistoryHref, { scroll: false });
     setOpening(o);
     setRound((n) => n + 1);
   };
@@ -116,20 +102,14 @@ export function NewScheduleButton({ workDate }: { workDate: string }) {
   );
 }
 
-/** 공백 줄 「이 시간대에 배정」 — 그 근무일 · 공백 시작 · 끝으로 등록을 연다 */
-export function AssignGapButton({ workDate, startTime, endTime }: { workDate: string; startTime: string; endTime: string }) {
+/** 공백 줄 「이 시간대에 배정」(데모 soft 버튼) — 그 근무일 · 공백 시작 · 끝으로 등록을 연다. 공백이 여럿이면 글자에 시각을 적는다(label) */
+export function AssignGapButton({ workDate, startTime, endTime, label }: { workDate: string; startTime: string; endTime: string; label: string }) {
   const { open, closed } = useSchedulePanel();
   if (!usePagePermission().create || closed) return null;
   return (
-    <button
-      type="button"
-      aria-controls="schedule-form"
-      aria-label={`${startTime}-${endTime} 에 배정`}
-      className="shrink-0 text-[13px] text-erp-link hover:underline"
-      onClick={() => open({ kind: "new", workDate, startTime, endTime })}
-    >
-      이 시간대에 배정
-    </button>
+    <Button variant="soft" aria-controls="schedule-form" aria-label={`${startTime}-${endTime} 에 배정`} onClick={() => open({ kind: "new", workDate, startTime, endTime })}>
+      {label}
+    </Button>
   );
 }
 

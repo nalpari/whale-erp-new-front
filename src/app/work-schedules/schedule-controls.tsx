@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useTransition } from "react";
-import { Button, DateField, Pagination, Select, SlidePanel, Tag } from "@/components/common";
+import { useEffect, useTransition } from "react";
+import { DataTable, DateField, Pagination, Select, type Column } from "@/components/common";
 import { useScope, useStores } from "@/components/site/session-gate";
 import { formatDateTime } from "@/lib/format";
 import { PAGE_SIZES, type PageSize } from "@/lib/staff-members";
@@ -31,9 +31,10 @@ export function SchedulePicker({ query, today }: { query: ScheduleQuery; today: 
   }, [query.storeId, fallback]);
   if (query.storeId === null)
     return <p className="text-[14px] text-erp-label">{stores.length ? "점포를 고르는 중입니다…" : "관리하는 점포가 없습니다."}</p>;
+  // 점포를 바꾸면 복사 미리보기를 닫고, 앞 점포 직원으로 건 변경 이력 조건 · 쪽을 푼다
   return (
     <div className="w-[220px] shrink-0">
-      <Select aria-label="근무지" value={query.storeId} onChange={(e) => navigate({ ...query, storeId: Number(e.target.value), history: false, copy: false })}>
+      <Select aria-label="근무지" value={query.storeId} onChange={(e) => navigate({ ...query, storeId: Number(e.target.value), copy: false, historyStaffId: null, historyPage: 1 })}>
         {stores.map((s) => (
           <option key={s.storeId} value={s.storeId}>
             {s.name}
@@ -54,10 +55,8 @@ export function WeekJump({ query, today }: { query: ScheduleQuery; today: string
   );
 }
 
-const TAG_DANGER = "inline-block rounded-[2px] bg-erp-off-bg px-[4px] py-px text-[14px] font-medium whitespace-nowrap text-erp-off";
-
-// 변경 이력(#608). 도구 줄의 「변경 이력」으로 연다 — 열림 · 필터 · 쪽은 주소에 둔다(목록 화면과 같은 규칙). 데이터는 서버가 읽어 넘긴다.
-// 줄은 목업 「09-01 14:22 · 수정 · 서지안 09-04 13:00-21:30 → 09:00-17:00 · 정하윤」. 삭제는 빨강 꼬리표에 글자로도 「삭제」다.
+// 변경 이력(#608). 데모 schedLog 처럼 근무표 아래에 늘 보이는 표다(2026-10-22 재영) — 조건 · 쪽은 주소에 둔다(목록 화면과 같은 규칙). 데이터는 서버가 읽어 넘긴다.
+// 줄은 목업 「09-01 14:22 · 수정 · 서지안 09-04 13:00-21:30 → 09:00-17:00 · 정하윤」. 삭제는 데모처럼 빨강 글자다.
 export function ScheduleHistory({
   query,
   today,
@@ -66,69 +65,74 @@ export function ScheduleHistory({
 }: {
   query: ScheduleQuery;
   today: string;
-  /** null 은 패널이 닫혀 받지 않은 것, "failed" 는 받지 못한 것 */
-  data: WorkScheduleHistoryList | "failed" | null;
+  /** "failed" 는 받지 못한 것 */
+  data: WorkScheduleHistoryList | "failed";
   staffOptions: { staffMemberId: number; name: string }[];
 }) {
   const navigate = useScheduleNavigation(today);
-  const trigger = useRef<HTMLButtonElement>(null);
   const go = (next: Partial<ScheduleQuery>) => navigate({ ...query, historyPage: 1, ...next });
-  const failed = data === "failed";
-  const list = failed ? null : data;
+  const list = data === "failed" ? null : data;
   const totalPages = list ? Math.max(1, Math.ceil(list.total / query.historyPageSize)) : 1;
   // 「10-22 10:11」(한국 시간)
   const time = (iso: string) => formatDateTime(iso).slice(5);
+  const columns: Column<WorkScheduleHistoryList["items"][number]>[] = [
+    { header: "일시", width: "w-[120px]", cell: (h) => time(h.changedAt) },
+    { header: "구분", width: "w-[80px]", cell: (h) => <span className={h.changeType === "DELETED" ? "text-erp-off" : undefined}>{CHANGE_LABEL[h.changeType]}</span> },
+    { header: "내용", align: "left", cell: (h) => <span title={historyLine(h)}>{historyLine(h)}</span> },
+  ];
 
   return (
-    <>
-      <Button ref={trigger} variant="off" aria-controls="schedule-history" aria-expanded={query.history} onClick={() => navigate({ ...query, history: true })}>
-        변경 이력
-      </Button>
-      <SlidePanel id="schedule-history" open={query.history} onClose={() => navigate({ ...query, history: false })} label="변경 이력" trigger={trigger} closeOnBackdrop>
-        <div className="flex flex-col gap-[12px] p-[24px]">
-          <h2 className="text-[18px] font-semibold">변경 이력</h2>
-          <div className="flex flex-col gap-[6px]">
-            <div className="grid grid-cols-2 gap-[6px]">
-              <DateField aria-label="변경일 시작" value={query.historyFrom} onChange={(v) => go({ historyFrom: v })} />
-              <DateField aria-label="변경일 끝" value={query.historyTo} onChange={(v) => go({ historyTo: v })} />
-            </div>
-            <Select aria-label="직원" value={query.historyStaffId ?? ""} onChange={(e) => go({ historyStaffId: e.target.value ? Number(e.target.value) : null })}>
-              <option value="">전체 직원</option>
-              {staffOptions.map((s) => (
-                <option key={s.staffMemberId} value={s.staffMemberId}>
-                  {s.name}
-                </option>
-              ))}
-            </Select>
-          </div>
-          <div className="flex items-center justify-between text-[14px]">
-            <span className="text-erp-label">{list?.total ?? 0}건</span>
-            <div className="w-[80px]">
-              <Select aria-label="페이지당 건수" value={String(query.historyPageSize)} onChange={(e) => go({ historyPageSize: Number(e.target.value) as PageSize })}>
-                {PAGE_SIZES.map((size) => (
-                  <option key={size} value={size}>
-                    {size}
-                  </option>
-                ))}
-              </Select>
-            </div>
-          </div>
-          <ul className="flex flex-col">
-            {failed && <li role="alert" className="py-[14px] text-[14px] text-erp-off">변경 이력을 불러오지 못했습니다. 잠시 뒤 다시 열어 주세요.</li>}
-            {list?.items.length === 0 && <li className="py-[14px] text-[14px] text-erp-label">변경 이력이 없습니다.</li>}
-            {list?.items.map((h) => (
-              <li key={h.workScheduleHistoryId} className="flex items-start gap-[8px] border-b border-erp-thead-line py-[10px] text-[14px]">
-                <span className="w-[86px] shrink-0 text-[13px] text-erp-muted">{time(h.changedAt)}</span>
-                {h.changeType === "DELETED" ? <span className={TAG_DANGER}>{CHANGE_LABEL.DELETED}</span> : <Tag>{CHANGE_LABEL[h.changeType]}</Tag>}
-                <span className="min-w-0 flex-1">{historyLine(h)}</span>
-              </li>
-            ))}
-          </ul>
-          {list && list.total > query.historyPageSize && (
-            <Pagination page={query.historyPage} totalPages={totalPages} onPageChange={(page) => navigate({ ...query, historyPage: page })} />
-          )}
+    <section aria-labelledby="schedule-history" className="flex min-w-0 flex-col gap-[12px] pt-[12px]">
+      <div className="flex items-end gap-[6px]">
+        <h2 id="schedule-history" className="flex-1 text-[18px] font-semibold text-erp-ink">
+          변경 이력
+        </h2>
+        <div className="w-[150px] shrink-0">
+          <DateField aria-label="변경일 시작" value={query.historyFrom} onChange={(v) => go({ historyFrom: v })} />
         </div>
-      </SlidePanel>
-    </>
+        <div className="w-[150px] shrink-0">
+          <DateField aria-label="변경일 끝" value={query.historyTo} onChange={(v) => go({ historyTo: v })} />
+        </div>
+        <div className="w-[160px] shrink-0">
+          <Select aria-label="직원" value={query.historyStaffId ?? ""} onChange={(e) => go({ historyStaffId: e.target.value ? Number(e.target.value) : null })}>
+            <option value="">전체 직원</option>
+            {/* 주를 옮겨 고른 직원이 이 주 목록에 없어도 조건은 남아 있다 — 「전체 직원」으로 보이지 않게 둔다 */}
+            {query.historyStaffId !== null && !staffOptions.some((s) => s.staffMemberId === query.historyStaffId) && <option value={query.historyStaffId}>고른 직원</option>}
+            {staffOptions.map((s) => (
+              <option key={s.staffMemberId} value={s.staffMemberId}>
+                {s.name}
+              </option>
+            ))}
+          </Select>
+        </div>
+        <div className="w-[80px] shrink-0">
+          <Select aria-label="페이지당 건수" value={String(query.historyPageSize)} onChange={(e) => go({ historyPageSize: Number(e.target.value) as PageSize })}>
+            {PAGE_SIZES.map((size) => (
+              <option key={size} value={size}>
+                {size}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </div>
+      <DataTable
+        columns={columns}
+        rows={list?.items ?? []}
+        rowKey={(h) => h.workScheduleHistoryId}
+        empty={
+          list ? (
+            "변경 이력이 없습니다."
+          ) : (
+            // 이력을 받지 못해도 근무표는 그린다 — 이 표 안에만 알린다(front #93 리뷰)
+            <span role="alert" className="text-erp-off">
+              변경 이력을 불러오지 못했습니다. 잠시 뒤 다시 열어 주세요.
+            </span>
+          )
+        }
+      />
+      {list && list.total > query.historyPageSize && (
+        <Pagination page={query.historyPage} totalPages={totalPages} onPageChange={(page) => navigate({ ...query, historyPage: page })} />
+      )}
+    </section>
   );
 }
