@@ -47,17 +47,40 @@ function useSchedulePanel() {
 
 const CLOSED_STORE = "폐점 점포는 근무스케줄을 등록할 수 없습니다.";
 
-/** 화면에서 고른 점포의 등록 · 수정 패널. 안쪽 버튼(막대 · 공백 · 등록)은 useSchedulePanel 로 연다 */
-export function SchedulePanel({ storeId, children }: { storeId: number; children: ReactNode }) {
+/**
+ * 화면에서 고른 점포의 등록 · 수정 패널. 안쪽 버튼(막대 · 공백 · 등록)은 useSchedulePanel 로 연다.
+ * 연 채 점포를 바꾸면 닫는다 — 남겨 두면 앞 점포 직원으로 저장이 나간다(front #95 리뷰). 변경 이력 패널과는 하나만 연다(같은 층이라 겹친다).
+ */
+export function SchedulePanel({
+  storeId,
+  historyOpen,
+  closeHistoryHref,
+  children,
+}: {
+  storeId: number;
+  /** 변경 이력 패널이 열렸는가(주소 history=1) */
+  historyOpen: boolean;
+  /** 변경 이력을 닫은 주소 */
+  closeHistoryHref: string;
+  children: ReactNode;
+}) {
+  const router = useRouter();
   const store = useStores().find((s) => s.storeId === storeId);
   const closed = !!store && isClosedStore(store);
   const [opening, setOpening] = useState<Opening | null>(null);
   // 열 때마다 칸을 새로 그린다(같은 근무스케줄을 다시 열어도 처음 값부터)
   const [round, setRound] = useState(0);
   const trigger = useRef<HTMLElement | null>(null);
+  // 점포가 바뀌거나 변경 이력이 열리면 닫는다 — 렌더 중에 앞 값과 견준다(effect 로 한 박자 늦게 닫지 않게)
+  const [seen, setSeen] = useState({ storeId, historyOpen });
+  if (seen.storeId !== storeId || seen.historyOpen !== historyOpen) {
+    setSeen({ storeId, historyOpen });
+    if (seen.storeId !== storeId || historyOpen) setOpening(null);
+  }
   const open = (o: Opening) => {
     if (o.kind === "new" && closed) return;
     trigger.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    if (historyOpen) router.replace(closeHistoryHref, { scroll: false });
     setOpening(o);
     setRound((n) => n + 1);
   };
@@ -217,6 +240,10 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [saving, startSaving] = useTransition();
   const seq = useRef(0);
+  // 계약 값 요청 — 마지막 요청의 응답만 칸을 채운다(직원 · 근무일을 빠르게 바꿀 때, front #95 리뷰)
+  const defaultsSeq = useRef(0);
+  // 지금 근무일 — 늦게 온 계약 값이 바뀐 근무일 칸을 덮지 않게 견준다(handleDateChange 가 고친다)
+  const workDateNow = useRef(workDate);
   const key = (id: number) => `${id}|${workDate}`;
 
   // 등록이면 그 근무일에 받을 수 있는 직원을 받는다(STAFF-29). 근무일을 빠르게 바꾸면 마지막 요청의 응답만 쓴다
@@ -240,6 +267,8 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
 
   /** 계약 값을 받아 둔다. 받은 뒤 fill 로 칸을 채운다. 실패하면 칸은 그대로(빈칸)이고 되돌리기 버튼만 숨는다 */
   const loadDefaults = (id: number, fill?: (d: ScheduleDefaults) => void) => {
+    const n = ++defaultsSeq.current;
+    const date = workDate;
     const cached = defaults[key(id)];
     if (cached) return fill?.(cached);
     getScheduleDefaultsAction(id, workDate)
@@ -249,7 +278,8 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
           return;
         }
         setDefaults((d) => ({ ...d, [`${id}|${workDate}`]: result.defaults }));
-        fill?.(result.defaults);
+        // 근무일이 바뀐 뒤의 응답은 버린다. 일괄은 직원마다 제 줄을 채우므로 한 명 칸만 마지막 요청으로 막는다
+        if (date === workDateNow.current && (n === defaultsSeq.current || mode === "bulk")) fill?.(result.defaults);
       })
       .catch((error: unknown) => console.error("근무스케줄 계약 값 조회 실패", error));
   };
@@ -261,6 +291,7 @@ function ScheduleForm({ storeId, opening, onClose }: { storeId: number; opening:
 
   const handleDateChange = (value: string) => {
     setWorkDate(value);
+    workDateNow.current = value;
     if (edit) return;
     // 받을 수 있는 직원이 근무일마다 달라 고른 직원을 비운다
     setStaffId(null);

@@ -54,7 +54,7 @@ export default async function WorkSchedulesPage({ searchParams }: { searchParams
       <PageBar title="근무스케줄 관리">
         <ScheduleHistory query={query} today={today} data={history} staffOptions={staffOptions} />
       </PageBar>
-      <SchedulePanel storeId={query.storeId}>
+      <SchedulePanel storeId={query.storeId} historyOpen={query.history} closeHistoryHref={href({ ...query, history: false })}>
         <main className="m-[24px] flex min-h-0 flex-1 flex-col gap-[14px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px]">
           <div className="flex flex-wrap items-center gap-[8px]">
             <SchedulePicker query={query} today={today} />
