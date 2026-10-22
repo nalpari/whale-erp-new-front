@@ -12,6 +12,7 @@ import {
   groupChanged,
   hasPending,
   itemChanged,
+  itemsDeletable,
   itemsDirty,
   renumberAdded,
   savedToast,
@@ -140,6 +141,12 @@ test("새 목록 — 수정은 저장되고 삭제가 실패했으면 지울 행
   assert.deepEqual(withKeptPending([fresh[0]], current, true), [fresh[0]]);
   // 저장을 시작한 목록이 아니면 표시를 버린다
   assert.equal(hasPending(withKeptPending(fresh, current, false)), false);
+});
+
+test("플랫폼고정 그룹의 상세 코드는 지우지 않는다 — 플랫폼제공 그룹만", () => {
+  assert.equal(itemsDeletable("PLATFORM_FIXED"), false);
+  assert.equal(itemsDeletable("PLATFORM_PROVIDED"), true);
+  assert.equal(codePanelAccess({ update: true, create: true, delete: itemsDeletable("PLATFORM_FIXED") }).canDelete, false);
 });
 
 test("[되돌리기]로 지울 행 표시를 풀면 바뀐 것이 없다", () => {

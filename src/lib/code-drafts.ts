@@ -85,6 +85,9 @@ export function codePanelAccess({
   return { manage, canAdd, canDelete, canSave: manage || canAdd || canDelete };
 }
 
+/** 플랫폼 공통코드에서 이 그룹의 상세 코드를 지울 수 있는지 — 플랫폼고정 그룹은 사용 상태로만 관리한다(api 409, 2026-10-22). */
+export const itemsDeletable = (manageOwnerCode: ManageOwnerCode | undefined) => manageOwnerCode !== "PLATFORM_FIXED";
+
 /** 새 행은 저장된 행 뒤에 이어 붙고, 마지막 저장된 순서 다음부터 차례로 번호를 받는다. */
 export function renumberAdded<D extends ItemDraft>(rows: readonly D[]): D[] {
   let next = Math.max(0, ...rows.filter((r) => !r.added).map((r) => r.sortOrder));

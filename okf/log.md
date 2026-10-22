@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [플랫폼 시스템관리](/system.md) — 플랫폼 공통코드에서 플랫폼고정 그룹은 상세 코드 삭제 칸을 두지 않는다(`itemsDeletable` — api #135 가 409 로 막는다, 사용 상태로만 관리). front #113 머지 블로커 반영. 공통코드 api 타입을 api main(#135 머지 뒤) 기준으로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통코드 api 타입을 api #135 의 openapi 로 다시 만들었다(설명만 바뀜). 이 화면은 api #135 가 main 에 머지 · 배포된 뒤에 머지한다(front #113 머지 블로커).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [BP 환경설정](/config.md) · [플랫폼 시스템관리](/system.md) — 공통코드 리뷰 반영: 수정은 저장되고 삭제가 실패해도 지울 행 표시와 실패 띠가 남는다(`withKeptPending` · `hasPending`). 삭제 실패로 보내지 않은 등록은 띠에 「새 행도 등록하지 않았습니다」로 알린다(`SaveResult.skipped`). `updatesSaved` 를 `anySaved` 로, 토스트 판단을 `savedToast` 로 바꿨다. okf 의 옛 저장 순서(`saveUpdateThenCreate`) · BP 다시 켜기 금지 · 사용중지 그룹 표시 설명을 바로잡았다.
 * **Update**: [BP 환경설정](/config.md) · [플랫폼 시스템관리](/system.md) · [Whale ERP Frontend](/whale-erp-front.md) — 상세 코드 삭제 정책을 고쳤다: 플랫폼 공통코드는 중복 검사에서 지운 코드를 빼고 지운 코드를 다시 등록하면 삭제를 풀어 되살린다(api 작업 중). BP 공통코드는 플랫폼제공 · BP전용 코드를 모두 지운다(`bpDeletable`). 저장 409 에서 표에 없는 코드와 겹치면 「이 그룹에서 사용할 수 없는 상세 코드입니다: CODE」로 보인다(`unusableCodeMessage`).

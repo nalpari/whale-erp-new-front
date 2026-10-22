@@ -76,7 +76,7 @@ export async function updateCodeItems(groupCode: string, input: UpdateCodeItemsI
   await request(`/code-groups/${encodeURIComponent(groupCode)}/items`, await json("PUT", input));
 }
 
-/** DELETE /code-groups/{groupCode}/items — 상세 코드 삭제(논리 · 삭제 권한). 플랫폼 공통코드에서는 어느 코드든 지운다. 지운 코드를 다시 등록(createCodeItems)하면 api 가 삭제를 풀어 되살린다. */
+/** DELETE /code-groups/{groupCode}/items — 상세 코드 삭제(논리 · 삭제 권한). 플랫폼제공 그룹의 코드는 어느 것이든 지운다(플랫폼고정 그룹은 api 가 409 로 막는다 — 사용 상태로만 관리). 지운 코드를 다시 등록(createCodeItems)하면 api 가 삭제를 풀어 되살린다. */
 export async function deleteCodeItems(groupCode: string, input: DeleteCodeItemsInput): Promise<void> {
   await request(`/code-groups/${encodeURIComponent(groupCode)}/items`, await json("DELETE", input));
 }

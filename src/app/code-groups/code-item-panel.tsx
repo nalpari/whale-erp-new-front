@@ -11,6 +11,7 @@ import {
   followSameRows,
   itemsDirty,
   hasPending,
+  itemsDeletable,
   renumberAdded,
   savedToast,
   unusableCodeMessage,
@@ -30,7 +31,7 @@ import { DeletePending, DeleteToggle, Struck } from "@/components/site/code-edit
 // 오른쪽 상세 코드 목록 — 고른 그룹의 플랫폼 원본 상세 코드. BP전용 코드는 api 가 빼고 준다.
 // 상세 코드에는 관리 주체 칸이 없다 — 소속 그룹을 따른다(PL-VOCZCE). SERVICE 그룹이면 상세 코드가 서비스 코드, 코드명이 서비스명이다.
 // 기존 코드는 코드명 · 사용 상태만 고친다. 서비스 코드 사용 끄기도 확인창 없이 저장할 때 반영한다.
-// 기존 코드는 어느 것이든 [삭제]로 지울 행으로 표시해 두고 [저장] 때 지운다(삭제 권한, 논리 삭제). 지운 코드를 다시 등록하면 api 가 그 행의 삭제를 풀어 되살린다(2026-10-22).
+// 플랫폼제공 그룹의 기존 코드는 어느 것이든 [삭제]로 지울 행으로 표시해 두고(플랫폼고정 그룹은 사용 상태로만 관리 — 삭제 칸이 없다) [저장] 때 지운다(삭제 권한, 논리 삭제). 지운 코드를 다시 등록하면 api 가 그 행의 삭제를 풀어 되살린다(2026-10-22).
 // [추가]를 누를 때마다 맨 끝에 입력 행이 하나씩 생기고, [저장] 한 번으로 바뀐 행 · 지울 행 · 새 행을 함께 보낸다(수정 → 삭제 → 등록, actions.ts).
 // 새 코드는 기존 코드와도, 다른 새 행과도 겹칠 수 없다. 새 행은 저장 전에 이동 칸의 [×]로 뺄 수 있다.
 // 표시 순서는 숫자로만 보이고 직접 입력하지 않는다. 손잡이로 끌거나 ↑ · ↓ 로 옮기면 1부터 다시 매긴다.
@@ -53,7 +54,13 @@ export function CodeItemPanel({
 }) {
   // 메뉴 권한(로그인 정보)으로 보인다 — 막는 것은 api 다. api 는 기존 행 수정(수정 권한) · 삭제(삭제 권한) · 새 행 등록(등록 권한)이 따로다.
   // 그래서 기존 행 고치기 · 순서 옮기기는 수정 권한, [추가]와 새 행 입력 · 빼기는 등록 권한, [삭제]는 삭제 권한, [저장]은 셋 중 하나만 있어도 보인다.
-  const { manage, canAdd, canDelete, canSave } = codePanelAccess({ ...usePagePermission(), loadFailed });
+  // 플랫폼고정 그룹은 상세 코드를 지우지 않는다(사용 상태로만 관리 — api 가 409 로 막는다) — 삭제 칸을 두지 않는다
+  const permission = usePagePermission();
+  const { manage, canAdd, canDelete, canSave } = codePanelAccess({
+    ...permission,
+    delete: permission.delete && itemsDeletable(group?.manageOwnerCode),
+    loadFailed,
+  });
   const isService = group?.groupCode === "SERVICE";
   const router = useRouter();
   const toast = useToast();
@@ -277,7 +284,7 @@ export function CodeItemPanel({
           <Badge tone={d.status === "ACTIVE" ? "on" : "off"}>{d.status === "ACTIVE" ? "사용" : "미사용"}</Badge>
         ),
     },
-    // 플랫폼 공통코드에서는 저장된 상세 코드 어느 것이든 지운다(삭제 권한). 새 행은 이동 칸의 [×]로 뺀다.
+    // 플랫폼제공 그룹의 저장된 상세 코드는 어느 것이든 지운다(삭제 권한 — 플랫폼고정 그룹은 이 칸이 없다). 새 행은 이동 칸의 [×]로 뺀다.
     ...(canDelete
       ? [
           {
