@@ -6,8 +6,10 @@ import { Button, DateField, Field, FormGroup, FormRow, Radio, RequiredMark, Sear
 import { useMenuRole, useStores } from "@/components/site/session-gate";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { MENU_CODE } from "@/lib/menus";
+import { withoutStoreSearch } from "@/lib/store-scope";
 import { useFailure } from "../staff-members/[id]/use-action-failure";
 import { createTodoAction, getAssignableStaffAction, updateTodoAction } from "./actions";
+import { withBack } from "./todo-list-query";
 import { fromDetail, initialForm, matchStaff, problems, staffChipText, toCreateBody, toUpdateBody, type PickedStaff, type TodoForm as Form } from "./todo-form-model";
 import { StaffNames } from "./staff-names";
 import type { TodoDetail } from "./todo-row";
@@ -54,7 +56,7 @@ export function TodoForm(props: Parameters<typeof TodoFormFields>[0]) {
   return (
     <div className="flex flex-col items-center gap-[16px] py-[80px] text-[14px] text-erp-muted">
       <p>{props.detail ? "TO-DO 를 수정할 권한이 없습니다." : "TO-DO 를 등록할 권한이 없습니다."}</p>
-      <Button variant="off" href={props.detail ? `/todos/${props.detail.todoId}` : "/todos"}>
+      <Button variant="off" href={props.detail ? withBack(`/todos/${props.detail.todoId}`, props.backHref) : props.backHref}>
         {props.detail ? "상세로" : "목록으로"}
       </Button>
     </div>
@@ -65,12 +67,15 @@ function TodoFormFields({
   today,
   labels,
   detail,
+  backHref,
 }: {
   /** 화면을 그릴 때 서버의 오늘(KST) */
   today: string;
   labels: { assigneeType: EnumValue[]; executionMode: EnumValue[] };
   /** 있으면 수정 */
   detail?: TodoDetail;
+  /** 들어올 때의 목록 주소(?back=, backHrefOf 로 거른 값) — 취소 · 저장 뒤 이리로 돌아간다 */
+  backHref: string;
 }) {
   const router = useRouter();
   const toast = useToast();
@@ -88,7 +93,9 @@ function TodoFormFields({
   const seq = useRef(0);
   const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
   const issues = problems(form, today, detail);
-  const cancelHref = detail ? `/todos/${detail.todoId}` : "/todos";
+  const cancelHref = detail ? withBack(`/todos/${detail.todoId}`, backHref) : backHref;
+  // 등록 뒤에는 점포 검색을 「전체」로 비운다 — 고른 점포 밖에 등록했으면 목록에 보이지 않는다(점포 목록의 등록 뒤와 같다)
+  const createdHref = withoutStoreSearch(backHref);
 
   /**
    * 개인 배정일 때 그 근무지에서 배정할 수 있는 직원을 받는다. 이미 받은(받는 중인) 근무지면 다시 받지 않는다 — 실패했으면 다시 받는다.
@@ -148,13 +155,13 @@ function TodoFormFields({
         const result = await createTodoAction(toCreateBody(form));
         if (result.ok) {
           toast("saved");
-          router.push("/todos");
+          router.push(createdHref);
           return;
         }
         // 결과 모름 — 이미 만들어졌을 수 있어 다시 저장하게 두지 않는다(직원 수만큼 겹쳐 생긴다). 목록에서 확인하게 보낸다
         if (result.status === undefined) {
           toast(result.message);
-          router.push("/todos");
+          router.push(createdHref);
           return;
         }
         const message = onFailure(result);
@@ -166,7 +173,7 @@ function TodoFormFields({
           return;
         }
         toast(CREATE_UNKNOWN);
-        router.push("/todos");
+        router.push(createdHref);
       }
     });
   };

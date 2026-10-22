@@ -2,6 +2,7 @@
 
 ## 2026-10-22
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 직원 상세 급여명세서 칸을 데모 detail.html 에 맞췄다(WHALEERP-186): 응답이 `recent`(최근 3건) · `unsentCount` 로 바뀌어 열을 지급월(링크) · 기본급 · 수당 · 공제 · 실지급액 · 상태로 하고, 「구분」 열(이번 달 · 최근 확정)을 걷었다. 금액이 없거나 0 이면 「-」. 생성 타입은 API PR 머지 뒤 main 기준으로 다시 만든다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — TO-DO 목록(`/todos`)에 상단 점포 범위 연동을 붙였다(2026-10-22 재영). 근무지 선택을 점포 고르기(`StorePicker`, 주소 `storeIds`)로 바꾸고 헤더 범위(`scope`)를 따른다 — 점포 목록과 같은 네 가지 상태이고, api 에는 `storeIds` · `storeTypes` 로 보낸다. 상세 · 등록 · 수정은 `?back=` 으로 목록 주소를 받는다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 도입문의 문의 내용의 줄바꿈을 1자로 보낸다. 브라우저가 CRLF 로 바꿔 화면 1990자(줄바꿈 60)가 api 에서 2000자를 넘어 거절되던 것을 재현하고 고쳤다(front #100 재영 참고 1).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 도입문의 접수 실패 문구: api 400 문장 중 하나라도 영문이면 한글과 섞여 있어도 입력 확인 문구로 바꾼다(front #100 재영 참고 2).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 로그인 전 홈 리뷰 반영: 로그인한 채 `/` 에 오면 접근 토큰이 살아 있을 때만 자기 홈으로 보낸다(끝난 로그인은 로그인 전 홈을 그대로, `redirectsSignedIn` 시험 추가). 긴 소식 제목 전체 보기, 회사 링크의 「(새 창)」 안내, 주석 바로잡기.
