@@ -31,3 +31,22 @@
 3. 화면 → `pnpm lint` · `tsc` · `pnpm build`
 4. 로컬 api(브랜치)로 등록 → 목록 → 상세 상태 변경 → 삭제를 한 번 돌려 보기
 5. 커밋·PR 은 재영 확인
+
+## 상단 점포 범위 연동 (2026-10-22 재영)
+
+목록 필터의 근무지 선택(`storeId` 하나)을 점포 목록과 같은 점포 고르기(`StorePicker`)로 바꾸고, 헤더 범위(`?scope=`)를 따른다. api 는 `GET /todos` 에 `storeIds`(쉼표, 1000개까지) · `storeTypes`(DIRECT · FRANCHISE)를 받고 업무 범위 밖 점포는 뺀다.
+
+| 주소 | 뜻 | api 조건 |
+|---|---|---|
+| `storeIds=3,7` | 목록에서 고른 점포 | `storeIds=3,7` |
+| `storeIds=` | 목록에서 비운 「전체」(헤더 범위가 아니다) | 없음 |
+| `scope=STORE:12` | 헤더 범위 — 점포 하나 | `storeIds=12` |
+| `scope=DIRECT` · `scope=FRANCHISE` | 헤더 범위 — 직영 · 가맹 전체 | `storeTypes=DIRECT` · `FRANCHISE` |
+| `scope=ALL` | 헤더 범위 — 전체 | 없음 |
+| (없음) | 정해지지 않음 — 필터가 헤더 범위로 채운다(`fillScopeOf`) | 채운 뒤의 조건 |
+
+- `storeIds` 는 빈 값이어도 `scope` 보다 앞선다. 옛 주소의 `storeId=N` 은 `storeIds=N` 으로 읽는다.
+- 칩 이름은 로그인 정보의 관리 점포(`useStores`)에서 찾는다 — 점포 목록 api 는 「점포 정보 관리」 권한이 있어야 열려 서버가 찾지 않는다. 로그인 정보에 없는 점포는 조건에서 빼고 알리고, 이 탭에서 쓸 수 없는 범위는 「전체」로 바꾸고 알린다.
+- 직영 · 가맹 범위는 api 에 `storeTypes` 로 보내고 폐점 점포는 api 가 뺀다 — 칩(폐점 제외)과 목록이 맞는다. 로그인 정보의 점포는 브라우저에만 있어 서버가 id 로 풀지 않는다. 폐점 점포 TO-DO 는 「전체」나 점포를 골라 본다(2026-10-22 재영).
+- 상세 · 등록 · 수정은 목록 주소를 `?back=` 으로 받는다(`/todos` 주소만). 등록 뒤에는 점포 검색을 「전체」로 비운 목록(`withoutStoreSearch` — 새 TO-DO 가 보이게)으로, 삭제 뒤에는 들어올 때의 목록 조건 그대로 돌아간다(하나 지워도 점포 조건은 틀어지지 않는다, 2026-10-22 재영).
+- 확인: `node --test src/app/todos/todo-list-query.test.ts` (네 가지 상태 · 범위 종류 · api 변환 · back 거르기)

@@ -1,8 +1,16 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — #109 리뷰: 새 계약 저장 뒤 발송 실패로 상세에 갈 때도 점포 조건을 「전체」로 비운 목록을 넘기고, 예전 `?storeName=` 주소 · 칩 1000개 상한을 적었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — #109 리뷰 반영: 근로계약 목록의 쓸 수 없는 범위 판정을 헤더 · 칩과 같은 `isUnusableScope` 로 맞추고(`unusableScopeOf`, 폐점만 남은 점포 유형), 목록 주소(`?back=`)를 이어 쓰기 · 작성 · 근로자 정보 · 재발송 · 저장 · 삭제 뒤 이동까지 잇는다(새 계약 · 삭제 뒤는 점포 조건 「전체」).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 목록 점포 필터를 점포명 글자 검색에서 공통 점포 고르기(`StorePicker`)로 바꾸고 상단 점포 범위와 이었다(WHALEERP-133, 1팀 front #88 규칙). api 는 `storeIds` · `storeTypes` 로 거른다(api 짝 PR). 상세의 [목록]은 `?back=` 으로 같은 조건에 돌아온다. api 타입을 api main + 이 변경으로 다시 만들었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 로그인한 화면의 api 호출(`authHeaders()`)에도 사용자 IP 를 `X-Forwarded-For` 로 싣는다. 점포 진위확인(IP당 시간당 10건) · 내 정보 수정 · 이메일 중복 확인(분당 60건)이 모든 관리자에게 Next 서버 IP 한 칸으로 세어지던 것.
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 직원 상세 급여명세서 칸을 데모 detail.html 에 맞췄다(WHALEERP-186): 응답이 `recent`(최근 3건) · `unsentCount` 로 바뀌어 열을 지급월(링크) · 기본급 · 수당 · 공제 · 실지급액 · 상태로 하고, 「구분」 열(이번 달 · 최근 확정)을 걷었다. 금액이 없거나 0 이면 「-」. 생성 타입은 API PR 머지 뒤 main 기준으로 다시 만든다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — TO-DO 목록(`/todos`)에 상단 점포 범위 연동을 붙였다(2026-10-22 재영). 근무지 선택을 점포 고르기(`StorePicker`, 주소 `storeIds`)로 바꾸고 헤더 범위(`scope`)를 따른다 — 점포 목록과 같은 네 가지 상태이고, api 에는 `storeIds` · `storeTypes` 로 보낸다. 상세 · 등록 · 수정은 `?back=` 으로 목록 주소를 받는다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 도입문의 문의 내용의 줄바꿈을 1자로 보낸다. 브라우저가 CRLF 로 바꿔 화면 1990자(줄바꿈 60)가 api 에서 2000자를 넘어 거절되던 것을 재현하고 고쳤다(front #100 재영 참고 1).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 도입문의 접수 실패 문구: api 400 문장 중 하나라도 영문이면 한글과 섞여 있어도 입력 확인 문구로 바꾼다(front #100 재영 참고 2).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 로그인 전 홈 리뷰 반영: 로그인한 채 `/` 에 오면 접근 토큰이 살아 있을 때만 자기 홈으로 보낸다(끝난 로그인은 로그인 전 홈을 그대로, `redirectsSignedIn` 시험 추가). 긴 소식 제목 전체 보기, 회사 링크의 「(새 창)」 안내, 주석 바로잡기.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 로그인 전 홈(#289) · 푸터(#291): 홈의 질문 · 소식 칸을 api 의 비로그인 FAQ · 공지사항으로 채우고 받지 못하면 감춘다. 로그인한 채 `/` 에 오면 자기 홈으로 보낸다. 회원가입 버튼 둘의 빈 링크를 고쳤고, 푸터 상호명에 회사 소개 새 창 링크 자리를 두었다(주소 미정). 도입문의 상세의 [답변 메일 다시 보내기]를 「답변 수정」 옆으로 옮겼다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 적대적 리뷰(ip-code-review-claude, front #107) 반영: 플랫폼 관리자 수정 패널을 세울 때 메뉴 수정 권한만이 아니라 상세의 [수정] 버튼과 같은 계정별 판정(`adminActionsOf`)을 본다 — 플랫폼 관리자가 주소(`?edit=1`)로 플랫폼 마스터 계정의 수정 폼을 열 수 있었다(저장은 api 가 막는다). main 병합으로 생긴 okf 충돌을 양쪽 서술을 살려 풀었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR 리뷰(pr-review-toolkit) 반영: 새로 고침 · 앞으로 가기로 다시 연 플랫폼 관리자 수정을 닫아도 상세 기록이 겹치지 않게 수정 기록에 `history.state` 꼬리표를 단다. 다른 계정을 거쳐 돌아와도 포커스가 상세의 [수정]으로 돌아간다. 수정 패널을 세우는 조건을 `isEditOpen` 으로 떼어 테스트했다. SlidePanel 등 낡은 주석과 SlidePanel 설명의 `flushSync` 서술(코드는 rAF)을 고쳤다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 상세 패널이 닫히면(브라우저 뒤로 가기 등) 비밀번호 초기화 · 삭제 확인창과 변경이력 팝업도 닫는다(사용자 요청). 네이티브 `<dialog>` 라 패널과 함께 밀려 나가지 않고 남아 있었다.

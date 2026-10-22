@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import { Badge, DataTable } from "@/components/common";
 import { labelOf } from "@/lib/enums";
 import { formatDateTime } from "@/lib/format";
-import { formatAmount } from "@/lib/payslips";
 import { kstToday } from "@/lib/staff-members";
 import { MENU_CODE } from "@/lib/menus";
 import { getStaffMemberPayslipSummary, getStaffMemberTodoSummary, getStaffMemberWeekSchedule } from "@/lib/staff-members-api";
@@ -19,13 +18,14 @@ import {
   hoursText,
   isAreaForbidden,
   isPayslipSummaryEmpty,
-  payslipRows,
+  payAmountText,
+  payMonthText,
   todoFootText,
   todoHistoryText,
-  payPeriodText,
   todoAssignText,
   todoStatusMark,
   workDateText,
+  type PayslipSummaryItem,
   type TodoItem,
   type WeekScheduleItem,
 } from "./summary-view";
@@ -83,9 +83,10 @@ export async function ScheduleBox({ staffMemberId, weekStart }: { staffMemberId:
   );
 }
 
-type PayslipRow = ReturnType<typeof payslipRows>[number];
-
-/** 「급여명세서」 영역 — 이번 달 · 최근 확정 명세서 줄 + 미발송 건수. 둘 다 없고 미발송도 없으면 빈 상태 */
+/**
+ * 「급여명세서」 영역 — 데모 detail.html 처럼 최근 명세서 3건(api 순서 = 급여 기간 시작일 최신순) 표 + 미발송 건수. 열은 지급월 · 기본급 · 수당 ·
+ * 공제 · 실지급액(굵게) · 상태(배지). 최근 명세서도 미발송도 없으면 빈 상태
+ */
 export async function PayslipBox({ staffMemberId }: { staffMemberId: number }) {
   const [result, statuses] = await Promise.all([
     loadArea("급여명세서 영역", () => getStaffMemberPayslipSummary(staffMemberId)),
@@ -96,31 +97,30 @@ export async function PayslipBox({ staffMemberId }: { staffMemberId: number }) {
   if (isPayslipSummaryEmpty(summary)) return <BoxMessage>급여명세서가 없습니다.</BoxMessage>;
   return (
     <>
-      <DataTable<PayslipRow>
+      <DataTable<PayslipSummaryItem>
         headVariant="plain"
         columns={[
-          { header: "구분", width: "w-[130px]", cell: (r) => r.label },
           // 데모의 지급월 링크 — 명세서 상세로. 급여명세서 관리 조회 권한이 없으면 글자만
           {
-            header: "급여 기간",
-            cell: (r) => (
-              <MenuTextLink menuCode={MENU_CODE.payslips} href={`/payslips/${r.payslip.payslipId}`}>
-                {payPeriodText(r.payslip)}
+            header: "지급월",
+            cell: (p) => (
+              <MenuTextLink menuCode={MENU_CODE.payslips} href={`/payslips/${p.payslipId}`}>
+                {payMonthText(p)}
               </MenuTextLink>
             ),
           },
-          { header: "지급", width: "w-[110px]", cell: (r) => formatAmount(r.payslip.grossPayAmount) },
-          { header: "공제", width: "w-[100px]", cell: (r) => formatAmount(r.payslip.totalDeductionAmount) },
-          { header: "실지급액", width: "w-[110px]", cell: (r) => <b className="font-semibold">{formatAmount(r.payslip.netPayAmount)}</b> },
+          { header: "기본급", cell: (p) => payAmountText(p.basePayAmount) },
+          { header: "수당", cell: (p) => payAmountText(p.allowanceAmount) },
+          { header: "공제", cell: (p) => payAmountText(p.totalDeductionAmount) },
+          { header: "실지급액", cell: (p) => <b className="font-semibold">{payAmountText(p.netPayAmount)}</b> },
           {
             header: "상태",
-            width: "w-[90px]",
-            cell: (r) => (statuses ? <CellView cell={{ text: labelOf(statuses, r.payslip.status), style: STATUS_STYLE[r.payslip.status] }} /> : "-"),
+            cell: (p) => (statuses ? <CellView cell={{ text: labelOf(statuses, p.status), style: STATUS_STYLE[p.status] }} /> : "-"),
           },
         ]}
-        rows={payslipRows(summary)}
-        rowKey={(r) => r.payslip.payslipId}
-        empty="이번 달 · 확정한 명세서가 없습니다."
+        rows={summary.recent}
+        rowKey={(p) => p.payslipId}
+        empty="급여명세서가 없습니다."
       />
       <Foot label="미발송">{summary.unsentCount}건</Foot>
     </>

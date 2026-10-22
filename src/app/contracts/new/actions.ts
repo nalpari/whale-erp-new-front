@@ -49,7 +49,8 @@ async function save(path: string, method: "POST" | "PUT", body: CreateContractBo
     if (e instanceof ApiError) {
       if (e.status === 401) return { error: "로그인이 필요합니다" };
       const sendFailed = sendFailedTarget(e.status, e.body);
-      if (sendFailed) redirect(withBack(sendFailed, back));
+      // 저장은 됐다 — 성공과 같이 새 계약이면 점포 조건을 「전체」로 비운 목록을 넘긴다(#109 리뷰)
+      if (sendFailed) redirect(withBack(sendFailed, listAfterSave(back, contractId === null)));
       const code = (e.body as { code?: unknown } | null)?.code;
       if (saveOutcomeUnknown(e.status, typeof code === "string" ? code : undefined)) return unknownOutcome(contractId, back);
       const inProgress = e.status === 409 ? inProgressOf(e.body) : undefined;
