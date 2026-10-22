@@ -34,6 +34,8 @@ type Props = {
   id: string;
   open: boolean;
   onClose: () => void;
+  /** 바탕창 클릭 — 겹친 패널을 모두 닫는다(admins-screen.tsx closeAll). 저장하는 동안은 onClose 처럼 닫히지 않는다 */
+  onBackdropClose: () => void;
   trigger: RefObject<HTMLElement | null>;
   roleGroups: PlatformRoleGroup[];
 } & (
@@ -42,7 +44,7 @@ type Props = {
 );
 
 export function AdminFormPanel(props: Props) {
-  const { id, mode, open, onClose, trigger, roleGroups } = props;
+  const { id, mode, open, onClose, onBackdropClose, trigger, roleGroups } = props;
   const me = useAccount();
   // 권한 유형 이름은 로그인 정보의 공통코드 ROLE_TYPE 에서 읽는다(네이밍 규칙 화면 문구)
   const roleTypes = useCodes("ROLE_TYPE");
@@ -164,9 +166,19 @@ export function AdminFormPanel(props: Props) {
   };
 
   return (
-    // 수정은 상세 위에 겹쳐 열려 잃을 입력이 적다고 보고 바탕 클릭으로도 닫히게 한다. 등록은 처음부터 쓰는
-    // 빈 칸이라 그대로 기본값(false)을 둔다(2026-10-20 피드백).
-    <SlidePanel id={id} open={open} onClose={safeClose} label={title} trigger={trigger} closeOnBackdrop={mode === "edit"}>
+    // 등록 · 수정 모두 상세처럼 바탕창을 깔고, 바탕을 누르면 겹친 패널을 모두 닫는다(2026-10-22 사용자 요청, 데모와 같다).
+    // 등록은 빈 칸부터 쓰는 패널이라 바깥을 잘못 누르면 입력이 사라지고, 연 동안 목록이 막혀 상세를 그 위에 겹쳐 열 수 없다 — 알고 고른 것이다.
+    <SlidePanel
+      id={id}
+      open={open}
+      onClose={safeClose}
+      onBackdropClose={() => {
+        if (!saving) onBackdropClose();
+      }}
+      label={title}
+      trigger={trigger}
+      closeOnBackdrop
+    >
       <h2 className="text-[18px] font-semibold text-erp-ink">
         {title}
         {mode === "edit" && (

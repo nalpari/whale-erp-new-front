@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { homeOf, isPlatformRole, isPublicPath } from "@/lib/auth-routes";
+import { homeOf, isPlatformRole, isPublicPath, redirectsSignedIn } from "@/lib/auth-routes";
 import { BP_HEADER, bpRouteOf, stripBp } from "@/lib/bp-path";
 import { answersWith401, TOO_LARGE, tooLarge } from "@/lib/paper-request";
 import {
@@ -31,7 +31,8 @@ export async function proxy(req: NextRequest) {
   if (tooLarge(stripBp(pathname), req.headers.get("content-length"), req.headers.get("transfer-encoding"))) return NextResponse.json({ error: TOO_LARGE, messages: [TOO_LARGE] }, { status: 413 });
 
   if (isPublicPath(pathname)) {
-    if ((pathname === "/login" || pathname === "/find") && req.method === "GET" && session) return NextResponse.redirect(new URL(homeOf(session.roleTypeCode), req.url));
+    // 로그인한 채 로그인 전 홈 · 로그인 · 찾기에 오면 자기 홈으로 보낸다 — 조건은 redirectsSignedIn(auth-routes.ts).
+    if (session && redirectsSignedIn(pathname, req.method, session)) return NextResponse.redirect(new URL(homeOf(session.roleTypeCode), req.url));
     // 공개 화면도 들어온 탭 BP 헤더는 버린다 — 헤더는 늘 proxy 가 주소에서 정한 값이다.
     req.headers.delete(BP_HEADER);
     return NextResponse.next({ request: { headers: req.headers } });
