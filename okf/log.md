@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) · [근무스케줄 관리 화면 (구현)](/screens/work-schedules.md) — 직원 상세를 데모 detail.html 에 맞췄다(2026-10-22 노영주): 근무스케줄 칸을 한 주 보기 + 주 넘김 + 주 선택 달력(popover, 몇째 주는 목요일 기준, 주소 `week`)으로 되돌리고 WHALEERP-185 기간 · 건수 · 쪽 번호를 걷었다(`…/summary/work-schedules`, 「관리」는 `&week=`). TO-DO 칸은 열 이름 줄 없는 표(제목 · 배정 · 상태 색 글자), 급여명세서 칸은 급여 기간 → 명세서 상세 링크 · 「관리」 `/payslips`(MN000009 조회 권한). 공통 `DataTable` 에 `headVariant`(plain · none)를 더해 상세 표에만 켰고, 요약 줄 아래 모서리를 데모처럼 각지게 했다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 도입문의 리뷰 반영: 시간 초과는 「이미 접수되었을 수 있다」로, 영문 400 은 입력 확인 문구로 안내하고, 빈칸만 적은 칸 · 전화번호 형식을 확인 창 전에 잡는다. 폼 부품 이름을 도입문의 `lead`(`LeadForm` · `lead-form.tsx`, 링크 키 `leads`)로 바꿨다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [홈](/home.md) — 비로그인 도입문의 실제 화면 `/leads`(#297 · #298)를 열었다. 디자인 샘플과 한 폼을 쓰고 선택지는 공개 공통코드 · enum 에서, 접수는 서버 액션으로 api `POST /leads` 에 보낸다. 확인 창 · 완료 창, 실패 때 내용 유지와 안내, 업종 기타면 아래에 직접 입력. 「도입문의」 링크와 공개 경로를 `/inquiry` 에서 `/leads` 로 옮겼다.
 * **Update**: [근무스케줄 관리 화면 (구현)](/screens/work-schedules.md) — 직원 상세 근무스케줄 칸 설명을 맞췄다: `GET /staff-members/:id/work-schedules`(WHALEERP-185)로 받고, 「관리」는 주 없이 `/work-schedules?store=<근무지>`(이번 주)로 연다(front #99 리뷰).
