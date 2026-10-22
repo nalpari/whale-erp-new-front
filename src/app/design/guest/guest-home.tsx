@@ -1,8 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Fragment } from "react";
+import { Fragment, type ReactNode } from "react";
+import type { components } from "@/lib/api-types.generated";
 import type { GuestRoutes } from "./guest-routes";
 import { Arrow, FaqItem, GuestButton, GuestPage, ICON_GRADIENT, SectionTitle, TitleRow, TRIM } from "./guest-ui";
+import { Badges, dotDate } from "./notices/notice-views";
 import { BUTTON_MOTION, HOVER } from "./theme";
 
 // Figma 「로그인전_Main」(8QSOuwFFBfCbFWR6RBUlps · 1:2). 1920 폭 데스크톱 시안이다.
@@ -100,7 +102,7 @@ function Billboard({ routes }: { routes: GuestRoutes }) {
           </div>
           <div className="flex gap-[8px]">
             <Link
-              href="#"
+              href={routes.signUp}
               className={`flex h-[48px] w-[176px] items-center justify-center gap-[12px] rounded-[6px] border border-transparent bg-[rgba(58,86,112,0.9)] text-[18px] leading-[1.5] font-semibold text-white hover:border-guest-navy hover:bg-white hover:text-guest-navy ${BUTTON_MOTION}`}
             >
               무료로 시작하기
@@ -328,14 +330,14 @@ const STEPS = [
 ];
 
 
-function Steps() {
+function Steps({ routes }: { routes: GuestRoutes }) {
   return (
     <section className="flex flex-col gap-[60px] px-[80px] py-[120px]">
       <TitleRow
         light="시작은"
         bold="세 단계면 충분합니다"
         action={
-          <GuestButton tone="navy" arrow>
+          <GuestButton tone="navy" href={routes.signUp} arrow>
             가입하고 시작하기
           </GuestButton>
         }
@@ -449,25 +451,39 @@ function Plans({ routes }: { routes: GuestRoutes }) {
   );
 }
 
-// 시안에 답변이 있는 질문은 둘째 하나뿐이다. 나머지 답변은 기획이 정하면 채운다.
-const FAQS = [
-  { q: "사업자등록번호 없이도 가입할 수 있나요?", a: null },
-  {
-    q: "가입하면 바로 쓸 수 있는 범위가 있나요?",
-    a: "네, 가입할 때는 필요하지 않습니다. 다만 매장을 등록하거나, 직원을 고용하거나, 세금계산서 발행이 필요한 부가서비스를 구독할 때는 사업자등록번호를 입력해야 합니다.",
-  },
-  { q: "직원도 앱을 설치해야 하나요?", a: null },
-  { q: "부가서비스는 중간에 해지할 수 있나요?", a: null },
-];
+type NoticePost = Pick<components["schemas"]["PublishedPostResponseDto"], "postId" | "title" | "isPinned" | "noticeType" | "postedDate">;
 
-const NEWS = [
-  { badge: { text: "안내", className: "bg-[#f2f6ff] text-[#366fe3]" }, title: "WHALE ERP 1차 서비스 오픈 안내" },
-  { badge: { text: "점검", className: "bg-[#e7f7f1] text-[#11b076]" }, title: "정기 시스템 점검 (11/05 02:00~04:00)" },
-  { badge: null, title: "개인정보처리방침 개정 안내" },
-  { badge: null, title: "Pick up Order 서비스 출시 예정 안내" },
-  { badge: null, title: "직원 전용 앱 출퇴근 QR 기능 안내" },
-  { badge: null, title: "추석 연휴 고객센터 운영 안내" },
-];
+/** 메인 「가장 많이 묻는 질문」 목록. a 가 있는 질문은 펼쳐 둔다(시안). */
+export function HomeFaqList({ items }: { items: { key: string | number; q: string; a: string | null; open?: boolean }[] }) {
+  if (!items.length) return <p className="py-[18px] text-[17px] text-guest-sub">등록된 질문이 없습니다.</p>;
+  return (
+    <div className="flex flex-col gap-[8px]">
+      {items.map((faq) => (
+        <FaqItem key={faq.key} q={faq.q} open={faq.open}>
+          {faq.a}
+        </FaqItem>
+      ))}
+    </div>
+  );
+}
+
+/** 메인 「새로운 소식」 목록. 배지 · 날짜 표기는 공지사항 목록(notice-views.tsx)과 같다. */
+export function HomeNewsList({ items, typeLabel, hrefOf }: { items: NoticePost[]; typeLabel: (type: NonNullable<NoticePost["noticeType"]>) => string; hrefOf: (postId: number) => string }) {
+  if (!items.length) return <p className="border-t border-guest-list-line py-[18px] text-[17px] text-guest-sub">등록된 공지사항이 없습니다.</p>;
+  return (
+    <ul className="border-t border-guest-list-line text-[17px] leading-[1.5]">
+      {items.map((n) => (
+        <li key={n.postId} className="flex items-center gap-[8px] border-b border-guest-list-line py-[18px] last:border-b-0">
+          <Badges post={n} typeLabel={typeLabel} />
+          <Link href={hrefOf(n.postId)} className={`flex-1 truncate text-guest-ink hover:text-guest-navy ${HOVER}`}>
+            {n.title}
+          </Link>
+          <span className="text-guest-sub">{dotDate(n.postedDate)}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 function BoardHead({ text, action, href }: { text: string; action: string; href: string }) {
   return (
@@ -480,57 +496,44 @@ function BoardHead({ text, action, href }: { text: string; action: string; href:
   );
 }
 
-function Boards({ routes }: { routes: GuestRoutes }) {
+// 받지 못한 쪽(null)은 칸째 감춘다(#289) — 남은 하나가 폭을 다 쓰고, 둘 다 없으면 이 구역이 없다.
+function Boards({ routes, faq, news }: { routes: GuestRoutes; faq: ReactNode | null; news: ReactNode | null }) {
+  if (!faq && !news) return null;
   return (
-    <section className="grid grid-cols-2 gap-[16px] px-[80px]">
-      <div className="flex flex-col gap-[60px]">
-        <SectionTitle light="시작 전에," bold="가장 많이 묻는 질문" />
-        <div className="flex flex-col gap-[34px] rounded-[6px] border border-guest-line bg-white p-[34px]">
-          <BoardHead text="궁금한 점이 더 있다면 언제든 편하게 물어보세요." action="전체 질문 보기" href={`${routes.notices}#faq`} />
-          <div className="flex flex-col gap-[8px]">
-            {FAQS.map((faq) => (
-              <FaqItem key={faq.q} q={faq.q} open={faq.a !== null}>
-                {faq.a}
-              </FaqItem>
-            ))}
+    <section className={`grid gap-[16px] px-[80px] ${faq && news ? "grid-cols-2" : "grid-cols-1"}`}>
+      {faq && (
+        <div className="flex flex-col gap-[60px]">
+          <SectionTitle light="시작 전에," bold="가장 많이 묻는 질문" />
+          <div className="flex flex-col gap-[34px] rounded-[6px] border border-guest-line bg-white p-[34px]">
+            <BoardHead text="궁금한 점이 더 있다면 언제든 편하게 물어보세요." action="전체 질문 보기" href={`${routes.notices}#faq`} />
+            {faq}
           </div>
         </div>
-      </div>
-      <div className="flex flex-col gap-[60px]">
-        <SectionTitle light="Whale ERP" bold="새로운 소식 안내" />
-        <div className="flex flex-1 flex-col gap-[32px] rounded-[6px] border border-guest-line bg-white p-[34px]">
-          <BoardHead text="Whale ERP의 새로운 소식을 알려 드립니다." action="전체 보기" href={routes.notices} />
-          <ul className="border-t border-guest-list-line text-[17px] leading-[1.5]">
-            {NEWS.map((n) => (
-              <li key={n.title} className="flex items-center gap-[8px] border-b border-guest-list-line py-[18px] last:border-b-0">
-                {n.badge && (
-                  <span className={`flex h-[30px] items-center rounded-[3px] px-[10px] text-[15px] leading-[1.4] font-semibold ${n.badge.className}`}>
-                    {n.badge.text}
-                  </span>
-                )}
-                <Link href="#" className={`flex-1 text-guest-ink hover:text-guest-navy ${HOVER}`}>
-                  {n.title}
-                </Link>
-                <span className="text-guest-sub">2026.10.30</span>
-              </li>
-            ))}
-          </ul>
+      )}
+      {news && (
+        <div className="flex flex-col gap-[60px]">
+          <SectionTitle light="Whale ERP" bold="새로운 소식 안내" />
+          <div className="flex flex-1 flex-col gap-[32px] rounded-[6px] border border-guest-line bg-white p-[34px]">
+            <BoardHead text="Whale ERP의 새로운 소식을 알려 드립니다." action="전체 보기" href={routes.notices} />
+            {news}
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }
 
-export function GuestHome({ routes }: { routes: GuestRoutes }) {
+/** faq · news 는 「가장 많이 묻는 질문」 · 「새로운 소식」 칸에 넣을 목록(HomeFaqList · HomeNewsList)이다. 실제 홈은 api 에서, 샘플은 예시로 채운다. */
+export function GuestHome({ routes, faq, news }: { routes: GuestRoutes; faq: ReactNode | null; news: ReactNode | null }) {
   return (
     <GuestPage>
       <Billboard routes={routes} />
       <Features routes={routes} />
       <Personas routes={routes} />
       <Connections />
-      <Steps />
+      <Steps routes={routes} />
       <Plans routes={routes} />
-      <Boards routes={routes} />
+      <Boards routes={routes} faq={faq} news={news} />
     </GuestPage>
   );
 }

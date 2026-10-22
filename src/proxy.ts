@@ -31,7 +31,8 @@ export async function proxy(req: NextRequest) {
   if (tooLarge(stripBp(pathname), req.headers.get("content-length"), req.headers.get("transfer-encoding"))) return NextResponse.json({ error: TOO_LARGE, messages: [TOO_LARGE] }, { status: 413 });
 
   if (isPublicPath(pathname)) {
-    if ((pathname === "/login" || pathname === "/find") && req.method === "GET" && session) return NextResponse.redirect(new URL(homeOf(session.roleTypeCode), req.url));
+    // 로그인한 채 로그인 전 홈 · 로그인 · 찾기에 오면 자기 홈으로 보낸다(홈은 #289). 다른 로그인 전 화면은 머리말에 「홈으로」를 두고 그대로 보인다.
+    if ((pathname === "/" || pathname === "/login" || pathname === "/find") && req.method === "GET" && session) return NextResponse.redirect(new URL(homeOf(session.roleTypeCode), req.url));
     // 공개 화면도 들어온 탭 BP 헤더는 버린다 — 헤더는 늘 proxy 가 주소에서 정한 값이다.
     req.headers.delete(BP_HEADER);
     return NextResponse.next({ request: { headers: req.headers } });

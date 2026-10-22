@@ -27,7 +27,7 @@ function Badge({ tone, children }: { tone: keyof typeof BADGE_TONE; children: Re
   return <span className={`flex h-[30px] shrink-0 items-center rounded-[3px] px-[10px] text-[15px] leading-[1.4] font-semibold ${BADGE_TONE[tone]}`}>{children}</span>;
 }
 
-function Badges({ post, typeLabel }: { post: Pick<Post, "isPinned" | "noticeType">; typeLabel: (type: NoticeType) => string }) {
+export function Badges({ post, typeLabel }: { post: Pick<Post, "isPinned" | "noticeType">; typeLabel: (type: NoticeType) => string }) {
   return (
     <>
       {post.isPinned && <Badge tone="PINNED">고정</Badge>}
@@ -37,7 +37,7 @@ function Badges({ post, typeLabel }: { post: Pick<Post, "isPinned" | "noticeType
 }
 
 /** api 게시일(2026-09-05)을 시안 표기(2026.09.05)로. */
-const dotDate = (date: string) => date.replaceAll("-", ".");
+export const dotDate = (date: string) => date.replaceAll("-", ".");
 
 /** 빈 상태 · 불러오지 못함 — 목록 자리에 문장 하나와 버튼. */
 export function GuestNote({ children, action }: { children: ReactNode; action?: ReactNode }) {
