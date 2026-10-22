@@ -341,3 +341,7 @@ test("api 오류 나누기 — 국세청 문장이 여럿이어도 공통 문구
 test("api 오류 나누기 — 저장 때 번호 중복 409 는 번호 칸에 공통 문구로", () => {
   assert.deepEqual(storeServerErrors(409, ["이미 미운영 · 운영 중인 다른 점포가 쓰는 사업자등록번호입니다"]).fields, { bizNumber: "이미 등록된 사업자등록번호입니다." });
 });
+
+test("api 오류 칸 — 운영 조건 문구는 조건 이름에 「진위확인」이 있어도 점포상태 칸", () => {
+  assert.equal(storeServerErrorField(400, "운영으로 바꾸려면 다음이 필요합니다 — 사업자 진위확인, 좌표(위도 · 경도)"), "storeStatus");
+});

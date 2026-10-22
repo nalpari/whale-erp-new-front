@@ -378,10 +378,11 @@ export function toUpdateStoreInput(f: StoreForm, updatedAt: string): UpdateStore
  * 저장 때 서버가 다시 한 국세청 확인의 실패(400 불일치 · 503 연동)는 인증 상자의 버튼 위 한 줄(bizVerify)이다.
  */
 export function storeServerErrorField(status: number | undefined, message: string): StoreFormField | null {
+  // 운영 조건 미충족 — 문구에 「좌표(위도 · 경도)」나 「사업자 진위확인」 같은 조건 이름이 들어 있어도 점포상태 칸의 것이다.
+  // 국세청 재확인 실패 규칙보다 먼저 본다(조건 이름은 /enums 라벨이라 「진위확인」을 쓸 수 있다)
+  if (status === 400 && message.includes("운영으로 바꾸려면")) return "storeStatus";
   if ((status === 400 || status === 503) && (message.includes("국세청") || message.includes("진위확인"))) return "bizVerify";
   if (status !== 400 && status !== 409) return null;
-  // 운영 조건 미충족 — 문구에 「좌표(위도 · 경도)」가 들어 있어도 점포상태 칸의 것이다
-  if (message.includes("운영으로 바꾸려면")) return "storeStatus";
   if (message.includes("사업자등록번호")) return "bizNumber";
   if (message.includes("대표자명")) return "ceoName";
   if (message.includes("개업일자")) return "openDate";
