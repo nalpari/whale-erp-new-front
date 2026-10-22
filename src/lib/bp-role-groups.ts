@@ -3,12 +3,12 @@
 // api 가 동작마다 판정한다 — 화면은 api 가 준 creatableRoleTypeCode · isEditable · 칸별 editable 로 미리 숨기거나 흐리게만 한다.
 // 모든 요청에 이 탭의 BP 를 X-Bp-Code-Id 헤더로 싣는다(화면 주소 /bp/{id}, authHeaders) — 플랫폼 사용자는 고른 BP 를 조회만 하고,
 // BP 쪽 사용자는 자기 BP 다(다른 BP 면 api 가 403).
-// 미리보기 · 삭제 후보는 플랫폼 권한과 같은 모양이라 그 타입을 쓴다.
 import type { components } from "./api-types.generated";
 import { authHeaders, request } from "./api";
 import type { DeletionCandidates, RevocationPreview, RoleGroupMenuCells } from "./platform-role-groups";
 
-// 요청 · 응답 모양은 api openapi 에서 생성한 타입(pnpm openapi:types)이다. 등록 · 수정 · 삭제 · 메뉴 저장 본문은 플랫폼 권한과 같은 DTO 다.
+// 요청 · 응답 모양은 api openapi 에서 생성한 타입(pnpm openapi:types)이다. 목록 · 상세 · 메뉴 트리만 BP 전용 DTO 이고,
+// 등록 · 수정 · 삭제 · 메뉴 저장 본문과 메뉴 칸 · 미리보기 · 삭제 후보는 플랫폼 권한과 같은 DTO 다.
 type Schemas = components["schemas"];
 export type BpRoleGroup = Schemas["BpRoleGroupSummaryResponseDto"];
 export type BpRoleGroupList = Schemas["BpRoleGroupListResponseDto"];
