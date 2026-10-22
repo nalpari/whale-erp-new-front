@@ -15,6 +15,7 @@ import {
   sizeLabel,
   validatePost,
   draftView,
+  pageWindow,
   type PostForm,
 } from "./community-view.ts";
 
@@ -168,4 +169,11 @@ test("체크박스 필터 — 여러 값을 받고, 모르는 값 · 겹친 값�
   assert.deepEqual(parseInquiryQuery({ answerStatus: ["ANSWERED", "WAITING"] }).answerStatus, ["WAITING", "ANSWERED"]);
   assert.deepEqual(parseSupportFaqQuery({ faqCategoryCode: [" ACCOUNT ", "", "ACCOUNT", "B".repeat(21), "BILLING"] }).faqCategoryCode, ["ACCOUNT", "BILLING"]);
   assert.deepEqual(parseSupportFaqQuery({}).faqCategoryCode, []);
+});
+
+test("pageWindow — 10개 묶음과 앞 · 뒤 묶음", () => {
+  assert.deepEqual(pageWindow(1, 0, 20), { pages: [1], prev: null, next: null });
+  assert.deepEqual(pageWindow(3, 45, 20), { pages: [1, 2, 3], prev: null, next: null });
+  assert.deepEqual(pageWindow(12, 1000, 20), { pages: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20], prev: 10, next: 21 });
+  assert.deepEqual(pageWindow(99, 45, 20), { pages: [1, 2, 3], prev: null, next: null });
 });
