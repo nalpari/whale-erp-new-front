@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
 import { Badge, DetailTable, DetailValues, Tag, type DetailRow } from "@/components/common";
-import { ApiError, getEnum } from "@/lib/api";
+import { getEnum } from "@/lib/api";
 import { formatDateTime, formatPhone } from "@/lib/format";
 import { storeImageFailureText } from "@/lib/store-image";
 import { getStore } from "@/lib/stores";
 import { CodeLabel } from "@/components/site/code-label";
 import { formatBizNumber, hasStoreCoordinates } from "@/lib/store-view";
-import { StoreCardBody, StoreFrame } from "../store-frame";
+import { StoreCardBody, StoreDenied, StoreFrame, storeDenied } from "../store-frame";
 import { StoreFloorLabel } from "../store-floor-label";
 import { NoticeBand, StoreImage, StoreStatusBadge } from "../store-parts";
 import { backHrefOf } from "../stores-query";
@@ -52,15 +52,13 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
 
   // 운영 조건 한글(GET /enums/StoreOperationRequirement)을 못 받아도 상세는 연다 — 문구가 값 그대로 보일 뿐이다
   const [store, requirementLabels] = await Promise.all([
-    getStore(storeId),
+    getStore(storeId).catch(storeDenied(storeId)),
     getEnum("StoreOperationRequirement").catch((error: unknown) => {
       console.error("운영 조건 한글 조회 실패", storeId, error);
       return [];
     }),
-  ]).catch((error: unknown) => {
-    if (error instanceof ApiError && error.status === 404) notFound();
-    throw error;
-  });
+  ]);
+  if ("denied" in store) return <StoreDenied message={store.denied} />;
 
   const b = store.business;
   // 대표 이미지만 표에 두지 않고 제목 줄의 머리 카드로 옮겼다(2026-10-19 점검 — 실사용자 확인, 디자인 데모

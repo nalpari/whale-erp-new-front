@@ -4,13 +4,15 @@ import { labelOf } from "@/lib/enums";
 import { formatDateTime } from "@/lib/format";
 import { formatAmount } from "@/lib/payslips";
 import { kstToday } from "@/lib/staff-members";
+import { MENU_CODE } from "@/lib/menus";
 import { getStaffMemberPayslipSummary, getStaffMemberTodoSummary, getStaffMemberWeekSchedule } from "@/lib/staff-members-api";
 import { getStaffMemberTodos } from "@/lib/todos-api";
 import { STATUS_STYLE } from "../../payslips/payslip-row";
-import { dueText, statusCells } from "../../todos/todo-row";
+import { endLabel } from "../../work-schedules/work-schedule-view";
 import { CellView } from "../staff-table";
 import { AreaFailure, BoxMessage } from "./detail-box";
 import { RetryButton } from "./retry-button";
+import { MenuTextLink } from "./manage-link";
 import { loadArea, loadLabels } from "./summary-load";
 import { TodoTitleLink } from "./todo-links";
 import {
@@ -21,17 +23,20 @@ import {
   todoFootText,
   todoHistoryText,
   payPeriodText,
+  todoAssignText,
+  todoStatusMark,
   workDateText,
-  type WeekSchedule,
+  type TodoItem,
+  type WeekScheduleItem,
 } from "./summary-view";
 
 // 직원 상세 오른쪽 영역(WHALEERP-184, api #183 GET /staff-members/:id/summary/…). 영역마다 Suspense 안의 서버 컴포넌트라
 // 기본 정보 · 다른 영역은 먼저 그려지고, 한 영역을 못 받으면 그 영역에만 안내를 그리고 throw 하지 않는다.
 
-/** 표 아래 요약 한 줄 — 데모 detail.mjs 의 foot(오른쪽 끝에 이름 + 값) */
+/** 표 아래 요약 한 줄 — 데모 detail.mjs 의 foot(오른쪽 끝에 이름 + 값, 모서리를 둥글리지 않는다) */
 function Foot({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="flex h-[46px] items-center justify-end gap-[12px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-erp-thead-bg px-[12px] text-[14px]">
+    <div className="flex h-[46px] items-center justify-end gap-[12px] border-x border-b border-erp-thead-line bg-erp-thead-bg px-[12px] text-[14px]">
       <span className="text-erp-thead-text">{label}</span>
       <b className="font-semibold text-erp-ink">{children}</b>
     </div>
@@ -43,31 +48,31 @@ function FootMessage({ children, alert = false }: { children: ReactNode; alert?:
   return (
     <div
       role={alert ? "alert" : undefined}
-      className="flex min-h-[46px] items-center justify-end gap-[12px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-erp-thead-bg px-[12px] py-[6px] text-[14px] text-erp-muted"
+      className="flex min-h-[46px] items-center justify-end gap-[12px] border-x border-b border-erp-thead-line bg-erp-thead-bg px-[12px] py-[6px] text-[14px] text-erp-muted"
     >
       {children}
     </div>
   );
 }
 
-type ScheduleRow = WeekSchedule["items"][number];
-
 /**
- * 「근무스케줄」 영역 — 한 주(월~일)의 근무스케줄 표 + 주간 근무시간 합계. 주 넘김은 영역 머리(page.tsx)가 주소의 weekStart 로 한다.
- * 표 모양은 데모 그대로의 네 칸이다. 근무스케줄 화면과 맞춘 표 모양은 WHALEERP-185 에서 다시 본다.
+ * 「근무스케줄」 영역 — 한 주(월~일)의 근무스케줄 표(api 순서 = 시작 일시 순) + 주간 근무시간 합계(데모 detail.mjs). 주 넘김은 영역 머리(week-nav.tsx)가
+ * 주소의 week 로 한다. 빈 주에도 합계 0.0h 를 보인다(2026-10-22 노영주).
  */
-export async function ScheduleBox({ staffMemberId, weekStart }: { staffMemberId: number; weekStart: string | null }) {
+export async function ScheduleBox({ staffMemberId, weekStart }: { staffMemberId: number; weekStart: string }) {
   const result = await loadArea("근무스케줄 영역", () => getStaffMemberWeekSchedule(staffMemberId, weekStart));
   if (result.kind !== "ok") return <AreaFailure kind={result.kind} subject="근무스케줄을" />;
   const { items, totalWorkMinutes } = result.data;
   return (
     <>
-      <DataTable<ScheduleRow>
+      <DataTable<WeekScheduleItem>
+        headVariant="plain"
         columns={[
           { header: "날짜", cell: (r) => workDateText(r.workDate) },
           { header: "근무지", cell: (r) => <span className="block truncate">{r.storeName}</span> },
           { header: "시작", cell: (r) => r.startTime },
-          { header: "종료", cell: (r) => r.endTime },
+          // 근무스케줄 화면과 같은 글자 — 다음 날이면 「익일 02:00」, 다음 날 0시면 「24:00」
+          { header: "종료", cell: (r) => endLabel(r.startTime, r.endTime) },
         ]}
         rows={items}
         rowKey={(r) => r.workScheduleId}
@@ -92,9 +97,18 @@ export async function PayslipBox({ staffMemberId }: { staffMemberId: number }) {
   return (
     <>
       <DataTable<PayslipRow>
+        headVariant="plain"
         columns={[
           { header: "구분", width: "w-[130px]", cell: (r) => r.label },
-          { header: "급여 기간", cell: (r) => payPeriodText(r.payslip) },
+          // 데모의 지급월 링크 — 명세서 상세로. 급여명세서 관리 조회 권한이 없으면 글자만
+          {
+            header: "급여 기간",
+            cell: (r) => (
+              <MenuTextLink menuCode={MENU_CODE.payslips} href={`/payslips/${r.payslip.payslipId}`}>
+                {payPeriodText(r.payslip)}
+              </MenuTextLink>
+            ),
+          },
           { header: "지급", width: "w-[110px]", cell: (r) => formatAmount(r.payslip.grossPayAmount) },
           { header: "공제", width: "w-[100px]", cell: (r) => formatAmount(r.payslip.totalDeductionAmount) },
           { header: "실지급액", width: "w-[110px]", cell: (r) => <b className="font-semibold">{formatAmount(r.payslip.netPayAmount)}</b> },
@@ -116,7 +130,6 @@ export async function PayslipBox({ staffMemberId }: { staffMemberId: number }) {
 /** 직원 상세 TO-DO 영역에 보일 건수. api 순서(미완료 긴급 → 미완료 → 완료)의 앞쪽이다 */
 const STAFF_TODO_COUNT = 5;
 
-type TodoListItem = Awaited<ReturnType<typeof getStaffMemberTodos>>["items"][number];
 type TodoSummary = Awaited<ReturnType<typeof getStaffMemberTodoSummary>>;
 
 /**
@@ -126,23 +139,26 @@ type TodoSummary = Awaited<ReturnType<typeof getStaffMemberTodoSummary>>;
  * 그 밖에는 목록과 요약이 따로 실패한다(각자 그 자리에 다시 하기).
  */
 export async function TodoBox({ staffMemberId }: { staffMemberId: number }) {
-  const [summary, list, statuses, actors] = await Promise.all([
+  const [summary, list, statuses, actors, assigneeTypes, executionModes] = await Promise.all([
     loadArea("TO-DO 영역 요약", () => getStaffMemberTodoSummary(staffMemberId)),
     loadArea("TO-DO 목록", () => getStaffMemberTodos(staffMemberId, STAFF_TODO_COUNT)),
     loadLabels("TodoStatus"),
     loadLabels("StatusChangeActor"),
+    loadLabels("TodoAssigneeType"),
+    loadLabels("TodoExecutionMode"),
   ]);
   if (isAreaForbidden(summary, list)) return <AreaFailure kind="forbidden" subject="TO-DO 를" />;
-  const statusLabel = statuses ? (status: string) => labelOf(statuses, status) : null;
+  const labeler = (labels: Awaited<ReturnType<typeof loadLabels>>) => (labels ? (value: string) => labelOf(labels, value) : null);
+  const statusLabel = labeler(statuses);
   return (
     <>
       {list.kind === "ok" ? (
-        <TodoList items={list.data.items} statuses={statuses} />
+        <TodoList items={list.data.items} statusLabel={statusLabel} assigneeLabel={labeler(assigneeTypes)} modeLabel={labeler(executionModes)} />
       ) : (
         <AreaFailure kind={list.kind} subject="TO-DO 를" />
       )}
       {summary.kind === "ok" ? (
-        <TodoSummaryFoot summary={summary.data} statusLabel={statusLabel} actorLabel={actors ? (actor: string) => labelOf(actors, actor) : null} />
+        <TodoSummaryFoot summary={summary.data} statusLabel={statusLabel} actorLabel={labeler(actors)} />
       ) : (
         <FootMessage alert>
           TO-DO 건수를 불러오지 못했습니다.
@@ -153,23 +169,42 @@ export async function TodoBox({ staffMemberId }: { staffMemberId: number }) {
   );
 }
 
-/** TO-DO 목록 — 제목 · 긴급 · 수행 예정 · 상태. 상태 한글을 받지 못했으면 「-」 */
-function TodoList({ items, statuses }: { items: TodoListItem[]; statuses: Parameters<typeof statusCells>[1] | null }) {
+type Labeler = ((value: string) => string) | null;
+
+/**
+ * TO-DO 목록 — 데모 detail.mjs 처럼 열 이름 줄 없는 표: 제목(+ 긴급) · 배정(220px) · 상태(110px, 색 글자). 한글을 받지 못한 조각은 빠지거나
+ * 「-」다(영문 값을 보이지 않는다).
+ */
+function TodoList({ items, statusLabel, assigneeLabel, modeLabel }: { items: TodoItem[]; statusLabel: Labeler; assigneeLabel: Labeler; modeLabel: Labeler }) {
   if (items.length === 0) return <BoxMessage>배정된 TO-DO 가 없습니다.</BoxMessage>;
   const today = kstToday();
   return (
-    <ul className="rounded-b-[2px] border border-erp-thead-line bg-white text-[14px]">
-      {items.map((t) => (
-        <li key={t.todoId} className="flex h-[46px] items-center gap-[10px] border-b border-erp-thead-line px-[12px] last:border-b-0">
-          <TodoTitleLink todoId={t.todoId} title={t.title} />
-          {t.isUrgent && <Badge tone="off">긴급</Badge>}
-          <span className="w-[90px] shrink-0 text-center text-erp-label">{dueText(t.dueDate, t.dueTime, today)}</span>
-          <span className="flex w-[110px] shrink-0 justify-center">
-            {statuses ? <CellView cell={statusCells({ ...t, todoCount: 1, doneCount: 0 }, statuses)[0]} /> : "-"}
-          </span>
-        </li>
-      ))}
-    </ul>
+    <DataTable<TodoItem>
+      headVariant="none"
+      columns={[
+        {
+          header: "제목",
+          align: "left",
+          cell: (t) => (
+            <span className="flex min-w-0 items-center gap-[10px]">
+              <TodoTitleLink todoId={t.todoId} title={t.title} />
+              {t.isUrgent && <Badge tone="off">긴급</Badge>}
+            </span>
+          ),
+        },
+        { header: "배정", width: "w-[220px]", cell: (t) => <span className="block truncate">{todoAssignText(t, assigneeLabel, modeLabel, today)}</span> },
+        {
+          header: "상태",
+          width: "w-[110px]",
+          cell: (t) => {
+            const mark = todoStatusMark(t, statusLabel, today);
+            return mark ? <CellView cell={mark} /> : "-";
+          },
+        },
+      ]}
+      rows={items}
+      rowKey={(t) => t.todoId}
+    />
   );
 }
 

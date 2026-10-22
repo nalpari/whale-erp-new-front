@@ -1,23 +1,14 @@
 import { cookies, headers } from "next/headers";
-import { BP_HEADER } from "./bp-path";
+import { ApiError } from "./api-error";
+import { BP_HEADER, bpPath } from "./bp-path";
 import type { EnumValue } from "./enums";
 import { parseSession, SESSION_COOKIE, type Session } from "./session";
 
 // 세션 모양·쿠키 헬퍼는 next/headers 없이 proxy 도 쓰도록 session.ts 에 있다.
 export * from "./session";
 
-export class ApiError extends Error {
-  constructor(
-    readonly status: number,
-    message: string,
-    /** 검증 실패(400)의 문장 목록. 배열이 아니면 message 하나다 — 화면이 줄마다 나눠 보일 때 쓴다. */
-    readonly messages: string[] = [message],
-    /** 응답 본문 그대로. 409 의 code · 목록처럼 message 말고도 화면이 쓸 칸이 있다 */
-    readonly body: unknown = null,
-  ) {
-    super(message);
-  }
-}
+// api 오류와 거절 판정은 node --test 가 읽도록 api-error.ts 에 있다.
+export { ApiError, deniedMessageOf } from "./api-error";
 
 /**
  * whale-erp-api 주소. 모듈 로드 시점이 아니라 호출 시점에 읽는다. 빌드할 때는
@@ -111,9 +102,24 @@ async function forwardedForHeader(): Promise<Record<string, string>> {
 
 /**
  * 이 요청의 탭 BP — proxy 가 남긴 x-bp-code-id(화면 주소 /bp/{id} 의 값, BFF 면 브라우저 bff() 가 실은 숫자)를 X-Bp-Code-Id 로 api 에 싣는다.
- * 주소에 BP 가 없는 화면은 비고, api 는 소속 BP 로 동작한다. 판정은 api 가 한다.
+ * 주소에 BP 가 없는 화면은 비운다 — BP · 가맹 계정은 api 가 소속 BP 로 보고, 플랫폼 계정은 BP 가 필요한 경로(BP 권한 그룹 · 점포 탭 BP
+ * 전환 뒤의 점포)에서 400 이다. 판정은 api 가 한다.
  */
 export async function bpHeader(): Promise<Record<string, string>> {
   const bp = (await headers()).get(BP_HEADER);
   return bp && /^\d{1,9}$/.test(bp) ? { "X-Bp-Code-Id": bp } : {};
+}
+
+/**
+ * 서버 컴포넌트가 그리는 화면 주소를 만드는 함수. 이 요청이 탭 BP 주소(/bp/{id}/...)로 왔으면 옛 경로(폴더) path 에 같은 BP 를 붙인다.
+ * 주소에 BP 가 없으면 그대로 두고, 옮긴 화면이면 SessionGate 가 탭 BP 주소로 보낸다. 링크를 여럿 그리는 화면(점포 목록)이 한 번 받아 쓴다.
+ */
+export async function screenPath(): Promise<(path: string) => string> {
+  const bp = (await bpHeader())["X-Bp-Code-Id"];
+  return (path) => (bp ? bpPath(Number(bp), path) : path);
+}
+
+/** 서버 화면이 그리는 링크(다시 시도 · 목록) 하나. 탭 BP 주소로 들어온 요청이면 같은 BP 를 붙인다 — 옛 경로로 가 SessionGate 가 한 번 더 보내지 않게. */
+export async function bpHref(path: string): Promise<string> {
+  return (await screenPath())(path);
 }

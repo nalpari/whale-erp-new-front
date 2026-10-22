@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
-import { ApiError, getEnum } from "@/lib/api";
+import { getEnum } from "@/lib/api";
 import { getStore, getStoreImageTypes } from "@/lib/stores";
-import { StoreCardBody, StoreFrame } from "../../store-frame";
+import { StoreCardBody, StoreDenied, StoreFrame, storeDenied } from "../../store-frame";
 import { StoreFormView } from "../../store-form-view";
 import { NoticeBand } from "../../store-parts";
 import { StorePermission } from "../../store-permission";
@@ -15,10 +15,7 @@ export default async function EditStorePage({ params, searchParams }: PageProps<
   if (storeId < 1) notFound();
 
   const [store, imageTypes, requirementLabels] = await Promise.all([
-    getStore(storeId).catch((error: unknown) => {
-      if (error instanceof ApiError && error.status === 404) notFound();
-      throw error;
-    }),
+    getStore(storeId).catch(storeDenied(storeId)),
     getStoreImageTypes(),
     // 운영 조건 한글(GET /enums/StoreOperationRequirement) — 못 받아도 화면은 연다, 문구가 값 그대로 보일 뿐이다
     getEnum("StoreOperationRequirement").catch((error: unknown) => {
@@ -26,6 +23,7 @@ export default async function EditStorePage({ params, searchParams }: PageProps<
       return [];
     }),
   ]);
+  if ("denied" in store) return <StoreDenied message={store.denied} />;
 
   return (
     <StoreFrame>

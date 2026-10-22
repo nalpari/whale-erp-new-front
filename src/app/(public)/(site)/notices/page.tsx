@@ -57,5 +57,5 @@ export default async function NoticesPage({ searchParams }: PageProps<"/notices"
     </div>
   );
 
-  return <NoticesScreen inquiryHref={SITE_ROUTES.inquiry} notices={noticePanel} faq={faqPanel} />;
+  return <NoticesScreen inquiryHref={SITE_ROUTES.leads} notices={noticePanel} faq={faqPanel} />;
 }

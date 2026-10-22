@@ -5,10 +5,11 @@ import { link } from "./site.mjs";
 
 // 1팀 배지는 운영(on)·미운영(off) 두 색뿐이다. 임시저장·고정처럼 상태 색이 없는 값은 옅은 회색 꼬리표로 둔다.
 const tag = (text) => `<span class="inline-block rounded-[2px] bg-erp-subtle px-[4px] py-[2px] text-center text-[14px] font-medium text-erp-ink">${text}</span>`;
-// 화면마다 왼쪽 필터 + 목록(목록 화면 기본 틀). 라디오는 필터 안에 세로로, 첫 값(전체)을 고른 채로 둔다.
-const radioGroup = (name, items) => items.map((t, i) => ui.radio(t, name, i === 0)).join("");
+// 화면마다 왼쪽 필터 + 목록(목록 화면 기본 틀).
+// 상태 필터는 다른 목록처럼 체크박스로 여러 개를 함께 고른다. 아무것도 고르지 않으면 전체다(2026-10-22 재영, #275).
+const checks = (A, items) => items.map((t) => ui.checkbox(A, t)).join("");
 const search = (A, label, placeholder) => ui.filterSection(label, ui.searchField(A, { placeholder }), { tight: true });
-const pick = (label, name, items) => ui.filterSection(label, radioGroup(name, items), { last: true });
+const pick = (A, label, items) => ui.filterSection(label, checks(A, items), { last: true });
 const pager = (A) => `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`;
 
 export function communitySections({ A, R }) {
@@ -47,21 +48,21 @@ export function communitySections({ A, R }) {
   return {
     notices: {
       // api 는 게시 상태로만 거른다(WHALEERP-332).
-      filter: ui.filterPanel(A, [pick("상태", "notice-state", ["전체", "게시", "임시저장", "비공개"])]),
+      filter: ui.filterPanel(A, [pick(A, "상태", ["게시", "임시저장", "비공개"])]),
       content:
         ui.listToolbar(12, ui.button("새 공지", { href: edit })) +
         ui.dataTable([{ header: "제목", align: "left" }, { header: "유형", width: "w-[120px]" }, STATE, { header: "최근 수정", width: "w-[200px]" }], notices) +
         pager(A),
     },
     faq: {
-      filter: ui.filterPanel(A, [pick("상태", "faq-state", ["전체", "게시", "임시저장", "비공개"])]),
+      filter: ui.filterPanel(A, [pick(A, "상태", ["게시", "임시저장", "비공개"])]),
       content:
         ui.listToolbar(18, ui.button("새 FAQ", { href: faqEdit })) +
         ui.dataTable([{ header: "질문", align: "left" }, { header: "카테고리", width: "w-[160px]" }, STATE, { header: "최근 수정", width: "w-[200px]" }], faqs) +
         pager(A),
     },
     asks: {
-      filter: ui.filterPanel(A, [search(A, "제목", "제목으로 검색"), search(A, "보낸 곳", "BP·점포 또는 이름으로 검색"), pick("상태", "ask-state", ["전체", "답변 대기", "답변 완료"])]),
+      filter: ui.filterPanel(A, [search(A, "제목", "제목으로 검색"), search(A, "보낸 곳", "BP·점포 또는 이름으로 검색"), pick(A, "상태", ["답변 대기", "답변 완료"])]),
       content:
         ui.listToolbar(7, "") +
         ui.dataTable(
@@ -72,7 +73,7 @@ export function communitySections({ A, R }) {
     },
     leads: {
       // api 는 답변 상태로만 거른다(WHALEERP-332). 답변 대기 = 접수 + 처리중.
-      filter: ui.filterPanel(A, [pick("상태", "lead-state", ["전체", "답변 대기", "답변 완료"])]),
+      filter: ui.filterPanel(A, [pick(A, "상태", ["답변 대기", "답변 완료"])]),
       content:
         ui.listToolbar(4, "") +
         ui.dataTable(

@@ -12,7 +12,7 @@ test("플랫폼 마스터·관리자는 플랫폼 홈, 나머지는 ERP 홈", ()
 });
 
 test("공개 경로만 로그인 없이 열린다 — 접두가 경로 마디와 맞아야 한다", () => {
-  for (const p of ["/", "/login", "/find", "/signup", "/inquiry", "/notices", "/store-operations", "/add-on-services", "/terms", "/design", "/design/full"]) assert.equal(isPublicPath(p), true, p);
+  for (const p of ["/", "/login", "/find", "/signup", "/leads", "/notices", "/store-operations", "/add-on-services", "/terms", "/design", "/design/full"]) assert.equal(isPublicPath(p), true, p);
   for (const p of ["/home", "/settings/admins", "/platform", "/platform/bp", "/staff-members/1"]) assert.equal(isPublicPath(p), false, p);
   // 마디 단위 비교. /loginx 는 /login 이 아니다.
   for (const p of ["/loginx", "/designer", "/signupx"]) assert.equal(isPublicPath(p), false, p);
