@@ -219,7 +219,7 @@ ${field("상호명", box(`<input name="companyName" required maxlength="50" auto
     `<div data-biz class="flex flex-col gap-[20px] rounded-[6px] border border-guest-line bg-erp-thead-bg p-[24px]">
 <div class="flex justify-end"><span data-biz-status class="text-[16px] font-medium text-[#e93737]">미인증</span></div>
 <div class="grid grid-cols-3 items-start gap-[16px]">
-${field("사업자등록번호", box(`<input name="bizRegistrationNumber" inputmode="numeric" maxlength="12" placeholder="숫자 10자리" class="${g.INPUT}">`))}
+${field("사업자등록번호", box(`<input name="bizRegistrationNumber" inputmode="numeric" placeholder="숫자 10자리" class="${g.INPUT}">`))}
 ${field("대표자명", box(`<input name="bizCeoName" maxlength="50" placeholder="대표자 이름" class="${g.INPUT}">`))}
 ${field("개업일자", box(`<input name="bizOpenDate" type="date" class="${g.INPUT} [&:placeholder-shown::-webkit-datetime-edit-fields-wrapper]:text-[#999] [&:placeholder-shown::-webkit-datetime-edit-text]:text-[#999] [&:placeholder-shown::-webkit-datetime-edit-year-field]:text-[#999] [&:placeholder-shown::-webkit-datetime-edit-month-field]:text-[#999] [&:placeholder-shown::-webkit-datetime-edit-day-field]:text-[#999]">`))}
 </div>

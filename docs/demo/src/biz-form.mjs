@@ -182,7 +182,7 @@ export const bizVerifyBox = (A, { id, values = ["", "", ""], locked = [], row = 
   const [num, ceo, open] = values;
   const lock = (k) => locked.includes(k);
   const cell = row ? "flex min-w-px flex-1 flex-col" : "flex flex-col";
-  const numField = ui.field("사업자등록번호", ui.textField({ value: num, placeholder: "숫자 10자리", maxlength: 12, inputmode: "numeric", ...(lock("num") ? { readonly: true } : {}) }));
+  const numField = ui.field("사업자등록번호", ui.textField({ value: num, placeholder: "숫자 10자리", inputmode: "numeric", ...(lock("num") ? { readonly: true } : {}) }));
   const ceoField = ui.field("대표자명", ui.textField({ value: ceo, placeholder: "대표자 이름", maxlength: 50, ...(lock("ceo") ? { readonly: true } : {}) }));
   const openField = lock("open") ? ui.field("개업일자", ui.textField({ value: open, readonly: true })) : group("개업일자", ui.dateField(A, { label: "개업일자", value: open }));
   return (

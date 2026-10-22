@@ -241,7 +241,7 @@
       bizStatus.textContent = bizVerified ? `인증 완료 · ${new Date().toISOString().slice(0, 10)}` : "미인증";
       bizStatus.className = `text-[16px] font-medium ${bizVerified ? "text-guest-navy" : "text-[#e93737]"}`;
     };
-    bizNumber.addEventListener("input", () => (bizNumber.value = bizNumber.value.replace(/[^0-9-]/g, "")));
+    bizNumber.addEventListener("input", () => (bizNumber.value = bizNumber.value.replace(/[^0-9-]/g, "").slice(0, 12)));
     for (const i of bizInputs) i.addEventListener("input", () => (showLine(""), syncBiz()));
     bizVerify.addEventListener("click", () => {
       if (bizVerified) {

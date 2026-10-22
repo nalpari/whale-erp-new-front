@@ -5,7 +5,6 @@ import { FIELD_BUTTON, INPUT, INPUT_BOX, LABEL } from "@/app/design/guest/guest-
 import {
   BIZ_CEO_NAME_MAX,
   BIZ_MESSAGE,
-  BIZ_NUMBER_INPUT_MAX,
   bizDigits,
   bizNumberInput,
   bizVerifiedLabel,
@@ -183,7 +182,9 @@ export function BizAuthSection({
       </span>
       <div key={clearCount} className="grid grid-cols-3 items-start gap-[16px]">
         <OptionalField label="사업자등록번호" message={fieldError.bizNumber} messageId={messageId("bizNumber")}>
-          {/* 숫자와 하이픈만 받는다 — 105-87-63602 처럼 하이픈을 넣어 치거나 붙여 넣어도 12자까지 들어가고, 검사 · 요청에는 숫자만 쓴다 */}
+          {/* 숫자와 하이픈만 받는다 — 105-87-63602 처럼 하이픈을 넣어 치거나 붙여 넣어도 12자까지 들어가고, 검사 · 요청에는 숫자만 쓴다.
+              maxLength 를 DOM 에 두지 않는다 — 「105 - 87 - 63602」처럼 공백이 섞인 붙여넣기가 거르기 전에 12자에서 잘려 뒤 숫자가
+              사라진다. 12자 제한은 bizNumberInput 이 거른 뒤 slice 로 건다 */}
           <span className={INPUT_BOX}>
             <input
               value={value.bizRegistrationNumber}
@@ -191,7 +192,6 @@ export function BizAuthSection({
               onBlur={() => setBizNumberTouched(true)}
               readOnly={locked}
               inputMode="numeric"
-              maxLength={BIZ_NUMBER_INPUT_MAX}
               placeholder="숫자 10자리"
               aria-invalid={invalid("bizNumber")}
               aria-describedby={describe("bizNumber")}

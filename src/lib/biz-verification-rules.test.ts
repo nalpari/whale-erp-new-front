@@ -19,6 +19,8 @@ const filled = { bizNumber: "211-87-01234", ceoName: " 남도현 ", openDate: "2
 test("bizNumberInput · bizDigits — 하이픈을 넣어 쳐도 받고, 쓸 때는 숫자만", () => {
   assert.equal(bizNumberInput("211-87-01234abc"), "211-87-01234");
   assert.equal(bizNumberInput("2118701234567"), "211870123456");
+  // 공백이 섞인 붙여넣기도 거른 뒤 자른다 — 입력칸에 maxLength 를 두지 않는 이유
+  assert.equal(bizNumberInput("105 - 87 - 63602"), "105-87-63602");
   assert.equal(bizDigits("211-87-01234"), "2118701234");
 });
 

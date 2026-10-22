@@ -6,7 +6,6 @@ import { FieldMessage } from "@/components/site/side-parts";
 import {
   BIZ_CEO_NAME_MAX,
   BIZ_MESSAGE,
-  BIZ_NUMBER_INPUT_MAX,
   bizNumberInput,
   bizVerifiedLabel,
   missingMessage,
@@ -103,12 +102,12 @@ export function BizVerificationBox({
           <Field label="사업자등록번호">
             <TextField
               value={locked.bizNumber ? (lockedDisplay.bizNumber ?? values.bizNumber) : values.bizNumber}
+              // maxLength 를 DOM 에 두지 않는다 — 공백이 섞인 붙여넣기가 거르기 전에 잘린다. 12자 제한은 bizNumberInput 이 건다
               onChange={(e) => onChange("bizNumber", bizNumberInput(e.target.value))}
               readOnly={locked.bizNumber || verifying}
               disabled={disabled}
               inputMode="numeric"
               placeholder="숫자 10자리"
-              maxLength={BIZ_NUMBER_INPUT_MAX}
               aria-invalid={invalid("bizNumber") || undefined}
               aria-describedby={describe("bizNumber")}
             />
