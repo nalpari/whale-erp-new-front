@@ -58,5 +58,8 @@ test("isBpPathScreen 은 옮긴 화면만", () => {
   assert.equal(isBpPathScreen("/stores"), true);
   assert.equal(isBpPathScreen("/bp/8/stores/3/edit"), true);
   assert.equal(isBpPathScreen("/stores-x"), false);
+  assert.equal(isBpPathScreen("/bp/8/stores-x"), false);
+  // 엑셀 중계 경로도 옮긴 화면 아래라 /bp/{id} 로 부른다
+  assert.equal(isBpPathScreen("/stores/excel"), true);
   assert.equal(isBpPathScreen("/staff-members"), false);
 });
