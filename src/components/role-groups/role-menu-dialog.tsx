@@ -7,10 +7,14 @@ import { CodeLabel } from "@/components/site/code-label";
 import { ServiceTabs } from "@/components/site/service-tabs";
 import { usePagePermission } from "@/components/site/session-gate";
 import { labelOf, type EnumValue } from "@/lib/enums";
+import type { BpRoleGroupMenuTree } from "@/lib/bp-role-groups";
 import type { RevocationPreview, RoleGroupMenuCells, RoleGroupMenuNode, RoleGroupMenuTree } from "@/lib/platform-role-groups";
 import type { ActionResult } from "@/lib/role-group-actions";
 import { aggregate, blockedReasonsOf, changedMenus, editableOf, hasRevocation, initialValues, OPS, toggle, toggleAll, type Op, type Values } from "@/lib/role-menu-grid";
 import { FailedBand, InfoBand, reasonLabel, unknownResult } from "./role-parts";
+
+// 플랫폼 · BP 트리는 권한 유형 값만 다르고 칸 모양은 같다.
+type MenuTree = RoleGroupMenuTree | BpRoleGroupMenuTree;
 
 // 권한 메뉴 등록(플랫폼 S-EFQREM · BP S-KUDELB · 데모 system/roles 메뉴등록 팝업). 880px 확인창에 서비스 탭 · 메뉴 표(조회 · 등록 · 수정 · 삭제)를 둔다.
 // 칸마다 바꿀 수 있는지와 막힌 이유는 api 메뉴 트리가 준다(본인 범위 밖 · BP 쪽 고정 권한의 플랫폼 메뉴 등, 한글은 GET /enums/PlatformRoleMenuBlockReason).
@@ -24,7 +28,7 @@ const OP_LABEL: Record<Op, string> = { read: "조회", create: "등록", update:
 /** 팝업 위쪽에 보이는 권한 — 플랫폼 · BP 목록 항목이 다 이 모양을 갖는다 */
 export type MenuDialogRole = { roleGroupId: number; roleCode: string; roleTypeCode: string; name: string };
 /** 저장(save)은 회수 미리보기(preview)와 함께만 준다 — 끈 칸이 함께 빠지는 하위 그룹 · 사용자를 확인받지 않고는 저장하지 않으므로, 미리보기 없이 저장만 주면 저장이 멈춘다. */
-export type MenuDialogActions = { load: (id: number) => Promise<ActionResult<RoleGroupMenuTree>> } & (
+export type MenuDialogActions = { load: (id: number) => Promise<ActionResult<MenuTree>> } & (
   | { preview?: never; save?: never }
   | {
       preview: (id: number, menus: RoleGroupMenuCells[]) => Promise<ActionResult<RevocationPreview>>;
@@ -75,7 +79,7 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
   const router = useRouter();
   const toast = useToast();
   const can = usePagePermission();
-  const [tree, setTree] = useState<RoleGroupMenuTree | null>(null);
+  const [tree, setTree] = useState<MenuTree | null>(null);
   const [initial, setInitial] = useState<Values>({});
   const [values, setValues] = useState<Values>({});
   const [tab, setTab] = useState<string | null>(null);
