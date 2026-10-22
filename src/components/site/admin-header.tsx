@@ -1,22 +1,22 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useEffectEvent, useState, type ReactNode } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useEffectEvent, useState, type ReactNode } from "react";
 import { GlobalHeader, ScopeSelect, ServiceLinks, useBackdropActive, UserPop, type HeaderMenu, type ScopeSelectSection, type UserPopItem } from "@/components/common";
 import { logout } from "@/app/actions";
+import { bpPath, isBpPathScreen } from "@/lib/bp-path";
 import type { ServiceCode } from "@/lib/browser-storage";
 import { findMenu, HOME, PENDING_PLATFORM_MENU } from "@/lib/menus";
 import type { AccountBp, AdminStore } from "@/lib/session";
-import { isClosedStore, openStores, pickedListHref, scopedListHref, scopeKeyOf, scopeOfKey, usesStoreScope } from "@/lib/store-scope";
+import { isClosedStore, openStores, SCOPE_PARAM, scopeFromAddress, scopeKeyOf, scopeOfKey, withScope } from "@/lib/store-scope";
 import { BpSelectDialog } from "./bp-select-dialog";
-import { useAccount, useCurrentBp, useMenus, useMyPageOpen, useMyPageTrigger, usePageMenu, useScope, useService, useStorePicks, useStores } from "./session-gate";
+import { useAccount, useCurrentBp, useMenus, useMyPageOpen, useMyPageTrigger, usePageMenu, useScope, useService, useStores } from "./session-gate";
 
 // 로그인 후 화면의 헤더 하나. 메뉴·점포·이름은 로그인 정보(SessionGate)에서 그린다.
 // 메뉴는 이 탭 서비스(useService)의 것만, 2단계까지 그린다(3단계는 헤더에 보이지 않는다, 2026-10-13).
 // 서비스마다 다른 것은 오른쪽 선택기와 서비스 바로가기의 동작이다 — 선택기는 ERP 면 점포 범위, 플랫폼이면 BP 선택기 자리(비어 있다. BP 는
 // 서비스 바로가기의 웨일ERP 로 고른다). 바로가기는 serviceTargets 참고.
-// 점포 검색 컴포넌트를 쓰는 목록 메뉴(store-scope.ts)의 링크는 점포 범위를 싣는다 — 메뉴로 들어가면 처음부터 그 점포로 검색한다.
-// 그 메뉴 안에서 사용자가 목록의 점포를 바꿨으면(store-picks) 범위 대신 그 점포를 싣는다.
+// 메뉴 링크는 점포 범위를 주소(?scope=)에 싣는다(store-scope.ts) — 점포 검색 필터가 있는 목록은 처음부터 그 범위로 검색하고, 없는 목록은 무시한다.
 // alarm 은 알림 종(NotificationBellSlot, 서버 컴포넌트)이다. 클라이언트인 이 헤더가 직접 그릴 수 없어 루트 layout 이 만들어 AdminLayout → AdminFrame 을 거쳐 넘긴다.
 export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   const account = useAccount();
@@ -26,18 +26,10 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   const [bpSelectOpen, setBpSelectOpen] = useState(false);
   const [, setMyPageOpen] = useMyPageOpen();
   const myPageTrigger = useMyPageTrigger();
+  const tabBp = useCurrentBp().bpCodeId;
   const [scope] = useScope();
-  const stores = useStores();
-  const [picks] = useStorePicks();
-  const linkOf = (url: string) => {
-    if (!usesStoreScope(url)) return url;
-    if (picks?.url !== url) return scopedListHref(url, scope, stores);
-    return pickedListHref(
-      url,
-      picks.stores.map((s) => s.storeId),
-      stores,
-    );
-  };
+  // /bp/{id} 주소로 옮긴 ERP 화면에만 탭 BP 를 붙인다(BP_PATH_SCREENS). 메뉴 url 자체는 옛 경로 그대로다.
+  const linkOf = (url: string) => (service === "WHALE_ERP" && isBpPathScreen(url) ? bpPath(tabBp, url) : withScope(url, scope));
   const menus: HeaderMenu[] = all.map((m) => {
       const items = m.children.flatMap((c) => {
         // 하위 메뉴로 가는 길로만 들어온 메뉴는 조회 권한이 없다(isAllowed 가 막는다). 권한 있는 첫 하위 메뉴로 보내고, 없으면 뺀다.
@@ -94,35 +86,53 @@ function serviceTargets(bp: AccountBp, service: ServiceCode, openBpSelect: () =>
 // 범위 선택기 — 전체 · 직영 · 가맹 · 점포 하나 중 하나(okf/home.md). 모양은 데모 scopeDropdown(칸은 「BP 이름 · 고른 값」, 목록은 BP 묶음 · 직영 · 가맹 묶음 + 검색).
 // 폐점이 아닌 점포가 없는 유형은 「직영 · 가맹 전체」 항목을 뺀다(폐점 점포만 있으면 그 유형 묶음은 남고 회색 점포만 보인다).
 // 폐점 점포는 그 유형 묶음 끝에 회색으로 보이고 하나씩 고를 수 있지만, 개수와 직영 · 가맹 전체에는 넣지 않는다.
-// 바꾸면 지금 화면이 점포 검색 컴포넌트를 쓰는 메뉴(목록 · 상세 · 등록 · 수정)일 때 그 목록으로 가서 범위의 점포로 검색한다.
-// 다른 화면은 그대로 두고 범위만 바꾼다 — 그 뒤 그런 목록에 들어가면 이 범위로 검색한다.
-// 목록에서 사용자가 고른 점포의 기억(store-picks)은 범위를 새로 고르거나 그 메뉴를 떠나면 지운다 — 다시 들어오면 범위를 따른다.
+// 바꾸면 지금 화면 메뉴(목록 · 상세 · 등록 · 수정)의 목록으로 늘 간다(2026-10-21 정책). 범위는 주소(?scope=)에 실어, 점포 검색 필터가
+// 있는 목록은 그 범위로 바로 검색하고 없는 목록은 기본 조건으로 연다. 다른 검색 조건과 목록에서 고른 점포는 초기값이다.
+// 어느 메뉴에 점포 검색 필터가 있는지 헤더는 모른다 — 메뉴 주소 · 코드를 적어 두지 않는다. 메뉴가 아닌 화면(홈 등)은 범위만 바꾼다.
 function HeaderScopeSelect() {
   const bp = useCurrentBp();
   const router = useRouter();
   const pageMenu = usePageMenu();
   const stores = useStores();
   const [scope, setScope] = useScope();
-  const [picks, setPicks] = useStorePicks();
   const pageUrl = pageMenu?.url ?? null;
-  const forgetPicksOutside = useEffectEvent(() => {
-    if (picks && picks.url !== pageUrl) setPicks(null);
-  });
-  useEffect(() => forgetPicksOutside(), [pageUrl]);
   // 칸 앞의 BP 이름이 어느 BP 의 데이터인지 늘 보인다(플랫폼 계정이 고른 BP 의 탭도)
   return (
-    <ScopeSelect
-      title={bp.tradeName}
-      sections={scopeSections(bp.tradeName, stores)}
-      value={scopeKeyOf(scope)}
-      onChange={(key) => {
-        const next = scopeOfKey(key);
-        if (!next) return;
-        setScope(next);
-        if (pageUrl && usesStoreScope(pageUrl)) router.push(scopedListHref(pageUrl, next, stores));
-      }}
-    />
+    <>
+      {/* 주소의 범위를 읽는다 — useSearchParams 는 운영 빌드에서 Suspense 로 감싸야 한다 */}
+      <Suspense fallback={null}>
+        <ScopeFromAddress />
+      </Suspense>
+      <ScopeSelect
+        title={bp.tradeName}
+        sections={scopeSections(bp.tradeName, stores)}
+        value={scopeKeyOf(scope)}
+        onChange={(key) => {
+          const next = scopeOfKey(key);
+          if (!next) return;
+          setScope(next);
+          if (pageUrl) router.push(withScope(pageUrl, next));
+        }}
+      />
+    </>
   );
+}
+
+/**
+ * 주소에 범위(?scope=)가 있으면 이 탭의 헤더 범위를 그 값으로 맞춘다 — 다른 탭에서 복사한 주소를 열거나 뒤로 가기로 앞 범위의 주소에 오면
+ * 목록은 주소의 범위로 검색하는데 헤더는 다른 범위를 보이면 헷갈린다. 이 탭의 점포에 없는 범위(지운 점포 · 폐점만 남은 유형)는 따르지 않는다.
+ * scope 는 헤더 범위만 뜻한다 — 목록에서 비운 「전체」는 빈 storeIds 로 적는다(store-scope.ts).
+ */
+function ScopeFromAddress() {
+  const param = useSearchParams().get(SCOPE_PARAM) ?? undefined;
+  const stores = useStores();
+  const [scope, setScope] = useScope();
+  const follow = useEffectEvent(() => {
+    const wanted = scopeFromAddress(param, scope, stores);
+    if (wanted) setScope(wanted);
+  });
+  useEffect(() => follow(), [param]);
+  return null;
 }
 
 /**

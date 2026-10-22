@@ -7,7 +7,6 @@ import type {
   BusinessVerificationResult,
   CreateStoreInput,
   StoreHistoryList,
-  StoreSummary,
   StoreTransitions,
   UpdateStoreInput,
 } from "@/lib/store-types";
@@ -18,7 +17,6 @@ import {
   getStoreHistories,
   getStoreTransitions,
   putStoreImage,
-  searchStores,
   updateStore,
   verifyStoreBusiness,
 } from "@/lib/stores";
@@ -57,16 +55,6 @@ function refresh() {
     revalidatePath("/stores", "layout");
   } catch (error) {
     console.error("점포 화면 갱신 실패", error);
-  }
-}
-
-/** 필터의 점포 고르기 자동완성 — 점포명 · 점포코드 포함, 폐점 점포도 찾는다 */
-export async function searchStoresAction(keyword: unknown): Promise<ActionResult<{ items: StoreSummary[] }>> {
-  if (typeof keyword !== "string" || !keyword.trim()) return { ok: true, items: [] };
-  try {
-    return { ok: true, items: (await searchStores(keyword.trim().slice(0, 50))).items };
-  } catch (error) {
-    return failureOf(error, "검색");
   }
 }
 

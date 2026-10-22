@@ -1,20 +1,22 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  clearBpFix,
   clearLoginStorage,
+  clearTabBp,
+  markBpFix,
   readCodes,
   readCurrentBp,
   readLoginBpInfo,
   readScope,
-  readStorePicks,
   readSelectedBp,
   readStores,
   resolveTab,
+  takeBpFix,
   writeCodes,
   writeCurrentBp,
   writeLoginBpInfo,
   writeScope,
-  writeStorePicks,
   writeSelectedBp,
   writeStores,
 } from "./browser-storage.ts";
@@ -71,7 +73,8 @@ test("readCurrentBp: 앞 로그인의 탭 BP 면 null 을 주고 탭 값을 모�
   writeStores(a.bpCodeId, []);
   writeCodes(a.bpCodeId, {});
   writeScope(a.bpCodeId, { type: "ALL" });
-  writeStorePicks(a.bpCodeId, { url: "/stores", stores: [] });
+  // 지금은 쓰지 않는 앞 값(목록에서 고른 점포)도 함께 지운다
+  tab.setItem("whale-erp:v2:store-picks", JSON.stringify({ bpCodeId: a.bpCodeId, url: "/stores", stores: [] }));
   assert.equal(readCurrentBp("new"), null);
   assert.deepEqual(tab.keys(), []);
 });
@@ -100,22 +103,30 @@ test("탭 값은 bpCodeId 가 다르면 null", () => {
   assert.equal(readScope(b.bpCodeId), null);
 });
 
-test("사용자가 목록에서 고른 점포 — 이 탭에 두고(빈 목록도) null 이면 지운다", () => {
+test("bp-fix: 고쳐 보낸 주소로 다시 오면 한 번만 true 이고 표시를 지운다", () => {
   const { tab } = fresh();
-  assert.equal(readStorePicks(a.bpCodeId), null);
-  const picks = { url: "/stores", stores: [{ storeId: 5, name: "강남점", storeCode: "ST000005" }] };
-  writeStorePicks(a.bpCodeId, picks);
-  assert.deepEqual(readStorePicks(a.bpCodeId), picks);
-  // 같은 탭에서 BP 를 바꾸면 앞 BP 의 선택은 쓰지 않는다
-  assert.equal(readStorePicks(b.bpCodeId), null);
-  writeStorePicks(a.bpCodeId, { url: "/stores", stores: [] });
-  assert.deepEqual(readStorePicks(a.bpCodeId), { url: "/stores", stores: [] });
-  // 모양이 깨진 값은 버린다
-  tab.setItem("whale-erp:v2:store-picks", JSON.stringify({ bpCodeId: a.bpCodeId, url: "/stores" }));
-  assert.equal(readStorePicks(a.bpCodeId), null);
-  writeStorePicks(a.bpCodeId, null);
-  assert.equal(readStorePicks(a.bpCodeId), null);
+  assert.equal(takeBpFix("/bp/124/x"), false);
+  markBpFix("/bp/124/x");
+  assert.equal(takeBpFix("/bp/8/x"), false); // 다른 주소는 어긋남이 아니다(표시는 남는다)
+  assert.equal(takeBpFix("/bp/124/x"), true);
+  assert.equal(takeBpFix("/bp/124/x"), false); // 한 번 쓰면 지워져 정상 재방문을 막지 않는다
+  markBpFix("/bp/124/x");
+  clearBpFix();
   assert.deepEqual(tab.keys(), []);
+});
+
+test("clearTabBp: 탭 값(bp-fix · 고른 점포 포함)만 지우고 공용 로그인 정보는 남긴다", () => {
+  const { local, tab } = fresh();
+  writeSelectedBp("k", a);
+  writeCurrentBp("k", erp(a));
+  writeStores(a.bpCodeId, []);
+  writeCodes(a.bpCodeId, {});
+  writeScope(a.bpCodeId, { type: "ALL" });
+  tab.setItem("whale-erp:v2:store-picks", "{}");
+  markBpFix("/bp/124/x");
+  clearTabBp();
+  assert.deepEqual(tab.keys(), []);
+  assert.equal(local.keys().length, 1);
 });
 
 test("공용 값은 loginKey 가 다르면 null", () => {
@@ -133,7 +144,8 @@ test("clearLoginStorage: 로그인 정보만 지우고 아이디 저장은 남�
   local.setItem("whale-erp:saved-login-id", "whaleadmin");
   writeSelectedBp("k", a);
   writeCurrentBp("k", erp(a));
-  writeStorePicks(a.bpCodeId, { url: "/stores", stores: [] });
+  tab.setItem("whale-erp:v2:store-picks", "{}");
+  markBpFix("/bp/124/x");
   // 앞 버전(v1) 키도 남기지 않는다 — 로그인 정보가 들어 있다
   local.setItem("whale-erp:v1:login-info", "{}");
   local.setItem("whale-erp:v1:login-bp-info", "{}");
