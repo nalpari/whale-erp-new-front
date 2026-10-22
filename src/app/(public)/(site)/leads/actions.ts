@@ -23,7 +23,7 @@ export async function submitLead(form: FormData): Promise<LeadResult> {
     return { ok: true };
   } catch (e) {
     // 연결 자체가 안 된 것(api 꺼짐)은 접수되지 않았으니 다시 하라고, 시간 초과는 결과를 모른다고 알린다.
-    const failure = e instanceof ApiError ? leadFailureOf(e.status, e.message) : isTimeout(e) ? leadFailureOf(null, "") : { message: LEAD_FAILED, log: true };
+    const failure = e instanceof ApiError ? leadFailureOf(e.status, e.messages) : isTimeout(e) ? leadFailureOf(null, []) : { message: LEAD_FAILED, log: true };
     if (failure.log) console.error("[leads] 도입문의 접수 실패", e);
     return { ok: false, error: failure.message };
   }
