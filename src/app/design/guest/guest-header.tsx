@@ -92,7 +92,8 @@ export function GuestHeader({ homeHref }: { homeHref?: string }) {
           <Link
             key={menu.route}
             href={routes[menu.route]}
-            aria-current={routes[menu.route] === pathname ? "page" : undefined}
+            // 공지사항 상세(/notices/{id})에서도 공지사항을 켠다.
+            aria-current={pathname === routes[menu.route] || pathname.startsWith(`${routes[menu.route]}/`) ? "page" : undefined}
             className={`hover:text-guest-ink aria-[current=page]:text-guest-navy ${HOVER}`}
           >
             {menu.label}
