@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — api #113 이 TO-DO 목록 경로(`GET /staff-members/:id/todos`)에도 TO-DO 관리 조회 권한을 걸어 403 「조회 권한이 없습니다.」가 올 수 있게 됐다. 직원 상세 TO-DO 칸은 목록 · 요약 중 한 경로라도 그 403 이면 영역 전체를 막는다(`isAreaForbidden`).
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — front #90 리뷰 반영: 직원 상세 TO-DO 영역을 TO-DO 관리 조회 권한으로 목록까지 막고(요약 경로의 403 으로 판단, 2026-10-22 노영주), 근로계약 · TO-DO 칸 머리의 「관리」를 그 메뉴 조회 권한이 없으면 흐리게 둔다(`manage-link.tsx`).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main(#88) 병합: proxy 의 본문 크기 상한(`tooLarge`)도 `/bp/{id}` 를 뗀 주소로 판정한다. main 이 없앤 store-picks(목록에서 고른 점포)는 따르고, 탭 BP 의 bp-fix 표시 · 헤더 링크(`withScope` 앞에 `bpPath`)는 남겼다.
 
