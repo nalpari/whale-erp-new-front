@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 오른쪽에 근무스케줄 · 출퇴근 현황(준비 중) · 급여명세서 · TO-DO 영역을 영역마다 따로 받아 두었다 — 근무스케줄은 근무스케줄 표 api(GET /staff-members/:id/work-schedules, WHALEERP-185)로 기간 필터 · 페이지 번호 · 기간 근무시간 합계를, 나머지는 상세 요약 api(#183)로 받는다. 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-22T17:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-22T05:02:26Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -13,11 +13,11 @@ sources:
   - id: staff-members-api
     resource: ../../src/lib/staff-members-api.ts
     title: api 호출 — 목록 · 상세 · 상세 영역 요약 · 근무스케줄 표(WHALEERP-185) · 퇴직 미리 보기 · 처리 · 변경 · 취소 · 비밀번호 재설정 링크
-    last_modified: 2026-10-22T15:00:00Z
+    last_modified: 2026-10-22T05:02:26Z
   - id: api-types-generated
     resource: ../../src/lib/api-types.generated.ts
     title: 생성한 api 타입 — 근무스케줄 표 응답 StaffMemberWorkScheduleListResponseDto · 기간 enum StaffWorkSchedulePeriod(api WHALEERP-185, giza 에서 뽑음)
-    last_modified: 2026-10-22T16:00:00Z
+    last_modified: 2026-10-22T05:02:26Z
   - id: staff-list-query
     resource: ../../src/app/staff-members/staff-list-query.ts
     title: 목록 URL ↔ 조회 조건(점포명 + storeIds)
@@ -53,7 +53,7 @@ sources:
   - id: staff-detail-page
     resource: ../../src/app/staff-members/[id]/page.tsx
     title: 직원 상세 화면(틀 + 기본 정보 · 퇴직일 · 가입 상태 · 초대 · 이메일 + 비밀번호 초기화 자리 + 근로계약 칸 + 오른쪽 영역 배치)
-    last_modified: 2026-10-22T15:00:00Z
+    last_modified: 2026-10-22T05:02:26Z
   - id: contract-box
     resource: ../../src/app/staff-members/[id]/contract-box.tsx
     title: 상세 근로계약 칸 — 근로계약 영역 요약(api #183)을 받고 실패 · 권한 없음이면 이 칸만 안내, 계약이 없으면 작성으로(WHALEERP-184). 줄 라벨 칸은 DetailTable 과 같은 폭(110px)을 옮겨 쓴다.
@@ -65,11 +65,11 @@ sources:
   - id: summary-view
     resource: ../../src/app/staff-members/[id]/summary-view.ts
     title: 상세 요약 영역 판정 — 영역 403 문구 가르기 · 근무스케줄 주소 값(기간 · 쪽 · 건수) · 날짜 칸 · 급여명세서 줄 · TO-DO 요약 줄 · 이력 문구
-    last_modified: 2026-10-22T15:00:00Z
+    last_modified: 2026-10-22T05:02:26Z
   - id: summary-boxes
     resource: ../../src/app/staff-members/[id]/summary-boxes.tsx
     title: 상세 오른쪽 영역(근무스케줄 표 · 급여명세서 · TO-DO 목록 · 요약 · 최근 처리 이력)
-    last_modified: 2026-10-22T15:00:00Z
+    last_modified: 2026-10-22T05:02:26Z
   - id: summary-load
     resource: ../../src/app/staff-members/[id]/summary-load.ts
     title: 상세 영역 데이터 받기 — loadArea(영역 실패 판정 · 로그) · loadLabels(enum 한글)
@@ -81,7 +81,7 @@ sources:
   - id: schedule-controls
     resource: ../../src/app/staff-members/[id]/schedule-controls.tsx
     title: 근무스케줄 영역 기간 · 페이지당 건수 선택칸과 페이지 번호(주소 schedulePeriod · schedulePage · schedulePageSize)
-    last_modified: 2026-10-22T15:00:00Z
+    last_modified: 2026-10-22T05:02:26Z
   - id: password-reset-dialog
     resource: ../../src/app/staff-members/[id]/password-reset-dialog.tsx
     title: 비밀번호 초기화 확인창(WHALEERP-177)
