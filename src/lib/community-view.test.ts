@@ -71,6 +71,9 @@ test("validatePost — 제목 200자 · 본문 20,000자 경계", () => {
 test("queryString — 빈 값과 기본값은 싣지 않는다", () => {
   assert.equal(queryString({ page: 1, pageSize: 20, status: [] }), "");
   assert.equal(queryString({ page: 1, pageSize: 20, status: ["DRAFT", "PRIVATE"] }), "?status=DRAFT&status=PRIVATE");
+  // 읽은 조건이 그대로 주소 · api 쿼리가 된다 — 같은 이름 되풀이 · 보이는 순서 · 기본값은 뺀다.
+  assert.equal(queryString(parseSupportNoticeQuery({ noticeType: ["TERMS", "x", "MAINTENANCE"], page: "2" })), "?page=2&noticeType=MAINTENANCE&noticeType=TERMS");
+  assert.equal(queryString(parseSupportFaqQuery({ faqCategoryCode: ["B", "A"] })), "?faqCategoryCode=B&faqCategoryCode=A");
   assert.equal(queryString({ page: 2, pageSize: 50, answerStatus: "ANSWERED", title: "a b" }), "?page=2&pageSize=50&answerStatus=ANSWERED&title=a+b");
 });
 
@@ -164,12 +167,16 @@ test("draftView — 그사이 저장된 값이 바뀌면 손대지 않은 글은
   assert.deepEqual(draftView({ text: "내 답", base: "" }, "남의 답"), { text: "내 답", stale: true });
 });
 
-test("체크박스 필터 — 여러 값을 받고, 모르는 값 · 겹친 값은 빼고, 보이는 순서로 둔다", () => {
+test("체크박스 필터 — 여러 값을 받고, 모르는 값 · 겹친 값은 빼고, enum 값은 보이는 순서로(FAQ 카테고리는 주소 순서로) 둔다", () => {
   assert.deepEqual(parseSupportNoticeQuery({ noticeType: ["TERMS", "x", "MAINTENANCE", "TERMS"] }).noticeType, ["MAINTENANCE", "TERMS"]);
   assert.deepEqual(parseInquiryQuery({ answerStatus: ["ANSWERED", "WAITING"] }).answerStatus, ["WAITING", "ANSWERED"]);
   assert.deepEqual(parseSupportFaqQuery({ faqCategoryCode: [" ACCOUNT ", "", "ACCOUNT", "B".repeat(21), "BILLING"] }).faqCategoryCode, ["ACCOUNT", "BILLING"]);
   assert.deepEqual(parseSupportFaqQuery({}).faqCategoryCode, []);
   assert.equal(parseSupportFaqQuery({ faqCategoryCode: Array.from({ length: 60 }, (_, i) => `C${i}`) }).faqCategoryCode.length, 50);
+  // 20자는 남고, 넘는 값은 20자로 잘라 보내지 않고 버린다. 버린 값 · 겹친 값은 50개 한도에 세지 않는다.
+  assert.deepEqual(parseSupportFaqQuery({ faqCategoryCode: ["A".repeat(20), "B".repeat(25)] }).faqCategoryCode, ["A".repeat(20)]);
+  const noisy = [...Array(10).fill(""), ...Array.from({ length: 50 }, (_, i) => `C${i}`)];
+  assert.equal(parseSupportFaqQuery({ faqCategoryCode: noisy }).faqCategoryCode.length, 50);
 });
 
 test("pageWindow — 10개 묶음과 앞 · 뒤 묶음", () => {
