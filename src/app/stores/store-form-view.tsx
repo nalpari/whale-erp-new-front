@@ -114,7 +114,7 @@ export function StoreFormView(props: Props) {
   // 선택지 글자는 <option> 에 글자로만 넣는다 — 공통코드 한글(로그인 정보)
   const statusLabel = useCodeLabel("STORE_STATUS");
   // 등록할 BP — 이 탭의 BP(플랫폼 계정이 고른 BP, 그 밖은 소속 BP). 주소 /bp/{id} 의 BP 와 같다(SessionGate 가 주소로 정한다) —
-  // 본문의 bpCodeId 가 proxy 가 실은 헤더와 다르면 api 가 400 이다
+  // api 가 헤더로 대상 BP 를 정하면(점포 탭 BP 전환) 본문의 bpCodeId 가 proxy 가 실은 헤더와 다를 때 400 이다
   const currentBp = useCurrentBp();
   // 화면 주소는 탭 BP 를 붙인다. backHref 는 옛 경로(목록 쿼리)다
   const at = (path: string) => bpPath(currentBp.bpCodeId, path);

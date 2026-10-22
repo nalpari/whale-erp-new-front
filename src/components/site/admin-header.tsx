@@ -12,15 +12,15 @@ import { isClosedStore, openStores, SCOPE_PARAM, scopeFromAddress, scopeKeyOf, s
 import { BpSelectDialog } from "./bp-select-dialog";
 import { useAccount, useCurrentBp, useMenus, useMyPageOpen, useMyPageTrigger, usePageMenu, useScope, useService, useStores } from "./session-gate";
 
+/** ERP 메뉴 url 의 화면 주소 — /bp/{id} 주소로 옮긴 화면에만 탭 BP 를 붙인다(BP_PATH_SCREENS). 메뉴 url 자체는 옛 경로 그대로다. */
+const screenOf = (url: string, tabBp: number) => (isBpPathScreen(url) ? bpPath(tabBp, url) : url);
+
 // 로그인 후 화면의 헤더 하나. 메뉴·점포·이름은 로그인 정보(SessionGate)에서 그린다.
 // 메뉴는 이 탭 서비스(useService)의 것만, 2단계까지 그린다(3단계는 헤더에 보이지 않는다, 2026-10-13).
 // 서비스마다 다른 것은 오른쪽 선택기와 서비스 바로가기의 동작이다 — 선택기는 ERP 면 점포 범위, 플랫폼이면 BP 선택기 자리(비어 있다. BP 는
 // 서비스 바로가기의 웨일ERP 로 고른다). 바로가기는 serviceTargets 참고.
 // 메뉴 링크는 점포 범위를 주소(?scope=)에 싣는다(store-scope.ts) — 점포 검색 필터가 있는 목록은 처음부터 그 범위로 검색하고, 없는 목록은 무시한다.
 // alarm 은 알림 종(NotificationBellSlot, 서버 컴포넌트)이다. 클라이언트인 이 헤더가 직접 그릴 수 없어 루트 layout 이 만들어 AdminLayout → AdminFrame 을 거쳐 넘긴다.
-/** ERP 메뉴 url 의 화면 주소 — /bp/{id} 주소로 옮긴 화면에만 탭 BP 를 붙인다(BP_PATH_SCREENS). 메뉴 url 자체는 옛 경로 그대로다. */
-const screenOf = (url: string, tabBp: number) => (isBpPathScreen(url) ? bpPath(tabBp, url) : url);
-
 export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   const account = useAccount();
   const service = useService();

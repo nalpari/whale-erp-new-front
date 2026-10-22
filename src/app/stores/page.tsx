@@ -16,8 +16,9 @@ import { StoreExcelButton, StoreExcelNotice, StoreExcelProvider } from "./store-
 // 점포 정보 관리 목록(S-BAYAJS). 데모 docs/demo/stores/index.html 을 공통 컴포넌트로 옮겼다. api 는 GET /stores.
 // 카드 목록이 기본이고 표로 바꿀 수 있다. 조건 · 쪽 · 보기는 URL 에만 둔다. 점포 조건은 목록에서 고른 점포(storeIds) 또는 헤더가 실어 온
 // 범위(scope)다 — 직영 · 가맹 전체는 점포를 풀지 않고 점포유형으로 api 에 보낸다(storeListQueryOf).
-// 엑셀은 지금 조건으로 바로 받는다(store-excel.tsx · 중계 경로 /stores/excel). 화면 주소는 탭 BP 주소 /bp/{id}/stores 다 — proxy 가 그 BP 를
-// X-Bp-Code-Id 로 실어, 플랫폼 계정은 고른 BP 의 점포만 본다(BP_PATH_SCREENS).
+// 엑셀은 지금 조건으로 바로 받는다(store-excel.tsx · 중계 경로 /bp/{id}/stores/excel). 화면 주소는 탭 BP 주소 /bp/{id}/stores 다 — proxy 가
+// 그 BP 를 X-Bp-Code-Id 로 싣는다(BP_PATH_SCREENS). api 가 그 헤더로 대상 BP 를 정하면(whale-erp-api 점포 탭 BP 전환) 플랫폼 계정은 고른
+// BP 의 점포만 본다 — 그 전까지는 지금처럼 모든 BP 의 점포다.
 export default async function StoresPage({ searchParams }: PageProps<"/stores">) {
   const raw = await searchParams;
   const parsed = parseStoresQuery(raw);

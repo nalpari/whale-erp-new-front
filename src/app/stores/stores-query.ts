@@ -220,7 +220,7 @@ export const detailHrefOf = (listHref: string) => (id: number) => withBack(`/sto
 
 /**
  * 상세 · 수정에서 돌아갈 목록 주소. 넘어온 값이 점포 목록 주소가 아니면(다른 곳으로 보내려는 값) 기본 목록으로.
- * 이 파일의 주소는 모두 옛 경로(/stores…)다 — 탭 BP(/bp/{id})는 이동할 때 bpPath 로 씌운다(back 에 BP 를 싣지 않는다).
+ * 이 파일의 주소는 모두 옛 경로(/stores…)다 — 탭 BP(/bp/{id})는 이동할 때 bpPath(클라이언트) · screenPath()(서버)로 씌운다(back 에 BP 를 싣지 않는다).
  */
 export function backHrefOf(raw: string | string[] | undefined): string {
   const value = typeof raw === "string" ? raw : "";
