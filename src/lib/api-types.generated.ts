@@ -1229,6 +1229,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/staff-members/{id}/work-schedules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 이 직원의 근무스케줄 — 기간 필터 · 페이지. 근무일 내림차순, 같은 날은 시작 시각 순 */
+        get: operations["StaffMemberWorkSchedulesController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/staff-members/{id}/retirement-preview": {
         parameters: {
             query?: never;
@@ -1699,6 +1716,40 @@ export interface paths {
         put?: never;
         /** 수정 요청 — 계약서가 틀렸을 때(대조 결과와 상관없이). 따로 받는 내용은 없다 */
         post: operations["MyContractsController_requestCorrection"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/contracts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 내 근로계약 목록 — 서명 대기 이후(임시저장 · 발송 대기 제외). 소속 확인 대기 계약은 없다 */
+        get: operations["MyContractViewsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/contracts/{contractId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 내 근로계약 상세 — 계약서에 그릴 값 · 사용자 칸 · 본인 대조 미리보기(날인할 수 있는지 · 다른 항목) */
+        get: operations["MyContractViewsController_findOne"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -4684,6 +4735,27 @@ export interface components {
              */
             recentHistories: components["schemas"]["StaffMemberTodoHistoryDto"][];
         };
+        /** @enum {string} */
+        StaffWorkSchedulePeriod: "THIS_WEEK" | "LAST_4_WEEKS" | "LAST_3_MONTHS" | "LAST_1_YEAR" | "ALL";
+        StaffMemberWorkScheduleListItemDto: {
+            workScheduleId: number;
+            /** @description 근무일(YYYY-MM-DD) — 시작 일시의 한국 날짜 */
+            workDate: string;
+            /** @description 근무지 점포 이름 */
+            storeName: string;
+            /** @description 시작 HH:mm(한국 시각) */
+            startTime: string;
+            /** @description 종료 HH:mm(한국 시각). 시작보다 이르면 다음 날이다 */
+            endTime: string;
+        };
+        StaffMemberWorkScheduleListResponseDto: {
+            /** @description 근무일 내림차순 → 같은 날은 시작 시각 오름차순 → 근무스케줄 ID */
+            items: components["schemas"]["StaffMemberWorkScheduleListItemDto"][];
+            /** @description 기간 안의 지우지 않은 근무스케줄 수(모든 페이지) */
+            total: number;
+            /** @description 기간 안의 근무시간 합계(분, 페이지와 무관) — 건마다 종료 − 시작 − 휴게(직원 상세 요약의 workMinutes 와 같다). 0건이면 0 */
+            totalWorkMinutes: number;
+        };
         ContractToEndDto: {
             /** @description 임시저장 · 발송 대기 · 서명 대기 · 수정 요청 */
             status: components["schemas"]["ContractStatus"];
@@ -5243,6 +5315,13 @@ export interface components {
             contractId: number;
             staffMemberId: number;
         };
+        ContractDetailWorkDayDto: {
+            weekday: components["schemas"]["Weekday"];
+            breakStartTime: string | null;
+            breakEndTime: string | null;
+            startTime: string;
+            endTime: string;
+        };
         ContractStatusHistoryDto: {
             /** @description 처음 만든 줄은 null */
             fromStatus: components["schemas"]["ContractStatus"] | null;
@@ -5263,22 +5342,7 @@ export interface components {
             /** @description 올린 파일의 원래 이름 */
             fileName: string;
         };
-        ContractDetailWorkDayDto: {
-            weekday: components["schemas"]["Weekday"];
-            breakStartTime: string | null;
-            breakEndTime: string | null;
-            startTime: string;
-            endTime: string;
-        };
         ContractDetailDto: {
-            status: components["schemas"]["ContractStatus"] | null;
-            employmentType: components["schemas"]["EmploymentType"];
-            /** @description 점포가 지워졌어도 이름은 보인다. 점포 행이 없으면 null */
-            storeName: string | null;
-            /** @description YYYY-MM-DD */
-            birthDate: string | null;
-            gender: components["schemas"]["Gender"] | null;
-            contractMethod: components["schemas"]["ContractMethod"] | null;
             startDate: string | null;
             endDate: string | null;
             workLocation: string | null;
@@ -5315,13 +5379,21 @@ export interface components {
             probationWageReductionRate: number | null;
             isHealthPensionInsured: boolean | null;
             isEmploymentInjuryInsured: boolean | null;
+            workDays: components["schemas"]["ContractDetailWorkDayDto"][];
+            status: components["schemas"]["ContractStatus"] | null;
+            employmentType: components["schemas"]["EmploymentType"];
+            /** @description 점포가 지워졌어도 이름은 보인다. 점포 행이 없으면 null */
+            storeName: string | null;
+            /** @description YYYY-MM-DD */
+            birthDate: string | null;
+            gender: components["schemas"]["Gender"] | null;
+            contractMethod: components["schemas"]["ContractMethod"] | null;
             /** @description 초대 유형 판별 결과(초안 저장 때). 임시저장이면 null */
             draftAction: components["schemas"]["ContractDraftAction"] | null;
             /** @description 상태 변경 이력. 최근 것부터 */
             histories: components["schemas"]["ContractStatusHistoryDto"][];
             /** @description 종이 계약 날인본(근로계약서 · 임금계약서). 전자계약 · 임시저장이면 빈 배열 */
             documents: components["schemas"]["ContractDocumentDto"][];
-            workDays: components["schemas"]["ContractDetailWorkDayDto"][];
             contractId: number;
             staffMemberId: number;
             name: string;
@@ -5369,6 +5441,154 @@ export interface components {
         MyContractActionResponseDto: {
             contractId: number;
             status: components["schemas"]["ContractStatus"];
+        };
+        MyContractListItemDto: {
+            status: components["schemas"]["ContractStatus"];
+            employmentType: components["schemas"]["EmploymentType"] | null;
+            /** @description 전자계약 · 종이 계약 */
+            contractMethod: components["schemas"]["ContractMethod"] | null;
+            /**
+             * @description YYYY-MM-DD
+             * @example 2026-11-01
+             */
+            startDate: string | null;
+            /**
+             * @description YYYY-MM-DD. 비어 있으면 기간의 정함이 없는 계약
+             * @example null
+             */
+            endDate: string | null;
+            /** @description 발송 일시 (ISO 8601) — 날인할 때 이 값을 그대로 보낸다(sentAt). 종이 계약이면 null */
+            sentAt: string | null;
+            /** @description 날인 기한 (ISO 8601) */
+            signDeadlineAt: string | null;
+            /**
+             * @description 지금 상태가 된 시각 (ISO 8601). 체결 완료면 날인 일자(종이 계약이면 관리자 등록일), 거부 · 만료 · 종료 · 수정
+             *     요청이면 그 일자(상태 이력의 처리 시각). 서명 대기면 마지막 발송 시각(sentAt) — 서명 대기 그대로 다시 보내면
+             *     이력이 쌓이지 않아 발송 일시를 쓴다
+             */
+            processedAt: string | null;
+            contractId: number;
+            /** @description 근무지(소속) — 점포가 지워졌어도 이름은 보인다 */
+            storeId: number;
+            storeName: string;
+            /** @description 지금 날인할 수 있는가 — 서명 대기 · 날인 기한 안 · 재직 중. 날인 요청 팝업(WHALEERP-148)이 쓴다. 본인 대조는 상세에서 */
+            awaitingSignature: boolean;
+        };
+        MyContractListResponseDto: {
+            /** @description 날인을 기다리는 계약(기한이 급한 순) 먼저, 그다음 최근 것부터 */
+            items: components["schemas"]["MyContractListItemDto"][];
+            total: number;
+        };
+        /**
+         * @description 계약서 값과 계정 값이 다른 항목 — 날인 API 의 409 IDENTITY_MISMATCH 와 같다. 다르면 직원은 수정 요청을 낸다
+         * @enum {string}
+         */
+        IdentityField: "name" | "phone" | "birthDate" | "gender" | "isForeigner";
+        MyContractWorkerDto: {
+            name: string | null;
+            phone: string | null;
+            /** @description YYYY-MM-DD */
+            birthDate: string | null;
+            gender: components["schemas"]["Gender"] | null;
+            /** @description 주소 — 날인할 때 계정 주소로 고정된다. 날인 전이면 비어 있다(본인인증 정보의 주소를 보인다) */
+            zipCode: string | null;
+            address: string | null;
+            addressDetail: string | null;
+            isForeigner: boolean;
+            /** @description 직무 — 직원 레코드 값 */
+            jobTitle: string;
+        };
+        MyContractEmployerDto: {
+            storePhone: string | null;
+            storeZipCode: string | null;
+            storeAddress: string | null;
+            storeAddressDetail: string | null;
+            /** @description 상호 */
+            tradeName: string | null;
+            /** @description 사업자등록번호 */
+            registrationNumber: string | null;
+            /** @description 대표자 */
+            ceoName: string | null;
+            /** @description 사업장 주소 */
+            bizZipCode: string | null;
+            bizAddress: string | null;
+            bizAddressDetail: string | null;
+            storeName: string;
+        };
+        MyContractAccountDto: {
+            gender: components["schemas"]["Gender"] | null;
+            zipCode: string | null;
+            address: string | null;
+            addressDetail: string | null;
+            name: string;
+            phone: string;
+            /** @description YYYY-MM-DD */
+            birthDate: string;
+            isForeigner: boolean;
+        };
+        MyContractDocumentDto: {
+            kind: components["schemas"]["ContractDocumentKind"];
+            contractDocumentId: number;
+            fileName: string;
+        };
+        MyContractDetailDto: {
+            startDate: string | null;
+            endDate: string | null;
+            workLocation: string | null;
+            weeklyHoliday: components["schemas"]["Weekday"] | null;
+            /** @description 원. 시급 — 고용 형태와 상관없이 시급이다(2026-10-12) */
+            wageAmount: number | null;
+            /** @description 식대 — 원 */
+            mealAllowanceAmount: number | null;
+            /** @description 자가운전보조금 — 원 */
+            carAllowanceAmount: number | null;
+            /** @description 육아수당 — 원 */
+            childcareAllowanceAmount: number | null;
+            /** @description 월 기본시간 — 시간(0.5 단위) */
+            baseHours: number | null;
+            /** @description 월간 연장근무 — 시간 */
+            monthlyOvertimeHours: number | null;
+            /** @description 기본시간 중 야간근무 — 시간 */
+            baseNightHours: number | null;
+            /** @description 기본시간 중 휴일근무 — 시간. 화면(front #15)에서는 받지 않는다. 칸은 남아 있다 */
+            baseHolidayHours: number | null;
+            /** @description 월간 추가 휴일근무 — 시간. 화면(front #15)에서는 받지 않는다. 칸은 남아 있다 */
+            monthlyExtraHolidayHours: number | null;
+            /** @description 연차휴가 조항 문구 */
+            annualLeaveTerms: string | null;
+            /** @description 퇴직금 조항 문구 */
+            severancePayTerms: string | null;
+            payMonth: components["schemas"]["PayMonth"] | null;
+            payDay: number | null;
+            /** @description 급여 지급 방식 — 계좌 · 현금 */
+            payMethod: components["schemas"]["PayMethod"] | null;
+            /** @description 수습 기간 — 개월(1~3). 수습이 없으면 null */
+            probationMonths: number | null;
+            /** @description 수습 중 임금 감액률 — %(0~10). 수습이 없으면 null */
+            probationWageReductionRate: number | null;
+            isHealthPensionInsured: boolean | null;
+            isEmploymentInjuryInsured: boolean | null;
+            workDays: components["schemas"]["ContractDetailWorkDayDto"][];
+            status: components["schemas"]["ContractStatus"];
+            employmentType: components["schemas"]["EmploymentType"] | null;
+            contractMethod: components["schemas"]["ContractMethod"] | null;
+            /** @description 발송 일시 (ISO 8601) — 날인할 때 그대로 보낸다(sentAt). 다르면 409 CONTRACT_RESENT */
+            sentAt: string | null;
+            signDeadlineAt: string | null;
+            /** @description 목록과 같다 — 지금 상태가 된 시각 */
+            processedAt: string | null;
+            /** @description 계약서 값과 계정 값이 다른 항목 — 날인 API 의 409 IDENTITY_MISMATCH 와 같다. 다르면 직원은 수정 요청을 낸다 */
+            mismatches: components["schemas"]["IdentityField"][];
+            worker: components["schemas"]["MyContractWorkerDto"];
+            employer: components["schemas"]["MyContractEmployerDto"];
+            account: components["schemas"]["MyContractAccountDto"];
+            documents: components["schemas"]["MyContractDocumentDto"][];
+            contractId: number;
+            storeId: number;
+            /** @description 목록과 같다 — 서명 대기 · 기한 안 · 재직 중 */
+            awaitingSignature: boolean;
+            /** @description 지금 날인하면 받는가 — awaitingSignature 이고 본인 대조가 맞을 때. 날인 API 와 같은 판정이다 */
+            signable: boolean;
         };
         StoreOptionDto: {
             storeId: number;
@@ -10123,6 +10343,65 @@ export interface operations {
             };
         };
     };
+    StaffMemberWorkSchedulesController_list: {
+        parameters: {
+            query?: {
+                /**
+                 * @description 기간. 빼면 이번 주. 근무일(시작 일시의 한국 날짜)로 자른다.
+                 *     - `THIS_WEEK` — 오늘(한국 날짜)이 든 주의 월~일
+                 *     - `LAST_4_WEEKS` — 오늘에서 28일 전 0시부터, 상한 없음(미래에 잡힌 근무 포함)
+                 *     - `LAST_3_MONTHS` — 오늘에서 3개월 전 같은 날 0시부터, 상한 없음(미래 포함). 그 달에 같은 날이 없으면 그 달 말일(5월 31일 → 2월 28일)
+                 *     - `LAST_1_YEAR` — 오늘에서 12개월 전 같은 날 0시부터, 상한 없음(미래 포함). 말일 보정은 3개월과 같다
+                 *     - `ALL` — 날짜 조건 없음(생성일로부터 3년 지난 것은 파기 배치가 지운다)
+                 */
+                period?: components["schemas"]["StaffWorkSchedulePeriod"];
+                /** @description 페이지, 1부터. 상한은 OFFSET 이 DB 정수 범위를 넘어 500 이 되지 않게 둔다 */
+                page?: number;
+                /** @description 페이지당 건수 — 20 · 50 · 100, 기본 20 */
+                pageSize?: 20 | 50 | 100;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffMemberWorkScheduleListResponseDto"];
+                };
+            };
+            /** @description period · page · pageSize 오류 — 가드 403 뒤, ID 형식 404 보다 먼저 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 정보 관리 조회 권한 없음(가드, 쿼리 · ID 검사보다 먼저) · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 · 근무스케줄 관리 조회 권한 없음(「조회 권한이 없습니다.」, ID 형식 404 뒤 · 범위 404 앞 — 형식이 맞는 어떤 ID 든 같은 403) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ID 형식 오류(쿼리 400 뒤 · 영역 403 앞) · 없는 직원 · 관리 범위 밖 · 가려지는 직원(영역 403 뒤) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     RetirementController_preview: {
         parameters: {
             query: {
@@ -11882,6 +12161,81 @@ export interface operations {
             };
         };
     };
+    MyContractViewsController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyContractListResponseDto"];
+                };
+            };
+            /** @description 토큰 없음 · 접속 종료 · 탈퇴 계정 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 관리자 토큰 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MyContractViewsController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contractId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyContractDetailDto"];
+                };
+            };
+            /** @description 토큰 없음 · 접속 종료 · 탈퇴 계정 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 관리자 토큰 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 내 계약이 아님 — 없는 id · 남의 계약 · 임시저장 · 발송 대기 · 소속 확인 대기 계약(후보 계정만). 모두 같은 본문 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     StoresController_options: {
         parameters: {
             query: {
@@ -12470,8 +12824,8 @@ export interface operations {
     PlatformNoticesController_list: {
         parameters: {
             query?: {
-                /** @description 게시 상태로 거른다. 없으면 전부. */
-                status?: components["schemas"]["PostStatus"];
+                /** @description 게시 상태로 거른다. 여러 개면 `?status=DRAFT&status=PUBLISHED`. 없으면 전부. */
+                status?: components["schemas"]["PostStatus"][];
                 /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
                 page?: number;
                 /** @description 한 쪽 건수. 기본 20, 최대 200. */
@@ -12757,8 +13111,8 @@ export interface operations {
     PlatformFaqsController_list: {
         parameters: {
             query?: {
-                /** @description 게시 상태로 거른다. 없으면 전부. */
-                status?: components["schemas"]["PostStatus"];
+                /** @description 게시 상태로 거른다. 여러 개면 `?status=DRAFT&status=PUBLISHED`. 없으면 전부. */
+                status?: components["schemas"]["PostStatus"][];
                 /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
                 page?: number;
                 /** @description 한 쪽 건수. 기본 20, 최대 200. */
@@ -12974,10 +13328,10 @@ export interface operations {
                 page?: number;
                 /** @description 한 쪽 건수. 기본 20, 최대 200. */
                 pageSize?: number;
-                /** @description 공지사항 구분으로 거른다. FAQ 에는 쓰지 않는다. */
-                noticeType?: components["schemas"]["NoticeType"];
-                /** @description FAQ 카테고리(공통코드 FAQ_CATEGORY 상세코드)로 거른다. */
-                faqCategoryCode?: string;
+                /** @description 공지사항 구분으로 거른다. 여러 개면 `?noticeType=GENERAL&noticeType=MAINTENANCE`. FAQ 에는 쓰지 않는다. */
+                noticeType?: components["schemas"]["NoticeType"][];
+                /** @description FAQ 카테고리(공통코드 FAQ_CATEGORY 상세코드)로 거른다. 여러 개면 `?faqCategoryCode=A&faqCategoryCode=B`, 50개까지. */
+                faqCategoryCode?: string[];
                 /** @description 제목(FAQ 는 제목 또는 본문)에 든 글자로 찾는다. 대소문자는 가리지 않는다. */
                 keyword?: string;
             };
@@ -13098,10 +13452,10 @@ export interface operations {
                 page?: number;
                 /** @description 한 쪽 건수. 기본 20, 최대 200. */
                 pageSize?: number;
-                /** @description 공지사항 구분으로 거른다. FAQ 에는 쓰지 않는다. */
-                noticeType?: components["schemas"]["NoticeType"];
-                /** @description FAQ 카테고리(공통코드 FAQ_CATEGORY 상세코드)로 거른다. */
-                faqCategoryCode?: string;
+                /** @description 공지사항 구분으로 거른다. 여러 개면 `?noticeType=GENERAL&noticeType=MAINTENANCE`. FAQ 에는 쓰지 않는다. */
+                noticeType?: components["schemas"]["NoticeType"][];
+                /** @description FAQ 카테고리(공통코드 FAQ_CATEGORY 상세코드)로 거른다. 여러 개면 `?faqCategoryCode=A&faqCategoryCode=B`, 50개까지. */
+                faqCategoryCode?: string[];
                 /** @description 제목(FAQ 는 제목 또는 본문)에 든 글자로 찾는다. 대소문자는 가리지 않는다. */
                 keyword?: string;
             };
@@ -13138,10 +13492,10 @@ export interface operations {
                 page?: number;
                 /** @description 한 쪽 건수. 기본 20, 최대 200. */
                 pageSize?: number;
-                /** @description 공지사항 구분으로 거른다. FAQ 에는 쓰지 않는다. */
-                noticeType?: components["schemas"]["NoticeType"];
-                /** @description FAQ 카테고리(공통코드 FAQ_CATEGORY 상세코드)로 거른다. */
-                faqCategoryCode?: string;
+                /** @description 공지사항 구분으로 거른다. 여러 개면 `?noticeType=GENERAL&noticeType=MAINTENANCE`. FAQ 에는 쓰지 않는다. */
+                noticeType?: components["schemas"]["NoticeType"][];
+                /** @description FAQ 카테고리(공통코드 FAQ_CATEGORY 상세코드)로 거른다. 여러 개면 `?faqCategoryCode=A&faqCategoryCode=B`, 50개까지. */
+                faqCategoryCode?: string[];
                 /** @description 제목(FAQ 는 제목 또는 본문)에 든 글자로 찾는다. 대소문자는 가리지 않는다. */
                 keyword?: string;
             };
@@ -13232,10 +13586,10 @@ export interface operations {
                 page?: number;
                 /** @description 한 쪽 건수. 기본 20, 최대 200. */
                 pageSize?: number;
-                /** @description 공지사항 구분으로 거른다. FAQ 에는 쓰지 않는다. */
-                noticeType?: components["schemas"]["NoticeType"];
-                /** @description FAQ 카테고리(공통코드 FAQ_CATEGORY 상세코드)로 거른다. */
-                faqCategoryCode?: string;
+                /** @description 공지사항 구분으로 거른다. 여러 개면 `?noticeType=GENERAL&noticeType=MAINTENANCE`. FAQ 에는 쓰지 않는다. */
+                noticeType?: components["schemas"]["NoticeType"][];
+                /** @description FAQ 카테고리(공통코드 FAQ_CATEGORY 상세코드)로 거른다. 여러 개면 `?faqCategoryCode=A&faqCategoryCode=B`, 50개까지. */
+                faqCategoryCode?: string[];
                 /** @description 제목(FAQ 는 제목 또는 본문)에 든 글자로 찾는다. 대소문자는 가리지 않는다. */
                 keyword?: string;
             };
@@ -13674,8 +14028,8 @@ export interface operations {
     LeadsAdminController_list: {
         parameters: {
             query: {
-                /** @description 답변 대기(접수 · 처리중) 또는 답변 완료. */
-                answerStatus?: components["schemas"]["InquiryAnswerStatus"];
+                /** @description 답변 대기(접수 · 처리중) · 답변 완료. 둘 다면 `?answerStatus=WAITING&answerStatus=ANSWERED`. */
+                answerStatus?: components["schemas"]["InquiryAnswerStatus"][];
                 /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
                 page: number;
                 /** @description 한 쪽 건수. 기본 20, 최대 200. */
@@ -13994,8 +14348,8 @@ export interface operations {
     InquiriesController_list: {
         parameters: {
             query: {
-                /** @description 답변 대기(접수 · 처리중) 또는 답변 완료. */
-                answerStatus?: components["schemas"]["InquiryAnswerStatus"];
+                /** @description 답변 대기(접수 · 처리중) · 답변 완료. 둘 다면 `?answerStatus=WAITING&answerStatus=ANSWERED`. */
+                answerStatus?: components["schemas"]["InquiryAnswerStatus"][];
                 /** @description 제목에 들어 있으면 나온다. */
                 title?: string;
                 /** @description 보낸 곳 — BP 이름 · 점포 이름 · 보낸 사람 이름 중 하나에 들어 있으면 나온다. */
@@ -14271,8 +14625,9 @@ export interface operations {
                 /**
                  * @description 답변 상태 — 접수 · 처리중 · 답변완료. 고객지원 화면은 「답변 대기 · 처리 중 · 답변 완료」 탭을 따로 두어(front
                  *     목업 S-ITFILU) 「답변 대기」가 접수 하나다 — 접수 · 처리중을 합친 커뮤니티 관리의 `answerStatus` 와 다르다.
+                 *     여러 개면 `?status=RECEIVED&status=IN_PROGRESS`.
                  */
-                status?: components["schemas"]["InquiryStatus"];
+                status?: components["schemas"]["InquiryStatus"][];
                 /** @description 제목에 들어 있으면 나온다. */
                 title?: string;
                 /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
@@ -14986,7 +15341,7 @@ export interface operations {
                     "application/json": components["schemas"]["WorkScheduleDto"];
                 };
             };
-            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 체결 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) */
+            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 체결 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) · WORK_SCHEDULE_STORE_CLOSED(폐점 점포 — 등록만, 수정은 받는다) */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -15145,7 +15500,7 @@ export interface operations {
                     "application/json": components["schemas"]["WorkScheduleDefaultsDto"];
                 };
             };
-            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 체결 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) */
+            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 체결 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) · WORK_SCHEDULE_STORE_CLOSED(폐점 점포 — 등록만, 수정은 받는다) */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -15233,7 +15588,7 @@ export interface operations {
                     "application/json": components["schemas"]["CopyLastWeekResponseDto"];
                 };
             };
-            /** @description 쿼리 형식 오류 · weekStart 가 월요일이 아님 */
+            /** @description 쿼리 형식 오류 · weekStart 가 월요일이 아님 · WORK_SCHEDULE_STORE_CLOSED(폐점 점포) */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -15287,7 +15642,7 @@ export interface operations {
                     "application/json": components["schemas"]["CopyLastWeekResponseDto"];
                 };
             };
-            /** @description 요청 형식 오류 · weekStart 가 월요일이 아님 */
+            /** @description 요청 형식 오류 · weekStart 가 월요일이 아님 · WORK_SCHEDULE_STORE_CLOSED(폐점 점포) */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -15381,7 +15736,7 @@ export interface operations {
                     "application/json": components["schemas"]["WorkScheduleDto"];
                 };
             };
-            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 체결 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) */
+            /** @description 입력 오류 · 24시간짜리 · 휴게가 근무시간 이상 · WORK_SCHEDULE_NO_CONTRACT(근무일에 체결 완료 계약 없음) · WORK_SCHEDULE_AFTER_RETIREMENT(퇴직일 뒤) · WORK_SCHEDULE_NOT_JOINED(가입 전) · WORK_SCHEDULE_HIDDEN(본사에게 가려지는 가맹 직원) · WORK_SCHEDULE_STORE_CLOSED(폐점 점포 — 등록만, 수정은 받는다) */
             400: {
                 headers: {
                     [name: string]: unknown;
