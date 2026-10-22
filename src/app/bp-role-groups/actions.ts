@@ -11,10 +11,12 @@ import {
   saveBpRoleGroupMenus,
   updateBpRoleGroup,
   type BpRoleGroupInput,
+  type BpRoleGroupMenuTree,
   type CreatedBpRoleGroup,
   type DeleteBpRoleGroupInput,
+  type UpdateBpRoleGroupInput,
 } from "@/lib/bp-role-groups";
-import type { DeletionCandidates, RevocationPreview, RoleGroupMenuCells, RoleGroupMenuTree } from "@/lib/platform-role-groups";
+import type { DeletionCandidates, RevocationPreview, RoleGroupMenuCells } from "@/lib/platform-role-groups";
 import { failureOf as sharedFailureOf, menusFailure, validId, type ActionFailure, type ActionResult } from "@/lib/role-group-actions";
 
 // BP 권한 그룹 등록 · 수정 · 삭제 · 메뉴 권한 조회 · 미리보기 · 저장 · 가맹마스터 보기. 실패하면 화면이 입력값을 그대로 두고 문구만 보인다.
@@ -46,7 +48,7 @@ export async function createBpRoleGroupAction(input: BpRoleGroupInput): Promise<
   }
 }
 
-export async function updateBpRoleGroupAction(id: number, input: BpRoleGroupInput & { updatedAt: string }): Promise<ActionResult> {
+export async function updateBpRoleGroupAction(id: number, input: UpdateBpRoleGroupInput): Promise<ActionResult> {
   if (!validId(id)) return NOT_FOUND;
   try {
     await updateBpRoleGroup(id, input);
@@ -78,7 +80,7 @@ export async function deleteBpRoleGroupAction(id: number, input: DeleteBpRoleGro
   }
 }
 
-export async function getBpRoleGroupMenusAction(id: number): Promise<ActionResult<RoleGroupMenuTree>> {
+export async function getBpRoleGroupMenusAction(id: number): Promise<ActionResult<BpRoleGroupMenuTree>> {
   if (!validId(id)) return NOT_FOUND;
   try {
     return { ok: true, ...(await getBpRoleGroupMenus(id)) };
@@ -116,7 +118,7 @@ export async function saveBpRoleGroupMenusAction(
   }
 }
 
-export async function getFranchiseMasterMenusAction(): Promise<ActionResult<RoleGroupMenuTree>> {
+export async function getFranchiseMasterMenusAction(): Promise<ActionResult<BpRoleGroupMenuTree>> {
   try {
     return { ok: true, ...(await getFranchiseMasterMenus()) };
   } catch (error) {

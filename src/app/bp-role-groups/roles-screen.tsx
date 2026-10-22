@@ -160,7 +160,11 @@ function RolesBody({
           setCreatedId(id);
           handleSelect(id);
         }}
-        onDeleted={() => handleSelect()}
+        // 그 쪽의 마지막 한 건을 지웠으면 앞쪽으로 — 빈 쪽에 「데이터가 없습니다」만 남지 않게
+        onDeleted={() => {
+          setCreating(false);
+          go({ page: list.items.length === 1 && page > 1 ? page - 1 : page });
+        }}
       />
 
       {/* 잠긴 팝업의 안내 띠는 두지 않는다 — 칸이 막히고 [닫기]만 보이는 것으로 알린다 */}

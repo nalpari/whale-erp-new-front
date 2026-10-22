@@ -12,6 +12,9 @@ import type { ActionResult } from "@/lib/role-group-actions";
 import { aggregate, blockedReasonsOf, changedMenus, editableOf, hasRevocation, initialValues, OPS, toggle, toggleAll, type Op, type Values } from "@/lib/role-menu-grid";
 import { FailedBand, InfoBand, reasonLabel, unknownResult } from "./role-parts";
 
+// 팝업이 트리에서 읽는 칸만 — 플랫폼 · BP 트리 모두 이 모양을 갖는다(권한 유형은 role 에서 받는다).
+type MenuTree = Pick<RoleGroupMenuTree, "isSavable" | "updatedAt" | "services">;
+
 // 권한 메뉴 등록(플랫폼 S-EFQREM · BP S-KUDELB · 데모 system/roles 메뉴등록 팝업). 880px 확인창에 서비스 탭 · 메뉴 표(조회 · 등록 · 수정 · 삭제)를 둔다.
 // 칸마다 바꿀 수 있는지와 막힌 이유는 api 메뉴 트리가 준다(본인 범위 밖 · BP 쪽 고정 권한의 플랫폼 메뉴 등, 한글은 GET /enums/PlatformRoleMenuBlockReason).
 // 플랫폼 마스터 · 본인이 연결된 권한 · 수정 권한이 없으면 칸을 모두 막고 [닫기]만 둔다.
@@ -24,7 +27,7 @@ const OP_LABEL: Record<Op, string> = { read: "조회", create: "등록", update:
 /** 팝업 위쪽에 보이는 권한 — 플랫폼 · BP 목록 항목이 다 이 모양을 갖는다 */
 export type MenuDialogRole = { roleGroupId: number; roleCode: string; roleTypeCode: string; name: string };
 /** 저장(save)은 회수 미리보기(preview)와 함께만 준다 — 끈 칸이 함께 빠지는 하위 그룹 · 사용자를 확인받지 않고는 저장하지 않으므로, 미리보기 없이 저장만 주면 저장이 멈춘다. */
-export type MenuDialogActions = { load: (id: number) => Promise<ActionResult<RoleGroupMenuTree>> } & (
+export type MenuDialogActions = { load: (id: number) => Promise<ActionResult<MenuTree>> } & (
   | { preview?: never; save?: never }
   | {
       preview: (id: number, menus: RoleGroupMenuCells[]) => Promise<ActionResult<RevocationPreview>>;
@@ -75,7 +78,7 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
   const router = useRouter();
   const toast = useToast();
   const can = usePagePermission();
-  const [tree, setTree] = useState<RoleGroupMenuTree | null>(null);
+  const [tree, setTree] = useState<MenuTree | null>(null);
   const [initial, setInitial] = useState<Values>({});
   const [values, setValues] = useState<Values>({});
   const [tab, setTab] = useState<string | null>(null);
@@ -252,9 +255,17 @@ function MenuTable({
   const walk = (list: RoleGroupMenuNode[]) => list.forEach((n) => (rows.push(n), walk(n.children)));
   walk(nodes);
 
-  const box = (label: string, state: { checked: boolean; disabled: boolean }, onToggle: (on: boolean) => void) => (
+  // 일부만 켜진 묶음 · 머리칸은 –(mixed)로 보이고, 누르면 모두 켠다
+  const box = (label: string, state: { checked: boolean; mixed?: boolean; disabled: boolean }, onToggle: (on: boolean) => void) => (
     <span className={`inline-flex ${state.disabled ? "opacity-40" : ""}`}>
-      <Checkbox label="" aria-label={label} checked={state.checked} disabled={locked || state.disabled} onChange={(e) => onToggle(e.target.checked)} />
+      <Checkbox
+        label=""
+        aria-label={label}
+        checked={state.checked}
+        indeterminate={Boolean(state.mixed)}
+        disabled={locked || state.disabled}
+        onChange={(e) => onToggle(e.target.checked)}
+      />
     </span>
   );
 
