@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — 점포 정보 관리를 탭 BP 주소 `/bp/{bpCodeId}/stores` 로 옮겼다(`BP_PATH_SCREENS`). 플랫폼 마스터가 BP 를 골라도 모든 BP 의 점포가 나오던 것 — `/stores` 호출에 `X-Bp-Code-Id` 가 실리지 않았다. 목록 조작 · 상세 · 등록 · 수정 · 삭제 뒤 이동 · 오류 화면 · 엑셀 중계 경로가 주소의 BP 를 잃지 않는다. 쿼리 · `?back=` 은 옛 경로로 두고 이동할 때 `bpPath` · `screenPath()` 로 씌운다. 헤더의 메뉴 링크 · 범위 변경 이동도 옮긴 화면이면 `bpPath` 뒤에 `withScope` 를 붙인다(BP 권한 그룹 링크에도 `?scope=` 가 붙는다 — 그 화면은 쓰지 않는다). 목록 · 상세 · 수정이 api 거절(BP 를 고르지 않음 400 · 403 · 없는 BP 404)을 받으면 오류 화면 대신 그 문장을 띠로 보인다(`StoreDenied` — 판정은 BP 권한 그룹과 함께 `deniedMessageOf`). 머지 순서: front 가 먼저다 — api main 의 가드는 헤더를 검사만 하고 점포 조회에 쓰지 않아 지금 동작 그대로이고, api 의 `/stores` 헤더 판정(alhambra)은 플랫폼 계정이 헤더 없이 부르면 400 이라 front 보다 먼저 들어가면 지금 front 의 플랫폼 점포 화면이 깨진다(2026-10-22 코드 확인).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 권한 메뉴 등록 팝업의 머리칸 · 묶음 칸이 일부만 켜졌으면 「–」로 보인다(S-KUDELB, 공용 `Checkbox` 에 `indeterminate`). BP 권한 그룹에서 그 쪽의 마지막 한 건을 지우면 앞쪽으로 간다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 권한 그룹의 손으로 적은 타입을 생성 타입 별칭으로 바꿨다. BP 메뉴 트리의 권한 유형이 `BA` · `FA` · `FM` 이라 플랫폼 트리 타입과 맞지 않던 것을 고쳐, 공용 메뉴 팝업이 두 트리를 함께 받는다. api #94 머지로 헤더 판정이 main 에 들어간 것도 반영했다.
 * **Update**: [근무스케줄 관리 화면 (구현)](/screens/work-schedules.md) — 지난 주 복사 미리보기(#204): 빈 주에서만 켜지는 「지난 주 복사」, 직원별 지난 주 · 이번 주 · 처리(복사 · 일부 제외 · 제외 사유 · 지난 주 없음), 「n명 복사」. 폐점 점포는 끈다.
