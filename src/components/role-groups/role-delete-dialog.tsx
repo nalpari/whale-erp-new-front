@@ -3,16 +3,34 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button, ConfirmDialog, Field, Select, useToast } from "@/components/common";
-import type { DeletionCandidates, RoleGroupDetail } from "@/lib/platform-role-groups";
-import { deleteRoleGroupAction, getDeletionCandidatesAction } from "./actions";
+import type { DeletionCandidates } from "@/lib/platform-role-groups";
+import type { ActionResult } from "@/lib/role-group-actions";
 import { useCodeLabel } from "@/components/site/code-label";
 import { FailedBand, InfoBand, unknownResult } from "./role-parts";
 
-// 권한 삭제(데모 roles-master 삭제 확인창 · SYSTEM-6). 플랫폼 관리자 추가 권한만 지운다(고정 권한은 버튼이 없다).
+// 권한 삭제(데모 roles-master 삭제 확인창 · SYSTEM-6 · BP CONFIG-5). 고정 권한은 버튼이 없다.
+// 후보 조회 · 삭제는 화면마다 다른 api 라 actions 로 받는다.
 // 열 때 연결 사용자와 대체 권한 후보를 받는다 — 연결 사용자가 있으면 대체 권한을 골라야 하고, 그 사용자들을 한꺼번에 옮긴 뒤 지운다.
-// 대체 후보는 api 가 준다(같은 유형의 지우지 않은 다른 추가 권한). 후보가 없으면 지우지 못한다.
+// 대체 후보는 api 가 준다(같은 유형 · 같은 관리 범위의 지우지 않은 다른 그룹). 후보가 없으면 지우지 못한다 — noCandidateText 로 알린다.
 
-export function RoleDeleteDialog({ role, blockedReason, onDeleted }: { role: RoleGroupDetail; blockedReason?: string | null; onDeleted: () => void }) {
+export type DeleteDialogActions = {
+  candidates: (id: number) => Promise<ActionResult<DeletionCandidates>>;
+  remove: (id: number, input: { updatedAt: string; replacementRoleGroupId?: number }) => Promise<ActionResult>;
+};
+
+export function RoleDeleteDialog({
+  role,
+  actions,
+  noCandidateText,
+  blockedReason,
+  onDeleted,
+}: {
+  role: { roleGroupId: number; roleCode: string; name: string; updatedAt: string };
+  actions: DeleteDialogActions;
+  noCandidateText: string;
+  blockedReason?: string | null;
+  onDeleted: () => void;
+}) {
   const router = useRouter();
   const toast = useToast();
   const [open, setOpen] = useState(false);
@@ -26,7 +44,7 @@ export function RoleDeleteDialog({ role, blockedReason, onDeleted }: { role: Rol
   /** 연결 사용자 · 대체 후보를 받는다. keep 은 이미 보이는 실패 문구 — 다시 받는 경우 그 문구를 지우지 않는다 */
   const loadCandidates = (keep?: string) =>
     startBusy(async () => {
-      const result = await getDeletionCandidatesAction(role.roleGroupId).catch(unknownResult("삭제 대상 조회", false));
+      const result = await actions.candidates(role.roleGroupId).catch(unknownResult("삭제 대상 조회", false));
       if (result.ok) {
         setData(result);
         // 고르던 대체 권한이 후보에서 빠졌으면 다시 고르게 한다
@@ -48,7 +66,7 @@ export function RoleDeleteDialog({ role, blockedReason, onDeleted }: { role: Rol
   const handleDelete = () =>
     startBusy(async () => {
       const replacementRoleGroupId = replacement ? Number(replacement) : undefined;
-      const result = await deleteRoleGroupAction(role.roleGroupId, { replacementRoleGroupId, updatedAt: role.updatedAt }).catch(unknownResult("삭제"));
+      const result = await actions.remove(role.roleGroupId, { replacementRoleGroupId, updatedAt: role.updatedAt }).catch(unknownResult("삭제"));
       if (!result.ok) {
         setFailure(result.message);
         // 그 사이 바뀌었거나 지워졌거나 결과를 모르면 상세 · 목록을 새로 받는다
@@ -122,7 +140,7 @@ export function RoleDeleteDialog({ role, blockedReason, onDeleted }: { role: Rol
           </dl>
           {data && admins.length === 0 && <p className="text-erp-label">연결된 사용자가 없어 바로 삭제합니다. 되돌릴 수 없습니다.</p>}
           {noCandidate && (
-            <p className="text-erp-off">옮길 대체 권한이 없어 지울 수 없습니다. 플랫폼 관리자 추가 권한을 하나 더 만든 뒤 다시 시도해 주세요.</p>
+            <p className="text-erp-off">{noCandidateText}</p>
           )}
           {data && admins.length > 0 && !noCandidate && (
             <>

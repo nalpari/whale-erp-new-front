@@ -115,6 +115,7 @@ export const PAGE_LINKS: PageLink[] = [
   { group: "비로그인", name: "가입 완료", href: "/design/guest/sign-up/complete", source: "기획 시안(Claude 아티팩트 signup-done)", entry: "회원가입 완료 후" },
   { group: "비로그인", name: "도입문의", href: "/design/guest/inquiry", source: "목업 home/inquiry + 회원가입 폼 규격(Figma 시안 없음)", entry: "머리말 도입문의 · 화면마다 「도입문의」 버튼" },
   { group: "비로그인", name: "공지사항 · FAQ", href: "/design/guest/notices", source: "목업 home/notices + 메인 소식·FAQ 판(Figma 시안 없음)", entry: "머리말 공지사항 · 메인 「전체 보기」 · 「전체 질문 보기」(#faq)" },
+  { group: "비로그인", name: "공지사항 상세", href: "/design/guest/notices/detail", source: "데모 home/notice-detail(Figma 시안 없음)", entry: "공지사항 목록의 글 제목" },
 ];
 export const PAGE_LINK_COLUMNS: Column<PageLink>[] = [
   { header: "구분", width: "w-[100px]", cell: (r) => r.group },

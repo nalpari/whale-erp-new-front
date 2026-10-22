@@ -9,8 +9,8 @@ export const LOGIN_KEY_COOKIE = "login-key";
 export const ACCESS_TOKEN_TTL_MS = 60 * 60 * 1000;
 
 /**
- * 쿠키에 담는 값. 토큰은 Next 서버만 읽는다(httpOnly). 계정 이름·BP 는 login-info 로 그리므로 여기 두지 않는다.
- * 권한 유형은 /login 에서 자기 홈을 고르는 데만 쓴다 — 데이터 권한은 api 가 토큰으로 다시 확인한다.
+ * 쿠키에 담는 값. 토큰은 Next 서버만 읽는다(httpOnly). 계정 이름·BP 상호는 login-info 로 그리므로 여기 두지 않는다.
+ * 권한 유형 · 소속 BP 는 어디로 보낼지 고르는 데만 쓴다(자기 홈 — proxy · 공개 화면 링크, BP · 가맹 계정의 남의 BP 주소 → 소속 BP) — 데이터 권한은 api 가 토큰으로 다시 확인한다.
  */
 export interface Session {
   accessToken: string;
@@ -18,6 +18,8 @@ export interface Session {
   /** 접근 토큰이 끝나는 시각(ms). proxy 가 이보다 50분 앞서(받은 지 10분 뒤부터) 갱신한다. */
   accessTokenExpiresAt: number;
   roleTypeCode: string;
+  /** 소속 BP. 이 칸이 생기기 전(2026-10-21)에 로그인한 세션에는 없다 — 그때는 SessionGate 가 보낸다. */
+  bpCodeId?: number;
 }
 
 // shortcut: 생성 타입(api-types.generated.ts)에 /auth/admin/* · code-items 가 아직 없어 api 응답 타입을 손으로 적었다. api openapi.json 에 들어오면 생성 타입으로 바꾼다.
@@ -121,12 +123,18 @@ export function parseSession(raw: string | undefined): Session | null {
   try {
     const s = JSON.parse(raw) as Partial<Session>;
     // 만료 시각이 숫자가 아니면 proxy 의 갱신 비교가 NaN 이 되어 끝난 토큰을 그대로 통과시킨다.
-    return typeof s.accessToken === "string" &&
-      typeof s.refreshToken === "string" &&
-      typeof s.roleTypeCode === "string" &&
-      typeof s.accessTokenExpiresAt === "number"
-      ? (s as Session)
-      : null;
+    if (
+      !(
+        typeof s.accessToken === "string" &&
+        typeof s.refreshToken === "string" &&
+        typeof s.roleTypeCode === "string" &&
+        typeof s.accessTokenExpiresAt === "number"
+      )
+    )
+      return null;
+    // 소속 BP 가 없거나 모양이 틀리면 그 칸만 버린다 — 옛 세션도 로그아웃시키지 않는다(SessionGate 가 대신 보낸다).
+    const { bpCodeId, ...rest } = s as Session;
+    return Number.isInteger(bpCodeId) && bpCodeId! > 0 ? { ...rest, bpCodeId } : rest;
   } catch {
     return null;
   }

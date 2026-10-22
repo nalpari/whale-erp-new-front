@@ -1,11 +1,19 @@
 // node --test src/lib/paper-request.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { stripBp } from "./bp-path.ts";
 import { answersWith401, INQUIRY_SAVE_ROUTE, NOTICE_SAVE_ROUTE, PAPER_ROUTE, sameOrigin, tooLarge } from "./paper-request.ts";
 
 test("answersWith401 — BFF · 종이 계약 등록 · 공지사항 저장 · 문의 등록만 401, 화면 경로는 로그인으로 리다이렉트", () => {
   for (const p of ["/api/contracts", "/api/auth/admin/login-info", "/contracts/paper", "/platform-notices/save", "/support-inquiries/save"]) assert.equal(answersWith401(p), true, p);
   for (const p of ["/contracts", "/contracts/7", "/contracts/paper/x", "/contracts/7/documents/1", "/home", "/apix", "/platform-notices", "/platform-notices/1"]) assert.equal(answersWith401(p), false, p);
+});
+
+test("answersWith401 — proxy 처럼 탭 BP 접두(/bp/{id})를 떼고 보면 옮긴 창구도 401", () => {
+  assert.equal(answersWith401(stripBp("/bp/8/contracts/paper")), true);
+  assert.equal(answersWith401(stripBp("/bp/8/contracts")), false);
+  // 본문 상한도 같은 주소로 본다 — 접두가 붙어도 종이 계약은 21MB
+  assert.equal(tooLarge(stripBp("/bp/8/contracts/paper"), String(21 * 1024 * 1024 + 1)), true);
 });
 
 test("sameOrigin — host 가 Origin 과 같으면 통과(포트까지 본다)", () => {

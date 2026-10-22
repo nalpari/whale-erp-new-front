@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { ApiError, getSession, request, SESSION_COOKIE } from "@/lib/api";
+import { ApiError, bpHeader, getSession, request, SESSION_COOKIE } from "@/lib/api";
 
 // 브라우저가 부르는 api 창구(BFF). 쿠키의 접근 토큰을 붙여 whale-erp-api 를 대신 부른다 — 토큰은 브라우저 스크립트에 나가지 않는다.
 // 토큰 갱신과 세션 없음(401)은 proxy 가 먼저 처리한다.
@@ -12,7 +12,8 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/api/[...path]">)
   if (!session) return NextResponse.json({ message: "로그인이 필요합니다" }, { status: 401 });
   try {
     const body = await request<unknown>(`/${path.map(encodeURIComponent).join("/")}${req.nextUrl.search}`, {
-      headers: { Authorization: `Bearer ${session.accessToken}` },
+      // 탭 BP 는 브라우저(bff())가 주소에서 읽어 실었다 — proxy 가 숫자일 때만 남긴다
+      headers: { Authorization: `Bearer ${session.accessToken}`, ...(await bpHeader()) },
     });
     return NextResponse.json(body);
   } catch (e) {
