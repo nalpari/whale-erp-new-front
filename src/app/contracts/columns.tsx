@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Badge, type Column } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
-import { deadlineNote, periodText, sentText, wageText, type ContractListItem } from "./contract-list";
+import { deadlineNote, periodText, sentText, wageText, withBack, type ContractListItem } from "./contract-list";
 
 type Status = NonNullable<ContractListItem["status"]>;
 
@@ -17,14 +17,23 @@ export function StatusBadge({ status, label }: { status: Status; label: string }
 type Row = ContractListItem & { no: number };
 
 // 상태별 버튼(이어 쓰기 · 삭제 · 재발송 · 새 계약)은 상세 화면 위쪽에 있다. 목록은 직원 이름으로 상세에 들어간다.
-// 임시저장은 상세를 거치지 않고 이어 쓰기 화면으로 바로 간다.
-export function contractColumns(statuses: EnumValue[], now: Date, draftActions: EnumValue[] = [], employmentTypes: EnumValue[] = []): Column<Row>[] {
+// 임시저장은 상세를 거치지 않고 이어 쓰기 화면으로 바로 간다. 상세로는 지금 목록 주소(listHref)를 ?back= 으로 넘겨 [목록]이 같은 조건으로 돌아온다.
+export function contractColumns(
+  statuses: EnumValue[],
+  now: Date,
+  draftActions: EnumValue[] = [],
+  employmentTypes: EnumValue[] = [],
+  listHref = "/contracts",
+): Column<Row>[] {
   return [
     { header: "순번", width: "w-[60px]", cell: (r) => r.no },
     {
       header: "직원",
       cell: (r) => (
-        <Link href={r.status === "DRAFT" ? `/contracts/${r.contractId}/edit` : `/contracts/${r.contractId}`} className="text-erp-link hover:underline">
+        <Link
+          href={r.status === "DRAFT" ? `/contracts/${r.contractId}/edit` : withBack(`/contracts/${r.contractId}`, listHref)}
+          className="text-erp-link hover:underline"
+        >
           {r.staffMemberName}
         </Link>
       ),

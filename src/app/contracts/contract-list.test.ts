@@ -1,14 +1,40 @@
 // node --test src/app/contracts/contract-list.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { deadlineNote, periodText, readListQuery, sentText, toSearch, wageText, withKnownStatus } from "./contract-list.ts";
+import {
+  apiSearch,
+  backHrefOf,
+  deadlineNote,
+  fillScopeOf,
+  periodText,
+  pickedIdsOf,
+  readListQuery,
+  sentText,
+  toSearch,
+  wageText,
+  withBack,
+  withKnownStatus,
+  withPickedStores,
+  withScopeCondition,
+  type ListQuery,
+} from "./contract-list.ts";
+
+const EMPTY: ListQuery = { page: 1, staffMemberName: "", status: [], storeIds: [], storesCleared: false, scope: null };
 
 test("readListQuery 는 빈 값 · 잘못된 page 를 기본값으로 바꾼다", () => {
-  assert.deepEqual(readListQuery({}), { page: 1, storeName: "", staffMemberName: "", status: [] });
+  assert.deepEqual(readListQuery({}), EMPTY);
   assert.equal(readListQuery({ page: "0" }).page, 1);
   assert.equal(readListQuery({ page: "abc" }).page, 1);
   assert.equal(readListQuery({ page: "3" }).page, 3);
-  assert.equal(readListQuery({ storeName: "  서초 " }).storeName, "서초");
+});
+
+test("readListQuery 점포 조건 — 고른 점포가 범위보다 앞서고, 빈 storeIds 는 목록에서 비운 「전체」다", () => {
+  assert.deepEqual(readListQuery({ storeIds: "3,7,3,x,0", scope: "DIRECT" }), { ...EMPTY, storeIds: [3, 7] });
+  assert.deepEqual(readListQuery({ storeIds: "", scope: "DIRECT" }), { ...EMPTY, storesCleared: true });
+  assert.deepEqual(readListQuery({ scope: "STORE:12" }).scope, { type: "STORE", storeId: 12 });
+  assert.deepEqual(readListQuery({ scope: "ALL" }).scope, { type: "ALL" });
+  assert.equal(readListQuery({ scope: "FOO" }).scope, null);
+  assert.equal(readListQuery({ storeIds: Array.from({ length: 1001 }, (_, i) => i + 1).join(",") }).storeIds.length, 1000);
 });
 
 test("readListQuery 는 상태가 하나여도 배열로 준다", () => {
@@ -17,12 +43,56 @@ test("readListQuery 는 상태가 하나여도 배열로 준다", () => {
 });
 
 test("toSearch 는 기본값을 빼고, 상태는 같은 키를 되풀이한다", () => {
-  assert.equal(toSearch({ page: 1, storeName: "", staffMemberName: "", status: [] }), "");
-  assert.equal(
-    toSearch({ page: 2, storeName: "서초", staffMemberName: "", status: ["SIGNED", "REJECTED"] }),
-    "?page=2&storeName=%EC%84%9C%EC%B4%88&status=SIGNED&status=REJECTED",
+  assert.equal(toSearch(EMPTY), "");
+  assert.equal(toSearch({ ...EMPTY, page: 2, status: ["SIGNED", "REJECTED"] }), "?page=2&status=SIGNED&status=REJECTED");
+});
+
+test("toSearch 점포 조건 — 고른 점포 · 비운 「전체」 · 헤더 범위 순, 주소를 다시 읽으면 같은 조건이다", () => {
+  const cases: ListQuery[] = [
+    { ...EMPTY, storeIds: [3, 7] },
+    { ...EMPTY, storesCleared: true },
+    { ...EMPTY, scope: { type: "ALL" } },
+    { ...EMPTY, scope: { type: "STORE", storeId: 12 } },
+  ];
+  assert.deepEqual(
+    cases.map((q) => toSearch(q)),
+    ["?storeIds=3%2C7", "?storeIds=", "?scope=ALL", "?scope=STORE%3A12"],
   );
-  assert.equal(toSearch({ page: 1, storeName: "", staffMemberName: "", status: [] }, { pageSize: "20" }), "?pageSize=20");
+  for (const q of cases) assert.deepEqual(readListQuery(Object.fromEntries(new URLSearchParams(toSearch(q)))), q);
+});
+
+test("apiSearch — 고른 점포 · 점포 하나 범위는 storeIds, 직영 · 가맹 범위는 storeTypes, 전체는 점포 조건 없음", () => {
+  assert.equal(apiSearch(EMPTY, 20), "?pageSize=20");
+  assert.equal(apiSearch({ ...EMPTY, storeIds: [3, 7], scope: null }, 20), "?pageSize=20&storeIds=3%2C7");
+  assert.equal(apiSearch({ ...EMPTY, scope: { type: "STORE", storeId: 12 } }, 20), "?pageSize=20&storeIds=12");
+  assert.equal(apiSearch({ ...EMPTY, scope: { type: "FRANCHISE" } }, 20), "?pageSize=20&storeTypes=FRANCHISE");
+  assert.equal(apiSearch({ ...EMPTY, scope: { type: "ALL" } }, 20), "?pageSize=20");
+  assert.equal(apiSearch({ ...EMPTY, storesCleared: true }, 20), "?pageSize=20");
+  assert.equal(
+    apiSearch({ ...EMPTY, page: 2, staffMemberName: "도윤", status: ["SIGNED"] }, 20),
+    "?page=2&pageSize=20&staffMemberName=%EB%8F%84%EC%9C%A4&status=SIGNED",
+  );
+});
+
+test("점포 조건 바꾸기 · 헤더 범위로 채우기", () => {
+  const q = { ...EMPTY, page: 3, scope: { type: "DIRECT" as const } };
+  assert.deepEqual(withPickedStores(q, [5]), { ...EMPTY, storeIds: [5] });
+  assert.deepEqual(withPickedStores(q, []), { ...EMPTY, storesCleared: true });
+  assert.deepEqual(withScopeCondition({ ...EMPTY, page: 2, storeIds: [5] }, { type: "ALL" }), { ...EMPTY, scope: { type: "ALL" } });
+  // 주소에 점포 조건이 없고 헤더 범위가 전체가 아닐 때만 채운다
+  assert.deepEqual(fillScopeOf(EMPTY, { type: "FRANCHISE" }), { type: "FRANCHISE" });
+  assert.equal(fillScopeOf(EMPTY, { type: "ALL" }), null);
+  assert.equal(fillScopeOf({ ...EMPTY, storesCleared: true }, { type: "FRANCHISE" }), null);
+  assert.equal(fillScopeOf({ ...EMPTY, storeIds: [1] }, { type: "FRANCHISE" }), null);
+  assert.deepEqual(pickedIdsOf({ storeIds: [], scope: { type: "STORE", storeId: 9 } }), [9]);
+});
+
+test("상세의 [목록]은 넘어온 근로계약 목록 주소로만 돌아간다", () => {
+  assert.equal(withBack("/contracts/7", "/contracts"), "/contracts/7");
+  const back = withBack("/contracts/7", "/contracts?storeIds=3&page=2");
+  assert.equal(back, "/contracts/7?back=%2Fcontracts%3FstoreIds%3D3%26page%3D2");
+  assert.equal(backHrefOf(new URLSearchParams(back.split("?")[1]).get("back") ?? undefined), "/contracts?storeIds=3&page=2");
+  for (const bad of ["https://evil.example/contracts", "//evil/contracts", "/stores", "/contracts/7", undefined]) assert.equal(backHrefOf(bad), "/contracts", String(bad));
 });
 
 test("기간 · 급여 표기", () => {
@@ -54,7 +124,6 @@ test("서명 대기만 남은 날을 붙인다", () => {
 test("api 가 400 을 줄 주소 값은 보내기 전에 거른다", () => {
   // 이름 검색어는 api @MaxLength(50) 에 맞춰 자른다
   assert.equal(readListQuery({ staffMemberName: "가".repeat(60) }).staffMemberName.length, 50);
-  assert.equal(readListQuery({ storeName: "x".repeat(51) }).storeName.length, 50);
   // 모르는 상태 값은 뺀다
   const q = readListQuery({ status: ["SIGNED", "FOO"] });
   assert.deepEqual(withKnownStatus(q, [{ value: "SIGNED" }, { value: "DRAFT" }]).status, ["SIGNED"]);

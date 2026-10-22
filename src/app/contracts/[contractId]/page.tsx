@@ -4,6 +4,7 @@ import { Button, DataTable, DetailTable, DetailValues, PageBar } from "@/compone
 import { ApiError, authHeaders, getEnum, request } from "@/lib/api";
 import { labelOf } from "@/lib/enums";
 import { StatusBadge } from "../columns";
+import { backHrefOf } from "../contract-list";
 import { ContractPermission } from "../contract-permission";
 import { formatPhone, type ContractDetail } from "../new/contract-form-model";
 import { documentNoticeOf } from "./document-notice";
@@ -186,7 +187,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
             <div className="flex items-center gap-[6px]">
               <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">근로계약 상세</h2>
               {buttons}
-              <Button href="/contracts">목록</Button>
+              <Button href={backHrefOf(query.back)}>목록</Button>
             </div>
             {sendNotice && (
               <p role="alert" className="rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] font-semibold text-erp-off">

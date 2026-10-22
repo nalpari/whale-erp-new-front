@@ -3,9 +3,10 @@ import { ApiError, authHeaders, getEnum, request } from "@/lib/api";
 import { contractColumns } from "./columns";
 import { ContractPermission } from "./contract-permission";
 import { ContractFilters, ContractPagination } from "./contract-filters";
-import { PAGE_SIZE, readListQuery, toSearch, withKnownStatus, type ContractListPage } from "./contract-list";
+import { PAGE_SIZE, apiSearch, listHrefOf, readListQuery, toSearch, withKnownStatus, type ContractListPage } from "./contract-list";
 
 // 근로계약 관리 목록. docs/demo/staff/contracts.html 을 공통 컴포넌트로 옮겼고, 목록은 GET /contracts 에서 받는다.
+// 점포 조건은 목록에서 고른 점포(storeIds) 또는 헤더가 실어 온 범위(scope)다 — 직영 · 가맹 전체는 점포 유형으로 api 에 보낸다(apiSearch, WHALEERP-133).
 export default async function ContractsPage({ searchParams }: PageProps<"/contracts">) {
   const asked = readListQuery(await searchParams);
   const [statuses, draftActions, employmentTypes, headers] = await Promise.all([
@@ -23,7 +24,7 @@ export default async function ContractsPage({ searchParams }: PageProps<"/contra
   let notice = "로그인이 필요합니다.";
   if (headers.Authorization) {
     try {
-      page = await request<ContractListPage>(`/contracts${toSearch(query, { pageSize: String(PAGE_SIZE) })}`, {
+      page = await request<ContractListPage>(`/contracts${apiSearch(query, PAGE_SIZE)}`, {
         headers,
       });
     } catch (e) {
@@ -48,7 +49,7 @@ export default async function ContractsPage({ searchParams }: PageProps<"/contra
         <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px]">
           <ListToolbar total={page?.total ?? 0} />
           <DataTable
-            columns={contractColumns(statuses, new Date(), draftActions, employmentTypes)}
+            columns={contractColumns(statuses, new Date(), draftActions, employmentTypes, listHrefOf(query))}
             rows={rows}
             rowKey={(r) => r.contractId}
             empty={page ? undefined : notice}
