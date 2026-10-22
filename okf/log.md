@@ -1,6 +1,8 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [근무스케줄 관리 화면 (구현)](/screens/work-schedules.md) — front #93 리뷰 반영: 고른 날의 주소 기본값을 읽기 · 쓰기가 같은 함수(`defaultDay`)로 보게 해 이번 주 월요일 · 이번 달 1일을 고를 수 있게 했다. 거꾸로 된 변경 이력 기간은 비우고, 이력을 받지 못하면 패널 안에만 안내한다. 자정을 넘어온 전날 근무는 인원 줄 · 공백에서 따로 본다(2026-10-22 재영, `carryOver`) — 주간은 전주 일요일부터 8일을 받는다.
+* **Create**: [근무스케줄 관리 화면 (구현)](/screens/work-schedules.md) — `/work-schedules` 주간 · 월간 보기(#202 · #343)와 변경 이력 패널(#608). 근무스케줄 api 타입은 main 의 재생성분(front #90)을 그대로 쓴다. 인원 줄은 api 30분 칸의 작은 값으로 한 시간 칸, 공백은 30분 단위, 가린 직원은 줄만. 직원 상세 근무스케줄 칸의 「관리」를 `/work-schedules?store=<근무지>` 로 걸었다(MN000010 조회 권한이 없으면 흐린 「관리」, `MenuManageLink` — 그 직원의 근무지 · 영역이 보던 주로 연다) — [직원 정보 관리 화면 (구현)](/screens/staff-members.md).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — api #113 머지(86f05e1)에 맞춰 `api-types.generated.ts` 를 api main 기준으로 다시 만들었다(front #90). 지운 스키마 · 경로는 없고 BP 권한 그룹 · 내 정보 쪽 스키마 8 · 경로 8 이 더해졌다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — api #113 이 TO-DO 목록 경로(`GET /staff-members/:id/todos`)에도 TO-DO 관리 조회 권한을 걸어 403 「조회 권한이 없습니다.」가 올 수 있게 됐다. 직원 상세 TO-DO 칸은 목록 · 요약 중 한 경로라도 그 403 이면 영역 전체를 막는다(`isAreaForbidden`).
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — front #90 리뷰 반영: 직원 상세 TO-DO 영역을 TO-DO 관리 조회 권한으로 목록까지 막고(요약 경로의 403 으로 판단, 2026-10-22 노영주), 근로계약 · TO-DO 칸 머리의 「관리」를 그 메뉴 조회 권한이 없으면 흐리게 둔다(`manage-link.tsx`).

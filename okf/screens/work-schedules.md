@@ -1,0 +1,70 @@
+---
+type: Screen
+title: 근무스케줄 관리 화면 (구현)
+description: /work-schedules 주간 · 월간 보기와 변경 이력 패널. 데이터는 근무스케줄 api(GET /work-schedules · GET /work-schedules/histories)다. 등록 · 수정 · 삭제 패널과 지난 주 복사는 다음 PR.
+tags: [staff, work-schedule, screen]
+status: draft
+generated: { by: claude-code/opus-5.5, at: 2026-10-21T09:21:20Z }
+sources:
+  - id: page
+    resource: ../../src/app/work-schedules/page.tsx
+    title: 화면 틀 · 도구 줄(근무지 · 보기 · 주 이동) · 데이터 읽기
+    last_modified: 2026-10-21T09:21:20Z
+  - id: query
+    resource: ../../src/app/work-schedules/work-schedule-query.ts
+    title: 주소 ↔ 조회 조건 ↔ api 쿼리, 주 · 달 · 42일 범위
+    last_modified: 2026-10-21T09:21:20Z
+  - id: view
+    resource: ../../src/app/work-schedules/work-schedule-view.ts
+    title: 막대 · 근무 인원 줄(30분 → 1시간) · 공백 · 이력 한 줄
+    last_modified: 2026-10-21T09:21:20Z
+  - id: week
+    resource: ../../src/app/work-schedules/schedule-week.tsx
+    title: 주간 보기
+    last_modified: 2026-10-21T09:21:20Z
+  - id: month
+    resource: ../../src/app/work-schedules/schedule-month.tsx
+    title: 월간 보기
+    last_modified: 2026-10-21T09:21:20Z
+  - id: controls
+    resource: ../../src/app/work-schedules/schedule-controls.tsx
+    title: 근무지 고르기 · 날짜로 주 고르기 · 변경 이력 패널
+    last_modified: 2026-10-21T09:21:20Z
+  - id: api
+    resource: ../../src/lib/work-schedules-api.ts
+    title: GET /work-schedules · GET /work-schedules/histories(404 → null · 빈 목록)
+    last_modified: 2026-10-21T09:21:20Z
+---
+
+# What it is
+
+근무스케줄 관리(`/work-schedules`, 메뉴 MN000010 「근무스케줄 관리」 — #202 · #343 · #608). 목업 `docs/mockup/staff/index.html` 근무스케줄 탭과
+데모 `docs/demo/staff/work-schedules.html`(원본 `docs/demo/src/staff-parts.mjs` 의 `schedWeek` · `schedMonth` · `coverRow`)을 공통 컴포넌트로 옮겼다.
+계획은 `docs/plans/2026-10-21-work-schedules-screen.md`, api 결정은 api `docs/plans/2026-10-21-work-schedules.md` 다.
+
+화면 상태는 주소에만 둔다: `?store=&view=week|month&week=<월요일>&day=&month=YYYY-MM&history=1&hfrom=&hto=&hstaff=&hpage=&hsize=`. 기본값(이번 주 · 오늘 · 이번 달)은 주소에서 뺀다.
+근무스케줄은 점포 하나씩 본다 — 주소에 점포가 없으면 헤더 범위가 점포 하나일 때 그 점포(`?scope=STORE:12` 도 읽는다), 아니면 폐점이 아닌 첫 점포로 옮긴다(`SchedulePicker`).
+
+# 주간 보기
+
+* 요일 칩 7개(월~일, 그날 근무 인원 `days[].headcount`) → 고른 요일의 시간축 24칸(00~23시).
+* 직원 줄은 그날 `schedulableDates` 에 든 직원만(휴무 포함, STAFF-29). 본사에게 가려진 직원(`isMasked`)은 줄을 두되 이름 · 막대를 비우고 key 는 순번이다(STAFF-39).
+* 막대는 시작 · 길이의 비율, 자정을 넘으면 24시에서 자르고 글자로 「22:00~익일 02:00」(STAFF-33), 24시에 끝나면 「~24:00」. 쪼갠 근무는 한 줄에 막대 여럿.
+* 근무 인원 줄 24칸 — api 의 30분 칸 48개에서 **한 시간 칸 = 두 반칸 중 작은 값**(30분 공백도 0 으로 보이게). 그날 첫 근무 시작 전 · 마지막 근무 종료 뒤는 빈칸이고, 걸친 시간(09:30 시작)은 근무 안쪽 반칸만 본다. api 가 전날 넘어온 새벽 근무도 센다(api Q4). 전날 시작해 넘어온 근무는 따로 본다 — 넘어온 근무가 덮는 새벽 칸은 세고, 끝난 뒤부터 그날 첫 근무 시작 전까지는 빈칸이다(2026-10-22 재영). 그래서 주간은 전주 일요일부터 8일을 받는다. 가린 직원의 넘어온 근무는 items 에 없어 그날 근무로 센다. 0 빨강 · 1 회색 · 2 이상 파랑 + 숫자.
+* 공백 줄 — 그날 시작한 근무의 첫 시작~마지막 종료 사이 0 인 구간을 30분 단위로 「공백 1시간 30분 · 15:00-16:30 에 배정된 직원이 없습니다」. 「이 시간대에 배정」 버튼은 등록 패널과 함께 붙인다.
+
+# 월간 보기
+
+* 달력 6주(그 달 1일이 든 주의 월요일부터 42일)를 한 번에 읽는다(api 상한 42일). 칸에는 `headcount` 만, 그 달 밖의 날은 흐린 칸.
+* 왼쪽: 고른 날 · ‹ › 날 이동 · 근무자(이름 · 고용 형태 · 시간). 본사에게 가려진 직원은 이름 없이 「그 밖에 n명(본사 제공 동의 없음)」으로만 센다.
+
+# 변경 이력
+
+* 「변경 이력」(쪽 머리)으로 여는 `SlidePanel`(바깥 눌러 닫힘 — 잃을 입력이 없다). 필터: 변경일 기간(`DateField` 둘) · 직원(그 기간 응답의 가리지 않은 직원). 20 · 50 · 100 + `Pagination`.
+* 줄: 일시(한국 시각 MM-DD HH:mm) · 구분(추가 · 수정 · 삭제 — 삭제는 빨강 꼬리표에 글자로도) · 「서지안 09-04 13:00-21:30 → 09:00-17:00 · 정하윤」. 근무일이 바뀌면 뒤에도 날짜, 휴게만 바뀌면 「휴게 30분 → 60분」.
+* 본사 계정 · 가맹 점포에서 동의 없는 직원의 이력은 api 가 줄째로 뺀다(api Q12).
+
+# 아직 없는 것
+
+* 등록 · 수정 · 삭제 패널(#203)과 「이 시간대에 배정」, 지난 주 복사 미리보기(#204) — 다음 PR(계획 문서 「PR 나눔」 2 · 3).
+* 직원 상세의 근무스케줄 칸 안(지금 「준비 중입니다.」). 「관리」 링크는 걸었다(`/work-schedules?store=<근무지>`).
