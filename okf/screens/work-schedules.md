@@ -4,7 +4,7 @@ title: 근무스케줄 관리 화면 (구현)
 description: /work-schedules 주간 · 월간 보기, 변경 이력 패널, 등록 · 수정 · 삭제 패널(한 명 · 여러 명 일괄), 지난 주 복사 미리보기. 데이터는 근무스케줄 api 다.
 tags: [staff, work-schedule, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-22T05:02:26Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-22T06:09:19Z }
 sources:
   - id: page
     resource: ../../src/app/work-schedules/page.tsx
@@ -99,4 +99,4 @@ sources:
 
 # 아직 없는 것
 
-* api 쪽 폐점 점포 등록 거절(WHALEERP-614) — 지금은 화면만 막는다. 직원 상세 근무스케줄 칸은 `GET /staff-members/:id/work-schedules`(WHALEERP-185, 기간 필터 · 표 · 쪽)로 받고, 「관리」는 주 없이 `/work-schedules?store=<근무지>`(이 화면 기본인 이번 주)로 연다.
+* api 쪽 폐점 점포 등록 거절(WHALEERP-614) — 지금은 화면만 막는다. 직원 상세 근무스케줄 칸은 데모대로 한 주 보기로 되돌렸다(`GET /staff-members/:id/summary/work-schedules?weekStart=`, 2026-10-22 노영주) — 「관리」는 `/work-schedules?store=<근무지>&week=<칸이 보던 주 월요일>` 로 연다. 기간 목록 경로(`…/work-schedules`, WHALEERP-185)는 화면에서 부르지 않는다.

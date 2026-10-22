@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { createContext, use, useOptimistic, useTransition, type ReactNode } from "react";
+import { useCurrentBp } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import { storesHref, type StoresQuery } from "./stores-query";
 
 type Navigation = { current: StoresQuery; navigate: (next: StoresQuery) => void };
@@ -15,12 +17,14 @@ const NavigationContext = createContext<Navigation | null>(null);
  */
 export function StoreListNavigationProvider({ query, children }: { query: StoresQuery; children: ReactNode }) {
   const router = useRouter();
+  const bp = useCurrentBp().bpCodeId;
   const [, startTransition] = useTransition();
   const [current, setCurrent] = useOptimistic(query);
   const navigate = (next: StoresQuery) =>
     startTransition(() => {
       setCurrent(next);
-      router.replace(storesHref(next), { scroll: false });
+      // 화면 주소는 탭 BP 를 붙인다 — proxy 가 이 폴더로 rewrite 하며 헤더에 싣는다
+      router.replace(bpPath(bp, storesHref(next)), { scroll: false });
     });
   return <NavigationContext value={{ current, navigate }}>{children}</NavigationContext>;
 }

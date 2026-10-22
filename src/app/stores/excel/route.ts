@@ -2,7 +2,8 @@ import { errorMessageOf } from "@/lib/download";
 import { getStoresExcel } from "@/lib/stores";
 import { parseStoresQuery, scopeTypeMismatch, storeListQueryOf, withDefaultStatuses } from "../stores-query";
 
-// 점포 목록 엑셀 내려받기 중계. 브라우저는 api 토큰을 모르므로 이 경로가 서버에서 토큰을 붙여 GET /stores/excel 을 부르고,
+// 점포 목록 엑셀 내려받기 중계. 브라우저는 api 토큰을 모르므로 이 경로가 서버에서 토큰과 탭 BP(proxy 가 /bp/{id}/stores/excel 에서 넣은
+// 헤더 — 화면은 이 주소로 부른다)를 붙여 GET /stores/excel 을 부르고,
 // 파일은 그대로 흘려보낸다(Content-Length 를 넘겨 화면이 받은 비율을 그린다). 조건은 목록 주소와 같은 쿼리를 읽는다.
 // 실패는 { message } JSON 으로 — api 의 상태(400 1만 건 이상 · 429 1분 제한 · 403 권한)는 그대로, 조건이 비면 400, api 주소 설정이 없으면 500, 연결 실패는 502.
 // 세션이 없으면 토큰 없이 부르므로 api 가 401 을 주고, 그 상태를 그대로 넘긴다.

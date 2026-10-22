@@ -144,7 +144,7 @@ function ServiceSection({
           <GuestButton tone="navy" arrow>
             요금 안내 보기
           </GuestButton>
-          <GuestButton tone="soft" href={routes.inquiry}>
+          <GuestButton tone="soft" href={routes.leads}>
             도입문의
           </GuestButton>
         </div>

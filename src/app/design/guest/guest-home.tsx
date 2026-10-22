@@ -107,7 +107,7 @@ function Billboard({ routes }: { routes: GuestRoutes }) {
               <Arrow />
             </Link>
             <Link
-              href={routes.inquiry}
+              href={routes.leads}
               className={`flex h-[48px] w-[100px] items-center justify-center rounded-[6px] border border-transparent bg-white/90 text-[18px] leading-[1.5] font-semibold text-guest-navy hover:border-guest-navy hover:bg-white ${BUTTON_MOTION}`}
             >
               도입문의
@@ -251,7 +251,7 @@ function Personas({ routes }: { routes: GuestRoutes }) {
                   <GuestButton tone="navy" href={p.route && routes[p.route]} arrow grow>
                     {p.cta}
                   </GuestButton>
-                  <GuestButton tone="soft" href={routes.inquiry}>
+                  <GuestButton tone="soft" href={routes.leads}>
                     도입문의
                   </GuestButton>
                 </div>

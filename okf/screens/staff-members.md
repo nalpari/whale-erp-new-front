@@ -1,10 +1,10 @@
 ---
 type: Screen
 title: 직원 정보 관리 화면 (구현)
-description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 오른쪽에 근무스케줄 · 출퇴근 현황(준비 중) · 급여명세서 · TO-DO 영역을 영역마다 따로 받아 두었다 — 근무스케줄은 근무스케줄 표 api(GET /staff-members/:id/work-schedules, WHALEERP-185)로 기간 필터 · 페이지 번호 · 기간 근무시간 합계를, 나머지는 상세 요약 api(#183)로 받는다. 남은 것.
+description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 오른쪽에 근무스케줄 · 출퇴근 현황(준비 중) · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다). 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-22T05:02:26Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-22T06:09:19Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -12,11 +12,11 @@ sources:
     last_modified: 2026-10-21T19:30:00Z
   - id: staff-members-api
     resource: ../../src/lib/staff-members-api.ts
-    title: api 호출 — 목록 · 상세 · 상세 영역 요약 · 근무스케줄 표(WHALEERP-185) · 퇴직 미리 보기 · 처리 · 변경 · 취소 · 비밀번호 재설정 링크
-    last_modified: 2026-10-22T05:02:26Z
+    title: api 호출 — 목록 · 상세 · 상세 영역 요약(근무스케줄은 한 주) · 퇴직 미리 보기 · 처리 · 변경 · 취소 · 비밀번호 재설정 링크
+    last_modified: 2026-10-22T06:09:19Z
   - id: api-types-generated
     resource: ../../src/lib/api-types.generated.ts
-    title: 생성한 api 타입 — 근무스케줄 표 응답 StaffMemberWorkScheduleListResponseDto · 기간 enum StaffWorkSchedulePeriod(api WHALEERP-185, giza 에서 뽑음)
+    title: 생성한 api 타입 — 근무스케줄 칸은 한 주 응답 StaffMemberWeekScheduleResponseDto, TO-DO 칸은 TodoItemDto
     last_modified: 2026-10-22T05:02:26Z
   - id: staff-list-query
     resource: ../../src/app/staff-members/staff-list-query.ts
@@ -52,8 +52,8 @@ sources:
     last_modified: 2026-10-12T08:33:58Z
   - id: staff-detail-page
     resource: ../../src/app/staff-members/[id]/page.tsx
-    title: 직원 상세 화면(틀 + 기본 정보 · 퇴직일 · 가입 상태 · 초대 · 이메일 + 비밀번호 초기화 자리 + 근로계약 칸 + 오른쪽 영역 배치)
-    last_modified: 2026-10-22T05:02:26Z
+    title: 직원 상세 화면(틀 + 기본 정보 · 퇴직일 · 가입 상태 · 초대 · 이메일 + 비밀번호 초기화 자리 + 근로계약 칸 + 오른쪽 영역 배치 · 근무스케줄 주(주소 week))
+    last_modified: 2026-10-22T06:09:19Z
   - id: contract-box
     resource: ../../src/app/staff-members/[id]/contract-box.tsx
     title: 상세 근로계약 칸 — 근로계약 영역 요약(api #183)을 받고 실패 · 권한 없음이면 이 칸만 안내, 계약이 없으면 작성으로(WHALEERP-184). 줄 라벨 칸은 DetailTable 과 같은 폭(110px)을 옮겨 쓴다.
@@ -64,24 +64,36 @@ sources:
     last_modified: 2026-10-21T18:10:00Z
   - id: summary-view
     resource: ../../src/app/staff-members/[id]/summary-view.ts
-    title: 상세 요약 영역 판정 — 영역 403 문구 가르기 · 근무스케줄 주소 값(기간 · 쪽 · 건수) · 날짜 칸 · 급여명세서 줄 · TO-DO 요약 줄 · 이력 문구
-    last_modified: 2026-10-22T05:02:26Z
+    title: 상세 요약 영역 판정 — 영역 403 문구 가르기 · 근무스케줄 주(주소 week · 주 글자 · 주 선택 달력 판) · 날짜 칸 · 급여명세서 줄 · TO-DO 배정 · 상태 글자 · 요약 줄 · 이력 문구
+    last_modified: 2026-10-22T06:09:19Z
   - id: summary-boxes
     resource: ../../src/app/staff-members/[id]/summary-boxes.tsx
-    title: 상세 오른쪽 영역(근무스케줄 표 · 급여명세서 · TO-DO 목록 · 요약 · 최근 처리 이력)
-    last_modified: 2026-10-22T05:02:26Z
+    title: 상세 오른쪽 영역(근무스케줄 한 주 표 · 급여명세서 · TO-DO 목록 · 요약 · 최근 처리 이력)
+    last_modified: 2026-10-22T06:09:19Z
   - id: summary-load
     resource: ../../src/app/staff-members/[id]/summary-load.ts
     title: 상세 영역 데이터 받기 — loadArea(영역 실패 판정 · 로그) · loadLabels(enum 한글)
     last_modified: 2026-10-21T19:00:00Z
   - id: manage-link
     resource: ../../src/app/staff-members/[id]/manage-link.tsx
-    title: 상세 영역 머리의 「관리」 — 그 메뉴 조회 권한이 없으면 흐리게
-    last_modified: 2026-10-22T09:00:00Z
-  - id: schedule-controls
-    resource: ../../src/app/staff-members/[id]/schedule-controls.tsx
-    title: 근무스케줄 영역 기간 · 페이지당 건수 선택칸과 페이지 번호(주소 schedulePeriod · schedulePage · schedulePageSize)
-    last_modified: 2026-10-22T05:02:26Z
+    title: 상세 영역 머리의 「관리」 — 그 메뉴 조회 권한이 없으면 흐리게. 다른 메뉴 글자 링크(MenuTextLink) — 권한이 없으면 글자만
+    last_modified: 2026-10-22T06:09:19Z
+  - id: week-nav
+    resource: ../../src/app/staff-members/[id]/week-nav.tsx
+    title: 근무스케줄 칸 머리의 주 넘김 · 주 선택 달력(popover, 데모 weekNav · erp.js initWeeks)
+    last_modified: 2026-10-22T06:09:19Z
+  - id: todo-links
+    resource: ../../src/app/staff-members/[id]/todo-links.tsx
+    title: TO-DO 칸 제목 링크 — TO-DO 리스트 관리 조회 권한이 없으면 글자만
+    last_modified: 2026-10-22T06:09:19Z
+  - id: data-table
+    resource: ../../src/components/common/data-table.tsx
+    title: 공통 표 — 열 이름 줄 모양 headVariant(default · plain · none). 직원 상세만 plain · none 을 켠다
+    last_modified: 2026-10-22T06:09:19Z
+  - id: menus
+    resource: ../../src/lib/menus.ts
+    title: 메뉴 코드 — 직원 상세가 보는 다른 메뉴(근로계약 · 급여명세서 MN000009 · 근무스케줄 · TO-DO)
+    last_modified: 2026-10-22T06:09:19Z
   - id: password-reset-dialog
     resource: ../../src/app/staff-members/[id]/password-reset-dialog.tsx
     title: 비밀번호 초기화 확인창(WHALEERP-177)
@@ -129,10 +141,10 @@ sources:
 바깥 틀과 `ErpRoot` 를 씌운다. 목록 · 상세 page 는 `PageBar`(제목 줄)부터 그리고, `layout.tsx` 는 탭 제목만 둔다
 (WHALEERP-593, 2026-10-14). 주소는 메뉴 url 과 같아야 열린다 — 「직원 정보 관리」(MN000005) 메뉴 url 을 `/staff` 에서
 `/staff-members` 로 바꾸는 것은 1팀 일이고(#592 결정), 반영 전에는 메뉴 권한 확인에서 막힌다. 상세의 「관리」 링크는 같은
-결정의 메뉴 url 로 건다. 지금은 근로계약(그 계약 상세 `/contracts/{id}`, 계약이 없으면 `/contracts`, MN000006) · TO-DO(`/todos`, MN000026) · 근무스케줄(`/work-schedules?store=<근무지>` — 주는 그 화면 기본인 이번 주, MN000010)만 링크이고,
+결정의 메뉴 url 로 건다. 지금은 근로계약(그 계약 상세 `/contracts/{id}`, 계약이 없으면 `/contracts`, MN000006) · TO-DO(`/todos`, MN000026) · 근무스케줄(`/work-schedules?store=<근무지>&week=<칸이 보던 주 월요일>`, MN000010) · 급여명세서(`/payslips`, MN000009)가 링크이고,
 그 메뉴 조회 권한이 없으면 흐린 「관리」로 둔다(`MenuManageLink`, `manage-link.tsx` — front #90 리뷰). 권한을 보지 않는 링크를 걸 길은 `Box` 에 두지 않았다.
-출퇴근 현황(`/attendance-records`) · 급여명세서(`/payslips`)는 흐린 「관리」로 두었다 — 걸면 메뉴가
-없을 때 「접근 권한이 없는 메뉴」로 막혀 권한 문제처럼 보인다(front #26 리뷰). 각 관리 화면으로 가는 링크는 WHALEERP-186 몫이다.
+출퇴근 현황(`/attendance-records`)은 화면이 없어 흐린 「관리」로 두었다 — 걸면 메뉴가
+없을 때 「접근 권한이 없는 메뉴」로 막혀 권한 문제처럼 보인다(front #26 리뷰).
 
 # 목록 조회 조건
 
@@ -158,7 +170,8 @@ sources:
 # 상세 (WHALEERP-184)
 
 배치는 데모 `docs/demo/src/pages/staff/detail.mjs` 와 같은 5:7 두 단이다 — 왼쪽은 기본 정보 · 비밀번호 초기화 · 근로계약, 오른쪽은
-근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO.
+근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO. 근무스케줄 · 급여명세서 표의 열 이름 줄은 데모 `whiteHead` 대로 흰 바탕 · 600 먹색 글자(공통 `DataTable` `headVariant="plain"` —
+기본값은 그대로라 다른 화면은 바뀌지 않는다)이고, 표 아래 요약 줄은 데모 `foot` 처럼 모서리를 둥글리지 않는다.
 
 **기본 정보**는 상세 응답(`GET /staff-members/:id`)으로 채운다. api #183 이 직무(`jobTitle`) · 입사일(`hiredDate`) · 생년월일(`birthDate`)을 더했다.
 
@@ -174,7 +187,7 @@ sources:
 * 가린 직원(본사 제공 동의 없는 가맹 직원) · 업무 범위 밖 · 없는 직원은 상세 api 가 404 라 상세로 들어가지 못한다(#184 · #599).
   본사 제공 동의한 가맹 직원은 본사 역할에게도 상세가 열리지만, 비밀번호 초기화는 범위가 달라 버튼이 없다(아래).
 
-**나머지 영역은 영역마다 따로 받는다** — 근무스케줄은 근무스케줄 표 api(`GET /staff-members/:id/work-schedules`, WHALEERP-185), 근로계약 · 급여명세서 · TO-DO 는
+**나머지 영역은 영역마다 따로 받는다** — 근로계약 · 근무스케줄 · 급여명세서 · TO-DO 모두
 상세 요약 api(`GET /staff-members/:id/summary/…`, api #183)다(`summary-boxes.tsx`, 근로계약은 `contract-box.tsx`). 영역마다 `Suspense` 안의 서버 컴포넌트라 기본 정보가 먼저 그려지고, 한 영역이 실패해도 나머지는 그대로다.
 
 * 경로마다 직원 정보 관리 조회 + 그 영역 메뉴 조회 권한이 필요하다. 영역 권한이 없으면 그 영역만 403 이고 message 가 정확히
@@ -182,22 +195,27 @@ sources:
   `summary-view.ts` 의 `AREA_READ_DENIED_MESSAGE` 한 곳) — 「{영역}을 볼 권한이 없습니다.」만 보이고 다시 하기는 두지 않으며 로그도 남기지 않는다.
   다른 403(공통 「접근 권한이 없습니다. 관리자에게 문의해 주세요.」) · 404 · 5xx · 연결 실패는 「{영역}을 불러오지 못했습니다.」 + 「다시 하기」
   (`router.refresh()`)이고 상태 코드와 함께 서버 로그에 남긴다.
-* **근무스케줄**은 근무스케줄 표 api(`GET /staff-members/:id/work-schedules?period=&page=&pageSize=`, WHALEERP-185, 근무스케줄 관리 조회 권한)로
-  고른 기간의 한 쪽을 받는다 — 그 직원의 근무스케줄(3년 지난 것은 파기 배치가 지워 남지 않는다), 근무일 최신순 · 같은 날은 시작 시각 순, 미래에 잡힌 근무도 든다. 칸 머리에 기간 선택칸(이번 주 · 최근 4주 ·
-  최근 3개월 · 최근 1년 · 전체, 기본 이번 주)과 페이지당 건수(20 · 50 · 100, 목록과 같은 `PAGE_SIZES`)를, 표 아래에 공통 `Pagination` 을 둔다(`schedule-controls.tsx`).
-  주소 값은 `schedulePeriod` · `schedulePage` · `schedulePageSize`(`parseScheduleQuery`) — 모르는 값은 오류 없이 기본(이번 주 · 1쪽 · 20건)이고, 기본값은 주소에서 뺀다.
-  바꿀 때는 다른 조회 조건(목록으로 돌아갈 값)을 둔 채 이 값만 바꾸고(`scheduleHref`, `replace`, 스크롤 그대로) 기간 · 건수를 바꾸면 1쪽으로 간다. 칸 머리의
-  기간 · 건수와 표 아래 쪽 번호는 칸을 감싼 `ScheduleNavigationProvider` 의 낙관적 조건 하나를 함께 써, 기간을 바꾸고 응답 전에 쪽을 눌러도 새 기간이 남는다.
-  WHALEERP-184 주 넘김의 `weekStart` 는 읽지 않는다. 표는 날짜(`MM-DD 요일`, 오늘과 다른 해면 `YYYY-MM-DD 요일`) · 근무지 · 시작 · 종료(근무스케줄 화면과 같은 `endLabel` — 다음 날이면 「익일 02:00」, 다음 날 0시면 「24:00」) 네 칸이고, 아래에 고른 기간 전체(쪽과 무관)의
-  근무시간 합계 줄(응답 `totalWorkMinutes`, 시간 소수 한 자리)이다 — 이번 주면 「주간 근무시간 합계」, 다른 기간은 「기간 근무시간 합계」이고 빈 기간에도 0.0h 를 보인다.
-  빈 표는 이번 주면 「이 주에 잡힌 근무스케줄이 없습니다.」, 다른 기간은 「이 기간에 잡힌 근무스케줄이 없습니다.」다(2026-10-22 노영주).
-  권한 · 실패는 위 영역 규칙과 같다. 칸 머리 「관리」는 `/work-schedules?store=<근무지>` 다(주는 그 화면의 기본인 이번 주). 응답 · 기간 타입은 생성 타입
-  (`StaffMemberWorkScheduleListResponseDto` · `StaffWorkSchedulePeriod`)이고 기간 순서는 `summary-view.ts` 의 `STAFF_WORK_SCHEDULE_PERIODS` 다. 상세 요약의 주 api(`…/summary/work-schedules`)는 화면에서 더 부르지 않는다(api 함수를 지웠다).
+* **근무스케줄**은 데모(`detail.mjs` · `staff-parts.mjs` weekNav · `erp.js` initWeeks)대로 **한 주(월~일)**다 — WHALEERP-185 의 기간 선택 · 건수 · 쪽 번호를
+  걷고 되돌렸다(2026-10-22 노영주). 상세 요약의 주 api(`GET /staff-members/:id/summary/work-schedules?weekStart=<월요일>`, 근무스케줄 관리 조회 권한, 생성 타입
+  `StaffMemberWeekScheduleResponseDto`)로 받는다. api 쪽 기간 목록 경로(`…/work-schedules`)는 남아 있지만 화면은 부르지 않는다.
+  칸 머리(`week-nav.tsx`)는 ‹ 이전 주 · 가운데 버튼 「2026년 10-19 ~ 10-25」(연도는 그 주 월요일의 해, `weekLabel`) · 다음 주 › 이고, 가운데 버튼은 주 선택 달력(네이티브
+  popover auto · role=dialog 「주 선택」 · aria-expanded, 버튼 아래 6px 가운데 · 화면 끝 8px 안쪽, 급여명세서 목록 달 판과 같은 모양)을 연다. 달력은 그 달에 목요일이 드는 주들을
+  「N주」 줄로 보이고(몇째 주는 목요일이 든 달 기준 — 9월 1주 = 08-31 ~ 09-06, `weekRowsOf` · `weekMonthOf`), 지금 주 줄은 브랜드 바탕(aria-pressed)이며 열 때 그 줄에 포커스가 간다.
+  ‹ › 로 달만 바꾸면 고른 주는 그대로, 줄을 누르면 그 주로 옮기고 닫은 뒤 포커스를 가운데 버튼으로 돌린다. 아래 「이번 주」도 같다.
+  주소 값은 `week`(그 주 월요일, 근무스케줄 화면과 같은 이름). 날짜가 아니거나 1900~2999년 밖이면 이번 주이고, 월요일이 아닌 날짜는 그 주 월요일로 맞추며(`weekParam`), 이번 주면 주소에서 뺀다(`weekHref`).
+  옮길 때는 다른 조회 조건(목록으로 돌아갈 값)을 둔 채 `week` 만 바꾸고 지난 주소 값(`weekStart` · `schedulePeriod` · `schedulePage` · `schedulePageSize`)은 함께 뺀다(`replace`, 스크롤 그대로,
+  응답 전에 다시 눌러도 앞의 이동을 잃지 않게 낙관적 주). 표는 날짜(`MM-DD 요일`) · 근무지 · 시작 · 종료(근무스케줄 화면과 같은 `endLabel` — 「익일 02:00」 · 「24:00」), api 순서(시작 일시 순)이고
+  아래에 「주간 근무시간 합계 Xh」(응답 `totalWorkMinutes`, 소수 한 자리)다. 빈 주는 「이 주에 잡힌 근무스케줄이 없습니다.」 + 0.0h. 권한 · 실패는 위 영역 규칙과 같다.
+  칸 머리 「관리」는 `/work-schedules?store=<근무지>&week=<보는 주 월요일>` 이다.
 * **출퇴근 현황**은 api 가 없어 「준비 중입니다.」다 — 출퇴근 작업과 함께 따로 한다(2026-10-21 재영).
 * **급여명세서**는 이번 달 · 최근 확정 명세서를 한 줄씩(같은 명세서면 「이번 달 · 최근 확정」 한 줄) 구분 · 급여 기간 · 지급 · 공제 · 실지급액 · 상태
-  배지(`PayslipStatus` enum, 급여 목록과 같은 색 `STATUS_STYLE`)로 보이고 아래에 미발송 N건(발송 완료가 아닌 모두)이다. 두 줄도 미발송도 없으면
+  배지(`PayslipStatus` enum, 급여 목록과 같은 색 `STATUS_STYLE`)로 보이고 아래에 미발송 N건(발송 완료가 아닌 모두)이다. 급여 기간 글자는 데모의 지급월 링크처럼
+  명세서 상세(`/payslips/{payslipId}`)로 가고, 「급여명세서 관리」(MN000009) 조회 권한이 없으면 글자만이다(`MenuTextLink`). 칸 머리 「관리」는 `/payslips`. 두 줄도 미발송도 없으면
   「급여명세서가 없습니다.」. 데모는 최근 석 달 표지만 api 가 주는 것이 이 둘이다. 급여 기간은 같은 해면 끝 날짜의 연도를 줄인다(`payPeriodText`).
-* **TO-DO** 는 목록(`GET /staff-members/:id/todos`, #118 — 앞쪽 5건)을 그대로 두고, 그 아래에 요약
+* **TO-DO** 는 목록(`GET /staff-members/:id/todos`, #118 — 앞쪽 5건)을 데모처럼 열 이름 줄 없는 표(공통 `DataTable` `headVariant="none"`)로 그린다 — 제목(+ 긴급 배지) ·
+  배정(220px) · 상태(110px). 배정은 `TodoAssigneeType` · `TodoExecutionMode` 한글(`getEnum`)과 수행 예정으로 「개인 · 08-28 14:00」 · 「근무지 전체 · 각자 수행 · 09-03」이다(`todoAssignText` —
+  데모는 「개인 배정」이지만 enum 한글은 「개인」이라 enum 을 따른다). 상태는 배지가 아닌 색 글자(`todoStatusMark`) — 완료는 파랑 「MM-DD 완료」(`completedAt` 의 한국 날짜),
+  대기는 회색, 진행 중은 TO-DO 목록과 같은 파랑(데모에 진행 중 줄이 없다). 그 아래에 요약
   (`…/summary/todos`, TO-DO 관리 조회 권한)으로 「전체 N · 완료 n · 미완료 n」 줄과 「최근 처리 이력」 5건을 더했다. 이력은 api 순서(최신이 위)
   그대로이고, 문구는 등록(이전 상태 없음) · 긴급 표시 변경 · 「이전 → 이후」 상태(`TodoStatus` 한글), 바꾼 쪽은 `StatusChangeActor` 한글(관리자 · 직원 ·
   시스템)이다 — 사람 이름은 오지 않는다(2026-10-21 노영주 A안). **TO-DO 관리 조회 권한이 없으면 목록까지 영역 전체를 막는다**(2026-10-22 노영주, front #90 리뷰). api 가 목록 · 요약 두 경로에 같은 영역 권한을
@@ -329,9 +347,8 @@ sources:
 
 # 아직 없는 것
 
-* api 185 머지 뒤 main 기준으로 `api-types.generated.ts` 다시 만들기, 오른쪽 영역의 관리 화면 링크(WHALEERP-186), 출퇴근 현황 영역.
+* 출퇴근 현황 영역과 그 「관리」 링크.
 * 가입 연결 확인 시트(#139), 일괄 저장 · 직원 초대(근로계약서 초안).
-* 상세 근무스케줄 칸의 「주 이름을 눌러 달력에서 고르기」(데모)는 두지 않는다 — 기간 선택칸(이번 주 ~ 전체)으로 대신했다(WHALEERP-185).
 * 상세 「근로계약서 작성」 버튼의 직원 미리 채움 — 작성 화면이 직원을 받지 않는다.
 * 쪽 이동이 `router.replace` 라 뒤로 가기가 쪽을 거슬러 가지 않는다.
 
