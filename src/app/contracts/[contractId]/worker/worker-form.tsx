@@ -32,7 +32,8 @@ export function WorkerForm({
   const failureRef = useRef<HTMLDivElement>(null);
   const [failures, setFailures] = useState(0);
   useEffect(() => {
-    if (failures) failureRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+    // nearest — center 는 바깥 틀까지 밀어 올려 화면 아래에 빈 공간이 생긴다(작성 화면과 같다)
+    if (failures) failureRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [failures]);
 
   const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
