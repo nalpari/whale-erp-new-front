@@ -2,6 +2,10 @@
 
 ## 2026-10-22
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front #61 magikarp): 플랫폼 관리자 등록 패널의 아이디 칸이 등록일 때만 보이게 바뀐 main 구조 위에 확인 중 · 사용 가능 상태 표시(`LoginIdAvailability`)를 다시 얹었다. okf 충돌은 양쪽 서술을 살려 풀었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 도입문의 문의 내용의 줄바꿈을 1자로 보낸다. 브라우저가 CRLF 로 바꿔 화면 1990자(줄바꿈 60)가 api 에서 2000자를 넘어 거절되던 것을 재현하고 고쳤다(front #100 재영 참고 1).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 도입문의 접수 실패 문구: api 400 문장 중 하나라도 영문이면 한글과 섞여 있어도 입력 확인 문구로 바꾼다(front #100 재영 참고 2).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 로그인 전 홈 리뷰 반영: 로그인한 채 `/` 에 오면 접근 토큰이 살아 있을 때만 자기 홈으로 보낸다(끝난 로그인은 로그인 전 홈을 그대로, `redirectsSignedIn` 시험 추가). 긴 소식 제목 전체 보기, 회사 링크의 「(새 창)」 안내, 주석 바로잡기.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 로그인 전 홈(#289) · 푸터(#291): 홈의 질문 · 소식 칸을 api 의 비로그인 FAQ · 공지사항으로 채우고 받지 못하면 감춘다. 로그인한 채 `/` 에 오면 자기 홈으로 보낸다. 회원가입 버튼 둘의 빈 링크를 고쳤고, 푸터 상호명에 회사 소개 새 창 링크 자리를 두었다(주소 미정). 도입문의 상세의 [답변 메일 다시 보내기]를 「답변 수정」 옆으로 옮겼다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 적대적 리뷰(ip-code-review-claude, front #107) 반영: 플랫폼 관리자 수정 패널을 세울 때 메뉴 수정 권한만이 아니라 상세의 [수정] 버튼과 같은 계정별 판정(`adminActionsOf`)을 본다 — 플랫폼 관리자가 주소(`?edit=1`)로 플랫폼 마스터 계정의 수정 폼을 열 수 있었다(저장은 api 가 막는다). main 병합으로 생긴 okf 충돌을 양쪽 서술을 살려 풀었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR 리뷰(pr-review-toolkit) 반영: 새로 고침 · 앞으로 가기로 다시 연 플랫폼 관리자 수정을 닫아도 상세 기록이 겹치지 않게 수정 기록에 `history.state` 꼬리표를 단다. 다른 계정을 거쳐 돌아와도 포커스가 상세의 [수정]으로 돌아간다. 수정 패널을 세우는 조건을 `isEditOpen` 으로 떼어 테스트했다. SlidePanel 등 낡은 주석과 SlidePanel 설명의 `flushSync` 서술(코드는 rAF)을 고쳤다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 상세 패널이 닫히면(브라우저 뒤로 가기 등) 비밀번호 초기화 · 삭제 확인창과 변경이력 팝업도 닫는다(사용자 요청). 네이티브 `<dialog>` 라 패널과 함께 밀려 나가지 않고 남아 있었다.

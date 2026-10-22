@@ -13,6 +13,18 @@ export function isPlatformRole(roleTypeCode: string): boolean {
   return roleTypeCode === "PM" || roleTypeCode === "PA";
 }
 
+/**
+ * 로그인한 채 이 로그인 전 화면에 오면 자기 홈(homeOf)으로 보낼지(proxy). 화면을 여는 GET 만 본다 — 서버 액션 POST 는 보내지 않는다.
+ * /login · /find 는 쿠키만 있으면 보낸다 — 로그인이 끝났으면 홈에서 갱신에 실패해 결국 로그인 화면으로 오니 손해가 없다.
+ * 로그인 전 홈(/, #289)은 접근 토큰이 살아 있을 때만 보낸다 — 1시간 넘게 쉬어 끝난 로그인의 쿠키로 홈을 보러 온 사람이 로그인 화면에 떨어지지 않게.
+ * 다른 로그인 전 화면((site))은 보내지 않고 머리말에 「홈으로」를 둔다.
+ */
+export function redirectsSignedIn(pathname: string, method: string, session: { accessTokenExpiresAt: number } | null, now = Date.now()): boolean {
+  if (method !== "GET" || !session) return false;
+  if (pathname === "/login" || pathname === "/find") return true;
+  return pathname === "/" && session.accessTokenExpiresAt > now;
+}
+
 /** okf/auth.md — BP·가맹 계정은 웨일ERP(BP) 홈, 플랫폼 계정은 플랫폼관리 사이트. */
 export function homeOf(roleTypeCode: string): "/platform" | "/home" {
   return isPlatformRole(roleTypeCode) ? "/platform" : "/home";
