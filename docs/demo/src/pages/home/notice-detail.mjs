@@ -21,5 +21,5 @@ export default ({ A, R }) => {
 
   const main = `<section class="mx-auto flex w-[1200px] flex-col gap-[32px] pt-[80px] text-guest-ink"><div class="flex flex-col gap-[16px] border-b-2 border-guest-ink pb-[24px]"><div class="flex items-center gap-[8px]">${n.pinned ? badge("고정") : ""}${badge(n.kind)}</div><h1 class="text-[28px] leading-[1.4] font-bold">${n.title}</h1><span class="text-[16px] text-guest-sub">${n.date}</span></div>${body}${files}<div class="flex justify-center border-t border-[#ebebeb] pt-[40px]">${g.button(A, "목록", { tone: "outline", href: link(R, "home/notices.html") })}</div></section>`;
 
-  return { title: "공지사항", head: g.head(A), html: g.page(A, R, { current: "home/notices.html", main }) };
+  return { title: "공지사항 상세", head: g.head(A), html: g.page(A, R, { current: "home/notices.html", main }) };
 };

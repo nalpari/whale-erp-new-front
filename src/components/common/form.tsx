@@ -23,18 +23,30 @@ export function Select(props: Omit<ComponentProps<"select">, "className" | "styl
 const MARK_MOTION =
   "pointer-events-none relative scale-75 opacity-0 transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] peer-checked:scale-100 peer-checked:opacity-100 motion-reduce:scale-100";
 
+const DASH_MOTION =
+  "pointer-events-none scale-75 opacity-0 transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] peer-indeterminate:scale-100 peer-indeterminate:opacity-100 motion-reduce:scale-100";
+
 // Figma Form_check. 하루에도 여러 번 누르는 컨트롤이라 짧고 옅게만 움직인다:
 // 칸 색은 150ms 로 짧게 바뀌고, 체크 표시는 살짝 커지며 나타난다.
-export function Checkbox({ label, ...props }: { label: string } & Omit<ComponentProps<"input">, "type" | "className" | "style">) {
+// indeterminate 는 「일부만 선택」(–) — HTML 속성이 아니라 DOM 값이라 ref 로 단다. 화면 읽기는 「혼합」으로 읽는다.
+export function Checkbox({
+  label,
+  indeterminate = false,
+  ...props
+}: { label: string; indeterminate?: boolean } & Omit<ComponentProps<"input">, "type" | "className" | "style" | "ref">) {
   return (
     <label className="flex items-center gap-[8px] text-[14px] text-erp-ink">
       <span className="relative grid size-[20px] shrink-0 place-items-center">
         <input
           {...props}
+          ref={(el) => {
+            if (el) el.indeterminate = indeterminate;
+          }}
           type="checkbox"
-          className="peer absolute inset-0 appearance-none rounded-[2px] border border-erp-field-line bg-white transition-[background-color,border-color] duration-150 ease-out checked:border-erp-brand checked:bg-erp-brand"
+          className="peer absolute inset-0 appearance-none rounded-[2px] border border-erp-field-line bg-white transition-[background-color,border-color] duration-150 ease-out checked:border-erp-brand checked:bg-erp-brand indeterminate:border-erp-brand indeterminate:bg-erp-brand"
         />
-        <Image src="/icons/check.svg" alt="" width={12} height={9} className={MARK_MOTION} />
+        <Image src="/icons/check.svg" alt="" width={12} height={9} className={`${MARK_MOTION} peer-indeterminate:hidden`} />
+        <span className={`absolute h-[2px] w-[10px] rounded-[1px] bg-white ${DASH_MOTION}`} />
       </span>
       {label}
     </label>

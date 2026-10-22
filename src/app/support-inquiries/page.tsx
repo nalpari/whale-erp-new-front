@@ -1,5 +1,5 @@
 import { PageBar } from "@/components/common";
-import { getEnum } from "@/lib/api";
+import { bpHref, getEnum } from "@/lib/api";
 import { getMyInquiries } from "@/lib/community";
 import { parseSupportInquiryQuery, SUPPORT_INQUIRY_BASE } from "@/lib/community-view";
 import { ListFailure, loadList } from "@/components/community/list-load";
@@ -15,7 +15,7 @@ export default async function SupportInquiriesPage({ searchParams }: PageProps<"
       {"data" in loaded ? (
         <MyInquiryList items={loaded.data[0].items} total={loaded.data[0].total} query={query} statuses={loaded.data[1]} />
       ) : (
-        <ListFailure {...loaded} retryHref={SUPPORT_INQUIRY_BASE} />
+        <ListFailure {...loaded} retryHref={await bpHref(SUPPORT_INQUIRY_BASE)} />
       )}
     </>
   );

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { Button, Checkbox, ConfirmDialog, DateField, Field, FormGroup, FormRow, Radio, TextField } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { formatPhone, GENDERS, inProgressLine, type InProgressContract } from "../../new/contract-form-model";
+import { withBack } from "../../contract-list";
 import { updateWorker } from "../actions";
 import { callSave, SAVE_CALL_LOST } from "../send-model";
 import { workerBody, workerProblems, workerSaveNote, type WorkerForm as Form } from "./worker-model";
@@ -16,11 +17,14 @@ export function WorkerForm({
   status,
   initial,
   labels,
+  back,
 }: {
   contractId: number;
   status: string;
   initial: Form;
   labels: { gender: EnumValue[]; contractStatus: EnumValue[] };
+  /** 돌아갈 목록 주소(?back=) — 상세로 갈 때 이어 싣는다 */
+  back: string;
 }) {
   const router = useRouter();
   const [form, setForm] = useState<Form>(initial);
@@ -32,7 +36,8 @@ export function WorkerForm({
   const failureRef = useRef<HTMLDivElement>(null);
   const [failures, setFailures] = useState(0);
   useEffect(() => {
-    if (failures) failureRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+    // nearest — center 는 바깥 틀까지 밀어 올려 화면 아래에 빈 공간이 생긴다(작성 화면과 같다)
+    if (failures) failureRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [failures]);
 
   const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
@@ -41,10 +46,10 @@ export function WorkerForm({
     startSaving(async () => {
       // 성공하면 액션이 상세로 보낸다. 돌아왔다면 실패다.
       // 액션의 redirect(성공 · 보내기 실패)는 callSave 가 다시 던져 그 목적지로 간다
-      const result = await callSave(() => updateWorker(contractId, workerBody(form, replaceContractIds)), unstable_rethrow);
+      const result = await callSave(() => updateWorker(contractId, workerBody(form, replaceContractIds), back), unstable_rethrow);
       if (result === SAVE_CALL_LOST) {
         // 서버 액션 호출 자체가 끊겼다 — 저장하면 다시 보내므로 이미 보냈을 수 있다. 같은 폼으로 다시 저장하지 않게 상세로(front #50 재리뷰)
-        router.replace(`/contracts/${contractId}?send=unknown`);
+        router.replace(withBack(`/contracts/${contractId}?send=unknown`, back));
         return;
       }
       if (result.inProgress) {
@@ -69,7 +74,7 @@ export function WorkerForm({
     <div className="flex flex-col gap-[12px]">
       <div className="flex items-end gap-[6px]">
         <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">근로자 정보 수정</h2>
-        <Button variant="off" href={`/contracts/${contractId}`}>
+        <Button variant="off" href={withBack(`/contracts/${contractId}`, back)}>
           취소
         </Button>
         <Button onClick={save} disabled={saving}>

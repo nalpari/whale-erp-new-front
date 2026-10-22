@@ -39,6 +39,7 @@ export function GuestButton({
   tone,
   href = "#",
   submit = false,
+  onClick,
   arrow = false,
   grow = false,
   tall = false,
@@ -49,6 +50,8 @@ export function GuestButton({
   // true 면 <Link> 대신 <button type="submit"> 로 그린다 — 감싼 <form action>(서버 액션)을 부를 때 쓴다
   // (href 는 이때 쓰지 않는다). signup/done 의 「웨일ERP 시작하기」처럼 이동이 아니라 동작일 때.
   submit?: boolean;
+  // 주면 <button type="button"> 으로 그린다 — 「다시 시도」처럼 화면을 옮기지 않는 동작(클라이언트 컴포넌트에서만 넘길 수 있다).
+  onClick?: () => void;
   // true 는 글 뒤에 나아가는 화살표, "back" 은 글 앞에 되돌아가는 화살표.
   arrow?: boolean | "back";
   grow?: boolean;
@@ -64,9 +67,9 @@ export function GuestButton({
       {arrow === true && <Arrow />}
     </>
   );
-  if (submit)
+  if (submit || onClick)
     return (
-      <button type="submit" className={className}>
+      <button type={submit ? "submit" : "button"} onClick={onClick} className={className}>
         {content}
       </button>
     );
@@ -120,16 +123,18 @@ export function GuestVisual({ eyebrow, title, children }: { eyebrow: string; tit
 // 펼침 움직임은 globals.css 의 details[name="guest-faq"] 가 맡는다.
 // 여백은 박스가 아니라 질문 줄(summary)에 둬서 박스 거의 전체가 눌린다. 박스에는 아래 4px 만 남긴다(위 22 · 아래 22 를 맞추려고).
 // 답변 간격도 margin 이 아니라 padding 이어야 펼침 높이에 함께 들어간다 — margin 이면 열 때 튄다.
-export function FaqItem({ q, open = false, children }: { q: string; open?: boolean; children?: ReactNode }) {
+// category 는 질문 앞의 카테고리 이름(공지사항 FAQ #294). 답변 평문의 줄바꿈은 그대로 살린다.
+export function FaqItem({ q, category, open = false, children }: { q: string; category?: string; open?: boolean; children?: ReactNode }) {
   return (
     <details name="guest-faq" open={open} className="group rounded-[3px] bg-[#fafafa] pb-[4px] open:bg-[#f5f5f5]">
       <summary className={`flex cursor-pointer px-[20px] pt-[22px] pb-[18px] list-none items-center gap-[11px] text-[17px] leading-[1.5] font-semibold text-guest-ink hover:text-guest-navy ${HOVER} [&::-webkit-details-marker]:hidden`}>
         <span className="flex size-[28px] shrink-0 items-center justify-center rounded-full bg-guest-navy text-[18px] font-bold tracking-normal text-white">Q</span>
+        {category && <span className="shrink-0 text-[15px] font-medium text-guest-sub">{category}</span>}
         <span className="flex-1">{q}</span>
         <Image src="/guest/faq-plus.svg" alt="" width={28} height={28} className="group-open:hidden" />
         <Image src="/guest/faq-close.svg" alt="" width={28} height={28} className="hidden group-open:block" />
       </summary>
-      {children && <p className="pr-[20px] pb-[18px] pl-[60px] text-[16px] leading-[1.5] text-guest-sub">{children}</p>}
+      {children && <p className="pr-[20px] pb-[18px] pl-[60px] text-[16px] leading-[1.5] whitespace-pre-line text-guest-sub">{children}</p>}
     </details>
   );
 }
