@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 직원 상세 근무스케줄 칸을 한 주 보기 + 주 넘김에서 기간 선택(이번 주 · 최근 4주 · 최근 3개월 · 최근 1년 · 전체) + 표(날짜 · 근무지 · 시작 · 종료 — 종료는 근무스케줄 화면과 같은 「익일 02:00」 · 「24:00」) + 페이지 번호로 바꿨다(WHALEERP-185, `GET /staff-members/:id/work-schedules`, 주소 `schedulePeriod` · `schedulePage` · `schedulePageSize`). 표 아래에 기간 근무시간 합계 줄(이번 주는 「주간 근무시간 합계」), 빈 표는 「이 주에 · 이 기간에 잡힌 근무스케줄이 없습니다.」. 응답 · 기간 타입은 api giza(WHALEERP-185)의 openapi 로 다시 만든 생성 타입이다(머지 뒤 main 기준으로 다시 만든다). `week-nav.tsx` 와 상세 요약 주 api 함수를 지웠다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 권한 메뉴 등록 팝업의 머리칸 · 묶음 칸이 일부만 켜졌으면 「–」로 보인다(S-KUDELB, 공용 `Checkbox` 에 `indeterminate`). BP 권한 그룹에서 그 쪽의 마지막 한 건을 지우면 앞쪽으로 간다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 권한 그룹의 손으로 적은 타입을 생성 타입 별칭으로 바꿨다. BP 메뉴 트리의 권한 유형이 `BA` · `FA` · `FM` 이라 플랫폼 트리 타입과 맞지 않던 것을 고쳐, 공용 메뉴 팝업이 두 트리를 함께 받는다. api #94 머지로 헤더 판정이 main 에 들어간 것도 반영했다.
 * **Update**: [근무스케줄 관리 화면 (구현)](/screens/work-schedules.md) — 지난 주 복사 미리보기(#204): 빈 주에서만 켜지는 「지난 주 복사」, 직원별 지난 주 · 이번 주 · 처리(복사 · 일부 제외 · 제외 사유 · 지난 주 없음), 「n명 복사」. 폐점 점포는 끈다.
