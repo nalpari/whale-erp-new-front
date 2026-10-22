@@ -164,12 +164,14 @@ const StatusBadge = ({ status, statuses }: { status: InquiryDetail["status"]; st
 /**
  * 답변 상자. 답변 전이면 입력칸, 답변 완료면 읽기 + 「답변 수정」(CNT-17). 쓰던 글(draft)이 있으면 입력칸을 연다 — 저장에 성공하거나
  * [취소]하면 draft 가 비어 읽기로 돌아간다. 그사이 다른 운영자가 답변을 저장했으면 위 읽기(view)에 새 답변이 서고 입력칸 아래에 알린다.
- * view 는 답변 완료일 때 위에 늘 보일 읽기 내용(본문 · 시각 · 메일 결과 등)이다.
+ * view 는 답변 완료일 때 위에 늘 보일 읽기 내용(본문 · 시각 · 메일 결과 등)이다. actions 는 읽기일 때 「답변 수정」 옆에 둘 버튼이다 —
+ * 고치는 동안에는 숨는다. 그때 누르면 화면에서 고치던 글이 아니라 이미 저장된 답변이 나가기 때문이다.
  */
 function AnswerBox({
   hint,
   current,
   view,
+  actions,
   placeholder,
   firstNote,
   editNote,
@@ -181,6 +183,7 @@ function AnswerBox({
   hint: string;
   current: string | null;
   view: ReactNode;
+  actions?: ReactNode;
   placeholder: string;
   firstNote: string;
   editNote: string;
@@ -217,10 +220,11 @@ function AnswerBox({
           </div>
         </>
       ) : (
-        <div>
+        <div className="flex items-center gap-[6px]">
           <Button variant="soft" onClick={() => onDraft(saved, saved)}>
             답변 수정
           </Button>
+          {actions}
         </div>
       )}
     </Box>
@@ -489,16 +493,14 @@ export function LeadDetailView({ detail: d, statuses, interests, mailResults }: 
             <Meta>
               {dt(d.repliedAt)} · {d.repliedByName ?? "-"}
             </Meta>
-            {/* 처음 답할 때만 메일이 가고 고쳐도 다시 가지 않는다. [다시 보내기]는 저장된 지금 답변을 보낸다(같은 도입문의 1분 간격). */}
-            <div className="flex items-center gap-[12px]">
-              <div className="flex-1">
-                <DetailTable title="답변 메일" rows={[{ label: "마지막 발송", value: mail }]} />
-              </div>
-              <Button variant="soft" disabled={c.busy || d.status !== "ANSWERED"} onClick={() => setConfirmResend(true)}>
-                답변 메일 다시 보내기
-              </Button>
-            </div>
+            <DetailTable title="답변 메일" rows={[{ label: "마지막 발송", value: mail }]} />
           </>
+        }
+        // 처음 답할 때만 메일이 가고 고쳐도 다시 가지 않는다. [다시 보내기]는 저장된 지금 답변을 보낸다(같은 도입문의 1분 간격).
+        actions={
+          <Button variant="soft" disabled={c.busy || d.status !== "ANSWERED"} onClick={() => setConfirmResend(true)}>
+            답변 메일 다시 보내기
+          </Button>
         }
         placeholder="계정이 없는 분이라 이 내용이 메일로 그대로 갑니다."
         firstNote="저장하면 상태가 답변 완료로 바뀌고 오늘이 상담 완료일로 남습니다. 처음 저장할 때만 문의자 이메일로 답변이 갑니다."
