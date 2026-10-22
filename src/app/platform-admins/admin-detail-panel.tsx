@@ -92,6 +92,7 @@ function DetailBody({
   const [confirm, setConfirm] = useState<"reset" | "delete" | null>(null);
   // 확인창 · 이력창은 네이티브 <dialog>(최상위 레이어)라 패널이 밀려 나가도 혼자 남는다. 브라우저 뒤로 가기처럼 클릭 아닌 길로
   // 패널이 닫히면 함께 닫는다(2026-10-22 사용자 요청). 진행 중인 초기화 · 삭제 요청은 그대로 끝까지 간다.
+  // 이력창은 HistoryButton 이 panelOpen 으로 같은 방식으로 닫는다.
   if (!panelOpen && confirm) setConfirm(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [busy, startBusy] = useTransition();

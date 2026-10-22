@@ -10,7 +10,10 @@ import { AdminDetailPanel } from "./admin-detail-panel";
 import { AdminFilter } from "./admin-filter";
 import { AdminFormPanel } from "./admin-form-panel";
 import { AdminTable } from "./admin-table";
-import { adminsHref, type AdminsQuery } from "./admins-href";
+import { adminsHref, isEditOpen, type AdminsQuery } from "./admins-href";
+
+/** 이 화면이 상세 위에 쌓은 수정 기록에 다는 history.state 꼬리표 — 값은 그 상세의 계정 id */
+const EDIT_PUSHED_STATE = "platformAdminEditPushedFor";
 
 // 목록 화면과 세 슬라이드 패널(등록 · 상세 · 수정)을 한데 쥔다. 수정은 상세 위에 겹쳐 연다(데모와 같다).
 // 상세를 열고 닫는 것은 주소(?admin=)로 한다 — 서버가 그 계정을 불러 detail 로 넘긴다. 수정도 주소(?edit=1)로 열어
@@ -32,7 +35,11 @@ export function AdminsScreen({
   const can = usePagePermission();
   // 등록 · 수정 패널은 열 때마다 칸을 새로 채운다(admin-form-panel.tsx) — 다시 마운트하지 않아야 밀려 나오는 전환이 산다
   const [newOpen, setNewOpen] = useState(false);
-  /** 이 화면이 수정을 열며 기록을 하나 쌓았는가 — 그렇다면 닫을 때 뒤로 가 그 기록을 걷는다(아래 closeEdit) */
+  /**
+   * 지금 수정 기록(?edit=1)이 이 화면이 상세 위에 쌓은 것인가 — 그렇다면 닫을 때 뒤로 가 그 기록을 걷는다(아래 closeEdit).
+   * [수정]을 누르면 참이 되고, 수정이 열릴 때 기록 자체(history.state)에도 꼬리표를 달아 둔다. ref 는 새로 고침에 사라지고
+   * 뒤로 가기에 지워지므로, 새로 고침 · 앞으로 가기로 다시 열린 수정은 그 꼬리표로 되살린다(코드 리뷰로 찾음, 2026-10-22).
+   */
   const editPushed = useRef(false);
   const newTrigger = useRef<HTMLButtonElement>(null);
   const detailTrigger = useRef<HTMLElement | null>(null);
@@ -42,19 +49,27 @@ export function AdminsScreen({
   const [shown, setShown] = useState(detail);
   if (detail && detail !== shown) setShown(detail);
 
-  // 수정 패널은 주소에 ?edit=1 이 있고 그 계정의 상세가 지금 열려 있을 때만 선다. 상세를 못 불러왔거나(지운 계정 · 실패 띠)
-  // 수정 권한이 없으면 주소에 남아 있어도 열지 않는다 — 없는 수정 패널 때문에 상세의 [닫기] · Esc 가 막히지 않게 한다.
-  const editOpen = Boolean(query.edit && can.update && shown && "admin" in shown && shown.admin.adminAccountId === query.admin);
+  // 수정 패널은 주소에 ?edit=1 이 있고 그 계정의 상세가 지금 열려 있을 때만 선다(admins-href.ts isEditOpen).
+  const editOpen = isEditOpen(query, can.update, shown);
 
   // 지금 수정 · 상세가 열려 있는지를 최신 값으로 본다. 저장 · 삭제 결과는 누른 때의 화면(클로저)으로 돌아오므로, 그 사이
   // 브라우저 뒤로 가기로 이미 닫혔으면 다시 뒤로 가거나 목록 주소를 쌓지 않아야 한다 — 바로 들어온 상세에서는 그 뒤로 가기가
-  // 이 화면을 벗어난다(코드 리뷰로 찾음, 2026-10-22). 수정이 닫히면 이 화면이 쌓은 기록도 이미 걷힌 것이라 editPushed 를 지운다.
+  // 이 화면을 벗어난다(코드 리뷰로 찾음, 2026-10-22).
   const editOpenRef = useRef(editOpen);
   const detailOpenRef = useRef(Boolean(query.admin));
   useEffect(() => {
     editOpenRef.current = editOpen;
-    if (!editOpen) editPushed.current = false;
-  }, [editOpen]);
+    // 수정이 닫히면(뒤로 가기로 걷혔든, 바탕 클릭으로 목록 주소가 그 위에 쌓였든) 바로 뒤가 이 화면이 쌓은 수정 기록이 아니다
+    if (!editOpen) {
+      editPushed.current = false;
+      return;
+    }
+    // 수정이 열린 지금 기록은 ?edit=1 이다(Next 가 같은 커밋의 insertion effect 에서 이미 쌓았다). 꼬리표는 여기서만 읽고 쓴다 —
+    // 뒤로 · 앞으로 가기는 이 값을 남기지만 router.refresh · 서버 액션은 기록을 다시 써 지우므로, 닫을 때 읽으면 늦다.
+    const state = window.history.state as Record<string, unknown> | null;
+    if (editPushed.current) window.history.replaceState({ ...state, [EDIT_PUSHED_STATE]: query.admin }, "");
+    else if (state?.[EDIT_PUSHED_STATE] === query.admin) editPushed.current = true;
+  }, [editOpen, query.admin]);
   useEffect(() => {
     detailOpenRef.current = Boolean(query.admin);
   }, [query.admin]);
@@ -74,7 +89,7 @@ export function AdminsScreen({
     go({ edit: true });
   };
   /**
-   * 수정 패널의 취소 · Esc · 바탕 클릭 · 저장. 이 화면이 쌓은 기록이면 뒤로 가 걷는다 — push 로 상세 주소를 다시 쌓으면
+   * 수정 패널의 취소 · Esc · 저장(바탕 클릭은 closeAll 이 맡는다). 이 화면이 쌓은 기록이면 뒤로 가 걷는다 — push 로 상세 주소를 다시 쌓으면
    * 그 뒤 뒤로 가기가 닫은 수정을 다시 연다. 새로 고침 · 링크로 ?edit=1 에 바로 들어왔으면 뒤가 이 화면이 아닐 수 있어
    * 주소만 바꾼다(replace). 저장 뒤 상세는 서버 액션의 revalidatePath 로 새 값을 받는다.
    */
@@ -82,8 +97,9 @@ export function AdminsScreen({
     // 이미 닫혔거나(저장 중 뒤로 가기) 닫는 중이면(Esc 를 빠르게 두 번) 다시 이동하지 않는다
     if (!editOpenRef.current) return;
     editOpenRef.current = false;
-    // 새로 고침 · 링크로 바로 들어와 [수정]을 누르지 않았으면 되돌릴 버튼이 없다 — 상세의 [수정]으로 포커스를 돌린다
-    editTrigger.current ??= document.querySelector<HTMLButtonElement>('[aria-controls="platform-admin-edit-panel"]');
+    // 새로 고침 · 링크로 바로 들어왔거나, 다른 계정을 거쳐 돌아와 누른 버튼이 이미 화면에서 사라졌으면 지금 상세의 [수정]으로 돌린다
+    if (!editTrigger.current?.isConnected)
+      editTrigger.current = document.querySelector<HTMLButtonElement>('[aria-controls="platform-admin-edit-panel"]');
     if (editPushed.current) {
       editPushed.current = false;
       router.back();
@@ -94,7 +110,8 @@ export function AdminsScreen({
    * 「Esc 는 가장 안쪽부터」). 같은 Esc 가 문서까지 올라와 상세도 닫으려 하므로 여기서 거른다 — <dialog> 의 cancel 은
    * keydown 이 다 지나간 뒤에 오므로 이때는 아직 열려 있다.
    * editOpen 은 상세 패널의 Esc 처리가 수정 패널의 것보다 먼저 돈다는 데 기댄다 — 둘 다 document 에 달리고, 수정은
-   * 상세를 연 뒤에만 열리므로 늘 나중에 달린다. 순서가 바뀌면 수정이 먼저 닫혀 이 값이 false 로 보일 수 있다.
+   * 상세를 연 뒤에 열리거나([수정] 버튼), 주소(?edit=1)로 함께 열릴 때도 JSX 에서 상세보다 뒤에 있어 effect 가 나중에
+   * 돈다 — 늘 나중에 달린다. 둘의 JSX 순서를 바꾸면 수정이 먼저 닫혀 이 값이 false 로 보일 수 있다.
    */
   const dismissDetail = () => {
     if (editOpen || document.querySelector("dialog[open]")) return;

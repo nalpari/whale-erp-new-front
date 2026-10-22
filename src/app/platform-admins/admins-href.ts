@@ -1,7 +1,7 @@
 import type { AdminStatus } from "@/lib/platform-admins";
 
-// 목록 조건 · 쪽 · 연 상세는 주소(?keyword · roleGroupId · status · page · admin)에 둔다 — 새로 고쳐도, 링크를 나눠도 같은 화면이다.
-// 상세 · 등록 · 수정은 따로 주소가 없는 슬라이드 패널이다(2026-10-08) — 상세는 ?admin= 으로 어느 계정인지 남기고,
+// 목록 조건 · 쪽 · 연 상세 · 수정은 주소(?keyword · roleGroupId · status · page · admin · edit)에 둔다 — 새로 고쳐도, 링크를 나눠도 같은 화면이다.
+// 상세 · 등록 · 수정은 따로 경로(/platform-admins/[id] 등)가 없는 슬라이드 패널이다(2026-10-08) — 상세는 ?admin= 으로 어느 계정인지 남기고,
 // 그 위에 겹친 수정은 ?edit=1 로 남겨 브라우저 뒤로 가기가 수정 → 상세로 돌아오게 한다(2026-10-22 사용자 요청). 등록은 남기지 않는다.
 
 export type AdminsQuery = {
@@ -49,4 +49,17 @@ export function adminsHref(query: Partial<AdminsQuery>): string {
   if (query.admin && query.edit) params.set("edit", "1");
   const search = params.toString();
   return `/platform-admins${search ? `?${search}` : ""}`;
+}
+
+/**
+ * 수정 패널을 세울지. 주소에 ?edit=1 이 있어도 수정 권한이 없거나, 상세를 못 불러왔거나(지운 계정 · 실패 띠), 화면에 남은
+ * 상세가 주소의 계정이 아니면(다른 계정으로 옮기는 중 — 앞 상세를 붙잡아 둔다) 열지 않는다. 마지막 것이 빠지면 앞 계정의
+ * 수정 폼이 다른 계정 주소 위에 열려 엉뚱한 계정을 고칠 수 있다. 없는 수정 패널 때문에 상세의 [닫기] · Esc 도 막히지 않는다.
+ */
+export function isEditOpen(
+  query: Pick<AdminsQuery, "admin" | "edit">,
+  canUpdate: boolean,
+  shown: { admin: { adminAccountId: number } } | { failed: string } | null,
+): boolean {
+  return Boolean(query.edit && canUpdate && shown && "admin" in shown && shown.admin.adminAccountId === query.admin);
 }
