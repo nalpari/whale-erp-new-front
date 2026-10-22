@@ -3,7 +3,7 @@ import { ApiError, authHeaders, getEnum, request } from "@/lib/api";
 import { contractColumns } from "./columns";
 import { ContractPermission } from "./contract-permission";
 import { ContractFilters, ContractPagination } from "./contract-filters";
-import { PAGE_SIZE, apiSearch, listHrefOf, readListQuery, toSearch, withKnownStatus, type ContractListPage } from "./contract-list";
+import { PAGE_SIZE, apiSearch, listHrefOf, readListQuery, toSearch, withBack, withKnownStatus, type ContractListPage } from "./contract-list";
 
 // 근로계약 관리 목록. docs/demo/staff/contracts.html 을 공통 컴포넌트로 옮겼고, 목록은 GET /contracts 에서 받는다.
 // 점포 조건은 목록에서 고른 점포(storeIds) 또는 헤더가 실어 온 범위(scope)다 — 직영 · 가맹 전체는 점포 유형으로 api 에 보낸다(apiSearch, WHALEERP-133).
@@ -40,7 +40,7 @@ export default async function ContractsPage({ searchParams }: PageProps<"/contra
     <>
       <PageBar title="근로계약 관리">
         <ContractPermission action="create">
-          <Button href="/contracts/new">계약서 작성</Button>
+          <Button href={withBack("/contracts/new", listHrefOf(query))}>계약서 작성</Button>
         </ContractPermission>
       </PageBar>
       <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">

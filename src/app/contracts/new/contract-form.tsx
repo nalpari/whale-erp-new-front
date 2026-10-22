@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState, useTransition, type ReactNode } fro
 import { Button, Checkbox, ConfirmDialog, DataTable, DateField, FormGroup, FormRow, Radio, Select, Textarea, TextField } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { callSave, SAVE_CALL_LOST, SAVE_UNKNOWN_NEW } from "../[contractId]/send-model";
+import { backHrefOf, listAfterSave, withBack } from "../contract-list";
 import { createContract, updateContract } from "./actions";
 import {
   formatHours,
@@ -216,6 +217,7 @@ export function ContractForm({
   initial,
   deleteButton,
   correction = false,
+  back = "/contracts",
 }: {
   stores: { storeId: number; name: string }[];
   labels: ContractFormLabels;
@@ -230,6 +232,8 @@ export function ContractForm({
    * 대기로 다시 보낸다(2026-10-19 재영, api 가 같은 것을 다시 본다).
    */
   correction?: boolean;
+  /** 돌아갈 목록 주소(?back=) — 취소 · 저장 뒤 같은 조건의 목록으로 간다 */
+  back?: string;
 }) {
   const [form, setForm] = useState<Form>(() => initial ?? initialForm(stores.length === 1 ? String(stores[0].storeId) : ""));
   // 저장을 한 번 누른 뒤부터 막는 이유를 보인다. 처음부터 빨간 줄을 띄우지 않는다.
@@ -291,12 +295,12 @@ export function ContractForm({
     startSaving(async () => {
       // 성공하면 액션이 목록으로 보낸다. 돌아왔다면 실패다.
       // 액션의 redirect(성공 · 보내기 실패)는 callSave 가 다시 던져 그 목적지로 간다
-      const result = await callSave(() => (contractId ? updateContract(contractId, body) : createContract(body)), unstable_rethrow);
+      const result = await callSave(() => (contractId ? updateContract(contractId, body, back) : createContract(body, back)), unstable_rethrow);
       if (result === SAVE_CALL_LOST) {
         // 서버 액션 호출 자체가 끊겼다(앞단 504 · 배포 중 재시작 · 네트워크) — 저장 = 발송이라 이미 저장 · 발송됐을 수 있다.
         // 이어 쓰기는 상세로 옮겨 알리고, 새 계약은 같은 폼으로 다시 저장하지 못하게 막는다(front #50 재리뷰).
         if (contractId) {
-          router.replace(`/contracts/${contractId}?send=unknown`);
+          router.replace(withBack(`/contracts/${contractId}?send=unknown`, back));
           return;
         }
         setLocked(true);
@@ -334,7 +338,7 @@ export function ContractForm({
         result = { error: "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요" };
       }
       if (result.ok) {
-        router.push("/contracts");
+        router.push(listAfterSave(back, !contractId));
         return;
       }
       if (result.inProgress) {
@@ -437,7 +441,7 @@ export function ContractForm({
     <div className="flex flex-col gap-[12px] [&_:is(select,input:not([type=radio],[type=checkbox])):disabled]:bg-erp-thead-bg">
       <div className="flex items-end gap-[6px]">
         <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">근로계약서</h2>
-        <Button variant="off" href="/contracts">
+        <Button variant="off" href={backHrefOf(back)}>
           취소
         </Button>
         {deleteButton}

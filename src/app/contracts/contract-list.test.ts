@@ -6,11 +6,13 @@ import {
   backHrefOf,
   deadlineNote,
   fillScopeOf,
+  listAfterSave,
   periodText,
   pickedIdsOf,
   readListQuery,
   sentText,
   toSearch,
+  unusableScopeOf,
   wageText,
   withBack,
   withKnownStatus,
@@ -93,6 +95,29 @@ test("상세의 [목록]은 넘어온 근로계약 목록 주소로만 돌아간
   assert.equal(back, "/contracts/7?back=%2Fcontracts%3FstoreIds%3D3%26page%3D2");
   assert.equal(backHrefOf(new URLSearchParams(back.split("?")[1]).get("back") ?? undefined), "/contracts?storeIds=3&page=2");
   for (const bad of ["https://evil.example/contracts", "//evil/contracts", "/stores", "/contracts/7", undefined]) assert.equal(backHrefOf(bad), "/contracts", String(bad));
+});
+
+test("목록에서 나가는 주소는 쿼리가 있어도 back 을 잇고, 근로계약 목록이 아닌 back 은 싣지 않는다", () => {
+  assert.equal(withBack("/contracts/7?send=unknown", "/contracts?storeIds=3"), "/contracts/7?send=unknown&back=%2Fcontracts%3FstoreIds%3D3");
+  assert.equal(withBack("/contracts/new", "https://evil.example/contracts"), "/contracts/new");
+  assert.equal(withBack("/contracts/7/edit", undefined), "/contracts/7/edit");
+});
+
+test("저장 · 삭제 뒤 목록 — 새로 만들었거나 지웠으면 점포 조건을 「전체」로 비우고, 이어 쓰기 저장은 그대로", () => {
+  assert.equal(listAfterSave("/contracts?scope=DIRECT&page=3&staffMemberName=%EA%B9%80", true), "/contracts?staffMemberName=%EA%B9%80&storeIds=");
+  assert.equal(listAfterSave("/contracts?storeIds=3,7", false), "/contracts?storeIds=3,7");
+  assert.equal(listAfterSave("/stores", false), "/contracts");
+});
+
+test("쓸 수 없는 범위는 헤더 · 칩과 같은 판정이다 — 폐점만 남은 점포 유형도 쓸 수 없다", () => {
+  const store = (storeId: number, storeTypeCode: string, storeStatusCode = "OPERATING") => ({ storeId, storeCode: `S${storeId}`, name: `점포${storeId}`, storeTypeCode, storeStatusCode });
+  const stores = [store(1, "DIRECT", "CLOSED"), store(2, "FRANCHISE")];
+  assert.equal(unusableScopeOf({ scope: { type: "DIRECT" } }, stores), true);
+  assert.equal(unusableScopeOf({ scope: { type: "FRANCHISE" } }, stores), false);
+  assert.equal(unusableScopeOf({ scope: { type: "STORE", storeId: 9 } }, stores), true);
+  assert.equal(unusableScopeOf({ scope: { type: "STORE", storeId: 2 } }, stores), false);
+  assert.equal(unusableScopeOf({ scope: { type: "ALL" } }, stores), false);
+  assert.equal(unusableScopeOf({ scope: null }, stores), false);
 });
 
 test("기간 · 급여 표기", () => {

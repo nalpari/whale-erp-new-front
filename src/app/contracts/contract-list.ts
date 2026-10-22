@@ -3,7 +3,8 @@
 
 import type { components } from "@/lib/api-types.generated";
 import type { Scope } from "../../lib/browser-storage.ts";
-import { SCOPE_PARAM, scopeKeyOf, scopeOfParam } from "../../lib/store-scope.ts";
+import type { AdminStore } from "../../lib/session.ts";
+import { SCOPE_PARAM, isUnusableScope, scopeKeyOf, scopeOfParam, withoutStoreSearch } from "../../lib/store-scope.ts";
 
 export const PAGE_SIZE = 20;
 
@@ -121,10 +122,34 @@ export const withPickedStores = (q: ListQuery, ids: number[]): ListQuery => ({ .
 /** 헤더 범위로 점포 조건을 건다(고른 점포는 비운다). 첫 쪽으로 간다 */
 export const withScopeCondition = (q: ListQuery, scope: Scope): ListQuery => ({ ...q, storeIds: [], storesCleared: false, scope, page: 1 });
 
-/** 상세로 갈 때 지금 목록 주소를 넘긴다 — 상세의 [목록]이 같은 조건 · 쪽으로 돌아온다 */
-export const withBack = (path: string, listHref: string) => (listHref === "/contracts" ? path : `${path}?back=${encodeURIComponent(listHref)}`);
+/**
+ * 주소의 범위를 이 탭에서 쓸 수 없는가 — 고를 점포가 없다(점포 하나가 로그인 정보에 없음 · 직영 · 가맹에 폐점이 아닌 점포가 없음).
+ * 헤더(scopeFromAddress) · 칩(scopeStores)과 같은 isUnusableScope 다 — 폐점을 세면 헤더는 따르지 않고 칩은 비었는데 api 에는 점포 유형이
+ * 가는, 보이지 않는 조건이 생긴다(#109 리뷰). 그런 주소는 필터가 「전체」로 바꾸고 알린다. 고른 점포(storeIds)는 보지 않는다 — 로그인
+ * 정보에 없어도 「점포 {id}」 칩으로 보이고 지울지는 사용자가 정한다.
+ */
+export const unusableScopeOf = (q: Pick<ListQuery, "scope">, stores: readonly AdminStore[]): boolean => !!q.scope && isUnusableScope(q.scope, stores);
 
-/** 상세에서 돌아갈 목록 주소. 근로계약 목록 주소가 아니면(다른 곳으로 보내려는 값) 기본 목록으로 */
+/**
+ * 목록에서 나가는 주소(상세 · 이어 쓰기 · 작성 · 근로자 정보)에 지금 목록 주소를 ?back= 으로 싣는다 — 그 화면들의 [목록] · 저장 · 삭제 뒤
+ * 이동이 같은 조건 · 쪽으로 돌아온다(1팀 「상세 · 등록으로 갈 때 목록 주소를 ?back= 으로 넘긴다」). 기본 목록이면 싣지 않는다. href 에 이미
+ * 쿼리(?send= 등)가 있으면 뒤에 붙인다. back 은 backHrefOf 로 다시 걸러 근로계약 목록 주소만 싣는다.
+ */
+export function withBack(href: string, back: string | string[] | undefined): string {
+  const list = backHrefOf(back);
+  return list === "/contracts" ? href : `${href}${href.includes("?") ? "&" : "?"}back=${encodeURIComponent(list)}`;
+}
+
+/**
+ * 저장 · 삭제 뒤 돌아갈 목록. 새로 만들었거나(등록) 지웠으면 점포 조건을 「전체」로 비운다(1팀 withoutStoreSearch — 새 계약의 점포가 고른
+ * 점포 밖일 수 있다). 이어 쓰기 · 수정 저장은 같은 계약이라 그대로 돌아간다.
+ */
+export const listAfterSave = (back: string | string[] | undefined, created: boolean) => {
+  const list = backHrefOf(back);
+  return created ? withoutStoreSearch(list) : list;
+};
+
+/** 돌아갈 목록 주소. 근로계약 목록 주소가 아니면(다른 곳으로 보내려는 값) 기본 목록으로 — 서버 액션에 온 값도 이것으로 거른다 */
 export function backHrefOf(raw: string | string[] | undefined): string {
   const value = typeof raw === "string" ? raw : "";
   return /^\/contracts(\?[^#]*)?$/.test(value) ? value : "/contracts";

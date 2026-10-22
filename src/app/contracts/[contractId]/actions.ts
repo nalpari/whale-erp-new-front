@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { ApiError, authHeaders, request } from "@/lib/api";
+import { listAfterSave, withBack } from "../contract-list";
 import { inProgressOf, type SaveResult } from "../new/contract-form-model";
 import { saveOutcomeUnknown, sendFailedTarget, sendFailureOf, type SendFailure } from "./send-model";
 import type { WorkerBody } from "./worker/worker-model";
@@ -10,8 +11,11 @@ import type { WorkerBody } from "./worker/worker-model";
 // "1/../../stores/5" 같은 값이 api 의 다른 경로로 쓰기 요청을 보내지 않게 한다(front #13 리뷰).
 const isContractId = (id: unknown): id is number => Number.isInteger(id) && (id as number) >= 1 && (id as number) <= 2_147_483_647;
 
-/** 임시저장 삭제. 성공하면 목록으로 간다. 실패하면 화면에 보일 문장을 돌려준다(임시저장이 아님 409 등) */
-export async function deleteContract(contractId: number): Promise<{ error: string }> {
+/**
+ * 임시저장 삭제. 성공하면 목록으로 간다 — 점포 조건은 「전체」로 비운다(listAfterSave). back 은 화면이 넘긴 목록 주소다(서버 액션은
+ * 누구나 부를 수 있어 backHrefOf 로 다시 거른다). 실패하면 화면에 보일 문장을 돌려준다(임시저장이 아님 409 등)
+ */
+export async function deleteContract(contractId: number, back?: string): Promise<{ error: string }> {
   if (!isContractId(contractId)) return { error: "근로계약을 찾을 수 없습니다" };
   const headers = await authHeaders();
   if (!headers.Authorization) return { error: "로그인이 필요합니다" };
@@ -24,14 +28,14 @@ export async function deleteContract(contractId: number): Promise<{ error: strin
     if (e instanceof ApiError) return { error: e.status === 401 ? "로그인이 필요합니다" : e.message };
     throw e;
   }
-  redirect("/contracts");
+  redirect(listAfterSave(back, true));
 }
 
 /**
  * 날인 전 당사자 정보 수정(WHALEERP-125 · 126). 저장하면 api 가 곧바로 다시 보낸다(2026-10-19 재영). 성공하면 상세로 간다. 실패하면 화면에 보일 문장을 돌려주고, 새 번호로
  * 같은 점포에 진행 중 계약이 있으면(409 CONTRACT_IN_PROGRESS) 그 목록도 돌려줘 화면이 대체할지 묻는다.
  */
-export async function updateWorker(contractId: number, body: WorkerBody): Promise<SaveResult> {
+export async function updateWorker(contractId: number, body: WorkerBody, back?: string): Promise<SaveResult> {
   if (!isContractId(contractId)) return { error: "근로계약을 찾을 수 없습니다" };
   const headers = await authHeaders();
   if (!headers.Authorization) return { error: "로그인이 필요합니다" };
@@ -46,17 +50,17 @@ export async function updateWorker(contractId: number, body: WorkerBody): Promis
       if (e.status === 401) return { error: "로그인이 필요합니다" };
       // 고친 내용은 저장했는데 다시 보내기(가입 초대 알림톡)가 실패했다 — 상세에서 알린다
       const sendFailed = sendFailedTarget(e.status, e.body);
-      if (sendFailed) redirect(sendFailed);
+      if (sendFailed) redirect(withBack(sendFailed, back));
       // 결과를 받지 못했다(코드 없는 502 · 504) — 저장 · 다시 보내기가 됐을 수 있어 같은 폼으로 다시 저장하지 않게 상세로(front #50 리뷰)
       const code = (e.body as { code?: unknown } | null)?.code;
-      if (saveOutcomeUnknown(e.status, typeof code === "string" ? code : undefined)) redirect(`/contracts/${contractId}?send=unknown`);
+      if (saveOutcomeUnknown(e.status, typeof code === "string" ? code : undefined)) redirect(withBack(`/contracts/${contractId}?send=unknown`, back));
       const inProgress = e.status === 409 ? inProgressOf(e.body) : undefined;
       return inProgress ? { error: e.message, inProgress } : { error: e.message };
     }
     console.error("당사자 정보 저장 응답을 받지 못함", contractId, e);
-    redirect(`/contracts/${contractId}?send=unknown`);
+    redirect(withBack(`/contracts/${contractId}?send=unknown`, back));
   }
-  redirect(`/contracts/${contractId}`);
+  redirect(withBack(`/contracts/${contractId}`, back));
 }
 
 /** 재발송 결과. 실패면 화면에 보일 문장 · api 의 코드 · 다시 읽어야 하는지(send-model.ts) */

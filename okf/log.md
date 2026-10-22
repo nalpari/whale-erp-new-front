@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — #109 리뷰 반영: 근로계약 목록의 쓸 수 없는 범위 판정을 헤더 · 칩과 같은 `isUnusableScope` 로 맞추고(`unusableScopeOf`, 폐점만 남은 점포 유형), 목록 주소(`?back=`)를 이어 쓰기 · 작성 · 근로자 정보 · 재발송 · 저장 · 삭제 뒤 이동까지 잇는다(새 계약 · 삭제 뒤는 점포 조건 「전체」).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 목록 점포 필터를 점포명 글자 검색에서 공통 점포 고르기(`StorePicker`)로 바꾸고 상단 점포 범위와 이었다(WHALEERP-133, 1팀 front #88 규칙). api 는 `storeIds` · `storeTypes` 로 거른다(api 짝 PR). 상세의 [목록]은 `?back=` 으로 같은 조건에 돌아온다. api 타입을 api main + 이 변경으로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 적대적 리뷰(ip-code-review-claude, front #107) 반영: 플랫폼 관리자 수정 패널을 세울 때 메뉴 수정 권한만이 아니라 상세의 [수정] 버튼과 같은 계정별 판정(`adminActionsOf`)을 본다 — 플랫폼 관리자가 주소(`?edit=1`)로 플랫폼 마스터 계정의 수정 폼을 열 수 있었다(저장은 api 가 막는다). main 병합으로 생긴 okf 충돌을 양쪽 서술을 살려 풀었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR 리뷰(pr-review-toolkit) 반영: 새로 고침 · 앞으로 가기로 다시 연 플랫폼 관리자 수정을 닫아도 상세 기록이 겹치지 않게 수정 기록에 `history.state` 꼬리표를 단다. 다른 계정을 거쳐 돌아와도 포커스가 상세의 [수정]으로 돌아간다. 수정 패널을 세우는 조건을 `isEditOpen` 으로 떼어 테스트했다. SlidePanel 등 낡은 주석과 SlidePanel 설명의 `flushSync` 서술(코드는 rAF)을 고쳤다.
