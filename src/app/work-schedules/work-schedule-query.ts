@@ -55,12 +55,18 @@ export function addMonths(month: string, n: number): string {
   return d.toISOString().slice(0, 7);
 }
 
-/** 주간 보기가 읽는 7일 */
-export const weekRange = (week: string) => ({ from: week, to: addDays(week, 6) });
+/** 주간 보기가 읽는 8일 — 그 주 7일 앞에 전주 일요일을 붙인다(월요일 새벽으로 넘어온 근무를 가르려고, 2026-10-22 재영) */
+export const weekRange = (week: string) => ({ from: addDays(week, -1), to: addDays(week, 6) });
 /** 월간 달력이 읽는 42일 — 그 달 1일이 든 주의 월요일부터 6주(api 상한 42일) */
 export function monthRange(month: string) {
   const from = mondayOf(`${month}-01`);
   return { from, to: addDays(from, 41) };
+}
+
+/** 주소에 day 가 없을 때의 고른 날 — 그 주 · 달에 오늘이 있으면 오늘, 아니면 월요일 · 1일. 읽기와 쓰기가 같은 값을 쓴다 */
+function defaultDay(view: ScheduleView, week: string, month: string, today: string): string {
+  if (view === "week") return today >= week && today <= addDays(week, 6) ? today : week;
+  return today.slice(0, 7) === month ? today : `${month}-01`;
 }
 
 export function parseScheduleQuery(raw: RawSearch, today: string): ScheduleQuery {
@@ -73,20 +79,13 @@ export function parseScheduleQuery(raw: RawSearch, today: string): ScheduleQuery
   const monthRaw = first(raw.month);
   const month = monthRaw && /^\d{4}-(0[1-9]|1[0-2])$/.test(monthRaw) ? monthRaw : today.slice(0, 7);
   const dayRaw = dateOf(first(raw.day));
-  // 주간은 그 주 안의 날만 — 아니면 오늘(그 주면) · 월요일
-  const inWeek = (d: string) => d >= week && d <= addDays(week, 6);
-  const day =
-    view === "week"
-      ? dayRaw && inWeek(dayRaw)
-        ? dayRaw
-        : inWeek(today)
-          ? today
-          : week
-      : dayRaw && dayRaw.slice(0, 7) === month
-        ? dayRaw
-        : today.slice(0, 7) === month
-          ? today
-          : `${month}-01`;
+  // 주간은 그 주 안의 날만, 월간은 그 달 안의 날만 — 아니면 기본값(defaultDay)
+  const inView = view === "week" ? dayRaw >= week && dayRaw <= addDays(week, 6) : dayRaw.slice(0, 7) === month;
+  const day = dayRaw && inView ? dayRaw : defaultDay(view, week, month, today);
+  let historyFrom = dateOf(first(raw.hfrom));
+  let historyTo = dateOf(first(raw.hto));
+  // 거꾸로 된 기간은 api 가 400 이다 — 둘 다 비운다(front #93 리뷰)
+  if (historyFrom && historyTo && historyFrom > historyTo) historyFrom = historyTo = "";
   const page = Number(first(raw.hpage));
   const pageSize = Number(first(raw.hsize));
   return {
@@ -96,8 +95,8 @@ export function parseScheduleQuery(raw: RawSearch, today: string): ScheduleQuery
     day,
     month,
     history: first(raw.history) === "1",
-    historyFrom: dateOf(first(raw.hfrom)),
-    historyTo: dateOf(first(raw.hto)),
+    historyFrom,
+    historyTo,
     historyStaffId: idOf(first(raw.hstaff)),
     historyPage: Number.isInteger(page) && page >= 1 && page <= MAX_PAGE ? page : 1,
     historyPageSize: PAGE_SIZES.find((s) => s === pageSize) ?? 20,
@@ -111,11 +110,8 @@ export function toScheduleSearch(q: ScheduleQuery, today: string): string {
   if (q.view === "month") {
     p.set("view", "month");
     if (q.month !== today.slice(0, 7)) p.set("month", q.month);
-    if (q.day !== today && q.day !== `${q.month}-01`) p.set("day", q.day);
-  } else {
-    if (q.week !== mondayOf(today)) p.set("week", q.week);
-    if (q.day !== today && q.day !== q.week) p.set("day", q.day);
-  }
+  } else if (q.week !== mondayOf(today)) p.set("week", q.week);
+  if (q.day !== defaultDay(q.view, q.week, q.month, today)) p.set("day", q.day);
   if (q.history) {
     p.set("history", "1");
     if (q.historyFrom) p.set("hfrom", q.historyFrom);

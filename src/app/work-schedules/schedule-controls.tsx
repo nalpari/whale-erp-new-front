@@ -66,13 +66,16 @@ export function ScheduleHistory({
 }: {
   query: ScheduleQuery;
   today: string;
-  data: WorkScheduleHistoryList | null;
+  /** null 은 패널이 닫혀 받지 않은 것, "failed" 는 받지 못한 것 */
+  data: WorkScheduleHistoryList | "failed" | null;
   staffOptions: { staffMemberId: number; name: string }[];
 }) {
   const navigate = useScheduleNavigation(today);
   const trigger = useRef<HTMLButtonElement>(null);
   const go = (next: Partial<ScheduleQuery>) => navigate({ ...query, historyPage: 1, ...next });
-  const totalPages = data ? Math.max(1, Math.ceil(data.total / query.historyPageSize)) : 1;
+  const failed = data === "failed";
+  const list = failed ? null : data;
+  const totalPages = list ? Math.max(1, Math.ceil(list.total / query.historyPageSize)) : 1;
   // 「10-22 10:11」(한국 시간)
   const time = (iso: string) => formatDateTime(iso).slice(5);
 
@@ -99,7 +102,7 @@ export function ScheduleHistory({
             </Select>
           </div>
           <div className="flex items-center justify-between text-[14px]">
-            <span className="text-erp-label">{data?.total ?? 0}건</span>
+            <span className="text-erp-label">{list?.total ?? 0}건</span>
             <div className="w-[80px]">
               <Select aria-label="페이지당 건수" value={String(query.historyPageSize)} onChange={(e) => go({ historyPageSize: Number(e.target.value) as PageSize })}>
                 {PAGE_SIZES.map((size) => (
@@ -111,8 +114,9 @@ export function ScheduleHistory({
             </div>
           </div>
           <ul className="flex flex-col">
-            {data?.items.length === 0 && <li className="py-[14px] text-[14px] text-erp-label">변경 이력이 없습니다.</li>}
-            {data?.items.map((h) => (
+            {failed && <li role="alert" className="py-[14px] text-[14px] text-erp-off">변경 이력을 불러오지 못했습니다. 잠시 뒤 다시 열어 주세요.</li>}
+            {list?.items.length === 0 && <li className="py-[14px] text-[14px] text-erp-label">변경 이력이 없습니다.</li>}
+            {list?.items.map((h) => (
               <li key={h.workScheduleHistoryId} className="flex items-start gap-[8px] border-b border-erp-thead-line py-[10px] text-[14px]">
                 <span className="w-[86px] shrink-0 text-[13px] text-erp-muted">{time(h.changedAt)}</span>
                 {h.changeType === "DELETED" ? <span className={TAG_DANGER}>{CHANGE_LABEL.DELETED}</span> : <Tag>{CHANGE_LABEL[h.changeType]}</Tag>}
@@ -120,7 +124,7 @@ export function ScheduleHistory({
               </li>
             ))}
           </ul>
-          {data && data.total > query.historyPageSize && (
+          {list && list.total > query.historyPageSize && (
             <Pagination page={query.historyPage} totalPages={totalPages} onPageChange={(page) => navigate({ ...query, historyPage: page })} />
           )}
         </div>

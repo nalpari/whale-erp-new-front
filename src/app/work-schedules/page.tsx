@@ -10,7 +10,7 @@ import { ScheduleWeek } from "./schedule-week";
 import { addDays, historyApiSearch, mondayOf, moved, parseScheduleQuery, scheduleApiSearch, toScheduleSearch, type ScheduleQuery } from "./work-schedule-query";
 
 // 근무스케줄 관리(#202 · #343 · #608). 목업 docs/mockup/staff/index.html 근무스케줄 탭 · 데모 docs/demo/staff/work-schedules.html 을 공통 컴포넌트로 옮겼다.
-// 데이터는 GET /work-schedules(주간 7일 · 월간 42일)와 GET /work-schedules/histories(변경 이력 패널이 열렸을 때)다. 화면 상태는 주소에만 둔다.
+// 데이터는 GET /work-schedules(주간 8일 — 전주 일요일 포함 · 월간 42일)와 GET /work-schedules/histories(변경 이력 패널이 열렸을 때)다. 화면 상태는 주소에만 둔다.
 // 등록 · 수정 · 삭제 패널과 지난 주 복사는 다음 PR 이다(계획 문서 「PR 나눔」).
 
 const tab = (active: boolean) =>
@@ -36,7 +36,13 @@ export default async function WorkSchedulesPage({ searchParams }: { searchParams
   const withStore = { ...query, storeId: query.storeId };
   const [data, history, employmentLabels] = await Promise.all([
     getWorkSchedules(scheduleApiSearch(withStore)),
-    query.history ? getWorkScheduleHistories(historyApiSearch(withStore)) : Promise.resolve(null),
+    // 이력을 받지 못해도 화면은 그린다 — 패널 안에만 안내하고 원인은 서버 로그에 남긴다(front #93 리뷰)
+    query.history
+      ? getWorkScheduleHistories(historyApiSearch(withStore)).catch((error: unknown) => {
+          console.error("근무스케줄: GET /work-schedules/histories 를 받지 못했습니다", error);
+          return "failed" as const;
+        })
+      : Promise.resolve(null),
     getEnum("EmploymentType"),
   ]);
   if (!data) notFound();

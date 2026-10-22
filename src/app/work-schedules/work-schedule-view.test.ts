@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { barOf, durationLabel, gapsOf, historyLine, hourCells, shiftLabel } from "./work-schedule-view.ts";
+import { barOf, carryOver, durationLabel, gapsOf, historyLine, hourCells, shiftLabel } from "./work-schedule-view.ts";
 
 /** 30분 칸 48개 — [시작 칸, 끝 칸) 구간마다 인원을 더한다 */
 const cov = (...spans: [number, number][]) => {
@@ -75,4 +75,27 @@ test("이력 한 줄 — 추가 · 수정 · 삭제 · 휴게만 · 날짜 바�
     "배정숙 08-30 16:00-22:00 삭제 · 정하윤",
   );
   assert.equal(historyLine({ changeType: "DELETED", staffName: "배정숙", changedBy: by, before: null, after: null }), "배정숙 — 삭제 · 정하윤");
+});
+
+test("전날에서 넘어온 근무 — 끝난 뒤 그날 첫 근무 전은 빈칸, 공백은 그날 시작한 근무 사이만(2026-10-22 재영)", () => {
+  const carry = carryOver([
+    { startTime: "22:00", endTime: "02:00" },
+    { startTime: "09:00", endTime: "18:00" }, // 자정을 넘지 않으면 넘어오지 않는다
+    { startTime: "20:00", endTime: "00:00" }, // 24:00 에 끝나면 넘어오지 않는다
+  ]);
+  assert.equal(carry.slice(0, 5).join(), "1,1,1,1,0");
+  // 00:00-02:00 넘어온 근무, 그날 09:00-12:00 · 13:00-15:00
+  const coverage = cov([0, 4], [18, 24], [26, 30]);
+  const cells = hourCells(coverage, carry);
+  assert.deepEqual(cells.slice(0, 3), [1, 1, null]); // 02시부터 빈칸
+  assert.equal(cells[8], null); // 그날 첫 근무 전
+  assert.equal(cells[9], 1);
+  assert.equal(cells[12], 0); // 그날 근무 사이 공백
+  assert.equal(cells[15], null);
+  assert.deepEqual(gapsOf(coverage, carry), [{ from: "12:00", to: "13:00", minutes: 60 }]);
+  // 넘어온 근무만 있는 날 — 새벽 칸만, 공백 없음
+  assert.deepEqual(hourCells(cov([0, 4]), carry).slice(0, 3), [1, 1, null]);
+  assert.deepEqual(gapsOf(cov([0, 4]), carry), []);
+  // 넘어온 근무를 모르면(carry 없음) 예전처럼 02:00-09:00 도 공백으로 센다
+  assert.equal(gapsOf(coverage).length, 2);
 });
