@@ -9,7 +9,6 @@ export default ({ A, R }) => {
   const [code, name, type, , , , , , , photo] = STORES.find((s) => s[0] === "ST000006");
   const unmetId = x.dialogId();
   // 재인증 확인 문구는 점포 등록 화면과 같다.
-  const reauthText = `<p>지금 인증한 사업자등록번호·대표자명·개업일자가 지워지고 인증 전으로 돌아갑니다.</p>`;
 
   // 점포유형은 등록 뒤 바꿀 수 없다 — 등록 화면의 큰 선택 카드를 여기 두지 않고, 제목 줄에 점포유형 · 점포코드로만
   // 알린다(2026-10-16 점검).
@@ -54,9 +53,28 @@ export default ({ A, R }) => {
   // 순서는 사업자등록번호 인증 라인 → 상호명 · 대표자 연락처 → 업태 · 종목 → 사업자주소(2026-10-16 점검).
   // 상호명 · 대표자 연락처는 한 줄, 업태 · 종목도 한 줄 — 둘 다 반씩이다(상호명이 점포명과 같은 폭).
   // 사업자주소는 체크박스를 라벨 바로 옆 같은 줄에 둔다.
+  // 저장한 점포는 세 칸이 잠긴 「인증 완료 · 저장된 인증일」로 열린다. [재인증]은 대표자명만 열고, [재인증 취소]는 저장된 값으로 되돌린다(S-VRNTHD · S-JEPOMK)
+  const saved = ["105-22-81934", "박서윤", "2019-05-10"];
+  const savedGuide = "대표자 변경 시 새 대표자명으로 재인증해야 합니다.<br>사업자등록번호와 개업일자는 수정할 수 없으며, 인증 실패 시 기존 정보가 유지됩니다.";
   const biz = ui.formGroup(
-    "사업자정보",
-    f.bizAuth(A, "ebiz", { start: "open", inline: true, values: ["105-22-81934", "박서윤", "2019-05-10"], confirmReauth: reauthText }),
+    f.titleBadge("사업자정보", "on", "인증 완료 · 2026-03-04"),
+    f.bizVerifyBox(A, {
+      id: "ebiz-locked",
+      row: true,
+      values: saved,
+      locked: ["num", "ceo", "open"],
+      buttons: ui.button("재인증", { variant: "soft", ...f.swapAttr("ebiz-locked", "ebiz-open") }),
+      guide: savedGuide,
+    }),
+    f.bizVerifyBox(A, {
+      id: "ebiz-open",
+      row: true,
+      values: saved,
+      locked: ["num", "open"],
+      hidden: true,
+      buttons: ui.button("인증하기", { variant: "soft" }) + ui.button("재인증 취소", { variant: "soft", ...f.swapAttr("ebiz-open", "ebiz-locked") }),
+      guide: savedGuide,
+    }),
     ui.formRow(
       ui.field("상호명", ui.textField({ value: "모리커피 연남", maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })),
       f.group("대표자 연락처", f.tel("010", "5521", "3380")),
