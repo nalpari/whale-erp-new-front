@@ -209,20 +209,25 @@ ${field("상호명", box(`<input name="companyName" required maxlength="50" auto
 </div>`,
   );
 
-  // 사업자정보는 선택이라 인증하기를 누를 때만 세 칸을 확인한다. 인증되면 칸을 잠근다. "인증완료" 뱃지는
-  // 제목 줄에 하나만 둔다 — 안쪽에도 두면 한 화면에 두 번 보인다(2026-10-16). 빈 날짜 칸의 "연도. 월. 일."은
-  // 브라우저가 그리는 글자라 placeholder 색(#999)을 webkit 의사 요소로 맞춘다.
+  // 사업자정보는 선택이라 인증하기를 누를 때만 세 칸을 확인한다. 네 화면 공통 정책(manyfast S-VRNTHD, 2026-10-22 사용자 확정)대로
+  // #f8f9fb 회색 상자 안에 세 칸 → 버튼 위 한 줄(빈 칸은 「·」로 묶음) → [인증하기|재인증] [지우기] → 안내 순서이고, 인증하면 세 칸을
+  // 잠그며 [재인증]으로 연다. 사업자등록번호는 하이픈을 넣어 쳐도 받는다(12자). 인증 상태(「인증 완료 · 날짜」/「미인증」)는 상자 머리
+  // 오른쪽에 둔다. 빈 날짜 칸의 "연도. 월. 일."은 브라우저가 그리는 글자라 placeholder 색(#999)을 webkit 의사 요소로 맞춘다.
   const biz = section(
     "사업자정보 인증",
     "(선택)",
-    `<div data-biz class="flex flex-col gap-[24px]">
-<div class="grid grid-cols-[repeat(3,minmax(0,1fr))_auto] items-end gap-[16px]">
-${field("사업자등록번호", box(`<input name="bizRegistrationNumber" inputmode="numeric" pattern="[0-9]{3}-?[0-9]{2}-?[0-9]{5}" placeholder="000-00-00000" class="${g.INPUT}">`))}
-${field("대표자명", box(`<input name="bizCeoName" placeholder="대표자 이름" class="${g.INPUT}">`))}
+    `<div data-biz class="flex flex-col gap-[20px] rounded-[6px] border border-guest-line bg-erp-thead-bg p-[24px]">
+<div class="flex justify-end"><span data-biz-status class="text-[16px] font-medium text-[#e93737]">미인증</span></div>
+<div class="grid grid-cols-3 items-start gap-[16px]">
+${field("사업자등록번호", box(`<input name="bizRegistrationNumber" inputmode="numeric" maxlength="12" placeholder="숫자 10자리" class="${g.INPUT}">`))}
+${field("대표자명", box(`<input name="bizCeoName" maxlength="50" placeholder="대표자 이름" class="${g.INPUT}">`))}
 ${field("개업일자", box(`<input name="bizOpenDate" type="date" class="${g.INPUT} [&:placeholder-shown::-webkit-datetime-edit-fields-wrapper]:text-[#999] [&:placeholder-shown::-webkit-datetime-edit-text]:text-[#999] [&:placeholder-shown::-webkit-datetime-edit-year-field]:text-[#999] [&:placeholder-shown::-webkit-datetime-edit-month-field]:text-[#999] [&:placeholder-shown::-webkit-datetime-edit-day-field]:text-[#999]">`))}
-<div class="flex gap-[8px]"><button type="button" data-biz-reverify hidden class="${g.FIELD_BUTTON}">재인증</button><button type="button" data-biz-clear hidden class="${g.FIELD_BUTTON}">사용안함</button><button type="button" data-biz-verify class="${g.FIELD_BUTTON}">인증하기</button></div>
-</div></div>`,
-    `<span data-biz-badge hidden class="ml-[10px] rounded-[4px] bg-guest-card px-[8px] py-[2px] align-middle text-[14px] font-normal text-guest-navy">인증완료</span>`,
+</div>
+<span data-biz-line role="alert" hidden class="text-[14px] leading-[1.5] text-[#e93737]"></span>
+<div class="flex gap-[8px]"><button type="button" data-biz-verify class="${g.FIELD_BUTTON}">인증하기</button><button type="button" data-biz-clear hidden class="${g.FIELD_BUTTON}">지우기</button></div>
+<p class="text-[15px] leading-[1.5] text-guest-sub">사업자정보가 국세청에 등록된 정보와 일치하는지 확인합니다.</p>
+</div>`,
+    "",
   );
 
   const agree = section(

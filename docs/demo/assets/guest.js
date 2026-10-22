@@ -220,25 +220,52 @@
       });
     }
 
-    // 사업자정보 인증. 진위확인은 보내지 않고 세 칸이 다 맞으면 인증된 것으로 잠근다.
+    // 사업자정보 인증(S-VRNTHD). 진위확인은 보내지 않고 세 칸이 다 맞으면 인증된 것으로 잠근다.
+    // 빈 칸은 「·」로 묶어 버튼 위 한 줄, 번호는 하이픈을 빼고 10자리인지 본다. 인증하면 잠그고 [재인증]으로 연다.
     const biz = signup.querySelector("[data-biz]");
     const bizInputs = $$("input", biz);
-    const setVerified = (on) => {
-      for (const i of bizInputs) i.disabled = on;
-      biz.querySelector("[data-biz-badge]").hidden = !on;
-      biz.querySelector("[data-biz-verify]").hidden = on;
-      biz.querySelector("[data-biz-reverify]").hidden = !on;
-      biz.querySelector("[data-biz-clear]").hidden = !on;
+    const [bizNumber, bizCeo, bizOpen] = bizInputs;
+    const bizVerify = biz.querySelector("[data-biz-verify]");
+    const bizClear = biz.querySelector("[data-biz-clear]");
+    const bizLine = biz.querySelector("[data-biz-line]");
+    const bizStatus = biz.querySelector("[data-biz-status]");
+    let bizVerified = false;
+    const showLine = (text) => {
+      bizLine.textContent = text;
+      bizLine.hidden = !text;
     };
-    biz.querySelector("[data-biz-verify]").addEventListener("click", () => {
-      const bad = bizInputs.find((i) => !i.value.trim() || !i.checkValidity());
-      if (bad) bad.focus();
-      else setVerified(true);
+    const syncBiz = () => {
+      for (const i of bizInputs) i.readOnly = bizVerified;
+      bizVerify.textContent = bizVerified ? "재인증" : "인증하기";
+      bizClear.hidden = !(bizVerified || bizInputs.some((i) => i.value));
+      bizStatus.textContent = bizVerified ? `인증 완료 · ${new Date().toISOString().slice(0, 10)}` : "미인증";
+      bizStatus.className = `text-[16px] font-medium ${bizVerified ? "text-guest-navy" : "text-[#e93737]"}`;
+    };
+    bizNumber.addEventListener("input", () => (bizNumber.value = bizNumber.value.replace(/[^0-9-]/g, "")));
+    for (const i of bizInputs) i.addEventListener("input", () => (showLine(""), syncBiz()));
+    bizVerify.addEventListener("click", () => {
+      if (bizVerified) {
+        bizVerified = false;
+        return syncBiz();
+      }
+      const missing = [
+        [bizNumber.value.replace(/[^0-9]/g, ""), "사업자등록번호"],
+        [bizCeo.value.trim(), "대표자명"],
+        [bizOpen.value, "개업일자"],
+      ]
+        .filter(([v]) => !v)
+        .map(([, label]) => label);
+      if (missing.length) return showLine(`${missing.join("·")} 항목을 입력해 주세요.`);
+      if (bizNumber.value.replace(/[^0-9]/g, "").length !== 10) return showLine("사업자등록번호는 숫자 10자리입니다.");
+      showLine("");
+      bizVerified = true;
+      syncBiz();
     });
-    biz.querySelector("[data-biz-reverify]").addEventListener("click", () => setVerified(false));
-    biz.querySelector("[data-biz-clear]").addEventListener("click", () => {
+    bizClear.addEventListener("click", () => {
       for (const i of bizInputs) i.value = "";
-      setVerified(false);
+      bizVerified = false;
+      showLine("");
+      syncBiz();
     });
 
     // 약관: 모두 동의와 개별 동의를 맞춘다.
