@@ -82,7 +82,7 @@ table.spec td.n{color:var(--muted)}
 <div class="diagram">
 <div class="v v-logical"><svg viewBox="0 0 1328 1024" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="erd-hiring-logical-title erd-hiring-logical-desc" style="min-width:1328px">
 <title id="erd-hiring-logical-title">채용과 초대</title>
-<desc id="erd-hiring-logical-desc">채용과 초대 논리 ERD. 엔티티 8개와 관계 8개를 보여 준다: 점포, 계정, 직원 레코드, 신고 정보, 초대, 가입 연결 보류, 관리자 계정, 퇴직 처리 이력.</desc>
+<desc id="erd-hiring-logical-desc">채용과 초대 논리 ERD. 엔티티 10개와 관계 9개를 보여 준다: 점포, 계정, 직원 레코드, 신고 정보, 초대, 가입 연결 보류, 관리자 계정, 퇴직 처리 이력, 초대 코드 입력 시도, 신고 정보 변경 이력.</desc>
 <rect width="100%" height="100%" fill="#ffffff"/>
 <path d="M 280,108 L 376,108" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 280,312 L 376,312" fill="none" stroke="#60646c" stroke-width="1"/>
@@ -92,6 +92,7 @@ table.spec td.n{color:var(--muted)}
 <path d="M 160,424 L 160,640 Q 160,648 168,648 L 872,648 Q 880,648 880,640 L 880,576" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 1048,464 L 952,464" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 376,200 L 356,200 Q 348,200 348,208 L 348,752 Q 348,760 356,760 L 376,760" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 616,500 L 656,500 Q 664,500 664,508 L 664,776 Q 664,784 672,784 L 712,784" fill="none" stroke="#60646c" stroke-width="1"/>
 <g id="logical-ent-store">
 <rect x="40" y="40" width="240" height="172" rx="6" fill="#ffffff"/>
 <rect x="40" y="40" width="240" height="172" rx="6" fill="rgba(13,116,206,0.03)" stroke="rgba(13,116,206,0.60)" stroke-width="1" stroke-dasharray="2,3"/>
@@ -288,6 +289,48 @@ table.spec td.n{color:var(--muted)}
 <text x="392" y="896" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">처리 일시</text>
 <text x="600" y="896" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">datetime</text>
 </g>
+<g id="logical-ent-invite_attempt">
+<rect x="1048" y="40" width="240" height="192" rx="6" fill="#ffffff"/>
+<rect x="1048" y="40" width="240" height="192" rx="6" fill="rgba(23,23,23,0.02)" stroke="rgba(23,23,23,0.32)" stroke-width="1" stroke-dasharray="4,3"/>
+<rect x="1049" y="41" width="238" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
+<line x1="1048" y1="92" x2="1288" y2="92" stroke="rgba(23,23,23,0.32)" stroke-opacity="0.35" stroke-width="1"/>
+<text x="1064" y="60" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">HISTORY · invitation_code_attempts</text>
+<text x="1064" y="80" fill="#171717" font-size="16" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">초대 코드 입력 시도</text>
+<text x="1064" y="116" fill="#8145b5" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">#</text>
+<text x="1078" y="116" fill="#171717" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">시도 ID</text>
+<text x="1272" y="116" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+<text x="1064" y="136" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">휴대전화번호 키</text>
+<text x="1272" y="136" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">hash</text>
+<text x="1064" y="156" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">다시 세기 기준</text>
+<text x="1272" y="156" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">bool</text>
+<text x="1064" y="176" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">실패 횟수</text>
+<text x="1272" y="176" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">int</text>
+<text x="1064" y="196" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">잠금 해제 시각</text>
+<text x="1272" y="196" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">datetime</text>
+<text x="1064" y="216" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">시도 시각</text>
+<text x="1272" y="216" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">datetime</text>
+</g>
+<g id="logical-ent-tax_history">
+<rect x="712" y="700" width="240" height="172" rx="6" fill="#ffffff"/>
+<rect x="712" y="700" width="240" height="172" rx="6" fill="rgba(23,23,23,0.02)" stroke="rgba(23,23,23,0.32)" stroke-width="1" stroke-dasharray="4,3"/>
+<rect x="713" y="701" width="238" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
+<line x1="712" y1="752" x2="952" y2="752" stroke="rgba(23,23,23,0.32)" stroke-opacity="0.35" stroke-width="1"/>
+<text x="728" y="720" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">HISTORY · staff_tax_profile_histories</text>
+<text x="728" y="740" fill="#171717" font-size="16" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">신고 정보 변경 이력</text>
+<text x="728" y="776" fill="#8145b5" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">#</text>
+<text x="742" y="776" fill="#171717" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">이력 ID</text>
+<text x="936" y="776" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+<text x="728" y="796" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="742" y="796" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">직원 레코드</text>
+<text x="936" y="796" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+<text x="728" y="816" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">바뀐 항목</text>
+<text x="936" y="816" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">enum</text>
+<text x="728" y="836" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="742" y="836" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">바꾼 계정</text>
+<text x="936" y="836" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">id</text>
+<text x="728" y="856" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">바꾼 시각</text>
+<text x="936" y="856" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">datetime</text>
+</g>
 <rect x="286" y="92" width="16" height="12" rx="2" fill="#ffffff"/>
 <text x="294" y="102" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
 <rect x="354" y="92" width="16" height="12" rx="2" fill="#ffffff"/>
@@ -330,6 +373,10 @@ table.spec td.n{color:var(--muted)}
 <text x="362" y="194" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
 <rect x="354" y="744" width="16" height="12" rx="2" fill="#ffffff"/>
 <text x="362" y="754" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
+<rect x="622" y="484" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="630" y="494" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
+<rect x="690" y="768" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="698" y="778" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
 <line x1="40" y1="960" x2="1288" y2="960" stroke="#dcdee0" stroke-width="0.8"/>
 <text x="40" y="980" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.18em">LEGEND</text>
 <rect x="40" y="996" width="16" height="12" rx="2" fill="rgba(129,69,181,0.04)" stroke="#8145b5"/>
@@ -349,16 +396,17 @@ table.spec td.n{color:var(--muted)}
 </svg></div>
 <div class="v v-physical"><p class="view-note">PostgreSQL 테이블·컬럼·타입이다. 타입 끝 ? 는 NULL 허용이다. 이름이 논리 ERD 와 다른 컬럼은 테이블 정의의 비고에 논리 이름을 적었다.</p><svg viewBox="0 0 1800 1024" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="erd-hiring-physical-title erd-hiring-physical-desc" style="min-width:1800px">
 <title id="erd-hiring-physical-title">채용과 초대</title>
-<desc id="erd-hiring-physical-desc">채용과 초대 물리 ERD. 엔티티 8개와 관계 8개를 보여 준다: 점포, 계정, 직원 레코드, 신고 정보, 초대, 가입 연결 보류, 관리자 계정, 퇴직 처리 이력.</desc>
+<desc id="erd-hiring-physical-desc">채용과 초대 물리 ERD. 엔티티 10개와 관계 9개를 보여 준다: 점포, 계정, 직원 레코드, 신고 정보, 초대, 가입 연결 보류, 관리자 계정, 퇴직 처리 이력, 초대 코드 입력 시도, 신고 정보 변경 이력.</desc>
 <rect width="100%" height="100%" fill="#ffffff"/>
-<path d="M 380,124 L 432,124 Q 440,124 440,132 L 440,176 Q 440,184 448,184 L 500,184" fill="none" stroke="#60646c" stroke-width="1"/>
-<path d="M 380,444 L 432,444 Q 440,444 440,436 L 440,336 Q 440,328 448,328 L 500,328" fill="none" stroke="#60646c" stroke-width="1"/>
-<path d="M 840,176 L 960,176" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 380,124 L 432,124 Q 440,124 440,132 L 440,148 Q 440,156 448,156 L 500,156" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 380,484 L 432,484 Q 440,484 440,476 L 440,284 Q 440,276 448,276 L 500,276" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 840,184 L 960,184" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 500,360 L 448,360 Q 440,360 440,368 L 440,656 Q 440,664 432,664 L 380,664" fill="none" stroke="#60646c" stroke-width="1"/>
-<path d="M 1128,312 L 1128,376" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 1128,332 L 1128,396" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 380,512 L 960,512" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 1420,468 L 1300,468" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 500,420 L 478,420 Q 470,420 470,428 L 470,752 Q 470,760 478,760 L 500,760" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 380,764 L 960,764" fill="none" stroke="#60646c" stroke-width="1"/>
 <g id="physical-ent-store">
 <rect x="40" y="40" width="340" height="172" rx="6" fill="#ffffff"/>
 <rect x="40" y="40" width="340" height="172" rx="6" fill="rgba(13,116,206,0.03)" stroke="rgba(13,116,206,0.60)" stroke-width="1" stroke-dasharray="2,3"/>
@@ -395,8 +443,8 @@ table.spec td.n{color:var(--muted)}
 <text x="364" y="536" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">account_status</text>
 </g>
 <g id="physical-ent-staff_member">
-<rect x="500" y="40" width="340" height="432" rx="6" fill="#ffffff"/>
-<rect x="500" y="40" width="340" height="432" rx="6" fill="rgba(129,69,181,0.04)" stroke="#8145b5" stroke-width="1"/>
+<rect x="500" y="40" width="340" height="352" rx="6" fill="#ffffff"/>
+<rect x="500" y="40" width="340" height="352" rx="6" fill="rgba(129,69,181,0.04)" stroke="#8145b5" stroke-width="1"/>
 <rect x="501" y="41" width="338" height="51" rx="5" fill="rgba(129,69,181,0.10)"/>
 <line x1="500" y1="92" x2="840" y2="92" stroke="#8145b5" stroke-opacity="0.35" stroke-width="1"/>
 <text x="516" y="60" fill="#8145b5" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">CORE ENTITY · staff_members</text>
@@ -429,18 +477,10 @@ table.spec td.n{color:var(--muted)}
 <text x="824" y="316" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">staff_member_join_status</text>
 <text x="516" y="336" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">retired_date</text>
 <text x="824" y="336" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">date?</text>
-<text x="516" y="356" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">is_hq_sharing_consented</text>
-<text x="824" y="356" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">boolean</text>
-<text x="516" y="376" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">hq_sharing_consent_version</text>
-<text x="824" y="376" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text?</text>
-<text x="516" y="396" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">hq_sharing_agreed_at</text>
-<text x="824" y="396" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)?</text>
-<text x="516" y="416" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">hq_sharing_withdrawn_at</text>
-<text x="824" y="416" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)?</text>
-<text x="516" y="436" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">created_at</text>
-<text x="824" y="436" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
-<text x="516" y="456" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">updated_at</text>
-<text x="824" y="456" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
+<text x="516" y="356" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">created_at</text>
+<text x="824" y="356" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
+<text x="516" y="376" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">updated_at</text>
+<text x="824" y="376" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
 </g>
 <g id="physical-ent-tax">
 <rect x="40" y="616" width="340" height="212" rx="6" fill="#ffffff"/>
@@ -466,8 +506,8 @@ table.spec td.n{color:var(--muted)}
 <text x="364" y="812" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
 </g>
 <g id="physical-ent-invitation">
-<rect x="960" y="40" width="340" height="272" rx="6" fill="#ffffff"/>
-<rect x="960" y="40" width="340" height="272" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
+<rect x="960" y="40" width="340" height="292" rx="6" fill="#ffffff"/>
+<rect x="960" y="40" width="340" height="292" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
 <rect x="961" y="41" width="338" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
 <line x1="960" y1="92" x2="1300" y2="92" stroke="#171717" stroke-opacity="0.35" stroke-width="1"/>
 <text x="976" y="60" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">ENTITY · invitations</text>
@@ -482,46 +522,48 @@ table.spec td.n{color:var(--muted)}
 <text x="1284" y="156" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">invitation_type</text>
 <text x="976" y="176" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">invitation_token</text>
 <text x="1284" y="176" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text?</text>
-<text x="976" y="196" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">channel</text>
-<text x="1284" y="196" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">invitation_channel</text>
-<text x="976" y="216" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">sent_at</text>
-<text x="1284" y="216" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
-<text x="976" y="236" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">expires_at</text>
+<text x="976" y="196" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">invitation_code_hash</text>
+<text x="1284" y="196" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text?</text>
+<text x="976" y="216" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">channel</text>
+<text x="1284" y="216" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">invitation_channel</text>
+<text x="976" y="236" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">sent_at</text>
 <text x="1284" y="236" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
-<text x="976" y="256" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">status</text>
-<text x="1284" y="256" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">invitation_status</text>
-<text x="976" y="276" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">responded_at</text>
-<text x="1284" y="276" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)?</text>
-<text x="976" y="296" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">reject_reason</text>
-<text x="1284" y="296" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text?</text>
+<text x="976" y="256" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">expires_at</text>
+<text x="1284" y="256" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
+<text x="976" y="276" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">status</text>
+<text x="1284" y="276" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">invitation_status</text>
+<text x="976" y="296" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">responded_at</text>
+<text x="1284" y="296" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)?</text>
+<text x="976" y="316" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">reject_reason</text>
+<text x="1284" y="316" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text?</text>
 </g>
 <g id="physical-ent-hold">
-<rect x="960" y="376" width="340" height="232" rx="6" fill="#ffffff"/>
-<rect x="960" y="376" width="340" height="232" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
-<rect x="961" y="377" width="338" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
-<line x1="960" y1="428" x2="1300" y2="428" stroke="#171717" stroke-opacity="0.35" stroke-width="1"/>
-<text x="976" y="396" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">ENTITY · link_holds</text>
-<text x="976" y="416" fill="#171717" font-size="16" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">가입 연결 보류</text>
-<text x="976" y="452" fill="#8145b5" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">#</text>
-<text x="990" y="452" fill="#171717" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">link_hold_id</text>
-<text x="1284" y="452" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer</text>
-<text x="976" y="472" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
-<text x="990" y="472" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">invitation_id</text>
+<rect x="960" y="396" width="340" height="232" rx="6" fill="#ffffff"/>
+<rect x="960" y="396" width="340" height="232" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
+<rect x="961" y="397" width="338" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
+<line x1="960" y1="448" x2="1300" y2="448" stroke="#171717" stroke-opacity="0.35" stroke-width="1"/>
+<text x="976" y="416" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">ENTITY · link_holds</text>
+<text x="976" y="436" fill="#171717" font-size="16" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">가입 연결 보류</text>
+<text x="976" y="472" fill="#8145b5" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">#</text>
+<text x="990" y="472" fill="#171717" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">link_hold_id</text>
 <text x="1284" y="472" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer</text>
 <text x="976" y="492" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
-<text x="990" y="492" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">account_id</text>
+<text x="990" y="492" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">invitation_id</text>
 <text x="1284" y="492" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer</text>
-<text x="976" y="512" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">mismatch_reason</text>
-<text x="1284" y="512" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">link_hold_mismatch_reason</text>
-<text x="976" y="532" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">resolution</text>
-<text x="1284" y="532" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">link_hold_resolution?</text>
-<text x="976" y="552" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
-<text x="990" y="552" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">resolved_by</text>
-<text x="1284" y="552" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer?</text>
-<text x="976" y="572" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">resolved_at</text>
-<text x="1284" y="572" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)?</text>
-<text x="976" y="592" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">created_at</text>
-<text x="1284" y="592" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
+<text x="976" y="512" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="990" y="512" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">account_id</text>
+<text x="1284" y="512" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer</text>
+<text x="976" y="532" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">mismatch_reason</text>
+<text x="1284" y="532" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">link_hold_mismatch_reason</text>
+<text x="976" y="552" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">resolution</text>
+<text x="1284" y="552" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">link_hold_resolution?</text>
+<text x="976" y="572" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="990" y="572" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">resolved_by</text>
+<text x="1284" y="572" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer?</text>
+<text x="976" y="592" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">resolved_at</text>
+<text x="1284" y="592" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)?</text>
+<text x="976" y="612" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">created_at</text>
+<text x="1284" y="612" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
 </g>
 <g id="physical-ent-admin">
 <rect x="1420" y="404" width="340" height="132" rx="6" fill="#ffffff"/>
@@ -567,32 +609,74 @@ table.spec td.n{color:var(--muted)}
 <text x="516" y="896" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">processed_at</text>
 <text x="824" y="896" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
 </g>
+<g id="physical-ent-invite_attempt">
+<rect x="1420" y="40" width="340" height="192" rx="6" fill="#ffffff"/>
+<rect x="1420" y="40" width="340" height="192" rx="6" fill="rgba(23,23,23,0.02)" stroke="rgba(23,23,23,0.32)" stroke-width="1" stroke-dasharray="4,3"/>
+<rect x="1421" y="41" width="338" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
+<line x1="1420" y1="92" x2="1760" y2="92" stroke="rgba(23,23,23,0.32)" stroke-opacity="0.35" stroke-width="1"/>
+<text x="1436" y="60" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">HISTORY · invitation_code_attempts</text>
+<text x="1436" y="80" fill="#171717" font-size="16" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">초대 코드 입력 시도</text>
+<text x="1436" y="116" fill="#8145b5" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">#</text>
+<text x="1450" y="116" fill="#171717" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">invitation_code_attempt_id</text>
+<text x="1744" y="116" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer</text>
+<text x="1436" y="136" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">phone_key</text>
+<text x="1744" y="136" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+<text x="1436" y="156" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">is_succeeded</text>
+<text x="1744" y="156" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">boolean</text>
+<text x="1436" y="176" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">failed_count</text>
+<text x="1744" y="176" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer</text>
+<text x="1436" y="196" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">lock_expires_at</text>
+<text x="1744" y="196" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)?</text>
+<text x="1436" y="216" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">attempted_at</text>
+<text x="1744" y="216" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
+</g>
+<g id="physical-ent-tax_history">
+<rect x="960" y="700" width="340" height="172" rx="6" fill="#ffffff"/>
+<rect x="960" y="700" width="340" height="172" rx="6" fill="rgba(23,23,23,0.02)" stroke="rgba(23,23,23,0.32)" stroke-width="1" stroke-dasharray="4,3"/>
+<rect x="961" y="701" width="338" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
+<line x1="960" y1="752" x2="1300" y2="752" stroke="rgba(23,23,23,0.32)" stroke-opacity="0.35" stroke-width="1"/>
+<text x="976" y="720" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">HISTORY · staff_tax_profile_histories</text>
+<text x="976" y="740" fill="#171717" font-size="16" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">신고 정보 변경 이력</text>
+<text x="976" y="776" fill="#8145b5" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">#</text>
+<text x="990" y="776" fill="#171717" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">staff_tax_profile_history_id</text>
+<text x="1284" y="776" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer</text>
+<text x="976" y="796" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="990" y="796" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">staff_member_id</text>
+<text x="1284" y="796" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer</text>
+<text x="976" y="816" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">field</text>
+<text x="1284" y="816" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">staff_tax_profile_field</text>
+<text x="976" y="836" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="990" y="836" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">account_id</text>
+<text x="1284" y="836" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer</text>
+<text x="976" y="856" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">changed_at</text>
+<text x="1284" y="856" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
+</g>
 <rect x="386" y="108" width="16" height="12" rx="2" fill="#ffffff"/>
 <text x="394" y="118" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
-<rect x="478" y="168" width="16" height="12" rx="2" fill="#ffffff"/>
-<text x="486" y="178" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
+<rect x="478" y="140" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="486" y="150" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
 <rect x="392" y="132" width="32" height="16" rx="2" fill="#ffffff"/>
 <text x="408" y="144" fill="#60646c" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="500" text-anchor="middle">소속</text>
-<rect x="386" y="428" width="36" height="12" rx="2" fill="#ffffff"/>
-<text x="404" y="438" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">0..1</text>
-<rect x="478" y="312" width="16" height="12" rx="2" fill="#ffffff"/>
-<text x="486" y="322" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
-<rect x="400" y="376" width="32" height="16" rx="2" fill="#ffffff"/>
-<text x="416" y="388" fill="#60646c" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="500" text-anchor="middle">연결</text>
-<rect x="846" y="160" width="16" height="12" rx="2" fill="#ffffff"/>
-<text x="854" y="170" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
-<rect x="938" y="160" width="16" height="12" rx="2" fill="#ffffff"/>
-<text x="946" y="170" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
-<rect x="884" y="184" width="32" height="16" rx="2" fill="#ffffff"/>
-<text x="900" y="196" fill="#60646c" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="500" text-anchor="middle">초대</text>
+<rect x="386" y="468" width="36" height="12" rx="2" fill="#ffffff"/>
+<text x="404" y="478" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">0..1</text>
+<rect x="478" y="260" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="486" y="270" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
+<rect x="400" y="372" width="32" height="16" rx="2" fill="#ffffff"/>
+<text x="416" y="384" fill="#60646c" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="500" text-anchor="middle">연결</text>
+<rect x="846" y="168" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="854" y="178" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
+<rect x="938" y="168" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="946" y="178" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
+<rect x="884" y="192" width="32" height="16" rx="2" fill="#ffffff"/>
+<text x="900" y="204" fill="#60646c" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="500" text-anchor="middle">초대</text>
 <rect x="478" y="344" width="16" height="12" rx="2" fill="#ffffff"/>
 <text x="486" y="354" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
 <rect x="386" y="648" width="36" height="12" rx="2" fill="#ffffff"/>
 <text x="404" y="658" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">0..1</text>
-<rect x="1132" y="320" width="16" height="12" rx="2" fill="#ffffff"/>
-<text x="1140" y="330" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
-<rect x="1132" y="356" width="36" height="12" rx="2" fill="#ffffff"/>
-<text x="1150" y="366" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">0..1</text>
+<rect x="1132" y="340" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="1140" y="350" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
+<rect x="1132" y="376" width="36" height="12" rx="2" fill="#ffffff"/>
+<text x="1150" y="386" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">0..1</text>
 <rect x="386" y="496" width="16" height="12" rx="2" fill="#ffffff"/>
 <text x="394" y="506" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
 <rect x="938" y="496" width="16" height="12" rx="2" fill="#ffffff"/>
@@ -609,6 +693,10 @@ table.spec td.n{color:var(--muted)}
 <text x="486" y="414" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
 <rect x="478" y="744" width="16" height="12" rx="2" fill="#ffffff"/>
 <text x="486" y="754" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
+<rect x="386" y="748" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="394" y="758" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
+<rect x="938" y="748" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="946" y="758" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
 <line x1="40" y1="960" x2="1760" y2="960" stroke="#dcdee0" stroke-width="0.8"/>
 <text x="40" y="980" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.18em">LEGEND</text>
 <rect x="40" y="996" width="16" height="12" rx="2" fill="rgba(129,69,181,0.04)" stroke="#8145b5"/>
@@ -628,16 +716,17 @@ table.spec td.n{color:var(--muted)}
 </svg></div>
 <div class="v v-both"><p class="view-note">논리 속성명 옆에 물리 컬럼명과 타입을 함께 보인다. 타입 끝 ? 는 NULL 허용이다.</p><svg viewBox="0 0 2760 1024" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="erd-hiring-both-title erd-hiring-both-desc" style="min-width:2760px">
 <title id="erd-hiring-both-title">채용과 초대</title>
-<desc id="erd-hiring-both-desc">채용과 초대 논리·물리 ERD. 엔티티 8개와 관계 8개를 보여 준다: 점포, 계정, 직원 레코드, 신고 정보, 초대, 가입 연결 보류, 관리자 계정, 퇴직 처리 이력.</desc>
+<desc id="erd-hiring-both-desc">채용과 초대 논리·물리 ERD. 엔티티 10개와 관계 9개를 보여 준다: 점포, 계정, 직원 레코드, 신고 정보, 초대, 가입 연결 보류, 관리자 계정, 퇴직 처리 이력, 초대 코드 입력 시도, 신고 정보 변경 이력.</desc>
 <rect width="100%" height="100%" fill="#ffffff"/>
-<path d="M 620,124 L 672,124 Q 680,124 680,132 L 680,176 Q 680,184 688,184 L 740,184" fill="none" stroke="#60646c" stroke-width="1"/>
-<path d="M 620,444 L 672,444 Q 680,444 680,436 L 680,336 Q 680,328 688,328 L 740,328" fill="none" stroke="#60646c" stroke-width="1"/>
-<path d="M 1320,176 L 1440,176" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 620,124 L 672,124 Q 680,124 680,132 L 680,148 Q 680,156 688,156 L 740,156" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 620,484 L 672,484 Q 680,484 680,476 L 680,284 Q 680,276 688,276 L 740,276" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 1320,184 L 1440,184" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 740,360 L 688,360 Q 680,360 680,368 L 680,656 Q 680,664 672,664 L 620,664" fill="none" stroke="#60646c" stroke-width="1"/>
-<path d="M 1728,312 L 1728,376" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 1728,332 L 1728,396" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 620,512 L 1440,512" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 2140,468 L 2020,468" fill="none" stroke="#60646c" stroke-width="1"/>
 <path d="M 740,420 L 718,420 Q 710,420 710,428 L 710,752 Q 710,760 718,760 L 740,760" fill="none" stroke="#60646c" stroke-width="1"/>
+<path d="M 620,764 L 1440,764" fill="none" stroke="#60646c" stroke-width="1"/>
 <g id="both-ent-store">
 <rect x="40" y="40" width="580" height="172" rx="6" fill="#ffffff"/>
 <rect x="40" y="40" width="580" height="172" rx="6" fill="rgba(13,116,206,0.03)" stroke="rgba(13,116,206,0.60)" stroke-width="1" stroke-dasharray="2,3"/>
@@ -682,8 +771,8 @@ table.spec td.n{color:var(--muted)}
 <text x="232" y="536" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">status</text>
 </g>
 <g id="both-ent-staff_member">
-<rect x="740" y="40" width="580" height="432" rx="6" fill="#ffffff"/>
-<rect x="740" y="40" width="580" height="432" rx="6" fill="rgba(129,69,181,0.04)" stroke="#8145b5" stroke-width="1"/>
+<rect x="740" y="40" width="580" height="352" rx="6" fill="#ffffff"/>
+<rect x="740" y="40" width="580" height="352" rx="6" fill="rgba(129,69,181,0.04)" stroke="#8145b5" stroke-width="1"/>
 <rect x="741" y="41" width="578" height="51" rx="5" fill="rgba(129,69,181,0.10)"/>
 <line x1="740" y1="92" x2="1320" y2="92" stroke="#8145b5" stroke-opacity="0.35" stroke-width="1"/>
 <text x="756" y="60" fill="#8145b5" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">CORE ENTITY · staff_members</text>
@@ -716,18 +805,10 @@ table.spec td.n{color:var(--muted)}
 <text x="1304" y="316" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">staff_member_join_status</text>
 <text x="756" y="336" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">퇴직일</text>
 <text x="1304" y="336" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">date?</text>
-<text x="756" y="356" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">본사 제공 동의</text>
-<text x="1304" y="356" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">boolean</text>
-<text x="756" y="376" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">본사 제공 동의 문구 버전</text>
-<text x="1304" y="376" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text?</text>
-<text x="756" y="396" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">본사 제공 동의 일시</text>
-<text x="1304" y="396" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)?</text>
-<text x="756" y="416" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">본사 제공 동의 철회 일시</text>
-<text x="1304" y="416" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)?</text>
-<text x="756" y="436" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">등록 일시</text>
-<text x="1304" y="436" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
-<text x="756" y="456" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">최근 수정 일시</text>
-<text x="1304" y="456" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
+<text x="756" y="356" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">등록 일시</text>
+<text x="1304" y="356" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
+<text x="756" y="376" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">최근 수정 일시</text>
+<text x="1304" y="376" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
 <text x="932" y="116" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">staff_member_id</text>
 <text x="932" y="136" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">store_id</text>
 <text x="932" y="156" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_id</text>
@@ -740,12 +821,8 @@ table.spec td.n{color:var(--muted)}
 <text x="932" y="296" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">employment_status</text>
 <text x="932" y="316" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">join_status</text>
 <text x="932" y="336" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">retired_date</text>
-<text x="932" y="356" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">is_hq_sharing_consented</text>
-<text x="932" y="376" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">hq_sharing_consent_version</text>
-<text x="932" y="396" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">hq_sharing_agreed_at</text>
-<text x="932" y="416" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">hq_sharing_withdrawn_at</text>
-<text x="932" y="436" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">created_at</text>
-<text x="932" y="456" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">updated_at</text>
+<text x="932" y="356" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">created_at</text>
+<text x="932" y="376" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">updated_at</text>
 </g>
 <g id="both-ent-tax">
 <rect x="40" y="616" width="580" height="212" rx="6" fill="#ffffff"/>
@@ -778,8 +855,8 @@ table.spec td.n{color:var(--muted)}
 <text x="232" y="812" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">updated_at</text>
 </g>
 <g id="both-ent-invitation">
-<rect x="1440" y="40" width="580" height="272" rx="6" fill="#ffffff"/>
-<rect x="1440" y="40" width="580" height="272" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
+<rect x="1440" y="40" width="580" height="292" rx="6" fill="#ffffff"/>
+<rect x="1440" y="40" width="580" height="292" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
 <rect x="1441" y="41" width="578" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
 <line x1="1440" y1="92" x2="2020" y2="92" stroke="#171717" stroke-opacity="0.35" stroke-width="1"/>
 <text x="1456" y="60" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">ENTITY · invitations</text>
@@ -794,64 +871,67 @@ table.spec td.n{color:var(--muted)}
 <text x="2004" y="156" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">invitation_type</text>
 <text x="1456" y="176" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">초대 토큰</text>
 <text x="2004" y="176" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text?</text>
-<text x="1456" y="196" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">수신 채널</text>
-<text x="2004" y="196" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">invitation_channel</text>
-<text x="1456" y="216" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">발송 일시</text>
-<text x="2004" y="216" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
-<text x="1456" y="236" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">만료 일시</text>
+<text x="1456" y="196" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">초대 코드 해시</text>
+<text x="2004" y="196" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text?</text>
+<text x="1456" y="216" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">수신 채널</text>
+<text x="2004" y="216" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">invitation_channel</text>
+<text x="1456" y="236" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">발송 일시</text>
 <text x="2004" y="236" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
-<text x="1456" y="256" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">상태</text>
-<text x="2004" y="256" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">invitation_status</text>
-<text x="1456" y="276" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">응답 일시</text>
-<text x="2004" y="276" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)?</text>
-<text x="1456" y="296" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">거절 사유</text>
-<text x="2004" y="296" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text?</text>
+<text x="1456" y="256" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">만료 일시</text>
+<text x="2004" y="256" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
+<text x="1456" y="276" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">상태</text>
+<text x="2004" y="276" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">invitation_status</text>
+<text x="1456" y="296" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">응답 일시</text>
+<text x="2004" y="296" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)?</text>
+<text x="1456" y="316" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">거절 사유</text>
+<text x="2004" y="316" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text?</text>
 <text x="1632" y="116" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">invitation_id</text>
 <text x="1632" y="136" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">staff_member_id</text>
 <text x="1632" y="156" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">invitation_type</text>
 <text x="1632" y="176" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">invitation_token</text>
-<text x="1632" y="196" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">channel</text>
-<text x="1632" y="216" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">sent_at</text>
-<text x="1632" y="236" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">expires_at</text>
-<text x="1632" y="256" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">status</text>
-<text x="1632" y="276" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">responded_at</text>
-<text x="1632" y="296" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">reject_reason</text>
+<text x="1632" y="196" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">invitation_code_hash</text>
+<text x="1632" y="216" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">channel</text>
+<text x="1632" y="236" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">sent_at</text>
+<text x="1632" y="256" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">expires_at</text>
+<text x="1632" y="276" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">status</text>
+<text x="1632" y="296" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">responded_at</text>
+<text x="1632" y="316" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">reject_reason</text>
 </g>
 <g id="both-ent-hold">
-<rect x="1440" y="376" width="580" height="232" rx="6" fill="#ffffff"/>
-<rect x="1440" y="376" width="580" height="232" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
-<rect x="1441" y="377" width="578" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
-<line x1="1440" y1="428" x2="2020" y2="428" stroke="#171717" stroke-opacity="0.35" stroke-width="1"/>
-<text x="1456" y="396" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">ENTITY · link_holds</text>
-<text x="1456" y="416" fill="#171717" font-size="16" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">가입 연결 보류</text>
-<text x="1456" y="452" fill="#8145b5" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">#</text>
-<text x="1470" y="452" fill="#171717" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">보류 ID</text>
-<text x="2004" y="452" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer</text>
-<text x="1456" y="472" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
-<text x="1470" y="472" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">초대</text>
+<rect x="1440" y="396" width="580" height="232" rx="6" fill="#ffffff"/>
+<rect x="1440" y="396" width="580" height="232" rx="6" fill="#ffffff" stroke="#171717" stroke-width="1"/>
+<rect x="1441" y="397" width="578" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
+<line x1="1440" y1="448" x2="2020" y2="448" stroke="#171717" stroke-opacity="0.35" stroke-width="1"/>
+<text x="1456" y="416" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">ENTITY · link_holds</text>
+<text x="1456" y="436" fill="#171717" font-size="16" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">가입 연결 보류</text>
+<text x="1456" y="472" fill="#8145b5" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">#</text>
+<text x="1470" y="472" fill="#171717" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">보류 ID</text>
 <text x="2004" y="472" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer</text>
 <text x="1456" y="492" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
-<text x="1470" y="492" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">보류 계정</text>
+<text x="1470" y="492" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">초대</text>
 <text x="2004" y="492" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer</text>
-<text x="1456" y="512" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">불일치 사유</text>
-<text x="2004" y="512" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">link_hold_mismatch_reason</text>
-<text x="1456" y="532" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">처리 결과</text>
-<text x="2004" y="532" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">link_hold_resolution?</text>
-<text x="1456" y="552" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
-<text x="1470" y="552" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">처리 관리자</text>
-<text x="2004" y="552" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer?</text>
-<text x="1456" y="572" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">처리 일시</text>
-<text x="2004" y="572" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)?</text>
-<text x="1456" y="592" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">보류 일시</text>
-<text x="2004" y="592" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
-<text x="1632" y="452" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">link_hold_id</text>
-<text x="1632" y="472" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">invitation_id</text>
-<text x="1632" y="492" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_id</text>
-<text x="1632" y="512" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">mismatch_reason</text>
-<text x="1632" y="532" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">resolution</text>
-<text x="1632" y="552" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">resolved_by</text>
-<text x="1632" y="572" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">resolved_at</text>
-<text x="1632" y="592" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">created_at</text>
+<text x="1456" y="512" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="1470" y="512" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">보류 계정</text>
+<text x="2004" y="512" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer</text>
+<text x="1456" y="532" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">불일치 사유</text>
+<text x="2004" y="532" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">link_hold_mismatch_reason</text>
+<text x="1456" y="552" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">처리 결과</text>
+<text x="2004" y="552" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">link_hold_resolution?</text>
+<text x="1456" y="572" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="1470" y="572" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">처리 관리자</text>
+<text x="2004" y="572" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer?</text>
+<text x="1456" y="592" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">처리 일시</text>
+<text x="2004" y="592" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)?</text>
+<text x="1456" y="612" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">보류 일시</text>
+<text x="2004" y="612" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
+<text x="1632" y="472" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">link_hold_id</text>
+<text x="1632" y="492" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">invitation_id</text>
+<text x="1632" y="512" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_id</text>
+<text x="1632" y="532" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">mismatch_reason</text>
+<text x="1632" y="552" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">resolution</text>
+<text x="1632" y="572" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">resolved_by</text>
+<text x="1632" y="592" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">resolved_at</text>
+<text x="1632" y="612" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">created_at</text>
 </g>
 <g id="both-ent-admin">
 <rect x="2140" y="404" width="580" height="132" rx="6" fill="#ffffff"/>
@@ -908,32 +988,85 @@ table.spec td.n{color:var(--muted)}
 <text x="932" y="876" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">processed_by</text>
 <text x="932" y="896" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">processed_at</text>
 </g>
+<g id="both-ent-invite_attempt">
+<rect x="2140" y="40" width="580" height="192" rx="6" fill="#ffffff"/>
+<rect x="2140" y="40" width="580" height="192" rx="6" fill="rgba(23,23,23,0.02)" stroke="rgba(23,23,23,0.32)" stroke-width="1" stroke-dasharray="4,3"/>
+<rect x="2141" y="41" width="578" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
+<line x1="2140" y1="92" x2="2720" y2="92" stroke="rgba(23,23,23,0.32)" stroke-opacity="0.35" stroke-width="1"/>
+<text x="2156" y="60" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">HISTORY · invitation_code_attempts</text>
+<text x="2156" y="80" fill="#171717" font-size="16" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">초대 코드 입력 시도</text>
+<text x="2156" y="116" fill="#8145b5" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">#</text>
+<text x="2170" y="116" fill="#171717" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">시도 ID</text>
+<text x="2704" y="116" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer</text>
+<text x="2156" y="136" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">휴대전화번호 키</text>
+<text x="2704" y="136" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">text</text>
+<text x="2156" y="156" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">다시 세기 기준</text>
+<text x="2704" y="156" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">boolean</text>
+<text x="2156" y="176" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">실패 횟수</text>
+<text x="2704" y="176" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer</text>
+<text x="2156" y="196" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">잠금 해제 시각</text>
+<text x="2704" y="196" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)?</text>
+<text x="2156" y="216" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">시도 시각</text>
+<text x="2704" y="216" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
+<text x="2332" y="116" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">invitation_code_attempt_id</text>
+<text x="2332" y="136" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">phone_key</text>
+<text x="2332" y="156" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">is_succeeded</text>
+<text x="2332" y="176" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">failed_count</text>
+<text x="2332" y="196" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">lock_expires_at</text>
+<text x="2332" y="216" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">attempted_at</text>
+</g>
+<g id="both-ent-tax_history">
+<rect x="1440" y="700" width="580" height="172" rx="6" fill="#ffffff"/>
+<rect x="1440" y="700" width="580" height="172" rx="6" fill="rgba(23,23,23,0.02)" stroke="rgba(23,23,23,0.32)" stroke-width="1" stroke-dasharray="4,3"/>
+<rect x="1441" y="701" width="578" height="51" rx="5" fill="rgba(23,23,23,0.04)"/>
+<line x1="1440" y1="752" x2="2020" y2="752" stroke="rgba(23,23,23,0.32)" stroke-opacity="0.35" stroke-width="1"/>
+<text x="1456" y="720" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.08em">HISTORY · staff_tax_profile_histories</text>
+<text x="1456" y="740" fill="#171717" font-size="16" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">신고 정보 변경 이력</text>
+<text x="1456" y="776" fill="#8145b5" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">#</text>
+<text x="1470" y="776" fill="#171717" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="600">이력 ID</text>
+<text x="2004" y="776" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer</text>
+<text x="1456" y="796" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="1470" y="796" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">직원 레코드</text>
+<text x="2004" y="796" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer</text>
+<text x="1456" y="816" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">바뀐 항목</text>
+<text x="2004" y="816" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">staff_tax_profile_field</text>
+<text x="1456" y="836" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600">→</text>
+<text x="1470" y="836" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">바꾼 계정</text>
+<text x="2004" y="836" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">integer</text>
+<text x="1456" y="856" fill="#2b2e33" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="400">바꾼 시각</text>
+<text x="2004" y="856" fill="#6f747c" font-size="9" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" text-anchor="end">timestamptz(6)</text>
+<text x="1632" y="776" fill="#171717" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">staff_tax_profile_history_id</text>
+<text x="1632" y="796" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">staff_member_id</text>
+<text x="1632" y="816" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">field</text>
+<text x="1632" y="836" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">account_id</text>
+<text x="1632" y="856" fill="#60646c" font-size="11" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace">changed_at</text>
+</g>
 <rect x="626" y="108" width="16" height="12" rx="2" fill="#ffffff"/>
 <text x="634" y="118" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
-<rect x="718" y="168" width="16" height="12" rx="2" fill="#ffffff"/>
-<text x="726" y="178" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
+<rect x="718" y="140" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="726" y="150" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
 <rect x="632" y="132" width="32" height="16" rx="2" fill="#ffffff"/>
 <text x="648" y="144" fill="#60646c" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="500" text-anchor="middle">소속</text>
-<rect x="626" y="428" width="36" height="12" rx="2" fill="#ffffff"/>
-<text x="644" y="438" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">0..1</text>
-<rect x="718" y="312" width="16" height="12" rx="2" fill="#ffffff"/>
-<text x="726" y="322" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
-<rect x="640" y="376" width="32" height="16" rx="2" fill="#ffffff"/>
-<text x="656" y="388" fill="#60646c" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="500" text-anchor="middle">연결</text>
-<rect x="1326" y="160" width="16" height="12" rx="2" fill="#ffffff"/>
-<text x="1334" y="170" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
-<rect x="1418" y="160" width="16" height="12" rx="2" fill="#ffffff"/>
-<text x="1426" y="170" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
-<rect x="1364" y="184" width="32" height="16" rx="2" fill="#ffffff"/>
-<text x="1380" y="196" fill="#60646c" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="500" text-anchor="middle">초대</text>
+<rect x="626" y="468" width="36" height="12" rx="2" fill="#ffffff"/>
+<text x="644" y="478" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">0..1</text>
+<rect x="718" y="260" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="726" y="270" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
+<rect x="640" y="372" width="32" height="16" rx="2" fill="#ffffff"/>
+<text x="656" y="384" fill="#60646c" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="500" text-anchor="middle">연결</text>
+<rect x="1326" y="168" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="1334" y="178" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
+<rect x="1418" y="168" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="1426" y="178" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
+<rect x="1364" y="192" width="32" height="16" rx="2" fill="#ffffff"/>
+<text x="1380" y="204" fill="#60646c" font-size="12" font-family="'Pretendard Variable', Pretendard, Inter, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif" font-weight="500" text-anchor="middle">초대</text>
 <rect x="718" y="344" width="16" height="12" rx="2" fill="#ffffff"/>
 <text x="726" y="354" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
 <rect x="626" y="648" width="36" height="12" rx="2" fill="#ffffff"/>
 <text x="644" y="658" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">0..1</text>
-<rect x="1732" y="320" width="16" height="12" rx="2" fill="#ffffff"/>
-<text x="1740" y="330" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
-<rect x="1732" y="356" width="36" height="12" rx="2" fill="#ffffff"/>
-<text x="1750" y="366" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">0..1</text>
+<rect x="1732" y="340" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="1740" y="350" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
+<rect x="1732" y="376" width="36" height="12" rx="2" fill="#ffffff"/>
+<text x="1750" y="386" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">0..1</text>
 <rect x="626" y="496" width="16" height="12" rx="2" fill="#ffffff"/>
 <text x="634" y="506" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
 <rect x="1418" y="496" width="16" height="12" rx="2" fill="#ffffff"/>
@@ -950,6 +1083,10 @@ table.spec td.n{color:var(--muted)}
 <text x="726" y="414" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
 <rect x="718" y="744" width="16" height="12" rx="2" fill="#ffffff"/>
 <text x="726" y="754" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
+<rect x="626" y="748" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="634" y="758" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">1</text>
+<rect x="1418" y="748" width="16" height="12" rx="2" fill="#ffffff"/>
+<text x="1426" y="758" fill="#60646c" font-size="10" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="600" text-anchor="middle">N</text>
 <line x1="40" y1="960" x2="2720" y2="960" stroke="#dcdee0" stroke-width="0.8"/>
 <text x="40" y="980" fill="#60646c" font-size="8" font-family="'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace" font-weight="500" letter-spacing="0.18em">LEGEND</text>
 <rect x="40" y="996" width="16" height="12" rx="2" fill="rgba(129,69,181,0.04)" stroke="#8145b5"/>
@@ -970,7 +1107,7 @@ table.spec td.n{color:var(--muted)}
 </div>
 <div class="cards"><div class="card"><p class="ey">중심</p><div class="card-h"><span class="dot coral"></span><h3>레코드는 계정보다 먼저 생긴다</h3></div><ul><li>초안 저장이 채용의 유일한 시작점이다</li><li>가입이 끝나면 계정을 연결하고 계약서를 자동 발송한다</li><li>소속 확인을 수락하면 본인인증 정보만 새 레코드로 복사한다</li></ul></div><div class="card"><div class="card-h"><span class="dot ink"></span><h3>보류와 개인정보 경계</h3></div><ul><li>연결 보류 중에는 계약서를 보내지 않는다</li><li>관리자에게는 번호 끝자리와 불일치 사유만 보인다</li><li>주민등록번호와 급여 계좌는 계약서가 아니라 신고 정보에 암호화해 둔다</li></ul></div><div class="card"><p class="ey">미정</p><div class="card-h"><span class="dot muted"></span><h3>남은 결정</h3></div><ul><li>JOIN-3 연결 보류 화면에서 직원에게 어디까지 알릴지</li><li>신고 정보를 내 정보에서 조회·수정하는 방법이 명세에 없다</li><li>점포 좌표·반경을 1팀 점포 테이블에 둘지 3팀 확장 테이블로 둘지</li></ul></div></div>
 
-<div class="phys-only"><h2>테이블 정의</h2><div class='tbl' id='t-staff_members'><h3>직원 레코드<code>staff_members</code></h3><div class='spec-wrap'><table class='spec'><thead><tr><th>KEY</th><th>COLUMN</th><th>TYPE</th><th>NULL</th><th>DEFAULT</th><th>속성</th><th>참조 · 비고</th></tr></thead><tbody><tr><td class='c'>PK</td><td class='c'>staff_member_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'>IDENTITY</td><td>직원 레코드 ID</td><td class='n'></td></tr><tr><td class='c'>FK</td><td class='c'>store_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'></td><td>점포</td><td class='n'>→ stores.store_id</td></tr><tr><td class='c'>FK</td><td class='c'>account_id</td><td class='c'>integer</td><td class='c'></td><td class='c'></td><td>계정</td><td class='n'>→ accounts.account_id 가입 전에는 비어 있음</td></tr><tr><td class='c'>FK</td><td class='c'>candidate_account_id</td><td class='c'>integer</td><td class='c'></td><td class='c'></td><td>후보 계정</td><td class='n'>→ accounts.account_id 내부 전용, 화면에 안 보임</td></tr><tr><td class='c'></td><td class='c'>name</td><td class='c'>text</td><td class='c'>NOT NULL</td><td class='c'></td><td>이름</td><td class='n'>초안 입력값</td></tr><tr><td class='c'></td><td class='c'>phone</td><td class='c'>text</td><td class='c'>NOT NULL</td><td class='c'></td><td>휴대전화번호</td><td class='n'>초대 기준값</td></tr><tr><td class='c'></td><td class='c'>employment_type</td><td class='c'>employment_type</td><td class='c'>NOT NULL</td><td class='c'></td><td>고용 형태</td><td class='n'>정직원·파트타이머, 계약으로만 바뀜 · FULL_TIME · PART_TIME</td></tr><tr><td class='c'></td><td class='c'>job_title</td><td class='c'>text</td><td class='c'>NOT NULL</td><td class='c'></td><td>직무</td><td class='n'>초안 필수 (2026-10-06)</td></tr><tr><td class='c'></td><td class='c'>hired_date</td><td class='c'>date</td><td class='c'></td><td class='c'></td><td>입사일</td><td class='n'></td></tr><tr><td class='c'></td><td class='c'>employment_status</td><td class='c'>employment_status</td><td class='c'>NOT NULL</td><td class='c'>&#x27;EMPLOYED&#x27;</td><td>재직 상태</td><td class='n'>재직·퇴직 · EMPLOYED · RETIRED</td></tr><tr><td class='c'></td><td class='c'>join_status</td><td class='c'>staff_member_join_status</td><td class='c'>NOT NULL</td><td class='c'>&#x27;DRAFT&#x27;</td><td>가입 상태</td><td class='n'>초안·초대 발송·가입 완료 · DRAFT · INVITED · JOINED</td></tr><tr><td class='c'></td><td class='c'>retired_date</td><td class='c'>date</td><td class='c'></td><td class='c'></td><td>퇴직일</td><td class='n'></td></tr><tr><td class='c'></td><td class='c'>is_hq_sharing_consented</td><td class='c'>boolean</td><td class='c'>NOT NULL</td><td class='c'>false</td><td>본사 제공 동의</td><td class='n'>가맹 점포 직원을 BP 마스터 · BP 관리자에게 보일지 정한다 (#137, 2026-10-12 재영, 명세 「직원 초대와 가입 확인」). 철회하면 false</td></tr><tr><td class='c'></td><td class='c'>hq_sharing_consent_version</td><td class='c'>text</td><td class='c'></td><td class='c'></td><td>본사 제공 동의 문구 버전</td><td class='n'>동의한 문구의 버전</td></tr><tr><td class='c'></td><td class='c'>hq_sharing_agreed_at</td><td class='c'>timestamptz(6)</td><td class='c'></td><td class='c'></td><td>본사 제공 동의 일시</td><td class='n'>다시 동의하면 그 시각으로 바뀐다</td></tr><tr><td class='c'></td><td class='c'>hq_sharing_withdrawn_at</td><td class='c'>timestamptz(6)</td><td class='c'></td><td class='c'></td><td>본사 제공 동의 철회 일시</td><td class='n'>철회하지 않았으면 NULL</td></tr><tr><td class='c'></td><td class='c'>created_at</td><td class='c'>timestamptz(6)</td><td class='c'>NOT NULL</td><td class='c'>CURRENT_TIMESTAMP</td><td>등록 일시</td><td class='n'></td></tr><tr><td class='c'></td><td class='c'>updated_at</td><td class='c'>timestamptz(6)</td><td class='c'>NOT NULL</td><td class='c'>CURRENT_TIMESTAMP</td><td>최근 수정 일시</td><td class='n'></td></tr></tbody></table></div><p class=k>CHECK staff_members_phone_format: &quot;phone&quot; ~ &#x27;^[0-9]{10,11}$&#x27;<br>CHECK staff_members_retired_date_required: &quot;employment_status&quot; &lt;&gt; &#x27;RETIRED&#x27; OR &quot;retired_date&quot; IS NOT NULL<br>CHECK staff_members_hq_sharing_consent_fields: NOT &quot;is_hq_sharing_consented&quot; OR (&quot;hq_sharing_consent_version&quot; IS NOT NULL AND &quot;hq_sharing_agreed_at&quot; IS NOT NULL AND &quot;hq_sharing_withdrawn_at&quot; IS NULL)<br>CHECK staff_members_hq_sharing_not_consented_fields: &quot;is_hq_sharing_consented&quot; OR (&quot;hq_sharing_consent_version&quot; IS NULL AND &quot;hq_sharing_agreed_at&quot; IS NULL AND &quot;hq_sharing_withdrawn_at&quot; IS NULL) OR (&quot;hq_sharing_consent_version&quot; IS NOT NULL AND &quot;hq_sharing_agreed_at&quot; IS NOT NULL AND &quot;hq_sharing_withdrawn_at&quot; IS NOT NULL)<br>CHECK staff_members_hq_sharing_withdrawn_after_agreed: &quot;hq_sharing_withdrawn_at&quot; IS NULL OR (&quot;hq_sharing_agreed_at&quot; IS NOT NULL AND &quot;hq_sharing_withdrawn_at&quot; &gt;= &quot;hq_sharing_agreed_at&quot;)<br>INDEX staff_members_store_id_idx (store_id)<br>INDEX staff_members_account_id_idx (account_id)<br></p></div><div class='tbl' id='t-staff_tax_profiles'><h3>신고 정보<code>staff_tax_profiles</code></h3><div class='spec-wrap'><table class='spec'><thead><tr><th>KEY</th><th>COLUMN</th><th>TYPE</th><th>NULL</th><th>DEFAULT</th><th>속성</th><th>참조 · 비고</th></tr></thead><tbody><tr><td class='c'>PK · FK</td><td class='c'>staff_member_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'></td><td>직원 레코드</td><td class='n'>→ staff_members.staff_member_id 1:1</td></tr><tr><td class='c'></td><td class='c'>rrn_encrypted</td><td class='c'>bytea</td><td class='c'>NOT NULL</td><td class='c'></td><td>주민등록번호</td><td class='n'>암호화, 관리자 웹은 마스킹</td></tr><tr><td class='c'></td><td class='c'>bank_code</td><td class='c'>text</td><td class='c'>NOT NULL</td><td class='c'></td><td>은행</td><td class='n'></td></tr><tr><td class='c'></td><td class='c'>payroll_account_number_encrypted</td><td class='c'>bytea</td><td class='c'>NOT NULL</td><td class='c'></td><td>급여 계좌</td><td class='n'>예금주 본인</td></tr><tr><td class='c'></td><td class='c'>purpose</td><td class='c'>text</td><td class='c'>NOT NULL</td><td class='c'></td><td>수집 목적</td><td class='n'>취득 신고·원천징수·급여 이체</td></tr><tr><td class='c'></td><td class='c'>collected_at</td><td class='c'>timestamptz(6)</td><td class='c'>NOT NULL</td><td class='c'>CURRENT_TIMESTAMP</td><td>수집 일시</td><td class='n'></td></tr><tr><td class='c'></td><td class='c'>updated_at</td><td class='c'>timestamptz(6)</td><td class='c'>NOT NULL</td><td class='c'>CURRENT_TIMESTAMP</td><td>최종 수정 일시</td><td class='n'>계좌 변경은 다음 급여부터</td></tr></tbody></table></div></div><div class='tbl' id='t-invitations'><h3>초대<code>invitations</code></h3><div class='spec-wrap'><table class='spec'><thead><tr><th>KEY</th><th>COLUMN</th><th>TYPE</th><th>NULL</th><th>DEFAULT</th><th>속성</th><th>참조 · 비고</th></tr></thead><tbody><tr><td class='c'>PK</td><td class='c'>invitation_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'>IDENTITY</td><td>초대 ID</td><td class='n'></td></tr><tr><td class='c'>FK</td><td class='c'>staff_member_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'></td><td>직원 레코드</td><td class='n'>→ staff_members.staff_member_id 재초대로 여러 건</td></tr><tr><td class='c'></td><td class='c'>invitation_type</td><td class='c'>invitation_type</td><td class='c'>NOT NULL</td><td class='c'></td><td>초대 유형</td><td class='n'>가입 초대·재초대·소속 추가 확인·복귀 확인 · SIGNUP · REINVITE · AFFILIATION_CONFIRM · RETURN_CONFIRM</td></tr><tr><td class='c'></td><td class='c'>invitation_token</td><td class='c'>text</td><td class='c'></td><td class='c'></td><td>초대 토큰</td><td class='n'>가입 초대·재초대만</td></tr><tr><td class='c'></td><td class='c'>channel</td><td class='c'>invitation_channel</td><td class='c'>NOT NULL</td><td class='c'></td><td>수신 채널</td><td class='n'>SMS · ALIMTALK · PUSH</td></tr><tr><td class='c'></td><td class='c'>sent_at</td><td class='c'>timestamptz(6)</td><td class='c'>NOT NULL</td><td class='c'></td><td>발송 일시</td><td class='n'></td></tr><tr><td class='c'></td><td class='c'>expires_at</td><td class='c'>timestamptz(6)</td><td class='c'>NOT NULL</td><td class='c'></td><td>만료 일시</td><td class='n'>30일</td></tr><tr><td class='c'></td><td class='c'>status</td><td class='c'>invitation_status</td><td class='c'>NOT NULL</td><td class='c'></td><td>상태</td><td class='n'>발송·수락·만료·거절 · SENT · ACCEPTED · EXPIRED · REJECTED · REJECTED_UNDER_AGE</td></tr><tr><td class='c'></td><td class='c'>responded_at</td><td class='c'>timestamptz(6)</td><td class='c'></td><td class='c'></td><td>응답 일시</td><td class='n'></td></tr><tr><td class='c'></td><td class='c'>reject_reason</td><td class='c'>text</td><td class='c'></td><td class='c'></td><td>거절 사유</td><td class='n'>소속 확인 거절</td></tr></tbody></table></div><p class=k>UNIQUE (invitation_token) WHERE &quot;invitation_token&quot; IS NOT NULL — 토큰은 가입 초대·재초대만<br>CHECK invitations_token_required: &quot;invitation_type&quot; NOT IN (&#x27;SIGNUP&#x27;, &#x27;REINVITE&#x27;) OR &quot;invitation_token&quot; IS NOT NULL<br>INDEX invitations_staff_member_id_idx (staff_member_id)<br></p></div><div class='tbl' id='t-link_holds'><h3>가입 연결 보류<code>link_holds</code></h3><div class='spec-wrap'><table class='spec'><thead><tr><th>KEY</th><th>COLUMN</th><th>TYPE</th><th>NULL</th><th>DEFAULT</th><th>속성</th><th>참조 · 비고</th></tr></thead><tbody><tr><td class='c'>PK</td><td class='c'>link_hold_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'>IDENTITY</td><td>보류 ID</td><td class='n'></td></tr><tr><td class='c'>FK</td><td class='c'>invitation_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'></td><td>초대</td><td class='n'>→ invitations.invitation_id</td></tr><tr><td class='c'>FK</td><td class='c'>account_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'></td><td>보류 계정</td><td class='n'>→ accounts.account_id</td></tr><tr><td class='c'></td><td class='c'>mismatch_reason</td><td class='c'>link_hold_mismatch_reason</td><td class='c'>NOT NULL</td><td class='c'></td><td>불일치 사유</td><td class='n'>번호 불일치·이름 불일치 · PHONE_MISMATCH · NAME_MISMATCH</td></tr><tr><td class='c'></td><td class='c'>resolution</td><td class='c'>link_hold_resolution</td><td class='c'></td><td class='c'></td><td>처리 결과</td><td class='n'>승인·번호 수정 후 재초대 · APPROVED · REINVITED</td></tr><tr><td class='c'>FK</td><td class='c'>resolved_by</td><td class='c'>integer</td><td class='c'></td><td class='c'></td><td>처리 관리자</td><td class='n'>→ admin_accounts.admin_account_id</td></tr><tr><td class='c'></td><td class='c'>resolved_at</td><td class='c'>timestamptz(6)</td><td class='c'></td><td class='c'></td><td>처리 일시</td><td class='n'></td></tr><tr><td class='c'></td><td class='c'>created_at</td><td class='c'>timestamptz(6)</td><td class='c'>NOT NULL</td><td class='c'>CURRENT_TIMESTAMP</td><td>보류 일시</td><td class='n'></td></tr></tbody></table></div><p class=k>INDEX link_holds_invitation_id_idx (invitation_id)<br></p></div><div class='tbl' id='t-staff_member_retirement_logs'><h3>퇴직 처리 이력<code>staff_member_retirement_logs</code></h3><div class='spec-wrap'><table class='spec'><thead><tr><th>KEY</th><th>COLUMN</th><th>TYPE</th><th>NULL</th><th>DEFAULT</th><th>속성</th><th>참조 · 비고</th></tr></thead><tbody><tr><td class='c'>PK</td><td class='c'>staff_member_retirement_log_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'>IDENTITY</td><td>퇴직 처리 이력 ID</td><td class='n'></td></tr><tr><td class='c'>FK</td><td class='c'>staff_member_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'></td><td>직원 레코드</td><td class='n'>→ staff_members.staff_member_id</td></tr><tr><td class='c'></td><td class='c'>action</td><td class='c'>retirement_action</td><td class='c'>NOT NULL</td><td class='c'></td><td>처리 종류</td><td class='n'>처리·취소 · RETIRE · CANCEL</td></tr><tr><td class='c'></td><td class='c'>retired_date</td><td class='c'>date</td><td class='c'>NOT NULL</td><td class='c'></td><td>퇴직일</td><td class='n'>처리·취소한 퇴직일</td></tr><tr><td class='c'>FK</td><td class='c'>contract_id</td><td class='c'>integer</td><td class='c'></td><td class='c'></td><td>퇴직일에 걸친 근로계약</td><td class='n'>→ contracts.contract_id 참고, 처리 행만, 계약마다 한 줄</td></tr><tr><td class='c'></td><td class='c'>previous_contract_end_date</td><td class='c'>date</td><td class='c'></td><td class='c'></td><td>처리 시점 계약 종료일</td><td class='n'>참고용 (2026-10-08)</td></tr><tr><td class='c'>FK</td><td class='c'>processed_by</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'></td><td>처리 관리자</td><td class='n'>→ admin_accounts.admin_account_id</td></tr><tr><td class='c'></td><td class='c'>processed_at</td><td class='c'>timestamptz(6)</td><td class='c'>NOT NULL</td><td class='c'>CURRENT_TIMESTAMP</td><td>처리 일시</td><td class='n'>같은 처리는 같은 시각</td></tr></tbody></table></div><p class=k>CHECK staff_member_retirement_logs_contract_only_on_retire: &quot;action&quot; = &#x27;RETIRE&#x27; OR (&quot;contract_id&quot; IS NULL AND &quot;previous_contract_end_date&quot; IS NULL)<br>CHECK staff_member_retirement_logs_end_date_needs_contract: &quot;previous_contract_end_date&quot; IS NULL OR &quot;contract_id&quot; IS NOT NULL<br>INDEX staff_member_retirement_logs_staff_member_id_processed_at_idx (staff_member_id, processed_at)<br></p></div></div>
+<div class="phys-only"><h2>테이블 정의</h2><div class='tbl' id='t-staff_members'><h3>직원 레코드<code>staff_members</code></h3><div class='spec-wrap'><table class='spec'><thead><tr><th>KEY</th><th>COLUMN</th><th>TYPE</th><th>NULL</th><th>DEFAULT</th><th>속성</th><th>참조 · 비고</th></tr></thead><tbody><tr><td class='c'>PK</td><td class='c'>staff_member_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'>IDENTITY</td><td>직원 레코드 ID</td><td class='n'></td></tr><tr><td class='c'>FK</td><td class='c'>store_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'></td><td>점포</td><td class='n'>→ stores.store_id</td></tr><tr><td class='c'>FK</td><td class='c'>account_id</td><td class='c'>integer</td><td class='c'></td><td class='c'></td><td>계정</td><td class='n'>→ accounts.account_id 가입 전에는 비어 있음</td></tr><tr><td class='c'>FK</td><td class='c'>candidate_account_id</td><td class='c'>integer</td><td class='c'></td><td class='c'></td><td>후보 계정</td><td class='n'>→ accounts.account_id 내부 전용, 화면에 안 보임</td></tr><tr><td class='c'></td><td class='c'>name</td><td class='c'>text</td><td class='c'>NOT NULL</td><td class='c'></td><td>이름</td><td class='n'>초안 입력값</td></tr><tr><td class='c'></td><td class='c'>phone</td><td class='c'>text</td><td class='c'>NOT NULL</td><td class='c'></td><td>휴대전화번호</td><td class='n'>초대 기준값</td></tr><tr><td class='c'></td><td class='c'>employment_type</td><td class='c'>employment_type</td><td class='c'>NOT NULL</td><td class='c'></td><td>고용 형태</td><td class='n'>정직원·파트타이머, 계약으로만 바뀜 · FULL_TIME · PART_TIME</td></tr><tr><td class='c'></td><td class='c'>job_title</td><td class='c'>text</td><td class='c'>NOT NULL</td><td class='c'></td><td>직무</td><td class='n'>초안 필수 (2026-10-06)</td></tr><tr><td class='c'></td><td class='c'>hired_date</td><td class='c'>date</td><td class='c'></td><td class='c'></td><td>입사일</td><td class='n'></td></tr><tr><td class='c'></td><td class='c'>employment_status</td><td class='c'>employment_status</td><td class='c'>NOT NULL</td><td class='c'>&#x27;EMPLOYED&#x27;</td><td>재직 상태</td><td class='n'>재직·퇴직 · EMPLOYED · RETIRED</td></tr><tr><td class='c'></td><td class='c'>join_status</td><td class='c'>staff_member_join_status</td><td class='c'>NOT NULL</td><td class='c'>&#x27;DRAFT&#x27;</td><td>가입 상태</td><td class='n'>초안·초대 발송·가입 완료 · DRAFT · INVITED · JOINED</td></tr><tr><td class='c'></td><td class='c'>retired_date</td><td class='c'>date</td><td class='c'></td><td class='c'></td><td>퇴직일</td><td class='n'></td></tr><tr><td class='c'></td><td class='c'>created_at</td><td class='c'>timestamptz(6)</td><td class='c'>NOT NULL</td><td class='c'>CURRENT_TIMESTAMP</td><td>등록 일시</td><td class='n'></td></tr><tr><td class='c'></td><td class='c'>updated_at</td><td class='c'>timestamptz(6)</td><td class='c'>NOT NULL</td><td class='c'>CURRENT_TIMESTAMP</td><td>최근 수정 일시</td><td class='n'></td></tr></tbody></table></div><p class=k>CHECK staff_members_phone_format: &quot;phone&quot; ~ &#x27;^[0-9]{10,11}$&#x27;<br>CHECK staff_members_retired_date_required: &quot;employment_status&quot; &lt;&gt; &#x27;RETIRED&#x27; OR &quot;retired_date&quot; IS NOT NULL<br>INDEX staff_members_store_id_idx (store_id)<br>INDEX staff_members_account_id_idx (account_id)<br></p></div><div class='tbl' id='t-staff_tax_profiles'><h3>신고 정보<code>staff_tax_profiles</code></h3><div class='spec-wrap'><table class='spec'><thead><tr><th>KEY</th><th>COLUMN</th><th>TYPE</th><th>NULL</th><th>DEFAULT</th><th>속성</th><th>참조 · 비고</th></tr></thead><tbody><tr><td class='c'>PK · FK</td><td class='c'>staff_member_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'></td><td>직원 레코드</td><td class='n'>→ staff_members.staff_member_id 1:1</td></tr><tr><td class='c'></td><td class='c'>rrn_encrypted</td><td class='c'>bytea</td><td class='c'>NOT NULL</td><td class='c'></td><td>주민등록번호</td><td class='n'>암호화, 관리자 웹은 마스킹</td></tr><tr><td class='c'></td><td class='c'>bank_code</td><td class='c'>text</td><td class='c'>NOT NULL</td><td class='c'></td><td>은행</td><td class='n'></td></tr><tr><td class='c'></td><td class='c'>payroll_account_number_encrypted</td><td class='c'>bytea</td><td class='c'>NOT NULL</td><td class='c'></td><td>급여 계좌</td><td class='n'>예금주 본인</td></tr><tr><td class='c'></td><td class='c'>purpose</td><td class='c'>text</td><td class='c'>NOT NULL</td><td class='c'></td><td>수집 목적</td><td class='n'>취득 신고·원천징수·급여 이체</td></tr><tr><td class='c'></td><td class='c'>collected_at</td><td class='c'>timestamptz(6)</td><td class='c'>NOT NULL</td><td class='c'>CURRENT_TIMESTAMP</td><td>수집 일시</td><td class='n'></td></tr><tr><td class='c'></td><td class='c'>updated_at</td><td class='c'>timestamptz(6)</td><td class='c'>NOT NULL</td><td class='c'>CURRENT_TIMESTAMP</td><td>최종 수정 일시</td><td class='n'>계좌 변경은 다음 급여부터</td></tr></tbody></table></div></div><div class='tbl' id='t-invitations'><h3>초대<code>invitations</code></h3><div class='spec-wrap'><table class='spec'><thead><tr><th>KEY</th><th>COLUMN</th><th>TYPE</th><th>NULL</th><th>DEFAULT</th><th>속성</th><th>참조 · 비고</th></tr></thead><tbody><tr><td class='c'>PK</td><td class='c'>invitation_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'>IDENTITY</td><td>초대 ID</td><td class='n'></td></tr><tr><td class='c'>FK</td><td class='c'>staff_member_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'></td><td>직원 레코드</td><td class='n'>→ staff_members.staff_member_id 재초대로 여러 건</td></tr><tr><td class='c'></td><td class='c'>invitation_type</td><td class='c'>invitation_type</td><td class='c'>NOT NULL</td><td class='c'></td><td>초대 유형</td><td class='n'>가입 초대·재초대·소속 추가 확인·복귀 확인 · SIGNUP · REINVITE · AFFILIATION_CONFIRM · RETURN_CONFIRM</td></tr><tr><td class='c'></td><td class='c'>invitation_token</td><td class='c'>text</td><td class='c'></td><td class='c'></td><td>초대 토큰</td><td class='n'>가입 초대·재초대만</td></tr><tr><td class='c'></td><td class='c'>invitation_code_hash</td><td class='c'>text</td><td class='c'></td><td class='c'></td><td>초대 코드 해시</td><td class='n'>초대 코드(8자리)의 HMAC-SHA256(JWT_SECRET) — 가입 초대·재초대만, 휴대전화번호와 함께 찾는다 (JOIN-7, 2026-10-19)</td></tr><tr><td class='c'></td><td class='c'>channel</td><td class='c'>invitation_channel</td><td class='c'>NOT NULL</td><td class='c'></td><td>수신 채널</td><td class='n'>SMS · ALIMTALK · PUSH</td></tr><tr><td class='c'></td><td class='c'>sent_at</td><td class='c'>timestamptz(6)</td><td class='c'>NOT NULL</td><td class='c'></td><td>발송 일시</td><td class='n'></td></tr><tr><td class='c'></td><td class='c'>expires_at</td><td class='c'>timestamptz(6)</td><td class='c'>NOT NULL</td><td class='c'></td><td>만료 일시</td><td class='n'>30일</td></tr><tr><td class='c'></td><td class='c'>status</td><td class='c'>invitation_status</td><td class='c'>NOT NULL</td><td class='c'></td><td>상태</td><td class='n'>발송·수락·만료·거절 · SENT · ACCEPTED · EXPIRED · REJECTED · REJECTED_UNDER_AGE</td></tr><tr><td class='c'></td><td class='c'>responded_at</td><td class='c'>timestamptz(6)</td><td class='c'></td><td class='c'></td><td>응답 일시</td><td class='n'></td></tr><tr><td class='c'></td><td class='c'>reject_reason</td><td class='c'>text</td><td class='c'></td><td class='c'></td><td>거절 사유</td><td class='n'>소속 확인 거절</td></tr></tbody></table></div><p class=k>UNIQUE (invitation_token) WHERE &quot;invitation_token&quot; IS NOT NULL — 토큰은 가입 초대·재초대만<br>CHECK invitations_token_required: &quot;invitation_type&quot; NOT IN (&#x27;SIGNUP&#x27;, &#x27;REINVITE&#x27;) OR &quot;invitation_token&quot; IS NOT NULL<br>INDEX invitations_staff_member_id_idx (staff_member_id)<br>INDEX invitations_invitation_code_hash_idx (invitation_code_hash)<br></p></div><div class='tbl' id='t-link_holds'><h3>가입 연결 보류<code>link_holds</code></h3><div class='spec-wrap'><table class='spec'><thead><tr><th>KEY</th><th>COLUMN</th><th>TYPE</th><th>NULL</th><th>DEFAULT</th><th>속성</th><th>참조 · 비고</th></tr></thead><tbody><tr><td class='c'>PK</td><td class='c'>link_hold_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'>IDENTITY</td><td>보류 ID</td><td class='n'></td></tr><tr><td class='c'>FK</td><td class='c'>invitation_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'></td><td>초대</td><td class='n'>→ invitations.invitation_id</td></tr><tr><td class='c'>FK</td><td class='c'>account_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'></td><td>보류 계정</td><td class='n'>→ accounts.account_id</td></tr><tr><td class='c'></td><td class='c'>mismatch_reason</td><td class='c'>link_hold_mismatch_reason</td><td class='c'>NOT NULL</td><td class='c'></td><td>불일치 사유</td><td class='n'>번호 불일치·이름 불일치 · PHONE_MISMATCH · NAME_MISMATCH</td></tr><tr><td class='c'></td><td class='c'>resolution</td><td class='c'>link_hold_resolution</td><td class='c'></td><td class='c'></td><td>처리 결과</td><td class='n'>승인·번호 수정 후 재초대 · APPROVED · REINVITED</td></tr><tr><td class='c'>FK</td><td class='c'>resolved_by</td><td class='c'>integer</td><td class='c'></td><td class='c'></td><td>처리 관리자</td><td class='n'>→ admin_accounts.admin_account_id</td></tr><tr><td class='c'></td><td class='c'>resolved_at</td><td class='c'>timestamptz(6)</td><td class='c'></td><td class='c'></td><td>처리 일시</td><td class='n'></td></tr><tr><td class='c'></td><td class='c'>created_at</td><td class='c'>timestamptz(6)</td><td class='c'>NOT NULL</td><td class='c'>CURRENT_TIMESTAMP</td><td>보류 일시</td><td class='n'></td></tr></tbody></table></div><p class=k>INDEX link_holds_invitation_id_idx (invitation_id)<br></p></div><div class='tbl' id='t-staff_member_retirement_logs'><h3>퇴직 처리 이력<code>staff_member_retirement_logs</code></h3><div class='spec-wrap'><table class='spec'><thead><tr><th>KEY</th><th>COLUMN</th><th>TYPE</th><th>NULL</th><th>DEFAULT</th><th>속성</th><th>참조 · 비고</th></tr></thead><tbody><tr><td class='c'>PK</td><td class='c'>staff_member_retirement_log_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'>IDENTITY</td><td>퇴직 처리 이력 ID</td><td class='n'></td></tr><tr><td class='c'>FK</td><td class='c'>staff_member_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'></td><td>직원 레코드</td><td class='n'>→ staff_members.staff_member_id</td></tr><tr><td class='c'></td><td class='c'>action</td><td class='c'>retirement_action</td><td class='c'>NOT NULL</td><td class='c'></td><td>처리 종류</td><td class='n'>처리·취소 · RETIRE · CANCEL</td></tr><tr><td class='c'></td><td class='c'>retired_date</td><td class='c'>date</td><td class='c'>NOT NULL</td><td class='c'></td><td>퇴직일</td><td class='n'>처리·취소한 퇴직일</td></tr><tr><td class='c'>FK</td><td class='c'>contract_id</td><td class='c'>integer</td><td class='c'></td><td class='c'></td><td>퇴직일에 걸친 근로계약</td><td class='n'>→ contracts.contract_id 참고, 처리 행만, 계약마다 한 줄</td></tr><tr><td class='c'></td><td class='c'>previous_contract_end_date</td><td class='c'>date</td><td class='c'></td><td class='c'></td><td>처리 시점 계약 종료일</td><td class='n'>참고용 (2026-10-08)</td></tr><tr><td class='c'>FK</td><td class='c'>processed_by</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'></td><td>처리 관리자</td><td class='n'>→ admin_accounts.admin_account_id</td></tr><tr><td class='c'></td><td class='c'>processed_at</td><td class='c'>timestamptz(6)</td><td class='c'>NOT NULL</td><td class='c'>CURRENT_TIMESTAMP</td><td>처리 일시</td><td class='n'>같은 처리는 같은 시각</td></tr></tbody></table></div><p class=k>CHECK staff_member_retirement_logs_contract_only_on_retire: &quot;action&quot; = &#x27;RETIRE&#x27; OR (&quot;contract_id&quot; IS NULL AND &quot;previous_contract_end_date&quot; IS NULL)<br>CHECK staff_member_retirement_logs_end_date_needs_contract: &quot;previous_contract_end_date&quot; IS NULL OR &quot;contract_id&quot; IS NOT NULL<br>INDEX staff_member_retirement_logs_staff_member_id_processed_at_idx (staff_member_id, processed_at)<br></p></div><div class='tbl' id='t-invitation_code_attempts'><h3>초대 코드 입력 시도<code>invitation_code_attempts</code></h3><div class='spec-wrap'><table class='spec'><thead><tr><th>KEY</th><th>COLUMN</th><th>TYPE</th><th>NULL</th><th>DEFAULT</th><th>속성</th><th>참조 · 비고</th></tr></thead><tbody><tr><td class='c'>PK</td><td class='c'>invitation_code_attempt_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'>IDENTITY</td><td>시도 ID</td><td class='n'></td></tr><tr><td class='c'></td><td class='c'>phone_key</td><td class='c'>text</td><td class='c'>NOT NULL</td><td class='c'></td><td>휴대전화번호 키</td><td class='n'>HMAC, 원본 저장 안 함, 초대가 없는 번호도 같은 기준으로 셈</td></tr><tr><td class='c'></td><td class='c'>is_succeeded</td><td class='c'>boolean</td><td class='c'>NOT NULL</td><td class='c'>false</td><td>다시 세기 기준</td><td class='n'>기본 false. 맞는 코드 · 재발송 잠금 해제 행이 true — 이 행부터 실패를 다시 센다 (api #93)</td></tr><tr><td class='c'></td><td class='c'>failed_count</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'>0</td><td>실패 횟수</td><td class='n'>기본 0, 5회면 30분 잠금</td></tr><tr><td class='c'></td><td class='c'>lock_expires_at</td><td class='c'>timestamptz(6)</td><td class='c'></td><td class='c'></td><td>잠금 해제 시각</td><td class='n'>잠겨 있지 않으면 비움</td></tr><tr><td class='c'></td><td class='c'>attempted_at</td><td class='c'>timestamptz(6)</td><td class='c'>NOT NULL</td><td class='c'>CURRENT_TIMESTAMP</td><td>시도 시각</td><td class='n'>(phone_key, attempted_at) 인덱스 · 재발송하면 실패 0 행을 쌓아 잠금을 푼다 (JOIN-7, 2026-10-20)</td></tr></tbody></table></div><p class=k>CHECK invitation_code_attempts_failed_count_nonnegative: &quot;failed_count&quot; &gt;= 0<br>INDEX invitation_code_attempts_phone_key_attempted_at_idx (phone_key, attempted_at)<br></p></div><div class='tbl' id='t-staff_tax_profile_histories'><h3>신고 정보 변경 이력<code>staff_tax_profile_histories</code></h3><div class='spec-wrap'><table class='spec'><thead><tr><th>KEY</th><th>COLUMN</th><th>TYPE</th><th>NULL</th><th>DEFAULT</th><th>속성</th><th>참조 · 비고</th></tr></thead><tbody><tr><td class='c'>PK</td><td class='c'>staff_tax_profile_history_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'>IDENTITY</td><td>이력 ID</td><td class='n'></td></tr><tr><td class='c'>FK</td><td class='c'>staff_member_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'></td><td>직원 레코드</td><td class='n'>→ staff_members.staff_member_id 신고 정보는 레코드마다 하나라 이력도 레코드 기준</td></tr><tr><td class='c'></td><td class='c'>field</td><td class='c'>staff_tax_profile_field</td><td class='c'>NOT NULL</td><td class='c'></td><td>바뀐 항목</td><td class='n'>주민등록번호 · 급여 계좌(은행·계좌번호 함께) · RRN · PAYROLL_ACCOUNT</td></tr><tr><td class='c'>FK</td><td class='c'>account_id</td><td class='c'>integer</td><td class='c'>NOT NULL</td><td class='c'></td><td>바꾼 계정</td><td class='n'>→ accounts.account_id 직원 본인만 고친다 (TAX-07)</td></tr><tr><td class='c'></td><td class='c'>changed_at</td><td class='c'>timestamptz(6)</td><td class='c'>NOT NULL</td><td class='c'>CURRENT_TIMESTAMP</td><td>바꾼 시각</td><td class='n'>(staff_member_id, changed_at) 인덱스 · 값(이전·새 값)은 남기지 않음 · 처음 작성도 항목마다 한 행 (#334, 2026-10-20)</td></tr></tbody></table></div><p class=k>INDEX staff_tax_profile_histories_staff_member_id_changed_at_idx (staff_member_id, changed_at)<br></p></div></div>
 <div class="footer"><span>근거 · Manyfast 명세 dataSpec 2026-09-15 · front·staff 목업 확정 쟁점</span><span>docs/erd/_build.py 로 생성 · 손으로 고치지 말 것</span></div>
 </div>
 

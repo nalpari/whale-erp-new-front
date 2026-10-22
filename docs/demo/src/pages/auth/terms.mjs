@@ -5,12 +5,12 @@ import * as g from "../../guest.mjs";
 import * as p from "../../public.mjs";
 
 const TABS = [
-  ["use", "플랫폼 이용약관 (BP사업자 회원가입용)"],
-  ["privacy", "개인정보 수집·이용"],
-  ["useStaff", "플랫폼 이용약관 (직원앱 회원가입용)"],
-  ["privacyStaff", "개인정보 수집·이용 (직원앱)"],
-  ["marketing", "마케팅 수신"],
-  ["location", "위치정보 수집·이용"],
+  ["TERMS_SERVICE", "플랫폼 이용약관 (BP사업자 회원가입용)"],
+  ["PRIVACY_COLLECT", "개인정보 수집·이용"],
+  ["STAFF_TERMS_SERVICE", "플랫폼 이용약관 (직원앱 회원가입용)"],
+  ["STAFF_PRIVACY", "개인정보 수집·이용 (직원앱)"],
+  ["MARKETING", "마케팅 수신"],
+  ["LOCATION", "위치정보 수집·이용"],
 ];
 
 const TAB_ON = "border-guest-navy bg-guest-card font-semibold text-guest-navy";

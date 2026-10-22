@@ -42,9 +42,18 @@ test("묶음을 누르면 아래 잎의 바꿀 수 있는 칸만 바뀌고, 상�
   const v = toggle(initialValues([g]), g, "create", true);
   assert.deepEqual(v[2], { read: true, create: true, update: false, delete: false });
   assert.equal(v[3].create, false);
-  assert.deepEqual(aggregate(v, [g], "create"), { checked: true, disabled: false });
-  assert.deepEqual(aggregate(v, [locked], "create"), { checked: false, disabled: true });
-  assert.deepEqual(aggregate(v, [], "read", true), { checked: true, disabled: true });
+  assert.deepEqual(aggregate(v, [g], "create"), { checked: true, mixed: false, disabled: false });
+  assert.deepEqual(aggregate(v, [locked], "create"), { checked: false, mixed: false, disabled: true });
+  assert.deepEqual(aggregate(v, [], "read", true), { checked: true, mixed: false, disabled: true });
+});
+
+test("바꿀 수 있는 칸이 일부만 켜졌으면 mixed(–), 모두 켜지면 checked", () => {
+  const a = leaf(2, true);
+  const b = leaf(3);
+  const v = initialValues([a, b]);
+  assert.deepEqual(aggregate(v, [a, b], "read"), { checked: false, mixed: true, disabled: false });
+  assert.deepEqual(aggregate(toggleAll(v, [a, b], "read", true), [a, b], "read"), { checked: true, mixed: false, disabled: false });
+  assert.deepEqual(aggregate(toggleAll(v, [a, b], "read", false), [a, b], "read"), { checked: false, mixed: false, disabled: false });
 });
 
 test("바뀐 잎만 보내고, 켜진 칸을 끈 것이 있으면 회수다", () => {
@@ -68,7 +77,7 @@ test("바꿀 수 없는 등록 · 수정 · 삭제 칸이 켜진 줄은 조회�
   assert.equal(editableOf(row, "create"), true);
   const v = initialValues([row]);
   assert.equal(toggle(v, row, "read", false), v);
-  assert.deepEqual(aggregate(v, [row], "read"), { checked: true, disabled: true });
+  assert.deepEqual(aggregate(v, [row], "read"), { checked: true, mixed: false, disabled: true });
 });
 
 test("조회가 꺼진 채 바꿀 수 없는 줄은 등록 · 수정 · 삭제도 켤 수 없다 — 켜면 「조회 없는 등록」으로 api 가 400", () => {

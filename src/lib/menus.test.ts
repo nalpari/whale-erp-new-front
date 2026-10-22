@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { isAllowed, MENU_CODE, menuOfPath, menuPermissionOf, menusOf, serviceOfPath } from "./menus.ts";
+import { bpOfSwitchUrl, bpSwitchUrl, isAllowed, MENU_CODE, menuOfPath, menuPermissionOf, menusOf, serviceOfPath } from "./menus.ts";
 import type { AdminMenu } from "./session.ts";
 
 const menu = (url: string | null, read: boolean, children: AdminMenu[] = [], serviceCode = "WHALE_ERP"): AdminMenu => ({
@@ -20,6 +20,14 @@ const menus = [
 ];
 // 플랫폼 계정은 두 서비스 메뉴를 모두 받는다.
 const platformAccount = [...menus, menu(null, false, [menu("/code-groups", true, [], "PLATFORM")], "PLATFORM")];
+
+test("탭 BP 접두(/bp/{id})는 떼고 메뉴와 비교한다", () => {
+  const menus = [menu("/bp-role-groups", true)];
+  assert.equal(isAllowed(menus, "/bp/8/bp-role-groups", "WHALE_ERP"), true);
+  assert.equal(isAllowed([], "/bp/8/home", "WHALE_ERP"), true);
+  assert.equal(menuOfPath(menus, "/bp/8/bp-role-groups", "WHALE_ERP")?.url, "/bp-role-groups");
+  assert.equal(serviceOfPath(menus, "/bp/8/bp-role-groups"), "WHALE_ERP");
+});
 
 test("isAllowed: 서비스 홈은 메뉴가 비어도 열린다", () => {
   assert.equal(isAllowed([], "/home", "WHALE_ERP"), true);
@@ -98,6 +106,13 @@ test("menuPermissionOf: 다른 서비스 탭의 메뉴와 없는 코드는 false
   assert.equal(menuPermissionOf([staff], "WHALE_ERP", MENU_CODE.platformMenus, "read"), false);
 });
 
+test("menuOfPath: 직원 상세(/staff-members/12)는 직원 정보 관리 메뉴 — 상세 버튼 권한(usePagePermission)이 이 메뉴의 권한 칸이다", () => {
+  const staff: AdminMenu = { ...menu("/staff-members", true), menuCode: MENU_CODE.staffMembers, permission: { read: true, create: false, update: true, delete: false } };
+  assert.deepEqual(menuOfPath([staff], "/staff-members/12", "WHALE_ERP")?.permission, staff.permission);
+  const readOnly: AdminMenu = { ...staff, permission: { ...staff.permission, update: false } };
+  assert.equal(menuOfPath([readOnly], "/staff-members/12", "WHALE_ERP")?.permission.update, false);
+});
+
 test("menuOfPath: 지금 주소의 메뉴 — 그 url 이거나 그 아래, 이 탭 서비스, 조회 권한", () => {
   const admins: AdminMenu = { ...menu("/platform-admins", true, [], "PLATFORM"), permission: { read: true, create: true, update: false, delete: true } };
   const account = [...platformAccount, menu(null, false, [admins], "PLATFORM")];
@@ -132,4 +147,23 @@ test("menuOfPath: 조회 권한이 없는 하위 메뉴는 고르지 않고 상�
   const child = menu("/stores/contract-templates", false);
   const parent = { ...menu("/stores", true), children: [child] };
   assert.equal(menuOfPath([parent], "/stores/contract-templates", "WHALE_ERP")?.url, parent.url);
+});
+
+test("bpSwitchUrl · bpOfSwitchUrl: 만든 주소를 읽으면 같은 BP 다", () => {
+  const read = (href: string) => bpOfSwitchUrl(new URL(href, "http://x"));
+  assert.deepEqual(read(bpSwitchUrl(17, "BP000017")), { bpCodeId: 17, bpCode: "BP000017" });
+  // 검색어 없이 손으로 친 주소도 BP 는 읽는다(그 BP 를 찾을 수 없어 SessionGate 가 안내한다)
+  assert.deepEqual(read("/bp-switch?bp=1"), { bpCodeId: 1, bpCode: null });
+});
+
+test("bpOfSwitchUrl: ?bp= 는 BP 이동 화면의 것만, 숫자일 때만 받는다", () => {
+  const read = (href: string) => bpOfSwitchUrl(new URL(href, "http://x"));
+  assert.equal(read("/home?bp=17&bpCode=BP000017"), null);
+  assert.equal(read("/bp-switch"), null);
+  assert.equal(read("/bp-switch?bp=1x"), null);
+  assert.equal(read("/bp-switch?bp=12345678901"), null);
+  assert.deepEqual(read("/bp-switch?bp=17&bpCode="), { bpCodeId: 17, bpCode: null });
+  // BP 코드 형식이 아니면(잘렸거나 손으로 고친 값) 검색어로 쓰지 않는다
+  assert.deepEqual(read(`/bp-switch?bp=17&bpCode=${"X".repeat(60)}`), { bpCodeId: 17, bpCode: null });
+  assert.deepEqual(read("/bp-switch?bp=17&bpCode=BP00001"), { bpCodeId: 17, bpCode: null });
 });

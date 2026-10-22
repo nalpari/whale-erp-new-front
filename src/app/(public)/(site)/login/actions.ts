@@ -4,6 +4,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { ACCESS_TOKEN_TTL_MS, ApiError, loginKeyCookie, request, sessionCookie, type AdminLoginResponse } from "@/lib/api";
 import { homeOf } from "@/lib/auth-routes";
+import { apiHeaders } from "@/lib/forwarded-headers";
 
 export type LoginFormState = { error?: string };
 
@@ -20,7 +21,8 @@ export async function login(_prev: LoginFormState, formData: FormData): Promise<
   try {
     res = await request<AdminLoginResponse>("/auth/admin/login", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      // 사용자 IP 를 넘긴다(로그인 이력의 접속 IP · IP 한도) — 이유와 전제는 apiHeaders() 참고.
+      headers: await apiHeaders(),
       body: JSON.stringify({ loginId, password, deviceInformation: (await headers()).get("user-agent")?.slice(0, 200) }),
     });
   } catch (e) {
@@ -45,6 +47,7 @@ export async function login(_prev: LoginFormState, formData: FormData): Promise<
       refreshToken: res.refreshToken,
       accessTokenExpiresAt: Date.now() + ACCESS_TOKEN_TTL_MS,
       roleTypeCode: res.account.roleTypeCode,
+      bpCodeId: res.account.bp?.bpCodeId,
     }),
   );
   // 새 값이면 브라우저에 남은 앞 로그인의 메뉴·점포·공통코드를 버리고 login-info 를 다시 받는다(SessionGate). 같은 계정이 다시 로그인해도 갈린다.

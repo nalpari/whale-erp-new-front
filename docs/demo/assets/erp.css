@@ -637,6 +637,9 @@
   .ml-\[2px\] {
     margin-left: 2px;
   }
+  .ml-\[4px\] {
+    margin-left: 4px;
+  }
   .ml-\[6px\] {
     margin-left: 6px;
   }
@@ -701,10 +704,6 @@
     width: 12px;
     height: 12px;
   }
-  .size-\[13px\] {
-    width: 13px;
-    height: 13px;
-  }
   .size-\[14px\] {
     width: 14px;
     height: 14px;
@@ -716,6 +715,10 @@
   .size-\[16px\] {
     width: 16px;
     height: 16px;
+  }
+  .size-\[17px\] {
+    width: 17px;
+    height: 17px;
   }
   .size-\[18px\] {
     width: 18px;
@@ -740,6 +743,10 @@
   .size-\[34px\] {
     width: 34px;
     height: 34px;
+  }
+  .size-\[36px\] {
+    width: 36px;
+    height: 36px;
   }
   .size-\[38px\] {
     width: 38px;
@@ -961,9 +968,6 @@
   .max-h-\[273px\] {
     max-height: 273px;
   }
-  .max-h-\[280px\] {
-    max-height: 280px;
-  }
   .max-h-\[288px\] {
     max-height: 288px;
   }
@@ -975,6 +979,9 @@
   }
   .max-h-\[440px\] {
     max-height: 440px;
+  }
+  .max-h-\[506px\] {
+    max-height: 506px;
   }
   .max-h-\[calc\(100dvh-48px\)\] {
     max-height: calc(100dvh - 48px);
@@ -2215,6 +2222,9 @@
   .px-6 {
     padding-inline: calc(var(--spacing) * 6);
   }
+  .px-\[2px\] {
+    padding-inline: 2px;
+  }
   .px-\[4px\] {
     padding-inline: 4px;
   }
@@ -2280,6 +2290,9 @@
   }
   .py-12 {
     padding-block: calc(var(--spacing) * 12);
+  }
+  .py-\[1px\] {
+    padding-block: 1px;
   }
   .py-\[2px\] {
     padding-block: 2px;
@@ -2379,6 +2392,9 @@
   }
   .pt-\[38px\] {
     padding-top: 38px;
+  }
+  .pt-\[40px\] {
+    padding-top: 40px;
   }
   .pt-\[44px\] {
     padding-top: 44px;
@@ -2650,6 +2666,10 @@
   .leading-\[1\.7\] {
     --tw-leading: 1.7;
     line-height: 1.7;
+  }
+  .leading-\[1\.8\] {
+    --tw-leading: 1.8;
+    line-height: 1.8;
   }
   .leading-\[2\.3\] {
     --tw-leading: 2.3;
@@ -3516,6 +3536,12 @@
   }
   .\[\&_h3\]\:text-guest-ink h3 {
     color: var(--color-guest-ink);
+  }
+  .\[\&_tbody_tr\]\:cursor-pointer tbody tr {
+    cursor: pointer;
+  }
+  .\[\&_tbody_tr\:has\(\:checked\)\]\:bg-erp-thead-bg tbody tr:has(:checked) {
+    background-color: var(--color-erp-thead-bg);
   }
   .\[\&_tbody_tr\:last-child\]\:border-b-0 tbody tr:last-child {
     border-bottom-style: var(--tw-border-style);

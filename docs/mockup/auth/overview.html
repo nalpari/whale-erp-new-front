@@ -64,7 +64,7 @@
               </a>
               <a class="mk-card" href="find.html#id">
                 <span class="mk-card__route">/find · 두 탭</span>
-                <span class="mk-card__name">아이디·비밀번호 찾기</span>
+                <span class="mk-card__name">아이디/비밀번호 찾기</span>
                 <span class="mk-card__desc">
                   아이디는 이름·이메일로 찾아 앞 2자·뒤 1자만 보여 준다. 비밀번호는 이름·아이디·이메일로 확인해 임시 비밀번호를 메일로 보낸다.
                 </span>
@@ -96,7 +96,7 @@
                 <span class="mk-card__route">/terms</span>
                 <span class="mk-card__name">약관 전문</span>
                 <span class="mk-card__desc">
-                  약관 여섯 가지를 탭으로 본다. 1)·2) 는 회원가입, 3)~6) 은 직원 근무 앱에서 받는다(5) 마케팅 수신 · 6) 위치정보 수집·이용 포함). 표준안 초안이며 법무 검토 전이다.
+                  약관 여섯 가지를 탭으로 본다. 1)·2) 는 회원가입, 3)~6) 은 직원 근무 앱에서 받는다(5) 마케팅 수신 · 6) 위치정보 수집·이용 포함). 푸터의 이용약관·개인정보처리방침이 여기로 온다. 문구 원본은 api 의 약관 버전(terms_versions)이고 법무 검토 전이다.
                 </span>
                 <span class="mk-card__end">
                   <span class="badge badge--quiet">F-OFBCVL</span>
@@ -146,13 +146,14 @@
                     <tr><td class="k">로그인</td><td>로그인 · 플랫폼 계정(플랫폼 마스터·관리자)</td><td>웨일ERP(플랫폼관리) 사이트 <span class="badge badge--quiet">목업 없음</span></td></tr>
                     <tr><td class="k">로그인</td><td>로그인 · 초기 또는 임시 비밀번호로 들어옴</td><td><a class="tlink" href="force-password.html">강제 비밀번호 변경</a> → 홈</td></tr>
                     <tr><td class="k">로그인</td><td>잠김 안내의 비밀번호 찾기 · 임시 비밀번호 만료 안내</td><td><a class="tlink" href="find.html#pw">비밀번호 찾기 탭</a></td></tr>
-                    <tr><td class="k">로그인</td><td>아이디 찾기 · 비밀번호 찾기</td><td><a class="tlink" href="find.html#id">아이디·비밀번호 찾기</a> — 누른 쪽 탭이 열린다</td></tr>
-                    <tr><td class="k">로그인</td><td>사업자회원가입</td><td><a class="tlink" href="signup.html">회원가입</a></td></tr>
+                    <tr><td class="k">로그인</td><td>아이디/비밀번호 찾기 (링크 하나)</td><td><a class="tlink" href="find.html">아이디/비밀번호 찾기</a></td></tr>
+                    <tr><td class="k">로그인</td><td>사업자 회원가입 버튼</td><td><a class="tlink" href="signup.html">회원가입</a></td></tr>
                     <tr><td class="k">아이디 찾기</td><td>찾음 → 로그인하러 가기</td><td><a class="tlink" href="login.html">로그인</a></td></tr>
                     <tr><td class="k">비밀번호 찾기</td><td>발송함 → 확인</td><td><a class="tlink" href="login.html">로그인</a> — 받은 임시 비밀번호로 들어오면 강제 변경</td></tr>
                     <tr><td class="k">회원가입</td><td>사업자정보 인증하기</td><td>사업자 번호 인증 팝업 → 성공하면 사업자정보 영역이 열림</td></tr>
                     <tr><td class="k">회원가입</td><td>회원가입</td><td><a class="tlink" href="signup-done.html">가입 완료</a></td></tr>
-                    <tr><td class="k">홈 푸터</td><td>이용약관</td><td><a class="tlink" href="terms.html#use">약관 전문</a> — 현재 창에서 연다</td></tr>
+                    <tr><td class="k">푸터 · 로그인 아래</td><td>이용약관</td><td><a class="tlink" href="terms.html#TERMS_SERVICE">약관 전문 · 1) 탭</a> — 현재 창에서 연다(팝업 아님)</td></tr>
+                    <tr><td class="k">푸터 · 로그인 아래</td><td>개인정보처리방침 (굵게)</td><td><a class="tlink" href="terms.html#PRIVACY_COLLECT">약관 전문 · 2) 탭</a> — 개인정보 수집·이용 동의(BP 가입용)를 연다</td></tr>
                     <tr><td class="k">가입 완료</td><td>웨일ERP 시작하기</td><td>로그인 후 홈 <span class="side__tag side__tag--t3">3팀</span> — 강제 변경 없음(본인이 정한 비밀번호)</td></tr>
                     <tr><td class="k">강제 변경</td><td>로그아웃</td><td><a class="tlink" href="../home/index.html">로그인 전 홈</a> — 스스로 끝낸 세션</td></tr>
                     <tr><td class="k">어느 화면이든</td><td>갱신 토큰 만료</td><td><a class="tlink" href="../stores/index.html?session=expired">그 화면 위 세션 만료 경고창</a> → 확인 → 로그인</td></tr>
@@ -166,7 +167,7 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">정책</h2>
-              <span class="badge badge--quiet">17줄</span>
+              <span class="badge badge--quiet">18줄</span>
             </div>
             <div class="grid grid--2" style="align-items: start">
               <div class="panel">
@@ -190,12 +191,13 @@
               <div class="panel">
                 <div class="panel__head">
                   <h3 class="t-h3">가입 · 계정 찾기</h3>
-                  <span class="badge badge--quiet">8</span>
+                  <span class="badge badge--quiet">9</span>
                 </div>
                 <ul class="pol">
                   <li><span class="pol__t">가입 필수는 상호명·아이디·비밀번호·확인·이름·연락처·이메일. 이메일은 형식과 중복만 보고 소유 인증은 하지 않는다.</span><span class="pol__ref">S-RCJXIG</span></li>
                   <li><span class="pol__t">사업자 번호 인증은 선택이다. 상호명은 인증 결과로 채우지 않는다 — 진위확인이 상호명을 돌려주지 않는다.</span><span class="pol__ref">S-RCJXIG · S-VRNTHD</span></li>
                   <li><span class="pol__t">BP 회원가입의 약관은 필수 두 가지뿐이다. 마케팅 수신 동의는 BP 회원가입에는 없고, 직원 근무 앱에서 받는다.</span><span class="pol__ref">S-RCJXIG</span></li>
+                  <li><span class="pol__t">약관 문구의 원본은 api 의 약관 버전(terms_versions)이다. 가입·강제 변경의 전문 팝업은 <b>처음 열 때</b> 사용 중 버전을 캐시 없이 받아 보이고, 받으면 다시 묻지 않는다. 받지 못하면 팝업에 「약관을 불러오지 못했습니다. 잠시 뒤 다시 열어 주세요.」를 두고 다시 열 때 다시 받는다. 가입·비밀번호 변경은 막지 않는다 — 사용 중 약관이 없으면 api 가 가입을 거절한다 (2026-10-19, PR #52).</span><span class="pol__ref">F-OFBCVL · S-RCJXIG · S-VFGQLI</span></li>
                   <li><span class="pol__t">가입 중 입력은 서버에 두지 않는다. 떠나거나 새로 고치면 인증 결과까지 모두 사라진다.</span><span class="pol__ref">F-JVTPSU</span></li>
                   <li><span class="pol__t">가입해도 점포는 만들지 않고, 완료 화면과 홈에서 점포 등록을 권하지 않는다.</span><span class="pol__ref">S-UUBGOD</span></li>
                   <li><span class="pol__t">아이디 찾기는 사용 상태 계정만 대상이다. 찾으면 앞 2자와 뒤 1자만 보인다. 횟수 제한은 없다.</span><span class="pol__ref">S-PHOPWY</span></li>
@@ -209,10 +211,11 @@
           <section class="section">
             <div class="panel__head" style="padding-left: 0; padding-right: 0">
               <h2 class="t-h2">쟁점</h2>
-              <span class="badge badge--ok">4건 · 모두 확정</span>
+              <span class="badge badge--ok">5건 · 모두 확정</span>
             </div>
             <p class="gap__note" style="margin-top: 0">
-              넷 다 3팀 목업의 로그인 화면(홈·계정 진입 영역)과 1팀 명세가 다른 곳이다. 이 영역의 화면은 모두 1팀 명세 쪽을 따랐다.
+              AUTH-1~4 는 3팀 목업의 로그인 화면(홈·계정 진입 영역)과 1팀 명세가 다른 곳이다. 이 영역의 화면은 모두 1팀 명세 쪽을 따랐다.
+              AUTH-5 는 약관 링크를 실제 화면으로 옮기며 정한 것이다.
               어느 쪽이 맞는지는 두 팀이 함께 정한다 — 정해지면 진 쪽 화면을 고치거나 지운다.
             </p>
 
@@ -295,6 +298,27 @@
               </div>
               <p class="gap__note">
                 메일 발송은 3팀이 맡기로 했으므로 어느 쪽이든 발송 포맷은 3팀이 만든다. 1팀 명세에는 임시 비밀번호 발급 포맷과 관리자 계정 생성 포맷이 이미 있다.
+              </p>
+            </div>
+            <div class="gap is-decided">
+              <div class="gap__head">
+                <span class="gap__no">AUTH-5</span>
+                <b>푸터의 이용약관 · 개인정보처리방침을 어떻게 여는가</b>
+                <span class="gap__decided">확정 2026-10-19 재영 · 약관 전문 화면</span>
+                <span class="gap__ref">F-OFBCVL · S-XJDKSI</span>
+              </div>
+              <div class="gap__opts">
+                <div class="gap__opt is-dropped" data-side="a">
+                  <div class="gap__label">A · 2026-10-12 결정 · 1팀 명세</div>
+                  <p>링크를 누르면 전문을 <b>팝업</b>으로 연다. 개인정보처리방침은 가입 때 받는 개인정보 수집·이용 동의와 <b>다른 문서</b>로 둔다.</p>
+                </div>
+                <div class="gap__opt is-picked" data-side="b">
+                  <div class="gap__label">B · 데모 · 실제 화면(PR #52) · 이 화면</div>
+                  <p>링크는 <b>약관 전문 화면(/terms)</b>의 그 탭으로 간다 — 이용약관은 #TERMS_SERVICE, 개인정보처리방침은 #PRIVACY_COLLECT. 개인정보처리방침은 <b>따로 두지 않고</b> 개인정보 수집·이용 동의(BP 사업자 회원가입용)를 연다. 링크는 계속 굵게 둔다.</p>
+                </div>
+              </div>
+              <p class="gap__note">
+                가입·강제 변경 화면의 전문 보기는 그대로 팝업이다. 목업의 따로 쓴 개인정보처리방침 초안은 지웠다.
               </p>
             </div>
           </section>

@@ -1,7 +1,7 @@
 // node --test src/lib/staff-members.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { EMPLOYMENT_TYPES, JOIN_GROUPS, MAX_STORE_IDS, kstToday, staffEmailText, staffListApiSearch, staffListEmptyMessage, storeIdsByName, tooManyStores, type StaffListQuery } from "./staff-members.ts";
+import { EMPLOYMENT_TYPES, JOIN_GROUPS, MAX_STORE_IDS, hqSharingConsentText, kstToday, staffEmailText, staffListApiSearch, staffListEmptyMessage, storeIdsByName, tooManyStores, type StaffListQuery } from "./staff-members.ts";
 
 const base: StaffListQuery = {
   store: "",
@@ -145,4 +145,19 @@ test("이메일 칸 — 가입 상태를 모르면 「-」", () => {
 test("이메일 칸 — enum 을 받지 못했거나(빈 목록) 목록에 없는 값이면 영문 값 대신 「-」", () => {
   assert.equal(staffEmailText({ email: null, joinState: "LINK_HOLD" }, []), "-");
   assert.equal(staffEmailText({ email: null, joinState: "SOMETHING_NEW" as never }, JOIN_STATE_LABELS), "-");
+});
+
+const HQ_CONSENT_LABELS = [
+  { value: "AGREED", label: "동의", order: 1 },
+  { value: "NOT_AGREED", label: "미동의", order: 2 },
+];
+
+test("본사 제공 동의 칸은 가맹 점포 직원만 — 직영 점포 직원(null)은 줄이 없다", () => {
+  assert.equal(hqSharingConsentText({ hqSharingConsent: "AGREED" }, HQ_CONSENT_LABELS), "동의");
+  assert.equal(hqSharingConsentText({ hqSharingConsent: "NOT_AGREED" }, HQ_CONSENT_LABELS), "미동의");
+  assert.equal(hqSharingConsentText({ hqSharingConsent: null }, HQ_CONSENT_LABELS), null);
+});
+
+test("본사 제공 동의 한글을 받지 못했으면 - — 영문 값을 보이지 않는다", () => {
+  assert.equal(hqSharingConsentText({ hqSharingConsent: "NOT_AGREED" }, []), "-");
 });

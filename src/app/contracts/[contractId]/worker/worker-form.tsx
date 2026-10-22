@@ -9,7 +9,7 @@ import { updateWorker } from "../actions";
 import { callSave, SAVE_CALL_LOST } from "../send-model";
 import { workerBody, workerProblems, workerSaveNote, type WorkerForm as Form } from "./worker-model";
 
-// 날인 전 근로자 정보 수정(WHALEERP-125 「본인 대조」 · 126). 링크를 못 받았다는 직원과 유선으로 번호를 확인했거나,
+// 날인 전 근로자 정보 수정(WHALEERP-125 「본인 대조」 · 126). 초대 코드를 못 받았다는 직원과 유선으로 번호를 확인했거나,
 // 직원이 가입 값과 달라 수정을 요청했을 때 쓴다. 다섯 칸은 직원이 가입하며 넣는 값과 대조된다.
 export function WorkerForm({
   contractId,
@@ -32,7 +32,8 @@ export function WorkerForm({
   const failureRef = useRef<HTMLDivElement>(null);
   const [failures, setFailures] = useState(0);
   useEffect(() => {
-    if (failures) failureRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+    // nearest — center 는 바깥 틀까지 밀어 올려 화면 아래에 빈 공간이 생긴다(작성 화면과 같다)
+    if (failures) failureRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [failures]);
 
   const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));

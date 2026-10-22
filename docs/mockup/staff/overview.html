@@ -206,7 +206,7 @@
                   <span class="badge badge--quiet">13</span>
                 </div>
                 <ul class="pol">
-                <li><span class="pol__t">근무스케줄은 시점 제한 없이 고치고 지운다. 급여 초안의 참고 정보다.</span><span class="pol__ref">S-WPGUXX</span></li>
+                <li><span class="pol__t">근무스케줄은 시점 제한 없이 고치고 지운다. 지난 날짜도 경고 없이 고치고 변경 이력에만 남긴다. 급여 계산에는 쓰지 않는다(운영 정책 PAY-12).</span><span class="pol__ref">S-WPGUXX</span></li>
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 근무스케줄의 기본값은 <b>근로계약의 근무시간</b>이고 관리자가 고쳐 저장한다. 자동 반영은 등록할 때 한 번이라 계약을 나중에 바꿔도 등록된 근무스케줄은 그대로다. 등록 패널에는 안내 띠 없이 「계약 값으로 되돌리기」 버튼만 둔다(2026-10-08 재영).</span><span class="pol__ref">S-WPGUXX · STAFF-14</span></li>
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 근무스케줄은 확정 단계 없이 <b>저장하면 바로</b> 직원 근무 앱에 반영되고, 저장할 때마다 바뀐 직원에게만 알림이 한 번 간다(일괄 등록·지난 주 복사 포함). 그대로인 직원은 받지 않고, 삭제도 그 직원에게는 알린다(2026-10-08 재영).</span><span class="pol__ref">S-WPGUXX · STAFF-15</span></li>
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 지난 주 복사는 <b>비어 있는 주에서만</b> 되고, 직전 주를 원본으로 재직자만 복사하며 복사하면 바로 반영된다. 재직이 아닌 사람은 미리보기에서 빠진다.</span><span class="pol__ref">S-WPGUXX · STAFF-13</span></li>
@@ -218,7 +218,7 @@
                 <li><span class="pol__t">위치 판정 결과(반경 안·밖, 오차)는 <b>저장하지 않는다</b>. 확인 필요 사유 글자만 남고 관리자가 보정하거나 이상 없음을 누르면 그것도 지운다.</span><span class="pol__ref">S-EITCPC · 운영 정책 ATT-19</span></li>
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> TO-DO 는 정규 근무 밖 <b>특별업무 전용</b>이다. 반복·정기 업무는 넣지 않고 반복 설정도 없다.</span><span class="pol__ref">S-NIAGGB · STAFF-4</span></li>
                 <li><span class="pol__t">수행 날짜는 필수, 시간은 선택이다. 대상은 개인 또는 근무지 전체이고, 전체일 때 각자 수행인지 한 명 수행인지는 등록 때 고르고 바꾸지 못한다.</span><span class="pol__ref">S-NIAGGB</span></li>
-                <li><span class="pol__t">상태는 대기·진행 중·완료다. <b>TO-DO 배정은 앱 푸시를 보내지 않는다.</b> 긴급 표시는 직원 근무 앱 홈·근무 탭 맨 위에 세우고 관리자 웹 미조치에 세는 강조일 뿐이며 이력을 남긴다.</span><span class="pol__ref">S-NIAGGB</span></li>
+                <li><span class="pol__t">상태는 대기·진행 중·완료다. <b>TO-DO 배정 알림은 없다.</b> 수행 예정 일시가 다가오면 배정된 직원에게 수행 임박 알림을 한 번 보낸다(2026-10-19 재영). 긴급 표시는 직원 근무 앱 홈·근무 탭 맨 위에 세우고 관리자 웹 미조치에 세는 강조일 뿐이며 이력을 남긴다.</span><span class="pol__ref">S-NIAGGB</span></li>
                 </ul>
               </div>
               <div class="panel">
@@ -697,7 +697,7 @@
               </div>
               <p class="gap__note">
                 문서에 없던 결정이다. 근로계약의 근무시간이 곧 기본 근무표이니 근무스케줄이 거기서 시작하는 게 맞다. 자동 반영은 <b>등록하는 시점에 한 번</b>으로 못박는다 —
-                계약을 나중에 고쳐도 이미 등록된 근무스케줄은 바뀌지 않는다. 근무스케줄은 급여 초안의 참고 정보라 등록된 뒤에 저절로 움직이면 급여가 흔들린다.
+                계약을 나중에 고쳐도 이미 등록된 근무스케줄은 바뀌지 않는다. 관리자가 정해 둔 근무가 등록된 뒤에 저절로 움직이면 안 된다.
               </p>
               <div class="gap__block">
                 <b>딸린 것.</b>
@@ -976,7 +976,7 @@
                   <p>하루씩 넘기는 일간 근무표와 직원 × 요일 표. 홈과 모양이 달라 같은 근무스케줄을 두 가지로 읽어야 한다.</p>
                 </div>
               </div>
-              <p class="gap__note">2026-10-08 재영 확정. 관리 화면은 그날 체결 완료 근로계약이 있는 재직자 전원(휴무 포함)을 보이고(미체결 직원은 STAFF-29 로 뺀다) 홈은 근무자만 보인다. 시간축은 그 점포의 운영시간이다. 공백 안내와 「이 시간대에 배정」은 관리에만 둔다. 월간 달력에는 인원만 둔다. 주 이동 옆의 「확정 전 / 확정」 꼬리표는 확정 단계를 없애며 뺐다(2026-10-08 재영). 「이번 주」 버튼은 남긴다.</p>
+              <p class="gap__note">2026-10-08 재영 확정. 관리 화면은 그날 체결 완료 근로계약이 있는 재직자 전원(휴무 포함)을 보이고(미체결 직원은 STAFF-29 로 뺀다) 홈은 근무자만 보인다. 시간축은 00~24시다(2026-10-21 재영, STAFF-37 — 그 점포의 운영시간에서 바꿈). 공백 안내와 「이 시간대에 배정」은 관리에만 둔다. 월간 달력에는 인원만 둔다. 주 이동 옆의 「확정 전 / 확정」 꼬리표는 확정 단계를 없애며 뺐다(2026-10-08 재영). 「이번 주」 버튼은 남긴다.</p>
             </div>
             <div class="gap is-decided">
               <div class="gap__head">

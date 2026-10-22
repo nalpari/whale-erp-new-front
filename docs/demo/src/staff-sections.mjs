@@ -160,15 +160,15 @@ export function staffSections({ A, R }) {
   const proxyPanel = "proxy-form";
   // 근무스케줄 보기는 로그인 후 홈과 같은 부품(staff-parts schedWeek·schedMonth)으로 그린다(2026-10-08 재영).
   // 관리는 그날 체결 완료 근로계약이 있는 재직자 전원(휴무 포함)을 보이고(미체결 직원은 뺀다, STAFF-29), 주간 보기 아래에 공백 안내와 「이 시간대에 배정」을 둔다.
-  // 주간 근무표(직원 × 요일 표, 주 합계)는 없앴다(STAFF-26). 운영 07:00-22:00, 주 08-17 ~ 08-23, 샘플의 오늘은 공백이 드러나는 토요일.
+  // 주간 근무표(직원 × 요일 표, 주 합계)는 없앴다(STAFF-26). 시간축 00~24시(STAFF-37), 주 08-17 ~ 08-23, 샘플의 오늘은 공백이 드러나는 토요일.
   const schedCrew = [
-    ["오세라", "점장", { 1: [9, 18], 2: [9, 18], 4: [9, 18], 5: [9, 18], 6: [11, 20] }],
-    ["유하람", "바리스타", { 2: [16, 22], 3: [16, 22], 5: [16, 22], 6: [12, 22], 0: [12, 22] }],
+    ["오세라", "점장", { 1: [9, 18], 2: [9, 18], 4: [9, 18], 5: [9, 18], 6: [10, 15] }],
+    ["유하람", "바리스타", { 2: [16, 22], 3: [16, 22], 5: [16, 22], 6: [17, 22], 0: [12, 22] }],
     ["서지안", "바리스타", { 1: [7, 16], 2: [7, 16], 3: [7, 16], 4: [7, 16], 0: [10, 19] }],
-    // 다섯째 칸은 체결 완료 계약 기간. 월간 보기는 그 밖의 날에 인원에서 뺀다(STAFF-29).
-    ["권도윤", "바리스타", { 1: [13, 22], 3: [13, 22], 4: [13, 22], 5: [13, 22], 0: [13, 22] }, "", ["2025-08-24", "2026-08-23"]],
+    // 넷째 칸은 체결 완료 계약 기간. 월간 보기는 그 밖의 날에 인원에서 뺀다(STAFF-29).
+    ["권도윤", "바리스타", { 1: [13, 22], 3: [13, 22], 4: [13, 22], 5: [13, 22], 0: [13, 22] }, ["2025-08-24", "2026-08-23"]],
   ];
-  const schedWeekView = p.schedWeek(schedCrew, { open: 7, close: 22, dates: { 1: 17, 2: 18, 3: 19, 4: 20, 5: 21, 6: 22, 0: 23 }, pick: 6, all: true, gap: schedPanel });
+  const schedWeekView = p.schedWeek(schedCrew, { open: 0, close: 24, dates: { 1: 17, 2: 18, 3: 19, 4: 20, 5: 21, 6: 22, 0: 23 }, pick: 6, all: true, gap: schedPanel });
   const schedMonthView = p.schedMonth(A, schedCrew, { year: 2026, month: 7, today: "2026-08-22", all: true });
 
   const schedLog = p.section(
@@ -179,7 +179,7 @@ export function staffSections({ A, R }) {
       [
         ["09-01 14:22", "수정", "서지안 09-04 13:00-21:30 → 09:00-17:00 · 정하윤"],
         ["08-31 10:05", "추가", "09-08 일괄 등록 3명 · 정하윤"],
-        ["08-28 17:41", p.mark("risk", "삭제"), "배정숙 08-30 마감 삭제 · 정하윤"],
+        ["08-28 17:41", p.mark("risk", "삭제"), "배정숙 08-30 16:00-22:00 삭제 · 정하윤"],
       ],
     ),
   );
@@ -248,7 +248,7 @@ export function staffSections({ A, R }) {
       ["처리한 사람", "정하윤 (BP 마스터)"],
       ["변경 전", "출근 09:02 · 퇴근 없음"],
       ["변경 후", "출근 09:02 · 퇴근 18:30"],
-      ["사유", "퇴근 등록 누락 · 마감 확인"],
+      ["사유", "퇴근 등록 누락 · 점장 확인"],
     ]) +
     histDialog("오세라", [
       ["일시", "2026-08-27 18:05"],
@@ -294,7 +294,7 @@ export function staffSections({ A, R }) {
         { id: "sched-week", label: "주간 보기" },
         { id: "sched-month", label: "월간 보기" },
       ]),
-      `<span class="text-[14px] text-erp-label">모리커피 서초점 · 운영 07:00-22:00</span>`,
+      `<span class="text-[14px] text-erp-label">모리커피 서초점 · 00~24시</span>`,
     ) +
     x.tabPanel("sched-week", schedWeekView, true) +
     x.tabPanel("sched-month", schedMonthView) +
@@ -305,7 +305,7 @@ export function staffSections({ A, R }) {
     ui.filterSection("직원", ui.searchField(A, { placeholder: "이름 또는 번호" }), { tight: true }),
     ui.filterSection("고용형태", ui.checkbox(A, "정직원", true) + ui.checkbox(A, "파트타이머", true)),
     ui.filterSection("출퇴근 상태", ["정상", "지각", "미출근", "출근 미등록", "퇴근 미등록", "휴무"].map((t) => ui.checkbox(A, t, true)).join("")),
-    ui.filterSection("확인 필요 사유", ["위치 오차 초과", "반경 밖 퇴근", "위치 조작 감지"].map((t) => ui.checkbox(A, t, true)).join("")),
+    ui.filterSection("확인 필요 사유", ["위치 오차 초과", "반경 밖 출근", "반경 밖 퇴근", "위치 조작 감지"].map((t) => ui.checkbox(A, t, true)).join("")),
     ui.filterSection("기록 구분", ["직원 등록", "대신 등록", "보정됨"].map((t) => ui.checkbox(A, t, true)).join("")),
     ui.filterSection("재직 상태", ui.select(["재직", "퇴직", "전체"], { "aria-label": "재직 상태" }), { tight: true, last: true }),
   ]);
@@ -497,7 +497,7 @@ export function staffSections({ A, R }) {
       ui.formGroup(
         "출퇴근 기록",
         ui.formRow(p.fieldH("출근", p.timeField("12:58", "출근"), "원본 12:58"), p.fieldH("퇴근", p.timeField("21:30", "퇴근"), "원본 없음")),
-        p.fieldH("수정 사유", ui.textarea({ rows: 4, value: "퇴근 등록 누락 · 마감 근무스케줄 종료 시각으로 보정. 점장 구두 확인." }), ""),
+        p.fieldH("수정 사유", ui.textarea({ rows: 4, value: "퇴근 등록 누락 · 근무스케줄 종료 시각으로 보정. 점장 구두 확인." }), ""),
       ) +
       ui.panelButtons("취소", "보정 저장"),
   );

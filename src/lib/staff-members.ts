@@ -41,6 +41,16 @@ export function staffEmailText(staff: Pick<StaffMember, "email" | "joinState">, 
   return joinStateLabels.find((v) => v.value === staff.joinState)?.label ?? "-";
 }
 
+/**
+ * 상세 기본 정보의 「본사 제공 동의」 칸(WHALEERP-184 완료 조건 8, ATT-30). 가맹 점포 직원만 동의 · 미동의 값이 오고 직영 점포 직원은 null 이라
+ * 줄을 그리지 않는다(null 을 돌려준다). 한글은 api enum(GET /enums/HqSharingConsentState)이고, 받지 못했거나 목록에 없는 값은 영문 대신 「-」다.
+ * 값은 계정의 동의라 소속마다 다르지 않다. 본사 역할은 미동의 직원 상세가 404 라 늘 동의를 본다.
+ */
+export function hqSharingConsentText(staff: Pick<StaffMember, "hqSharingConsent">, labels: readonly EnumValue[]): string | null {
+  if (staff.hqSharingConsent === null) return null;
+  return labels.find((v) => v.value === staff.hqSharingConsent)?.label ?? "-";
+}
+
 export const EMPLOYMENT_TYPES: readonly EmploymentType[] = ["FULL_TIME", "PART_TIME"];
 
 /** 화면 「가입·인증」 체크 다섯. api 의 StaffJoinState 를 묶는다. */

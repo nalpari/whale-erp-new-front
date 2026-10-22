@@ -5,6 +5,7 @@ import { StaffFilter } from "./staff-filter";
 import { StaffPageSize, StaffPagination } from "./staff-list-controls";
 import { parseStaffListQuery, toStaffListSearch } from "./staff-list-query";
 import { StaffTable } from "./staff-table";
+import { ContractMenuPermission } from "../contracts/contract-permission";
 
 // 직원 정보 관리 목록(WHALEERP-138). 데모 docs/demo/staff/index.html 을 공통 컴포넌트로 옮겼다.
 // 데이터는 GET /staff-members(getStaffMembers)다. 화면 상태는 URL 에만 둔다.
@@ -21,8 +22,10 @@ export default async function StaffMembersPage({
   return (
     <>
       <PageBar title="직원 정보 관리">
-        {/* 초안을 저장하면 초대가 나간다 — 데모의 「계약서 작성」을 이름만 바꿨다(2026-10-12 yjnoh). */}
-        <Button href="/contracts/new">직원 초대</Button>
+        {/* 초안을 저장하면 초대가 나간다 — 데모의 「계약서 작성」을 이름만 바꿨다(2026-10-12 yjnoh). 근로계약 등록 권한일 때만(WHALEERP-592) */}
+        <ContractMenuPermission action="create">
+          <Button href="/contracts/new">직원 초대</Button>
+        </ContractMenuPermission>
       </PageBar>
       <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
         <StaffFilter query={query} />

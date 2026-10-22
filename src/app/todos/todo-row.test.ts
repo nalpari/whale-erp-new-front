@@ -127,7 +127,7 @@ test("상태 이력 한 줄 — 등록 · 상태 변경 · 긴급 변경 · 배�
   assert.equal(historyText(history({ fromStatus: "PENDING", toStatus: "PENDING", unassignedStaffMemberName: "오세라" }), LABELS), "배정 풀림 · 오세라(퇴직)");
 });
 
-test("가린 직원 — 직원 목록과 같은 「본사 제공 동의 없음」", () => {
+test("가린 직원 — 급여명세서와 같은 짧은 「본사 제공 동의 없음」", () => {
   assert.equal(MASKED_STAFF, "본사 제공 동의 없음");
   assert.equal(staffNameText(masked), MASKED_STAFF);
   assert.equal(staffNameText(person(1, "서지안")), "서지안");

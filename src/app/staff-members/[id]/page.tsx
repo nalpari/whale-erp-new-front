@@ -1,76 +1,38 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { Badge, DetailTable, PageBar } from "@/components/common";
+import { DetailTable, PageBar } from "@/components/common";
 import { getEnum } from "@/lib/api";
 import type { EnumValue } from "@/lib/enums";
-import { kstToday, staffEmailText } from "@/lib/staff-members";
+import { hqSharingConsentText, kstToday, staffEmailText } from "@/lib/staff-members";
+import { MENU_CODE } from "@/lib/menus";
 import { getStaffMember, staffMemberIdOf } from "@/lib/staff-members-api";
-import { getStaffMemberTodos, type TodoItemList } from "@/lib/todos-api";
-import { dueText, statusCells } from "../../todos/todo-row";
 import { staffListHref } from "../staff-list-query";
-import { EMPLOYMENT_TYPE_LABELS, employmentStatusCells, formatPhone } from "../staff-row";
+import { ResendInvitationButton } from "../resend-invitation-button";
+import { canResendInvitation, EMPLOYMENT_TYPE_LABELS, employmentStatusCells, formatPhone, invitationText, joinCell } from "../staff-row";
 import { CellView } from "../staff-table";
-import { ContractBox, ContractBoxLoading } from "./contract-box";
-import { Box, BoxMessage } from "./detail-box";
+import { ContractBox } from "./contract-box";
+import { AreaLoading, Box, BoxMessage } from "./detail-box";
+import { MenuManageLink } from "./manage-link";
 import { PasswordResetButton, StaffDetailActions } from "./staff-detail-actions";
-import { TodoManageLink, TodoTitleLink } from "./todo-links";
+import { PayslipBox, ScheduleBox, TodoBox } from "./summary-boxes";
+import { scheduleWeekOf } from "./summary-view";
+import { WeekNav } from "./week-nav";
 
 export const metadata: Metadata = {
   title: "직원 상세 · Whale ERP",
 };
 
-// 아직 값이 없는 칸. 상세 요약 api(WHALEERP-183)가 나오면 채운다.
+// 값이 없는 칸.
 const PENDING = "-";
 
 function NotReady() {
   return <BoxMessage>준비 중입니다.</BoxMessage>;
 }
 
-// 「관리」 대상 화면이 아직 없어 링크를 걸지 않는다. 걸면 메뉴 url 이 없을 때 공통 틀이 「접근 권한이 없는 메뉴」로
-// 막아 권한 문제처럼 보인다. 화면이 생기면 메뉴 url(#592 결정)을 manageHref 로 넣는다: 근무스케줄 /work-schedules ·
-// 출퇴근 현황 /attendance-records · 급여명세서 /payslips. TO-DO 는 화면(#116)과 메뉴 url(MN000026 /todos)이 생겨 걸었다.
-const RIGHT_BOXES: { title: string; manageHref?: string }[] = [
-  { title: "근무스케줄" },
-  { title: "출퇴근 현황" },
-  { title: "급여명세서" },
-  { title: "TO-DO", manageHref: "/todos" },
-];
-
-/** 직원 상세 TO-DO 영역에 보일 건수. api 순서(미완료 긴급 → 미완료 → 완료)의 앞쪽이다 */
-const STAFF_TODO_COUNT = 5;
-
-// 직원 상세의 TO-DO(#118). 받지 못해도 상세는 그린다 — 이 칸만 안내를 보이고 원인은 서버 로그에 남긴다.
-async function loadStaffTodos(rawId: string): Promise<TodoItemList | null> {
-  const id = staffMemberIdOf(rawId);
-  if (id === null) return null;
-  try {
-    return await getStaffMemberTodos(id, STAFF_TODO_COUNT);
-  } catch (error) {
-    console.error("직원 상세: GET /staff-members/:id/todos 를 받지 못했습니다", error);
-    return null;
-  }
-}
-
-function StaffTodos({ todos, statusLabels, today }: { todos: TodoItemList | null; statusLabels: EnumValue[]; today: string }) {
-  const frame = "rounded-b-[2px] border border-erp-thead-line bg-white text-[14px]";
-  if (!todos) return <BoxMessage alert>TO-DO 를 불러오지 못했습니다.</BoxMessage>;
-  if (todos.items.length === 0) return <BoxMessage>배정된 TO-DO 가 없습니다.</BoxMessage>;
-  return (
-    <ul className={frame}>
-      {todos.items.map((t) => (
-        <li key={t.todoId} className="flex h-[46px] items-center gap-[10px] border-b border-erp-thead-line px-[12px] last:border-b-0">
-          <TodoTitleLink todoId={t.todoId} title={t.title} />
-          {t.isUrgent && <Badge tone="off">긴급</Badge>}
-          <span className="w-[90px] shrink-0 text-center text-erp-label">{dueText(t.dueDate, t.dueTime, today)}</span>
-          <span className="flex w-[110px] shrink-0 justify-center">
-            <CellView cell={statusCells({ ...t, todoCount: 1, doneCount: 0 }, statusLabels)[0]} />
-          </span>
-        </li>
-      ))}
-    </ul>
-  );
-}
+// 오른쪽 영역의 「관리」. 출퇴근 현황은 아직 링크를 걸지 않는다 — 화면이 없다(메뉴 url #592 결정 /attendance-records).
+// TO-DO 는 화면(#116)과 메뉴 url(MN000026 /todos)이, 근무스케줄은 화면(#202)과 메뉴 url(MN000010 /work-schedules)이, 급여명세서는 화면과
+// 메뉴 url(MN000009 /payslips)이 있어 걸었다 — 근무스케줄은 그 직원의 근무지 · 칸이 보던 주로 연다.
 
 // 가입 상태 한글(이메일 칸, WHALEERP-180). 받지 못해도 상세는 그린다 — 이메일 칸만 「-」가 되고 원인은 서버 로그에 남긴다.
 async function loadJoinStateLabels(): Promise<EnumValue[]> {
@@ -82,10 +44,21 @@ async function loadJoinStateLabels(): Promise<EnumValue[]> {
   }
 }
 
+// 초대 유형 · 상태 한글(「초대」 줄, WHALEERP-138)과 본사 제공 동의 한글(WHALEERP-184). 받지 못해도 상세는 그린다 — 그 조각만 「-」가 되거나 빠지고 원인은 서버 로그에 남긴다.
+async function loadEnumOrEmpty(name: string): Promise<EnumValue[]> {
+  try {
+    return await getEnum(name);
+  } catch (error) {
+    console.error(`직원 상세: GET /enums/${name} 를 받지 못했습니다`, error);
+    return [];
+  }
+}
+
 // 직원 상세(WHALEERP-184). 배치는 데모 docs/demo/staff/detail.html(원본 src/pages/staff/detail.mjs)과 같다 — 5:7 두 단,
 // 왼쪽은 기본 정보 · 비밀번호 초기화 · 근로계약, 오른쪽은 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO.
-// 데이터는 상세 api(GET /staff-members/:id, WHALEERP-599)로 받고, 목록 한 줄에 계정 이메일을 더한 모양이라 그 값만 채운다. 직무 · 입사일 · 생년월일 · 본인인증과 오른쪽 영역의 내용은 상세 요약
-// api(WHALEERP-183)가 나오면 다시 작업한다. 근로계약은 응답의 가장 최근 계약으로 계약 상세를 따로 받는다(contract-box.tsx). 가린 직원 · 없는 직원 · 이상한 id 는 404 다.
+// 기본 정보는 상세 api(GET /staff-members/:id, WHALEERP-599 · 183)로 받는다 — 목록 한 줄에 계정 이메일 · 직무 · 입사일 · 생년월일을 더한 모양이다.
+// 근로계약 · 근무스케줄 · 급여명세서 · TO-DO 건수는 영역마다 상세 요약 api(GET /staff-members/:id/summary/…, WHALEERP-183)로 따로 받아
+// 한 영역만 실패하거나 그 영역 메뉴 권한이 없어도 나머지는 그린다(summary-boxes.tsx). 가린 직원 · 없는 직원 · 이상한 id 는 404 다.
 export default async function StaffMemberDetailPage({
   params,
   searchParams,
@@ -94,34 +67,62 @@ export default async function StaffMemberDetailPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { id: rawId } = await params;
-  const [staff, joinStateLabels, todos, todoStatusLabels] = await Promise.all([
+  const search = await searchParams;
+  const [staff, joinStateLabels, invitationTypeLabels, invitationStatusLabels, hqConsentLabels] = await Promise.all([
     getStaffMember(rawId),
     loadJoinStateLabels(),
-    loadStaffTodos(rawId),
-    // 받지 못하면 상태가 영문 값으로 보일 뿐이라 상세는 그린다
-    getEnum("TodoStatus").catch((error: unknown) => {
-      console.error("직원 상세: GET /enums/TodoStatus 를 받지 못했습니다", error);
-      return [];
-    }),
+    loadEnumOrEmpty("InvitationType"),
+    loadEnumOrEmpty("InvitationStatus"),
+    loadEnumOrEmpty("HqSharingConsentState"),
   ]);
-  if (!staff) notFound();
+  const staffMemberId = staffMemberIdOf(rawId);
+  if (!staff || staffMemberId === null) notFound();
   const employmentStatus = employmentStatusCells(staff);
-  const listHref = staffListHref(await searchParams);
+  const hqConsent = hqSharingConsentText(staff, hqConsentLabels);
+  const listHref = staffListHref(search);
+  const today = kstToday();
+  // 근무스케줄 영역이 볼 주(월요일). 주소 week 가 없거나 날짜가 아니면 이번 주(데모 weekNav, 2026-10-22 노영주 — WHALEERP-185 기간 선택을 걷었다)
+  const monday = scheduleWeekOf(search, today);
 
   const basicRows = [
-    { label: "이름", value: staff.name },
-    { label: "직무", value: PENDING },
+    // 재직 상태는 이름 옆 칩이다(184 완료 조건 2 「이름 아래」 — 줄 높이 46 이 고정이라 옆에 둔다). 본인인증은 1차 범위 밖이라(WHALEERP-612 → 2차)
+    // 줄도 칩도 두지 않는다(2026-10-21 재영).
+    {
+      label: "이름",
+      value: (
+        <span className="inline-flex min-w-0 items-center gap-[10px]">
+          <span className="truncate">{staff.name}</span>
+          {employmentStatus.map((cell) => (
+            <CellView key={cell.text} cell={cell} />
+          ))}
+        </span>
+      ),
+    },
+    { label: "직무", value: staff.jobTitle || PENDING },
     { label: "고용 형태", value: staff.employmentType ? EMPLOYMENT_TYPE_LABELS[staff.employmentType] : PENDING },
     { label: "소속 근무지", value: staff.store.name },
-    { label: "입사일", value: PENDING },
-    { label: "재직 상태", value: employmentStatus.length ? employmentStatus.map((cell) => <CellView key={cell.text} cell={cell} />) : PENDING },
+    // 입사일은 나중에 시스템이 첫 체결 계약 시작일로 채운다. 지금은 늘 null 이라 「-」다(2026-10-21 재영)
+    { label: "입사일", value: staff.hiredDate ?? PENDING },
     // 퇴직 예정 · 퇴직이면 퇴직일을 보인다(목업 detail.html)
     ...(staff.retiredDate ? [{ label: "퇴직일", value: staff.retiredDate }] : []),
-    { label: "생년월일", value: PENDING },
+    // 가입한 계정 값, 가입 전 · 탈퇴면 가장 최근 계약에 적은 값(api #183). api 가 주는 대로 보이고 화면에서 따로 가리지 않는다(2026-10-21 재영)
+    { label: "생년월일", value: staff.birthDate ?? PENDING },
     { label: "휴대전화번호", value: staff.phone ? formatPhone(staff.phone) : PENDING },
-    { label: "본인인증", value: PENDING },
+    // 가입 상태 · 초대는 목록과 같은 함수다(staff-row.ts). 재발송도 목록과 같은 판정 · 버튼이다(WHALEERP-138)
+    {
+      label: "가입 상태",
+      value: (
+        <span className="inline-flex items-center gap-[6px]">
+          <CellView cell={joinCell(staff, today)} />
+          {staff.contract && canResendInvitation(staff) && <ResendInvitationButton contractId={staff.contract.contractId} name={staff.name} />}
+        </span>
+      ),
+    },
+    { label: "초대", value: invitationText(staff.invitation, invitationTypeLabels, invitationStatusLabels) },
     // 계정 이메일(회원 ID) — 상세를 볼 수 있으면 보이고, 고치지 못한다(ACC-17, WHALEERP-180). 없을 때의 표시는 staffEmailText.
     { label: "이메일", value: staffEmailText(staff, joinStateLabels) },
+    // 가맹 점포 직원만 동의 · 미동의 한 줄, 직영 점포 직원은 줄이 없다(184 완료 조건 8, ATT-30)
+    ...(hqConsent === null ? [] : [{ label: "본사 제공 동의", value: hqConsent }]),
   ];
 
   return (
@@ -132,34 +133,61 @@ export default async function StaffMemberDetailPage({
           <div className="flex flex-col gap-[12px]">
             <div className="flex items-center gap-[6px]">
               <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">직원 상세</h2>
-              <StaffDetailActions staff={staff} today={kstToday()} listHref={listHref} />
+              <StaffDetailActions staff={staff} today={today} listHref={listHref} />
             </div>
             <div className="grid grid-cols-[5fr_7fr] items-start gap-[24px]">
               <div className="flex min-w-0 flex-col gap-[24px]">
                 <DetailTable title="기본 정보" rows={basicRows} />
                 <PasswordResetButton staff={staff} />
-                {/* 가장 최근 계약 1건. 근로계약서를 쓰면서 직원이 생기므로 계약 없음은 거의 나오지 않는다(2026-10-19 노영주) — 임시저장 계약을 지워도 보통 직원 레코드가 함께 지워진다 */}
-                <Box title="근로계약" manageHref={staff.contract ? `/contracts/${staff.contract.contractId}` : "/contracts"}>
-                  {staff.contract ? (
-                    <Suspense fallback={<ContractBoxLoading />}>
-                      <ContractBox contractId={staff.contract.contractId} />
-                    </Suspense>
-                  ) : (
-                    <BoxMessage>등록된 근로계약이 없습니다.</BoxMessage>
-                  )}
+                {/* 가장 최근 계약 1건 — 근로계약 영역 요약(api #183). 계약이 없으면 그 칸이 작성으로 넘긴다 */}
+                <Box
+                  title="근로계약"
+                  manage={
+                    <MenuManageLink
+                      menuCode={MENU_CODE.contracts}
+                      menuName="근로계약 관리"
+                      href={staff.contract ? `/contracts/${staff.contract.contractId}` : "/contracts"}
+                    />
+                  }
+                >
+                  <Suspense fallback={<AreaLoading />}>
+                    <ContractBox staffMemberId={staffMemberId} />
+                  </Suspense>
                 </Box>
               </div>
+              {/* 영역마다 따로 받는다 — 한 영역이 실패해도 그 영역에만 안내 · 다시 하기를 그리고 나머지는 그대로다 */}
               <div className="flex min-w-0 flex-col gap-[24px]">
-                {RIGHT_BOXES.map((box) => (
-                  <Box
-                    key={box.title}
-                    title={box.title}
-                    manageHref={box.manageHref}
-                    manage={box.title === "TO-DO" && box.manageHref ? <TodoManageLink href={box.manageHref} /> : undefined}
-                  >
-                    {box.title === "TO-DO" ? <StaffTodos todos={todos} statusLabels={todoStatusLabels} today={kstToday()} /> : <NotReady />}
-                  </Box>
-                ))}
+                <Box
+                  title="근무스케줄"
+                  tools={<WeekNav monday={monday} search={search} today={today} />}
+                  manage={
+                    <MenuManageLink
+                      menuCode={MENU_CODE.workSchedules}
+                      menuName="근무스케줄 관리"
+                      href={`/work-schedules?${new URLSearchParams({ store: String(staff.store.storeId), week: monday })}`}
+                    />
+                  }
+                >
+                  {/* 주를 바꾸면 이 영역만 다시 기다린다 */}
+                  <Suspense key={monday} fallback={<AreaLoading />}>
+                    <ScheduleBox staffMemberId={staffMemberId} weekStart={monday} />
+                  </Suspense>
+                </Box>
+                {/* 출퇴근 현황 api 는 아직 없다(api #183 「하지 않은 것」) */}
+                <Box title="출퇴근 현황">
+                  <NotReady />
+                </Box>
+                <Box title="급여명세서" manage={<MenuManageLink menuCode={MENU_CODE.payslips} menuName="급여명세서 관리" href="/payslips" />}>
+                  <Suspense fallback={<AreaLoading />}>
+                    <PayslipBox staffMemberId={staffMemberId} />
+                  </Suspense>
+                </Box>
+                <Box title="TO-DO" manage={<MenuManageLink menuCode={MENU_CODE.todos} menuName="TO-DO 리스트 관리" href="/todos" />}>
+                  {/* TO-DO 관리 조회 권한이 없으면 목록까지 영역 전체를 막는다(summary-boxes.tsx TodoBox) */}
+                  <Suspense fallback={<AreaLoading />}>
+                    <TodoBox staffMemberId={staffMemberId} />
+                  </Suspense>
+                </Box>
               </div>
             </div>
           </div>

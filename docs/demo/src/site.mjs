@@ -54,7 +54,7 @@ export const STORES = [
 export const USER = "정하윤 (BP 마스터)";
 
 // 헤더의 점포 범위 드롭다운 — 목업(F-TLJOCK)처럼 전체·직영·가맹 묶음 + 직영·가맹 점포 목록 + 이름 검색으로 그린다.
-// BP 변경 버튼은 넣지 않는다 — 실제로는 플랫폼 마스터·플랫폼 관리자에게만 있고, 이 데모는 BP 마스터(정하윤) 기준이다.
+// ERP 헤더에는 웨일ERP 바로가기의 BP 선택을 두지 않는다 — 실제로는 플랫폼 마스터·플랫폼 관리자에게만 열리고, 이 데모의 ERP 화면은 BP 마스터(정하윤) 기준이다.
 function scopeDropdown(A) {
   const id = ui.uid("scope");
   const dir = STORES.filter((s) => s[2] === "직영점포");
@@ -81,7 +81,8 @@ function scopeDropdown(A) {
     sect(`직영 ${dir.length}`, dir.map(storeOpt)) +
     sect(`가맹 ${fr.length}`, fr.map(storeOpt));
 
-  const search = `<div class="mb-[6px] flex items-center gap-[8px] border-b border-erp-divider px-[12px] pb-[8px]">${ui.img(A, "search.svg", 12, 12)}<input type="search" placeholder="점포 이름으로 찾기" aria-label="점포 찾기" class="min-w-0 flex-1 border-0 bg-transparent text-[13px] text-erp-ink outline-none placeholder:text-erp-label" data-scope-q-input></div>`;
+  // 검색 줄 높이는 목업(pop__search · 36.5px)에 맞춘다 — 위 6 · 아래 8 여백, 입력칸 줄 높이 1.5 + 위아래 1px
+  const search = `<div class="mb-[6px] flex items-center gap-[8px] border-b border-erp-divider px-[10px] pt-[6px] pb-[8px]">${ui.img(A, "search.svg", 14, 14)}<input type="search" placeholder="점포 이름으로 찾기" aria-label="점포 찾기" class="min-w-0 flex-1 border-0 bg-transparent px-[2px] py-[1px] text-[13px] leading-[1.5] text-erp-ink outline-none placeholder:text-erp-label" data-scope-q-input></div>`;
 
   const trigger = `<button type="button" aria-expanded="false" aria-controls="${id}" aria-label="점포: ${initial}" class="flex h-[42px] w-[420px] items-center gap-[8px] rounded-full border border-erp-field-line bg-erp-thead-bg px-[18px] text-left text-[14px] text-erp-ink"><b class="shrink-0 font-semibold">${BP.name}</b><span class="text-erp-label">·</span><span class="flex-1 truncate" data-scope-value>${initial}</span>${ui.img(A, "chevron-small-brand.svg", 5, 8, `transition-transform duration-200 ${ui.EASE_OUT} -rotate-90`)}</button>`;
 
@@ -102,12 +103,19 @@ const saveRow = (label, closeSave, toast) =>
 // tabPrefix: 탭 id 접두. closeSave: 저장 버튼이 패널을 닫을지(패널에서는 닫는다, 전체 화면에서는 그대로 머문다).
 export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = false } = {}) {
   const save = saveRow("저장", closeSave, "저장되었습니다.");
+  // 계정 정보는 FormGroup 의 기본 제목(배경 없음) 대신 DetailTable 제목 줄과 같은 회색 바를 쓴다
+  // (사용자 디자인 피드백, 2026-10-21). 본문 카드는 FormGroup 과 같은 토큰으로 직접 짠다.
+  // 아이콘을 넣어 봤지만 24px 로는 너무 작아 뺐다(사용자 지정, 2026-10-21).
+  // 글자 크기 · 굵기는 DetailTable 이 아니라 바로 아래 「기본정보」(FormGroup) 제목과 맞춘다(2026-10-21 피드백).
+  const accountInfo =
+    `<div class="w-full"><h3 class="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">계정 정보</h3>` +
+    `<div class="flex flex-col gap-[18px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white px-[16px] py-[20px]">` +
+    ui.formRow(ui.readonlyField("아이디", "hangang01", true), ui.readonlyField("사용자 권한", "BP 마스터", true)) +
+    `<hr class="border-erp-divider">` +
+    ui.formRow(ui.readonlyField("최근 로그인", "2026-09-22 09:12", true), ui.readonlyField("가입일", "2026-03-04", true)) +
+    `</div></div>`;
   const basic =
-    ui.formGroup(
-      "계정 정보",
-      ui.formRow(ui.field("아이디", ui.textField({ value: "hangang01", disabled: true })), ui.field("사용자 권한", ui.textField({ value: "BP 마스터", disabled: true }))),
-      ui.formRow(ui.field("가입일", ui.textField({ value: "2026-03-04", disabled: true })), ui.field("최근 로그인 일시", ui.textField({ value: "2026-09-22 09:12", disabled: true }))),
-    ) +
+    accountInfo +
     ui.formGroup(
       "기본정보",
       ui.field(f.req("이름"), ui.textField({ value: "정하윤", maxlength: 20, placeholder: "한글 또는 영문 2~20자" })),
@@ -303,7 +311,7 @@ export function erpHeader(A, R) {
 
 export const link = to;
 
-// 플랫폼 콘솔(목업 Platform). 상단 선택칸은 BP 를 고른다(1팀 공통정책 2번의 BP 변경).
+// 플랫폼 콘솔(목업 Platform). BP 는 서비스 바로가기 「웨일ERP」의 BP 선택 확인창으로 골라 새 탭으로 연다(F-TLJOCK).
 const PLATFORM_MENUS = [
   ["회원관리", [["회원 정보 관리"]]],
   ["BP 마스터 계정 관리", [["BP 마스터 계정 목록", "bp/index.html"]]],
@@ -332,40 +340,39 @@ const PLATFORM_MENUS = [
     ],
   ],
 ];
-const BPS = ["BP 선택", `${BP.name} · ${BP.code}`, "㈜모리푸드 · BP000021", "㈜온기에프앤비 · BP000009"];
 export const PLATFORM_USER = "김지영 (플랫폼 관리자)";
 export const PLATFORM_MASTER = "김서연 (플랫폼 마스터)"; // system/admins 목록의 platkim
 
-// 플랫폼 콘솔에서 "웨일ERP" 바로가기를 누르면 여는 "BP 및 점포 선택" 확인창(F-TLJOCK) — 어떤 BP·점포 범위로 ERP 콘솔에
-// 들어갈지 고른다. 이 데모는 점포 목록을 ㈜한강상회(BP) 것만 갖고 있어 그 BP 기준으로 그린다.
+// 플랫폼 콘솔에서 "웨일ERP" 바로가기를 누르면 여는 "BP 선택" 확인창(F-TLJOCK, 앱 bp-select-dialog.tsx) — 어떤 BP 의 웨일ERP 를 새 탭으로 열지 고른다.
+// 상호 · BP코드로 찾고([검색] 또는 Enter, 1쪽으로) 10건씩 넘긴다. 줄을 눌러도 고르고, 쪽을 넘기거나 검색하면 고른 것을 비운다. 고르기 전에는 [이동]이 막혀 있다.
+// 점포는 고르지 않는다 — 고른 BP 의 전체 점포로 열고, 범위는 ERP 헤더의 점포 선택 드롭다운에서 바꾼다(2026-10-20 재영). 거르기 · 쪽 넘김은 erp.js.
+// 줄: BP코드 · 상호 · 상태. BP 마스터 계정 목록(bp/index)의 BP 에 예시 BP 를 더해 2쪽이 생기게 했다. 플랫폼 탭의 지금 BP 는 플랫폼 BP 라 「(현재)」 줄이 없다.
+const PLATFORM_BPS = [
+  ["BP000003", "모리커피 본사", "사용"],
+  ["BP000008", "국밥24", "탈퇴"],
+  ["BP000010", "카페눈", "사용"],
+  ["BP000012", "솥밥상회", "미사용"],
+  ["BP000017", "㈜한강상회", "사용"],
+  ["BP000021", "㈜바다푸드", "사용"],
+  ["BP000030", "브레드랩", "사용"],
+  ["BP000031", "브레드랩 2호", "사용"],
+  ["BP000032", "하루국수", "미사용"],
+  ["BP000033", "㈜청솔푸드", "사용"],
+  ["BP000034", "소금빵공방", "사용"],
+  ["BP000035", "㈜온기에프앤비", "사용"],
+];
 function platformScopeDialog(A, R, id) {
-  const dir = STORES.filter((s) => s[2] === "직영점포");
-  const fr = STORES.filter((s) => s[2] === "가맹점포");
-
-  const groupCheck = (type) =>
-    `<span role="checkbox" tabindex="0" aria-checked="false" aria-label="${type} 전체" data-scope-group="${type}" class="relative grid size-[20px] shrink-0 place-items-center rounded-[2px] border border-erp-field-line bg-white"><img alt="" width="12" height="9" class="hidden" data-group-check src="${A}icons/check.svg"><span class="hidden h-[2px] w-[10px] bg-erp-brand" data-group-mixed></span></span>`;
-  const storeRow = (s) =>
-    `<label class="flex items-center gap-[10px] rounded-[8px] px-[12px] py-[8px] hover:bg-erp-thead-bg" data-scope-q="${s[1]} ${s[0]}">${ui.checkbox(
-      A,
-      "",
-      false,
-      { "data-scope-pick": "", "data-scope-type": s[2], "data-scope-name": s[1], "aria-label": s[1] },
-    )}<span class="flex-1 truncate text-[13px] text-erp-ink">${s[1]}</span><span class="text-[11.5px] text-erp-muted">${s[0]}</span></label>`;
-  const group = (type, items) =>
-    items.length
-      ? `<div class="flex flex-col gap-[1px]" data-scope-sect><div class="flex items-center gap-[10px] px-[12px] py-[8px]">${groupCheck(type)}<b class="flex-1 text-[13px] font-semibold text-erp-ink">${type}</b><span class="text-[11.5px] text-erp-muted">${items.length}개점</span></div>${items.map(storeRow).join("")}</div>`
-      : "";
-
+  const columns = [{ header: "BP코드", width: "w-[110px]" }, { header: "상호", align: "left" }, { header: "상태", width: "w-[80px]" }];
+  const rows = PLATFORM_BPS.map(([code, name, status]) => [code, ui.radio(name, `${id}-bp`, false, { "data-bp-code": code, "data-bp-name": name }), status]);
+  const table = ui.dataTable(columns, rows).replace("</tbody>", `${ui.tableEmptyRow(columns).replace("<tr ", "<tr hidden data-bp-none ")}</tbody>`);
   const body =
-    ui.field("BP", `<div class="w-full">${ui.select([`${BP.name} · ${BP.code}`, "㈜모리푸드 · BP000021", "㈜온기에프앤비 · BP000009"], { "aria-label": "BP" })}</div>`) +
-    `<div class="mt-[12px] flex items-center gap-[8px] border-b border-erp-divider pb-[8px]">${ui.img(A, "search.svg", 12, 12)}<input type="search" placeholder="점포 이름으로 찾기" aria-label="점포 찾기" class="min-w-0 flex-1 border-0 bg-transparent text-[13px] text-erp-ink outline-none placeholder:text-erp-label" data-scope-q-input></div>` +
-    `<div class="mt-[6px] max-h-[280px] overflow-y-auto" data-scope-list>${group("직영점포", dir)}${group("가맹점포", fr)}<p class="hidden px-[12px] py-[14px] text-center text-[13px] text-erp-label" data-scope-none>맞는 점포가 없습니다.</p></div>` +
-    `<p class="mt-[12px] text-[13px] text-erp-label" data-scope-summary>선택 안 함 · 적용하면 전체 ${STORES.length}개점을 봅니다</p>`;
+    `<div class="flex flex-col gap-[12px]"><p>고른 BP 의 웨일ERP 가 새 탭으로 열립니다.</p>${ui.searchField(A, { placeholder: "상호 또는 BP코드", label: "BP 찾기" })}` +
+    `<div class="max-h-[506px] overflow-y-auto [&_tbody_tr]:cursor-pointer [&_tbody_tr:has(:checked)]:bg-erp-thead-bg" data-bp-table>${table}</div>${ui.pagination(A, 1, Math.ceil(PLATFORM_BPS.length / 10), 5)}</div>`;
 
-  return `<dialog id="${id}" data-scope-popup aria-labelledby="${id}-t" class="m-auto w-[420px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"><h2 id="${id}-t" class="text-[18px] font-semibold">BP 및 점포 선택</h2><div class="mt-[12px] text-[14px] leading-[1.6] text-erp-ink">${body}</div><div class="mt-[24px] flex justify-end gap-[6px]">${ui.button(
+  return `<dialog id="${id}" data-scope-popup data-scope-all="전체 ${STORES.length}개점" aria-labelledby="${id}-t" class="m-auto w-[480px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"><h2 id="${id}-t" class="text-[18px] font-semibold">BP 선택</h2><div class="mt-[12px] text-[14px] leading-[1.6] text-erp-ink">${body}</div><div class="mt-[24px] flex justify-end gap-[6px]">${ui.button(
     "취소",
     { variant: "off", "data-close": true },
-  )}${ui.button("적용", { "data-scope-apply": to(R, "home/signed-in.html") })}</div></dialog>`;
+  )}${ui.button("이동", { "data-scope-apply": to(R, "home/signed-in.html"), disabled: true }).replace('class="', 'class="disabled:pointer-events-none disabled:opacity-40 ')}</div></dialog>`;
 }
 
 // master: true 면 플랫폼 마스터로 로그인한 헤더(마스터 기준 화면용).
@@ -382,7 +389,8 @@ export function platformHeader(A, R, { master = false } = {}) {
     ui.globalHeader(
       A,
       menus,
-      ui.storeSelect(A, BPS, BPS[0], "BP") +
+      // 플랫폼 콘솔에는 BP 선택 드롭다운을 두지 않는다 — BP 는 서비스 바로가기 「웨일ERP」로 고른다(2026-10-19 재영). 빈 칸이 오른쪽 컨트롤을 민다.
+      `<div class="flex-1"></div>` +
         ui.serviceLinks(A, { erp: to(R, "home/signed-in.html"), platform: to(R, "bp/index.html"), scopeDialog: scopeId }) +
         ui.alarmLink(A, "#") +
         ui.userPop(A, master ? PLATFORM_MASTER : PLATFORM_USER, user),

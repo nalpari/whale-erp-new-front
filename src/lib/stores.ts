@@ -65,12 +65,6 @@ export async function getStoresExcel(query: Omit<StoreListQuery, "page" | "pageS
   return requestRaw(`/stores/excel?${conditionParams(query)}`, await json("GET"));
 }
 
-/** GET /stores?keyword= — 필터의 점포 고르기 자동완성. 상태와 상관없이(폐점 포함) 점포명 · 점포코드로 찾는다. */
-export async function searchStores(keyword: string): Promise<StoreList> {
-  const params = new URLSearchParams({ page: "1", pageSize: "20", keyword, statuses: "NOT_OPERATING,OPERATING,CLOSED" });
-  return request(`/stores?${params}`, await json("GET"));
-}
-
 /** GET /stores/:id — 없거나 범위 밖 · 지운 점포는 404 */
 export async function getStore(id: number): Promise<StoreDetail> {
   return request(`/stores/${id}`, await json("GET"));

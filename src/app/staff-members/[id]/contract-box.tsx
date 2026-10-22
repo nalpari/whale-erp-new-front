@@ -1,64 +1,41 @@
-import { unstable_rethrow } from "next/navigation";
-import { ApiError, authHeaders, getEnum, request } from "@/lib/api";
-import { labelOf, type EnumValue } from "@/lib/enums";
-import { kstToday } from "@/lib/staff-members";
+import { Button } from "@/components/common";
+import { labelOf } from "@/lib/enums";
+import { getStaffMemberContractSummary } from "@/lib/staff-members-api";
 import { StatusBadge } from "../../contracts/columns";
-import { contractFailureOf, contractSummaryTexts, labelsOrNull, type ContractDetail } from "./contract-summary";
-import { BoxMessage } from "./detail-box";
-import { RetryButton } from "./retry-button";
-
-/** 「근로계약」 칸이 계약을 받는 동안. 기본 정보는 먼저 그려지고 이 칸만 기다린다. */
-export function ContractBoxLoading() {
-  return <BoxMessage>불러오는 중입니다.</BoxMessage>;
-}
-
-// enum 한글. 받지 못했거나 응답에 그 enum 이 빠져 비었어도 칸은 그린다 — 그 값만 「-」가 되고 원인은 서버 로그에 남긴다
-// (빈 목록은 getEnum 이 남긴다). 이메일 칸의 가입 상태와 같다.
-async function loadLabels(name: "ContractStatus" | "EmploymentType"): Promise<EnumValue[] | null> {
-  try {
-    return labelsOrNull(await getEnum(name));
-  } catch (error) {
-    unstable_rethrow(error);
-    console.error(`직원 상세 근로계약 칸: GET /enums/${name} 를 받지 못했습니다`, error);
-    return null;
-  }
-}
+import { ContractMenuPermission } from "../../contracts/contract-permission";
+import { contractSummaryTexts } from "./contract-summary";
+import { AreaFailure, BoxMessage } from "./detail-box";
+import { loadArea, loadLabels } from "./summary-load";
 
 /**
- * 직원 상세의 「근로계약」 칸(WHALEERP-184). 직원 상세 응답의 가장 최근 계약(contract)으로 계약 상세(GET /contracts/:id)를 한 번 더
- * 받는다. 못 받으면 이 칸만 안내를 그리고 throw 하지 않는다 — 기본 정보 · 다른 칸은 그대로 둔다.
+ * 직원 상세의 「근로계약」 칸(WHALEERP-184). 근로계약 영역 요약(GET /staff-members/:id/summary/contracts, api #183)으로 가장 최근
+ * 계약 하나를 받는다. 이 경로는 근로계약 관리 조회 권한도 보므로, 그 권한이 없으면 403 「조회 권한이 없습니다.」라 이 칸만 안내한다
+ * (front #79 와 같은 자리). 못 받으면 이 칸만 안내를 그리고 throw 하지 않는다 — 기본 정보 · 다른 칸은 그대로 둔다.
  */
-export async function ContractBox({ contractId }: { contractId: number }) {
-  const headers = await authHeaders();
+export async function ContractBox({ staffMemberId }: { staffMemberId: number }) {
   const [result, statuses, employmentTypes] = await Promise.all([
-    request<ContractDetail>(`/contracts/${contractId}`, { headers }).then(
-      (contract) => ({ contract }),
-      (error: unknown) => ({ error }),
-    ),
+    loadArea("근로계약 칸", () => getStaffMemberContractSummary(staffMemberId)),
     loadLabels("ContractStatus"),
     loadLabels("EmploymentType"),
   ]);
+  if (result.kind !== "ok") return <AreaFailure kind={result.kind} subject="근로계약을" />;
 
-  if ("error" in result) {
-    const { error } = result;
-    unstable_rethrow(error);
-    const status = error instanceof ApiError ? error.status : null;
-    if (contractFailureOf(status) === "forbidden") {
-      // 화면은 권한 안내만 — 지금 api 는 메뉴 권한 검사가 없어 403 이 오면 다른 까닭이라 흔적을 남긴다
-      console.warn(`직원 상세 근로계약 칸: GET /contracts/${contractId} 403`, error);
-      return <BoxMessage>근로계약을 볼 권한이 없습니다.</BoxMessage>;
-    }
-    console.error(`직원 상세 근로계약 칸: GET /contracts/${contractId} 를 받지 못했습니다 (status ${status ?? "연결 실패"})`, error);
+  const c = result.data.contract;
+  // 근로계약서를 쓰면서 직원이 생기므로 계약 없음은 거의 나오지 않는다(2026-10-19 노영주). 나오면 작성으로 넘긴다 —
+  // 버튼은 근로계약 관리 등록 권한이 있을 때만(front #57 규칙: 다른 메뉴는 useMenuRole)
+  if (!c)
     return (
-      <BoxMessage alert>
-        근로계약을 불러오지 못했습니다.
-        <RetryButton />
+      <BoxMessage>
+        등록된 근로계약이 없습니다.
+        <ContractMenuPermission action="create">
+          <Button href="/contracts/new">
+            근로계약서 작성
+          </Button>
+        </ContractMenuPermission>
       </BoxMessage>
     );
-  }
 
-  const c = result.contract;
-  const texts = contractSummaryTexts(c, employmentTypes ? labelOf(employmentTypes, c.employmentType) : null, kstToday());
+  const texts = contractSummaryTexts(c, c.employmentType && employmentTypes ? labelOf(employmentTypes, c.employmentType) : null);
   const statusCell = c.status && statuses ? <StatusBadge status={c.status} label={labelOf(statuses, c.status)} /> : "-";
   const rows = [
     { label: "계약 유형", value: texts.type },
@@ -68,7 +45,7 @@ export async function ContractBox({ contractId }: { contractId: number }) {
     { label: "갱신 예정일", value: texts.renewal },
   ];
 
-  // 제목 줄은 Box 가 그려 DetailTable 을 쓰지 않는다. 줄 모양은 DetailTable 의 줄을 옮겨 왔다 — 라벨 180 고정, 줄 46.
+  // 제목 줄은 Box 가 그려 DetailTable 을 쓰지 않는다. 줄 모양은 DetailTable 의 줄을 옮겨 왔다 — 라벨 110 고정, 줄 46.
   // DetailTable 의 줄 모양을 고치면 여기도 같이 고친다(공통 컴포넌트는 1팀과 맞춰 고치므로 줄만 따로 내보내지 않았다).
   return (
     <>
@@ -78,7 +55,7 @@ export async function ContractBox({ contractId }: { contractId: number }) {
           return (
             <div key={label} className="flex w-full">
               <dt
-                className={`flex h-[46px] w-[180px] shrink-0 items-center truncate border-b border-l border-erp-thead-line bg-white p-[12px] text-[14px] font-medium text-erp-label ${
+                className={`flex h-[46px] w-[110px] shrink-0 items-center truncate border-b border-l border-erp-thead-line bg-white p-[12px] text-[14px] font-medium text-erp-label ${
                   last ? "rounded-bl-[2px]" : ""
                 }`}
               >

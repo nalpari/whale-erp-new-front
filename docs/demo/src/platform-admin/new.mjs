@@ -18,8 +18,9 @@ const tel = (a, b, c) =>
 const BLANK = `<div class="min-w-px flex-1"></div>`;
 const stack = (...c) => `<div class="flex flex-col gap-[8px]">${c.join("")}</div>`;
 // 주소: 검색칸(치는 대로 바로 아래 층에 결과 — 앱 address-field.tsx, [주소 검색] 버튼 없음) / 우편번호·기본주소(검색 결과로만 채움) + [지우기] / 상세주소(주소를 고른 뒤에만 적는다) — 2026-10-13 앱 반영
+// 우편번호는 검색으로만 채워지는 숫자 5자리라 좁게 둔다 — 넓게 두면 옆 기본주소 칸이 너무 좁아진다(2026-10-20 디자인 수정, 앱 address-field.tsx 와 같다).
 const address = (A, zip, base, detail) =>
-  `<div class="flex flex-col gap-[8px]" data-addr-live><span class="text-[14px] font-medium text-erp-label">주소</span><div class="relative" data-addr-box>${ui.searchField(A, { placeholder: "도로명, 건물명, 지번으로 검색", label: "주소 검색어" })}</div><div class="flex gap-[6px]"><div class="w-[120px] shrink-0">${ui.textField({ value: zip, readonly: true, placeholder: "우편번호", "aria-label": "우편번호" })}</div>${ui.textField({ value: base, readonly: true, placeholder: "검색해서 고르면 채워집니다", "aria-label": "기본주소" })}<span data-addr-clear${zip ? "" : " hidden"}>${ui.button("지우기", { variant: "off" })}</span></div>${ui.textField(base ? { value: detail, maxlength: 100, placeholder: "상세주소", "aria-label": "상세주소" } : { value: detail, maxlength: 100, placeholder: "주소를 검색해 고른 뒤 적습니다", "aria-label": "상세주소", disabled: true })}</div>`;
+  `<div class="flex flex-col gap-[8px]" data-addr-live><span class="text-[14px] font-medium text-erp-label">주소</span><div class="relative" data-addr-box>${ui.searchField(A, { placeholder: "도로명, 건물명, 지번으로 검색", label: "주소 검색어" })}</div><div class="flex gap-[6px]"><div class="w-[80px] shrink-0">${ui.textField({ value: zip, readonly: true, placeholder: "우편번호", "aria-label": "우편번호" })}</div>${ui.textField({ value: base, readonly: true, placeholder: "검색해서 고르면 채워집니다", "aria-label": "기본주소" })}<span data-addr-clear${zip ? "" : " hidden"}>${ui.button("지우기", { variant: "off" })}</span></div>${ui.textField(base ? { value: detail, maxlength: 100, placeholder: "상세주소", "aria-label": "상세주소" } : { value: detail, maxlength: 100, placeholder: "주소를 검색해 고른 뒤 적습니다", "aria-label": "상세주소", disabled: true })}</div>`;
 
 function platformAdminNewBody(A) {
   // 패널(464px)이라 두 칸 줄을 한 칸씩 세로로 쌓는다
@@ -37,7 +38,7 @@ function platformAdminNewBody(A) {
           `<p data-dup-message hidden></p>`,
         ),
       ),
-      ui.field(req("이름"), ui.textField({ value: "윤채원", maxlength: 20, placeholder: "한글 또는 영문 2~20자" })),
+      ui.field(req("이름"), ui.textField({ value: "윤채원", maxlength: 20, placeholder: "한글 또는 영문 2~20자로 입력해 주세요." })),
     ),
     row(
       ui.field(req("연락처"), tel("010", "9013", "5528")),
@@ -51,7 +52,7 @@ function platformAdminNewBody(A) {
       ),
     ),
     row(
-      ui.field("소속 부서", stack(ui.textField({ value: "플랫폼운영팀", maxlength: 30 }))),
+      ui.field("소속부서", stack(ui.textField({ value: "플랫폼운영팀", maxlength: 30 }))),
       ui.field("직책", stack(ui.textField({ value: "사원", maxlength: 30 }))),
     ),
     address(A, "13529", "경기 성남시 분당구 판교역로 166", "7층"),
@@ -72,7 +73,7 @@ function platformAdminNewBody(A) {
 
   // 저장하면 등록 패널을 닫고 상세 패널을 연다
   const buttons = `<div class="flex justify-center gap-[6px]">${ui.button("취소", { variant: "off", "data-close": true })}${ui.button("저장", { "data-save-panel": "platform-admin-detail-panel" })}</div>`;
-  return basic + role + note("초기 비밀번호를 등록 이메일로 발송합니다.") + buttons;
+  return basic + role + note("관리자 계정의 초기 비밀번호는 등록된 이메일로 발송됩니다.") + buttons;
 }
 
 export const platformAdminNewPanel = (A, R) =>

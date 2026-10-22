@@ -1,13 +1,20 @@
 // node --test src/lib/format.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { formatDateTime, formatPhone } from "./format.ts";
+import { formatDate, formatDateTime, formatPhone } from "./format.ts";
 
 test("일시는 한국 시간으로 분까지", () => {
   assert.equal(formatDateTime("2026-10-13T00:05:00.000Z"), "2026-10-13 09:05");
   assert.equal(formatDateTime("2026-10-12T15:30:59Z"), "2026-10-13 00:30");
   assert.equal(formatDateTime(null), "");
   assert.equal(formatDateTime("깨진 값"), "");
+});
+
+test("날짜만 — 한국 시간으로 날짜가 넘어가는 경계도 맞춘다", () => {
+  assert.equal(formatDate("2026-10-13T00:05:00.000Z"), "2026-10-13");
+  assert.equal(formatDate("2026-10-12T15:30:59Z"), "2026-10-13"); // UTC 로는 12일, 한국 시간으로는 13일
+  assert.equal(formatDate(null), "");
+  assert.equal(formatDate("깨진 값"), "");
 });
 
 test("전화번호에 하이픈을 넣는다", () => {

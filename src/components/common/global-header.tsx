@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, type ReactNode, type SyntheticEvent } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, type MouseEvent, type ReactNode, type SyntheticEvent } from "react";
 import { useDismiss } from "./popup";
 import { EASE_OUT } from "./theme";
 
@@ -75,9 +76,9 @@ function SubMenu({
   );
 }
 
-function Logo() {
+function Logo({ href = "/", onClick }: { href?: string; onClick?: (e: MouseEvent<HTMLAnchorElement>) => void }) {
   return (
-    <Link href="/" className="flex w-[177px] shrink-0 items-center gap-[10px]">
+    <Link href={href} onClick={onClick} className="flex w-[177px] shrink-0 items-center gap-[10px]">
       <Image src="/icons/logo-whale.svg" alt="" width={53} height={40} />
       <p className="leading-[1.3] text-[#252525]">
         <span className="block text-[16px] font-extrabold uppercase">Whale ERP</span>
@@ -98,31 +99,50 @@ function Tip({ label }: { label: string }) {
   );
 }
 
-// size- 와 w- 를 같이 쓰면 둘 다 width 를 정해 어느 쪽이 이길지 보장되지 않는다. 높이만 여기서 정하고 폭은 링크마다 준다.
+// size- 와 w- 를 같이 쓰면 둘 다 width 를 정해 어느 쪽이 이길지 보장되지 않는다. 높이만 여기서 정하고 폭은 바로가기마다 준다.
 const ICON_HOVER = "group relative grid h-[32px] place-items-center rounded-full [&>img]:transition-opacity [&>img]:duration-150 hover:[&>img]:opacity-70 [&>span:first-child]:transition-opacity hover:[&>span:first-child]:opacity-70";
 
+/** 바로가기 하나가 할 일 — 주소면 링크, 함수면 버튼(팝업을 열거나 전체 로드로 옮길 때). */
+type ServiceTarget = string | (() => void);
+
+// 링크와 버튼이 같은 모양 · 같은 툴팁을 쓰게 한다.
+function ServiceLink({ target, label, className, children }: { target?: ServiceTarget; label: string; className: string; children: ReactNode }) {
+  const body = (
+    <>
+      {children}
+      <Tip label={label} />
+    </>
+  );
+  return typeof target === "function" ? (
+    <button type="button" onClick={target} aria-label={label} className={className}>
+      {body}
+    </button>
+  ) : (
+    <Link href={target ?? "#"} aria-label={label} className={className}>
+      {body}
+    </Link>
+  );
+}
+
 // Figma Top2 의 서비스 바로가기. 둥근 테두리 안에 세 아이콘을 두고, 올리면 이름 툴팁이 뜬다.
-export function ServiceLinks({ hrefs = {} }: { hrefs?: { erp?: string; addon?: string; platform?: string } }) {
+export function ServiceLinks({ targets = {} }: { targets?: { erp?: ServiceTarget; addon?: ServiceTarget; platform?: ServiceTarget } }) {
   return (
     <div className="flex h-[42px] shrink-0 items-center gap-[18px] rounded-full border border-erp-field-line bg-white px-[24px]">
       <span className="text-[15px] font-medium whitespace-nowrap text-erp-ink">서비스 바로가기</span>
       <div className="flex items-center gap-[12px]">
-        <Link href={hrefs.erp ?? "#"} aria-label="웨일ERP" className={`${ICON_HOVER} w-[32px]`}>
+        <ServiceLink target={targets.erp} label="웨일ERP" className={`${ICON_HOVER} w-[32px]`}>
           <Image src="/icons/service-erp.svg" alt="" width={32} height={32} />
-          <Tip label="웨일ERP" />
-        </Link>
-        <Link href={hrefs.addon ?? "#"} aria-label="부가서비스 현황" className={`${ICON_HOVER} w-[32px] bg-white`}>
+        </ServiceLink>
+        <ServiceLink target={targets.addon} label="부가서비스 현황" className={`${ICON_HOVER} w-[32px] bg-white`}>
           <Image src="/icons/service-chat.svg" alt="" width={19} height={19} />
-          <Tip label="부가서비스 현황" />
-        </Link>
-        <Link href={hrefs.platform ?? "#"} aria-label="플랫폼관리" className={`${ICON_HOVER} w-[14px]`}>
-          <span className="grid grid-cols-3 gap-[2.5px]">
-            {Array.from({ length: 9 }, (_, i) => (
-              <Image key={i} src="/icons/dot.svg" alt="" width={3} height={3} />
-            ))}
-          </span>
-          <Tip label="플랫폼관리" />
-        </Link>
+        </ServiceLink>
+        {/* 플랫폼관리는 톱니바퀴(데모 service-platform.svg, 2026-10-20). 아홉 점 아이콘에서 바꿨다.
+            플랫폼 계정에게만 보인다 — BP·가맹 계정은 자리 자체를 없앤다(사용자 지적, 2026-10-21). */}
+        {targets.platform && (
+          <ServiceLink target={targets.platform} label="플랫폼관리" className={`${ICON_HOVER} w-[20px] bg-white`}>
+            <Image src="/icons/service-platform.svg" alt="" width={20} height={20} />
+          </ServiceLink>
+        )}
       </div>
     </div>
   );
@@ -141,13 +161,36 @@ export function AlarmLink({ href }: { href: string }) {
 // Figma Top2. 흰 윗줄(로고 + 오른쪽 컨트롤), 짙은 1depth 메뉴 줄, 그 아래 펼쳐지는 2depth 줄.
 // right 에는 StoreSelect, ServiceLinks, AlarmLink(또는 알림 종 슬롯), UserPop 을 차례로 넣는다. 선택기가 없으면 빈 flex-1 로 자리를 채운다.
 // StoreSelect 가 남는 폭을 차지해 나머지를 오른쪽으로 민다.
-export function GlobalHeader({ menus, right }: { menus: HeaderMenu[]; right?: ReactNode }) {
+export function GlobalHeader({
+  menus,
+  right,
+  inert,
+  logoHref,
+}: {
+  menus: HeaderMenu[];
+  right?: ReactNode;
+  /** 바탕창이 뜬 동안 헤더를 Tab 에서 뺀다 — 바탕창은 클릭만 가로채 포커스를 가두지 않는다(AdminFrame, 코드 리뷰, 2026-10-20) */
+  inert?: boolean;
+  /** 로고가 갈 주소 — 없으면 "/"(로그인 전 공개 홈, /design 화면 등). 로그인 뒤 화면은 이 탭 서비스의 홈을
+   * 준다(AdminHeader) — 이미 그 홈이면 새로고침한다(router.refresh), 로고가 로그인 전 공개 홈으로 가버리던
+   * 문제를 고친다(사용자 지적, 2026-10-21). */
+  logoHref?: string;
+}) {
   const { ref, ...state } = useHeaderMenu();
+  const pathname = usePathname();
+  const router = useRouter();
+  const handleLogoClick = logoHref
+    ? (e: MouseEvent<HTMLAnchorElement>) => {
+        if (pathname !== logoHref) return;
+        e.preventDefault();
+        router.refresh();
+      }
+    : undefined;
 
   return (
-    <header ref={ref} className="bg-white">
+    <header ref={ref} inert={inert} className="bg-white">
       <div className="flex h-[70px] items-center gap-[34px] px-[24px]">
-        <Logo />
+        <Logo href={logoHref} onClick={handleLogoClick} />
         {right && <div className="flex flex-1 items-center gap-[12px]">{right}</div>}
       </div>
       <nav className="flex h-[52px] items-center gap-[54px] bg-erp-nav px-[24px]">

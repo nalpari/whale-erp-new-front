@@ -99,25 +99,6 @@ export function WhoList({ rows }: { rows: [string, ReactNode][] }) {
   );
 }
 
-/** 사용자 권한 꼬리표 앞 방패 — 데모 상세와 같은 선(public/icons 에 없다). */
-export function ShieldIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="mr-[4px] inline-block size-[12px] align-[-1px]"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M12 3.1 20 6v6.1c0 4.5-3.4 7.9-8 8.9-4.6-1-8-4.4-8-8.9V6z" />
-      <path d="m8.9 12.1 2.1 2.1 4.1-4.2" />
-    </svg>
-  );
-}
-
 /** 막힌 버튼의 이유 안내. 막힌 버튼은 호버를 받지 않으므로(Button 의 disabled:pointer-events-none) 감싸는 칸에 단다. */
 export function Blocked({ reason, children }: { reason?: string; children: ReactNode }) {
   return (
