@@ -1,6 +1,11 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 상세 패널이 닫히면(브라우저 뒤로 가기 등) 비밀번호 초기화 · 삭제 확인창과 변경이력 팝업도 닫는다(사용자 요청). 네이티브 `<dialog>` 라 패널과 함께 밀려 나가지 않고 남아 있었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 화면에서 바탕을 누르면 열린 패널(등록 · 상세 · 수정)을 모두 닫고 목록으로 간다(사용자 요청 — 한 단계씩 닫혀 뒤로 가기처럼 보였다). 공통 `SlidePanel` 에 바탕 클릭 전용 `onBackdropClose`(선택, 없으면 `onClose`)를 더했다 — 다른 화면은 그대로다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [플랫폼 시스템 관리](/system.md) — 플랫폼 관리자 수정 패널을 주소 `?edit=1`(상세 `?admin=` 이 있을 때만)로 열게 했다(`admins-href.ts` · `admins-screen.tsx`, 사용자 요청). 브라우저 뒤로 가기가 수정 → 상세 → 목록 순으로 접히고 새로 고쳐도 수정 패널이 남는다. 이 화면에서 연 수정은 닫을 때 뒤로 가 기록을 걷는다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 등록 패널도 상세 · 수정처럼 바탕창을 깔고 바탕 클릭으로 닫히게 했다(`admin-form-panel.tsx` 의 `closeOnBackdrop`, 사용자 요청 · 데모와 같다). 공통 `SlidePanel` 은 그대로다. 등록 중에는 목록이 막혀 상세를 겹쳐 열 수 없고, 바깥을 잘못 누르면 입력이 사라진다.
+* **Update**: [플랫폼 시스템 관리](/system.md) — 화면 표의 플랫폼 관리자 상세 · 등록 · 수정 주소를 구현(`src/app/platform-admins/admins-href.ts`)에 맞췄다. 목업 1차의 `/platform-admins/:아이디` · `/new` · `/:아이디/edit` 가 남아 있어 따로 주소가 있는 화면으로 읽혔다 — 실제는 슬라이드 패널이고 상세만 `?admin={adminAccountId}` 로 남긴다(2026-10-08 데모 결정).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 권한 메뉴 등록 팝업의 머리칸 · 묶음 칸이 일부만 켜졌으면 「–」로 보인다(S-KUDELB, 공용 `Checkbox` 에 `indeterminate`). BP 권한 그룹에서 그 쪽의 마지막 한 건을 지우면 앞쪽으로 간다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 권한 그룹의 손으로 적은 타입을 생성 타입 별칭으로 바꿨다. BP 메뉴 트리의 권한 유형이 `BA` · `FA` · `FM` 이라 플랫폼 트리 타입과 맞지 않던 것을 고쳐, 공용 메뉴 팝업이 두 트리를 함께 받는다. api #94 머지로 헤더 판정이 main 에 들어간 것도 반영했다.
 * **Update**: [근무스케줄 관리 화면 (구현)](/screens/work-schedules.md) — 지난 주 복사 미리보기(#204): 빈 주에서만 켜지는 「지난 주 복사」, 직원별 지난 주 · 이번 주 · 처리(복사 · 일부 제외 · 제외 사유 · 지난 주 없음), 「n명 복사」. 폐점 점포는 끈다.
