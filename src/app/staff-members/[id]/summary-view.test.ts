@@ -1,21 +1,25 @@
 // pnpm test 로 함께 돈다. 이 파일만: node --test "src/**/summary-view.test.ts" — 경로의 [id] 를 node 가 glob 으로 읽어 그대로 적으면 찾지 못한다
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { endLabel } from "../../work-schedules/work-schedule-view.ts";
 import {
   AREA_READ_DENIED_MESSAGE,
   areaFailureOf,
   isAreaForbidden,
-  hoursText,
   isPayslipSummaryEmpty,
-  mondayOf,
+  parseScheduleQuery,
   payPeriodText,
   payslipRows,
-  shiftDate,
+  SCHEDULE_PERIOD_LABELS,
+  STAFF_WORK_SCHEDULE_PERIODS,
+  scheduleEmptyText,
+  scheduleHref,
+  schedulePageCount,
+  scheduleTotalLabel,
+  hoursText,
   todoFootText,
   todoHistoryText,
-  weekRangeText,
-  weekHref,
-  weekStartParam,
+  withScheduleFilter,
   workDateText,
   type PayslipSummaryItem,
 } from "./summary-view.ts";
@@ -40,36 +44,74 @@ test("403 이 아니면 문구가 같아도 오류다", () => {
   assert.equal(areaFailureOf(null, null), "error");
 });
 
-test("주소의 weekStart 는 실제 날짜일 때만 받는다", () => {
-  assert.equal(weekStartParam("2026-10-21"), "2026-10-21");
-  assert.equal(weekStartParam("2026-02-30"), null);
-  assert.equal(weekStartParam("2026-1-5"), null);
-  assert.equal(weekStartParam("abc"), null);
-  assert.equal(weekStartParam(undefined), null);
-  assert.equal(weekStartParam(["2026-10-21", "2026-10-28"]), null);
-  // 연도는 1900~2999 — 9999 년의 다음 주는 다섯 자리 연도라 링크가 깨진다
-  assert.equal(weekStartParam("1900-01-01"), "1900-01-01");
-  assert.equal(weekStartParam("2999-12-31"), "2999-12-31");
-  assert.equal(weekStartParam("0001-01-01"), null);
-  assert.equal(weekStartParam("9999-12-27"), null);
+test("근무스케줄 기간 선택칸은 다섯 가지, 화면이 쓰는 배열 순서와 글자다", () => {
+  assert.deepEqual(
+    STAFF_WORK_SCHEDULE_PERIODS.map((p) => SCHEDULE_PERIOD_LABELS[p]),
+    ["이번 주", "최근 4주", "최근 3개월", "최근 1년", "전체"],
+  );
+  // 배열에서 빠진 값은 주소에서 조용히 이번 주로 바뀐다 — 배열과 글자 표의 키가 같아야 한다
+  assert.deepEqual(new Set(STAFF_WORK_SCHEDULE_PERIODS), new Set(Object.keys(SCHEDULE_PERIOD_LABELS)));
 });
 
-test("주는 월요일부터다 — 일요일은 그 앞 월요일의 주", () => {
-  assert.equal(mondayOf("2026-10-19"), "2026-10-19"); // 월
-  assert.equal(mondayOf("2026-10-21"), "2026-10-19"); // 수
-  assert.equal(mondayOf("2026-10-25"), "2026-10-19"); // 일
-  assert.equal(mondayOf("2026-11-01"), "2026-10-26"); // 일, 달을 넘는다
+test("주소의 근무스케줄 값 — 없으면 이번 주 · 1쪽 · 20건", () => {
+  assert.deepEqual(parseScheduleQuery({}), { period: "THIS_WEEK", page: 1, pageSize: 20 });
+  assert.deepEqual(parseScheduleQuery({ schedulePeriod: "LAST_1_YEAR", schedulePage: "3", schedulePageSize: "50" }), {
+    period: "LAST_1_YEAR",
+    page: 3,
+    pageSize: 50,
+  });
+  assert.equal(parseScheduleQuery({ schedulePeriod: "ALL" }).period, "ALL");
 });
 
-test("주 넘김은 7일씩, 달 · 해를 넘는다", () => {
-  assert.equal(shiftDate("2026-10-26", 7), "2026-11-02");
-  assert.equal(shiftDate("2026-01-05", -7), "2025-12-29");
-  assert.equal(weekRangeText("2026-10-26"), "2026-10-26 ~ 11-01");
+test("잘못된 근무스케줄 주소 값은 기본으로", () => {
+  for (const schedulePeriod of ["this_week", "LAST_2_WEEKS", ""]) assert.equal(parseScheduleQuery({ schedulePeriod }).period, "THIS_WEEK", schedulePeriod);
+  for (const schedulePage of ["0", "-1", "1.5", "abc", "1000001"]) assert.equal(parseScheduleQuery({ schedulePage }).page, 1, schedulePage);
+  // 쪽 상한(api 와 같은 1,000,000)은 받는다
+  assert.equal(parseScheduleQuery({ schedulePage: "1000000" }).page, 1_000_000);
+  for (const schedulePageSize of ["10", "30", "200", "x"]) assert.equal(parseScheduleQuery({ schedulePageSize }).pageSize, 20, schedulePageSize);
+  // 같은 키가 여럿이면 앞의 것
+  assert.deepEqual(parseScheduleQuery({ schedulePeriod: ["LAST_4_WEEKS", "ALL"], schedulePage: ["2", "5"] }), { period: "LAST_4_WEEKS", page: 2, pageSize: 20 });
+  // WHALEERP-184 주 넘김의 weekStart 는 읽지 않는다
+  assert.deepEqual(parseScheduleQuery({ weekStart: "2026-10-12" }), { period: "THIS_WEEK", page: 1, pageSize: 20 });
 });
 
-test("근무일 칸은 MM-DD 요일", () => {
-  assert.equal(workDateText("2026-10-21"), "10-21 수");
-  assert.equal(workDateText("2026-10-25"), "10-25 일");
+test("기간 · 건수를 바꾸면 1쪽으로", () => {
+  const q = { period: "LAST_4_WEEKS", page: 4, pageSize: 50 } as const;
+  assert.deepEqual(withScheduleFilter(q, { period: "ALL" }), { period: "ALL", page: 1, pageSize: 50 });
+  assert.deepEqual(withScheduleFilter(q, { pageSize: 100 }), { period: "LAST_4_WEEKS", page: 1, pageSize: 100 });
+});
+
+test("근무스케줄 링크는 다른 조회 조건을 두고 schedule 값만 바꾼다 — 기본값은 뺀다", () => {
+  assert.equal(scheduleHref({}, { period: "THIS_WEEK", page: 1, pageSize: 20 }), "?");
+  assert.equal(scheduleHref({}, { period: "LAST_3_MONTHS", page: 2, pageSize: 100 }), "?schedulePeriod=LAST_3_MONTHS&schedulePage=2&schedulePageSize=100");
+  assert.equal(
+    scheduleHref({ name: "서지안", storeIds: ["1", "2"], schedulePeriod: "ALL", schedulePage: "3", weekStart: "2026-10-19" }, { period: "ALL", page: 1, pageSize: 20 }),
+    "?name=%EC%84%9C%EC%A7%80%EC%95%88&storeIds=1&storeIds=2&schedulePeriod=ALL",
+  );
+});
+
+test("근무스케줄 값은 직원 목록의 page · pageSize 와 섞이지 않는다", () => {
+  assert.equal(scheduleHref({ page: "3", pageSize: "50", schedulePage: "2" }, { period: "THIS_WEEK", page: 5, pageSize: 20 }), "?page=3&pageSize=50&schedulePage=5");
+  assert.deepEqual(parseScheduleQuery({ page: "3", pageSize: "50" }), { period: "THIS_WEEK", page: 1, pageSize: 20 });
+});
+
+test("쪽 수는 0건도 1쪽", () => {
+  assert.equal(schedulePageCount(0, 20), 1);
+  assert.equal(schedulePageCount(20, 20), 1);
+  assert.equal(schedulePageCount(21, 20), 2);
+  assert.equal(schedulePageCount(101, 50), 3);
+});
+
+test("빈 표 안내 — 이번 주는 「이 주에」, 다른 기간은 「이 기간에」(2026-10-22 노영주)", () => {
+  assert.equal(scheduleEmptyText("THIS_WEEK"), "이 주에 잡힌 근무스케줄이 없습니다.");
+  for (const period of ["LAST_4_WEEKS", "LAST_3_MONTHS", "LAST_1_YEAR", "ALL"] as const)
+    assert.equal(scheduleEmptyText(period), "이 기간에 잡힌 근무스케줄이 없습니다.", period);
+});
+
+test("합계 줄 이름 — 이번 주는 주간, 다른 기간은 기간(2026-10-22 노영주)", () => {
+  assert.equal(scheduleTotalLabel("THIS_WEEK"), "주간 근무시간 합계");
+  for (const period of ["LAST_4_WEEKS", "LAST_3_MONTHS", "LAST_1_YEAR", "ALL"] as const)
+    assert.equal(scheduleTotalLabel(period), "기간 근무시간 합계", period);
 });
 
 test("근무시간 합계는 시간으로 소수 한 자리", () => {
@@ -77,6 +119,17 @@ test("근무시간 합계는 시간으로 소수 한 자리", () => {
   assert.equal(hoursText(450), "7.5h");
   assert.equal(hoursText(2250), "37.5h");
   assert.equal(hoursText(100), "1.7h");
+});
+
+test("종료 칸은 근무스케줄 화면과 같은 글자(endLabel) — 같은 날 · 익일 · 24:00", () => {
+  assert.deepEqual([endLabel("09:00", "18:00"), endLabel("22:00", "02:00"), endLabel("16:00", "00:00")], ["18:00", "익일 02:00", "24:00"]);
+});
+
+test("근무일 칸은 MM-DD 요일, 오늘과 다른 해면 연도를 남긴다", () => {
+  assert.equal(workDateText("2026-10-21", "2026-10-22"), "10-21 수");
+  assert.equal(workDateText("2026-10-25", "2026-10-22"), "10-25 일");
+  assert.equal(workDateText("2025-12-29", "2026-01-02"), "2025-12-29 월");
+  assert.equal(workDateText("2027-01-04", "2026-12-30"), "2027-01-04 월");
 });
 
 const payslip = (payslipId: number, status: PayslipSummaryItem["status"]): PayslipSummaryItem => ({
@@ -116,11 +169,6 @@ test("급여명세서 영역은 보일 명세서도 미발송도 없을 때만 �
 test("TO-DO 요약 줄은 배정이 있을 때만", () => {
   assert.deepEqual(todoFootText({ total: 6, doneCount: 4, notDoneCount: 2 }), { label: "전체 6", value: "완료 4 · 미완료 2" });
   assert.equal(todoFootText({ total: 0, doneCount: 0, notDoneCount: 0 }), null);
-});
-
-test("주 넘김 링크는 다른 조회 조건을 두고 weekStart 만 바꾼다", () => {
-  assert.equal(weekHref({}, "2026-10-26"), "?weekStart=2026-10-26");
-  assert.equal(weekHref({ name: "서지안", storeIds: ["1", "2"], weekStart: "2026-10-19" }, "2026-10-26"), "?name=%EC%84%9C%EC%A7%80%EC%95%88&storeIds=1&storeIds=2&weekStart=2026-10-26");
 });
 
 test("TO-DO 이력 문구 — 등록 · 긴급 표시 변경 · 상태 변경", () => {
