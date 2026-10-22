@@ -255,9 +255,17 @@ function MenuTable({
   const walk = (list: RoleGroupMenuNode[]) => list.forEach((n) => (rows.push(n), walk(n.children)));
   walk(nodes);
 
-  const box = (label: string, state: { checked: boolean; disabled: boolean }, onToggle: (on: boolean) => void) => (
+  // 일부만 켜진 묶음 · 머리칸은 –(mixed)로 보이고, 누르면 모두 켠다
+  const box = (label: string, state: { checked: boolean; mixed?: boolean; disabled: boolean }, onToggle: (on: boolean) => void) => (
     <span className={`inline-flex ${state.disabled ? "opacity-40" : ""}`}>
-      <Checkbox label="" aria-label={label} checked={state.checked} disabled={locked || state.disabled} onChange={(e) => onToggle(e.target.checked)} />
+      <Checkbox
+        label=""
+        aria-label={label}
+        checked={state.checked}
+        indeterminate={Boolean(state.mixed)}
+        disabled={locked || state.disabled}
+        onChange={(e) => onToggle(e.target.checked)}
+      />
     </span>
   );
 
