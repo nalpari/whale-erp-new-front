@@ -1202,7 +1202,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 급여명세서 영역 — 최근 확정 명세서 · 이번 달 명세서 · 미발송 건수. 급여명세서 관리 조회 권한 */
+        /** 급여명세서 영역 — 최근 명세서 3건 · 미발송 건수. 급여명세서 관리 조회 권한 */
         get: operations["StaffMemberSummaryController_payslips"];
         put?: never;
         post?: never;
@@ -4800,24 +4800,26 @@ export interface components {
         };
         /** @enum {string} */
         PayslipStatus: "DRAFTING" | "REVIEWING" | "CONFIRMED" | "SENT";
-        StaffMemberPayslipSummaryDto: {
+        StaffMemberRecentPayslipDto: {
             status: components["schemas"]["PayslipStatus"];
             payslipId: number;
             /** @description 급여 기간 시작일(YYYY-MM-DD) */
             periodStartDate: string;
             /** @description 급여 기간 종료일(YYYY-MM-DD) */
             periodEndDate: string;
-            grossPayAmount: number;
+            /**
+             * @description 기본급 — 기본급(BASE_PAY) 항목의 관리자 수정값 ?? 시스템 계산값 ?? 0(명세서 지급 총액과 같은 기준). 항목이 없거나
+             *     넣지 않은 줄(isEntered = false)이면 null
+             */
+            basePayAmount: number | null;
+            /** @description 수당 — 지급 총액 − 기본급. 기본급이 null 이면 지급 총액 그대로다(지금은 늘 숫자) */
+            allowanceAmount: number | null;
             totalDeductionAmount: number;
             netPayAmount: number;
-            /** Format: date-time */
-            confirmedAt: string | null;
         };
         StaffMemberPayslipSummaryResponseDto: {
-            /** @description 확정 · 발송 완료 중 급여 기간이 가장 늦은 명세서. 없으면 null */
-            latestConfirmed: components["schemas"]["StaffMemberPayslipSummaryDto"] | null;
-            /** @description 급여 기간 시작일이 이번 달(한국 날짜)인 명세서. 없으면 null */
-            currentMonth: components["schemas"]["StaffMemberPayslipSummaryDto"] | null;
+            /** @description 이 직원의 명세서 최근 3건 — 상태와 관계없이(작성 중 포함) 급여 기간 시작일 최신순, 같으면 명세서 ID 내림차순 */
+            recent: components["schemas"]["StaffMemberRecentPayslipDto"][];
             /** @description 발송 완료가 아닌 명세서 수 — 작성 중 · 검토 중 · 확정 */
             unsentCount: number;
         };
@@ -6276,14 +6278,19 @@ export interface components {
          */
         PreferenceCategory: "CONTRACT" | "SCHEDULE" | "TODO" | "PAYSLIP";
         /** @enum {string} */
-        StaffNotificationTargetType: "WORK_SCHEDULE" | "TODO";
+        StaffNotificationTargetType: "WORK_SCHEDULE" | "TODO" | "CONTRACT" | "PAYSLIP";
         StaffNotificationTargetDto: {
             type: components["schemas"]["StaffNotificationTargetType"];
-            staffMemberId: number;
+            /** @description 그 업무가 속한 내 소속. 급여명세서는 없다 */
+            staffMemberId?: number;
             /** @description 근무스케줄 — 근무일 YYYY-MM-DD */
             workDate?: string;
             /** @description TO-DO */
             todoId?: number;
+            /** @description 근로계약 */
+            contractId?: number;
+            /** @description 급여명세서 */
+            payslipId?: number;
         };
         MyNotificationItemDto: {
             /** @description 수신 설정 묶음 — 지금 템플릿의 값. 템플릿이 없으면 null */
@@ -15265,11 +15272,11 @@ export interface operations {
                 pageSize?: number;
                 /** @description 여러 개면 `?status=PENDING&status=IN_PROGRESS`. 없으면 전체 */
                 status?: components["schemas"]["TodoStatus"][];
-                /** @description 점포 유형 — DIRECT 직영 · FRANCHISE 가맹. 여러 개는 반복하거나 쉼표로. 주지 않으면 둘 다 */
+                /** @description 점포 유형(상단 범위 직영 · 가맹) — DIRECT · FRANCHISE. 폐점 점포는 뺀다. 여러 개는 반복하거나 쉼표로. 주지 않으면 둘 다(폐점 포함) */
                 storeTypes?: ("DIRECT" | "FRANCHISE")[];
                 /** @description 담당 — 개인 · 근무지 전체 */
                 assigneeType?: components["schemas"]["TodoAssigneeType"];
-                /** @description 고른 점포. 여러 개는 `storeIds=1&storeIds=2` 또는 쉼표로, 1000개까지. 주지 않으면 업무 범위 전체 */
+                /** @description 고른 점포. 여러 개는 `storeIds=1&storeIds=2` 와 쉼표 `storeIds=1,2` 중 하나로(섞으면 400), 1000개까지. 주지 않으면 업무 범위 전체 */
                 storeIds?: number[];
                 /** @description 이 직원 레코드에 배정된 것 */
                 staffMemberId?: number;
