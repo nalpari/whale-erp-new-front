@@ -7,7 +7,7 @@ import { labelOf } from "@/lib/enums";
 import { formatDateTime } from "@/lib/format";
 import { getTodo, type TodoDetail } from "@/lib/todos-api";
 import { CellView } from "../../staff-members/staff-table";
-import { todoListHref } from "../todo-list-query";
+import { backHrefOf, withBack } from "../todo-list-query";
 import { StaffName, StaffNames } from "../staff-names";
 import { historyActorText, historyText, staffNameText, statusCells } from "../todo-row";
 import { TodoDetailActions, TodoStatusControl } from "./todo-detail-actions";
@@ -36,8 +36,7 @@ export default async function TodoDetailPage({
     getEnum("TodoExecutionMode"),
   ]);
   if (!todo) notFound();
-  const listHref = todoListHref(await searchParams);
-  const listSearch = listHref.slice("/todos".length);
+  const listHref = backHrefOf((await searchParams).back);
   const status = statusCells({ ...todo, todoCount: 1, doneCount: 0 }, statusLabels);
 
   const rows: DetailRow[] = [
@@ -95,7 +94,7 @@ export default async function TodoDetailPage({
                       ) : r.todoId === todo.todoId ? (
                         <b className="font-medium">{r.staffMemberName ?? "배정 풀림"}</b>
                       ) : (
-                        <Link href={`/todos/${r.todoId}${listSearch}`} className="text-erp-link hover:underline">
+                        <Link href={withBack(`/todos/${r.todoId}`, listHref)} className="text-erp-link hover:underline">
                           {r.staffMemberName ?? "배정 풀림"}
                         </Link>
                       ),
