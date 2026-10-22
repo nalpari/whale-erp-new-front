@@ -12,6 +12,9 @@ import { isClosedStore, openStores, SCOPE_PARAM, scopeFromAddress, scopeKeyOf, s
 import { BpSelectDialog } from "./bp-select-dialog";
 import { useAccount, useCurrentBp, useMenus, useMyPageOpen, useMyPageTrigger, usePageMenu, useScope, useService, useStores } from "./session-gate";
 
+/** ERP 메뉴 url 의 화면 주소 — /bp/{id} 주소로 옮긴 화면에만 탭 BP 를 붙인다(BP_PATH_SCREENS). 메뉴 url 자체는 옛 경로 그대로다. */
+const screenOf = (url: string, tabBp: number) => (isBpPathScreen(url) ? bpPath(tabBp, url) : url);
+
 // 로그인 후 화면의 헤더 하나. 메뉴·점포·이름은 로그인 정보(SessionGate)에서 그린다.
 // 메뉴는 이 탭 서비스(useService)의 것만, 2단계까지 그린다(3단계는 헤더에 보이지 않는다, 2026-10-13).
 // 서비스마다 다른 것은 오른쪽 선택기와 서비스 바로가기의 동작이다 — 선택기는 ERP 면 점포 범위, 플랫폼이면 BP 선택기 자리(비어 있다. BP 는
@@ -28,8 +31,7 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   const myPageTrigger = useMyPageTrigger();
   const tabBp = useCurrentBp().bpCodeId;
   const [scope] = useScope();
-  // /bp/{id} 주소로 옮긴 ERP 화면에만 탭 BP 를 붙인다(BP_PATH_SCREENS). 메뉴 url 자체는 옛 경로 그대로다.
-  const linkOf = (url: string) => (service === "WHALE_ERP" && isBpPathScreen(url) ? bpPath(tabBp, url) : withScope(url, scope));
+  const linkOf = (url: string) => withScope(service === "WHALE_ERP" ? screenOf(url, tabBp) : url, scope);
   const menus: HeaderMenu[] = all.map((m) => {
       const items = m.children.flatMap((c) => {
         // 하위 메뉴로 가는 길로만 들어온 메뉴는 조회 권한이 없다(isAllowed 가 막는다). 권한 있는 첫 하위 메뉴로 보내고, 없으면 뺀다.
@@ -111,7 +113,7 @@ function HeaderScopeSelect() {
           const next = scopeOfKey(key);
           if (!next) return;
           setScope(next);
-          if (pageUrl) router.push(withScope(pageUrl, next));
+          if (pageUrl) router.push(withScope(screenOf(pageUrl, bp.bpCodeId), next));
         }}
       />
     </>

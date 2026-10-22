@@ -1,6 +1,6 @@
 import { PageBar } from "@/components/common";
 import { CARD, FailedBand } from "@/components/role-groups/role-parts";
-import { ApiError, getEnum } from "@/lib/api";
+import { ApiError, deniedMessageOf, getEnum } from "@/lib/api";
 import { BP_ROLE_PAGE_SIZE, getBpRoleGroup, getBpRoleGroups } from "@/lib/bp-role-groups";
 import type { BpRoleDetailState } from "./bp-actions";
 import { BpRolesScreen } from "./roles-screen";
@@ -46,18 +46,12 @@ export default async function BpRolesPage({ searchParams }: PageProps<"/bp-role-
   );
 }
 
-/**
- * 목록을 api 가 거절했다(BP 를 고르지 않음 400 · 다른 BP · 권한 없음 403 · 없는 BP 404) — 다시 시도해도 같으므로 오류 화면 대신 그 문장을 보인다.
- * 거절이 아닌 것은 그대로 던져 error.tsx 가 받는다: 서버 장애 · 응답 없음, 검증 실패 400(message 가 배열 — 주소 · 계약이 어긋난 결함),
- * 라우트가 없는 404(Nest 「Cannot GET …」 — api 배포가 어긋남).
- */
+/** 목록을 api 가 거절했으면(deniedMessageOf) 오류 화면 대신 그 문장을 보인다. 거절이 아닌 것은 그대로 던져 error.tsx 가 받는다. */
 const listDenied = (error: unknown): { denied: string } => {
-  if (!(error instanceof ApiError)) throw error;
-  const validation = error.status === 400 && Array.isArray((error.body as { message?: unknown } | null)?.message);
-  const noRoute = error.status === 404 && error.message.startsWith("Cannot ");
-  if (![400, 403, 404].includes(error.status) || validation || noRoute) throw error;
-  console.warn("BP 권한 그룹 목록 거절", error.status, error.message);
-  return { denied: error.message };
+  const denied = deniedMessageOf(error);
+  if (denied === null) throw error;
+  console.warn("BP 권한 그룹 목록 거절", error instanceof ApiError ? error.status : undefined, denied);
+  return { denied };
 };
 
 /** 어느 enum 이 실패했는지 로그에 남기고 빈 목록으로 연다 — 화면은 일반 문구로 대신한다(reasonLabel) */

@@ -7,11 +7,13 @@ import { labelOf, type EnumValue } from "@/lib/enums";
 import { formOfStore, toUpdateStoreInput } from "@/lib/store-form";
 import type { StoreDetail, StoreStatus, StoreTransitions } from "@/lib/store-types";
 import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
-import { usePagePermission } from "@/components/site/session-gate";
+import { useCurrentBp, usePagePermission } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import { withoutStoreSearch } from "@/lib/store-scope";
 import { closeBlockText, finalEuro, nextStatuses } from "@/lib/store-view";
 import { deleteStoreAction, getStoreTransitionsAction, updateStoreAction, type ActionFailure } from "../actions";
 import { StoreStatusBadge } from "../store-parts";
+import { withBack } from "../stores-query";
 
 /** 막힌 버튼의 이유. 막힌 버튼은 호버를 받지 않으므로(Button 의 disabled:pointer-events-none) 감싸는 칸에 단다 */
 function Blocked({ reason, children }: { reason?: string; children: React.ReactNode }) {
@@ -64,6 +66,9 @@ export function StoreDetailActions({
   const router = useRouter();
   const toast = useToast();
   const can = usePagePermission();
+  // 화면 주소는 탭 BP 를 붙인다. backHref 는 옛 경로(목록 쿼리)다
+  const bp = useCurrentBp().bpCodeId;
+  const at = (path: string) => bpPath(bp, path);
   const statusLabel = useCodeLabel("STORE_STATUS");
   const [dialog, setDialog] = useState<"status" | "delete" | null>(null);
   const [target, setTarget] = useState<StoreStatus | null>(null);
@@ -124,12 +129,12 @@ export function StoreDetailActions({
       if (!result.ok && (result.status === undefined || result.status === 404)) {
         setDialog(null);
         toast(result.status === 404 ? "이미 지워진 점포입니다." : "삭제 결과를 확인하지 못했습니다. 목록에서 확인해 주세요.");
-        return router.push(withoutStoreSearch(backHref));
+        return router.push(at(withoutStoreSearch(backHref)));
       }
       if (!result.ok) return fail(result.status, result.message);
       setDialog(null);
       toast("deleted");
-      router.push(withoutStoreSearch(backHref));
+      router.push(at(withoutStoreSearch(backHref)));
     });
 
   return (
@@ -165,13 +170,13 @@ export function StoreDetailActions({
                 </Button>
               </Blocked>
             ) : (
-              <Button variant="soft" href={`/stores/${store.storeId}/edit${backHref === "/stores" ? "" : `?back=${encodeURIComponent(backHref)}`}`}>
+              <Button variant="soft" href={at(withBack(`/stores/${store.storeId}/edit`, backHref))}>
                 수정
               </Button>
             ))}
         </>
       )}
-      <Button href={backHref}>목록</Button>
+      <Button href={at(backHref)}>목록</Button>
 
       {can.update && !closed && targets.length > 0 && (
         <ConfirmDialog

@@ -1,6 +1,7 @@
 // node --test src/app/stores/stores-query.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { bpPath } from "../../lib/bp-path.ts";
 import { withoutStoreSearch } from "../../lib/store-scope.ts";
 import {
   backHrefOf,
@@ -253,6 +254,14 @@ test("돌아갈 목록 주소는 점포 목록만 — 다른 곳으로 보내려
     assert.equal(backHrefOf(bad), "/stores", String(bad));
   }
   assert.equal(backHrefOf("/stores?page=2&view=table"), "/stores?page=2&view=table");
+});
+
+test("돌아갈 목록 주소에는 탭 BP 를 싣지 않는다 — 이동할 때만 bpPath 로 씌운다", () => {
+  // BP 를 실은 주소를 back 으로 넘기면 기본 목록이 된다(조건을 잃는다) — 넘기는 쪽이 옛 경로를 넘겨야 한다
+  assert.equal(backHrefOf("/bp/8/stores?page=2"), "/stores");
+  // 씌운 상세 주소의 back 은 옛 경로 그대로다
+  assert.equal(bpPath(8, withBack("/stores/12/edit", "/stores?page=2")), "/bp/8/stores/12/edit?back=%2Fstores%3Fpage%3D2");
+  assert.equal(bpPath(8, withBack("/stores/12", "/stores")), "/bp/8/stores/12");
 });
 
 test("상세 · 등록으로 넘긴 목록 주소가 ?back= 를 거쳐 그대로 돌아온다", () => {

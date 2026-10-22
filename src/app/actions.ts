@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { ApiError, getSession, LOGIN_KEY_COOKIE, request, SESSION_COOKIE } from "@/lib/api";
+import { apiHeaders } from "@/lib/forwarded-headers";
 
 /** 이 브라우저의 접속만 끝낸다. api 가 실패해도 쿠키는 지운다 — 나가려는 사람을 붙잡지 않는다. */
 export async function logout(): Promise<void> {
@@ -32,7 +33,8 @@ export async function changeForcedPassword(input: {
   try {
     await request("/auth/admin/password-change", {
       method: "POST",
-      headers: { Authorization: `Bearer ${session.accessToken}`, "Content-Type": "application/json" },
+      // 사용자 IP 를 넘긴다 — api 가 약관 동의 이력에 접속 IP 를 남긴다. 이유와 전제는 apiHeaders() 참고.
+      headers: { Authorization: `Bearer ${session.accessToken}`, ...(await apiHeaders()) },
       body: JSON.stringify(input),
     });
     return { status: 204 };
