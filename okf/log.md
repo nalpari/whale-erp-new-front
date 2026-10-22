@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 로그인한 화면의 api 호출(`authHeaders()`)에도 사용자 IP 를 `X-Forwarded-For` 로 싣는다. 점포 진위확인(IP당 시간당 10건) · 내 정보 수정 · 이메일 중복 확인(분당 60건)이 모든 관리자에게 Next 서버 IP 한 칸으로 세어지던 것.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 권한 메뉴 등록 팝업의 머리칸 · 묶음 칸이 일부만 켜졌으면 「–」로 보인다(S-KUDELB, 공용 `Checkbox` 에 `indeterminate`). BP 권한 그룹에서 그 쪽의 마지막 한 건을 지우면 앞쪽으로 간다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 권한 그룹의 손으로 적은 타입을 생성 타입 별칭으로 바꿨다. BP 메뉴 트리의 권한 유형이 `BA` · `FA` · `FM` 이라 플랫폼 트리 타입과 맞지 않던 것을 고쳐, 공용 메뉴 팝업이 두 트리를 함께 받는다. api #94 머지로 헤더 판정이 main 에 들어간 것도 반영했다.
 * **Update**: [근무스케줄 관리 화면 (구현)](/screens/work-schedules.md) — 지난 주 복사 미리보기(#204): 빈 주에서만 켜지는 「지난 주 복사」, 직원별 지난 주 · 이번 주 · 처리(복사 · 일부 제외 · 제외 사유 · 지난 주 없음), 「n명 복사」. 폐점 점포는 끈다.

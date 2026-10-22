@@ -95,10 +95,18 @@ export async function getSession(): Promise<Session | null> {
  * 탭 BP(X-Bp-Code-Id, bpHeader — 세션과 상관없이 proxy 가 넣은 값이 있으면 싣는다).
  * 로그인 전에 쓰던 개발 토큰(API_DEV_TOKEN)은 관리자 로그인이 생겨 2026-10-15 에 지웠다 — api 가 토큰의 접속(sid)까지 확인해
  * 서명만 맞춘 토큰은 더 통하지 않는다.
+ * 사용자 IP(X-Forwarded-For)도 싣는다 — 싣지 않으면 api 의 IP 한도(점포 진위확인 시간당 10건, 내 정보 수정 · 이메일 중복 확인
+ * 분당 60건 등)를 모든 관리자가 이 Next 서버 IP 한 칸으로 나눠 쓴다. 믿는 조건은 로그인 전 화면과 같다(forwarded-headers.ts).
  */
 export async function authHeaders(): Promise<Record<string, string>> {
   const token = (await getSession())?.accessToken;
-  return { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(await bpHeader()) };
+  return { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(await bpHeader()), ...(await forwardedForHeader()) };
+}
+
+/** 이 요청의 사용자 IP — Next 가 채운(또는 앞단 프록시가 붙인) x-forwarded-for 를 그대로 api 에 넘긴다. */
+async function forwardedForHeader(): Promise<Record<string, string>> {
+  const forwardedFor = (await headers()).get("x-forwarded-for");
+  return forwardedFor ? { "X-Forwarded-For": forwardedFor } : {};
 }
 
 /**
