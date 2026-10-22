@@ -4,6 +4,9 @@
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main(#88) 병합: proxy 의 본문 크기 상한(`tooLarge`)도 `/bp/{id}` 를 뗀 주소로 판정한다. main 이 없앤 store-picks(목록에서 고른 점포)는 따르고, 탭 BP 의 bp-fix 표시 · 헤더 링크(`withScope` 앞에 `bpPath`)는 남겼다.
 
 ## 2026-10-21
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 공지 첨부가 없으면(404) 로그 없이 「찾을 수 없다」로 안내하고, 상세의 구분 조회 실패도 로그에 남긴다(옆 화면과 맞춤).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 공지사항을 한 쪽 10건으로 나눈다(요청).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비로그인 공지사항 · FAQ 화면(#293 · #294)을 만들었다: `/notices`(공지 목록 · 페이지 번호 · FAQ 탭)와 상세 `/notices/{id}`, 첨부 내려받기 경로. 디자인 샘플에 공지사항 상세(`/design/guest/notices/detail`)를 더하고 샘플과 실제 화면이 같은 그리기를 쓰게 했다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — proxy 의 로그인 끊김 401 판정(`answersWith401`)을 `/bp/{id}` 를 뗀 주소로 본다. fetch 로 부르는 창구(종이 계약 등록)를 탭 BP 주소로 옮겨도 리다이렉트 대신 401 을 받는다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — PR #82 리뷰 반영: SessionGate 가 탭 BP 를 렌더 중 `location` 대신 `usePathname()`(클라이언트에서 브라우저 주소 /bp/{id}/... 를 준다 — 앱 안 이동은 렌더 뒤에 주소가 바뀌어 location 이 이전 값이었다)으로 본다. BP 권한 그룹 목록을 api 가 거절하면(400 · 403 · 404) 그 문장을 보인다. 메뉴 팝업 actions 는 저장을 회수 미리보기와 함께만 받는다(타입). bp-fix · clearTabBp 테스트와 탭 BP 주석을 고쳤다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 권한 그룹 상세의 [삭제]를 메뉴 삭제 권한만이 아니라 api `isDeletable` 로도 숨긴다. 플랫폼 계정 · BP 관리자처럼 조회만인 역할에게 누르면 거절되는 버튼이 보이던 것을 막았다. 디자인 피드백으로 목록 위 역할 안내 줄, 메뉴등록 · 가맹마스터 보기 팝업의 잠김 안내 띠(공용 팝업에 `note={null}` 을 더함)를 지우고, 관리계정ID 가 없으면 `-` 로, 목록 아래 안내 문구(「권한명을 누르면 … BP 관리자 관리에서 합니다」 — 아직 화면이 없는 링크 포함)는 지웠다.
