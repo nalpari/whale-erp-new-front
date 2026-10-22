@@ -1705,6 +1705,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/me/contracts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 내 근로계약 목록 — 서명 대기 이후(임시저장 · 발송 대기 제외). 소속 확인 대기 계약은 없다 */
+        get: operations["MyContractViewsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/contracts/{contractId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 내 근로계약 상세 — 계약서에 그릴 값 · 사용자 칸 · 본인 대조 미리보기(날인할 수 있는지 · 다른 항목) */
+        get: operations["MyContractViewsController_findOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/stores/options": {
         parameters: {
             query?: never;
@@ -5243,6 +5277,13 @@ export interface components {
             contractId: number;
             staffMemberId: number;
         };
+        ContractDetailWorkDayDto: {
+            weekday: components["schemas"]["Weekday"];
+            breakStartTime: string | null;
+            breakEndTime: string | null;
+            startTime: string;
+            endTime: string;
+        };
         ContractStatusHistoryDto: {
             /** @description 처음 만든 줄은 null */
             fromStatus: components["schemas"]["ContractStatus"] | null;
@@ -5263,22 +5304,7 @@ export interface components {
             /** @description 올린 파일의 원래 이름 */
             fileName: string;
         };
-        ContractDetailWorkDayDto: {
-            weekday: components["schemas"]["Weekday"];
-            breakStartTime: string | null;
-            breakEndTime: string | null;
-            startTime: string;
-            endTime: string;
-        };
         ContractDetailDto: {
-            status: components["schemas"]["ContractStatus"] | null;
-            employmentType: components["schemas"]["EmploymentType"];
-            /** @description 점포가 지워졌어도 이름은 보인다. 점포 행이 없으면 null */
-            storeName: string | null;
-            /** @description YYYY-MM-DD */
-            birthDate: string | null;
-            gender: components["schemas"]["Gender"] | null;
-            contractMethod: components["schemas"]["ContractMethod"] | null;
             startDate: string | null;
             endDate: string | null;
             workLocation: string | null;
@@ -5315,13 +5341,21 @@ export interface components {
             probationWageReductionRate: number | null;
             isHealthPensionInsured: boolean | null;
             isEmploymentInjuryInsured: boolean | null;
+            workDays: components["schemas"]["ContractDetailWorkDayDto"][];
+            status: components["schemas"]["ContractStatus"] | null;
+            employmentType: components["schemas"]["EmploymentType"];
+            /** @description 점포가 지워졌어도 이름은 보인다. 점포 행이 없으면 null */
+            storeName: string | null;
+            /** @description YYYY-MM-DD */
+            birthDate: string | null;
+            gender: components["schemas"]["Gender"] | null;
+            contractMethod: components["schemas"]["ContractMethod"] | null;
             /** @description 초대 유형 판별 결과(초안 저장 때). 임시저장이면 null */
             draftAction: components["schemas"]["ContractDraftAction"] | null;
             /** @description 상태 변경 이력. 최근 것부터 */
             histories: components["schemas"]["ContractStatusHistoryDto"][];
             /** @description 종이 계약 날인본(근로계약서 · 임금계약서). 전자계약 · 임시저장이면 빈 배열 */
             documents: components["schemas"]["ContractDocumentDto"][];
-            workDays: components["schemas"]["ContractDetailWorkDayDto"][];
             contractId: number;
             staffMemberId: number;
             name: string;
@@ -5369,6 +5403,154 @@ export interface components {
         MyContractActionResponseDto: {
             contractId: number;
             status: components["schemas"]["ContractStatus"];
+        };
+        MyContractListItemDto: {
+            status: components["schemas"]["ContractStatus"];
+            employmentType: components["schemas"]["EmploymentType"] | null;
+            /** @description 전자계약 · 종이 계약 */
+            contractMethod: components["schemas"]["ContractMethod"] | null;
+            /**
+             * @description YYYY-MM-DD
+             * @example 2026-11-01
+             */
+            startDate: string | null;
+            /**
+             * @description YYYY-MM-DD. 비어 있으면 기간의 정함이 없는 계약
+             * @example null
+             */
+            endDate: string | null;
+            /** @description 발송 일시 (ISO 8601) — 날인할 때 이 값을 그대로 보낸다(sentAt). 종이 계약이면 null */
+            sentAt: string | null;
+            /** @description 날인 기한 (ISO 8601) */
+            signDeadlineAt: string | null;
+            /**
+             * @description 지금 상태가 된 시각 (ISO 8601). 체결 완료면 날인 일자(종이 계약이면 관리자 등록일), 거부 · 만료 · 종료 · 수정
+             *     요청이면 그 일자(상태 이력의 처리 시각). 서명 대기면 마지막 발송 시각(sentAt) — 서명 대기 그대로 다시 보내면
+             *     이력이 쌓이지 않아 발송 일시를 쓴다
+             */
+            processedAt: string | null;
+            contractId: number;
+            /** @description 근무지(소속) — 점포가 지워졌어도 이름은 보인다 */
+            storeId: number;
+            storeName: string;
+            /** @description 지금 날인할 수 있는가 — 서명 대기 · 날인 기한 안 · 재직 중. 날인 요청 팝업(WHALEERP-148)이 쓴다. 본인 대조는 상세에서 */
+            awaitingSignature: boolean;
+        };
+        MyContractListResponseDto: {
+            /** @description 날인을 기다리는 계약(기한이 급한 순) 먼저, 그다음 최근 것부터 */
+            items: components["schemas"]["MyContractListItemDto"][];
+            total: number;
+        };
+        /**
+         * @description 계약서 값과 계정 값이 다른 항목 — 날인 API 의 409 IDENTITY_MISMATCH 와 같다. 다르면 직원은 수정 요청을 낸다
+         * @enum {string}
+         */
+        IdentityField: "name" | "phone" | "birthDate" | "gender" | "isForeigner";
+        MyContractWorkerDto: {
+            name: string | null;
+            phone: string | null;
+            /** @description YYYY-MM-DD */
+            birthDate: string | null;
+            gender: components["schemas"]["Gender"] | null;
+            /** @description 주소 — 날인할 때 계정 주소로 고정된다. 날인 전이면 비어 있다(본인인증 정보의 주소를 보인다) */
+            zipCode: string | null;
+            address: string | null;
+            addressDetail: string | null;
+            isForeigner: boolean;
+            /** @description 직무 — 직원 레코드 값 */
+            jobTitle: string;
+        };
+        MyContractEmployerDto: {
+            storePhone: string | null;
+            storeZipCode: string | null;
+            storeAddress: string | null;
+            storeAddressDetail: string | null;
+            /** @description 상호 */
+            tradeName: string | null;
+            /** @description 사업자등록번호 */
+            registrationNumber: string | null;
+            /** @description 대표자 */
+            ceoName: string | null;
+            /** @description 사업장 주소 */
+            bizZipCode: string | null;
+            bizAddress: string | null;
+            bizAddressDetail: string | null;
+            storeName: string;
+        };
+        MyContractAccountDto: {
+            gender: components["schemas"]["Gender"] | null;
+            zipCode: string | null;
+            address: string | null;
+            addressDetail: string | null;
+            name: string;
+            phone: string;
+            /** @description YYYY-MM-DD */
+            birthDate: string;
+            isForeigner: boolean;
+        };
+        MyContractDocumentDto: {
+            kind: components["schemas"]["ContractDocumentKind"];
+            contractDocumentId: number;
+            fileName: string;
+        };
+        MyContractDetailDto: {
+            startDate: string | null;
+            endDate: string | null;
+            workLocation: string | null;
+            weeklyHoliday: components["schemas"]["Weekday"] | null;
+            /** @description 원. 시급 — 고용 형태와 상관없이 시급이다(2026-10-12) */
+            wageAmount: number | null;
+            /** @description 식대 — 원 */
+            mealAllowanceAmount: number | null;
+            /** @description 자가운전보조금 — 원 */
+            carAllowanceAmount: number | null;
+            /** @description 육아수당 — 원 */
+            childcareAllowanceAmount: number | null;
+            /** @description 월 기본시간 — 시간(0.5 단위) */
+            baseHours: number | null;
+            /** @description 월간 연장근무 — 시간 */
+            monthlyOvertimeHours: number | null;
+            /** @description 기본시간 중 야간근무 — 시간 */
+            baseNightHours: number | null;
+            /** @description 기본시간 중 휴일근무 — 시간. 화면(front #15)에서는 받지 않는다. 칸은 남아 있다 */
+            baseHolidayHours: number | null;
+            /** @description 월간 추가 휴일근무 — 시간. 화면(front #15)에서는 받지 않는다. 칸은 남아 있다 */
+            monthlyExtraHolidayHours: number | null;
+            /** @description 연차휴가 조항 문구 */
+            annualLeaveTerms: string | null;
+            /** @description 퇴직금 조항 문구 */
+            severancePayTerms: string | null;
+            payMonth: components["schemas"]["PayMonth"] | null;
+            payDay: number | null;
+            /** @description 급여 지급 방식 — 계좌 · 현금 */
+            payMethod: components["schemas"]["PayMethod"] | null;
+            /** @description 수습 기간 — 개월(1~3). 수습이 없으면 null */
+            probationMonths: number | null;
+            /** @description 수습 중 임금 감액률 — %(0~10). 수습이 없으면 null */
+            probationWageReductionRate: number | null;
+            isHealthPensionInsured: boolean | null;
+            isEmploymentInjuryInsured: boolean | null;
+            workDays: components["schemas"]["ContractDetailWorkDayDto"][];
+            status: components["schemas"]["ContractStatus"];
+            employmentType: components["schemas"]["EmploymentType"] | null;
+            contractMethod: components["schemas"]["ContractMethod"] | null;
+            /** @description 발송 일시 (ISO 8601) — 날인할 때 그대로 보낸다(sentAt). 다르면 409 CONTRACT_RESENT */
+            sentAt: string | null;
+            signDeadlineAt: string | null;
+            /** @description 목록과 같다 — 지금 상태가 된 시각 */
+            processedAt: string | null;
+            /** @description 계약서 값과 계정 값이 다른 항목 — 날인 API 의 409 IDENTITY_MISMATCH 와 같다. 다르면 직원은 수정 요청을 낸다 */
+            mismatches: components["schemas"]["IdentityField"][];
+            worker: components["schemas"]["MyContractWorkerDto"];
+            employer: components["schemas"]["MyContractEmployerDto"];
+            account: components["schemas"]["MyContractAccountDto"];
+            documents: components["schemas"]["MyContractDocumentDto"][];
+            contractId: number;
+            storeId: number;
+            /** @description 목록과 같다 — 서명 대기 · 기한 안 · 재직 중 */
+            awaitingSignature: boolean;
+            /** @description 지금 날인하면 받는가 — awaitingSignature 이고 본인 대조가 맞을 때. 날인 API 와 같은 판정이다 */
+            signable: boolean;
         };
         StoreOptionDto: {
             storeId: number;
@@ -11875,6 +12057,81 @@ export interface operations {
             };
             /** @description 경로마다 계정당 10분에 20번(날인 · 거부 · 수정 요청을 따로 센다) */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MyContractViewsController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyContractListResponseDto"];
+                };
+            };
+            /** @description 토큰 없음 · 접속 종료 · 탈퇴 계정 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 관리자 토큰 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MyContractViewsController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contractId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyContractDetailDto"];
+                };
+            };
+            /** @description 토큰 없음 · 접속 종료 · 탈퇴 계정 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 관리자 토큰 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 내 계약이 아님 — 없는 id · 남의 계약 · 임시저장 · 발송 대기 · 소속 확인 대기 계약(후보 계정만). 모두 같은 본문 */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
