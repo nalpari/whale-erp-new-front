@@ -45,6 +45,7 @@ export async function login(_prev: LoginFormState, formData: FormData): Promise<
       refreshToken: res.refreshToken,
       accessTokenExpiresAt: Date.now() + ACCESS_TOKEN_TTL_MS,
       roleTypeCode: res.account.roleTypeCode,
+      bpCodeId: res.account.bp?.bpCodeId,
     }),
   );
   // 새 값이면 브라우저에 남은 앞 로그인의 메뉴·점포·공통코드를 버리고 login-info 를 다시 받는다(SessionGate). 같은 계정이 다시 로그인해도 갈린다.

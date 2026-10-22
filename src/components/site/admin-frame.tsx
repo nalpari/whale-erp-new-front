@@ -14,10 +14,7 @@ export function AdminFrame({ alarm, children }: { alarm: ReactNode; children: Re
     <ErpRoot className="min-h-[100dvh]">
       <div className="h-[100dvh] overflow-x-auto overflow-y-hidden bg-erp-thead-bg">
         <div className="relative flex h-full min-w-[1720px] flex-col overflow-x-clip">
-          <SessionGate>
-            <AdminHeader alarm={alarm} />
-            {children}
-          </SessionGate>
+          <SessionGate header={<AdminHeader alarm={alarm} />}>{children}</SessionGate>
           <PanelBackdrop />
         </div>
       </div>

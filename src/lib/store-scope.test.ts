@@ -2,7 +2,20 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { AdminStore } from "./session.ts";
-import { openStores, pickedListHref, restoredScope, scopedListHref, scopeKeyOf, scopeOfKey, scopeStores, usesStoreScope, withoutStoreIds } from "./store-scope.ts";
+import {
+  isUnusableScope,
+  openStores,
+  restoredScope,
+  scopeFromAddress,
+  scopeKeyOf,
+  scopeOfKey,
+  scopeOfParam,
+  scopeStores,
+  searchStoresByText,
+  toPickedStore,
+  withoutStoreSearch,
+  withScope,
+} from "./store-scope.ts";
 
 const store = (storeId: number, storeTypeCode: string): AdminStore => ({
   storeId,
@@ -22,37 +35,69 @@ test("scopeStores: 전체는 조건 없음, 직영 · 가맹은 그 유형 점�
   assert.deepEqual(scopeStores({ type: "STORE", storeId: 9 }, stores), []);
 });
 
-test("scopedListHref: 범위의 점포를 storeIds 로 싣고, 전체면 조건 없는 목록", () => {
-  assert.equal(scopedListHref("/stores", { type: "ALL" }, stores), "/stores");
-  assert.equal(scopedListHref("/stores", { type: "DIRECT" }, stores), "/stores?storeIds=1%2C3");
-  assert.equal(scopedListHref("/stores", { type: "STORE", storeId: 2 }, stores), "/stores?storeIds=2");
-  // 범위에 드는 점포가 없으면(로그인 정보에 없는 점포) 조건 없는 목록이다
-  assert.equal(scopedListHref("/stores", { type: "STORE", storeId: 9 }, stores), "/stores");
-});
-
-test("usesStoreScope: 점포 검색 컴포넌트를 쓰는 목록 메뉴만", () => {
-  assert.equal(usesStoreScope("/stores"), true);
-  assert.equal(usesStoreScope("/staff-members"), false);
-  assert.equal(usesStoreScope(null), false);
-});
-
 test("폐점 점포는 직영 · 가맹 전체에 들지 않지만 점포 하나로는 고를 수 있다", () => {
   assert.deepEqual(openStores(stores).map((s) => s.storeId), [1, 2, 3]);
   assert.deepEqual(scopeStores({ type: "DIRECT" }, stores).map((s) => s.storeId), [1, 3]);
   assert.deepEqual(scopeStores({ type: "STORE", storeId: 4 }, stores).map((s) => s.storeId), [4]);
 });
 
-test("withoutStoreIds: 고른 점포와 쪽만 빼고 다른 조건은 남긴다", () => {
-  assert.equal(withoutStoreIds("/stores"), "/stores");
-  assert.equal(withoutStoreIds("/stores?storeIds=1%2C2"), "/stores");
-  assert.equal(withoutStoreIds("/stores?storeIds=1%2C2&statuses=CLOSED&page=3&view=table"), "/stores?statuses=CLOSED&view=table");
+test("withScope: 헤더가 메뉴로 갈 때 범위를 scope 하나로 싣는다 — 전체도 적고, 점포가 많아도 길어지지 않는다", () => {
+  // 전체도 적는다 — 뒤로 · 앞으로 가기에도 헤더가 주소를 따라 전체로 돌아온다
+  assert.equal(withScope("/stores", { type: "ALL" }), "/stores?scope=ALL");
+  assert.equal(withScope("/stores", { type: "DIRECT" }), "/stores?scope=DIRECT");
+  assert.equal(withScope("/staff-members", { type: "STORE", storeId: 12 }), "/staff-members?scope=STORE%3A12");
+  // 메뉴 주소에 이미 쿼리가 있으면 이어 붙이고, 있던 범위는 바꾼다
+  assert.equal(withScope("/stores?view=table", { type: "FRANCHISE" }), "/stores?view=table&scope=FRANCHISE");
+  assert.equal(withScope("/stores?scope=DIRECT", { type: "ALL" }), "/stores?scope=ALL");
 });
 
-test("pickedListHref: 폐점 점포가 들면 점포상태를 「전체」로 싣는다 — 목록 기본 상태가 폐점을 빼 0건이 되지 않게", () => {
-  assert.equal(pickedListHref("/stores", [], stores), "/stores");
-  assert.equal(pickedListHref("/stores", [1, 3], stores), "/stores?storeIds=1%2C3");
-  assert.equal(pickedListHref("/stores", [1, 4], stores), "/stores?storeIds=1%2C4&statuses=NOT_OPERATING%2COPERATING%2CCLOSED");
-  assert.equal(scopedListHref("/stores", { type: "STORE", storeId: 4 }, stores), "/stores?storeIds=4&statuses=NOT_OPERATING%2COPERATING%2CCLOSED");
+test("scopeOfParam: 주소의 scope 를 범위로 — 없거나 모르는 값은 null", () => {
+  assert.deepEqual(scopeOfParam("STORE:12"), { type: "STORE", storeId: 12 });
+  assert.deepEqual(scopeOfParam("ALL"), { type: "ALL" });
+  assert.equal(scopeOfParam(undefined), null);
+  assert.equal(scopeOfParam("NOPE"), null);
+  // 주소에서 오므로 int4 양의 정수만 — 범위 밖 id 는 api 가 400 으로 막아 오류 화면이 된다
+  for (const bad of ["STORE:9999999999", "STORE:1e3", "STORE:0x10", "STORE: 12", "STORE:12 ", "STORE:-1", "STORE:"]) assert.equal(scopeOfParam(bad), null, bad);
+  assert.deepEqual(scopeOfParam("STORE:999999999"), { type: "STORE", storeId: 999_999_999 });
+});
+
+test("scopeFromAddress: 주소의 범위로 헤더를 바꿀 값 — 없거나 같거나 이 탭에서 쓸 수 없으면 그대로", () => {
+  const all = { type: "ALL" } as const;
+  assert.equal(scopeFromAddress(undefined, all, stores), null);
+  assert.equal(scopeFromAddress("DIRECT", { type: "DIRECT" }, stores), null);
+  assert.deepEqual(scopeFromAddress("DIRECT", all, stores), { type: "DIRECT" });
+  // 로그인 정보에 없는 점포 · 폐점만 남은 유형은 따르지 않는다
+  assert.equal(scopeFromAddress("STORE:99", all, stores), null);
+  const onlyClosedDirect = [store(2, "FRANCHISE"), { ...store(4, "DIRECT"), storeStatusCode: "CLOSED" }];
+  assert.equal(scopeFromAddress("DIRECT", all, onlyClosedDirect), null);
+  // 범위를 전체로 바꾼 주소로 돌아오면 전체로 · 폐점 점포 하나는 따른다
+  assert.deepEqual(scopeFromAddress("ALL", { type: "DIRECT" }, stores), all);
+  assert.deepEqual(scopeFromAddress("STORE:4", all, stores), { type: "STORE", storeId: 4 });
+});
+
+test("isUnusableScope: 이 탭에 고를 점포가 없는 범위", () => {
+  assert.equal(isUnusableScope({ type: "ALL" }, []), false);
+  assert.equal(isUnusableScope({ type: "DIRECT" }, stores), false);
+  assert.equal(isUnusableScope({ type: "DIRECT" }, [store(2, "FRANCHISE")]), true);
+  assert.equal(isUnusableScope({ type: "STORE", storeId: 99 }, stores), true);
+});
+
+test("toPickedStore: 칩에 쓰는 칸 셋만", () => {
+  assert.deepEqual(toPickedStore(stores[0]), { storeId: 1, name: "점포1", storeCode: "ST000001" });
+});
+
+test("withoutStoreSearch: 등록 · 삭제 뒤 점포 검색을 「전체」로 — 빈 storeIds, 범위 · 쪽은 빼고 다른 조건은 남긴다(헤더 범위는 그대로)", () => {
+  assert.equal(withoutStoreSearch("/stores"), "/stores?storeIds=");
+  assert.equal(withoutStoreSearch("/stores?storeIds=1%2C2&statuses=CLOSED&page=3&view=table"), "/stores?storeIds=&statuses=CLOSED&view=table");
+  assert.equal(withoutStoreSearch("/stores?scope=DIRECT"), "/stores?storeIds=");
+});
+
+test("searchStoresByText: 점포명 · 점포코드에 글자가 든 점포(대소문자 무시, 폐점 포함), 빈 글자면 없음", () => {
+  assert.deepEqual(searchStoresByText(stores, "점포1").map((s) => s.storeId), [1]);
+  assert.deepEqual(searchStoresByText(stores, "st000004").map((s) => s.storeId), [4]);
+  assert.deepEqual(searchStoresByText(stores, "  "), []);
+  const many = Array.from({ length: 30 }, (_, i) => store(i + 1, "DIRECT"));
+  assert.equal(searchStoresByText(many, "점포").length, 20);
 });
 
 test("scopeKeyOf · scopeOfKey: 키와 범위를 오가고 모르는 키는 null", () => {

@@ -6,8 +6,9 @@ import { Button, ConfirmDialog, Radio, useToast } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { formOfStore, toUpdateStoreInput } from "@/lib/store-form";
 import type { StoreDetail, StoreStatus, StoreTransitions } from "@/lib/store-types";
-import { useCodeLabel } from "@/components/site/code-label";
-import { usePagePermission, useResetStoreSearch } from "@/components/site/session-gate";
+import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
+import { usePagePermission } from "@/components/site/session-gate";
+import { withoutStoreSearch } from "@/lib/store-scope";
 import { closeBlockText, finalEuro, nextStatuses } from "@/lib/store-view";
 import { deleteStoreAction, getStoreTransitionsAction, updateStoreAction, type ActionFailure } from "../actions";
 import { StoreStatusBadge } from "../store-parts";
@@ -18,6 +19,20 @@ function Blocked({ reason, children }: { reason?: string; children: React.ReactN
     <span title={reason} className="inline-flex">
       {children}
     </span>
+  );
+}
+
+/** 확인창 안에서 어떤 점포인지 — platform-admins/admin-parts.tsx 의 WhoList 와 같은 모양(화면마다 로컬로 둔다). */
+function WhoList({ rows }: { rows: [string, React.ReactNode][] }) {
+  return (
+    <dl className="grid grid-cols-[60px_1fr] gap-y-[6px] rounded-[2px] border border-erp-thead-line bg-erp-thead-bg p-[12px]">
+      {rows.map(([k, v]) => (
+        <div key={k} className="contents">
+          <dt className="text-erp-label">{k}</dt>
+          <dd>{v}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
@@ -49,7 +64,6 @@ export function StoreDetailActions({
   const router = useRouter();
   const toast = useToast();
   const can = usePagePermission();
-  const resetStoreSearch = useResetStoreSearch();
   const statusLabel = useCodeLabel("STORE_STATUS");
   const [dialog, setDialog] = useState<"status" | "delete" | null>(null);
   const [target, setTarget] = useState<StoreStatus | null>(null);
@@ -110,12 +124,12 @@ export function StoreDetailActions({
       if (!result.ok && (result.status === undefined || result.status === 404)) {
         setDialog(null);
         toast(result.status === 404 ? "이미 지워진 점포입니다." : "삭제 결과를 확인하지 못했습니다. 목록에서 확인해 주세요.");
-        return router.push(resetStoreSearch(backHref));
+        return router.push(withoutStoreSearch(backHref));
       }
       if (!result.ok) return fail(result.status, result.message);
       setDialog(null);
       toast("deleted");
-      router.push(resetStoreSearch(backHref));
+      router.push(withoutStoreSearch(backHref));
     });
 
   return (
@@ -233,15 +247,22 @@ export function StoreDetailActions({
       {can.delete && !closed && (
         <ConfirmDialog
           open={dialog === "delete"}
-          title="점포 삭제"
+          title="점포를 삭제하시겠습니까?"
           confirmLabel="삭제"
           busy={busy}
           onConfirm={handleDelete}
           onCancel={() => setDialog(null)}
         >
-          <p>
-            <b className="font-semibold">{store.name}</b>({store.storeCode})을(를) 삭제합니다. 삭제한 점포는 되살리지 않습니다.
-          </p>
+          <div className="flex flex-col gap-[12px]">
+            <WhoList
+              rows={[
+                ["점포명", store.name],
+                ["점포유형", <CodeLabel key="type" group="STORE_TYPE" value={store.storeTypeCode} />],
+                ["점포코드", store.storeCode],
+              ]}
+            />
+            <p>삭제한 점포는 복구할 수 없습니다.</p>
+          </div>
           {failure && <p role="alert" className="mt-[10px] text-erp-off">{failure}</p>}
         </ConfirmDialog>
       )}

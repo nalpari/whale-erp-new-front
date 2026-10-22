@@ -236,6 +236,7 @@ export async function startSessionFromSignup(): Promise<void> {
         refreshToken: res.refreshToken,
         accessTokenExpiresAt: Date.now() + ACCESS_TOKEN_TTL_MS,
         roleTypeCode: res.account.roleTypeCode,
+        bpCodeId: res.account.bp?.bpCodeId,
       }),
     );
     jar.set(loginKeyCookie(crypto.randomUUID()));

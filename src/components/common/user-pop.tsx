@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, type RefObject } from "react";
 import { Popup, useDropdown } from "./popup";
 import { EASE_OUT } from "./theme";
 
@@ -16,8 +17,16 @@ export type UserPopItem = { label: string; danger?: boolean } & (
 // Figma Login_infos. 이름을 누르면 MY PAGE 메뉴가 페이드로 뜬다.
 // 화살표 키 탐색을 따로 두지 않으므로 ARIA menu 대신 disclosure(aria-expanded + 링크/버튼 목록)로 둔다.
 // Figma Top2 의 Info(둥근 42px 사람 아이콘 + 이름)다.
-export function UserPop({ name, items }: { name: string; items: UserPopItem[] }) {
+// triggerRef: 이 버튼을 다른 SlidePanel(MY PAGE 등)의 trigger 로도 쓰려는 바깥 ref — 이름 버튼은
+// 컴포넌트 안쪽이라 밖에서 직접 못 잡는다(코드 리뷰로 찾음, 2026-10-21. 전에는 비워 둬 패널을 닫으면
+// 포커스가 body 로 빠졌다 — DESIGN.md Slide Panel 의 "닫히면 포커스가 열었던 버튼으로 돌아온다" 위반).
+// useDropdown 이 돌려준 trigger ref 는 직접 건드리지 않는다(훅이 쓰는 값은 훅 안에서만 바꾼다, ESLint
+// react-hooks/refs) — 커밋이 끝난 뒤 effect 에서 그 값을 바깥 triggerRef 로 복사만 한다.
+export function UserPop({ name, items, triggerRef }: { name: string; items: UserPopItem[]; triggerRef?: RefObject<HTMLButtonElement | null> }) {
   const { open, setOpen, close, ref, trigger, id } = useDropdown();
+  useEffect(() => {
+    if (triggerRef) triggerRef.current = trigger.current;
+  });
 
   return (
     <div ref={ref} className="relative">
