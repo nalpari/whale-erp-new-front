@@ -1,19 +1,17 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { RetryButton } from "./retry-button";
 
 // 데모 staff-parts.mjs 의 box — 제목 줄(오른쪽에 「관리」 링크) + 내용.
-// manageHref 가 없으면 「관리」를 흐리게 두고 누를 수 없게 한다 — 그 화면이 아직 없다. manage 를 주면 그것을 대신 그린다(권한으로 가르는 링크).
+// 「관리」는 manage 로 받는다 — 링크는 그 메뉴 조회 권한을 보는 MenuManageLink(manage-link.tsx)다. 없으면 흐리게 두고 누를 수 없게 한다(그 화면으로 가는
+// 링크가 아직 없다, WHALEERP-186). 권한을 보지 않는 링크를 걸 길은 두지 않는다(front #90 리뷰).
 // tools 는 「관리」 왼쪽에 서는 것(근무스케줄의 주 넘김 — 데모 weekNav)이다.
 export function Box({
   title,
-  manageHref,
   manage,
   tools,
   children,
 }: {
   title: string;
-  manageHref?: string;
   manage?: ReactNode;
   tools?: ReactNode;
   children: ReactNode;
@@ -24,15 +22,11 @@ export function Box({
         <span className="flex-1">{title}</span>
         <span className="flex items-center gap-[6px] text-[14px] font-normal">
           {tools}
-          {manage ?? (manageHref ? (
-            <Link href={manageHref} className="text-erp-link hover:underline">
-              관리
-            </Link>
-          ) : (
+          {manage ?? (
             <span aria-disabled="true" title="준비 중입니다." className="cursor-default text-erp-muted">
               관리
             </span>
-          ))}
+          )}
         </span>
       </h3>
       {children}

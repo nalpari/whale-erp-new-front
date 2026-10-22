@@ -5,6 +5,7 @@ import { DetailTable, PageBar } from "@/components/common";
 import { getEnum } from "@/lib/api";
 import type { EnumValue } from "@/lib/enums";
 import { hqSharingConsentText, kstToday, staffEmailText } from "@/lib/staff-members";
+import { MENU_CODE } from "@/lib/menus";
 import { getStaffMember, staffMemberIdOf } from "@/lib/staff-members-api";
 import { staffListHref } from "../staff-list-query";
 import { ResendInvitationButton } from "../resend-invitation-button";
@@ -12,10 +13,10 @@ import { canResendInvitation, EMPLOYMENT_TYPE_LABELS, employmentStatusCells, for
 import { CellView } from "../staff-table";
 import { ContractBox } from "./contract-box";
 import { AreaLoading, Box, BoxMessage } from "./detail-box";
+import { MenuManageLink } from "./manage-link";
 import { PasswordResetButton, StaffDetailActions } from "./staff-detail-actions";
-import { PayslipBox, ScheduleBox, TodoListBox, TodoSummaryFoot } from "./summary-boxes";
+import { PayslipBox, ScheduleBox, TodoBox } from "./summary-boxes";
 import { mondayOf, weekStartParam } from "./summary-view";
-import { TodoManageLink } from "./todo-links";
 import { WeekNav } from "./week-nav";
 
 export const metadata: Metadata = {
@@ -139,7 +140,16 @@ export default async function StaffMemberDetailPage({
                 <DetailTable title="기본 정보" rows={basicRows} />
                 <PasswordResetButton staff={staff} />
                 {/* 가장 최근 계약 1건 — 근로계약 영역 요약(api #183). 계약이 없으면 그 칸이 작성으로 넘긴다 */}
-                <Box title="근로계약" manageHref={staff.contract ? `/contracts/${staff.contract.contractId}` : "/contracts"}>
+                <Box
+                  title="근로계약"
+                  manage={
+                    <MenuManageLink
+                      menuCode={MENU_CODE.contracts}
+                      menuName="근로계약 관리"
+                      href={staff.contract ? `/contracts/${staff.contract.contractId}` : "/contracts"}
+                    />
+                  }
+                >
                   <Suspense fallback={<AreaLoading />}>
                     <ContractBox staffMemberId={staffMemberId} />
                   </Suspense>
@@ -162,11 +172,10 @@ export default async function StaffMemberDetailPage({
                     <PayslipBox staffMemberId={staffMemberId} />
                   </Suspense>
                 </Box>
-                <Box title="TO-DO" manage={<TodoManageLink href="/todos" />}>
-                  {/* 목록(#118)과 요약(api #183)은 따로 받고 따로 실패한다. 한 Suspense 로 묶어 칸 높이가 두 번 바뀌지 않게 한다 */}
+                <Box title="TO-DO" manage={<MenuManageLink menuCode={MENU_CODE.todos} menuName="TO-DO 리스트 관리" href="/todos" />}>
+                  {/* TO-DO 관리 조회 권한이 없으면 목록까지 영역 전체를 막는다(summary-boxes.tsx TodoBox) */}
                   <Suspense fallback={<AreaLoading />}>
-                    <TodoListBox staffMemberId={staffMemberId} />
-                    <TodoSummaryFoot staffMemberId={staffMemberId} />
+                    <TodoBox staffMemberId={staffMemberId} />
                   </Suspense>
                 </Box>
               </div>

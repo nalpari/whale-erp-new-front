@@ -115,17 +115,45 @@ export async function PayslipBox({ staffMemberId }: { staffMemberId: number }) {
 /** 직원 상세 TO-DO 영역에 보일 건수. api 순서(미완료 긴급 → 미완료 → 완료)의 앞쪽이다 */
 const STAFF_TODO_COUNT = 5;
 
+type TodoListItem = Awaited<ReturnType<typeof getStaffMemberTodos>>["items"][number];
+type TodoSummary = Awaited<ReturnType<typeof getStaffMemberTodoSummary>>;
+
 /**
- * 「TO-DO」 영역의 목록(GET /staff-members/:id/todos, #118) — 앞쪽 5건의 제목 · 긴급 · 수행 예정 · 상태. 직원 정보 관리 조회만 보는
- * 경로라 권한 없음은 사실상 나오지 않지만, 다른 영역과 같은 규칙(loadArea)으로 받아 실패하면 이 목록 자리에만 안내 · 다시 하기를 그린다.
+ * 「TO-DO」 영역 — 목록(GET /staff-members/:id/todos, #118) 앞쪽 5건 + 요약 줄(전체 · 완료 · 미완료) + 최근 처리 이력 5건.
+ * 목록 경로는 직원 정보 관리 조회만 보지만, 이 영역은 다른 영역과 같이 그 영역 메뉴(TO-DO 관리) 조회 권한으로 막는다(2026-10-22 노영주,
+ * front #90 리뷰). 메뉴 권한은 서버가 모르므로 요약 경로(…/summary/todos)의 403 「조회 권한이 없습니다.」로 판단한다 — 그러면 목록도
+ * 그리지 않고 영역 전체에 권한 안내만 보인다. 그 밖에는 목록과 요약이 따로 실패한다(각자 그 자리에 다시 하기).
  */
-export async function TodoListBox({ staffMemberId }: { staffMemberId: number }) {
-  const [result, statuses] = await Promise.all([
+export async function TodoBox({ staffMemberId }: { staffMemberId: number }) {
+  const [summary, list, statuses, actors] = await Promise.all([
+    loadArea("TO-DO 영역 요약", () => getStaffMemberTodoSummary(staffMemberId)),
     loadArea("TO-DO 목록", () => getStaffMemberTodos(staffMemberId, STAFF_TODO_COUNT)),
     loadLabels("TodoStatus"),
+    loadLabels("StatusChangeActor"),
   ]);
-  if (result.kind !== "ok") return <AreaFailure kind={result.kind} subject="TO-DO 를" />;
-  const { items } = result.data;
+  if (summary.kind === "forbidden") return <AreaFailure kind="forbidden" subject="TO-DO 를" />;
+  const statusLabel = statuses ? (status: string) => labelOf(statuses, status) : null;
+  return (
+    <>
+      {list.kind === "ok" ? (
+        <TodoList items={list.data.items} statuses={statuses} />
+      ) : (
+        <AreaFailure kind={list.kind} subject="TO-DO 를" />
+      )}
+      {summary.kind === "ok" ? (
+        <TodoSummaryFoot summary={summary.data} statusLabel={statusLabel} actorLabel={actors ? (actor: string) => labelOf(actors, actor) : null} />
+      ) : (
+        <FootMessage alert>
+          TO-DO 건수를 불러오지 못했습니다.
+          <RetryButton />
+        </FootMessage>
+      )}
+    </>
+  );
+}
+
+/** TO-DO 목록 — 제목 · 긴급 · 수행 예정 · 상태. 상태 한글을 받지 못했으면 「-」 */
+function TodoList({ items, statuses }: { items: TodoListItem[]; statuses: Parameters<typeof statusCells>[1] | null }) {
   if (items.length === 0) return <BoxMessage>배정된 TO-DO 가 없습니다.</BoxMessage>;
   const today = kstToday();
   return (
@@ -145,27 +173,20 @@ export async function TodoListBox({ staffMemberId }: { staffMemberId: number }) 
 }
 
 /**
- * 「TO-DO」 영역 아래 요약 줄(전체 · 완료 · 미완료)과 최근 처리 이력 5건. 위의 목록(GET /staff-members/:id/todos, #118)은 직원 정보 관리
- * 조회만 보고 이 요약은 TO-DO 관리 조회 권한도 보므로, 목록은 보이고 이 아래만 막힐 수 있다. 배정이 없으면 목록의 빈 상태가 말하므로
- * 요약 줄을 그리지 않는다. 이력은 api 순서(최신이 위) 그대로이고 바꾼 사람 이름은 오지 않아 바꾼 쪽(관리자 · 직원 · 시스템)만 보인다.
+ * TO-DO 요약 줄과 최근 처리 이력. 배정이 없으면 목록의 빈 상태가 말하므로 요약 줄을 그리지 않는다. 이력은 api 순서(최신이 위) 그대로이고
+ * 바꾼 사람 이름은 오지 않아 바꾼 쪽(관리자 · 직원 · 시스템)만 보인다.
  */
-export async function TodoSummaryFoot({ staffMemberId }: { staffMemberId: number }) {
-  const [result, statuses, actors] = await Promise.all([
-    loadArea("TO-DO 영역 요약", () => getStaffMemberTodoSummary(staffMemberId)),
-    loadLabels("TodoStatus"),
-    loadLabels("StatusChangeActor"),
-  ]);
-  if (result.kind === "forbidden") return <FootMessage>TO-DO 건수를 볼 권한이 없습니다.</FootMessage>;
-  if (result.kind === "error")
-    return (
-      <FootMessage alert>
-        TO-DO 건수를 불러오지 못했습니다.
-        <RetryButton />
-      </FootMessage>
-    );
-  const foot = todoFootText(result.data);
-  const histories = result.data.recentHistories;
-  const statusLabel = statuses ? (status: string) => labelOf(statuses, status) : null;
+function TodoSummaryFoot({
+  summary,
+  statusLabel,
+  actorLabel,
+}: {
+  summary: TodoSummary;
+  statusLabel: ((status: string) => string) | null;
+  actorLabel: ((actor: string) => string) | null;
+}) {
+  const foot = todoFootText(summary);
+  const histories = summary.recentHistories;
   return (
     <>
       {foot && <Foot label={foot.label}>{foot.value}</Foot>}
@@ -180,7 +201,7 @@ export async function TodoSummaryFoot({ staffMemberId }: { staffMemberId: number
                 <span className="w-[100px] shrink-0 text-erp-label">{formatDateTime(h.changedAt).slice(5)}</span>
                 <span className="min-w-0 flex-1 truncate text-erp-ink">{h.title}</span>
                 <span className="w-[140px] shrink-0 text-center text-erp-ink">{todoHistoryText(h, statusLabel)}</span>
-                <span className="w-[60px] shrink-0 text-center text-erp-label">{actors ? labelOf(actors, h.actor) : "-"}</span>
+                <span className="w-[60px] shrink-0 text-center text-erp-label">{actorLabel ? actorLabel(h.actor) : "-"}</span>
               </li>
             ))}
           </ul>
