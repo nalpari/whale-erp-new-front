@@ -17,6 +17,8 @@ export interface ScheduleQuery {
   month: string;
   /** 변경 이력 패널이 열렸는가 */
   history: boolean;
+  /** 지난 주 복사 미리보기가 열렸는가(주간만, #204) */
+  copy: boolean;
   /** 변경 이력 필터 — 변경 일시의 한국 날짜, 빈 값이면 열린 끝 */
   historyFrom: string;
   historyTo: string;
@@ -95,6 +97,7 @@ export function parseScheduleQuery(raw: RawSearch, today: string): ScheduleQuery
     day,
     month,
     history: first(raw.history) === "1",
+    copy: view === "week" && first(raw.copy) === "1",
     historyFrom,
     historyTo,
     historyStaffId: idOf(first(raw.hstaff)),
@@ -112,6 +115,7 @@ export function toScheduleSearch(q: ScheduleQuery, today: string): string {
     if (q.month !== today.slice(0, 7)) p.set("month", q.month);
   } else if (q.week !== mondayOf(today)) p.set("week", q.week);
   if (q.day !== defaultDay(q.view, q.week, q.month, today)) p.set("day", q.day);
+  if (q.copy && q.view === "week") p.set("copy", "1");
   if (q.history) {
     p.set("history", "1");
     if (q.historyFrom) p.set("hfrom", q.historyFrom);
@@ -139,7 +143,8 @@ export function historyApiSearch(q: ScheduleQuery & { storeId: number }): string
   return p.toString();
 }
 
-/** 다른 주 · 달 · 날로 옮긴다 — 이력 패널은 닫는다 */
+/** 다른 주 · 달 · 날로 옮긴다 — 이력 패널은 닫는다. 복사 미리보기는 같은 주의 다른 날로 갈 때만 남긴다 */
 export function moved(q: ScheduleQuery, next: Partial<Pick<ScheduleQuery, "view" | "week" | "day" | "month">>): ScheduleQuery {
-  return { ...q, ...next, history: false };
+  const sameWeek = (next.view ?? q.view) === "week" && (next.week ?? q.week) === q.week;
+  return { ...q, ...next, history: false, copy: q.copy && sameWeek };
 }

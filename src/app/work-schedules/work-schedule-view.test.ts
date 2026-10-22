@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { barOf, carryOver, durationLabel, gapsOf, historyLine, hourCells, shiftLabel } from "./work-schedule-view.ts";
+import { barOf, carryOver, copyStatus, durationLabel, gapsOf, historyLine, hourCells, shiftLabel, totalsLabel } from "./work-schedule-view.ts";
 
 /** 30분 칸 48개 — [시작 칸, 끝 칸) 구간마다 인원을 더한다 */
 const cov = (...spans: [number, number][]) => {
@@ -93,4 +93,24 @@ test("전날에서 넘어온 근무 — 공백은 그날 시작한 근무 사이
   assert.deepEqual(gapsOf(cov([0, 4]), carry), []);
   // 넘어온 근무를 모르면(carry 없음) 02:00-09:00 도 공백으로 센다
   assert.equal(gapsOf(coverage).length, 2);
+});
+
+test("지난 주 복사 처리 — 복사 · 일부 제외 · 제외 사유(STAFF-13)", () => {
+  assert.equal(totalsLabel({ days: 5, minutes: 2400 }), "5일 · 40.0h");
+  assert.equal(totalsLabel({ days: 3, minutes: 1290 }), "3일 · 21.5h");
+  assert.equal(totalsLabel({ days: 0, minutes: 0 }), "—");
+  const row = (days: number, excluded: { workDate: string; code: string | null }[], retiredDate: string | null = null) => ({ retiredDate, copied: { days }, excluded });
+  assert.deepEqual(copyStatus(row(5, [])), { kind: "copy", label: "복사", detail: null });
+  assert.deepEqual(copyStatus(row(0, [{ workDate: "2026-10-26", code: "WORK_SCHEDULE_NO_CONTRACT" }, { workDate: "2026-10-27", code: "WORK_SCHEDULE_NO_CONTRACT" }])), {
+    kind: "excluded",
+    label: "제외 · 근로계약 미체결",
+    detail: null,
+  });
+  assert.equal(copyStatus(row(0, [{ workDate: "2026-10-26", code: "WORK_SCHEDULE_AFTER_RETIREMENT" }], "2026-10-20")).label, "제외 · 10-20 퇴직");
+  assert.deepEqual(copyStatus(row(3, [{ workDate: "2026-10-30", code: "WORK_SCHEDULE_AFTER_RETIREMENT" }, { workDate: "2026-10-28", code: "WORK_SCHEDULE_OVERLAP" }], "2026-10-29")), {
+    kind: "partial",
+    label: "일부 제외",
+    detail: "10-30 10-29 퇴직, 10-28 시간 겹침",
+  });
+  assert.equal(copyStatus(row(0, [{ workDate: "2026-10-26", code: "SOMETHING_NEW" }])).label, "제외 · 규칙에 맞지 않음");
 });

@@ -5,6 +5,7 @@ import {
   historyApiSearch,
   mondayOf,
   monthRange,
+  moved,
   parseScheduleQuery,
   scheduleApiSearch,
   toScheduleSearch,
@@ -94,4 +95,14 @@ test("변경 이력 기간이 거꾸로면 둘 다 비운다(api 400 막기)", (
   assert.equal(q.historyTo, "");
   const same = parseScheduleQuery({ store: "7", history: "1", hfrom: "2026-10-20", hto: "2026-10-20" }, TODAY);
   assert.equal(same.historyTo, "2026-10-20");
+});
+
+test("지난 주 복사 미리보기 — 주간에서만 copy=1, 주를 바꾸면 닫고 같은 주의 다른 날은 남긴다(#204)", () => {
+  const q = parseScheduleQuery({ store: "7", copy: "1" }, TODAY);
+  assert.equal(q.copy, true);
+  assert.equal(toScheduleSearch(q, TODAY), "?store=7&copy=1");
+  assert.equal(parseScheduleQuery({ store: "7", view: "month", copy: "1" }, TODAY).copy, false);
+  assert.equal(moved(q, { day: "2026-10-23" }).copy, true);
+  assert.equal(moved(q, { week: "2026-10-26", day: "2026-10-26" }).copy, false);
+  assert.equal(moved(q, { view: "month", month: "2026-10" }).copy, false);
 });

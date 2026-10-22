@@ -128,3 +128,32 @@ export function historyLine(item: HistoryItem): string {
   }
   return `${item.staffName} ${body} · ${who}`;
 }
+
+/** 지난 주 복사(#204)에서 빠지는 날의 사유 — api 코드별. 퇴직은 퇴직일을 함께 적는다(STAFF-13 「제외 · 08-20 퇴직」) */
+const EXCLUDE_REASON: Record<string, string> = {
+  WORK_SCHEDULE_NO_CONTRACT: "근로계약 미체결",
+  WORK_SCHEDULE_NOT_JOINED: "가입 전",
+  WORK_SCHEDULE_OVERLAP: "시간 겹침",
+  WORK_SCHEDULE_HIDDEN: "본사 제공 동의 없음",
+};
+const excludeReason = (code: string | null, retiredDate: string | null) =>
+  code === "WORK_SCHEDULE_AFTER_RETIREMENT" ? (retiredDate ? `${mmdd(retiredDate)} 퇴직` : "퇴직") : ((code && EXCLUDE_REASON[code]) ?? "규칙에 맞지 않음");
+
+/** 「5일 · 40.0h」(휴게를 뺀 시간). 없으면 「—」 */
+export const totalsLabel = (t: { days: number; minutes: number }) => (t.days ? `${t.days}일 · ${(t.minutes / 60).toFixed(1)}h` : "—");
+
+type CopyRow = { retiredDate: string | null; copied: { days: number }; excluded: { workDate: string; code: string | null }[] };
+
+/**
+ * 복사 미리보기 한 줄의 처리 글자(목업 STAFF-13). 복사할 날이 없으면 「제외 · 사유」, 일부만 빠지면 「일부 제외」와 빠진 날 · 사유,
+ * 아니면 「복사」. 사유가 여럿이면 겹치지 않게 모은다.
+ */
+export function copyStatus(row: CopyRow): { kind: "copy" | "partial" | "excluded"; label: string; detail: string | null } {
+  if (row.copied.days === 0) {
+    const reasons = [...new Set(row.excluded.map((e) => excludeReason(e.code, row.retiredDate)))];
+    return { kind: "excluded", label: `제외 · ${reasons.join(" · ") || "복사할 날 없음"}`, detail: null };
+  }
+  if (row.excluded.length)
+    return { kind: "partial", label: "일부 제외", detail: row.excluded.map((e) => `${mmdd(e.workDate)} ${excludeReason(e.code, row.retiredDate)}`).join(", ") };
+  return { kind: "copy", label: "복사", detail: null };
+}

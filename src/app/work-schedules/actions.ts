@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
 import {
   bulkCreateSchedules,
+  copyLastWeek,
   createSchedule,
   deleteSchedule,
   getScheduleDefaults,
@@ -116,6 +117,20 @@ export async function deleteScheduleAction(id: unknown): Promise<ActionResult> {
   } catch (error) {
     const failure = failureOf(error, "삭제", { id });
     if (failure.status === undefined || failure.status === 404) refresh();
+    return failure;
+  }
+}
+
+/** 지난 주 복사(#204) — 넣을 주의 월요일. 빈 주가 아니면 409 문장 그대로 */
+export async function copyLastWeekAction(storeId: unknown, weekStart: unknown): Promise<ActionResult<{ copied: number }>> {
+  if (!validId(storeId) || !validDate(weekStart)) return { ok: false, status: 400, message: "점포와 주를 다시 골라 주세요." };
+  try {
+    const result = await copyLastWeek(storeId, weekStart);
+    refresh();
+    return { ok: true, copied: result.staff.filter((s) => s.copied.days > 0).length };
+  } catch (error) {
+    const failure = failureOf(error, "지난 주 복사", { storeId, weekStart });
+    if (failure.status === undefined) refresh();
     return failure;
   }
 }
