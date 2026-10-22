@@ -9,7 +9,6 @@ export function supportSections({ A, R }) {
   const L = (path) => link(R, path);
   const pageNav = (n) => `<div class="pt-[14px]">${ui.pagination(A, 1, n)}</div>`;
   const ND = L("support/notice-detail.html");
-  // 라디오는 필터 안에 세로로 둔다.
   // 구분 · 카테고리 · 상태 필터는 다른 목록처럼 체크박스로 여러 개를 함께 고른다. 아무것도 고르지 않으면 전체다(2026-10-22 재영, #282~284).
   const checks = (items) => items.map((t) => ui.checkbox(A, t)).join("");
   const IM = L("support/inquiry-mine.html");

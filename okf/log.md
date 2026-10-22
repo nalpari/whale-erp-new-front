@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [고객지원·커뮤니티](/support.md) — 탭 BP 이동 리뷰 반영: 고객지원 서버 화면의 「다시 시도」 · 「목록」 링크에도 탭 BP 를 붙이고(`bpHref`), 주소에만 있는 사용 중지 FAQ 카테고리를 체크된 칸으로 보인다. support.md 의 화면 주소가 메뉴 URL 이고 실제 주소는 `/bp/{bpCodeId}/…` 임을 적었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [고객지원·커뮤니티](/support.md) — 고객지원 · 커뮤니티 관리 목록의 상태 · 구분 · 카테고리 필터를 라디오(「전체」 + 하나)에서 체크박스(여러 개, 안 고르면 전체)로 바꿨다(2026-10-22 재영). 데모 필터도 맞췄다. api 가 여러 값을 받는 변경과 함께 간다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 고객지원 화면 셋(공지사항 · FAQ · 문의하기)을 탭 BP 주소(`/bp/{bpCodeId}/…`, front #82 · api #94)로 옮겼다. 화면 안 링크와 문의 등록 창구에 탭 BP 를 붙인다.
 * **Update**: [근무스케줄 관리 화면 (구현)](/screens/work-schedules.md) — 지난 주 복사 미리보기(#204): 빈 주에서만 켜지는 「지난 주 복사」, 직원별 지난 주 · 이번 주 · 처리(복사 · 일부 제외 · 제외 사유 · 지난 주 없음), 「n명 복사」. 폐점 점포는 끈다.

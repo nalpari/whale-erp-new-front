@@ -12,6 +12,8 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-22T04:00:00Z }
 
 # 화면
 
+주소는 메뉴 URL 이다. ERP 화면이라 실제 화면 주소는 앞에 탭 BP 를 붙인 `/bp/{bpCodeId}/support-…` 다(front #82). BP 없이 오면 SessionGate 가 탭 BP 주소로 보낸다.
+
 | 주소 | 이름 | 하는 일 | 스펙 |
 |------|------|---------|------|
 | `/support-notices` · `/support-faqs` · `/support-inquiries` | 공지사항 · FAQ · 문의하기 | 화면 셋, 메뉴 셋(이 순서). 검색·필터·페이저가 화면마다 있고, 문의 등록 폼은 문의하기 화면에 있다. 목업은 한 파일에 탭으로 그렸다. | `S-ITFILU` |

@@ -5,7 +5,7 @@ import { link } from "./site.mjs";
 
 // 1팀 배지는 운영(on)·미운영(off) 두 색뿐이다. 임시저장·고정처럼 상태 색이 없는 값은 옅은 회색 꼬리표로 둔다.
 const tag = (text) => `<span class="inline-block rounded-[2px] bg-erp-subtle px-[4px] py-[2px] text-center text-[14px] font-medium text-erp-ink">${text}</span>`;
-// 화면마다 왼쪽 필터 + 목록(목록 화면 기본 틀). 라디오는 필터 안에 세로로, 첫 값(전체)을 고른 채로 둔다.
+// 화면마다 왼쪽 필터 + 목록(목록 화면 기본 틀).
 // 상태 필터는 다른 목록처럼 체크박스로 여러 개를 함께 고른다. 아무것도 고르지 않으면 전체다(2026-10-22 재영, #275).
 const checks = (A, items) => items.map((t) => ui.checkbox(A, t)).join("");
 const search = (A, label, placeholder) => ui.filterSection(label, ui.searchField(A, { placeholder }), { tight: true });
