@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, type ReactNode } from "react";
-import { Button, DateField, Field, TextField } from "@/components/common";
+import { Badge, Button, DateField, Field, TextField } from "@/components/common";
 import { FieldMessage } from "@/components/site/side-parts";
 import {
   BIZ_CEO_NAME_MAX,
@@ -21,9 +21,9 @@ import {
  * 상태는 부르는 화면이 쥔다 — 이 상자는 그리기만 한다. 인증하기는 확인만 하고 저장은 화면의 [저장]이 한다.
  * 형식 오류 · 중복은 그 칸 아래, 빈 칸 묶음 · 그 밖의 실패(boxError)는 인증하기 버튼 바로 위 한 줄이다.
  */
-/** 인증 상태 글자 — 「인증 완료 · 날짜」(파랑) / 「미인증」(빨강). 상자 머리 대신 묶음 제목에 둘 때도 같은 모양을 쓴다 */
+/** 인증 상태 배지 — 「인증 완료 · 날짜」(on) / 「미인증」(off). 상자 머리 대신 묶음 제목에 둘 때도 같은 배지를 쓴다(2026-10-22 사용자 지정) */
 export function BizVerifiedStatus({ verified, date }: { verified: boolean; date: string }) {
-  return <span className={`text-[14px] font-medium ${verified ? "text-erp-on" : "text-erp-off"}`}>{bizVerifiedLabel(verified, date)}</span>;
+  return <Badge tone={verified ? "on" : "off"}>{bizVerifiedLabel(verified, date)}</Badge>;
 }
 
 export function BizVerificationBox({
