@@ -6278,14 +6278,19 @@ export interface components {
          */
         PreferenceCategory: "CONTRACT" | "SCHEDULE" | "TODO" | "PAYSLIP";
         /** @enum {string} */
-        StaffNotificationTargetType: "WORK_SCHEDULE" | "TODO";
+        StaffNotificationTargetType: "WORK_SCHEDULE" | "TODO" | "CONTRACT" | "PAYSLIP";
         StaffNotificationTargetDto: {
             type: components["schemas"]["StaffNotificationTargetType"];
-            staffMemberId: number;
+            /** @description 그 업무가 속한 내 소속. 급여명세서는 없다 */
+            staffMemberId?: number;
             /** @description 근무스케줄 — 근무일 YYYY-MM-DD */
             workDate?: string;
             /** @description TO-DO */
             todoId?: number;
+            /** @description 근로계약 */
+            contractId?: number;
+            /** @description 급여명세서 */
+            payslipId?: number;
         };
         MyNotificationItemDto: {
             /** @description 수신 설정 묶음 — 지금 템플릿의 값. 템플릿이 없으면 null */
@@ -15267,11 +15272,11 @@ export interface operations {
                 pageSize?: number;
                 /** @description 여러 개면 `?status=PENDING&status=IN_PROGRESS`. 없으면 전체 */
                 status?: components["schemas"]["TodoStatus"][];
-                /** @description 점포 유형 — DIRECT 직영 · FRANCHISE 가맹. 여러 개는 반복하거나 쉼표로. 주지 않으면 둘 다 */
+                /** @description 점포 유형(상단 범위 직영 · 가맹) — DIRECT · FRANCHISE. 폐점 점포는 뺀다. 여러 개는 반복하거나 쉼표로. 주지 않으면 둘 다(폐점 포함) */
                 storeTypes?: ("DIRECT" | "FRANCHISE")[];
                 /** @description 담당 — 개인 · 근무지 전체 */
                 assigneeType?: components["schemas"]["TodoAssigneeType"];
-                /** @description 고른 점포. 여러 개는 `storeIds=1&storeIds=2` 또는 쉼표로, 1000개까지. 주지 않으면 업무 범위 전체 */
+                /** @description 고른 점포. 여러 개는 `storeIds=1&storeIds=2` 와 쉼표 `storeIds=1,2` 중 하나로(섞으면 400), 1000개까지. 주지 않으면 업무 범위 전체 */
                 storeIds?: number[];
                 /** @description 이 직원 레코드에 배정된 것 */
                 staffMemberId?: number;
