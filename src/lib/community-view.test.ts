@@ -169,6 +169,7 @@ test("체크박스 필터 — 여러 값을 받고, 모르는 값 · 겹친 값�
   assert.deepEqual(parseInquiryQuery({ answerStatus: ["ANSWERED", "WAITING"] }).answerStatus, ["WAITING", "ANSWERED"]);
   assert.deepEqual(parseSupportFaqQuery({ faqCategoryCode: [" ACCOUNT ", "", "ACCOUNT", "B".repeat(21), "BILLING"] }).faqCategoryCode, ["ACCOUNT", "BILLING"]);
   assert.deepEqual(parseSupportFaqQuery({}).faqCategoryCode, []);
+  assert.equal(parseSupportFaqQuery({ faqCategoryCode: Array.from({ length: 60 }, (_, i) => `C${i}`) }).faqCategoryCode.length, 50);
 });
 
 test("pageWindow — 10개 묶음과 앞 · 뒤 묶음", () => {

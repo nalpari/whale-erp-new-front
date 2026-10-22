@@ -199,8 +199,8 @@ export const parseSupportNoticeQuery = (raw: Raw): SupportNoticeQuery => ({
 export const parseSupportFaqQuery = (raw: Raw): SupportFaqQuery => ({
   ...pageOf(raw),
   keyword: textOf(first(raw.keyword), 100),
-  // 카테고리는 공통코드라 목록을 모른다 — 다듬어 빈 값 · 겹친 값만 빼고, 20자 넘는 값(api 가 400)은 버린다.
-  faqCategoryCode: [...new Set(all(raw.faqCategoryCode).map((v) => textOf(v, 21)))].filter((v) => v && v.length <= 20),
+  // 카테고리는 공통코드라 목록을 모른다 — 다듬어 빈 값 · 겹친 값만 빼고, api 가 400 을 내는 값(20자 넘음 · 50개 넘음)은 버린다.
+  faqCategoryCode: [...new Set(all(raw.faqCategoryCode).map((v) => textOf(v, 21)))].filter((v) => v && v.length <= 20).slice(0, 50),
 });
 export const parseSupportInquiryQuery = (raw: Raw): SupportInquiryQuery => ({
   ...pageOf(raw),
