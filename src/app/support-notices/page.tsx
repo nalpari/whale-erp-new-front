@@ -1,5 +1,5 @@
 import { PageBar } from "@/components/common";
-import { getEnum } from "@/lib/api";
+import { bpHref, getEnum } from "@/lib/api";
 import { getSupportNotices } from "@/lib/community";
 import { parseSupportNoticeQuery, SUPPORT_NOTICE_BASE } from "@/lib/community-view";
 import { ListFailure, loadList } from "@/components/community/list-load";
@@ -15,7 +15,7 @@ export default async function SupportNoticesPage({ searchParams }: PageProps<"/s
       {"data" in loaded ? (
         <SupportNoticeList items={loaded.data[0].items} total={loaded.data[0].total} query={query} noticeTypes={loaded.data[1]} />
       ) : (
-        <ListFailure {...loaded} retryHref={SUPPORT_NOTICE_BASE} />
+        <ListFailure {...loaded} retryHref={await bpHref(SUPPORT_NOTICE_BASE)} />
       )}
     </>
   );
