@@ -11,7 +11,18 @@ import { useCodeLabel } from "@/components/site/code-label";
 import { useAccount, usePagePermission } from "@/components/site/session-gate";
 import { bpCodePanelAccess, bpDeletable, bpPanelLock, newBpItemDraft, toBpItemDraft, type BpItemDraft } from "@/lib/bp-code-drafts";
 import type { BpCodeGroup, BpCodeItem } from "@/lib/bp-codes";
-import { buildSaveItemsInput, conflictCode, dropCreatedAdded, followSameRows, itemsDirty, renumberAdded, unusableCodeMessage, withKeptAdded } from "@/lib/code-drafts";
+import {
+  buildSaveItemsInput,
+  conflictCode,
+  dropCreatedAdded,
+  followSameRows,
+  hasPending,
+  itemsDirty,
+  renumberAdded,
+  savedToast,
+  unusableCodeMessage,
+  withKeptPending,
+} from "@/lib/code-drafts";
 import { failureView } from "@/lib/code-save";
 import { codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-validation";
 import { saveBpCodeItemsAction } from "./actions";
@@ -42,7 +53,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [failure, setFailure] = useState<string | null>(null);
   const [saving, startSaving] = useTransition();
-  // 저장을 시작한 목록 — 등록만 실패했거나 결과를 모를 때 다음에 오는 목록 뒤에 새 행을 이어 둔다(플랫폼 패널과 같다).
+  // 저장을 시작한 목록 — 뒤 단계가 실패했거나 결과를 모를 때 다음에 오는 목록 뒤에 새 행을 이어 두고 지울 행 표시도 다시 얹는다(플랫폼 패널과 같다).
   const [savingFrom, setSavingFrom] = useState<BpCodeItem[] | null>(null);
   const nextId = useRef(1);
 
@@ -53,10 +64,10 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
     setShown(items);
     if (sameRows) setSavingFrom(followSameRows(savingFrom, shown, items));
     else {
-      const next = renumberAdded(withKeptAdded(items.map(toBpItemDraft), drafts, savingFrom === shown));
+      const next = renumberAdded(withKeptPending(items.map(toBpItemDraft), drafts, savingFrom === shown));
       setSavingFrom(null);
       setDrafts(next);
-      if (!next.some((d) => d.added)) {
+      if (!hasPending(next)) {
         setErrors({});
         setFailure(null);
       }
@@ -132,15 +143,16 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
         router.refresh();
         return setFailure(UNKNOWN_RESULT);
       }
-      if ((result.ok || result.updatesSaved) && !result.refreshed) router.refresh();
+      if ((result.ok || result.anySaved) && !result.refreshed) router.refresh();
       if (result.ok) {
         setSavingFrom(null);
         setDrafts((rows) => dropCreatedAdded(rows, input.creates.map((c) => c.itemCode)).map((d) => ({ ...d, label: d.label.trim() })));
         setErrors({});
         setFailure(null);
-        return toast(input.creates.length ? "saved" : input.deletes.length && !input.updates.length ? "deleted" : "updated");
+        return toast(savedToast(input));
       }
-      if (!result.updatesSaved) setSavingFrom(null);
+      // 앞 단계(수정 · 삭제)가 저장됐으면 새 행 · 지울 행 표시는 다시 받은 목록에 남는다(savingFrom)
+      if (!result.anySaved) setSavingFrom(null);
       // 409 — 겹친 코드(지운 코드 포함) · 플랫폼고정 그룹. 문구가 「…: CODE」 꼴이면 그 새 행의 칸 오류로, 아니면 표 아래 한 줄로 보인다.
       const view = failureView(result);
       if (view.conflict) {

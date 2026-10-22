@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
 import { createBpCodeItems, deleteBpCodeItems, updateBpCodeItems, type SaveCodeItemsInput } from "@/lib/bp-codes";
-import { planSave, saveInOrder, type SaveFailure, type SaveResult } from "@/lib/code-save";
+import { planSave, saveInOrder, savedNote, type SaveFailure, type SaveResult } from "@/lib/code-save";
 
 // 상세 코드 패널 저장 — 플랫폼 공통코드와 같은 순서다(수정 PUT → 삭제 DELETE → 등록 POST, planSave · saveInOrder). 한 단계가 실패하면
 // 뒤 단계는 보내지 않고, 앞 단계에서 저장한 것은 남는다 — 화면은 반영된 목록 뒤에 새 행을 남긴다.
@@ -44,24 +44,30 @@ const GROUP_CODE = /^[A-Z][A-Z0-9_]{0,19}$/;
 const MAX_ROWS = 500;
 
 export async function saveBpCodeItemsAction(groupCode: string, input: SaveCodeItemsInput): Promise<SaveResult> {
-  if (!GROUP_CODE.test(groupCode) || [input.updates, input.creates, input.deletes].some((rows) => rows.length > MAX_ROWS))
+  // deletes 가 없는 요청(삭제가 생기기 전 화면 등)은 지울 것이 없는 것으로 본다. 행 목록이 배열이 아니면 400 으로 돌려보낸다.
+  const deletes = input.deletes ?? [];
+  if (!GROUP_CODE.test(groupCode) || [input.updates, input.creates, deletes].some((rows) => !Array.isArray(rows) || rows.length > MAX_ROWS))
     return {
       ok: false,
-      updatesSaved: false,
+      anySaved: false,
       saved: [],
       failed: "수정",
+      skipped: [],
       refreshed: false,
       status: 400,
       message: "저장할 내용이 올바르지 않습니다. 화면을 새로 고친 뒤 다시 저장해 주세요.",
     };
   const where = `BP 상세 코드(${groupCode})`;
   return saveInOrder({
-    ...planSave(input, {
-      update: (body) => updateBpCodeItems(groupCode, body),
-      create: (body) => createBpCodeItems(groupCode, body),
-      remove: (body) => deleteBpCodeItems(groupCode, body),
-    }),
-    failureOf: (error, what) => failureOf(error, `${where} ${what}${what !== "수정" && input.updates.length ? "(수정분은 저장됨)" : ""}`),
+    ...planSave(
+      { ...input, deletes },
+      {
+        update: (body) => updateBpCodeItems(groupCode, body),
+        create: (body) => createBpCodeItems(groupCode, body),
+        remove: (body) => deleteBpCodeItems(groupCode, body),
+      },
+    ),
+    failureOf: (error, what, saved) => failureOf(error, `${where} ${what}${savedNote(saved)}`),
     refresh,
   });
 }

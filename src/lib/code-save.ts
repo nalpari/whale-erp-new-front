@@ -9,12 +9,18 @@ export type SaveStep = "수정" | "삭제" | "등록";
 export type SaveFailure = { status?: number; message: string };
 
 /**
- * updatesSaved: 실패한 단계 앞에서 무언가 저장됐다(saved 에 그 단계들, failed 는 실패한 단계). refreshed: 화면 무효화(revalidatePath)를
- * 마쳤다 — 무언가 저장됐는데 false 면 화면이 직접 다시 받아야 한다(router.refresh).
+ * anySaved: 실패한 단계 앞에서 무언가(수정이든 삭제든) 저장됐다 — saved 에 그 단계들, failed 는 실패한 단계, skipped 는 실패 때문에
+ * 보내지 않은 뒤 단계다. refreshed: 화면 무효화(revalidatePath)를 마쳤다 — 무언가 저장됐는데 false 면 화면이 직접 다시 받아야 한다(router.refresh).
  */
 export type SaveResult =
   | { ok: true; refreshed: boolean }
-  | ({ ok: false; updatesSaved: boolean; saved: SaveStep[]; failed: SaveStep; refreshed: boolean } & SaveFailure);
+  | ({ ok: false; anySaved: boolean; saved: SaveStep[]; failed: SaveStep; skipped: SaveStep[]; refreshed: boolean } & SaveFailure);
+
+/** 실패한 저장 결과. */
+export type SaveFailed = Extract<SaveResult, { ok: false }>;
+
+/** 서버 로그에 붙이는 앞 단계 저장 표시 — 「(수정 · 삭제분은 저장됨)」. 저장된 것이 없으면 빈 문자열. */
+export const savedNote = (saved: readonly SaveStep[]) => (saved.length ? `(${saved.join(" · ")}분은 저장됨)` : "");
 
 type Run = (() => Promise<void>) | null;
 
@@ -53,7 +59,8 @@ export async function saveInOrder({
   failureOf,
   refresh,
 }: SavePlan & {
-  failureOf: (error: unknown, what: SaveStep) => SaveFailure;
+  /** saved — 이 실패 앞에서 이미 저장된 단계(서버 로그에 남긴다, savedNote). */
+  failureOf: (error: unknown, what: SaveStep, saved: readonly SaveStep[]) => SaveFailure;
   refresh: () => boolean;
 }): Promise<SaveResult> {
   const steps: [SaveStep, Run][] = [
@@ -62,38 +69,39 @@ export async function saveInOrder({
     ["등록", create],
   ];
   const saved: SaveStep[] = [];
-  for (const [what, run] of steps) {
+  for (const [n, [what, run]] of steps.entries()) {
     if (!run) continue;
     try {
       await run();
       saved.push(what);
     } catch (error) {
-      const updatesSaved = saved.length > 0;
-      return { ...failureOf(error, what), ok: false, updatesSaved, saved, failed: what, refreshed: updatesSaved ? refresh() : false };
+      const anySaved = saved.length > 0;
+      const skipped = steps.slice(n + 1).flatMap(([step, later]) => (later ? [step] : []));
+      return { ...failureOf(error, what, [...saved]), ok: false, anySaved, saved, failed: what, skipped, refreshed: anySaved ? refresh() : false };
     }
   }
   return saved.length ? { ok: true, refreshed: refresh() } : { ok: true, refreshed: false };
 }
 
-/** 앞 단계는 저장되고 뒤 단계가 실패했다는 안내. 수정 → 삭제 → 등록 순서라 saved 는 그 앞부분이다. */
-export function partialSaved(saved: readonly SaveStep[], failed: SaveStep): string {
+/**
+ * 앞 단계는 저장되고 뒤 단계가 실패했다는 안내. 수정 → 삭제 → 등록 순서라 saved 는 그 앞부분이다.
+ * 삭제가 실패해 등록을 보내지 않았으면(skipped) 새 행도 저장되지 않았다고 덧붙인다 — 화면에 남은 새 행을 저장된 것으로 오해하지 않게.
+ */
+export function partialSaved(saved: readonly SaveStep[], failed: SaveStep, skipped: readonly SaveStep[] = []): string {
   const done = saved.includes("수정") ? (saved.includes("삭제") ? "기존 행 수정과 삭제는" : "기존 행 수정은") : "행 삭제는";
   const notDone = failed === "등록" ? "새 행은 등록하지 못했습니다." : "지울 행은 삭제하지 못했습니다.";
-  return `${done} 저장했습니다. ${notDone}`;
+  const notSent = skipped.includes("등록") ? " 새 행도 등록하지 않았습니다." : "";
+  return `${done} 저장했습니다. ${notDone}${notSent}`;
 }
-
-export const PARTIAL_SAVED = partialSaved(["수정"], "등록");
 
 /**
  * 실패를 화면에 어떻게 보일지. 409(중복)는 그 칸 아래 오류(conflict)로, 그 밖은 표 위 띠(band)로 보인다.
  * 앞 단계가 저장된 실패면 띠에 그 사실을 먼저 적는다 — 「저장하지 못했습니다」만 보이면 저장된 것도 날아간 줄 안다.
  */
-export function failureView(
-  result: SaveFailure & { updatesSaved: boolean; saved?: readonly SaveStep[]; failed?: SaveStep },
-): { band: string | null; conflict: string | null } {
+export function failureView(result: SaveFailed): { band: string | null; conflict: string | null } {
   const conflict = result.status === 409 ? result.message : null;
-  if (result.updatesSaved) {
-    const partial = partialSaved(result.saved ?? ["수정"], result.failed ?? "등록");
+  if (result.anySaved) {
+    const partial = partialSaved(result.saved, result.failed, result.skipped);
     return { band: conflict ? partial : `${partial} ${result.message}`, conflict };
   }
   return { band: conflict ? null : result.message, conflict };

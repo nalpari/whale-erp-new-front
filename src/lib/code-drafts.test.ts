@@ -10,11 +10,13 @@ import {
   dropCreatedAdded,
   followSameRows,
   groupChanged,
+  hasPending,
   itemChanged,
   itemsDirty,
   renumberAdded,
+  savedToast,
   unusableCodeMessage,
-  withKeptAdded,
+  withKeptPending,
   type GroupDraft,
   type ItemDraft,
 } from "./code-drafts.ts";
@@ -115,11 +117,45 @@ const added = (key: string, itemCode: string): ItemDraft => ({ key, itemCode, la
 test("새 목록 — 저장을 시작한 목록을 대신하면 새 행을 뒤에 이어 두고 번호를 다시 매긴다", () => {
   const current = [itemDraft(items[0]), added("new-1", "INTERN")];
   const fresh = items.map((i) => itemDraft(i, { label: `${i.label}!` }));
-  const kept = renumberAdded(withKeptAdded(fresh, current, true));
+  const kept = renumberAdded(withKeptPending(fresh, current, true));
   assert.deepEqual(kept.slice(0, items.length), fresh, "새 목록 값으로 다시 시작");
   assert.equal(kept.at(-1)?.key, "new-1", "새 행은 키 그대로 뒤에 — 칸 오류가 제자리에 붙는다");
   assert.equal(kept.at(-1)?.sortOrder, Math.max(...items.map((i) => i.sortOrder)) + 1, "마지막 저장된 순서 다음 번호");
-  assert.deepEqual(withKeptAdded(fresh, current, false), fresh, "다른 목록이면 새 행을 버린다");
+  assert.deepEqual(withKeptPending(fresh, current, false), fresh, "다른 목록이면 새 행을 버린다");
+});
+
+test("새 목록 — 수정은 저장되고 삭제가 실패했으면 지울 행 표시를 다시 얹는다", () => {
+  const current = [itemDraft(items[0], { label: "정규직" }), itemDraft(items[1], { deleted: true })];
+  const fresh = [itemDraft({ ...items[0], label: "정규직" }), itemDraft(items[1])];
+  const kept = withKeptPending(fresh, current, true);
+  assert.deepEqual(
+    kept.map((d) => [d.itemCode, Boolean(d.deleted)]),
+    [
+      ["FULL", false],
+      ["PART", true],
+    ],
+  );
+  assert.equal(hasPending(kept), true, "이어 둔 지울 행이 있으면 실패 띠를 지우지 않는다");
+  // 새 목록에 없는 코드(이미 지워졌다)는 다시 얹지 않는다
+  assert.deepEqual(withKeptPending([fresh[0]], current, true), [fresh[0]]);
+  // 저장을 시작한 목록이 아니면 표시를 버린다
+  assert.equal(hasPending(withKeptPending(fresh, current, false)), false);
+});
+
+test("[되돌리기]로 지울 행 표시를 풀면 바뀐 것이 없다", () => {
+  assert.equal(itemsDirty([itemDraft(items[0], { deleted: false }), itemDraft(items[1])], items), false);
+});
+
+test("지울 표시가 붙은 새 행은 등록하지 않는다", () => {
+  assert.deepEqual(buildSaveItemsInput([...items.map((i) => itemDraft(i)), { ...added("new-1", "INTERN"), deleted: true }], items).creates, []);
+});
+
+test("토스트 — 새 행이 있거나 고치기 · 지우기를 함께 하면 저장, 지우기만이면 삭제, 고치기만이면 수정", () => {
+  const u = [{ itemCode: "A", label: "a", status: "ACTIVE" as const, sortOrder: 1 }];
+  assert.equal(savedToast({ updates: [], creates: u, deletes: [] }), "saved");
+  assert.equal(savedToast({ updates: u, creates: [], deletes: ["B"] }), "saved");
+  assert.equal(savedToast({ updates: [], creates: [], deletes: ["B"] }), "deleted");
+  assert.equal(savedToast({ updates: u, creates: [], deletes: [] }), "updated");
 });
 
 test("같은 내용의 목록이 새 참조로 오면 저장 기준을 옮긴다 — 다음 진짜 목록에서 새 행을 이어 둔다", () => {
@@ -131,7 +167,7 @@ test("같은 내용의 목록이 새 참조로 오면 저장 기준을 옮긴다
   const followed = followSameRows(started, started, sameContent);
   assert.equal(followed, sameContent);
   const current = [itemDraft(items[0]), added("new-1", "INTERN")];
-  assert.equal(withKeptAdded(revalidated.map((i) => itemDraft(i)), current, followed === sameContent).at(-1)?.key, "new-1");
+  assert.equal(withKeptPending(revalidated.map((i) => itemDraft(i)), current, followed === sameContent).at(-1)?.key, "new-1");
 
   assert.equal(followSameRows(null, started, sameContent), null, "저장 중이 아니면 그대로");
   assert.equal(followSameRows(started, sameContent, revalidated), started, "기준이 지금 목록이 아니면 그대로");

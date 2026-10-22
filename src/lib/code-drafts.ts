@@ -1,6 +1,6 @@
 // 공통코드 화면 두 패널(그룹 목록 · 상세 코드)의 초안 다루기 — 바뀜 판정, 저장 요청 만들기, 409 문구 해석.
 // 패널(src/app/code-groups/code-*-panel.tsx · src/app/bp-code-groups/bp-code-item-panel.tsx)에서 뺀 순수 함수라 node --test 로 검사한다(code-drafts.test.ts).
-// 상세 코드 함수는 칸이 더 있는 BP 행(관리 주체 · 플랫폼 사용중지 — bp-code-drafts.ts)도 받도록 행 모양을 넓게 받는다.
+// 상세 코드 함수는 칸이 더 있는 BP 행(관리 주체 등 — bp-code-drafts.ts)도 받도록 행 모양을 넓게 받는다.
 import type { CodeGroup, CodeItem, ManageOwnerCode, SaveCodeGroupsInput, SaveCodeItemsInput, UseStatus } from "./codes";
 import { CODE_PATTERN, normalizeCode } from "./code-validation.ts";
 
@@ -51,7 +51,7 @@ export function buildSaveItemsInput(drafts: readonly ItemDraft[], items: readonl
     .filter((d) => !d.added && !d.deleted && itemChanged(d, saved.get(d.itemCode)))
     .map(({ itemCode, label, status, sortOrder }) => ({ itemCode, label: label.trim(), status, sortOrder }));
   const creates = drafts
-    .filter((d) => d.added)
+    .filter((d) => d.added && !d.deleted)
     .map((d) => ({ itemCode: normalizeCode(d.itemCode), label: d.label.trim(), status: d.status, sortOrder: d.sortOrder }));
   const deletes = drafts.filter((d) => !d.added && d.deleted).map((d) => d.itemCode);
   return { updates, creates, deletes };
@@ -92,11 +92,27 @@ export function renumberAdded<D extends ItemDraft>(rows: readonly D[]): D[] {
 }
 
 /**
- * 새 목록이 왔을 때의 행. keep 이면(저장을 시작한 목록을 대신하는 목록이다 — 등록만 실패했거나 결과를 모른다)
- * 아직 저장하지 못한 새 행을 새 목록 뒤에 이어 둔다. 아니면 새 목록으로 다시 시작한다.
+ * 새 목록이 왔을 때의 행. keep 이면(저장을 시작한 목록을 대신하는 목록이다 — 뒤 단계가 실패했거나 결과를 모른다)
+ * 아직 저장하지 못한 것을 새 목록에 다시 얹는다 — 새 행은 뒤에 이어 두고, [삭제]로 표시해 둔 기존 행은 새 목록에 그 코드가
+ * 남아 있으면(삭제가 실패했다) 다시 표시한다. 아니면 새 목록으로 다시 시작한다. 그룹 행에는 삭제가 없어 새 행만 잇는다.
  */
-export function withKeptAdded<D extends { added: boolean }>(fresh: readonly D[], current: readonly D[], keep: boolean): D[] {
-  return [...fresh, ...(keep ? current.filter((d) => d.added) : [])];
+export function withKeptPending<D extends { added: boolean; deleted?: boolean; key?: string }>(
+  fresh: readonly D[],
+  current: readonly D[],
+  keep: boolean,
+): D[] {
+  if (!keep) return [...fresh];
+  const deleting = new Set(current.filter((d) => !d.added && d.deleted).map((d) => d.key));
+  return [...fresh.map((d) => (deleting.has(d.key) ? { ...d, deleted: true } : d)), ...current.filter((d) => d.added)];
+}
+
+/** 이어 둔 것(새 행 · 지울 행)이 있는지 — 없으면 지난 저장의 오류 · 띠를 지운다. */
+export const hasPending = (rows: readonly { added: boolean; deleted?: boolean }[]) => rows.some((d) => d.added || d.deleted);
+
+/** 다 저장한 뒤의 토스트. 새로 만든 것이 있거나 고치기 · 지우기를 함께 했으면 ‘저장되었습니다.’, 지우기만 했으면 ‘삭제되었습니다.’, 고치기만 했으면 ‘수정되었습니다.’ */
+export function savedToast({ updates, creates, deletes }: SaveCodeItemsInput): "saved" | "deleted" | "updated" {
+  if (creates.length || (updates.length && deletes.length)) return "saved";
+  return deletes.length ? "deleted" : "updated";
 }
 
 /**

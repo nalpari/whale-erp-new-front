@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { Badge, Button, DataTable, Pagination, Select, Tag, TextField, Toggle, useToast, type Column } from "@/components/common";
-import { buildSaveGroupsInput, codePanelAccess, followSameRows, groupChanged, withKeptAdded, type GroupDraft } from "@/lib/code-drafts";
+import { buildSaveGroupsInput, codePanelAccess, followSameRows, groupChanged, withKeptPending, type GroupDraft } from "@/lib/code-drafts";
 import { failureView } from "@/lib/code-save";
 import { codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-validation";
 import type { CodeGroup, ManageOwnerCode } from "@/lib/codes";
@@ -79,7 +79,7 @@ export function CodeGroupPanel({
       if (savingFrom && followed !== savingFrom.groups) setSavingFrom({ ...savingFrom, groups });
     } else {
       const keep = savingFrom?.groups === shown.groups && savingFrom.selected === selected;
-      const next = withKeptAdded(groups.map(toDraft), drafts, keep);
+      const next = withKeptPending(groups.map(toDraft), drafts, keep);
       setSavingFrom(null);
       setDrafts(next);
       if (!next.some((d) => d.added)) {
@@ -171,7 +171,7 @@ export function CodeGroupPanel({
         return setFailure(UNKNOWN_RESULT);
       }
       // 저장했는데 서버가 화면을 무효화하지 못했으면 직접 다시 받는다 — 새 목록이 와야 이어 둔 새 행 · 바뀐 값이 정리된다
-      if ((result.ok || result.updatesSaved) && !result.refreshed) router.refresh();
+      if ((result.ok || result.anySaved) && !result.refreshed) router.refresh();
       if (result.ok) {
         // 저장한 값으로 이 패널을 마무리한다. 새 그룹이 다음 쪽에 들어가 이 쪽 목록이 그대로여도(위 재설정이 돌지 않아도)
         // 입력 행이 남지 않게 한다. 다시 그린 목록이 먼저 와서 새 행을 이어 뒀으면 그것도 여기서 빠진다.
@@ -183,7 +183,7 @@ export function CodeGroupPanel({
         return toast(input.creates.length ? "saved" : "updated");
       }
       // 아무것도 저장되지 않았으면 이어 둘 일이 없다. 수정만 저장됐으면 새 행은 다시 받은 목록 뒤에 남는다(savingFrom).
-      if (!result.updatesSaved) setSavingFrom(null);
+      if (!result.anySaved) setSavingFrom(null);
       // 그룹 코드가 겹치면 칸 오류로, 그 밖은 띠로 알린다. 수정분이 저장됐으면 띠에 그 사실을 먼저 적는다(failureView).
       const view = failureView(result);
       if (view.conflict) setErrors({ code: view.conflict });

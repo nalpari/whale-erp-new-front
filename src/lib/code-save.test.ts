@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { failureView, PARTIAL_SAVED, partialSaved, planSave, saveInOrder, type SaveStep } from "./code-save.ts";
+import { failureView, partialSaved, planSave, saveInOrder, savedNote, type SaveFailed, type SaveStep } from "./code-save.ts";
 
 // 부른 순서와 화면 무효화 횟수를 남기는 가짜 api. 실패하면 던진 오류의 문구와 409 를 결과로 옮긴다 —
 // failureOf 가 어느 단계의 어떤 오류를 받았는지까지 결과에서 보인다.
@@ -58,9 +58,10 @@ test("수정이 실패하면 뒤 단계는 보내지 않고 무효화도 하지 
   const h = harness({ updateFails: true });
   assert.deepEqual(await saveInOrder({ ...h.deps, update: h.update, remove: h.remove, create: h.create }), {
     ok: false,
-    updatesSaved: false,
+    anySaved: false,
     saved: [],
     failed: "수정",
+    skipped: ["삭제", "등록"],
     refreshed: false,
     status: 409,
     message: "수정: update 오류",
@@ -73,9 +74,10 @@ test("등록만 실패하면 수정분은 저장됐다고 알리고 무효화한
   const h = harness({ createFails: true });
   assert.deepEqual(await saveInOrder({ ...h.deps, update: h.update, create: h.create }), {
     ok: false,
-    updatesSaved: true,
+    anySaved: true,
     saved: ["수정"],
     failed: "등록",
+    skipped: [],
     refreshed: true,
     status: 409,
     message: "등록: create 오류",
@@ -89,17 +91,48 @@ test("삭제가 실패하면 등록은 보내지 않는다 — 수정분은 저�
   const result = await saveInOrder({ ...h.deps, update: h.update, remove: h.remove, create: h.create });
   assert.deepEqual(h.calls, ["update", "remove"]);
   assert.equal(result.ok, false);
-  assert.deepEqual(!result.ok && [result.saved, result.failed, result.updatesSaved], [["수정"], "삭제", true]);
+  assert.deepEqual(!result.ok && [result.saved, result.failed, result.skipped, result.anySaved], [["수정"], "삭제", ["등록"], true]);
   assert.equal(h.refreshes(), 1);
+});
+
+test("삭제만 저장되고 등록이 실패해도 저장된 것이 있다 — 무효화하고 새 행을 이어 둔다", async () => {
+  const h = harness({ createFails: true });
+  const result = await saveInOrder({ ...h.deps, update: null, remove: h.remove, create: h.create });
+  assert.deepEqual(h.calls, ["remove", "create"]);
+  assert.deepEqual(!result.ok && [result.saved, result.failed, result.skipped, result.anySaved], [["삭제"], "등록", [], true]);
+  assert.equal(h.refreshes(), 1);
+});
+
+test("삭제만 보낸 저장이 실패하면 저장된 것이 없다 — 무효화하지 않는다", async () => {
+  const h = harness({ removeFails: true });
+  const result = await saveInOrder({ ...h.deps, update: null, remove: h.remove, create: null });
+  assert.deepEqual(!result.ok && [result.saved, result.failed, result.skipped, result.anySaved], [[], "삭제", [], false]);
+  assert.equal(h.refreshes(), 0);
+});
+
+test("failureOf 는 실패 앞에서 저장된 단계를 받는다 — 서버 로그에 남긴다", async () => {
+  const got: (readonly SaveStep[])[] = [];
+  const h = harness({ createFails: true });
+  await saveInOrder({
+    ...h.deps,
+    failureOf: (_error, _what, saved) => (got.push(saved), { message: "x" }),
+    update: h.update,
+    remove: h.remove,
+    create: h.create,
+  });
+  assert.deepEqual(got, [["수정", "삭제"]]);
+  assert.equal(savedNote(["수정", "삭제"]), "(수정 · 삭제분은 저장됨)");
+  assert.equal(savedNote([]), "");
 });
 
 test("등록만 보낸 저장이 실패하면 저장된 것이 없다 — 무효화하지 않는다", async () => {
   const h = harness({ createFails: true });
   assert.deepEqual(await saveInOrder({ ...h.deps, update: null, create: h.create }), {
     ok: false,
-    updatesSaved: false,
+    anySaved: false,
     saved: [],
     failed: "등록",
+    skipped: [],
     refreshed: false,
     status: 409,
     message: "등록: create 오류",
@@ -123,11 +156,11 @@ test("failureOf 가 판별 필드를 덮지 못한다", async () => {
     update: h.update,
     create: h.create,
     refresh: h.deps.refresh,
-    // 더 붙은 필드가 있어도 ok · updatesSaved 는 이 함수가 정한다
-    failureOf: () => ({ message: "x", ok: true, updatesSaved: true }) as unknown as { message: string },
+    // 더 붙은 필드가 있어도 ok · anySaved 는 이 함수가 정한다
+    failureOf: () => ({ message: "x", ok: true, anySaved: true }) as unknown as { message: string },
   });
   assert.equal(result.ok, false);
-  assert.equal(!result.ok && result.updatesSaved, false);
+  assert.equal(!result.ok && result.anySaved, false);
 });
 
 test("planSave — updates 는 수정, creates 는 등록에 { items } 로, deletes 는 삭제에 { itemCodes } 로 잇고, 빈 쪽은 null", async () => {
@@ -157,19 +190,40 @@ test("planSave — updates 는 수정, creates 는 등록에 { items } 로, dele
 });
 
 test("partialSaved — 저장된 단계와 실패한 단계를 함께 알린다", () => {
-  assert.equal(PARTIAL_SAVED, "기존 행 수정은 저장했습니다. 새 행은 등록하지 못했습니다.");
+  assert.equal(partialSaved(["수정"], "등록"), "기존 행 수정은 저장했습니다. 새 행은 등록하지 못했습니다.");
   assert.equal(partialSaved(["수정", "삭제"], "등록"), "기존 행 수정과 삭제는 저장했습니다. 새 행은 등록하지 못했습니다.");
   assert.equal(partialSaved(["삭제"], "등록"), "행 삭제는 저장했습니다. 새 행은 등록하지 못했습니다.");
   assert.equal(partialSaved(["수정"], "삭제"), "기존 행 수정은 저장했습니다. 지울 행은 삭제하지 못했습니다.");
+  // 삭제가 실패해 등록을 보내지 않았으면 새 행도 저장되지 않았다고 덧붙인다
+  assert.equal(partialSaved(["수정"], "삭제", ["등록"]), "기존 행 수정은 저장했습니다. 지울 행은 삭제하지 못했습니다. 새 행도 등록하지 않았습니다.");
+});
+
+const failed = (rest: { status?: number; message: string; saved: SaveStep[]; failed: SaveStep; skipped?: SaveStep[] }): SaveFailed => ({
+  ok: false,
+  anySaved: rest.saved.length > 0,
+  skipped: [],
+  refreshed: true,
+  ...rest,
 });
 
 test("failureView — 409 는 칸 오류, 그 밖은 띠. 앞 단계가 저장됐으면 띠에 먼저 적는다", () => {
-  assert.deepEqual(failureView({ status: 409, message: "겹칩니다: A", updatesSaved: false }), { band: null, conflict: "겹칩니다: A" });
-  assert.deepEqual(failureView({ status: 403, message: "권한이 없습니다", updatesSaved: false }), { band: "권한이 없습니다", conflict: null });
-  assert.deepEqual(failureView({ status: 409, message: "겹칩니다: A", updatesSaved: true }), { band: PARTIAL_SAVED, conflict: "겹칩니다: A" });
-  assert.deepEqual(failureView({ message: "저장하지 못했습니다.", updatesSaved: true }), { band: `${PARTIAL_SAVED} 저장하지 못했습니다.`, conflict: null });
-  assert.deepEqual(failureView({ message: "x", updatesSaved: true, saved: ["수정"], failed: "삭제" }), {
-    band: `${partialSaved(["수정"], "삭제")} x`,
+  const partial = partialSaved(["수정"], "등록");
+  assert.deepEqual(failureView(failed({ status: 409, message: "겹칩니다: A", saved: [], failed: "등록" })), { band: null, conflict: "겹칩니다: A" });
+  assert.deepEqual(failureView(failed({ status: 403, message: "권한이 없습니다", saved: [], failed: "수정" })), { band: "권한이 없습니다", conflict: null });
+  assert.deepEqual(failureView(failed({ status: 409, message: "겹칩니다: A", saved: ["수정"], failed: "등록" })), { band: partial, conflict: "겹칩니다: A" });
+  assert.deepEqual(failureView(failed({ message: "저장하지 못했습니다.", saved: ["수정"], failed: "등록" })), {
+    band: `${partial} 저장하지 못했습니다.`,
     conflict: null,
   });
+  assert.deepEqual(failureView(failed({ message: "x", saved: ["수정"], failed: "삭제", skipped: ["등록"] })), {
+    band: `${partialSaved(["수정"], "삭제", ["등록"])} x`,
+    conflict: null,
+  });
+  // 삭제만 저장되고 등록이 409 면 띠는 삭제를 저장했다고 알리고, 겹친 코드는 칸 오류로 간다
+  assert.deepEqual(failureView(failed({ status: 409, message: "겹칩니다: B", saved: ["삭제"], failed: "등록" })), {
+    band: partialSaved(["삭제"], "등록"),
+    conflict: "겹칩니다: B",
+  });
+  // 아무것도 저장되지 않은 삭제 단계 409(막힌 그룹 등)는 띠 없이 칸 오류(표 아래 한 줄)로 보인다
+  assert.deepEqual(failureView(failed({ status: 409, message: "막힌 그룹입니다", saved: [], failed: "삭제" })), { band: null, conflict: "막힌 그룹입니다" });
 });

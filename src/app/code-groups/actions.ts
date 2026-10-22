@@ -12,7 +12,7 @@ import {
   type SaveCodeGroupsInput,
   type SaveCodeItemsInput,
 } from "@/lib/codes";
-import { planSave, saveInOrder, type SaveFailure, type SavePlan, type SaveResult } from "@/lib/code-save";
+import { planSave, saveInOrder, savedNote, type SaveFailure, type SavePlan, type SaveResult } from "@/lib/code-save";
 
 // 패널 저장 — 사용자 동작은 행마다가 아니라 패널마다 한 번이다(S-UQPNIH). api 는 수정(PUT, 수정 권한) · 삭제(DELETE, 삭제 권한 —
 // 상세 코드만) · 등록(POST, 등록 권한)이 따로라 바뀐 기존 행이 있으면 수정, 지울 행이 있으면 삭제, 새 행이 있으면 등록을 이 순서로
@@ -54,7 +54,7 @@ function refresh(): boolean {
 function run(plan: SavePlan, where: string): Promise<SaveResult> {
   return saveInOrder({
     ...plan,
-    failureOf: (error, what) => failureOf(error, `공통코드 ${where} ${what}${what !== "수정" && plan.update ? "(수정분은 저장됨)" : ""}`, FAILED),
+    failureOf: (error, what, saved) => failureOf(error, `공통코드 ${where} ${what}${savedNote(saved)}`, FAILED),
     refresh,
   });
 }
