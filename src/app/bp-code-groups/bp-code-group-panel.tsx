@@ -65,6 +65,7 @@ export function BpCodeGroupPanel({
       />
       <div className="pt-[14px]">
         <Pagination page={page} totalPages={Math.max(1, Math.ceil(total / pageSize))} onPageChange={(next) => navigate(hrefOf({ page: next }))} />
-      </div>    </CodePanel>
+      </div>
+    </CodePanel>
   );
 }
