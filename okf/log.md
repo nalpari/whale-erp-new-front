@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) · [근무스케줄 관리 화면 (구현)](/screens/work-schedules.md) — 직원 상세를 데모 detail.html 에 맞췄다(2026-10-22 노영주): 근무스케줄 칸을 한 주 보기 + 주 넘김 + 주 선택 달력(popover, 몇째 주는 목요일 기준, 주소 `week`)으로 되돌리고 WHALEERP-185 기간 · 건수 · 쪽 번호를 걷었다(`…/summary/work-schedules`, 「관리」는 `&week=`). TO-DO 칸은 열 이름 줄 없는 표(제목 · 배정 · 상태 색 글자), 급여명세서 칸은 급여 기간 → 명세서 상세 링크 · 「관리」 `/payslips`(MN000009 조회 권한). 공통 `DataTable` 에 `headVariant`(plain · none)를 더해 상세 표에만 켰고, 요약 줄 아래 모서리를 데모처럼 각지게 했다.
 * **Update**: [근무스케줄 관리 화면 (구현)](/screens/work-schedules.md) — 직원 상세 근무스케줄 칸 설명을 맞췄다: `GET /staff-members/:id/work-schedules`(WHALEERP-185)로 받고, 「관리」는 주 없이 `/work-schedules?store=<근무지>`(이번 주)로 연다(front #99 리뷰).
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 직원 상세 근무스케줄 칸을 한 주 보기 + 주 넘김에서 기간 선택(이번 주 · 최근 4주 · 최근 3개월 · 최근 1년 · 전체) + 표(날짜 · 근무지 · 시작 · 종료 — 종료는 근무스케줄 화면과 같은 「익일 02:00」 · 「24:00」) + 페이지 번호로 바꿨다(WHALEERP-185, `GET /staff-members/:id/work-schedules`, 주소 `schedulePeriod` · `schedulePage` · `schedulePageSize`). 표 아래에 기간 근무시간 합계 줄(이번 주는 「주간 근무시간 합계」), 빈 표는 「이 주에 · 이 기간에 잡힌 근무스케줄이 없습니다.」. 응답 · 기간 타입은 api giza(WHALEERP-185)의 openapi 로 다시 만든 생성 타입이다(머지 뒤 main 기준으로 다시 만든다). `week-nav.tsx` 와 상세 요약 주 api 함수를 지웠다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [고객지원·커뮤니티](/support.md) — 탭 BP 이동 리뷰 반영: 고객지원 서버 화면의 「다시 시도」 · 「목록」 링크에도 탭 BP 를 붙이고(`bpHref`), 주소에만 있는 사용 중지 FAQ 카테고리를 체크된 칸으로 보인다. support.md 의 화면 주소가 메뉴 URL 이고 실제 주소는 `/bp/{bpCodeId}/…` 임을 적었다.
