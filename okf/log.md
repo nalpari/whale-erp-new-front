@@ -1,6 +1,9 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [고객지원·커뮤니티](/support.md) — 탭 BP 이동 리뷰 반영: 고객지원 서버 화면의 「다시 시도」 · 「목록」 링크에도 탭 BP 를 붙이고(`bpHref`), 주소에만 있는 사용 중지 FAQ 카테고리를 체크된 칸으로 보인다. support.md 의 화면 주소가 메뉴 URL 이고 실제 주소는 `/bp/{bpCodeId}/…` 임을 적었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [고객지원·커뮤니티](/support.md) — 고객지원 · 커뮤니티 관리 목록의 상태 · 구분 · 카테고리 필터를 라디오(「전체」 + 하나)에서 체크박스(여러 개, 안 고르면 전체)로 바꿨다(2026-10-22 재영). 데모 필터도 맞췄다. api 가 여러 값을 받는 변경과 함께 간다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 고객지원 화면 셋(공지사항 · FAQ · 문의하기)을 탭 BP 주소(`/bp/{bpCodeId}/…`, front #82 · api #94)로 옮겼다. 화면 안 링크와 문의 등록 창구에 탭 BP 를 붙인다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 강제 비밀번호 변경(`changeForcedPassword`)도 사용자 IP 를 api 로 넘긴다. api 가 약관 동의 이력에 접속 IP 를 남기는데 Next 서버 주소가 찍히고 있었다(front #97 리뷰). 로그인 설명에 `X-Forwarded-For` 를 믿을 수 있는 배포 전제(앞단 프록시 · api `TRUST_PROXY`)를 더했다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 로그인 서버 액션이 사용자 IP(`X-Forwarded-For`)를 api 로 넘긴다(`apiHeaders()`). 전에는 넘기지 않아 로그인 이력의 접속 IP 가 모두 Next 서버 주소였고 IP 한도를 전원이 나눠 썼다(WHALEERP-392 점검).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 권한 메뉴 등록 팝업의 머리칸 · 묶음 칸이 일부만 켜졌으면 「–」로 보인다(S-KUDELB, 공용 `Checkbox` 에 `indeterminate`). BP 권한 그룹에서 그 쪽의 마지막 한 건을 지우면 앞쪽으로 간다.
