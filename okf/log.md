@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 도입문의 리뷰 반영: 시간 초과는 「이미 접수되었을 수 있다」로, 영문 400 은 입력 확인 문구로 안내하고, 빈칸만 적은 칸 · 전화번호 형식을 확인 창 전에 잡는다. 폼 부품 이름을 도입문의 `lead`(`LeadForm` · `lead-form.tsx`, 링크 키 `leads`)로 바꿨다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [홈](/home.md) — 비로그인 도입문의 실제 화면 `/leads`(#297 · #298)를 열었다. 디자인 샘플과 한 폼을 쓰고 선택지는 공개 공통코드 · enum 에서, 접수는 서버 액션으로 api `POST /leads` 에 보낸다. 확인 창 · 완료 창, 실패 때 내용 유지와 안내, 업종 기타면 아래에 직접 입력. 「도입문의」 링크와 공개 경로를 `/inquiry` 에서 `/leads` 로 옮겼다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [고객지원·커뮤니티](/support.md) — 탭 BP 이동 리뷰 반영: 고객지원 서버 화면의 「다시 시도」 · 「목록」 링크에도 탭 BP 를 붙이고(`bpHref`), 주소에만 있는 사용 중지 FAQ 카테고리를 체크된 칸으로 보인다. support.md 의 화면 주소가 메뉴 URL 이고 실제 주소는 `/bp/{bpCodeId}/…` 임을 적었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [고객지원·커뮤니티](/support.md) — 고객지원 · 커뮤니티 관리 목록의 상태 · 구분 · 카테고리 필터를 라디오(「전체」 + 하나)에서 체크박스(여러 개, 안 고르면 전체)로 바꿨다(2026-10-22 재영). 데모 필터도 맞췄다. api 가 여러 값을 받는 변경과 함께 간다.

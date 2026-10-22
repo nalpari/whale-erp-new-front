@@ -1,7 +1,7 @@
 "use client";
 
 import { type FormEvent, type ReactNode, useEffect, useId, useRef, useState, useTransition } from "react";
-import { INDUSTRY_OTHER, LEAD_FAILED, type LeadResult } from "@/lib/leads";
+import { INDUSTRY_OTHER, LEAD_UNKNOWN, leadInputProblem, type LeadResult } from "@/lib/leads";
 import { CHECKBOX, INPUT, INPUT_BOX, LABEL, SUBMIT } from "../guest-form";
 import { GuestButton } from "../guest-ui";
 import { HOVER } from "../theme";
@@ -83,7 +83,7 @@ function CheckGroup({ label, name, options, message }: { label: string; name: st
         {label}
         <Required />
       </legend>
-      <div className="flex h-[56px] items-center gap-[32px] text-[16px] leading-[1.5]">
+      <div className="flex min-h-[56px] flex-wrap items-center gap-x-[32px] gap-y-[12px] text-[16px] leading-[1.5]">
         {options.map((o, i) => (
           <label key={o.value} className="flex items-center gap-[8px] text-guest-ink">
             <input
@@ -127,7 +127,7 @@ function LeadDialog({ open, title, onClose, actions, children }: { open: boolean
 }
 
 // 도입문의 화면 머리 + 본문(폼, 또는 선택지를 못 받았을 때의 안내). 실제 화면((site)/leads)과 샘플이 함께 쓴다.
-export function InquiryScreen({ children }: { children: ReactNode }) {
+export function LeadScreen({ children }: { children: ReactNode }) {
   return (
     <section className="mx-auto flex w-[800px] flex-col gap-[40px] pt-[80px] text-guest-ink">
       <div className="flex flex-col gap-[8px]">
@@ -139,6 +139,9 @@ export function InquiryScreen({ children }: { children: ReactNode }) {
   );
 }
 
+// leadInputProblem 이 검사 오류를 거는 칸.
+const CHECKED_FIELDS = new Set(["contactName", "phone", "industryDetail", "body"]);
+
 // 샘플은 접수 요청을 보내지 않고 늘 성공한다.
 const sampleSubmit = async (): Promise<LeadResult> => ({ ok: true });
 
@@ -146,8 +149,9 @@ const sampleSubmit = async (): Promise<LeadResult> => ({ ok: true });
  * 도입문의(#297 · #298). 받는 항목은 okf/home.md 도입문의(이름·업종·전화번호·이메일·관심 서비스·도입 예정 시기·문의 내용)를 따른다.
  * [문의 접수하기] → 브라우저 검사 → 확인 창(접수 대상 · 연락 일정) → 접수. 성공하면 완료 창을 띄우고 폼을 비운다.
  * 실패하면 적은 내용을 그대로 두고 오류와 다시 하는 방법을 버튼 위에 보인다 — 서버 액션을 form action 이 아니라 직접 불러 폼이 초기화되지 않는다.
+ * 브라우저 검사가 놓치는 빈칸만 적은 칸 · 전화번호 형식(leadInputProblem)은 확인 창을 띄우기 전에 그 칸에 검사 오류로 건다.
  */
-export function InquiryForm({ options, submit = sampleSubmit }: { options: LeadOptions; submit?: (form: FormData) => Promise<LeadResult> }) {
+export function LeadForm({ options, submit = sampleSubmit }: { options: LeadOptions; submit?: (form: FormData) => Promise<LeadResult> }) {
   const formRef = useRef<HTMLFormElement>(null);
   const errorRef = useRef<HTMLParagraphElement>(null);
   // 성공하면 key 를 바꿔 폼을 새로 그린다 — 체크 상자 상태 · 열린 직접 입력칸까지 처음으로 돌아간다.
@@ -157,16 +161,43 @@ export function InquiryForm({ options, submit = sampleSubmit }: { options: LeadO
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  // [접수하기]를 빠르게 두 번 눌러도 한 번만 보낸다 — pending 은 다음 렌더에야 바뀌어 두 번째 클릭을 막지 못한다.
+  const sendingRef = useRef(false);
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const form = new FormData(e.currentTarget);
+    const formEl = e.currentTarget;
+    const form = new FormData(formEl);
+    const problem = leadInputProblem(form);
+    if (problem) {
+      const field = formEl.elements.namedItem(problem.name) as HTMLInputElement | HTMLTextAreaElement | null;
+      field?.setCustomValidity(problem.message);
+      field?.reportValidity();
+      return;
+    }
     setConfirming({ phone: String(form.get("phone")).trim(), email: String(form.get("email")).trim() });
   }
 
+  // leadInputProblem 이 건 검사 오류는 그 칸을 고치기 시작하면 푼다 — 남아 있으면 브라우저가 다음 제출을 막는다.
+  function handleInput(e: FormEvent<HTMLFormElement>) {
+    const target = e.target as HTMLInputElement | HTMLTextAreaElement;
+    if (CHECKED_FIELDS.has(target.name)) target.setCustomValidity("");
+  }
+
+  // 완료 창을 닫으면 새로 그린 폼의 접수 버튼으로 커서를 돌린다 — 성공 때 폼을 새로 그려 앞서 누른 버튼이 없어졌다.
+  function handleDoneClose() {
+    setDone(false);
+    formRef.current?.querySelector<HTMLButtonElement>('button[type="submit"]')?.focus();
+  }
+
   function handleConfirm() {
+    if (sendingRef.current) return;
+    sendingRef.current = true;
     setConfirming(null);
-    if (!formRef.current) return;
+    if (!formRef.current) {
+      sendingRef.current = false;
+      return;
+    }
     const data = new FormData(formRef.current);
     setError(null);
     startTransition(async () => {
@@ -175,9 +206,11 @@ export function InquiryForm({ options, submit = sampleSubmit }: { options: LeadO
       try {
         result = await submit(data);
       } catch (err) {
-        console.error("도입문의 접수 요청이 서버에 닿지 못했습니다", err);
-        result = { ok: false, error: LEAD_FAILED };
+        // 요청이 api 까지 갔는지 알 수 없다 — 이미 접수됐을 수 있다고 안내한다.
+        console.error("도입문의 접수 요청의 응답을 받지 못했습니다", err);
+        result = { ok: false, error: LEAD_UNKNOWN };
       }
+      sendingRef.current = false;
       if (result.ok) {
         setFormKey((k) => k + 1);
         setOtherIndustry(false);
@@ -192,7 +225,7 @@ export function InquiryForm({ options, submit = sampleSubmit }: { options: LeadO
 
   return (
     <>
-      <form key={formKey} ref={formRef} className="flex flex-col gap-[40px]" onSubmit={handleSubmit}>
+      <form key={formKey} ref={formRef} className="flex flex-col gap-[40px]" onSubmit={handleSubmit} onInput={handleInput}>
         <Section
           title="문의자 정보"
           note={
@@ -209,7 +242,7 @@ export function InquiryForm({ options, submit = sampleSubmit }: { options: LeadO
             </Field>
             <Field label="전화번호" required help="점포 번호를 적어도 됩니다. 중복 접수는 이 번호와 이메일로 가립니다.">
               <span className={INPUT_BOX}>
-                <input name="phone" type="tel" required inputMode="numeric" autoComplete="tel" placeholder="숫자만 입력해 주세요" className={INPUT} />
+                <input name="phone" type="tel" required inputMode="numeric" autoComplete="tel" placeholder="02-1234-5678" className={INPUT} />
               </span>
             </Field>
             <Field label="업종" required>
@@ -306,9 +339,9 @@ export function InquiryForm({ options, submit = sampleSubmit }: { options: LeadO
       <LeadDialog
         open={done}
         title="문의가 접수되었습니다"
-        onClose={() => setDone(false)}
+        onClose={handleDoneClose}
         actions={
-          <GuestButton tone="navy" onClick={() => setDone(false)}>
+          <GuestButton tone="navy" onClick={handleDoneClose}>
             확인
           </GuestButton>
         }

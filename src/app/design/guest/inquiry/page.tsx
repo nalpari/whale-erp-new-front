@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { GuestPage } from "../guest-ui";
-import { InquiryForm, InquiryScreen, type LeadOptions } from "./inquiry-form";
+import { LeadForm, LeadScreen, type LeadOptions } from "./lead-form";
 
 export const metadata: Metadata = { title: "Whale ERP · 도입문의" };
 
@@ -32,9 +32,9 @@ const OPTIONS: LeadOptions = {
 export default function InquiryPage() {
   return (
     <GuestPage>
-      <InquiryScreen>
-        <InquiryForm options={OPTIONS} />
-      </InquiryScreen>
+      <LeadScreen>
+        <LeadForm options={OPTIONS} />
+      </LeadScreen>
     </GuestPage>
   );
 }
