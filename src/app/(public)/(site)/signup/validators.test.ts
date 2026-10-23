@@ -75,6 +75,9 @@ test("이메일 — 형식 검사", () => {
   assert.ok(validateEmail("hayoon.co.kr"), "@ 없음");
   assert.ok(validateEmail("hayoon @hangang.co.kr"), "공백 포함");
   assert.equal(validateEmail("hayoon@hangang.co.kr"), undefined);
+  // 앞뒤 공백은 api 처럼 빼고 본다(복사해 붙인 값)
+  assert.equal(validateEmail(" hayoon@hangang.co.kr "), undefined);
+  assert.equal(validateEmail("   "), "이메일을 입력해 주세요.");
   // api @IsEmail 이 막는 값(규칙 자체는 lib/email-format.test.ts)
   for (const bad of ["hayoon@hangang.c", "hayoon@hangang..kr", "hayoon@hangang.co.kr,"]) assert.equal(validateEmail(bad), "이메일 형식이 올바르지 않습니다.", bad);
 });

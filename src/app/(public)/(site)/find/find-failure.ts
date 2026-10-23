@@ -52,8 +52,8 @@ export function failureOf(e: unknown, notFound: string): { message: string; log:
   // 일치 없음으로 보이면 사용자는 입력만 고치고 원인은 로그에도 남지 않는다.
   if (status === 404)
     return nestBodyOf(e, 404) && !message.startsWith("Cannot ") ? { message: notFound, log: false } : { message: CONNECT_FAILED, log: true };
-  // 칸 길이 · 필수는 폼이 막으므로 남는 400 은 이메일 형식이다. 브라우저 type="email" 은 a@b 를 통과시키지만 api @IsEmail 은
-  // 거절하고, 그 문구는 영어 기본값이다.
+  // 칸 길이 · 필수는 폼이 막으므로 남는 400 은 이메일 형식이다(그 문구는 영어 기본값). actions.ts 가 묻기 전에 같은 규칙
+  // (lib/email-format.ts)으로 먼저 보므로 거의 오지 않지만, 규칙이 어긋났을 때를 대비해 같은 문구로 둔다.
   if (status === 400) return { message: INVALID_INPUT, log: false };
   return { message: CONNECT_FAILED, log: true };
 }

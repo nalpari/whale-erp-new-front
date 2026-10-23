@@ -55,10 +55,12 @@ export function validatePhone(a: string, b: string, c: string): string | undefin
   return undefined;
 }
 
-// 형식은 api @IsEmail 과 같은 규칙(이메일 칸이 있는 화면이 같이 쓰는 lib/email-format.ts)
+// 형식은 api @IsEmail 과 같은 규칙(이메일 칸이 있는 화면이 같이 쓰는 lib/email-format.ts). api 가 앞뒤 공백을 빼고 보므로
+// 여기서도 빼고 본다 — 복사해 붙이며 따라온 공백 때문에 api 가 받는 값을 막지 않게(다른 이메일 칸과 같다).
 export function validateEmail(value: string): string | undefined {
-  if (!value) return "이메일을 입력해 주세요.";
-  if (!isEmailFormat(value)) return EMAIL_FORMAT_ERROR;
+  const email = value.trim();
+  if (!email) return "이메일을 입력해 주세요.";
+  if (!isEmailFormat(email)) return EMAIL_FORMAT_ERROR;
   return undefined;
 }
 
