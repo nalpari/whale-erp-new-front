@@ -5,7 +5,7 @@ import { useEffect, useId, useRef, useState, useTransition, type ReactNode } fro
 import { Button, Checkbox, ConfirmDialog, DataTable, DateField, FormGroup, FormRow, Radio, Select, Textarea, TextField } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { callSave, SAVE_CALL_LOST, SAVE_UNKNOWN_NEW } from "../[contractId]/send-model";
-import { backHrefOf, listAfterSave, withBack, withSaved } from "../contract-list";
+import { backHrefOf, listAfterSave, savedKindOf, withBack, withSaved } from "../contract-list";
 import { createContract, updateContract } from "./actions";
 import {
   formatHours,
@@ -325,7 +325,7 @@ export function ContractForm({
       if (files.employment) data.set("employmentContract", files.employment);
       if (files.wage) data.set("wageContract", files.wage);
       if (contractId) data.set("contractId", String(contractId));
-      let result: SaveResult & { ok?: boolean };
+      let result: SaveResult & { ok?: boolean; status?: string | null; draftAction?: string | null };
       try {
         const res = await fetch("/contracts/paper", { method: "POST", body: data });
         // 세션이 끊겼다 — proxy · 핸들러가 쿠키를 지우고 401 을 준다. 로그인 화면으로 보낸다.
@@ -333,13 +333,13 @@ export function ContractForm({
           router.push("/login");
           return;
         }
-        result = (await res.json().catch(() => ({ error: `요청이 실패했습니다 (HTTP ${res.status})` }))) as SaveResult & { ok?: boolean };
+        result = (await res.json().catch(() => ({ error: `요청이 실패했습니다 (HTTP ${res.status})` }))) as typeof result;
       } catch {
         result = { error: "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요" };
       }
       if (result.ok) {
-        // 종이 계약 등록은 발송 · 날인 없이 체결 완료다 — 목록 위에 그렇게 알린다(?saved=, WHALEERP-132)
-        router.push(withSaved(listAfterSave(back, contractId ? body.storeId : null), "PAPER"));
+        // 저장 뒤 안내는 서버 액션과 같이 저장 응답으로 고른다(종이 계약 등록이면 체결 완료 — ?saved=, WHALEERP-132)
+        router.push(withSaved(listAfterSave(back, contractId ? body.storeId : null), savedKindOf(result)));
         return;
       }
       if (result.inProgress) {
@@ -615,7 +615,7 @@ export function ContractForm({
               {partTime
                 ? "요일마다 시업 · 종업 · 휴게를 고칠 수 있다. 위 근무시간 · 휴게시간을 바꾸거나 요일을 켜면 그 값으로 다시 채운다. 주휴시간은 주 15시간 이상일 때 주 시간 ÷ 5(8시간까지), 월급여는 주급 × 4.345."
                 : "요일마다 같은 시간이 들어간다. 요일별로 다른 시간은 근무스케줄에서 고친다."}{" "}
-              이 소정근로시간이 근무스케줄 기본값이 된다(STAFF-14).
+              이 소정근로시간이 근무스케줄 기본값이 된다.
             </span>
           </div>
           {/* 급여 지급 방식은 소정근로시간 표 바로 밑(데모 확인 2026-10-15) */}

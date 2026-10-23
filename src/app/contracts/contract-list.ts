@@ -4,12 +4,11 @@
 import type { components } from "@/lib/api-types.generated";
 import type { Scope } from "../../lib/browser-storage.ts";
 import type { AdminStore } from "../../lib/session.ts";
-import { PAGE_SIZES } from "../../lib/staff-members.ts";
+import { PAGE_SIZES, type PageSize } from "../../lib/staff-members.ts";
 import { SCOPE_PARAM, isUnusableScope, scopeKeyOf, scopeOfParam, withoutStoreSearch } from "../../lib/store-scope.ts";
 
 /** 페이지당 건수 — 다른 목록(직원 · 급여명세서)과 같은 선택지다(WHALEERP-133). 고른 값은 주소 pageSize 에 둔다 */
-export { PAGE_SIZES };
-export type PageSize = (typeof PAGE_SIZES)[number];
+export { PAGE_SIZES, type PageSize };
 const DEFAULT_PAGE_SIZE: PageSize = 20;
 
 /** GET /contracts 의 한 줄과 한 페이지. api 의 openapi.json 에서 만든 타입을 쓴다(pnpm openapi:types). */
@@ -204,8 +203,8 @@ const WAITING_SIGNATURE_NOTES = new Set<ContractListItem["staffJoinState"]>(["AF
 
 /**
  * 상태 칸 뒤에 「 · 」로 붙일 안내(목록 끝 칸에 두던 것, WHALEERP-133). 가입 · 초대 안내, 서명 대기의 남은 날, 퇴직한 직원이면 「퇴직」.
- * 재계약 서명 대기는 재계약(WHALEERP-156) 때 넣는다. api 가 가입 상태를 아직 싣지 않으면(먼저 배포된 화면) 발송 대기에 판별한 초대 유형을
- * 붙이던 예전 안내로 둔다(draftActionLabel).
+ * 재계약 서명 대기는 재계약(WHALEERP-156) 때 넣는다. 발송 대기인데 가입 · 초대 안내가 없으면(나간 초대가 없는 초안 직원 · api 가 가입
+ * 상태를 아직 싣지 않은 먼저 배포된 화면) 판별한 초대 유형을 붙이던 예전 안내로 둔다(draftActionLabel).
  */
 export function statusNotes(
   row: Pick<ContractListItem, "status" | "signDeadlineAt" | "draftAction" | "staffJoinState" | "staffRetired">,
@@ -213,10 +212,10 @@ export function statusNotes(
   draftActionLabel: (v: string) => string = (v) => v,
 ): string[] {
   const notes: string[] = [];
-  const join = row.staffJoinState === undefined ? undefined : JOIN_NOTES[row.staffJoinState];
+  const join = row.staffJoinState == null ? undefined : JOIN_NOTES[row.staffJoinState];
   if (row.status === "PENDING_SEND") {
     if (join) notes.push(join);
-    else if (row.staffJoinState === undefined && row.draftAction) notes.push(draftActionLabel(row.draftAction));
+    else if ((row.staffJoinState == null || row.staffJoinState === "DRAFT") && row.draftAction) notes.push(draftActionLabel(row.draftAction));
   }
   if (row.status === "PENDING_SIGNATURE" && join && WAITING_SIGNATURE_NOTES.has(row.staffJoinState)) notes.push(join);
   const deadline = deadlineNote(row, now);

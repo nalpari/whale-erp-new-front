@@ -219,10 +219,13 @@ test("저장 뒤 안내 — 임시저장 · 종이 계약은 상태로, 보낸 �
   assert.equal(withSaved(listAfterSave("/contracts?storeIds=3&page=2", null), "SIGNUP_INVITE"), `${listAfterSave("/contracts?storeIds=3&page=2", null)}&saved=SIGNUP_INVITE`);
 });
 
-test("상태 칸 안내를 붙이지 않는 경우 — 가입한 직원 · 초안의 발송 대기, 연결 보류의 서명 대기", () => {
+test("발송 대기에 가입 · 초대 안내가 없을 때 — 초안 직원 · 가입 상태가 null 이면 판별한 초대 유형, 가입한 직원은 없음", () => {
   const now = new Date("2026-09-07T03:00:00Z");
   const row = { status: "PENDING_SEND" as const, signDeadlineAt: null, draftAction: "SIGNUP_INVITE" as const, staffRetired: false };
   assert.deepEqual(statusNotes({ ...row, staffJoinState: "JOINED" }, now), []);
-  assert.deepEqual(statusNotes({ ...row, staffJoinState: "DRAFT" }, now), []);
+  // 나간 초대가 없는 초안 직원(알림톡 실패 뒤 등)은 어느 초대를 보내야 하는지 예전처럼 알린다
+  assert.deepEqual(statusNotes({ ...row, staffJoinState: "DRAFT" }, now, () => "가입 초대"), ["가입 초대"]);
+  // @ts-expect-error — 가입 상태가 null 로 온 응답
+  assert.deepEqual(statusNotes({ ...row, staffJoinState: null }, now, () => "가입 초대"), ["가입 초대"]);
   assert.deepEqual(statusNotes({ ...row, status: "PENDING_SIGNATURE", staffJoinState: "LINK_HOLD" }, now), []);
 });

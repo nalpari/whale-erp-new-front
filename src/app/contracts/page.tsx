@@ -2,6 +2,7 @@ import { Button, DataTable, ListToolbar, PageBar } from "@/components/common";
 import { ApiError, authHeaders, getEnum, request } from "@/lib/api";
 import { contractColumns } from "./columns";
 import { ContractPermission } from "./contract-permission";
+import { SavedNotice } from "./saved-notice";
 import { ContractFilters, ContractPageSize, ContractPagination } from "./contract-filters";
 import { apiSearch, listHrefOf, readListQuery, savedNoticeOf, toSearch, withBack, withKnownStatus, type ContractListPage } from "./contract-list";
 
@@ -10,7 +11,7 @@ import { apiSearch, listHrefOf, readListQuery, savedNoticeOf, toSearch, withBack
 export default async function ContractsPage({ searchParams }: PageProps<"/contracts">) {
   const search = await searchParams;
   const asked = readListQuery(search);
-  // 저장 뒤 시스템이 한 처리(?saved=, WHALEERP-132) — 필터 · 쪽을 바꾸면 주소에서 빠져 사라진다
+  // 저장 뒤 시스템이 한 처리(?saved=, WHALEERP-132) — SavedNotice 가 한 번 보이고 주소에서 지운다
   const savedNotice = savedNoticeOf(search.saved);
   const [statuses, draftActions, employmentTypes, headers] = await Promise.all([
     getEnum("ContractStatus"),
@@ -50,11 +51,7 @@ export default async function ContractsPage({ searchParams }: PageProps<"/contra
         {/* 주소가 바뀌면(뒤로 가기 포함) 입력칸을 주소 값으로 다시 맞춘다 */}
         <ContractFilters key={toSearch(query)} query={query} statuses={statuses} statusCounts={page?.statusCounts} />
         <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px]">
-          {savedNotice && (
-            <p role="status" className="rounded-[2px] border border-erp-panel-line bg-erp-subtle px-[16px] py-[12px] text-[14px] text-erp-ink">
-              {savedNotice}
-            </p>
-          )}
+          <SavedNotice text={savedNotice} />
           <ListToolbar total={page?.total ?? 0}>
             <ContractPageSize query={query} />
           </ListToolbar>
