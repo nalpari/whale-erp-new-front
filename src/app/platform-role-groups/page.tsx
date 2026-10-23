@@ -1,4 +1,3 @@
-import { PageBar } from "@/components/common";
 import { ApiError, getEnum } from "@/lib/api";
 import { getRoleGroup, getRoleGroups } from "@/lib/platform-role-groups";
 import { type RoleDetailState } from "./role-parts";
@@ -17,12 +16,8 @@ export default async function PlatformRolesPage({ searchParams }: PageProps<"/pl
     getEnum("PlatformRoleMenuBlockReason").catch(enumFailed("PlatformRoleMenuBlockReason")),
     selected ? loadDetail(selected) : null,
   ]);
-  return (
-    <>
-      <PageBar title="플랫폼 권한 관리" />
-      <RolesScreen roles={roles} selected={selected} detail={detail} lockReasons={lockReasons} menuReasons={menuReasons} />
-    </>
-  );
+  // 제목 줄(PageBar)은 RolesScreen 이 그린다 — [등록]이 등록 칸을 여는 상태와 같은 곳에 있어야 해서다
+  return <RolesScreen roles={roles} selected={selected} detail={detail} lockReasons={lockReasons} menuReasons={menuReasons} />;
 }
 
 /** 어느 enum 이 실패했는지 로그에 남기고 빈 목록으로 연다 — 화면은 일반 문구로 대신한다(reasonLabel) */

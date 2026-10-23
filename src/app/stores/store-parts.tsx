@@ -158,7 +158,7 @@ export function StoreTypeCards({
   describedBy?: string;
 }) {
   const items: { type: StoreType; desc: string }[] = [
-    { type: "DIRECT", desc: "본사가 직접 운영하는 점포" },
+    { type: "DIRECT", desc: "직접 운영하는 점포" },
     { type: "FRANCHISE", desc: "가맹 계약으로 운영하는 점포" },
   ];
   return (

@@ -4,36 +4,36 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 오른쪽에 근무스케줄 · 출퇴근 현황(준비 중) · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다). 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-22T07:44:47Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-23T04:18:49Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
-    title: 타입(생성한 api 타입) · 조회 조건 → api 쿼리(staffListApiSearch) · 점포명 → 점포 id(storeIdsByName) · 상세 이메일 칸(staffEmailText) · 본사 제공 동의 칸(hqSharingConsentText)
-    last_modified: 2026-10-21T19:30:00Z
+    title: 타입(생성한 api 타입) · 조회 조건 → api 쿼리(staffListApiSearch — 고른 점포 · 점포 하나 범위는 storeIds, 직영 · 가맹 범위는 storeTypes) · 상세 이메일 칸(staffEmailText) · 본사 제공 동의 칸(hqSharingConsentText)
+    last_modified: 2026-10-23T03:37:40Z
   - id: staff-members-api
     resource: ../../src/lib/staff-members-api.ts
     title: api 호출 — 목록 · 상세 · 상세 영역 요약(근무스케줄은 한 주) · 퇴직 미리 보기 · 처리 · 변경 · 취소 · 비밀번호 재설정 링크
     last_modified: 2026-10-22T07:28:28Z
   - id: api-types-generated
     resource: ../../src/lib/api-types.generated.ts
-    title: 생성한 api 타입 — 근무스케줄 칸은 한 주 응답 StaffMemberWeekScheduleResponseDto, TO-DO 칸은 TodoItemDto
-    last_modified: 2026-10-22T07:41:35Z
+    title: 생성한 api 타입 — 근무스케줄 칸은 한 주 응답 StaffMemberWeekScheduleResponseDto, TO-DO 칸은 TodoItemDto, 목록 쿼리 storeIds · storeTypes
+    last_modified: 2026-10-23T03:37:40Z
   - id: staff-list-query
     resource: ../../src/app/staff-members/staff-list-query.ts
-    title: 목록 URL ↔ 조회 조건(점포명 + storeIds)
-    last_modified: 2026-10-15T10:00:00Z
+    title: 목록 URL ↔ 조회 조건(점포 조건 storeIds · 빈 storeIds · scope) · 상세로 넘기는 ?back=(withBack · backHrefOf)
+    last_modified: 2026-10-23T04:18:49Z
   - id: staff-filter
     resource: ../../src/app/staff-members/staff-filter.tsx
-    title: 목록 필터 — 점포명을 로그인 정보의 관리 점포로 점포 id 로 바꾼다
-    last_modified: 2026-10-15T10:00:00Z
+    title: 목록 필터 — 점포 칸은 공통 점포 고르기(StorePicker), 상단 점포 범위와 잇는다(근로계약 목록과 같은 규칙)
+    last_modified: 2026-10-23T03:37:40Z
   - id: retirement-dialog
     resource: ../../src/app/staff-members/[id]/retirement-dialog.tsx
     title: 퇴직 처리 · 퇴직일 변경 · 취소 확인창
     last_modified: 2026-10-16T09:00:00Z
   - id: staff-detail-actions
     resource: ../../src/app/staff-members/[id]/staff-detail-actions.tsx
-    title: 상세 머리 버튼(퇴직 · 목록) · 비밀번호 초기화 버튼
-    last_modified: 2026-10-21T09:00:00Z
+    title: 상세 머리 버튼(퇴직 · 목록 — ?back= 의 목록 주소로) · 비밀번호 초기화 버튼
+    last_modified: 2026-10-23T03:37:40Z
   - id: confirm-dialog
     resource: ../../src/components/common/confirm-dialog.tsx
     title: 공통 확인창 — confirmVariant 추가
@@ -44,16 +44,16 @@ sources:
     last_modified: 2026-10-21T15:00:00Z
   - id: staff-table
     resource: ../../src/app/staff-members/staff-table.tsx
-    title: 목록 표 — 가입·인증 칸의 재발송 버튼, 가린 행의 이름 자리
-    last_modified: 2026-10-21T12:00:00Z
+    title: 목록 표 — 가입·인증 칸의 재발송 버튼, 가린 행의 이름 자리, 상세 링크에 목록 주소 ?back=
+    last_modified: 2026-10-23T03:37:40Z
   - id: staff-list-page
     resource: ../../src/app/staff-members/page.tsx
     title: 직원 목록 화면
-    last_modified: 2026-10-12T08:33:58Z
+    last_modified: 2026-10-23T03:37:40Z
   - id: staff-detail-page
     resource: ../../src/app/staff-members/[id]/page.tsx
-    title: 직원 상세 화면(틀 + 기본 정보 · 퇴직일 · 가입 상태 · 초대 · 이메일 + 비밀번호 초기화 자리 + 근로계약 칸 + 오른쪽 영역 배치 · 근무스케줄 주(주소 week))
-    last_modified: 2026-10-22T06:09:19Z
+    title: 직원 상세 화면(틀 + 기본 정보 · 퇴직일 · 가입 상태 · 초대 · 이메일 + 비밀번호 초기화 자리 + 근로계약 칸 + 오른쪽 영역 배치 · 근무스케줄 주(주소 week) · [목록] 주소(주소 back, 없으면 상세 주소에 붙은 예전 목록 조건))
+    last_modified: 2026-10-23T04:18:49Z
   - id: contract-box
     resource: ../../src/app/staff-members/[id]/contract-box.tsx
     title: 상세 근로계약 칸 — 근로계약 영역 요약(api #183)을 받고 실패 · 권한 없음이면 이 칸만 안내, 계약이 없으면 작성으로(WHALEERP-184). 줄 라벨 칸은 DetailTable 과 같은 폭(110px)을 옮겨 쓴다.
@@ -150,19 +150,32 @@ sources:
 
 * 화면 묶음(가입 완료 · 초대 발송 · 연결 보류 · 소속 추가 확인 · 가입 불가)은 그 상태들을 `joinState` **쉼표 목록**으로,
   고용형태는 `employmentType` 쉼표 목록으로 보낸다. 모두 고른 목록과 재직 상태 「전체」는 파라미터를 뺀다(`staffListApiSearch`).
-* **묶음 · 고용형태를 하나도 고르지 않았거나 점포명에 맞는 점포가 없으면 api 를 부르지 않고 0건이다.** api 는 빈 값을
+* **묶음 · 고용형태를 하나도 고르지 않았으면 api 를 부르지 않고 0건이다.** api 는 빈 값을
   400 으로 막고, 파라미터를 빼면 전체를 돌려준다 — 둘을 바꿔 쓰면 「하나도 안 고름」이 「전체」가 된다.
-* **점포명 → 점포 id 는 로그인 정보의 관리 점포(`useStores`)에서 찾는다**(2026-10-15 노영주 A안). 필터가 점포명 부분 일치로
-  id 를 찾아 URL 에 `store` 와 `storeIds` 를 함께 두고, 서버는 `storeIds` 를 그대로 api 에 싣는다. 점포 목록 api(`GET /stores`)는
-  「점포 정보 관리」(MN000002) 메뉴 권한이 있어야 열려, 직원 정보 관리만 가진 관리자가 점포명으로 거르면 403 이 나기 때문이다.
-  모자란 점: 로그인 정보는 로그인할 때의 값이라 그 뒤에 생긴 점포는 다시 로그인해야 잡힌다(메뉴 · 권한과 같은 정책). 범위 밖
-  id 는 api 가 조용히 뺀다.
+* **점포 칸은 공통 점포 고르기(`StorePicker`)이고 상단 점포 범위와 잇는다**(재영 Buzz 공지 2026-10-22, 근로계약 목록 front #109 · WHALEERP-133 과 같은 규칙,
+  `staff-list-query.ts` · `staff-filter.tsx`). 점포 조건은 네 가지다 — 목록에서 고른 점포(`storeIds=3,7`), 목록에서 비운 「전체」(빈 `storeIds=` —
+  헤더 범위가 아니다), 헤더 범위(`scope=ALL · DIRECT · FRANCHISE · STORE:12`, 헤더가 메뉴로 이동할 때 싣는다), 정해지지 않음(주소에 셋 다 없음 —
+  필터가 헤더 범위로 채운다, `fillScopeOf`). 고른 점포 · 빈 `storeIds` 가 `scope` 보다 앞선다. 초기화는 헤더 범위로 돌아간다.
+  api 에는 고른 점포 · 점포 하나 범위를 `storeIds`(쉼표), 직영 · 가맹 범위를 점포를 풀지 않고 `storeTypes` 로 보낸다(`staffListApiSearch`) —
+  `storeTypes` 를 주면 api 가 TO-DO 목록처럼 그 유형의 폐점 점포를 빼서 칩과 결과가 같다(근로계약은 폐점 점포의 계약도 나온다). 범위 「전체」 · 비운 「전체」(범위가 함께 있어도) · 정해지지 않음은 점포 조건이 없다(업무 범위 전체).
+  칩 이름은 로그인 정보의 점포(`useStores`)에서 찾는다 — 점포 목록 api(`GET /stores`)는 「점포 정보 관리」(MN000002) 메뉴 권한이 있어야 열려 서버가 찾지 않는다.
+  로그인 정보에 없는 고른 점포(로그인 뒤 맡게 된 점포 · 다른 탭에서 복사한 주소)는 「점포 {id}」 칩으로 둔다 — 조건에서 빼면 api 가 볼 수 있는 점포까지
+  잃는다(업무 범위 밖 id 는 api 가 조용히 뺀다). 주소의 범위를 이 탭에서 쓸 수 없으면(점포 하나가 로그인 정보에 없음 · 직영 · 가맹에 폐점이 아닌 점포가 없음 —
+  `isUnusableScope`) 「전체」(빈 `storeIds`)로 바꾸고 토스트로 알린다.
+* **예전 점포명 주소(`?store=`)는 읽지 않는다** — 그 주소로 오면 함께 실린 `storeIds` 도 버리고 점포 조건이 없는 것으로 보아 상단 범위로 채운다(상단이 전체면 주소는 그대로 두고 읽지만 않는다)
+  (근로계약 `?storeName=` 과 같다). 그래서 「점포를 찾는 중입니다.」 · 「점포명을 더 좁혀 주세요」 빈 목록 문구와 `staffListEmptyMessage` · `tooManyStores` 는 걷었다.
+  `storeIdsByName` 은 급여명세서 목록 점포명 칸이 아직 쓴다.
 * **api 상한을 화면이 먼저 막는다**(PR #36 리뷰). 넘기면 api 400 으로 목록 전체가 오류 화면이 되기 때문이다 — 검색어(이름 ·
-  번호 · 점포명)는 50자(검색칸 `maxLength` + 파서가 자름), 쪽은 1,000,000 을 넘으면 1. 점포명에 맞는 점포가 500곳(`MAX_STORE_IDS`)을
-  넘으면 잘라 보내지 않고(일부 점포가 조용히 빠진다) api 를 부르지 않은 채 「점포명을 더 좁혀 주세요」를 빈 목록 자리에 보인다.
-* `store` 만 있고 `storeIds` 가 없는 주소(storeIds 를 싣기 전의 북마크 · 손으로 친 주소)는 파서가 `storeIds: null` 로 읽고, 필터가
-  열리며 점포 목록에서 id 를 채워 주소를 바꾼다 — 그대로 두면 검색칸에 점포명이 있는데 0건이었다. 빈 값(`storeIds=`)은 「맞는 점포 없음」이다.
-  채우기 전 첫 화면은 api 를 부르지 않으므로 빈 목록 자리에 「점포를 찾는 중입니다.」를 보인다(`staffListEmptyMessage`) — 「없음」이 깜빡이지 않게.
+  번호)는 50자(검색칸 `maxLength` + 파서가 자름), 쪽은 1,000,000 을 넘으면 1, 주소의 `storeIds` 는 int4 양의 정수만 남기고 1000개(`MAX_STORE_IDS`,
+  api 상한 — 500 에서 1000 으로 올림)에서 자른다. 직영 · 가맹 범위 칩을 지워 점포 id 목록으로 바뀔 때 1000개를 넘으면 뒤가 빠진다 — 근로계약 · 1팀 점포 정보 관리와 같은 한계다.
+* **상세로 갈 때 목록 주소를 `?back=` 으로 넘긴다**(`withBack`, 기본 목록이면 싣지 않는다). 상세의 [목록]은 `detailListHrefOf` 로 정한다 — `back` 이 있으면
+  `backHrefOf(back)`(직원 목록 주소가 아니면 기본 목록이고, 이때 아래 예전 조건으로 떨어지지 않는다. 받은 쿼리는 목록과 같은 규칙으로 걸러 다시 만든다 — 같은 이름이 여럿이면 첫 값).
+  `back` 이 없으면 예전처럼 목록 조건을 상세 주소에 그대로 붙인 주소(`/staff-members/5?keyword=홍&page=3` — 북마크 등)의 조건을 목록 규칙으로 다시 만들어 돌아간다
+  (같은 이름 여럿은 첫 값, 모르는 이름 · 예전 `?store=` 는 버리고, 상세 전용 `week` 는 목록에 넣지 않는다). 둘 다 없으면 기본 목록이다. 브라우저 뒤로 가기는 목록 조작이 `replace` 라 상세로 가기 직전의 목록 주소로 간다. 근무스케줄 주
+  넘김(`weekHref`)은 `week` 만 바꾸고 `back` 과 예전 형식 목록 조건을 그대로 둔다 — 주를 옮긴 뒤에도 [목록]이 같은 조건으로 돌아간다.
+  직원 등록 화면은 따로 없다 — 「직원 초대」는 근로계약 작성(`/contracts/new`)이라 `back` 을 싣지 않는다(근로계약 `backHrefOf` 가 근로계약 목록 주소만 받는다).
+  상세 안에서 다른 화면(근로계약 등)으로 가는 링크는 `back` 을 싣지 않는다. 직원 목록에서 저장 · 삭제 뒤 목록으로 돌아가는 동작이 없어(퇴직 처리 · 변경 · 취소는
+  상세에 머물고 다시 받는다) 근로계약의 `withoutStoreSearch` 처리는 두지 않았다.
 * 목록 라벨(`joinCell` 의 `StaffJoinState` · `EmploymentType`)은 아직 화면 상수다. `getEnum` 으로 바꾸는 것은 남았다 — 상세
   「이메일」 칸의 가입 상태 한글은 이미 `getEnum` 으로 받는다(아래 「이메일」).
 * api 오류(401 · 403 · 5xx)는 `error.tsx` 가 받는다. 404(상세)는 상세가 먼저 `notFound()` 로 받는다.

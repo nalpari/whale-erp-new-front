@@ -30,19 +30,17 @@ export default async function BpRolesPage({ searchParams }: PageProps<"/bp-role-
         </div>
       </>
     );
+  // 제목 줄(PageBar)은 BpRolesScreen 이 그린다 — [등록]이 등록 칸을 여는 상태와 같은 곳에 있어야 해서다
   return (
-    <>
-      <PageBar title="BP 권한 그룹 관리" />
-      <BpRolesScreen
-        page={page}
-        totalPages={Math.max(1, Math.ceil(list.total / BP_ROLE_PAGE_SIZE))}
-        list={list}
-        selected={selected}
-        detail={detail}
-        lockReasons={lockReasons}
-        menuReasons={menuReasons}
-      />
-    </>
+    <BpRolesScreen
+      page={page}
+      totalPages={Math.max(1, Math.ceil(list.total / BP_ROLE_PAGE_SIZE))}
+      list={list}
+      selected={selected}
+      detail={detail}
+      lockReasons={lockReasons}
+      menuReasons={menuReasons}
+    />
   );
 }
 
