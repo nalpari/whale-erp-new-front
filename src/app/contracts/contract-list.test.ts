@@ -10,18 +10,22 @@ import {
   periodText,
   pickedIdsOf,
   readListQuery,
+  savedKindOf,
+  savedNoticeOf,
   sentText,
+  statusNotes,
   toSearch,
   unusableScopeOf,
   wageText,
   withBack,
   withKnownStatus,
   withPickedStores,
+  withSaved,
   withScopeCondition,
   type ListQuery,
 } from "./contract-list.ts";
 
-const EMPTY: ListQuery = { page: 1, staffMemberName: "", status: [], storeIds: [], storesCleared: false, scope: null };
+const EMPTY: ListQuery = { page: 1, pageSize: 20, staffMemberName: "", status: [], storeIds: [], storesCleared: false, scope: null };
 
 test("readListQuery 는 빈 값 · 잘못된 page 를 기본값으로 바꾼다", () => {
   assert.deepEqual(readListQuery({}), EMPTY);
@@ -64,14 +68,14 @@ test("toSearch 점포 조건 — 고른 점포 · 비운 「전체」 · 헤더 
 });
 
 test("apiSearch — 고른 점포 · 점포 하나 범위는 storeIds, 직영 · 가맹 범위는 storeTypes, 전체는 점포 조건 없음", () => {
-  assert.equal(apiSearch(EMPTY, 20), "?pageSize=20");
-  assert.equal(apiSearch({ ...EMPTY, storeIds: [3, 7], scope: null }, 20), "?pageSize=20&storeIds=3%2C7");
-  assert.equal(apiSearch({ ...EMPTY, scope: { type: "STORE", storeId: 12 } }, 20), "?pageSize=20&storeIds=12");
-  assert.equal(apiSearch({ ...EMPTY, scope: { type: "FRANCHISE" } }, 20), "?pageSize=20&storeTypes=FRANCHISE");
-  assert.equal(apiSearch({ ...EMPTY, scope: { type: "ALL" } }, 20), "?pageSize=20");
-  assert.equal(apiSearch({ ...EMPTY, storesCleared: true }, 20), "?pageSize=20");
+  assert.equal(apiSearch(EMPTY), "?pageSize=20");
+  assert.equal(apiSearch({ ...EMPTY, storeIds: [3, 7], scope: null }), "?pageSize=20&storeIds=3%2C7");
+  assert.equal(apiSearch({ ...EMPTY, scope: { type: "STORE", storeId: 12 } }), "?pageSize=20&storeIds=12");
+  assert.equal(apiSearch({ ...EMPTY, scope: { type: "FRANCHISE" } }), "?pageSize=20&storeTypes=FRANCHISE");
+  assert.equal(apiSearch({ ...EMPTY, scope: { type: "ALL" } }), "?pageSize=20");
+  assert.equal(apiSearch({ ...EMPTY, storesCleared: true }), "?pageSize=20");
   assert.equal(
-    apiSearch({ ...EMPTY, page: 2, staffMemberName: "도윤", status: ["SIGNED"] }, 20),
+    apiSearch({ ...EMPTY, page: 2, staffMemberName: "도윤", status: ["SIGNED"] }),
     "?page=2&pageSize=20&staffMemberName=%EB%8F%84%EC%9C%A4&status=SIGNED",
   );
 });
@@ -157,4 +161,71 @@ test("api 가 400 을 줄 주소 값은 보내기 전에 거른다", () => {
   // 모르는 상태 값은 뺀다
   const q = readListQuery({ status: ["SIGNED", "FOO"] });
   assert.deepEqual(withKnownStatus(q, [{ value: "SIGNED" }, { value: "DRAFT" }]).status, ["SIGNED"]);
+});
+
+test("페이지당 건수는 20 · 50 · 100 만 — 기본 20 은 주소에서 빼고, 다른 값은 기본으로", () => {
+  assert.equal(readListQuery({ pageSize: "50" }).pageSize, 50);
+  assert.equal(readListQuery({ pageSize: "500" }).pageSize, 20);
+  assert.equal(readListQuery({ pageSize: "abc" }).pageSize, 20);
+  assert.equal(toSearch({ ...EMPTY, pageSize: 100 }), "?pageSize=100");
+  assert.equal(toSearch(EMPTY), "");
+  assert.equal(apiSearch({ ...EMPTY, pageSize: 50 }), "?pageSize=50");
+});
+
+test("상태 칸 안내 — 발송 대기는 직원의 지금 가입 · 초대 상태, 서명 대기는 소속 · 복귀 확인과 남은 날, 퇴직이면 「퇴직」", () => {
+  const now = new Date("2026-09-07T03:00:00Z");
+  const base = {
+    status: "PENDING_SEND" as const,
+    signDeadlineAt: "2026-10-01T02:00:00.000Z",
+    draftAction: "SIGNUP_INVITE" as const,
+    staffJoinState: "INVITED" as const,
+    staffRetired: false,
+  };
+  assert.deepEqual(statusNotes(base, now), ["가입 대기 중"]);
+  // 초대가 만료되면 저장 때 판별한 초대 유형(가입 초대)이 아니라 만료다
+  assert.deepEqual(statusNotes({ ...base, staffJoinState: "EXPIRED" }, now), ["초대 만료"]);
+  assert.deepEqual(statusNotes({ ...base, status: "PENDING_SIGNATURE", staffJoinState: "AFFILIATION_PENDING" }, now), ["소속 확인 중", "D-24"]);
+  // 가입한 직원의 서명 대기는 남은 날만
+  assert.deepEqual(statusNotes({ ...base, status: "PENDING_SIGNATURE", staffJoinState: "JOINED" }, now), ["D-24"]);
+  assert.deepEqual(statusNotes({ ...base, status: "ENDED", staffJoinState: "JOINED", staffRetired: true }, now), ["퇴직"]);
+  assert.deepEqual(statusNotes({ ...base, status: "SIGNED", staffJoinState: "JOINED" }, now), []);
+});
+
+test("api 가 가입 상태를 아직 싣지 않으면 발송 대기에 판별한 초대 유형을 붙인다(먼저 배포된 화면)", () => {
+  const row = { status: "PENDING_SEND" as const, signDeadlineAt: null, draftAction: "SIGNUP_INVITE" as const, staffJoinState: undefined, staffRetired: undefined };
+  // @ts-expect-error — 옛 api 응답에는 두 칸이 없다
+  assert.deepEqual(statusNotes(row, new Date(), () => "가입 초대"), ["가입 초대"]);
+});
+
+test("저장 뒤 안내 — 임시저장 · 종이 계약은 상태로, 보낸 저장은 api 가 싣는 「실제로 한 처리」로 고른다", () => {
+  assert.equal(savedKindOf({ status: "DRAFT", draftAction: null }), "DRAFT");
+  assert.equal(savedKindOf({ status: "SIGNED", draftAction: "SIGNUP_INVITE" }), "PAPER");
+  assert.equal(savedKindOf({ status: "PENDING_SEND", draftAction: "SIGNUP_INVITE" }), "SIGNUP_INVITE");
+  assert.equal(savedKindOf({ status: "PENDING_SIGNATURE", draftAction: "AFFILIATION_CONFIRM" }), "AFFILIATION_CONFIRM");
+  assert.equal(savedKindOf({ status: "PENDING_SIGNATURE", draftAction: "RETURN_CONFIRM" }), "RETURN_CONFIRM");
+  // 가입한 직원에게 앱으로 보냈다(수정 요청을 고쳐 다시 보낸 것도) — api 가 처음 판별값 대신 IMMEDIATE_SEND 를 싣는다
+  assert.equal(savedKindOf({ status: "PENDING_SIGNATURE", draftAction: "IMMEDIATE_SEND" }), "IMMEDIATE_SEND");
+  assert.equal(savedKindOf({ status: "PENDING_SIGNATURE", draftAction: null }), null);
+  assert.equal(savedKindOf(null), null);
+  assert.match(savedNoticeOf("SIGNUP_INVITE") ?? "", /가입 초대 알림톡을 보냈습니다/);
+  assert.equal(savedNoticeOf("toString"), null);
+  assert.equal(savedNoticeOf(["DRAFT"]), null);
+  assert.equal(withSaved("/contracts", "DRAFT"), "/contracts?saved=DRAFT");
+  assert.equal(withSaved("/contracts?page=2", "DRAFT"), "/contracts?page=2&saved=DRAFT");
+  assert.equal(withSaved("/contracts", null), "/contracts");
+  // 이미 있던 saved 는 바꾼다 — 겹치면 배열이 되어 안내가 사라진다
+  assert.equal(withSaved("/contracts?saved=DRAFT", "PAPER"), "/contracts?saved=PAPER");
+  // 새 계약 저장 뒤 실제로 가는 주소 — 점포 조건을 비운 목록에 안내를 싣는다
+  assert.equal(withSaved(listAfterSave("/contracts?storeIds=3&page=2", null), "SIGNUP_INVITE"), `${listAfterSave("/contracts?storeIds=3&page=2", null)}&saved=SIGNUP_INVITE`);
+});
+
+test("발송 대기에 가입 · 초대 안내가 없을 때 — 초안 직원 · 가입 상태가 null 이면 판별한 초대 유형, 가입한 직원은 없음", () => {
+  const now = new Date("2026-09-07T03:00:00Z");
+  const row = { status: "PENDING_SEND" as const, signDeadlineAt: null, draftAction: "SIGNUP_INVITE" as const, staffRetired: false };
+  assert.deepEqual(statusNotes({ ...row, staffJoinState: "JOINED" }, now), []);
+  // 나간 초대가 없는 초안 직원(알림톡 실패 뒤 등)은 어느 초대를 보내야 하는지 예전처럼 알린다
+  assert.deepEqual(statusNotes({ ...row, staffJoinState: "DRAFT" }, now, () => "가입 초대"), ["가입 초대"]);
+  // @ts-expect-error — 가입 상태가 null 로 온 응답
+  assert.deepEqual(statusNotes({ ...row, staffJoinState: null }, now, () => "가입 초대"), ["가입 초대"]);
+  assert.deepEqual(statusNotes({ ...row, status: "PENDING_SIGNATURE", staffJoinState: "LINK_HOLD" }, now), []);
 });

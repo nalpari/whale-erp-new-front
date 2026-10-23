@@ -5622,6 +5622,11 @@ export interface components {
             sentAt: string | null;
             /** @description 날인 기한 (ISO 8601) */
             signDeadlineAt: string | null;
+            /**
+             * @description 직원의 지금 가입 · 초대 상태(직원 목록 joinState 와 같은 규칙, WHALEERP-133). draftAction 은 저장 때 판별한 값이라 초대가
+             *     만료 · 거절돼도 남는다 — 상태 칸의 「가입 대기 중」 · 「소속 확인 중」은 이 값으로 정한다
+             */
+            staffJoinState: components["schemas"]["StaffJoinState"];
             contractId: number;
             staffMemberId: number;
             /** @description 직원 레코드의 이름(초안 입력값) */
@@ -5629,11 +5634,30 @@ export interface components {
             storeId: number;
             /** @description 점포가 지워졌어도 이름은 보인다 */
             storeName: string | null;
+            /** @description 직원이 퇴직했는가(재직 상태 퇴직) — 상태 칸에 「퇴직」을 붙인다. 퇴직 예정(퇴직일 전)은 false */
+            staffRetired: boolean;
+        };
+        ContractStatusCountsDto: {
+            DRAFT: number;
+            PENDING_SEND: number;
+            PENDING_SIGNATURE: number;
+            CORRECTION_REQUESTED: number;
+            SIGNED: number;
+            REJECTED: number;
+            EXPIRED: number;
+            ENDED: number;
         };
         ContractListResponseDto: {
             items: components["schemas"]["ContractListItemDto"][];
             /** @description 거른 결과 전체 건수 */
             total: number;
+            /**
+             * @description 상태별 계약 수(WHALEERP-133, ATT-30). 상태 필터와 상관없고 점포 · 점포명 · 직원명 필터는 따른다. 본사 역할에게 가려지는
+             *     가맹 점포의, 본사 제공 동의를 하지 않은 직원 계약도 센다(목록에는 없다) — 다만 직원명으로 거르면 그 계약은 빼고 센다
+             *     (그 이름의 계약이 있는지 개수로 드러나지 않게, 급여명세서 statusCounts 와 같다)
+             *     상태가 빈 옛 계약은 세지 않아 개수의 합이 total 과 다를 수 있다
+             */
+            statusCounts: components["schemas"]["ContractStatusCountsDto"];
         };
         /**
          * @description 성별 — 남 · 여. 가입 때 직원이 넣은 값과 본인 대조한다(WHALEERP-125). 임시저장은 비워도 된다
@@ -5740,6 +5764,14 @@ export interface components {
             replaceContractIds?: number[];
         };
         CreatedContractResponseDto: {
+            /** @description 저장한 뒤의 상태 — 임시저장 · 발송 대기 · 서명 대기 · 체결 완료(종이 계약) 등 */
+            status: components["schemas"]["ContractStatus"];
+            /**
+             * @description 시스템이 실제로 한 처리(WHALEERP-132). 보내지 않은 저장(임시저장 · 종이 계약 등록)은 null, 가입한 직원에게 앱으로 보냈으면
+             *     즉시 발송(IMMEDIATE_SEND), 아니면 판별한 초대 유형 — 가입 초대(알림톡) · 소속 추가 확인 · 복귀 확인(소속 · 복귀를 확인하기
+             *     전까지 직원에게 알림이 가지 않는다). 계약에 저장한 draftAction(상세 · 목록)과 다를 수 있다
+             */
+            draftAction: components["schemas"]["ContractDraftAction"] | null;
             contractId: number;
             staffMemberId: number;
         };
