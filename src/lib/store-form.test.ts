@@ -152,9 +152,27 @@ test("좌표 입력칸 둘 다 있어야 있다고 본다 — bodyOf · 선택�
 });
 
 test("사업자주소가 「점포 주소와 같음」이면 점포 주소를 싣는다", () => {
-  const f = { ...filled, zipCode: "06236", address: "서울 강남구 테헤란로 152", addressDetail: "1층", bizAddress: "다른 곳" };
+  const f = { ...filled, zipCode: "06236", address: "서울 강남구 테헤란로 152", addressDetail: "1층", bizAddress: "다른 곳", bizSameAsStore: true };
   assert.equal(toCreateStoreInput(f).business.address, "서울 강남구 테헤란로 152");
   assert.equal(toCreateStoreInput({ ...f, bizSameAsStore: false }).business.address, "다른 곳");
+});
+
+test("새 점포는 「점포 주소와 같음」이 기본 해제다 — 점포주소와 사업자주소가 다를 수 있다(사용자 지정, 2026-10-23)", () => {
+  assert.equal(EMPTY_STORE_FORM.bizSameAsStore, false);
+});
+
+// bizSameAsStore 기본값이 해제라 아래 두 검사가 모든 새 점포의 기본 경로다 — 전엔 EMPTY_STORE_FORM 이
+// true 라 이 분기를 타는 입력을 직접 만들어야만 테스트됐다(코드 리뷰로 찾음, 2026-10-23).
+test("「점포 주소와 같음」이 해제면 사업자 상세주소만 적고 사업자주소를 검색 안 하면 막는다", () => {
+  const f = { ...filled, bizSameAsStore: false, bizAddressDetail: "3층" };
+  assert.equal(validateStoreForm(f, "create").bizAddressDetail, "사업자주소를 먼저 검색해 주세요.");
+  assert.equal(validateStoreForm({ ...f, bizAddress: "서울 강남구 테헤란로 152" }, "create").bizAddressDetail, undefined);
+});
+
+test("「점포 주소와 같음」이 해제면 사업자 상세주소도 100자 제한 — 켜져 있으면(점포 상세주소를 쓴다) 검사하지 않는다", () => {
+  const long = "가".repeat(101);
+  assert.equal(validateStoreForm({ ...filled, bizSameAsStore: false, bizAddressDetail: long }, "create").bizAddressDetail, "상세주소는 100자까지입니다.");
+  assert.equal(validateStoreForm({ ...filled, bizSameAsStore: true, bizAddressDetail: long }, "create").bizAddressDetail, undefined);
 });
 
 const detail: StoreDetail = {

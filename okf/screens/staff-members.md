@@ -1,10 +1,10 @@
 ---
 type: Screen
 title: 직원 정보 관리 화면 (구현)
-description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 오른쪽에 근무스케줄 · 출퇴근 현황(준비 중) · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다). 남은 것.
+description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보에 재입사로 이은 재직 이력 줄(WHALEERP-615)을, 그 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 오른쪽에 근무스케줄 · 출퇴근 현황(준비 중) · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다). 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-23T05:20:57Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-23T07:40:00Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -16,8 +16,8 @@ sources:
     last_modified: 2026-10-22T07:28:28Z
   - id: api-types-generated
     resource: ../../src/lib/api-types.generated.ts
-    title: 생성한 api 타입 — 근무스케줄 칸은 한 주 응답 StaffMemberWeekScheduleResponseDto, TO-DO 칸은 TodoItemDto, 목록 쿼리 storeIds · storeTypes
-    last_modified: 2026-10-23T05:20:57Z
+    title: 생성한 api 타입 — 근무스케줄 칸은 한 주 응답 StaffMemberWeekScheduleResponseDto, TO-DO 칸은 TodoItemDto, 목록 쿼리 storeIds · storeTypes, 재직 이력은 StaffMemberEmploymentPeriodDto
+    last_modified: 2026-10-23T07:40:00Z
   - id: staff-list-query
     resource: ../../src/app/staff-members/staff-list-query.ts
     title: 목록 URL ↔ 조회 조건(점포 조건 storeIds · 빈 storeIds · scope) · 상세로 넘기는 ?back=(withBack · backHrefOf)
@@ -52,8 +52,12 @@ sources:
     last_modified: 2026-10-23T03:37:40Z
   - id: staff-detail-page
     resource: ../../src/app/staff-members/[id]/page.tsx
-    title: 직원 상세 화면(틀 + 기본 정보 · 퇴직일 · 가입 상태 · 초대 · 이메일 + 비밀번호 초기화 자리 + 근로계약 칸 + 오른쪽 영역 배치 · 근무스케줄 주(주소 week) · [목록] 주소(주소 back, 없으면 상세 주소에 붙은 예전 목록 조건))
-    last_modified: 2026-10-23T04:18:49Z
+    title: 직원 상세 화면(틀 + 기본 정보 · 퇴직일 · 재직 이력 · 가입 상태 · 초대 · 이메일 + 비밀번호 초기화 자리 + 근로계약 칸 + 오른쪽 영역 배치 · 근무스케줄 주(주소 week) · [목록] 주소(주소 back, 없으면 상세 주소에 붙은 예전 목록 조건))
+    last_modified: 2026-10-23T07:40:00Z
+  - id: employment-history
+    resource: ../../src/app/staff-members/[id]/employment-history.ts
+    title: 재직 이력 줄(재입사로 이은 이전 · 이후 재직 기간, WHALEERP-615 — 링크는 ?back= + week)
+    last_modified: 2026-10-23T07:40:00Z
   - id: contract-box
     resource: ../../src/app/staff-members/[id]/contract-box.tsx
     title: 상세 근로계약 칸 — 근로계약 영역 요약(api #183)을 받고 실패 · 권한 없음이면 이 칸만 안내, 계약이 없으면 작성으로(WHALEERP-184). 줄 라벨 칸은 DetailTable 과 같은 폭(110px)을 옮겨 쓴다.
@@ -193,6 +197,12 @@ sources:
 * **본인인증은 보이지 않는다** — 1차 범위 밖이다(WHALEERP-612 → 2차, 2026-10-21 재영). 기본 정보의 줄도 이름 옆 칩도 두지 않는다.
   데모 `detail.mjs` 의 기본 정보에는 아직 「본인인증 완료」 줄이 있다.
 * 입사일은 나중에 시스템이 첫 체결 계약 시작일로 채운다. 지금은 늘 null 이라 「-」다(2026-10-21 재영).
+* **재직 이력**(WHALEERP-615, 목업 `docs/mockup/staff/detail.html`, 운영 정책 CTR-30) — 퇴직 뒤 같은 점포에 다시 입사하면 새 직원 레코드가
+  생기고 api 가 직전 재직 레코드와 잇는다(api #136). 상세 응답 `previousRecords` · `laterRecords` 로 퇴직일 줄(재직 중이면 입사일 줄) 아래에 「재직 이력」(이전 재직 기간, 「· 이전 재직」)과
+  「이후 재입사」 줄을 둔다(`employmentHistoryLines`). 기간은 「입사일 ~ 퇴직일」(퇴직일이 없으면 「재직 중」, 입사일이 없으면 「-」)이고 누르면 그 레코드의
+  상세로 간다 — 상세의 [목록] 주소(`detailListHrefOf`)를 `?back=` 으로 싣고(기본 목록이면 싣지 않음) 근무스케줄이 보던 주(`week`)를 이어 단다(`historySearch`) — 거기서도 [목록]이 같은 조건 · 쪽으로 돌아간다. 좁은 단에서 꺾여도
+  잘리지 않게 높이가 내용만큼 늘어나는 줄이다(`multiline`). 이은 레코드가 없으면 줄이 없다. 칸이 없는
+  응답(api #136 배포 전 서버)은 응답을 받는 자리(`getStaffMember` → `withEmploymentHistory`)에서 빈 목록으로 채운다 — front 가 먼저 배포돼도 상세가 오류가 되지 않는다. 링크는 「재직 이력 기간 직원 상세」로 읽힌다(`aria-label`). 순서(가까운 것부터) · 가림(본사 제공 동의) · 체결 완료된 레코드만 내기는 api 가 정한다. 직원 목록은 그대로다(레코드마다 한 줄, 2026-10-22 재영 C안).
 * 생년월일은 api 가 주는 대로 보인다 — 본사 역할(동의한 가맹 직원) · 퇴직 직원에게도 화면에서 따로 가리지 않는다(2026-10-21 재영).
 * 가맹 점포 직원은 「본사 제공 동의」 줄(동의 · 미동의)이 있다(완료 조건 8, ATT-30). 상세 응답 `hqSharingConsent`(api #113, API 전용 enum
   `HqSharingConsentState`, 한글은 `GET /enums/HqSharingConsentState`)이고, 직영 점포 직원은 null 이라 줄이 없다(`hqSharingConsentText`). 값은 계정의 동의라

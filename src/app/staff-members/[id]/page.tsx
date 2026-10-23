@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { DetailTable, PageBar } from "@/components/common";
@@ -13,6 +14,7 @@ import { canResendInvitation, EMPLOYMENT_TYPE_LABELS, employmentStatusCells, for
 import { CellView } from "../staff-table";
 import { ContractBox } from "./contract-box";
 import { AreaLoading, Box, BoxMessage } from "./detail-box";
+import { employmentHistoryLines, historySearch } from "./employment-history";
 import { MenuManageLink } from "./manage-link";
 import { PasswordResetButton, StaffDetailActions } from "./staff-detail-actions";
 import { PayslipBox, ScheduleBox, TodoBox } from "./summary-boxes";
@@ -80,7 +82,8 @@ export default async function StaffMemberDetailPage({
   const employmentStatus = employmentStatusCells(staff);
   const hqConsent = hqSharingConsentText(staff, hqConsentLabels);
   // [목록] 주소 — 목록이 상세 링크에 ?back= 으로 실어 보낸 목록 주소(근로계약 · TO-DO 처럼 ?back= 을 쓰되, 받은 쿼리는 목록 규칙으로 다시
-  // 만든다). ?back= 이 없는 예전 형식 주소는 상세 주소에 붙은 목록 조건으로 돌아간다(detailListHrefOf). 주 넘김(weekHref)은 둘 다 그대로 둔다
+  // 만든다). ?back= 이 없는 예전 형식 주소는 상세 주소에 붙은 목록 조건으로 돌아간다(detailListHrefOf). 주 넘김(weekHref)은 둘 다 그대로 둔다.
+  // 재직 이력 링크도 이 주소를 ?back= 으로 싣고 근무스케줄이 보던 주(week)를 이어 단다(historySearch)
   const listHref = detailListHrefOf(search);
   const today = kstToday();
   // 근무스케줄 영역이 볼 주(월요일). 주소 week 가 없거나 날짜가 아니면 이번 주(데모 weekNav, 2026-10-22 노영주 — WHALEERP-185 기간 선택을 걷었다)
@@ -107,6 +110,24 @@ export default async function StaffMemberDetailPage({
     { label: "입사일", value: staff.hiredDate ?? PENDING },
     // 퇴직 예정 · 퇴직이면 퇴직일을 보인다(목업 detail.html)
     ...(staff.retiredDate ? [{ label: "퇴직일", value: staff.retiredDate }] : []),
+    // 재입사로 이은 다른 재직 기간(WHALEERP-615, 목업 detail.html) — 누르면 그 기간의 상세. 이은 레코드가 없으면 줄이 없다.
+    // 좁은 단에서 기간이 꺾여도 잘리지 않게 높이가 내용만큼 늘어나는 줄로 둔다
+    ...employmentHistoryLines(staff, historySearch(listHref, search.week)).map((line) => ({
+      label: line.label,
+      multiline: true,
+      value: (
+        <span className="flex flex-col gap-[4px]">
+          {line.links.map((link, i) => (
+            <span key={`${i}-${link.href}`}>
+              <Link href={link.href} aria-label={`${line.label} ${link.text} 직원 상세`} className="text-erp-link hover:underline">
+                {link.text}
+              </Link>
+              {line.note && <span className="text-erp-muted"> · {line.note}</span>}
+            </span>
+          ))}
+        </span>
+      ),
+    })),
     // 가입한 계정 값, 가입 전 · 탈퇴면 가장 최근 계약에 적은 값(api #183). api 가 주는 대로 보이고 화면에서 따로 가리지 않는다(2026-10-21 재영)
     { label: "생년월일", value: staff.birthDate ?? PENDING },
     { label: "휴대전화번호", value: staff.phone ? formatPhone(staff.phone) : PENDING },

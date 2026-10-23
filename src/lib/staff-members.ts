@@ -52,6 +52,15 @@ export function hqSharingConsentText(staff: Pick<StaffMember, "hqSharingConsent"
   return labels.find((v) => v.value === staff.hqSharingConsent)?.label ?? "-";
 }
 
+/**
+ * 상세 응답의 재직 이력 칸(WHALEERP-615)을 채운다. 칸이 없는 응답(api #136 배포 전 서버)은 이은 레코드가 없는 것으로 본다 — front 가
+ * 먼저 배포돼도 `previousRecords` · `laterRecords` 를 읽는 곳이 오류가 되지 않게 응답을 받는 자리(getStaffMember)에서 한 번 맞춘다.
+ */
+export function withEmploymentHistory(staff: StaffMember): StaffMember {
+  const raw = staff as Partial<Pick<StaffMember, "previousRecords" | "laterRecords">> & StaffMember;
+  return { ...staff, previousRecords: raw.previousRecords ?? [], laterRecords: raw.laterRecords ?? [] };
+}
+
 export const EMPLOYMENT_TYPES: readonly EmploymentType[] = ["FULL_TIME", "PART_TIME"];
 
 /** 화면 「가입·인증」 체크 다섯. api 의 StaffJoinState 를 묶는다. */
