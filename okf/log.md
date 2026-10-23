@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-23
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) · [Whale ERP Frontend](/whale-erp-front.md) — WHALEERP-611: 재발송이 가입한 직원(서명 대기)에게 앱 알림(알림함 · 푸시 대기 — 푸시는 #261 · #321 뒤. 받을 계정이 없거나 탈퇴면 알림 없이 기한만 새로, api NTF-25)으로 나가게 되어(api) 목록 · 상세 재발송 버튼을 `invitation.canResend` 하나로 보인다(최근 계약이 있을 때 — 호출부, 계약 발송 대기 조건을 뺐다). 근로계약 상세의 서명 대기 「재발송」을 막지 않고 다른 상태처럼 확인창 → 재발송으로 두며, 「앱 알림이 생기면 다시 보낼 수 있습니다」를 걷었다. 소속 추가 확인 · 복귀 확인의 409 `SEND_CHANNEL_NOT_READY` 는 api 문장 그대로 확인창에 보인다. 서명 대기 재발송 확인창은 데모(contracts-signing) 문구 「계약서를 다시 보내시겠습니까?」 · 「같은 조건의 계약서를 ○○ 님에게 다시 보냅니다. 날인 기한은 발송일로부터 30일입니다.」를 근로계약 상세에 쓴다(`signingResendCopy`). 직원 목록 · 상세 재발송은 api canResend 가 가입 전 · 계정 없는 번호에만 참이라 늘 가입 초대 문구다. api 타입을 uluru(WHALEERP-611)의 openapi 로 다시 만들었다(설명만 바뀜) — api 머지 뒤 main 기준으로 다시 만든다. 당사자 정보 저장 주석을 「가입한 직원은 앱 알림(api #259), 계정만 있는 번호는 보내지 않음」으로 고쳤다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 이메일 형식 검사: 도메인은 허용 글자만 받고(끝에 쉼표 · 괄호가 붙은 값), 끝(TLD)의 전각 영문도 막는다 — api @IsEmail 과 맞춤(리뷰로 찾음, front #61).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front #61 magikarp, main #120 까지): okf 충돌은 main 의 플랫폼 관리자 줄([등록] 제목 줄 이동 · 미사용 비밀번호 빈칸) 위에 이메일 형식 서술만 다시 얹고, 로그는 양쪽을 살렸다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 이메일 칸의 형식 검사를 api `@IsEmail` 에 맞췄다 — 화면이 「올바른 형식」이라 한 값을 저장 때 api 가 막지 않게(사용자 결정, front #61).

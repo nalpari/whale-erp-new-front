@@ -67,8 +67,9 @@ export async function updateWorker(contractId: number, body: WorkerBody, back?: 
 export type SendContractResult = { ok: true } | SendFailure;
 
 /**
- * 근로계약 발송 · 재발송(WHALEERP-136). 계정이 없는 직원에게 가입 초대 알림톡을 보내고 서명 대기로 둔다.
- * 기존 계정(소속 추가 · 복귀)은 앱 알림이 아직 없어 api 가 409 SEND_CHANNEL_NOT_READY 로 막는다.
+ * 근로계약 발송 · 재발송(WHALEERP-136). 계정이 없는 직원에게는 가입 초대 알림톡, 가입한 직원에게는 앱 알림(알림함 · 푸시 대기 —
+ * 푸시는 #261 · #321 뒤. 받을 계정이 없거나 탈퇴면 알림 없이 기한만 새로, api NTF-25)을 보내고 서명 대기로 둔다
+ * (WHALEERP-611). 소속 추가 확인 · 복귀 확인(계정 있음 · 이 점포 미가입)은 api 가 409 SEND_CHANNEL_NOT_READY 로 막는다.
  */
 export async function sendContract(contractId: number): Promise<SendContractResult> {
   if (!isContractId(contractId)) return { ok: false, error: "근로계약을 찾을 수 없습니다", recheck: false };

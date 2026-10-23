@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 오른쪽에 근무스케줄 · 출퇴근 현황(준비 중) · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다). 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-23T04:18:49Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-23T05:20:57Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -17,7 +17,7 @@ sources:
   - id: api-types-generated
     resource: ../../src/lib/api-types.generated.ts
     title: 생성한 api 타입 — 근무스케줄 칸은 한 주 응답 StaffMemberWeekScheduleResponseDto, TO-DO 칸은 TodoItemDto, 목록 쿼리 storeIds · storeTypes
-    last_modified: 2026-10-23T03:37:40Z
+    last_modified: 2026-10-23T05:20:57Z
   - id: staff-list-query
     resource: ../../src/app/staff-members/staff-list-query.ts
     title: 목록 URL ↔ 조회 조건(점포 조건 storeIds · 빈 storeIds · scope) · 상세로 넘기는 ?back=(withBack · backHrefOf)
@@ -41,7 +41,7 @@ sources:
   - id: resend-invitation-button
     resource: ../../src/app/staff-members/resend-invitation-button.tsx
     title: 가입 초대 재발송 버튼 · 확인창(WHALEERP-138) — 근로계약 관리 수정 권한(MN000006)으로 가린다
-    last_modified: 2026-10-21T15:00:00Z
+    last_modified: 2026-10-23T05:20:57Z
   - id: staff-table
     resource: ../../src/app/staff-members/staff-table.tsx
     title: 목록 표 — 가입·인증 칸의 재발송 버튼, 가린 행의 이름 자리, 상세 링크에 목록 주소 ?back=
@@ -113,7 +113,7 @@ sources:
   - id: staff-row
     resource: ../../src/app/staff-members/staff-row.ts
     title: 한 줄 표시 규칙(배지 · D-day · 재직 칸 · 재발송 판정 · 상세 초대 줄). 갱신 예정 날수(RENEWAL_NOTICE_DAYS)를 상세 근로계약 칸과 함께 쓴다
-    last_modified: 2026-10-21T12:00:00Z
+    last_modified: 2026-10-23T05:20:57Z
   - id: retirement
     resource: ../../src/lib/retirement.ts
     title: 퇴직 처리 판정 — 상세 머리 버튼 · 퇴직일 범위 검사(WHALEERP-585)
@@ -337,15 +337,16 @@ sources:
 두고 목록 자리가 없어, 칸을 210px 에서 300px 로 넓혀 배지 옆에 세웠다(데모와 다름). 상세는 목록의 이름 링크가 가입 완료 · 재직
 직원에게만 걸려 실제로는 거의 쓰이지 않지만, 주소로 들어온 경우를 위해 같은 판정을 둔다.
 
-* 보일지(`canResendInvitation`) — 응답의 `invitation.canResend` 이면서 **계약이 발송 대기(`PENDING_SEND`)일 때만**이다. api 의
-  `canResend` 는 초대 발송 · 초대 만료 · 소속 추가 확인 · 복귀 확인(수락 전)에 참인데, 재발송 api(`POST /contracts/:id/send`, #136)는
-  계정이 없는 직원의 가입 초대 알림톡만 보낸다 — 서명 대기(앱으로 받는 직원, 소속 추가 확인 · 복귀 확인)는 앱 알림 전이라
-  409 `SEND_CHANNEL_NOT_READY`, 만료 · 거부 계약은 409 `CONTRACT_STATUS_CONFLICT` 다. 근로계약 상세의 재발송 버튼(`send-button.tsx`)과
-  같은 기준이다. 두 값이 맞지 않는 것은 api 쪽 정리 거리다.
+* 보일지(`canResendInvitation`) — 응답의 `invitation.canResend` 하나로 정한다(WHALEERP-611, 최근 계약이 있을 때 — 호출부가
+  `contract &&` 로 막는다). api 가 재발송(`POST /contracts/:id/send`, #136)이 가입 초대 알림톡을 실제로 보낼 수 있을 때만 참으로
+  준다 — 가입 전 · 계정 없는 번호 · 휴대폰 번호 · 계약 발송 대기 또는 서명 대기 · 수락하지 않은 초대. 가입한 직원(앱 알림 재발송은
+  근로계약 상세에서)과 계정 있는 번호(소속 추가 확인 · 복귀 확인)는 거짓이다. 예전에는 화면이 계약 발송 대기까지 함께 봤다(앱 알림
+  전이라 서명 대기는 409 였다). 근로계약 상세의 재발송 버튼(`send-button.tsx`)과 같은 서버 액션 · 실패 판정을 쓴다. 목록을 읽은
+  시점 기준으로 가입 초대다 — 그사이 가입했으면 api 가 앱 알림으로 보내고 200, 토스트는 가입 초대 문구 그대로다(받아들인 한계).
 * 권한 — 근로계약 관리(MN000006) 수정 권한일 때만(`useMenuRole(MENU_CODE.contracts, "update")`). 다른 메뉴 화면에 놓인 버튼이라
   메뉴 코드로 찾는다(front #57). api #97(WHALEERP-592)이 send 경로에 같은 수정 권한을 건다. `MENU_CODE.contracts` 는 front #79 와 같은
   이름 · 값이다.
-* 보내기 — 확인창(가입 초대를 다시 보내시겠습니까?) 뒤 근로계약 상세와 같은 서버 액션(`sendContract`)과 실패 판정(`sendFailureOf`)을
+* 보내기 — 확인창(가입 초대를 다시 보내시겠습니까?, 계약이 서명 대기여도 늘 가입 초대 알림톡) 뒤 근로계약 상세와 같은 서버 액션(`sendContract`)과 실패 판정(`sendFailureOf`)을
   쓴다. 성공하면 토스트 「가입 초대를 다시 보냈습니다.」와 함께 화면을 다시 받아 새 발송일(「초대 발송 · MM-DD」)을 보인다. 409 ·
   502 · 503 은 api 문구 그대로다 — `SEND_FAILED`(되돌렸고 다시 보낼 수 있음) · `SEND_CHANNEL_NOT_READY` · `SEND_PHONE_NOT_MOBILE` 는
   확인창 안에 보인다. 접수 여부를 모르면(`SEND_UNCONFIRMED`, 코드 없는 502 · 504, 연결 끊김) 재발송은 계약 상태를 바꾸지 않아 다시 받은
