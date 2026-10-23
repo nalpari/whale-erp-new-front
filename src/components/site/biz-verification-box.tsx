@@ -73,8 +73,10 @@ export function BizVerificationBox({
   guide?: ReactNode;
   /** 안내 아래에 덧붙일 그 화면만의 한 줄(점포의 운영 전환 조건 등) */
   note?: ReactNode;
-  /** 세 칸 배치 — 좁은 슬라이드 패널(MY PAGE)은 한 줄씩 쌓고(stack, 기본), 넓은 화면(점포 등록 · 수정)은 한 줄에 나란히(row) 둔다(2026-10-22 사용자 지정) */
-  layout?: "stack" | "row";
+  /** 세 칸 배치 — 좁은 슬라이드 패널(MY PAGE)은 한 줄씩 쌓고(stack, 기본), 넓은 화면(점포 등록 · 수정)은 한 줄에 나란히(row) 둔다
+   * (2026-10-22 사용자 지정). split 은 사업자등록번호만 혼자 한 줄, 대표자명 · 개업일자를 다음 줄에 나란히 둔다 — 번호가 길어
+   * 세 칸을 다 나란히 두기엔 좁지만 대표자명 · 개업일자 정도는 묶을 수 있는 폭일 때 쓴다(MY PAGE, 2026-10-23 사용자 지정) */
+  layout?: "stack" | "row" | "split";
   /** 상자 머리(「사업자정보」 · 인증 상태). 점포는 인증 상태를 위쪽 묶음 제목에 두어(BizVerifiedStatus) 머리를 뺀다(2026-10-22 사용자 지정) */
   showHeader?: boolean;
 }) {
@@ -85,8 +87,58 @@ export function BizVerificationBox({
   const describe = (key: BizVerifyField) => (fieldErrors[key] ? messageId(key) : missing.includes(key) ? lineId : undefined);
   const invalid = (key: BizVerifyField) => Boolean(fieldErrors[key]) || missing.includes(key);
   const off = disabled || verifying;
-  // 칸 하나(입력칸 + 그 아래 문구). 나란히 둘 때는 세 칸이 남는 폭을 똑같이 나눈다
-  const cell = layout === "row" ? "flex min-w-px flex-1 flex-col" : "flex flex-col";
+  // 칸 하나(입력칸 + 그 아래 문구). 나란히 둘 때(row · split 의 대표자명 · 개업일자 묶음)는 칸이 남는 폭을 똑같이 나눈다
+  const paired = layout === "row" || layout === "split";
+  const cell = paired ? "flex min-w-px flex-1 flex-col" : "flex flex-col";
+
+  const bizNumberCell = (
+    <div className={cell}>
+      <Field label="사업자등록번호">
+        <TextField
+          value={locked.bizNumber ? (lockedDisplay.bizNumber ?? values.bizNumber) : values.bizNumber}
+          // maxLength 를 DOM 에 두지 않는다 — 공백이 섞인 붙여넣기가 거르기 전에 잘린다. 12자 제한은 bizNumberInput 이 건다
+          onChange={(e) => onChange("bizNumber", bizNumberInput(e.target.value))}
+          readOnly={locked.bizNumber || verifying}
+          disabled={disabled}
+          inputMode="numeric"
+          placeholder="숫자 10자리"
+          aria-invalid={invalid("bizNumber") || undefined}
+          aria-describedby={describe("bizNumber")}
+        />
+      </Field>
+      <FieldMessage id={messageId("bizNumber")} message={fieldErrors.bizNumber} />
+    </div>
+  );
+  const ceoNameCell = (
+    <div className={cell}>
+      <Field label="대표자명">
+        <TextField
+          value={values.ceoName}
+          onChange={(e) => onChange("ceoName", e.target.value)}
+          readOnly={locked.ceoName || verifying}
+          disabled={disabled}
+          placeholder="대표자 이름"
+          maxLength={BIZ_CEO_NAME_MAX}
+          aria-invalid={invalid("ceoName") || undefined}
+          aria-describedby={describe("ceoName")}
+        />
+      </Field>
+      <FieldMessage id={messageId("ceoName")} message={fieldErrors.ceoName} />
+    </div>
+  );
+  const openDateCell = (
+    <div className={cell}>
+      <div role="group" aria-label="개업일자" className="flex flex-col gap-[8px]">
+        <span className="text-[14px] font-medium text-erp-label">개업일자</span>
+        {locked.openDate || verifying ? (
+          <TextField value={values.openDate} readOnly aria-label="개업일자" />
+        ) : (
+          <DateField value={values.openDate} onChange={(v) => onChange("openDate", v)} disabled={disabled} aria-label="개업일자" />
+        )}
+      </div>
+      <FieldMessage id={messageId("openDate")} message={fieldErrors.openDate} />
+    </div>
+  );
 
   return (
     <section aria-label="사업자 번호 인증" className="flex flex-col gap-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[18px]">
@@ -97,50 +149,21 @@ export function BizVerificationBox({
         </div>
       )}
       {/* 오류 문구가 칸 사이에 빈 줄을 만들지 않게 칸과 문구를 간격 없는 묶음으로 둔다(2026-10-22 사용자 지정) */}
-      <div className={layout === "row" ? "flex gap-[6px]" : "flex flex-col gap-[12px]"}>
-        <div className={cell}>
-          <Field label="사업자등록번호">
-            <TextField
-              value={locked.bizNumber ? (lockedDisplay.bizNumber ?? values.bizNumber) : values.bizNumber}
-              // maxLength 를 DOM 에 두지 않는다 — 공백이 섞인 붙여넣기가 거르기 전에 잘린다. 12자 제한은 bizNumberInput 이 건다
-              onChange={(e) => onChange("bizNumber", bizNumberInput(e.target.value))}
-              readOnly={locked.bizNumber || verifying}
-              disabled={disabled}
-              inputMode="numeric"
-              placeholder="숫자 10자리"
-              aria-invalid={invalid("bizNumber") || undefined}
-              aria-describedby={describe("bizNumber")}
-            />
-          </Field>
-          <FieldMessage id={messageId("bizNumber")} message={fieldErrors.bizNumber} />
-        </div>
-        <div className={cell}>
-          <Field label="대표자명">
-            <TextField
-              value={values.ceoName}
-              onChange={(e) => onChange("ceoName", e.target.value)}
-              readOnly={locked.ceoName || verifying}
-              disabled={disabled}
-              placeholder="대표자 이름"
-              maxLength={BIZ_CEO_NAME_MAX}
-              aria-invalid={invalid("ceoName") || undefined}
-              aria-describedby={describe("ceoName")}
-            />
-          </Field>
-          <FieldMessage id={messageId("ceoName")} message={fieldErrors.ceoName} />
-        </div>
-        <div className={cell}>
-          <div role="group" aria-label="개업일자" className="flex flex-col gap-[8px]">
-            <span className="text-[14px] font-medium text-erp-label">개업일자</span>
-            {locked.openDate || verifying ? (
-              <TextField value={values.openDate} readOnly aria-label="개업일자" />
-            ) : (
-              <DateField value={values.openDate} onChange={(v) => onChange("openDate", v)} disabled={disabled} aria-label="개업일자" />
-            )}
+      {layout === "split" ? (
+        <div className="flex flex-col gap-[12px]">
+          {bizNumberCell}
+          <div className="flex gap-[6px]">
+            {ceoNameCell}
+            {openDateCell}
           </div>
-          <FieldMessage id={messageId("openDate")} message={fieldErrors.openDate} />
         </div>
-      </div>
+      ) : (
+        <div className={layout === "row" ? "flex gap-[6px]" : "flex flex-col gap-[12px]"}>
+          {bizNumberCell}
+          {ceoNameCell}
+          {openDateCell}
+        </div>
+      )}
       <FieldMessage id={lineId} message={lineMessage} />
       <div className="flex gap-[6px]">
         <Button variant="soft" onClick={onVerify} disabled={off}>

@@ -6,7 +6,7 @@ import { Checkbox, Field, FormRow, RequiredMark, TextField, useToast } from "@/c
 import { BizVerificationBox } from "@/components/site/biz-verification-box";
 import { formatDate } from "@/lib/format";
 import { splitPhone } from "@/lib/my-profile-form";
-import type { BizVerifyField } from "@/lib/biz-verification-rules";
+import { bizVerifyFailure, type BizVerifyField } from "@/lib/biz-verification-rules";
 import {
   emptyVerifyFields,
   formOf,
@@ -116,6 +116,8 @@ export const BpProfileTab = forwardRef<
 
   const [verifyForm, setVerifyForm] = useState<VerifyForm | null>(null);
   const [verifyErrors, setVerifyErrors] = useState<Partial<Record<VerifyFormField, string>>>({});
+  // 특정 칸 탓이 아닌 인증 실패(불일치 · 장애 · 한도 초과) — 상자 맨 아래 한 줄로 보인다(boxError)
+  const [verifyFailure, setVerifyFailure] = useState<string | null>(null);
   // 인증완료(잠긴) 상태를 "재인증"으로 다시 열어 고치는 중인가 — 저장된 값이 있는 한 isVerified 는 계속
   // true 라, 이 화면 전용 토글이 따로 있어야 편집 칸으로 바뀐다(signup biz-auth-section.tsx 의
   // value.verification 토글과 달리, BP 는 저장된 값이 있어도 편집할 수 있어야 해서 하나 더 필요하다).
@@ -165,6 +167,7 @@ export const BpProfileTab = forwardRef<
     verifyNumber.current++;
     setVerifyForm((f) => (f ? { ...f, [key]: value } : f));
     clearVerifyError(key);
+    setVerifyFailure(null);
   };
 
   /** 점포 사업자정보와 같은 동작(store-form-view.tsx handleClearPending) — 칸을 저장된 값으로 되돌린다.
@@ -184,16 +187,21 @@ export const BpProfileTab = forwardRef<
         : f,
     );
     setVerifyErrors({});
+    setVerifyFailure(null);
     setVerifyEditing(false);
   };
 
-  // 점포 사업자정보 인증(store-form-view.tsx handleVerify)과 같은 메시지 — 번호 중복은 사업자등록번호 칸에,
-  // 국세청 불일치는 대표자명 칸에 api 문구 그대로 붙인다(띠로 따로 보이지 않는다). 성공해도 저장하지 않는다 —
-  // 받은 토큰을 verification 으로 들고 있다가 전체 저장에 싣는다.
+  // 점포 사업자정보 인증(store-form-view.tsx handleVerify)과 같은 분류(bizVerifyFailure) — 번호 중복(409)만
+  // 사업자등록번호 칸 아래에 붙이고, 국세청 불일치(422) · 연동 장애(503) · 한도 초과(429) · 그 밖의 실패는
+  // 특정 칸 탓이 아니라서 상자 맨 아래 한 줄(verifyFailure → boxError)로 보인다. 전엔 불일치를 대표자명
+  // 칸에 붙였는데, 실제로 틀린 게 대표자명이 아니어도(예: 개업일자) 대표자명만 빨갛게 보여 헷갈렸다
+  // (코드 리뷰로 찾음, 2026-10-23). 성공해도 저장하지 않는다 — 받은 토큰을 verification 으로 들고 있다가
+  // 전체 저장에 싣는다.
   const handleVerify = () => {
     if (!verifyForm) return;
     const found = validateVerifyForm(verifyForm);
     setVerifyErrors(found);
+    setVerifyFailure(null);
     if (Object.keys(found).length) return;
     const requested = toVerifyInput(verifyForm);
     const startedAt = Date.now();
@@ -201,17 +209,14 @@ export const BpProfileTab = forwardRef<
     startVerifying(async () => {
       const result = await verifyBpBusinessAction(requested).catch((error: unknown) => {
         console.error("사업자 번호 인증 호출 실패", error);
-        return {
-          ok: false as const,
-          status: undefined,
-          message: "인증 결과를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.",
-        };
+        return { ok: false as const, status: undefined, message: "" };
       });
       // 기다리는 사이 칸을 고쳤으면 이 응답은 옛 값의 것이다 — 버린다.
       if (mine !== verifyNumber.current) return;
       if (!result.ok) {
-        if (result.status === 422) return setVerifyErrors((e) => ({ ...e, bizCeoName: result.message }));
-        return setVerifyErrors((e) => ({ ...e, bizRegistrationNumber: result.message }));
+        const failure = bizVerifyFailure(result.status);
+        if (failure.field) return setVerifyErrors((e) => ({ ...e, bizRegistrationNumber: failure.message }));
+        return setVerifyFailure(failure.message);
       }
       setVerifyForm((f) => (f ? { ...f, verification: { token: result.verificationToken, verifiedAt: startedAt, ...requested } } : f));
       setVerifyEditing(false);
@@ -265,7 +270,12 @@ export const BpProfileTab = forwardRef<
   // (BizVerificationBox 가 missing 과 fieldErrors 를 받아 이 가름을 그 안에서 한다)
   const emptyErrored = emptyVerifyFields(verifyForm).filter((key) => verifyErrors[key]);
   const hasVerifyInput = emptyVerifyFields(verifyForm).length < 3;
-  const showClear = Boolean(verifyForm.savedBizNumber) || hasVerifyInput;
+  // 점포(store-form-view.tsx showBizClear)와 같은 기준 — "지우기"는 아직 저장한 적 없는(비어 있던) 값을
+  // 입력하다 마는 경우에만 쓴다. 저장된 값이 있으면 지우기 대신 아래 onRevert("재인증 취소")를 쓴다 — 저장
+  // 뒤엔 이 PATCH 가 사업자정보를 비우는 걸 지원하지 않아(bp-profile-update.dto.ts), 저장된 값을 "지우는"
+  // 동작 자체가 없다(코드 리뷰로 찾음, 2026-10-23 — 전 버전의 "사용안함"은 잠긴 상태에서 눌러도 아무 일도
+  // 안 일어나는 빈 버튼이었다).
+  const showClear = !verifyForm.savedBizNumber && hasVerifyInput;
   // 네 화면 공통 상자(BizVerificationBox, S-VRNTHD)가 쓰는 키(BizVerifyField)로 옮긴다 — VERIFY_TO_BIZ 참고
   const bizValues = { bizNumber: verifyForm.bizRegistrationNumber, ceoName: verifyForm.bizCeoName, openDate: verifyForm.bizOpenDate };
   const bizMissing = emptyErrored.map((key) => VERIFY_TO_BIZ[key]);
@@ -277,22 +287,31 @@ export const BpProfileTab = forwardRef<
 
   return (
     <div id={ids} className="flex flex-col gap-[18px]">
-      {/* 상자는 네 화면 공통(BizVerificationBox, S-VRNTHD) — 좁은 슬라이드 패널이라 한 줄씩 쌓는다(layout="stack") */}
+      {/* 상자는 네 화면 공통(BizVerificationBox, S-VRNTHD) — 사업자등록번호는 혼자, 대표자명 · 개업일자는
+          한 줄에 묶는다(layout="split", 2026-10-23 사용자 지정) */}
       <BizVerificationBox
-        layout="stack"
+        layout="split"
         values={bizValues}
         onChange={(key, value) => setVerify(BIZ_TO_VERIFY[key], value)}
         locked={{ bizNumber: locked, ceoName: locked, openDate: locked }}
-        verified={verified}
+        // 상자에 넘기는 verified 는 "지금 잠겨서 보이는가"다(locked) — 원본 isVerified(verifyForm)
+        // 가 아니다. 재인증을 열면(verifyEditing=true) 서버엔 여전히 인증된 값이 남아 있어도 화면은
+        // "미인증"으로 보여야 버튼이 재인증→인증하기로 바뀐다(점포 store-form-view.tsx 의 savedLocked
+        // 와 같다 — reopenSaved 가 서는 순간 verified 가 꺼진다, 코드 리뷰로 찾음, 2026-10-23).
+        verified={locked}
         verifiedDate={verifyForm.savedVerifiedAt ? formatDate(verifyForm.savedVerifiedAt) : ""}
         verifying={verifying}
         fieldErrors={bizFieldErrors}
         missing={bizMissing}
+        boxError={verifyFailure}
         // 잠겼을 때(인증 완료 · 재인증 전) 누르면 재인증하려고 칸을 연다 — 점포(store-form-view.tsx
         // handleReverify)와 같은 패턴. 열린 뒤에는 실제 인증 요청(handleVerify)으로 바뀐다.
         onVerify={locked ? () => setVerifyEditing(true) : handleVerify}
         onClear={clearVerify}
         showClear={showClear}
+        // 저장된 값을 재인증하려고 열었을 때만(점포 handleRevertSaved 와 같은 조건) — 눌러도 저장된 값은
+        // 그대로 두고 칸·잠금만 그 값으로 되돌린다("재인증 취소")
+        onRevert={verifyForm.savedBizNumber && !locked ? clearVerify : undefined}
         // 저장은 안 됐지만 이번 화면에서 통과해 둔 상태는 배지에 그 사실을 덧붙인다(사용자 지정, 2026-10-22)
         note={pending ? "저장하면 반영됩니다" : undefined}
       />

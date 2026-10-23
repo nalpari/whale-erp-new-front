@@ -151,9 +151,13 @@ test("좌표 입력칸 둘 다 있어야 있다고 본다 — bodyOf · 선택�
 });
 
 test("사업자주소가 「점포 주소와 같음」이면 점포 주소를 싣는다", () => {
-  const f = { ...filled, zipCode: "06236", address: "서울 강남구 테헤란로 152", addressDetail: "1층", bizAddress: "다른 곳" };
+  const f = { ...filled, zipCode: "06236", address: "서울 강남구 테헤란로 152", addressDetail: "1층", bizAddress: "다른 곳", bizSameAsStore: true };
   assert.equal(toCreateStoreInput(f).business.address, "서울 강남구 테헤란로 152");
   assert.equal(toCreateStoreInput({ ...f, bizSameAsStore: false }).business.address, "다른 곳");
+});
+
+test("새 점포는 「점포 주소와 같음」이 기본 해제다 — 점포주소와 사업자주소가 다를 수 있다(사용자 지정, 2026-10-23)", () => {
+  assert.equal(EMPTY_STORE_FORM.bizSameAsStore, false);
 });
 
 const detail: StoreDetail = {
