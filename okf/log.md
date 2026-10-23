@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-23
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세에 발송 · 처리 정보(발송일 · 재발송 횟수 · 날인 기한 · 최종 처리일 · 거부 사유, 종이 계약은 등록일 · 등록 관리자, WHALEERP-155 · 328)와 발송 대기 「종료」 버튼(WHALEERP-327)을 더하고, 재발송 버튼은 api 의 `canResend` 일 때만 보인다(소속 추가 확인 · 복귀 확인은 숨김). api 타입을 api 브랜치(seel) 기준으로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front kingdra, main #123 까지): okf/log 충돌은 양쪽 기록을 살렸고, 데모 html 은 main 것을 받아 다시 빌드했다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front kingdra, main #121 까지): okf 충돌은 양쪽 기록을 살리고 generated.at 만 새로 썼다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [로그인](/auth.md) — 이메일 형식 문구를 다섯 화면 모두 「이메일 형식이 올바르지 않습니다.」 하나로 맞췄다(`EMAIL_FORMAT_ERROR`, 사용자 결정). 플랫폼 관리자 · MY PAGE 는 저장 때 api 형식 400 도 이 문구로 보인다.

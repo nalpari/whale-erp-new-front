@@ -93,3 +93,23 @@ export async function sendContract(contractId: number): Promise<SendContractResu
   }
   return { ok: true };
 }
+
+/**
+ * 발송 대기 계약 종료(WHALEERP-327 · 155, 2026-10-21 재영). 채용을 접을 때 계약을 종료로 닫고 나간 초대(코드 · 링크)를 무효로
+ * 한다. 실패하면 화면에 보일 문장과 다시 읽을지(recheck — 지금 상태가 발송 대기가 아님 · 다른 요청이 먼저 고침)를 돌려준다.
+ */
+export async function endContract(contractId: number): Promise<{ ok: true } | { ok: false; error: string; recheck: boolean }> {
+  if (!isContractId(contractId)) return { ok: false, error: "근로계약을 찾을 수 없습니다", recheck: false };
+  const headers = await authHeaders();
+  if (!headers.Authorization) return { ok: false, error: "로그인이 필요합니다", recheck: false };
+  try {
+    await request(`/contracts/${contractId}/end`, { method: "POST", headers });
+  } catch (e) {
+    if (e instanceof ApiError) {
+      if (e.status === 401) return { ok: false, error: "로그인이 필요합니다", recheck: false };
+      return { ok: false, error: e.message, recheck: e.status === 409 };
+    }
+    throw e;
+  }
+  return { ok: true };
+}

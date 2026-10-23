@@ -8,14 +8,16 @@ import { backHrefOf, withBack } from "../contract-list";
 import { ContractPermission } from "../contract-permission";
 import { formatPhone, type ContractDetail } from "../new/contract-form-model";
 import { documentNoticeOf } from "./document-notice";
+import { EndContractButton } from "./end-button";
 import { SendContractButton } from "./send-button";
 import { sendNoticeOf } from "./send-model";
-import { insuranceText, kstDateTime, partTimeRows, payDayText, probationText, weeklyHoursOf, workDayLines, type PartTimeRow } from "./detail-format";
+import { insuranceText, kstDateTime, partTimeRows, payDayText, probationText, processRows, weeklyHoursOf, workDayLines, type PartTimeRow } from "./detail-format";
 
 type Status = Parameters<typeof StatusBadge>[0]["status"];
 
 // 상태마다 위쪽에 서는 버튼(CTR-19, 2026-10-19 재영). 보내기는 저장할 때 곧바로 한다 — 「발송」 버튼은 없다.
-// 발송 대기 · 서명 대기는 「재발송」과 「수정」(당사자 정보), 수정 요청은 「수정」(계약서 전체). 만료 재발송(WHALEERP-153) ·
+// 발송 대기 · 서명 대기는 「재발송」과 「수정」(당사자 정보), 발송 대기는 「종료」도(채용을 접을 때, WHALEERP-327), 수정 요청은
+// 「수정」(계약서 전체). 재발송은 api 가 보낼 수 있다고 할 때만(canResend — 소속 추가 확인 · 복귀 확인은 아직 보낼 길이 없다). 만료 재발송(WHALEERP-153) ·
 // 새 계약은 아직 API 가 없어 비활성으로 둔다. 거부 · 종료는 버튼이 없다.
 const PENDING: Partial<Record<Status, string>> = {
   EXPIRED: "재발송",
@@ -73,7 +75,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
       </ContractPermission>
     ) : (
       <>
-        {(status === "PENDING_SEND" || status === "PENDING_SIGNATURE") && (
+        {(status === "PENDING_SEND" || status === "PENDING_SIGNATURE") && c?.canResend && (
           <ContractPermission action="update">
             <SendContractButton contractId={contractId} status={status} name={c?.name ?? null} back={backHrefOf(query.back)} />
           </ContractPermission>
@@ -92,6 +94,12 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
             <Button variant="soft" href={withBack(`/contracts/${contractId}/worker`, query.back)}>
               수정
             </Button>
+          </ContractPermission>
+        )}
+        {/* 채용을 접을 때 — 종료로 닫고 나간 초대를 무효로 한다(WHALEERP-327) */}
+        {status === "PENDING_SEND" && (
+          <ContractPermission action="update">
+            <EndContractButton contractId={contractId} name={c?.name ?? null} />
           </ContractPermission>
         )}
         {status && PENDING[status] && (
@@ -118,6 +126,8 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
             />
           ),
         },
+        // 발송일 · 재발송 · 날인 기한 · 최종 처리일 · 거부 사유, 종이 계약은 등록일 · 등록 관리자(WHALEERP-155 · 328)
+        ...processRows(c),
         { label: "계약 기간", value: c.startDate ? `${c.startDate} ~ ${c.endDate ?? "무기한"}` : "-" },
         { label: "시급", value: c.wageAmount === null ? "-" : c.wageAmount.toLocaleString("ko-KR") },
         {
