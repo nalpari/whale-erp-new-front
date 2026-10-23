@@ -612,7 +612,7 @@ export function StoreFormView(props: Props) {
               {message("name")}
             </Stack>
             <Stack grow>
-              <PhoneGroup label="점포 연락처" value={form.phone} onChange={(v) => set("phone", v, "phone")} invalid={invalid("phone")} describedBy={describe("phone")} />
+              <PhoneGroup label="점포 연락처" headMaxLength={4} value={form.phone} onChange={(v) => set("phone", v, "phone")} invalid={invalid("phone")} describedBy={describe("phone")} />
               {message("phone")}
             </Stack>
           </FormRow>
@@ -915,12 +915,15 @@ function PhoneGroup({
   onChange,
   invalid,
   describedBy,
+  headMaxLength = 3,
 }: {
   label: string;
   value: PhoneParts;
   onChange: (next: PhoneParts) => void;
   invalid?: boolean;
   describedBy?: string;
+  /** 앞자리 칸 길이 — 점포 연락처는 050X 평생번호(0507 등) 때문에 4, 대표자 연락처(휴대전화)는 3 */
+  headMaxLength?: number;
 }) {
   return (
     <Labeled label={label}>
@@ -935,7 +938,8 @@ function PhoneGroup({
               onChange(next);
             }}
             inputMode="numeric"
-            maxLength={i === 0 ? 3 : 4}
+            // 길이 검사는 저장 때 전체 자릿수로 한다(점포 9~12 · 대표자 10~11)
+            maxLength={i === 0 ? headMaxLength : 4}
             aria-label={`${label} ${part}`}
             aria-invalid={invalid}
             aria-describedby={describedBy}

@@ -6230,7 +6230,7 @@ export interface components {
             bpCodeId?: number;
             /** @description 점포명 — 1~50자 */
             name: string;
-            /** @description 점포 연락처 — 숫자 9~11자리 */
+            /** @description 점포 연락처 — 숫자 9~12자리(12자리는 050X 평생번호, 예 050720331334) */
             phone?: string | null;
             /** @description 우편번호 — 숫자 5자리, 주소 검색 결과 */
             zipCode?: string | null;
@@ -6277,7 +6277,7 @@ export interface components {
             storeStatus: "NOT_OPERATING" | "OPERATING" | "CLOSED";
             /** @description 점포명 — 1~50자 */
             name: string;
-            /** @description 점포 연락처 — 숫자 9~11자리 */
+            /** @description 점포 연락처 — 숫자 9~12자리(12자리는 050X 평생번호, 예 050720331334) */
             phone?: string | null;
             /** @description 우편번호 — 숫자 5자리, 주소 검색 결과 */
             zipCode?: string | null;

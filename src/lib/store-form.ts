@@ -130,11 +130,11 @@ export const EMPTY_STORE_FORM: StoreForm = {
   floors: [],
 };
 
-/** 하이픈 없는 전화번호를 세 칸으로. 02 국번은 2자리, 그 밖은 3자리 + 가운데 3~4자리 + 끝 4자리 */
+/** 하이픈 없는 전화번호를 세 칸으로. 02 국번은 2자리, 050X 평생번호(12자리)는 4자리, 그 밖은 3자리 + 가운데 3~4자리 + 끝 4자리 */
 export function splitPhone(value: string | null | undefined): PhoneParts {
   const d = (value ?? "").replace(/[^0-9]/g, "");
   if (!d) return ["", "", ""];
-  const head = d.startsWith("02") ? 2 : 3;
+  const head = d.startsWith("02") ? 2 : d.startsWith("050") && d.length === 12 ? 4 : 3;
   return [d.slice(0, head), d.slice(head, d.length - 4), d.slice(d.length - 4)];
 }
 
@@ -192,7 +192,8 @@ export function formOfStore(d: StoreDetail): StoreForm {
   };
 }
 
-const PHONE_PATTERN = /^[0-9]{9,11}$/;
+// 점포 연락처 — 9~12자리. 12자리는 050X 평생번호(0507-2033-1334 등, 2026-10-23)
+const PHONE_PATTERN = /^[0-9]{9,12}$/;
 // api save-store.dto 와 같은 검사 — 휴대전화로 좁히면 api 로 저장된 유선 번호 점포를 고칠 수 없다
 const CEO_PHONE_PATTERN = /^[0-9]{10,11}$/;
 const BIZ_NUMBER_PATTERN = /^[0-9]{10}$/;
@@ -255,7 +256,7 @@ export function validateStoreForm(f: StoreForm, mode: "create" | "edit", require
   else if (name.length > 50) errors.name = "점포명은 50자까지입니다.";
 
   const phone = joinPhone(f.phone);
-  if (phone && !PHONE_PATTERN.test(phone)) errors.phone = "점포 연락처는 숫자 9~11자리입니다.";
+  if (phone && !PHONE_PATTERN.test(phone)) errors.phone = "점포 연락처는 숫자 9~12자리입니다.";
 
   if (f.addressDetail.trim().length > 100) errors.addressDetail = "상세주소는 100자까지입니다.";
   else if (f.addressDetail.trim() && !f.address) errors.addressDetail = "주소를 먼저 검색해 주세요.";
