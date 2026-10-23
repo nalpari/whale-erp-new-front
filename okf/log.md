@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: `docs/mockup/bp/` 의 확정 쟁점 3건(BP-6·7·8)을 [BP 마스터 계정 관리](/bp.md) 로 옮겼다. 화면은 `/bp-masters` 한 화면의 슬라이드 패널(상세만 `?bp=`), 상세의 상태 변경·비밀번호 초기화는 그 줄 버튼, 하단 [닫기][삭제][수정][변경 이력], 변경 이력은 팝업, 수정 일시·수정자 줄 추가, 소속 점포는 수만(점포 목록 연결은 나중에). 옛 주소 `/platform/bp` 를 메뉴 URL `/bp-masters` 로 바꿨다. 보류 쟁점은 없다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 도입문의 리뷰 반영: 시간 초과는 「이미 접수되었을 수 있다」로, 영문 400 은 입력 확인 문구로 안내하고, 빈칸만 적은 칸 · 전화번호 형식을 확인 창 전에 잡는다. 폼 부품 이름을 도입문의 `lead`(`LeadForm` · `lead-form.tsx`, 링크 키 `leads`)로 바꿨다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [홈](/home.md) — 비로그인 도입문의 실제 화면 `/leads`(#297 · #298)를 열었다. 디자인 샘플과 한 폼을 쓰고 선택지는 공개 공통코드 · enum 에서, 접수는 서버 액션으로 api `POST /leads` 에 보낸다. 확인 창 · 완료 창, 실패 때 내용 유지와 안내, 업종 기타면 아래에 직접 입력. 「도입문의」 링크와 공개 경로를 `/inquiry` 에서 `/leads` 로 옮겼다.
 * **Update**: [근무스케줄 관리 화면 (구현)](/screens/work-schedules.md) — 직원 상세 근무스케줄 칸 설명을 맞췄다: `GET /staff-members/:id/work-schedules`(WHALEERP-185)로 받고, 「관리」는 주 없이 `/work-schedules?store=<근무지>`(이번 주)로 연다(front #99 리뷰).

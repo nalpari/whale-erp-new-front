@@ -288,9 +288,9 @@
         { key: "bp", text: "BP 마스터 계정 관리", team: "1팀", toggle: 1, items: [
           { text: "영역 개요", href: "bp/overview.html", mock: 1 },
           { key: "bp-master", text: "BP 마스터 계정 목록", href: "bp/index.html", sub: [
-            { text: "BP 마스터 계정 상세", href: "bp/detail.html", route: "/platform/bp/BP000017" },
-            { text: "BP 마스터 계정 등록", href: "bp/new.html", route: "/platform/bp/new" },
-            { text: "BP 마스터 계정 수정", href: "bp/edit.html", route: "/platform/bp/…/edit" }
+            { text: "BP 마스터 계정 상세", href: "bp/detail.html", route: "/bp-masters?bp=17" },
+            { text: "BP 마스터 계정 등록", href: "bp/new.html", route: "/bp-masters (등록 패널)" },
+            { text: "BP 마스터 계정 수정", href: "bp/edit.html", route: "/bp-masters?bp=17 (수정 패널)" }
           ]}
         ]},
         { key: "settle", text: "서비스정산관리", phase: "2", items: [
