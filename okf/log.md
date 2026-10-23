@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-23
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세 code-review 반영(front #124): 「종료」 실패는 재발송과 같은 `sendFailureOf` 규칙(모를 때 문장만 `END_UNKNOWN`)이고 확인창을 막지 않는다(두 번 닫히지 않음). 닫으면 `?send=` 안내를 지운다. 날인 기한은 만료에도 보이고, 거부 사유 줄은 길면 늘어난다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세 리뷰 반영: 「종료」는 서버 액션 호출이 끊기거나 api 가 5xx · 응답 전 끊김이면 오류 화면 대신 종료를 막고 다시 읽는다. 재발송 버튼은 `canResend` 가 false 일 때만 숨긴다(칸이 없는 옛 api 응답이면 보임 — front 가 먼저 배포돼도 버튼이 사라지지 않게). 처리 정보 줄 테스트 보강(발송 대기 날인 기한 · 마지막 발송 없는 재발송 횟수 · 사유 없는 거부). api 타입을 api seel 로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세에 발송 · 처리 정보(발송일 · 재발송 횟수 · 날인 기한 · 최종 처리일 · 거부 사유, 종이 계약은 등록일 · 등록 관리자, WHALEERP-155 · 328)와 발송 대기 「종료」 버튼(WHALEERP-327)을 더하고, 재발송 버튼은 api 의 `canResend` 일 때만 보인다(소속 추가 확인 · 복귀 확인은 숨김). api 타입을 api 브랜치(seel) 기준으로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front kingdra, main #123 까지): okf/log 충돌은 양쪽 기록을 살렸고, 데모 html 은 main 것을 받아 다시 빌드했다.

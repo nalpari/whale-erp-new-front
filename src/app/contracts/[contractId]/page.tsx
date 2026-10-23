@@ -100,7 +100,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
         {/* 채용을 접을 때 — 종료로 닫고 나간 초대를 무효로 한다(WHALEERP-327) */}
         {status === "PENDING_SEND" && (
           <ContractPermission action="update">
-            <EndContractButton contractId={contractId} name={c?.name ?? null} />
+            <EndContractButton contractId={contractId} name={c?.name ?? null} back={backHrefOf(query.back)} />
           </ContractPermission>
         )}
         {status && PENDING[status] && (
