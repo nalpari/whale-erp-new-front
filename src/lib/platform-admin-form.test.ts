@@ -6,8 +6,12 @@ import {
   EMPTY_FORM,
   emailError,
   formOf,
+  isOriginalEmail,
+  LOGIN_ID_FORMAT_ERROR,
+  LOGIN_ID_TAKEN,
   loginIdError,
   serverErrorField,
+  serverFieldMessage,
   splitPhone,
   toCreateInput,
   toUpdateInput,
@@ -134,4 +138,20 @@ test("api 오류를 붙일 칸 — 400 · 409 의 아이디 · 이메일만, 수
   assert.equal(serverErrorField(409, "아이디 또는 이메일이 방금 다른 계정에 등록되었습니다", "create"), null);
   assert.equal(serverErrorField(403, "아이디 …", "create"), null);
   assert.equal(serverErrorField(undefined, "아이디 …", "create"), null);
+});
+
+test("칸에 붙일 api 오류 문구 — 아이디는 화면 문구로, 이메일은 api 문구 그대로", () => {
+  const apiTaken = "이미 사용 중인 아이디입니다. 삭제된 계정의 아이디도 다시 쓸 수 없습니다";
+  assert.equal(serverFieldMessage("loginId", 409, apiTaken), LOGIN_ID_TAKEN);
+  assert.equal(serverFieldMessage("loginId", 400, "아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다"), LOGIN_ID_FORMAT_ERROR);
+  assert.equal(LOGIN_ID_FORMAT_ERROR, loginIdError("1234"), "화면 형식 검사와 같은 문구");
+  const emailTaken = "이미 다른 관리자 계정에 등록된 이메일입니다";
+  assert.equal(serverFieldMessage("email", 409, emailTaken), emailTaken);
+});
+
+test("수정 화면의 원래 이메일 — 앞뒤 공백 · 대소문자는 보지 않는다", () => {
+  assert.equal(isOriginalEmail(" SeoJun@Whale.Test ", "seojun@whale.test"), true);
+  assert.equal(isOriginalEmail("seojun2@whale.test", "seojun@whale.test"), false);
+  assert.equal(isOriginalEmail("", null), true);
+  assert.equal(isOriginalEmail("a@b.co", null), false);
 });

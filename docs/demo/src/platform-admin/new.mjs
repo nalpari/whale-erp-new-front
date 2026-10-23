@@ -31,10 +31,10 @@ function platformAdminNewBody(A) {
       ui.field(
         req("아이디"),
         // 칸을 벗어나거나 Enter 를 치면 형식 · 중복을 확인해 칸 아래에 알린다(erp.js data-dupcheck, 앱 admin-form-panel.tsx).
-        // 데모의 ‘이미 있는 아이디’는 data-taken 값이다. 확인 중 · 사용 가능 · 중복(코드 리뷰 반영, 2026-10-20)
-        // 세 상태를 data-dup-message 하나로 그린다 — 클래스 · 내용은 erp.js initDupCheck 가 상태에 맞게 바꾼다.
+        // 데모의 ‘이미 있는 아이디’는 data-taken 값이고, fail 로 시작하는 아이디는 확인 요청 실패를 흉내 낸다(data-fail-prefix).
+        // 확인 중 · 사용 가능 · 중복 · 확인 실패를 data-dup-message 하나로 그린다 — 클래스 · 내용은 erp.js initDupCheck 가 바꾼다.
         stack(
-          ui.textField({ value: "platyoon", maxlength: 20, placeholder: "영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요.", "data-dupcheck": "id", "data-taken": "plathan,whaleadmin" }),
+          ui.textField({ value: "platyoon", maxlength: 20, placeholder: "영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요.", "data-dupcheck": "id", "data-taken": "plathan,whaleadmin", "data-fail-prefix": "fail" }),
           `<p data-dup-message hidden></p>`,
         ),
       ),

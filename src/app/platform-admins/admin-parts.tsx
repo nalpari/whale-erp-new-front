@@ -49,24 +49,46 @@ function CheckIcon() {
 }
 
 /**
- * 아이디 중복확인 세 상태 — 확인 중(회색 대기 문구, erp-label) · 사용 가능(체크 표시 + 파란 문구 —
- * signup-form.tsx 의 성공 표시와 같은 색, ERP 토큰 erp-on) · 오류(FieldMessage 그대로).
- * 대기·성공은 조용히 사라지는 정보라 aria-live="polite" 로만 알리고(막는 오류가 아니므로 role=alert 는 쓰지 않는다).
+ * 화면 읽기 프로그램 알림 칸 — 문구가 없어도 늘 그려 둔다. 알림 영역(aria-live)이 문구와 함께 새로 생기면 첫 문구를
+ * 읽지 않는 프로그램이 있다. sr-only(absolute)라 칸 사이 간격을 차지하지 않는다. 보이는 문구는 aria-hidden 으로 두어
+ * 두 번 읽히지 않게 한다(입력칸의 aria-describedby 는 숨긴 요소도 읽는다). 오류는 FieldMessage(role=alert)가 알리므로 비운다.
  */
-export function LoginIdAvailability({ id, checking, available, message }: { id: string; checking: boolean; available: boolean; message?: string }) {
-  if (message) return <FieldMessage id={id} message={message} />;
-  if (!checking && !available) return null;
+function LiveText({ text }: { text: string }) {
   return (
-    <p id={id} aria-live="polite" className="flex items-center gap-[4px] text-[13px] leading-[1.5]">
-      {checking ? (
-        <span className="text-erp-label">확인 중입니다.</span>
-      ) : (
-        <span className="flex items-center gap-[4px] text-erp-on">
-          <CheckIcon />
-          사용 가능한 아이디입니다.
-        </span>
+    <span className="sr-only" aria-live="polite">
+      {text}
+    </span>
+  );
+}
+
+/** 아이디 중복확인 상태. 오류(형식 · 사용 중)는 이 상태가 아니라 칸 오류 문구로 보인다. */
+export type LoginIdCheck = "idle" | "checking" | "available" | "failed";
+
+const LOGIN_ID_CHECK_TEXT: Record<Exclude<LoginIdCheck, "idle">, string> = {
+  checking: "아이디를 확인하는 중입니다.",
+  available: "사용 가능한 아이디입니다.",
+  // 확인 요청 자체가 실패(403 · 429 · 5xx · 연결)했을 때. 저장은 막지 않는다 — 저장할 때 api 가 중복을 다시 막는다.
+  failed: "아이디를 확인하지 못했습니다. 저장 시 다시 확인합니다.",
+};
+
+/**
+ * 아이디 중복확인 표시 — 확인 중 · 확인 실패(회색, erp-label) · 사용 가능(체크 표시 + 파란 문구 —
+ * signup-form.tsx 의 성공 표시와 같은 색, ERP 토큰 erp-on) · 오류(FieldMessage 그대로).
+ * 대기 · 성공 · 실패는 막는 오류가 아니므로 role=alert 대신 알림 칸(aria-live="polite")으로만 알린다.
+ */
+export function LoginIdAvailability({ id, check, message }: { id: string; check: LoginIdCheck; message?: string }) {
+  const text = message || check === "idle" ? "" : LOGIN_ID_CHECK_TEXT[check];
+  return (
+    <>
+      <FieldMessage id={id} message={message} />
+      {text && (
+        <p id={id} aria-hidden="true" className={`flex items-center gap-[4px] text-[13px] leading-[1.5] ${check === "available" ? "text-erp-on" : "text-erp-label"}`}>
+          {check === "available" && <CheckIcon />}
+          {text}
+        </p>
       )}
-    </p>
+      <LiveText text={text} />
+    </>
   );
 }
 
@@ -75,13 +97,18 @@ export function LoginIdAvailability({ id, checking, available, message }: { id: 
  * 그래서 "사용 가능"이라 하지 않고 "형식이 올바르다"고만 말한다 — 중복 여부는 저장해야 알 수 있다.
  */
 export function EmailFormatValid({ id, valid, message }: { id: string; valid: boolean; message?: string }) {
-  if (message) return <FieldMessage id={id} message={message} />;
-  if (!valid) return null;
+  const text = !message && valid ? "올바른 이메일 형식입니다." : "";
   return (
-    <p id={id} aria-live="polite" className="flex items-center gap-[4px] text-[13px] leading-[1.5] text-erp-on">
-      <CheckIcon />
-      올바른 이메일 형식입니다.
-    </p>
+    <>
+      <FieldMessage id={id} message={message} />
+      {text && (
+        <p id={id} aria-hidden="true" className="flex items-center gap-[4px] text-[13px] leading-[1.5] text-erp-on">
+          <CheckIcon />
+          {text}
+        </p>
+      )}
+      <LiveText text={text} />
+    </>
   );
 }
 

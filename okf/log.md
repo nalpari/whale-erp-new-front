@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-23
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 등록 · 수정 패널 문구 확정(사용자, front #61): 아이디 확인 중 · 중복 · 확인 실패 문구, 중복 거절한 아이디는 고치기 전 저장 막기, 수정 화면 원래 이메일은 표시 없음, 확인 문구 알림 칸 상시 배치. 데모(erp.js · platform-admin)도 맞췄고 목업은 그대로 둔다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front #61 magikarp, main #116 까지): okf 충돌은 양쪽 기록을 살리고 generated.at 만 새로 썼다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 등록 · 수정 패널: 저장 때 api 가 칸에 붙인 중복 오류는 그 칸을 고칠 때까지 남기고, 저장이 거절되면 사용 가능 · 올바른 형식 표시를 내린다(front #61 머지 블로커 반영).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front #61 magikarp, main #113 까지): okf 충돌은 main 서술 위에 플랫폼 관리자 줄의 아이디 · 이메일 즉시 확인 서술만 다시 얹어 풀었다. 데모 html 은 main 것을 받아 다시 빌드했다.

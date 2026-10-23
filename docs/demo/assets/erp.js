@@ -894,11 +894,15 @@
   // 확인을 흉내 낸다. 데모의 ‘이미 있는 값’은 data-taken 이다.
   // 이메일은 바로 물어볼 중복확인 API 가 없어(등록 시점에만 api 가 409 로 막는다) 형식만 보고 지연 없이 바로
   // 답한다(taken 없음) — 그래서 "사용 가능"이 아니라 "형식이 올바르다"고만 말한다(2026-10-20).
+  // 확인 요청 자체의 실패(앱의 403 · 429 · 5xx · 연결 실패)는 data-fail-prefix 로 시작하는 값으로 흉내 낸다(2026-10-23).
+  // 수정 화면에서 data-dup-keep 칸이 원래 값 그대로면 아무것도 띄우지 않는다(앱 isOriginalEmail).
   const DUP = {
     id: {
       pattern: /^(?=.*[A-Za-z])[A-Za-z0-9]{4,20}$/,
       format: "아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다.",
-      taken: "이미 사용 중인 아이디입니다. 삭제된 계정의 아이디도 다시 쓸 수 없습니다",
+      taken: "이미 사용 중인 아이디입니다. 다른 아이디를 입력해 주세요.",
+      checking: "아이디를 확인하는 중입니다.",
+      failed: "아이디를 확인하지 못했습니다. 저장 시 다시 확인합니다.",
       ok: "사용 가능한 아이디입니다.",
     },
     mail: {
@@ -915,20 +919,28 @@
     const message = input.parentElement.querySelector("[data-dup-message]");
     if (!rule || !message) return;
     let timer = null;
-    // kind: "" (지움) · "checking"(회색, 대기) · "ok"(파랑 erp-on, 체크) · "error"(빨강 erp-off, role=alert)
+    // 화면 읽기 프로그램 알림 칸 — 늘 붙여 둔다. 알림 영역이 문구와 함께 생기면 첫 문구를 읽지 않는 프로그램이 있다
+    // (앱 admin-parts.tsx LiveText). 보이는 문구는 aria-hidden 으로 두어 두 번 읽히지 않게 하고, 오류는 role=alert 가 알린다.
+    const live = document.createElement("span");
+    live.className = "sr-only";
+    live.setAttribute("aria-live", "polite");
+    message.after(live);
+    // kind: "" (지움) · "checking" · "failed"(회색, erp-label) · "ok"(파랑 erp-on, 체크) · "error"(빨강 erp-off, role=alert)
     const render = (kind, text) => {
       message.hidden = !kind;
       message.removeAttribute("role");
-      message.removeAttribute("aria-live");
-      if (kind === "checking") {
+      message.removeAttribute("aria-hidden");
+      live.textContent = kind && kind !== "error" ? text : "";
+      if (kind === "checking" || kind === "failed") {
         message.className = "text-[13px] leading-[1.5] text-erp-label";
-        message.setAttribute("aria-live", "polite");
-        message.textContent = "확인 중입니다.";
+        message.setAttribute("aria-hidden", "true");
+        message.textContent = text;
         input.removeAttribute("aria-invalid");
-        input.setAttribute("aria-busy", "true");
+        if (kind === "checking") input.setAttribute("aria-busy", "true");
+        else input.removeAttribute("aria-busy");
       } else if (kind === "ok") {
         message.className = "flex items-center gap-[4px] text-[13px] leading-[1.5] text-erp-on";
-        message.setAttribute("aria-live", "polite");
+        message.setAttribute("aria-hidden", "true");
         message.innerHTML = `${DUP_CHECK_SVG} ${text}`;
         input.removeAttribute("aria-invalid");
         input.removeAttribute("aria-busy");
@@ -947,11 +959,14 @@
       clearTimeout(timer);
       const v = input.value.trim();
       if (!v) return render("");
+      if ("dupKeep" in input.dataset && v.toLowerCase() === input.defaultValue.trim().toLowerCase()) return render("");
       if (!rule.pattern.test(v)) return render("error", rule.format);
       // taken 이 없는 규칙(이메일)은 물어볼 중복확인 API 가 없다는 뜻 — 형식만 보고 지연 없이 바로 답한다.
       if (!rule.taken) return render("ok", rule.ok);
-      render("checking");
+      render("checking", rule.checking);
       timer = setTimeout(() => {
+        const failPrefix = input.dataset.failPrefix;
+        if (failPrefix && v.toLowerCase().startsWith(failPrefix)) return render("failed", rule.failed);
         const taken = (input.dataset.taken || "").toLowerCase().split(",");
         const isTaken = taken.includes(v.toLowerCase());
         render(isTaken ? "error" : "ok", isTaken ? rule.taken : rule.ok);
