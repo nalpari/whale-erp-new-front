@@ -4981,6 +4981,13 @@ export interface components {
          * @enum {string}
          */
         HqSharingConsentState: "AGREED" | "NOT_AGREED";
+        StaffMemberEmploymentPeriodDto: {
+            staffMemberId: number;
+            /** @description 입사일(YYYY-MM-DD). 채우기 전 레코드는 null */
+            hiredDate: string | null;
+            /** @description 퇴직일(YYYY-MM-DD) — 퇴직 예정이면 정한 날. 정하지 않았으면 null */
+            retiredDate: string | null;
+        };
         StaffMemberDetailResponseDto: {
             employmentType: components["schemas"]["EmploymentType"] | null;
             joinState: components["schemas"]["StaffJoinState"] | null;
@@ -5005,6 +5012,16 @@ export interface components {
              *     null
              */
             birthDate: string | null;
+            /**
+             * @description 이전 재직 기간 — 퇴직 뒤 같은 점포에 다시 입사해 이은 옛 레코드들(WHALEERP-615), 가까운 것부터. 누르면 그 레코드의
+             *     상세로 간다. 체결 완료된 계약이 없는 레코드와 이 관리자에게 가려지는 레코드는 빠진다
+             */
+            previousRecords: components["schemas"]["StaffMemberEmploymentPeriodDto"][];
+            /**
+             * @description 이후 재직 기간 — 이 레코드 뒤에 다시 입사한 레코드들, 가까운 것부터. 체결 완료 전(임시저장 · 발송만 한) 레코드와 가려지는
+             *     레코드는 빠진다
+             */
+            laterRecords: components["schemas"]["StaffMemberEmploymentPeriodDto"][];
             staffMemberId: number | null;
             isMasked: boolean;
             name: string | null;

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { DetailTable, PageBar } from "@/components/common";
@@ -7,12 +8,13 @@ import type { EnumValue } from "@/lib/enums";
 import { hqSharingConsentText, kstToday, staffEmailText } from "@/lib/staff-members";
 import { MENU_CODE } from "@/lib/menus";
 import { getStaffMember, staffMemberIdOf } from "@/lib/staff-members-api";
-import { staffListHref } from "../staff-list-query";
+import { parseStaffListQuery, staffListHref, toStaffListSearch } from "../staff-list-query";
 import { ResendInvitationButton } from "../resend-invitation-button";
 import { canResendInvitation, EMPLOYMENT_TYPE_LABELS, employmentStatusCells, formatPhone, invitationText, joinCell } from "../staff-row";
 import { CellView } from "../staff-table";
 import { ContractBox } from "./contract-box";
 import { AreaLoading, Box, BoxMessage } from "./detail-box";
+import { employmentHistoryLines } from "./employment-history";
 import { MenuManageLink } from "./manage-link";
 import { PasswordResetButton, StaffDetailActions } from "./staff-detail-actions";
 import { PayslipBox, ScheduleBox, TodoBox } from "./summary-boxes";
@@ -105,6 +107,23 @@ export default async function StaffMemberDetailPage({
     { label: "입사일", value: staff.hiredDate ?? PENDING },
     // 퇴직 예정 · 퇴직이면 퇴직일을 보인다(목업 detail.html)
     ...(staff.retiredDate ? [{ label: "퇴직일", value: staff.retiredDate }] : []),
+    // 재입사로 이은 다른 재직 기간(WHALEERP-615, 목업 detail.html) — 누르면 그 기간의 상세. 이은 레코드가 없으면 줄이 없다
+    ...employmentHistoryLines(staff, toStaffListSearch(parseStaffListQuery(search))).map((line) => ({
+      label: line.label,
+      multiline: line.links.length > 1,
+      value: (
+        <span className="flex flex-col gap-[4px]">
+          {line.links.map((link) => (
+            <span key={link.href}>
+              <Link href={link.href} className="text-erp-link hover:underline">
+                {link.text}
+              </Link>
+              {line.note && <span className="text-erp-muted"> · {line.note}</span>}
+            </span>
+          ))}
+        </span>
+      ),
+    })),
     // 가입한 계정 값, 가입 전 · 탈퇴면 가장 최근 계약에 적은 값(api #183). api 가 주는 대로 보이고 화면에서 따로 가리지 않는다(2026-10-21 재영)
     { label: "생년월일", value: staff.birthDate ?? PENDING },
     { label: "휴대전화번호", value: staff.phone ? formatPhone(staff.phone) : PENDING },
