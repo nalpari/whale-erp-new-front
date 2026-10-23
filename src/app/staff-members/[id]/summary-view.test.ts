@@ -7,8 +7,8 @@ import {
   areaFailureOf,
   isAreaForbidden,
   isPayslipSummaryEmpty,
-  payPeriodText,
-  payslipRows,
+  payAmountText,
+  payMonthText,
   scheduleWeekOf,
   shiftYearMonth,
   hoursText,
@@ -156,35 +156,32 @@ test("근무일 칸은 MM-DD 요일(연도는 칸 머리가 보인다)", () => {
 const payslip = (payslipId: number, status: PayslipSummaryItem["status"]): PayslipSummaryItem => ({
   payslipId,
   status,
-  periodStartDate: "2026-10-01",
-  periodEndDate: "2026-10-31",
-  grossPayAmount: 3_000_000,
-  totalDeductionAmount: 300_000,
-  netPayAmount: 2_700_000,
-  confirmedAt: null,
+  periodStartDate: "2026-08-01",
+  periodEndDate: "2026-08-31",
+  basePayAmount: 2_840_000,
+  allowanceAmount: 186_000,
+  totalDeductionAmount: 0,
+  netPayAmount: 3_026_000,
 });
 
-test("급여명세서 영역은 이번 달 · 최근 확정 순으로, 같은 명세서면 한 줄이다", () => {
-  assert.deepEqual(
-    payslipRows({ currentMonth: payslip(2, "REVIEWING"), latestConfirmed: payslip(1, "SENT") }).map((r) => [r.label, r.payslip.payslipId]),
-    [
-      ["이번 달", 2],
-      ["최근 확정", 1],
-    ],
-  );
-  assert.deepEqual(
-    payslipRows({ currentMonth: payslip(1, "CONFIRMED"), latestConfirmed: payslip(1, "CONFIRMED") }).map((r) => r.label),
-    ["이번 달 · 최근 확정"],
-  );
-  assert.deepEqual(payslipRows({ currentMonth: null, latestConfirmed: payslip(1, "SENT") }).map((r) => r.label), ["최근 확정"]);
-  assert.deepEqual(payslipRows({ currentMonth: null, latestConfirmed: null }), []);
+test("급여명세서 영역의 지급월은 급여 기간 시작일의 YYYY-MM", () => {
+  assert.equal(payMonthText({ periodStartDate: "2026-08-01" }), "2026-08");
+  // 21일 ~ 다음 달 20일 같은 기간도 시작일의 달이다
+  assert.equal(payMonthText({ periodStartDate: "2025-12-21" }), "2025-12");
 });
 
-test("급여명세서 영역은 보일 명세서도 미발송도 없을 때만 빈 상태다", () => {
-  assert.equal(isPayslipSummaryEmpty({ currentMonth: null, latestConfirmed: null, unsentCount: 0 }), true);
-  // 지난 달 작성 중 명세서처럼 두 줄에 안 걸려도 미발송이 있으면 건수를 보인다
-  assert.equal(isPayslipSummaryEmpty({ currentMonth: null, latestConfirmed: null, unsentCount: 1 }), false);
-  assert.equal(isPayslipSummaryEmpty({ currentMonth: payslip(1, "DRAFTING"), latestConfirmed: null, unsentCount: 1 }), false);
+test("급여명세서 영역의 금액은 쉼표 글자, 없거나 0 이면 「-」(데모의 검토 중 줄 공제)", () => {
+  assert.equal(payAmountText(2_840_000), "2,840,000");
+  assert.equal(payAmountText(0), "-");
+  assert.equal(payAmountText(null), "-");
+  assert.equal(payAmountText(-12000), "-12,000");
+});
+
+test("급여명세서 영역은 최근 명세서도 미발송도 없을 때만 빈 상태다", () => {
+  assert.equal(isPayslipSummaryEmpty({ recent: [], unsentCount: 0 }), true);
+  assert.equal(isPayslipSummaryEmpty({ recent: [], unsentCount: 1 }), false);
+  assert.equal(isPayslipSummaryEmpty({ recent: [payslip(1, "SENT")], unsentCount: 0 }), false);
+  assert.equal(isPayslipSummaryEmpty({ recent: [payslip(2, "REVIEWING"), payslip(1, "SENT")], unsentCount: 1 }), false);
 });
 
 test("TO-DO 요약 줄은 배정이 있을 때만", () => {
@@ -203,11 +200,6 @@ test("TO-DO 이력 문구 — 등록 · 긴급 표시 변경 · 상태 변경", 
 test("TO-DO 상태 한글을 받지 못했으면 상태 변경은 이름 없이 — 영문 값을 보이지 않는다", () => {
   assert.equal(todoHistoryText({ fromStatus: "PENDING", toStatus: "DONE", isUrgentChanged: false }, null), "상태 변경");
   assert.equal(todoHistoryText({ fromStatus: null, toStatus: "PENDING", isUrgentChanged: false }, null), "등록");
-});
-
-test("급여 기간은 같은 해면 끝 날짜의 연도를 줄이고, 해를 넘으면 남긴다", () => {
-  assert.equal(payPeriodText({ periodStartDate: "2026-10-01", periodEndDate: "2026-10-31" }), "2026-10-01 ~ 10-31");
-  assert.equal(payPeriodText({ periodStartDate: "2025-12-21", periodEndDate: "2026-01-20" }), "2025-12-21 ~ 2026-01-20");
 });
 
 test("TO-DO 칸은 목록 · 요약 중 한 경로라도 영역 권한 403 이면 영역 전체를 막는다", () => {

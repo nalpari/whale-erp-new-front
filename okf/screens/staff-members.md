@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 오른쪽에 근무스케줄 · 출퇴근 현황(준비 중) · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다). 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-22T06:09:19Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-22T07:44:47Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -13,11 +13,11 @@ sources:
   - id: staff-members-api
     resource: ../../src/lib/staff-members-api.ts
     title: api 호출 — 목록 · 상세 · 상세 영역 요약(근무스케줄은 한 주) · 퇴직 미리 보기 · 처리 · 변경 · 취소 · 비밀번호 재설정 링크
-    last_modified: 2026-10-22T06:09:19Z
+    last_modified: 2026-10-22T07:28:28Z
   - id: api-types-generated
     resource: ../../src/lib/api-types.generated.ts
     title: 생성한 api 타입 — 근무스케줄 칸은 한 주 응답 StaffMemberWeekScheduleResponseDto, TO-DO 칸은 TodoItemDto
-    last_modified: 2026-10-22T05:02:26Z
+    last_modified: 2026-10-22T07:41:35Z
   - id: staff-list-query
     resource: ../../src/app/staff-members/staff-list-query.ts
     title: 목록 URL ↔ 조회 조건(점포명 + storeIds)
@@ -64,12 +64,12 @@ sources:
     last_modified: 2026-10-21T18:10:00Z
   - id: summary-view
     resource: ../../src/app/staff-members/[id]/summary-view.ts
-    title: 상세 요약 영역 판정 — 영역 403 문구 가르기 · 근무스케줄 주(주소 week · 주 글자 · 주 선택 달력 판) · 날짜 칸 · 급여명세서 줄 · TO-DO 배정 · 상태 글자 · 요약 줄 · 이력 문구
-    last_modified: 2026-10-22T06:09:19Z
+    title: 상세 요약 영역 판정 — 영역 403 문구 가르기 · 근무스케줄 주(주소 week · 주 글자 · 주 선택 달력 판) · 날짜 칸 · 급여명세서 지급월 · 금액 글자 · 빈 상태 · TO-DO 배정 · 상태 글자 · 요약 줄 · 이력 문구
+    last_modified: 2026-10-22T07:44:38Z
   - id: summary-boxes
     resource: ../../src/app/staff-members/[id]/summary-boxes.tsx
     title: 상세 오른쪽 영역(근무스케줄 한 주 표 · 급여명세서 · TO-DO 목록 · 요약 · 최근 처리 이력)
-    last_modified: 2026-10-22T06:09:19Z
+    last_modified: 2026-10-22T07:39:02Z
   - id: summary-load
     resource: ../../src/app/staff-members/[id]/summary-load.ts
     title: 상세 영역 데이터 받기 — loadArea(영역 실패 판정 · 로그) · loadLabels(enum 한글)
@@ -208,10 +208,11 @@ sources:
   아래에 「주간 근무시간 합계 Xh」(응답 `totalWorkMinutes`, 소수 한 자리)다. 빈 주는 「이 주에 잡힌 근무스케줄이 없습니다.」 + 0.0h. 권한 · 실패는 위 영역 규칙과 같다.
   칸 머리 「관리」는 `/work-schedules?store=<근무지>&week=<보는 주 월요일>` 이다.
 * **출퇴근 현황**은 api 가 없어 「준비 중입니다.」다 — 출퇴근 작업과 함께 따로 한다(2026-10-21 재영).
-* **급여명세서**는 이번 달 · 최근 확정 명세서를 한 줄씩(같은 명세서면 「이번 달 · 최근 확정」 한 줄) 구분 · 급여 기간 · 지급 · 공제 · 실지급액 · 상태
-  배지(`PayslipStatus` enum, 급여 목록과 같은 색 `STATUS_STYLE`)로 보이고 아래에 미발송 N건(발송 완료가 아닌 모두)이다. 급여 기간 글자는 데모의 지급월 링크처럼
-  명세서 상세(`/payslips/{payslipId}`)로 가고, 「급여명세서 관리」(MN000009) 조회 권한이 없으면 글자만이다(`MenuTextLink`). 칸 머리 「관리」는 `/payslips`. 두 줄도 미발송도 없으면
-  「급여명세서가 없습니다.」. 데모는 최근 석 달 표지만 api 가 주는 것이 이 둘이다. 급여 기간은 같은 해면 끝 날짜의 연도를 줄인다(`payPeriodText`).
+* **급여명세서**는 데모 detail.html 처럼 최근 명세서 3건(응답 `recent`, api 순서 = 급여 기간 시작일 최신순)을 지급월 · 기본급 · 수당 · 공제 · 실지급액(굵게) · 상태
+  배지(`PayslipStatus` enum, 급여 목록과 같은 `STATUS_STYLE`)로 보이고 아래에 미발송 N건(`unsentCount`, 발송 완료가 아닌 모두)이다(WHALEERP-186, 2026-10-22). 지급월은 급여 기간
+  시작일의 `YYYY-MM`(`payMonthText`)이고 모든 줄이 명세서 상세(`/payslips/{payslipId}`)로 가며, 「급여명세서 관리」(MN000009) 조회 권한이 없으면 글자만이다(`MenuTextLink`).
+  금액이 없거나(null) 0 이면 「-」(데모의 검토 중 줄 공제), 아니면 쉼표 글자다(`payAmountText`). 열 너비는 데모처럼 똑같이 나눈다. 칸 머리 「관리」는 `/payslips`.
+  최근 명세서도 미발송도 없으면 「급여명세서가 없습니다.」(`isPayslipSummaryEmpty`) — api 는 둘을 같은 직원의 명세서 전체에서 세어 `recent` 가 비면 미발송도 0 이고, `unsentCount` 는 api 가 바뀔 때를 대비해 함께 본다. 옛 「구분」 열(이번 달 · 최근 확정)과 급여 기간 글자는 걷었다.
 * **TO-DO** 는 목록(`GET /staff-members/:id/todos`, #118 — 앞쪽 5건)을 데모처럼 열 이름 줄 없는 표(공통 `DataTable` `headVariant="none"`)로 그린다 — 제목(+ 긴급 배지) ·
   배정(220px) · 상태(110px). 배정은 `TodoAssigneeType` · `TodoExecutionMode` 한글(`getEnum`)과 수행 예정으로 「개인 · 08-28 14:00」 · 「근무지 전체 · 각자 수행 · 09-03」이다(`todoAssignText` —
   데모는 「개인 배정」이지만 enum 한글은 「개인」이라 enum 을 따른다). 상태는 배지가 아닌 색 글자(`todoStatusMark`) — 완료는 파랑 「MM-DD 완료」(`completedAt` 의 한국 날짜),

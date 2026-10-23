@@ -6,17 +6,18 @@ import {
   applyCodeGroupToBps,
   createCodeGroups,
   createCodeItems,
+  deleteCodeItems,
   updateCodeGroups,
   updateCodeItems,
   type SaveCodeGroupsInput,
   type SaveCodeItemsInput,
 } from "@/lib/codes";
-import { planSave, saveUpdateThenCreate, type SaveFailure, type SavePlan, type SaveResult } from "@/lib/code-save";
+import { planSave, saveInOrder, savedNote, type SaveFailure, type SavePlan, type SaveResult } from "@/lib/code-save";
 
-// 패널 저장 — 사용자 동작은 행마다가 아니라 패널마다 한 번이다(S-UQPNIH). api 는 수정(PUT, 수정 권한)과 등록(POST, 등록 권한)이
-// 따로라 바뀐 기존 행이 있으면 수정, 새 행이 있으면 등록을 이 순서로 부른다(planSave · saveUpdateThenCreate). 수정이 실패하면
-// 등록은 보내지 않고 화면은 입력값을 그대로 둔다. 등록만 실패하면 수정분은 저장된 채로 남고, 화면은 반영된 목록 뒤에 새 행을 남긴다.
-// 로그인 · 메뉴 권한(등록 · 수정)은 api 가 본다 — 세션 토큰을 싣고, 없거나 끝났으면 api 가 401 을 준다.
+// 패널 저장 — 사용자 동작은 행마다가 아니라 패널마다 한 번이다(S-UQPNIH). api 는 수정(PUT, 수정 권한) · 삭제(DELETE, 삭제 권한 —
+// 상세 코드만) · 등록(POST, 등록 권한)이 따로라 바뀐 기존 행이 있으면 수정, 지울 행이 있으면 삭제, 새 행이 있으면 등록을 이 순서로
+// 부른다(planSave · saveInOrder). 한 단계가 실패하면 뒤 단계는 보내지 않고, 앞 단계에서 저장한 것은 남는다 — 화면은 반영된 목록 뒤에
+// 새 행을 남긴다. 로그인 · 메뉴 권한은 api 가 본다 — 세션 토큰을 싣고, 없거나 끝났으면 api 가 401 을 준다.
 
 export type { SaveResult };
 
@@ -49,11 +50,11 @@ function refresh(): boolean {
   }
 }
 
-/** where — 서버 로그에서 어느 패널(상세 코드면 그룹 코드)인지, 등록 실패가 수정분 저장 뒤인지 가른다 */
+/** where — 서버 로그에서 어느 패널(상세 코드면 그룹 코드)인지, 실패가 앞 단계 저장 뒤인지 가른다 */
 function run(plan: SavePlan, where: string): Promise<SaveResult> {
-  return saveUpdateThenCreate({
+  return saveInOrder({
     ...plan,
-    failureOf: (error, what) => failureOf(error, `공통코드 ${where} ${what}${what === "등록" && plan.update ? "(수정분은 저장됨)" : ""}`, FAILED),
+    failureOf: (error, what, saved) => failureOf(error, `공통코드 ${where} ${what}${savedNote(saved)}`, FAILED),
     refresh,
   });
 }
@@ -64,7 +65,11 @@ export async function saveCodeGroupsAction(input: SaveCodeGroupsInput): Promise<
 
 export async function saveCodeItemsAction(groupCode: string, input: SaveCodeItemsInput): Promise<SaveResult> {
   return run(
-    planSave(input, { update: (body) => updateCodeItems(groupCode, body), create: (body) => createCodeItems(groupCode, body) }),
+    planSave(input, {
+      update: (body) => updateCodeItems(groupCode, body),
+      create: (body) => createCodeItems(groupCode, body),
+      remove: (body) => deleteCodeItems(groupCode, body),
+    }),
     `상세 코드(${groupCode})`,
   );
 }

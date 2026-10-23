@@ -71,24 +71,33 @@ test("진위확인 칸 — 처음은 세 칸, 재인증은 대표자명만", () 
 });
 
 test("진위확인 칸을 고치고 인증하지 않으면 저장 전에 막는다 — 그대로 두면 성공 뒤 값이 원래대로 돌아간다", () => {
+  // 어느 한 칸의 것이 아니라 인증 상자의 버튼 위 한 줄(bizVerify)이다(S-VRNTHD)
   const ask = "인증하기를 눌러 사업자정보를 확인해 주세요.";
+  const NOW = 1_000_000;
   // 등록: 세 칸 중 하나라도 적었는데 인증 전
-  assert.equal(validateStoreForm({ ...filled, ceoName: "홍길동" }, "create").bizNumber, ask);
-  const checked = { bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02" };
+  assert.equal(validateStoreForm({ ...filled, ceoName: "홍길동" }, "create", [], NOW).bizVerify, ask);
+  const checked = { bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02", verifiedAt: NOW };
   const done = { ...filled, bizNumber: "123-45-67890", ceoName: "홍길동", openDate: "2020-01-02", verified: checked };
-  assert.equal(validateStoreForm(done, "create").bizNumber, undefined);
+  assert.equal(validateStoreForm(done, "create", [], NOW).bizVerify, undefined);
   // 인증 뒤 대표자명을 고치면 다시 막는다
-  assert.equal(validateStoreForm({ ...done, ceoName: "김철수" }, "create").bizNumber, ask);
+  assert.equal(validateStoreForm({ ...done, ceoName: "김철수" }, "create", [], NOW).bizVerify, ask);
   // 수정: 저장된 번호가 있으면 대표자명만 본다
   const saved = { ...filled, savedBizNumber: "1234567890", savedCeoName: "홍길동", bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02" };
-  assert.deepEqual(validateStoreForm(saved, "edit"), {});
-  assert.equal(validateStoreForm({ ...saved, ceoName: "김철수" }, "edit").ceoName, ask);
-  assert.equal(validateStoreForm({ ...saved, ceoName: "김철수", verified: { ...checked, ceoName: "김철수" } }, "edit").ceoName, undefined);
+  assert.deepEqual(validateStoreForm(saved, "edit", [], NOW), {});
+  assert.equal(validateStoreForm({ ...saved, ceoName: "김철수" }, "edit", [], NOW).bizVerify, ask);
+  assert.equal(validateStoreForm({ ...saved, ceoName: "김철수", verified: { ...checked, ceoName: "김철수" } }, "edit", [], NOW).bizVerify, undefined);
+});
+
+test("인증하고 10분이 지나면 저장하지 않고 다시 인증하게 한다", () => {
+  const checked = { bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02", verifiedAt: 0 };
+  const done = { ...filled, bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02", verified: checked };
+  assert.equal(validateStoreForm(done, "create", [], 599_999).bizVerify, undefined);
+  assert.equal(validateStoreForm(done, "create", [], 600_000).bizVerify, "사업자정보 인증이 만료되었습니다. 다시 인증해 주세요.");
 });
 
 test("인증 결과는 지금 칸 값과 같을 때만 인증으로 본다 — 늦게 온 응답이 옛 값을 넣어도 운영 조건을 통과하지 않는다", () => {
   const operating = { ...filled, storeStatus: "OPERATING" as const, latitude: "37.5", longitude: "127.0" };
-  const checked = { bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02" };
+  const checked = { bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02", verifiedAt: Date.now() };
   const now = { ...operating, bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02", verified: checked };
   assert.equal(validateStoreForm(now, "edit", REQUIREMENT_LABELS).storeStatus, undefined);
   assert.equal(validateStoreForm({ ...now, ceoName: "김철수" }, "edit", REQUIREMENT_LABELS).storeStatus, "운영으로 바꾸려면 사업자정보 인증이 필요합니다.");
@@ -118,7 +127,7 @@ test("등록 요청 — 공백을 빼고 빈 칸은 null, 빈 층은 보내지 �
   assert.equal(input.business.tradeName, "웨일커피");
   assert.deepEqual(input.floors, [{ floorTypeCode: "BASEMENT", floorNumber: 1, floorAreaPyeong: null, floorAreaSqm: null, seatCount: 10 }]);
   assert.equal(input.businessVerification, undefined);
-  const checked = { bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02" };
+  const checked = { bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02", verifiedAt: Date.now() };
   const verified = toCreateStoreInput({ ...filled, bizNumber: "123-45-67890", ceoName: " 홍길동 ", openDate: "2020-01-02", verified: checked });
   assert.deepEqual(verified.businessVerification, { bizRegistrationNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02" });
   // 인증 뒤(또는 늦게 온 응답 사이) 칸을 고쳤으면 옛 인증 값은 싣지 않는다
@@ -307,4 +316,32 @@ test("api 오류를 붙일 칸 — api 실제 문구 기준. 사업자번호 중
   assert.equal(storeServerErrorField(409, "다른 관리자가 먼저 수정했습니다. 최신 정보를 불러온 뒤 다시 저장해 주세요"), null);
   assert.equal(storeServerErrorField(400, "점포명은 50자까지입니다"), "name");
   assert.equal(storeServerErrorField(503, "사업자등록번호 …"), null);
+  assert.equal(storeServerErrorField(409, "이미 등록된 사업자등록번호입니다."), "bizNumber");
+  // 저장 때 서버가 다시 한 국세청 확인의 실패는 인증 상자의 버튼 위 한 줄 — 문구는 네 화면 공통으로 바꾼다
+  assert.equal(storeServerErrorField(400, "국세청에 등록된 사업자 정보와 맞지 않습니다. 사업자등록번호 · 대표자명 · 개업일자를 확인해 주세요"), "bizVerify");
+  assert.equal(storeServerErrorField(503, "사업자 진위확인 중 오류가 났습니다. 잠시 뒤 다시 시도해 주세요"), "bizVerify");
+  assert.deepEqual(storeServerErrors(400, ["국세청에 등록된 사업자 정보와 맞지 않습니다. 사업자등록번호 · 대표자명 · 개업일자를 확인해 주세요"]).fields, {
+    bizVerify: "입력한 사업자정보가 국세청 정보와 일치하지 않습니다.",
+  });
+  assert.deepEqual(storeServerErrors(503, ["사업자 진위확인 연동이 아직 없어 인증할 수 없습니다"]).fields, {
+    bizVerify: "국세청 확인이 원활하지 않습니다. 잠시 후 다시 시도해 주세요.",
+  });
+});
+
+test("api 오류 나누기 — 국세청 문장이 여럿이어도 공통 문구는 한 번, 다른 칸 문장은 그 칸에 따로", () => {
+  const { fields, rest } = storeServerErrors(400, [
+    "국세청에 등록된 사업자 정보와 맞지 않습니다. 사업자등록번호 · 대표자명 · 개업일자를 확인해 주세요",
+    "사업자 진위확인 결과가 맞지 않습니다",
+    "점포명은 50자까지입니다",
+  ]);
+  assert.deepEqual(fields, { bizVerify: "입력한 사업자정보가 국세청 정보와 일치하지 않습니다.", name: "점포명은 50자까지입니다" });
+  assert.deepEqual(rest, []);
+});
+
+test("api 오류 나누기 — 저장 때 번호 중복 409 는 번호 칸에 공통 문구로", () => {
+  assert.deepEqual(storeServerErrors(409, ["이미 미운영 · 운영 중인 다른 점포가 쓰는 사업자등록번호입니다"]).fields, { bizNumber: "이미 등록된 사업자등록번호입니다." });
+});
+
+test("api 오류 칸 — 운영 조건 문구는 조건 이름에 「진위확인」이 있어도 점포상태 칸", () => {
+  assert.equal(storeServerErrorField(400, "운영으로 바꾸려면 다음이 필요합니다 — 사업자 진위확인, 좌표(위도 · 경도)"), "storeStatus");
 });

@@ -285,7 +285,9 @@ export function staffSections({ A, R }) {
     p.bar(
       // 날짜 선택은 직원 상세와 같은 주 이동(2026-10-02 재영). 데모라 근무표 내용은 주를 바꿔도 그대로다.
       // 확정 단계는 없다 — 저장하면 바로 직원 근무 앱에 반영되고 바뀐 직원에게 알림이 간다(2026-10-08 재영, STAFF-15).
-      p.weekNav(A, "", "2026-08-17"),
+      // 근무지는 점포 하나씩 본다 — 관리자 웹 근무스케줄 관리처럼 맨 앞 선택칸에서 고르고, 등록은 고른 점포에 한다(2026-10-22 재영).
+      `<div class="w-[220px] shrink-0">${ui.select(["모리커피 서초점", "모리커피 연남점", "모리커피 성수점"], { "aria-label": "근무지" })}</div>` +
+        p.weekNav(A, "", "2026-08-17"),
       p.ask("지난 주 복사", "soft", "지난 주 근무스케줄을 복사하시겠습니까?", "지난 주 근무스케줄을 지금 보고 있는 주에 그대로 넣습니다. 복사하면 바로 반영되고 해당 직원에게 알림이 갑니다.", "복사") +
         ui.slideTrigger("근무스케줄 등록", schedPanel),
     ) +
@@ -294,7 +296,7 @@ export function staffSections({ A, R }) {
         { id: "sched-week", label: "주간 보기" },
         { id: "sched-month", label: "월간 보기" },
       ]),
-      `<span class="text-[14px] text-erp-label">모리커피 서초점 · 00~24시</span>`,
+      `<span class="text-[14px] text-erp-label">00~24시</span>`,
     ) +
     x.tabPanel("sched-week", schedWeekView, true) +
     x.tabPanel("sched-month", schedMonthView) +
@@ -470,8 +472,8 @@ export function staffSections({ A, R }) {
       p.radios("sched-mode", ["한 명", "여러 명 일괄"]) +
       ui.formGroup(
         "근무",
-        // 근무지·근무일은 두 방식이 함께 쓴다. 여러 명 일괄도 근무일은 하루 하나(주 단위는 지난 주 복사, STAFF-27).
-        ui.formRow(ui.field("근무지", ui.select(["모리커피 서초점", "모리커피 성수점"])), ui.field("근무일", ui.dateField(A, { label: "근무일", value: "2026-09-08" }))),
+        // 근무지는 목록에서 고른 점포로 정해져 보이기만 한다(2026-10-22 재영). 근무지·근무일은 두 방식이 함께 쓴다. 여러 명 일괄도 근무일은 하루 하나(주 단위는 지난 주 복사, STAFF-27).
+        ui.formRow(ui.field("근무지", ui.textField({ value: "모리커피 서초점", readonly: true, "aria-label": "근무지" })), ui.field("근무일", ui.dateField(A, { label: "근무일", value: "2026-09-08" }))),
         `<div class="flex flex-col gap-[18px]" data-when="sched-mode:한 명">` +
         ui.field("직원", ui.select(["서지안 · 바리스타", "오세라 · 점장"])),
         // 시작·종료·휴게는 계약 값으로 미리 채운다(STAFF-14). 안내 띠는 두지 않고 「계약 값으로 되돌리기」만 둔다(2026-10-08 재영).

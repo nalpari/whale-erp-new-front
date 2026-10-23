@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button, ConfirmDialog } from "@/components/common";
+import { withBack } from "../contract-list";
 import { sendContract, type SendContractResult } from "./actions";
 import { sendFailureOf } from "./send-model";
 
@@ -12,7 +13,7 @@ import { sendFailureOf } from "./send-model";
 // 서명 대기는 앱으로 받는 직원(가입 · 계정 있음)이라 앱 알림이 생길 때까지 버튼을 막아 둔다(front #58 리뷰). 막힌 버튼은
 // 마우스 · 키보드 · 터치 어느 쪽으로도 툴팁이 뜨지 않으므로 까닭을 버튼 옆 글자로 보인다(front #58 재리뷰).
 // 접수 여부를 모르거나 화면이 낡았으면(recheck) 보내기를 막고 상세를 다시 읽는다 — 다시 눌러 두 번 가지 않게(front #41 리뷰).
-export function SendContractButton({ contractId, status }: { contractId: number; status: string }) {
+export function SendContractButton({ contractId, status, back }: { contractId: number; status: string; back: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
@@ -59,8 +60,9 @@ export function SendContractButton({ contractId, status }: { contractId: number;
             if (result.ok) {
               setOpen(false);
               setError("");
-              // 보내기 실패 안내(?send=)로 왔다면 쿼리를 지운다 — 남아 있으면 「보내지 못했습니다」를 보고 또 누른다(front #50 리뷰)
-              router.replace(`/contracts/${contractId}`);
+              // 보내기 실패 안내(?send=)로 왔다면 쿼리를 지운다 — 남아 있으면 「보내지 못했습니다」를 보고 또 누른다(front #50 리뷰).
+              // 돌아갈 목록 주소(?back=)는 남긴다
+              router.replace(withBack(`/contracts/${contractId}`, back));
               router.refresh();
               return;
             }

@@ -9,7 +9,7 @@ import { PasswordField } from "./password-field";
 import { PhoneField } from "./phone-field";
 import { RequiredField } from "./required-field";
 import { CHECK_FAILED_MESSAGE, UNKNOWN_RESULT_MESSAGE } from "./api-failure";
-import { bizSubmitBlock } from "./biz-verification";
+import { bizNoticeField, bizSubmitBlock } from "./biz-verification";
 import {
   agreeErrorMessage,
   normalizeLoginId,
@@ -208,7 +208,7 @@ export function SignupForm({ loggedInHomeHref }: { loggedInHomeHref?: string }) 
     requestAnimationFrame(() => (formRef.current?.querySelector('[aria-invalid="true"]') as HTMLElement | null)?.focus());
   // 사업자정보 인증을 풀고 그 묶음에 문구를 보인다. 가입 버튼 아래가 아니라 위쪽 묶음이라 그리로 스크롤한다.
   const rejectBiz = (notice: string) => {
-    setBiz((b) => ({ ...b, verification: null, notice }));
+    setBiz((b) => ({ ...b, verification: null, notice, noticeField: bizNoticeField(notice) }));
     requestAnimationFrame(() => formRef.current?.querySelector("[data-biz-auth]")?.scrollIntoView({ block: "center" }));
   };
 
