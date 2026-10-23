@@ -1,7 +1,7 @@
 // node --test "src/app/contracts/[contractId]/detail-format.test.ts"
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { insuranceText, kstDateTime, partTimeRows, payDayText, probationText, weeklyHoursOf, workDayLines } from "./detail-format.ts";
+import { insuranceText, kstDateTime, partTimeRows, payDayText, probationText, processRows, weeklyHoursOf, workDayLines } from "./detail-format.ts";
 import type { ContractDetail } from "../new/contract-form-model.ts";
 
 const label = (d: string) => ({ MON: "월", TUE: "화", WED: "수", THU: "목", FRI: "금", SAT: "토", SUN: "일" })[d] ?? d;
@@ -71,4 +71,78 @@ test("partTimeRows — 주 15시간 미만이면 주휴수당이 없고, 시급�
   const rows = partTimeRows({ wageAmount: null, workDays: [day("MON", "09:00", "13:00", false)] } as unknown as ContractDetail, label);
   assert.equal(rows[0].wage, "-");
   assert.deepEqual(rows.find((r) => r.key === "holiday"), { key: "holiday", label: "주휴수당", hours: "0", amount: "0" });
+});
+
+// 발송 · 처리 정보(WHALEERP-155 · 328). 시각은 한국 시간
+const sent = {
+  status: "PENDING_SIGNATURE",
+  contractMethod: "ELECTRONIC",
+  firstSentAt: "2026-10-20T01:00:00.000Z",
+  lastSentAt: "2026-10-20T01:00:00.000Z",
+  signDeadlineAt: "2026-11-19T01:00:00.000Z",
+  lastProcessedAt: "2026-10-20T01:00:00.000Z",
+  resendCount: 0,
+  rejectReason: null,
+  registeredAt: null,
+  registeredBy: null,
+} as const;
+
+test("전자계약은 발송일 · 날인 기한 · 최종 처리일을 보이고, 재발송했으면 횟수와 마지막 발송을 더한다", () => {
+  assert.deepEqual(processRows(sent), [
+    { label: "발송일", value: "2026-10-20 10:00" },
+    { label: "날인 기한", value: "2026-11-19 10:00" },
+    { label: "최종 처리일", value: "2026-10-20 10:00" },
+  ]);
+  assert.deepEqual(processRows({ ...sent, resendCount: 2, lastSentAt: "2026-10-22T03:30:00.000Z" })[1], {
+    label: "재발송",
+    value: "2회 · 마지막 2026-10-22 12:30",
+  });
+});
+
+test("날인 기한은 날인을 기다리는 동안과 만료만 — 체결 완료 · 종료는 보이지 않는다", () => {
+  const labels = processRows({ ...sent, status: "SIGNED" }).map((r) => r.label);
+  assert.ok(!labels.includes("날인 기한"));
+  assert.ok(processRows({ ...sent, status: "PENDING_SEND" }).some((r) => r.label === "날인 기한"));
+  assert.ok(processRows({ ...sent, status: "EXPIRED" }).some((r) => r.label === "날인 기한"));
+});
+
+test("재발송 횟수가 있어도 마지막 발송 일시가 없으면 재발송 줄을 두지 않는다", () => {
+  const labels = processRows({ ...sent, resendCount: 1, lastSentAt: null }).map((r) => r.label);
+  assert.ok(!labels.includes("재발송"));
+});
+
+test("거부된 계약은 거부 사유를 보인다 — 직원이 쓴 글이라 줄이 늘어난다", () => {
+  assert.deepEqual(processRows({ ...sent, status: "REJECTED", rejectReason: "근무 시간이 맞지 않아요" }).at(-1), {
+    label: "거부 사유",
+    value: "근무 시간이 맞지 않아요",
+    multiline: true,
+  });
+  assert.deepEqual(processRows({ ...sent, status: "REJECTED", rejectReason: null }).at(-1), { label: "거부 사유", value: "-", multiline: true });
+});
+
+test("종이 계약은 발송 칸 대신 등록일 · 등록 관리자를 보인다", () => {
+  assert.deepEqual(
+    processRows({
+      ...sent,
+      status: "SIGNED",
+      contractMethod: "PAPER",
+      firstSentAt: null,
+      lastSentAt: null,
+      signDeadlineAt: null,
+      registeredAt: "2026-10-15T03:00:00.000Z",
+      registeredBy: "김관리",
+      lastProcessedAt: "2026-10-15T03:00:00.000Z",
+    }),
+    [
+      { label: "등록일", value: "2026-10-15 12:00" },
+      { label: "등록 관리자", value: "김관리" },
+      { label: "최종 처리일", value: "2026-10-15 12:00" },
+    ],
+  );
+});
+
+test("보낸 적 없는 임시저장은 최종 처리일만 — 이력도 없으면 줄이 없다", () => {
+  const draft = { ...sent, status: "DRAFT", firstSentAt: null, lastSentAt: null, signDeadlineAt: null } as const;
+  assert.deepEqual(processRows(draft), [{ label: "최종 처리일", value: "2026-10-20 10:00" }]);
+  assert.deepEqual(processRows({ ...draft, lastProcessedAt: null }), []);
 });
