@@ -157,7 +157,7 @@ test("여러 칸 검증 오류(400 배열)는 아이디 문구로 덮지 않는�
   assert.equal(serverFieldMessage("loginId", 400, joined), joined);
 });
 
-test("중복확인 답 → 화면 상태 — 사용 중 · 400 은 칸 오류, 401 은 띠, 그 밖은 확인 실패(저장은 막지 않는다)", () => {
+test("중복확인 답 → 화면 상태 — 사용 중 · 400 은 칸 오류, 401 · 403 은 띠, 그 밖은 확인 실패(저장은 막지 않는다)", () => {
   assert.deepEqual(loginIdCheckOutcome({ ok: true, available: true }), { check: "available" });
   assert.deepEqual(loginIdCheckOutcome({ ok: true, available: false }), { check: "idle", fieldError: LOGIN_ID_TAKEN });
   assert.deepEqual(loginIdCheckOutcome({ ok: false, status: 400, message: "아이디는 …" }), { check: "idle", fieldError: LOGIN_ID_FORMAT_ERROR });
@@ -165,7 +165,9 @@ test("중복확인 답 → 화면 상태 — 사용 중 · 400 은 칸 오류, 4
     check: "idle",
     failure: "로그인이 만료되었습니다. 다시 로그인해 주세요.",
   });
-  for (const status of [403, 404, 409, 429, 500, undefined]) {
+  // 403(등록 권한 없음)은 저장해도 막히므로 띠로 바로 알린다
+  assert.deepEqual(loginIdCheckOutcome({ ok: false, status: 403, message: "권한이 없습니다" }), { check: "idle", failure: "권한이 없습니다" });
+  for (const status of [404, 409, 429, 500, undefined]) {
     assert.deepEqual(loginIdCheckOutcome({ ok: false, status, message: "…" }), { check: "failed" }, `status ${status}`);
   }
 });

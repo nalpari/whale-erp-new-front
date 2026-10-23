@@ -65,7 +65,7 @@ function LiveText({ text }: { text: string }) {
 const LOGIN_ID_CHECK_TEXT: Record<Exclude<LoginIdCheck, "idle">, string> = {
   checking: "아이디를 확인하는 중입니다.",
   available: "사용 가능한 아이디입니다.",
-  // 확인 요청 자체가 실패(403 · 429 · 5xx · 연결)했을 때. 저장은 막지 않는다 — 저장할 때 api 가 중복을 다시 막는다.
+  // 확인 요청 자체가 실패(429 · 5xx · 연결)했을 때(401 · 403 은 패널 위 띠). 저장은 막지 않는다 — 저장할 때 api 가 중복을 다시 막는다.
   failed: "아이디를 확인하지 못했습니다. 저장 시 다시 확인합니다.",
 };
 

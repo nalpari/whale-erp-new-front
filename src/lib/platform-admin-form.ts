@@ -147,12 +147,13 @@ type LoginIdCheckResult = { ok: true; available: boolean } | { ok: false; status
 
 /**
  * 중복확인 답을 화면 상태로. 「사용 중」 · 400 은 칸 오류(서버가 거절한 값 — 고칠 때까지 저장 요청을 보내지 않는다),
- * 401 은 위 띠, 그 밖(403 · 429 · 5xx · 연결 실패)은 "failed" — 저장은 막지 않고 api 가 저장할 때 다시 본다.
+ * 401(로그인 만료) · 403(등록 권한 없음 — 저장해도 같은 이유로 막힌다, 2026-10-23 사용자 결정)은 위 띠로 api 문구를,
+ * 그 밖(429 · 5xx · 연결 실패)은 "failed" — 저장은 막지 않고 api 가 저장할 때 다시 본다.
  */
 export function loginIdCheckOutcome(result: LoginIdCheckResult): { check: LoginIdCheck; fieldError?: string; failure?: string } {
   if (result.ok) return result.available ? { check: "available" } : { check: "idle", fieldError: LOGIN_ID_TAKEN };
   if (result.status === 400) return { check: "idle", fieldError: LOGIN_ID_FORMAT_ERROR };
-  if (result.status === 401) return { check: "idle", failure: result.message };
+  if (result.status === 401 || result.status === 403) return { check: "idle", failure: result.message };
   return { check: "failed" };
 }
 
