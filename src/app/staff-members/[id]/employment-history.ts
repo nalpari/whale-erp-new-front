@@ -1,4 +1,5 @@
 import type { StaffMember } from "../../../lib/staff-members.ts";
+import { weekParam } from "./summary-view.ts";
 
 type Period = StaffMember["previousRecords"][number];
 
@@ -29,12 +30,13 @@ export function employmentHistoryLines(
 /**
  * 재직 이력 링크에 붙일 조건 — 상세의 [목록] 주소(listHref, detailListHrefOf)를 ?back= 으로 싣고(기본 목록이면 싣지 않는다 — 목록의 withBack 과
  * 같다), 근무스케줄이 보던 주(주소 week)를 더한다. 다른 재직 기간으로 가도 [목록]이 같은 조건 · 쪽으로 돌아가고 같은 주를 견줘 볼 수 있게.
- * 날짜 모양이 아닌 week 는 버린다 — 상세가 어차피 이번 주로 본다(scheduleWeekOf).
+ * 주는 근무스케줄 칸과 같은 규칙(weekParam — 여럿이면 앞의 것, 그 주 월요일)으로 읽고, 날짜가 아니면 버린다 — 상세가 어차피 이번 주로 본다.
  */
 export function historySearch(listHref: string, week: string | string[] | undefined): string {
   const params = new URLSearchParams();
   if (listHref !== "/staff-members") params.set("back", listHref);
-  if (typeof week === "string" && /^\d{4}-\d{2}-\d{2}$/.test(week)) params.set("week", week);
+  const monday = weekParam(week);
+  if (monday) params.set("week", monday);
   const search = params.toString();
   return search ? `?${search}` : "";
 }
