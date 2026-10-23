@@ -102,6 +102,12 @@ test("전자계약은 발송일 · 날인 기한 · 최종 처리일을 보이�
 test("날인 기한은 날인을 기다리는 동안만 — 체결 완료 · 종료는 보이지 않는다", () => {
   const labels = processRows({ ...sent, status: "SIGNED" }).map((r) => r.label);
   assert.ok(!labels.includes("날인 기한"));
+  assert.ok(processRows({ ...sent, status: "PENDING_SEND" }).some((r) => r.label === "날인 기한"));
+});
+
+test("재발송 횟수가 있어도 마지막 발송 일시가 없으면 재발송 줄을 두지 않는다", () => {
+  const labels = processRows({ ...sent, resendCount: 1, lastSentAt: null }).map((r) => r.label);
+  assert.ok(!labels.includes("재발송"));
 });
 
 test("거부된 계약은 거부 사유를 보인다", () => {
@@ -109,6 +115,7 @@ test("거부된 계약은 거부 사유를 보인다", () => {
     label: "거부 사유",
     value: "근무 시간이 맞지 않아요",
   });
+  assert.deepEqual(processRows({ ...sent, status: "REJECTED", rejectReason: null }).at(-1), { label: "거부 사유", value: "-" });
 });
 
 test("종이 계약은 발송 칸 대신 등록일 · 등록 관리자를 보인다", () => {

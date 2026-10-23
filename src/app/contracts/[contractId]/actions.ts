@@ -94,11 +94,17 @@ export async function sendContract(contractId: number): Promise<SendContractResu
   return { ok: true };
 }
 
+const END_UNKNOWN = "종료됐는지 확인하지 못했습니다. 상세를 다시 읽었으니 상태를 확인해 주세요";
+
+/** 종료 결과. 실패면 화면에 보일 문장과 다시 읽어야 하는지 */
+export type EndContractResult = { ok: true } | { ok: false; error: string; recheck: boolean };
+
 /**
  * 발송 대기 계약 종료(WHALEERP-327 · 155, 2026-10-21 재영). 채용을 접을 때 계약을 종료로 닫고 나간 초대(코드 · 링크)를 무효로
- * 한다. 실패하면 화면에 보일 문장과 다시 읽을지(recheck — 지금 상태가 발송 대기가 아님 · 다른 요청이 먼저 고침)를 돌려준다.
+ * 한다. 실패하면 화면에 보일 문장과 다시 읽을지(recheck)를 돌려준다 — 지금 상태가 발송 대기가 아님 · 다른 요청이 먼저 고침(409),
+ * 또는 api 가 이미 닫았는지 모름(5xx · 응답 전에 끊김).
  */
-export async function endContract(contractId: number): Promise<{ ok: true } | { ok: false; error: string; recheck: boolean }> {
+export async function endContract(contractId: number): Promise<EndContractResult> {
   if (!isContractId(contractId)) return { ok: false, error: "근로계약을 찾을 수 없습니다", recheck: false };
   const headers = await authHeaders();
   if (!headers.Authorization) return { ok: false, error: "로그인이 필요합니다", recheck: false };
@@ -107,9 +113,12 @@ export async function endContract(contractId: number): Promise<{ ok: true } | { 
   } catch (e) {
     if (e instanceof ApiError) {
       if (e.status === 401) return { ok: false, error: "로그인이 필요합니다", recheck: false };
+      if (e.status >= 500) return { ok: false, error: END_UNKNOWN, recheck: true };
       return { ok: false, error: e.message, recheck: e.status === 409 };
     }
-    throw e;
+    // api 와의 연결이 응답 전에 끊겼다 — api 는 이미 닫았을 수 있어 오류 화면 대신 다시 읽게 한다
+    console.error("근로계약 종료 응답을 받지 못함", contractId, e);
+    return { ok: false, error: END_UNKNOWN, recheck: true };
   }
   return { ok: true };
 }
