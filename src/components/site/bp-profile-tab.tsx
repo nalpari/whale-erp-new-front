@@ -2,16 +2,17 @@
 
 import { forwardRef, useEffect, useId, useImperativeHandle, useRef, useState, useTransition } from "react";
 import { AddressField } from "@/components/address-field";
-import { Button, Checkbox, DateField, Field, FormRow, RequiredMark, TextField, useToast } from "@/components/common";
+import { Checkbox, Field, FormRow, RequiredMark, TextField, useToast } from "@/components/common";
+import { BizVerificationBox } from "@/components/site/biz-verification-box";
 import { formatDate } from "@/lib/format";
 import { splitPhone } from "@/lib/my-profile-form";
+import type { BizVerifyField } from "@/lib/biz-verification-rules";
 import {
   emptyVerifyFields,
   formOf,
   hasPendingVerification,
   hasUnverifiedChange,
   isVerified,
-  missingVerifyMessage,
   serverErrorField,
   toUpdateBpProfileInput,
   toVerifyInput,
@@ -24,6 +25,19 @@ import {
   type VerifyFormField,
 } from "@/lib/bp-profile-form";
 import { getBpProfileAction, updateBpProfileAction, verifyBpBusinessAction } from "./bp-page-actions";
+
+/** VerifyFormField(api 모양) ↔ BizVerifyField(상자 공통 모양) 키 대응 — 두 타입이 어근은 같지만
+ * 이름이 달라서(사업자등록번호 필드가 하나는 bizRegistrationNumber, 하나는 bizNumber) 상자에 넘길 때 바꿔 준다. */
+const VERIFY_TO_BIZ: Record<VerifyFormField, BizVerifyField> = {
+  bizRegistrationNumber: "bizNumber",
+  bizCeoName: "ceoName",
+  bizOpenDate: "openDate",
+};
+const BIZ_TO_VERIFY: Record<BizVerifyField, VerifyFormField> = {
+  bizNumber: "bizRegistrationNumber",
+  ceoName: "bizCeoName",
+  openDate: "bizOpenDate",
+};
 
 const UNVERIFIED_CHANGE_MESSAGE = "인증하기를 눌러 사업자정보를 확인해 주세요.";
 
@@ -247,104 +261,41 @@ export const BpProfileTab = forwardRef<
   const verified = isVerified(verifyForm);
   const pending = hasPendingVerification(verifyForm);
   const locked = verified && !verifyEditing;
-  // 비어 있어서 걸린 칸은 칸 아래가 아니라 한 줄 안내(missingMessage)로 모은다 — 칸 아래에는 형식 오류 · api 문구만 남는다
+  // 비어 있어서 걸린 칸은 칸 아래가 아니라 한 줄 안내로 모은다 — 칸 아래에는 형식 오류 · api 문구만 남는다
+  // (BizVerificationBox 가 missing 과 fieldErrors 를 받아 이 가름을 그 안에서 한다)
   const emptyErrored = emptyVerifyFields(verifyForm).filter((key) => verifyErrors[key]);
-  const missingMessage = missingVerifyMessage(emptyErrored);
-  const missingId = `${ids}-v-missing`;
   const hasVerifyInput = emptyVerifyFields(verifyForm).length < 3;
   const showClear = Boolean(verifyForm.savedBizNumber) || hasVerifyInput;
-  const messageIdV = (key: VerifyFormField) => `${ids}-v-${key}`;
-  const describeV = (key: VerifyFormField) => (!verifyErrors[key] ? undefined : emptyErrored.includes(key) ? missingId : messageIdV(key));
-  const invalidV = (key: VerifyFormField) => (verifyErrors[key] ? true : undefined);
-  const messageV = (key: VerifyFormField) => (emptyErrored.includes(key) ? null : <FieldMessage id={messageIdV(key)} message={verifyErrors[key]} />);
+  // 네 화면 공통 상자(BizVerificationBox, S-VRNTHD)가 쓰는 키(BizVerifyField)로 옮긴다 — VERIFY_TO_BIZ 참고
+  const bizValues = { bizNumber: verifyForm.bizRegistrationNumber, ceoName: verifyForm.bizCeoName, openDate: verifyForm.bizOpenDate };
+  const bizMissing = emptyErrored.map((key) => VERIFY_TO_BIZ[key]);
+  const bizFieldErrors: Partial<Record<BizVerifyField, string>> = {};
+  (Object.keys(BIZ_TO_VERIFY) as BizVerifyField[]).forEach((biz) => {
+    const key = BIZ_TO_VERIFY[biz];
+    if (!emptyErrored.includes(key) && verifyErrors[key]) bizFieldErrors[biz] = verifyErrors[key];
+  });
 
   return (
     <div id={ids} className="flex flex-col gap-[18px]">
-      {/* 기본정보 탭의 계정 정보 칸과 같은 모양 — 타이틀을 회색 박스로 두르고, 본문은 흰 박스로 아래에
-          잇는다(사용자 지정, 2026-10-22). 제목 줄에 인증 상태를 같이 둔다. 아래 상호명 묶음과는 다른 카드라
-          따로 둔다(사용자 지정, 2026-10-22).*/}
-      <div className="flex flex-col">
-        <h4 className="flex h-[42px] items-center justify-between rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">
-          <span>사업자정보</span>
-          {verified ? (
-            <span className="text-[14px] font-medium text-erp-on">
-              인증 완료{pending ? " · 저장하면 반영됩니다" : verifyForm.savedVerifiedAt ? ` · ${formatDate(verifyForm.savedVerifiedAt)}` : ""}
-            </span>
-          ) : (
-            <span className="text-[14px] font-medium text-erp-off">미인증</span>
-          )}
-        </h4>
-        <div className="flex flex-col gap-[12px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white px-[16px] py-[20px]">
-          <div className="flex flex-col">
-            <Field label="사업자등록번호">
-              <TextField
-                value={verifyForm.bizRegistrationNumber}
-                // 점포 쪽(store-form-view.tsx)과 같다 — 타이핑 중에는 하이픈도 그대로 두고(숫자 · 하이픈만
-                // 거른다), 서버로 보낼 때(toVerifyInput)·검사할 때(validateVerifyForm)만 하이픈을 뗀다.
-                // maxLength 는 숫자 10자리 + 하이픈 2개 = 12(store-form-view.tsx 와 같은 값) — 붙여넣은
-                // 글자 그대로에 먼저 걸리므로, 하이픈 없이 숫자만 붙여넣어도 10자가 넉넉히 다 들어간다.
-                onChange={(e) => setVerify("bizRegistrationNumber", e.target.value.replace(/[^0-9-]/g, ""))}
-                readOnly={locked}
-                placeholder="숫자 10자리"
-                maxLength={12}
-                aria-invalid={invalidV("bizRegistrationNumber")}
-                aria-describedby={describeV("bizRegistrationNumber")}
-              />
-            </Field>
-            {messageV("bizRegistrationNumber")}
-          </div>
-          <div className="flex flex-col">
-            <Field label="대표자명">
-              <TextField
-                value={verifyForm.bizCeoName}
-                onChange={(e) => setVerify("bizCeoName", e.target.value)}
-                readOnly={locked}
-                placeholder="대표자 이름"
-                maxLength={50}
-                aria-invalid={invalidV("bizCeoName")}
-                aria-describedby={describeV("bizCeoName")}
-              />
-            </Field>
-            {messageV("bizCeoName")}
-          </div>
-          <div className="flex flex-col">
-            <Labeled label="개업일자">
-              {locked ? (
-                <TextField value={verifyForm.bizOpenDate} readOnly aria-label="개업일자" />
-              ) : (
-                <DateField value={verifyForm.bizOpenDate} onChange={(v) => setVerify("bizOpenDate", v)} aria-label="개업일자" />
-              )}
-            </Labeled>
-            {messageV("bizOpenDate")}
-          </div>
-          <FieldMessage id={missingId} message={missingMessage ?? undefined} />
-          <div className="flex gap-[6px]">
-            {locked ? (
-              <>
-                <Button variant="soft" onClick={() => setVerifyEditing(true)}>
-                  재인증
-                </Button>
-                <Button variant="soft" onClick={clearVerify}>
-                  사용안함
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button variant="soft" onClick={handleVerify} disabled={verifying}>
-                  {verifying ? "인증 중…" : verifyForm.savedBizNumber ? "재인증" : "인증하기"}
-                </Button>
-                {showClear && (
-                  <Button variant="soft" onClick={clearVerify} disabled={verifying}>
-                    {verifyForm.savedBizNumber ? "사용안함" : "지우기"}
-                  </Button>
-                )}
-              </>
-            )}
-          </div>
-          {/* 안내는 버튼 아래에 둔다(사용자 지정, 2026-10-22) */}
-          <p className="text-[13px] leading-[1.6] text-erp-label">사업자정보가 국세청에 등록된 정보와 일치하는지 확인합니다.</p>
-        </div>
-      </div>
+      {/* 상자는 네 화면 공통(BizVerificationBox, S-VRNTHD) — 좁은 슬라이드 패널이라 한 줄씩 쌓는다(layout="stack") */}
+      <BizVerificationBox
+        layout="stack"
+        values={bizValues}
+        onChange={(key, value) => setVerify(BIZ_TO_VERIFY[key], value)}
+        locked={{ bizNumber: locked, ceoName: locked, openDate: locked }}
+        verified={verified}
+        verifiedDate={verifyForm.savedVerifiedAt ? formatDate(verifyForm.savedVerifiedAt) : ""}
+        verifying={verifying}
+        fieldErrors={bizFieldErrors}
+        missing={bizMissing}
+        // 잠겼을 때(인증 완료 · 재인증 전) 누르면 재인증하려고 칸을 연다 — 점포(store-form-view.tsx
+        // handleReverify)와 같은 패턴. 열린 뒤에는 실제 인증 요청(handleVerify)으로 바뀐다.
+        onVerify={locked ? () => setVerifyEditing(true) : handleVerify}
+        onClear={clearVerify}
+        showClear={showClear}
+        // 저장은 안 됐지만 이번 화면에서 통과해 둔 상태는 배지에 그 사실을 덧붙인다(사용자 지정, 2026-10-22)
+        note={pending ? "저장하면 반영됩니다" : undefined}
+      />
 
       {/* 상호명부터는 별도 카드다(사용자 지정, 2026-10-22) — 칸과 그 오류 문구 사이에는 여백을 두지 않는다. */}
       <section aria-label="상호명 등" className="flex flex-col gap-[18px] rounded-[2px] border border-erp-panel-line bg-white px-[16px] py-[20px]">
