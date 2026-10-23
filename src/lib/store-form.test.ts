@@ -16,6 +16,7 @@ import {
   type StoreForm,
 } from "./store-form.ts";
 import type { StoreDetail } from "./store-types.ts";
+import { formatPhone } from "./format.ts";
 
 const filled: StoreForm = { ...EMPTY_STORE_FORM, storeTypeCode: "DIRECT", name: " 강남점 " };
 // 운영 조건 한글(GET /enums/StoreOperationRequirement) — 라벨 없이 부르면(빈 배열) 값 코드를 그대로 보인다
@@ -33,7 +34,7 @@ test("필수는 점포유형(등록) · 점포명뿐이다", () => {
   assert.ok(validateStoreForm({ ...filled, name: "가".repeat(51) }, "create").name);
 });
 
-test("연락처 9~11자리 · 대표자 연락처는 숫자 10~11자리(api 와 같게 유선 번호도 받는다)", () => {
+test("점포 연락처 9~12자리 · 대표자 연락처는 숫자 10~11자리(api 와 같게 유선 번호도 받는다)", () => {
   assert.equal(validateStoreForm({ ...filled, phone: ["02", "123", "4567"] }, "create").phone, undefined);
   assert.ok(validateStoreForm({ ...filled, phone: ["02", "12", "34"] }, "create").phone);
   assert.equal(validateStoreForm({ ...filled, ceoPhone: ["010", "1234", "5678"] }, "create").ceoPhone, undefined);
@@ -71,24 +72,33 @@ test("진위확인 칸 — 처음은 세 칸, 재인증은 대표자명만", () 
 });
 
 test("진위확인 칸을 고치고 인증하지 않으면 저장 전에 막는다 — 그대로 두면 성공 뒤 값이 원래대로 돌아간다", () => {
+  // 어느 한 칸의 것이 아니라 인증 상자의 버튼 위 한 줄(bizVerify)이다(S-VRNTHD)
   const ask = "인증하기를 눌러 사업자정보를 확인해 주세요.";
+  const NOW = 1_000_000;
   // 등록: 세 칸 중 하나라도 적었는데 인증 전
-  assert.equal(validateStoreForm({ ...filled, ceoName: "홍길동" }, "create").bizNumber, ask);
-  const checked = { bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02" };
+  assert.equal(validateStoreForm({ ...filled, ceoName: "홍길동" }, "create", [], NOW).bizVerify, ask);
+  const checked = { bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02", verifiedAt: NOW };
   const done = { ...filled, bizNumber: "123-45-67890", ceoName: "홍길동", openDate: "2020-01-02", verified: checked };
-  assert.equal(validateStoreForm(done, "create").bizNumber, undefined);
+  assert.equal(validateStoreForm(done, "create", [], NOW).bizVerify, undefined);
   // 인증 뒤 대표자명을 고치면 다시 막는다
-  assert.equal(validateStoreForm({ ...done, ceoName: "김철수" }, "create").bizNumber, ask);
+  assert.equal(validateStoreForm({ ...done, ceoName: "김철수" }, "create", [], NOW).bizVerify, ask);
   // 수정: 저장된 번호가 있으면 대표자명만 본다
   const saved = { ...filled, savedBizNumber: "1234567890", savedCeoName: "홍길동", bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02" };
-  assert.deepEqual(validateStoreForm(saved, "edit"), {});
-  assert.equal(validateStoreForm({ ...saved, ceoName: "김철수" }, "edit").ceoName, ask);
-  assert.equal(validateStoreForm({ ...saved, ceoName: "김철수", verified: { ...checked, ceoName: "김철수" } }, "edit").ceoName, undefined);
+  assert.deepEqual(validateStoreForm(saved, "edit", [], NOW), {});
+  assert.equal(validateStoreForm({ ...saved, ceoName: "김철수" }, "edit", [], NOW).bizVerify, ask);
+  assert.equal(validateStoreForm({ ...saved, ceoName: "김철수", verified: { ...checked, ceoName: "김철수" } }, "edit", [], NOW).bizVerify, undefined);
+});
+
+test("인증하고 10분이 지나면 저장하지 않고 다시 인증하게 한다", () => {
+  const checked = { bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02", verifiedAt: 0 };
+  const done = { ...filled, bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02", verified: checked };
+  assert.equal(validateStoreForm(done, "create", [], 599_999).bizVerify, undefined);
+  assert.equal(validateStoreForm(done, "create", [], 600_000).bizVerify, "사업자정보 인증이 만료되었습니다. 다시 인증해 주세요.");
 });
 
 test("인증 결과는 지금 칸 값과 같을 때만 인증으로 본다 — 늦게 온 응답이 옛 값을 넣어도 운영 조건을 통과하지 않는다", () => {
   const operating = { ...filled, storeStatus: "OPERATING" as const, latitude: "37.5", longitude: "127.0" };
-  const checked = { bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02" };
+  const checked = { bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02", verifiedAt: Date.now() };
   const now = { ...operating, bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02", verified: checked };
   assert.equal(validateStoreForm(now, "edit", REQUIREMENT_LABELS).storeStatus, undefined);
   assert.equal(validateStoreForm({ ...now, ceoName: "김철수" }, "edit", REQUIREMENT_LABELS).storeStatus, "운영으로 바꾸려면 사업자정보 인증이 필요합니다.");
@@ -118,7 +128,7 @@ test("등록 요청 — 공백을 빼고 빈 칸은 null, 빈 층은 보내지 �
   assert.equal(input.business.tradeName, "웨일커피");
   assert.deepEqual(input.floors, [{ floorTypeCode: "BASEMENT", floorNumber: 1, floorAreaPyeong: null, floorAreaSqm: null, seatCount: 10 }]);
   assert.equal(input.businessVerification, undefined);
-  const checked = { bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02" };
+  const checked = { bizNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02", verifiedAt: Date.now() };
   const verified = toCreateStoreInput({ ...filled, bizNumber: "123-45-67890", ceoName: " 홍길동 ", openDate: "2020-01-02", verified: checked });
   assert.deepEqual(verified.businessVerification, { bizRegistrationNumber: "1234567890", ceoName: "홍길동", openDate: "2020-01-02" });
   // 인증 뒤(또는 늦게 온 응답 사이) 칸을 고쳤으면 옛 인증 값은 싣지 않는다
@@ -142,9 +152,27 @@ test("좌표 입력칸 둘 다 있어야 있다고 본다 — bodyOf · 선택�
 });
 
 test("사업자주소가 「점포 주소와 같음」이면 점포 주소를 싣는다", () => {
-  const f = { ...filled, zipCode: "06236", address: "서울 강남구 테헤란로 152", addressDetail: "1층", bizAddress: "다른 곳" };
+  const f = { ...filled, zipCode: "06236", address: "서울 강남구 테헤란로 152", addressDetail: "1층", bizAddress: "다른 곳", bizSameAsStore: true };
   assert.equal(toCreateStoreInput(f).business.address, "서울 강남구 테헤란로 152");
   assert.equal(toCreateStoreInput({ ...f, bizSameAsStore: false }).business.address, "다른 곳");
+});
+
+test("새 점포는 「점포 주소와 같음」이 기본 해제다 — 점포주소와 사업자주소가 다를 수 있다(사용자 지정, 2026-10-23)", () => {
+  assert.equal(EMPTY_STORE_FORM.bizSameAsStore, false);
+});
+
+// bizSameAsStore 기본값이 해제라 아래 두 검사가 모든 새 점포의 기본 경로다 — 전엔 EMPTY_STORE_FORM 이
+// true 라 이 분기를 타는 입력을 직접 만들어야만 테스트됐다(코드 리뷰로 찾음, 2026-10-23).
+test("「점포 주소와 같음」이 해제면 사업자 상세주소만 적고 사업자주소를 검색 안 하면 막는다", () => {
+  const f = { ...filled, bizSameAsStore: false, bizAddressDetail: "3층" };
+  assert.equal(validateStoreForm(f, "create").bizAddressDetail, "사업자주소를 먼저 검색해 주세요.");
+  assert.equal(validateStoreForm({ ...f, bizAddress: "서울 강남구 테헤란로 152" }, "create").bizAddressDetail, undefined);
+});
+
+test("「점포 주소와 같음」이 해제면 사업자 상세주소도 100자 제한 — 켜져 있으면(점포 상세주소를 쓴다) 검사하지 않는다", () => {
+  const long = "가".repeat(101);
+  assert.equal(validateStoreForm({ ...filled, bizSameAsStore: false, bizAddressDetail: long }, "create").bizAddressDetail, "상세주소는 100자까지입니다.");
+  assert.equal(validateStoreForm({ ...filled, bizSameAsStore: true, bizAddressDetail: long }, "create").bizAddressDetail, undefined);
 });
 
 const detail: StoreDetail = {
@@ -271,8 +299,24 @@ test("저장된 층 줄과 새 줄의 키는 겹치지 않는다", () => {
   assert.ok(form.floors[0].key.startsWith("saved-") && added.key.startsWith("new-"));
 });
 
-test("점포 연락처는 9~11자리만 — api 와 같은 전제(8자리 대표번호는 받지 않는다)", () => {
+test("점포 연락처는 9~12자리만 — 050X 평생번호는 받고, 8자리 대표번호는 받지 않는다", () => {
   assert.ok(validateStoreForm({ ...filled, phone: ["1588", "", "1234"] }, "edit").phone);
+  assert.equal(validateStoreForm({ ...filled, phone: ["0507", "2033", "1334"] }, "edit").phone, undefined);
+  assert.ok(validateStoreForm({ ...filled, phone: ["0507", "2033", "13345"] }, "edit").phone, "13자리는 막는다");
+  // 대표자 연락처는 숫자 10~11자리(유선 포함) 그대로
+  assert.ok(validateStoreForm({ ...filled, ceoPhone: ["0507", "2033", "1334"] }, "edit").ceoPhone);
+});
+
+test("050 이 아닌 12자리 점포 연락처도 저장 검사는 통과한다 — api 와 같이 자릿수만 본다. 나누기 · 표시는 050X 규칙을 타지 않는다", () => {
+  assert.equal(validateStoreForm({ ...filled, phone: ["0311", "2345", "6789"] }, "edit").phone, undefined);
+  assert.deepEqual(splitPhone("031123456789"), ["031", "12345", "6789"]);
+  assert.equal(formatPhone("031123456789"), "031123456789");
+});
+
+test("050X 12자리 점포 연락처는 불러와 그대로 저장해도 같은 값이다", () => {
+  const form = { ...filled, phone: splitPhone("050720331334") };
+  assert.equal(validateStoreForm(form, "edit").phone, undefined);
+  assert.equal(form.phone.join(""), "050720331334");
 });
 
 test("점포유형 없이 등록 요청을 만들면 던진다", () => {
@@ -294,9 +338,11 @@ test("새로 더했는데 비어 있는 층 줄은 보내지 않는다", () => {
   assert.deepEqual(input.floors, []);
 });
 
-test("전화번호 나누기 — 02 국번 · 휴대전화 · 빈 값", () => {
+test("전화번호 나누기 — 02 국번 · 휴대전화 · 050X 평생번호 · 빈 값", () => {
   assert.deepEqual(splitPhone("021234567"), ["02", "123", "4567"]);
   assert.deepEqual(splitPhone("01012345678"), ["010", "1234", "5678"]);
+  assert.deepEqual(splitPhone("050720331334"), ["0507", "2033", "1334"]);
+  assert.deepEqual(splitPhone("05012345678"), ["050", "1234", "5678"], "11자리 050 은 3자리 국번");
   assert.deepEqual(splitPhone(null), ["", "", ""]);
 });
 
@@ -307,4 +353,32 @@ test("api 오류를 붙일 칸 — api 실제 문구 기준. 사업자번호 중
   assert.equal(storeServerErrorField(409, "다른 관리자가 먼저 수정했습니다. 최신 정보를 불러온 뒤 다시 저장해 주세요"), null);
   assert.equal(storeServerErrorField(400, "점포명은 50자까지입니다"), "name");
   assert.equal(storeServerErrorField(503, "사업자등록번호 …"), null);
+  assert.equal(storeServerErrorField(409, "이미 등록된 사업자등록번호입니다."), "bizNumber");
+  // 저장 때 서버가 다시 한 국세청 확인의 실패는 인증 상자의 버튼 위 한 줄 — 문구는 네 화면 공통으로 바꾼다
+  assert.equal(storeServerErrorField(400, "국세청에 등록된 사업자 정보와 맞지 않습니다. 사업자등록번호 · 대표자명 · 개업일자를 확인해 주세요"), "bizVerify");
+  assert.equal(storeServerErrorField(503, "사업자 진위확인 중 오류가 났습니다. 잠시 뒤 다시 시도해 주세요"), "bizVerify");
+  assert.deepEqual(storeServerErrors(400, ["국세청에 등록된 사업자 정보와 맞지 않습니다. 사업자등록번호 · 대표자명 · 개업일자를 확인해 주세요"]).fields, {
+    bizVerify: "입력한 사업자정보가 국세청 정보와 일치하지 않습니다.",
+  });
+  assert.deepEqual(storeServerErrors(503, ["사업자 진위확인 연동이 아직 없어 인증할 수 없습니다"]).fields, {
+    bizVerify: "국세청 확인이 원활하지 않습니다. 잠시 후 다시 시도해 주세요.",
+  });
+});
+
+test("api 오류 나누기 — 국세청 문장이 여럿이어도 공통 문구는 한 번, 다른 칸 문장은 그 칸에 따로", () => {
+  const { fields, rest } = storeServerErrors(400, [
+    "국세청에 등록된 사업자 정보와 맞지 않습니다. 사업자등록번호 · 대표자명 · 개업일자를 확인해 주세요",
+    "사업자 진위확인 결과가 맞지 않습니다",
+    "점포명은 50자까지입니다",
+  ]);
+  assert.deepEqual(fields, { bizVerify: "입력한 사업자정보가 국세청 정보와 일치하지 않습니다.", name: "점포명은 50자까지입니다" });
+  assert.deepEqual(rest, []);
+});
+
+test("api 오류 나누기 — 저장 때 번호 중복 409 는 번호 칸에 공통 문구로", () => {
+  assert.deepEqual(storeServerErrors(409, ["이미 미운영 · 운영 중인 다른 점포가 쓰는 사업자등록번호입니다"]).fields, { bizNumber: "이미 등록된 사업자등록번호입니다." });
+});
+
+test("api 오류 칸 — 운영 조건 문구는 조건 이름에 「진위확인」이 있어도 점포상태 칸", () => {
+  assert.equal(storeServerErrorField(400, "운영으로 바꾸려면 다음이 필요합니다 — 사업자 진위확인, 좌표(위도 · 경도)"), "storeStatus");
 });

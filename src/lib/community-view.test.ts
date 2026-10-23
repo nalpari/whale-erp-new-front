@@ -4,6 +4,7 @@ import { test } from "node:test";
 import {
   faqBody,
   parseInquiryQuery,
+  parseSupportFaqQuery,
   parseSupportInquiryQuery,
   parseSupportNoticeQuery,
   pickInquiryFiles,
@@ -14,6 +15,7 @@ import {
   sizeLabel,
   validatePost,
   draftView,
+  pageWindow,
   type PostForm,
 } from "./community-view.ts";
 
@@ -32,9 +34,9 @@ const notice = (over: Partial<PostForm> = {}): PostForm => ({
 const faq = (over: Partial<PostForm> = {}): PostForm => notice({ kind: "FAQ", noticeType: "", faqCategoryCode: "STAFF_LABOR", ...over });
 
 test("parsePostQuery — 이상한 값은 기본값(1쪽 · 20건 · 전체)으로", () => {
-  assert.deepEqual(parsePostQuery({}), { page: 1, pageSize: 20, status: "" });
-  assert.deepEqual(parsePostQuery({ page: "3", pageSize: "50", status: "PRIVATE" }), { page: 3, pageSize: 50, status: "PRIVATE" });
-  assert.deepEqual(parsePostQuery({ page: "0", pageSize: "30", status: "x" }), { page: 1, pageSize: 20, status: "" });
+  assert.deepEqual(parsePostQuery({}), { page: 1, pageSize: 20, status: [] });
+  assert.deepEqual(parsePostQuery({ page: "3", pageSize: "50", status: "PRIVATE" }), { page: 3, pageSize: 50, status: ["PRIVATE"] });
+  assert.deepEqual(parsePostQuery({ page: "0", pageSize: "30", status: "x" }), { page: 1, pageSize: 20, status: [] });
   assert.equal(parsePostQuery({ page: "10000001" }).page, 1);
 });
 
@@ -42,7 +44,7 @@ test("parseInquiryQuery — 검색어는 다듬고 api 한도로 자른다", () 
   const q = parseInquiryQuery({ title: "  주휴수당 ", sender: "가".repeat(150), answerStatus: "WAITING" });
   assert.equal(q.title, "주휴수당");
   assert.equal(q.sender.length, 100);
-  assert.equal(q.answerStatus, "WAITING");
+  assert.deepEqual(q.answerStatus, ["WAITING"]);
 });
 
 test("parseInquiryQuery — 주소의 NUL 은 뺀다(api 가 400 을 내 목록이 통째로 실패한다)", () => {
@@ -67,7 +69,11 @@ test("validatePost — 제목 200자 · 본문 20,000자 경계", () => {
 });
 
 test("queryString — 빈 값과 기본값은 싣지 않는다", () => {
-  assert.equal(queryString({ page: 1, pageSize: 20, status: "" }), "");
+  assert.equal(queryString({ page: 1, pageSize: 20, status: [] }), "");
+  assert.equal(queryString({ page: 1, pageSize: 20, status: ["DRAFT", "PRIVATE"] }), "?status=DRAFT&status=PRIVATE");
+  // 읽은 조건이 그대로 주소 · api 쿼리가 된다 — 같은 이름 되풀이 · 보이는 순서 · 기본값은 뺀다.
+  assert.equal(queryString(parseSupportNoticeQuery({ noticeType: ["TERMS", "x", "MAINTENANCE"], page: "2" })), "?page=2&noticeType=MAINTENANCE&noticeType=TERMS");
+  assert.equal(queryString(parseSupportFaqQuery({ faqCategoryCode: ["B", "A"] })), "?faqCategoryCode=B&faqCategoryCode=A");
   assert.equal(queryString({ page: 2, pageSize: 50, answerStatus: "ANSWERED", title: "a b" }), "?page=2&pageSize=50&answerStatus=ANSWERED&title=a+b");
 });
 
@@ -129,9 +135,9 @@ test("sizeLabel", () => {
 });
 
 test("고객지원 쿼리 — 모르는 구분 · 상태는 전체로, 검색어는 api 한도로 자른다", () => {
-  assert.deepEqual(parseSupportNoticeQuery({ noticeType: "ADDON", keyword: ` ${"가".repeat(150)} ` }), { page: 1, pageSize: 20, keyword: "가".repeat(100), noticeType: "" });
-  assert.deepEqual(parseSupportInquiryQuery({ status: "IN_PROGRESS", title: "주휴", page: "2" }), { page: 2, pageSize: 20, title: "주휴", status: "IN_PROGRESS" });
-  assert.equal(parseSupportInquiryQuery({ status: "WAITING" }).status, "");
+  assert.deepEqual(parseSupportNoticeQuery({ noticeType: "ADDON", keyword: ` ${"가".repeat(150)} ` }), { page: 1, pageSize: 20, keyword: "가".repeat(100), noticeType: [] });
+  assert.deepEqual(parseSupportInquiryQuery({ status: "IN_PROGRESS", title: "주휴", page: "2" }), { page: 2, pageSize: 20, title: "주휴", status: ["IN_PROGRESS"] });
+  assert.deepEqual(parseSupportInquiryQuery({ status: "WAITING" }).status, []);
 });
 
 test("pickInquiryFiles — 6번째 · 10MB 초과 · 다른 종류는 그 파일만 뺀다", () => {
@@ -159,4 +165,23 @@ test("draftView — 그사이 저장된 값이 바뀌면 손대지 않은 글은
   assert.deepEqual(draftView({ text: "A 고침", base: "A" }, "B"), { text: "A 고침", stale: true });
   // 처음 답변(저장된 값 없음)을 쓰던 중 다른 운영자가 먼저 답했다
   assert.deepEqual(draftView({ text: "내 답", base: "" }, "남의 답"), { text: "내 답", stale: true });
+});
+
+test("체크박스 필터 — 여러 값을 받고, 모르는 값 · 겹친 값은 빼고, enum 값은 보이는 순서로(FAQ 카테고리는 주소 순서로) 둔다", () => {
+  assert.deepEqual(parseSupportNoticeQuery({ noticeType: ["TERMS", "x", "MAINTENANCE", "TERMS"] }).noticeType, ["MAINTENANCE", "TERMS"]);
+  assert.deepEqual(parseInquiryQuery({ answerStatus: ["ANSWERED", "WAITING"] }).answerStatus, ["WAITING", "ANSWERED"]);
+  assert.deepEqual(parseSupportFaqQuery({ faqCategoryCode: [" ACCOUNT ", "", "ACCOUNT", "B".repeat(21), "BILLING"] }).faqCategoryCode, ["ACCOUNT", "BILLING"]);
+  assert.deepEqual(parseSupportFaqQuery({}).faqCategoryCode, []);
+  assert.equal(parseSupportFaqQuery({ faqCategoryCode: Array.from({ length: 60 }, (_, i) => `C${i}`) }).faqCategoryCode.length, 50);
+  // 20자는 남고, 넘는 값은 20자로 잘라 보내지 않고 버린다. 버린 값 · 겹친 값은 50개 한도에 세지 않는다.
+  assert.deepEqual(parseSupportFaqQuery({ faqCategoryCode: ["A".repeat(20), "B".repeat(25)] }).faqCategoryCode, ["A".repeat(20)]);
+  const noisy = [...Array(10).fill(""), ...Array.from({ length: 50 }, (_, i) => `C${i}`)];
+  assert.equal(parseSupportFaqQuery({ faqCategoryCode: noisy }).faqCategoryCode.length, 50);
+});
+
+test("pageWindow — 10개 묶음과 앞 · 뒤 묶음", () => {
+  assert.deepEqual(pageWindow(1, 0, 20), { pages: [1], prev: null, next: null });
+  assert.deepEqual(pageWindow(3, 45, 20), { pages: [1, 2, 3], prev: null, next: null });
+  assert.deepEqual(pageWindow(12, 1000, 20), { pages: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20], prev: 10, next: 21 });
+  assert.deepEqual(pageWindow(99, 45, 20), { pages: [1, 2, 3], prev: null, next: null });
 });

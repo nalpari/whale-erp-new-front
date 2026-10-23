@@ -1,12 +1,13 @@
 import type { ReactNode } from "react";
 
-// 공통코드 화면의 두 카드(그룹 목록 · 상세 코드) 껍데기. 제목 줄 오른쪽에 버튼, 아래에 표를 둔다.
+// 공통코드 화면(플랫폼 공통코드 관리 · BP 공통코드 관리)의 두 카드(그룹 목록 · 상세 코드) 껍데기. 제목 줄 오른쪽에 버튼, 아래에 표를 둔다.
 // 카드 안에서만 세로로 스크롤해 body 는 스크롤하지 않는다(DESIGN.md 한 화면 규칙).
 export function CodePanel({
   title,
   sub,
   actions,
   wide,
+  narrow,
   children,
 }: {
   title: string;
@@ -15,12 +16,14 @@ export function CodePanel({
   actions?: ReactNode;
   /** 왼쪽 그룹 목록은 900 고정(관리 주체 선택칸이 잘리지 않도록 2026-10-12 넓힘), 오른쪽 상세 코드는 남는 폭. */
   wide?: boolean;
+  /** 읽기만 하는 그룹 목록(BP 공통코드 — 입력칸이 없다)은 560 고정(데모 config/codes). */
+  narrow?: boolean;
   children: ReactNode;
 }) {
   return (
     <section
       className={`flex flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>*]:shrink-0 ${
-        wide ? "min-w-0 flex-1" : "w-[900px] shrink-0"
+        wide ? "min-w-0 flex-1" : narrow ? "w-[560px] shrink-0" : "w-[900px] shrink-0"
       }`}
     >
       <div className="flex items-end gap-[6px]">

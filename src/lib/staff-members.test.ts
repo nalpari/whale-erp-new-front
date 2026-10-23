@@ -1,11 +1,12 @@
 // node --test src/lib/staff-members.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { EMPLOYMENT_TYPES, JOIN_GROUPS, MAX_STORE_IDS, kstToday, staffEmailText, staffListApiSearch, staffListEmptyMessage, storeIdsByName, tooManyStores, type StaffListQuery } from "./staff-members.ts";
+import { EMPLOYMENT_TYPES, JOIN_GROUPS, hqSharingConsentText, withEmploymentHistory, kstToday, staffEmailText, staffListApiSearch, storeIdsByName, type StaffListQuery } from "./staff-members.ts";
 
 const base: StaffListQuery = {
-  store: "",
   storeIds: [],
+  storesCleared: false,
+  scope: null,
   keyword: "",
   employmentTypes: [...EMPLOYMENT_TYPES],
   joinGroups: [...JOIN_GROUPS],
@@ -36,40 +37,44 @@ test("고용형태 하나만 고르면 그것만", () => {
   assert.equal(paramsOf({ ...base, employmentTypes: ["PART_TIME"] }).get("employmentType"), "PART_TIME");
 });
 
-test("검색어 · 점포 id 를 싣는다", () => {
-  const params = paramsOf({ ...base, keyword: "서지안", store: "서초", storeIds: [1, 7] });
+test("검색어 · 고른 점포 id 를 싣는다", () => {
+  const params = paramsOf({ ...base, keyword: "서지안", storeIds: [1, 7] });
   assert.equal(params.get("keyword"), "서지안");
   assert.equal(params.get("storeIds"), "1,7");
+  assert.equal(params.has("storeTypes"), false);
 });
 
-test("점포명이 없으면 storeIds 를 싣지 않는다 — 관리 범위 전체", () => {
-  assert.equal(paramsOf({ ...base, storeIds: [1] }).has("storeIds"), false);
+test("상단 범위 — 점포 하나는 storeIds, 직영 · 가맹은 storeTypes, 전체는 점포 조건 없음", () => {
+  assert.equal(paramsOf({ ...base, scope: { type: "STORE", storeId: 12 } }).get("storeIds"), "12");
+  const direct = paramsOf({ ...base, scope: { type: "DIRECT" } });
+  assert.equal(direct.get("storeTypes"), "DIRECT");
+  assert.equal(direct.has("storeIds"), false);
+  assert.equal(paramsOf({ ...base, scope: { type: "FRANCHISE" } }).get("storeTypes"), "FRANCHISE");
+  for (const q of [{ ...base, scope: { type: "ALL" as const } }, { ...base, storesCleared: true }, base]) {
+    const params = paramsOf(q);
+    assert.equal(params.has("storeIds"), false);
+    assert.equal(params.has("storeTypes"), false);
+  }
+});
+
+test("비운 「전체」면 범위가 함께 있어도 점포 조건을 보내지 않는다", () => {
+  for (const scope of [{ type: "FRANCHISE" as const }, { type: "DIRECT" as const }, { type: "STORE" as const, storeId: 3 }]) {
+    const params = paramsOf({ ...base, storesCleared: true, scope });
+    assert.equal(params.has("storeIds"), false);
+    assert.equal(params.has("storeTypes"), false);
+  }
+});
+
+test("고른 점포가 있으면 범위보다 앞선다 — storeTypes 를 보내지 않는다", () => {
+  const direct = paramsOf({ ...base, storeIds: [1, 7], scope: { type: "DIRECT" } });
+  assert.equal(direct.get("storeIds"), "1,7");
+  assert.equal(direct.has("storeTypes"), false);
+  assert.equal(paramsOf({ ...base, storeIds: [3], scope: { type: "STORE", storeId: 12 } }).get("storeIds"), "3");
 });
 
 test("api 를 부르지 않고 0건인 조건 — 빈 값은 api 가 400, 빼면 전체라서", () => {
   assert.equal(staffListApiSearch({ ...base, joinGroups: [] }), null);
   assert.equal(staffListApiSearch({ ...base, employmentTypes: [] }), null);
-  assert.equal(staffListApiSearch({ ...base, store: "없는점", storeIds: [] }), null);
-});
-
-test("점포 id 를 아직 못 찾았으면(null) api 를 부르지 않는다 — 필터가 채운 뒤 다시 그린다", () => {
-  assert.equal(staffListApiSearch({ ...base, store: "판교", storeIds: null }), null);
-});
-
-test("맞는 점포가 api 상한(500)을 넘으면 부르지 않고 좁혀 달라고 한다 — 잘라 보내면 일부 점포가 조용히 빠진다", () => {
-  const ids = Array.from({ length: MAX_STORE_IDS + 1 }, (_, i) => i + 1);
-  assert.equal(staffListApiSearch({ ...base, store: "점", storeIds: ids }), null);
-  assert.equal(tooManyStores({ ...base, store: "점", storeIds: ids }), true);
-  assert.equal(tooManyStores({ ...base, store: "점", storeIds: ids.slice(0, MAX_STORE_IDS) }), false);
-  assert.notEqual(staffListApiSearch({ ...base, store: "점", storeIds: ids.slice(0, MAX_STORE_IDS) }), null);
-});
-
-test("빈 목록 문구 — 점포 id 를 찾는 중 · 점포가 너무 많음 · 그 밖은 기본", () => {
-  assert.equal(staffListEmptyMessage({ ...base, store: "판교", storeIds: null }), "점포를 찾는 중입니다.");
-  const ids = Array.from({ length: MAX_STORE_IDS + 1 }, (_, i) => i + 1);
-  assert.equal(staffListEmptyMessage({ ...base, store: "점", storeIds: ids }), "점포명에 맞는 점포가 500곳을 넘습니다. 점포명을 더 좁혀 주세요.");
-  assert.equal(staffListEmptyMessage(base), undefined);
-  assert.equal(staffListEmptyMessage({ ...base, store: "없는점", storeIds: [] }), undefined);
 });
 
 const stores = [
@@ -145,4 +150,27 @@ test("이메일 칸 — 가입 상태를 모르면 「-」", () => {
 test("이메일 칸 — enum 을 받지 못했거나(빈 목록) 목록에 없는 값이면 영문 값 대신 「-」", () => {
   assert.equal(staffEmailText({ email: null, joinState: "LINK_HOLD" }, []), "-");
   assert.equal(staffEmailText({ email: null, joinState: "SOMETHING_NEW" as never }, JOIN_STATE_LABELS), "-");
+});
+
+const HQ_CONSENT_LABELS = [
+  { value: "AGREED", label: "동의", order: 1 },
+  { value: "NOT_AGREED", label: "미동의", order: 2 },
+];
+
+test("본사 제공 동의 칸은 가맹 점포 직원만 — 직영 점포 직원(null)은 줄이 없다", () => {
+  assert.equal(hqSharingConsentText({ hqSharingConsent: "AGREED" }, HQ_CONSENT_LABELS), "동의");
+  assert.equal(hqSharingConsentText({ hqSharingConsent: "NOT_AGREED" }, HQ_CONSENT_LABELS), "미동의");
+  assert.equal(hqSharingConsentText({ hqSharingConsent: null }, HQ_CONSENT_LABELS), null);
+});
+
+test("본사 제공 동의 한글을 받지 못했으면 - — 영문 값을 보이지 않는다", () => {
+  assert.equal(hqSharingConsentText({ hqSharingConsent: "NOT_AGREED" }, []), "-");
+});
+
+test("재직 이력 칸이 없는 상세 응답(api #136 배포 전)은 빈 목록으로 채운다 — 있으면 그대로", () => {
+  const period = { staffMemberId: 3, hiredDate: "2024-01-02", retiredDate: "2024-06-30" };
+  const before = { staffMemberId: 1, name: "서지안" } as unknown as Parameters<typeof withEmploymentHistory>[0];
+  assert.deepEqual(withEmploymentHistory(before), { staffMemberId: 1, name: "서지안", previousRecords: [], laterRecords: [] });
+  const after = { ...before, previousRecords: [period], laterRecords: [] } as Parameters<typeof withEmploymentHistory>[0];
+  assert.deepEqual(withEmploymentHistory(after).previousRecords, [period]);
 });

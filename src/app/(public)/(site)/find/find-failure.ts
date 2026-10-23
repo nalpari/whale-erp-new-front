@@ -1,9 +1,12 @@
 // 찾기 화면의 실패 판정. next/* 를 불러오지 않아 node --test 로 검사한다(find-failure.test.ts) —
 // lib/api.ts 는 next/headers 를 불러와 ApiError 를 instanceof 로 쓸 수 없어, 상태 코드 · 문구 · 이름 · 본문만 본다.
 
+import { EMAIL_FORMAT_ERROR } from "../../../../lib/email-format.ts";
+
 export const CONNECT_FAILED = "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요";
 export const THROTTLED = "요청이 많습니다. 잠시 뒤 다시 시도해 주세요";
-export const INVALID_INPUT = "입력한 이메일 형식을 확인해 주세요";
+// 이메일 칸이 있는 화면 모두 같은 형식 문구다(lib/email-format.ts)
+export const INVALID_INPUT = EMAIL_FORMAT_ERROR;
 // 일치 없음(404). 미사용 · 탈퇴 계정과만 맞아도 같은 문구다.
 export const LOGIN_ID_NOT_FOUND = "입력하신 정보와 일치하는 회원정보가 없습니다. 이름, 이메일 주소를 다시 확인해 주세요.";
 // 임시 비밀번호도 일치 여부를 알린다(2026-10-20 재영). 줄바꿈은 화면이 그대로 보인다(whitespace-pre-line).
@@ -49,8 +52,8 @@ export function failureOf(e: unknown, notFound: string): { message: string; log:
   // 일치 없음으로 보이면 사용자는 입력만 고치고 원인은 로그에도 남지 않는다.
   if (status === 404)
     return nestBodyOf(e, 404) && !message.startsWith("Cannot ") ? { message: notFound, log: false } : { message: CONNECT_FAILED, log: true };
-  // 칸 길이 · 필수는 폼이 막으므로 남는 400 은 이메일 형식이다. 브라우저 type="email" 은 a@b 를 통과시키지만 api @IsEmail 은
-  // 거절하고, 그 문구는 영어 기본값이다.
+  // 칸 길이 · 필수는 폼이 막으므로 남는 400 은 이메일 형식이다(그 문구는 영어 기본값). actions.ts 가 묻기 전에 같은 규칙
+  // (lib/email-format.ts)으로 먼저 보므로 거의 오지 않지만, 규칙이 어긋났을 때를 대비해 같은 문구로 둔다.
   if (status === 400) return { message: INVALID_INPUT, log: false };
   return { message: CONNECT_FAILED, log: true };
 }

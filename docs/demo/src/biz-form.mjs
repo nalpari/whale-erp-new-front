@@ -75,7 +75,7 @@ export function bizAuth(A, p, { start = "fold", values = ["", "", ""], input = v
         ui.field("사업자등록번호", ui.textField({ value: num, disabled: true })),
         ui.field("개업일자", ui.textField({ value: open, disabled: true })),
         ui.field("대표자명", ui.textField({ value: ceo })),
-      ) + help("대표자가 바뀌었을 때 새 이름으로 다시 확인합니다. 번호와 개업일자는 바꿀 수 없습니다.")
+      ) + help("대표자 변경 시 새 대표자명으로 재인증해야 합니다.<br>사업자등록번호와 개업일자는 수정할 수 없으며, 인증 실패 시 기존 정보가 유지됩니다.")
     : inline
       ? ui.formRow(
           // 회원가입(biz-auth-section.tsx)과 같은 placeholder로 맞췄다(2026-10-16 점검, inline 은 점포 등록 · 수정만 쓴다)
@@ -172,4 +172,26 @@ export const floorTable = (rows) =>
   `<template data-floor-row>${ui.tableRow(FLOOR_COLUMNS, floorRow())}</template>` +
   `<template data-floor-empty>${ui.tableEmptyRow(FLOOR_COLUMNS)}</template>` +
   `</div>`;
+
+// 사업자정보 인증 상자 — 앱의 공통 상자(src/components/site/biz-verification-box.tsx, manyfast S-VRNTHD 2026-10-22 사용자 확정)와
+// 같은 생김새. 회색 상자 안에 세 칸 → 버튼 → 안내. 형식 오류 · 중복은 칸 아래, 빈 칸 묶음 · 그 밖의 실패는 버튼 바로 위 한 줄이다.
+// 인증하면 세 칸을 잠그고(locked) [재인증]으로 연다. 점포는 인증 상태를 묶음 제목 배지(titleBadge)로 보이고 상자 머리를 두지 않는다.
+// row: 세 칸을 한 줄에(점포 등록 · 수정), 아니면 한 줄씩 쌓는다(슬라이드 패널). locked: 잠근 칸 이름 목록("num" · "ceo" · "open").
+// 사업자등록번호는 하이픈을 넣어 쳐도 받는다(12자, 저장은 숫자만).
+export const bizVerifyBox = (A, { id, values = ["", "", ""], locked = [], row = false, buttons, guide, hidden = false }) => {
+  const [num, ceo, open] = values;
+  const lock = (k) => locked.includes(k);
+  const cell = row ? "flex min-w-px flex-1 flex-col" : "flex flex-col";
+  const numField = ui.field("사업자등록번호", ui.textField({ value: num, placeholder: "숫자 10자리", inputmode: "numeric", ...(lock("num") ? { readonly: true } : {}) }));
+  const ceoField = ui.field("대표자명", ui.textField({ value: ceo, placeholder: "대표자 이름", maxlength: 50, ...(lock("ceo") ? { readonly: true } : {}) }));
+  const openField = lock("open") ? ui.field("개업일자", ui.textField({ value: open, readonly: true })) : group("개업일자", ui.dateField(A, { label: "개업일자", value: open }));
+  return (
+    `<section id="${id}" aria-label="사업자 번호 인증" class="flex flex-col gap-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[18px]"${hidden ? " hidden" : ""}>` +
+    `<div class="${row ? "flex gap-[6px]" : "flex flex-col gap-[12px]"}"><div class="${cell}">${numField}</div><div class="${cell}">${ceoField}</div><div class="${cell}">${openField}</div></div>` +
+    `<div class="flex gap-[6px]">${buttons}</div>` +
+    `<p class="text-[13px] leading-[1.5] text-erp-label">${guide}</p>` +
+    `</section>`
+  );
+};
+export const BIZ_GUIDE = "사업자정보가 국세청에 등록된 정보와 일치하는지 확인합니다.";
 

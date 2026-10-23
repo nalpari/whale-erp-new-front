@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useState, useTransition, type ReactNode } from "react";
 import { Button, DataTable, DetailTable, DetailValues, PageBar, type Column } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
+import { useCurrentBp } from "@/components/site/session-gate";
 import { bff, BffError } from "@/lib/bff";
+import { bpPath } from "@/lib/bp-path";
 import type { SupportInquiry, SupportNotice } from "@/lib/community";
 import { SESSION_EXPIRED, sizeLabel, SUPPORT_INQUIRY_BASE, SUPPORT_NOTICE_BASE, type InquiryStatus } from "@/lib/community-view";
 import { labelOf, type EnumValue } from "@/lib/enums";
@@ -13,6 +15,7 @@ import { InquiryStatusBadge } from "./support-lists";
 
 // 고객지원 상세 둘 — 공지사항(#282, 데모 support/notice-detail)과 내 문의(#284, 데모 support/inquiry-mine).
 // 노출 대상 · 이력 · 내부 메모 · 이전 답변 · 운영자는 api 가 싣지 않는다(CNT-17). 첨부는 누를 때마다 5분짜리 서명 주소를 새로 받는다.
+// 화면 안 링크(목록 · 이전 · 다음)는 탭 BP 를 붙인다(bpPath, front #82). 첨부 주소는 api 경로라 bff() 가 BP 를 싣는다.
 
 const Prose = ({ children }: { children: ReactNode }) => <p className="text-[14px] leading-[1.7] whitespace-pre-wrap break-keep text-erp-ink">{children}</p>;
 const Meta = ({ children }: { children: ReactNode }) => <span className="text-[13px] text-erp-label">{children}</span>;
@@ -75,11 +78,12 @@ function useDownload() {
 
 export function SupportNoticeView({ notice: n, noticeTypes }: { notice: SupportNotice; noticeTypes: EnumValue[] }) {
   const { error, busy, download } = useDownload();
+  const bp = useCurrentBp().bpCodeId;
   const neighbor = (p: SupportNotice["prev"], none: string) =>
     p ? (
       <DetailValues
         items={[
-          <Link key="t" href={`${SUPPORT_NOTICE_BASE}/${p.postId}`} className="truncate text-erp-link hover:underline">
+          <Link key="t" href={bpPath(bp, `${SUPPORT_NOTICE_BASE}/${p.postId}`)} className="truncate text-erp-link hover:underline">
             {p.title}
           </Link>,
           <Meta key="d">{p.postedDate}</Meta>,
@@ -89,7 +93,7 @@ export function SupportNoticeView({ notice: n, noticeTypes }: { notice: SupportN
       <Sub>{none}</Sub>
     );
   return (
-    <Frame menu="공지사항" title="공지사항 상세" listHref={SUPPORT_NOTICE_BASE} error={error}>
+    <Frame menu="공지사항" title="공지사항 상세" listHref={bpPath(bp, SUPPORT_NOTICE_BASE)} error={error}>
       <Box title={n.title} hint={[n.noticeType && labelOf(noticeTypes, n.noticeType), n.postedDate].filter(Boolean).join(" · ")}>
         {/* 본문은 평문이다 — HTML 로 그리지 않는다. */}
         <Prose>{n.body}</Prose>
@@ -130,6 +134,7 @@ type Step = [string, InquiryStatus];
 export function MyInquiryView({ inquiry: d, statuses }: { inquiry: SupportInquiry; statuses: EnumValue[] }) {
   const categoryLabel = useCodeLabel("INQUIRY_CATEGORY");
   const { error, busy, download } = useDownload();
+  const bp = useCurrentBp().bpCodeId;
   // 진행 — 최근 것부터. 처리중을 거치지 않고 답했으면 그 줄이 없다.
   const steps: Step[] = [
     ...(d.reply ? [[formatDateTime(d.reply.repliedAt), "ANSWERED"] as Step] : []),
@@ -142,7 +147,7 @@ export function MyInquiryView({ inquiry: d, statuses }: { inquiry: SupportInquir
   ];
 
   return (
-    <Frame menu="문의하기" title="문의사항 상세" listHref={SUPPORT_INQUIRY_BASE} error={error}>
+    <Frame menu="문의하기" title="문의사항 상세" listHref={bpPath(bp, SUPPORT_INQUIRY_BASE)} error={error}>
       <div className="grid grid-cols-[7fr_5fr] items-start gap-[24px]">
         <div className="flex min-w-0 flex-col gap-[24px]">
           <Box title={d.title} hint={`${formatDateTime(d.createdAt)} · ${categoryLabel(d.inquiryCategoryCode)}`}>

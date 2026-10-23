@@ -8,7 +8,7 @@ import { NoticeBand } from "./store-parts";
 // 점포 목록 엑셀 바로 받기(S-BAYAJS). 버튼은 툴바에, 안내 띠는 목록 위에 서므로 둘이 상태를 나눠 쓴다(목업 docs/mockup/stores 의
 // 「엑셀 생성 중 · 1분 제한 · 1만 건 이상 · 실패」). 받는 동안 버튼이 「파일 만드는 중 · N%」로 바뀌고 잠긴다 — api 가 파일을 다 만든
 // 뒤에야 보내기 시작하므로, 만드는 동안은 비율 없이 「파일 만드는 중」이고 받기 시작하면 받은 비율이 붙는다.
-// 파일은 front 중계 경로(/stores/excel)가 토큰을 붙여 api 에서 받아 흘려준다. 1만 건 이상의 예약 생성(이메일 링크)은 api 에 아직 없다.
+// 파일은 front 중계 경로(/bp/{id}/stores/excel)가 토큰을 붙여 api 에서 받아 흘려준다. 1만 건 이상의 예약 생성(이메일 링크)은 api 에 아직 없다.
 
 type Notice = { tone: "risk" | "info"; title: string; detail?: string };
 /** 받기 단계 — 쉬는 중 · 만드는 중(api 가 아직 보내기 전이라 비율을 모름) · 받는 중(받은 비율, 크기를 모르면 null) */

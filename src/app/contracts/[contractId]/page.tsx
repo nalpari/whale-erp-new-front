@@ -4,6 +4,7 @@ import { Button, DataTable, DetailTable, DetailValues, PageBar } from "@/compone
 import { ApiError, authHeaders, getEnum, request } from "@/lib/api";
 import { labelOf } from "@/lib/enums";
 import { StatusBadge } from "../columns";
+import { backHrefOf, withBack } from "../contract-list";
 import { ContractPermission } from "../contract-permission";
 import { formatPhone, type ContractDetail } from "../new/contract-form-model";
 import { documentNoticeOf } from "./document-notice";
@@ -66,7 +67,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
     // 버튼은 근로계약 관리 메뉴 권한으로 가린다 — 이어 쓰기는 작성(api 가 임시저장 이어 쓰기 저장에 작성 권한을 본다), 재발송 · 수정은 수정(WHALEERP-592)
     status === "DRAFT" ? (
       <ContractPermission action="create">
-        <Button variant="soft" href={`/contracts/${contractId}/edit`}>
+        <Button variant="soft" href={withBack(`/contracts/${contractId}/edit`, query.back)}>
           이어 쓰기
         </Button>
       </ContractPermission>
@@ -74,13 +75,13 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
       <>
         {(status === "PENDING_SEND" || status === "PENDING_SIGNATURE") && (
           <ContractPermission action="update">
-            <SendContractButton contractId={contractId} status={status} />
+            <SendContractButton contractId={contractId} status={status} name={c?.name ?? null} back={backHrefOf(query.back)} />
           </ContractPermission>
         )}
         {/* 직원이 수정을 요청했다 — 계약서 전체를 고치면 곧바로 서명 대기로 다시 보낸다(WHALEERP-125 · 126) */}
         {status === "CORRECTION_REQUESTED" && (
           <ContractPermission action="update">
-            <Button variant="soft" href={`/contracts/${contractId}/edit`}>
+            <Button variant="soft" href={withBack(`/contracts/${contractId}/edit`, query.back)}>
               수정
             </Button>
           </ContractPermission>
@@ -88,7 +89,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
         {/* 날인 전 당사자 정보(이름 · 번호 · 생년월일 · 성별 · 외국인 여부) — 본인 대조 값. 저장하면 다시 보낸다 */}
         {(status === "PENDING_SEND" || status === "PENDING_SIGNATURE") && (
           <ContractPermission action="update">
-            <Button variant="soft" href={`/contracts/${contractId}/worker`}>
+            <Button variant="soft" href={withBack(`/contracts/${contractId}/worker`, query.back)}>
               수정
             </Button>
           </ContractPermission>
@@ -186,7 +187,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
             <div className="flex items-center gap-[6px]">
               <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">근로계약 상세</h2>
               {buttons}
-              <Button href="/contracts">목록</Button>
+              <Button href={backHrefOf(query.back)}>목록</Button>
             </div>
             {sendNotice && (
               <p role="alert" className="rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] font-semibold text-erp-off">

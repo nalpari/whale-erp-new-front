@@ -24,7 +24,11 @@ test("연락처 — 숫자 10~11자리", () => {
 test("이메일 — 형식과 100자", () => {
   assert.equal(validateMyProfileForm({ ...filled, email: "" }).email, "이메일을 입력해 주세요.");
   assert.ok(validateMyProfileForm({ ...filled, email: "not-an-email" }).email);
-  assert.ok(validateMyProfileForm({ ...filled, email: `${"a".repeat(95)}@a.com` }).email, "100자 초과");
+  // @ 앞은 api 가 64바이트까지만 받아 도메인을 늘려 잰다
+  assert.equal(validateMyProfileForm({ ...filled, email: `${"a".repeat(60)}@${"b".repeat(35)}.com` }).email, undefined, "100자");
+  assert.ok(validateMyProfileForm({ ...filled, email: `${"a".repeat(60)}@${"b".repeat(36)}.com` }).email, "100자 초과");
+  // api @IsEmail 이 막는 값(규칙 자체는 email-format.test.ts)
+  for (const bad of ["seojun@whale.c", "seojun@whale.co,"]) assert.equal(validateMyProfileForm({ ...filled, email: bad }).email, "이메일 형식이 올바르지 않습니다.", bad);
 });
 
 test("splitPhone — 숫자만 세 칸으로, 02는 두 자리", () => {

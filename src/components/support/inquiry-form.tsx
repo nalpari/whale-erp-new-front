@@ -3,8 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState, type ReactNode, type RefObject } from "react";
 import { Button, Field, FormGroup, Select, SlidePanel, Textarea, TextField, useToast } from "@/components/common";
-import { useCodes } from "@/components/site/session-gate";
+import { useCodes, useCurrentBp } from "@/components/site/session-gate";
 import { PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
+import { bpPath } from "@/lib/bp-path";
 import { BODY_MAX, FILE_ACCEPT, MAX_ATTACHMENTS, PASSWORD_REQUIRED_PREFIX, pickInquiryFiles, SESSION_EXPIRED, sizeLabel, TITLE_MAX } from "@/lib/community-view";
 import { INQUIRY_SAVE_ROUTE } from "@/lib/paper-request";
 
@@ -23,6 +24,7 @@ export function InquiryFormPanel({ id, open, onClose, trigger }: { id: string; o
   const router = useRouter();
   const toast = useToast();
   const categories = useCodes("INQUIRY_CATEGORY");
+  const bp = useCurrentBp().bpCodeId;
   const [form, setForm] = useState<Form>(EMPTY);
   /** key 는 같은 이름 파일을 둘 올려도 줄을 가르려고 붙인다. */
   const [files, setFiles] = useState<{ key: number; file: File }[]>([]);
@@ -53,7 +55,8 @@ export function InquiryFormPanel({ id, open, onClose, trigger }: { id: string; o
     for (const { file } of files) data.append("files", file);
     setSaving(true);
     try {
-      const res = await fetch(INQUIRY_SAVE_ROUTE, { method: "POST", body: data });
+      // 창구 주소에도 탭 BP 를 붙인다 — proxy 가 떼어 이 핸들러로 보내며 X-Bp-Code-Id 를 싣는다(front #82).
+      const res = await fetch(bpPath(bp, INQUIRY_SAVE_ROUTE), { method: "POST", body: data });
       const body = (await res.json().catch(() => null)) as { messages?: string[]; registered?: boolean } | null;
       // 등록은 됐는데 결과만 못 읽었으면(registered) 성공처럼 칸을 비우고 닫는다 — 남겨 두면 다시 눌러 같은 문의가 또 생긴다.
       if (!res.ok && !body?.registered) {
