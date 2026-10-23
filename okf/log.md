@@ -1,6 +1,8 @@
 # Bundle history
 
 ## 2026-10-23
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — main 병합(front marowak, main #122 까지): 재직 이력 링크를 main(#120)의 `?back=` 방식으로 바꿨다 — [목록] 주소(`detailListHrefOf`)를 `back=` 으로 싣고 근무스케줄 주 `week` 를 이어 단다(`historySearch`, #119 리뷰 블로커). okf 충돌은 양쪽 기록을 살렸다.
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 직원 상세 기본 정보의 퇴직일 줄(재직 중이면 입사일 줄) 아래에 「재직 이력」(재입사로 이은 이전 재직 기간) · 「이후 재입사」 줄을 두었다(WHALEERP-615, 목업 staff/detail.html). 기간은 「입사일 ~ 퇴직일」이고 누르면 그 레코드의 상세로 간다. api 타입을 api main(#136 머지 f7aebab) 기준으로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front kingdra, main #123 까지): okf/log 충돌은 양쪽 기록을 살렸고, 데모 html 은 main 것을 받아 다시 빌드했다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front kingdra, main #121 까지): okf 충돌은 양쪽 기록을 살리고 generated.at 만 새로 썼다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [로그인](/auth.md) — 이메일 형식 문구를 다섯 화면 모두 「이메일 형식이 올바르지 않습니다.」 하나로 맞췄다(`EMAIL_FORMAT_ERROR`, 사용자 결정). 플랫폼 관리자 · MY PAGE 는 저장 때 api 형식 400 도 이 문구로 보인다.
