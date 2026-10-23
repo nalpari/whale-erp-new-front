@@ -9,7 +9,7 @@ export const LOGIN_ID_PATTERN = /^(?=.*[A-Za-z])[A-Za-z0-9]{4,20}$/;
 export const NAME_PATTERN = /^[가-힣A-Za-z ]{2,20}$/;
 /** 연락처 — 하이픈 없이 숫자 10~11자리. */
 export const PHONE_PATTERN = /^[0-9]{10,11}$/;
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** 입력칸 값 그대로. 연락처는 세 칸, 권한은 select 값(문자열)이다. */
 export type AdminForm = {

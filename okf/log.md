@@ -1,6 +1,8 @@
 # Bundle history
 
 ## 2026-10-23
+* **Update**: [BP 환경설정](/config.md) — BP 관리자 등록·수정의 점포 고르기 후보에서 고를 수 없는 점포를 뺐다: 폐점과(가맹 마스터면) 다른 가맹 마스터 담당은 흐리게 보이지 않고 아예 나오지 않는다(사용자 결정 — 흐리게는 상단 점포 선택·목록 필터 쪽). api `store-options` 도 그렇게 바뀌어 `isSelectable` · `assignedFranchiseMaster` 가 없어졌다. `StoreMappingPicker` 의 `lock`, 목업 후보의 담당 · 폐점 항목, 화면정의서 · 데모 문구를 함께 고쳤다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [BP 환경설정](/config.md) — BP 관리자 관리 화면 1단계(BP 마스터 · BP 관리자 · 플랫폼 사용자 · 본인 계정)를 넣었다: 탭 BP 주소 `/bp/{bpCodeId}/bp-admins`(`BP_PATH_SCREENS`), 필터 · 목록 · 상세 · 등록 · 수정 슬라이드 패널, 대상 점포 고르기 `StoreMappingPicker`. api `/bp-admins` 가 머지되기 전이라 타입은 작업 지시서대로 손으로 적었다. 플랫폼 관리자 이력 팝업은 받는 서버 액션을 `load` 로 받게 바꿔 함께 쓴다. config 의 화면 주소를 구현 주소로 고쳤다.
 * **Update**: [BP 환경설정](/config.md) — BP 관리자 관리 정책 네 가지를 정했다(api 작업 전 확인): 가맹 마스터 · 가맹 관리자도 본인 계정을 본다, 새로 매핑할 점포는 미운영 · 운영만(폐점은 후보에 흐리게), 가맹 마스터 점포를 빼면 연결 가맹 관리자의 그 점포 매핑도 빠진다(0곳이어도 상태 그대로), 연쇄로 바뀐 가맹 관리자 이력의 처리자는 저장한 사람이고 값에 이유를 붙인다. 목업 · 화면정의서 · 데모도 맞췄다.
 * **Update**: [BP 환경설정](/config.md) — BP 관리자 목록의 「새 계정」 배지를 뺐고(데모에 없음), 가맹 관리자 상세 기본정보에 연결 가맹 마스터 줄을 더했다. 목업 `config/admins.html` · `admins-detail.html` 과 화면정의서도 같이 고쳤다.
 
