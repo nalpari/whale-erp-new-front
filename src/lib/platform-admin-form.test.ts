@@ -4,6 +4,7 @@ import { test } from "node:test";
 import type { PlatformAdminDetail } from "./platform-admins";
 import {
   EMPTY_FORM,
+  emailError,
   formOf,
   loginIdError,
   serverErrorField,
@@ -41,6 +42,12 @@ test("칸을 벗어날 때의 아이디 형식 검사 — 앞뒤 공백은 빼�
   assert.equal(loginIdError(" seojun01 "), undefined);
   assert.equal(loginIdError(""), "아이디를 입력해 주세요.");
   assert.equal(loginIdError("1234"), "아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다.");
+});
+
+test("칸을 벗어날 때의 이메일 형식 검사 — 앞뒤 공백은 빼고 본다", () => {
+  assert.equal(emailError("  a@b.co  "), undefined);
+  assert.equal(emailError(" "), "이메일을 입력해 주세요.");
+  assert.ok(emailError("seojun@"));
 });
 
 test("필수 칸 — 이름 · 연락처 · 이메일 · 사용자 권한", () => {
@@ -123,6 +130,7 @@ test("api 오류를 붙일 칸 — 400 · 409 의 아이디 · 이메일만, 수
   assert.equal(serverErrorField(409, taken, "create"), "loginId");
   assert.equal(serverErrorField(409, taken, "edit"), null);
   assert.equal(serverErrorField(409, "이미 다른 관리자 계정에 등록된 이메일입니다", "edit"), "email");
+  assert.equal(serverErrorField(409, "이미 다른 관리자 계정에 등록된 이메일입니다", "create"), "email");
   assert.equal(serverErrorField(409, "아이디 또는 이메일이 방금 다른 계정에 등록되었습니다", "create"), null);
   assert.equal(serverErrorField(403, "아이디 …", "create"), null);
   assert.equal(serverErrorField(undefined, "아이디 …", "create"), null);

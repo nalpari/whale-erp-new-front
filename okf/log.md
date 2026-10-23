@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-23
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 등록 · 수정 패널: 저장 때 api 가 칸에 붙인 중복 오류는 그 칸을 고칠 때까지 남기고, 저장이 거절되면 사용 가능 · 올바른 형식 표시를 내린다(front #61 머지 블로커 반영).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front #61 magikarp, main #113 까지): okf 충돌은 main 서술 위에 플랫폼 관리자 줄의 아이디 · 이메일 즉시 확인 서술만 다시 얹어 풀었다. 데모 html 은 main 것을 받아 다시 빌드했다.
 
 ## 2026-10-22

@@ -54,14 +54,20 @@ export function AdminFormPanel(props: Props) {
   const [form, setForm] = useState<AdminForm>(initialForm);
   const [errors, setErrors] = useState<Partial<Record<AdminFormField, string>>>({});
   const [failure, setFailure] = useState<string | null>(null);
-  /** 아이디 중복 확인 차례 — 고치거나 다시 물으면(패널을 다시 열어도) 올라가, 앞선 답을 버린다 */
+  /** 아이디 중복 확인 차례 — 고치거나 다시 물으면(패널을 다시 열거나 새로 받거나, 저장이 거절되어도) 올라가, 앞선 답을 버린다 */
   const checkNumber = useRef(0);
-  /** 중복확인 대기·성공 상태(코드 리뷰 반영) — 오류는 기존대로 errors.loginId 에 둔다 */
+  /** 중복확인 대기 · 성공 상태. 오류는 errors.loginId(서버의 답이면 serverErrors.loginId 에도)에 둔다 */
   const [checkingLoginId, setCheckingLoginId] = useState(false);
   const [loginIdAvailable, setLoginIdAvailable] = useState(false);
   /** 이메일 형식 확인 성공 — api 호출이 없어 아이디처럼 확인 중 차례를 둘 필요가 없다. 오류는 errors.email 에 둔다. */
   const [emailValid, setEmailValid] = useState(false);
-  /** 칸을 되돌릴 때마다 올라간다 — 아래 effect 가 이 값을 보고 중복확인 상태 · 차례를 함께 되돌린다 */
+  /**
+   * 서버가 칸에 붙인 오류 — 저장 때 받은 아이디 · 이메일 중복과, 아이디 중복확인의 「사용 중」 · 400 답.
+   * 그 칸을 고칠 때까지 남긴다 — 다시 저장하거나 같은 값을
+   * 다시 확인하는 것으로 지워지면, 서버가 방금 거절한 값 아래에 "사용 가능" 같은 성공 문구가 다시 보인다.
+   */
+  const [serverErrors, setServerErrors] = useState<Partial<Record<AdminFormField, string>>>({});
+  /** 칸을 되돌릴 때마다 올라간다 — 아래 layout effect 가 이 값을 보고 중복확인 차례(ref)를 올린다. 상태는 그리는 중에 지운다 */
   const [resetSignal, setResetSignal] = useState(0);
 
   // 열 때마다(취소한 입력을 남기지 않는다) · 최신 정보를 다시 받았을 때(동시 수정 409 뒤) 칸을 새로 채운다.
@@ -77,11 +83,12 @@ export function AdminFormPanel(props: Props) {
     if (reopened || filledFor.updatedAt !== updatedAt) {
       setForm(initialForm());
       setErrors({});
+      setServerErrors({});
       // 최신 정보만 새로 받은 때는 띠를 남긴다 — 결과를 모른 채 새로 받은 경우 그 안내가 사라지면 안 된다
       if (reopened) setFailure(null);
-      // 아이디 중복확인 상태도 같이 되돌린다 — 안 그러면 되돌린 빈 칸에 이전에 확인했던 "사용 가능한 아이디입니다"가
+      // 아이디 · 이메일 확인 표시도 같이 되돌린다 — 안 그러면 되돌린 빈 칸에 이전에 확인했던 "사용 가능한 아이디입니다"가
       // 그대로 남는다. 닫는 사이 떠 있던 요청이 늦게 도착해 새로 연 칸에 옛 결과를 칠하는 것은 ref 차례로 막는데,
-      // ref 는 그리는 중에 건드릴 수 없어(react-hooks/refs) 아래 effect 에서만 차례를 올린다.
+      // ref 는 그리는 중에 건드릴 수 없어(react-hooks/refs) 되돌릴 때의 차례는 아래 effect 가 올린다.
       setCheckingLoginId(false);
       setLoginIdAvailable(false);
       setEmailValid(false);
@@ -99,10 +106,13 @@ export function AdminFormPanel(props: Props) {
 
   const ids = useId();
   // 칸을 고치면 그 칸의 오류는 바로 지운다
-  const clearError = (key: AdminFormField) => setErrors((e) => (key in e ? Object.fromEntries(Object.entries(e).filter(([k]) => k !== key)) : e));
+  const without = (key: AdminFormField) => (e: Partial<Record<AdminFormField, string>>) =>
+    key in e ? Object.fromEntries(Object.entries(e).filter(([k]) => k !== key)) : e;
+  const clearError = (key: AdminFormField) => setErrors(without(key));
   const set = <K extends keyof AdminForm>(key: K, value: AdminForm[K]) => {
     setForm((f) => ({ ...f, [key]: value }));
     clearError(key as AdminFormField);
+    setServerErrors(without(key as AdminFormField));
   };
   const invalid = (key: AdminFormField) => (errors[key] ? true : undefined);
   /** 칸 아래 오류 문구의 id — 입력칸이 aria-describedby 로 가리킨다 */
@@ -116,20 +126,31 @@ export function AdminFormPanel(props: Props) {
 
   /** api 가 거절한 이유가 한 칸의 것이면(아이디 · 이메일 중복 등) 그 칸 아래에 붙인다. 아니면 위 띠로. */
   const applyServerError = (status: number | undefined, message: string) => {
+    // 저장이 거절되면 앞서 받은 성공 표시(사용 가능 · 올바른 형식)를 내린다 — 「아이디 또는 이메일」처럼 칸을 가를 수
+    // 없는 중복은 띠로만 가서, 남겨 두면 띠는 중복이라는데 칸 아래는 "사용 가능"이라고 한다. 떠 있던 확인 답도 버린다.
+    checkNumber.current++;
+    setCheckingLoginId(false);
+    setLoginIdAvailable(false);
+    setEmailValid(false);
     const field = serverErrorField(status, message, mode);
     if (!field) return setFailure(message);
+    setServerErrors((e) => ({ ...e, [field]: message }));
     setErrors((e) => ({ ...e, [field]: message }));
     focusFirstError();
   };
 
   /**
    * 아이디 중복 확인(등록만) — 칸을 벗어나거나 Enter 를 칠 때. 형식이 틀리면 api 에 묻지 않고 형식 문구를 단다.
-   * 비어 있으면 저장할 때 알린다. 묻는 사이 아이디를 고쳤으면 늦게 온 답은 버린다.
-   * 400(형식)이면 그 문구를 칸 아래에, 401(로그인 만료)이면 위 띠로 바로 알린다 — 다 채운 뒤에야 알면 늦다.
+   * 비어 있으면 저장할 때 알린다. 서버가 거절한 값(저장 때 중복 · 확인 때 「사용 중」 · 400)을 고치지 않았으면 다시 묻지 않는다.
+   * 묻는 사이 아이디를 고치거나 · 패널을 되돌리거나 · 저장이 거절되면 늦게 온 답은 버린다.
+   * 400(형식)이면 그 문구를 칸 아래에(고칠 때까지 남긴다), 401(로그인 만료)이면 위 띠로 바로 알린다 — 다 채운 뒤에야 알면 늦다.
    * 그 밖(403 · 5xx · 연결 실패)은 칸에 아무것도 달지 않고 넘어간다 — 저장할 때 api 가 다시 본다. 원인은 콘솔에 남긴다.
    */
   const checkLoginId = (value: string) => {
     if (mode !== "create" || !value.trim()) return;
+    // 서버가 거절한 값을 고치지 않고 다시 벗어난 것이면 묻지 않는다 — 아래에서 그 오류를 먼저 지우므로,
+    // 확인이 실패하면(403 · 5xx · 연결) 칸이 아무 표시 없이 정상처럼 보인다(이메일의 errors.email 확인과 같은 취지).
+    if (serverErrors.loginId) return;
     const formatError = loginIdError(value);
     if (formatError) {
       setErrors((e) => ({ ...e, loginId: formatError }));
@@ -138,6 +159,7 @@ export function AdminFormPanel(props: Props) {
     const mine = ++checkNumber.current;
     // 같은 값을 다시 물을 때(Enter 재확인 등, 칸을 고치지 않아 onChange 의 초기화를 타지 않는다)도 앞서 달렸던
     // 오류를 지운다 — 안 그러면 묻는 동안에도 "확인 중입니다." 대신 옛 오류 문구가 그대로 보인다.
+    // 서버가 거절한 값은 위에서 이미 돌려보냈으므로, 여기서 지워지는 것은 그 밖의 칸 오류뿐이다.
     clearError("loginId");
     setLoginIdAvailable(false);
     setCheckingLoginId(true);
@@ -147,8 +169,15 @@ export function AdminFormPanel(props: Props) {
         setCheckingLoginId(false);
         if (result.ok) {
           if (result.available) setLoginIdAvailable(true);
-          else setErrors((e) => ({ ...e, loginId: LOGIN_ID_TAKEN }));
-        } else if (result.status === 400) setErrors((e) => ({ ...e, loginId: result.message }));
+          else {
+            // 확인에서 받은 「사용 중」도 서버의 답이다 — 저장 때 받은 중복처럼 아이디를 고칠 때까지 남긴다
+            setServerErrors((e) => ({ ...e, loginId: LOGIN_ID_TAKEN }));
+            setErrors((e) => ({ ...e, loginId: LOGIN_ID_TAKEN }));
+          }
+        } else if (result.status === 400) {
+          setServerErrors((e) => ({ ...e, loginId: result.message }));
+          setErrors((e) => ({ ...e, loginId: result.message }));
+        }
         else if (result.status === 401) setFailure(result.message);
         else console.warn("아이디 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다", result.status, result.message);
       })
@@ -160,8 +189,8 @@ export function AdminFormPanel(props: Props) {
   };
 
   /**
-   * 이메일 형식 즉시 확인(등록 · 수정 모두) — 칸을 벗어날 때. 아이디와 달리 바로 물어볼 중복확인 API 가 없어
-   * (등록 시점에만 api 가 409 로 막는다) 형식만 본다 — 그래서 확인 중 차례나 네트워크 호출이 없다.
+   * 이메일 형식 즉시 확인(등록 · 수정 모두) — 칸을 벗어나거나 Enter 를 칠 때. 아이디와 달리 바로 물어볼 중복확인 API 가 없어
+   * (중복은 저장할 때 — 등록 · 수정 모두 — api 가 409 로 막는다) 형식만 본다 — 그래서 확인 중 차례나 네트워크 호출이 없다.
    */
   const checkEmail = (value: string) => {
     if (!value.trim()) return;
@@ -183,7 +212,8 @@ export function AdminFormPanel(props: Props) {
 
   const handleSave = () => {
     const found = validateAdminForm(form, mode);
-    setErrors(found);
+    // 고치지 않은 칸의 서버 오류는 남긴다(입력 검사 문구가 있으면 그쪽이 앞선다). 저장은 막지 않고 api 가 다시 본다.
+    setErrors({ ...serverErrors, ...found });
     setFailure(null);
     if (Object.keys(found).length) return focusFirstError();
 

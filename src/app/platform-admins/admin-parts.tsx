@@ -38,7 +38,7 @@ export function FieldMessage({ id, message }: { id: string; message?: string }) 
   );
 }
 
-/** address-field.tsx 의 확인 완료 체크 표시와 같은 모양 — LoginIdAvailability · EmailFormatValid 가 같이 쓴다. */
+/** 확인 완료 체크 표시(테두리만 그린 원) — LoginIdAvailability · EmailFormatValid 가 같이 쓴다. */
 function CheckIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -49,8 +49,8 @@ function CheckIcon() {
 }
 
 /**
- * 아이디 중복확인 세 상태 — 확인 중(address-field.tsx의 "찾는 중입니다." 와 같은 회색 대기 문구) · 사용 가능
- * (signup-form.tsx 의 체크 표시 + 파란 문구와 같은 모양, ERP 토큰 erp-on 으로 맞춘다) · 오류(FieldMessage 그대로).
+ * 아이디 중복확인 세 상태 — 확인 중(회색 대기 문구, erp-label) · 사용 가능(체크 표시 + 파란 문구 —
+ * signup-form.tsx 의 성공 표시와 같은 색, ERP 토큰 erp-on) · 오류(FieldMessage 그대로).
  * 대기·성공은 조용히 사라지는 정보라 aria-live="polite" 로만 알리고(막는 오류가 아니므로 role=alert 는 쓰지 않는다).
  */
 export function LoginIdAvailability({ id, checking, available, message }: { id: string; checking: boolean; available: boolean; message?: string }) {
@@ -71,7 +71,7 @@ export function LoginIdAvailability({ id, checking, available, message }: { id: 
 }
 
 /**
- * 이메일 형식 즉시 확인 — 아이디처럼 바로 물어볼 중복확인 API 가 없어(등록 시점에만 api 가 409 로 막는다) 형식만 본다.
+ * 이메일 형식 즉시 확인 — 아이디처럼 바로 물어볼 중복확인 API 가 없어(중복은 저장할 때 api 가 409 로 막는다) 형식만 본다.
  * 그래서 "사용 가능"이라 하지 않고 "형식이 올바르다"고만 말한다 — 중복 여부는 저장해야 알 수 있다.
  */
 export function EmailFormatValid({ id, valid, message }: { id: string; valid: boolean; message?: string }) {

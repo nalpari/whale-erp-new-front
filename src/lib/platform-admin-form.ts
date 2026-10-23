@@ -76,8 +76,8 @@ export function loginIdError(loginId: string): string | undefined {
 }
 
 /**
- * 이메일 형식 오류 문구. 맞으면 undefined. 저장할 때와 칸을 벗어날 때 같이 쓴다.
- * 아이디처럼 중복을 바로 물어볼 API 가 없어(등록 시점에만 api 가 409 로 막는다) 형식만 본다.
+ * 이메일 형식 오류 문구. 맞으면 undefined. 저장할 때와 칸을 벗어나거나 Enter 를 칠 때 같이 쓴다.
+ * 아이디처럼 중복을 바로 물어볼 API 가 없어(중복은 저장할 때 — 등록 · 수정 모두 — api 가 409 로 막는다) 형식만 본다.
  */
 export function emailError(email: string): string | undefined {
   const value = email.trim();
