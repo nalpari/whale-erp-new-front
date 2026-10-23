@@ -110,6 +110,7 @@ test("verifyFormOf — 저장된 값으로 칸을 채우고(재인증도 이 칸
     bizCeoName: "남도현",
     bizOpenDate: "2021-03-15",
     verification: null,
+    pendingClear: false,
   });
   assert.deepEqual(verifyFormOf(unverified), {
     savedBizNumber: "",
@@ -120,6 +121,7 @@ test("verifyFormOf — 저장된 값으로 칸을 채우고(재인증도 이 칸
     bizCeoName: "",
     bizOpenDate: "",
     verification: null,
+    pendingClear: false,
   });
 });
 
@@ -282,6 +284,25 @@ test("hasUnverifiedChange — 인증 없이 칸만 고쳤으면 참. 저장된 �
   assert.equal(hasUnverifiedChange(verified), false);
   const revertedToSaved: VerifyForm = { ...base, bizCeoName: "새대표", bizRegistrationNumber: base.savedBizNumber, bizOpenDate: base.savedOpenDate };
   assert.equal(hasUnverifiedChange({ ...revertedToSaved, bizCeoName: base.savedCeoName }), false);
+});
+
+test("hasUnverifiedChange — pendingClear(사용안함)면 칸이 비어도 거짓이다 — 지우겠다는 의도적인 선택이라 인증을 요구하지 않는다", () => {
+  const base = verifyFormOf(profile);
+  const clearing: VerifyForm = { ...base, bizRegistrationNumber: "", bizCeoName: "", bizOpenDate: "", pendingClear: true };
+  assert.equal(hasUnverifiedChange(clearing), false);
+});
+
+test("toUpdateBpProfileInput — pendingClear(사용안함)면 clearBusinessVerification 을 싣고 businessVerificationToken 은 싣지 않는다", () => {
+  const verifyForm: VerifyForm = {
+    ...verifyFormOf(profile),
+    bizRegistrationNumber: "",
+    bizCeoName: "",
+    bizOpenDate: "",
+    pendingClear: true,
+  };
+  const input = toUpdateBpProfileInput(emptyForm, "2026-01-01T00:00:00.000Z", "", "", verifyForm);
+  assert.equal(input.clearBusinessVerification, true);
+  assert.equal("businessVerificationToken" in input, false);
 });
 
 test("serverErrorField — 상호명 · 연락처 · 이메일 · 업태 · 종목 문구만 그 칸, 나머지는 띠", () => {

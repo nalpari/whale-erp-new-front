@@ -39,6 +39,9 @@ export type UpdateBpProfileInput = {
    * 개업일자와 인증일시를 이 저장과 같은 트랜잭션에서 반영한다 — 점포 사업자정보와 같은 패턴(2026-10-22
    * 사용자 결정). 비우면 세 값은 그대로 둔다. */
   businessVerificationToken?: string;
+  /** true 면 사업자등록번호 · 대표자명 · 개업일자 · 인증일시를 전부 지운다 — 점포와 달리 BP 자신은
+   * 지울 수 있다(2026-10-23 사용자 결정). businessVerificationToken 과 함께 보낼 수 없다(api 400). */
+  clearBusinessVerification?: boolean;
 };
 
 export type VerifyBpBusinessInput = {

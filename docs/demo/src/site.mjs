@@ -124,34 +124,73 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
       save,
     );
 
-  // 사업자 번호 인증 칸은 접지 않는다 — 늘 펼쳐 있다(2026-10-22 사용자 지정). 순서는 상호명 → 사업자 번호
-  // 인증 → 대표자 연락처 · 이메일(기본정보와 동일 체크박스) → 사업장 주소 → 업태 · 종목.
+  // 사업자정보 인증 상자 — 네 화면 공통 컴포넌트(BizVerificationBox, S-VRNTHD)를 그대로 옮긴 모양이다.
+  // 상자 머리(「사업자정보」 · 인증 상태)까지 같은 회색 박스 안에 있다(2026-10-23 — 전엔 제목 줄과 본문을
+  // 따로 두었는데, 공통 상자로 옮기며 하나가 됐다). 세 칸은 한 줄에 나란히 두되 값 길이에 맞춰 폭을
+  // 다르게 준다 — 사업자등록번호(하이픈 넣어 최대 12자)·개업일자(입력칸 안 달력 아이콘까지 있어 자리를
+  // 더 쓴다)는 넓게, 대표자명은 보통 짧아 좁게(compactRow, 2026-10-23 사용자가 실제 화면으로 맞춘 값).
+  // DOM maxlength 는 사업자등록번호에 안 둔다 — 하이픈 섞어 붙여넣으면 거르기 전에 잘리기 때문이다.
   //
   // 인증은 검사만 하고, 저장(아래 「저장」 버튼)을 눌러야 반영된다(점포 사업자정보와 같은 두 단계, 2026-10-22
-  // 사용자 결정 — 「인증하자마자 바로 저장」하던 첫 버전을 고침). 인증이 끝나 있으면(locked) 세 칸이 읽기
-  // 전용으로 잠기고 [재인증][사용안함]만 보인다 — 「재인증」을 누르면 값은 그대로 둔 채 세 칸이 한꺼번에
-  // 열리고, 「인증하기」로 다시 검사해야 다시 잠긴다(signup biz-auth-section.tsx 의 토글과 같은 모양, BP는
-  // 점포와 달리 번호·개업일자도 재인증 때 함께 바뀔 수 있어 세 칸이 같이 열고 닫힌다). 「지우기」/「사용안함」은
-  // 서버를 부르지 않고 칸을 저장된 값으로 되돌릴 뿐이다.
-  const bizAuthRow = (num, ceo, open, locked) =>
-    ui.formRow(
-      ui.field("사업자등록번호", locked ? ui.textField({ value: num, readonly: true }) : ui.textField({ value: num, placeholder: "숫자 10자리", maxlength: 12 })),
-      ui.field("대표자명", locked ? ui.textField({ value: ceo, readonly: true }) : ui.textField({ value: ceo, placeholder: "대표자 이름", maxlength: 50 })),
-      locked ? ui.field("개업일자", ui.textField({ value: open, readonly: true })) : f.group("개업일자", ui.dateField(A, { label: "개업일자", value: open })),
-      `<div class="flex shrink-0 gap-[6px] self-end">${
-        locked ? ui.button("재인증", { variant: "soft" }) + ui.button("사용안함", { variant: "soft" }) : ui.button("인증하기", { variant: "soft" }) + ui.button("지우기", { variant: "soft" })
-      }</div>`,
-    ) + `<span class="text-[13px] text-erp-label">사업자정보가 국세청에 등록된 정보와 일치하는지 확인합니다.</span>`;
+  // 사용자 결정). 인증이 끝나 있으면(locked) 세 칸이 읽기 전용으로 잠기고 [재인증][사용안함]만 보인다 —
+  // 「재인증」을 누르면 값은 그대로 둔 채 세 칸이 한꺼번에 열리고, 「인증하기」로 다시 검사해야 다시 잠긴다.
+  // 「사용안함」을 누르면(struck) 확인창 없이 바로 세 칸이 지워질 값에 취소선을 긋고 잠기며, 「인증하기」
+  // 버튼은 사라지고 「사용안함 취소」 하나만 남는다 — 저장을 눌러야 실제로 지워진다(점포는 저장 뒤 번호 ·
+  // 개업일자가 고정이라 이 기능 자체가 없다, MY PAGE 전용, 2026-10-23 사용자 결정).
+  const struckField = (value) =>
+    `<div class="flex h-[34px] w-full items-center rounded-[2px] border border-erp-field-line bg-erp-thead-bg pl-[10px] text-[14px] text-erp-label"><span class="truncate line-through">${value || "&nbsp;"}</span></div>`;
+  const bizFields = (state, num, ceo, open) => {
+    const locked = state === "locked";
+    const struck = state === "struck";
+    return (
+      `<div class="flex gap-[6px]">` +
+      ui.field(
+        "사업자등록번호",
+        struck ? struckField(num) : ui.textField({ value: num, readonly: locked, placeholder: locked ? undefined : "숫자 10자리", inputmode: "numeric" }),
+        "min-w-px flex-[1.0]",
+      ) +
+      ui.field(
+        "대표자명",
+        struck ? struckField(ceo) : ui.textField({ value: ceo, readonly: locked, placeholder: locked ? undefined : "대표자 이름", maxlength: 50 }),
+        "min-w-px flex-[0.85]",
+      ) +
+      f.group(
+        "개업일자",
+        struck ? struckField(open) : locked ? ui.textField({ value: open, readonly: true, "aria-label": "개업일자" }) : ui.dateField(A, { label: "개업일자", value: open }),
+        "min-w-px flex-[1.3]",
+      ) +
+      `</div>`
+    );
+  };
+  // 버튼 줄 — locked: [재인증][사용안함]. struck("사용안함" 뒤): [사용안함 취소] 하나뿐(인증하기도 숨긴다 —
+  // 지워질 값을 두고 재인증하는 건 말이 안 되니, 바꿔 타려면 먼저 되돌려야 한다). 그 밖(미인증 · 입력 중):
+  // [인증하기][지우기].
+  const bizButtons = (state) =>
+    `<div class="flex gap-[6px]">${
+      state === "locked"
+        ? ui.button("재인증", { variant: "soft" }) + ui.button("사용안함", { variant: "soft" })
+        : state === "struck"
+          ? ui.button("사용안함 취소", { variant: "soft" })
+          : ui.button("인증하기", { variant: "soft" }) + ui.button("지우기", { variant: "soft" })
+    }</div>`;
+  const bizGuide =
+    `<p class="text-[13px] leading-[1.5] text-erp-label">` +
+    `사업자정보가 국세청에 등록된 정보와 일치하는지 확인합니다.</p>`;
+  const bizStruckGuide = `<p class="text-[13px] leading-[1.5] text-erp-label">하단의 [저장] 버튼을 클릭하면 인증 정보가 삭제됩니다.</p>`;
+  const bizAuthBox = (state, num, ceo, open, date) =>
+    `<section aria-label="사업자 번호 인증" class="flex flex-col gap-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[18px]">` +
+    `<div class="flex items-center justify-between"><span class="text-[15px] font-semibold text-erp-ink">사업자정보</span>${
+      state === "new" || state === "struck" ? ui.badge("off", "미인증") : ui.badge("on", `인증 완료 · ${date}`)
+    }</div>` +
+    bizFields(state, num, ceo, open) +
+    bizButtons(state) +
+    (state === "struck" ? bizStruckGuide : bizGuide) +
+    `</section>`;
   // sameAsBasic: 대표자 연락처 · 이메일 칸에 "기본정보와 동일" 체크박스 — 체크하면 기본정보(이름 탭) 값을 그대로 쓴다(2026-10-22 사용자 지정).
   const ceoContact = (idp, checked) =>
     `<div role="group" aria-label="대표자 연락처" class="flex min-w-px flex-1 flex-col gap-[8px]"><span class="flex items-center gap-[10px] text-[14px] font-medium text-erp-label"><span>대표자 연락처</span>${ui.checkbox(A, "기본정보와 동일", checked, { id: `${idp}-phone-same` })}</span>${f.tel(checked ? "010" : "010", "5530", "1182")}</div>` +
     `<div role="group" aria-label="대표자 이메일" class="flex min-w-px flex-1 flex-col gap-[8px]"><span class="flex items-center gap-[10px] text-[14px] font-medium text-erp-label"><span>대표자 이메일</span>${ui.checkbox(A, "기본정보와 동일", checked, { id: `${idp}-email-same` })}</span>${ui.textField({ type: "email", value: "ceo@hangang.co.kr", maxlength: 100, disabled: checked })}</div>`;
 
-  // 기본정보 탭의 「계정 정보」와 같은 모양 — 타이틀을 회색 박스로 두르고 본문은 흰 박스로 아래에 잇는다
-  // (사용자 지정, 2026-10-22). 제목 줄에 인증 상태를 같이 둔다. 아래 상호명 묶음과는 다른 카드라 따로 둔다
-  // (사용자 지정, 2026-10-22).
-  const bizAuthBox = (locked, num, ceo, open, badge) =>
-    `<div class="w-full"><h3 class="flex h-[42px] items-center justify-between rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink"><span>사업자정보</span>${badge}</h3><div class="flex flex-col gap-[12px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white px-[16px] py-[20px]">${bizAuthRow(num, ceo, open, locked)}</div></div>`;
   const bizRest = (idp) =>
     `<section aria-label="상호명 등" class="flex flex-col gap-[18px] rounded-[2px] border border-erp-panel-line bg-white px-[16px] py-[20px]">` +
     ui.field(f.req("상호명"), ui.textField({ value: "㈜한강상회", maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })) +
@@ -159,19 +198,21 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
     f.address(A, "사업장 주소", { zip: "04007", base: "서울 마포구 망원로 42", detail: "3층" }) +
     ui.formRow(ui.field("업태", ui.textField({ value: "도소매업", maxlength: 50 })), ui.field("종목", ui.textField({ value: "식자재 유통", maxlength: 50 }))) +
     `</section>`;
-  const ON_BADGE = (date) => `<span class="text-[14px] font-medium text-erp-on">인증 완료 · ${date}</span>`;
-  const OFF_BADGE = `<span class="text-[14px] font-medium text-erp-off">미인증</span>`;
 
-  const biz = `<div class="flex flex-col gap-[18px]">${bizAuthBox(true, "211-87-01234", "남도현", "2021-03-15", ON_BADGE("2026-10-20"))}${bizRest(`${idPrefix}-done`)}</div>${save}`;
+  const biz = `<div class="flex flex-col gap-[18px]">${bizAuthBox("locked", "211-87-01234", "남도현", "2021-03-15", "2026-10-20")}${bizRest(`${idPrefix}-done`)}</div>${save}`;
 
   // 가입 직후처럼 아직 사업자 인증을 받지 않은 초기 상태 — 인증완료 탭과 생김새를 견주어 보려고 따로 둔다(2026-10-07 피드백).
-  const bizNew = `<div class="flex flex-col gap-[18px]">${bizAuthBox(false, "", "", "", OFF_BADGE)}${bizRest(`${idPrefix}-new`)}</div>${save}`;
+  const bizNew = `<div class="flex flex-col gap-[18px]">${bizAuthBox("new", "", "", "")}${bizRest(`${idPrefix}-new`)}</div>${save}`;
+
+  // 「사용안함」을 누른 뒤 — 저장을 눌러야 실제로 지워진다. 인증완료 탭과 생김새를 견주어 보려고 따로 둔다(2026-10-23).
+  const bizDisabled = `<div class="flex flex-col gap-[18px]">${bizAuthBox("struck", "211-87-01234", "남도현", "2021-03-15")}${bizRest(`${idPrefix}-disabled`)}</div>${save}`;
 
   return (
     x.tabs([
       { id: `${tabPrefix}basic`, label: "기본정보", html: basic },
       { id: `${tabPrefix}biz`, label: "사업자정보", html: biz },
       { id: `${tabPrefix}biz-new`, label: "사업자정보(인증 전)", html: bizNew },
+      { id: `${tabPrefix}biz-disabled`, label: "사업자정보(사용안함)", html: bizDisabled },
     ]) + f.SWAP_SCRIPT
   );
 }

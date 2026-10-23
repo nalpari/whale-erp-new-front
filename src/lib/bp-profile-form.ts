@@ -49,6 +49,9 @@ export type VerifyForm = {
     bizCeoName: string;
     bizOpenDate: string;
   } | null;
+  /** "사용안함"으로 저장을 눌러 지우기로 한 상태(2026-10-23 사용자 결정) — 점포와 달리 BP 는 인증된
+   * 세 값을 아예 지울 수 있다. 저장을 눌러야 실제로 반영된다(인증 · 재인증과 같은 두 단계). */
+  pendingClear: boolean;
 };
 export type VerifyFormField = "bizRegistrationNumber" | "bizCeoName" | "bizOpenDate";
 
@@ -87,6 +90,7 @@ export function verifyFormOf(profile: BpProfile): VerifyForm {
     bizCeoName: profile.bizCeoName,
     bizOpenDate: profile.bizOpenDate ?? "",
     verification: null,
+    pendingClear: false,
   };
 }
 
@@ -140,7 +144,13 @@ export function toUpdateBpProfileInput(
     ...(detail ? { bizAddressDetail: detail } : {}),
     ...(category ? { bizCategory: category } : {}),
     ...(item ? { bizItem: item } : {}),
-    ...(verification ? { businessVerificationToken: verification.token } : {}),
+    // pendingClear 와 businessVerificationToken 은 함께 못 싣는다(api 400) — pendingClear 가 늘 앞선다,
+    // "사용안함"을 누른 뒤엔 그사이 인증이 남아 있을 수 없어서다(clearVerify 가 verification 도 비운다).
+    ...(verifyForm.pendingClear
+      ? { clearBusinessVerification: true }
+      : verification
+        ? { businessVerificationToken: verification.token }
+        : {}),
   };
 }
 
@@ -211,9 +221,11 @@ export function hasPendingVerification(f: VerifyForm): boolean {
 
 /** 진위확인 칸을 고쳤는데(또는 재인증을 열어 둔 채) 인증하지 않았는가. 그 값은 인증을 거쳐야만 저장에 실리므로
  * (businessVerificationToken), 그대로 저장하면 칸에 보이던 값이 저장 뒤 원래대로 돌아온다 — 저장 전에 막는다
- * (store-form.ts hasUnverifiedChange 와 같은 패턴). "지우기"/"사용안함"은 칸을 저장된 값으로 되돌리므로
- * (clearVerify) 여기 걸리지 않는다. */
+ * (store-form.ts hasUnverifiedChange 와 같은 패턴). "지우기"는 칸을 저장된 값으로 되돌리므로(clearVerify)
+ * 여기 걸리지 않는다. "사용안함"(pendingClear)은 인증 대신 지우겠다는 의도적인 선택이라 따로 뺀다 — 인증을
+ * 요구하면 안 된다. */
 export function hasUnverifiedChange(f: VerifyForm): boolean {
+  if (f.pendingClear) return false;
   if (currentVerification(f)) return false;
   return f.bizRegistrationNumber !== f.savedBizNumber || f.bizCeoName !== f.savedCeoName || f.bizOpenDate !== f.savedOpenDate;
 }

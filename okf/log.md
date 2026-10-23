@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-10-23
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — MY PAGE 사업자정보 탭(`site/bp-profile-tab.tsx`, S-UOJVUR)이 공통 인증 상자(`biz-verification-box.tsx`)를 쓰도록 옮겼다. 세 칸을 한 줄에 두되 좁은 슬라이드 패널에 맞게 폭을 달리 주는 `compactRow`를 상자에 새로 더했다(사업자등록번호 · 개업일자는 넓게, 대표자명은 좁게 — 실제 화면으로 여러 번 맞춰 본 값). 저장된 사업자정보를 아예 지우는 "사용안함"(`onClearSaved` · `struck`, 점포에는 없는 MY PAGE 전용 기능)을 더했다 — 확인창 없이 바로 열려 값에 취소선을 긋고, 저장을 눌러야 api `clearBusinessVerification` 플래그로 실제 반영된다. 재인증 버튼 레이블("재인증"/"인증하기")이 실제로 전환되지 않던 버그, 재인증 중 국세청 불일치(422) 오류가 대표자명 칸에 잘못 붙던 버그, 429(한도 초과) 응답이 기본 문구로 뭉개지던 버그, 탭을 오가면 사업자정보 탭의 고치던 값과 토큰이 사라지던 문제(always-mounted + remount key)를 코드 리뷰 · 실사용 테스트로 찾아 고쳤다. 점포 등록 화면 "점포 주소와 같음" 체크박스 기본값을 해제로 바꿨다(`EMPTY_STORE_FORM.bizSameAsStore`, 무관한 작은 수정). 디자인 데모(`docs/demo/mypage/profile.html` 등, GNB 패널이 모든 화면에 실려 전체 재생성)도 맞춰 고쳤다 — 「사업자정보(사용안함)」 탭을 새로 더했다.
+
 ## 2026-10-22
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 푸터 사업자 정보를 재영이 보내 준 값(상호 · 주소 · 이메일 · 전화번호 · 사업자등록번호)으로 바꿨다. 회사 소개 페이지가 없어 상호명 링크 자리(`COMPANY_URL`)를 지우고 글자로 둔다. 시안 자리값(둘째 상호 칸 · 통신판매업신고번호)도 뺐다. 데모도 같이 고쳤다(front #110 재영 답글).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [플랫폼 시스템관리](/system.md) — 플랫폼 공통코드에서 플랫폼고정 그룹은 상세 코드 삭제 칸을 두지 않는다(`itemsDeletable` — api #135 가 409 로 막는다, 사용 상태로만 관리). front #113 머지 블로커 반영. 공통코드 api 타입을 api main(#135 머지 뒤) 기준으로 다시 만들었다.

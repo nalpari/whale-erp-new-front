@@ -97,6 +97,11 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
    * 같은 자리(패널 맨 아래)에 두기 위해서다(사용자 디자인 피드백, 2026-10-22). */
   const bpTab = useRef<BpProfileTabHandle>(null);
   const [bizSaving, setBizSaving] = useState(false);
+  // 사업자정보 탭(BpProfileTab)을 열 때마다 새로 마운트해 자기 useEffect 로 다시 받게 하는 값 — 탭을
+  // 오갈 때는 그대로 두고(그래야 고치던 값·받아 둔 인증 토큰이 안 사라진다), 패널을 다시 열 때만 올린다
+  // (코드 리뷰로 찾음, 2026-10-23 — 전엔 탭 전환 자체가 unmount 라 아래 "열 때마다 새로 받는다"를 BpProfileTab
+  // 도 같이 타고 있었는데, 늘 마운트해 두는 쪽으로 고치며 따로 신호가 필요해졌다).
+  const [bizTabGeneration, setBizTabGeneration] = useState(0);
 
   // 열 때마다 새로 받는다 — 다른 기기에서 먼저 고쳤을 수 있다. 칸 비우기는 렌더 중에 해도 안전하지만(admin-form-panel.tsx
   // 와 같은 패턴), 실제 네트워크 호출(서버 액션)은 렌더 바깥에서 해야 한다 — 렌더 중에 부르면 "Cannot update a component
@@ -115,6 +120,8 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
       setEmailCheckSkipped(false);
       setCurrentPassword("");
       setTab("basic");
+      setBizSaving(false);
+      setBizTabGeneration((n) => n + 1);
     }
   }
 
@@ -254,10 +261,18 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
           {/* 사업자정보 탭은 BP 마스터에게만 보인다(manyfast S-UOJVUR) — 그 밖의 권한은 탭 바 자체가 없다. */}
           {profile.roleTypeCode === "BM" && <TabBar tab={tab} onChange={setTab} />}
 
-          {tab === "biz" ? (
-            <BpProfileTab ref={bpTab} onSavingChange={setBizSaving} basicPhone={profile.phone} basicEmail={profile.email} />
-          ) : (
-            <>
+          {/* 탭을 그냥 조건부로 마운트하면 사업자정보 탭을 떠날 때 고치던 값·받아 둔 인증 토큰이 경고 없이
+              사라진다 — 둘 다 늘 마운트해 두고 숨김으로만 가린다(popup.tsx·slide-panel.tsx 의 "항상 마운트,
+              전환으로 여닫기"와 같은 원칙, 코드 리뷰로 찾음, 2026-10-23). SlidePanel 자신이 flex flex-col
+              gap-[16px] 라 전엔 각 묶음이 그 바로 아래 자식(Fragment 는 DOM 을 안 만든다)이어서 간격을
+              그대로 받았다 — 이 div 가 그 자리를 대신하니 같은 gap 을 직접 줘야 한다(사용자가 찾음, 2026-10-23
+              — 기본정보 탭에서 "계정 정보"와 "기본정보" 사이가 붙어 보였다). */}
+          <div className={`flex flex-col gap-[16px] ${tab === "biz" ? "" : "hidden"}`}>
+            {/* key 는 패널을 다시 열 때만 바뀐다(bizTabGeneration) — 탭을 오가는 동안은 같은 인스턴스를
+                유지해 고치던 값을 지키고, 패널을 다시 열면 새로 마운트해 "열 때마다 새로 받는다"를 지킨다. */}
+            <BpProfileTab key={bizTabGeneration} ref={bpTab} onSavingChange={setBizSaving} basicPhone={profile.phone} basicEmail={profile.email} />
+          </div>
+          <div className={`flex flex-col gap-[16px] ${tab === "basic" ? "" : "hidden"}`}>
               {/* 점포정보 관리 상세화면(DetailTable)의 제목 줄과 같은 회색 바 — FormGroup 의 기본 제목(배경 없음)
                   대신 쓴다(사용자 디자인 피드백, 2026-10-21). 본문 카드는 FormGroup 과 같은 토큰으로 직접 짠다.
                   아이콘을 넣어 봤지만 24px 로는 너무 작아 뺐다(사용자 지정, 2026-10-21).
@@ -367,8 +382,7 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
               </div>
             )}
               </FormGroup>
-            </>
-          )}
+          </div>
 
           <div className="flex justify-center gap-[6px]">
             <Button variant="off" onClick={onClose} disabled={saving || bizSaving}>
