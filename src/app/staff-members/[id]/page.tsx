@@ -8,13 +8,13 @@ import type { EnumValue } from "@/lib/enums";
 import { hqSharingConsentText, kstToday, staffEmailText } from "@/lib/staff-members";
 import { MENU_CODE } from "@/lib/menus";
 import { getStaffMember, staffMemberIdOf } from "@/lib/staff-members-api";
-import { parseStaffListQuery, staffListHref, toStaffListSearch } from "../staff-list-query";
+import { staffListSearch } from "../staff-list-query";
 import { ResendInvitationButton } from "../resend-invitation-button";
 import { canResendInvitation, EMPLOYMENT_TYPE_LABELS, employmentStatusCells, formatPhone, invitationText, joinCell } from "../staff-row";
 import { CellView } from "../staff-table";
 import { ContractBox } from "./contract-box";
 import { AreaLoading, Box, BoxMessage } from "./detail-box";
-import { employmentHistoryLines } from "./employment-history";
+import { employmentHistoryLines, historySearch } from "./employment-history";
 import { MenuManageLink } from "./manage-link";
 import { PasswordResetButton, StaffDetailActions } from "./staff-detail-actions";
 import { PayslipBox, ScheduleBox, TodoBox } from "./summary-boxes";
@@ -81,7 +81,9 @@ export default async function StaffMemberDetailPage({
   if (!staff || staffMemberId === null) notFound();
   const employmentStatus = employmentStatusCells(staff);
   const hqConsent = hqSharingConsentText(staff, hqConsentLabels);
-  const listHref = staffListHref(search);
+  // 목록 조건 — 「목록」과 재직 이력 링크가 함께 쓴다. 재직 이력 링크는 근무스케줄이 보던 주(week)도 이어 단다
+  const listSearch = staffListSearch(search);
+  const listHref = `/staff-members${listSearch}`;
   const today = kstToday();
   // 근무스케줄 영역이 볼 주(월요일). 주소 week 가 없거나 날짜가 아니면 이번 주(데모 weekNav, 2026-10-22 노영주 — WHALEERP-185 기간 선택을 걷었다)
   const monday = scheduleWeekOf(search, today);
@@ -108,14 +110,14 @@ export default async function StaffMemberDetailPage({
     // 퇴직 예정 · 퇴직이면 퇴직일을 보인다(목업 detail.html)
     ...(staff.retiredDate ? [{ label: "퇴직일", value: staff.retiredDate }] : []),
     // 재입사로 이은 다른 재직 기간(WHALEERP-615, 목업 detail.html) — 누르면 그 기간의 상세. 이은 레코드가 없으면 줄이 없다.
-    // 좁은 단에서 기간이 꺾이면 고정 높이(46)에서 잘려 한 줄로 둔다
-    ...employmentHistoryLines(staff, toStaffListSearch(parseStaffListQuery(search))).map((line) => ({
+    // 좁은 단에서 기간이 꺾여도 잘리지 않게 높이가 내용만큼 늘어나는 줄로 둔다
+    ...employmentHistoryLines(staff, historySearch(listSearch, search.week)).map((line) => ({
       label: line.label,
-      multiline: line.links.length > 1,
+      multiline: true,
       value: (
         <span className="flex flex-col gap-[4px]">
-          {line.links.map((link) => (
-            <span key={link.href} className="whitespace-nowrap">
+          {line.links.map((link, i) => (
+            <span key={`${i}-${link.href}`}>
               <Link href={link.href} aria-label={`${line.label} ${link.text} 직원 상세`} className="text-erp-link hover:underline">
                 {link.text}
               </Link>

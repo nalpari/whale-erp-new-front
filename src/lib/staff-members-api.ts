@@ -1,7 +1,7 @@
 // 직원 목록 · 상세 · 퇴직 처리 · 비밀번호 재설정 링크 api. 토큰은 authHeaders() 가 로그인 세션에서 붙인다.
 // 메뉴 권한 · 업무 범위 · 본사 제공 동의(가림)는 api 가 요청마다 본다 — 이 파일은 그대로 전한다.
 import { ApiError, authHeaders, request } from "./api";
-import { staffListApiSearch, type RetirementPreview, type StaffListQuery, type StaffMember, type StaffMemberListResponse } from "./staff-members";
+import { staffListApiSearch, withEmploymentHistory, type RetirementPreview, type StaffListQuery, type StaffMember, type StaffMemberListResponse } from "./staff-members";
 import type { components } from "./api-types.generated";
 
 type Schemas = components["schemas"];
@@ -35,7 +35,7 @@ export async function getStaffMember(rawId: string): Promise<StaffMember | null>
   const id = staffMemberIdOf(rawId);
   if (id === null) return null;
   try {
-    return await request<StaffMember>(`/staff-members/${id}`, await init("GET"));
+    return withEmploymentHistory(await request<StaffMember>(`/staff-members/${id}`, await init("GET")));
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) return null;
     throw error;

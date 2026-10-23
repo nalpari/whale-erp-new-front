@@ -1,7 +1,7 @@
 // node --test "src/app/staff-members/[[]id]/employment-history.test.ts"
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { employmentHistoryLines, periodText } from "./employment-history.ts";
+import { employmentHistoryLines, historySearch, periodText } from "./employment-history.ts";
 
 const period = (staffMemberId: number, hiredDate: string | null, retiredDate: string | null) => ({ staffMemberId, hiredDate, retiredDate });
 
@@ -16,11 +16,6 @@ test("입사일이 비어 있으면 「-」 — 입사일 채우기(WHALEERP-613
 
 test("이은 레코드가 없으면 줄을 두지 않는다", () => {
   assert.deepEqual(employmentHistoryLines({ previousRecords: [], laterRecords: [] }, ""), []);
-});
-
-test("응답에 재직 이력 칸이 없으면(api #136 배포 전) 줄을 두지 않는다 — 상세가 오류가 되지 않게", () => {
-  const before = {} as Parameters<typeof employmentHistoryLines>[0];
-  assert.deepEqual(employmentHistoryLines(before, ""), []);
 });
 
 test("이전 재직은 「재직 이력」, 이후 재입사는 「이후 재입사」 줄 — api 순서(가까운 것부터) 그대로, 목록 조건을 이어 단다", () => {
@@ -42,4 +37,12 @@ test("이전 재직은 「재직 이력」, 이후 재입사는 「이후 재입
     },
     { label: "이후 재입사", note: null, links: [{ href: "/staff-members/12?store=5", text: "2026-03-01 ~ 재직 중" }] },
   ]);
+});
+
+test("재직 이력 링크는 목록 조건에 근무스케줄 주를 더한다 — 날짜 모양이 아닌 주는 버린다", () => {
+  assert.equal(historySearch("?store=5", "2025-06-02"), "?store=5&week=2025-06-02");
+  assert.equal(historySearch("", "2025-06-02"), "?week=2025-06-02");
+  assert.equal(historySearch("?store=5", undefined), "?store=5");
+  assert.equal(historySearch("?store=5", "abc"), "?store=5");
+  assert.equal(historySearch("", ["2025-06-02", "2025-06-09"]), "");
 });

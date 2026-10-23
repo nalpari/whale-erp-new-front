@@ -91,11 +91,11 @@ export function toStaffListSearch(query: StaffListQuery): string {
 }
 
 /**
- * 상세의 「목록」 주소. 목록이 상세 링크에 붙여 보낸 조건을 그대로 돌려줘 검색 · 쪽이 풀리지 않게 한다.
+ * 상세가 들고 온 목록 조건(「?…」 또는 빈 문자열). 「목록」 주소와 재직 이력 링크(WHALEERP-615)가 함께 써 검색 · 쪽이 풀리지 않게 한다.
  * 받은 쿼리는 목록과 같은 규칙으로 걸러 다시 만든다 — 모르는 이름 · 이상한 값은 따라오지 않는다.
  */
-export function staffListHref(raw: RawSearch): string {
-  return `/staff-members${toStaffListSearch(parseStaffListQuery(raw))}`;
+export function staffListSearch(raw: RawSearch): string {
+  return toStaffListSearch(parseStaffListQuery(raw));
 }
 
 /** 필터 · 건수를 바꾼다. 쪽은 1로 돌린다 — 4쪽에서 거르면 빈 쪽이 보인다. */

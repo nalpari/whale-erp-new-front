@@ -1,7 +1,7 @@
 // node --test src/lib/staff-members.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { EMPLOYMENT_TYPES, JOIN_GROUPS, MAX_STORE_IDS, hqSharingConsentText, kstToday, staffEmailText, staffListApiSearch, staffListEmptyMessage, storeIdsByName, tooManyStores, type StaffListQuery } from "./staff-members.ts";
+import { EMPLOYMENT_TYPES, JOIN_GROUPS, MAX_STORE_IDS, hqSharingConsentText, withEmploymentHistory, kstToday, staffEmailText, staffListApiSearch, staffListEmptyMessage, storeIdsByName, tooManyStores, type StaffListQuery } from "./staff-members.ts";
 
 const base: StaffListQuery = {
   store: "",
@@ -160,4 +160,12 @@ test("본사 제공 동의 칸은 가맹 점포 직원만 — 직영 점포 직�
 
 test("본사 제공 동의 한글을 받지 못했으면 - — 영문 값을 보이지 않는다", () => {
   assert.equal(hqSharingConsentText({ hqSharingConsent: "NOT_AGREED" }, []), "-");
+});
+
+test("재직 이력 칸이 없는 상세 응답(api #136 배포 전)은 빈 목록으로 채운다 — 있으면 그대로", () => {
+  const period = { staffMemberId: 3, hiredDate: "2024-01-02", retiredDate: "2024-06-30" };
+  const before = { staffMemberId: 1, name: "서지안" } as unknown as Parameters<typeof withEmploymentHistory>[0];
+  assert.deepEqual(withEmploymentHistory(before), { staffMemberId: 1, name: "서지안", previousRecords: [], laterRecords: [] });
+  const after = { ...before, previousRecords: [period], laterRecords: [] } as Parameters<typeof withEmploymentHistory>[0];
+  assert.deepEqual(withEmploymentHistory(after).previousRecords, [period]);
 });
