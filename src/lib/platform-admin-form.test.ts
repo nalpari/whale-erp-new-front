@@ -64,7 +64,7 @@ test("이메일 형식 — api @IsEmail 이 막는 값은 화면도 형식 오�
   const rejected = ["kim@whale.c", "kim@whale..co", "kim@.whale.co", ".kim@whale.co", "kim.@whale.co", "kim..lee@whale.co", "kim@whale.123", "kim@whale"];
   rejected.push("kim@-whale.co", "kim@whale-.co", "kim@whale_x.co", "a,b@x.co", "a(b@x.co", "kim@whale.co-", "kim@whale.xn--");
   // 주소 목록에서 복사하면 따라오는 쉼표 · 괄호, 도메인의 기호 · 전각 영문
-  rejected.push("kim@whale.co,", "kim@naver.com)", "kim@whale.co;", "kim@wh+ale.co", "kim@whale.co!", "kim@ｗhale.co");
+  rejected.push("kim@whale.co,", "kim@naver.com)", "kim@whale.co;", "kim@wh+ale.co", "kim@whale.co!", "kim@ｗhale.co", "kim@whale.ｃｏｍ");
   for (const bad of rejected) {
     assert.equal(emailError(bad), "이메일 형식이 아닙니다.", bad);
   }

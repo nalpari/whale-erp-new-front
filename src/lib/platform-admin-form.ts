@@ -1,6 +1,6 @@
 // 플랫폼 관리자 등록 · 수정 입력칸 — 검사와 요청 만들기. 패널(src/app/platform-admins/)에서 뺀 순수 함수라
 // node --test 로 검사한다(platform-admin-form.test.ts).
-// 규칙은 api(platform-admin-format.ts · save-platform-admin.dto.ts)와 같다. api 가 다시 막으므로 화면은 저장 전에 칸 아래 먼저 알리기만 한다.
+// 규칙은 api(platform-admin-format.ts · save-platform-admin.dto.ts)와 같다(이메일은 @IsEmail 의 주요 규칙만 — EMAIL_PATTERN 참고). api 가 다시 막으므로 화면은 저장 전에 칸 아래 먼저 알리기만 한다.
 import type { AdminStatus, CreatePlatformAdminInput, PlatformAdminDetail, UpdatePlatformAdminInput } from "./platform-admins";
 
 /** 아이디 — 영문 또는 영문 · 숫자 4~20자, 영문이 하나 이상(PL-OCJOFP). 밑줄은 쓸 수 없다. */
@@ -13,10 +13,11 @@ export const PHONE_PATTERN = /^[0-9]{10,11}$/;
  * 이메일 — api @IsEmail(validator isEmail · isFQDN)의 주요 규칙에 맞춘다. 화면이 「올바른 형식」이라 한 값을 저장 때 api 가
  * 형식 오류로 막지 않게. 점은 맨 앞 · 맨 뒤 · 연달아 오지 않고, 앞부분에 괄호 · 쉼표 같은 특수문자가 없다. 도메인은 허용 글자만
  * 받는다(isFQDN — 영문 · 숫자 · 하이픈 · 한글 같은 비ASCII, 전각 영문 · 기호 제외) — 마디는 하이픈으로 시작 · 끝나지 않고,
- * 끝(TLD)은 숫자 없는 2자 이상이거나 xn-- 이다. 따옴표로 묶은 앞부분(`"kim lee"@…`)과 마디 63자 · 앞부분 64자 제한은 보지 않는다.
+ * 끝(TLD)은 숫자 · 하이픈 · 전각 영문 없는 2자 이상이거나 xn-- 이다. 따옴표로 묶은 앞부분(`"kim lee"@…`)과 마디 63자 · 앞부분
+ * 64자 제한은 보지 않는다.
  */
 const EMAIL_PATTERN =
-  /^[^\s@.(),:;<>[\]\\"]+(?:\.[^\s@.(),:;<>[\]\\"]+)*@(?:[a-z0-9¡-＀｟-￿](?:[a-z0-9¡-＀｟-￿-]*[a-z0-9¡-＀｟-￿])?\.)+(?:[a-z¡-¨ª-퟿豈-﷏ﷰ-￯]{2,}|xn--[a-z0-9-]*[a-z0-9])$/i;
+  /^[^\s@.(),:;<>[\]\\"]+(?:\.[^\s@.(),:;<>[\]\\"]+)*@(?:[a-z0-9¡-＀｟-￿](?:[a-z0-9¡-＀｟-￿-]*[a-z0-9¡-＀｟-￿])?\.)+(?:[a-z¡-¨ª-퟿豈-﷏ﷰ-＀｟-￯]{2,}|xn--[a-z0-9-]*[a-z0-9])$/i;
 
 /** 입력칸 값 그대로. 연락처는 세 칸, 권한은 select 값(문자열)이다. */
 export type AdminForm = {

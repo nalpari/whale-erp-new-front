@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-23
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 이메일 형식 검사: 도메인은 허용 글자만 받고(끝에 쉼표 · 괄호가 붙은 값), 끝(TLD)의 전각 영문도 막는다 — api @IsEmail 과 맞춤(리뷰로 찾음, front #61).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front #61 magikarp, main #120 까지): okf 충돌은 main 의 플랫폼 관리자 줄([등록] 제목 줄 이동 · 미사용 비밀번호 빈칸) 위에 이메일 형식 서술만 다시 얹고, 로그는 양쪽을 살렸다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 이메일 칸의 형식 검사를 api `@IsEmail` 에 맞췄다 — 화면이 「올바른 형식」이라 한 값을 저장 때 api 가 막지 않게(사용자 결정, front #61).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 패널: 여러 칸 검증 오류(400 배열)는 아이디 칸이 아니라 위 띠로 보인다(code-review 로 찾음, front #61).
