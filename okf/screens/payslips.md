@@ -58,7 +58,7 @@ sources:
 칸과 필터는 Plane WHALEERP-233 완료 조건이 기준이고, 데모(`staff-sections.mjs` payList · payslipsFilter)와 **일부러 다르다**.
 
 * 필터는 급여 기간(목록 위 달 이동) · 점포 · 직원명 · 명세서 상태다(점포 · 직원명은 2026-10-19 사용자 요청으로 더했다).
-  점포 · 직원명 검색칸은 직원 목록 필터와 같은 `SearchField` 다 — Enter · 돋보기로 반영하고, 점포명은 로그인 정보의 관리 점포에서
+  점포 · 직원명 검색칸은 `SearchField` 다 — Enter · 돋보기로 반영하고, 점포명은 로그인 정보의 관리 점포에서
   맞는 점포 id 를 찾아(`storeIdsByName`) URL 에 `store` · `storeIds` 로 함께 둔다. 직원명은 `staffName`. api 는 `storeIds` ·
   `staffName` 을 받는다. 맞는 점포가 없으면 api 를 부르지 않고 0건(상태 건수도 0)이다. 점포명만 있고 id 가 없는 주소는 필터가
   들어오자마자 채운다. 직원명으로 거르면 본사 역할에게 가린 줄은 api 가 목록과 상태 건수에서 모두 뺀다 — 이름 검색으로 가린

@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Badge, DataTable, type Column } from "@/components/common";
 import type { StaffMemberListItem } from "@/lib/staff-members";
 import { ResendInvitationButton } from "./resend-invitation-button";
+import { withBack } from "./staff-list-query";
 import { canResendInvitation, contractCell, EMPLOYMENT_TYPE_LABELS, formatPhone, joinCell, rowNumber, statusCells, type Cell } from "./staff-row";
 
 // 데모 staff-parts.mjs 의 회색 배지(quiet). 공통 Badge 에는 on · off 두 가지뿐이다.
@@ -36,7 +37,7 @@ export function StaffTable({
   page,
   pageSize,
   today,
-  listSearch,
+  listHref,
   empty = "조회된 직원이 없습니다.",
 }: {
   items: StaffMemberListItem[];
@@ -44,9 +45,9 @@ export function StaffTable({
   page: number;
   pageSize: number;
   today: string;
-  /** 지금 목록 조건(toStaffListSearch). 상세 링크에 붙여 상세의 「목록」이 같은 조건으로 돌아오게 한다. */
-  listSearch: string;
-  /** 빈 목록 문구. 조회하지 않은 까닭이 있으면 바꾼다(staffListEmptyMessage). */
+  /** 지금 목록 주소(staffListHrefOf). 상세 링크에 ?back= 으로 실어 상세의 「목록」이 같은 조건으로 돌아오게 한다. */
+  listHref: string;
+  /** 빈 목록 문구 */
   empty?: string;
 }) {
   const columns: Column<Row>[] = [
@@ -62,7 +63,7 @@ export function StaffTable({
             가맹 점포 직원
           </span>
         ) : item.staffMemberId !== null && item.joinState === "JOINED" && item.employmentStatus === "EMPLOYED" ? (
-          <Link href={`/staff-members/${item.staffMemberId}${listSearch}`} className="text-erp-link hover:underline">
+          <Link href={withBack(`/staff-members/${item.staffMemberId}`, listHref)} className="text-erp-link hover:underline">
             {item.name}
           </Link>
         ) : (

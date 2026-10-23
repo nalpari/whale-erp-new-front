@@ -7,7 +7,7 @@ import type { EnumValue } from "@/lib/enums";
 import { hqSharingConsentText, kstToday, staffEmailText } from "@/lib/staff-members";
 import { MENU_CODE } from "@/lib/menus";
 import { getStaffMember, staffMemberIdOf } from "@/lib/staff-members-api";
-import { staffListHref } from "../staff-list-query";
+import { detailListHrefOf } from "../staff-list-query";
 import { ResendInvitationButton } from "../resend-invitation-button";
 import { canResendInvitation, EMPLOYMENT_TYPE_LABELS, employmentStatusCells, formatPhone, invitationText, joinCell } from "../staff-row";
 import { CellView } from "../staff-table";
@@ -79,7 +79,9 @@ export default async function StaffMemberDetailPage({
   if (!staff || staffMemberId === null) notFound();
   const employmentStatus = employmentStatusCells(staff);
   const hqConsent = hqSharingConsentText(staff, hqConsentLabels);
-  const listHref = staffListHref(search);
+  // [목록] 주소 — 목록이 상세 링크에 ?back= 으로 실어 보낸 목록 주소(근로계약 · TO-DO 처럼 ?back= 을 쓰되, 받은 쿼리는 목록 규칙으로 다시
+  // 만든다). ?back= 이 없는 예전 형식 주소는 상세 주소에 붙은 목록 조건으로 돌아간다(detailListHrefOf). 주 넘김(weekHref)은 둘 다 그대로 둔다
+  const listHref = detailListHrefOf(search);
   const today = kstToday();
   // 근무스케줄 영역이 볼 주(월요일). 주소 week 가 없거나 날짜가 아니면 이번 주(데모 weekNav, 2026-10-22 노영주 — WHALEERP-185 기간 선택을 걷었다)
   const monday = scheduleWeekOf(search, today);
