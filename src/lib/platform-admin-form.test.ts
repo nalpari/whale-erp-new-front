@@ -56,6 +56,18 @@ test("칸을 벗어날 때의 이메일 형식 검사 — 앞뒤 공백은 빼�
   assert.ok(emailError("seojun@"));
 });
 
+test("이메일 형식 — api @IsEmail 이 막는 값은 화면도 형식 오류로", () => {
+  // 아래 값은 api 의 validator isEmail 결과와 하나씩 맞춰 보았다(2026-10-23)
+  for (const ok of ["kim@whale.co", "SeoJun@Whale.Test", "kim.lee@mail.whale.kr", "kim@회사.한국", "kim@whale.xn--3e0b707e", "a+b_c@wh-ale.io"]) {
+    assert.equal(emailError(ok), undefined, ok);
+  }
+  const rejected = ["kim@whale.c", "kim@whale..co", "kim@.whale.co", ".kim@whale.co", "kim.@whale.co", "kim..lee@whale.co", "kim@whale.123", "kim@whale"];
+  rejected.push("kim@-whale.co", "kim@whale-.co", "kim@whale_x.co", "a,b@x.co", "a(b@x.co", "kim@whale.co-");
+  for (const bad of rejected) {
+    assert.equal(emailError(bad), "이메일 형식이 아닙니다.", bad);
+  }
+});
+
 test("필수 칸 — 이름 · 연락처 · 이메일 · 사용자 권한", () => {
   const errors = validateAdminForm({ ...filled, name: "", phone: ["010", "", ""], email: "", roleGroupId: "" }, "create");
   assert.deepEqual(Object.keys(errors).sort(), ["email", "name", "phone", "roleGroupId"]);

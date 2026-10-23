@@ -9,7 +9,13 @@ export const LOGIN_ID_PATTERN = /^(?=.*[A-Za-z])[A-Za-z0-9]{4,20}$/;
 export const NAME_PATTERN = /^[가-힣A-Za-z ]{2,20}$/;
 /** 연락처 — 하이픈 없이 숫자 10~11자리. */
 export const PHONE_PATTERN = /^[0-9]{10,11}$/;
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/**
+ * 이메일 — api @IsEmail(validator isEmail · isFQDN)의 주요 규칙에 맞춘다. 화면이 「올바른 형식」이라 한 값을 저장 때 api 가
+ * 형식 오류로 막지 않게. 점은 맨 앞 · 맨 뒤 · 연달아 오지 않고, 앞부분에 괄호 · 쉼표 같은 특수문자가 없고, 도메인 마디는
+ * 밑줄이 없고 하이픈으로 시작 · 끝나지 않으며, 끝(TLD)은 숫자 · 하이픈 없는 2자 이상이거나 xn-- 이다.
+ */
+const EMAIL_PATTERN =
+  /^[^\s@.(),:;<>[\]\\"]+(?:\.[^\s@.(),:;<>[\]\\"]+)*@(?:[^\s@._-](?:[^\s@._]*[^\s@._-])?\.)+(?:[^\s@._\d-]{2,}|xn--[^\s@._]+)$/i;
 
 /** 입력칸 값 그대로. 연락처는 세 칸, 권한은 select 값(문자열)이다. */
 export type AdminForm = {
