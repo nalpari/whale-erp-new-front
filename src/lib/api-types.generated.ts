@@ -480,6 +480,8 @@ export interface paths {
          * 바로 고칠 수 있는 항목 저장(상호명 · 대표자 연락처 · 대표자 이메일 · 사업장주소 · 업태 · 종목).
          *     사업자등록번호 · 대표자명 · 개업일자는 여기 보내지 않는다 — business-verification 이 돌려준
          *     businessVerificationToken 을 이 PATCH 에 실어야 그 세 값이 바뀐다(검사와 저장이 나뉜 두 단계).
+         *     clearBusinessVerification 을 true 로 보내면 그 세 값과 인증일시를 지운다(점포와 달리 BP 자신은
+         *     지울 수 있다, 2026-10-23 사용자 결정) — businessVerificationToken 과 함께 보내면 400.
          *     계정 축은 PATCH me 와 같이 signedInUserTracker 로 로그인한 계정 자신으로 고정한다(코드 리뷰로
          *     찾음, 2026-10-22).
          */
@@ -1752,8 +1754,11 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * 재발송 — 발송 대기(가입 초대를 받지 못함) · 서명 대기에서 가입 초대 알림톡을 새 초대 코드 · 새 서명 기한(30일)으로 다시
-         *     보낸다. 상태는 그대로이고 앞서 나간 초대 코드는 무효다. 앱으로 받는 직원(가입 · 계정 있음)은 앱 알림이 아직 없어 409.
+         * 재발송 — 발송 대기 · 서명 대기에서 새 서명 기한(30일)으로 다시 보낸다. 가입 전 · 계정 없는 번호는 가입 초대 알림톡을 새
+         *     초대 코드로(상태 그대로, 앞서 나간 초대 코드는 무효), 가입한 직원은 앱 알림(근로계약서 발송 알림)으로 보낸다 — 발송 대기였으면
+         *     서명 대기로 넘긴다(WHALEERP-611). 가입한 직원의 알림은 알림함 알림이고(앱 푸시는 #261 전까지 나가지 않는다), 알림 템플릿을
+         *     쓸 수 없거나 탈퇴 계정이면 알림 없이 기한만 새로 잡는다. 계정은 있고 이 점포에 가입하지 않은 번호(소속 추가 확인 · 복귀
+         *     확인)는 409.
          */
         post: operations["ContractSendController_send"];
         delete?: never;
@@ -3810,6 +3815,15 @@ export interface components {
              *     않는다 — admin-signup.service.ts 의 signup 과 같은 규칙). 비우면 인증 쪽 세 값은 그대로 둔다.
              */
             businessVerificationToken?: string;
+            /**
+             * @description 사업자등록번호 · 대표자명 · 개업일자 · 인증일시를 전부 비운다(사용자 결정, 2026-10-23) — 점포와
+             *     달리 BP 자신의 사업자정보는 "다른 번호로 바꾸기"(재인증) 말고 "아예 지우기"도 된다. true 면 그 네
+             *     칸을 null 로 쓴다. businessVerificationToken 과 함께 보내면 400(서비스에서 본다) — 같은 저장에서
+             *     "새로 반영"과 "지우기"를 동시에 받을 수 없다. 구독 기록이 있으면 막아야 하지만(사용자 결정) 구독
+             *     자체가 아직 없어(관련 테이블 없음, Manyfast S-JHQQNR 「1차 범위 밖」과 같은 이유) 지금은 검사하지
+             *     않는다 — 구독이 생기면 여기에 그 검사를 더한다.
+             */
+            clearBusinessVerification?: boolean;
         };
         BpBusinessVerificationDto: {
             /**
@@ -4928,7 +4942,14 @@ export interface components {
             lastSentAt: string;
             /** Format: date-time */
             expiresAt: string;
-            /** @description 재발송 버튼을 보일지. 간격 제한 없이 상태로만 정한다 — 초대 발송 · 초대 만료 · 소속 추가 확인 · 복귀 확인 */
+            /**
+             * @description 가입 초대 재발송 버튼을 보일지 — 이 값 하나만 본다. 참이면 이 줄의 contract.contractId 로 근로계약 재발송(POST
+             *     /contracts/{contractId}/send)이 가입 초대 알림톡을 보낸다(설정 누락 503 · 그사이 바뀐 상태 409 · 발송 실패 502 는 남는다).
+             *     모두 맞을 때만 참이다: 가입 전(가입 완료가 아님) · 가입 상태가 초대 발송 · 초대 만료 · 소속 추가 확인 · 복귀 확인(연결 보류 ·
+             *     만 19세 미만 · 거절 · 초안은 거짓) · 이 초대가 수락되지 않음 · 최근 계약이 발송 대기 또는 서명 대기 · 그 번호에 탈퇴하지
+             *     않은 계정이 없음(있으면 소속 추가 확인 · 복귀 확인이라 앱에 받을 길이 없어 409) · 휴대폰 번호. 간격 제한은 없다. 가입한
+             *     직원의 앱 알림 재발송은 가입 초대가 아니라 근로계약 상세에서 하므로 거짓이다.
+             */
             canResend: boolean;
         };
         /** @enum {string} */
@@ -6630,7 +6651,7 @@ export interface components {
             bodySummary: string;
             kakaoTemplateCode: string | null;
             isActive: boolean;
-            /** @description 기본 문구가 있는지(마이그레이션으로 넣은 기본 템플릿 41건) — 되돌리기를 보일지 */
+            /** @description 기본 문구가 있는지(마이그레이션으로 넣은 기본 템플릿 42건) — 되돌리기를 보일지 */
             hasDefault: boolean;
             /** @description 마지막으로 고친 관리자 이름. 아무도 고치지 않았으면 null — 화면은 「기본 문구」 */
             updatedByName: string | null;
@@ -6670,7 +6691,7 @@ export interface components {
             bodySummary: string;
             kakaoTemplateCode: string | null;
             isActive: boolean;
-            /** @description 기본 문구가 있는지(마이그레이션으로 넣은 기본 템플릿 41건) — 되돌리기를 보일지 */
+            /** @description 기본 문구가 있는지(마이그레이션으로 넣은 기본 템플릿 42건) — 되돌리기를 보일지 */
             hasDefault: boolean;
             /** @description 마지막으로 고친 관리자 이름. 아무도 고치지 않았으면 null — 화면은 「기본 문구」 */
             updatedByName: string | null;
@@ -8386,6 +8407,13 @@ export interface operations {
         };
         responses: {
             204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description clearBusinessVerification 과 businessVerificationToken 을 함께 보냄 */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -11005,10 +11033,18 @@ export interface operations {
         parameters: {
             query?: {
                 /**
-                 * @description 쉼표로 구분한 점포 ID. 관리 범위 밖의 ID 는 조용히 빠진다. 없으면 관리 범위 전체.
-                 *     빈 칸 · 숫자가 아닌 값 · 1..2147483647 밖의 값이 하나라도 있거나 500개를 넘으면 400 이다.
+                 * @description 고른 점포(관리자웹 목록 점포 필터 · 상단 점포 범위). 쉼표로 1000개까지(`storeIds=1,2`). 같은 키 반복
+                 *     (`storeIds=1&storeIds=2`)도 받지만 쿼리 파서가 키를 1000개까지만 읽어 넘치면 뒤 조건이 400 없이 빠지므로 많을 때는
+                 *     쉼표로 보낸다(api #132 리뷰). 관리 범위 밖의 id 는 조용히 빠진다. 주지 않으면 관리 범위 전체.
+                 *     빈 칸 · 숫자가 아닌 값 · 1..2147483647 밖의 값이 하나라도 있거나 1000개를 넘으면 400 이다.
                  */
-                storeIds?: string;
+                storeIds?: number[];
+                /**
+                 * @description 점포 유형(상단 점포 범위의 직영 · 가맹) — DIRECT · FRANCHISE, 반복하거나 쉼표로. 주면 그 유형 점포만이고 폐점 점포는
+                 *     뺀다(TO-DO 목록 api #133 과 같다, 2026-10-22 재영 — 폐점 점포는 전체 · 점포를 골라 본다). storeIds 와 함께 주면 둘 다
+                 *     맞는 점포만이다. 주지 않으면 유형 · 폐점 무관. 빈 값 · 모르는 값이 하나라도 있으면 400 이다.
+                 */
+                storeTypes?: ("DIRECT" | "FRANCHISE")[];
                 /**
                  * @description 쉼표로 구분한 고용형태. 없으면 전체. 화면은 둘 다 고르면 보내지 않는다.
                  *     빈 값 · 모르는 값이 하나라도 있으면 400 이다.
@@ -12839,7 +12875,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description { contractId, status(그대로 — PENDING_SEND · PENDING_SIGNATURE), sentAt, signDeadlineAt } */
+            /** @description { contractId, status(가입 초대는 그대로 PENDING_SEND · PENDING_SIGNATURE, 가입한 직원은 PENDING_SIGNATURE), sentAt, signDeadlineAt }. 가입한 직원은 알림함 알림(앱 푸시는 #261 전까지 나가지 않음) — 알림 템플릿을 쓸 수 없거나 탈퇴 계정이면 알림 없이 기한만 새로 */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -12860,21 +12896,21 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description CONTRACT_STATUS_CONFLICT(발송 대기 · 서명 대기가 아님) · SEND_CHANNEL_NOT_READY(가입한 직원 · 계정이 있는 번호 — 앱 알림 준비 전) · SEND_PHONE_NOT_MOBILE(휴대폰 번호가 아님) · 다른 요청이 먼저 고침 */
+            /** @description CONTRACT_STATUS_CONFLICT(발송 대기 · 서명 대기가 아님) · SEND_CHANNEL_NOT_READY(계정이 있는 번호의 소속 추가 확인 · 복귀 확인 — 직원 앱에 소속 확인이 없음) · SEND_PHONE_NOT_MOBILE(휴대폰 번호가 아님) · 코드 없음 「이 점포에 이미 재직 중인 직원입니다」(가입 전 레코드인데 그 번호의 계정이 이 점포에 재직 중) · 다른 요청이 먼저 고침 */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description SEND_FAILED(나가지 않음 — 거절 · 토큰 단계 · 요청 전 오류, 되돌렸고 다시 보낼 수 있음, 본문 contractId · status) · SEND_UNCONFIRMED(접수 여부 모름 또는 되돌리기 실패 — 상세를 다시 읽을 것) */
+            /** @description 가입 초대 알림톡일 때만 — SEND_FAILED(나가지 않음 — 거절 · 토큰 단계 · 요청 전 오류, 되돌렸고 다시 보낼 수 있음, 본문 contractId · status) · SEND_UNCONFIRMED(접수 여부 모름 또는 되돌리기 실패 — 상세를 다시 읽을 것) */
             502: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 직원 앱 주소(STAFF_APP_URL)가 없음 · 대체 문자 발신번호(BIZPPURIO_SMS_FROM)가 없음 · 가입 초대 템플릿이 없거나 꺼짐 */
+            /** @description 가입 초대 알림톡일 때만 — 직원 앱 주소(STAFF_APP_URL)가 없음 · 대체 문자 발신번호(BIZPPURIO_SMS_FROM)가 없음 · 가입 초대 템플릿이 없거나 꺼짐 */
             503: {
                 headers: {
                     [name: string]: unknown;

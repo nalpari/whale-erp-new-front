@@ -12,7 +12,7 @@ import { CancelRetirementDialog, RetirementDialog } from "./retirement-dialog";
 // 카드 머리 오른쪽(WHALEERP-585). 퇴직 버튼은 retirementActions 가 정한다 — 재직이면 붉은 「퇴직 처리」, 퇴직일 전의 퇴직
 // 예정이면 「퇴직일 변경」 · 「퇴직 처리 취소」(목업 detail.html).
 // 수정 권한은 지금 주소의 메뉴 권한(usePagePermission)으로 미리 가리고, 막는 것은 api 다.
-// 「목록」은 들어올 때의 목록 조건으로 돌아간다(staffListSearch).
+// 「목록」은 목록이 ?back= 으로 실어 보낸 목록 주소로 돌아간다(backHrefOf).
 export function StaffDetailActions({ staff, today, listHref }: { staff: StaffMember; today: string; listHref: string }) {
   const canUpdate = usePagePermission().update;
   const [dialog, setDialog] = useState<"retire" | "change" | "cancel" | null>(null);

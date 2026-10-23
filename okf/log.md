@@ -1,7 +1,25 @@
 # Bundle history
 
 ## 2026-10-23
+* **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — main 병합(front marowak, main #122 까지): 재직 이력 링크를 main(#120)의 `?back=` 방식으로 바꿨다 — [목록] 주소(`detailListHrefOf`)를 `back=` 으로 싣고 근무스케줄 주 `week` 를 이어 단다(`historySearch`, #119 리뷰 블로커). okf 충돌은 양쪽 기록을 살렸다.
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — 직원 상세 기본 정보의 퇴직일 줄(재직 중이면 입사일 줄) 아래에 「재직 이력」(재입사로 이은 이전 재직 기간) · 「이후 재입사」 줄을 두었다(WHALEERP-615, 목업 staff/detail.html). 기간은 「입사일 ~ 퇴직일」이고 누르면 그 레코드의 상세로 간다. api 타입을 api main(#136 머지 f7aebab) 기준으로 다시 만들었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front kingdra, main #123 까지): okf/log 충돌은 양쪽 기록을 살렸고, 데모 html 은 main 것을 받아 다시 빌드했다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front kingdra, main #121 까지): okf 충돌은 양쪽 기록을 살리고 generated.at 만 새로 썼다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [로그인](/auth.md) — 이메일 형식 문구를 다섯 화면 모두 「이메일 형식이 올바르지 않습니다.」 하나로 맞췄다(`EMAIL_FORMAT_ERROR`, 사용자 결정). 플랫폼 관리자 · MY PAGE 는 저장 때 api 형식 400 도 이 문구로 보인다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 이메일 형식 검사를 `src/lib/email-format.ts` 하나로 모아 이메일 칸이 있는 다섯 화면(플랫폼 관리자 · MY PAGE · 회원가입 · 찾기 · 도입문의)과 데모가 api `@IsEmail` 과 같은 규칙을 쓴다. 플랫폼 관리자 패널은 저장 중에 고친 칸의 거절을 칸이 아니라 띠로 보인다(front #61 ip-code-review 비블로커, 사용자 요청).
+* **Update**: [점포 관리](/stores.md) — 점포 상세 · 목록 카드 줄 맞춤(사용자 요청): 상세 변경이력의 등록 칸을 위치정보 줄과 같은 고정폭으로, 머리 카드 점포명 · 점포코드 사이 6px. 목록 카드는 점포명 한 줄 말줄임, 사업자정보 미인증을 점포주소 옆 제목으로, 간격 12 · 18px. 데모도 같게.
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) · [Whale ERP Frontend](/whale-erp-front.md) — WHALEERP-611: 재발송이 가입한 직원(서명 대기)에게 앱 알림(알림함 · 푸시 대기 — 푸시는 #261 · #321 뒤. 받을 계정이 없거나 탈퇴면 알림 없이 기한만 새로, api NTF-25)으로 나가게 되어(api) 목록 · 상세 재발송 버튼을 `invitation.canResend` 하나로 보인다(최근 계약이 있을 때 — 호출부, 계약 발송 대기 조건을 뺐다). 근로계약 상세의 서명 대기 「재발송」을 막지 않고 다른 상태처럼 확인창 → 재발송으로 두며, 「앱 알림이 생기면 다시 보낼 수 있습니다」를 걷었다. 소속 추가 확인 · 복귀 확인의 409 `SEND_CHANNEL_NOT_READY` 는 api 문장 그대로 확인창에 보인다. 서명 대기 재발송 확인창은 데모(contracts-signing) 문구 「계약서를 다시 보내시겠습니까?」 · 「같은 조건의 계약서를 ○○ 님에게 다시 보냅니다. 날인 기한은 발송일로부터 30일입니다.」를 근로계약 상세에 쓴다(`signingResendCopy`). 직원 목록 · 상세 재발송은 api canResend 가 가입 전 · 계정 없는 번호에만 참이라 늘 가입 초대 문구다. api 타입을 uluru(WHALEERP-611)의 openapi 로 다시 만들었다(설명만 바뀜) — api 머지 뒤 main 기준으로 다시 만든다. 당사자 정보 저장 주석을 「가입한 직원은 앱 알림(api #259), 계정만 있는 번호는 보내지 않음」으로 고쳤다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 이메일 형식 검사: 도메인은 허용 글자만 받고(끝에 쉼표 · 괄호가 붙은 값), 끝(TLD)의 전각 영문도 막는다 — api @IsEmail 과 맞춤(리뷰로 찾음, front #61).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front #61 magikarp, main #120 까지): okf 충돌은 main 의 플랫폼 관리자 줄([등록] 제목 줄 이동 · 미사용 비밀번호 빈칸) 위에 이메일 형식 서술만 다시 얹고, 로그는 양쪽을 살렸다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 이메일 칸의 형식 검사를 api `@IsEmail` 에 맞췄다 — 화면이 「올바른 형식」이라 한 값을 저장 때 api 가 막지 않게(사용자 결정, front #61).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 패널: 여러 칸 검증 오류(400 배열)는 아이디 칸이 아니라 위 띠로 보인다(code-review 로 찾음, front #61).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 아이디 중복확인의 403(등록 권한 없음)을 회색 확인 실패 대신 패널 위 띠로 올렸다(사용자 결정, front #61).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 패널 리뷰 반영(front #61): 확인 답 → 상태 · 저장을 막는 오류를 순수 함수로 빼 테스트, 저장 거절은 거절된 칸의 성공 표시만 내림, 여러 칸 400 은 원문 유지.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 등록 · 수정 패널 문구 확정(사용자, front #61): 아이디 확인 중 · 중복 · 확인 실패 문구, 중복 거절한 아이디는 고치기 전 저장 막기, 수정 화면 원래 이메일은 표시 없음, 확인 문구 알림 칸 상시 배치. 데모(erp.js · platform-admin)도 맞췄고 목업은 그대로 둔다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front #61 magikarp, main #116 까지): okf 충돌은 양쪽 기록을 살리고 generated.at 만 새로 썼다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 등록 · 수정 패널: 저장 때 api 가 칸에 붙인 중복 오류는 그 칸을 고칠 때까지 남기고, 저장이 거절되면 사용 가능 · 올바른 형식 표시를 내린다(front #61 머지 블로커 반영).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front #61 magikarp, main #113 까지): okf 충돌은 main 서술 위에 플랫폼 관리자 줄의 아이디 · 이메일 즉시 확인 서술만 다시 얹어 풀었다. 데모 html 은 main 것을 받아 다시 빌드했다.
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 직원 목록 점포 필터를 상단 점포 범위와 이었다(재영 Buzz 공지 10-22, 근로계약 #109 와 같은 규칙): 점포 칸을 `StorePicker` 로 바꾸고 고른 점포는 `storeIds`, 빈 `storeIds=` 는 「전체」, 상단 범위 `scope` 는 api `storeIds`(점포 하나) · `storeTypes`(직영 · 가맹)로 보낸다(폐점은 api 가 뺀다). 예전 `?store=` 주소는 읽지 않고 상단 범위로 채운다. 상세 링크에 목록 주소 `?back=` 을 싣고 [목록]이 그 주소로 돌아간다. 점포 id 상한 500 → 1000. api 타입을 api #140(horsea — `GET /staff-members` `storeIds` number[] · `storeTypes`)의 openapi 로 다시 만들었다 — api 머지 뒤 main 기준으로 다시 만든다. 상세 [목록]은 `?back=` 이 없으면 상세 주소에 붙은 예전 형식 목록 조건(`?keyword=…&page=…`)으로 돌아간다(`detailListHrefOf`, 이상한 `back` 은 기본 목록).
 * **Update**: [점포 관리](/stores.md) · [Whale ERP Frontend](/whale-erp-front.md) — PR 리뷰 반영: 점포 연락처 검사는 api 와 같이 자릿수만 본다(050 이 아닌 12자리도 저장, 좁히지 않기로 함 — 사용자 결정)는 것을 본문 · 주석 · 테스트로 남겼다. 대표자 연락처 설명을 「휴대전화」에서 「10~11자리(유선 포함)」로 바로잡았다. api 타입을 api main(점포 연락처 9~12자리 머지 뒤) 기준으로 다시 만들었다. 플랫폼 메뉴 [등록] 자리 설명을 `createPlacement` 규칙대로 고쳤다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 상세에서 미사용 계정의 비밀번호 칸을 「—」 대신 빈칸으로 둔다. BP 권한 그룹 관리 목록 카드 머리의 [신규 등록]을 제목 줄 [등록]으로 옮기며 이름을 바꿨다(사용자 요청).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — 1팀 목록 화면의 등록 버튼을 3팀 목록(근로계약 · 직원 · TO-DO)처럼 제목 줄(`PageBar`) 오른쪽으로 옮겼다: 점포 정보 관리(`StoreFrame actions`), 플랫폼 관리자 · 플랫폼 권한 · BP 권한 그룹 · 플랫폼 메뉴(제목 줄을 화면 클라이언트 컴포넌트가 그린다 — 버튼이 등록 패널 · 칸 상태와 같은 곳에 있어야 해서). 플랫폼 · BP 공통코드 관리는 카드 머리 [추가] · [저장]을 그대로 둔다(사용자 요청, 예외).
@@ -9,6 +27,7 @@
 * **Update**: [점포 관리](/stores.md) — 점포 연락처에 050X 평생번호(12자리, 0507-2033-1334)를 받는다. 앞자리 칸 4자리, 저장 검사 9~12자리, `splitPhone` · `formatPhone` 이 050 12자리를 4-4-4 로 다룬다. 대표자 연락처는 10~11자리 · 앞자리 3칸 그대로. api 의 저장 검사 · DB 제약 확장은 api 브랜치에 있고 main 머지 대기 — 배포는 api 다음.
 
 ## 2026-10-22
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front #61 magikarp): 플랫폼 관리자 등록 패널의 아이디 칸이 등록일 때만 보이게 바뀐 main 구조 위에 확인 중 · 사용 가능 상태 표시(`LoginIdAvailability`)를 다시 얹었다. okf 충돌은 양쪽 서술을 살려 풀었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 푸터 사업자 정보를 재영이 보내 준 값(상호 · 주소 · 이메일 · 전화번호 · 사업자등록번호)으로 바꿨다. 회사 소개 페이지가 없어 상호명 링크 자리(`COMPANY_URL`)를 지우고 글자로 둔다. 시안 자리값(둘째 상호 칸 · 통신판매업신고번호)도 뺐다. 데모도 같이 고쳤다(front #110 재영 답글).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [플랫폼 시스템관리](/system.md) — 플랫폼 공통코드에서 플랫폼고정 그룹은 상세 코드 삭제 칸을 두지 않는다(`itemsDeletable` — api #135 가 409 로 막는다, 사용 상태로만 관리). front #113 머지 블로커 반영. 공통코드 api 타입을 api main(#135 머지 뒤) 기준으로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통코드 api 타입을 api #135 의 openapi 로 다시 만들었다(설명만 바뀜). 이 화면은 api #135 가 main 에 머지 · 배포된 뒤에 머지한다(front #113 머지 블로커).
@@ -124,6 +143,10 @@
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — main 병합: `usePagePermission` 훅 · `/find` proxy 문장을 BP 선택 반영본에 합치고, 점포 등록 BP 는 웨일ERP 바로가기 문장을 남기며 버튼 권한을 주소 기준(`usePagePermission`)으로 맞췄다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 고른 BP 탭의 브라우저 탭 제목에 상호를 붙이던 것을 뺐다. 즐겨찾기 이름에 상호가 남아 다른 BP 로 열릴 때 헷갈린다(재영). BP 선택 팝업은 BP 만 고른다(점포 선택 제외) — 목업 · 데모도 맞췄다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `SlidePanel` 의 바탕창(`PanelBackdrop`)이 클릭만 가로채고 포커스는 가두지 않아, Tab 으로 배경(헤더·목록)이나 다른 패널로 넘어갈 수 있던 문제를 고쳤다(적대적 코드 리뷰 3개가 독립적으로 찾음, PR #62). `useBackdropActive()` 를 새로 내보내 배경과 맨 위가 아닌 패널에 직접 `inert` 를 건다 — 헤더는 `AdminHeader` 가 자동으로 감싸고, 본문은 쓰는 화면이 손으로 감싸야 한다(platform-admins). 뒤이어 패널을 닫을 때 트리거로 포커스가 못 돌아가는 회귀를 또 찾아 `notifyBackdrop` 을 `flushSync` 로 감싸 고쳤다. 중복이 된 `admin-detail-panel.tsx` 의 `inert={editOpen}` 과 그 전달용 `editOpen` prop 도 지웠다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 등록·수정의 아이디·이메일 즉시 유효성 체크가
+  확인 중 · 사용 가능 상태를 보이지 않던 것을 고쳤다(impeccable critique P1). 아이디는 중복확인 API 응답에 따라
+  세 상태(확인 중 · 사용 가능 · 중복)를, 이메일은 중복확인 API 가 없어 형식만 보고 지연 없이 성공 상태를 보인다 —
+  이미 저장 때 받은 중복 오류가 있으면 값을 고치지 않고는 지우지 않는다. 개발화면·데모·목업 세 곳에 모두 반영했다.
 
 ## 2026-10-19
 * **Update**: [급여명세서 관리 화면 (구현)](/screens/payslips.md) — WHALEERP-231 · 237 발송. 목록 「확정 N건 발송」이 확인창 뒤 `POST /payslips/send`(목록과 같은 달 · 점포 · 직원명)를 부르고, 실패가 있으면 결과 창에 성공 건수와 실패 대상(이름 · 이유)을 따로 보인다. 검토 화면에 「발송」(확정) · 「재발송」(발송 완료) 버튼과 확인창, 발송 완료의 확정 취소 확인창에 직원 앱에서 사라진다는 경고. 경고 띠는 확인된 검토 사유를 뺀다. `api-types.generated.ts` 다시 만듦(추가만).

@@ -11,13 +11,45 @@ export const SEND_UNKNOWN = "발송됐는지 알 수 없습니다. 상세를 다
  * - SEND_UNCONFIRMED: api 가 쓰고 보냈을 수 있다(되돌리기 실패 포함) → recheck
  * - 409 상태 충돌 · 「다른 요청이 먼저 고침」(code 없음): 화면이 낡았다 → recheck
  * - 코드 없는 502 · 504, 응답 없음: 앞단에서 끊겨 접수 여부를 모른다 → recheck, 문장은 SEND_UNKNOWN
- * - 나머지(SEND_FAILED · SEND_CHANNEL_NOT_READY · SEND_PHONE_NOT_MOBILE · 503 …): api 문장 그대로, 다시 보낼 수 있다
+ * - 나머지: api 문장 그대로, 보내기를 막지 않는다(SEND_FAILED · 503 은 다시 보내면 될 수 있고, SEND_CHANNEL_NOT_READY ·
+ *   SEND_PHONE_NOT_MOBILE 은 원인이 풀릴 때까지 같은 409)
  */
 export function sendFailureOf(status: number | null, code: string | undefined, message: string): SendFailure {
   const withCode = code ? { code } : {};
   if (status === null || ((status === 502 || status === 504) && !code)) return { ok: false, error: SEND_UNKNOWN, recheck: true };
   const recheck = code === "SEND_UNCONFIRMED" || (status === 409 && (!code || code === "CONTRACT_STATUS_CONFLICT"));
   return { ok: false, error: message, ...withCode, recheck };
+}
+
+/**
+ * 근로계약 상세에서 서명 대기 계약을 다시 보낼 때의 확인창 문구(WHALEERP-611). 데모
+ * docs/demo/src/pages/staff/contracts-signing.mjs 의 문구 그대로다. 이름을 모르면 그 조각만 뺀다.
+ * 상세 응답에 가입 여부가 없어 서명 대기면 가입 전(가입 초대 알림톡)이어도 이 문구다 — 틀린 말은 없지만 가입 전이면 앞서 보낸
+ * 초대 코드가 무효가 된다는 점은 빠진다(상세 응답에 가입 여부가 생기면 나눈다).
+ */
+export function signingResendCopy(name: string | null | undefined): { title: string; body: string } {
+  return {
+    title: "계약서를 다시 보내시겠습니까?",
+    body: `같은 조건의 계약서를 ${name ? `${name} 님에게 ` : ""}다시 보냅니다. 날인 기한은 발송일로부터 30일입니다.`,
+  };
+}
+
+/** 발송 대기(가입 초대 알림톡)의 재발송 확인창 문구 */
+const INVITE_RESEND_COPY = {
+  title: "근로계약서를 다시 보내시겠습니까?",
+  body: [
+    "직원 휴대전화번호로 가입 초대 알림톡(초대 코드)을 다시 보냅니다. 초대 코드와 서명 기한은 보낸 날부터 30일입니다.",
+    "앞서 보낸 초대 코드는 쓸 수 없고, 서명 기한도 새로 잡힙니다.",
+  ],
+};
+
+/** 근로계약 상세 재발송 확인창 문구 — 서명 대기면 signingResendCopy, 그 밖(발송 대기)은 가입 초대 문구. 본문은 문단마다 한 줄 */
+export function resendDialogCopy(status: string | null | undefined, name: string | null | undefined): { title: string; body: string[] } {
+  if (status === "PENDING_SIGNATURE") {
+    const { title, body } = signingResendCopy(name);
+    return { title, body: [body] };
+  }
+  return { title: INVITE_RESEND_COPY.title, body: [...INVITE_RESEND_COPY.body] };
 }
 
 /**

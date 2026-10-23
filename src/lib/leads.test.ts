@@ -67,6 +67,8 @@ test("빈칸만 적은 칸과 api 가 받지 않는 전화번호를 확인 창 �
   assert.equal(leadInputProblem(formOf([...BASE, ["industryDetail", " "]])), null);
   for (const ok of ["021234567", "010-1234-5678", " 031 123 4567 ", "1588-1234", "16001234"]) assert.equal(leadInputProblem(formOf(replaced("phone", ok))), null, ok);
   for (const bad of ["1234", "010-1234-56789", "1700-1234", "02)1234-5678", "abc"]) assert.equal(leadInputProblem(formOf(replaced("phone", bad)))?.name, "phone", bad);
+  // 브라우저 type=email 은 통과시키지만 api @IsEmail 은 막는 값
+  for (const bad of ["kim@whale", "kim@whale.c", "kim@whale.co,"]) assert.equal(leadInputProblem(formOf(replaced("email", bad)))?.name, "email", bad);
 });
 
 test("429 · 한글 400 은 api 문구를, 영문 400 은 입력 확인 문구를, 응답 없음은 결과 모름을, 그 밖은 접수 실패를 보인다", () => {

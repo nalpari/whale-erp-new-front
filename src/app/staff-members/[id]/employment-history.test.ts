@@ -1,6 +1,7 @@
 // node --test "src/app/staff-members/[[]id]/employment-history.test.ts"
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { detailListHrefOf } from "../staff-list-query.ts";
 import { employmentHistoryLines, historySearch, periodText } from "./employment-history.ts";
 
 const period = (staffMemberId: number, hiredDate: string | null, retiredDate: string | null) => ({ staffMemberId, hiredDate, retiredDate });
@@ -18,31 +19,39 @@ test("이은 레코드가 없으면 줄을 두지 않는다", () => {
   assert.deepEqual(employmentHistoryLines({ previousRecords: [], laterRecords: [] }, ""), []);
 });
 
-test("이전 재직은 「재직 이력」, 이후 재입사는 「이후 재입사」 줄 — api 순서(가까운 것부터) 그대로, 목록 조건을 이어 단다", () => {
+test("이전 재직은 「재직 이력」, 이후 재입사는 「이후 재입사」 줄 — api 순서(가까운 것부터) 그대로, 받은 조건을 이어 단다", () => {
   const lines = employmentHistoryLines(
     {
       previousRecords: [period(7, "2025-01-02", "2025-06-30"), period(3, "2024-01-02", "2024-06-30")],
       laterRecords: [period(12, "2026-03-01", null)],
     },
-    "?store=5",
+    "?back=%2Fstaff-members%3Fpage%3D2",
   );
   assert.deepEqual(lines, [
     {
       label: "재직 이력",
       note: "이전 재직",
       links: [
-        { href: "/staff-members/7?store=5", text: "2025-01-02 ~ 2025-06-30" },
-        { href: "/staff-members/3?store=5", text: "2024-01-02 ~ 2024-06-30" },
+        { href: "/staff-members/7?back=%2Fstaff-members%3Fpage%3D2", text: "2025-01-02 ~ 2025-06-30" },
+        { href: "/staff-members/3?back=%2Fstaff-members%3Fpage%3D2", text: "2024-01-02 ~ 2024-06-30" },
       ],
     },
-    { label: "이후 재입사", note: null, links: [{ href: "/staff-members/12?store=5", text: "2026-03-01 ~ 재직 중" }] },
+    { label: "이후 재입사", note: null, links: [{ href: "/staff-members/12?back=%2Fstaff-members%3Fpage%3D2", text: "2026-03-01 ~ 재직 중" }] },
   ]);
 });
 
-test("재직 이력 링크는 목록 조건에 근무스케줄 주를 더한다 — 날짜 모양이 아닌 주는 버린다", () => {
-  assert.equal(historySearch("?store=5", "2025-06-02"), "?store=5&week=2025-06-02");
-  assert.equal(historySearch("", "2025-06-02"), "?week=2025-06-02");
-  assert.equal(historySearch("?store=5", undefined), "?store=5");
-  assert.equal(historySearch("?store=5", "abc"), "?store=5");
-  assert.equal(historySearch("", ["2025-06-02", "2025-06-09"]), "");
+test("재직 이력 링크는 [목록] 주소를 ?back= 으로 싣고 근무스케줄 주를 더한다 — 기본 목록 · 날짜 모양이 아닌 주는 싣지 않는다", () => {
+  const back = "/staff-members?keyword=%ED%99%8D&page=2";
+  assert.equal(historySearch(back, "2025-06-02"), `?back=${encodeURIComponent(back)}&week=2025-06-02`);
+  assert.equal(historySearch("/staff-members", "2025-06-02"), "?week=2025-06-02");
+  assert.equal(historySearch(back, undefined), `?back=${encodeURIComponent(back)}`);
+  assert.equal(historySearch(back, "abc"), `?back=${encodeURIComponent(back)}`);
+  assert.equal(historySearch("/staff-members", ["2025-06-02", "2025-06-09"]), "");
+});
+
+test("재직 이력 링크로 간 상세의 [목록]은 원래 목록 주소다 — week 는 목록에 들어가지 않는다", () => {
+  const back = "/staff-members?keyword=%ED%99%8D&page=2";
+  const search = Object.fromEntries(new URLSearchParams(historySearch(back, "2025-06-02")));
+  assert.equal(detailListHrefOf(search), back);
+  assert.equal(detailListHrefOf(Object.fromEntries(new URLSearchParams(historySearch("/staff-members", "2025-06-02")))), "/staff-members");
 });

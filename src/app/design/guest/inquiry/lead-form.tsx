@@ -140,7 +140,7 @@ export function LeadScreen({ children }: { children: ReactNode }) {
 }
 
 // leadInputProblem 이 검사 오류를 거는 칸.
-const CHECKED_FIELDS = new Set(["contactName", "phone", "industryDetail", "body"]);
+const CHECKED_FIELDS = new Set(["contactName", "phone", "email", "industryDetail", "body"]);
 
 // 샘플은 접수 요청을 보내지 않고 늘 성공한다.
 const sampleSubmit = async (): Promise<LeadResult> => ({ ok: true });
@@ -149,7 +149,7 @@ const sampleSubmit = async (): Promise<LeadResult> => ({ ok: true });
  * 도입문의(#297 · #298). 받는 항목은 okf/home.md 도입문의(이름·업종·전화번호·이메일·관심 서비스·도입 예정 시기·문의 내용)를 따른다.
  * [문의 접수하기] → 브라우저 검사 → 확인 창(접수 대상 · 연락 일정) → 접수. 성공하면 완료 창을 띄우고 폼을 비운다.
  * 실패하면 적은 내용을 그대로 두고 오류와 다시 하는 방법을 버튼 위에 보인다 — 서버 액션을 form action 이 아니라 직접 불러 폼이 초기화되지 않는다.
- * 브라우저 검사가 놓치는 빈칸만 적은 칸 · 전화번호 형식(leadInputProblem)은 확인 창을 띄우기 전에 그 칸에 검사 오류로 건다.
+ * 브라우저 검사가 놓치는 빈칸만 적은 칸 · 전화번호 · 이메일 형식(leadInputProblem)은 확인 창을 띄우기 전에 그 칸에 검사 오류로 건다.
  */
 export function LeadForm({ options, submit = sampleSubmit }: { options: LeadOptions; submit?: (form: FormData) => Promise<LeadResult> }) {
   const formRef = useRef<HTMLFormElement>(null);

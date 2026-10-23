@@ -3,6 +3,36 @@
 (() => {
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
+  // 이메일 형식 — 앱 src/lib/email-format.ts 의 isEmailFormat 과 같다(api @IsEmail 규칙). 브라우저 type="email" 은 a@b 도 받는다.
+  // 고칠 때는 앱 파일 · erp.js · guest.js 셋을 같이 고친다.
+  const EMAIL_LOCAL_ATOM = "[a-z0-9!#$%&'*+\\-/=?^_`{|}~\\u00a1-\\ud7ff\\uf900-\\ufdcf\\ufdf0-\\uffef]+";
+  const EMAIL_LOCAL = new RegExp(`^${EMAIL_LOCAL_ATOM}(?:\\.${EMAIL_LOCAL_ATOM})*$`, "i");
+  const EMAIL_LABEL_CHAR = "[a-z0-9\\u00a1-\\uff00\\uff5f-\\uffff]";
+  const EMAIL_LABEL = new RegExp(`^${EMAIL_LABEL_CHAR}(?:(?:${EMAIL_LABEL_CHAR}|-)*${EMAIL_LABEL_CHAR})?$`, "i");
+  const EMAIL_TLD = /^(?:[a-z¡-¨ª-퟿豈-﷏ﷰ-＀｟-￯]{2,}|xn[a-z0-9-]+[a-z0-9])$/i;
+  const emailBytes = (text) => new TextEncoder().encode(text).length;
+  const isEmailFormat = (value) => {
+    if (value.length > 254) return false;
+    const parts = value.split("@");
+    if (parts.length !== 2) return false;
+    const [local, domain] = parts;
+    if (emailBytes(local) > 64 || emailBytes(domain) > 254 || !EMAIL_LOCAL.test(local)) return false;
+    const labels = domain.split(".");
+    const tld = labels.pop() ?? "";
+    if (!labels.length || tld.length > 63 || /\s/.test(tld) || !EMAIL_TLD.test(tld)) return false;
+    return labels.every((label) => label.length <= 63 && !/\s/.test(label) && EMAIL_LABEL.test(label));
+  };
+  // data-email-format 칸(회원가입 · 찾기 · 도입문의)은 형식이 틀리면 그 문구로 검사 오류를 건다 — 앱 EMAIL_FORMAT_ERROR 와 같은 문구다.
+  const syncEmailFormat = (input) => {
+    const v = input.value.trim();
+    input.setCustomValidity(!v || isEmailFormat(v) ? "" : input.dataset.emailFormat);
+  };
+  for (const input of $$("input[data-email-format]")) {
+    input.addEventListener("input", () => syncEmailFormat(input));
+    // 폼을 비우면(reset) 값이 돌아간 뒤에 다시 본다 — reset 이벤트는 값을 되돌리기 전에 온다
+    input.form?.addEventListener("reset", () => setTimeout(() => syncEmailFormat(input)));
+  }
+
   // 머리말: 스크롤하면 흰 바탕과 선을 깐다. 본문이 흰 화면(data-lined)은 맨 위에서도 선이 있다.
   const header = document.querySelector("[data-guest-header]");
   if (header) {
@@ -209,6 +239,8 @@
       // 다시 고치면 표시를 지운다.
       input.addEventListener("input", () => {
         input.setCustomValidity("");
+        // 이메일은 지운 검사 오류 대신 형식 검사를 다시 건다(위 data-email-format)
+        if (input.dataset.emailFormat) syncEmailFormat(input);
         show("idle");
       });
       // 칸을 벗어날 때 형식이 맞으면 확인한다. 이미 쓰는 값이면 제출을 막는다.
