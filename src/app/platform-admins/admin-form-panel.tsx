@@ -103,11 +103,13 @@ export function AdminFormPanel(props: Props) {
   }, [resetSignal]);
   const [saving, startSaving] = useTransition();
   /**
-   * 저장 요청이 떠 있는 동안 고친 칸 — 입력칸은 저장 중에도 잠기지 않는다. 늦게 온 거절은 보낸 값의 것이라 지금 값에 붙이면
-   * 쓸 수 있는 아이디가 「사용 중」으로 막힌다. 그런 칸의 거절은 위 띠로만 알린다. set() 을 거친 칸만 담긴다 — 주소 칸은
-   * 따로 바꾸지만 api 가 칸에 붙이는 오류는 아이디 · 이메일뿐이라(serverErrorField) 상관없다.
+   * 저장 요청이 떠 있는 동안 보낸 값과 달라진 칸 — 입력칸은 저장 중에도 잠기지 않는다. 늦게 온 거절은 보낸 값(sentForm)의
+   * 것이라 바뀐 값에 붙이면 쓸 수 있는 아이디가 「사용 중」으로 막힌다. 그런 칸의 거절은 위 띠로만 알린다. 지웠다가 같은 값으로
+   * 다시 치면 빠진다 — 거절이 그 값의 것이므로 칸에 붙인다. set() 을 거친 칸만 담긴다 — 주소 칸은 따로 바꾸지만 api 가 칸에
+   * 붙이는 오류는 아이디 · 이메일뿐이라(serverErrorField) 상관없다.
    */
   const editedWhileSaving = useRef(new Set<AdminFormField>());
+  const sentForm = useRef<AdminForm | null>(null);
   const router = useRouter();
 
   const ids = useId();
@@ -117,7 +119,9 @@ export function AdminFormPanel(props: Props) {
   const clearError = (key: AdminFormField) => setErrors(without(key));
   const set = <K extends keyof AdminForm>(key: K, value: AdminForm[K]) => {
     setForm((f) => ({ ...f, [key]: value }));
-    editedWhileSaving.current.add(key as AdminFormField);
+    const sent = sentForm.current?.[key];
+    if (sent !== undefined && JSON.stringify(sent) === JSON.stringify(value)) editedWhileSaving.current.delete(key as AdminFormField);
+    else editedWhileSaving.current.add(key as AdminFormField);
     clearError(key as AdminFormField);
     setServerErrors(without(key as AdminFormField));
   };
@@ -232,6 +236,7 @@ export function AdminFormPanel(props: Props) {
     if (Object.keys(found).length) return focusFirstError();
 
     editedWhileSaving.current = new Set();
+    sentForm.current = form;
     startSaving(async () => {
       if (props.mode === "create") {
         const result = await createPlatformAdminAction(toCreateInput(form)).catch(unknownResult("등록"));
