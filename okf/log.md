@@ -32,6 +32,7 @@
 * **Update**: [점포 관리](/stores.md) — 점포 연락처에 050X 평생번호(12자리, 0507-2033-1334)를 받는다. 앞자리 칸 4자리, 저장 검사 9~12자리, `splitPhone` · `formatPhone` 이 050 12자리를 4-4-4 로 다룬다. 대표자 연락처는 10~11자리 · 앞자리 3칸 그대로. api 의 저장 검사 · DB 제약 확장은 api 브랜치에 있고 main 머지 대기 — 배포는 api 다음.
 
 ## 2026-10-22
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — MY PAGE 기본정보에서 이메일을 바꿀 때 「지금 비밀번호」를 요구하던 통제(2026-10-21 추가)를 뺐다(사용자 결정, 2026-10-22) — 토큰 탈취만으로 이메일을 바꿔 비밀번호 찾기를 가로챌 수 있는 경로가 다시 열린다는 점을 알리고 확인받았다. `my-profile-form.ts`(`validateCurrentPassword` 삭제, `toUpdateInput` 단순화), `my-page-panel.tsx`(지금 비밀번호 칸·상태 제거)를 고쳤다. api 쪽(`admin-profile.service.ts`/`admin-profile-update.dto.ts`)은 별도 PR이다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front #61 magikarp): 플랫폼 관리자 등록 패널의 아이디 칸이 등록일 때만 보이게 바뀐 main 구조 위에 확인 중 · 사용 가능 상태 표시(`LoginIdAvailability`)를 다시 얹었다. okf 충돌은 양쪽 서술을 살려 풀었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 푸터 사업자 정보를 재영이 보내 준 값(상호 · 주소 · 이메일 · 전화번호 · 사업자등록번호)으로 바꿨다. 회사 소개 페이지가 없어 상호명 링크 자리(`COMPANY_URL`)를 지우고 글자로 둔다. 시안 자리값(둘째 상호 칸 · 통신판매업신고번호)도 뺐다. 데모도 같이 고쳤다(front #110 재영 답글).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [플랫폼 시스템관리](/system.md) — 플랫폼 공통코드에서 플랫폼고정 그룹은 상세 코드 삭제 칸을 두지 않는다(`itemsDeletable` — api #135 가 409 로 막는다, 사용 상태로만 관리). front #113 머지 블로커 반영. 공통코드 api 타입을 api main(#135 머지 뒤) 기준으로 다시 만들었다.
