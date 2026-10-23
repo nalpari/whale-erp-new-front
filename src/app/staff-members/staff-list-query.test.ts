@@ -1,7 +1,8 @@
 // node --test src/app/staff-members/staff-list-query.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { backHrefOf, DEFAULT_STAFF_LIST_QUERY, parseStaffListQuery, toStaffListSearch, withBack, withFilter, withPickedStores, withScopeCondition } from "./staff-list-query.ts";
+import { weekHref } from "./[id]/summary-view.ts";
+import { backHrefOf, detailListHrefOf, DEFAULT_STAFF_LIST_QUERY, parseStaffListQuery, toStaffListSearch, withBack, withFilter, withPickedStores, withScopeCondition } from "./staff-list-query.ts";
 
 const pick = (q: { storeIds: number[]; storesCleared: boolean; scope: unknown }) => ({ storeIds: q.storeIds, storesCleared: q.storesCleared, scope: q.scope });
 
@@ -207,4 +208,41 @@ test("storeIds 1000개 자르기 — 앞에서부터 1000개, 겹친 값은 하�
 
 test("이상한 storeIds 뿐이면 범위가 있어도 비운 「전체」", () => {
   assert.deepEqual(pick(parseStaffListQuery({ storeIds: "abc", scope: "DIRECT" })), { storeIds: [], storesCleared: true, scope: null });
+});
+
+test("상세 [목록] — ?back= 이 있으면 그 목록 주소", () => {
+  assert.equal(detailListHrefOf({ back: "/staff-members?storeIds=3&page=2" }), "/staff-members?storeIds=3&page=2");
+  // back 이 있으면 상세 주소에 붙은 다른 값은 보지 않는다
+  assert.equal(detailListHrefOf({ back: "/staff-members?scope=DIRECT", keyword: "홍", week: "2026-10-26" }), "/staff-members?scope=DIRECT");
+});
+
+test("상세 [목록] — ?back= 이 없으면 상세 주소에 붙은 예전 형식 목록 조건을 목록 규칙으로", () => {
+  assert.equal(detailListHrefOf({ keyword: "홍", page: "3" }), "/staff-members?keyword=%ED%99%8D&page=3");
+  // 같은 이름 여럿은 첫 값, 모르는 이름 · 예전 ?store= · 상세 전용 week 는 버린다
+  assert.equal(
+    detailListHrefOf({ page: ["2", "5"], next: "//evil.example", store: "판교", storeIds: "3", week: "2026-10-26", employmentStatus: "ALL" }),
+    "/staff-members?employmentStatus=ALL&page=2",
+  );
+  assert.equal(detailListHrefOf({ storeIds: "3,7", scope: "DIRECT" }), "/staff-members?storeIds=3%2C7");
+});
+
+test("상세 [목록] — 둘 다 없거나 week 만 있으면 기본 목록", () => {
+  assert.equal(detailListHrefOf({}), "/staff-members");
+  assert.equal(detailListHrefOf({ week: "2026-10-26" }), "/staff-members");
+});
+
+test("상세 [목록] — back 이 이상한 값이면 기본 목록이고 예전 조건으로 떨어지지 않는다", () => {
+  assert.equal(detailListHrefOf({ back: "//evil.example", keyword: "홍" }), "/staff-members");
+  assert.equal(detailListHrefOf({ back: "", page: "3" }), "/staff-members");
+  assert.equal(detailListHrefOf({ back: ["/staff-members?page=2", "/staff-members?page=3"], page: "4" }), "/staff-members");
+});
+
+test("주 넘김(weekHref)은 ?back= 도 예전 형식 목록 조건도 잃지 않는다", () => {
+  const today = "2026-10-22";
+  const back = Object.fromEntries(new URLSearchParams(weekHref({ back: "/staff-members?storeIds=3&page=2" }, "2026-10-26", today).slice(1)));
+  assert.equal(back.week, "2026-10-26");
+  assert.equal(detailListHrefOf(back), "/staff-members?storeIds=3&page=2");
+  const legacy = Object.fromEntries(new URLSearchParams(weekHref({ keyword: "홍", page: "3", week: "2026-10-26" }, "2026-10-12", today).slice(1)));
+  assert.equal(legacy.week, "2026-10-12");
+  assert.equal(detailListHrefOf(legacy), "/staff-members?keyword=%ED%99%8D&page=3");
 });

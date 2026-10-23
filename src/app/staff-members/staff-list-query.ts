@@ -119,6 +119,16 @@ export function backHrefOf(raw: string | string[] | undefined): string {
   return staffListHrefOf(parseStaffListQuery(search));
 }
 
+/**
+ * 상세의 [목록] 주소. 목록이 실어 보낸 ?back= 이 있으면 그것(backHrefOf — 이상한 값이면 기본 목록이고, 아래 예전 조건으로 떨어지지 않는다).
+ * 없으면 상세 주소에 직접 붙은 목록 조건(?back= 을 쓰기 전 형식 /staff-members/5?keyword=홍&page=3 — 북마크 · 주 넘김으로 남은 주소)을 목록
+ * 규칙으로 다시 만든다 — 같은 이름이 여럿이면 첫 값, 모르는 이름 · 예전 ?store= 는 버리고, 상세 전용 값(week 등)은 목록에 들어가지 않는다.
+ */
+export function detailListHrefOf(search: RawSearch): string {
+  if (search.back !== undefined) return backHrefOf(search.back);
+  return staffListHrefOf(parseStaffListQuery(search));
+}
+
 /** 필터 · 건수를 바꾼다. 쪽은 1로 돌린다 — 4쪽에서 거르면 빈 쪽이 보인다. */
 export function withFilter(query: StaffListQuery, next: Partial<StaffListQuery>): StaffListQuery {
   return { ...query, ...next, page: 1 };
