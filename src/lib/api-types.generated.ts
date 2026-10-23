@@ -458,6 +458,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/admin/me/bp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 내 BP 사업자정보(MY PAGE, S-UOJVUR). BP 마스터만 받는다 — 그 밖의 권한은 403, 계정이 지워졌으면
+         *     404. GET me 와 같이 인증된 조회라 한도를 끈다(코드 리뷰로 찾음, 2026-10-22 — 탭 전환·저장 뒤
+         *     재조회가 로그인성 한도에 걸릴 수 있었다).
+         */
+        get: operations["AdminAuthController_getBpProfile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * 바로 고칠 수 있는 항목 저장(상호명 · 대표자 연락처 · 대표자 이메일 · 사업장주소 · 업태 · 종목).
+         *     사업자등록번호 · 대표자명 · 개업일자는 여기 보내지 않는다 — business-verification 이 돌려준
+         *     businessVerificationToken 을 이 PATCH 에 실어야 그 세 값이 바뀐다(검사와 저장이 나뉜 두 단계).
+         *     계정 축은 PATCH me 와 같이 signedInUserTracker 로 로그인한 계정 자신으로 고정한다(코드 리뷰로
+         *     찾음, 2026-10-22).
+         */
+        patch: operations["AdminAuthController_updateBpProfile"];
+        trace?: never;
+    };
+    "/auth/admin/me/bp/business-verification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 사업자 번호 인증 — 검사만(최초 · 재인증 공통). 다른 BP · 점포가 쓰는 번호면 409, 국세청과 다르면 422,
+         *     국세청 연동 장애면 503. 저장은 하지 않는다 — 받은 토큰을 PATCH /me/bp 의 businessVerificationToken 으로
+         *     보내야 사업자등록번호 · 대표자명 · 개업일자 · 인증일시가 반영된다(점포 사업자정보와 같은 패턴, 2026-10-22).
+         *     IP · 계정마다 시간당 10건 — 점포 사업자정보 인증(stores.controller.ts)과 같은 기준이다. 국세청을 실제로
+         *     부르는 횟수는 BpProfileService 가 관리자별로 따로 센다(countNtsCall, StoreManagementService 와 같은
+         *     방식) — 국세청 키 · 하루 할당량을 모든 BP 가 함께 쓰므로, 한 관리자가 반복해 부르면 그날 모든 BP 의
+         *     가입 · 점포 · MY PAGE 인증이 503 이 된다(코드 리뷰로 찾음, 2026-10-22 — 점포 쪽에만 있던 보호가
+         *     빠져 있었다).
+         */
+        post: operations["AdminAuthController_requestBpBusinessVerification"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/public-code-items": {
         parameters: {
             query?: never;
@@ -587,7 +641,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 공통코드 그룹 목록. 플랫폼고정 · 플랫폼제공 그룹을 표시 순서대로. */
+        /** 공통코드 그룹 목록. 플랫폼고정 · 플랫폼제공 그룹을 표시 순서대로, 그룹 코드 · 그룹명 검색(부분 일치). */
         get: operations["CodeGroupsController_listGroups"];
         /** 그룹 수정. 기존 그룹 여러 개를 한 번에 — 하나라도 없으면 아무것도 고치지 않는다. */
         put: operations["CodeGroupsController_updateGroups"];
@@ -612,7 +666,11 @@ export interface paths {
         put: operations["CodeGroupsController_updateItems"];
         /** 상세 코드 등록. 새 코드 여러 개를 한 번에 — 하나라도 막히면 아무것도 생기지 않는다. */
         post: operations["CodeGroupsController_createItems"];
-        delete?: never;
+        /**
+         * 상세 코드 삭제(논리) — 플랫폼제공 그룹만, 여러 개를 한 번에, 하나라도 막히면 아무것도 지우지 않는다. 플랫폼 원본만
+         *     지우고 BP 에 복사된 행은 건드리지 않는다. 플랫폼고정 그룹은 시스템이 값을 참조해 409(사용 상태로 관리). 같은 코드로 다시 등록하면 되살아난다 — 단 어느 BP 에 복사본이 살아 있으면 등록이 409 다.
+         */
+        delete: operations["CodeGroupsController_deleteItems"];
         options?: never;
         head?: never;
         patch?: never;
@@ -633,6 +691,43 @@ export interface paths {
          */
         post: operations["CodeGroupsController_applyToBps"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bp-code-groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 그룹 목록 — 사용 중인 플랫폼고정 · 플랫폼제공 그룹(적용 여부와 관계없이), 표시 순서대로. 사용중지 그룹은 빠진다. */
+        get: operations["BpCodeGroupsController_listGroups"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bp-code-groups/{groupCode}/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 고른 그룹의 상세 코드. 플랫폼고정은 플랫폼 원본, 플랫폼제공은 이 BP 의 행(BP전용 포함). */
+        get: operations["BpCodeGroupsController_listItems"];
+        /** 상세 코드 수정 — 이 BP 의 행 여러 개를 한 번에. 하나라도 막히면 아무것도 고치지 않는다. */
+        put: operations["BpCodeGroupsController_updateItems"];
+        /** 상세 코드 등록 — BP전용 코드 여러 개를 한 번에. 하나라도 막히면 아무것도 생기지 않는다. */
+        post: operations["BpCodeGroupsController_createItems"];
+        /** 상세 코드 삭제(논리) — 이 BP 의 행(BP전용 · 복사된 플랫폼제공) 여러 개를 한 번에. 하나라도 막히면 아무것도 지우지 않는다. */
+        delete: operations["BpCodeGroupsController_deleteItems"];
         options?: never;
         head?: never;
         patch?: never;
@@ -3629,6 +3724,116 @@ export interface components {
             /** @description true 면 이 이메일로 저장할 수 있다. */
             available: boolean;
         };
+        BpProfileResponseDto: {
+            /** @description 상호명. */
+            tradeName: string;
+            /** @description 사업자등록번호 — 하이픈 없이 숫자 10자리. 인증 결과로만 바뀐다. 미인증이면 빈 문자열. */
+            bizRegistrationNumber: string;
+            /** @description 대표자명. 인증 결과로만 바뀐다. 미인증이면 빈 문자열. */
+            bizCeoName: string;
+            /** @description 개업일자(YYYY-MM-DD). 인증 결과로만 바뀐다. 미인증이면 null. */
+            bizOpenDate: string | null;
+            /** @description 대표자 연락처 — 하이픈 없이 숫자. */
+            bizCeoPhone: string;
+            /** @description 대표자 이메일. */
+            bizCeoEmail: string;
+            /** @description 사업장 우편번호. */
+            bizZipCode: string;
+            /** @description 사업장 기본주소. */
+            bizAddress: string;
+            /** @description 사업장 상세주소. */
+            bizAddressDetail: string;
+            /** @description 업태. */
+            bizCategory: string;
+            /** @description 종목. */
+            bizItem: string;
+            /**
+             * Format: date-time
+             * @description 최종 인증일시 — 인증한 적 없으면 null.
+             */
+            bizVerifiedAt: string | null;
+            /**
+             * Format: date-time
+             * @description 저장(PATCH)할 때 동시 수정 검사에 그대로 돌려줘야 하는 값 — 검사만 하는 인증(POST
+             *     business-verification)은 저장이 아니라 받지 않는다.
+             */
+            updatedAt: string;
+        };
+        BpProfileUpdateDto: {
+            /** @description 내 사업자정보 조회 응답의 updatedAt 그대로. 그사이 다른 저장이 있었으면 409. */
+            updatedAt: string;
+            /**
+             * @description 상호명. 1~50자.
+             * @example 한강상회
+             */
+            tradeName: string;
+            /**
+             * @description 대표자 연락처. 하이픈 없이 숫자 9~11자리(02 지역번호 포함). 비워 둘 수 있다.
+             * @example 01012345678
+             */
+            bizCeoPhone?: string;
+            /**
+             * Format: email
+             * @description 대표자 이메일. 비워 둘 수 있다.
+             * @example ceo@hangang.co.kr
+             */
+            bizCeoEmail?: string;
+            /**
+             * @description 사업장 우편번호 — 주소 검색 컴포넌트가 고른 값만.
+             * @example 04524
+             */
+            bizZipCode?: string;
+            /**
+             * @description 사업장 기본주소 — 주소 검색 컴포넌트가 고른 값만.
+             * @example 서울특별시 중구 세종대로 110
+             */
+            bizAddress?: string;
+            /**
+             * @description 사업장 상세주소 — 직접 입력.
+             * @example 3층
+             */
+            bizAddressDetail?: string;
+            /**
+             * @description 업태. 비워 둘 수 있다.
+             * @example 도소매업
+             */
+            bizCategory?: string;
+            /**
+             * @description 종목. 비워 둘 수 있다.
+             * @example 제과점
+             */
+            bizItem?: string;
+            /**
+             * @description POST /me/bp/business-verification 이 돌려준 10분짜리 토큰. 실으면 그 안의 사업자등록번호 ·
+             *     대표자명 · 개업일자와 인증일시를 이 저장과 같은 트랜잭션에서 함께 반영한다(화면이 보낸 값은 믿지
+             *     않는다 — admin-signup.service.ts 의 signup 과 같은 규칙). 비우면 인증 쪽 세 값은 그대로 둔다.
+             */
+            businessVerificationToken?: string;
+        };
+        BpBusinessVerificationDto: {
+            /**
+             * @description 사업자등록번호. 하이픈을 넣어 보내도 숫자만 남겨 받는다.
+             * @example 1058763602
+             */
+            bizRegistrationNumber: string;
+            /**
+             * @description 대표자명.
+             * @example 김하늘
+             */
+            bizCeoName: string;
+            /**
+             * @description 개업일자(YYYY-MM-DD).
+             * @example 2020-03-02
+             */
+            bizOpenDate: string;
+        };
+        BpBusinessVerificationResponseDto: {
+            /**
+             * @description 10분짜리 인증 토큰. 「저장」(PATCH /me/bp)의 businessVerificationToken 으로 그대로 보낸다 —
+             *     그래야 세 값이 실제로 반영된다(점포 사업자정보와 같은 패턴).
+             */
+            verificationToken: string;
+        };
         CodeItemsResponseDto: {
             /**
              * @example {
@@ -3877,6 +4082,15 @@ export interface components {
             /** @description 고칠 상세 코드. 1~500행. 한 요청 안에서 코드가 겹치면 409. */
             items: components["schemas"]["CodeItemInputDto"][];
         };
+        DeleteCodeItemsDto: {
+            /**
+             * @description 지울 상세 코드. 1~500건, 등록과 같이 앞뒤 공백을 지우고 대문자로 받는다. 한 요청 안에서 겹치면 409.
+             * @example [
+             *       "INTERN"
+             *     ]
+             */
+            itemCodes: string[];
+        };
         BpApplicationResponseDto: {
             /** @description 적용 대상 BP 수(사용 중인 고객 BP). */
             bpCount: number;
@@ -3884,6 +4098,60 @@ export interface components {
             itemCount: number;
             /** @description 실제로 넣은 행 수. BP 에 이미 있던 행은 건너뛰어 세지 않는다. */
             createdCount: number;
+        };
+        BpCodeGroupResponseDto: {
+            /**
+             * @description 관리 주체. 그룹 단계에는 BP전용이 없다 — 플랫폼고정은 조회만, 플랫폼제공은 상세 코드를 고치고 더한다.
+             * @enum {string}
+             */
+            manageOwnerCode: "PLATFORM_FIXED" | "PLATFORM_PROVIDED";
+            /** @description 사용 상태(플랫폼이 정한다). BP 화면에는 사용 중인 그룹만 나오므로 늘 사용이다 — 사용중지 그룹은 목록에서 빠진다. */
+            status: components["schemas"]["UseStatus"];
+            /**
+             * @description 그룹 코드.
+             * @example EMP_TYPE
+             */
+            groupCode: string;
+            /** @description 그룹명. */
+            groupName: string;
+            /** @description 표시 순서. */
+            sortOrder: number;
+        };
+        BpCodeGroupListResponseDto: {
+            items: components["schemas"]["BpCodeGroupResponseDto"][];
+            /** @description 조건에 맞는 전체 건수. */
+            total: number;
+        };
+        BpCodeItemResponseDto: {
+            /** @description 사용 상태. */
+            status: components["schemas"]["UseStatus"];
+            /**
+             * @description 관리 주체 — 플랫폼이 등록한 코드는 그룹의 관리 주체, 이 BP 가 더한 코드는 BP전용.
+             * @enum {string}
+             */
+            manageOwnerCode: "PLATFORM_FIXED" | "PLATFORM_PROVIDED" | "BP_ONLY";
+            /**
+             * @description 상세 코드. 등록 뒤 바뀌지 않는다.
+             * @example FULL
+             */
+            itemCode: string;
+            /**
+             * @description 코드명. 플랫폼제공 그룹이면 이 BP 의 값(복사된 뒤 고쳤으면 고친 값)이다.
+             * @example 정직원
+             */
+            label: string;
+            /** @description 표시 순서. */
+            sortOrder: number;
+            /**
+             * @description 플랫폼 원본이 사용중지인가(안내용). BP전용은 늘 거짓. 플랫폼제공 그룹에서 BP 는 이 값과 관계없이 사용 상태를
+             *     자유롭게 바꾼다(2026-10-22 결정). 플랫폼고정 그룹은 모든 칸이 읽기 전용이다.
+             */
+            isPlatformInactive: boolean;
+        };
+        BpCodeItemListResponseDto: {
+            items: components["schemas"]["BpCodeItemResponseDto"][];
+            /** @description 전체 건수. 상세 코드는 쪽을 나누지 않는다. */
+            total: number;
         };
         PlatformRoleGroupResponseDto: {
             /**
@@ -5777,12 +6045,12 @@ export interface components {
             openDate: string;
         };
         /**
-         * @description 인증됨 · 확인 불가(국세청 정보와 다름) · 번호 중복(미운영 · 운영 점포가 쓰는 번호 — 누가 쓰는지는 알리지 않는다)
+         * @description 인증됨 · 확인 불가(국세청 정보와 다름) · 번호 중복(미운영 · 운영 점포나 소속 BP 가 아닌 고객 BP 가 쓰는 번호 — 누가 쓰는지는 알리지 않는다, PL-OCJOFP)
          * @enum {string}
          */
         StoreBusinessVerificationResult: "VERIFIED" | "UNVERIFIABLE" | "DUPLICATE";
         StoreBusinessVerificationResponseDto: {
-            /** @description 인증됨 · 확인 불가(국세청 정보와 다름) · 번호 중복(미운영 · 운영 점포가 쓰는 번호 — 누가 쓰는지는 알리지 않는다) */
+            /** @description 인증됨 · 확인 불가(국세청 정보와 다름) · 번호 중복(미운영 · 운영 점포나 소속 BP 가 아닌 고객 BP 가 쓰는 번호 — 누가 쓰는지는 알리지 않는다, PL-OCJOFP) */
             result: components["schemas"]["StoreBusinessVerificationResult"];
         };
         StoreBusinessResponseDto: {
@@ -8047,6 +8315,139 @@ export interface operations {
             };
         };
     };
+    AdminAuthController_getBpProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BpProfileResponseDto"];
+                };
+            };
+            /** @description BP 마스터가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 관리자 계정을 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminAuthController_updateBpProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BpProfileUpdateDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description BP 마스터가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 관리자 계정을 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 동시 수정 — updatedAt 이 최신이 아님 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminAuthController_requestBpBusinessVerification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BpBusinessVerificationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BpBusinessVerificationResponseDto"];
+                };
+            };
+            /** @description BP 마스터가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 다른 BP · 점포가 쓰는 사업자등록번호 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 국세청 정보와 불일치 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description IP · 계정의 시간당 한도(10건) */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 국세청 연동 장애 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     CodesController_findAll: {
         parameters: {
             query?: {
@@ -8249,6 +8650,10 @@ export interface operations {
     CodeGroupsController_listGroups: {
         parameters: {
             query: {
+                /** @description 그룹 코드에 들어 있으면 나온다(대소문자 무시). */
+                groupCode?: string;
+                /** @description 그룹명에 들어 있으면 나온다. */
+                groupName?: string;
                 /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
                 page: number;
                 /** @description 한 쪽 건수. 기본 20, 최대 200. */
@@ -8439,7 +8844,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 한 요청에 같은 상세 코드가 두 번 */
+            /** @description 한 요청에 같은 상세 코드가 두 번 · 확인 뒤 다른 관리자가 먼저 지운 코드 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -8486,7 +8891,54 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 이 그룹에 이미 있는(BP별 · BP전용 · 지운 행 포함) 상세 코드 · 요청 안에서 겹친 상세 코드 */
+            /** @description 이 그룹의 살아 있는 행(플랫폼 원본 · BP별 · BP전용)과 겹친 상세 코드 · 요청 안에서 겹친 상세 코드 · 확인 뒤 다른 관리자가 같은 코드를 먼저 등록 · 되살림 — 지운 원본과 같은 코드는 되살린다 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CodeGroupsController_deleteItems: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                groupCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeleteCodeItemsDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 플랫폼 관리자가 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 그룹 · 지울 상세 코드가 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼고정 그룹(사용 상태로만 관리) · 한 요청에 같은 상세 코드가 두 번 · 확인 뒤 다른 관리자가 먼저 지움 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -8532,6 +8984,265 @@ export interface operations {
                 content?: never;
             };
             /** @description 플랫폼제공 그룹이 아님 · 상세 코드가 없음 · 사용 중인 고객 BP 가 없음 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpCodeGroupsController_listGroups: {
+        parameters: {
+            query: {
+                /** @description 그룹 코드에 들어 있으면 나온다(대소문자 무시). */
+                groupCode?: string;
+                /** @description 그룹명에 들어 있으면 나온다. */
+                groupName?: string;
+                /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
+                page: number;
+                /** @description 한 쪽 건수. 기본 20, 최대 200. */
+                pageSize: number;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BpCodeGroupListResponseDto"];
+                };
+            };
+            /** @description 본문 · 쿼리 검증 실패 · (조회) 플랫폼 사용자의 X-Bp-Code-Id 누락 — 등록 · 수정 · 삭제는 그 전에 403 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 플랫폼 사용자의 등록 · 수정 · 삭제 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 사용자의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) — `:groupCode` 경로는 그룹 404(없음 · 지움 · 사용중지)도 있다 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpCodeGroupsController_listItems: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                groupCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BpCodeItemListResponseDto"];
+                };
+            };
+            /** @description 본문 · 쿼리 검증 실패 · (조회) 플랫폼 사용자의 X-Bp-Code-Id 누락 — 등록 · 수정 · 삭제는 그 전에 403 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 플랫폼 사용자의 등록 · 수정 · 삭제 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 사용자의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) — `:groupCode` 경로는 그룹 404(없음 · 지움 · 사용중지)도 있다 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpCodeGroupsController_updateItems: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                groupCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateCodeItemsDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 본문 · 쿼리 검증 실패 · (조회) 플랫폼 사용자의 X-Bp-Code-Id 누락 — 등록 · 수정 · 삭제는 그 전에 403 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 플랫폼 사용자의 등록 · 수정 · 삭제 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 대상 BP(가드) · 그룹(없음 · 지움 · 사용중지) 404, 그리고 이 BP 에 없는 상세 코드(플랫폼 원본에만 있는 코드 포함) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼고정 그룹 · 한 요청에 같은 코드가 두 번 · 확인 뒤 다른 관리자가 먼저 지운 코드(「다른 관리자가 먼저 지운…저장해 주세요」) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpCodeGroupsController_createItems: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                groupCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCodeItemsDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 본문 · 쿼리 검증 실패 · (조회) 플랫폼 사용자의 X-Bp-Code-Id 누락 — 등록 · 수정 · 삭제는 그 전에 403 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 플랫폼 사용자의 등록 · 수정 · 삭제 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼 사용자의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) — `:groupCode` 경로는 그룹 404(없음 · 지움 · 사용중지)도 있다 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼고정 그룹 · 같은 그룹의 살아 있는 플랫폼 원본(「플랫폼이 등록한…」)이나 이 BP 의 살아 있는 행(「이미 있는…」)과 겹친 코드 · 요청 안에서 겹친 코드 · 확인 뒤 다른 관리자가 같은 코드를 먼저 등록하거나 되살림 — 이 BP 의 지운 행과 같은 코드는 BP전용으로 되살린다 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpCodeGroupsController_deleteItems: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                groupCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeleteCodeItemsDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 본문 · 쿼리 검증 실패 · (조회) 플랫폼 사용자의 X-Bp-Code-Id 누락 — 등록 · 수정 · 삭제는 그 전에 403 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · BP · 가맹 사용자의 다른 BP 헤더 · 플랫폼 사용자의 등록 · 수정 · 삭제 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 대상 BP(가드) · 그룹(없음 · 지움 · 사용중지) 404, 그리고 이 BP 에 없는 상세 코드 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 플랫폼고정 그룹 · 한 요청에 같은 코드가 두 번 · 확인 뒤 다른 관리자가 먼저 지움 */
             409: {
                 headers: {
                     [name: string]: unknown;

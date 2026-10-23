@@ -4,6 +4,7 @@ import {
   addMonths,
   historyApiSearch,
   mondayOf,
+  monthCells,
   monthRange,
   moved,
   parseScheduleQuery,
@@ -22,6 +23,14 @@ test("주는 월~일, 월간은 그 달 1일이 든 주의 월요일부터 42일
   assert.deepEqual(monthRange("2026-10"), { from: "2026-09-28", to: "2026-11-08" });
   assert.equal(addMonths("2026-12", 1), "2027-01");
   assert.equal(addMonths("2026-01", -1), "2025-12");
+});
+
+test("월간 달력은 그 달이 걸친 주만 — 4 · 5 · 6주", () => {
+  assert.equal(monthCells("2027-02").length, 28); // 월요일 시작 · 28일
+  assert.equal(monthCells("2026-10").length, 35);
+  assert.equal(monthCells("2026-08").length, 42);
+  assert.equal(monthCells("2026-10")[0], "2026-09-28");
+  assert.equal(monthCells("2026-10").at(-1), "2026-11-01");
 });
 
 test("기본값 — 이번 주 · 오늘, 기본값은 주소에서 뺀다", () => {
@@ -65,10 +74,17 @@ test("api 쿼리 — 주간 8일(전주 일요일 포함) · 월간 42일", () =
 });
 
 test("변경 이력 — 주소 ↔ api, 이상한 페이지당 건수는 20", () => {
-  const q = parseScheduleQuery({ store: "7", history: "1", hfrom: "2026-10-01", hstaff: "41", hpage: "2", hsize: "50" }, TODAY);
-  assert.equal(toScheduleSearch(q, TODAY), "?store=7&history=1&hfrom=2026-10-01&hstaff=41&hpage=2&hsize=50");
+  const q = parseScheduleQuery({ store: "7", hfrom: "2026-10-01", hstaff: "41", hpage: "2", hsize: "50" }, TODAY);
+  assert.equal(toScheduleSearch(q, TODAY), "?store=7&hfrom=2026-10-01&hstaff=41&hpage=2&hsize=50");
   assert.equal(historyApiSearch({ ...q, storeId: 7 }), "storeId=7&page=2&pageSize=50&from=2026-10-01&staffMemberId=41");
-  assert.equal(parseScheduleQuery({ history: "1", hsize: "30" }, TODAY).historyPageSize, 20);
+  assert.equal(historyApiSearch({ ...parseScheduleQuery({ store: "7" }, TODAY), storeId: 7 }), "storeId=7&page=1&pageSize=20");
+  assert.equal(parseScheduleQuery({ hsize: "30" }, TODAY).historyPageSize, 20);
+});
+
+test("변경 이력은 늘 보인다 — 옛 주소의 history=1 은 버리고, 주를 옮겨도 이력 조건은 남는다(2026-10-22 재영)", () => {
+  const old = parseScheduleQuery({ store: "7", history: "1", hstaff: "41" }, TODAY);
+  assert.equal(toScheduleSearch(old, TODAY), "?store=7&hstaff=41");
+  assert.equal(toScheduleSearch(moved(old, { week: "2026-10-26", day: "2026-10-26" }), TODAY), "?store=7&week=2026-10-26&hstaff=41");
 });
 
 test("고른 날 왕복 — 주소로 바꿨다 읽으면 같은 날(이번 주 월요일 · 이번 달 1일 · 다른 주 · 달, front #93 리뷰)", () => {
@@ -90,10 +106,10 @@ test("고른 날 왕복 — 주소로 바꿨다 읽으면 같은 날(이번 주 
 });
 
 test("변경 이력 기간이 거꾸로면 둘 다 비운다(api 400 막기)", () => {
-  const q = parseScheduleQuery({ store: "7", history: "1", hfrom: "2026-10-20", hto: "2026-10-01" }, TODAY);
+  const q = parseScheduleQuery({ store: "7", hfrom: "2026-10-20", hto: "2026-10-01" }, TODAY);
   assert.equal(q.historyFrom, "");
   assert.equal(q.historyTo, "");
-  const same = parseScheduleQuery({ store: "7", history: "1", hfrom: "2026-10-20", hto: "2026-10-20" }, TODAY);
+  const same = parseScheduleQuery({ store: "7", hfrom: "2026-10-20", hto: "2026-10-20" }, TODAY);
   assert.equal(same.historyTo, "2026-10-20");
 });
 
