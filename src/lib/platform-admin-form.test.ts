@@ -57,12 +57,12 @@ test("칸을 벗어날 때의 이메일 형식 검사 — 앞뒤 공백은 빼�
 });
 
 test("이메일 형식 — api @IsEmail 이 막는 값은 화면도 형식 오류로", () => {
-  // 아래 값은 api 의 validator isEmail 결과와 하나씩 맞춰 보았다(2026-10-23)
+  // 아래 값은 2026-10-23 에 api 의 validator(13.15) isEmail 결과와 손으로 맞춰 보았다 — 저장소에 비교 검사는 없다
   for (const ok of ["kim@whale.co", "SeoJun@Whale.Test", "kim.lee@mail.whale.kr", "kim@회사.한국", "kim@whale.xn--3e0b707e", "a+b_c@wh-ale.io"]) {
     assert.equal(emailError(ok), undefined, ok);
   }
   const rejected = ["kim@whale.c", "kim@whale..co", "kim@.whale.co", ".kim@whale.co", "kim.@whale.co", "kim..lee@whale.co", "kim@whale.123", "kim@whale"];
-  rejected.push("kim@-whale.co", "kim@whale-.co", "kim@whale_x.co", "a,b@x.co", "a(b@x.co", "kim@whale.co-");
+  rejected.push("kim@-whale.co", "kim@whale-.co", "kim@whale_x.co", "a,b@x.co", "a(b@x.co", "kim@whale.co-", "kim@whale.xn--");
   for (const bad of rejected) {
     assert.equal(emailError(bad), "이메일 형식이 아닙니다.", bad);
   }
