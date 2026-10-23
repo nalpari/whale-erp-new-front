@@ -18,6 +18,11 @@ test("이은 레코드가 없으면 줄을 두지 않는다", () => {
   assert.deepEqual(employmentHistoryLines({ previousRecords: [], laterRecords: [] }, ""), []);
 });
 
+test("응답에 재직 이력 칸이 없으면(api #136 배포 전) 줄을 두지 않는다 — 상세가 오류가 되지 않게", () => {
+  const before = {} as Parameters<typeof employmentHistoryLines>[0];
+  assert.deepEqual(employmentHistoryLines(before, ""), []);
+});
+
 test("이전 재직은 「재직 이력」, 이후 재입사는 「이후 재입사」 줄 — api 순서(가까운 것부터) 그대로, 목록 조건을 이어 단다", () => {
   const lines = employmentHistoryLines(
     {

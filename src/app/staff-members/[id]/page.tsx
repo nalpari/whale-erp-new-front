@@ -107,15 +107,16 @@ export default async function StaffMemberDetailPage({
     { label: "입사일", value: staff.hiredDate ?? PENDING },
     // 퇴직 예정 · 퇴직이면 퇴직일을 보인다(목업 detail.html)
     ...(staff.retiredDate ? [{ label: "퇴직일", value: staff.retiredDate }] : []),
-    // 재입사로 이은 다른 재직 기간(WHALEERP-615, 목업 detail.html) — 누르면 그 기간의 상세. 이은 레코드가 없으면 줄이 없다
+    // 재입사로 이은 다른 재직 기간(WHALEERP-615, 목업 detail.html) — 누르면 그 기간의 상세. 이은 레코드가 없으면 줄이 없다.
+    // 좁은 단에서 기간이 꺾이면 고정 높이(46)에서 잘려 한 줄로 둔다
     ...employmentHistoryLines(staff, toStaffListSearch(parseStaffListQuery(search))).map((line) => ({
       label: line.label,
       multiline: line.links.length > 1,
       value: (
         <span className="flex flex-col gap-[4px]">
           {line.links.map((link) => (
-            <span key={link.href}>
-              <Link href={link.href} className="text-erp-link hover:underline">
+            <span key={link.href} className="whitespace-nowrap">
+              <Link href={link.href} aria-label={`${line.label} ${link.text} 직원 상세`} className="text-erp-link hover:underline">
                 {link.text}
               </Link>
               {line.note && <span className="text-erp-muted"> · {line.note}</span>}

@@ -19,8 +19,9 @@ export function employmentHistoryLines(
   staff: Pick<StaffMember, "previousRecords" | "laterRecords">,
   listSearch: string,
 ): EmploymentHistoryLine[] {
-  const line = (label: string, note: string | null, periods: Period[]): EmploymentHistoryLine[] =>
-    periods.length === 0
+  // 칸이 없는 응답(api #136 배포 전 서버)은 이은 레코드가 없는 것으로 본다 — front 가 먼저 배포돼도 상세가 오류가 되지 않게
+  const line = (label: string, note: string | null, periods: Period[] | undefined): EmploymentHistoryLine[] =>
+    !periods || periods.length === 0
       ? []
       : [{ label, note, links: periods.map((p) => ({ href: `/staff-members/${p.staffMemberId}${listSearch}`, text: periodText(p) })) }];
   return [...line("재직 이력", "이전 재직", staff.previousRecords), ...line("이후 재입사", null, staff.laterRecords)];
