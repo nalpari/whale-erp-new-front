@@ -189,7 +189,7 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
   const tabId = "platform-menus-tabs";
   return (
     <>
-      {/* [등록]은 제목 줄 오른쪽 — 3팀 목록과 같은 자리(2026-10-23). 고른 탭의 트리(고른 메뉴 아래)에 새 메뉴를 더한다 */}
+      {/* [등록]은 제목 줄 오른쪽 — 3팀 목록과 같은 자리(2026-10-23). 새 메뉴 자리는 createPlacement 가 정한다(고른 메뉴 안 · 3단계면 그 상위 안 · 고른 것이 없으면 최상위 맨 끝) */}
       <PageBar title="플랫폼 메뉴 관리">
         {can.create && (
           <Button onClick={handleCreate} disabled={creating || moving || !tree}>

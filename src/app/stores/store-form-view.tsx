@@ -922,7 +922,7 @@ function PhoneGroup({
   onChange: (next: PhoneParts) => void;
   invalid?: boolean;
   describedBy?: string;
-  /** 앞자리 칸 길이 — 점포 연락처는 050X 평생번호(0507 등) 때문에 4, 대표자 연락처(휴대전화)는 3 */
+  /** 앞자리 칸 길이 — 점포 연락처는 050X 평생번호(0507 등) 때문에 4, 대표자 연락처(10~11자리)는 3 */
   headMaxLength?: number;
 }) {
   return (
@@ -938,7 +938,7 @@ function PhoneGroup({
               onChange(next);
             }}
             inputMode="numeric"
-            // 길이 검사는 저장 때 전체 자릿수로 한다(점포 9~12 · 대표자 10~11)
+            // 길이 검사는 저장 때 전체 자릿수로 한다(validateStoreForm 의 PHONE_PATTERN · CEO_PHONE_PATTERN)
             maxLength={i === 0 ? headMaxLength : 4}
             aria-label={`${label} ${part}`}
             aria-invalid={invalid}
