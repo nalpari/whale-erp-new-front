@@ -1,5 +1,18 @@
 # Bundle history
 
+## 2026-10-23
+* **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) — 근태 요약의 근로시간 · 연장 · 주휴 대상을 급여 계산과 같은 규칙(api `weekStaff`)으로, 확인 필요 사유 필터에서 위치 오차 초과를 뺐다.
+* **Update**: 논리 ERD 「근무스케줄·출퇴근」에 위치정보 동의 이력(`location_consent_histories` — 동의 · 철회 · 잠시 멈춤 · 다시 켜기, 운영 정책 ATT-26, 2026-10-23 재영)을 더했다(`docs/erd/_build.py`).
+* **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) — 일별 출퇴근 비고에 「확인 필요 · 사유」 꼬리표를 다시 붙였다(2026-10-23 재영 Buzz 답).
+* **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) — 데모 · 목업 대조: 수정됨 · 대신 등록 꼬리, 이력 창 처리한 사람 권한, 보정 원본 도움말 · 시각 칸, 대신 등록 직원 · 날짜 순, 지각 N분, 미출근 「미기록」.
+* **Fix**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) — 「출퇴근 대신 등록」을 누르면 화면이 멈추던 문제(그리는 도중 직원 선택지를 받아 무한 갱신)를 고쳤다. 보정 · 대신 등록 패널에 다음 날 퇴근 안내를 더했다.
+* **Update**: [급여명세서 관리 화면 (구현)](/screens/payslips.md) — 「출퇴근으로 다시 계산」을 api(`POST /payslips/:id/recalculate`, WHALEERP-227)에 붙이고, 가산 스위치가 연장수당 칸을 직접 바꾸지 않게 했다(api 가 임시저장 때 다시 계산). 「출퇴근 보정」 · 「출퇴근 기록 보기」는 출·퇴근 현황 조회로 간다.
+* **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) — 보정 · 「이상 없음」 · 이력 · 출퇴근 대신 등록(WHALEERP-220), 근태 요약의 연장 · 야간 · 주휴 대상(임시 계산), 확인 필요 사유 필터를 데모의 네 칸으로.
+* **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) — 데모 틀로 다시 짰다: 왼쪽 필터 7개(STAFF-31), 일별 출퇴근 · 근태 요약 두 칸, 보정이 필요한 기록. 점포 하나 선택칸 · 「일별/직원별」 탭 · 상태별 인원 줄 · 비고의 사유 꼬리표를 걷었다.
+* **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) — 「직원별」 보기(기간 · 직원, WHALEERP-219). 본사에게 가린 직원 줄을 뺐다(ATT-30).
+* **Add**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) — `/attendance-records` 일별 출퇴근(WHALEERP-219): 근무지 · 날 이동, 상태별 인원, 직원별 예정 · 출근 · 퇴근 · 비고. api 타입 재생성.
+* **Update**: ERD — 출퇴근 확인 필요 사유(반경 밖 출근 추가 · 위치 오차 초과 안 씀), 근무지 「직원이 고른 곳」, 급여명세서 검토 대기 사유 「확인 필요 기록 포함」(ATT-07 · ATT-11). 물리 ERD 사본 재생성.
+
 ## 2026-10-22
 * **Update**: [점포 관리](/stores.md) — 사업자정보 인증을 공통 인증 상자(S-VRNTHD)로 바꿨다. 인증 후 잠금 → [재인증]으로 해제, 저장한 점포는 대표자명만 열고 [재인증 취소]로 되돌린다, 비우는 버튼은 「지우기」 하나, 인증 10분 만료와 저장 때 국세청 재확인 실패는 인증을 풀고 버튼 위 한 줄로 알린다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 사업자정보 인증을 회원가입 · 점포 등록/수정이 같은 규칙 · 문구로 쓰게 했다(S-VRNTHD, 2026-10-22 사용자 확정). 공통 규칙 `lib/biz-verification-rules.ts` · 관리자 웹 상자 `components/site/biz-verification-box.tsx`. 하이픈 입력 허용, 인증 후 잠금 → 재인증으로 해제, 빈 칸 「·」 묶음, 「인증 완료 · 날짜」, 한도 초과는 일반 문구, 인증 10분 만료. MY PAGE 사업자정보 탭은 다른 작업(ekans)에서 같은 규칙으로 맞춘다.
