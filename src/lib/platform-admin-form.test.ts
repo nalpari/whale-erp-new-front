@@ -56,18 +56,9 @@ test("칸을 벗어날 때의 이메일 형식 검사 — 앞뒤 공백은 빼�
   assert.ok(emailError("seojun@"));
 });
 
-test("이메일 형식 — api @IsEmail 이 막는 값은 화면도 형식 오류로", () => {
-  // 아래 값은 2026-10-23 에 api 의 validator(13.15) isEmail 결과와 손으로 맞춰 보았다 — 저장소에 비교 검사는 없다
-  for (const ok of ["kim@whale.co", "SeoJun@Whale.Test", "kim.lee@mail.whale.kr", "kim@회사.한국", "kim@whale.xn--3e0b707e", "a+b_c@wh-ale.io"]) {
-    assert.equal(emailError(ok), undefined, ok);
-  }
-  const rejected = ["kim@whale.c", "kim@whale..co", "kim@.whale.co", ".kim@whale.co", "kim.@whale.co", "kim..lee@whale.co", "kim@whale.123", "kim@whale"];
-  rejected.push("kim@-whale.co", "kim@whale-.co", "kim@whale_x.co", "a,b@x.co", "a(b@x.co", "kim@whale.co-", "kim@whale.xn--");
-  // 주소 목록에서 복사하면 따라오는 쉼표 · 괄호, 도메인의 기호 · 전각 영문
-  rejected.push("kim@whale.co,", "kim@naver.com)", "kim@whale.co;", "kim@wh+ale.co", "kim@whale.co!", "kim@ｗhale.co", "kim@whale.ｃｏｍ");
-  for (const bad of rejected) {
-    assert.equal(emailError(bad), "이메일 형식이 아닙니다.", bad);
-  }
+test("이메일 형식 — api @IsEmail 이 막는 값은 화면도 형식 오류로(규칙 자체는 email-format.test.ts)", () => {
+  for (const ok of ["kim@whale.co", "kim@회사.한국"]) assert.equal(emailError(ok), undefined, ok);
+  for (const bad of ["kim@whale.c", "kim@whale.co,", "kim😀@whale.co"]) assert.equal(emailError(bad), "이메일 형식이 아닙니다.", bad);
 });
 
 test("필수 칸 — 이름 · 연락처 · 이메일 · 사용자 권한", () => {
@@ -134,8 +125,9 @@ test("경계값 — 아이디 4 · 20자, 이메일 100자, 칸별 공백", () =
   assert.ok(validateAdminForm({ ...filled, loginId: "a".repeat(21) }, "create").loginId);
   // 수정에서는 형식이 틀린 아이디도 보지 않는다(바꿀 수 없는 칸)
   assert.equal(validateAdminForm({ ...filled, loginId: "bad_id" }, "edit").loginId, undefined);
-  assert.equal(validateAdminForm({ ...filled, email: "a".repeat(95) + "@b.co" }, "create").email, undefined);
-  assert.equal(validateAdminForm({ ...filled, email: "a".repeat(96) + "@b.co" }, "create").email, "이메일 형식이 아닙니다.");
+  // 100자 — @ 앞은 api 가 64바이트까지만 받아(email-format.ts) 도메인을 늘려 잰다
+  assert.equal(validateAdminForm({ ...filled, email: `${"a".repeat(60)}@${"b".repeat(36)}.co` }, "create").email, undefined);
+  assert.equal(validateAdminForm({ ...filled, email: `${"a".repeat(60)}@${"b".repeat(37)}.co` }, "create").email, "이메일 형식이 아닙니다.");
   assert.equal(toCreateInput({ ...filled, phone: ["010", " 1234 ", "5678"] }).phone, "01012345678");
 });
 

@@ -102,6 +102,11 @@ export function AdminFormPanel(props: Props) {
     checkNumber.current++;
   }, [resetSignal]);
   const [saving, startSaving] = useTransition();
+  /**
+   * 저장 요청이 떠 있는 동안 고친 칸 — 입력칸은 저장 중에도 잠기지 않는다. 늦게 온 거절은 보낸 값의 것이라 지금 값에 붙이면
+   * 쓸 수 있는 아이디가 「사용 중」으로 막힌다. 그런 칸의 거절은 위 띠로만 알린다.
+   */
+  const editedWhileSaving = useRef(new Set<AdminFormField>());
   const router = useRouter();
 
   const ids = useId();
@@ -111,6 +116,7 @@ export function AdminFormPanel(props: Props) {
   const clearError = (key: AdminFormField) => setErrors(without(key));
   const set = <K extends keyof AdminForm>(key: K, value: AdminForm[K]) => {
     setForm((f) => ({ ...f, [key]: value }));
+    editedWhileSaving.current.add(key as AdminFormField);
     clearError(key as AdminFormField);
     setServerErrors(without(key as AdminFormField));
   };
@@ -130,6 +136,8 @@ export function AdminFormPanel(props: Props) {
     // 없는 중복은 띠로만 가서, 남겨 두면 띠는 중복이라는데 칸 아래는 "사용 가능"이라고 한다. 그때는 둘 다 내린다.
     // 이메일 중복처럼 다른 칸의 거절이면 아이디의 "사용 가능"은 그대로 둔다(아이디는 멀쩡하다).
     const field = serverErrorField(status, message, mode);
+    // 보낸 뒤 고친 칸의 거절이면 지금 값과 그 칸의 확인 표시는 건드리지 않는다 — 고친 값은 따로 확인된다
+    if (field && editedWhileSaving.current.has(field)) return setFailure(serverFieldMessage(field, status, message));
     if (field !== "email") {
       checkNumber.current++; // 떠 있던 아이디 확인 답도 버린다
       setLoginIdCheck("idle");
@@ -222,6 +230,7 @@ export function AdminFormPanel(props: Props) {
     setFailure(null);
     if (Object.keys(found).length) return focusFirstError();
 
+    editedWhileSaving.current = new Set();
     startSaving(async () => {
       if (props.mode === "create") {
         const result = await createPlatformAdminAction(toCreateInput(form)).catch(unknownResult("등록"));
