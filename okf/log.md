@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-10-23
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — BP 마스터 계정 관리 화면(`src/app/bp-masters/`, 메뉴 `/bp-masters`)을 api 병행으로 만들었다. 목록 · 필터 · 엑셀, 상세 · 등록 · 수정 슬라이드 패널, 상태 변경 · 비밀번호 초기화 · 삭제 확인 · 변경 이력 팝업, 사업자 인증 상자. 타입은 api openapi 전이라 임시 타입(`shortcut:`). 점포 엑셀 컴포넌트에 파일 이름 · 빈 목록 문구를 받는 칸을 더해 같이 쓴다.
+
 ## 2026-10-22
 * **Update**: `docs/mockup/bp/` 의 확정 쟁점 3건(BP-6·7·8)을 [BP 마스터 계정 관리](/bp.md) 로 옮겼다. 화면은 `/bp-masters` 한 화면의 슬라이드 패널(상세만 `?bp=`), 상세의 상태 변경·비밀번호 초기화는 그 줄 버튼, 하단 [닫기][삭제][수정][변경 이력], 변경 이력은 팝업, 수정 일시·수정자 줄 추가, 소속 점포는 수만(점포 목록 연결은 나중에). 옛 주소 `/platform/bp` 를 메뉴 URL `/bp-masters` 로 바꿨다. 보류 쟁점은 없다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 도입문의 리뷰 반영: 시간 초과는 「이미 접수되었을 수 있다」로, 영문 400 은 입력 확인 문구로 안내하고, 빈칸만 적은 칸 · 전화번호 형식을 확인 창 전에 잡는다. 폼 부품 이름을 도입문의 `lead`(`LeadForm` · `lead-form.tsx`, 링크 키 `leads`)로 바꿨다.
