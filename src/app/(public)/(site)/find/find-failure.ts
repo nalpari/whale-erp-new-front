@@ -1,9 +1,12 @@
 // 찾기 화면의 실패 판정. next/* 를 불러오지 않아 node --test 로 검사한다(find-failure.test.ts) —
 // lib/api.ts 는 next/headers 를 불러와 ApiError 를 instanceof 로 쓸 수 없어, 상태 코드 · 문구 · 이름 · 본문만 본다.
 
+import { EMAIL_FORMAT_ERROR } from "../../../../lib/email-format.ts";
+
 export const CONNECT_FAILED = "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요";
 export const THROTTLED = "요청이 많습니다. 잠시 뒤 다시 시도해 주세요";
-export const INVALID_INPUT = "입력한 이메일 형식을 확인해 주세요";
+// 이메일 칸이 있는 화면 모두 같은 형식 문구다(lib/email-format.ts)
+export const INVALID_INPUT = EMAIL_FORMAT_ERROR;
 // 일치 없음(404). 미사용 · 탈퇴 계정과만 맞아도 같은 문구다.
 export const LOGIN_ID_NOT_FOUND = "입력하신 정보와 일치하는 회원정보가 없습니다. 이름, 이메일 주소를 다시 확인해 주세요.";
 // 임시 비밀번호도 일치 여부를 알린다(2026-10-20 재영). 줄바꿈은 화면이 그대로 보인다(whitespace-pre-line).

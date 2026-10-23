@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-23
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [로그인](/auth.md) — 이메일 형식 문구를 다섯 화면 모두 「이메일 형식이 올바르지 않습니다.」 하나로 맞췄다(`EMAIL_FORMAT_ERROR`, 사용자 결정). 플랫폼 관리자 · MY PAGE 는 저장 때 api 형식 400 도 이 문구로 보인다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 이메일 형식 검사를 `src/lib/email-format.ts` 하나로 모아 이메일 칸이 있는 다섯 화면(플랫폼 관리자 · MY PAGE · 회원가입 · 찾기 · 도입문의)과 데모가 api `@IsEmail` 과 같은 규칙을 쓴다. 플랫폼 관리자 패널은 저장 중에 고친 칸의 거절을 칸이 아니라 띠로 보인다(front #61 ip-code-review 비블로커, 사용자 요청).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 이메일 형식 검사: 도메인은 허용 글자만 받고(끝에 쉼표 · 괄호가 붙은 값), 끝(TLD)의 전각 영문도 막는다 — api @IsEmail 과 맞춤(리뷰로 찾음, front #61).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front #61 magikarp, main #120 까지): okf 충돌은 main 의 플랫폼 관리자 줄([등록] 제목 줄 이동 · 미사용 비밀번호 빈칸) 위에 이메일 형식 서술만 다시 얹고, 로그는 양쪽을 살렸다.

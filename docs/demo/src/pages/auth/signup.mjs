@@ -203,7 +203,7 @@ ${field("아이디", checkedInput(A, "loginId", `required pattern="(?=.*[A-Za-z]
 ${field("이름", box(`<input name="name" required minlength="2" maxlength="20" autocomplete="name" placeholder="한글 또는 영문 2~20자" class="${g.INPUT}">`), true)}
 ${passwordField(A, "비밀번호", "password", "영문·숫자·특수문자 조합 8~20자")}
 ${passwordField(A, "비밀번호 확인", "passwordConfirm", "비밀번호를 한 번 더 입력해 주세요")}
-${field("이메일", checkedInput(A, "email", `type="email" data-email-format="이메일 형식으로 입력해 주세요." required autocomplete="email" placeholder="example@company.com"`), true)}
+${field("이메일", checkedInput(A, "email", `type="email" data-email-format="이메일 형식이 올바르지 않습니다." required autocomplete="email" placeholder="example@company.com"`), true)}
 <div class="flex flex-col gap-[10px]"><span id="phone-label" class="${g.LABEL}">연락처${REQUIRED}</span><div role="group" aria-labelledby="phone-label" class="grid grid-cols-3 gap-[8px]">${PHONE.map(([part, pattern, max, ph]) => box(`<input name="phone" aria-label="${part}" required inputmode="numeric" pattern="${pattern}" maxlength="${max}" placeholder="${ph}" class="${g.INPUT}">`)).join("")}</div></div>
 ${field("상호명", box(`<input name="companyName" required maxlength="50" autocomplete="organization" placeholder="50자 이내" class="${g.INPUT}">`), true)}
 </div>`,

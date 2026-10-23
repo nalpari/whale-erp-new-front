@@ -76,7 +76,7 @@ test("이메일 — 형식 검사", () => {
   assert.ok(validateEmail("hayoon @hangang.co.kr"), "공백 포함");
   assert.equal(validateEmail("hayoon@hangang.co.kr"), undefined);
   // api @IsEmail 이 막는 값(규칙 자체는 lib/email-format.test.ts)
-  for (const bad of ["hayoon@hangang.c", "hayoon@hangang..kr", "hayoon@hangang.co.kr,"]) assert.equal(validateEmail(bad), "이메일 형식으로 입력해 주세요.", bad);
+  for (const bad of ["hayoon@hangang.c", "hayoon@hangang..kr", "hayoon@hangang.co.kr,"]) assert.equal(validateEmail(bad), "이메일 형식이 올바르지 않습니다.", bad);
 });
 
 test("상호명 — 비어 있으면 입력 요청, 50자 넘으면 오류, 공백만 있으면 입력 요청", () => {

@@ -912,7 +912,7 @@
     if (emailBytes(local) > 64 || emailBytes(domain) > 254 || !EMAIL_LOCAL.test(local)) return false;
     const labels = domain.split(".");
     const tld = labels.pop() ?? "";
-    if (!labels.length || /\s/.test(tld) || !EMAIL_TLD.test(tld)) return false;
+    if (!labels.length || tld.length > 63 || /\s/.test(tld) || !EMAIL_TLD.test(tld)) return false;
     return labels.every((label) => label.length <= 63 && !/\s/.test(label) && EMAIL_LABEL.test(label));
   };
   const DUP = {
@@ -926,7 +926,7 @@
     },
     mail: {
       test: isEmailFormat,
-      format: "이메일 형식이 아닙니다.",
+      format: "이메일 형식이 올바르지 않습니다.",
       ok: "올바른 이메일 형식입니다.",
     },
   };

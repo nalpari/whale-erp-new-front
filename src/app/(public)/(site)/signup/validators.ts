@@ -1,7 +1,7 @@
 // 회원가입 기본정보 형식 검사. 여기 있는 건 글자 모양만 보는 검사다 — 아이디·이메일 중복 확인은
 // signup/actions.ts 가 api 로 한다. 사업자등록번호 중복 · 진위 확인은 api 진위확인(actions.ts 의 verifyBusiness)이 한다.
 // 메세지가 있으면 오류, undefined 면 통과.
-import { isEmailFormat } from "../../../../lib/email-format.ts";
+import { EMAIL_FORMAT_ERROR, isEmailFormat } from "../../../../lib/email-format.ts";
 
 // 아이디는 입력하는 순간 소문자로 바꿔 보인다. api 가 소문자로 저장하고 관리자 웹 로그인은 대소문자를 구분하므로
 // (1팀), 대문자로 친 그대로 두면 가입한 아이디를 그대로 쳐서는 로그인할 수 없다 — 저장되는 그대로를 처음부터 보게 한다.
@@ -58,7 +58,7 @@ export function validatePhone(a: string, b: string, c: string): string | undefin
 // 형식은 api @IsEmail 과 같은 규칙(이메일 칸이 있는 화면이 같이 쓰는 lib/email-format.ts)
 export function validateEmail(value: string): string | undefined {
   if (!value) return "이메일을 입력해 주세요.";
-  if (!isEmailFormat(value)) return "이메일 형식으로 입력해 주세요.";
+  if (!isEmailFormat(value)) return EMAIL_FORMAT_ERROR;
   return undefined;
 }
 

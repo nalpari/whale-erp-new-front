@@ -1,5 +1,6 @@
 // node --test src/lib/email-format.test.ts
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { isEmailFormat } from "./email-format.ts";
 
@@ -27,5 +28,21 @@ test("길이 — @ 앞 64바이트 · 마디 63자 · 전체 254자", () => {
   assert.equal(isEmailFormat(`${"가".repeat(21)}@x.co`), true);
   assert.equal(isEmailFormat(`${"가".repeat(22)}@x.co`), false);
   assert.equal(isEmailFormat(`a@${"b".repeat(64)}.co`), false);
+  // 끝 마디(TLD)도 63자까지다
+  assert.equal(isEmailFormat(`a@b.${"x".repeat(63)}`), true);
+  assert.equal(isEmailFormat(`a@b.${"x".repeat(64)}`), false);
   assert.equal(isEmailFormat(`a@${"b.".repeat(126)}co`), false, "256자");
+});
+
+// 데모 erp.js · guest.js 는 이 함수를 옮겨 적었다(모듈을 불러올 수 없는 정적 html). 고칠 때 한쪽만 고치지 않게 같은 값에 같은 답인지 본다.
+test("데모 사본(erp.js · guest.js)도 같은 답을 낸다", () => {
+  const values = ["kim@whale.co", "kim@회사.한국", "a@a.xn-1a", "kim@whale.c", "kim@whale.co,", "kim😀@whale.co", `${"가".repeat(22)}@x.co`, `a@b.${"x".repeat(64)}`, "kim@ｗhale.co", "6a@0.한　"];
+  for (const file of ["erp.js", "guest.js"]) {
+    const src = readFileSync(new URL(`../../docs/demo/assets/${file}`, import.meta.url), "utf8");
+    const start = src.indexOf("  const EMAIL_LOCAL_ATOM");
+    const end = src.indexOf("\n  };", src.indexOf("  const isEmailFormat")) + 5;
+    assert.ok(start > 0 && end > start, `${file} 에서 isEmailFormat 을 찾지 못했다`);
+    const demo = new Function(`${src.slice(start, end)}\nreturn isEmailFormat;`)() as (value: string) => boolean;
+    for (const v of values) assert.equal(demo(v), isEmailFormat(v), `${file}: ${JSON.stringify(v)}`);
+  }
 });

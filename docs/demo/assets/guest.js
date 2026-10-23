@@ -19,10 +19,10 @@
     if (emailBytes(local) > 64 || emailBytes(domain) > 254 || !EMAIL_LOCAL.test(local)) return false;
     const labels = domain.split(".");
     const tld = labels.pop() ?? "";
-    if (!labels.length || /\s/.test(tld) || !EMAIL_TLD.test(tld)) return false;
+    if (!labels.length || tld.length > 63 || /\s/.test(tld) || !EMAIL_TLD.test(tld)) return false;
     return labels.every((label) => label.length <= 63 && !/\s/.test(label) && EMAIL_LABEL.test(label));
   };
-  // data-email-format 칸(회원가입 · 찾기 · 도입문의)은 형식이 틀리면 그 문구로 검사 오류를 건다 — 칸마다 앱 화면의 문구다.
+  // data-email-format 칸(회원가입 · 찾기 · 도입문의)은 형식이 틀리면 그 문구로 검사 오류를 건다 — 앱 EMAIL_FORMAT_ERROR 와 같은 문구다.
   const syncEmailFormat = (input) => {
     const v = input.value.trim();
     input.setCustomValidity(!v || isEmailFormat(v) ? "" : input.dataset.emailFormat);

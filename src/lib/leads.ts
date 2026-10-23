@@ -1,5 +1,5 @@
 import type { components } from "./api-types.generated";
-import { isEmailFormat } from "./email-format.ts";
+import { EMAIL_FORMAT_ERROR, isEmailFormat } from "./email-format.ts";
 
 // 비로그인 도입문의(#297 · #298) 폼 값 → api POST /leads 본문, 실패 → 화면 문구. 폼(design/guest/inquiry)과 서버 액션((site)/leads)이 같이 쓴다.
 
@@ -48,7 +48,7 @@ export function leadBodyOf(form: FormData): CreateLead {
 export function leadInputProblem(form: FormData): { name: string; message: string } | null {
   if (!textOf(form, "contactName")) return { name: "contactName", message: "이름을 입력해 주세요." };
   if (!PHONE.test(textOf(form, "phone").replace(/[\s-]/g, ""))) return { name: "phone", message: "전화번호 형식이 올바르지 않습니다. 예) 02-1234-5678, 1588-1234" };
-  if (!isEmailFormat(textOf(form, "email"))) return { name: "email", message: "이메일 형식이 올바르지 않습니다." };
+  if (!isEmailFormat(textOf(form, "email"))) return { name: "email", message: EMAIL_FORMAT_ERROR };
   if (textOf(form, "industryCode") === INDUSTRY_OTHER && !textOf(form, "industryDetail")) return { name: "industryDetail", message: "업종을 입력해 주세요." };
   if (!textOf(form, "body")) return { name: "body", message: "문의 내용을 입력해 주세요." };
   return null;

@@ -1,7 +1,10 @@
 // 이메일 형식 — 이메일 칸이 있는 화면(플랫폼 관리자 등록 · 수정, MY PAGE 기본정보, 회원가입, 아이디 · 비밀번호 찾기, 도입문의)이
 // 같이 쓴다. api 는 이 칸들을 모두 class-validator @IsEmail()(validator 13.15 isEmail · isFQDN, 기본 옵션)로 막으므로, 화면도
 // 같은 규칙으로 본다 — 화면이 맞다고 한 값을 저장할 때 api 가 형식 오류로 막지 않게. node --test 로 검사한다(email-format.test.ts).
-// 칸마다 다른 최대 길이(100 · 254)와 문구는 쓰는 쪽이 정한다.
+// 칸마다 다른 최대 길이(100 · 254)는 쓰는 쪽이 정한다.
+
+/** 형식이 틀렸을 때 칸 아래(또는 제출 버튼 위)에 보이는 문구 — 이메일 칸이 있는 화면 모두 같다(2026-10-23 사용자 결정). */
+export const EMAIL_FORMAT_ERROR = "이메일 형식이 올바르지 않습니다.";
 
 /** @ 앞 — 영문 · 숫자 · 일부 기호 · 비ASCII(이모지 · 제어문자 제외). 점은 맨 앞 · 맨 뒤 · 연달아 오지 않는다. */
 const LOCAL_ATOM = "[a-z0-9!#$%&'*+\\-/=?^_`{|}~\\u00a1-\\ud7ff\\uf900-\\ufdcf\\ufdf0-\\uffef]+";
@@ -27,6 +30,6 @@ export function isEmailFormat(value: string): boolean {
   if (bytes(local) > 64 || bytes(domain) > 254 || !LOCAL.test(local)) return false;
   const labels = domain.split(".");
   const tld = labels.pop() ?? "";
-  if (!labels.length || /\s/.test(tld) || !TLD.test(tld)) return false;
+  if (!labels.length || tld.length > 63 || /\s/.test(tld) || !TLD.test(tld)) return false;
   return labels.every((label) => label.length <= 63 && !/\s/.test(label) && LABEL.test(label));
 }

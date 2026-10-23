@@ -104,7 +104,8 @@ export function AdminFormPanel(props: Props) {
   const [saving, startSaving] = useTransition();
   /**
    * 저장 요청이 떠 있는 동안 고친 칸 — 입력칸은 저장 중에도 잠기지 않는다. 늦게 온 거절은 보낸 값의 것이라 지금 값에 붙이면
-   * 쓸 수 있는 아이디가 「사용 중」으로 막힌다. 그런 칸의 거절은 위 띠로만 알린다.
+   * 쓸 수 있는 아이디가 「사용 중」으로 막힌다. 그런 칸의 거절은 위 띠로만 알린다. set() 을 거친 칸만 담긴다 — 주소 칸은
+   * 따로 바꾸지만 api 가 칸에 붙이는 오류는 아이디 · 이메일뿐이라(serverErrorField) 상관없다.
    */
   const editedWhileSaving = useRef(new Set<AdminFormField>());
   const router = useRouter();

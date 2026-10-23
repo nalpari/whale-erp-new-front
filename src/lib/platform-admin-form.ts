@@ -1,7 +1,7 @@
 // 플랫폼 관리자 등록 · 수정 입력칸 — 검사와 요청 만들기. 패널(src/app/platform-admins/)에서 뺀 순수 함수라
 // node --test 로 검사한다(platform-admin-form.test.ts).
 // 규칙은 api(platform-admin-format.ts · save-platform-admin.dto.ts)와 같다(이메일 형식은 다른 화면과 같이 쓰는 email-format.ts). api 가 다시 막으므로 화면은 저장 전에 칸 아래 먼저 알리기만 한다.
-import { isEmailFormat } from "./email-format.ts";
+import { EMAIL_FORMAT_ERROR, isEmailFormat } from "./email-format.ts";
 import type { AdminStatus, CreatePlatformAdminInput, PlatformAdminDetail, UpdatePlatformAdminInput } from "./platform-admins";
 
 /** 아이디 — 영문 또는 영문 · 숫자 4~20자, 영문이 하나 이상(PL-OCJOFP). 밑줄은 쓸 수 없다. */
@@ -91,7 +91,7 @@ export function isOriginalEmail(value: string, original: string | null): boolean
 export function emailError(email: string): string | undefined {
   const value = email.trim();
   if (!value) return "이메일을 입력해 주세요.";
-  if (value.length > 100 || !isEmailFormat(value)) return "이메일 형식이 아닙니다.";
+  if (value.length > 100 || !isEmailFormat(value)) return EMAIL_FORMAT_ERROR;
   return undefined;
 }
 
@@ -132,9 +132,11 @@ export function serverErrorField(status: number | undefined, message: string, mo
 
 /**
  * 칸 아래에 붙일 api 오류 문구. 아이디는 화면 문구로 바꾼다 — 400(형식)은 화면 검사와 같은 문구, 409(중복)는 LOGIN_ID_TAKEN.
- * 그 밖(이메일 중복 등)은 api 문구 그대로. 여러 칸 검증 오류는 serverErrorField 가 이미 띠로 보낸다.
+ * 이메일 400(형식)도 화면 형식 문구(EMAIL_FORMAT_ERROR)로. 그 밖(이메일 중복 등)은 api 문구 그대로. 여러 칸 검증 오류는 serverErrorField 가 이미 띠로 보낸다.
  */
 export function serverFieldMessage(field: AdminFormField, status: number | undefined, message: string): string {
+  // 이메일 400(형식)도 화면 형식 문구로 — api 문구(「이메일 형식이 아닙니다」)와 칸에서 본 문구가 달라지지 않게
+  if (field === "email") return status === 400 ? EMAIL_FORMAT_ERROR : message;
   if (field !== "loginId") return message;
   if (status === 400) return LOGIN_ID_FORMAT_ERROR;
   if (status === 409) return LOGIN_ID_TAKEN;

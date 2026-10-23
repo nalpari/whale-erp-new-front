@@ -58,7 +58,7 @@ test("칸을 벗어날 때의 이메일 형식 검사 — 앞뒤 공백은 빼�
 
 test("이메일 형식 — api @IsEmail 이 막는 값은 화면도 형식 오류로(규칙 자체는 email-format.test.ts)", () => {
   for (const ok of ["kim@whale.co", "kim@회사.한국"]) assert.equal(emailError(ok), undefined, ok);
-  for (const bad of ["kim@whale.c", "kim@whale.co,", "kim😀@whale.co"]) assert.equal(emailError(bad), "이메일 형식이 아닙니다.", bad);
+  for (const bad of ["kim@whale.c", "kim@whale.co,", "kim😀@whale.co"]) assert.equal(emailError(bad), "이메일 형식이 올바르지 않습니다.", bad);
 });
 
 test("필수 칸 — 이름 · 연락처 · 이메일 · 사용자 권한", () => {
@@ -127,7 +127,7 @@ test("경계값 — 아이디 4 · 20자, 이메일 100자, 칸별 공백", () =
   assert.equal(validateAdminForm({ ...filled, loginId: "bad_id" }, "edit").loginId, undefined);
   // 100자 — @ 앞은 api 가 64바이트까지만 받아(email-format.ts) 도메인을 늘려 잰다
   assert.equal(validateAdminForm({ ...filled, email: `${"a".repeat(60)}@${"b".repeat(36)}.co` }, "create").email, undefined);
-  assert.equal(validateAdminForm({ ...filled, email: `${"a".repeat(60)}@${"b".repeat(37)}.co` }, "create").email, "이메일 형식이 아닙니다.");
+  assert.equal(validateAdminForm({ ...filled, email: `${"a".repeat(60)}@${"b".repeat(37)}.co` }, "create").email, "이메일 형식이 올바르지 않습니다.");
   assert.equal(toCreateInput({ ...filled, phone: ["010", " 1234 ", "5678"] }).phone, "01012345678");
 });
 
@@ -148,13 +148,14 @@ test("api 오류를 붙일 칸 — 400 · 409 의 아이디 · 이메일만, 수
   assert.equal(serverErrorField(undefined, "아이디 …", "create"), null);
 });
 
-test("칸에 붙일 api 오류 문구 — 아이디는 화면 문구로, 이메일은 api 문구 그대로", () => {
+test("칸에 붙일 api 오류 문구 — 아이디와 이메일 형식(400)은 화면 문구로, 이메일 중복은 api 문구 그대로", () => {
   const apiTaken = "이미 사용 중인 아이디입니다. 삭제된 계정의 아이디도 다시 쓸 수 없습니다";
   assert.equal(serverFieldMessage("loginId", 409, apiTaken), LOGIN_ID_TAKEN);
   assert.equal(serverFieldMessage("loginId", 400, "아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다"), LOGIN_ID_FORMAT_ERROR);
   assert.equal(LOGIN_ID_FORMAT_ERROR, loginIdError("1234"), "화면 형식 검사와 같은 문구");
   const emailTaken = "이미 다른 관리자 계정에 등록된 이메일입니다";
   assert.equal(serverFieldMessage("email", 409, emailTaken), emailTaken);
+  assert.equal(serverFieldMessage("email", 400, "이메일 형식이 아닙니다"), emailError("kim@whale.c"), "칸에서 본 형식 문구와 같다");
 });
 
 test("여러 칸 검증 오류(400 배열)는 칸에 붙이지 않고 띠로 — 아이디 칸에 남아 저장을 막지 않게", () => {
