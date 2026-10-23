@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { Badge, Button, ConfirmDialog, DataTable, useToast, type Column } from "@/components/common";
+import { Badge, Button, ConfirmDialog, DataTable, PageBar, useToast, type Column } from "@/components/common";
 import { ServiceTabs } from "@/components/site/service-tabs";
 import { usePagePermission } from "@/components/site/session-gate";
 import { CARD, FailedBand } from "@/components/site/side-parts";
@@ -188,99 +188,104 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
 
   const tabId = "platform-menus-tabs";
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-[12px] p-[24px]">
-      <ServiceTabs
-        services={services.map((s) => ({
-          serviceCode: s.serviceCode,
-          name: s.name,
-          suffix: (
-            <>
-              <span className="ml-[6px] text-erp-label">{s.menuCount.toLocaleString("ko-KR")}</span>
-              {s.status !== "ACTIVE" && (
-                <span className="ml-[6px]">
-                  <Badge tone="off">미사용</Badge>
-                </span>
-              )}
-            </>
-          ),
-        }))}
-        selected={serviceCode || null}
-        idPrefix={tabId}
-        onSelect={handleServiceSelect}
-      />
-      <div id={`${tabId}-panel`} role="tabpanel" aria-labelledby={serviceCode ? `${tabId}-${serviceCode}` : undefined} className="flex min-h-0 flex-1 gap-[12px]">
-        <section className={`${CARD} min-w-0 flex-1`} aria-label="메뉴 트리">
-          <div className="flex items-end gap-[6px]">
-            <h2 className="text-[18px] font-semibold text-erp-ink">
-              메뉴 트리 <span className="ml-[6px] text-[14px] font-normal text-erp-label">{(tree?.total ?? 0).toLocaleString("ko-KR")}개</span>
-            </h2>
-            {/* 끄는 동안 놓을 자리를, 옮기는 동안 진행을 알린다 — 화면 읽기 프로그램에도 */}
-            <p aria-live="polite" className="min-w-0 flex-1 truncate text-[13px] text-erp-label">
-              {moving ? "옮기는 중입니다…" : drag.hint}
-            </p>
-            {can.create && (
-              <Button onClick={handleCreate} disabled={creating || moving || !tree}>
-                등록
-              </Button>
-            )}
-          </div>
-          {moveFailure && <FailedBand message={moveFailure.message} detail={moveFailure.detail} />}
-          <div {...drag.wrapProps} className="relative">
-            <DataTable
-              columns={columns}
-              rows={rows}
-              rowKey={(r) => (r.kind === "menu" ? r.row.node.menuId : "draft")}
-              rowState={(r) => (r.kind === "draft" ? "added" : !creating && r.row.node.menuId === picked ? "selected" : undefined)}
-              rowProps={(r) =>
-                r.kind === "menu"
-                  ? {
-                      ...(editable ? drag.rowProps(r.row.node) : {}),
-                      onClick: () => handleRowClick(r.row.node.menuId),
-                    }
-                  : {}
-              }
-              empty="이 서비스에 등록된 메뉴가 없습니다."
-            />
-            {drag.dragging !== null && (
-              <div {...drag.endProps} className="flex h-[46px] items-center justify-center border border-t-0 border-dashed border-erp-thead-line text-[13px] text-erp-label">
-                여기에 놓으면 최상위 맨 끝으로 옮깁니다
-              </div>
-            )}
-            {drag.indicator}
-          </div>
-        </section>
-
-        <MenuSide
-          // 다른 메뉴를 고르면 칸을 새로 그린다. 같은 메뉴의 최신 정보(updatedAt)로는 다시 그리지 않는다 — 다시 그리면 409 실패 문구 · 고치던 입력이
-          // 함께 사라진다. 최신 값으로 칸을 다시 채우는 것은 폼이 맞춘다(menu-form.ts).
-          key={creating ? `new-${placement?.parent?.menuId ?? "root"}` : detail && "menu" in detail ? String(detail.menu.menuId) : String(picked ?? "empty")}
-          serviceCode={serviceCode}
-          nodes={nodes}
-          placement={placement}
-          detail={picked === null ? (detail && "failed" in detail ? detail : null) : detail}
-          onDraftNameChange={setDraftName}
-          onCancelCreate={() => setCreating(false)}
-          onCreated={(id) => handleSelect(id)}
-          onCreateUnknown={(message) => {
-            // 등록됐는지 모른다 — 양식을 닫아 같은 입력으로 다시 저장해 메뉴가 둘 생기지 않게 하고(삭제가 없다) 최신 트리를 받는다
-            setCreating(false);
-            setMoveFailure({ message, detail: "최신 트리를 다시 받았습니다. 새 메뉴가 생겼는지 트리에서 확인한 뒤, 없으면 다시 등록해 주세요." });
-            router.refresh();
-          }}
+    <>
+      {/* [등록]은 제목 줄 오른쪽 — 3팀 목록과 같은 자리(2026-10-23). 고른 탭의 트리(고른 메뉴 아래)에 새 메뉴를 더한다 */}
+      <PageBar title="플랫폼 메뉴 관리">
+        {can.create && (
+          <Button onClick={handleCreate} disabled={creating || moving || !tree}>
+            등록
+          </Button>
+        )}
+      </PageBar>
+      <div className="flex min-h-0 flex-1 flex-col gap-[12px] p-[24px]">
+        <ServiceTabs
+          services={services.map((s) => ({
+            serviceCode: s.serviceCode,
+            name: s.name,
+            suffix: (
+              <>
+                <span className="ml-[6px] text-erp-label">{s.menuCount.toLocaleString("ko-KR")}</span>
+                {s.status !== "ACTIVE" && (
+                  <span className="ml-[6px]">
+                    <Badge tone="off">미사용</Badge>
+                  </span>
+                )}
+              </>
+            ),
+          }))}
+          selected={serviceCode || null}
+          idPrefix={tabId}
+          onSelect={handleServiceSelect}
         />
-        <ConfirmDialog
-          open={pendingMove !== null}
-          title="이 화면이 닫힙니다"
-          confirmLabel="옮겨 저장"
-          busy={moving}
-          onConfirm={() => pendingMove && saveMove(pendingMove.menuId, pendingMove.spot, pendingMove.verdict, pendingMove.via)}
-          onCancel={() => setPendingMove(null)}
-        >
-          <p className="text-[14px] leading-[1.6]">
-            미사용 메뉴 아래로 옮기면 플랫폼 메뉴 관리({SELF_MENU_CODE})도 사용자 화면과 메뉴 권한에서 빠져, 다음 로그인부터 이 화면으로는 되돌릴 수 없습니다. 계속할까요?
-          </p>
-        </ConfirmDialog>
+        <div id={`${tabId}-panel`} role="tabpanel" aria-labelledby={serviceCode ? `${tabId}-${serviceCode}` : undefined} className="flex min-h-0 flex-1 gap-[12px]">
+          <section className={`${CARD} min-w-0 flex-1`} aria-label="메뉴 트리">
+            <div className="flex items-end gap-[6px]">
+              <h2 className="text-[18px] font-semibold text-erp-ink">
+                메뉴 트리 <span className="ml-[6px] text-[14px] font-normal text-erp-label">{(tree?.total ?? 0).toLocaleString("ko-KR")}개</span>
+              </h2>
+              {/* 끄는 동안 놓을 자리를, 옮기는 동안 진행을 알린다 — 화면 읽기 프로그램에도 */}
+              <p aria-live="polite" className="min-w-0 flex-1 truncate text-[13px] text-erp-label">
+                {moving ? "옮기는 중입니다…" : drag.hint}
+              </p>
+            </div>
+            {moveFailure && <FailedBand message={moveFailure.message} detail={moveFailure.detail} />}
+            <div {...drag.wrapProps} className="relative">
+              <DataTable
+                columns={columns}
+                rows={rows}
+                rowKey={(r) => (r.kind === "menu" ? r.row.node.menuId : "draft")}
+                rowState={(r) => (r.kind === "draft" ? "added" : !creating && r.row.node.menuId === picked ? "selected" : undefined)}
+                rowProps={(r) =>
+                  r.kind === "menu"
+                    ? {
+                        ...(editable ? drag.rowProps(r.row.node) : {}),
+                        onClick: () => handleRowClick(r.row.node.menuId),
+                      }
+                    : {}
+                }
+                empty="이 서비스에 등록된 메뉴가 없습니다."
+              />
+              {drag.dragging !== null && (
+                <div {...drag.endProps} className="flex h-[46px] items-center justify-center border border-t-0 border-dashed border-erp-thead-line text-[13px] text-erp-label">
+                  여기에 놓으면 최상위 맨 끝으로 옮깁니다
+                </div>
+              )}
+              {drag.indicator}
+            </div>
+          </section>
+
+          <MenuSide
+            // 다른 메뉴를 고르면 칸을 새로 그린다. 같은 메뉴의 최신 정보(updatedAt)로는 다시 그리지 않는다 — 다시 그리면 409 실패 문구 · 고치던 입력이
+            // 함께 사라진다. 최신 값으로 칸을 다시 채우는 것은 폼이 맞춘다(menu-form.ts).
+            key={creating ? `new-${placement?.parent?.menuId ?? "root"}` : detail && "menu" in detail ? String(detail.menu.menuId) : String(picked ?? "empty")}
+            serviceCode={serviceCode}
+            nodes={nodes}
+            placement={placement}
+            detail={picked === null ? (detail && "failed" in detail ? detail : null) : detail}
+            onDraftNameChange={setDraftName}
+            onCancelCreate={() => setCreating(false)}
+            onCreated={(id) => handleSelect(id)}
+            onCreateUnknown={(message) => {
+              // 등록됐는지 모른다 — 양식을 닫아 같은 입력으로 다시 저장해 메뉴가 둘 생기지 않게 하고(삭제가 없다) 최신 트리를 받는다
+              setCreating(false);
+              setMoveFailure({ message, detail: "최신 트리를 다시 받았습니다. 새 메뉴가 생겼는지 트리에서 확인한 뒤, 없으면 다시 등록해 주세요." });
+              router.refresh();
+            }}
+          />
+          <ConfirmDialog
+            open={pendingMove !== null}
+            title="이 화면이 닫힙니다"
+            confirmLabel="옮겨 저장"
+            busy={moving}
+            onConfirm={() => pendingMove && saveMove(pendingMove.menuId, pendingMove.spot, pendingMove.verdict, pendingMove.via)}
+            onCancel={() => setPendingMove(null)}
+          >
+            <p className="text-[14px] leading-[1.6]">
+              미사용 메뉴 아래로 옮기면 플랫폼 메뉴 관리({SELF_MENU_CODE})도 사용자 화면과 메뉴 권한에서 빠져, 다음 로그인부터 이 화면으로는 되돌릴 수 없습니다. 계속할까요?
+            </p>
+          </ConfirmDialog>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
