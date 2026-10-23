@@ -121,7 +121,8 @@ export const EMPTY_STORE_FORM: StoreForm = {
   verified: null,
   tradeName: "",
   ceoPhone: ["", "", ""],
-  bizSameAsStore: true,
+  // 새 점포는 사업자주소가 점포주소와 다를 수 있어 기본은 해제(사용자 지정, 2026-10-23)
+  bizSameAsStore: false,
   bizZipCode: "",
   bizAddress: "",
   bizAddressDetail: "",
