@@ -3137,6 +3137,7 @@ export interface paths {
          * 신고 정보 작성 · 수정 (WHALEERP-334). 직원 본인만 — 관리자 토큰은 403. 처음에는 주민등록번호 · 은행 · 계좌번호를 모두,
          *     고칠 때는 주민등록번호만 또는 급여 계좌(은행 · 계좌번호 함께)만 보낸다. 주민등록번호를 새로 받으면 수집 일시가 바뀌고
          *     이전 값은 남기지 않는다. 급여 계좌는 다음 급여부터 쓴다. 응답은 조회와 같다(가린 값만).
+         *     이미 낸 신고 정보를 고칠 때는 `currentPassword`(지금 비밀번호)도 보낸다 — 처음 작성에는 필요 없다(2026-10-23).
          */
         put: operations["MyMembershipsController_saveTaxProfile"];
         post?: never;
@@ -7552,6 +7553,12 @@ export interface components {
             bankCode?: string;
             /** @description 급여 계좌번호 — 숫자 10~16자리(하이픈은 지운다). 예금주는 본인이어야 한다 */
             payrollAccountNumber?: string;
+            /**
+             * @description 지금 비밀번호 — 이미 낸 신고 정보를 고칠 때 필수다. 없거나 틀리면 400 `CURRENT_PASSWORD_MISMATCH`(토큰만 손에 넣은
+             *     사람이 급여 계좌를 바꾸지 못하게, WHALEERP-333 · 334 후속 2026-10-23). 처음 작성할 때는 보내지 않는다 — 보내도 서버가 비교하지
+             *     않지만 형식은 본다(빈 문자열 · 128자 초과는 처음 작성에도 400). 형식 · 상한은 이메일 변경 핀 요청(WHALEERP-607)과 같다
+             */
+            currentPassword?: string;
         };
         InvitationLookupDto: {
             /** @description 초대 링크의 토큰(base64url 43자) */
@@ -17359,7 +17366,7 @@ export interface operations {
                     "application/json": components["schemas"]["MyTaxProfileResponseDto"];
                 };
             };
-            /** @description 형식 오류 · 바꿀 값 없음(TAX_PROFILE_EMPTY) · 처음인데 셋 중 빠짐(TAX_PROFILE_INCOMPLETE) · 은행 · 계좌번호 한쪽만(TAX_PROFILE_ACCOUNT_INCOMPLETE) · 주민등록번호 앞자리와 가입 생년월일이 다름(RRN_BIRTH_MISMATCH — 관리자에게 정정 요청) · 없는 은행(BANK_CODE_UNKNOWN) */
+            /** @description 형식 오류 · 바꿀 값 없음(TAX_PROFILE_EMPTY) · 고치는데 지금 비밀번호가 없거나 틀림(CURRENT_PASSWORD_MISMATCH — 「지금 비밀번호가 맞지 않습니다」, 내 소속 확인 뒤 · 다른 검사 전에 본다) · 처음인데 셋 중 빠짐(TAX_PROFILE_INCOMPLETE) · 은행 · 계좌번호 한쪽만(TAX_PROFILE_ACCOUNT_INCOMPLETE) · 주민등록번호 앞자리와 가입 생년월일이 다름(RRN_BIRTH_MISMATCH — 관리자에게 정정 요청) · 없는 은행(BANK_CODE_UNKNOWN) */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -17382,6 +17389,13 @@ export interface operations {
             };
             /** @description 내 소속이 아님 — 조회와 같은 본문 */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 계정 · IP 요청 한도 */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
