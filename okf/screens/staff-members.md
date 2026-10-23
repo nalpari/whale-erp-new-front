@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 오른쪽에 근무스케줄 · 출퇴근 현황(준비 중) · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다). 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-23T03:37:40Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-23T04:18:49Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -21,7 +21,7 @@ sources:
   - id: staff-list-query
     resource: ../../src/app/staff-members/staff-list-query.ts
     title: 목록 URL ↔ 조회 조건(점포 조건 storeIds · 빈 storeIds · scope) · 상세로 넘기는 ?back=(withBack · backHrefOf)
-    last_modified: 2026-10-23T03:37:40Z
+    last_modified: 2026-10-23T04:18:49Z
   - id: staff-filter
     resource: ../../src/app/staff-members/staff-filter.tsx
     title: 목록 필터 — 점포 칸은 공통 점포 고르기(StorePicker), 상단 점포 범위와 잇는다(근로계약 목록과 같은 규칙)
@@ -52,8 +52,8 @@ sources:
     last_modified: 2026-10-23T03:37:40Z
   - id: staff-detail-page
     resource: ../../src/app/staff-members/[id]/page.tsx
-    title: 직원 상세 화면(틀 + 기본 정보 · 퇴직일 · 가입 상태 · 초대 · 이메일 + 비밀번호 초기화 자리 + 근로계약 칸 + 오른쪽 영역 배치 · 근무스케줄 주(주소 week) · [목록] 주소(주소 back))
-    last_modified: 2026-10-23T03:37:40Z
+    title: 직원 상세 화면(틀 + 기본 정보 · 퇴직일 · 가입 상태 · 초대 · 이메일 + 비밀번호 초기화 자리 + 근로계약 칸 + 오른쪽 영역 배치 · 근무스케줄 주(주소 week) · [목록] 주소(주소 back, 없으면 상세 주소에 붙은 예전 목록 조건))
+    last_modified: 2026-10-23T04:18:49Z
   - id: contract-box
     resource: ../../src/app/staff-members/[id]/contract-box.tsx
     title: 상세 근로계약 칸 — 근로계약 영역 요약(api #183)을 받고 실패 · 권한 없음이면 이 칸만 안내, 계약이 없으면 작성으로(WHALEERP-184). 줄 라벨 칸은 DetailTable 과 같은 폭(110px)을 옮겨 쓴다.
@@ -168,9 +168,11 @@ sources:
 * **api 상한을 화면이 먼저 막는다**(PR #36 리뷰). 넘기면 api 400 으로 목록 전체가 오류 화면이 되기 때문이다 — 검색어(이름 ·
   번호)는 50자(검색칸 `maxLength` + 파서가 자름), 쪽은 1,000,000 을 넘으면 1, 주소의 `storeIds` 는 int4 양의 정수만 남기고 1000개(`MAX_STORE_IDS`,
   api 상한 — 500 에서 1000 으로 올림)에서 자른다. 직영 · 가맹 범위 칩을 지워 점포 id 목록으로 바뀔 때 1000개를 넘으면 뒤가 빠진다 — 근로계약 · 1팀 점포 정보 관리와 같은 한계다.
-* **상세로 갈 때 목록 주소를 `?back=` 으로 넘긴다**(`withBack`, 기본 목록이면 싣지 않는다). 상세의 [목록]은 `backHrefOf(back)` 로 돌아간다 — 직원 목록 주소가
-  아니면 기본 목록이고, 받은 쿼리는 목록과 같은 규칙으로 걸러 다시 만든다(같은 이름이 여럿이면 첫 값). 브라우저 뒤로 가기는 목록 조작이 `replace` 라 상세로 가기 직전의 목록 주소로 간다. 근무스케줄 주
-  넘김(`weekHref`)은 `back` 을 그대로 둔다. 예전처럼 목록 조건을 상세 주소에 그대로 붙인 주소(`/staff-members/5?keyword=…`)는 [목록]이 기본 목록으로 간다.
+* **상세로 갈 때 목록 주소를 `?back=` 으로 넘긴다**(`withBack`, 기본 목록이면 싣지 않는다). 상세의 [목록]은 `detailListHrefOf` 로 정한다 — `back` 이 있으면
+  `backHrefOf(back)`(직원 목록 주소가 아니면 기본 목록이고, 이때 아래 예전 조건으로 떨어지지 않는다. 받은 쿼리는 목록과 같은 규칙으로 걸러 다시 만든다 — 같은 이름이 여럿이면 첫 값).
+  `back` 이 없으면 예전처럼 목록 조건을 상세 주소에 그대로 붙인 주소(`/staff-members/5?keyword=홍&page=3` — 북마크 등)의 조건을 목록 규칙으로 다시 만들어 돌아간다
+  (같은 이름 여럿은 첫 값, 모르는 이름 · 예전 `?store=` 는 버리고, 상세 전용 `week` 는 목록에 넣지 않는다). 둘 다 없으면 기본 목록이다. 브라우저 뒤로 가기는 목록 조작이 `replace` 라 상세로 가기 직전의 목록 주소로 간다. 근무스케줄 주
+  넘김(`weekHref`)은 `week` 만 바꾸고 `back` 과 예전 형식 목록 조건을 그대로 둔다 — 주를 옮긴 뒤에도 [목록]이 같은 조건으로 돌아간다.
   직원 등록 화면은 따로 없다 — 「직원 초대」는 근로계약 작성(`/contracts/new`)이라 `back` 을 싣지 않는다(근로계약 `backHrefOf` 가 근로계약 목록 주소만 받는다).
   상세 안에서 다른 화면(근로계약 등)으로 가는 링크는 `back` 을 싣지 않는다. 직원 목록에서 저장 · 삭제 뒤 목록으로 돌아가는 동작이 없어(퇴직 처리 · 변경 · 취소는
   상세에 머물고 다시 받는다) 근로계약의 `withoutStoreSearch` 처리는 두지 않았다.
