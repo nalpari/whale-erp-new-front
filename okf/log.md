@@ -1,5 +1,9 @@
 # Bundle history
 
+## 2026-10-23
+* **Update**: [BP 환경설정](/config.md) — BP 관리자 관리 정책 네 가지를 정했다(api 작업 전 확인): 가맹 마스터 · 가맹 관리자도 본인 계정을 본다, 새로 매핑할 점포는 미운영 · 운영만(폐점은 후보에 흐리게), 가맹 마스터 점포를 빼면 연결 가맹 관리자의 그 점포 매핑도 빠진다(0곳이어도 상태 그대로), 연쇄로 바뀐 가맹 관리자 이력의 처리자는 저장한 사람이고 값에 이유를 붙인다. 목업 · 화면정의서 · 데모도 맞췄다.
+* **Update**: [BP 환경설정](/config.md) — BP 관리자 목록의 「새 계정」 배지를 뺐고(데모에 없음), 가맹 관리자 상세 기본정보에 연결 가맹 마스터 줄을 더했다. 목업 `config/admins.html` · `admins-detail.html` 과 화면정의서도 같이 고쳤다.
+
 ## 2026-10-22
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [플랫폼 시스템관리](/system.md) — 플랫폼 공통코드에서 플랫폼고정 그룹은 상세 코드 삭제 칸을 두지 않는다(`itemsDeletable` — api #135 가 409 로 막는다, 사용 상태로만 관리). front #113 머지 블로커 반영. 공통코드 api 타입을 api main(#135 머지 뒤) 기준으로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통코드 api 타입을 api #135 의 openapi 로 다시 만들었다(설명만 바뀜). 이 화면은 api #135 가 main 에 머지 · 배포된 뒤에 머지한다(front #113 머지 블로커).
