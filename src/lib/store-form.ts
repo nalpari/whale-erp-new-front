@@ -1,6 +1,7 @@
 // 점포 등록 · 수정 폼의 칸 값 · 검증 · 요청 만들기. 화면 칸은 모두 문자열로 쥐고, 보낼 때 숫자 · null 로 바꾼다.
 // 규칙은 okf stores.md · api 계약(2026-10-14)과 같다 — 서버가 다시 보지만 저장 전에 칸 아래에서 먼저 알린다.
 // node --test 가 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
+import { BIZ_MESSAGE, isBizVerificationExpired } from "./biz-verification-rules.ts";
 import { labelOf, type EnumValue } from "./enums.ts";
 import { finalJosa, hasStoreCoordinates } from "./store-view.ts";
 import type {
@@ -50,9 +51,10 @@ export type StoreForm = {
   openDate: string;
   /**
    * 이번 화면에서 진위확인을 통과한 값. 지금 칸 값과 같을 때만 인증으로 본다(currentVerification) — 기다리는 사이 칸을 고쳤는데
-   * 늦게 온 응답이 옛 값을 넣어도 저장에는 쓰이지 않는다. 저장할 때만 businessVerification 으로 보낸다
+   * 늦게 온 응답이 옛 값을 넣어도 저장에는 쓰이지 않는다. 저장할 때만 businessVerification 으로 보낸다.
+   * verifiedAt 은 인증 요청을 보낸 시각(ms) — 10분이 지나면 저장하지 않고 다시 인증하게 한다(S-VRNTHD)
    */
-  verified: { bizNumber: string; ceoName: string; openDate: string } | null;
+  verified: { bizNumber: string; ceoName: string; openDate: string; verifiedAt: number } | null;
   tradeName: string;
   ceoPhone: PhoneParts;
   /** 사업자주소를 점포 주소와 같게 둔다 */
@@ -76,6 +78,8 @@ export type StoreFormField =
   | "bizNumber"
   | "ceoName"
   | "openDate"
+  /** 인증 상자의 버튼 위 한 줄 — 국세청 불일치 · 연동 실패 · 만료 · 미인증 저장처럼 어느 한 칸의 것이 아닌 문구 */
+  | "bizVerify"
   | "tradeName"
   | "ceoPhone"
   | "bizAddressDetail"
@@ -228,10 +232,10 @@ export function verificationErrors(f: Pick<StoreForm, "savedBizNumber" | "bizNum
   const errors: StoreFormErrors = {};
   const number = f.bizNumber.replace(/-/g, "").trim();
   if (!f.savedBizNumber && !BIZ_NUMBER_PATTERN.test(number))
-    errors.bizNumber = number ? "사업자등록번호는 숫자 10자리입니다." : "사업자등록번호를 입력해 주세요.";
+    errors.bizNumber = number ? BIZ_MESSAGE.NUMBER_FORMAT : "사업자등록번호를 입력해 주세요.";
   if (!f.ceoName.trim()) errors.ceoName = "대표자명을 입력해 주세요.";
-  else if (f.ceoName.trim().length > 50) errors.ceoName = "대표자명은 50자까지입니다.";
-  if (!f.savedBizNumber && !DATE_PATTERN.test(f.openDate)) errors.openDate = f.openDate ? "개업일자는 YYYY-MM-DD 입니다." : "개업일자를 입력해 주세요.";
+  else if (f.ceoName.trim().length > 50) errors.ceoName = BIZ_MESSAGE.CEO_NAME_LENGTH;
+  if (!f.savedBizNumber && !DATE_PATTERN.test(f.openDate)) errors.openDate = f.openDate ? BIZ_MESSAGE.OPEN_DATE_FORMAT : "개업일자를 입력해 주세요.";
   return errors;
 }
 
@@ -241,8 +245,8 @@ export function hasCoordinateInput(latitude: string, longitude: string): boolean
 }
 
 /** 칸별 오류. 없으면 빈 객체. requirementLabels — 운영 조건 한글(GET /enums/StoreOperationRequirement). 새 점포는 미운영으로만
- * 생겨 이 검증을 타지 않으므로 등록(create) 화면은 빈 배열을 넘겨도 된다 */
-export function validateStoreForm(f: StoreForm, mode: "create" | "edit", requirementLabels: EnumValue[] = []): StoreFormErrors {
+ * 생겨 이 검증을 타지 않으므로 등록(create) 화면은 빈 배열을 넘겨도 된다. now 는 인증 10분 만료를 재는 지금 시각(ms) */
+export function validateStoreForm(f: StoreForm, mode: "create" | "edit", requirementLabels: EnumValue[] = [], now = Date.now()): StoreFormErrors {
   const errors: StoreFormErrors = {};
   if (mode === "create" && !f.storeTypeCode) errors.storeTypeCode = "점포유형을 골라 주세요.";
 
@@ -271,7 +275,9 @@ export function validateStoreForm(f: StoreForm, mode: "create" | "edit", require
   }
   if (f.bizCategory.trim().length > 50) errors.bizCategory = "업태는 50자까지입니다.";
   if (f.bizItem.trim().length > 50) errors.bizItem = "종목은 50자까지입니다.";
-  if (hasUnverifiedChange(f)) errors[f.savedBizNumber ? "ceoName" : "bizNumber"] = "인증하기를 눌러 사업자정보를 확인해 주세요.";
+  if (hasUnverifiedChange(f)) errors.bizVerify = BIZ_MESSAGE.UNVERIFIED;
+  const verification = currentVerification(f);
+  if (verification && isBizVerificationExpired(verification.verifiedAt, now)) errors.bizVerify = BIZ_MESSAGE.EXPIRED;
 
   const badFloor = f.floors.find(
     (r) =>
@@ -368,12 +374,15 @@ export function toUpdateStoreInput(f: StoreForm, updatedAt: string): UpdateStore
 
 /**
  * api 가 거절한 이유를 붙일 칸. 한 칸의 것이 아니면 null(폼 위 띠로 보인다).
- * api 는 오류에 칸 이름을 싣지 않아 문구로 가른다 — 400 · 409 만 보고, 사업자번호 중복은 진위확인 칸에 붙인다.
+ * api 는 오류에 칸 이름을 싣지 않아 문구로 가른다 — 400 · 409 를 보고(국세청 재확인 실패는 400 · 503 도), 사업자번호 중복은 진위확인 칸에 붙인다.
+ * 저장 때 서버가 다시 한 국세청 확인의 실패(400 불일치 · 503 연동)는 인증 상자의 버튼 위 한 줄(bizVerify)이다.
  */
 export function storeServerErrorField(status: number | undefined, message: string): StoreFormField | null {
+  // 운영 조건 미충족 — 문구에 「좌표(위도 · 경도)」나 「사업자 진위확인」 같은 조건 이름이 들어 있어도 점포상태 칸의 것이다.
+  // 국세청 재확인 실패 규칙보다 먼저 본다(조건 이름은 /enums 라벨이라 「진위확인」을 쓸 수 있다)
+  if (status === 400 && message.includes("운영으로 바꾸려면")) return "storeStatus";
+  if ((status === 400 || status === 503) && (message.includes("국세청") || message.includes("진위확인"))) return "bizVerify";
   if (status !== 400 && status !== 409) return null;
-  // 운영 조건 미충족 — 문구에 「좌표(위도 · 경도)」가 들어 있어도 점포상태 칸의 것이다
-  if (message.includes("운영으로 바꾸려면")) return "storeStatus";
   if (message.includes("사업자등록번호")) return "bizNumber";
   if (message.includes("대표자명")) return "ceoName";
   if (message.includes("개업일자")) return "openDate";
@@ -391,7 +400,16 @@ export function storeServerErrors(status: number | undefined, messages: readonly
   const rest: string[] = [];
   for (const message of messages) {
     const field = storeServerErrorField(status, message);
-    if (field) fields[field] = fields[field] ? `${fields[field]} ${message}` : message;
+    // 인증 실패는 네 화면이 같은 글자를 보이도록 api 문구 대신 공통 문구로 바꾼다(S-VRNTHD)
+    const text =
+      field === "bizVerify"
+        ? status === 503
+          ? BIZ_MESSAGE.UNAVAILABLE
+          : BIZ_MESSAGE.MISMATCH
+        : field === "bizNumber" && status === 409
+          ? BIZ_MESSAGE.DUPLICATE
+          : message;
+    if (field) fields[field] = fields[field] && fields[field] !== text ? `${fields[field]} ${text}` : text;
     else rest.push(message);
   }
   return { fields, rest };

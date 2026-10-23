@@ -58,7 +58,7 @@ export async function getStaffMemberWeekSchedule(id: number, weekStart: string):
   return request(`/staff-members/${id}/summary/work-schedules?${new URLSearchParams({ weekStart })}`, await init("GET"));
 }
 
-/** GET /staff-members/:id/summary/payslips — 최근 확정 · 이번 달 명세서와 미발송 건수. 급여명세서 관리 조회 권한 */
+/** GET /staff-members/:id/summary/payslips — 최근 명세서 3건(급여 기간 시작일 최신순)과 미발송 건수. 급여명세서 관리 조회 권한 */
 export async function getStaffMemberPayslipSummary(id: number): Promise<Schemas["StaffMemberPayslipSummaryResponseDto"]> {
   return request(`/staff-members/${id}/summary/payslips`, await init("GET"));
 }

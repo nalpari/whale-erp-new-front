@@ -3,18 +3,19 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { Badge, Button, DataTable, Pagination, Select, Tag, TextField, Toggle, useToast, type Column } from "@/components/common";
-import { buildSaveGroupsInput, codePanelAccess, followSameRows, groupChanged, withKeptAdded, type GroupDraft } from "@/lib/code-drafts";
+import { buildSaveGroupsInput, codePanelAccess, followSameRows, groupChanged, withKeptPending, type GroupDraft } from "@/lib/code-drafts";
 import { failureView } from "@/lib/code-save";
 import { codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-validation";
 import type { CodeGroup, ManageOwnerCode } from "@/lib/codes";
 import { usePagePermission } from "@/components/site/session-gate";
 import { applyCodeGroupToBpsAction, saveCodeGroupsAction } from "./actions";
 import { BpApplyDialog } from "./bp-apply-dialog";
-import { CodePanel, DoneNotice, FieldErrors, SaveFailedBand, UNKNOWN_RESULT, UNREACHABLE } from "./code-panel";
+import { CodePanel, DoneNotice, FieldErrors, SaveFailedBand, UNKNOWN_RESULT, UNREACHABLE } from "@/components/site/code-editor/code-panel";
 import { codesHref } from "./codes-href";
-import { GuardedLink, useUnsavedChanges } from "./unsaved-changes";
+import { searchedEmpty } from "@/components/site/code-editor/code-group-filter";
+import { GuardedLink, useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
 
-// 왼쪽 공통코드 그룹 목록. 그룹 코드를 누르면 오른쪽에 그 그룹의 상세 코드가 선다(?group=).
+// 가운데 공통코드 그룹 목록. 그룹 코드를 누르면 오른쪽에 그 그룹의 상세 코드가 선다(?group=). 그룹 · 쪽을 옮겨도 왼쪽 필터의 검색 조건은 이어 간다.
 // 기존 그룹은 그룹명 · 사용 상태만 고치고(코드 · 관리 주체는 바꾸지 않는다), [추가]는 맨 끝에 입력 행 하나를 붙인다.
 // [저장] 한 번으로 바뀐 행과 새 행을 함께 보낸다(수정 → 등록 두 요청, actions.ts). 그룹 순서는 화면에서 바꾸지 않는다(2026-10-12) — 표시 순서대로 보이기만 한다.
 // 플랫폼제공 그룹은 [BP 적용]으로 사용 중인 모든 BP 에 복사한다 — BP 에 이미 있는 상세 코드는 건너뛰고 없는 것만 넣는다(2026-10-12).
@@ -30,6 +31,7 @@ export function CodeGroupPanel({
   total,
   page,
   pageSize,
+  search,
   selected,
   ownerLabels,
 }: {
@@ -37,13 +39,17 @@ export function CodeGroupPanel({
   total: number;
   page: number;
   pageSize: number;
+  /** 왼쪽 필터의 검색 조건 — 그룹 · 쪽을 옮겨도 이어 간다. */
+  search: { groupCode: string; groupName: string };
   selected?: string;
   /** 관리 주체 한글 — 공통코드 MANAGE_OWNER 에서 읽은 값. */
   ownerLabels: Record<string, string>;
 }) {
   // 메뉴 권한(로그인 정보)으로 보인다 — 막는 것은 api 다. api 는 기존 행 수정(수정 권한)과 새 행 등록(등록 권한)이 따로다.
   // 그래서 기존 행 고치기 · BP 적용은 수정 권한, [추가]와 새 행 입력은 등록 권한, [저장]은 둘 중 하나만 있어도 보인다.
-  const { manage, canAdd, canSave } = codePanelAccess(usePagePermission());
+  // 그룹에는 삭제가 없어 삭제 권한은 넘기지 않는다 — [저장]이 삭제 권한만으로 보이지 않게.
+  const permission = usePagePermission();
+  const { manage, canAdd, canSave } = codePanelAccess({ update: permission.update, create: permission.create });
   const router = useRouter();
   const toast = useToast();
   const { setDirty, isDirty, navigate } = useUnsavedChanges();
@@ -73,7 +79,7 @@ export function CodeGroupPanel({
       if (savingFrom && followed !== savingFrom.groups) setSavingFrom({ ...savingFrom, groups });
     } else {
       const keep = savingFrom?.groups === shown.groups && savingFrom.selected === selected;
-      const next = withKeptAdded(groups.map(toDraft), drafts, keep);
+      const next = withKeptPending(groups.map(toDraft), drafts, keep);
       setSavingFrom(null);
       setDrafts(next);
       if (!next.some((d) => d.added)) {
@@ -165,7 +171,7 @@ export function CodeGroupPanel({
         return setFailure(UNKNOWN_RESULT);
       }
       // 저장했는데 서버가 화면을 무효화하지 못했으면 직접 다시 받는다 — 새 목록이 와야 이어 둔 새 행 · 바뀐 값이 정리된다
-      if ((result.ok || result.updatesSaved) && !result.refreshed) router.refresh();
+      if ((result.ok || result.anySaved) && !result.refreshed) router.refresh();
       if (result.ok) {
         // 저장한 값으로 이 패널을 마무리한다. 새 그룹이 다음 쪽에 들어가 이 쪽 목록이 그대로여도(위 재설정이 돌지 않아도)
         // 입력 행이 남지 않게 한다. 다시 그린 목록이 먼저 와서 새 행을 이어 뒀으면 그것도 여기서 빠진다.
@@ -177,7 +183,7 @@ export function CodeGroupPanel({
         return toast(input.creates.length ? "saved" : "updated");
       }
       // 아무것도 저장되지 않았으면 이어 둘 일이 없다. 수정만 저장됐으면 새 행은 다시 받은 목록 뒤에 남는다(savingFrom).
-      if (!result.updatesSaved) setSavingFrom(null);
+      if (!result.anySaved) setSavingFrom(null);
       // 그룹 코드가 겹치면 칸 오류로, 그 밖은 띠로 알린다. 수정분이 저장됐으면 띠에 그 사실을 먼저 적는다(failureView).
       const view = failureView(result);
       if (view.conflict) setErrors({ code: view.conflict });
@@ -208,7 +214,7 @@ export function CodeGroupPanel({
             {d.groupCode}
           </b>
         ) : (
-          <GuardedLink href={codesHref({ page, group: d.groupCode })} className="text-erp-link hover:underline">
+          <GuardedLink href={codesHref({ ...search, page, group: d.groupCode })} className="text-erp-link hover:underline">
             {d.groupCode}
           </GuardedLink>
         ),
@@ -316,6 +322,7 @@ export function CodeGroupPanel({
         rows={drafts}
         rowKey={(d) => (d.added ? "__added" : d.groupCode)}
         rowState={(d) => (d.added ? "added" : d.groupCode === selected ? "selected" : undefined)}
+        empty={searchedEmpty(search) ?? "등록한 공통코드 그룹이 없습니다."}
       />
       <FieldErrors messages={Object.values(errors)} />
       {manage && <BpApplyDialog group={applyTarget} busy={applying} onConfirm={handleApply} onCancel={() => setApplyTarget(null)} />}
@@ -323,7 +330,7 @@ export function CodeGroupPanel({
         <Pagination
           page={page}
           totalPages={Math.max(1, Math.ceil(total / pageSize))}
-          onPageChange={(next) => navigate(codesHref({ page: next }))}
+          onPageChange={(next) => navigate(codesHref({ ...search, page: next }))}
         />
       </div>
     </CodePanel>

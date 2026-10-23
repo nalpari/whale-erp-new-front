@@ -2,13 +2,14 @@
 // 테스트는 pnpm test 로 함께 돈다. 이 파일만: node --test "src/**/summary-view.test.ts" — 경로의 [id] 를 node 가 glob 으로 읽어 그대로 적으면 찾지 못한다.
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
 import type { components } from "../../../lib/api-types.generated.ts";
+import { formatAmount } from "../../../lib/payslips.ts";
 import { kstToday } from "../../../lib/staff-members.ts";
 import { addDays, mondayOf } from "../../work-schedules/work-schedule-query.ts";
 
 type Schemas = components["schemas"];
 export type ContractSummary = Schemas["StaffMemberContractSummaryResponseDto"];
 export type PayslipSummary = Schemas["StaffMemberPayslipSummaryResponseDto"];
-export type PayslipSummaryItem = Schemas["StaffMemberPayslipSummaryDto"];
+export type PayslipSummaryItem = PayslipSummary["recent"][number];
 export type TodoSummary = Schemas["StaffMemberTodoSummaryResponseDto"];
 export type WeekSchedule = Schemas["StaffMemberWeekScheduleResponseDto"];
 export type WeekScheduleItem = WeekSchedule["items"][number];
@@ -138,26 +139,22 @@ export function workDateText(workDate: string): string {
   return `${md(workDate)} ${WEEKDAYS[new Date(`${workDate}T00:00:00Z`).getUTCDay()]}`;
 }
 
-/** 급여명세서 영역의 급여 기간 — 2026-10-01 ~ 10-31. 끝 날짜가 다른 해면 연도를 남긴다(2025-12-21 ~ 2026-01-20). */
-export function payPeriodText(p: Pick<PayslipSummaryItem, "periodStartDate" | "periodEndDate">): string {
-  const sameYear = p.periodStartDate.slice(0, 4) === p.periodEndDate.slice(0, 4);
-  return `${p.periodStartDate} ~ ${sameYear ? p.periodEndDate.slice(5) : p.periodEndDate}`;
+/** 급여명세서 영역의 지급월 — 데모 「2026-08」. 급여 기간 시작일의 연 · 월이다 */
+export function payMonthText(p: Pick<PayslipSummaryItem, "periodStartDate">): string {
+  return p.periodStartDate.slice(0, 7);
 }
 
-/** 급여명세서 영역의 줄. 이번 달 · 최근 확정이 같은 명세서면 한 줄로 합친다. 둘 다 없으면 빈 배열. */
-export function payslipRows(summary: Pick<PayslipSummary, "latestConfirmed" | "currentMonth">): { label: string; payslip: PayslipSummaryItem }[] {
-  const { currentMonth, latestConfirmed } = summary;
-  if (currentMonth && latestConfirmed && currentMonth.payslipId === latestConfirmed.payslipId)
-    return [{ label: "이번 달 · 최근 확정", payslip: currentMonth }];
-  return [
-    ...(currentMonth ? [{ label: "이번 달", payslip: currentMonth }] : []),
-    ...(latestConfirmed ? [{ label: "최근 확정", payslip: latestConfirmed }] : []),
-  ];
+/** 급여명세서 영역의 금액 칸 — 없거나(null) 0 이면 「-」(데모의 검토 중 줄 공제), 아니면 급여명세서 화면과 같은 쉼표 글자 */
+export function payAmountText(amount: number | null): string {
+  return amount ? formatAmount(amount) : "-";
 }
 
-/** 급여명세서 영역이 빈 상태인가 — 보일 명세서도 미발송도 없을 때 */
-export function isPayslipSummaryEmpty(summary: PayslipSummary): boolean {
-  return payslipRows(summary).length === 0 && summary.unsentCount === 0;
+/**
+ * 급여명세서 영역이 빈 상태인가 — 최근 명세서가 없을 때. api 는 recent · unsentCount 를 같은 직원의 명세서 전체에서 세므로 recent 가 비면
+ * 미발송도 0 이다. unsentCount 는 api 가 바뀔 때를 대비해 함께 본다.
+ */
+export function isPayslipSummaryEmpty(summary: Pick<PayslipSummary, "recent" | "unsentCount">): boolean {
+  return summary.recent.length === 0 && summary.unsentCount === 0;
 }
 
 /** TO-DO 영역 아래 요약 줄 — 데모 「전체 6 · 완료 4 · 미완료 2」. 배정이 없으면 null(목록의 빈 상태가 말한다). */
