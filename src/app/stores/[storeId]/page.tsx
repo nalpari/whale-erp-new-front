@@ -21,6 +21,10 @@ const orDash = (v: string | null | undefined) => (v ? v : muted("-"));
  * (2026-10-19 점검 — 실사용자 확인). 변경이력 줄은 이 너비를 쓰지 않는다 — flex-1 + 말줄임으로 따로 맞춘다
  * (아래 변경이력 주석 참고). */
 const FIRST_COLUMN_WIDTH = "inline-block min-w-[140px]";
+/** 변경이력 줄의 등록 칸 너비 — 위치정보 줄의 위도 · 경도 두 칸(140 + 칸 사이 10 + 구분선 1 + 10 + 140)과 같게 두어, 최종수정 앞
+ * 구분선이 바로 위 줄 출퇴근 위치 적용 여부 앞 구분선과 같은 세로줄에 선다(2026-10-23 사용자 요청 — 들쑥날쑥해 보였다).
+ * 처리자 이름이 길면 이 너비 안에서 말줄임된다. */
+const REGISTERED_COLUMN_WIDTH = "w-[301px]";
 /** 주소 한 줄 — 「[ 우편번호 04104 ] 기본주소(볼드), 상세주소」. 괄호·라벨은 라벨 색, 번호는 기존 데이터 색(검정)이다.
  * 없으면 「-」(2026-10-19 점검 — 두 줄이던 걸 한 줄로, 번호 색·괄호 안쪽 띄어쓰기는 뒤이은 요청으로 다시 손봄) */
 const addressLines = (zip: string | null, address: string | null, detail: string | null) => {
@@ -101,12 +105,13 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
       // 보기] 버튼은 DetailValues 밖에 따로 두어 앞에 구분선(|)이 안 붙게 하고, justify-between 으로 칸 맨
       // 오른쪽에 고정한다 — 칸 자체의 12px 오른쪽 여백(DetailTable dd)이 있어 따로 더 주지 않는다(2026-10-16 점검).
       // 등록 · 최종수정은 DetailValues(inline-block) 대신 flex-1 + truncate 로 직접 그린다 — 처리자 이름이
-      // 길면(예: 테스트 계정명) 고정폭을 넘어 [변경이력] 버튼을 dd 밖으로 밀어내 잘리는 문제가 있었다. 두 값이
-      // 남는 폭을 반씩 나눠 가지며 길면 말줄임되므로 버튼은 항상 자리를 지킨다(2026-10-19 점검 — 실사용자 확인).
+      // 길면(예: 테스트 계정명) 고정폭을 넘어 [변경이력] 버튼을 dd 밖으로 밀어내 잘리는 문제가 있었다. 등록은
+      // 위치정보 줄과 구분선을 맞춘 고정폭(REGISTERED_COLUMN_WIDTH), 최종수정은 남는 폭을 쓰고 둘 다 길면 말줄임되므로
+      // 버튼은 항상 자리를 지킨다(2026-10-19 점검 — 실사용자 확인, 구분선 맞춤은 2026-10-23).
       value: (
         <span className="flex w-full items-center gap-[12px]">
           <span className="flex min-w-0 flex-1 items-center gap-[10px]">
-            <span className="min-w-0 flex-1 truncate">
+            <span className={`${REGISTERED_COLUMN_WIDTH} min-w-0 shrink-0 truncate`}>
               <span className="mr-[10px] text-erp-label">등록</span>
               {formatDateTime(store.createdAt)} · {store.createdByName ?? "-"}
             </span>
@@ -195,7 +200,8 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
             ) : (
               <StoreImage size={48} />
             )}
-            <div className="flex min-w-0 flex-1 flex-col gap-[12px]">
+            {/* 점포명과 점포코드 줄 사이는 6px — 12px 는 떨어져 보였다(2026-10-23 사용자 요청) */}
+            <div className="flex min-w-0 flex-1 flex-col gap-[6px]">
               <h2 className="truncate text-[18px] font-semibold text-erp-ink">{store.name}</h2>
               {/* 운영 상태 배지는 여기 두지 않는다 — 점포 기본정보 표의 점포상태 줄과 정보가 겹쳐 보였다
                   (2026-10-19 점검 — 실사용자 확인). */}

@@ -9,6 +9,9 @@ import { STORES, erpHeader, link } from "../../site.mjs";
 // DetailValues 로 값을 여럿 늘어놓는 줄들의 첫 칸(들) 너비 — 위치정보 · 변경이력처럼 짝을 이루는 줄들이
 // 값이 비어 있을 때도 구분선(|)이 들쑥날쑥하지 않게 맞춘다(2026-10-19 점검 — 실사용자 확인).
 const FIRST_COL = "inline-block min-w-[140px]";
+// 변경이력 줄의 등록 칸 너비 — 위치정보 줄의 위도 · 경도 두 칸(140 + 10 + 구분선 1 + 10 + 140)과 같아, 최종수정 앞 구분선이 바로 위
+// 줄 출퇴근 위치 적용 여부 앞 구분선과 같은 세로줄에 선다(2026-10-23 사용자 요청 — 앱 stores/[storeId]/page.tsx 와 같다).
+const REGISTERED_COL = "w-[301px]";
 
 export default ({ A, R }) => {
   const [code, name, type, state, biz, phone, staff, date, , photo] = STORES.find((s) => s[0] === "ST000006");
@@ -17,10 +20,10 @@ export default ({ A, R }) => {
 
   // 대표 이미지 · 점포명 · 점포코드 · 유형 · 상태 · 실행 버튼을 한 머리 카드에 묶는다(2026-10-19 점검 —
   // 실사용자 확인, 디자인 데모 1안 채택). 그만큼 점포 기본정보 표에서 대표 이미지 · 점포코드가 빠져 사업자정보와
-  // 같은 5행이 된다.
+  // 같은 5행이 된다. 점포명과 점포코드 줄 사이는 6px(앱과 같다, 2026-10-23 사용자 요청).
   const head = `<div class="flex items-center gap-[18px] rounded-[4px] border border-erp-panel-line bg-white p-[18px]">
     <img src="${A}img/${photo}" alt="${name} 대표 이미지" class="size-[72px] shrink-0 rounded-[2px] object-cover">
-    <div class="flex min-w-0 flex-1 flex-col gap-[8px]">
+    <div class="flex min-w-0 flex-1 flex-col gap-[6px]">
       <h2 class="truncate text-[18px] font-semibold text-erp-ink">${name}</h2>
       <!-- 운영 상태 배지는 여기 두지 않는다 — 점포 기본정보 표의 점포상태 줄과 정보가 겹쳐 보였다(2026-10-19 점검). -->
       <div class="flex items-center gap-[8px] text-[14px] font-medium text-erp-label">
@@ -71,7 +74,7 @@ export default ({ A, R }) => {
       // [변경이력] 버튼이 칸 밖으로 밀려 잘리는 문제가 있었다(2026-10-19 점검 — 실사용자 확인).
       [
         "변경이력",
-        `<span class="flex w-full items-center gap-[12px]"><span class="flex min-w-0 flex-1 items-center gap-[10px]"><span class="min-w-0 flex-1 truncate"><span class="mr-[10px] text-erp-label">등록</span>${date} 14:18 · 정하윤</span><span class="h-[11px] w-px shrink-0 bg-[#d9d9d9]"></span><span class="min-w-0 flex-1 truncate"><span class="mr-[10px] text-erp-label">최종수정</span>2026-08-14 10:31 · 정하윤</span></span>${x.dialogTrigger("변경이력", histId, "soft")}</span>`,
+        `<span class="flex w-full items-center gap-[12px]"><span class="flex min-w-0 flex-1 items-center gap-[10px]"><span class="${REGISTERED_COL} min-w-0 shrink-0 truncate"><span class="mr-[10px] text-erp-label">등록</span>${date} 14:18 · 정하윤</span><span class="h-[11px] w-px shrink-0 bg-[#d9d9d9]"></span><span class="min-w-0 flex-1 truncate"><span class="mr-[10px] text-erp-label">최종수정</span>2026-08-14 10:31 · 정하윤</span></span>${x.dialogTrigger("변경이력", histId, "soft")}</span>`,
       ],
     ],
   );
