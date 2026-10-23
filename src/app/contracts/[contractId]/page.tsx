@@ -75,7 +75,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
       <>
         {(status === "PENDING_SEND" || status === "PENDING_SIGNATURE") && (
           <ContractPermission action="update">
-            <SendContractButton contractId={contractId} status={status} back={backHrefOf(query.back)} />
+            <SendContractButton contractId={contractId} status={status} name={c?.name ?? null} back={backHrefOf(query.back)} />
           </ContractPermission>
         )}
         {/* 직원이 수정을 요청했다 — 계약서 전체를 고치면 곧바로 서명 대기로 다시 보낸다(WHALEERP-125 · 126) */}

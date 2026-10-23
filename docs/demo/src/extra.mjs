@@ -55,21 +55,29 @@ export const ICON = {
   store: '<path d="M4.6 9.6v10.7h14.8V9.6"/><path d="M3 9.6 4.7 3.9h14.6L21 9.6"/><path d="M3 9.6a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M9.6 20.3v-6.1h4.8v6.1"/>',
 };
 
+// 카드 안내(notice) 뒤의 느낌표 동그라미 — 앱 store-parts.tsx 의 NoticeIcon 과 같다.
+const NOTICE_ICON = `<svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true" class="shrink-0"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M10 5.5v5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="14.25" r="1" fill="currentColor"/></svg>`;
+
 // 카드(점포 카드 등). 카드 전체가 링크다. 모서리 4px·1px 선·그림자 없음(카드·패널 규칙 — DESIGN.md 는 카드
 // 모서리를 4px 로 고정해 둬서, 8px 로 키워 달라는 요청은 1팀 확인 전이라 되돌렸다, 2026-10-16 코드리뷰),
 // 호버는 선 색만 바꾼다.
 // image: 이미지 주소(없으면 아이콘 칸), fields: [[라벨, 값, wide?]]
+// notice: 정보 칸 끝에 둘 안내(점포의 「사업자정보 미인증」). 보기엔 옆 칸 제목과 같은 줄 · 같은 글자의 제목만 있는 칸이지만, dl 은
+// 제목마다 값이 있어야 해서 제목(noticeTerm)은 화면 읽기 프로그램에만 두고 안내를 값으로 둔다(앱 store-parts.tsx 와 같다).
 // data: 목록 거르기용 항목 { 열 이름: 값 }. 카드에 보이지 않는 값(사업자등록번호 등)도 넣는다 — 표 머리와 같은 이름이면 erp.js 가 그 열처럼 거른다.
 // muted: 미운영처럼 아직 쓰지 않는 카드. 바탕을 두 번째 바탕색(#f8f9fb)으로 깔고, 아이콘 칸은 흰색으로 뒤집어 묻히지 않게 한다.
-// title 은 16px·두 줄까지(line-clamp-2)로 키웠다 — 이름이 길면 두 줄, 그 아래 줄(sub)로 밀린다(2026-10-16 점검).
-export function card({ href, image, icon = ICON.store, title, sub, badge = "", fields = [], data, muted = false }) {
+// title 은 16px · 한 줄 — 넘치면 말줄임하고 전체는 마우스를 올리면 보인다(2026-10-23 사용자 요청 — 두 줄까지 보이던 때는 이름 길이에
+// 따라 카드마다 그 아래 줄(sub)과 구분선 높이가 달라 들쑥날쑥했다. 앱 store-parts.tsx 와 같다).
+// 카드 머리와 아래 구분선 사이는 12px — 구분선 아래와 같게(2026-10-23 사용자 요청, 앱 store-parts.tsx 와 같다).
+export function card({ href, image, icon = ICON.store, title, sub, badge = "", fields = [], notice = "", noticeTerm = "", data, muted = false }) {
   const pic = image
     ? `<img src="${image}" alt="${title} 대표 이미지" class="size-[48px] shrink-0 rounded-[2px] object-cover">`
     : `<span role="img" aria-label="대표 이미지 없음" class="grid size-[48px] shrink-0 place-items-center rounded-[2px] ${muted ? "bg-white" : "bg-erp-thead-bg"} text-erp-label"><svg viewBox="0 0 24 24" class="size-[20px] fill-none stroke-current" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icon}</svg></span>`;
   const grid = fields
     .map(([k, v, wide]) => `<div class="${wide ? "col-span-2 " : ""}flex flex-col gap-[4px]"><dt class="text-[13px] text-erp-label">${k}</dt><dd class="truncate text-[14px] text-erp-ink">${v}</dd></div>`)
-    .join("");
-  return `<a href="${href}"${data ? ` data-fields='${JSON.stringify(data)}'` : ""} class="flex flex-col gap-[18px] rounded-[4px] border border-erp-panel-line ${muted ? "bg-erp-thead-bg" : "bg-white"} p-[18px] transition-colors duration-150 ease-out hover:border-erp-brand"><div class="flex items-start gap-[12px]">${pic}<div class="flex min-w-0 flex-1 flex-col gap-[4px]"><b class="line-clamp-2 text-[16px] font-semibold text-erp-ink">${title}</b><span class="truncate text-[13px] text-erp-label">${sub}</span></div>${badge}</div><dl class="grid grid-cols-2 gap-x-[12px] gap-y-[10px] border-t border-erp-divider pt-[12px]">${grid}</dl></a>`;
+    .join("") +
+    (notice ? `<div class="flex flex-col gap-[4px]"><dt class="sr-only">${noticeTerm}</dt><dd class="flex items-center gap-[4px] text-[13px] text-erp-label">${notice}${NOTICE_ICON}</dd></div>` : "");
+  return `<a href="${href}"${data ? ` data-fields='${JSON.stringify(data)}'` : ""} class="flex flex-col gap-[12px] rounded-[4px] border border-erp-panel-line ${muted ? "bg-erp-thead-bg" : "bg-white"} p-[18px] transition-colors duration-150 ease-out hover:border-erp-brand"><div class="flex items-start gap-[12px]">${pic}<div class="flex min-w-0 flex-1 flex-col gap-[4px]"><b title="${title}" class="truncate text-[16px] font-semibold text-erp-ink">${title}</b><span class="truncate text-[13px] text-erp-label">${sub}</span></div>${badge}</div><dl class="grid grid-cols-2 gap-x-[12px] gap-y-[18px] border-t border-erp-divider pt-[12px]">${grid}</dl></a>`;
 }
 // 큰 선택 카드(라디오, 등록 화면 전용 — 등록 뒤 바꿀 수 없어 수정 화면에는 두지 않는다). 이름 · 한 줄 설명
 // (아이콘 없음 — 2026-10-16 점검, 아이콘이 의미 없이 들어가 있었다).
