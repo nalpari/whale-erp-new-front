@@ -78,13 +78,12 @@ export function joinCell(item: StaffMemberListItem, today: string): Cell {
 }
 
 /**
- * 재발송 버튼을 보일지(WHALEERP-138). api 의 invitation.canResend 에 더해 계약이 발송 대기일 때만이다 — 재발송 api
- * (POST /contracts/:id/send)는 계정이 없는 직원의 가입 초대 알림톡만 보낸다. 서명 대기는 앱으로 받는 직원(가입 · 계정 있음)이라
- * 앱 알림이 생기기 전까지 409 SEND_CHANNEL_NOT_READY, 만료 · 거부 계약은 409 CONTRACT_STATUS_CONFLICT 다. canResend 는 초대 만료 ·
- * 소속 추가 확인 · 복귀 확인에도 참이라 그대로 따르면 누를 때마다 막힌다. 근로계약 상세의 재발송 버튼과 같은 기준이다(send-button.tsx).
+ * 가입 초대 재발송 버튼을 보일지(WHALEERP-138). api 의 invitation.canResend 를 그대로 따른다 — api 가 재발송(POST /contracts/:id/send)이
+ * 가입 초대 알림톡을 실제로 보낼 수 있을 때만 참으로 준다(WHALEERP-611: 가입 전 · 계정 없는 휴대폰 번호 · 계약 발송 대기 또는
+ * 서명 대기 · 수락하지 않은 초대). 가입한 직원의 앱 알림 재발송은 근로계약 상세에서 한다.
  */
-export function canResendInvitation(item: Pick<StaffMemberListItem, "invitation" | "contract">): boolean {
-  return !!item.invitation?.canResend && item.contract?.status === "PENDING_SEND";
+export function canResendInvitation(item: Pick<StaffMemberListItem, "invitation">): boolean {
+  return !!item.invitation?.canResend;
 }
 
 /**

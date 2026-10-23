@@ -5,7 +5,7 @@ import { Button, ConfirmDialog } from "@/components/common";
 import { deleteContract } from "./actions";
 
 // 임시저장 삭제. 누르면 확인창으로 한 번 더 묻는다.
-export function DeleteDraftButton({ contractId }: { contractId: number }) {
+export function DeleteDraftButton({ contractId, back }: { contractId: number; back: string }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [pending, start] = useTransition();
@@ -27,7 +27,7 @@ export function DeleteDraftButton({ contractId }: { contractId: number }) {
         onConfirm={() =>
           start(async () => {
             // 성공하면 액션이 목록으로 보낸다. 돌아왔다면 실패다.
-            const { error } = await deleteContract(contractId);
+            const { error } = await deleteContract(contractId, back);
             setError(error);
           })
         }

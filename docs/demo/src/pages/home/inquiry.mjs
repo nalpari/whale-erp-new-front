@@ -25,7 +25,7 @@ export default ({ A, R }) => {
       field("전화번호", input('name="phone" type="tel" required inputmode="numeric" autocomplete="tel" placeholder="숫자만 입력해 주세요"'), { required: true, help: "점포 번호를 적어도 됩니다. 중복 접수는 이 번호와 이메일로 가립니다." }),
       // 업종에서 「기타」를 고르면 아래에 직접 입력 칸이 열린다(LEAD-1 · #297, api industryDetail 1~50자). 닫혀 있는 동안은 검사·전송에서 빠진다.
       field("업종", select("industry", ["카페·음료", "음식점", "베이커리·디저트", "주점", "기타"], true).replace("<select ", "<select data-other-select "), { required: true }),
-      field("이메일", input('name="email" type="email" required autocomplete="email" placeholder="example@company.com"'), { required: true, help: "접수 확인 메일을 이 주소로 보냅니다." }),
+      field("이메일", input('name="email" type="email" data-email-format="이메일 형식이 올바르지 않습니다." required autocomplete="email" placeholder="example@company.com"'), { required: true, help: "접수 확인 메일을 이 주소로 보냅니다." }),
       `<div data-other-wrap hidden class="col-start-1">${field("업종 직접 입력", input('name="industryOther" data-other-input required disabled maxlength="50" placeholder="업종을 직접 입력해 주세요"'), { required: true })}</div>`,
     ),
   );

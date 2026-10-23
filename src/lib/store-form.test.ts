@@ -16,6 +16,7 @@ import {
   type StoreForm,
 } from "./store-form.ts";
 import type { StoreDetail } from "./store-types.ts";
+import { formatPhone } from "./format.ts";
 
 const filled: StoreForm = { ...EMPTY_STORE_FORM, storeTypeCode: "DIRECT", name: " 강남점 " };
 // 운영 조건 한글(GET /enums/StoreOperationRequirement) — 라벨 없이 부르면(빈 배열) 값 코드를 그대로 보인다
@@ -33,7 +34,7 @@ test("필수는 점포유형(등록) · 점포명뿐이다", () => {
   assert.ok(validateStoreForm({ ...filled, name: "가".repeat(51) }, "create").name);
 });
 
-test("연락처 9~11자리 · 대표자 연락처는 숫자 10~11자리(api 와 같게 유선 번호도 받는다)", () => {
+test("점포 연락처 9~12자리 · 대표자 연락처는 숫자 10~11자리(api 와 같게 유선 번호도 받는다)", () => {
   assert.equal(validateStoreForm({ ...filled, phone: ["02", "123", "4567"] }, "create").phone, undefined);
   assert.ok(validateStoreForm({ ...filled, phone: ["02", "12", "34"] }, "create").phone);
   assert.equal(validateStoreForm({ ...filled, ceoPhone: ["010", "1234", "5678"] }, "create").ceoPhone, undefined);
@@ -151,9 +152,27 @@ test("좌표 입력칸 둘 다 있어야 있다고 본다 — bodyOf · 선택�
 });
 
 test("사업자주소가 「점포 주소와 같음」이면 점포 주소를 싣는다", () => {
-  const f = { ...filled, zipCode: "06236", address: "서울 강남구 테헤란로 152", addressDetail: "1층", bizAddress: "다른 곳" };
+  const f = { ...filled, zipCode: "06236", address: "서울 강남구 테헤란로 152", addressDetail: "1층", bizAddress: "다른 곳", bizSameAsStore: true };
   assert.equal(toCreateStoreInput(f).business.address, "서울 강남구 테헤란로 152");
   assert.equal(toCreateStoreInput({ ...f, bizSameAsStore: false }).business.address, "다른 곳");
+});
+
+test("새 점포는 「점포 주소와 같음」이 기본 해제다 — 점포주소와 사업자주소가 다를 수 있다(사용자 지정, 2026-10-23)", () => {
+  assert.equal(EMPTY_STORE_FORM.bizSameAsStore, false);
+});
+
+// bizSameAsStore 기본값이 해제라 아래 두 검사가 모든 새 점포의 기본 경로다 — 전엔 EMPTY_STORE_FORM 이
+// true 라 이 분기를 타는 입력을 직접 만들어야만 테스트됐다(코드 리뷰로 찾음, 2026-10-23).
+test("「점포 주소와 같음」이 해제면 사업자 상세주소만 적고 사업자주소를 검색 안 하면 막는다", () => {
+  const f = { ...filled, bizSameAsStore: false, bizAddressDetail: "3층" };
+  assert.equal(validateStoreForm(f, "create").bizAddressDetail, "사업자주소를 먼저 검색해 주세요.");
+  assert.equal(validateStoreForm({ ...f, bizAddress: "서울 강남구 테헤란로 152" }, "create").bizAddressDetail, undefined);
+});
+
+test("「점포 주소와 같음」이 해제면 사업자 상세주소도 100자 제한 — 켜져 있으면(점포 상세주소를 쓴다) 검사하지 않는다", () => {
+  const long = "가".repeat(101);
+  assert.equal(validateStoreForm({ ...filled, bizSameAsStore: false, bizAddressDetail: long }, "create").bizAddressDetail, "상세주소는 100자까지입니다.");
+  assert.equal(validateStoreForm({ ...filled, bizSameAsStore: true, bizAddressDetail: long }, "create").bizAddressDetail, undefined);
 });
 
 const detail: StoreDetail = {
@@ -280,8 +299,24 @@ test("저장된 층 줄과 새 줄의 키는 겹치지 않는다", () => {
   assert.ok(form.floors[0].key.startsWith("saved-") && added.key.startsWith("new-"));
 });
 
-test("점포 연락처는 9~11자리만 — api 와 같은 전제(8자리 대표번호는 받지 않는다)", () => {
+test("점포 연락처는 9~12자리만 — 050X 평생번호는 받고, 8자리 대표번호는 받지 않는다", () => {
   assert.ok(validateStoreForm({ ...filled, phone: ["1588", "", "1234"] }, "edit").phone);
+  assert.equal(validateStoreForm({ ...filled, phone: ["0507", "2033", "1334"] }, "edit").phone, undefined);
+  assert.ok(validateStoreForm({ ...filled, phone: ["0507", "2033", "13345"] }, "edit").phone, "13자리는 막는다");
+  // 대표자 연락처는 숫자 10~11자리(유선 포함) 그대로
+  assert.ok(validateStoreForm({ ...filled, ceoPhone: ["0507", "2033", "1334"] }, "edit").ceoPhone);
+});
+
+test("050 이 아닌 12자리 점포 연락처도 저장 검사는 통과한다 — api 와 같이 자릿수만 본다. 나누기 · 표시는 050X 규칙을 타지 않는다", () => {
+  assert.equal(validateStoreForm({ ...filled, phone: ["0311", "2345", "6789"] }, "edit").phone, undefined);
+  assert.deepEqual(splitPhone("031123456789"), ["031", "12345", "6789"]);
+  assert.equal(formatPhone("031123456789"), "031123456789");
+});
+
+test("050X 12자리 점포 연락처는 불러와 그대로 저장해도 같은 값이다", () => {
+  const form = { ...filled, phone: splitPhone("050720331334") };
+  assert.equal(validateStoreForm(form, "edit").phone, undefined);
+  assert.equal(form.phone.join(""), "050720331334");
 });
 
 test("점포유형 없이 등록 요청을 만들면 던진다", () => {
@@ -303,9 +338,11 @@ test("새로 더했는데 비어 있는 층 줄은 보내지 않는다", () => {
   assert.deepEqual(input.floors, []);
 });
 
-test("전화번호 나누기 — 02 국번 · 휴대전화 · 빈 값", () => {
+test("전화번호 나누기 — 02 국번 · 휴대전화 · 050X 평생번호 · 빈 값", () => {
   assert.deepEqual(splitPhone("021234567"), ["02", "123", "4567"]);
   assert.deepEqual(splitPhone("01012345678"), ["010", "1234", "5678"]);
+  assert.deepEqual(splitPhone("050720331334"), ["0507", "2033", "1334"]);
+  assert.deepEqual(splitPhone("05012345678"), ["050", "1234", "5678"], "11자리 050 은 3자리 국번");
   assert.deepEqual(splitPhone(null), ["", "", ""]);
 });
 

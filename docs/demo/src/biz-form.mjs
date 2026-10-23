@@ -75,7 +75,7 @@ export function bizAuth(A, p, { start = "fold", values = ["", "", ""], input = v
         ui.field("사업자등록번호", ui.textField({ value: num, disabled: true })),
         ui.field("개업일자", ui.textField({ value: open, disabled: true })),
         ui.field("대표자명", ui.textField({ value: ceo })),
-      ) + help("대표자가 바뀌었을 때 새 이름으로 다시 확인합니다. 번호와 개업일자는 바꿀 수 없습니다.")
+      ) + help("대표자 변경 시 새 대표자명으로 재인증해야 합니다.<br>사업자등록번호와 개업일자는 수정할 수 없으며, 인증 실패 시 기존 정보가 유지됩니다.")
     : inline
       ? ui.formRow(
           // 회원가입(biz-auth-section.tsx)과 같은 placeholder로 맞췄다(2026-10-16 점검, inline 은 점포 등록 · 수정만 쓴다)

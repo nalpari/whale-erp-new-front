@@ -15,11 +15,9 @@ export interface ScheduleQuery {
   day: string;
   /** 월간 보기의 달 YYYY-MM */
   month: string;
-  /** 변경 이력 패널이 열렸는가 */
-  history: boolean;
   /** 지난 주 복사 미리보기가 열렸는가(주간만, #204) */
   copy: boolean;
-  /** 변경 이력 필터 — 변경 일시의 한국 날짜, 빈 값이면 열린 끝 */
+  /** 변경 이력 필터 — 변경 일시의 한국 날짜, 빈 값이면 열린 끝. 이력은 근무표 아래에 늘 보인다(2026-10-22 재영 — 옛 주소의 history=1 은 무시한다) */
   historyFrom: string;
   historyTo: string;
   historyStaffId: number | null;
@@ -65,6 +63,12 @@ export function monthRange(month: string) {
   return { from, to: addDays(from, 41) };
 }
 
+/** 월간 달력에 그릴 날 — 그 달이 걸친 주만(4~6주, 데모 erp.js initDayPlan). 읽기는 늘 42일이다 */
+export function monthCells(month: string): string[] {
+  const { from } = monthRange(month);
+  return Array.from({ length: 42 }, (_, i) => addDays(from, i)).filter((_, i) => addDays(from, i - (i % 7)).slice(0, 7) <= month);
+}
+
 /** 주소에 day 가 없을 때의 고른 날 — 그 주 · 달에 오늘이 있으면 오늘, 아니면 월요일 · 1일. 읽기와 쓰기가 같은 값을 쓴다 */
 function defaultDay(view: ScheduleView, week: string, month: string, today: string): string {
   if (view === "week") return today >= week && today <= addDays(week, 6) ? today : week;
@@ -96,7 +100,6 @@ export function parseScheduleQuery(raw: RawSearch, today: string): ScheduleQuery
     week,
     day,
     month,
-    history: first(raw.history) === "1",
     copy: view === "week" && first(raw.copy) === "1",
     historyFrom,
     historyTo,
@@ -116,14 +119,11 @@ export function toScheduleSearch(q: ScheduleQuery, today: string): string {
   } else if (q.week !== mondayOf(today)) p.set("week", q.week);
   if (q.day !== defaultDay(q.view, q.week, q.month, today)) p.set("day", q.day);
   if (q.copy && q.view === "week") p.set("copy", "1");
-  if (q.history) {
-    p.set("history", "1");
-    if (q.historyFrom) p.set("hfrom", q.historyFrom);
-    if (q.historyTo) p.set("hto", q.historyTo);
-    if (q.historyStaffId !== null) p.set("hstaff", String(q.historyStaffId));
-    if (q.historyPage !== 1) p.set("hpage", String(q.historyPage));
-    if (q.historyPageSize !== 20) p.set("hsize", String(q.historyPageSize));
-  }
+  if (q.historyFrom) p.set("hfrom", q.historyFrom);
+  if (q.historyTo) p.set("hto", q.historyTo);
+  if (q.historyStaffId !== null) p.set("hstaff", String(q.historyStaffId));
+  if (q.historyPage !== 1) p.set("hpage", String(q.historyPage));
+  if (q.historyPageSize !== 20) p.set("hsize", String(q.historyPageSize));
   const s = p.toString();
   return s ? `?${s}` : "";
 }
@@ -143,8 +143,8 @@ export function historyApiSearch(q: ScheduleQuery & { storeId: number }): string
   return p.toString();
 }
 
-/** 다른 주 · 달 · 날로 옮긴다 — 이력 패널은 닫는다. 복사 미리보기는 같은 주의 다른 날로 갈 때만 남긴다 */
+/** 다른 주 · 달 · 날로 옮긴다 — 변경 이력 조건은 그대로 둔다. 복사 미리보기는 같은 주의 다른 날로 갈 때만 남긴다 */
 export function moved(q: ScheduleQuery, next: Partial<Pick<ScheduleQuery, "view" | "week" | "day" | "month">>): ScheduleQuery {
   const sameWeek = (next.view ?? q.view) === "week" && (next.week ?? q.week) === q.week;
-  return { ...q, ...next, history: false, copy: q.copy && sameWeek };
+  return { ...q, ...next, copy: q.copy && sameWeek };
 }

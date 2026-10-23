@@ -2,10 +2,12 @@
 
 import { useEffect, useId, useRef, useState, useTransition, type RefObject } from "react";
 import { Button, Field, FormGroup, FormRow, RequiredMark, SlidePanel, TextField, useToast } from "@/components/common";
+import { EMAIL_FORMAT_ERROR } from "@/lib/email-format";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { formOf, serverErrorField, toUpdateInput, validateCurrentPassword, validateMyProfileForm, type MyProfileForm, type MyProfileFormField } from "@/lib/my-profile-form";
 import type { MyProfile } from "@/lib/my-profile";
 import { checkMyEmailAvailableAction, getMyProfileAction, updateMyProfileAction, type ActionResult } from "./my-page-actions";
+import { BpProfileTab, type BpProfileTabHandle } from "./bp-profile-tab";
 import { useCodeLabel } from "./code-label";
 import { usePatchAccount } from "./session-gate";
 
@@ -25,6 +27,34 @@ function FailedBand({ message }: { message: string }) {
   return (
     <div role="alert" className="rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] leading-[1.6] text-erp-off">
       {message}
+    </div>
+  );
+}
+
+/** 「기본정보」 · 「사업자정보」 전환 — BP 마스터에게만 보인다(mockup data-show-role="bpm"). 둘뿐이라 ServiceTabs 의
+ * 가로 스크롤 · 화살표 없이 밑줄만 쓴다(service-tabs.tsx 의 탭 하나 모양과 같다, 2026-10-22). */
+function TabBar({ tab, onChange }: { tab: "basic" | "biz"; onChange: (next: "basic" | "biz") => void }) {
+  const items = [
+    { key: "basic" as const, label: "기본정보" },
+    { key: "biz" as const, label: "사업자정보" },
+  ];
+  return (
+    <div role="tablist" aria-label="내 정보" className="flex h-[42px] gap-[18px] border-b border-erp-thead-line">
+      {items.map((it) => {
+        const on = tab === it.key;
+        return (
+          <button
+            key={it.key}
+            type="button"
+            role="tab"
+            aria-selected={on}
+            onClick={() => onChange(it.key)}
+            className={`h-[42px] border-b-2 text-[14px] font-medium transition-colors duration-150 ease-out ${on ? "border-erp-brand text-erp-ink" : "border-transparent text-erp-label hover:text-erp-ink"}`}
+          >
+            {it.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -62,6 +92,17 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
   const [currentPassword, setCurrentPassword] = useState("");
   const [saving, startSaving] = useTransition();
   const checkNumber = useRef(0);
+  /** 「기본정보」 · 「사업자정보」 — BP 마스터가 아니면 탭 자체가 없어 늘 기본정보다. */
+  const [tab, setTab] = useState<"basic" | "biz">("basic");
+  /** 사업자정보 탭의 저장은 ref 로 부르고, 저장 중 여부는 이 상태로 받는다 — 「저장」·「닫기」를 기본정보 탭과
+   * 같은 자리(패널 맨 아래)에 두기 위해서다(사용자 디자인 피드백, 2026-10-22). */
+  const bpTab = useRef<BpProfileTabHandle>(null);
+  const [bizSaving, setBizSaving] = useState(false);
+  // 사업자정보 탭(BpProfileTab)을 열 때마다 새로 마운트해 자기 useEffect 로 다시 받게 하는 값 — 탭을
+  // 오갈 때는 그대로 두고(그래야 고치던 값·받아 둔 인증 토큰이 안 사라진다), 패널을 다시 열 때만 올린다
+  // (코드 리뷰로 찾음, 2026-10-23 — 전엔 탭 전환 자체가 unmount 라 아래 "열 때마다 새로 받는다"를 BpProfileTab
+  // 도 같이 타고 있었는데, 늘 마운트해 두는 쪽으로 고치며 따로 신호가 필요해졌다).
+  const [bizTabGeneration, setBizTabGeneration] = useState(0);
 
   // 열 때마다 새로 받는다 — 다른 기기에서 먼저 고쳤을 수 있다. 칸 비우기는 렌더 중에 해도 안전하지만(admin-form-panel.tsx
   // 와 같은 패턴), 실제 네트워크 호출(서버 액션)은 렌더 바깥에서 해야 한다 — 렌더 중에 부르면 "Cannot update a component
@@ -79,6 +120,9 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
       setEmailChecking(false); // 지난 세션에서 확인 중이던 흔적이 남아 "확인하는 중입니다" 가 계속 보이지 않게 한다
       setEmailCheckSkipped(false);
       setCurrentPassword("");
+      setTab("basic");
+      setBizSaving(false);
+      setBizTabGeneration((n) => n + 1);
     }
   }
 
@@ -122,13 +166,19 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
   const describe = (key: MyProfileFormField) => (errors[key] ? messageId(key) : undefined);
   const message = (key: MyProfileFormField) => <FieldMessage id={messageId(key)} message={errors[key]} />;
 
+  // 사업자정보 탭(BpProfileTab)도 늘 마운트돼 있어(코드 리뷰로 찾음, 2026-10-23) 패널 전체(id)에서 찾으면
+  // 숨겨진 그 탭에 남은 aria-invalid 를 먼저 찾아 포커스가 안 보이는 칸으로 간다 — 기본정보 탭 자신(ids)
+  // 으로 좁힌다(코드 리뷰로 찾음, 2026-10-23).
   const focusFirstError = () =>
-    requestAnimationFrame(() => (document.getElementById(id)?.querySelector('[aria-invalid="true"]') as HTMLElement | null)?.focus());
+    requestAnimationFrame(() => (document.getElementById(ids)?.querySelector('[aria-invalid="true"]') as HTMLElement | null)?.focus());
 
   const applyServerError = (status: number | undefined, msg: string) => {
     const field = serverErrorField(status, msg);
     if (!field) return setFailure(msg);
-    setErrors((e) => ({ ...e, [field]: msg }));
+    // 이메일 400(형식)은 칸에서 본 형식 문구로 — api 문구(「이메일 형식이 아닙니다」)와 달라지지 않게. 여러 칸 검증 오류
+    // (api.ts messageOf 가 ", " 로 잇는다)는 원문 그대로 둔다 — 덮으면 함께 온 다른 칸의 이유가 사라진다(플랫폼 관리자와 같다).
+    const text = field === "email" && status === 400 && !msg.includes(", ") ? EMAIL_FORMAT_ERROR : msg;
+    setErrors((e) => ({ ...e, [field]: text }));
     focusFirstError();
   };
 
@@ -210,34 +260,54 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
     <SlidePanel id={id} open={open} onClose={onClose} label="내 정보" trigger={trigger} closeOnBackdrop>
       <h2 className="text-[18px] font-semibold text-erp-ink">내 정보</h2>
       {loadFailure && <FailedBand message={loadFailure} />}
-      {failure && <FailedBand message={failure} />}
+      {tab === "basic" && failure && <FailedBand message={failure} />}
       {!profile || !form ? (
         !loadFailure && <p className="text-erp-muted">불러오는 중입니다.</p>
       ) : (
         <>
-          {/* 점포정보 관리 상세화면(DetailTable)의 제목 줄과 같은 회색 바 — FormGroup 의 기본 제목(배경 없음)
-              대신 쓴다(사용자 디자인 피드백, 2026-10-21). 본문 카드는 FormGroup 과 같은 토큰으로 직접 짠다.
-              아이콘을 넣어 봤지만 24px 로는 너무 작아 뺐다(사용자 지정, 2026-10-21).
-              글자 크기 · 굵기는 DetailTable 이 아니라 바로 아래 「기본정보」(FormGroup) 제목과 맞춘다 — 같은 패널
-              안에서 두 제목이 달라 보인다는 피드백, 2026-10-21. 회색 바탕 · 테두리만 DetailTable 에서 가져온다. */}
-          <div className="w-full">
-            <h3 className="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">계정 정보</h3>
-            <div className="flex flex-col gap-[18px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white px-[16px] py-[20px]">
-              <FormRow>
-                <ReadonlyField label="아이디" value={profile.loginId} bold />
-                <ReadonlyField label="사용자 권한" value={roleTypeLabel(profile.roleTypeCode)} bold />
-              </FormRow>
-              <hr className="border-erp-divider" />
-              <FormRow>
-                <ReadonlyField label="최근 로그인" value={profile.lastLoginAt ? formatDateTime(profile.lastLoginAt) : "로그인 기록 없음"} bold />
-                <ReadonlyField label="가입일" value={formatDate(profile.createdAt)} bold />
-              </FormRow>
-            </div>
-          </div>
+          {/* 사업자정보 탭은 BP 마스터에게만 보인다(manyfast S-UOJVUR) — 그 밖의 권한은 탭 바 자체가 없다. */}
+          {profile.roleTypeCode === "BM" && <TabBar tab={tab} onChange={setTab} />}
 
-          <FormGroup title="기본정보">
-            <div className="flex flex-col gap-[8px]">
-              <Field label="이름" required>
+          {/* 탭을 그냥 조건부로 마운트하면 사업자정보 탭을 떠날 때 고치던 값·받아 둔 인증 토큰이 경고 없이
+              사라진다 — BM 에게 보이는 두 탭 다 늘 마운트해 두고 숨김으로만 가린다(popup.tsx·slide-panel.tsx
+              의 "항상 마운트, 전환으로 여닫기"와 같은 원칙, 코드 리뷰로 찾음, 2026-10-23). BpProfileTab 의
+              마운트 자체는 roleTypeCode === "BM" 으로 한 번 더 묶는다 — 그 밖의 권한은 조회 자체가
+              403(BP 마스터 전용) 이라, 숨겨 두기만 해도 열 때마다 쓸모없는 호출이 나간다(코드 리뷰로 찾음,
+              2026-10-23). SlidePanel 자신이 flex flex-col gap-[16px] 라 전엔 각 묶음이 그 바로 아래
+              자식(Fragment 는 DOM 을 안 만든다)이어서 간격을 그대로 받았다 — 이 div 가 그 자리를 대신하니
+              같은 gap 을 직접 줘야 한다(사용자가 찾음, 2026-10-23 — 기본정보 탭에서 "계정 정보"와
+              "기본정보" 사이가 붙어 보였다). */}
+          {profile.roleTypeCode === "BM" && (
+            <div className={`flex flex-col gap-[16px] ${tab === "biz" ? "" : "hidden"}`}>
+              {/* key 는 패널을 다시 열 때만 바뀐다(bizTabGeneration) — 탭을 오가는 동안은 같은 인스턴스를
+                  유지해 고치던 값을 지키고, 패널을 다시 열면 새로 마운트해 "열 때마다 새로 받는다"를 지킨다. */}
+              <BpProfileTab key={bizTabGeneration} ref={bpTab} onSavingChange={setBizSaving} basicPhone={profile.phone} basicEmail={profile.email} />
+            </div>
+          )}
+          <div id={ids} className={`flex flex-col gap-[16px] ${tab === "basic" ? "" : "hidden"}`}>
+              {/* 점포정보 관리 상세화면(DetailTable)의 제목 줄과 같은 회색 바 — FormGroup 의 기본 제목(배경 없음)
+                  대신 쓴다(사용자 디자인 피드백, 2026-10-21). 본문 카드는 FormGroup 과 같은 토큰으로 직접 짠다.
+                  아이콘을 넣어 봤지만 24px 로는 너무 작아 뺐다(사용자 지정, 2026-10-21).
+                  글자 크기 · 굵기는 DetailTable 이 아니라 바로 아래 「기본정보」(FormGroup) 제목과 맞춘다 — 같은 패널
+                  안에서 두 제목이 달라 보인다는 피드백, 2026-10-21. 회색 바탕 · 테두리만 DetailTable 에서 가져온다. */}
+              <div className="w-full">
+                <h3 className="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">계정 정보</h3>
+                <div className="flex flex-col gap-[18px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white px-[16px] py-[20px]">
+                  <FormRow>
+                    <ReadonlyField label="아이디" value={profile.loginId} bold />
+                    <ReadonlyField label="사용자 권한" value={roleTypeLabel(profile.roleTypeCode)} bold />
+                  </FormRow>
+                  <hr className="border-erp-divider" />
+                  <FormRow>
+                    <ReadonlyField label="최근 로그인" value={profile.lastLoginAt ? formatDateTime(profile.lastLoginAt) : "로그인 기록 없음"} bold />
+                    <ReadonlyField label="가입일" value={formatDate(profile.createdAt)} bold />
+                  </FormRow>
+                </div>
+              </div>
+
+              <FormGroup title="기본정보">
+                <div className="flex flex-col gap-[8px]">
+                  <Field label="이름" required>
                 <TextField
                   value={form.name}
                   onChange={(e) => set("name", e.target.value)}
@@ -323,15 +393,22 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
                 {message("currentPassword")}
               </div>
             )}
-          </FormGroup>
+              </FormGroup>
+          </div>
 
           <div className="flex justify-center gap-[6px]">
-            <Button variant="off" onClick={onClose} disabled={saving}>
+            <Button variant="off" onClick={onClose} disabled={saving || bizSaving}>
               닫기
             </Button>
-            <Button onClick={handleSave} disabled={saving || !emailPassed}>
-              저장
-            </Button>
+            {tab === "basic" ? (
+              <Button onClick={handleSave} disabled={saving || !emailPassed}>
+                저장
+              </Button>
+            ) : (
+              <Button onClick={() => bpTab.current?.save()} disabled={bizSaving}>
+                저장
+              </Button>
+            )}
           </div>
         </>
       )}

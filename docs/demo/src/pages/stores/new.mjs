@@ -73,7 +73,8 @@ export default ({ A, R }) => {
       ui.field("업태", ui.textField({ maxlength: 30, placeholder: "30자 이내로 입력해주세요." }), "w-[160px]"),
       ui.field("종목", ui.textField({ maxlength: 30, placeholder: "30자 이내로 입력해주세요." }), "w-[160px]"),
     ),
-    f.address(A, "사업자주소", {}, { labelExtra: ui.checkbox(A, "점포 주소와 같음", true) }),
+    // 등록 기본값은 해제 — 점포주소와 사업자주소가 다를 수 있다(EMPTY_STORE_FORM.bizSameAsStore, 사용자 지정, 2026-10-23)
+    f.address(A, "사업자주소", {}, { labelExtra: ui.checkbox(A, "점포 주소와 같음", false) }),
   );
 
   // 취소 · 저장은 제목 줄 오른쪽에 둔다 — 근로계약서 작성 화면(staff/contracts-new.mjs)과 같은 자리

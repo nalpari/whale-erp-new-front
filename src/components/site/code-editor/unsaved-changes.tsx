@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createContext, use, useEffect, useState, type ComponentProps, type ReactNode } from "react";
 import { ConfirmDialog } from "@/components/common";
 
-// 두 패널(그룹 목록 · 상세 코드)의 저장하지 않은 변경을 모아 둔다. 변경이 있는데 다른 그룹 · 다른 쪽으로 가려 하면
+// 공통코드 화면(플랫폼 · BP)의 패널(그룹 목록 · 상세 코드)의 저장하지 않은 변경을 모아 둔다. 변경이 있는데 다른 그룹 · 다른 쪽으로 가려 하면
 // 버릴지 묻는다(2026-10-12 결정). 브라우저를 닫거나 새로 고칠 때는 브라우저 기본 확인창이 뜬다.
 // 헤더 메뉴 이동은 묻지 않는다 — 헤더는 모든 화면이 함께 쓰는 공통 컴포넌트라 이 화면의 상태를 모른다.
 type UnsavedChanges = {
