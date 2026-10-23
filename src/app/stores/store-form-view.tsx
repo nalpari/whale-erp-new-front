@@ -886,9 +886,13 @@ export function StoreFormView(props: Props) {
   );
 }
 
-/** 칸과 그 아래 문구를 세로로 — 문구가 라벨 밖에 있어야 입력칸의 접근 가능한 이름에 섞이지 않는다 */
+/**
+ * 칸과 그 아래 문구를 세로로 — 문구가 라벨 밖에 있어야 입력칸의 접근 가능한 이름에 섞이지 않는다.
+ * grow(FormRow 안에 나란히 둘 때)는 위로 맞춘다(self-start) — 늘이면 옆 칸에만 오류 문구가 붙었을 때 이 칸이 그 높이로
+ * 늘어나고, 공통 Field 가 라벨 · 입력칸을 세로 가운데로 두어 입력칸이 아래로 밀렸다(2026-10-23, 인증 상자와 같은 문제).
+ */
 function Stack({ children, grow }: { children: ReactNode; grow?: boolean }) {
-  return <div className={`flex flex-col gap-[8px] ${grow ? "min-w-0 flex-1" : ""}`}>{children}</div>;
+  return <div className={`flex flex-col gap-[8px] ${grow ? "min-w-0 flex-1 self-start" : ""}`}>{children}</div>;
 }
 
 /** 입력칸이 여럿이거나 입력칸이 아닌 칸(연락처 세 칸 · 날짜 · 배지). Field 는 라벨이 입력칸 하나를 감싸므로 묶음 이름만 단다 */
