@@ -18,8 +18,8 @@ const muted = (text: string) => <span className="text-erp-muted">{text}</span>;
 const orDash = (v: string | null | undefined) => (v ? v : muted("-"));
 /** DetailValues 로 값을 여럿 늘어놓는 줄들의 첫 칸(들) 너비 — 사업자등록번호 · 대표자정보, 위치정보의
  * 위도 · 경도처럼 같은 표 안에서 짝을 이루는 줄들이 값이 비어 있을 때도 구분선(|)이 들쑥날쑥하지 않게 맞춘다
- * (2026-10-19 점검 — 실사용자 확인). 변경이력 줄은 이 너비를 쓰지 않는다 — flex-1 + 말줄임으로 따로 맞춘다
- * (아래 변경이력 주석 참고). */
+ * (2026-10-19 점검 — 실사용자 확인). 변경이력 줄의 등록 칸은 이 너비 두 칸에서 셈한 고정폭(REGISTERED_COLUMN_WIDTH)을
+ * 쓴다 — 이 값을 바꾸면 그것도 같이 바꾼다. */
 const FIRST_COLUMN_WIDTH = "inline-block min-w-[140px]";
 /** 변경이력 줄의 등록 칸 너비 — 위치정보 줄의 위도 · 경도 두 칸(140 + 칸 사이 10 + 구분선 1 + 10 + 140)과 같게 두어, 최종수정 앞
  * 구분선이 바로 위 줄 출퇴근 위치 적용 여부 앞 구분선과 같은 세로줄에 선다(2026-10-23 사용자 요청 — 들쑥날쑥해 보였다).
@@ -104,10 +104,10 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
       // 고친 적 없으면 최종수정 값은 「-」(화면 정의서). 등록 · 최종수정 글자는 라벨과 같은 회색이다. [변경이력
       // 보기] 버튼은 DetailValues 밖에 따로 두어 앞에 구분선(|)이 안 붙게 하고, justify-between 으로 칸 맨
       // 오른쪽에 고정한다 — 칸 자체의 12px 오른쪽 여백(DetailTable dd)이 있어 따로 더 주지 않는다(2026-10-16 점검).
-      // 등록 · 최종수정은 DetailValues(inline-block) 대신 flex-1 + truncate 로 직접 그린다 — 처리자 이름이
-      // 길면(예: 테스트 계정명) 고정폭을 넘어 [변경이력] 버튼을 dd 밖으로 밀어내 잘리는 문제가 있었다. 등록은
-      // 위치정보 줄과 구분선을 맞춘 고정폭(REGISTERED_COLUMN_WIDTH), 최종수정은 남는 폭을 쓰고 둘 다 길면 말줄임되므로
-      // 버튼은 항상 자리를 지킨다(2026-10-19 점검 — 실사용자 확인, 구분선 맞춤은 2026-10-23).
+      // 등록 · 최종수정은 DetailValues(inline-block) 대신 직접 그린다 — 등록은 위치정보 줄과 구분선을 맞춘
+      // 고정폭(REGISTERED_COLUMN_WIDTH) + truncate, 최종수정은 flex-1 + truncate. DetailValues 로 그리던 때는 처리자
+      // 이름이 길면(예: 테스트 계정명) [변경이력] 버튼을 dd 밖으로 밀어내 잘렸는데, 둘 다 말줄임되므로 버튼은 항상
+      // 자리를 지킨다(2026-10-19 점검 — 실사용자 확인, 구분선 맞춤은 2026-10-23).
       value: (
         <span className="flex w-full items-center gap-[12px]">
           {/* overflow-hidden — 칸이 고정폭보다 좁아져도 등록 글자가 [변경이력] 버튼 위로 넘치지 않게 */}
