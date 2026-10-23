@@ -110,7 +110,8 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
       // 버튼은 항상 자리를 지킨다(2026-10-19 점검 — 실사용자 확인, 구분선 맞춤은 2026-10-23).
       value: (
         <span className="flex w-full items-center gap-[12px]">
-          <span className="flex min-w-0 flex-1 items-center gap-[10px]">
+          {/* overflow-hidden — 칸이 고정폭보다 좁아져도 등록 글자가 [변경이력] 버튼 위로 넘치지 않게 */}
+          <span className="flex min-w-0 flex-1 items-center gap-[10px] overflow-hidden">
             <span className={`${REGISTERED_COLUMN_WIDTH} min-w-0 shrink-0 truncate`}>
               <span className="mr-[10px] text-erp-label">등록</span>
               {formatDateTime(store.createdAt)} · {store.createdByName ?? "-"}

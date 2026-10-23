@@ -117,13 +117,12 @@ function NoticeIcon() {
 export function StoreCard({ store, href }: { store: StoreSummary; href: string }) {
   const muted = store.storeStatusCode !== "OPERATING";
   const verified = Boolean(store.bizRegistrationNumber);
-  // 값이 null 인 칸은 제목만 보인다. 미인증이면 점포주소를 반 칸으로 줄이고 그 옆에 「사업자정보 미인증」 제목만 둔다 — 카드
-  // 아래쪽에 한 줄로 따로 두면 그 카드만 길어져 줄이 들쑥날쑥했다. 인증 완료는 따로 알리지 않는다(2026-10-23 사용자 요청).
-  const fields: [string, ReactNode | null, boolean?][] = [
+  // 미인증이면 점포주소를 반 칸으로 줄이고 그 옆에 「사업자정보 미인증」을 둔다(아래 dl 끝) — 카드 아래쪽에 한 줄로 따로 두면
+  // 그 카드만 길어져 줄이 들쑥날쑥했다. 인증 완료는 따로 알리지 않는다(2026-10-23 사용자 요청).
+  const fields: [string, ReactNode, boolean?][] = [
     ["점포 연락처", store.phone ? formatPhone(store.phone) : "-"],
     ["재직직원", `${store.staffCount.toLocaleString("ko-KR")}명`],
     ["점포주소", store.region ?? "-", verified],
-    ...(verified ? [] : [["사업자정보 미인증", null] as [string, null]]),
   ];
   return (
     <Link
@@ -148,14 +147,22 @@ export function StoreCard({ store, href }: { store: StoreSummary; href: string }
       <dl className="grid grid-cols-2 gap-x-[12px] gap-y-[18px] border-t border-erp-divider pt-[12px]">
         {fields.map(([label, value, wide]) => (
           <div key={label} className={`flex flex-col gap-[4px] ${wide ? "col-span-2" : ""}`}>
-            {/* 값이 없는 칸(사업자정보 미인증)은 안내라 제목 뒤에 느낌표 동그라미를 둔다 — 색은 제목과 같은 회색(색은 상태에만) */}
-            <dt className="flex items-center gap-[4px] text-[13px] text-erp-label">
-              {label}
-              {value === null && <NoticeIcon />}
-            </dt>
-            {value !== null && <dd className="truncate text-[14px] text-erp-ink">{value}</dd>}
+            <dt className="text-[13px] text-erp-label">{label}</dt>
+            <dd className="truncate text-[14px] text-erp-ink">{value}</dd>
           </div>
         ))}
+        {/* 미인증 안내 — 보기엔 옆 칸 제목(점포주소)과 같은 줄 · 같은 글자의 제목만 있는 칸이지만, dl 은 제목마다 값이
+            있어야 해서 제목(사업자정보)은 화면 읽기 프로그램에만 두고 「사업자정보 미인증」을 값으로 둔다. 뒤의 느낌표 동그라미는
+            제목과 같은 회색이다(색은 상태에만). */}
+        {!verified && (
+          <div className="flex flex-col gap-[4px]">
+            <dt className="sr-only">사업자정보</dt>
+            <dd className="flex items-center gap-[4px] text-[13px] text-erp-label">
+              사업자정보 미인증
+              <NoticeIcon />
+            </dd>
+          </div>
+        )}
       </dl>
     </Link>
   );

@@ -74,7 +74,7 @@ export default ({ A, R }) => {
       // [변경이력] 버튼이 칸 밖으로 밀려 잘리는 문제가 있었다(2026-10-19 점검 — 실사용자 확인).
       [
         "변경이력",
-        `<span class="flex w-full items-center gap-[12px]"><span class="flex min-w-0 flex-1 items-center gap-[10px]"><span class="${REGISTERED_COL} min-w-0 shrink-0 truncate"><span class="mr-[10px] text-erp-label">등록</span>${date} 14:18 · 정하윤</span><span class="h-[11px] w-px shrink-0 bg-[#d9d9d9]"></span><span class="min-w-0 flex-1 truncate"><span class="mr-[10px] text-erp-label">최종수정</span>2026-08-14 10:31 · 정하윤</span></span>${x.dialogTrigger("변경이력", histId, "soft")}</span>`,
+        `<span class="flex w-full items-center gap-[12px]"><span class="flex min-w-0 flex-1 items-center gap-[10px] overflow-hidden"><span class="${REGISTERED_COL} min-w-0 shrink-0 truncate"><span class="mr-[10px] text-erp-label">등록</span>${date} 14:18 · 정하윤</span><span class="h-[11px] w-px shrink-0 bg-[#d9d9d9]"></span><span class="min-w-0 flex-1 truncate"><span class="mr-[10px] text-erp-label">최종수정</span>2026-08-14 10:31 · 정하윤</span></span>${x.dialogTrigger("변경이력", histId, "soft")}</span>`,
       ],
     ],
   );

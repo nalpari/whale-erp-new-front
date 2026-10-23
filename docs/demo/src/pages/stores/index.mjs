@@ -80,8 +80,9 @@ export default ({ A, R }) => {
       sub: `${tag(type)}<span class="ml-[6px] inline-flex align-middle">${code}</span>`,
       badge: ui.badge(state === "운영" ? "on" : "off", state),
       muted: state === "미운영",
-      // 미인증(사업자등록번호 없음)이면 점포주소를 반 칸으로 줄이고 옆에 「사업자정보 미인증」 제목만 둔다 — 앱 store-parts.tsx 와 같다(2026-10-23).
-      fields: [["점포 연락처", phone], ["재직직원", `${staff}명`], ["점포주소", region, biz !== "-"], ...(biz === "-" ? [["사업자정보 미인증", null]] : [])],
+      // 미인증(사업자등록번호 없음)이면 점포주소를 반 칸으로 줄이고 옆에 「사업자정보 미인증」을 둔다 — 앱 store-parts.tsx 와 같다(2026-10-23).
+      fields: [["점포 연락처", phone], ["재직직원", `${staff}명`], ["점포주소", region, biz !== "-"]],
+      ...(biz === "-" && { notice: "사업자정보 미인증", noticeTerm: "사업자정보" }),
       data: { 점포코드: code, 점포명: name, 점포유형: type, 점포상태: state, 사업자등록번호: biz },
     }),
   );
