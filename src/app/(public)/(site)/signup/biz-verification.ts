@@ -1,22 +1,24 @@
 // 사업자정보 진위확인(국세청)의 결과를 화면 문구로 바꾼다. 서버 액션(actions.ts)과 화면(biz-auth-section · signup-form)이 같이 쓴다.
 // api 가 중복 검사 → 국세청 확인을 하고 10분짜리 인증 토큰을 준다. front 는 그 토큰을 들고 있다가 가입할 때 싣는다.
-import { apiFailure, BUSY_MESSAGE, type ApiFailure } from "./api-failure.ts";
+// 문구 · 10분 · 실패 자리는 네 화면 공통(lib/biz-verification-rules.ts, manyfast S-VRNTHD)을 쓴다 — 이 파일은 가입만의 것(토큰 · 가입 거절)만 더한다.
+import { BIZ_MESSAGE, bizVerifyFailure, isBizVerificationExpired } from "../../../../lib/biz-verification-rules.ts";
+import { apiFailure, type ApiFailure } from "./api-failure.ts";
 
 /**
  * api 가 주는 인증 토큰의 유효 시간. 지나면 가입 요청을 보내지 않고 다시 인증하게 한다.
  * 화면은 요청을 보내기 직전부터 잰다 — api 는 그 뒤에 서명하니 화면이 먼저 만료로 본다. 시계 차이로 그래도 api 가
  * 거절하면 isBizSignupRejection 이 받는다.
  */
-export const BIZ_VERIFICATION_TTL_MS = 10 * 60_000;
+export { BIZ_VERIFICATION_TTL_MS, isBizVerificationExpired } from "../../../../lib/biz-verification-rules.ts";
 
 /** api 에 닿지 못했거나 api 문구를 보일 수 없는 실패. */
-export const BIZ_VERIFY_FAILED_MESSAGE = "사업자정보를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+export const BIZ_VERIFY_FAILED_MESSAGE = BIZ_MESSAGE.FAILED;
 
 /** 인증한 뒤 10분이 지나 가입하려 할 때. */
-export const BIZ_VERIFICATION_EXPIRED_MESSAGE = "인증 시간(10분)이 지났습니다. 다시 인증해 주세요.";
+export const BIZ_VERIFICATION_EXPIRED_MESSAGE = BIZ_MESSAGE.EXPIRED;
 
 /** 사업자정보 칸에 값이 있는데 인증하지 않은 채 가입하려 할 때. */
-export const BIZ_UNVERIFIED_MESSAGE = "사업자정보를 인증하거나 지우기로 비운 뒤 가입해 주세요.";
+export const BIZ_UNVERIFIED_MESSAGE = BIZ_MESSAGE.UNVERIFIED;
 
 /**
  * 가입 전에 사업자정보 묶음이 막아야 하는 이유. 토큰 없이 보내면 칸에 보이던 사업자정보가 빠진 채 가입되고 되돌릴 수 없어서,
@@ -70,18 +72,20 @@ export function hasApiMessage(body: unknown): boolean {
   return (typeof message === "string" && message.trim() !== "") || (Array.isArray(message) && message.length > 0);
 }
 
-// 400 형식 · 409 중복 · 422 불일치는 예상한 거절이라 api 문구를 그대로 보이고 로그를 남기지 않는다.
-// 503 은 국세청 장애라 api 문구(한글로 정해 둔 안내)를 보이되, 자주 나면 알아야 하므로 로그를 남긴다.
-// 그 밖(429 한도, 아직 배포 안 된 404, 5XX …)은 원문이 영문일 수 있어 숨기고 정해진 문구를 보인다.
+// 화면 문구는 네 화면 공통(bizVerifyFailure) — 409 중복은 번호 칸 아래(field), 422 불일치 · 503 장애 · 429 한도 · 그 밖은
+// 인증하기 버튼 위 한 줄이다. 400 은 화면이 먼저 거르는 형식 오류라 api 문구를 그대로 보인다.
+// 409 · 422 · 400 은 예상한 거절이라 로그를 남기지 않고, 503 · 429 · 그 밖은 자주 나면 알아야 하므로 남긴다.
 // api 문구가 없는 실패(앞단 프록시가 JSON 없이 준 503 등)는 상태와 상관없이 정해진 문구를 보이고 로그를 남긴다.
-export function bizVerificationFailure(status: number, message: string, apiMessage = true): { message: string; log: boolean } {
-  if (!apiMessage) return { message: BIZ_VERIFY_FAILED_MESSAGE, log: true };
-  if (status === 400 || status === 409 || status === 422) return { message, log: false };
-  if (status === 503) return { message, log: true };
-  if (status === 429) return { message: BUSY_MESSAGE, log: true };
-  return { message: BIZ_VERIFY_FAILED_MESSAGE, log: true };
+export function bizVerificationFailure(
+  status: number,
+  message: string,
+  apiMessage = true,
+): { message: string; log: boolean; field: "bizNumber" | null } {
+  if (!apiMessage) return { message: BIZ_VERIFY_FAILED_MESSAGE, log: true, field: null };
+  if (status === 400) return { message, log: false, field: null };
+  const failure = bizVerifyFailure(status);
+  return { ...failure, log: status !== 409 && status !== 422 };
 }
 
-export function isBizVerificationExpired(verifiedAt: number, now: number): boolean {
-  return now - verifiedAt >= BIZ_VERIFICATION_TTL_MS;
-}
+/** 가입 거절 문구를 사업자정보 상자의 어느 자리에 보일지 — 사업자번호 중복만 번호 칸 아래, 그 밖(토큰 만료)은 버튼 위 한 줄 */
+export const bizNoticeField = (message: string): "bizNumber" | null => (message === BIZ_MESSAGE.DUPLICATE ? "bizNumber" : null);

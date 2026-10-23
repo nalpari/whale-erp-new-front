@@ -157,7 +157,8 @@ export async function checkEmailAvailability(email: string): Promise<Availabilit
 }
 
 export type BizVerificationInput = { bizRegistrationNumber: string; bizCeoName: string; bizOpenDate: string };
-export type BizVerificationResult = { ok: true; verificationToken: string } | { ok: false; message: string };
+/** 실패의 field — 문구를 보일 자리(사업자번호 중복만 번호 칸 아래, null 은 인증하기 버튼 위 한 줄, S-VRNTHD) */
+export type BizVerificationResult = { ok: true; verificationToken: string } | { ok: false; message: string; field: "bizNumber" | null };
 
 // 사업자정보 진위확인. api 가 중복 검사 → 국세청 확인을 하고 10분짜리 토큰을 준다. 화면은 토큰을 들고 있다가 가입할 때 싣는다.
 export async function verifyBusiness(input: BizVerificationInput): Promise<BizVerificationResult> {
@@ -172,7 +173,7 @@ export async function verifyBusiness(input: BizVerificationInput): Promise<BizVe
     if (!verificationToken) {
       // api 버전이 어긋났다. 「인증완료」로 바꾸면 가입할 때 사업자정보가 조용히 빠진다.
       console.error("[signup] verifyBusiness unexpected response");
-      return { ok: false, message: BIZ_VERIFY_FAILED_MESSAGE };
+      return { ok: false, message: BIZ_VERIFY_FAILED_MESSAGE, field: null };
     }
     return { ok: true, verificationToken };
   } catch (error) {
@@ -180,10 +181,10 @@ export async function verifyBusiness(input: BizVerificationInput): Promise<BizVe
       const failure = bizVerificationFailure(error.status, error.message, hasApiMessage(error.body));
       // 입력값(대표자명 등)은 로그에 남기지 않는다.
       if (failure.log) console.error("[signup] verifyBusiness api error", error.status, error.message);
-      return { ok: false, message: failure.message };
+      return { ok: false, message: failure.message, field: failure.field };
     }
     console.error("[signup] verifyBusiness failed", error);
-    return { ok: false, message: BIZ_VERIFY_FAILED_MESSAGE };
+    return { ok: false, message: BIZ_VERIFY_FAILED_MESSAGE, field: null };
   }
 }
 

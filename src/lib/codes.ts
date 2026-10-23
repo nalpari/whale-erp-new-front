@@ -13,9 +13,17 @@ export type CreateCodeGroupsInput = Schemas["CreateCodeGroupsDto"];
 export type UpdateCodeGroupsInput = Schemas["UpdateCodeGroupsDto"];
 export type CreateCodeItemsInput = Schemas["CreateCodeItemsDto"];
 export type UpdateCodeItemsInput = Schemas["UpdateCodeItemsDto"];
-/** 패널 하나의 저장 내용 — 바뀐 기존 행(updates)과 새 행(creates). api 에는 수정 · 등록 두 번으로 나눠 { items } 로 보낸다(front 전용 모양). */
+export type DeleteCodeItemsInput = Schemas["DeleteCodeItemsDto"];
+/**
+ * 패널 하나의 저장 내용 — 바뀐 기존 행(updates)과 새 행(creates), 상세 코드는 지울 행(deletes)도. api 에는 수정 · 삭제 · 등록으로
+ * 나눠 { items } · { itemCodes } 로 보낸다(front 전용 모양).
+ */
 export type SaveCodeGroupsInput = { updates: UpdateCodeGroupsInput["items"]; creates: CreateCodeGroupsInput["items"] };
-export type SaveCodeItemsInput = { updates: UpdateCodeItemsInput["items"]; creates: CreateCodeItemsInput["items"] };
+export type SaveCodeItemsInput = {
+  updates: UpdateCodeItemsInput["items"];
+  creates: CreateCodeItemsInput["items"];
+  deletes: DeleteCodeItemsInput["itemCodes"];
+};
 export type BpApplication = Schemas["BpApplicationResponseDto"];
 export type UseStatus = Schemas["UseStatus"];
 export type ManageOwnerCode = CodeGroup["manageOwnerCode"];
@@ -28,9 +36,17 @@ const json = async (method: string, body?: unknown): Promise<RequestInit> => ({
   body: body === undefined ? undefined : JSON.stringify(body),
 });
 
-/** GET /code-groups — 플랫폼고정 · 플랫폼제공 그룹을 표시 순서대로 한 쪽씩. */
-export async function getCodeGroups({ page = 1, pageSize = DEFAULT_PAGE_SIZE } = {}): Promise<CodeGroupList> {
-  return request(`/code-groups?page=${page}&pageSize=${pageSize}`, await json("GET"));
+/** GET /code-groups — 플랫폼고정 · 플랫폼제공 그룹을 표시 순서대로 한 쪽씩. 그룹 코드 · 그룹명은 일부 일치(대소문자 무시)이고 빈 값은 보내지 않는다. */
+export async function getCodeGroups({
+  page = 1,
+  pageSize = DEFAULT_PAGE_SIZE,
+  groupCode = "",
+  groupName = "",
+}: { page?: number; pageSize?: number; groupCode?: string; groupName?: string } = {}): Promise<CodeGroupList> {
+  const query = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
+  if (groupCode) query.set("groupCode", groupCode);
+  if (groupName) query.set("groupName", groupName);
+  return request(`/code-groups?${query}`, await json("GET"));
 }
 
 /** GET /code-groups/{groupCode}/items — 플랫폼 원본 상세 코드. BP전용 코드는 나오지 않는다. */
@@ -38,7 +54,7 @@ export async function getCodeItems(groupCode: string): Promise<CodeItemList> {
   return request(`/code-groups/${encodeURIComponent(groupCode)}/items`, await json("GET"));
 }
 
-// 등록 · 수정은 각자 한 트랜잭션이고 응답은 204 다. 한 요청 안에서 하나라도 막히면 아무것도 바뀌지 않는다.
+// 등록 · 수정 · 삭제는 각자 한 트랜잭션이고 응답은 204 다. 한 요청 안에서 하나라도 막히면 아무것도 바뀌지 않는다.
 
 /** POST /code-groups — 새 그룹 등록(등록 권한). */
 export async function createCodeGroups(input: CreateCodeGroupsInput): Promise<void> {
@@ -58,6 +74,11 @@ export async function createCodeItems(groupCode: string, input: CreateCodeItemsI
 /** PUT /code-groups/{groupCode}/items — 기존 상세 코드 수정(수정 권한). 고칠 수 있는 것은 코드명 · 사용 상태 · 표시 순서뿐이다. */
 export async function updateCodeItems(groupCode: string, input: UpdateCodeItemsInput): Promise<void> {
   await request(`/code-groups/${encodeURIComponent(groupCode)}/items`, await json("PUT", input));
+}
+
+/** DELETE /code-groups/{groupCode}/items — 상세 코드 삭제(논리 · 삭제 권한). 플랫폼제공 그룹의 코드는 어느 것이든 지운다(플랫폼고정 그룹은 api 가 409 로 막는다 — 사용 상태로만 관리). 지운 코드를 다시 등록(createCodeItems)하면 api 가 삭제를 풀어 되살린다. */
+export async function deleteCodeItems(groupCode: string, input: DeleteCodeItemsInput): Promise<void> {
+  await request(`/code-groups/${encodeURIComponent(groupCode)}/items`, await json("DELETE", input));
 }
 
 /** POST /code-groups/{groupCode}/bp-application — 플랫폼제공 그룹만. BP 에 이미 있는 행은 건너뛰고 없는 행만 넣는다. */

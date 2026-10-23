@@ -51,19 +51,14 @@ export async function getStaffMemberContractSummary(id: number): Promise<Schemas
 }
 
 /**
- * GET /staff-members/:id/work-schedules(WHALEERP-185) — 그 직원의 근무스케줄 한 쪽(근무일 최신순, 같은 날은 시작 시각 순)과 전체 건수 · 기간 근무시간 합계.
- * 3년 지난 것은 파기 배치가 지워 남지 않는다.
- * 근무스케줄 관리 조회 권한이 없으면 403 「조회 권한이 없습니다.」(영역 권한), 없는 직원 · 범위 밖은 404, 이상한 값은 400.
+ * GET /staff-members/:id/summary/work-schedules — 그 주(월~일)의 근무스케줄(시작 일시 순)과 주간 근무시간 합계. weekStart 는 그 주 월요일.
+ * 근무스케줄 관리 조회 권한이 없으면 403 「조회 권한이 없습니다.」(영역 권한), 없는 직원 · 범위 밖은 404, 이상한 날짜는 400.
  */
-export async function getStaffMemberWorkSchedules(
-  id: number,
-  query: { period: Schemas["StaffWorkSchedulePeriod"]; page: number; pageSize: number },
-): Promise<Schemas["StaffMemberWorkScheduleListResponseDto"]> {
-  const search = new URLSearchParams({ period: query.period, page: String(query.page), pageSize: String(query.pageSize) });
-  return request(`/staff-members/${id}/work-schedules?${search}`, await init("GET"));
+export async function getStaffMemberWeekSchedule(id: number, weekStart: string): Promise<Schemas["StaffMemberWeekScheduleResponseDto"]> {
+  return request(`/staff-members/${id}/summary/work-schedules?${new URLSearchParams({ weekStart })}`, await init("GET"));
 }
 
-/** GET /staff-members/:id/summary/payslips — 최근 확정 · 이번 달 명세서와 미발송 건수. 급여명세서 관리 조회 권한 */
+/** GET /staff-members/:id/summary/payslips — 최근 명세서 3건(급여 기간 시작일 최신순)과 미발송 건수. 급여명세서 관리 조회 권한 */
 export async function getStaffMemberPayslipSummary(id: number): Promise<Schemas["StaffMemberPayslipSummaryResponseDto"]> {
   return request(`/staff-members/${id}/summary/payslips`, await init("GET"));
 }

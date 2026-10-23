@@ -10,7 +10,7 @@ export { Button, type ButtonVariant } from "./button";
 export { Checkbox, Field, FormGroup, FormRow, Radio, RequiredMark, Select, Textarea, TextField } from "./form";
 export { DateField } from "./date-field";
 export { SearchField } from "./search-field";
-export { DataTable, type Column, type RowState } from "./data-table";
+export { DataTable, type Column, type RowState, type TableHeadVariant } from "./data-table";
 export { DetailTable, DetailValues, type DetailRow } from "./detail-table";
 export { ListToolbar } from "./list-toolbar";
 export { Pagination } from "./pagination";
