@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-22
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — MY PAGE 기본정보에서 이메일을 바꿀 때 「지금 비밀번호」를 요구하던 통제(2026-10-21 추가)를 뺐다(사용자 결정, 2026-10-22) — 토큰 탈취만으로 이메일을 바꿔 비밀번호 찾기를 가로챌 수 있는 경로가 다시 열린다는 점을 알리고 확인받았다. `my-profile-form.ts`(`validateCurrentPassword` 삭제, `toUpdateInput` 단순화), `my-page-panel.tsx`(지금 비밀번호 칸·상태 제거), api `admin-profile.service.ts`/`admin-profile-update.dto.ts`(`currentPassword` 검사·필드 삭제)를 같이 고쳤다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main(#88) 병합: proxy 의 본문 크기 상한(`tooLarge`)도 `/bp/{id}` 를 뗀 주소로 판정한다. main 이 없앤 store-picks(목록에서 고른 점포)는 따르고, 탭 BP 의 bp-fix 표시 · 헤더 링크(`withScope` 앞에 `bpPath`)는 남겼다.
 
 ## 2026-10-21
