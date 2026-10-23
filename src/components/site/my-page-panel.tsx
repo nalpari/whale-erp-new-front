@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState, useTransition, type RefObject } from "react";
 import { Button, Field, FormGroup, FormRow, RequiredMark, SlidePanel, TextField, useToast } from "@/components/common";
+import { EMAIL_FORMAT_ERROR } from "@/lib/email-format";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { formOf, serverErrorField, toUpdateInput, validateCurrentPassword, validateMyProfileForm, type MyProfileForm, type MyProfileFormField } from "@/lib/my-profile-form";
 import type { MyProfile } from "@/lib/my-profile";
@@ -128,7 +129,10 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
   const applyServerError = (status: number | undefined, msg: string) => {
     const field = serverErrorField(status, msg);
     if (!field) return setFailure(msg);
-    setErrors((e) => ({ ...e, [field]: msg }));
+    // 이메일 400(형식)은 칸에서 본 형식 문구로 — api 문구(「이메일 형식이 아닙니다」)와 달라지지 않게. 여러 칸 검증 오류
+    // (api.ts messageOf 가 ", " 로 잇는다)는 원문 그대로 둔다 — 덮으면 함께 온 다른 칸의 이유가 사라진다(플랫폼 관리자와 같다).
+    const text = field === "email" && status === 400 && !msg.includes(", ") ? EMAIL_FORMAT_ERROR : msg;
+    setErrors((e) => ({ ...e, [field]: text }));
     focusFirstError();
   };
 

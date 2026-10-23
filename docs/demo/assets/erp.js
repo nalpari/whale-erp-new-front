@@ -896,9 +896,28 @@
   // 답한다(taken 없음) — 그래서 "사용 가능"이 아니라 "형식이 올바르다"고만 말한다(2026-10-20).
   // 확인 요청 자체의 실패(앱의 429 · 5xx · 연결 실패)는 data-fail-prefix 로 시작하는 값으로 흉내 낸다(2026-10-23).
   // 수정 화면에서 data-dup-keep 칸이 원래 값 그대로면 아무것도 띄우지 않는다(앱 isOriginalEmail).
+  // 이메일 형식 — 앱 src/lib/email-format.ts 의 isEmailFormat 과 같다(api @IsEmail 규칙). 브라우저 type="email" 은 a@b 도 받는다.
+  // 고칠 때는 앱 파일 · erp.js · guest.js 셋을 같이 고친다.
+  const EMAIL_LOCAL_ATOM = "[a-z0-9!#$%&'*+\\-/=?^_`{|}~\\u00a1-\\ud7ff\\uf900-\\ufdcf\\ufdf0-\\uffef]+";
+  const EMAIL_LOCAL = new RegExp(`^${EMAIL_LOCAL_ATOM}(?:\\.${EMAIL_LOCAL_ATOM})*$`, "i");
+  const EMAIL_LABEL_CHAR = "[a-z0-9\\u00a1-\\uff00\\uff5f-\\uffff]";
+  const EMAIL_LABEL = new RegExp(`^${EMAIL_LABEL_CHAR}(?:(?:${EMAIL_LABEL_CHAR}|-)*${EMAIL_LABEL_CHAR})?$`, "i");
+  const EMAIL_TLD = /^(?:[a-z¡-¨ª-퟿豈-﷏ﷰ-＀｟-￯]{2,}|xn[a-z0-9-]+[a-z0-9])$/i;
+  const emailBytes = (text) => new TextEncoder().encode(text).length;
+  const isEmailFormat = (value) => {
+    if (value.length > 254) return false;
+    const parts = value.split("@");
+    if (parts.length !== 2) return false;
+    const [local, domain] = parts;
+    if (emailBytes(local) > 64 || emailBytes(domain) > 254 || !EMAIL_LOCAL.test(local)) return false;
+    const labels = domain.split(".");
+    const tld = labels.pop() ?? "";
+    if (!labels.length || tld.length > 63 || /\s/.test(tld) || !EMAIL_TLD.test(tld)) return false;
+    return labels.every((label) => label.length <= 63 && !/\s/.test(label) && EMAIL_LABEL.test(label));
+  };
   const DUP = {
     id: {
-      pattern: /^(?=.*[A-Za-z])[A-Za-z0-9]{4,20}$/,
+      test: (v) => /^(?=.*[A-Za-z])[A-Za-z0-9]{4,20}$/.test(v),
       format: "아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다.",
       taken: "이미 사용 중인 아이디입니다. 다른 아이디를 입력해 주세요.",
       checking: "아이디를 확인하는 중입니다.",
@@ -906,9 +925,8 @@
       ok: "사용 가능한 아이디입니다.",
     },
     mail: {
-      // 앱 platform-admin-form.ts EMAIL_PATTERN 과 같다(api @IsEmail 에 맞춤 — a@b.c · a@b..co 는 형식 오류)
-      pattern: /^[^\s@.(),:;<>[\]\\"]+(?:\.[^\s@.(),:;<>[\]\\"]+)*@(?:[a-z0-9¡-＀｟-￿](?:[a-z0-9¡-＀｟-￿-]*[a-z0-9¡-＀｟-￿])?\.)+(?:[a-z¡-¨ª-퟿豈-﷏ﷰ-＀｟-￯]{2,}|xn--[a-z0-9-]*[a-z0-9])$/i,
-      format: "이메일 형식이 아닙니다.",
+      test: isEmailFormat,
+      format: "이메일 형식이 올바르지 않습니다.",
       ok: "올바른 이메일 형식입니다.",
     },
   };
@@ -961,7 +979,7 @@
       const v = input.value.trim();
       if (!v) return render("");
       if ("dupKeep" in input.dataset && v.toLowerCase() === input.defaultValue.trim().toLowerCase()) return render("");
-      if (!rule.pattern.test(v)) return render("error", rule.format);
+      if (!rule.test(v)) return render("error", rule.format);
       // taken 이 없는 규칙(이메일)은 물어볼 중복확인 API 가 없다는 뜻 — 형식만 보고 지연 없이 바로 답한다.
       if (!rule.taken) return render("ok", rule.ok);
       render("checking", rule.checking);

@@ -1,10 +1,13 @@
 "use server";
 
 import { apiError, request, requestRaw } from "@/lib/api";
+import { isEmailFormat } from "@/lib/email-format";
 import { apiHeaders } from "@/lib/forwarded-headers";
-import { CONNECT_FAILED, failureOf, LOGIN_ID_NOT_FOUND, maskedLoginIdOf, temporaryPasswordOutcome } from "./find-failure";
+import { CONNECT_FAILED, failureOf, INVALID_INPUT, LOGIN_ID_NOT_FOUND, maskedLoginIdOf, temporaryPasswordOutcome } from "./find-failure";
 
 // 입력값은 실패해도 폼에 남긴다 — 서버 액션이 끝나면 React 가 비제어 폼을 defaultValue 로 되돌린다.
+// 이메일 형식은 api 에 묻기 전에 api @IsEmail 과 같은 규칙(email-format.ts)으로 보고, 틀리면 api 400 과 같은 문구를 보인다 —
+// 브라우저 검사(type="email")는 a@b 같은 값을 통과시킨다.
 export type FindLoginIdState = { error?: string; name?: string; email?: string; maskedLoginId?: string };
 export type TemporaryPasswordState = { error?: string; name?: string; loginId?: string; email?: string; sent?: boolean };
 
@@ -16,6 +19,7 @@ export async function findLoginId(_prev: FindLoginIdState, formData: FormData): 
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   if (!name || !email) return { error: "이름과 이메일을 입력해 주세요", name, email };
+  if (!isEmailFormat(email)) return { error: INVALID_INPUT, name, email };
 
   try {
     const res = await request<unknown>("/auth/admin/login-id-find-attempts", {
@@ -46,6 +50,7 @@ export async function issueTemporaryPassword(_prev: TemporaryPasswordState, form
   const loginId = String(formData.get("loginId") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   if (!name || !loginId || !email) return { error: "이름 · 아이디 · 이메일을 입력해 주세요", name, loginId, email };
+  if (!isEmailFormat(email)) return { error: INVALID_INPUT, name, loginId, email };
 
   try {
     // 본문은 쓰지 않아 상태 코드만 본다 — request() 는 2xx 뒤 본문을 파싱해, 깨진 본문이면 발급을 마쳤는데도 실패로 던진다.
