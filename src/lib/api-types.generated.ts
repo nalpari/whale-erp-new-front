@@ -1408,6 +1408,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/payslips/{id}/recalculate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 출퇴근으로 다시 계산 — 기본급 · 주휴수당 · 연장수당을 지금 출퇴근 기록으로 다시 계산하고 고친 값은 버린다(WHALEERP-227). */
+        post: operations["PayslipsController_recalculate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/payslips/{id}/confirm": {
         parameters: {
             query?: never;
@@ -2906,6 +2923,202 @@ export interface paths {
         };
         /** 내 소속 하나의 한 달 근무스케줄, 시작순. 앞달 말일에 시작해 1일로 넘어온 근무는 앞달 것이다 */
         get: operations["MyWorkSchedulesController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 출퇴근 화면 — 고른 근무지의 좌표 · 반경(1차 모두 100m), 동의 상태, 출근을 막는 까닭, 열린 출근, 오늘 근무스케줄 */
+        get: operations["MyAttendanceController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/attendance/check-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 출근. 기록 시각은 서버가 받은 시각이다 */
+        post: operations["MyAttendanceController_checkIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/attendance/check-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 퇴근. 고른 소속의 열린 출근을 닫는다 */
+        post: operations["MyAttendanceController_checkOut"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/attendance/records": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 출퇴근 현황(WHALEERP-221 · 222) — 내 소속 하나의 기간(366일 이하) 기록. 보기만 한다(고치기는 관리자 웹뿐). 보정 · 대신 등록한 날에는
+         *     이력이 붙는다(연필 시트)
+         */
+        get: operations["MyAttendanceController_myRecords"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance-records/daily": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 일별 출퇴근 — 점포 조건(상단 범위 · 필터) 안 하루의 직원별 예정 · 출근 · 퇴근 · 상태. 업무 범위 밖 점포는 빠진다. 본사 계정에게
+         *     동의 없는 가맹 직원은 줄째로 빼고 건수에만 센다(ATT-30)
+         */
+        get: operations["AttendanceRecordsController_daily"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance-records": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 기간 출퇴근 — 점포 조건 안 기간(92일 이하)의 직원 · 날 줄, 직원을 고르면 그 직원만(WHALEERP-217 「직원별 · 근무지별 · 기간」).
+         *     근무스케줄이나 기록이 있는 날만. 본사 계정에게 동의 없는 가맹 직원은 빠지고 건수에만 센다(ATT-30)
+         */
+        get: operations["AttendanceRecordsController_period"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance-records/proxy-staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 대신 등록 선택지 — 그날 대신 등록할 수 있는 직원(위치정보 동의 없음 · 일시 중지, 체결 완료 계약, ATT-20 · 26) */
+        get: operations["AttendanceRecordsController_proxyStaff"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance-records/proxy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 출퇴근 대신 등록(ATT-20 · 26). 최근 3개월 · 오늘까지, 사유 필수 */
+        post: operations["AttendanceRecordsController_proxy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance-records/{recordId}/correction": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 기록 보정 — 짝의 출근 · 퇴근 시각, 비었던 쪽은 새로. 보정 이력을 남기고 확인 필요 사유를 지운다(218 · ATT-19) */
+        post: operations["AttendanceRecordsController_correct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance-records/{recordId}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 「이상 없음」 — 값은 그대로 두고 짝의 확인 필요 사유만 지운다(ATT-19) */
+        post: operations["AttendanceRecordsController_review"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attendance-records/{recordId}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 이력 — 짝의 보정 이력과 대신 등록, 새것부터 */
+        get: operations["AttendanceRecordsController_history"];
         put?: never;
         post?: never;
         delete?: never;
@@ -5062,7 +5275,7 @@ export interface components {
             isEntered: boolean;
         };
         /** @enum {string} */
-        PayslipReviewReason: "MISSING_ATTENDANCE" | "AFTER_CONTRACT_END" | "CONTRACT_CHANGED" | "DEDUCTION_MISSING";
+        PayslipReviewReason: "MISSING_ATTENDANCE" | "AFTER_CONTRACT_END" | "CONTRACT_CHANGED" | "DEDUCTION_MISSING" | "ATTENDANCE_NEEDS_REVIEW";
         PayslipReviewReasonDto: {
             reviewReason: components["schemas"]["PayslipReviewReason"];
             payslipReviewReasonId: number;
@@ -7153,6 +7366,295 @@ export interface components {
             /** @description 시작 일시순 */
             items: components["schemas"]["WorkScheduleDto"][];
         };
+        AttendanceStoreDto: {
+            storeId: number;
+            name: string;
+            /** @description 기본주소와 상세주소 */
+            address: string | null;
+            /** @description 위도. 점포에 좌표가 없으면 null — 앱은 위치로 판정할 수 없다 */
+            latitude: number | null;
+            longitude: number | null;
+            /** @description 근무지 반경(미터). 1차는 모든 점포 100 */
+            radiusMeters: number;
+            /** @description 위치 적용 여부 — false 면 위치를 보지 않고(동의 · 사유도 없음) 등록한다 */
+            isLocationApplied: boolean;
+        };
+        /** @enum {string} */
+        LocationConsentState: "NOT_AGREED" | "AGREED" | "PAUSED" | "WITHDRAWN";
+        AttendanceConsentDto: {
+            state: components["schemas"]["LocationConsentState"];
+            /** @description 동의한 약관 버전이 지금 시행 중인 것과 달라 다시 받아야 한다(ATT-23) */
+            needsReconsent: boolean;
+            /** @description 지금 시행 중인 위치정보 약관 버전 — 동의 시트의 「v1.2」. 없으면 null */
+            termsVersion: string | null;
+        };
+        CheckInBlockDto: {
+            /** @enum {string} */
+            reason: "CONTRACT_PENDING_SIGNATURE" | "NO_CONTRACT";
+            /** @description 서명 대기 계약 — 「계약서 보기」로 연다. NO_CONTRACT 면 null */
+            contractId: number | null;
+        };
+        OpenCheckInDto: {
+            attendanceRecordId: number;
+            staffMemberId: number;
+            storeId: number;
+            storeName: string;
+            /** Format: date-time */
+            recordedAt: string;
+        };
+        TodayScheduleDto: {
+            /** Format: date-time */
+            startAt: string;
+            /** Format: date-time */
+            endAt: string;
+            /** @description 시작 HH:mm(한국 시각) */
+            startTime: string;
+            /** @description 끝 HH:mm(한국 시각) */
+            endTime: string;
+            breakMinutes: number;
+        };
+        MyAttendanceResponseDto: {
+            staffMemberId: number;
+            store: components["schemas"]["AttendanceStoreDto"];
+            locationConsent: components["schemas"]["AttendanceConsentDto"];
+            /** @description 출근을 막는 까닭. 출근할 수 있으면 null */
+            checkInBlock: components["schemas"]["CheckInBlockDto"] | null;
+            openCheckIn: components["schemas"]["OpenCheckInDto"] | null;
+            todaySchedules: components["schemas"]["TodayScheduleDto"][];
+        };
+        CheckInDto: {
+            /**
+             * @description 확인 필요 사유 — 고른 근무지 반경 밖이면 `OUT_OF_RADIUS_CHECKIN`(ATT-11). 좌표 · 거리는 받지 않는다(ATT-05)
+             * @enum {string}
+             */
+            reviewReason?: "OUT_OF_RADIUS_CHECKIN";
+            /** @description 앱 전역에서 고른 소속(직원 레코드) — 이 근무지로 출근한다(ATT-07) */
+            staffMemberId: number;
+        };
+        AttendanceRecordResultDto: {
+            /** @enum {string} */
+            kind: "CHECK_IN" | "CHECK_OUT";
+            /** @enum {string|null} */
+            reviewReason: "OUT_OF_RADIUS_CHECKIN" | "OUT_OF_RADIUS_CHECKOUT" | "MOCK_LOCATION" | null;
+            attendanceRecordId: number;
+            /**
+             * Format: date-time
+             * @description 기록 시각 — 서버가 요청을 받은 시각
+             */
+            recordedAt: string;
+            storeId: number;
+            storeName: string;
+            /**
+             * Format: date-time
+             * @description 퇴근일 때 짝 출근 시각. 출근이면 null
+             */
+            checkInRecordedAt: string | null;
+        };
+        CheckOutDto: {
+            /**
+             * @description 확인 필요 사유 — 반경 밖 `OUT_OF_RADIUS_CHECKOUT`, 위치 조작 감지 `MOCK_LOCATION`(ATT-11 · ATT-21). 좌표는 받지 않는다
+             * @enum {string}
+             */
+            reviewReason?: "OUT_OF_RADIUS_CHECKOUT" | "MOCK_LOCATION";
+            /** @description 앱 전역에서 고른 소속 — 열린 출근 기록이 이 소속의 것이어야 한다 */
+            staffMemberId: number;
+        };
+        /**
+         * @description 그날 상태. 근무스케줄 시작 전이면 null(예정)
+         * @enum {string}
+         */
+        AttendanceDayStatus: "NORMAL" | "LATE" | "ABSENT" | "MISSING_CHECK_IN" | "MISSING_CHECK_OUT" | "OFF";
+        AttendanceHistoryEntryDto: {
+            /** @enum {string} */
+            kind: "CORRECTION" | "PROXY";
+            /**
+             * Format: date-time
+             * @description 처리 일시
+             */
+            at: string;
+            /** @description 처리한 관리자 — 이름(없으면 아이디) */
+            by: string;
+            /** @description 처리한 관리자의 권한 그룹 이름(데모 「정하윤 (BP 마스터)」). 계정을 찾지 못하면 null */
+            byRole: string | null;
+            /** @description 보정이면 변경 전 「출근 09:02 · 퇴근 없음」, 대신 등록이면 null */
+            before: string | null;
+            /** @description 보정이면 변경 후, 대신 등록이면 등록한 값 */
+            after: string;
+            reason: string;
+        };
+        AttendanceScheduleDto: {
+            /** @description HH:mm(한국) */
+            startTime: string;
+            /** @description HH:mm(한국). 자정을 넘으면 다음 날 시각 */
+            endTime: string;
+            breakMinutes: number;
+        };
+        /**
+         * @description 확인 필요 사유 — 검토를 마치면 null
+         * @enum {string}
+         */
+        AttendanceReviewReason: "ACCURACY_EXCEEDED" | "OUT_OF_RADIUS_CHECKIN" | "OUT_OF_RADIUS_CHECKOUT" | "MOCK_LOCATION";
+        /** @enum {string} */
+        AttendanceEntryMethod: "SELF" | "PROXY";
+        AttendancePunchDto: {
+            /** @description 확인 필요 사유 — 검토를 마치면 null */
+            reviewReason: components["schemas"]["AttendanceReviewReason"] | null;
+            entryMethod: components["schemas"]["AttendanceEntryMethod"];
+            attendanceRecordId: number;
+            /**
+             * Format: date-time
+             * @description 기록 시각(ISO)
+             */
+            recordedAt: string;
+            /** @description 기록 시각 HH:mm(한국) */
+            time: string;
+            /** @description 관리자가 보정한 적이 있는가(보정 이력이 있다) — 필터 「기록 구분 · 보정됨」 */
+            isCorrected: boolean;
+        };
+        AttendancePairDto: {
+            checkIn: components["schemas"]["AttendancePunchDto"] | null;
+            checkOut: components["schemas"]["AttendancePunchDto"] | null;
+        };
+        MyAttendanceDayDto: {
+            employmentType: components["schemas"]["EmploymentType"];
+            employmentStatus: components["schemas"]["EmploymentStatus"];
+            /** @description 그날 상태. 근무스케줄 시작 전이면 null(예정) */
+            status: components["schemas"]["AttendanceDayStatus"] | null;
+            /** @description 보정 · 대신 등록 이력, 새것부터. 손대지 않은 날 · 「이상 없음」만 받은 날은 빈 배열(ATT-19) */
+            edits: components["schemas"]["AttendanceHistoryEntryDto"][];
+            /** @description 날 YYYY-MM-DD(한국) */
+            date: string;
+            staffMemberId: number;
+            name: string;
+            /** @description 휴대전화번호 — 필터 「직원(이름 또는 번호)」 */
+            phone: string;
+            storeId: number;
+            storeName: string;
+            schedules: components["schemas"]["AttendanceScheduleDto"][];
+            /** @description 출근순 */
+            pairs: components["schemas"]["AttendancePairDto"][];
+            /** @description 그날이 확정 · 발송된 급여명세서 기간 안이다 — 보정하면 급여에 영향이 갈 수 있다(WHALEERP-218 · 220) */
+            isPayslipConfirmed: boolean;
+        };
+        MyAttendanceRecordsResponseDto: {
+            from: string;
+            to: string;
+            storeName: string;
+            /** @description 근무스케줄이나 기록이 있는 날만, 날짜순 */
+            items: components["schemas"]["MyAttendanceDayDto"][];
+        };
+        AttendanceDayItemDto: {
+            employmentType: components["schemas"]["EmploymentType"];
+            employmentStatus: components["schemas"]["EmploymentStatus"];
+            /** @description 그날 상태. 근무스케줄 시작 전이면 null(예정) */
+            status: components["schemas"]["AttendanceDayStatus"] | null;
+            /** @description 날 YYYY-MM-DD(한국) */
+            date: string;
+            staffMemberId: number;
+            name: string;
+            /** @description 휴대전화번호 — 필터 「직원(이름 또는 번호)」 */
+            phone: string;
+            storeId: number;
+            storeName: string;
+            schedules: components["schemas"]["AttendanceScheduleDto"][];
+            /** @description 출근순 */
+            pairs: components["schemas"]["AttendancePairDto"][];
+            /** @description 그날이 확정 · 발송된 급여명세서 기간 안이다 — 보정하면 급여에 영향이 갈 수 있다(WHALEERP-218 · 220) */
+            isPayslipConfirmed: boolean;
+        };
+        DailyAttendanceResponseDto: {
+            date: string;
+            /** @description 점포 · 이름순 */
+            items: components["schemas"]["AttendanceDayItemDto"][];
+            /** @description 상태별 인원 — 가린 직원도 센다(ATT-30 「점포별 숫자에는 센다」) */
+            counts: {
+                [key: string]: number;
+            };
+        };
+        AttendancePeriodItemDto: {
+            employmentType: components["schemas"]["EmploymentType"];
+            employmentStatus: components["schemas"]["EmploymentStatus"];
+            /** @description 그날 상태. 근무스케줄 시작 전이면 null(예정) */
+            status: components["schemas"]["AttendanceDayStatus"] | null;
+            /** @description 날 YYYY-MM-DD(한국) */
+            date: string;
+            staffMemberId: number;
+            name: string;
+            /** @description 휴대전화번호 — 필터 「직원(이름 또는 번호)」 */
+            phone: string;
+            storeId: number;
+            storeName: string;
+            schedules: components["schemas"]["AttendanceScheduleDto"][];
+            /** @description 출근순 */
+            pairs: components["schemas"]["AttendancePairDto"][];
+            /** @description 그날이 확정 · 발송된 급여명세서 기간 안이다 — 보정하면 급여에 영향이 갈 수 있다(WHALEERP-218 · 220) */
+            isPayslipConfirmed: boolean;
+            /** @description 보정 · 대신 등록 이력, 새것부터. 손대지 않은 날 · 「이상 없음」만 받은 날은 빈 배열(ATT-19) */
+            edits: components["schemas"]["AttendanceHistoryEntryDto"][];
+        };
+        AttendanceWeekStaffDto: {
+            staffMemberId: number;
+            /** @description 근무 분 — 출근 ~ 짝 퇴근의 합에서 그날 근무스케줄 휴게(없으면 계약 휴게)를 뺀 것 */
+            workedMinutes: number;
+            /** @description 연장 분 — 정직원은 하루 8시간 · 주 40시간 초과, 파트타이머는 그 요일 계약 시간 초과(계약 안 한 요일은 전부)(PAY-04 우리 판단) */
+            overtimeMinutes: number;
+            /** @description 주휴 대상 — 1주 소정근로시간 15시간 이상이고 그 주 계약 요일을 모두 출근(PAY-02) */
+            isWeeklyHolidayEligible: boolean;
+        };
+        PeriodAttendanceResponseDto: {
+            from: string;
+            to: string;
+            /** @description 근무스케줄이나 기록이 있는 직원 · 날만(휴무는 없음). 날짜 내림차순, 같은 날은 점포 · 이름순 */
+            items: components["schemas"]["AttendancePeriodItemDto"][];
+            /** @description 직원 · 날 상태별 건수 — 본사에게 가려지는 직원도 센다(ATT-30) */
+            counts: {
+                [key: string]: number;
+            };
+            /**
+             * @description 근태 요약의 직원별 한 주 값 — 기간이 월요일 ~ 일요일 한 주일 때만(아니면 없음). 급여 계산(WHALEERP-227)과 같은 규칙이다.
+             *     줄에 나온 직원만(가려진 직원 없음)
+             */
+            weekStaff?: components["schemas"]["AttendanceWeekStaffDto"][];
+        };
+        ProxyStaffItemDto: {
+            staffMemberId: number;
+            name: string;
+            storeId: number;
+            storeName: string;
+        };
+        ProxyStaffResponseDto: {
+            items: components["schemas"]["ProxyStaffItemDto"][];
+        };
+        ProxyAttendanceDto: {
+            staffMemberId: number;
+            /** @description 날 YYYY-MM-DD(한국). 최근 3개월 안 · 오늘까지 */
+            date: string;
+            /** @description 출근 HH:mm — 필수 */
+            checkInTime: string;
+            /** @description 퇴근 HH:mm. 없으면 출근만(열린 출근). 출근보다 이르면 다음 날 */
+            checkOutTime?: string;
+            /** @description 사유 — 필수, 500자까지 */
+            reason: string;
+        };
+        AttendanceEditResultDto: {
+            /** @description 그 날짜가 확정 · 발송된 급여명세서 기간 안이다 — 급여에 영향이 갈 수 있다(218) */
+            isPayslipConfirmed: boolean;
+        };
+        CorrectAttendanceDto: {
+            /** @description 출근 HH:mm. 출근이 있으면 필수 — 지우지는 않는다 */
+            checkInTime?: string;
+            /** @description 퇴근 HH:mm. 퇴근이 있으면 필수 */
+            checkOutTime?: string;
+            /** @description 수정 사유 — 필수, 500자까지 */
+            reason: string;
+            /** @description 화면이 본 출근 기록 시각(ISO) — 그사이 다른 관리자가 고쳤으면 409 ATTENDANCE_CHANGED. 출근이 없던 짝이면 생략 */
+            expectedCheckInAt?: string;
+            /** @description 화면이 본 퇴근 기록 시각(ISO). 퇴근이 없던 짝이면 생략 — 그사이 퇴근이 생겼어도 409 */
+            expectedCheckOutAt?: string;
+        };
+        AttendanceHistoryResponseDto: {
+            items: components["schemas"]["AttendanceHistoryEntryDto"][];
+        };
         MyHqSharingConsentDto: {
             isConsented: boolean;
             /** @description 동의한 문구의 버전 */
@@ -7165,8 +7667,6 @@ export interface components {
              */
             withdrawnAt: string | null;
         };
-        /** @enum {string} */
-        LocationConsentState: "NOT_AGREED" | "AGREED" | "PAUSED" | "WITHDRAWN";
         MyLocationConsentDto: {
             state: components["schemas"]["LocationConsentState"];
             /** @description 동의한 약관 버전. 미동의면 null */
@@ -7180,6 +7680,11 @@ export interface components {
             pausedAt: string | null;
             /** Format: date-time */
             withdrawnAt: string | null;
+            /**
+             * @description 동의한 약관 버전이 지금 시행 중인 것과 달라 다시 동의해야 하는지(ATT-23). 동의 · 일시 중지일 때만 true 일 수 있다 —
+             *     앱은 다음 출퇴근 등록 전에 동의 시트를 다시 띄우고 `POST /me/location-consent` 로 새 버전에 동의한다.
+             */
+            needsReconsent: boolean;
         };
         MyProfileResponseDto: {
             status: components["schemas"]["AccountStatus"];
@@ -11203,6 +11708,55 @@ export interface operations {
             };
         };
     };
+    PayslipsController_recalculate: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PayslipStatusChangeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayslipDetailResponseDto"];
+                };
+            };
+            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 명세서 · 관리 범위 밖 · 가려지는 명세서 · ID 형식 오류 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description PAYSLIP_STATUS_CONFLICT — 작성 중 · 검토 중이 아님 · PAYSLIP_STALE — 그사이 누가 고침 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     PayslipsController_confirm: {
         parameters: {
             query?: never;
@@ -11562,6 +12116,14 @@ export interface operations {
             query: {
                 /** @description 여러 개면 `?status=SIGNED&status=REJECTED`. 없으면 전체 */
                 status?: components["schemas"]["ContractStatus"][];
+                /**
+                 * @description 고른 점포(관리자웹 목록 점포 필터 · 상단 점포 범위, WHALEERP-133 · 326). 쉼표로 1000개까지(`storeIds=1,2`). 같은 키
+                 *     반복(`storeIds=1&storeIds=2`)도 받지만 쿼리 파서가 키를 1000개까지만 읽어 넘치면 뒤 조건이 400 없이 빠지므로 많을 때는
+                 *     쉼표로 보낸다(api #132 리뷰). 업무 범위 밖의 id 는 조용히 빠진다. 주지 않으면 업무 범위 전체.
+                 */
+                storeIds?: number[];
+                /** @description 점포 유형(직영 · 가맹) — 상단 점포 범위의 직영 · 가맹. 주지 않으면 둘 다. */
+                storeTypes?: ("DIRECT" | "FRANCHISE")[];
                 /** @description 1부터 */
                 page: number;
                 pageSize: number;
@@ -16266,6 +16828,538 @@ export interface operations {
                 content?: never;
             };
             /** @description 내 소속이 아님 — 없는 id, 남의 레코드, 퇴직했거나 체결 완료 근로계약이 없는 내 레코드. 모두 같은 본문 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MyAttendanceController_get: {
+        parameters: {
+            query: {
+                /** @description 앱 전역에서 고른 소속(직원 레코드) — `GET /me/memberships` 의 staffMemberId (ATT-07) */
+                staffMemberId: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyAttendanceResponseDto"];
+                };
+            };
+            /** @description staffMemberId 형식 오류 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 관리자 토큰 · LOCATION_CONSENT_REQUIRED — 위치정보 동의 없음 · 철회 · 약관 버전이 바뀌어 다시 동의 필요 / LOCATION_PAUSED — 위치 수집 일시 중지. 위치를 보지 않는 근무지는 보지 않는다 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 내 소속이 아님 — 없는 id, 남의 레코드, 퇴직했거나 체결 완료 근로계약이 없는 내 레코드. 모두 같은 본문 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MyAttendanceController_checkIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckInDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceRecordResultDto"];
+                };
+            };
+            /** @description 본문 형식 오류 · 출근에 쓸 수 없는 사유 · 위치를 보지 않는 근무지에 사유 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 관리자 토큰 · LOCATION_CONSENT_REQUIRED — 위치정보 동의 없음 · 철회 · 약관 버전이 바뀌어 다시 동의 필요 / LOCATION_PAUSED — 위치 수집 일시 중지. 위치를 보지 않는 근무지는 보지 않는다 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 내 소속이 아님 — 없는 id, 남의 레코드, 퇴직했거나 체결 완료 근로계약이 없는 내 레코드. 모두 같은 본문 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ALREADY_CHECKED_IN — 어느 소속에든 열린 출근이 있음(openCheckIn 을 함께) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description CONTRACT_PENDING_SIGNATURE — 서명 대기 계약(contractId) / NO_CONTRACT — 오늘이 체결 완료 근로계약 기간 밖이거나 퇴직일이 지남 (ATT-12) */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MyAttendanceController_checkOut: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckOutDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceRecordResultDto"];
+                };
+            };
+            /** @description 본문 형식 오류 · 퇴근에 쓸 수 없는 사유 · 위치를 보지 않는 근무지에 사유 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 관리자 토큰 · LOCATION_CONSENT_REQUIRED — 위치정보 동의 없음 · 철회 · 약관 버전이 바뀌어 다시 동의 필요 / LOCATION_PAUSED — 위치 수집 일시 중지. 위치를 보지 않는 근무지는 보지 않는다 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 내 소속이 아님 — 없는 id, 남의 레코드, 퇴직했거나 체결 완료 근로계약이 없는 내 레코드. 모두 같은 본문 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description NO_OPEN_CHECK_IN — 고른 소속에 열린 출근이 없음. 다른 소속에 있으면 openCheckIn 을 함께 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MyAttendanceController_myRecords: {
+        parameters: {
+            query: {
+                /** @description 앱 전역에서 고른 소속(직원 레코드) */
+                staffMemberId: number;
+                /** @description 시작일 YYYY-MM-DD(한국) */
+                from: string;
+                /** @description 끝날 YYYY-MM-DD(포함). 시작부터 366일 이하(HIST-2 「한 번에 최대 1년」) */
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyAttendanceRecordsResponseDto"];
+                };
+            };
+            /** @description 쿼리 형식 오류 · 기간이 366일 넘음 · 끝이 시작보다 앞 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 관리자 토큰 — 위치 동의는 보지 않는다 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 내 소속이 아님 — 없는 id, 남의 레코드, 퇴직했거나 체결 완료 근로계약이 없는 내 레코드. 모두 같은 본문 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceRecordsController_daily: {
+        parameters: {
+            query: {
+                /** @description 점포 유형(상단 범위 직영 · 가맹) — DIRECT · FRANCHISE. 폐점 점포는 뺀다 */
+                storeTypes?: ("DIRECT" | "FRANCHISE")[];
+                /** @description 날짜 YYYY-MM-DD(한국). 출근 기록 시각 · 근무스케줄 시작이 이 날인 것 */
+                date: string;
+                /** @description 고른 점포. 여러 개는 `storeIds=1&storeIds=2` 와 쉼표 `storeIds=1,2` 중 하나로, 1000개까지 */
+                storeIds?: number[];
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DailyAttendanceResponseDto"];
+                };
+            };
+            /** @description 쿼리 형식 오류 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 출·퇴근 현황 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceRecordsController_period: {
+        parameters: {
+            query: {
+                /** @description 점포 유형(상단 범위 직영 · 가맹) — DIRECT · FRANCHISE. 폐점 점포는 뺀다 */
+                storeTypes?: ("DIRECT" | "FRANCHISE")[];
+                /** @description 시작일 YYYY-MM-DD(한국) */
+                from: string;
+                /** @description 끝날 YYYY-MM-DD(포함). 시작부터 92일 이하 */
+                to: string;
+                /** @description 직원 레코드 — 주면 그 직원만. 점포 조건 안의 직원이 아니거나 본사에게 가려지는 직원이면 404 */
+                staffMemberId?: number;
+                /** @description 고른 점포. 여러 개는 `storeIds=1&storeIds=2` 와 쉼표 `storeIds=1,2` 중 하나로, 1000개까지 */
+                storeIds?: number[];
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PeriodAttendanceResponseDto"];
+                };
+            };
+            /** @description 쿼리 형식 오류 · 기간이 92일 넘음 · 끝이 시작보다 앞 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 출·퇴근 현황 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원이 점포 조건 안의 직원이 아니거나 본사에게 가려진 직원 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceRecordsController_proxyStaff: {
+        parameters: {
+            query: {
+                /** @description 점포 유형(상단 범위 직영 · 가맹) — DIRECT · FRANCHISE. 폐점 점포는 뺀다 */
+                storeTypes?: ("DIRECT" | "FRANCHISE")[];
+                /** @description 날 YYYY-MM-DD(한국) */
+                date: string;
+                /** @description 고른 점포. 여러 개는 `storeIds=1&storeIds=2` 와 쉼표 `storeIds=1,2` 중 하나로, 1000개까지 */
+                storeIds?: number[];
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProxyStaffResponseDto"];
+                };
+            };
+            /** @description 쿼리 형식 오류 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 출·퇴근 현황 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceRecordsController_proxy: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProxyAttendanceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceEditResultDto"];
+                };
+            };
+            /** @description 본문 형식 오류 · 3개월이 지났거나 오늘 이후 · 아직 오지 않은 시각 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 출·퇴근 현황 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ALREADY_CHECKED_IN — 퇴근 없이 출근만 넣는데 열린 출근이 있음 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description PROXY_NOT_ALLOWED — 위치정보 동의가 있는 직원 · 위치를 보지 않는 점포 / NO_CONTRACT — 그날 체결 완료 계약 없음 · 퇴직 뒤 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceRecordsController_correct: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                recordId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CorrectAttendanceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceEditResultDto"];
+                };
+            };
+            /** @description 본문 형식 오류 · 3개월이 지남 · 있던 쪽 시각을 비움 · 바뀐 값 없음 · 아직 오지 않은 시각 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 출·퇴근 현황 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 기록 · 업무 범위 밖 · 본사에게 가려진 직원 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ATTENDANCE_CHANGED — 그사이 다른 관리자가 고침 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceRecordsController_review: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                recordId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceEditResultDto"];
+                };
+            };
+            /** @description 출·퇴근 현황 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 기록 · 업무 범위 밖 · 본사에게 가려진 직원 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ATTENDANCE_CHANGED — 확인 필요 사유가 없음(이미 검토됨) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AttendanceRecordsController_history: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                recordId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceHistoryResponseDto"];
+                };
+            };
+            /** @description 출·퇴근 현황 조회 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 기록 · 업무 범위 밖 · 본사에게 가려진 직원 */
             404: {
                 headers: {
                     [name: string]: unknown;
