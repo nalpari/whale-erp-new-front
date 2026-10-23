@@ -5,9 +5,11 @@ import type { BpProfile } from "./bp-profile";
 import {
   currentVerification,
   emptyVerifyFields,
+  expireVerification,
   formOf,
   hasPendingVerification,
   hasUnverifiedChange,
+  isVerificationExpired,
   isVerified,
   missingVerifyMessage,
   serverErrorField,
@@ -269,6 +271,34 @@ test("hasPendingVerification — 이번 화면에서 통과했지만 저장된 �
     verification: { token: "t", verifiedAt: 1, bizRegistrationNumber: "2118701234", bizCeoName: "새대표", bizOpenDate: "2021-03-15" },
   };
   assert.equal(hasPendingVerification(changed), true);
+});
+
+// 저장 직전에만 본다(store-form.ts 와 같은 TTL) — api BusinessVerificationService 의 토큰도 10분이라,
+// 만료된 토큰을 그대로 보내면 api 가 저장 전체를 막는다(code-review 로 찾음, 2026-10-23).
+test("isVerificationExpired · expireVerification — 10분 안이면 그대로, 지났으면 verification 을 비운다", () => {
+  const changed: VerifyForm = {
+    ...verifyFormOf(profile),
+    bizCeoName: "새대표",
+    verification: { token: "t", verifiedAt: 1_000_000, bizRegistrationNumber: "2118701234", bizCeoName: "새대표", bizOpenDate: "2021-03-15" },
+  };
+  const within = 1_000_000 + 9 * 60_000;
+  const after = 1_000_000 + 11 * 60_000;
+  assert.equal(isVerificationExpired(changed, within), false);
+  assert.equal(expireVerification(changed, within), changed); // 참조 그대로 — 호출부가 === 로 "방금 비웠다"를 가른다
+  assert.equal(isVerificationExpired(changed, after), true);
+  const expired = expireVerification(changed, after);
+  assert.notEqual(expired, changed);
+  assert.equal(expired.verification, null);
+  assert.equal(expired.bizCeoName, "새대표"); // 칸 값은 그대로 — 지우는 건 verification 뿐
+});
+
+test("isVerificationExpired — 저장된 값(savedLocked)은 토큰이 아니라서 만료가 없다", () => {
+  // currentVerification 이 없어도(verification: null) savedBizNumber 가 있으면 isVerified 는 참이지만,
+  // 만료는 "이번 화면에서 받은 토큰"에만 있는 개념이다.
+  const saved = verifyFormOf(profile);
+  assert.equal(saved.verification, null);
+  assert.equal(isVerificationExpired(saved, Date.now() + 1_000 * 60 * 60 * 24), false);
+  assert.equal(expireVerification(saved, Date.now() + 1_000 * 60 * 60 * 24), saved);
 });
 
 test("hasUnverifiedChange — 인증 없이 칸만 고쳤으면 참. 저장된 값으로 되돌리면(지우기·사용안함) 거짓", () => {

@@ -10,6 +10,7 @@ import { formatBizNumber } from "@/lib/store-view";
 import { BIZ_MESSAGE, bizVerifyFailure, type BizVerifyField } from "@/lib/biz-verification-rules";
 import {
   emptyVerifyFields,
+  expireVerification,
   formOf,
   hasPendingVerification,
   hasUnverifiedChange,
@@ -255,18 +256,28 @@ export const BpProfileTab = forwardRef<
     const found = validateBpProfileForm(form);
     setErrors(found);
     setFailure(null);
-    const unverified = hasUnverifiedChange(verifyForm);
+    // 인증 10분이 지났으면 저장 직전에 풀어 둔다(점포 store-form-view.tsx handleSave 와 같다, 코드 리뷰로
+    // 찾음, 2026-10-23) — 그대로 두고 보내면 api BusinessVerificationService 가 토큰을 트랜잭션보다 먼저
+    // 검사해 저장 전체를 막는다(상호명 등 무관한 칸까지). effective 를 쓰면 이번 호출에서만 비운 값으로
+    // 나가고, 화면 상태는 아래서 한 번에 반영한다.
+    const effective = expireVerification(verifyForm, Date.now());
+    const expired = effective !== verifyForm;
+    if (expired) {
+      verifyNumber.current++;
+      setVerifyForm(effective);
+    }
+    const unverified = hasUnverifiedChange(effective);
     if (unverified) {
       setVerifyEditing(true);
       // 사업자등록번호 칸에 붙이던 것을 상자 맨 아래 한 줄로 — 안 바뀐 칸은 대표자명 · 개업일자일 수도 있어
       // 특정 칸 탓이 아니다(422 처리와 같은 이유, 코드 리뷰로 찾음, 2026-10-23). 문구도 점포와 같은
-      // BIZ_MESSAGE.UNVERIFIED 로 — 전엔 같은 뜻의 로컬 상수를 따로 뒀다.
-      setVerifyFailure(BIZ_MESSAGE.UNVERIFIED);
+      // BIZ_MESSAGE.UNVERIFIED/EXPIRED 로 — 전엔 같은 뜻의 로컬 상수를 따로 뒀다.
+      setVerifyFailure(expired ? BIZ_MESSAGE.EXPIRED : BIZ_MESSAGE.UNVERIFIED);
     }
     if (Object.keys(found).length || unverified) return focusFirstError(document.getElementById(ids));
     startSaving(async () => {
       try {
-        const result = await updateBpProfileAction(toUpdateBpProfileInput(form, updatedAt, basicPhone, basicEmail, verifyForm));
+        const result = await updateBpProfileAction(toUpdateBpProfileInput(form, updatedAt, basicPhone, basicEmail, effective));
         if (!result.ok) {
           const field = serverErrorField(result.status, result.message);
           if (!field) return setFailure(result.message);
@@ -481,7 +492,18 @@ export const BpProfileTab = forwardRef<
         </FormRow>
 
         {/* 업태 · 종목 다음에 둔다(사용자 지정, 2026-10-22) */}
-        <AddressField label="사업자주소" value={form.address} onChange={(next) => set("address", next)} detailError={errors.bizAddressDetail} />
+        <AddressField
+          label="사업자주소"
+          value={form.address}
+          onChange={(next) => {
+            // "address" 는 BpProfileFormField 가 아니다 — 100자 제한 오류는 bizAddressDetail 에 붙으므로
+            // set("address", …)의 clearError(key as …) 캐스트는 아무것도 못 지운다(점포 store-form-view.tsx
+            // 의 사업자주소 onChange 와 같은 이유로 여기서 직접 지운다, 코드 리뷰로 찾음, 2026-10-23).
+            setForm((f) => (f ? { ...f, address: next } : f));
+            clearError("bizAddressDetail");
+          }}
+          detailError={errors.bizAddressDetail}
+        />
 
         {failure && <FailedBand title={failure} />}
       </section>

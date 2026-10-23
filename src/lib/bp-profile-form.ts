@@ -2,6 +2,7 @@
 // node --test 로 검사한다(bp-profile-form.test.ts). 숫자 패턴은 api DTO(bp-profile-update.dto.ts ·
 // bp-business-verification.dto.ts)와 같다. 규칙은 manyfast F-AMTDCK > S-UOJVUR.
 import type { AddressValue } from "@/components/address-field";
+import { isBizVerificationExpired } from "./biz-verification-rules.ts";
 import { splitPhone } from "./my-profile-form.ts";
 import type { BpProfile, UpdateBpProfileInput, VerifyBpBusinessInput } from "./bp-profile.ts";
 
@@ -213,6 +214,22 @@ export function currentVerification(f: VerifyForm): VerifyForm["verification"] {
 
 /** 사업자 번호 인증이 끝났는가 — 저장된 번호가 있거나 이번 화면에서 지금 칸 값으로 통과했다. */
 export const isVerified = (f: VerifyForm) => Boolean(f.savedBizNumber) || Boolean(currentVerification(f));
+
+/** 이번 화면에서 받은 인증이 10분(BIZ_VERIFICATION_TTL_MS)을 넘겼는가 — 저장을 누르는 순간에만 본다
+ * (점포 store-form.ts validateStoreForm 과 같은 TTL. api BusinessVerificationService 의 토큰도 같은
+ * 10분이라, 그대로 두면 저장 자체가 400 으로 막혀 상호명 등 무관한 칸까지 같이 거절된다 — code-review
+ * 로 찾음, 2026-10-23). 저장된 값이 있어 currentVerification 이 없는 상태(savedLocked)는 토큰이 아니라
+ * 서버에 남은 값을 보는 것이라 만료가 없다. */
+export function isVerificationExpired(f: VerifyForm, now: number): boolean {
+  const v = currentVerification(f);
+  return Boolean(v) && isBizVerificationExpired(v!.verifiedAt, now);
+}
+
+/** 만료됐으면 verification 을 비운 새 VerifyForm 을, 아니면 그대로(참조 그대로) 돌려준다 — 호출부가
+ * === 로 "방금 비웠다"를 가를 수 있다. */
+export function expireVerification(f: VerifyForm, now: number): VerifyForm {
+  return isVerificationExpired(f, now) ? { ...f, verification: null } : f;
+}
 
 /** 이번 화면에서 통과했지만 아직 저장하지 않아 서버 값과 다른가 — 인증완료 배지에 "저장하면 반영됩니다"를
  * 더 보일지 가른다. */
