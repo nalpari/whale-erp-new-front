@@ -267,11 +267,13 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
               gap-[16px] 라 전엔 각 묶음이 그 바로 아래 자식(Fragment 는 DOM 을 안 만든다)이어서 간격을
               그대로 받았다 — 이 div 가 그 자리를 대신하니 같은 gap 을 직접 줘야 한다(사용자가 찾음, 2026-10-23
               — 기본정보 탭에서 "계정 정보"와 "기본정보" 사이가 붙어 보였다). */}
-          <div className={`flex flex-col gap-[16px] ${tab === "biz" ? "" : "hidden"}`}>
-            {/* key 는 패널을 다시 열 때만 바뀐다(bizTabGeneration) — 탭을 오가는 동안은 같은 인스턴스를
-                유지해 고치던 값을 지키고, 패널을 다시 열면 새로 마운트해 "열 때마다 새로 받는다"를 지킨다. */}
-            <BpProfileTab key={bizTabGeneration} ref={bpTab} onSavingChange={setBizSaving} basicPhone={profile.phone} basicEmail={profile.email} />
-          </div>
+          {profile.roleTypeCode === "BM" && (
+            <div className={`flex flex-col gap-[16px] ${tab === "biz" ? "" : "hidden"}`}>
+              {/* key 는 패널을 다시 열 때만 바뀐다(bizTabGeneration) — 탭을 오가는 동안은 같은 인스턴스를
+                  유지해 고치던 값을 지키고, 패널을 다시 열면 새로 마운트해 "열 때마다 새로 받는다"를 지킨다. */}
+              <BpProfileTab key={bizTabGeneration} ref={bpTab} onSavingChange={setBizSaving} basicPhone={profile.phone} basicEmail={profile.email} />
+            </div>
+          )}
           <div className={`flex flex-col gap-[16px] ${tab === "basic" ? "" : "hidden"}`}>
               {/* 점포정보 관리 상세화면(DetailTable)의 제목 줄과 같은 회색 바 — FormGroup 의 기본 제목(배경 없음)
                   대신 쓴다(사용자 디자인 피드백, 2026-10-21). 본문 카드는 FormGroup 과 같은 토큰으로 직접 짠다.

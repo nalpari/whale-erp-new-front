@@ -6,6 +6,7 @@ import { Checkbox, Field, FormRow, RequiredMark, TextField, useToast } from "@/c
 import { BizVerificationBox } from "@/components/site/biz-verification-box";
 import { formatDate } from "@/lib/format";
 import { splitPhone } from "@/lib/my-profile-form";
+import { formatBizNumber } from "@/lib/store-view";
 import { BIZ_MESSAGE, bizVerifyFailure, type BizVerifyField } from "@/lib/biz-verification-rules";
 import {
   emptyVerifyFields,
@@ -326,6 +327,9 @@ export const BpProfileTab = forwardRef<
         values={bizValues}
         onChange={(key, value) => setVerify(BIZ_TO_VERIFY[key], value)}
         locked={{ bizNumber: locked, ceoName: locked, openDate: locked }}
+        // 잠겼을 때(일반 잠금 · 사용안함 취소선) 보이는 사업자등록번호는 하이픈을 넣어 보인다(점포와
+        // 같다, 코드 리뷰로 찾음, 2026-10-23) — 안 넣으면 values.bizNumber(저장된 원래 숫자)가 그대로 보인다.
+        lockedDisplay={verifyForm.savedBizNumber ? { bizNumber: formatBizNumber(verifyForm.savedBizNumber) } : {}}
         // "사용안함"을 누르면 입력칸 대신 지워질 저장된 값에 취소선을 긋고, 인증하기 버튼도 숨긴다(2026-10-23 사용자 지정)
         struck={verifyForm.pendingClear}
         // 상자에 넘기는 verified 는 "지금 잠겨서 보이는가"다(locked) — 원본 isVerified(verifyForm)
