@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { LoginIdCheck } from "@/lib/platform-admin-form";
 
 // 플랫폼 관리자 패널들이 같이 쓰는 작은 조각. 공통 컴포넌트에 없는 것만 둔다.
 
@@ -61,9 +62,6 @@ function LiveText({ text }: { text: string }) {
   );
 }
 
-/** 아이디 중복확인 상태. 오류(형식 · 사용 중)는 이 상태가 아니라 칸 오류 문구로 보인다. */
-export type LoginIdCheck = "idle" | "checking" | "available" | "failed";
-
 const LOGIN_ID_CHECK_TEXT: Record<Exclude<LoginIdCheck, "idle">, string> = {
   checking: "아이디를 확인하는 중입니다.",
   available: "사용 가능한 아이디입니다.",
@@ -75,6 +73,7 @@ const LOGIN_ID_CHECK_TEXT: Record<Exclude<LoginIdCheck, "idle">, string> = {
  * 아이디 중복확인 표시 — 확인 중 · 확인 실패(회색, erp-label) · 사용 가능(체크 표시 + 파란 문구 —
  * signup-form.tsx 의 성공 표시와 같은 색, ERP 토큰 erp-on) · 오류(FieldMessage 그대로).
  * 대기 · 성공 · 실패는 막는 오류가 아니므로 role=alert 대신 알림 칸(aria-live="polite")으로만 알린다.
+ * 오류 문구(message)가 있으면 상태 문구는 그리지 않는다 — 패널은 칸 오류를 붙일 때 상태를 "idle" 로 내리지만, 여기서도 오류를 앞세운다.
  */
 export function LoginIdAvailability({ id, check, message }: { id: string; check: LoginIdCheck; message?: string }) {
   const text = message || check === "idle" ? "" : LOGIN_ID_CHECK_TEXT[check];

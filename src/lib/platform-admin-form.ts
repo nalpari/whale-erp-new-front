@@ -129,13 +129,44 @@ export function serverErrorField(status: number | undefined, message: string, mo
 
 /**
  * 칸 아래에 붙일 api 오류 문구. 아이디는 화면 문구로 바꾼다 — 400(형식)은 화면 검사와 같은 문구, 409(중복)는 LOGIN_ID_TAKEN.
- * 그 밖(이메일 중복 등)은 api 문구 그대로.
+ * 그 밖(이메일 중복 등)은 api 문구 그대로. 400 이 여러 칸 문장을 이어 붙인 것(검증 배열 — api.ts messageOf 가 ", " 로 잇는다)이면
+ * 바꾸지 않는다 — 아이디 문구로 덮으면 함께 온 다른 칸의 이유가 사라진다.
  */
 export function serverFieldMessage(field: AdminFormField, status: number | undefined, message: string): string {
   if (field !== "loginId") return message;
-  if (status === 400) return LOGIN_ID_FORMAT_ERROR;
+  if (status === 400) return message.includes(", ") ? message : LOGIN_ID_FORMAT_ERROR;
   if (status === 409) return LOGIN_ID_TAKEN;
   return message;
+}
+
+/** 아이디 중복확인 상태. 오류(형식 · 사용 중)는 이 상태가 아니라 칸 오류 문구로 보인다. */
+export type LoginIdCheck = "idle" | "checking" | "available" | "failed";
+
+/** 중복확인 server action 의 답(actions.ts ActionResult). 호출 자체가 거절되면(catch) 화면이 "failed" 로 둔다. */
+type LoginIdCheckResult = { ok: true; available: boolean } | { ok: false; status?: number; message: string };
+
+/**
+ * 중복확인 답을 화면 상태로. 「사용 중」 · 400 은 칸 오류(서버가 거절한 값 — 고칠 때까지 저장 요청을 보내지 않는다),
+ * 401 은 위 띠, 그 밖(403 · 429 · 5xx · 연결 실패)은 "failed" — 저장은 막지 않고 api 가 저장할 때 다시 본다.
+ */
+export function loginIdCheckOutcome(result: LoginIdCheckResult): { check: LoginIdCheck; fieldError?: string; failure?: string } {
+  if (result.ok) return result.available ? { check: "available" } : { check: "idle", fieldError: LOGIN_ID_TAKEN };
+  if (result.status === 400) return { check: "idle", fieldError: LOGIN_ID_FORMAT_ERROR };
+  if (result.status === 401) return { check: "idle", failure: result.message };
+  return { check: "failed" };
+}
+
+/**
+ * 저장을 막는 오류. 입력 검사 문구에 더해, 서버가 거절한 아이디(사용 중 · 형식)는 고치기 전까지 막는다 — api 가 같은 이유로
+ * 다시 거절한다. 이메일 중복 같은 다른 칸의 서버 오류는 막지 않는다 — 그 사이 다른 계정이 이메일을 바꿨을 수 있다.
+ * 같은 칸에 입력 검사 문구가 있으면 그쪽이 앞선다.
+ */
+export function saveBlockingErrors(
+  form: AdminForm,
+  mode: "create" | "edit",
+  serverErrors: Partial<Record<AdminFormField, string>>,
+): Partial<Record<AdminFormField, string>> {
+  return { ...(serverErrors.loginId && { loginId: serverErrors.loginId }), ...validateAdminForm(form, mode) };
 }
 
 /** 선택 칸 — 비우면 null 로 보내 지운다. */

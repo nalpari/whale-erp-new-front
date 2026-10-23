@@ -9,7 +9,9 @@ import {
   isOriginalEmail,
   LOGIN_ID_FORMAT_ERROR,
   LOGIN_ID_TAKEN,
+  loginIdCheckOutcome,
   loginIdError,
+  saveBlockingErrors,
   serverErrorField,
   serverFieldMessage,
   splitPhone,
@@ -147,6 +149,32 @@ test("칸에 붙일 api 오류 문구 — 아이디는 화면 문구로, 이메�
   assert.equal(LOGIN_ID_FORMAT_ERROR, loginIdError("1234"), "화면 형식 검사와 같은 문구");
   const emailTaken = "이미 다른 관리자 계정에 등록된 이메일입니다";
   assert.equal(serverFieldMessage("email", 409, emailTaken), emailTaken);
+});
+
+test("여러 칸 검증 오류(400 배열)는 아이디 문구로 덮지 않는다", () => {
+  const joined = "아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다, 이메일 형식이 아닙니다";
+  assert.equal(serverErrorField(400, joined, "create"), "loginId");
+  assert.equal(serverFieldMessage("loginId", 400, joined), joined);
+});
+
+test("중복확인 답 → 화면 상태 — 사용 중 · 400 은 칸 오류, 401 은 띠, 그 밖은 확인 실패(저장은 막지 않는다)", () => {
+  assert.deepEqual(loginIdCheckOutcome({ ok: true, available: true }), { check: "available" });
+  assert.deepEqual(loginIdCheckOutcome({ ok: true, available: false }), { check: "idle", fieldError: LOGIN_ID_TAKEN });
+  assert.deepEqual(loginIdCheckOutcome({ ok: false, status: 400, message: "아이디는 …" }), { check: "idle", fieldError: LOGIN_ID_FORMAT_ERROR });
+  assert.deepEqual(loginIdCheckOutcome({ ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." }), {
+    check: "idle",
+    failure: "로그인이 만료되었습니다. 다시 로그인해 주세요.",
+  });
+  for (const status of [403, 404, 409, 429, 500, undefined]) {
+    assert.deepEqual(loginIdCheckOutcome({ ok: false, status, message: "…" }), { check: "failed" }, `status ${status}`);
+  }
+});
+
+test("저장을 막는 오류 — 서버가 거절한 아이디만 막고, 이메일 서버 오류는 막지 않는다", () => {
+  assert.deepEqual(saveBlockingErrors(filled, "create", { loginId: LOGIN_ID_TAKEN }), { loginId: LOGIN_ID_TAKEN });
+  assert.deepEqual(saveBlockingErrors(filled, "create", { email: "이미 다른 관리자 계정에 등록된 이메일입니다" }), {});
+  // 같은 칸에 입력 검사 문구가 있으면 그쪽이 앞선다
+  assert.equal(saveBlockingErrors({ ...filled, loginId: "" }, "create", { loginId: LOGIN_ID_TAKEN }).loginId, "아이디를 입력해 주세요.");
 });
 
 test("수정 화면의 원래 이메일 — 앞뒤 공백 · 대소문자는 보지 않는다", () => {

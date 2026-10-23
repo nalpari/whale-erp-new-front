@@ -10,21 +10,21 @@ import {
   emailError,
   formOf,
   isOriginalEmail,
-  LOGIN_ID_FORMAT_ERROR,
-  LOGIN_ID_TAKEN,
+  loginIdCheckOutcome,
   loginIdError,
+  saveBlockingErrors,
   serverErrorField,
   serverFieldMessage,
   toCreateInput,
   toUpdateInput,
-  validateAdminForm,
   type AdminForm,
   type AdminFormField,
+  type LoginIdCheck,
 } from "@/lib/platform-admin-form";
 import type { PlatformAdminDetail, PlatformRoleGroup } from "@/lib/platform-admins";
 import { checkLoginIdAvailableAction, createPlatformAdminAction, updatePlatformAdminAction } from "./actions";
 import { AddressField } from "@/components/address-field";
-import { EmailFormatValid, FailedBand, FieldMessage, LoginIdAvailability, unknownResult, type LoginIdCheck } from "./admin-parts";
+import { EmailFormatValid, FailedBand, FieldMessage, LoginIdAvailability, unknownResult } from "./admin-parts";
 
 // 플랫폼 관리자 등록(S-FOJJKB) · 수정(S-CZGHBS) 슬라이드 패널. 패널 폭(464)이라 칸을 한 줄에 하나씩 쌓는다(데모와 같다).
 // 등록에는 상태 · 비밀번호 칸이 없다 — 사용으로 생기고 초기 비밀번호가 등록 이메일로 간다.
@@ -63,7 +63,7 @@ export function AdminFormPanel(props: Props) {
   /** 이메일 형식 확인 성공 — api 호출이 없어 아이디처럼 확인 중 차례를 둘 필요가 없다. 오류는 errors.email 에 둔다. */
   const [emailValid, setEmailValid] = useState(false);
   /**
-   * 서버가 칸에 붙인 오류 — 저장 때 받은 아이디 · 이메일 중복과, 아이디 중복확인의 「사용 중」 · 400 답.
+   * 서버가 칸에 붙인 오류 — 저장 때 받은 아이디 · 이메일 중복(아이디는 400 형식도)과, 아이디 중복확인의 「사용 중」 · 400 답.
    * 그 칸을 고칠 때까지 남긴다 — 다시 저장하거나 같은 값을
    * 다시 확인하는 것으로 지워지면, 서버가 방금 거절한 값 아래에 "사용 가능" 같은 성공 문구가 다시 보인다.
    */
@@ -126,15 +126,19 @@ export function AdminFormPanel(props: Props) {
 
   /** api 가 거절한 이유가 한 칸의 것이면(아이디 · 이메일 중복 등) 그 칸 아래에 붙인다. 아니면 위 띠로. */
   const applyServerError = (status: number | undefined, message: string) => {
-    // 저장이 거절되면 앞서 받은 성공 표시(사용 가능 · 올바른 형식)를 내린다 — 「아이디 또는 이메일」처럼 칸을 가를 수
-    // 없는 중복은 띠로만 가서, 남겨 두면 띠는 중복이라는데 칸 아래는 "사용 가능"이라고 한다. 떠 있던 확인 답도 버린다.
-    checkNumber.current++;
-    setLoginIdCheck("idle");
-    setEmailValid(false);
+    // 저장이 거절되면 거절된 칸의 성공 표시(사용 가능 · 올바른 형식)를 내린다 — 「아이디 또는 이메일」처럼 칸을 가를 수
+    // 없는 중복은 띠로만 가서, 남겨 두면 띠는 중복이라는데 칸 아래는 "사용 가능"이라고 한다. 그때는 둘 다 내린다.
+    // 이메일 중복처럼 다른 칸의 거절이면 아이디의 "사용 가능"은 그대로 둔다(아이디는 멀쩡하다).
     const field = serverErrorField(status, message, mode);
+    if (field !== "email") {
+      checkNumber.current++; // 떠 있던 아이디 확인 답도 버린다
+      setLoginIdCheck("idle");
+    }
+    if (field !== "loginId") setEmailValid(false);
     if (!field) return setFailure(message);
     // 아이디는 화면 문구로 바꿔 붙인다 — 중복확인 때의 「사용 중」과 같은 문구여야 한다
     const text = serverFieldMessage(field, status, message);
+    if (text !== message) console.warn("api 문구를 화면 문구로 바꿔 붙였다", status, message);
     setServerErrors((e) => ({ ...e, [field]: text }));
     setErrors((e) => ({ ...e, [field]: text }));
     focusFirstError();
@@ -142,7 +146,7 @@ export function AdminFormPanel(props: Props) {
 
   /**
    * 아이디 중복 확인(등록만) — 칸을 벗어나거나 Enter 를 칠 때. 형식이 틀리면 api 에 묻지 않고 형식 문구를 단다.
-   * 비어 있으면 저장할 때 알린다. 서버가 거절한 값(저장 때 중복 · 확인 때 「사용 중」 · 400)을 고치지 않았으면 다시 묻지 않는다.
+   * 비어 있으면 저장할 때 알린다. 서버가 거절한 값(저장 때 중복 · 400, 확인 때 「사용 중」 · 400)을 고치지 않았으면 다시 묻지 않는다.
    * 묻는 사이 아이디를 고치거나 · 패널을 되돌리거나 · 저장이 거절되면 늦게 온 답은 버린다.
    * 400(형식)이면 화면의 형식 문구를 칸 아래에(고칠 때까지 남긴다), 401(로그인 만료)이면 위 띠로 바로 알린다 — 다 채운 뒤에야 알면 늦다.
    * 그 밖(403 · 429 · 5xx · 연결 실패)은 칸 아래에 회색으로 "확인하지 못했다"고만 알린다 — 저장은 막지 않고 api 가 다시 본다.
@@ -167,27 +171,17 @@ export function AdminFormPanel(props: Props) {
     checkLoginIdAvailableAction(value.trim())
       .then((result) => {
         if (mine !== checkNumber.current) return;
-        if (result.ok) {
-          setLoginIdCheck(result.available ? "available" : "idle");
-          if (!result.available) {
-            // 확인에서 받은 「사용 중」도 서버의 답이다 — 저장 때 받은 중복처럼 아이디를 고칠 때까지 남긴다
-            setServerErrors((e) => ({ ...e, loginId: LOGIN_ID_TAKEN }));
-            setErrors((e) => ({ ...e, loginId: LOGIN_ID_TAKEN }));
-          }
-          return;
+        const { check, fieldError, failure } = loginIdCheckOutcome(result);
+        setLoginIdCheck(check);
+        if (fieldError) {
+          // 「사용 중」 · 400 도 서버의 답이다 — 저장 때 받은 중복처럼 아이디를 고칠 때까지 남긴다.
+          // 400 은 api 문구 대신 화면 형식 문구로 보이므로(같은 규칙) 원문은 콘솔에 남긴다.
+          if (!result.ok) console.warn("아이디 중복 확인 400 — 화면 형식 문구로 보인다", result.message);
+          setServerErrors((e) => ({ ...e, loginId: fieldError }));
+          setErrors((e) => ({ ...e, loginId: fieldError }));
         }
-        if (result.status === 400) {
-          // api 문구 대신 화면 형식 문구 — 같은 규칙이라 뜻은 같고, 칸을 벗어날 때의 형식 문구와 똑같이 보인다
-          setLoginIdCheck("idle");
-          setServerErrors((e) => ({ ...e, loginId: LOGIN_ID_FORMAT_ERROR }));
-          setErrors((e) => ({ ...e, loginId: LOGIN_ID_FORMAT_ERROR }));
-        } else if (result.status === 401) {
-          setLoginIdCheck("idle");
-          setFailure(result.message);
-        } else {
-          setLoginIdCheck("failed");
-          console.warn("아이디 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다", result.status, result.message);
-        }
+        if (failure) setFailure(failure);
+        if (check === "failed" && !result.ok) console.warn("아이디 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다", result.status, result.message);
       })
       .catch((error: unknown) => {
         if (mine !== checkNumber.current) return;
@@ -222,10 +216,8 @@ export function AdminFormPanel(props: Props) {
     mode === "edit" && !roleGroups.some((r) => r.roleGroupId === props.admin.roleGroup.roleGroupId) ? [props.admin.roleGroup, ...roleGroups] : roleGroups;
 
   const handleSave = () => {
-    // 서버가 거절한 아이디(사용 중 · 형식)를 고치지 않았으면 저장 요청을 보내지 않는다 — api 가 같은 이유로 다시 거절한다.
-    // 그 밖의 칸 서버 오류(이메일 중복)는 남겨 보이되 막지는 않는다 — 다른 계정이 그 사이 이메일을 바꿨을 수 있다.
-    const found = { ...(serverErrors.loginId && { loginId: serverErrors.loginId }), ...validateAdminForm(form, mode) };
-    // 입력 검사 문구가 있으면 그쪽이 앞선다
+    // 서버가 거절한 아이디는 고치기 전까지 막고, 이메일 중복 같은 다른 칸의 서버 오류는 보이기만 한다(saveBlockingErrors)
+    const found = saveBlockingErrors(form, mode, serverErrors);
     setErrors({ ...serverErrors, ...found });
     setFailure(null);
     if (Object.keys(found).length) return focusFirstError();

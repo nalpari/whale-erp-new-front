@@ -889,10 +889,10 @@
   }
 
   // ── 아이디 · 이메일 중복 확인(data-dupcheck) — 칸을 벗어나거나 Enter 를 치면 형식과 중복을 보고 칸 아래 문구로 알린다 ──
-  // 앱 admin-form-panel.tsx 와 같다. 아이디는 확인 중 · 사용 가능 · 중복 세 상태를 보인다(코드 리뷰 반영, 2026-10-20 —
-  // 대기·성공 신호가 없어 "확인했는지조차 알 수 없는" 문제였다). 데모엔 실제 api 가 없어 짧은 지연으로 비동기
-  // 확인을 흉내 낸다. 데모의 ‘이미 있는 값’은 data-taken 이다.
-  // 이메일은 바로 물어볼 중복확인 API 가 없어(등록 시점에만 api 가 409 로 막는다) 형식만 보고 지연 없이 바로
+  // 앱 admin-form-panel.tsx 와 같다. 아이디는 확인 중 · 사용 가능 · 중복 · 확인 실패를 보인다(세 상태는 코드 리뷰 반영
+  // 2026-10-20 — 대기·성공 신호가 없어 "확인했는지조차 알 수 없는" 문제였다, 확인 실패는 2026-10-23). 데모엔 실제 api 가
+  // 없어 짧은 지연으로 비동기 확인을 흉내 낸다. 데모의 ‘이미 있는 값’은 data-taken 이다.
+  // 이메일은 바로 물어볼 중복확인 API 가 없어(중복은 저장 시점에만 — 등록 · 수정 모두 — api 가 409 로 막는다) 형식만 보고 지연 없이 바로
   // 답한다(taken 없음) — 그래서 "사용 가능"이 아니라 "형식이 올바르다"고만 말한다(2026-10-20).
   // 확인 요청 자체의 실패(앱의 403 · 429 · 5xx · 연결 실패)는 data-fail-prefix 로 시작하는 값으로 흉내 낸다(2026-10-23).
   // 수정 화면에서 data-dup-keep 칸이 원래 값 그대로면 아무것도 띄우지 않는다(앱 isOriginalEmail).
@@ -965,7 +965,7 @@
       if (!rule.taken) return render("ok", rule.ok);
       render("checking", rule.checking);
       timer = setTimeout(() => {
-        const failPrefix = input.dataset.failPrefix;
+        const failPrefix = (input.dataset.failPrefix || "").toLowerCase();
         if (failPrefix && v.toLowerCase().startsWith(failPrefix)) return render("failed", rule.failed);
         const taken = (input.dataset.taken || "").toLowerCase().split(",");
         const isTaken = taken.includes(v.toLowerCase());
