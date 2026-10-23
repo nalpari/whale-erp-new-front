@@ -1,11 +1,13 @@
 # Bundle history
 
 ## 2026-10-23
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front #61 magikarp, main #116 까지): okf 충돌은 양쪽 기록을 살리고 generated.at 만 새로 썼다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 등록 · 수정 패널: 저장 때 api 가 칸에 붙인 중복 오류는 그 칸을 고칠 때까지 남기고, 저장이 거절되면 사용 가능 · 올바른 형식 표시를 내린다(front #61 머지 블로커 반영).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front #61 magikarp, main #113 까지): okf 충돌은 main 서술 위에 플랫폼 관리자 줄의 아이디 · 이메일 즉시 확인 서술만 다시 얹어 풀었다. 데모 html 은 main 것을 받아 다시 빌드했다.
 
 ## 2026-10-22
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front #61 magikarp): 플랫폼 관리자 등록 패널의 아이디 칸이 등록일 때만 보이게 바뀐 main 구조 위에 확인 중 · 사용 가능 상태 표시(`LoginIdAvailability`)를 다시 얹었다. okf 충돌은 양쪽 서술을 살려 풀었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 푸터 사업자 정보를 재영이 보내 준 값(상호 · 주소 · 이메일 · 전화번호 · 사업자등록번호)으로 바꿨다. 회사 소개 페이지가 없어 상호명 링크 자리(`COMPANY_URL`)를 지우고 글자로 둔다. 시안 자리값(둘째 상호 칸 · 통신판매업신고번호)도 뺐다. 데모도 같이 고쳤다(front #110 재영 답글).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [플랫폼 시스템관리](/system.md) — 플랫폼 공통코드에서 플랫폼고정 그룹은 상세 코드 삭제 칸을 두지 않는다(`itemsDeletable` — api #135 가 409 로 막는다, 사용 상태로만 관리). front #113 머지 블로커 반영. 공통코드 api 타입을 api main(#135 머지 뒤) 기준으로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통코드 api 타입을 api #135 의 openapi 로 다시 만들었다(설명만 바뀜). 이 화면은 api #135 가 main 에 머지 · 배포된 뒤에 머지한다(front #113 머지 블로커).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [BP 환경설정](/config.md) · [플랫폼 시스템관리](/system.md) — 공통코드 리뷰 반영: 수정은 저장되고 삭제가 실패해도 지울 행 표시와 실패 띠가 남는다(`withKeptPending` · `hasPending`). 삭제 실패로 보내지 않은 등록은 띠에 「새 행도 등록하지 않았습니다」로 알린다(`SaveResult.skipped`). `updatesSaved` 를 `anySaved` 로, 토스트 판단을 `savedToast` 로 바꿨다. okf 의 옛 저장 순서(`saveUpdateThenCreate`) · BP 다시 켜기 금지 · 사용중지 그룹 표시 설명을 바로잡았다.
