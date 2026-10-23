@@ -9,7 +9,7 @@ import { formatAmount } from "@/lib/payslips";
 import { getPayslip } from "@/lib/payslips-api";
 import { kstToday } from "@/lib/staff-members";
 import { payslipListHref } from "../payslip-list-query";
-import { reviewBand } from "../payslip-row";
+import { attendanceHref, reviewBand } from "../payslip-row";
 import { PayslipReview, SectionHead } from "./payslip-review";
 
 export const metadata: Metadata = {
@@ -55,8 +55,7 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
       </section>
       <section className="flex min-w-0 flex-col gap-[12px]">
         <SectionHead title="참조한 것">
-          {/* 출퇴근 현황 화면이 아직 없다 */}
-          <Button variant="soft" disabled title="준비 중입니다.">
+          <Button variant="soft" href={attendanceHref(payslip)}>
             출퇴근 기록 보기
           </Button>
         </SectionHead>

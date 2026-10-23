@@ -14,9 +14,10 @@ import {
   type PayslipDetail,
   type PayslipItem,
 } from "@/lib/payslips";
-import { earningHelp } from "../payslip-row";
+import { attendanceHref, earningHelp } from "../payslip-row";
 import {
   cancelPayslipConfirmation,
+  recalculatePayslip,
   confirmPayslip,
   getAdditionalItems,
   getPreviousValues,
@@ -32,10 +33,12 @@ import { addAdditionalLine, applyPrevious, removeLine, saveItems } from "./paysl
 // 데이터는 GET /payslips/:id 이고, 임시저장 · 지난 명세서 불러오기 · 항목 추가(WHALEERP-228)와 확정 · 확정 취소(WHALEERP-230)는
 // server action(actions.ts)으로 api 를 부른다. 확정이면 「발송」, 발송 완료면 「재발송」(확인창을 거친다, WHALEERP-231 · 237). 금액 칸 · 두 스위치 · 붙인 추가 공제는 임시저장해야 남고, 합계와 빨간 띠가 따라 바뀐다.
 // 성공하면 router.refresh() 로 상세를 다시 받는다 — page 가 updatedAt 을 key 로 줘 화면 상태도 새 값으로 다시 선다.
-// 「출퇴근으로 다시 계산」은 출퇴근 집계(WHALEERP-227)가 없어 「준비 중」이다.
+// 기본급 · 주휴수당 · 연장수당은 api 가 근로계약 · 출퇴근 기록으로 계산한다(WHALEERP-227). 「출퇴근으로 다시 계산」은 확인창을 거쳐
+// POST /payslips/:id/recalculate 를 부르고(고친 값은 버린다), 가산 스위치는 임시저장 때 api 가 그 값으로 다시 계산한다.
+// 경고 띠의 「출퇴근 보정」은 출·퇴근 현황 조회(보정이 필요한 기록)를 그 점포 · 직원 · 급여 기간으로 연다.
 // 고칠 수 있는 것은 작성 중 · 검토 중이고 수정 권한이 있을 때뿐이다 — 확정 · 발송 완료는 읽기만 하고 「확정 취소」와 「발송」 · 「재발송」만 둔다(okf/staff.md 급여).
 
-type Dialog = "save" | "confirm" | "cancel" | "send" | "resend" | "load" | "add" | "preview";
+type Dialog = "save" | "confirm" | "cancel" | "send" | "resend" | "load" | "add" | "preview" | "recalc";
 
 const HELP = "text-[12px] leading-[1.5] text-erp-muted";
 const textOf = (amount: number | null) => (amount === null ? "" : formatAmount(amount));
@@ -188,12 +191,8 @@ export function PayslipReview({
   const deductionHelp = (item: PayslipItem) =>
     item.itemCategory === "WITHHOLDING" ? `3.3% 원천징수 · 비과세를 포함한 지급 총액 ${formatAmount(totals.gross)}원에 매긴다` : "직접 입력";
 
-  const togglePremium = (on: boolean) => {
-    setPremium(on);
-    // 끄면 연장수당을 계산하지 않는다(PAY-05). 켜면 처음 받은 값으로 돌린다 — 다시 계산은 출퇴근 집계(WHALEERP-227) 뒤에 api 가 한다.
-    const overtime = items.find((i) => i.itemCode === "OVERTIME_PAY");
-    if (overtime) setText(overtime.payslipItemId, on ? textOf(itemAmount(overtime)) : "0");
-  };
+  // 끄면 연장수당을 계산하지 않는다(PAY-05). 금액은 임시저장 때 api 가 그 값으로 다시 계산한다 — 칸을 고치지 않았으면 새 계산값을 따른다.
+  const togglePremium = (on: boolean) => setPremium(on);
 
   /** api 를 부르고, 성공하면 확인창을 닫고 알린 뒤 상세를 다시 받는다. 실패하면 확인창에 남기고, 결과를 모르면 상세도 다시 받는다. */
   const run = (call: () => Promise<{ ok: true } | EditFailure>, done: string) =>
@@ -304,7 +303,7 @@ export function PayslipReview({
             title={band.title}
             desc={band.desc}
             actions={
-              <Button variant="soft" disabled title="준비 중입니다.">
+              <Button variant="soft" href={attendanceHref(payslip)}>
                 출퇴근 보정
               </Button>
             }
@@ -320,10 +319,9 @@ export function PayslipReview({
               {payslip.periodStartDate} ~ {payslip.periodEndDate.slice(5)}
             </span>
             {editable && (
-              // 출퇴근 집계 · 계산(WHALEERP-227)이 아직 없다
               // 공통 Button 에 className 을 넘기지 않는다(DESIGN.md) — 간격은 감싸는 쪽이 준다
               <span className="ml-[6px] inline-flex">
-                <Button variant="soft" disabled title="준비 중입니다.">
+                <Button variant="soft" onClick={() => open("recalc")}>
                   출퇴근으로 다시 계산
                 </Button>
               </span>
@@ -407,6 +405,17 @@ export function PayslipReview({
             : `확정하면 수정할 수 없습니다. 확정 취소하면 검토 중으로 돌아옵니다. 발송은 이 화면의 「발송」이나 급여명세서 목록에서 확정 건을 모아 보냅니다.${
                 band ? " 검토 사유는 확인한 것으로 남습니다." : ""
               }`}
+        {failureText}
+      </ConfirmDialog>
+      <ConfirmDialog
+        open={dialog === "recalc"}
+        title="출퇴근 기록으로 다시 계산하시겠습니까?"
+        confirmLabel="다시 계산"
+        busy={busy}
+        onConfirm={() => run(() => recalculatePayslip(payslip.payslipId, payslip.updatedAt), "출퇴근 기록으로 다시 계산했습니다.")}
+        onCancel={close}
+      >
+        {payslip.periodStartDate} ~ {payslip.periodEndDate.slice(5)} 출퇴근 기록으로 기본급·주휴수당·연장수당을 다시 계산합니다. 세 칸에서 고친 값과 임시저장하지 않은 변경은 사라집니다.
         {failureText}
       </ConfirmDialog>
       <ConfirmDialog

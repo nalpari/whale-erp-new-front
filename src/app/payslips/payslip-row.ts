@@ -46,6 +46,12 @@ export function earningHelp(item: Pick<PayslipItem, "itemCode" | "isTaxFree" | "
     : "계산값";
 }
 
+/** 출·퇴근 현황 조회를 그 명세서의 점포 · 직원 · 급여 기간으로 연다 — 「출퇴근 보정」 · 「출퇴근 기록 보기」. 기간은 보정이 필요한 기록의 기간이다 */
+export function attendanceHref(p: { storeId: number; staffName: string; periodStartDate: string; periodEndDate: string }): string {
+  const q = new URLSearchParams({ storeIds: String(p.storeId), staff: p.staffName, fixFrom: p.periodStartDate, fixTo: p.periodEndDate });
+  return `/attendance-records?${q.toString()}`;
+}
+
 /** 위쪽 경고 띠. 공제 미입력은 금액 칸 아래 빨간 띠가 따로 말하므로 뺀다. 이미 확인한 사유(확정 때 확인됨)도 뺀다. 띠가 없으면 null. */
 export function reviewBand(reasons: readonly PayslipReviewReason[], labelOf: (reason: string) => string): { title: string; desc: string } | null {
   const shown = reasons.filter((r) => r.reviewReason !== "DEDUCTION_MISSING" && r.acknowledgedAt === null);

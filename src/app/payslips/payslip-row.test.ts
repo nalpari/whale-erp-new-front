@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { PayslipReviewReason } from "../../lib/payslips.ts";
-import { attendanceCell, earningHelp, periodText, reviewBand, sentDateText } from "./payslip-row.ts";
+import { attendanceCell, attendanceHref, earningHelp, periodText, reviewBand, sentDateText } from "./payslip-row.ts";
 
 test("목록 칸 — 급여 기간, 출퇴근 확인 전은 「누락」 · 확인은 「확인」 · 가린 줄은 null", () => {
   assert.equal(periodText({ periodStartDate: "2026-09-01", periodEndDate: "2026-09-30" }), "2026-09-01 ~ 2026-09-30");
@@ -63,4 +63,11 @@ test("경고 띠 — 다른 사유는 사유 한글로, 상세가 없으면 한�
     title: "기간 중 계약 변경 사유로 검토 대기로 분류되었습니다",
     desc: "기간 중 계약 변경. 확인한 뒤에는 경고가 있어도 확정할 수 있습니다.",
   });
+});
+
+test("출퇴근 보정 · 기록 보기 — 출·퇴근 현황 조회를 점포 · 직원 · 급여 기간으로", () => {
+  assert.equal(
+    attendanceHref({ storeId: 5, staffName: "서 지안", periodStartDate: "2026-09-01", periodEndDate: "2026-09-30" }),
+    "/attendance-records?storeIds=5&staff=%EC%84%9C+%EC%A7%80%EC%95%88&fixFrom=2026-09-01&fixTo=2026-09-30",
+  );
 });
