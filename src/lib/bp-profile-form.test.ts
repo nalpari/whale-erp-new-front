@@ -282,23 +282,32 @@ test("hasUnverifiedChange — 인증 없이 칸만 고쳤으면 참. 저장된 �
     verification: { token: "t", verifiedAt: 1, bizRegistrationNumber: base.savedBizNumber, bizCeoName: "새대표", bizOpenDate: base.savedOpenDate },
   };
   assert.equal(hasUnverifiedChange(verified), false);
-  const revertedToSaved: VerifyForm = { ...base, bizCeoName: "새대표", bizRegistrationNumber: base.savedBizNumber, bizOpenDate: base.savedOpenDate };
-  assert.equal(hasUnverifiedChange({ ...revertedToSaved, bizCeoName: base.savedCeoName }), false);
+  const revertedToSaved: VerifyForm = { ...base, bizCeoName: base.savedCeoName, bizRegistrationNumber: base.savedBizNumber, bizOpenDate: base.savedOpenDate };
+  assert.equal(hasUnverifiedChange(revertedToSaved), false);
 });
 
-test("hasUnverifiedChange — pendingClear(사용안함)면 칸이 비어도 거짓이다 — 지우겠다는 의도적인 선택이라 인증을 요구하지 않는다", () => {
+test("hasUnverifiedChange — pendingClear(사용안함)면 거짓이다 — 지우겠다는 의도적인 선택이라 인증을 요구하지 않는다", () => {
   const base = verifyFormOf(profile);
-  const clearing: VerifyForm = { ...base, bizRegistrationNumber: "", bizCeoName: "", bizOpenDate: "", pendingClear: true };
+  // handleClearSaved 는 칸 값을 비우지 않는다 — 저장된 값 그대로 두고 struck 로 취소선만 긋는다(실제 UI 동작).
+  const clearing: VerifyForm = { ...base, pendingClear: true };
   assert.equal(hasUnverifiedChange(clearing), false);
 });
 
 test("toUpdateBpProfileInput — pendingClear(사용안함)면 clearBusinessVerification 을 싣고 businessVerificationToken 은 싣지 않는다", () => {
+  const verifyForm: VerifyForm = { ...verifyFormOf(profile), pendingClear: true };
+  const input = toUpdateBpProfileInput(emptyForm, "2026-01-01T00:00:00.000Z", "", "", verifyForm);
+  assert.equal(input.clearBusinessVerification, true);
+  assert.equal("businessVerificationToken" in input, false);
+});
+
+test("toUpdateBpProfileInput — pendingClear 가 verification 보다 앞선다(두 값이 같이 있어도 clearBusinessVerification 만 싣는다)", () => {
+  // handleClearSaved 가 verification 을 늘 비우므로 실제 UI 에선 안 생기지만, toUpdateBpProfileInput
+  // 자신의 보장이어야 한다 — 호출 순서를 바꾸거나 두 키를 한 번에 스프레드해도 api 400 을 내지 않도록.
+  const base = verifyFormOf(profile);
   const verifyForm: VerifyForm = {
-    ...verifyFormOf(profile),
-    bizRegistrationNumber: "",
-    bizCeoName: "",
-    bizOpenDate: "",
+    ...base,
     pendingClear: true,
+    verification: { token: "stale-token", verifiedAt: 1, bizRegistrationNumber: base.bizRegistrationNumber, bizCeoName: base.bizCeoName, bizOpenDate: base.bizOpenDate },
   };
   const input = toUpdateBpProfileInput(emptyForm, "2026-01-01T00:00:00.000Z", "", "", verifyForm);
   assert.equal(input.clearBusinessVerification, true);

@@ -165,8 +165,11 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
   const describe = (key: MyProfileFormField) => (errors[key] ? messageId(key) : undefined);
   const message = (key: MyProfileFormField) => <FieldMessage id={messageId(key)} message={errors[key]} />;
 
+  // 사업자정보 탭(BpProfileTab)도 늘 마운트돼 있어(코드 리뷰로 찾음, 2026-10-23) 패널 전체(id)에서 찾으면
+  // 숨겨진 그 탭에 남은 aria-invalid 를 먼저 찾아 포커스가 안 보이는 칸으로 간다 — 기본정보 탭 자신(ids)
+  // 으로 좁힌다(코드 리뷰로 찾음, 2026-10-23).
   const focusFirstError = () =>
-    requestAnimationFrame(() => (document.getElementById(id)?.querySelector('[aria-invalid="true"]') as HTMLElement | null)?.focus());
+    requestAnimationFrame(() => (document.getElementById(ids)?.querySelector('[aria-invalid="true"]') as HTMLElement | null)?.focus());
 
   const applyServerError = (status: number | undefined, msg: string) => {
     const field = serverErrorField(status, msg);
@@ -262,11 +265,14 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
           {profile.roleTypeCode === "BM" && <TabBar tab={tab} onChange={setTab} />}
 
           {/* 탭을 그냥 조건부로 마운트하면 사업자정보 탭을 떠날 때 고치던 값·받아 둔 인증 토큰이 경고 없이
-              사라진다 — 둘 다 늘 마운트해 두고 숨김으로만 가린다(popup.tsx·slide-panel.tsx 의 "항상 마운트,
-              전환으로 여닫기"와 같은 원칙, 코드 리뷰로 찾음, 2026-10-23). SlidePanel 자신이 flex flex-col
-              gap-[16px] 라 전엔 각 묶음이 그 바로 아래 자식(Fragment 는 DOM 을 안 만든다)이어서 간격을
-              그대로 받았다 — 이 div 가 그 자리를 대신하니 같은 gap 을 직접 줘야 한다(사용자가 찾음, 2026-10-23
-              — 기본정보 탭에서 "계정 정보"와 "기본정보" 사이가 붙어 보였다). */}
+              사라진다 — BM 에게 보이는 두 탭 다 늘 마운트해 두고 숨김으로만 가린다(popup.tsx·slide-panel.tsx
+              의 "항상 마운트, 전환으로 여닫기"와 같은 원칙, 코드 리뷰로 찾음, 2026-10-23). BpProfileTab 의
+              마운트 자체는 roleTypeCode === "BM" 으로 한 번 더 묶는다 — 그 밖의 권한은 조회 자체가
+              403(BP 마스터 전용) 이라, 숨겨 두기만 해도 열 때마다 쓸모없는 호출이 나간다(코드 리뷰로 찾음,
+              2026-10-23). SlidePanel 자신이 flex flex-col gap-[16px] 라 전엔 각 묶음이 그 바로 아래
+              자식(Fragment 는 DOM 을 안 만든다)이어서 간격을 그대로 받았다 — 이 div 가 그 자리를 대신하니
+              같은 gap 을 직접 줘야 한다(사용자가 찾음, 2026-10-23 — 기본정보 탭에서 "계정 정보"와
+              "기본정보" 사이가 붙어 보였다). */}
           {profile.roleTypeCode === "BM" && (
             <div className={`flex flex-col gap-[16px] ${tab === "biz" ? "" : "hidden"}`}>
               {/* key 는 패널을 다시 열 때만 바뀐다(bizTabGeneration) — 탭을 오가는 동안은 같은 인스턴스를
@@ -274,7 +280,7 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
               <BpProfileTab key={bizTabGeneration} ref={bpTab} onSavingChange={setBizSaving} basicPhone={profile.phone} basicEmail={profile.email} />
             </div>
           )}
-          <div className={`flex flex-col gap-[16px] ${tab === "basic" ? "" : "hidden"}`}>
+          <div id={ids} className={`flex flex-col gap-[16px] ${tab === "basic" ? "" : "hidden"}`}>
               {/* 점포정보 관리 상세화면(DetailTable)의 제목 줄과 같은 회색 바 — FormGroup 의 기본 제목(배경 없음)
                   대신 쓴다(사용자 디자인 피드백, 2026-10-21). 본문 카드는 FormGroup 과 같은 토큰으로 직접 짠다.
                   아이콘을 넣어 봤지만 24px 로는 너무 작아 뺐다(사용자 지정, 2026-10-21).

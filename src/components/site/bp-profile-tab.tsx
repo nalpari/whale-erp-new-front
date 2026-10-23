@@ -58,7 +58,7 @@ function FailedBand({ title, message }: { title: string; message?: string }) {
   );
 }
 
-/** 입력칸이 여럿이거나 입력칸이 아닌 칸(개업일자 · 연락처 세 칸). Field 는 입력칸 하나만 감싸고 labelExtra 가
+/** 입력칸이 여럿이거나 입력칸이 아닌 칸(연락처 세 칸). Field 는 입력칸 하나만 감싸고 labelExtra 가
  * 없어서, 라벨 옆에 체크박스를 다는 칸(대표자 연락처 · 대표자 이메일)은 이걸로 짠다(AddressField 의 라벨
  * 줄과 같은 모양 — 화면마다 로컬로 둔다). */
 function Labeled({ label, required, labelExtra, children }: { label: string; required?: boolean; labelExtra?: React.ReactNode; children: React.ReactNode }) {
@@ -87,8 +87,10 @@ export type BpProfileTabHandle = { save: () => void };
  * 첫 버전을 고침) — 「인증하기」는 검사만 하고 토큰을 로컬 상태(verifyForm.verification)로 들고 있다가,
  * 전체 「저장」을 눌러야 실제로 반영된다. 인증이 끝나 있으면(저장된 값이 있거나 이번 화면에서 통과했으면)
  * 세 칸을 읽기 전용으로 잠그고 "재인증"으로만 다시 연다(verifyEditing) — DESIGN.md 의 readonly 모양
- * ("인증을 마친 사업자정보"가 그 예다). "지우기"/"사용안함"은 서버를 부르지 않는다 — 칸을 저장된 값으로
- * 되돌릴 뿐이다(clearVerify, 아직 저장한 적 없으면 빈 값으로 되돌아간다).
+ * ("인증을 마친 사업자정보"가 그 예다). "지우기"(clearVerify, 아직 저장한 적 없는 값을 비운다)와 "사용안함
+ * 취소"(clearVerify 가 그대로 맡는다, 저장된 값으로 되돌리고 pendingClear 도 끈다)는 서버를 부르지 않고
+ * 로컬 상태만 되돌린다. "사용안함"(handleClearSaved) 은 되돌리는 쪽이 아니라 저장된 값을 지우기로
+ * "표시"만 한다(pendingClear) — 실제로 지워지는 건 전체 "저장"을 눌러야다.
  *
  * basicPhone · basicEmail — 내 정보(기본정보) 탭의 연락처 · 이메일. 대표자 연락처 · 이메일의 "기본정보와
  * 동일" 체크박스가 그 값을 그대로 쓴다(사용자 지정, 2026-10-22). my-page-panel.tsx 가 이미 받아 둔 값을
@@ -111,8 +113,10 @@ export const BpProfileTab = forwardRef<
 
   useEffect(() => {
     onSavingChange(saving);
-    // my-page-panel.tsx 가 탭을 바꾸면 이 컴포넌트를 통째로 내린다(숨기는 게 아니다) — 저장 중에 탭을
-    // 바꾸면 cleanup 없이는 부모의 bizSaving 이 true 로 멈춰 [닫기]가 영영 잠긴다(코드 리뷰로 찾음, 2026-10-23).
+    // my-page-panel.tsx 는 탭을 바꿔도 이 컴포넌트를 내리지 않고 숨기기만 한다(always-mounted, 코드
+    // 리뷰로 찾음, 2026-10-23) — 이 cleanup 은 패널을 다시 열 때(bizTabGeneration 이 올라 key 가 바뀌어
+    // 실제로 unmount 될 때)를 위한 것이다. 그때 저장 중이었다면 cleanup 없이는 부모의 bizSaving 이 true 로
+    // 멈춰 [닫기]가 영영 잠긴다.
     return () => onSavingChange(false);
   }, [saving, onSavingChange]);
 
@@ -143,8 +147,10 @@ export const BpProfileTab = forwardRef<
         console.error("사업자정보 불러오기 호출 실패", error);
         setLoadFailure("사업자정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
       });
-    // 탭이 열릴 때 한 번만 받는다(기본정보 탭과 같다) — basicPhone · basicEmail 은 탭이 떠 있는 동안
-    // 바뀌지 않는다(기본정보 탭은 다른 탭이라 동시에 못 연다).
+    // 조회는 마운트될 때(패널을 열 때) 한 번만 — basicPhone · basicEmail 은 이 컴포넌트가 떠 있는 동안에도
+    // 기본정보 탭에서 고쳐 저장하면 바뀔 수 있다(always-mounted, 코드 리뷰로 찾음, 2026-10-23). 그 최신
+    // 값은 화면 표시(대표자 연락처·이메일의 "기본정보와 동일" 칸)와 저장(toUpdateBpProfileInput)이 매 렌더
+    // 그대로 읽는다 — 여기서 쓰는 건 처음 조회 한 번뿐이라 깊이 의존하지 않아도 된다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -174,7 +180,8 @@ export const BpProfileTab = forwardRef<
 
   /** 점포 사업자정보와 같은 동작(store-form-view.tsx handleClearPending) — 칸을 저장된 값으로 되돌린다.
    * 아직 저장한 적 없으면 빈 값으로 돌아간다. 서버는 부르지 않는다 — 저장 전엔 전부 로컬 상태라서다
-   * (2026-10-22 사용자 결정). 인증 전엔 "지우기", 인증완료 뒤엔 "사용안함"으로 문구만 가른다. */
+   * (2026-10-22 사용자 결정). onClear("지우기")와 onRevert("재인증 취소" · "사용안함 취소")가 함께 쓴다 —
+   * pendingClear 도 끈다("사용안함"으로 연 상태를 되돌릴 때). */
   const clearVerify = () => {
     verifyNumber.current++;
     setVerifyForm((f) =>
@@ -194,10 +201,11 @@ export const BpProfileTab = forwardRef<
     setVerifyEditing(false);
   };
 
-  /** "사용안함" — 재인증과 같이 누르면 바로 칸을 비우고 연다(확인창 없음, 2026-10-23 사용자 지정). 서버는
-   * 부르지 않는다(인증 · 재인증과 같은 두 단계) — 전체 "저장"을 눌러야 clearBusinessVerification 으로
-   * 실제 반영된다. "사용안함 취소"는 clearVerify 가 그대로 맡는다(재인증 취소와 같은 복귀 — 저장된 값으로
-   * 돌아가고 pendingClear 도 끈다). */
+  /** "사용안함" — 확인창 없이 바로 pendingClear 를 켠다(2026-10-23 사용자 지정). 칸 값은 지우지 않고
+   * 그대로 둔 채(아래 setVerifyForm) 상자가 struck 로 취소선을 긋고 읽기 전용으로 바꾼다 — 재인증처럼
+   * 칸을 열어 고치는 게 아니다. 서버는 부르지 않는다(인증 · 재인증과 같은 두 단계) — 전체 "저장"을 눌러야
+   * clearBusinessVerification 으로 실제 반영된다. "사용안함 취소"는 clearVerify 가 그대로 맡는다(재인증
+   * 취소와 같은 복귀 — 저장된 값으로 되돌리고 pendingClear 도 끈다). */
   const handleClearSaved = () => {
     verifyNumber.current++;
     // 칸 값은 그대로 둔다 — 지워질 저장된 값에 취소선을 그어 보여준다(입력칸이 아니다, 2026-10-23 사용자 지정).
@@ -265,17 +273,30 @@ export const BpProfileTab = forwardRef<
           setErrors((e) => ({ ...e, [field]: result.message }));
           return focusFirstError(document.getElementById(ids));
         }
-        toast("saved");
+      } catch (error: unknown) {
+        console.error("사업자정보 저장 호출 실패", error);
+        setFailure("저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+        return;
+      }
+      // 저장은 이미 끝났다 — 뒤이은 다시 불러오기가 실패해도 저장이 안 된 것처럼 알리지 않는다(코드 리뷰로
+      // 찾음, 2026-10-23 — 전엔 둘을 한 try 로 묶어 저장 뒤 불러오기만 실패해도 "저장 결과를 확인하지
+      // 못했습니다"가 떠, 다시 저장을 누르면 이미 반영된 updatedAt·토큰으로 409 가 났다). 화면은 다시 열어야
+      // 최신값을 받으므로 그렇게 안내한다.
+      toast("saved");
+      try {
         const refreshed = await getBpProfileAction();
         if (refreshed.ok) {
           setUpdatedAt(refreshed.profile.updatedAt);
           setForm(formOf(refreshed.profile, basicPhone, basicEmail));
           setVerifyForm(verifyFormOf(refreshed.profile));
           setVerifyEditing(false);
+        } else {
+          console.error("사업자정보 저장 후 다시 불러오기 실패", refreshed.status, refreshed.message);
+          setFailure("저장했지만 최신 정보를 불러오지 못했습니다. 패널을 닫았다 다시 열어 주세요.");
         }
       } catch (error: unknown) {
-        console.error("사업자정보 저장 처리 실패", error);
-        setFailure("저장 결과를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+        console.error("사업자정보 저장 후 다시 불러오기 호출 실패", error);
+        setFailure("저장했지만 최신 정보를 불러오지 못했습니다. 패널을 닫았다 다시 열어 주세요.");
       }
     });
   };
@@ -287,9 +308,9 @@ export const BpProfileTab = forwardRef<
 
   const verified = isVerified(verifyForm);
   const pending = hasPendingVerification(verifyForm);
-  // pendingClear("사용안함")도 재인증처럼 칸을 연다 — 비운 값을 보여주고 고칠 수도 있어야 한다(재인증으로
-  // 바꿔 타기로 마음을 바꿀 수도 있어서, 2026-10-23 사용자 지정 — 확인창 없이 바로 열리고, 되돌리기 버튼
-  // 하나로 취소한다).
+  // pendingClear("사용안함")도 editing 에 들어간다 — 칸을 고칠 수 있게 여는 게 아니라(상자가 struck 로
+  // 읽기 전용으로 바꾼다), locked · savedLocked 를 꺼서 onRevert("사용안함 취소")가 나오고 onClearSaved
+  // ("사용안함")는 숨게 하기 위해서다(2026-10-23 사용자 지정).
   const editing = verifyEditing || verifyForm.pendingClear;
   const locked = verified && !editing;
   // 점포(store-form-view.tsx savedLocked)와 같다 — locked 와 달리 pending 을 뺀다. 재인증을 통과했지만
@@ -318,8 +339,9 @@ export const BpProfileTab = forwardRef<
   return (
     <div id={ids} className="flex flex-col gap-[18px]">
       {/* 상자는 네 화면 공통(BizVerificationBox, S-VRNTHD) — 세 칸을 한 줄에 나란히 둔다(layout="row",
-          점포와 같은 배치, 2026-10-23 사용자 지정). "사용안함"도 재인증처럼 확인창 없이 바로 칸을 열고,
-          되돌리기 버튼 하나로 취소한다(2026-10-23 사용자 지정 — 전엔 확인창 + 별도 카드였다). */}
+          점포와 같은 배치, 2026-10-23 사용자 지정). "사용안함"은 확인창 없이 바로 struck(취소선 ·
+          읽기 전용)으로 바꾸고, 되돌리기 버튼("사용안함 취소") 하나로 되돌린다(2026-10-23 사용자 지정
+          — 전엔 확인창 + 별도 카드, 그 다음엔 칸을 비우고 여는 안이었다). */}
       <BizVerificationBox
         layout="row"
         // 좁은 슬라이드 패널 전용 비율 — 회원가입 · 점포는 그대로(2026-10-23 사용자 지정)
@@ -335,7 +357,7 @@ export const BpProfileTab = forwardRef<
         // 상자에 넘기는 verified 는 "지금 잠겨서 보이는가"다(locked) — 원본 isVerified(verifyForm)
         // 가 아니다. 재인증을 열거나(verifyEditing) 사용안함을 누르면(pendingClear) 서버엔 여전히
         // 인증된 값이 남아 있어도 화면은 "미인증"으로 보여야 버튼이 재인증→인증하기로 바뀐다(점포
-        // store-form-view.tsx 의 savedLocked 와 같다, 코드 리뷰로 찾음, 2026-10-23).
+        // store-form-view.tsx 의 verified = pending || savedLocked 와 같다, 코드 리뷰로 찾음, 2026-10-23).
         verified={locked}
         // pending(재인증은 통과했지만 아직 저장 전)일 때 저장된 옛 인증일자를 보이면 "지금 보이는 값이
         // 이 날짜에 인증됐다"로 잘못 읽힌다 — savedLocked 일 때만 보인다(점포와 같다, 코드 리뷰로 찾음, 2026-10-23)
@@ -345,8 +367,9 @@ export const BpProfileTab = forwardRef<
         missing={bizMissing}
         boxError={verifyFailure}
         // 잠겼을 때(인증 완료, 재인증·사용안함 전) 누르면 재인증하려고 칸을 연다 — 점포(store-form-view.tsx
-        // handleReverify)와 같은 패턴. 열린 뒤에는(재인증이든 사용안함 뒤 마음을 바꿨든) 실제 인증
-        // 요청(handleVerify)으로 바뀐다.
+        // handleReverify)와 같은 패턴. 열린 뒤에는 실제 인증 요청(handleVerify)으로 바뀐다. struck 일
+        // 때는 상자가 인증하기 버튼 자체를 숨기므로(!struck) 이 onVerify 는 안 쓰인다 — 재인증으로
+        // 바꿔 타려면 먼저 "사용안함 취소"로 되돌려야 한다.
         onVerify={locked ? () => setVerifyEditing(true) : handleVerify}
         onClear={clearVerify}
         showClear={showClear}
@@ -355,7 +378,7 @@ export const BpProfileTab = forwardRef<
         onRevert={verifyForm.savedBizNumber && !savedLocked ? clearVerify : undefined}
         revertLabel={verifyForm.pendingClear ? "사용안함 취소" : "재인증 취소"}
         // 저장된 값을 아예 지울 수 있는 건 BP 뿐이다(점포는 재인증으로 바꾸기만 된다, 2026-10-23
-        // 사용자 결정) — 재인증 버튼 오른쪽에 둔다. 확인창 없이 바로 칸을 비우고 연다.
+        // 사용자 결정) — 재인증 버튼 오른쪽에 둔다. 확인창 없이 바로 struck 으로 바꾼다(칸은 비우지 않는다).
         onClearSaved={savedLocked ? handleClearSaved : undefined}
         // pendingClear 는 저장하면 지워진다는 걸 알리는 전용 안내로 바꾼다 — 그 밖엔 공통 안내 +
         // 저장 전 통과 상태 한 줄(사용자 지정, 2026-10-22).

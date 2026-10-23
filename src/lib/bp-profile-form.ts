@@ -49,8 +49,9 @@ export type VerifyForm = {
     bizCeoName: string;
     bizOpenDate: string;
   } | null;
-  /** "사용안함"으로 저장을 눌러 지우기로 한 상태(2026-10-23 사용자 결정) — 점포와 달리 BP 는 인증된
-   * 세 값을 아예 지울 수 있다. 저장을 눌러야 실제로 반영된다(인증 · 재인증과 같은 두 단계). */
+  /** "사용안함"을 눌러 저장 때 지우기로 한 상태(2026-10-23 사용자 결정) — 점포와 달리 BP 는 인증된
+   * 세 값을 아예 지울 수 있다. 누른 시점엔 아무 일도 안 나고, 전체 "저장"을 눌러야 실제로 반영된다
+   * (인증 · 재인증과 같은 두 단계). */
   pendingClear: boolean;
 };
 export type VerifyFormField = "bizRegistrationNumber" | "bizCeoName" | "bizOpenDate";
@@ -144,8 +145,9 @@ export function toUpdateBpProfileInput(
     ...(detail ? { bizAddressDetail: detail } : {}),
     ...(category ? { bizCategory: category } : {}),
     ...(item ? { bizItem: item } : {}),
-    // pendingClear 와 businessVerificationToken 은 함께 못 싣는다(api 400) — pendingClear 가 늘 앞선다,
-    // "사용안함"을 누른 뒤엔 그사이 인증이 남아 있을 수 없어서다(clearVerify 가 verification 도 비운다).
+    // pendingClear 와 businessVerificationToken 은 함께 못 싣는다(api 400) — pendingClear 가 늘 앞선다.
+    // handleClearSaved 가 "사용안함"을 누르는 순간 verification 을 비우고, 그동안(struck) 상자가 인증하기
+    // 버튼을 숨겨 새 토큰도 못 생기게 하지만, 이 가드는 그 보장과 무관하게 여기서 한 번 더 지킨다.
     ...(verifyForm.pendingClear
       ? { clearBusinessVerification: true }
       : verification
