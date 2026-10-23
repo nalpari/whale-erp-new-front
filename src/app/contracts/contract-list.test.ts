@@ -197,15 +197,15 @@ test("api 가 가입 상태를 아직 싣지 않으면 발송 대기에 판별�
   assert.deepEqual(statusNotes(row, new Date(), () => "가입 초대"), ["가입 초대"]);
 });
 
-test("저장 뒤 안내 — 저장 응답의 상태 · 초대 유형으로 시스템이 한 처리를 고른다", () => {
+test("저장 뒤 안내 — 임시저장 · 종이 계약은 상태로, 보낸 저장은 api 가 싣는 「실제로 한 처리」로 고른다", () => {
   assert.equal(savedKindOf({ status: "DRAFT", draftAction: null }), "DRAFT");
   assert.equal(savedKindOf({ status: "SIGNED", draftAction: "SIGNUP_INVITE" }), "PAPER");
   assert.equal(savedKindOf({ status: "PENDING_SEND", draftAction: "SIGNUP_INVITE" }), "SIGNUP_INVITE");
   assert.equal(savedKindOf({ status: "PENDING_SIGNATURE", draftAction: "AFFILIATION_CONFIRM" }), "AFFILIATION_CONFIRM");
   assert.equal(savedKindOf({ status: "PENDING_SIGNATURE", draftAction: "RETURN_CONFIRM" }), "RETURN_CONFIRM");
-  // 가입한 직원에게 보낸 것 · 즉시 발송은 앱으로 보냈다
-  assert.equal(savedKindOf({ status: "PENDING_SIGNATURE", draftAction: "SIGNUP_INVITE" }), "IMMEDIATE_SEND");
-  assert.equal(savedKindOf({ status: "CORRECTION_REQUESTED", draftAction: null }), null);
+  // 가입한 직원에게 앱으로 보냈다(수정 요청을 고쳐 다시 보낸 것도) — api 가 처음 판별값 대신 IMMEDIATE_SEND 를 싣는다
+  assert.equal(savedKindOf({ status: "PENDING_SIGNATURE", draftAction: "IMMEDIATE_SEND" }), "IMMEDIATE_SEND");
+  assert.equal(savedKindOf({ status: "PENDING_SIGNATURE", draftAction: null }), null);
   assert.equal(savedKindOf(null), null);
   assert.match(savedNoticeOf("SIGNUP_INVITE") ?? "", /가입 초대 알림톡을 보냈습니다/);
   assert.equal(savedNoticeOf("toString"), null);
@@ -213,4 +213,16 @@ test("저장 뒤 안내 — 저장 응답의 상태 · 초대 유형으로 시�
   assert.equal(withSaved("/contracts", "DRAFT"), "/contracts?saved=DRAFT");
   assert.equal(withSaved("/contracts?page=2", "DRAFT"), "/contracts?page=2&saved=DRAFT");
   assert.equal(withSaved("/contracts", null), "/contracts");
+  // 이미 있던 saved 는 바꾼다 — 겹치면 배열이 되어 안내가 사라진다
+  assert.equal(withSaved("/contracts?saved=DRAFT", "PAPER"), "/contracts?saved=PAPER");
+  // 새 계약 저장 뒤 실제로 가는 주소 — 점포 조건을 비운 목록에 안내를 싣는다
+  assert.equal(withSaved(listAfterSave("/contracts?storeIds=3&page=2", null), "SIGNUP_INVITE"), `${listAfterSave("/contracts?storeIds=3&page=2", null)}&saved=SIGNUP_INVITE`);
+});
+
+test("상태 칸 안내를 붙이지 않는 경우 — 가입한 직원 · 초안의 발송 대기, 연결 보류의 서명 대기", () => {
+  const now = new Date("2026-09-07T03:00:00Z");
+  const row = { status: "PENDING_SEND" as const, signDeadlineAt: null, draftAction: "SIGNUP_INVITE" as const, staffRetired: false };
+  assert.deepEqual(statusNotes({ ...row, staffJoinState: "JOINED" }, now), []);
+  assert.deepEqual(statusNotes({ ...row, staffJoinState: "DRAFT" }, now), []);
+  assert.deepEqual(statusNotes({ ...row, status: "PENDING_SIGNATURE", staffJoinState: "LINK_HOLD" }, now), []);
 });

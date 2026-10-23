@@ -1,22 +1,25 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useEffectEvent, useState } from "react";
 import { Checkbox, FilterPanel, FilterSection, Pagination, SearchField, Select, useToast } from "@/components/common";
 import { useScope, useStores } from "@/components/site/session-gate";
 import { StorePicker, type PickedStore } from "@/components/site/store-picker";
 import type { EnumValue } from "@/lib/enums";
 import { scopeStores, toPickedStore } from "@/lib/store-scope";
-import { PAGE_SIZES, fillScopeOf, pickedIdsOf, toSearch, unusableScopeOf, withPickedStores, withScopeCondition, type ContractListPage, type ListQuery, type PageSize } from "./contract-list";
+import { PAGE_SIZES, fillScopeOf, withSaved, pickedIdsOf, toSearch, unusableScopeOf, withPickedStores, withScopeCondition, type ContractListPage, type ListQuery, type PageSize } from "./contract-list";
 
 // 필터와 페이지는 주소 쿼리에 둔다. 서버 페이지가 그 쿼리로 목록을 다시 받아 그린다.
 function useGo() {
   const router = useRouter();
   const pathname = usePathname();
+  const saved = useSearchParams().get("saved");
   return {
+    // 사용자가 거르면 저장 뒤 안내(?saved=)는 빠진다
     push: (q: ListQuery) => router.push(`${pathname}${toSearch(q)}`),
-    // 사용자가 고르지 않은 바꿈(헤더 범위로 채우기 · 쓸 수 없는 점포 빼기)은 기록을 쌓지 않는다 — 뒤로 가기가 같은 주소로 되돌아와 다시 바꾸지 않게
-    replace: (q: ListQuery) => router.replace(`${pathname}${toSearch(q)}`, { scroll: false }),
+    // 사용자가 고르지 않은 바꿈(헤더 범위로 채우기 · 쓸 수 없는 점포 빼기)은 기록을 쌓지 않는다 — 뒤로 가기가 같은 주소로 되돌아와 다시 바꾸지 않게.
+    // 저장하고 막 돌아온 주소면 저장 뒤 안내(?saved=)를 남긴다 — 빼면 안내가 한 번 깜빡이고 사라진다
+    replace: (q: ListQuery) => router.replace(withSaved(`${pathname}${toSearch(q)}`, saved), { scroll: false }),
   };
 }
 

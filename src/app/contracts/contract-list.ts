@@ -239,29 +239,26 @@ const SAVED_NOTICES: Record<string, string> = {
 };
 
 /**
- * 저장 응답 → 안내 종류. 발송 대기는 가입 초대, 서명 대기는 소속 추가 · 복귀 확인이 아니면 앱으로 보낸 것(즉시 발송 · 가입한 직원)이다.
- * 수정 요청 · 그 밖의 상태는 안내하지 않는다.
+ * 저장 응답 → 안내 종류. 임시저장 · 종이 계약 등록은 상태로, 보낸 저장은 api 가 싣는 「시스템이 실제로 한 처리」(draftAction —
+ * 가입 초대 · 소속 추가 확인 · 복귀 확인 · 가입한 직원에게 앱으로 보낸 즉시 발송)로 고른다. 수정 요청을 고쳐 저장한 것도 같다.
  */
 export function savedKindOf(saved: { status?: string | null; draftAction?: string | null } | null | undefined): string | null {
-  switch (saved?.status) {
-    case "DRAFT":
-      return "DRAFT";
-    case "SIGNED":
-      return "PAPER";
-    case "PENDING_SEND":
-      return "SIGNUP_INVITE";
-    case "PENDING_SIGNATURE":
-      return saved.draftAction === "AFFILIATION_CONFIRM" || saved.draftAction === "RETURN_CONFIRM" ? saved.draftAction : "IMMEDIATE_SEND";
-    default:
-      return null;
-  }
+  if (saved?.status === "DRAFT") return "DRAFT";
+  if (saved?.status === "SIGNED") return "PAPER";
+  return saved?.draftAction ?? null;
 }
 
 export const savedNoticeOf = (raw: string | string[] | undefined): string | null =>
   typeof raw === "string" && Object.hasOwn(SAVED_NOTICES, raw) ? SAVED_NOTICES[raw] : null;
 
-/** 목록 주소에 저장 뒤 안내를 싣는다 — 안내 종류가 없으면 그대로 */
-export const withSaved = (href: string, kind: string | null): string => (kind ? `${href}${href.includes("?") ? "&" : "?"}saved=${kind}` : href);
+/** 목록 주소에 저장 뒤 안내를 싣는다 — 안내 종류가 없으면 그대로. 이미 있던 saved 는 바꾼다(겹치면 배열이 되어 안내가 사라진다) */
+export function withSaved(href: string, kind: string | null): string {
+  if (!kind) return href;
+  const [path, query = ""] = href.split("?");
+  const params = new URLSearchParams(query);
+  params.set("saved", kind);
+  return `${path}?${params}`;
+}
 
 /** 서명 대기의 남은 날. 날인 기한 날짜까지 며칠 남았는지(D-0 이 마감일). */
 export function deadlineNote(row: Pick<ContractListItem, "status" | "signDeadlineAt">, now: Date): string | undefined {

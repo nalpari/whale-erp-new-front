@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-23
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — goldeen 리뷰 반영: 종이 계약 등록 뒤에도 목록 위 안내(`PAPER`), 저장 안내는 api 가 싣는 「실제로 한 처리」로 골라 수정 요청을 고쳐 다시 보낸 것도 맞게, 헤더 범위로 주소를 채울 때 안내를 남기고, 겹친 `saved` 는 바꾼다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 목록(WHALEERP-133): 페이지당 건수 20 · 50 · 100, 상태 칸에 직원의 지금 가입 · 초대 상태(가입 대기 중 · 소속 확인 중 등) · 퇴직 안내, 상태 체크 옆 상태별 개수(동의 안 한 가맹 직원 계약도 셈). 작성 화면(WHALEERP-132): 기재사항 · 주민등록번호를 받지 않는다는 안내, 소정근로시간이 근무스케줄 기본값이 된다는 안내(데모도), 저장 뒤 목록 위에 시스템이 한 처리 안내(`?saved=`). api 타입을 api goldeen 으로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — ip-code-review-claude 적대적 리뷰 반영: 다른 번호로 재인증에 성공한 뒤(pending, 아직 저장 전) 사업자등록번호 화면이 savedBizNumber(서버 값)를 써서 옛 번호로 보이던 것을 지금 칸 값(verifyForm.bizRegistrationNumber)으로 고쳤다 — 사용자가 "안 바뀌었다"고 믿고 저장하면 실제론 새 번호가 저장돼 화면·실제 저장값이 어긋나던 문제. api 짝 PR #139(`clearBusinessVerification`)가 머지되기 전에는 "사용안함" 저장만 400 으로 거절된다는 배포 순서 블로커는 #139 머지로 풀렸다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — code-review 스킬 반영: 점포(store-form.ts)와 달리 인증 10분 만료를 저장 직전에 검사하지 않아, 만료된 토큰을 그대로 보내면 api 가 저장 전체(상호명 등 무관한 칸까지)를 막던 것 — `isVerificationExpired` · `expireVerification` 을 더해 handleSave 에서 풀고 재인증을 요구한다. 사업자주소 onChange 의 `clearError` 캐스트가 실제 오류 키(bizAddressDetail)와 달라 100자 오류가 안 지워지던 것도 고쳤다.

@@ -5,7 +5,7 @@ import { useEffect, useId, useRef, useState, useTransition, type ReactNode } fro
 import { Button, Checkbox, ConfirmDialog, DataTable, DateField, FormGroup, FormRow, Radio, Select, Textarea, TextField } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { callSave, SAVE_CALL_LOST, SAVE_UNKNOWN_NEW } from "../[contractId]/send-model";
-import { backHrefOf, listAfterSave, withBack } from "../contract-list";
+import { backHrefOf, listAfterSave, withBack, withSaved } from "../contract-list";
 import { createContract, updateContract } from "./actions";
 import {
   formatHours,
@@ -338,7 +338,8 @@ export function ContractForm({
         result = { error: "서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요" };
       }
       if (result.ok) {
-        router.push(listAfterSave(back, contractId ? body.storeId : null));
+        // 종이 계약 등록은 발송 · 날인 없이 체결 완료다 — 목록 위에 그렇게 알린다(?saved=, WHALEERP-132)
+        router.push(withSaved(listAfterSave(back, contractId ? body.storeId : null), "PAPER"));
         return;
       }
       if (result.inProgress) {
