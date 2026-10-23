@@ -31,17 +31,25 @@ function platformAdminNewBody(A) {
       ui.field(
         req("아이디"),
         // 칸을 벗어나거나 Enter 를 치면 형식 · 중복을 확인해 칸 아래에 알린다(erp.js data-dupcheck, 앱 admin-form-panel.tsx).
-        // 데모의 ‘이미 있는 아이디’는 data-taken 값이다. 쓸 수 있으면 아무것도 띄우지 않는다.
+        // 데모의 ‘이미 있는 아이디’는 data-taken 값이고, fail 로 시작하는 아이디는 확인 요청 실패를 흉내 낸다(data-fail-prefix).
+        // 확인 중 · 사용 가능 · 중복 · 확인 실패를 data-dup-message 하나로 그린다 — 클래스 · 내용은 erp.js initDupCheck 가 바꾼다.
         stack(
-          ui.textField({ value: "platyoon", maxlength: 20, placeholder: "영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요.", "data-dupcheck": "id", "data-taken": "plathan,whaleadmin" }),
-          `<p class="text-[13px] leading-[1.5] text-erp-off" role="alert" data-dup-message hidden></p>`,
+          ui.textField({ value: "platyoon", maxlength: 20, placeholder: "영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요.", "data-dupcheck": "id", "data-taken": "plathan,whaleadmin", "data-fail-prefix": "fail" }),
+          `<p data-dup-message hidden></p>`,
         ),
       ),
       ui.field(req("이름"), ui.textField({ value: "윤채원", maxlength: 20, placeholder: "한글 또는 영문 2~20자로 입력해 주세요." })),
     ),
     row(
       ui.field(req("연락처"), tel("010", "9013", "5528")),
-      ui.field(req("이메일"), stack(ui.textField({ value: "chaewon.yoon@whale-erp.example", maxlength: 100 }))),
+      ui.field(
+        req("이메일"),
+        // 아이디와 달리 바로 물어볼 중복확인 API 가 없어 형식만 본다 — erp.js initDupCheck 가 지연 없이 바로 답한다(2026-10-20).
+        stack(
+          ui.textField({ value: "chaewon.yoon@whale-erp.example", maxlength: 100, type: "email", "data-dupcheck": "mail" }),
+          `<p data-dup-message hidden></p>`,
+        ),
+      ),
     ),
     row(
       ui.field("소속부서", stack(ui.textField({ value: "플랫폼운영팀", maxlength: 30 }))),
