@@ -361,8 +361,13 @@ export const BpProfileTab = forwardRef<
         onChange={(key, value) => setVerify(BIZ_TO_VERIFY[key], value)}
         locked={{ bizNumber: locked, ceoName: locked, openDate: locked }}
         // 잠겼을 때(일반 잠금 · 사용안함 취소선) 보이는 사업자등록번호는 하이픈을 넣어 보인다(점포와
-        // 같다, 코드 리뷰로 찾음, 2026-10-23) — 안 넣으면 values.bizNumber(저장된 원래 숫자)가 그대로 보인다.
-        lockedDisplay={verifyForm.savedBizNumber ? { bizNumber: formatBizNumber(verifyForm.savedBizNumber) } : {}}
+        // 같다, 코드 리뷰로 찾음, 2026-10-23) — 안 넣으면 values.bizNumber가 하이픈 없이 그대로 보인다.
+        // savedBizNumber(서버 값)가 아니라 지금 칸 값(verifyForm.bizRegistrationNumber)으로 만든다 — 다른
+        // 번호로 재인증에 성공한 뒤(pending, 아직 저장 전) locked 가 true 가 되는데, savedBizNumber 를 쓰면
+        // 옛 번호가 보여 "안 바뀌었다"고 믿고 저장하면 실제론 새 번호가 저장되는 화면·실제 값 불일치가
+        // 생겼다(ip-code-review-claude 적대적 리뷰로 찾음, 2026-10-23). locked=true 인 동안은 칸을 못 고치므로
+        // 지금 칸 값이 savedLocked·pending 둘 다에서 항상 맞는 값이다.
+        lockedDisplay={verifyForm.bizRegistrationNumber ? { bizNumber: formatBizNumber(verifyForm.bizRegistrationNumber) } : {}}
         // "사용안함"을 누르면 입력칸 대신 지워질 저장된 값에 취소선을 긋고, 인증하기 버튼도 숨긴다(2026-10-23 사용자 지정)
         struck={verifyForm.pendingClear}
         // 상자에 넘기는 verified 는 "지금 잠겨서 보이는가"다(locked) — 원본 isVerified(verifyForm)
