@@ -8,13 +8,16 @@ import {
   type BpMasterStatusValue,
 } from "../../lib/bp-master-paging.ts";
 
-// 목록 조건 · 쪽 · 연 상세는 주소(?searchType · keyword · status · verification · page · pageSize · bp)에 둔다 —
-// 새로 고쳐도, 링크를 나눠도 같은 화면이다. 상세 · 등록 · 수정은 따로 주소가 없는 슬라이드 패널이고(BP-6), 상세만 ?bp= 로 남긴다.
+// 목록 조건 · 쪽 · 연 상세 · 수정은 주소(?searchType · keyword · status · verification · page · pageSize · bp · edit)에 둔다 —
+// 새로 고쳐도, 링크를 나눠도 같은 화면이다. 상세 · 등록 · 수정은 따로 경로가 없는 슬라이드 패널이고(BP-6), 상세는 ?bp= 로,
+// 그 위에 겹친 수정은 ?edit=1 로 남겨 브라우저 뒤로 가기가 수정 → 상세 → 목록으로 하나씩 접힌다(플랫폼 관리자와 같다). 등록은 남기지 않는다.
 // 플랫폼 메뉴라 탭 BP 주소(/bp/{bpCodeId}/…)를 쓰지 않는다 — ?bp= 는 탭 BP 가 아니라 연 상세의 BP 다(2026-10-22).
 
 export type BpMastersQuery = BpMasterListQuery & {
   /** 상세를 연 BP(bpCodeId) */
   bp?: number;
+  /** 상세 위에 수정 패널을 열었다 — bp 가 있을 때만 참이다 */
+  edit?: boolean;
 };
 
 type Params = Record<string, string | string[] | undefined>;
@@ -39,6 +42,7 @@ export function parseBpMastersQuery(params: Params): BpMastersQuery {
   const verification = one(params.verification);
   // 검색어는 50자까지 — 상호명이 가장 길다(50자)
   const keyword = one(params.keyword)?.trim().slice(0, 50).trim() || undefined;
+  const bp = positiveInt(one(params.bp));
   return {
     page: positiveInt(one(params.page)) ?? 1,
     pageSize: (BP_MASTER_PAGE_SIZES as readonly number[]).includes(pageSize) ? (pageSize as BpMasterPageSize) : 20,
@@ -46,7 +50,8 @@ export function parseBpMastersQuery(params: Params): BpMastersQuery {
     keyword,
     statuses: normalizeStatuses((one(params.status) ?? "").split(",").filter(isStatus)),
     verification: verification === "VERIFIED" || verification === "UNVERIFIED" ? verification : undefined,
-    bp: positiveInt(one(params.bp)),
+    bp,
+    edit: bp !== undefined && one(params.edit) === "1" ? true : undefined,
   };
 }
 
@@ -63,11 +68,25 @@ export function bpMastersHref(query: Partial<BpMastersQuery>): string {
   if (query.pageSize && query.pageSize !== 20) params.set("pageSize", String(query.pageSize));
   if (query.page && query.page > 1) params.set("page", String(query.page));
   if (query.bp) params.set("bp", String(query.bp));
+  if (query.bp && query.edit) params.set("edit", "1");
   const search = params.toString();
   return `/bp-masters${search ? `?${search}` : ""}`;
 }
 
+/**
+ * 수정 패널을 세울지. 주소에 ?edit=1 이 있어도 고칠 수 없거나(canUpdate — 메뉴 수정 권한 · 탈퇴 BP 가 아님), 상세를 못 불러왔거나,
+ * 화면에 남은 상세가 주소의 BP 가 아니면(다른 BP 로 옮기는 중) 열지 않는다 — 앞 BP 의 수정 폼이 다른 BP 주소 위에 열리지 않게
+ * (platform-admins/admins-href.ts isEditOpen 과 같다).
+ */
+export function isEditOpen(
+  query: Pick<BpMastersQuery, "bp" | "edit">,
+  canUpdate: boolean,
+  shown: { bp: { bpCodeId: number } } | { failed: string } | null,
+): boolean {
+  return Boolean(query.edit && canUpdate && shown && "bp" in shown && shown.bp.bpCodeId === query.bp);
+}
+
 /** 엑셀 중계 경로 — 목록과 같은 조건, 쪽 · 상세는 뺀다 */
 export function bpMastersExcelHref(query: BpMastersQuery): string {
-  return bpMastersHref({ ...query, page: 1, pageSize: 20, bp: undefined }).replace(/^\/bp-masters/, "/bp-masters/excel");
+  return bpMastersHref({ ...query, page: 1, pageSize: 20, bp: undefined, edit: undefined }).replace(/^\/bp-masters/, "/bp-masters/excel");
 }

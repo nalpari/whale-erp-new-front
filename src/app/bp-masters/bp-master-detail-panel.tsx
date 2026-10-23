@@ -26,6 +26,7 @@ export function BpMasterDetailPanel({
   detail,
   created,
   onClose,
+  onBackdropClose,
   trigger,
   onEdit,
   onDeleted,
@@ -34,18 +35,29 @@ export function BpMasterDetailPanel({
   detail: { bp: BpMasterDetail } | { failed: string } | null;
   created: CreatedNotice | null;
   onClose: () => void;
+  /** 바탕창 클릭 — 겹친 패널을 모두 닫는다(bp-masters-screen.tsx closeAll) */
+  onBackdropClose: () => void;
   trigger: RefObject<HTMLElement | null>;
   onEdit: (from: HTMLButtonElement) => void;
   onDeleted: () => void;
 }) {
   return (
-    // 읽기 전용이라 잃을 입력이 없다 — 바탕창을 눌러도 닫힌다(platform-admins 상세와 같다)
-    <SlidePanel id="bp-master-detail-panel" open={open} onClose={onClose} label="BP 마스터 계정 상세" trigger={trigger} closeOnBackdrop>
+    // 읽기 전용이라 잃을 입력이 없다 — 바탕창을 누르면 닫힌다(밑에 깔린 등록이 있으면 함께, closeAll — platform-admins 상세와 같다)
+    <SlidePanel
+      id="bp-master-detail-panel"
+      open={open}
+      onClose={onClose}
+      onBackdropClose={onBackdropClose}
+      label="BP 마스터 계정 상세"
+      trigger={trigger}
+      closeOnBackdrop
+    >
       {detail && "bp" in detail ? (
         <DetailBody
           // 다른 BP 를 열면 확인창 · 실패 띠를 새로 시작한다
           key={detail.bp.bpCodeId}
           bp={detail.bp}
+          panelOpen={open}
           created={created}
           onClose={onClose}
           onEdit={onEdit}
@@ -69,12 +81,15 @@ type Confirm = "inactive" | "active" | "reset" | "delete";
 
 function DetailBody({
   bp,
+  panelOpen,
   created,
   onClose,
   onEdit,
   onDeleted,
 }: {
   bp: BpMasterDetail;
+  /** 상세 패널이 열려 있는가 — 닫히면 이 안에서 띄운 팝업도 닫는다 */
+  panelOpen: boolean;
   created: CreatedNotice | null;
   onClose: () => void;
   onEdit: (from: HTMLButtonElement) => void;
@@ -83,6 +98,9 @@ function DetailBody({
   const toast = useToast();
   const router = useRouter();
   const [confirm, setConfirm] = useState<Confirm | null>(null);
+  // 확인창 · 이력창은 네이티브 <dialog>(최상위 레이어)라 패널이 밀려 나가도 혼자 남는다. 브라우저 뒤로 가기처럼 클릭 아닌 길로
+  // 패널이 닫히면 함께 닫는다(platform-admins 와 같다). 진행 중인 요청은 그대로 끝까지 간다.
+  if (!panelOpen && confirm) setConfirm(null);
   const [failure, setFailure] = useState<{ message: string; detail?: string } | null>(null);
   const [busy, startBusy] = useTransition();
 
@@ -270,7 +288,7 @@ function DetailBody({
             수정
           </Button>
         )}
-        <HistoryButton bpCodeId={bp.bpCodeId} />
+        <HistoryButton bpCodeId={bp.bpCodeId} panelOpen={panelOpen} />
       </div>
 
       {canUpdate && (

@@ -39,6 +39,8 @@ type Props = {
   id: string;
   open: boolean;
   onClose: () => void;
+  /** 바탕창 클릭 — 겹친 패널을 모두 닫는다(bp-masters-screen.tsx closeAll). 저장하는 동안은 onClose 처럼 닫히지 않는다 */
+  onBackdropClose: () => void;
   trigger: RefObject<HTMLElement | null>;
 } & (
   | { mode: "create"; bp?: never; onSaved: (result: CreateBpMasterResult) => void }
@@ -46,7 +48,7 @@ type Props = {
 );
 
 export function BpMasterFormPanel(props: Props) {
-  const { id, mode, open, onClose, trigger } = props;
+  const { id, mode, open, onClose, onBackdropClose, trigger } = props;
   const initialForm = () => (props.mode === "edit" ? formOfBpMaster(props.bp) : EMPTY_BP_MASTER_FORM);
   const [form, setForm] = useState<BpMasterForm>(initialForm);
   const [errors, setErrors] = useState<BpMasterFormErrors>({});
@@ -54,6 +56,8 @@ export function BpMasterFormPanel(props: Props) {
   /** 진위확인 실패 문구(중복 · 불일치 · 장애) — 인증 상자 아래 한 줄 */
   const [verifyFailure, setVerifyFailure] = useState<string | null>(null);
   const [reverifyAsk, setReverifyAsk] = useState(false);
+  // 재인증 확인창은 네이티브 <dialog> 라 패널이 뒤로 가기 등으로 닫혀도 혼자 남는다 — 함께 닫는다
+  if (!open && reverifyAsk) setReverifyAsk(false);
 
   // 열 때마다 칸을 새로 채운다(취소한 입력을 남기지 않는다). 다시 마운트하면 밀려 나오는 전환이 사라지므로 그리는 중에 값만 되돌린다.
   const [filledFor, setFilledFor] = useState(open);
@@ -194,7 +198,19 @@ export function BpMasterFormPanel(props: Props) {
   const verifyErrorId = `${ids}-verify`;
 
   return (
-    <SlidePanel id={id} open={open} onClose={safeClose} label={title} trigger={trigger} closeOnBackdrop={mode === "edit"}>
+    // 등록 · 수정 모두 바탕창을 깔고, 바탕을 누르면 겹친 패널을 모두 닫는다(platform-admins 와 같다, 2026-10-22 사용자 요청).
+    // 등록은 바깥을 잘못 누르면 입력이 사라진다 — 알고 고른 것이다.
+    <SlidePanel
+      id={id}
+      open={open}
+      onClose={safeClose}
+      onBackdropClose={() => {
+        if (!saving) onBackdropClose();
+      }}
+      label={title}
+      trigger={trigger}
+      closeOnBackdrop
+    >
       <h2 className="text-[18px] font-semibold text-erp-ink">
         {title}
         {props.mode === "edit" && (

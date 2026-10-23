@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-23
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 마스터 계정 패널을 플랫폼 관리자 패널의 새 동작(main)에 맞췄다: 수정을 주소 `?edit=1` 로 열어 뒤로 가기가 한 단계씩 접히고, 등록 · 상세 · 수정 모두 바탕을 누르면 겹친 패널을 모두 닫으며, 패널이 닫히면 확인창 · 이력창 · 재인증 확인창도 닫힌다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — BP 마스터 계정 관리 화면(`src/app/bp-masters/`, 메뉴 `/bp-masters`)을 api 병행으로 만들었다. 목록 · 필터 · 엑셀, 상세 · 등록 · 수정 슬라이드 패널, 상태 변경 · 비밀번호 초기화 · 삭제 확인 · 변경 이력 팝업, 사업자 인증 상자. 타입은 api openapi 전이라 임시 타입(`shortcut:`). 점포 엑셀 컴포넌트에 파일 이름 · 빈 목록 문구를 받는 칸을 더해 같이 쓴다.
 
 ## 2026-10-22
