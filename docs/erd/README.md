@@ -499,17 +499,26 @@ python3 docs/erd/_build.py
 |  | 동의 일시 | datetime | `agreed_at` | 첫 출퇴근 등록 때 |
 |  | 철회 일시 | datetime | `withdrawn_at` |  |
 
+### 위치정보 동의 이력 `location_consent_histories` · 이력
+
+| 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
+|---|---|---|---|---|
+| PK | 동의 이력 ID | id | `history_id` |  |
+| FK | 위치정보 동의 | id | `consent_id` |  |
+|  | 처리 구분 | enum | `action` | 동의·철회·잠시 멈춤·다시 켜기 |
+|  | 처리 일시 | datetime | `occurred_at` |  |
+
 ### 출퇴근 기록 `attendance_records` · 중심
 
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
 | PK | 출퇴근 기록 ID | id | `attendance_record_id` |  |
 | FK | 직원 레코드 | id | `staff_member_id` |  |
-| FK | 근무지 | id | `store_id` | 여럿이면 가장 가까운 곳 |
+| FK | 근무지 | id | `store_id` | 여럿이면 직원이 고른 곳 |
 |  | 구분 | enum | `kind` | 출근·퇴근 |
 |  | 기록 시각 | datetime | `recorded_at` | 기기 시각 |
 |  | 서버 수신 시각 | datetime | `received_at` | 확정 기준 |
-|  | 확인 필요 사유 | enum | `review_reason` | 오차 초과·반경 밖 퇴근·위치 조작, 검토 후 null |
+|  | 확인 필요 사유 | enum | `review_reason` | 반경 밖 출근·반경 밖 퇴근·위치 조작, 검토 후 null |
 | FK | 검토 관리자 | id | `reviewed_by` | 보정 또는 이상 없음 |
 |  | 검토 일시 | datetime | `reviewed_at` |  |
 |  | 등록 방식 | enum | `entry_method` | 직원 등록·대신 등록 |
@@ -551,6 +560,7 @@ python3 docs/erd/_build.py
 - 출퇴근 기록 `1` — `N` 출퇴근 보정 이력
 - 직원 레코드 `N` — `0..1` 계정
 - 계정 `1` — `N` 위치정보 동의
+- 위치정보 동의 `1` — `N` 위치정보 동의 이력
 
 ## TO-DO
 
@@ -704,7 +714,7 @@ TO-DO는 특별업무 지시 전용이다. 개인 또는 근무지 전체에 배
 |---|---|---|---|---|
 | PK | 사유 ID | id | `reason_id` |  |
 | FK | 급여명세서 | id | `payslip_id` |  |
-|  | 사유 | enum | `reason` | 출퇴근 누락·계약 만료 후 기록·기간 중 계약 변경·공제 미입력 |
+|  | 사유 | enum | `reason` | 출퇴근 누락·계약 만료 후 기록·기간 중 계약 변경·공제 미입력·확인 필요 기록 포함 |
 |  | 상세 | text | `detail` | 누락 일수 등 |
 |  | 확인 일시 | datetime | `acknowledged_at` |  |
 
