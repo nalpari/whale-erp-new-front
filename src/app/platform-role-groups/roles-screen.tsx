@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Badge, Button, DataTable, type Column } from "@/components/common";
+import { Badge, Button, DataTable, PageBar, type Column } from "@/components/common";
 import { CodeLabel } from "@/components/site/code-label";
 import { usePagePermission } from "@/components/site/session-gate";
 import type { EnumValue } from "@/lib/enums";
@@ -76,39 +76,44 @@ export function RolesScreen({
   ];
 
   return (
-    <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
-      <section className={`${CARD} min-w-0 flex-1`}>
-        <div className="flex items-end gap-[6px]">
-          <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">
-            권한 목록 <span className="ml-[6px] text-[14px] font-normal text-erp-label">{roles.length.toLocaleString("ko-KR")}건</span>
-          </h2>
-          {can.create && (
-            <Button onClick={() => setCreating(true)} disabled={creating}>
-              등록
-            </Button>
-          )}
-        </div>
-        <DataTable
-          columns={columns}
-          rows={roles}
-          rowKey={(r) => r.roleGroupId}
-          rowState={(r) => (!creating && r.roleGroupId === selected ? "selected" : undefined)}
+    <>
+      {/* [등록]은 제목 줄 오른쪽 — 3팀 목록과 같은 자리(2026-10-23) */}
+      <PageBar title="플랫폼 권한 관리">
+        {can.create && (
+          <Button onClick={() => setCreating(true)} disabled={creating}>
+            등록
+          </Button>
+        )}
+      </PageBar>
+      <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
+        <section className={`${CARD} min-w-0 flex-1`}>
+          <div className="flex items-end gap-[6px]">
+            <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">
+              권한 목록 <span className="ml-[6px] text-[14px] font-normal text-erp-label">{roles.length.toLocaleString("ko-KR")}건</span>
+            </h2>
+          </div>
+          <DataTable
+            columns={columns}
+            rows={roles}
+            rowKey={(r) => r.roleGroupId}
+            rowState={(r) => (!creating && r.roleGroupId === selected ? "selected" : undefined)}
+          />
+        </section>
+
+        <RoleSide
+          // 다른 권한을 고르면 칸을 새로 그린다. 같은 권한의 최신 정보(updatedAt)로는 다시 그리지 않는다 — 다시 그리면 409 실패 문구 · 고치던 입력 ·
+          // 열린 삭제 확인창이 함께 사라진다. 최신 값으로 칸을 다시 채우는 것은 폼이 409 뒤에만 한다(role-side.tsx).
+          key={creating ? "new" : detail && "role" in detail ? String(detail.role.roleGroupId) : (selected ?? "empty")}
+          creating={creating}
+          detail={detail}
+          lockReasons={lockReasons}
+          onCancelCreate={() => setCreating(false)}
+          onCreated={(id) => handleSelect(id)}
+          onDeleted={() => handleSelect()}
         />
-      </section>
 
-      <RoleSide
-        // 다른 권한을 고르면 칸을 새로 그린다. 같은 권한의 최신 정보(updatedAt)로는 다시 그리지 않는다 — 다시 그리면 409 실패 문구 · 고치던 입력 ·
-        // 열린 삭제 확인창이 함께 사라진다. 최신 값으로 칸을 다시 채우는 것은 폼이 409 뒤에만 한다(role-side.tsx).
-        key={creating ? "new" : detail && "role" in detail ? String(detail.role.roleGroupId) : (selected ?? "empty")}
-        creating={creating}
-        detail={detail}
-        lockReasons={lockReasons}
-        onCancelCreate={() => setCreating(false)}
-        onCreated={(id) => handleSelect(id)}
-        onDeleted={() => handleSelect()}
-      />
-
-      <RoleMenuDialog role={menuFor} reasons={menuReasons} actions={MENU_ACTIONS} onClose={() => setMenuFor(null)} />
-    </div>
+        <RoleMenuDialog role={menuFor} reasons={menuReasons} actions={MENU_ACTIONS} onClose={() => setMenuFor(null)} />
+      </div>
+    </>
   );
 }

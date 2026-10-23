@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-23
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front #61 magikarp, main #120 까지): okf 충돌은 main 의 플랫폼 관리자 줄([등록] 제목 줄 이동 · 미사용 비밀번호 빈칸) 위에 이메일 형식 서술만 다시 얹고, 로그는 양쪽을 살렸다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 이메일 칸의 형식 검사를 api `@IsEmail` 에 맞췄다 — 화면이 「올바른 형식」이라 한 값을 저장 때 api 가 막지 않게(사용자 결정, front #61).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 패널: 여러 칸 검증 오류(400 배열)는 아이디 칸이 아니라 위 띠로 보인다(code-review 로 찾음, front #61).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 아이디 중복확인의 403(등록 권한 없음)을 회색 확인 실패 대신 패널 위 띠로 올렸다(사용자 결정, front #61).
@@ -9,6 +10,12 @@
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front #61 magikarp, main #116 까지): okf 충돌은 양쪽 기록을 살리고 generated.at 만 새로 썼다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 등록 · 수정 패널: 저장 때 api 가 칸에 붙인 중복 오류는 그 칸을 고칠 때까지 남기고, 저장이 거절되면 사용 가능 · 올바른 형식 표시를 내린다(front #61 머지 블로커 반영).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front #61 magikarp, main #113 까지): okf 충돌은 main 서술 위에 플랫폼 관리자 줄의 아이디 · 이메일 즉시 확인 서술만 다시 얹어 풀었다. 데모 html 은 main 것을 받아 다시 빌드했다.
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 직원 목록 점포 필터를 상단 점포 범위와 이었다(재영 Buzz 공지 10-22, 근로계약 #109 와 같은 규칙): 점포 칸을 `StorePicker` 로 바꾸고 고른 점포는 `storeIds`, 빈 `storeIds=` 는 「전체」, 상단 범위 `scope` 는 api `storeIds`(점포 하나) · `storeTypes`(직영 · 가맹)로 보낸다(폐점은 api 가 뺀다). 예전 `?store=` 주소는 읽지 않고 상단 범위로 채운다. 상세 링크에 목록 주소 `?back=` 을 싣고 [목록]이 그 주소로 돌아간다. 점포 id 상한 500 → 1000. api 타입을 api #140(horsea — `GET /staff-members` `storeIds` number[] · `storeTypes`)의 openapi 로 다시 만들었다 — api 머지 뒤 main 기준으로 다시 만든다. 상세 [목록]은 `?back=` 이 없으면 상세 주소에 붙은 예전 형식 목록 조건(`?keyword=…&page=…`)으로 돌아간다(`detailListHrefOf`, 이상한 `back` 은 기본 목록).
+* **Update**: [점포 관리](/stores.md) · [Whale ERP Frontend](/whale-erp-front.md) — PR 리뷰 반영: 점포 연락처 검사는 api 와 같이 자릿수만 본다(050 이 아닌 12자리도 저장, 좁히지 않기로 함 — 사용자 결정)는 것을 본문 · 주석 · 테스트로 남겼다. 대표자 연락처 설명을 「휴대전화」에서 「10~11자리(유선 포함)」로 바로잡았다. api 타입을 api main(점포 연락처 9~12자리 머지 뒤) 기준으로 다시 만들었다. 플랫폼 메뉴 [등록] 자리 설명을 `createPlacement` 규칙대로 고쳤다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 상세에서 미사용 계정의 비밀번호 칸을 「—」 대신 빈칸으로 둔다. BP 권한 그룹 관리 목록 카드 머리의 [신규 등록]을 제목 줄 [등록]으로 옮기며 이름을 바꿨다(사용자 요청).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [점포 관리](/stores.md) — 1팀 목록 화면의 등록 버튼을 3팀 목록(근로계약 · 직원 · TO-DO)처럼 제목 줄(`PageBar`) 오른쪽으로 옮겼다: 점포 정보 관리(`StoreFrame actions`), 플랫폼 관리자 · 플랫폼 권한 · BP 권한 그룹 · 플랫폼 메뉴(제목 줄을 화면 클라이언트 컴포넌트가 그린다 — 버튼이 등록 패널 · 칸 상태와 같은 곳에 있어야 해서). 플랫폼 · BP 공통코드 관리는 카드 머리 [추가] · [저장]을 그대로 둔다(사용자 요청, 예외).
+* **Update**: [점포 관리](/stores.md) — 점포유형 선택칸의 직영점포 설명을 「본사가 직접 운영하는 점포」에서 「직접 운영하는 점포」로 줄였다(사용자 요청).
+* **Update**: [점포 관리](/stores.md) — 점포 연락처에 050X 평생번호(12자리, 0507-2033-1334)를 받는다. 앞자리 칸 4자리, 저장 검사 9~12자리, `splitPhone` · `formatPhone` 이 050 12자리를 4-4-4 로 다룬다. 대표자 연락처는 10~11자리 · 앞자리 3칸 그대로. api 의 저장 검사 · DB 제약 확장은 api 브랜치에 있고 main 머지 대기 — 배포는 api 다음.
 
 ## 2026-10-22
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front #61 magikarp): 플랫폼 관리자 등록 패널의 아이디 칸이 등록일 때만 보이게 바뀐 main 구조 위에 확인 중 · 사용 가능 상태 표시(`LoginIdAvailability`)를 다시 얹었다. okf 충돌은 양쪽 서술을 살려 풀었다.

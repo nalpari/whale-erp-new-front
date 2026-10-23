@@ -3137,6 +3137,7 @@ export interface paths {
          * 신고 정보 작성 · 수정 (WHALEERP-334). 직원 본인만 — 관리자 토큰은 403. 처음에는 주민등록번호 · 은행 · 계좌번호를 모두,
          *     고칠 때는 주민등록번호만 또는 급여 계좌(은행 · 계좌번호 함께)만 보낸다. 주민등록번호를 새로 받으면 수집 일시가 바뀌고
          *     이전 값은 남기지 않는다. 급여 계좌는 다음 급여부터 쓴다. 응답은 조회와 같다(가린 값만).
+         *     이미 낸 신고 정보를 고칠 때는 `currentPassword`(지금 비밀번호)도 보낸다 — 처음 작성에는 필요 없다(2026-10-23).
          */
         put: operations["MyMembershipsController_saveTaxProfile"];
         post?: never;
@@ -4980,6 +4981,13 @@ export interface components {
          * @enum {string}
          */
         HqSharingConsentState: "AGREED" | "NOT_AGREED";
+        StaffMemberEmploymentPeriodDto: {
+            staffMemberId: number;
+            /** @description 입사일(YYYY-MM-DD). 채우기 전 레코드는 null */
+            hiredDate: string | null;
+            /** @description 퇴직일(YYYY-MM-DD) — 퇴직 예정이면 정한 날. 정하지 않았으면 null */
+            retiredDate: string | null;
+        };
         StaffMemberDetailResponseDto: {
             employmentType: components["schemas"]["EmploymentType"] | null;
             joinState: components["schemas"]["StaffJoinState"] | null;
@@ -5004,6 +5012,16 @@ export interface components {
              *     null
              */
             birthDate: string | null;
+            /**
+             * @description 이전 재직 기간 — 퇴직 뒤 같은 점포에 다시 입사해 이은 옛 레코드들(WHALEERP-615), 가까운 것부터. 누르면 그 레코드의
+             *     상세로 간다. 체결 완료된 계약이 없는 레코드와 이 관리자에게 가려지는 레코드는 빠진다
+             */
+            previousRecords: components["schemas"]["StaffMemberEmploymentPeriodDto"][];
+            /**
+             * @description 이후 재직 기간 — 이 레코드 뒤에 다시 입사한 레코드들, 가까운 것부터. 체결 완료 전(임시저장 · 발송만 한) 레코드와 가려지는
+             *     레코드는 빠진다
+             */
+            laterRecords: components["schemas"]["StaffMemberEmploymentPeriodDto"][];
             staffMemberId: number | null;
             isMasked: boolean;
             name: string | null;
@@ -6230,7 +6248,7 @@ export interface components {
             bpCodeId?: number;
             /** @description 점포명 — 1~50자 */
             name: string;
-            /** @description 점포 연락처 — 숫자 9~11자리 */
+            /** @description 점포 연락처 — 숫자 9~12자리(12자리는 050X 평생번호, 예 050720331334) */
             phone?: string | null;
             /** @description 우편번호 — 숫자 5자리, 주소 검색 결과 */
             zipCode?: string | null;
@@ -6277,7 +6295,7 @@ export interface components {
             storeStatus: "NOT_OPERATING" | "OPERATING" | "CLOSED";
             /** @description 점포명 — 1~50자 */
             name: string;
-            /** @description 점포 연락처 — 숫자 9~11자리 */
+            /** @description 점포 연락처 — 숫자 9~12자리(12자리는 050X 평생번호, 예 050720331334) */
             phone?: string | null;
             /** @description 우편번호 — 숫자 5자리, 주소 검색 결과 */
             zipCode?: string | null;
@@ -7552,6 +7570,12 @@ export interface components {
             bankCode?: string;
             /** @description 급여 계좌번호 — 숫자 10~16자리(하이픈은 지운다). 예금주는 본인이어야 한다 */
             payrollAccountNumber?: string;
+            /**
+             * @description 지금 비밀번호 — 이미 낸 신고 정보를 고칠 때 필수다. 없거나 틀리면 400 `CURRENT_PASSWORD_MISMATCH`(토큰만 손에 넣은
+             *     사람이 급여 계좌를 바꾸지 못하게, WHALEERP-333 · 334 후속 2026-10-23). 처음 작성할 때는 보내지 않는다 — 보내도 서버가 비교하지
+             *     않지만 형식은 본다(빈 문자열 · 128자 초과는 처음 작성에도 400). 형식 · 상한은 이메일 변경 핀 요청(WHALEERP-607)과 같다
+             */
+            currentPassword?: string;
         };
         InvitationLookupDto: {
             /** @description 초대 링크의 토큰(base64url 43자) */
@@ -10981,10 +11005,18 @@ export interface operations {
         parameters: {
             query?: {
                 /**
-                 * @description 쉼표로 구분한 점포 ID. 관리 범위 밖의 ID 는 조용히 빠진다. 없으면 관리 범위 전체.
-                 *     빈 칸 · 숫자가 아닌 값 · 1..2147483647 밖의 값이 하나라도 있거나 500개를 넘으면 400 이다.
+                 * @description 고른 점포(관리자웹 목록 점포 필터 · 상단 점포 범위). 쉼표로 1000개까지(`storeIds=1,2`). 같은 키 반복
+                 *     (`storeIds=1&storeIds=2`)도 받지만 쿼리 파서가 키를 1000개까지만 읽어 넘치면 뒤 조건이 400 없이 빠지므로 많을 때는
+                 *     쉼표로 보낸다(api #132 리뷰). 관리 범위 밖의 id 는 조용히 빠진다. 주지 않으면 관리 범위 전체.
+                 *     빈 칸 · 숫자가 아닌 값 · 1..2147483647 밖의 값이 하나라도 있거나 1000개를 넘으면 400 이다.
                  */
-                storeIds?: string;
+                storeIds?: number[];
+                /**
+                 * @description 점포 유형(상단 점포 범위의 직영 · 가맹) — DIRECT · FRANCHISE, 반복하거나 쉼표로. 주면 그 유형 점포만이고 폐점 점포는
+                 *     뺀다(TO-DO 목록 api #133 과 같다, 2026-10-22 재영 — 폐점 점포는 전체 · 점포를 골라 본다). storeIds 와 함께 주면 둘 다
+                 *     맞는 점포만이다. 주지 않으면 유형 · 폐점 무관. 빈 값 · 모르는 값이 하나라도 있으면 400 이다.
+                 */
+                storeTypes?: ("DIRECT" | "FRANCHISE")[];
                 /**
                  * @description 쉼표로 구분한 고용형태. 없으면 전체. 화면은 둘 다 고르면 보내지 않는다.
                  *     빈 값 · 모르는 값이 하나라도 있으면 400 이다.
@@ -17359,7 +17391,7 @@ export interface operations {
                     "application/json": components["schemas"]["MyTaxProfileResponseDto"];
                 };
             };
-            /** @description 형식 오류 · 바꿀 값 없음(TAX_PROFILE_EMPTY) · 처음인데 셋 중 빠짐(TAX_PROFILE_INCOMPLETE) · 은행 · 계좌번호 한쪽만(TAX_PROFILE_ACCOUNT_INCOMPLETE) · 주민등록번호 앞자리와 가입 생년월일이 다름(RRN_BIRTH_MISMATCH — 관리자에게 정정 요청) · 없는 은행(BANK_CODE_UNKNOWN) */
+            /** @description 형식 오류 · 바꿀 값 없음(TAX_PROFILE_EMPTY) · 고치는데 지금 비밀번호가 없거나 틀림(CURRENT_PASSWORD_MISMATCH — 「지금 비밀번호가 맞지 않습니다」, 내 소속 확인 뒤 · 다른 검사 전에 본다) · 처음인데 셋 중 빠짐(TAX_PROFILE_INCOMPLETE) · 은행 · 계좌번호 한쪽만(TAX_PROFILE_ACCOUNT_INCOMPLETE) · 주민등록번호 앞자리와 가입 생년월일이 다름(RRN_BIRTH_MISMATCH — 관리자에게 정정 요청) · 없는 은행(BANK_CODE_UNKNOWN) */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -17382,6 +17414,13 @@ export interface operations {
             };
             /** @description 내 소속이 아님 — 조회와 같은 본문 */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 계정 · IP 요청 한도 */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

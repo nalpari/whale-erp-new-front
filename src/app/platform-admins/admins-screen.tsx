@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Button, ListToolbar, Pagination, useBackdropActive, useToast } from "@/components/common";
+import { Button, ListToolbar, PageBar, Pagination, useBackdropActive, useToast } from "@/components/common";
 import { useAccount, usePagePermission } from "@/components/site/session-gate";
 import { adminActionsOf } from "@/lib/platform-admin-actions";
 import { ADMIN_PAGE_SIZE } from "@/lib/platform-admin-paging";
@@ -150,81 +150,87 @@ export function AdminsScreen({
   const backdropActive = useBackdropActive();
 
   return (
-    <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
-      {/* display:contents 로 레이아웃(gap-[12px])에 끼어들지 않으면서 둘을 함께 inert 로 뺀다 */}
+    <>
+      {/* [등록]은 제목 줄 오른쪽 — 3팀 목록과 같은 자리(2026-10-23). 바탕창이 떠 있는 동안은 목록처럼 inert 로 뺀다 */}
       <div className="contents" inert={backdropActive}>
-        <AdminFilter query={query} roleGroups={roleGroups} onApply={(next) => go({ ...next, page: 1, admin: undefined })} />
-        <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>*]:shrink-0">
-          <ListToolbar total={list.total}>
-            {can.create && (
-              <Button ref={newTrigger} aria-controls="platform-admin-new-panel" aria-expanded={newOpen} onClick={() => setNewOpen(true)}>
-                등록
-              </Button>
-            )}
-          </ListToolbar>
-          <AdminTable rows={list.items} selected={query.admin} onOpen={openDetail} />
-          <div className="pt-[14px]">
-            <Pagination page={query.page} totalPages={Math.max(1, Math.ceil(list.total / ADMIN_PAGE_SIZE))} onPageChange={(page) => go({ page, admin: undefined })} />
-          </div>
-        </main>
+        <PageBar title="플랫폼 관리자 관리">
+          {can.create && (
+            <Button ref={newTrigger} aria-controls="platform-admin-new-panel" aria-expanded={newOpen} onClick={() => setNewOpen(true)}>
+              등록
+            </Button>
+          )}
+        </PageBar>
       </div>
+      <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
+        {/* display:contents 로 레이아웃(gap-[12px])에 끼어들지 않으면서 둘을 함께 inert 로 뺀다 */}
+        <div className="contents" inert={backdropActive}>
+          <AdminFilter query={query} roleGroups={roleGroups} onApply={(next) => go({ ...next, page: 1, admin: undefined })} />
+          <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>*]:shrink-0">
+            <ListToolbar total={list.total} />
+            <AdminTable rows={list.items} selected={query.admin} onOpen={openDetail} />
+            <div className="pt-[14px]">
+              <Pagination page={query.page} totalPages={Math.max(1, Math.ceil(list.total / ADMIN_PAGE_SIZE))} onPageChange={(page) => go({ page, admin: undefined })} />
+            </div>
+          </main>
+        </div>
 
-      {can.create && (
-        <AdminFormPanel
-          id="platform-admin-new-panel"
-          mode="create"
-          open={newOpen}
-          onClose={dismissNew}
+        {can.create && (
+          <AdminFormPanel
+            id="platform-admin-new-panel"
+            mode="create"
+            open={newOpen}
+            onClose={dismissNew}
+            onBackdropClose={closeAll}
+            trigger={newTrigger}
+            roleGroups={roleGroups}
+            onSaved={(result) => {
+              setNewOpen(false);
+              // 초기 비밀번호 메일이 실패해도 계정은 만들어졌다 — 상세의 비밀번호 초기화로 다시 보낸다(SYSTEM-3).
+              toast(result.isMailSent ? "saved" : "저장되었습니다. 초기 비밀번호 메일은 보내지 못했습니다 — 상세에서 비밀번호를 초기화해 주세요.");
+              detailTrigger.current = newTrigger.current;
+              go({ admin: result.adminAccountId });
+            }}
+          />
+        )}
+
+        <AdminDetailPanel
+          open={Boolean(query.admin)}
+          detail={shown}
+          onClose={dismissDetail}
           onBackdropClose={closeAll}
-          trigger={newTrigger}
-          roleGroups={roleGroups}
-          onSaved={(result) => {
-            setNewOpen(false);
-            // 초기 비밀번호 메일이 실패해도 계정은 만들어졌다 — 상세의 비밀번호 초기화로 다시 보낸다(SYSTEM-3).
-            toast(result.isMailSent ? "saved" : "저장되었습니다. 초기 비밀번호 메일은 보내지 못했습니다 — 상세에서 비밀번호를 초기화해 주세요.");
-            detailTrigger.current = newTrigger.current;
-            go({ admin: result.adminAccountId });
+          trigger={detailTrigger}
+          onEdit={openEdit}
+          onDeleted={() => {
+            toast("deleted");
+            // 삭제를 기다리는 동안 뒤로 가기로 상세가 이미 닫혔으면 목록 주소를 다시 쌓지 않는다
+            if (detailOpenRef.current) closeDetail();
           }}
         />
-      )}
 
-      <AdminDetailPanel
-        open={Boolean(query.admin)}
-        detail={shown}
-        onClose={dismissDetail}
-        onBackdropClose={closeAll}
-        trigger={detailTrigger}
-        onEdit={openEdit}
-        onDeleted={() => {
-          toast("deleted");
-          // 삭제를 기다리는 동안 뒤로 가기로 상세가 이미 닫혔으면 목록 주소를 다시 쌓지 않는다
-          if (detailOpenRef.current) closeDetail();
-        }}
-      />
-
-      {can.update && shown && "admin" in shown && (
-        <AdminFormPanel
-          // 다른 계정이면 새로 그린다. 같은 계정을 다시 열거나 최신 정보를 받으면 패널이 스스로 칸을 다시 채운다.
-          key={shown.admin.adminAccountId}
-          id="platform-admin-edit-panel"
-          mode="edit"
-          admin={shown.admin}
-          open={editOpen}
-          onClose={closeEdit}
-          onBackdropClose={closeAll}
-          trigger={editTrigger}
-          roleGroups={roleGroups}
-          onSaved={() => {
-            closeEdit();
-            toast("updated");
-          }}
-          // 최신 정보가 오면(updatedAt 이 바뀌면) 패널이 칸을 한 번 다시 채운다. 알림은 토스트로 남긴다.
-          onStale={() => {
-            toast("다른 관리자가 먼저 수정했습니다. 최신 정보를 불러왔으니 다시 고쳐 저장해 주세요.");
-            router.refresh();
-          }}
-        />
-      )}
-    </div>
+        {can.update && shown && "admin" in shown && (
+          <AdminFormPanel
+            // 다른 계정이면 새로 그린다. 같은 계정을 다시 열거나 최신 정보를 받으면 패널이 스스로 칸을 다시 채운다.
+            key={shown.admin.adminAccountId}
+            id="platform-admin-edit-panel"
+            mode="edit"
+            admin={shown.admin}
+            open={editOpen}
+            onClose={closeEdit}
+            onBackdropClose={closeAll}
+            trigger={editTrigger}
+            roleGroups={roleGroups}
+            onSaved={() => {
+              closeEdit();
+              toast("updated");
+            }}
+            // 최신 정보가 오면(updatedAt 이 바뀌면) 패널이 칸을 한 번 다시 채운다. 알림은 토스트로 남긴다.
+            onStale={() => {
+              toast("다른 관리자가 먼저 수정했습니다. 최신 정보를 불러왔으니 다시 고쳐 저장해 주세요.");
+              router.refresh();
+            }}
+          />
+        )}
+      </div>
+    </>
   );
 }
