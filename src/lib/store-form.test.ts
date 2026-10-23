@@ -16,6 +16,7 @@ import {
   type StoreForm,
 } from "./store-form.ts";
 import type { StoreDetail } from "./store-types.ts";
+import { formatPhone } from "./format.ts";
 
 const filled: StoreForm = { ...EMPTY_STORE_FORM, storeTypeCode: "DIRECT", name: " 강남점 " };
 // 운영 조건 한글(GET /enums/StoreOperationRequirement) — 라벨 없이 부르면(빈 배열) 값 코드를 그대로 보인다
@@ -33,7 +34,7 @@ test("필수는 점포유형(등록) · 점포명뿐이다", () => {
   assert.ok(validateStoreForm({ ...filled, name: "가".repeat(51) }, "create").name);
 });
 
-test("연락처 9~11자리 · 대표자 연락처는 숫자 10~11자리(api 와 같게 유선 번호도 받는다)", () => {
+test("점포 연락처 9~12자리 · 대표자 연락처는 숫자 10~11자리(api 와 같게 유선 번호도 받는다)", () => {
   assert.equal(validateStoreForm({ ...filled, phone: ["02", "123", "4567"] }, "create").phone, undefined);
   assert.ok(validateStoreForm({ ...filled, phone: ["02", "12", "34"] }, "create").phone);
   assert.equal(validateStoreForm({ ...filled, ceoPhone: ["010", "1234", "5678"] }, "create").ceoPhone, undefined);
@@ -284,8 +285,20 @@ test("점포 연락처는 9~12자리만 — 050X 평생번호는 받고, 8자리
   assert.ok(validateStoreForm({ ...filled, phone: ["1588", "", "1234"] }, "edit").phone);
   assert.equal(validateStoreForm({ ...filled, phone: ["0507", "2033", "1334"] }, "edit").phone, undefined);
   assert.ok(validateStoreForm({ ...filled, phone: ["0507", "2033", "13345"] }, "edit").phone, "13자리는 막는다");
-  // 대표자 연락처는 휴대전화 10~11자리 그대로
+  // 대표자 연락처는 숫자 10~11자리(유선 포함) 그대로
   assert.ok(validateStoreForm({ ...filled, ceoPhone: ["0507", "2033", "1334"] }, "edit").ceoPhone);
+});
+
+test("050 이 아닌 12자리 점포 연락처도 저장 검사는 통과한다 — api 와 같이 자릿수만 본다. 나누기 · 표시는 050X 규칙을 타지 않는다", () => {
+  assert.equal(validateStoreForm({ ...filled, phone: ["0311", "2345", "6789"] }, "edit").phone, undefined);
+  assert.deepEqual(splitPhone("031123456789"), ["031", "12345", "6789"]);
+  assert.equal(formatPhone("031123456789"), "031123456789");
+});
+
+test("050X 12자리 점포 연락처는 불러와 그대로 저장해도 같은 값이다", () => {
+  const form = { ...filled, phone: splitPhone("050720331334") };
+  assert.equal(validateStoreForm(form, "edit").phone, undefined);
+  assert.equal(form.phone.join(""), "050720331334");
 });
 
 test("점포유형 없이 등록 요청을 만들면 던진다", () => {

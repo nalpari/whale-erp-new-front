@@ -23,6 +23,8 @@ test("전화번호에 하이픈을 넣는다", () => {
   assert.equal(formatPhone("0212345678"), "02-1234-5678");
   assert.equal(formatPhone("021234567"), "02-123-4567");
   assert.equal(formatPhone("050720331334"), "0507-2033-1334");
+  assert.equal(formatPhone("05012345678"), "050-1234-5678", "050 11자리는 3자리 국번");
+  assert.equal(formatPhone("0507203313345"), "0507203313345", "13자리는 그대로");
   assert.equal(formatPhone("010-1234"), "010-1234");
   assert.equal(formatPhone(null), "");
 });
