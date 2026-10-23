@@ -652,12 +652,6 @@
   .box-content {
     box-sizing: content-box;
   }
-  .line-clamp-2 {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-  }
   .block {
     display: block;
   }
@@ -1259,6 +1253,9 @@
   .w-\[300px\] {
     width: 300px;
   }
+  .w-\[301px\] {
+    width: 301px;
+  }
   .w-\[304px\] {
     width: 304px;
   }
@@ -1728,6 +1725,9 @@
   }
   .gap-y-\[10px\] {
     row-gap: 10px;
+  }
+  .gap-y-\[18px\] {
+    row-gap: 18px;
   }
   .gap-y-\[24px\] {
     row-gap: 24px;
