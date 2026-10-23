@@ -26,9 +26,13 @@ export function formatDate(iso: string | null | undefined): string {
   return Number.isNaN(date.getTime()) ? "" : DATE.format(date);
 }
 
-/** 하이픈 없는 전화번호 → `010-1234-5678` · `02-123-4567` · `031-123-4567`. 숫자 9~11자리(02 국번은 9자리부터)가 아니면 그대로 둔다. */
+/**
+ * 하이픈 없는 전화번호 → `010-1234-5678` · `02-123-4567` · `031-123-4567` · `0507-2033-1334`(050X 평생번호 12자리).
+ * 숫자 9~11자리(02 국번은 9자리부터)나 050X 12자리가 아니면 그대로 둔다.
+ */
 export function formatPhone(digits: string | null | undefined): string {
   if (!digits) return "";
+  if (/^050[0-9]{9}$/.test(digits)) return digits.replace(/^([0-9]{4})([0-9]{4})([0-9]{4})$/, "$1-$2-$3");
   if (!/^[0-9]{9,11}$/.test(digits)) return digits;
   if (digits.startsWith("02")) return digits.replace(/^(02)([0-9]{3,4})([0-9]{4})$/, "$1-$2-$3");
   return digits.replace(/^([0-9]{3})([0-9]{3,4})([0-9]{4})$/, "$1-$2-$3");
