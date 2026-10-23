@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { LoginIdCheck } from "@/lib/platform-admin-form";
 
 // 플랫폼 관리자 패널들이 같이 쓰는 작은 조각. 공통 컴포넌트에 없는 것만 둔다.
 
@@ -35,6 +36,78 @@ export function FieldMessage({ id, message }: { id: string; message?: string }) 
     <p id={id} role="alert" className="text-[13px] leading-[1.5] text-erp-off">
       {message}
     </p>
+  );
+}
+
+/** 확인 완료 체크 표시(테두리만 그린 원) — LoginIdAvailability · EmailFormatValid 가 같이 쓴다. */
+function CheckIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M6 10.5L8.5 13L14 7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/**
+ * 화면 읽기 프로그램 알림 칸 — 문구가 없어도 늘 그려 둔다. 알림 영역(aria-live)이 문구와 함께 새로 생기면 첫 문구를
+ * 읽지 않는 프로그램이 있다. sr-only(absolute)라 칸 사이 간격을 차지하지 않는다. 보이는 문구는 aria-hidden 으로 두어
+ * 두 번 읽히지 않게 한다(입력칸의 aria-describedby 는 숨긴 요소도 읽는다). 오류는 FieldMessage(role=alert)가 알리므로 비운다.
+ */
+function LiveText({ text }: { text: string }) {
+  return (
+    <span className="sr-only" aria-live="polite">
+      {text}
+    </span>
+  );
+}
+
+const LOGIN_ID_CHECK_TEXT: Record<Exclude<LoginIdCheck, "idle">, string> = {
+  checking: "아이디를 확인하는 중입니다.",
+  available: "사용 가능한 아이디입니다.",
+  // 확인 요청 자체가 실패(429 · 5xx · 연결)했을 때(401 · 403 은 패널 위 띠). 저장은 막지 않는다 — 저장할 때 api 가 중복을 다시 막는다.
+  failed: "아이디를 확인하지 못했습니다. 저장 시 다시 확인합니다.",
+};
+
+/**
+ * 아이디 중복확인 표시 — 확인 중 · 확인 실패(회색, erp-label) · 사용 가능(체크 표시 + 파란 문구 —
+ * signup-form.tsx 의 성공 표시와 같은 색, ERP 토큰 erp-on) · 오류(FieldMessage 그대로).
+ * 대기 · 성공 · 실패는 막는 오류가 아니므로 role=alert 대신 알림 칸(aria-live="polite")으로만 알린다.
+ * 오류 문구(message)가 있으면 상태 문구는 그리지 않는다 — 패널은 칸 오류를 붙일 때 상태를 "idle" 로 내리지만, 여기서도 오류를 앞세운다.
+ */
+export function LoginIdAvailability({ id, check, message }: { id: string; check: LoginIdCheck; message?: string }) {
+  const text = message || check === "idle" ? "" : LOGIN_ID_CHECK_TEXT[check];
+  return (
+    <>
+      <FieldMessage id={id} message={message} />
+      {text && (
+        <p id={id} aria-hidden="true" className={`flex items-center gap-[4px] text-[13px] leading-[1.5] ${check === "available" ? "text-erp-on" : "text-erp-label"}`}>
+          {check === "available" && <CheckIcon />}
+          {text}
+        </p>
+      )}
+      <LiveText text={text} />
+    </>
+  );
+}
+
+/**
+ * 이메일 형식 즉시 확인 — 아이디처럼 바로 물어볼 중복확인 API 가 없어(중복은 저장할 때 api 가 409 로 막는다) 형식만 본다.
+ * 그래서 "사용 가능"이라 하지 않고 "형식이 올바르다"고만 말한다 — 중복 여부는 저장해야 알 수 있다.
+ */
+export function EmailFormatValid({ id, valid, message }: { id: string; valid: boolean; message?: string }) {
+  const text = !message && valid ? "올바른 이메일 형식입니다." : "";
+  return (
+    <>
+      <FieldMessage id={id} message={message} />
+      {text && (
+        <p id={id} aria-hidden="true" className="flex items-center gap-[4px] text-[13px] leading-[1.5] text-erp-on">
+          <CheckIcon />
+          {text}
+        </p>
+      )}
+      <LiveText text={text} />
+    </>
   );
 }
 
