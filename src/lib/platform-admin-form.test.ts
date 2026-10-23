@@ -151,10 +151,10 @@ test("칸에 붙일 api 오류 문구 — 아이디는 화면 문구로, 이메�
   assert.equal(serverFieldMessage("email", 409, emailTaken), emailTaken);
 });
 
-test("여러 칸 검증 오류(400 배열)는 아이디 문구로 덮지 않는다", () => {
+test("여러 칸 검증 오류(400 배열)는 칸에 붙이지 않고 띠로 — 아이디 칸에 남아 저장을 막지 않게", () => {
   const joined = "아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다, 이메일 형식이 아닙니다";
-  assert.equal(serverErrorField(400, joined, "create"), "loginId");
-  assert.equal(serverFieldMessage("loginId", 400, joined), joined);
+  assert.equal(serverErrorField(400, joined, "create"), null);
+  assert.equal(serverErrorField(400, "아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다", "create"), "loginId");
 });
 
 test("중복확인 답 → 화면 상태 — 사용 중 · 400 은 칸 오류, 401 · 403 은 띠, 그 밖은 확인 실패(저장은 막지 않는다)", () => {

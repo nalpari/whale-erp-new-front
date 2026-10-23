@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-23
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 패널: 여러 칸 검증 오류(400 배열)는 아이디 칸이 아니라 위 띠로 보인다(code-review 로 찾음, front #61).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 아이디 중복확인의 403(등록 권한 없음)을 회색 확인 실패 대신 패널 위 띠로 올렸다(사용자 결정, front #61).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 패널 리뷰 반영(front #61): 확인 답 → 상태 · 저장을 막는 오류를 순수 함수로 빼 테스트, 저장 거절은 거절된 칸의 성공 표시만 내림, 여러 칸 400 은 원문 유지.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 관리자 등록 · 수정 패널 문구 확정(사용자, front #61): 아이디 확인 중 · 중복 · 확인 실패 문구, 중복 거절한 아이디는 고치기 전 저장 막기, 수정 화면 원래 이메일은 표시 없음, 확인 문구 알림 칸 상시 배치. 데모(erp.js · platform-admin)도 맞췄고 목업은 그대로 둔다.

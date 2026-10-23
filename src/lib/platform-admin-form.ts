@@ -122,6 +122,9 @@ export function validateAdminForm(form: AdminForm, mode: "create" | "edit"): Par
 export function serverErrorField(status: number | undefined, message: string, mode: "create" | "edit"): AdminFormField | null {
   if (status !== 400 && status !== 409) return null;
   if (message.includes("아이디 또는 이메일")) return null;
+  // 여러 칸 검증 오류(400 배열 — api.ts messageOf 가 ", " 로 잇는다)는 한 칸에 붙이지 않고 띠로 원문을 보인다 — 아이디 칸에 붙이면
+  // 함께 온 다른 칸의 이유가 아이디 아래에 숨고, 서버가 거절한 아이디로 남아 아이디를 고치기 전까지 저장이 막힌다.
+  if (status === 400 && message.includes(", ")) return null;
   if (message.includes("아이디")) return mode === "create" ? "loginId" : null;
   if (message.includes("이메일")) return "email";
   return null;
@@ -129,12 +132,11 @@ export function serverErrorField(status: number | undefined, message: string, mo
 
 /**
  * 칸 아래에 붙일 api 오류 문구. 아이디는 화면 문구로 바꾼다 — 400(형식)은 화면 검사와 같은 문구, 409(중복)는 LOGIN_ID_TAKEN.
- * 그 밖(이메일 중복 등)은 api 문구 그대로. 400 이 여러 칸 문장을 이어 붙인 것(검증 배열 — api.ts messageOf 가 ", " 로 잇는다)이면
- * 바꾸지 않는다 — 아이디 문구로 덮으면 함께 온 다른 칸의 이유가 사라진다.
+ * 그 밖(이메일 중복 등)은 api 문구 그대로. 여러 칸 검증 오류는 serverErrorField 가 이미 띠로 보낸다.
  */
 export function serverFieldMessage(field: AdminFormField, status: number | undefined, message: string): string {
   if (field !== "loginId") return message;
-  if (status === 400) return message.includes(", ") ? message : LOGIN_ID_FORMAT_ERROR;
+  if (status === 400) return LOGIN_ID_FORMAT_ERROR;
   if (status === 409) return LOGIN_ID_TAKEN;
   return message;
 }
