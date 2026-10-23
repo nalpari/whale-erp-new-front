@@ -2,13 +2,16 @@ import { Button, DataTable, ListToolbar, PageBar } from "@/components/common";
 import { ApiError, authHeaders, getEnum, request } from "@/lib/api";
 import { contractColumns } from "./columns";
 import { ContractPermission } from "./contract-permission";
-import { ContractFilters, ContractPagination } from "./contract-filters";
-import { PAGE_SIZE, apiSearch, listHrefOf, readListQuery, toSearch, withBack, withKnownStatus, type ContractListPage } from "./contract-list";
+import { ContractFilters, ContractPageSize, ContractPagination } from "./contract-filters";
+import { apiSearch, listHrefOf, readListQuery, savedNoticeOf, toSearch, withBack, withKnownStatus, type ContractListPage } from "./contract-list";
 
 // 근로계약 관리 목록. docs/demo/staff/contracts.html 을 공통 컴포넌트로 옮겼고, 목록은 GET /contracts 에서 받는다.
 // 점포 조건은 목록에서 고른 점포(storeIds) 또는 헤더가 실어 온 범위(scope)다 — 직영 · 가맹 전체는 점포 유형으로 api 에 보낸다(apiSearch, WHALEERP-133).
 export default async function ContractsPage({ searchParams }: PageProps<"/contracts">) {
-  const asked = readListQuery(await searchParams);
+  const search = await searchParams;
+  const asked = readListQuery(search);
+  // 저장 뒤 시스템이 한 처리(?saved=, WHALEERP-132) — 필터 · 쪽을 바꾸면 주소에서 빠져 사라진다
+  const savedNotice = savedNoticeOf(search.saved);
   const [statuses, draftActions, employmentTypes, headers] = await Promise.all([
     getEnum("ContractStatus"),
     getEnum("ContractDraftAction"),
@@ -24,7 +27,7 @@ export default async function ContractsPage({ searchParams }: PageProps<"/contra
   let notice = "로그인이 필요합니다.";
   if (headers.Authorization) {
     try {
-      page = await request<ContractListPage>(`/contracts${apiSearch(query, PAGE_SIZE)}`, {
+      page = await request<ContractListPage>(`/contracts${apiSearch(query)}`, {
         headers,
       });
     } catch (e) {
@@ -33,8 +36,8 @@ export default async function ContractsPage({ searchParams }: PageProps<"/contra
     }
   }
 
-  const rows = (page?.items ?? []).map((item, i) => ({ ...item, no: (query.page - 1) * PAGE_SIZE + i + 1 }));
-  const totalPages = Math.max(1, Math.ceil((page?.total ?? 0) / PAGE_SIZE));
+  const rows = (page?.items ?? []).map((item, i) => ({ ...item, no: (query.page - 1) * query.pageSize + i + 1 }));
+  const totalPages = Math.max(1, Math.ceil((page?.total ?? 0) / query.pageSize));
 
   return (
     <>
@@ -45,9 +48,16 @@ export default async function ContractsPage({ searchParams }: PageProps<"/contra
       </PageBar>
       <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
         {/* 주소가 바뀌면(뒤로 가기 포함) 입력칸을 주소 값으로 다시 맞춘다 */}
-        <ContractFilters key={toSearch(query)} query={query} statuses={statuses} />
+        <ContractFilters key={toSearch(query)} query={query} statuses={statuses} statusCounts={page?.statusCounts} />
         <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px]">
-          <ListToolbar total={page?.total ?? 0} />
+          {savedNotice && (
+            <p role="status" className="rounded-[2px] border border-erp-panel-line bg-erp-subtle px-[16px] py-[12px] text-[14px] text-erp-ink">
+              {savedNotice}
+            </p>
+          )}
+          <ListToolbar total={page?.total ?? 0}>
+            <ContractPageSize query={query} />
+          </ListToolbar>
           <DataTable
             columns={contractColumns(statuses, new Date(), draftActions, employmentTypes, listHrefOf(query))}
             rows={rows}

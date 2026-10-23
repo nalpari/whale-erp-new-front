@@ -100,6 +100,8 @@ export const contractForm = (d) => ({ A, R }) => {
         p.fieldH(req("소속 근무지"), ui.select(["모리커피 성수점", "모리커피 서초점", "온기식당 판교점"]), ""),
         p.fieldH(req("직무"), ui.textField({ value: "바리스타" }), ""),
       ),
+      // 기재사항 · 주민등록번호는 받지 않는다(WHALEERP-132, 가입 값은 날인 전 본인 대조에만 — 2026-10-23 WHALEERP-130)
+      p.help("주소 등 직원 기재사항은 받지 않는다 — 직원이 가입하며 넣는 값은 계약서에 채우지 않고 날인 전 본인 대조에만 쓴다. 주민등록번호는 날인을 마친 뒤 직원이 앱에서 넣는다."),
     ) +
     ui.formGroup(
       "계약 방식",
@@ -125,7 +127,7 @@ export const contractForm = (d) => ({ A, R }) => {
           p.fieldH("월급", ui.textField({ value: won(monthlyFull), readonly: true, "data-month": "" }), "급여항목 합계 + 비과세 합계"),
           p.fieldH("연봉", ui.textField({ value: won(monthlyFull * 12), readonly: true, "data-year": "" }), "월급 × 12"),
         ) +
-        `<div class="flex flex-col gap-[8px]">${hoursHead}${hoursFull.replace("<table ", "<table data-hours ")}${p.help("요일마다 같은 시간이 들어간다. 요일별로 다른 시간은 근무스케줄에서 고친다.")}</div>` +
+        `<div class="flex flex-col gap-[8px]">${hoursHead}${hoursFull.replace("<table ", "<table data-hours ")}${p.help("요일마다 같은 시간이 들어간다. 요일별로 다른 시간은 근무스케줄에서 고친다. 이 소정근로시간이 근무스케줄 기본값이 된다(STAFF-14).")}</div>` +
         choice(req("급여 지급 방식"), "pay-method-full", ["계좌", "현금"]) +
         ui.formRow(
           payTable("비과세 항목", taxFree, "금액은 원 단위. 0 원도 값으로 저장한다."),
@@ -138,7 +140,7 @@ export const contractForm = (d) => ({ A, R }) => {
           p.fieldH("월급", ui.textField({ value: won(monthlyPart), readonly: true, "data-month": "" }), "주급 × 4.345"),
           `<div class="min-w-px flex-1"></div>`,
         ) +
-        `<div class="flex flex-col gap-[8px]">${hoursHead}${hoursPart.replace("<table ", "<table data-hours data-hours-part ")}${p.help("요일마다 시업 · 종업 · 휴게를 고칠 수 있다. 위 근무시간 · 휴게시간을 바꾸거나 요일을 켜면 그 값으로 다시 채운다. 월급여는 주급 × 4.345.")}</div>` +
+        `<div class="flex flex-col gap-[8px]">${hoursHead}${hoursPart.replace("<table ", "<table data-hours data-hours-part ")}${p.help("요일마다 시업 · 종업 · 휴게를 고칠 수 있다. 위 근무시간 · 휴게시간을 바꾸거나 요일을 켜면 그 값으로 다시 채운다. 월급여는 주급 × 4.345. 이 소정근로시간이 근무스케줄 기본값이 된다(STAFF-14).")}</div>` +
         choice(req("급여 지급 방식"), "pay-method-part", ["계좌", "현금"]) +
         `</div>` +
         `</div>` +

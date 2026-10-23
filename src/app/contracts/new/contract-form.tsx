@@ -490,6 +490,11 @@ export function ContractForm({
               {(id) => <TextField id={id} value={form.jobTitle} maxLength={50} placeholder="예: 바리스타" onChange={(e) => set("jobTitle", e.target.value)} />}
             </Item>
           </FormRow>
+          {/* 기재사항 · 주민등록번호는 받지 않는다(WHALEERP-132). 가입 값은 계약서에 채우지 않고 날인 전 본인 대조에만 쓴다(2026-10-23, WHALEERP-130) */}
+          <span className={HELP}>
+            주소 등 직원 기재사항은 받지 않는다 — 직원이 가입하며 넣는 값은 계약서에 채우지 않고 날인 전 본인 대조에만 쓴다. 주민등록번호는 날인을
+            마친 뒤 직원이 앱에서 넣는다.
+          </span>
         </FormGroup>
 
         <FormGroup title="계약 방식">
@@ -608,7 +613,8 @@ export function ContractForm({
             <span className={HELP}>
               {partTime
                 ? "요일마다 시업 · 종업 · 휴게를 고칠 수 있다. 위 근무시간 · 휴게시간을 바꾸거나 요일을 켜면 그 값으로 다시 채운다. 주휴시간은 주 15시간 이상일 때 주 시간 ÷ 5(8시간까지), 월급여는 주급 × 4.345."
-                : "요일마다 같은 시간이 들어간다. 요일별로 다른 시간은 근무스케줄에서 고친다."}
+                : "요일마다 같은 시간이 들어간다. 요일별로 다른 시간은 근무스케줄에서 고친다."}{" "}
+              이 소정근로시간이 근무스케줄 기본값이 된다(STAFF-14).
             </span>
           </div>
           {/* 급여 지급 방식은 소정근로시간 표 바로 밑(데모 확인 2026-10-15) */}

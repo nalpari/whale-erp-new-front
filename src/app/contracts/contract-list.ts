@@ -4,9 +4,13 @@
 import type { components } from "@/lib/api-types.generated";
 import type { Scope } from "../../lib/browser-storage.ts";
 import type { AdminStore } from "../../lib/session.ts";
+import { PAGE_SIZES } from "../../lib/staff-members.ts";
 import { SCOPE_PARAM, isUnusableScope, scopeKeyOf, scopeOfParam, withoutStoreSearch } from "../../lib/store-scope.ts";
 
-export const PAGE_SIZE = 20;
+/** 페이지당 건수 — 다른 목록(직원 · 급여명세서)과 같은 선택지다(WHALEERP-133). 고른 값은 주소 pageSize 에 둔다 */
+export { PAGE_SIZES };
+export type PageSize = (typeof PAGE_SIZES)[number];
+const DEFAULT_PAGE_SIZE: PageSize = 20;
 
 /** GET /contracts 의 한 줄과 한 페이지. api 의 openapi.json 에서 만든 타입을 쓴다(pnpm openapi:types). */
 export type ContractListItem = components["schemas"]["ContractListItemDto"];
@@ -20,6 +24,7 @@ export type ContractListPage = components["schemas"]["ContractListResponseDto"];
  */
 export interface ListQuery {
   page: number;
+  pageSize: PageSize;
   staffMemberName: string;
   status: string[];
   storeIds: number[];
@@ -46,6 +51,7 @@ export function withKnownStatus(q: ListQuery, known: { value: string }[]): ListQ
 
 export function readListQuery(params: SearchParams): ListQuery {
   const page = Number.parseInt(first(params.page), 10);
+  const pageSize = Number(first(params.pageSize));
   const status = params.status;
   const rawStoreIds = params.storeIds === undefined ? undefined : first(params.storeIds);
   // 숫자가 아닌 조각은 버리고 겹친 것은 하나로 — 주소에 직접 넣은 값으로 api 가 400 을 내지 않게
@@ -60,6 +66,8 @@ export function readListQuery(params: SearchParams): ListQuery {
   return {
     // 숫자가 아니거나 1보다 작으면 첫 페이지. api 는 page=0 을 400 으로 돌려준다.
     page: Number.isInteger(page) && page >= 1 ? page : 1,
+    // 고를 수 있는 값이 아니면 기본(20) — 주소에 직접 넣은 큰 값으로 api 상한(200)을 넘기지 않게
+    pageSize: PAGE_SIZES.find((n) => n === pageSize) ?? DEFAULT_PAGE_SIZE,
     // api 는 50자를 넘으면 400 이다(@MaxLength(50)). 주소에 직접 넣은 긴 값은 잘라 보낸다.
     staffMemberName: first(params.staffMemberName).trim().slice(0, NAME_MAX),
     status: (Array.isArray(status) ? status : status ? [status] : []).filter(Boolean),
@@ -77,6 +85,7 @@ export function readListQuery(params: SearchParams): ListQuery {
 export function toSearch(q: ListQuery): string {
   const s = new URLSearchParams();
   if (q.page > 1) s.set("page", String(q.page));
+  if (q.pageSize !== DEFAULT_PAGE_SIZE) s.set("pageSize", String(q.pageSize));
   if (q.storeIds.length) s.set("storeIds", q.storeIds.join(","));
   else if (q.storesCleared) s.set("storeIds", "");
   else if (q.scope) s.set(SCOPE_PARAM, scopeKeyOf(q.scope));
@@ -93,10 +102,10 @@ export const listHrefOf = (q: ListQuery) => `/contracts${toSearch(q)}`;
  * api(GET /contracts) 쿼리. 고른 점포는 storeIds, 범위가 점포 하나면 그 id, 직영 · 가맹 전체면 점포를 풀지 않고 점포 유형(storeTypes)으로
  * 보낸다. 범위 「전체」 · 비운 「전체」는 점포 조건이 없다. 업무 범위 밖의 id 는 api 가 조용히 뺀다.
  */
-export function apiSearch(q: ListQuery, pageSize: number): string {
+export function apiSearch(q: ListQuery): string {
   const s = new URLSearchParams();
   if (q.page > 1) s.set("page", String(q.page));
-  s.set("pageSize", String(pageSize));
+  s.set("pageSize", String(q.pageSize));
   const ids = q.storeIds.length ? q.storeIds : q.scope?.type === "STORE" ? [q.scope.storeId] : [];
   if (ids.length) s.set("storeIds", ids.join(","));
   else if (q.scope?.type === "DIRECT" || q.scope?.type === "FRANCHISE") s.set("storeTypes", q.scope.type);
@@ -176,6 +185,83 @@ const kstDate = (iso: string) => new Date(new Date(iso).getTime() + 9 * 3600_000
 export function sentText(sentAt: string | null): string {
   return sentAt ? kstDate(sentAt).slice(5) : "-";
 }
+
+/**
+ * 상태 칸에 붙는 직원의 가입 · 초대 안내(WHALEERP-133). 저장 때 판별한 초대 유형(draftAction)이 아니라 직원의 지금 상태(staffJoinState)라
+ * 초대가 만료 · 거절되면 「가입 대기 중」이 아니다. 발송 대기는 초대에 응답을 기다리는 동안, 서명 대기는 소속 · 복귀 확인을 기다리는
+ * 동안만 붙인다(가입한 직원의 서명 대기는 남은 날만).
+ */
+const JOIN_NOTES: Partial<Record<ContractListItem["staffJoinState"], string>> = {
+  INVITED: "가입 대기 중",
+  AFFILIATION_PENDING: "소속 확인 중",
+  RETURN_PENDING: "복귀 확인 중",
+  LINK_HOLD: "연결 보류",
+  UNDER_AGE: "가입 불가",
+  EXPIRED: "초대 만료",
+  REJECTED: "초대 거절",
+};
+const WAITING_SIGNATURE_NOTES = new Set<ContractListItem["staffJoinState"]>(["AFFILIATION_PENDING", "RETURN_PENDING"]);
+
+/**
+ * 상태 칸 뒤에 「 · 」로 붙일 안내(목록 끝 칸에 두던 것, WHALEERP-133). 가입 · 초대 안내, 서명 대기의 남은 날, 퇴직한 직원이면 「퇴직」.
+ * 재계약 서명 대기는 재계약(WHALEERP-156) 때 넣는다. api 가 가입 상태를 아직 싣지 않으면(먼저 배포된 화면) 발송 대기에 판별한 초대 유형을
+ * 붙이던 예전 안내로 둔다(draftActionLabel).
+ */
+export function statusNotes(
+  row: Pick<ContractListItem, "status" | "signDeadlineAt" | "draftAction" | "staffJoinState" | "staffRetired">,
+  now: Date,
+  draftActionLabel: (v: string) => string = (v) => v,
+): string[] {
+  const notes: string[] = [];
+  const join = row.staffJoinState === undefined ? undefined : JOIN_NOTES[row.staffJoinState];
+  if (row.status === "PENDING_SEND") {
+    if (join) notes.push(join);
+    else if (row.staffJoinState === undefined && row.draftAction) notes.push(draftActionLabel(row.draftAction));
+  }
+  if (row.status === "PENDING_SIGNATURE" && join && WAITING_SIGNATURE_NOTES.has(row.staffJoinState)) notes.push(join);
+  const deadline = deadlineNote(row, now);
+  if (deadline) notes.push(deadline);
+  if (row.staffRetired) notes.push("퇴직");
+  return notes;
+}
+
+/**
+ * 저장 뒤 목록 위 안내(?saved=, WHALEERP-132) — 시스템이 한 처리. 저장 응답(status · draftAction)에서 savedKindOf 로 고른 값을 주소에
+ * 싣는다. 모르는 값이면 안내가 없다.
+ */
+const SAVED_NOTICES: Record<string, string> = {
+  DRAFT: "임시저장했습니다. 직원 이름을 눌러 이어 쓸 수 있습니다.",
+  PAPER: "종이 계약을 등록했습니다. 발송 · 날인 없이 체결 완료입니다.",
+  SIGNUP_INVITE: "근로계약서를 저장하고 직원 휴대전화로 가입 초대 알림톡을 보냈습니다. 직원이 가입하면 서명 대기로 넘어갑니다.",
+  IMMEDIATE_SEND: "근로계약서를 저장하고 직원 앱으로 보냈습니다. 직원이 날인하면 체결 완료입니다.",
+  AFFILIATION_CONFIRM: "근로계약서를 저장했습니다. 이 번호로 가입한 계정이 있어 소속 추가 확인을 기다립니다 — 직원이 이 점포 소속을 확인하면 앱에서 계약서를 봅니다.",
+  RETURN_CONFIRM: "근로계약서를 저장했습니다. 이 점포에서 퇴직한 직원의 계정이라 복귀 확인을 기다립니다 — 직원이 복귀를 확인하면 앱에서 계약서를 봅니다.",
+};
+
+/**
+ * 저장 응답 → 안내 종류. 발송 대기는 가입 초대, 서명 대기는 소속 추가 · 복귀 확인이 아니면 앱으로 보낸 것(즉시 발송 · 가입한 직원)이다.
+ * 수정 요청 · 그 밖의 상태는 안내하지 않는다.
+ */
+export function savedKindOf(saved: { status?: string | null; draftAction?: string | null } | null | undefined): string | null {
+  switch (saved?.status) {
+    case "DRAFT":
+      return "DRAFT";
+    case "SIGNED":
+      return "PAPER";
+    case "PENDING_SEND":
+      return "SIGNUP_INVITE";
+    case "PENDING_SIGNATURE":
+      return saved.draftAction === "AFFILIATION_CONFIRM" || saved.draftAction === "RETURN_CONFIRM" ? saved.draftAction : "IMMEDIATE_SEND";
+    default:
+      return null;
+  }
+}
+
+export const savedNoticeOf = (raw: string | string[] | undefined): string | null =>
+  typeof raw === "string" && Object.hasOwn(SAVED_NOTICES, raw) ? SAVED_NOTICES[raw] : null;
+
+/** 목록 주소에 저장 뒤 안내를 싣는다 — 안내 종류가 없으면 그대로 */
+export const withSaved = (href: string, kind: string | null): string => (kind ? `${href}${href.includes("?") ? "&" : "?"}saved=${kind}` : href);
 
 /** 서명 대기의 남은 날. 날인 기한 날짜까지 며칠 남았는지(D-0 이 마감일). */
 export function deadlineNote(row: Pick<ContractListItem, "status" | "signDeadlineAt">, now: Date): string | undefined {
