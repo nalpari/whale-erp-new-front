@@ -59,7 +59,7 @@ export function BpMasterTable({
         withdrawn(b) ? (
           gone
         ) : (
-          <TwoLines top={<WithIcon icon="phone">{formatPhone(b.phone)}</WithIcon>} bottom={b.email && <WithIcon icon="mail">{b.email}</WithIcon>} />
+          <TwoLines top={b.phone && <WithIcon icon="phone">{formatPhone(b.phone)}</WithIcon>} bottom={b.email && <WithIcon icon="mail">{b.email}</WithIcon>} />
         ),
     },
     { header: "상태", width: "w-[80px]", cell: (b) => <BpStatusBadge status={b.accountStatus} /> },

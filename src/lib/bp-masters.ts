@@ -2,92 +2,21 @@
 // 메뉴 권한(조회 · 등록 · 수정 · 삭제)과 삭제 조건 · 탈퇴 BP 보호는 api 가 동작마다 판정한다 — 화면은 미리 숨기거나 흐리게만 한다.
 // 계약은 docs/plans/2026-10-22-bp-masters.md 「API 작업 지시서」다.
 import { authHeaders, request, requestRaw } from "./api";
-import { BP_MASTER_HISTORY_PAGE_SIZE, type BpMasterListQuery, type BpMasterStatusValue } from "./bp-master-paging";
+import type { components } from "./api-types.generated";
+import { BP_MASTER_HISTORY_PAGE_SIZE, type BpMasterListQuery } from "./bp-master-paging";
 
-// shortcut: api 의 openapi 가 아직 없어 지시서대로 손으로 적은 타입이다. api /bp-masters 가 main 에 들어오면
-// `pnpm openapi:types` 로 api-types.generated.ts 를 다시 만들고 아래를 생성 타입 별칭으로 바꾼다(머지 전에).
-export type BpMasterStatus = BpMasterStatusValue;
-export type BpJoinPath = "SIGNUP" | "PLATFORM_REGISTERED";
-
-export type BpMaster = {
-  bpCodeId: number;
-  bpCode: string;
-  loginId: string;
-  /** 탈퇴 BP 는 null — 화면이 「탈퇴로 삭제됨」으로 보인다 */
-  name: string | null;
-  phone: string | null;
-  email: string | null;
-  accountStatus: BpMasterStatus;
-  tradeName: string;
-  /** 미인증이면 null */
-  bizRegistrationNumber: string | null;
-  joinPath: BpJoinPath;
-  createdAt: string;
-  createdByName: string | null;
-};
-
-export type BpMasterList = { items: BpMaster[]; total: number };
-
-export type BpMasterDetail = BpMaster & {
-  adminAccountId: number;
-  statusChangedAt: string | null;
-  bizCeoName: string | null;
-  /** YYYY-MM-DD */
-  bizOpenDate: string | null;
-  bizCeoPhone: string | null;
-  bizCeoEmail: string | null;
-  bizZipCode: string | null;
-  bizAddress: string | null;
-  bizAddressDetail: string | null;
-  bizCategory: string | null;
-  bizItem: string | null;
-  bizVerifiedAt: string | null;
-  /** 폐점 · 삭제 제외 */
-  storeCount: number;
-  /** 이 BP 의 BP 관리자 · 가맹 마스터 · 가맹 관리자 중 지우지 않은 계정 수 */
-  subAdminCount: number;
-  lastLoginAt: string | null;
-  termsAgreedAt: string | null;
-  isPasswordChangeRequired: boolean;
-  /** BP 정보와 BP 마스터 계정 중 나중에 고친 쪽 */
-  updatedAt: string;
-  updatedByName: string | null;
-  /** reasons 는 화면 말풍선 문구 그대로 */
-  deletion: { isDeletable: boolean; reasons: string[] };
-};
-
-export type BpMasterHistory = {
-  changeId: number;
-  changedAt: string;
-  /** 한글 항목 이름 */
-  field: string;
-  beforeValue: string | null;
-  afterValue: string | null;
-  changedByName: string | null;
-  /** 탈퇴 줄의 탈퇴 사유만 */
-  note: string | null;
-};
-export type BpMasterHistoryList = { items: BpMasterHistory[]; total: number };
-
-/** 등록 · 수정이 같이 쓰는 칸. 사업자등록번호 · 대표자명 · 개업일자는 진위확인 토큰에서만 꺼낸다. */
-type BpMasterProfileInput = {
-  name: string;
-  phone: string;
-  email: string;
-  tradeName: string;
-  bizCeoPhone: string | null;
-  bizCeoEmail: string | null;
-  bizZipCode: string | null;
-  bizAddress: string | null;
-  bizAddressDetail: string | null;
-  bizCategory: string | null;
-  bizItem: string | null;
-  verificationToken?: string;
-};
-export type CreateBpMasterInput = BpMasterProfileInput & { loginId: string };
-export type UpdateBpMasterInput = BpMasterProfileInput;
-export type CreateBpMasterResult = { bpCodeId: number; bpCode: string; email: string; isMailSent: boolean };
-export type BpBusinessVerificationInput = { bizRegistrationNumber: string; bizCeoName: string; bizOpenDate: string; bpCodeId?: number };
+// 타입은 손으로 짓지 않고 api 의 openapi.json 에서 만든 것(api-types.generated.ts)을 쓴다.
+type Schemas = components["schemas"];
+export type BpMaster = Schemas["BpMasterSummaryResponseDto"];
+export type BpMasterList = Schemas["BpMasterListResponseDto"];
+export type BpMasterDetail = Schemas["BpMasterDetailResponseDto"];
+export type BpMasterHistory = Schemas["BpMasterHistoryResponseDto"];
+export type BpMasterHistoryList = Schemas["BpMasterHistoryListResponseDto"];
+export type CreateBpMasterInput = Schemas["CreateBpMasterDto"];
+export type UpdateBpMasterInput = Schemas["UpdateBpMasterDto"];
+export type CreateBpMasterResult = Schemas["CreateBpMasterResponseDto"];
+export type BpBusinessVerificationInput = Schemas["VerifyBpMasterBusinessDto"];
+export type BpMasterStatus = BpMaster["accountStatus"];
 
 const json = async (method: "GET" | "POST" | "PUT" | "DELETE", body?: unknown): Promise<RequestInit> => ({
   method,
@@ -133,11 +62,11 @@ export async function getBpMasterHistories(bpCodeId: number, page = 1): Promise<
 /** GET /bp-masters/login-id-availability — 탈퇴 · 삭제한 계정의 아이디도 쓸 수 없다. */
 export async function checkBpMasterLoginIdAvailable(loginId: string): Promise<boolean> {
   const params = new URLSearchParams({ loginId });
-  return (await request<{ available: boolean }>(`/bp-masters/login-id-availability?${params}`, await json("GET"))).available;
+  return (await request<Schemas["LoginIdAvailabilityResponseDto"]>(`/bp-masters/login-id-availability?${params}`, await json("GET"))).available;
 }
 
 /** POST /bp-masters/business-verifications — 번호 중복을 먼저 보고 국세청 진위확인. 수정은 bpCodeId 로 자기 BP 를 중복에서 뺀다. 토큰은 10분. */
-export async function verifyBpBusiness(input: BpBusinessVerificationInput): Promise<{ verificationToken: string }> {
+export async function verifyBpBusiness(input: BpBusinessVerificationInput): Promise<Schemas["BpMasterBusinessVerificationResponseDto"]> {
   return request("/bp-masters/business-verifications", await json("POST", input));
 }
 
@@ -152,12 +81,12 @@ export async function updateBpMaster(bpCodeId: number, input: UpdateBpMasterInpu
 }
 
 /** POST /bp-masters/{bpCodeId}/status — 미사용이면 이 BP 의 관리자 계정 모두, 사용이면 BP 와 BP 마스터만. */
-export async function changeBpMasterStatus(bpCodeId: number, status: Exclude<BpMasterStatus, "WITHDRAWN">): Promise<void> {
+export async function changeBpMasterStatus(bpCodeId: number, status: Schemas["ChangeBpMasterStatusDto"]["status"]): Promise<void> {
   await request(`/bp-masters/${bpCodeId}/status`, await json("POST", { status }));
 }
 
 /** POST /bp-masters/{bpCodeId}/password-reset — 새 초기 비밀번호를 계정 이메일로만 보낸다. */
-export async function resetBpMasterPassword(bpCodeId: number): Promise<{ isMailSent: boolean }> {
+export async function resetBpMasterPassword(bpCodeId: number): Promise<Schemas["ResetBpMasterPasswordResponseDto"]> {
   return request(`/bp-masters/${bpCodeId}/password-reset`, await json("POST"));
 }
 

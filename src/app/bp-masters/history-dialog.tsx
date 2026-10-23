@@ -23,7 +23,8 @@ const COLUMNS: Column<BpMasterHistory>[] = [
     cell: (h) => (
       <>
         {h.afterValue}
-        {h.note && <span className="text-erp-label"> · 탈퇴 사유: {h.note}</span>}
+        {/* 비고 — 탈퇴 줄의 탈퇴 사유, 사업자 번호 인증으로 바뀐 줄의 「사업자 번호 인증」 */}
+        {h.note && <span className="text-erp-label"> · {h.note}</span>}
       </>
     ),
   },
@@ -97,8 +98,9 @@ export function HistoryButton({ bpCodeId, panelOpen }: { bpCodeId: number; /** �
           {failure && <FailedBand message={failure} />}
           <DataTable
             columns={COLUMNS}
-            rows={data?.items ?? []}
-            rowKey={(h) => h.changeId}
+            // api 이력 줄에는 id 가 없다(두 테이블을 합친 것) — 한 쪽 안에서 같은 값이 겹칠 수 있어 쪽 안 순번을 섞는다
+            rows={(data?.items ?? []).map((h, i) => ({ ...h, key: `${page}-${i}` }))}
+            rowKey={(h) => h.key}
             empty={loading && !data ? "불러오는 중입니다." : "변경 이력이 없습니다."}
           />
           {data && data.total > BP_MASTER_HISTORY_PAGE_SIZE && (

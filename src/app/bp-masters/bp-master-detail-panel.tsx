@@ -167,11 +167,17 @@ function DetailBody({
     { label: "이메일", value: withdrawn ? gone : bp.email },
     {
       label: "비밀번호",
-      value: canUpdate ? (
-        <Button variant="soft" onClick={() => setConfirm("reset")} disabled={busy}>
-          초기화
-        </Button>
-      ) : null,
+      value: (
+        <>
+          {canUpdate && (
+            <Button variant="soft" onClick={() => setConfirm("reset")} disabled={busy}>
+              초기화
+            </Button>
+          )}
+          {/* 등록 · 초기화 메일이 실패했다 — 다시 보내는 길은 초기화뿐이다 */}
+          {!withdrawn && bp.isInitialPasswordUnsent && <span className="text-erp-off">초기 비밀번호 미발송</span>}
+        </>
+      ),
     },
     {
       label: "BP 상태",
@@ -194,7 +200,8 @@ function DetailBody({
     // BP 정보와 BP 마스터 계정 중 나중에 고친 쪽(BP-7)
     { label: "수정 일시", value: bp.updatedByName ? <DetailValues items={[formatDateTime(bp.updatedAt), bp.updatedByName]} /> : muted("수정한 적 없음") },
     { label: "최근 로그인", value: bp.lastLoginAt ? formatDateTime(bp.lastLoginAt) : muted("로그인 기록 없음") },
-    { label: "약관 동의", value: bp.termsAgreedAt ? "동의" : <>미동의 {muted("· 첫 로그인 때 받음")}</> },
+    // 「첫 로그인 때 받음」은 아직 로그인하지 않은 BP 에만 붙인다
+    { label: "약관 동의", value: bp.termsAgreedAt ? "동의" : bp.lastLoginAt ? "미동의" : <>미동의 {muted("· 첫 로그인 때 받음")}</> },
     { label: "강제 변경", value: bp.isPasswordChangeRequired ? "비밀번호 변경 대상" : "대상 아님" },
   ];
 
@@ -277,7 +284,8 @@ function DetailBody({
         <span className="flex-1" />
         {canDelete && (
           // 조건(사용 · 미사용 · 로그인 기록 없음 · 하위 관리자 0 · 등록 점포 0)을 못 채우면 흐리게 두고 이유를 말풍선으로(S-GZDODB)
-          <Blocked reason={bp.deletion.isDeletable ? undefined : `삭제할 수 없습니다 — ${bp.deletion.reasons.join(" ")}`}>
+          // api 의 이유 문장이 「…삭제할 수 없습니다」로 끝나므로 그대로 잇는다
+          <Blocked reason={bp.deletion.isDeletable ? undefined : bp.deletion.reasons.join(" ")}>
             <Button variant="soft" onClick={() => setConfirm("delete")} disabled={!bp.deletion.isDeletable || busy}>
               삭제
             </Button>
