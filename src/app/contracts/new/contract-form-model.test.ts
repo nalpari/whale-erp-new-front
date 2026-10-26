@@ -401,9 +401,11 @@ test("재계약 — 직전 계약 값을 채우고 시작일은 종료일 다음
   assert.equal(renewalFromDetail(detailOf({ status: "SIGNED", endDate: null })).startDate, "");
 
   assert.equal(canRenew({ status: "SIGNED", histories: [] }), true);
-  const signedHistory = { fromStatus: "PENDING_SIGNATURE" as const, toStatus: "SIGNED" as const, actor: "STAFF" as const, changedAt: "2026-01-01T00:00:00Z" };
-  assert.equal(canRenew({ status: "ENDED", histories: [signedHistory] }), true);
-  // 체결 없이 종료(대체 · 채용 접음)는 재계약하지 않는다
+  const ended = (actor: "SYSTEM" | "ADMIN") => ({ fromStatus: "SIGNED" as const, toStatus: "ENDED" as const, actor, changedAt: "2027-01-01T00:00:00Z" });
+  // 기간이 끝나 배치가 닫은 체결 완료는 재계약한다
+  assert.equal(canRenew({ status: "ENDED", histories: [ended("SYSTEM")] }), true);
+  // 대체로 닫힌 체결 완료 · 체결 없이 종료(채용 접음)는 재계약하지 않는다
+  assert.equal(canRenew({ status: "ENDED", histories: [ended("ADMIN")] }), false);
   assert.equal(canRenew({ status: "ENDED", histories: [] }), false);
   assert.equal(canRenew({ status: "PENDING_SIGNATURE", histories: [] }), false);
 });

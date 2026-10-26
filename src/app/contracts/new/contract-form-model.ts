@@ -233,9 +233,12 @@ const nextDay = (iso: string) => {
   return t.toISOString().slice(0, 10);
 };
 
-/** 재계약을 시작할 수 있는 계약 — 체결 완료이거나 체결된 뒤 종료된 것(api 의 SIGNED_ONCE 와 같다) */
+/**
+ * 재계약을 시작할 수 있는 계약 — 체결 완료이거나, 기간이 끝나 하루 배치가 체결 완료에서 닫은 것(api 의 SIGNED_ONCE 와 같다 — 이력
+ * 체결 완료 → 종료, 시스템). 대체로 닫힌 체결 완료(관리자)는 새 계약이 이미 그 자리를 이어 재계약하지 않는다(api #152 리뷰).
+ */
 export function canRenew(d: Pick<ContractDetail, "status" | "histories">): boolean {
-  return d.status === "SIGNED" || (d.status === "ENDED" && d.histories.some((h) => h.toStatus === "SIGNED"));
+  return d.status === "SIGNED" || (d.status === "ENDED" && d.histories.some((h) => h.fromStatus === "SIGNED" && h.toStatus === "ENDED" && h.actor === "SYSTEM"));
 }
 
 const moneyText = (n: number | null | undefined) => (n == null ? "" : n.toLocaleString("ko-KR"));
