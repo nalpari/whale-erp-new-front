@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-10-26
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 휴일 관리 화면(`/public-holidays`, S-DDGJKQ)을 만들었다: 조회 전용 캘린더 · 목록, 연도 2000~2100, 다다음 해 정부 발표 안내 · 동기화 실패 안내. api(`GET /public-holidays` — 캘린더는 `month` 를 함께, `synchronization.failedYears` · `lastSynchronizedAt`)의 openapi 로 타입을 만들어 썼다. superpowers code-reviewer 반영: 선택칸 낙관적 표시, 휴일인 오늘 테두리, 막힌 달 이동 버튼 호버 없음, 실패 안내 문구, api 머지 전 생성 타입임을 api-types 항목에 적음.
+
 ## 2026-10-23
 * **Update**: [점포 관리](/stores.md) — 사업자 번호 인증 상자 세 칸과 등록 · 수정 폼의 두 칸 줄을 위로 맞춰, 한 칸에만 오류 문구가 붙어도 옆 입력칸이 밀리지 않게 했다(사용자 요청 — 「이미 등록된 사업자등록번호입니다」).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — ip-code-review-claude 적대적 리뷰 반영: 다른 번호로 재인증에 성공한 뒤(pending, 아직 저장 전) 사업자등록번호 화면이 savedBizNumber(서버 값)를 써서 옛 번호로 보이던 것을 지금 칸 값(verifyForm.bizRegistrationNumber)으로 고쳤다 — 사용자가 "안 바뀌었다"고 믿고 저장하면 실제론 새 번호가 저장돼 화면·실제 저장값이 어긋나던 문제. api 짝 PR #139(`clearBusinessVerification`)가 머지되기 전에는 "사용안함" 저장만 400 으로 거절된다는 배포 순서 블로커는 #139 머지로 풀렸다.
