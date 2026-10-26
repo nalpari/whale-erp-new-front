@@ -40,13 +40,15 @@ test("이전 재직은 「재직 이력」, 이후 재입사는 「이후 재입
   ]);
 });
 
-test("재직 이력 링크는 [목록] 주소를 ?back= 으로 싣고 근무스케줄 주를 더한다 — 기본 목록 · 날짜 모양이 아닌 주는 싣지 않는다", () => {
+test("재직 이력 링크는 [목록] 주소를 ?back= 으로 싣고 근무스케줄 주를 더한다 — 기본 목록 · 날짜가 아닌 주는 싣지 않는다", () => {
   const back = "/staff-members?keyword=%ED%99%8D&page=2";
   assert.equal(historySearch(back, "2025-06-02"), `?back=${encodeURIComponent(back)}&week=2025-06-02`);
   assert.equal(historySearch("/staff-members", "2025-06-02"), "?week=2025-06-02");
   assert.equal(historySearch(back, undefined), `?back=${encodeURIComponent(back)}`);
   assert.equal(historySearch(back, "abc"), `?back=${encodeURIComponent(back)}`);
-  assert.equal(historySearch("/staff-members", ["2025-06-02", "2025-06-09"]), "");
+  // 근무스케줄 칸(weekParam)과 같다 — 여럿이면 앞의 것, 월요일이 아니면 그 주 월요일
+  assert.equal(historySearch("/staff-members", ["2025-06-02", "2025-06-09"]), "?week=2025-06-02");
+  assert.equal(historySearch("/staff-members", "2025-06-04"), "?week=2025-06-02");
 });
 
 test("재직 이력 링크로 간 상세의 [목록]은 원래 목록 주소다 — week 는 목록에 들어가지 않는다", () => {
