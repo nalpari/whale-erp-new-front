@@ -7883,12 +7883,26 @@ export interface components {
             /** @description 그날이 확정 · 발송된 급여명세서 기간 안이다 — 보정하면 급여에 영향이 갈 수 있다(WHALEERP-218 · 220) */
             isPayslipConfirmed: boolean;
         };
+        MyAttendanceStatsDto: {
+            workedMinutes: number;
+            overtimeMinutes: number;
+        };
+        MyAttendanceWeekDto: {
+            workedMinutes: number;
+            overtimeMinutes: number;
+            /** @description 그 주 월요일(YYYY-MM-DD) */
+            monday: string;
+        };
         MyAttendanceRecordsResponseDto: {
             from: string;
             to: string;
             storeName: string;
             /** @description 근무스케줄이나 기록이 있는 날만, 날짜순 */
             items: components["schemas"]["MyAttendanceDayDto"][];
+            /** @description 기간 합 */
+            totals: components["schemas"]["MyAttendanceStatsDto"];
+            /** @description 기간에 걸친 주마다, 월요일순 */
+            weeks: components["schemas"]["MyAttendanceWeekDto"][];
         };
         AttendanceDayItemDto: {
             employmentType: components["schemas"]["EmploymentType"];
@@ -7968,6 +7982,8 @@ export interface components {
             name: string;
             storeId: number;
             storeName: string;
+            /** @description 대신 등록(위치정보 동의 없음 · 일시 중지). false 면 위치정보에 동의한 직원 — 기록 없는 날만 출근 · 퇴근을 함께 넣어 보정한다 */
+            isProxy: boolean;
             /** @description 그 날짜가 확정 · 발송된 급여명세서 기간 안이다 — 등록하기 전에 경고한다(218) */
             isPayslipConfirmed: boolean;
         };
