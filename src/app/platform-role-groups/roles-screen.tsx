@@ -45,7 +45,8 @@ export function RolesScreen({
     // 권한유형 · 코드를 한 칸에 — BP 권한 그룹 관리(bp-role-groups/roles-screen.tsx)와 같은 모양(2026-10-26 사용자 지정)
     {
       header: "권한유형 · 코드",
-      width: "w-[170px]",
+      // 「플랫폼 관리자 · PA000002」가 권한명과 너무 붙어 보여 BP(170px)보다 넓힌다(2026-10-26 사용자 지정)
+      width: "w-[200px]",
       align: "left", // 2026-10-26 사용자 지정
       cell: (r) => (
         <span className="truncate">
