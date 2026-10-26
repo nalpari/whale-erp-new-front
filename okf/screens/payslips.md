@@ -46,7 +46,7 @@ sources:
 
 # api 로 그린다
 
-목록은 `GET /payslips?month&status&storeIds&staffName&page&pageSize`, 상세는 `GET /payslips/:id` 다(`src/lib/payslips-api.ts`, 직원 목록
+목록은 `GET /payslips?month&status&storeIds&storeTypes&staffName&page&pageSize`, 상세는 `GET /payslips/:id` 다(`src/lib/payslips-api.ts`, 직원 목록
 `staff-members-api.ts` 와 같은 `request()` · `authHeaders()` · `ApiError` 모양). 응답 타입은 `api-types.generated.ts` 의
 `PayslipListResponseDto` · `PayslipDetailResponseDto` 를 그대로 쓴다. 메뉴 권한(MN000009 조회) · 관리 범위 · 가림은 api 가 본다.
 상세의 없음 · 범위 밖 · 가림 · 이상한 id 는 404 → `notFound()`, 그 밖의 api 오류(꺼짐 · 401 · 403)는 `error.tsx` 가 받는다.
@@ -58,10 +58,11 @@ sources:
 칸과 필터는 Plane WHALEERP-233 완료 조건이 기준이고, 데모(`staff-sections.mjs` payList · payslipsFilter)와 **일부러 다르다**.
 
 * 필터는 급여 기간(목록 위 달 이동) · 점포 · 직원명 · 명세서 상태다(점포 · 직원명은 2026-10-19 사용자 요청으로 더했다).
-  점포 · 직원명 검색칸은 `SearchField` 다 — Enter · 돋보기로 반영하고, 점포명은 로그인 정보의 관리 점포에서
-  맞는 점포 id 를 찾아(`storeIdsByName`) URL 에 `store` · `storeIds` 로 함께 둔다. 직원명은 `staffName`. api 는 `storeIds` ·
-  `staffName` 을 받는다. 맞는 점포가 없으면 api 를 부르지 않고 0건(상태 건수도 0)이다. 점포명만 있고 id 가 없는 주소는 필터가
-  들어오자마자 채운다. 직원명으로 거르면 본사 역할에게 가린 줄은 api 가 목록과 상태 건수에서 모두 뺀다 — 이름 검색으로 가린
+  점포는 공통 점포 고르기(`StorePicker`)이고 **상단 점포 범위와 잇는다**(PR #88 공유, 2026-10-26 — 직원 목록과 같은 규칙): 목록에서 고른
+  점포(`storeIds`) · 목록에서 비운 「전체」(빈 `storeIds=`) · 헤더 범위(`scope=ALL · DIRECT · FRANCHISE · STORE:id`) · 정해지지 않음(필터가
+  헤더 범위로 채운다). api 에는 고른 점포 · 점포 하나 범위면 `storeIds`, 직영 · 가맹 범위면 `storeTypes`(그 유형의 폐점 점포는 api 가 뺀다)로
+  보내고(`payslipStoreCondition`), 「확정 N건 발송」도 같은 조건이다. 주소의 범위를 이 탭에서 쓸 수 없으면 「전체」로 바꾸고 알린다. 예전
+  점포명 주소(`?store=`)는 읽지 않고 상단 범위로 채운다. 직원명 검색칸은 `SearchField`(Enter · 돋보기, `staffName`). 직원명으로 거르면 본사 역할에게 가린 줄은 api 가 목록과 상태 건수에서 모두 뺀다 — 이름 검색으로 가린
   직원이 드러나지 않게. 상태 건수는 점포 · 직원명 필터를 따르고 상태 필터는 따르지 않는다.
   상태를 모두 고르면 `status` 를 빼고, 하나도 고르지 않으면 api 가 빈 값을 400 으로 막아 `status` 없이 부른 뒤 줄은 버리고
   상태 건수만 쓴다(0건).
@@ -80,9 +81,10 @@ sources:
 * 목록 「계약 없음 · 초안 없음」 줄(이 달 명세서가 없는 재직 직원). 출퇴근 누락 일수는 상세의 경고 띠 설명에 api 사유 상세로 나온다
   (「출퇴근 기록이 2일 누락되었습니다 — 09-05 퇴근 미등록, …」, WHALEERP-229).
 * 상세 「참조한 것」의 집계 근로시간 · 덧붙임 · 근무스케줄 기준 시간.
-* 지급 칸 도움말의 계산 근거 글자(데모 「8.0h × 1.5배 · 가산 적용」) — 「계산값」 · 「계산값 A 을 B 으로 고침」만 남는다.
-* 근로계약 번호(데모 `CTR-2026-0143`)는 contracts 에 칸이 없어 `근로계약 #id` 링크로 보인다. 계약 급여의 단위(월 · 시간)도
-  칸이 없어 고용형태로 붙인다. 근로계약 상태가 null 이면 「-」.
+* 지급 칸 도움말의 계산 근거 글자(데모 「8.0h × 1.5배 · 가산 적용」) — 「계산값」 · 「계산값 A 을 B 으로 고침」만 남는다. 가산을 끈
+  명세서의 연장수당은 앞에 「가산 미적용 · 1배로 계산」이 붙는다(PAY-05, 2026-10-26 재영).
+* 근로계약 번호(데모 `CTR-2026-0143`)는 contracts 에 칸이 없어 `근로계약 #id` 링크로 보인다. 계약 급여는 근로계약 급여액이
+  고용형태와 상관없이 시급이라(2026-10-12) 「원 / 시간」이다 — 월 기본시간 · 월간 연장은 api 응답에 칸이 없어 보이지 않는다. 근로계약 상태가 null 이면 「-」.
 
 # 목록 「확정 N건 발송」 (WHALEERP-231 · 237)
 
