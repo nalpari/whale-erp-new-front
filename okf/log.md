@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-26
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #127 리뷰(Young Joo) 반영: 저장 뒤 안내 쿠키를 서버가 아니라 `SavedNotice` 가 읽고 지운다 — 목록 → 상세 → [뒤로] 때 Next 가 기억한 화면으로 안내가 또 뜨지 않게. 상태별 개수 서술을 api #146(보이는 계약만 셈)에 맞췄다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #127 ip-code-review 블로커 반영: 저장 뒤 안내를 주소(`?saved=`) 대신 60초 사는 쿠키(`contract-saved`)로 넘기고 `SavedNotice` 가 그리면 지운다 — 주소에서 지우던 `history.replaceState(history.state …)` 는 Next 가 라우터 상태를 맞추지 않아 `?saved=` 가 되살아나 새로고침 때 안내가 다시 떴다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front seel, main #128 까지): okf/log 충돌은 양쪽 기록을 살렸다.
 
