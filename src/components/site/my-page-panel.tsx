@@ -266,10 +266,10 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
           )}
           <div id={ids} className={`flex flex-col gap-[16px] ${tab === "basic" ? "" : "hidden"}`}>
               {/* 점포정보 관리 상세화면(DetailTable)의 제목 줄과 같은 회색 바 — FormGroup 의 기본 제목(배경 없음)
-                  대신 쓴다(사용자 디자인 피드백, 2026-10-21). 본문 카드는 FormGroup 과 같은 토큰으로 직접 짠다.
+                  대신 쓴다(사용자 디자인 피드백, 2026-10-21). 카드 모양은 공통 ReadonlyCard 가 그린다.
                   아이콘을 넣어 봤지만 24px 로는 너무 작아 뺐다(사용자 지정, 2026-10-21).
                   글자 크기 · 굵기는 DetailTable 이 아니라 바로 아래 「기본정보」(FormGroup) 제목과 맞춘다 — 같은 패널
-                  안에서 두 제목이 달라 보인다는 피드백, 2026-10-21. 회색 바탕 · 테두리만 DetailTable 에서 가져온다.
+                  안에서 두 제목이 달라 보인다는 피드백, 2026-10-21. 회색 바탕 · 테두리는 DetailTable 에서 가져왔다.
                   권한 그룹 상세가 같은 모양을 쓰게 되어 공통 ReadonlyCard · ReadonlyValue 로 옮겼다(2026-10-26). */}
               <ReadonlyCard title="계정 정보">
                 <FormRow>
