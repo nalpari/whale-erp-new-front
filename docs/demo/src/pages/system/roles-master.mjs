@@ -1,6 +1,6 @@
 // 플랫폼 권한 관리 · 플랫폼 마스터 기준. 목업 docs/mockup/system/roles.html 의 기본 상태(목업 권한 master, PA000002 선택)를 본 것.
 // roles.mjs(플랫폼 관리자 기준)와 다른 점: 본인 권한이 PM000001, 권한 상세에 [삭제]와 권한 삭제 확인창이 있고,
-// 메뉴등록에서 본인 범위 상한이 걸리지 않으며 PA000001 고정 권한도 고칠 수 있다.
+// [메뉴설정]에서 본인 범위 상한이 걸리지 않으며 PA000001 고정 권한도 고칠 수 있다.
 import * as ui from "../../ui.mjs";
 import { req } from "../../biz-form.mjs";
 import * as x from "../../extra.mjs";
@@ -70,7 +70,7 @@ const SELECTED = null; // 처음 진입은 고른 권한 없이 빈 안내를 �
 
 const has = (map, code, op) => !!map?.[code]?.includes(op);
 const TIP = { self: "본인 권한 범위 밖", bp: "BP 마스터·가맹 마스터 권한에는 플랫폼 관리 메뉴를 줄 수 없습니다" };
-// 메뉴 등록 팝업의 서비스 탭. POS 는 아직 메뉴가 없어 빈 표다
+// [메뉴설정] 팝업의 서비스 탭. POS 는 아직 메뉴가 없어 빈 표다
 // 공통코드 SERVICE 순서 그대로(2026-10-15). 탭이 팝업 폭을 넘으면 한 줄을 지키고 가로로 스크롤해 고른다(scrollTabs).
 // 메뉴가 아직 없는 서비스는 빈 표다
 const SVC_TABS = [
@@ -78,7 +78,7 @@ const SVC_TABS = [
   ["QR_ORDER", "QR Order"], ["RECIPE_MANAGEMENT", "레시피관리"], ["ORDER_MANAGEMENT", "발주관리"], ["STORE_INVENTORY", "점포재고관리"], ["WAITING_MANAGEMENT", "대기순번관리"], ["RESERVATION", "예약관리"],
 ];
 
-// 메뉴 등록 확인창 하나(권한 하나). 목업 스크립트가 그리던 표를 빌드 때 그린다.
+// [메뉴설정] 확인창 하나(권한 하나). 목업 스크립트가 그리던 표를 빌드 때 그린다.
 function menuDialog(A, R, role, id) {
   const [type, code, name, , , , , , , base, svc] = role; // base: 추가 권한인지 가리는 데만 쓴다(상한은 설정자 본인 권한뿐 · 확정 2026-10-06)
   const isBp = code.startsWith("BM") || code.startsWith("FM");
@@ -133,14 +133,14 @@ function menuDialog(A, R, role, id) {
       // 체크박스는 칸 가운데(본문과 같은 세로줄), 글자는 그 오른쪽(앱 role-menu-dialog.tsx 와 같다, 2026-10-26 사용자 지정)
       return `<span class="grid grid-cols-[1fr_auto_1fr] items-center gap-[6px]"><span></span><span class="inline-flex${open.length ? "" : " opacity-40"}">${ui.checkbox(A, "", open.length > 0 && open.every((m) => has(map, m[0], op)), { "aria-label": `${label} 전체 선택`, disabled: !open.length })}</span><span class="justify-self-start whitespace-nowrap">${label}</span></span>`;
     };
-    // 메뉴 영역은 BP 권한 메뉴 등록처럼 높이를 고정하고 넘치면 그 안에서 스크롤한다
+    // 메뉴 영역은 BP 권한별 메뉴설정처럼 높이를 고정하고 넘치면 그 안에서 스크롤한다
     return menuScroll(depthRows(ui.dataTable(
       [{ header: "메뉴명", align: "left" }, { header: "메뉴단계", width: "w-[80px]" }, ...OPS.map((o) => ({ header: head(o), width: "w-[100px]" }))],
       rows,
       "이 서비스에 등록된 메뉴가 없습니다.",
     ), vis.map((m) => m[1])));
   };
-  // 서비스는 표 위 탭으로 고른다(BP 권한 메뉴 등록과 같다 · 2026-10-08). 처음엔 그 권한의 기본 서비스 탭이 열린다
+  // 서비스는 표 위 탭으로 고른다(BP 권한별 메뉴설정과 같다 · 2026-10-08). 처음엔 그 권한의 기본 서비스 탭이 열린다
   const tabs = scrollTabs(x.tabs(
     SVC_TABS.map(([key, label]) => ({ id: `${id}-${key}`, label, html: svcTable(key) })),
     `${id}-${svc}`,
@@ -170,11 +170,10 @@ export default ({ A, R }) => {
       `${type} <span class="text-erp-label">· ${code}</span>`,
       `<span class="text-erp-link hover:underline">${name}</span>`, // 권한명은 링크색 — 앱(platform-role-groups · bp-role-groups)과 같다(2026-10-26 사용자 지정)
       desc,
-
       // 등록일시 열은 뺐다 — 앱 platform-role-groups 와 같이 최종수정만(2026-10-26 사용자 지정)
       `${mod} ${c.muted(`· ${modBy}`)}`,
-      // 등록 / 미등록만 보인다. 미등록은 상태 빨강 배지
       x.dialogTrigger("메뉴설정", id, "soft"),
+      // 등록 / 미등록만 보인다. 미등록은 상태 빨강 배지
       n ? ui.badge("on", "등록") : ui.badge("off", "미등록"),
     ];
   });

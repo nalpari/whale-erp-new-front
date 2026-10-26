@@ -8,7 +8,7 @@ import * as c from "../../config-parts.mjs";
 import { erpHeader, link } from "../../site.mjs";
 import { recordCard, roleHead, sideHead, depthRows, menuScroll, tagRows, newButton, ROLE_SCRIPT } from "../../role-side.mjs";
 
-// [유형, 코드, 권한명, 설명, 수정일시, 수정자, 메뉴 수, 생성일시, 생성자, 관리계정ID, 연결 사용자] — 목업 표본과 같다
+// [유형, 코드, 권한명, 설명, 수정일시, 수정자, 메뉴 수, 생성일시, 생성자, 가맹마스터 계정, 연결 사용자] — 목업 표본과 같다
 const GROUPS = [
   ["BP 관리자", "BA000003", "운영 총괄", "점포·직원·환경설정 전반", "2026-08-28 16:40", "hangang01", 15, "2025-02-07 14:10", "hangang01", null, ["hgops 김도윤"]],
   ["BP 관리자", "BA000004", "인사 담당", "직원관리 중심", "2026-09-15 11:20", "hangang01", 14, "2025-03-28 15:30", "hangang01", null, ["hghr 이서아"]],
@@ -102,7 +102,7 @@ export default ({ A, R }) => {
     { header: "권한명", width: "w-[260px]", align: "left" }, // 설명 글자가 칸 한가운데서 시작하지 않게 권한명을 넓혀 고정한다(앱 bp-role-groups 와 같다, 2026-10-26 사용자 지정)
     { header: "설명", align: "left" },
     { header: "최종수정", width: "w-[220px]" }, // 앱 bp-role-groups 와 같이 한 줄 「일시 · 사람」(2026-10-26 사용자 지정)
-    { header: "메뉴관리", width: "w-[130px]" }, // 버튼 열을 상태 앞에(앱 bp-role-groups 와 같다, 2026-10-26 사용자 지정)
+    { header: "메뉴관리", width: "w-[124px]" }, // 버튼 열을 상태 앞에(앱 bp-role-groups 와 같다, 2026-10-26 사용자 지정)
     { header: "메뉴설정 여부", width: "w-[120px]" },
   ];
   const rows = GROUPS.map(([type, code, name, desc, at, by, n], i) => [
@@ -110,12 +110,12 @@ export default ({ A, R }) => {
     `<span class="text-erp-link hover:underline">${name}</span>`, // 권한명은 링크색 — 앱 bp-role-groups 와 같다(2026-10-26)
     desc || c.muted("-"),
     `${at} ${c.muted(`· ${by}`)}`,
-    // 메뉴 권한이 하나도 없으면 미등록(상태 빨강) — BA000007 이 미등록 표본(2026-10-08)
     i === MENU_ROW ? x.dialogTrigger("메뉴설정", menuId, "soft") : ui.button("메뉴설정", { variant: "soft" }),
+    // 메뉴 권한이 하나도 없으면 미등록(상태 빨강) — BA000007 이 미등록 표본(2026-10-08)
     n ? ui.badge("on", "등록") : ui.badge("off", "미등록"),
   ]);
-  // 줄을 누르면 오른쪽 칸이 그 그룹 상세로 바뀐다(ROLE_SCRIPT). 두 줄 칸이 46px 줄에 들어가게 줄 간격만 좁힌다.
-  const table = tagRows(ui.dataTable(cols, rows), GROUPS, GROUPS[SELECTED]?.[1]).replaceAll('<td class="truncate px-[10px]', '<td class="truncate px-[10px] leading-[1.3]');
+  // 줄을 누르면 오른쪽 칸이 그 그룹 상세로 바뀐다(ROLE_SCRIPT). 최종수정이 한 줄 「일시 · 사람」이 되어 줄 간격을 좁히던 처리는 뺐다(2026-10-26).
+  const table = tagRows(ui.dataTable(cols, rows), GROUPS, GROUPS[SELECTED]?.[1]);
 
   const left = c.card(
     "min-w-0 flex-1",
@@ -158,7 +158,7 @@ export default ({ A, R }) => {
   const view = ([type, code, name, desc, at, by, , regAt, regBy, owner], i) => {
     const editable = type === "BP 관리자";
     const rowsInfo = editable ? [] : [["권한명", name], ["설명", desc || c.muted("-")]];
-    // 고칠 수 없는 값 상자 — 관리계정ID 는 가맹 관리자 그룹을 만든 가맹 마스터(아이디 · 이름), BP 관리자 그룹은 「-」(앱과 같다)
+    // 고칠 수 없는 값 상자 — 가맹마스터 계정은 가맹 관리자 그룹을 만든 가맹 마스터(아이디 · 이름), BP 관리자 그룹은 「-」(앱과 같다)
     const record = recordCard({ manager: owner ? owner.replace(" ", " · ") : null, reg: [regAt, regBy], mod: [at, by] });
     const edit = editable
       ? `<div class="flex flex-col gap-[18px]">${ui.field(c.req("권한명"), ui.textField({ placeholder: "권한명을 입력해 주세요. (예: 프로모션 담당자)", value: name }))}${ui.field("설명", ui.textarea({ rows: 2, placeholder: "해당 권한에 대한 역할과 담당 업무를 입력해 주세요.", value: desc }))}</div>` +
@@ -184,11 +184,11 @@ export default ({ A, R }) => {
     `</div>`;
   // 처음 진입 · 고른 그룹 없음(2026-10-26 사용자 지정 문구 — 앱 bp-role-groups/role-side.tsx 와 같다. 목록이 빈 경우의 문구는 앱에만 있다: 데모는 늘 목록이 있다)
   const empty =
-    `<div data-role-view="empty" class="flex flex-col gap-[18px]"${SELECTED === null ? "" : " hidden"}>${ui.sectionHead("권한 그룹 수정")}` +
+    `<div data-role-view="empty" class="flex flex-col gap-[18px]"${SELECTED === null ? "" : " hidden"}>${sideHead("권한 그룹 상세")}` +
     `<div class="flex flex-col items-center gap-[6px] rounded-[2px] border border-erp-thead-line px-[18px] py-[36px] text-center text-[14px] text-erp-muted"><p>왼쪽 목록에서 [권한명]을 클릭하면 상세 정보가 표시됩니다.</p></div></div>`;
   const right = c.card("w-[464px] shrink-0", empty + GROUPS.map(view).join("") + form).replace("<section ", "<section data-role-side ");
 
-  // 권한 메뉴 등록(BA000004)
+  // 권한별 메뉴설정(BA000004)
   const menuDialog = c.wide(
     x.dialog(
       menuId,

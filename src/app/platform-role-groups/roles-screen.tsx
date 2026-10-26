@@ -14,7 +14,7 @@ import { RoleSide } from "./role-side";
 
 // 왼쪽 권한 목록 + 오른쪽 고정 칸(데모 system/roles · role-side). 오른쪽 칸은 슬라이드 패널이 아니라 늘 서 있다.
 // 권한명을 누르면 오른쪽에 그 권한의 수정(고칠 수 없으면 상세)이, [등록]을 누르면 같은 칸에 등록 양식이 선다.
-// 메뉴 등록 팝업은 BP 권한 그룹 관리와 같이 쓴다(components/role-groups) — 이 화면의 action 을 넘긴다.
+// [메뉴설정] 팝업(권한별 메뉴설정)은 BP 권한 그룹 관리와 같이 쓴다(components/role-groups) — 이 화면의 action 을 넘긴다.
 const MENU_ACTIONS: MenuDialogActions = { load: getRoleGroupMenusAction, preview: previewRoleGroupMenusAction, save: saveRoleGroupMenusAction };
 
 // 버튼은 지금 주소(/platform-role-groups)의 메뉴 권한(usePagePermission)으로 보인다 — 등록 create, 권한명 · 설명 · 메뉴 저장 update, 삭제 delete. 막는 것은 api 다.
@@ -72,8 +72,7 @@ export function RolesScreen({
     { header: "설명", align: "left", cell: (r) => r.description || <span className="text-erp-muted">-</span> },
     // 한 칸에 「일시 · 사람」. 등록일시 열은 뺐다 — BP 권한 그룹 관리와 같이 최종수정만 보인다(2026-10-26 사용자 지정). 등록은 상세에 있다
     { header: "최종수정", width: "w-[220px]", cell: (r) => <WhenWho at={r.updatedAt} actor={r.updatedBy} /> },
-    // 등록 / 미등록만 보인다. 미등록은 상태 빨강 배지
-    // [메뉴설정] 버튼 열을 「메뉴설정 여부」 앞에 둔다(2026-10-26 사용자 지정 — 전엔 「메뉴 등록 여부」 · 「메뉴 권한관리」[권한설정] 순)
+    // [메뉴설정] 버튼 열(「메뉴관리」)을 「메뉴설정 여부」 앞에 둔다(2026-10-26 사용자 지정 — 전엔 「메뉴 등록 여부」 · 「메뉴등록」[메뉴등록] 순)
     {
       header: "메뉴관리",
       width: "w-[124px]",
@@ -83,6 +82,7 @@ export function RolesScreen({
         </Button>
       ),
     },
+    // 등록 / 미등록만 보인다. 미등록은 상태 빨강 배지
     { header: "메뉴설정 여부", width: "w-[120px]", cell: (r) => (r.isMenuRegistered ? <Badge tone="on">등록</Badge> : <Badge tone="off">미등록</Badge>) },
   ];
 
@@ -98,7 +98,7 @@ export function RolesScreen({
       </PageBar>
       <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
         <section className={`${CARD} min-w-0 flex-1`}>
-          {/* 제목 줄을 34px(버튼 높이)로 고정해 왼쪽 목록 머리와 높이를 맞춘다 — 그래야 아래 첫 칸이 왼쪽 표 시작선에 선다(2026-10-26 사용자 지정) */}
+          {/* 제목 줄을 34px(버튼 높이)로 고정해 오른쪽 상세 칸 제목과 높이를 맞춘다 — 그래야 오른쪽 첫 칸이 왼쪽 표 시작선에 선다(2026-10-26 사용자 지정) */}
           <div className="flex min-h-[34px] items-end gap-[6px]">
             <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">
               {/* BP 권한 그룹 관리와 같은 제목(2026-10-26 사용자 지정, 전엔 「권한 목록」) */}

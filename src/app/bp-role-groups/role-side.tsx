@@ -113,8 +113,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
   const heading = (
     <h2 className="flex min-h-[34px] flex-wrap content-end items-center gap-[6px] text-[18px] font-semibold text-erp-ink">
       <span className="mr-[4px]">권한 그룹 상세</span>
-      {/* 권한유형(굵게) → 코드 순 — 목록 「권한유형 · 코드」와 같은 순서(2026-10-26 사용자 지정). Tag 는 className 을 받지 않아 안쪽에서 굵힌다.
-          띠 안 앞에 「권한유형」 라벨을 두고 유형 이름만 굵힌다(2026-10-26 사용자 지정) */}
+      {/* 띠 「권한유형 · {유형}」(유형만 굵게) → 코드 순 — 목록 「권한유형 · 코드」와 같은 순서(2026-10-26 사용자 지정). Tag 는 className 을 받지 않아 안쪽 span 으로 굵힌다 */}
       <Tag>
         <span className="font-normal">권한유형 ·</span>{" "}
         <span className="font-semibold">

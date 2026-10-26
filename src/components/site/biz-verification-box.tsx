@@ -188,7 +188,7 @@ export function BizVerificationBox({
   );
 
   // titleBar 면 머리를 상자 밖 회색 제목 바로 떼고 본문을 흰 바탕에 둔다(MY PAGE 「계정 정보」와 같은 모양,
-  // 2026-10-26 사용자 지정). 아니면 본문 div 는 contents 라 지금처럼 회색 상자 하나다.
+  // 2026-10-26 사용자 지정). 아니면 본문 div 는 contents 라 회색 상자 하나(머리 · 본문이 한 상자)다.
   return (
     <section
       aria-label="사업자 번호 인증"

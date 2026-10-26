@@ -271,7 +271,7 @@ function MenuTable({
   const walk = (list: RoleGroupMenuNode[]) => list.forEach((n) => (rows.push(n), walk(n.children)));
   walk(nodes);
 
-  // 일부만 켜진 묶음 줄은 –(mixed)로 보이고, 누르면 모두 켠다(머리칸은 – 없이 해제로 — 위 OPS 머리 참고)
+  // 일부만 켜진 묶음 줄은 –(mixed)로 보이고, 누르면 모두 켠다(머리칸은 – 없이 해제로 — 아래 머리 표의 OPS 칸 참고)
   const box = (label: string, state: { checked: boolean; mixed?: boolean; disabled: boolean }, onToggle: (on: boolean) => void) => (
     <span className={`inline-flex ${state.disabled ? "opacity-40" : ""}`}>
       <Checkbox
@@ -360,7 +360,7 @@ function MenuTable({
                 // enum 을 못 받았으면 영문 값 대신 쓰지 않는다(이유는 띠 · 흐린 칸으로 알 수 있다)
                 const why = blockedReasonsOf(n).flatMap((r) => (reasons.some((l) => l.value === r) ? [labelOf(reasons, r)] : []));
                 return (
-                  // 1단계 줄에만 회청 바탕을 깔아 2단계와 가른다. 줄 높이는 한 화면에 더 들어가게 42px(2026-10-26 사용자 지정)
+                  // 1단계 줄에만 옅은 바탕(erp-thead-bg #f8f9fb)을 깔아 2단계와 가른다. 줄 높이는 한 화면에 더 들어가게 42px(2026-10-26 사용자 지정)
                   <tr key={n.menuId} className={`h-[42px] border-b border-erp-thead-line ${n.depth === 1 ? "bg-erp-thead-bg" : ""}`}>
                     <td className="truncate px-[10px] text-left" title={why.join(" · ") || undefined}>
                       <span style={{ paddingLeft: (n.depth - 1) * 18 }}>

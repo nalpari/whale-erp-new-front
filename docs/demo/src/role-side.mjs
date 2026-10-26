@@ -35,7 +35,7 @@ export const roleHead = (type, code, name) =>
 export const sideHead = (title) => ui.sectionHead(title).replace('class="flex items-end', 'class="flex min-h-[34px] items-end');
 
 // 권한별 메뉴설정 표 모양(앱 role-menu-dialog.tsx 와 같다, 2026-10-26 사용자 지정) — 머리는 erp-subtle 바탕 · 600 먹색 · 칸 여백 4px,
-// 본문 줄은 42px, 1단계 줄에만 회청 바탕. depths: 줄마다 단계
+// 본문 줄은 42px, 1단계 줄에만 옅은 바탕(erp-thead-bg #f8f9fb). depths: 줄마다 단계
 export function depthRows(table, depths) {
   let n = -1;
   return table
@@ -55,14 +55,14 @@ export function menuScroll(table) {
   return (
     `<div class="flex h-[420px] flex-col">` +
     `<div class="shrink-0 overflow-hidden [scrollbar-gutter:stable]">${open}${cols}${pick("thead")}</table></div>` +
-    `<div class="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">${open}${cols}${pick("tbody")}</table></div>` +
+    `<div class="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">${open}${cols}${pick("thead").replace(/<thead>/, '<thead class="sr-only">').replace(/<input[^>]*>/g, "")}${pick("tbody")}</table></div>` +
     `</div>`
   );
 }
 
 // 권한 그룹 상세의 고칠 수 없는 값 상자 — MY PAGE 「계정 정보」 모양에서 제목 바만 뺐다(앱 components/common/readonly-card.tsx, 2026-10-26 사용자 지정).
 // manager: 가맹마스터 계정 — undefined 면 줄 없음(플랫폼), null 이면 「-」(BP 관리자 그룹), 값이면 가맹 마스터 아이디 · 이름. reg · mod: [일시, 사람]
-// 라벨 옆 도움말(?) — 마우스를 올리거나 키보드로 닿으면 안내가 뜬다(앱 components/common/help-tip.tsx 와 같다, 2026-10-26 사용자 지정)
+// 라벨 옆 도움말 정보 아이콘 — 마우스를 올리거나 키보드로 닿으면 안내가 뜬다(앱 components/common/help-tip.tsx 와 같다, 2026-10-26 사용자 지정)
 const helpTip = (text, label) =>
   `<span class="group/help relative inline-flex shrink-0"><button type="button" aria-label="${label} 도움말" class="grid size-[16px] place-items-center rounded-full text-erp-muted transition-colors duration-150 group-hover/help:text-erp-brand focus-visible:text-erp-brand"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><rect x="7.3" y="7" width="1.4" height="5" rx="0.7" fill="#fff"/><circle cx="8" cy="4.8" r="0.9" fill="#fff"/></svg></button>` +
   `<span role="tooltip" class="pointer-events-none absolute top-[calc(100%+6px)] left-[-8px] z-10 w-max max-w-[260px] rounded-[2px] border border-[#ebebeb] bg-white px-[12px] py-[8px] text-[13px] leading-[1.5] font-normal break-keep whitespace-normal text-erp-ink opacity-0 shadow-[0_2px_6px_rgba(40,47,55,0.08)] transition-opacity duration-150 group-focus-within/help:opacity-100 group-hover/help:opacity-100">${text}</span></span>`;
@@ -88,7 +88,7 @@ export function roleSide({ roles, own, master, selected, del = {}, card }) {
   const view = (r) => {
     const [type, code, name, kind, desc, mod, modBy, reg, regBy] = r;
     const locked = code === own;
-    // 제목 옆에 권한유형 · 코드, 입력칸 아래 「등록 정보」 카드(앱과 같다, 2026-10-26).
+    // 제목 옆에 권한유형 · 코드, 입력칸 아래 제목 없는 고칠 수 없는 값 상자(등록 · 최종수정, 앱과 같다, 2026-10-26).
     // 본인 권한은 고칠 수 없어 권한명 · 설명을 제목 없는 표에 싣는다.
     const rows = locked ? [["권한명", name], ["설명", desc || c.muted("-")]] : [];
     const fields = locked ? "" : `<div class="flex flex-col gap-[18px]">${ui.field(req("권한명"), ui.textField({ placeholder: "권한명을 입력해 주세요. (예: 프로모션 담당자)", value: name }))}${ui.field("설명", ui.textarea({ rows: 2, placeholder: "해당 권한에 대한 역할과 담당 업무를 입력해 주세요.", value: desc }))}</div>`;
@@ -128,7 +128,7 @@ export function roleSide({ roles, own, master, selected, del = {}, card }) {
   return `<section class="${card} w-[464px] shrink-0" data-role-side>${empty}${roles.map(view).join("")}${form}</section>` + ROLE_SCRIPT;
 }
 
-// 메뉴 등록 팝업의 서비스 탭을 가로 스크롤 줄로(2026-10-15). 공통 x.tabs 는 다른 화면도 써서 그 결과의 탭 줄만 바꾼다.
+// [메뉴설정] 팝업(권한별 메뉴설정)의 서비스 탭을 가로 스크롤 줄로(2026-10-15). 공통 x.tabs 는 다른 화면도 써서 그 결과의 탭 줄만 바꾼다.
 // 사용 중 서비스(공통코드 SERVICE)가 많아도 한 줄을 지키고, 스크롤바는 숨기고, 넘치는 쪽만 끝을 흐리게 한 뒤 ‹ › 를 둔다.
 // 탭 전환은 그대로 공통 erp.js 가 한다. 스크롤 · 흐림 · 화살표는 SVC_TABS_SCRIPT 가 맡는다.
 const ARROW = "grid h-[42px] w-[28px] shrink-0 place-items-center text-[18px] text-erp-label transition-colors duration-150 ease-out hover:text-erp-ink";

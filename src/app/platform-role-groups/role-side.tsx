@@ -30,7 +30,7 @@ export function RoleSide({
 }: {
   creating: boolean;
   detail: RoleDetailState;
-  /** 권한 목록이 아예 비었는가 — 빈 칸 문구를 가른다 */
+  /** 권한 그룹 목록이 아예 비었는가 — 빈 칸 문구를 가른다 */
   listEmpty: boolean;
   lockReasons: EnumValue[];
   onCancelCreate: () => void;
@@ -82,7 +82,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
           { label: "설명", value: role.description || muted("-"), multiline: Boolean(role.description) },
         ]),
   ];
-  // 고칠 수 없는 값은 MY PAGE 「계정 정보」와 같은 카드로(2026-10-26 사용자 지정 — 전엔 「기본 정보」 상세 표 세 줄).
+  // 고칠 수 없는 값은 MY PAGE 「계정 정보」와 같은 카드로(2026-10-26 사용자 지정 — 전엔 「기본 정보」 상세 표의 등록일시 · 최종수정일시 두 줄).
   // 일시는 굵게, 사람은 회색으로 「일시 · 사람」.
   const whenText = (at: string, actor: Parameters<typeof actorOf>[0]) => `${formatDateTime(at)} · ${actorOf(actor)}`;
   const when = (at: string, actor: Parameters<typeof actorOf>[0]) => (
@@ -103,8 +103,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
     <h2 className="flex min-h-[34px] flex-wrap content-end items-center gap-[6px] text-[18px] font-semibold text-erp-ink">
       {/* 고칠 수 있어도 없어도 같은 제목 — BP 권한 그룹 관리와 같다(2026-10-26 사용자 지정, 전엔 「권한 수정」 · 「권한 상세」) */}
       <span className="mr-[4px]">권한 그룹 상세</span>
-      {/* 권한유형(굵게) → 코드 순 — 목록 「권한유형 · 코드」와 같은 순서(2026-10-26 사용자 지정). Tag 는 className 을 받지 않아 안쪽에서 굵힌다.
-          띠 안 앞에 「권한유형」 라벨을 두고 유형 이름만 굵힌다(2026-10-26 사용자 지정) */}
+      {/* 띠 「권한유형 · {유형}」(유형만 굵게) → 코드 순 — 목록 「권한유형 · 코드」와 같은 순서(2026-10-26 사용자 지정). Tag 는 className 을 받지 않아 안쪽 span 으로 굵힌다 */}
       <Tag>
         <span className="font-normal">권한유형 ·</span>{" "}
         <span className="font-semibold">
