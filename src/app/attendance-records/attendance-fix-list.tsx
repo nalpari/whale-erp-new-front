@@ -27,6 +27,17 @@ const Mark = ({ tone, children }: { tone: keyof typeof TONE; children: ReactNode
 const Sub = ({ children }: { children: ReactNode }) => <span className="text-erp-label">{children}</span>;
 const PAYSLIP_WARNING = "이 날짜는 급여명세서가 확정된 기간입니다. 고치면 급여에 영향이 갈 수 있습니다.";
 
+/** 짝마다 한 줄 — 하루에 출근이 여러 번이면 출근 · 퇴근 칸의 같은 높이가 한 짝이다(일별 출퇴근과 같은 모양) */
+const Times = ({ times }: { times: string[] }) =>
+  times.length ? (
+    <span className="inline-flex flex-col leading-[1.4]">
+      {times.map((t, i) => (
+        <span key={i}>{t}</span>
+      ))}
+    </span>
+  ) : (
+    "-"
+  );
 const punchesOf = (r: FixRow) => r.pairs.flatMap((p) => [p.checkIn, p.checkOut]);
 const hasReason = (r: FixRow) => punchesOf(r).some((p) => p?.reviewReason);
 const needsAction = (r: FixRow) => hasReason(r) || r.status === "MISSING_CHECK_OUT" || r.status === "MISSING_CHECK_IN";
@@ -123,8 +134,8 @@ export function FixList({ rows, reasonLabels, editableFrom }: { rows: FixRow[]; 
         ),
     },
     { header: "날짜", width: "w-[80px]", cell: (r) => shortDay(r.date) },
-    { header: "출근", width: "w-[80px]", cell: (r) => r.pairs.map((p) => p.checkIn?.time ?? "-").join(", ") || "-" },
-    { header: "퇴근", width: "w-[80px]", cell: (r) => r.pairs.map((p) => p.checkOut?.time ?? "-").join(", ") || "-" },
+    { header: "출근", width: "w-[80px]", cell: (r) => <Times times={r.pairs.map((p) => p.checkIn?.time ?? "-")} /> },
+    { header: "퇴근", width: "w-[80px]", cell: (r) => <Times times={r.pairs.map((p) => p.checkOut?.time ?? "-")} /> },
     { header: "사유", align: "left", cell: (r) => <span className="flex flex-wrap items-center gap-[4px]">{tagsOf(r, reasonLabels)}</span> },
     {
       header: "",
@@ -160,7 +171,8 @@ export function FixList({ rows, reasonLabels, editableFrom }: { rows: FixRow[]; 
       <SlidePanel id="attendance-fix" open={fix !== null} onClose={() => setFix(null)} label="기록 보정" trigger={trigger}>
         {fix && (
           <FixForm
-            key={round}
+            // 고칠 기록(짝)을 바꾸면 입력칸을 그 짝 값으로 새로 채운다
+            key={`${round}-${fix.pairIndex}`}
             fix={fix}
             onPick={(pairIndex) => setFix({ ...fix, pairIndex })}
             onClose={() => setFix(null)}
