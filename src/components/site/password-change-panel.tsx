@@ -83,7 +83,7 @@ export function PasswordChangePanel({ id, open, onClose, trigger }: { id: string
   const [done, setDone] = useState(false);
   const [saving, startSaving] = useTransition();
   // 패널을 닫았다 다시 열면 지난 저장 요청의 응답이 늦게 와도 새 세션에 적용되지 않게 막는다 — ref 는 렌더링
-  // 중이 아니라 이벤트 핸들러 안에서만 건드린다(my-page-panel.tsx 의 checkNumber 와 같은 패턴, 코드 리뷰로 찾음).
+  // 중이 아니라 effect · 이벤트 핸들러 안에서만 건드린다(my-page-panel.tsx 의 checkNumber 와 같은 패턴, 코드 리뷰로 찾음).
   const saveNumber = useRef(0);
 
   // 열 때마다 칸·오류·완료 화면을 비운다 — 저장된 비밀번호 값을 패널에 남기지 않는다(마스킹과 별개로, 다시 열면 늘 빈칸).
@@ -106,6 +106,14 @@ export function PasswordChangePanel({ id, open, onClose, trigger }: { id: string
   const messageId = (field: MyPasswordFormField) => `${ids}-${field}`;
   const invalid = (field: MyPasswordFormField) => (fieldError?.at === field ? true : undefined);
   const describe = (field: MyPasswordFormField) => (fieldError?.at === field ? messageId(field) : undefined);
+
+  // Esc · 바탕 클릭도 이 하나로 받는다 — 저장 중에 닫으면 결과(성공이면 완료 화면, 실패면 오류 문구)를 아무도
+  // 못 본다(closeOnBackdrop 이 saving 을 안 보고 그대로 onClose 를 불러서, 닫기 버튼만 disabled 여도 막히지
+  // 않았다 — 코드 리뷰로 찾음, 2026-10-26). "닫기" 버튼은 이미 disabled={saving} 이라 저장 중엔 안 눌리지만,
+  // 한 군데서 막아 둔다.
+  const handleClose = () => {
+    if (!saving) onClose();
+  };
 
   const handleSave = () => {
     setFieldError(null);
@@ -136,7 +144,7 @@ export function PasswordChangePanel({ id, open, onClose, trigger }: { id: string
   };
 
   return (
-    <SlidePanel id={id} open={open} onClose={onClose} label="비밀번호 변경" trigger={trigger} closeOnBackdrop>
+    <SlidePanel id={id} open={open} onClose={handleClose} label="비밀번호 변경" trigger={trigger} closeOnBackdrop>
       <h2 className="text-[18px] font-semibold text-erp-ink">비밀번호 변경</h2>
       {done ? (
         <Done onClose={onClose} />
@@ -197,7 +205,7 @@ export function PasswordChangePanel({ id, open, onClose, trigger }: { id: string
           </FormGroup>
 
           <div className="flex justify-center gap-[6px]">
-            <Button variant="off" onClick={onClose} disabled={saving}>
+            <Button variant="off" onClick={handleClose} disabled={saving}>
               닫기
             </Button>
             <Button onClick={handleSave} disabled={saving || !form.current || !form.next || !form.confirm}>

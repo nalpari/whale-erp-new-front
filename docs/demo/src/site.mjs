@@ -226,8 +226,8 @@ export function mypagePanel(A) {
 
 // MY PAGE 전체 화면(mypage/password.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다. 비밀번호 칸(눈 아이콘 보기 토글)은
 // biz-form.mjs 의 pwField. 안내 문구는 전부 칸 안 placeholder 로 두고, 칸 아래는 error 가 있을 때만 보인다(2026-10-26
-// 사용자 지정 — 전엔 긴 조건 문구가 칸 아래 늘 남아 있었다). errors 를 주면(current · newPassword · confirm) 목업이
-// 숨겨 두는 위반 안내(data-show="cur" 등)를 그 자리에 그대로 보인다.
+// 사용자 지정 — 전엔 긴 조건 문구가 칸 아래 늘 남아 있었다). errors 의 칸(current · newPassword · confirm)에 값이
+// 있으면 그 pwField 가 그 문구를 칸 아래에 보인다.
 export function passwordBody(A, { closeSave = false, errors = {} } = {}) {
   return ui.formGroup(
     "새 비밀번호 설정",

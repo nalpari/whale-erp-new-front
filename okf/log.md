@@ -1,7 +1,7 @@
 # Bundle history
 
 ## 2026-10-26
-* **Create**: [Whale ERP Frontend](/whale-erp-front.md) — GNB 「비밀번호 변경」(MY PAGE, S-PTWREE) 슬라이드 패널을 열었다(`password-change-panel.tsx`). 현재 비밀번호를 받아 `POST /auth/admin/me/password-change`(api PR #145/everest 짝)를 부른다. 오류 문구는 화면이 만들지 않고 api message 를 그대로 쓴다(force-password-dialog.tsx 와 같은 규칙) — `myPasswordErrorField`(`my-password-form.ts`)가 어느 칸 탓인지만 가른다. `session-gate.tsx`에 `passwordChangeOpen`을 `myPageOpen`과 같은 자리에 더하고 같은 `myPageTrigger`로 포커스를 돌린다. 세션은 건드리지 않는다(이 기기 · 다른 기기 로그인 모두 이어짐, S-PTWREE outcome).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — GNB 「비밀번호 변경」(MY PAGE, S-PTWREE) 슬라이드 패널을 열었다(`password-change-panel.tsx`). 현재 비밀번호를 받아 `POST /auth/admin/me/password-change`(api PR #145/everest 짝)를 부른다. 오류 문구는 화면이 만들지 않고 api message 를 그대로 쓴다(force-password-dialog.tsx 와 같은 규칙) — `myPasswordErrorField`(`my-password-form.ts`)가 어느 칸 탓인지만 가른다. `session-gate.tsx`에 `passwordChangeOpen`을 `myPageOpen`과 같은 자리에 더하고 같은 `myPageTrigger`로 포커스를 돌린다. 세션은 건드리지 않는다(이 기기 · 다른 기기 로그인 모두 이어짐, S-PTWREE outcome).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비밀번호 변경 패널 디자인 정리(사용자 지정, 2026-10-26). 세 칸 모두 보기/숨기기 눈 아이콘(`PasswordInput`)을 더하고, 칸 아래 늘 보이던 `passwordChecks` 체크리스트를 빼 조건 안내는 placeholder로만 둔다(긴 문구가 칸 너비에 잘려 발견). 성공하면 패널을 닫지 않고 완료 화면(연한 파랑 원 + 체크 아이콘, 비교 시안 C안)으로 바꾼다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front seel, main #128 까지): okf/log 충돌은 양쪽 기록을 살렸다.
 

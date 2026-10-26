@@ -67,8 +67,8 @@ type LoginActions = {
   passwordChangeOpen: boolean;
   setPasswordChangeOpen: (open: boolean) => void;
   /** UserPop 의 이름 버튼 — MyPagePanel · PasswordChangePanel 의 SlidePanel trigger 로 같이 써서(둘 다 같은
-   * UserPop 항목에서 연다) 패널을 닫으면 포커스가 이 버튼으로 돌아오게 한다(코드 리뷰로 찾음, 2026-10-21 —
-   * 전에는 못 꺼내 body 로 빠졌다). AdminHeader 가 UserPop 에 넘긴다. */
+   * UserPop 안의 서로 다른 항목에서 연다) 패널을 닫으면 포커스가 이 버튼으로 돌아오게 한다(코드 리뷰로 찾음,
+   * 2026-10-21 — 전에는 못 꺼내 body 로 빠졌다). AdminHeader 가 UserPop 에 넘긴다. */
   myPageTrigger: RefObject<HTMLButtonElement | null>;
 };
 const LoginContext = createContext<(LoginState & LoginActions) | null>(null);
