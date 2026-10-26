@@ -2,12 +2,12 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useState } from "react";
-import { Checkbox, FilterPanel, FilterSection, Pagination, SearchField, useToast } from "@/components/common";
+import { Checkbox, FilterPanel, FilterSection, Pagination, SearchField, Select, useToast } from "@/components/common";
 import { useScope, useStores } from "@/components/site/session-gate";
 import { StorePicker, type PickedStore } from "@/components/site/store-picker";
 import type { EnumValue } from "@/lib/enums";
 import { scopeStores, toPickedStore } from "@/lib/store-scope";
-import { fillScopeOf, pickedIdsOf, toSearch, unusableScopeOf, withPickedStores, withScopeCondition, type ListQuery } from "./contract-list";
+import { PAGE_SIZES, fillScopeOf, pickedIdsOf, toSearch, unusableScopeOf, withPickedStores, withScopeCondition, type ContractListPage, type ListQuery, type PageSize } from "./contract-list";
 
 // 필터와 페이지는 주소 쿼리에 둔다. 서버 페이지가 그 쿼리로 목록을 다시 받아 그린다.
 function useGo() {
@@ -28,8 +28,17 @@ function useGo() {
  * 탭에서 복사한 주소) 이름 대신 「점포 {id}」 칩으로 그린다 — 조건에서 빼면 api 가 볼 수 있는 점포까지 잃고, 칩이 없으면 보이지 않는 조건이
  * 된다. 지울지는 사용자가 정하고, 업무 범위 밖 id 는 api 가 조용히 뺀다. 주소의 범위를 이 탭에서 쓸 수 없으면(unusableScopeOf — 헤더 ·
  * 칩과 같은 판정) 「전체」로 바꾸고 알린다.
+ * 상태 체크마다 상태별 개수를 붙인다(WHALEERP-133) — api 가 상태 필터와 상관없이 세고, 본사 역할에게 가려진 가맹 직원 계약도 센다(ATT-30).
  */
-export function ContractFilters({ query, statuses }: { query: ListQuery; statuses: EnumValue[] }) {
+export function ContractFilters({
+  query,
+  statuses,
+  statusCounts,
+}: {
+  query: ListQuery;
+  statuses: EnumValue[];
+  statusCounts?: ContractListPage["statusCounts"];
+}) {
   const go = useGo();
   const toast = useToast();
   const [headerScope] = useScope();
@@ -82,7 +91,11 @@ export function ContractFilters({ query, statuses }: { query: ListQuery; statuse
       onReset={() => {
         setStaffMemberName("");
         // 초기화는 헤더 범위로 돌아간다
-        const reset = withScopeCondition({ page: 1, staffMemberName: "", status: [], storeIds: [], storesCleared: false, scope: null }, headerScope);
+        // 페이지당 건수는 보는 방식이라 그대로 둔다
+        const reset = withScopeCondition(
+          { page: 1, pageSize: query.pageSize, staffMemberName: "", status: [], storeIds: [], storesCleared: false, scope: null },
+          headerScope,
+        );
         setChips(chipsOf(reset));
         go.push(reset);
       }}
@@ -110,13 +123,29 @@ export function ContractFilters({ query, statuses }: { query: ListQuery; statuse
         {statuses.map((s) => (
           <Checkbox
             key={s.value}
-            label={s.label}
+            label={statusCounts ? `${s.label} (${(statusCounts[s.value as keyof typeof statusCounts] ?? 0).toLocaleString("ko-KR")})` : s.label}
             checked={checked.includes(s.value)}
             onChange={(e) => toggle(s.value, e.target.checked)}
           />
         ))}
       </FilterSection>
     </FilterPanel>
+  );
+}
+
+/** 페이지당 건수 — 직원 목록(StaffPageSize)과 같은 선택지. 바꾸면 첫 쪽으로 간다 */
+export function ContractPageSize({ query }: { query: ListQuery }) {
+  const go = useGo();
+  return (
+    <div className="w-[80px] shrink-0">
+      <Select aria-label="페이지당 건수" value={String(query.pageSize)} onChange={(e) => go.push({ ...query, pageSize: Number(e.target.value) as PageSize, page: 1 })}>
+        {PAGE_SIZES.map((size) => (
+          <option key={size} value={size}>
+            {size}
+          </option>
+        ))}
+      </Select>
+    </div>
   );
 }
 

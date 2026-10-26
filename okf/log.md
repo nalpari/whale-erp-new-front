@@ -1,10 +1,16 @@
 # Bundle history
 
 ## 2026-10-26
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front goldeen, main #129 까지): okf 충돌은 양쪽 기록을 살렸고, `api-types.generated.ts` 는 api main(#146 · #147 머지 뒤 `5c80d70`)으로 다시 만들었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #127 리뷰(Young Joo) 반영: 저장 뒤 안내 쿠키를 서버가 아니라 `SavedNotice` 가 읽고 지운다 — 목록 → 상세 → [뒤로] 때 Next 가 기억한 화면으로 안내가 또 뜨지 않게. 상태별 개수 서술을 api #146(보이는 계약만 셈)에 맞췄다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #127 ip-code-review 블로커 반영: 저장 뒤 안내를 주소(`?saved=`) 대신 60초 사는 쿠키(`contract-saved`)로 넘기고 `SavedNotice` 가 그리면 지운다 — 주소에서 지우던 `history.replaceState(history.state …)` 는 Next 가 라우터 상태를 맞추지 않아 `?saved=` 가 되살아나 새로고침 때 안내가 다시 떴다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `api-types.generated.ts` 를 api #147(kabuto)(`PATCH /auth/admin/me` 의 `currentPassword` 칸 삭제) 기준으로 다시 만들었다. MY PAGE 저장 설명 · 400 설명만 바뀌었고 화면 코드는 그대로다(front #125 가 이미 안 보낸다). api #147 다음에 머지한다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front seel, main #128 까지): okf/log 충돌은 양쪽 기록을 살렸다.
 
 ## 2026-10-23
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #127 code-review 반영: 저장 뒤 안내를 `SavedNotice` 로 — 한 번 보이고 주소에서 `saved` 를 지워 새로고침 · 뒤로 가기에 다시 뜨지 않는다. 종이 계약 라우트가 저장 응답을 넘겨 안내를 한 곳(`savedKindOf`)에서 고른다. 초안 직원의 발송 대기 · 가입 상태 null 은 판별한 초대 유형을 붙인다. 화면 문구에서 일감 번호(STAFF-14)를 뺐다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — goldeen 리뷰 반영: 종이 계약 등록 뒤에도 목록 위 안내(`PAPER`), 저장 안내는 api 가 싣는 「실제로 한 처리」로 골라 수정 요청을 고쳐 다시 보낸 것도 맞게, 헤더 범위로 주소를 채울 때 안내를 남기고, 겹친 `saved` 는 바꾼다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 목록(WHALEERP-133): 페이지당 건수 20 · 50 · 100, 상태 칸에 직원의 지금 가입 · 초대 상태(가입 대기 중 · 소속 확인 중 등) · 퇴직 안내, 상태 체크 옆 상태별 개수(동의 안 한 가맹 직원 계약도 셈). 작성 화면(WHALEERP-132): 기재사항 · 주민등록번호를 받지 않는다는 안내, 소정근로시간이 근무스케줄 기본값이 된다는 안내(데모도), 저장 뒤 목록 위에 시스템이 한 처리 안내(`?saved=`). api 타입을 api goldeen 으로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — MY PAGE 기본정보에서 이메일을 바꿀 때 「지금 비밀번호」를 요구하던 통제(2026-10-21 추가)를 뺐다(사용자 결정, 2026-10-22) — 토큰 탈취만으로 이메일을 바꿔 비밀번호 찾기를 가로챌 수 있는 경로가 다시 열린다는 점을 알리고 확인받았다. `my-profile-form.ts`(`validateCurrentPassword` 삭제, `toUpdateInput` 단순화), `my-page-panel.tsx`(지금 비밀번호 칸·상태 제거)를 고쳤다. api 쪽(`admin-profile.service.ts`/`admin-profile-update.dto.ts`)은 api #145 — api 가 먼저 머지 · 배포돼야 한다(안 그러면 이메일 변경 저장이 400).
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — #119 재리뷰 참고 반영: 재직 이력 링크의 주(`week`)를 근무스케줄 칸과 같은 `weekParam` 으로 읽는다(여럿이면 앞의 것, 그 주 월요일). 예전에는 여럿이면 빼서 이력 상세가 이번 주를 봤다. #119 로그의 타입 기준 커밋을 `dee2f0a` 로 바로잡았다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세 code-review 반영(front #124): 「종료」 실패는 재발송과 같은 `sendFailureOf` 규칙(모를 때 문장만 `END_UNKNOWN`)이고 확인창을 막지 않는다(두 번 닫히지 않음). 닫으면 `?send=` 안내를 지운다. 날인 기한은 만료에도 보이고, 거부 사유 줄은 길면 늘어난다.
