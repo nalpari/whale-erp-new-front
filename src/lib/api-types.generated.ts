@@ -1123,6 +1123,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/public-holidays": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 공식 휴일 — 월을 주면 그 달(캘린더), 없으면 그 해 전체(목록). 날짜순, 페이지 없이. */
+        get: operations["PublicHolidaysController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/bp-codes": {
         parameters: {
             query?: never;
@@ -4858,6 +4875,48 @@ export interface components {
             parentMenuId: number | null;
             /** @description 새 상위 아래의 자리 — 0 이 맨 앞, 형제 수 이상이면 맨 끝. */
             index: number;
+        };
+        PublicHolidayResponseDto: {
+            publicHolidayId: number;
+            /**
+             * @description 날짜.
+             * @example 2026-09-24
+             */
+            holidayDate: string;
+            /**
+             * @description 휴일명.
+             * @example 추석
+             */
+            name: string;
+            /**
+             * @description 비고. 없으면 null.
+             * @example 추석 연휴
+             */
+            note: string | null;
+        };
+        PublicHolidaySynchronizationResponseDto: {
+            /**
+             * @description 성공한 마지막 동기화 시각(ISO 8601). 동기화한 적이 없으면 null.
+             * @example 2026-09-01T03:00:00.000Z
+             */
+            lastSynchronizedAt: string | null;
+            /**
+             * @description 올해 · 다음 해(한국 날짜 기준) 중 마지막 동기화가 실패한 연도. 없으면 빈 배열.
+             * @example [
+             *       2027
+             *     ]
+             */
+            failedYears: number[];
+        };
+        PublicHolidayListResponseDto: {
+            /** @description 고른 연도. */
+            year: number;
+            /** @description 고른 월. 연도 전체를 조회했으면 null. */
+            month: number | null;
+            items: components["schemas"]["PublicHolidayResponseDto"][];
+            /** @description 공식 휴일 수(고른 달, 또는 그 해). */
+            total: number;
+            synchronization: components["schemas"]["PublicHolidaySynchronizationResponseDto"];
         };
         BpListItemResponseDto: {
             bpCodeId: number;
@@ -10866,6 +10925,47 @@ export interface operations {
             };
             /** @description 쓰기가 몰려 트랜잭션 시간을 넘김 — 잠시 뒤 다시 시도 */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PublicHolidaysController_list: {
+        parameters: {
+            query: {
+                /** @description 연도. 2000~2100(공식 휴일 테이블의 범위). */
+                year: number;
+                /** @description 월 1~12. 주면 그 달(캘린더), 없으면 그 해 전체(목록). */
+                month?: number;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicHolidayListResponseDto"];
+                };
+            };
+            /** @description 연도 2000~2100 · 월 1~12 밖 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님(공용 문구) */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
