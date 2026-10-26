@@ -1,8 +1,10 @@
 # Bundle history
 
 ## 2026-10-26
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front goldeen, main #129 까지): okf 충돌은 양쪽 기록을 살렸고, `api-types.generated.ts` 는 api main(#146 · #147 머지 뒤 `5c80d70`)으로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #127 리뷰(Young Joo) 반영: 저장 뒤 안내 쿠키를 서버가 아니라 `SavedNotice` 가 읽고 지운다 — 목록 → 상세 → [뒤로] 때 Next 가 기억한 화면으로 안내가 또 뜨지 않게. 상태별 개수 서술을 api #146(보이는 계약만 셈)에 맞췄다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #127 ip-code-review 블로커 반영: 저장 뒤 안내를 주소(`?saved=`) 대신 60초 사는 쿠키(`contract-saved`)로 넘기고 `SavedNotice` 가 그리면 지운다 — 주소에서 지우던 `history.replaceState(history.state …)` 는 Next 가 라우터 상태를 맞추지 않아 `?saved=` 가 되살아나 새로고침 때 안내가 다시 떴다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `api-types.generated.ts` 를 api #147(kabuto)(`PATCH /auth/admin/me` 의 `currentPassword` 칸 삭제) 기준으로 다시 만들었다. MY PAGE 저장 설명 · 400 설명만 바뀌었고 화면 코드는 그대로다(front #125 가 이미 안 보낸다). api #147 다음에 머지한다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front seel, main #128 까지): okf/log 충돌은 양쪽 기록을 살렸다.
 
 ## 2026-10-23
