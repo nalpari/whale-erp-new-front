@@ -46,11 +46,18 @@ const INVITE_RESEND_COPY = {
   ],
 };
 
-/** 근로계약 상세 재발송 확인창 문구 — 서명 대기면 signingResendCopy, 그 밖(발송 대기)은 가입 초대 문구. 본문은 문단마다 한 줄 */
+/**
+ * 근로계약 상세 재발송 확인창 문구 — 서명 대기면 signingResendCopy, 거부 · 만료면 같은 조건으로 다시 보낸다는 문구(WHALEERP-153 — 앱
+ * 직원이면 서명 대기, 가입 초대면 발송 대기로 돌아간다), 그 밖(발송 대기)은 가입 초대 문구. 본문은 문단마다 한 줄
+ */
 export function resendDialogCopy(status: string | null | undefined, name: string | null | undefined): { title: string; body: string[] } {
   if (status === "PENDING_SIGNATURE") {
     const { title, body } = signingResendCopy(name);
     return { title, body: [body] };
+  }
+  if (status === "REJECTED" || status === "EXPIRED") {
+    const { title, body } = signingResendCopy(name);
+    return { title, body: [body, status === "REJECTED" ? "거부된 근로계약서를 같은 조건으로 다시 보냅니다. 내용을 바꾸려면 새 계약을 작성해 주세요." : "날인 기한이 지나 만료된 근로계약서를 같은 조건으로 다시 보냅니다."] };
   }
   return { title: INVITE_RESEND_COPY.title, body: [...INVITE_RESEND_COPY.body] };
 }

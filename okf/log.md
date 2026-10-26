@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-26
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 거부 · 만료 재발송(WHALEERP-153): 근로계약 상세의 「재발송」을 거부 · 만료에서도 켠다(api `canResend` 가 참일 때만). 확인창은 같은 조건으로 다시 보낸다는 문장을 더한다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 재계약(WHALEERP-156): 근로계약 상세의 「새 계약」을 체결 완료 · 체결 뒤 종료에서 켜고 `/contracts/new?from=` 재계약 작성(직전 값 채움 · 근무지 · 번호 잠금 · `previousContractId`). 목록 상태 칸에 재계약 서명 대기 「재계약」, 체결 완료 「갱신 예정 MM-DD」. api 타입 다시 만듦.
 * **Update**: main 병합(front horsea, main #131 까지): okf 충돌은 양쪽 기록을 살렸다. `api-types.generated.ts` 는 main 과 같다(api main `d7c5daa` 기준).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #127 재리뷰 참고 반영: 저장 뒤 안내 쿠키 값을 `decodeURIComponent` 에 넘기지 않는다(깨진 값이면 URIError 로 근로계약 목록이 오류 화면이 됐다), 상태별 개수 주석을 api #146(보이는 계약만 셈)에 맞췄다. api 타입을 api main(`d7c5daa`, #148 · #149 머지 뒤) 기준으로 다시 만들었다.

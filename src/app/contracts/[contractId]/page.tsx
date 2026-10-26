@@ -18,11 +18,11 @@ type Status = Parameters<typeof StatusBadge>[0]["status"];
 // 상태마다 위쪽에 서는 버튼(CTR-19, 2026-10-19 재영). 보내기는 저장할 때 곧바로 한다 — 「발송」 버튼은 없다.
 // 발송 대기 · 서명 대기는 「재발송」과 「수정」(당사자 정보), 발송 대기는 「종료」도(채용을 접을 때, WHALEERP-327), 수정 요청은
 // 「수정」(계약서 전체). 재발송은 api 가 보낼 수 없다고 하면 숨긴다(canResend — 소속 추가 확인 · 복귀 확인은 아직 보낼 길이 없다. 칸이 없는
-// 옛 api 응답이면 보인다 — front 가 먼저 배포돼도 재발송 버튼이 모두 사라지지 않게). 만료 재발송(WHALEERP-153)은 아직 API 가 없어
-// 비활성으로 둔다. 체결 완료와 체결 뒤 종료는 「새 계약」(재계약, WHALEERP-156) — 이 계약 값을 채운 작성 화면을 연다. 거부는 버튼이 없다.
-const PENDING: Partial<Record<Status, string>> = {
-  EXPIRED: "재발송",
-};
+// 옛 api 응답이면 보인다 — front 가 먼저 배포돼도 재발송 버튼이 모두 사라지지 않게). 거부 · 만료도 같은 조건으로 「재발송」한다(WHALEERP-153 —
+// api 가 거부 · 만료를 다시 보낼 수 있을 때만 canResend 가 참이라, 그 전 api 와 떠도 버튼이 서지 않는다). 체결 완료와 체결 뒤 종료는
+// 「새 계약」(재계약, WHALEERP-156) — 이 계약 값을 채운 작성 화면을 연다.
+const RESENDABLE = new Set<Status>(["PENDING_SEND", "PENDING_SIGNATURE"]);
+const REOPENABLE = new Set<Status>(["REJECTED", "EXPIRED"]);
 
 // 근로계약 상세. 데모 docs/demo/staff/contracts-detail 의 틀(제목 줄 + 계약 내용 + 상태 변경 이력).
 // 주휴일 · 급여 지급 방식 · 수습(정직원)도 보인다(데모 확인 2026-10-15).
@@ -75,7 +75,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
       </ContractPermission>
     ) : (
       <>
-        {(status === "PENDING_SEND" || status === "PENDING_SIGNATURE") && c?.canResend !== false && (
+        {status && ((RESENDABLE.has(status) && c?.canResend !== false) || (REOPENABLE.has(status) && c?.canResend === true)) && (
           <ContractPermission action="update">
             <SendContractButton contractId={contractId} status={status} name={c?.name ?? null} back={backHrefOf(query.back)} />
           </ContractPermission>
@@ -108,11 +108,6 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
               새 계약
             </Button>
           </ContractPermission>
-        )}
-        {status && PENDING[status] && (
-          <Button variant="soft" disabled title="준비 중">
-            {PENDING[status]}
-          </Button>
         )}
       </>
     );
