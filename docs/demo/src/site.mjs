@@ -224,24 +224,33 @@ export function mypagePanel(A) {
   return ui.slidePanel("mypage-panel", "내 정보", ui.sectionHead("내 정보") + mypageBody(A, { idPrefix: "mpb", tabPrefix: "mp-", closeSave: true }));
 }
 
-// MY PAGE 전체 화면(mypage/password.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다. 비밀번호 칸(보기 토글)은 biz-form.mjs 의 pwField.
-export function passwordBody({ closeSave = false } = {}) {
+// MY PAGE 전체 화면(mypage/password.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다. 비밀번호 칸(눈 아이콘 보기 토글)은
+// biz-form.mjs 의 pwField. 안내 문구는 전부 칸 안 placeholder 로 두고, 칸 아래는 error 가 있을 때만 보인다(2026-10-26
+// 사용자 지정 — 전엔 긴 조건 문구가 칸 아래 늘 남아 있었다). errors 의 칸(current · newPassword · confirm)에 값이
+// 있으면 그 pwField 가 그 문구를 칸 아래에 보인다.
+export function passwordBody(A, { closeSave = false, errors = {} } = {}) {
   return ui.formGroup(
     "새 비밀번호 설정",
-    f.pwField("현재 비밀번호", "whale-2026!", "current-password", "지금 쓰고 있는 비밀번호를 입력하세요"),
-    f.pwField(
-      "새 비밀번호",
-      "hangang-0922#",
-      "new-password",
-      "특수문자는 ! @ # $ % ^ &amp; * ( ) - _ = + [ ] { } ? 만, 공백 불가",
-      "영문·숫자·특수문자를 조합하여 8~20자 입력해 주세요.",
-    ),
-    f.pwField("새 비밀번호 확인", "hangang-0922#", "new-password", "새 비밀번호를 한 번 더 입력하세요"),
+    // value 를 비워 둔다 — 안내문구가 placeholder 라 값이 차 있으면 안 보인다(코드 리뷰로 찾음, 2026-10-26).
+    f.pwField(A, "현재 비밀번호", "", "current-password", {
+      placeholder: "지금 쓰고 있는 비밀번호를 입력해 주세요.",
+      error: errors.current,
+    }),
+    // 회원가입(signup.mjs passwordField)과 같은 짧은 문구 — 긴 조건 문구는 칸 너비에 다 안 들어가 뒤가 잘렸다
+    // (사용자가 찾음, 2026-10-26). 세 칸 모두 마침표로 끝맺는다(사용자 지정).
+    f.pwField(A, "새 비밀번호", "", "new-password", {
+      placeholder: "영문·숫자·특수문자를 조합하여 8~20자로 입력해 주세요.",
+      error: errors.newPassword,
+    }),
+    f.pwField(A, "새 비밀번호 확인", "", "new-password", {
+      placeholder: "새 비밀번호를 한 번 더 입력해 주세요.",
+      error: errors.confirm,
+    }),
     saveRow("비밀번호 변경", closeSave, "비밀번호가 변경되었습니다."),
   );
 }
 export function passwordPanel(A) {
-  return ui.slidePanel("password-panel", "비밀번호 변경", ui.sectionHead("비밀번호 변경") + passwordBody({ closeSave: true }));
+  return ui.slidePanel("password-panel", "비밀번호 변경", ui.sectionHead("비밀번호 변경") + passwordBody(A, { closeSave: true }));
 }
 
 // 회원 탈퇴. MY PAGE 전체 화면(mypage/withdraw.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다.
