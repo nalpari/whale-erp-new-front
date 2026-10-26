@@ -80,6 +80,9 @@ function BirthDateDialog({
   // 체크를 누를 때 — 에만 칸의 글자를 DOM 에서 읽어 판정한다(inputPending).
   const confirmedRef = useRef(false);
   const fieldRef = useRef<HTMLDivElement>(null);
+  // 확인한 뒤 입력칸을 한 번이라도 고쳤는가. 1990-05-01 을 확인하고 1990-05-1 로 지운 채 [정정]을 누르면 blur 가 같은 값 1990-05-01 로 맞춰
+  // 값이 안 바뀐 것으로 보이므로, 값 비교가 아니라 편집 여부로 막는다. 입력 이벤트 중에는 ref 만 바꾼다(상태를 바꾸면 DateField 칸이 되돌려진다).
+  const editedSinceConfirm = useRef(false);
   const inputPending = () => isPendingInput(fieldRef.current?.querySelector("input")?.value ?? "", date);
   // 마우스 체크: pointerdown → (blur 가 날짜를 바꿈) → click 이 체크를 다시 켠다. 그 click 을 무시하려 두 시각을 남긴다.
   // pointerDownAt 은 체크 영역의 pointerdown 에서만 남기고, 다른 곳의 pointerdown · 키 입력(날짜 입력 포함)에서 지운다 — 체크 onChange 를 쓰지
@@ -92,11 +95,14 @@ function BirthDateDialog({
     confirmedRef.current = next;
     setConfirmed(next);
     setError(null);
-    if (next) setReconfirm(false);
+    if (next) {
+      editedSinceConfirm.current = false;
+      setReconfirm(false);
+    }
   };
   const changeDate = (next: string) => {
     if (next !== date) dateChangedAt.current = performance.now();
-    if (!confirmAfterDateChange(confirmed, date, next)) {
+    if (!confirmAfterDateChange(confirmed, date, next) || (confirmed && editedSinceConfirm.current)) {
       if (confirmed) setReconfirm(true);
       changeConfirmed(false);
     }
@@ -116,7 +122,7 @@ function BirthDateDialog({
   const handleConfirm = async () => {
     if (sending.current || problem || !confirmed || !confirmedRef.current) return;
     // 칸에 덜 친 값이 보이면 보내지 않고 체크를 풀어 다시 확인받는다
-    if (inputPending()) {
+    if (editedSinceConfirm.current || inputPending()) {
       changeConfirmed(false);
       setReconfirm(true);
       return;
@@ -182,7 +188,7 @@ function BirthDateDialog({
         </div>
         <div className="flex flex-col gap-[8px]">
           <span className="text-[14px] font-medium text-erp-label">새 생년월일</span>
-          <div ref={fieldRef}>
+          <div ref={fieldRef} onInputCapture={() => (editedSinceConfirm.current = true)}>
             <DateField aria-label="새 생년월일" autoHyphen value={date} onChange={changeDate} />
           </div>
           {dateNote && (
