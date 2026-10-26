@@ -60,6 +60,7 @@ export function BizVerificationBox({
   layout = "stack",
   compactRow = false,
   showHeader = true,
+  titleBar = false,
 }: {
   values: BizVerifyValues;
   onChange: (key: BizVerifyField, value: string) => void;
@@ -107,6 +108,9 @@ export function BizVerificationBox({
   compactRow?: boolean;
   /** 상자 머리(「사업자정보」 · 인증 상태). 점포는 인증 상태를 위쪽 묶음 제목에 두어(BizVerifiedStatus) 머리를 뺀다(2026-10-22 사용자 지정) */
   showHeader?: boolean;
+  /** 머리를 상자 밖 42px 회색 제목 바로 떼고 본문을 흰 바탕에 둔다 — MY PAGE 사업자정보 탭 전용(2026-10-26 사용자 지정).
+   * 켜면 showHeader 는 보지 않는다 */
+  titleBar?: boolean;
 }) {
   const ids = useId();
   const lineMessage = missingMessage(missing) ?? boxError ?? undefined;
@@ -183,58 +187,75 @@ export function BizVerificationBox({
     </div>
   );
 
+  // titleBar 면 머리를 상자 밖 회색 제목 바로 떼고 본문을 흰 바탕에 둔다(MY PAGE 「계정 정보」와 같은 모양,
+  // 2026-10-26 사용자 지정). 아니면 본문 div 는 contents 라 회색 상자 하나(머리 · 본문이 한 상자)다.
   return (
-    <section aria-label="사업자 번호 인증" className="flex flex-col gap-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[18px]">
-      {showHeader && (
-        <div className="flex items-center justify-between">
-          <span className="text-[15px] font-semibold text-erp-ink">사업자정보</span>
+    <section
+      aria-label="사업자 번호 인증"
+      className={titleBar ? "w-full" : "flex flex-col gap-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[18px]"}
+    >
+      {titleBar && (
+        <h3 className="flex h-[42px] items-center justify-between rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">
+          <span>사업자정보</span>
           <BizVerifiedStatus verified={verified} date={verifiedDate} />
-        </div>
+        </h3>
       )}
-      {/* 오류 문구가 칸 사이에 빈 줄을 만들지 않게 칸과 문구를 간격 없는 묶음으로 둔다(2026-10-22 사용자 지정) */}
-      <div className={layout === "row" ? "flex gap-[6px]" : "flex flex-col gap-[12px]"}>
-        {bizNumberCell}
-        {ceoNameCell}
-        {openDateCell}
+      {/* 본문 위아래 여백은 계정 정보(20px)보다 줄인 16px — 좌우와 같다(사용자가 비교 화면으로 고름, 2026-10-26) */}
+      <div className={titleBar ? "flex flex-col gap-[12px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white p-[16px]" : "contents"}>
+        {showHeader && !titleBar && (
+          <div className="flex items-center justify-between">
+            <span className="text-[15px] font-semibold text-erp-ink">사업자정보</span>
+            <BizVerifiedStatus verified={verified} date={verifiedDate} />
+          </div>
+        )}
+        {/* 오류 문구가 칸 사이에 빈 줄을 만들지 않게 칸과 문구를 간격 없는 묶음으로 둔다(2026-10-22 사용자 지정).
+            나란히(row)일 땐 위로 맞춘다(items-start) — 늘이면(기본 stretch) 한 칸에만 오류 문구가 붙었을 때 다른 칸이
+            그 높이로 늘어나고, 공통 Field 가 라벨 · 입력칸을 세로 가운데로 두어(justify-center) 입력칸 줄이 어긋났다
+            (2026-10-23 사용자 요청 — 점포 「이미 등록된 사업자등록번호입니다」). */}
+        <div className={layout === "row" ? "flex items-start gap-[6px]" : "flex flex-col gap-[12px]"}>
+          {bizNumberCell}
+          {ceoNameCell}
+          {openDateCell}
+        </div>
+        <FieldMessage id={lineId} message={lineMessage} />
+        <div className="flex gap-[6px]">
+          {/* struck 일 땐 숨긴다 — 지워질 값을 두고 "재인증/인증하기"를 누르는 건 말이 안 된다. 바꿔 타려면
+              먼저 되돌리기(onRevert)로 돌아와야 한다(2026-10-23 사용자 지정). */}
+          {!struck && (
+            <Button variant="soft" onClick={onVerify} disabled={off}>
+              {verifying ? "인증 중…" : verified ? "재인증" : "인증하기"}
+            </Button>
+          )}
+          {onClearSaved && (
+            <Button variant="soft" onClick={onClearSaved} disabled={off}>
+              사용안함
+            </Button>
+          )}
+          {showClear && (
+            <Button variant="soft" onClick={onClear} disabled={off}>
+              지우기
+            </Button>
+          )}
+          {onRevert && (
+            <Button variant="soft" onClick={onRevert} disabled={off}>
+              {revertLabel}
+            </Button>
+          )}
+        </div>
+        {/* 성공은 상자 머리의 상태가 바뀌는 것으로 보이고, 화면 낭독기에만 따로 알린다 */}
+        <span role="status" className="sr-only">
+          {verified ? "사업자정보 인증이 완료되었습니다." : ""}
+        </span>
+        <p className="text-[13px] leading-[1.5] text-erp-label">
+          {guide}
+          {note && (
+            <>
+              <br />
+              {note}
+            </>
+          )}
+        </p>
       </div>
-      <FieldMessage id={lineId} message={lineMessage} />
-      <div className="flex gap-[6px]">
-        {/* struck 일 땐 숨긴다 — 지워질 값을 두고 "재인증/인증하기"를 누르는 건 말이 안 된다. 바꿔 타려면
-            먼저 되돌리기(onRevert)로 돌아와야 한다(2026-10-23 사용자 지정). */}
-        {!struck && (
-          <Button variant="soft" onClick={onVerify} disabled={off}>
-            {verifying ? "인증 중…" : verified ? "재인증" : "인증하기"}
-          </Button>
-        )}
-        {onClearSaved && (
-          <Button variant="soft" onClick={onClearSaved} disabled={off}>
-            사용안함
-          </Button>
-        )}
-        {showClear && (
-          <Button variant="soft" onClick={onClear} disabled={off}>
-            지우기
-          </Button>
-        )}
-        {onRevert && (
-          <Button variant="soft" onClick={onRevert} disabled={off}>
-            {revertLabel}
-          </Button>
-        )}
-      </div>
-      {/* 성공은 상자 머리의 상태가 바뀌는 것으로 보이고, 화면 낭독기에만 따로 알린다 */}
-      <span role="status" className="sr-only">
-        {verified ? "사업자정보 인증이 완료되었습니다." : ""}
-      </span>
-      <p className="text-[13px] leading-[1.5] text-erp-label">
-        {guide}
-        {note && (
-          <>
-            <br />
-            {note}
-          </>
-        )}
-      </p>
     </section>
   );
 }

@@ -55,10 +55,11 @@ export function hqSharingConsentText(staff: Pick<StaffMember, "hqSharingConsent"
 /**
  * 상세 응답의 재직 이력 칸(WHALEERP-615)을 채운다. 칸이 없는 응답(api #136 배포 전 서버)은 이은 레코드가 없는 것으로 본다 — front 가
  * 먼저 배포돼도 `previousRecords` · `laterRecords` 를 읽는 곳이 오류가 되지 않게 응답을 받는 자리(getStaffMember)에서 한 번 맞춘다.
+ * `birthDateCorrectable`(WHALEERP-602)도 옛 api 에는 없다 — 없으면 false 로 채워 정정 버튼을 숨긴다.
  */
 export function withEmploymentHistory(staff: StaffMember): StaffMember {
-  const raw = staff as Partial<Pick<StaffMember, "previousRecords" | "laterRecords">> & StaffMember;
-  return { ...staff, previousRecords: raw.previousRecords ?? [], laterRecords: raw.laterRecords ?? [] };
+  const raw = staff as Partial<Pick<StaffMember, "previousRecords" | "laterRecords" | "birthDateCorrectable">> & StaffMember;
+  return { ...staff, previousRecords: raw.previousRecords ?? [], laterRecords: raw.laterRecords ?? [], birthDateCorrectable: raw.birthDateCorrectable ?? false };
 }
 
 export const EMPLOYMENT_TYPES: readonly EmploymentType[] = ["FULL_TIME", "PART_TIME"];

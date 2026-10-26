@@ -80,7 +80,7 @@ python3 docs/erd/_build.py
 |  | 이메일 아이디 | text | `email` | 로그인 아이디, 고유 |
 |  | 비밀번호 해시 | hash | `password_hash` |  |
 |  | 실명 | text | `real_name` | 본인인증 값, 수정 불가 |
-|  | 생년월일 | date | `birth_date` | 본인인증 값, 수정 불가 |
+|  | 생년월일 | date | `birth_date` | 본인인증 값, 직원은 수정 불가 · 관리자 정정만 된다 (WHALEERP-602) |
 |  | 휴대전화번호 | text | `phone` | 본인인증, 변경 시 재인증 |
 |  | 동일인 식별값 | text | `ci` |  |
 |  | 주소 | text | `address` | 다음 계약부터 반영 |
@@ -94,11 +94,11 @@ python3 docs/erd/_build.py
 |---|---|---|---|---|
 | PK | 변경 이력 ID | id | `change_id` |  |
 | FK | 계정 | id | `account_id` |  |
-|  | 변경 항목 | enum | `field` | 휴대전화번호·이메일·주소·비밀번호 |
+|  | 변경 항목 | enum | `field` | 휴대전화번호·이메일·주소·비밀번호·생년월일 (`BIRTH_DATE`) |
 |  | 변경 전 값 | text | `before_value` | 비밀번호는 저장 안 함 |
 |  | 변경 후 값 | text | `after_value` | 비밀번호는 저장 안 함 |
-|  | 변경 경로 | enum | `channel` | 본인·핀 재설정·관리자 초기화 |
-| FK | 요청 관리자 | id | `requested_by` | 관리자 초기화일 때 |
+|  | 변경 경로 | enum | `channel` | 본인·핀 재설정·관리자 초기화·관리자 정정 (`ADMIN_CORRECTION`) |
+| FK | 요청 관리자 | id | `requested_by` | 관리자 초기화 · 관리자 정정일 때 |
 |  | 변경 일시 | datetime | `changed_at` |  |
 
 ### 로그인 이력 `login_histories` · 이력

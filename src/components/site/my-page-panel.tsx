@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, useTransition, type RefObject } from "react";
-import { Button, Field, FormGroup, FormRow, RequiredMark, SlidePanel, TextField, useToast } from "@/components/common";
+import { Button, Field, FormGroup, FormRow, ReadonlyCard, ReadonlyValue, RequiredMark, SlidePanel, TextField, useToast } from "@/components/common";
 import { EMAIL_FORMAT_ERROR } from "@/lib/email-format";
 import { formatDate, formatDateTime } from "@/lib/format";
-import { formOf, serverErrorField, toUpdateInput, validateCurrentPassword, validateMyProfileForm, type MyProfileForm, type MyProfileFormField } from "@/lib/my-profile-form";
+import { formOf, serverErrorField, toUpdateInput, validateMyProfileForm, type MyProfileForm, type MyProfileFormField } from "@/lib/my-profile-form";
 import type { MyProfile } from "@/lib/my-profile";
 import { checkMyEmailAvailableAction, getMyProfileAction, updateMyProfileAction, type ActionResult } from "./my-page-actions";
 import { BpProfileTab, type BpProfileTabHandle } from "./bp-profile-tab";
@@ -59,18 +59,6 @@ function TabBar({ tab, onChange }: { tab: "basic" | "biz"; onChange: (next: "bas
   );
 }
 
-/** 바꿀 수 없는 계정 정보 칸 — 입력칸 테두리 없이 라벨 위 · 값 아래로만 보인다(사용자 디자인 참고, 2026-10-21).
- * 글자 크기 · 색은 새로 짓지 않고 DetailTable 의 라벨 · 값 토큰을 그대로 쓴다(기존 정책, 2026-10-21 피드백).
- * bold 는 아이디처럼 눈에 먼저 띄어야 하는 값에만 켠다. */
-function ReadonlyField({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
-  return (
-    <div className="flex min-w-px flex-1 flex-col gap-[4px]">
-      <span className="truncate text-[14px] font-medium text-erp-label">{label}</span>
-      <span className={`truncate text-[14px] text-erp-ink ${bold ? "font-semibold" : ""}`}>{value}</span>
-    </div>
-  );
-}
-
 /** GNB 「내정보 관리」가 여는 슬라이드 패널(S-JXKHCM). 열릴 때마다 api 에서 최신 값을 받는다.
  * 저장은 패널을 닫지 않고 토스트로만 알린다 — 닫기는 따로 있다(데모 site.mjs saveRow 와 같다, 2026-10-06 피드백). */
 export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: boolean; onClose: () => void; trigger: RefObject<HTMLElement | null> }) {
@@ -87,9 +75,6 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
   const [emailChecking, setEmailChecking] = useState(false);
   /** 중복 확인 자체가 실패해 통과시킨 값 — "확인됨"과 다른 문구로 보여야 한다(코드 리뷰로 찾음, 2026-10-21). */
   const [emailCheckSkipped, setEmailCheckSkipped] = useState(false);
-  /** 이메일을 바꿀 때만 쓰는 지금 비밀번호 — 계정 자체를 가리키는 값이 아니라 폼 칸으로 따로 둔다
-   * (api 가 코드 리뷰로 요구하게 됨, 2026-10-21). */
-  const [currentPassword, setCurrentPassword] = useState("");
   const [saving, startSaving] = useTransition();
   const checkNumber = useRef(0);
   /** 「기본정보」 · 「사업자정보」 — BP 마스터가 아니면 탭 자체가 없어 늘 기본정보다. */
@@ -119,7 +104,6 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
       setEmailChecked(null);
       setEmailChecking(false); // 지난 세션에서 확인 중이던 흔적이 남아 "확인하는 중입니다" 가 계속 보이지 않게 한다
       setEmailCheckSkipped(false);
-      setCurrentPassword("");
       setTab("basic");
       setBizSaving(false);
       setBizTabGeneration((n) => n + 1);
@@ -220,13 +204,10 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
   };
 
   const emailPassed = !!form && (form.email.trim() === emailChecked || form.email.trim() === profile?.email);
-  const emailChanged = !!form && !!profile && form.email.trim().toLowerCase() !== profile.email;
 
   const handleSave = () => {
     if (!form || !profile) return;
     const found = validateMyProfileForm(form);
-    const passwordError = validateCurrentPassword(emailChanged, currentPassword);
-    if (passwordError) found.currentPassword = passwordError;
     setErrors(found);
     setFailure(null);
     if (Object.keys(found).length) return focusFirstError();
@@ -234,11 +215,10 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
 
     startSaving(async () => {
       try {
-        const updated = toUpdateInput(form, profile.updatedAt, emailChanged ? currentPassword : undefined);
+        const updated = toUpdateInput(form, profile.updatedAt);
         const result = await updateMyProfileAction(updated);
         if (!result.ok) return applyServerError(result.status, result.message);
         toast("saved");
-        setCurrentPassword(""); // 다 쓴 값을 화면에 남기지 않는다
         // GNB 이름 등 로그인 정보를 쓰는 화면이 다시 로그인하지 않아도 바로 보이게 한다.
         patchAccount({ name: updated.name, email: updated.email });
         // PATCH 는 204 라 새 updatedAt 을 안 준다 — 다시 받아 두지 않으면 바로 이어 저장할 때
@@ -286,24 +266,22 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
           )}
           <div id={ids} className={`flex flex-col gap-[16px] ${tab === "basic" ? "" : "hidden"}`}>
               {/* 점포정보 관리 상세화면(DetailTable)의 제목 줄과 같은 회색 바 — FormGroup 의 기본 제목(배경 없음)
-                  대신 쓴다(사용자 디자인 피드백, 2026-10-21). 본문 카드는 FormGroup 과 같은 토큰으로 직접 짠다.
+                  대신 쓴다(사용자 디자인 피드백, 2026-10-21). 카드 모양은 공통 ReadonlyCard 가 그린다.
                   아이콘을 넣어 봤지만 24px 로는 너무 작아 뺐다(사용자 지정, 2026-10-21).
                   글자 크기 · 굵기는 DetailTable 이 아니라 바로 아래 「기본정보」(FormGroup) 제목과 맞춘다 — 같은 패널
-                  안에서 두 제목이 달라 보인다는 피드백, 2026-10-21. 회색 바탕 · 테두리만 DetailTable 에서 가져온다. */}
-              <div className="w-full">
-                <h3 className="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">계정 정보</h3>
-                <div className="flex flex-col gap-[18px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white px-[16px] py-[20px]">
-                  <FormRow>
-                    <ReadonlyField label="아이디" value={profile.loginId} bold />
-                    <ReadonlyField label="사용자 권한" value={roleTypeLabel(profile.roleTypeCode)} bold />
-                  </FormRow>
-                  <hr className="border-erp-divider" />
-                  <FormRow>
-                    <ReadonlyField label="최근 로그인" value={profile.lastLoginAt ? formatDateTime(profile.lastLoginAt) : "로그인 기록 없음"} bold />
-                    <ReadonlyField label="가입일" value={formatDate(profile.createdAt)} bold />
-                  </FormRow>
-                </div>
-              </div>
+                  안에서 두 제목이 달라 보인다는 피드백, 2026-10-21. 회색 바탕 · 테두리는 DetailTable 에서 가져왔다.
+                  권한 그룹 상세가 같은 모양을 쓰게 되어 공통 ReadonlyCard · ReadonlyValue 로 옮겼다(2026-10-26). */}
+              <ReadonlyCard title="계정 정보">
+                <FormRow>
+                  <ReadonlyValue label="아이디" value={profile.loginId} bold />
+                  <ReadonlyValue label="사용자 권한" value={roleTypeLabel(profile.roleTypeCode)} bold />
+                </FormRow>
+                <hr className="border-erp-divider" />
+                <FormRow>
+                  <ReadonlyValue label="최근 로그인" value={profile.lastLoginAt ? formatDateTime(profile.lastLoginAt) : "로그인 기록 없음"} bold />
+                  <ReadonlyValue label="가입일" value={formatDate(profile.createdAt)} bold />
+                </FormRow>
+              </ReadonlyCard>
 
               <FormGroup title="기본정보">
                 <div className="flex flex-col gap-[8px]">
@@ -374,25 +352,6 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
               )}
               {message("email")}
             </div>
-            {emailChanged && (
-              <div className="flex flex-col gap-[8px]">
-                <Field label="지금 비밀번호" required>
-                  <TextField
-                    type="password"
-                    value={currentPassword}
-                    onChange={(e) => {
-                      setCurrentPassword(e.target.value);
-                      clearError("currentPassword");
-                    }}
-                    placeholder="이메일을 바꾸려면 지금 비밀번호를 입력해 주세요."
-                    aria-invalid={invalid("currentPassword")}
-                    aria-describedby={describe("currentPassword")}
-                    aria-required
-                  />
-                </Field>
-                {message("currentPassword")}
-              </div>
-            )}
               </FormGroup>
           </div>
 

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ApiError, deniedMessageOf } from "./api-error.ts";
+import { ApiError, codeOf, deniedMessageOf } from "./api-error.ts";
 
 test("deniedMessageOf: api 거절(400 · 403 · 404 문장 하나)은 그 문장", () => {
   assert.equal(deniedMessageOf(new ApiError(400, "점포를 볼 BP 를 골라 주세요")), "점포를 볼 BP 를 골라 주세요");
@@ -22,4 +22,9 @@ test("deniedMessageOf: ApiError 가 아니면 null", () => {
   assert.equal(deniedMessageOf(new Error("x")), null);
   assert.equal(deniedMessageOf("문자열"), null);
   assert.equal(deniedMessageOf(null), null);
+});
+
+test("codeOf: 객체 본문의 문자열 code 만 꺼낸다", () => {
+  assert.equal(codeOf({ code: "X" }), "X");
+  for (const body of [{ code: 1 }, {}, null, undefined, "BIRTH_DATE_RETIRED", ["BIRTH_DATE_RETIRED"], [{ code: "X" }]]) assert.equal(codeOf(body), undefined);
 });

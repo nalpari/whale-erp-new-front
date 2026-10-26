@@ -19,7 +19,7 @@ export const row = (...c) => ui.formRow(...c).replace('class="flex w-full gap-[6
 // 빈 칸(두 칸 줄의 오른쪽을 비울 때)
 export const blank = '<div class="min-w-px flex-1"></div>';
 // 두 칸 묶음 카드(목록 + 상세처럼 나란히 놓는 카드). system/codes 와 같은 껍데기.
-export const card = (w, html) => `<section class="${w} flex flex-col gap-[12px] overflow-y-auto rounded-[4px] [&>*]:shrink-0 border border-erp-panel-line bg-white p-[25px]">${html}</section>`;
+export const card = (w, html) => `<section class="${w} flex flex-col gap-[12px] overflow-y-auto rounded-[4px] [&>:not([data-table-scroll])]:shrink-0 border border-erp-panel-line bg-white p-[25px]">${html}</section>`;
 // 확인창 안의 짧은 항목·값 목록(목업 .kv)
 export const kv = (rows, w = 96) =>
   `<dl class="grid gap-y-[6px] rounded-[2px] border border-erp-thead-line bg-erp-thead-bg p-[12px]" style="grid-template-columns:${w}px 1fr">${rows

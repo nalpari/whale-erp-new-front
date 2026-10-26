@@ -10,7 +10,7 @@ import { findMenu, HOME, PENDING_PLATFORM_MENU } from "@/lib/menus";
 import type { AccountBp, AdminStore } from "@/lib/session";
 import { isClosedStore, openStores, SCOPE_PARAM, scopeFromAddress, scopeKeyOf, scopeOfKey, withScope } from "@/lib/store-scope";
 import { BpSelectDialog } from "./bp-select-dialog";
-import { useAccount, useCurrentBp, useMenus, useMyPageOpen, useMyPageTrigger, usePageMenu, useScope, useService, useStores } from "./session-gate";
+import { useAccount, useCurrentBp, useMenus, useMyPageOpen, useMyPageTrigger, usePageMenu, usePasswordChangeOpen, useScope, useService, useStores } from "./session-gate";
 
 /** ERP 메뉴 url 의 화면 주소 — /bp/{id} 주소로 옮긴 화면에만 탭 BP 를 붙인다(BP_PATH_SCREENS). 메뉴 url 자체는 옛 경로 그대로다. */
 const screenOf = (url: string, tabBp: number) => (isBpPathScreen(url) ? bpPath(tabBp, url) : url);
@@ -28,6 +28,7 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   const backdropActive = useBackdropActive();
   const [bpSelectOpen, setBpSelectOpen] = useState(false);
   const [, setMyPageOpen] = useMyPageOpen();
+  const [, setPasswordChangeOpen] = usePasswordChangeOpen();
   const myPageTrigger = useMyPageTrigger();
   const tabBp = useCurrentBp().bpCodeId;
   const [scope] = useScope();
@@ -44,10 +45,10 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
       });
       return { label: m.name, items, href: items.length === 0 && m.permission.read && m.url ? linkOf(m.url) : undefined };
     });
-  // 비밀번호 변경·회원 탈퇴는 슬라이드 패널 작업 전이라 아직 아무 데도 가지 않는다(S-PTWREE·S-JHQQNR).
+  // 회원 탈퇴는 슬라이드 패널 작업 전이라 아직 아무 데도 가지 않는다(S-JHQQNR).
   const mine: UserPopItem[] = [
     { label: "내정보 관리", onSelect: () => setMyPageOpen(true) },
-    { label: "비밀번호 변경", href: "#" },
+    { label: "비밀번호 변경", onSelect: () => setPasswordChangeOpen(true) },
   ];
   const userItems: UserPopItem[] =
     service === "WHALE_ERP"
