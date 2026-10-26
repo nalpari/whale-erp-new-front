@@ -137,7 +137,8 @@ function treeTab(key, s) {
     .replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, () => {
     const n = nodes[++i];
     // 1단계 줄은 권한별 메뉴설정 팝업과 같은 바탕(2026-10-26 사용자 지정)
-    const cls = ["cursor-pointer", n === sel || n.lvl === 1 ? "bg-erp-thead-bg" : "", n.use ? "" : "text-erp-muted"].filter(Boolean).join(" ");
+    // 고른 줄은 한 단계 어두운 바탕 + 왼쪽 브랜드색 3px 선(앱 DataTable current 와 같다, 2026-10-26)
+    const cls = ["cursor-pointer", n === sel ? "bg-erp-subtle [&>td:first-child]:shadow-[inset_3px_0_0_var(--color-erp-brand)]" : n.lvl === 1 ? "bg-erp-thead-bg" : "", n.use ? "" : "text-erp-muted"].filter(Boolean).join(" ");
     return `<tr class="h-[46px] border-b border-erp-thead-line ${cls}" data-row="${key}" data-code="${n.code}" data-lvl="${n.lvl}" data-name="${n.name}" data-label="${n.code} · ${path(n)}" data-kids="${n.kids}"${hides(n) ? " data-hides" : ""}>`;
   });
 
@@ -205,7 +206,9 @@ function treeTab(key, s) {
 // 트리의 새 자리(고른 메뉴 맨 끝, 3단계를 고르면 그 상위 맨 끝)에 ‘작성 중’ 줄이 선다. 취소·저장하면 상세로 돌아간다(데모라 트리에 넣지는 않는다).
 const MENU_SCRIPT = `<script>
 (() => {
-  const SEL = "bg-erp-thead-bg";
+  // 고른 줄 표시 — 1단계 줄 바탕(bg-erp-thead-bg)과 겹치지 않게 다른 바탕 + 왼쪽 선(앱 DataTable current 와 같다)
+  const SEL = "bg-erp-subtle";
+  const BAR = "[&>td:first-child]:shadow-[inset_3px_0_0_var(--color-erp-brand)]";
   document.querySelectorAll("[data-side]").forEach((side) => {
     const key = side.dataset.side;
     const rows = [...document.querySelectorAll('[data-row="' + key + '"]')];
@@ -218,7 +221,13 @@ const MENU_SCRIPT = `<script>
     let cur = first ? first.dataset.code : null;
     let draft = null, from = null;
     const show = (v) => side.querySelectorAll("[data-view]").forEach((el) => (el.hidden = el.dataset.view !== v));
-    const mark = () => rows.forEach((r) => r.classList.toggle(SEL, !draft && r.dataset.code === cur));
+    const mark = () =>
+      rows.forEach((r) => {
+        const on = !draft && r.dataset.code === cur;
+        r.classList.toggle(SEL, on);
+        r.classList.toggle(BAR, on);
+        r.classList.toggle("bg-erp-thead-bg", !on && r.dataset.lvl === "1");
+      });
     const parentOf = (r) => {
       for (let i = rows.indexOf(r) - 1; i >= 0; i--) if (+rows[i].dataset.lvl < +r.dataset.lvl) return rows[i];
       return null;

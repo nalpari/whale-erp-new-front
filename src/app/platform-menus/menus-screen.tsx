@@ -237,7 +237,7 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
                 rows={rows}
                 rowKey={(r) => (r.kind === "menu" ? r.row.node.menuId : "draft")}
                 rowState={(r) =>
-                  r.kind === "draft" ? "added" : !creating && r.row.node.menuId === picked ? "selected" : r.row.node.depth === 1 ? "group" : undefined
+                  r.kind === "draft" ? "added" : !creating && r.row.node.menuId === picked ? "current" : r.row.node.depth === 1 ? "group" : undefined
                 }
                 headVariant="subtle"
                 scroll

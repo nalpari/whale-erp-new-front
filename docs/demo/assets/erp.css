@@ -3701,6 +3701,10 @@
   .\[\&\>span\>span\]\:bg-erp-on > span > span {
     background-color: var(--color-erp-on);
   }
+  .\[\&\>td\:first-child\]\:shadow-\[inset_3px_0_0_var\(--color-erp-brand\)\] > td:first-child {
+    --tw-shadow: inset 3px 0 0 var(--tw-shadow-color, var(--color-erp-brand));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
   .\[\&\[readonly\]\]\:bg-erp-thead-bg[readonly] {
     background-color: var(--color-erp-thead-bg);
   }
