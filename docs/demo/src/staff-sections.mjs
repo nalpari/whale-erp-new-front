@@ -275,7 +275,7 @@ export function staffSections({ A, R }) {
       [
         ["서지안", "09-05", "12:58", "-", p.tag("warn", "퇴근 미등록"), fixBtns(false)],
         ["권도윤", "08-21", "-", "21:12", p.tag("warn", "출근 미등록"), fixBtns(false)],
-        ["배정숙", "09-02", "08:47", "23:58", p.tag("risk", "퇴근 시각 이상"), fixBtns()],
+        ["배정숙", "09-02", "08:47", "23:58", p.tag("risk", "반경 밖 퇴근"), fixBtns()],
         ["남주호", "09-01", "09:04", "18:02", p.tag("risk", "위치 조작 감지"), fixBtns()],
         ["문태경", "08-29", "09:02", "18:30", `${p.tag("info", "수정됨")} ${p.sub("08-30 정하윤")}`, x.dialogTrigger("이력", histId.문태경, "off")],
         ["오세라", "08-27", "10:00", "16:00", `${p.tag("info", "대신 등록")} ${p.sub("위치 수집 일시 중지 · 정하윤")}`, x.dialogTrigger("이력", histId.오세라, "off")],
@@ -308,7 +308,8 @@ export function staffSections({ A, R }) {
     ui.filterSection("직원", ui.searchField(A, { placeholder: "이름 또는 번호" }), { tight: true }),
     ui.filterSection("고용형태", ui.checkbox(A, "정직원", true) + ui.checkbox(A, "파트타이머", true)),
     ui.filterSection("출퇴근 상태", ["정상", "지각", "미출근", "출근 미등록", "퇴근 미등록", "휴무"].map((t) => ui.checkbox(A, t, true)).join("")),
-    ui.filterSection("확인 필요 사유", ["위치 오차 초과", "반경 밖 출근", "반경 밖 퇴근", "위치 조작 감지"].map((t) => ui.checkbox(A, t, true)).join("")),
+    // 확인 필요 사유는 셋 — 위치 오차 초과는 2026-10-20 에 없앴다(운영 정책 ATT-19).
+    ui.filterSection("확인 필요 사유", ["반경 밖 출근", "반경 밖 퇴근", "위치 조작 감지"].map((t) => ui.checkbox(A, t, true)).join("")),
     ui.filterSection("기록 구분", ["직원 등록", "대신 등록", "보정됨"].map((t) => ui.checkbox(A, t, true)).join("")),
     ui.filterSection("재직 상태", ui.select(["재직", "퇴직", "전체"], { "aria-label": "재직 상태" }), { tight: true, last: true }),
   ]);
