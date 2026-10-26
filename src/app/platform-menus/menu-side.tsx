@@ -119,7 +119,7 @@ function MenuView({ menu }: { menu: MenuDetail }) {
     { label: "메뉴 순서", value: menu.sortOrder },
     { label: "메뉴명", value: menu.name },
     { label: "메뉴 URL", value: menu.url ?? <span className="text-erp-muted">—</span> },
-    { label: "메뉴 사용 상태", value: <Badge tone={menu.status === "ACTIVE" ? "on" : "off"}>{statusText(menu.status)}</Badge> },
+    { label: "사용여부", value: <Badge tone={menu.status === "ACTIVE" ? "on" : "off"}>{statusText(menu.status)}</Badge> },
   ];
   return (
     <>
@@ -229,7 +229,9 @@ function MenuForm(
       setBase((b) => ({ ...b, ...saved }));
       setForm(saved);
       setFailure(null);
-      toast(base.status === "ACTIVE" && saved.status === "INACTIVE" ? "수정되었습니다. 미사용 메뉴는 사용자 화면 및 신규 권한 설정에서 제외되며, 기존 권한 설정은 유지되어 다시 사용하면 그대로 적용됩니다." : "updated");
+      // 미사용 안내는 토스트가 아니라 라디오 바로 아래 빨간 박스로 고르는 즉시 보인다(위 fieldset) — 저장 토스트는
+      // 다른 저장과 같게 짧게 "수정되었습니다."만(사용자 지정, 2026-10-26).
+      toast("updated");
     });
   };
 
@@ -273,9 +275,7 @@ function MenuForm(
       <Field label="서비스 코드">{readOnly(props.mode === "edit" ? props.menu.serviceCode : props.serviceCode)}</Field>
       <Field label="상위 메뉴">{readOnly(parentLabel)}</Field>
       <FormRow>
-        <Field label={props.mode === "create" ? "메뉴 코드 (자동 채번)" : "메뉴 코드"}>
-          {props.mode === "edit" ? readOnly(props.menu.menuCode) : readOnly("", "저장할 때 매깁니다")}
-        </Field>
+        <Field label="메뉴 코드">{props.mode === "edit" ? readOnly(props.menu.menuCode) : readOnly("", "저장 시 자동채번")}</Field>
         <Field label="메뉴 순서">{readOnly(props.mode === "edit" ? props.menu.sortOrder : props.placement.order)}</Field>
       </FormRow>
       <div className="flex flex-col gap-[8px]">
@@ -307,12 +307,20 @@ function MenuForm(
         <FieldMessage id={`${id}-url-error`} message={errors.url} />
       </div>
       <fieldset className="flex flex-col gap-[8px]">
-        <legend className="mb-[8px] text-[14px] font-medium text-erp-label">메뉴 사용 상태</legend>
+        <legend className="mb-[8px] text-[14px] font-medium text-erp-label">사용여부</legend>
         <div className="flex h-[34px] items-center gap-[18px]">
           {(["ACTIVE", "INACTIVE"] as const).map((status) => (
             <Radio key={status} label={statusText(status)} name={`${id}-status`} checked={form.status === status} onChange={() => handleFieldChange("status", status)} />
           ))}
         </div>
+        {/* 미사용을 고르면 저장 전에도 바로 보인다 — 저장 뒤 토스트(빠르게 사라짐)로만 알리면 놓치기 쉽다(사용자 지적, 2026-10-26). */}
+        {form.status === "INACTIVE" && (
+          <div className="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off">
+            {"미사용으로 변경하면 사용자 화면과 [권한관리 > 메뉴 설정]에 표시되지 않습니다."}
+            <br />
+            {`다시 '사용'으로 변경하면 기존 설정값이 그대로 적용됩니다.`}
+          </div>
+        )}
       </fieldset>
       <div className="flex justify-end gap-[6px]">
         {props.mode === "create" && (

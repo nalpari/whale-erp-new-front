@@ -146,6 +146,7 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
     {
       header: "메뉴명", // 「노출 메뉴명」에서 줄임(2026-10-26 사용자 지정)
       align: "left",
+      width: "w-[250px]", // 폭을 안 주면 표 전체 남는 칸을 다 먹어 메뉴코드 칸과 간격이 벌어진다(사용자 지적, 2026-10-26 — 220px는 너무 붙어 250px로 조정)
       cell: (r) => {
         const depth = r.kind === "menu" ? r.row.node.depth : placement!.depth;
         const name = r.kind === "menu" ? r.row.node.name : draftName.trim() || "새 메뉴";
@@ -179,7 +180,7 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
     },
     { header: "순서", width: "w-[60px]", cell: (r) => (r.kind === "menu" ? muted(r.row.node, r.row.node.sortOrder) : placement!.order) },
     {
-      header: "사용 상태",
+      header: "사용여부",
       width: "w-[100px]",
       cell: (r) =>
         r.kind === "menu" ? <Badge tone={r.row.node.status === "ACTIVE" ? "on" : "off"}>{statusText(r.row.node.status)}</Badge> : <span className="text-erp-muted">—</span>,
