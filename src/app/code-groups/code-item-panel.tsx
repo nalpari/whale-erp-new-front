@@ -320,6 +320,8 @@ export function CodeItemPanel({
     >
       {failure && <SaveFailedBand message={failure} />}
       <DataTable
+        // 열 이름 줄까지 고정하고 그 아래만 스크롤한다(2026-10-26 사용자 지정)
+        scroll
         columns={columns}
         rows={drafts}
         rowKey={(d) => d.key}

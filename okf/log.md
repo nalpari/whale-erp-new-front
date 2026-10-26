@@ -1,6 +1,9 @@
 # Bundle history
 
 ## 2026-10-26
+* **Update**: main 병합(front raichu, main #134 까지): okf 충돌은 양쪽 기록을 살렸다.
+* **Update**: main 병합(front raichu, main #132 까지): okf 충돌은 양쪽 기록을 살렸다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 디자인 수정 모음(front raichu): 공통 컴포넌트(DataTable `scroll` · DetailTable `title` 생략 · ReadonlyCard/ReadonlyValue 공통화 · HelpTip 신설), BP · 플랫폼 권한 그룹 목록 · 상세 · [메뉴설정] 팝업, 공통코드 관리 표 머리 고정.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — GNB 「비밀번호 변경」(MY PAGE, S-PTWREE) 슬라이드 패널을 열었다(`password-change-panel.tsx`). 현재 비밀번호를 받아 `POST /auth/admin/me/password-change`(api PR #155/metapod 짝 — front 가 먼저 배포되면 이 호출이 404 이니, api 가 먼저 머지·배포돼야 한다)를 부른다. 오류 문구는 화면이 만들지 않고 api message 를 그대로 쓴다(force-password-dialog.tsx 와 같은 규칙) — `myPasswordErrorField`(`my-password-form.ts`)가 어느 칸 탓인지만 가른다. `session-gate.tsx`에 `passwordChangeOpen`을 `myPageOpen`과 같은 자리에 더하고 같은 `myPageTrigger`로 포커스를 돌린다. 세션은 건드리지 않는다(이 기기 · 다른 기기 로그인 모두 이어짐, S-PTWREE outcome).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비밀번호 변경 패널 디자인 정리(사용자 지정, 2026-10-26). 세 칸 모두 보기/숨기기 눈 아이콘(`PasswordInput`)을 더하고, 칸 아래 늘 보이던 `passwordChecks` 체크리스트를 빼 조건 안내는 placeholder로만 둔다(긴 문구가 칸 너비에 잘려 발견). 성공하면 패널을 닫지 않고 완료 화면(연한 파랑 원 + 체크 아이콘, 비교 시안 C안)으로 바꾼다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — ip-code-review-claude 적대적 리뷰 반영: 비밀번호 변경 패널을 저장하지 않고 닫아도 입력값 · 보기 상태가 DOM 에 남던 것을 열고 닫을 때 모두 비우도록 고쳤다(`fieldGeneration` 을 `PasswordInput` 의 key 로 줌). 100자 넘는 입력의 영문 메시지 오귀속(`maxLength=100`), 429 영문 문구(한글로 교체)도 같이 고쳤다.

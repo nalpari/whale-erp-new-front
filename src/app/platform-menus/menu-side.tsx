@@ -27,7 +27,7 @@ import { createMenuAction, updateMenuAction } from "./actions";
 import { statusText, unknownResult, type MenuDetailState } from "./menu-parts";
 
 // 오른쪽 고정 칸(데모 system/menus) — 고른 메뉴 없음 · 수정 · 상세(조회 권한만) · 등록 네 상태.
-// 서비스 코드 · 상위 메뉴 · 메뉴 코드 · 메뉴 순서는 읽기 전용이고 노출 메뉴명 · 메뉴 URL · 사용 상태만 고친다(S-GXMZOU).
+// 서비스 코드 · 상위 메뉴 · 메뉴 코드 · 메뉴 순서는 읽기 전용이고 메뉴명 · 메뉴 URL · 사용 상태만 고친다(S-GXMZOU).
 // 상위 메뉴와 순서는 트리에서 끌어 바꾼다. 메뉴 삭제는 없다 — 안 쓰는 메뉴는 미사용으로 돌린다.
 
 type Placement = ReturnType<typeof createPlacement<MenuNode>>;
@@ -84,10 +84,15 @@ export function MenuSide({
           {detail && "failed" in detail ? (
             <FailedBand message={detail.failed} />
           ) : (
-            // 처음 진입 · 고른 메뉴 없음(데모 2026-10-08)
+            // 처음 진입 · 고른 메뉴 없음 — 문구는 사용자 지정(2026-10-26). 등록 안내는 [등록] 버튼이 보일 때(등록 권한)만
             <div className="flex flex-col items-center gap-[6px] rounded-[2px] border border-erp-thead-line px-[18px] py-[36px] text-center text-[14px] text-erp-muted">
-              <p>왼쪽 트리에서 메뉴를 고르면 상세가 여기에 섭니다.</p>
-              {can.create && <p className="text-[13px]">아무것도 고르지 않고 등록을 누르면 최상위(1단계) 메뉴로 등록합니다.</p>}
+              <p>왼쪽 메뉴 트리에서 [메뉴명]을 클릭하면 상세 정보가 표시됩니다.</p>
+              {can.create && (
+                <div className="mt-[12px]">
+                  <p>신규 메뉴는 [등록] 버튼을 클릭하여 추가할 수 있습니다.</p>
+                  <p>메뉴를 선택하지 않고 [등록]하면 최상위(1단계) 메뉴로 등록됩니다.</p>
+                </div>
+              )}
             </div>
           )}
         </>
@@ -112,7 +117,7 @@ function MenuView({ menu }: { menu: MenuDetail }) {
     { label: "상위 메뉴", value: parentLabelOf(menu) },
     { label: "메뉴 코드", value: menu.menuCode },
     { label: "메뉴 순서", value: menu.sortOrder },
-    { label: "노출 메뉴명", value: menu.name },
+    { label: "메뉴명", value: menu.name },
     { label: "메뉴 URL", value: menu.url ?? <span className="text-erp-muted">—</span> },
     { label: "메뉴 사용 상태", value: <Badge tone={menu.status === "ACTIVE" ? "on" : "off"}>{statusText(menu.status)}</Badge> },
   ];
@@ -214,7 +219,7 @@ function MenuForm(
         if (!created.ok && created.status === undefined) return props.onUnknown(created.message);
         if (!created.ok) return fail(created);
         setFailure(null);
-        toast(`등록했습니다. 메뉴 코드 ${created.menuCode} — 권한은 플랫폼 권한 관리의 [메뉴등록]에서 줍니다.`);
+        toast(`등록했습니다. 메뉴 코드 ${created.menuCode} — 권한은 플랫폼 권한 관리 목록의 메뉴설정 [설정]에서 줍니다.`);
         return props.onDone(created.menuId);
       }
       const result = await updateMenuAction(props.menu.menuId, { ...body, updatedAt: base.updatedAt }).catch(unknownResult("저장"));
@@ -224,7 +229,7 @@ function MenuForm(
       setBase((b) => ({ ...b, ...saved }));
       setForm(saved);
       setFailure(null);
-      toast(base.status === "ACTIVE" && saved.status === "INACTIVE" ? "수정되었습니다. 미사용으로 돌려 사용자 화면과 신규 권한 부여에서 빠집니다. 이미 준 권한은 남습니다." : "updated");
+      toast(base.status === "ACTIVE" && saved.status === "INACTIVE" ? "수정되었습니다. 미사용 메뉴는 사용자 화면 및 신규 권한 설정에서 제외되며, 기존 권한 설정은 유지되어 다시 사용하면 그대로 적용됩니다." : "updated");
     });
   };
 
@@ -274,7 +279,7 @@ function MenuForm(
         <Field label="메뉴 순서">{readOnly(props.mode === "edit" ? props.menu.sortOrder : props.placement.order)}</Field>
       </FormRow>
       <div className="flex flex-col gap-[8px]">
-        <Field label="노출 메뉴명" required>
+        <Field label="메뉴명" required>
           <TextField
             value={form.name}
             onChange={(e) => handleFieldChange("name", e.target.value)}
