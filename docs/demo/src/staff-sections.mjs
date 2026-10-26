@@ -257,7 +257,8 @@ export function staffSections({ A, R }) {
       ["등록한 값", "출근 10:00 · 퇴근 16:00"],
       ["사유", "위치 수집 일시 중지 · 점장 확인"],
     ]);
-  const fixBtns = () => `<span class="flex justify-center gap-[6px]">${ui.slideTrigger("보정", fixPanel, "off")}${p.ask("이상 없음", "off", "이상 없음으로 검토를 마치시겠습니까?", "확인 필요 꼬리표와 사유를 지웁니다.")}</span>`;
+  // 「이상 없음」은 확인 필요 꼬리표가 붙은 줄에만 — 출근·퇴근 미등록은 보정으로 채운다(운영 정책 ATT-19, 2026-10-26 재영).
+  const fixBtns = (ok = true) => `<span class="flex justify-center gap-[6px]">${ui.slideTrigger("보정", fixPanel, "off")}${ok ? p.ask("이상 없음", "off", "이상 없음으로 검토를 마치시겠습니까?", "확인 필요 꼬리표와 사유를 지웁니다.") : ""}</span>`;
   const fixList = p.section(
     "보정이 필요한 기록",
     // 기간 지정 조회는 이 목록에만, 최근 3개월 안에서 고른다(STAFF-31).
@@ -272,8 +273,8 @@ export function staffSections({ A, R }) {
         { header: "", width: "w-[230px]" },
       ],
       [
-        ["서지안", "09-05", "12:58", "-", p.tag("warn", "퇴근 미등록"), fixBtns()],
-        ["권도윤", "08-21", "-", "21:12", p.tag("warn", "출근 미등록"), fixBtns()],
+        ["서지안", "09-05", "12:58", "-", p.tag("warn", "퇴근 미등록"), fixBtns(false)],
+        ["권도윤", "08-21", "-", "21:12", p.tag("warn", "출근 미등록"), fixBtns(false)],
         ["배정숙", "09-02", "08:47", "23:58", p.tag("risk", "퇴근 시각 이상"), fixBtns()],
         ["남주호", "09-01", "09:04", "18:02", p.tag("risk", "위치 조작 감지"), fixBtns()],
         ["문태경", "08-29", "09:02", "18:30", `${p.tag("info", "수정됨")} ${p.sub("08-30 정하윤")}`, x.dialogTrigger("이력", histId.문태경, "off")],
@@ -317,6 +318,7 @@ export function staffSections({ A, R }) {
   const PD = L("staff/payrolls-detail.html");
   // 급여명세서 관리는 달 단위로 넘겨 본다(2026-10-02 재영): ‹ 2026년 8월 › · 달 선택. 데모 데이터는 8월·7월, 나머지 달은 빈 목록.
   // 검토 대기 목록은 두지 않는다 — 사유는 명세서 상세에서만 보인다(STAFF-32, 2026-10-12 재영).
+  // 검토 대기는 상태가 아니라 분류다 — 상태는 작성 중 그대로, 목록에는 「검토 대기」 배지와 필터(운영 정책 PAY-01·06, 2026-10-26 재영).
   const payRow = (name, store, h, base, extra, ded, net, st) => [ui.link(name, PD), store, h, base, extra, ded, `<b class="font-semibold">${net}</b>`, st];
   const payList = (title, right, rows) =>
     p.section(
@@ -383,13 +385,13 @@ export function staffSections({ A, R }) {
   const months =
     month(
       "2026-08-01",
-      counts(52, 8, 3, 0) +
+      counts(60, 0, 3, 0) +
         payList("급여명세서", payButtons(3), [
           payRow("오세라", "모리커피 서초점", "180.0", "3,420,000", "184,000", "-", "3,604,000", p.tag("quiet", "작성 중")),
-          payRow("서지안", "모리커피 서초점", "168.0", "2,840,000", "186,000", "-", "3,026,000", p.tag("warn", "검토 중")),
+          payRow("서지안", "모리커피 서초점", "168.0", "2,840,000", "186,000", "-", "3,026,000", `${p.tag("quiet", "작성 중")} ${p.tag("warn", "검토 대기")}`),
           payRow("문태경", "온기식당 판교점", "184.0", "3,680,000", "276,000", "-", "3,956,000", p.tag("quiet", "작성 중")),
           payRow("배정숙", "온기식당 판교점", "96.0", "1,113,600", "92,800", "-", "1,206,400", p.tag("quiet", "작성 중")),
-          payRow("권도윤", "모리커피 서초점", "176.0", "1,971,200", "164,800", "-", "2,136,000", p.tag("warn", "검토 중")),
+          payRow("권도윤", "모리커피 서초점", "176.0", "1,971,200", "164,800", "-", "2,136,000", `${p.tag("quiet", "작성 중")} ${p.tag("warn", "검토 대기")}`),
           ["남도현", "모리커피 성수점", "-", "-", "-", "-", "-", p.tag("risk", "계약 없음 · 초안 없음")],
         ]),
     ) +
@@ -409,7 +411,8 @@ export function staffSections({ A, R }) {
   const payslipsFilter = ui.filterPanel(A, [
     storeFilter(),
     ui.filterSection("직원", ui.searchField(A, { placeholder: "이름" }), { tight: true }),
-    ui.filterSection("명세서 상태", ["작성 중", "검토 중", "확정", "발송 완료"].map((t) => ui.checkbox(A, t, true)).join(""), { last: true }),
+    ui.filterSection("명세서 상태", ["작성 중", "검토 중", "확정", "발송 완료"].map((t) => ui.checkbox(A, t, true)).join("")),
+    ui.filterSection("분류", ui.checkbox(A, "검토 대기만", false), { last: true }),
   ]);
   // 직원 고르기 팝업은 달 묶음(hidden) 밖에 한 번만 둔다 — 숨긴 묶음 안의 dialog 는 열어도 보이지 않는다.
   const payrollTab = `<div class="flex flex-col gap-[12px]">${p.weekNav(A, "pay-months", "2026-08-01", { month: true })}<div id="pay-months">${months}</div></div>${pickDialog}`;
