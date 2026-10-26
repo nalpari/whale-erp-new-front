@@ -247,7 +247,7 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
                 영향받는 사용자: <b className="font-semibold">{preview.affectedAdminCount.toLocaleString("ko-KR")}명</b>
               </li>
               {/* 서버가 요청마다 지금 권한을 다시 판정한다 — 로그인 중인 사용자도 다음 요청(저장 · 화면 이동 · 새로고침)부터 바뀐다(S-KUDELB). 문구는 쉬운 말로(2026-10-26 사용자 지정) */}
-              <li>변경된 권한은 다시 로그인하지 않아도 바로 적용됩니다.</li>
+              <li>변경된 권한은 다시 로그인하지 않아도, 사용자가 화면을 새로고침하거나 이동하면 적용됩니다.</li>
             </ul>
           </div>
         )}
