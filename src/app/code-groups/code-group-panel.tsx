@@ -274,7 +274,7 @@ export function CodeGroupPanel({
             </Button>
           </span>
         ) : (
-          <span className="text-erp-muted">{d.added ? "" : "—"}</span>
+          <span className="text-erp-muted">{d.added ? "" : "-"}</span>
         ),
     },
     {

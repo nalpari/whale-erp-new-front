@@ -27,7 +27,7 @@ import { createMenuAction, updateMenuAction } from "./actions";
 import { statusText, unknownResult, type MenuDetailState } from "./menu-parts";
 
 // 오른쪽 고정 칸(데모 system/menus) — 고른 메뉴 없음 · 수정 · 상세(조회 권한만) · 등록 네 상태.
-// 서비스 코드 · 상위 메뉴 · 메뉴 코드 · 메뉴 순서는 읽기 전용이고 노출 메뉴명 · 메뉴 URL · 사용 상태만 고친다(S-GXMZOU).
+// 서비스 코드 · 상위 메뉴 · 메뉴 코드 · 메뉴 순서는 읽기 전용이고 메뉴명 · 메뉴 URL · 사용 상태만 고친다(S-GXMZOU).
 // 상위 메뉴와 순서는 트리에서 끌어 바꾼다. 메뉴 삭제는 없다 — 안 쓰는 메뉴는 미사용으로 돌린다.
 
 type Placement = ReturnType<typeof createPlacement<MenuNode>>;
@@ -112,7 +112,7 @@ function MenuView({ menu }: { menu: MenuDetail }) {
     { label: "상위 메뉴", value: parentLabelOf(menu) },
     { label: "메뉴 코드", value: menu.menuCode },
     { label: "메뉴 순서", value: menu.sortOrder },
-    { label: "노출 메뉴명", value: menu.name },
+    { label: "메뉴명", value: menu.name },
     { label: "메뉴 URL", value: menu.url ?? <span className="text-erp-muted">—</span> },
     { label: "메뉴 사용 상태", value: <Badge tone={menu.status === "ACTIVE" ? "on" : "off"}>{statusText(menu.status)}</Badge> },
   ];
@@ -274,7 +274,7 @@ function MenuForm(
         <Field label="메뉴 순서">{readOnly(props.mode === "edit" ? props.menu.sortOrder : props.placement.order)}</Field>
       </FormRow>
       <div className="flex flex-col gap-[8px]">
-        <Field label="노출 메뉴명" required>
+        <Field label="메뉴명" required>
           <TextField
             value={form.name}
             onChange={(e) => handleFieldChange("name", e.target.value)}

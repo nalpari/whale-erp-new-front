@@ -10,23 +10,31 @@ export type Column<T> = {
   cell: (row: T) => ReactNode;
 };
 
-/** 줄 상태. selected = 고른 줄, added = 저장 전 추가한 입력 줄. 둘 다 표 머리 바탕을 깐다(두 바탕 규칙). */
-export type RowState = "selected" | "added";
+/** 줄 상태. selected = 고른 줄, added = 저장 전 추가한 입력 줄, group = 트리의 1단계(묶음) 줄 — 셋 다 표 머리 바탕을 깐다(두 바탕 규칙).
+ * group 은 플랫폼 메뉴 관리 트리가 권한별 메뉴설정 팝업과 같게 1단계를 가르려고 더했다(2026-10-26 사용자 지정). */
+export type RowState = "selected" | "added" | "group";
 
 const ROW_STATE: Record<RowState, string> = {
   selected: "bg-erp-thead-bg",
   added: "bg-erp-thead-bg",
+  group: "bg-erp-thead-bg",
 };
 
 /**
  * 열 이름 줄 모양. default = Figma 머리(옅은 회청 바탕 · 500 회색 글자), plain = 흰 바탕 · 600 먹색 글자(묶음 머리 칸 바로 아래에 두는 표,
  * 데모 staff/detail.mjs whiteHead, 2026-10-02 재영), none = 열 이름 줄을 보이지 않고 줄만(데모 detail.mjs TO-DO noHead — 위 테두리를 표가 긋는다).
  * none 도 열 이름은 화면 읽기 도구용으로 남긴다(sr-only thead).
+ * subtle = erp-subtle(#f0f1f3) 바탕 · 600 먹색 — 1단계 줄에 #f8f9fb 를 까는 트리 표에서 머리를 그보다 살짝 어둡게 가른다(권한별 메뉴설정 팝업과 같다,
+ * DESIGN.md Tables 예외 · 1팀 확인 필요, 2026-10-26).
  */
-export type TableHeadVariant = "default" | "plain" | "none";
+export type TableHeadVariant = "default" | "plain" | "subtle" | "none";
 
-const HEAD_ROW: Record<Exclude<TableHeadVariant, "none">, string> = { default: "bg-erp-thead-bg", plain: "bg-white" };
-const HEAD_CELL: Record<Exclude<TableHeadVariant, "none">, string> = { default: "font-medium text-erp-thead-text", plain: "font-semibold text-erp-ink" };
+const HEAD_ROW: Record<Exclude<TableHeadVariant, "none">, string> = { default: "bg-erp-thead-bg", plain: "bg-white", subtle: "bg-erp-subtle" };
+const HEAD_CELL: Record<Exclude<TableHeadVariant, "none">, string> = {
+  default: "font-medium text-erp-thead-text",
+  plain: "font-semibold text-erp-ink",
+  subtle: "font-semibold text-erp-ink",
+};
 
 // Figma TABLE. 열 정의(columns)와 행(rows)을 받아 목록을 그린다.
 // rowState 로 줄 바탕을, rowProps 로 줄 속성(끌기 이벤트 · aria 등)을 준다. 줄 모양(className · style)은 받지 않는다.

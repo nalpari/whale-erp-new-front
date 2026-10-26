@@ -120,9 +120,9 @@ function treeTab(key, s) {
   ]);
   const cols = [
     { header: "이동", width: "w-[56px]" },
-    { header: "노출 메뉴명", align: "left" },
+    { header: "메뉴명", align: "left" },
     { header: "메뉴 코드", width: "w-[110px]" },
-    { header: "메뉴 계층", width: "w-[90px]" },
+    { header: "메뉴단계", width: "w-[90px]" },
     { header: "메뉴 URL", align: "left", width: "w-[240px]" },
     { header: "순서", width: "w-[60px]" },
     { header: "사용 상태", width: "w-[100px]" },
@@ -131,12 +131,13 @@ function treeTab(key, s) {
   let i = -1;
   const table = ui.dataTable(cols, rows).replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, () => {
     const n = nodes[++i];
-    const cls = ["cursor-pointer", n === sel ? "bg-erp-thead-bg" : "", n.use ? "" : "text-erp-muted"].filter(Boolean).join(" ");
+    // 1단계 줄은 권한별 메뉴설정 팝업과 같은 바탕(2026-10-26 사용자 지정)
+    const cls = ["cursor-pointer", n === sel || n.lvl === 1 ? "bg-erp-thead-bg" : "", n.use ? "" : "text-erp-muted"].filter(Boolean).join(" ");
     return `<tr class="h-[46px] border-b border-erp-thead-line ${cls}" data-row="${key}" data-code="${n.code}" data-lvl="${n.lvl}" data-name="${n.name}" data-label="${n.code} · ${path(n)}" data-kids="${n.kids}"${hides(n) ? " data-hides" : ""}>`;
   });
 
   const nameFields = (name, url, use, id, isNew) =>
-    ui.field(req("노출 메뉴명"), ui.textField({ value: name, placeholder: eg, "data-new-name": isNew })) +
+    ui.field(req("메뉴명"), ui.textField({ value: name, placeholder: eg, "data-new-name": isNew })) +
     ui.field(`메뉴 URL ${help("선택")}`, ui.textField({ value: url, placeholder: urlEg })) +
     `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">메뉴 사용 상태</span>${useRadios(id, use)}</div>`;
 

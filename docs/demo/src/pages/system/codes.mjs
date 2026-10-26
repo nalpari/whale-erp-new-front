@@ -106,7 +106,7 @@ export default ({ A, R }) => {
     ui.textField({ value: name, "aria-label": "그룹명" }),
     owner,
     // BP 적용 칸 — 관리 주체가 플랫폼제공인 그룹만 [BP 적용] 버튼, 나머지는 —(2026-10-08)
-    owner === "플랫폼제공" ? x.dialogTrigger("BP 적용", apply, "soft") : '<span class="text-erp-muted">—</span>',
+    owner === "플랫폼제공" ? x.dialogTrigger("BP 적용", apply, "soft") : '<span class="text-erp-muted">-</span>',
     x.toggle("사용", true),
   ]);
   const left = card(
