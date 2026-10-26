@@ -1,5 +1,5 @@
 # ── build: 개발 의존성까지 설치해 빌드한다 ──
-FROM node:24-slim AS build
+FROM node:24.22.1-slim AS build
 WORKDIR /app
 RUN npm install -g pnpm@11.18.0
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -16,7 +16,7 @@ FROM build AS prod-deps
 RUN pnpm prune --prod
 
 # ── runtime ──
-FROM node:24-slim
+FROM node:24.22.1-slim
 # next start 는 dev · prod 프로파일 모두 NODE_ENV=production 으로 돈다. 프로파일 차이는 마운트하는 값 파일뿐이다.
 # PORT 는 컨테이너 안에서 고정하고, 밖의 포트는 docker run -p 로 프로파일마다 정한다.
 ENV NODE_ENV=production \
