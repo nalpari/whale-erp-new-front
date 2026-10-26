@@ -239,15 +239,15 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
             <p>
               <Tag>
                 <span className="font-semibold">{role.name}</span>
-              </Tag>
+              </Tag>{" "}
               의 메뉴 권한이 변경됩니다.
             </p>
             <ul className="list-disc pl-[18px]">
               <li>
                 영향받는 사용자: <b className="font-semibold">{preview.affectedAdminCount.toLocaleString("ko-KR")}명</b>
               </li>
-              {/* 서버가 요청마다 지금 권한을 다시 판정한다 — 로그인 중인 사용자도 다음 요청(저장 · 화면 이동 · 새로고침)부터 바뀐다(S-KUDELB) */}
-              <li>변경된 권한은 재로그인 없이 다음 요청부터 적용됩니다.</li>
+              {/* 서버가 요청마다 지금 권한을 다시 판정한다 — 로그인 중인 사용자도 다음 요청(저장 · 화면 이동 · 새로고침)부터 바뀐다(S-KUDELB). 문구는 쉬운 말로(2026-10-26 사용자 지정) */}
+              <li>변경된 권한은 다시 로그인하지 않아도 바로 적용됩니다.</li>
             </ul>
           </div>
         )}
