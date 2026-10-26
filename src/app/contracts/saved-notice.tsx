@@ -15,9 +15,11 @@ export function SavedNotice() {
       ?.slice(SAVED_COOKIE.length + 1);
     if (value === undefined) return;
     document.cookie = `${SAVED_COOKIE}=; path=/contracts; max-age=0; samesite=lax`;
-    // 쿠키는 클라이언트에서 읽고 바로 지운다 — 첫 렌더에 읽으면 하이드레이션이 어긋나고, 읽으며 지우는 것은 그리는 중에 할 수 없다(login-form 과 같다)
+    // 쿠키는 클라이언트에서 읽고 바로 지운다 — 첫 렌더에 읽으면 하이드레이션이 어긋나고, 읽으며 지우는 것은 그리는 중에 할 수 없다(login-form 과 같다).
+    // 값은 풀지 않는다 — 넣는 값이 모두 영문 키라 풀 것이 없고, 깨진 값(다른 경로 · 하위 도메인에서 심은 %E0 등)을 decodeURIComponent 에
+    // 넘기면 URIError 로 목록이 오류 화면이 된다(front #127 재리뷰). 모르는 값이면 savedNoticeOf 가 null 이라 안내가 없다
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setText(savedNoticeOf(decodeURIComponent(value)));
+    setText(savedNoticeOf(value));
   }, []);
   if (!text) return null;
   return (

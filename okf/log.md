@@ -1,6 +1,8 @@
 # Bundle history
 
 ## 2026-10-26
+* **Update**: main 병합(front horsea, main #131 까지): okf 충돌은 양쪽 기록을 살렸다. `api-types.generated.ts` 는 main 과 같다(api main `d7c5daa` 기준).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #127 재리뷰 참고 반영: 저장 뒤 안내 쿠키 값을 `decodeURIComponent` 에 넘기지 않는다(깨진 값이면 URIError 로 근로계약 목록이 오류 화면이 됐다), 상태별 개수 주석을 api #146(보이는 계약만 셈)에 맞췄다. api 타입을 api main(`d7c5daa`, #148 · #149 머지 뒤) 기준으로 다시 만들었다.
 * **Update**: main 병합(front flaaffy, main #130 까지): okf 충돌은 양쪽 기록을 살렸다.
 * **Update**: [직원 운영 관리](/staff.md) — 직원 개인정보는 조회만 한다는 규칙에 생년월일 관리자 정정만 예외(WHALEERP-602)를 적었다(STAFF-9 칸 포함). ERD 카탈로그(`docs/erd/README.md`)의 `accounts.birth_date` · `account_change_histories` 의 field · channel · requested_by 도 602 에 맞췄다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [직원 정보 관리 화면](/screens/staff-members.md) — 직원 상세 「생년월일」 줄에 [정정] 버튼과 확인창을 더했다(WHALEERP-602, `PUT /staff-members/:id/birth-date`): 수정 권한이 있고 상세 응답 `birthDateCorrectable` 이 true 일 때만, 신분증 확인 체크 · 안내 세 줄, 409 가입 전 · 퇴직은 토스트 뒤 닫고 다시 받는다. 새 생년월일이 바뀌면(blur 보정 포함) 확인 체크를 풀고, 덜 친 값이 보이는 채 [정정] · 체크를 누르면 그 순간 칸의 글자를 읽어 보내지 않고 체크를 풀며(입력 중에는 상태를 바꾸지 않는다), 확인한 뒤 입력칸을 고쳤으면(blur 가 같은 값으로 맞춰도) 체크를 풀고 보내지 않으며, 마우스 체크 click 이 풀린 체크를 되돌리지 않게 한다. `api-types.generated.ts` 를 api main `d7c5daa`(#149 머지 뒤) 기준으로 다시 만들었다.
