@@ -108,15 +108,6 @@ export function kstToday(now: Date = new Date()): string {
 }
 
 /**
- * 점포명 부분 일치로 점포 id 를 찾는다(급여명세서 목록 점포명 칸이 쓴다 — 직원 목록은 점포 고르기로 바꿨다). 점포 목록은 로그인 정보의 관리 점포(useStores)다 — 점포 목록 api 는
- * 「점포 정보 관리」 메뉴 권한이 있어야 열려 급여명세서 관리만 가진 관리자가 쓸 수 없다. 로그인 뒤 새로 생긴 점포는 다시 로그인해야 잡힌다.
- */
-export function storeIdsByName(stores: readonly { storeId: number; name: string }[], name: string): number[] {
-  const needle = name.trim().toLowerCase();
-  return stores.filter((s) => s.name.toLowerCase().includes(needle)).map((s) => s.storeId);
-}
-
-/**
  * 주소에서 읽을 때 남기는 점포 수 — api 상한(1000)과 같다. 고르기는 막지 않는다 — 넘친 것은 주소를 다시 읽을 때 뒤가 말없이 빠진다
  * (근로계약 · 점포 정보 관리와 같은 한계).
  */
