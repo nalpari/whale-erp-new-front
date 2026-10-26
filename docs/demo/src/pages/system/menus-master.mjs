@@ -129,7 +129,12 @@ function treeTab(key, s) {
   ];
   // 줄마다 스크립트가 읽을 단서를 단다 — 이 줄 아래에 새 메뉴를 만들 때의 단계·상위 표시·순서
   let i = -1;
-  const table = ui.dataTable(cols, rows).replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, () => {
+  // 머리는 권한별 메뉴설정 팝업과 같은 색(erp-subtle 바탕 · 600 먹색, 앱 DataTable headVariant subtle — 2026-10-26)
+  const table = ui
+    .dataTable(cols, rows)
+    .replace('<tr class="h-[42px] border-y border-erp-thead-line bg-erp-thead-bg">', '<tr class="h-[42px] border-y border-erp-thead-line bg-erp-subtle">')
+    .replaceAll('class="px-[10px] font-medium text-erp-thead-text"', 'class="px-[10px] font-semibold text-erp-ink"')
+    .replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, () => {
     const n = nodes[++i];
     // 1단계 줄은 권한별 메뉴설정 팝업과 같은 바탕(2026-10-26 사용자 지정)
     const cls = ["cursor-pointer", n === sel || n.lvl === 1 ? "bg-erp-thead-bg" : "", n.use ? "" : "text-erp-muted"].filter(Boolean).join(" ");
