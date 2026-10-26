@@ -6,7 +6,7 @@ import { req } from "../../biz-form.mjs";
 import * as x from "../../extra.mjs";
 import * as c from "../../config-parts.mjs";
 import { platformHeader, link } from "../../site.mjs";
-import { roleSide, tagRows, newButton, scrollTabs, SVC_TABS_SCRIPT } from "../../role-side.mjs";
+import { roleSide, roleHead, depthRows, menuScroll, tagRows, newButton, scrollTabs, SVC_TABS_SCRIPT } from "../../role-side.mjs";
 
 // 1팀 컴포넌트에 없는 것들. 토큰으로만 그린다.
 const note = (html) => `<p class="text-[14px] leading-[1.6] text-erp-label">${html}</p>`;
@@ -130,14 +130,15 @@ function menuDialog(A, R, role, id) {
     // 머리칸 전체 선택: 고를 수 있는 칸이 모두 켜져 있으면 켜짐, 고를 칸이 없으면 흐리게
     const head = ([op, label]) => {
       const open = vis.filter((m) => !m[4] && !block(m, op));
-      return `<span class="inline-flex${open.length ? "" : " opacity-40"}">${ui.checkbox(A, label, open.length > 0 && open.every((m) => has(map, m[0], op)), { "aria-label": `${label} 전체 선택`, disabled: !open.length })}</span>`;
+      // 체크박스는 칸 가운데(본문과 같은 세로줄), 글자는 그 오른쪽(앱 role-menu-dialog.tsx 와 같다, 2026-10-26 사용자 지정)
+      return `<span class="grid grid-cols-[1fr_auto_1fr] items-center gap-[6px]"><span></span><span class="inline-flex${open.length ? "" : " opacity-40"}">${ui.checkbox(A, "", open.length > 0 && open.every((m) => has(map, m[0], op)), { "aria-label": `${label} 전체 선택`, disabled: !open.length })}</span><span class="justify-self-start whitespace-nowrap">${label}</span></span>`;
     };
     // 메뉴 영역은 BP 권한 메뉴 등록처럼 높이를 고정하고 넘치면 그 안에서 스크롤한다
-    return `<div class="h-[420px] overflow-y-auto">${ui.dataTable(
-      [{ header: "메뉴명", align: "left" }, { header: "메뉴 계층", width: "w-[90px]" }, ...OPS.map((o) => ({ header: head(o), width: "w-[90px]" }))],
+    return menuScroll(depthRows(ui.dataTable(
+      [{ header: "메뉴명", align: "left" }, { header: "메뉴단계", width: "w-[80px]" }, ...OPS.map((o) => ({ header: head(o), width: "w-[100px]" }))],
       rows,
       "이 서비스에 등록된 메뉴가 없습니다.",
-    )}</div>`;
+    ), vis.map((m) => m[1])));
   };
   // 서비스는 표 위 탭으로 고른다(BP 권한 메뉴 등록과 같다 · 2026-10-08). 처음엔 그 권한의 기본 서비스 탭이 열린다
   const tabs = scrollTabs(x.tabs(
@@ -149,58 +150,48 @@ function menuDialog(A, R, role, id) {
 
   const body =
     `<div class="flex flex-col gap-[12px]">` +
-    c.kv(
-      [
-        ["권한 코드", code],
-        ["권한 유형", type],
-        ["권한명", name],
-      ],
-      84,
-    ) +
+    roleHead(type, code, name) +
     tabs +
     `</div>`;
   const foot = canSave
     ? ui.button("취소", { variant: "off", "data-close": true }) + ui.button("저장", { "data-close": true })
     : ui.button("닫기", { "data-close": true });
-  return c.wide(x.dialog(id, "권한 메뉴 등록", body, foot), "w-[880px]");
+  return c.wide(x.dialog(id, "권한별 메뉴설정", body, foot), "w-[880px]");
 }
 
 export default ({ A, R }) => {
   const dialogs = [];
   const rows = ROLES.map((r) => {
-    const [type, code, name, kind, desc, mod, modBy, reg, regBy] = r;
+    const [type, code, name, , desc, mod, modBy] = r;
     const id = x.dialogId();
     dialogs.push(menuDialog(A, R, r, id));
     const n = Object.values(GRANT[code]).reduce((s, m) => s + Object.values(m).filter(Boolean).length, 0);
     return [
-      code,
-      type,
-      name,
+      `${type} <span class="text-erp-label">· ${code}</span>`,
+      `<span class="text-erp-link hover:underline">${name}</span>`, // 권한명은 링크색 — 앱(platform-role-groups · bp-role-groups)과 같다(2026-10-26 사용자 지정)
       desc,
-      // BP 권한 그룹 관리 목록처럼 한 칸에 두 줄(일시 / 아이디)
-      // 등록일시 · 최종수정일시 순서로, 한 칸에 「일시 | 사람」(상세와 같은 모양 · 2026-10-15)
-      `${reg} ${c.muted(`| ${regBy}`)}`,
-      `${mod} ${c.muted(`| ${modBy}`)}`,
+
+      // 등록일시 열은 뺐다 — 앱 platform-role-groups 와 같이 최종수정만(2026-10-26 사용자 지정)
+      `${mod} ${c.muted(`· ${modBy}`)}`,
       // 등록 / 미등록만 보인다. 미등록은 상태 빨강 배지
+      x.dialogTrigger("메뉴설정", id, "soft"),
       n ? ui.badge("on", "등록") : ui.badge("off", "미등록"),
-      x.dialogTrigger("메뉴등록", id, "soft"),
     ];
   });
   const cols = [
-    { header: "권한코드", width: "w-[96px]" },
-    { header: "권한유형", width: "w-[110px]" },
-    { header: "권한명", align: "left" },
+    // 권한유형 · 코드를 한 칸에 — BP 권한 그룹 관리(앱 bp-role-groups)와 같은 모양(2026-10-26 사용자 지정)
+    { header: "권한유형 · 코드", width: "w-[170px]", align: "left" },
+    { header: "권한명", width: "w-[260px]", align: "left" }, // 설명이 칸 한가운데서 시작하지 않게 고정한다(앱 platform-role-groups 와 같다, 2026-10-26 사용자 지정)
     { header: "설명", align: "left" },
-    { header: "등록일시", width: "w-[200px]" },
-    { header: "최종수정일시", width: "w-[200px]" },
-    { header: "메뉴 등록 여부", width: "w-[130px]" },
-    { header: "메뉴등록", width: "w-[124px]" },
+    { header: "최종수정", width: "w-[220px]" },
+    { header: "메뉴관리", width: "w-[124px]" }, // 버튼 열을 상태 앞에(앱 platform-role-groups 와 같다, 2026-10-26 사용자 지정)
+    { header: "메뉴설정 여부", width: "w-[120px]" },
   ];
   const table = tagRows(ui.dataTable(cols, rows), ROLES, SELECTED).replaceAll('<td class="truncate px-[10px]', '<td class="truncate px-[10px] leading-[1.3]');
 
   const left =
     `<section class="${CARD} flex-1">` +
-    ui.sectionHead(`권한 목록 <span class="text-[14px] font-normal text-erp-label">7건</span>`, newButton()) +
+    ui.sectionHead(`권한 그룹 목록 <span class="text-[14px] font-normal text-erp-label">7건</span>`, newButton()) +
     table +
     `</section>`;
 
@@ -215,17 +206,17 @@ export default ({ A, R }) => {
       const others = ROLES.filter((r) => r[3] === "추가" && r[1] !== code).map((r) => `${r[1]} · ${r[2]}`);
       const body = users.length
         ? kv([
-            ["권한", `${name} ${sub(code)}`],
+            ["권한명", `${name} ${sub(`· ${code}`)}`],
             // 몇 명인지 먼저, 그 아래에 한 사람씩 「아이디 | 사용자명」으로 줄을 바꿔 보인다. 다섯 명까지 보이고 넘으면 목록 안에서 스크롤한다(2026-10-15)
             ["연결 사용자", `<p>${users.length}명</p><ul class="mt-[4px] flex max-h-[118px] flex-col gap-[2px] overflow-y-auto text-erp-label">${users.map((u) => `<li class="h-[22px] shrink-0 truncate leading-[22px]">${u.replace(" ", " | ").replace("(미사용)", " (미사용)")}</li>`).join("")}</ul>`],
           ]) +
           ui.field(req("대체 권한"), ui.select(["선택하세요", ...others])) +
           band(`로그인 중인 사용자도 다음 요청부터 새 권한으로 판정됩니다`)
         : kv([
-            ["권한", `${name} ${sub(code)}`],
+            ["권한명", `${name} ${sub(`· ${code}`)}`],
             ["연결 사용자", "없음"],
-          ]) + note("연결된 사용자가 없어 바로 삭제합니다. 되돌릴 수 없습니다.");
-      return x.dialog(id, "권한 삭제", `<div class="flex flex-col gap-[12px] break-keep">${body}</div>`, ui.button("취소", { variant: "off", "data-close": true }) + ui.button("삭제", { "data-close": true }));
+          ]) + note("연결된 사용자가 없어 바로 삭제할 수 있습니다.<br>삭제된 권한 그룹은 복구할 수 없습니다.");
+      return x.dialog(id, "권한 그룹을 삭제하시겠습니까?", `<div class="flex flex-col gap-[12px] break-keep">${body}</div>`, ui.button("취소", { variant: "off", "data-close": true }) + ui.button("삭제", { "data-close": true }));
     })
     .join("");
 

@@ -74,14 +74,17 @@ function RolesBody({
     {
       header: "권한유형 · 코드",
       width: "w-[170px]",
+      align: "left", // 2026-10-26 사용자 지정
       cell: (r) => (
         <span className="truncate">
-          <CodeLabel group="ROLE_TYPE" value={r.roleTypeCode} /> <span className="text-erp-label">{r.roleCode}</span>
+          <CodeLabel group="ROLE_TYPE" value={r.roleTypeCode} /> <span className="text-erp-label">· {r.roleCode}</span>
         </span>
       ),
     },
     {
       header: "권한명",
+      // 폭을 정하지 않으면 설명과 남는 폭을 반씩 나눠 설명 글자가 칸 한가운데서 시작했다 — 권한명을 고정하고 설명이 나머지를 쓴다(2026-10-26 사용자 지정)
+      width: "w-[260px]",
       align: "left",
       cell: (r) => (
         <span className="flex min-w-0 items-center gap-[6px]">
@@ -98,27 +101,28 @@ function RolesBody({
         </span>
       ),
     },
-    { header: "설명", align: "left", cell: (r) => r.description ?? <span className="text-erp-muted">—</span> },
-    { header: "최종수정일시", width: "w-[200px]", cell: (r) => <WhenWho at={r.updatedAt} actor={r.updatedBy} /> },
+    { header: "설명", align: "left", cell: (r) => r.description || <span className="text-erp-muted">-</span> },
+    { header: "최종수정", width: "w-[220px]", cell: (r) => <WhenWho at={r.updatedAt} actor={r.updatedBy} /> },
+    // [메뉴설정] 버튼 열을 「메뉴설정 여부」 앞에 둔다(2026-10-26 사용자 지정 — 전엔 「메뉴 등록 여부」 · 「메뉴 권한관리」[권한설정] 순)
     {
-      header: "메뉴 등록 여부",
-      width: "w-[130px]",
-      cell: (r) => (r.menuCount > 0 ? <Badge tone="on">등록 {r.menuCount.toLocaleString("ko-KR")}개</Badge> : <Badge tone="off">미등록</Badge>),
-    },
-    {
-      header: "메뉴등록",
+      header: "메뉴관리",
       width: "w-[124px]",
       cell: (r) => (
         <Button variant="soft" onClick={() => setMenuFor(r)}>
-          메뉴등록
+          메뉴설정
         </Button>
       ),
+    },
+    {
+      header: "메뉴설정 여부",
+      width: "w-[120px]",
+      cell: (r) => (r.menuCount > 0 ? <Badge tone="on">등록 {r.menuCount.toLocaleString("ko-KR")}개</Badge> : <Badge tone="off">미등록</Badge>),
     },
   ];
 
   return (
     <>
-      {/* [등록]은 제목 줄 오른쪽 — 3팀 목록과 같은 자리(2026-10-23). [가맹마스터 보기]는 목록 카드 머리에 그대로 둔다 */}
+      {/* [등록]은 제목 줄 오른쪽 — 3팀 목록과 같은 자리(2026-10-23). [가맹마스터 메뉴설정 보기]는 목록 카드 머리에 그대로 둔다 */}
       <PageBar title="BP 권한 그룹 관리">
         {can.create && list.creatableRoleTypeCode !== null && (
           <Button onClick={() => setCreating(true)} disabled={creating}>
@@ -128,14 +132,15 @@ function RolesBody({
       </PageBar>
       <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
         <section className={`${CARD} min-w-0 flex-1`}>
-          <div className="flex items-end gap-[6px]">
+          {/* 제목 줄을 34px(버튼 높이)로 고정해 왼쪽 목록 머리와 높이를 맞춘다 — 그래야 아래 첫 칸이 왼쪽 표 시작선에 선다(2026-10-26 사용자 지정) */}
+          <div className="flex min-h-[34px] items-end gap-[6px]">
             <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">
               권한 그룹 목록 <span className="ml-[6px] text-[14px] font-normal text-erp-label">{list.total.toLocaleString("ko-KR")}건</span>
             </h2>
             {/* 가맹 관리자에게는 숨긴다(S-LYKAEI) — api 도 403 이다 */}
             {account.roleTypeCode !== "FA" && (
               <Button variant="soft" onClick={() => setFranchiseMasterOpen(true)}>
-                가맹마스터 보기
+                가맹마스터 메뉴설정 보기
               </Button>
             )}
           </div>
@@ -154,6 +159,7 @@ function RolesBody({
           creating={creating}
           createTypeCode={list.creatableRoleTypeCode}
           detail={detail}
+          listEmpty={list.total === 0}
           lockReasons={lockReasons}
           onCancelCreate={() => setCreating(false)}
           onCreated={(id) => {
@@ -170,7 +176,8 @@ function RolesBody({
         {/* 잠긴 팝업의 안내 띠는 두지 않는다 — 칸이 막히고 [닫기]만 보이는 것으로 알린다 */}
         <RoleMenuDialog role={menuFor} reasons={menuReasons} actions={actions.menus} note={null} onClose={() => setMenuFor(null)} />
         <RoleMenuDialog
-          title="가맹 마스터 권한 보기"
+          // 제목은 [메뉴설정] 팝업과 같게 두고 띠지로 가른다(2026-10-26 사용자 지정, 전엔 「가맹 마스터 권한 보기」)
+          titleTag="가맹 마스터 권한용"
           role={franchiseMasterOpen ? { ...BLANK_ROLE, name: roleTypeLabel("FM") } : null}
           reasons={menuReasons}
           actions={actions.franchiseMaster}

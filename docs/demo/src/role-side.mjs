@@ -22,6 +22,63 @@ export function tagRows(table, roles, selected) {
   });
 }
 
+// 권한별 메뉴설정 팝업 머리 — 권한유형 · 권한코드 · 권한명 한 줄(앱 role-menu-dialog.tsx 와 같다, 2026-10-26 사용자 지정)
+export const roleHead = (type, code, name) =>
+  `<div class="flex h-[42px] items-center gap-[10px] rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[12px] text-[14px]">` +
+  [type && ["권한유형", type, true], ["권한코드", code], ["권한명", name, true]]
+    .filter(Boolean)
+    .map(([l, v, b]) => `<span class="flex items-center gap-[6px]"><span class="text-erp-label">${l}</span><span${b ? ' class="font-semibold"' : ""}>${v}</span></span>`)
+    .join('<span aria-hidden="true" class="h-[11px] w-px bg-[#d9d9d9]"></span>') +
+  `</div>`;
+
+// 오른쪽 칸 제목 — 왼쪽 목록 머리(버튼 34px)와 같은 높이로 둬 첫 칸이 표 시작선에 서게 한다(앱과 같다, 2026-10-26 사용자 지정)
+export const sideHead = (title) => ui.sectionHead(title).replace('class="flex items-end', 'class="flex min-h-[34px] items-end');
+
+// 권한별 메뉴설정 표 모양(앱 role-menu-dialog.tsx 와 같다, 2026-10-26 사용자 지정) — 머리는 erp-subtle 바탕 · 600 먹색 · 칸 여백 4px,
+// 본문 줄은 42px, 1단계 줄에만 회청 바탕. depths: 줄마다 단계
+export function depthRows(table, depths) {
+  let n = -1;
+  return table
+    .replace('<tr class="h-[42px] border-y border-erp-thead-line bg-erp-thead-bg">', '<tr class="h-[42px] border-y border-erp-thead-line bg-erp-subtle">')
+    .replaceAll('class="px-[10px] font-medium text-erp-thead-text"', 'class="px-[4px] font-semibold text-erp-ink"')
+    .replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, () =>
+      depths[++n] === 1 ? '<tr class="h-[42px] border-b border-erp-thead-line bg-erp-thead-bg">' : '<tr class="h-[42px] border-b border-erp-thead-line">',
+    );
+}
+
+// 권한별 메뉴설정 표를 머리 표(고정) + 본문 표(스크롤)로 나눈다 — 스크롤바가 머리 아래에서 시작한다(앱 role-menu-dialog.tsx 와 같다,
+// 2026-10-26 사용자 지정). 두 칸 모두 스크롤바 자리를 비워 머리 · 본문 열이 어긋나지 않는다. table: ui.dataTable 결과
+export function menuScroll(table) {
+  const open = table.slice(0, table.indexOf(">") + 1);
+  const pick = (tag) => table.slice(table.indexOf(`<${tag}`), table.indexOf(`</${tag}>`) + tag.length + 3);
+  const cols = pick("colgroup");
+  return (
+    `<div class="flex h-[420px] flex-col">` +
+    `<div class="shrink-0 overflow-hidden [scrollbar-gutter:stable]">${open}${cols}${pick("thead")}</table></div>` +
+    `<div class="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">${open}${cols}${pick("tbody")}</table></div>` +
+    `</div>`
+  );
+}
+
+// 권한 그룹 상세의 고칠 수 없는 값 상자 — MY PAGE 「계정 정보」 모양에서 제목 바만 뺐다(앱 components/common/readonly-card.tsx, 2026-10-26 사용자 지정).
+// manager: 관리계정ID — undefined 면 줄 없음(플랫폼), null 이면 「-」(BP 관리자 그룹), 값이면 가맹 마스터 아이디 · 이름. reg · mod: [일시, 사람]
+// 라벨 옆 도움말(?) — 마우스를 올리거나 키보드로 닿으면 안내가 뜬다(앱 components/common/help-tip.tsx 와 같다, 2026-10-26 사용자 지정)
+const helpTip = (text, label) =>
+  `<span class="group relative inline-flex shrink-0"><button type="button" aria-label="${label} 도움말" class="grid size-[16px] place-items-center rounded-full text-erp-muted transition-colors duration-150 group-hover:text-erp-brand focus-visible:text-erp-brand"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><rect x="7.3" y="7" width="1.4" height="5" rx="0.7" fill="#fff"/><circle cx="8" cy="4.8" r="0.9" fill="#fff"/></svg></button>` +
+  `<span role="tooltip" class="pointer-events-none absolute top-[calc(100%+6px)] left-[-8px] z-10 w-max max-w-[260px] rounded-[2px] border border-[#ebebeb] bg-white px-[12px] py-[8px] text-[13px] leading-[1.5] font-normal break-keep whitespace-normal text-erp-ink opacity-0 shadow-[0_2px_6px_rgba(40,47,55,0.08)] transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100">${text}</span></span>`;
+const helpField = (label, value, text) =>
+  `<div class="flex min-w-px flex-1 flex-col gap-[4px]"><span class="flex min-w-0 items-center gap-[4px]"><span class="truncate text-[14px] font-medium text-erp-label">${label}</span>${helpTip(text, label)}</span><span class="truncate text-[14px] text-erp-ink font-semibold">${value}</span></div>`;
+export function recordCard({ manager, reg, mod }) {
+  const when = ([at, by]) => `${at} <span class="font-normal text-erp-label">· ${by}</span>`;
+  const rows = [
+    ...(manager === undefined ? [] : [ui.formRow(helpField("가맹마스터 계정", manager ?? '<span class="font-normal text-erp-muted">-</span>', "가맹관리자 권한을 생성한 가맹마스터의 정보가 표시됩니다."))]),
+    ui.formRow(ui.readonlyField("등록", when(reg), true), ui.readonlyField("최종수정", when(mod), true)),
+  ];
+  return (
+    `<div class="flex w-full flex-col gap-[18px] rounded-[2px] border border-erp-thead-line bg-white px-[16px] py-[20px]">${rows.join('<hr class="border-erp-divider">')}</div>`
+  );
+}
+
 // 등록 버튼(목록 머리 오른쪽)
 export const newButton = () => ui.button("등록", { "data-role-new": true }).replace('class="', 'class="disabled:pointer-events-none disabled:opacity-40 ');
 
@@ -31,24 +88,21 @@ export function roleSide({ roles, own, master, selected, del = {}, card }) {
   const view = (r) => {
     const [type, code, name, kind, desc, mod, modBy, reg, regBy] = r;
     const locked = code === own;
-    // BP 권한 그룹 수정과 같은 모양(2026-10-08): 제목 옆에 권한코드 · 권한유형, 입력칸 아래 제목 없는 표에 등록일시 · 최종수정일시.
-    // 본인 권한은 고칠 수 없어 권한 상세로 두고 권한명 · 설명을 표에 싣는다.
-    const rows = [
-      ...(locked ? [["권한명", name], ["설명", desc || c.muted("—")]] : []),
-      ["등록일시", `${reg} ${c.muted(`| ${regBy}`)}`],
-      ["최종수정일시", `${mod} ${c.muted(`| ${modBy}`)}`],
-    ];
-    const fields = locked ? "" : `<div class="flex flex-col gap-[18px]">${ui.field(req("권한명"), ui.textField({ value: name }))}${ui.field("설명", ui.textarea({ rows: 4, value: desc }))}</div>`;
+    // 제목 옆에 권한유형 · 코드, 입력칸 아래 「등록 정보」 카드(앱과 같다, 2026-10-26).
+    // 본인 권한은 고칠 수 없어 권한명 · 설명을 제목 없는 표에 싣는다.
+    const rows = locked ? [["권한명", name], ["설명", desc || c.muted("-")]] : [];
+    const fields = locked ? "" : `<div class="flex flex-col gap-[18px]">${ui.field(req("권한명"), ui.textField({ placeholder: "권한명을 입력해 주세요. (예: 프로모션 담당자)", value: name }))}${ui.field("설명", ui.textarea({ rows: 2, placeholder: "해당 권한에 대한 역할과 담당 업무를 입력해 주세요.", value: desc }))}</div>`;
     const canDelete = master && kind === "추가";
     const foot = locked
       ? ""
-      : `<div class="flex gap-[6px]">${canDelete ? x.dialogTrigger("삭제", del[code], "soft") : ""}<span class="flex-1"></span>${ui.button("저장")}</div>`;
+      : `<div class="flex justify-center gap-[6px]">${canDelete ? x.dialogTrigger("삭제", del[code], "soft") : ""}${ui.button("저장")}</div>`;
     return (
       `<div data-role-view="${code}" class="flex flex-col gap-[18px]"${code === selected ? "" : " hidden"}>` +
-      ui.sectionHead(`${locked ? "권한 상세" : "권한 수정"}<span class="ml-[10px] inline-flex items-center gap-[6px] align-middle">${c.muted(code)}${c.tag(type)}</span>`) +
+      sideHead(`권한 그룹 상세<span class="ml-[10px] inline-flex items-center gap-[6px] align-middle">${c.tag(`<span class="font-normal">권한유형 ·</span> <b class="font-semibold">${type}</b>`)}${c.muted(code)}</span>`) +
       (locked ? band("본인이 연결된 권한이라 고칠 수 없습니다") : "") +
       fields +
-      plainTable(rows) +
+      (rows.length ? plainTable(rows) : "") +
+      recordCard({ reg: [reg, regBy], mod: [mod, modBy] }) +
       foot +
       `</div>`
     );
@@ -57,19 +111,19 @@ export function roleSide({ roles, own, master, selected, del = {}, card }) {
   // 신규 등록 — 마스터 유형 셋이 모두 있어 플랫폼 관리자만 고른다(목업 new 상태)
   const form =
     `<div data-role-view="new" class="flex flex-col gap-[18px]" hidden>` +
-    ui.sectionHead("권한 등록") +
+    sideHead("권한 등록") +
     `<div class="flex flex-col gap-[18px]">` +
-    ui.field(req("권한유형"), ui.select(["플랫폼 관리자"])) +
-    ui.field(req("권한명"), ui.textField({ placeholder: "예: 프로모션 담당", "data-role-name": true })) +
-    ui.field("설명", ui.textarea({ rows: 4, placeholder: "이 권한으로 맡길 업무를 적습니다" })) +
+    ui.field(req("권한유형"), ui.textField({ value: "플랫폼 관리자", readonly: true })) +
+    ui.field(req("권한명"), ui.textField({ placeholder: "권한명을 입력해 주세요. (예: 프로모션 담당자)", "data-role-name": true })) +
+    ui.field("설명", ui.textarea({ rows: 2, placeholder: "해당 권한에 대한 역할과 담당 업무를 입력해 주세요." })) +
     `</div>` +
-    `<div class="flex justify-end gap-[6px]">${ui.button("취소", { variant: "off", "data-role-cancel": true })}${ui.button("저장", { "data-role-save": true })}</div>` +
+    `<div class="flex justify-center gap-[6px]">${ui.button("취소", { variant: "off", "data-role-cancel": true })}${ui.button("저장", { "data-role-save": true })}</div>` +
     `</div>`;
 
-  // 처음 진입 · 고른 권한 없음 — 메뉴 관리의 빈 상세와 같은 안내(2026-10-08)
+  // 처음 진입 · 고른 권한 없음(2026-10-26 사용자 지정 문구 — 앱 platform-role-groups/role-side.tsx 와 같다. 목록이 빈 경우의 문구는 앱에만 있다)
   const empty =
-    `<div data-role-view="empty" class="flex flex-col gap-[18px]"${selected ? " hidden" : ""}>${ui.sectionHead("권한 수정")}` +
-    `<div class="flex flex-col items-center gap-[6px] rounded-[2px] border border-erp-thead-line px-[18px] py-[36px] text-center text-[14px] text-erp-muted"><p>왼쪽 목록에서 권한을 고르면 수정 화면이 여기에 섭니다.</p><p class="text-[13px]">아무것도 고르지 않고 등록을 누르면</p><p class="text-[13px]">플랫폼 관리자 유형의 새 권한을 등록합니다.</p></div></div>`;
+    `<div data-role-view="empty" class="flex flex-col gap-[18px]"${selected ? " hidden" : ""}>${sideHead("권한 그룹 상세")}` +
+    `<div class="flex flex-col items-center gap-[6px] rounded-[2px] border border-erp-thead-line px-[18px] py-[36px] text-center text-[14px] text-erp-muted"><p>왼쪽 목록에서 [권한명]을 클릭하면 상세 정보가 표시됩니다.</p></div></div>`;
 
   return `<section class="${card} w-[464px] shrink-0" data-role-side>${empty}${roles.map(view).join("")}${form}</section>` + ROLE_SCRIPT;
 }

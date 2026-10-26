@@ -214,7 +214,7 @@ function MenuForm(
         if (!created.ok && created.status === undefined) return props.onUnknown(created.message);
         if (!created.ok) return fail(created);
         setFailure(null);
-        toast(`등록했습니다. 메뉴 코드 ${created.menuCode} — 권한은 플랫폼 권한 관리의 [메뉴등록]에서 줍니다.`);
+        toast(`등록했습니다. 메뉴 코드 ${created.menuCode} — 권한은 플랫폼 권한 관리의 [메뉴설정]에서 줍니다.`);
         return props.onDone(created.menuId);
       }
       const result = await updateMenuAction(props.menu.menuId, { ...body, updatedAt: base.updatedAt }).catch(unknownResult("저장"));

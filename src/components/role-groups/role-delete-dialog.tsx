@@ -99,7 +99,8 @@ export function RoleDeleteDialog({
       </span>
       <ConfirmDialog
         open={open}
-        title="권한 삭제"
+        // 점포 삭제 확인창(stores/[storeId]/store-detail-actions.tsx)과 같은 물음 · 복구 안내(2026-10-26 사용자 지정)
+        title="권한 그룹을 삭제하시겠습니까?"
         confirmLabel="삭제"
         wide
         busy={busy}
@@ -110,9 +111,9 @@ export function RoleDeleteDialog({
         <div className="flex flex-col gap-[12px] break-keep">
           {failure && <FailedBand message={failure} />}
           <dl className="grid grid-cols-[84px_1fr] gap-y-[6px] rounded-[2px] border border-erp-thead-line bg-erp-thead-bg p-[12px]">
-            <dt className="text-erp-label">권한</dt>
+            <dt className="text-erp-label">권한명</dt>
             <dd>
-              {role.name} <span className="text-erp-label">{role.roleCode}</span>
+              {role.name} <span className="text-erp-label">· {role.roleCode}</span>
             </dd>
             <dt className="text-erp-label">연결 사용자</dt>
             <dd>
@@ -138,7 +139,13 @@ export function RoleDeleteDialog({
               )}
             </dd>
           </dl>
-          {data && admins.length === 0 && <p className="text-erp-label">연결된 사용자가 없어 바로 삭제합니다. 되돌릴 수 없습니다.</p>}
+          {/* 두 줄로 나눠 보인다(2026-10-26 사용자 지정) */}
+          {data && admins.length === 0 && (
+            <div className="text-erp-label">
+              <p>연결된 사용자가 없어 바로 삭제할 수 있습니다.</p>
+              <p>삭제된 권한 그룹은 복구할 수 없습니다.</p>
+            </div>
+          )}
           {noCandidate && (
             <p className="text-erp-off">{noCandidateText}</p>
           )}

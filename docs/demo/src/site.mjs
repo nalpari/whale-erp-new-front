@@ -177,15 +177,18 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
     `<p class="text-[13px] leading-[1.5] text-erp-label">` +
     `사업자정보가 국세청에 등록된 정보와 일치하는지 확인합니다.</p>`;
   const bizStruckGuide = `<p class="text-[13px] leading-[1.5] text-erp-label">하단의 [저장] 버튼을 클릭하면 인증 정보가 삭제됩니다.</p>`;
+  // 머리(「사업자정보」 · 인증 상태)는 기본정보 탭 「계정 정보」와 같은 회색 제목 바로 떼어 내고, 본문은 흰 바탕에
+  // 둔다(사용자 지정, 2026-10-26). 본문 위아래 여백은 계정 정보(20px)보다 줄인 16px — 좌우와 같다(비교 화면으로 고름).
   const bizAuthBox = (state, num, ceo, open, date) =>
-    `<section aria-label="사업자 번호 인증" class="flex flex-col gap-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[18px]">` +
-    `<div class="flex items-center justify-between"><span class="text-[15px] font-semibold text-erp-ink">사업자정보</span>${
+    `<section aria-label="사업자 번호 인증" class="w-full">` +
+    `<h3 class="flex h-[42px] items-center justify-between rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink"><span>사업자정보</span>${
       state === "new" || state === "struck" ? ui.badge("off", "미인증") : ui.badge("on", `인증 완료 · ${date}`)
-    }</div>` +
+    }</h3>` +
+    `<div class="flex flex-col gap-[12px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white px-[16px] py-[16px]">` +
     bizFields(state, num, ceo, open) +
     bizButtons(state) +
     (state === "struck" ? bizStruckGuide : bizGuide) +
-    `</section>`;
+    `</div></section>`;
   // sameAsBasic: 대표자 연락처 · 이메일 칸에 "기본정보와 동일" 체크박스 — 체크하면 기본정보(이름 탭) 값을 그대로 쓴다(2026-10-22 사용자 지정).
   const ceoContact = (idp, checked) =>
     `<div role="group" aria-label="대표자 연락처" class="flex min-w-px flex-1 flex-col gap-[8px]"><span class="flex items-center gap-[10px] text-[14px] font-medium text-erp-label"><span>대표자 연락처</span>${ui.checkbox(A, "기본정보와 동일", checked, { id: `${idp}-phone-same` })}</span>${f.tel(checked ? "010" : "010", "5530", "1182")}</div>` +
@@ -225,8 +228,35 @@ export function mypagePanel(A) {
 }
 
 // MY PAGE 전체 화면(mypage/password.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다. 비밀번호 칸(보기 토글)은 biz-form.mjs 의 pwField.
+// 비밀번호 변경 완료 — 제목은 그대로 두고 입력칸 자리에 큰 체크 + 안내를 둔다(2026-10-26 사용자 지정, C안: 연한 파랑 원 + 파랑 체크).
+// 「색은 상태다」 규칙대로 완료 상태에 상태 파랑(#5e8ce9 · 바탕 #f4f9ff)을 쓴다. 전엔 토스트로만 알렸다.
+const PW_DONE_ICON =
+  '<svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="28" fill="#f4f9ff"/><path d="M17 28.5l7.5 7.5L39.5 21" fill="none" stroke="#5e8ce9" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const PW_SCRIPT = `<script>
+(() => {
+  if (window.__pwDone) return;
+  window.__pwDone = true;
+  document.addEventListener("click", (e) => {
+    const submit = e.target.closest("[data-pw-submit]");
+    const reset = e.target.closest("[data-pw-reset]");
+    const root = (submit || reset)?.closest("[data-pw]");
+    if (!root) return;
+    root.querySelector("[data-pw-form]").hidden = Boolean(submit);
+    root.querySelector("[data-pw-done]").hidden = !submit;
+    if (submit) root.querySelector("[data-pw-done] button")?.focus();
+  });
+})();
+</script>`;
 export function passwordBody({ closeSave = false } = {}) {
-  return ui.formGroup(
+  const done =
+    `<div data-pw-done hidden class="flex flex-col gap-[18px]">` +
+    `<div role="status" class="flex flex-col items-center gap-[6px] rounded-[2px] border border-erp-thead-line px-[18px] py-[36px] text-center">` +
+    `<span class="mb-[12px]">${PW_DONE_ICON}</span>` +
+    `<p class="text-[16px] font-semibold text-erp-ink">비밀번호가 변경되었습니다.</p>` +
+    `<p class="text-[14px] text-erp-muted">다음 로그인부터 새 비밀번호를 사용해 주세요.</p></div>` +
+    // 패널은 [닫기](닫으면 다음에 열 때 입력칸으로 돌아온다), 전체 화면은 [확인]으로 입력칸으로 돌아간다
+    `<div class="flex justify-center">${closeSave ? ui.button("닫기", { "data-close": true, "data-pw-reset": true }) : ui.button("확인", { "data-pw-reset": true })}</div></div>`;
+  return `<div data-pw class="flex flex-col gap-[18px]"><div data-pw-form>` + ui.formGroup(
     "새 비밀번호 설정",
     f.pwField("현재 비밀번호", "whale-2026!", "current-password", "지금 쓰고 있는 비밀번호를 입력하세요"),
     f.pwField(
@@ -237,8 +267,8 @@ export function passwordBody({ closeSave = false } = {}) {
       "영문·숫자·특수문자를 조합하여 8~20자 입력해 주세요.",
     ),
     f.pwField("새 비밀번호 확인", "hangang-0922#", "new-password", "새 비밀번호를 한 번 더 입력하세요"),
-    saveRow("비밀번호 변경", closeSave, "비밀번호가 변경되었습니다."),
-  );
+    `<div class="flex justify-end gap-[6px]">${closeSave ? ui.button("닫기", { variant: "off", "data-close": true }) : ""}${ui.button("비밀번호 변경", { "data-pw-submit": true })}</div>`,
+  ) + `</div>${done}</div>` + PW_SCRIPT;
 }
 export function passwordPanel(A) {
   return ui.slidePanel("password-panel", "비밀번호 변경", ui.sectionHead("비밀번호 변경") + passwordBody({ closeSave: true }));

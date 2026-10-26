@@ -60,6 +60,7 @@ export function BizVerificationBox({
   layout = "stack",
   compactRow = false,
   showHeader = true,
+  titleBar = false,
 }: {
   values: BizVerifyValues;
   onChange: (key: BizVerifyField, value: string) => void;
@@ -107,6 +108,9 @@ export function BizVerificationBox({
   compactRow?: boolean;
   /** 상자 머리(「사업자정보」 · 인증 상태). 점포는 인증 상태를 위쪽 묶음 제목에 두어(BizVerifiedStatus) 머리를 뺀다(2026-10-22 사용자 지정) */
   showHeader?: boolean;
+  /** 머리를 상자 밖 42px 회색 제목 바로 떼고 본문을 흰 바탕에 둔다 — MY PAGE 사업자정보 탭 전용(2026-10-26 사용자 지정).
+   * 켜면 showHeader 는 보지 않는다 */
+  titleBar?: boolean;
 }) {
   const ids = useId();
   const lineMessage = missingMessage(missing) ?? boxError ?? undefined;
@@ -183,9 +187,22 @@ export function BizVerificationBox({
     </div>
   );
 
+  // titleBar 면 머리를 상자 밖 회색 제목 바로 떼고 본문을 흰 바탕에 둔다(MY PAGE 「계정 정보」와 같은 모양,
+  // 2026-10-26 사용자 지정). 아니면 본문 div 는 contents 라 지금처럼 회색 상자 하나다.
   return (
-    <section aria-label="사업자 번호 인증" className="flex flex-col gap-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[18px]">
-      {showHeader && (
+    <section
+      aria-label="사업자 번호 인증"
+      className={titleBar ? "w-full" : "flex flex-col gap-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[18px]"}
+    >
+      {titleBar && (
+        <h3 className="flex h-[42px] items-center justify-between rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">
+          <span>사업자정보</span>
+          <BizVerifiedStatus verified={verified} date={verifiedDate} />
+        </h3>
+      )}
+      {/* 본문 위아래 여백은 계정 정보(20px)보다 줄인 16px — 좌우와 같다(사용자가 비교 화면으로 고름, 2026-10-26) */}
+      <div className={titleBar ? "flex flex-col gap-[12px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white p-[16px]" : "contents"}>
+      {showHeader && !titleBar && (
         <div className="flex items-center justify-between">
           <span className="text-[15px] font-semibold text-erp-ink">사업자정보</span>
           <BizVerifiedStatus verified={verified} date={verifiedDate} />
@@ -238,6 +255,7 @@ export function BizVerificationBox({
           </>
         )}
       </p>
+      </div>
     </section>
   );
 }

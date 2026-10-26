@@ -424,6 +424,9 @@
   .left-1\/2 {
     left: calc(1 / 2 * 100%);
   }
+  .left-\[-8px\] {
+    left: -8px;
+  }
   .left-\[-12\.98px\] {
     left: -12.98px;
   }
@@ -1322,8 +1325,14 @@
   .w-full {
     width: 100%;
   }
+  .w-max {
+    width: max-content;
+  }
   .w-px {
     width: 1px;
+  }
+  .max-w-\[260px\] {
+    max-width: 260px;
   }
   .max-w-\[300px\] {
     max-width: 300px;
@@ -1519,6 +1528,9 @@
   }
   .grid-cols-7 {
     grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+  .grid-cols-\[1fr_auto_1fr\] {
+    grid-template-columns: 1fr auto 1fr;
   }
   .grid-cols-\[5fr_7fr\] {
     grid-template-columns: 5fr 7fr;
@@ -1752,6 +1764,9 @@
   }
   .self-stretch {
     align-self: stretch;
+  }
+  .justify-self-start {
+    justify-self: flex-start;
   }
   .truncate {
     overflow: hidden;
@@ -3171,6 +3186,9 @@
   .group-open\:rotate-90:is(:where(.group):is([open], :popover-open, :open) *) {
     rotate: 90deg;
   }
+  .group-focus-within\:opacity-100:is(:where(.group):focus-within *) {
+    opacity: 100%;
+  }
   @media (hover: hover) {
     .group-hover\:-translate-x-\[3px\]:is(:where(.group):hover *) {
       --tw-translate-x: calc(3px * -1);
@@ -3186,6 +3204,9 @@
     }
     .group-hover\:stroke-erp-ink:is(:where(.group):hover *) {
       stroke: var(--color-erp-ink);
+    }
+    .group-hover\:text-erp-brand:is(:where(.group):hover *) {
+      color: var(--color-erp-brand);
     }
     .group-hover\:opacity-100:is(:where(.group):hover *) {
       opacity: 100%;
@@ -3337,6 +3358,9 @@
   }
   .focus-visible\:bg-erp-thead-bg:focus-visible {
     background-color: var(--color-erp-thead-bg);
+  }
+  .focus-visible\:text-erp-brand:focus-visible {
+    color: var(--color-erp-brand);
   }
   .active\:scale-\[0\.97\]:active {
     scale: 0.97;
@@ -3597,7 +3621,7 @@
   .\[\&\:placeholder-shown\:\:-webkit-datetime-edit-year-field\]\:text-\[\#999\]:placeholder-shown::-webkit-datetime-edit-year-field {
     color: #999;
   }
-  .\[\&\>\*\]\:shrink-0 > * {
+  .\[\&\>\:not\(\[data-table-scroll\]\)\]\:shrink-0 > :not([data-table-scroll]) {
     flex-shrink: 0;
   }
   .\[\&\>img\]\:transition-opacity > img {

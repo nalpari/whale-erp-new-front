@@ -30,6 +30,9 @@ const HEAD_CELL: Record<Exclude<TableHeadVariant, "none">, string> = { default: 
 // Figma TABLE. 열 정의(columns)와 행(rows)을 받아 목록을 그린다.
 // rowState 로 줄 바탕을, rowProps 로 줄 속성(끌기 이벤트 · aria 등)을 준다. 줄 모양(className · style)은 받지 않는다.
 // headVariant 로 열 이름 줄 모양을 고른다(기본 default).
+// scroll 을 켜면 열 이름 줄을 고정하고 그 아래 줄만 스크롤한다 — 부모가 정한 높이를 채우며(flex-1), 스크롤바도 열 이름 줄 아래에서
+// 시작한다(공통코드 관리, 2026-10-26 사용자 지정). 머리 · 본문을 두 표로 나누고 둘 다 스크롤바 자리를 비워(scrollbar-gutter) 열이 어긋나지 않는다.
+// 부모는 flex 세로 묶음이어야 한다. headVariant none 에는 쓰지 않는다(고정할 머리가 없다).
 export function DataTable<T>({
   columns,
   rows,
@@ -38,6 +41,7 @@ export function DataTable<T>({
   rowProps,
   empty = "데이터가 없습니다.",
   headVariant = "default",
+  scroll = false,
 }: {
   columns: Column<T>[];
   rows: T[];
@@ -46,61 +50,89 @@ export function DataTable<T>({
   rowProps?: (row: T) => Omit<ComponentProps<"tr">, "className" | "style" | "children">;
   empty?: ReactNode;
   headVariant?: TableHeadVariant;
+  scroll?: boolean;
 }) {
-  return (
-    <table className={`w-full table-fixed border-collapse border-x border-erp-thead-line text-[14px] ${headVariant === "none" ? "border-t" : ""}`}>
-      <colgroup>
-        {columns.map((c, i) => (
-          <col key={i} className={c.width} />
-        ))}
-      </colgroup>
-      {headVariant === "none" ? (
-        <thead className="sr-only">
-          <tr>
-            {columns.map((c, i) => (
-              <th key={i} scope="col">
-                {c.header}
-              </th>
-            ))}
-          </tr>
-        </thead>
+  const table = `w-full table-fixed border-collapse border-x border-erp-thead-line text-[14px] ${headVariant === "none" ? "border-t" : ""}`;
+  const cols = (
+    <colgroup>
+      {columns.map((c, i) => (
+        <col key={i} className={c.width} />
+      ))}
+    </colgroup>
+  );
+  const head =
+    headVariant === "none" ? (
+      <thead className="sr-only">
+        <tr>
+          {columns.map((c, i) => (
+            <th key={i} scope="col">
+              {c.header}
+            </th>
+          ))}
+        </tr>
+      </thead>
+    ) : (
+      <thead>
+        <tr className={`h-[42px] border-y border-erp-thead-line ${HEAD_ROW[headVariant]}`}>
+          {columns.map((c, i) => (
+            <th key={i} scope="col" className={`px-[10px] ${HEAD_CELL[headVariant]}`}>
+              {c.header}
+            </th>
+          ))}
+        </tr>
+      </thead>
+    );
+  const body = (
+    <tbody className="text-erp-ink">
+      {rows.length === 0 ? (
+        <tr className="h-[92px] border-b border-erp-thead-line">
+          <td colSpan={columns.length} className="text-center text-erp-muted">
+            {empty}
+          </td>
+        </tr>
       ) : (
-        <thead>
-          <tr className={`h-[42px] border-y border-erp-thead-line ${HEAD_ROW[headVariant]}`}>
-            {columns.map((c, i) => (
-              <th key={i} scope="col" className={`px-[10px] ${HEAD_CELL[headVariant]}`}>
-                {c.header}
-              </th>
-            ))}
-          </tr>
-        </thead>
+        rows.map((row) => {
+          const state = rowState?.(row);
+          return (
+            <tr
+              key={rowKey(row)}
+              {...rowProps?.(row)}
+              className={`h-[46px] border-b border-erp-thead-line ${state ? ROW_STATE[state] : ""}`}
+            >
+              {columns.map((c, i) => (
+                <td key={i} className={`truncate px-[10px] ${c.align === "left" ? "text-left" : "text-center"}`}>
+                  {c.cell(row)}
+                </td>
+              ))}
+            </tr>
+          );
+        })
       )}
-      <tbody className="text-erp-ink">
-        {rows.length === 0 ? (
-          <tr className="h-[92px] border-b border-erp-thead-line">
-            <td colSpan={columns.length} className="text-center text-erp-muted">
-              {empty}
-            </td>
-          </tr>
-        ) : (
-          rows.map((row) => {
-            const state = rowState?.(row);
-            return (
-              <tr
-                key={rowKey(row)}
-                {...rowProps?.(row)}
-                className={`h-[46px] border-b border-erp-thead-line ${state ? ROW_STATE[state] : ""}`}
-              >
-                {columns.map((c, i) => (
-                  <td key={i} className={`truncate px-[10px] ${c.align === "left" ? "text-left" : "text-center"}`}>
-                    {c.cell(row)}
-                  </td>
-                ))}
-              </tr>
-            );
-          })
-        )}
-      </tbody>
+    </tbody>
+  );
+
+  if (scroll && headVariant !== "none")
+    return (
+      <div data-table-scroll className="flex min-h-0 flex-1 flex-col">
+        <div className="shrink-0 overflow-hidden [scrollbar-gutter:stable]">
+          <table className={table}>
+            {cols}
+            {head}
+          </table>
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">
+          <table className={table}>
+            {cols}
+            {body}
+          </table>
+        </div>
+      </div>
+    );
+  return (
+    <table className={table}>
+      {cols}
+      {head}
+      {body}
     </table>
   );
 }

@@ -6,7 +6,7 @@ import { platformHeader } from "../../site.mjs";
 import { band as riskBand } from "../../staff-parts.mjs";
 
 // 두 카드 껍데기
-const card = (w, html) => `<section class="${w} flex flex-col gap-[12px] overflow-y-auto rounded-[4px] [&>*]:shrink-0 border border-erp-panel-line bg-white p-[25px]">${html}</section>`;
+const card = (w, html) => `<section class="${w} flex flex-col gap-[12px] overflow-y-auto rounded-[4px] [&>:not([data-table-scroll])]:shrink-0 border border-erp-panel-line bg-white p-[25px]">${html}</section>`;
 // 고른 줄 표시(목업 surface-strong). dataTable 결과의 n 번째 줄에 표 머리 바탕을 얹는다.
 const markRow = (table, n) => {
   let i = -1;
@@ -112,7 +112,7 @@ export default ({ A, R }) => {
   const left = card(
     "w-[900px] shrink-0", // 그룹 목록을 넓혔다(2026-10-12)
     ui.sectionHead(`공통코드 그룹${sub(`${GROUPS.length}개`)}`, dim(ui.button("추가", { variant: "soft", "data-add-row": "new-group" })) + ui.button("저장")) +
-      markRow(ui.dataTable(groupCols, groupRows), 0) +
+      ui.scrollTable(markRow(ui.dataTable(groupCols, groupRows), 0)) + // 열 이름 줄까지 고정, 아래만 스크롤(앱과 같다, 2026-10-26)
       addRows(
         "new-group",
         [
@@ -144,7 +144,7 @@ export default ({ A, R }) => {
   const right = card(
     "min-w-0 flex-1",
     ui.sectionHead(`상세 코드${sub("SERVICE · 서비스 · 플랫폼고정")}`, dim(ui.button("추가", { variant: "soft", "data-add-row": "new-code", "data-multi": true })) + ui.button("저장")) +
-      ui.dataTable(codeCols, codeRows) +
+      ui.scrollTable(ui.dataTable(codeCols, codeRows)) +
       addRows(
         "new-code",
         [

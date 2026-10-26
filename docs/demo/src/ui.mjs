@@ -76,6 +76,20 @@ export function dataTable(columns, rows, empty = "데이터가 없습니다.") {
   return `<table class="w-full table-fixed border-collapse border-x border-erp-thead-line text-[14px]"><colgroup>${cols}</colgroup><thead><tr class="h-[42px] border-y border-erp-thead-line bg-erp-thead-bg">${head}</tr></thead><tbody class="text-erp-ink">${body}</tbody></table>`;
 }
 
+// data-table.tsx 의 scroll — 열 이름 줄을 고정하고 그 아래 줄만 스크롤한다. 부모(flex 세로 묶음)가 정한 높이를 채운다(2026-10-26).
+// 머리 · 본문을 두 표로 나누고 둘 다 스크롤바 자리를 비워 열이 어긋나지 않는다. table: dataTable 결과(줄 표시를 얹은 뒤에 감싼다)
+export function scrollTable(table) {
+  const open = table.slice(0, table.indexOf(">") + 1);
+  const pick = (tag) => table.slice(table.indexOf(`<${tag}`), table.indexOf(`</${tag}>`) + tag.length + 3);
+  const cols = pick("colgroup");
+  return (
+    `<div data-table-scroll class="flex min-h-0 flex-1 flex-col">` +
+    `<div class="shrink-0 overflow-hidden [scrollbar-gutter:stable]">${open}${cols}${pick("thead")}</table></div>` +
+    `<div class="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">${open}${cols}${pick("tbody")}</table></div>` +
+    `</div>`
+  );
+}
+
 // detail-table.tsx. rows: [label, valueHtml, multiline?] — multiline 은 값이 여러 줄인 줄(주소 · 대표 이미지처럼)만
 // 46 을 최소로 내용만큼 늘린다(real DetailRow.multiline 과 같다). 라벨 칸 110px(180px에서 줄임, 2026-10-20 — 앱·DESIGN.md 와 같다).
 export function detailTable(title, rows) {

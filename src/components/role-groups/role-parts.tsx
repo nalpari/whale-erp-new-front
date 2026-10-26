@@ -38,7 +38,7 @@ export const actorOf = (actor: Actor) => (actor ? (actor.name ?? actor.loginId) 
 export function WhenWho({ at, actor }: { at: string; actor: Actor }) {
   return (
     <span className="truncate">
-      {formatDateTime(at)} <span className="text-erp-label">| {actorOf(actor)}</span>
+      {formatDateTime(at)} <span className="text-erp-label">· {actorOf(actor)}</span>
     </span>
   );
 }
