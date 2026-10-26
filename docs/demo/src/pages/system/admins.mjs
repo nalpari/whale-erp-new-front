@@ -51,7 +51,7 @@ export default ({ A, R }) => {
     { header: "연락처", width: "w-[150px]", align: "left" },
     { header: "이메일", width: "w-[220px]", align: "left" },
     { header: "최근 로그인", width: "w-[170px]" },
-    { header: "등록일시", width: "w-[170px]" },
+    { header: "등록", width: "w-[170px]" }, // 권한 그룹 관리와 같은 라벨(앱 platform-admins, 2026-10-26)
   ];
   const rows = ADMINS.map(([id, name, role, state, phone, mail, login, reg]) => [
     id,

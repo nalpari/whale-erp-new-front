@@ -38,10 +38,10 @@ function platformAdminDetailBody(A, R) {
     ["직책", "매니저"],
     // 주소는 우편번호 · 기본주소 · 상세주소를 줄을 바꿔 보이고, 위아래 선에 붙지 않게 여백을 준다
     ["주소", `<div class="py-[2px] leading-[1.6]">${["06236", "서울 강남구 테헤란로 152", "12층"].join("<br>")}</div>`],
-    // 최근 로그인 → 등록일시 → 최종 수정일시 순으로 둔다(2026-10-20 디자인 수정).
+    // 최근 로그인 → 등록 → 최종수정 순으로 둔다(2026-10-20 디자인 수정). 「일시 · 사람」(앱과 같다, 2026-10-26)
     ["최근 로그인", "2026-09-21 09:03"],
-    ["등록일시", ui.detailValues(["2025-06-02 10:11", "platjung"])],
-    ["최종 수정일시", ui.detailValues(["2026-08-12 09:40", "platkim"])],
+    ["등록", `2025-06-02 10:11 <span class="text-erp-label">· platjung</span>`],
+    ["최종수정", `2026-08-12 09:40 <span class="text-erp-label">· platkim</span>`],
   ]));
 
   const history = ui.dataTable(
