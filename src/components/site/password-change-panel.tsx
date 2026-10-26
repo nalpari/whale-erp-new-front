@@ -1,0 +1,195 @@
+"use client";
+
+import Image from "next/image";
+import { useId, useState, useTransition, type ComponentProps, type RefObject } from "react";
+import { Button, Field, FormGroup, SlidePanel } from "@/components/common";
+import { FIELD } from "@/components/common/theme";
+import { myPasswordErrorField, type MyPasswordFormField } from "@/lib/my-password-form";
+import { changeMyPasswordAction } from "./password-change-actions";
+
+type Form = { current: string; next: string; confirm: string };
+const EMPTY: Form = { current: "", next: "", confirm: "" };
+
+function FieldMessage({ id, message }: { id: string; message?: string }) {
+  if (!message) return null;
+  return (
+    <p id={id} role="alert" className="text-[13px] leading-[1.5] text-erp-off">
+      {message}
+    </p>
+  );
+}
+
+function FailedBand({ message }: { message: string }) {
+  return (
+    <div role="alert" className="rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] leading-[1.6] text-erp-off">
+      {message}
+    </div>
+  );
+}
+
+/** 저장 성공 화면 — 패널을 닫지 않고 폼을 이 화면으로 바꾼다(사용자 지정, 2026-10-26). 다른 기기 로그인은
+ * 그대로 이어지므로 "다시 로그인"이 아니라 "다음 로그인부터"로 안내한다. 상자·아이콘은 C안(연한 파랑 원
+ * #f4f9ff + 파랑 체크 #5e8ce9, DESIGN.md 상태 파랑·연한 파랑 바탕 토큰) — 입력칸 자리에 권한그룹 상세의
+ * 빈 칸과 같은 상자(erp-thead-line 테두리)를 두는 사용자 비교 시안 기준(scratchpad pw-done-compare.html). */
+function Done({ onClose }: { onClose: () => void }) {
+  return (
+    <>
+      <div className="flex flex-col items-center gap-[6px] rounded-[2px] border border-erp-thead-line px-[18px] py-[36px] text-center">
+        <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true" className="mb-[12px]">
+          <circle cx="28" cy="28" r="28" fill="#f4f9ff" />
+          <path d="M17 28.5l7.5 7.5L39.5 21" fill="none" stroke="#5e8ce9" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        <p className="text-[16px] font-semibold text-erp-ink">비밀번호가 변경되었습니다.</p>
+        <p className="text-[14px] text-erp-muted">다음 로그인부터 변경된 비밀번호로 로그인해 주세요.</p>
+      </div>
+      <div className="flex justify-center gap-[6px]">
+        <Button onClick={onClose}>닫기</Button>
+      </div>
+    </>
+  );
+}
+
+/** 비밀번호 칸 + 눈 아이콘(보기·숨기기, 회원가입 password-field.tsx 와 같은 아이콘 쌍 — docs/demo pwField 기준,
+ * 2026-10-26 사용자 지정). 오른쪽에 아이콘 버튼을 겹치는 칸은 공통 TextField 가 className 을 안 받아 FIELD
+ * 토큰을 직접 써서 만든다(search-field.tsx 와 같은 방식). ERP 비로그인이 아닌 화면에서는 이 칸이 처음이라
+ * 아직 공통 컴포넌트로 올리지 않았다 — 두 번째로 쓰는 화면이 생기면 올린다(DESIGN.md). */
+function PasswordInput(props: Omit<ComponentProps<"input">, "type" | "className">) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <div className="relative">
+      <input {...props} type={visible ? "text" : "password"} className={`${FIELD} pr-[34px]`} />
+      <button
+        type="button"
+        aria-pressed={visible}
+        aria-label={visible ? "비밀번호 숨기기" : "비밀번호 보기"}
+        onClick={() => setVisible((v) => !v)}
+        className="absolute top-0 right-0 grid size-[34px] place-items-center text-erp-label hover:text-erp-ink"
+      >
+        <Image src={visible ? "/icons/eye-off.svg" : "/icons/eye-on.svg"} alt="" width={16} height={16} />
+      </button>
+    </div>
+  );
+}
+
+/** GNB 「비밀번호 변경」이 여는 슬라이드 패널(MY PAGE, S-PTWREE). 바꾸면 패널을 닫지 않고 완료 화면(Done)으로
+ * 바꾼다(사용자 지정, 2026-10-26). 오류 문구는 화면이 만들지 않고 api 의 message 를 그대로 보인다
+ * (force-password-dialog.tsx 와 같은 규칙, 정책 PL-QSBSYY) — myPasswordErrorField 가 어느 칸 탓인지만
+ * 가른다. 바꿔도 이 기기 · 다른 기기의 로그인은 모두 이어진다(S-PTWREE outcome) — 재로그인을 요구하지 않는다. */
+export function PasswordChangePanel({ id, open, onClose, trigger }: { id: string; open: boolean; onClose: () => void; trigger: RefObject<HTMLElement | null> }) {
+  const ids = useId();
+  const [form, setForm] = useState<Form>(EMPTY);
+  const [fieldError, setFieldError] = useState<{ at: MyPasswordFormField; message: string } | null>(null);
+  const [failure, setFailure] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+  const [saving, startSaving] = useTransition();
+
+  // 열 때마다 칸·오류·완료 화면을 비운다 — 저장된 비밀번호 값을 패널에 남기지 않는다(마스킹과 별개로, 다시 열면 늘 빈칸).
+  // 렌더 중에 상태를 맞춘다(effect 가 아니다) — my-page-panel.tsx 의 loadedFor 와 같은 패턴(react-hooks/set-state-in-effect
+  // 가 걸려 찾음, 2026-10-26). 서버를 부르지 않는 순수 리셋이라 렌더 중에 해도 안전하다.
+  const [openedFor, setOpenedFor] = useState(open);
+  if (open !== openedFor) {
+    setOpenedFor(open);
+    if (open) {
+      setForm(EMPTY);
+      setFieldError(null);
+      setFailure(null);
+      setDone(false);
+    }
+  }
+
+  const messageId = (field: MyPasswordFormField) => `${ids}-${field}`;
+  const invalid = (field: MyPasswordFormField) => (fieldError?.at === field ? true : undefined);
+  const describe = (field: MyPasswordFormField) => (fieldError?.at === field ? messageId(field) : undefined);
+
+  const handleSave = () => {
+    setFieldError(null);
+    setFailure(null);
+    startSaving(async () => {
+      const result = await changeMyPasswordAction({
+        currentPassword: form.current,
+        newPassword: form.next,
+        newPasswordConfirm: form.confirm,
+      });
+      if (!result.ok) {
+        const field = myPasswordErrorField(result.status, result.message);
+        if (!field) return setFailure(result.message);
+        return setFieldError({ at: field, message: result.message });
+      }
+      setForm(EMPTY);
+      setDone(true);
+    });
+  };
+
+  return (
+    <SlidePanel id={id} open={open} onClose={onClose} label="비밀번호 변경" trigger={trigger} closeOnBackdrop>
+      <h2 className="text-[18px] font-semibold text-erp-ink">비밀번호 변경</h2>
+      {done ? (
+        <Done onClose={onClose} />
+      ) : (
+        <>
+          {failure && <FailedBand message={failure} />}
+
+          <FormGroup title="새 비밀번호 설정">
+            <div className="flex flex-col gap-[8px]">
+              <Field label="현재 비밀번호" required>
+                <PasswordInput
+                  autoComplete="current-password"
+                  placeholder="지금 쓰고 있는 비밀번호를 입력해 주세요."
+                  value={form.current}
+                  onChange={(e) => setForm((f) => ({ ...f, current: e.target.value }))}
+                  aria-invalid={invalid("current")}
+                  aria-describedby={describe("current")}
+                  aria-required
+                />
+              </Field>
+              <FieldMessage id={messageId("current")} message={fieldError?.at === "current" ? fieldError.message : undefined} />
+            </div>
+
+            <div className="flex flex-col gap-[8px]">
+              <Field label="새 비밀번호" required>
+                <PasswordInput
+                  autoComplete="new-password"
+                  placeholder="영문·숫자·특수문자를 조합하여 8~20자로 입력해 주세요."
+                  maxLength={20}
+                  value={form.next}
+                  onChange={(e) => setForm((f) => ({ ...f, next: e.target.value }))}
+                  aria-invalid={invalid("newPassword")}
+                  aria-describedby={describe("newPassword")}
+                  aria-required
+                />
+              </Field>
+              {/* 안내(비밀번호 정책 조건)는 칸 안 placeholder 로 두고, 칸 아래는 오류가 있을 때만 보인다(docs/demo pwField
+               * 기준, 2026-10-26 사용자 지정 — 전엔 조건 충족 여부를 칸 아래 늘 보이는 체크리스트로 띄웠다). */}
+              <FieldMessage id={messageId("newPassword")} message={fieldError?.at === "newPassword" ? fieldError.message : undefined} />
+            </div>
+
+            <div className="flex flex-col gap-[8px]">
+              <Field label="새 비밀번호 확인" required>
+                <PasswordInput
+                  autoComplete="new-password"
+                  placeholder="새 비밀번호를 한 번 더 입력해 주세요."
+                  maxLength={20}
+                  value={form.confirm}
+                  onChange={(e) => setForm((f) => ({ ...f, confirm: e.target.value }))}
+                  aria-invalid={invalid("newPasswordConfirm")}
+                  aria-describedby={describe("newPasswordConfirm")}
+                  aria-required
+                />
+              </Field>
+              <FieldMessage id={messageId("newPasswordConfirm")} message={fieldError?.at === "newPasswordConfirm" ? fieldError.message : undefined} />
+            </div>
+          </FormGroup>
+
+          <div className="flex justify-center gap-[6px]">
+            <Button variant="off" onClick={onClose} disabled={saving}>
+              닫기
+            </Button>
+            <Button onClick={handleSave} disabled={saving || !form.current || !form.next || !form.confirm}>
+              비밀번호 변경
+            </Button>
+          </div>
+        </>
+      )}
+    </SlidePanel>
+  );
+}
