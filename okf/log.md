@@ -1,7 +1,14 @@
 # Bundle history
 
 ## 2026-10-26
+* **Update**: main 병합(front horsea, main #131 까지): okf 충돌은 양쪽 기록을 살렸다. `api-types.generated.ts` 는 main 과 같다(api main `d7c5daa` 기준).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #127 재리뷰 참고 반영: 저장 뒤 안내 쿠키 값을 `decodeURIComponent` 에 넘기지 않는다(깨진 값이면 URIError 로 근로계약 목록이 오류 화면이 됐다), 상태별 개수 주석을 api #146(보이는 계약만 셈)에 맞췄다. api 타입을 api main(`d7c5daa`, #148 · #149 머지 뒤) 기준으로 다시 만들었다.
+* **Update**: main 병합(front flaaffy, main #130 까지): okf 충돌은 양쪽 기록을 살렸다.
+* **Update**: [직원 운영 관리](/staff.md) — 직원 개인정보는 조회만 한다는 규칙에 생년월일 관리자 정정만 예외(WHALEERP-602)를 적었다(STAFF-9 칸 포함). ERD 카탈로그(`docs/erd/README.md`)의 `accounts.birth_date` · `account_change_histories` 의 field · channel · requested_by 도 602 에 맞췄다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [직원 정보 관리 화면](/screens/staff-members.md) — 직원 상세 「생년월일」 줄에 [정정] 버튼과 확인창을 더했다(WHALEERP-602, `PUT /staff-members/:id/birth-date`): 수정 권한이 있고 상세 응답 `birthDateCorrectable` 이 true 일 때만, 신분증 확인 체크 · 안내 세 줄, 409 가입 전 · 퇴직은 토스트 뒤 닫고 다시 받는다. 새 생년월일이 바뀌면(blur 보정 포함) 확인 체크를 풀고, 덜 친 값이 보이는 채 [정정] · 체크를 누르면 그 순간 칸의 글자를 읽어 보내지 않고 체크를 풀며(입력 중에는 상태를 바꾸지 않는다), 확인한 뒤 입력칸을 고쳤으면(blur 가 같은 값으로 맞춰도) 체크를 풀고 보내지 않으며, 마우스 체크 click 이 풀린 체크를 되돌리지 않게 한다. `api-types.generated.ts` 를 api main `d7c5daa`(#149 머지 뒤) 기준으로 다시 만들었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front wobbuffet, main #129 까지): okf 충돌은 양쪽 기록을 살렸고, `api-types.generated.ts` 는 api main(#148 플랫폼 휴일 조회 머지 뒤 `06f6deb`)으로 다시 만들었다 — 「머지 전 api 브랜치 기준」 · 「api 가 먼저 배포되어야 한다」 서술을 지웠다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 휴일 관리 화면(`/public-holidays`, S-DDGJKQ)을 만들었다: 조회 전용 캘린더 · 목록, 연도 2000~2100, 다다음 해 정부 발표 안내 · 동기화 실패 안내. api(`GET /public-holidays` — 캘린더는 `month` 를 함께, `synchronization.failedYears` · `lastSynchronizedAt`)의 openapi 로 타입을 만들어 썼다. superpowers code-reviewer 반영: 선택칸 낙관적 표시, 휴일인 오늘 테두리, 막힌 달 이동 버튼 호버 없음, 실패 안내 문구, api 머지 전 생성 타입임을 api-types 항목에 적음.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 휴일 관리 pr-review-toolkit 리뷰 반영: 이동 조작이 낙관적 상태 하나를 나눠 가짐(연도 → 월 이어 고르기에서 연도를 잃던 것), 401 · 403 은 다시 시도 없는 안내, 오류 화면에 오류 번호 · role=alert, 칸 · 실패 안내 · api 경로 판단을 순수 함수로 빼 테스트(20건), `weekdayOf` 가 없는 날짜를 거름, 겹친 휴일 이름 · 2051~2100 음력 미적재 · 동기화 배치 미구현 주석을 사실대로.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front goldeen, main #129 까지): okf 충돌은 양쪽 기록을 살렸고, `api-types.generated.ts` 는 api main(#146 · #147 머지 뒤 `5c80d70`)으로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #127 리뷰(Young Joo) 반영: 저장 뒤 안내 쿠키를 서버가 아니라 `SavedNotice` 가 읽고 지운다 — 목록 → 상세 → [뒤로] 때 Next 가 기억한 화면으로 안내가 또 뜨지 않게. 상태별 개수 서술을 api #146(보이는 계약만 셈)에 맞췄다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #127 ip-code-review 블로커 반영: 저장 뒤 안내를 주소(`?saved=`) 대신 60초 사는 쿠키(`contract-saved`)로 넘기고 `SavedNotice` 가 그리면 지운다 — 주소에서 지우던 `history.replaceState(history.state …)` 는 Next 가 라우터 상태를 맞추지 않아 `?saved=` 가 되살아나 새로고침 때 안내가 다시 떴다.

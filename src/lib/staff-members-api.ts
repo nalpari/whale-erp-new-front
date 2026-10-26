@@ -97,3 +97,13 @@ export async function cancelRetirement(id: number): Promise<void> {
 export async function issuePasswordResetLink(id: number): Promise<void> {
   await request(`/staff-members/${id}/password-reset-links`, await init("POST"));
 }
+
+/**
+ * PUT /staff-members/:id/birth-date(WHALEERP-602) — 생년월일 정정. 204. 직원 정보 관리 수정 권한이 필요하고, 범위 밖 · 본사에 가린 직원은 404.
+ * 400 BIRTH_DATE_INVALID(형식 · 없는 날짜 · 오늘 뒤. 본문이 틀리면 code 없는 400) · BIRTH_DATE_UNDER_AGE(만 19세 미만),
+ * 409 BIRTH_DATE_NOT_JOINED(가입 전 · 탈퇴 · 연결 보류) · BIRTH_DATE_RETIRED · BIRTH_DATE_UNCHANGED.
+ */
+export async function correctBirthDate(id: number, birthDate: string): Promise<void> {
+  const body: Schemas["BirthDateCorrectionDto"] = { birthDate };
+  await request(`/staff-members/${id}/birth-date`, await init("PUT", body));
+}
