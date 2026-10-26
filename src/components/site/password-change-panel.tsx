@@ -90,18 +90,22 @@ export function PasswordChangePanel({ id, open, onClose, trigger }: { id: string
   // 중이 아니라 effect · 이벤트 핸들러 안에서만 건드린다(my-page-panel.tsx 의 checkNumber 와 같은 패턴, 코드 리뷰로 찾음).
   const saveNumber = useRef(0);
 
-  // 열 때마다 칸·오류·완료 화면을 비운다 — 저장된 비밀번호 값을 패널에 남기지 않는다(마스킹과 별개로, 다시 열면 늘 빈칸).
-  // 렌더 중에 상태를 맞춘다(effect 가 아니다) — my-page-panel.tsx 의 loadedFor 와 같은 패턴(react-hooks/set-state-in-effect
-  // 가 걸려 찾음, 2026-10-26). 서버를 부르지 않는 순수 리셋이라 렌더 중에 해도 안전하다.
+  // 열고 닫을 때마다 칸·오류·완료 화면을 비운다 — SlidePanel 은 닫혀도 children 을 마운트해 두므로(inert +
+  // 화면 밖으로 밀기), 닫을 때 비우지 않으면 친 비밀번호 평문이 DOM 의 input value 로 다음에 열 때까지 남는다
+  // (코드 리뷰로 찾음, 2026-10-26 — 전엔 열 때만 비워 닫은 뒤에도 값이 남아 있었다). fieldGeneration 은
+  // PasswordInput 의 key 로 써 보기/숨기기(visible) 도 같이 초기화한다 — 그 상태는 각 입력칸 안에 있어 패널이
+  // 다시 마운트되지 않으면 안 풀린다. 렌더 중에 상태를 맞춘다(effect 가 아니다) — my-page-panel.tsx 의
+  // loadedFor 와 같은 패턴(react-hooks/set-state-in-effect 가 걸려 찾음, 2026-10-26). 서버를 부르지 않는
+  // 순수 리셋이라 렌더 중에 해도 안전하다. 저장 중에는 닫히지 않으므로(handleClose) 저장 결과를 지우지 않는다.
   const [openedFor, setOpenedFor] = useState(open);
+  const [fieldGeneration, setFieldGeneration] = useState(0);
   if (open !== openedFor) {
     setOpenedFor(open);
-    if (open) {
-      setForm(EMPTY);
-      setFieldError(null);
-      setFailure(null);
-      setDone(false);
-    }
+    setForm(EMPTY);
+    setFieldError(null);
+    setFailure(null);
+    setDone(false);
+    setFieldGeneration((g) => g + 1);
   }
   useEffect(() => {
     if (open) saveNumber.current++;
@@ -173,9 +177,11 @@ export function PasswordChangePanel({ id, open, onClose, trigger }: { id: string
             <div className="flex flex-col gap-[8px]">
               <Field label="현재 비밀번호" required>
                 <PasswordInput
+                  key={fieldGeneration}
                   fieldLabel="현재 비밀번호"
                   autoComplete="current-password"
                   placeholder="지금 쓰고 있는 비밀번호를 입력해 주세요."
+                  maxLength={100}
                   value={form.current}
                   onChange={(e) => setForm((f) => ({ ...f, current: e.target.value }))}
                   aria-invalid={invalid("current")}
@@ -188,10 +194,15 @@ export function PasswordChangePanel({ id, open, onClose, trigger }: { id: string
 
             <div className="flex flex-col gap-[8px]">
               <Field label="새 비밀번호" required>
+                {/* maxLength 는 100 — 정책의 실제 최대(20자)보다 훨씬 커서 붙여넣은 진짜 비밀번호를 자르지
+                 * 않는다. api DTO 의 MaxLength(100) 보다 긴 값만 막아, 그 칸이 영문 class-validator 문구로
+                 * "새 비밀번호" 칸에 잘못 붙는 것을 막는다(코드 리뷰로 찾음, 2026-10-26). */}
                 <PasswordInput
+                  key={fieldGeneration}
                   fieldLabel="새 비밀번호"
                   autoComplete="new-password"
                   placeholder="영문·숫자·특수문자를 조합하여 8~20자로 입력해 주세요."
+                  maxLength={100}
                   value={form.next}
                   onChange={(e) => setForm((f) => ({ ...f, next: e.target.value }))}
                   aria-invalid={invalid("newPassword")}
@@ -207,9 +218,11 @@ export function PasswordChangePanel({ id, open, onClose, trigger }: { id: string
             <div className="flex flex-col gap-[8px]">
               <Field label="새 비밀번호 확인" required>
                 <PasswordInput
+                  key={fieldGeneration}
                   fieldLabel="새 비밀번호 확인"
                   autoComplete="new-password"
                   placeholder="새 비밀번호를 한 번 더 입력해 주세요."
+                  maxLength={100}
                   value={form.confirm}
                   onChange={(e) => setForm((f) => ({ ...f, confirm: e.target.value }))}
                   aria-invalid={invalid("newPasswordConfirm")}
