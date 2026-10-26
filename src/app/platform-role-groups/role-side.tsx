@@ -90,14 +90,20 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
       {formatDateTime(at)} <span className="font-normal text-erp-label">· {actorOf(actor)}</span>
     </>
   );
+  // 위 · 아래 항목과의 간격을 입력칸 사이(18)와 같게 — 칸 간격 12 에 6 을 더한다(2026-10-26 사용자 지정)
   const record = (
-    <ReadonlyCard>
-      {/* 제목 바는 두지 않는다(2026-10-26 사용자 지정) */}
-      <FormRow>
-        <ReadonlyValue label="등록" value={when(role.createdAt, role.createdBy)} title={whenText(role.createdAt, role.createdBy)} bold />
-        <ReadonlyValue label="최종수정" value={when(role.updatedAt, role.updatedBy)} title={whenText(role.updatedAt, role.updatedBy)} bold />
-      </FormRow>
-    </ReadonlyCard>
+    <div className="mt-[6px]">
+      <ReadonlyCard>
+        {/* 제목 바는 두지 않는다(2026-10-26 사용자 지정) */}
+        {/* 등록 · 최종수정은 한 줄에 하나씩, 사이 선 없이(2026-10-26 사용자 지정) */}
+        <FormRow>
+          <ReadonlyValue label="등록" value={when(role.createdAt, role.createdBy)} title={whenText(role.createdAt, role.createdBy)} bold />
+        </FormRow>
+        <FormRow>
+          <ReadonlyValue label="최종수정" value={when(role.updatedAt, role.updatedBy)} title={whenText(role.updatedAt, role.updatedBy)} bold />
+        </FormRow>
+      </ReadonlyCard>
+    </div>
   );
   const heading = (
     <h2 className="flex min-h-[34px] flex-wrap content-end items-center gap-[6px] text-[18px] font-semibold text-erp-ink">
@@ -130,7 +136,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
         {can.update && role.editBlockedReason && <InfoBand>{reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한입니다")}</InfoBand>}
         {rows.length > 0 && <DetailTable rows={rows} />}
         {record}
-        {deleteButton && <div className="flex gap-[6px]">{deleteButton}</div>}
+        {deleteButton && <div className="mt-[6px] flex justify-center gap-[6px]">{deleteButton}</div>}
       </>
     );
   return (

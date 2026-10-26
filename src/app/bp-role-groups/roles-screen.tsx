@@ -84,7 +84,7 @@ function RolesBody({
     {
       header: "권한명",
       // 폭을 정하지 않으면 설명과 남는 폭을 반씩 나눠 설명 글자가 칸 한가운데서 시작했다 — 권한명을 고정하고 설명이 나머지를 쓴다(2026-10-26 사용자 지정)
-      width: "w-[260px]",
+      width: "w-[180px]", // 설명이 권한명에 더 붙게 260 → 180(2026-10-26 사용자 지정)
       align: "left",
       cell: (r) => (
         <span className="flex min-w-0 items-center gap-[6px]">
@@ -103,13 +103,13 @@ function RolesBody({
     },
     { header: "설명", align: "left", cell: (r) => r.description || <span className="text-erp-muted">-</span> },
     { header: "최종수정", width: "w-[220px]", align: "left", cell: (r) => <WhenWho at={r.updatedAt} actor={r.updatedBy} /> },
-    // [메뉴설정] 버튼 열(「메뉴관리」)을 「메뉴설정 여부」 앞에 둔다(2026-10-26 사용자 지정 — 전엔 「메뉴 등록 여부」 · 「메뉴등록」[메뉴등록] 순)
+    // [설정] 버튼 열(「메뉴설정」)을 「메뉴설정 여부」 앞에 둔다(2026-10-26 사용자 지정 — 전엔 「메뉴 등록 여부」 · 「메뉴등록」[메뉴등록] 순)
     {
-      header: "메뉴관리",
+      header: "메뉴설정",
       width: "w-[124px]",
       cell: (r) => (
         <Button variant="soft" onClick={() => setMenuFor(r)}>
-          메뉴설정
+          설정
         </Button>
       ),
     },

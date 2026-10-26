@@ -56,8 +56,8 @@ export function RolesScreen({
     },
     {
       header: "권한명",
-      // 폭을 정하지 않으면 설명과 남는 폭을 반씩 나눠 설명 글자가 칸 한가운데서 시작했다. 설명이 권한명에 더 붙게 220px(2026-10-26 사용자 지정)
-      width: "w-[220px]",
+      // 폭을 정하지 않으면 설명과 남는 폭을 반씩 나눠 설명 글자가 칸 한가운데서 시작했다. 설명이 권한명에 더 붙게 180px(2026-10-26 사용자 지정)
+      width: "w-[180px]",
       align: "left",
       cell: (r) => (
         <button
@@ -73,13 +73,13 @@ export function RolesScreen({
     { header: "설명", align: "left", cell: (r) => r.description || <span className="text-erp-muted">-</span> },
     // 한 칸에 「일시 · 사람」. 등록일시 열은 뺐다 — BP 권한 그룹 관리와 같이 최종수정만 보인다(2026-10-26 사용자 지정). 등록은 상세에 있다
     { header: "최종수정", width: "w-[220px]", align: "left", cell: (r) => <WhenWho at={r.updatedAt} actor={r.updatedBy} /> },
-    // [메뉴설정] 버튼 열(「메뉴관리」)을 「메뉴설정 여부」 앞에 둔다(2026-10-26 사용자 지정 — 전엔 「메뉴 등록 여부」 · 「메뉴등록」[메뉴등록] 순)
+    // [설정] 버튼 열(「메뉴설정」)을 「메뉴설정 여부」 앞에 둔다(2026-10-26 사용자 지정 — 전엔 「메뉴 등록 여부」 · 「메뉴등록」[메뉴등록] 순)
     {
-      header: "메뉴관리",
+      header: "메뉴설정",
       width: "w-[124px]",
       cell: (r) => (
         <Button variant="soft" onClick={() => setMenuFor(r)}>
-          메뉴설정
+          설정
         </Button>
       ),
     },

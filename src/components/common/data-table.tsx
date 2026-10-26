@@ -1,4 +1,5 @@
 import type { ComponentProps, Key, ReactNode } from "react";
+import { ScrollHeadSync } from "./scroll-head-sync";
 
 export type Column<T> = {
   header: string;
@@ -116,27 +117,30 @@ export function DataTable<T>({
   if (scroll && headVariant !== "none")
     return (
       <div data-table-scroll className="flex min-h-[134px] flex-1 flex-col">
-        <div aria-hidden="true" className="shrink-0 overflow-hidden [scrollbar-gutter:stable]">
-          <table className={table}>
-            {cols}
-            {head}
-          </table>
-        </div>
-        <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">
-          <table className={table}>
-            {cols}
-            <thead className="sr-only">
-              <tr>
-                {columns.map((c, i) => (
-                  <th key={i} scope="col">
-                    {c.header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            {body}
-          </table>
-        </div>
+        {/* 본문을 가로로 밀면 머리도 따라간다(ScrollHeadSync) */}
+        <ScrollHeadSync
+          head={
+            <table className={table}>
+              {cols}
+              {head}
+            </table>
+          }
+          body={
+            <table className={table}>
+              {cols}
+              <thead className="sr-only">
+                <tr>
+                  {columns.map((c, i) => (
+                    <th key={i} scope="col">
+                      {c.header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              {body}
+            </table>
+          }
+        />
       </div>
     );
   return (

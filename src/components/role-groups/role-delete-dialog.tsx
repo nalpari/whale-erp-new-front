@@ -161,7 +161,7 @@ export function RoleDeleteDialog({
                   ))}
                 </Select>
               </Field>
-              <InfoBand>로그인 중인 사용자도 다음 요청부터 새 권한으로 판정됩니다.</InfoBand>
+              <InfoBand>변경된 권한은 다시 로그인하지 않아도, 사용자가 화면을 새로고침하거나 이동하면 적용됩니다.</InfoBand>
             </>
           )}
         </div>

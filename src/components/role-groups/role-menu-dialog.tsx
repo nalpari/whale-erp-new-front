@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
-import { Button, Checkbox, ConfirmDialog, Tag, useToast } from "@/components/common";
+import { Button, Checkbox, ConfirmDialog, Tag } from "@/components/common";
+import { EASE_OUT } from "@/components/common/theme";
 import { CodeLabel } from "@/components/site/code-label";
 import { ServiceTabs } from "@/components/site/service-tabs";
 import { usePagePermission } from "@/components/site/session-gate";
@@ -39,7 +40,7 @@ type BodyProps = { role: MenuDialogRole; reasons: EnumValue[]; actions: MenuDial
 /** note 를 주면 잠긴 팝업의 안내를 그 문구로 바꾸고, null 이면 안내를 두지 않는다. */
 export function RoleMenuDialog({
   role,
-  title = "권한별 메뉴설정", // 목록 [메뉴설정] 버튼으로 연다(2026-10-26 사용자 지정, 전엔 「권한 메뉴 등록」)
+  title = "권한별 메뉴설정", // 목록 메뉴설정 열의 [설정] 버튼으로 연다(2026-10-26 사용자 지정, 전엔 「권한 메뉴 등록」)
   titleTag,
   ...body
 }: Omit<BodyProps, "role"> & {
@@ -83,7 +84,13 @@ export function RoleMenuDialog({
 
 function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
   const router = useRouter();
-  const toast = useToast();
+  // 저장 알림은 팝업 안에 띄운다 — 공통 토스트는 화면 아래(팝업 뒤)에 떠 보이지 않았다. 저장해도 팝업은 닫지 않는다(2026-10-26 사용자 지정)
+  const [savedShown, setSavedShown] = useState(false);
+  useEffect(() => {
+    if (!savedShown) return;
+    const timer = setTimeout(() => setSavedShown(false), 3000);
+    return () => clearTimeout(timer);
+  }, [savedShown]);
   const can = usePagePermission();
   const [tree, setTree] = useState<MenuTree | null>(null);
   const [initial, setInitial] = useState<Values>({});
@@ -149,13 +156,14 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
         if (result.status === 404) router.refresh();
         return;
       }
-      toast("saved");
+      setSavedShown(true);
       router.refresh();
-      onClose();
+      // 다음 저장이 옛 updatedAt 으로 409 가 나지 않게 저장된 트리를 다시 받는다
+      load();
     });
 
   const handleSave = () => {
-    if (!changed.length) return onClose();
+    if (!changed.length) return;
     setFailure(null);
     if (!hasRevocation(initial, values)) return handleConfirmSave();
     // 저장은 미리보기와 함께만 온다(MenuDialogActions). 없으면 확인 없이 저장하지 않고 멈춘다.
@@ -174,7 +182,7 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
   };
 
   return (
-    <div className="mt-[12px] flex flex-col gap-[12px]" aria-busy={busy}>
+    <div className="relative mt-[12px] flex flex-col gap-[12px]" aria-busy={busy}>
       {/* 권한유형 → 권한코드 → 권한명을 한 줄로(2026-10-26 사용자 지정, 전엔 세 줄). 구분선은 상세 표 값 구분선(11px #d9d9d9)과 같다 */}
       <dl className="flex h-[42px] items-center gap-[10px] rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[12px] text-[14px]">
         <div className="flex shrink-0 items-center gap-[6px]">
@@ -211,16 +219,29 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
       <div className="mt-[12px] flex justify-end gap-[6px]">
         {savable ? (
           <>
+            {/* 저장해도 팝업을 닫지 않으므로 「취소」가 아니라 「닫기」다(2026-10-26 사용자 지정) */}
             <Button variant="off" onClick={onClose} disabled={busy}>
-              취소
+              닫기
             </Button>
-            <Button onClick={handleSave} disabled={busy}>
+            {/* 바뀐 칸이 없으면 막는다 — 저장해도 팝업을 닫지 않으므로 누를 일이 없다 */}
+            <Button onClick={handleSave} disabled={busy || changed.length === 0}>
               저장
             </Button>
           </>
         ) : (
           <Button onClick={onClose}>닫기</Button>
         )}
+      </div>
+
+      {/* 팝업 안 저장 알림 — 공통 토스트와 같은 모양(DESIGN.md: 떠 있는 것의 그림자 하나), 늘 마운트해 두고 전환으로 여닫는다 */}
+      <div
+        role="status"
+        aria-live="polite"
+        className={`pointer-events-none absolute bottom-[46px] left-1/2 z-[2] -translate-x-1/2 rounded-[2px] bg-erp-nav px-[24px] py-[12px] text-[14px] font-medium whitespace-nowrap text-white shadow-[0_2px_6px_rgba(40,47,55,0.08)] transition-[opacity,translate,visibility] ${EASE_OUT} motion-reduce:transition-none ${
+          savedShown ? "visible translate-y-0 opacity-100 duration-200" : "invisible translate-y-[6px] opacity-0 duration-150"
+        }`}
+      >
+        {savedShown ? "저장되었습니다." : ""}
       </div>
 
       <ConfirmDialog
@@ -246,6 +267,12 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
               <li>
                 영향받는 사용자: <b className="font-semibold">{preview.affectedAdminCount.toLocaleString("ko-KR")}명</b>
               </li>
+              {/* BP · 가맹 마스터 권한을 끄면 아래 권한 그룹에서도 같은 칸이 꺼지고 되돌리지 않는다 — 그럴 때만 알린다(2026-10-26 사용자 지정) */}
+              {preview.affectedRoleGroupCount > 0 && (
+                <li>
+                  하위 권한 그룹 <b className="font-semibold">{preview.affectedRoleGroupCount.toLocaleString("ko-KR")}개</b>에도 같이 적용되며, 되돌릴 수 없습니다.
+                </li>
+              )}
               {/* 서버가 요청마다 지금 권한을 다시 판정한다 — 로그인 중인 사용자도 다음 요청(저장 · 화면 이동 · 새로고침)부터 바뀐다(S-KUDELB). 문구는 쉬운 말로(2026-10-26 사용자 지정) */}
               <li>변경된 권한은 다시 로그인하지 않아도, 사용자가 화면을 새로고침하거나 이동하면 적용됩니다.</li>
             </ul>
@@ -270,13 +297,20 @@ function MenuTable({
   locked: boolean;
   onChange: (v: Values) => void;
 }) {
+  const headRef = useRef<HTMLDivElement>(null);
   const rows: RoleGroupMenuNode[] = [];
   const walk = (list: RoleGroupMenuNode[]) => list.forEach((n) => (rows.push(n), walk(n.children)));
   walk(nodes);
 
   // 일부만 켜진 묶음 줄은 –(mixed)로 보이고, 누르면 모두 켠다(머리칸은 – 없이 해제로 — 아래 머리 표의 OPS 칸 참고)
-  const box = (label: string, state: { checked: boolean; mixed?: boolean; disabled: boolean }, onToggle: (on: boolean) => void) => (
-    <span className={`inline-flex ${state.disabled ? "opacity-40" : ""}`}>
+  // top: 1단계 줄 — 켜진 칸을 「등록」 배지의 상태 파랑(erp-on)으로 칠해 2단계와 가른다(2026-10-26 사용자 지정).
+  // 공통 Checkbox 는 className 을 받지 않아 감싸는 span 에서 안쪽 input 의 켜짐 · 일부 색만 덮는다.
+  const box = (label: string, state: { checked: boolean; mixed?: boolean; disabled: boolean }, onToggle: (on: boolean) => void, top = false) => (
+    <span
+      className={`inline-flex ${state.disabled ? "opacity-40" : ""} ${
+        top ? "[&_input:checked]:border-erp-on [&_input:checked]:bg-erp-on [&_input:indeterminate]:border-erp-on [&_input:indeterminate]:bg-erp-on" : ""
+      }`}
+    >
       <Checkbox
         label=""
         aria-label={label}
@@ -304,7 +338,7 @@ function MenuTable({
   // 스크롤바가 머리 옆까지 올라왔다). 두 칸 모두 스크롤바 자리를 비워(scrollbar-gutter: stable) 머리 · 본문 열이 어긋나지 않는다.
   return (
     <div className="flex h-full flex-col">
-      <div className="shrink-0 overflow-hidden [scrollbar-gutter:stable]">
+      <div ref={headRef} className="shrink-0 overflow-hidden [scrollbar-gutter:stable]">
         <table className="w-full table-fixed border-collapse border-x border-t border-erp-thead-line text-[14px]">
           {cols}
           <thead>
@@ -336,7 +370,13 @@ function MenuTable({
           </thead>
         </table>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">
+      {/* 본문을 가로로 밀면 머리도 따라간다 — 팝업을 좁게 띄우면(max-w 100vw-32px) 열이 칸보다 넓어진다 */}
+      <div
+        className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]"
+        onScroll={(e) => {
+          if (headRef.current) headRef.current.scrollLeft = e.currentTarget.scrollLeft;
+        }}
+      >
         <table className="w-full table-fixed border-collapse border-x border-erp-thead-line text-[14px]">
           {cols}
           {/* 머리 표와 나눠져 칸과 열 이름이 끊기지 않게 본문 표에도 열 이름을 둔다(화면 읽기 도구용). 보이는 머리 표는 전체 선택 체크박스가 있어 숨기지 않는다 */}
@@ -384,6 +424,7 @@ function MenuTable({
                           `${n.name} ${OP_LABEL[op]}`,
                           n.isGroup ? aggregate(values, n.children, op, n[op].value) : { checked: Boolean(values[n.menuId]?.[op]), disabled: !editableOf(n, op) },
                           (on) => onChange(toggle(values, n, op, on)),
+                          n.depth === 1,
                         )}
                       </td>
                     ))}

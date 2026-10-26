@@ -60,7 +60,7 @@ export function menuScroll(table) {
   );
 }
 
-// 권한 그룹 상세의 고칠 수 없는 값 상자 — MY PAGE 「계정 정보」 모양에서 제목 바만 뺐다(앱 components/common/readonly-card.tsx, 2026-10-26 사용자 지정).
+// 권한 그룹 상세의 고칠 수 없는 값 — MY PAGE 「계정 정보」 모양에서 제목 바 · 테두리를 뺐다(앱 components/common/readonly-card.tsx, 2026-10-26 사용자 지정).
 // manager: 가맹마스터 계정 — undefined 면 줄 없음(플랫폼), null 이면 「-」(BP 관리자 그룹), 값이면 가맹 마스터 아이디 · 이름. reg · mod: [일시, 사람]
 // 라벨 옆 도움말 정보 아이콘 — 마우스를 올리거나 키보드로 닿으면 안내가 뜬다(앱 components/common/help-tip.tsx 와 같다, 2026-10-26 사용자 지정)
 const helpTip = (text, label) =>
@@ -70,18 +70,15 @@ const helpField = (label, value, text) =>
   `<div class="flex min-w-px flex-1 flex-col gap-[4px]"><span class="flex min-w-0 items-center gap-[4px]"><span class="truncate text-[14px] font-medium text-erp-label">${label}</span>${helpTip(text, label)}</span><span class="truncate text-[14px] text-erp-ink font-semibold">${value}</span></div>`;
 export function recordCard({ manager, reg, mod }) {
   const when = ([at, by]) => `${at} <span class="font-normal text-erp-label">· ${by}</span>`;
-  const rows = [
-    ...(manager === undefined ? [] : [ui.formRow(helpField("가맹마스터 계정", manager ?? '<span class="font-normal text-erp-muted">-</span>', "가맹관리자 권한을 생성한 가맹마스터의 정보가 표시됩니다."))]),
-    ui.formRow(ui.readonlyField("등록", when(reg), true), ui.readonlyField("최종수정", when(mod), true)),
-  ];
-  return (
-    `<div class="flex w-full flex-col gap-[18px] rounded-[2px] border border-erp-thead-line bg-white px-[16px] py-[20px]">${rows.join('<hr class="border-erp-divider">')}</div>`
-  );
+  // 가맹마스터 계정 아래에만 선을 두고, 등록 · 최종수정은 한 줄에 하나씩 선 없이(앱과 같다, 2026-10-26 사용자 지정)
+  const head = manager === undefined ? "" : ui.formRow(helpField("가맹마스터 계정", manager ?? '<span class="font-normal text-erp-muted">-</span>', "가맹관리자 권한을 생성한 가맹마스터의 정보가 표시됩니다.")) + '<hr class="border-erp-divider">';
+  // 제목 · 테두리 없이 값만(앱 ReadonlyCard title 없음과 같다)
+  return `<div class="flex w-full flex-col gap-[18px]">${head}${ui.formRow(ui.readonlyField("등록", when(reg), true))}${ui.formRow(ui.readonlyField("최종수정", when(mod), true))}</div>`;
 }
 
 // 권한별 메뉴설정 표의 묶음(1단계) 칸이 일부만 켜졌을 때의 「–」 — 앱은 공용 Checkbox indeterminate, 데모는 같은 모양을 그린다(2026-10-26 사용자 지정: 묶음 줄은 「–」 유지, 머리칸만 제외)
 export const partialBox = (label) =>
-  `<span role="checkbox" aria-checked="mixed" aria-label="${label}" tabindex="0" class="grid size-[20px] place-items-center rounded-[2px] border border-erp-brand bg-white"><span class="h-[2px] w-[10px] bg-erp-brand"></span></span>`;
+  `<span role="checkbox" aria-checked="mixed" aria-label="${label}" tabindex="0" class="grid size-[20px] place-items-center rounded-[2px] border border-erp-on bg-erp-on"><span class="h-[2px] w-[10px] bg-white"></span></span>`; // 1단계 줄에서만 쓰여 상태 파랑(앱 indeterminate 와 같은 꽉 찬 모양)
 
 // 등록 버튼(목록 머리 오른쪽)
 export const newButton = () => ui.button("등록", { "data-role-new": true }).replace('class="', 'class="disabled:pointer-events-none disabled:opacity-40 ');

@@ -85,7 +85,7 @@ export function RoleForm(
         const created = await props.actions.create(body).catch(unknownResult("등록"));
         if (created.ok) {
           setFailure(null);
-          toast(`등록했습니다. 권한 코드 ${created.roleCode} — [메뉴설정]으로 메뉴 권한을 정해 주세요.`);
+          toast(`등록했습니다. 권한 코드 ${created.roleCode} — 목록의 메뉴설정 [설정]으로 메뉴 권한을 정해 주세요.`);
           return props.onDone(created.roleGroupId);
         }
         return fail(created);
@@ -166,7 +166,8 @@ export function RoleForm(
       </div>
       {props.extra}
       {/* 버튼 줄은 가운데 — MY PAGE 패널(my-page-panel.tsx)과 같다(2026-10-26 사용자 지정, 전엔 양 끝 · 오른쪽 정렬) */}
-      <div className="flex justify-center gap-[6px]">
+      {/* 위 내용(최종수정)과의 간격을 입력칸 사이(18)와 같게 — 칸 간격 12 + 6(2026-10-26 사용자 지정) */}
+      <div className="mt-[6px] flex justify-center gap-[6px]">
         {props.mode === "create" ? (
           <Button variant="off" onClick={props.onCancel} disabled={saving}>
             취소

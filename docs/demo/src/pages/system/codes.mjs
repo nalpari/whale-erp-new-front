@@ -110,7 +110,7 @@ export default ({ A, R }) => {
     x.toggle("사용", true),
   ]);
   const left = card(
-    "w-[900px] shrink-0", // 그룹 목록을 넓혔다(2026-10-12)
+    "w-[750px] shrink-0", // 그룹 목록을 넓혔다가(2026-10-12) 상세 코드 칸이 좁아 그룹명 칸을 반으로 줄였다(앱 code-panel 과 같다, 2026-10-26)
     ui.sectionHead(`공통코드 그룹${sub(`${GROUPS.length}개`)}`, dim(ui.button("추가", { variant: "soft", "data-add-row": "new-group" })) + ui.button("저장")) +
       ui.scrollTable(markRow(ui.dataTable(groupCols, groupRows), 0)) + // 열 이름 줄까지 고정, 아래만 스크롤(앱과 같다, 2026-10-26)
       addRows(

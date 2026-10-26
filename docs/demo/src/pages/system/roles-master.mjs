@@ -104,9 +104,10 @@ function menuDialog(A, R, role, id) {
       return out;
     };
     const map = GRANT[code][svc] || {};
-    const cell = (on, b, op) => {
+    // top: 1단계 줄 — 켜진 칸을 「등록」 배지의 상태 파랑(erp-on)으로(앱 role-menu-dialog 와 같다, 2026-10-26 사용자 지정)
+    const cell = (on, b, op, top = false) => {
       const box = ui.checkbox(A, "", on, { "aria-label": op, disabled: !!b });
-      return `<span class="inline-flex${b ? " opacity-40" : ""}">${box}</span>`;
+      return `<span class="inline-flex${b ? " opacity-40" : ""}${top ? " [&_input:checked]:border-erp-on [&_input:checked]:bg-erp-on" : ""}">${box}</span>`;
     };
     const OPS = [["R", "조회"], ["C", "등록"], ["U", "수정"], ["D", "삭제"]];
     const rows = vis.map((m, i) => {
@@ -120,11 +121,11 @@ function menuDialog(A, R, role, id) {
           if (TIP[gb]) reasons.add(TIP[gb]);
           // 일부만 켜졌으면 「–」(머리칸은 「–」 없이 해제 — 아래 head)
           if (n > 0 && n < open.length) return `<span class="inline-flex">${partialBox(label)}</span>`;
-          return cell(open.length > 0 && n === open.length, gb, label);
+          return cell(open.length > 0 && n === open.length, gb, label, m[1] === 1);
         }
         const b = block(m, op);
         if (TIP[b]) reasons.add(TIP[b]);
-        return cell(has(map, m[0], op), b, label);
+        return cell(has(map, m[0], op), b, label, m[1] === 1);
       });
       const nm = `<span style="padding-left:${(m[1] - 1) * 18}px">${m[1] > 1 ? sub("└ ") : ""}${m[1] === 1 ? `<b class="font-semibold">${m[2]}</b>` : m[2]}</span>${[...reasons].map((r) => ` <span class="text-[13px] text-erp-label">· ${r}</span>`).join("")}`;
       return [nm, sub(`${m[1]}단계`), ...cells];
@@ -156,7 +157,7 @@ function menuDialog(A, R, role, id) {
     tabs +
     `</div>`;
   const foot = canSave
-    ? ui.button("취소", { variant: "off", "data-close": true }) + ui.button("저장", { "data-close": true })
+    ? ui.button("닫기", { variant: "off", "data-close": true }) + ui.button("저장") // 저장해도 팝업을 닫지 않고 안에 알림(앱과 같다, 2026-10-26)
     : ui.button("닫기", { "data-close": true });
   return c.wide(x.dialog(id, "권한별 메뉴설정", body, foot), "w-[880px]");
 }
@@ -174,7 +175,7 @@ export default ({ A, R }) => {
       desc,
       // 등록일시 열은 뺐다 — 앱 platform-role-groups 와 같이 최종수정만(2026-10-26 사용자 지정)
       `${mod} ${c.muted(`· ${modBy}`)}`,
-      x.dialogTrigger("메뉴설정", id, "soft"),
+      x.dialogTrigger("설정", id, "soft"),
       // 등록 / 미등록만 보인다. 미등록은 상태 빨강 배지
       n ? ui.badge("on", "등록") : ui.badge("off", "미등록"),
     ];
@@ -182,10 +183,10 @@ export default ({ A, R }) => {
   const cols = [
     // 권한유형 · 코드를 한 칸에 — BP 권한 그룹 관리(앱 bp-role-groups)와 같은 모양(2026-10-26 사용자 지정)
     { header: "권한유형 · 코드", width: "w-[200px]", align: "left" },
-    { header: "권한명", width: "w-[220px]", align: "left" }, // 설명이 칸 한가운데서 시작하지 않게 고정한다(앱 platform-role-groups 와 같다, 2026-10-26 사용자 지정)
+    { header: "권한명", width: "w-[180px]", align: "left" }, // 설명이 칸 한가운데서 시작하지 않게 고정한다(앱 platform-role-groups 와 같다, 2026-10-26 사용자 지정)
     { header: "설명", align: "left" },
     { header: "최종수정", width: "w-[220px]", align: "left" },
-    { header: "메뉴관리", width: "w-[124px]" }, // 버튼 열을 상태 앞에(앱 platform-role-groups 와 같다, 2026-10-26 사용자 지정)
+    { header: "메뉴설정", width: "w-[124px]" }, // 버튼 열을 상태 앞에(앱 platform-role-groups 와 같다, 2026-10-26 사용자 지정)
     { header: "메뉴설정 여부", width: "w-[120px]" },
   ];
   const table = tagRows(ui.dataTable(cols, rows), ROLES, SELECTED).replaceAll('<td class="truncate px-[10px]', '<td class="truncate px-[10px] leading-[1.3]');
@@ -212,7 +213,7 @@ export default ({ A, R }) => {
             ["연결 사용자", `<p>${users.length}명</p><ul class="mt-[4px] flex max-h-[118px] flex-col gap-[2px] overflow-y-auto text-erp-label">${users.map((u) => `<li class="h-[22px] shrink-0 truncate leading-[22px]">${u.replace(" ", " | ").replace("(미사용)", " (미사용)")}</li>`).join("")}</ul>`],
           ]) +
           ui.field(req("대체 권한"), ui.select(["선택하세요", ...others])) +
-          band(`로그인 중인 사용자도 다음 요청부터 새 권한으로 판정됩니다`)
+          band(`변경된 권한은 다시 로그인하지 않아도, 사용자가 화면을 새로고침하거나 이동하면 적용됩니다.`)
         : kv([
             ["권한명", `${name} ${sub(`· ${code}`)}`],
             ["연결 사용자", "없음"],

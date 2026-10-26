@@ -62,8 +62,9 @@ const plainTable = (rows) =>
 // 반쯤 켜진 체크(하위 메뉴 일부만 켜짐). 1팀 체크박스에 indeterminate 모양이 없어 같은 칸에 막대를 그린다.
 const partial = (label) =>
   `<span role="checkbox" aria-checked="mixed" aria-label="${label}" tabindex="0" class="grid size-[20px] place-items-center rounded-[2px] border border-erp-brand bg-white"><span class="h-[2px] w-[10px] bg-erp-brand"></span></span>`;
-const cell = (A, v, label, ro) =>
-  `<span class="inline-flex justify-center">${v === "m" ? partial(label) : ui.checkbox(A, "", !!v, { "aria-label": label, disabled: ro })}</span>`;
+// top: 1단계 줄 — 켜진 칸 · 일부 켜진 칸을 상태 파랑(erp-on)으로(앱 role-menu-dialog 와 같다, 2026-10-26 사용자 지정)
+const cell = (A, v, label, ro, top = false) =>
+  `<span class="inline-flex justify-center${top ? " [&_input:checked]:border-erp-on [&_input:checked]:bg-erp-on [&>span]:border-erp-on [&>span]:bg-erp-on [&>span>span]:bg-white" : ""}">${v === "m" ? partial(label) : ui.checkbox(A, "", !!v, { "aria-label": label, disabled: ro })}</span>`;
 const menuName = (lv, name, code) =>
   `<span class="flex items-center gap-[6px]" style="padding-left:${(lv - 1) * 16}px">${lv > 1 ? c.muted("└") : ""}<span class="${lv === 1 ? "font-semibold" : ""}">${name}</span></span>`;
 // 머리칸 체크박스는 칸 가운데(본문 체크박스와 같은 세로줄), 글자는 그 오른쪽(앱 role-menu-dialog.tsx 와 같다, 2026-10-26 사용자 지정)
@@ -78,7 +79,7 @@ function matrix(A, rows, ro) {
   const body = rows.map(([lv, name, code, ...v]) => [
     menuName(lv, name, code),
     c.muted(`${lv}단계`),
-    ...v.map((on, i) => cell(A, on, `${name} ${["조회", "등록", "수정", "삭제"][i]}`, ro)),
+    ...v.map((on, i) => cell(A, on, `${name} ${["조회", "등록", "수정", "삭제"][i]}`, ro, lv === 1)),
   ]);
   return menuScroll(depthRows(ui.dataTable(cols, body, "이 서비스에 등록된 메뉴가 없습니다."), rows.map(([lv]) => lv)));
 }
@@ -99,10 +100,10 @@ export default ({ A, R }) => {
   const cols = [
     // 권한유형 · 코드를 한 칸에 — BP 권한 그룹 관리(앱 bp-role-groups)와 같은 모양(2026-10-26 사용자 지정)
     { header: "권한유형 · 코드", width: "w-[170px]", align: "left" },
-    { header: "권한명", width: "w-[260px]", align: "left" }, // 설명 글자가 칸 한가운데서 시작하지 않게 권한명을 넓혀 고정한다(앱 bp-role-groups 와 같다, 2026-10-26 사용자 지정)
+    { header: "권한명", width: "w-[180px]", align: "left" }, // 설명 글자가 칸 한가운데서 시작하지 않게 권한명을 넓혀 고정한다(앱 bp-role-groups 와 같다, 2026-10-26 사용자 지정)
     { header: "설명", align: "left" },
     { header: "최종수정", width: "w-[220px]", align: "left" }, // 앱 bp-role-groups 와 같이 한 줄 「일시 · 사람」(2026-10-26 사용자 지정)
-    { header: "메뉴관리", width: "w-[124px]" }, // 버튼 열을 상태 앞에(앱 bp-role-groups 와 같다, 2026-10-26 사용자 지정)
+    { header: "메뉴설정", width: "w-[124px]" }, // 버튼 열을 상태 앞에(앱 bp-role-groups 와 같다, 2026-10-26 사용자 지정)
     { header: "메뉴설정 여부", width: "w-[120px]" },
   ];
   const rows = GROUPS.map(([type, code, name, desc, at, by, n], i) => [
@@ -110,7 +111,7 @@ export default ({ A, R }) => {
     `<span class="text-erp-link hover:underline">${name}</span>`, // 권한명은 링크색 — 앱 bp-role-groups 와 같다(2026-10-26)
     desc || c.muted("-"),
     `${at} ${c.muted(`· ${by}`)}`,
-    i === MENU_ROW ? x.dialogTrigger("메뉴설정", menuId, "soft") : ui.button("메뉴설정", { variant: "soft" }),
+    i === MENU_ROW ? x.dialogTrigger("설정", menuId, "soft") : ui.button("설정", { variant: "soft" }),
     // 메뉴 권한이 하나도 없으면 미등록(상태 빨강) — BA000007 이 미등록 표본(2026-10-08)
     n ? ui.badge("on", "등록") : ui.badge("off", "미등록"),
   ]);
@@ -194,7 +195,7 @@ export default ({ A, R }) => {
       menuId,
       "권한별 메뉴설정",
       `<div class="flex flex-col gap-[12px]">${roleHead("BP 관리자", "BA000004", "인사 담당")}${svcTabs(A, MENU_BA, false)}</div>`,
-      ui.button("취소", { variant: "off", "data-close": true }) + ui.button("저장", { "data-close": true }),
+      ui.button("닫기", { variant: "off", "data-close": true }) + ui.button("저장"), // 저장해도 팝업을 닫지 않고 안에 알림(앱과 같다, 2026-10-26)
     ),
     "w-[880px]",
   );
