@@ -134,7 +134,8 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
     <RoleDeleteDialog
       role={role}
       actions={actions.remove}
-      noCandidateText={`옮길 대체 권한 그룹이 없어 지울 수 없습니다. 같은 ${role.roleTypeCode === "FA" ? "가맹 마스터의 가맹 관리자" : "BP 의 BP 관리자"} 권한 그룹을 하나 더 만든 뒤 다시 시도해 주세요.`}
+      // 플랫폼 안내와 같은 말투 · 두 줄(2026-10-26 사용자 지정)
+      noCandidateText={`대체 권한 그룹이 없어 삭제할 수 없습니다.\n${role.roleTypeCode === "FA" ? "가맹관리자" : "BP관리자"} 권한 그룹을 추가한 후 다시 시도해 주세요.`}
       onDeleted={onDeleted}
     />
   ) : null;

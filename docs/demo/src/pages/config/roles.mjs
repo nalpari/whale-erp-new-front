@@ -150,7 +150,7 @@ export default ({ A, R }) => {
         id,
         "권한 그룹을 삭제하시겠습니까?", // 점포 삭제 확인창과 같은 물음(앱 role-delete-dialog.tsx, 2026-10-26 사용자 지정)
         `<div class="flex flex-col gap-[12px] break-keep">${body}<p><b class="font-semibold">삭제한 권한 코드 ${code} 는 다시 쓰지 않습니다</b></p></div>`,
-        ui.button("취소", { variant: "off", "data-close": true }) + ui.button("삭제", { "data-close": true }),
+        ui.button("닫기", { variant: "off", "data-close": true }) + ui.button("삭제", { "data-toast": "삭제되었습니다.", "data-close-after": "1200" }), // 앱과 같다(2026-10-26)
       );
     })
     .join("");

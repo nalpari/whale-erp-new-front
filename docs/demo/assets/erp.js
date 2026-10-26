@@ -161,6 +161,9 @@
   document.addEventListener("click", (e) => {
     const t = e.target.closest("[data-toast]");
     if (t?.dataset.toast) showToast(t.dataset.toast);
+    // data-close-after="ms" — 알림을 보인 뒤 그 확인창을 닫는다(권한 그룹 삭제, 2026-10-26)
+    const after = e.target.closest("dialog [data-close-after]");
+    if (after) setTimeout(() => after.closest("dialog")?.close(), Number(after.dataset.closeAfter) || 1200);
   });
   // "저장" 버튼은 어디서든 공통으로 "저장되었습니다." 토스트를 띄운다(2026-10-06 피드백) — data-toast 로 자기만의
   // 문구를 이미 정한 버튼과, 또 다른 확인창을 먼저 여는 버튼(data-dialog, 아직 저장이 끝난 게 아니다)은 건너뛴다.

@@ -124,7 +124,8 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
       <RoleDeleteDialog
         role={role}
         actions={DELETE_ACTIONS}
-        noCandidateText="옮길 대체 권한이 없어 지울 수 없습니다. 플랫폼 관리자 추가 권한을 하나 더 만든 뒤 다시 시도해 주세요."
+        // 두 줄로 보인다(줄바꿈은 확인창이 살린다) — 2026-10-26 사용자 지정
+        noCandidateText={"대체 권한이 없어 삭제할 수 없습니다.\n플랫폼관리자 권한을 추가한 후 다시 시도해 주세요."}
         blockedReason={role.deleteBlockedReason && reasonLabel(lockReasons, role.deleteBlockedReason, "지울 수 없는 권한입니다")} onDeleted={onDeleted} />
     ) : null;
 

@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Button, ConfirmDialog, Field, Select, useToast } from "@/components/common";
+import { Button, ConfirmDialog, Field, Select } from "@/components/common";
+import { EASE_OUT } from "@/components/common/theme";
 import type { DeletionCandidates } from "@/lib/platform-role-groups";
 import type { ActionResult } from "@/lib/role-group-actions";
 import { useCodeLabel } from "@/components/site/code-label";
@@ -32,8 +33,9 @@ export function RoleDeleteDialog({
   onDeleted: () => void;
 }) {
   const router = useRouter();
-  const toast = useToast();
   const [open, setOpen] = useState(false);
+  // 지운 뒤 확인창 안에 「삭제되었습니다.」를 잠깐 보이고 저절로 닫는다 — 공통 토스트는 확인창 뒤(화면 아래)에 떠 보이지 않았다(2026-10-26 사용자 지정)
+  const [deleted, setDeleted] = useState(false);
   const [data, setData] = useState<DeletionCandidates | null>(null);
   const [replacement, setReplacement] = useState("");
   const [failure, setFailure] = useState<string | null>(null);
@@ -75,9 +77,12 @@ export function RoleDeleteDialog({
         if (result.status === 400 || result.status === 409) loadCandidates(result.message);
         return;
       }
-      setOpen(false);
-      toast("deleted");
-      onDeleted();
+      setDeleted(true);
+      setTimeout(() => {
+        setOpen(false);
+        setDeleted(false);
+        onDeleted();
+      }, 1200);
     });
 
   const admins = data?.admins ?? [];
@@ -102,13 +107,25 @@ export function RoleDeleteDialog({
         // 점포 삭제 확인창(stores/[storeId]/store-detail-actions.tsx)과 같은 물음 · 복구 안내(2026-10-26 사용자 지정)
         title="권한 그룹을 삭제하시겠습니까?"
         confirmLabel="삭제"
+        // 「취소」 대신 「닫기」(2026-10-26 사용자 지정). 지운 뒤 닫히기 전에는 두 버튼을 막는다
+        cancelLabel="닫기"
         wide
-        busy={busy}
+        busy={busy || deleted}
         confirmDisabled={!ready}
         onConfirm={handleDelete}
         onCancel={() => setOpen(false)}
       >
-        <div className="flex flex-col gap-[12px] break-keep">
+        <div className="relative flex flex-col gap-[12px] break-keep">
+          {/* 확인창 안 삭제 알림 — 공통 토스트와 같은 모양, 늘 마운트해 두고 전환으로 여닫는다 */}
+          <div
+            role="status"
+            aria-live="polite"
+            className={`pointer-events-none absolute bottom-0 left-1/2 z-[2] -translate-x-1/2 rounded-[2px] bg-erp-nav px-[24px] py-[12px] text-[14px] font-medium whitespace-nowrap text-white shadow-[0_2px_6px_rgba(40,47,55,0.08)] transition-[opacity,translate,visibility] ${EASE_OUT} motion-reduce:transition-none ${
+              deleted ? "visible translate-y-0 opacity-100 duration-200" : "invisible translate-y-[6px] opacity-0 duration-150"
+            }`}
+          >
+            {deleted ? "삭제되었습니다." : ""}
+          </div>
           {failure && <FailedBand message={failure} />}
           <dl className="grid grid-cols-[84px_1fr] gap-y-[6px] rounded-[2px] border border-erp-thead-line bg-erp-thead-bg p-[12px]">
             <dt className="text-erp-label">권한명</dt>
@@ -147,7 +164,7 @@ export function RoleDeleteDialog({
             </div>
           )}
           {noCandidate && (
-            <p className="text-erp-off">{noCandidateText}</p>
+            <p className="whitespace-pre-line text-erp-off">{noCandidateText}</p>
           )}
           {data && admins.length > 0 && !noCandidate && (
             <>
