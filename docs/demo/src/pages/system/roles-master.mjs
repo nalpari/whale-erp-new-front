@@ -104,10 +104,10 @@ function menuDialog(A, R, role, id) {
       return out;
     };
     const map = GRANT[code][svc] || {};
-    // top: 1단계 줄 — 켜진 칸을 「등록」 배지의 상태 파랑(erp-on)으로(앱 role-menu-dialog 와 같다, 2026-10-26 사용자 지정)
+    // top: 1단계 줄 — 켜진 칸을 「등록」 배지 모양(연한 파랑 바탕 · 파랑 테두리 · 파랑 체크)으로(앱 role-menu-dialog 와 같다, 2026-10-26 사용자 지정)
     const cell = (on, b, op, top = false) => {
       const box = ui.checkbox(A, "", on, { "aria-label": op, disabled: !!b });
-      return `<span class="inline-flex${b ? " opacity-40" : ""}${top ? " [&_input:checked]:border-erp-on [&_input:checked]:bg-erp-on" : ""}">${box}</span>`;
+      return `<span class="inline-flex${b ? " opacity-40" : ""}${top ? " [&_input:checked]:border-erp-on [&_input:checked]:bg-erp-on-bg [&_input:checked]:bg-[url(icons/check-on.svg)] [&_input:checked]:bg-center [&_input:checked]:bg-no-repeat [&_img]:hidden" : ""}">${box}</span>`;
     };
     const OPS = [["R", "조회"], ["C", "등록"], ["U", "수정"], ["D", "삭제"]];
     const rows = vis.map((m, i) => {

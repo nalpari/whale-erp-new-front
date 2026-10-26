@@ -62,9 +62,9 @@ const plainTable = (rows) =>
 // 반쯤 켜진 체크(하위 메뉴 일부만 켜짐). 1팀 체크박스에 indeterminate 모양이 없어 같은 칸에 막대를 그린다.
 const partial = (label) =>
   `<span role="checkbox" aria-checked="mixed" aria-label="${label}" tabindex="0" class="grid size-[20px] place-items-center rounded-[2px] border border-erp-brand bg-white"><span class="h-[2px] w-[10px] bg-erp-brand"></span></span>`;
-// top: 1단계 줄 — 켜진 칸 · 일부 켜진 칸을 상태 파랑(erp-on)으로(앱 role-menu-dialog 와 같다, 2026-10-26 사용자 지정)
+// top: 1단계 줄 — 켜진 칸 · 일부 켜진 칸을 「등록」 배지 모양(연한 파랑 바탕 · 파랑)으로(앱 role-menu-dialog 와 같다, 2026-10-26 사용자 지정)
 const cell = (A, v, label, ro, top = false) =>
-  `<span class="inline-flex justify-center${top ? " [&_input:checked]:border-erp-on [&_input:checked]:bg-erp-on [&>span]:border-erp-on [&>span]:bg-erp-on [&>span>span]:bg-white" : ""}">${v === "m" ? partial(label) : ui.checkbox(A, "", !!v, { "aria-label": label, disabled: ro })}</span>`;
+  `<span class="inline-flex justify-center${top ? " [&_input:checked]:border-erp-on [&_input:checked]:bg-erp-on-bg [&_input:checked]:bg-[url(icons/check-on.svg)] [&_input:checked]:bg-center [&_input:checked]:bg-no-repeat [&_img]:hidden [&>span]:border-erp-on [&>span]:bg-erp-on-bg [&>span>span]:bg-erp-on" : ""}">${v === "m" ? partial(label) : ui.checkbox(A, "", !!v, { "aria-label": label, disabled: ro })}</span>`;
 const menuName = (lv, name, code) =>
   `<span class="flex items-center gap-[6px]" style="padding-left:${(lv - 1) * 16}px">${lv > 1 ? c.muted("└") : ""}<span class="${lv === 1 ? "font-semibold" : ""}">${name}</span></span>`;
 // 머리칸 체크박스는 칸 가운데(본문 체크박스와 같은 세로줄), 글자는 그 오른쪽(앱 role-menu-dialog.tsx 와 같다, 2026-10-26 사용자 지정)

@@ -3579,11 +3579,23 @@
   .\[\&_h3\]\:text-guest-ink h3 {
     color: var(--color-guest-ink);
   }
+  .\[\&_img\]\:hidden img {
+    display: none;
+  }
   .\[\&_input\:checked\]\:border-erp-on input:checked {
     border-color: var(--color-erp-on);
   }
-  .\[\&_input\:checked\]\:bg-erp-on input:checked {
-    background-color: var(--color-erp-on);
+  .\[\&_input\:checked\]\:bg-erp-on-bg input:checked {
+    background-color: var(--color-erp-on-bg);
+  }
+  .\[\&_input\:checked\]\:bg-\[url\(icons\/check-on\.svg\)\] input:checked {
+    background-image: url(icons/check-on.svg);
+  }
+  .\[\&_input\:checked\]\:bg-center input:checked {
+    background-position: center;
+  }
+  .\[\&_input\:checked\]\:bg-no-repeat input:checked {
+    background-repeat: no-repeat;
   }
   .\[\&_tbody_tr\]\:cursor-pointer tbody tr {
     cursor: pointer;
@@ -3673,8 +3685,8 @@
   .\[\&\>span\]\:border-erp-on > span {
     border-color: var(--color-erp-on);
   }
-  .\[\&\>span\]\:bg-erp-on > span {
-    background-color: var(--color-erp-on);
+  .\[\&\>span\]\:bg-erp-on-bg > span {
+    background-color: var(--color-erp-on-bg);
   }
   .\[\&\>span\:first-child\]\:transition-opacity > span:first-child {
     transition-property: opacity;
@@ -3686,8 +3698,8 @@
       opacity: 70%;
     }
   }
-  .\[\&\>span\>span\]\:bg-white > span > span {
-    background-color: var(--color-white);
+  .\[\&\>span\>span\]\:bg-erp-on > span > span {
+    background-color: var(--color-erp-on);
   }
   .\[\&\[readonly\]\]\:bg-erp-thead-bg[readonly] {
     background-color: var(--color-erp-thead-bg);

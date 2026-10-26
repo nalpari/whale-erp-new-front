@@ -303,12 +303,13 @@ function MenuTable({
   walk(nodes);
 
   // 일부만 켜진 묶음 줄은 –(mixed)로 보이고, 누르면 모두 켠다(머리칸은 – 없이 해제로 — 아래 머리 표의 OPS 칸 참고)
-  // top: 1단계 줄 — 켜진 칸을 「등록」 배지의 상태 파랑(erp-on)으로 칠해 2단계와 가른다(2026-10-26 사용자 지정).
-  // 공통 Checkbox 는 className 을 받지 않아 감싸는 span 에서 안쪽 input 의 켜짐 · 일부 색만 덮는다.
+  // top: 1단계 줄 — 켜진 칸을 「등록」 배지 모양(연한 파랑 바탕 erp-on-bg · 파랑 erp-on)으로 칠해 2단계와 가른다(2026-10-26 사용자 지정).
+  // 바탕이 연해 흰 체크가 안 보이므로 흰 체크 그림은 숨기고 파랑 체크(/icons/check-on.svg)를 input 바탕 그림으로 깐다.
+  // 공통 Checkbox 는 className 을 받지 않아 감싸는 span 에서 안쪽 input · 그림 · 막대만 덮는다.
   const box = (label: string, state: { checked: boolean; mixed?: boolean; disabled: boolean }, onToggle: (on: boolean) => void, top = false) => (
     <span
       className={`inline-flex ${state.disabled ? "opacity-40" : ""} ${
-        top ? "[&_input:checked]:border-erp-on [&_input:checked]:bg-erp-on [&_input:indeterminate]:border-erp-on [&_input:indeterminate]:bg-erp-on" : ""
+        top ? "[&_input:checked]:border-erp-on [&_input:checked]:bg-erp-on-bg [&_input:checked]:bg-[url(/icons/check-on.svg)] [&_input:checked]:bg-center [&_input:checked]:bg-no-repeat [&_img]:hidden [&_input:indeterminate]:border-erp-on [&_input:indeterminate]:bg-erp-on-bg [&_input:indeterminate~span]:bg-erp-on" : ""
       }`}
     >
       <Checkbox

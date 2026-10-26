@@ -78,7 +78,7 @@ export function recordCard({ manager, reg, mod }) {
 
 // 권한별 메뉴설정 표의 묶음(1단계) 칸이 일부만 켜졌을 때의 「–」 — 앱은 공용 Checkbox indeterminate, 데모는 같은 모양을 그린다(2026-10-26 사용자 지정: 묶음 줄은 「–」 유지, 머리칸만 제외)
 export const partialBox = (label) =>
-  `<span role="checkbox" aria-checked="mixed" aria-label="${label}" tabindex="0" class="grid size-[20px] place-items-center rounded-[2px] border border-erp-on bg-erp-on"><span class="h-[2px] w-[10px] bg-white"></span></span>`; // 1단계 줄에서만 쓰여 상태 파랑(앱 indeterminate 와 같은 꽉 찬 모양)
+  `<span role="checkbox" aria-checked="mixed" aria-label="${label}" tabindex="0" class="grid size-[20px] place-items-center rounded-[2px] border border-erp-on bg-erp-on-bg"><span class="h-[2px] w-[10px] bg-erp-on"></span></span>`; // 1단계 줄에서만 쓰여 「등록」 배지 모양(연한 파랑 바탕 · 파랑 막대, 앱과 같다)
 
 // 등록 버튼(목록 머리 오른쪽)
 export const newButton = () => ui.button("등록", { "data-role-new": true }).replace('class="', 'class="disabled:pointer-events-none disabled:opacity-40 ');
