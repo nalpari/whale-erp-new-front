@@ -42,7 +42,7 @@ export function validateMyProfileForm(form: MyProfileForm): Partial<Record<MyPro
 
 /** updatedAt 은 조회 응답 그대로 — 동시 수정 검사에 쓴다. 이메일을 바꿀 때 지금 비밀번호를 확인하던 통제는
  * 2026-10-22 사용자 결정으로 뺐다(토큰 탈취만으로 이메일을 바꿔 비밀번호 찾기를 가로채는 경로가 다시
- * 열린다는 점을 알리고 확인받았다 — api admin-profile.service.ts 와 같은 결정). */
+ * 열린다는 점을 알리고 확인받았다 — api #145 admin-profile.service.ts 와 같은 결정 — api 가 먼저 나가야 한다). */
 export function toUpdateInput(form: MyProfileForm, updatedAt: string): UpdateMyProfileInput {
   return {
     name: form.name.trim(),

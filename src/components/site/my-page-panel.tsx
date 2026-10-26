@@ -366,7 +366,7 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
               )}
               {message("email")}
             </div>
-          </FormGroup>
+              </FormGroup>
           </div>
 
           <div className="flex justify-center gap-[6px]">
