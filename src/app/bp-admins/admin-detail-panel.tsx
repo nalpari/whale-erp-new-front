@@ -134,7 +134,14 @@ function DetailBody({
     { label: "등록일시", value: <DetailValues items={[formatDateTime(admin.createdAt), admin.createdByName ?? muted("시스템")]} /> },
     {
       label: "최종 수정일시",
-      value: admin.updatedByName ? <DetailValues items={[formatDateTime(admin.updatedAt), admin.updatedByName]} /> : muted("수정한 적 없음"),
+      // 등록만 한 계정은 수정일시가 등록일시와 같아 등록이 수정처럼 보인다 — 같으면 비운다(2026-10-26 사용자 요청).
+      // 등록 때 두 값이 따로 찍혀 ms 가 어긋날 수 있어 1초 안쪽은 같은 것으로 본다
+      value:
+        Math.abs(Date.parse(admin.updatedAt) - Date.parse(admin.createdAt)) >= 1000 ? (
+          <DetailValues items={[formatDateTime(admin.updatedAt), admin.updatedByName ?? muted("시스템")]} />
+        ) : (
+          muted("수정한 적 없음")
+        ),
     },
     { label: "최근 로그인", value: admin.lastLoginAt ? formatDateTime(admin.lastLoginAt) : muted("로그인 기록 없음") },
   ];
@@ -212,7 +219,10 @@ function MappedStores({ admin }: { admin: BpAdminDetail }) {
       {admin.isAllStores ? (
         <p className="text-[14px] text-erp-label">소속 BP 의 모든 점포를 관리합니다. 새로 등록하는 점포도 함께 관리합니다.</p>
       ) : (
-        <DataTable columns={columns} rows={admin.stores} rowKey={(s) => s.storeId} empty="매핑된 점포가 없습니다." />
+        // 5개까지 보이고 그 뒤로는 이 안에서 세로로 스크롤한다 — 머리 42 + 줄 46 × 5 + 선(2026-10-26 사용자 요청)
+        <div className="max-h-[274px] overflow-y-auto overscroll-contain">
+          <DataTable columns={columns} rows={admin.stores} rowKey={(s) => s.storeId} empty="매핑된 점포가 없습니다." />
+        </div>
       )}
     </section>
   );
