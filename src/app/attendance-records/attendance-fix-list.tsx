@@ -7,7 +7,7 @@ import { usePagePermission } from "@/components/site/session-gate";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import type { AttendanceHistory, ProxyStaff } from "@/lib/attendance-records-api";
 import { correctAttendanceAction, getAttendanceHistoryAction, getProxyStaffAction, proxyAttendanceAction, reviewAttendanceAction, type EditResult } from "./actions";
-import { byLabel, editTail, overnightNote, shortDay, type FixRow } from "./attendance-query";
+import { byLabel, editTail, fixPairIndex, overnightNote, shortDay, type FixRow } from "./attendance-query";
 
 // 보정이 필요한 기록의 표와 동작(데모 staff-sections.mjs fixList · fixForm · proxyForm · histDialog, WHALEERP-220). 확인 필요 · 미등록 줄에는
 // 「보정」 · 「이상 없음」, 보정 · 대신 등록한 줄에는 「이력」. 보정 · 대신 등록은 오른쪽 패널, 「이상 없음」은 확인창, 이력은 창이다.
@@ -103,7 +103,7 @@ export function FixList({ rows, reasonLabels, editableFrom }: { rows: FixRow[]; 
   };
   const openFix = (row: FixRow) => {
     trigger.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    setFix({ row, pairIndex: 0 });
+    setFix({ row, pairIndex: fixPairIndex(row) });
     setRound((n) => n + 1);
   };
   const openHistory = (row: FixRow) =>
@@ -304,7 +304,7 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
         <Field label="수정 사유" required>
           <Textarea aria-label="수정 사유" rows={4} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="예: 퇴근 등록 누락 · 근무스케줄 종료 시각으로 보정. 점장 구두 확인." />
         </Field>
-        <p className="text-[13px] text-erp-label">퇴근이 출근보다 이르면 다음 날 퇴근으로 저장합니다. 보정하면 확인 필요 꼬리표와 사유도 지웁니다.</p>
+        <p className="text-[13px] text-erp-label">퇴근이 출근보다 이르거나 같으면 다음 날 퇴근으로 저장합니다. 보정하면 확인 필요 꼬리표와 사유도 지웁니다.</p>
       </FormGroup>
       {error && (
         <p role="alert" className="text-[14px] text-erp-off">
@@ -323,8 +323,8 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
   );
 }
 
-// 출퇴근 대신 등록(데모 proxyForm, 운영 정책 ATT-20 · 26): 직원 · 날짜 · 출근 · 퇴근 · 사유(필수). 직원 선택지는 그날 대신 등록할 수 있는 직원 —
-// 위치정보 동의가 없거나 일시 중지한 직원, 체결 완료 계약이 있는 날(STAFF-29). 등록 권한이 없으면 버튼을 두지 않는다.
+// 출퇴근 대신 등록(데모 proxyForm, 운영 정책 ATT-20 · 26): 직원 · 날짜 · 출근 · 퇴근 · 사유(필수). 직원 선택지는 그날 체결 완료 계약이 있는
+// 직원(STAFF-29) — 대신 등록 대상이 아닌 직원(api `isProxy` false)은 기록 없는 날을 보정으로 채운다(2026-10-26). 등록 권한이 없으면 버튼을 두지 않는다.
 export function ProxyButton({ stores, today, editableFrom }: { stores: string; today: string; editableFrom: string }) {
   const router = useRouter();
   const toast = useToast();
@@ -358,7 +358,7 @@ export function ProxyButton({ stores, today, editableFrom }: { stores: string; t
                 const done = result.isProxy ? "대신 등록했습니다." : "보정했습니다.";
                 toast(result.isPayslipConfirmed ? `${done} ${PAYSLIP_WARNING}` : done);
                 setOpen(false);
-              }
+              } else toast(result.message); // 결과를 모르는 실패(5xx · 연결) — 새로 불러온 목록으로 확인하게 알린다
               router.refresh();
             }}
           />
@@ -382,11 +382,18 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
   const loadStaff = useCallback(
     (day: string) => {
       wanted.current = day;
-      void getProxyStaffAction(stores, day).then((result) => {
-        if (wanted.current !== day) return;
-        if (!result.ok) return setError(result.message);
-        setStaff(result.staff);
-      });
+      getProxyStaffAction(stores, day)
+        .then((result) => {
+          if (wanted.current !== day) return;
+          if (!result.ok) return setError(result.message);
+          setStaff(result.staff);
+        })
+        .catch(() => {
+          // 서버 액션 호출 자체가 실패(연결 끊김 등) — 선택지를 비우고 알린다. 날짜를 다시 고르면 다시 받는다
+          if (wanted.current !== day) return;
+          setStaff([]);
+          setError("직원 목록을 불러오지 못했습니다. 날짜를 다시 골라 주세요.");
+        });
     },
     [stores],
   );
@@ -451,7 +458,7 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
           <Textarea aria-label="사유" rows={4} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="예: 위치 수집 일시 중지 · 점장 확인" />
         </Field>
         <p className="text-[13px] text-erp-label">
-          위치정보 동의를 하지 않았거나 일시 중지한 직원은 대신 등록합니다. 위치정보에 동의한 직원(보정)은 출근 · 퇴근을 모두 찍지 않은 날만 두 시각을 함께 넣어 보정합니다. 퇴근이 출근보다 이르면 다음 날 퇴근이고, 아직 오지 않은 시각은 등록할 수 없습니다. 직원 근무 앱에는 연필 표시로 보입니다.
+          위치정보 동의를 하지 않았거나 일시 중지한 직원은 대신 등록합니다. 그 밖의 직원(보정)은 출근 · 퇴근을 모두 찍지 않은 날만 두 시각을 함께 넣어 보정합니다. 퇴근이 출근보다 이르거나 같으면 다음 날 퇴근이고, 아직 오지 않은 시각은 등록할 수 없습니다. 직원 근무 앱에는 연필 표시로 보입니다.
         </p>
       </FormGroup>
       {error && (
@@ -476,7 +483,7 @@ function PayslipWarning() {
   return <p className="rounded-[2px] bg-[#fff6e5] px-[12px] py-[10px] text-[14px] text-[#956013]">{PAYSLIP_WARNING}</p>;
 }
 
-/** 퇴근이 출근보다 이르면 다음 날 퇴근으로 저장된다는 것을 실제 날짜로 알린다(api 와 같은 규칙) */
+/** 퇴근이 출근보다 이르거나 같으면 다음 날 퇴근으로 저장된다는 것을 실제 날짜로 알린다(api 와 같은 규칙) */
 function OvernightNote({ date, checkIn, checkOut }: { date: string; checkIn: string; checkOut: string }) {
   const note = overnightNote(date, checkIn, checkOut);
   return note && <p className="text-[13px] font-medium text-erp-ink">{note}</p>;

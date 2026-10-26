@@ -278,6 +278,12 @@ export function dayLabel(day: string): string {
 }
 /** 「10-23」 */
 export const shortDay = (day: string) => day.slice(5);
+
+/** 보정 패널을 열 짝 — 확인 필요 사유가 있거나 빈 쪽(퇴근 · 출근 미등록)이 있는 첫 짝, 없으면 첫 짝. 하루에 짝이 여럿이면 고칠 짝으로 연다 */
+export function fixPairIndex(r: Pick<DayRow, "pairs">): number {
+  const i = r.pairs.findIndex((p) => p.checkIn?.reviewReason || p.checkOut?.reviewReason || !p.checkIn || !p.checkOut);
+  return Math.max(0, i);
+}
 /** 「1,284h」 · 「12h 30m」 */
 export const hoursLabel = (minutes: number) => (minutes % 60 ? `${Math.floor(minutes / 60).toLocaleString("ko-KR")}h ${minutes % 60}m` : `${(minutes / 60).toLocaleString("ko-KR")}h`);
 

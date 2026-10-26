@@ -1,7 +1,7 @@
 // node --test src/app/attendance-records/attendance-query.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { byLabel, type DayRow, defaultQuery, editTail, lateMinutes, matchesFilter, matchesSummary, mondayOf, needsFix, overnightNote, parseAttendanceQuery, storeParams, toAttendanceSearch, weekSummary } from "./attendance-query.ts";
+import { byLabel, type DayRow, defaultQuery, editTail, fixPairIndex, lateMinutes, matchesFilter, matchesSummary, mondayOf, needsFix, overnightNote, parseAttendanceQuery, storeParams, toAttendanceSearch, weekSummary } from "./attendance-query.ts";
 
 const TODAY = "2026-10-23";
 const def = defaultQuery(TODAY);
@@ -29,6 +29,14 @@ const row = (patch: Partial<DayRow> = {}): DayRow => ({
   status: "NORMAL",
   isPayslipConfirmed: false,
   ...patch,
+});
+
+test("보정 패널은 고칠 짝(사유 · 빈 쪽)으로 연다, 없으면 첫 짝", () => {
+  const punch = (time: string, reviewReason: string | null = null) => ({ time, reviewReason }) as unknown as DayRow["pairs"][number]["checkIn"];
+  const pairs = (list: [DayRow["pairs"][number]["checkIn"], DayRow["pairs"][number]["checkOut"]][]) => ({ pairs: list.map(([checkIn, checkOut]) => ({ checkIn, checkOut })) }) as Pick<DayRow, "pairs">;
+  assert.equal(fixPairIndex(pairs([[punch("09:00"), punch("12:00")], [punch("13:00"), null]])), 1);
+  assert.equal(fixPairIndex(pairs([[punch("09:00"), punch("12:00")], [punch("13:00"), punch("18:00", "OUT_OF_RADIUS_CHECKOUT")]])), 1);
+  assert.equal(fixPairIndex(pairs([[punch("09:00"), punch("12:00")]])), 0);
 });
 
 test("기본값 — 체크 묶음 전부 · 재직 · 오늘 · 이번 주 · 한 달", () => {
