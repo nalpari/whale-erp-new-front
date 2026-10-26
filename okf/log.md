@@ -4,6 +4,7 @@
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front seel, main #128 까지): okf/log 충돌은 양쪽 기록을 살렸다.
 
 ## 2026-10-23
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — MY PAGE 기본정보에서 이메일을 바꿀 때 「지금 비밀번호」를 요구하던 통제(2026-10-21 추가)를 뺐다(사용자 결정, 2026-10-22) — 토큰 탈취만으로 이메일을 바꿔 비밀번호 찾기를 가로챌 수 있는 경로가 다시 열린다는 점을 알리고 확인받았다. `my-profile-form.ts`(`validateCurrentPassword` 삭제, `toUpdateInput` 단순화), `my-page-panel.tsx`(지금 비밀번호 칸·상태 제거)를 고쳤다. api 쪽(`admin-profile.service.ts`/`admin-profile-update.dto.ts`)은 api #145 — api 가 먼저 머지 · 배포돼야 한다(안 그러면 이메일 변경 저장이 400).
 * **Update**: [직원 정보 관리 화면](/screens/staff-members.md) — #119 재리뷰 참고 반영: 재직 이력 링크의 주(`week`)를 근무스케줄 칸과 같은 `weekParam` 으로 읽는다(여럿이면 앞의 것, 그 주 월요일). 예전에는 여럿이면 빼서 이력 상세가 이번 주를 봤다. #119 로그의 타입 기준 커밋을 `dee2f0a` 로 바로잡았다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세 code-review 반영(front #124): 「종료」 실패는 재발송과 같은 `sendFailureOf` 규칙(모를 때 문장만 `END_UNKNOWN`)이고 확인창을 막지 않는다(두 번 닫히지 않음). 닫으면 `?send=` 안내를 지운다. 날인 기한은 만료에도 보이고, 거부 사유 줄은 길면 늘어난다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 상세 리뷰 반영: 「종료」는 서버 액션 호출이 끊기거나 api 가 5xx · 응답 전 끊김이면 오류 화면 대신 종료를 막고 다시 읽는다. 재발송 버튼은 `canResend` 가 false 일 때만 숨긴다(칸이 없는 옛 api 응답이면 보임 — front 가 먼저 배포돼도 버튼이 사라지지 않게). 처리 정보 줄 테스트 보강(발송 대기 날인 기한 · 마지막 발송 없는 재발송 횟수 · 사유 없는 거부). api 타입을 api seel 로 다시 만들었다.
