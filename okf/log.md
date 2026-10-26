@@ -1,6 +1,9 @@
 # Bundle history
 
 ## 2026-10-26
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front wobbuffet, main #129 까지): okf 충돌은 양쪽 기록을 살렸고, `api-types.generated.ts` 는 api main(#148 플랫폼 휴일 조회 머지 뒤 `06f6deb`)으로 다시 만들었다 — 「머지 전 api 브랜치 기준」 · 「api 가 먼저 배포되어야 한다」 서술을 지웠다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 휴일 관리 화면(`/public-holidays`, S-DDGJKQ)을 만들었다: 조회 전용 캘린더 · 목록, 연도 2000~2100, 다다음 해 정부 발표 안내 · 동기화 실패 안내. api(`GET /public-holidays` — 캘린더는 `month` 를 함께, `synchronization.failedYears` · `lastSynchronizedAt`)의 openapi 로 타입을 만들어 썼다. superpowers code-reviewer 반영: 선택칸 낙관적 표시, 휴일인 오늘 테두리, 막힌 달 이동 버튼 호버 없음, 실패 안내 문구, api 머지 전 생성 타입임을 api-types 항목에 적음.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 휴일 관리 pr-review-toolkit 리뷰 반영: 이동 조작이 낙관적 상태 하나를 나눠 가짐(연도 → 월 이어 고르기에서 연도를 잃던 것), 401 · 403 은 다시 시도 없는 안내, 오류 화면에 오류 번호 · role=alert, 칸 · 실패 안내 · api 경로 판단을 순수 함수로 빼 테스트(20건), `weekdayOf` 가 없는 날짜를 거름, 겹친 휴일 이름 · 2051~2100 음력 미적재 · 동기화 배치 미구현 주석을 사실대로.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front goldeen, main #129 까지): okf 충돌은 양쪽 기록을 살렸고, `api-types.generated.ts` 는 api main(#146 · #147 머지 뒤 `5c80d70`)으로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #127 리뷰(Young Joo) 반영: 저장 뒤 안내 쿠키를 서버가 아니라 `SavedNotice` 가 읽고 지운다 — 목록 → 상세 → [뒤로] 때 Next 가 기억한 화면으로 안내가 또 뜨지 않게. 상태별 개수 서술을 api #146(보이는 계약만 셈)에 맞췄다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #127 ip-code-review 블로커 반영: 저장 뒤 안내를 주소(`?saved=`) 대신 60초 사는 쿠키(`contract-saved`)로 넘기고 `SavedNotice` 가 그리면 지운다 — 주소에서 지우던 `history.replaceState(history.state …)` 는 Next 가 라우터 상태를 맞추지 않아 `?saved=` 가 되살아나 새로고침 때 안내가 다시 떴다.
