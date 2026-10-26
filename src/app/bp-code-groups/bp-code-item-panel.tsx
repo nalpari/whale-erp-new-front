@@ -310,6 +310,8 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
       {reordered && <DoneNotice message="표시 순서를 바꿨습니다 — 저장을 눌러야 반영됩니다." />}
       {failure && <SaveFailedBand message={failure} />}
       <DataTable
+        // 열 이름 줄까지 고정하고 그 아래만 스크롤한다(2026-10-26 사용자 지정)
+        scroll
         columns={columns}
         rows={drafts}
         rowKey={(d) => d.key}

@@ -274,7 +274,7 @@ export function CodeGroupPanel({
             </Button>
           </span>
         ) : (
-          <span className="text-erp-muted">{d.added ? "" : "—"}</span>
+          <span className="text-erp-muted">{d.added ? "" : "-"}</span>
         ),
     },
     {
@@ -318,6 +318,8 @@ export function CodeGroupPanel({
       {applyError && <SaveFailedBand message={applyError} detail={null} />}
       {notice && <DoneNotice message={notice} />}
       <DataTable
+        // 열 이름 줄까지 고정하고 그 아래만 스크롤한다(2026-10-26 사용자 지정)
+        scroll
         columns={columns}
         rows={drafts}
         rowKey={(d) => (d.added ? "__added" : d.groupCode)}

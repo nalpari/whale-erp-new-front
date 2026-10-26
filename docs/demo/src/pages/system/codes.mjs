@@ -2,11 +2,12 @@
 // 왼쪽 공통코드 그룹, 오른쪽 고른 그룹의 상세 코드를 두 카드로 나란히 둔다(2단 카드 본문).
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
+import * as c from "../../config-parts.mjs";
 import { platformHeader } from "../../site.mjs";
 import { band as riskBand } from "../../staff-parts.mjs";
 
 // 두 카드 껍데기
-const card = (w, html) => `<section class="${w} flex flex-col gap-[12px] overflow-y-auto rounded-[4px] [&>*]:shrink-0 border border-erp-panel-line bg-white p-[25px]">${html}</section>`;
+const card = (w, html) => `<section class="${w} flex flex-col gap-[12px] overflow-y-auto rounded-[4px] [&>:not([data-table-scroll])]:shrink-0 border border-erp-panel-line bg-white p-[25px]">${html}</section>`;
 // 고른 줄 표시(목업 surface-strong). dataTable 결과의 n 번째 줄에 표 머리 바탕을 얹는다.
 const markRow = (table, n) => {
   let i = -1;
@@ -94,6 +95,12 @@ const SERVICES = [
 export default ({ A, R }) => {
   const apply = x.dialogId();
 
+  // 왼쪽 필터 — BP 공통코드 관리와 같은 공용 필터(앱 code-groups/code-filter.tsx → code-group-filter.tsx, 2026-10-26)
+  const filter = ui.filterPanel(A, [
+    ui.filterSection("그룹 코드", ui.searchField(A, { placeholder: "예: EMP_TYPE", label: "그룹 코드" }), { tight: true }),
+    ui.filterSection("그룹명", ui.searchField(A, { placeholder: "예: 고용 형태", label: "그룹명" }), { tight: true, last: true }),
+  ]);
+
   const groupCols = [
     { header: "그룹 코드", width: "w-[170px]", align: "left" },
     { header: "그룹명", align: "left" },
@@ -104,15 +111,15 @@ export default ({ A, R }) => {
   const groupRows = GROUPS.map(([code, name, owner, bp], i) => [
     i === 0 ? `<b class="font-semibold" aria-current="true">${code}</b>` : ui.link(code, "#"),
     ui.textField({ value: name, "aria-label": "그룹명" }),
-    owner,
+    c.tag(owner), // 관리 주체는 분류 꼬리표(앱 code-group-panel.tsx 의 Tag 와 같다, 2026-10-26)
     // BP 적용 칸 — 관리 주체가 플랫폼제공인 그룹만 [BP 적용] 버튼, 나머지는 —(2026-10-08)
-    owner === "플랫폼제공" ? x.dialogTrigger("BP 적용", apply, "soft") : '<span class="text-erp-muted">—</span>',
+    owner === "플랫폼제공" ? x.dialogTrigger("BP 적용", apply, "soft") : '<span class="text-erp-muted">-</span>',
     x.toggle("사용", true),
   ]);
   const left = card(
-    "w-[900px] shrink-0", // 그룹 목록을 넓혔다(2026-10-12)
+    "w-[750px] shrink-0", // 그룹 목록을 넓혔다가(2026-10-12) 상세 코드 칸이 좁아 그룹명 칸을 반으로 줄였다(앱 code-panel 과 같다, 2026-10-26)
     ui.sectionHead(`공통코드 그룹${sub(`${GROUPS.length}개`)}`, dim(ui.button("추가", { variant: "soft", "data-add-row": "new-group" })) + ui.button("저장")) +
-      markRow(ui.dataTable(groupCols, groupRows), 0) +
+      ui.scrollTable(markRow(ui.dataTable(groupCols, groupRows), 0)) + // 열 이름 줄까지 고정, 아래만 스크롤(앱과 같다, 2026-10-26)
       addRows(
         "new-group",
         [
@@ -144,7 +151,7 @@ export default ({ A, R }) => {
   const right = card(
     "min-w-0 flex-1",
     ui.sectionHead(`상세 코드${sub("SERVICE · 서비스 · 플랫폼고정")}`, dim(ui.button("추가", { variant: "soft", "data-add-row": "new-code", "data-multi": true })) + ui.button("저장")) +
-      ui.dataTable(codeCols, codeRows) +
+      ui.scrollTable(ui.dataTable(codeCols, codeRows)) +
       addRows(
         "new-code",
         [
@@ -187,7 +194,7 @@ export default ({ A, R }) => {
     html: ui.erpFrame({
       header: platformHeader(A, R),
       title: "플랫폼 공통코드 관리",
-      body: `<div class="flex min-h-0 flex-1 gap-[12px] p-[24px]">${left}${right}</div>${dialog}${ADD_SCRIPT}`,
+      body: `<div class="flex min-h-0 flex-1 gap-[12px] p-[24px]">${filter}${left}${right}</div>${dialog}${ADD_SCRIPT}`,
     }),
   };
 };

@@ -144,8 +144,9 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
   const columns: Column<Row>[] = [
     ...(editable ? [{ header: "이동", width: "w-[56px]", cell: (r: Row) => (r.kind === "menu" ? drag.handle(r.row.node) : null) } satisfies Column<Row>] : []),
     {
-      header: "노출 메뉴명",
+      header: "메뉴명", // 「노출 메뉴명」에서 줄임(2026-10-26 사용자 지정)
       align: "left",
+      width: "w-[250px]", // 폭을 안 주면 표 전체 남는 칸을 다 먹어 메뉴코드 칸과 간격이 벌어진다(사용자 지적, 2026-10-26 — 220px는 너무 붙어 250px로 조정)
       cell: (r) => {
         const depth = r.kind === "menu" ? r.row.node.depth : placement!.depth;
         const name = r.kind === "menu" ? r.row.node.name : draftName.trim() || "새 메뉴";
@@ -167,7 +168,7 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
     },
     { header: "메뉴 코드", width: "w-[110px]", cell: (r) => (r.kind === "menu" ? muted(r.row.node, r.row.node.menuCode) : <span className="text-erp-label">자동 채번</span>) },
     {
-      header: "메뉴 계층",
+      header: "메뉴단계", // 권한별 메뉴설정 팝업과 같은 이름(2026-10-26 사용자 지정)
       width: "w-[90px]",
       cell: (r) => <span className="text-erp-label">{r.kind === "menu" ? r.row.node.depth : placement!.depth}단계</span>,
     },
@@ -179,7 +180,7 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
     },
     { header: "순서", width: "w-[60px]", cell: (r) => (r.kind === "menu" ? muted(r.row.node, r.row.node.sortOrder) : placement!.order) },
     {
-      header: "사용 상태",
+      header: "사용여부",
       width: "w-[100px]",
       cell: (r) =>
         r.kind === "menu" ? <Badge tone={r.row.node.status === "ACTIVE" ? "on" : "off"}>{statusText(r.row.node.status)}</Badge> : <span className="text-erp-muted">—</span>,
@@ -229,12 +230,18 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
               </p>
             </div>
             {moveFailure && <FailedBand message={moveFailure.message} detail={moveFailure.detail} />}
-            <div {...drag.wrapProps} className="relative">
+            {/* 머리 줄까지 고정하고 아래만 스크롤(DataTable scroll) — 칸이 남는 높이를 채우게 flex 묶음으로 둔다. CARD 의 [&>*]:shrink-0 를 이 칸만 푼다.
+                1단계 줄 바탕 · 머리 색은 권한별 메뉴설정 팝업과 같다(2026-10-26 사용자 지정) */}
+            <div {...drag.wrapProps} className="relative flex min-h-0 flex-1 shrink! flex-col">
               <DataTable
                 columns={columns}
                 rows={rows}
                 rowKey={(r) => (r.kind === "menu" ? r.row.node.menuId : "draft")}
-                rowState={(r) => (r.kind === "draft" ? "added" : !creating && r.row.node.menuId === picked ? "selected" : undefined)}
+                rowState={(r) =>
+                  r.kind === "draft" ? "added" : !creating && r.row.node.menuId === picked ? "current" : r.row.node.depth === 1 ? "group" : undefined
+                }
+                headVariant="subtle"
+                scroll
                 rowProps={(r) =>
                   r.kind === "menu"
                     ? {

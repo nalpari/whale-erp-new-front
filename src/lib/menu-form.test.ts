@@ -13,7 +13,7 @@ test("isDirty — 앞뒤 공백은 고친 것으로 보지 않는다", () => {
 });
 
 test("validateMenuForm — 이름 필수 · 20자, URL 선택 · 형식", () => {
-  assert.deepEqual(validateMenuForm({ name: "  ", url: "", status: "ACTIVE" }), { name: "노출 메뉴명을 입력해 주세요." });
+  assert.deepEqual(validateMenuForm({ name: "  ", url: "", status: "ACTIVE" }), { name: "메뉴명을 입력해 주세요." });
   assert.ok(validateMenuForm({ name: "가".repeat(21), url: "", status: "ACTIVE" }).name);
   assert.deepEqual(validateMenuForm({ name: "가".repeat(20), url: "", status: "ACTIVE" }), {});
   assert.ok(validateMenuForm({ name: "a", url: "platform", status: "ACTIVE" }).url);
