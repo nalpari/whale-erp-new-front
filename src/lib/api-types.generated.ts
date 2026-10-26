@@ -1397,6 +1397,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/staff-members/{id}/birth-date": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * 직원 생년월일 정정
+         * @description 가입 때 잘못 넣은 생년월일을 관리자가 확인해 정정한다(WHALEERP-602). 직원 레코드의 계정 생년월일을 바꾸므로 같은 사람의 다른 BP 소속에도 같이 바뀐다. 계약서에 적힌 생년월일은 바꾸지 않고, 날인 대기 중인 계약이 있어도 막지 않는다. 날인 대기 계약은 날인 때 계약서 생년월일과 계정 생년월일을 다시 대조하므로 정정으로 대조가 풀릴 수도 있고(보통) 새로 어긋날 수도 있다(계정 하나라 다른 BP 의 계약도 같다). 정정은 계정 변경 이력(BIRTH_DATE · ADMIN_CORRECTION)에 남는다. 오류 응답은 `code` 로 가른다.
+         */
+        put: operations["StaffBirthDateController_correct"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/payslips": {
         parameters: {
             query?: never;
@@ -5104,6 +5124,14 @@ export interface components {
              */
             birthDate: string | null;
             /**
+             * @description 관리자가 생년월일을 정정할 수 있는 레코드인가(PUT /staff-members/:id/birth-date, WHALEERP-602). 계정이 있고 가입 완료
+             *     (`JOINED`, 탈퇴 · 연결 보류 아님)이며 퇴직하지 않았을 때 true(퇴직일이 지났는데 배치 전인 레코드는 퇴직으로 보아 false) — 정정 API 가
+             *     409 로 막는 경우(BIRTH_DATE_NOT_JOINED · BIRTH_DATE_RETIRED)와 같은 판정이다. `joinState` 는 직원 레코드의 가입 상태라
+             *     계정이 탈퇴 · 연결 보류여도 JOINED 로 오므로 버튼 표시에는 이 칸을 쓴다. 수정 권한은 보지 않는다 — 화면이 권한으로 가린다.
+             *     같은 값이라는 409(BIRTH_DATE_UNCHANGED)는 값을 넣어 봐야 아는 것이라 담지 않는다
+             */
+            birthDateCorrectable: boolean;
+            /**
              * @description 이전 재직 기간 — 퇴직 뒤 같은 점포에 다시 입사해 이은 옛 레코드들(WHALEERP-615), 가까운 것부터. 누르면 그 레코드의
              *     상세로 간다. 체결 완료된 계약이 없는 레코드와 이 관리자에게 가려지는 레코드는 빠진다
              */
@@ -5274,6 +5302,13 @@ export interface components {
              * @example 2026-10-31
              */
             retiredDate: string;
+        };
+        BirthDateCorrectionDto: {
+            /**
+             * @description 정정할 생년월일(YYYY-MM-DD, 한국 날짜). 오늘(KST) 뒤 날짜(내일부터)이거나 한국 오늘 기준 만 19세 미만이면 받지 않는다.
+             * @example 1990-05-17
+             */
+            birthDate: string;
         };
         PayslipListItemDto: {
             employmentType: components["schemas"]["EmploymentType"] | null;
@@ -7631,7 +7666,7 @@ export interface components {
             email: string;
             /** @description 이름 — 고칠 수 없다 */
             realName: string;
-            /** @description 생년월일(YYYY-MM-DD) — 고칠 수 없다 */
+            /** @description 생년월일(YYYY-MM-DD) — 직원 앱에서는 고칠 수 없다(생년월일은 관리자 정정만, WHALEERP-602) */
             birthDate: string;
             /** @description 휴대전화번호 — 1차는 읽기 전용 */
             phone: string;
@@ -11746,6 +11781,61 @@ export interface operations {
                 content?: never;
             };
             /** @description 가입 전 · 이미 퇴직 · 이미 퇴직 예정(처리) / 퇴직 예정이 아님 · 퇴직일 당일 이후 · 같은 날짜(취소 · 변경) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StaffBirthDateController_correct: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BirthDateCorrectionDto"];
+            };
+        };
+        responses: {
+            /** @description 정정함 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description BIRTH_DATE_INVALID(문자열 날짜의 형식 오류 · 없는 날짜 · 오늘(KST) 뒤 날짜(내일부터); birthDate 없음 · 문자열 아님 · 모르는 필드는 code 없는 ValidationPipe 400) / BIRTH_DATE_UNDER_AGE(한국 오늘 기준 만 19세 미만) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 정보 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 직원이거나 관리 범위 밖 · 본사 제공 동의로 가려진 직원 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description BIRTH_DATE_NOT_JOINED(계정 없음(가입 전) · 계정이 JOINED 아님(탈퇴 · 연결 보류)) / BIRTH_DATE_RETIRED(퇴직한 레코드 · 퇴직일이 지났는데 배치 전인 레코드. 퇴직 예정은 허용) / BIRTH_DATE_UNCHANGED(지금 값과 같음) */
             409: {
                 headers: {
                     [name: string]: unknown;

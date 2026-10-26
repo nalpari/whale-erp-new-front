@@ -12,6 +12,7 @@ import { detailListHrefOf } from "../staff-list-query";
 import { ResendInvitationButton } from "../resend-invitation-button";
 import { canResendInvitation, EMPLOYMENT_TYPE_LABELS, employmentStatusCells, formatPhone, invitationText, joinCell } from "../staff-row";
 import { CellView } from "../staff-table";
+import { BirthDateCell } from "./birth-date-dialog";
 import { ContractBox } from "./contract-box";
 import { AreaLoading, Box, BoxMessage } from "./detail-box";
 import { employmentHistoryLines, historySearch } from "./employment-history";
@@ -129,7 +130,7 @@ export default async function StaffMemberDetailPage({
       ),
     })),
     // 가입한 계정 값, 가입 전 · 탈퇴면 가장 최근 계약에 적은 값(api #183). api 가 주는 대로 보이고 화면에서 따로 가리지 않는다(2026-10-21 재영)
-    { label: "생년월일", value: staff.birthDate ?? PENDING },
+    { label: "생년월일", value: <BirthDateCell staff={staff} text={staff.birthDate ?? PENDING} today={today} /> },
     { label: "휴대전화번호", value: staff.phone ? formatPhone(staff.phone) : PENDING },
     // 가입 상태 · 초대는 목록과 같은 함수다(staff-row.ts). 재발송도 목록과 같은 판정 · 버튼이다(WHALEERP-138)
     {

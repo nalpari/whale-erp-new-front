@@ -5,7 +5,7 @@ import { PASSWORD_REQUIRED_EVENT } from "@/lib/bff";
 import { failureEffect } from "@/lib/retirement";
 import type { ActionFailure } from "./actions";
 
-// 직원 상세 확인창(퇴직 처리 · 비밀번호 초기화)이 서버 액션 실패를 받은 뒤 할 일. 403 두 가지는 okf api admin-auth 「403 messages」를 따른다.
+// 직원 상세 확인창(퇴직 처리 · 비밀번호 초기화 · 생년월일 정정)이 서버 액션 실패를 받은 뒤 할 일. 403 두 가지는 okf api admin-auth 「403 messages」를 따른다.
 
 /** 실패를 받은 뒤 할 일. 확인창 안에 둘 문구면 돌려주고, 아니면 여기서 처리하고 null. */
 export function useFailure() {
