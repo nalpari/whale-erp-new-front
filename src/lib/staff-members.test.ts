@@ -170,7 +170,9 @@ test("본사 제공 동의 한글을 받지 못했으면 - — 영문 값을 보
 test("재직 이력 칸이 없는 상세 응답(api #136 배포 전)은 빈 목록으로 채운다 — 있으면 그대로", () => {
   const period = { staffMemberId: 3, hiredDate: "2024-01-02", retiredDate: "2024-06-30" };
   const before = { staffMemberId: 1, name: "서지안" } as unknown as Parameters<typeof withEmploymentHistory>[0];
-  assert.deepEqual(withEmploymentHistory(before), { staffMemberId: 1, name: "서지안", previousRecords: [], laterRecords: [] });
+  assert.deepEqual(withEmploymentHistory(before), { staffMemberId: 1, name: "서지안", previousRecords: [], laterRecords: [], birthDateCorrectable: false });
+  // 정정 가능 칸도 옛 api 에는 없다(WHALEERP-602) — 없으면 false, 있으면 그대로
+  assert.equal(withEmploymentHistory({ ...before, birthDateCorrectable: true } as Parameters<typeof withEmploymentHistory>[0]).birthDateCorrectable, true);
   const after = { ...before, previousRecords: [period], laterRecords: [] } as Parameters<typeof withEmploymentHistory>[0];
   assert.deepEqual(withEmploymentHistory(after).previousRecords, [period]);
 });

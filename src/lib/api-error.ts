@@ -29,3 +29,10 @@ export function deniedMessageOf(error: unknown): string | null {
   const noRoute = error.status === 404 && error.message.startsWith("Cannot ");
   return [400, 403, 404].includes(error.status) && !validation && !noRoute ? error.message : null;
 }
+
+/** api 오류 본문의 업무 code(예: BIRTH_DATE_NOT_JOINED). 본문이 객체가 아니거나 code 가 문자열이 아니면 undefined. */
+export function codeOf(body: unknown): string | undefined {
+  if (typeof body !== "object" || body === null || Array.isArray(body)) return undefined;
+  const code = (body as { code?: unknown }).code;
+  return typeof code === "string" ? code : undefined;
+}
