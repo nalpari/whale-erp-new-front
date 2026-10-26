@@ -190,7 +190,7 @@ function treeTab(key, s) {
     `<section class="flex min-w-0 flex-1 flex-col gap-[12px]">${ui.sectionHead(
       `메뉴 트리 <span class="text-[14px] font-normal text-erp-label">${nodes.length}개</span>`,
       dim(ui.button("등록", { "data-new": key })),
-    )}${table}${
+    )}<div class="flex h-[560px] flex-col">${ui.scrollTable(table)}</div>${ /* 머리 고정 · 아래만 스크롤(앱 DataTable scroll 과 같다, 2026-10-26) */ ""}${
       s.count > nodes.length ? help(`… 외 ${s.count - nodes.length}개 메뉴 · 목업 표본에서 생략`) : ""
     }</section>` +
     `<div class="flex w-[464px] shrink-0 flex-col" data-side="${key}" data-roots="${sibs(null).length}" data-next="${NEXT_CODE}">` +

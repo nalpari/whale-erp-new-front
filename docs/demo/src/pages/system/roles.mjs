@@ -7,7 +7,7 @@ import { req } from "../../biz-form.mjs";
 import * as x from "../../extra.mjs";
 import * as c from "../../config-parts.mjs";
 import { platformHeader, link } from "../../site.mjs";
-import { roleSide, roleHead, depthRows, menuScroll, partialBox, tagRows, newButton, scrollTabs, SVC_TABS_SCRIPT } from "../../role-side.mjs";
+import { roleSide, roleHead, depthRows, menuScroll, partialBox, menuSaveButton, revokeDialog, MENU_SAVE_SCRIPT, tagRows, newButton, scrollTabs, SVC_TABS_SCRIPT } from "../../role-side.mjs";
 
 // 1팀 컴포넌트에 없는 것들. 토큰으로만 그린다.
 const sub = (t) => `<span class="text-erp-label">${t}</span>`;
@@ -148,10 +148,12 @@ function menuDialog(A, R, role, id) {
   const body =
     `<div class="flex flex-col gap-[12px]">` +
     roleHead(type, code, name) +
+    // 잠긴 팝업의 안내 띠(앱 role-menu-dialog lockedText 와 같다, 2026-10-26)
+    (canSave ? "" : `<p class="flex min-h-[42px] items-center rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[12px] py-[8px] text-[14px] font-medium text-erp-ink">${code === "PM000001" ? "플랫폼마스터는 시스템 최상위 권한으로, 모든 메뉴의 접근·관리 권한이 자동 부여되며 현재 화면에서는 조작할 수 없습니다." : "본인 계정에 연결된 권한 그룹이라 수정할 수 없습니다."}</p>`) +
     tabs +
     `</div>`;
   const foot = canSave
-    ? ui.button("닫기", { variant: "off", "data-close": true }) + ui.button("저장") // 저장해도 팝업을 닫지 않고 안에 알림(앱과 같다, 2026-10-26)
+    ? ui.button("닫기", { variant: "off", "data-close": true }) + menuSaveButton(name) // 저장해도 팝업을 닫지 않고 안에 알림(앱과 같다, 2026-10-26)
     : ui.button("닫기", { "data-close": true });
   return c.wide(x.dialog(id, "권한별 메뉴설정", body, foot), "w-[880px]");
 }
@@ -168,7 +170,7 @@ export default ({ A, R }) => {
       `<span class="text-erp-link hover:underline">${name}</span>`, // 권한명은 링크색 — 앱(platform-role-groups · bp-role-groups)과 같다(2026-10-26 사용자 지정)
       desc,
       // 등록일시 열은 뺐다 — 앱 platform-role-groups 와 같이 최종수정만(2026-10-26 사용자 지정)
-      `${mod} ${c.muted(`· ${modBy}`)}`,
+      `${mod} <span class="text-erp-label">· ${modBy}</span>`,
       x.dialogTrigger("설정", id, "soft"),
       // 등록 / 미등록만 보인다. 미등록은 상태 빨강 배지
       n ? ui.badge("on", "등록") : ui.badge("off", "미등록"),
@@ -199,7 +201,7 @@ export default ({ A, R }) => {
     html: ui.erpFrame({
       header: platformHeader(A, R),
       title: "플랫폼 권한 관리",
-      body: `<div class="flex min-h-0 flex-1 gap-[12px] p-[24px]">${left}${right}</div>` + dialogs.join("") + SVC_TABS_SCRIPT,
+      body: `<div class="flex min-h-0 flex-1 gap-[12px] p-[24px]">${left}${right}</div>` + dialogs.join("") + revokeDialog() + MENU_SAVE_SCRIPT + SVC_TABS_SCRIPT,
     }),
   };
 };

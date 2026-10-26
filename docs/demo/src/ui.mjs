@@ -85,7 +85,7 @@ export function scrollTable(table) {
   return (
     `<div data-table-scroll class="flex min-h-[134px] flex-1 flex-col">` +
     `<div aria-hidden="true" class="shrink-0 overflow-hidden [scrollbar-gutter:stable]">${open}${cols}${pick("thead")}</table></div>` +
-    `<div class="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">${open}${cols}${pick("thead").replace("<thead>", '<thead class="sr-only">')}${pick("tbody")}</table></div>` +
+    `<div class="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]" onscroll="this.previousElementSibling.scrollLeft=this.scrollLeft">${open}${cols}${pick("thead").replace("<thead>", '<thead class="sr-only">')}${pick("tbody")}</table></div>` +
     `</div>`
   );
 }

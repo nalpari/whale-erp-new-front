@@ -151,13 +151,23 @@
         "fixed inset-x-0 bottom-[32px] z-50 mx-auto w-fit rounded-[2px] bg-erp-nav px-[18px] py-[12px] text-[14px] text-white opacity-0 translate-y-[6px] transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none pointer-events-none";
       document.body.append(toastEl);
     }
-    // 열린 확인창이 있으면 그 안에 붙인다 — 모달(showModal)은 최상위 레이어라 body 에 두면 뒤에 가려진다(권한별 메뉴설정 저장, 2026-10-26)
-    (document.querySelector("dialog[open]") || document.body).append(toastEl);
+    // 열린 확인창이 있으면 그 안 아래 가운데에 붙인다(앱의 팝업 안 알림과 같은 자리 · 모양) — 모달(showModal)은 최상위 레이어라
+    // body 에 두면 뒤에 가려진다(권한별 메뉴설정 저장 · 권한 그룹 삭제, 2026-10-26)
+    const host = [...document.querySelectorAll("dialog[open]")].pop();
+    (host || document.body).append(toastEl);
+    toastEl.classList.toggle("fixed", !host);
+    toastEl.classList.toggle("bottom-[32px]", !host);
+    toastEl.classList.toggle("absolute", !!host);
+    toastEl.classList.toggle("bottom-[46px]", !!host);
+    toastEl.classList.toggle("px-[18px]", !host);
+    toastEl.classList.toggle("px-[24px]", !!host);
+    toastEl.classList.toggle("font-medium", !!host);
     toastEl.textContent = msg;
     clearTimeout(toastTimer);
     requestAnimationFrame(() => toastEl.classList.remove("opacity-0", "translate-y-[6px]"));
     toastTimer = setTimeout(() => toastEl.classList.add("opacity-0", "translate-y-[6px]"), 2200);
   }
+  window.erpToast = showToast;
   document.addEventListener("click", (e) => {
     const t = e.target.closest("[data-toast]");
     if (t?.dataset.toast) showToast(t.dataset.toast);

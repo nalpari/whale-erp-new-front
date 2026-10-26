@@ -418,6 +418,9 @@
   .bottom-\[32px\] {
     bottom: 32px;
   }
+  .bottom-\[46px\] {
+    bottom: 46px;
+  }
   .left-0 {
     left: 0px;
   }
@@ -943,6 +946,9 @@
   }
   .h-\[540px\] {
     height: 540px;
+  }
+  .h-\[560px\] {
+    height: 560px;
   }
   .h-\[1080px\] {
     height: 1080px;

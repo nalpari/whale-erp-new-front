@@ -6,7 +6,7 @@ import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as c from "../../config-parts.mjs";
 import { erpHeader, link } from "../../site.mjs";
-import { recordCard, roleHead, sideHead, depthRows, menuScroll, tagRows, newButton, ROLE_SCRIPT } from "../../role-side.mjs";
+import { recordCard, roleHead, sideHead, depthRows, menuScroll, menuSaveButton, revokeDialog, MENU_SAVE_SCRIPT, tagRows, newButton, ROLE_SCRIPT } from "../../role-side.mjs";
 
 // [유형, 코드, 권한명, 설명, 수정일시, 수정자, 메뉴 수, 생성일시, 생성자, 가맹마스터 계정, 연결 사용자] — 목업 표본과 같다
 const GROUPS = [
@@ -110,7 +110,7 @@ export default ({ A, R }) => {
     `${type} <span class="text-erp-label">· ${code}</span>`,
     `<span class="text-erp-link hover:underline">${name}</span>`, // 권한명은 링크색 — 앱 bp-role-groups 와 같다(2026-10-26)
     desc || c.muted("-"),
-    `${at} ${c.muted(`· ${by}`)}`,
+    `${at} <span class="text-erp-label">· ${by}</span>`,
     i === MENU_ROW ? x.dialogTrigger("설정", menuId, "soft") : ui.button("설정", { variant: "soft" }),
     // 메뉴 권한이 하나도 없으면 미등록(상태 빨강) — BA000007 이 미등록 표본(2026-10-08)
     n ? ui.badge("on", "등록") : ui.badge("off", "미등록"),
@@ -133,16 +133,17 @@ export default ({ A, R }) => {
       const others = GROUPS.filter((g) => g[0] === type && g[1] !== code).map((g) => `${g[1]} · ${g[2]}`);
       const body = users.length
         ? c.kv([
-            ["권한명", `${name} ${c.muted(`· ${code}`)}`],
+            ["권한명", `${name} <span class="text-erp-label">· ${code}</span>`],
             ["권한 유형", type],
             ["연결 사용자", `${users.length}명 ${c.muted(`· ${users.join(", ")}`)}`],
           ]) +
           ui.field(
             c.req("대체 권한 그룹"),
             ui.select(["선택하세요", ...others]),
-          )
+          ) +
+          c.band("변경된 권한은 다시 로그인하지 않아도, 사용자가 화면을 새로고침하거나 이동하면 적용됩니다.")
         : c.kv([
-            ["권한명", `${name} ${c.muted(`· ${code}`)}`],
+            ["권한명", `${name} <span class="text-erp-label">· ${code}</span>`],
             ["권한 유형", type],
             ["연결 사용자", "없음"],
           ]) + `<p class="text-erp-label">연결된 사용자가 없어 바로 삭제할 수 있습니다.<br>삭제된 권한 그룹은 복구할 수 없습니다.</p>`;
@@ -168,7 +169,7 @@ export default ({ A, R }) => {
       : plainTable(rowsInfo) + record;
     return (
       `<div data-role-view="${code}" class="flex flex-col gap-[18px]"${i === SELECTED ? "" : " hidden"}>` +
-      sideHead(`권한 그룹 상세<span class="ml-[10px] inline-flex items-center gap-[6px] align-middle">${c.tag(`<span class="font-normal">권한유형 ·</span> <b class="font-semibold">${type}</b>`)}${c.muted(code)}</span>`) +
+      sideHead(`권한 그룹 상세<span class="ml-[10px] inline-flex items-center gap-[6px] align-middle">${c.tag(`<span class="font-normal">권한유형 ·</span> <b class="font-semibold">${type}</b>`)}<span class="text-[14px] font-normal text-erp-label">${code}</span></span>`) +
       // 고칠 수 있는 그룹은 입력칸 아래에 생성·최종 수정을 둔다(목업과 같은 순서)
       edit +
       `</div>`
@@ -195,7 +196,7 @@ export default ({ A, R }) => {
       menuId,
       "권한별 메뉴설정",
       `<div class="flex flex-col gap-[12px]">${roleHead("BP 관리자", "BA000004", "인사 담당")}${svcTabs(A, MENU_BA, false)}</div>`,
-      ui.button("닫기", { variant: "off", "data-close": true }) + ui.button("저장"), // 저장해도 팝업을 닫지 않고 안에 알림(앱과 같다, 2026-10-26)
+      ui.button("닫기", { variant: "off", "data-close": true }) + menuSaveButton("인사 담당"), // 저장해도 팝업을 닫지 않고 안에 알림(앱과 같다, 2026-10-26)
     ),
     "w-[880px]",
   );
@@ -216,7 +217,7 @@ export default ({ A, R }) => {
     html: ui.erpFrame({
       header: erpHeader(A, R),
       title: "BP 권한 그룹 관리",
-      body: `<div class="flex min-h-0 flex-1 gap-[12px] p-[24px]">${left}${right}</div>${menuDialog}${fmDialog}${delDialogs}${ROLE_SCRIPT}`,
+      body: `<div class="flex min-h-0 flex-1 gap-[12px] p-[24px]">${left}${right}</div>${menuDialog}${fmDialog}${revokeDialog()}${MENU_SAVE_SCRIPT}${delDialogs}${ROLE_SCRIPT}`,
     }),
   };
 };

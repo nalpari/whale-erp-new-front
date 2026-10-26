@@ -55,7 +55,7 @@ export function menuScroll(table) {
   return (
     `<div class="flex h-[420px] flex-col">` +
     `<div class="shrink-0 overflow-hidden [scrollbar-gutter:stable]">${open}${cols}${pick("thead")}</table></div>` +
-    `<div class="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">${open}${cols}${pick("thead").replace(/<thead>/, '<thead class="sr-only">').replace(/<input[^>]*>/g, "")}${pick("tbody")}</table></div>` +
+    `<div class="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]" onscroll="this.previousElementSibling.scrollLeft=this.scrollLeft">${open}${cols}${pick("thead").replace(/<thead>/, '<thead class="sr-only">').replace(/<input[^>]*>/g, "")}${pick("tbody")}</table></div>` +
     `</div>`
   );
 }
@@ -80,6 +80,59 @@ export function recordCard({ manager, reg, mod }) {
 export const partialBox = (label) =>
   `<span role="checkbox" aria-checked="mixed" aria-label="${label}" tabindex="0" class="grid size-[20px] place-items-center rounded-[2px] border border-erp-on bg-erp-on-bg"><span class="h-[2px] w-[10px] bg-erp-on"></span></span>`; // 1단계 줄에서만 쓰여 「등록」 배지 모양(연한 파랑 바탕 · 파랑 막대, 앱과 같다)
 
+// 권한별 메뉴설정 [저장] — 앱 role-menu-dialog 와 같다(2026-10-26): 바뀐 칸이 없으면 막고, 켜져 있던 칸을 껐으면 「메뉴 권한 회수」를 먼저 묻고,
+// 저장하면 팝업을 닫지 않고 안에 「저장되었습니다.」를 띄운다. 회수 확인창은 화면에 하나 두고 [저장] 의 data-role-name 으로 권한명을 채운다.
+// 영향 사용자 · 하위 권한 그룹 수는 데모 표본 값이다(앱은 api 미리보기 값).
+export const menuSaveButton = (name) => ui.button("저장", { "data-menu-save": true, "data-role-name": name, "data-toast": "", disabled: true });
+export const revokeDialog = () =>
+  x.dialog(
+    "menu-revoke",
+    "메뉴 권한 회수",
+    `<div class="flex flex-col gap-[12px] break-keep"><p><span class="inline-block rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[4px] py-px text-[14px] whitespace-nowrap text-erp-sub"><b class="font-semibold" data-revoke-name></b></span> 의 메뉴 권한이 변경됩니다.</p>` +
+      `<ul class="list-disc pl-[18px]"><li>영향받는 사용자: <b class="font-semibold">2명</b></li><li data-revoke-groups>하위 권한 그룹 <b class="font-semibold">3개</b>에도 같이 적용되며, 되돌릴 수 없습니다.</li><li>변경된 권한은 다시 로그인하지 않아도, 사용자가 화면을 새로고침하거나 이동하면 적용됩니다.</li></ul></div>`,
+    ui.button("취소", { variant: "off", "data-close": true }) + ui.button("저장", { "data-revoke-ok": true, "data-toast": "" }),
+    "w-[480px]",
+  );
+export const MENU_SAVE_SCRIPT = `<script>
+(() => {
+  const boxes = (d) => [...d.querySelectorAll('input[type="checkbox"]')];
+  const dirty = (d) => boxes(d).some((i) => i.checked !== i.defaultChecked);
+  const revoked = (d) => boxes(d).some((i) => i.defaultChecked && !i.checked);
+  let pending = null;
+  const done = (d) => {
+    boxes(d).forEach((i) => (i.defaultChecked = i.checked));
+    const b = d.querySelector("[data-menu-save]");
+    if (b) b.disabled = true;
+    window.erpToast?.("저장되었습니다.");
+  };
+  document.addEventListener("change", (e) => {
+    const d = e.target.closest("dialog");
+    const b = d?.querySelector("[data-menu-save]");
+    if (b) b.disabled = !dirty(d);
+  });
+  document.addEventListener("click", (e) => {
+    const save = e.target.closest("[data-menu-save]");
+    if (save) {
+      const d = save.closest("dialog");
+      if (!revoked(d)) return done(d);
+      pending = d;
+      const r = document.getElementById("menu-revoke");
+      r.querySelector("[data-revoke-name]").textContent = save.dataset.roleName;
+      // 하위 권한 그룹 줄은 BP · 가맹 마스터 · 플랫폼 관리자 고정 권한처럼 아래 그룹이 있을 때만(데모는 마스터 권한명으로 가른다)
+      r.querySelector("[data-revoke-groups]").hidden = !/마스터/.test(save.dataset.roleName);
+      r.showModal();
+      return;
+    }
+    const ok = e.target.closest("[data-revoke-ok]");
+    if (ok) {
+      ok.closest("dialog").close();
+      if (pending) done(pending);
+      pending = null;
+    }
+  });
+})();
+</script>`;
+
 // 등록 버튼(목록 머리 오른쪽)
 export const newButton = () => ui.button("등록", { "data-role-new": true }).replace('class="', 'class="disabled:pointer-events-none disabled:opacity-40 ');
 
@@ -99,7 +152,7 @@ export function roleSide({ roles, own, master, selected, del = {}, card }) {
       : `<div class="flex justify-center gap-[6px]">${canDelete ? x.dialogTrigger("삭제", del[code], "soft") : ""}${ui.button("저장")}</div>`;
     return (
       `<div data-role-view="${code}" class="flex flex-col gap-[18px]"${code === selected ? "" : " hidden"}>` +
-      sideHead(`권한 그룹 상세<span class="ml-[10px] inline-flex items-center gap-[6px] align-middle">${c.tag(`<span class="font-normal">권한유형 ·</span> <b class="font-semibold">${type}</b>`)}${c.muted(code)}</span>`) +
+      sideHead(`권한 그룹 상세<span class="ml-[10px] inline-flex items-center gap-[6px] align-middle">${c.tag(`<span class="font-normal">권한유형 ·</span> <b class="font-semibold">${type}</b>`)}<span class="text-[14px] font-normal text-erp-label">${code}</span></span>`) +
       (locked ? band("본인 계정에 연결된 권한 그룹이라 수정할 수 없습니다.") : "") +
       fields +
       (rows.length ? plainTable(rows) : "") +
