@@ -1,7 +1,7 @@
 # Bundle history
 
 ## 2026-10-26
-* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `api-types.generated.ts` 를 api kabuto(`PATCH /auth/admin/me` 의 `currentPassword` 칸 삭제) 기준으로 다시 만들었다. MY PAGE 저장 설명 · 400 설명만 바뀌었고 화면 코드는 그대로다(front #125 가 이미 안 보낸다). api PR 다음에 머지한다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — `api-types.generated.ts` 를 api #147(kabuto)(`PATCH /auth/admin/me` 의 `currentPassword` 칸 삭제) 기준으로 다시 만들었다. MY PAGE 저장 설명 · 400 설명만 바뀌었고 화면 코드는 그대로다(front #125 가 이미 안 보낸다). api #147 다음에 머지한다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front seel, main #128 까지): okf/log 충돌은 양쪽 기록을 살렸다.
 
 ## 2026-10-23
