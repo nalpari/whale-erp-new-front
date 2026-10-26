@@ -97,7 +97,7 @@ export function AttendanceFilter({
           placeholder="이름 또는 번호"
           aria-label="직원"
           maxLength={50}
-          onSearch={(v: string) => go({ staff: v.trim() })}
+          onSearch={(v: string) => go({ staff: v.trim(), staffMemberId: null })}
         />
       </FilterSection>
       <FilterSection label="고용형태">

@@ -19,10 +19,9 @@ export type EmploymentType = Schemas["EmploymentType"];
 
 /** 필터 「출퇴근 상태」(STAFF-31) — 화면 순서 */
 export const DAY_STATUSES: readonly DayStatus[] = ["NORMAL", "LATE", "ABSENT", "MISSING_CHECK_IN", "MISSING_CHECK_OUT", "OFF"];
-/** 필터 「확인 필요 사유」 — 데모의 네 칸 그대로. 위치 오차 초과는 더 쓰지 않지만(ATT-4 · ATT-11) 데모에 맞춰 칸은 둔다(추후 정책과 맞춤) */
 /**
- * 필터 「확인 필요 사유」의 선택지. 위치 오차 초과(ACCURACY_EXCEEDED)는 뺐다 — 확인 필요 사유에서 빠진 값이고(직원 앱 목업 HIST-4 ·
- * 2026-10-20 재영) api 는 값만 남겼다. 데모 필터에는 아직 있다(2026-10-23 사용자 결정).
+ * 필터 「확인 필요 사유」의 선택지 — 반경 밖 출근 · 반경 밖 퇴근 · 위치 조작 감지 셋(ATT-11, 2026-10-26 재영). 위치 오차 초과(ACCURACY_EXCEEDED)는
+ * 확인 필요 사유에서 빠진 값이라(직원 앱 목업 HIST-4) api 는 값만 남겼다.
  */
 export const REVIEW_REASONS: readonly ReviewReason[] = ["OUT_OF_RADIUS_CHECKIN", "OUT_OF_RADIUS_CHECKOUT", "MOCK_LOCATION"];
 export const EMPLOYMENT_TYPES: readonly EmploymentType[] = ["FULL_TIME", "PART_TIME"];
@@ -44,6 +43,8 @@ export interface AttendanceQuery {
   scope: Scope | null;
   /** 직원(이름 또는 번호) */
   staff: string;
+  /** 직원 레코드 하나로 좁힌다 — 급여명세서의 「출퇴근 보정」 · 「출퇴근 기록 보기」(이름이 비슷한 다른 직원이 섞이지 않게). 직원 칸을 고치면 풀린다 */
+  staffMemberId: number | null;
   employmentTypes: EmploymentType[];
   statuses: DayStatus[];
   reasons: ReviewReason[];
@@ -82,6 +83,13 @@ export function mondayOf(day: string): string {
 const span = (from: string, to: string) => (new Date(`${to}T00:00:00Z`).getTime() - new Date(`${from}T00:00:00Z`).getTime()) / DAY_MS + 1;
 
 /** 보정 목록 기본 기간 — 오늘까지 한 달(데모 08-06 ~ 09-06) */
+/** 보정 · 대신 등록할 수 있는 첫 날 — 한국 오늘의 3개월 전(api 와 같은 계산) */
+export function editableFromOf(today: string): string {
+  const [y, m, d] = today.split("-").map(Number);
+  const lastDay = new Date(Date.UTC(y, m - 1 - 3 + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(y, m - 1 - 3, Math.min(d, lastDay))).toISOString().slice(0, 10);
+}
+
 export const defaultFixPeriod = (today: string) => ({ fixFrom: addDays(today, -31), fixTo: today });
 
 export const defaultQuery = (today: string): AttendanceQuery => ({
@@ -89,6 +97,7 @@ export const defaultQuery = (today: string): AttendanceQuery => ({
   storesCleared: false,
   scope: null,
   staff: "",
+  staffMemberId: null,
   employmentTypes: [...EMPLOYMENT_TYPES],
   statuses: [...DAY_STATUSES],
   reasons: [...REVIEW_REASONS],
@@ -112,8 +121,12 @@ export function parseAttendanceQuery(raw: RawSearch, today: string): AttendanceQ
   const def = defaultQuery(today);
   const rawStoreIds = first(raw.storeIds);
   const storeIds = [...new Set((rawStoreIds ?? "").split(",").map(idOf).filter((id) => id !== null))].slice(0, MAX_PICKED_STORES);
+  // 보정이 필요한 기록의 기간은 최근 3개월 안 · 오늘까지(STAFF-31) — 주소로 그 밖이 와도 안으로 줄인다
+  const editableFrom = editableFromOf(today);
   let fixFrom = dateOf(first(raw.fixFrom)) || def.fixFrom;
   let fixTo = dateOf(first(raw.fixTo)) || def.fixTo;
+  if (fixFrom < editableFrom) fixFrom = editableFrom;
+  if (fixTo > today) fixTo = today;
   const n = span(fixFrom, fixTo);
   if (n < 1 || n > MAX_PERIOD_DAYS) ({ fixFrom, fixTo } = def);
   const employment = first(raw.employment);
@@ -122,6 +135,7 @@ export function parseAttendanceQuery(raw: RawSearch, today: string): AttendanceQ
     storesCleared: rawStoreIds !== undefined && !storeIds.length,
     scope: rawStoreIds !== undefined ? null : scopeOfParam(first(raw[SCOPE_PARAM])),
     staff: (first(raw.staff) ?? "").trim().slice(0, 50),
+    staffMemberId: idOf(first(raw.staffMemberId) ?? ""),
     employmentTypes: checks(first(raw.employmentType), EMPLOYMENT_TYPES),
     statuses: checks(first(raw.status), DAY_STATUSES),
     reasons: checks(first(raw.reason), REVIEW_REASONS),
@@ -141,6 +155,7 @@ export function toAttendanceSearch(q: AttendanceQuery, today: string): string {
   else if (q.storesCleared) params.set("storeIds", "");
   else if (q.scope) params.set(SCOPE_PARAM, scopeKeyOf(q.scope));
   if (q.staff) params.set("staff", q.staff);
+  if (q.staffMemberId !== null) params.set("staffMemberId", String(q.staffMemberId));
   const sets: [string, string | null][] = [
     ["employmentType", checksParam(q.employmentTypes, EMPLOYMENT_TYPES)],
     ["status", checksParam(q.statuses, DAY_STATUSES)],
@@ -189,6 +204,7 @@ export function matchesFilter(r: DayRow, q: AttendanceQuery): boolean {
   if (!matchesSummary(r, q)) return false;
   const needle = q.staff.replaceAll("-", "");
   if (needle && !r.name.includes(needle) && !r.phone.includes(needle)) return false;
+  if (q.staffMemberId !== null && r.staffMemberId !== q.staffMemberId) return false;
   if (r.status !== null && !q.statuses.includes(r.status)) return false;
   // 선택지에 없는 사유(남아 있는 위치 오차 초과)는 거르기에 쓰지 않는다 — 그 줄이 필터로 사라지지 않게
   const reasons = reasonsOf(r).filter((x) => REVIEW_REASONS.includes(x));

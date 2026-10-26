@@ -12,7 +12,8 @@ import { byLabel, editTail, overnightNote, shortDay, type FixRow } from "./atten
 // 보정이 필요한 기록의 표와 동작(데모 staff-sections.mjs fixList · fixForm · proxyForm · histDialog, WHALEERP-220). 확인 필요 · 미등록 줄에는
 // 「보정」 · 「이상 없음」, 보정 · 대신 등록한 줄에는 「이력」. 보정 · 대신 등록은 오른쪽 패널, 「이상 없음」은 확인창, 이력은 창이다.
 // 3개월이 지난 기록에는 보정 진입점을 두지 않는다(220). 수정 권한이 없으면 보정 · 이상 없음을, 등록 권한이 없으면 대신 등록을 두지 않는다.
-// 급여명세서가 확정된 기간이면 패널에 경고를 보이고, 저장 결과도 같은 경고를 토스트로 알린다(218 「급여에 영향이 갈 수 있다」).
+// 급여명세서가 확정된 기간이면 보정 패널 · 이상 없음 확인창 · 대신 등록 패널(고른 직원 · 날짜)에 경고를 보이고, 저장 결과도 같은 경고를
+// 토스트로 알린다(218 「급여에 영향이 갈 수 있다」).
 
 const TIME = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
 const TONE = {
@@ -190,6 +191,7 @@ export function FixList({ rows, reasonLabels, editableFrom }: { rows: FixRow[]; 
         }
       >
         확인 필요 꼬리표와 사유를 지웁니다. 기록 값은 바뀌지 않습니다.
+        {reviewing?.isPayslipConfirmed && <PayslipWarning />}
       </ConfirmDialog>
       <ConfirmDialog
         open={history !== null}
@@ -265,7 +267,7 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
           {fix.row.name} · {shortDay(fix.row.date)}
         </span>
       </div>
-      {fix.row.isPayslipConfirmed && <p className="rounded-[2px] bg-[#fff6e5] px-[12px] py-[10px] text-[14px] text-[#956013]">{PAYSLIP_WARNING}</p>}
+      {fix.row.isPayslipConfirmed && <PayslipWarning />}
       {fix.row.pairs.length > 1 && (
         <Field label="고칠 기록">
           <Select aria-label="고칠 기록" value={fix.pairIndex} onChange={(e) => onPick(Number(e.target.value))}>
@@ -426,6 +428,7 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
           </Field>
         </FormRow>
         <OvernightNote date={date} checkIn={checkIn} checkOut={checkOut} />
+        {staff?.find((s) => s.staffMemberId === staffId)?.isPayslipConfirmed && <PayslipWarning />}
         <Field label="사유" required>
           <Textarea aria-label="사유" rows={4} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="예: 위치 수집 일시 중지 · 점장 확인" />
         </Field>
@@ -448,6 +451,11 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
       </div>
     </div>
   );
+}
+
+/** 확정 · 발송된 급여명세서 기간이라는 경고 — 보정 · 이상 없음 · 대신 등록 모두 저장하기 전에 보인다(218) */
+function PayslipWarning() {
+  return <p className="rounded-[2px] bg-[#fff6e5] px-[12px] py-[10px] text-[14px] text-[#956013]">{PAYSLIP_WARNING}</p>;
 }
 
 /** 퇴근이 출근보다 이르면 다음 날 퇴근으로 저장된다는 것을 실제 날짜로 알린다(api 와 같은 규칙) */

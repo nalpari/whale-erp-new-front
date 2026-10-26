@@ -108,7 +108,8 @@ export function DaySection({
     },
     {
       header: "퇴근",
-      cell: (r) => <Stack lines={r.pairs.map((p, i) => (p.checkOut ? p.checkOut.time : <Sub key={i}>{date === today ? "근무 중" : "미기록"}</Sub>))} />,
+            // 퇴근을 더 기다리지 않는 날만 api 가 퇴근 미등록으로 준다 — 밤샘 근무의 어제 출근은 오늘까지 「근무 중」이다
+      cell: (r) => <Stack lines={r.pairs.map((p, i) => (p.checkOut ? p.checkOut.time : <Sub key={i}>{r.status === "MISSING_CHECK_OUT" || r.status === "MISSING_CHECK_IN" ? "미기록" : "근무 중"}</Sub>))} />,
     },
     {
       header: "비고",

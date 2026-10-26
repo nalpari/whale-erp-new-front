@@ -3,7 +3,7 @@ import { getEnum } from "@/lib/api";
 import { getDailyAttendance, getPeriodAttendance } from "@/lib/attendance-records-api";
 import { kstToday } from "@/lib/staff-members";
 import { AttendanceFilter } from "./attendance-filter";
-import { addDays, matchesFilter, matchesSummary, needsFix, parseAttendanceQuery, storeParams, toAttendanceSearch, weekSummary, type AttendanceQuery } from "./attendance-query";
+import { addDays, editableFromOf, matchesFilter, matchesSummary, needsFix, parseAttendanceQuery, storeParams, toAttendanceSearch, weekSummary, type AttendanceQuery } from "./attendance-query";
 import { DaySection, FixSection, SummarySection } from "./attendance-sections";
 
 // 출·퇴근 현황 조회(/attendance-records, MN000025, WHALEERP-219). 데모 docs/demo/staff/attendance.html 을 공통 컴포넌트로 옮겼다 — 왼쪽 필터 7개
@@ -11,13 +11,6 @@ import { DaySection, FixSection, SummarySection } from "./attendance-sections";
 // 데이터는 GET /attendance-records/daily(그날) · GET /attendance-records(근태 요약의 주 · 보정 목록 기간)이고, 필터 7개는 받은 줄을 화면이
 // 거른다 — 근태 요약에는 점포 · 고용형태 · 재직 상태만 걸린다(STAFF-31). 화면 상태는 주소에만 둔다.
 // 보정 · 「이상 없음」 · 이력 · 출퇴근 대신 등록은 보정이 필요한 기록에 있다(WHALEERP-218 · 220).
-/** 보정 · 대신 등록할 수 있는 첫 날 — 한국 오늘의 3개월 전(api 와 같은 계산) */
-function editableFromOf(today: string): string {
-  const [y, m, d] = today.split("-").map(Number);
-  const lastDay = new Date(Date.UTC(y, m - 1 - 3 + 1, 0)).getUTCDate();
-  return new Date(Date.UTC(y, m - 1 - 3, Math.min(d, lastDay))).toISOString().slice(0, 10);
-}
-
 export default async function AttendanceRecordsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const today = kstToday();
   const query = parseAttendanceQuery(await searchParams, today);
