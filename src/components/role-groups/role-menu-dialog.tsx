@@ -246,7 +246,8 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
               <li>
                 영향받는 사용자: <b className="font-semibold">{preview.affectedAdminCount.toLocaleString("ko-KR")}명</b>
               </li>
-              <li>변경된 권한은 다음 로그인부터 적용됩니다.</li>
+              {/* 서버가 요청마다 지금 권한을 다시 판정한다 — 로그인 중인 사용자도 다음 요청(저장 · 화면 이동 · 새로고침)부터 바뀐다(S-KUDELB) */}
+              <li>변경된 권한은 재로그인 없이 다음 요청부터 적용됩니다.</li>
             </ul>
           </div>
         )}
