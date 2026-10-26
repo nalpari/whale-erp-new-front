@@ -165,7 +165,7 @@ function treeTab(key, s) {
   // 아무것도 고르지 않았을 때
   const empty =
     `<section data-view="empty"${sel ? " hidden" : ""} class="flex flex-col gap-[18px]">${ui.sectionHead("메뉴 수정")}` +
-    `<div class="flex flex-col items-center gap-[6px] rounded-[2px] border border-erp-thead-line px-[18px] py-[36px] text-center text-[14px] text-erp-muted"><p>왼쪽 트리에서 메뉴를 고르면 상세가 여기에 섭니다.</p><p class="text-[13px]">아무것도 고르지 않고 등록을 누르면 최상위(1단계) 메뉴로 등록합니다.</p></div></section>`;
+    `<div class="flex flex-col items-center gap-[6px] rounded-[2px] border border-erp-thead-line px-[18px] py-[36px] text-center text-[14px] text-erp-muted"><p>왼쪽 메뉴 트리에서 [메뉴명]을 클릭하면 상세 정보가 표시됩니다.</p><div class="mt-[12px]"><p>신규 메뉴는 [등록] 버튼을 클릭하여 추가할 수 있습니다.</p><p>메뉴를 선택하지 않고 [등록]하면 최상위(1단계) 메뉴로 등록됩니다.</p></div></div></section>`;
 
   // 신규 메뉴 등록 — 상위 메뉴·단계·순서는 스크립트가 고른 줄을 보고 채운다
   const form =

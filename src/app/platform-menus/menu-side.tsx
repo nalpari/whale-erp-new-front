@@ -84,10 +84,15 @@ export function MenuSide({
           {detail && "failed" in detail ? (
             <FailedBand message={detail.failed} />
           ) : (
-            // 처음 진입 · 고른 메뉴 없음(데모 2026-10-08)
+            // 처음 진입 · 고른 메뉴 없음 — 문구는 사용자 지정(2026-10-26). 등록 안내는 [등록] 버튼이 보일 때(등록 권한)만
             <div className="flex flex-col items-center gap-[6px] rounded-[2px] border border-erp-thead-line px-[18px] py-[36px] text-center text-[14px] text-erp-muted">
-              <p>왼쪽 트리에서 메뉴를 고르면 상세가 여기에 섭니다.</p>
-              {can.create && <p className="text-[13px]">아무것도 고르지 않고 등록을 누르면 최상위(1단계) 메뉴로 등록합니다.</p>}
+              <p>왼쪽 메뉴 트리에서 [메뉴명]을 클릭하면 상세 정보가 표시됩니다.</p>
+              {can.create && (
+                <div className="mt-[12px]">
+                  <p>신규 메뉴는 [등록] 버튼을 클릭하여 추가할 수 있습니다.</p>
+                  <p>메뉴를 선택하지 않고 [등록]하면 최상위(1단계) 메뉴로 등록됩니다.</p>
+                </div>
+              )}
             </div>
           )}
         </>
