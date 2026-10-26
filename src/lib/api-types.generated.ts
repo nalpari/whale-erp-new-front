@@ -420,10 +420,8 @@ export interface paths {
         options?: never;
         head?: never;
         /**
-         * 내 기본정보 저장 — 이름 · 연락처 · 이메일만. 이메일을 바꾸면 지금 비밀번호(currentPassword)도
-         *     받아 맞는지 본다(틀리거나 없으면 400) — 탈취한 접근 토큰만으로 로그인 이메일을 공격자 주소로
-         *     바꿔 비밀번호 찾기를 가로채는 계정 탈취를 막는다(ip-code-review-claude 적대적 리뷰로 찾음,
-         *     2026-10-21). 이메일이 다른 관리자 계정과 겹치면 409.
+         * 내 기본정보 저장 — 이름 · 연락처 · 이메일만. 이메일을 바꿔도 지금 비밀번호는 보지 않는다
+         *     (S-JXKHCM 사용자 결정, 2026-10-23 — 서비스 update 주석 참고). 이메일이 다른 관리자 계정과 겹치면 409.
          *     계정 축 기본 추적은 본문의 email 로 센다(throttle.ts accountTracker) — 저장할 새 이메일을
          *     호출자가 그대로 고를 수 있어, 매번 다른 값을 보내면 버킷을 계속 새로 만들어 계정 한도를
          *     비울 수 있었다(코드 리뷰로 찾음, 2026-10-21). my-profile.controller.ts 의 비밀번호 · 이메일
@@ -1761,6 +1759,26 @@ export interface paths {
          *     확인)는 409.
          */
         post: operations["ContractSendController_send"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/contracts/{contractId}/end": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 발송 대기 계약 종료(WHALEERP-327). 채용을 접을 때 계약을 종료로 닫고 나간 초대(코드 · 링크)를 무효로 한다. 행은 남고 상태
+         *     이력에 남는다. 기존 계약을 바꾸므로 수정 권한이다.
+         */
+        post: operations["ContractSendController_end"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3719,10 +3737,10 @@ export interface components {
              */
             email: string;
             /**
-             * @description 이메일을 바꿀 때만 받는다(원래 값과 같으면 비워도 된다) — 토큰만 가진 사람이 비밀번호 없이
-             *     로그인 이메일을 자기 것으로 바꿔, 비밀번호 찾기로 새 임시 비밀번호를 가로채는 계정 탈취를
-             *     막는다(ip-code-review-claude 적대적 리뷰로 찾음, 2026-10-21 — my-profile(직원 앱)의
-             *     email-change 와 같은 통제다).
+             * @deprecated
+             * @description 받기만 하고 쓰지 않는다 — 이메일을 바꿔도 지금 비밀번호를 보지 않는다(S-JXKHCM, 2026-10-23
+             *     사용자 결정, 서비스 update 주석 참고). 지금 비밀번호 칸이 있는 화면(front main)이 보내도
+             *     400(forbidNonWhitelisted)이 나지 않게 남겨 둔다 — front 가 보내지 않게 배포된 뒤 지운다.
              */
             currentPassword?: string;
         };
@@ -5769,7 +5787,8 @@ export interface components {
             /**
              * @description 시스템이 실제로 한 처리(WHALEERP-132). 보내지 않은 저장(임시저장 · 종이 계약 등록)은 null, 가입한 직원에게 앱으로 보냈으면
              *     즉시 발송(IMMEDIATE_SEND), 아니면 판별한 초대 유형 — 가입 초대(알림톡) · 소속 추가 확인 · 복귀 확인(소속 · 복귀를 확인하기
-             *     전까지 직원에게 알림이 가지 않는다). 계약에 저장한 draftAction(상세 · 목록)과 다를 수 있다
+             *     전까지 직원에게 알림이 가지 않는다). 보내기 전에 다른 요청이 초대를 무효로 해 되돌렸거나, 판별값이 없는 옛 계약의 가입 전
+             *     직원이라 나간 것이 없으면 null(상태는 지금 상태). 계약에 저장한 draftAction(상세 · 목록)과 다를 수 있다
              */
             draftAction: components["schemas"]["ContractDraftAction"] | null;
             contractId: number;
@@ -5854,6 +5873,28 @@ export interface components {
             histories: components["schemas"]["ContractStatusHistoryDto"][];
             /** @description 종이 계약 날인본(근로계약서 · 임금계약서). 전자계약 · 임시저장이면 빈 배열 */
             documents: components["schemas"]["ContractDocumentDto"][];
+            /**
+             * @description 처음 보낸 때(ISO 8601) — 상태 이력에서 발송 대기 · 서명 대기로 처음 간 때(WHALEERP-328). 보낸 적 없는 임시저장 · 종이
+             *     계약이면 null
+             */
+            firstSentAt: string | null;
+            /** @description 마지막으로 보낸 때(ISO 8601) — 재발송 · 고쳐 다시 보내면 바뀐다. 보낸 적 없으면 null */
+            lastSentAt: string | null;
+            /** @description 날인 기한(ISO 8601) — 마지막으로 보낸 때부터 30일. 보낸 적 없으면 null */
+            signDeadlineAt: string | null;
+            /** @description 최종 처리일(ISO 8601) — 가장 최근 상태 변경 일시. 이력이 없으면 null */
+            lastProcessedAt: string | null;
+            /** @description 직원이 남긴 거부 사유 — 거부된 계약에만, 그 밖은 null */
+            rejectReason: string | null;
+            /** @description 재계약으로 만든 계약이면 직전 계약 ID. 재계약(WHALEERP-156) 전이라 지금은 늘 null */
+            previousContractId: number | null;
+            /** @description 종이 계약 등록일(ISO 8601) — 체결 완료가 된 때. 종이 계약만 — 전자계약 · 등록 전 임시저장(등록 전에 종료된 것 포함)은 null */
+            registeredAt: string | null;
+            /**
+             * @description 종이 계약을 작성한 관리자 — 등록한 종이 계약만(registeredAt 이 있을 때), 그 밖은 null. 이름이 없으면 로그인 아이디. 임시저장을 다른 관리자가 이어 써 등록했어도
+             *     처음 작성한 관리자다(상태 이력은 관리자를 남기지 않는다)
+             */
+            registeredBy: string | null;
             contractId: number;
             staffMemberId: number;
             name: string;
@@ -5862,6 +5903,19 @@ export interface components {
             storeId: number;
             /** @description 외국인 여부 — 체크하지 않았으면 false */
             isForeigner: boolean;
+            /**
+             * @description 재발송 횟수 — 처음 발송 뒤 다시 보낸 횟수(재발송 · 고쳐 다시 보냄). 알림 없이 날인 기한만 새로 잡은 것도 센다. 알림톡이 나가지
+             *     않으면 되돌려 빼지만, 드물게 다른 요청과 겹친 실패 · 그사이 다른 요청이 초대를 무효로 해 보내지 않은 재발송은 빼지 못해 실제보다
+             *     클 수 있다. 이 칸이 생기기 전의 재발송은 세지 않았다.
+             *     재발송 여부는 이 값으로 본다(firstSentAt · lastSentAt 은 시각 출처가 달라 첫 발송에도 ms 가 다를 수 있다)
+             */
+            resendCount: number;
+            /**
+             * @description 재발송(POST …/send)을 정책상 할 수 있는가 — 발송 대기 · 서명 대기이고, 가입한 직원이거나 그 번호로 계정이 없는 가입 전 직원. 계정이
+             *     있는 번호(소속 추가 확인 · 복귀 확인)는 409 SEND_CHANNEL_NOT_READY 라 false. 상세 화면이 재발송 버튼을 이 값으로 보인다. 정책만
+             *     본다 — 유선번호(409 SEND_PHONE_NOT_MOBILE) · 발송 설정 없음(503)은 true 여도 보낼 때 막힌다
+             */
+            canResend: boolean;
         };
         UpdateWorkerDto: {
             /** @description 성별 — 남 · 여. 가입 때 직원이 넣은 값과 본인 대조한다(WHALEERP-125). 임시저장은 비워도 된다 */
@@ -8355,7 +8409,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 형식 위반 · 동시 수정 토큰 형식 오류 · 이메일 변경 시 지금 비밀번호 틀림(없음 포함) */
+            /** @description 형식 위반 · 동시 수정 토큰 형식 오류 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -12944,6 +12998,50 @@ export interface operations {
             };
             /** @description 가입 초대 알림톡일 때만 — 직원 앱 주소(STAFF_APP_URL)가 없음 · 대체 문자 발신번호(BIZPPURIO_SMS_FROM)가 없음 · 가입 초대 템플릿이 없거나 꺼짐 */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ContractSendController_end: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                contractId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description { contractId, status: ENDED } */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 근로계약 관리 수정 권한 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없는 계약 · 업무 범위 밖 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description CONTRACT_STATUS_CONFLICT(발송 대기가 아님 — 지금 상태를 싣는다) · 다른 요청이 먼저 고침 */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -904,6 +904,7 @@
                   </div>
                 </div>
                 <p class="gap__note">2026-10-21 재영 결정(운영 정책 PAY-12).</p>
+                <p class="gap__note">예외로 급여에서 빼는 휴게는 그날 근무스케줄의 휴게를 먼저 쓰고, 근무스케줄이 없으면 계약의 그 요일 휴게를 쓴다(2026-10-23 재영, 운영 정책 PAY-12).</p>
               </div>
 
               <div class="gap is-decided">
@@ -1195,7 +1196,7 @@
                 <input class="input" style="width: 180px" placeholder="이름 또는 휴대전화번호" aria-label="직원" />
                 <select class="select" style="width: 130px" aria-label="고용형태"><option>고용형태 전체</option><option>정직원</option><option>파트타이머</option></select>
                 <select class="select" style="width: 150px" aria-label="출퇴근 상태"><option>상태 전체</option><option>정상</option><option>지각</option><option>미출근</option><option>출근 미등록</option><option>퇴근 미등록</option><option>휴무</option></select>
-                <select class="select" style="width: 160px" aria-label="확인 필요 사유"><option>사유 전체</option><option>위치 오차 초과</option><option>반경 밖 출근</option><option>반경 밖 퇴근</option><option>위치 조작 감지</option></select>
+                <select class="select" style="width: 160px" aria-label="확인 필요 사유"><option>사유 전체</option><option>반경 밖 출근</option><option>반경 밖 퇴근</option><option>위치 조작 감지</option></select>
                 <select class="select" style="width: 140px" aria-label="기록 구분"><option>기록 전체</option><option>직원 등록</option><option>대신 등록</option><option>보정됨</option></select>
                 <select class="select" style="width: 110px" aria-label="재직 상태"><option>재직</option><option>퇴직</option><option>전체</option></select>
                 <div class="filters__end"><span class="filters__count">근태 요약에는 점포·고용형태·재직만</span></div>
@@ -1359,7 +1360,7 @@
                           <td class="mono">09-02</td>
                           <td class="mono">08:47</td>
                           <td class="mono">23:58</td>
-                          <td><span class="badge badge--risk">퇴근 시각 이상</span></td>
+                          <td><span class="badge badge--risk">반경 밖 퇴근</span></td>
                           <td class="c">
                             <button class="tbtn" type="button">보정</button>
                             <button class="tbtn" type="button" data-tip="기록 값은 그대로 두고 검토만 끝낸다. 보정 이력도 연필 표시도 남지 않는다.">이상 없음</button>
@@ -1403,10 +1404,11 @@
                   </div>
                   <div class="panel__note">
 급여명세서가 확정된 뒤에도 고칠 수 있지만, 명세서에 영향을 줄 수 있다고 경고한다.
-                    <b>확인 필요</b>로 올라오는 사유는 출근·퇴근 미등록, 퇴근 시각 이상, 위치 오차가 반경보다 큼, <b>위치 조작 감지</b>다.
+                    <b>확인 필요</b>로 올라오는 사유는 <b>반경 밖 출근</b>, <b>반경 밖 퇴근</b>, <b>위치 조작 감지</b> 셋이다(운영 정책 ATT-19, 2026-10-20).
+                    출근 미등록·퇴근 미등록은 출퇴근 상태이지 확인 필요 사유가 아니다(운영 정책 ATT-31·34).
                     모의 위치가 잡힌 <b>퇴근</b>이 마지막 사유로 들어온다 — 출근은 앱이 아예 막는다.
                     보정하거나 <b>이상 없음</b>을 누르면 확인 필요와 사유가 지워진다.
-                    위치 판정 결과(반경 안·밖, 오차)는 처음부터 저장하지 않아 사유 글자만 남았다가 검토와 함께 사라진다.
+                    위치 판정 결과(반경 안·밖)는 처음부터 저장하지 않아 사유 글자만 남았다가 검토와 함께 사라진다.
                     <b>대신 등록</b>한 기록은 목록에서 그렇게 구분해 보이고 직원 근무 앱에는 보정과 같이 연필 표시로 드러난다.
                   </div>
                 </section>
