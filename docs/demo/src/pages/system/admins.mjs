@@ -9,7 +9,9 @@ import { platformAdminEditPanel } from "../../platform-admin/edit.mjs";
 
 // 이름은 상세를 슬라이드 패널로 연다(표본 상세는 platpark 하나라 모든 줄이 그 상세를 연다). 아이디는 고칠 수 없는 값이라
 // 링크로 두지 않는다(2026-10-20 디자인 수정).
-const detailTrigger = (text) => `<button type="button" aria-controls="platform-admin-detail-panel" aria-expanded="false" class="text-erp-link hover:underline">${text}</button>`;
+// 미사용 계정의 이름은 링크색 대신 흐린 글자 + 밑줄 호버(앱 admin-table.tsx 와 같다, 2026-10-26)
+const detailTrigger = (text, inactive) =>
+  `<button type="button" aria-controls="platform-admin-detail-panel" aria-expanded="false" class="${inactive ? "text-erp-muted" : "text-erp-link"} hover:underline">${text}</button>`;
 
 // 미사용 계정 줄은 흐리게(목업 is-read). 행 단위 클래스를 받지 않는 dataTable 결과에서 n 번째 줄에 글자색을 얹는다.
 const dimRows = (table, idx) => {
@@ -46,16 +48,16 @@ export default ({ A, R }) => {
   const cols = [
     { header: "아이디", width: "w-[130px]" },
     { header: "이름", width: "w-[110px]" },
-    { header: "사용자 권한", width: "w-[140px]" },
+    { header: "사용자 권한", width: "w-[150px]" }, // 앱 admin-table.tsx 와 같은 폭(2026-10-26)
     { header: "계정 상태", width: "w-[100px]" },
     { header: "연락처", width: "w-[150px]", align: "left" },
     { header: "이메일", width: "w-[220px]", align: "left" },
-    { header: "최근 로그인", width: "w-[170px]" },
+    { header: "최근 로그인", width: "w-[180px]" }, // 앱 admin-table.tsx 와 같은 폭(2026-10-26)
     { header: "등록", width: "w-[170px]" }, // 권한 그룹 관리와 같은 라벨(앱 platform-admins, 2026-10-26)
   ];
   const rows = ADMINS.map(([id, name, role, state, phone, mail, login, reg]) => [
     id,
-    detailTrigger(name),
+    detailTrigger(name, state === "미사용"),
     role,
     ui.badge(state === "사용" ? "on" : "off", state),
     withIcon("phone", phone),

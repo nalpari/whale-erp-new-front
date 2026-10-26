@@ -6,7 +6,7 @@ import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as c from "../../config-parts.mjs";
 import { erpHeader, link } from "../../site.mjs";
-import { recordCard, roleHead, sideHead, depthRows, menuScroll, menuSaveButton, revokeDialog, MENU_SAVE_SCRIPT, tagRows, newButton, ROLE_SCRIPT } from "../../role-side.mjs";
+import { recordCard, roleHead, sideHead, depthRows, menuScroll, menuSaveButton, revokeDialog, MENU_SAVE_SCRIPT, tagRows, newButton, editSaveButton, createdToast, band, ROLE_SCRIPT } from "../../role-side.mjs";
 
 // [유형, 코드, 권한명, 설명, 수정일시, 수정자, 메뉴 수, 생성일시, 생성자, 가맹마스터 계정, 연결 사용자] — 목업 표본과 같다
 const GROUPS = [
@@ -65,8 +65,9 @@ const partial = (label) =>
 // top: 1단계 줄 — 켜진 칸 · 일부 켜진 칸을 「등록」 배지 모양(연한 파랑 바탕 · 파랑)으로(앱 role-menu-dialog 와 같다, 2026-10-26 사용자 지정)
 const cell = (A, v, label, ro, top = false) =>
   `<span class="inline-flex justify-center${top ? " [&_input:checked]:border-erp-on [&_input:checked]:bg-erp-on-bg [&_input:checked]:bg-[url(icons/check-on.svg)] [&_input:checked]:bg-center [&_input:checked]:bg-no-repeat [&_img]:hidden [&>span]:border-erp-on [&>span]:bg-erp-on-bg [&>span>span]:bg-erp-on" : ""}">${v === "m" ? partial(label) : ui.checkbox(A, "", !!v, { "aria-label": label, disabled: ro })}</span>`;
-const menuName = (lv, name, code) =>
-  `<span class="flex items-center gap-[6px]" style="padding-left:${(lv - 1) * 16}px">${lv > 1 ? c.muted("└") : ""}<span class="${lv === 1 ? "font-semibold" : ""}">${name}</span></span>`;
+// 들여쓰기 (단계-1)×18px, 「└ 」는 라벨 회색 글자로 붙여 쓴다(앱 role-menu-dialog.tsx 와 같다, 2026-10-26)
+const menuName = (lv, name) =>
+  `<span style="padding-left:${(lv - 1) * 18}px">${lv > 1 ? '<span class="text-erp-label">└ </span>' : ""}${lv === 1 ? `<b class="font-semibold">${name}</b>` : name}</span>`;
 // 머리칸 체크박스는 칸 가운데(본문 체크박스와 같은 세로줄), 글자는 그 오른쪽(앱 role-menu-dialog.tsx 와 같다, 2026-10-26 사용자 지정)
 const headCheck = (A, t, ro) =>
   `<span class="grid grid-cols-[1fr_auto_1fr] items-center gap-[6px]"><span></span><span class="inline-flex">${ui.checkbox(A, "", false, { "aria-label": `${t} 전체 선택`, disabled: ro })}</span><span class="justify-self-start whitespace-nowrap">${t}</span></span>`;
@@ -76,9 +77,9 @@ function matrix(A, rows, ro) {
     { header: "메뉴단계", width: "w-[80px]" },
     ...["조회", "등록", "수정", "삭제"].map((t) => ({ header: headCheck(A, t, ro), width: "w-[100px]" })),
   ];
-  const body = rows.map(([lv, name, code, ...v]) => [
-    menuName(lv, name, code),
-    c.muted(`${lv}단계`),
+  const body = rows.map(([lv, name, , ...v]) => [
+    menuName(lv, name),
+    `<span class="text-erp-label">${lv}단계</span>`, // 단계 칸은 라벨 회색(앱 role-menu-dialog.tsx 와 같다, 2026-10-26)
     ...v.map((on, i) => cell(A, on, `${name} ${["조회", "등록", "수정", "삭제"][i]}`, ro, lv === 1)),
   ]);
   return menuScroll(depthRows(ui.dataTable(cols, body, "이 서비스에 등록된 메뉴가 없습니다."), rows.map(([lv]) => lv)));
@@ -113,45 +114,48 @@ export default ({ A, R }) => {
     `${at} <span class="text-erp-label">· ${by}</span>`,
     i === MENU_ROW ? x.dialogTrigger("설정", menuId, "soft") : ui.button("설정", { variant: "soft" }),
     // 메뉴 권한이 하나도 없으면 미등록(상태 빨강) — BA000007 이 미등록 표본(2026-10-08)
-    n ? ui.badge("on", "등록") : ui.badge("off", "미등록"),
+    // 등록이면 메뉴 수를 함께 — 「등록 14개」(앱 bp-role-groups/roles-screen.tsx 와 같다, 2026-10-26)
+    n ? ui.badge("on", `등록 ${n.toLocaleString("ko-KR")}개`) : ui.badge("off", "미등록"),
   ]);
   // 줄을 누르면 오른쪽 칸이 그 그룹 상세로 바뀐다(ROLE_SCRIPT). 최종수정이 한 줄 「일시 · 사람」이 되어 줄 간격을 좁히던 처리는 뺐다(2026-10-26).
   const table = tagRows(ui.dataTable(cols, rows), GROUPS, GROUPS[SELECTED]?.[1]);
 
+  // [등록]은 제목 줄로 옮겼다 — 카드 머리에는 [가맹마스터 메뉴설정 보기]만(앱 roles-screen.tsx 와 같다, 2026-10-26).
+  // 건수는 제목에서 6px 띄우고, 쪽 나눔은 따로 감싸지 않고 카드 간격(12px)만 둔다(앱과 같다)
   const left = c.card(
     "min-w-0 flex-1",
-    ui.sectionHead(`권한 그룹 목록${c.sub(`${GROUPS.length}건`)}`, x.dialogTrigger("가맹마스터 메뉴설정 보기", fmId, "soft") + newButton()) +
+    sideHead(`권한 그룹 목록 <span class="ml-[6px] text-[14px] font-normal text-erp-label">${GROUPS.length}건</span>`, x.dialogTrigger("가맹마스터 메뉴설정 보기", fmId, "soft")) +
       table +
-      `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
+      ui.pagination(A, 1, 1),
   );
 
   // 삭제 확인창 — BP 관리자 그룹마다. 대체 후보는 같은 BP·같은 유형의 다른 그룹이다.
+  // 앱 role-delete-dialog.tsx 와 같다(2026-10-26): 480px, 권한명 · 연결 사용자 두 줄(라벨 84px), 연결 사용자는 「N명」 아래 한 사람씩
+  // 「아이디 | 이름」(다섯 명 넘으면 그 안에서 스크롤), 연결 사용자가 있으면 대체 권한을 골라야 [삭제]가 켜진다(data-needs-choice · erp.js)
   const del = {};
   const delDialogs = GROUPS.filter((g) => g[0] === "BP 관리자")
     .map(([type, code, name, , , , , , , , users]) => {
       const id = (del[code] = x.dialogId());
       const others = GROUPS.filter((g) => g[0] === type && g[1] !== code).map((g) => `${g[1]} · ${g[2]}`);
+      const nameRow = ["권한명", `${name} <span class="text-erp-label">· ${code}</span>`];
       const body = users.length
-        ? c.kv([
-            ["권한명", `${name} <span class="text-erp-label">· ${code}</span>`],
-            ["권한 유형", type],
-            ["연결 사용자", `${users.length}명 ${c.muted(`· ${users.join(", ")}`)}`],
-          ]) +
-          ui.field(
-            c.req("대체 권한 그룹"),
-            ui.select(["선택하세요", ...others]),
+        ? c.kv(
+            [
+              nameRow,
+              ["연결 사용자", `<p>${users.length}명</p><ul class="mt-[4px] flex max-h-[118px] flex-col gap-[2px] overflow-y-auto text-erp-label">${users.map((u) => `<li class="h-[22px] shrink-0 truncate leading-[22px]">${u.replace(" ", " | ").replace("(미사용)", " (미사용)")}</li>`).join("")}</ul>`],
+            ],
+            84,
           ) +
-          c.band("변경된 권한은 다시 로그인하지 않아도, 사용자가 화면을 새로고침하거나 이동하면 적용됩니다.")
-        : c.kv([
-            ["권한명", `${name} <span class="text-erp-label">· ${code}</span>`],
-            ["권한 유형", type],
-            ["연결 사용자", "없음"],
-          ]) + `<p class="text-erp-label">연결된 사용자가 없어 바로 삭제할 수 있습니다.<br>삭제된 권한 그룹은 복구할 수 없습니다.</p>`;
+          ui.field(c.req("대체 권한"), ui.select(["선택하세요", ...others])) +
+          band("변경된 권한은 다시 로그인하지 않아도, 사용자가 화면을 새로고침하거나 이동하면 적용됩니다.")
+        : c.kv([nameRow, ["연결 사용자", "없음"]], 84) + `<div class="text-erp-label"><p>연결된 사용자가 없어 바로 삭제할 수 있습니다.</p><p>삭제된 권한 그룹은 복구할 수 없습니다.</p></div>`;
       return x.dialog(
         id,
         "권한 그룹을 삭제하시겠습니까?", // 점포 삭제 확인창과 같은 물음(앱 role-delete-dialog.tsx, 2026-10-26 사용자 지정)
-        `<div class="flex flex-col gap-[12px] break-keep">${body}<p><b class="font-semibold">삭제한 권한 코드 ${code} 는 다시 쓰지 않습니다</b></p></div>`,
-        ui.button("닫기", { variant: "off", "data-close": true }) + ui.button("삭제", { "data-toast": "삭제되었습니다.", "data-close-after": "1200" }), // 앱과 같다(2026-10-26)
+        `<div class="flex flex-col gap-[12px] break-keep">${body}</div>`,
+        ui.button("닫기", { variant: "off", "data-close": true }) +
+          ui.button("삭제", { "data-toast": "삭제되었습니다.", "data-close-after": "1200", ...(users.length ? { disabled: true, "data-needs-choice": true } : {}) }), // 앱과 같다(2026-10-26)
+        "w-[480px]",
       );
     })
     .join("");
@@ -165,10 +169,12 @@ export default ({ A, R }) => {
     const edit = editable
       ? `<div class="flex flex-col gap-[18px]">${ui.field(c.req("권한명"), ui.textField({ placeholder: "권한명을 입력해 주세요. (예: 프로모션 담당자)", value: name }))}${ui.field("설명", ui.textarea({ rows: 2, placeholder: "해당 권한에 대한 역할과 담당 업무를 입력해 주세요.", value: desc }))}</div>` +
         record +
-        `<div class="flex justify-center gap-[6px]">${x.dialogTrigger("삭제", del[code], "soft")}${ui.button("저장")}</div>`
-      : plainTable(rowsInfo) + record;
+        `<div class="flex justify-center gap-[6px]">${x.dialogTrigger("삭제", del[code], "soft")}${editSaveButton()}</div>`
+      : // 고칠 수 없는 그룹(BP 마스터가 보는 가맹 관리자 그룹)은 표 위에 막힌 이유 띠 — api enum PlatformRoleGroupLockReason 의
+        // NO_PERMISSION 한글(앱 bp-role-groups/role-side.tsx InfoBand, 2026-10-26)
+        band("권한 관리 메뉴 권한 없음") + plainTable(rowsInfo) + record;
     return (
-      `<div data-role-view="${code}" class="flex flex-col gap-[18px]"${i === SELECTED ? "" : " hidden"}>` +
+      `<div data-role-view="${code}" class="flex flex-col gap-[18px]"${editable ? " data-dirty-scope" : ""}${i === SELECTED ? "" : " hidden"}>` +
       sideHead(`권한 그룹 상세<span class="ml-[10px] inline-flex items-center gap-[6px] align-middle">${c.tag(`<span class="font-normal">권한유형 ·</span> <b class="font-semibold">${type}</b>`)}<span class="text-[14px] font-normal text-erp-label">${code}</span></span>`) +
       // 고칠 수 있는 그룹은 입력칸 아래에 생성·최종 수정을 둔다(목업과 같은 순서)
       edit +
@@ -182,7 +188,7 @@ export default ({ A, R }) => {
     ui.field(c.req("권한유형"), ui.textField({ value: "BP 관리자", readonly: true })) +
     ui.field(c.req("권한명"), ui.textField({ placeholder: "권한명을 입력해 주세요. (예: 프로모션 담당자)", "data-role-name": true })) +
     ui.field("설명", ui.textarea({ rows: 2, placeholder: "해당 권한에 대한 역할과 담당 업무를 입력해 주세요." })) +
-    `<div class="flex justify-center gap-[6px]">${ui.button("취소", { variant: "off", "data-role-cancel": true })}${ui.button("저장", { "data-role-save": true })}</div>` +
+    `<div class="flex justify-center gap-[6px]">${ui.button("취소", { variant: "off", "data-role-cancel": true })}${ui.button("저장", { "data-role-save": true, "data-toast": createdToast("BA000008") })}</div>` +
     `</div>`;
   // 처음 진입 · 고른 그룹 없음(2026-10-26 사용자 지정 문구 — 앱 bp-role-groups/role-side.tsx 와 같다. 목록이 빈 경우의 문구는 앱에만 있다: 데모는 늘 목록이 있다)
   const empty =
@@ -190,7 +196,7 @@ export default ({ A, R }) => {
     `<div class="flex flex-col items-center gap-[6px] rounded-[2px] border border-erp-thead-line px-[18px] py-[36px] text-center text-[14px] text-erp-muted"><p>왼쪽 목록에서 [권한명]을 클릭하면 상세 정보가 표시됩니다.</p></div></div>`;
   const right = c.card("w-[464px] shrink-0", empty + GROUPS.map(view).join("") + form).replace("<section ", "<section data-role-side ");
 
-  // 권한별 메뉴설정(BA000004)
+  // 권한별 메뉴설정(BA000004). 화면보다 길면 팝업 안에서 스크롤한다(앱 role-menu-dialog.tsx 의 max-h · overflow 와 같다, 2026-10-26)
   const menuDialog = c.wide(
     x.dialog(
       menuId,
@@ -198,7 +204,7 @@ export default ({ A, R }) => {
       `<div class="flex flex-col gap-[12px]">${roleHead("BP 관리자", "BA000004", "인사 담당")}${svcTabs(A, MENU_BA, false)}</div>`,
       ui.button("닫기", { variant: "off", "data-close": true }) + menuSaveButton("인사 담당"), // 저장해도 팝업을 닫지 않고 안에 알림(앱과 같다, 2026-10-26)
     ),
-    "w-[880px]",
+    "w-[880px] max-h-[calc(100dvh-48px)] overflow-y-auto",
   );
 
   // 가맹 마스터 고정 권한(조회용)
@@ -206,10 +212,11 @@ export default ({ A, R }) => {
     x.dialog(
       fmId,
       `권한별 메뉴설정<span class="ml-[10px] inline-flex align-middle">${c.tag("가맹 마스터 권한용")}</span>`,
-      `<div class="flex flex-col gap-[12px]">${roleHead("", "FM000001", "가맹 마스터")}${svcTabs(A, MENU_FM, true)}</div>`,
+      // 머리는 권한유형까지 셋 다(앱이 BLANK_ROLE 의 FM 유형 이름을 싣는다, 2026-10-26)
+      `<div class="flex flex-col gap-[12px]">${roleHead("가맹 마스터", "FM000001", "가맹 마스터")}${svcTabs(A, MENU_FM, true)}</div>`,
       ui.button("닫기", { "data-close": true }),
     ),
-    "w-[880px]",
+    "w-[880px] max-h-[calc(100dvh-48px)] overflow-y-auto",
   );
 
   return {
@@ -217,6 +224,7 @@ export default ({ A, R }) => {
     html: ui.erpFrame({
       header: erpHeader(A, R),
       title: "BP 권한 그룹 관리",
+      titleRight: newButton(),
       body: `<div class="flex min-h-0 flex-1 gap-[12px] p-[24px]">${left}${right}</div>${menuDialog}${fmDialog}${revokeDialog()}${MENU_SAVE_SCRIPT}${delDialogs}${ROLE_SCRIPT}`,
     }),
   };

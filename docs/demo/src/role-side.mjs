@@ -6,7 +6,8 @@ import { req } from "./biz-form.mjs";
 import * as x from "./extra.mjs";
 import * as c from "./config-parts.mjs";
 
-const band = (t) => `<div class="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[16px] py-[12px] text-[14px] font-medium text-erp-ink">${t}</div>`;
+// 안내 띠(앱 components/site/side-parts.tsx 의 InfoBand 와 같다). BP 권한 그룹 관리의 잠긴 그룹 안내도 이것을 쓴다(2026-10-26)
+export const band = (t) => `<div class="rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[16px] py-[12px] text-[14px] font-medium text-erp-ink">${t}</div>`;
 
 // 제목 없는 상세 표 — 「기본 정보」 같은 제목 줄 없이 항목만(BP 권한 그룹 관리와 같다)
 const plainTable = (rows) =>
@@ -32,7 +33,8 @@ export const roleHead = (type, code, name) =>
   `</div>`;
 
 // 오른쪽 칸 제목 — 왼쪽 목록 머리(버튼 34px)와 같은 높이로 둬 첫 칸이 표 시작선에 서게 한다(앱과 같다, 2026-10-26 사용자 지정)
-export const sideHead = (title) => ui.sectionHead(title).replace('class="flex items-end', 'class="flex min-h-[34px] items-end');
+// right: 목록 카드 머리 오른쪽 버튼(가맹마스터 메뉴설정 보기) — 버튼이 없어도 34px 를 지킨다(앱 roles-screen.tsx 와 같다, 2026-10-26)
+export const sideHead = (title, right = "") => ui.sectionHead(title, right).replace('class="flex items-end', 'class="flex min-h-[34px] items-end');
 
 // 권한별 메뉴설정 표 모양(앱 role-menu-dialog.tsx 와 같다, 2026-10-26 사용자 지정) — 머리는 erp-subtle 바탕 · 600 먹색 · 칸 여백 4px,
 // 본문 줄은 42px, 1단계 줄에만 옅은 바탕(erp-thead-bg #f8f9fb). depths: 줄마다 단계
@@ -133,8 +135,14 @@ export const MENU_SAVE_SCRIPT = `<script>
 })();
 </script>`;
 
-// 등록 버튼(목록 머리 오른쪽)
+// 등록 버튼 — 제목 줄(PageBar) 오른쪽에 둔다(앱 roles-screen.tsx 와 같은 자리, 2026-10-23). 목록 카드 머리에서 옮겼다(2026-10-26)
 export const newButton = () => ui.button("등록", { "data-role-new": true }).replace('class="', 'class="disabled:pointer-events-none disabled:opacity-40 ');
+
+// 권한 수정 양식의 [저장] — 고친 칸이 있어야 켜지고, 저장하면 「수정되었습니다.」(앱 role-form.tsx 의 isDirty · toast("updated") 와 같다, 2026-10-26).
+// 묶음 [data-dirty-scope] 안의 칸만 본다(erp.js). BP 권한 그룹 관리(config/roles.mjs)도 쓴다.
+export const editSaveButton = () => ui.button("저장", { "data-dirty-save": true, "data-toast": "수정되었습니다.", disabled: true });
+// 권한 등록 [저장] 의 알림 — 앱 role-form.tsx 문구 그대로. code 는 표본의 다음 권한 코드다
+export const createdToast = (code) => `등록했습니다. 권한 코드 ${code} — 목록의 메뉴설정 [설정]으로 메뉴 권한을 정해 주세요.`;
 
 // roles: [권한유형, 코드, 권한명, 구분, 설명, 최종수정일시, 수정자, 등록일, 등록자, 소속 고정 권한(추가 권한만), 기본 서비스, 아래 권한 그룹]
 // own: 보는 사람에게 연결된 권한(고칠 수 없다). master: 플랫폼 마스터로 보는지(추가 권한 삭제가 있다). del: { 권한코드: 삭제 확인창 id }
@@ -147,11 +155,17 @@ export function roleSide({ roles, own, master, selected, del = {}, card }) {
     const rows = locked ? [["권한명", name], ["설명", desc || c.muted("-")]] : [];
     const fields = locked ? "" : `<div class="flex flex-col gap-[18px]">${ui.field(req("권한명"), ui.textField({ placeholder: "권한명을 입력해 주세요. (예: 프로모션 담당자)", value: name }))}${ui.field("설명", ui.textarea({ rows: 2, placeholder: "해당 권한에 대한 역할과 담당 업무를 입력해 주세요.", value: desc }))}</div>`;
     const canDelete = master && kind === "추가";
+    // 플랫폼 관리자 고정 권한(PA000001)은 지울 수 없다 — 막힌 [삭제] 옆에 이유를 글자로 둔다. 이유는 api enum PlatformRoleGroupLockReason 의
+    // FIXED_ROLE 한글 「고정 권한」(앱 role-delete-dialog.tsx blockedReason, 2026-10-26). 마스터 고정 권한(PM · BM · FM)은 버튼 자체가 없다(isMaster)
+    const fixedDelete =
+      master && code === "PA000001"
+        ? `<span class="inline-flex items-center gap-[6px]">${ui.button("삭제", { variant: "soft", disabled: true, "aria-describedby": `role-${code}-delete-blocked` })}<span id="role-${code}-delete-blocked" class="text-[13px] text-erp-label">고정 권한</span></span>`
+        : "";
     const foot = locked
       ? ""
-      : `<div class="flex justify-center gap-[6px]">${canDelete ? x.dialogTrigger("삭제", del[code], "soft") : ""}${ui.button("저장")}</div>`;
+      : `<div class="flex justify-center gap-[6px]">${canDelete ? x.dialogTrigger("삭제", del[code], "soft") : fixedDelete}${editSaveButton()}</div>`;
     return (
-      `<div data-role-view="${code}" class="flex flex-col gap-[18px]"${code === selected ? "" : " hidden"}>` +
+      `<div data-role-view="${code}" class="flex flex-col gap-[18px]"${locked ? "" : " data-dirty-scope"}${code === selected ? "" : " hidden"}>` +
       sideHead(`권한 그룹 상세<span class="ml-[10px] inline-flex items-center gap-[6px] align-middle">${c.tag(`<span class="font-normal">권한유형 ·</span> <b class="font-semibold">${type}</b>`)}<span class="text-[14px] font-normal text-erp-label">${code}</span></span>`) +
       (locked ? band("본인 계정에 연결된 권한 그룹이라 수정할 수 없습니다.") : "") +
       fields +
@@ -171,7 +185,7 @@ export function roleSide({ roles, own, master, selected, del = {}, card }) {
     ui.field(req("권한명"), ui.textField({ placeholder: "권한명을 입력해 주세요. (예: 프로모션 담당자)", "data-role-name": true })) +
     ui.field("설명", ui.textarea({ rows: 2, placeholder: "해당 권한에 대한 역할과 담당 업무를 입력해 주세요." })) +
     `</div>` +
-    `<div class="flex justify-center gap-[6px]">${ui.button("취소", { variant: "off", "data-role-cancel": true })}${ui.button("저장", { "data-role-save": true })}</div>` +
+    `<div class="flex justify-center gap-[6px]">${ui.button("취소", { variant: "off", "data-role-cancel": true })}${ui.button("저장", { "data-role-save": true, "data-toast": createdToast("PA000005") })}</div>` +
     `</div>`;
 
   // 처음 진입 · 고른 권한 없음(2026-10-26 사용자 지정 문구 — 앱 platform-role-groups/role-side.tsx 와 같다. 목록이 빈 경우의 문구는 앱에만 있다)

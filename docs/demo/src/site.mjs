@@ -95,8 +95,9 @@ function scopeDropdown(A) {
 }
 
 // 저장 버튼 줄. 패널(closeSave)에서는 왼쪽에 [닫기]를 둔다 — 저장·비밀번호 변경 버튼은 패널을 닫지 않고 토스트로만 알린다(2026-10-06 피드백).
+// 버튼 줄은 가운데(앱 my-page-panel.tsx 와 같다, 2026-10-26) — 입력 묶음 밖, 탭 내용 아래에 둔다
 const saveRow = (label, closeSave, toast) =>
-  `<div class="flex justify-end gap-[6px]">${closeSave ? ui.button("닫기", { variant: "off", "data-close": true }) : ""}${ui.button(label, { "data-toast": toast })}</div>`;
+  `<div class="flex justify-center gap-[6px]">${closeSave ? ui.button("닫기", { variant: "off", "data-close": true }) : ""}${ui.button(label, { "data-toast": toast })}</div>`;
 
 // 내 정보 입력칸(기본정보·사업자정보 탭). MY PAGE 전체 화면(mypage/profile.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다.
 // idPrefix: 사업자 인증 상자 id 접두 — 전체 화면과 패널이 한 페이지(mypage/profile.html)에 같이 실릴 수 있어 서로 다르게 둔다.
@@ -114,15 +115,16 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
     `<hr class="border-erp-divider">` +
     ui.formRow(ui.readonlyField("최근 로그인", "2026-09-22 09:12", true), ui.readonlyField("가입일", "2026-03-04", true)) +
     `</div></div>`;
+  // 입력 예시 문구는 앱 my-page-panel.tsx 그대로(2026-10-26). [닫기][저장] 줄은 「기본정보」 묶음 밖에 둔다(앱과 같다)
   const basic =
     accountInfo +
     ui.formGroup(
       "기본정보",
-      ui.field(f.req("이름"), ui.textField({ value: "정하윤", maxlength: 20, placeholder: "한글 또는 영문 2~20자" })),
+      ui.field(f.req("이름"), ui.textField({ value: "정하윤", maxlength: 20, placeholder: "한글 또는 영문 2~20자로 입력해 주세요." })),
       f.group(f.req("연락처"), f.tel("010", "4821", "7730")),
-      ui.field(f.req("이메일"), ui.textField({ type: "email", value: "hayoon@hangang.co.kr", maxlength: 100 })),
-      save,
-    );
+      ui.field(f.req("이메일"), ui.textField({ type: "email", value: "hayoon@hangang.co.kr", maxlength: 100, placeholder: "example@company.com" })),
+    ) +
+    save;
 
   // 사업자정보 인증 상자 — 네 화면 공통 컴포넌트(BizVerificationBox, S-VRNTHD)를 그대로 옮긴 모양이다.
   // 상자 머리(「사업자정보」 · 인증 상태)까지 같은 회색 박스 안에 있다(2026-10-23 — 전엔 제목 줄과 본문을
@@ -163,15 +165,15 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
     );
   };
   // 버튼 줄 — locked: [재인증][사용안함]. struck("사용안함" 뒤): [사용안함 취소] 하나뿐(인증하기도 숨긴다 —
-  // 지워질 값을 두고 재인증하는 건 말이 안 되니, 바꿔 타려면 먼저 되돌려야 한다). 그 밖(미인증 · 입력 중):
-  // [인증하기][지우기].
+  // 지워질 값을 두고 재인증하는 건 말이 안 되니, 바꿔 타려면 먼저 되돌려야 한다). 그 밖(미인증): [인증하기] 하나 —
+  // [지우기]는 입력값이 있을 때만 보이는데(앱 BizVerificationBox onClear) 표본 미인증 상태는 세 칸이 비어 있어 두지 않는다(2026-10-26).
   const bizButtons = (state) =>
     `<div class="flex gap-[6px]">${
       state === "locked"
         ? ui.button("재인증", { variant: "soft" }) + ui.button("사용안함", { variant: "soft" })
         : state === "struck"
           ? ui.button("사용안함 취소", { variant: "soft" })
-          : ui.button("인증하기", { variant: "soft" }) + ui.button("지우기", { variant: "soft" })
+          : ui.button("인증하기", { variant: "soft" })
     }</div>`;
   const bizGuide =
     `<p class="text-[13px] leading-[1.5] text-erp-label">` +
@@ -198,8 +200,9 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
     `<section aria-label="상호명 등" class="flex flex-col gap-[18px] rounded-[2px] border border-erp-panel-line bg-white px-[16px] py-[20px]">` +
     ui.field(f.req("상호명"), ui.textField({ value: "㈜한강상회", maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })) +
     ceoContact(idp, false) +
-    f.address(A, "사업장 주소", { zip: "04007", base: "서울 마포구 망원로 42", detail: "3층" }) +
     ui.formRow(ui.field("업태", ui.textField({ value: "도소매업", maxlength: 50 })), ui.field("종목", ui.textField({ value: "식자재 유통", maxlength: 50 }))) +
+    // 주소는 업태 · 종목 다음, 라벨 「사업자주소」(앱 bp-profile-tab.tsx 와 같다, 2026-10-26)
+    f.address(A, "사업자주소", { zip: "04007", base: "서울 마포구 망원로 42", detail: "3층" }) +
     `</section>`;
 
   const biz = `<div class="flex flex-col gap-[18px]">${bizAuthBox("locked", "211-87-01234", "남도현", "2021-03-15", "2026-10-20")}${bizRest(`${idPrefix}-done`)}</div>${save}`;
@@ -211,13 +214,29 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
   const bizDisabled = `<div class="flex flex-col gap-[18px]">${bizAuthBox("struck", "211-87-01234", "남도현", "2021-03-15")}${bizRest(`${idPrefix}-disabled`)}</div>${save}`;
 
   return (
-    x.tabs([
-      { id: `${tabPrefix}basic`, label: "기본정보", html: basic },
-      { id: `${tabPrefix}biz`, label: "사업자정보", html: biz },
-      { id: `${tabPrefix}biz-new`, label: "사업자정보(인증 전)", html: bizNew },
-      { id: `${tabPrefix}biz-disabled`, label: "사업자정보(사용안함)", html: bizDisabled },
-    ]) + f.SWAP_SCRIPT
+    mypageTabs(
+      x.tabs([
+        { id: `${tabPrefix}basic`, label: "기본정보", html: basic },
+        { id: `${tabPrefix}biz`, label: "사업자정보", html: biz },
+        { id: `${tabPrefix}biz-new`, label: "사업자정보(인증 전)", html: bizNew },
+        { id: `${tabPrefix}biz-disabled`, label: "사업자정보(사용안함)", html: bizDisabled },
+      ]),
+    ) + f.SWAP_SCRIPT
   );
+}
+
+// MY PAGE 탭 줄만 앱 my-page-panel.tsx TabBar 모양으로 — 14px 500, 탭 사이 18px, 좌우 여백 없음, 아래 선 erp-thead-line.
+// 탭 내용 묶음 사이는 16px(계정 정보 ↔ 기본정보, 앱과 같다). 공통 x.tabs 는 다른 화면도 써서 그 결과를 여기서만 바꾼다(2026-10-26).
+// 탭 전환은 공통 erp.js 가 data-on · data-off 클래스로 한다.
+function mypageTabs(html) {
+  const end = html.indexOf("</div>"); // 첫 </div> 가 탭 줄의 끝이다(탭 단추 안에는 div 가 없다)
+  const bar = html
+    .slice(0, end)
+    .replace('<div role="tablist" class="flex shrink-0 border-b border-erp-bar-line">', '<div role="tablist" aria-label="내 정보" class="flex h-[42px] shrink-0 gap-[18px] border-b border-erp-thead-line">')
+    .replaceAll("-mb-px flex h-[42px] items-center border-b-2 px-[18px] text-[15px]", "h-[42px] border-b-2 text-[14px]")
+    .replaceAll("border-erp-brand font-semibold text-erp-ink", "border-erp-brand font-medium text-erp-ink");
+  const panels = html.slice(end).replace(/(<div role="tabpanel"[^>]*?class=")flex min-h-0 flex-1 flex-col gap-\[12px\]"/g, '$1flex min-h-0 flex-1 flex-col gap-[16px]"');
+  return bar + panels;
 }
 
 // GNB 「내정보 관리」가 여는 슬라이드 패널 — 입력칸이 몇 안 되는 화면이라 전체 페이지 전환 대신 패널로 연다(2026-10-06 피드백).

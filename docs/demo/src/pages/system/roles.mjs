@@ -7,7 +7,7 @@ import { req } from "../../biz-form.mjs";
 import * as x from "../../extra.mjs";
 import * as c from "../../config-parts.mjs";
 import { platformHeader, link } from "../../site.mjs";
-import { roleSide, roleHead, depthRows, menuScroll, partialBox, menuSaveButton, revokeDialog, MENU_SAVE_SCRIPT, tagRows, newButton, scrollTabs, SVC_TABS_SCRIPT } from "../../role-side.mjs";
+import { roleSide, roleHead, sideHead, depthRows, menuScroll, partialBox, menuSaveButton, revokeDialog, MENU_SAVE_SCRIPT, tagRows, newButton, scrollTabs, SVC_TABS_SCRIPT } from "../../role-side.mjs";
 
 // 1팀 컴포넌트에 없는 것들. 토큰으로만 그린다.
 const sub = (t) => `<span class="text-erp-label">${t}</span>`;
@@ -155,7 +155,8 @@ function menuDialog(A, R, role, id) {
   const foot = canSave
     ? ui.button("닫기", { variant: "off", "data-close": true }) + menuSaveButton(name) // 저장해도 팝업을 닫지 않고 안에 알림(앱과 같다, 2026-10-26)
     : ui.button("닫기", { "data-close": true });
-  return c.wide(x.dialog(id, "권한별 메뉴설정", body, foot), "w-[880px]");
+  // 화면보다 길면 팝업 안에서 스크롤한다(앱 role-menu-dialog.tsx 의 max-h · overflow 와 같다, 2026-10-26)
+  return c.wide(x.dialog(id, "권한별 메뉴설정", body, foot), "w-[880px] max-h-[calc(100dvh-48px)] overflow-y-auto");
 }
 
 export default ({ A, R }) => {
@@ -189,7 +190,8 @@ export default ({ A, R }) => {
 
   const left =
     `<section class="${CARD} flex-1">` +
-    ui.sectionHead(`권한 그룹 목록 <span class="text-[14px] font-normal text-erp-label">7건</span>`, newButton()) +
+    // [등록]은 제목 줄로 옮겼다(앱 roles-screen.tsx 와 같다, 2026-10-26). 머리는 버튼이 없어도 34px, 건수는 제목에서 6px
+    sideHead(`권한 그룹 목록 <span class="ml-[6px] text-[14px] font-normal text-erp-label">${ROLES.length}건</span>`) +
     table +
     `</section>`;
 
@@ -201,6 +203,7 @@ export default ({ A, R }) => {
     html: ui.erpFrame({
       header: platformHeader(A, R),
       title: "플랫폼 권한 관리",
+      titleRight: newButton(),
       body: `<div class="flex min-h-0 flex-1 gap-[12px] p-[24px]">${left}${right}</div>` + dialogs.join("") + revokeDialog() + MENU_SAVE_SCRIPT + SVC_TABS_SCRIPT,
     }),
   };

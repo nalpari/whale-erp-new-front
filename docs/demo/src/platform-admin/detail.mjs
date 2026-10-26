@@ -48,7 +48,7 @@ function platformAdminDetailBody(A, R) {
     [
       { header: "변경일시", width: "w-[140px]" },
       { header: "변경자", width: "w-[80px]" },
-      { header: "항목", width: "w-[160px]" },
+      { header: "항목", width: "w-[120px]", align: "left" }, // 앱 history-dialog.tsx 와 같다(2026-10-26)
       { header: "변경 전", align: "left" },
       { header: "변경 후", align: "left" },
     ],
@@ -60,11 +60,13 @@ function platformAdminDetailBody(A, R) {
     ],
   );
 
+  // 안내가 세 줄이라 넓은 확인창 480px(앱 admin-detail-panel.tsx 의 ConfirmDialog wide, 2026-10-26)
   const resetDialog = x.dialog(
     resetId,
     "비밀번호를 초기화하시겠습니까?",
     `<div class="flex flex-col gap-[12px] break-keep">${WHO}<p>임시 비밀번호가 등록된 이메일로 발송되며, 기존 비밀번호는 즉시 무효화됩니다.<br>임시 비밀번호는 1시간 동안 유효하며, 로그인 시 비밀번호를 변경해야 합니다.<br>현재 로그인 중인 세션은 유지됩니다.</p></div>`,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("초기화", { "data-close": true }),
+    "w-[480px]",
   );
   const deleteDialog = x.dialog(
     deleteId,
@@ -75,14 +77,15 @@ function platformAdminDetailBody(A, R) {
 
   // 변경이력 — BP 관리자 상세처럼 버튼을 누르면 팝업으로 본다(2026-10-08). 표가 넓어 이 창만 넓힌다. 제목·칸
   // 이름은 1팀 영역 모두(점포·BP·휴일 등) 같은 말을 쓴다(2026-10-20 디자인 수정).
+  // 폭 760px(앱 history-dialog.tsx 와 같다, 2026-10-26). 쪽 나눔은 한 쪽(앱 HISTORY_PAGE_SIZE)을 넘을 때만 보여, 네 건인 표본에는 두지 않는다
   const historyDialog = x
     .dialog(
       histId,
       "변경이력",
-      `<div class="overflow-x-auto">${history}</div><div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
+      `<div class="overflow-x-auto">${history}</div>`,
       ui.button("닫기", { variant: "off", "data-close": true }),
     )
-    .replace("w-[420px]", "w-[640px] max-h-[calc(100dvh-48px)] overflow-y-auto");
+    .replace("w-[420px]", "w-[760px] max-h-[calc(100dvh-48px)] overflow-y-auto");
 
   const editBtn = ui.slideTrigger("수정", "platform-admin-edit-panel");
   const actions = `${x.dialogTrigger("삭제", deleteId, "soft")}${editBtn}${x.dialogTrigger("변경이력", histId, "soft")}`;

@@ -2,6 +2,7 @@
 // 왼쪽 공통코드 그룹, 오른쪽 고른 그룹의 상세 코드를 두 카드로 나란히 둔다(2단 카드 본문).
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
+import * as c from "../../config-parts.mjs";
 import { platformHeader } from "../../site.mjs";
 import { band as riskBand } from "../../staff-parts.mjs";
 
@@ -94,6 +95,12 @@ const SERVICES = [
 export default ({ A, R }) => {
   const apply = x.dialogId();
 
+  // 왼쪽 필터 — BP 공통코드 관리와 같은 공용 필터(앱 code-groups/code-filter.tsx → code-group-filter.tsx, 2026-10-26)
+  const filter = ui.filterPanel(A, [
+    ui.filterSection("그룹 코드", ui.searchField(A, { placeholder: "예: EMP_TYPE", label: "그룹 코드" }), { tight: true }),
+    ui.filterSection("그룹명", ui.searchField(A, { placeholder: "예: 고용 형태", label: "그룹명" }), { tight: true, last: true }),
+  ]);
+
   const groupCols = [
     { header: "그룹 코드", width: "w-[170px]", align: "left" },
     { header: "그룹명", align: "left" },
@@ -104,7 +111,7 @@ export default ({ A, R }) => {
   const groupRows = GROUPS.map(([code, name, owner, bp], i) => [
     i === 0 ? `<b class="font-semibold" aria-current="true">${code}</b>` : ui.link(code, "#"),
     ui.textField({ value: name, "aria-label": "그룹명" }),
-    owner,
+    c.tag(owner), // 관리 주체는 분류 꼬리표(앱 code-group-panel.tsx 의 Tag 와 같다, 2026-10-26)
     // BP 적용 칸 — 관리 주체가 플랫폼제공인 그룹만 [BP 적용] 버튼, 나머지는 —(2026-10-08)
     owner === "플랫폼제공" ? x.dialogTrigger("BP 적용", apply, "soft") : '<span class="text-erp-muted">-</span>',
     x.toggle("사용", true),
@@ -187,7 +194,7 @@ export default ({ A, R }) => {
     html: ui.erpFrame({
       header: platformHeader(A, R),
       title: "플랫폼 공통코드 관리",
-      body: `<div class="flex min-h-0 flex-1 gap-[12px] p-[24px]">${left}${right}</div>${dialog}${ADD_SCRIPT}`,
+      body: `<div class="flex min-h-0 flex-1 gap-[12px] p-[24px]">${filter}${left}${right}</div>${dialog}${ADD_SCRIPT}`,
     }),
   };
 };

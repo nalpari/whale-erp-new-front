@@ -189,6 +189,53 @@
     }
   });
 
+  // ── 고친 것이 있을 때만 [저장] (data-dirty-save) ──
+  // 수정 양식의 [저장]은 칸을 하나라도 고쳐야 켜진다(앱 role-form.tsx · menu-side.tsx 의 isDirty 와 같다, 2026-10-26).
+  // 묶음은 가장 가까운 [data-dirty-scope]. 저장하면 지금 값을 새 기준으로 삼고 다시 막는다.
+  const dirtyFields = (s) => [...s.querySelectorAll("input, textarea, select")].filter((i) => !i.readOnly && i.type !== "search");
+  const isFieldDirty = (i) =>
+    i.type === "checkbox" || i.type === "radio"
+      ? i.checked !== i.defaultChecked
+      : i.tagName === "SELECT"
+        ? [...i.options].some((o) => o.selected !== o.defaultSelected)
+        : i.value !== i.defaultValue;
+  const syncDirty = (s) => s.querySelectorAll("[data-dirty-save]").forEach((b) => (b.disabled = !dirtyFields(s).some(isFieldDirty)));
+  const onDirtyInput = (e) => {
+    const s = e.target.closest?.("[data-dirty-scope]");
+    if (s) syncDirty(s);
+  };
+  document.addEventListener("input", onDirtyInput);
+  document.addEventListener("change", onDirtyInput);
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-dirty-save]");
+    const s = b?.closest("[data-dirty-scope]");
+    if (!s) return;
+    dirtyFields(s).forEach((i) => {
+      if (i.type === "checkbox" || i.type === "radio") i.defaultChecked = i.checked;
+      else if (i.tagName === "SELECT") [...i.options].forEach((o) => (o.defaultSelected = o.selected));
+      else i.defaultValue = i.value;
+    });
+    // 같은 클릭의 토스트(data-toast)가 먼저 뜨도록 다음 틱에 막는다
+    setTimeout(() => syncDirty(s));
+  });
+
+  // ── 고를 것을 골라야 켜지는 확인 버튼 (data-needs-choice) ──
+  // 권한 삭제 확인창의 [삭제]는 연결 사용자가 있으면 대체 권한을 골라야 켜진다(앱 role-delete-dialog.tsx 의 confirmDisabled 와 같다, 2026-10-26).
+  // 확인창 안 선택칸이 모두 첫 항목(「선택하세요」)이 아니어야 켜지고, 닫히면 고른 값을 처음으로 되돌린다.
+  const choiceReady = (d) => [...d.querySelectorAll("select")].every((s) => s.selectedIndex > 0);
+  document.addEventListener("change", (e) => {
+    const d = e.target.closest?.("dialog");
+    if (!d || e.target.tagName !== "SELECT") return;
+    d.querySelectorAll("[data-needs-choice]").forEach((b) => (b.disabled = !choiceReady(d)));
+  });
+  document.querySelectorAll("dialog").forEach((d) => {
+    if (!d.querySelector("[data-needs-choice]")) return;
+    d.addEventListener("close", () => {
+      d.querySelectorAll("select").forEach((s) => (s.selectedIndex = 0));
+      d.querySelectorAll("[data-needs-choice]").forEach((b) => (b.disabled = true));
+    });
+  });
+
   // 드롭다운 항목을 고르면 닫는다. 점포 선택칸은 고른 값을 칸에 넣고, 원래 값을 목록으로 돌려놓는다.
   document.addEventListener("click", (e) => {
     const item = e.target.closest("[id] > div > ul button, [id] > div > ul a");

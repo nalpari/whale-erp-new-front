@@ -31,8 +31,9 @@ const BTN_TONE = {
   // 퇴직 처리처럼 되돌리기 어려운 동작(2026-10-08 재영). 미운영 배지와 같은 상태 빨강 토큰을 쓴다. 공통 Button 에는 아직 없다.
   danger: "border-erp-off bg-erp-off text-white",
 };
+// 막힌 버튼(disabled)은 흐리게 두고 호버하지 않는다 — 앱 button.tsx 에 있던 것을 옮겼다(2026-10-26, 수정 양식 [저장] · 권한 삭제 [삭제]가 막혀 보이게)
 const BTN_SHELL =
-  "inline-flex h-[34px] shrink-0 items-center justify-center rounded-[2px] border px-[24px] text-[14px] font-medium whitespace-nowrap transition-[background-color,border-color,color] duration-150 ease-out hover:border-erp-brand hover:bg-white hover:text-erp-ink";
+  "inline-flex h-[34px] shrink-0 items-center justify-center rounded-[2px] border px-[24px] text-[14px] font-medium whitespace-nowrap transition-[background-color,border-color,color] duration-150 ease-out hover:border-erp-brand hover:bg-white hover:text-erp-ink disabled:pointer-events-none disabled:opacity-40";
 export function button(label, { variant = "primary", href, ...a } = {}) {
   const cls = `${BTN_SHELL} ${BTN_TONE[variant]} `;
   return href !== undefined
