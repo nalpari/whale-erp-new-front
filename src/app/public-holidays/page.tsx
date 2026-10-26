@@ -1,79 +1,78 @@
 import type { ReactNode } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { Button, DataTable, PageBar, type Column } from "@/components/common";
+import { DataTable, PageBar, type Column } from "@/components/common";
+import { deniedMessage, ListFailure } from "@/components/community/list-load";
+import { ApiError } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
-import { getPublicHolidays, type PublicHoliday } from "@/lib/public-holidays";
+import { getPublicHolidays, type PublicHoliday, type PublicHolidayList } from "@/lib/public-holidays";
 import {
-  calendarWeeks,
-  dateKey,
+  calendarCells,
   holidaysHref,
   needsAnnouncementNote,
   parseHolidayQuery,
-  shiftHolidayMonth,
+  showsSyncFailure,
   WEEKDAY_HEADERS,
   weekdayOf,
   type HolidayQuery,
 } from "@/lib/public-holiday-view";
 import { kstToday } from "@/lib/staff-members";
-import { MonthSelect, YearSelect } from "./holiday-controls";
+import { HolidayNavigation, MonthSelect, MonthStep, TodayButton, ViewTab, YearSelect } from "./holiday-controls";
 
 // 플랫폼 휴일 관리(S-DDGJKQ · F-CNPWOQ). 목업 docs/mockup/system/holidays.html · 데모 docs/demo/system/holidays.html 을 공통 컴포넌트로 옮겼다.
 // 조회 전용이다 — 대한민국 공식 휴일만 보이고 등록 · 수정 · 삭제, 연도별 불러오기, 휴일 구분 필터가 없다.
 // 들어오면 늘 이번 달 캘린더다(SYSTEM-8). 데이터는 캘린더면 그 달(GET /public-holidays?year=&month=), 목록이면 그 해 전체(?year=)다.
 // 계산값과 정부 발표값은 구분하지 않는다. 동기화가 실패했으면 값은 그대로 보이고 실패만 알린다(SYSTEM-9).
-
-// 데모 tabs — 고른 탭은 브랜드 밑줄 · 굵게
-const tab = (active: boolean) =>
-  `-mb-px flex h-[42px] items-center border-b-2 px-[18px] text-[15px] transition-colors duration-150 ease-out ${
-    active ? "border-erp-brand font-semibold text-erp-ink" : "border-transparent font-medium text-erp-label hover:text-erp-ink"
-  }`;
-// 데모 iconBtn(이전 · 다음 달) — 근무스케줄 관리의 주 이동과 같은 껍데기
-const ICON_SHELL = "grid size-[34px] shrink-0 place-items-center rounded-[2px] border border-erp-button-line bg-white";
-const ICON_BUTTON = `${ICON_SHELL} transition-[border-color] duration-150 ease-out hover:border-erp-brand`;
+// 화면의 판단(칸 · 안내 · api 경로)은 public-holiday-view.ts 에 두고 테스트한다. 이동 조작은 holiday-controls.tsx 다.
 
 export default async function PublicHolidaysPage({ searchParams }: PageProps<"/public-holidays">) {
   const today = kstToday();
   const query = parseHolidayQuery(await searchParams, today);
-  // 캘린더는 그 달만, 목록은 그 해 전체를 받는다
-  const data = await getPublicHolidays(query.year, query.view === "calendar" ? query.month : undefined);
-  const todayYear = Number(today.slice(0, 4));
+
+  // 로그인 끊김(401) · 권한 없음(403)은 다시 해도 같아 다시 시도 없이 안내만 보인다(커뮤니티 목록과 같다). 그 밖의 오류는 error.tsx 가 받는다.
+  let data: PublicHolidayList;
+  try {
+    data = await getPublicHolidays(query);
+  } catch (error) {
+    if (!(error instanceof ApiError && (error.status === 401 || error.status === 403))) throw error;
+    return (
+      <>
+        <PageBar title="플랫폼 휴일 관리" />
+        <ListFailure failure={deniedMessage(error.status, "플랫폼 휴일을 볼 권한이 없습니다.")} denied retryHref={holidaysHref(query)} />
+      </>
+    );
+  }
   const { lastSynchronizedAt, failedYears } = data.synchronization;
 
   return (
     <>
       <PageBar title="플랫폼 휴일 관리" />
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
-        <main className="flex flex-1 flex-col gap-[24px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
-          <div className="flex flex-wrap items-center gap-[12px]">
-            <YearSelect query={query} />
-            {lastSynchronizedAt && <span className="text-[14px] text-erp-label">최종 동기화 {formatDateTime(lastSynchronizedAt)}</span>}
-            {needsAnnouncementNote(query.year, todayYear) && <span className="text-[14px] text-erp-label">임시공휴일 · 선거일은 정부 발표 후 반영됩니다</span>}
-          </div>
-          {/* 동기화 대상은 올해 · 다음 해뿐이라 고른 해가 실패 목록에 있을 때만 알린다 */}
-          {failedYears.includes(query.year) && (
-            <div role="status" className="flex flex-col gap-[6px] rounded-[2px] border border-erp-off bg-erp-off-bg px-[18px] py-[12px] text-[14px]">
-              <p className="font-semibold text-erp-off">{query.year}년 공식 휴일 동기화가 실패했습니다 — 저장된 휴일을 그대로 보여 드립니다</p>
-              <p className="text-erp-ink">실패한 동기화는 휴일을 바꾸지 않았습니다. 아래 휴일은 직전 동기화 값 또는 규칙으로 계산한 값이며, 다음 정기 동기화에서 다시 맞춥니다.</p>
+      <HolidayNavigation query={query}>
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[24px]">
+          <main className="flex flex-1 flex-col gap-[24px] rounded-[4px] border border-erp-panel-line bg-white p-[24px]">
+            <div className="flex flex-wrap items-center gap-[12px]">
+              <YearSelect />
+              {lastSynchronizedAt && <span className="text-[14px] text-erp-label">최종 동기화 {formatDateTime(lastSynchronizedAt)}</span>}
+              {needsAnnouncementNote(query.year, Number(today.slice(0, 4))) && <span className="text-[14px] text-erp-label">임시공휴일 · 선거일은 정부 발표 후 반영됩니다</span>}
             </div>
-          )}
-          <div className="flex min-h-0 flex-col gap-[12px]">
-            <nav aria-label="보기" className="flex shrink-0 border-b border-erp-bar-line">
-              <Link href={holidaysHref({ ...query, view: "calendar" })} aria-current={query.view === "calendar" ? "page" : undefined} className={tab(query.view === "calendar")} scroll={false}>
-                캘린더
-              </Link>
-              <Link href={holidaysHref({ ...query, view: "list" })} aria-current={query.view === "list" ? "page" : undefined} className={tab(query.view === "list")} scroll={false}>
-                목록
-              </Link>
-            </nav>
-            {query.view === "calendar" ? (
-              <HolidayCalendar query={query} today={today} holidays={data.items} total={data.total} />
-            ) : (
-              <HolidayList year={query.year} holidays={data.items} total={data.total} />
+            {showsSyncFailure(failedYears, query.year) && (
+              <div role="status" className="flex flex-col gap-[6px] rounded-[2px] border border-erp-off bg-erp-off-bg px-[18px] py-[12px] text-[14px]">
+                <p className="font-semibold text-erp-off">{query.year}년 공식 휴일 동기화가 실패했습니다 — 저장된 휴일을 그대로 보여 드립니다</p>
+                <p className="text-erp-ink">실패한 동기화는 휴일을 바꾸지 않았습니다. 아래 휴일은 직전 동기화 값 또는 규칙으로 계산한 값이며, 다음 정기 동기화에서 다시 맞춥니다.</p>
+              </div>
             )}
-          </div>
-        </main>
-      </div>
+            <div className="flex min-h-0 flex-col gap-[12px]">
+              <nav aria-label="보기" className="flex shrink-0 border-b border-erp-bar-line">
+                <ViewTab view="calendar">캘린더</ViewTab>
+                <ViewTab view="list">목록</ViewTab>
+              </nav>
+              {query.view === "calendar" ? (
+                <HolidayCalendar query={query} today={today} holidays={data.items} total={data.total} />
+              ) : (
+                <HolidayList year={query.year} holidays={data.items} total={data.total} />
+              )}
+            </div>
+          </main>
+        </div>
+      </HolidayNavigation>
     </>
   );
 }
@@ -103,21 +102,14 @@ function Legend({ mark, text }: { mark: string; text: string }) {
 /** 월 캘린더. 1팀 공통 컴포넌트에 없어 표 선 · 표 머리 바탕으로 그린다. 공식 휴일만 상태 빨강으로 칠하고 토 · 일은 칠하지 않는다. */
 function HolidayCalendar({ query, today, holidays, total }: { query: HolidayQuery; today: string; holidays: PublicHoliday[]; total: number }) {
   const { year, month } = query;
-  // 한 날짜에 한 건이다 — 겹친 휴일은 api 가 이름을 이어 붙여 준다(예 「어린이날 · 부처님오신날」)
-  const byDate = new Map(holidays.map((h) => [h.holidayDate, h]));
-  const prev = shiftHolidayMonth(query, -1);
-  const next = shiftHolidayMonth(query, 1);
-  const thisMonth = { ...query, year: Number(today.slice(0, 4)), month: Number(today.slice(5, 7)) };
 
   return (
     <>
       <div className="flex items-center gap-[6px]">
-        <Button variant="off" href={holidaysHref(thisMonth)} scroll={false}>
-          오늘
-        </Button>
-        <MonthLink target={prev} label="이전달" icon="/icons/prev.svg" />
-        <MonthLink target={next} label="다음달" icon="/icons/next.svg" />
-        <MonthSelect query={query} />
+        <TodayButton today={today} />
+        <MonthStep shift={-1} />
+        <MonthStep shift={1} />
+        <MonthSelect />
       </div>
       <SectionHead title={`${year}년 ${month}월`} count={total}>
         <span className="flex gap-[18px]">
@@ -136,15 +128,13 @@ function HolidayCalendar({ query, today, holidays, total }: { query: HolidayQuer
           </tr>
         </thead>
         <tbody>
-          {calendarWeeks(year, month).map((week, w) => (
+          {calendarCells(year, month, holidays, today).map((week, w) => (
             <tr key={w}>
-              {week.map((day, i) => {
+              {week.map((cell, i) => {
                 const line = `h-[92px] border-b border-erp-thead-line p-[10px] align-top ${i ? "border-l" : ""}`;
-                if (day === null) return <td key={i} className={`${line} bg-erp-thead-bg`} />;
-                const key = dateKey(year, month, day);
-                const holiday = byDate.get(key);
-                const isToday = key === today;
-                // 오늘은 휴일이어도 테두리를 씌운다 — 범례의 「오늘」을 달력에서 늘 찾을 수 있게. 글자색은 휴일이면 상태 빨강을 지킨다.
+                if (cell === null) return <td key={i} className={`${line} bg-erp-thead-bg`} />;
+                const { day, holiday, isToday } = cell;
+                // 오늘은 휴일이어도 테두리를 씌운다. 글자색은 휴일이면 상태 빨강을 지킨다.
                 const dayColor = holiday ? "font-semibold text-erp-off" : isToday ? "font-semibold text-erp-brand" : "text-erp-ink";
                 return (
                   <td key={i} aria-current={isToday ? "date" : undefined} className={`${line} ${holiday ? "bg-erp-off-bg" : ""}`}>
@@ -165,21 +155,6 @@ function HolidayCalendar({ query, today, holidays, total }: { query: HolidayQuer
         </tbody>
       </table>
     </>
-  );
-}
-
-/** 이전 · 다음 달. 2000년 1월 앞 · 2100년 12월 뒤는 갈 곳이 없어 막힌 버튼으로 둔다. */
-function MonthLink({ target, label, icon }: { target: HolidayQuery | null; label: string; icon: string }) {
-  const img = <Image src={icon} alt="" width={16} height={16} />;
-  return target ? (
-    <Link href={holidaysHref(target)} aria-label={label} scroll={false} className={ICON_BUTTON}>
-      {img}
-    </Link>
-  ) : (
-    // 막힌 버튼은 호버에 반응하지 않는다 — 호버 테두리가 없는 껍데기만 쓴다
-    <button type="button" aria-label={label} disabled className={`${ICON_SHELL} opacity-40`}>
-      {img}
-    </button>
   );
 }
 

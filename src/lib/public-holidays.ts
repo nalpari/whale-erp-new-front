@@ -3,16 +3,16 @@
 // 타입은 손으로 짓지 않고 api 의 openapi.json 에서 만든 것(api-types.generated.ts)을 쓴다.
 import type { components } from "./api-types.generated";
 import { authHeaders, request } from "./api";
+import { publicHolidaysApiPath, type HolidayQuery } from "./public-holiday-view";
 
 type Schemas = components["schemas"];
 export type PublicHoliday = Schemas["PublicHolidayResponseDto"];
 export type PublicHolidayList = Schemas["PublicHolidayListResponseDto"];
 
 /**
- * GET /public-holidays?year=&month= — 월을 주면 그 달(캘린더), 없으면 그 해 전체(목록). 날짜순, 페이지 없이.
+ * GET /public-holidays?year=&month= — 캘린더면 그 달, 목록이면 그 해 전체(publicHolidaysApiPath). 날짜순, 페이지 없이.
  * synchronization 은 「최종 동기화」(어느 해든 마지막 성공)와 올해 · 다음 해 중 마지막 동기화가 실패한 연도다.
  */
-export async function getPublicHolidays(year: number, month?: number): Promise<PublicHolidayList> {
-  const search = new URLSearchParams({ year: String(year), ...(month === undefined ? {} : { month: String(month) }) });
-  return request(`/public-holidays?${search}`, { headers: await authHeaders() });
+export async function getPublicHolidays(query: HolidayQuery): Promise<PublicHolidayList> {
+  return request(publicHolidaysApiPath(query), { headers: await authHeaders() });
 }

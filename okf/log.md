@@ -2,6 +2,7 @@
 
 ## 2026-10-26
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 휴일 관리 화면(`/public-holidays`, S-DDGJKQ)을 만들었다: 조회 전용 캘린더 · 목록, 연도 2000~2100, 다다음 해 정부 발표 안내 · 동기화 실패 안내. api(`GET /public-holidays` — 캘린더는 `month` 를 함께, `synchronization.failedYears` · `lastSynchronizedAt`)의 openapi 로 타입을 만들어 썼다. superpowers code-reviewer 반영: 선택칸 낙관적 표시, 휴일인 오늘 테두리, 막힌 달 이동 버튼 호버 없음, 실패 안내 문구, api 머지 전 생성 타입임을 api-types 항목에 적음.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 휴일 관리 pr-review-toolkit 리뷰 반영: 이동 조작이 낙관적 상태 하나를 나눠 가짐(연도 → 월 이어 고르기에서 연도를 잃던 것), 401 · 403 은 다시 시도 없는 안내, 오류 화면에 오류 번호 · role=alert, 칸 · 실패 안내 · api 경로 판단을 순수 함수로 빼 테스트(20건), `weekdayOf` 가 없는 날짜를 거름, 겹친 휴일 이름 · 2051~2100 음력 미적재 · 동기화 배치 미구현 주석을 사실대로.
 
 ## 2026-10-23
 * **Update**: [점포 관리](/stores.md) — 사업자 번호 인증 상자 세 칸과 등록 · 수정 폼의 두 칸 줄을 위로 맞춰, 한 칸에만 오류 문구가 붙어도 옆 입력칸이 밀리지 않게 했다(사용자 요청 — 「이미 등록된 사업자등록번호입니다」).
