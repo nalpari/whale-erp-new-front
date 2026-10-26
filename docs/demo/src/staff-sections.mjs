@@ -232,6 +232,7 @@ export function staffSections({ A, R }) {
       ["주휴 대상", paid],
     ])}</div>`;
   };
+  // 본사 계정의 근태 요약 숫자에서는 본사 제공 동의가 없는 가맹 점포 직원을 뺀다 — 근로계약 목록 상태별 개수와 같은 기준(WHALEERP-133, 2026-10-26 재영).
   const summary = p.section(
     "근태 요약",
     p.weekNav(A, "attend-sums", "2026-08-31"),
@@ -257,7 +258,9 @@ export function staffSections({ A, R }) {
       ["등록한 값", "출근 10:00 · 퇴근 16:00"],
       ["사유", "위치 수집 일시 중지 · 점장 확인"],
     ]);
-  const fixBtns = () => `<span class="flex justify-center gap-[6px]">${ui.slideTrigger("보정", fixPanel, "off")}${p.ask("이상 없음", "off", "이상 없음으로 검토를 마치시겠습니까?", "확인 필요 꼬리표와 사유를 지웁니다.")}</span>`;
+  // 「이상 없음」은 확인 필요 꼬리표(반경 밖 · 위치 조작 감지)가 붙은 줄에만 둔다. 출근 · 퇴근 미등록 줄은 「보정」만 있다(2026-10-26 재영).
+  const fixBtns = (ok = true) =>
+    `<span class="flex justify-center gap-[6px]">${ui.slideTrigger("보정", fixPanel, "off")}${ok ? p.ask("이상 없음", "off", "이상 없음으로 검토를 마치시겠습니까?", "확인 필요 꼬리표와 사유를 지웁니다.") : ""}</span>`;
   const fixList = p.section(
     "보정이 필요한 기록",
     // 기간 지정 조회는 이 목록에만, 최근 3개월 안에서 고른다(STAFF-31).
@@ -272,8 +275,8 @@ export function staffSections({ A, R }) {
         { header: "", width: "w-[230px]" },
       ],
       [
-        ["서지안", "09-05", "12:58", "-", p.tag("warn", "퇴근 미등록"), fixBtns()],
-        ["권도윤", "08-21", "-", "21:12", p.tag("warn", "출근 미등록"), fixBtns()],
+        ["서지안", "09-05", "12:58", "-", p.tag("warn", "퇴근 미등록"), fixBtns(false)],
+        ["권도윤", "08-21", "-", "21:12", p.tag("warn", "출근 미등록"), fixBtns(false)],
         ["배정숙", "09-02", "08:47", "23:58", p.tag("risk", "반경 밖 퇴근"), fixBtns()],
         ["남주호", "09-01", "09:04", "18:02", p.tag("risk", "위치 조작 감지"), fixBtns()],
         ["문태경", "08-29", "09:02", "18:30", `${p.tag("info", "수정됨")} ${p.sub("08-30 정하윤")}`, x.dialogTrigger("이력", histId.문태경, "off")],
@@ -317,6 +320,7 @@ export function staffSections({ A, R }) {
   const PD = L("staff/payrolls-detail.html");
   // 급여명세서 관리는 달 단위로 넘겨 본다(2026-10-02 재영): ‹ 2026년 8월 › · 달 선택. 데모 데이터는 8월·7월, 나머지 달은 빈 목록.
   // 검토 대기 목록은 두지 않는다 — 사유는 명세서 상세에서만 보인다(STAFF-32, 2026-10-12 재영).
+  // 검토 사유가 붙어도 상태는 「작성 중」 그대로다. 검토 대기는 상태가 아닌 분류이고 사유는 명세서 상세의 경고 띠로만 보인다(PAY-01 · 06, 2026-10-26 재영).
   const payRow = (name, store, h, base, extra, ded, net, st) => [ui.link(name, PD), store, h, base, extra, ded, `<b class="font-semibold">${net}</b>`, st];
   const payList = (title, right, rows) =>
     p.section(
@@ -338,8 +342,8 @@ export function staffSections({ A, R }) {
       ),
       rows.length ? pageNav(4) : "",
     );
-  const counts = (a, b, c, d) =>
-    `<p class="text-[14px] text-erp-label">작성 중 <b class="font-semibold text-erp-ink">${a}</b> · 검토 중 <b class="font-semibold text-erp-ink">${b}</b> · 확정 <b class="font-semibold text-erp-ink">${c}</b> · 발송 완료 <b class="font-semibold text-erp-ink">${d}</b></p>`;
+  const counts = (a, c, d) =>
+    `<p class="text-[14px] text-erp-label">작성 중 <b class="font-semibold text-erp-ink">${a}</b> · 확정 <b class="font-semibold text-erp-ink">${c}</b> · 발송 완료 <b class="font-semibold text-erp-ink">${d}</b></p>`;
   // 목록 오른쪽 위 버튼: 「급여명세서 작성」은 어느 달이든 늘 보인다(2026-10-02 재영). 누르면 점포·직원을 고르는 팝업이 뜨고, 고른 직원으로 작성하면 데모라 명세서 화면으로 간다.
   // 근로계약이 없거나 이 달 명세서가 이미 있는 직원은 고를 수 없다(WHALEERP-226). 점포 · 이름으로 좁히기와 「작성」 켜기는 PICK_SCRIPT.
   const pickId = x.dialogId();
@@ -383,19 +387,19 @@ export function staffSections({ A, R }) {
   const months =
     month(
       "2026-08-01",
-      counts(52, 8, 3, 0) +
+      counts(60, 3, 0) +
         payList("급여명세서", payButtons(3), [
           payRow("오세라", "모리커피 서초점", "180.0", "3,420,000", "184,000", "-", "3,604,000", p.tag("quiet", "작성 중")),
-          payRow("서지안", "모리커피 서초점", "168.0", "2,840,000", "186,000", "-", "3,026,000", p.tag("warn", "검토 중")),
+          payRow("서지안", "모리커피 서초점", "168.0", "2,840,000", "186,000", "-", "3,026,000", p.tag("quiet", "작성 중")),
           payRow("문태경", "온기식당 판교점", "184.0", "3,680,000", "276,000", "-", "3,956,000", p.tag("quiet", "작성 중")),
           payRow("배정숙", "온기식당 판교점", "96.0", "1,113,600", "92,800", "-", "1,206,400", p.tag("quiet", "작성 중")),
-          payRow("권도윤", "모리커피 서초점", "176.0", "1,971,200", "164,800", "-", "2,136,000", p.tag("warn", "검토 중")),
+          payRow("권도윤", "모리커피 서초점", "176.0", "1,971,200", "164,800", "-", "2,136,000", p.tag("quiet", "작성 중")),
           ["남도현", "모리커피 성수점", "-", "-", "-", "-", "-", p.tag("risk", "계약 없음 · 초안 없음")],
         ]),
     ) +
     month(
       "2026-07-01",
-      counts(0, 0, 0, 61) +
+      counts(0, 0, 61) +
         payList("급여명세서", payButtons(0), [
           payRow("오세라", "모리커피 서초점", "176.0", "3,420,000", "142,000", "241,800", "3,320,200", sent),
           payRow("서지안", "모리커피 서초점", "168.0", "2,840,000", "142,000", "241,800", "2,740,200", sent),
@@ -404,12 +408,12 @@ export function staffSections({ A, R }) {
           payRow("권도윤", "모리커피 서초점", "172.0", "1,926,400", "158,000", "68,780", "2,015,620", sent),
         ]),
     ) +
-    month("", counts(0, 0, 0, 0) + payList("급여명세서", payButtons(0), []));
+    month("", counts(0, 0, 0) + payList("급여명세서", payButtons(0), []));
   // 급여명세서 관리: 왼쪽 필터(점포 · 직원 · 명세서 상태) + 달 이동 · 상태 건수 · 명세서 목록. 「급여 월」 선택칸은 달 이동으로 옮겼다.
   const payslipsFilter = ui.filterPanel(A, [
     storeFilter(),
     ui.filterSection("직원", ui.searchField(A, { placeholder: "이름" }), { tight: true }),
-    ui.filterSection("명세서 상태", ["작성 중", "검토 중", "확정", "발송 완료"].map((t) => ui.checkbox(A, t, true)).join(""), { last: true }),
+    ui.filterSection("명세서 상태", ["작성 중", "확정", "발송 완료"].map((t) => ui.checkbox(A, t, true)).join(""), { last: true }),
   ]);
   // 직원 고르기 팝업은 달 묶음(hidden) 밖에 한 번만 둔다 — 숨긴 묶음 안의 dialog 는 열어도 보이지 않는다.
   const payrollTab = `<div class="flex flex-col gap-[12px]">${p.weekNav(A, "pay-months", "2026-08-01", { month: true })}<div id="pay-months">${months}</div></div>${pickDialog}`;
@@ -505,6 +509,8 @@ export function staffSections({ A, R }) {
   );
   // 출퇴근 대신 등록(운영 정책 ATT-20): 직원 · 날짜 · 출근 · 퇴근 · 사유(필수). 직원 근무 앱에는 연필 표시로 보인다.
   // 그 날짜에 체결 완료 계약이 없는 직원은 선택지에서 뺀다(STAFF-29) — 09-06의 권도윤은 재계약 서명 대기라 빠졌다.
+  // 위치정보에 동의한 직원은 여기서 고르지 않는다. 그날 출근 · 퇴근이 둘 다 없으면 「보정」으로 두 시각을 넣는다 — 조건은 대신 등록과 같다(최근 3개월 · 사유 필수 · 그날 체결 완료 계약, 2026-10-26 재영).
+  // 보정으로 채운 줄은 「수정됨」 하나로만 보이고 「대신 등록」으로 같이 보이지 않는다.
   const proxyForm = ui.slidePanel(
     proxyPanel,
     "출퇴근 대신 등록",
@@ -518,6 +524,7 @@ export function staffSections({ A, R }) {
         ui.formRow(p.fieldH(req("출근"), p.timeField("09:00", "출근"), ""), p.fieldH("퇴근", p.timeField("", "퇴근"), "")),
         p.fieldH(req("사유"), ui.textarea({ rows: 4, placeholder: "예: 위치 수집 일시 중지 · 점장 확인" }), ""),
       ) +
+      p.note("위치정보 동의를 거부·철회했거나 위치 수집을 일시 중지한 직원만 고를 수 있습니다. 동의한 직원은 그날 출근·퇴근 기록이 모두 없어도 「보정」으로 두 시각을 넣습니다.") +
       ui.panelButtons("취소", "대신 등록"),
   );
   // 배정 대상·수행 방식 라벨과 ⓘ 툴팁(2026-10-08 재영)

@@ -160,7 +160,7 @@
                 <ul class="pol">
                 <li><span class="pol__t">초대·계약·근무스케줄·TO-DO·급여 모두 <b>BP 마스터·BP 관리자·가맹마스터·가맹관리자</b>의 일이고 자기 소속 범위 안에서만이다. 권한이 없으면 진입점을 숨긴다.</span><span class="pol__ref">F-XJXAQO · F-GLGEOF · F-NUXMTT · F-XXYSNZ</span></li>
                 <li><span class="pol__t">마스터는 자기 <b>전체 소속 범위</b>, 관리자는 <b>점포 범위</b>에서 일한다.</span><span class="pol__ref">F-NUXMTT</span></li>
-                <li><span class="pol__t">가맹 점포 직원의 개인 기록은 직원이 <b>본사 제공 동의</b>를 한 경우에만 본사(BP 마스터·BP 관리자)에게 보인다. 가맹 점포 직원의 고용주는 가맹점이라 본사 열람을 <b>제3자 제공</b>으로 보기 때문이다. 동의하지 않았거나 철회한 직원은 직원 목록·상세·계약·출퇴근·근무스케줄·급여에서 가리고, 점포별 숫자에는 그대로 센다. 가맹마스터·가맹관리자 화면은 바뀌지 않고 직영 점포도 해당하지 않는다.</span><span class="pol__ref">운영 정책 ATT-30 · 법무 확인 대기 · STAFF-23</span></li>
+                <li><span class="pol__t">가맹 점포 직원의 개인 기록은 직원이 <b>본사 제공 동의</b>를 한 경우에만 본사(BP 마스터·BP 관리자)에게 보인다. 가맹 점포 직원의 고용주는 가맹점이라 본사 열람을 <b>제3자 제공</b>으로 보기 때문이다. 동의하지 않았거나 철회한 직원은 직원 목록·상세·계약·출퇴근·근무스케줄·급여에서 가린다. 점포별 인원수에는 그대로 세지만 본사 계정의 <b>근태 요약</b> 숫자에서는 근로계약 목록 상태별 개수와 같은 기준으로 뺀다(WHALEERP-133, 2026-10-26 재영). 가맹마스터·가맹관리자 화면은 바뀌지 않고 직영 점포도 해당하지 않는다.</span><span class="pol__ref">운영 정책 ATT-30 · 법무 확인 대기 · STAFF-23</span></li>
                 <li><span class="pol__t">플랫폼 마스터·관리자는 사업자의 근무·급여를 <b>조회만</b> 하고 고치지 못한다.</span><span class="pol__ref">F-NUXMTT · F-XXYSNZ</span></li>
                 <li><span class="pol__t">계약 상태를 손으로 바꾸는 것은 <b>BP 마스터와 가맹마스터</b>만 한다.</span><span class="pol__ref">S-XDBBDP</span></li>
                 <li><span class="pol__t">직원은 앱에서 자기 것만 본다. 근무스케줄을 고치지 못하고, TO-DO 를 만들거나 지우지 못하며, 배정된 것의 상태만 바꾼다.</span><span class="pol__ref">S-WPGUXX · S-NIAGGB</span></li>
@@ -214,8 +214,8 @@
                 <li><span class="pol__t">주는 이전·다음 화살표, 달력, 이번 주 버튼으로 옮기고 일간 표에는 오늘 버튼이 있다. 보존 기간 3년 안의 어느 주든 본다.</span><span class="pol__ref">S-WPGUXX</span></li>
                 <li><span class="pol__t">한 사람의 3년치 근무스케줄은 직원 상세에서 기간 필터와 페이저로 본다.</span><span class="pol__ref">S-PIXATL</span></li>
                 <li><span class="pol__t">출퇴근 기록의 <b>보정</b>과 위치정보 동의가 없는 직원의 <b>대신 등록</b>은 이 영역(근무스케줄)이 아니라 출·퇴근 현황 조회 메뉴에서 한다. 직원 본인의 등록은 직원 근무 앱에서 한다.</span><span class="pol__ref">F-NUXMTT</span></li>
-                <li><span class="pol__t">위치정보 동의를 <b>거부·철회했거나</b> 앱에서 위치 수집을 <b>일시 중지</b>한 직원은 앱으로 찍지 못한다. 그 직원에게만 관리자 웹에서 <b>대신 등록</b>이 열리고, 날짜·출퇴근 시각·사유(필수)를 최근 3개월 이내로 받는다. 목록에서 구분해 보이고 직원 근무 앱에는 연필 표시로 드러난다.</span><span class="pol__ref">S-EITCPC · 운영 정책 ATT-20 · 운영 정책 ATT-26</span></li>
-                <li><span class="pol__t">위치 판정 결과(반경 안·밖)는 <b>저장하지 않는다</b>. 위치 오차는 따로 판정하지 않는다(ATT-4). 확인 필요 사유 글자만 남고 관리자가 보정하거나 이상 없음을 누르면 그것도 지운다.</span><span class="pol__ref">S-EITCPC · 운영 정책 ATT-19</span></li>
+                <li><span class="pol__t">위치정보 동의를 <b>거부·철회했거나</b> 앱에서 위치 수집을 <b>일시 중지</b>한 직원은 앱으로 찍지 못한다. 그 직원에게만 관리자 웹에서 <b>대신 등록</b>이 열리고, 날짜·출퇴근 시각·사유(필수)를 최근 3개월 이내로 받는다. 목록에서 구분해 보이고 직원 근무 앱에는 연필 표시로 드러난다. 동의한 직원은 그날 출근·퇴근이 모두 없어도 대신 등록이 아니라 <b>보정</b>으로 두 시각을 넣고(조건은 같다), 보정으로 채운 줄은 「수정됨」 하나로만 보인다(2026-10-26 재영).</span><span class="pol__ref">S-EITCPC · 운영 정책 ATT-20 · 운영 정책 ATT-26</span></li>
+                <li><span class="pol__t">위치 판정 결과(반경 안·밖)는 <b>저장하지 않는다</b>. 위치 오차는 따로 판정하지 않는다(ATT-4). 확인 필요 사유 글자만 남고 관리자가 보정하거나 이상 없음(확인 필요 사유가 붙은 줄에만 있다. 출근·퇴근 미등록 줄은 보정만)을 누르면 그것도 지운다.</span><span class="pol__ref">S-EITCPC · 운영 정책 ATT-19</span></li>
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> TO-DO 는 정규 근무 밖 <b>특별업무 전용</b>이다. 반복·정기 업무는 넣지 않고 반복 설정도 없다.</span><span class="pol__ref">S-NIAGGB · STAFF-4</span></li>
                 <li><span class="pol__t">수행 날짜는 필수, 시간은 선택이다. 대상은 개인 또는 근무지 전체이고, 전체일 때 각자 수행인지 한 명 수행인지는 등록 때 고르고 바꾸지 못한다.</span><span class="pol__ref">S-NIAGGB</span></li>
                 <li><span class="pol__t">상태는 대기·진행 중·완료다. <b>TO-DO 배정 알림은 없다.</b> 수행 예정 일시가 다가오면 배정된 직원에게 수행 임박 알림을 한 번 보낸다(2026-10-19 재영). 긴급 표시는 직원 근무 앱 홈·근무 탭 맨 위에 세우고 관리자 웹 미조치에 세는 강조일 뿐이며 이력을 남긴다.</span><span class="pol__ref">S-NIAGGB</span></li>
@@ -227,13 +227,13 @@
                   <span class="badge badge--quiet">7</span>
                 </div>
                 <ul class="pol">
-                <li><span class="pol__t">명세서 상태는 작성 중·검토 중·확정·발송 완료다. 확정 취소는 <b>발송 후에도</b> 되고 검토 중으로 돌아간다.</span><span class="pol__ref">S-DOVWAR</span></li>
+                <li><span class="pol__t">명세서 상태는 작성 중·확정·발송 완료다. 검토 사유가 붙어도 상태는 작성 중 그대로이고 <b>검토 대기</b>는 상태가 아닌 분류다 — 사유는 명세서 상세의 경고 띠로 보인다(PAY-01 · 06, 2026-10-26 재영). 확정 취소는 <b>발송 후에도</b> 되고 작성 중으로 돌아간다.</span><span class="pol__ref">S-DOVWAR</span></li>
                 <li><span class="pol__t"><span class="badge badge--ok">쟁점 확정</span> 기본급·주휴수당·연장수당은 시스템이 계산하고 관리자가 확인·수정한다. <b>공제는 관리자가 입력</b>한다 — 요율이 해마다 바뀐다.</span><span class="pol__ref">S-DOVWAR · STAFF-5</span></li>
                 <li><span class="pol__t">지급은 <b>열한 줄</b>이고 그중 기본급·주휴수당·연장수당 셋만 시스템이 계산한다. 식대·자가운전보조금·육아수당은 비과세로 가른다. 공제는 <b>기본 여섯</b>이 늘 보이고 추가 열은 붙인 것만 보인다. 항목 목록은 플랫폼 관리자가 관리하고 점포 관리자는 골라 붙인다.</span><span class="pol__ref">S-DOVWAR · 운영 정책 PAY-02·03</span></li>
                 <li><span class="pol__t">주휴 대상은 1주 소정근로시간 15시간 이상에 그 주 소정근로일 개근, 그 주 전체가 계약 기간 안인 주이고 금액은 min(1주 소정, 40) ÷ 40 × 8시간 × 시급이다. 달을 걸친 주는 앞달 날짜만으로 주휴 조건을 채우면 앞달, 아니면 다음 달이 주 전체를 센다. 파트타이머 연장은 그 요일 계약 시간 초과분(계약 없는 요일은 전부)과 1주 40시간 초과분이고(같은 달 귀속), 정직원 연장수당에는 계약의 월간 연장(포괄)을 넣지 않는다(운영 정책 PAY-04). <b>가산 적용 여부는 명세서마다 관리자가 정한다</b> — 5인 미만 여부는 직원이 아니라 사업장의 사실이고 달마다 바뀔 수 있다. 끄면 연장수당을 가산 없이 1배로 계산한다(PAY-05).</span><span class="pol__ref">S-DOVWAR</span></li>
                 <li><span class="pol__t">계산식과 가산율은 확정 전에 노무사 검토를 거친다. 급여 지급 실행은 없다.</span><span class="pol__ref">S-DOVWAR</span></li>
                 <li><span class="pol__t">명세서는 이메일로 보내고 직원은 퇴직한 뒤에도 앱 급여 탭에서 보존 기간(생성일부터 3년) 동안 본다(PAY-4).</span><span class="pol__ref">F-XXYSNZ</span></li>
-                <li><span class="pol__t">초안 생성·수정·확정·확정 취소·발송을 한 <b>처리 이력</b>에 남긴다. 검토 중 금액을 고쳐도 남고, 수정 줄은 시스템이 바뀐 항목을 견줘 짓는다. 유형은 문장과 따로 저장해 목록에서 거른다. 직원 근무 앱은 유형과 시각만 본다.</span><span class="pol__ref">S-DOVWAR</span></li>
+                <li><span class="pol__t">초안 생성·수정·확정·확정 취소·발송을 한 <b>처리 이력</b>에 남긴다. 작성 중 금액을 고쳐도 남고, 수정 줄은 시스템이 바뀐 항목을 견줘 짓는다. 유형은 문장과 따로 저장해 목록에서 거른다. 직원 근무 앱은 유형과 시각만 본다.</span><span class="pol__ref">S-DOVWAR</span></li>
                 </ul>
               </div>
               <div class="panel">

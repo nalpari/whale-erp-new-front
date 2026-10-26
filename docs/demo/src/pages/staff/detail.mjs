@@ -87,7 +87,7 @@ export default ({ A, R }) => {
     whiteHead(ui.dataTable(
       [{ header: "지급월" }, { header: "기본급" }, { header: "수당" }, { header: "공제" }, { header: "실지급액" }, { header: "상태" }],
       [
-        [ui.link("2026-08", L("staff/payrolls-detail.html")), "2,840,000", "186,000", "-", "<b class=\"font-semibold\">3,026,000</b>", p.tag("warn", "검토 중")],
+        [ui.link("2026-08", L("staff/payrolls-detail.html")), "2,840,000", "186,000", "-", "<b class=\"font-semibold\">3,026,000</b>", p.tag("quiet", "작성 중")],
         ["2026-07", "2,840,000", "142,000", "241,800", "<b class=\"font-semibold\">2,740,200</b>", p.tag("ok", "발송 완료")],
         ["2026-06", "2,840,000", "98,000", "238,400", "<b class=\"font-semibold\">2,699,600</b>", p.tag("ok", "발송 완료")],
       ],

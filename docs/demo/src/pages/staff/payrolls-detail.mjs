@@ -1,4 +1,4 @@
-// 급여명세서 검토. 목업 docs/mockup/staff/payrolls-detail.html(서지안 · 2026-08 · 검토 중)을 BP 마스터로 본 것.
+// 급여명세서 검토. 목업 docs/mockup/staff/payrolls-detail.html(서지안 · 2026-08 · 작성 중, 검토 사유 있음)을 BP 마스터로 본 것.
 // 표본이 정직원이라 파트타이머 명세서에만 서는 3.3% 원천징수 스위치와 칸은 넣지 않았다.
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
@@ -122,7 +122,7 @@ export default ({ A, R }) => {
   const confirmDialog = x.dialog(
     confirmId,
     "급여명세서를 확정하시겠습니까?",
-    "확정하면 수정할 수 없습니다. 확정 취소하면 검토 중으로 돌아옵니다. 발송은 급여명세서 목록에서 확정 건을 모아 보냅니다.",
+    "확정하면 수정할 수 없습니다. 확정 취소하면 작성 중으로 돌아옵니다. 발송은 급여명세서 목록에서 확정 건을 모아 보냅니다.",
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("확정", { "data-close": true }),
   );
   const body = ui.detailBody(`<div class="flex flex-col gap-[12px]">${head}${warn}</div>${p.cols(pay, reasons + refs + log)}${confirmDialog}`);
