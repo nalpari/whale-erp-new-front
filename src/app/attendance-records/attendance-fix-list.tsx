@@ -355,7 +355,8 @@ export function ProxyButton({ stores, today, editableFrom }: { stores: string; t
             onClose={() => setOpen(false)}
             onDone={(result) => {
               if (result.ok) {
-                toast(result.isPayslipConfirmed ? `대신 등록했습니다. ${PAYSLIP_WARNING}` : "대신 등록했습니다.");
+                const done = result.isProxy ? "대신 등록했습니다." : "보정했습니다.";
+                toast(result.isPayslipConfirmed ? `${done} ${PAYSLIP_WARNING}` : done);
                 setOpen(false);
               }
               router.refresh();
@@ -367,7 +368,7 @@ export function ProxyButton({ stores, today, editableFrom }: { stores: string; t
   );
 }
 
-function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: string; today: string; editableFrom: string; onClose: () => void; onDone: (r: EditResult) => void }) {
+function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: string; today: string; editableFrom: string; onClose: () => void; onDone: (r: EditResult & { isProxy: boolean }) => void }) {
   const [date, setDate] = useState(today);
   const [staff, setStaff] = useState<ProxyStaff[] | null>(null);
   const [staffId, setStaffId] = useState<number | null>(null);
@@ -398,17 +399,21 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
     loadStaff(day);
   };
   const manyStores = new Set((staff ?? []).map((s) => s.storeId)).size > 1;
+  // 위치정보에 동의한 직원은 대신 등록이 아니라 기록 없는 날을 보정으로 채운다 — 출근 · 퇴근을 함께 받는다(2026-10-26 재영)
+  const picked = staff?.find((s) => s.staffMemberId === staffId);
+  const isProxy = picked?.isProxy ?? true;
 
   const save = () => {
     if (staffId === null) return setError("직원을 골라 주세요.");
     if (!TIME.test(checkIn)) return setError("출근 시각을 입력해 주세요.");
+    if (!isProxy && !checkOut) return setError("퇴근 시각을 입력해 주세요.");
     if (checkOut && !TIME.test(checkOut)) return setError("퇴근 시각을 시 · 분까지 입력해 주세요.");
     if (!reason.trim()) return setError("사유를 입력해 주세요.");
     setError(null);
     startTransition(async () => {
       const result = await proxyAttendanceAction({ staffMemberId: staffId, date, checkInTime: checkIn, ...(checkOut ? { checkOutTime: checkOut } : {}), reason: reason.trim() });
       if (!result.ok && result.status !== undefined && result.status < 500) return setError(result.message);
-      onDone(result);
+      onDone({ ...result, isProxy });
     });
   };
 
@@ -419,10 +424,11 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
         <FormRow>
           <Field label="직원" required>
             <Select aria-label="직원" value={staffId ?? ""} onChange={(e) => setStaffId(e.target.value ? Number(e.target.value) : null)} disabled={!staff}>
-              <option value="">{staff === null ? "불러오는 중…" : staff.length ? "직원 선택" : "대신 등록할 직원 없음"}</option>
+              <option value="">{staff === null ? "불러오는 중…" : staff.length ? "직원 선택" : "등록할 수 있는 직원 없음"}</option>
               {(staff ?? []).map((s) => (
                 <option key={s.staffMemberId} value={s.staffMemberId}>
                   {manyStores ? `${s.name} · ${s.storeName}` : s.name}
+                  {s.isProxy ? "" : " (보정)"}
                 </option>
               ))}
             </Select>
@@ -435,17 +441,17 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
           <Field label="출근" required>
             <TextField type="time" aria-label="출근" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
           </Field>
-          <Field label="퇴근">
+          <Field label="퇴근" required={!isProxy}>
             <TextField type="time" aria-label="퇴근" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />
           </Field>
         </FormRow>
         <OvernightNote date={date} checkIn={checkIn} checkOut={checkOut} />
-        {staff?.find((s) => s.staffMemberId === staffId)?.isPayslipConfirmed && <PayslipWarning />}
+        {picked?.isPayslipConfirmed && <PayslipWarning />}
         <Field label="사유" required>
           <Textarea aria-label="사유" rows={4} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="예: 위치 수집 일시 중지 · 점장 확인" />
         </Field>
         <p className="text-[13px] text-erp-label">
-          위치정보 동의를 하지 않았거나 일시 중지한 직원만 고를 수 있습니다. 퇴근이 출근보다 이르면 다음 날 퇴근이고, 아직 오지 않은 시각은 등록할 수 없습니다. 직원 근무 앱에는 연필 표시로 보입니다.
+          위치정보 동의를 하지 않았거나 일시 중지한 직원은 대신 등록합니다. 위치정보에 동의한 직원(보정)은 출근 · 퇴근을 모두 찍지 않은 날만 두 시각을 함께 넣어 보정합니다. 퇴근이 출근보다 이르면 다음 날 퇴근이고, 아직 오지 않은 시각은 등록할 수 없습니다. 직원 근무 앱에는 연필 표시로 보입니다.
         </p>
       </FormGroup>
       {error && (
@@ -458,7 +464,7 @@ function ProxyForm({ stores, today, editableFrom, onClose, onDone }: { stores: s
           취소
         </Button>
         <Button onClick={save} disabled={busy}>
-          대신 등록
+          {isProxy ? "대신 등록" : "보정"}
         </Button>
       </div>
     </div>
