@@ -225,7 +225,8 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
 
       <ConfirmDialog
         open={preview !== null}
-        title="메뉴 권한 회수"
+        // 켜져 있던 칸을 끄고 저장할 때 묻는 창 — 문구는 사용자 지정(2026-10-26, 전엔 「메뉴 권한 회수」 · 끈 칸 수 · 함께 꺼지는 아래 권한 그룹 수)
+        title="메뉴 권한 변경"
         confirmLabel="저장"
         wide
         busy={busy}
@@ -234,18 +235,11 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
       >
         {preview && (
           <div className="flex flex-col gap-[12px] break-keep">
+            <p>메뉴 접근 권한이 변경됩니다.</p>
             <p>
-              끈 칸 <b className="font-semibold">{preview.revokedCells.toLocaleString("ko-KR")}개</b>가 이 권한에서 빠집니다.
+              영향받는 사용자: <b className="font-semibold">{preview.affectedAdminCount.toLocaleString("ko-KR")}명</b>
             </p>
-            {preview.affectedRoleGroupCount > 0 && (
-              <p>
-                이 권한 아래 <b className="font-semibold">권한 그룹 {preview.affectedRoleGroupCount.toLocaleString("ko-KR")}개</b>에서도 같은 칸이 함께 꺼지고 되돌리지 않습니다.
-              </p>
-            )}
-            <p>
-              영향을 받는 사용자는 <b className="font-semibold">{preview.affectedAdminCount.toLocaleString("ko-KR")}명</b>이고, 로그인 중이어도 다음 요청부터 새 권한으로
-              판정됩니다.
-            </p>
+            <p>변경된 권한은 재로그인 없이 다음 요청부터 적용됩니다.</p>
           </div>
         )}
       </ConfirmDialog>
