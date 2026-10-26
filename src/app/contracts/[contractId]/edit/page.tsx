@@ -64,6 +64,8 @@ export default async function EditContractPage({ params, searchParams }: PagePro
                 signedIn
                 contractId={contractId}
                 initial={fromDetail(detail)}
+                // 재계약 임시저장(WHALEERP-156)은 근무지 · 번호를 바꾸지 않는다(api 가 400 으로 다시 본다)
+                previousContractId={detail.previousContractId ?? undefined}
                 back={back}
                 deleteButton={
                   <ContractPermission action="delete">

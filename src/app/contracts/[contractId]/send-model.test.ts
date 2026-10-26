@@ -131,11 +131,15 @@ test("발송 대기 종료도 같은 규칙 — 모를 때 문장만 종료 문�
 });
 
 test("거부 · 만료 재발송 확인창 — 같은 조건으로 다시 보낸다는 문장을 더한다(WHALEERP-153)", () => {
-  const rejected = resendDialogCopy("REJECTED", "남도현");
+  // 가입한 직원 — 앱으로(서명 대기 문구)
+  const rejected = resendDialogCopy("REJECTED", "남도현", true);
   assert.equal(rejected.title, "계약서를 다시 보내시겠습니까?");
   assert.deepEqual(rejected.body, [
-    "같은 조건의 계약서를 남도현 님에게 다시 보냅니다. 날인 기한은 발송일로부터 30일입니다.",
     "거부된 근로계약서를 같은 조건으로 다시 보냅니다. 내용을 바꾸려면 새 계약을 작성해 주세요.",
+    "같은 조건의 계약서를 남도현 님에게 다시 보냅니다. 날인 기한은 발송일로부터 30일입니다.",
   ]);
-  assert.equal(resendDialogCopy("EXPIRED", null).body[1], "날인 기한이 지나 만료된 근로계약서를 같은 조건으로 다시 보냅니다.");
+  // 가입 전 직원 — 가입 초대 알림톡(발송 대기 문구)
+  const expired = resendDialogCopy("EXPIRED", null, false);
+  assert.equal(expired.body[0], "날인 기한이 지나 만료된 근로계약서를 같은 조건으로 다시 보냅니다.");
+  assert.match(expired.body[1], /가입 초대 알림톡/);
 });

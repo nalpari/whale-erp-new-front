@@ -220,11 +220,15 @@ export function fromDetail(d: ContractDetail): ContractForm {
 }
 
 /**
- * 재계약(WHALEERP-156) 작성 화면의 처음 값 — 직전 계약 값을 그대로 채우고 기간만 새로 잡는다. 시작일은 직전 계약 종료일 다음 날(종료일이
- * 없으면 비움), 종료일은 비운다.
+ * 재계약(WHALEERP-156) 작성 화면의 처음 값 — 직전 계약 값을 채우고 기간을 새로 잡는다. 시작일은 직전 계약 종료일 다음 날인데, 그 날이
+ * 오늘(한국 날짜)보다 앞이면(기간이 끝난 지 오래된 계약) 비워 관리자가 고르게 한다 — 지난 날로 시작하는 계약이 그대로 나가지 않게.
+ * 종료일은 비운다. 수습은 이어 일하는 직원이라 끈다(관리자가 다시 켤 수 있다).
  */
-export function renewalFromDetail(d: ContractDetail): ContractForm {
-  return { ...fromDetail(d), startDate: d.endDate ? nextDay(d.endDate) : "", endDate: "" };
+export function renewalFromDetail(d: ContractDetail, now = new Date()): ContractForm {
+  const base = fromDetail(d);
+  const today = new Date(now.getTime() + 9 * 3600_000).toISOString().slice(0, 10);
+  const start = d.endDate ? nextDay(d.endDate) : "";
+  return { ...base, startDate: start && start >= today ? start : "", endDate: "", probation: false };
 }
 
 const nextDay = (iso: string) => {
@@ -237,7 +241,9 @@ const nextDay = (iso: string) => {
  * 재계약을 시작할 수 있는 계약 — 체결 완료이거나, 기간이 끝나 하루 배치가 체결 완료에서 닫은 것(api 의 SIGNED_ONCE 와 같다 — 이력
  * 체결 완료 → 종료, 시스템). 대체로 닫힌 체결 완료(관리자)는 새 계약이 이미 그 자리를 이어 재계약하지 않는다(api #152 리뷰).
  */
-export function canRenew(d: Pick<ContractDetail, "status" | "histories">): boolean {
+export function canRenew(d: Pick<ContractDetail, "status" | "histories" | "renewedBy">): boolean {
+  // 이미 이어지는 재계약(진행 중이거나 체결)이 있으면 다시 띄우지 않는다 — 다 쓰고 저장하면 api 가 막는다(front #135 code-review)
+  if (d.renewedBy !== null) return false;
   return d.status === "SIGNED" || (d.status === "ENDED" && d.histories.some((h) => h.fromStatus === "SIGNED" && h.toStatus === "ENDED" && h.actor === "SYSTEM"));
 }
 

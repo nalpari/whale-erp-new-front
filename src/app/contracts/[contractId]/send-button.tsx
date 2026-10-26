@@ -16,13 +16,13 @@ import { resendDialogCopy, sendFailureOf } from "./send-model";
 // 서명 대기의 가입 전 직원(가입 초대 알림톡)도 데모 문구를 본다. 가입한 직원의 발송 대기(데이터가 이상할 때만)는 api 가 앱 알림으로
 // 보내고 서명 대기로 넘기지만, 화면은 가입 여부를 몰라 가입 초대 문구를 보인다.
 // 접수 여부를 모르거나 화면이 낡았으면(recheck) 보내기를 막고 상세를 다시 읽는다 — 다시 눌러 두 번 가지 않게(front #41 리뷰).
-export function SendContractButton({ contractId, status, name, back }: { contractId: number; status: string; name: string | null; back: string }) {
+export function SendContractButton({ contractId, status, name, back, staffJoined }: { contractId: number; status: string; name: string | null; back: string; staffJoined?: boolean }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [locked, setLocked] = useState(false);
   const [pending, start] = useTransition();
-  const copy = resendDialogCopy(status, name);
+  const copy = resendDialogCopy(status, name, staffJoined);
 
   return (
     <>
