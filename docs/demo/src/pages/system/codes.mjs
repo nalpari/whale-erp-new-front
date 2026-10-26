@@ -165,7 +165,8 @@ export default ({ A, R }) => {
       ),
   );
 
-  // BP에 적용 확인창 — 문구는 목업 pop-apply 와 같다. 적용 대상 요약(표 머리와 같은 바탕·선) + 되돌릴 수 없다는 위험 띠.
+  // BP에 적용 확인창 — 적용 대상 요약(표 머리와 같은 바탕·선) + 되돌릴 수 없다는 위험 띠. 제목·위험 띠·설명
+  // 문구는 사용자 지정(2026-10-26, 앱 bp-apply-dialog.tsx 와 같다).
   const summary = (rows) =>
     `<dl class="grid grid-cols-[84px_1fr] gap-x-[12px] gap-y-[8px] rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[16px] py-[14px]">${rows
       .map(([k, v]) => `<dt class="font-medium text-erp-label">${k}</dt><dd class="text-erp-ink">${v}</dd>`)
@@ -173,15 +174,15 @@ export default ({ A, R }) => {
   const dialog = x
     .dialog(
       apply,
-      "BP에 적용",
+      "BP에 적용하시겠습니까?",
       `<div class="flex flex-col gap-[12px] break-keep">` +
         summary([
           ["그룹", `PAY_TYPE <span class="text-erp-label">·</span> 급여 형태`],
           ["상세 코드", "지금 등록된 상세 코드 전부"],
         ]) +
-        riskBand("사용 중인 모든 BP에 배포되며 되돌릴 수 없습니다", {
+        riskBand("사용 중인 모든 BP에 적용되며, 적용 후에는 취소할 수 없습니다.", {
           tone: "risk",
-          desc: "적용하면 이 그룹과 상세 코드가 각 BP에 복사되고, 그룹의 BP 적용은 다시 미적용으로 바꿀 수 없습니다. 적용한 뒤 추가한 상세 코드는 다시 BP에 적용하면 기존 BP에도 들어갑니다 — BP에 이미 있는 코드는 건너뛰어 BP가 고친 값은 그대로입니다.",
+          desc: "BP에 등록된 기존 코드는 유지되며, 새로 추가된 코드만 반영됩니다.",
         }) +
         `</div>`,
       ui.button("취소", { variant: "off", "data-close": true }) + ui.button("적용", { "data-close": true }),
