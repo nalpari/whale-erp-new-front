@@ -30,8 +30,10 @@ function FailedBand({ message }: { message: string }) {
 /** 저장 성공 화면 — 패널을 닫지 않고 폼을 이 화면으로 바꾼다(사용자 지정, 2026-10-26). 다른 기기 로그인은
  * 그대로 이어지므로 "다시 로그인"이 아니라 "다음 로그인부터"로 안내한다. 상자·아이콘은 C안(연한 파랑 원
  * erp-on-bg + 파랑 체크 erp-on, DESIGN.md 상태 파랑·연한 파랑 바탕 토큰) — 입력칸 자리에 권한그룹 상세의
- * 빈 칸과 같은 상자(erp-thead-line 테두리)를 두는 사용자 비교 시안 기준(scratchpad pw-done-compare.html). */
-function Done({ onClose }: { onClose: () => void }) {
+ * 빈 칸과 같은 상자(erp-thead-line 테두리)를 두는 사용자 비교 시안 기준(scratchpad pw-done-compare.html).
+ * headingId 로 포커스를 받는다 — 비우지 않으면 폼의 "비밀번호 변경" 버튼이 통째로 사라지며 포커스가 body 로
+ * 빠진다(코드 리뷰로 찾음, 2026-10-26). */
+function Done({ headingId, onClose }: { headingId: string; onClose: () => void }) {
   return (
     <>
       <div className="flex flex-col items-center gap-[6px] rounded-[2px] border border-erp-thead-line px-[18px] py-[36px] text-center">
@@ -39,7 +41,9 @@ function Done({ onClose }: { onClose: () => void }) {
           <circle cx="28" cy="28" r="28" className="fill-erp-on-bg" />
           <path d="M17 28.5l7.5 7.5L39.5 21" fill="none" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" className="stroke-erp-on" />
         </svg>
-        <p className="text-[16px] font-semibold text-erp-ink">비밀번호가 변경되었습니다.</p>
+        <p id={headingId} tabIndex={-1} className="text-[16px] font-semibold text-erp-ink outline-none!">
+          비밀번호가 변경되었습니다.
+        </p>
         <p className="text-[14px] text-erp-muted">다음 로그인부터 변경된 비밀번호로 로그인해 주세요.</p>
       </div>
       <div className="flex justify-center gap-[6px]">
@@ -102,10 +106,22 @@ export function PasswordChangePanel({ id, open, onClose, trigger }: { id: string
   useEffect(() => {
     if (open) saveNumber.current++;
   }, [open]);
+  // 성공하면 폼이 통째로 완료 화면으로 바뀌어 포커스를 받던 "비밀번호 변경" 버튼이 사라진다 — 완료 문구로
+  // 옮겨 body 로 빠지지 않게 한다(my-page-panel.tsx focusFirstError 와 같은 이유, 코드 리뷰로 찾음, 2026-10-26).
+  const doneHeadingId = `${ids}-done`;
+  useEffect(() => {
+    if (done) requestAnimationFrame(() => document.getElementById(doneHeadingId)?.focus());
+  }, [done, doneHeadingId]);
 
   const messageId = (field: MyPasswordFormField) => `${ids}-${field}`;
   const invalid = (field: MyPasswordFormField) => (fieldError?.at === field ? true : undefined);
   const describe = (field: MyPasswordFormField) => (fieldError?.at === field ? messageId(field) : undefined);
+  // my-page-panel.tsx 의 focusFirstError 와 같다 — 패널 자신의 id(SlidePanel 의 <aside id={id}>)로 좁힌다.
+  // requestAnimationFrame 의 반환값(번호)을 그대로 돌려주면 안 된다 — handleSave 의 async 콜백이 이 값을
+  // 반환해 useTransition 의 TransitionFunction 타입(Promise<void>)과 안 맞는다(타입체크로 찾음, 2026-10-26).
+  const focusFirstError = () => {
+    requestAnimationFrame(() => (document.getElementById(id)?.querySelector('[aria-invalid="true"]') as HTMLElement | null)?.focus());
+  };
 
   // Esc · 바탕 클릭도 이 하나로 받는다 — 저장 중에 닫으면 결과(성공이면 완료 화면, 실패면 오류 문구)를 아무도
   // 못 본다(closeOnBackdrop 이 saving 을 안 보고 그대로 onClose 를 불러서, 닫기 버튼만 disabled 여도 막히지
@@ -130,7 +146,8 @@ export function PasswordChangePanel({ id, open, onClose, trigger }: { id: string
         if (!result.ok) {
           const field = myPasswordErrorField(result.status, result.message);
           if (!field) return setFailure(result.message);
-          return setFieldError({ at: field, message: result.message });
+          setFieldError({ at: field, message: result.message });
+          return focusFirstError();
         }
         setForm(EMPTY);
         setDone(true);
@@ -147,7 +164,7 @@ export function PasswordChangePanel({ id, open, onClose, trigger }: { id: string
     <SlidePanel id={id} open={open} onClose={handleClose} label="비밀번호 변경" trigger={trigger} closeOnBackdrop>
       <h2 className="text-[18px] font-semibold text-erp-ink">비밀번호 변경</h2>
       {done ? (
-        <Done onClose={onClose} />
+        <Done headingId={doneHeadingId} onClose={onClose} />
       ) : (
         <>
           {failure && <FailedBand message={failure} />}
