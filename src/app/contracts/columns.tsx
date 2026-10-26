@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Badge, type Column } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
-import { deadlineNote, periodText, sentText, wageText, withBack, type ContractListItem } from "./contract-list";
+import { periodText, sentText, statusNotes, wageText, withBack, type ContractListItem } from "./contract-list";
 
 type Status = NonNullable<ContractListItem["status"]>;
 
@@ -46,11 +46,10 @@ export function contractColumns(
     {
       header: "상태",
       cell: (r) => {
-        // 발송 대기는 판별한 초대 유형을 붙인다(예: 발송 대기 · 가입 초대). 서명 대기는 남은 날.
-        const note = r.status === "PENDING_SEND" && r.draftAction ? labelOf(draftActions, r.draftAction) : deadlineNote(r, now);
+        // 직원의 가입 · 초대 안내(가입 대기 중 · 소속 확인 중 등), 서명 대기의 남은 날, 퇴직을 붙인다(statusNotes, WHALEERP-133)
         if (!r.status) return "-";
-        const label = labelOf(statuses, r.status);
-        return <StatusBadge status={r.status} label={note ? `${label} · ${note}` : label} />;
+        const notes = statusNotes(r, now, (v) => labelOf(draftActions, v));
+        return <StatusBadge status={r.status} label={[labelOf(statuses, r.status), ...notes].join(" · ")} />;
       },
     },
   ];

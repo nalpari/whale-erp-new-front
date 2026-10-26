@@ -86,6 +86,9 @@ export const DEFAULT_SEVERANCE_PAY_TERMS = "계속근로기간 1년에 대하여
 /** POST · PUT /contracts 본문. api 의 openapi.json 에서 만든 타입을 쓴다(pnpm openapi:types). 임시저장이면 계약 칸은 비워 보낼 수 있다 */
 export type CreateContractBody = components["schemas"]["CreateContractDto"];
 
+/** 저장 응답 — 저장 뒤 상태와 초대 유형으로 시스템이 한 처리를 알린다(WHALEERP-132) */
+export type SavedContract = components["schemas"]["CreatedContractResponseDto"];
+
 /** 같은 점포 · 같은 번호의 진행 중 계약 — 대체할지 묻는 데 쓴다 */
 // 이름 · 기간은 확인창에서 누구 계약인지 보이려고 api 가 싣는다(api #49) — 번호를 넘겨받은 다른 사람의 계약일 수 있다.
 export type InProgressContract = { contractId: number; status: string; name: string | null; startDate: string | null; endDate: string | null };
