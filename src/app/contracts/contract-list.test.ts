@@ -20,7 +20,6 @@ import {
   withBack,
   withKnownStatus,
   withPickedStores,
-  withSaved,
   withScopeCondition,
   type ListQuery,
 } from "./contract-list.ts";
@@ -210,13 +209,6 @@ test("저장 뒤 안내 — 임시저장 · 종이 계약은 상태로, 보낸 �
   assert.match(savedNoticeOf("SIGNUP_INVITE") ?? "", /가입 초대 알림톡을 보냈습니다/);
   assert.equal(savedNoticeOf("toString"), null);
   assert.equal(savedNoticeOf(["DRAFT"]), null);
-  assert.equal(withSaved("/contracts", "DRAFT"), "/contracts?saved=DRAFT");
-  assert.equal(withSaved("/contracts?page=2", "DRAFT"), "/contracts?page=2&saved=DRAFT");
-  assert.equal(withSaved("/contracts", null), "/contracts");
-  // 이미 있던 saved 는 바꾼다 — 겹치면 배열이 되어 안내가 사라진다
-  assert.equal(withSaved("/contracts?saved=DRAFT", "PAPER"), "/contracts?saved=PAPER");
-  // 새 계약 저장 뒤 실제로 가는 주소 — 점포 조건을 비운 목록에 안내를 싣는다
-  assert.equal(withSaved(listAfterSave("/contracts?storeIds=3&page=2", null), "SIGNUP_INVITE"), `${listAfterSave("/contracts?storeIds=3&page=2", null)}&saved=SIGNUP_INVITE`);
 });
 
 test("발송 대기에 가입 · 초대 안내가 없을 때 — 초안 직원 · 가입 상태가 null 이면 판별한 초대 유형, 가입한 직원은 없음", () => {

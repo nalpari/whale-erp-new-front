@@ -225,9 +225,14 @@ export function statusNotes(
 }
 
 /**
- * 저장 뒤 목록 위 안내(?saved=, WHALEERP-132) — 시스템이 한 처리. 저장 응답(status · draftAction)에서 savedKindOf 로 고른 값을 주소에
- * 싣는다. 모르는 값이면 안내가 없다.
+ * 저장 뒤 목록 위 안내(WHALEERP-132) — 시스템이 한 처리. 저장 응답(status · draftAction)에서 savedKindOf 로 고른 값을 짧게 사는 쿠키
+ * (SAVED_COOKIE)로 목록에 넘긴다. 주소에 싣지 않는다 — 주소에 남으면 새로고침 · 뒤로 가기 · 즐겨찾기마다 다시 뜨고, 지우려고 주소를 바꾸면
+ * 필터의 헤더 범위 채우기와 겹친다(front #127 ip-code-review). 모르는 값이면 안내가 없다.
  */
+export const SAVED_COOKIE = "contract-saved";
+/** 쿠키가 사는 시간(초) — 저장 뒤 목록을 그릴 동안만. 목록이 그리면 SavedNotice 가 지운다 */
+export const SAVED_COOKIE_MAX_AGE = 60;
+
 const SAVED_NOTICES: Record<string, string> = {
   DRAFT: "임시저장했습니다. 직원 이름을 눌러 이어 쓸 수 있습니다.",
   PAPER: "종이 계약을 등록했습니다. 발송 · 날인 없이 체결 완료입니다.",
@@ -249,15 +254,6 @@ export function savedKindOf(saved: { status?: string | null; draftAction?: strin
 
 export const savedNoticeOf = (raw: string | string[] | undefined): string | null =>
   typeof raw === "string" && Object.hasOwn(SAVED_NOTICES, raw) ? SAVED_NOTICES[raw] : null;
-
-/** 목록 주소에 저장 뒤 안내를 싣는다 — 안내 종류가 없으면 그대로. 이미 있던 saved 는 바꾼다(겹치면 배열이 되어 안내가 사라진다) */
-export function withSaved(href: string, kind: string | null): string {
-  if (!kind) return href;
-  const [path, query = ""] = href.split("?");
-  const params = new URLSearchParams(query);
-  params.set("saved", kind);
-  return `${path}?${params}`;
-}
 
 /** 서명 대기의 남은 날. 날인 기한 날짜까지 며칠 남았는지(D-0 이 마감일). */
 export function deadlineNote(row: Pick<ContractListItem, "status" | "signDeadlineAt">, now: Date): string | undefined {
