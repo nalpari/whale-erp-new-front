@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type RefObject } from "react";
-import { Badge, Button, ConfirmDialog, DetailTable, DetailValues, SlidePanel, Tag, useToast, type DetailRow } from "@/components/common";
+import { Badge, Button, ConfirmDialog, DetailTable, SlidePanel, Tag, useToast, type DetailRow } from "@/components/common";
 import { useAccount, usePagePermission } from "@/components/site/session-gate";
 import { formatDateTime, formatPhone } from "@/lib/format";
 import { adminActionsOf } from "@/lib/platform-admin-actions";
@@ -132,6 +132,11 @@ function DetailBody({
 
   const address = [admin.zipCode, admin.address, admin.addressDetail].filter((line): line is string => Boolean(line));
   const muted = (text: string) => <span className="text-erp-muted">{text}</span>;
+  const when = (at: string, who: string) => (
+    <span className="truncate">
+      {formatDateTime(at)} <span className="text-erp-label">· {who}</span>
+    </span>
+  );
   const rows: DetailRow[] = [
     { label: "아이디", value: admin.loginId },
     { label: "이름", value: name },
@@ -139,8 +144,8 @@ function DetailBody({
     { label: "이메일", value: admin.email ?? null },
     {
       label: "비밀번호",
-      // 미사용 계정은 초기화 버튼 · 미발송 표시 없이 「—」만 둔다 — 화면에서만 숨긴다(api 는 미사용 계정 초기화를 막지 않는다)
-      value: admin.accountStatus === "INACTIVE" ? muted("—") : (
+      // 미사용 계정은 초기화 버튼 · 미발송 표시 없이 빈칸으로 둔다(2026-10-23) — 화면에서만 숨긴다(api 는 미사용 계정 초기화를 막지 않는다)
+      value: admin.accountStatus === "INACTIVE" ? null : (
         <>
           {canUpdate && (
             <Blocked reason={isSelf ? "본인 비밀번호는 내 정보에서 바꿔 주세요" : undefined}>
@@ -169,12 +174,13 @@ function DetailBody({
         null
       ),
     },
-    // 최근 로그인 → 등록일시 → 최종 수정일시 순으로 둔다(2026-10-20 디자인 수정).
+    // 최근 로그인 → 등록 → 최종수정 순으로 둔다(2026-10-20 디자인 수정). 일시와 사람은 세로선 대신 「일시 · 사람」으로 —
+    // 권한 그룹 관리와 같은 라벨 · 구분자(2026-10-26 사용자 지정)
     { label: "최근 로그인", value: admin.lastLoginAt ? formatDateTime(admin.lastLoginAt) : muted("로그인 기록 없음") },
-    { label: "등록일시", value: <DetailValues items={[formatDateTime(admin.createdAt), admin.createdByName ?? muted("시스템")]} /> },
+    { label: "등록", value: when(admin.createdAt, admin.createdByName ?? "시스템") },
     {
-      label: "최종 수정일시",
-      value: admin.updatedByName ? <DetailValues items={[formatDateTime(admin.updatedAt), admin.updatedByName]} /> : muted("수정한 적 없음"),
+      label: "최종수정",
+      value: admin.updatedByName ? when(admin.updatedAt, admin.updatedByName) : muted("수정한 적 없음"),
     },
   ];
   // 미사용 전환일시는 상세에 더 보이지 않는다 — 누가 바꿨는지까지는 변경이력에 이미 쌓인다(2026-10-20 피드백).

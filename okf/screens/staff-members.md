@@ -1,39 +1,39 @@
 ---
 type: Screen
 title: 직원 정보 관리 화면 (구현)
-description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 오른쪽에 근무스케줄 · 출퇴근 현황(준비 중) · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다). 남은 것.
-tags: [staff, screen, retirement, password-reset, invitation]
+description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보에 재입사로 이은 재직 이력 줄(WHALEERP-615)을, 그 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 오른쪽에 근무스케줄 · 출퇴근 현황(준비 중) · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다), 기본 정보 생년월일 줄에 [정정] 확인창(WHALEERP-602)을 두었다. 남은 것.
+tags: [staff, screen, retirement, password-reset, invitation, birth-date]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-22T07:44:47Z }
+generated: { by: claude-code/sonnet-5.5, at: 2026-10-26T04:18:52Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
-    title: 타입(생성한 api 타입) · 조회 조건 → api 쿼리(staffListApiSearch) · 점포명 → 점포 id(storeIdsByName) · 상세 이메일 칸(staffEmailText) · 본사 제공 동의 칸(hqSharingConsentText)
-    last_modified: 2026-10-21T19:30:00Z
+    title: 타입(생성한 api 타입) · 조회 조건 → api 쿼리(staffListApiSearch — 고른 점포 · 점포 하나 범위는 storeIds, 직영 · 가맹 범위는 storeTypes) · 상세 이메일 칸(staffEmailText) · 본사 제공 동의 칸(hqSharingConsentText)
+    last_modified: 2026-10-26T03:31:34Z
   - id: staff-members-api
     resource: ../../src/lib/staff-members-api.ts
-    title: api 호출 — 목록 · 상세 · 상세 영역 요약(근무스케줄은 한 주) · 퇴직 미리 보기 · 처리 · 변경 · 취소 · 비밀번호 재설정 링크
-    last_modified: 2026-10-22T07:28:28Z
+    title: api 호출 — 목록 · 상세 · 상세 영역 요약(근무스케줄은 한 주) · 퇴직 미리 보기 · 처리 · 변경 · 취소 · 비밀번호 재설정 링크 · 생년월일 정정(correctBirthDate)
+    last_modified: 2026-10-26T03:31:34Z
   - id: api-types-generated
     resource: ../../src/lib/api-types.generated.ts
-    title: 생성한 api 타입 — 근무스케줄 칸은 한 주 응답 StaffMemberWeekScheduleResponseDto, TO-DO 칸은 TodoItemDto
-    last_modified: 2026-10-22T07:41:35Z
+    title: 생성한 api 타입 — 근무스케줄 칸은 한 주 응답 StaffMemberWeekScheduleResponseDto, TO-DO 칸은 TodoItemDto, 목록 쿼리 storeIds · storeTypes, 재직 이력은 StaffMemberEmploymentPeriodDto · 생년월일 정정(BirthDateCorrectionDto · 상세의 birthDateCorrectable)
+    last_modified: 2026-10-26T03:31:34Z
   - id: staff-list-query
     resource: ../../src/app/staff-members/staff-list-query.ts
-    title: 목록 URL ↔ 조회 조건(점포명 + storeIds)
-    last_modified: 2026-10-15T10:00:00Z
+    title: 목록 URL ↔ 조회 조건(점포 조건 storeIds · 빈 storeIds · scope) · 상세로 넘기는 ?back=(withBack · backHrefOf)
+    last_modified: 2026-10-23T04:18:49Z
   - id: staff-filter
     resource: ../../src/app/staff-members/staff-filter.tsx
-    title: 목록 필터 — 점포명을 로그인 정보의 관리 점포로 점포 id 로 바꾼다
-    last_modified: 2026-10-15T10:00:00Z
+    title: 목록 필터 — 점포 칸은 공통 점포 고르기(StorePicker), 상단 점포 범위와 잇는다(근로계약 목록과 같은 규칙)
+    last_modified: 2026-10-23T03:37:40Z
   - id: retirement-dialog
     resource: ../../src/app/staff-members/[id]/retirement-dialog.tsx
     title: 퇴직 처리 · 퇴직일 변경 · 취소 확인창
     last_modified: 2026-10-16T09:00:00Z
   - id: staff-detail-actions
     resource: ../../src/app/staff-members/[id]/staff-detail-actions.tsx
-    title: 상세 머리 버튼(퇴직 · 목록) · 비밀번호 초기화 버튼
-    last_modified: 2026-10-21T09:00:00Z
+    title: 상세 머리 버튼(퇴직 · 목록 — ?back= 의 목록 주소로) · 비밀번호 초기화 버튼
+    last_modified: 2026-10-23T03:37:40Z
   - id: confirm-dialog
     resource: ../../src/components/common/confirm-dialog.tsx
     title: 공통 확인창 — confirmVariant 추가
@@ -41,19 +41,23 @@ sources:
   - id: resend-invitation-button
     resource: ../../src/app/staff-members/resend-invitation-button.tsx
     title: 가입 초대 재발송 버튼 · 확인창(WHALEERP-138) — 근로계약 관리 수정 권한(MN000006)으로 가린다
-    last_modified: 2026-10-21T15:00:00Z
+    last_modified: 2026-10-23T05:20:57Z
   - id: staff-table
     resource: ../../src/app/staff-members/staff-table.tsx
-    title: 목록 표 — 가입·인증 칸의 재발송 버튼, 가린 행의 이름 자리
-    last_modified: 2026-10-21T12:00:00Z
+    title: 목록 표 — 가입·인증 칸의 재발송 버튼, 가린 행의 이름 자리, 상세 링크에 목록 주소 ?back=
+    last_modified: 2026-10-23T03:37:40Z
   - id: staff-list-page
     resource: ../../src/app/staff-members/page.tsx
     title: 직원 목록 화면
-    last_modified: 2026-10-12T08:33:58Z
+    last_modified: 2026-10-23T03:37:40Z
   - id: staff-detail-page
     resource: ../../src/app/staff-members/[id]/page.tsx
-    title: 직원 상세 화면(틀 + 기본 정보 · 퇴직일 · 가입 상태 · 초대 · 이메일 + 비밀번호 초기화 자리 + 근로계약 칸 + 오른쪽 영역 배치 · 근무스케줄 주(주소 week))
-    last_modified: 2026-10-22T06:09:19Z
+    title: 직원 상세 화면(틀 + 기본 정보 · 퇴직일 · 재직 이력 · 가입 상태 · 초대 · 이메일 + 비밀번호 초기화 자리 + 근로계약 칸 + 오른쪽 영역 배치 · 근무스케줄 주(주소 week) · [목록] 주소(주소 back, 없으면 상세 주소에 붙은 예전 목록 조건) + 생년월일 줄 [정정])
+    last_modified: 2026-10-26T03:31:34Z
+  - id: employment-history
+    resource: ../../src/app/staff-members/[id]/employment-history.ts
+    title: 재직 이력 줄(재입사로 이은 이전 · 이후 재직 기간, WHALEERP-615 — 링크는 ?back= + week)
+    last_modified: 2026-10-23T07:40:00Z
   - id: contract-box
     resource: ../../src/app/staff-members/[id]/contract-box.tsx
     title: 상세 근로계약 칸 — 근로계약 영역 요약(api #183)을 받고 실패 · 권한 없음이면 이 칸만 안내, 계약이 없으면 작성으로(WHALEERP-184). 줄 라벨 칸은 DetailTable 과 같은 폭(110px)을 옮겨 쓴다.
@@ -102,18 +106,26 @@ sources:
     resource: ../../src/lib/password-reset.ts
     title: 비밀번호 초기화 판정 — 버튼 노출 · 받는 곳 문구 · 실패 문구
     last_modified: 2026-10-16T07:47:00Z
+  - id: birth-date-dialog
+    resource: ../../src/app/staff-members/[id]/birth-date-dialog.tsx
+    title: 생년월일 줄의 [정정] 버튼 · 정정 확인창(WHALEERP-602)
+    last_modified: 2026-10-26T04:17:24Z
+  - id: birth-date
+    resource: ../../src/lib/birth-date.ts
+    title: 생년월일 정정 판정 — 버튼 노출 · 입력 검사 · 안내 문구 · 닫고 다시 받는 409
+    last_modified: 2026-10-26T04:06:15Z
   - id: use-action-failure
     resource: ../../src/app/staff-members/[id]/use-action-failure.ts
-    title: 상세 확인창 실패 처리(failureEffect) — 퇴직 처리는 모두, 비밀번호 초기화는 403 만 쓴다
-    last_modified: 2026-10-16T09:00:00Z
+    title: 상세 확인창 실패 처리(failureEffect) — 퇴직 처리는 모두, 비밀번호 초기화는 403 만, 생년월일 정정은 403 · 결과 모름을 쓴다
+    last_modified: 2026-10-26T03:31:34Z
   - id: staff-detail-server-actions
     resource: ../../src/app/staff-members/[id]/actions.ts
-    title: 퇴직 · 재설정 링크 발송 서버 액션
-    last_modified: 2026-10-16T09:00:00Z
+    title: 퇴직 · 재설정 링크 발송 · 생년월일 정정 서버 액션(실패에 api 409 code 를 싣는다)
+    last_modified: 2026-10-26T03:31:34Z
   - id: staff-row
     resource: ../../src/app/staff-members/staff-row.ts
     title: 한 줄 표시 규칙(배지 · D-day · 재직 칸 · 재발송 판정 · 상세 초대 줄). 갱신 예정 날수(RENEWAL_NOTICE_DAYS)를 상세 근로계약 칸과 함께 쓴다
-    last_modified: 2026-10-21T12:00:00Z
+    last_modified: 2026-10-23T05:20:57Z
   - id: retirement
     resource: ../../src/lib/retirement.ts
     title: 퇴직 처리 판정 — 상세 머리 버튼 · 퇴직일 범위 검사(WHALEERP-585)
@@ -150,19 +162,32 @@ sources:
 
 * 화면 묶음(가입 완료 · 초대 발송 · 연결 보류 · 소속 추가 확인 · 가입 불가)은 그 상태들을 `joinState` **쉼표 목록**으로,
   고용형태는 `employmentType` 쉼표 목록으로 보낸다. 모두 고른 목록과 재직 상태 「전체」는 파라미터를 뺀다(`staffListApiSearch`).
-* **묶음 · 고용형태를 하나도 고르지 않았거나 점포명에 맞는 점포가 없으면 api 를 부르지 않고 0건이다.** api 는 빈 값을
+* **묶음 · 고용형태를 하나도 고르지 않았으면 api 를 부르지 않고 0건이다.** api 는 빈 값을
   400 으로 막고, 파라미터를 빼면 전체를 돌려준다 — 둘을 바꿔 쓰면 「하나도 안 고름」이 「전체」가 된다.
-* **점포명 → 점포 id 는 로그인 정보의 관리 점포(`useStores`)에서 찾는다**(2026-10-15 노영주 A안). 필터가 점포명 부분 일치로
-  id 를 찾아 URL 에 `store` 와 `storeIds` 를 함께 두고, 서버는 `storeIds` 를 그대로 api 에 싣는다. 점포 목록 api(`GET /stores`)는
-  「점포 정보 관리」(MN000002) 메뉴 권한이 있어야 열려, 직원 정보 관리만 가진 관리자가 점포명으로 거르면 403 이 나기 때문이다.
-  모자란 점: 로그인 정보는 로그인할 때의 값이라 그 뒤에 생긴 점포는 다시 로그인해야 잡힌다(메뉴 · 권한과 같은 정책). 범위 밖
-  id 는 api 가 조용히 뺀다.
+* **점포 칸은 공통 점포 고르기(`StorePicker`)이고 상단 점포 범위와 잇는다**(재영 Buzz 공지 2026-10-22, 근로계약 목록 front #109 · WHALEERP-133 과 같은 규칙,
+  `staff-list-query.ts` · `staff-filter.tsx`). 점포 조건은 네 가지다 — 목록에서 고른 점포(`storeIds=3,7`), 목록에서 비운 「전체」(빈 `storeIds=` —
+  헤더 범위가 아니다), 헤더 범위(`scope=ALL · DIRECT · FRANCHISE · STORE:12`, 헤더가 메뉴로 이동할 때 싣는다), 정해지지 않음(주소에 셋 다 없음 —
+  필터가 헤더 범위로 채운다, `fillScopeOf`). 고른 점포 · 빈 `storeIds` 가 `scope` 보다 앞선다. 초기화는 헤더 범위로 돌아간다.
+  api 에는 고른 점포 · 점포 하나 범위를 `storeIds`(쉼표), 직영 · 가맹 범위를 점포를 풀지 않고 `storeTypes` 로 보낸다(`staffListApiSearch`) —
+  `storeTypes` 를 주면 api 가 TO-DO 목록처럼 그 유형의 폐점 점포를 빼서 칩과 결과가 같다(근로계약은 폐점 점포의 계약도 나온다). 범위 「전체」 · 비운 「전체」(범위가 함께 있어도) · 정해지지 않음은 점포 조건이 없다(업무 범위 전체).
+  칩 이름은 로그인 정보의 점포(`useStores`)에서 찾는다 — 점포 목록 api(`GET /stores`)는 「점포 정보 관리」(MN000002) 메뉴 권한이 있어야 열려 서버가 찾지 않는다.
+  로그인 정보에 없는 고른 점포(로그인 뒤 맡게 된 점포 · 다른 탭에서 복사한 주소)는 「점포 {id}」 칩으로 둔다 — 조건에서 빼면 api 가 볼 수 있는 점포까지
+  잃는다(업무 범위 밖 id 는 api 가 조용히 뺀다). 주소의 범위를 이 탭에서 쓸 수 없으면(점포 하나가 로그인 정보에 없음 · 직영 · 가맹에 폐점이 아닌 점포가 없음 —
+  `isUnusableScope`) 「전체」(빈 `storeIds`)로 바꾸고 토스트로 알린다.
+* **예전 점포명 주소(`?store=`)는 읽지 않는다** — 그 주소로 오면 함께 실린 `storeIds` 도 버리고 점포 조건이 없는 것으로 보아 상단 범위로 채운다(상단이 전체면 주소는 그대로 두고 읽지만 않는다)
+  (근로계약 `?storeName=` 과 같다). 그래서 「점포를 찾는 중입니다.」 · 「점포명을 더 좁혀 주세요」 빈 목록 문구와 `staffListEmptyMessage` · `tooManyStores` 는 걷었다.
+  `storeIdsByName` 은 급여명세서 목록 점포명 칸이 아직 쓴다.
 * **api 상한을 화면이 먼저 막는다**(PR #36 리뷰). 넘기면 api 400 으로 목록 전체가 오류 화면이 되기 때문이다 — 검색어(이름 ·
-  번호 · 점포명)는 50자(검색칸 `maxLength` + 파서가 자름), 쪽은 1,000,000 을 넘으면 1. 점포명에 맞는 점포가 500곳(`MAX_STORE_IDS`)을
-  넘으면 잘라 보내지 않고(일부 점포가 조용히 빠진다) api 를 부르지 않은 채 「점포명을 더 좁혀 주세요」를 빈 목록 자리에 보인다.
-* `store` 만 있고 `storeIds` 가 없는 주소(storeIds 를 싣기 전의 북마크 · 손으로 친 주소)는 파서가 `storeIds: null` 로 읽고, 필터가
-  열리며 점포 목록에서 id 를 채워 주소를 바꾼다 — 그대로 두면 검색칸에 점포명이 있는데 0건이었다. 빈 값(`storeIds=`)은 「맞는 점포 없음」이다.
-  채우기 전 첫 화면은 api 를 부르지 않으므로 빈 목록 자리에 「점포를 찾는 중입니다.」를 보인다(`staffListEmptyMessage`) — 「없음」이 깜빡이지 않게.
+  번호)는 50자(검색칸 `maxLength` + 파서가 자름), 쪽은 1,000,000 을 넘으면 1, 주소의 `storeIds` 는 int4 양의 정수만 남기고 1000개(`MAX_STORE_IDS`,
+  api 상한 — 500 에서 1000 으로 올림)에서 자른다. 직영 · 가맹 범위 칩을 지워 점포 id 목록으로 바뀔 때 1000개를 넘으면 뒤가 빠진다 — 근로계약 · 1팀 점포 정보 관리와 같은 한계다.
+* **상세로 갈 때 목록 주소를 `?back=` 으로 넘긴다**(`withBack`, 기본 목록이면 싣지 않는다). 상세의 [목록]은 `detailListHrefOf` 로 정한다 — `back` 이 있으면
+  `backHrefOf(back)`(직원 목록 주소가 아니면 기본 목록이고, 이때 아래 예전 조건으로 떨어지지 않는다. 받은 쿼리는 목록과 같은 규칙으로 걸러 다시 만든다 — 같은 이름이 여럿이면 첫 값).
+  `back` 이 없으면 예전처럼 목록 조건을 상세 주소에 그대로 붙인 주소(`/staff-members/5?keyword=홍&page=3` — 북마크 등)의 조건을 목록 규칙으로 다시 만들어 돌아간다
+  (같은 이름 여럿은 첫 값, 모르는 이름 · 예전 `?store=` 는 버리고, 상세 전용 `week` 는 목록에 넣지 않는다). 둘 다 없으면 기본 목록이다. 브라우저 뒤로 가기는 목록 조작이 `replace` 라 상세로 가기 직전의 목록 주소로 간다. 근무스케줄 주
+  넘김(`weekHref`)은 `week` 만 바꾸고 `back` 과 예전 형식 목록 조건을 그대로 둔다 — 주를 옮긴 뒤에도 [목록]이 같은 조건으로 돌아간다.
+  직원 등록 화면은 따로 없다 — 「직원 초대」는 근로계약 작성(`/contracts/new`)이라 `back` 을 싣지 않는다(근로계약 `backHrefOf` 가 근로계약 목록 주소만 받는다).
+  상세 안에서 다른 화면(근로계약 등)으로 가는 링크는 `back` 을 싣지 않는다. 직원 목록에서 저장 · 삭제 뒤 목록으로 돌아가는 동작이 없어(퇴직 처리 · 변경 · 취소는
+  상세에 머물고 다시 받는다) 근로계약의 `withoutStoreSearch` 처리는 두지 않았다.
 * 목록 라벨(`joinCell` 의 `StaffJoinState` · `EmploymentType`)은 아직 화면 상수다. `getEnum` 으로 바꾸는 것은 남았다 — 상세
   「이메일」 칸의 가입 상태 한글은 이미 `getEnum` 으로 받는다(아래 「이메일」).
 * api 오류(401 · 403 · 5xx)는 `error.tsx` 가 받는다. 404(상세)는 상세가 먼저 `notFound()` 로 받는다.
@@ -180,6 +205,12 @@ sources:
 * **본인인증은 보이지 않는다** — 1차 범위 밖이다(WHALEERP-612 → 2차, 2026-10-21 재영). 기본 정보의 줄도 이름 옆 칩도 두지 않는다.
   데모 `detail.mjs` 의 기본 정보에는 아직 「본인인증 완료」 줄이 있다.
 * 입사일은 나중에 시스템이 첫 체결 계약 시작일로 채운다. 지금은 늘 null 이라 「-」다(2026-10-21 재영).
+* **재직 이력**(WHALEERP-615, 목업 `docs/mockup/staff/detail.html`, 운영 정책 CTR-30) — 퇴직 뒤 같은 점포에 다시 입사하면 새 직원 레코드가
+  생기고 api 가 직전 재직 레코드와 잇는다(api #136). 상세 응답 `previousRecords` · `laterRecords` 로 퇴직일 줄(재직 중이면 입사일 줄) 아래에 「재직 이력」(이전 재직 기간, 「· 이전 재직」)과
+  「이후 재입사」 줄을 둔다(`employmentHistoryLines`). 기간은 「입사일 ~ 퇴직일」(퇴직일이 없으면 「재직 중」, 입사일이 없으면 「-」)이고 누르면 그 레코드의
+  상세로 간다 — 상세의 [목록] 주소(`detailListHrefOf`)를 `?back=` 으로 싣고(기본 목록이면 싣지 않음) 근무스케줄이 보던 주(`week` — 근무스케줄 칸과 같은 `weekParam` 으로 읽는다)를 이어 단다(`historySearch`) — 거기서도 [목록]이 같은 조건 · 쪽으로 돌아간다. 좁은 단에서 꺾여도
+  잘리지 않게 높이가 내용만큼 늘어나는 줄이다(`multiline`). 이은 레코드가 없으면 줄이 없다. 칸이 없는
+  응답(api #136 배포 전 서버)은 응답을 받는 자리(`getStaffMember` → `withEmploymentHistory`)에서 빈 목록으로 채운다 — front 가 먼저 배포돼도 상세가 오류가 되지 않는다. 링크는 「재직 이력 기간 직원 상세」로 읽힌다(`aria-label`). 순서(가까운 것부터) · 가림(본사 제공 동의) · 체결 완료된 레코드만 내기는 api 가 정한다. 직원 목록은 그대로다(레코드마다 한 줄, 2026-10-22 재영 C안).
 * 생년월일은 api 가 주는 대로 보인다 — 본사 역할(동의한 가맹 직원) · 퇴직 직원에게도 화면에서 따로 가리지 않는다(2026-10-21 재영).
 * 가맹 점포 직원은 「본사 제공 동의」 줄(동의 · 미동의)이 있다(완료 조건 8, ATT-30). 상세 응답 `hqSharingConsent`(api #113, API 전용 enum
   `HqSharingConsentState`, 한글은 `GET /enums/HqSharingConsentState`)이고, 직영 점포 직원은 null 이라 줄이 없다(`hqSharingConsentText`). 값은 계정의 동의라
@@ -318,21 +349,40 @@ sources:
   발송 종류를 담는 이메일 발송 로그 테이블을 따로 만들어 발송 이력으로 다룬다(2026-10-16 노영주). api 응답의 `issuedAt` · `expiresAt`
   은 지금 쓰지 않는다.
 
+# 생년월일 정정 (WHALEERP-602)
+
+기본 정보 「생년월일」 줄 값 옆에 [정정] 버튼을 둔다(`BirthDateCell`). 목업(`docs/mockup/staff/detail.html`)에는 없는 버튼이고 노영주 승인안이다
+(2026-10-26). api 는 `PUT /staff-members/:id/birth-date` `{ birthDate }` 로 204 다. 직원 이름 · 성별 · 외국인 여부는 여전히 수정할 수 없다.
+
+* 버튼(`canCorrectBirthDate`) — 지금 주소의 메뉴 수정 권한(`usePagePermission`)이 있고 상세 응답의 `birthDateCorrectable` 이 true 일 때만.
+  이 칸은 api 가 가입 전(탈퇴 · 연결 보류 포함) · 퇴직으로 막는 경우와 같은 판정이다 — `joinState` 는 직원 레코드 기준이라 탈퇴 · 연결 보류 계정도 `JOINED` 로 와서
+  쓰지 않는다. 퇴직 예정(재직 + 퇴직일)은 보인다. 옛 api 응답(칸 없음)은 false 로 채워 숨긴다(`withEmploymentHistory`). 본사 역할 · 점포 범위는 화면이 보지 않는다 — 범위 밖 · 본사에 가린 직원은 api 가 404 다.
+* 확인창 — 제목 「생년월일 정정」, 지금 생년월일, 새 생년월일(`DateField`), 체크 「신분증 등으로 본인의 생년월일을 확인했습니다」(체크해야
+  [정정]이 눌린다), 안내 세 줄(`BIRTH_DATE_NOTES` — 체결한 계약서는 안 바뀜 · 날인 대기 계약은 본인 대조를 다시 함 · 다른 근무지 소속에도 같이 바뀜),
+  [취소] · [정정]. 공통 `DateField` 에 상한이 없어 오늘 뒤는 달력으로 막지 못한다 — 입력하면 칸 아래에 알리고 [정정]을 막는다(`checkBirthDate`,
+  지금 생년월일과 같은 값도 미리 알린다). 만 19세 미만은 api 가 본다.
+* 성공 — 토스트 「생년월일을 정정했습니다.」, 확인창을 닫고 `router.refresh`. 서버 액션(`correctBirthDateAction`)은 날짜 모양 · 오늘 뒤 · 같은 값을 api 까지 보내지 않고 막는다.
+* 실패 — 400 `BIRTH_DATE_INVALID` · `BIRTH_DATE_UNDER_AGE` 와 409 `BIRTH_DATE_UNCHANGED` 는 확인창 안에 api 문구(UNCHANGED 는 낡은 「지금 생년월일」을 다시 받는다 — `router.refresh`). 409 `BIRTH_DATE_NOT_JOINED` ·
+  `BIRTH_DATE_RETIRED` 는 상태가 바뀐 것이라 토스트로 알리고 닫은 뒤 다시 받는다(`refreshesAfterCorrection` — `ActionFailure.code` 가 api 오류 본문의
+  `code` 를 싣는다). 403 · 결과 모름은 `useFailure`, 404 는 확인창 안 문구. 날짜나 체크를 바꾸면 앞의 api 오류 문구를 지운다. 새 생년월일이 바뀌면(DateField 의 blur 보정 포함) 신분증 확인 체크를 풀어 다시 받는다(`confirmAfterDateChange`) — 눌러서 blur 되는 순간 덜 친 값이 맞춰져 관리자가 보지 못한 날짜가 저장되는 것을 막는다. 칸에 덜 친 값이 보이는 채(DateField 는 덜 친 값을 밖으로 내보내지 않는다) [정정]이나 체크를 누르면 — 입력 이벤트 중에는 상태를 바꾸지 않고(바꾸면 DateField 칸이 되돌려진다) 그 순간에만 칸의 글자를 DOM 에서 읽어 판정한다(`isPendingInput`) — 보내지 않고 체크를 풀며, 체크박스 아래에 「날짜를 다 입력한 뒤 다시 확인해 주세요」를 보인다. 마우스로 체크할 때 pointerdown 뒤 날짜가 blur 로 바뀌었으면 이어진 click 이 체크를 다시 켜지 않는다(`ignoresCheck`) — 키보드 Space 는 그대로 된다. 확인한 뒤 입력칸을 한 번이라도 고쳤으면(입력 이벤트에서 ref 만 바꾼다) 체크를 풀고 보내지 않는다 — 1990-05-01 을 확인하고 1990-05-1 로 지운 채 [정정]을 누르면 blur 가 같은 값으로 맞춰 값 비교로는 못 잡는다. pointerdown 시각은 체크 영역 밖의 pointerdown · 키 입력(날짜 입력 포함)에서 지운다. 확인 버튼은 그리기 전 두 번째 클릭도 ref 로 막는다.
+* 정정 이력은 화면에 보이지 않는다(이번 범위 밖).
+
 # 가입 초대 재발송 (WHALEERP-138)
 
 목록 「가입·인증」 칸의 배지 옆과 상세 기본 정보 「가입 상태」 줄에 soft 「재발송」을 둔다. 데모는 재발송을 근로계약 상세 제목 줄에만
 두고 목록 자리가 없어, 칸을 210px 에서 300px 로 넓혀 배지 옆에 세웠다(데모와 다름). 상세는 목록의 이름 링크가 가입 완료 · 재직
 직원에게만 걸려 실제로는 거의 쓰이지 않지만, 주소로 들어온 경우를 위해 같은 판정을 둔다.
 
-* 보일지(`canResendInvitation`) — 응답의 `invitation.canResend` 이면서 **계약이 발송 대기(`PENDING_SEND`)일 때만**이다. api 의
-  `canResend` 는 초대 발송 · 초대 만료 · 소속 추가 확인 · 복귀 확인(수락 전)에 참인데, 재발송 api(`POST /contracts/:id/send`, #136)는
-  계정이 없는 직원의 가입 초대 알림톡만 보낸다 — 서명 대기(앱으로 받는 직원, 소속 추가 확인 · 복귀 확인)는 앱 알림 전이라
-  409 `SEND_CHANNEL_NOT_READY`, 만료 · 거부 계약은 409 `CONTRACT_STATUS_CONFLICT` 다. 근로계약 상세의 재발송 버튼(`send-button.tsx`)과
-  같은 기준이다. 두 값이 맞지 않는 것은 api 쪽 정리 거리다.
+* 보일지(`canResendInvitation`) — 응답의 `invitation.canResend` 하나로 정한다(WHALEERP-611, 최근 계약이 있을 때 — 호출부가
+  `contract &&` 로 막는다). api 가 재발송(`POST /contracts/:id/send`, #136)이 가입 초대 알림톡을 실제로 보낼 수 있을 때만 참으로
+  준다 — 가입 전 · 계정 없는 번호 · 휴대폰 번호 · 계약 발송 대기 또는 서명 대기 · 수락하지 않은 초대. 가입한 직원(앱 알림 재발송은
+  근로계약 상세에서)과 계정 있는 번호(소속 추가 확인 · 복귀 확인)는 거짓이다. 예전에는 화면이 계약 발송 대기까지 함께 봤다(앱 알림
+  전이라 서명 대기는 409 였다). 근로계약 상세의 재발송 버튼(`send-button.tsx`)과 같은 서버 액션 · 실패 판정을 쓴다. 목록을 읽은
+  시점 기준으로 가입 초대다 — 그사이 가입했으면 api 가 앱 알림으로 보내고 200, 토스트는 가입 초대 문구 그대로다(받아들인 한계).
 * 권한 — 근로계약 관리(MN000006) 수정 권한일 때만(`useMenuRole(MENU_CODE.contracts, "update")`). 다른 메뉴 화면에 놓인 버튼이라
   메뉴 코드로 찾는다(front #57). api #97(WHALEERP-592)이 send 경로에 같은 수정 권한을 건다. `MENU_CODE.contracts` 는 front #79 와 같은
   이름 · 값이다.
-* 보내기 — 확인창(가입 초대를 다시 보내시겠습니까?) 뒤 근로계약 상세와 같은 서버 액션(`sendContract`)과 실패 판정(`sendFailureOf`)을
+* 보내기 — 확인창(가입 초대를 다시 보내시겠습니까?, 계약이 서명 대기여도 늘 가입 초대 알림톡) 뒤 근로계약 상세와 같은 서버 액션(`sendContract`)과 실패 판정(`sendFailureOf`)을
   쓴다. 성공하면 토스트 「가입 초대를 다시 보냈습니다.」와 함께 화면을 다시 받아 새 발송일(「초대 발송 · MM-DD」)을 보인다. 409 ·
   502 · 503 은 api 문구 그대로다 — `SEND_FAILED`(되돌렸고 다시 보낼 수 있음) · `SEND_CHANNEL_NOT_READY` · `SEND_PHONE_NOT_MOBILE` 는
   확인창 안에 보인다. 접수 여부를 모르면(`SEND_UNCONFIRMED`, 코드 없는 502 · 504, 연결 끊김) 재발송은 계약 상태를 바꾸지 않아 다시 받은

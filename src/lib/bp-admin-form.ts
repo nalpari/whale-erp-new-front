@@ -1,7 +1,10 @@
 // BP 관리자 등록 · 수정 입력칸 — 검사와 요청 만들기. 패널(src/app/bp-admins/)에서 뺀 순수 함수라 node --test 로 검사한다(bp-admin-form.test.ts).
 // 아이디 · 이름 · 휴대전화 · 이메일 형식은 플랫폼 관리자와 같아 그쪽 것을 쓴다. api 가 다시 막으므로 화면은 저장 전에 칸 아래 먼저 알리기만 한다.
 import type { BpAdminDetail, BpAdminRoleType, BpAdminStatus, CreateBpAdminInput, UpdateBpAdminInput } from "./bp-admins";
-import { EMAIL_PATTERN, loginIdError, NAME_PATTERN, PHONE_PATTERN, splitPhone } from "./platform-admin-form.ts";
+import { emailError, loginIdError, NAME_PATTERN, PHONE_PATTERN, splitPhone } from "./platform-admin-form.ts";
+
+// 이메일 형식 · 문구는 플랫폼 관리자 · MY PAGE 와 같다(email-format.ts) — 등록 패널이 중복 확인 전에도 쓴다
+export { emailError };
 
 export type PickedMappingStore = { storeId: number; name: string; storeCode: string };
 
@@ -48,13 +51,6 @@ export function bpAdminFormOf(detail: BpAdminDetail): BpAdminForm {
 }
 
 const phoneOf = (form: BpAdminForm) => form.phone.map((p) => p.trim()).join("");
-
-/** 이메일 형식 오류 문구. 맞으면 undefined. 저장할 때와 칸을 벗어날 때(중복 확인 전) 같이 쓴다. */
-export function emailError(email: string): string | undefined {
-  const value = email.trim();
-  if (!value) return "이메일을 입력해 주세요.";
-  if (value.length > 100 || !EMAIL_PATTERN.test(value)) return "이메일 형식이 아닙니다.";
-}
 
 /**
  * 칸별 오류 문구. 없으면 빈 객체. 등록은 아이디 · 계정 역할도 본다(수정은 바꾸지 않는다).

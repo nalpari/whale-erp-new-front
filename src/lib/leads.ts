@@ -1,4 +1,5 @@
 import type { components } from "./api-types.generated";
+import { EMAIL_FORMAT_ERROR, isEmailFormat } from "./email-format.ts";
 
 // 비로그인 도입문의(#297 · #298) 폼 값 → api POST /leads 본문, 실패 → 화면 문구. 폼(design/guest/inquiry)과 서버 액션((site)/leads)이 같이 쓴다.
 
@@ -41,12 +42,13 @@ export function leadBodyOf(form: FormData): CreateLead {
 }
 
 /**
- * 브라우저 검사(required · type=email)가 놓치는 것 — 빈칸만 적은 칸, 전화번호 형식 — 을 접수 확인 창을 띄우기 전에 본다.
+ * 브라우저 검사(required · type=email)가 놓치는 것 — 빈칸만 적은 칸, 전화번호 형식, api @IsEmail 이 막는 이메일(브라우저는 a@b 를 통과시킨다) — 을 접수 확인 창을 띄우기 전에 본다.
  * 걸린 칸 이름과 문구를 돌려주면 폼이 그 칸에 검사 오류를 건다. 없으면 null.
  */
 export function leadInputProblem(form: FormData): { name: string; message: string } | null {
   if (!textOf(form, "contactName")) return { name: "contactName", message: "이름을 입력해 주세요." };
   if (!PHONE.test(textOf(form, "phone").replace(/[\s-]/g, ""))) return { name: "phone", message: "전화번호 형식이 올바르지 않습니다. 예) 02-1234-5678, 1588-1234" };
+  if (!isEmailFormat(textOf(form, "email"))) return { name: "email", message: EMAIL_FORMAT_ERROR };
   if (textOf(form, "industryCode") === INDUSTRY_OTHER && !textOf(form, "industryDetail")) return { name: "industryDetail", message: "업종을 입력해 주세요." };
   if (!textOf(form, "body")) return { name: "body", message: "문의 내용을 입력해 주세요." };
   return null;

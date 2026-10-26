@@ -53,7 +53,7 @@ export default ({ A, R }) => {
   const left = c.card(
     "w-[560px] shrink-0",
     head(`공통코드 그룹${c.sub(`${GROUPS.length}개`)}`) +
-      c.markRow(ui.dataTable(groupCols, groupRows, "조건에 맞는 공통코드 그룹이 없습니다."), SELECTED) +
+      ui.scrollTable(c.markRow(ui.dataTable(groupCols, groupRows, "조건에 맞는 공통코드 그룹이 없습니다."), SELECTED)) + // 열 이름 줄까지 고정, 아래만 스크롤(앱과 같다, 2026-10-26)
       `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
   );
 
@@ -72,7 +72,7 @@ export default ({ A, R }) => {
         `상세 코드${c.sub("EMP_TYPE · 고용 형태")}<span class="ml-[10px] inline-flex align-middle">${c.tag("플랫폼제공")}</span>`,
         ui.button("추가", { variant: "soft" }) + ui.button("저장"),
       ) +
-      ui.dataTable(codeCols, codeRows),
+      ui.scrollTable(ui.dataTable(codeCols, codeRows)),
   );
 
   return {

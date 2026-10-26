@@ -85,7 +85,7 @@ export function RoleForm(
         const created = await props.actions.create(body).catch(unknownResult("등록"));
         if (created.ok) {
           setFailure(null);
-          toast(`등록했습니다. 권한 코드 ${created.roleCode} — [메뉴등록]으로 메뉴 권한을 정해 주세요.`);
+          toast(`등록했습니다. 권한 코드 ${created.roleCode} — 목록의 메뉴설정 [설정]으로 메뉴 권한을 정해 주세요.`);
           return props.onDone(created.roleGroupId);
         }
         return fail(created);
@@ -124,7 +124,7 @@ export function RoleForm(
   const describe = (key: keyof Form) => (errors[key] ? `${id}-${key}-error` : undefined);
   return (
     <>
-      {props.mode === "create" && <h2 className="text-[18px] font-semibold text-erp-ink">권한 등록</h2>}
+      {props.mode === "create" && <h2 className="flex min-h-[34px] items-end text-[18px] font-semibold text-erp-ink">권한 등록</h2>}
       {failure && <FailedBand message={failure.message} detail={failure.detail} />}
       <div className="flex flex-col gap-[18px]">
         {props.mode === "create" && (
@@ -139,7 +139,7 @@ export function RoleForm(
               value={form.name}
               onChange={(e) => handleFieldChange("name", e.target.value)}
               maxLength={ROLE_NAME_MAX}
-              placeholder={props.mode === "create" ? "예: 프로모션 담당" : undefined}
+              placeholder="권한명을 입력해 주세요. (예: 프로모션 담당자)"
               aria-required
               aria-invalid={errors.name ? true : undefined}
               aria-describedby={describe("name")}
@@ -150,12 +150,13 @@ export function RoleForm(
         </div>
         <div className="flex flex-col gap-[8px]">
           <Field label="설명">
+            {/* 두 줄 정도만 쓰는 칸이라 높이를 줄였다(2026-10-26 사용자 지정, 전엔 4줄) */}
             <Textarea
-              rows={4}
+              rows={2}
               value={form.description}
               onChange={(e) => handleFieldChange("description", e.target.value)}
               maxLength={ROLE_DESCRIPTION_MAX}
-              placeholder={props.mode === "create" ? "이 권한으로 맡길 업무를 적습니다" : undefined}
+              placeholder="해당 권한에 대한 역할과 담당 업무를 입력해 주세요."
               aria-invalid={errors.description ? true : undefined}
               aria-describedby={describe("description")}
             />
@@ -164,19 +165,15 @@ export function RoleForm(
         </div>
       </div>
       {props.extra}
-      <div className="flex gap-[6px]">
+      {/* 버튼 줄은 가운데 — MY PAGE 패널(my-page-panel.tsx)과 같다(2026-10-26 사용자 지정, 전엔 양 끝 · 오른쪽 정렬) */}
+      {/* 위 내용(최종수정)과의 간격을 입력칸 사이(18)와 같게 — 칸 간격 12 + 6(2026-10-26 사용자 지정) */}
+      <div className="mt-[6px] flex justify-center gap-[6px]">
         {props.mode === "create" ? (
-          <>
-            <span className="flex-1" />
-            <Button variant="off" onClick={props.onCancel} disabled={saving}>
-              취소
-            </Button>
-          </>
+          <Button variant="off" onClick={props.onCancel} disabled={saving}>
+            취소
+          </Button>
         ) : (
-          <>
-            {props.deleteButton}
-            <span className="flex-1" />
-          </>
+          props.deleteButton
         )}
         <Button onClick={handleSave} disabled={saving || !dirty}>
           저장

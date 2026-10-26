@@ -1,4 +1,3 @@
-import { PageBar } from "@/components/common";
 import { ApiError } from "@/lib/api";
 import { getPlatformAdmin, getPlatformAdmins, getPlatformRoleGroups, type PlatformAdminDetail } from "@/lib/platform-admins";
 import { parseAdminsQuery } from "./admins-href";
@@ -18,12 +17,8 @@ export default async function PlatformAdminsPage({ searchParams }: PageProps<"/p
     query.admin ? loadDetail(query.admin) : null,
   ]);
 
-  return (
-    <>
-      <PageBar title="플랫폼 관리자 관리" />
-      <AdminsScreen list={list} roleGroups={roleGroups} query={query} detail={detail} />
-    </>
-  );
+  // 제목 줄(PageBar)은 AdminsScreen 이 그린다 — [등록]이 등록 패널을 여는 상태와 같은 곳에 있어야 해서다
+  return <AdminsScreen list={list} roleGroups={roleGroups} query={query} detail={detail} />;
 }
 
 /** 상세를 못 불러오면 패널은 열되 실패 띠로 알린다 — 404(지웠거나 없는 계정)는 그 사실을, 그 밖은 일반 문구를. */

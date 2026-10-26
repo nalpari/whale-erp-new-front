@@ -41,7 +41,15 @@ export default async function StoresPage({ searchParams }: PageProps<"/stores">)
   const excelHref = at(storesExcelHref(query));
 
   return (
-    <StoreFrame>
+    <StoreFrame
+      // 등록 버튼은 제목 줄 오른쪽 — 3팀 목록(근로계약 · 직원 · TO-DO)과 같은 자리(2026-10-23)
+      actions={
+        // 가맹 마스터 · 가맹 관리자는 등록 권한이 켜져 있어도 등록하지 못한다 — api 가 403 으로 막는다
+        <StorePermission action="create">
+          <Button href={at(withBack("/stores/new", listHref))}>등록</Button>
+        </StorePermission>
+      }
+    >
       <StoreListNavigationProvider query={query}>
         <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
           <StoreFilter picked={picked} scope={query.scope} requested={pickedIdsOf(parsed)} />
@@ -57,10 +65,6 @@ export default async function StoresPage({ searchParams }: PageProps<"/stores">)
               <ListToolbar total={total}>
                 <StoreViewToggle />
                 <StoreExcelButton href={excelHref} empty={total === 0} />
-                {/* 가맹 마스터 · 가맹 관리자는 등록 권한이 켜져 있어도 등록하지 못한다 — api 가 403 으로 막는다 */}
-                <StorePermission action="create">
-                  <Button href={at(withBack("/stores/new", listHref))}>등록</Button>
-                </StorePermission>
                 <StorePageSizeSelect />
               </ListToolbar>
               {query.view === "table" ? (

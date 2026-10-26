@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Badge, Button, DataTable, Pagination, Tag, type Column } from "@/components/common";
+import { Badge, Button, DataTable, PageBar, Pagination, Tag, type Column } from "@/components/common";
 import { RoleMenuDialog, type MenuDialogRole } from "@/components/role-groups/role-menu-dialog";
 import { CARD, WhenWho } from "@/components/role-groups/role-parts";
 import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
@@ -14,7 +14,7 @@ import { PATH, useBpActions, type BpRoleDetailState } from "./bp-actions";
 import { BpRoleSide } from "./role-side";
 
 // 왼쪽 권한 그룹 목록(쪽 나눔) + 오른쪽 고정 칸(S-LYKAEI · 데모 config/roles). 권한명을 누르면 오른쪽에 그 그룹의 수정(고칠 수 없으면 상세)이,
-// [신규 등록]을 누르면 같은 칸에 등록 양식이 선다. 버튼은 메뉴 권한(usePagePermission)과 api 가 준 creatableRoleTypeCode 로 보인다. 막는 것은 api 다.
+// [등록]을 누르면 같은 칸에 등록 양식이 선다. 버튼은 메뉴 권한(usePagePermission)과 api 가 준 creatableRoleTypeCode 로 보인다. 막는 것은 api 다.
 const BLANK_ROLE: MenuDialogRole = { roleGroupId: 0, roleCode: "FM000001", roleTypeCode: "FM", name: "" };
 
 export function BpRolesScreen(props: {
@@ -26,11 +26,7 @@ export function BpRolesScreen(props: {
   lockReasons: EnumValue[];
   menuReasons: EnumValue[];
 }) {
-  return (
-    <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
-      <RolesBody {...props} />
-    </div>
-  );
+  return <RolesBody {...props} />;
 }
 
 function RolesBody({
@@ -78,14 +74,17 @@ function RolesBody({
     {
       header: "권한유형 · 코드",
       width: "w-[170px]",
+      align: "left", // 2026-10-26 사용자 지정
       cell: (r) => (
         <span className="truncate">
-          <CodeLabel group="ROLE_TYPE" value={r.roleTypeCode} /> <span className="text-erp-label">{r.roleCode}</span>
+          <CodeLabel group="ROLE_TYPE" value={r.roleTypeCode} /> <span className="text-erp-label">· {r.roleCode}</span>
         </span>
       ),
     },
     {
       header: "권한명",
+      // 폭을 정하지 않으면 설명과 남는 폭을 반씩 나눠 설명 글자가 칸 한가운데서 시작했다 — 권한명을 고정하고 설명이 나머지를 쓴다(2026-10-26 사용자 지정)
+      width: "w-[180px]", // 설명이 권한명에 더 붙게 260 → 180(2026-10-26 사용자 지정)
       align: "left",
       cell: (r) => (
         <span className="flex min-w-0 items-center gap-[6px]">
@@ -102,81 +101,90 @@ function RolesBody({
         </span>
       ),
     },
-    { header: "설명", align: "left", cell: (r) => r.description ?? <span className="text-erp-muted">—</span> },
-    { header: "최종수정일시", width: "w-[200px]", cell: (r) => <WhenWho at={r.updatedAt} actor={r.updatedBy} /> },
+    { header: "설명", align: "left", cell: (r) => r.description || <span className="text-erp-muted">-</span> },
+    { header: "최종수정", width: "w-[220px]", align: "left", cell: (r) => <WhenWho at={r.updatedAt} actor={r.updatedBy} /> },
+    // [설정] 버튼 열(「메뉴설정」)을 「메뉴설정 여부」 앞에 둔다(2026-10-26 사용자 지정 — 전엔 「메뉴 등록 여부」 · 「메뉴등록」[메뉴등록] 순)
     {
-      header: "메뉴 등록 여부",
-      width: "w-[130px]",
-      cell: (r) => (r.menuCount > 0 ? <Badge tone="on">등록 {r.menuCount.toLocaleString("ko-KR")}개</Badge> : <Badge tone="off">미등록</Badge>),
-    },
-    {
-      header: "메뉴등록",
+      header: "메뉴설정",
       width: "w-[124px]",
       cell: (r) => (
         <Button variant="soft" onClick={() => setMenuFor(r)}>
-          메뉴등록
+          설정
         </Button>
       ),
+    },
+    {
+      header: "메뉴설정 여부",
+      width: "w-[120px]",
+      cell: (r) => (r.menuCount > 0 ? <Badge tone="on">등록 {r.menuCount.toLocaleString("ko-KR")}개</Badge> : <Badge tone="off">미등록</Badge>),
     },
   ];
 
   return (
     <>
-      <section className={`${CARD} min-w-0 flex-1`}>
-        <div className="flex items-end gap-[6px]">
-          <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">
-            권한 그룹 목록 <span className="ml-[6px] text-[14px] font-normal text-erp-label">{list.total.toLocaleString("ko-KR")}건</span>
-          </h2>
-          {/* 가맹 관리자에게는 숨긴다(S-LYKAEI) — api 도 403 이다 */}
-          {account.roleTypeCode !== "FA" && (
-            <Button variant="soft" onClick={() => setFranchiseMasterOpen(true)}>
-              가맹마스터 보기
-            </Button>
-          )}
-          {can.create && list.creatableRoleTypeCode !== null && (
-            <Button onClick={() => setCreating(true)} disabled={creating}>
-              신규 등록
-            </Button>
-          )}
-        </div>
-        <DataTable
-          columns={columns}
-          rows={list.items}
-          rowKey={(r) => r.roleGroupId}
-          rowState={(r) => (!creating && r.roleGroupId === selected ? "selected" : undefined)}
+      {/* [등록]은 제목 줄 오른쪽 — 3팀 목록과 같은 자리(2026-10-23). [가맹마스터 메뉴설정 보기]는 목록 카드 머리에 그대로 둔다 */}
+      <PageBar title="BP 권한 그룹 관리">
+        {can.create && list.creatableRoleTypeCode !== null && (
+          <Button onClick={() => setCreating(true)} disabled={creating}>
+            등록
+          </Button>
+        )}
+      </PageBar>
+      <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
+        <section className={`${CARD} min-w-0 flex-1`}>
+          {/* 제목 줄을 34px(버튼 높이)로 고정해 오른쪽 상세 칸 제목과 높이를 맞춘다 — 그래야 오른쪽 첫 칸이 왼쪽 표 시작선에 선다(2026-10-26 사용자 지정) */}
+          <div className="flex min-h-[34px] items-end gap-[6px]">
+            <h2 className="flex-1 text-[18px] font-semibold text-erp-ink">
+              권한 그룹 목록 <span className="ml-[6px] text-[14px] font-normal text-erp-label">{list.total.toLocaleString("ko-KR")}건</span>
+            </h2>
+            {/* 가맹 관리자에게는 숨긴다(S-LYKAEI) — api 도 403 이다 */}
+            {account.roleTypeCode !== "FA" && (
+              <Button variant="soft" onClick={() => setFranchiseMasterOpen(true)}>
+                가맹마스터 메뉴설정 보기
+              </Button>
+            )}
+          </div>
+          <DataTable
+            columns={columns}
+            rows={list.items}
+            rowKey={(r) => r.roleGroupId}
+            rowState={(r) => (!creating && r.roleGroupId === selected ? "selected" : undefined)}
+          />
+          <Pagination page={page} totalPages={totalPages} onPageChange={(p) => go({ page: p })} />
+        </section>
+
+        <BpRoleSide
+          // 다른 그룹을 고르면 칸을 새로 그린다. 같은 그룹의 최신 정보(updatedAt)로는 다시 그리지 않는다(플랫폼 권한 관리와 같다 — role-form.tsx).
+          key={creating ? "new" : detail && "role" in detail ? String(detail.role.roleGroupId) : (selected ?? "empty")}
+          creating={creating}
+          createTypeCode={list.creatableRoleTypeCode}
+          detail={detail}
+          listEmpty={list.total === 0}
+          lockReasons={lockReasons}
+          onCancelCreate={() => setCreating(false)}
+          onCreated={(id) => {
+            setCreatedId(id);
+            handleSelect(id);
+          }}
+          // 그 쪽의 마지막 한 건을 지웠으면 앞쪽으로 — 빈 쪽에 「데이터가 없습니다」만 남지 않게
+          onDeleted={() => {
+            setCreating(false);
+            go({ page: list.items.length === 1 && page > 1 ? page - 1 : page });
+          }}
         />
-        <Pagination page={page} totalPages={totalPages} onPageChange={(p) => go({ page: p })} />
-      </section>
 
-      <BpRoleSide
-        // 다른 그룹을 고르면 칸을 새로 그린다. 같은 그룹의 최신 정보(updatedAt)로는 다시 그리지 않는다(플랫폼 권한 관리와 같다 — role-form.tsx).
-        key={creating ? "new" : detail && "role" in detail ? String(detail.role.roleGroupId) : (selected ?? "empty")}
-        creating={creating}
-        createTypeCode={list.creatableRoleTypeCode}
-        detail={detail}
-        lockReasons={lockReasons}
-        onCancelCreate={() => setCreating(false)}
-        onCreated={(id) => {
-          setCreatedId(id);
-          handleSelect(id);
-        }}
-        // 그 쪽의 마지막 한 건을 지웠으면 앞쪽으로 — 빈 쪽에 「데이터가 없습니다」만 남지 않게
-        onDeleted={() => {
-          setCreating(false);
-          go({ page: list.items.length === 1 && page > 1 ? page - 1 : page });
-        }}
-      />
-
-      {/* 잠긴 팝업의 안내 띠는 두지 않는다 — 칸이 막히고 [닫기]만 보이는 것으로 알린다 */}
-      <RoleMenuDialog role={menuFor} reasons={menuReasons} actions={actions.menus} note={null} onClose={() => setMenuFor(null)} />
-      <RoleMenuDialog
-        title="가맹 마스터 권한 보기"
-        role={franchiseMasterOpen ? { ...BLANK_ROLE, name: roleTypeLabel("FM") } : null}
-        reasons={menuReasons}
-        actions={actions.franchiseMaster}
-        note={null}
-        onClose={() => setFranchiseMasterOpen(false)}
-      />
+        {/* 잠긴 팝업의 안내 띠는 두지 않는다 — 칸이 막히고 [닫기]만 보이는 것으로 알린다 */}
+        <RoleMenuDialog role={menuFor} reasons={menuReasons} actions={actions.menus} note={null} onClose={() => setMenuFor(null)} />
+        <RoleMenuDialog
+          // 제목은 [메뉴설정] 팝업과 같게 두고 띠지로 가른다(2026-10-26 사용자 지정, 전엔 「가맹 마스터 권한 보기」)
+          titleTag="가맹 마스터 권한용"
+          role={franchiseMasterOpen ? { ...BLANK_ROLE, name: roleTypeLabel("FM") } : null}
+          reasons={menuReasons}
+          actions={actions.franchiseMaster}
+          note={null}
+          onClose={() => setFranchiseMasterOpen(false)}
+        />
+      </div>
     </>
   );
 }

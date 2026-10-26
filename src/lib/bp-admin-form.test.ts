@@ -103,8 +103,8 @@ test("요청 — 이메일은 소문자로, 전체 점포면 storeIds 를 비운
 test("이메일 형식 — 중복 확인 전에 칸을 벗어날 때도 같은 문구", () => {
   assert.equal(emailError(" a@b.co "), undefined);
   assert.equal(emailError("  "), "이메일을 입력해 주세요.");
-  assert.equal(emailError("a@b"), "이메일 형식이 아닙니다.");
-  assert.equal(emailError(`${"a".repeat(95)}@b.com`), "이메일 형식이 아닙니다.");
+  assert.equal(emailError("a@b"), "이메일 형식이 올바르지 않습니다.");
+  assert.equal(emailError(`${"a".repeat(95)}@b.com`), "이메일 형식이 올바르지 않습니다.");
 });
 
 test("api 오류를 붙일 칸 — 문구로 가른다", () => {

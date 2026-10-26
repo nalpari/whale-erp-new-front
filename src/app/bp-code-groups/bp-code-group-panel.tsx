@@ -57,6 +57,8 @@ export function BpCodeGroupPanel({
   return (
     <CodePanel title="공통코드 그룹" sub={`${total.toLocaleString("ko-KR")}개`} narrow>
       <DataTable
+        // 열 이름 줄까지 고정하고 그 아래만 스크롤한다(2026-10-26 사용자 지정)
+        scroll
         columns={columns}
         rows={groups}
         rowKey={(g) => g.groupCode}
