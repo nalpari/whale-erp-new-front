@@ -9,6 +9,8 @@ import {
   formatPhone,
   formatWage,
   fromDetail,
+  canRenew,
+  renewalFromDetail,
   hoursOf,
   initialForm,
   inProgressLine,
@@ -388,4 +390,20 @@ test("성별 · 외국인 여부 — 이어 쓰기는 상세 값으로 다시 �
   assert.equal(f.gender, "FEMALE");
   assert.equal(f.isForeigner, true);
   assert.equal(fromDetail(detailOf()).gender, "");
+});
+
+test("재계약 — 직전 계약 값을 채우고 시작일은 종료일 다음 날, 종료일은 비운다. 체결 완료 · 체결 뒤 종료만 재계약한다(WHALEERP-156)", () => {
+  const signed = detailOf({ status: "SIGNED", startDate: "2026-01-01", endDate: "2026-12-31" });
+  const f = renewalFromDetail(signed);
+  assert.equal(f.startDate, "2027-01-01");
+  assert.equal(f.endDate, "");
+  assert.equal(f.name, fromDetail(signed).name);
+  assert.equal(renewalFromDetail(detailOf({ status: "SIGNED", endDate: null })).startDate, "");
+
+  assert.equal(canRenew({ status: "SIGNED", histories: [] }), true);
+  const signedHistory = { fromStatus: "PENDING_SIGNATURE" as const, toStatus: "SIGNED" as const, actor: "STAFF" as const, changedAt: "2026-01-01T00:00:00Z" };
+  assert.equal(canRenew({ status: "ENDED", histories: [signedHistory] }), true);
+  // 체결 없이 종료(대체 · 채용 접음)는 재계약하지 않는다
+  assert.equal(canRenew({ status: "ENDED", histories: [] }), false);
+  assert.equal(canRenew({ status: "PENDING_SIGNATURE", histories: [] }), false);
 });

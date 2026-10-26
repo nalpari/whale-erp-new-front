@@ -188,6 +188,9 @@ test("상태 칸 안내 — 발송 대기는 직원의 지금 가입 · 초대 �
   assert.deepEqual(statusNotes({ ...base, status: "PENDING_SIGNATURE", staffJoinState: "JOINED" }, now), ["D-24"]);
   assert.deepEqual(statusNotes({ ...base, status: "ENDED", staffJoinState: "JOINED", staffRetired: true }, now), ["퇴직"]);
   assert.deepEqual(statusNotes({ ...base, status: "SIGNED", staffJoinState: "JOINED" }, now), []);
+  // 재계약 서명 대기 · 체결 완료의 갱신 예정일(WHALEERP-156)
+  assert.deepEqual(statusNotes({ ...base, status: "PENDING_SIGNATURE", staffJoinState: "JOINED", previousContractId: 5 }, now), ["재계약", "D-24"]);
+  assert.deepEqual(statusNotes({ ...base, status: "SIGNED", staffJoinState: "JOINED", renewalDate: "2026-12-01" }, now), ["갱신 예정 12-01"]);
 });
 
 test("api 가 가입 상태를 아직 싣지 않으면 발송 대기에 판별한 초대 유형을 붙인다(먼저 배포된 화면)", () => {

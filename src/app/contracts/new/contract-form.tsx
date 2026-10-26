@@ -217,6 +217,7 @@ export function ContractForm({
   initial,
   deleteButton,
   correction = false,
+  previousContractId,
   back = "/contracts",
 }: {
   stores: { storeId: number; name: string }[];
@@ -232,6 +233,11 @@ export function ContractForm({
    * 대기로 다시 보낸다(2026-10-19 재영, api 가 같은 것을 다시 본다).
    */
   correction?: boolean;
+  /**
+   * 재계약의 직전 계약(WHALEERP-156) — 저장 본문에 싣는다. 근무지 · 휴대전화번호는 직전 계약과 같아야 해(api 가 다시 본다) 바꾸지
+   * 않는다.
+   */
+  previousContractId?: number;
   /** 돌아갈 목록 주소(?back=) — 취소 · 저장 뒤 같은 조건의 목록으로 간다 */
   back?: string;
 }) {
@@ -287,8 +293,9 @@ export function ContractForm({
       return;
     }
     // 종이 계약 등록은 날인본과 함께 보낸다. 임시저장은 종이 계약이어도 파일 없이 JSON 으로 둔다.
-    if (paper && !temporary) sendPaper(toBody(form));
-    else send(toBody(form, temporary));
+    const body = (b: CreateContractBody): CreateContractBody => (previousContractId ? { ...b, previousContractId } : b);
+    if (paper && !temporary) sendPaper(body(toBody(form)));
+    else send(body(toBody(form, temporary)));
   };
 
   const send = (body: CreateContractBody) =>
@@ -460,7 +467,17 @@ export function ContractForm({
               {(id) => <TextField id={id} value={form.name} maxLength={50} onChange={(e) => set("name", e.target.value)} />}
             </Item>
             <Item label="휴대전화번호" required help="초대 발송과 가입 연결의 기준값">
-              {(id) => <TextField id={id} value={form.phone} inputMode="tel" placeholder="010-0000-0000" maxLength={13} onChange={(e) => set("phone", formatPhone(e.target.value))} />}
+              {(id) => (
+                <TextField
+                  id={id}
+                  value={form.phone}
+                  inputMode="tel"
+                  placeholder="010-0000-0000"
+                  maxLength={13}
+                  disabled={previousContractId !== undefined}
+                  onChange={(e) => set("phone", formatPhone(e.target.value))}
+                />
+              )}
             </Item>
           </FormRow>
           <FormRow>
@@ -478,8 +495,8 @@ export function ContractForm({
             </Group>
             <Item label="소속 근무지" required>
               {(id) => (
-                // 수정 요청은 이미 보낸 계약이라 근무지를 바꾸지 않는다 — 다른 근무지는 새 근로계약서로(api #58)
-                <Select id={id} value={form.storeId} disabled={correction} onChange={(e) => set("storeId", e.target.value)}>
+                // 수정 요청은 이미 보낸 계약이라 근무지를 바꾸지 않는다 — 다른 근무지는 새 근로계약서로(api #58). 재계약도 직전 계약의 근무지다
+                <Select id={id} value={form.storeId} disabled={correction || previousContractId !== undefined} onChange={(e) => set("storeId", e.target.value)}>
                   <option value="">선택</option>
                   {stores.map((s) => (
                     <option key={s.storeId} value={s.storeId}>

@@ -219,6 +219,25 @@ export function fromDetail(d: ContractDetail): ContractForm {
   };
 }
 
+/**
+ * 재계약(WHALEERP-156) 작성 화면의 처음 값 — 직전 계약 값을 그대로 채우고 기간만 새로 잡는다. 시작일은 직전 계약 종료일 다음 날(종료일이
+ * 없으면 비움), 종료일은 비운다.
+ */
+export function renewalFromDetail(d: ContractDetail): ContractForm {
+  return { ...fromDetail(d), startDate: d.endDate ? nextDay(d.endDate) : "", endDate: "" };
+}
+
+const nextDay = (iso: string) => {
+  const t = new Date(`${iso}T00:00:00Z`);
+  t.setUTCDate(t.getUTCDate() + 1);
+  return t.toISOString().slice(0, 10);
+};
+
+/** 재계약을 시작할 수 있는 계약 — 체결 완료이거나 체결된 뒤 종료된 것(api 의 SIGNED_ONCE 와 같다) */
+export function canRenew(d: Pick<ContractDetail, "status" | "histories">): boolean {
+  return d.status === "SIGNED" || (d.status === "ENDED" && d.histories.some((h) => h.toStatus === "SIGNED"));
+}
+
 const moneyText = (n: number | null | undefined) => (n == null ? "" : n.toLocaleString("ko-KR"));
 const hoursText = (n: number | null | undefined) => (n == null ? "" : String(n));
 

@@ -5741,6 +5741,14 @@ export interface components {
             storeName: string | null;
             /** @description 직원이 퇴직했는가(재직 상태 퇴직) — 상태 칸에 「퇴직」을 붙인다. 퇴직 예정(퇴직일 전)은 false */
             staffRetired: boolean;
+            /**
+             * @description 갱신 예정일 YYYY-MM-DD — 체결 완료이고 종료일이 오늘 이후면 종료일 30일 전(직원 상세 요약과 같은 규칙, WHALEERP-156).
+             *     종료일이 30일 안이면 이미 지난 날짜다. 이미 재계약했으면(진행 중이거나 체결을 거친 재계약이 있음) null, 그 밖에도 null
+             * @example 2026-11-01
+             */
+            renewalDate: string | null;
+            /** @description 재계약이면 직전 계약 ID(WHALEERP-156) — 상태 칸에 「재계약」을 붙인다. 아니면 null */
+            previousContractId: number | null;
         };
         ContractStatusCountsDto: {
             DRAFT: number;
@@ -5866,6 +5874,14 @@ export interface components {
              *     다시 보낼 수 없으면 그 번호로는 종이 계약을 등록할 수 없다(api #49 리뷰, WHALEERP-600).
              */
             replaceContractIds?: number[];
+            /**
+             * @description 재계약의 직전 계약(WHALEERP-156) — 저장(POST)에서만 본다. 체결 완료이거나 체결 뒤 종료된 같은 근무지 · 같은 번호의
+             *     계약이어야 하고, 이미 살아 있는(진행 중이거나 체결을 거친) 재계약이 있으면 409 다. 그 직원이 재직 중이면(퇴직 · 퇴직 예정이
+             *     아니면) 연장이라 같은 직원 레코드에 새 계약을 붙인다 — 가입한 재직 직원이어도 막지 않는다. 퇴직한 직원이면 재입사라 지금처럼
+             *     새 레코드를 만든다(가입한 직원이 퇴직 예정이면 아직 재직이라 409 — 퇴직 뒤에). 앞 계약은 새 계약이 체결 완료이고 그 시작일이
+             *     되면 하루 배치가 종료로 바꾼다(2026-10-26 김민식).
+             */
+            previousContractId?: number;
         };
         CreatedContractResponseDto: {
             /** @description 저장한 뒤의 상태 — 임시저장 · 발송 대기 · 서명 대기 · 체결 완료(종이 계약) 등 */

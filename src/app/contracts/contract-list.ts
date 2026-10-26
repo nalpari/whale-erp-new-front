@@ -202,12 +202,14 @@ const JOIN_NOTES: Partial<Record<ContractListItem["staffJoinState"], string>> = 
 const WAITING_SIGNATURE_NOTES = new Set<ContractListItem["staffJoinState"]>(["AFFILIATION_PENDING", "RETURN_PENDING"]);
 
 /**
- * 상태 칸 뒤에 「 · 」로 붙일 안내(목록 끝 칸에 두던 것, WHALEERP-133). 가입 · 초대 안내, 서명 대기의 남은 날, 퇴직한 직원이면 「퇴직」.
- * 재계약 서명 대기는 재계약(WHALEERP-156) 때 넣는다. 발송 대기인데 가입 · 초대 안내가 없으면(나간 초대가 없는 초안 직원 · api 가 가입
- * 상태를 아직 싣지 않은 먼저 배포된 화면) 판별한 초대 유형을 붙이던 예전 안내로 둔다(draftActionLabel).
+ * 상태 칸 뒤에 「 · 」로 붙일 안내(목록 끝 칸에 두던 것, WHALEERP-133). 가입 · 초대 안내, 재계약 서명 대기의 「재계약」, 서명 대기의 남은
+ * 날, 체결 완료의 갱신 예정일(WHALEERP-156 — 이미 재계약했으면 api 가 비운다), 퇴직한 직원이면 「퇴직」. 발송 대기인데 가입 · 초대
+ * 안내가 없으면(나간 초대가 없는 초안 직원 · api 가 가입 상태를 아직 싣지 않은 먼저 배포된 화면) 판별한 초대 유형을 붙이던 예전 안내로
+ * 둔다(draftActionLabel).
  */
 export function statusNotes(
-  row: Pick<ContractListItem, "status" | "signDeadlineAt" | "draftAction" | "staffJoinState" | "staffRetired">,
+  row: Pick<ContractListItem, "status" | "signDeadlineAt" | "draftAction" | "staffJoinState" | "staffRetired"> &
+    Partial<Pick<ContractListItem, "renewalDate" | "previousContractId">>,
   now: Date,
   draftActionLabel: (v: string) => string = (v) => v,
 ): string[] {
@@ -218,8 +220,10 @@ export function statusNotes(
     else if ((row.staffJoinState == null || row.staffJoinState === "DRAFT") && row.draftAction) notes.push(draftActionLabel(row.draftAction));
   }
   if (row.status === "PENDING_SIGNATURE" && join && WAITING_SIGNATURE_NOTES.has(row.staffJoinState)) notes.push(join);
+  if (row.status === "PENDING_SIGNATURE" && row.previousContractId) notes.push("재계약");
   const deadline = deadlineNote(row, now);
   if (deadline) notes.push(deadline);
+  if (row.status === "SIGNED" && row.renewalDate) notes.push(`갱신 예정 ${row.renewalDate.slice(5)}`);
   if (row.staffRetired) notes.push("퇴직");
   return notes;
 }
