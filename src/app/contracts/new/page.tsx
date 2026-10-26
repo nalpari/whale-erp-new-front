@@ -15,20 +15,25 @@ export default async function NewContractPage({ searchParams }: PageProps<"/cont
   const back = backHrefOf(query.back);
   const from = typeof query.from === "string" ? Number(query.from) : undefined;
   if (from !== undefined && !(Number.isInteger(from) && from >= 1 && from <= 2_147_483_647)) notFound();
-  const { stores, labels, signedIn } = await loadFormData();
-
-  // 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403)이면 api 문장을 그대로 보인다(이어 쓰기와 같다)
-  let previous: ContractDetail | null = null;
-  let notice = "로그인이 필요합니다";
-  if (from !== undefined && signedIn) {
+  // 직전 계약은 작성 화면 재료와 함께 읽는다. 근로계약 관리 조회 권한이 없거나 사용 중이 아닌 계정(403)이면 api 문장을 그대로
+  // 보인다(이어 쓰기와 같다). 세션이 없으면 api 가 401 이라 「로그인이 필요합니다」다
+  const readPrevious = async (): Promise<{ previous: ContractDetail | null; notice: string }> => {
+    const none = { previous: null, notice: "로그인이 필요합니다" };
+    if (from === undefined) return none;
+    const headers = await authHeaders();
+    if (!headers.Authorization) return none;
     try {
-      previous = await request<ContractDetail>(`/contracts/${from}`, { headers: await authHeaders() });
+      return { previous: await request<ContractDetail>(`/contracts/${from}`, { headers }), notice: "" };
     } catch (e) {
       if (e instanceof ApiError && e.status === 404) notFound();
       if (!(e instanceof ApiError && (e.status === 401 || e.status === 403))) throw e;
-      if (e.status === 403) notice = e.message;
+      return e.status === 403 ? { previous: null, notice: e.message } : none;
     }
-  }
+  };
+  const [{ stores, labels, signedIn }, { previous, notice }] = await Promise.all([loadFormData(), readPrevious()]);
+  // 재계약은 직전 계약의 근무지로만 한다 — 그 점포가 고를 수 있는 근무지(폐점 아님 · 맡은 점포)가 아니면 열지 않는다. 잠긴 칸에
+  // 보이지 않는 점포로 저장되지 않게
+  const storeOpen = !previous || stores.some((s) => s.storeId === previous.storeId);
 
   return (
     <>
@@ -42,8 +47,10 @@ export default async function NewContractPage({ searchParams }: PageProps<"/cont
               <Notice title={notice} back={back} />
             ) : !canRenew(previous) ? (
               <Notice title="체결 완료되었거나 체결 뒤 종료된 근로계약만 재계약할 수 있습니다" back={back} />
+            ) : !storeOpen ? (
+              <Notice title="이 근무지에는 근로계약서를 작성할 수 없습니다(폐점했거나 맡은 점포가 아님)" back={back} />
             ) : (
-              <ContractForm stores={stores} labels={labels} signedIn initial={renewalFromDetail(previous)} previousContractId={from} back={back} />
+              <ContractForm stores={stores} labels={labels} signedIn={signedIn} initial={renewalFromDetail(previous)} previousContractId={from} back={back} />
             )}
           </ContractPermission>
         </div>
