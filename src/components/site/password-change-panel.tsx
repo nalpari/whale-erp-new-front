@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useId, useState, useTransition, type ComponentProps, type RefObject } from "react";
+import { useEffect, useId, useRef, useState, useTransition, type ComponentProps, type RefObject } from "react";
 import { Button, Field, FormGroup, SlidePanel } from "@/components/common";
 import { FIELD } from "@/components/common/theme";
 import { myPasswordErrorField, type MyPasswordFormField } from "@/lib/my-password-form";
@@ -29,15 +29,15 @@ function FailedBand({ message }: { message: string }) {
 
 /** 저장 성공 화면 — 패널을 닫지 않고 폼을 이 화면으로 바꾼다(사용자 지정, 2026-10-26). 다른 기기 로그인은
  * 그대로 이어지므로 "다시 로그인"이 아니라 "다음 로그인부터"로 안내한다. 상자·아이콘은 C안(연한 파랑 원
- * #f4f9ff + 파랑 체크 #5e8ce9, DESIGN.md 상태 파랑·연한 파랑 바탕 토큰) — 입력칸 자리에 권한그룹 상세의
+ * erp-on-bg + 파랑 체크 erp-on, DESIGN.md 상태 파랑·연한 파랑 바탕 토큰) — 입력칸 자리에 권한그룹 상세의
  * 빈 칸과 같은 상자(erp-thead-line 테두리)를 두는 사용자 비교 시안 기준(scratchpad pw-done-compare.html). */
 function Done({ onClose }: { onClose: () => void }) {
   return (
     <>
       <div className="flex flex-col items-center gap-[6px] rounded-[2px] border border-erp-thead-line px-[18px] py-[36px] text-center">
         <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true" className="mb-[12px]">
-          <circle cx="28" cy="28" r="28" fill="#f4f9ff" />
-          <path d="M17 28.5l7.5 7.5L39.5 21" fill="none" stroke="#5e8ce9" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx="28" cy="28" r="28" className="fill-erp-on-bg" />
+          <path d="M17 28.5l7.5 7.5L39.5 21" fill="none" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" className="stroke-erp-on" />
         </svg>
         <p className="text-[16px] font-semibold text-erp-ink">비밀번호가 변경되었습니다.</p>
         <p className="text-[14px] text-erp-muted">다음 로그인부터 변경된 비밀번호로 로그인해 주세요.</p>
@@ -53,7 +53,7 @@ function Done({ onClose }: { onClose: () => void }) {
  * 2026-10-26 사용자 지정). 오른쪽에 아이콘 버튼을 겹치는 칸은 공통 TextField 가 className 을 안 받아 FIELD
  * 토큰을 직접 써서 만든다(search-field.tsx 와 같은 방식). ERP 비로그인이 아닌 화면에서는 이 칸이 처음이라
  * 아직 공통 컴포넌트로 올리지 않았다 — 두 번째로 쓰는 화면이 생기면 올린다(DESIGN.md). */
-function PasswordInput(props: Omit<ComponentProps<"input">, "type" | "className">) {
+function PasswordInput({ fieldLabel, ...props }: { fieldLabel: string } & Omit<ComponentProps<"input">, "type" | "className">) {
   const [visible, setVisible] = useState(false);
   return (
     <div className="relative">
@@ -61,7 +61,7 @@ function PasswordInput(props: Omit<ComponentProps<"input">, "type" | "className"
       <button
         type="button"
         aria-pressed={visible}
-        aria-label={visible ? "비밀번호 숨기기" : "비밀번호 보기"}
+        aria-label={`${fieldLabel} ${visible ? "숨기기" : "보기"}`}
         onClick={() => setVisible((v) => !v)}
         className="absolute top-0 right-0 grid size-[34px] place-items-center text-erp-label hover:text-erp-ink"
       >
@@ -82,6 +82,9 @@ export function PasswordChangePanel({ id, open, onClose, trigger }: { id: string
   const [failure, setFailure] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [saving, startSaving] = useTransition();
+  // 패널을 닫았다 다시 열면 지난 저장 요청의 응답이 늦게 와도 새 세션에 적용되지 않게 막는다 — ref 는 렌더링
+  // 중이 아니라 이벤트 핸들러 안에서만 건드린다(my-page-panel.tsx 의 checkNumber 와 같은 패턴, 코드 리뷰로 찾음).
+  const saveNumber = useRef(0);
 
   // 열 때마다 칸·오류·완료 화면을 비운다 — 저장된 비밀번호 값을 패널에 남기지 않는다(마스킹과 별개로, 다시 열면 늘 빈칸).
   // 렌더 중에 상태를 맞춘다(effect 가 아니다) — my-page-panel.tsx 의 loadedFor 와 같은 패턴(react-hooks/set-state-in-effect
@@ -96,6 +99,9 @@ export function PasswordChangePanel({ id, open, onClose, trigger }: { id: string
       setDone(false);
     }
   }
+  useEffect(() => {
+    if (open) saveNumber.current++;
+  }, [open]);
 
   const messageId = (field: MyPasswordFormField) => `${ids}-${field}`;
   const invalid = (field: MyPasswordFormField) => (fieldError?.at === field ? true : undefined);
@@ -104,19 +110,28 @@ export function PasswordChangePanel({ id, open, onClose, trigger }: { id: string
   const handleSave = () => {
     setFieldError(null);
     setFailure(null);
+    const mine = saveNumber.current;
     startSaving(async () => {
-      const result = await changeMyPasswordAction({
-        currentPassword: form.current,
-        newPassword: form.next,
-        newPasswordConfirm: form.confirm,
-      });
-      if (!result.ok) {
-        const field = myPasswordErrorField(result.status, result.message);
-        if (!field) return setFailure(result.message);
-        return setFieldError({ at: field, message: result.message });
+      try {
+        const result = await changeMyPasswordAction({
+          currentPassword: form.current,
+          newPassword: form.next,
+          newPasswordConfirm: form.confirm,
+        });
+        if (mine !== saveNumber.current) return; // 그사이 패널을 닫았다 다시 열었다 — 지난 응답은 버린다
+        if (!result.ok) {
+          const field = myPasswordErrorField(result.status, result.message);
+          if (!field) return setFailure(result.message);
+          return setFieldError({ at: field, message: result.message });
+        }
+        setForm(EMPTY);
+        setDone(true);
+      } catch (error: unknown) {
+        // 서버 액션 자체가 거부될 수 있다(배포 직후 낡은 참조 등) — my-page-panel.tsx handleSave 와 같은 자리.
+        if (mine !== saveNumber.current) return;
+        console.error("비밀번호 변경 처리 실패", error);
+        setFailure("비밀번호 변경 결과를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.");
       }
-      setForm(EMPTY);
-      setDone(true);
     });
   };
 
@@ -133,6 +148,7 @@ export function PasswordChangePanel({ id, open, onClose, trigger }: { id: string
             <div className="flex flex-col gap-[8px]">
               <Field label="현재 비밀번호" required>
                 <PasswordInput
+                  fieldLabel="현재 비밀번호"
                   autoComplete="current-password"
                   placeholder="지금 쓰고 있는 비밀번호를 입력해 주세요."
                   value={form.current}
@@ -148,9 +164,9 @@ export function PasswordChangePanel({ id, open, onClose, trigger }: { id: string
             <div className="flex flex-col gap-[8px]">
               <Field label="새 비밀번호" required>
                 <PasswordInput
+                  fieldLabel="새 비밀번호"
                   autoComplete="new-password"
                   placeholder="영문·숫자·특수문자를 조합하여 8~20자로 입력해 주세요."
-                  maxLength={20}
                   value={form.next}
                   onChange={(e) => setForm((f) => ({ ...f, next: e.target.value }))}
                   aria-invalid={invalid("newPassword")}
@@ -166,9 +182,9 @@ export function PasswordChangePanel({ id, open, onClose, trigger }: { id: string
             <div className="flex flex-col gap-[8px]">
               <Field label="새 비밀번호 확인" required>
                 <PasswordInput
+                  fieldLabel="새 비밀번호 확인"
                   autoComplete="new-password"
                   placeholder="새 비밀번호를 한 번 더 입력해 주세요."
-                  maxLength={20}
                   value={form.confirm}
                   onChange={(e) => setForm((f) => ({ ...f, confirm: e.target.value }))}
                   aria-invalid={invalid("newPasswordConfirm")}
