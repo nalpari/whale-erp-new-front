@@ -102,7 +102,7 @@ function RolesBody({
       ),
     },
     { header: "설명", align: "left", cell: (r) => r.description || <span className="text-erp-muted">-</span> },
-    { header: "최종수정", width: "w-[220px]", cell: (r) => <WhenWho at={r.updatedAt} actor={r.updatedBy} /> },
+    { header: "최종수정", width: "w-[220px]", align: "left", cell: (r) => <WhenWho at={r.updatedAt} actor={r.updatedBy} /> },
     // [메뉴설정] 버튼 열(「메뉴관리」)을 「메뉴설정 여부」 앞에 둔다(2026-10-26 사용자 지정 — 전엔 「메뉴 등록 여부」 · 「메뉴등록」[메뉴등록] 순)
     {
       header: "메뉴관리",

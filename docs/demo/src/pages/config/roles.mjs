@@ -101,7 +101,7 @@ export default ({ A, R }) => {
     { header: "권한유형 · 코드", width: "w-[170px]", align: "left" },
     { header: "권한명", width: "w-[260px]", align: "left" }, // 설명 글자가 칸 한가운데서 시작하지 않게 권한명을 넓혀 고정한다(앱 bp-role-groups 와 같다, 2026-10-26 사용자 지정)
     { header: "설명", align: "left" },
-    { header: "최종수정", width: "w-[220px]" }, // 앱 bp-role-groups 와 같이 한 줄 「일시 · 사람」(2026-10-26 사용자 지정)
+    { header: "최종수정", width: "w-[220px]", align: "left" }, // 앱 bp-role-groups 와 같이 한 줄 「일시 · 사람」(2026-10-26 사용자 지정)
     { header: "메뉴관리", width: "w-[124px]" }, // 버튼 열을 상태 앞에(앱 bp-role-groups 와 같다, 2026-10-26 사용자 지정)
     { header: "메뉴설정 여부", width: "w-[120px]" },
   ];

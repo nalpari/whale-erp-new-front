@@ -7,7 +7,7 @@ import { req } from "../../biz-form.mjs";
 import * as x from "../../extra.mjs";
 import * as c from "../../config-parts.mjs";
 import { platformHeader, link } from "../../site.mjs";
-import { roleSide, roleHead, depthRows, menuScroll, tagRows, newButton, scrollTabs, SVC_TABS_SCRIPT } from "../../role-side.mjs";
+import { roleSide, roleHead, depthRows, menuScroll, partialBox, tagRows, newButton, scrollTabs, SVC_TABS_SCRIPT } from "../../role-side.mjs";
 
 // 1팀 컴포넌트에 없는 것들. 토큰으로만 그린다.
 const sub = (t) => `<span class="text-erp-label">${t}</span>`;
@@ -112,6 +112,8 @@ function menuDialog(A, R, role, id) {
           const gb = open.length ? null : kids.length ? block(kids[0], op) : "view";
           const n = open.filter((k) => has(map, k[0], op)).length;
           if (TIP[gb]) reasons.add(TIP[gb]);
+          // 일부만 켜졌으면 「–」(머리칸은 「–」 없이 해제 — 아래 head)
+          if (n > 0 && n < open.length) return `<span class="inline-flex">${partialBox(label)}</span>`;
           return cell(open.length > 0 && n === open.length, gb, label);
         }
         const b = block(m, op);
@@ -176,7 +178,7 @@ export default ({ A, R }) => {
     { header: "권한유형 · 코드", width: "w-[170px]", align: "left" },
     { header: "권한명", width: "w-[260px]", align: "left" }, // 설명이 칸 한가운데서 시작하지 않게 고정한다(앱 platform-role-groups 와 같다, 2026-10-26 사용자 지정)
     { header: "설명", align: "left" },
-    { header: "최종수정", width: "w-[220px]" },
+    { header: "최종수정", width: "w-[220px]", align: "left" },
     { header: "메뉴관리", width: "w-[124px]" }, // 버튼 열을 상태 앞에(앱 platform-role-groups 와 같다, 2026-10-26 사용자 지정)
     { header: "메뉴설정 여부", width: "w-[120px]" },
   ];
