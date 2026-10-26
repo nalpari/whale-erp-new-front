@@ -15,11 +15,11 @@ import { FailedBand, InfoBand, reasonLabel, unknownResult } from "./role-parts";
 // 팝업이 트리에서 읽는 칸만 — 플랫폼 · BP 트리 모두 이 모양을 갖는다(권한 유형은 role 에서 받는다).
 type MenuTree = Pick<RoleGroupMenuTree, "isSavable" | "updatedAt" | "services">;
 
-// 권한 메뉴 등록(플랫폼 S-EFQREM · BP S-KUDELB · 데모 system/roles 메뉴등록 팝업). 880px 확인창에 서비스 탭 · 메뉴 표(조회 · 등록 · 수정 · 삭제)를 둔다.
+// 권한별 메뉴설정(플랫폼 S-EFQREM · BP S-KUDELB · 데모 system/roles [메뉴설정] 팝업). 880px 확인창에 서비스 탭 · 메뉴 표(조회 · 등록 · 수정 · 삭제)를 둔다.
 // 칸마다 바꿀 수 있는지와 막힌 이유는 api 메뉴 트리가 준다(본인 범위 밖 · BP 쪽 고정 권한의 플랫폼 메뉴 등, 한글은 GET /enums/PlatformRoleMenuBlockReason).
 // 플랫폼 마스터 · 본인이 연결된 권한 · 수정 권한이 없으면 칸을 모두 막고 [닫기]만 둔다.
 // 켜져 있던 칸을 끄면 저장 전에 회수 범위를 미리 본다 — BP · 가맹 마스터는 아래 BP 관리자 · 가맹 관리자 그룹에서도 함께 꺼지므로 확인을 받는다.
-// 조회 · 미리보기 · 저장은 화면마다 다른 api 라 actions 로 받는다. save 가 없으면 볼 수만 있다(가맹마스터 보기).
+// 조회 · 미리보기 · 저장은 화면마다 다른 api 라 actions 로 받는다. save 가 없으면 볼 수만 있다(가맹마스터 메뉴설정 보기).
 // 공통 확인창은 420 · 480 뿐이고 공통 표는 머리칸에 글자만 받아(전체 선택 체크박스) 이 팝업 전용으로 그린다 — 모양은 같은 토큰을 쓴다.
 
 const OP_LABEL: Record<Op, string> = { read: "조회", create: "등록", update: "수정", delete: "삭제" };
@@ -336,6 +336,18 @@ function MenuTable({
       <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">
         <table className="w-full table-fixed border-collapse border-x border-erp-thead-line text-[14px]">
           {cols}
+          {/* 머리 표와 나눠져 칸과 열 이름이 끊기지 않게 본문 표에도 열 이름을 둔다(화면 읽기 도구용). 보이는 머리 표는 전체 선택 체크박스가 있어 숨기지 않는다 */}
+          <thead className="sr-only">
+            <tr>
+              <th scope="col">메뉴명</th>
+              <th scope="col">메뉴단계</th>
+              {OPS.map((op) => (
+                <th key={op} scope="col">
+                  {OP_LABEL[op]}
+                </th>
+              ))}
+            </tr>
+          </thead>
           <tbody className="text-erp-ink">
             {rows.length === 0 ? (
               <tr className="h-[92px] border-b border-erp-thead-line">

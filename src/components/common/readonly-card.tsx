@@ -17,14 +17,15 @@ export function ReadonlyCard({ title, children }: { title?: ReactNode; children:
 
 // 입력칸 테두리 없이 라벨 위 · 값 아래로만 보이는 값 한 칸. 글자 크기 · 색은 DetailTable 의 라벨 · 값 토큰을 그대로 쓴다.
 // bold 는 눈에 먼저 띄어야 하는 값에만 켠다. help 를 주면 라벨 옆에 도움말(?)을 둔다 — 말줄임 글자 밖에 둬야 뜨는 상자가 잘리지 않는다.
-export function ReadonlyValue({ label, value, bold, help }: { label: string; value: ReactNode; bold?: boolean; help?: string }) {
+// title 을 주면 값에 마우스를 올려 말줄임된 전체를 볼 수 있다.
+export function ReadonlyValue({ label, value, bold, help, title }: { label: string; value: ReactNode; bold?: boolean; help?: string; title?: string }) {
   return (
     <div className="flex min-w-px flex-1 flex-col gap-[4px]">
       <span className="flex min-w-0 items-center gap-[4px]">
         <span className="truncate text-[14px] font-medium text-erp-label">{label}</span>
         {help && <HelpTip text={help} label={`${label} 도움말`} />}
       </span>
-      <span className={`truncate text-[14px] text-erp-ink ${bold ? "font-semibold" : ""}`}>{value}</span>
+      <span title={title} className={`truncate text-[14px] text-erp-ink ${bold ? "font-semibold" : ""}`}>{value}</span>
     </div>
   );
 }

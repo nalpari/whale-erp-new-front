@@ -83,9 +83,9 @@ export function scrollTable(table) {
   const pick = (tag) => table.slice(table.indexOf(`<${tag}`), table.indexOf(`</${tag}>`) + tag.length + 3);
   const cols = pick("colgroup");
   return (
-    `<div data-table-scroll class="flex min-h-0 flex-1 flex-col">` +
-    `<div class="shrink-0 overflow-hidden [scrollbar-gutter:stable]">${open}${cols}${pick("thead")}</table></div>` +
-    `<div class="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">${open}${cols}${pick("tbody")}</table></div>` +
+    `<div data-table-scroll class="flex min-h-[134px] flex-1 flex-col">` +
+    `<div aria-hidden="true" class="shrink-0 overflow-hidden [scrollbar-gutter:stable]">${open}${cols}${pick("thead")}</table></div>` +
+    `<div class="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">${open}${cols}${pick("thead").replace("<thead>", '<thead class="sr-only">')}${pick("tbody")}</table></div>` +
     `</div>`
   );
 }

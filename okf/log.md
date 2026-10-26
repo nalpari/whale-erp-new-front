@@ -1,7 +1,7 @@
 # Bundle history
 
 ## 2026-10-26
-* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 공통 컴포넌트: DataTable `scroll`(머리 고정) · DetailTable `title` 생략 · ReadonlyCard/ReadonlyValue 공통화 · HelpTip 신설(front raichu, 디자인 수정 모음).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 디자인 수정 모음(front raichu): 공통 컴포넌트(DataTable `scroll` · DetailTable `title` 생략 · ReadonlyCard/ReadonlyValue 공통화 · HelpTip 신설), BP · 플랫폼 권한 그룹 목록 · 상세 · [메뉴설정] 팝업, 공통코드 관리 표 머리 고정.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front seel, main #128 까지): okf/log 충돌은 양쪽 기록을 살렸다.
 
 ## 2026-10-23

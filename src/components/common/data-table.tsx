@@ -111,10 +111,12 @@ export function DataTable<T>({
     </tbody>
   );
 
+  // 화면 읽기 도구는 본문 표 하나만 읽는다 — 보이는 머리 표(글자뿐)는 숨기고, 본문 표에 같은 열 이름을 sr-only 로 둬 칸과 열 이름이 이어진다.
+  // 최소 높이는 머리 42 + 줄 둘(46 × 2) — 패널이 낮아 모자라면 표가 0 으로 줄어 머리가 아래 형제와 겹치는 대신 바깥 카드가 스크롤한다.
   if (scroll && headVariant !== "none")
     return (
-      <div data-table-scroll className="flex min-h-0 flex-1 flex-col">
-        <div className="shrink-0 overflow-hidden [scrollbar-gutter:stable]">
+      <div data-table-scroll className="flex min-h-[134px] flex-1 flex-col">
+        <div aria-hidden="true" className="shrink-0 overflow-hidden [scrollbar-gutter:stable]">
           <table className={table}>
             {cols}
             {head}
@@ -123,6 +125,15 @@ export function DataTable<T>({
         <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">
           <table className={table}>
             {cols}
+            <thead className="sr-only">
+              <tr>
+                {columns.map((c, i) => (
+                  <th key={i} scope="col">
+                    {c.header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
             {body}
           </table>
         </div>

@@ -202,59 +202,59 @@ export function BizVerificationBox({
       )}
       {/* 본문 위아래 여백은 계정 정보(20px)보다 줄인 16px — 좌우와 같다(사용자가 비교 화면으로 고름, 2026-10-26) */}
       <div className={titleBar ? "flex flex-col gap-[12px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white p-[16px]" : "contents"}>
-      {showHeader && !titleBar && (
-        <div className="flex items-center justify-between">
-          <span className="text-[15px] font-semibold text-erp-ink">사업자정보</span>
-          <BizVerifiedStatus verified={verified} date={verifiedDate} />
+        {showHeader && !titleBar && (
+          <div className="flex items-center justify-between">
+            <span className="text-[15px] font-semibold text-erp-ink">사업자정보</span>
+            <BizVerifiedStatus verified={verified} date={verifiedDate} />
+          </div>
+        )}
+        {/* 오류 문구가 칸 사이에 빈 줄을 만들지 않게 칸과 문구를 간격 없는 묶음으로 둔다(2026-10-22 사용자 지정).
+            나란히(row)일 땐 위로 맞춘다(items-start) — 늘이면(기본 stretch) 한 칸에만 오류 문구가 붙었을 때 다른 칸이
+            그 높이로 늘어나고, 공통 Field 가 라벨 · 입력칸을 세로 가운데로 두어(justify-center) 입력칸 줄이 어긋났다
+            (2026-10-23 사용자 요청 — 점포 「이미 등록된 사업자등록번호입니다」). */}
+        <div className={layout === "row" ? "flex items-start gap-[6px]" : "flex flex-col gap-[12px]"}>
+          {bizNumberCell}
+          {ceoNameCell}
+          {openDateCell}
         </div>
-      )}
-      {/* 오류 문구가 칸 사이에 빈 줄을 만들지 않게 칸과 문구를 간격 없는 묶음으로 둔다(2026-10-22 사용자 지정).
-          나란히(row)일 땐 위로 맞춘다(items-start) — 늘이면(기본 stretch) 한 칸에만 오류 문구가 붙었을 때 다른 칸이
-          그 높이로 늘어나고, 공통 Field 가 라벨 · 입력칸을 세로 가운데로 두어(justify-center) 입력칸 줄이 어긋났다
-          (2026-10-23 사용자 요청 — 점포 「이미 등록된 사업자등록번호입니다」). */}
-      <div className={layout === "row" ? "flex items-start gap-[6px]" : "flex flex-col gap-[12px]"}>
-        {bizNumberCell}
-        {ceoNameCell}
-        {openDateCell}
-      </div>
-      <FieldMessage id={lineId} message={lineMessage} />
-      <div className="flex gap-[6px]">
-        {/* struck 일 땐 숨긴다 — 지워질 값을 두고 "재인증/인증하기"를 누르는 건 말이 안 된다. 바꿔 타려면
-            먼저 되돌리기(onRevert)로 돌아와야 한다(2026-10-23 사용자 지정). */}
-        {!struck && (
-          <Button variant="soft" onClick={onVerify} disabled={off}>
-            {verifying ? "인증 중…" : verified ? "재인증" : "인증하기"}
-          </Button>
-        )}
-        {onClearSaved && (
-          <Button variant="soft" onClick={onClearSaved} disabled={off}>
-            사용안함
-          </Button>
-        )}
-        {showClear && (
-          <Button variant="soft" onClick={onClear} disabled={off}>
-            지우기
-          </Button>
-        )}
-        {onRevert && (
-          <Button variant="soft" onClick={onRevert} disabled={off}>
-            {revertLabel}
-          </Button>
-        )}
-      </div>
-      {/* 성공은 상자 머리의 상태가 바뀌는 것으로 보이고, 화면 낭독기에만 따로 알린다 */}
-      <span role="status" className="sr-only">
-        {verified ? "사업자정보 인증이 완료되었습니다." : ""}
-      </span>
-      <p className="text-[13px] leading-[1.5] text-erp-label">
-        {guide}
-        {note && (
-          <>
-            <br />
-            {note}
-          </>
-        )}
-      </p>
+        <FieldMessage id={lineId} message={lineMessage} />
+        <div className="flex gap-[6px]">
+          {/* struck 일 땐 숨긴다 — 지워질 값을 두고 "재인증/인증하기"를 누르는 건 말이 안 된다. 바꿔 타려면
+              먼저 되돌리기(onRevert)로 돌아와야 한다(2026-10-23 사용자 지정). */}
+          {!struck && (
+            <Button variant="soft" onClick={onVerify} disabled={off}>
+              {verifying ? "인증 중…" : verified ? "재인증" : "인증하기"}
+            </Button>
+          )}
+          {onClearSaved && (
+            <Button variant="soft" onClick={onClearSaved} disabled={off}>
+              사용안함
+            </Button>
+          )}
+          {showClear && (
+            <Button variant="soft" onClick={onClear} disabled={off}>
+              지우기
+            </Button>
+          )}
+          {onRevert && (
+            <Button variant="soft" onClick={onRevert} disabled={off}>
+              {revertLabel}
+            </Button>
+          )}
+        </div>
+        {/* 성공은 상자 머리의 상태가 바뀌는 것으로 보이고, 화면 낭독기에만 따로 알린다 */}
+        <span role="status" className="sr-only">
+          {verified ? "사업자정보 인증이 완료되었습니다." : ""}
+        </span>
+        <p className="text-[13px] leading-[1.5] text-erp-label">
+          {guide}
+          {note && (
+            <>
+              <br />
+              {note}
+            </>
+          )}
+        </p>
       </div>
     </section>
   );

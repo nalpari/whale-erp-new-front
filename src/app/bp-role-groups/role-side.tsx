@@ -12,7 +12,7 @@ import { formatDateTime } from "@/lib/format";
 import { useBpActions, type BpRoleDetailState } from "./bp-actions";
 
 // 오른쪽 고정 칸(S-LYKAEI 상세 · 데모 config/roles) — 고른 그룹 없음 · 수정 · 상세(고칠 수 없는 그룹) · 등록 네 상태.
-// 권한 유형 · 권한 코드 · 관리계정ID 는 읽기 전용이고 권한명 · 설명만 고친다. 따로 수정 단계는 없다(2026-10-07).
+// 권한 유형 · 권한 코드 · 가맹마스터 계정은 읽기 전용이고 권한명 · 설명만 고친다. 따로 수정 단계는 없다(2026-10-07).
 // 고칠 수 있는지 · 지울 수 있는지와 막힌 이유(권한 없음 · 본인 연결)는 api 상세가 준다. 등록 유형은 등록자로 정해진다(BM → BA, FM → FA).
 
 export function BpRoleSide({
@@ -85,6 +85,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
   ];
   // 고칠 수 없는 값은 MY PAGE 「계정 정보」와 같은 카드로(2026-10-26 사용자 지정 — 전엔 「기본 정보」 상세 표 세 줄).
   // 일시는 굵게, 사람은 회색으로 「일시 · 사람」.
+  const whenText = (at: string, actor: Parameters<typeof actorOf>[0]) => `${formatDateTime(at)} · ${actorOf(actor)}`;
   const when = (at: string, actor: Parameters<typeof actorOf>[0]) => (
     <>
       {formatDateTime(at)} <span className="font-normal text-erp-label">· {actorOf(actor)}</span>
@@ -104,8 +105,8 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
       </FormRow>
       <hr className="border-erp-divider" />
       <FormRow>
-        <ReadonlyValue label="등록" value={when(role.createdAt, role.createdBy)} bold />
-        <ReadonlyValue label="최종수정" value={when(role.updatedAt, role.updatedBy)} bold />
+        <ReadonlyValue label="등록" value={when(role.createdAt, role.createdBy)} title={whenText(role.createdAt, role.createdBy)} bold />
+        <ReadonlyValue label="최종수정" value={when(role.updatedAt, role.updatedBy)} title={whenText(role.updatedAt, role.updatedBy)} bold />
       </FormRow>
     </ReadonlyCard>
   );
@@ -127,7 +128,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
   const deleteButton = can.delete && role.isDeletable ? (
     <RoleDeleteDialog
       role={role}
-            actions={actions.remove}
+      actions={actions.remove}
       noCandidateText={`옮길 대체 권한 그룹이 없어 지울 수 없습니다. 같은 ${role.roleTypeCode === "FA" ? "가맹 마스터의 가맹 관리자" : "BP 의 BP 관리자"} 권한 그룹을 하나 더 만든 뒤 다시 시도해 주세요.`}
       onDeleted={onDeleted}
     />

@@ -1004,6 +1004,9 @@
   .min-h-\[100dvh\] {
     min-height: 100dvh;
   }
+  .min-h-\[134px\] {
+    min-height: 134px;
+  }
   .min-h-\[180px\] {
     min-height: 180px;
   }
@@ -3186,7 +3189,7 @@
   .group-open\:rotate-90:is(:where(.group):is([open], :popover-open, :open) *) {
     rotate: 90deg;
   }
-  .group-focus-within\:opacity-100:is(:where(.group):focus-within *) {
+  .group-focus-within\/help\:opacity-100:is(:where(.group\/help):focus-within *) {
     opacity: 100%;
   }
   @media (hover: hover) {
@@ -3205,10 +3208,13 @@
     .group-hover\:stroke-erp-ink:is(:where(.group):hover *) {
       stroke: var(--color-erp-ink);
     }
-    .group-hover\:text-erp-brand:is(:where(.group):hover *) {
+    .group-hover\:opacity-100:is(:where(.group):hover *) {
+      opacity: 100%;
+    }
+    .group-hover\/help\:text-erp-brand:is(:where(.group\/help):hover *) {
       color: var(--color-erp-brand);
     }
-    .group-hover\:opacity-100:is(:where(.group):hover *) {
+    .group-hover\/help\:opacity-100:is(:where(.group\/help):hover *) {
       opacity: 100%;
     }
   }

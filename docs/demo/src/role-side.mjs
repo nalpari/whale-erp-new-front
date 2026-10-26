@@ -61,11 +61,11 @@ export function menuScroll(table) {
 }
 
 // 권한 그룹 상세의 고칠 수 없는 값 상자 — MY PAGE 「계정 정보」 모양에서 제목 바만 뺐다(앱 components/common/readonly-card.tsx, 2026-10-26 사용자 지정).
-// manager: 관리계정ID — undefined 면 줄 없음(플랫폼), null 이면 「-」(BP 관리자 그룹), 값이면 가맹 마스터 아이디 · 이름. reg · mod: [일시, 사람]
+// manager: 가맹마스터 계정 — undefined 면 줄 없음(플랫폼), null 이면 「-」(BP 관리자 그룹), 값이면 가맹 마스터 아이디 · 이름. reg · mod: [일시, 사람]
 // 라벨 옆 도움말(?) — 마우스를 올리거나 키보드로 닿으면 안내가 뜬다(앱 components/common/help-tip.tsx 와 같다, 2026-10-26 사용자 지정)
 const helpTip = (text, label) =>
-  `<span class="group relative inline-flex shrink-0"><button type="button" aria-label="${label} 도움말" class="grid size-[16px] place-items-center rounded-full text-erp-muted transition-colors duration-150 group-hover:text-erp-brand focus-visible:text-erp-brand"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><rect x="7.3" y="7" width="1.4" height="5" rx="0.7" fill="#fff"/><circle cx="8" cy="4.8" r="0.9" fill="#fff"/></svg></button>` +
-  `<span role="tooltip" class="pointer-events-none absolute top-[calc(100%+6px)] left-[-8px] z-10 w-max max-w-[260px] rounded-[2px] border border-[#ebebeb] bg-white px-[12px] py-[8px] text-[13px] leading-[1.5] font-normal break-keep whitespace-normal text-erp-ink opacity-0 shadow-[0_2px_6px_rgba(40,47,55,0.08)] transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100">${text}</span></span>`;
+  `<span class="group/help relative inline-flex shrink-0"><button type="button" aria-label="${label} 도움말" class="grid size-[16px] place-items-center rounded-full text-erp-muted transition-colors duration-150 group-hover/help:text-erp-brand focus-visible:text-erp-brand"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="currentColor"/><rect x="7.3" y="7" width="1.4" height="5" rx="0.7" fill="#fff"/><circle cx="8" cy="4.8" r="0.9" fill="#fff"/></svg></button>` +
+  `<span role="tooltip" class="pointer-events-none absolute top-[calc(100%+6px)] left-[-8px] z-10 w-max max-w-[260px] rounded-[2px] border border-[#ebebeb] bg-white px-[12px] py-[8px] text-[13px] leading-[1.5] font-normal break-keep whitespace-normal text-erp-ink opacity-0 shadow-[0_2px_6px_rgba(40,47,55,0.08)] transition-opacity duration-150 group-focus-within/help:opacity-100 group-hover/help:opacity-100">${text}</span></span>`;
 const helpField = (label, value, text) =>
   `<div class="flex min-w-px flex-1 flex-col gap-[4px]"><span class="flex min-w-0 items-center gap-[4px]"><span class="truncate text-[14px] font-medium text-erp-label">${label}</span>${helpTip(text, label)}</span><span class="truncate text-[14px] text-erp-ink font-semibold">${value}</span></div>`;
 export function recordCard({ manager, reg, mod }) {
@@ -228,7 +228,7 @@ export const ROLE_SCRIPT = `<script>
   };
   rows.forEach((r) =>
     r.addEventListener("click", (e) => {
-      if (e.target.closest("button, a, input, label")) return; // 메뉴등록 버튼은 그대로 확인창을 연다
+      if (e.target.closest("button, a, input, label")) return; // [메뉴설정] 버튼은 그대로 확인창을 연다
       cur = r.dataset.roleRow;
       back();
     }),

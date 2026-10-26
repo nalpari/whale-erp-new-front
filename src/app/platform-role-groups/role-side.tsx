@@ -5,10 +5,10 @@ import { RoleForm, type RoleFormActions } from "@/components/role-groups/role-fo
 import { CodeLabel } from "@/components/site/code-label";
 import { usePagePermission } from "@/components/site/session-gate";
 import type { EnumValue } from "@/lib/enums";
+import { formatDateTime } from "@/lib/format";
 import type { RoleGroupDetail } from "@/lib/platform-role-groups";
 import { RoleDeleteDialog, type DeleteDialogActions } from "@/components/role-groups/role-delete-dialog";
 import { createRoleGroupAction, deleteRoleGroupAction, getDeletionCandidatesAction, updateRoleGroupAction } from "./actions";
-import { formatDateTime } from "@/lib/format";
 import { actorOf, CARD, FailedBand, InfoBand, reasonLabel, type RoleDetailState } from "./role-parts";
 
 // 오른쪽 고정 칸(데모 role-side) — 고른 권한 없음 · 수정 · 상세(고칠 수 없는 권한) · 등록 네 상태.
@@ -84,6 +84,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
   ];
   // 고칠 수 없는 값은 MY PAGE 「계정 정보」와 같은 카드로(2026-10-26 사용자 지정 — 전엔 「기본 정보」 상세 표 세 줄).
   // 일시는 굵게, 사람은 회색으로 「일시 · 사람」.
+  const whenText = (at: string, actor: Parameters<typeof actorOf>[0]) => `${formatDateTime(at)} · ${actorOf(actor)}`;
   const when = (at: string, actor: Parameters<typeof actorOf>[0]) => (
     <>
       {formatDateTime(at)} <span className="font-normal text-erp-label">· {actorOf(actor)}</span>
@@ -93,8 +94,8 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
     <ReadonlyCard>
       {/* 제목 바는 두지 않는다(2026-10-26 사용자 지정) */}
       <FormRow>
-        <ReadonlyValue label="등록" value={when(role.createdAt, role.createdBy)} bold />
-        <ReadonlyValue label="최종수정" value={when(role.updatedAt, role.updatedBy)} bold />
+        <ReadonlyValue label="등록" value={when(role.createdAt, role.createdBy)} title={whenText(role.createdAt, role.createdBy)} bold />
+        <ReadonlyValue label="최종수정" value={when(role.updatedAt, role.updatedBy)} title={whenText(role.updatedAt, role.updatedBy)} bold />
       </FormRow>
     </ReadonlyCard>
   );
@@ -117,7 +118,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
     can.delete && !role.isMaster ? (
       <RoleDeleteDialog
         role={role}
-                actions={DELETE_ACTIONS}
+        actions={DELETE_ACTIONS}
         noCandidateText="옮길 대체 권한이 없어 지울 수 없습니다. 플랫폼 관리자 추가 권한을 하나 더 만든 뒤 다시 시도해 주세요."
         blockedReason={role.deleteBlockedReason && reasonLabel(lockReasons, role.deleteBlockedReason, "지울 수 없는 권한입니다")} onDeleted={onDeleted} />
     ) : null;
