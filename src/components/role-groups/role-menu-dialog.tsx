@@ -235,8 +235,12 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
       >
         {preview && (
           <div className="flex flex-col gap-[12px] break-keep">
+            {/* 권한명은 굵은 띠지로(2026-10-26 사용자 지정) — Tag 는 className 을 받지 않아 안쪽 span 으로 굵힌다 */}
             <p>
-              &apos;{role.name}&apos;의 메뉴 접근 권한이 회수됩니다.
+              <Tag>
+                <span className="font-semibold">{role.name}</span>
+              </Tag>
+              의 메뉴 권한이 변경됩니다.
             </p>
             <ul className="list-disc pl-[18px]">
               <li>
