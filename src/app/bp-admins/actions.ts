@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
 import {
+  checkBpAdminEmailAvailable,
   checkBpAdminLoginIdAvailable,
   createBpAdmin,
   getBpAdminHistories,
@@ -69,6 +70,15 @@ export async function checkBpAdminLoginIdAction(loginId: string): Promise<Action
     return { ok: true, available: await checkBpAdminLoginIdAvailable(loginId) };
   } catch (error) {
     return failureOf(error, "아이디 확인");
+  }
+}
+
+/** 이메일 중복 확인 — 등록 패널이 아이디와 같은 때(칸을 벗어나거나 Enter) 부른다. 형식은 화면이 먼저 본다. */
+export async function checkBpAdminEmailAction(email: string): Promise<ActionResult<{ available: boolean }>> {
+  try {
+    return { ok: true, available: await checkBpAdminEmailAvailable(email) };
+  } catch (error) {
+    return failureOf(error, "이메일 확인");
   }
 }
 

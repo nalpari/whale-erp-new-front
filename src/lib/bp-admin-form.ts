@@ -49,6 +49,13 @@ export function bpAdminFormOf(detail: BpAdminDetail): BpAdminForm {
 
 const phoneOf = (form: BpAdminForm) => form.phone.map((p) => p.trim()).join("");
 
+/** 이메일 형식 오류 문구. 맞으면 undefined. 저장할 때와 칸을 벗어날 때(중복 확인 전) 같이 쓴다. */
+export function emailError(email: string): string | undefined {
+  const value = email.trim();
+  if (!value) return "이메일을 입력해 주세요.";
+  if (value.length > 100 || !EMAIL_PATTERN.test(value)) return "이메일 형식이 아닙니다.";
+}
+
 /**
  * 칸별 오류 문구. 없으면 빈 객체. 등록은 아이디 · 계정 역할도 본다(수정은 바꾸지 않는다).
  * 일부 점포면 매핑이 1곳 이상이어야 한다 — 범위 밖 매핑(outOfScopeCount)도 저장 뒤 남으므로 센다. 점포 칸을 막았으면(본인 계정) 보지 않는다.
@@ -63,9 +70,8 @@ export function validateBpAdminForm(
   if (!NAME_PATTERN.test(form.name.trim())) errors.name = form.name.trim() ? "이름은 한글 또는 영문 2~20자입니다." : "이름을 입력해 주세요.";
   const phone = phoneOf(form);
   if (!PHONE_PATTERN.test(phone)) errors.phone = phone ? "휴대전화번호는 숫자 10~11자리입니다." : "휴대전화번호를 입력해 주세요.";
-  const email = form.email.trim();
-  if (!email) errors.email = "이메일을 입력해 주세요.";
-  else if (email.length > 100 || !EMAIL_PATTERN.test(email)) errors.email = "이메일 형식이 아닙니다.";
+  const email = emailError(form.email);
+  if (email) errors.email = email;
   if (mode === "create" && !form.roleTypeCode) errors.roleTypeCode = "계정 역할을 골라 주세요.";
   if (!form.roleGroupId) errors.roleGroupId = "권한 그룹을 골라 주세요.";
   if (!storesLocked && !form.isAllStores && form.stores.length + outOfScopeCount === 0) errors.stores = "대상 점포를 1곳 이상 골라 주세요.";

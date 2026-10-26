@@ -156,7 +156,16 @@ export async function checkBpAdminLoginIdAvailable(loginId: string): Promise<boo
   return (await request<{ available: boolean }>(`/bp-admins/login-id-availability?${params}`, await json("GET"))).available;
 }
 
-/** POST /bp-admins — 사용으로 만들고 초기 비밀번호를 메일로만 보낸다. 메일이 실패해도 계정은 만들어진다. */
+/**
+ * GET /bp-admins/email-availability — 지우지 않았고 탈퇴하지 않은 관리자 계정(사용 · 미사용)끼리 이메일이 겹치면 쓸 수 없다(저장 409 와 같은 규칙).
+ * 등록 권한이 필요하다. 형식이 틀리면 400 「이메일 형식이 아닙니다」.
+ */
+export async function checkBpAdminEmailAvailable(email: string): Promise<boolean> {
+  const params = new URLSearchParams({ email });
+  return (await request<{ available: boolean }>(`/bp-admins/email-availability?${params}`, await json("GET"))).available;
+}
+
+/** POST /bp-admins —사용으로 만들고 초기 비밀번호를 메일로만 보낸다. 메일이 실패해도 계정은 만들어진다. */
 export async function createBpAdmin(input: CreateBpAdminInput): Promise<{ adminAccountId: number; isMailSent: boolean }> {
   return request("/bp-admins", await json("POST", input));
 }

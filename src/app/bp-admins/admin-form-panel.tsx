@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
+import { useEffect, useId, useRef, useState, useTransition, type KeyboardEvent, type ReactNode, type RefObject } from "react";
 import { Button, DataTable, Field, FormGroup, FormRow, RequiredMark, Select, SlidePanel, TextField } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { useAccount } from "@/components/site/session-gate";
@@ -13,6 +13,7 @@ import {
   bpAdminFormOf,
   bpAdminServerErrorField,
   EMPTY_BP_ADMIN_FORM,
+  emailError,
   toCreateBpAdminInput,
   toUpdateBpAdminInput,
   validateBpAdminForm,
@@ -23,7 +24,7 @@ import { allowsAllStores, creatableRolesOf, editLocksOf } from "@/lib/bp-admin-r
 import type { BpAdminDetail, BpAdminRoleGroup, BpAdminRoleType, BpAdminStore, BpAdminStoreOption } from "@/lib/bp-admins";
 import { loginIdError } from "@/lib/platform-admin-form";
 import type { StoreStatus } from "@/lib/store-types";
-import { checkBpAdminLoginIdAction, createBpAdminAction, getBpAdminStoreOptionsAction, updateBpAdminAction } from "./actions";
+import { checkBpAdminEmailAction, checkBpAdminLoginIdAction, createBpAdminAction, getBpAdminStoreOptionsAction, updateBpAdminAction } from "./actions";
 import { unknownResult } from "./bp-admin-parts";
 
 // BP 관리자 등록(S-NIMSMQ) · 수정(S-OENTFQ) 슬라이드 패널(데모 config/admins-new · admins-edit). 패널 폭(464)이라 칸을 한 줄에 하나씩 쌓는다.
@@ -37,6 +38,8 @@ import { unknownResult } from "./bp-admin-parts";
 const STALE = "먼저 바꿨습니다";
 /** 중복 확인에서 쓸 수 없다고 온 아이디의 문구 */
 const LOGIN_ID_TAKEN = "이미 사용 중인 아이디입니다. 지우거나 탈퇴한 계정의 아이디도 다시 쓸 수 없습니다.";
+/** 중복 확인에서 쓸 수 없다고 온 이메일의 문구 */
+const EMAIL_TAKEN = "이미 사용 중인 이메일입니다.";
 
 type Props = {
   id: string;
@@ -90,7 +93,8 @@ export function AdminFormPanel(props: Props) {
   const [saving, startSaving] = useTransition();
   const router = useRouter();
   /** 아이디 중복 확인 차례 — 고치거나 다시 물으면 올라가, 앞선 답을 버린다 */
-  const checkNumber = useRef(0);
+  /** 칸별 중복 확인 차례 — 고치거나 다시 물으면 올라가, 앞선 답을 버린다 */
+  const checkNumber = useRef({ loginId: 0, email: 0 });
 
   // 대상 점포 후보 — 패널이 열려 있고 점포를 고를 수 있을 때, 계정 역할마다 받는다(가맹 마스터면 다른 가맹 마스터 담당 점포가 빠져 온다)
   const optionsRole = open && !locks.stores && form.roleTypeCode ? form.roleTypeCode : "";
@@ -143,26 +147,37 @@ export function AdminFormPanel(props: Props) {
     focusFirstError();
   };
 
-  /** 아이디 중복 확인(등록만) — 칸을 벗어나거나 Enter 를 칠 때. 형식이 틀리면 api 에 묻지 않는다(platform-admins 와 같다). */
-  const checkLoginId = (value: string) => {
-    if (mode !== "create" || !value.trim()) return;
-    const formatError = loginIdError(value);
+  /**
+   * 아이디 · 이메일 중복 확인(등록만) — 칸을 벗어나거나 Enter 를 칠 때, 두 칸 모두 같은 때에 묻는다(2026-10-26 사용자 요청).
+   * 형식이 틀리면 api 에 묻지 않는다. 그 밖의 실패(403 · 404 · 5xx)는 칸에 달지 않고 넘어간다 — 저장할 때 api 가 다시 본다.
+   */
+  const CHECKS = {
+    loginId: { formatError: loginIdError, ask: checkBpAdminLoginIdAction, taken: LOGIN_ID_TAKEN, value: (v: string) => v.trim() },
+    email: { formatError: emailError, ask: checkBpAdminEmailAction, taken: EMAIL_TAKEN, value: (v: string) => v.trim().toLowerCase() },
+  };
+  const checkAvailable = (field: "loginId" | "email", raw: string) => {
+    if (mode !== "create" || !raw.trim()) return;
+    const check = CHECKS[field];
+    const formatError = check.formatError(raw);
     if (formatError) {
-      setErrors((e) => ({ ...e, loginId: formatError }));
+      setErrors((e) => ({ ...e, [field]: formatError }));
       return;
     }
-    const mine = ++checkNumber.current;
-    checkBpAdminLoginIdAction(value.trim())
+    const mine = ++checkNumber.current[field];
+    check
+      .ask(check.value(raw))
       .then((result) => {
-        if (mine !== checkNumber.current) return;
+        if (mine !== checkNumber.current[field]) return;
         if (result.ok) {
-          if (!result.available) setErrors((e) => ({ ...e, loginId: LOGIN_ID_TAKEN }));
-        } else if (result.status === 400) setErrors((e) => ({ ...e, loginId: result.message }));
+          if (!result.available) setErrors((e) => ({ ...e, [field]: check.taken }));
+        } else if (result.status === 400) setErrors((e) => ({ ...e, [field]: result.message }));
         else if (result.status === 401) setFailure(result.message);
-        else console.warn("아이디 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다", result.status, result.message);
+        else console.warn(`${field} 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다`, result.status, result.message);
       })
-      .catch((error: unknown) => console.warn("아이디 중복 확인 호출 실패 — 저장할 때 api 가 다시 본다", error));
+      .catch((error: unknown) => console.warn(`${field} 중복 확인 호출 실패 — 저장할 때 api 가 다시 본다`, error));
   };
+  /** Enter 로 중복을 묻는다 — 한글 조합 중 Enter 는 글자 확정이라 넘긴다 */
+  const isEnter = (e: KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && !e.nativeEvent.isComposing;
 
   /** 계정 역할을 바꾸면 그 역할의 권한 그룹 · 점포로 새로 고른다 — 가맹 마스터는 고정 그룹 하나이고 늘 일부 점포다. */
   const changeRole = (role: BpAdminRoleType | "") => {
@@ -242,14 +257,14 @@ export function AdminFormPanel(props: Props) {
               <TextField
                 value={form.loginId}
                 onChange={(e) => {
-                  checkNumber.current++;
+                  checkNumber.current.loginId++;
                   set("loginId", e.target.value);
                 }}
-                onBlur={(e) => checkLoginId(e.currentTarget.value)}
+                onBlur={(e) => checkAvailable("loginId", e.currentTarget.value)}
                 onKeyDown={(e) => {
-                  if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
+                  if (!isEnter(e)) return;
                   e.preventDefault();
-                  checkLoginId(e.currentTarget.value);
+                  checkAvailable("loginId", e.currentTarget.value);
                 }}
                 maxLength={20}
                 placeholder="영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요."
@@ -301,7 +316,16 @@ export function AdminFormPanel(props: Props) {
             <TextField
               type="email"
               value={form.email}
-              onChange={(e) => set("email", e.target.value)}
+              onChange={(e) => {
+                checkNumber.current.email++;
+                set("email", e.target.value);
+              }}
+              onBlur={(e) => checkAvailable("email", e.currentTarget.value)}
+              onKeyDown={(e) => {
+                if (!isEnter(e)) return;
+                e.preventDefault();
+                checkAvailable("email", e.currentTarget.value);
+              }}
               maxLength={100}
               aria-invalid={invalid("email")}
               aria-describedby={describe("email")}
