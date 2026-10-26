@@ -246,7 +246,10 @@ export function mypagePanel(A) {
   return ui.slidePanel("mypage-panel", "내 정보", ui.sectionHead("내 정보") + mypageBody(A, { idPrefix: "mpb", tabPrefix: "mp-", closeSave: true }));
 }
 
-// MY PAGE 전체 화면(mypage/password.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다. 비밀번호 칸(보기 토글)은 biz-form.mjs 의 pwField.
+// MY PAGE 전체 화면(mypage/password.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다. 비밀번호 칸(눈 아이콘 보기 토글)은
+// biz-form.mjs 의 pwField. 안내 문구는 전부 칸 안 placeholder 로 두고, 칸 아래는 error 가 있을 때만 보인다(2026-10-26
+// 사용자 지정 — 전엔 긴 조건 문구가 칸 아래 늘 남아 있었다). errors 의 칸(current · newPassword · confirm)에 값이
+// 있으면 그 pwField 가 그 문구를 칸 아래에 보인다.
 // 비밀번호 변경 완료 — 제목은 그대로 두고 입력칸 자리에 큰 체크 + 안내를 둔다(2026-10-26 사용자 지정, C안: 연한 파랑 원 + 파랑 체크).
 // 「색은 상태다」 규칙대로 완료 상태에 상태 파랑(#5e8ce9 · 바탕 #f4f9ff)을 쓴다. 전엔 토스트로만 알렸다.
 const PW_DONE_ICON =
@@ -266,31 +269,38 @@ const PW_SCRIPT = `<script>
   });
 })();
 </script>`;
-export function passwordBody({ closeSave = false } = {}) {
+export function passwordBody(A, { closeSave = false, errors = {} } = {}) {
   const done =
     `<div data-pw-done hidden class="flex flex-col gap-[18px]">` +
     `<div role="status" class="flex flex-col items-center gap-[6px] rounded-[2px] border border-erp-thead-line px-[18px] py-[36px] text-center">` +
     `<span class="mb-[12px]">${PW_DONE_ICON}</span>` +
     `<p class="text-[16px] font-semibold text-erp-ink">비밀번호가 변경되었습니다.</p>` +
-    `<p class="text-[14px] text-erp-muted">다음 로그인부터 새 비밀번호를 사용해 주세요.</p></div>` +
+    `<p class="text-[14px] text-erp-muted">다음 로그인부터 변경된 비밀번호로 로그인해 주세요.</p></div>` +
     // 패널은 [닫기](닫으면 다음에 열 때 입력칸으로 돌아온다), 전체 화면은 [확인]으로 입력칸으로 돌아간다
     `<div class="flex justify-center">${closeSave ? ui.button("닫기", { "data-close": true, "data-pw-reset": true }) : ui.button("확인", { "data-pw-reset": true })}</div></div>`;
   return `<div data-pw class="flex flex-col gap-[18px]"><div data-pw-form>` + ui.formGroup(
     "새 비밀번호 설정",
-    f.pwField("현재 비밀번호", "whale-2026!", "current-password", "지금 쓰고 있는 비밀번호를 입력하세요"),
-    f.pwField(
-      "새 비밀번호",
-      "hangang-0922#",
-      "new-password",
-      "특수문자는 ! @ # $ % ^ &amp; * ( ) - _ = + [ ] { } ? 만, 공백 불가",
-      "영문·숫자·특수문자를 조합하여 8~20자 입력해 주세요.",
-    ),
-    f.pwField("새 비밀번호 확인", "hangang-0922#", "new-password", "새 비밀번호를 한 번 더 입력하세요"),
-    `<div class="flex justify-end gap-[6px]">${closeSave ? ui.button("닫기", { variant: "off", "data-close": true }) : ""}${ui.button("비밀번호 변경", { "data-pw-submit": true })}</div>`,
+    // value 를 비워 둔다 — 안내문구가 placeholder 라 값이 차 있으면 안 보인다(코드 리뷰로 찾음, 2026-10-26).
+    f.pwField(A, "현재 비밀번호", "", "current-password", {
+      placeholder: "지금 쓰고 있는 비밀번호를 입력해 주세요.",
+      error: errors.current,
+    }),
+    // 회원가입(signup.mjs passwordField)과 같은 짧은 문구 — 긴 조건 문구는 칸 너비에 다 안 들어가 뒤가 잘렸다
+    // (사용자가 찾음, 2026-10-26). 세 칸 모두 마침표로 끝맺는다(사용자 지정).
+    f.pwField(A, "새 비밀번호", "", "new-password", {
+      placeholder: "영문·숫자·특수문자를 조합하여 8~20자로 입력해 주세요.",
+      error: errors.newPassword,
+    }),
+    f.pwField(A, "새 비밀번호 확인", "", "new-password", {
+      placeholder: "새 비밀번호를 한 번 더 입력해 주세요.",
+      error: errors.confirm,
+    }),
+    // [비밀번호 변경] 은 토스트 대신 완료 상자로 바꾼다(C안) — 버튼 줄 모양은 saveRow 와 같다
+    `<div class="flex justify-center gap-[6px]">${closeSave ? ui.button("닫기", { variant: "off", "data-close": true }) : ""}${ui.button("비밀번호 변경", { "data-pw-submit": true })}</div>`,
   ) + `</div>${done}</div>` + PW_SCRIPT;
 }
 export function passwordPanel(A) {
-  return ui.slidePanel("password-panel", "비밀번호 변경", ui.sectionHead("비밀번호 변경") + passwordBody({ closeSave: true }));
+  return ui.slidePanel("password-panel", "비밀번호 변경", ui.sectionHead("비밀번호 변경") + passwordBody(A, { closeSave: true }));
 }
 
 // 회원 탈퇴. MY PAGE 전체 화면(mypage/withdraw.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다.
