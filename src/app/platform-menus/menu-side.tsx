@@ -229,7 +229,7 @@ function MenuForm(
       setBase((b) => ({ ...b, ...saved }));
       setForm(saved);
       setFailure(null);
-      toast(base.status === "ACTIVE" && saved.status === "INACTIVE" ? "수정되었습니다. 미사용으로 돌려 사용자 화면과 신규 권한 부여에서 빠집니다. 이미 준 권한은 남습니다." : "updated");
+      toast(base.status === "ACTIVE" && saved.status === "INACTIVE" ? "수정되었습니다. 미사용 메뉴는 사용자 화면 및 신규 권한 설정에서 제외되며, 기존 권한은 유지됩니다." : "updated");
     });
   };
 
