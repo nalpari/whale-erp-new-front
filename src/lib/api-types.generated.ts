@@ -3048,6 +3048,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/me/attendance/location-reads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 위치 읽음(ATT-22) — 출근 · 퇴근 버튼을 눌러 위치를 읽을 때마다 부른다. 확인자료(수집 · 이용)를 남기고, 받은 locationReadId 를
+         *     이어서 보내는 출근 · 퇴근에 넣는다. 위치는 보내지 않는다
+         */
+        post: operations["MyAttendanceController_locationRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/me/attendance/check-in": {
         parameters: {
             query?: never;
@@ -5520,6 +5540,8 @@ export interface components {
             month: string;
             /** @description 점포 ID 목록. 관리 범위 밖은 조용히 빠진다. 없으면 관리 범위 전체 */
             storeIds?: number[];
+            /** @description 점포 유형(상단 점포 범위의 직영 · 가맹, 목록과 같다). 주면 그 유형 점포만이고 폐점 점포는 뺀다 */
+            storeTypes?: ("DIRECT" | "FRANCHISE")[];
             /** @description 직원명 부분 일치(목록과 같다). 앞뒤 공백을 지우고 비면 없는 것으로 본다 */
             staffName?: string;
         };
@@ -7729,6 +7751,14 @@ export interface components {
             openCheckIn: components["schemas"]["OpenCheckInDto"] | null;
             todaySchedules: components["schemas"]["TodayScheduleDto"][];
         };
+        LocationReadDto: {
+            /** @description 앱 전역에서 고른 소속 — 이 근무지로 출근 · 퇴근하려고 위치를 읽었다 */
+            staffMemberId: number;
+        };
+        LocationReadResultDto: {
+            /** @description 이 읽음의 확인자료(수집) id — 이어서 보내는 출근 · 퇴근에 넣는다 */
+            locationReadId: number;
+        };
         CheckInDto: {
             /**
              * @description 확인 필요 사유 — 고른 근무지 반경 밖이면 `OUT_OF_RADIUS_CHECKIN`(ATT-11). 좌표 · 거리는 받지 않는다(ATT-05)
@@ -7737,6 +7767,11 @@ export interface components {
             reviewReason?: "OUT_OF_RADIUS_CHECKIN";
             /** @description 앱 전역에서 고른 소속(직원 레코드) — 이 근무지로 출근한다(ATT-07) */
             staffMemberId: number;
+            /**
+             * @description 출근 버튼을 누를 때 남긴 위치 읽음(`POST /me/attendance/location-reads` 의 locationReadId). 위치를 보는 근무지면 꼭 있어야 하고,
+             *     그 확인자료(수집 · 이용)를 이 기록에 잇는다(ATT-22). 위치를 보지 않는 근무지는 보내지 않는다
+             */
+            locationReadId?: number;
         };
         AttendanceRecordResultDto: {
             /** @enum {string} */
@@ -7765,6 +7800,11 @@ export interface components {
             reviewReason?: "OUT_OF_RADIUS_CHECKOUT" | "MOCK_LOCATION";
             /** @description 앱 전역에서 고른 소속 — 열린 출근 기록이 이 소속의 것이어야 한다 */
             staffMemberId: number;
+            /**
+             * @description 퇴근 버튼을 누를 때 남긴 위치 읽음(`POST /me/attendance/location-reads` 의 locationReadId). 위치를 보는 근무지면 꼭 있어야 하고,
+             *     그 확인자료(수집 · 이용)를 이 기록에 잇는다(ATT-22). 위치를 보지 않는 근무지는 보내지 않는다
+             */
+            locationReadId?: number;
         };
         /**
          * @description 그날 상태. 근무스케줄 시작 전이면 null(예정)
@@ -7928,6 +7968,8 @@ export interface components {
             name: string;
             storeId: number;
             storeName: string;
+            /** @description 그 날짜가 확정 · 발송된 급여명세서 기간 안이다 — 등록하기 전에 경고한다(218) */
+            isPayslipConfirmed: boolean;
         };
         ProxyStaffResponseDto: {
             items: components["schemas"]["ProxyStaffItemDto"][];
@@ -12093,9 +12135,14 @@ export interface operations {
                 status?: string;
                 /**
                  * @description 쉼표로 구분한 점포 ID(직원 목록과 같다). 관리 범위 밖의 ID 는 조용히 빠진다. 없으면 관리 범위 전체.
-                 *     빈 칸 · 숫자가 아닌 값 · 1..2147483647 밖의 값이 하나라도 있거나 500개를 넘으면 400 이다. 상태 건수도 이 점포로 센다.
+                 *     빈 칸 · 숫자가 아닌 값 · 1..2147483647 밖의 값이 하나라도 있거나 1000개를 넘으면 400 이다(직원 목록과 같다). 상태 건수도 이 점포로 센다.
                  */
                 storeIds?: string;
+                /**
+                 * @description 쉼표로 구분한 점포 유형(상단 점포 범위의 직영 · 가맹) — DIRECT · FRANCHISE. 주면 그 유형 점포만이고 폐점 점포는 뺀다(직원
+                 *     목록과 같다). storeIds 와 함께 주면 둘 다 맞는 점포만이다. 빈 값 · 모르는 값이 하나라도 있으면 400 이다.
+                 */
+                storeTypes?: string;
                 /** @description 페이지당 건수 — 20 · 50 · 100, 기본 20 */
                 pageSize?: 20 | 50 | 100;
                 /**
@@ -17650,6 +17697,50 @@ export interface operations {
             };
         };
     };
+    MyAttendanceController_locationRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LocationReadDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocationReadResultDto"];
+                };
+            };
+            /** @description 본문 형식 오류 · 위치를 보지 않는 근무지 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 관리자 토큰 · LOCATION_CONSENT_REQUIRED — 위치정보 동의 없음 · 철회 · 약관 버전이 바뀌어 다시 동의 필요 / LOCATION_PAUSED — 위치 수집 일시 중지. 위치를 보지 않는 근무지는 보지 않는다 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 내 소속이 아님 — 없는 id, 남의 레코드, 퇴직했거나 체결 완료 근로계약이 없는 내 레코드. 모두 같은 본문 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     MyAttendanceController_checkIn: {
         parameters: {
             query?: never;
@@ -17671,7 +17762,7 @@ export interface operations {
                     "application/json": components["schemas"]["AttendanceRecordResultDto"];
                 };
             };
-            /** @description 본문 형식 오류 · 출근에 쓸 수 없는 사유 · 위치를 보지 않는 근무지에 사유 */
+            /** @description 본문 형식 오류 · 출근에 쓸 수 없는 사유 · 위치를 보지 않는 근무지에 사유 · 위치 읽음 · 위치를 보는 근무지인데 위치 읽음이 없거나 이미 쓴 것 */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -17729,7 +17820,7 @@ export interface operations {
                     "application/json": components["schemas"]["AttendanceRecordResultDto"];
                 };
             };
-            /** @description 본문 형식 오류 · 퇴근에 쓸 수 없는 사유 · 위치를 보지 않는 근무지에 사유 */
+            /** @description 본문 형식 오류 · 퇴근에 쓸 수 없는 사유 · 위치를 보지 않는 근무지에 사유 · 위치 읽음 · 위치를 보는 근무지인데 위치 읽음이 없거나 이미 쓴 것 */
             400: {
                 headers: {
                     [name: string]: unknown;
