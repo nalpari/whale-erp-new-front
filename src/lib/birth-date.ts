@@ -40,6 +40,23 @@ export function checkBirthDate(value: string, today: string, current: string | n
  */
 export const confirmAfterDateChange = (confirmed: boolean, prev: string, next: string) => confirmed && prev === next;
 
+/**
+ * 날짜 칸에 덜 친 값이 있는가. DateField 는 완성값(YYYY-MM-DD) · 빈 값만 onChange 로 내보내므로, 칸의 글자가 비어 있지 않고 확인창이 쥔 날짜와
+ * 다르면 관리자 눈에 보이는 값과 보내질 값이 다르다. 완성되거나 blur 로 맞춰지면 onChange 가 와서 풀린다.
+ */
+export const isPendingInput = (text: string, date: string) => text !== "" && text !== date;
+
+/**
+ * 체크 클릭을 무시하는가. 덜 친 값이 있으면 확인할 날짜가 정해지지 않았으니 무시한다. 마우스로 체크를 누르면 pointerdown 뒤 mousedown 의
+ * blur 보정이 날짜를 바꿔 체크를 풀고 이어서 click 이 다시 켜므로, pointerdown 뒤에 날짜가 바뀌었으면 그 클릭도 무시한다(관리자가 바뀐 날짜를
+ * 보고 누른 것이 아니다). 시각은 performance.now() 값, null 은 없음(키보드 Space 는 pointerdown 이 없어 무시하지 않는다).
+ */
+export const ignoresCheck = (pending: boolean, pointerDownAt: number | null, dateChangedAt: number | null) =>
+  pending || (pointerDownAt !== null && dateChangedAt !== null && dateChangedAt >= pointerDownAt);
+
+/** 체크가 풀린 이유를 알리는 문구(날짜 입력 중이거나 날짜가 바뀌어 체크가 풀린 직후) */
+export const BIRTH_DATE_RECONFIRM_MESSAGE = "날짜를 다 입력한 뒤 다시 확인해 주세요";
+
 /** 확인창 체크 문구. 체크해야 [정정]이 눌린다. */
 export const BIRTH_DATE_CONFIRM_LABEL = "신분증 등으로 본인의 생년월일을 확인했습니다";
 

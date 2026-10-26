@@ -1,7 +1,7 @@
 // node --test src/lib/birth-date.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { BIRTH_DATE_NOTES, canCorrectBirthDate, confirmAfterDateChange, checkBirthDate, refreshesAfterCorrection } from "./birth-date.ts";
+import { BIRTH_DATE_NOTES, canCorrectBirthDate, confirmAfterDateChange, ignoresCheck, isPendingInput, checkBirthDate, refreshesAfterCorrection } from "./birth-date.ts";
 
 test("버튼 — api 가 정정할 수 있다고 알렸고 수정 권한이 있으면 보인다", () => {
   assert.equal(canCorrectBirthDate({ birthDateCorrectable: true }, true), true);
@@ -60,4 +60,21 @@ test("날짜가 바뀌면 확인 체크를 푼다 — blur 보정(1990-05-1 → 
   assert.equal(confirmAfterDateChange(true, "1990-05-01", ""), false);
   assert.equal(confirmAfterDateChange(true, "1990-05-01", "1990-05-01"), true);
   assert.equal(confirmAfterDateChange(false, "1990-05-10", "1990-05-01"), false);
+});
+
+test("덜 친 값 — 칸의 글자가 비어 있지 않고 확인창의 날짜와 다르면 입력 중이다", () => {
+  assert.equal(isPendingInput("1990-05-1", "1990-05-10"), true);
+  assert.equal(isPendingInput("19900501", ""), true);
+  assert.equal(isPendingInput("", "1990-05-10"), false);
+  assert.equal(isPendingInput("1990-05-10", "1990-05-10"), false);
+});
+
+test("체크 클릭 무시 — 입력 중이면 무시, 마우스(pointerdown) 뒤 날짜가 바뀌었으면 무시, 키보드(pointerdown 없음)나 날짜가 안 바뀌었으면 받는다", () => {
+  assert.equal(ignoresCheck(true, null, null), true);
+  assert.equal(ignoresCheck(false, 100, 101), true);
+  assert.equal(ignoresCheck(false, 100, 100), true);
+  assert.equal(ignoresCheck(false, 100, 99), false);
+  assert.equal(ignoresCheck(false, 100, null), false);
+  assert.equal(ignoresCheck(false, null, 101), false);
+  assert.equal(ignoresCheck(false, null, null), false);
 });
