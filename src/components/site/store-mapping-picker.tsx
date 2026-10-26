@@ -10,7 +10,6 @@ import { useCodeLabel } from "./code-label";
 // 후보(options)는 화면이 api 로 받아 넘긴다 — 로그인 정보의 점포가 아니라 그 폼이 고를 수 있는 점포다(BP 관리자: store-options).
 // 후보에는 고를 수 있는 점포만 온다 — 폐점 · 다른 가맹 마스터 담당은 api 가 빼고 보낸다(흐리게 보이는 것은 상단 점포 선택 · 목록 필터 쪽, 2026-10-23).
 // 찾기 칸을 누르면 아직 고르지 않은 점포가 모두 펼쳐지고, 글자를 넣으면 점포명 · 점포코드로 좁힌다. 고르면 칩 맨 앞에 붙는다.
-// shortcut: 데모의 일괄 검색 끌어 놓기(drag & drop)는 두지 않았다 — 체크 후 [추가 ›] · [‹ 빼기]로 옮긴다. 요청이 오면 더한다.
 
 export type MappingStoreOption = {
   storeId: number;
@@ -206,7 +205,8 @@ export function StoreMappingPicker({
 }
 
 /**
- * 점포 일괄 검색 창(데모 storeBulkDialog). 왼쪽은 매핑 안 된 점포, 오른쪽은 매핑된 점포다. 체크하고 [추가 ›] · [‹ 빼기]로 옮기고
+ * 점포 일괄 검색 창(데모 storeBulkDialog). 왼쪽은 매핑 안 된 점포, 오른쪽은 매핑된 점포다. 체크하고 [추가 ›] · [‹ 빼기]로 옮기거나,
+ * 줄을 끌어 반대쪽 목록에 놓는다 — 체크한 줄을 끌면 같은 쪽에서 체크한 줄이 모두 간다(2026-10-26). 옮긴 뒤
  * [N개점 적용]으로 칩에 반영한다. 두 목록 위 묶음 체크(전체 선택 · 점포유형)는 그 목록에서 한꺼번에 체크한다.
  * 이미 매핑된 점포는 후보에 없어도(폐점) 오른쪽에 그대로 서고 뺄 수 있다. 열 때마다 지금 칩으로 두 목록을 다시 나눈다.
  */
@@ -228,6 +228,10 @@ function BulkDialog({
   const typeLabel = useCodeLabel("STORE_TYPE");
   const [draft, setDraft] = useState<MappingStore[]>(picked);
   const [checked, setChecked] = useState<Set<number>>(new Set());
+  /** 끌고 있는 줄 — 어느 쪽에서 무엇을 옮기는지 */
+  const [dragging, setDragging] = useState<{ from: "L" | "R"; ids: number[] } | null>(null);
+  /** 끌어 놓을 수 있는 목록 위에 있다 — 그 목록 테두리를 브랜드색으로 */
+  const [over, setOver] = useState<"L" | "R" | null>(null);
   const [shownOpen, setShownOpen] = useState(open);
   if (open !== shownOpen) {
     setShownOpen(open);
@@ -257,12 +261,18 @@ function BulkDialog({
       else next.delete(id);
       return next;
     });
-  const move = (to: "R" | "L") => {
+  /** 고른 점포를 반대쪽으로 옮긴다 — 버튼은 체크한 것, 끌어 놓기는 끈 것 */
+  const moveIds = (to: "R" | "L", ids: ReadonlySet<number>) => {
     if (to === "R") {
-      const add = left.filter((o) => checked.has(o.storeId)).map(({ storeId, name, storeCode }) => ({ storeId, name, storeCode }));
+      const add = left.filter((o) => ids.has(o.storeId)).map(({ storeId, name, storeCode }) => ({ storeId, name, storeCode }));
       setDraft([...add, ...draft]);
-    } else setDraft(draft.filter((s) => !checked.has(s.storeId)));
+    } else setDraft(draft.filter((s) => !ids.has(s.storeId)));
     setChecked(new Set());
+  };
+  const move = (to: "R" | "L") => moveIds(to, checked);
+  const endDrag = () => {
+    setDragging(null);
+    setOver(null);
   };
 
   const pane = (side: "L" | "R", title: string, rows: MappingStoreOption[], empty: string) => {
@@ -280,7 +290,26 @@ function BulkDialog({
       );
     };
     return (
-      <section aria-label={title} className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-[4px] border border-erp-panel-line">
+      <section
+        aria-label={title}
+        // 반대쪽에서 끌어 온 줄만 받는다
+        onDragOver={(e) => {
+          if (!dragging || dragging.from === side) return;
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "move";
+          if (over !== side) setOver(side);
+        }}
+        onDragLeave={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setOver(null);
+        }}
+        onDrop={(e) => {
+          if (!dragging || dragging.from === side) return;
+          e.preventDefault();
+          moveIds(side, new Set(dragging.ids));
+          endDrag();
+        }}
+        className={`flex min-w-0 flex-1 flex-col overflow-hidden rounded-[4px] border transition-[border-color] duration-150 ease-out ${over === side ? "border-erp-brand" : "border-erp-panel-line"}`}
+      >
         <div className="flex h-[42px] shrink-0 items-center gap-[8px] border-b border-erp-thead-line bg-erp-thead-bg px-[12px] text-[14px] font-medium">
           {title}
           <span className="font-normal text-erp-label">{rows.length}개점</span>
@@ -291,7 +320,19 @@ function BulkDialog({
         </div>
         <ul className="h-[300px] overflow-y-auto overscroll-contain p-[4px]">
           {rows.map((r) => (
-            <li key={r.storeId} className="flex items-center gap-[8px] rounded-[2px] px-[8px] py-[6px] text-[13px] text-erp-ink hover:bg-erp-thead-bg">
+            <li
+              key={r.storeId}
+              draggable
+              onDragStart={(e) => {
+                // 체크한 줄을 끌면 같은 쪽에서 체크한 줄이 모두 간다
+                const ids = checked.has(r.storeId) ? rows.filter((x) => checked.has(x.storeId)).map((x) => x.storeId) : [r.storeId];
+                e.dataTransfer.effectAllowed = "move";
+                e.dataTransfer.setData("text/plain", ids.join(","));
+                setDragging({ from: side, ids });
+              }}
+              onDragEnd={endDrag}
+              className={`flex cursor-grab items-center gap-[8px] rounded-[2px] px-[8px] py-[6px] text-[13px] text-erp-ink hover:bg-erp-thead-bg ${dragging?.ids.includes(r.storeId) ? "opacity-40" : ""}`}
+            >
               <span className="min-w-0 flex-1 truncate">
                 <Checkbox label={r.name} checked={checked.has(r.storeId)} onChange={(e) => toggle(r.storeId, e.target.checked)} />
               </span>
@@ -318,14 +359,15 @@ function BulkDialog({
         e.preventDefault();
         onCancel();
       }}
-      // #ebebeb 팝업 테두리는 Figma 에 한 번만 나오는 색이라 토큰이 없다(DESIGN.md Popups).
-      className="m-auto w-[800px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
+      // #ebebeb 팝업 테두리는 Figma 에 한 번만 나오는 색이라 토큰이 없다(DESIGN.md Popups). 폭 960 은 두 목록 머리의 묶음 체크가
+      // 한 줄에 들어가게 넓혔다 — 줄이 넘어가면 두 목록 높이가 어긋난다(2026-10-26 사용자 요청)
+      className="m-auto w-[960px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
     >
       <h2 id={titleId} className="text-[18px] font-semibold">
         점포 일괄 검색
       </h2>
       <div className="mt-[12px] text-[14px] leading-[1.6]">
-        <p className="text-[13px] text-erp-label">왼쪽에서 체크하고 [추가 ›] 를 누르면 매핑됩니다. 오른쪽에서 빼면 매핑이 풀립니다.</p>
+        <p className="text-[13px] text-erp-label">왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 매핑됩니다. 오른쪽에서 빼면 매핑이 풀립니다.</p>
         <div className="mt-[12px] flex items-stretch gap-[12px]">
           {pane("L", "매핑 안 된 점포", left, "고를 수 있는 점포를 모두 매핑했습니다.")}
           <div className="flex shrink-0 flex-col justify-center gap-[6px]">
