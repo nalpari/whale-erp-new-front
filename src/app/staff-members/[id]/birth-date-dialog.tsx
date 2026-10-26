@@ -75,13 +75,16 @@ function BirthDateDialog({
   // 날짜가 바뀌면 확인을 풀어 다시 받는다 — 공통 DateField 는 [정정]을 누르는 순간의 blur 로 덜 친 값(1990-05-1)을 맞춰(1990-05-01)
   // 관리자가 보지 못한 날짜가 저장될 수 있다. blur → onChange → 다시 그림이 click 보다 먼저라 버튼이 잠기지만, 그 사이 낡은 클릭이
   // 들어와도 보내지 않도록 확인 여부를 ref 로도 쥔다(handleConfirm).
-  // 입력 중(pending): DateField 는 덜 친 값을 밖으로 내보내지 않아, 칸에 덜 친 값이 보이는 채 직전 완성값이 보내질 수 있다(blur 없이 click 만
-  // 오는 보조기기). 입력칸의 글자를 감싼 요소에서 읽어(onInputCapture) 입력 중이면 체크를 풀고 [정정]을 잠그며, onChange(완성 · blur 보정 ·
-  // 달력 · 빈 값)가 오면 푼다.
+  // 덜 친 값: DateField 는 완성값 · 빈 값만 밖으로 내보내 칸에 덜 친 값이 보이는 채 직전 완성값이 보내질 수 있다(blur 없이 click 만 오는 보조기기).
+  // 입력 이벤트 중에 상태를 바꾸면 DateField 칸이 되돌려지므로(입력 중에는 아무 상태도 바꾸지 않는다), 필요한 순간 — [정정]을 누를 때와
+  // 체크를 누를 때 — 에만 칸의 글자를 DOM 에서 읽어 판정한다(inputPending).
   const confirmedRef = useRef(false);
-  const pendingRef = useRef(false);
-  const [pending, setPending] = useState(false);
+  const fieldRef = useRef<HTMLDivElement>(null);
+  const inputPending = () => isPendingInput(fieldRef.current?.querySelector("input")?.value ?? "", date);
   // 마우스 체크: pointerdown → (blur 가 날짜를 바꿈) → click 이 체크를 다시 켠다. 그 click 을 무시하려 두 시각을 남긴다.
+  // pointerDownAt 은 체크 영역의 pointerdown 에서만 남기고, 다른 곳의 pointerdown · 키 입력(날짜 입력 포함)에서 지운다 — 체크 onChange 를 쓰지
+  // 않고 끝난 포인터 조작(누른 채 밖으로 끌기)의 값이 남지 않게.
+  const checkRef = useRef<HTMLDivElement>(null);
   const pointerDownAt = useRef<number | null>(null);
   const dateChangedAt = useRef<number | null>(null);
   const [reconfirm, setReconfirm] = useState(false);
@@ -91,32 +94,17 @@ function BirthDateDialog({
     setError(null);
     if (next) setReconfirm(false);
   };
-  const changePending = (next: boolean) => {
-    pendingRef.current = next;
-    setPending(next);
-  };
   const changeDate = (next: string) => {
-    const changed = next !== date || pendingRef.current;
-    const keep = confirmAfterDateChange(confirmed, date, next) && !pendingRef.current;
-    if (keep !== confirmed) {
-      changeConfirmed(keep);
-      setReconfirm(true);
+    if (next !== date) dateChangedAt.current = performance.now();
+    if (!confirmAfterDateChange(confirmed, date, next)) {
+      if (confirmed) setReconfirm(true);
+      changeConfirmed(false);
     }
-    if (changed) dateChangedAt.current = performance.now();
-    changePending(false);
     setDate(next);
     setError(null);
   };
-  const typing = (text: string) => {
-    if (!isPendingInput(text, date)) return;
-    changePending(true);
-    if (confirmedRef.current) {
-      changeConfirmed(false);
-      setReconfirm(true);
-    }
-  };
   const checkClicked = (checked: boolean) => {
-    const ignored = ignoresCheck(pendingRef.current, pointerDownAt.current, dateChangedAt.current);
+    const ignored = ignoresCheck(inputPending(), pointerDownAt.current, dateChangedAt.current);
     pointerDownAt.current = null;
     if (checked && ignored) {
       setReconfirm(true);
@@ -126,7 +114,13 @@ function BirthDateDialog({
   };
 
   const handleConfirm = async () => {
-    if (sending.current || problem || !confirmed || !confirmedRef.current || pendingRef.current) return;
+    if (sending.current || problem || !confirmed || !confirmedRef.current) return;
+    // 칸에 덜 친 값이 보이면 보내지 않고 체크를 풀어 다시 확인받는다
+    if (inputPending()) {
+      changeConfirmed(false);
+      setReconfirm(true);
+      return;
+    }
     sending.current = true;
     setBusy(true);
     setError(null);
@@ -173,18 +167,22 @@ function BirthDateDialog({
       title="생년월일 정정"
       confirmLabel="정정"
       busy={busy}
-      confirmDisabled={problem !== null || !confirmed || pending}
+      confirmDisabled={problem !== null || !confirmed}
       onConfirm={handleConfirm}
       onCancel={onClose}
     >
-      <div className="flex flex-col gap-[12px]">
+      <div
+        className="flex flex-col gap-[12px]"
+        onPointerDownCapture={(e) => (pointerDownAt.current = checkRef.current?.contains(e.target as Node) ? performance.now() : null)}
+        onKeyDownCapture={() => (pointerDownAt.current = null)}
+      >
         <div className="flex items-center gap-[8px]">
           <span className="text-[14px] font-medium text-erp-label">지금 생년월일</span>
           <span>{current ?? "-"}</span>
         </div>
         <div className="flex flex-col gap-[8px]">
           <span className="text-[14px] font-medium text-erp-label">새 생년월일</span>
-          <div onInputCapture={(e) => typing((e.target as HTMLInputElement).value)}>
+          <div ref={fieldRef}>
             <DateField aria-label="새 생년월일" autoHyphen value={date} onChange={changeDate} />
           </div>
           {dateNote && (
@@ -193,13 +191,9 @@ function BirthDateDialog({
             </p>
           )}
         </div>
-        <div
-          className="flex flex-col gap-[4px]"
-          onPointerDownCapture={() => (pointerDownAt.current = performance.now())}
-          onKeyDownCapture={() => (pointerDownAt.current = null)}
-        >
+        <div ref={checkRef} className="flex flex-col gap-[4px]">
           <Checkbox label={BIRTH_DATE_CONFIRM_LABEL} checked={confirmed} onChange={(e) => checkClicked(e.target.checked)} />
-          {(pending || (reconfirm && !confirmed)) && <p className="text-[13px] text-erp-off">{BIRTH_DATE_RECONFIRM_MESSAGE}</p>}
+          {reconfirm && !confirmed && <p className="text-[13px] text-erp-off">{BIRTH_DATE_RECONFIRM_MESSAGE}</p>}
         </div>
         <ul className="flex list-disc flex-col gap-[4px] pl-[20px] text-[13px] text-erp-label">
           {BIRTH_DATE_NOTES.map((line) => (
