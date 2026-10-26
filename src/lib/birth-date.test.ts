@@ -1,7 +1,7 @@
 // node --test src/lib/birth-date.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { BIRTH_DATE_NOTES, canCorrectBirthDate, checkBirthDate, refreshesAfterCorrection } from "./birth-date.ts";
+import { BIRTH_DATE_NOTES, canCorrectBirthDate, confirmAfterDateChange, checkBirthDate, refreshesAfterCorrection } from "./birth-date.ts";
 
 test("버튼 — api 가 정정할 수 있다고 알렸고 수정 권한이 있으면 보인다", () => {
   assert.equal(canCorrectBirthDate({ birthDateCorrectable: true }, true), true);
@@ -53,4 +53,11 @@ test("409 가입 전 · 퇴직만 닫고 다시 받는다. 같은 값 409 · 400
   assert.equal(refreshesAfterCorrection({ status: 409, code: "BIRTH_DATE_UNCHANGED" }), false);
   assert.equal(refreshesAfterCorrection({ status: 409 }), false);
   for (const status of [400, 404, 401, undefined]) assert.equal(refreshesAfterCorrection({ status, code: "BIRTH_DATE_RETIRED" }), false, String(status));
+});
+
+test("날짜가 바뀌면 확인 체크를 푼다 — blur 보정(1990-05-1 → 1990-05-01)도 바뀐 값이다. 같은 값이면 유지, 체크 안 했으면 그대로 false", () => {
+  assert.equal(confirmAfterDateChange(true, "1990-05-10", "1990-05-01"), false);
+  assert.equal(confirmAfterDateChange(true, "1990-05-01", ""), false);
+  assert.equal(confirmAfterDateChange(true, "1990-05-01", "1990-05-01"), true);
+  assert.equal(confirmAfterDateChange(false, "1990-05-10", "1990-05-01"), false);
 });

@@ -34,6 +34,12 @@ export function checkBirthDate(value: string, today: string, current: string | n
   return null;
 }
 
+/**
+ * 새 생년월일이 바뀌면 「신분증 등으로 확인했습니다」 체크를 푼다(관리자가 본 날짜가 아니면 확인으로 치지 않는다). 값이 같으면 유지한다 —
+ * DateField 는 값이 그대로여도 blur 때 onChange 를 다시 부른다.
+ */
+export const confirmAfterDateChange = (confirmed: boolean, prev: string, next: string) => confirmed && prev === next;
+
 /** 확인창 체크 문구. 체크해야 [정정]이 눌린다. */
 export const BIRTH_DATE_CONFIRM_LABEL = "신분증 등으로 본인의 생년월일을 확인했습니다";
 

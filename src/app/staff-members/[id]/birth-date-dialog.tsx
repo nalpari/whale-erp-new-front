@@ -2,13 +2,20 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { Button, Checkbox, ConfirmDialog, DateField, useToast } from "@/components/common";
+import {
+  Button,
+  Checkbox,
+  ConfirmDialog,
+  DateField,
+  useToast,
+} from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
 import {
   BIRTH_DATE_CONFIRM_LABEL,
   BIRTH_DATE_NOTES,
   BIRTH_DATE_REQUEST_FAILED_MESSAGE,
   canCorrectBirthDate,
+  confirmAfterDateChange,
   checkBirthDate,
   refreshesAfterCorrection,
 } from "@/lib/birth-date";
@@ -18,7 +25,15 @@ import { useFailure } from "./use-action-failure";
 
 // 기본 정보 「생년월일」 줄의 값과 [정정] 버튼(WHALEERP-602). 목업 detail.html 에는 이 버튼이 없다 — 노영주 승인안이다.
 // 버튼은 수정 권한(usePagePermission)과 상세 응답의 birthDateCorrectable 로 미리 가리고, 막는 것은 api 다(canCorrectBirthDate).
-export function BirthDateCell({ staff, text, today }: { staff: StaffMember; text: string; today: string }) {
+export function BirthDateCell({
+  staff,
+  text,
+  today,
+}: {
+  staff: StaffMember;
+  text: string;
+  today: string;
+}) {
   const canUpdate = usePagePermission().update;
   const [open, setOpen] = useState(false);
   const id = staff.staffMemberId;
@@ -32,7 +47,14 @@ export function BirthDateCell({ staff, text, today }: { staff: StaffMember; text
           정정
         </Button>
       )}
-      {show && open && <BirthDateDialog staffMemberId={id} current={staff.birthDate ?? null} today={today} onClose={() => setOpen(false)} />}
+      {show && open && (
+        <BirthDateDialog
+          staffMemberId={id}
+          current={staff.birthDate ?? null}
+          today={today}
+          onClose={() => setOpen(false)}
+        />
+      )}
     </span>
   );
 }
@@ -41,7 +63,17 @@ export function BirthDateCell({ staff, text, today }: { staff: StaffMember; text
  * 생년월일 정정 확인창. 신분증 등으로 확인했다는 체크를 해야 [정정]이 눌린다. 안내 세 줄은 정정이 닿는 곳을 알린다(BIRTH_DATE_NOTES).
  * 날짜 칸은 오늘 뒤를 고르지 못하게 달력으로 막지는 못한다(DateField 에 상한이 없다) — 입력하면 칸 아래에 알리고 [정정]을 막는다.
  */
-function BirthDateDialog({ staffMemberId, current, today, onClose }: { staffMemberId: number; current: string | null; today: string; onClose: () => void }) {
+function BirthDateDialog({
+  staffMemberId,
+  current,
+  today,
+  onClose,
+}: {
+  staffMemberId: number;
+  current: string | null;
+  today: string;
+  onClose: () => void;
+}) {
   const router = useRouter();
   const toast = useToast();
   const onFailure = useFailure();
@@ -56,8 +88,25 @@ function BirthDateDialog({ staffMemberId, current, today, onClose }: { staffMemb
   // 아직 아무것도 치지 않았을 때는 문구를 보이지 않고 버튼만 막는다
   const dateNote = date === "" ? null : problem;
 
+  // 날짜가 바뀌면 확인을 풀어 다시 받는다 — 공통 DateField 는 [정정]을 누르는 순간의 blur 로 덜 친 값(1990-05-1)을 맞춰(1990-05-01)
+  // 관리자가 보지 못한 날짜가 저장될 수 있다. blur → onChange → 다시 그림이 click 보다 먼저라 버튼이 잠기지만, 그 사이 낡은 클릭이
+  // 들어와도 보내지 않도록 확인 여부를 ref 로도 쥔다(handleConfirm).
+  const confirmedRef = useRef(false);
+  const changeConfirmed = (next: boolean) => {
+    confirmedRef.current = next;
+    setConfirmed(next);
+    setError(null);
+  };
+  const changeDate = (next: string) => {
+    const keep = confirmAfterDateChange(confirmed, date, next);
+    if (keep !== confirmed) changeConfirmed(keep);
+    setDate(next);
+    setError(null);
+  };
+
   const handleConfirm = async () => {
-    if (sending.current || problem || !confirmed) return;
+    if (sending.current || problem || !confirmed || !confirmedRef.current)
+      return;
     sending.current = true;
     setBusy(true);
     setError(null);
@@ -110,25 +159,32 @@ function BirthDateDialog({ staffMemberId, current, today, onClose }: { staffMemb
     >
       <div className="flex flex-col gap-[12px]">
         <div className="flex items-center gap-[8px]">
-          <span className="text-[14px] font-medium text-erp-label">지금 생년월일</span>
+          <span className="text-[14px] font-medium text-erp-label">
+            지금 생년월일
+          </span>
           <span>{current ?? "-"}</span>
         </div>
         <div className="flex flex-col gap-[8px]">
-          <span className="text-[14px] font-medium text-erp-label">새 생년월일</span>
-          <DateField aria-label="새 생년월일" autoHyphen value={date} onChange={(v) => {
-              setDate(v);
-              setError(null);
-            }} />
+          <span className="text-[14px] font-medium text-erp-label">
+            새 생년월일
+          </span>
+          <DateField
+            aria-label="새 생년월일"
+            autoHyphen
+            value={date}
+            onChange={changeDate}
+          />
           {dateNote && (
             <p role="alert" className="text-[13px] text-erp-off">
               {dateNote}
             </p>
           )}
         </div>
-        <Checkbox label={BIRTH_DATE_CONFIRM_LABEL} checked={confirmed} onChange={(e) => {
-          setConfirmed(e.target.checked);
-          setError(null);
-        }} />
+        <Checkbox
+          label={BIRTH_DATE_CONFIRM_LABEL}
+          checked={confirmed}
+          onChange={(e) => changeConfirmed(e.target.checked)}
+        />
         <ul className="flex list-disc flex-col gap-[4px] pl-[20px] text-[13px] text-erp-label">
           {BIRTH_DATE_NOTES.map((line) => (
             <li key={line}>{line}</li>

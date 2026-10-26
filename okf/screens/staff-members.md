@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보에 재입사로 이은 재직 이력 줄(WHALEERP-615)을, 그 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 오른쪽에 근무스케줄 · 출퇴근 현황(준비 중) · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다), 기본 정보 생년월일 줄에 [정정] 확인창(WHALEERP-602)을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation, birth-date]
 status: draft
-generated: { by: claude-code/sonnet-5.5, at: 2026-10-26T03:35:52Z }
+generated: { by: claude-code/sonnet-5.5, at: 2026-10-26T03:51:34Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -109,11 +109,11 @@ sources:
   - id: birth-date-dialog
     resource: ../../src/app/staff-members/[id]/birth-date-dialog.tsx
     title: 생년월일 줄의 [정정] 버튼 · 정정 확인창(WHALEERP-602)
-    last_modified: 2026-10-26T03:31:34Z
+    last_modified: 2026-10-26T03:51:14Z
   - id: birth-date
     resource: ../../src/lib/birth-date.ts
     title: 생년월일 정정 판정 — 버튼 노출 · 입력 검사 · 안내 문구 · 닫고 다시 받는 409
-    last_modified: 2026-10-26T03:31:34Z
+    last_modified: 2026-10-26T03:51:08Z
   - id: use-action-failure
     resource: ../../src/app/staff-members/[id]/use-action-failure.ts
     title: 상세 확인창 실패 처리(failureEffect) — 퇴직 처리는 모두, 비밀번호 초기화는 403 만, 생년월일 정정은 403 · 결과 모름을 쓴다
@@ -364,7 +364,7 @@ sources:
 * 성공 — 토스트 「생년월일을 정정했습니다.」, 확인창을 닫고 `router.refresh`. 서버 액션(`correctBirthDateAction`)은 날짜 모양 · 오늘 뒤 · 같은 값을 api 까지 보내지 않고 막는다.
 * 실패 — 400 `BIRTH_DATE_INVALID` · `BIRTH_DATE_UNDER_AGE` 와 409 `BIRTH_DATE_UNCHANGED` 는 확인창 안에 api 문구(UNCHANGED 는 낡은 「지금 생년월일」을 다시 받는다 — `router.refresh`). 409 `BIRTH_DATE_NOT_JOINED` ·
   `BIRTH_DATE_RETIRED` 는 상태가 바뀐 것이라 토스트로 알리고 닫은 뒤 다시 받는다(`refreshesAfterCorrection` — `ActionFailure.code` 가 api 오류 본문의
-  `code` 를 싣는다). 403 · 결과 모름은 `useFailure`, 404 는 확인창 안 문구. 날짜나 체크를 바꾸면 앞의 api 오류 문구를 지운다. 확인 버튼은 그리기 전 두 번째 클릭도 ref 로 막는다.
+  `code` 를 싣는다). 403 · 결과 모름은 `useFailure`, 404 는 확인창 안 문구. 날짜나 체크를 바꾸면 앞의 api 오류 문구를 지운다. 새 생년월일이 바뀌면(DateField 의 blur 보정 포함) 신분증 확인 체크를 풀어 다시 받는다(`confirmAfterDateChange`) — 눌러서 blur 되는 순간 덜 친 값이 맞춰져 관리자가 보지 못한 날짜가 저장되는 것을 막는다. 확인 버튼은 그리기 전 두 번째 클릭도 ref 로 막는다.
 * 정정 이력은 화면에 보이지 않는다(이번 범위 밖).
 
 # 가입 초대 재발송 (WHALEERP-138)
