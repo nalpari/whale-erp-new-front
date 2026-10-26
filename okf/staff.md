@@ -3,7 +3,7 @@ type: Area
 title: 직원 운영 관리
 description: 관리자 웹에서 직원을 초대하고 계약·근무스케줄·출퇴근·급여·TO-DO 를 다루는 영역. 채용은 근로계약서 초안에서 시작한다.
 tags: [mockup, staff]
-generated: { by: claude-code/sonnet-5.5, at: 2026-10-26T10:30:00Z }
+generated: { by: claude-code/sonnet-5.5, at: 2026-10-26T03:35:52Z }
 ---
 
 근거: `docs/mockup/staff/` (목업 · 1차 · R-QFUXNA)

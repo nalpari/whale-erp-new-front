@@ -4,20 +4,20 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보에 재입사로 이은 재직 이력 줄(WHALEERP-615)을, 그 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 오른쪽에 근무스케줄 · 출퇴근 현황(준비 중) · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다), 기본 정보 생년월일 줄에 [정정] 확인창(WHALEERP-602)을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation, birth-date]
 status: draft
-generated: { by: claude-code/sonnet-5.5, at: 2026-10-26T09:00:00Z }
+generated: { by: claude-code/sonnet-5.5, at: 2026-10-26T03:35:52Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
     title: 타입(생성한 api 타입) · 조회 조건 → api 쿼리(staffListApiSearch — 고른 점포 · 점포 하나 범위는 storeIds, 직영 · 가맹 범위는 storeTypes) · 상세 이메일 칸(staffEmailText) · 본사 제공 동의 칸(hqSharingConsentText)
-    last_modified: 2026-10-26T10:00:00Z
+    last_modified: 2026-10-26T03:31:34Z
   - id: staff-members-api
     resource: ../../src/lib/staff-members-api.ts
     title: api 호출 — 목록 · 상세 · 상세 영역 요약(근무스케줄은 한 주) · 퇴직 미리 보기 · 처리 · 변경 · 취소 · 비밀번호 재설정 링크 · 생년월일 정정(correctBirthDate)
-    last_modified: 2026-10-26T09:00:00Z
+    last_modified: 2026-10-26T03:31:34Z
   - id: api-types-generated
     resource: ../../src/lib/api-types.generated.ts
     title: 생성한 api 타입 — 근무스케줄 칸은 한 주 응답 StaffMemberWeekScheduleResponseDto, TO-DO 칸은 TodoItemDto, 목록 쿼리 storeIds · storeTypes, 재직 이력은 StaffMemberEmploymentPeriodDto · 생년월일 정정(BirthDateCorrectionDto · 상세의 birthDateCorrectable)
-    last_modified: 2026-10-26T10:00:00Z
+    last_modified: 2026-10-26T03:31:34Z
   - id: staff-list-query
     resource: ../../src/app/staff-members/staff-list-query.ts
     title: 목록 URL ↔ 조회 조건(점포 조건 storeIds · 빈 storeIds · scope) · 상세로 넘기는 ?back=(withBack · backHrefOf)
@@ -53,7 +53,7 @@ sources:
   - id: staff-detail-page
     resource: ../../src/app/staff-members/[id]/page.tsx
     title: 직원 상세 화면(틀 + 기본 정보 · 퇴직일 · 재직 이력 · 가입 상태 · 초대 · 이메일 + 비밀번호 초기화 자리 + 근로계약 칸 + 오른쪽 영역 배치 · 근무스케줄 주(주소 week) · [목록] 주소(주소 back, 없으면 상세 주소에 붙은 예전 목록 조건) + 생년월일 줄 [정정])
-    last_modified: 2026-10-26T09:00:00Z
+    last_modified: 2026-10-26T03:31:34Z
   - id: employment-history
     resource: ../../src/app/staff-members/[id]/employment-history.ts
     title: 재직 이력 줄(재입사로 이은 이전 · 이후 재직 기간, WHALEERP-615 — 링크는 ?back= + week)
@@ -109,19 +109,19 @@ sources:
   - id: birth-date-dialog
     resource: ../../src/app/staff-members/[id]/birth-date-dialog.tsx
     title: 생년월일 줄의 [정정] 버튼 · 정정 확인창(WHALEERP-602)
-    last_modified: 2026-10-26T09:00:00Z
+    last_modified: 2026-10-26T03:31:34Z
   - id: birth-date
     resource: ../../src/lib/birth-date.ts
     title: 생년월일 정정 판정 — 버튼 노출 · 입력 검사 · 안내 문구 · 닫고 다시 받는 409
-    last_modified: 2026-10-26T09:00:00Z
+    last_modified: 2026-10-26T03:31:34Z
   - id: use-action-failure
     resource: ../../src/app/staff-members/[id]/use-action-failure.ts
     title: 상세 확인창 실패 처리(failureEffect) — 퇴직 처리는 모두, 비밀번호 초기화는 403 만, 생년월일 정정은 403 · 결과 모름을 쓴다
-    last_modified: 2026-10-26T09:00:00Z
+    last_modified: 2026-10-26T03:31:34Z
   - id: staff-detail-server-actions
     resource: ../../src/app/staff-members/[id]/actions.ts
     title: 퇴직 · 재설정 링크 발송 · 생년월일 정정 서버 액션(실패에 api 409 code 를 싣는다)
-    last_modified: 2026-10-26T09:00:00Z
+    last_modified: 2026-10-26T03:31:34Z
   - id: staff-row
     resource: ../../src/app/staff-members/staff-row.ts
     title: 한 줄 표시 규칙(배지 · D-day · 재직 칸 · 재발송 판정 · 상세 초대 줄). 갱신 예정 날수(RENEWAL_NOTICE_DAYS)를 상세 근로계약 칸과 함께 쓴다
