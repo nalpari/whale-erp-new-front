@@ -40,7 +40,11 @@ export async function POST(req: NextRequest) {
     console.error("종이 계약 등록 연결 실패", e);
     return NextResponse.json({ error: SERVER_DOWN }, { status: 502 });
   }
-  if (response.ok) return NextResponse.json({ ok: true });
+  // 저장 응답(status · draftAction)을 넘겨 화면이 저장 뒤 안내를 고른다(savedKindOf, WHALEERP-132)
+  if (response.ok) {
+    const saved = (await response.json().catch(() => null)) as { status?: unknown; draftAction?: unknown } | null;
+    return NextResponse.json({ ok: true, status: saved?.status ?? null, draftAction: saved?.draftAction ?? null });
+  }
 
   const body: unknown = await response.json().catch(() => null);
   const message = (body as { message?: unknown } | null)?.message;
