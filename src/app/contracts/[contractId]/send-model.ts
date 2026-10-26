@@ -6,6 +6,9 @@ export type SendFailure = { ok: false; error: string; code?: string; recheck: bo
 /** 접수됐는지 모를 때(응답이 끊김 · 코드 없는 502 · 504)의 문장 */
 export const SEND_UNKNOWN = "발송됐는지 알 수 없습니다. 상세를 다시 읽었으니 직원에게 받았는지 확인한 뒤 다시 보내 주세요";
 
+/** 발송 대기 종료(WHALEERP-327)가 됐는지 모를 때의 문장 — 종료도 sendFailureOf 규칙으로 고른다 */
+export const END_UNKNOWN = "종료됐는지 확인하지 못했습니다. 상세를 다시 읽었으니 상태를 확인해 주세요";
+
 /**
  * api 응답(status · 본문의 code · 문장)으로 실패를 고른다. status 가 null 이면 응답을 받지 못했다(연결이 끊김).
  * - SEND_UNCONFIRMED: api 가 쓰고 보냈을 수 있다(되돌리기 실패 포함) → recheck
@@ -14,9 +17,9 @@ export const SEND_UNKNOWN = "발송됐는지 알 수 없습니다. 상세를 다
  * - 나머지: api 문장 그대로, 보내기를 막지 않는다(SEND_FAILED · 503 은 다시 보내면 될 수 있고, SEND_CHANNEL_NOT_READY ·
  *   SEND_PHONE_NOT_MOBILE 은 원인이 풀릴 때까지 같은 409)
  */
-export function sendFailureOf(status: number | null, code: string | undefined, message: string): SendFailure {
+export function sendFailureOf(status: number | null, code: string | undefined, message: string, unknown = SEND_UNKNOWN): SendFailure {
   const withCode = code ? { code } : {};
-  if (status === null || ((status === 502 || status === 504) && !code)) return { ok: false, error: SEND_UNKNOWN, recheck: true };
+  if (status === null || ((status === 502 || status === 504) && !code)) return { ok: false, error: unknown, recheck: true };
   const recheck = code === "SEND_UNCONFIRMED" || (status === 409 && (!code || code === "CONTRACT_STATUS_CONFLICT"));
   return { ok: false, error: message, ...withCode, recheck };
 }

@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { redirect, unstable_rethrow } from "next/navigation.js";
-import { callSave, SAVE_CALL_LOST, saveOutcomeUnknown, SEND_UNKNOWN, sendFailedTarget, resendDialogCopy, sendFailureOf, sendNoticeOf, signingResendCopy } from "./send-model.ts";
+import { callSave, END_UNKNOWN, SAVE_CALL_LOST, saveOutcomeUnknown, SEND_UNKNOWN, sendFailedTarget, resendDialogCopy, sendFailureOf, sendNoticeOf, signingResendCopy } from "./send-model.ts";
 
 test("sendFailureOf — 접수 여부 모름은 보내기를 막고 상세를 다시 읽는다", () => {
   assert.deepEqual(sendFailureOf(502, "SEND_UNCONFIRMED", "알림톡이 접수됐는지 알 수 없습니다"), {
@@ -117,4 +117,15 @@ test("근로계약 상세 재발송 확인창 — 서명 대기는 데모 문구
   assert.equal(invite.title, "근로계약서를 다시 보내시겠습니까?");
   assert.equal(invite.body.length, 2);
   assert.match(invite.body.join(" "), /초대 코드/);
+});
+
+test("발송 대기 종료도 같은 규칙 — 모를 때 문장만 종료 문장이다", () => {
+  assert.deepEqual(sendFailureOf(null, undefined, "", END_UNKNOWN), { ok: false, error: END_UNKNOWN, recheck: true });
+  assert.deepEqual(sendFailureOf(504, undefined, "Gateway Timeout", END_UNKNOWN), { ok: false, error: END_UNKNOWN, recheck: true });
+  assert.deepEqual(sendFailureOf(409, "CONTRACT_STATUS_CONFLICT", "지금 상태에서는 할 수 없습니다", END_UNKNOWN), {
+    ok: false,
+    error: "지금 상태에서는 할 수 없습니다",
+    code: "CONTRACT_STATUS_CONFLICT",
+    recheck: true,
+  });
 });

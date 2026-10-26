@@ -191,8 +191,11 @@ export function BizVerificationBox({
           <BizVerifiedStatus verified={verified} date={verifiedDate} />
         </div>
       )}
-      {/* 오류 문구가 칸 사이에 빈 줄을 만들지 않게 칸과 문구를 간격 없는 묶음으로 둔다(2026-10-22 사용자 지정) */}
-      <div className={layout === "row" ? "flex gap-[6px]" : "flex flex-col gap-[12px]"}>
+      {/* 오류 문구가 칸 사이에 빈 줄을 만들지 않게 칸과 문구를 간격 없는 묶음으로 둔다(2026-10-22 사용자 지정).
+          나란히(row)일 땐 위로 맞춘다(items-start) — 늘이면(기본 stretch) 한 칸에만 오류 문구가 붙었을 때 다른 칸이
+          그 높이로 늘어나고, 공통 Field 가 라벨 · 입력칸을 세로 가운데로 두어(justify-center) 입력칸 줄이 어긋났다
+          (2026-10-23 사용자 요청 — 점포 「이미 등록된 사업자등록번호입니다」). */}
+      <div className={layout === "row" ? "flex items-start gap-[6px]" : "flex flex-col gap-[12px]"}>
         {bizNumberCell}
         {ceoNameCell}
         {openDateCell}

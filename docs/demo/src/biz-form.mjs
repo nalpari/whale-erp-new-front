@@ -187,7 +187,8 @@ export const bizVerifyBox = (A, { id, values = ["", "", ""], locked = [], row = 
   const openField = lock("open") ? ui.field("개업일자", ui.textField({ value: open, readonly: true })) : group("개업일자", ui.dateField(A, { label: "개업일자", value: open }));
   return (
     `<section id="${id}" aria-label="사업자 번호 인증" class="flex flex-col gap-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg p-[18px]"${hidden ? " hidden" : ""}>` +
-    `<div class="${row ? "flex gap-[6px]" : "flex flex-col gap-[12px]"}"><div class="${cell}">${numField}</div><div class="${cell}">${ceoField}</div><div class="${cell}">${openField}</div></div>` +
+    // 나란히(row)일 땐 위로 맞춘다 — 한 칸에만 오류 문구가 붙으면 다른 칸이 늘어나 입력칸 줄이 어긋났다(앱 biz-verification-box.tsx 와 같다, 2026-10-23)
+    `<div class="${row ? "flex items-start gap-[6px]" : "flex flex-col gap-[12px]"}"><div class="${cell}">${numField}</div><div class="${cell}">${ceoField}</div><div class="${cell}">${openField}</div></div>` +
     `<div class="flex gap-[6px]">${buttons}</div>` +
     `<p class="text-[13px] leading-[1.5] text-erp-label">${guide}</p>` +
     `</section>`
