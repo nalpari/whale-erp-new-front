@@ -5,7 +5,7 @@ import { labelOf, type EnumValue } from "@/lib/enums";
 import type { PayslipListItem } from "@/lib/payslips";
 import { rowNumber } from "../staff-members/staff-row";
 import { CellView } from "../staff-members/staff-table";
-import { MASKED_TEXT, STATUS_STYLE, attendanceCell, periodText, sentDateText } from "./payslip-row";
+import { MASKED_TEXT, REVIEW_PENDING_TEXT, STATUS_STYLE, attendanceCell, periodText, sentDateText } from "./payslip-row";
 
 const DASH = "-";
 
@@ -24,6 +24,7 @@ export function PayslipTable({
   listSearch,
   statusLabels,
   employmentTypeLabels,
+  reviewReasonLabels,
 }: {
   items: PayslipListItem[];
   total: number;
@@ -33,6 +34,7 @@ export function PayslipTable({
   listSearch: string;
   statusLabels: EnumValue[];
   employmentTypeLabels: EnumValue[];
+  reviewReasonLabels: EnumValue[];
 }) {
   const rows: Row[] = items.map((payslip, i) => ({ no: rowNumber(total, page, pageSize, i), payslip }));
   const columns: Column<Row>[] = [
@@ -62,7 +64,21 @@ export function PayslipTable({
     {
       header: "상태",
       width: "w-[180px]",
-      cell: shown((p) => (p.status ? <CellView cell={{ text: labelOf(statusLabels, p.status), style: STATUS_STYLE[p.status] }} /> : DASH)),
+      // 검토 대기는 상태가 아니라 분류라 상태 배지 옆에 붙인다 — 사유는 배지에 마우스를 올리면 보이고, 내용은 상세에서 본다
+      cell: shown((p) =>
+        p.status ? (
+          <span className="inline-flex flex-wrap items-center gap-[4px]">
+            <CellView cell={{ text: labelOf(statusLabels, p.status), style: STATUS_STYLE[p.status] }} />
+            {!!p.pendingReviewReasons?.length && (
+              <span title={p.pendingReviewReasons.map((r) => labelOf(reviewReasonLabels, r)).join(" · ")}>
+                <CellView cell={{ text: REVIEW_PENDING_TEXT, style: "badge-off" }} />
+              </span>
+            )}
+          </span>
+        ) : (
+          DASH
+        ),
+      ),
     },
     { header: "발송일", width: "w-[100px]", cell: shown(sentDateText) },
   ];

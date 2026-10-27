@@ -5659,9 +5659,20 @@ export interface components {
              */
             birthDate: string;
         };
+        /**
+         * @description 확인하지 않은 검토 사유(검토 대기 — WHALEERP-234). 하나라도 있으면 검토 대기다. 사유 넷 — 출퇴근 누락 · 계약 만료 후 기록 ·
+         *     기간 중 계약 변경 · 확인 필요 기록 포함 — 의 순서. 가린 줄은 null
+         * @enum {string}
+         */
+        PayslipReviewReason: "MISSING_ATTENDANCE" | "AFTER_CONTRACT_END" | "CONTRACT_CHANGED" | "DEDUCTION_MISSING" | "ATTENDANCE_NEEDS_REVIEW";
         PayslipListItemDto: {
             employmentType: components["schemas"]["EmploymentType"] | null;
             status: components["schemas"]["PayslipStatus"] | null;
+            /**
+             * @description 확인하지 않은 검토 사유(검토 대기 — WHALEERP-234). 하나라도 있으면 검토 대기다. 사유 넷 — 출퇴근 누락 · 계약 만료 후 기록 ·
+             *     기간 중 계약 변경 · 확인 필요 기록 포함 — 의 순서. 가린 줄은 null
+             */
+            pendingReviewReasons: components["schemas"]["PayslipReviewReason"][] | null;
             payslipId: number | null;
             isMasked: boolean;
             staffName: string | null;
@@ -5694,6 +5705,8 @@ export interface components {
             total: number;
             /** @description 그 달 · 관리 범위의 상태 건수. 상태 필터와 상관없고 점포 · 직원명 필터는 따른다 — 직원명으로 거르면 가린 줄은 빼고, 아니면 가린 줄도 센다 */
             statusCounts: components["schemas"]["PayslipStatusCountsDto"];
+            /** @description 상태 건수와 같은 범위에서 검토 대기 명세서 수(「작성 중 60(검토 대기 8)」) */
+            reviewPendingCount: number;
         };
         PayslipCandidateDto: {
             /** @description 계약 유형 — 유효한 근로계약의 값, 없으면 직원 레코드의 값 */
@@ -5824,8 +5837,6 @@ export interface components {
             /** @description 입력 여부 — 공제 미입력과 0 을 가른다 */
             isEntered: boolean;
         };
-        /** @enum {string} */
-        PayslipReviewReason: "MISSING_ATTENDANCE" | "AFTER_CONTRACT_END" | "CONTRACT_CHANGED" | "DEDUCTION_MISSING" | "ATTENDANCE_NEEDS_REVIEW";
         PayslipReviewReasonDto: {
             reviewReason: components["schemas"]["PayslipReviewReason"];
             payslipReviewReasonId: number;
@@ -12962,6 +12973,12 @@ export interface operations {
                  *     목록과 같다). storeIds 와 함께 주면 둘 다 맞는 점포만이다. 빈 값 · 모르는 값이 하나라도 있으면 400 이다.
                  */
                 storeTypes?: string;
+                /**
+                 * @description true 면 검토 대기(확인하지 않은 검토 사유 — 출퇴근 누락 · 계약 만료 후 기록 · 기간 중 계약 변경 · 확인 필요 기록 포함 —
+                 *     가 남은 명세서)만(WHALEERP-234). 검토 대기는 상태가 아니라 분류다(2026-10-26). 주면 본사 역할에게 가린 줄은 빠진다 —
+                 *     상태 필터와 같다. false · 없음은 거르지 않는다. 'true' · 'false' 밖의 값은 400.
+                 */
+                reviewPending?: boolean;
                 /** @description 페이지당 건수 — 20 · 50 · 100, 기본 20 */
                 pageSize?: 20 | 50 | 100;
                 /**

@@ -59,6 +59,8 @@ export interface PayslipListQuery {
   /** 직원명 검색어. 주면 본사 역할에게 가린 줄은 api 가 목록 · 상태 건수에서 뺀다 */
   staffName: string;
   statuses: PayslipStatus[];
+  /** 「분류 · 검토 대기만」 — 확인하지 않은 검토 사유가 남은 명세서만(WHALEERP-234). 검토 대기는 상태가 아니라 분류다(2026-10-26) */
+  reviewPending: boolean;
   page: number;
   pageSize: PageSize;
 }
@@ -87,6 +89,7 @@ export function payslipListApiSearch(query: PayslipListQuery): string {
   if (storeIds) params.set("storeIds", storeIds.join(","));
   if (storeTypes) params.set("storeTypes", storeTypes.join(","));
   if (query.staffName) params.set("staffName", query.staffName);
+  if (query.reviewPending) params.set("reviewPending", "true");
   params.set("page", String(query.page));
   params.set("pageSize", String(query.pageSize));
   return params.toString();

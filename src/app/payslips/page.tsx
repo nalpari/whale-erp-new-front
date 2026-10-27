@@ -11,15 +11,17 @@ import { PayslipTable } from "./payslip-table";
 // 급여명세서 관리 목록. 데모 docs/demo/staff/payslips.html(원본 src/pages/staff/payslips.mjs · staff-sections.mjs)을 공통 컴포넌트로 옮겼다.
 // 칸 · 필터는 Plane WHALEERP-233 을 따라 데모와 일부러 다르다 — 왼쪽 필터는 점포 · 직원명 · 명세서 상태(점포는 업무 범위 안에서 좁히고, 범위는 공통 틀 위 업무 범위
 // 선택기), 칸은 급여 기간 · 직원명 · 근무지 · 계약 유형 · 출퇴근 확인 여부 · 상태 · 발송일. 달 이동 · 상태 건수 · 명세서 목록.
-// 검토 대기 목록은 두지 않는다 — 사유는 상세에서만 보인다(STAFF-32, 2026-10-12 재영). 데이터는 GET /payslips(getPayslips)이고
-// 상태 · 계약 유형 한글은 GET /enums 로 받는다. 화면 상태는 URL 에만 둔다. api 오류는 error.tsx 가 받는다.
+// 검토 대기는 상태가 아니라 분류다 — 따로 목록을 두지 않고 상태 칸의 「검토 대기」 배지 · 「분류 · 검토 대기만」 필터 · 건수 줄의 검토 대기
+// 수로 보이고, 사유 내용은 상세에서 본다(WHALEERP-234, 운영 정책 PAY-01 · 06 2026-10-26 재영). 데이터는 GET /payslips(getPayslips)이고
+// 상태 · 계약 유형 · 검토 사유 한글은 GET /enums 로 받는다. 화면 상태는 URL 에만 둔다. api 오류는 error.tsx 가 받는다.
 export default async function PayslipsPage({ searchParams }: PageProps<"/payslips">) {
   const today = kstToday();
   const query = parsePayslipListQuery(await searchParams, today);
-  const [{ items, total, statusCounts }, statusLabels, employmentTypeLabels] = await Promise.all([
+  const [{ items, total, statusCounts, reviewPendingCount }, statusLabels, employmentTypeLabels, reviewReasonLabels] = await Promise.all([
     getPayslips(query),
     getEnum("PayslipStatus"),
     getEnum("EmploymentType"),
+    getEnum("PayslipReviewReason"),
   ]);
   const totalPages = Math.max(1, Math.ceil(total / query.pageSize));
   const counts = statusLabels.map((s) => ({ label: s.label, count: statusCounts[s.value as keyof typeof statusCounts] ?? 0 }));
@@ -38,6 +40,7 @@ export default async function PayslipsPage({ searchParams }: PageProps<"/payslip
                 {c.label} <b className="font-semibold text-erp-ink">{c.count}</b>
               </span>
             ))}
+            {" · "}검토 대기 <b className="font-semibold text-erp-ink">{reviewPendingCount}</b>
           </p>
           <ListToolbar total={total}>
             <PayslipListActions query={query} confirmedCount={statusCounts.CONFIRMED} employmentTypeLabels={employmentTypeLabels} />
@@ -51,6 +54,7 @@ export default async function PayslipsPage({ searchParams }: PageProps<"/payslip
             listSearch={toPayslipListSearch(query)}
             statusLabels={statusLabels}
             employmentTypeLabels={employmentTypeLabels}
+            reviewReasonLabels={reviewReasonLabels}
           />
           {total > 0 && (
             <div className="pt-[14px]">

@@ -14,7 +14,7 @@ import { MAX_KEYWORD_LENGTH, defaultPayslipListQuery, withFilter, withPickedStor
 
 const toggle = <T,>(list: readonly T[], value: T) => (list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
 
-// 급여명세서 목록 왼쪽 필터: 점포 · 직원명 · 명세서 상태. 급여 기간(달)은 목록 위 달 이동이 정한다 — 초기화해도 달은 그대로다.
+// 급여명세서 목록 왼쪽 필터: 점포 · 직원명 · 명세서 상태 · 분류(검토 대기만 — 검토 대기는 상태가 아니라 분류다, WHALEERP-234 · 2026-10-26). 급여 기간(달)은 목록 위 달 이동이 정한다 — 초기화해도 달은 그대로다.
 // 점포 칸은 공통 점포 고르기(StorePicker)이고 상단 점포 범위와 잇는다 — 직원 목록 staff-filter.tsx 와 같은 규칙: 고른 점포가 있으면 그것을,
 // 없으면 헤더가 실어 온 범위(scope)를 칩으로 그린다. 칩 이름은 로그인 정보의 점포(useStores)에서 찾는다 — 점포 목록 api 는 「점포 정보 관리」
 // 메뉴 권한이 있어야 열린다. 직영 · 가맹 범위의 칩은 폐점을 뺀 점포이고, api 도 그 유형의 폐점 점포를 뺀다(storeTypes). 점포 조건이 주소에
@@ -75,7 +75,7 @@ export function PayslipFilter({ query, today, statusLabels }: { query: PayslipLi
           onSearch={(value) => go({ staffName: value.trim() })}
         />
       </FilterSection>
-      <FilterSection label="명세서 상태" last>
+      <FilterSection label="명세서 상태">
         {PAYSLIP_STATUSES.map((status) => (
           <Checkbox
             key={status}
@@ -84,6 +84,9 @@ export function PayslipFilter({ query, today, statusLabels }: { query: PayslipLi
             onChange={() => go({ statuses: toggle(current.statuses, status) })}
           />
         ))}
+      </FilterSection>
+      <FilterSection label="분류" last>
+        <Checkbox label="검토 대기만" checked={current.reviewPending} onChange={() => go({ reviewPending: !current.reviewPending })} />
       </FilterSection>
     </FilterPanel>
   );
