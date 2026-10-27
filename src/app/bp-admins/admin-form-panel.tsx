@@ -381,7 +381,8 @@ export function AdminFormPanel(props: Props) {
           {noGroupForRole && <FailedBand message="붙일 권한 그룹이 없습니다. BP 권한 그룹 관리에서 먼저 만들어 주세요." />}
           {/* 계정 역할 · 권한 그룹은 한 줄에 나란히(2026-10-27 사용자 지정 — 전엔 두 줄). 역할 이름은 7자를 넘지 않아
               계정 역할 칸은 그 폭(글자 + 화살표 30, 150 → 130)으로 줄이고 권한 그룹이 남는 폭을 쓴다(2026-10-27 사용자 지정) */}
-          <FormRow>
+          {/* 위쪽 정렬 — 한 칸에만 오류 문구가 붙어 줄이 높아져도 두 입력칸이 같은 높이에 선다(사용자가 찾음). FormRow 는 늘여 세워 옆 칸이 가운데로 내려갔다 */}
+          <div className="flex w-full items-start gap-[6px]">
             {mode === "create" && roles.length > 1 ? (
               <Labeled label="계정 역할" width="w-[130px]" required message={message("roleTypeCode")}>
                 <Select
@@ -422,7 +423,7 @@ export function AdminFormPanel(props: Props) {
                 ))}
               </Select>
             </Labeled>
-          </FormRow>
+          </div>
         </FormGroup>
 
         {/* 상세와 같은 「대상점포」(2026-10-27 사용자 지정) */}
