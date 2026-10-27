@@ -275,7 +275,7 @@ export function AdminFormPanel(props: Props) {
       {failure && <FailedBand message={failure} detail="입력한 값은 그대로 두었습니다." />}
       {locks.stores && (
         <Note>
-          수정 화면에서는 기본정보(이름 · 휴대전화번호 · 이메일)만 바뀝니다. 권한 그룹 · 계정 상태 · 대상 점포는 이 계정을 관리할 수 있는 다른 사용자가,
+          수정 화면에서는 기본정보(이름 · 연락처 · 이메일)만 바뀝니다. 권한 그룹 · 계정 상태 · 대상 점포는 이 계정을 관리할 수 있는 다른 사용자가,
           비밀번호는 내 정보에서 직접 바꿉니다.
         </Note>
       )}
@@ -317,7 +317,7 @@ export function AdminFormPanel(props: Props) {
               aria-required
             />
           </Labeled>
-          <Group label="휴대전화번호" required>
+          <Group label="연락처" required>
             <FormRow>
               {(["앞자리", "가운데자리", "끝자리"] as const).map((label, i) => (
                 <TextField
@@ -330,7 +330,7 @@ export function AdminFormPanel(props: Props) {
                   }}
                   inputMode="numeric"
                   maxLength={i === 0 ? 3 : 4}
-                  aria-label={`휴대전화번호 ${label}`}
+                  aria-label={`연락처 ${label}`}
                   aria-invalid={invalid("phone")}
                   aria-describedby={describe("phone")}
                   aria-required
@@ -543,7 +543,7 @@ function Labeled({
   );
 }
 
-/** 입력칸이 여럿인 칸(휴대전화번호). Field 는 라벨이 입력칸 하나를 감싸므로 묶음 이름만 단다. */
+/** 입력칸이 여럿인 칸(연락처). Field 는 라벨이 입력칸 하나를 감싸므로 묶음 이름만 단다. */
 function Group({ label, required, children }: { label: string; required?: boolean; children: ReactNode }) {
   return (
     <div role="group" aria-label={label} className="flex flex-col gap-[8px]">

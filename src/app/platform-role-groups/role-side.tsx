@@ -10,7 +10,7 @@ import { formatDateTime } from "@/lib/format";
 import type { RoleGroupDetail } from "@/lib/platform-role-groups";
 import { RoleDeleteDialog, type DeleteDialogActions } from "@/components/role-groups/role-delete-dialog";
 import { createRoleGroupAction, deleteRoleGroupAction, getDeletionCandidatesAction, updateRoleGroupAction } from "./actions";
-import { actorOf, CARD, FailedBand, InfoBand, reasonLabel, type RoleDetailState } from "./role-parts";
+import { actorOf, CARD, FailedBand, reasonLabel, WarnBand, type RoleDetailState } from "./role-parts";
 
 // 오른쪽 고정 칸(데모 role-side) — 고른 권한 없음 · 수정 · 상세(고칠 수 없는 권한) · 등록 네 상태.
 // 권한유형 · 권한코드는 읽기 전용이고 권한명 · 설명만 고친다. 고칠 수 있는지 · 지울 수 있는지와 막힌 이유는 api 상세가 준다
@@ -148,7 +148,8 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
         {/* 조회 권한만 있으면 이유 띠 없이 상세로만 보인다 */}
         {/* 본인 연결(SELF_LINKED)은 api 이유 문구(「본인이 연결된 권한」) 대신 문장으로 풀어 쓴다(2026-10-26 사용자 지정) */}
         {can.update && role.editBlockedReason && (
-          <InfoBand>{role.editBlockedReason === "SELF_LINKED" ? "본인 계정에 연결된 권한그룹은 수정할 수 없습니다." : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한입니다")}</InfoBand>
+          // 막힌 이유는 빨간 안내 상자(WarnBand — 2026-10-27 사용자 지정, 전엔 회색 띠)
+          <WarnBand>{role.editBlockedReason === "SELF_LINKED" ? "본인 계정에 연결된 권한그룹은 수정할 수 없습니다." : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한입니다")}</WarnBand>
         )}
         {rows.length > 0 && <DetailTable rows={rows} />}
         {record}

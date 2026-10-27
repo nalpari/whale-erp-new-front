@@ -60,7 +60,7 @@ test("채운 등록 칸은 오류가 없다", () => {
 test("빈 등록 칸 — 필수 칸마다 문구, 휴대전화도 필수다", () => {
   const errors = validateBpAdminForm({ ...EMPTY_BP_ADMIN_FORM, phone: ["", "", ""] }, { mode: "create" });
   assert.deepEqual(Object.keys(errors).sort(), ["email", "loginId", "name", "phone", "roleGroupId", "roleTypeCode", "stores"]);
-  assert.equal(errors.phone, "휴대전화번호를 입력해 주세요.");
+  assert.equal(errors.phone, "연락처를 입력해 주세요.");
 });
 
 test("수정은 아이디 · 계정 역할을 보지 않는다", () => {

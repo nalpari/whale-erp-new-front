@@ -113,7 +113,7 @@ function DetailBody({
   const rows: DetailRow[] = [
     { label: "아이디", value: admin.loginId },
     { label: "이름", value: name },
-    { label: "휴대전화번호", value: admin.phone ? formatPhone(admin.phone) : null },
+    { label: "연락처", value: admin.phone ? formatPhone(admin.phone) : null },
     { label: "이메일", value: admin.email ?? null },
     // 가맹 관리자만 — 등록 때 정해진 연결 가맹 마스터. 누가 열든 보인다(2026-10-23)
     ...(admin.franchiseMaster
@@ -184,8 +184,8 @@ function DetailBody({
         </FormRow>
       </ReadonlyCard>
 
-      {/* 맨 아래 버튼 줄은 위와 선으로 가르지 않는다(DESIGN.md 슬라이드 패널) */}
-      <div className="flex flex-wrap items-center gap-[6px]">
+      {/* 맨 아래 버튼 줄은 위와 선으로 가르지 않는다(DESIGN.md 슬라이드 패널). 위 카드와 조금 더 떨어지게 패널 칸 간격 16 에 8 을 더한다(2026-10-27 사용자 지정) */}
+      <div className="flex flex-wrap items-center gap-[6px] pt-[8px]">
         <Button variant="off" onClick={onClose}>
           닫기
         </Button>
@@ -233,25 +233,33 @@ function MappedStores({ admin }: { admin: BpAdminDetail }) {
     { header: "점포 상태", width: "w-[90px]" as const, cell: (s: BpAdminStore) => <StoreStatusBadge status={s.storeStatusCode as StoreStatus} /> },
   ];
   const many = admin.stores.length > 5;
-  const table = <DataTable scroll={many} columns={columns} rows={admin.stores} rowKey={(s) => s.storeId} empty="매핑된 점포가 없습니다." />;
+  // 열 이름 줄은 두지 않는다(화면 낭독기용으로만 남는다, headVariant="none") — 점포명 · ST 코드 · 상태 배지는 값만으로 뜻이 분명하고,
+  // 회색 제목 바 아래에 열 이름 줄까지 붙으면 무거워 보였다(2026-10-27 사용자 지정 — 전엔 회색 머리 → 흰 머리)
+  const table = <DataTable headVariant="none" columns={columns} rows={admin.stores} rowKey={(s) => s.storeId} empty="매핑된 점포가 없습니다." />;
   return (
     // 기본정보처럼 회색 제목 바(42px · 15px 600 — DetailTable 제목과 같다) 아래에 표를 붙인다(2026-10-27 사용자 지정 — 전엔 글자 제목 아래 따로 선 표).
-    // 제목 바는 아래 선을 두지 않는다 — 표 머리 줄(또는 안내 칸)의 위 선이 그 자리를 맡아 선이 두 겹이 되지 않게 한다
+    // 제목 바는 아래 선을 두지 않는다 — 표(또는 안내 칸)의 위 선이 그 자리를 맡아 선이 두 겹이 되지 않게 한다
     <section className="flex flex-col">
       {/* 점포가 많아 표가 스크롤하면 표는 오른쪽에 스크롤바 자리를 비운다 — 제목 바도 같은 자리를 비워 오른쪽 선이 표와 맞게 한다(사용자가 찾음) */}
       <div className={many ? "overflow-hidden [scrollbar-gutter:stable]" : undefined}>
-        <h3 className="flex h-[42px] items-center gap-[10px] rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">
-          대상점포
-          <span className="text-[14px] font-normal text-erp-label">
-            {admin.isAllStores ? `전체 점포 · 지금 ${admin.bpStoreCount.toLocaleString("ko-KR")}개점` : `일부 점포 · ${admin.stores.length.toLocaleString("ko-KR")}개점`}
+        {/* 「대상점포」(15px)와 「일부 점포 · N개점」(14px)은 글자 바닥선을 맞추고, 그 묶음을 제목 바 가운데에 둔다(2026-10-27 사용자 확인) */}
+        <h3 className="flex h-[42px] items-center rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">
+          <span className="flex items-baseline gap-[10px]">
+            대상점포
+            <span className="text-[14px] font-normal text-erp-label">
+              {admin.isAllStores ? `전체 점포 · 지금 ${admin.bpStoreCount.toLocaleString("ko-KR")}개점` : `일부 점포 · ${admin.stores.length.toLocaleString("ko-KR")}개점`}
+            </span>
           </span>
         </h3>
       </div>
       {admin.isAllStores ? (
         <p className="rounded-b-[2px] border border-erp-thead-line px-[16px] py-[14px] text-[14px] text-erp-label">소속 BP 의 모든 점포를 관리합니다. 새로 등록하는 점포도 함께 관리합니다.</p>
       ) : many ? (
-        // 여섯 개부터는 높이를 머리 42 + 줄 46 × 5 + 선으로 묶고 열 이름 줄은 고정한 채 점포 줄만 스크롤한다(권한 그룹 삭제 확인창과 같다, 2026-10-27)
-        <div className="flex h-[274px] flex-col">{table}</div>
+        // 여섯 개부터는 다섯 줄 높이(위 선 1 + 줄 46 × 5) 안에서 표를 스크롤한다(2026-10-26 사용자 요청). 표의 아래 선은 마지막 줄에 붙어 스크롤 중엔
+        // 상자 밖으로 내려간다 — 상자 맨 아래에 늘 보이는 선을 덧그린다(끝까지 내리면 마지막 줄 선과 겹친다, 사용자가 찾음)
+        <div className="relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-erp-thead-line">
+          <div className="max-h-[231px] overflow-y-auto overscroll-contain [scrollbar-gutter:stable]">{table}</div>
+        </div>
       ) : (
         table
       )}

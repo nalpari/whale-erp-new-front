@@ -3,7 +3,7 @@
 import { DetailTable, FormRow, ReadonlyCard, ReadonlyValue, Tag, type DetailRow } from "@/components/common";
 import { RoleDeleteDialog } from "@/components/role-groups/role-delete-dialog";
 import { RoleForm } from "@/components/role-groups/role-form";
-import { actorOf, CARD, FailedBand, InfoBand, reasonLabel } from "@/components/role-groups/role-parts";
+import { actorOf, CARD, FailedBand, reasonLabel, WarnBand } from "@/components/role-groups/role-parts";
 import { CodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
 import { usePagePermission } from "@/components/site/session-gate";
@@ -170,14 +170,15 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
         {/* 조회 권한만 있으면 이유 띠 없이 상세로만 보인다 */}
         {/* 본인 연결(SELF_LINKED)은 api 이유 문구(「본인이 연결된 권한」) 대신 문장으로 풀어 쓴다(2026-10-26 사용자 지정).
             가맹 마스터가 아닌 사람이 보는 가맹 관리자 그룹(NO_PERMISSION · FA)도 문장으로(2026-10-27 사용자 지정) */}
+        {/* 막힌 이유는 빨간 안내 상자(WarnBand — 2026-10-27 사용자 지정, 전엔 회색 띠) */}
         {can.update && role.editBlockedReason && (
-          <InfoBand>
+          <WarnBand>
             {role.editBlockedReason === "SELF_LINKED"
               ? "본인 계정에 연결된 권한그룹은 수정할 수 없습니다."
               : role.editBlockedReason === "NO_PERMISSION" && role.roleTypeCode === "FA"
                 ? "본인 계정은 가맹관리자 권한 그룹을 수정할 수 없습니다."
                 : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한 그룹입니다")}
-          </InfoBand>
+          </WarnBand>
         )}
         {rows.length > 0 && <DetailTable rows={rows} />}
         {record}

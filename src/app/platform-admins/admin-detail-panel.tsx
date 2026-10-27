@@ -274,10 +274,13 @@ function DetailBody({
           >
             <div className="flex flex-col gap-[12px]">
               {who}
-              <p>
-                삭제한 계정은 <b className="font-semibold">관리자 목록 및 검색 결과에서 제외</b>되며, <b className="font-semibold">해당 계정으로 더 이상 로그인할 수 없습니다</b>.
-              </p>
-              <p>삭제한 계정은 복구할 수 없습니다.</p>
+              {/* 되돌릴 수 없는 결과 안내 — 플랫폼 메뉴 관리의 미사용 안내와 같은 빨간 테두리 · 연한 빨간 바탕 상자(2026-10-27 사용자 지정 — 전엔 본문 글자) */}
+              <div className="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off">
+                <p>
+                  삭제한 계정은 관리자 목록 및 검색 결과에서 제외되며, 해당 계정으로 더 이상 로그인할 수 없습니다.
+                </p>
+                <p>삭제한 계정은 복구할 수 없습니다.</p>
+              </div>
             </div>
           </ConfirmDialog>
         </>

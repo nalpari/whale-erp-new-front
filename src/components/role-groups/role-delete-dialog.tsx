@@ -158,7 +158,8 @@ export function RoleDeleteDialog({
               (DataTable scroll — 공통코드 목록 표와 같다, 2026-10-27 사용자 지정) */}
           {admins.length > 0 && admins.length <= 5 && <DataTable columns={userColumns} rows={admins} rowKey={(a) => a.adminAccountId} />}
           {admins.length > 5 && (
-            <div className="flex h-[274px] flex-col">
+            // 표의 아래 선은 마지막 줄에 붙어 스크롤 중엔 상자 밖으로 내려간다 — 상자 맨 아래에 늘 보이는 선을 덧그린다(대상점포 표와 같다)
+            <div className="relative flex h-[274px] flex-col after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-erp-thead-line">
               <DataTable scroll columns={userColumns} rows={admins} rowKey={(a) => a.adminAccountId} />
             </div>
           )}
