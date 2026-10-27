@@ -24,16 +24,16 @@ sources:
     last_modified: 2026-10-19T09:00:00Z
   - id: payslip-row
     resource: ../../src/app/payslips/payslip-row.ts
-    title: 목록 칸(급여 기간 · 출퇴근 확인 · 발송일) · 상태 색 · 지급 도움말 · 경고 띠
-    last_modified: 2026-10-19T09:00:00Z
+    title: 목록 칸(급여 기간 · 출퇴근 확인 · 발송일 · 검토 대기 배지) · 상태 색 · 지급 도움말 · 경고 띠
+    last_modified: 2026-10-27T11:00:00Z
   - id: payslip-draft-dialog
     resource: ../../src/app/payslips/payslip-draft-dialog.tsx
     title: 급여명세서 작성 팝업 — 점포 · 이름 좁히기 · 직원 고르기 · 작성 · 일괄 작성(칸 문구 payslip-draft.ts, server action actions.ts)
     last_modified: 2026-10-19T14:00:00Z
   - id: payslip-detail-page
     resource: ../../src/app/payslips/[payslipId]/page.tsx
-    title: 검토 화면 — 오른쪽 단(검토 사유 · 참조한 것 · 처리 이력)
-    last_modified: 2026-10-19T09:00:00Z
+    title: 검토 화면 — 오른쪽 단(검토 사유 · 참조한 것 · 처리 이력 · 발송 이력)
+    last_modified: 2026-10-27T11:00:00Z
   - id: payslip-edit
     resource: ../../src/app/payslips/[payslipId]/payslip-edit.ts
     title: 검토 화면 고칠 거리 — 임시저장 본문 · 추가 공제 붙이기 · 떼기 · 지난 명세서 불러오기(server action actions.ts)
@@ -46,18 +46,22 @@ sources:
 
 # api 로 그린다
 
-목록은 `GET /payslips?month&status&storeIds&storeTypes&staffName&page&pageSize`, 상세는 `GET /payslips/:id` 다(`src/lib/payslips-api.ts`, 직원 목록
+목록은 `GET /payslips?month&status&storeIds&storeTypes&staffName&reviewPending&page&pageSize`, 상세는 `GET /payslips/:id` 다(`src/lib/payslips-api.ts`, 직원 목록
 `staff-members-api.ts` 와 같은 `request()` · `authHeaders()` · `ApiError` 모양). 응답 타입은 `api-types.generated.ts` 의
 `PayslipListResponseDto` · `PayslipDetailResponseDto` 를 그대로 쓴다. 메뉴 권한(MN000009 조회) · 관리 범위 · 가림은 api 가 본다.
 상세의 없음 · 범위 밖 · 가림 · 이상한 id 는 404 → `notFound()`, 그 밖의 api 오류(꺼짐 · 401 · 403)는 `error.tsx` 가 받는다.
-상태 · 검토 사유 · 처리 구분 · 근로계약 상태 · 계약 유형 한글은 `getEnum` 으로 받는다(`PayslipStatus` · `PayslipReviewReason` ·
-`PayslipLogType` · `ContractStatus` · `EmploymentType`).
+상태 · 검토 사유 · 처리 구분 · 근로계약 상태 · 계약 유형 · 발송 채널 · 발송 결과 한글은 `getEnum` 으로 받는다(`PayslipStatus` ·
+`PayslipReviewReason` · `PayslipLogType` · `ContractStatus` · `EmploymentType` · `PayslipDispatchChannel` · `DispatchResult`).
+
+상세 오른쪽 단 맨 아래 「발송 이력」(WHALEERP-236)은 `dispatches` 를 채널마다 한 줄로 — 일시 · 채널(이메일 · 앱 푸시) · 결과(성공 파랑 ·
+실패 빨강 배지), 처리 이력처럼 최근 것이 위다. 처리 이력의 「발송」 줄은 그대로 두고, 채널별 성공 · 실패는 이 표에서 따로 본다. 지금 api 는
+이메일만 보내 줄을 남긴다 — 앱 푸시는 기기 토큰 · FCM 이 생기면(WHALEERP-241) 같은 표에 선다. 없으면 「발송 이력이 없습니다.」
 
 # 목록은 Plane WHALEERP-233 을 따른다
 
 칸과 필터는 Plane WHALEERP-233 완료 조건이 기준이고, 데모(`staff-sections.mjs` payList · payslipsFilter)와 **일부러 다르다**.
 
-* 필터는 급여 기간(목록 위 달 이동) · 점포 · 직원명 · 명세서 상태다(점포 · 직원명은 2026-10-19 사용자 요청으로 더했다).
+* 필터는 급여 기간(목록 위 달 이동) · 점포 · 직원명 · 명세서 상태 · 분류(검토 대기만, 아래)다(점포 · 직원명은 2026-10-19 사용자 요청으로 더했다).
   점포는 공통 점포 고르기(`StorePicker`)이고 **상단 점포 범위와 잇는다**(PR #88 공유, 2026-10-26 — 직원 목록과 같은 규칙): 목록에서 고른
   점포(`storeIds`) · 목록에서 비운 「전체」(빈 `storeIds=`) · 헤더 범위(`scope=ALL · DIRECT · FRANCHISE · STORE:id`) · 정해지지 않음(필터가
   헤더 범위로 채운다). api 에는 고른 점포 · 점포 하나 범위면 `storeIds`, 직영 · 가맹 범위면 `storeTypes`(그 유형의 폐점 점포는 api 가 뺀다)로
@@ -69,6 +73,12 @@ sources:
 * 칸은 순번 · 급여 기간 · 직원명 · 근무지 · 계약 유형 · 출퇴근 확인 여부 · 상태 · 발송일이다. 출퇴근 확인 여부는
   `isAttendanceConfirmed` — true 「확인」, false 「누락」, null(가린 줄) 「-」. api 에 누락 일수 칸이 없어 일수는 보이지 않는다.
   발송일은 `lastSentAt` 을 근로계약 목록처럼 MM-DD 로, 발송 전이면 「-」.
+* **검토 대기**(WHALEERP-234)는 상태가 아니라 분류다(운영 정책 PAY-01 · 06, 2026-10-26 재영 — STAFF-32 「목록 없음」을 바꿨다). 따로
+  목록을 두지 않고, 확인하지 않은 검토 사유(`pendingReviewReasons` — 출퇴근 누락 · 계약 만료 후 기록 · 기간 중 계약 변경 · 확인 필요 기록
+  포함)가 남은 줄의 상태 칸에 상태 배지 옆 빨간 「검토 대기」 배지를 붙인다(데모 `p.tag("warn", "검토 대기")`). 배지에 마우스를 올리면
+  사유 이름(`GET /enums` 의 `PayslipReviewReason`)이 보이고, 내용은 상세 「검토 사유」에서 본다. 왼쪽 필터 맨 아래 「분류 · 검토 대기만」
+  체크(주소 `reviewPending=true`, api 도 같은 이름 — 본사 역할에게 가린 줄은 api 가 뺀다). 건수 줄 끝에 「· 검토 대기 N」
+  (`reviewPendingCount`, 상태 건수와 같은 범위).
 * 상태 건수는 `statusCounts`(상태 필터와 상관없이 점포 · 직원명 필터만 건 그 달 건수, 직원명으로 거르면 가린 줄은 뺀다). 쪽 넘김은 `total` · `page` · `pageSize`,
   건수는 20 · 50 · 100(기본 20, URL 에서 뺀다). 명세서가 없으면 「이 달의 급여명세서가 없습니다.」
 * 가린 줄(`isMasked`, 본사 제공 동의 없는 가맹 점포 직원, ATT-30)은 근무지 · 급여 기간 밖은 「-」, 직원명은
