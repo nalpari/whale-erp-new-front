@@ -3889,6 +3889,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/home/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 수치 카드 넷 · 점포별 현황 표(미조치 많은 순 일곱 곳 + 전체 수) */
+        get: operations["HomeController_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/home/pending": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 경고 밴드(갱신 예정 7일 안) · 처리 대기 유형 목록 */
+        get: operations["HomeController_pending"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -9293,6 +9327,120 @@ export interface components {
              * @example 2026-10-26T01:00:00.000Z
              */
             updatedAt: string;
+        };
+        HomeStaffCardDto: {
+            total: number;
+            /** @description 정직원 */
+            fullTime: number;
+            /** @description 파트타이머 */
+            partTime: number;
+        };
+        HomeStoreCardDto: {
+            total: number;
+            direct: number;
+            franchise: number;
+        };
+        HomeAttendanceCardDto: {
+            /** @description 근무 예정 — 오늘 근무스케줄이 있는 재직 직원 수 */
+            scheduled: number;
+            /** @description 출근 — 오늘 출근 기록이 있는 직원 수 */
+            checkedIn: number;
+            /** @description 미출근 — 근무 예정인데 출근 기록이 없는 수 */
+            notCheckedIn: number;
+        };
+        HomeInquiryCardDto: {
+            /** @description 답변 대기 — 접수 · 처리중 */
+            waiting: number;
+            /** @description 답변완료 */
+            answered: number;
+        };
+        HomeCardsDto: {
+            /** @description 직원 정보 관리 조회 권한 */
+            staff: components["schemas"]["HomeStaffCardDto"] | null;
+            /** @description 미체결 계약(발송 대기 + 서명 대기 + 수정 요청). 근로계약 관리 조회 권한 */
+            unsignedContractCount: number | null;
+            stores: components["schemas"]["HomeStoreCardDto"];
+            /** @description 출퇴근 현황 · 근무스케줄 관리 조회 권한 둘 다 */
+            todayAttendance: components["schemas"]["HomeAttendanceCardDto"] | null;
+            /** @description 문의사항 조회 권한 */
+            myInquiries: components["schemas"]["HomeInquiryCardDto"] | null;
+        };
+        HomeStoreRowDto: {
+            storeId: number;
+            storeName: string;
+            /** @description 점포 유형 코드 — DIRECT · FRANCHISE */
+            storeTypeCode: string;
+            staffCount: number | null;
+            unsignedContractCount: number | null;
+            /** @description 오늘 출근 */
+            checkedInCount: number | null;
+            /** @description 오늘 근무 예정 */
+            scheduledCount: number | null;
+            /** @description 미조치 — 서명 대기 + 근로계약 수정 요청 + 소속 확인 거절 + 긴급 TO-DO 미완료. 볼 수 있는 영역의 건수만 더한다 */
+            pendingActionCount: number;
+        };
+        HomeStoreTableDto: {
+            /** @description 운영 점포 전체 수 */
+            total: number;
+            /** @description 미조치 많은 순(같으면 점포명) 일곱 곳 */
+            items: components["schemas"]["HomeStoreRowDto"][];
+        };
+        HomeSummaryResponseDto: {
+            /**
+             * Format: date-time
+             * @description 조회 시각
+             */
+            asOf: string;
+            /** @description 플랫폼 계정(플랫폼 마스터 · 플랫폼 관리자)이면 true — 현황 없이 안내만 보이고, 나머지 칸은 null · 빈 표다 */
+            platform: boolean;
+            cards: components["schemas"]["HomeCardsDto"] | null;
+            storeTable: components["schemas"]["HomeStoreTableDto"];
+        };
+        HomeRenewalDto: {
+            contractId: number;
+            /** @description 가려지는 직원(본사 제공 동의가 없는 가맹 점포 직원)이면 null */
+            staffMemberId: number | null;
+            /** @description 가려지는 직원이면 null */
+            name: string | null;
+            isMasked: boolean;
+            storeId: number;
+            storeName: string;
+            /** @description 계약 종료일(YYYY-MM-DD) */
+            endDate: string;
+        };
+        /**
+         * @description 계약 갱신 예정 · 근로계약 서명 대기 · 근로계약 수정 요청 · 소속 확인 거절 · 문의 답변완료(최근 7일) · 긴급 TO-DO 미완료
+         * @enum {string}
+         */
+        HomePendingType: "CONTRACT_RENEWAL" | "CONTRACT_PENDING_SIGNATURE" | "CONTRACT_CORRECTION_REQUESTED" | "AFFILIATION_REJECTED" | "INQUIRY_ANSWERED" | "URGENT_TODO";
+        HomePendingFilterDto: {
+            /** @description 점포. 문의는 점포로 거르지 않아 빈 배열 */
+            storeIds: number[];
+            /** @description 그 화면 목록의 상태 필터 값 — 근로계약 상태 · 가입 상태 · 문의 답변 상태 · TO-DO 상태 */
+            status: string[];
+        };
+        HomePendingItemDto: {
+            /** @description 계약 갱신 예정 · 근로계약 서명 대기 · 근로계약 수정 요청 · 소속 확인 거절 · 문의 답변완료(최근 7일) · 긴급 TO-DO 미완료 */
+            type: components["schemas"]["HomePendingType"];
+            count: number;
+            /** @description 대표 이름 — 가장 오래 기다린 것의 직원 이름(문의 · TO-DO 는 제목). 가려지는 직원이면 null */
+            firstName: string | null;
+            isFirstNameMasked: boolean;
+            /** @description 대표 말고 나머지 건수(「외 N명」) */
+            othersCount: number;
+            /** @description 가장 오래 기다린 일수(한국 날짜) — 서명 대기는 발송 뒤, 수정 요청은 요청 뒤, 소속 확인 거절은 거절 뒤, 문의는 답변 뒤, TO-DO 는 등록 뒤. 갱신 예정은 null */
+            waitingDays: number | null;
+            filter: components["schemas"]["HomePendingFilterDto"];
+        };
+        HomePendingResponseDto: {
+            /** Format: date-time */
+            asOf: string;
+            /** @description 플랫폼 계정이면 true — renewals 는 null, items 는 빈 배열 */
+            platform: boolean;
+            /** @description 경고 밴드. 근로계약 관리 조회 권한이 없으면 null */
+            renewals: components["schemas"]["HomeRenewalDto"][] | null;
+            /** @description 건수가 0인 유형과 권한이 없는 유형은 뺀다. 순서는 갱신 예정 → 계약 → 직원 → 문의 → TO-DO */
+            items: components["schemas"]["HomePendingItemDto"][];
         };
     };
     responses: never;
@@ -21241,6 +21389,78 @@ export interface operations {
             };
             /** @description 끝난 휴일 · 오늘 이후에 시작하는 휴일(삭제를 쓴다) · 다른 사용자가 먼저 수정 */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    HomeController_summary: {
+        parameters: {
+            query?: {
+                /** @description 업무 범위의 점포. 여러 개는 `storeIds=1&storeIds=2` 와 쉼표 `storeIds=1,2` 중 하나로(섞으면 400), 1000개까지. 관리 범위 밖 ID 는 조용히 빠진다. 주지 않으면 관리 범위 전체 */
+                storeIds?: number[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HomeSummaryResponseDto"];
+                };
+            };
+            /** @description storeIds 형식 오류 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    HomeController_pending: {
+        parameters: {
+            query?: {
+                /** @description 업무 범위의 점포. 여러 개는 `storeIds=1&storeIds=2` 와 쉼표 `storeIds=1,2` 중 하나로(섞으면 400), 1000개까지. 관리 범위 밖 ID 는 조용히 빠진다. 주지 않으면 관리 범위 전체 */
+                storeIds?: number[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HomePendingResponseDto"];
+                };
+            };
+            /** @description storeIds 형식 오류 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 직원 앱 토큰이거나 사용 중인 관리자 계정이 아님 */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
