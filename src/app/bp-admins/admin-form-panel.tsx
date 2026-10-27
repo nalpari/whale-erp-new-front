@@ -2,10 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useLayoutEffect, useRef, useState, useTransition, type KeyboardEvent, type ReactNode, type RefObject } from "react";
-import { Button, DataTable, Field, FormGroup, FormRow, RequiredMark, Select, SlidePanel, TextField } from "@/components/common";
+import { Button, ConfirmDialog, DataTable, Field, FormGroup, FormRow, RequiredMark, Select, SlidePanel, TextField } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { useAccount } from "@/components/site/session-gate";
-import { FailedBand, FieldMessage } from "@/components/site/side-parts";
+import { FailedBand, FieldMessage, InfoBand } from "@/components/site/side-parts";
 import { StoreMappingPicker, type MappingStoreOption } from "@/components/site/store-mapping-picker";
 import { StoreStatusBadge } from "@/app/stores/store-parts";
 import { formatDateTime } from "@/lib/format";
@@ -22,10 +22,25 @@ import {
   type BpAdminFormField,
 } from "@/lib/bp-admin-form";
 import { allowsAllStores, creatableRolesOf, editLocksOf } from "@/lib/bp-admin-rules";
-import type { BpAdminDetail, BpAdminRoleGroup, BpAdminRoleType, BpAdminStore, BpAdminStoreOption } from "@/lib/bp-admins";
+import type {
+  BpAdminDetail,
+  BpAdminRoleGroup,
+  BpAdminRoleType,
+  BpAdminStore,
+  BpAdminStoreOption,
+  BpAdminUpdateImpact,
+  UpdateBpAdminInput,
+} from "@/lib/bp-admins";
 import { loginIdError } from "@/lib/platform-admin-form";
 import type { StoreStatus } from "@/lib/store-types";
-import { checkBpAdminEmailAction, checkBpAdminLoginIdAction, createBpAdminAction, getBpAdminStoreOptionsAction, updateBpAdminAction } from "./actions";
+import {
+  checkBpAdminEmailAction,
+  checkBpAdminLoginIdAction,
+  createBpAdminAction,
+  getBpAdminStoreOptionsAction,
+  getBpAdminUpdateImpactAction,
+  updateBpAdminAction,
+} from "./actions";
 import { unknownResult } from "./bp-admin-parts";
 
 // BP 관리자 등록(S-NIMSMQ) · 수정(S-OENTFQ) 슬라이드 패널(데모 config/admins-new · admins-edit). 패널 폭(464)이라 칸을 한 줄에 하나씩 쌓는다.
@@ -33,7 +48,8 @@ import { unknownResult } from "./bp-admin-parts";
 // 수정에서 아이디 · 계정 역할은 읽기 전용이다. 본인 계정은 기본정보만 고친다(권한 그룹 · 상태 · 범위 · 점포를 막는다 — api 도 막는다).
 // 대상 점포 후보는 api 의 store-options 다 — 수정하는 사람의 관리 범위 안에서 고를 수 있는 점포만 온다(폐점 · 다른 가맹 마스터 담당은 빠진다).
 // 수정하는 사람의 범위 밖에 이미 매핑된 점포는 칩이 아니라 아래 읽기 전용 표로 보이고, 저장해도 api 가 그대로 둔다(목업 확정 2026-09-29).
-// shortcut: 가맹 마스터 미사용 · 점포 축소 때 딸린 가맹 관리자에 번지는 연쇄 확인창이 없다(api 가 처리한다), 프런트 2단계에서 더한다.
+// 가맹 마스터를 미사용으로 바꾸거나 점포를 빼면 연결된 가맹 관리자도 같은 저장에서 바뀐다(연쇄는 api 가 한다). 미사용을 고르면 상태 칸 아래 띠로,
+// 저장을 누르면 확인창으로 함께 바뀌는 계정을 첫 아이디와 「외 N명」으로 알린다 — 함께 바뀌는 계정이 없으면 확인창 없이 저장한다(2026-10-27 사용자 결정).
 
 /** 동시 수정 409 문구(작업 지시서). 이때만 최신 정보를 다시 불러온다. */
 const STALE = "먼저 바꿨습니다";
@@ -145,6 +161,34 @@ export function AdminFormPanel(props: Props) {
   }, [optionsRole, optionsKey, editingId]);
   const optionsReady = options?.key === optionsKey;
 
+  const editing = mode === "edit" ? props.admin : null;
+  // 사용 중인 가맹 마스터를 미사용으로 고르면 함께 멈출 가맹 관리자를 미리 센다 — 받은 값은 그 계정 · 연 횟수 · 최신 정보에 묶는다
+  const watchDeactivation = open && editing?.roleTypeCode === "FM" && editing.accountStatus === "ACTIVE" && form.accountStatus === "INACTIVE";
+  const impactKey = `${editingId}|${openCount}|${updatedAt}`;
+  const [deactivation, setDeactivation] = useState<{ key: string; impact: BpAdminUpdateImpact } | null>(null);
+  useEffect(() => {
+    if (!watchDeactivation || !editing) return;
+    let live = true;
+    const storeIds = editing.stores.filter((s) => !s.isOutOfScope).map((s) => s.storeId);
+    // 띠는 미리 알리는 것뿐이다 — 못 받으면 띠 없이 두고, 저장을 누를 때 다시 센다
+    getBpAdminUpdateImpactAction(editing.adminAccountId, { accountStatus: "INACTIVE", storeIds })
+      .then((result) => {
+        if (!live) return;
+        if (result.ok) setDeactivation({ key: impactKey, impact: result });
+        else console.warn("함께 미사용이 될 가맹 관리자를 세지 못했습니다 — 저장할 때 다시 센다", result.status, result.message);
+      })
+      .catch((error: unknown) => console.warn("함께 미사용이 될 가맹 관리자 조회 호출 실패 — 저장할 때 다시 센다", error));
+    return () => {
+      live = false;
+    };
+  }, [watchDeactivation, editing, impactKey]);
+  const deactivationImpact = watchDeactivation && deactivation?.key === impactKey ? deactivation.impact : null;
+
+  /** 저장 전 확인창 — 함께 바뀌는 가맹 관리자가 있을 때만 뜬다. 보낼 값을 쥐고 있다가 [저장]에서 그대로 보낸다 */
+  const [cascade, setCascade] = useState<{ input: UpdateBpAdminInput; impact: BpAdminUpdateImpact; removed: BpAdminStore[] } | null>(null);
+  // 확인창은 네이티브 <dialog>(최상위 레이어)라 뒤로 가기처럼 클릭 아닌 길로 패널이 닫히면 혼자 남는다 — 함께 닫는다
+  if (!open && cascade) setCascade(null);
+
   const ids = useId();
   const clearError = (key: BpAdminFormField) => setErrors((e) => (key in e ? Object.fromEntries(Object.entries(e).filter(([k]) => k !== key)) : e));
   const set = <K extends keyof BpAdminForm>(key: K, value: BpAdminForm[K]) => {
@@ -234,14 +278,39 @@ export function AdminFormPanel(props: Props) {
         }
         return props.onSaved(result);
       }
-      const result = await updateBpAdminAction(props.admin.adminAccountId, toUpdateBpAdminInput(form, props.admin.updatedAt)).catch(unknownResult("수정"));
-      if (result.ok) return props.onSaved();
-      if (result.status === undefined) router.refresh();
-      // 다른 사람이 먼저 고쳤으면 저장하지 않고 최신 정보를 불러온다 — 칸은 새 값으로 다시 채워진다(알림은 화면이 토스트로 한다)
-      if (result.status === 409 && result.message.includes(STALE)) return props.onStale();
-      applyServerError(result.status, result.message);
+      const admin = props.admin;
+      const input = toUpdateBpAdminInput(form, admin.updatedAt);
+      // 가맹 마스터를 미사용으로 바꾸거나 내 범위 안 점포를 빼면 저장 전에 함께 바뀔 가맹 관리자를 센다
+      const removed = admin.roleTypeCode === "FM" ? admin.stores.filter((s) => !s.isOutOfScope && !input.storeIds.includes(s.storeId)) : [];
+      const deactivating = admin.roleTypeCode === "FM" && admin.accountStatus === "ACTIVE" && input.accountStatus === "INACTIVE";
+      if (deactivating || removed.length) {
+        const impact = await getBpAdminUpdateImpactAction(admin.adminAccountId, input).catch((error: unknown) => {
+          console.error("BP 관리자 함께 바뀌는 계정 조회 호출 실패", error);
+          return { ok: false as const, status: undefined, message: "함께 바뀌는 계정을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요." };
+        });
+        // 모르고 저장하면 가맹 관리자가 말없이 바뀔 수 있다 — 세지 못하면 저장하지 않는다
+        if (!impact.ok) return setFailure(impact.message);
+        if (impact.deactivatedCount || impact.unmappedCount) return setCascade({ input, impact, removed });
+      }
+      await submitUpdate(input);
     });
   };
+
+  const submitUpdate = async (input: UpdateBpAdminInput) => {
+    if (props.mode !== "edit") return;
+    const result = await updateBpAdminAction(props.admin.adminAccountId, input).catch(unknownResult("수정"));
+    if (result.ok) return props.onSaved();
+    if (result.status === undefined) router.refresh();
+    // 다른 사람이 먼저 고쳤으면 저장하지 않고 최신 정보를 불러온다 — 칸은 새 값으로 다시 채워진다(알림은 화면이 토스트로 한다)
+    if (result.status === 409 && result.message.includes(STALE)) return props.onStale();
+    applyServerError(result.status, result.message);
+  };
+  const confirmCascade = () =>
+    startSaving(async () => {
+      if (!cascade) return;
+      await submitUpdate(cascade.input);
+      setCascade(null);
+    });
 
   // 저장하는 동안은 Esc · 바탕 클릭으로도 닫히지 않는다 — 닫히면 저장 결과를 사용자가 못 보고 패널이 먼저 사라진다.
   const safeClose = () => {
@@ -375,6 +444,14 @@ export function AdminFormPanel(props: Props) {
                   <option value="INACTIVE">미사용</option>
                 </Select>
               </Field>
+              {deactivationImpact && deactivationImpact.deactivatedCount > 0 && (
+                <InfoBand>
+                  <p>가맹 마스터를 미사용으로 저장하면 연결된 가맹 관리자 계정도 함께 멈춥니다</p>
+                  <p className="font-normal text-erp-label">
+                    가맹 관리자 {andOthers(deactivationImpact.firstDeactivatedLoginId, deactivationImpact.deactivatedCount)} → 미사용
+                  </p>
+                </InfoBand>
+              )}
               <Field label="등록일시">
                 <TextField value={formatDateTime(props.admin.createdAt)} readOnly />
               </Field>
@@ -514,9 +591,70 @@ export function AdminFormPanel(props: Props) {
           저장
         </Button>
       </div>
+
+      {mode === "edit" && cascade && (
+        <ConfirmDialog
+          open
+          title={cascadeTitle(cascade)}
+          confirmLabel={cascade.impact.deactivatedCount && cascade.input.accountStatus === "INACTIVE" ? "미사용으로 저장" : "저장"}
+          wide
+          busy={saving}
+          onConfirm={confirmCascade}
+          onCancel={() => setCascade(null)}
+        >
+          <div className="flex flex-col gap-[12px] break-keep">
+            <dl className="grid grid-cols-[84px_1fr] gap-y-[6px] rounded-[2px] border border-erp-thead-line bg-erp-thead-bg p-[12px]">
+              <dt className="text-erp-label">대상</dt>
+              <dd>
+                {props.admin.loginId} {props.admin.name} · {roleType(props.admin.roleTypeCode)}
+              </dd>
+              {cascade.removed.length > 0 && (
+                <>
+                  <dt className="text-erp-label">빼는 점포</dt>
+                  <dd>{cascade.removed.map((s) => `${s.name} ${s.storeCode}`).join(" · ")}</dd>
+                </>
+              )}
+              {cascade.impact.unmappedCount > 0 && (
+                <>
+                  <dt className="text-erp-label">매핑 해제</dt>
+                  <dd>가맹 관리자 {andOthers(cascade.impact.firstUnmappedLoginId, cascade.impact.unmappedCount)} · 뺀 점포의 매핑만 풀립니다</dd>
+                </>
+              )}
+              {cascade.impact.deactivatedCount > 0 && (
+                <>
+                  <dt className="text-erp-label">함께 미사용</dt>
+                  <dd>가맹 관리자 {andOthers(cascade.impact.firstDeactivatedLoginId, cascade.impact.deactivatedCount)}</dd>
+                </>
+              )}
+            </dl>
+            <p className="text-[13px] text-erp-label">아이디는 첫 계정만 보입니다.</p>
+            {cascade.impact.unmappedCount > 0 && (
+              <p>점포가 하나도 남지 않는 가맹 관리자도 계정 상태는 사용 그대로입니다. 그 계정을 다음에 수정할 때 관리 점포를 한 곳 이상 골라야 저장됩니다.</p>
+            )}
+            {cascade.impact.deactivatedCount > 0 && (
+              <p>
+                함께 미사용이 되는 계정의 로그인이 막힙니다. 열려 있는 세션은 닫지 않습니다. 나중에 가맹 마스터를 사용으로 돌려도 가맹 관리자는 미사용으로
+                남습니다.
+              </p>
+            )}
+            <p>가맹 관리자 변경 이력에는 저장하는 사람이 처리자로 남고, 변경 후 값에 사유가 붙습니다.</p>
+          </div>
+        </ConfirmDialog>
+      )}
     </SlidePanel>
   );
 }
+
+/** 「moriyn 외 1명」 — 아이디는 첫 계정만 보인다(목업 확정 2026-09-29) */
+const andOthers = (first: string | null, count: number) => `${first ?? ""}${count > 1 ? ` 외 ${count - 1}명` : ""}`;
+
+/** 확인창 제목 — 점포 빼기 · 미사용 중 이번 저장이 하는 것(목업 pop-cascade) */
+const cascadeTitle = ({ input, removed }: { input: UpdateBpAdminInput; removed: BpAdminStore[] }) =>
+  removed.length && input.accountStatus === "INACTIVE"
+    ? "가맹 마스터 점포를 빼고 미사용으로 저장"
+    : removed.length
+      ? "가맹 마스터 점포를 빼고 저장"
+      : "가맹 마스터를 미사용으로 저장";
 
 /** 입력칸 하나와 그 아래 오류 문구 */
 function Labeled({ label, required, message, children }: { label: string; required?: boolean; message: ReactNode; children: ReactNode }) {

@@ -8,11 +8,13 @@ import {
   createBpAdmin,
   getBpAdminHistories,
   getBpAdminStoreOptions,
+  getBpAdminUpdateImpact,
   resetBpAdminPassword,
   updateBpAdmin,
   type BpAdminHistoryList,
   type BpAdminRoleType,
   type BpAdminStoreOption,
+  type BpAdminUpdateImpact,
   type CreateBpAdminInput,
   type UpdateBpAdminInput,
 } from "@/lib/bp-admins";
@@ -90,6 +92,21 @@ export async function updateBpAdminAction(id: number, input: UpdateBpAdminInput)
     return { ok: true };
   } catch (error) {
     return failureOf(error, "수정");
+  }
+}
+
+/** 가맹 마스터 저장 전 확인창의 수 — 수정 패널이 미사용을 고를 때와 저장을 누를 때 부른다. */
+export async function getBpAdminUpdateImpactAction(
+  id: number,
+  input: Pick<UpdateBpAdminInput, "accountStatus" | "storeIds">,
+): Promise<ActionResult<BpAdminUpdateImpact>> {
+  if (!validId(id)) return NOT_FOUND;
+  if (input.accountStatus !== "ACTIVE" && input.accountStatus !== "INACTIVE") return { ok: false, status: 400, message: "계정 상태를 골라 주세요." };
+  if (!Array.isArray(input.storeIds) || !input.storeIds.every(validId)) return { ok: false, status: 400, message: "점포를 다시 골라 주세요." };
+  try {
+    return { ok: true, ...(await getBpAdminUpdateImpact(id, input)) };
+  } catch (error) {
+    return failureOf(error, "함께 바뀌는 계정 조회");
   }
 }
 
