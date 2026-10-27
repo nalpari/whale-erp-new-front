@@ -108,7 +108,7 @@ export default ({ A, R }) => {
     { header: "메뉴설정 여부", width: "w-[120px]" },
   ];
   const rows = GROUPS.map(([type, code, name, desc, at, by, n], i) => [
-    `${type} <span class="text-erp-label">· ${code}</span>`,
+    `${type} <span class="text-[12px] text-erp-label">· ${code}</span>`,
     `<span class="text-erp-link hover:underline">${name}</span>`, // 권한명은 링크색 — 앱 bp-role-groups 와 같다(2026-10-26)
     desc || c.muted("-"),
     `${at} <span class="text-erp-label">· ${by}</span>`,

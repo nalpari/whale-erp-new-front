@@ -60,7 +60,7 @@ export default ({ A, R }) => {
     id,
     detailTrigger(name),
     role,
-    `${group} ${c.muted(`· ${code}`)}`,
+    `${group} <span class="text-[12px] text-erp-muted">· ${code}</span>`, // 코드는 12px(앱과 같다, 2026-10-27)
     ui.badge(state === "사용" ? "on" : "off", state),
     stores,
     login,

@@ -173,7 +173,7 @@ export default ({ A, R }) => {
     dialogs.push(menuDialog(A, R, r, id));
     const n = Object.values(GRANT[code]).reduce((s, m) => s + Object.values(m).filter(Boolean).length, 0);
     return [
-      `${type} <span class="text-erp-label">· ${code}</span>`,
+      `${type} <span class="text-[12px] text-erp-label">· ${code}</span>`,
       `<span class="text-erp-link hover:underline">${name}</span>`, // 권한명은 링크색 — 앱(platform-role-groups · bp-role-groups)과 같다(2026-10-26 사용자 지정)
       desc,
       // 등록일시 열은 뺐다 — 앱 platform-role-groups 와 같이 최종수정만(2026-10-26 사용자 지정)

@@ -49,7 +49,7 @@ export function AdminTable({
           a,
           <span className="truncate">
             {/* 권한 그룹명과 코드 사이에 「 · 」(2026-10-27 사용자 지정) */}
-            {a.roleGroup.name} <span className="text-erp-muted">· {a.roleGroup.roleCode}</span>
+            {a.roleGroup.name} <span className="text-[12px] text-erp-muted">· {a.roleGroup.roleCode}</span>
           </span>,
         ),
     },

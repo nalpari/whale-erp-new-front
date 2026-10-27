@@ -78,7 +78,7 @@ function RolesBody({
       // 가운데 정렬 — 열 이름과 맞춘다(2026-10-27 사용자 지정, 전엔 왼쪽)
       cell: (r) => (
         <span className="truncate">
-          <CodeLabel group="ROLE_TYPE" value={r.roleTypeCode} /> <span className="text-erp-label">· {r.roleCode}</span>
+          <CodeLabel group="ROLE_TYPE" value={r.roleTypeCode} /> <span className="text-[12px] text-erp-label">· {r.roleCode}</span>
         </span>
       ),
     },
