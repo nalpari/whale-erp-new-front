@@ -132,6 +132,16 @@ export function inProgressLine(c: InProgressContract, statusLabel: string): stri
   return [c.name, period, statusLabel, `계약 ${c.contractId}`].filter(Boolean).join(" · ");
 }
 
+/**
+ * 대체 확인에서 보낼 replaceContractIds — 앞 확인에서 고른 계약에 다시 물은 목록을 더한다. 다시 물은 목록만 보내면 앞서 대체하기로
+ * 한 계약이 빠진다(front #135 code-review)
+ */
+export const replaceIdsOf = (before: number[] | undefined, list: InProgressContract[]): number[] => [...new Set([...(before ?? []), ...list.map((c) => c.contractId)])];
+
+/** 바로잡기로 다시 보낸 뒤 진행 중 목록(CONTRACT_IN_PROGRESS)으로 다시 물을 때 — 바로잡기 문구는 목록에 체결 완료가 있을 때만 */
+export const stillCorrecting = (body: CreateContractBody, list: InProgressContract[]): boolean =>
+  body.correctSignedContracts === true && list.some((c) => c.status === "SIGNED");
+
 const span = (sh: string, eh: string): TimeSpan => ({ start: { hour: sh, minute: "00" }, end: { hour: eh, minute: "00" } });
 
 /** 처음 열었을 때의 값. 정직원 · 월~금 09~18 · 휴게 12~13 · 익월 10일 (데모와 같다). 주휴일은 근무로 정해진다 */

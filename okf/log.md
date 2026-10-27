@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-27
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 code-review(델타) 반영: 이어 쓰기(`PUT`)에는 `previousContractId` 를 싣지 않음, 재계약이면 바로잡기 확인창을 띄우지 않음(`signedOverlap` 이어도), 대체 확인을 다시 물으면 앞서 고른 계약과 합쳐 보냄(`replaceIdsOf`), 바로잡기 뒤 진행 중 목록으로 다시 물을 때 바로잡기 문구는 체결 완료가 있을 때만(`stillCorrecting`), 낡은 주석 고침.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 재리뷰 참고 반영(노영주): 진행 중인 재계약이 있어도 재계약 작성 화면을 연다 — api `renewedBy` 가 체결된 재계약만 싣고, 저장할 때 대체를 묻는다. `renewedBy != null` 로 봐 칸 없는 옛 응답에도 안전. main 병합 · api 타입 다시 만듦.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 디자인 수정 모음(front fearow): BP 권한 그룹 최종수정 열 280px. BP 공통코드 그룹 목록은 쪽 없이 플랫폼제공만(api `manageOwnerCodes`), 플랫폼 공통코드 그룹 목록도 쪽 없음 · 관리주체 둘 다 끔은 결과 없음. 공통코드 칸 오류를 칸 아래 한 줄로(`CellError` · `focusFirstInvalid` · `recheck`), 형식 · 중복 문구와 새 상세 코드 플레이스홀더를 바꿨다. BP 공통코드 관리주체 열 i 도움말(DataTable `Column.help` · HelpTip `floating`). BP · 플랫폼 관리자: 상세 머리 「역할 | 권한그룹 | 상태」(`HeadValues`), 등록 · 최종수정 카드, 플랫폼 목록 쪽 건수 · 계정 상태 둘 다 끔은 결과 없음, BP 목록 · 등록 · 수정 · 초기화 확인창을 플랫폼 관리자와 맞췄다. DetailTable 제목 15px 600(DESIGN.md 함께 고침).  [직원 정보 관리 화면 (구현)](/screens/staff-members.md) 은 근거 파일 `data-table.tsx` 가 바뀌었지만(열 도움말 `help` 추가) 그 화면은 쓰지 않아 본문을 고치지 않았다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 공통코드 관리에 관리주체 필터(체크박스, 주소 `?manageOwnerCode` · 둘 다 끔은 NONE, api `manageOwnerCodes`)를 더했다. BP 공통코드 관리에는 두지 않는다. 관리주체 꼬리표(`OwnerTag`), 상세 코드 머리(`GroupHead`), 고른 그룹 줄(`current`), 사용여부 · 관리주체 문구, 저장 안 한 변경 확인창 문구도 바꿨다.
