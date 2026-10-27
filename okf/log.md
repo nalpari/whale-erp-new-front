@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-27
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #136 셀프 code-review: 재발송이 막힌(`blocked`) 확인창을 닫을 때 상세를 다시 읽는다 — 낡은 재발송 버튼으로 같은 409 를 되풀이하지 않게.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #136 재리뷰 참고 반영: 거부 · 만료 재발송이 막히면(`REOPEN_BLOCKED` · `WORK_TIME_OVERLAP`) 까닭 문장을 남기고 보내기만 막는다(`SendFailure.blocked`) — code-review 델타에서 다시 읽게 했더니 버튼 · 확인창과 함께 까닭이 사라졌다. #135(main 병합) 병합.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #136 code-review(델타) 반영: 거부 · 만료 재발송이 막히면(`REOPEN_BLOCKED` · `WORK_TIME_OVERLAP`) api 문장을 보이며 보내기를 막고 상세를 다시 읽음, 재발송 확인창 문구를 상태가 아니라 가입 여부(`staffJoined`, 필수)로 고름(가입 전 서명 대기는 가입 초대 문구), 거부 문구에서 「새 계약을 작성해 주세요」 뺌, 버튼 조건을 `canShowResend` 로 옮겨 테스트, 낡은 주석 고침. #135 병합 · api 타입을 #158 tentacruel 에서 다시 만듦.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 재리뷰 참고 반영: 대체 확인을 다시 물으면 다시 물은 목록만 보낸다(`replaceIdsOf` 를 없앰) — api `checkReplace` 는 지금 목록과 같은 집합만 받아, 앞서 고른 것을 합치면 그사이 빠진 계약 때문에 같은 409 가 되풀이됐다. main 병합.

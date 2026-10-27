@@ -16,11 +16,14 @@ import { resendDialogCopy, sendFailureOf } from "./send-model";
 // 확인창 문구는 resendDialogCopy(send-model.ts) — 가입 여부(api staffJoined)로 앱 문구(데모)와 가입 초대 문구를 고른다.
 // 접수 여부를 모르거나 화면이 낡았으면(recheck) 보내기를 막고 상세를 다시 읽는다 — 다시 눌러 두 번 가지 않게(front #41 리뷰).
 // 거부 · 만료를 되살릴 수 없게 됐으면(blocked) 보내기만 막고 까닭 문장을 남긴다 — 다시 읽으면 버튼과 함께 사라진다(front #136 재리뷰).
+// 확인창을 닫을 때 상세를 다시 읽는다 — 낡은 버튼으로 같은 409 를 되풀이하지 않게(front #136 셀프 code-review).
 export function SendContractButton({ contractId, status, name, back, staffJoined }: { contractId: number; status: string; name: string | null; back: string; staffJoined: boolean }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [locked, setLocked] = useState(false);
+  // 거부 · 만료를 되살릴 수 없게 됐다(blocked) — 확인창을 닫을 때 상세를 다시 읽어 낡은 재발송 버튼을 걷는다
+  const [blocked, setBlocked] = useState(false);
   const [pending, start] = useTransition();
   const copy = resendDialogCopy(status, name, staffJoined);
 
@@ -39,6 +42,10 @@ export function SendContractButton({ contractId, status, name, back, staffJoined
           setOpen(false);
           setError("");
           setLocked(false);
+          if (blocked) {
+            setBlocked(false);
+            router.refresh();
+          }
         }}
         onConfirm={() =>
           start(async () => {
@@ -60,6 +67,7 @@ export function SendContractButton({ contractId, status, name, back, staffJoined
             }
             setError(result.error);
             if (result.recheck || result.blocked) setLocked(true);
+            if (result.blocked) setBlocked(true);
             if (result.recheck) router.refresh();
           })
         }
