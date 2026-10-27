@@ -42,7 +42,8 @@ export function adminNewBody(A, R, { panel = false } = {}) {
     // 수정 화면의 대상 점포와 같다 — 범위가 전체 점포면 숨는다(erp.js)
     c.storePicker(A, {
       clearLabel: "전체 제거",
-      bulk: [...STORES].sort((a, b) => a[0].localeCompare(b[0])).map(([code, name, type]) => [name, code, type]),
+      // 폐점 점포는 새로 매핑할 수 없다 — 일괄 검색 왼쪽에 흐리게 「폐점」으로 두고 옮기지 못한다(2026-10-23)
+      bulk: [...[...STORES].sort((a, b) => a[0].localeCompare(b[0])).map(([code, name, type]) => [name, code, type]), ["모리커피 합정점", "ST000012", "가맹점포", "폐점"]],
       picked: [],
     }),
   );
