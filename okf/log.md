@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-27
+* **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) — 보정 창에 「다음 날 퇴근」 체크(api `checkOutNextDay` 로 늘 보낸다, 퇴근이 출근보다 이르면 고정)와 저장할 날 안내, 출근 없는 퇴근에 밤 출근을 채우면 「전날 … 출근으로 저장합니다」. 짐작 안내(keptCheckOutNote)를 지웠다. api 타입을 다시 만들었다(PR #159 재영 리뷰).
 * **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) — 보정 창의 원본 퇴근 · 고칠 기록 선택지에 「(다음날)」 · 「(+N일)」을 붙이고, 24시간 넘는 짝의 퇴근 시각을 그대로 두면 「10/24 10:00 퇴근을 그대로 둡니다.」로 안내한다(api 가 원래 날을 지킨다, PR #159 리뷰).
 * **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) — 확인 필요 사유 필터에 「근무 12시간 초과」(api `LONG_SHIFT`, 2026-10-27 재영)를 더했다. 이름은 `GET /enums` 로 받는다. api 타입을 다시 만들었다.
 
