@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   bpMasterServerErrorField,
+  emailError,
   EMPTY_BP_MASTER_FORM,
   formOfBpMaster,
   hasPendingVerification,
@@ -88,6 +89,8 @@ test("상세로 채우면 인증된 BP 는 완료 카드 값을, 미인증 BP �
   assert.deepEqual(form.ceoPhone, ["02", "3380", "1127"]);
   assert.equal(form.verifying, false);
   assert.equal(formOfBpMaster({ ...detail, bizVerifiedAt: null, bizRegistrationNumber: null }).verified, null);
+  // 번호만 남고 인증 시각이 없는 BP 는 인증 완료 카드로 열지 않는다
+  assert.equal(formOfBpMaster({ ...detail, bizVerifiedAt: null }).verified, null);
 });
 
 test("api 오류를 붙일 칸 — 중복 · 형식만, 수정의 아이디 오류는 띠로", () => {
@@ -96,5 +99,22 @@ test("api 오류를 붙일 칸 — 중복 · 형식만, 수정의 아이디 오�
   assert.equal(bpMasterServerErrorField(409, "이미 사용 중인 이메일입니다", "edit"), "email");
   assert.equal(bpMasterServerErrorField(400, "대표자 이메일 형식이 아닙니다", "edit"), "ceoEmail");
   assert.equal(bpMasterServerErrorField(409, "아이디 또는 이메일이 이미 쓰였습니다", "create"), null);
+  assert.equal(bpMasterServerErrorField(409, "사용 중이거나 미사용인 다른 관리자 계정의 이메일입니다", "create"), "email");
+  assert.equal(bpMasterServerErrorField(409, "이미 사용 중인 상호입니다", "create"), "tradeName");
+  assert.equal(bpMasterServerErrorField(409, "이미 사용 중인 대표자 이메일입니다", "create"), "ceoEmail");
   assert.equal(bpMasterServerErrorField(500, "이메일", "create"), null);
+});
+
+test("대표자 연락처는 02 국번 9자리도 받는다(api · MY PAGE 와 같다)", () => {
+  assert.equal(validateBpMasterForm({ ...filled, ceoPhone: ["02", "123", "4567"] }, "create").ceoPhone, undefined);
+  assert.equal(validateBpMasterForm({ ...filled, ceoPhone: ["02", "12", "4567"] }, "create").ceoPhone, "대표자 연락처는 숫자 9~11자리입니다.");
+});
+
+test("emailError — 앞뒤 공백은 지우고 보고, 100자까지", () => {
+  assert.equal(emailError(" a@b.co "), undefined);
+  assert.equal(emailError(""), "이메일을 입력해 주세요.");
+  assert.equal(emailError("a@b"), "이메일 형식이 아닙니다.");
+  const local = (n: number) => `${"a".repeat(n - "@b.co".length)}@b.co`;
+  assert.equal(emailError(local(100)), undefined);
+  assert.equal(emailError(local(101)), "이메일 형식이 아닙니다.");
 });

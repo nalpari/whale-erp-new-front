@@ -172,6 +172,8 @@ export function BpMastersScreen({
           trigger={newTrigger}
           onSaved={(result) => {
             setNewOpen(false);
+            // 상세 띠는 상세를 불러와야 보이고 다른 줄을 누르면 사라진다 — 메일 실패를 놓치지 않게 토스트로도 알린다(platform-admins 와 같다)
+            toast(result.isMailSent ? "saved" : "저장되었습니다. 초기 비밀번호 메일은 보내지 못했습니다 — 상세에서 비밀번호를 초기화해 주세요.");
             setCreated(result);
             detailTrigger.current = newTrigger.current;
             go({ bp: result.bpCodeId });

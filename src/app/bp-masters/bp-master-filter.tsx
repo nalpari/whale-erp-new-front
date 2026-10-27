@@ -35,7 +35,14 @@ export function BpMasterFilter({ query, onApply }: { query: BpMastersQuery; onAp
   const toggle = (s: BpMasterStatusValue, checked: boolean) => apply({ statuses: BP_MASTER_STATUSES.filter((x) => (x === s ? checked : shows(x))) });
 
   return (
-    <FilterPanel onReset={() => onApply({ searchType: "BP_CODE", keyword: undefined, statuses: [], verification: undefined })}>
+    <FilterPanel
+      onReset={() => {
+        // 검색하지 않은 채 바꾼 기준 · 검색어는 주소에 없어 위 따라가기로 지워지지 않는다 — 칸도 직접 비운다
+        setSearchType("BP_CODE");
+        setKeyword("");
+        onApply({ searchType: "BP_CODE", keyword: undefined, statuses: [], verification: undefined });
+      }}
+    >
       <FilterSection label="검색" tight>
         <div className="flex flex-col gap-[6px]">
           <Select

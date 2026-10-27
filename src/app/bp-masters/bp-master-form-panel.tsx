@@ -171,7 +171,11 @@ export function BpMasterFormPanel(props: Props) {
         bizCeoName: values.ceoName,
         bizOpenDate: values.openDate,
         ...(props.mode === "edit" ? { bpCodeId: props.bp.bpCodeId } : {}),
-      }).catch(unknownResult("사업자정보 인증"));
+      }).catch((error: unknown) => {
+        // 진위확인은 저장이 아니라 다시 받을 화면이 없다 — unknownResult 의 「화면을 새로 받았으니」 문구를 쓰지 않는다
+        console.error("BP 마스터 계정 사업자정보 인증 호출 실패", error);
+        return { ok: false as const, status: undefined, message: "사업자정보를 인증하지 못했습니다. 잠시 후 다시 시도해 주세요." };
+      });
       if (mine !== verifyNumber.current) return;
       // 로그인 만료(401) · 권한 없음(403)은 저장도 막히고, 국세청 장애(503)는 문구에 이미 들어 있어 「인증 없이 저장」 안내를 붙이지 않는다
       if (!result.ok) return setVerifyFailure([401, 403, 503].includes(result.status ?? 0) ? result.message : `${result.message} 인증 없이도 저장할 수 있습니다.`);

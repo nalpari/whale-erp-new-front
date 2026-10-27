@@ -3,6 +3,8 @@
 // node --test 가 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
 import type { BpMasterDetail, CreateBpMasterInput, UpdateBpMasterInput } from "./bp-masters.ts";
 import { loginIdError, NAME_PATTERN, PHONE_PATTERN, splitPhone } from "./platform-admin-form.ts";
+// 대표자 연락처는 02 국번 9자리도 받는다 — api DTO · BP 자기 사업자정보(MY PAGE)와 같은 규칙
+import { CEO_PHONE_PATTERN } from "./bp-profile-form.ts";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const BIZ_NUMBER_PATTERN = /^[0-9]{10}$/;
@@ -139,7 +141,7 @@ export function validateBpMasterForm(form: BpMasterForm, mode: "create" | "edit"
   if (!tradeName) errors.tradeName = "상호명을 입력해 주세요.";
   else if (tradeName.length > 50) errors.tradeName = "상호명은 50자까지입니다.";
   const ceoPhone = phoneOf(form.ceoPhone);
-  if (ceoPhone && !PHONE_PATTERN.test(ceoPhone)) errors.ceoPhone = "대표자 연락처는 숫자 10~11자리입니다.";
+  if (ceoPhone && !CEO_PHONE_PATTERN.test(ceoPhone)) errors.ceoPhone = "대표자 연락처는 숫자 9~11자리입니다.";
   const ceoEmail = form.ceoEmail.trim();
   if (ceoEmail && (ceoEmail.length > 100 || !EMAIL_PATTERN.test(ceoEmail))) errors.ceoEmail = "대표자 이메일 형식이 아닙니다.";
   if (form.category.trim().length > 50) errors.category = "업태는 50자까지입니다.";
