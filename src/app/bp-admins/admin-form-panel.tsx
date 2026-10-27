@@ -275,7 +275,7 @@ export function AdminFormPanel(props: Props) {
       {failure && <FailedBand message={failure} detail="입력한 값은 그대로 두었습니다." />}
       {locks.stores && (
         <Note>
-          수정 화면에서는 기본정보(이름 · 연락처 · 이메일)만 바뀝니다. 권한 그룹 · 계정상태 · 대상 점포는 이 계정을 관리할 수 있는 다른 사용자가,
+          수정 화면에서는 기본정보(이름 · 연락처 · 이메일)만 바뀝니다. 권한명 · 계정상태 · 대상점포는 이 계정을 관리할 수 있는 다른 사용자가,
           비밀번호는 내 정보에서 직접 바꿉니다.
         </Note>
       )}
@@ -379,8 +379,8 @@ export function AdminFormPanel(props: Props) {
           {/* 계정 역할 · 권한명은 기본정보 안 맨 아래 — 따로 있던 「계정 역할」 묶음 제목은 없앴다(2026-10-27 사용자 지정) */}
           {groupsFailed && <FailedBand message="권한 그룹 목록을 불러오지 못했습니다. 화면을 새로 고쳐 주세요." />}
           {noGroupForRole && <FailedBand message="붙일 권한 그룹이 없습니다. BP 권한 그룹 관리에서 먼저 만들어 주세요." />}
-          {/* 계정 역할 · 권한 그룹은 한 줄에 나란히(2026-10-27 사용자 지정 — 전엔 두 줄). 역할 이름은 7자를 넘지 않아
-              계정 역할 칸은 그 폭(글자 + 화살표 30, 150 → 130)으로 줄이고 권한 그룹이 남는 폭을 쓴다(2026-10-27 사용자 지정) */}
+          {/* 계정 역할 · 권한명은 한 줄에 나란히(2026-10-27 사용자 지정 — 전엔 두 줄). 역할 이름은 7자를 넘지 않아
+              계정 역할 칸은 그 폭(글자 + 화살표 30, 150 → 130)으로 줄이고 권한명이 남는 폭을 쓴다(2026-10-27 사용자 지정) */}
           {/* 위쪽 정렬 — 한 칸에만 오류 문구가 붙어 줄이 높아져도 두 입력칸이 같은 높이에 선다(사용자가 찾음). FormRow 는 늘여 세워 옆 칸이 가운데로 내려갔다 */}
           <div className="flex w-full items-start gap-[6px]">
             {mode === "create" && roles.length > 1 ? (
@@ -526,7 +526,7 @@ function Labeled({
   children,
 }: {
   label: string;
-  /** 한 줄에 나란히 둘 때의 고정 폭. 없으면 Field 처럼 남는 폭을 나눠 가진다(계정 역할 · 권한 그룹) */
+  /** 한 줄에 나란히 둘 때의 고정 폭. 없으면 Field 처럼 남는 폭을 나눠 가진다(계정 역할 · 권한명) */
   width?: `w-[${number}px]`;
   required?: boolean;
   message: ReactNode;

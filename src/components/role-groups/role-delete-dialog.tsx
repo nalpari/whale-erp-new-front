@@ -7,7 +7,7 @@ import { EASE_OUT } from "@/components/common/theme";
 import type { DeletionCandidates } from "@/lib/platform-role-groups";
 import type { ActionResult } from "@/lib/role-group-actions";
 import { useCodeLabel } from "@/components/site/code-label";
-import { FailedBand, InfoBand, unknownResult } from "./role-parts";
+import { FailedBand, InfoBand, unknownResult, WarnBand } from "./role-parts";
 
 // 권한 삭제(데모 roles-master 삭제 확인창 · SYSTEM-6 · BP CONFIG-5). 고정 권한은 버튼이 없다.
 // 후보 조회 · 삭제는 화면마다 다른 api 라 actions 로 받는다.
@@ -172,7 +172,7 @@ export function RoleDeleteDialog({
           )}
           {/* 삭제를 막는 이유 — 플랫폼 메뉴 관리의 미사용 안내와 같은 빨간 테두리 · 연한 빨간 바탕 상자(2026-10-27 사용자 지정 — 전엔 빨간 글자만) */}
           {noCandidate && (
-            <p className="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] whitespace-pre-line text-erp-off">{noCandidateText}</p>
+            <WarnBand>{noCandidateText}</WarnBand>
           )}
           {data && admins.length > 0 && !noCandidate && (
             <>
