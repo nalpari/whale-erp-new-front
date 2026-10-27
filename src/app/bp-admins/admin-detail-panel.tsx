@@ -238,12 +238,15 @@ function MappedStores({ admin }: { admin: BpAdminDetail }) {
     // 기본정보처럼 회색 제목 바(42px · 15px 600 — DetailTable 제목과 같다) 아래에 표를 붙인다(2026-10-27 사용자 지정 — 전엔 글자 제목 아래 따로 선 표).
     // 제목 바는 아래 선을 두지 않는다 — 표 머리 줄(또는 안내 칸)의 위 선이 그 자리를 맡아 선이 두 겹이 되지 않게 한다
     <section className="flex flex-col">
-      <h3 className="flex h-[42px] items-center gap-[10px] rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">
-        대상점포
-        <span className="text-[14px] font-normal text-erp-label">
-          {admin.isAllStores ? `전체 점포 · 지금 ${admin.bpStoreCount.toLocaleString("ko-KR")}개점` : `일부 점포 · ${admin.stores.length.toLocaleString("ko-KR")}개점`}
-        </span>
-      </h3>
+      {/* 점포가 많아 표가 스크롤하면 표는 오른쪽에 스크롤바 자리를 비운다 — 제목 바도 같은 자리를 비워 오른쪽 선이 표와 맞게 한다(사용자가 찾음) */}
+      <div className={many ? "overflow-hidden [scrollbar-gutter:stable]" : undefined}>
+        <h3 className="flex h-[42px] items-center gap-[10px] rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">
+          대상점포
+          <span className="text-[14px] font-normal text-erp-label">
+            {admin.isAllStores ? `전체 점포 · 지금 ${admin.bpStoreCount.toLocaleString("ko-KR")}개점` : `일부 점포 · ${admin.stores.length.toLocaleString("ko-KR")}개점`}
+          </span>
+        </h3>
+      </div>
       {admin.isAllStores ? (
         <p className="rounded-b-[2px] border border-erp-thead-line px-[16px] py-[14px] text-[14px] text-erp-label">소속 BP 의 모든 점포를 관리합니다. 새로 등록하는 점포도 함께 관리합니다.</p>
       ) : many ? (
