@@ -374,7 +374,8 @@ export function BpMasterFormPanel(props: Props) {
             </div>
             <Note>
               사업자등록번호 · 대표자명 · 개업일자가 국세청에 등록된 정보와 일치하는지 확인합니다.
-              {mode === "edit" && verified && " 재인증에 실패하면 저장된 사업자정보와 인증 상태는 그대로입니다."}
+              {/* 점포 수정(store-form-view.tsx)과 같은 문구 */}
+              {mode === "edit" && verified && " 인증 실패 시 기존 정보가 유지됩니다."}
             </Note>
           </Stack>
         ) : form.verified ? (
@@ -389,7 +390,7 @@ export function BpMasterFormPanel(props: Props) {
                 재인증
               </Button>
             </div>
-            {mode === "edit" && form.verified.token && <Note>재인증 결과는 저장해야 반영됩니다.</Note>}
+            {mode === "edit" && form.verified.token && <Note>인증 결과는 저장해야 반영됩니다.</Note>}
           </Stack>
         ) : (
           <Stack>

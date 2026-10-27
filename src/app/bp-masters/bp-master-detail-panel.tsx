@@ -226,7 +226,8 @@ function DetailBody({
       ),
     },
     { label: "업태 · 종목", value: <DetailValues items={[bp.bizCategory ?? "", bp.bizItem ?? ""].filter(Boolean)} /> },
-    { label: "최종 인증", value: verified ? formatDateTime(bp.bizVerifiedAt) : null },
+    // 라벨 · 빈 값은 점포 상세(stores/[storeId]/page.tsx)와 같다
+    { label: "최종 인증일시", value: unverified(formatDateTime(bp.bizVerifiedAt)) },
   ];
 
   const who = <WhoList rows={[["BP", `${bp.tradeName} · ${bp.bpCode}`], ["계정", bp.loginId]]} />;
