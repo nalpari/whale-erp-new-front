@@ -157,7 +157,7 @@ export function AdminsScreen({
             </div>
           </main>
         </div>
-  
+
         {canCreate && (
           <AdminFormPanel
             id="bp-admin-new-panel"
@@ -176,9 +176,9 @@ export function AdminsScreen({
             }}
           />
         )}
-  
+
         <AdminDetailPanel open={Boolean(query.admin)} detail={shown} onClose={dismissDetail} onBackdropClose={closeAll} trigger={detailTrigger} onEdit={openEdit} />
-  
+
         {can.update && shown && "admin" in shown && (
           <AdminFormPanel
             // 다른 계정이면 새로 그린다. 같은 계정을 다시 열거나 최신 정보를 받으면 패널이 스스로 칸을 다시 채운다.
