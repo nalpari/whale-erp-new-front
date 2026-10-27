@@ -4,12 +4,12 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-27T07:03:15Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-27T09:10:13Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
     title: 타입(생성한 api 타입) · 조회 조건 · api 쿼리 · 달 · 합계
-    last_modified: 2026-10-27T07:03:15Z
+    last_modified: 2026-10-27T09:10:13Z
   - id: payslips-api
     resource: ../../src/lib/payslips-api.ts
     title: GET /payslips · GET /payslips/:id 호출(404 → null)
@@ -17,15 +17,15 @@ sources:
   - id: payslip-list-page
     resource: ../../src/app/payslips/page.tsx
     title: 목록 화면 — 상태 필터 · 달 이동 · 상태 건수 · 건수 선택 · 목록
-    last_modified: 2026-10-27T07:03:15Z
+    last_modified: 2026-10-27T09:10:13Z
   - id: payslip-list-query
     resource: ../../src/app/payslips/payslip-list-query.ts
     title: 목록 URL ↔ 조회 조건(달은 늘 싣는다, 기본 건수 20 은 뺀다)
     last_modified: 2026-10-27T06:46:08Z
   - id: payslip-row
     resource: ../../src/app/payslips/payslip-row.ts
-    title: 목록 칸(급여 기간 · 출퇴근 확인 · 발송일 · 검토 대기 배지) · 상태 색 · 지급 도움말 · 경고 띠
-    last_modified: 2026-10-27T11:00:00Z
+    title: 목록 칸(급여 기간 · 출퇴근 확인 · 발송일 · 검토 대기 꼬리표) · 상태 색 · 지급 도움말 · 경고 띠
+    last_modified: 2026-10-27T09:10:13Z
   - id: payslip-draft-dialog
     resource: ../../src/app/payslips/payslip-draft-dialog.tsx
     title: 급여명세서 작성 팝업 — 점포 · 이름 좁히기 · 직원 고르기 · 작성 · 일괄 작성(칸 문구 payslip-draft.ts, server action actions.ts)
@@ -74,11 +74,14 @@ sources:
   `isAttendanceConfirmed` — true 「확인」, false 「누락」, null(가린 줄) 「-」. api 에 누락 일수 칸이 없어 일수는 보이지 않는다.
   발송일은 `lastSentAt` 을 근로계약 목록처럼 MM-DD 로, 발송 전이면 「-」.
 * **검토 대기**(WHALEERP-234)는 상태가 아니라 분류다(운영 정책 PAY-01 · 06, 2026-10-26 재영 — STAFF-32 「목록 없음」을 바꿨다). 따로
-  목록을 두지 않고, 확인하지 않은 검토 사유(`pendingReviewReasons` — 출퇴근 누락 · 계약 만료 후 기록 · 기간 중 계약 변경 · 확인 필요 기록
-  포함)가 남은 줄의 상태 칸에 상태 배지 옆 빨간 「검토 대기」 배지를 붙인다(데모 `p.tag("warn", "검토 대기")`). 배지에 마우스를 올리면
+  목록을 두지 않고, 검토 대기 사유(`pendingReviewReasons` — 출퇴근 누락 · 계약 만료 후 기록 · 기간 중 계약 변경 · 공제 미입력 · 확인 필요 기록
+  포함, 공제 미입력은 api 가 공제 칸으로 판정한다)가 남은 줄의 상태 칸에 상태 배지 옆 「검토 대기」 꼬리표(공통 `Tag` — 표 머리 바탕 · 선 ·
+  보조 글자색)를 붙인다. 「검토 중」 상태 배지(빨강)와 다른 모양이어야 해서 데모의 빨간 `p.tag("warn", "검토 대기")` 대신 DESIGN.md
+  「분류를 말할 뿐 상태가 아니다」 꼬리표를 쓴다(운영 정책 v221 PAY-06, 2026-10-27 재영). 꼬리표에 마우스를 올리면
   사유 이름(`GET /enums` 의 `PayslipReviewReason`)이 보이고, 내용은 상세 「검토 사유」에서 본다. 왼쪽 필터 맨 아래 「분류 · 검토 대기만」
-  체크(주소 `reviewPending=true`, api 도 같은 이름 — 본사 역할에게 가린 줄은 api 가 뺀다). 건수 줄 끝에 「· 검토 대기 N」
-  (`reviewPendingCount`, 그 달 · 고른 점포(직원명이면 그 이름)). 검토 대기 건수도 「검토 대기만」 목록처럼 본사 역할에게 가린 줄(본사 제공 동의 없는 가맹 직원)은 세지 않는다 — 둘의 차이로 가린 직원의 근태 이상 여부가 드러나지 않게(ATT-30, 운영 정책 v218, api PR #169 리뷰). 상태 · 직원명 · 검토 대기만으로 거른 목록이 비면 「조건에 맞는 급여명세서가 없습니다.」(거르지 않았으면 「이 달의 급여명세서가 없습니다.」). 배지에 화면 낭독기용 숨긴 사유 글자를 붙인다.
+  체크(주소 `reviewPending=true`, api 도 같은 이름 — 본사 역할에게 가린 줄은 api 가 뺀다). 건수 줄은 상태 넷 뒤에 11px 세로선을
+  긋고 「검토 대기 N」 꼬리표를 따로 둔다(`reviewPendingCount`, 그 달 · 고른 점포(직원명이면 그 이름)) — 검토 대기는 작성 중 · 검토 중
+  모두에 생기는 분류라 다섯째 상태처럼 「·」로 잇으면 합계가 맞지 않게 읽힌다(운영 정책 v221 PAY-06). 검토 대기 건수도 「검토 대기만」 목록처럼 본사 역할에게 가린 줄(본사 제공 동의 없는 가맹 직원)은 세지 않는다 — 둘의 차이로 가린 직원의 근태 이상 여부가 드러나지 않게(ATT-30, 운영 정책 v218, api PR #169 리뷰). 상태 · 직원명 · 검토 대기만으로 거른 목록이 비면 「조건에 맞는 급여명세서가 없습니다.」(거르지 않았으면 「이 달의 급여명세서가 없습니다.」). 꼬리표에 화면 낭독기용 숨긴 사유 글자를 붙인다.
 * 상태 건수는 `statusCounts`(상태 필터와 상관없이 점포 · 직원명 필터만 건 그 달 건수, 직원명으로 거르면 가린 줄은 뺀다). 쪽 넘김은 `total` · `page` · `pageSize`,
   건수는 20 · 50 · 100(기본 20, URL 에서 뺀다). 명세서가 없으면 「이 달의 급여명세서가 없습니다.」
 * 가린 줄(`isMasked`, 본사 제공 동의 없는 가맹 점포 직원, ATT-30)은 근무지 · 급여 기간 밖은 「-」, 직원명은

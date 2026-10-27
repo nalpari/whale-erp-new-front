@@ -13,7 +13,7 @@ export const STATUS_STYLE: Record<PayslipStatus, CellStyle> = {
   SENT: "badge-on",
 };
 
-/** 목록 상태 칸의 분류 배지 — 확인하지 않은 검토 사유가 남은 명세서(WHALEERP-234, 데모 「검토 대기」) */
+/** 목록 상태 칸의 분류 꼬리표 — 확인하지 않은 검토 사유가 남았거나 공제가 빈 명세서(WHALEERP-234 · 운영 정책 v221 PAY-06, 데모 「검토 대기」) */
 export const REVIEW_PENDING_TEXT = "검토 대기";
 
 /** 가린 줄(본사 제공 동의 없는 가맹 점포 직원)의 직원명 칸. 직원 목록과 같은 글자다(ATT-30). */

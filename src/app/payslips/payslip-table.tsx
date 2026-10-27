@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { DataTable, type Column } from "@/components/common";
+import { DataTable, Tag, type Column } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import type { PayslipListItem } from "@/lib/payslips";
 import { rowNumber } from "../staff-members/staff-row";
@@ -67,8 +67,8 @@ export function PayslipTable({
     {
       header: "상태",
       width: "w-[180px]",
-      // 검토 대기는 상태가 아니라 분류라 상태 배지 옆에 붙인다 — 사유는 배지에 마우스를 올리면 보이고(화면 낭독기는 숨긴 글자로 읽는다),
-      // 내용은 상세에서 본다
+      // 검토 대기는 상태가 아니라 분류라 상태 배지 옆에 꼬리표(Tag)로 붙인다 — 「검토 중」 상태 배지(빨강)와 다른 모양으로(운영 정책
+      // v221 PAY-06). 사유는 꼬리표에 마우스를 올리면 보이고(화면 낭독기는 숨긴 글자로 읽는다), 내용은 상세에서 본다
       cell: shown((p) => {
         const reasons = p.pendingReviewReasons?.map((r) => labelOf(reviewReasonLabels, r)).join(" · ");
         return p.status ? (
@@ -76,7 +76,7 @@ export function PayslipTable({
             <CellView cell={{ text: labelOf(statusLabels, p.status), style: STATUS_STYLE[p.status] }} />
             {reasons && (
               <span title={reasons}>
-                <CellView cell={{ text: REVIEW_PENDING_TEXT, style: "badge-off" }} />
+                <Tag>{REVIEW_PENDING_TEXT}</Tag>
                 <span className="sr-only"> — {reasons}</span>
               </span>
             )}

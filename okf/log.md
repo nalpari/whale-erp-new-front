@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-27
+* **Update**: [급여명세서 관리 화면](/screens/payslips.md) — 재영 리뷰(front #151, 운영 정책 v221 PAY-06): 건수 줄의 「검토 대기 N」을 상태 넷과 세로선으로 떼어 꼬리표(`Tag`)로, 줄의 「검토 대기」도 「검토 중」 빨간 배지와 다른 꼬리표로 바꿨다. 공제 미입력(`DEDUCTION_MISSING`)도 api 가 검토 대기 사유로 보내 꼬리표 · 사유 글자에 보인다. api 타입 설명 두 줄을 새 openapi 에 맞췄다.
 * **Update**: main 병합(front venusaur, main 최신까지): okf/log 충돌은 양쪽 기록을 살렸다.
 * **Update**: main 병합(front venusaur, ⑥ 블로커 수정 뒤 main 최신까지): okf/log 충돌은 양쪽 기록을 살렸다.
 * **Fix**: [급여명세서 관리 화면](/screens/payslips.md) — PR #151 ⑥ 머지 블로커: api 가 검토 대기 건수에서도 본사 역할에게 가린 줄을 빼므로(ATT-30 v218) 「본사 제공 동의 없는 직원의 명세서는 …빠집니다」 안내를 뺐다.

@@ -6511,8 +6511,7 @@ export interface components {
             birthDate: string;
         };
         /**
-         * @description 확인하지 않은 검토 사유(검토 대기 — WHALEERP-234). 하나라도 있으면 검토 대기다. 사유 넷 — 출퇴근 누락 · 계약 만료 후 기록 ·
-         *     기간 중 계약 변경 · 확인 필요 기록 포함 — 의 순서. 가린 줄은 null
+         * @description 급여명세서 검토 사유 — 출퇴근 누락 · 계약 만료 후 기록 · 기간 중 계약 변경 · 공제 미입력 · 확인 필요 기록 포함
          * @enum {string}
          */
         PayslipReviewReason: "MISSING_ATTENDANCE" | "AFTER_CONTRACT_END" | "CONTRACT_CHANGED" | "DEDUCTION_MISSING" | "ATTENDANCE_NEEDS_REVIEW";
@@ -6520,8 +6519,9 @@ export interface components {
             employmentType: components["schemas"]["EmploymentType"] | null;
             status: components["schemas"]["PayslipStatus"] | null;
             /**
-             * @description 확인하지 않은 검토 사유(검토 대기 — WHALEERP-234). 하나라도 있으면 검토 대기다. 사유 넷 — 출퇴근 누락 · 계약 만료 후 기록 ·
-             *     기간 중 계약 변경 · 확인 필요 기록 포함 — 의 순서. 가린 줄은 null
+             * @description 검토 대기 사유(WHALEERP-234) — 확인하지 않은 검토 사유와 공제 미입력(공제 칸으로 판정, 운영 정책 v221 PAY-06). 하나라도
+             *     있으면 검토 대기다. 사유 다섯 — 출퇴근 누락 · 계약 만료 후 기록 · 기간 중 계약 변경 · 공제 미입력 · 확인 필요 기록 포함 — 의
+             *     순서. 작성 중 · 검토 중이 아니면 빈 배열, 가린 줄은 null
              */
             pendingReviewReasons: components["schemas"]["PayslipReviewReason"][] | null;
             payslipId: number | null;
