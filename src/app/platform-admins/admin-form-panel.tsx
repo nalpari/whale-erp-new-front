@@ -416,9 +416,10 @@ export function AdminFormPanel(props: Props) {
                 aria-required
               >
                 {mode === "create" && <option value="">선택</option>}
+                {/* 「권한명 · 권한코드 (역할-역할 이름)」 — 괄호 안 값이 무엇인지 「역할-」 머리를 붙인다(2026-10-27 사용자 지정) */}
                 {options.map((r) => (
                   <option key={r.roleGroupId} value={r.roleGroupId}>
-                    {r.name} · {r.roleCode} ({labelOf(roleTypes, r.roleTypeCode)})
+                    {r.name} · {r.roleCode} (역할-{labelOf(roleTypes, r.roleTypeCode)})
                   </option>
                 ))}
               </Select>
