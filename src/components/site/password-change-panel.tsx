@@ -1,9 +1,7 @@
 "use client";
 
-import Image from "next/image";
-import { useEffect, useId, useRef, useState, useTransition, type ComponentProps, type RefObject } from "react";
-import { Button, Field, FormGroup, SlidePanel } from "@/components/common";
-import { FIELD } from "@/components/common/theme";
+import { useEffect, useId, useRef, useState, useTransition, type RefObject } from "react";
+import { Button, Field, FormGroup, PasswordInput, SlidePanel } from "@/components/common";
 import { myPasswordErrorField, type MyPasswordFormField } from "@/lib/my-password-form";
 import { changeMyPasswordAction } from "./password-change-actions";
 
@@ -50,28 +48,6 @@ function Done({ headingId, onClose }: { headingId: string; onClose: () => void }
         <Button onClick={onClose}>닫기</Button>
       </div>
     </>
-  );
-}
-
-/** 비밀번호 칸 + 눈 아이콘(보기·숨기기, 회원가입 password-field.tsx 와 같은 아이콘 쌍 — docs/demo pwField 기준,
- * 2026-10-26 사용자 지정). 오른쪽에 아이콘 버튼을 겹치는 칸은 공통 TextField 가 className 을 안 받아 FIELD
- * 토큰을 직접 써서 만든다(search-field.tsx 와 같은 방식). ERP 비로그인이 아닌 화면에서는 이 칸이 처음이라
- * 아직 공통 컴포넌트로 올리지 않았다 — 두 번째로 쓰는 화면이 생기면 올린다(DESIGN.md). */
-function PasswordInput({ fieldLabel, ...props }: { fieldLabel: string } & Omit<ComponentProps<"input">, "type" | "className">) {
-  const [visible, setVisible] = useState(false);
-  return (
-    <div className="relative">
-      <input {...props} type={visible ? "text" : "password"} className={`${FIELD} pr-[34px]`} />
-      <button
-        type="button"
-        aria-pressed={visible}
-        aria-label={`${fieldLabel} ${visible ? "숨기기" : "보기"}`}
-        onClick={() => setVisible((v) => !v)}
-        className="absolute top-0 right-0 grid size-[34px] place-items-center text-erp-label hover:text-erp-ink"
-      >
-        <Image src={visible ? "/icons/eye-off.svg" : "/icons/eye-on.svg"} alt="" width={16} height={16} />
-      </button>
-    </div>
   );
 }
 
