@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { bpPath } from "../../lib/bp-path.ts";
-import { bpAdminListQueryOf, bpAdminsHref, parseBpAdminsQuery, withBpAdminFilter, withPickedStores, withScopeCondition, type BpAdminsQuery } from "./bp-admins-href.ts";
+import { bpAdminListQueryOf, bpAdminsHref, keepingPanel, parseBpAdminsQuery, withBpAdminFilter, withPickedStores, withScopeCondition, type BpAdminsQuery } from "./bp-admins-href.ts";
 
 const base = parseBpAdminsQuery({});
 
@@ -79,4 +79,15 @@ test("조건을 바꾸면 1쪽으로 돌리고 연 상세를 닫는다", () => {
   assert.equal(withPickedStores(open, []).storesCleared, true);
   const scoped = withScopeCondition({ ...base, storeIds: [3] }, { type: "ALL" });
   assert.deepEqual([scoped.storeIds, scoped.scope], [[], { type: "ALL" }]);
+});
+
+test("화면이 스스로 채우는 점포 조건은 열린 상세 · 수정을 닫지 않는다 — 상세 링크로 들어와도 패널이 남는다", () => {
+  const deepLink = parseBpAdminsQuery({ admin: "5", edit: "1" });
+  const filled = keepingPanel(deepLink, withScopeCondition(deepLink, { type: "DIRECT" }));
+  assert.deepEqual([filled.admin, filled.edit, filled.scope], [5, true, { type: "DIRECT" }]);
+  assert.equal(bpAdminsHref(filled), "/bp-admins?scope=DIRECT&admin=5&edit=1");
+  const dropped = keepingPanel({ ...deepLink, storeIds: [3, 999] }, withPickedStores(deepLink, [3]));
+  assert.deepEqual([dropped.admin, dropped.edit, dropped.storeIds], [5, true, [3]]);
+  // 사용자가 조건을 바꾸면 그대로 닫는다
+  assert.equal(withScopeCondition(deepLink, { type: "DIRECT" }).admin, undefined);
 });

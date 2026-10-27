@@ -8,7 +8,7 @@ import type { Scope } from "@/lib/browser-storage";
 import type { BpAdminRoleGroup, BpAdminStatus } from "@/lib/bp-admins";
 import { isUnusableScope, scopeKeyOf, scopeStores, toPickedStore } from "@/lib/store-scope";
 import { fillScopeOf } from "@/app/stores/stores-query";
-import { parseBpAdminsQuery, withBpAdminFilter, withPickedStores, withScopeCondition, type BpAdminsQuery } from "./bp-admins-href";
+import { keepingPanel, parseBpAdminsQuery, withBpAdminFilter, withPickedStores, withScopeCondition, type BpAdminsQuery } from "./bp-admins-href";
 
 /**
  * 왼쪽 필터(데모 config/admins). 점포 · 아이디 · 이름 · 권한 그룹 · 계정 상태, 조건은 모두 AND 다(S-AJHXFU).
@@ -52,7 +52,7 @@ export function AdminFilter({
   const noCondition = !query.storeIds.length && !query.storesCleared && !query.scope;
   const fill = useEffectEvent(() => {
     const s = fillScopeOf(query, headerScope);
-    if (s) navigate(withScopeCondition(query, s), true);
+    if (s) navigate(keepingPanel(query, withScopeCondition(query, s)), true);
   });
   useEffect(() => fill(), [noCondition]);
 
@@ -62,13 +62,16 @@ export function AdminFilter({
   const dropMissing = useEffectEvent(() => {
     if (unusable) {
       toast("상단 범위에 해당하는 점포가 이 탭에 없어 전체로 조회합니다.");
-      navigate(withPickedStores(query, []), true);
+      navigate(keepingPanel(query, withPickedStores(query, [])), true);
     } else if (missing.length) {
       toast(`고른 점포 ${missing.length}곳을 찾을 수 없어 조건에서 뺐습니다.`);
       navigate(
-        withPickedStores(
+        keepingPanel(
           query,
-          query.storeIds.filter((id) => !missing.includes(id)),
+          withPickedStores(
+            query,
+            query.storeIds.filter((id) => !missing.includes(id)),
+          ),
         ),
         true,
       );

@@ -95,6 +95,13 @@ export const withPickedStores = (query: BpAdminsQuery, ids: number[]): BpAdminsQ
   scope: null,
 });
 
+/**
+ * 화면이 스스로 하는 이동(헤더 범위로 채우기 · 찾지 못한 점포 빼기)에서는 열린 상세 · 수정을 그대로 둔다. 위 함수들은 사용자가 조건을
+ * 바꾼 때를 위해 패널을 닫는데, 점포 조건 없는 상세 링크(알림 · 즐겨찾기 · BP 없는 옛 주소)로 들어오면 필터가 마운트하며 조건을 채워
+ * 막 연 상세가 바로 닫혔다(PR #140 적대적 리뷰 블로커).
+ */
+export const keepingPanel = (from: BpAdminsQuery, next: BpAdminsQuery): BpAdminsQuery => ({ ...next, admin: from.admin, edit: from.edit });
+
 /** 헤더 범위로 점포 조건을 건다(목록에서 고른 점포는 비운다). */
 export const withScopeCondition = (query: BpAdminsQuery, scope: Scope): BpAdminsQuery => ({
   ...withBpAdminFilter(query, {}),
