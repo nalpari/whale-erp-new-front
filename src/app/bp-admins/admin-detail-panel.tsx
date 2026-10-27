@@ -119,7 +119,7 @@ function DetailBody({
     ...(admin.franchiseMaster
       ? [
           {
-            label: "연결 가맹 마스터",
+            label: "연결된 가맹마스터", // 2026-10-27 사용자 지정 — 전엔 「연결 가맹 마스터」
             value: (
               <span>
                 {/* 「아이디 · 이름」 — 권한 그룹 상세의 가맹마스터 계정과 같은 구분자(2026-10-27) */}
