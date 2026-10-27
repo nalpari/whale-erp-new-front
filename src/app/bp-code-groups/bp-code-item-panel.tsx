@@ -283,7 +283,8 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
       sub={
         group && (
           <>
-            {group.groupCode} · {group.groupName}
+            {/* 그룹명은 굵게(2026-10-27 사용자 지정) */}
+            {group.groupCode} · <b className="font-semibold text-erp-ink">{group.groupName}</b>
             <span className="ml-[10px] inline-flex align-middle">
               <Tag>{ownerLabel(group.manageOwnerCode)}</Tag>
             </span>

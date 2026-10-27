@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { Badge, Button, DataTable, TextField, Toggle, useToast, type Column } from "@/components/common";
+import { Badge, Button, DataTable, Tag, TextField, Toggle, useToast, type Column } from "@/components/common";
 import {
   buildSaveItemsInput,
   codePanelAccess,
@@ -301,7 +301,19 @@ export function CodeItemPanel({
     <CodePanel
       title="상세 코드"
       wide
-      sub={group && [group.groupCode, group.groupName, ownerLabel].filter(Boolean).join(" · ")}
+      // 그룹 코드 · 그룹명(굵게) 뒤에 관리주체 띠지 — 그룹 목록의 관리주체 칸 · BP 공통코드와 같은 모양(2026-10-27 사용자 지정)
+      sub={
+        group && (
+          <>
+            {group.groupCode} · <b className="font-semibold text-erp-ink">{group.groupName}</b>
+            {ownerLabel && (
+              <span className="ml-[10px] inline-flex align-middle">
+                <Tag>{ownerLabel}</Tag>
+              </span>
+            )}
+          </>
+        )
+      }
       actions={
         canSave &&
         group && (

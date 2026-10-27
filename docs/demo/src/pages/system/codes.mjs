@@ -150,7 +150,7 @@ export default ({ A, R }) => {
   ]);
   const right = card(
     "min-w-0 flex-1",
-    ui.sectionHead(`상세 코드${sub("SERVICE · 서비스 · 플랫폼고정")}`, dim(ui.button("추가", { variant: "soft", "data-add-row": "new-code", "data-multi": true })) + ui.button("저장")) +
+    ui.sectionHead(`상세 코드${sub('SERVICE · <b class="font-semibold text-erp-ink">서비스</b>')}<span class="ml-[10px] inline-flex align-middle">${c.tag("플랫폼고정")}</span>`, dim(ui.button("추가", { variant: "soft", "data-add-row": "new-code", "data-multi": true })) + ui.button("저장")) +
       ui.scrollTable(ui.dataTable(codeCols, codeRows)) +
       addRows(
         "new-code",

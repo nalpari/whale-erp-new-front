@@ -69,7 +69,7 @@ export default ({ A, R }) => {
   const right = c.card(
     "min-w-0 flex-1",
       head(
-        `상세 코드${c.sub("EMP_TYPE · 고용 형태")}<span class="ml-[10px] inline-flex align-middle">${c.tag("플랫폼제공")}</span>`,
+        `상세 코드${c.sub('EMP_TYPE · <b class="font-semibold text-erp-ink">고용 형태</b>')}<span class="ml-[10px] inline-flex align-middle">${c.tag("플랫폼제공")}</span>`,
         ui.button("추가", { variant: "soft" }) + ui.button("저장"),
       ) +
       ui.scrollTable(ui.dataTable(codeCols, codeRows)),
