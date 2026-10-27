@@ -19,11 +19,11 @@ import {
   type ItemDraft,
 } from "@/lib/code-drafts";
 import { failureView } from "@/lib/code-save";
-import { codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-validation";
+import { CODE_PLACEHOLDER, codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-validation";
 import type { CodeGroup, CodeItem } from "@/lib/codes";
 import { usePagePermission } from "@/components/site/session-gate";
 import { saveCodeItemsAction } from "./actions";
-import { CodePanel, FieldErrors, GroupHead, SaveFailedBand, UNKNOWN_RESULT } from "@/components/site/code-editor/code-panel";
+import { CellError, CodePanel, FieldErrors, focusFirstInvalid, recheck, GroupHead, SaveFailedBand, UNKNOWN_RESULT } from "@/components/site/code-editor/code-panel";
 import { useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
 import { useRowReorder } from "@/components/site/code-editor/use-row-reorder";
 import { DeletePending, DeleteToggle, Struck } from "@/components/site/code-editor/delete-mark";
@@ -38,6 +38,8 @@ import { OwnerTag } from "@/components/site/code-editor/owner-tag";
 // 표시 순서는 숫자로만 보이고 직접 입력하지 않는다. 손잡이로 끌거나 ↑ · ↓ 로 옮기면 1부터 다시 매긴다.
 
 type Draft = ItemDraft;
+/** 저장을 막은 첫 칸을 찾을 범위 — 상세 코드 카드 */
+const PANEL_ID = "platform-code-items-panel";
 
 const toDraft = (i: CodeItem): Draft => ({ ...i, key: i.itemCode, added: false });
 
@@ -103,7 +105,13 @@ export function CodeItemPanel({
   // 그룹을 바꾸면 이 패널은 새로 그려진다. 사라질 때 변경 표시를 지운다.
   useEffect(() => () => setDirty("items", false), [setDirty]);
 
-  const update = (key: string, patch: Partial<Draft>) => setDrafts((rows) => rows.map((d) => (d.key === key ? { ...d, ...patch } : d)));
+  const update = (key: string, patch: Partial<Draft>) => {
+    const rows = drafts.map((d) => (d.key === key ? { ...d, ...patch } : d));
+    setDrafts(rows);
+    // 오류가 난 칸을 고치면 그 칸만 다시 본다 — 맞으면 빨간 테두리 · 문구를 지운다(2026-10-27 사용자 지정). 다른 칸 · 서버가 알린 오류는 그대로 둔다
+    const fields = [...("label" in patch ? [`label:${key}`] : []), ...("itemCode" in patch ? [`code:${key}`] : [])].filter((f) => f in errors);
+    if (fields.length) setErrors(recheck(errors, validate(rows), fields));
+  };
 
   const handleAdd = () => {
     const key = `new-${nextId.current++}`;
@@ -119,14 +127,14 @@ export function CodeItemPanel({
 
   const codeName = isService ? "서비스 코드" : "상세 코드";
   const labelName = isService ? "서비스명" : "코드명";
-  /** 오류 문구에서 행을 가리키는 이름 — 새 행은 입력한 코드, 비었으면 몇 번째 새 행인지. */
-  const rowName = (d: Draft, rows = drafts) =>
-    d.added ? (d.itemCode ? `새 ${codeName} ${d.itemCode}` : `새 행 ${rows.filter((r) => r.added).indexOf(d) + 1}`) : d.itemCode;
+  /** 칸 이름(aria-label)에서 행을 가리키는 이름 — 새 행은 입력한 코드, 비었으면 몇 번째 새 행인지. 오류 문구는 칸 아래에 붙어 행 이름을 달지 않는다. */
+  const rowName = (d: Draft) =>
+    d.added ? (d.itemCode ? `새 ${codeName} ${d.itemCode}` : `새 행 ${drafts.filter((r) => r.added).indexOf(d) + 1}`) : d.itemCode;
 
   const validate = (rows: Draft[] = drafts): Record<string, string> => {
     const next: Record<string, string> = {};
     const addedRows = rows.filter((d) => d.added);
-    for (const d of rows) if (!d.deleted && !d.label.trim()) next[`label:${d.key}`] = `${rowName(d, rows)} — ${labelName}을 입력해 주세요.`;
+    for (const d of rows) if (!d.deleted && !d.label.trim()) next[`label:${d.key}`] = `${labelName}을 입력해 주세요.`;
 
     // 기존 코드와 겹치는 것, 새 행끼리 겹치는 것을 한 번에 찾는다.
     const codes = addedRows.map((d) => normalizeCode(d.itemCode));
@@ -137,12 +145,12 @@ export function CodeItemPanel({
     addedRows.forEach((d, n) => {
       const code = codes[n];
       const formatError = codeFormatError(code);
-      if (formatError) next[`code:${d.key}`] = `${rowName(d, rows)} — ${formatError}`;
+      if (formatError) next[`code:${d.key}`] = formatError;
       else if (repeated.has(code)) {
-        const same = original.get(code);
-        next[`code:${d.key}`] = same
-          ? `이 그룹에 이미 있는 상세 코드입니다 — ${code} · ${same.label} (표시 순서 ${same.sortOrder}). 다른 코드를 입력해 주세요.`
-          : `새로 추가한 행끼리 ${codeName}가 겹칩니다 — ${code}. 한 행만 남겨 주세요.`;
+        // 아이디 중복 확인 문구와 같은 꼴로 짧게(2026-10-27 사용자 지정 — 전엔 겹친 코드의 코드명 · 표시 순서까지 적어 칸 아래 한 줄에 다 안 보였다)
+        next[`code:${d.key}`] = original.has(code)
+          ? `이미 사용 중인 ${codeName}입니다.`
+          : `다른 새 행과 같은 ${codeName}입니다.`;
       }
     });
     return next;
@@ -153,7 +161,7 @@ export function CodeItemPanel({
     const found = validate();
     setErrors(found);
     setFailure(null);
-    if (Object.keys(found).length) return;
+    if (Object.keys(found).length) return focusFirstInvalid(PANEL_ID);
 
     const input = buildSaveItemsInput(drafts, items);
     setSavingFrom(items);
@@ -199,6 +207,8 @@ export function CodeItemPanel({
   };
 
   const invalid = (key: string) => (key in errors ? true : undefined);
+  // 이 행의 어느 칸에 오류가 있는지 — 있으면 오류 없는 칸도 문구 한 줄만큼 자리를 둬 입력칸 높이를 맞춘다(CellError reserve)
+  const rowInvalid = (key: string) => `code:${key}` in errors || `label:${key}` in errors;
   const reorder = useRowReorder({ rows: drafts, setRows: setDrafts, keyOf: (d) => d.key, labelOf: (d) => d.itemCode });
 
   const columns: Column<Draft>[] = [
@@ -232,15 +242,17 @@ export function CodeItemPanel({
         d.deleted ? (
           <Struck>{d.itemCode}</Struck>
         ) : d.added ? (
-          <TextField
-            value={d.itemCode}
-            onChange={(e) => update(d.key, { itemCode: e.target.value.toUpperCase() })}
-            placeholder={isService ? "서비스 코드 직접 입력" : "상세 코드"}
-            maxLength={20}
-            aria-label={`${rowName(d)} ${codeName}`}
-            aria-invalid={invalid(`code:${d.key}`)}
-            autoFocus
-          />
+          <CellError message={errors[`code:${d.key}`]} reserve={rowInvalid(d.key)}>
+            <TextField
+              value={d.itemCode}
+              onChange={(e) => update(d.key, { itemCode: e.target.value.toUpperCase() })}
+              placeholder={isService ? "서비스 코드 직접 입력" : CODE_PLACEHOLDER}
+              maxLength={20}
+              aria-label={`${rowName(d)} ${codeName}`}
+              aria-invalid={invalid(`code:${d.key}`)}
+              autoFocus
+            />
+          </CellError>
         ) : (
           d.itemCode
         ),
@@ -254,14 +266,16 @@ export function CodeItemPanel({
         d.deleted ? (
           <Struck>{d.label}</Struck>
         ) : manage || d.added ? (
-          <TextField
-            value={d.label}
-            onChange={(e) => update(d.key, { label: e.target.value })}
-            placeholder={d.added ? labelName : undefined}
-            maxLength={50}
-            aria-label={`${rowName(d)} ${labelName}`}
-            aria-invalid={invalid(`label:${d.key}`)}
-          />
+          <CellError message={errors[`label:${d.key}`]} reserve={rowInvalid(d.key)}>
+            <TextField
+              value={d.label}
+              onChange={(e) => update(d.key, { label: e.target.value })}
+              placeholder={d.added ? labelName : undefined}
+              maxLength={50}
+              aria-label={`${rowName(d)} ${labelName}`}
+              aria-invalid={invalid(`label:${d.key}`)}
+            />
+          </CellError>
         ) : (
           d.label
         ),
@@ -300,6 +314,7 @@ export function CodeItemPanel({
 
   return (
     <CodePanel
+      id={PANEL_ID}
       title="상세 코드"
       wide
       // 그룹 코드 · 그룹명(굵게) 뒤에 관리주체 띠지 — 그룹 목록의 관리주체 칸 · BP 공통코드와 같은 모양(2026-10-27 사용자 지정)
@@ -345,7 +360,8 @@ export function CodeItemPanel({
         rowProps={manage ? reorder.rowProps : undefined}
         empty={loadFailed ? "상세 코드를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요." : group ? "데이터가 없습니다." : "왼쪽에서 공통코드 그룹을 고르세요."}
       />
-      <FieldErrors messages={Object.values(errors)} />
+      {/* 칸에 붙은 오류는 그 칸 아래에 있다 — 어느 새 행인지 모르는 409 만 여기 */}
+      <FieldErrors messages={errors["code:server"] ? [errors["code:server"]] : []} />
       {reorder.liveRegion}
     </CodePanel>
   );

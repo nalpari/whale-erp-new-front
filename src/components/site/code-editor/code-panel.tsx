@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
+import { HeadValues } from "@/components/site/head-values";
 
 // 공통코드 화면(플랫폼 공통코드 관리 · BP 공통코드 관리)의 두 카드(그룹 목록 · 상세 코드) 껍데기. 제목 줄 오른쪽에 버튼, 아래에 표를 둔다.
 // 카드 안에서만 세로로 스크롤해 body 는 스크롤하지 않는다(DESIGN.md 한 화면 규칙).
 export function CodePanel({
+  id,
   title,
   sub,
   actions,
@@ -10,6 +12,8 @@ export function CodePanel({
   narrow,
   children,
 }: {
+  /** 저장을 막은 첫 칸을 찾을 범위(focusFirstInvalid). */
+  id?: string;
   title: string;
   /** 제목 옆 회색 글자(건수 · 고른 그룹). */
   sub?: ReactNode;
@@ -22,6 +26,7 @@ export function CodePanel({
 }) {
   return (
     <section
+      id={id}
       // 표(DataTable scroll)는 남는 높이를 먹고 그 안에서만 스크롤한다 — 나머지(제목 · 띠 · 쪽 넘김)는 줄지 않는다(2026-10-26 사용자 지정)
       className={`flex flex-col gap-[12px] overflow-y-auto [scrollbar-gutter:stable] rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>:not([data-table-scroll])]:shrink-0 ${
         wide ? "min-w-0 flex-1" : narrow ? "w-[560px] shrink-0" : "w-[750px] shrink-0"
@@ -46,26 +51,10 @@ export function CodePanel({
  * 플랫폼 · BP 공통코드 관리가 같이 쓴다.
  */
 export function GroupHead({ groupCode, groupName, owner }: { groupCode: string; groupName: string; owner?: ReactNode }) {
-  // 제목(「상세 코드」)과 같은 글자 기준선에 선다 — 가운데 맞춤이면 18px 제목 옆에서 위아래로 어긋나 보였다(2026-10-27 사용자 지정). 구분선만 가운데
-  const bar = <span aria-hidden="true" className="h-[11px] w-px shrink-0 self-center bg-[#d9d9d9]" />;
   return (
-    <span className="inline-flex items-baseline gap-[10px] align-baseline">
-      <span className="inline-flex items-baseline gap-[6px]">
-        <span className="text-erp-label">그룹코드</span>
-        <b className="font-semibold text-erp-ink">{groupCode}</b>
-      </span>
-      {bar}
-      <span className="inline-flex items-baseline gap-[6px]">
-        <span className="text-erp-label">그룹명</span>
-        <b className="font-semibold text-erp-ink">{groupName}</b>
-      </span>
-      {owner && (
-        <>
-          {bar}
-          {owner}
-        </>
-      )}
-    </span>
+    <HeadValues
+      items={[{ label: "그룹코드", value: groupCode }, { label: "그룹명", value: groupName }, ...(owner ? [{ value: owner }] : [])]}
+    />
   );
 }
 
@@ -84,8 +73,43 @@ export function SaveFailedBand({ message, detail = "입력한 값은 그대로 �
   );
 }
 
-// 칸 오류 문구 — 표 바로 아래, 입력 행 밑에 한 줄씩. 해당 칸은 aria-invalid 로 빨간 테두리가 된다.
-// 같은 문구(새 행 둘이 같은 코드로 겹침 등)는 한 번만 보인다.
+/**
+ * 칸 오류 문구 — 그 입력칸 바로 아래에 둔다. 칸은 aria-invalid 로 빨간 테두리가 되고, 문구가 있는 줄만 높아진다.
+ * 전엔 표 아래에 모아 보여 어느 칸 오류인지 알기 어려웠다(2026-10-27 사용자 지정).
+ * 문구는 늘 한 줄이다 — 줄을 바꾸면 같은 줄의 칸끼리 높이가 달라 입력칸이 들쑥날쑥했다(사용자가 찾음). 넘치면 말줄임하고 마우스를 올리면 전체를 보인다.
+ * 같은 줄의 다른 칸에만 오류가 있으면 reserve 로 문구 한 줄만큼 빈 자리를 둬 입력칸 높이를 맞춘다.
+ */
+export function CellError({ message, reserve, children }: { message?: string; reserve?: boolean; children: ReactNode }) {
+  if (!message && !reserve) return children;
+  return (
+    <span className="flex flex-col gap-[4px] py-[6px]">
+      {children}
+      <span title={message} aria-hidden={message ? undefined : true} className="truncate text-left text-[12px] leading-[1.4] text-erp-off">
+        {message ?? " "}
+      </span>
+    </span>
+  );
+}
+
+/**
+ * 고친 칸(fields)의 오류만 새 검사 결과(found)로 바꾼다 — 맞으면 지우고, 아직 틀리면 새 문구로. 다른 칸 · 서버가 알린 오류는 그대로 둔다.
+ * 칠 때마다 새 오류를 띄우지 않도록, 이미 오류가 있던 칸만 부르는 쪽이 넘긴다.
+ */
+export function recheck(errors: Record<string, string>, found: Record<string, string>, fields: string[]): Record<string, string> {
+  const next = { ...errors };
+  for (const f of fields) {
+    if (found[f]) next[f] = found[f];
+    else delete next[f];
+  }
+  return next;
+}
+
+/** 저장을 막은 첫 칸으로 포커스를 옮긴다 — 오류가 그려진 다음 프레임에 패널(id) 안 첫 aria-invalid 칸. 표 안에서 그 칸이 보이게 스크롤된다. */
+export function focusFirstInvalid(panelId: string) {
+  requestAnimationFrame(() => document.getElementById(panelId)?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus());
+}
+
+// 칸에 붙지 못한 오류(어느 새 행인지 모르는 서버 409 등)만 표 아래에 한 줄씩 둔다. 같은 문구는 한 번만 보인다.
 export function FieldErrors({ messages }: { messages: string[] }) {
   const unique = [...new Set(messages)];
   if (unique.length === 0) return null;

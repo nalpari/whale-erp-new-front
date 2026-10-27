@@ -4,24 +4,19 @@ import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as c from "../../config-parts.mjs";
 import { erpHeader } from "../../site.mjs";
+import { floatingHelpTip } from "../../role-side.mjs";
 
-// [그룹 코드, 그룹명, 관리 주체, 고를 수 있는지]
+// [그룹 코드, 그룹명, 관리 주체, 고를 수 있는지] — 플랫폼제공 그룹만 보인다. 플랫폼고정은 BP 가 고칠 것이 없어 뺐다(앱 bp-codes.ts, 2026-10-27 사용자 지정)
 const GROUPS = [
-  ["SERVICE", "서비스", "플랫폼고정"],
-  ["ROLE_TYPE", "권한 유형", "플랫폼고정", true],
-  ["ACCOUNT_STATUS", "계정 상태", "플랫폼고정"],
-  ["JOIN_PATH", "가입경로", "플랫폼고정"],
-  ["WITHDRAW_REASON", "탈퇴 사유", "플랫폼고정"],
-  ["MAIL_TYPE", "메일 유형", "플랫폼고정"],
-  ["TERMS_TYPE", "약관 유형", "플랫폼고정"],
-  ["FLOOR_TYPE", "층수 구분", "플랫폼고정"],
-  ["STORE_STATUS", "점포 상태", "플랫폼고정"],
-  ["STORE_TYPE", "점포 유형", "플랫폼고정"],
-  ["MANAGE_OWNER", "관리 주체", "플랫폼고정"],
   ["EMP_TYPE", "고용 형태", "플랫폼제공"],
   ["LEAVE_TYPE", "휴가 유형", "플랫폼제공", true],
+  ["POSITION", "직급", "플랫폼제공", true],
+  ["BANK", "은행", "플랫폼제공", true],
 ];
-const SELECTED = 11;
+const SELECTED = 0;
+// 관리주체 열 이름 옆 도움말(앱 bp-code-item-panel OWNER_HELP, 2026-10-27 사용자 지정)
+const OWNER_HELP =
+  '<span class="block">· <b class="font-semibold">플랫폼제공</b> 웨일ERP 기본 코드입니다.(수정·삭제 가능)</span><span class="block">· <b class="font-semibold">BP전용</b> 우리 회사만 사용하는 코드입니다.</span>';
 const CODES = [
   ["FULL", "정직원", "플랫폼제공"],
   ["CONTRACT", "계약직", "플랫폼제공"],
@@ -54,19 +49,28 @@ export default ({ A, R }) => {
   const left = c.card(
     "w-[560px] shrink-0",
     head(`공통코드 그룹${c.sub(`${GROUPS.length}개`)}`) +
-      ui.scrollTable(c.markCurrent(ui.dataTable(groupCols, groupRows, "조건에 맞는 공통코드 그룹이 없습니다."), SELECTED)) + // 열 이름 줄까지 고정, 아래만 스크롤(앱과 같다, 2026-10-26)
-      `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
+      // 열 이름 줄까지 고정, 아래만 스크롤(2026-10-26). 쪽 넘김 없이 전부 보인다(앱과 같다, 2026-10-27 사용자 지정)
+      ui.scrollTable(c.markCurrent(ui.dataTable(groupCols, groupRows, "조건에 맞는 공통코드 그룹이 없습니다."), SELECTED)),
   );
 
   const codeCols = [
     { header: "이동", width: "w-[60px]" },
-    { header: "상세 코드", width: "w-[230px]", align: "left" }, // 앱과 같다(2026-10-27)
+    { header: "상세 코드", width: "w-[300px]", align: "left" }, // 새 행 안내 문구가 잘리지 않는 폭(앱과 같다, 2026-10-27 사용자 지정)
     { header: "코드명", align: "left" },
     { header: "표시 순서", width: "w-[90px]" },
     { header: "사용여부", width: "w-[110px]" },
-    { header: "관리주체", width: "w-[110px]" },
+    { header: `<span class="inline-flex items-center gap-[4px]">관리주체${floatingHelpTip(OWNER_HELP, "관리주체")}</span>`, width: "w-[110px]" },
   ];
   const codeRows = CODES.map(([code, name, owner], i) => [handle, code, ui.textField({ value: name, "aria-label": "코드명" }), i + 1, x.toggle("사용", true), c.ownerTag(owner)]);
+  // 저장 전 새 행 — 상세 코드 칸에 입력 규칙을 안내 문구로 보인다(앱 CODE_PLACEHOLDER, 2026-10-27 사용자 지정)
+  codeRows.push([
+    '<button type="button" aria-label="새 행 빼기" class="text-[14px] text-erp-label">×</button>',
+    ui.textField({ placeholder: "영문 대문자로 시작, 영문·숫자·_ 최대 20자", maxlength: 20, "aria-label": "새 행 상세 코드" }),
+    ui.textField({ placeholder: "코드명", "aria-label": "새 행 코드명" }),
+    CODES.length + 1,
+    x.toggle("사용", true),
+    c.ownerTag("BP전용"),
+  ]);
   const right = c.card(
     "min-w-0 flex-1",
       head(

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
-import { Badge, Button, DataTable, Pagination, Select, TextField, Toggle, useToast, type Column } from "@/components/common";
+import { Badge, Button, DataTable, Select, TextField, Toggle, useToast, type Column } from "@/components/common";
 import { buildSaveGroupsInput, codePanelAccess, followSameRows, groupChanged, withKeptPending, type GroupDraft } from "@/lib/code-drafts";
 import { failureView } from "@/lib/code-save";
 import { codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-validation";
@@ -10,19 +10,22 @@ import type { CodeGroup, ManageOwnerCode } from "@/lib/codes";
 import { usePagePermission } from "@/components/site/session-gate";
 import { applyCodeGroupToBpsAction, saveCodeGroupsAction } from "./actions";
 import { BpApplyDialog } from "./bp-apply-dialog";
-import { CodePanel, DoneNotice, FieldErrors, SaveFailedBand, UNKNOWN_RESULT, UNREACHABLE } from "@/components/site/code-editor/code-panel";
+import { CellError, CodePanel, DoneNotice, FieldErrors, focusFirstInvalid, recheck, SaveFailedBand, UNKNOWN_RESULT, UNREACHABLE } from "@/components/site/code-editor/code-panel";
 import { codesHref } from "./codes-href";
 import { searchedEmpty, type CodeGroupSearch } from "@/components/site/code-editor/code-group-filter";
 import { GuardedLink, useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
 import { OwnerTag } from "@/components/site/code-editor/owner-tag";
 
-// 가운데 공통코드 그룹 목록. 그룹 코드를 누르면 오른쪽에 그 그룹의 상세 코드가 선다(?group=). 그룹 · 쪽을 옮겨도 왼쪽 필터의 검색 조건은 이어 간다.
+// 가운데 공통코드 그룹 목록. 그룹 코드를 누르면 오른쪽에 그 그룹의 상세 코드가 선다(?group=). 그룹을 옮겨도 왼쪽 필터의 검색 조건은 이어 간다.
+// 쪽을 나누지 않고 상세 코드 카드 높이만큼 늘어난 표 안에서 스크롤한다(2026-10-27 사용자 지정).
 // 기존 그룹은 그룹명 · 사용여부만 고치고(코드 · 관리주체는 바꾸지 않는다), [추가]는 맨 끝에 입력 행 하나를 붙인다.
 // [저장] 한 번으로 바뀐 행과 새 행을 함께 보낸다(수정 → 등록 두 요청, actions.ts). 그룹 순서는 화면에서 바꾸지 않는다(2026-10-12) — 표시 순서대로 보이기만 한다.
 // 플랫폼제공 그룹은 [BP 적용]으로 사용 중인 모든 BP 에 복사한다 — BP 에 이미 있는 상세 코드는 건너뛰고 없는 것만 넣는다(2026-10-12).
 // 저장한 값으로 적용하므로 두 패널(이 패널 · 오른쪽 상세 코드) 어디든 저장하지 않은 변경이 있으면 막는다.
 
 type Draft = GroupDraft;
+/** 저장을 막은 첫 칸을 찾을 범위 — 공통코드 그룹 카드 */
+const PANEL_ID = "platform-code-groups-panel";
 
 const toDraft = (g: CodeGroup): Draft => ({ ...g, added: false });
 const OWNERS: ManageOwnerCode[] = ["PLATFORM_FIXED", "PLATFORM_PROVIDED"];
@@ -30,17 +33,13 @@ const OWNERS: ManageOwnerCode[] = ["PLATFORM_FIXED", "PLATFORM_PROVIDED"];
 export function CodeGroupPanel({
   groups,
   total,
-  page,
-  pageSize,
   search,
   selected,
   ownerLabels,
 }: {
   groups: CodeGroup[];
   total: number;
-  page: number;
-  pageSize: number;
-  /** 왼쪽 필터의 검색 조건 — 그룹 · 쪽을 옮겨도 이어 간다. */
+  /** 왼쪽 필터의 검색 조건 — 그룹을 옮겨도 이어 간다. */
   search: CodeGroupSearch;
   selected?: string;
   /** 관리 주체 한글 — 공통코드 MANAGE_OWNER 에서 읽은 값. */
@@ -53,7 +52,7 @@ export function CodeGroupPanel({
   const { manage, canAdd, canSave } = codePanelAccess({ update: permission.update, create: permission.create });
   const router = useRouter();
   const toast = useToast();
-  const { setDirty, isDirty, navigate } = useUnsavedChanges();
+  const { setDirty, isDirty } = useUnsavedChanges();
   const [drafts, setDrafts] = useState(() => groups.map(toDraft));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [failure, setFailure] = useState<string | null>(null);
@@ -64,7 +63,7 @@ export function CodeGroupPanel({
   const [applyError, setApplyError] = useState<string | null>(null);
   // 저장을 시작한 목록과 고른 그룹. 저장할 때마다 두고, 다음에 오는 목록이 바로 그 목록을 대신하면 아직 저장하지 못한 새 행을
   // 그 뒤에 이어 둔다(한 번 쓰고 지운다 — 등록만 실패했거나 결과를 모를 때 입력을 잃지 않게). 완전히 성공했으면 저장 처리가
-  // 이어 둔 새 행을 걷어 낸다. 다른 그룹으로 옮긴 뒤 온 목록에는 잇지 않는다. 다른 쪽으로 가면 패널이 새로 그려진다(key=page).
+  // 이어 둔 새 행을 걷어 낸다. 다른 그룹으로 옮긴 뒤 온 목록에는 잇지 않는다. 다른 검색으로 가면 패널이 새로 그려진다(key).
   const [savingFrom, setSavingFrom] = useState<{ groups: CodeGroup[]; selected?: string } | null>(null);
 
   // 저장 뒤 서버가 새 목록을 주면 그 값으로 다시 시작한다. 새 행을 이어 둘 때(savingFrom)는 그 행의 오류 · 띠도 남긴다.
@@ -98,11 +97,20 @@ export function CodeGroupPanel({
   const applyBlocked = dirty || isDirty("items");
 
   useEffect(() => setDirty("groups", dirty), [dirty, setDirty]);
-  // 다른 쪽으로 가면 이 패널은 새로 그려진다(key=page). 사라질 때 변경 표시를 지운다.
+  // 다른 검색으로 가면 이 패널은 새로 그려진다(key). 사라질 때 변경 표시를 지운다.
   useEffect(() => () => setDirty("groups", false), [setDirty]);
 
-  const update = (key: string, patch: Partial<Draft>) =>
-    setDrafts((rows) => rows.map((d) => (d.added ? key === "" : d.groupCode === key) ? { ...d, ...patch } : d));
+  const update = (key: string, patch: Partial<Draft>) => {
+    const rows = drafts.map((d) => ((d.added ? key === "" : d.groupCode === key) ? { ...d, ...patch } : d));
+    setDrafts(rows);
+    // 오류가 난 칸을 고치면 그 칸만 다시 본다 — 맞으면 빨간 테두리 · 문구를 지운다(2026-10-27 사용자 지정). 다른 칸 · 서버가 알린 오류는 그대로 둔다
+    const fields = [
+      ...("groupName" in patch ? [`name:${key}`] : []),
+      ...("groupCode" in patch ? ["code"] : []),
+      ...("manageOwnerCode" in patch ? ["owner"] : []),
+    ].filter((f) => f in errors);
+    if (fields.length) setErrors(recheck(errors, validate(rows), fields));
+  };
 
   const handleAdd = () => {
     // 새 행은 마지막 다음 순서, 사용 상태로 시작한다.
@@ -113,18 +121,19 @@ export function CodeGroupPanel({
     ]);
   };
 
-  const validate = (): Record<string, string> => {
+  const validate = (rows: Draft[] = drafts): Record<string, string> => {
     const next: Record<string, string> = {};
-    for (const d of drafts) {
-      const label = d.added ? "새 그룹" : d.groupCode;
-      if (!d.groupName.trim()) next[`name:${d.added ? "" : d.groupCode}`] = `${label} — 그룹명을 입력해 주세요.`;
+    const added = rows.find((d) => d.added);
+    for (const d of rows) {
+      if (!d.groupName.trim()) next[`name:${d.added ? "" : d.groupCode}`] = "그룹명을 입력해 주세요.";
     }
     if (added) {
       const code = normalizeCode(added.groupCode);
       const formatError = codeFormatError(code);
-      if (formatError) next.code = `새 그룹 코드 — ${formatError}`;
-      else if (duplicateCodes(groups.map((g) => g.groupCode), [code]).size) next.code = `이미 있는 그룹 코드입니다: ${code}`;
-      if (!added.manageOwnerCode) next.owner = "새 그룹 — 관리주체를 골라 주세요.";
+      if (formatError) next.code = formatError;
+      // 아이디 중복 확인 문구와 같은 꼴(2026-10-27 사용자 지정)
+      else if (duplicateCodes(groups.map((g) => g.groupCode), [code]).size) next.code = "이미 사용 중인 그룹 코드입니다.";
+      if (!added.manageOwnerCode) next.owner = "관리주체를 골라 주세요.";
     }
     return next;
   };
@@ -156,7 +165,7 @@ export function CodeGroupPanel({
     const found = validate();
     setErrors(found);
     setFailure(null);
-    if (Object.keys(found).length) return;
+    if (Object.keys(found).length) return focusFirstInvalid(PANEL_ID);
 
     const input = buildSaveGroupsInput(drafts, groups);
     setSavingFrom({ groups, selected });
@@ -193,6 +202,8 @@ export function CodeGroupPanel({
   };
 
   const invalid = (key: string) => (key in errors ? true : undefined);
+  // 새 행의 어느 칸에 오류가 있는지 — 있으면 오류 없는 칸도 문구 한 줄만큼 자리를 둬 입력칸 높이를 맞춘다(CellError reserve). 기존 행은 그룹명 칸뿐이다
+  const addedInvalid = "code" in errors || "owner" in errors || "name:" in errors;
 
   const columns: Column<Draft>[] = [
     {
@@ -201,21 +212,23 @@ export function CodeGroupPanel({
       align: "left",
       cell: (d) =>
         d.added ? (
-          <TextField
-            value={d.groupCode}
-            onChange={(e) => update("", { groupCode: e.target.value.toUpperCase() })}
-            placeholder="그룹 코드"
-            maxLength={20}
-            aria-label="새 그룹 코드"
-            aria-invalid={invalid("code")}
-            autoFocus
-          />
+          <CellError message={errors.code} reserve={addedInvalid}>
+            <TextField
+              value={d.groupCode}
+              onChange={(e) => update("", { groupCode: e.target.value.toUpperCase() })}
+              placeholder="그룹 코드"
+              maxLength={20}
+              aria-label="새 그룹 코드"
+              aria-invalid={invalid("code")}
+              autoFocus
+            />
+          </CellError>
         ) : d.groupCode === selected ? (
           <b className="font-semibold" aria-current="true">
             {d.groupCode}
           </b>
         ) : (
-          <GuardedLink href={codesHref({ ...search, page, group: d.groupCode })} className="text-erp-link hover:underline">
+          <GuardedLink href={codesHref({ ...search, group: d.groupCode })} className="text-erp-link hover:underline">
             {d.groupCode}
           </GuardedLink>
         ),
@@ -228,14 +241,16 @@ export function CodeGroupPanel({
         if (!manage && !d.added) return d.groupName;
         const key = d.added ? "" : d.groupCode;
         return (
-          <TextField
-            value={d.groupName}
-            onChange={(e) => update(key, { groupName: e.target.value })}
-            placeholder={d.added ? "그룹명" : undefined}
-            maxLength={50}
-            aria-label={`${d.added ? "새 그룹" : d.groupCode} 그룹명`}
-            aria-invalid={invalid(`name:${key}`)}
-          />
+          <CellError message={errors[`name:${key}`]} reserve={d.added && addedInvalid}>
+            <TextField
+              value={d.groupName}
+              onChange={(e) => update(key, { groupName: e.target.value })}
+              placeholder={d.added ? "그룹명" : undefined}
+              maxLength={50}
+              aria-label={`${d.added ? "새 그룹" : d.groupCode} 그룹명`}
+              aria-invalid={invalid(`name:${key}`)}
+            />
+          </CellError>
         );
       },
     },
@@ -245,19 +260,21 @@ export function CodeGroupPanel({
       width: "w-[140px]",
       cell: (d) =>
         d.added ? (
-          <Select
-            value={d.manageOwnerCode}
-            onChange={(e) => update("", { manageOwnerCode: e.target.value as ManageOwnerCode })}
-            aria-label="새 그룹 관리주체"
-            aria-invalid={invalid("owner")}
-          >
-            <option value="">선택</option>
-            {OWNERS.map((o) => (
-              <option key={o} value={o}>
-                {ownerLabels[o] ?? o}
-              </option>
-            ))}
-          </Select>
+          <CellError message={errors.owner} reserve={addedInvalid}>
+            <Select
+              value={d.manageOwnerCode}
+              onChange={(e) => update("", { manageOwnerCode: e.target.value as ManageOwnerCode })}
+              aria-label="새 그룹 관리주체"
+              aria-invalid={invalid("owner")}
+            >
+              <option value="">선택</option>
+              {OWNERS.map((o) => (
+                <option key={o} value={o}>
+                  {ownerLabels[o] ?? o}
+                </option>
+              ))}
+            </Select>
+          </CellError>
         ) : (
           <OwnerTag code={d.manageOwnerCode}>{ownerLabels[d.manageOwnerCode] ?? d.manageOwnerCode}</OwnerTag>
         ),
@@ -297,6 +314,7 @@ export function CodeGroupPanel({
 
   return (
     <CodePanel
+      id={PANEL_ID}
       title="공통코드 그룹"
       sub={`${total}개`}
       actions={
@@ -328,15 +346,9 @@ export function CodeGroupPanel({
         rowState={(d) => (d.added ? "added" : d.groupCode === selected ? "current" : undefined)}
         empty={searchedEmpty(search, search.manageOwnerCode && search.manageOwnerCode !== "NONE" ? ownerLabels[search.manageOwnerCode] : undefined) ?? "등록한 공통코드 그룹이 없습니다."}
       />
-      <FieldErrors messages={Object.values(errors)} />
+      {/* 칸에 붙은 오류는 그 칸 아래에 있다 — 새 행이 없는데 온 그룹 코드 409 만 여기 */}
+      <FieldErrors messages={!added && errors.code ? [errors.code] : []} />
       {manage && <BpApplyDialog group={applyTarget} busy={applying} onConfirm={handleApply} onCancel={() => setApplyTarget(null)} />}
-      <div className="pt-[14px]">
-        <Pagination
-          page={page}
-          totalPages={Math.max(1, Math.ceil(total / pageSize))}
-          onPageChange={(next) => navigate(codesHref({ ...search, page: next }))}
-        />
-      </div>
     </CodePanel>
   );
 }

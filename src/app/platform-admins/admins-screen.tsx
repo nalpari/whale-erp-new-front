@@ -2,10 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Button, ListToolbar, PageBar, Pagination, useBackdropActive, useToast } from "@/components/common";
+import { Button, ListToolbar, PageBar, Pagination, Select, useBackdropActive, useToast } from "@/components/common";
 import { useAccount, usePagePermission } from "@/components/site/session-gate";
 import { adminActionsOf } from "@/lib/platform-admin-actions";
-import { ADMIN_PAGE_SIZE } from "@/lib/platform-admin-paging";
+import { ADMIN_PAGE_SIZES, type AdminPageSize } from "@/lib/platform-admin-paging";
 import type { PlatformAdminDetail, PlatformAdminList, PlatformRoleGroup } from "@/lib/platform-admins";
 import { AdminDetailPanel } from "./admin-detail-panel";
 import { AdminFilter } from "./admin-filter";
@@ -166,10 +166,25 @@ export function AdminsScreen({
         <div className="contents" inert={backdropActive}>
           <AdminFilter query={query} roleGroups={roleGroups} onApply={(next) => go({ ...next, page: 1, admin: undefined })} />
           <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>*]:shrink-0">
-            <ListToolbar total={list.total} />
+            {/* 오른쪽 위에 한 쪽 건수 — BP 관리자 관리와 같다(2026-10-27 사용자 지정). 바꾸면 1쪽부터 */}
+            <ListToolbar total={list.total}>
+              <div className="w-[80px] shrink-0">
+                <Select
+                  aria-label="페이지당 건수"
+                  value={String(query.pageSize)}
+                  onChange={(e) => go({ pageSize: Number(e.target.value) as AdminPageSize, page: 1, admin: undefined })}
+                >
+                  {ADMIN_PAGE_SIZES.map((size) => (
+                    <option key={size} value={size}>
+                      {size}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            </ListToolbar>
             <AdminTable rows={list.items} selected={query.admin} onOpen={openDetail} />
             <div className="pt-[14px]">
-              <Pagination page={query.page} totalPages={Math.max(1, Math.ceil(list.total / ADMIN_PAGE_SIZE))} onPageChange={(page) => go({ page, admin: undefined })} />
+              <Pagination page={query.page} totalPages={Math.max(1, Math.ceil(list.total / query.pageSize))} onPageChange={(page) => go({ page, admin: undefined })} />
             </div>
           </main>
         </div>
