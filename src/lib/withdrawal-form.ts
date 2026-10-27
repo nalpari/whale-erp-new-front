@@ -31,17 +31,20 @@ export function withdrawFormField(status: number | undefined, message: string): 
 }
 
 /** 탈퇴 경고 문구(데모 docs/demo/src/site.mjs 328-343줄의 근거) — 실제 값으로 바뀌는 자리를
- * eligibility 로 채운다. `<br>` 대신 `\n` 을 쓴다 — 줄바꿈을 어떻게 그릴지는 컴포넌트(Task 3) 몫이다. */
+ * eligibility 로 채운다. `<br>` 대신 `\n` 을 쓴다 — 줄바꿈을 어떻게 그릴지는 컴포넌트(Task 3) 몫이다.
+ * 데모의 live()(굵게+밑줄)에 해당하는 자리(BP 이름·관리자 수·점포 수)는 `**...**` 로 감싼다 — 이 파일은
+ * React 를 안 쓰므로(node --test 로 돈다) 마크다운 굵게만 흉내 내고, 실제 굵게+밑줄 렌더링은 컴포넌트가
+ * `**` 를 갈라 맡는다(2026-10-27 사용자 지정 — BP 이름이 눈에 띄어야 한다). */
 export function withdrawWarningText(eligibility: WithdrawEligibility): WithdrawWarningBlock[] {
   const { bpName, adminCount, storeCount } = eligibility;
   return [
-    `탈퇴하면 ${bpName}의 서비스 이용이 종료됩니다. 동일한 BP에 속한 관리자·가맹 계정 ${adminCount}개도 함께 탈퇴되어 더 이상 로그인할 수 없습니다.`,
+    `탈퇴하면 **${bpName}**의 서비스 이용이 종료됩니다. 관리자·가맹 계정 **${adminCount}개**도 함께 탈퇴되어 더 이상 로그인할 수 없습니다.`,
     {
-      head: `점포 ${storeCount}개가 모두 폐점 처리됩니다`,
-      text: `점포 보유 여부는 탈퇴를 제한하지 않습니다.\n탈퇴 처리 시 점포의 현재 운영 상태나 폐점 조건을 별도로 확인하지 않고, 운영·미운영 점포 ${storeCount}개를 모두 폐점 처리합니다.`,
+      head: `점포 **${storeCount}개**가 모두 폐점 처리됩니다.`,
+      text: `점포 보유 여부는 탈퇴를 제한하지 않습니다.\n탈퇴 처리 시 점포의 현재 운영 상태나 폐점 조건을 별도로 확인하지 않고, 운영·미운영 점포 **${storeCount}개**를 모두 폐점 처리합니다.`,
     },
     {
-      head: "개인정보가 삭제됩니다",
+      head: "개인정보가 삭제됩니다.",
       text: "탈퇴 계정의 이름·연락처·이메일과 대표자의 연락처·이메일은 즉시 삭제되며, 아이디만 보관됩니다. 직원·계약·정산 정보와 변경 이력은 보존 정책에 따라 보관됩니다.",
     },
     "탈퇴한 계정은 복구할 수 없습니다.\n정말 탈퇴하시겠습니까?",

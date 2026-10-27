@@ -25,13 +25,19 @@ test("400이 아니면 null", () => {
 test("관리자·점포가 0개여도 문장이 깨지지 않는다", () => {
   const blocks = withdrawWarningText({ bpName: "웨일분식", adminCount: 0, storeCount: 0, hasInProgressContract: false });
   assert.equal(blocks.length, 4);
-  assert.match(blocks[0] as string, /관리자·가맹 계정 0개/);
-  assert.match((blocks[1] as { head: string }).head, /점포 0개/);
+  assert.match(blocks[0] as string, /관리자·가맹 계정 \*\*0개\*\*/);
+  assert.match((blocks[1] as { head: string }).head, /점포 \*\*0개\*\*/);
 });
 
-test("BP명·관리자수·점포수가 실제 값으로 들어간다", () => {
+test("BP명·관리자수·점포수가 실제 값으로 들어간다(굵게 표시용 ** 로 감싼다)", () => {
   const blocks = withdrawWarningText({ bpName: "테스트상회", adminCount: 3, storeCount: 7, hasInProgressContract: false });
-  assert.match(blocks[0] as string, /테스트상회/);
-  assert.match(blocks[0] as string, /3개/);
-  assert.match((blocks[1] as { head: string }).head, /7개/);
+  assert.match(blocks[0] as string, /\*\*테스트상회\*\*/);
+  assert.match(blocks[0] as string, /\*\*3개\*\*/);
+  assert.match((blocks[1] as { head: string }).head, /\*\*7개\*\*/);
+});
+
+test("점포 폐점·개인정보 삭제 제목은 마침표로 끝난다", () => {
+  const blocks = withdrawWarningText({ bpName: "테스트상회", adminCount: 3, storeCount: 7, hasInProgressContract: false });
+  assert.match((blocks[1] as { head: string }).head, /\.$/);
+  assert.match((blocks[2] as { head: string }).head, /\.$/);
 });

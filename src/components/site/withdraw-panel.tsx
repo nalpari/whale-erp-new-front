@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState, useTransition, type RefObject } from "react";
 import { logout } from "@/app/actions";
-import { Button, ConfirmDialog, FailedBand, Field, FieldMessage, FormGroup, PasswordInput, Select, SlidePanel, Textarea } from "@/components/common";
+import { Button, ConfirmDialog, DataTable, FailedBand, Field, FieldMessage, FormGroup, PasswordInput, Select, SlidePanel, Textarea } from "@/components/common";
 import { withdrawFormField, withdrawWarningText, WITHDRAW_REASONS, type WithdrawEligibility, type WithdrawWarningBlock } from "@/lib/withdrawal-form";
 import { createWithdrawalAction, getWithdrawEligibilityAction } from "./withdraw-actions";
 
@@ -12,34 +12,35 @@ const EMPTY: Form = { currentPassword: "", reasonCode: "", reasonDetail: "" };
 
 type FieldAt = "currentPassword" | "reasonDetail";
 
+// withdrawal-form.ts 의 withdrawWarningText 가 실제 값(BP 이름 · 관리자 수 · 점포 수) 자리를 `**...**` 로
+// 감싸 둔다(그 파일은 React 를 안 쓴다) — 여기서 갈라 데모의 live()(굵게+밑줄)와 같은 모양으로 그린다.
+function withEmphasis(text: string) {
+  return text.split("**").map((part, i) => (i % 2 === 1 ? <b key={i} className="font-semibold underline">{part}</b> : part));
+}
+
 // 경고 상자 — bp-apply-dialog.tsx 의 위험 띠(채도 높은 border-erp-off/bg-erp-off-bg)와는 다른 패턴이다. 이
 // 상자는 승인된 데모의 notice() 상자를 그대로 따른다(docs/demo/src/site.mjs:314-323) — 제목("탈퇴 전 꼭
 // 확인해 주세요")과 본문 블록이 한 상자(border-erp-panel-line / bg-erp-thead-bg) 안에 함께 들어간다. 제목만
 // #e93737(DESIGN.md 가 토큰 없이 직접 쓰기로 둔 Figma 전용 색). head/text 블록은 head 를 굵게, text 는 \n 을
 // 그대로 줄바꿈으로 보인다(whitespace-pre-line).
 function WarningBlock({ block }: { block: WithdrawWarningBlock }) {
-  if (typeof block === "string") return <p className="whitespace-pre-line">{block}</p>;
+  if (typeof block === "string") return <p className="whitespace-pre-line">{withEmphasis(block)}</p>;
   return (
     <div>
-      <p className="font-semibold">{block.head}</p>
-      <p className="whitespace-pre-line">{block.text}</p>
+      <p className="flex items-center gap-[6px] font-semibold">
+        <span aria-hidden className="inline-block size-[6px] shrink-0 rounded-full bg-erp-ink" />
+        {withEmphasis(block.head)}
+      </p>
+      <p className="whitespace-pre-line">{withEmphasis(block.text)}</p>
     </div>
   );
 }
 
-function ConditionRow({ label, checked, note }: { label: string; checked: boolean | null; note: string }) {
-  const mark = checked === null ? <span className="text-erp-label">–</span> : checked ? <span className="text-erp-link">✓</span> : <span className="text-erp-off">–</span>;
-  return (
-    <div className="flex items-start gap-[8px] text-[14px]">
-      <span aria-hidden className="mt-[1px] w-[16px] shrink-0 text-center font-semibold">
-        {mark}
-      </span>
-      <div>
-        <p className="text-erp-ink">{label}</p>
-        <p className="text-[13px] text-erp-muted">{note}</p>
-      </div>
-    </div>
-  );
+// DetailTable 한 칸(값)에 들어간다(표로 바꿈, 사용자 지정, 2026-10-27) — 아이콘·설명문 대신 값 색으로만
+// 상태를 말한다. checked 가 null 이면 1차 범위 밖(확인하지 않음)이라 값도 중립색이다.
+function ConditionValue({ value, checked }: { value: string; checked: boolean | null }) {
+  const tone = checked === null ? "text-erp-label" : checked ? "text-erp-link" : "text-erp-off";
+  return <span className={`font-semibold ${tone}`}>{value}</span>;
 }
 
 /** GNB 「회원 탈퇴」가 여는 슬라이드 패널(MY PAGE, S-JHQQNR). 1단계(비밀번호)는 api 를 부르지 않는다 — 별도
@@ -218,17 +219,20 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
                 ))}
               </div>
 
-              <FormGroup title="탈퇴 조건">
-                <ConditionRow label="부가서비스 구독 해지" checked={null} note="1차 범위 밖 — 1차에서는 확인하지 않습니다." />
-                <ConditionRow label="미정산 금액 없음" checked={null} note="1차 범위 밖 — 1차에서는 확인하지 않습니다." />
-                <ConditionRow
-                  label="진행 중인 근로계약 없음"
-                  checked={!eligibility.hasInProgressContract}
-                  note={eligibility.hasInProgressContract ? "진행 중인 근로계약이 있습니다." : "진행 중인 근로계약이 없습니다."}
-                />
-              </FormGroup>
+              <DataTable
+                columns={[
+                  { header: "부가서비스 구독", cell: () => <ConditionValue value="-" checked={null} /> },
+                  { header: "미정산 금액", cell: () => <ConditionValue value="-" checked={null} /> },
+                  {
+                    header: "진행 중인 근로계약",
+                    cell: (e) => <ConditionValue value={e.hasInProgressContract ? "있음" : "없음"} checked={!e.hasInProgressContract} />,
+                  },
+                ]}
+                rows={[eligibility]}
+                rowKey={() => "conditions"}
+              />
 
-              <FormGroup title="탈퇴 사유">
+              <div className="flex flex-col gap-[18px]">
                 <div className="flex flex-col gap-[8px]">
                   <Field label="탈퇴 사유" required>
                     <Select
@@ -249,6 +253,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
                   <div className="flex flex-col gap-[8px]">
                     <Field label="상세 사유" required>
                       <Textarea
+                        rows={4}
                         maxLength={500}
                         value={form.reasonDetail}
                         onChange={(e) => setForm((f) => ({ ...f, reasonDetail: e.target.value }))}
@@ -260,7 +265,7 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
                     <FieldMessage id={reasonDetailMessageId} message={fieldError?.at === "reasonDetail" ? fieldError.message : undefined} />
                   </div>
                 )}
-              </FormGroup>
+              </div>
 
               {failure && <FailedBand message={failure} />}
 
@@ -291,7 +296,11 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
             <p id={doneHeadingId} tabIndex={-1} className="text-[16px] font-semibold text-erp-ink outline-none!">
               회원 탈퇴가 완료되었습니다.
             </p>
-            <p className="text-[14px] text-erp-muted">등록한 이메일로 탈퇴 완료 안내를 보냈습니다.</p>
+            <p className="text-[14px] text-erp-muted">
+              그동안 서비스를 이용해 주셔서 감사합니다.
+              <br />
+              회원 탈퇴 완료 안내 메일이 등록된 이메일로 발송되었습니다.
+            </p>
           </div>
           {/* admin-header.tsx 의 UserPop 로그아웃 항목과 같은 호출 방식 — <form action={}> 으로 서버 액션을 부른다. */}
           <form action={logout} className="flex justify-center gap-[6px]">
@@ -311,8 +320,12 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
           if (!saving) setConfirmOpen(false);
         }}
       >
-        <p>정말로 탈퇴하시겠습니까? 회원 탈퇴 시 웨일ERP를 더 이상 이용할 수 없습니다.</p>
-        <p className="text-erp-muted">필요한 순간에 다시 웨일ERP와 함께해 주세요.</p>
+        <p>회원 탈퇴를 진행합니다.</p>
+        <p className="text-erp-muted">
+          그동안 웨일ERP를 이용해 주셔서 감사합니다.
+          <br />
+          언제든 필요할 때 다시 찾아주세요.
+        </p>
       </ConfirmDialog>
     </SlidePanel>
   );
