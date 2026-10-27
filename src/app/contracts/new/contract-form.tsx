@@ -63,6 +63,8 @@ const HOURS_FIELDS: [HourField, string][] = [
   ["baseNightHours", "기본시간 중 야간근무"],
 ];
 const HELP = "text-[12px] leading-[1.5] text-erp-muted";
+// 종이 재계약이 직전 계약이 아닌 체결 완료와 겹쳤을 때(api SIGNED_CONTRACT_OVERLAP) — 재계약은 바로잡기와 함께 보낼 수 없다(WHALEERP-156)
+const RENEWAL_OVERLAP = "이 점포에 같은 휴대전화번호로 계약 기간이 겹치는 다른 체결 완료 근로계약이 있어 재계약을 등록할 수 없습니다. 그 계약을 먼저 확인해 주세요";
 const LABEL = "truncate text-[14px] font-medium text-erp-label";
 
 const won = (n: number | null) => (n === null ? "-" : n.toLocaleString("ko-KR"));
@@ -356,6 +358,13 @@ export function ContractForm({
         return;
       }
       if (result.signedOverlap) {
+        // 재계약은 바로잡기와 함께 보낼 수 없다(api 400) — 직전 계약이 아닌 체결 완료와 겹친 것이라 그 계약만 알린다
+        if (body.previousContractId) {
+          setReplace(null);
+          const lines = result.signedOverlap.map((c) => inProgressLine(c, labelOf(labels.contractStatus, c.status))).join(", ");
+          fail(`${RENEWAL_OVERLAP} — ${lines}`);
+          return;
+        }
         setReplace({ body, list: result.signedOverlap, paper: true, correcting: true });
         return;
       }
