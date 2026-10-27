@@ -282,7 +282,8 @@ function BulkDialog({
       const add = left.filter((o) => ids.has(o.storeId)).map(({ storeId, name, storeCode }) => ({ storeId, name, storeCode }));
       setDraft([...add, ...draft]);
     } else setDraft(draft.filter((s) => !ids.has(s.storeId)));
-    setChecked(new Set());
+    // 옮긴 줄의 체크만 푼다 — 반대쪽에서 체크해 둔 줄은 남긴다
+    setChecked((c) => new Set([...c].filter((id) => !ids.has(id))));
   };
   const move = (to: "R" | "L") => moveIds(to, checked);
   const endDrag = () => {

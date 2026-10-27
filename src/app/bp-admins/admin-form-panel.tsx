@@ -165,7 +165,8 @@ export function AdminFormPanel(props: Props) {
   const applyServerError = (status: number | undefined, text: string) => {
     const field = bpAdminServerErrorField(status, text, mode);
     // 보낸 뒤 고친 칸의 거절이면 지금 값에 붙이지 않고 띠로만 알린다. 점포 칸이 숨어 있으면(전체 점포 · 본인 계정) 붙여도 안 보이므로 띠로
-    const hidden = field === "stores" && (form.isAllStores || locks.stores);
+    // 범위는 저장을 누른 때의 값이라, 그 뒤 범위를 바꿨으면(editedWhileSaving) 지금 점포 칸이 숨었을 수 있다
+    const hidden = field === "stores" && (form.isAllStores || locks.stores || editedWhileSaving.current.has("isAllStores" as BpAdminFormField));
     if (!field || hidden || editedWhileSaving.current.has(field)) return setFailure(text);
     setErrors((e) => ({ ...e, [field]: text }));
     focusFirstError();
@@ -210,6 +211,8 @@ export function AdminFormPanel(props: Props) {
   };
 
   const groupOptions = groups.filter((r) => r.roleTypeCode === form.roleTypeCode);
+  // 고른 역할에 붙일 그룹이 없으면 저장할 수 없다 — 가맹 마스터가 가맹 관리자 그룹을 아직 만들지 않은 때 등(BP 관리자 등록 정책)
+  const noGroupForRole = mode === "create" && !groupsFailed && !!form.roleTypeCode && !groupOptions.length;
   // 지금 권한 그룹이 선택지에 없으면(보는 사람이 고를 수 없는 그룹) 그 그룹도 남겨 값이 비지 않게 한다
   if (mode === "edit" && !groupOptions.some((r) => r.roleGroupId === props.admin.roleGroup.roleGroupId)) groupOptions.unshift(props.admin.roleGroup);
 
@@ -384,6 +387,7 @@ export function AdminFormPanel(props: Props) {
 
         <FormGroup title="계정 역할">
           {groupsFailed && <FailedBand message="권한 그룹 목록을 불러오지 못했습니다. 화면을 새로 고쳐 주세요." />}
+          {noGroupForRole && <FailedBand message="붙일 권한 그룹이 없습니다. BP 권한 그룹 관리에서 먼저 만들어 주세요." />}
           {mode === "create" && roles.length > 1 ? (
             <Labeled label="계정 역할" required message={message("roleTypeCode")}>
               <Select
@@ -506,7 +510,7 @@ export function AdminFormPanel(props: Props) {
           취소
         </Button>
         {/* 권한 그룹을 받지 못하면 등록은 고를 그룹이 없어 저장할 수 없다(수정은 지금 그룹을 그대로 둔다) */}
-        <Button onClick={handleSave} disabled={saving || (mode === "create" && groupsFailed)}>
+        <Button onClick={handleSave} disabled={saving || (mode === "create" && (groupsFailed || noGroupForRole))}>
           저장
         </Button>
       </div>
