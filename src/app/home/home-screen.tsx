@@ -103,7 +103,7 @@ export function HomeScreen() {
     body = (
       <>
         {p?.renewals?.length ? <RenewalBand renewals={p.renewals} href={renewalItem ? (pendingLineOf(renewalItem, bp)?.href ?? "/contracts") : "/contracts"} /> : null}
-        {s?.cards && <Cards cards={s.cards} hq={hq} scopeHref={(href) => withScope(href, scope)} canOpen={canOpen} bp={bp} />}
+        {s?.cards && <Cards cards={s.cards} hq={hq && s.cards.stores.franchise > 0} scopeHref={(href) => withScope(href, scope)} canOpen={canOpen} bp={bp} />}
         <div className="grid grid-cols-[minmax(0,7fr)_minmax(0,5fr)] items-start gap-[12px]">
           {!summary ? <Notice text="현황을 불러오는 중입니다." /> : "error" in summary ? failed("현황을", summary.error) : <StoreTable table={summary.data.storeTable} staffHref={canOpen("/staff-members") ? withScope("/staff-members", scope) : null} />}
           {!pending ? <Notice text="처리 대기를 불러오는 중입니다." /> : "error" in pending ? failed("처리 대기를", pending.error) : <Pending data={pending.data} bp={bp} />}
@@ -205,7 +205,7 @@ function Cards({ cards, hq, scopeHref, canOpen, bp }: { cards: CardsData; hq: bo
         <Figure
           href={canOpen("/staff-members") ? scopeHref("/staff-members") : null}
           label="재직 직원"
-          note={hq ? "동의하지 않은 가맹 직원은 고용 형태에 세지 않습니다" : undefined}
+          note={hq ? "동의하지 않은 가맹 직원은 고용 형태 · 미체결 계약에 세지 않습니다" : undefined}
           value={staff.total}
           unit="명"
           sub={
@@ -217,10 +217,9 @@ function Cards({ cards, hq, scopeHref, canOpen, bp }: { cards: CardsData; hq: bo
         />
       )}
       <Figure href={canOpen("/stores") ? bpPath(bp, scopeHref("/stores")) : null} label="운영 점포" value={stores.total} unit="개점" sub={`직영 ${stores.direct} · 가맹 ${stores.franchise}`} />
-      {/* 출퇴근 현황 화면이 관리자 웹에 아직 없어 링크를 걸지 않는다 */}
       {today && (
         <Figure
-          href={null}
+          href={canOpen("/attendance-records") ? scopeHref("/attendance-records") : null}
           label="오늘 출근"
           note={hq ? "동의하지 않은 가맹 직원은 출근 · 미출근에 세지 않습니다" : undefined}
           value={today.checkedIn}
