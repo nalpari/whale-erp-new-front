@@ -5,6 +5,7 @@ import { RoleDeleteDialog } from "@/components/role-groups/role-delete-dialog";
 import { RoleForm } from "@/components/role-groups/role-form";
 import { actorOf, CARD, FailedBand, InfoBand, reasonLabel } from "@/components/role-groups/role-parts";
 import { CodeLabel } from "@/components/site/code-label";
+import { HeadValues } from "@/components/site/head-values";
 import { usePagePermission } from "@/components/site/session-gate";
 import type { BpRoleGroupDetail, BpRoleType } from "@/lib/bp-role-groups";
 import type { EnumValue } from "@/lib/enums";
@@ -131,13 +132,24 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
     <h2 className="flex min-h-[34px] flex-wrap content-end items-center gap-[6px] text-[18px] font-semibold text-erp-ink">
       <span className="mr-[4px]">권한 그룹 상세</span>
       {/* 띠 「권한유형 · {유형}」(유형만 굵게) → 코드 순 — 목록 「권한유형 · 코드」와 같은 순서(2026-10-26 사용자 지정). Tag 는 className 을 받지 않아 안쪽 span 으로 굵힌다 */}
-      <Tag>
-        <span className="font-normal">권한유형 ·</span>{" "}
-        <span className="font-semibold">
-          <CodeLabel group="ROLE_TYPE" value={role.roleTypeCode} />
-        </span>
-      </Tag>
-      <span className="text-[14px] font-normal text-erp-label">{role.roleCode}</span>
+      {/* 띠지 뒤에 「| 권한코드 값」 — 권한코드는 띠지가 아니라 글자(라벨 회색 · 값 굵게, 공통코드 상세 코드 머리와 같은 구분선, 2026-10-27 사용자 지정) */}
+      <span className="text-[14px] font-normal">
+        <HeadValues
+          items={[
+            {
+              value: (
+                <Tag>
+                  <span className="font-normal">권한유형 ·</span>{" "}
+                  <span className="font-semibold">
+                    <CodeLabel group="ROLE_TYPE" value={role.roleTypeCode} />
+                  </span>
+                </Tag>
+              ),
+            },
+            { label: "권한코드", value: role.roleCode },
+          ]}
+        />
+      </span>
     </h2>
   );
   // 지울 수 없는 그룹(역할 · 본인 연결)은 버튼을 숨긴다. 막힌 이유는 수정 권한이 있으면 위 띠(editBlockedReason, 같은 값)로 보인다.

@@ -3,6 +3,7 @@
 import { DetailTable, FormRow, ReadonlyCard, ReadonlyValue, Tag, type DetailRow } from "@/components/common";
 import { RoleForm, type RoleFormActions } from "@/components/role-groups/role-form";
 import { CodeLabel } from "@/components/site/code-label";
+import { HeadValues } from "@/components/site/head-values";
 import { usePagePermission } from "@/components/site/session-gate";
 import type { EnumValue } from "@/lib/enums";
 import { formatDateTime } from "@/lib/format";
@@ -110,13 +111,24 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
       {/* 고칠 수 있어도 없어도 같은 제목 — BP 권한 그룹 관리와 같다(2026-10-26 사용자 지정, 전엔 「권한 수정」 · 「권한 상세」) */}
       <span className="mr-[4px]">권한 그룹 상세</span>
       {/* 띠 「권한유형 · {유형}」(유형만 굵게) → 코드 순 — 목록 「권한유형 · 코드」와 같은 순서(2026-10-26 사용자 지정). Tag 는 className 을 받지 않아 안쪽 span 으로 굵힌다 */}
-      <Tag>
-        <span className="font-normal">권한유형 ·</span>{" "}
-        <span className="font-semibold">
-          <CodeLabel group="ROLE_TYPE" value={role.roleTypeCode} />
-        </span>
-      </Tag>
-      <span className="text-[14px] font-normal text-erp-label">{role.roleCode}</span>
+      {/* 띠지 뒤에 「| 권한코드 값」 — 권한코드는 띠지가 아니라 글자(라벨 회색 · 값 굵게, 공통코드 상세 코드 머리와 같은 구분선, 2026-10-27 사용자 지정) */}
+      <span className="text-[14px] font-normal">
+        <HeadValues
+          items={[
+            {
+              value: (
+                <Tag>
+                  <span className="font-normal">권한유형 ·</span>{" "}
+                  <span className="font-semibold">
+                    <CodeLabel group="ROLE_TYPE" value={role.roleTypeCode} />
+                  </span>
+                </Tag>
+              ),
+            },
+            { label: "권한코드", value: role.roleCode },
+          ]}
+        />
+      </span>
     </h2>
   );
   const deleteButton =
