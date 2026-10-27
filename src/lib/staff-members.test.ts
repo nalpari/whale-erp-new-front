@@ -1,7 +1,7 @@
 // node --test src/lib/staff-members.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { EMPLOYMENT_TYPES, JOIN_GROUPS, hqSharingConsentText, withEmploymentHistory, kstToday, staffEmailText, staffListApiSearch, storeIdsByName, type StaffListQuery } from "./staff-members.ts";
+import { EMPLOYMENT_TYPES, JOIN_GROUPS, hqSharingConsentText, withEmploymentHistory, kstToday, staffEmailText, staffListApiSearch, type StaffListQuery } from "./staff-members.ts";
 
 const base: StaffListQuery = {
   storeIds: [],
@@ -75,25 +75,6 @@ test("고른 점포가 있으면 범위보다 앞선다 — storeTypes 를 보�
 test("api 를 부르지 않고 0건인 조건 — 빈 값은 api 가 400, 빼면 전체라서", () => {
   assert.equal(staffListApiSearch({ ...base, joinGroups: [] }), null);
   assert.equal(staffListApiSearch({ ...base, employmentTypes: [] }), null);
-});
-
-const stores = [
-  { storeId: 1, name: "모리커피 서초점" },
-  { storeId: 2, name: "모리커피 성수점" },
-  { storeId: 7, name: "온기식당 서초점" },
-];
-
-test("점포명 부분 일치로 점포 id 를 찾는다", () => {
-  assert.deepEqual(storeIdsByName(stores, "서초"), [1, 7]);
-  assert.deepEqual(storeIdsByName(stores, "모리커피"), [1, 2]);
-});
-
-test("점포명은 앞뒤 공백 · 대소문자를 가리지 않는다", () => {
-  assert.deepEqual(storeIdsByName([{ storeId: 3, name: "Cafe ABC" }], "  abc "), [3]);
-});
-
-test("맞는 점포가 없으면 빈 목록", () => {
-  assert.deepEqual(storeIdsByName(stores, "판교"), []);
 });
 
 test("kstToday 는 한국 날짜 — UTC 로 전날 15시는 한국 0시", () => {

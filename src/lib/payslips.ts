@@ -2,6 +2,8 @@
 // api 를 부르는 함수는 payslips-api.ts 에 있다 — 이 파일은 next/* 를 읽지 않아 node --test 가 바로 읽는다.
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
 import type { components } from "./api-types.generated.ts";
+import type { Scope } from "./browser-storage.ts";
+import { pickedStoreIdsOf } from "./staff-members.ts";
 
 type Schemas = components["schemas"];
 
@@ -46,13 +48,14 @@ export type PageSize = (typeof PAGE_SIZES)[number];
 export interface PayslipListQuery {
   /** 급여 월 YYYY-MM */
   month: string;
-  /** 점포명 검색어(직원 목록과 같다). 비면 관리 범위 전체 */
-  store: string;
   /**
-   * 점포명에 맞는 점포 id — 필터가 로그인 정보의 관리 점포에서 찾아 넣는다(storeIdsByName). store 가 비면 쓰지 않는다.
-   * null 은 점포명만 있고 아직 찾지 않은 것(storeIds 없이 들어온 주소) — 필터가 열리며 채운다.
+   * 점포 조건은 직원 목록(StaffListQuery)과 같은 짝이다(상단 점포 범위 ↔ 목록 점포 필터): 목록에서 고른 점포(storeIds — 주소 storeIds=3,7),
+   * 목록에서 비운 「전체」(storesCleared — 주소 storeIds=), 헤더 범위(scope — 주소 scope=ALL · DIRECT · FRANCHISE · STORE:12). 셋 다 없으면
+   * 정해지지 않은 것이라 필터가 헤더 범위로 채운다.
    */
-  storeIds: number[] | null;
+  storeIds: number[];
+  storesCleared: boolean;
+  scope: Scope | null;
   /** 직원명 검색어. 주면 본사 역할에게 가린 줄은 api 가 목록 · 상태 건수에서 뺀다 */
   staffName: string;
   statuses: PayslipStatus[];
@@ -60,20 +63,29 @@ export interface PayslipListQuery {
   pageSize: PageSize;
 }
 
-/** api 가 한 번에 받는 점포 id 수(PayslipListQueryDto @ArrayMaxSize). */
-const MAX_STORE_IDS = 500;
+/**
+ * 목록 · 일괄 발송의 점포 조건 — 직원 목록(staffListApiSearch)과 같다. 고른 점포 · 점포 하나 범위면 storeIds, 직영 · 가맹 범위면 점포를 풀지
+ * 않고 storeTypes(그 유형의 폐점 점포는 api 가 뺀다). 범위 「전체」 · 비운 「전체」 · 정해지지 않음은 조건 없음(업무 범위 전체).
+ */
+export function payslipStoreCondition(query: Pick<PayslipListQuery, "storeIds" | "storesCleared" | "scope">): { storeIds?: number[]; storeTypes?: ("DIRECT" | "FRANCHISE")[] } {
+  if (query.storesCleared) return {};
+  const storeIds = pickedStoreIdsOf(query);
+  if (storeIds.length) return { storeIds };
+  if (query.scope?.type === "DIRECT" || query.scope?.type === "FRANCHISE") return { storeTypes: [query.scope.type] };
+  return {};
+}
 
 /**
- * GET /payslips 쿼리. null 이면 부르지 않고 0건이다(점포명에 맞는 점포 없음). 상태를 모두 골랐으면 status 를 뺀다(전체). 하나도 고르지 않았을 때도 빼고 부른다 — api 는 빈 값을
- * 400 으로 막는다. 그때 줄은 버리고 상태 건수만 쓴다(payslips-api.ts getPayslips).
+ * GET /payslips 쿼리. 상태를 모두 골랐으면 status 를 뺀다(전체). 하나도 고르지 않았을 때도 빼고 부른다 — api 는 빈 값을 400 으로 막는다.
+ * 그때 줄은 버리고 상태 건수만 쓴다(payslips-api.ts getPayslips). 점포 조건은 payslipStoreCondition.
  */
-export function payslipListApiSearch(query: PayslipListQuery): string | null {
-  // 맞는 점포가 없거나 · 아직 찾지 않았거나 · api 상한(500)을 넘으면 부르지 않는다 — 빈 storeIds 는 api 가 400 이다
-  if (query.store && (!query.storeIds || query.storeIds.length === 0 || query.storeIds.length > MAX_STORE_IDS)) return null;
+export function payslipListApiSearch(query: PayslipListQuery): string {
   const params = new URLSearchParams({ month: query.month });
   if (query.statuses.length > 0 && query.statuses.length !== PAYSLIP_STATUSES.length)
     params.set("status", PAYSLIP_STATUSES.filter((s) => query.statuses.includes(s)).join(","));
-  if (query.store && query.storeIds) params.set("storeIds", query.storeIds.join(","));
+  const { storeIds, storeTypes } = payslipStoreCondition(query);
+  if (storeIds) params.set("storeIds", storeIds.join(","));
+  if (storeTypes) params.set("storeTypes", storeTypes.join(","));
   if (query.staffName) params.set("staffName", query.staffName);
   params.set("page", String(query.page));
   params.set("pageSize", String(query.pageSize));

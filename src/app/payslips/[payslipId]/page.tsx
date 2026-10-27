@@ -9,7 +9,7 @@ import { formatAmount } from "@/lib/payslips";
 import { getPayslip } from "@/lib/payslips-api";
 import { kstToday } from "@/lib/staff-members";
 import { payslipListHref } from "../payslip-list-query";
-import { reviewBand } from "../payslip-row";
+import { attendanceHref, reviewBand } from "../payslip-row";
 import { PayslipReview, SectionHead } from "./payslip-review";
 
 export const metadata: Metadata = {
@@ -32,8 +32,9 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
   const listHref = payslipListHref(await searchParams, kstToday());
   const reasonOf = (value: string) => labelOf(reasonLabels, value);
   const present = new Set<string>(payslip.reviewReasons.map((r) => r.reviewReason));
-  // 사유 목록은 api 가 준 것으로 그린다 — 새 사유가 생겨도 front 는 따로 고치지 않는다(naming.md 「조회한 목록으로 그린다」)
-  const absentReasons = reasonLabels.filter((r) => !present.has(r.value));
+  // 사유 목록은 api 가 준 것으로 그린다 — 새 사유가 생겨도 front 는 따로 고치지 않는다(naming.md 「조회한 목록으로 그린다」).
+  // 공제 미입력은 사유 줄로 남기지 않고 확정을 막는다(api okf) — 「해당 없음」으로 그리면 금액 칸 아래 빨간 띠와 어긋나 뺀다
+  const absentReasons = reasonLabels.filter((r) => !present.has(r.value) && r.value !== "DEDUCTION_MISSING");
   const { contract } = payslip;
 
   const aside = (
@@ -55,8 +56,7 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
       </section>
       <section className="flex min-w-0 flex-col gap-[12px]">
         <SectionHead title="참조한 것">
-          {/* 출퇴근 현황 화면이 아직 없다 */}
-          <Button variant="soft" disabled title="준비 중입니다.">
+          <Button variant="soft" href={attendanceHref(payslip)}>
             출퇴근 기록 보기
           </Button>
         </SectionHead>
@@ -74,10 +74,10 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
                 </span>
               ),
             },
-            // 월급 · 시급은 근로계약에 칸이 없어 고용형태로 단위를 붙인다(정직원 월급 · 파트타이머 시급)
+            // 근로계약 급여액은 고용형태와 상관없이 시급이다(2026-10-12) — 정직원 기본급은 시급 × 월 기본시간
             {
               label: "계약 급여",
-              value: contract.wageAmount === null ? "-" : `${formatAmount(contract.wageAmount)} 원 / ${payslip.employmentType === "FULL_TIME" ? "월" : "시간"}`,
+              value: contract.wageAmount === null ? "-" : `${formatAmount(contract.wageAmount)} 원 / 시간`,
             },
             { label: "출퇴근 기간", value: `${payslip.attendanceStartDate} ~ ${payslip.attendanceEndDate.slice(5)}` },
             // 집계 근로시간 · 근무스케줄 기준 시간은 api 에 칸이 없어 두지 않는다

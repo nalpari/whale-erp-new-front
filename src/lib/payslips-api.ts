@@ -23,8 +23,6 @@ const init = async (): Promise<RequestInit> => ({ method: "GET", headers: await 
 /** GET /payslips. 점포명에 맞는 점포가 없으면 부르지 않고 0건. 상태를 하나도 고르지 않았으면 0건이다 — 상태 건수는 상태 필터와 상관없어 api 에서 그대로 받는다. */
 export async function getPayslips(query: PayslipListQuery): Promise<PayslipListResponse> {
   const search = payslipListApiSearch(query);
-  // 점포명에 맞는 점포가 없으면 부르지 않는다 — 고른 점포가 없으니 상태 건수도 0 이다
-  if (search === null) return { items: [], total: 0, statusCounts: { DRAFTING: 0, REVIEWING: 0, CONFIRMED: 0, SENT: 0 } };
   const response = await request<PayslipListResponse>(`/payslips?${search}`, await init());
   return query.statuses.length === 0 ? { ...response, items: [], total: 0 } : response;
 }
