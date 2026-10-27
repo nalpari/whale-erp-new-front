@@ -5,7 +5,7 @@ import { useState, useTransition, type RefObject } from "react";
 import { Badge, Button, ConfirmDialog, DataTable, DetailTable, DetailValues, SlidePanel, Tag, useToast, type DetailRow } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { usePagePermission } from "@/components/site/session-gate";
-import { FailedBand } from "@/components/site/side-parts";
+import { FailedBand, InfoBand } from "@/components/site/side-parts";
 import { Blocked, WhoList } from "@/app/platform-admins/admin-parts";
 import { HistoryButton } from "@/app/platform-admins/history-dialog";
 import { StoreStatusBadge } from "@/app/stores/store-parts";
@@ -157,6 +157,28 @@ function DetailBody({
         </Tag>
       </h2>
       {failure && <FailedBand message={failure} />}
+      {/* 버튼을 숨기거나 막은 이유(목업 admins-detail, 남이 연 가맹 관리자 문구는 2026-10-27 사용자 지정) */}
+      {admin.actions.isSelf ? (
+        admin.roleTypeCode === "FA" ? (
+          <InfoBand>
+            <p>내 계정입니다 — 조회만 합니다</p>
+            <p className="font-normal text-erp-label">
+              가맹 관리자는 계정을 수정하지 않습니다. 계정 정보 · 권한 그룹 · 점포 · 상태는 연결된 가맹 마스터가 바꾸고, 비밀번호는 내 정보에서 직접 바꿉니다.
+            </p>
+          </InfoBand>
+        ) : (
+          <InfoBand>
+            <p>내 계정입니다</p>
+            <p className="font-normal text-erp-label">
+              수정 화면에서는 기본정보(이름 · 휴대전화번호 · 이메일)만 바뀝니다. 권한 그룹 · 계정 상태 · 대상 점포는 BP 마스터 · BP 관리자 · 플랫폼 사용자가,
+              비밀번호는 내 정보에서 직접 바꿉니다.
+            </p>
+          </InfoBand>
+        )
+      ) : (
+        admin.roleTypeCode === "FA" &&
+        !admin.actions.canUpdate && <InfoBand>가맹 관리자 계정은 연결된 가맹 마스터만 수정 · 비밀번호 초기화할 수 있습니다.</InfoBand>
+      )}
       <DetailTable title="기본정보" rows={rows} />
       {/* 대상 점포 위에 적용 범위 — BP 휴일 상세의 적용 대상과 같은 모양(데모, 2026-10-08) */}
       <DetailTable title="적용 대상" rows={[{ label: "적용 범위", value: <Tag>{admin.isAllStores ? "전체 점포" : "일부 점포"}</Tag> }]} />
