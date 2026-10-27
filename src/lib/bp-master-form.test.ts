@@ -7,10 +7,12 @@ import {
   EMPTY_BP_MASTER_FORM,
   formOfBpMaster,
   hasPendingVerification,
+  isVerificationExpired,
   toCreateBpMasterInput,
   toUpdateBpMasterInput,
   validateBpMasterForm,
   verificationErrors,
+  verificationRejection,
   type BpMasterForm,
 } from "./bp-master-form.ts";
 import type { BpMasterDetail } from "./bp-masters.ts";
@@ -117,4 +119,20 @@ test("emailError — 앞뒤 공백은 지우고 보고, 100자까지", () => {
   const local = (n: number) => `${"a".repeat(n - "@b.co".length)}@b.co`;
   assert.equal(emailError(local(100)), undefined);
   assert.equal(emailError(local(101)), "이메일 형식이 아닙니다.");
+});
+
+test("이번 화면의 인증은 10분이 지나면 저장 전에 푼다 — 저장돼 있던 인증(token 없음)은 보지 않는다", () => {
+  const verified = { bizNumber: "1058633412", ceoName: "정하윤", openDate: "2016-05-20", token: "t", verifiedAt: 0 };
+  assert.equal(isVerificationExpired({ verified }, 9 * 60_000 + 59_999), false);
+  assert.equal(isVerificationExpired({ verified }, 10 * 60_000), true);
+  assert.equal(isVerificationExpired({ verified: { ...verified, token: undefined, verifiedAt: undefined } }, 10 * 60_000), false);
+  assert.equal(isVerificationExpired({ verified: null }, 10 * 60_000), false);
+});
+
+test("저장이 실어 보낸 인증 때문에 거절됐는가 — 토큰 만료 400 · 번호 중복 409 만, 토큰을 보냈을 때만", () => {
+  const sent = { verified: { bizNumber: "1058633412", ceoName: "정하윤", openDate: "2016-05-20", token: "t", verifiedAt: 0 } };
+  assert.equal(verificationRejection(sent, 400, "사업자정보 인증이 만료되었습니다. 다시 인증해 주세요."), "사업자정보 인증이 만료되었습니다. 다시 인증해 주세요.");
+  assert.equal(verificationRejection(sent, 409, "이미 등록된 사업자등록번호입니다."), "이미 등록된 사업자등록번호입니다.");
+  assert.equal(verificationRejection(sent, 409, "사용 중이거나 미사용인 다른 관리자 계정의 이메일입니다"), null);
+  assert.equal(verificationRejection({ verified: { ...sent.verified, token: undefined } }, 409, "이미 등록된 사업자등록번호입니다."), null);
 });

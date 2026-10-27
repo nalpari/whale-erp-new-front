@@ -5,13 +5,17 @@ import type { BpMasterDetail, CreateBpMasterInput, UpdateBpMasterInput } from ".
 import { loginIdError, NAME_PATTERN, PHONE_PATTERN, splitPhone } from "./platform-admin-form.ts";
 // 대표자 연락처는 02 국번 9자리도 받는다 — api DTO · BP 자기 사업자정보(MY PAGE)와 같은 규칙
 import { CEO_PHONE_PATTERN } from "./bp-profile-form.ts";
+import { BIZ_MESSAGE, isBizVerificationExpired } from "./biz-verification-rules.ts";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const BIZ_NUMBER_PATTERN = /^[0-9]{10}$/;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
-/** 진위확인을 통과한 세 값. token 은 이번 화면에서 받은 것만 있다(수정에서 저장돼 있던 인증은 token 이 없다). */
-export type BpVerified = { bizNumber: string; ceoName: string; openDate: string; token?: string };
+/**
+ * 진위확인을 통과한 세 값. token 은 이번 화면에서 받은 것만 있다(수정에서 저장돼 있던 인증은 token 이 없다).
+ * verifiedAt 은 그 인증을 요청한 시각(ms) — 10분이 지나면 저장 전에 인증을 푼다(점포 · 회원가입과 같은 규칙, biz-verification-rules.ts).
+ */
+export type BpVerified = { bizNumber: string; ceoName: string; openDate: string; token?: string; verifiedAt?: number };
 
 /** 입력칸 값 그대로. 연락처는 세 칸이다. */
 export type BpMasterForm = {
@@ -199,5 +203,20 @@ export function bpMasterServerErrorField(status: number | undefined, message: st
   if (message.includes("대표자 이메일")) return "ceoEmail";
   if (message.includes("이메일")) return "email";
   if (message.includes("상호")) return "tradeName";
+  return null;
+}
+
+/** 이번 화면에서 받은 인증이 10분을 넘겼는가 — 저장 전에 풀고 다시 인증하게 한다(점포 · 회원가입과 같다). */
+export const isVerificationExpired = (form: Pick<BpMasterForm, "verified">, now: number) =>
+  Boolean(form.verified?.token && form.verified.verifiedAt !== undefined && isBizVerificationExpired(form.verified.verifiedAt, now));
+
+/**
+ * 저장이 실어 보낸 인증 때문에 거절됐는가 — 토큰 만료(400)이거나 그 사이 같은 번호가 저장됐다(409). 그 인증은 다시 써도 같은 이유로
+ * 거절되므로 화면이 버린다. 문구는 api 가 공통 문구(BIZ_MESSAGE)를 그대로 준다. 토큰을 실어 보내지 않았으면 해당 없다.
+ */
+export function verificationRejection(form: Pick<BpMasterForm, "verified">, status: number | undefined, message: string): string | null {
+  if (!form.verified?.token) return null;
+  if (status === 400 && message === BIZ_MESSAGE.EXPIRED) return BIZ_MESSAGE.EXPIRED;
+  if (status === 409 && message === BIZ_MESSAGE.DUPLICATE) return BIZ_MESSAGE.DUPLICATE;
   return null;
 }

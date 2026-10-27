@@ -10,15 +10,18 @@ import {
   EMPTY_BP_MASTER_FORM,
   formOfBpMaster,
   hasPendingVerification,
+  isVerificationExpired,
   toCreateBpMasterInput,
   toUpdateBpMasterInput,
   validateBpMasterForm,
   verificationErrors,
+  verificationRejection,
   verificationValuesOf,
   type BpMasterForm,
   type BpMasterFormErrors,
   type BpMasterFormField,
 } from "@/lib/bp-master-form";
+import { BIZ_MESSAGE, bizVerifyFailure } from "@/lib/biz-verification-rules";
 import type { BpMasterDetail, CreateBpMasterResult } from "@/lib/bp-masters";
 import { loginIdError } from "@/lib/platform-admin-form";
 import { formatDateTime } from "@/lib/format";
@@ -165,6 +168,8 @@ export function BpMasterFormPanel(props: Props) {
     if (Object.keys(found).length) return focusFirstError();
     const values = verificationValuesOf(form);
     const mine = ++verifyNumber.current;
+    // 10분은 요청을 보내기 직전부터 잰다 — api 는 그 뒤에 서명하니 화면이 먼저 만료로 본다(biz-verification-rules.ts)
+    const verifiedAt = Date.now();
     startVerifying(async () => {
       const result = await verifyBpBusinessAction({
         bizRegistrationNumber: values.bizNumber,
@@ -177,11 +182,26 @@ export function BpMasterFormPanel(props: Props) {
         return { ok: false as const, status: undefined, message: "사업자정보를 인증하지 못했습니다. 잠시 후 다시 시도해 주세요." };
       });
       if (mine !== verifyNumber.current) return;
-      // 로그인 만료(401) · 권한 없음(403)은 저장도 막히고, 국세청 장애(503)는 문구에 이미 들어 있어 「인증 없이 저장」 안내를 붙이지 않는다
-      if (!result.ok) return setVerifyFailure([401, 403, 503].includes(result.status ?? 0) ? result.message : `${result.message} 인증 없이도 저장할 수 있습니다.`);
+      if (!result.ok) {
+        // 로그인 만료(401) · 권한 없음(403) · 입력 형식(400)은 api 문구 그대로 — 401 · 403 은 저장도 막혀 「인증 없이 저장」을 붙이지 않는다.
+        // 그 밖은 점포 · 회원가입과 같은 글자가 보이도록 상태 코드로 공통 문구를 고른다(bizVerifyFailure, S-VRNTHD)
+        if (result.status === 401 || result.status === 403) return setVerifyFailure(result.message);
+        const text = result.status === 400 ? result.message : bizVerifyFailure(result.status).message;
+        return setVerifyFailure(`${text} 인증 없이도 저장할 수 있습니다.`);
+      }
       setVerifyFailure(null);
-      setForm((f) => ({ ...f, verifying: false, verified: { ...values, token: result.verificationToken }, bizNumber: "", ceoName: "", openDate: "" }));
+      setForm((f) => ({ ...f, verifying: false, verified: { ...values, token: result.verificationToken, verifiedAt }, bizNumber: "", ceoName: "", openDate: "" }));
     });
+  };
+
+  /**
+   * 이번 화면에서 받은 인증을 버린다 — 등록은 미인증으로, 수정은 저장돼 있던 인증으로 돌아간다. 띠에 이유와 다음 길을 알린다.
+   * 점포 · 회원가입처럼 만료 · 번호 중복으로 쓸 수 없는 인증을 화면에 남겨 두지 않는다(그대로면 저장이 같은 이유로 계속 거절된다).
+   */
+  const releaseVerification = (reason: string) => {
+    verifyNumber.current++;
+    setForm((f) => ({ ...f, verified: props.mode === "edit" ? formOfBpMaster(props.bp).verified : null }));
+    setFailure(`${reason} 다시 인증하거나 인증 없이 저장할 수 있습니다.`);
   };
 
   const handleSave = () => {
@@ -193,6 +213,7 @@ export function BpMasterFormPanel(props: Props) {
     if (hasPendingVerification(form)) {
       return setFailure("인증하지 않은 사업자등록번호 · 대표자명 · 개업일자는 저장되지 않습니다. [인증하기]를 누르거나 인증 상자를 닫은 뒤 저장해 주세요.");
     }
+    if (isVerificationExpired(form, Date.now())) return releaseVerification(BIZ_MESSAGE.EXPIRED);
 
     startSaving(async () => {
       if (props.mode === "create") {
@@ -200,13 +221,16 @@ export function BpMasterFormPanel(props: Props) {
         if (!result.ok) {
           // 결과를 모르면 목록을 새로 받아, 이미 만들어졌는지 사용자가 볼 수 있게 한다
           if (result.status === undefined) router.refresh();
-          return applyServerError(result.status, result.message);
+          const rejected = verificationRejection(form, result.status, result.message);
+          return rejected ? releaseVerification(rejected) : applyServerError(result.status, result.message);
         }
         return props.onSaved(result);
       }
       const result = await updateBpMasterAction(props.bp.bpCodeId, toUpdateBpMasterInput(form)).catch(unknownResult("수정"));
       if (result.ok) return props.onSaved();
       // 결과를 모름 · 그 사이 탈퇴(409) · 지움(404)이면 상세를 다시 받는다
+      const rejected = verificationRejection(form, result.status, result.message);
+      if (rejected) return releaseVerification(rejected);
       if (result.status === undefined || result.status === 404 || result.status === 409) router.refresh();
       applyServerError(result.status, result.message);
     });
