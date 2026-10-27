@@ -229,7 +229,8 @@ function DetailBody({
 function MappedStores({ admin }: { admin: BpAdminDetail }) {
   const columns = [
     { header: "점포명", align: "left" as const, cell: (s: BpAdminStore) => s.name },
-    { header: "점포코드", width: "w-[110px]" as const, cell: (s: BpAdminStore) => s.storeCode },
+    // 점포코드는 작은 회색 글자 — 점포 일괄 검색 창 · 점포 찾기 목록과 같다. 점포명이 먼저 읽히게 한다(2026-10-27 사용자 지정)
+    { header: "점포코드", width: "w-[110px]" as const, cell: (s: BpAdminStore) => <span className="text-[12px] text-erp-muted">{s.storeCode}</span> },
     { header: "점포 상태", width: "w-[90px]" as const, cell: (s: BpAdminStore) => <StoreStatusBadge status={s.storeStatusCode as StoreStatus} /> },
   ];
   const many = admin.stores.length > 5;
@@ -253,7 +254,11 @@ function MappedStores({ admin }: { admin: BpAdminDetail }) {
         </h3>
       </div>
       {admin.isAllStores ? (
-        <p className="rounded-b-[2px] border border-erp-thead-line px-[16px] py-[14px] text-[14px] text-erp-label">소속 BP 의 모든 점포를 관리합니다. 새로 등록하는 점포도 함께 관리합니다.</p>
+        // 두 줄로(2026-10-27 사용자 지정 — 전엔 「소속 BP 의 모든 점포를 관리합니다. 새로 등록하는 점포도 함께 관리합니다.」 한 줄)
+        <div className="rounded-b-[2px] border border-erp-thead-line px-[16px] py-[14px] text-[14px] text-erp-label">
+          <p>소속BP의 모든 점포를 관리합니다.</p>
+          <p>신규 등록된 점포도 관리 대상에 자동으로 포함됩니다.</p>
+        </div>
       ) : many ? (
         // 여섯 개부터는 다섯 줄 높이(위 선 1 + 줄 46 × 5) 안에서 표를 스크롤한다(2026-10-26 사용자 요청). 표의 아래 선은 마지막 줄에 붙어 스크롤 중엔
         // 상자 밖으로 내려간다 — 상자 맨 아래에 늘 보이는 선을 덧그린다(끝까지 내리면 마지막 줄 선과 겹친다, 사용자가 찾음)

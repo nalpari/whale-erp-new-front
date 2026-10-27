@@ -40,7 +40,7 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
   const storeTable = ui
     .dataTable(
       [{ header: "점포명", align: "left" }, { header: "점포코드", width: "w-[110px]" }, { header: "점포 상태", width: "w-[90px]" }],
-      STORES.map(([n, code]) => [n, code, ui.badge("on", "운영")]),
+      STORES.map(([n, code]) => [n, `<span class="text-[12px] text-erp-muted">${code}</span>`, ui.badge("on", "운영")]), // 점포코드는 작은 회색 글자(앱과 같다)
     )
     .replace("<thead>", '<thead class="sr-only">')
     .replace('class="w-full table-fixed border-collapse border-x', 'class="w-full table-fixed border-collapse border-t border-x');

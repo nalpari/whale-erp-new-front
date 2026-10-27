@@ -200,7 +200,12 @@ export function StoreMappingPicker({
             ))}
           </ul>
           {!picked.length && (
-            <p className="pointer-events-none absolute inset-0 grid place-items-center text-[13px] text-erp-muted">아직 고른 점포가 없습니다. 위에서 찾아 더하세요.</p>
+            <p className="pointer-events-none absolute inset-0 grid place-items-center text-center text-[13px] leading-[1.6] text-erp-muted">
+              {/* 두 줄 안내(2026-10-27 사용자 지정 — 전엔 「아직 고른 점포가 없습니다. 위에서 찾아 더하세요.」) */}
+              선택된 점포가 없습니다.
+              <br />
+              점포찾기에서 점포를 검색하여 추가해주세요.
+            </p>
           )}
         </div>
       </div>
