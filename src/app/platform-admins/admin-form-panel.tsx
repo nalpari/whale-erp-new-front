@@ -402,7 +402,7 @@ export function AdminFormPanel(props: Props) {
         />
       </FormGroup>
 
-      <FormGroup title={mode === "create" ? "사용자 권한" : "사용자 권한 · 계정상태"}>
+      <FormGroup title={mode === "create" ? "권한명" : "권한명 · 계정상태"}>
         {/* 본인 계정은 이 칸들을 고칠 수 없어 비활성 처리한다 — 흰 바탕과 구별되게 막힌 칸만 회색으로 그린다
             (공통 입력칸 토큰은 그대로 두고 이 화면 테두리에서만 셈한다, contract-form.tsx 와 같은 방식). */}
         <div className="flex flex-col gap-[12px] [&_select:disabled]:bg-erp-thead-bg">

@@ -49,7 +49,7 @@ function platformAdminEditBody(A) {
   );
 
   const role = ui.formGroup(
-    "사용자 권한 · 계정상태",
+    "권한명 · 계정상태",
     row(
       ui.field(
         "권한명",
@@ -102,7 +102,7 @@ export const platformMyPanel = (A, { master = false } = {}) => {
     ui.field("직책", ui.textField({ value: me.title, maxlength: 30 })),
     myAddress(A, "13529", "경기 성남시 분당구 판교역로 166", "7층"),
   );
-  const role = ui.formGroup("사용자 권한", ui.field("사용자 권한", ui.textField({ value: me.role, readonly: true })));
+  const role = ui.formGroup("권한명", ui.field("권한명", ui.textField({ value: me.role, readonly: true })));
   const buttons = `<div class="flex justify-center gap-[6px]">${ui.button("취소", { variant: "off", "data-close": true })}${ui.button("저장", { "data-close": true })}</div>`;
   return ui.slidePanel("platform-mypage-panel", "내 정보", ui.sectionHead(`내 정보${sub(`${me.name} · ${me.id}`)}`) + basic + role + buttons);
 };

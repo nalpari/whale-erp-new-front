@@ -59,7 +59,7 @@ function platformAdminNewBody(A) {
   );
 
   const role = ui.formGroup(
-    "사용자 권한",
+    "권한명",
     row(
       ui.field(
         req("권한명"),
