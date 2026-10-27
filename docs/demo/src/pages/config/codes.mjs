@@ -50,7 +50,7 @@ export default ({ A, R }) => {
   const groupRows = GROUPS.map(([code, name, owner, pick], i) => [
     i === SELECTED ? `<b class="font-semibold" aria-current="true">${code}</b>` : pick ? ui.link(code, "#") : code,
     name,
-    c.tag(owner),
+    c.ownerTag(owner),
   ]);
   const left = c.card(
     "w-[560px] shrink-0",
@@ -67,11 +67,11 @@ export default ({ A, R }) => {
     { header: "사용여부", width: "w-[110px]" },
     { header: "관리주체", width: "w-[110px]" },
   ];
-  const codeRows = CODES.map(([code, name, owner], i) => [handle, code, ui.textField({ value: name, "aria-label": "코드명" }), i + 1, x.toggle("사용", true), c.tag(owner)]);
+  const codeRows = CODES.map(([code, name, owner], i) => [handle, code, ui.textField({ value: name, "aria-label": "코드명" }), i + 1, x.toggle("사용", true), c.ownerTag(owner)]);
   const right = c.card(
     "min-w-0 flex-1",
       head(
-        `상세 코드${c.sub('EMP_TYPE · <b class="font-semibold text-erp-ink">고용 형태</b>')}<span class="ml-[10px] inline-flex align-middle">${c.tag("플랫폼제공")}</span>`,
+        `상세 코드${c.sub('EMP_TYPE · <b class="font-semibold text-erp-ink">고용 형태</b>')}<span class="ml-[10px] inline-flex align-middle">${c.ownerTag("플랫폼제공")}</span>`,
         ui.button("추가", { variant: "soft" }) + ui.button("저장"),
       ) +
       ui.scrollTable(ui.dataTable(codeCols, codeRows)),

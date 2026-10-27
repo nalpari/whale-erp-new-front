@@ -7,6 +7,7 @@ import { GuardedLink, useUnsavedChanges } from "@/components/site/code-editor/un
 import { useCodeLabel } from "@/components/site/code-label";
 import { useCurrentBp } from "@/components/site/session-gate";
 import { bpCodesHref } from "@/lib/bp-code-drafts";
+import { ownerTagTone } from "@/lib/code-drafts";
 import type { BpCodeGroup } from "@/lib/bp-codes";
 import { bpPath } from "@/lib/bp-path";
 
@@ -51,7 +52,7 @@ export function BpCodeGroupPanel({
         ),
     },
     { header: "그룹명", align: "left", cell: (g) => g.groupName },
-    { header: "관리주체", width: "w-[110px]", cell: (g) => <Tag>{ownerLabel(g.manageOwnerCode)}</Tag> },
+    { header: "관리주체", width: "w-[110px]", cell: (g) => <Tag tone={ownerTagTone(g.manageOwnerCode)}>{ownerLabel(g.manageOwnerCode)}</Tag> },
   ];
 
   return (

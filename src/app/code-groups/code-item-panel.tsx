@@ -12,6 +12,7 @@ import {
   itemsDirty,
   hasPending,
   itemsDeletable,
+  ownerTagTone,
   renumberAdded,
   savedToast,
   unusableCodeMessage,
@@ -308,7 +309,7 @@ export function CodeItemPanel({
             {group.groupCode} · <b className="font-semibold text-erp-ink">{group.groupName}</b>
             {ownerLabel && (
               <span className="ml-[10px] inline-flex align-middle">
-                <Tag>{ownerLabel}</Tag>
+                <Tag tone={ownerTagTone(group.manageOwnerCode)}>{ownerLabel}</Tag>
               </span>
             )}
           </>

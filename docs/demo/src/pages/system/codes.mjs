@@ -113,7 +113,7 @@ export default ({ A, R }) => {
   const groupRows = GROUPS.map(([code, name, owner, bp], i) => [
     i === 0 ? `<b class="font-semibold" aria-current="true">${code}</b>` : ui.link(code, "#"),
     ui.textField({ value: name, "aria-label": "그룹명" }),
-    c.tag(owner), // 관리 주체는 분류 꼬리표(앱 code-group-panel.tsx 의 Tag 와 같다, 2026-10-26)
+    c.ownerTag(owner), // 관리주체는 분류 꼬리표, 플랫폼고정만 하늘색(앱 code-group-panel.tsx 의 Tag 와 같다, 2026-10-26)
     // BP 적용 칸 — 관리 주체가 플랫폼제공인 그룹만 [BP 적용] 버튼, 나머지는 —(2026-10-08)
     owner === "플랫폼제공" ? x.dialogTrigger("BP 적용", apply, "soft") : '<span class="text-erp-muted">-</span>',
     x.toggle("사용", true),
@@ -152,7 +152,7 @@ export default ({ A, R }) => {
   ]);
   const right = card(
     "min-w-0 flex-1",
-    ui.sectionHead(`상세 코드${sub('SERVICE · <b class="font-semibold text-erp-ink">서비스</b>')}<span class="ml-[10px] inline-flex align-middle">${c.tag("플랫폼고정")}</span>`, dim(ui.button("추가", { variant: "soft", "data-add-row": "new-code", "data-multi": true })) + ui.button("저장")) +
+    ui.sectionHead(`상세 코드${sub('SERVICE · <b class="font-semibold text-erp-ink">서비스</b>')}<span class="ml-[10px] inline-flex align-middle">${c.ownerTag("플랫폼고정")}</span>`, dim(ui.button("추가", { variant: "soft", "data-add-row": "new-code", "data-multi": true })) + ui.button("저장")) +
       ui.scrollTable(ui.dataTable(codeCols, codeRows)) +
       addRows(
         "new-code",

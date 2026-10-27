@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { Badge, Button, DataTable, Pagination, Select, Tag, TextField, Toggle, useToast, type Column } from "@/components/common";
-import { buildSaveGroupsInput, codePanelAccess, followSameRows, groupChanged, withKeptPending, type GroupDraft } from "@/lib/code-drafts";
+import { buildSaveGroupsInput, codePanelAccess, followSameRows, groupChanged, ownerTagTone, withKeptPending, type GroupDraft } from "@/lib/code-drafts";
 import { failureView } from "@/lib/code-save";
 import { codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-validation";
 import type { CodeGroup, ManageOwnerCode } from "@/lib/codes";
@@ -258,7 +258,7 @@ export function CodeGroupPanel({
             ))}
           </Select>
         ) : (
-          <Tag>{ownerLabels[d.manageOwnerCode] ?? d.manageOwnerCode}</Tag>
+          <Tag tone={ownerTagTone(d.manageOwnerCode)}>{ownerLabels[d.manageOwnerCode] ?? d.manageOwnerCode}</Tag>
         ),
     },
     {

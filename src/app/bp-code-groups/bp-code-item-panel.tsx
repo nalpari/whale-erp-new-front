@@ -18,6 +18,7 @@ import {
   followSameRows,
   hasPending,
   itemsDirty,
+  ownerTagTone,
   renumberAdded,
   savedToast,
   unusableCodeMessage,
@@ -259,7 +260,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
       header: "관리주체",
       width: "w-[110px]",
       // 새 행은 BP전용으로 저장된다(api 가 정한다)
-      cell: (d) => <Tag>{ownerLabel(d.manageOwnerCode)}</Tag>,
+      cell: (d) => <Tag tone={ownerTagTone(d.manageOwnerCode)}>{ownerLabel(d.manageOwnerCode)}</Tag>,
     },
     // 플랫폼제공 · BP전용 코드를 지운다(삭제 권한, bpDeletable) — 새 행에는 버튼이 없다(이동 칸의 [×]로 뺀다)
     ...(canDelete
@@ -286,7 +287,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
             {/* 그룹명은 굵게(2026-10-27 사용자 지정) */}
             {group.groupCode} · <b className="font-semibold text-erp-ink">{group.groupName}</b>
             <span className="ml-[10px] inline-flex align-middle">
-              <Tag>{ownerLabel(group.manageOwnerCode)}</Tag>
+              <Tag tone={ownerTagTone(group.manageOwnerCode)}>{ownerLabel(group.manageOwnerCode)}</Tag>
             </span>
           </>
         )
