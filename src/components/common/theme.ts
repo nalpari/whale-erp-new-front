@@ -12,6 +12,11 @@ export const FIELD_BOX =
 
 export const FIELD = `${FIELD_BOX} h-[34px] pl-[10px]`;
 
+// 필터 라벨 줄 · 칩 머리에 서는 작은 버튼(24px — 점포 [일괄검색] · [전체 제거]). 34px 버튼은 그 줄을 밀어내 작게 둔다(사용자 요청, 2026-10-27).
+// 색 · 호버는 Button 의 soft 와 같다 — 테두리를 같은 색으로 깔아 호버에 크기가 변하지 않는다.
+export const SMALL_BUTTON =
+  "inline-flex h-[24px] shrink-0 items-center rounded-[2px] border border-erp-brand-soft bg-erp-brand-soft px-[8px] text-[12px] font-medium whitespace-nowrap text-white transition-[background-color,border-color,color] duration-150 ease-out hover:border-erp-brand hover:bg-white hover:text-erp-ink";
+
 // globals.css 는 OS 설정을 따라 다크 테마가 되므로, ERP 화면은 ErpRoot 안에서 밝은 테마로 고정한다.
 // Tailwind v4 는 버튼에 pointer 커서를 주지 않으므로 누를 수 있는 요소를 여기서 한 번에 잡는다.
 // 스크롤바는 색과 굵기(thin)를 ! 로 고정해 밝은 화면에 맞춘다. Chrome 은 색·굵기를 표준 속성으로 주면
