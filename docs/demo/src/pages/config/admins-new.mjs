@@ -25,8 +25,8 @@ export function adminNewBody(A, R, { panel = false } = {}) {
   );
 
   // 계정 역할 · 권한 그룹 — 안내 문구 없이. 패널에서도 한 줄에 나란히(2026-10-27 사용자 지정 — 전엔 패널에서 두 줄)
-  const role = ui.formGroup(
-    "계정 역할",
+  // 계정 역할 · 권한명은 기본정보 안 맨 아래 — 「계정 역할」 묶음 제목은 없앴다(앱과 같다, 2026-10-27 사용자 지정)
+  const roleRow = [
     c.row(
       // 계정 역할은 130px 고정, 권한 그룹이 남는 폭(앱 admin-form-panel, 2026-10-27)
       ui.field(c.req("계정 역할"), ui.select(["BP 관리자", "가맹 마스터"]), "w-[130px] shrink-0"),
@@ -35,7 +35,7 @@ export function adminNewBody(A, R, { panel = false } = {}) {
         ui.select(["운영 총괄 · BA000003", "인사 담당 · BA000004", "정산 조회 · BA000005", "고객응대 · BA000006", "점포 조회 전용 · BA000007"], { value: "고객응대 · BA000006" }),
       ),
     ),
-  );
+  ][0];
 
   const stores = ui.formGroup(
     "대상점포",
@@ -55,7 +55,7 @@ export function adminNewBody(A, R, { panel = false } = {}) {
   const save = panel
     ? ui.button("저장", { "data-save-panel": "admin-detail-panel" })
     : ui.button("저장", { href: `${link(R, "config/admins.html")}?panel=admin-detail-panel` });
-  return basic + role + stores + c.note("관리자 계정의 초기 비밀번호는 등록된 이메일로 발송됩니다.") /* 플랫폼 관리자 등록과 같은 문구(2026-10-27 사용자 지정) */ + c.buttons(cancel, save);
+  return basic.replace("</div></section>", `${roleRow}</div></section>`) + stores + c.note("관리자 계정의 초기 비밀번호는 등록된 이메일로 발송됩니다.") /* 플랫폼 관리자 등록과 같은 문구(2026-10-27 사용자 지정) */ + c.buttons(cancel, save);
 }
 
 export function adminNewPanel(A, R) {

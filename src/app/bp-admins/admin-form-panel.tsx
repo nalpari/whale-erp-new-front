@@ -376,9 +376,7 @@ export function AdminFormPanel(props: Props) {
               {/* 등록일시 · 최근 로그인은 상세에서 본다 — 수정에는 두지 않는다(2026-10-27 사용자 지정) */}
             </>
           )}
-        </FormGroup>
-
-        <FormGroup title="계정 역할">
+          {/* 계정 역할 · 권한명은 기본정보 안 맨 아래 — 따로 있던 「계정 역할」 묶음 제목은 없앴다(2026-10-27 사용자 지정) */}
           {groupsFailed && <FailedBand message="권한 그룹 목록을 불러오지 못했습니다. 화면을 새로 고쳐 주세요." />}
           {noGroupForRole && <FailedBand message="붙일 권한 그룹이 없습니다. BP 권한 그룹 관리에서 먼저 만들어 주세요." />}
           {/* 계정 역할 · 권한 그룹은 한 줄에 나란히(2026-10-27 사용자 지정 — 전엔 두 줄). 역할 이름은 7자를 넘지 않아
