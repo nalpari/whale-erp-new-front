@@ -883,7 +883,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 그룹 목록 — 사용 중인 플랫폼제공 그룹(적용 여부와 관계없이), 표시 순서대로. 플랫폼고정 · 사용중지 그룹은 items · total 에서 빠진다. */
+        /** 그룹 목록 — 사용 중인 플랫폼고정 · 플랫폼제공 그룹(적용 여부와 관계없이), 표시 순서대로. 사용중지 그룹은 빠진다. */
         get: operations["BpCodeGroupsController_listGroups"];
         put?: never;
         post?: never;
@@ -900,7 +900,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 고른 플랫폼제공 그룹의 상세 코드 — 이 BP 의 행(BP전용 포함). 플랫폼고정 · 사용중지 그룹은 404. */
+        /** 고른 그룹의 상세 코드. 플랫폼고정은 플랫폼 원본, 플랫폼제공은 이 BP 의 행(BP전용 포함). */
         get: operations["BpCodeGroupsController_listItems"];
         /** 상세 코드 수정 — 이 BP 의 행 여러 개를 한 번에. 하나라도 막히면 아무것도 고치지 않는다. */
         put: operations["BpCodeGroupsController_updateItems"];
@@ -4223,7 +4223,7 @@ export interface components {
             loginId: string;
             /** @description 이름. */
             name: string;
-            /** @description 연락처 — 하이픈 없이 숫자 9~12자리. */
+            /** @description 연락처 — 하이픈 없이 숫자 10~11자리. */
             phone: string;
             /** @description 이메일. */
             email: string;
@@ -4262,7 +4262,7 @@ export interface components {
              */
             name: string;
             /**
-             * @description 연락처. 하이픈 없이 숫자 9~12자리.
+             * @description 연락처. 하이픈 없이 숫자 10~11자리.
              * @example 01012345678
              */
             phone: string;
@@ -4329,7 +4329,7 @@ export interface components {
              */
             tradeName: string;
             /**
-             * @description 대표자 연락처. 하이픈 없이 숫자 9~12자리(02 지역번호 · 050X 평생번호 포함). 비워 둘 수 있다.
+             * @description 대표자 연락처. 하이픈 없이 숫자 9~11자리(02 지역번호 포함). 비워 둘 수 있다.
              * @example 01012345678
              */
             bizCeoPhone?: string;
@@ -4430,7 +4430,7 @@ export interface components {
             password: string;
             /** @description 한글 또는 영문 2~20자 */
             name: string;
-            /** @description 숫자만 9~12자리. 화면의 세 칸을 이어 붙인 값이다 */
+            /** @description 숫자만 10~11자리. 화면의 세 칸을 이어 붙인 값이다 */
             phone: string;
             /**
              * Format: email
@@ -4817,8 +4817,7 @@ export interface components {
              */
             name: string;
             /**
-             * @description 휴대전화. 하이픈 없이 숫자 9~12자리 — 화면 이름은 휴대전화지만 1팀 연락처 범위(02 지역번호 9자리 · 050X
-             *     평생번호 12자리)를 그대로 받는다. 중복 검사는 하지 않는다.
+             * @description 휴대전화. 하이픈 없이 숫자 10~11자리. 중복 검사는 하지 않는다.
              * @example 01012345678
              */
             phone: string;
@@ -4851,8 +4850,7 @@ export interface components {
              */
             name: string;
             /**
-             * @description 휴대전화. 하이픈 없이 숫자 9~12자리 — 화면 이름은 휴대전화지만 1팀 연락처 범위(02 지역번호 9자리 · 050X
-             *     평생번호 12자리)를 그대로 받는다. 중복 검사는 하지 않는다.
+             * @description 휴대전화. 하이픈 없이 숫자 10~11자리. 중복 검사는 하지 않는다.
              * @example 01012345678
              */
             phone: string;
@@ -4879,11 +4877,10 @@ export interface components {
         };
         BpCodeGroupResponseDto: {
             /**
-             * @description 관리 주체 — 늘 플랫폼제공이다. 그룹 단계에는 BP전용이 없고, 플랫폼고정 그룹은 BP 화면에 보이지 않는다(목록 ·
-             *     total 에서 빠진다, 2026-10-27 사용자 결정).
+             * @description 관리 주체. 그룹 단계에는 BP전용이 없다 — 플랫폼고정은 조회만, 플랫폼제공은 상세 코드를 고치고 더한다.
              * @enum {string}
              */
-            manageOwnerCode: "PLATFORM_PROVIDED";
+            manageOwnerCode: "PLATFORM_FIXED" | "PLATFORM_PROVIDED";
             /** @description 사용 상태(플랫폼이 정한다). BP 화면에는 사용 중인 그룹만 나오므로 늘 사용이다 — 사용중지 그룹은 목록에서 빠진다. */
             status: components["schemas"]["UseStatus"];
             /**
@@ -4905,10 +4902,10 @@ export interface components {
             /** @description 사용 상태. */
             status: components["schemas"]["UseStatus"];
             /**
-             * @description 관리 주체 — 플랫폼이 등록해 복사된 코드는 플랫폼제공, 이 BP 가 더하거나 되살린 코드는 BP전용.
+             * @description 관리 주체 — 플랫폼이 등록한 코드는 그룹의 관리 주체, 이 BP 가 더한 코드는 BP전용.
              * @enum {string}
              */
-            manageOwnerCode: "PLATFORM_PROVIDED" | "BP_ONLY";
+            manageOwnerCode: "PLATFORM_FIXED" | "PLATFORM_PROVIDED" | "BP_ONLY";
             /**
              * @description 상세 코드. 등록 뒤 바뀌지 않는다.
              * @example FULL
@@ -4923,7 +4920,7 @@ export interface components {
             sortOrder: number;
             /**
              * @description 플랫폼 원본이 사용중지인가(안내용). BP전용은 늘 거짓. 플랫폼제공 그룹에서 BP 는 이 값과 관계없이 사용 상태를
-             *     자유롭게 바꾼다(2026-10-22 결정).
+             *     자유롭게 바꾼다(2026-10-22 결정). 플랫폼고정 그룹은 모든 칸이 읽기 전용이다.
              */
             isPlatformInactive: boolean;
         };
@@ -5063,7 +5060,7 @@ export interface components {
              */
             name: string;
             /**
-             * @description 연락처. 하이픈 없이 숫자 9~12자리.
+             * @description 연락처. 하이픈 없이 숫자 10~11자리.
              * @example 01012345678
              */
             phone: string;
@@ -5105,7 +5102,7 @@ export interface components {
              */
             name: string;
             /**
-             * @description 연락처. 하이픈 없이 숫자 9~12자리.
+             * @description 연락처. 하이픈 없이 숫자 10~11자리.
              * @example 01012345678
              */
             phone: string;
@@ -7203,7 +7200,7 @@ export interface components {
         StoreBusinessInputDto: {
             /** @description 상호명 — 국세청이 돌려주지 않아 직접 넣는다. 50자. */
             tradeName?: string | null;
-            /** @description 대표자 연락처 — 숫자 9~12자리(점포 연락처와 같다) */
+            /** @description 대표자 연락처 — 숫자 10~11자리 */
             ceoPhone?: string | null;
             /** @description 사업자 우편번호 — 숫자 5자리 */
             zipCode?: string | null;
@@ -11203,12 +11200,15 @@ export interface operations {
     BpCodeGroupsController_listGroups: {
         parameters: {
             query: {
-                /** @description 관리 주체. BP 공통코드 관리에는 플랫폼제공 그룹만 보이므로 `PLATFORM_PROVIDED` 만 받는다(다른 값은 400). 주지 않으면 플랫폼제공 전체. */
-                manageOwnerCodes?: "PLATFORM_PROVIDED"[];
                 /** @description 그룹 코드에 들어 있으면 나온다(대소문자 무시). */
                 groupCode?: string;
                 /** @description 그룹명에 들어 있으면 나온다. */
                 groupName?: string;
+                /**
+                 * @description 관리 주체. 여러 개는 `manageOwnerCodes=PLATFORM_FIXED&manageOwnerCodes=PLATFORM_PROVIDED` 또는 쉼표로.
+                 *     주지 않으면 둘 다(플랫폼고정 · 플랫폼제공).
+                 */
+                manageOwnerCodes?: ("PLATFORM_FIXED" | "PLATFORM_PROVIDED")[];
                 /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
                 page: number;
                 /** @description 한 쪽 건수. 기본 20, 최대 200. */
@@ -11245,7 +11245,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 플랫폼 사용자의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) — `:groupCode` 경로는 그룹 404(없음 · 지움 · 사용중지 · 플랫폼고정 — BP 화면에 보이지 않는 그룹)도 있다 */
+            /** @description 플랫폼 사용자의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) — `:groupCode` 경로는 그룹 404(없음 · 지움 · 사용중지)도 있다 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -11290,7 +11290,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 플랫폼 사용자의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) — `:groupCode` 경로는 그룹 404(없음 · 지움 · 사용중지 · 플랫폼고정 — BP 화면에 보이지 않는 그룹)도 있다 */
+            /** @description 플랫폼 사용자의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) — `:groupCode` 경로는 그룹 404(없음 · 지움 · 사용중지)도 있다 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -11337,14 +11337,14 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 대상 BP(가드) · 그룹(없음 · 지움 · 사용중지 · 플랫폼고정) 404, 그리고 이 BP 에 없는 상세 코드(플랫폼 원본에만 있는 코드 포함) */
+            /** @description 대상 BP(가드) · 그룹(없음 · 지움 · 사용중지) 404, 그리고 이 BP 에 없는 상세 코드(플랫폼 원본에만 있는 코드 포함) */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 한 요청에 같은 코드가 두 번 · 확인 뒤 다른 관리자가 먼저 지운 코드(「다른 관리자가 먼저 지운…저장해 주세요」) */
+            /** @description 플랫폼고정 그룹 · 한 요청에 같은 코드가 두 번 · 확인 뒤 다른 관리자가 먼저 지운 코드(「다른 관리자가 먼저 지운…저장해 주세요」) */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -11391,14 +11391,14 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 플랫폼 사용자의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) — `:groupCode` 경로는 그룹 404(없음 · 지움 · 사용중지 · 플랫폼고정 — BP 화면에 보이지 않는 그룹)도 있다 */
+            /** @description 플랫폼 사용자의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) — `:groupCode` 경로는 그룹 404(없음 · 지움 · 사용중지)도 있다 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 같은 그룹의 살아 있는 플랫폼 원본(「플랫폼이 등록한…」)이나 이 BP 의 살아 있는 행(「이미 있는…」)과 겹친 코드 · 요청 안에서 겹친 코드 · 확인 뒤 다른 관리자가 같은 코드를 먼저 등록하거나 되살림 — 이 BP 의 지운 행과 같은 코드는 BP전용으로 되살린다 */
+            /** @description 플랫폼고정 그룹 · 같은 그룹의 살아 있는 플랫폼 원본(「플랫폼이 등록한…」)이나 이 BP 의 살아 있는 행(「이미 있는…」)과 겹친 코드 · 요청 안에서 겹친 코드 · 확인 뒤 다른 관리자가 같은 코드를 먼저 등록하거나 되살림 — 이 BP 의 지운 행과 같은 코드는 BP전용으로 되살린다 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -11445,14 +11445,14 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 대상 BP(가드) · 그룹(없음 · 지움 · 사용중지 · 플랫폼고정) 404, 그리고 이 BP 에 없는 상세 코드 */
+            /** @description 대상 BP(가드) · 그룹(없음 · 지움 · 사용중지) 404, 그리고 이 BP 에 없는 상세 코드 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 한 요청에 같은 코드가 두 번 · 확인 뒤 다른 관리자가 먼저 지움 */
+            /** @description 플랫폼고정 그룹 · 한 요청에 같은 코드가 두 번 · 확인 뒤 다른 관리자가 먼저 지움 */
             409: {
                 headers: {
                     [name: string]: unknown;
