@@ -180,9 +180,10 @@ function DetailBody({
     { label: "등록", value: when(admin.createdAt, admin.createdByName ?? "시스템") },
     {
       label: "최종수정",
-      // 등록만 하고 고친 적 없으면 「-」(2026-10-27 사용자 요청, wasUpdated). 수정자가 없는 계정(회원가입으로 만든 계정 등)도 「-」다.
+      // 등록만 하고 고친 적 없으면 「-」(2026-10-27 사용자 요청, wasUpdated). 수정자가 없는 계정(마이그레이션으로 넣은 플랫폼 마스터 등)도 「-」다.
       // 한계: api 의 updatedAt(Prisma @updatedAt)은 로그인(최근 로그인 · 실패 횟수) · 초기 비밀번호 미발송 표시에도 올라가는데, 수정자(updatedBy)는 등록 때부터
-      // 등록자로 채워져 있어 이 검사로는 그 갱신을 거르지 못한다 — 로그인한 계정은 「로그인 시각 · 등록자」가 최종수정으로 보인다(api 요청 대기)
+      // 등록자로 채워져 있어 이 검사로는 그 갱신을 거르지 못한다 — 로그인한 계정은 「로그인 시각 · 등록자」가 최종수정으로 보인다. 등록 직후에도 초기 비밀번호 메일을
+      // 보낸 뒤 미발송 표시를 끄며 updatedAt 이 몇 초 늦게 찍혀 최종수정이 보일 수 있다(api 요청 대기)
       value: admin.updatedByName && wasUpdated(admin.createdAt, admin.updatedAt) ? when(admin.updatedAt, admin.updatedByName) : muted("-"),
     },
   ];

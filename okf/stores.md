@@ -8,7 +8,7 @@ sources:
   - { id: stores-data, resource: ../src/lib/stores.ts, title: 점포 데이터 접근 }
   - { id: store-form, resource: ../src/lib/store-form.ts, title: 점포 등록 · 수정 폼 규칙 }
   - { id: store-view, resource: ../src/lib/store-view.ts, title: 점포 표기 }
-generated: { by: claude-code/opus-5.5, at: 2026-10-27T13:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-27T15:00:00Z }
 ---
 
 근거: `docs/mockup/stores/` (목업 · 1차 · R-QTPRUQ)
@@ -100,6 +100,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-27T13:00:00Z }
 # 구현 (2026-10-19)
 
 * 변경 이력은 상세에 늘 펼쳐 보이던 표 대신, 기본정보의 [변경이력] 버튼으로 여는 팝업이다. 등록 · 최종수정 한 줄은 기본정보 쪽에 그대로 남는다
+* 최종수정은 등록일시와 1초 넘게 다를 때만 「일시 · 수정자」로 보이고, 등록만 한 점포는 「-」다(`format.ts` 의 `wasUpdated`, 2026-10-27 사용자 요청 — 전엔 수정자 이름 유무로 갈랐다)
 * 점포유형 큰 선택 카드는 등록 화면에만 보인다. 수정 화면은 등록 뒤 바꿀 수 없는 값이라 카드를 보이지 않고, 제목 줄에 점포코드 · 점포유형만 적는다
 * 좌표(위도 · 경도) 줄에 [주소로 다시 계산] 버튼을 등록 · 수정 화면 모두에 둔다 — 주소를 고르면 좌표가 자동으로 채워지지만 그 뒤 직접 고칠 수 있어, 고친 값을 주소 기준 값으로 되돌리는 용도다. 지금 입력된 점포 주소(괄호 속 참고항목은 떼고)로 다시 묻고, 실패해도 이미 있던 좌표는 지우지 않는다
 * 위도 · 경도 입력칸은 숫자 · 마침표 · 마이너스만 받는다

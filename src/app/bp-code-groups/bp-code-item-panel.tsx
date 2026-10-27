@@ -35,7 +35,7 @@ import { saveBpCodeItemsAction } from "./actions";
 //  · 막힌 그룹 — 플랫폼 사용자는 조회만(띠, 버튼 없음). 플랫폼고정 · 사용중지 그룹은 api 가 보내지 않는다(플랫폼고정 잠금은
 //    api 보다 화면이 먼저 배포될 때를 위해 남긴다 — bpPanelLock).
 //  · [삭제]는 플랫폼제공 · BP전용 코드에 있다(2026-10-22). 사용 상태도 자유롭게 켜고 끈다.
-// 막는 것은 api 다(403 · 409) — 화면은 미리 숨기거나 잠그고 이유를 띠로 알린다.
+// 막는 것은 api 다(403 · 404 · 409) — 화면은 미리 숨기거나 잠그고 이유를 띠로 알린다.
 
 type Draft = BpItemDraft;
 
@@ -44,7 +44,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
   const permission = usePagePermission();
   const lock = bpPanelLock(group, isPlatform);
   const { manage, canAdd, canDelete, canSave } = bpCodePanelAccess({ lock, ...permission, loadFailed });
-  // 플랫폼고정 그룹이면 버튼은 두되 잠근다(목업) — 이유는 띠가 말한다. 플랫폼 사용자 · 권한 없음 · 불러오기 실패면 버튼이 없다.
+  // 플랫폼고정 그룹이면(api 변경 전에만 온다) 버튼은 두되 잠근다 — 이유는 띠가 말한다. 플랫폼 사용자 · 권한 없음 · 불러오기 실패면 버튼이 없다.
   const showButtons = Boolean(group) && !loadFailed && !isPlatform && (permission.update || permission.create || permission.delete);
   const ownerLabel = useCodeLabel("MANAGE_OWNER");
   const router = useRouter();
@@ -154,7 +154,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
       }
       // 앞 단계(수정 · 삭제)가 저장됐으면 새 행 · 지울 행 표시는 다시 받은 목록에 남는다(savingFrom)
       if (!result.anySaved) setSavingFrom(null);
-      // 409 — 겹친 코드(지운 코드 포함) · 플랫폼고정 그룹. 문구가 「…: CODE」 꼴이면 그 새 행의 칸 오류로, 아니면 표 아래 한 줄로 보인다.
+      // 409 — 겹친 코드(지운 코드 포함). api 변경 전에는 플랫폼고정 그룹 저장도 409 다(bpPanelLock 의 fixed 가 미리 막는다). 문구가 「…: CODE」 꼴이면 그 새 행의 칸 오류로, 아니면 표 아래 한 줄로 보인다.
       const view = failureView(result);
       if (view.conflict) {
         const code = conflictCode(view.conflict);
@@ -174,7 +174,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
   const reorder = useRowReorder({ rows: drafts, setRows: setDrafts, keyOf: (d) => d.key, labelOf: (d) => d.itemCode });
 
   const columns: Column<Draft>[] = [
-    // 플랫폼고정 그룹은 순서를 바꿀 수 없어 이동 칸 자체를 두지 않는다(목업)
+    // 플랫폼고정 그룹(api 변경 전에만 온다)은 순서를 바꿀 수 없어 이동 칸 자체를 두지 않는다
     ...(lock !== "fixed" && (manage || canAdd)
       ? [
           {

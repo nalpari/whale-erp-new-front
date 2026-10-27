@@ -42,7 +42,7 @@ export const EMPTY_FORM: AdminForm = {
   accountStatus: "ACTIVE",
 };
 
-/** 하이픈 없는 번호를 세 칸으로 — 휴대전화(3-4-4) · 02 지역번호(2-3/4-4) · 050X 평생번호(4-4-4, 12자리) · 그 밖 지역번호(3-3/4-4). */
+/** 하이픈 없는 번호를 세 칸으로 — 휴대전화(3-4-4) · 02 지역번호(2-3/4-4) · 050X 평생번호(4-4-4, 12자리) · 그 밖 지역번호(3-3/4-4). 검사는 자릿수만 보므로 050 이 아닌 12자리 · 02 가 아닌 9자리는 이 규칙대로 나뉘지 않는다(가운데 칸이 5자리 · 2자리 — store-form.ts 와 같다). */
 export function splitPhone(digits: string | null): [string, string, string] {
   if (!digits) return ["", "", ""];
   const head = digits.startsWith("02") ? 2 : digits.startsWith("050") && digits.length === 12 ? 4 : 3;
