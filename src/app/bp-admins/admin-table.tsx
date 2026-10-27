@@ -43,8 +43,7 @@ export function AdminTable({
     { header: "이름", cell: (a) => open(a, a.name ?? a.loginId) },
     { header: "역할", cell: (a) => dim(a, roleType(a.roleTypeCode)) },
     {
-      header: "권한명 · 코드", // 열 이름도 값과 같은 「권한명 · 코드」(2026-10-27 사용자 지정 — 전엔 「권한 그룹」)
-      align: "left",
+      header: "권한명 · 코드", // 열 이름도 값과 같은 「권한명 · 코드」(2026-10-27 사용자 지정 — 전엔 「권한 그룹」). 가운데 정렬(권한 그룹 목록과 같다)
       cell: (a) =>
         dim(
           a,
