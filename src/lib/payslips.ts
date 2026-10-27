@@ -16,7 +16,7 @@ export type PayslipReviewReasonValue = Schemas["PayslipReviewReason"];
  * (본사 제공 동의 없는 가맹 점포 직원, ATT-30). isAttendanceConfirmed 는 출퇴근 누락 사유가 없거나 모두 확인됐는가다.
  */
 export type PayslipListItem = Schemas["PayslipListItemDto"];
-/** total 은 모든 필터를 건 건수, statusCounts 는 상태 필터와 상관없이 점포 · 직원명 필터만 건 그 달 건수다(직원명으로 거르면 가린 줄은 뺀다). reviewPendingCount 는 statusCounts 와 같은 범위의 검토 대기 수다(가린 줄도 센다 — 「검토 대기만」 목록은 가린 줄을 뺀다). */
+/** total 은 모든 필터를 건 건수, statusCounts 는 상태 필터와 상관없이 점포 · 직원명 필터만 건 그 달 건수다(직원명으로 거르면 가린 줄은 뺀다). reviewPendingCount 는 그 달 · 고른 점포(직원명이면 그 이름)의 검토 대기 수다 — 가린 줄은 세지 않는다(ATT-30 v218). */
 export type PayslipListResponse = Schemas["PayslipListResponseDto"];
 /** 명세서 상세(GET /payslips/:id). 가려지는 명세서는 404 라 늘 직원 이름이 있다. */
 export type PayslipDetail = Schemas["PayslipDetailResponseDto"];

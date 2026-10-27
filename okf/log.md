@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-27
+* **Fix**: [급여명세서 관리 화면](/screens/payslips.md) — PR #151 ⑥ 머지 블로커: api 가 검토 대기 건수에서도 본사 역할에게 가린 줄을 빼므로(ATT-30 v218) 「본사 제공 동의 없는 직원의 명세서는 …빠집니다」 안내를 뺐다.
 * **Update**: main 병합(front venusaur, ivysaur 머지 뒤 main 최신까지): okf/log 충돌은 양쪽 기록을 살렸다.
 * **Update**: [급여명세서 관리 화면 (구현)](/screens/payslips.md) — 검토 대기(WHALEERP-234, 운영 정책 PAY-01 · 06 2026-10-26 — 상태가 아니라 분류): 목록 상태 칸에 「검토 대기」 배지(사유는 마우스를 올리면), 왼쪽 필터 「분류 · 검토 대기만」(`reviewPending`), 건수 줄 끝 「검토 대기 N」. 상세 오른쪽 단에 채널별 성공 · 실패 「발송 이력」(WHALEERP-236). api 타입을 다시 만들었다.
 * **Update**: main 병합(front ivysaur, main 최신까지): okf/log 충돌은 양쪽 기록을 살렸고, 데모 HTML 은 합쳐진 원본으로 다시 빌드했다. api 타입은 git 이 합친 그대로 둔다 — main 의 타입은 api weepinbell 기준이라 지금 api main 으로 다시 만들면 BP 공통코드 `manageOwnerCode` 에서 PLATFORM_FIXED 가 빠져 main 의 bp-code-drafts 가 깨진다(api main 이 BP 공통코드에서 플랫폼고정을 숨긴 뒤 front 가 아직 맞추지 않았다).

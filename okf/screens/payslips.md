@@ -4,12 +4,12 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-27T06:46:08Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-27T07:03:15Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
     title: 타입(생성한 api 타입) · 조회 조건 · api 쿼리 · 달 · 합계
-    last_modified: 2026-10-27T06:46:08Z
+    last_modified: 2026-10-27T07:03:15Z
   - id: payslips-api
     resource: ../../src/lib/payslips-api.ts
     title: GET /payslips · GET /payslips/:id 호출(404 → null)
@@ -17,7 +17,7 @@ sources:
   - id: payslip-list-page
     resource: ../../src/app/payslips/page.tsx
     title: 목록 화면 — 상태 필터 · 달 이동 · 상태 건수 · 건수 선택 · 목록
-    last_modified: 2026-10-27T06:46:08Z
+    last_modified: 2026-10-27T07:03:15Z
   - id: payslip-list-query
     resource: ../../src/app/payslips/payslip-list-query.ts
     title: 목록 URL ↔ 조회 조건(달은 늘 싣는다, 기본 건수 20 은 뺀다)
@@ -78,7 +78,7 @@ sources:
   포함)가 남은 줄의 상태 칸에 상태 배지 옆 빨간 「검토 대기」 배지를 붙인다(데모 `p.tag("warn", "검토 대기")`). 배지에 마우스를 올리면
   사유 이름(`GET /enums` 의 `PayslipReviewReason`)이 보이고, 내용은 상세 「검토 사유」에서 본다. 왼쪽 필터 맨 아래 「분류 · 검토 대기만」
   체크(주소 `reviewPending=true`, api 도 같은 이름 — 본사 역할에게 가린 줄은 api 가 뺀다). 건수 줄 끝에 「· 검토 대기 N」
-  (`reviewPendingCount`, 상태 건수와 같은 범위). 건수는 본사 제공 동의 없는 직원 명세서도 세고 「검토 대기만」 목록은 빼서, 필터를 켰는데 건수가 목록보다 많으면 「본사 제공 동의 없는 직원의 명세서는 「검토 대기만」 목록에서 빠집니다.」를 보인다. 상태 · 직원명 · 검토 대기만으로 거른 목록이 비면 「조건에 맞는 급여명세서가 없습니다.」(거르지 않았으면 「이 달의 급여명세서가 없습니다.」). 배지에 화면 낭독기용 숨긴 사유 글자를 붙인다.
+  (`reviewPendingCount`, 상태 건수와 같은 범위). 검토 대기 건수도 「검토 대기만」 목록처럼 본사 역할에게 가린 줄(본사 제공 동의 없는 가맹 직원)은 세지 않는다 — 둘의 차이로 가린 직원의 근태 이상 여부가 드러나지 않게(ATT-30, 운영 정책 v218, PR #169 리뷰). 상태 · 직원명 · 검토 대기만으로 거른 목록이 비면 「조건에 맞는 급여명세서가 없습니다.」(거르지 않았으면 「이 달의 급여명세서가 없습니다.」). 배지에 화면 낭독기용 숨긴 사유 글자를 붙인다.
 * 상태 건수는 `statusCounts`(상태 필터와 상관없이 점포 · 직원명 필터만 건 그 달 건수, 직원명으로 거르면 가린 줄은 뺀다). 쪽 넘김은 `total` · `page` · `pageSize`,
   건수는 20 · 50 · 100(기본 20, URL 에서 뺀다). 명세서가 없으면 「이 달의 급여명세서가 없습니다.」
 * 가린 줄(`isMasked`, 본사 제공 동의 없는 가맹 점포 직원, ATT-30)은 근무지 · 급여 기간 밖은 「-」, 직원명은

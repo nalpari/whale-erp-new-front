@@ -6065,7 +6065,7 @@ export interface components {
             total: number;
             /** @description 그 달 · 관리 범위의 상태 건수. 상태 필터와 상관없고 점포 · 직원명 필터는 따른다 — 직원명으로 거르면 가린 줄은 빼고, 아니면 가린 줄도 센다 */
             statusCounts: components["schemas"]["PayslipStatusCountsDto"];
-            /** @description 상태 건수와 같은 범위에서 검토 대기 명세서 수(「작성 중 60(검토 대기 8)」) */
+            /** @description 그 달 · 고른 점포(직원명으로 거르면 그 이름)의 검토 대기 명세서 수 — 본사 역할에게 가린 줄은 세지 않는다(ATT-30, 운영 정책 v218 — 근태 이상 여부가 드러나지 않게). 관리자 웹 건수 줄 끝 「· 검토 대기 N」 */
             reviewPendingCount: number;
         };
         PayslipCandidateDto: {
