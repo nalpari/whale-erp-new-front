@@ -5,6 +5,8 @@
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 공통 Button `danger` · ConfirmDialog `confirmVariant` 가 1팀 동의를 받았다(DESIGN.md Buttons 에 Danger 추가). 같은 날 1팀이 DetailTable 라벨 110px, 점포 카드 모서리 8px, 트리 표 머리(subtle) · 고른 줄(current), ReadonlyCard, 스위치 알약형에도 동의해 DESIGN.md 와 코드 주석의 「1팀 확인 필요」 표시를 동의 기록으로 바꿨다. 플랫폼 관리자 상세의 버튼 줄 위 선을 없앴다(데모의 BP 마스터 · BP 관리자 · 휴일 상세도 같이).
 
 ## 2026-10-26
+* **Update**: main 병합(front sandshrew, main #139 까지): okf 충돌은 양쪽 기록을 살렸다. 플랫폼 관리자 이메일 검사가 `email-format.ts` 로 모여, BP 관리자 폼도 그 `emailError` 를 쓴다(문구 「이메일 형식이 올바르지 않습니다.」).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 관리자: 등록 때 이메일도 아이디와 같은 때(칸을 벗어나거나 Enter) api `GET /bp-admins/email-availability` 로 중복을 묻는다(사용자 요청). 점포 일괄 검색 창에 끌어서 옮기기를 더하고 폭을 960 으로 넓혔다. 상세 대상 점포 표는 5개 뒤로 표 안에서 스크롤하고, 등록만 한 계정은 최종 수정일시를 「수정한 적 없음」으로 둔다.
 * **Update**: main 병합(front raichu, main #134 까지): okf 충돌은 양쪽 기록을 살렸다.
 * **Update**: main 병합(front raichu, main #132 까지): okf 충돌은 양쪽 기록을 살렸다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 디자인 수정 모음(front raichu): 공통 컴포넌트(DataTable `scroll` · DetailTable `title` 생략 · ReadonlyCard/ReadonlyValue 공통화 · HelpTip 신설), BP · 플랫폼 권한 그룹 목록 · 상세 · [메뉴설정] 팝업, 공통코드 관리 표 머리 고정.
@@ -26,6 +28,10 @@
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — main 병합(front seel, main #128 까지): okf/log 충돌은 양쪽 기록을 살렸다.
 
 ## 2026-10-23
+* **Update**: [BP 환경설정](/config.md) — BP 관리자 등록·수정의 점포 고르기 후보에서 고를 수 없는 점포를 뺐다: 폐점과(가맹 마스터면) 다른 가맹 마스터 담당은 흐리게 보이지 않고 아예 나오지 않는다(사용자 결정 — 흐리게는 상단 점포 선택·목록 필터 쪽). api `store-options` 도 그렇게 바뀌어 `isSelectable` · `assignedFranchiseMaster` 가 없어졌다. `StoreMappingPicker` 의 `lock`, 목업 후보의 담당 · 폐점 항목, 화면정의서 · 데모 문구를 함께 고쳤다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [BP 환경설정](/config.md) — BP 관리자 관리 화면 1단계(BP 마스터 · BP 관리자 · 플랫폼 사용자 · 본인 계정)를 넣었다: 탭 BP 주소 `/bp/{bpCodeId}/bp-admins`(`BP_PATH_SCREENS`), 필터 · 목록 · 상세 · 등록 · 수정 슬라이드 패널, 대상 점포 고르기 `StoreMappingPicker`. api `/bp-admins` 가 머지되기 전이라 타입은 작업 지시서대로 손으로 적었다. 플랫폼 관리자 이력 팝업은 받는 서버 액션을 `load` 로 받게 바꿔 함께 쓴다. config 의 화면 주소를 구현 주소로 고쳤다.
+* **Update**: [BP 환경설정](/config.md) — BP 관리자 관리 정책 네 가지를 정했다(api 작업 전 확인): 가맹 마스터 · 가맹 관리자도 본인 계정을 본다, 새로 매핑할 점포는 미운영 · 운영만(폐점은 후보에 흐리게), 가맹 마스터 점포를 빼면 연결 가맹 관리자의 그 점포 매핑도 빠진다(0곳이어도 상태 그대로), 연쇄로 바뀐 가맹 관리자 이력의 처리자는 저장한 사람이고 값에 이유를 붙인다. 목업 · 화면정의서 · 데모도 맞췄다.
+* **Update**: [BP 환경설정](/config.md) — BP 관리자 목록의 「새 계정」 배지를 뺐고(데모에 없음), 가맹 관리자 상세 기본정보에 연결 가맹 마스터 줄을 더했다. 목업 `config/admins.html` · `admins-detail.html` 과 화면정의서도 같이 고쳤다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #127 code-review 반영: 저장 뒤 안내를 `SavedNotice` 로 — 한 번 보이고 주소에서 `saved` 를 지워 새로고침 · 뒤로 가기에 다시 뜨지 않는다. 종이 계약 라우트가 저장 응답을 넘겨 안내를 한 곳(`savedKindOf`)에서 고른다. 초안 직원의 발송 대기 · 가입 상태 null 은 판별한 초대 유형을 붙인다. 화면 문구에서 일감 번호(STAFF-14)를 뺐다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — goldeen 리뷰 반영: 종이 계약 등록 뒤에도 목록 위 안내(`PAPER`), 저장 안내는 api 가 싣는 「실제로 한 처리」로 골라 수정 요청을 고쳐 다시 보낸 것도 맞게, 헤더 범위로 주소를 채울 때 안내를 남기고, 겹친 `saved` 는 바꾼다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 근로계약 목록(WHALEERP-133): 페이지당 건수 20 · 50 · 100, 상태 칸에 직원의 지금 가입 · 초대 상태(가입 대기 중 · 소속 확인 중 등) · 퇴직 안내, 상태 체크 옆 상태별 개수(동의 안 한 가맹 직원 계약도 셈). 작성 화면(WHALEERP-132): 기재사항 · 주민등록번호를 받지 않는다는 안내, 소정근로시간이 근무스케줄 기본값이 된다는 안내(데모도), 저장 뒤 목록 위에 시스템이 한 처리 안내(`?saved=`). api 타입을 api goldeen 으로 다시 만들었다.

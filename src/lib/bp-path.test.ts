@@ -62,6 +62,7 @@ test("isBpPathScreen 은 옮긴 화면만", () => {
   // 엑셀 중계 경로도 옮긴 화면 아래라 /bp/{id} 로 부른다
   assert.equal(isBpPathScreen("/stores/excel"), true);
   assert.equal(isBpPathScreen("/staff-members"), false);
+  assert.equal(isBpPathScreen("/bp/8/bp-admins"), true);
 });
 
 test("isBpPathScreen 은 고객지원 셋과 문의 등록 창구도", () => {

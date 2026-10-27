@@ -7,7 +7,7 @@ import { useAccount, usePagePermission } from "@/components/site/session-gate";
 import { formatDateTime, formatPhone } from "@/lib/format";
 import { adminActionsOf } from "@/lib/platform-admin-actions";
 import type { PlatformAdminDetail } from "@/lib/platform-admins";
-import { deletePlatformAdminAction, resetPlatformAdminPasswordAction } from "./actions";
+import { deletePlatformAdminAction, getPlatformAdminHistoriesAction, resetPlatformAdminPasswordAction } from "./actions";
 import { Blocked, FailedBand, unknownResult, WhoList } from "./admin-parts";
 import { HistoryButton } from "./history-dialog";
 
@@ -218,7 +218,7 @@ function DetailBody({
             수정
           </Button>
         )}
-        <HistoryButton adminId={admin.adminAccountId} panelOpen={panelOpen} />
+        <HistoryButton adminId={admin.adminAccountId} panelOpen={panelOpen} load={getPlatformAdminHistoriesAction} />
       </div>
 
       {/* 고칠 수 없는 계정이면 확인창도 두지 않는다 */}

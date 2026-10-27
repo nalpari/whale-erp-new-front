@@ -39,7 +39,8 @@ export function adminEditBody(A, R, { panel = false } = {}) {
     row(ui.field("범위", ui.select(["전체 점포", "일부 점포"], { value: "일부 점포", "data-spick-scope": true })), c.blank),
     c.storePicker(A, {
       clearLabel: "전체 제거",
-      bulk: [...STORES].sort((a, b) => a[0].localeCompare(b[0])).map(([code, name, type]) => [name, code, type]),
+      // 폐점 점포는 새로 매핑할 수 없다 — 일괄 검색 왼쪽에 흐리게 「폐점」으로 두고 옮기지 못한다(2026-10-23)
+      bulk: [...[...STORES].sort((a, b) => a[0].localeCompare(b[0])).map(([code, name, type]) => [name, code, type]), ["모리커피 합정점", "ST000012", "가맹점포", "폐점"]],
       picked: [
         ["모리커피 서초점", "ST000001", "직영점포"],
         ["모리커피 성수점", "ST000002", "직영점포"],
