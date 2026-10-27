@@ -405,7 +405,7 @@ export function AdminFormPanel(props: Props) {
             (공통 입력칸 토큰은 그대로 두고 이 화면 테두리에서만 셈한다, contract-form.tsx 와 같은 방식). */}
         <div className="flex flex-col gap-[12px] [&_select:disabled]:bg-erp-thead-bg">
           <div className="flex flex-col gap-[8px]">
-            <Field label="사용자 권한" required>
+            <Field label="권한명" required>
               <Select
                 value={form.roleGroupId}
                 onChange={(e) => set("roleGroupId", e.target.value)}

@@ -61,7 +61,7 @@ test("이메일 형식 — api @IsEmail 이 막는 값은 화면도 형식 오�
   for (const bad of ["kim@whale.c", "kim@whale.co,", "kim😀@whale.co"]) assert.equal(emailError(bad), "이메일 형식이 올바르지 않습니다.", bad);
 });
 
-test("필수 칸 — 이름 · 연락처 · 이메일 · 사용자 권한", () => {
+test("필수 칸 — 이름 · 연락처 · 이메일 · 권한명", () => {
   const errors = validateAdminForm({ ...filled, name: "", phone: ["010", "", ""], email: "", roleGroupId: "" }, "create");
   assert.deepEqual(Object.keys(errors).sort(), ["email", "name", "phone", "roleGroupId"]);
   assert.ok(validateAdminForm({ ...filled, name: "이" }, "create").name, "1자");

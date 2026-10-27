@@ -110,7 +110,7 @@ export function validateAdminForm(form: AdminForm, mode: "create" | "edit"): Par
   if (form.addressDetail.trim().length > 100) errors.addressDetail = "상세주소는 100자까지입니다.";
   // 상세주소는 기본주소에 딸린 값이다 — api 는 세 칸을 따로 받아, 막지 않으면 「302호」만 남은 주소가 저장된다
   else if (form.addressDetail.trim() && !form.address.trim()) errors.addressDetail = "주소를 먼저 검색해 주세요.";
-  if (!form.roleGroupId) errors.roleGroupId = "사용자 권한을 골라 주세요.";
+  if (!form.roleGroupId) errors.roleGroupId = "권한명을 골라 주세요.";
   return errors;
 }
 
