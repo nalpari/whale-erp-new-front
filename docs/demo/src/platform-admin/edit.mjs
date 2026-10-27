@@ -1,5 +1,5 @@
 // 플랫폼 관리자 수정. 목업 docs/mockup/system/admins-edit.html 의 기본 상태(platpark 박지우 · 일반)를 플랫폼 관리자로 본 것.
-// 목업 제목 줄의 [취소][저장]은 화면 아래로 내렸다. 권한 선택의 묶음(optgroup)은 Select 가 받지 않아 한 줄 목록으로 폈다.
+// 목업 제목 줄의 [취소][저장]은 화면 아래로 내렸다. 권한 선택은 역할 묶음(optgroup)으로 나눈다(2026-10-27).
 // 상세·등록·수정은 따로 화면(주소)이 없고 목록(system/admins.html)의 슬라이드 패널로만 연다(2026-10-08). 저장하면 상세 패널로 간다(erp.js data-save-panel).
 import * as ui from "../ui.mjs";
 import * as c from "../config-parts.mjs";
@@ -26,6 +26,20 @@ function platformAdminEditBody(A) {
   const row = (...cells) => cells.join("");
 
   // 아이디는 고칠 수 없고 패널 제목 줄에 이미 보이므로(sub) 칸을 다시 두지 않는다(2026-10-20 디자인 수정).
+  // 권한명 · 계정상태는 기본정보 안 이메일 다음에 둔다(앱 admin-form-panel, 2026-10-27 사용자 지정 — 전엔 따로 묶음)
+  const roleFields =
+    row(
+      ui.field(
+        req("권한명"),
+        stack(
+          ui.select([{ group: "역할 · 플랫폼 마스터", options: ["플랫폼 마스터 · PM000001"] }, { group: "역할 · 플랫폼 관리자", options: ["플랫폼 관리자 · PA000001", "고객지원 담당 · PA000002", "정산 담당 · PA000003", "기준정보 조회 · PA000004"] }], {
+            value: "고객지원 담당 · PA000002",
+            "aria-label": "권한명",
+          }),
+        ),
+      ),
+      ui.field(req("계정상태"), ui.select(["사용", "미사용"], { "aria-label": "계정상태" })),
+    );
   const basic = ui.formGroup(
     "기본정보",
     ui.field(req("이름"), ui.textField({ value: "박지우", maxlength: 20, placeholder: "한글 또는 영문 2~20자" })),
@@ -41,6 +55,7 @@ function platformAdminEditBody(A) {
         ),
       ),
     ),
+    roleFields,
     row(
       ui.field("소속부서", ui.textField({ value: "고객지원팀", maxlength: 30 })),
       ui.field("직책", ui.textField({ value: "매니저", maxlength: 30 })),
@@ -48,25 +63,9 @@ function platformAdminEditBody(A) {
     address(A, "06236", "서울 강남구 테헤란로 152", "12층"),
   );
 
-  const role = ui.formGroup(
-    "사용자 권한 · 계정 상태",
-    row(
-      ui.field(
-        "사용자 권한",
-        stack(
-          ui.select(["플랫폼 마스터 · PM000001", "플랫폼 관리자 · PA000001", "고객지원 담당 · PA000002", "정산 담당 · PA000003", "기준정보 조회 · PA000004"], {
-            value: "고객지원 담당 · PA000002",
-            "aria-label": "사용자 권한",
-          }),
-        ),
-      ),
-      ui.field(req("계정 상태"), ui.select(["사용", "미사용"], { "aria-label": "계정 상태" })),
-    ),
-  );
-
   // 저장하면 수정 패널을 닫아 아래 상세 패널을 보인다
   const buttons = `<div class="flex justify-center gap-[6px]">${ui.button("취소", { variant: "off", "data-close": true })}${ui.button("저장", { "data-save-panel": "platform-admin-detail-panel" })}</div>`;
-  return basic + role + buttons;
+  return basic + buttons;
 }
 
 export const platformAdminEditPanel = (A, R) =>
@@ -74,7 +73,7 @@ export const platformAdminEditPanel = (A, R) =>
     "platform-admin-edit-panel",
     "플랫폼 관리자 수정",
     // 아이디 칸을 없앤 대신 제목 줄에 라벨을 달아 값만으로는 안 보이던 것을 바로 알게 한다(이름은 중복이라
-    // 뺀다, 2026-10-20 디자인 수정). 상세 제목 줄의 사용자 권한 꼬리표와 같은 뱃지 모양으로 맞췄다.
+    // 뺀다, 2026-10-20 디자인 수정). 공통 띠지(Tag) 모양이다.
     ui.sectionHead(
       `플랫폼 관리자 수정<span class="ml-[6px] inline-flex">${c.tag('아이디 · <b class="font-semibold">platpark</b>')}</span>`,
     ) + platformAdminEditBody(A),

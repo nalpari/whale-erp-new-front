@@ -16,7 +16,7 @@ const GROUPS = [
 const SELECTED = 0;
 // 관리주체 열 이름 옆 도움말(앱 bp-code-item-panel OWNER_HELP, 2026-10-27 사용자 지정)
 const OWNER_HELP =
-  '<span class="block">· <b class="font-semibold">플랫폼제공</b> 웨일ERP 기본 코드입니다.(수정·삭제 가능)</span><span class="block">· <b class="font-semibold">BP전용</b> 우리 회사만 사용하는 코드입니다.</span>';
+  '<span class="block whitespace-nowrap">· <b class="font-semibold">플랫폼제공</b> 웨일ERP 기본 코드입니다.</span><span class="block whitespace-nowrap pl-[10px]">(수정·삭제 가능)</span><span class="block whitespace-nowrap">· <b class="font-semibold">BP전용</b> 우리 회사만 사용하는 코드입니다.</span>';
 const CODES = [
   ["FULL", "정직원", "플랫폼제공"],
   ["CONTRACT", "계약직", "플랫폼제공"],
@@ -55,8 +55,8 @@ export default ({ A, R }) => {
 
   const codeCols = [
     { header: "이동", width: "w-[60px]" },
-    { header: "상세 코드", width: "w-[300px]", align: "left" }, // 새 행 안내 문구가 잘리지 않는 폭(앱과 같다, 2026-10-27 사용자 지정)
-    { header: "코드명", align: "left" },
+    { header: "상세 코드", align: "left" }, // 남는 폭 — 300px 고정은 좁은 화면에서 코드명이 찌그러졌다(앱과 같다, 2026-10-27)
+    { header: "코드명", width: "w-[160px]", align: "left" },
     { header: "표시 순서", width: "w-[90px]" },
     { header: "사용여부", width: "w-[110px]" },
     { header: `<span class="inline-flex items-center gap-[4px]">관리주체${floatingHelpTip(OWNER_HELP, "관리주체")}</span>`, width: "w-[110px]" },
@@ -65,7 +65,7 @@ export default ({ A, R }) => {
   // 저장 전 새 행 — 상세 코드 칸에 입력 규칙을 안내 문구로 보인다(앱 CODE_PLACEHOLDER, 2026-10-27 사용자 지정)
   codeRows.push([
     '<button type="button" aria-label="새 행 빼기" class="text-[14px] text-erp-label">×</button>',
-    ui.textField({ placeholder: "영문 대문자로 시작, 영문·숫자·_ 최대 20자", maxlength: 20, "aria-label": "새 행 상세 코드" }),
+    ui.textField({ placeholder: "영문 대문자로 시작, 영문·숫자·언더바(_) (최대20자)", maxlength: 20, "aria-label": "새 행 상세 코드" }),
     ui.textField({ placeholder: "코드명", "aria-label": "새 행 코드명" }),
     CODES.length + 1,
     x.toggle("사용", true),

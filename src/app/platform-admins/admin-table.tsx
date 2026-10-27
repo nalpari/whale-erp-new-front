@@ -76,9 +76,9 @@ export function AdminTable({
   const columns: Column<PlatformAdmin>[] = [
     { header: "아이디", width: "w-[130px]", cell: (a) => dim(a, a.loginId) },
     { header: "이름", width: "w-[110px]", cell: (a) => open(a, a.name ?? a.loginId) },
-    { header: "사용자 권한", width: "w-[150px]", cell: (a) => dim(a, a.roleGroup.name) },
+    { header: "권한명", width: "w-[150px]", cell: (a) => dim(a, a.roleGroup.name) },
     {
-      header: "계정 상태",
+      header: "계정상태",
       width: "w-[100px]",
       cell: (a) => (a.accountStatus === "ACTIVE" ? <Badge tone="on">사용</Badge> : <Badge tone="off">미사용</Badge>),
     },
@@ -106,7 +106,7 @@ export function AdminTable({
       rows={rows}
       rowKey={(a) => a.adminAccountId}
       rowState={(a) => (a.adminAccountId === selected ? "selected" : undefined)}
-      empty={noStatus ? "선택한 계정 상태가 없어 표시할 관리자 계정이 없습니다. 계정 상태를 하나 이상 선택해 주세요." : "조건에 맞는 플랫폼 관리자 계정이 없습니다."}
+      empty={noStatus ? "선택한 계정상태가 없어 표시할 관리자 계정이 없습니다. 계정상태를 하나 이상 선택해 주세요." : "조건에 맞는 플랫폼 관리자 계정이 없습니다."}
     />
   );
 }

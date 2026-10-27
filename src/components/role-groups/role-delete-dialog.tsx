@@ -2,12 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Button, ConfirmDialog, Field, Select } from "@/components/common";
+import { Badge, Button, ConfirmDialog, DataTable, Field, Select, type Column } from "@/components/common";
 import { EASE_OUT } from "@/components/common/theme";
 import type { DeletionCandidates } from "@/lib/platform-role-groups";
 import type { ActionResult } from "@/lib/role-group-actions";
 import { useCodeLabel } from "@/components/site/code-label";
-import { FailedBand, InfoBand, unknownResult } from "./role-parts";
+import { FailedBand, InfoBand, unknownResult, WarnBand } from "./role-parts";
 
 // 권한 삭제(데모 roles-master 삭제 확인창 · SYSTEM-6 · BP CONFIG-5). 고정 권한은 버튼이 없다.
 // 후보 조회 · 삭제는 화면마다 다른 api 라 actions 로 받는다.
@@ -86,6 +86,16 @@ export function RoleDeleteDialog({
     });
 
   const admins = data?.admins ?? [];
+  const userColumns: Column<(typeof admins)[number]>[] = [
+    // 값도 열 이름처럼 가운데 — 왼쪽 정렬이면 가운데인 열 이름과 시작점이 어긋나 보였다. 아이디는 140px, 이름이 남는 폭(2026-10-27 사용자 지정)
+    { header: "아이디", width: "w-[140px]", cell: (a) => a.loginId },
+    { header: "이름", cell: (a) => a.name || <span className="text-erp-muted">-</span> },
+    {
+      header: "계정상태",
+      width: "w-[100px]",
+      cell: (a) => <Badge tone={a.accountStatusCode === "INACTIVE" ? "off" : "on"}>{statusLabel(a.accountStatusCode)}</Badge>,
+    },
+  ];
   const noCandidate = admins.length > 0 && data?.candidates.length === 0;
   const ready = Boolean(data) && !noCandidate && (admins.length === 0 || Boolean(replacement));
 
@@ -137,25 +147,26 @@ export function RoleDeleteDialog({
               {!data ? (
                 <span className="text-erp-muted">{busy ? "불러오는 중입니다" : "—"}</span>
               ) : admins.length ? (
-                // 몇 명인지 먼저, 그 아래에 한 사람씩 줄을 바꿔 보인다. 다섯 명까지 보이고 넘으면 이 목록 안에서 스크롤한다(2026-10-15) —
-                // 줄 높이 22 × 5 + 사이 2 × 4 = 118
-                <>
-                  <p>{admins.length.toLocaleString("ko-KR")}명</p>
-                  <ul className="mt-[4px] flex max-h-[118px] flex-col gap-[2px] overflow-y-auto text-erp-label">
-                    {admins.map((a) => (
-                      <li key={a.adminAccountId} className="h-[22px] shrink-0 truncate leading-[22px]">
-                        {/* 아이디 | 사용자명 — 이름이 없으면 아이디만 */}
-                        {a.name ? `${a.loginId} | ${a.name}` : a.loginId}
-                        {a.accountStatusCode === "INACTIVE" && ` (${statusLabel("INACTIVE")})`}
-                      </li>
-                    ))}
-                  </ul>
-                </>
+                `${admins.length.toLocaleString("ko-KR")}명`
               ) : (
                 "없음"
               )}
             </dd>
           </dl>
+          {/* 연결 사용자는 표로(아이디 · 이름 · 계정 상태) — 전엔 「아이디 | 이름」을 옅은 회색으로 이어 붙였다(2026-10-27 사용자 지정).
+              다섯 명까지는 표가 내용만큼 서고, 여섯 명부터는 높이를 머리 42 + 줄 46 × 5 + 선으로 묶고 열 이름 줄은 고정한 채 사람 줄만 스크롤한다
+              (DataTable scroll — 공통코드 목록 표와 같다, 2026-10-27 사용자 지정) */}
+          {admins.length > 0 && admins.length <= 5 && <DataTable columns={userColumns} rows={admins} rowKey={(a) => a.adminAccountId} />}
+          {admins.length > 5 && (
+            // 표의 아래 선은 마지막 줄에 붙어 스크롤 중엔 상자 밖으로 내려간다 — 상자 맨 아래에 늘 보이는 선을 덧그린다(대상점포 표와 같다).
+            // 선은 스크롤바 자리를 비운 겹 상자 안에 두어 표 오른쪽 끝에서 멈춘다(리뷰로 찾음)
+            <div className="relative flex h-[274px] flex-col">
+              <DataTable scroll columns={userColumns} rows={admins} rowKey={(a) => a.adminAccountId} />
+              <span aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden [scrollbar-gutter:stable]">
+                <span className="absolute inset-x-0 bottom-0 h-px bg-erp-thead-line" />
+              </span>
+            </div>
+          )}
           {/* 두 줄로 나눠 보인다(2026-10-26 사용자 지정) */}
           {data && admins.length === 0 && (
             <div className="text-erp-label">
@@ -163,8 +174,9 @@ export function RoleDeleteDialog({
               <p>삭제된 권한 그룹은 복구할 수 없습니다.</p>
             </div>
           )}
+          {/* 삭제를 막는 이유 — 플랫폼 메뉴 관리의 미사용 안내와 같은 빨간 테두리 · 연한 빨간 바탕 상자(2026-10-27 사용자 지정 — 전엔 빨간 글자만) */}
           {noCandidate && (
-            <p className="whitespace-pre-line text-erp-off">{noCandidateText}</p>
+            <WarnBand>{noCandidateText}</WarnBand>
           )}
           {data && admins.length > 0 && !noCandidate && (
             <>

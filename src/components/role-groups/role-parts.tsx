@@ -5,7 +5,7 @@ import type { ActionFailure } from "@/lib/role-group-actions";
 // 권한 그룹 화면(플랫폼 권한 관리 · BP 권한 그룹 관리)이 같이 쓰는 작은 조각. 공통 컴포넌트에 없는 것만 둔다.
 // 카드 · 띠 · 칸 오류는 메뉴 관리와 같이 쓴다(side-parts).
 
-export { CARD, FailedBand, FieldMessage, InfoBand } from "@/components/site/side-parts";
+export { CARD, FailedBand, FieldMessage, InfoBand, WarnBand } from "@/components/site/side-parts";
 
 /**
  * 막힌 이유 한글(api enum). 목록에 없거나 enum 을 못 받았으면 값(SELF_LINKED 같은 영문) 대신 fallback 을 보인다.
