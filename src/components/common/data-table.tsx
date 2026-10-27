@@ -13,7 +13,7 @@ export type Column<T> = {
 /** 줄 상태. selected = 고른 줄, added = 저장 전 추가한 입력 줄, group = 트리의 1단계(묶음) 줄 — 셋 다 표 머리 바탕을 깐다(두 바탕 규칙).
  * group 은 플랫폼 메뉴 관리 트리가 권한별 메뉴설정 팝업과 같게 1단계를 가르려고 더했다(2026-10-26 사용자 지정).
  * current = group 줄이 있는 표에서 고른 줄 — 바탕(#f8f9fb)만으로는 1단계 줄과 갈리지 않아 한 단계 어두운 erp-subtle 에 왼쪽 브랜드색 3px 선을
- * 더한다(그림자가 아니라 안쪽 선, 2026-10-26 사용자 지정 · 1팀 확인 필요). */
+ * 더한다(그림자가 아니라 안쪽 선, 2026-10-26 사용자 지정 · 1팀 동의 2026-10-27). */
 export type RowState = "selected" | "added" | "group" | "current";
 
 const ROW_STATE: Record<RowState, string> = {
@@ -28,7 +28,7 @@ const ROW_STATE: Record<RowState, string> = {
  * 데모 staff/detail.mjs whiteHead, 2026-10-02 재영), none = 열 이름 줄을 보이지 않고 줄만(데모 detail.mjs TO-DO noHead — 위 테두리를 표가 긋는다).
  * none 도 열 이름은 화면 읽기 도구용으로 남긴다(sr-only thead).
  * subtle = erp-subtle(#f0f1f3) 바탕 · 600 먹색 — 1단계 줄에 #f8f9fb 를 까는 트리 표에서 머리를 그보다 살짝 어둡게 가른다(권한별 메뉴설정 팝업과 같다,
- * DESIGN.md Tables 예외 · 1팀 확인 필요, 2026-10-26).
+ * DESIGN.md Tables 예외 · 1팀 동의 2026-10-27).
  */
 export type TableHeadVariant = "default" | "plain" | "subtle" | "none";
 

@@ -347,7 +347,7 @@ function MenuTable({
           {cols}
           <thead>
             {/* 머리는 600 먹색 글자에 erp-subtle(#f0f1f3) 바탕 — 1단계 줄(#f8f9fb)보다 살짝 어둡게 해 둘이 갈리게 한다(2026-10-26 사용자 지정).
-                두 바탕 규칙 밖이라 기존 토큰(Off 버튼 바탕)을 빌렸다 — 1팀과 맞출 것. 칸 안쪽 여백은 4px 로 좁혀 100px 칸에 「체크박스 + 글자」가 한 줄로 든다 */}
+                두 바탕 규칙 밖이라 기존 토큰(Off 버튼 바탕)을 빌렸다 — DESIGN.md Tables 예외, 1팀 동의 2026-10-27. 칸 안쪽 여백은 4px 로 좁혀 100px 칸에 「체크박스 + 글자」가 한 줄로 든다 */}
             <tr className="h-[42px] border-b border-erp-thead-line bg-erp-subtle">
               <th scope="col" className="px-[4px] font-semibold text-erp-ink">
                 메뉴명
