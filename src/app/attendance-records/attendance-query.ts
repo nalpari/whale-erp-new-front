@@ -308,21 +308,23 @@ export function laterDayMark(date: string, recordedAt: string): string {
 }
 
 /**
- * 다음 날 이후 퇴근인 짝의 안내 — api 와 같은 규칙(PR #159 리뷰). 24시간 넘는 짝(09:00 → 다음 날 10:00)은 퇴근 시각을 그대로 두면 원래 퇴근
- * 순간을 지키므로 「10/24 10:00 퇴근을 그대로 둡니다.」. 그 밖에 퇴근이 출근보다 늦게 들어오면 시각으로 다시 만들어 같은 날 퇴근이 되므로 그렇게
- * 알린다 — 다음 날 퇴근이 말없이 당겨지지 않게. 같은 날 짝이거나 퇴근이 출근보다 이르면 null(다음 날 안내 overnightNote 를 쓴다)
+ * 출근이 있는 짝의 보정 — 퇴근 날을 「다음 날 퇴근」으로 api 에 보낸다(`checkOutNextDay`, PR #159 리뷰). 퇴근은 출근한 다음 날까지 받아
+ * 24시간 넘는 짝(09:00 → 다음 날 10:00)이 있어 시각만으로는 날을 알 수 없다. 처음 값은 원래 퇴근이 출근한 날 뒤인가. 퇴근이 출근보다
+ * 이르거나 같으면 다음 날일 수밖에 없어 늘 다음 날이다
  */
-export function keptCheckOutNote(original: { checkIn: { recordedAt: string } | null; checkOut: { recordedAt: string; time: string } | null }, checkIn: string, checkOut: string): string | null {
-  const { checkIn: inPunch, checkOut: outPunch } = original;
+export function initialNextDay(date: string, checkOut: { recordedAt: string } | null): boolean {
+  return !!checkOut && laterDayMark(date, checkOut.recordedAt) !== "";
+}
+export const forcedNextDay = (checkIn: string, checkOut: string) => !!checkIn && !!checkOut && checkOut <= checkIn;
+
+/** 보정 패널 안내 — 출근이 있는 짝은 퇴근 날을, 출근 없는 퇴근에 출근을 채우면 출근 날을 알린다(api 가 저장할 순간과 같다). 같은 날이면 null */
+export function fixSaveNote(date: string, hasCheckIn: boolean, checkIn: string, checkOut: string, nextDay: boolean): string | null {
   const hhmm = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
-  if (!inPunch || !outPunch || !hhmm.test(checkIn) || !hhmm.test(checkOut)) return null;
+  if (!hhmm.test(checkIn) || !hhmm.test(checkOut)) return null;
   const md = (day: string) => `${Number(day.slice(5, 7))}/${Number(day.slice(8, 10))}`;
-  const outDay = kstDateOf(outPunch.recordedAt);
-  const long = Date.parse(outPunch.recordedAt) - Date.parse(inPunch.recordedAt) > 24 * 60 * 60_000;
-  if (long && checkOut === outPunch.time) return `${md(outDay)} ${checkOut} 퇴근을 그대로 둡니다.`;
-  // 원래 다음 날 이후 퇴근인데 퇴근이 출근보다 늦으면 같은 날 퇴근이 된다(밤샘 22:00 → 06:00 에서 출근만 05:00 으로 바꾼 것 포함)
-  if (checkOut <= checkIn || outDay === kstDateOf(inPunch.recordedAt)) return null;
-  return `같은 날(${md(kstDateOf(inPunch.recordedAt))}) ${checkOut} 퇴근으로 저장합니다. 원래 날(${md(kstDateOf(outPunch.recordedAt))}) 퇴근을 지키려면 퇴근을 원본 ${outPunch.time} 그대로 두세요.`;
+  // 출근 없는 퇴근: 퇴근은 그날 그대로, 출근이 퇴근보다 늦거나 같으면 전날 밤 출근이다(api correct)
+  if (!hasCheckIn) return checkOut <= checkIn ? `전날(${md(addDays(date, -1))}) ${checkIn} 출근으로 저장합니다.` : null;
+  return nextDay || forcedNextDay(checkIn, checkOut) ? `다음 날(${md(addDays(date, 1))}) ${checkOut} 퇴근으로 저장합니다.` : null;
 }
 
 /** 처리한 사람 — 「정하윤 (BP 마스터)」(데모 이력 창) */
