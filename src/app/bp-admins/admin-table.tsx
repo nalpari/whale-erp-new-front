@@ -36,7 +36,8 @@ export function AdminTable({
   );
 
   const columns: Column<BpAdmin>[] = [
-    // 아이디 · 이름 · 역할 · 권한 그룹은 폭을 정하지 않아 남는 폭을 똑같이 나눈다(2026-10-27 사용자 지정)
+    // 아이디 · 이름 · 역할 · 권한명 · 코드 · 최근 로그인 · 등록일시는 폭을 정하지 않아 남는 폭을 똑같이 나눈다(2026-10-27 사용자 지정).
+    // 계정 상태 · 매핑 점포만 고정 폭이다
     // 아이디도 가운데 정렬 — 플랫폼 관리자 목록과 같다(2026-10-27 사용자 지정)
     { header: "아이디", cell: (a) => dim(a, <span className="block truncate">{a.loginId}</span>) },
     { header: "이름", cell: (a) => open(a, a.name ?? a.loginId) },
@@ -61,7 +62,6 @@ export function AdminTable({
     { header: "매핑 점포", width: "w-[110px]", cell: (a) => dim(a, a.isAllStores ? "전체" : a.storeCount.toLocaleString("ko-KR")) },
     {
       header: "최근 로그인",
-      width: "w-[160px]",
       // 초기 비밀번호 메일이 실패한 계정은 그 사실을 먼저 알린다 — 상세의 비밀번호 초기화로 다시 보낸다
       cell: (a) =>
         a.isInitialPasswordUnsent ? (
@@ -73,7 +73,7 @@ export function AdminTable({
         ),
     },
     // 최근 로그인 다음에 등록일시(2026-10-27 사용자 지정 — 전엔 등록일시 · 최근 로그인 순)
-    { header: "등록일시", width: "w-[160px]", cell: (a) => dim(a, formatDateTime(a.createdAt)) },
+    { header: "등록일시", cell: (a) => dim(a, formatDateTime(a.createdAt)) },
   ];
 
   return (
