@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useId, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
+import { useId, useLayoutEffect, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
 import { Badge, Button, ConfirmDialog, DateField, Field, FormGroup, FormRow, RequiredMark, SlidePanel, Tag, TextField } from "@/components/common";
 import { AddressField } from "@/components/address-field";
 import {
@@ -62,6 +62,11 @@ export function BpMasterFormPanel(props: Props) {
   // 재인증 확인창은 네이티브 <dialog> 라 패널이 뒤로 가기 등으로 닫혀도 혼자 남는다 — 함께 닫는다
   if (!open && reverifyAsk) setReverifyAsk(false);
 
+  /** 칸별 중복 확인 차례 — 고치거나 다시 물으면 올라가, 앞선 답을 버린다 */
+  const checkNumber = useRef({ loginId: 0, email: 0 });
+  /** 진위확인 차례 — 세 칸을 고치면 올라가, 기다리던 인증 응답을 버린다(옛 값이 「인증 완료」로 되살아나지 않게) */
+  const verifyNumber = useRef(0);
+
   // 열 때마다 칸을 새로 채운다(취소한 입력을 남기지 않는다). 다시 마운트하면 밀려 나오는 전환이 사라지므로 그리는 중에 값만 되돌린다.
   const [filledFor, setFilledFor] = useState(open);
   const [openCount, setOpenCount] = useState(0);
@@ -76,13 +81,18 @@ export function BpMasterFormPanel(props: Props) {
     }
   }
 
+  // 닫기 전에 보낸 진위확인 · 중복 확인의 늦은 응답이 새로 채운 칸에 붙지 않게, 다시 연 직후(페인트 전) 차례를 올린다.
+  // 그리는 중에는 ref 를 못 건드려(react-hooks/refs) platform-admins(admin-form-panel.tsx)처럼 layout effect 에서 한다.
+  useLayoutEffect(() => {
+    if (openCount === 0) return;
+    verifyNumber.current++;
+    checkNumber.current.loginId++;
+    checkNumber.current.email++;
+  }, [openCount]);
+
   const [saving, startSaving] = useTransition();
   const [verifying, startVerifying] = useTransition();
   const router = useRouter();
-  /** 칸별 중복 확인 차례 — 고치거나 다시 물으면 올라가, 앞선 답을 버린다 */
-  const checkNumber = useRef({ loginId: 0, email: 0 });
-  /** 진위확인 차례 — 세 칸을 고치면 올라가, 기다리던 인증 응답을 버린다(옛 값이 「인증 완료」로 되살아나지 않게) */
-  const verifyNumber = useRef(0);
 
   const ids = useId();
   const clearError = (key: BpMasterFormField) => setErrors((e) => (key in e ? Object.fromEntries(Object.entries(e).filter(([k]) => k !== key)) : e));
@@ -163,7 +173,8 @@ export function BpMasterFormPanel(props: Props) {
         ...(props.mode === "edit" ? { bpCodeId: props.bp.bpCodeId } : {}),
       }).catch(unknownResult("사업자정보 인증"));
       if (mine !== verifyNumber.current) return;
-      if (!result.ok) return setVerifyFailure(result.message);
+      // 로그인 만료(401) · 권한 없음(403)은 저장도 막히고, 국세청 장애(503)는 문구에 이미 들어 있어 「인증 없이 저장」 안내를 붙이지 않는다
+      if (!result.ok) return setVerifyFailure([401, 403, 503].includes(result.status ?? 0) ? result.message : `${result.message} 인증 없이도 저장할 수 있습니다.`);
       setVerifyFailure(null);
       setForm((f) => ({ ...f, verifying: false, verified: { ...values, token: result.verificationToken }, bizNumber: "", ceoName: "", openDate: "" }));
     });
@@ -198,8 +209,9 @@ export function BpMasterFormPanel(props: Props) {
   };
 
   // 저장하는 동안은 Esc · 바탕 클릭으로도 닫히지 않는다(admin-form-panel.tsx 와 같다)
+  // 재인증 확인창(<dialog>) 안의 Esc 는 확인창만 닫는다 — SlidePanel 의 문서 Esc 도 같이 받아 패널까지 닫히던 것을 막는다(상세의 dismissDetail 과 같다)
   const safeClose = () => {
-    if (!saving) onClose();
+    if (!saving && !document.querySelector("dialog[open]")) onClose();
   };
 
   const title = mode === "create" ? "BP 마스터 계정 등록" : "BP 마스터 계정 수정";
@@ -361,7 +373,7 @@ export function BpMasterFormPanel(props: Props) {
             {message("openDate")}
             {verifyFailure && (
               <p id={verifyErrorId} role="alert" className="text-[13px] leading-[1.5] text-erp-off">
-                {verifyFailure} 인증 없이도 저장할 수 있습니다.
+                {verifyFailure}
               </p>
             )}
             <div className="flex justify-end gap-[6px]">
