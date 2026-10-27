@@ -520,7 +520,12 @@ export function AdminFormPanel(props: Props) {
         </FormGroup>
 
         <FormGroup title="대상 점포">
-          <Field label="범위" required={!locks.scope}>
+          {/* 「전체 점포」가 막힌 이유를 라벨 옆에 둔다(2026-10-27 사용자 지정 문구 · 자리). 공통코드 이름은 띄어 쓰지 않아(가맹마스터) 문구를 적어 둔다 */}
+          <HintedField
+            label="범위"
+            required={!locks.scope}
+            hint={form.roleTypeCode === "FM" || form.roleTypeCode === "FA" ? `${form.roleTypeCode === "FM" ? "가맹 마스터" : "가맹 관리자"}는 점포를 골라서 맡습니다.` : undefined}
+          >
             <Select
               value={form.isAllStores ? "ALL" : "PART"}
               onChange={(e) => {
@@ -538,11 +543,7 @@ export function AdminFormPanel(props: Props) {
               <option value="ALL">전체 점포</option>
               <option value="PART">일부 점포</option>
             </Select>
-          </Field>
-          {/* 「전체 점포」가 막힌 이유(2026-10-27 사용자 지정 문구). 공통코드 이름은 띄어 쓰지 않아(가맹마스터) 문구를 적어 둔다 */}
-          {(form.roleTypeCode === "FM" || form.roleTypeCode === "FA") && (
-            <Note>{form.roleTypeCode === "FM" ? "가맹 마스터" : "가맹 관리자"}는 점포를 골라서 맡습니다.</Note>
-          )}
+          </HintedField>
           {!form.isAllStores && !locks.stores && (
             <div className="flex flex-col gap-[8px]">
               {optionsFailure && (
@@ -678,6 +679,22 @@ function Labeled({ label, required, message, children }: { label: string; requir
       </Field>
       {message}
     </div>
+  );
+}
+
+/** 라벨 옆에 짧은 도움말을 붙이는 칸 — 공통 Field 는 라벨에 글자만 받아(공통 수정은 1팀과 먼저 맞춘다) 같은 모양으로 그린다. */
+function HintedField({ label, required, hint, children }: { label: string; required?: boolean; hint?: string; children: ReactNode }) {
+  return (
+    <label className="flex flex-col justify-center gap-[8px]">
+      <span className="flex min-w-0 items-baseline gap-[10px] text-[14px] font-medium text-erp-label">
+        <span className="shrink-0">
+          {label}
+          {required && <RequiredMark />}
+        </span>
+        {hint && <span className="truncate text-[13px] font-normal">{hint}</span>}
+      </span>
+      {children}
+    </label>
   );
 }
 
