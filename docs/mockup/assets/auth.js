@@ -673,8 +673,13 @@
      두 목록 위 옵션(전체 선택 · 직영점포 · 가맹점포)은 그 목록에서 묶음을 한꺼번에 체크한다(옮기지는 않는다).
      다른 가맹 마스터가 맡은 점포처럼 고를 수 없는 점포는 왼쪽에 사유와 함께 흐리게 있고, 체크도 끌기도 되지 않는다.
      [적용]을 눌러야 화면의 선택한 점포가 오른쪽 목록으로 바뀐다. 새로 매핑한 점포가 앞에 붙는다.
-     취소 · 닫기 · Esc · 바깥 누르기는 아무것도 바꾸지 않는다. 팝업은 한 화면에 하나만 두고, 연 묶음의 점포와 선택을 받아 그린다. */
+     취소 · 닫기 · Esc · 바깥 누르기는 아무것도 바꾸지 않는다. 팝업은 한 화면에 하나만 두고, 연 묶음의 점포와 선택을 받아 그린다.
+     검색 필터의 점포 고르기(data-spick-nocode)에서 열면 「매핑」 대신 「선택」 문구를 쓴다(점포 정보 관리 필터 · 2026-10-27). */
   var bulkPop = null, bulk = null;
+  var BULK_TEXT = {
+    map: { guide: "왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 매핑됩니다. 오른쪽에서 빼면 매핑이 풀립니다.", left: "매핑 안 된 점포", right: "매핑된 점포", leftDone: "고를 수 있는 점포를 모두 매핑했습니다.", rightEmpty: "아직 매핑된 점포가 없습니다." },
+    filter: { guide: "왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 선택됩니다. 오른쪽에서 빼면 선택이 풀립니다.", left: "고를 수 있는 점포", right: "선택한 점포", leftDone: "고를 수 있는 점포를 모두 골랐습니다.", rightEmpty: "아직 고른 점포가 없습니다." }
+  };
   function bulkIc(name, size) { return '<svg width="' + size + '" height="' + size + '" aria-hidden="true"><use href="#i-' + name + '"/></svg>'; }
   function bulkSide(side) {
     return bulk.pool.filter(function (s) { return (bulk.sel.indexOf(s.code) > -1) === (side === "R"); });
@@ -707,23 +712,23 @@
         return opt(t, t, can.filter(function (s) { return s.type === t; }), chk, side);
       }).join("") + "</div>";
     }
-    var nl = bulk.chkL.length, nr = bulk.chkR.length, n = bulk.sel.length;
+    var nl = bulk.chkL.length, nr = bulk.chkR.length, n = bulk.sel.length, t = bulk.t;
     bulkPop.innerHTML = '<div class="modal__box spickpop__box">' +
       '<div class="modal__head"><h2 class="t-h2" id="spb-t">점포 일괄 검색</h2><button class="iconbtn" type="button" data-spb-cancel aria-label="닫기">' + bulkIc("x", 16) + "</button></div>" +
       '<div class="modal__body">' +
-      '<p class="help" style="margin: 0">왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 매핑됩니다. 오른쪽에서 빼면 매핑이 풀립니다.</p>' +
+      '<p class="help" style="margin: 0">' + t.guide + '</p>' +
       '<div class="spickpop__cols">' +
-      '<section class="spickpop__pane" data-spb-pane="L" aria-label="매핑 안 된 점포">' +
-      '<div class="spickpop__phead"><b>매핑 안 된 점포</b><span class="subtle">' + left.length + "곳</span></div>" +
-      opts(left, bulk.chkL, "L", "매핑 안 된 점포에서 한꺼번에 체크") +
-      '<div class="spickpop__list">' + (left.length ? left.map(function (s) { return item(s, "L"); }).join("") : '<p class="spickpop__empty">고를 수 있는 점포를 모두 매핑했습니다.</p>') + "</div></section>" +
+      '<section class="spickpop__pane" data-spb-pane="L" aria-label="' + t.left + '">' +
+      '<div class="spickpop__phead"><b>' + t.left + '</b><span class="subtle">' + left.length + "곳</span></div>" +
+      opts(left, bulk.chkL, "L", t.left + "에서 한꺼번에 체크") +
+      '<div class="spickpop__list">' + (left.length ? left.map(function (s) { return item(s, "L"); }).join("") : '<p class="spickpop__empty">' + t.leftDone + '</p>') + "</div></section>" +
       '<div class="spickpop__mid">' +
       '<button class="btn btn--secondary btn--sm" type="button" data-spb-move="R"' + (nl ? "" : " disabled") + ">추가" + (nl ? " " + nl : "") + " ›</button>" +
       '<button class="btn btn--secondary btn--sm" type="button" data-spb-move="L"' + (nr ? "" : " disabled") + ">‹ 빼기" + (nr ? " " + nr : "") + "</button></div>" +
-      '<section class="spickpop__pane" data-spb-pane="R" aria-label="매핑된 점포">' +
-      '<div class="spickpop__phead"><b>매핑된 점포</b><span class="subtle">' + right.length + "곳</span></div>" +
-      opts(right, bulk.chkR, "R", "매핑된 점포에서 한꺼번에 체크") +
-      '<div class="spickpop__list">' + (right.length ? right.map(function (s) { return item(s, "R"); }).join("") : '<p class="spickpop__empty">아직 매핑된 점포가 없습니다.<br />왼쪽에서 골라 옮기세요.</p>') + "</div></section>" +
+      '<section class="spickpop__pane" data-spb-pane="R" aria-label="' + t.right + '">' +
+      '<div class="spickpop__phead"><b>' + t.right + '</b><span class="subtle">' + right.length + "곳</span></div>" +
+      opts(right, bulk.chkR, "R", t.right + "에서 한꺼번에 체크") +
+      '<div class="spickpop__list">' + (right.length ? right.map(function (s) { return item(s, "R"); }).join("") : '<p class="spickpop__empty">' + t.rightEmpty + '<br />왼쪽에서 골라 옮기세요.</p>') + "</div></section>" +
       "</div>" +
       "</div>" +
       '<div class="modal__foot"><button class="btn btn--ghost" type="button" data-spb-cancel>취소</button>' +
@@ -843,7 +848,7 @@
       document.body.appendChild(bulkPop);
       bulkWire();
     }
-    bulk = { pool: o.pool, sel: o.picked.slice(), was: o.picked.slice(), chkL: [], chkR: [], apply: o.apply, back: document.activeElement };
+    bulk = { pool: o.pool, sel: o.picked.slice(), was: o.picked.slice(), chkL: [], chkR: [], apply: o.apply, back: document.activeElement, t: o.texts || BULK_TEXT.map };
     bulkDraw();
     bulkPop.hidden = false;
     var first = bulkPop.querySelector(".spickpop__opts .check:not([disabled])") || bulkPop.querySelector("[data-spb-cancel]");
@@ -937,11 +942,14 @@
       if (!f) close();
     });
     if (clear) clear.addEventListener("click", function () { picked = []; draw(); q.focus(); });
-    var bulkBtn = box.querySelector("[data-spick-bulk]");
+    /* 검색 필터는 [일괄검색]이 묶음 밖 「점포」 라벨 줄에 있어 같은 .field 에서도 찾는다 */
+    var field = box.closest(".field");
+    var bulkBtn = box.querySelector("[data-spick-bulk]") || (field && field.querySelector("[data-spick-bulk]"));
     if (bulkBtn) bulkBtn.addEventListener("click", function () {
       close();
       spickBulk({
         pool: pool, picked: picked,
+        texts: box.hasAttribute("data-spick-nocode") ? BULK_TEXT.filter : null,
         apply: function (sel) {
           var keep = picked.filter(function (c) { return sel.indexOf(c) > -1; });
           var fresh = pool.filter(function (s) { return !s.lock && sel.indexOf(s.code) > -1 && picked.indexOf(s.code) < 0; }).map(function (s) { return s.code; });
