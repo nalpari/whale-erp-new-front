@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-27
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #136 code-review(델타) 반영: 거부 · 만료 재발송이 막히면(`REOPEN_BLOCKED` · `WORK_TIME_OVERLAP`) api 문장을 보이며 보내기를 막고 상세를 다시 읽음, 재발송 확인창 문구를 상태가 아니라 가입 여부(`staffJoined`, 필수)로 고름(가입 전 서명 대기는 가입 초대 문구), 거부 문구에서 「새 계약을 작성해 주세요」 뺌, 버튼 조건을 `canShowResend` 로 옮겨 테스트, 낡은 주석 고침. #135 병합 · api 타입을 #158 tentacruel 에서 다시 만듦.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 code-review(델타) 반영: 이어 쓰기(`PUT`)에는 `previousContractId` 를 싣지 않음, 재계약이면 바로잡기 확인창을 띄우지 않음(`signedOverlap` 이어도), 대체 확인을 다시 물으면 앞서 고른 계약과 합쳐 보냄(`replaceIdsOf`), 바로잡기 뒤 진행 중 목록으로 다시 물을 때 바로잡기 문구는 체결 완료가 있을 때만(`stillCorrecting`), 낡은 주석 고침.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #136 리뷰 참고 반영: 거부 · 만료 재발송이 막히면 api 가 code 를 실어(`REOPEN_BLOCKED` · `WORK_TIME_OVERLAP`) 화면이 다시 읽지 않고 막힌 까닭을 확인창에 보인다(테스트로 고정). #135 병합.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 재리뷰 참고 반영(노영주): 진행 중인 재계약이 있어도 재계약 작성 화면을 연다 — api `renewedBy` 가 체결된 재계약만 싣고, 저장할 때 대체를 묻는다. `renewedBy != null` 로 봐 칸 없는 옛 응답에도 안전. main 병합 · api 타입 다시 만듦.

@@ -13,22 +13,24 @@ export const END_UNKNOWN = "종료됐는지 확인하지 못했습니다. 상세
  * api 응답(status · 본문의 code · 문장)으로 실패를 고른다. status 가 null 이면 응답을 받지 못했다(연결이 끊김).
  * - SEND_UNCONFIRMED: api 가 쓰고 보냈을 수 있다(되돌리기 실패 포함) → recheck
  * - 409 상태 충돌 · 「다른 요청이 먼저 고침」(code 없음): 화면이 낡았다 → recheck
+ * - 409 REOPEN_BLOCKED · WORK_TIME_OVERLAP(거부 · 만료를 되살릴 수 없음, WHALEERP-153): 화면을 연 뒤 막혔다 → api 문장 그대로 보이고
+ *   recheck(다시 읽으면 api canResend 가 거짓이라 버튼이 사라진다, front #136 code-review)
  * - 코드 없는 502 · 504, 응답 없음: 앞단에서 끊겨 접수 여부를 모른다 → recheck, 문장은 SEND_UNKNOWN
  * - 나머지: api 문장 그대로, 보내기를 막지 않는다(SEND_FAILED · 503 은 다시 보내면 될 수 있고, SEND_CHANNEL_NOT_READY ·
  *   SEND_PHONE_NOT_MOBILE 은 원인이 풀릴 때까지 같은 409)
  */
+const STALE_CODES = new Set(["CONTRACT_STATUS_CONFLICT", "REOPEN_BLOCKED", "WORK_TIME_OVERLAP"]);
+
 export function sendFailureOf(status: number | null, code: string | undefined, message: string, unknown = SEND_UNKNOWN): SendFailure {
   const withCode = code ? { code } : {};
   if (status === null || ((status === 502 || status === 504) && !code)) return { ok: false, error: unknown, recheck: true };
-  const recheck = code === "SEND_UNCONFIRMED" || (status === 409 && (!code || code === "CONTRACT_STATUS_CONFLICT"));
+  const recheck = code === "SEND_UNCONFIRMED" || (status === 409 && (!code || STALE_CODES.has(code)));
   return { ok: false, error: message, ...withCode, recheck };
 }
 
 /**
- * 근로계약 상세에서 서명 대기 계약을 다시 보낼 때의 확인창 문구(WHALEERP-611). 데모
+ * 근로계약 상세에서 가입한 직원에게 앱으로 다시 보낼 때의 확인창 문구(WHALEERP-611). 데모
  * docs/demo/src/pages/staff/contracts-signing.mjs 의 문구 그대로다. 이름을 모르면 그 조각만 뺀다.
- * 상세 응답에 가입 여부가 없어 서명 대기면 가입 전(가입 초대 알림톡)이어도 이 문구다 — 틀린 말은 없지만 가입 전이면 앞서 보낸
- * 초대 코드가 무효가 된다는 점은 빠진다(상세 응답에 가입 여부가 생기면 나눈다).
  */
 export function signingResendCopy(name: string | null | undefined): { title: string; body: string } {
   return {
@@ -47,22 +49,31 @@ const INVITE_RESEND_COPY = {
 };
 
 /**
- * 근로계약 상세 재발송 확인창 문구 — 서명 대기면 signingResendCopy, 그 밖(발송 대기)은 가입 초대 문구. 거부 · 만료(WHALEERP-153)는
- * 가입한 직원이면 앱으로(서명 대기), 아니면 가입 초대(발송 대기)로 가므로 가입 여부(api staffJoined)로 둘 중 하나를 고르고, 같은 조건으로
- * 다시 보낸다는 문장을 더한다. 본문은 문단마다 한 줄
+ * 근로계약 상세 재발송 확인창 문구 — api 가 보내는 길로 고른다: 가입한 직원(api staffJoined)이면 앱으로(signingResendCopy), 아니면
+ * 가입 초대 알림톡 문구. 상태가 아니라 가입 여부로 고른다 — 가입 전 직원의 서명 대기도 초대 알림톡으로 가고 앞서 보낸 초대 코드가
+ * 무효가 된다(front #136 code-review). 거부 · 만료(WHALEERP-153)는 같은 조건으로 다시 보낸다는 문장을 앞에 더한다. 본문은 문단마다 한 줄
  */
-export function resendDialogCopy(status: string | null | undefined, name: string | null | undefined, staffJoined = true): { title: string; body: string[] } {
-  if (status === "REJECTED" || status === "EXPIRED") {
-    const base = resendDialogCopy(staffJoined ? "PENDING_SIGNATURE" : "PENDING_SEND", name);
-    const again = status === "REJECTED" ? "거부된 근로계약서를 같은 조건으로 다시 보냅니다. 내용을 바꾸려면 새 계약을 작성해 주세요." : "날인 기한이 지나 만료된 근로계약서를 같은 조건으로 다시 보냅니다.";
-    return { title: base.title, body: [again, ...base.body] };
-  }
-  if (status === "PENDING_SIGNATURE") {
-    const { title, body } = signingResendCopy(name);
-    return { title, body: [body] };
-  }
-  return { title: INVITE_RESEND_COPY.title, body: [...INVITE_RESEND_COPY.body] };
+export function resendDialogCopy(status: string | null | undefined, name: string | null | undefined, staffJoined: boolean): { title: string; body: string[] } {
+  const signing = signingResendCopy(name);
+  const base = staffJoined ? { title: signing.title, body: [signing.body] } : { title: INVITE_RESEND_COPY.title, body: [...INVITE_RESEND_COPY.body] };
+  const again =
+    status === "REJECTED"
+      ? "거부된 근로계약서를 같은 조건으로 다시 보냅니다."
+      : status === "EXPIRED"
+        ? "날인 기한이 지나 만료된 근로계약서를 같은 조건으로 다시 보냅니다."
+        : null;
+  return again ? { title: base.title, body: [again, ...base.body] } : base;
 }
+
+const RESENDABLE = new Set(["PENDING_SEND", "PENDING_SIGNATURE"]);
+const REOPENABLE = new Set(["REJECTED", "EXPIRED"]);
+
+/**
+ * 상세 제목 줄에 「재발송」을 세우는가 — 발송 대기 · 서명 대기는 api 가 막지 않으면(canResend 칸이 없는 옛 응답이면 세운다 — front 가
+ * 먼저 배포돼도 버튼이 모두 사라지지 않게), 거부 · 만료(WHALEERP-153)는 api 가 다시 보낼 수 있다고 할 때만(그 전 api 와 떠도 서지 않게)
+ */
+export const canShowResend = (status: string | null | undefined, canResend: boolean | undefined): status is string =>
+  !!status && ((RESENDABLE.has(status) && canResend !== false) || (REOPENABLE.has(status) && canResend === true));
 
 /**
  * 저장하면 곧바로 보낸다(2026-10-19 재영). 저장 · 고침은 끝났는데 가입 초대 알림톡이 실패하면 api 가 502 와 계약 ID 를

@@ -8,15 +8,15 @@ import { sendContract, type SendContractResult } from "./actions";
 import { resendDialogCopy, sendFailureOf } from "./send-model";
 
 // 근로계약 재발송(WHALEERP-136). 보내기는 저장할 때 곧바로 하고(2026-10-19 재영), 이 버튼은 다시 보내기만 한다 — 발송 대기
-// (가입 초대를 받지 못함) · 서명 대기. 누르면 확인창으로 묻고, 보내면 상세를 다시 읽는다(기한이 바뀐다).
+// (가입 초대를 받지 못함) · 서명 대기, 그리고 거부 · 만료(같은 조건으로 되살림, WHALEERP-153). 누르면 확인창으로 묻고, 보내면 상세를
+// 다시 읽는다(기한이 바뀐다).
 // 가입한 직원은 앱 알림(알림함 · 푸시 대기 — 푸시는 #261 · #321 뒤. 받을 계정이 없거나 탈퇴면 알림 없이 기한만 새로, api NTF-25)
 // 으로, 계정이 없는 직원은 가입 초대 알림톡으로 간다(WHALEERP-611). 소속 추가 확인 · 복귀 확인(계정 있음 · 이 점포 미가입)은
 // 상세가 버튼을 숨긴다(canResend). 화면을 연 뒤 그 번호로 계정이 생겼으면 api 가 409 SEND_CHANNEL_NOT_READY 로 막고, 그 문장을 확인창에 그대로 보인다.
-// 확인창 문구는 resendDialogCopy(send-model.ts) — 서명 대기면 데모 문구, 발송 대기면 가입 초대 문구다. 상세 응답에 가입 여부가 없어
-// 서명 대기의 가입 전 직원(가입 초대 알림톡)도 데모 문구를 본다. 가입한 직원의 발송 대기(데이터가 이상할 때만)는 api 가 앱 알림으로
-// 보내고 서명 대기로 넘기지만, 화면은 가입 여부를 몰라 가입 초대 문구를 보인다.
-// 접수 여부를 모르거나 화면이 낡았으면(recheck) 보내기를 막고 상세를 다시 읽는다 — 다시 눌러 두 번 가지 않게(front #41 리뷰).
-export function SendContractButton({ contractId, status, name, back, staffJoined }: { contractId: number; status: string; name: string | null; back: string; staffJoined?: boolean }) {
+// 확인창 문구는 resendDialogCopy(send-model.ts) — 가입 여부(api staffJoined)로 앱 문구(데모)와 가입 초대 문구를 고른다.
+// 접수 여부를 모르거나 화면이 낡았으면(recheck — 거부 · 만료를 되살릴 수 없게 된 409 도) 보내기를 막고 상세를 다시 읽는다 — 다시
+// 눌러 두 번 가지 않게(front #41 리뷰).
+export function SendContractButton({ contractId, status, name, back, staffJoined }: { contractId: number; status: string; name: string | null; back: string; staffJoined: boolean }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
