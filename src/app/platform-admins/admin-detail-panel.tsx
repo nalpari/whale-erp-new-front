@@ -198,7 +198,7 @@ function DetailBody({
           <HeadValues
             items={[
               { label: "역할", value: roleType(admin.roleGroup.roleTypeCode) },
-              { label: "권한그룹", value: admin.roleGroup.name },
+              { label: "권한명", value: admin.roleGroup.name }, // 라벨 「권한명」(2026-10-27 사용자 지정 — 전엔 「권한그룹」)
               { value: admin.accountStatus === "ACTIVE" ? <Badge tone="on">사용</Badge> : <Badge tone="off">미사용</Badge> },
             ]}
           />

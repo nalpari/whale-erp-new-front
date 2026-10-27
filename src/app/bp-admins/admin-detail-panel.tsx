@@ -18,7 +18,7 @@ import { getBpAdminHistoriesAction, resetBpAdminPasswordAction } from "./actions
 import { unknownResult } from "./bp-admin-parts";
 
 // BP 관리자 상세(S-EBIPGZ · 데모 config/admins-detail). 모두 읽기 전용이고, 상태 · 권한 그룹 · 점포는 수정 패널에서만 바꾼다.
-// 계정 상태 · 역할 · 권한 그룹은 이름 아랫줄에 「역할 | 권한그룹 | 상태 배지」(HeadValues)로 보인다(2026-10-27, 전엔 제목 줄 꼬리표). 가맹 관리자는 기본정보에 연결 가맹 마스터 줄을 둔다(2026-10-23).
+// 계정 상태 · 역할 · 권한 그룹은 이름 아랫줄에 「역할 | 권한명 | 상태 배지」(HeadValues)로 보인다(2026-10-27, 전엔 제목 줄 꼬리표). 가맹 관리자는 기본정보에 연결 가맹 마스터 줄을 둔다(2026-10-23).
 // [수정] · [비밀번호 초기화]는 메뉴 수정 권한과 api 가 준 actions 를 함께 본다(bp-admin-rules.ts) — 막는 것은 api 다.
 // 미사용 계정은 초기화 버튼 · 미발송 표시를 숨긴다 — 플랫폼 관리자와 같다(2026-10-27 사용자 지정). 본인 계정은 초기화 버튼을 막는다(내 정보에서 바꾼다).
 // 등록 · 최종수정은 화면 맨 아래 권한 그룹 상세와 같은 테두리 없는 카드로, 적용 대상(전체 · 일부 점포)은 대상점포 제목 바 옆에 보인다. 최근 로그인은 기본정보 표의 비밀번호 아래 줄이다(2026-10-27 사용자 지정).
@@ -122,7 +122,9 @@ function DetailBody({
             label: "연결 가맹 마스터",
             value: (
               <span>
-                {admin.franchiseMaster.loginId} {admin.franchiseMaster.name && <span className="text-erp-label">{admin.franchiseMaster.name}</span>}
+                {/* 「아이디 · 이름」 — 권한 그룹 상세의 가맹마스터 계정과 같은 구분자(2026-10-27) */}
+                {admin.franchiseMaster.loginId}
+                {admin.franchiseMaster.name && <span className="text-erp-label"> · {admin.franchiseMaster.name}</span>}
               </span>
             ),
           },
@@ -159,7 +161,7 @@ function DetailBody({
           <HeadValues
             items={[
               { label: "역할", value: roleType(admin.roleTypeCode) },
-              { label: "권한그룹", value: admin.roleGroup.name },
+              { label: "권한명", value: admin.roleGroup.name }, // 라벨 「권한명」(2026-10-27 사용자 지정 — 전엔 「권한그룹」)
               { value: admin.accountStatus === "ACTIVE" ? <Badge tone="on">사용</Badge> : <Badge tone="off">미사용</Badge> },
             ]}
           />

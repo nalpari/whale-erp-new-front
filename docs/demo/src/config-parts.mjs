@@ -24,7 +24,7 @@ export const headValues = (items) =>
     .join(HEAD_BAR)}</span>`;
 // 관리자 상세 머리 — 이름 아랫줄에 「역할 | 권한그룹 | 상태 배지」(앱 bp-admins · platform-admins admin-detail-panel, 2026-10-27 사용자 지정)
 export const adminHead = (name, role, group, badge) =>
-  `<h2 class="flex flex-col items-start gap-[6px] text-[18px] font-semibold text-erp-ink"><span>${name}</span><span class="text-[14px] font-normal">${headValues([["역할", role], ["권한그룹", group], ["", badge]])}</span></h2>`;
+  `<h2 class="flex flex-col items-start gap-[6px] text-[18px] font-semibold text-erp-ink"><span>${name}</span><span class="text-[14px] font-normal">${headValues([["역할", role], ["권한명", group], ["", badge]])}</span></h2>`;
 // 등록 · 최종수정 — 표 밖 테두리 없는 카드, 일시 굵게 · 사람 회색(앱 ReadonlyCard, 2026-10-27 사용자 지정). extra: 카드 아래쪽에 더 둘 줄(선 뒤)
 export const recordValues = (reg, mod, extra = "") => {
   const when = ([at, by]) => `${at} <span class="font-normal text-erp-label">· ${by}</span>`;
@@ -129,10 +129,10 @@ function storeBulkDialog(A, id, { stores, picked }) {
     "매핑된 점포",
     { opts: opts("R", "매핑된 점포에서 한꺼번에 체크") },
     stores.map((s, i) => (picked.includes(s[1]) ? items[i] : "")).join(""),
-    "아직 매핑된 점포가 없습니다.<br>왼쪽에서 골라 옮기세요.",
+    "매핑된 점포가 없습니다.<br>왼쪽 목록에서 점포를 선택하여 추가해 주세요.",
   );
   const body =
-    `<p class="text-[13px] text-erp-label">왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 매핑됩니다. 오른쪽에서 빼면 매핑이 풀립니다.</p>` +
+    `<p class="text-[13px] text-erp-label">점포를 선택한 후 [추가] 버튼을 누르거나 오른쪽으로 드래그하여 매핑할 수 있습니다. 매핑 해제는 [빼기] 버튼을 이용해 주세요.</p>` +
     `<div class="mt-[12px] flex items-stretch gap-[12px]">${left}<div class="flex shrink-0 flex-col justify-center gap-[6px]">${move("R", "추가 ›")}${move("L", "‹ 빼기")}</div>${right}</div>`;
   return `<dialog id="${id}" data-bulk-popup aria-labelledby="${id}-t" class="m-auto w-[800px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"><h2 id="${id}-t" class="text-[18px] font-semibold">점포 일괄 검색</h2><div class="mt-[12px] text-[14px] leading-[1.6] text-erp-ink">${body}</div><div class="mt-[24px] flex justify-end gap-[6px]">${ui.button("취소", { variant: "off", "data-close": true })}${ui.button(`${picked.length}개점 적용`, { "data-bulk-apply": true })}</div></dialog>`;
 }
