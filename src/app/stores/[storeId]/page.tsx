@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { Badge, DetailTable, DetailValues, Tag, type DetailRow } from "@/components/common";
 import { getEnum } from "@/lib/api";
-import { formatDateTime, formatPhone } from "@/lib/format";
+import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
 import { storeImageFailureText } from "@/lib/store-image";
 import { getStore } from "@/lib/stores";
 import { CodeLabel } from "@/components/site/code-label";
@@ -101,7 +101,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
     { label: "재직직원", value: <span>{store.staffCount.toLocaleString("ko-KR")}명</span> },
     {
       label: "변경이력",
-      // 고친 적 없으면 최종수정 값은 「-」(화면 정의서). 등록 · 최종수정 글자는 라벨과 같은 회색이다. [변경이력
+      // 고친 적 없으면(최종수정일시가 등록일시와 같으면, wasUpdated) 최종수정 값은 「-」(화면 정의서 · 2026-10-27 사용자 요청). 등록 · 최종수정 글자는 라벨과 같은 회색이다. [변경이력
       // 보기] 버튼은 DetailValues 밖에 따로 두어 앞에 구분선(|)이 안 붙게 하고, justify-between 으로 칸 맨
       // 오른쪽에 고정한다 — 칸 자체의 12px 오른쪽 여백(DetailTable dd)이 있어 따로 더 주지 않는다(2026-10-16 점검).
       // 등록 · 최종수정은 DetailValues(inline-block) 대신 직접 그린다 — 등록은 위치정보 줄과 구분선을 맞춘
@@ -120,7 +120,7 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
             <span className="h-[11px] w-px shrink-0 bg-[#d9d9d9]" />
             <span className="min-w-0 flex-1 truncate">
               <span className="mr-[10px] text-erp-label">최종수정</span>
-              {store.updatedByName ? `${formatDateTime(store.updatedAt)} · ${store.updatedByName}` : muted("-")}
+              {wasUpdated(store.createdAt, store.updatedAt) ? `${formatDateTime(store.updatedAt)} · ${store.updatedByName ?? "-"}` : muted("-")}
             </span>
           </span>
           <HistoryButton storeId={store.storeId} />

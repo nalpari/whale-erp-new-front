@@ -36,7 +36,7 @@ export default async function BpAdminsPage({ searchParams }: PageProps<"/bp-admi
       </>
     );
 
-  // 제목 줄(PageBar)은 AdminsScreen 이 그린다 — [등록]이 등록 패널을 여는 상태와 같은 곳에 있어야 해서다
+  // 제목 줄은 AdminsScreen 이 그린다 — [등록]이 그 줄에 선다
   return <AdminsScreen list={list} roleGroups={roleGroups} query={query} detail={detail} />;
 }
 

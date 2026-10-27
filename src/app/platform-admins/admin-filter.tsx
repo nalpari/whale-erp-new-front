@@ -29,12 +29,11 @@ export function AdminFilter({
 
   const apply = (patch: Filters) => onApply({ ...current, ...patch });
 
-  // 상태는 하나만 고른 때만 조건이 된다. 둘 다 고른 것과 둘 다 끈 것은 모두 전체로 본다 —
-  // 마지막 하나를 끄면 둘 다 켜진 모양으로 돌아온다(빈 목록을 조건으로 만들지 않는다).
-  const shows = (s: AdminStatus) => !query.status || query.status === s;
+  // 하나만 고르면 그 상태, 둘 다 고르면 전체, 둘 다 끄면 결과 없음(NONE — 2026-10-27 사용자 지정, 전엔 둘 다 끄면 전체로 돌아왔다).
+  const shows = (s: AdminStatus) => query.status !== "NONE" && (!query.status || query.status === s);
   const toggle = (s: AdminStatus, checked: boolean) => {
     const next = (["ACTIVE", "INACTIVE"] as const).filter((x) => (x === s ? checked : shows(x)));
-    apply({ status: next.length === 1 ? next[0] : undefined });
+    apply({ status: next.length === 0 ? "NONE" : next.length === 1 ? next[0] : undefined });
   };
 
   return (

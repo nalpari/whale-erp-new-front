@@ -8,7 +8,7 @@ import { CodeLabel } from "@/components/site/code-label";
 import { usePagePermission } from "@/components/site/session-gate";
 import type { BpRoleGroupDetail, BpRoleType } from "@/lib/bp-role-groups";
 import type { EnumValue } from "@/lib/enums";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, wasUpdated } from "@/lib/format";
 import { useBpActions, type BpRoleDetailState } from "./bp-actions";
 
 // 오른쪽 고정 칸(S-LYKAEI 상세 · 데모 config/roles) — 고른 그룹 없음 · 수정 · 상세(고칠 수 없는 그룹) · 등록 네 상태.
@@ -101,7 +101,18 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
           <ReadonlyValue
             label="가맹마스터 계정"
             help="가맹관리자 권한을 생성한 가맹마스터의 정보가 표시됩니다."
-            value={role.manager ? (role.manager.name ? `${role.manager.loginId} · ${role.manager.name}` : role.manager.loginId) : <span className="font-normal text-erp-muted">-</span>}
+            // 아이디는 굵게, 이름은 등록 · 최종수정의 사람처럼 회색 · 보통 굵기(2026-10-27 사용자 지정)
+            value={
+              role.manager ? (
+                <>
+                  {role.manager.loginId}
+                  {role.manager.name && <span className="font-normal text-erp-label"> · {role.manager.name}</span>}
+                </>
+              ) : (
+                <span className="font-normal text-erp-muted">-</span>
+              )
+            }
+            title={role.manager ? [role.manager.loginId, role.manager.name].filter(Boolean).join(" · ") : undefined}
             bold
           />
         </FormRow>
@@ -111,7 +122,12 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
           <ReadonlyValue label="등록" value={when(role.createdAt, role.createdBy)} title={whenText(role.createdAt, role.createdBy)} bold />
         </FormRow>
         <FormRow>
-          <ReadonlyValue label="최종수정" value={when(role.updatedAt, role.updatedBy)} title={whenText(role.updatedAt, role.updatedBy)} bold />
+          {/* 등록만 하고 고친 적 없으면 「-」(2026-10-27 사용자 요청) */}
+          {wasUpdated(role.createdAt, role.updatedAt) ? (
+            <ReadonlyValue label="최종수정" value={when(role.updatedAt, role.updatedBy)} title={whenText(role.updatedAt, role.updatedBy)} bold />
+          ) : (
+            <ReadonlyValue label="최종수정" value={<span className="font-normal text-erp-muted">-</span>} bold />
+          )}
         </FormRow>
       </ReadonlyCard>
     </div>
@@ -145,9 +161,16 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
       <>
         {heading}
         {/* 조회 권한만 있으면 이유 띠 없이 상세로만 보인다 */}
-        {/* 본인 연결(SELF_LINKED)은 api 이유 문구(「본인이 연결된 권한」) 대신 문장으로 풀어 쓴다(2026-10-26 사용자 지정) */}
+        {/* 본인 연결(SELF_LINKED)은 api 이유 문구(「본인이 연결된 권한」) 대신 문장으로 풀어 쓴다(2026-10-26 사용자 지정).
+            가맹 마스터가 아닌 사람이 보는 가맹 관리자 그룹(NO_PERMISSION · FA)도 문장으로(2026-10-27 사용자 지정) */}
         {can.update && role.editBlockedReason && (
-          <InfoBand>{role.editBlockedReason === "SELF_LINKED" ? "본인 계정에 연결된 권한 그룹이라 수정할 수 없습니다." : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한 그룹입니다")}</InfoBand>
+          <InfoBand>
+            {role.editBlockedReason === "SELF_LINKED"
+              ? "본인 계정에 연결된 권한그룹은 수정할 수 없습니다."
+              : role.editBlockedReason === "NO_PERMISSION" && role.roleTypeCode === "FA"
+                ? "본인 계정은 가맹관리자 권한 그룹을 수정할 수 없습니다."
+                : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한 그룹입니다")}
+          </InfoBand>
         )}
         {rows.length > 0 && <DetailTable rows={rows} />}
         {record}

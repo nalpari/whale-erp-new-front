@@ -117,7 +117,7 @@ export function AdminsScreen({
 
   return (
     <>
-      {/* [등록]은 제목 줄 오른쪽 — 3팀 목록 · 플랫폼 관리자와 같은 자리(2026-10-23). 바탕창이 떠 있는 동안은 목록처럼 inert 로 뺀다 */}
+      {/* [등록]은 제목 줄 오른쪽 — 플랫폼 관리자 관리와 같은 자리(2026-10-27 사용자 지정 — 전엔 목록 건수 줄). 바탕창이 떠 있는 동안은 목록처럼 inert 로 뺀다 */}
       <div className="contents" inert={backdropActive}>
         <PageBar title="BP 관리자 관리">
           {canCreate && (
@@ -196,7 +196,7 @@ export function AdminsScreen({
               toast("updated");
             }}
             onStale={() => {
-              toast("다른 사용자가 먼저 수정했습니다. 최신 정보를 불러왔으니 다시 고쳐 저장해 주세요.");
+              toast("다른 관리자가 먼저 수정했습니다. 최신 정보를 불러왔으니 다시 고쳐 저장해 주세요."); // 플랫폼 관리자와 같은 문구(2026-10-27 사용자 지정)
               router.refresh();
             }}
           />

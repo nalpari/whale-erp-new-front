@@ -2,13 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useLayoutEffect, useRef, useState, useTransition, type KeyboardEvent, type ReactNode, type RefObject } from "react";
-import { Button, ConfirmDialog, DataTable, Field, FormGroup, FormRow, RequiredMark, Select, SlidePanel, TextField } from "@/components/common";
+import { Button, ConfirmDialog, DataTable, Field, FormGroup, FormRow, RequiredMark, Select, SlidePanel, Tag, TextField } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { useAccount } from "@/components/site/session-gate";
 import { FailedBand, FieldMessage, InfoBand } from "@/components/site/side-parts";
 import { StoreMappingPicker, type MappingStoreOption } from "@/components/site/store-mapping-picker";
 import { StoreStatusBadge } from "@/app/stores/store-parts";
-import { formatDateTime } from "@/lib/format";
 import {
   bpAdminFormOf,
   bpAdminServerErrorField,
@@ -45,7 +44,7 @@ import { unknownResult } from "./bp-admin-parts";
 
 // BP 관리자 등록(S-NIMSMQ) · 수정(S-OENTFQ) 슬라이드 패널(데모 config/admins-new · admins-edit). 패널 폭(464)이라 칸을 한 줄에 하나씩 쌓는다.
 // 묶음은 기본정보 · 계정 역할 · 대상 점포 셋이다. 등록에는 상태 칸이 없다 — 사용으로 생기고 초기 비밀번호가 등록 이메일로 간다.
-// 수정에서 아이디 · 계정 역할은 읽기 전용이다. 본인 계정은 기본정보만 고친다(권한 그룹 · 상태 · 범위 · 점포를 막는다 — api 도 막는다).
+// 수정에서 아이디는 제목 줄 띠지로만 보이고(칸 없음), 계정 역할은 읽기 전용 칸이다. 본인 계정은 기본정보만 고친다(권한 그룹 · 상태 · 범위 · 점포를 막는다 — api 도 막는다).
 // 대상 점포 후보는 api 의 store-options 다 — 수정하는 사람의 관리 범위 안에서 고를 수 있는 점포만 온다(폐점 · 다른 가맹 마스터 담당은 빠진다).
 // 수정하는 사람의 범위 밖에 이미 매핑된 점포는 칩이 아니라 아래 읽기 전용 표로 보이고, 저장해도 api 가 그대로 둔다(목업 확정 2026-09-29).
 // 가맹 마스터를 미사용으로 바꾸거나 점포를 빼면 연결된 가맹 관리자도 같은 저장에서 바뀐다(연쇄는 api 가 한다). 미사용을 고르면 상태 칸 아래 띠로,
@@ -349,8 +348,11 @@ export function AdminFormPanel(props: Props) {
       <h2 className="text-[18px] font-semibold text-erp-ink">
         {title}
         {mode === "edit" && (
-          <span className="ml-[6px] text-[14px] font-normal text-erp-label">
-            {props.admin.name ?? props.admin.loginId} · {props.admin.loginId} · {roleType(props.admin.roleTypeCode)}
+          // 고칠 수 없는 아이디를 제목 줄 띠지로 — 플랫폼 관리자 수정과 같다(2026-10-27 사용자 지정 — 전엔 「이름 · 아이디 · 역할」 회색 글자와 기본정보의 읽기 전용 아이디 칸)
+          <span className="ml-[6px] inline-flex">
+            <Tag>
+              아이디 · <b className="font-semibold">{props.admin.loginId}</b>
+            </Tag>
           </span>
         )}
       </h2>
@@ -387,11 +389,7 @@ export function AdminFormPanel(props: Props) {
                 autoComplete="off"
               />
             </Labeled>
-          ) : (
-            <Field label="아이디">
-              <TextField value={props.admin.loginId} readOnly />
-            </Field>
-          )}
+          ) : null}
           <Labeled label="이름" required message={message("name")}>
             <TextField
               value={form.name}
@@ -415,7 +413,7 @@ export function AdminFormPanel(props: Props) {
                     set("phone", next);
                   }}
                   inputMode="numeric"
-                  maxLength={i === 0 ? 3 : 4}
+                  maxLength={4}
                   aria-label={`휴대전화번호 ${label}`}
                   aria-invalid={invalid("phone")}
                   aria-describedby={describe("phone")}
@@ -467,12 +465,7 @@ export function AdminFormPanel(props: Props) {
                   </p>
                 </InfoBand>
               )}
-              <Field label="등록일시">
-                <TextField value={formatDateTime(props.admin.createdAt)} readOnly />
-              </Field>
-              <Field label="최근 로그인">
-                <TextField value={props.admin.lastLoginAt ? formatDateTime(props.admin.lastLoginAt) : "로그인 기록 없음"} readOnly />
-              </Field>
+              {/* 등록일시 · 최근 로그인은 상세에서 본다 — 수정에는 두지 않는다(2026-10-27 사용자 지정) */}
             </>
           )}
         </FormGroup>
@@ -480,46 +473,50 @@ export function AdminFormPanel(props: Props) {
         <FormGroup title="계정 역할">
           {groupsFailed && <FailedBand message="권한 그룹 목록을 불러오지 못했습니다. 화면을 새로 고쳐 주세요." />}
           {noGroupForRole && <FailedBand message="붙일 권한 그룹이 없습니다. BP 권한 그룹 관리에서 먼저 만들어 주세요." />}
-          {mode === "create" && roles.length > 1 ? (
-            <Labeled label="계정 역할" required message={message("roleTypeCode")}>
+          {/* 계정 역할 · 권한 그룹은 한 줄에 나란히(2026-10-27 사용자 지정 — 전엔 두 줄). 역할 이름은 7자를 넘지 않아
+              계정 역할 칸은 그 폭(글자 + 화살표 30, 150 → 130)으로 줄이고 권한 그룹이 남는 폭을 쓴다(2026-10-27 사용자 지정) */}
+          <FormRow>
+            {mode === "create" && roles.length > 1 ? (
+              <Labeled label="계정 역할" width="w-[130px]" required message={message("roleTypeCode")}>
+                <Select
+                  value={form.roleTypeCode}
+                  onChange={(e) => changeRole(e.target.value as BpAdminRoleType | "")}
+                  aria-invalid={invalid("roleTypeCode")}
+                  aria-describedby={describe("roleTypeCode")}
+                  aria-required
+                >
+                  <option value="">선택</option>
+                  {roles.map((r) => (
+                    <option key={r} value={r}>
+                      {roleType(r)}
+                    </option>
+                  ))}
+                </Select>
+              </Labeled>
+            ) : (
+              <Field label="계정 역할" width="w-[130px]">
+                <TextField value={form.roleTypeCode ? roleType(form.roleTypeCode) : ""} readOnly />
+              </Field>
+            )}
+            <Labeled label="권한 그룹" required={!locks.roleGroup} message={message("roleGroupId")}>
               <Select
-                value={form.roleTypeCode}
-                onChange={(e) => changeRole(e.target.value as BpAdminRoleType | "")}
-                aria-invalid={invalid("roleTypeCode")}
-                aria-describedby={describe("roleTypeCode")}
+                value={form.roleGroupId}
+                onChange={(e) => set("roleGroupId", e.target.value)}
+                disabled={locks.roleGroup || !form.roleTypeCode}
+                title={locks.roleGroup ? "이 계정의 권한 그룹은 여기서 바꿀 수 없습니다" : undefined}
+                aria-invalid={invalid("roleGroupId")}
+                aria-describedby={describe("roleGroupId")}
                 aria-required
               >
-                <option value="">선택</option>
-                {roles.map((r) => (
-                  <option key={r} value={r}>
-                    {roleType(r)}
+                {!form.roleGroupId && <option value="">{form.roleTypeCode ? "선택" : "계정 역할을 먼저 골라 주세요"}</option>}
+                {groupOptions.map((r) => (
+                  <option key={r.roleGroupId} value={r.roleGroupId}>
+                    {r.name} · {r.roleCode}
                   </option>
                 ))}
               </Select>
             </Labeled>
-          ) : (
-            <Field label="계정 역할">
-              <TextField value={form.roleTypeCode ? roleType(form.roleTypeCode) : ""} readOnly />
-            </Field>
-          )}
-          <Labeled label="권한 그룹" required={!locks.roleGroup} message={message("roleGroupId")}>
-            <Select
-              value={form.roleGroupId}
-              onChange={(e) => set("roleGroupId", e.target.value)}
-              disabled={locks.roleGroup || !form.roleTypeCode}
-              title={locks.roleGroup ? "이 계정의 권한 그룹은 여기서 바꿀 수 없습니다" : undefined}
-              aria-invalid={invalid("roleGroupId")}
-              aria-describedby={describe("roleGroupId")}
-              aria-required
-            >
-              {!form.roleGroupId && <option value="">{form.roleTypeCode ? "선택" : "계정 역할을 먼저 골라 주세요"}</option>}
-              {groupOptions.map((r) => (
-                <option key={r.roleGroupId} value={r.roleGroupId}>
-                  {r.name} · {r.roleCode}
-                </option>
-              ))}
-            </Select>
-          </Labeled>
+          </FormRow>
         </FormGroup>
 
         <FormGroup title="대상 점포">
@@ -595,10 +592,12 @@ export function AdminFormPanel(props: Props) {
         </FormGroup>
       </div>
 
-      {mode === "create" && <Note>초기 비밀번호는 등록 이메일로 갑니다.</Note>}
+      {/* 안내 문구는 플랫폼 관리자 등록 · 수정과 같다(2026-10-27 사용자 지정) */}
+      {mode === "create" && <Note>관리자 계정의 초기 비밀번호는 등록된 이메일로 발송됩니다.</Note>}
       {mode === "edit" && form.accountStatus === "INACTIVE" && props.admin.accountStatus === "ACTIVE" && (
         <Note>
-          미사용으로 바꾸면 이 계정의 로그인과 ERP 이용이 그때부터 막힙니다. 열려 있는 세션은 닫지 않습니다.
+          미사용으로 변경하면 해당 계정의 로그인 및 서비스 접근이 즉시 차단됩니다.
+          <br />단, 현재 로그인 중인 세션은 유지됩니다.
         </Note>
       )}
 
@@ -677,9 +676,22 @@ const cascadeTitle = ({ deactivating, removed }: { deactivating: boolean; remove
           "가맹 마스터 저장";
 
 /** 입력칸 하나와 그 아래 오류 문구 */
-function Labeled({ label, required, message, children }: { label: string; required?: boolean; message: ReactNode; children: ReactNode }) {
+function Labeled({
+  label,
+  width,
+  required,
+  message,
+  children,
+}: {
+  label: string;
+  /** 한 줄에 나란히 둘 때의 고정 폭. 없으면 Field 처럼 남는 폭을 나눠 가진다(계정 역할 · 권한 그룹) */
+  width?: `w-[${number}px]`;
+  required?: boolean;
+  message: ReactNode;
+  children: ReactNode;
+}) {
   return (
-    <div className="flex flex-col gap-[8px]">
+    <div className={`flex flex-col gap-[8px] ${width ? `shrink-0 ${width}` : "min-w-px flex-1"}`}>
       <Field label={label} required={required}>
         {children}
       </Field>

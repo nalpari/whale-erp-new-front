@@ -2,14 +2,15 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type RefObject } from "react";
-import { Badge, Button, ConfirmDialog, DataTable, DetailTable, DetailValues, SlidePanel, Tag, useToast, type DetailRow } from "@/components/common";
+import { Badge, Button, ConfirmDialog, DataTable, DetailTable, FormRow, ReadonlyCard, ReadonlyValue, SlidePanel, useToast, type DetailRow } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
+import { HeadValues } from "@/components/site/head-values";
 import { usePagePermission } from "@/components/site/session-gate";
 import { FailedBand, InfoBand } from "@/components/site/side-parts";
 import { Blocked, WhoList } from "@/app/platform-admins/admin-parts";
 import { HistoryButton } from "@/app/platform-admins/history-dialog";
 import { StoreStatusBadge } from "@/app/stores/store-parts";
-import { formatDateTime, formatPhone } from "@/lib/format";
+import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
 import { detailButtonsOf } from "@/lib/bp-admin-rules";
 import type { BpAdminDetail, BpAdminStore } from "@/lib/bp-admins";
 import type { StoreStatus } from "@/lib/store-types";
@@ -17,9 +18,10 @@ import { getBpAdminHistoriesAction, resetBpAdminPasswordAction } from "./actions
 import { unknownResult } from "./bp-admin-parts";
 
 // BP 관리자 상세(S-EBIPGZ · 데모 config/admins-detail). 모두 읽기 전용이고, 상태 · 권한 그룹 · 점포는 수정 패널에서만 바꾼다.
-// 계정 상태 · 역할 · 권한 그룹은 제목 줄 꼬리표로 보인다(2026-10-07). 가맹 관리자는 기본정보에 연결 가맹 마스터 줄을 둔다(2026-10-23).
+// 계정 상태 · 역할 · 권한 그룹은 이름 아랫줄에 「역할 | 권한그룹 | 상태 배지」(HeadValues)로 보인다(2026-10-27, 전엔 제목 줄 꼬리표). 가맹 관리자는 기본정보에 연결 가맹 마스터 줄을 둔다(2026-10-23).
 // [수정] · [비밀번호 초기화]는 메뉴 수정 권한과 api 가 준 actions 를 함께 본다(bp-admin-rules.ts) — 막는 것은 api 다.
-// 미사용 계정도 초기화할 수 있다(목업 기준 — 플랫폼 관리자와 다르다). 본인 계정은 초기화 버튼을 막는다(내 정보에서 바꾼다).
+// 미사용 계정은 초기화 버튼 · 미발송 표시를 숨긴다 — 플랫폼 관리자와 같다(2026-10-27 사용자 지정). 본인 계정은 초기화 버튼을 막는다(내 정보에서 바꾼다).
+// 등록 · 최종수정과 적용 대상은 표가 아니라 권한 그룹 상세와 같은 테두리 없는 카드로 보인다. 최근 로그인은 기본정보 표의 비밀번호 아래 줄이다(2026-10-27 사용자 지정).
 // 본인 계정은 수정 범위를 제목 아래 띠로 알린다(가맹 관리자 본인은 늘, 그 밖은 [수정]이 보일 때만). 수정할 수 없는 가맹 관리자 계정은
 // 수정 · 초기화를 막은 이유를 띠로 보인다(2026-10-27).
 
@@ -48,7 +50,7 @@ export function AdminDetailPanel({
       ) : (
         <>
           {detail && <FailedBand message={detail.failed} />}
-          <div className="flex border-t border-erp-panel-line pt-[16px]">
+          <div className="flex">
             <Button variant="off" onClick={onClose}>
               닫기
             </Button>
@@ -99,7 +101,20 @@ function DetailBody({
       toast(result.isMailSent ? "초기 비밀번호를 계정 이메일로 보냈습니다." : "초기화했지만 메일을 보내지 못했습니다. 다시 초기화해 주세요.");
     });
 
-  const muted = (text: string) => <span className="text-erp-muted">{text}</span>;
+  const muted = (text: string) => <span className="font-normal text-erp-muted">{text}</span>;
+  // 일시는 굵게, 사람은 회색 · 보통 굵기로 「일시 · 사람」 — 권한 그룹 상세의 등록 · 최종수정과 같다
+  const when = (at: string, who: string | null | undefined) => (
+    <>
+      {formatDateTime(at)} <span className="font-normal text-erp-label">· {who ?? "시스템"}</span>
+    </>
+  );
+  const whenText = (at: string, who: string | null | undefined) => `${formatDateTime(at)} · ${who ?? "시스템"}`;
+  // 등록만 한 계정은 수정일시가 등록일시와 같아 등록이 수정처럼 보인다 — 같으면 일시 · 수정자 대신 「-」를 둔다(2026-10-26 사용자 요청, 2026-10-27 「수정한 적 없음」 → 「-」).
+  // 1초 안쪽 어긋남은 같은 것으로 본다(wasUpdated).
+  // 수정자가 없는 계정(회원가입으로 만든 BP 마스터 등)도 「-」다. 한계: api 의 updatedAt(Prisma @updatedAt)은 로그인 · 초기 비밀번호 미발송 표시에도 올라가는데,
+  // 수정자(updatedBy)는 등록 때부터 등록자로 채워져 있어 이 검사로는 그 갱신을 거르지 못한다 — 로그인한 계정은 「로그인 시각 · 등록자」가
+  // 최종수정으로 보이고, 등록 직후에도 메일을 보낸 뒤 미발송 표시를 끄며 몇 초 늦게 찍혀 보일 수 있다(api 요청 대기)
+  const edited = admin.updatedByName !== null && wasUpdated(admin.createdAt, admin.updatedAt);
   const rows: DetailRow[] = [
     { label: "아이디", value: admin.loginId },
     { label: "이름", value: name },
@@ -120,7 +135,8 @@ function DetailBody({
       : []),
     {
       label: "비밀번호",
-      value: (
+      // 미사용 계정은 초기화 버튼 · 미발송 표시 없이 빈칸으로 둔다 — 화면에서만 숨긴다(api 는 미사용 계정 초기화를 막지 않는다, 플랫폼 관리자와 같다)
+      value: admin.accountStatus === "INACTIVE" ? null : (
         <span className="flex items-center gap-[10px]">
           {showReset && (
             <Blocked reason={resetBlocked ? "본인 비밀번호는 내 정보에서 바꿉니다" : undefined}>
@@ -133,31 +149,27 @@ function DetailBody({
         </span>
       ),
     },
-    { label: "등록일시", value: <DetailValues items={[formatDateTime(admin.createdAt), admin.createdByName ?? muted("시스템")]} /> },
-    {
-      label: "최종 수정일시",
-      // 등록만 한 계정은 수정일시가 등록일시와 같아 등록이 수정처럼 보인다 — 같으면 일시 · 수정자 대신 「수정한 적 없음」을 둔다(2026-10-26 사용자 요청).
-      // 등록 때 두 값이 따로 찍혀 ms 가 어긋날 수 있어 1초 안쪽은 같은 것으로 본다
-      value:
-        Math.abs(Date.parse(admin.updatedAt) - Date.parse(admin.createdAt)) >= 1000 ? (
-          <DetailValues items={[formatDateTime(admin.updatedAt), admin.updatedByName ?? muted("시스템")]} />
-        ) : (
-          muted("수정한 적 없음")
-        ),
-    },
-    { label: "최근 로그인", value: admin.lastLoginAt ? formatDateTime(admin.lastLoginAt) : muted("로그인 기록 없음") },
+    // 비밀번호 아래 줄 — 플랫폼 관리자 상세와 같이 표에 둔다(2026-10-27 사용자 지정)
+    { label: "최근 로그인", value: admin.lastLoginAt ? formatDateTime(admin.lastLoginAt) : muted("-") },
   ];
 
   return (
-    <div className="flex flex-col gap-[24px]">
-      <h2 className="flex flex-wrap items-center gap-[6px] text-[18px] font-semibold text-erp-ink">
-        <span className="mr-[4px]">{name}</span>
-        {admin.accountStatus === "ACTIVE" ? <Badge tone="on">사용</Badge> : <Badge tone="off">미사용</Badge>}
-        <Tag>{roleType(admin.roleTypeCode)}</Tag>
-        <Tag>
-          권한 그룹 · <b className="font-semibold">{admin.roleGroup.name}</b>
-        </Tag>
-      </h2>
+    // 제목 줄과 기본정보 표 사이를 16 으로 — 플랫폼 관리자 상세와 같다(2026-10-27 사용자 지정 — 전엔 24)
+    <div className="flex flex-col gap-[16px]">
+      {/* 이름 아랫줄에 「역할 값 | 권한그룹 값 | 상태 배지」 — 공통코드 상세 코드 머리 · 플랫폼 관리자 상세와 같은 모양(2026-10-27 사용자 지정 — 전엔 꼬리표).
+          상태는 라벨 없이 배지만. 이름 길이와 상관없이 두 화면이 같은 자리에 선다. 제목(h2)은 이름만 — 값 줄까지 제목 이름으로 읽히지 않게(리뷰로 찾음) */}
+      <div className="flex flex-col items-start gap-[6px]">
+        <h2 className="text-[18px] font-semibold text-erp-ink">{name}</h2>
+        <span className="text-[14px]">
+          <HeadValues
+            items={[
+              { label: "역할", value: roleType(admin.roleTypeCode) },
+              { label: "권한그룹", value: admin.roleGroup.name },
+              { value: admin.accountStatus === "ACTIVE" ? <Badge tone="on">사용</Badge> : <Badge tone="off">미사용</Badge> },
+            ]}
+          />
+        </span>
+      </div>
       {failure && <FailedBand message={failure} />}
       {/* 버튼을 숨기거나 막은 이유(목업 admins-detail). 연결 가맹 마스터가 아닌 사람이 보는 가맹 관리자 문구는 2026-10-27 사용자 지정 */}
       {admin.actions.isSelf ? (
@@ -185,11 +197,29 @@ function DetailBody({
         !admin.actions.canUpdate && <InfoBand>가맹 관리자 계정은 연결된 가맹 마스터만 수정 · 비밀번호 초기화할 수 있습니다.</InfoBand>
       )}
       <DetailTable title="기본정보" rows={rows} />
-      {/* 대상 점포 위에 적용 범위 — BP 휴일 상세의 적용 대상과 같은 모양(데모, 2026-10-08) */}
-      <DetailTable title="적용 대상" rows={[{ label: "적용 범위", value: <Tag>{admin.isAllStores ? "전체 점포" : "일부 점포"}</Tag> }]} />
+      {/* 등록 · 최종수정을 한 줄에 하나씩(2026-10-27 사용자 지정 — 전엔 기본정보 표의 등록일시 · 최종 수정일시 줄) */}
+      <ReadonlyCard>
+        <FormRow>
+          <ReadonlyValue label="등록" value={when(admin.createdAt, admin.createdByName)} title={whenText(admin.createdAt, admin.createdByName)} bold />
+        </FormRow>
+        <FormRow>
+          <ReadonlyValue
+            label="최종수정"
+            value={edited ? when(admin.updatedAt, admin.updatedByName) : muted("-")}
+            title={edited ? whenText(admin.updatedAt, admin.updatedByName) : undefined}
+            bold
+          />
+        </FormRow>
+        <hr className="border-erp-divider" />
+        {/* 적용 대상은 표 없이 제목 · 값만(2026-10-27 사용자 지정 — 전엔 「적용 대상」 상세 표의 적용 범위 줄) */}
+        <FormRow>
+          <ReadonlyValue label="적용 대상" value={admin.isAllStores ? "전체 점포" : "일부 점포"} bold />
+        </FormRow>
+      </ReadonlyCard>
       <MappedStores admin={admin} />
 
-      <div className="flex flex-wrap items-center gap-[6px] border-t border-erp-panel-line pt-[16px]">
+      {/* 맨 아래 버튼 줄은 위와 선으로 가르지 않는다(DESIGN.md 슬라이드 패널) */}
+      <div className="flex flex-wrap items-center gap-[6px]">
         <Button variant="off" onClick={onClose}>
           닫기
         </Button>
@@ -205,21 +235,22 @@ function DetailBody({
       {showReset && !resetBlocked && (
         <ConfirmDialog
           open={confirmOpen}
-          title="비밀번호 초기화"
+          // 제목 · 문구는 플랫폼 관리자 관리의 초기화 확인창과 같다(2026-10-27 사용자 지정)
+          title="비밀번호를 초기화하시겠습니까?"
           confirmLabel="초기화"
           wide
           busy={busy}
           onConfirm={handleReset}
           onCancel={() => setConfirmOpen(false)}
         >
-          <div className="flex flex-col gap-[12px] break-keep">
+          <div className="flex flex-col gap-[12px]">
             <WhoList rows={[["아이디", admin.loginId], ["이름", name]]} />
             <p>
-              시스템이 12자 무작위 초기 비밀번호를 새로 발급해 이 계정의 이메일로만 보냅니다. 처리하는 사람도 그 값을 볼 수 없습니다. 초기 비밀번호는 1시간
-              안에 로그인해야 하며, 지나면 로그인 화면의 비밀번호 찾기로 임시 비밀번호를 다시 받습니다.
-            </p>
-            <p>
-              <b className="font-semibold">지금 비밀번호는 곧바로 못 쓰게 되지만, 열려 있는 세션은 닫지 않습니다</b>
+              임시 비밀번호가 등록된 이메일로 발송되며, 기존 비밀번호는 즉시 무효화됩니다.
+              <br />
+              임시 비밀번호는 1시간 동안 유효하며, 로그인 시 비밀번호를 변경해야 합니다.
+              <br />
+              현재 로그인 중인 세션은 유지됩니다.
             </p>
           </div>
         </ConfirmDialog>

@@ -5,7 +5,7 @@ import { RoleForm, type RoleFormActions } from "@/components/role-groups/role-fo
 import { CodeLabel } from "@/components/site/code-label";
 import { usePagePermission } from "@/components/site/session-gate";
 import type { EnumValue } from "@/lib/enums";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, wasUpdated } from "@/lib/format";
 import type { RoleGroupDetail } from "@/lib/platform-role-groups";
 import { RoleDeleteDialog, type DeleteDialogActions } from "@/components/role-groups/role-delete-dialog";
 import { createRoleGroupAction, deleteRoleGroupAction, getDeletionCandidatesAction, updateRoleGroupAction } from "./actions";
@@ -100,7 +100,12 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
           <ReadonlyValue label="등록" value={when(role.createdAt, role.createdBy)} title={whenText(role.createdAt, role.createdBy)} bold />
         </FormRow>
         <FormRow>
-          <ReadonlyValue label="최종수정" value={when(role.updatedAt, role.updatedBy)} title={whenText(role.updatedAt, role.updatedBy)} bold />
+          {/* 등록만 하고 고친 적 없으면 「-」(2026-10-27 사용자 요청) */}
+          {wasUpdated(role.createdAt, role.updatedAt) ? (
+            <ReadonlyValue label="최종수정" value={when(role.updatedAt, role.updatedBy)} title={whenText(role.updatedAt, role.updatedBy)} bold />
+          ) : (
+            <ReadonlyValue label="최종수정" value={<span className="font-normal text-erp-muted">-</span>} bold />
+          )}
         </FormRow>
       </ReadonlyCard>
     </div>
@@ -136,7 +141,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
         {/* 조회 권한만 있으면 이유 띠 없이 상세로만 보인다 */}
         {/* 본인 연결(SELF_LINKED)은 api 이유 문구(「본인이 연결된 권한」) 대신 문장으로 풀어 쓴다(2026-10-26 사용자 지정) */}
         {can.update && role.editBlockedReason && (
-          <InfoBand>{role.editBlockedReason === "SELF_LINKED" ? "본인 계정에 연결된 권한 그룹이라 수정할 수 없습니다." : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한입니다")}</InfoBand>
+          <InfoBand>{role.editBlockedReason === "SELF_LINKED" ? "본인 계정에 연결된 권한그룹은 수정할 수 없습니다." : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한입니다")}</InfoBand>
         )}
         {rows.length > 0 && <DetailTable rows={rows} />}
         {record}
