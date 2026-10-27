@@ -196,7 +196,14 @@ export function PayslipReview({
   // 쓰고 스위치 아래에 다시 계산한다고 알린다.
   const togglePremium = (on: boolean) => setPremium(on);
   const premiumPending = premium !== payslip.isPremiumApplied;
-  const adjustedOvertime = payslip.items.find((i) => i.itemCode === "OVERTIME_PAY" && i.adjustedAmount !== null);
+  // 가산을 바꿔도 지키는 연장수당 — api 와 같은 기준: 지금 칸 값이 저장된 금액과 다르거나(이번에 고침) 앞서 고쳐 둔 값이 있다. 저장된 값만 보면
+  // 저장 전에 칸을 고쳤을 때 안내와 결과가 어긋난다(PR #137 리뷰)
+  const overtimeItem = payslip.items.find((i) => i.itemCode === "OVERTIME_PAY");
+  const overtimeText = overtimeItem ? parseAmount(texts.get(overtimeItem.payslipItemId) ?? "") : null;
+  const keptOvertime =
+    overtimeItem && overtimeText !== null && !Number.isNaN(overtimeText) && (overtimeText !== itemAmount(overtimeItem) || overtimeItem.adjustedAmount !== null)
+      ? overtimeText
+      : null;
 
   /** api 를 부르고, 성공하면 확인창을 닫고 알린 뒤 상세를 다시 받는다. 실패하면 확인창에 남기고, 결과를 모르면 상세도 다시 받는다. */
   const run = (call: () => Promise<{ ok: true } | EditFailure>, done: string) =>
@@ -335,8 +342,8 @@ export function PayslipReview({
             <Toggle label="연장·야간·휴일 가산 적용" checked={premium} disabled={!editable} onChange={(e) => togglePremium(e.target.checked)} />
             {premiumPending && (
               <span className={HELP}>
-                {adjustedOvertime
-                  ? `임시저장하면 연장수당 계산값을 ${premium ? "1.5배" : "가산 없이 1배"}로 다시 계산합니다. 직접 고친 연장수당(${formatAmount(adjustedOvertime.adjustedAmount!)}원)은 그대로 둡니다.`
+                {keptOvertime !== null
+                  ? `임시저장하면 연장수당 계산값을 ${premium ? "1.5배" : "가산 없이 1배"}로 다시 계산합니다. 직접 고친 연장수당(${formatAmount(keptOvertime)}원)은 그대로 둡니다.`
                   : `임시저장하면 연장수당을 ${premium ? "1.5배" : "가산 없이 1배"}로 다시 계산합니다.`}
               </span>
             )}
