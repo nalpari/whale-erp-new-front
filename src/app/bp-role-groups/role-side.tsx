@@ -101,7 +101,18 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
           <ReadonlyValue
             label="가맹마스터 계정"
             help="가맹관리자 권한을 생성한 가맹마스터의 정보가 표시됩니다."
-            value={role.manager ? (role.manager.name ? `${role.manager.loginId} · ${role.manager.name}` : role.manager.loginId) : <span className="font-normal text-erp-muted">-</span>}
+            // 아이디는 굵게, 이름은 등록 · 최종수정의 사람처럼 회색 · 보통 굵기(2026-10-27 사용자 지정)
+            value={
+              role.manager ? (
+                <>
+                  {role.manager.loginId}
+                  {role.manager.name && <span className="font-normal text-erp-label"> · {role.manager.name}</span>}
+                </>
+              ) : (
+                <span className="font-normal text-erp-muted">-</span>
+              )
+            }
+            title={role.manager ? [role.manager.loginId, role.manager.name].filter(Boolean).join(" · ") : undefined}
             bold
           />
         </FormRow>
