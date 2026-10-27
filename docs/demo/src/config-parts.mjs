@@ -12,11 +12,9 @@ export const muted = (t) => `<span class="text-erp-muted">${t}</span>`;
 export const band = (text) => `<p class="flex min-h-[42px] items-center rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[12px] py-[8px] text-[14px] font-medium text-erp-ink">${text}</p>`;
 // 구분 꼬리표(역할·관리 주체·적용 범위 같은 분류 값). 상태가 아니라서 색을 쓰지 않고 표 머리 바탕·선에 2depth 글자색. 높이는 배지와 같다.
 export const tag = (t) => `<span class="inline-block rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[4px] py-px text-[14px] font-medium whitespace-nowrap text-erp-sub">${t}</span>`;
-// 관리주체 띠지 — 플랫폼고정만 하늘색(앱 Tag tone="sky" · ownerTagTone, 2026-10-27)
+// 관리주체 띠지 — 글자 · 선은 tag 그대로, 바탕만 플랫폼고정 연한 파랑(앱 OwnerTag, 2026-10-27)
 export const ownerTag = (t) =>
-  t === "플랫폼고정"
-    ? `<span class="inline-block rounded-[2px] border border-erp-on-bg bg-erp-on-bg px-[4px] py-px text-[14px] font-medium whitespace-nowrap text-erp-on">${t}</span>`
-    : tag(t);
+  `<span class="inline-block rounded-[2px] border border-erp-thead-line px-[4px] py-px text-[14px] font-medium whitespace-nowrap text-erp-sub ${t === "플랫폼고정" ? "bg-erp-on-bg" : "bg-erp-thead-bg"}">${t}</span>`;
 // 입력칸 + 도움말을 세로로
 export const stack = (...c) => `<div class="flex flex-col gap-[8px]">${c.join("")}</div>`;
 // 위쪽 정렬 formRow(도움말 줄 수가 달라도 입력칸 높이가 맞게)

@@ -170,9 +170,6 @@ export const searchTerm = (raw: string | string[] | undefined, max: number) => (
 export const GROUP_OWNERS = ["PLATFORM_FIXED", "PLATFORM_PROVIDED"] as const;
 export type GroupOwner = (typeof GROUP_OWNERS)[number];
 
-/** 관리주체 띠지 모양 — 플랫폼고정만 하늘색(sky), 플랫폼제공 · BP전용은 기본 회색(2026-10-27 사용자 지정). */
-export const ownerTagTone = (code: string) => (code === "PLATFORM_FIXED" ? "sky" : "default");
-
 /** 필터의 관리주체 값 — 하나만 고름(그 값), 둘 다 끔(NONE). 둘 다 고름은 값 없음(undefined). NONE 과 둘 다 고름은 같은 목록(전체)이다. */
 export type OwnerFilter = GroupOwner | "NONE";
 

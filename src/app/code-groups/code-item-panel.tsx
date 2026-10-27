@@ -1,8 +1,9 @@
 "use client";
 
+import { OwnerTag } from "@/components/site/code-editor/owner-tag";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { Badge, Button, DataTable, Tag, TextField, Toggle, useToast, type Column } from "@/components/common";
+import { Badge, Button, DataTable, TextField, Toggle, useToast, type Column } from "@/components/common";
 import {
   buildSaveItemsInput,
   codePanelAccess,
@@ -12,7 +13,6 @@ import {
   itemsDirty,
   hasPending,
   itemsDeletable,
-  ownerTagTone,
   renumberAdded,
   savedToast,
   unusableCodeMessage,
@@ -226,8 +226,7 @@ export function CodeItemPanel({
         ]
       : []),
     {
-      header: "상세 코드",
-      width: "w-[160px]", // 코드명과 사이를 좁혀 코드명 칸을 넓힌다(2026-10-27 사용자 지정, 전엔 220)
+      header: "상세 코드", // 폭을 정하지 않는다 — 남는 폭을 받아 긴 코드가 잘리지 않게(삭제 칸이 붙는 그룹에서도, 2026-10-27 사용자 지정)
       align: "left",
       cell: (d) =>
         d.deleted ? (
@@ -248,6 +247,7 @@ export function CodeItemPanel({
     },
     {
       header: "코드명",
+      width: "w-[160px]", // 그룹 목록의 그룹명 칸과 같은 폭 — 두 입력칸이 같은 크기로 칸을 채운다(2026-10-27 사용자 지정)
       align: "left",
       // 기존 행은 수정 권한, 새 행은 등록 권한으로 고친다(새 행은 등록 권한이 있어야 생긴다)
       cell: (d) =>
@@ -308,7 +308,13 @@ export function CodeItemPanel({
           <GroupHead
             groupCode={group.groupCode}
             groupName={group.groupName}
-            owner={ownerLabel && <Tag tone={ownerTagTone(group.manageOwnerCode)}>{ownerLabel}</Tag>}
+            owner={
+              ownerLabel && (
+                <OwnerTag code={group.manageOwnerCode}>
+                  {ownerLabel}
+                </OwnerTag>
+              )
+            }
           />
         )
       }

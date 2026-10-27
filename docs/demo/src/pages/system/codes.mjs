@@ -7,7 +7,7 @@ import { platformHeader } from "../../site.mjs";
 import { band as riskBand } from "../../staff-parts.mjs";
 
 // 두 카드 껍데기
-const card = (w, html) => `<section class="${w} flex flex-col gap-[12px] overflow-y-auto rounded-[4px] [&>:not([data-table-scroll])]:shrink-0 border border-erp-panel-line bg-white p-[25px]">${html}</section>`;
+const card = (w, html) => `<section class="${w} flex flex-col gap-[12px] overflow-y-auto [scrollbar-gutter:stable] rounded-[4px] [&>:not([data-table-scroll])]:shrink-0 border border-erp-panel-line bg-white p-[25px]">${html}</section>`;
 // 고른 줄 표시 — dataTable 결과의 n 번째 줄에 한 단계 어두운 바탕 + 왼쪽 브랜드색 3px 선(앱 DataTable current · 메뉴 트리와 같다, 2026-10-27).
 const markRow = (table, n) => {
   let i = -1;
@@ -112,7 +112,7 @@ export default ({ A, R }) => {
   ];
   const groupRows = GROUPS.map(([code, name, owner, bp], i) => [
     i === 0 ? `<b class="font-semibold" aria-current="true">${code}</b>` : ui.link(code, "#"),
-    ui.textField({ value: name, "aria-label": "그룹명" }),
+    `${ui.textField({ value: name, "aria-label": "그룹명" })}`,
     c.ownerTag(owner), // 관리주체는 분류 꼬리표, 플랫폼고정만 하늘색(앱 code-group-panel.tsx 의 Tag 와 같다, 2026-10-26)
     // BP 적용 칸 — 관리 주체가 플랫폼제공인 그룹만 [BP 적용] 버튼, 나머지는 —(2026-10-08)
     owner === "플랫폼제공" ? x.dialogTrigger("BP 적용", apply, "soft") : '<span class="text-erp-muted">-</span>',
@@ -138,15 +138,15 @@ export default ({ A, R }) => {
 
   const codeCols = [
     { header: "이동", width: "w-[60px]" },
-    { header: "상세 코드", width: "w-[160px]", align: "left" }, // 앱과 같다(2026-10-27)
-    { header: "코드명", align: "left" },
+    { header: "상세 코드", align: "left" }, // 남는 폭(앱과 같다, 2026-10-27)
+    { header: "코드명", width: "w-[160px]", align: "left" }, // 그룹명 칸과 같은 폭(앱과 같다)
     { header: "표시 순서", width: "w-[90px]" },
     { header: "사용여부", width: "w-[100px]" },
   ];
   const codeRows = SERVICES.map(([code, name, on = true], i) => [
     handle,
     code,
-    ui.textField({ value: name, "aria-label": "코드명" }),
+    `${ui.textField({ value: name, "aria-label": "코드명" })}`,
     i + 1,
     x.toggle("사용", on), // 켜고 끄는 상태는 스위치로 보이고 옆 글자는 늘 ‘사용’(2026-10-08)
   ]);

@@ -1,8 +1,9 @@
 "use client";
 
+import { OwnerTag } from "@/components/site/code-editor/owner-tag";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { Badge, Button, DataTable, Tag, TextField, Toggle, useToast, type Column } from "@/components/common";
+import { Badge, Button, DataTable, TextField, Toggle, useToast, type Column } from "@/components/common";
 import { CodePanel, DoneNotice, FieldErrors, GroupHead, SaveFailedBand, UNKNOWN_RESULT } from "@/components/site/code-editor/code-panel";
 import { useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
 import { useRowReorder } from "@/components/site/code-editor/use-row-reorder";
@@ -18,7 +19,6 @@ import {
   followSameRows,
   hasPending,
   itemsDirty,
-  ownerTagTone,
   renumberAdded,
   savedToast,
   unusableCodeMessage,
@@ -200,7 +200,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
       : []),
     {
       header: "상세 코드",
-      width: "w-[190px]", // 코드명 칸을 오른쪽으로 옮긴다(2026-10-27 사용자 지정, 전엔 150)
+      width: "w-[230px]", // 코드명 칸을 오른쪽으로 옮겨 상세 코드가 잘리지 않게(2026-10-27 사용자 지정, 전엔 150)
       align: "left",
       cell: (d) =>
         d.deleted ? (
@@ -260,7 +260,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
       header: "관리주체",
       width: "w-[110px]",
       // 새 행은 BP전용으로 저장된다(api 가 정한다)
-      cell: (d) => <Tag tone={ownerTagTone(d.manageOwnerCode)}>{ownerLabel(d.manageOwnerCode)}</Tag>,
+      cell: (d) => <OwnerTag code={d.manageOwnerCode}>{ownerLabel(d.manageOwnerCode)}</OwnerTag>,
     },
     // 플랫폼제공 · BP전용 코드를 지운다(삭제 권한, bpDeletable) — 새 행에는 버튼이 없다(이동 칸의 [×]로 뺀다)
     ...(canDelete
@@ -286,7 +286,11 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
           <GroupHead
             groupCode={group.groupCode}
             groupName={group.groupName}
-            owner={<Tag tone={ownerTagTone(group.manageOwnerCode)}>{ownerLabel(group.manageOwnerCode)}</Tag>}
+            owner={
+              <OwnerTag code={group.manageOwnerCode}>
+                {ownerLabel(group.manageOwnerCode)}
+              </OwnerTag>
+            }
           />
         )
       }

@@ -1,13 +1,13 @@
 "use client";
 
-import { DataTable, Pagination, Tag, type Column } from "@/components/common";
+import { DataTable, Pagination, type Column } from "@/components/common";
 import { searchedEmpty, type CodeGroupSearch } from "@/components/site/code-editor/code-group-filter";
 import { CodePanel } from "@/components/site/code-editor/code-panel";
 import { GuardedLink, useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
 import { useCodeLabel } from "@/components/site/code-label";
 import { useCurrentBp } from "@/components/site/session-gate";
 import { bpCodesHref } from "@/lib/bp-code-drafts";
-import { ownerTagTone } from "@/lib/code-drafts";
+import { OwnerTag } from "@/components/site/code-editor/owner-tag";
 import type { BpCodeGroup } from "@/lib/bp-codes";
 import { bpPath } from "@/lib/bp-path";
 
@@ -52,7 +52,7 @@ export function BpCodeGroupPanel({
         ),
     },
     { header: "그룹명", align: "left", cell: (g) => g.groupName },
-    { header: "관리주체", width: "w-[110px]", cell: (g) => <Tag tone={ownerTagTone(g.manageOwnerCode)}>{ownerLabel(g.manageOwnerCode)}</Tag> },
+    { header: "관리주체", width: "w-[110px]", cell: (g) => <OwnerTag code={g.manageOwnerCode}>{ownerLabel(g.manageOwnerCode)}</OwnerTag> },
   ];
 
   return (

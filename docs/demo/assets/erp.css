@@ -1973,9 +1973,6 @@
   .border-erp-on {
     border-color: var(--color-erp-on);
   }
-  .border-erp-on-bg {
-    border-color: var(--color-erp-on-bg);
-  }
   .border-erp-panel-line {
     border-color: var(--color-erp-panel-line);
   }
