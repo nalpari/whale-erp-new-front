@@ -38,6 +38,11 @@ export const dimRows = (table, idx) => {
   return table.replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, (m) => (idx.includes(++n) ? m.replace('">', ' text-erp-muted">') : m));
 };
 // 고른 줄 표시(표 머리 바탕)
+// 고른 줄을 더 또렷이(앱 DataTable current — 공통코드 그룹 목록, 2026-10-27)
+export const markCurrent = (table, n) => {
+  let i = -1;
+  return table.replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, (m) => (++i === n ? m.replace('">', ' bg-erp-subtle [&>td:first-child]:shadow-[inset_3px_0_0_var(--color-erp-brand)]">') : m));
+};
 export const markRow = (table, n) => {
   let i = -1;
   return table.replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, (m) => (++i === n ? m.replace('">', ' bg-erp-thead-bg">') : m));

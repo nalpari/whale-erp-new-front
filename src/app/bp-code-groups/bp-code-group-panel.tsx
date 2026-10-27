@@ -63,7 +63,8 @@ export function BpCodeGroupPanel({
         columns={columns}
         rows={groups}
         rowKey={(g) => g.groupCode}
-        rowState={(g) => (g.groupCode === selected ? "selected" : undefined)}
+        // 고른 그룹은 한 단계 어두운 바탕 + 왼쪽 브랜드색 선 — 플랫폼 메뉴 관리 트리와 같다(2026-10-27 사용자 지정)
+        rowState={(g) => (g.groupCode === selected ? "current" : undefined)}
         empty={searchedEmpty(search) ?? "볼 수 있는 공통코드 그룹이 없습니다."}
       />
       <div className="pt-[14px]">

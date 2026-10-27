@@ -8,10 +8,10 @@ import { band as riskBand } from "../../staff-parts.mjs";
 
 // 두 카드 껍데기
 const card = (w, html) => `<section class="${w} flex flex-col gap-[12px] overflow-y-auto rounded-[4px] [&>:not([data-table-scroll])]:shrink-0 border border-erp-panel-line bg-white p-[25px]">${html}</section>`;
-// 고른 줄 표시(목업 surface-strong). dataTable 결과의 n 번째 줄에 표 머리 바탕을 얹는다.
+// 고른 줄 표시 — dataTable 결과의 n 번째 줄에 한 단계 어두운 바탕 + 왼쪽 브랜드색 3px 선(앱 DataTable current · 메뉴 트리와 같다, 2026-10-27).
 const markRow = (table, n) => {
   let i = -1;
-  return table.replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, (m) => (++i === n ? m.replace('">', ' bg-erp-thead-bg">') : m));
+  return table.replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, (m) => (++i === n ? m.replace('">', ' bg-erp-subtle [&>td:first-child]:shadow-[inset_3px_0_0_var(--color-erp-brand)]">') : m));
 };
 // 끌어서 순서 바꾸는 손잡이. 아이콘이 없어 글자 기호로 둔다.
 const handle = '<span title="끌어서 순서 바꾸기" aria-label="끌어서 순서 바꾸기" class="cursor-grab text-[16px] text-erp-label">≡</span>';
