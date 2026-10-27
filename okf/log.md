@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-10-27
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 관리자 2단계: 가맹 마스터 미사용 띠 · 미사용/점포 빼기 저장 전 연쇄 확인창(api update-impact), 범위 칸 도움말, 상세의 본인 · 남이 연 가맹 관리자 안내 띠, [등록]을 제목 줄로.
+
 ## 2026-10-26
 * **Update**: main 병합(front sandshrew, main #139 까지): okf 충돌은 양쪽 기록을 살렸다. 플랫폼 관리자 이메일 검사가 `email-format.ts` 로 모여, BP 관리자 폼도 그 `emailError` 를 쓴다(문구 「이메일 형식이 올바르지 않습니다.」).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 관리자: 등록 때 이메일도 아이디와 같은 때(칸을 벗어나거나 Enter) api `GET /bp-admins/email-availability` 로 중복을 묻는다(사용자 요청). 점포 일괄 검색 창에 끌어서 옮기기를 더하고 폭을 960 으로 넓혔다. 상세 대상 점포 표는 5개 뒤로 표 안에서 스크롤하고, 등록만 한 계정은 최종 수정일시를 「수정한 적 없음」으로 둔다.
