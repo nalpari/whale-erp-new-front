@@ -62,7 +62,7 @@ export default ({ A, R }) => {
     ui.badge(state === "사용" ? "on" : "off", state),
     withIcon("phone", phone),
     withIcon("mail", mail),
-    login || '<span class="text-erp-muted">로그인 기록 없음</span>',
+    login || '<span class="text-erp-muted">-</span>',
     reg,
   ]);
 

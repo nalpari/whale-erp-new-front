@@ -329,7 +329,7 @@ export function AdminFormPanel(props: Props) {
                     set("phone", next);
                   }}
                   inputMode="numeric"
-                  maxLength={i === 0 ? 3 : 4}
+                  maxLength={4}
                   aria-label={`휴대전화번호 ${label}`}
                   aria-invalid={invalid("phone")}
                   aria-describedby={describe("phone")}

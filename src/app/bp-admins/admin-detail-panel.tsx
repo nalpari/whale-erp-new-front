@@ -10,7 +10,7 @@ import { FailedBand } from "@/components/site/side-parts";
 import { Blocked, WhoList } from "@/app/platform-admins/admin-parts";
 import { HistoryButton } from "@/app/platform-admins/history-dialog";
 import { StoreStatusBadge } from "@/app/stores/store-parts";
-import { formatDateTime, formatPhone } from "@/lib/format";
+import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
 import { detailButtonsOf } from "@/lib/bp-admin-rules";
 import type { BpAdminDetail, BpAdminStore } from "@/lib/bp-admins";
 import type { StoreStatus } from "@/lib/store-types";
@@ -108,8 +108,11 @@ function DetailBody({
   );
   const whenText = (at: string, who: string | null | undefined) => `${formatDateTime(at)} · ${who ?? "시스템"}`;
   // 등록만 한 계정은 수정일시가 등록일시와 같아 등록이 수정처럼 보인다 — 같으면 일시 · 수정자 대신 「-」를 둔다(2026-10-26 사용자 요청, 2026-10-27 「수정한 적 없음」 → 「-」).
-  // 등록 때 두 값이 따로 찍혀 ms 가 어긋날 수 있어 1초 안쪽은 같은 것으로 본다
-  const edited = Math.abs(Date.parse(admin.updatedAt) - Date.parse(admin.createdAt)) >= 1000;
+  // 1초 안쪽 어긋남은 같은 것으로 본다(wasUpdated).
+  // 수정자가 없는 계정(회원가입으로 만든 BP 마스터 등)도 「-」다. 한계: api 의 updatedAt(Prisma @updatedAt)은 로그인 · 초기 비밀번호 미발송 표시에도 올라가는데,
+  // 수정자(updatedBy)는 등록 때부터 등록자로 채워져 있어 이 검사로는 그 갱신을 거르지 못한다 — 로그인한 계정은 「로그인 시각 · 등록자」가
+  // 최종수정으로 보이고, 등록 직후에도 메일을 보낸 뒤 미발송 표시를 끄며 몇 초 늦게 찍혀 보일 수 있다(api 요청 대기)
+  const edited = admin.updatedByName !== null && wasUpdated(admin.createdAt, admin.updatedAt);
   const rows: DetailRow[] = [
     { label: "아이디", value: admin.loginId },
     { label: "이름", value: name },
@@ -145,7 +148,7 @@ function DetailBody({
       ),
     },
     // 비밀번호 아래 줄 — 플랫폼 관리자 상세와 같이 표에 둔다(2026-10-27 사용자 지정)
-    { label: "최근 로그인", value: admin.lastLoginAt ? formatDateTime(admin.lastLoginAt) : muted("로그인 기록 없음") },
+    { label: "최근 로그인", value: admin.lastLoginAt ? formatDateTime(admin.lastLoginAt) : muted("-") },
   ];
 
   return (
