@@ -168,13 +168,16 @@ function DetailBody({
             </p>
           </InfoBand>
         ) : (
-          <InfoBand>
-            <p>내 계정입니다</p>
-            <p className="font-normal text-erp-label">
-              수정 화면에서는 기본정보(이름 · 휴대전화번호 · 이메일)만 바뀝니다. 권한 그룹 · 계정 상태 · 대상 점포는 BP 마스터 · BP 관리자 · 플랫폼 사용자가,
-              비밀번호는 내 정보에서 직접 바꿉니다.
-            </p>
-          </InfoBand>
+          // 수정 화면을 설명하는 띠라 [수정]이 보일 때만 — 메뉴 수정 권한이 없으면 버튼도 없다
+          canUpdate && (
+            <InfoBand>
+              <p>내 계정입니다</p>
+              <p className="font-normal text-erp-label">
+                수정 화면에서는 기본정보(이름 · 휴대전화번호 · 이메일)만 바뀝니다. 권한 그룹 · 계정 상태 · 대상 점포는 BP 마스터 · BP 관리자 · 플랫폼 사용자가,
+                비밀번호는 내 정보에서 직접 바꿉니다.
+              </p>
+            </InfoBand>
+          )
         )
       ) : (
         admin.roleTypeCode === "FA" &&
