@@ -38,12 +38,12 @@ test("newBpItemDraft · toBpItemDraft — 새 행은 BP전용 · 사용, 받은 
   assert.deepEqual(toBpItemDraft(item), { ...item, key: "A", added: false });
 });
 
-test("bpCodesHref — 기본값(1쪽 · 빈 검색)은 빼고 순서를 고정한다", () => {
+test("bpCodesHref — 기본값(빈 검색)은 빼고 순서를 고정한다", () => {
   assert.equal(bpCodesHref({}), "/bp-code-groups");
-  assert.equal(bpCodesHref({ page: 1, groupCode: "" }), "/bp-code-groups");
+  assert.equal(bpCodesHref({ groupCode: "" }), "/bp-code-groups");
   assert.equal(
-    bpCodesHref({ page: 2, group: "EMP_TYPE", groupCode: "EMP", groupName: "고용" }),
-    "/bp-code-groups?groupCode=EMP&groupName=%EA%B3%A0%EC%9A%A9&page=2&group=EMP_TYPE",
+    bpCodesHref({ group: "EMP_TYPE", groupCode: "EMP", groupName: "고용" }),
+    "/bp-code-groups?groupCode=EMP&groupName=%EA%B3%A0%EC%9A%A9&group=EMP_TYPE",
   );
 });
 

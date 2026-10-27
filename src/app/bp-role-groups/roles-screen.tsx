@@ -102,7 +102,8 @@ function RolesBody({
       ),
     },
     { header: "설명", align: "left", cell: (r) => r.description || <span className="text-erp-muted">-</span> },
-    { header: "최종수정", width: "w-[220px]", align: "left", cell: (r) => <WhenWho at={r.updatedAt} actor={r.updatedBy} /> },
+    // 「일시 · 수정자」가 220px 에선 수정자 이름이 말줄임됐다 — 280px 로 넓힌다(2026-10-27 사용자 지정)
+    { header: "최종수정", width: "w-[280px]", align: "left", cell: (r) => <WhenWho at={r.updatedAt} actor={r.updatedBy} /> },
     // [설정] 버튼 열(「메뉴설정」)을 「메뉴설정 여부」 앞에 둔다(2026-10-26 사용자 지정 — 전엔 「메뉴 등록 여부」 · 「메뉴등록」[메뉴등록] 순)
     {
       header: "메뉴설정",

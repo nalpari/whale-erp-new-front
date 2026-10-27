@@ -33,7 +33,7 @@ export function UnsavedChangesProvider({ children }: { children: ReactNode }) {
   const value: UnsavedChanges = {
     setDirty: (panel, dirty) => setDirtyPanels((m) => (Boolean(m[panel]) === dirty ? m : { ...m, [panel]: dirty })),
     isDirty: (panel) => Boolean(dirtyPanels[panel]),
-    // 그룹 · 쪽만 바뀌는 이동이라 스크롤을 맨 위로 올리지 않는다 — 누른 자리에서 그대로 본다.
+    // 고른 그룹 · 검색만 바뀌는 이동이라 스크롤을 맨 위로 올리지 않는다 — 누른 자리에서 그대로 본다.
     navigate: (href) => (hasChanges ? setPendingHref(href) : router.push(href, { scroll: false })),
   };
 

@@ -170,12 +170,12 @@ export const searchTerm = (raw: string | string[] | undefined, max: number) => (
 export const GROUP_OWNERS = ["PLATFORM_FIXED", "PLATFORM_PROVIDED"] as const;
 export type GroupOwner = (typeof GROUP_OWNERS)[number];
 
-/** 필터의 관리주체 값 — 하나만 고름(그 값), 둘 다 끔(NONE). 둘 다 고름은 값 없음(undefined). NONE 과 둘 다 고름은 같은 목록(전체)이다. */
+/** 필터의 관리주체 값 — 하나만 고름(그 값), 둘 다 끔(NONE — 결과 없음, 2026-10-27 사용자 지정). 둘 다 고름은 값 없음(undefined, 전체). */
 export type OwnerFilter = GroupOwner | "NONE";
 
 /** 주소의 ?manageOwnerCode. 모르는 값이면 둘 다 고름(undefined). */
 export const ownerTerm = (raw: string | string[] | undefined): OwnerFilter | undefined =>
   raw === "NONE" ? "NONE" : GROUP_OWNERS.find((o) => o === raw);
 
-/** api 에 실을 관리주체 — 하나만 고른 때만. NONE(둘 다 끔)은 둘 다 고른 것과 같이 전체다(2026-10-27 사용자 지정). */
+/** api 에 실을 관리주체 — 하나만 고른 때만. NONE(둘 다 끔)은 api 를 부르지 않고 빈 목록으로 보이므로 부르는 쪽이 먼저 가른다. */
 export const ownerQuery = (v: OwnerFilter | undefined): GroupOwner | undefined => (v === "NONE" ? undefined : v);
