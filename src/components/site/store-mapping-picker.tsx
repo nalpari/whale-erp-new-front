@@ -176,8 +176,8 @@ export function StoreMappingPicker({
             </Button>
           </span>
         </p>
-        {/* 칩 34px × 5 + 간격 6px × 4 = 194px. 넘치면 이 안에서 세로로 스크롤한다 */}
-        <div className="relative h-[194px]">
+        {/* 194px(칩 다섯 줄)에서 1/3 줄인 130px(2026-10-27 사용자 지정) — 넷째 줄 윗부분이 살짝 보여 더 있다는 것을 알린다. 넘치면 이 안에서 세로로 스크롤한다 */}
+        <div className="relative h-[130px]">
           <ul aria-label="선택한 점포" className="flex h-full flex-wrap content-start gap-[6px] overflow-y-auto overscroll-contain">
             {picked.map((s) => (
               <li
