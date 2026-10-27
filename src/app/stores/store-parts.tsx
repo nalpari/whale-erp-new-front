@@ -127,9 +127,9 @@ export function StoreCard({ store, href }: { store: StoreSummary; href: string }
   return (
     <Link
       href={href}
-      // DESIGN.md 카드 규칙(4px)을 따른다 — 8px 로 키워 달라는 요청이 있었지만 1팀 확인 전이라 되돌렸다(2026-10-16 코드리뷰).
+      // 모서리는 8px — 점포 카드만 카드 규칙(4px)의 예외다(DESIGN.md Cards, 1팀 동의 2026-10-27. 2026-10-16 에는 확인 전이라 4px 로 되돌려 뒀다).
       // 머리(그림 · 이름)와 아래 구분선 사이는 12px — 구분선 아래(pt-[12px])와 같게, 18px 는 떨어져 보였다(2026-10-23 사용자 요청).
-      className={`flex flex-col gap-[12px] rounded-[4px] border border-erp-panel-line p-[18px] transition-colors duration-150 ease-out hover:border-erp-brand ${muted ? "bg-erp-thead-bg" : "bg-white"}`}
+      className={`flex flex-col gap-[12px] rounded-[8px] border border-erp-panel-line p-[18px] transition-colors duration-150 ease-out hover:border-erp-brand ${muted ? "bg-erp-thead-bg" : "bg-white"}`}
     >
       <div className="flex items-start gap-[12px]">
         <StoreImage size={48} onMuted={muted} url={store.imageUrl} name={store.name} />

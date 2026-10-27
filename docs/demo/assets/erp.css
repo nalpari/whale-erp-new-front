@@ -2411,9 +2411,6 @@
   .pt-\[14px\] {
     padding-top: 14px;
   }
-  .pt-\[16px\] {
-    padding-top: 16px;
-  }
   .pt-\[18px\] {
     padding-top: 18px;
   }
@@ -2578,6 +2575,9 @@
   }
   .align-\[-1px\] {
     vertical-align: -1px;
+  }
+  .align-baseline {
+    vertical-align: baseline;
   }
   .align-middle {
     vertical-align: middle;

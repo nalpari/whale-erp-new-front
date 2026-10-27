@@ -73,7 +73,7 @@ function RolesBody({
   const columns: Column<BpRoleGroup>[] = [
     {
       header: "권한유형 · 코드",
-      width: "w-[170px]",
+      width: "w-[200px]", // 플랫폼 권한 관리와 같은 폭 — 170px 이면 설명 칸이 넓어져 최종수정이 멀어 보였다(2026-10-27 사용자 지정)
       align: "left", // 2026-10-26 사용자 지정
       cell: (r) => (
         <span className="truncate">

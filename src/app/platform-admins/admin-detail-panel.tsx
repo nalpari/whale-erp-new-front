@@ -62,7 +62,7 @@ export function AdminDetailPanel({
       ) : (
         <>
           {detail && <FailedBand message={detail.failed} />}
-          <div className="flex border-t border-erp-panel-line pt-[16px]">
+          <div className="flex">
             <Button variant="off" onClick={onClose}>
               닫기
             </Button>
@@ -201,7 +201,7 @@ function DetailBody({
       {failure && <FailedBand message={failure} />}
       <DetailTable title="기본정보" rows={rows} />
 
-      <div className="flex flex-wrap items-center gap-[6px] border-t border-erp-panel-line pt-[16px]">
+      <div className="flex flex-wrap items-center gap-[6px]">
         <Button variant="off" onClick={onClose}>
           닫기
         </Button>

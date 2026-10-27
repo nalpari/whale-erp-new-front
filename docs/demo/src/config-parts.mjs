@@ -12,6 +12,9 @@ export const muted = (t) => `<span class="text-erp-muted">${t}</span>`;
 export const band = (text) => `<p class="flex min-h-[42px] items-center rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[12px] py-[8px] text-[14px] font-medium text-erp-ink">${text}</p>`;
 // 구분 꼬리표(역할·관리 주체·적용 범위 같은 분류 값). 상태가 아니라서 색을 쓰지 않고 표 머리 바탕·선에 2depth 글자색. 높이는 배지와 같다.
 export const tag = (t) => `<span class="inline-block rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[4px] py-px text-[14px] font-medium whitespace-nowrap text-erp-sub">${t}</span>`;
+// 관리주체 띠지 — 글자 · 선은 tag 그대로, 바탕만 플랫폼고정 연한 파랑(앱 OwnerTag, 2026-10-27)
+export const ownerTag = (t) =>
+  `<span class="inline-block rounded-[2px] border border-erp-thead-line px-[4px] py-px text-[14px] font-medium whitespace-nowrap text-erp-sub ${t === "플랫폼고정" ? "bg-erp-on-bg" : "bg-erp-thead-bg"}">${t}</span>`;
 // 입력칸 + 도움말을 세로로
 export const stack = (...c) => `<div class="flex flex-col gap-[8px]">${c.join("")}</div>`;
 // 위쪽 정렬 formRow(도움말 줄 수가 달라도 입력칸 높이가 맞게)
@@ -33,6 +36,11 @@ export const dimRows = (table, idx) => {
   return table.replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, (m) => (idx.includes(++n) ? m.replace('">', ' text-erp-muted">') : m));
 };
 // 고른 줄 표시(표 머리 바탕)
+// 고른 줄을 더 또렷이(앱 DataTable current — 공통코드 그룹 목록, 2026-10-27)
+export const markCurrent = (table, n) => {
+  let i = -1;
+  return table.replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, (m) => (++i === n ? m.replace('">', ' bg-erp-subtle [&>td:first-child]:shadow-[inset_3px_0_0_var(--color-erp-brand)]">') : m));
+};
 export const markRow = (table, n) => {
   let i = -1;
   return table.replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, (m) => (++i === n ? m.replace('">', ' bg-erp-thead-bg">') : m));

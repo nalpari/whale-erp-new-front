@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
-import { Badge, Button, DataTable, Pagination, Select, Tag, TextField, Toggle, useToast, type Column } from "@/components/common";
+import { Badge, Button, DataTable, Pagination, Select, TextField, Toggle, useToast, type Column } from "@/components/common";
 import { buildSaveGroupsInput, codePanelAccess, followSameRows, groupChanged, withKeptPending, type GroupDraft } from "@/lib/code-drafts";
 import { failureView } from "@/lib/code-save";
 import { codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-validation";
@@ -12,11 +12,12 @@ import { applyCodeGroupToBpsAction, saveCodeGroupsAction } from "./actions";
 import { BpApplyDialog } from "./bp-apply-dialog";
 import { CodePanel, DoneNotice, FieldErrors, SaveFailedBand, UNKNOWN_RESULT, UNREACHABLE } from "@/components/site/code-editor/code-panel";
 import { codesHref } from "./codes-href";
-import { searchedEmpty } from "@/components/site/code-editor/code-group-filter";
+import { searchedEmpty, type CodeGroupSearch } from "@/components/site/code-editor/code-group-filter";
 import { GuardedLink, useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
+import { OwnerTag } from "@/components/site/code-editor/owner-tag";
 
 // 가운데 공통코드 그룹 목록. 그룹 코드를 누르면 오른쪽에 그 그룹의 상세 코드가 선다(?group=). 그룹 · 쪽을 옮겨도 왼쪽 필터의 검색 조건은 이어 간다.
-// 기존 그룹은 그룹명 · 사용 상태만 고치고(코드 · 관리 주체는 바꾸지 않는다), [추가]는 맨 끝에 입력 행 하나를 붙인다.
+// 기존 그룹은 그룹명 · 사용여부만 고치고(코드 · 관리주체는 바꾸지 않는다), [추가]는 맨 끝에 입력 행 하나를 붙인다.
 // [저장] 한 번으로 바뀐 행과 새 행을 함께 보낸다(수정 → 등록 두 요청, actions.ts). 그룹 순서는 화면에서 바꾸지 않는다(2026-10-12) — 표시 순서대로 보이기만 한다.
 // 플랫폼제공 그룹은 [BP 적용]으로 사용 중인 모든 BP 에 복사한다 — BP 에 이미 있는 상세 코드는 건너뛰고 없는 것만 넣는다(2026-10-12).
 // 저장한 값으로 적용하므로 두 패널(이 패널 · 오른쪽 상세 코드) 어디든 저장하지 않은 변경이 있으면 막는다.
@@ -40,7 +41,7 @@ export function CodeGroupPanel({
   page: number;
   pageSize: number;
   /** 왼쪽 필터의 검색 조건 — 그룹 · 쪽을 옮겨도 이어 간다. */
-  search: { groupCode: string; groupName: string };
+  search: CodeGroupSearch;
   selected?: string;
   /** 관리 주체 한글 — 공통코드 MANAGE_OWNER 에서 읽은 값. */
   ownerLabels: Record<string, string>;
@@ -123,7 +124,7 @@ export function CodeGroupPanel({
       const formatError = codeFormatError(code);
       if (formatError) next.code = `새 그룹 코드 — ${formatError}`;
       else if (duplicateCodes(groups.map((g) => g.groupCode), [code]).size) next.code = `이미 있는 그룹 코드입니다: ${code}`;
-      if (!added.manageOwnerCode) next.owner = "새 그룹 — 관리 주체를 골라 주세요.";
+      if (!added.manageOwnerCode) next.owner = "새 그룹 — 관리주체를 골라 주세요.";
     }
     return next;
   };
@@ -239,7 +240,7 @@ export function CodeGroupPanel({
       },
     },
     {
-      header: "관리 주체",
+      header: "관리주체",
       // 새 행의 선택칸(글자 + 오른쪽 화살표 30)에 ‘플랫폼고정’이 잘리지 않는 폭
       width: "w-[140px]",
       cell: (d) =>
@@ -247,7 +248,7 @@ export function CodeGroupPanel({
           <Select
             value={d.manageOwnerCode}
             onChange={(e) => update("", { manageOwnerCode: e.target.value as ManageOwnerCode })}
-            aria-label="새 그룹 관리 주체"
+            aria-label="새 그룹 관리주체"
             aria-invalid={invalid("owner")}
           >
             <option value="">선택</option>
@@ -258,7 +259,7 @@ export function CodeGroupPanel({
             ))}
           </Select>
         ) : (
-          <Tag>{ownerLabels[d.manageOwnerCode] ?? d.manageOwnerCode}</Tag>
+          <OwnerTag code={d.manageOwnerCode}>{ownerLabels[d.manageOwnerCode] ?? d.manageOwnerCode}</OwnerTag>
         ),
     },
     {
@@ -278,7 +279,7 @@ export function CodeGroupPanel({
         ),
     },
     {
-      header: "사용 상태",
+      header: "사용여부",
       width: "w-[100px]",
       cell: (d) =>
         manage || d.added ? (
@@ -286,7 +287,7 @@ export function CodeGroupPanel({
             label="사용"
             checked={d.status === "ACTIVE"}
             onChange={(e) => update(d.added ? "" : d.groupCode, { status: e.target.checked ? "ACTIVE" : "INACTIVE" })}
-            aria-label={`${d.added ? "새 그룹" : d.groupCode} 사용 상태`}
+            aria-label={`${d.added ? "새 그룹" : d.groupCode} 사용여부`}
           />
         ) : (
           <Badge tone={d.status === "ACTIVE" ? "on" : "off"}>{d.status === "ACTIVE" ? "사용" : "미사용"}</Badge>
@@ -323,8 +324,9 @@ export function CodeGroupPanel({
         columns={columns}
         rows={drafts}
         rowKey={(d) => (d.added ? "__added" : d.groupCode)}
-        rowState={(d) => (d.added ? "added" : d.groupCode === selected ? "selected" : undefined)}
-        empty={searchedEmpty(search) ?? "등록한 공통코드 그룹이 없습니다."}
+        // 고른 그룹은 한 단계 어두운 바탕 + 왼쪽 브랜드색 선 — 플랫폼 메뉴 관리 트리와 같다(2026-10-27 사용자 지정)
+        rowState={(d) => (d.added ? "added" : d.groupCode === selected ? "current" : undefined)}
+        empty={searchedEmpty(search, search.manageOwnerCode && search.manageOwnerCode !== "NONE" ? ownerLabels[search.manageOwnerCode] : undefined) ?? "등록한 공통코드 그룹이 없습니다."}
       />
       <FieldErrors messages={Object.values(errors)} />
       {manage && <BpApplyDialog group={applyTarget} busy={applying} onConfirm={handleApply} onCancel={() => setApplyTarget(null)} />}

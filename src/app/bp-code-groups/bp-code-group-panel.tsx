@@ -1,9 +1,10 @@
 "use client";
 
-import { DataTable, Pagination, Tag, type Column } from "@/components/common";
-import { searchedEmpty } from "@/components/site/code-editor/code-group-filter";
+import { DataTable, Pagination, type Column } from "@/components/common";
+import { searchedEmpty, type CodeGroupSearch } from "@/components/site/code-editor/code-group-filter";
 import { CodePanel } from "@/components/site/code-editor/code-panel";
 import { GuardedLink, useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
+import { OwnerTag } from "@/components/site/code-editor/owner-tag";
 import { useCodeLabel } from "@/components/site/code-label";
 import { useCurrentBp } from "@/components/site/session-gate";
 import { bpCodesHref } from "@/lib/bp-code-drafts";
@@ -26,7 +27,7 @@ export function BpCodeGroupPanel({
   total: number;
   page: number;
   pageSize: number;
-  search: { groupCode: string; groupName: string };
+  search: CodeGroupSearch;
   selected?: string;
 }) {
   const bp = useCurrentBp().bpCodeId;
@@ -51,7 +52,7 @@ export function BpCodeGroupPanel({
         ),
     },
     { header: "그룹명", align: "left", cell: (g) => g.groupName },
-    { header: "관리 주체", width: "w-[110px]", cell: (g) => <Tag>{ownerLabel(g.manageOwnerCode)}</Tag> },
+    { header: "관리주체", width: "w-[110px]", cell: (g) => <OwnerTag code={g.manageOwnerCode}>{ownerLabel(g.manageOwnerCode)}</OwnerTag> },
   ];
 
   return (
@@ -62,7 +63,8 @@ export function BpCodeGroupPanel({
         columns={columns}
         rows={groups}
         rowKey={(g) => g.groupCode}
-        rowState={(g) => (g.groupCode === selected ? "selected" : undefined)}
+        // 고른 그룹은 한 단계 어두운 바탕 + 왼쪽 브랜드색 선 — 플랫폼 메뉴 관리 트리와 같다(2026-10-27 사용자 지정)
+        rowState={(g) => (g.groupCode === selected ? "current" : undefined)}
         empty={searchedEmpty(search) ?? "볼 수 있는 공통코드 그룹이 없습니다."}
       />
       <div className="pt-[14px]">

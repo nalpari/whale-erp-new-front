@@ -139,7 +139,7 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
         : (() => {
             const first = tree?.services.flatMap((sv) => sv.menus.flatMap((m) => blockedReasonsOf(m)))[0];
             // 플랫폼 마스터(PM_FIXED)는 안내 문장 전체를 따로 둔다 — enum 한글(「플랫폼 마스터 권한은 전체 메뉴 허용 고정」)에 덧붙이면 뜻이 잘 안 읽혔다(2026-10-26 사용자 지정)
-            if (first === "SELF_LINKED") return "본인 계정에 연결된 권한 그룹이라 수정할 수 없습니다."; // 상세 띠와 같은 문장(2026-10-26 사용자 지정)
+            if (first === "SELF_LINKED") return "본인 계정에 연결된 권한그룹은 수정할 수 없습니다."; // 상세 띠와 같은 문장(2026-10-26 사용자 지정)
             if (first === "PM_FIXED") return "플랫폼마스터는 시스템 최상위 권한으로, 모든 메뉴의 접근·관리 권한이 자동 부여되며 현재 화면에서는 조작할 수 없습니다.";
             return first ? `${reasonLabel(reasons, first, "고칠 수 없는 권한")} — 메뉴 권한을 볼 수만 있습니다.` : "이 권한의 메뉴 권한은 볼 수만 있습니다.";
           })();
@@ -347,7 +347,7 @@ function MenuTable({
           {cols}
           <thead>
             {/* 머리는 600 먹색 글자에 erp-subtle(#f0f1f3) 바탕 — 1단계 줄(#f8f9fb)보다 살짝 어둡게 해 둘이 갈리게 한다(2026-10-26 사용자 지정).
-                두 바탕 규칙 밖이라 기존 토큰(Off 버튼 바탕)을 빌렸다 — 1팀과 맞출 것. 칸 안쪽 여백은 4px 로 좁혀 100px 칸에 「체크박스 + 글자」가 한 줄로 든다 */}
+                두 바탕 규칙 밖이라 기존 토큰(Off 버튼 바탕)을 빌렸다 — DESIGN.md Tables 예외, 1팀 동의 2026-10-27. 칸 안쪽 여백은 4px 로 좁혀 100px 칸에 「체크박스 + 글자」가 한 줄로 든다 */}
             <tr className="h-[42px] border-b border-erp-thead-line bg-erp-subtle">
               <th scope="col" className="px-[4px] font-semibold text-erp-ink">
                 메뉴명

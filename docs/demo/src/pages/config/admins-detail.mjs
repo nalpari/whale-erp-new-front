@@ -81,7 +81,7 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
   // 패널: 이름은 맨 위에 혼자(닫기도 포함해 기능 버튼은 모두 맨 아래로, 2026-10-07 피드백). 전체 화면: 아래 버튼 줄.
   const head = panel ? `<h2 class="text-[18px] font-semibold whitespace-nowrap text-erp-ink">${NAME_BADGES}</h2>` : "";
   const bottomButtons = panel
-    ? `<div class="flex flex-wrap items-center gap-[6px] border-t border-erp-panel-line pt-[16px]">${ui.button("닫기", { variant: "off", "data-close": true })}<span class="flex-1"></span>${editBtn}${histBtn}</div>`
+    ? `<div class="flex flex-wrap items-center gap-[6px]">${ui.button("닫기", { variant: "off", "data-close": true })}<span class="flex-1"></span>${editBtn}${histBtn}</div>`
     : "";
   const info = panel
     ? `<div class="flex flex-col gap-[24px]">${left}${right}</div>`

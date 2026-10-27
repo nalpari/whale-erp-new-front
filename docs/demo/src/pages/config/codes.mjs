@@ -37,39 +37,40 @@ const handle = '<span title="끌어서 순서 바꾸기" aria-label="끌어서 �
 export default ({ A, R }) => {
   const filter = ui.filterPanel(A, [
     ui.filterSection("그룹 코드", ui.searchField(A, { placeholder: "예: EMP_TYPE", label: "그룹 코드" }), { tight: true }),
+    // 관리주체 칸은 플랫폼 공통코드 관리에만 둔다(앱 code-group-filter.tsx showOwner, 2026-10-27)
     ui.filterSection("그룹명", ui.searchField(A, { placeholder: "예: 고용 형태", label: "그룹명" }), { tight: true, last: true }),
   ]);
 
   const groupCols = [
     { header: "그룹 코드", width: "w-[170px]", align: "left" },
     { header: "그룹명", align: "left" },
-    { header: "관리 주체", width: "w-[110px]" },
+    { header: "관리주체", width: "w-[110px]" },
   ];
   const groupRows = GROUPS.map(([code, name, owner, pick], i) => [
     i === SELECTED ? `<b class="font-semibold" aria-current="true">${code}</b>` : pick ? ui.link(code, "#") : code,
     name,
-    c.tag(owner),
+    c.ownerTag(owner),
   ]);
   const left = c.card(
     "w-[560px] shrink-0",
     head(`공통코드 그룹${c.sub(`${GROUPS.length}개`)}`) +
-      ui.scrollTable(c.markRow(ui.dataTable(groupCols, groupRows, "조건에 맞는 공통코드 그룹이 없습니다."), SELECTED)) + // 열 이름 줄까지 고정, 아래만 스크롤(앱과 같다, 2026-10-26)
+      ui.scrollTable(c.markCurrent(ui.dataTable(groupCols, groupRows, "조건에 맞는 공통코드 그룹이 없습니다."), SELECTED)) + // 열 이름 줄까지 고정, 아래만 스크롤(앱과 같다, 2026-10-26)
       `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
   );
 
   const codeCols = [
     { header: "이동", width: "w-[60px]" },
-    { header: "상세 코드", width: "w-[150px]", align: "left" },
+    { header: "상세 코드", width: "w-[230px]", align: "left" }, // 앱과 같다(2026-10-27)
     { header: "코드명", align: "left" },
     { header: "표시 순서", width: "w-[90px]" },
-    { header: "사용 상태", width: "w-[110px]" },
-    { header: "관리 주체", width: "w-[110px]" },
+    { header: "사용여부", width: "w-[110px]" },
+    { header: "관리주체", width: "w-[110px]" },
   ];
-  const codeRows = CODES.map(([code, name, owner], i) => [handle, code, ui.textField({ value: name, "aria-label": "코드명" }), i + 1, x.toggle("사용", true), c.tag(owner)]);
+  const codeRows = CODES.map(([code, name, owner], i) => [handle, code, ui.textField({ value: name, "aria-label": "코드명" }), i + 1, x.toggle("사용", true), c.ownerTag(owner)]);
   const right = c.card(
     "min-w-0 flex-1",
       head(
-        `상세 코드${c.sub("EMP_TYPE · 고용 형태")}<span class="ml-[10px] inline-flex align-middle">${c.tag("플랫폼제공")}</span>`,
+        `상세 코드${c.sub(`<span class="inline-flex items-baseline gap-[10px] align-baseline"><span class="inline-flex items-baseline gap-[6px]"><span class="text-erp-label">그룹코드</span><b class="font-semibold text-erp-ink">EMP_TYPE</b></span><span aria-hidden="true" class="h-[11px] w-px shrink-0 self-center bg-[#d9d9d9]"></span><span class="inline-flex items-baseline gap-[6px]"><span class="text-erp-label">그룹명</span><b class="font-semibold text-erp-ink">고용 형태</b></span><span aria-hidden="true" class="h-[11px] w-px shrink-0 self-center bg-[#d9d9d9]"></span>${c.ownerTag("플랫폼제공")}</span>`)}`, // 앱 code-panel GroupHead 와 같다(2026-10-27)
         ui.button("추가", { variant: "soft" }) + ui.button("저장"),
       ) +
       ui.scrollTable(ui.dataTable(codeCols, codeRows)),
