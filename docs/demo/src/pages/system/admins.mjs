@@ -62,11 +62,12 @@ export default ({ A, R }) => {
     ui.badge(state === "사용" ? "on" : "off", state),
     withIcon("phone", phone),
     withIcon("mail", mail),
-    login || '<span class="text-erp-muted">로그인 기록 없음</span>',
+    login || '<span class="text-erp-muted">-</span>',
     reg,
   ]);
 
-  const toolbar = ui.listToolbar(ADMINS.length, ui.slideTrigger("등록", "platform-admin-new-panel"));
+  // [등록]은 제목 줄(앱 platform-admins admins-screen, 2026-10-23), 목록 오른쪽 위엔 한 쪽 건수 — BP 관리자 관리와 같다(2026-10-27 사용자 지정)
+  const toolbar = ui.listToolbar(ADMINS.length, `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`);
   const table = dimRows(ui.dataTable(cols, rows, "조건에 맞는 플랫폼 관리자 계정이 없습니다."), [2]);
 
   return {
@@ -74,6 +75,7 @@ export default ({ A, R }) => {
     html: ui.erpFrame({
       header: platformHeader(A, R),
       title: "플랫폼 관리자 관리",
+      titleRight: ui.slideTrigger("등록", "platform-admin-new-panel"),
       body: ui.listBody(filter, toolbar + table + `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`),
       panels: platformAdminNewPanel(A, R) + platformAdminDetailPanel(A, R) + platformAdminEditPanel(A, R),
     }),

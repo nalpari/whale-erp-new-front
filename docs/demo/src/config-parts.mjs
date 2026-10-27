@@ -12,7 +12,24 @@ export const muted = (t) => `<span class="text-erp-muted">${t}</span>`;
 export const band = (text) => `<p class="flex min-h-[42px] items-center rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[12px] py-[8px] text-[14px] font-medium text-erp-ink">${text}</p>`;
 // 구분 꼬리표(역할·관리 주체·적용 범위 같은 분류 값). 상태가 아니라서 색을 쓰지 않고 표 머리 바탕·선에 2depth 글자색. 높이는 배지와 같다.
 export const tag = (t) => `<span class="inline-block rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[4px] py-px text-[14px] font-medium whitespace-nowrap text-erp-sub">${t}</span>`;
+// 관리주체 띠지 — 글자 · 선은 tag 그대로, 바탕만 플랫폼고정 연한 파랑(앱 OwnerTag, 2026-10-27)
+export const ownerTag = (t) =>
+  `<span class="inline-block rounded-[2px] border border-erp-thead-line px-[4px] py-px text-[14px] font-medium whitespace-nowrap text-erp-sub ${t === "플랫폼고정" ? "bg-erp-on-bg" : "bg-erp-thead-bg"}">${t}</span>`;
 // 입력칸 + 도움말을 세로로
+// 제목 옆 값 줄 「라벨 값 | 라벨 값 | 띠지」 — 라벨 회색, 값 굵게, 11px #d9d9d9 구분선. 라벨 없는 칸([, html])은 그대로(앱 components/site/head-values.tsx, 2026-10-27)
+const HEAD_BAR = '<span aria-hidden="true" class="h-[11px] w-px shrink-0 self-center bg-[#d9d9d9]"></span>';
+export const headValues = (items) =>
+  `<span class="inline-flex flex-wrap items-baseline gap-[10px] align-baseline">${items
+    .map(([label, value]) => (label ? `<span class="inline-flex items-baseline gap-[6px]"><span class="text-erp-label">${label}</span><b class="font-semibold text-erp-ink">${value}</b></span>` : value))
+    .join(HEAD_BAR)}</span>`;
+// 관리자 상세 머리 — 이름 아랫줄에 「역할 | 권한그룹 | 상태 배지」(앱 bp-admins · platform-admins admin-detail-panel, 2026-10-27 사용자 지정)
+export const adminHead = (name, role, group, badge) =>
+  `<h2 class="flex flex-col items-start gap-[6px] text-[18px] font-semibold text-erp-ink"><span>${name}</span><span class="text-[14px] font-normal">${headValues([["역할", role], ["권한그룹", group], ["", badge]])}</span></h2>`;
+// 등록 · 최종수정 — 표 밖 테두리 없는 카드, 일시 굵게 · 사람 회색(앱 ReadonlyCard, 2026-10-27 사용자 지정). extra: 카드 아래쪽에 더 둘 줄(선 뒤)
+export const recordValues = (reg, mod, extra = "") => {
+  const when = ([at, by]) => `${at} <span class="font-normal text-erp-label">· ${by}</span>`;
+  return `<div class="flex w-full flex-col gap-[18px]">${ui.formRow(ui.readonlyField("등록", when(reg), true))}${ui.formRow(ui.readonlyField("최종수정", when(mod), true))}${extra ? `<hr class="border-erp-divider">${extra}` : ""}</div>`;
+};
 export const stack = (...c) => `<div class="flex flex-col gap-[8px]">${c.join("")}</div>`;
 // 위쪽 정렬 formRow(도움말 줄 수가 달라도 입력칸 높이가 맞게)
 export const row = (...c) => ui.formRow(...c).replace('class="flex w-full gap-[6px]"', 'class="flex w-full items-start gap-[6px]"');
@@ -33,6 +50,11 @@ export const dimRows = (table, idx) => {
   return table.replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, (m) => (idx.includes(++n) ? m.replace('">', ' text-erp-muted">') : m));
 };
 // 고른 줄 표시(표 머리 바탕)
+// 고른 줄을 더 또렷이(앱 DataTable current — 공통코드 그룹 목록, 2026-10-27)
+export const markCurrent = (table, n) => {
+  let i = -1;
+  return table.replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, (m) => (++i === n ? m.replace('">', ' bg-erp-subtle [&>td:first-child]:shadow-[inset_3px_0_0_var(--color-erp-brand)]">') : m));
+};
 export const markRow = (table, n) => {
   let i = -1;
   return table.replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, (m) => (++i === n ? m.replace('">', ' bg-erp-thead-bg">') : m));

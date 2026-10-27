@@ -14,9 +14,10 @@ const STORES = [
   ["온기식당 판교점", "ST000003"],
   ["온기식당 광화문점", "ST000004"],
 ];
-// 권한 그룹은 계정 역할 옆에 방패 아이콘을 단 꼬리표로 보인다(본문의 계정 상태·권한 그룹 영역은 없앴다 · 2026-10-07). 아이콘 모양은 목업 app.js 의 shield.
-const SHIELD = `<svg viewBox="0 0 24 24" class="mr-[4px] inline-block size-[12px] align-[-1px]" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.1 20 6v6.1c0 4.5-3.4 7.9-8 8.9-4.6-1-8-4.4-8-8.9V6z"/><path d="m8.9 12.1 2.1 2.1 4.1-4.2"/></svg>`;
-const NAME_BADGES = `이서아 <span class="ml-[6px] inline-flex gap-[6px] align-middle">${ui.badge("on", "사용")}${c.tag("BP 관리자")}<span title="권한 그룹">${c.tag(`${SHIELD}인사 담당`)}</span></span>`;
+// 이름 아랫줄에 「역할 | 권한그룹 | 상태 배지」 — 공통코드 상세 코드 머리 · 플랫폼 관리자 상세와 같은 모양(2026-10-27 사용자 지정 — 전엔 이름 옆 꼬리표)
+const HEAD = c.adminHead("이서아", "BP 관리자", "인사 담당", ui.badge("on", "사용"));
+// 전체 화면은 제목 줄에 이름만 두고, 「역할 | 권한그룹 | 상태 배지」 줄을 본문 맨 위에 둔다 — 제목 줄(59px)은 한 줄뿐이다(2026-10-27)
+const HEAD_LINE = `<p class="text-[14px]">${c.headValues([["역할", "BP 관리자"], ["권한그룹", "인사 담당"], ["", ui.badge("on", "사용")]])}</p>`;
 
 export function adminDetailBody(A, R, { panel = false } = {}) {
   const resetId = x.dialogId();
@@ -28,20 +29,20 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
       ["이름", "이서아"],
       ["휴대전화번호", "010-2290-5173"],
       ["이메일", "seoa.lee@hangang.co.kr"],
+      // 미사용 계정이면 초기화 버튼 없이 빈칸(플랫폼 관리자와 같다, 2026-10-27 사용자 지정)
       ["비밀번호", x.dialogTrigger("초기화", resetId, "soft")],
-      ["등록일시", ui.detailValues(["2025-04-01 09:12", "정하윤"])],
-      ["최종 수정일시", ui.detailValues(["2026-02-03 15:10", "정하윤"])],
+      // 최근 로그인은 비밀번호 아래 줄(2026-10-27 사용자 지정)
       ["최근 로그인", "2026-09-20 17:55"],
     ]),
+    // 등록 · 최종수정은 표 밖 테두리 없는 카드, 선 아래에 적용 대상(표 없이 제목 · 값만, 2026-10-27 사용자 지정)
+    c.recordValues(["2025-04-01 09:12", "정하윤"], ["2026-02-03 15:10", "정하윤"], ui.formRow(ui.readonlyField("적용 대상", "일부 점포", true))),
   ].join("");
 
   const storeTable = ui.dataTable(
     [{ header: "점포명", align: "left" }, { header: "점포코드", width: "w-[110px]" }, { header: "점포 상태", width: "w-[90px]" }],
     STORES.map(([n, code]) => [n, code, ui.badge("on", "운영")]),
   );
-  // 대상 점포 위에 적용 범위 — BP 휴일 상세의 적용 대상과 같은 모양(2026-10-08)
   const right =
-    ui.detailTable("적용 대상", [["적용 범위", c.tag("일부 점포")]]) +
     `<div class="flex flex-col gap-[12px]">${ui.sectionHead(`대상 점포${c.sub("일부 · 4개점")}`)}${panel ? `<div class="overflow-x-auto">${storeTable}</div>` : storeTable}</div>`;
 
   const history = ui.dataTable(
@@ -62,9 +63,11 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
 
   const resetDialog = x.dialog(
     resetId,
-    "비밀번호 초기화",
-    `<div class="flex flex-col gap-[12px] break-keep">${c.kv([["아이디", "hghr"], ["이름", "이서아"]], 60)}<p>시스템이 12자 무작위 초기 비밀번호를 새로 발급해 이 계정의 이메일로만 보냅니다. 처리하는 사람도 그 값을 볼 수 없습니다. 초기 비밀번호는 1시간 안에 로그인해야 하며, 지나면 로그인 화면의 비밀번호 찾기로 임시 비밀번호를 다시 받습니다.</p><p><b class="font-semibold">지금 비밀번호는 곧바로 못 쓰게 되지만, 열려 있는 세션은 닫지 않습니다</b></p></div>`,
+    // 제목 · 문구는 플랫폼 관리자 관리의 초기화 확인창과 같다(2026-10-27 사용자 지정)
+    "비밀번호를 초기화하시겠습니까?",
+    `<div class="flex flex-col gap-[12px] break-keep">${c.kv([["아이디", "hghr"], ["이름", "이서아"]], 60)}<p>임시 비밀번호가 등록된 이메일로 발송되며, 기존 비밀번호는 즉시 무효화됩니다.<br>임시 비밀번호는 1시간 동안 유효하며, 로그인 시 비밀번호를 변경해야 합니다.<br>현재 로그인 중인 세션은 유지됩니다.</p></div>`,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("초기화", { "data-close": true }),
+    "w-[480px]",
   );
   const historyDialog = c.wide(
     x.dialog(
@@ -79,12 +82,12 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
   const editBtn = ui.slideTrigger("수정", "admin-edit-panel");
   const histBtn = x.dialogTrigger("변경 이력", histId, "soft");
   // 패널: 이름은 맨 위에 혼자(닫기도 포함해 기능 버튼은 모두 맨 아래로, 2026-10-07 피드백). 전체 화면: 아래 버튼 줄.
-  const head = panel ? `<h2 class="text-[18px] font-semibold whitespace-nowrap text-erp-ink">${NAME_BADGES}</h2>` : "";
+  const head = panel ? HEAD : HEAD_LINE;
   const bottomButtons = panel
-    ? `<div class="flex flex-wrap items-center gap-[6px] border-t border-erp-panel-line pt-[16px]">${ui.button("닫기", { variant: "off", "data-close": true })}<span class="flex-1"></span>${editBtn}${histBtn}</div>`
+    ? `<div class="flex flex-wrap items-center gap-[6px]">${ui.button("닫기", { variant: "off", "data-close": true })}<span class="flex-1"></span>${editBtn}${histBtn}</div>`
     : "";
   const info = panel
-    ? `<div class="flex flex-col gap-[24px]">${left}${right}</div>`
+    ? `<div class="flex flex-col gap-[24px]">${left}${right}</div>` // 제목 줄과 표 사이는 패널 칸 간격(16) — 플랫폼 관리자 상세와 같다(2026-10-27)
     : `<div class="grid grid-cols-2 items-start gap-[24px]"><div class="flex flex-col gap-[24px]">${left}</div><div class="flex flex-col gap-[24px]">${right}</div></div>`;
   const foot = panel ? "" : c.buttons(ui.button("목록", { variant: "off", href: link(R, "config/admins.html") }), editBtn, histBtn);
 
@@ -99,6 +102,6 @@ export default ({ A, R }) => {
   const body = ui.detailBody(adminDetailBody(A, R));
   return {
     title: "이서아",
-    html: ui.erpFrame({ header: erpHeader(A, R), title: NAME_BADGES, body, panels: adminEditPanel(A, R) }),
+    html: ui.erpFrame({ header: erpHeader(A, R), title: "이서아", body, panels: adminEditPanel(A, R) }),
   };
 };

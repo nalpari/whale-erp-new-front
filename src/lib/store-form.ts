@@ -196,8 +196,8 @@ export function formOfStore(d: StoreDetail): StoreForm {
 // 점포 연락처 — 9~12자리(api save-store.dto 와 같다). 12자리는 050X 평생번호(0507-2033-1334 등, 2026-10-23)를 위한 것이지만
 // 검사는 자릿수만 본다 — 050 이 아닌 12자리도 저장되고, 그 번호는 나누기 · 표시가 050X 규칙을 타지 않는다(splitPhone · formatPhone)
 const PHONE_PATTERN = /^[0-9]{9,12}$/;
-// api save-store.dto 와 같은 검사 — 휴대전화로 좁히면 api 로 저장된 유선 번호 점포를 고칠 수 없다
-const CEO_PHONE_PATTERN = /^[0-9]{10,11}$/;
+// 대표자 연락처도 점포 연락처와 같은 9~12자리다(1팀 연락처 칸을 모두 맞춤, 2026-10-27). api save-store.dto 는 따로 맞춘다
+const CEO_PHONE_PATTERN = PHONE_PATTERN;
 const BIZ_NUMBER_PATTERN = /^[0-9]{10}$/;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 /** 소수 자릿수 상한까지의 숫자(음수 허용 여부는 따로) */
@@ -271,7 +271,7 @@ export function validateStoreForm(f: StoreForm, mode: "create" | "edit", require
 
   if (f.tradeName.trim().length > 50) errors.tradeName = "상호명은 50자까지입니다.";
   const ceoPhone = joinPhone(f.ceoPhone);
-  if (ceoPhone && !CEO_PHONE_PATTERN.test(ceoPhone)) errors.ceoPhone = "대표자 연락처는 숫자 10~11자리입니다.";
+  if (ceoPhone && !CEO_PHONE_PATTERN.test(ceoPhone)) errors.ceoPhone = "대표자 연락처는 숫자 9~12자리입니다.";
   if (!f.bizSameAsStore) {
     if (f.bizAddressDetail.trim().length > 100) errors.bizAddressDetail = "상세주소는 100자까지입니다.";
     else if (f.bizAddressDetail.trim() && !f.bizAddress) errors.bizAddressDetail = "사업자주소를 먼저 검색해 주세요.";

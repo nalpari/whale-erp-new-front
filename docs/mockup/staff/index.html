@@ -1059,7 +1059,7 @@
                   </div>
                 </div>
                 <div class="panel__note">
-                  근무스케줄은 급여 계산에 쓰지 않는다. 다만 그날 휴게 분은 근무스케줄의 휴게를 먼저 쓰고, 없으면 계약 요일 휴게를 쓴다(운영 정책 PAY-12). 본사가 볼 때 본사 제공 동의가 없는 가맹 점포 직원은 인원 수에는 세고 이름·막대는 비운다(운영 정책 ATT-30).
+                  근무스케줄은 급여 계산에 쓰지 않는다(운영 정책 PAY-12). 본사가 볼 때 본사 제공 동의가 없는 가맹 점포 직원은 인원 수에는 세고 이름·막대는 비운다(운영 정책 ATT-30).
                 </div>
               </section>
 
@@ -1196,7 +1196,7 @@
                 <input class="input" style="width: 180px" placeholder="이름 또는 휴대전화번호" aria-label="직원" />
                 <select class="select" style="width: 130px" aria-label="고용형태"><option>고용형태 전체</option><option>정직원</option><option>파트타이머</option></select>
                 <select class="select" style="width: 150px" aria-label="출퇴근 상태"><option>상태 전체</option><option>정상</option><option>지각</option><option>미출근</option><option>출근 미등록</option><option>퇴근 미등록</option><option>휴무</option></select>
-                <select class="select" style="width: 160px" aria-label="확인 필요 사유"><option>사유 전체</option><option>반경 밖 출근</option><option>반경 밖 퇴근</option><option>위치 조작 감지</option></select>
+                <select class="select" style="width: 160px" aria-label="확인 필요 사유"><option>사유 전체</option><option>반경 밖 출근</option><option>반경 밖 퇴근</option><option>위치 조작 감지</option><option>근무 12시간 초과</option></select>
                 <select class="select" style="width: 140px" aria-label="기록 구분"><option>기록 전체</option><option>직원 등록</option><option>대신 등록</option><option>보정됨</option></select>
                 <select class="select" style="width: 110px" aria-label="재직 상태"><option>재직</option><option>퇴직</option><option>전체</option></select>
                 <div class="filters__end"><span class="filters__count">근태 요약에는 점포·고용형태·재직만</span></div>
@@ -1267,7 +1267,7 @@
                       </tbody>
                     </table>
                   </div>
-                  <div class="panel__note">출퇴근은 직원 근무 앱에서 찍는다. 관리자는 기록을 보정하고, 위치정보 동의가 없는 직원의 기록은 대신 등록한다. 동의 없는 가맹 점포 직원의 기록은 본사에게 보이지 않고, 본사 계정의 근태 요약 숫자에서도 뺀다(근로계약 목록 상태별 개수와 같은 기준, WHALEERP-133).</div>
+                  <div class="panel__note">출퇴근은 직원 근무 앱에서 찍는다. 관리자는 기록을 보정만 한다. 동의 없는 가맹 점포 직원의 기록은 본사에게 보이지 않는다.</div>
                 </section>
 
                 <section class="panel">
@@ -1315,7 +1315,7 @@
                     <div class="panel__end">
                       <input class="input input--sm" type="date" value="2026-07-20" min="2026-05-20" aria-label="기간 시작" /> ~ <input class="input input--sm" type="date" value="2026-08-20" max="2026-08-20" aria-label="기간 끝" />
                       <span class="filters__count">최근 3개월 안 · 이 안에서만 수정 가능</span>
-                      <button class="btn btn--secondary btn--sm" type="button" data-tip="위치정보 동의를 거부·철회했거나 앱에서 위치 수집을 일시 중지한 직원에게만 열린다. 위치를 주는 직원은 앱으로 찍고 관리자는 그 기록을 보정한다. 그날 출근·퇴근이 모두 없어도 대신 등록이 아니라 보정으로 두 시각을 넣는다(조건은 대신 등록과 같음). 그 날짜에 체결 완료 근로계약이 없는 직원은 고를 수 없다(STAFF-29).">
+                      <button class="btn btn--secondary btn--sm" type="button" data-tip="위치정보 동의를 거부·철회했거나 앱에서 위치 수집을 일시 중지한 직원에게만 열린다. 위치를 주는 직원은 앱으로 찍고 관리자는 보정만 한다. 그 날짜에 체결 완료 근로계약이 없는 직원은 고를 수 없다(STAFF-29).">
                         <span data-icon="plus" data-icon-size="14"></span>출퇴근 대신 등록
                       </button>
                     </div>
@@ -1376,6 +1376,17 @@
                           </td>
                         </tr>
                         <tr>
+                          <td class="k">한도윤</td>
+                          <td class="mono">08-31</td>
+                          <td class="mono">09:00</td>
+                          <td class="mono">22:30</td>
+                          <td><span class="badge badge--risk">근무 12시간 초과</span></td>
+                          <td class="c">
+                            <button class="tbtn" type="button">보정</button>
+                            <button class="tbtn" type="button" data-tip="기록 값은 그대로 두고 검토만 끝낸다. 보정 이력도 연필 표시도 남지 않는다.">이상 없음</button>
+                          </td>
+                        </tr>
+                        <tr>
                           <td class="k">문태경</td>
                           <td class="mono">08-29</td>
                           <td class="mono">09:02</td>
@@ -1402,12 +1413,11 @@
                   </div>
                   <div class="panel__note">
 급여명세서가 확정된 뒤에도 고칠 수 있지만, 명세서에 영향을 줄 수 있다고 경고한다.
-                    <b>확인 필요</b>로 올라오는 사유는 <b>반경 밖 출근</b>, <b>반경 밖 퇴근</b>, <b>위치 조작 감지</b> 셋이다(운영 정책 ATT-19, 2026-10-20).
+                    <b>확인 필요</b>로 올라오는 사유는 <b>반경 밖 출근</b>, <b>반경 밖 퇴근</b>, <b>위치 조작 감지</b>, <b>근무 12시간 초과</b> 넷이다(운영 정책 ATT-19, 2026-10-20 · 근무 12시간 초과 2026-10-27 재영). 근무 12시간 초과는 직원이 앱으로 등록한 짝의 출근부터 퇴근까지 12시간이 넘을 때 붙고, 관리자가 보정·대신 등록으로 넣은 짝에는 붙지 않는다.
                     출근 미등록·퇴근 미등록은 출퇴근 상태이지 확인 필요 사유가 아니다(운영 정책 ATT-31·34). 그래서 미등록 줄에는 <b>이상 없음</b>을 두지 않고 <b>보정</b>으로 채운다(운영 정책 ATT-19, 2026-10-26 재영).
-                    모의 위치가 잡힌 <b>퇴근</b>이 마지막 사유로 들어온다 — 출근은 앱이 아예 막는다.
-                    <b>이상 없음</b>은 확인 필요 사유가 붙은 줄에만 있다. 보정하거나 이상 없음을 누르면 확인 필요와 사유가 지워진다.
+                    위치 조작 감지는 모의 위치가 잡힌 <b>퇴근</b>만 들어온다 — 출근은 앱이 아예 막는다.
+                    보정하거나 <b>이상 없음</b>을 누르면 확인 필요와 사유가 지워진다.
                     위치 판정 결과(반경 안·밖)는 처음부터 저장하지 않아 사유 글자만 남았다가 검토와 함께 사라진다.
-                    보정으로 빈 쪽을 채운 줄은 <b>수정됨</b> 하나로만 보이고 대신 등록으로 함께 보이지 않는다.
                     <b>대신 등록</b>한 기록은 목록에서 그렇게 구분해 보이고 직원 근무 앱에는 보정과 같이 연필 표시로 드러난다.
                   </div>
                 </section>
@@ -1441,14 +1451,13 @@
                   <div class="panel__note">
                     수정 이력은 원본과 분리해 보관한다 — 수정자·시각·사유·변경 전후 값.
                     <b>대신 등록</b>은 이 자리에서 날짜까지 받는다. 최근 3개월 이내만 되고 사유는 보정과 마찬가지로 필수다. 그 날짜에 체결 완료 근로계약이 없는 직원은 직원 선택지에서 빠진다(STAFF-29).
-                    위치정보에 동의한 직원은 출근·퇴근이 둘 다 없는 날도 대신 등록이 아니라 <b>보정</b>으로 두 시각을 넣는다 — 최근 3개월 · 사유 필수 · 그날 체결 완료 계약 조건은 같다(2026-10-26 재영).
                     확인 필요 건을 여기서 저장하면 꼬리표와 사유가 함께 사라진다.
-                    <b>위치 판정 결과</b>(반경 안·밖)는 처음부터 저장하지 않는다. 남는 것은 확인 필요 사유 글자뿐이고 그것도 검토를 마치면 지운다.
+                    <b>위치 판정 결과</b>(반경 안·밖, 오차)는 처음부터 저장하지 않는다. 남는 것은 확인 필요 사유 글자뿐이고 그것도 검토를 마치면 지운다.
                   </div>
                 </section>
               </div>
             </div>
-            <!-- 급여명세서 · S-DOVWAR · 작성 중 → 확정 → 발송 완료 (검토 사유가 붙어도 작성 중, PAY-01 · 06) -->
+            <!-- 급여명세서 · S-DOVWAR · 작성 중 → 검토 중 → 확정 → 발송 완료 -->
             <div data-panel="payroll" hidden>
               <div class="gap is-decided">
                 <div class="gap__head">
@@ -1485,6 +1494,7 @@
                 <select class="select" style="width: 150px" aria-label="명세서 상태">
                   <option>상태 전체</option>
                   <option>작성 중</option>
+                  <option>검토 중</option>
                   <option>확정</option>
                   <option>발송 완료</option>
                 </select>
