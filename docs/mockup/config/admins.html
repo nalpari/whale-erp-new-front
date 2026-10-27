@@ -12,8 +12,9 @@
          대상은 BP 관리자 · 가맹 마스터 · 가맹 관리자 계정이다. BP 마스터(hangang01)와 플랫폼 관리자 계정은 나오지 않는다(PL-RWJYLJ).
          조회 범위는 메뉴 조회 권한과 권한 레벨별 관리 대상 정책을 함께 적용해 가른다.
            BP 마스터 · BP 관리자 · 플랫폼 사용자 = 그 BP 의 세 역할 계정 전부(8명).
-           가맹 마스터(morinam01) = 본인 매핑 점포(ST000005~008) 범위의 가맹 관리자만(moriyn · moricd).
-           가맹 관리자(moriyn) = 본인 매핑 점포(ST000006)와 하나라도 겹치는 가맹 관리자만(본인 한 줄).
+           가맹 마스터(morinam01) = 본인 계정과 본인 매핑 점포(ST000005~008) 범위의 가맹 관리자(morinam01 · moriyn · moricd).
+           가맹 관리자(moriyn) = 본인 계정과 본인 매핑 점포(ST000006)와 하나라도 겹치는 가맹 관리자(본인 한 줄).
+           가맹 마스터 · 가맹 관리자도 본인 계정 줄을 보고 상세를 연다. 가맹 마스터는 본인 기본정보만 고치고, 가맹 관리자 본인 계정은 조회만 한다 (확정 2026-10-23).
          목록은 한 BP 의 계정만 보이므로 BP코드·BP상호명 열과 관리 대상 BP 검색은 두지 않는다. 플랫폼 사용자는 서비스 바로가기 「웨일ERP」에서 대상 BP 를 골라 새 탭으로 연다.
          검색은 한 줄 — 점포(공통 점포 검색 필터, 매핑 점포로 좁힘) · 아이디·이름 검색어(둘을 함께 찾음, 포함) · 권한 그룹 · 계정 상태(일치)다. 계정 상태는 사용 · 미사용 두 값뿐이다.
          행(아이디·이름)을 누르면 상세로 간다. 목록에는 수정 링크가 없다 — 수정은 상세를 거쳐서만 한다.
@@ -76,7 +77,7 @@
             <div class="panel__head">
               <h2 class="t-h2">검색 조건</h2>
               <span class="subtle" style="font-size: 12px" data-show-role="bm bpall bppart plat view">BP 관리자 · 가맹 마스터 · 가맹 관리자 계정</span>
-              <span class="subtle" style="font-size: 12px" data-show-role="fm fa" hidden>매핑 점포가 하나라도 겹치는 가맹 관리자 계정만</span>
+              <span class="subtle" style="font-size: 12px" data-show-role="fm fa" hidden>본인 계정과 매핑 점포가 하나라도 겹치는 가맹 관리자 계정</span>
             </div>
             <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
               <!-- 검색 조건 — 점포(맨 위, 고른 점포는 아래 「선택한 점포」) · 아이디·이름 · 권한 그룹 · 계정 상태 한 줄, 초기화 · 검색은 아래 오른쪽 (점포 정보 관리와 같은 구조) -->
@@ -164,7 +165,7 @@
               <span class="badge badge--quiet" data-show="base" data-show-role="bm bpall bppart plat view">8명 · 미사용 2</span>
               <span class="badge badge--quiet" data-show="created" data-show-role="bm bpall bppart plat view" hidden>9명 · 미사용 2</span>
               <span class="badge badge--quiet" data-show="off" data-show-role="bm bpall bppart plat view" hidden>2명</span>
-              <span class="badge badge--quiet" data-show="base created" data-show-role="fm" hidden>2명</span>
+              <span class="badge badge--quiet" data-show="base created" data-show-role="fm" hidden>3명</span>
               <span class="badge badge--quiet" data-show="base created" data-show-role="fa" hidden>1명</span>
               <span class="badge badge--quiet" data-show="off" data-show-role="fm fa" hidden>0명</span>
               <span class="badge badge--quiet" data-show="empty" hidden>0명</span>
@@ -193,7 +194,7 @@
                 <tbody>
                   <tr data-show="created" data-show-role="bm bpall bppart plat view" hidden>
                     <td class="mono"><a class="tlink" href="admins-detail.html?state=created">hgcs</a></td>
-                    <td class="k"><a class="tlink" href="admins-detail.html?state=created">문가은</a> <span class="badge badge--info">새 계정</span></td>
+                    <td class="k"><a class="tlink" href="admins-detail.html?state=created">문가은</a></td>
                     <td>BP 관리자</td>
                     <td>고객응대 <span class="mono subtle">BA000006</span></td>
                     <td><span class="badge badge--ok">사용</span></td>
@@ -261,7 +262,7 @@
                     <td class="mono" style="white-space: nowrap">2025-04-01 09:12</td>
                     <td class="mono" style="white-space: nowrap">2026-09-20 17:55</td>
                   </tr>
-                  <tr data-show-role="bm bpall bppart plat view">
+                  <tr data-show-role="bm bpall bppart plat view fm">
                     <td class="mono"><a class="tlink" href="admins-detail.html?state=morinam">morinam01</a></td>
                     <td class="k"><a class="tlink" href="admins-detail.html?state=morinam">박서윤</a></td>
                     <td>가맹 마스터</td>
@@ -329,7 +330,7 @@
             <div data-show="base" data-show-role="bm bpall bppart plat view"><div data-pager="8" data-pager-unit="명"></div></div>
             <div data-show="created" data-show-role="bm bpall bppart plat view" hidden><div data-pager="9" data-pager-unit="명"></div></div>
             <div data-show="off" data-show-role="bm bpall bppart plat view" hidden><div data-pager="2" data-pager-unit="명"></div></div>
-            <div data-show="base created" data-show-role="fm" hidden><div data-pager="2" data-pager-unit="명"></div></div>
+            <div data-show="base created" data-show-role="fm" hidden><div data-pager="3" data-pager-unit="명"></div></div>
             <div data-show="base created" data-show-role="fa" hidden><div data-pager="1" data-pager-unit="명"></div></div>
 
             <div class="empty" data-show="empty" hidden>
@@ -353,7 +354,8 @@
           <p class="note" data-show="base off created empty" data-show-role="fm fa" hidden>
             <span data-icon="info" data-icon-size="14"></span>
             <span>
-              가맹 쪽 사용자에게는 본인 매핑 점포와 하나라도 겹치는 가맹 관리자 계정만 보인다. BP 관리자와 가맹 마스터 계정은 조회 대상이 아니다.
+              가맹 쪽 사용자에게는 본인 계정과, 본인 매핑 점포와 하나라도 겹치는 가맹 관리자 계정이 보인다. 본인이 아닌 BP 관리자와 가맹 마스터 계정은 조회 대상이 아니다.
+              <span data-show-role="fm">본인 계정은 기본정보만 고친다.</span>
               <span data-show-role="fa">가맹 관리자는 계정을 조회만 하고 등록·수정하지 않는다.</span>
             </span>
           </p>

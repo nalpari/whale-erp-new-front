@@ -1,4 +1,3 @@
-import { PageBar } from "@/components/common";
 import { ApiError } from "@/lib/api";
 import { getMenu, getMenuServices, getMenuTree } from "@/lib/platform-menus";
 import { type MenuDetailState } from "./menu-parts";
@@ -14,17 +13,15 @@ export default async function PlatformMenusPage({ searchParams }: PageProps<"/pl
   const service = services.find((s) => s.serviceCode === params.service) ?? services[0];
   const selected = positiveInt(params.menu);
   const [tree, detail] = await Promise.all([service ? getMenuTree(service.serviceCode) : null, selected ? loadDetail(selected) : null]);
+  // 제목 줄(PageBar)은 MenusScreen 이 그린다 — [등록]이 등록 칸을 여는 상태(고른 메뉴 · 트리)와 같은 곳에 있어야 해서다
   return (
-    <>
-      <PageBar title="플랫폼 메뉴 관리" />
-      <MenusScreen
-        services={services}
-        tree={tree}
-        selected={selected}
-        // 다른 서비스의 메뉴 id 가 주소에 남았으면(탭을 바꾼 직후 · 손으로 고친 주소) 고르지 않은 것으로 본다
-        detail={detail && "menu" in detail && detail.menu.serviceCode !== service?.serviceCode ? null : detail}
-      />
-    </>
+    <MenusScreen
+      services={services}
+      tree={tree}
+      selected={selected}
+      // 다른 서비스의 메뉴 id 가 주소에 남았으면(탭을 바꾼 직후 · 손으로 고친 주소) 고르지 않은 것으로 본다
+      detail={detail && "menu" in detail && detail.menu.serviceCode !== service?.serviceCode ? null : detail}
+    />
   );
 }
 

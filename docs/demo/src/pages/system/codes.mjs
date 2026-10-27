@@ -2,15 +2,16 @@
 // 왼쪽 공통코드 그룹, 오른쪽 고른 그룹의 상세 코드를 두 카드로 나란히 둔다(2단 카드 본문).
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
+import * as c from "../../config-parts.mjs";
 import { platformHeader } from "../../site.mjs";
 import { band as riskBand } from "../../staff-parts.mjs";
 
 // 두 카드 껍데기
-const card = (w, html) => `<section class="${w} flex flex-col gap-[12px] overflow-y-auto rounded-[4px] [&>*]:shrink-0 border border-erp-panel-line bg-white p-[25px]">${html}</section>`;
-// 고른 줄 표시(목업 surface-strong). dataTable 결과의 n 번째 줄에 표 머리 바탕을 얹는다.
+const card = (w, html) => `<section class="${w} flex flex-col gap-[12px] overflow-y-auto [scrollbar-gutter:stable] rounded-[4px] [&>:not([data-table-scroll])]:shrink-0 border border-erp-panel-line bg-white p-[25px]">${html}</section>`;
+// 고른 줄 표시 — dataTable 결과의 n 번째 줄에 한 단계 어두운 바탕 + 왼쪽 브랜드색 3px 선(앱 DataTable current · 메뉴 트리와 같다, 2026-10-27).
 const markRow = (table, n) => {
   let i = -1;
-  return table.replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, (m) => (++i === n ? m.replace('">', ' bg-erp-thead-bg">') : m));
+  return table.replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, (m) => (++i === n ? m.replace('">', ' bg-erp-subtle [&>td:first-child]:shadow-[inset_3px_0_0_var(--color-erp-brand)]">') : m));
 };
 // 끌어서 순서 바꾸는 손잡이. 아이콘이 없어 글자 기호로 둔다.
 const handle = '<span title="끌어서 순서 바꾸기" aria-label="끌어서 순서 바꾸기" class="cursor-grab text-[16px] text-erp-label">≡</span>';
@@ -94,31 +95,39 @@ const SERVICES = [
 export default ({ A, R }) => {
   const apply = x.dialogId();
 
+  // 왼쪽 필터 — BP 공통코드 관리와 같은 공용 필터(앱 code-groups/code-filter.tsx → code-group-filter.tsx, 2026-10-26)
+  const filter = ui.filterPanel(A, [
+    ui.filterSection("그룹 코드", ui.searchField(A, { placeholder: "예: EMP_TYPE", label: "그룹 코드" }), { tight: true }),
+    ui.filterSection("그룹명", ui.searchField(A, { placeholder: "예: 고용 형태", label: "그룹명" }), { tight: true }),
+    // 관리주체 — 기본 둘 다, 하나만 고른 때만 조건(앱 code-group-filter.tsx, 2026-10-27)
+    ui.filterSection("관리주체", ui.checkbox(A, "플랫폼고정", true) + ui.checkbox(A, "플랫폼제공", true), { last: true }),
+  ]);
+
   const groupCols = [
     { header: "그룹 코드", width: "w-[170px]", align: "left" },
     { header: "그룹명", align: "left" },
-    { header: "관리 주체", width: "w-[140px]" }, // 추가 행 선택칸에 ‘플랫폼고정’이 잘리지 않는 폭(2026-10-12)
+    { header: "관리주체", width: "w-[140px]" }, // 추가 행 선택칸에 ‘플랫폼고정’이 잘리지 않는 폭(2026-10-12)
     { header: "BP 적용", width: "w-[130px]" },
-    { header: "사용 상태", width: "w-[100px]" },
+    { header: "사용여부", width: "w-[100px]" },
   ];
   const groupRows = GROUPS.map(([code, name, owner, bp], i) => [
     i === 0 ? `<b class="font-semibold" aria-current="true">${code}</b>` : ui.link(code, "#"),
-    ui.textField({ value: name, "aria-label": "그룹명" }),
-    owner,
+    `${ui.textField({ value: name, "aria-label": "그룹명" })}`,
+    c.ownerTag(owner), // 관리주체는 분류 꼬리표, 플랫폼고정만 하늘색(앱 code-group-panel.tsx 의 Tag 와 같다, 2026-10-26)
     // BP 적용 칸 — 관리 주체가 플랫폼제공인 그룹만 [BP 적용] 버튼, 나머지는 —(2026-10-08)
-    owner === "플랫폼제공" ? x.dialogTrigger("BP 적용", apply, "soft") : '<span class="text-erp-muted">—</span>',
+    owner === "플랫폼제공" ? x.dialogTrigger("BP 적용", apply, "soft") : '<span class="text-erp-muted">-</span>',
     x.toggle("사용", true),
   ]);
   const left = card(
-    "w-[900px] shrink-0", // 그룹 목록을 넓혔다(2026-10-12)
+    "w-[750px] shrink-0", // 그룹 목록을 넓혔다가(2026-10-12) 상세 코드 칸이 좁아 그룹명 칸을 반으로 줄였다(앱 code-panel 과 같다, 2026-10-26)
     ui.sectionHead(`공통코드 그룹${sub(`${GROUPS.length}개`)}`, dim(ui.button("추가", { variant: "soft", "data-add-row": "new-group" })) + ui.button("저장")) +
-      markRow(ui.dataTable(groupCols, groupRows), 0) +
+      ui.scrollTable(markRow(ui.dataTable(groupCols, groupRows), 0)) + // 열 이름 줄까지 고정, 아래만 스크롤(앱과 같다, 2026-10-26)
       addRows(
         "new-group",
         [
           [codeField("그룹 코드", "그룹 코드"), true],
           [ui.textField({ placeholder: "그룹명", "aria-label": "그룹명" }), true],
-          [ui.select(["선택", "플랫폼고정", "플랫폼제공"], { "aria-label": "관리 주체" })],
+          [ui.select(["선택", "플랫폼고정", "플랫폼제공"], { "aria-label": "관리주체" })],
           [""],
           [x.toggle("사용", true)],
         ],
@@ -129,22 +138,23 @@ export default ({ A, R }) => {
 
   const codeCols = [
     { header: "이동", width: "w-[60px]" },
-    { header: "상세 코드", width: "w-[220px]", align: "left" },
-    { header: "코드명", align: "left" },
+    { header: "상세 코드", align: "left" }, // 남는 폭(앱과 같다, 2026-10-27)
+    { header: "코드명", width: "w-[160px]", align: "left" }, // 그룹명 칸과 같은 폭(앱과 같다)
     { header: "표시 순서", width: "w-[90px]" },
-    { header: "사용 상태", width: "w-[120px]" },
+    { header: "사용여부", width: "w-[100px]" },
   ];
   const codeRows = SERVICES.map(([code, name, on = true], i) => [
     handle,
     code,
-    ui.textField({ value: name, "aria-label": "코드명" }),
+    `${ui.textField({ value: name, "aria-label": "코드명" })}`,
     i + 1,
     x.toggle("사용", on), // 켜고 끄는 상태는 스위치로 보이고 옆 글자는 늘 ‘사용’(2026-10-08)
   ]);
   const right = card(
     "min-w-0 flex-1",
-    ui.sectionHead(`상세 코드${sub("SERVICE · 서비스 · 플랫폼고정")}`, dim(ui.button("추가", { variant: "soft", "data-add-row": "new-code", "data-multi": true })) + ui.button("저장")) +
-      ui.dataTable(codeCols, codeRows) +
+    // 고른 그룹: 그룹코드 · 그룹명 라벨은 회색, 값은 굵게, 관리주체는 띠지만(앱 code-panel GroupHead, 2026-10-27)
+    ui.sectionHead(`상세 코드${sub(`<span class="inline-flex items-baseline gap-[10px] align-baseline"><span class="inline-flex items-baseline gap-[6px]"><span class="text-erp-label">그룹코드</span><b class="font-semibold text-erp-ink">SERVICE</b></span><span aria-hidden="true" class="h-[11px] w-px shrink-0 self-center bg-[#d9d9d9]"></span><span class="inline-flex items-baseline gap-[6px]"><span class="text-erp-label">그룹명</span><b class="font-semibold text-erp-ink">서비스</b></span><span aria-hidden="true" class="h-[11px] w-px shrink-0 self-center bg-[#d9d9d9]"></span>${c.ownerTag("플랫폼고정")}</span>`)}`, dim(ui.button("추가", { variant: "soft", "data-add-row": "new-code", "data-multi": true })) + ui.button("저장")) +
+      ui.scrollTable(ui.dataTable(codeCols, codeRows)) +
       addRows(
         "new-code",
         [
@@ -158,7 +168,8 @@ export default ({ A, R }) => {
       ),
   );
 
-  // BP에 적용 확인창 — 문구는 목업 pop-apply 와 같다. 적용 대상 요약(표 머리와 같은 바탕·선) + 되돌릴 수 없다는 위험 띠.
+  // BP에 적용 확인창 — 적용 대상 요약(표 머리와 같은 바탕·선) + 되돌릴 수 없다는 위험 띠. 제목·위험 띠·설명
+  // 문구는 사용자 지정(2026-10-26, 앱 bp-apply-dialog.tsx 와 같다).
   const summary = (rows) =>
     `<dl class="grid grid-cols-[84px_1fr] gap-x-[12px] gap-y-[8px] rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[16px] py-[14px]">${rows
       .map(([k, v]) => `<dt class="font-medium text-erp-label">${k}</dt><dd class="text-erp-ink">${v}</dd>`)
@@ -166,15 +177,15 @@ export default ({ A, R }) => {
   const dialog = x
     .dialog(
       apply,
-      "BP에 적용",
+      "BP에 적용하시겠습니까?",
       `<div class="flex flex-col gap-[12px] break-keep">` +
         summary([
           ["그룹", `PAY_TYPE <span class="text-erp-label">·</span> 급여 형태`],
           ["상세 코드", "지금 등록된 상세 코드 전부"],
         ]) +
-        riskBand("사용 중인 모든 BP에 배포되며 되돌릴 수 없습니다", {
+        riskBand("사용 중인 모든 BP에 적용되며, 적용 후에는 취소할 수 없습니다.", {
           tone: "risk",
-          desc: "적용하면 이 그룹과 상세 코드가 각 BP에 복사되고, 그룹의 BP 적용은 다시 미적용으로 바꿀 수 없습니다. 적용한 뒤 추가한 상세 코드는 다시 BP에 적용하면 기존 BP에도 들어갑니다 — BP에 이미 있는 코드는 건너뛰어 BP가 고친 값은 그대로입니다.",
+          desc: "BP에 등록된 기존 코드는 유지되며, 새로 추가된 코드만 반영됩니다.",
         }) +
         `</div>`,
       ui.button("취소", { variant: "off", "data-close": true }) + ui.button("적용", { "data-close": true }),
@@ -187,7 +198,7 @@ export default ({ A, R }) => {
     html: ui.erpFrame({
       header: platformHeader(A, R),
       title: "플랫폼 공통코드 관리",
-      body: `<div class="flex min-h-0 flex-1 gap-[12px] p-[24px]">${left}${right}</div>${dialog}${ADD_SCRIPT}`,
+      body: `<div class="flex min-h-0 flex-1 gap-[12px] p-[24px]">${filter}${left}${right}</div>${dialog}${ADD_SCRIPT}`,
     }),
   };
 };

@@ -151,14 +151,29 @@
         "fixed inset-x-0 bottom-[32px] z-50 mx-auto w-fit rounded-[2px] bg-erp-nav px-[18px] py-[12px] text-[14px] text-white opacity-0 translate-y-[6px] transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none pointer-events-none";
       document.body.append(toastEl);
     }
+    // 열린 확인창이 있으면 그 안 아래 가운데에 붙인다(앱의 팝업 안 알림과 같은 자리 · 모양) — 모달(showModal)은 최상위 레이어라
+    // body 에 두면 뒤에 가려진다(권한별 메뉴설정 저장 · 권한 그룹 삭제, 2026-10-26)
+    const host = [...document.querySelectorAll("dialog[open]")].pop();
+    (host || document.body).append(toastEl);
+    toastEl.classList.toggle("fixed", !host);
+    toastEl.classList.toggle("bottom-[32px]", !host);
+    toastEl.classList.toggle("absolute", !!host);
+    toastEl.classList.toggle("bottom-[46px]", !!host);
+    toastEl.classList.toggle("px-[18px]", !host);
+    toastEl.classList.toggle("px-[24px]", !!host);
+    toastEl.classList.toggle("font-medium", !!host);
     toastEl.textContent = msg;
     clearTimeout(toastTimer);
     requestAnimationFrame(() => toastEl.classList.remove("opacity-0", "translate-y-[6px]"));
     toastTimer = setTimeout(() => toastEl.classList.add("opacity-0", "translate-y-[6px]"), 2200);
   }
+  window.erpToast = showToast;
   document.addEventListener("click", (e) => {
     const t = e.target.closest("[data-toast]");
     if (t?.dataset.toast) showToast(t.dataset.toast);
+    // data-close-after="ms" — 알림을 보인 뒤 그 확인창을 닫는다(권한 그룹 삭제, 2026-10-26)
+    const after = e.target.closest("dialog [data-close-after]");
+    if (after) setTimeout(() => after.closest("dialog")?.close(), Number(after.dataset.closeAfter) || 1200);
   });
   // "저장" 버튼은 어디서든 공통으로 "저장되었습니다." 토스트를 띄운다(2026-10-06 피드백) — data-toast 로 자기만의
   // 문구를 이미 정한 버튼과, 또 다른 확인창을 먼저 여는 버튼(data-dialog, 아직 저장이 끝난 게 아니다)은 건너뛴다.
@@ -172,6 +187,53 @@
       e.preventDefault();
       setTimeout(() => (location.href = b.href), 900);
     }
+  });
+
+  // ── 고친 것이 있을 때만 [저장] (data-dirty-save) ──
+  // 수정 양식의 [저장]은 칸을 하나라도 고쳐야 켜진다(앱 role-form.tsx · menu-side.tsx 의 isDirty 와 같다, 2026-10-26).
+  // 묶음은 가장 가까운 [data-dirty-scope]. 저장하면 지금 값을 새 기준으로 삼고 다시 막는다.
+  const dirtyFields = (s) => [...s.querySelectorAll("input, textarea, select")].filter((i) => !i.readOnly && i.type !== "search");
+  const isFieldDirty = (i) =>
+    i.type === "checkbox" || i.type === "radio"
+      ? i.checked !== i.defaultChecked
+      : i.tagName === "SELECT"
+        ? [...i.options].some((o) => o.selected !== o.defaultSelected)
+        : i.value !== i.defaultValue;
+  const syncDirty = (s) => s.querySelectorAll("[data-dirty-save]").forEach((b) => (b.disabled = !dirtyFields(s).some(isFieldDirty)));
+  const onDirtyInput = (e) => {
+    const s = e.target.closest?.("[data-dirty-scope]");
+    if (s) syncDirty(s);
+  };
+  document.addEventListener("input", onDirtyInput);
+  document.addEventListener("change", onDirtyInput);
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-dirty-save]");
+    const s = b?.closest("[data-dirty-scope]");
+    if (!s) return;
+    dirtyFields(s).forEach((i) => {
+      if (i.type === "checkbox" || i.type === "radio") i.defaultChecked = i.checked;
+      else if (i.tagName === "SELECT") [...i.options].forEach((o) => (o.defaultSelected = o.selected));
+      else i.defaultValue = i.value;
+    });
+    // 같은 클릭의 토스트(data-toast)가 먼저 뜨도록 다음 틱에 막는다
+    setTimeout(() => syncDirty(s));
+  });
+
+  // ── 고를 것을 골라야 켜지는 확인 버튼 (data-needs-choice) ──
+  // 권한 삭제 확인창의 [삭제]는 연결 사용자가 있으면 대체 권한을 골라야 켜진다(앱 role-delete-dialog.tsx 의 confirmDisabled 와 같다, 2026-10-26).
+  // 확인창 안 선택칸이 모두 첫 항목(「선택하세요」)이 아니어야 켜지고, 닫히면 고른 값을 처음으로 되돌린다.
+  const choiceReady = (d) => [...d.querySelectorAll("select")].every((s) => s.selectedIndex > 0);
+  document.addEventListener("change", (e) => {
+    const d = e.target.closest?.("dialog");
+    if (!d || e.target.tagName !== "SELECT") return;
+    d.querySelectorAll("[data-needs-choice]").forEach((b) => (b.disabled = !choiceReady(d)));
+  });
+  document.querySelectorAll("dialog").forEach((d) => {
+    if (!d.querySelector("[data-needs-choice]")) return;
+    d.addEventListener("close", () => {
+      d.querySelectorAll("select").forEach((s) => (s.selectedIndex = 0));
+      d.querySelectorAll("[data-needs-choice]").forEach((b) => (b.disabled = true));
+    });
   });
 
   // 드롭다운 항목을 고르면 닫는다. 점포 선택칸은 고른 값을 칸에 넣고, 원래 값을 목록으로 돌려놓는다.
@@ -889,30 +951,107 @@
   }
 
   // ── 아이디 · 이메일 중복 확인(data-dupcheck) — 칸을 벗어나거나 Enter 를 치면 형식과 중복을 보고 칸 아래 문구로 알린다 ──
-  // 앱 admin-form-panel.tsx 와 같다. 쓸 수 있으면 아무것도 띄우지 않는다. 데모의 ‘이미 있는 값’은 data-taken 이다.
+  // 앱 admin-form-panel.tsx 와 같다. 아이디는 확인 중 · 사용 가능 · 중복 · 확인 실패를 보인다(세 상태는 코드 리뷰 반영
+  // 2026-10-20 — 대기·성공 신호가 없어 "확인했는지조차 알 수 없는" 문제였다, 확인 실패는 2026-10-23). 데모엔 실제 api 가
+  // 없어 짧은 지연으로 비동기 확인을 흉내 낸다. 데모의 ‘이미 있는 값’은 data-taken 이다.
+  // 이메일은 바로 물어볼 중복확인 API 가 없어(중복은 저장 시점에만 — 등록 · 수정 모두 — api 가 409 로 막는다) 형식만 보고 지연 없이 바로
+  // 답한다(taken 없음) — 그래서 "사용 가능"이 아니라 "형식이 올바르다"고만 말한다(2026-10-20).
+  // 확인 요청 자체의 실패(앱의 429 · 5xx · 연결 실패)는 data-fail-prefix 로 시작하는 값으로 흉내 낸다(2026-10-23).
+  // 수정 화면에서 data-dup-keep 칸이 원래 값 그대로면 아무것도 띄우지 않는다(앱 isOriginalEmail).
+  // 이메일 형식 — 앱 src/lib/email-format.ts 의 isEmailFormat 과 같다(api @IsEmail 규칙). 브라우저 type="email" 은 a@b 도 받는다.
+  // 고칠 때는 앱 파일 · erp.js · guest.js 셋을 같이 고친다.
+  const EMAIL_LOCAL_ATOM = "[a-z0-9!#$%&'*+\\-/=?^_`{|}~\\u00a1-\\ud7ff\\uf900-\\ufdcf\\ufdf0-\\uffef]+";
+  const EMAIL_LOCAL = new RegExp(`^${EMAIL_LOCAL_ATOM}(?:\\.${EMAIL_LOCAL_ATOM})*$`, "i");
+  const EMAIL_LABEL_CHAR = "[a-z0-9\\u00a1-\\uff00\\uff5f-\\uffff]";
+  const EMAIL_LABEL = new RegExp(`^${EMAIL_LABEL_CHAR}(?:(?:${EMAIL_LABEL_CHAR}|-)*${EMAIL_LABEL_CHAR})?$`, "i");
+  const EMAIL_TLD = /^(?:[a-z¡-¨ª-퟿豈-﷏ﷰ-＀｟-￯]{2,}|xn[a-z0-9-]+[a-z0-9])$/i;
+  const emailBytes = (text) => new TextEncoder().encode(text).length;
+  const isEmailFormat = (value) => {
+    if (value.length > 254) return false;
+    const parts = value.split("@");
+    if (parts.length !== 2) return false;
+    const [local, domain] = parts;
+    if (emailBytes(local) > 64 || emailBytes(domain) > 254 || !EMAIL_LOCAL.test(local)) return false;
+    const labels = domain.split(".");
+    const tld = labels.pop() ?? "";
+    if (!labels.length || tld.length > 63 || /\s/.test(tld) || !EMAIL_TLD.test(tld)) return false;
+    return labels.every((label) => label.length <= 63 && !/\s/.test(label) && EMAIL_LABEL.test(label));
+  };
   const DUP = {
     id: {
-      pattern: /^(?=.*[A-Za-z])[A-Za-z0-9]{4,20}$/,
+      test: (v) => /^(?=.*[A-Za-z])[A-Za-z0-9]{4,20}$/.test(v),
       format: "아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다.",
-      taken: "이미 사용 중인 아이디입니다. 삭제된 계정의 아이디도 다시 쓸 수 없습니다",
+      taken: "이미 사용 중인 아이디입니다. 다른 아이디를 입력해 주세요.",
+      checking: "아이디를 확인하는 중입니다.",
+      failed: "아이디를 확인하지 못했습니다. 저장 시 다시 확인합니다.",
+      ok: "사용 가능한 아이디입니다.",
+    },
+    mail: {
+      test: isEmailFormat,
+      format: "이메일 형식이 올바르지 않습니다.",
+      ok: "올바른 이메일 형식입니다.",
     },
   };
+  // DESIGN.md 토큰 erp-on(#5e8ce9)과 같은 체크 표시 — 앱 admin-parts.tsx 의 LoginIdAvailability 와 같은 svg.
+  const DUP_CHECK_SVG =
+    '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M6 10.5L8.5 13L14 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   function initDupCheck(input) {
     const rule = DUP[input.dataset.dupcheck];
     const message = input.parentElement.querySelector("[data-dup-message]");
     if (!rule || !message) return;
-    const say = (text) => {
-      message.textContent = text || "";
-      message.hidden = !text;
-      if (text) input.setAttribute("aria-invalid", "true");
-      else input.removeAttribute("aria-invalid");
+    let timer = null;
+    // 화면 읽기 프로그램 알림 칸 — 늘 붙여 둔다. 알림 영역이 문구와 함께 생기면 첫 문구를 읽지 않는 프로그램이 있다
+    // (앱 admin-parts.tsx LiveText). 보이는 문구는 aria-hidden 으로 두어 두 번 읽히지 않게 하고, 오류는 role=alert 가 알린다.
+    const live = document.createElement("span");
+    live.className = "sr-only";
+    live.setAttribute("aria-live", "polite");
+    message.after(live);
+    // kind: "" (지움) · "checking" · "failed"(회색, erp-label) · "ok"(파랑 erp-on, 체크) · "error"(빨강 erp-off, role=alert)
+    const render = (kind, text) => {
+      message.hidden = !kind;
+      message.removeAttribute("role");
+      message.removeAttribute("aria-hidden");
+      live.textContent = kind && kind !== "error" ? text : "";
+      if (kind === "checking" || kind === "failed") {
+        message.className = "text-[13px] leading-[1.5] text-erp-label";
+        message.setAttribute("aria-hidden", "true");
+        message.textContent = text;
+        input.removeAttribute("aria-invalid");
+        if (kind === "checking") input.setAttribute("aria-busy", "true");
+        else input.removeAttribute("aria-busy");
+      } else if (kind === "ok") {
+        message.className = "flex items-center gap-[4px] text-[13px] leading-[1.5] text-erp-on";
+        message.setAttribute("aria-hidden", "true");
+        message.innerHTML = `${DUP_CHECK_SVG} ${text}`;
+        input.removeAttribute("aria-invalid");
+        input.removeAttribute("aria-busy");
+      } else if (kind === "error") {
+        message.className = "text-[13px] leading-[1.5] text-erp-off";
+        message.setAttribute("role", "alert");
+        message.textContent = text;
+        input.setAttribute("aria-invalid", "true");
+        input.removeAttribute("aria-busy");
+      } else {
+        input.removeAttribute("aria-invalid");
+        input.removeAttribute("aria-busy");
+      }
     };
     const check = () => {
+      clearTimeout(timer);
       const v = input.value.trim();
-      if (!v) return say("");
-      if (!rule.pattern.test(v)) return say(rule.format);
-      const taken = (input.dataset.taken || "").toLowerCase().split(",");
-      say(taken.includes(v.toLowerCase()) ? rule.taken : "");
+      if (!v) return render("");
+      if ("dupKeep" in input.dataset && v.toLowerCase() === input.defaultValue.trim().toLowerCase()) return render("");
+      if (!rule.test(v)) return render("error", rule.format);
+      // taken 이 없는 규칙(이메일)은 물어볼 중복확인 API 가 없다는 뜻 — 형식만 보고 지연 없이 바로 답한다.
+      if (!rule.taken) return render("ok", rule.ok);
+      render("checking", rule.checking);
+      timer = setTimeout(() => {
+        const failPrefix = (input.dataset.failPrefix || "").toLowerCase();
+        if (failPrefix && v.toLowerCase().startsWith(failPrefix)) return render("failed", rule.failed);
+        const taken = (input.dataset.taken || "").toLowerCase().split(",");
+        const isTaken = taken.includes(v.toLowerCase());
+        render(isTaken ? "error" : "ok", isTaken ? rule.taken : rule.ok);
+      }, 400);
     };
     input.addEventListener("blur", check);
     input.addEventListener("keydown", (e) => {
@@ -920,8 +1059,11 @@
       e.preventDefault();
       check();
     });
-    // 고치면 그 칸의 오류는 바로 지운다
-    input.addEventListener("input", () => say(""));
+    // 고치면 대기 중이던 확인은 버리고 그 칸의 상태도 바로 지운다
+    input.addEventListener("input", () => {
+      clearTimeout(timer);
+      render("");
+    });
   }
 
   // ── 필터의 점포 칸(data-scope-store). 헤더 점포 선택이 점포 1개면 그 점포로 고정하고,

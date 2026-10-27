@@ -13,13 +13,16 @@ export type DetailRow = {
 // 오른쪽 값 칸이 남는 폭을 먹는다. 줄 높이는 46(multiline 줄만 46 을 최소로 내용만큼 늘어난다), 제목 줄은 42다.
 // 라벨·값 사이에는 Figma 대로 세로선을 넣지 않는다. 그래서 테두리를 라벨은 왼쪽+아래, 값은 오른쪽+아래로 나눠
 // 제목 줄의 사방 테두리와 겹치지 않게 한다. 마지막 줄만 아래 모서리를 둥글린다.
-export function DetailTable({ title, rows }: { title: ReactNode; rows: DetailRow[] }) {
+// title 을 주지 않으면 제목 줄 없이 표만 — 위 선 · 위 모서리를 표가 맡는다(권한 그룹 상세, 2026-10-26 사용자 지정 · 데모 role-side.mjs plainTable 과 같다).
+export function DetailTable({ title, rows }: { title?: ReactNode; rows: DetailRow[] }) {
   return (
     <div className="w-full">
-      <h3 className="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[16px] font-medium text-erp-ink">
-        {title}
-      </h3>
-      <dl className="flex w-full flex-col">
+      {title !== undefined && (
+        <h3 className="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[16px] font-medium text-erp-ink">
+          {title}
+        </h3>
+      )}
+      <dl className={`flex w-full flex-col ${title === undefined ? "rounded-t-[2px] border-t border-erp-thead-line" : ""}`}>
         {rows.map(({ label, value, multiline }, i) => {
           const last = i === rows.length - 1;
           const height = multiline ? "min-h-[46px]" : "h-[46px]";

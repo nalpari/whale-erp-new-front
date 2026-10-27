@@ -95,8 +95,9 @@ function scopeDropdown(A) {
 }
 
 // 저장 버튼 줄. 패널(closeSave)에서는 왼쪽에 [닫기]를 둔다 — 저장·비밀번호 변경 버튼은 패널을 닫지 않고 토스트로만 알린다(2026-10-06 피드백).
+// 버튼 줄은 가운데(앱 my-page-panel.tsx 와 같다, 2026-10-26) — 입력 묶음 밖, 탭 내용 아래에 둔다
 const saveRow = (label, closeSave, toast) =>
-  `<div class="flex justify-end gap-[6px]">${closeSave ? ui.button("닫기", { variant: "off", "data-close": true }) : ""}${ui.button(label, { "data-toast": toast })}</div>`;
+  `<div class="flex justify-center gap-[6px]">${closeSave ? ui.button("닫기", { variant: "off", "data-close": true }) : ""}${ui.button(label, { "data-toast": toast })}</div>`;
 
 // 내 정보 입력칸(기본정보·사업자정보 탭). MY PAGE 전체 화면(mypage/profile.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다.
 // idPrefix: 사업자 인증 상자 id 접두 — 전체 화면과 패널이 한 페이지(mypage/profile.html)에 같이 실릴 수 있어 서로 다르게 둔다.
@@ -114,46 +115,128 @@ export function mypageBody(A, { idPrefix = "pb", tabPrefix = "", closeSave = fal
     `<hr class="border-erp-divider">` +
     ui.formRow(ui.readonlyField("최근 로그인", "2026-09-22 09:12", true), ui.readonlyField("가입일", "2026-03-04", true)) +
     `</div></div>`;
+  // 입력 예시 문구는 앱 my-page-panel.tsx 그대로(2026-10-26). [닫기][저장] 줄은 「기본정보」 묶음 밖에 둔다(앱과 같다)
   const basic =
     accountInfo +
     ui.formGroup(
       "기본정보",
-      ui.field(f.req("이름"), ui.textField({ value: "정하윤", maxlength: 20, placeholder: "한글 또는 영문 2~20자" })),
+      ui.field(f.req("이름"), ui.textField({ value: "정하윤", maxlength: 20, placeholder: "한글 또는 영문 2~20자로 입력해 주세요." })),
       f.group(f.req("연락처"), f.tel("010", "4821", "7730")),
-      ui.field(f.req("이메일"), ui.textField({ type: "email", value: "hayoon@hangang.co.kr", maxlength: 100 })),
-      save,
-    );
+      ui.field(f.req("이메일"), ui.textField({ type: "email", value: "hayoon@hangang.co.kr", maxlength: 100, placeholder: "example@company.com" })),
+    ) +
+    save;
 
-  const biz = ui.formGroup(
-    f.titleBadge("사업자정보", "on", "인증 완료"),
-    f.bizAuth(A, `${idPrefix}-done`, { start: "done", values: ["211-87-01234", "남도현", "2021-03-15"], doneBadge: "인증 완료 · 2026-03-04" }),
-    ui.field(f.req("상호명"), ui.textField({ value: "㈜한강상회", maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })),
-    f.group("대표자 연락처", f.tel("010", "5530", "1182")),
-    ui.field("대표자 이메일", ui.textField({ type: "email", value: "ceo@hangang.co.kr", maxlength: 100 })),
-    f.address(A, "사업장 주소", { zip: "04007", base: "서울 마포구 망원로 42", detail: "3층" }),
-    ui.formRow(ui.field("업태", ui.textField({ value: "도소매업", maxlength: 50 })), ui.field("종목", ui.textField({ value: "식자재 유통", maxlength: 50 }))),
-    save,
-  );
+  // 사업자정보 인증 상자 — 네 화면 공통 컴포넌트(BizVerificationBox, S-VRNTHD)를 그대로 옮긴 모양이다.
+  // 상자 머리(「사업자정보」 · 인증 상태)까지 같은 회색 박스 안에 있다(2026-10-23 — 전엔 제목 줄과 본문을
+  // 따로 두었는데, 공통 상자로 옮기며 하나가 됐다). 세 칸은 한 줄에 나란히 두되 값 길이에 맞춰 폭을
+  // 다르게 준다 — 사업자등록번호(하이픈 넣어 최대 12자)·개업일자(입력칸 안 달력 아이콘까지 있어 자리를
+  // 더 쓴다)는 넓게, 대표자명은 보통 짧아 좁게(compactRow, 2026-10-23 사용자가 실제 화면으로 맞춘 값).
+  // DOM maxlength 는 사업자등록번호에 안 둔다 — 하이픈 섞어 붙여넣으면 거르기 전에 잘리기 때문이다.
+  //
+  // 인증은 검사만 하고, 저장(아래 「저장」 버튼)을 눌러야 반영된다(점포 사업자정보와 같은 두 단계, 2026-10-22
+  // 사용자 결정). 인증이 끝나 있으면(locked) 세 칸이 읽기 전용으로 잠기고 [재인증][사용안함]만 보인다 —
+  // 「재인증」을 누르면 값은 그대로 둔 채 세 칸이 한꺼번에 열리고, 「인증하기」로 다시 검사해야 다시 잠긴다.
+  // 「사용안함」을 누르면(struck) 확인창 없이 바로 세 칸이 지워질 값에 취소선을 긋고 잠기며, 「인증하기」
+  // 버튼은 사라지고 「사용안함 취소」 하나만 남는다 — 저장을 눌러야 실제로 지워진다(점포는 저장 뒤 번호 ·
+  // 개업일자가 고정이라 이 기능 자체가 없다, MY PAGE 전용, 2026-10-23 사용자 결정).
+  const struckField = (value) =>
+    `<div class="flex h-[34px] w-full items-center rounded-[2px] border border-erp-field-line bg-erp-thead-bg pl-[10px] text-[14px] text-erp-label"><span class="truncate line-through">${value || "&nbsp;"}</span></div>`;
+  const bizFields = (state, num, ceo, open) => {
+    const locked = state === "locked";
+    const struck = state === "struck";
+    return (
+      `<div class="flex gap-[6px]">` +
+      ui.field(
+        "사업자등록번호",
+        struck ? struckField(num) : ui.textField({ value: num, readonly: locked, placeholder: locked ? undefined : "숫자 10자리", inputmode: "numeric" }),
+        "min-w-px flex-[1.0]",
+      ) +
+      ui.field(
+        "대표자명",
+        struck ? struckField(ceo) : ui.textField({ value: ceo, readonly: locked, placeholder: locked ? undefined : "대표자 이름", maxlength: 50 }),
+        "min-w-px flex-[0.85]",
+      ) +
+      f.group(
+        "개업일자",
+        struck ? struckField(open) : locked ? ui.textField({ value: open, readonly: true, "aria-label": "개업일자" }) : ui.dateField(A, { label: "개업일자", value: open }),
+        "min-w-px flex-[1.3]",
+      ) +
+      `</div>`
+    );
+  };
+  // 버튼 줄 — locked: [재인증][사용안함]. struck("사용안함" 뒤): [사용안함 취소] 하나뿐(인증하기도 숨긴다 —
+  // 지워질 값을 두고 재인증하는 건 말이 안 되니, 바꿔 타려면 먼저 되돌려야 한다). 그 밖(미인증): [인증하기] 하나 —
+  // [지우기]는 입력값이 있을 때만 보이는데(앱 BizVerificationBox onClear) 표본 미인증 상태는 세 칸이 비어 있어 두지 않는다(2026-10-26).
+  const bizButtons = (state) =>
+    `<div class="flex gap-[6px]">${
+      state === "locked"
+        ? ui.button("재인증", { variant: "soft" }) + ui.button("사용안함", { variant: "soft" })
+        : state === "struck"
+          ? ui.button("사용안함 취소", { variant: "soft" })
+          : ui.button("인증하기", { variant: "soft" })
+    }</div>`;
+  const bizGuide =
+    `<p class="text-[13px] leading-[1.5] text-erp-label">` +
+    `사업자정보가 국세청에 등록된 정보와 일치하는지 확인합니다.</p>`;
+  const bizStruckGuide = `<p class="text-[13px] leading-[1.5] text-erp-label">하단의 [저장] 버튼을 클릭하면 인증 정보가 삭제됩니다.</p>`;
+  // 머리(「사업자정보」 · 인증 상태)는 기본정보 탭 「계정 정보」와 같은 회색 제목 바로 떼어 내고, 본문은 흰 바탕에
+  // 둔다(사용자 지정, 2026-10-26). 본문 위아래 여백은 계정 정보(20px)보다 줄인 16px — 좌우와 같다(비교 화면으로 고름).
+  const bizAuthBox = (state, num, ceo, open, date) =>
+    `<section aria-label="사업자 번호 인증" class="w-full">` +
+    `<h3 class="flex h-[42px] items-center justify-between rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink"><span>사업자정보</span>${
+      state === "new" || state === "struck" ? ui.badge("off", "미인증") : ui.badge("on", `인증 완료 · ${date}`)
+    }</h3>` +
+    `<div class="flex flex-col gap-[12px] rounded-b-[2px] border-x border-b border-erp-thead-line bg-white px-[16px] py-[16px]">` +
+    bizFields(state, num, ceo, open) +
+    bizButtons(state) +
+    (state === "struck" ? bizStruckGuide : bizGuide) +
+    `</div></section>`;
+  // sameAsBasic: 대표자 연락처 · 이메일 칸에 "기본정보와 동일" 체크박스 — 체크하면 기본정보(이름 탭) 값을 그대로 쓴다(2026-10-22 사용자 지정).
+  const ceoContact = (idp, checked) =>
+    `<div role="group" aria-label="대표자 연락처" class="flex min-w-px flex-1 flex-col gap-[8px]"><span class="flex items-center gap-[10px] text-[14px] font-medium text-erp-label"><span>대표자 연락처</span>${ui.checkbox(A, "기본정보와 동일", checked, { id: `${idp}-phone-same` })}</span>${f.tel(checked ? "010" : "010", "5530", "1182")}</div>` +
+    `<div role="group" aria-label="대표자 이메일" class="flex min-w-px flex-1 flex-col gap-[8px]"><span class="flex items-center gap-[10px] text-[14px] font-medium text-erp-label"><span>대표자 이메일</span>${ui.checkbox(A, "기본정보와 동일", checked, { id: `${idp}-email-same` })}</span>${ui.textField({ type: "email", value: "ceo@hangang.co.kr", maxlength: 100, disabled: checked })}</div>`;
+
+  const bizRest = (idp) =>
+    `<section aria-label="상호명 등" class="flex flex-col gap-[18px] rounded-[2px] border border-erp-panel-line bg-white px-[16px] py-[20px]">` +
+    ui.field(f.req("상호명"), ui.textField({ value: "㈜한강상회", maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })) +
+    ceoContact(idp, false) +
+    ui.formRow(ui.field("업태", ui.textField({ value: "도소매업", maxlength: 50 })), ui.field("종목", ui.textField({ value: "식자재 유통", maxlength: 50 }))) +
+    // 주소는 업태 · 종목 다음, 라벨 「사업자주소」(앱 bp-profile-tab.tsx 와 같다, 2026-10-26)
+    f.address(A, "사업자주소", { zip: "04007", base: "서울 마포구 망원로 42", detail: "3층" }) +
+    `</section>`;
+
+  const biz = `<div class="flex flex-col gap-[18px]">${bizAuthBox("locked", "211-87-01234", "남도현", "2021-03-15", "2026-10-20")}${bizRest(`${idPrefix}-done`)}</div>${save}`;
 
   // 가입 직후처럼 아직 사업자 인증을 받지 않은 초기 상태 — 인증완료 탭과 생김새를 견주어 보려고 따로 둔다(2026-10-07 피드백).
-  const bizNew = ui.formGroup(
-    f.titleBadge("사업자정보", "off", "미인증"),
-    f.bizAuth(A, `${idPrefix}-new`, { start: "open" }),
-    ui.field(f.req("상호명"), ui.textField({ value: "㈜한강상회", maxlength: 50, placeholder: "50자 이내로 입력해 주세요." })),
-    f.group("대표자 연락처", f.tel("010", "5530", "1182")),
-    ui.field("대표자 이메일", ui.textField({ type: "email", value: "ceo@hangang.co.kr", maxlength: 100 })),
-    f.address(A, "사업장 주소", { zip: "04007", base: "서울 마포구 망원로 42", detail: "3층" }),
-    ui.formRow(ui.field("업태", ui.textField({ value: "도소매업", maxlength: 50 })), ui.field("종목", ui.textField({ value: "식자재 유통", maxlength: 50 }))),
-    save,
-  );
+  const bizNew = `<div class="flex flex-col gap-[18px]">${bizAuthBox("new", "", "", "")}${bizRest(`${idPrefix}-new`)}</div>${save}`;
+
+  // 「사용안함」을 누른 뒤 — 저장을 눌러야 실제로 지워진다. 인증완료 탭과 생김새를 견주어 보려고 따로 둔다(2026-10-23).
+  const bizDisabled = `<div class="flex flex-col gap-[18px]">${bizAuthBox("struck", "211-87-01234", "남도현", "2021-03-15")}${bizRest(`${idPrefix}-disabled`)}</div>${save}`;
 
   return (
-    x.tabs([
-      { id: `${tabPrefix}basic`, label: "기본정보", html: basic },
-      { id: `${tabPrefix}biz`, label: "사업자정보", html: biz },
-      { id: `${tabPrefix}biz-new`, label: "사업자정보(인증 전)", html: bizNew },
-    ]) + f.SWAP_SCRIPT
+    mypageTabs(
+      x.tabs([
+        { id: `${tabPrefix}basic`, label: "기본정보", html: basic },
+        { id: `${tabPrefix}biz`, label: "사업자정보", html: biz },
+        { id: `${tabPrefix}biz-new`, label: "사업자정보(인증 전)", html: bizNew },
+        { id: `${tabPrefix}biz-disabled`, label: "사업자정보(사용안함)", html: bizDisabled },
+      ]),
+    ) + f.SWAP_SCRIPT
   );
+}
+
+// MY PAGE 탭 줄만 앱 my-page-panel.tsx TabBar 모양으로 — 14px 500, 탭 사이 18px, 좌우 여백 없음, 아래 선 erp-thead-line.
+// 탭 내용 묶음 사이는 16px(계정 정보 ↔ 기본정보, 앱과 같다). 공통 x.tabs 는 다른 화면도 써서 그 결과를 여기서만 바꾼다(2026-10-26).
+// 탭 전환은 공통 erp.js 가 data-on · data-off 클래스로 한다.
+function mypageTabs(html) {
+  const end = html.indexOf("</div>"); // 첫 </div> 가 탭 줄의 끝이다(탭 단추 안에는 div 가 없다)
+  const bar = html
+    .slice(0, end)
+    .replace('<div role="tablist" class="flex shrink-0 border-b border-erp-bar-line">', '<div role="tablist" aria-label="내 정보" class="flex h-[42px] shrink-0 gap-[18px] border-b border-erp-thead-line">')
+    .replaceAll("-mb-px flex h-[42px] items-center border-b-2 px-[18px] text-[15px]", "h-[42px] border-b-2 text-[14px]")
+    .replaceAll("border-erp-brand font-semibold text-erp-ink", "border-erp-brand font-medium text-erp-ink");
+  const panels = html.slice(end).replace(/(<div role="tabpanel"[^>]*?class=")flex min-h-0 flex-1 flex-col gap-\[12px\]"/g, '$1flex min-h-0 flex-1 flex-col gap-[16px]"');
+  return bar + panels;
 }
 
 // GNB 「내정보 관리」가 여는 슬라이드 패널 — 입력칸이 몇 안 되는 화면이라 전체 페이지 전환 대신 패널로 연다(2026-10-06 피드백).
@@ -163,24 +246,61 @@ export function mypagePanel(A) {
   return ui.slidePanel("mypage-panel", "내 정보", ui.sectionHead("내 정보") + mypageBody(A, { idPrefix: "mpb", tabPrefix: "mp-", closeSave: true }));
 }
 
-// MY PAGE 전체 화면(mypage/password.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다. 비밀번호 칸(보기 토글)은 biz-form.mjs 의 pwField.
-export function passwordBody({ closeSave = false } = {}) {
-  return ui.formGroup(
+// MY PAGE 전체 화면(mypage/password.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다. 비밀번호 칸(눈 아이콘 보기 토글)은
+// biz-form.mjs 의 pwField. 안내 문구는 전부 칸 안 placeholder 로 두고, 칸 아래는 error 가 있을 때만 보인다(2026-10-26
+// 사용자 지정 — 전엔 긴 조건 문구가 칸 아래 늘 남아 있었다). errors 의 칸(current · newPassword · confirm)에 값이
+// 있으면 그 pwField 가 그 문구를 칸 아래에 보인다.
+// 비밀번호 변경 완료 — 제목은 그대로 두고 입력칸 자리에 큰 체크 + 안내를 둔다(2026-10-26 사용자 지정, C안: 연한 파랑 원 + 파랑 체크).
+// 「색은 상태다」 규칙대로 완료 상태에 상태 파랑(#5e8ce9 · 바탕 #f4f9ff)을 쓴다. 전엔 토스트로만 알렸다.
+const PW_DONE_ICON =
+  '<svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="28" fill="#f4f9ff"/><path d="M17 28.5l7.5 7.5L39.5 21" fill="none" stroke="#5e8ce9" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const PW_SCRIPT = `<script>
+(() => {
+  if (window.__pwDone) return;
+  window.__pwDone = true;
+  document.addEventListener("click", (e) => {
+    const submit = e.target.closest("[data-pw-submit]");
+    const reset = e.target.closest("[data-pw-reset]");
+    const root = (submit || reset)?.closest("[data-pw]");
+    if (!root) return;
+    root.querySelector("[data-pw-form]").hidden = Boolean(submit);
+    root.querySelector("[data-pw-done]").hidden = !submit;
+    if (submit) root.querySelector("[data-pw-done] button")?.focus();
+  });
+})();
+</script>`;
+export function passwordBody(A, { closeSave = false, errors = {} } = {}) {
+  const done =
+    `<div data-pw-done hidden class="flex flex-col gap-[18px]">` +
+    `<div role="status" class="flex flex-col items-center gap-[6px] rounded-[2px] border border-erp-thead-line px-[18px] py-[36px] text-center">` +
+    `<span class="mb-[12px]">${PW_DONE_ICON}</span>` +
+    `<p class="text-[16px] font-semibold text-erp-ink">비밀번호가 변경되었습니다.</p>` +
+    `<p class="text-[14px] text-erp-muted">다음 로그인부터 변경된 비밀번호로 로그인해 주세요.</p></div>` +
+    // 패널은 [닫기](닫으면 다음에 열 때 입력칸으로 돌아온다), 전체 화면은 [확인]으로 입력칸으로 돌아간다
+    `<div class="flex justify-center">${closeSave ? ui.button("닫기", { "data-close": true, "data-pw-reset": true }) : ui.button("확인", { "data-pw-reset": true })}</div></div>`;
+  return `<div data-pw class="flex flex-col gap-[18px]"><div data-pw-form>` + ui.formGroup(
     "새 비밀번호 설정",
-    f.pwField("현재 비밀번호", "whale-2026!", "current-password", "지금 쓰고 있는 비밀번호를 입력하세요"),
-    f.pwField(
-      "새 비밀번호",
-      "hangang-0922#",
-      "new-password",
-      "특수문자는 ! @ # $ % ^ &amp; * ( ) - _ = + [ ] { } ? 만, 공백 불가",
-      "영문·숫자·특수문자를 조합하여 8~20자 입력해 주세요.",
-    ),
-    f.pwField("새 비밀번호 확인", "hangang-0922#", "new-password", "새 비밀번호를 한 번 더 입력하세요"),
-    saveRow("비밀번호 변경", closeSave, "비밀번호가 변경되었습니다."),
-  );
+    // value 를 비워 둔다 — 안내문구가 placeholder 라 값이 차 있으면 안 보인다(코드 리뷰로 찾음, 2026-10-26).
+    f.pwField(A, "현재 비밀번호", "", "current-password", {
+      placeholder: "지금 쓰고 있는 비밀번호를 입력해 주세요.",
+      error: errors.current,
+    }),
+    // 회원가입(signup.mjs passwordField)과 같은 짧은 문구 — 긴 조건 문구는 칸 너비에 다 안 들어가 뒤가 잘렸다
+    // (사용자가 찾음, 2026-10-26). 세 칸 모두 마침표로 끝맺는다(사용자 지정).
+    f.pwField(A, "새 비밀번호", "", "new-password", {
+      placeholder: "영문·숫자·특수문자를 조합하여 8~20자로 입력해 주세요.",
+      error: errors.newPassword,
+    }),
+    f.pwField(A, "새 비밀번호 확인", "", "new-password", {
+      placeholder: "새 비밀번호를 한 번 더 입력해 주세요.",
+      error: errors.confirm,
+    }),
+    // [비밀번호 변경] 은 토스트 대신 완료 상자로 바꾼다(C안) — 버튼 줄 모양은 saveRow 와 같다
+    `<div class="flex justify-center gap-[6px]">${closeSave ? ui.button("닫기", { variant: "off", "data-close": true }) : ""}${ui.button("비밀번호 변경", { "data-pw-submit": true })}</div>`,
+  ) + `</div>${done}</div>` + PW_SCRIPT;
 }
 export function passwordPanel(A) {
-  return ui.slidePanel("password-panel", "비밀번호 변경", ui.sectionHead("비밀번호 변경") + passwordBody({ closeSave: true }));
+  return ui.slidePanel("password-panel", "비밀번호 변경", ui.sectionHead("비밀번호 변경") + passwordBody(A, { closeSave: true }));
 }
 
 // 회원 탈퇴. MY PAGE 전체 화면(mypage/withdraw.mjs)과 GNB 슬라이드 패널이 같은 내용을 쓴다.

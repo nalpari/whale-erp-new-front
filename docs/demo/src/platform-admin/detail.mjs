@@ -38,17 +38,17 @@ function platformAdminDetailBody(A, R) {
     ["직책", "매니저"],
     // 주소는 우편번호 · 기본주소 · 상세주소를 줄을 바꿔 보이고, 위아래 선에 붙지 않게 여백을 준다
     ["주소", `<div class="py-[2px] leading-[1.6]">${["06236", "서울 강남구 테헤란로 152", "12층"].join("<br>")}</div>`],
-    // 최근 로그인 → 등록일시 → 최종 수정일시 순으로 둔다(2026-10-20 디자인 수정).
+    // 최근 로그인 → 등록 → 최종수정 순으로 둔다(2026-10-20 디자인 수정). 「일시 · 사람」(앱과 같다, 2026-10-26)
     ["최근 로그인", "2026-09-21 09:03"],
-    ["등록일시", ui.detailValues(["2025-06-02 10:11", "platjung"])],
-    ["최종 수정일시", ui.detailValues(["2026-08-12 09:40", "platkim"])],
+    ["등록", `2025-06-02 10:11 <span class="text-erp-label">· platjung</span>`],
+    ["최종수정", `2026-08-12 09:40 <span class="text-erp-label">· platkim</span>`],
   ]));
 
   const history = ui.dataTable(
     [
       { header: "변경일시", width: "w-[140px]" },
       { header: "변경자", width: "w-[80px]" },
-      { header: "항목", width: "w-[160px]" },
+      { header: "항목", width: "w-[120px]", align: "left" }, // 앱 history-dialog.tsx 와 같다(2026-10-26)
       { header: "변경 전", align: "left" },
       { header: "변경 후", align: "left" },
     ],
@@ -60,11 +60,13 @@ function platformAdminDetailBody(A, R) {
     ],
   );
 
+  // 안내가 세 줄이라 넓은 확인창 480px(앱 admin-detail-panel.tsx 의 ConfirmDialog wide, 2026-10-26)
   const resetDialog = x.dialog(
     resetId,
     "비밀번호를 초기화하시겠습니까?",
     `<div class="flex flex-col gap-[12px] break-keep">${WHO}<p>임시 비밀번호가 등록된 이메일로 발송되며, 기존 비밀번호는 즉시 무효화됩니다.<br>임시 비밀번호는 1시간 동안 유효하며, 로그인 시 비밀번호를 변경해야 합니다.<br>현재 로그인 중인 세션은 유지됩니다.</p></div>`,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("초기화", { "data-close": true }),
+    "w-[480px]",
   );
   const deleteDialog = x.dialog(
     deleteId,
@@ -75,20 +77,21 @@ function platformAdminDetailBody(A, R) {
 
   // 변경이력 — BP 관리자 상세처럼 버튼을 누르면 팝업으로 본다(2026-10-08). 표가 넓어 이 창만 넓힌다. 제목·칸
   // 이름은 1팀 영역 모두(점포·BP·휴일 등) 같은 말을 쓴다(2026-10-20 디자인 수정).
+  // 폭 760px(앱 history-dialog.tsx 와 같다, 2026-10-26). 쪽 나눔은 한 쪽(앱 HISTORY_PAGE_SIZE)을 넘을 때만 보여, 네 건인 표본에는 두지 않는다
   const historyDialog = x
     .dialog(
       histId,
       "변경이력",
-      `<div class="overflow-x-auto">${history}</div><div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
+      `<div class="overflow-x-auto">${history}</div>`,
       ui.button("닫기", { variant: "off", "data-close": true }),
     )
-    .replace("w-[420px]", "w-[640px] max-h-[calc(100dvh-48px)] overflow-y-auto");
+    .replace("w-[420px]", "w-[760px] max-h-[calc(100dvh-48px)] overflow-y-auto");
 
   const editBtn = ui.slideTrigger("수정", "platform-admin-edit-panel");
   const actions = `${x.dialogTrigger("삭제", deleteId, "soft")}${editBtn}${x.dialogTrigger("변경이력", histId, "soft")}`;
   // 이름은 맨 위에 혼자, 기능 버튼은 닫기까지 모두 맨 아래로(BP 관리자 상세 패널과 같다)
   const head = `<h2 class="text-[18px] font-semibold whitespace-nowrap text-erp-ink">${NAME}</h2>`;
-  const buttons = `<div class="flex flex-wrap items-center gap-[6px] border-t border-erp-panel-line pt-[16px]">${ui.button("닫기", { variant: "off", "data-close": true })}<span class="flex-1"></span>${actions}</div>`; // 닫기는 맨 왼쪽(상세 슬라이드 공통 · 2026-10-08)
+  const buttons = `<div class="flex flex-wrap items-center gap-[6px]">${ui.button("닫기", { variant: "off", "data-close": true })}<span class="flex-1"></span>${actions}</div>`; // 닫기는 맨 왼쪽(상세 슬라이드 공통 · 2026-10-08)
 
   return head + info + buttons + resetDialog + deleteDialog + historyDialog;
 }

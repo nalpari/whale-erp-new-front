@@ -1,7 +1,7 @@
 // 직원 목록 · 상세 · 퇴직 처리 · 비밀번호 재설정 링크 api. 토큰은 authHeaders() 가 로그인 세션에서 붙인다.
 // 메뉴 권한 · 업무 범위 · 본사 제공 동의(가림)는 api 가 요청마다 본다 — 이 파일은 그대로 전한다.
 import { ApiError, authHeaders, request } from "./api";
-import { staffListApiSearch, type RetirementPreview, type StaffListQuery, type StaffMember, type StaffMemberListResponse } from "./staff-members";
+import { staffListApiSearch, withEmploymentHistory, type RetirementPreview, type StaffListQuery, type StaffMember, type StaffMemberListResponse } from "./staff-members";
 import type { components } from "./api-types.generated";
 
 type Schemas = components["schemas"];
@@ -35,7 +35,7 @@ export async function getStaffMember(rawId: string): Promise<StaffMember | null>
   const id = staffMemberIdOf(rawId);
   if (id === null) return null;
   try {
-    return await request<StaffMember>(`/staff-members/${id}`, await init("GET"));
+    return withEmploymentHistory(await request<StaffMember>(`/staff-members/${id}`, await init("GET")));
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) return null;
     throw error;
@@ -96,4 +96,14 @@ export async function cancelRetirement(id: number): Promise<void> {
  */
 export async function issuePasswordResetLink(id: number): Promise<void> {
   await request(`/staff-members/${id}/password-reset-links`, await init("POST"));
+}
+
+/**
+ * PUT /staff-members/:id/birth-date(WHALEERP-602) — 생년월일 정정. 204. 직원 정보 관리 수정 권한이 필요하고, 범위 밖 · 본사에 가린 직원은 404.
+ * 400 BIRTH_DATE_INVALID(형식 · 없는 날짜 · 오늘 뒤. 본문이 틀리면 code 없는 400) · BIRTH_DATE_UNDER_AGE(만 19세 미만),
+ * 409 BIRTH_DATE_NOT_JOINED(가입 전 · 탈퇴 · 연결 보류) · BIRTH_DATE_RETIRED · BIRTH_DATE_UNCHANGED.
+ */
+export async function correctBirthDate(id: number, birthDate: string): Promise<void> {
+  const body: Schemas["BirthDateCorrectionDto"] = { birthDate };
+  await request(`/staff-members/${id}/birth-date`, await init("PUT", body));
 }

@@ -94,7 +94,7 @@ export function AdminTable({
           <span className="text-erp-muted">로그인 기록 없음</span>
         ),
     },
-    { header: "등록일시", width: "w-[170px]", cell: (a) => dim(a, formatDateTime(a.createdAt)) },
+    { header: "등록", width: "w-[170px]", cell: (a) => dim(a, formatDateTime(a.createdAt)) },
   ];
 
   return (

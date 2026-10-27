@@ -23,10 +23,11 @@ import { codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-valid
 import type { CodeGroup, CodeItem } from "@/lib/codes";
 import { usePagePermission } from "@/components/site/session-gate";
 import { saveCodeItemsAction } from "./actions";
-import { CodePanel, FieldErrors, SaveFailedBand, UNKNOWN_RESULT } from "@/components/site/code-editor/code-panel";
+import { CodePanel, FieldErrors, GroupHead, SaveFailedBand, UNKNOWN_RESULT } from "@/components/site/code-editor/code-panel";
 import { useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
 import { useRowReorder } from "@/components/site/code-editor/use-row-reorder";
 import { DeletePending, DeleteToggle, Struck } from "@/components/site/code-editor/delete-mark";
+import { OwnerTag } from "@/components/site/code-editor/owner-tag";
 
 // 오른쪽 상세 코드 목록 — 고른 그룹의 플랫폼 원본 상세 코드. BP전용 코드는 api 가 빼고 준다.
 // 상세 코드에는 관리 주체 칸이 없다 — 소속 그룹을 따른다(PL-VOCZCE). SERVICE 그룹이면 상세 코드가 서비스 코드, 코드명이 서비스명이다.
@@ -225,8 +226,7 @@ export function CodeItemPanel({
         ]
       : []),
     {
-      header: "상세 코드",
-      width: "w-[220px]",
+      header: "상세 코드", // 폭을 정하지 않는다 — 남는 폭을 받아 긴 코드가 잘리지 않게(삭제 칸이 붙는 그룹에서도, 2026-10-27 사용자 지정)
       align: "left",
       cell: (d) =>
         d.deleted ? (
@@ -247,6 +247,7 @@ export function CodeItemPanel({
     },
     {
       header: "코드명",
+      width: "w-[160px]", // 그룹 목록의 그룹명 칸과 같은 폭 — 두 입력칸이 같은 크기로 칸을 채운다(2026-10-27 사용자 지정)
       align: "left",
       // 기존 행은 수정 권한, 새 행은 등록 권한으로 고친다(새 행은 등록 권한이 있어야 생긴다)
       cell: (d) =>
@@ -268,8 +269,8 @@ export function CodeItemPanel({
     // 새 행은 맨 끝에 붙는다 — 저장한 뒤 끌어서 옮긴다
     { header: "표시 순서", width: "w-[90px]", cell: (d) => d.sortOrder },
     {
-      header: "사용 상태",
-      width: "w-[120px]",
+      header: "사용여부",
+      width: "w-[100px]", // 표시 순서를 오른쪽으로 조금 옮겨 코드명 칸을 넓힌다(2026-10-27 사용자 지정, 전엔 120)
       cell: (d) =>
         d.deleted ? (
           <DeletePending />
@@ -278,7 +279,7 @@ export function CodeItemPanel({
             label="사용"
             checked={d.status === "ACTIVE"}
             onChange={(e) => update(d.key, { status: e.target.checked ? "ACTIVE" : "INACTIVE" })}
-            aria-label={`${rowName(d)} 사용 상태`}
+            aria-label={`${rowName(d)} 사용여부`}
           />
         ) : (
           <Badge tone={d.status === "ACTIVE" ? "on" : "off"}>{d.status === "ACTIVE" ? "사용" : "미사용"}</Badge>
@@ -301,7 +302,22 @@ export function CodeItemPanel({
     <CodePanel
       title="상세 코드"
       wide
-      sub={group && [group.groupCode, group.groupName, ownerLabel].filter(Boolean).join(" · ")}
+      // 그룹 코드 · 그룹명(굵게) 뒤에 관리주체 띠지 — 그룹 목록의 관리주체 칸 · BP 공통코드와 같은 모양(2026-10-27 사용자 지정)
+      sub={
+        group && (
+          <GroupHead
+            groupCode={group.groupCode}
+            groupName={group.groupName}
+            owner={
+              ownerLabel && (
+                <OwnerTag code={group.manageOwnerCode}>
+                  {ownerLabel}
+                </OwnerTag>
+              )
+            }
+          />
+        )
+      }
       actions={
         canSave &&
         group && (
@@ -320,6 +336,8 @@ export function CodeItemPanel({
     >
       {failure && <SaveFailedBand message={failure} />}
       <DataTable
+        // 열 이름 줄까지 고정하고 그 아래만 스크롤한다(2026-10-26 사용자 지정)
+        scroll
         columns={columns}
         rows={drafts}
         rowKey={(d) => d.key}

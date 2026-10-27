@@ -19,7 +19,7 @@ import {
 import type { DeletionCandidates, RevocationPreview, RoleGroupMenuCells } from "@/lib/platform-role-groups";
 import { failureOf as sharedFailureOf, menusFailure, validId, type ActionFailure, type ActionResult } from "@/lib/role-group-actions";
 
-// BP 권한 그룹 등록 · 수정 · 삭제 · 메뉴 권한 조회 · 미리보기 · 저장 · 가맹마스터 보기. 실패하면 화면이 입력값을 그대로 두고 문구만 보인다.
+// BP 권한 그룹 등록 · 수정 · 삭제 · 메뉴 권한 조회 · 미리보기 · 저장 · 가맹마스터 메뉴설정 보기. 실패하면 화면이 입력값을 그대로 두고 문구만 보인다.
 // 역할 · 본인 연결 · 기준 고정 권한 · 본인 범위 상한 · BP 소속은 api 가 동작마다 본다(문구가 무엇이 막혔는지 말한다).
 // 탭 BP 는 인자로 받지 않는다 — 액션은 화면 주소(/bp/{id}/bp-role-groups)로 POST 되어 proxy 가 헤더로 싣는다(authHeaders).
 // server action 은 공개 엔드포인트라 id 가 int4 양의 정수인지 · 목록 길이만 다시 본다.

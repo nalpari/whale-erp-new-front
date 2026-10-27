@@ -99,27 +99,44 @@ export function StoreImage({ size, onMuted = false, url, name }: { size: 48 | 72
   return <StoreImagePicture key={imageKeyOf(url)} url={url} alt={name ? `${name} 대표 이미지` : "대표 이미지"} sizeClass={sizeClass} fallback={icon} />;
 }
 
+/** 느낌표 동그라미(테두리만 그린 원) — 플랫폼 관리자 admin-parts.tsx 의 확인 표시와 같은 크기 · 선 두께 */
+function NoticeIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true" className="shrink-0">
+      <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M10 5.5v5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="10" cy="14.25" r="1" fill="currentColor" />
+    </svg>
+  );
+}
+
 /**
  * 점포 카드. 카드 전체가 상세로 가는 링크다. 모서리 4px · 1px 선 · 그림자 없음(카드 규칙), 호버는 선 색만 바꾼다.
  * 운영이 아닌 카드(미운영 · 폐점)는 바탕을 두 번째 바탕색으로 깔아 흐리게 둔다(데모와 같다).
  */
 export function StoreCard({ store, href }: { store: StoreSummary; href: string }) {
   const muted = store.storeStatusCode !== "OPERATING";
+  const verified = Boolean(store.bizRegistrationNumber);
+  // 미인증이면 점포주소를 반 칸으로 줄이고 그 옆에 「사업자정보 미인증」을 둔다(아래 dl 끝) — 카드 아래쪽에 한 줄로 따로 두면
+  // 그 카드만 길어져 줄이 들쑥날쑥했다. 인증 완료는 따로 알리지 않는다(2026-10-23 사용자 요청).
   const fields: [string, ReactNode, boolean?][] = [
     ["점포 연락처", store.phone ? formatPhone(store.phone) : "-"],
     ["재직직원", `${store.staffCount.toLocaleString("ko-KR")}명`],
-    ["점포주소", store.region ?? "-", true],
+    ["점포주소", store.region ?? "-", verified],
   ];
   return (
     <Link
       href={href}
-      // DESIGN.md 카드 규칙(4px)을 따른다 — 8px 로 키워 달라는 요청이 있었지만 1팀 확인 전이라 되돌렸다(2026-10-16 코드리뷰).
-      className={`flex flex-col gap-[18px] rounded-[4px] border border-erp-panel-line p-[18px] transition-colors duration-150 ease-out hover:border-erp-brand ${muted ? "bg-erp-thead-bg" : "bg-white"}`}
+      // 모서리는 8px — 점포 카드만 카드 규칙(4px)의 예외다(DESIGN.md Cards, 1팀 동의 2026-10-27. 2026-10-16 에는 확인 전이라 4px 로 되돌려 뒀다).
+      // 머리(그림 · 이름)와 아래 구분선 사이는 12px — 구분선 아래(pt-[12px])와 같게, 18px 는 떨어져 보였다(2026-10-23 사용자 요청).
+      className={`flex flex-col gap-[12px] rounded-[8px] border border-erp-panel-line p-[18px] transition-colors duration-150 ease-out hover:border-erp-brand ${muted ? "bg-erp-thead-bg" : "bg-white"}`}
     >
       <div className="flex items-start gap-[12px]">
         <StoreImage size={48} onMuted={muted} url={store.imageUrl} name={store.name} />
         <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
-          <b className="line-clamp-2 text-[16px] font-semibold text-erp-ink">{store.name}</b>
+          {/* 이름은 한 줄 — 넘치면 말줄임하고 전체 이름은 마우스를 올리면 보인다. 두 줄까지 보이던 때는 이름 길이에 따라
+              카드마다 아래 유형 · 점포코드 줄과 구분선 높이가 달라 들쑥날쑥했다(2026-10-23 사용자 요청) */}
+          <b title={store.name} className="truncate text-[16px] font-semibold text-erp-ink">{store.name}</b>
           <span className="flex items-center gap-[6px] truncate text-[13px] text-erp-label">
             <Tag><CodeLabel group="STORE_TYPE" value={store.storeTypeCode} /></Tag>
             <span className="truncate">{store.storeCode}</span>
@@ -127,15 +144,24 @@ export function StoreCard({ store, href }: { store: StoreSummary; href: string }
         </div>
         <StoreStatusBadge status={store.storeStatusCode} />
       </div>
-      <dl className="grid grid-cols-2 gap-x-[12px] gap-y-[10px] border-t border-erp-divider pt-[12px]">
+      <dl className="grid grid-cols-2 gap-x-[12px] gap-y-[18px] border-t border-erp-divider pt-[12px]">
         {fields.map(([label, value, wide]) => (
           <div key={label} className={`flex flex-col gap-[4px] ${wide ? "col-span-2" : ""}`}>
             <dt className="text-[13px] text-erp-label">{label}</dt>
             <dd className="truncate text-[14px] text-erp-ink">{value}</dd>
           </div>
         ))}
-        {!store.bizRegistrationNumber && (
-          <div className="col-span-2 text-[13px] text-erp-label">사업자정보 미인증</div>
+        {/* 미인증 안내 — 보기엔 옆 칸 제목(점포주소)과 같은 줄 · 같은 글자의 제목만 있는 칸이지만, dl 은 제목마다 값이
+            있어야 해서 제목(사업자정보)은 화면 읽기 프로그램에만 두고 「사업자정보 미인증」을 값으로 둔다. 뒤의 느낌표 동그라미는
+            제목과 같은 회색이다(색은 상태에만). */}
+        {!verified && (
+          <div className="flex flex-col gap-[4px]">
+            <dt className="sr-only">사업자정보</dt>
+            <dd className="flex items-center gap-[4px] text-[13px] text-erp-label">
+              사업자정보 미인증
+              <NoticeIcon />
+            </dd>
+          </div>
         )}
       </dl>
     </Link>
@@ -158,7 +184,7 @@ export function StoreTypeCards({
   describedBy?: string;
 }) {
   const items: { type: StoreType; desc: string }[] = [
-    { type: "DIRECT", desc: "본사가 직접 운영하는 점포" },
+    { type: "DIRECT", desc: "직접 운영하는 점포" },
     { type: "FRANCHISE", desc: "가맹 계약으로 운영하는 점포" },
   ];
   return (

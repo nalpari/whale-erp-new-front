@@ -36,16 +36,18 @@ const json = async (method: string, body?: unknown): Promise<RequestInit> => ({
   body: body === undefined ? undefined : JSON.stringify(body),
 });
 
-/** GET /code-groups — 플랫폼고정 · 플랫폼제공 그룹을 표시 순서대로 한 쪽씩. 그룹 코드 · 그룹명은 일부 일치(대소문자 무시)이고 빈 값은 보내지 않는다. */
+/** GET /code-groups — 플랫폼고정 · 플랫폼제공 그룹을 표시 순서대로 한 쪽씩. 그룹 코드 · 그룹명은 일부 일치(대소문자 무시)이고 빈 값은 보내지 않는다. 관리주체를 주면 그 그룹만. */
 export async function getCodeGroups({
   page = 1,
   pageSize = DEFAULT_PAGE_SIZE,
   groupCode = "",
   groupName = "",
-}: { page?: number; pageSize?: number; groupCode?: string; groupName?: string } = {}): Promise<CodeGroupList> {
+  manageOwnerCode,
+}: { page?: number; pageSize?: number; groupCode?: string; groupName?: string; manageOwnerCode?: string } = {}): Promise<CodeGroupList> {
   const query = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
   if (groupCode) query.set("groupCode", groupCode);
   if (groupName) query.set("groupName", groupName);
+  if (manageOwnerCode) query.set("manageOwnerCodes", manageOwnerCode);
   return request(`/code-groups?${query}`, await json("GET"));
 }
 

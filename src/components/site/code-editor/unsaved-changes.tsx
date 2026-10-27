@@ -49,12 +49,14 @@ export function UnsavedChangesProvider({ children }: { children: ReactNode }) {
       {children}
       <ConfirmDialog
         open={pendingHref !== null}
-        title="저장하지 않은 변경"
-        confirmLabel="버리고 이동"
+        // 문구는 사용자 지정(2026-10-27)
+        title="저장하지 않은 변경사항"
+        confirmLabel="저장하지 않고 이동"
         onConfirm={handleDiscard}
         onCancel={() => setPendingHref(null)}
       >
-        저장하지 않은 변경이 있습니다. 버리고 이동할까요?
+        <p>현재 수정한 내용이 저장되지 않았습니다.</p>
+        <p>저장하지 않고 이동하면 수정한 내용이 모두 사라집니다. 이동하시겠습니까?</p>
       </ConfirmDialog>
     </UnsavedChangesContext>
   );

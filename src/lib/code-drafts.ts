@@ -165,3 +165,17 @@ export function unusableCodeMessage(message: string, visibleCodes: readonly stri
 
 /** 주소의 검색어 다듬기(플랫폼 · BP 공통코드 그룹 검색) — 앞뒤 공백을 빼고 api 상한(그룹 코드 20 · 그룹명 50)으로 자른다. 대소문자는 api 가 가리지 않아 그대로 둔다. */
 export const searchTerm = (raw: string | string[] | undefined, max: number) => (typeof raw === "string" ? raw.trim().slice(0, max) : "");
+
+/** 필터의 관리주체 — 공통코드 그룹이 쓰는 둘(BP전용은 상세 코드에만 있다). */
+export const GROUP_OWNERS = ["PLATFORM_FIXED", "PLATFORM_PROVIDED"] as const;
+export type GroupOwner = (typeof GROUP_OWNERS)[number];
+
+/** 필터의 관리주체 값 — 하나만 고름(그 값), 둘 다 끔(NONE). 둘 다 고름은 값 없음(undefined). NONE 과 둘 다 고름은 같은 목록(전체)이다. */
+export type OwnerFilter = GroupOwner | "NONE";
+
+/** 주소의 ?manageOwnerCode. 모르는 값이면 둘 다 고름(undefined). */
+export const ownerTerm = (raw: string | string[] | undefined): OwnerFilter | undefined =>
+  raw === "NONE" ? "NONE" : GROUP_OWNERS.find((o) => o === raw);
+
+/** api 에 실을 관리주체 — 하나만 고른 때만. NONE(둘 다 끔)은 둘 다 고른 것과 같이 전체다(2026-10-27 사용자 지정). */
+export const ownerQuery = (v: OwnerFilter | undefined): GroupOwner | undefined => (v === "NONE" ? undefined : v);

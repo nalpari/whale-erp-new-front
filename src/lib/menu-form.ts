@@ -59,8 +59,9 @@ export type MenuFormErrors = Partial<Record<"name" | "url", string>>;
 export function validateMenuForm(f: MenuFormValues, keptUrl?: string): MenuFormErrors {
   const errors: MenuFormErrors = {};
   const { name, url } = trimmedOf(f);
-  if (!name) errors.name = "노출 메뉴명을 입력해 주세요.";
-  else if (name.length > MENU_NAME_MAX) errors.name = `노출 메뉴명은 ${MENU_NAME_MAX}자까지입니다.`;
+  // 화면 문구는 「메뉴명」(2026-10-26 사용자 지정). api 거절 문구는 아직 「노출 메뉴명」이라 아래 menuFieldOf 는 그 말로 가른다
+  if (!name) errors.name = "메뉴명을 입력해 주세요.";
+  else if (name.length > MENU_NAME_MAX) errors.name = `메뉴명은 ${MENU_NAME_MAX}자까지입니다.`;
   if (url.length > MENU_URL_MAX) errors.url = `메뉴 URL 은 ${MENU_URL_MAX}자까지입니다.`;
   else if (url && url !== keptUrl?.trim() && !MENU_URL_PATTERN.test(url))
     errors.url = "메뉴 URL 은 '/' 하나로 시작하는 1뎁스 경로만 됩니다 — 소문자 · 숫자 · '-' 로, 구간은 '-' 로 잇습니다(예: /staff-content).";

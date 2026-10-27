@@ -2,11 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { Badge, Button, DataTable, Tag, TextField, Toggle, useToast, type Column } from "@/components/common";
-import { CodePanel, DoneNotice, FieldErrors, SaveFailedBand, UNKNOWN_RESULT } from "@/components/site/code-editor/code-panel";
+import { Badge, Button, DataTable, TextField, Toggle, useToast, type Column } from "@/components/common";
+import { CodePanel, DoneNotice, FieldErrors, GroupHead, SaveFailedBand, UNKNOWN_RESULT } from "@/components/site/code-editor/code-panel";
 import { useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
 import { useRowReorder } from "@/components/site/code-editor/use-row-reorder";
 import { DeletePending, DeleteToggle, Struck } from "@/components/site/code-editor/delete-mark";
+import { OwnerTag } from "@/components/site/code-editor/owner-tag";
 import { useCodeLabel } from "@/components/site/code-label";
 import { useAccount, usePagePermission } from "@/components/site/session-gate";
 import { bpCodePanelAccess, bpDeletable, bpPanelLock, newBpItemDraft, toBpItemDraft, type BpItemDraft } from "@/lib/bp-code-drafts";
@@ -199,7 +200,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
       : []),
     {
       header: "상세 코드",
-      width: "w-[150px]",
+      width: "w-[230px]", // 코드명 칸을 오른쪽으로 옮겨 상세 코드가 잘리지 않게(2026-10-27 사용자 지정, 전엔 150)
       align: "left",
       cell: (d) =>
         d.deleted ? (
@@ -239,7 +240,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
     },
     { header: "표시 순서", width: "w-[90px]", cell: (d) => d.sortOrder },
     {
-      header: "사용 상태",
+      header: "사용여부",
       width: "w-[110px]",
       cell: (d) =>
         d.deleted ? (
@@ -249,17 +250,17 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
             label="사용"
             checked={d.status === "ACTIVE"}
             onChange={(e) => update(d.key, { status: e.target.checked ? "ACTIVE" : "INACTIVE" })}
-            aria-label={`${rowName(d)} 사용 상태`}
+            aria-label={`${rowName(d)} 사용여부`}
           />
         ) : (
           <Badge tone={d.status === "ACTIVE" ? "on" : "off"}>{d.status === "ACTIVE" ? "사용" : "미사용"}</Badge>
         ),
     },
     {
-      header: "관리 주체",
+      header: "관리주체",
       width: "w-[110px]",
       // 새 행은 BP전용으로 저장된다(api 가 정한다)
-      cell: (d) => <Tag>{ownerLabel(d.manageOwnerCode)}</Tag>,
+      cell: (d) => <OwnerTag code={d.manageOwnerCode}>{ownerLabel(d.manageOwnerCode)}</OwnerTag>,
     },
     // 플랫폼제공 · BP전용 코드를 지운다(삭제 권한, bpDeletable) — 새 행에는 버튼이 없다(이동 칸의 [×]로 뺀다)
     ...(canDelete
@@ -282,12 +283,15 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
       wide
       sub={
         group && (
-          <>
-            {group.groupCode} · {group.groupName}
-            <span className="ml-[10px] inline-flex align-middle">
-              <Tag>{ownerLabel(group.manageOwnerCode)}</Tag>
-            </span>
-          </>
+          <GroupHead
+            groupCode={group.groupCode}
+            groupName={group.groupName}
+            owner={
+              <OwnerTag code={group.manageOwnerCode}>
+                {ownerLabel(group.manageOwnerCode)}
+              </OwnerTag>
+            }
+          />
         )
       }
       actions={
@@ -310,6 +314,8 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
       {reordered && <DoneNotice message="표시 순서를 바꿨습니다 — 저장을 눌러야 반영됩니다." />}
       {failure && <SaveFailedBand message={failure} />}
       <DataTable
+        // 열 이름 줄까지 고정하고 그 아래만 스크롤한다(2026-10-26 사용자 지정)
+        scroll
         columns={columns}
         rows={drafts}
         rowKey={(d) => d.key}

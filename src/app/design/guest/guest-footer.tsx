@@ -4,14 +4,10 @@ import { SITE_ROUTES } from "./guest-routes";
 import { HOVER } from "./theme";
 
 // 비로그인 화면 전체(실제 라우트·디자인 샘플)가 함께 쓰는 푸터. 이용약관·개인정보처리방침은 약관 전문 화면(/terms)의 그 탭으로 간다 — 데모 guest.mjs 와 같다(2026-10-19).
-// 상호명(첫 줄 첫 칸)은 회사 소개 웹사이트로 새 창에서 연다(#291, S-DKPXLC). 주소가 아직 정해지지 않아 비워 두면 글자로만 보인다 — 정해지면 여기만 채운다.
-const COMPANY_URL: string | null = null;
-
-// Figma 의 회사 정보 그대로다. 「상호」가 두 번 나오는 둘째 칸은 기획 확정 전 자리값이다.
+// 사업자 정보는 재영이 보내 준 값이다(2026-10-22). 회사 소개 페이지가 없어 상호명은 링크 없이 글자로 둔다.
 const INFO_ROWS = [
-  ["상호: 인터플러그", "상호: 인터플러그", "주소: 03787 서울특별시 서대문구 연세로 5다길 22-3, 발리빌딩 3층"],
-  ["이메일: help@interplug.co.kr", "전화번호: 6923-0028", "사업자등록번호 : 1233467890"],
-  ["통신판매업신고번호: 2021-00000000000"],
+  ["상호: 인터플러그", "주소: 03787 서울특별시 서대문구 연세로 5다길 22-3, 발리빌딩 3층"],
+  ["이메일: master@interplug.co.kr", "전화번호: 02-6928-0028", "사업자등록번호: 105-87-63602"],
 ];
 
 function Bar() {
@@ -46,14 +42,7 @@ export function GuestFooter() {
                   {row.map((text, j) => (
                     <Fragment key={j}>
                       {j > 0 && <Bar />}
-                      {i === 0 && j === 0 && COMPANY_URL ? (
-                        <a href={COMPANY_URL} target="_blank" rel="noopener noreferrer" className={`hover:text-guest-ink ${HOVER}`}>
-                          {text}
-                          <span className="sr-only">(새 창)</span>
-                        </a>
-                      ) : (
-                        <span>{text}</span>
-                      )}
+                      <span>{text}</span>
                     </Fragment>
                   ))}
                 </div>

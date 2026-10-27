@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
-import { Button, Checkbox, ConfirmDialog, useToast } from "@/components/common";
+import { Button, Checkbox, ConfirmDialog, Tag } from "@/components/common";
+import { EASE_OUT } from "@/components/common/theme";
 import { CodeLabel } from "@/components/site/code-label";
 import { ServiceTabs } from "@/components/site/service-tabs";
 import { usePagePermission } from "@/components/site/session-gate";
@@ -15,12 +16,12 @@ import { FailedBand, InfoBand, reasonLabel, unknownResult } from "./role-parts";
 // 팝업이 트리에서 읽는 칸만 — 플랫폼 · BP 트리 모두 이 모양을 갖는다(권한 유형은 role 에서 받는다).
 type MenuTree = Pick<RoleGroupMenuTree, "isSavable" | "updatedAt" | "services">;
 
-// 권한 메뉴 등록(플랫폼 S-EFQREM · BP S-KUDELB · 데모 system/roles 메뉴등록 팝업). 880px 확인창에 서비스 탭 · 메뉴 표(조회 · 등록 · 수정 · 삭제)를 둔다.
+// 권한별 메뉴설정(플랫폼 S-EFQREM · BP S-KUDELB · 데모 system/roles [메뉴설정] 팝업). 880px 확인창에 서비스 탭 · 메뉴 표(조회 · 등록 · 수정 · 삭제)를 둔다.
 // 칸마다 바꿀 수 있는지와 막힌 이유는 api 메뉴 트리가 준다(본인 범위 밖 · BP 쪽 고정 권한의 플랫폼 메뉴 등, 한글은 GET /enums/PlatformRoleMenuBlockReason).
 // 플랫폼 마스터 · 본인이 연결된 권한 · 수정 권한이 없으면 칸을 모두 막고 [닫기]만 둔다.
 // 켜져 있던 칸을 끄면 저장 전에 회수 범위를 미리 본다 — BP · 가맹 마스터는 아래 BP 관리자 · 가맹 관리자 그룹에서도 함께 꺼지므로 확인을 받는다.
-// 조회 · 미리보기 · 저장은 화면마다 다른 api 라 actions 로 받는다. save 가 없으면 볼 수만 있다(가맹마스터 보기).
-// 공통 확인창은 420 · 480 뿐이고 공통 표는 머리칸에 글자만 받아(전체 선택 체크박스) 이 팝업 전용으로 그린다 — 모양은 같은 토큰을 쓴다.
+// 조회 · 미리보기 · 저장은 화면마다 다른 api 라 actions 로 받는다. save 가 없으면 볼 수만 있다(가맹마스터 메뉴설정 보기).
+// 공통 확인창은 420 · 480 뿐이고 공통 표는 머리칸에 글자만 받아(전체 선택 체크박스) 이 팝업 전용으로 그린다 — 모양은 같은 토큰을 쓰되, 머리 바탕만 DESIGN.md Tables 예외(erp-subtle)다.
 
 const OP_LABEL: Record<Op, string> = { read: "조회", create: "등록", update: "수정", delete: "삭제" };
 
@@ -39,9 +40,15 @@ type BodyProps = { role: MenuDialogRole; reasons: EnumValue[]; actions: MenuDial
 /** note 를 주면 잠긴 팝업의 안내를 그 문구로 바꾸고, null 이면 안내를 두지 않는다. */
 export function RoleMenuDialog({
   role,
-  title = "권한 메뉴 등록",
+  title = "권한별 메뉴설정", // 목록 메뉴설정 열의 [설정] 버튼으로 연다(2026-10-26 사용자 지정, 전엔 「권한 메뉴 등록」)
+  titleTag,
   ...body
-}: Omit<BodyProps, "role"> & { role: MenuDialogRole | null; title?: string }) {
+}: Omit<BodyProps, "role"> & {
+  role: MenuDialogRole | null;
+  title?: string;
+  /** 제목 옆 회색 띠지 — 가맹 마스터 고정 권한을 볼 때 「가맹 마스터 권한용」(2026-10-26 사용자 지정) */
+  titleTag?: string;
+}) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const open = role !== null;
@@ -65,8 +72,9 @@ export function RoleMenuDialog({
       // #ebebeb 팝업 테두리는 Figma 에 한 번만 나오는 색이라 토큰이 없다(DESIGN.md Popups).
       className="m-auto max-h-[calc(100dvh-48px)] w-[880px] max-w-[calc(100vw-32px)] overflow-y-auto rounded-[2px] border border-[#ebebeb] bg-white p-[23px] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
     >
-      <h2 id={titleId} className="text-[18px] font-semibold">
+      <h2 id={titleId} className="flex items-center gap-[10px] text-[18px] font-semibold">
         {title}
+        {titleTag && <Tag>{titleTag}</Tag>}
       </h2>
       {/* 다른 권한을 열면 값 · 탭을 새로 시작한다 */}
       {role && <MenuBody key={role.roleGroupId} role={role} {...body} />}
@@ -76,7 +84,13 @@ export function RoleMenuDialog({
 
 function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
   const router = useRouter();
-  const toast = useToast();
+  // 저장 알림은 팝업 안에 띄운다 — 공통 토스트는 화면 아래(팝업 뒤)에 떠 보이지 않았다. 저장해도 팝업은 닫지 않는다(2026-10-26 사용자 지정)
+  const [savedShown, setSavedShown] = useState(false);
+  useEffect(() => {
+    if (!savedShown) return;
+    const timer = setTimeout(() => setSavedShown(false), 3000);
+    return () => clearTimeout(timer);
+  }, [savedShown]);
   const can = usePagePermission();
   const [tree, setTree] = useState<MenuTree | null>(null);
   const [initial, setInitial] = useState<Values>({});
@@ -124,6 +138,9 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
         ? "권한 관리 수정 권한이 없어 메뉴 권한을 볼 수만 있습니다."
         : (() => {
             const first = tree?.services.flatMap((sv) => sv.menus.flatMap((m) => blockedReasonsOf(m)))[0];
+            // 플랫폼 마스터(PM_FIXED)는 안내 문장 전체를 따로 둔다 — enum 한글(「플랫폼 마스터 권한은 전체 메뉴 허용 고정」)에 덧붙이면 뜻이 잘 안 읽혔다(2026-10-26 사용자 지정)
+            if (first === "SELF_LINKED") return "본인 계정에 연결된 권한그룹은 수정할 수 없습니다."; // 상세 띠와 같은 문장(2026-10-26 사용자 지정)
+            if (first === "PM_FIXED") return "플랫폼마스터는 시스템 최상위 권한으로, 모든 메뉴의 접근·관리 권한이 자동 부여되며 현재 화면에서는 조작할 수 없습니다.";
             return first ? `${reasonLabel(reasons, first, "고칠 수 없는 권한")} — 메뉴 권한을 볼 수만 있습니다.` : "이 권한의 메뉴 권한은 볼 수만 있습니다.";
           })();
   const service = tree?.services.find((s) => s.serviceCode === tab);
@@ -142,13 +159,14 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
         if (result.status === 404) router.refresh();
         return;
       }
-      toast("saved");
+      setSavedShown(true);
       router.refresh();
-      onClose();
+      // 다음 저장이 옛 updatedAt 으로 409 가 나지 않게 저장된 트리를 다시 받는다
+      load();
     });
 
   const handleSave = () => {
-    if (!changed.length) return onClose();
+    if (!changed.length) return;
     setFailure(null);
     if (!hasRevocation(initial, values)) return handleConfirmSave();
     // 저장은 미리보기와 함께만 온다(MenuDialogActions). 없으면 확인 없이 저장하지 않고 멈춘다.
@@ -167,16 +185,25 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
   };
 
   return (
-    <div className="mt-[12px] flex flex-col gap-[12px]" aria-busy={busy}>
-      <dl className="grid grid-cols-[84px_1fr] gap-y-[6px] rounded-[2px] border border-erp-thead-line bg-erp-thead-bg p-[12px] text-[14px]">
-        <dt className="text-erp-label">권한 코드</dt>
-        <dd>{role.roleCode}</dd>
-        <dt className="text-erp-label">권한 유형</dt>
-        <dd>
-          <CodeLabel group="ROLE_TYPE" value={role.roleTypeCode} />
-        </dd>
-        <dt className="text-erp-label">권한명</dt>
-        <dd>{role.name}</dd>
+    <div className="relative mt-[12px] flex flex-col gap-[12px]" aria-busy={busy}>
+      {/* 권한유형 → 권한코드 → 권한명을 한 줄로(2026-10-26 사용자 지정, 전엔 세 줄). 구분선은 상세 표 값 구분선(11px #d9d9d9)과 같다 */}
+      <dl className="flex h-[42px] items-center gap-[10px] rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[12px] text-[14px]">
+        <div className="flex shrink-0 items-center gap-[6px]">
+          <dt className="text-erp-label">권한유형</dt>
+          <dd className="font-semibold">
+            <CodeLabel group="ROLE_TYPE" value={role.roleTypeCode} />
+          </dd>
+        </div>
+        <span aria-hidden="true" className="h-[11px] w-px shrink-0 bg-[#d9d9d9]" />
+        <div className="flex shrink-0 items-center gap-[6px]">
+          <dt className="text-erp-label">권한코드</dt>
+          <dd>{role.roleCode}</dd>
+        </div>
+        <span aria-hidden="true" className="h-[11px] w-px shrink-0 bg-[#d9d9d9]" />
+        <div className="flex min-w-0 items-center gap-[6px]">
+          <dt className="shrink-0 text-erp-label">권한명</dt>
+          <dd className="truncate font-semibold">{role.name}</dd>
+        </div>
       </dl>
       {failure && <FailedBand message={failure.message} detail={failure.detail} />}
       {tree && !savable && lockedText && <InfoBand>{lockedText}</InfoBand>}
@@ -184,7 +211,7 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
       {tree && (
         <>
           <ServiceTabs services={tree.services} selected={tab} idPrefix={tabsId} onSelect={setTab} />
-          <div id={`${tabsId}-panel`} role="tabpanel" aria-labelledby={service ? `${tabsId}-${service.serviceCode}` : undefined} className="h-[420px] overflow-y-auto">
+          <div id={`${tabsId}-panel`} role="tabpanel" aria-labelledby={service ? `${tabsId}-${service.serviceCode}` : undefined} className="h-[420px]">
             {/* 통째로 잠긴 팝업은 위 띠가 이유를 한 번 말한다 — 줄마다 같은 이유를 되풀이하지 않는다 */}
             <MenuTable nodes={service?.menus ?? []} values={values} reasons={savable ? reasons : []} locked={!savable || busy} onChange={setValues} />
           </div>
@@ -195,10 +222,12 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
       <div className="mt-[12px] flex justify-end gap-[6px]">
         {savable ? (
           <>
+            {/* 저장해도 팝업을 닫지 않으므로 「취소」가 아니라 「닫기」다(2026-10-26 사용자 지정) */}
             <Button variant="off" onClick={onClose} disabled={busy}>
-              취소
+              닫기
             </Button>
-            <Button onClick={handleSave} disabled={busy}>
+            {/* 바뀐 칸이 없으면 막는다 — 저장해도 팝업을 닫지 않으므로 누를 일이 없다 */}
+            <Button onClick={handleSave} disabled={busy || changed.length === 0}>
               저장
             </Button>
           </>
@@ -207,8 +236,20 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
         )}
       </div>
 
+      {/* 팝업 안 저장 알림 — 공통 토스트와 같은 모양(DESIGN.md: 떠 있는 것의 그림자 하나), 늘 마운트해 두고 전환으로 여닫는다 */}
+      <div
+        role="status"
+        aria-live="polite"
+        className={`pointer-events-none absolute bottom-[46px] left-1/2 z-[2] -translate-x-1/2 rounded-[2px] bg-erp-nav px-[24px] py-[12px] text-[14px] font-medium whitespace-nowrap text-white shadow-[0_2px_6px_rgba(40,47,55,0.08)] transition-[opacity,translate,visibility] ${EASE_OUT} motion-reduce:transition-none ${
+          savedShown ? "visible translate-y-0 opacity-100 duration-200" : "invisible translate-y-[6px] opacity-0 duration-150"
+        }`}
+      >
+        {savedShown ? "저장되었습니다." : ""}
+      </div>
+
       <ConfirmDialog
         open={preview !== null}
+        // 켜져 있던 칸을 끄고 저장할 때 묻는 창 — 문구는 사용자 지정(2026-10-26, 전엔 끈 칸 수 · 함께 꺼지는 아래 권한 그룹 수도 보였다)
         title="메뉴 권한 회수"
         confirmLabel="저장"
         wide
@@ -218,18 +259,26 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
       >
         {preview && (
           <div className="flex flex-col gap-[12px] break-keep">
+            {/* 권한명은 굵은 띠지로(2026-10-26 사용자 지정) — Tag 는 className 을 받지 않아 안쪽 span 으로 굵힌다 */}
             <p>
-              끈 칸 <b className="font-semibold">{preview.revokedCells.toLocaleString("ko-KR")}개</b>가 이 권한에서 빠집니다.
+              <Tag>
+                <span className="font-semibold">{role.name}</span>
+              </Tag>{" "}
+              의 메뉴 권한이 변경됩니다.
             </p>
-            {preview.affectedRoleGroupCount > 0 && (
-              <p>
-                이 권한 아래 <b className="font-semibold">권한 그룹 {preview.affectedRoleGroupCount.toLocaleString("ko-KR")}개</b>에서도 같은 칸이 함께 꺼지고 되돌리지 않습니다.
-              </p>
-            )}
-            <p>
-              영향을 받는 사용자는 <b className="font-semibold">{preview.affectedAdminCount.toLocaleString("ko-KR")}명</b>이고, 로그인 중이어도 다음 요청부터 새 권한으로
-              판정됩니다.
-            </p>
+            <ul className="list-disc pl-[18px]">
+              <li>
+                영향받는 사용자: <b className="font-semibold">{preview.affectedAdminCount.toLocaleString("ko-KR")}명</b>
+              </li>
+              {/* BP · 가맹 마스터 권한을 끄면 아래 권한 그룹에서도 같은 칸이 꺼지고 되돌리지 않는다 — 그럴 때만 알린다(2026-10-26 사용자 지정) */}
+              {preview.affectedRoleGroupCount > 0 && (
+                <li>
+                  하위 권한 그룹 <b className="font-semibold">{preview.affectedRoleGroupCount.toLocaleString("ko-KR")}개</b>에도 같이 적용되며, 되돌릴 수 없습니다.
+                </li>
+              )}
+              {/* 서버가 요청마다 지금 권한을 다시 판정한다 — 로그인 중인 사용자도 다음 요청(저장 · 화면 이동 · 새로고침)부터 바뀐다(S-KUDELB). 문구는 쉬운 말로(2026-10-26 사용자 지정) */}
+              <li>변경된 권한은 다시 로그인하지 않아도, 사용자가 화면을 새로고침하거나 이동하면 적용됩니다.</li>
+            </ul>
           </div>
         )}
       </ConfirmDialog>
@@ -251,13 +300,21 @@ function MenuTable({
   locked: boolean;
   onChange: (v: Values) => void;
 }) {
+  const headRef = useRef<HTMLDivElement>(null);
   const rows: RoleGroupMenuNode[] = [];
   const walk = (list: RoleGroupMenuNode[]) => list.forEach((n) => (rows.push(n), walk(n.children)));
   walk(nodes);
 
-  // 일부만 켜진 묶음 · 머리칸은 –(mixed)로 보이고, 누르면 모두 켠다
-  const box = (label: string, state: { checked: boolean; mixed?: boolean; disabled: boolean }, onToggle: (on: boolean) => void) => (
-    <span className={`inline-flex ${state.disabled ? "opacity-40" : ""}`}>
+  // 일부만 켜진 묶음 줄은 –(mixed)로 보이고, 누르면 모두 켠다(머리칸은 – 없이 해제로 — 아래 머리 표의 OPS 칸 참고)
+  // top: 1단계 줄 — 켜진 칸을 「등록」 배지 모양(연한 파랑 바탕 erp-on-bg · 파랑 erp-on)으로 칠해 2단계와 가른다(2026-10-26 사용자 지정).
+  // 바탕이 연해 흰 체크가 안 보이므로 흰 체크 그림은 숨기고 파랑 체크(/icons/check-on.svg)를 input 바탕 그림으로 깐다.
+  // 공통 Checkbox 는 className 을 받지 않아 감싸는 span 에서 안쪽 input · 그림 · 막대만 덮는다.
+  const box = (label: string, state: { checked: boolean; mixed?: boolean; disabled: boolean }, onToggle: (on: boolean) => void, top = false) => (
+    <span
+      className={`inline-flex ${state.disabled ? "opacity-40" : ""} ${
+        top ? "[&_input:checked]:border-erp-on [&_input:checked]:bg-erp-on-bg [&_input:checked]:bg-[url(/icons/check-on.svg)] [&_input:checked]:bg-center [&_input:checked]:bg-no-repeat [&_img]:hidden [&_input:indeterminate]:border-erp-on [&_input:indeterminate]:bg-erp-on-bg [&_input:indeterminate~span]:bg-erp-on" : ""
+      }`}
+    >
       <Checkbox
         label=""
         aria-label={label}
@@ -269,76 +326,119 @@ function MenuTable({
     </span>
   );
 
+  // 두 표(머리 · 본문)가 같은 열 폭을 쓴다
+  const cols = (
+    <colgroup>
+      <col />
+      {/* 메뉴단계는 좁히고 조회 · 등록 · 수정 · 삭제 칸을 넓힌다 — 90px 에선 머리칸 「체크박스 + 글자」가 두 줄로 꺾였다(2026-10-26 사용자 지정) */}
+      <col className="w-[80px]" />
+      {OPS.map((op) => (
+        <col key={op} className="w-[100px]" />
+      ))}
+    </colgroup>
+  );
+
+  // 머리 표는 고정하고 그 아래 본문 표만 스크롤한다 — 스크롤바도 머리 아래에서 시작한다(2026-10-26 사용자 지정, 전엔 sticky 머리라
+  // 스크롤바가 머리 옆까지 올라왔다). 두 칸 모두 스크롤바 자리를 비워(scrollbar-gutter: stable) 머리 · 본문 열이 어긋나지 않는다.
   return (
-    <table className="w-full table-fixed border-collapse border-x border-erp-thead-line text-[14px]">
-      <colgroup>
-        <col />
-        <col className="w-[90px]" />
-        {OPS.map((op) => (
-          <col key={op} className="w-[90px]" />
-        ))}
-      </colgroup>
-      <thead className="sticky top-0 z-[1]">
-        <tr className="h-[42px] border-y border-erp-thead-line bg-erp-thead-bg">
-          <th scope="col" className="px-[10px] font-medium text-erp-thead-text">
-            메뉴명
-          </th>
-          <th scope="col" className="px-[10px] font-medium text-erp-thead-text">
-            메뉴 계층
-          </th>
-          {OPS.map((op) => {
-            const state = aggregate(values, nodes, op);
-            return (
-              <th key={op} scope="col" className="px-[10px] font-medium text-erp-thead-text">
-                <span className="inline-flex items-center justify-center gap-[6px]">
-                  {box(`${OP_LABEL[op]} 전체 선택`, state, (on) => onChange(toggleAll(values, nodes, op, on)))}
-                  {OP_LABEL[op]}
-                </span>
+    <div className="flex h-full flex-col">
+      <div ref={headRef} className="shrink-0 overflow-hidden [scrollbar-gutter:stable]">
+        <table className="w-full table-fixed border-collapse border-x border-t border-erp-thead-line text-[14px]">
+          {cols}
+          <thead>
+            {/* 머리는 600 먹색 글자에 erp-subtle(#f0f1f3) 바탕 — 1단계 줄(#f8f9fb)보다 살짝 어둡게 해 둘이 갈리게 한다(2026-10-26 사용자 지정).
+                두 바탕 규칙 밖이라 기존 토큰(Off 버튼 바탕)을 빌렸다 — DESIGN.md Tables 예외, 1팀 동의 2026-10-27. 칸 안쪽 여백은 4px 로 좁혀 100px 칸에 「체크박스 + 글자」가 한 줄로 든다 */}
+            <tr className="h-[42px] border-b border-erp-thead-line bg-erp-subtle">
+              <th scope="col" className="px-[4px] font-semibold text-erp-ink">
+                메뉴명
               </th>
-            );
-          })}
-        </tr>
-      </thead>
-      <tbody className="text-erp-ink">
-        {rows.length === 0 ? (
-          <tr className="h-[92px] border-b border-erp-thead-line">
-            <td colSpan={2 + OPS.length} className="text-center text-erp-muted">
-              이 서비스에 등록된 메뉴가 없습니다.
-            </td>
-          </tr>
-        ) : (
-          rows.map((n) => {
-            // enum 을 못 받았으면 영문 값 대신 쓰지 않는다(이유는 띠 · 흐린 칸으로 알 수 있다)
-            const why = blockedReasonsOf(n).flatMap((r) => (reasons.some((l) => l.value === r) ? [labelOf(reasons, r)] : []));
-            return (
-              <tr key={n.menuId} className="h-[46px] border-b border-erp-thead-line">
-                <td className="truncate px-[10px] text-left" title={why.join(" · ") || undefined}>
-                  <span style={{ paddingLeft: (n.depth - 1) * 18 }}>
-                    {n.depth > 1 && <span className="text-erp-label">└ </span>}
-                    {n.depth === 1 ? <b className="font-semibold">{n.name}</b> : n.name}
-                  </span>
-                  {why.map((r) => (
-                    <span key={r} className="text-[13px] text-erp-label">
-                      {" "}
-                      · {r}
+              <th scope="col" className="px-[4px] font-semibold text-erp-ink">
+                메뉴단계
+              </th>
+              {OPS.map((op) => {
+                // 머리칸은 하나라도 꺼져 있으면 – 없이 그냥 해제로 보인다(2026-10-26 사용자 지정). 누르면 모두 켠다. 묶음 줄의 – 는 그대로다
+                const state = { ...aggregate(values, nodes, op), mixed: false };
+                return (
+                  <th key={op} scope="col" className="px-[4px] font-semibold text-erp-ink">
+                    {/* 체크박스를 칸 가운데(본문 체크박스와 같은 세로줄)에 두고 글자는 그 오른쪽에 — 전엔 글자까지 묶어 가운데 맞춰
+                        체크박스가 왼쪽으로 밀려 본문과 들쭉날쭉했다(2026-10-26 사용자 지정) */}
+                    <span className="grid grid-cols-[1fr_auto_1fr] items-center gap-[6px]">
+                      <span />
+                      {box(`${OP_LABEL[op]} 전체 선택`, state, (on) => onChange(toggleAll(values, nodes, op, on)))}
+                      <span className="justify-self-start whitespace-nowrap">{OP_LABEL[op]}</span>
                     </span>
-                  ))}
+                  </th>
+                );
+              })}
+            </tr>
+          </thead>
+        </table>
+      </div>
+      {/* 본문을 가로로 밀면 머리도 따라간다 — 팝업을 좁게 띄우면(max-w 100vw-32px) 열이 칸보다 넓어진다 */}
+      <div
+        className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]"
+        onScroll={(e) => {
+          if (headRef.current) headRef.current.scrollLeft = e.currentTarget.scrollLeft;
+        }}
+      >
+        <table className="w-full table-fixed border-collapse border-x border-erp-thead-line text-[14px]">
+          {cols}
+          {/* 머리 표와 나눠져 칸과 열 이름이 끊기지 않게 본문 표에도 열 이름을 둔다(화면 읽기 도구용). 보이는 머리 표는 전체 선택 체크박스가 있어 숨기지 않는다 */}
+          <thead className="sr-only">
+            <tr>
+              <th scope="col">메뉴명</th>
+              <th scope="col">메뉴단계</th>
+              {OPS.map((op) => (
+                <th key={op} scope="col">
+                  {OP_LABEL[op]}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="text-erp-ink">
+            {rows.length === 0 ? (
+              <tr className="h-[92px] border-b border-erp-thead-line">
+                <td colSpan={2 + OPS.length} className="text-center text-erp-muted">
+                  이 서비스에 등록된 메뉴가 없습니다.
                 </td>
-                <td className="px-[10px] text-center text-erp-label">{n.depth}단계</td>
-                {OPS.map((op) => (
-                  <td key={op} className="px-[10px] text-center">
-                    {box(
-                      `${n.name} ${OP_LABEL[op]}`,
-                      n.isGroup ? aggregate(values, n.children, op, n[op].value) : { checked: Boolean(values[n.menuId]?.[op]), disabled: !editableOf(n, op) },
-                      (on) => onChange(toggle(values, n, op, on)),
-                    )}
-                  </td>
-                ))}
               </tr>
-            );
-          })
-        )}
-      </tbody>
-    </table>
+            ) : (
+              rows.map((n) => {
+                // enum 을 못 받았으면 영문 값 대신 쓰지 않는다(이유는 띠 · 흐린 칸으로 알 수 있다)
+                const why = blockedReasonsOf(n).flatMap((r) => (reasons.some((l) => l.value === r) ? [labelOf(reasons, r)] : []));
+                return (
+                  // 1단계 줄에만 옅은 바탕(erp-thead-bg #f8f9fb)을 깔아 2단계와 가른다. 줄 높이는 한 화면에 더 들어가게 42px(2026-10-26 사용자 지정)
+                  <tr key={n.menuId} className={`h-[42px] border-b border-erp-thead-line ${n.depth === 1 ? "bg-erp-thead-bg" : ""}`}>
+                    <td className="truncate px-[10px] text-left" title={why.join(" · ") || undefined}>
+                      <span style={{ paddingLeft: (n.depth - 1) * 18 }}>
+                        {n.depth > 1 && <span className="text-erp-label">└ </span>}
+                        {n.depth === 1 ? <b className="font-semibold">{n.name}</b> : n.name}
+                      </span>
+                      {why.map((r) => (
+                        <span key={r} className="text-[13px] text-erp-label">
+                          {" "}
+                          · {r}
+                        </span>
+                      ))}
+                    </td>
+                    <td className="px-[10px] text-center text-erp-label">{n.depth}단계</td>
+                    {OPS.map((op) => (
+                      <td key={op} className="px-[10px] text-center">
+                        {box(
+                          `${n.name} ${OP_LABEL[op]}`,
+                          n.isGroup ? aggregate(values, n.children, op, n[op].value) : { checked: Boolean(values[n.menuId]?.[op]), disabled: !editableOf(n, op) },
+                          (on) => onChange(toggle(values, n, op, on)),
+                          n.depth === 1,
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }

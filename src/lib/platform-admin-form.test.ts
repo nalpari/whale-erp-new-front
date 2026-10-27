@@ -4,9 +4,16 @@ import { test } from "node:test";
 import type { PlatformAdminDetail } from "./platform-admins";
 import {
   EMPTY_FORM,
+  emailError,
   formOf,
+  isOriginalEmail,
+  LOGIN_ID_FORMAT_ERROR,
+  LOGIN_ID_TAKEN,
+  loginIdCheckOutcome,
   loginIdError,
+  saveBlockingErrors,
   serverErrorField,
+  serverFieldMessage,
   splitPhone,
   toCreateInput,
   toUpdateInput,
@@ -41,6 +48,17 @@ test("칸을 벗어날 때의 아이디 형식 검사 — 앞뒤 공백은 빼�
   assert.equal(loginIdError(" seojun01 "), undefined);
   assert.equal(loginIdError(""), "아이디를 입력해 주세요.");
   assert.equal(loginIdError("1234"), "아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다.");
+});
+
+test("칸을 벗어날 때의 이메일 형식 검사 — 앞뒤 공백은 빼고 본다", () => {
+  assert.equal(emailError("  a@b.co  "), undefined);
+  assert.equal(emailError(" "), "이메일을 입력해 주세요.");
+  assert.ok(emailError("seojun@"));
+});
+
+test("이메일 형식 — api @IsEmail 이 막는 값은 화면도 형식 오류로(규칙 자체는 email-format.test.ts)", () => {
+  for (const ok of ["kim@whale.co", "kim@회사.한국"]) assert.equal(emailError(ok), undefined, ok);
+  for (const bad of ["kim@whale.c", "kim@whale.co,", "kim😀@whale.co"]) assert.equal(emailError(bad), "이메일 형식이 올바르지 않습니다.", bad);
 });
 
 test("필수 칸 — 이름 · 연락처 · 이메일 · 사용자 권한", () => {
@@ -107,8 +125,9 @@ test("경계값 — 아이디 4 · 20자, 이메일 100자, 칸별 공백", () =
   assert.ok(validateAdminForm({ ...filled, loginId: "a".repeat(21) }, "create").loginId);
   // 수정에서는 형식이 틀린 아이디도 보지 않는다(바꿀 수 없는 칸)
   assert.equal(validateAdminForm({ ...filled, loginId: "bad_id" }, "edit").loginId, undefined);
-  assert.equal(validateAdminForm({ ...filled, email: "a".repeat(95) + "@b.co" }, "create").email, undefined);
-  assert.equal(validateAdminForm({ ...filled, email: "a".repeat(96) + "@b.co" }, "create").email, "이메일 형식이 아닙니다.");
+  // 100자 — @ 앞은 api 가 64바이트까지만 받아(email-format.ts) 도메인을 늘려 잰다
+  assert.equal(validateAdminForm({ ...filled, email: `${"a".repeat(60)}@${"b".repeat(36)}.co` }, "create").email, undefined);
+  assert.equal(validateAdminForm({ ...filled, email: `${"a".repeat(60)}@${"b".repeat(37)}.co` }, "create").email, "이메일 형식이 올바르지 않습니다.");
   assert.equal(toCreateInput({ ...filled, phone: ["010", " 1234 ", "5678"] }).phone, "01012345678");
 });
 
@@ -123,7 +142,53 @@ test("api 오류를 붙일 칸 — 400 · 409 의 아이디 · 이메일만, 수
   assert.equal(serverErrorField(409, taken, "create"), "loginId");
   assert.equal(serverErrorField(409, taken, "edit"), null);
   assert.equal(serverErrorField(409, "이미 다른 관리자 계정에 등록된 이메일입니다", "edit"), "email");
+  assert.equal(serverErrorField(409, "이미 다른 관리자 계정에 등록된 이메일입니다", "create"), "email");
   assert.equal(serverErrorField(409, "아이디 또는 이메일이 방금 다른 계정에 등록되었습니다", "create"), null);
   assert.equal(serverErrorField(403, "아이디 …", "create"), null);
   assert.equal(serverErrorField(undefined, "아이디 …", "create"), null);
+});
+
+test("칸에 붙일 api 오류 문구 — 아이디와 이메일 형식(400)은 화면 문구로, 이메일 중복은 api 문구 그대로", () => {
+  const apiTaken = "이미 사용 중인 아이디입니다. 삭제된 계정의 아이디도 다시 쓸 수 없습니다";
+  assert.equal(serverFieldMessage("loginId", 409, apiTaken), LOGIN_ID_TAKEN);
+  assert.equal(serverFieldMessage("loginId", 400, "아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다"), LOGIN_ID_FORMAT_ERROR);
+  assert.equal(LOGIN_ID_FORMAT_ERROR, loginIdError("1234"), "화면 형식 검사와 같은 문구");
+  const emailTaken = "이미 다른 관리자 계정에 등록된 이메일입니다";
+  assert.equal(serverFieldMessage("email", 409, emailTaken), emailTaken);
+  assert.equal(serverFieldMessage("email", 400, "이메일 형식이 아닙니다"), emailError("kim@whale.c"), "칸에서 본 형식 문구와 같다");
+});
+
+test("여러 칸 검증 오류(400 배열)는 칸에 붙이지 않고 띠로 — 아이디 칸에 남아 저장을 막지 않게", () => {
+  const joined = "아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다, 이메일 형식이 아닙니다";
+  assert.equal(serverErrorField(400, joined, "create"), null);
+  assert.equal(serverErrorField(400, "아이디는 영문 또는 영문 · 숫자 조합으로 4~20자입니다", "create"), "loginId");
+});
+
+test("중복확인 답 → 화면 상태 — 사용 중 · 400 은 칸 오류, 401 · 403 은 띠, 그 밖은 확인 실패(저장은 막지 않는다)", () => {
+  assert.deepEqual(loginIdCheckOutcome({ ok: true, available: true }), { check: "available" });
+  assert.deepEqual(loginIdCheckOutcome({ ok: true, available: false }), { check: "idle", fieldError: LOGIN_ID_TAKEN });
+  assert.deepEqual(loginIdCheckOutcome({ ok: false, status: 400, message: "아이디는 …" }), { check: "idle", fieldError: LOGIN_ID_FORMAT_ERROR });
+  assert.deepEqual(loginIdCheckOutcome({ ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." }), {
+    check: "idle",
+    failure: "로그인이 만료되었습니다. 다시 로그인해 주세요.",
+  });
+  // 403(등록 권한 없음)은 저장해도 막히므로 띠로 바로 알린다
+  assert.deepEqual(loginIdCheckOutcome({ ok: false, status: 403, message: "권한이 없습니다" }), { check: "idle", failure: "권한이 없습니다" });
+  for (const status of [404, 409, 429, 500, undefined]) {
+    assert.deepEqual(loginIdCheckOutcome({ ok: false, status, message: "…" }), { check: "failed" }, `status ${status}`);
+  }
+});
+
+test("저장을 막는 오류 — 서버가 거절한 아이디만 막고, 이메일 서버 오류는 막지 않는다", () => {
+  assert.deepEqual(saveBlockingErrors(filled, "create", { loginId: LOGIN_ID_TAKEN }), { loginId: LOGIN_ID_TAKEN });
+  assert.deepEqual(saveBlockingErrors(filled, "create", { email: "이미 다른 관리자 계정에 등록된 이메일입니다" }), {});
+  // 같은 칸에 입력 검사 문구가 있으면 그쪽이 앞선다
+  assert.equal(saveBlockingErrors({ ...filled, loginId: "" }, "create", { loginId: LOGIN_ID_TAKEN }).loginId, "아이디를 입력해 주세요.");
+});
+
+test("수정 화면의 원래 이메일 — 앞뒤 공백 · 대소문자는 보지 않는다", () => {
+  assert.equal(isOriginalEmail(" SeoJun@Whale.Test ", "seojun@whale.test"), true);
+  assert.equal(isOriginalEmail("seojun2@whale.test", "seojun@whale.test"), false);
+  assert.equal(isOriginalEmail("", null), true);
+  assert.equal(isOriginalEmail("a@b.co", null), false);
 });

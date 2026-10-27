@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { redirect, unstable_rethrow } from "next/navigation.js";
-import { callSave, SAVE_CALL_LOST, saveOutcomeUnknown, SEND_UNKNOWN, sendFailedTarget, sendFailureOf, sendNoticeOf } from "./send-model.ts";
+import { callSave, END_UNKNOWN, SAVE_CALL_LOST, saveOutcomeUnknown, SEND_UNKNOWN, sendFailedTarget, resendDialogCopy, sendFailureOf, sendNoticeOf, signingResendCopy } from "./send-model.ts";
 
 test("sendFailureOf — 접수 여부 모름은 보내기를 막고 상세를 다시 읽는다", () => {
   assert.deepEqual(sendFailureOf(502, "SEND_UNCONFIRMED", "알림톡이 접수됐는지 알 수 없습니다"), {
@@ -34,6 +34,13 @@ test("sendFailureOf — 나가지 않은 실패는 api 문장 그대로, 다시 
     [404, undefined],
   ] as const)
     assert.equal(sendFailureOf(status, code, "x").recheck, false);
+  // 소속 추가 확인 · 복귀 확인은 계속 409 로 막힌다 — 문장은 api 가 정하므로 그대로 보인다(WHALEERP-611)
+  assert.deepEqual(sendFailureOf(409, "SEND_CHANNEL_NOT_READY", "직원이 소속 추가를 확인한 뒤 보낼 수 있습니다"), {
+    ok: false,
+    error: "직원이 소속 추가를 확인한 뒤 보낼 수 있습니다",
+    code: "SEND_CHANNEL_NOT_READY",
+    recheck: false,
+  });
 });
 
 test("sendFailedTarget — 저장 뒤 보내기가 실패한 502 만 그 계약 상세로 옮긴다", () => {
@@ -90,4 +97,35 @@ test("callSave — 성공 · 발송 실패의 redirect 는 다시 던져 원래 
   assert.equal(await callSave(() => Promise.reject(new TypeError("fetch failed")), unstable_rethrow), SAVE_CALL_LOST);
   // 돌아온 결과(실패 문장)는 그대로
   assert.deepEqual(await callSave(() => Promise.resolve({ error: "x" }), unstable_rethrow), { error: "x" });
+});
+
+test("서명 대기 재발송 확인창 — 데모 문구, 이름을 모르면 그 조각만 뺀다(WHALEERP-611)", () => {
+  assert.deepEqual(signingResendCopy("권도윤"), {
+    title: "계약서를 다시 보내시겠습니까?",
+    body: "같은 조건의 계약서를 권도윤 님에게 다시 보냅니다. 날인 기한은 발송일로부터 30일입니다.",
+  });
+  assert.equal(signingResendCopy(null).body, "같은 조건의 계약서를 다시 보냅니다. 날인 기한은 발송일로부터 30일입니다.");
+  assert.equal(signingResendCopy("").body, "같은 조건의 계약서를 다시 보냅니다. 날인 기한은 발송일로부터 30일입니다.");
+});
+
+test("근로계약 상세 재발송 확인창 — 서명 대기는 데모 문구, 발송 대기는 가입 초대 문구", () => {
+  assert.deepEqual(resendDialogCopy("PENDING_SIGNATURE", "권도윤"), {
+    title: "계약서를 다시 보내시겠습니까?",
+    body: ["같은 조건의 계약서를 권도윤 님에게 다시 보냅니다. 날인 기한은 발송일로부터 30일입니다."],
+  });
+  const invite = resendDialogCopy("PENDING_SEND", "남도현");
+  assert.equal(invite.title, "근로계약서를 다시 보내시겠습니까?");
+  assert.equal(invite.body.length, 2);
+  assert.match(invite.body.join(" "), /초대 코드/);
+});
+
+test("발송 대기 종료도 같은 규칙 — 모를 때 문장만 종료 문장이다", () => {
+  assert.deepEqual(sendFailureOf(null, undefined, "", END_UNKNOWN), { ok: false, error: END_UNKNOWN, recheck: true });
+  assert.deepEqual(sendFailureOf(504, undefined, "Gateway Timeout", END_UNKNOWN), { ok: false, error: END_UNKNOWN, recheck: true });
+  assert.deepEqual(sendFailureOf(409, "CONTRACT_STATUS_CONFLICT", "지금 상태에서는 할 수 없습니다", END_UNKNOWN), {
+    ok: false,
+    error: "지금 상태에서는 할 수 없습니다",
+    code: "CONTRACT_STATUS_CONFLICT",
+    recheck: true,
+  });
 });
