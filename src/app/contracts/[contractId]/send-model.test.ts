@@ -114,15 +114,18 @@ test("근로계약 상세 재발송 확인창 — 서명 대기는 데모 문구
     body: ["같은 조건의 계약서를 권도윤 님에게 다시 보냅니다. 날인 기한은 발송일로부터 30일입니다."],
   });
   const invite = resendDialogCopy("PENDING_SEND", "남도현");
-  assert.equal(invite.title, "근로계약서를 다시 보내시겠습니까?");
+  assert.equal(invite.title, "다시 보내시겠습니까?");
   assert.equal(invite.body.length, 2);
   // 보낼 때 api 가 다시 판별한다 — 가입 초대 · 소속 추가 확인 요청을 함께 알린다(WHALEERP-130)
   assert.match(invite.body.join(" "), /가입 초대 알림톡\(초대 코드\)/);
   assert.match(invite.body.join(" "), /소속 추가 확인 요청/);
   assert.match(invite.body[0], /^남도현 님의 /);
   // 직원 목록 재발송도 같은 문구다
-  const { title, body } = inviteResendCopy("남도현");
-  assert.deepEqual({ title, body }, invite);
+  assert.deepEqual(inviteResendCopy("남도현"), invite);
+  // 요청 유효 기간 · 발송 대기로 남는 것 · 날인 기한(용어 통일)
+  assert.match(invite.body[1], /30일 동안 유효/);
+  assert.match(invite.body[1], /발송 대기로 남습니다/);
+  assert.doesNotMatch(invite.body.join(" "), /서명 기한/);
   assert.match(inviteResendCopy(null).body[0], /^직원 휴대전화번호로/);
 });
 

@@ -45,12 +45,12 @@ export function signingResendCopy(name: string | null | undefined): { title: str
  */
 export function inviteResendCopy(name: string | null | undefined): { title: string; body: string[]; done: string } {
   return {
-    title: "근로계약서를 다시 보내시겠습니까?",
+    title: "다시 보내시겠습니까?",
     body: [
-      `${name ? `${name} 님의 ` : "직원 "}휴대전화번호로 다시 보냅니다. 그 번호로 가입한 계정이 없으면 가입 초대 알림톡(초대 코드)을, 있으면 소속 추가 확인 요청(알림톡 · 메일)을 보냅니다.`,
-      "앞서 보낸 초대 코드 · 요청은 쓸 수 없습니다. 서명 기한은 가입 초대면 보낸 날부터, 소속 추가 확인이면 직원이 수락한 날부터 30일입니다.",
+      `${name ? `${name} 님의 ` : "직원 "}휴대전화번호로 다시 보냅니다. 그 번호로 가입한 계정이 없으면 가입 초대 알림톡(초대 코드)을, 있으면 소속 추가 확인 요청(알림톡 · 메일)을 보냅니다. 이미 이 점포에 가입한 직원이면 앱 알림으로 갑니다.`,
+      "초대 코드와 요청은 보낸 날부터 30일 동안 유효하고, 앞서 보낸 것은 쓸 수 없습니다. 날인 기한은 가입 초대면 보낸 날부터, 소속 추가 확인이면 직원이 수락한 날부터 30일입니다 — 소속 추가 확인은 직원이 수락할 때까지 계약이 발송 대기로 남습니다.",
     ],
-    done: "근로계약서를 다시 보냈습니다.",
+    done: "다시 보냈습니다.",
   };
 }
 
@@ -64,8 +64,7 @@ export function resendDialogCopy(status: string | null | undefined, name: string
     const { title, body } = signingResendCopy(name);
     return { title, body: [body] };
   }
-  const { title, body } = inviteResendCopy(name);
-  return { title, body };
+  return inviteResendCopy(name);
 }
 
 /**
