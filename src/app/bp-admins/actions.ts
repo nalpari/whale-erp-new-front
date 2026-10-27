@@ -8,11 +8,13 @@ import {
   createBpAdmin,
   getBpAdminHistories,
   getBpAdminStoreOptions,
+  getBpAdminUpdateImpact,
   resetBpAdminPassword,
   updateBpAdmin,
   type BpAdminHistoryList,
   type BpAdminRoleType,
   type BpAdminStoreOption,
+  type BpAdminUpdateImpact,
   type CreateBpAdminInput,
   type UpdateBpAdminInput,
 } from "@/lib/bp-admins";
@@ -90,6 +92,27 @@ export async function updateBpAdminAction(id: number, input: UpdateBpAdminInput)
     return { ok: true };
   } catch (error) {
     return failureOf(error, "수정");
+  }
+}
+
+/** 가맹 마스터를 저장하면 함께 바뀔 가맹 관리자 수 — 수정 패널이 상태 칸 아래 띠(미사용을 고를 때)와 저장 전 확인창에 쓴다. */
+export async function getBpAdminUpdateImpactAction(
+  id: number,
+  input: Pick<UpdateBpAdminInput, "accountStatus" | "storeIds">,
+): Promise<ActionResult<BpAdminUpdateImpact>> {
+  if (!validId(id)) return NOT_FOUND;
+  if (input?.accountStatus !== "ACTIVE" && input?.accountStatus !== "INACTIVE") return { ok: false, status: 400, message: "계정 상태를 골라 주세요." };
+  if (!Array.isArray(input.storeIds) || !input.storeIds.every(validId)) return { ok: false, status: 400, message: "점포를 다시 골라 주세요." };
+  try {
+    const impact = await getBpAdminUpdateImpact(id, input);
+    // 수가 빠지면 패널의 `deactivatedCount || unmappedCount` 검사가 거짓이 되어 확인창 없이 저장된다 — 모양이 다르면 실패로 돌려 저장을 막는다
+    if (typeof impact?.deactivatedCount !== "number" || typeof impact.unmappedCount !== "number") {
+      console.error("BP 관리자 함께 바뀌는 계정 응답 모양이 다르다", impact);
+      return { ok: false, message: "함께 바뀌는 계정을 확인하지 못했습니다." };
+    }
+    return { ok: true, ...impact };
+  } catch (error) {
+    return failureOf(error, "함께 바뀌는 계정 조회");
   }
 }
 

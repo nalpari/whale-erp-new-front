@@ -6,7 +6,7 @@ import { Badge, Button, ConfirmDialog, DataTable, DetailTable, FormRow, Readonly
 import { useCodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
 import { usePagePermission } from "@/components/site/session-gate";
-import { FailedBand } from "@/components/site/side-parts";
+import { FailedBand, InfoBand } from "@/components/site/side-parts";
 import { Blocked, WhoList } from "@/app/platform-admins/admin-parts";
 import { HistoryButton } from "@/app/platform-admins/history-dialog";
 import { StoreStatusBadge } from "@/app/stores/store-parts";
@@ -22,6 +22,8 @@ import { unknownResult } from "./bp-admin-parts";
 // [수정] · [비밀번호 초기화]는 메뉴 수정 권한과 api 가 준 actions 를 함께 본다(bp-admin-rules.ts) — 막는 것은 api 다.
 // 미사용 계정은 초기화 버튼 · 미발송 표시를 숨긴다 — 플랫폼 관리자와 같다(2026-10-27 사용자 지정). 본인 계정은 초기화 버튼을 막는다(내 정보에서 바꾼다).
 // 등록 · 최종수정과 적용 대상은 표가 아니라 권한 그룹 상세와 같은 테두리 없는 카드로 보인다. 최근 로그인은 기본정보 표의 비밀번호 아래 줄이다(2026-10-27 사용자 지정).
+// 본인 계정은 수정 범위를 제목 아래 띠로 알린다(가맹 관리자 본인은 늘, 그 밖은 [수정]이 보일 때만). 수정할 수 없는 가맹 관리자 계정은
+// 수정 · 초기화를 막은 이유를 띠로 보인다(2026-10-27).
 
 export function AdminDetailPanel({
   open,
@@ -169,6 +171,31 @@ function DetailBody({
         </span>
       </div>
       {failure && <FailedBand message={failure} />}
+      {/* 버튼을 숨기거나 막은 이유(목업 admins-detail). 연결 가맹 마스터가 아닌 사람이 보는 가맹 관리자 문구는 2026-10-27 사용자 지정 */}
+      {admin.actions.isSelf ? (
+        admin.roleTypeCode === "FA" ? (
+          <InfoBand>
+            <p>내 계정입니다 — 조회만 합니다</p>
+            <p className="font-normal text-erp-label">
+              가맹 관리자는 계정을 수정하지 않습니다. 계정 정보 · 권한 그룹 · 점포 · 상태는 연결된 가맹 마스터가 바꾸고, 비밀번호는 내 정보에서 직접 바꿉니다.
+            </p>
+          </InfoBand>
+        ) : (
+          // 수정 화면을 설명하는 띠라 [수정]이 보일 때만(메뉴 수정 권한 + api canUpdate)
+          canUpdate && (
+            <InfoBand>
+              <p>내 계정입니다</p>
+              <p className="font-normal text-erp-label">
+                수정 화면에서는 기본정보(이름 · 휴대전화번호 · 이메일)만 바뀝니다. 권한 그룹 · 계정 상태 · 대상 점포는 BP 마스터 · BP 관리자 · 플랫폼 사용자가,
+                비밀번호는 내 정보에서 직접 바꿉니다.
+              </p>
+            </InfoBand>
+          )
+        )
+      ) : (
+        admin.roleTypeCode === "FA" &&
+        !admin.actions.canUpdate && <InfoBand>가맹 관리자 계정은 연결된 가맹 마스터만 수정 · 비밀번호 초기화할 수 있습니다.</InfoBand>
+      )}
       <DetailTable title="기본정보" rows={rows} />
       {/* 등록 · 최종수정을 한 줄에 하나씩(2026-10-27 사용자 지정 — 전엔 기본정보 표의 등록일시 · 최종 수정일시 줄) */}
       <ReadonlyCard>

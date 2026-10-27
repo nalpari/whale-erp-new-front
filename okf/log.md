@@ -1,6 +1,8 @@
 # Bundle history
 
 ## 2026-10-27
+* **Update**: main 병합(front vileplume, main #144 까지): okf 충돌은 양쪽 기록을 살렸다. BP 관리자 화면은 main(fearow)의 디자인 수정(제목 줄 [등록] · 이름 아랫줄 · 카드 · 수정 패널에서 등록일시 · 최근 로그인 제거)을 따르고 2단계 기능을 얹었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 관리자 2단계: 가맹 마스터 미사용 띠 · 저장 전 연쇄 확인창(가맹 마스터 저장마다 api update-impact 로 센다), 범위 라벨 옆 도움말, 상세의 본인(가맹 관리자 본인이 아니면 [수정]이 보일 때만) · 수정할 수 없는 가맹 관리자 안내 띠, [등록]을 제목 줄로.
 * **Update**: [홈·계정 진입](/home.md) — 로그인 후 홈(여러 점포 화면)을 api `GET /home/summary` · `GET /home/pending` 에 붙였다(WHALEERP-307~310). 미조치 정의를 운영 정책 HOM-03(근로계약 수정 요청, 연결 확인 필요 없음)에 맞추고, 점포별 현황 표의 전체 · 직영 · 가맹 탭을 목업 · 데모에서 뺐다(HOME-8, 2026-10-27 재영).
 * **Update**: main 병합(front ivysaur, main 최신까지): okf/log 충돌은 양쪽 기록을 살렸고, 데모 HTML 은 합쳐진 원본으로 다시 빌드했다. api 타입은 git 이 합친 그대로 둔다 — main 의 타입은 api weepinbell 기준이라 지금 api main 으로 다시 만들면 BP 공통코드 `manageOwnerCode` 에서 PLATFORM_FIXED 가 빠져 main 의 bp-code-drafts 가 깨진다(api main 이 BP 공통코드에서 플랫폼고정을 숨긴 뒤 front 가 아직 맞추지 않았다).
 * **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) — 보정 창에 「다음 날 퇴근」 체크(api `checkOutNextDay` 로 늘 보낸다, 퇴근이 출근보다 이르면 고정)와 저장할 날 안내, 출근 없는 퇴근에 밤 출근을 채우면 「전날 … 출근으로 저장합니다」. 짐작 안내(keptCheckOutNote)를 지웠다. api 타입을 다시 만들었다(PR #159 재영 리뷰).
