@@ -138,4 +138,17 @@ function storeBulkDialog(A, id, { stores, picked }) {
 }
 
 // 화면 아래 가운데 버튼 줄
+// 권한 그룹 삭제 확인창의 연결 사용자 표 — 아이디 · 이름 · 계정 상태(사용 · 미사용 배지). 다섯 명까지 보이고 넘으면 그 안에서 스크롤(머리 42 + 줄 46 × 5 + 선).
+// 앱 role-delete-dialog.tsx 와 같다(2026-10-27 사용자 지정 — 전엔 「아이디 | 이름」을 옅은 회색으로 이어 붙였다). 표본 글자는 「아이디 이름」 또는 「아이디 이름(미사용)」
+export const linkedUsersTable = (users) =>
+  `<div class="max-h-[274px] overflow-y-auto overscroll-contain">${ui.dataTable(
+    [{ header: "아이디", align: "left" }, { header: "이름", align: "left" }, { header: "계정 상태", width: "w-[100px]" }],
+    users.map((u) => {
+      const [id, ...rest] = u.split(" ");
+      const raw = rest.join(" ");
+      const off = raw.includes("(미사용)");
+      return [id, raw.replace("(미사용)", "").trim() || "-", ui.badge(off ? "off" : "on", off ? "미사용" : "사용")];
+    }),
+  )}</div>`;
+
 export const buttons = (...b) => `<div class="flex justify-center gap-[6px]">${b.join("")}</div>`;

@@ -131,7 +131,7 @@ export default ({ A, R }) => {
 
   // 삭제 확인창 — BP 관리자 그룹마다. 대체 후보는 같은 BP·같은 유형의 다른 그룹이다.
   // 앱 role-delete-dialog.tsx 와 같다(2026-10-26): 480px, 권한명 · 연결 사용자 두 줄(라벨 84px), 연결 사용자는 「N명」 아래 한 사람씩
-  // 「아이디 | 이름」(다섯 명 넘으면 그 안에서 스크롤), 연결 사용자가 있으면 대체 권한을 골라야 [삭제]가 켜진다(data-needs-choice · erp.js)
+  // 연결 사용자는 「N명」만 두고 그 아래 표(아이디 · 이름 · 계정 상태, 다섯 명 넘으면 그 안에서 스크롤 — c.linkedUsersTable, 2026-10-27), 연결 사용자가 있으면 대체 권한을 골라야 [삭제]가 켜진다(data-needs-choice · erp.js)
   const del = {};
   const delDialogs = GROUPS.filter((g) => g[0] === "BP 관리자")
     .map(([type, code, name, , , , , , , , users]) => {
@@ -142,10 +142,11 @@ export default ({ A, R }) => {
         ? c.kv(
             [
               nameRow,
-              ["연결 사용자", `<p>${users.length}명</p><ul class="mt-[4px] flex max-h-[118px] flex-col gap-[2px] overflow-y-auto text-erp-label">${users.map((u) => `<li class="h-[22px] shrink-0 truncate leading-[22px]">${u.replace(" ", " | ").replace("(미사용)", " (미사용)")}</li>`).join("")}</ul>`],
+              ["연결 사용자", `${users.length}명`],
             ],
             84,
           ) +
+          c.linkedUsersTable(users) +
           ui.field(c.req("대체 권한"), ui.select(["선택하세요", ...others])) +
           band("변경된 권한은 다시 로그인하지 않아도, 사용자가 화면을 새로고침하거나 이동하면 적용됩니다.")
         : c.kv([nameRow, ["연결 사용자", "없음"]], 84) + `<div class="text-erp-label"><p>연결된 사용자가 없어 바로 삭제할 수 있습니다.</p><p>삭제된 권한 그룹은 복구할 수 없습니다.</p></div>`;

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Button, ConfirmDialog, Field, Select } from "@/components/common";
+import { Badge, Button, ConfirmDialog, DataTable, Field, Select, type Column } from "@/components/common";
 import { EASE_OUT } from "@/components/common/theme";
 import type { DeletionCandidates } from "@/lib/platform-role-groups";
 import type { ActionResult } from "@/lib/role-group-actions";
@@ -86,6 +86,15 @@ export function RoleDeleteDialog({
     });
 
   const admins = data?.admins ?? [];
+  const userColumns: Column<(typeof admins)[number]>[] = [
+    { header: "아이디", align: "left", cell: (a) => a.loginId },
+    { header: "이름", align: "left", cell: (a) => a.name ?? <span className="text-erp-muted">-</span> },
+    {
+      header: "계정 상태",
+      width: "w-[100px]",
+      cell: (a) => <Badge tone={a.accountStatusCode === "INACTIVE" ? "off" : "on"}>{statusLabel(a.accountStatusCode)}</Badge>,
+    },
+  ];
   const noCandidate = admins.length > 0 && data?.candidates.length === 0;
   const ready = Boolean(data) && !noCandidate && (admins.length === 0 || Boolean(replacement));
 
@@ -137,25 +146,19 @@ export function RoleDeleteDialog({
               {!data ? (
                 <span className="text-erp-muted">{busy ? "불러오는 중입니다" : "—"}</span>
               ) : admins.length ? (
-                // 몇 명인지 먼저, 그 아래에 한 사람씩 줄을 바꿔 보인다. 다섯 명까지 보이고 넘으면 이 목록 안에서 스크롤한다(2026-10-15) —
-                // 줄 높이 22 × 5 + 사이 2 × 4 = 118
-                <>
-                  <p>{admins.length.toLocaleString("ko-KR")}명</p>
-                  <ul className="mt-[4px] flex max-h-[118px] flex-col gap-[2px] overflow-y-auto text-erp-label">
-                    {admins.map((a) => (
-                      <li key={a.adminAccountId} className="h-[22px] shrink-0 truncate leading-[22px]">
-                        {/* 아이디 | 사용자명 — 이름이 없으면 아이디만 */}
-                        {a.name ? `${a.loginId} | ${a.name}` : a.loginId}
-                        {a.accountStatusCode === "INACTIVE" && ` (${statusLabel("INACTIVE")})`}
-                      </li>
-                    ))}
-                  </ul>
-                </>
+                `${admins.length.toLocaleString("ko-KR")}명`
               ) : (
                 "없음"
               )}
             </dd>
           </dl>
+          {/* 연결 사용자는 표로(아이디 · 이름 · 계정 상태) — 전엔 「아이디 | 이름」을 옅은 회색으로 이어 붙였다(2026-10-27 사용자 지정).
+              다섯 명까지 보이고 넘으면 이 안에서 세로로 스크롤한다 — 머리 42 + 줄 46 × 5 + 선(BP 관리자 상세 대상 점포와 같다) */}
+          {admins.length > 0 && (
+            <div className="max-h-[274px] overflow-y-auto overscroll-contain">
+              <DataTable columns={userColumns} rows={admins} rowKey={(a) => a.adminAccountId} />
+            </div>
+          )}
           {/* 두 줄로 나눠 보인다(2026-10-26 사용자 지정) */}
           {data && admins.length === 0 && (
             <div className="text-erp-label">
@@ -163,8 +166,9 @@ export function RoleDeleteDialog({
               <p>삭제된 권한 그룹은 복구할 수 없습니다.</p>
             </div>
           )}
+          {/* 삭제를 막는 이유 — 플랫폼 메뉴 관리의 미사용 안내와 같은 빨간 테두리 · 연한 빨간 바탕 상자(2026-10-27 사용자 지정 — 전엔 빨간 글자만) */}
           {noCandidate && (
-            <p className="whitespace-pre-line text-erp-off">{noCandidateText}</p>
+            <p className="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] whitespace-pre-line text-erp-off">{noCandidateText}</p>
           )}
           {data && admins.length > 0 && !noCandidate && (
             <>

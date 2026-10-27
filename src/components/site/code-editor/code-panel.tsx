@@ -126,6 +126,21 @@ export function FieldErrors({ messages }: { messages: string[] }) {
   );
 }
 
+/**
+ * 아직 저장하지 않은 변경 안내 — 표 위에 한 줄. 놓치면 안 되는 안내라 플랫폼 메뉴 관리의 「미사용으로 변경하면 …」 안내와 같은
+ * 빨간 테두리 · 연한 빨간 바탕으로 둔다(2026-10-27 사용자 지정 — 전엔 처리 결과 안내와 같은 회색). 표시 순서를 옮긴 뒤 보인다.
+ */
+/** 표시 순서를 옮긴 뒤 안내 — 플랫폼 · BP 상세 코드가 같이 쓴다(2026-10-27 사용자 지정 — 전엔 「표시 순서를 바꿨습니다 — 저장을 눌러야 반영됩니다.」) */
+export const REORDERED = "표시 순서가 변경되었습니다. 저장 시 반영됩니다.";
+
+export function PendingNotice({ message }: { message: string }) {
+  return (
+    <p role="status" className="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off">
+      {message}
+    </p>
+  );
+}
+
 // 처리 결과 안내 — 표 위에 한 줄. 상태 색 없이 표 머리 바탕 · 선만 쓴다.
 export function DoneNotice({ message }: { message: string }) {
   return (
