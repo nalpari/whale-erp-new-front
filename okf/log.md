@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-27
+* **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) · [급여명세서 관리 화면 (구현)](/screens/payslips.md) — 후속(PR #137 리뷰): 보정 창의 고정 안내 「다음 날 퇴근을 고릅니다」는 출근이 있는 짝에만(출근 미등록 줄은 「출근이 퇴근보다 늦거나 같으면 전날 출근입니다」). 가산 스위치의 「고친 연장수당은 그대로」 안내를 지금 칸 값으로 판단한다(저장 전에 칸을 고쳐도 안내와 결과가 맞게, api 와 같은 기준).
 * **Update**: [홈·계정 진입](/home.md) — 로그인 후 홈(여러 점포 화면)을 api `GET /home/summary` · `GET /home/pending` 에 붙였다(WHALEERP-307~310). 미조치 정의를 운영 정책 HOM-03(근로계약 수정 요청, 연결 확인 필요 없음)에 맞추고, 점포별 현황 표의 전체 · 직영 · 가맹 탭을 목업 · 데모에서 뺐다(HOME-8, 2026-10-27 재영).
 * **Update**: main 병합(front ivysaur, main 최신까지): okf/log 충돌은 양쪽 기록을 살렸고, 데모 HTML 은 합쳐진 원본으로 다시 빌드했다. api 타입은 git 이 합친 그대로 둔다 — main 의 타입은 api weepinbell 기준이라 지금 api main 으로 다시 만들면 BP 공통코드 `manageOwnerCode` 에서 PLATFORM_FIXED 가 빠져 main 의 bp-code-drafts 가 깨진다(api main 이 BP 공통코드에서 플랫폼고정을 숨긴 뒤 front 가 아직 맞추지 않았다).
 * **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) — 보정 창에 「다음 날 퇴근」 체크(api `checkOutNextDay` 로 늘 보낸다, 퇴근이 출근보다 이르면 고정)와 저장할 날 안내, 출근 없는 퇴근에 밤 출근을 채우면 「전날 … 출근으로 저장합니다」. 짐작 안내(keptCheckOutNote)를 지웠다. api 타입을 다시 만들었다(PR #159 재영 리뷰).
