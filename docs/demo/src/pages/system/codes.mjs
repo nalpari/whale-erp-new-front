@@ -104,9 +104,9 @@ export default ({ A, R }) => {
   const groupCols = [
     { header: "그룹 코드", width: "w-[170px]", align: "left" },
     { header: "그룹명", align: "left" },
-    { header: "관리 주체", width: "w-[140px]" }, // 추가 행 선택칸에 ‘플랫폼고정’이 잘리지 않는 폭(2026-10-12)
+    { header: "관리주체", width: "w-[140px]" }, // 추가 행 선택칸에 ‘플랫폼고정’이 잘리지 않는 폭(2026-10-12)
     { header: "BP 적용", width: "w-[130px]" },
-    { header: "사용 상태", width: "w-[100px]" },
+    { header: "사용여부", width: "w-[100px]" },
   ];
   const groupRows = GROUPS.map(([code, name, owner, bp], i) => [
     i === 0 ? `<b class="font-semibold" aria-current="true">${code}</b>` : ui.link(code, "#"),
@@ -125,7 +125,7 @@ export default ({ A, R }) => {
         [
           [codeField("그룹 코드", "그룹 코드"), true],
           [ui.textField({ placeholder: "그룹명", "aria-label": "그룹명" }), true],
-          [ui.select(["선택", "플랫폼고정", "플랫폼제공"], { "aria-label": "관리 주체" })],
+          [ui.select(["선택", "플랫폼고정", "플랫폼제공"], { "aria-label": "관리주체" })],
           [""],
           [x.toggle("사용", true)],
         ],
@@ -139,7 +139,7 @@ export default ({ A, R }) => {
     { header: "상세 코드", width: "w-[220px]", align: "left" },
     { header: "코드명", align: "left" },
     { header: "표시 순서", width: "w-[90px]" },
-    { header: "사용 상태", width: "w-[120px]" },
+    { header: "사용여부", width: "w-[120px]" },
   ];
   const codeRows = SERVICES.map(([code, name, on = true], i) => [
     handle,

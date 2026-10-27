@@ -139,7 +139,7 @@ function MenuBody({ role, reasons, actions, note, onClose }: BodyProps) {
         : (() => {
             const first = tree?.services.flatMap((sv) => sv.menus.flatMap((m) => blockedReasonsOf(m)))[0];
             // 플랫폼 마스터(PM_FIXED)는 안내 문장 전체를 따로 둔다 — enum 한글(「플랫폼 마스터 권한은 전체 메뉴 허용 고정」)에 덧붙이면 뜻이 잘 안 읽혔다(2026-10-26 사용자 지정)
-            if (first === "SELF_LINKED") return "본인 계정에 연결된 권한 그룹이라 수정할 수 없습니다."; // 상세 띠와 같은 문장(2026-10-26 사용자 지정)
+            if (first === "SELF_LINKED") return "본인 계정에 연결된 권한그룹은 수정할 수 없습니다."; // 상세 띠와 같은 문장(2026-10-26 사용자 지정)
             if (first === "PM_FIXED") return "플랫폼마스터는 시스템 최상위 권한으로, 모든 메뉴의 접근·관리 권한이 자동 부여되며 현재 화면에서는 조작할 수 없습니다.";
             return first ? `${reasonLabel(reasons, first, "고칠 수 없는 권한")} — 메뉴 권한을 볼 수만 있습니다.` : "이 권한의 메뉴 권한은 볼 수만 있습니다.";
           })();

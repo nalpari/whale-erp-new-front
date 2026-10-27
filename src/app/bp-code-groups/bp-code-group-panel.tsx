@@ -51,7 +51,7 @@ export function BpCodeGroupPanel({
         ),
     },
     { header: "그룹명", align: "left", cell: (g) => g.groupName },
-    { header: "관리 주체", width: "w-[110px]", cell: (g) => <Tag>{ownerLabel(g.manageOwnerCode)}</Tag> },
+    { header: "관리주체", width: "w-[110px]", cell: (g) => <Tag>{ownerLabel(g.manageOwnerCode)}</Tag> },
   ];
 
   return (

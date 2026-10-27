@@ -268,7 +268,7 @@ export function CodeItemPanel({
     // 새 행은 맨 끝에 붙는다 — 저장한 뒤 끌어서 옮긴다
     { header: "표시 순서", width: "w-[90px]", cell: (d) => d.sortOrder },
     {
-      header: "사용 상태",
+      header: "사용여부",
       width: "w-[120px]",
       cell: (d) =>
         d.deleted ? (
@@ -278,7 +278,7 @@ export function CodeItemPanel({
             label="사용"
             checked={d.status === "ACTIVE"}
             onChange={(e) => update(d.key, { status: e.target.checked ? "ACTIVE" : "INACTIVE" })}
-            aria-label={`${rowName(d)} 사용 상태`}
+            aria-label={`${rowName(d)} 사용여부`}
           />
         ) : (
           <Badge tone={d.status === "ACTIVE" ? "on" : "off"}>{d.status === "ACTIVE" ? "사용" : "미사용"}</Badge>

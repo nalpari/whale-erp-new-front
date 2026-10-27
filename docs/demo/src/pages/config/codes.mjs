@@ -43,7 +43,7 @@ export default ({ A, R }) => {
   const groupCols = [
     { header: "그룹 코드", width: "w-[170px]", align: "left" },
     { header: "그룹명", align: "left" },
-    { header: "관리 주체", width: "w-[110px]" },
+    { header: "관리주체", width: "w-[110px]" },
   ];
   const groupRows = GROUPS.map(([code, name, owner, pick], i) => [
     i === SELECTED ? `<b class="font-semibold" aria-current="true">${code}</b>` : pick ? ui.link(code, "#") : code,
@@ -62,8 +62,8 @@ export default ({ A, R }) => {
     { header: "상세 코드", width: "w-[150px]", align: "left" },
     { header: "코드명", align: "left" },
     { header: "표시 순서", width: "w-[90px]" },
-    { header: "사용 상태", width: "w-[110px]" },
-    { header: "관리 주체", width: "w-[110px]" },
+    { header: "사용여부", width: "w-[110px]" },
+    { header: "관리주체", width: "w-[110px]" },
   ];
   const codeRows = CODES.map(([code, name, owner], i) => [handle, code, ui.textField({ value: name, "aria-label": "코드명" }), i + 1, x.toggle("사용", true), c.tag(owner)]);
   const right = c.card(

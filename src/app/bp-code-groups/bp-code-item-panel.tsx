@@ -239,7 +239,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
     },
     { header: "표시 순서", width: "w-[90px]", cell: (d) => d.sortOrder },
     {
-      header: "사용 상태",
+      header: "사용여부",
       width: "w-[110px]",
       cell: (d) =>
         d.deleted ? (
@@ -249,14 +249,14 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
             label="사용"
             checked={d.status === "ACTIVE"}
             onChange={(e) => update(d.key, { status: e.target.checked ? "ACTIVE" : "INACTIVE" })}
-            aria-label={`${rowName(d)} 사용 상태`}
+            aria-label={`${rowName(d)} 사용여부`}
           />
         ) : (
           <Badge tone={d.status === "ACTIVE" ? "on" : "off"}>{d.status === "ACTIVE" ? "사용" : "미사용"}</Badge>
         ),
     },
     {
-      header: "관리 주체",
+      header: "관리주체",
       width: "w-[110px]",
       // 새 행은 BP전용으로 저장된다(api 가 정한다)
       cell: (d) => <Tag>{ownerLabel(d.manageOwnerCode)}</Tag>,

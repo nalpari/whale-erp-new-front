@@ -147,7 +147,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
         {/* 조회 권한만 있으면 이유 띠 없이 상세로만 보인다 */}
         {/* 본인 연결(SELF_LINKED)은 api 이유 문구(「본인이 연결된 권한」) 대신 문장으로 풀어 쓴다(2026-10-26 사용자 지정) */}
         {can.update && role.editBlockedReason && (
-          <InfoBand>{role.editBlockedReason === "SELF_LINKED" ? "본인 계정에 연결된 권한 그룹이라 수정할 수 없습니다." : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한 그룹입니다")}</InfoBand>
+          <InfoBand>{role.editBlockedReason === "SELF_LINKED" ? "본인 계정에 연결된 권한그룹은 수정할 수 없습니다." : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한 그룹입니다")}</InfoBand>
         )}
         {rows.length > 0 && <DetailTable rows={rows} />}
         {record}

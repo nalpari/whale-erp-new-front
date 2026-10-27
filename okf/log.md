@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-10-27
+* **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 공통 Button `danger` · ConfirmDialog `confirmVariant` 가 1팀 동의를 받았다(DESIGN.md Buttons 에 Danger 추가). 같은 날 1팀이 DetailTable 라벨 110px, 점포 카드 모서리 8px, 트리 표 머리(subtle) · 고른 줄(current), ReadonlyCard, 스위치 알약형에도 동의해 DESIGN.md 와 코드 주석의 「1팀 확인 필요」 표시를 동의 기록으로 바꿨다. 플랫폼 관리자 상세의 버튼 줄 위 선을 없앴다(데모의 BP 마스터 · BP 관리자 · 휴일 상세도 같이).
+
 ## 2026-10-26
 * **Update**: main 병합(front raichu, main #134 까지): okf 충돌은 양쪽 기록을 살렸다.
 * **Update**: main 병합(front raichu, main #132 까지): okf 충돌은 양쪽 기록을 살렸다.

@@ -167,7 +167,7 @@ export function roleSide({ roles, own, master, selected, del = {}, card }) {
     return (
       `<div data-role-view="${code}" class="flex flex-col gap-[18px]"${locked ? "" : " data-dirty-scope"}${code === selected ? "" : " hidden"}>` +
       sideHead(`권한 그룹 상세<span class="ml-[10px] inline-flex items-center gap-[6px] align-middle">${c.tag(`<span class="font-normal">권한유형 ·</span> <b class="font-semibold">${type}</b>`)}<span class="text-[14px] font-normal text-erp-label">${code}</span></span>`) +
-      (locked ? band("본인 계정에 연결된 권한 그룹이라 수정할 수 없습니다.") : "") +
+      (locked ? band("본인 계정에 연결된 권한그룹은 수정할 수 없습니다.") : "") +
       fields +
       (rows.length ? plainTable(rows) : "") +
       recordCard({ reg: [reg, regBy], mod: [mod, modBy] }) +

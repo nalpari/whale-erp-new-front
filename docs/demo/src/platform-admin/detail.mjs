@@ -91,7 +91,7 @@ function platformAdminDetailBody(A, R) {
   const actions = `${x.dialogTrigger("삭제", deleteId, "soft")}${editBtn}${x.dialogTrigger("변경이력", histId, "soft")}`;
   // 이름은 맨 위에 혼자, 기능 버튼은 닫기까지 모두 맨 아래로(BP 관리자 상세 패널과 같다)
   const head = `<h2 class="text-[18px] font-semibold whitespace-nowrap text-erp-ink">${NAME}</h2>`;
-  const buttons = `<div class="flex flex-wrap items-center gap-[6px] border-t border-erp-panel-line pt-[16px]">${ui.button("닫기", { variant: "off", "data-close": true })}<span class="flex-1"></span>${actions}</div>`; // 닫기는 맨 왼쪽(상세 슬라이드 공통 · 2026-10-08)
+  const buttons = `<div class="flex flex-wrap items-center gap-[6px]">${ui.button("닫기", { variant: "off", "data-close": true })}<span class="flex-1"></span>${actions}</div>`; // 닫기는 맨 왼쪽(상세 슬라이드 공통 · 2026-10-08)
 
   return head + info + buttons + resetDialog + deleteDialog + historyDialog;
 }

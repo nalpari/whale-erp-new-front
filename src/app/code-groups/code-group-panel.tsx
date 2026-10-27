@@ -123,7 +123,7 @@ export function CodeGroupPanel({
       const formatError = codeFormatError(code);
       if (formatError) next.code = `새 그룹 코드 — ${formatError}`;
       else if (duplicateCodes(groups.map((g) => g.groupCode), [code]).size) next.code = `이미 있는 그룹 코드입니다: ${code}`;
-      if (!added.manageOwnerCode) next.owner = "새 그룹 — 관리 주체를 골라 주세요.";
+      if (!added.manageOwnerCode) next.owner = "새 그룹 — 관리주체를 골라 주세요.";
     }
     return next;
   };
@@ -239,7 +239,7 @@ export function CodeGroupPanel({
       },
     },
     {
-      header: "관리 주체",
+      header: "관리주체",
       // 새 행의 선택칸(글자 + 오른쪽 화살표 30)에 ‘플랫폼고정’이 잘리지 않는 폭
       width: "w-[140px]",
       cell: (d) =>
@@ -247,7 +247,7 @@ export function CodeGroupPanel({
           <Select
             value={d.manageOwnerCode}
             onChange={(e) => update("", { manageOwnerCode: e.target.value as ManageOwnerCode })}
-            aria-label="새 그룹 관리 주체"
+            aria-label="새 그룹 관리주체"
             aria-invalid={invalid("owner")}
           >
             <option value="">선택</option>
@@ -278,7 +278,7 @@ export function CodeGroupPanel({
         ),
     },
     {
-      header: "사용 상태",
+      header: "사용여부",
       width: "w-[100px]",
       cell: (d) =>
         manage || d.added ? (
@@ -286,7 +286,7 @@ export function CodeGroupPanel({
             label="사용"
             checked={d.status === "ACTIVE"}
             onChange={(e) => update(d.added ? "" : d.groupCode, { status: e.target.checked ? "ACTIVE" : "INACTIVE" })}
-            aria-label={`${d.added ? "새 그룹" : d.groupCode} 사용 상태`}
+            aria-label={`${d.added ? "새 그룹" : d.groupCode} 사용여부`}
           />
         ) : (
           <Badge tone={d.status === "ACTIVE" ? "on" : "off"}>{d.status === "ACTIVE" ? "사용" : "미사용"}</Badge>
