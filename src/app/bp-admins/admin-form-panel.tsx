@@ -21,7 +21,7 @@ import {
   type BpAdminForm,
   type BpAdminFormField,
 } from "@/lib/bp-admin-form";
-import { allowsAllStores, creatableRolesOf, editLocksOf } from "@/lib/bp-admin-rules";
+import { allowsAllStores, andOthers, cascadeOf, creatableRolesOf, editLocksOf } from "@/lib/bp-admin-rules";
 import type {
   BpAdminDetail,
   BpAdminRoleGroup,
@@ -162,7 +162,8 @@ export function AdminFormPanel(props: Props) {
   const optionsReady = options?.key === optionsKey;
 
   const editing = mode === "edit" ? props.admin : null;
-  // 사용 중인 가맹 마스터를 미사용으로 고르면 함께 멈출 가맹 관리자를 미리 센다 — 받은 값은 그 계정 · 연 횟수 · 최신 정보에 묶는다
+  // 사용 중인 가맹 마스터를 미사용으로 고르면 함께 멈출 가맹 관리자를 미리 센다 — 받은 값은 그 계정 · 연 횟수 · 최신 정보에 묶는다.
+  // 점포는 원래 값으로 보낸다: 띠는 미사용 수만 보이고 api 는 그 수를 점포와 상관없이 센다. 점포까지 반영한 수는 저장할 때 다시 센다
   const watchDeactivation = open && editing?.roleTypeCode === "FM" && editing.accountStatus === "ACTIVE" && form.accountStatus === "INACTIVE";
   const impactKey = `${editingId}|${openCount}|${updatedAt}`;
   const [deactivation, setDeactivation] = useState<{ key: string; impact: BpAdminUpdateImpact } | null>(null);
@@ -175,6 +176,8 @@ export function AdminFormPanel(props: Props) {
       .then((result) => {
         if (!live) return;
         if (result.ok) setDeactivation({ key: impactKey, impact: result });
+        // 로그인이 끝났으면 띠가 없는 것이 「연결된 계정 없음」으로 읽히지 않게 알린다(중복 확인과 같다)
+        else if (result.status === 401) setFailure(result.message);
         else console.warn("함께 미사용이 될 가맹 관리자를 세지 못했습니다 — 저장할 때 다시 센다", result.status, result.message);
       })
       .catch((error: unknown) => console.warn("함께 미사용이 될 가맹 관리자 조회 호출 실패 — 저장할 때 다시 센다", error));
@@ -185,7 +188,12 @@ export function AdminFormPanel(props: Props) {
   const deactivationImpact = watchDeactivation && deactivation?.key === impactKey ? deactivation.impact : null;
 
   /** 저장 전 확인창 — 함께 바뀌는 가맹 관리자가 있을 때만 뜬다. 보낼 값을 쥐고 있다가 [저장]에서 그대로 보낸다 */
-  const [cascade, setCascade] = useState<{ input: UpdateBpAdminInput; impact: BpAdminUpdateImpact; removed: BpAdminStore[] } | null>(null);
+  const [cascade, setCascade] = useState<{
+    input: UpdateBpAdminInput;
+    impact: BpAdminUpdateImpact;
+    deactivating: boolean;
+    removed: BpAdminStore[];
+  } | null>(null);
   // 확인창은 네이티브 <dialog>(최상위 레이어)라 뒤로 가기처럼 클릭 아닌 길로 패널이 닫히면 혼자 남는다 — 함께 닫는다
   if (!open && cascade) setCascade(null);
 
@@ -281,16 +289,18 @@ export function AdminFormPanel(props: Props) {
       const admin = props.admin;
       const input = toUpdateBpAdminInput(form, admin.updatedAt);
       // 가맹 마스터를 미사용으로 바꾸거나 내 범위 안 점포를 빼면 저장 전에 함께 바뀔 가맹 관리자를 센다
-      const removed = admin.roleTypeCode === "FM" ? admin.stores.filter((s) => !s.isOutOfScope && !input.storeIds.includes(s.storeId)) : [];
-      const deactivating = admin.roleTypeCode === "FM" && admin.accountStatus === "ACTIVE" && input.accountStatus === "INACTIVE";
+      const { deactivating, removed } = cascadeOf(admin, input);
       if (deactivating || removed.length) {
         const impact = await getBpAdminUpdateImpactAction(admin.adminAccountId, input).catch((error: unknown) => {
           console.error("BP 관리자 함께 바뀌는 계정 조회 호출 실패", error);
-          return { ok: false as const, status: undefined, message: "함께 바뀌는 계정을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요." };
+          return { ok: false as const, status: undefined, message: "" };
         });
-        // 모르고 저장하면 가맹 관리자가 말없이 바뀔 수 있다 — 세지 못하면 저장하지 않는다
-        if (!impact.ok) return setFailure(impact.message);
-        if (impact.deactivatedCount || impact.unmappedCount) return setCascade({ input, impact, removed });
+        // 모르고 저장하면 가맹 관리자가 말없이 바뀔 수 있다 — 세지 못하면 저장하지 않는다. 로그인 만료는 할 일이 다르므로 그 문구를 그대로 둔다
+        if (!impact.ok)
+          return setFailure(
+            impact.status === 401 ? impact.message : `저장하지 않았습니다. 함께 바뀌는 가맹 관리자를 확인하지 못했습니다. ${impact.status ? impact.message : "잠시 후 다시 시도해 주세요."}`,
+          );
+        if (impact.deactivatedCount || impact.unmappedCount) return setCascade({ input, impact, deactivating, removed });
       }
       await submitUpdate(input);
     });
@@ -313,7 +323,8 @@ export function AdminFormPanel(props: Props) {
     });
 
   // 저장하는 동안은 Esc · 바탕 클릭으로도 닫히지 않는다 — 닫히면 저장 결과를 사용자가 못 보고 패널이 먼저 사라진다.
-  // 확인창(<dialog>)이 떠 있으면 Esc 는 그 창만 닫아야 한다 — 패널의 Esc 처리는 data-dismiss-open 만 보고, 확인창은 그 표시가 없다
+  // 확인창(<dialog>)이 떠 있으면 Esc 는 그 창만 닫아야 한다 — 패널은 data-dismiss-open · keydown 의 defaultPrevented 로 거르는데,
+  // 확인창은 그 표시가 없고 Esc 를 cancel 이벤트에서야 막아 패널까지 온다
   const safeClose = () => {
     if (!saving && !document.querySelector("dialog[open]")) onClose();
   };
@@ -601,7 +612,7 @@ export function AdminFormPanel(props: Props) {
         <ConfirmDialog
           open
           title={cascadeTitle(cascade)}
-          confirmLabel={cascade.impact.deactivatedCount && cascade.input.accountStatus === "INACTIVE" ? "미사용으로 저장" : "저장"}
+          confirmLabel={cascade.deactivating ? "미사용으로 저장" : "저장"}
           wide
           busy={saving}
           onConfirm={confirmCascade}
@@ -650,12 +661,9 @@ export function AdminFormPanel(props: Props) {
   );
 }
 
-/** 「moriyn 외 1명」 — 아이디는 첫 계정만 보인다(목업 확정 2026-09-29) */
-const andOthers = (first: string | null, count: number) => `${first ?? ""}${count > 1 ? ` 외 ${count - 1}명` : ""}`;
-
-/** 확인창 제목 — 점포 빼기 · 미사용 중 이번 저장이 하는 것(목업 pop-cascade) */
-const cascadeTitle = ({ input, removed }: { input: UpdateBpAdminInput; removed: BpAdminStore[] }) =>
-  removed.length && input.accountStatus === "INACTIVE"
+/** 확인창 제목 — 점포 빼기 · 미사용 중 이번 저장이 하는 것(목업 pop-cascade). 버튼 문구와 같은 deactivating 을 본다 */
+const cascadeTitle = ({ deactivating, removed }: { deactivating: boolean; removed: BpAdminStore[] }) =>
+  removed.length && deactivating
     ? "가맹 마스터 점포를 빼고 미사용으로 저장"
     : removed.length
       ? "가맹 마스터 점포를 빼고 저장"

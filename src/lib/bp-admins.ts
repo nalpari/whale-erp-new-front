@@ -72,7 +72,7 @@ export type BpAdminHistory = {
 };
 export type BpAdminHistoryList = { items: BpAdminHistory[]; total: number };
 
-/** 가맹 마스터를 저장하면 함께 바뀌는 가맹 관리자 — 확인창에 첫 아이디와 「외 N명」으로 보인다 */
+/** 가맹 마스터를 저장하면 함께 바뀌는 가맹 관리자 — 상태 칸 아래 띠 · 저장 전 확인창에 첫 아이디와 「외 N명」으로 보인다 */
 export type BpAdminUpdateImpact = {
   /** 함께 미사용이 되는 사용 중 가맹 관리자 수 */
   deactivatedCount: number;
@@ -166,7 +166,7 @@ export async function getBpAdminHistories(id: number, page = 1): Promise<BpAdmin
  */
 export async function getBpAdminUpdateImpact(id: number, input: Pick<UpdateBpAdminInput, "accountStatus" | "storeIds">): Promise<BpAdminUpdateImpact> {
   const params = new URLSearchParams({ accountStatus: input.accountStatus });
-  // 비우면 api 가 점포를 모두 빼는 것으로 본다 — 빈 값(storeIds=)을 보내지 않는다
+  // 점포를 모두 빼면 storeIds 를 싣지 않는다 — api 는 storeIds 가 없으면 「모두 뺌」으로 센다(빈 값 storeIds= 은 보내지 않는다)
   if (input.storeIds.length) params.set("storeIds", input.storeIds.join(","));
   return request(`/bp-admins/${id}/update-impact?${params}`, await json("GET"));
 }

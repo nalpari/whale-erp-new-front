@@ -20,6 +20,7 @@ import { unknownResult } from "./bp-admin-parts";
 // 계정 상태 · 역할 · 권한 그룹은 제목 줄 꼬리표로 보인다(2026-10-07). 가맹 관리자는 기본정보에 연결 가맹 마스터 줄을 둔다(2026-10-23).
 // [수정] · [비밀번호 초기화]는 메뉴 수정 권한과 api 가 준 actions 를 함께 본다(bp-admin-rules.ts) — 막는 것은 api 다.
 // 미사용 계정도 초기화할 수 있다(목업 기준 — 플랫폼 관리자와 다르다). 본인 계정은 초기화 버튼을 막는다(내 정보에서 바꾼다).
+// 본인 계정 · 수정할 수 없는 가맹 관리자 계정은 버튼을 막은 이유를 제목 아래 띠로 보인다(2026-10-27).
 
 export function AdminDetailPanel({
   open,
@@ -157,7 +158,7 @@ function DetailBody({
         </Tag>
       </h2>
       {failure && <FailedBand message={failure} />}
-      {/* 버튼을 숨기거나 막은 이유(목업 admins-detail, 남이 연 가맹 관리자 문구는 2026-10-27 사용자 지정) */}
+      {/* 버튼을 숨기거나 막은 이유(목업 admins-detail). 연결 가맹 마스터가 아닌 사람이 보는 가맹 관리자 문구는 2026-10-27 사용자 지정 */}
       {admin.actions.isSelf ? (
         admin.roleTypeCode === "FA" ? (
           <InfoBand>
