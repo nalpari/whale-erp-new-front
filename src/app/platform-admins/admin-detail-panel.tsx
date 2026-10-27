@@ -2,12 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type RefObject } from "react";
-import { Badge, Button, ConfirmDialog, DetailTable, SlidePanel, Tag, useToast, type DetailRow } from "@/components/common";
+import { Badge, Button, ConfirmDialog, DetailTable, FormRow, ReadonlyCard, ReadonlyValue, SlidePanel, useToast, type DetailRow } from "@/components/common";
+import { useCodeLabel } from "@/components/site/code-label";
+import { HeadValues } from "@/components/site/head-values";
 import { useAccount, usePagePermission } from "@/components/site/session-gate";
 import { formatDateTime, formatPhone } from "@/lib/format";
 import { adminActionsOf } from "@/lib/platform-admin-actions";
 import type { PlatformAdminDetail } from "@/lib/platform-admins";
-import { deletePlatformAdminAction, resetPlatformAdminPasswordAction } from "./actions";
+import { deletePlatformAdminAction, getPlatformAdminHistoriesAction, resetPlatformAdminPasswordAction } from "./actions";
 import { Blocked, FailedBand, unknownResult, WhoList } from "./admin-parts";
 import { HistoryButton } from "./history-dialog";
 
@@ -62,7 +64,7 @@ export function AdminDetailPanel({
       ) : (
         <>
           {detail && <FailedBand message={detail.failed} />}
-          <div className="flex border-t border-erp-panel-line pt-[16px]">
+          <div className="flex">
             <Button variant="off" onClick={onClose}>
               닫기
             </Button>
@@ -132,10 +134,11 @@ function DetailBody({
 
   const address = [admin.zipCode, admin.address, admin.addressDetail].filter((line): line is string => Boolean(line));
   const muted = (text: string) => <span className="text-erp-muted">{text}</span>;
+  // 등록 · 최종수정 카드의 값 — 일시는 굵게, 사람은 회색 · 보통 굵기로 「일시 · 사람」(권한 그룹 상세 · BP 관리자 상세와 같다)
   const when = (at: string, who: string) => (
-    <span className="truncate">
-      {formatDateTime(at)} <span className="text-erp-label">· {who}</span>
-    </span>
+    <>
+      {formatDateTime(at)} <span className="font-normal text-erp-label">· {who}</span>
+    </>
   );
   const rows: DetailRow[] = [
     { label: "아이디", value: admin.loginId },
@@ -174,34 +177,50 @@ function DetailBody({
         null
       ),
     },
-    // 최근 로그인 → 등록 → 최종수정 순으로 둔다(2026-10-20 디자인 수정). 일시와 사람은 세로선 대신 「일시 · 사람」으로 —
-    // 권한 그룹 관리와 같은 라벨 · 구분자(2026-10-26 사용자 지정)
+    // 최근 로그인은 표 맨 아래 줄. 등록 · 최종수정은 표 밖 테두리 없는 카드로 둔다(2026-10-27 사용자 지정 — 전엔 표의 두 줄)
     { label: "최근 로그인", value: admin.lastLoginAt ? formatDateTime(admin.lastLoginAt) : muted("로그인 기록 없음") },
-    { label: "등록", value: when(admin.createdAt, admin.createdByName ?? "시스템") },
-    {
-      label: "최종수정",
-      value: admin.updatedByName ? when(admin.updatedAt, admin.updatedByName) : muted("수정한 적 없음"),
-    },
   ];
   // 미사용 전환일시는 상세에 더 보이지 않는다 — 누가 바꿨는지까지는 변경이력에 이미 쌓인다(2026-10-20 피드백).
 
+  // 등록만 한 계정은 수정일시가 등록일시와 같아 등록이 수정처럼 보인다 — 같으면 최종수정은 「-」(BP 관리자 상세와 같다, 2026-10-27 사용자 지정).
+  // 등록 때 두 값이 따로 찍혀 ms 가 어긋날 수 있어 1초 안쪽은 같은 것으로 본다
+  const edited = Math.abs(Date.parse(admin.updatedAt) - Date.parse(admin.createdAt)) >= 1000;
   const who = <WhoList rows={[["아이디", admin.loginId], ["이름", name]]} />;
+  const roleType = useCodeLabel("ROLE_TYPE");
 
   return (
     <div className="flex flex-col gap-[16px]">
-      {/* 이름 옆에 계정 상태와 사용자 권한을 꼬리표로 둔다(데모 상세 · 2026-10-08). 권한 꼬리표는 방패 아이콘 대신
-          라벨을 달아 값만으로는 안 보이던 것을 바로 알게 한다(점포코드 ST000123 처럼 라벨+값, 2026-10-20 디자인 수정). */}
-      <h2 className="flex flex-wrap items-center gap-[6px] text-[18px] font-semibold text-erp-ink">
-        <span className="mr-[4px]">{name}</span>
-        {admin.accountStatus === "ACTIVE" ? <Badge tone="on">사용</Badge> : <Badge tone="off">미사용</Badge>}
-        <Tag>
-          사용자 권한 · <b className="font-semibold">{admin.roleGroup.name}</b>
-        </Tag>
-      </h2>
+      {/* 이름 아랫줄에 「역할 값 | 권한그룹 값 | 상태 배지」 — 공통코드 상세 코드 머리와 같은 모양(2026-10-27 사용자 지정 — 전엔 상태 배지와 「사용자 권한 · 그룹명」 띠지).
+          상태는 라벨 없이 배지만. 이름 길이와 상관없이 두 화면이 같은 자리에 선다. 제목(h2)은 이름만 — 값 줄까지 제목 이름으로 읽히지 않게(리뷰로 찾음) */}
+      <div className="flex flex-col items-start gap-[6px]">
+        <h2 className="text-[18px] font-semibold text-erp-ink">{name}</h2>
+        <span className="text-[14px]">
+          <HeadValues
+            items={[
+              { label: "역할", value: roleType(admin.roleGroup.roleTypeCode) },
+              { label: "권한그룹", value: admin.roleGroup.name },
+              { value: admin.accountStatus === "ACTIVE" ? <Badge tone="on">사용</Badge> : <Badge tone="off">미사용</Badge> },
+            ]}
+          />
+        </span>
+      </div>
       {failure && <FailedBand message={failure} />}
       <DetailTable title="기본정보" rows={rows} />
+      {/* 등록 · 최종수정을 한 줄에 하나씩 — BP 관리자 상세 · 권한 그룹 상세와 같은 테두리 없는 카드(2026-10-27 사용자 지정) */}
+      <ReadonlyCard>
+        <FormRow>
+          <ReadonlyValue label="등록" value={when(admin.createdAt, admin.createdByName ?? "시스템")} bold />
+        </FormRow>
+        <FormRow>
+          <ReadonlyValue
+            label="최종수정"
+            value={edited ? when(admin.updatedAt, admin.updatedByName ?? "시스템") : <span className="font-normal text-erp-muted">-</span>}
+            bold
+          />
+        </FormRow>
+      </ReadonlyCard>
 
-      <div className="flex flex-wrap items-center gap-[6px] border-t border-erp-panel-line pt-[16px]">
+      <div className="flex flex-wrap items-center gap-[6px]">
         <Button variant="off" onClick={onClose}>
           닫기
         </Button>
@@ -218,7 +237,7 @@ function DetailBody({
             수정
           </Button>
         )}
-        <HistoryButton adminId={admin.adminAccountId} panelOpen={panelOpen} />
+        <HistoryButton adminId={admin.adminAccountId} panelOpen={panelOpen} load={getPlatformAdminHistoriesAction} />
       </div>
 
       {/* 고칠 수 없는 계정이면 확인창도 두지 않는다 */}

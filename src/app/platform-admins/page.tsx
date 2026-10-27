@@ -12,7 +12,16 @@ export default async function PlatformAdminsPage({ searchParams }: PageProps<"/p
   const query = parseAdminsQuery(params);
 
   const [list, roleGroups, detail] = await Promise.all([
-    getPlatformAdmins({ page: query.page, keyword: query.keyword, roleGroupId: query.roleGroupId, statuses: query.status && [query.status] }),
+    // 계정 상태를 모두 끄면(NONE) 결과 없음 — api 를 부르지 않는다(2026-10-27 사용자 지정)
+    query.status === "NONE"
+      ? { items: [], total: 0, inactiveCount: 0 }
+      : getPlatformAdmins({
+          page: query.page,
+          pageSize: query.pageSize,
+          keyword: query.keyword,
+          roleGroupId: query.roleGroupId,
+          statuses: query.status && [query.status],
+        }),
     getPlatformRoleGroups(),
     query.admin ? loadDetail(query.admin) : null,
   ]);

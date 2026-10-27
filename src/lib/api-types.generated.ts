@@ -718,6 +718,164 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/bp-admins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 목록. 대상 BP 의 BP 관리자 · 가맹 마스터 · 가맹 관리자, 등록일시 최신순. 가맹 쪽은 본인과 점포가 겹치는 가맹 관리자만. */
+        get: operations["BpAdminsController_list"];
+        put?: never;
+        /** 등록. 늘 사용으로 만들고 1시간짜리 초기 비밀번호를 메일로만 보낸다. 메일이 실패해도 계정은 남는다. */
+        post: operations["BpAdminsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bp-admins/role-groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 권한 그룹 선택지(목록 필터 · 등록 · 수정). `:id` 보다 먼저 둔다. */
+        get: operations["BpAdminsController_roleGroups"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bp-admins/store-options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 점포 선택지. 고를 수 있는 점포만 준다 — 폐점과, 가맹 마스터라면 다른 가맹 마스터 담당 점포는 빠진다. */
+        get: operations["BpAdminsController_storeOptions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bp-admins/login-id-availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 아이디 중복 확인. 등록 화면이 칸을 벗어나거나 Enter 를 칠 때 묻는다. 등록 권한이 필요하다. */
+        get: operations["BpAdminsController_loginIdAvailability"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bp-admins/email-availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 이메일 중복 확인. 아이디와 같은 때(칸을 벗어나거나 Enter) 묻는다. 등록 권한이 필요하다. 소문자로 맞춰 본다. */
+        get: operations["BpAdminsController_emailAvailability"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bp-admins/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 상세. 버튼 판정(actions)을 함께 준다. 볼 수 없는 계정 · BP 마스터 · 다른 BP 계정은 404. */
+        get: operations["BpAdminsController_detail"];
+        /** 수정. 상세에서 받은 updatedAt 을 함께 보낸다 — 그 사이 다른 사람이 고쳤으면 409. */
+        put: operations["BpAdminsController_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bp-admins/{id}/histories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 변경 이력. 최신순. */
+        get: operations["BpAdminsController_histories"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bp-admins/{id}/update-impact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 가맹 마스터 저장 전 확인창의 수 — 함께 미사용이 되는 · 점포 매핑이 빠지는 가맹 관리자. */
+        get: operations["BpAdminsController_updateImpact"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bp-admins/{id}/password-reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 비밀번호 초기화. 새 1시간짜리 임시 비밀번호를 그 계정 이메일로만 보내고 잠금을 푼다. 미사용 계정도 된다.
+         *     응답의 updatedAt 으로 다음 수정을 저장한다 — 초기화가 그 값을 올린다.
+         */
+        post: operations["BpAdminsController_resetPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/bp-code-groups": {
         parameters: {
             query?: never;
@@ -4278,6 +4436,212 @@ export interface components {
             /** @description 실제로 넣은 행 수. BP 에 이미 있던 행은 건너뛰어 세지 않는다. */
             createdCount: number;
         };
+        /** @enum {string} */
+        StoreType: "DIRECT" | "FRANCHISE";
+        /** @enum {string} */
+        AdminAccountStatus: "ACTIVE" | "INACTIVE";
+        /** @enum {string} */
+        BpAdminRole: "BA" | "FM" | "FA";
+        BpAdminRoleGroupDto: {
+            roleTypeCode: components["schemas"]["BpAdminRole"];
+            roleGroupId: number;
+            /**
+             * @description 권한 코드.
+             * @example BA000003
+             */
+            roleCode: string;
+            name: string;
+        };
+        BpAdminSummaryResponseDto: {
+            roleTypeCode: components["schemas"]["BpAdminRole"];
+            accountStatus: components["schemas"]["AdminAccountStatus"];
+            adminAccountId: number;
+            loginId: string;
+            name: string | null;
+            roleGroup: components["schemas"]["BpAdminRoleGroupDto"];
+            /** @description 전체 점포 담당. true 면 storeCount 는 0 */
+            isAllStores: boolean;
+            /** @description 매핑 점포 수(지운 점포 제외) */
+            storeCount: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            lastLoginAt: string | null;
+            /** @description 초기 비밀번호 미발송 — 등록 · 초기화 메일이 나가지 못했다. [비밀번호 초기화]로 다시 보낸다 */
+            isInitialPasswordUnsent: boolean;
+        };
+        BpAdminListResponseDto: {
+            items: components["schemas"]["BpAdminSummaryResponseDto"][];
+            total: number;
+            /** @description 상태 조건과 관계없이 같은 조건의 미사용 계정 수 */
+            inactiveCount: number;
+        };
+        BpAdminRoleGroupListResponseDto: {
+            items: components["schemas"]["BpAdminRoleGroupDto"][];
+        };
+        BpAdminStoreOptionDto: {
+            storeTypeCode: components["schemas"]["StoreType"];
+            storeId: number;
+            storeCode: string;
+            name: string;
+            /** @description NOT_OPERATING · OPERATING — 폐점은 선택지에 없다 */
+            storeStatusCode: string;
+        };
+        BpAdminStoreOptionListResponseDto: {
+            items: components["schemas"]["BpAdminStoreOptionDto"][];
+        };
+        LoginIdAvailabilityResponseDto: {
+            /** @description 쓸 수 있는가. 삭제한 계정의 아이디도 쓸 수 없다. */
+            available: boolean;
+        };
+        BpAdminStoreDto: {
+            storeId: number;
+            storeCode: string;
+            name: string;
+            /** @description 공통코드 STORE_STATUS — NOT_OPERATING · OPERATING · CLOSED */
+            storeStatusCode: string;
+            /** @description 보는 사람의 관리 범위 밖 — 수정에서 「범위 밖 매핑」으로 읽기 전용, 저장해도 남는다 */
+            isOutOfScope: boolean;
+        };
+        BpAdminAccountRefDto: {
+            adminAccountId: number;
+            loginId: string;
+            name: string | null;
+        };
+        BpAdminActionsDto: {
+            isSelf: boolean;
+            canUpdate: boolean;
+            canResetPassword: boolean;
+            canChangeScope: boolean;
+            canChangeRoleGroup: boolean;
+        };
+        BpAdminDetailResponseDto: {
+            roleTypeCode: components["schemas"]["BpAdminRole"];
+            accountStatus: components["schemas"]["AdminAccountStatus"];
+            adminAccountId: number;
+            loginId: string;
+            name: string | null;
+            roleGroup: components["schemas"]["BpAdminRoleGroupDto"];
+            /** @description 전체 점포 담당. true 면 storeCount 는 0 */
+            isAllStores: boolean;
+            /** @description 매핑 점포 수(지운 점포 제외) */
+            storeCount: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            lastLoginAt: string | null;
+            /** @description 초기 비밀번호 미발송 — 등록 · 초기화 메일이 나가지 못했다. [비밀번호 초기화]로 다시 보낸다 */
+            isInitialPasswordUnsent: boolean;
+            phone: string | null;
+            email: string | null;
+            /** Format: date-time */
+            statusChangedAt: string | null;
+            createdByName: string | null;
+            /** Format: date-time */
+            updatedAt: string;
+            updatedByName: string | null;
+            /** @description 이 BP 의 지우지 않은 점포 수 — 「전체 점포 — 지금 N개점」 */
+            bpStoreCount: number;
+            /** @description 일부 점포일 때 매핑 점포, 이름순 */
+            stores: components["schemas"]["BpAdminStoreDto"][];
+            /** @description 가맹 관리자의 연결 가맹 마스터. 다른 역할은 null */
+            franchiseMaster: components["schemas"]["BpAdminAccountRefDto"] | null;
+            /** @description 역할 규칙으로 정한 버튼. 메뉴 권한(수정)은 화면이 함께 본다 */
+            actions: components["schemas"]["BpAdminActionsDto"];
+        };
+        BpAdminHistoryResponseDto: {
+            changeId: number;
+            field: string;
+            beforeValue: string | null;
+            afterValue: string | null;
+            /** Format: date-time */
+            changedAt: string;
+            changedByName: string | null;
+        };
+        BpAdminHistoryListResponseDto: {
+            items: components["schemas"]["BpAdminHistoryResponseDto"][];
+            total: number;
+        };
+        BpAdminUpdateImpactResponseDto: {
+            /** @description 함께 미사용이 되는 사용 중 가맹 관리자 수 */
+            deactivatedCount: number;
+            firstDeactivatedLoginId: string | null;
+            /** @description 점포 매핑이 빠지는 가맹 관리자 수 */
+            unmappedCount: number;
+            firstUnmappedLoginId: string | null;
+        };
+        CreateBpAdminDto: {
+            /** @description 계정 역할. 본사는 BA · FM, 가맹 마스터는 FA 만. 등록 뒤 바꾸지 않는다. */
+            roleTypeCode: components["schemas"]["BpAdminRole"];
+            /**
+             * @description 아이디. 영문 또는 영문 · 숫자 4~20자. 삭제 · 탈퇴한 계정까지 포함해 겹칠 수 없고 바꿀 수 없다.
+             * @example jisu01
+             */
+            loginId: string;
+            /**
+             * @description 이름. 한글 · 영문 2~20자.
+             * @example 한지수
+             */
+            name: string;
+            /**
+             * @description 휴대전화. 하이픈 없이 숫자 10~11자리. 중복 검사는 하지 않는다.
+             * @example 01012345678
+             */
+            phone: string;
+            /**
+             * Format: email
+             * @description 이메일. 소문자로 저장한다. 지우지 않은 사용 · 미사용 관리자 계정끼리 겹칠 수 없다.
+             * @example jisu@whale.test
+             */
+            email: string;
+            /** @description 권한 그룹. BP 관리자는 그 BP 의 BA 그룹, 가맹 마스터는 고정 FM000001, 가맹 관리자는 연결 가맹 마스터의 FA 그룹. */
+            roleGroupId: number;
+            /** @description 전체 점포. BP 관리자에게만, 전체 점포를 맡은 사람만 줄 수 있다. */
+            isAllStores: boolean;
+            /** @description 일부 점포일 때 맡길 점포 — 호출자의 관리 범위 안. 전체 점포면 무시한다. 1000개까지. */
+            storeIds: number[];
+        };
+        CreateBpAdminResponseDto: {
+            adminAccountId: number;
+            /** @description 초기 비밀번호 메일을 보냈는가. false 면 계정은 남고 「미발송」으로 보인다 */
+            isMailSent: boolean;
+        };
+        UpdateBpAdminDto: {
+            /** @description 계정 상태. 가맹 마스터를 미사용으로 바꾸면 연결된 사용 중 가맹 관리자도 미사용이 된다. */
+            accountStatus: components["schemas"]["AdminAccountStatus"];
+            /** @description 상세에서 받은 최종수정일시 그대로. 그 사이 다른 사람이 고쳤으면 저장하지 않고 409. */
+            updatedAt: string;
+            /**
+             * @description 이름. 한글 · 영문 2~20자.
+             * @example 한지수
+             */
+            name: string;
+            /**
+             * @description 휴대전화. 하이픈 없이 숫자 10~11자리. 중복 검사는 하지 않는다.
+             * @example 01012345678
+             */
+            phone: string;
+            /**
+             * Format: email
+             * @description 이메일. 소문자로 저장한다. 지우지 않은 사용 · 미사용 관리자 계정끼리 겹칠 수 없다.
+             * @example jisu@whale.test
+             */
+            email: string;
+            /** @description 권한 그룹. BP 관리자는 그 BP 의 BA 그룹, 가맹 마스터는 고정 FM000001, 가맹 관리자는 연결 가맹 마스터의 FA 그룹. */
+            roleGroupId: number;
+            /** @description 전체 점포. BP 관리자에게만, 전체 점포를 맡은 사람만 줄 수 있다. */
+            isAllStores: boolean;
+            /** @description 일부 점포일 때 맡길 점포 — 호출자의 관리 범위 안. 전체 점포면 무시한다. 1000개까지. */
+            storeIds: number[];
+        };
+        ResetBpAdminPasswordResponseDto: {
+            isMailSent: boolean;
+            /**
+             * Format: date-time
+             * @description 초기화가 올린 최종수정일시 — 다음 저장의 updatedAt 으로 쓴다
+             */
+            updatedAt: string;
+        };
         BpCodeGroupResponseDto: {
             /**
              * @description 관리 주체. 그룹 단계에는 BP전용이 없다 — 플랫폼고정은 조회만, 플랫폼제공은 상세 코드를 고치고 더한다.
@@ -4386,10 +4750,6 @@ export interface components {
         };
         PlatformRoleGroupListResponseDto: {
             items: components["schemas"]["PlatformRoleGroupResponseDto"][];
-        };
-        LoginIdAvailabilityResponseDto: {
-            /** @description 쓸 수 있는가. 삭제한 계정의 아이디도 쓸 수 없다. */
-            available: boolean;
         };
         PlatformAdminDetailResponseDto: {
             /**
@@ -6125,8 +6485,8 @@ export interface components {
              */
             registeredBy: string | null;
             /**
-             * @description 이 계약을 직전 계약으로 둔 살아 있는(진행 중이거나 체결을 거친) 재계약 ID(WHALEERP-156) — 있으면 상세가 「새 계약」을 띄우지 않는다.
-             *     없으면 null
+             * @description 이 계약을 직전 계약으로 둔 체결을 거친 재계약 ID(WHALEERP-156) — 있으면 상세가 「새 계약」을 띄우지 않는다. 진행 중 재계약은 치지
+             *     않는다(새 재계약을 저장할 때 대체를 묻는다). 없으면 null
              */
             renewedBy: number | null;
             contractId: number;
@@ -6145,8 +6505,9 @@ export interface components {
              */
             resendCount: number;
             /**
-             * @description 재발송(POST …/send)을 정책상 할 수 있는가 — 발송 대기 · 서명 대기이고, 가입한 직원이거나 그 번호로 계정이 없는 가입 전 직원. 계정이
-             *     있는 번호(소속 추가 확인 · 복귀 확인)는 409 SEND_CHANNEL_NOT_READY 라 false. 상세 화면이 재발송 버튼을 이 값으로 보인다. 정책만
+             * @description 재발송(POST …/send)을 정책상 할 수 있는가 — 발송 대기 · 서명 대기 · 거부 · 만료(WHALEERP-153)이고, 가입한 직원이거나 그 번호로
+             *     계정이 없는 가입 전 직원. 계정이 있는 번호(소속 추가 확인 · 복귀 확인)는 409 SEND_CHANNEL_NOT_READY 라 false. 거부 · 만료는 되살릴
+             *     수 없거나(REOPEN_BLOCKED) 다른 점포 근무 시간과 겹치면(WORK_TIME_OVERLAP) false. 상세 화면이 재발송 버튼을 이 값으로 보인다. 정책만
              *     본다 — 유선번호(409 SEND_PHONE_NOT_MOBILE) · 발송 설정 없음(503)은 true 여도 보낼 때 막힌다
              */
             canResend: boolean;
@@ -9445,6 +9806,11 @@ export interface operations {
                 groupCode?: string;
                 /** @description 그룹명에 들어 있으면 나온다. */
                 groupName?: string;
+                /**
+                 * @description 관리 주체. 여러 개는 `manageOwnerCodes=PLATFORM_FIXED&manageOwnerCodes=PLATFORM_PROVIDED` 또는 쉼표로.
+                 *     주지 않으면 둘 다(플랫폼고정 · 플랫폼제공).
+                 */
+                manageOwnerCodes?: ("PLATFORM_FIXED" | "PLATFORM_PROVIDED")[];
                 /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
                 page: number;
                 /** @description 한 쪽 건수. 기본 20, 최대 200. */
@@ -9783,6 +10149,518 @@ export interface operations {
             };
         };
     };
+    BpAdminsController_list: {
+        parameters: {
+            query: {
+                /** @description 이 유형의 점포를 관리하는 계정 — 헤더의 직영 · 가맹 전체 범위용. 전체 점포 계정은 늘 나온다. */
+                storeTypeCode?: components["schemas"]["StoreType"];
+                /** @description 계정 상태. 주지 않으면 사용 · 미사용 둘 다. */
+                accountStatus?: components["schemas"]["AdminAccountStatus"];
+                /** @description 아이디 · 이름 중 하나에 들어 있으면 나온다. */
+                keyword?: string;
+                /** @description 이 점포를 관리하는 계정 — 매핑된 계정과 전체 점포 계정. 여러 개는 반복 또는 쉼표로, 1000개까지. */
+                storeIds?: number[];
+                /** @description 권한 그룹. */
+                roleGroupId?: number;
+                /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
+                page: number;
+                /** @description 한 쪽 건수. 기본 20, 최대 200. */
+                pageSize: number;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BpAdminListResponseDto"];
+                };
+            };
+            /** @description 입력 형식 · 플랫폼 사용자의 BP 미선택 · 선택할 수 없는 권한 · 점포 범위 밖 · 폐점 점포 · 점포 없음 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 다른 BP · 역할 규칙(등록할 수 없는 역할, 연결 가맹 마스터가 아님, 본인 계정의 권한 · 상태 · 점포) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpAdminsController_create: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateBpAdminDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateBpAdminResponseDto"];
+                };
+            };
+            /** @description 입력 형식 · 플랫폼 사용자의 BP 미선택 · 선택할 수 없는 권한 · 점포 범위 밖 · 폐점 점포 · 점포 없음 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 다른 BP · 역할 규칙(등록할 수 없는 역할, 연결 가맹 마스터가 아님, 본인 계정의 권한 · 상태 · 점포) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 아이디 · 이메일 중복 · 다른 가맹 마스터가 맡은 점포 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpAdminsController_roleGroups: {
+        parameters: {
+            query?: {
+                /** @description 이 역할의 그룹만. 주지 않으면 세 역할 모두. */
+                roleTypeCode?: components["schemas"]["BpAdminRole"];
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BpAdminRoleGroupListResponseDto"];
+                };
+            };
+            /** @description 입력 형식 · 플랫폼 사용자의 BP 미선택 · 선택할 수 없는 권한 · 점포 범위 밖 · 폐점 점포 · 점포 없음 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 다른 BP · 역할 규칙(등록할 수 없는 역할, 연결 가맹 마스터가 아님, 본인 계정의 권한 · 상태 · 점포) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpAdminsController_storeOptions: {
+        parameters: {
+            query: {
+                /** @description 등록 · 수정하는 계정의 역할. */
+                roleTypeCode: components["schemas"]["BpAdminRole"];
+                /** @description 수정 중인 가맹 마스터. 주면 그 계정이 맡은 점포를 「다른 가맹 마스터 담당」으로 빼지 않는다. 가맹 마스터가 아니면 쓰지 않는다. */
+                adminAccountId?: number;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BpAdminStoreOptionListResponseDto"];
+                };
+            };
+            /** @description 입력 형식 · 플랫폼 사용자의 BP 미선택 · 선택할 수 없는 권한 · 점포 범위 밖 · 폐점 점포 · 점포 없음 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 다른 BP · 역할 규칙(등록할 수 없는 역할, 연결 가맹 마스터가 아님, 본인 계정의 권한 · 상태 · 점포) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpAdminsController_loginIdAvailability: {
+        parameters: {
+            query: {
+                /** @description 아이디. 영문 또는 영문 · 숫자 4~20자. */
+                loginId: string;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginIdAvailabilityResponseDto"];
+                };
+            };
+            /** @description 아이디 형식 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 다른 BP · 역할 규칙(등록할 수 없는 역할, 연결 가맹 마스터가 아님, 본인 계정의 권한 · 상태 · 점포) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpAdminsController_emailAvailability: {
+        parameters: {
+            query: {
+                email: string;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProfileEmailAvailabilityResponseDto"];
+                };
+            };
+            /** @description 이메일 형식 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 다른 BP · 역할 규칙(등록할 수 없는 역할, 연결 가맹 마스터가 아님, 본인 계정의 권한 · 상태 · 점포) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpAdminsController_detail: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BpAdminDetailResponseDto"];
+                };
+            };
+            /** @description 입력 형식 · 플랫폼 사용자의 BP 미선택 · 선택할 수 없는 권한 · 점포 범위 밖 · 폐점 점포 · 점포 없음 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 다른 BP · 역할 규칙(등록할 수 없는 역할, 연결 가맹 마스터가 아님, 본인 계정의 권한 · 상태 · 점포) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 볼 수 없는 계정 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpAdminsController_update: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateBpAdminDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 입력 형식 · 플랫폼 사용자의 BP 미선택 · 선택할 수 없는 권한 · 점포 범위 밖 · 폐점 점포 · 점포 없음 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 다른 BP · 역할 규칙(등록할 수 없는 역할, 연결 가맹 마스터가 아님, 본인 계정의 권한 · 상태 · 점포) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 볼 수 없는 계정 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 이메일 중복 · 동시 수정 · 다른 가맹 마스터가 맡은 점포 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpAdminsController_histories: {
+        parameters: {
+            query: {
+                /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
+                page: number;
+                /** @description 한 쪽 건수. 기본 20, 최대 200. */
+                pageSize: number;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BpAdminHistoryListResponseDto"];
+                };
+            };
+            /** @description 입력 형식 · 플랫폼 사용자의 BP 미선택 · 선택할 수 없는 권한 · 점포 범위 밖 · 폐점 점포 · 점포 없음 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 다른 BP · 역할 규칙(등록할 수 없는 역할, 연결 가맹 마스터가 아님, 본인 계정의 권한 · 상태 · 점포) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 볼 수 없는 계정 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpAdminsController_updateImpact: {
+        parameters: {
+            query: {
+                accountStatus: components["schemas"]["AdminAccountStatus"];
+                /** @description 저장하려는 점포. 반복 또는 쉼표로, 1000개까지. 비우면 점포를 모두 빼는 것으로 본다. */
+                storeIds: number[];
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BpAdminUpdateImpactResponseDto"];
+                };
+            };
+            /** @description 입력 형식 · 플랫폼 사용자의 BP 미선택 · 선택할 수 없는 권한 · 점포 범위 밖 · 폐점 점포 · 점포 없음 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 다른 BP · 역할 규칙(등록할 수 없는 역할, 연결 가맹 마스터가 아님, 본인 계정의 권한 · 상태 · 점포) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 볼 수 없는 계정 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpAdminsController_resetPassword: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResetBpAdminPasswordResponseDto"];
+                };
+            };
+            /** @description 입력 형식 · 플랫폼 사용자의 BP 미선택 · 선택할 수 없는 권한 · 점포 범위 밖 · 폐점 점포 · 점포 없음 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 쓸 수 없는 계정 · 메뉴 권한 없음 · 다른 BP · 역할 규칙(등록할 수 없는 역할, 연결 가맹 마스터가 아님, 본인 계정의 권한 · 상태 · 점포) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 없거나 볼 수 없는 계정 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 이메일이 없는 계정 · 그 사이 이메일 · 역할이 바뀜 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메일 설정(MAIL_* · ADMIN_WEB_URL)이 없는 환경 — 아무것도 바꾸지 않는다 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     BpCodeGroupsController_listGroups: {
         parameters: {
             query: {
@@ -9790,6 +10668,11 @@ export interface operations {
                 groupCode?: string;
                 /** @description 그룹명에 들어 있으면 나온다. */
                 groupName?: string;
+                /**
+                 * @description 관리 주체. 여러 개는 `manageOwnerCodes=PLATFORM_FIXED&manageOwnerCodes=PLATFORM_PROVIDED` 또는 쉼표로.
+                 *     주지 않으면 둘 다(플랫폼고정 · 플랫폼제공).
+                 */
+                manageOwnerCodes?: ("PLATFORM_FIXED" | "PLATFORM_PROVIDED")[];
                 /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
                 page: number;
                 /** @description 한 쪽 건수. 기본 20, 최대 200. */
@@ -10045,16 +10928,16 @@ export interface operations {
     PlatformAdminsController_list: {
         parameters: {
             query: {
+                /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
+                page: number;
+                /** @description 한 쪽 건수. 기본 20, 최대 200. */
+                pageSize: number;
                 /** @description 아이디 · 이름 중 하나에 들어 있으면 나온다. */
                 keyword?: string;
                 /** @description 사용자 권한(권한 그룹). */
                 roleGroupId?: number;
                 /** @description 계정 상태. 여러 개는 `statuses=ACTIVE&statuses=INACTIVE` 또는 쉼표로. 주지 않으면 둘 다. */
                 statuses?: ("ACTIVE" | "INACTIVE")[];
-                /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
-                page: number;
-                /** @description 한 쪽 건수. 기본 20, 최대 200. */
-                pageSize: number;
             };
             header?: {
                 /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
@@ -13710,7 +14593,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description { contractId, status(가입 초대는 그대로 PENDING_SEND · PENDING_SIGNATURE, 가입한 직원은 PENDING_SIGNATURE), sentAt, signDeadlineAt }. 가입한 직원은 알림함 알림(앱 푸시는 #261 전까지 나가지 않음) — 알림 템플릿을 쓸 수 없거나 탈퇴 계정이면 알림 없이 기한만 새로 */
+            /** @description { contractId, status(가입 초대는 그대로 PENDING_SEND · PENDING_SIGNATURE, 가입한 직원은 PENDING_SIGNATURE. 거부 · 만료(WHALEERP-153)는 가입한 직원이면 PENDING_SIGNATURE, 가입 초대면 PENDING_SEND 로 되살린다), sentAt, signDeadlineAt }. 가입한 직원은 알림함 알림(앱 푸시는 #261 전까지 나가지 않음) — 알림 템플릿을 쓸 수 없거나 탈퇴 계정이면 알림 없이 기한만 새로 */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -13731,7 +14614,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description CONTRACT_STATUS_CONFLICT(발송 대기 · 서명 대기가 아님) · SEND_CHANNEL_NOT_READY(계정이 있는 번호의 소속 추가 확인 · 복귀 확인 — 직원 앱에 소속 확인이 없음) · SEND_PHONE_NOT_MOBILE(휴대폰 번호가 아님) · 코드 없음 「이 점포에 이미 재직 중인 직원입니다」(가입 전 레코드인데 그 번호의 계정이 이 점포에 재직 중) · 다른 요청이 먼저 고침 */
+            /** @description CONTRACT_STATUS_CONFLICT(발송 대기 · 서명 대기 · 거부 · 만료가 아님) · REOPEN_BLOCKED(거부 · 만료를 되살릴 수 없음 — 퇴직 · 퇴직일 있음, 폐점 · 삭제 점포, 같은 점포 · 번호의 다른 진행 중 계약, 기간이 겹치는 다른 체결 완료, 같은 직전 계약의 다른 재계약. message 에 까닭) · WORK_TIME_OVERLAP(거부 · 만료를 되살리면 다른 점포 근무 시간과 겹침) · SEND_CHANNEL_NOT_READY(계정이 있는 번호의 소속 추가 확인 · 복귀 확인 — 직원 앱에 소속 확인이 없음) · SEND_PHONE_NOT_MOBILE(휴대폰 번호가 아님) · 코드 없음 「이 점포에 이미 재직 중인 직원입니다」(가입 전 레코드인데 그 번호의 계정이 이 점포에 재직 중) · 다른 요청이 먼저 고침 */
             409: {
                 headers: {
                     [name: string]: unknown;

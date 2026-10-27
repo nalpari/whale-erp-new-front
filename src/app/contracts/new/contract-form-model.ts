@@ -255,8 +255,9 @@ const nextDay = (iso: string) => {
  * 체결 완료 → 종료, 시스템). 대체로 닫힌 체결 완료(관리자)는 새 계약이 이미 그 자리를 이어 재계약하지 않는다(api #152 리뷰).
  */
 export function canRenew(d: Pick<ContractDetail, "status" | "histories" | "renewedBy">): boolean {
-  // 이미 이어지는 재계약(진행 중이거나 체결)이 있으면 다시 띄우지 않는다 — 다 쓰고 저장하면 api 가 막는다(front #135 code-review)
-  if (d.renewedBy !== null) return false;
+  // 이미 체결된 재계약이 이어져 있으면 다시 띄우지 않는다 — 다 쓰고 저장하면 api 가 막는다(front #135 code-review). 진행 중 재계약은
+  // api 가 싣지 않는다(저장 때 대체를 묻는다). 칸이 없는 옛 api 응답(undefined)은 막지 않는다
+  if (d.renewedBy != null) return false;
   return d.status === "SIGNED" || (d.status === "ENDED" && d.histories.some((h) => h.fromStatus === "SIGNED" && h.toStatus === "ENDED" && h.actor === "SYSTEM"));
 }
 

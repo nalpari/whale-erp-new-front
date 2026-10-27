@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보에 재입사로 이은 재직 이력 줄(WHALEERP-615)을, 그 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 오른쪽에 근무스케줄 · 출퇴근 현황(준비 중) · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다), 기본 정보 생년월일 줄에 [정정] 확인창(WHALEERP-602)을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation, birth-date]
 status: draft
-generated: { by: claude-code/sonnet-5.5, at: 2026-10-26T04:18:52Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-27T02:07:39Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -315,7 +315,7 @@ sources:
 * 실패(`failureEffect`) — 403 강제 비밀번호 변경은 변경 팝업을 다시 띄우고, 403 권한 없음 · 사용할 수 없는 계정은 알린 뒤 이전
   화면으로(okf api admin-auth 「403 messages」). 400 · 404 · 409 · 401 은 확인창 안에 문구로, 결과를 모르는 실패(5xx · 연결)는
   화면을 새로 받는다.
-* 공통 `ConfirmDialog` 에 확인 버튼 색(`confirmVariant`)을 더했다 — 퇴직 처리 확인이 붉다(데모). 공통 컴포넌트라 1팀 확인이 필요하다.
+* 공통 `ConfirmDialog` 에 확인 버튼 색(`confirmVariant`)을 더했다 — 퇴직 처리 확인이 붉다(데모). 1팀 동의(2026-10-27).
 
 # 비밀번호 초기화 (WHALEERP-177)
 
@@ -406,4 +406,4 @@ sources:
 # 공통 Button 의 danger
 
 퇴직 처리를 데모처럼 붉게 보이려고 공통 `Button` 에 `danger`(상태 빨강 `erp-off`)를 더했다 — 데모 `ui.mjs` 의
-danger 와 같은 값이다. 공통 컴포넌트와 DESIGN.md(버튼 「세 종류」)는 1팀 관리라 **1팀 확인이 필요하다.**
+danger 와 같은 값이다. 1팀이 동의해(2026-10-27) DESIGN.md Buttons 에 네 번째 모양 **Danger** 로 올렸다.
