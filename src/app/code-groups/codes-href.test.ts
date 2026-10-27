@@ -9,3 +9,9 @@ test("codesHref — 기본값(1쪽 · 빈 검색)은 빼고 검색 · 쪽 · 그
   assert.equal(codesHref({ page: 3, group: "BANK" }), "/code-groups?page=3&group=BANK");
   assert.equal(codesHref({ page: 2, group: "EMP_TYPE", groupCode: "EMP", groupName: "고용" }), "/code-groups?groupCode=EMP&groupName=%EA%B3%A0%EC%9A%A9&page=2&group=EMP_TYPE");
 });
+
+test("codesHref — 관리주체는 하나만 고른 때만 검색어 뒤에 둔다", () => {
+  assert.equal(codesHref({ manageOwnerCode: "PLATFORM_PROVIDED" }), "/code-groups?manageOwnerCode=PLATFORM_PROVIDED");
+  assert.equal(codesHref({ groupCode: "EMP", manageOwnerCode: "PLATFORM_FIXED", page: 2 }), "/code-groups?groupCode=EMP&manageOwnerCode=PLATFORM_FIXED&page=2");
+  assert.equal(codesHref({ manageOwnerCode: undefined }), "/code-groups");
+});

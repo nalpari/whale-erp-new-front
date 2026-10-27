@@ -31,10 +31,13 @@ export async function getBpCodeGroups({
   pageSize = BP_CODE_PAGE_SIZE,
   groupCode = "",
   groupName = "",
-}: { page?: number; pageSize?: number; groupCode?: string; groupName?: string } = {}): Promise<BpCodeGroupList> {
+  manageOwnerCode,
+}: { page?: number; pageSize?: number; groupCode?: string; groupName?: string; manageOwnerCode?: string } = {}): Promise<BpCodeGroupList> {
   const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
   if (groupCode) params.set("groupCode", groupCode);
   if (groupName) params.set("groupName", groupName);
+  // 관리주체를 주면 그 그룹만(api manageOwnerCodes)
+  if (manageOwnerCode) params.set("manageOwnerCodes", manageOwnerCode);
   return request(`/bp-code-groups?${params}`, await json("GET"));
 }
 

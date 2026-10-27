@@ -1,7 +1,7 @@
 "use client";
 
 import { DataTable, Pagination, Tag, type Column } from "@/components/common";
-import { searchedEmpty } from "@/components/site/code-editor/code-group-filter";
+import { searchedEmpty, type CodeGroupSearch } from "@/components/site/code-editor/code-group-filter";
 import { CodePanel } from "@/components/site/code-editor/code-panel";
 import { GuardedLink, useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
 import { useCodeLabel } from "@/components/site/code-label";
@@ -26,7 +26,7 @@ export function BpCodeGroupPanel({
   total: number;
   page: number;
   pageSize: number;
-  search: { groupCode: string; groupName: string };
+  search: CodeGroupSearch;
   selected?: string;
 }) {
   const bp = useCurrentBp().bpCodeId;
@@ -63,7 +63,7 @@ export function BpCodeGroupPanel({
         rows={groups}
         rowKey={(g) => g.groupCode}
         rowState={(g) => (g.groupCode === selected ? "selected" : undefined)}
-        empty={searchedEmpty(search) ?? "볼 수 있는 공통코드 그룹이 없습니다."}
+        empty={searchedEmpty(search, search.manageOwnerCode && ownerLabel(search.manageOwnerCode)) ?? "볼 수 있는 공통코드 그룹이 없습니다."}
       />
       <div className="pt-[14px]">
         <Pagination page={page} totalPages={Math.max(1, Math.ceil(total / pageSize))} onPageChange={(next) => navigate(hrefOf({ page: next }))} />

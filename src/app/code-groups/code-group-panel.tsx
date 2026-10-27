@@ -12,7 +12,7 @@ import { applyCodeGroupToBpsAction, saveCodeGroupsAction } from "./actions";
 import { BpApplyDialog } from "./bp-apply-dialog";
 import { CodePanel, DoneNotice, FieldErrors, SaveFailedBand, UNKNOWN_RESULT, UNREACHABLE } from "@/components/site/code-editor/code-panel";
 import { codesHref } from "./codes-href";
-import { searchedEmpty } from "@/components/site/code-editor/code-group-filter";
+import { searchedEmpty, type CodeGroupSearch } from "@/components/site/code-editor/code-group-filter";
 import { GuardedLink, useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
 
 // 가운데 공통코드 그룹 목록. 그룹 코드를 누르면 오른쪽에 그 그룹의 상세 코드가 선다(?group=). 그룹 · 쪽을 옮겨도 왼쪽 필터의 검색 조건은 이어 간다.
@@ -40,7 +40,7 @@ export function CodeGroupPanel({
   page: number;
   pageSize: number;
   /** 왼쪽 필터의 검색 조건 — 그룹 · 쪽을 옮겨도 이어 간다. */
-  search: { groupCode: string; groupName: string };
+  search: CodeGroupSearch;
   selected?: string;
   /** 관리 주체 한글 — 공통코드 MANAGE_OWNER 에서 읽은 값. */
   ownerLabels: Record<string, string>;
@@ -324,7 +324,7 @@ export function CodeGroupPanel({
         rows={drafts}
         rowKey={(d) => (d.added ? "__added" : d.groupCode)}
         rowState={(d) => (d.added ? "added" : d.groupCode === selected ? "selected" : undefined)}
-        empty={searchedEmpty(search) ?? "등록한 공통코드 그룹이 없습니다."}
+        empty={searchedEmpty(search, search.manageOwnerCode && ownerLabels[search.manageOwnerCode]) ?? "등록한 공통코드 그룹이 없습니다."}
       />
       <FieldErrors messages={Object.values(errors)} />
       {manage && <BpApplyDialog group={applyTarget} busy={applying} onConfirm={handleApply} onCancel={() => setApplyTarget(null)} />}
