@@ -264,7 +264,8 @@ function MappedStores({ admin }: { admin: BpAdminDetail }) {
       ) : many ? (
         // 여섯 개부터는 다섯 줄 높이(위 선 1 + 줄 46 × 5) 안에서 표를 스크롤한다(2026-10-26 사용자 요청). 표의 아래 선은 마지막 줄에 붙어 스크롤 중엔
         // 상자 밖으로 내려간다 — 상자 맨 아래에 늘 보이는 선을 덧그린다(끝까지 내리면 마지막 줄 선과 겹친다, 사용자가 찾음)
-        <div className="relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-erp-thead-line">
+        // 위 선(제목 바와 표 사이)도 표에 붙어 스크롤하면 함께 올라간다 — 상자 맨 위에도 늘 보이는 선을 덧그린다(리뷰로 찾음)
+        <div className="relative before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-erp-thead-line after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-erp-thead-line">
           <div className="max-h-[231px] overflow-y-auto overscroll-contain [scrollbar-gutter:stable]">{table}</div>
         </div>
       ) : (
