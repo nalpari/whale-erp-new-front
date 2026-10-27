@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState, useTransition, type RefObject } from "react";
 import { logout } from "@/app/actions";
-import { Button, ConfirmDialog, Field, FormGroup, PasswordInput, Select, SlidePanel, Textarea } from "@/components/common";
+import { Button, ConfirmDialog, FailedBand, Field, FieldMessage, FormGroup, PasswordInput, Select, SlidePanel, Textarea } from "@/components/common";
 import { withdrawFormField, withdrawWarningText, WITHDRAW_REASONS, type WithdrawEligibility, type WithdrawWarningBlock } from "@/lib/withdrawal-form";
 import { createWithdrawalAction, getWithdrawEligibilityAction } from "./withdraw-actions";
 
@@ -12,25 +12,10 @@ const EMPTY: Form = { currentPassword: "", reasonCode: "", reasonDetail: "" };
 
 type FieldAt = "currentPassword" | "reasonDetail";
 
-function FieldMessage({ id, message }: { id: string; message?: string }) {
-  if (!message) return null;
-  return (
-    <p id={id} role="alert" className="text-[13px] leading-[1.5] text-erp-off">
-      {message}
-    </p>
-  );
-}
-
-function FailedBand({ message }: { message: string }) {
-  return (
-    <div role="alert" className="rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] leading-[1.6] text-erp-off">
-      {message}
-    </div>
-  );
-}
-
-// 경고 상자 — bp-apply-dialog.tsx 와 같은 위험 띠 모양(테두리·바탕은 erp-thead, 제목만 #e93737, DESIGN.md 에
-// 토큰이 없는 Figma 전용 색). head/text 블록은 head 를 굵게, text 는 \n 을 그대로 줄바꿈으로 보인다(whitespace-pre-line).
+// 경고 상자 — bp-apply-dialog.tsx 의 위험 띠(채도 높은 border-erp-off/bg-erp-off-bg)와는 다른 패턴이다. 이
+// 상자는 승인된 데모의 notice() 상자를 그대로 따른다(docs/demo/src/site.mjs:323) — 바탕은 중립(border-erp-panel-line
+// / bg-erp-thead-bg)이고 제목만 #e93737(DESIGN.md 가 토큰 없이 직접 쓰기로 둔 Figma 전용 색). head/text
+// 블록은 head 를 굵게, text 는 \n 을 그대로 줄바꿈으로 보인다(whitespace-pre-line).
 function WarningBlock({ block }: { block: WithdrawWarningBlock }) {
   if (typeof block === "string") return <p className="whitespace-pre-line">{block}</p>;
   return (
@@ -204,12 +189,19 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
               </div>
             </>
           ) : !eligibility ? (
-            <p className="py-[36px] text-center text-[14px] text-erp-muted">불러오는 중입니다.</p>
+            <>
+              <p className="py-[36px] text-center text-[14px] text-erp-muted">불러오는 중입니다.</p>
+              <div className="flex justify-center gap-[6px]">
+                <Button variant="off" onClick={handleClose}>
+                  닫기
+                </Button>
+              </div>
+            </>
           ) : (
             <>
               <div className="flex flex-col gap-[8px]">
                 <p className="font-semibold text-[#e93737]">탈퇴 전 꼭 확인해 주세요</p>
-                <div className="flex flex-col gap-[12px] rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[16px] py-[14px] text-[14px] leading-[1.6]">
+                <div className="flex flex-col gap-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[16px] py-[14px] text-[14px] leading-[1.6]">
                   {withdrawWarningText(eligibility).map((block, i) => (
                     <WarningBlock key={i} block={block} />
                   ))}

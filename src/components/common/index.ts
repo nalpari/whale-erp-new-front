@@ -9,6 +9,7 @@ export { Toggle } from "./toggle";
 export { Button, type ButtonVariant } from "./button";
 export { Checkbox, Field, FormGroup, FormRow, Radio, RequiredMark, Select, Textarea, TextField } from "./form";
 export { PasswordInput } from "./password-input";
+export { FieldMessage, FailedBand } from "./field-message";
 export { DateField } from "./date-field";
 export { SearchField } from "./search-field";
 export { DataTable, type Column, type RowState, type TableHeadVariant } from "./data-table";

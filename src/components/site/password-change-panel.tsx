@@ -1,29 +1,12 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, useTransition, type RefObject } from "react";
-import { Button, Field, FormGroup, PasswordInput, SlidePanel } from "@/components/common";
+import { Button, FailedBand, Field, FieldMessage, FormGroup, PasswordInput, SlidePanel } from "@/components/common";
 import { myPasswordErrorField, type MyPasswordFormField } from "@/lib/my-password-form";
 import { changeMyPasswordAction } from "./password-change-actions";
 
 type Form = { current: string; next: string; confirm: string };
 const EMPTY: Form = { current: "", next: "", confirm: "" };
-
-function FieldMessage({ id, message }: { id: string; message?: string }) {
-  if (!message) return null;
-  return (
-    <p id={id} role="alert" className="text-[13px] leading-[1.5] text-erp-off">
-      {message}
-    </p>
-  );
-}
-
-function FailedBand({ message }: { message: string }) {
-  return (
-    <div role="alert" className="rounded-[2px] border border-erp-off-bg bg-erp-off-bg px-[16px] py-[12px] text-[14px] leading-[1.6] text-erp-off">
-      {message}
-    </div>
-  );
-}
 
 /** 저장 성공 화면 — 패널을 닫지 않고 폼을 이 화면으로 바꾼다(사용자 지정, 2026-10-26). 다른 기기 로그인은
  * 그대로 이어지므로 "다시 로그인"이 아니라 "다음 로그인부터"로 안내한다. 상자·아이콘은 C안(연한 파랑 원
