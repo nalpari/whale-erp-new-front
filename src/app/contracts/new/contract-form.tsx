@@ -15,6 +15,8 @@ import {
   fullTimePay,
   initialForm,
   inProgressLine,
+  replaceIdsOf,
+  stillCorrecting,
   isMinor,
   MINIMUM_WAGE,
   monthlyHours,
@@ -297,7 +299,8 @@ export function ContractForm({
       return;
     }
     // 종이 계약 등록은 날인본과 함께 보낸다. 임시저장은 종이 계약이어도 파일 없이 JSON 으로 둔다.
-    const body = (b: CreateContractBody): CreateContractBody => (previousContractId ? { ...b, previousContractId } : b);
+    // 직전 계약은 처음 저장(POST)에만 싣는다 — 이어 쓰기(PUT)는 계약에 남은 직전 계약을 api 가 그대로 쓴다(front #135 code-review)
+    const body = (b: CreateContractBody): CreateContractBody => (previousContractId && !contractId ? { ...b, previousContractId } : b);
     if (paper && !temporary) sendPaper(body(toBody(form)));
     else send(body(toBody(form, temporary)));
   };
@@ -355,14 +358,16 @@ export function ContractForm({
         router.push(listAfterSave(back, contractId ? body.storeId : null));
         return;
       }
-      // 재계약이 직전 계약이 아닌 체결 완료와 겹치면 api 가 RENEWAL_SIGNED_OVERLAP 으로 막기만 한다 — 바로잡기를 묻지 않고 그 문장을 보인다
-      if (result.signedOverlap) {
+      // 기간이 겹치는 체결 완료(SIGNED_CONTRACT_OVERLAP)면 바로잡기를 묻는다. 재계약은 api 가 RENEWAL_SIGNED_OVERLAP 으로 막기만 해
+      // signedOverlap 이 없고 아래 fail 이 그 문장을 보인다 — 재계약에 바로잡기를 묻지 않게 한 번 더 막는다(front #135 code-review)
+      if (result.signedOverlap && !body.previousContractId) {
         setReplace({ body, list: result.signedOverlap, paper: true, correcting: true });
         return;
       }
-      // 바로잡기로 다시 보냈는데 그사이 대체할 목록이 바뀌었으면 api 가 지금 목록으로 다시 묻는다 — 바로잡기는 그대로 켜 둔다
+      // 바로잡기로 다시 보냈는데 그사이 대체할 목록이 바뀌었으면 api 가 지금 목록으로 다시 묻는다 — 바로잡기는 본문에 그대로 켜 두고,
+      // 바로잡기 문구는 목록에 체결 완료가 있을 때만 보인다(진행 중 계약만이면 대체 문구, front #135 code-review)
       if (result.inProgress) {
-        setReplace({ body, list: result.inProgress, paper: true, correcting: body.correctSignedContracts === true });
+        setReplace({ body, list: result.inProgress, paper: true, correcting: stillCorrecting(body, result.inProgress) });
         return;
       }
       setReplace(null);
@@ -836,7 +841,7 @@ export function ContractForm({
         onCancel={() => setReplace(null)}
         onConfirm={() => {
           if (!replace) return;
-          const ids = { replaceContractIds: replace.list.map((c) => c.contractId) };
+          const ids = { replaceContractIds: replaceIdsOf(replace.body.replaceContractIds, replace.list) };
           const body = { ...replace.body, ...ids, ...(replace.correcting && { correctSignedContracts: true }) };
           if (replace.paper) sendPaper(body);
           else send(body);
