@@ -593,7 +593,8 @@ function PhoneGroup({
               onChange(next);
             }}
             inputMode="numeric"
-            maxLength={i === 0 ? 3 : 4}
+            // 1팀 연락처는 숫자 9~12자리(0505 같은 4자리 앞자리 포함) — platform-admins 와 같게 칸마다 4자리까지
+            maxLength={4}
             aria-label={`${label} ${part}`}
             aria-invalid={invalid}
             aria-describedby={describedBy}

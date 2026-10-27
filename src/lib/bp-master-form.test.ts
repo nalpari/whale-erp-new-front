@@ -107,9 +107,9 @@ test("api 오류를 붙일 칸 — 중복 · 형식만, 수정의 아이디 오�
   assert.equal(bpMasterServerErrorField(500, "이메일", "create"), null);
 });
 
-test("대표자 연락처는 02 국번 9자리도 받는다(api · MY PAGE 와 같다)", () => {
+test("대표자 연락처는 02 국번 9자리도 받는다(1팀 연락처 9~12자리, MY PAGE 와 같다)", () => {
   assert.equal(validateBpMasterForm({ ...filled, ceoPhone: ["02", "123", "4567"] }, "create").ceoPhone, undefined);
-  assert.equal(validateBpMasterForm({ ...filled, ceoPhone: ["02", "12", "4567"] }, "create").ceoPhone, "대표자 연락처는 숫자 9~11자리입니다.");
+  assert.equal(validateBpMasterForm({ ...filled, ceoPhone: ["02", "12", "4567"] }, "create").ceoPhone, "대표자 연락처는 숫자 9~12자리입니다.");
 });
 
 test("emailError — 앞뒤 공백은 지우고 보고, 100자까지", () => {

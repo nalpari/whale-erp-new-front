@@ -5,7 +5,7 @@ import { useState, useTransition, type ReactNode, type RefObject } from "react";
 import { Badge, Button, ConfirmDialog, DetailTable, DetailValues, SlidePanel, Tag, useToast, type DetailRow } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
 import type { BpMasterDetail, CreateBpMasterResult } from "@/lib/bp-masters";
-import { formatDateTime, formatPhone } from "@/lib/format";
+import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
 import { formatBizNumber } from "@/lib/store-view";
 import { Blocked, FailedBand, WhoList } from "../platform-admins/admin-parts";
 import { NoticeBand } from "../stores/store-parts";
@@ -198,8 +198,8 @@ function DetailBody({
     { label: "가입경로", value: bp.joinPath === "SIGNUP" ? "회원가입" : "플랫폼등록" },
     { label: "등록 일시", value: <DetailValues items={[formatDateTime(bp.createdAt), bp.createdByName ?? bp.loginId]} /> },
     // api 의 최종수정 일시는 BP 정보(bp_codes.updated_at) 것이다 — 수정 저장 · 상태 변경 때 바뀌고, 비밀번호 초기화처럼 계정만 고친 것은 들어가지 않는다(BP-7).
-    // 등록할 때 같은 insert 로 수정 일시 · 수정자가 함께 채워지므로(ms 차이) 1초 이상 다를 때만 수정으로 본다
-    { label: "수정 일시", value: bp.updatedByName && Date.parse(bp.updatedAt) - Date.parse(bp.createdAt) >= 1000 ? <DetailValues items={[formatDateTime(bp.updatedAt), bp.updatedByName]} /> : "-" },
+    // 등록할 때 같은 insert 로 수정 일시 · 수정자가 함께 채워지므로 1팀 공통 판정(wasUpdated — 1초 이상 차이)으로 고친 적이 있는지 본다
+    { label: "수정 일시", value: bp.updatedByName && wasUpdated(bp.createdAt, bp.updatedAt) ? <DetailValues items={[formatDateTime(bp.updatedAt), bp.updatedByName]} /> : "-" },
     { label: "최근 로그인", value: bp.lastLoginAt ? formatDateTime(bp.lastLoginAt) : "-" },
     // 「첫 로그인 때 받음」은 아직 로그인하지 않은 BP 에만 붙인다
     { label: "약관 동의", value: bp.termsAgreedAt ? "동의" : bp.lastLoginAt ? "미동의" : <>미동의 {muted("· 첫 로그인 때 받음")}</> },
