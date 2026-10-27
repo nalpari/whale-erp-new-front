@@ -50,7 +50,7 @@ export default ({ A, R }) => {
     { header: "아이디" },
     { header: "이름" },
     { header: "역할" },
-    { header: "권한 그룹", align: "left" },
+    { header: "권한명 · 코드", align: "left" }, // 열 이름도 값과 같은 형식(앱과 같다, 2026-10-27)
     { header: "계정 상태", width: "w-[100px]" },
     { header: "매핑 점포", width: "w-[110px]" },
     { header: "최근 로그인", width: "w-[160px]" },
