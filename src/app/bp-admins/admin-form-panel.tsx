@@ -313,8 +313,9 @@ export function AdminFormPanel(props: Props) {
     });
 
   // 저장하는 동안은 Esc · 바탕 클릭으로도 닫히지 않는다 — 닫히면 저장 결과를 사용자가 못 보고 패널이 먼저 사라진다.
+  // 확인창(<dialog>)이 떠 있으면 Esc 는 그 창만 닫아야 한다 — 패널의 Esc 처리는 data-dismiss-open 만 보고, 확인창은 그 표시가 없다
   const safeClose = () => {
-    if (!saving) onClose();
+    if (!saving && !document.querySelector("dialog[open]")) onClose();
   };
   const title = mode === "create" ? "관리자 등록" : "관리자 수정";
 
