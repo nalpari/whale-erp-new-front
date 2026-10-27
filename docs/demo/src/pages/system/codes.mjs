@@ -7,11 +7,11 @@ import { platformHeader } from "../../site.mjs";
 import { band as riskBand } from "../../staff-parts.mjs";
 
 // 두 카드 껍데기
-const card = (w, html) => `<section class="${w} flex flex-col gap-[12px] overflow-y-auto rounded-[4px] [&>:not([data-table-scroll])]:shrink-0 border border-erp-panel-line bg-white p-[25px]">${html}</section>`;
-// 고른 줄 표시(목업 surface-strong). dataTable 결과의 n 번째 줄에 표 머리 바탕을 얹는다.
+const card = (w, html) => `<section class="${w} flex flex-col gap-[12px] overflow-y-auto [scrollbar-gutter:stable] rounded-[4px] [&>:not([data-table-scroll])]:shrink-0 border border-erp-panel-line bg-white p-[25px]">${html}</section>`;
+// 고른 줄 표시 — dataTable 결과의 n 번째 줄에 한 단계 어두운 바탕 + 왼쪽 브랜드색 3px 선(앱 DataTable current · 메뉴 트리와 같다, 2026-10-27).
 const markRow = (table, n) => {
   let i = -1;
-  return table.replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, (m) => (++i === n ? m.replace('">', ' bg-erp-thead-bg">') : m));
+  return table.replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, (m) => (++i === n ? m.replace('">', ' bg-erp-subtle [&>td:first-child]:shadow-[inset_3px_0_0_var(--color-erp-brand)]">') : m));
 };
 // 끌어서 순서 바꾸는 손잡이. 아이콘이 없어 글자 기호로 둔다.
 const handle = '<span title="끌어서 순서 바꾸기" aria-label="끌어서 순서 바꾸기" class="cursor-grab text-[16px] text-erp-label">≡</span>';
@@ -98,20 +98,22 @@ export default ({ A, R }) => {
   // 왼쪽 필터 — BP 공통코드 관리와 같은 공용 필터(앱 code-groups/code-filter.tsx → code-group-filter.tsx, 2026-10-26)
   const filter = ui.filterPanel(A, [
     ui.filterSection("그룹 코드", ui.searchField(A, { placeholder: "예: EMP_TYPE", label: "그룹 코드" }), { tight: true }),
-    ui.filterSection("그룹명", ui.searchField(A, { placeholder: "예: 고용 형태", label: "그룹명" }), { tight: true, last: true }),
+    ui.filterSection("그룹명", ui.searchField(A, { placeholder: "예: 고용 형태", label: "그룹명" }), { tight: true }),
+    // 관리주체 — 기본 둘 다, 하나만 고른 때만 조건(앱 code-group-filter.tsx, 2026-10-27)
+    ui.filterSection("관리주체", ui.checkbox(A, "플랫폼고정", true) + ui.checkbox(A, "플랫폼제공", true), { last: true }),
   ]);
 
   const groupCols = [
     { header: "그룹 코드", width: "w-[170px]", align: "left" },
     { header: "그룹명", align: "left" },
-    { header: "관리 주체", width: "w-[140px]" }, // 추가 행 선택칸에 ‘플랫폼고정’이 잘리지 않는 폭(2026-10-12)
+    { header: "관리주체", width: "w-[140px]" }, // 추가 행 선택칸에 ‘플랫폼고정’이 잘리지 않는 폭(2026-10-12)
     { header: "BP 적용", width: "w-[130px]" },
-    { header: "사용 상태", width: "w-[100px]" },
+    { header: "사용여부", width: "w-[100px]" },
   ];
   const groupRows = GROUPS.map(([code, name, owner, bp], i) => [
     i === 0 ? `<b class="font-semibold" aria-current="true">${code}</b>` : ui.link(code, "#"),
-    ui.textField({ value: name, "aria-label": "그룹명" }),
-    c.tag(owner), // 관리 주체는 분류 꼬리표(앱 code-group-panel.tsx 의 Tag 와 같다, 2026-10-26)
+    `${ui.textField({ value: name, "aria-label": "그룹명" })}`,
+    c.ownerTag(owner), // 관리주체는 분류 꼬리표, 플랫폼고정만 하늘색(앱 code-group-panel.tsx 의 Tag 와 같다, 2026-10-26)
     // BP 적용 칸 — 관리 주체가 플랫폼제공인 그룹만 [BP 적용] 버튼, 나머지는 —(2026-10-08)
     owner === "플랫폼제공" ? x.dialogTrigger("BP 적용", apply, "soft") : '<span class="text-erp-muted">-</span>',
     x.toggle("사용", true),
@@ -125,32 +127,31 @@ export default ({ A, R }) => {
         [
           [codeField("그룹 코드", "그룹 코드"), true],
           [ui.textField({ placeholder: "그룹명", "aria-label": "그룹명" }), true],
-          [ui.select(["선택", "플랫폼고정", "플랫폼제공"], { "aria-label": "관리 주체" })],
+          [ui.select(["선택", "플랫폼고정", "플랫폼제공"], { "aria-label": "관리주체" })],
           [""],
           [x.toggle("사용", true)],
         ],
-      ) +
-      // 목록 아래 페이지 이동 — BP 공통코드 관리 그룹 목록과 같다(2026-10-08)
-      `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,
+      ), // 쪽 넘김 없이 전부 보이고 표 안에서만 스크롤한다(앱과 같다, 2026-10-27 사용자 지정)
   );
 
   const codeCols = [
     { header: "이동", width: "w-[60px]" },
-    { header: "상세 코드", width: "w-[220px]", align: "left" },
-    { header: "코드명", align: "left" },
+    { header: "상세 코드", align: "left" }, // 남는 폭(앱과 같다, 2026-10-27)
+    { header: "코드명", width: "w-[160px]", align: "left" }, // 그룹명 칸과 같은 폭(앱과 같다)
     { header: "표시 순서", width: "w-[90px]" },
-    { header: "사용 상태", width: "w-[120px]" },
+    { header: "사용여부", width: "w-[100px]" },
   ];
   const codeRows = SERVICES.map(([code, name, on = true], i) => [
     handle,
     code,
-    ui.textField({ value: name, "aria-label": "코드명" }),
+    `${ui.textField({ value: name, "aria-label": "코드명" })}`,
     i + 1,
     x.toggle("사용", on), // 켜고 끄는 상태는 스위치로 보이고 옆 글자는 늘 ‘사용’(2026-10-08)
   ]);
   const right = card(
     "min-w-0 flex-1",
-    ui.sectionHead(`상세 코드${sub("SERVICE · 서비스 · 플랫폼고정")}`, dim(ui.button("추가", { variant: "soft", "data-add-row": "new-code", "data-multi": true })) + ui.button("저장")) +
+    // 고른 그룹: 그룹코드 · 그룹명 라벨은 회색, 값은 굵게, 관리주체는 띠지만(앱 code-panel GroupHead, 2026-10-27)
+    ui.sectionHead(`상세 코드${sub(`<span class="inline-flex items-baseline gap-[10px] align-baseline"><span class="inline-flex items-baseline gap-[6px]"><span class="text-erp-label">그룹코드</span><b class="font-semibold text-erp-ink">SERVICE</b></span><span aria-hidden="true" class="h-[11px] w-px shrink-0 self-center bg-[#d9d9d9]"></span><span class="inline-flex items-baseline gap-[6px]"><span class="text-erp-label">그룹명</span><b class="font-semibold text-erp-ink">서비스</b></span><span aria-hidden="true" class="h-[11px] w-px shrink-0 self-center bg-[#d9d9d9]"></span>${c.ownerTag("플랫폼고정")}</span>`)}`, dim(ui.button("추가", { variant: "soft", "data-add-row": "new-code", "data-multi": true })) + ui.button("저장")) +
       ui.scrollTable(ui.dataTable(codeCols, codeRows)) +
       addRows(
         "new-code",

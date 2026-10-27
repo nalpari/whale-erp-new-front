@@ -14,10 +14,8 @@ const kv = (rows) =>
     .map(([k, v]) => `<dt class="text-erp-label">${k}</dt><dd>${v}</dd>`)
     .join("")}</dl>`;
 const WHO = kv([["아이디", "platpark"], ["이름", "박지우"]]);
-// 권한명은 이름 옆에 계정 상태처럼 꼬리표로 보인다(BP 관리자 상세처럼 · 2026-10-08). 본문의 권한 · 상태 표는 없앴다.
-// 권한 꼬리표는 방패 아이콘 대신 라벨을 단다 — 값만으로는 안 보이던 것을 바로 알게 한다(점포코드 ST000123 처럼
-// 라벨+값, 2026-10-20 디자인 수정).
-const NAME = `박지우 <span class="ml-[6px] inline-flex gap-[6px] align-middle">${ui.badge("on", "사용")}${c.tag('사용자 권한 · <b class="font-semibold">고객지원 담당</b>')}</span>`;
+// 이름 아랫줄에 「역할 | 권한그룹 | 상태 배지」 — 공통코드 상세 코드 머리와 같은 모양(2026-10-27 사용자 지정 — 전엔 이름 옆 상태 배지 · 「사용자 권한 · 그룹명」 꼬리표)
+const HEAD = c.adminHead("박지우", "플랫폼 관리자", "고객지원 담당", ui.badge("on", "사용"));
 
 function platformAdminDetailBody(A, R) {
   const resetId = x.dialogId();
@@ -38,11 +36,9 @@ function platformAdminDetailBody(A, R) {
     ["직책", "매니저"],
     // 주소는 우편번호 · 기본주소 · 상세주소를 줄을 바꿔 보이고, 위아래 선에 붙지 않게 여백을 준다
     ["주소", `<div class="py-[2px] leading-[1.6]">${["06236", "서울 강남구 테헤란로 152", "12층"].join("<br>")}</div>`],
-    // 최근 로그인 → 등록 → 최종수정 순으로 둔다(2026-10-20 디자인 수정). 「일시 · 사람」(앱과 같다, 2026-10-26)
+    // 최근 로그인은 표 맨 아래 줄. 등록 · 최종수정은 표 밖 테두리 없는 카드로(2026-10-27 사용자 지정)
     ["최근 로그인", "2026-09-21 09:03"],
-    ["등록", `2025-06-02 10:11 <span class="text-erp-label">· platjung</span>`],
-    ["최종수정", `2026-08-12 09:40 <span class="text-erp-label">· platkim</span>`],
-  ]));
+  ])) + c.recordValues(["2025-06-02 10:11", "platjung"], ["2026-08-12 09:40", "platkim"]);
 
   const history = ui.dataTable(
     [
@@ -90,8 +86,8 @@ function platformAdminDetailBody(A, R) {
   const editBtn = ui.slideTrigger("수정", "platform-admin-edit-panel");
   const actions = `${x.dialogTrigger("삭제", deleteId, "soft")}${editBtn}${x.dialogTrigger("변경이력", histId, "soft")}`;
   // 이름은 맨 위에 혼자, 기능 버튼은 닫기까지 모두 맨 아래로(BP 관리자 상세 패널과 같다)
-  const head = `<h2 class="text-[18px] font-semibold whitespace-nowrap text-erp-ink">${NAME}</h2>`;
-  const buttons = `<div class="flex flex-wrap items-center gap-[6px] border-t border-erp-panel-line pt-[16px]">${ui.button("닫기", { variant: "off", "data-close": true })}<span class="flex-1"></span>${actions}</div>`; // 닫기는 맨 왼쪽(상세 슬라이드 공통 · 2026-10-08)
+  const head = HEAD;
+  const buttons = `<div class="flex flex-wrap items-center gap-[6px]">${ui.button("닫기", { variant: "off", "data-close": true })}<span class="flex-1"></span>${actions}</div>`; // 닫기는 맨 왼쪽(상세 슬라이드 공통 · 2026-10-08)
 
   return head + info + buttons + resetDialog + deleteDialog + historyDialog;
 }

@@ -244,6 +244,9 @@
   .inset-0 {
     inset: 0px;
   }
+  .inset-auto {
+    inset: auto;
+  }
   .inset-x-0 {
     inset-inline: 0px;
   }
@@ -606,9 +609,6 @@
   }
   .mt-auto {
     margin-top: auto;
-  }
-  .mr-\[4px\] {
-    margin-right: 4px;
   }
   .mr-\[10px\] {
     margin-right: 10px;
@@ -2411,9 +2411,6 @@
   .pt-\[14px\] {
     padding-top: 14px;
   }
-  .pt-\[16px\] {
-    padding-top: 16px;
-  }
   .pt-\[18px\] {
     padding-top: 18px;
   }
@@ -2576,8 +2573,8 @@
   .text-right {
     text-align: right;
   }
-  .align-\[-1px\] {
-    vertical-align: -1px;
+  .align-baseline {
+    vertical-align: baseline;
   }
   .align-middle {
     vertical-align: middle;
