@@ -5,7 +5,7 @@ const TONE = {
   primary: "border-erp-brand bg-erp-brand text-white",
   soft: "border-erp-brand-soft bg-erp-brand-soft text-white",
   off: "border-erp-subtle bg-erp-subtle text-erp-ink",
-  // 퇴직 처리처럼 되돌리기 어려운 동작. 미운영 배지와 같은 상태 빨강 토큰을 쓴다 — 데모 ui.mjs 의 danger 와 같다(2026-10-08 재영).
+  // 퇴직 처리처럼 되돌리기 어려운 동작. 미운영 배지와 같은 상태 빨강 토큰을 쓴다 — 데모 ui.mjs 의 danger 와 같다(2026-10-08 재영, DESIGN.md Buttons · 1팀 동의 2026-10-27).
   danger: "border-erp-off bg-erp-off text-white",
 };
 

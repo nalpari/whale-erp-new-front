@@ -8,7 +8,7 @@ import { planSave, saveInOrder, savedNote, type SaveFailure, type SaveResult } f
 // 상세 코드 패널 저장 — 플랫폼 공통코드와 같은 순서다(수정 PUT → 삭제 DELETE → 등록 POST, planSave · saveInOrder). 한 단계가 실패하면
 // 뒤 단계는 보내지 않고, 앞 단계에서 저장한 것은 남는다 — 화면은 반영된 목록 뒤에 새 행을 남긴다.
 // 탭 BP 는 인자로 받지 않는다 — 액션은 화면 주소(/bp/{id}/bp-code-groups)로 POST 되어 proxy 가 헤더로 싣는다(authHeaders).
-// 플랫폼고정 · 사용중지 · 없는 그룹(404), 플랫폼 사용자, 메뉴 권한은 api 가 본다(문구가 무엇이 막혔는지 말한다. api 2026-10-27 변경 뒤 — 그전 api 는 플랫폼고정 그룹을 보내고 저장은 409).
+// 플랫폼고정 그룹, 사용중지 · 없는 그룹(404), 플랫폼 사용자, 메뉴 권한은 api 가 본다(문구가 무엇이 막혔는지 말한다).
 
 export type { SaveResult };
 
@@ -17,7 +17,7 @@ const FAILED = "상세 코드를 저장하지 못했습니다. 잠시 후 다시
 
 /**
  * api 오류를 화면 문구로 바꾼다. api 가 한국어 문구를 주는 400(형식 · BP 를 고르지 않음) · 403(권한 · 다른 BP · 플랫폼 사용자) ·
- * 404(없는 · 보이지 않는 그룹 — 플랫폼고정 · 사용중지 포함 · 없는 코드) · 409(중복. api 변경 전에는 플랫폼고정 그룹도 409)는 그대로 보인다. 401 은 고정 문구로, 그 밖(5xx · 연결 실패)은 일반 문구로.
+ * 404(없는 그룹 · 코드) · 409(중복 · 막힌 그룹)는 그대로 보인다. 401 은 고정 문구로, 그 밖(5xx · 연결 실패)은 일반 문구로.
  */
 function failureOf(error: unknown, what: string): SaveFailure {
   if (error instanceof ApiError) {

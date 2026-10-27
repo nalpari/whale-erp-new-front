@@ -26,9 +26,8 @@ export const newBpItemDraft = (key: string): BpItemDraft => ({
 
 /**
  * 패널이 막힌 이유 — 플랫폼 사용자(조회만) · 플랫폼고정 그룹(조회만). 막히지 않았으면 null.
- * 둘 다 api 도 막는다 — 화면은 버튼을 숨기거나 잠그고 띠로 이유를 알린다.
- * 플랫폼고정 · 사용중지 그룹은 api 가 BP 에게 보내지 않는다(목록에서 빠지고 상세 코드는 404, 플랫폼고정은 2026-10-27).
- * 그래도 "fixed" 는 남긴다 — 화면이 api 보다 먼저 배포되어 플랫폼고정 그룹이 아직 오는 동안 고칠 수 있는 것처럼 보이지 않게.
+ * 둘 다 api 도 막는다(403 · 409) — 화면은 버튼을 숨기거나 잠그고 띠로 이유를 알린다.
+ * 사용중지 그룹은 api 가 BP 에게 보내지 않으므로(목록에서 빠지고 상세 코드는 404) 따로 막지 않는다.
  */
 export type BpPanelLock = "platform-user" | "fixed" | null;
 
@@ -54,15 +53,14 @@ export function bpCodePanelAccess(o: { lock: BpPanelLock; update: boolean; creat
 export const bpDeletable = (d: Pick<BpItemDraft, "added" | "manageOwnerCode">) =>
   !d.added && (d.manageOwnerCode === "BP_ONLY" || d.manageOwnerCode === "PLATFORM_PROVIDED");
 
-/** 화면 주소의 조건 — 쪽 · 고른 그룹 · 검색(그룹 코드 · 그룹명). 새로 고쳐도, 링크를 보내도 같은 화면이 선다. */
-export type BpCodesQuery = { page?: number; group?: string; groupCode?: string; groupName?: string };
+/** 화면 주소의 조건 — 고른 그룹 · 검색(그룹 코드 · 그룹명). 새로 고쳐도, 링크를 보내도 같은 화면이 선다. 그룹 목록은 쪽을 나누지 않는다(2026-10-27). */
+export type BpCodesQuery = { group?: string; groupCode?: string; groupName?: string };
 
 /** 화면 주소(폴더 경로). 탭 BP 는 부르는 쪽이 bpPath 로 씌운다 — /bp/{id}/bp-code-groups. 기본값은 뺀다. */
-export function bpCodesHref({ page, group, groupCode, groupName }: BpCodesQuery): string {
+export function bpCodesHref({ group, groupCode, groupName }: BpCodesQuery): string {
   const params = new URLSearchParams();
   if (groupCode) params.set("groupCode", groupCode);
   if (groupName) params.set("groupName", groupName);
-  if (page && page > 1) params.set("page", String(page));
   if (group) params.set("group", group);
   const query = params.toString();
   return `/bp-code-groups${query ? `?${query}` : ""}`;

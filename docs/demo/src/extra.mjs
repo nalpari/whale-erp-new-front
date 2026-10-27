@@ -58,8 +58,8 @@ export const ICON = {
 // 카드 안내(notice) 뒤의 느낌표 동그라미 — 앱 store-parts.tsx 의 NoticeIcon 과 같다.
 const NOTICE_ICON = `<svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true" class="shrink-0"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M10 5.5v5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="14.25" r="1" fill="currentColor"/></svg>`;
 
-// 카드(점포 카드 등). 카드 전체가 링크다. 모서리 4px·1px 선·그림자 없음(카드·패널 규칙 — DESIGN.md 는 카드
-// 모서리를 4px 로 고정해 둬서, 8px 로 키워 달라는 요청은 1팀 확인 전이라 되돌렸다, 2026-10-16 코드리뷰),
+// 카드(점포 카드 등). 카드 전체가 링크다. 모서리 8px·1px 선·그림자 없음(점포 카드만 카드 규칙 4px 의 예외 — DESIGN.md Cards,
+// 1팀 동의 2026-10-27),
 // 호버는 선 색만 바꾼다.
 // image: 이미지 주소(없으면 아이콘 칸), fields: [[라벨, 값, wide?]]
 // notice: 정보 칸 끝에 둘 안내(점포의 「사업자정보 미인증」). 보기엔 옆 칸 제목과 같은 줄 · 같은 글자의 제목만 있는 칸이지만, dl 은
@@ -77,7 +77,7 @@ export function card({ href, image, icon = ICON.store, title, sub, badge = "", f
     .map(([k, v, wide]) => `<div class="${wide ? "col-span-2 " : ""}flex flex-col gap-[4px]"><dt class="text-[13px] text-erp-label">${k}</dt><dd class="truncate text-[14px] text-erp-ink">${v}</dd></div>`)
     .join("") +
     (notice ? `<div class="flex flex-col gap-[4px]"><dt class="sr-only">${noticeTerm}</dt><dd class="flex items-center gap-[4px] text-[13px] text-erp-label">${notice}${NOTICE_ICON}</dd></div>` : "");
-  return `<a href="${href}"${data ? ` data-fields='${JSON.stringify(data)}'` : ""} class="flex flex-col gap-[12px] rounded-[4px] border border-erp-panel-line ${muted ? "bg-erp-thead-bg" : "bg-white"} p-[18px] transition-colors duration-150 ease-out hover:border-erp-brand"><div class="flex items-start gap-[12px]">${pic}<div class="flex min-w-0 flex-1 flex-col gap-[4px]"><b title="${title}" class="truncate text-[16px] font-semibold text-erp-ink">${title}</b><span class="truncate text-[13px] text-erp-label">${sub}</span></div>${badge}</div><dl class="grid grid-cols-2 gap-x-[12px] gap-y-[18px] border-t border-erp-divider pt-[12px]">${grid}</dl></a>`;
+  return `<a href="${href}"${data ? ` data-fields='${JSON.stringify(data)}'` : ""} class="flex flex-col gap-[12px] rounded-[8px] border border-erp-panel-line ${muted ? "bg-erp-thead-bg" : "bg-white"} p-[18px] transition-colors duration-150 ease-out hover:border-erp-brand"><div class="flex items-start gap-[12px]">${pic}<div class="flex min-w-0 flex-1 flex-col gap-[4px]"><b title="${title}" class="truncate text-[16px] font-semibold text-erp-ink">${title}</b><span class="truncate text-[13px] text-erp-label">${sub}</span></div>${badge}</div><dl class="grid grid-cols-2 gap-x-[12px] gap-y-[18px] border-t border-erp-divider pt-[12px]">${grid}</dl></a>`;
 }
 // 큰 선택 카드(라디오, 등록 화면 전용 — 등록 뒤 바꿀 수 없어 수정 화면에는 두지 않는다). 이름 · 한 줄 설명
 // (아이콘 없음 — 2026-10-16 점검, 아이콘이 의미 없이 들어가 있었다).

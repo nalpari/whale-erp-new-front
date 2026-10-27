@@ -74,7 +74,7 @@ function RolesBody({
   const columns: Column<BpRoleGroup>[] = [
     {
       header: "권한유형 · 코드",
-      width: "w-[170px]",
+      width: "w-[200px]", // 플랫폼 권한 관리와 같은 폭 — 170px 이면 설명 칸이 넓어져 최종수정이 멀어 보였다(2026-10-27 사용자 지정)
       align: "left", // 2026-10-26 사용자 지정
       cell: (r) => (
         <span className="truncate">
@@ -103,7 +103,8 @@ function RolesBody({
       ),
     },
     { header: "설명", align: "left", cell: (r) => r.description || <span className="text-erp-muted">-</span> },
-    { header: "최종수정", width: "w-[220px]", align: "left", cell: (r) =>
+    // 「일시 · 수정자」가 220px 에선 수정자 이름이 말줄임됐다 — 280px 로 넓힌다(2026-10-27 사용자 지정)
+    { header: "최종수정", width: "w-[280px]", align: "left", cell: (r) =>
         // 등록만 하고 고친 적 없으면 「-」(2026-10-27 사용자 요청)
         wasUpdated(r.createdAt, r.updatedAt) ? <WhenWho at={r.updatedAt} actor={r.updatedBy} /> : <span className="text-erp-muted">-</span>,
     },
