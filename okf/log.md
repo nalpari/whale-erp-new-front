@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-10-27
+* **Update**: [BP 환경설정](/config.md) — BP 공통코드에서 플랫폼고정 그룹을 보이지 않게 했다(2026-10-27 사용자 결정, 2026-10-22 A안 변경). 목록 · total 에서 빼고 상세 코드 조회 · 저장은 404 로 하는 것은 api 작업 대기 — 화면에서 거르면 쪽 나눔과 개수가 어긋난다. front 는 `bp-codes.ts` · `bp-code-group-panel.tsx` · `bp-code-item-panel.tsx` · `bp-code-drafts.ts` · `actions.ts` 주석을 맞추고, 플랫폼고정 잠금(`bpPanelLock` 의 `fixed`)은 api 보다 먼저 배포될 때를 위해 남겼다. 목업 · 데모 BP 공통코드 화면에서도 플랫폼고정 그룹을 뺐다.
+
 ## 2026-10-26
 * **Update**: main 병합(front sandshrew, main #139 까지): okf 충돌은 양쪽 기록을 살렸다. 플랫폼 관리자 이메일 검사가 `email-format.ts` 로 모여, BP 관리자 폼도 그 `emailError` 를 쓴다(문구 「이메일 형식이 올바르지 않습니다.」).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 관리자: 등록 때 이메일도 아이디와 같은 때(칸을 벗어나거나 Enter) api `GET /bp-admins/email-availability` 로 중복을 묻는다(사용자 요청). 점포 일괄 검색 창에 끌어서 옮기기를 더하고 폭을 960 으로 넓혔다. 상세 대상 점포 표는 5개 뒤로 표 안에서 스크롤하고, 등록만 한 계정은 최종 수정일시를 「수정한 적 없음」으로 둔다.

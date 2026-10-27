@@ -8,7 +8,7 @@ import { planSave, saveInOrder, savedNote, type SaveFailure, type SaveResult } f
 // 상세 코드 패널 저장 — 플랫폼 공통코드와 같은 순서다(수정 PUT → 삭제 DELETE → 등록 POST, planSave · saveInOrder). 한 단계가 실패하면
 // 뒤 단계는 보내지 않고, 앞 단계에서 저장한 것은 남는다 — 화면은 반영된 목록 뒤에 새 행을 남긴다.
 // 탭 BP 는 인자로 받지 않는다 — 액션은 화면 주소(/bp/{id}/bp-code-groups)로 POST 되어 proxy 가 헤더로 싣는다(authHeaders).
-// 플랫폼고정 그룹, 사용중지 · 없는 그룹(404), 플랫폼 사용자, 메뉴 권한은 api 가 본다(문구가 무엇이 막혔는지 말한다).
+// 플랫폼고정 · 사용중지 · 없는 그룹(404), 플랫폼 사용자, 메뉴 권한은 api 가 본다(문구가 무엇이 막혔는지 말한다).
 
 export type { SaveResult };
 

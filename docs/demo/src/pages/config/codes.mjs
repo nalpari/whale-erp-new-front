@@ -5,23 +5,12 @@ import * as x from "../../extra.mjs";
 import * as c from "../../config-parts.mjs";
 import { erpHeader } from "../../site.mjs";
 
-// [그룹 코드, 그룹명, 관리 주체, 고를 수 있는지]
+// [그룹 코드, 그룹명, 관리 주체, 고를 수 있는지]. 플랫폼고정 그룹은 BP 공통코드에 나오지 않는다(2026-10-27 사용자 결정).
 const GROUPS = [
-  ["SERVICE", "서비스", "플랫폼고정"],
-  ["ROLE_TYPE", "권한 유형", "플랫폼고정", true],
-  ["ACCOUNT_STATUS", "계정 상태", "플랫폼고정"],
-  ["JOIN_PATH", "가입경로", "플랫폼고정"],
-  ["WITHDRAW_REASON", "탈퇴 사유", "플랫폼고정"],
-  ["MAIL_TYPE", "메일 유형", "플랫폼고정"],
-  ["TERMS_TYPE", "약관 유형", "플랫폼고정"],
-  ["FLOOR_TYPE", "층수 구분", "플랫폼고정"],
-  ["STORE_STATUS", "점포 상태", "플랫폼고정"],
-  ["STORE_TYPE", "점포 유형", "플랫폼고정"],
-  ["MANAGE_OWNER", "관리 주체", "플랫폼고정"],
   ["EMP_TYPE", "고용 형태", "플랫폼제공"],
   ["LEAVE_TYPE", "휴가 유형", "플랫폼제공", true],
 ];
-const SELECTED = 11;
+const SELECTED = 0;
 const CODES = [
   ["FULL", "정직원", "플랫폼제공"],
   ["CONTRACT", "계약직", "플랫폼제공"],
