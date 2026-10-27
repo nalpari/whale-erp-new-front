@@ -6,7 +6,8 @@ import { useCodeLabel } from "@/components/site/code-label";
 import { formatDateTime } from "@/lib/format";
 import type { BpAdmin } from "@/lib/bp-admins";
 
-// BP 관리자 목록 표(S-AJHXFU · 데모 config/admins). 아이디 · 이름을 누르면 상세 패널이 열린다 — 목록에는 수정 링크가 없다(수정은 상세를 거친다).
+// BP 관리자 목록 표(S-AJHXFU · 데모 config/admins). 이름을 누르면 상세 패널이 열린다 — 목록에는 수정 링크가 없다(수정은 상세를 거친다).
+// 아이디는 링크 없이 본문 글자로 둔다 — 플랫폼 관리자 목록과 같다(2026-10-27 사용자 지정).
 // 미사용 계정은 줄 글자를 흐리게 하고 상태 배지(사용 · 미사용 글자)로 가른다 — 색만으로 말하지 않는다(DESIGN.md).
 // 역할 한글은 로그인 정보의 공통코드 ROLE_TYPE 에서 읽는다(네이밍 규칙 화면 문구).
 export function AdminTable({
@@ -35,9 +36,11 @@ export function AdminTable({
   );
 
   const columns: Column<BpAdmin>[] = [
-    { header: "아이디", width: "w-[140px]", align: "left", cell: (a) => open(a, a.loginId) },
-    { header: "이름", width: "w-[110px]", cell: (a) => open(a, a.name ?? a.loginId) },
-    { header: "역할", width: "w-[120px]", cell: (a) => dim(a, roleType(a.roleTypeCode)) },
+    // 아이디 · 이름 · 역할 · 권한 그룹은 폭을 정하지 않아 남는 폭을 똑같이 나눈다(2026-10-27 사용자 지정)
+    // 아이디도 가운데 정렬 — 플랫폼 관리자 목록과 같다(2026-10-27 사용자 지정)
+    { header: "아이디", cell: (a) => dim(a, <span className="block truncate">{a.loginId}</span>) },
+    { header: "이름", cell: (a) => open(a, a.name ?? a.loginId) },
+    { header: "역할", cell: (a) => dim(a, roleType(a.roleTypeCode)) },
     {
       header: "권한 그룹",
       align: "left",
@@ -45,7 +48,8 @@ export function AdminTable({
         dim(
           a,
           <span className="truncate">
-            {a.roleGroup.name} <span className="text-erp-muted">{a.roleGroup.roleCode}</span>
+            {/* 권한 그룹명과 코드 사이에 「 · 」(2026-10-27 사용자 지정) */}
+            {a.roleGroup.name} <span className="text-erp-muted">· {a.roleGroup.roleCode}</span>
           </span>,
         ),
     },
@@ -55,7 +59,6 @@ export function AdminTable({
       cell: (a) => (inactive(a) ? <Badge tone="off">미사용</Badge> : <Badge tone="on">사용</Badge>),
     },
     { header: "매핑 점포", width: "w-[110px]", cell: (a) => dim(a, a.isAllStores ? "전체" : a.storeCount.toLocaleString("ko-KR")) },
-    { header: "등록일시", width: "w-[160px]", cell: (a) => dim(a, formatDateTime(a.createdAt)) },
     {
       header: "최근 로그인",
       width: "w-[160px]",
@@ -66,9 +69,11 @@ export function AdminTable({
         ) : a.lastLoginAt ? (
           dim(a, formatDateTime(a.lastLoginAt))
         ) : (
-          <span className="text-erp-muted">로그인 기록 없음</span>
+          <span className="text-erp-muted">-</span>
         ),
     },
+    // 최근 로그인 다음에 등록일시(2026-10-27 사용자 지정 — 전엔 등록일시 · 최근 로그인 순)
+    { header: "등록일시", width: "w-[160px]", cell: (a) => dim(a, formatDateTime(a.createdAt)) },
   ];
 
   return (

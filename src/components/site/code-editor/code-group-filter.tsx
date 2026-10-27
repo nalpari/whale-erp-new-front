@@ -10,7 +10,16 @@ export type CodeGroupSearch = { groupCode: string; groupName: string; manageOwne
 
 /** 검색 결과가 없을 때 그룹 목록의 빈 칸 문구(두 줄). 검색하지 않았으면 undefined — 부르는 쪽 문구를 쓴다. */
 export function searchedEmpty({ groupCode, groupName, manageOwnerCode: owner }: CodeGroupSearch, ownerLabel?: string): ReactNode {
-  const manageOwnerCode = ownerQuery(owner); // 둘 다 끔(NONE)은 조건이 아니다
+  // 관리주체를 둘 다 끄면(NONE) 고른 관리주체가 없어 결과가 없다(2026-10-27 사용자 지정)
+  if (owner === "NONE")
+    return (
+      <>
+        선택한 관리주체가 없어 표시할 공통코드 그룹이 없습니다.
+        <br />
+        관리주체를 하나 이상 선택해 주세요.
+      </>
+    );
+  const manageOwnerCode = ownerQuery(owner);
   if (!groupCode && !groupName && !manageOwnerCode) return undefined;
   const terms = [groupCode && `그룹 코드 ‘${groupCode}’`, groupName && `그룹명 ‘${groupName}’`, manageOwnerCode && `관리주체 ‘${ownerLabel ?? manageOwnerCode}’`]
     .filter(Boolean)
@@ -26,8 +35,8 @@ export function searchedEmpty({ groupCode, groupName, manageOwnerCode: owner }: 
 
 // 왼쪽 필터 — 플랫폼 공통코드 관리와 BP 공통코드 관리가 함께 쓴다. 어느 칸에서 Enter · 돋보기를 눌러도 두 칸 값으로 함께 검색한다.
 // 어디로 갈지(주소 · 저장 안 한 변경 확인)는 부르는 쪽이 onSearch 로 정한다. 값은 앞뒤 공백을 빼서 넘긴다.
-// 관리주체는 체크박스로 고르는 즉시 건다. 하나만 고른 때만 조건이 되고, 둘 다 고른 것과 둘 다 끈 것은 모두 전체로 본다.
-// 둘 다 끄면 칸은 빈 채로 두고 목록만 전체로 보인다(2026-10-27 사용자 지정 — 전엔 마지막 하나를 끄면 둘 다 켜진 모양으로 돌아와 끌 수 없었다).
+// 관리주체는 체크박스로 고르는 즉시 건다. 하나만 고르면 그 관리주체만, 둘 다 고르면 전체, 둘 다 끄면 결과 없음이다
+// (2026-10-27 사용자 지정 — 그 전엔 둘 다 끄면 전체로 보였다).
 // 체크 모양은 주소(?manageOwnerCode — 하나만 고름은 그 값, 둘 다 끔은 NONE, 둘 다 고름은 없음)에서 읽는다 — 칸이 다시 그려져도 남는다. 기본은 둘 다.
 // 관리주체 칸은 플랫폼 공통코드 관리에만 둔다(showOwner) — BP 공통코드 관리는 그룹 코드 · 그룹명만(2026-10-27 사용자 지정).
 export function CodeGroupFilter({

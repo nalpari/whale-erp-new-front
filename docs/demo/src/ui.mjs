@@ -101,7 +101,7 @@ export function detailTable(title, rows) {
       return `<div class="flex w-full"><dt class="flex ${height} w-[110px] shrink-0 items-center truncate border-b border-l border-erp-thead-line bg-white p-[12px] text-[14px] font-medium text-erp-label ${last ? "rounded-bl-[2px]" : ""}">${label}</dt><dd class="flex ${height} min-w-px flex-1 items-center gap-[10px] overflow-hidden border-r border-b border-erp-thead-line bg-white p-[12px] text-[14px] text-erp-ink ${last ? "rounded-br-[2px]" : ""} ${multiline ? "leading-[1.6] break-keep" : ""}">${value}</dd></div>`;
     })
     .join("");
-  return `<div class="w-full"><h3 class="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[16px] font-medium text-erp-ink">${title}</h3><dl class="flex w-full flex-col">${items}</dl></div>`;
+  return `<div class="w-full"><h3 class="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">${title}</h3><dl class="flex w-full flex-col">${items}</dl></div>`; // 제목은 MY PAGE 「계정 정보」와 같은 15px 600(앱 detail-table.tsx, 2026-10-27 사용자 지정)
 }
 export const detailValues = (items) =>
   items

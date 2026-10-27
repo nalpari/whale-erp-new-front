@@ -6,6 +6,7 @@ import { Badge, Button, DataTable, PageBar, type Column } from "@/components/com
 import { CodeLabel } from "@/components/site/code-label";
 import { usePagePermission } from "@/components/site/session-gate";
 import type { EnumValue } from "@/lib/enums";
+import { wasUpdated } from "@/lib/format";
 import type { RoleGroup } from "@/lib/platform-role-groups";
 import { RoleMenuDialog, type MenuDialogActions } from "@/components/role-groups/role-menu-dialog";
 import { getRoleGroupMenusAction, previewRoleGroupMenusAction, saveRoleGroupMenusAction } from "./actions";
@@ -72,7 +73,10 @@ export function RolesScreen({
     },
     { header: "설명", align: "left", cell: (r) => r.description || <span className="text-erp-muted">-</span> },
     // 한 칸에 「일시 · 사람」. 등록일시 열은 뺐다 — BP 권한 그룹 관리와 같이 최종수정만 보인다(2026-10-26 사용자 지정). 등록은 상세에 있다
-    { header: "최종수정", width: "w-[220px]", align: "left", cell: (r) => <WhenWho at={r.updatedAt} actor={r.updatedBy} /> },
+    { header: "최종수정", width: "w-[220px]", align: "left", cell: (r) =>
+        // 등록만 하고 고친 적 없으면 「-」(2026-10-27 사용자 요청)
+        wasUpdated(r.createdAt, r.updatedAt) ? <WhenWho at={r.updatedAt} actor={r.updatedBy} /> : <span className="text-erp-muted">-</span>,
+    },
     // [설정] 버튼 열(「메뉴설정」)을 「메뉴설정 여부」 앞에 둔다(2026-10-26 사용자 지정 — 전엔 「메뉴 등록 여부」 · 「메뉴등록」[메뉴등록] 순)
     {
       header: "메뉴설정",
