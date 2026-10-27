@@ -197,9 +197,9 @@ function DetailBody({
     { label: "소속 점포", value: `${bp.storeCount.toLocaleString("ko-KR")}곳` },
     { label: "가입경로", value: bp.joinPath === "SIGNUP" ? "회원가입" : "플랫폼등록" },
     { label: "등록 일시", value: <DetailValues items={[formatDateTime(bp.createdAt), bp.createdByName ?? bp.loginId]} /> },
-    // BP 정보와 BP 마스터 계정 중 나중에 고친 쪽(BP-7)
-    { label: "수정 일시", value: bp.updatedByName ? <DetailValues items={[formatDateTime(bp.updatedAt), bp.updatedByName]} /> : muted("수정한 적 없음") },
-    { label: "최근 로그인", value: bp.lastLoginAt ? formatDateTime(bp.lastLoginAt) : muted("로그인 기록 없음") },
+    // BP 정보와 BP 마스터 계정 중 나중에 고친 쪽(BP-7). 등록할 때 api 가 수정 일시 · 수정자도 함께 채우므로(같은 insert 라 ms 차이) 1초 넘게 다를 때만 수정으로 본다
+    { label: "수정 일시", value: bp.updatedByName && Date.parse(bp.updatedAt) - Date.parse(bp.createdAt) >= 1000 ?<DetailValues items={[formatDateTime(bp.updatedAt), bp.updatedByName]} /> : "-" },
+    { label: "최근 로그인", value: bp.lastLoginAt ? formatDateTime(bp.lastLoginAt) : "-" },
     // 「첫 로그인 때 받음」은 아직 로그인하지 않은 BP 에만 붙인다
     { label: "약관 동의", value: bp.termsAgreedAt ? "동의" : bp.lastLoginAt ? "미동의" : <>미동의 {muted("· 첫 로그인 때 받음")}</> },
     { label: "강제 변경", value: bp.isPasswordChangeRequired ? "비밀번호 변경 대상" : "대상 아님" },
