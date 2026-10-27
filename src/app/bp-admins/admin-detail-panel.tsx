@@ -115,21 +115,6 @@ function DetailBody({
     { label: "이름", value: name },
     { label: "연락처", value: admin.phone ? formatPhone(admin.phone) : null },
     { label: "이메일", value: admin.email ?? null },
-    // 가맹 관리자만 — 등록 때 정해진 연결 가맹 마스터. 누가 열든 보인다(2026-10-23)
-    ...(admin.franchiseMaster
-      ? [
-          {
-            label: "연결 가맹마스터", // 2026-10-27 사용자 지정 — 전엔 「연결 가맹 마스터」
-            value: (
-              <span>
-                {/* 「아이디 · 이름」 — 권한 그룹 상세의 가맹마스터 계정과 같은 구분자(2026-10-27) */}
-                {admin.franchiseMaster.loginId}
-                {admin.franchiseMaster.name && <span className="text-erp-label"> · {admin.franchiseMaster.name}</span>}
-              </span>
-            ),
-          },
-        ]
-      : []),
     {
       label: "비밀번호",
       // 미사용 계정은 초기화 버튼 · 미발송 표시 없이 빈칸으로 둔다 — 화면에서만 숨긴다(api 는 미사용 계정 초기화를 막지 않는다, 플랫폼 관리자와 같다)
@@ -148,6 +133,21 @@ function DetailBody({
     },
     // 비밀번호 아래 줄 — 플랫폼 관리자 상세와 같이 표에 둔다(2026-10-27 사용자 지정)
     { label: "최근 로그인", value: admin.lastLoginAt ? formatDateTime(admin.lastLoginAt) : muted("로그인 기록 없음") },
+    // 가맹 관리자만 — 등록 때 정해진 연결 가맹 마스터. 누가 열든 보인다(2026-10-23). 표 맨 끝, 최근 로그인 아래(2026-10-27 사용자 지정)
+    ...(admin.franchiseMaster
+      ? [
+          {
+            label: "연결 가맹마스터", // 2026-10-27 사용자 지정 — 전엔 「연결 가맹 마스터」
+            value: (
+              <span>
+                {/* 「아이디 · 이름」 — 권한 그룹 상세의 가맹마스터 계정과 같은 구분자(2026-10-27) */}
+                {admin.franchiseMaster.loginId}
+                {admin.franchiseMaster.name && <span className="text-erp-label"> · {admin.franchiseMaster.name}</span>}
+              </span>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
