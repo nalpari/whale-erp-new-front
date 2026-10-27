@@ -218,6 +218,7 @@ export function ContractForm({
   deleteButton,
   correction = false,
   previousContractId,
+  previousStartDate,
   back = "/contracts",
 }: {
   stores: { storeId: number; name: string }[];
@@ -238,6 +239,8 @@ export function ContractForm({
    * 않는다.
    */
   previousContractId?: number;
+  /** 재계약의 직전 계약 시작일 — 새 계약 시작일은 그 다음 날부터다(api 가 400 으로 다시 본다) */
+  previousStartDate?: string;
   /** 돌아갈 목록 주소(?back=) — 취소 · 저장 뒤 같은 조건의 목록으로 간다 */
   back?: string;
 }) {
@@ -262,8 +265,9 @@ export function ContractForm({
     setFailures((n) => n + 1);
   };
   // 같은 점포에 진행 중 계약이 있어 저장하지 못했을 때 — 대체를 확인받아 같은 본문에 그 목록을 실어 다시 보낸다.
-  // paper 면 종이 계약 등록(날인본과 함께)이었다.
-  const [replace, setReplace] = useState<{ body: CreateContractBody; list: InProgressContract[]; paper: boolean } | null>(null);
+  // paper 면 종이 계약 등록(날인본과 함께)이었다. correcting 이면 종이 계약이 기간이 겹치는 체결 완료와 부딪혀(SIGNED_CONTRACT_OVERLAP)
+  // 「잘못 올린 계약 바로잡기」를 묻는다 — 확인하면 correctSignedContracts 를 켜 체결 완료도 대체한다(WHALEERP-156).
+  const [replace, setReplace] = useState<{ body: CreateContractBody; list: InProgressContract[]; paper: boolean; correcting: boolean } | null>(null);
   const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
   // 종이 계약 날인본(CTR-23). 근로계약서는 필수, 따로 날인한 임금계약서는 선택. 고르는 순간 형식 · 크기를 먼저 본다(api 가 내용으로 다시 본다).
   const [files, setFiles] = useState<{ employment: File | null; wage: File | null }>({ employment: null, wage: null });
@@ -278,7 +282,7 @@ export function ContractForm({
 
   // 막는 이유는 마지막으로 누른 저장 방식 기준으로 보인다.
   const [lastTemporary, setLastTemporary] = useState(false);
-  const issues = problems(form, lastTemporary, files.employment !== null);
+  const issues = problems(form, lastTemporary, files.employment !== null, previousStartDate);
   const minor = isMinor(form);
   const holiday = weeklyHolidayOf(form);
   const dayLabel = (d: Weekday) => labelOf(labels.weekday, d);
@@ -288,7 +292,7 @@ export function ContractForm({
     setTried(true);
     setLastTemporary(temporary);
     setServerError("");
-    if (problems(form, temporary, files.employment !== null).length) {
+    if (problems(form, temporary, files.employment !== null, previousStartDate).length) {
       setFailures((n) => n + 1);
       return;
     }
@@ -315,7 +319,7 @@ export function ContractForm({
         return;
       }
       if (result.inProgress) {
-        setReplace({ body, list: result.inProgress, paper: false });
+        setReplace({ body, list: result.inProgress, paper: false, correcting: false });
         return;
       }
       setReplace(null);
@@ -351,8 +355,13 @@ export function ContractForm({
         router.push(listAfterSave(back, contractId ? body.storeId : null));
         return;
       }
+      if (result.signedOverlap) {
+        setReplace({ body, list: result.signedOverlap, paper: true, correcting: true });
+        return;
+      }
+      // 바로잡기로 다시 보냈는데 그사이 대체할 목록이 바뀌었으면 api 가 지금 목록으로 다시 묻는다 — 바로잡기는 그대로 켜 둔다
       if (result.inProgress) {
-        setReplace({ body, list: result.inProgress, paper: true });
+        setReplace({ body, list: result.inProgress, paper: true, correcting: body.correctSignedContracts === true });
         return;
       }
       setReplace(null);
@@ -557,7 +566,7 @@ export function ContractForm({
 
         <FormGroup title="계약 조건">
           <FormRow>
-            <Item label="계약 시작일" required>
+            <Item label="계약 시작일" required help={previousStartDate ? `재계약은 직전 계약 시작일(${previousStartDate}) 다음 날부터` : undefined}>
               {() => <DateField aria-label="계약 시작일" value={form.startDate} onChange={(v) => set("startDate", v)} />}
             </Item>
             <Item label="계약 종료일" help="비워 두면 기간의 정함이 없는 계약">
@@ -815,30 +824,40 @@ export function ContractForm({
       </div>
 
       {/* 같은 점포 · 같은 번호의 진행 중 계약(WHALEERP-129). 대체하면 임시저장은 지우고, 발송 대기 · 서명 대기 · 수정 요청은 종료한다.
-          종이 계약 등록은 체결 완료도 묻고 종료한다 — 두 번 눌러 두 벌이 생기지 않게(api #49). */}
+          종이 계약이 기간이 겹치는 체결 완료와 부딪히면 대체하지 않고 「잘못 올린 계약 바로잡기」를 묻는다 — 바로잡기만 체결 완료도
+          곧바로 종료한다. 재계약이면 앞 계약은 새 계약 시작일에 하루 배치가 닫는다(WHALEERP-156). */}
       <ConfirmDialog
         open={replace !== null}
-        title="기존 근로계약을 대체하시겠습니까?"
-        confirmLabel={saving ? "저장 중" : "대체하고 저장"}
+        title={replace?.correcting ? "잘못 올린 계약을 바로잡으시겠습니까?" : "기존 근로계약을 대체하시겠습니까?"}
+        confirmLabel={saving ? "저장 중" : replace?.correcting ? "바로잡고 등록" : "대체하고 저장"}
         busy={saving}
         wide
         onCancel={() => setReplace(null)}
         onConfirm={() => {
           if (!replace) return;
-          const body = { ...replace.body, replaceContractIds: replace.list.map((c) => c.contractId) };
+          const ids = { replaceContractIds: replace.list.map((c) => c.contractId) };
+          const body = { ...replace.body, ...ids, ...(replace.correcting && { correctSignedContracts: true }) };
           if (replace.paper) sendPaper(body);
           else send(body);
         }}
       >
-        <p>이 점포에 같은 휴대전화번호로 진행 중인 근로계약이 있습니다.</p>
+        <p>
+          {replace?.correcting
+            ? "이 점포에 같은 휴대전화번호로 계약 기간이 겹치는 체결 완료 근로계약이 있습니다."
+            : "이 점포에 같은 휴대전화번호로 진행 중인 근로계약이 있습니다."}
+        </p>
         <ul className="mt-[6px] list-disc pl-[18px]">
           {replace?.list.map((c) => (
             <li key={c.contractId}>{inProgressLine(c, labelOf(labels.contractStatus, c.status))}</li>
           ))}
         </ul>
-        <p className="mt-[6px]">
-          대체하면 임시저장은 지우고, 발송 대기 · 서명 대기 · 수정 요청{replace?.paper ? " · 체결 완료" : ""} 계약은 종료합니다.
-        </p>
+        {replace?.correcting ? (
+          <p className="mt-[6px]">
+            같은 계약서를 다시 올렸다면 등록하지 않아도 됩니다. 재계약이면 기존 계약 상세의 [새 계약]으로 작성해 주세요. 잘못 올린 계약이면 바로잡기로 위 계약을 종료하고 이 계약서로 등록합니다(임시저장은 지웁니다).
+          </p>
+        ) : (
+          <p className="mt-[6px]">대체하면 임시저장은 지우고, 발송 대기 · 서명 대기 · 수정 요청 계약은 종료합니다.</p>
+        )}
       </ConfirmDialog>
     </div>
   );

@@ -25,6 +25,8 @@ import {
   partTimePay,
   probationWage,
   problems,
+  renewalStartProblem,
+  signedOverlapOf,
   toBody,
   weeklyHolidayOf,
   weeklyHours,
@@ -291,6 +293,25 @@ test("409 본문에서 대체할 진행 중 계약만 꺼낸다", () => {
   assert.equal(inProgressOf({ statusCode: 409, message: "재직 중" }), undefined);
   assert.equal(inProgressOf(null), undefined);
   assert.equal(inProgressOf({ code: "CONTRACT_IN_PROGRESS", contracts: [{ contractId: "5" }] }), undefined);
+});
+
+test("종이 계약과 기간이 겹치는 체결 완료(SIGNED_CONTRACT_OVERLAP)는 바로잡기가 대체할 목록으로 꺼내고, 진행 중 계약과 섞지 않는다(WHALEERP-156)", () => {
+  const list = [{ contractId: 5, status: "SIGNED", name: "남도현", startDate: "2026-11-01", endDate: "2027-10-31" }];
+  const body = { statusCode: 409, code: "SIGNED_CONTRACT_OVERLAP", message: "…", contracts: list };
+  assert.deepEqual(signedOverlapOf(body), list);
+  assert.equal(inProgressOf(body), undefined);
+  assert.equal(signedOverlapOf({ code: "CONTRACT_IN_PROGRESS", contracts: list }), undefined);
+});
+
+test("재계약 시작일은 직전 계약 시작일 다음 날부터 — 같거나 이르면 막고, 그 뒤로는 직전 계약과 겹쳐도 된다(WHALEERP-156)", () => {
+  const message = renewalStartProblem("2026-11-01");
+  assert.equal(message, "재계약 시작일은 직전 계약 시작일(2026-11-01) 다음 날부터입니다");
+  assert.ok(problems(filled({ startDate: "2026-11-01" }), false, false, "2026-11-01").includes(message));
+  assert.ok(problems(filled({ startDate: "2026-10-31" }), false, false, "2026-11-01").includes(message));
+  assert.ok(!problems(filled({ startDate: "2026-11-02" }), false, false, "2026-11-01").includes(message));
+  // 임시저장도 시작일을 넣었으면 본다(api 와 같다), 비었으면 묻지 않는다
+  assert.ok(problems(filled({ startDate: "2026-11-01" }), true, false, "2026-11-01").includes(message));
+  assert.ok(!problems(filled({ startDate: "" }), true, false, "2026-11-01").includes(message));
 });
 
 test("주휴일은 고른 요일을 쓰고, 근무 요일이면 근무하지 않는 가장 뒤 요일로 본다", () => {

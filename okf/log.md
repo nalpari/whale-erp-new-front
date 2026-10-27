@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-10-27
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — WHALEERP-156 재영 문의 반영: 종이 계약이 기간이 겹치는 체결 완료와 부딪히면(api 409 `SIGNED_CONTRACT_OVERLAP`) 「잘못 올린 계약 바로잡기」 확인창(`correctSignedContracts`), 재계약 시작일은 직전 계약 시작일 다음 날부터(작성 · 이어 쓰기). api 타입은 api gyarados(3ddc4d3d) 기준으로 다시 만들었다.
+
 ## 2026-10-26
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 code-review 반영: 이어지는 재계약이 있으면 「새 계약」을 숨기고(api `renewedBy`), 재계약 임시저장 이어 쓰기도 근무지 · 번호 잠금, 고를 수 없는 근무지면 재계약 화면을 열지 않음, 시작일이 지난 날이면 비우고 수습은 끔, 목록 「재계약」은 체결 전까지 · 갱신 예정은 날짜(해 포함) 또는 D-n, 직전 계약과 작성 재료를 함께 읽음. api 타입 다시 만듦(api main + 재계약).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 재계약(WHALEERP-156): 근로계약 상세의 「새 계약」을 체결 완료 · 체결 뒤 종료에서 켜고 `/contracts/new?from=` 재계약 작성(직전 값 채움 · 근무지 · 번호 잠금 · `previousContractId`). 목록 상태 칸에 재계약 서명 대기 「재계약」, 체결 완료 「갱신 예정 MM-DD」. api 타입 다시 만듦.
