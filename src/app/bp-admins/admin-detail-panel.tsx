@@ -6,11 +6,11 @@ import { Badge, Button, ConfirmDialog, DataTable, DetailTable, FormRow, Readonly
 import { useCodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
 import { usePagePermission } from "@/components/site/session-gate";
-import { FailedBand } from "@/components/site/side-parts";
+import { FailedBand, InfoBand } from "@/components/site/side-parts";
 import { Blocked, WhoList } from "@/app/platform-admins/admin-parts";
 import { HistoryButton } from "@/app/platform-admins/history-dialog";
 import { StoreStatusBadge } from "@/app/stores/store-parts";
-import { formatDateTime, formatPhone } from "@/lib/format";
+import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
 import { detailButtonsOf } from "@/lib/bp-admin-rules";
 import type { BpAdminDetail, BpAdminStore } from "@/lib/bp-admins";
 import type { StoreStatus } from "@/lib/store-types";
@@ -22,6 +22,8 @@ import { unknownResult } from "./bp-admin-parts";
 // [수정] · [비밀번호 초기화]는 메뉴 수정 권한과 api 가 준 actions 를 함께 본다(bp-admin-rules.ts) — 막는 것은 api 다.
 // 미사용 계정은 초기화 버튼 · 미발송 표시를 숨긴다 — 플랫폼 관리자와 같다(2026-10-27 사용자 지정). 본인 계정은 초기화 버튼을 막는다(내 정보에서 바꾼다).
 // 등록 · 최종수정은 화면 맨 아래 권한 그룹 상세와 같은 테두리 없는 카드로, 적용 대상(전체 · 일부 점포)은 대상점포 제목 바 옆에 보인다. 최근 로그인은 기본정보 표의 비밀번호 아래 줄이다(2026-10-27 사용자 지정).
+// 본인 계정은 수정 범위를 제목 아래 띠로 알린다(가맹 관리자 본인은 늘, 그 밖은 [수정]이 보일 때만). 수정할 수 없는 가맹 관리자 계정은
+// 수정 · 초기화를 막은 이유를 띠로 보인다(2026-10-27).
 
 export function AdminDetailPanel({
   open,
@@ -108,8 +110,11 @@ function DetailBody({
   );
   const whenText = (at: string, who: string | null | undefined) => `${formatDateTime(at)} · ${who ?? "시스템"}`;
   // 등록만 한 계정은 수정일시가 등록일시와 같아 등록이 수정처럼 보인다 — 같으면 일시 · 수정자 대신 「-」를 둔다(2026-10-26 사용자 요청, 2026-10-27 「수정한 적 없음」 → 「-」).
-  // 등록 때 두 값이 따로 찍혀 ms 가 어긋날 수 있어 1초 안쪽은 같은 것으로 본다
-  const edited = Math.abs(Date.parse(admin.updatedAt) - Date.parse(admin.createdAt)) >= 1000;
+  // 1초 안쪽 어긋남은 같은 것으로 본다(wasUpdated).
+  // 수정자가 없는 계정(회원가입으로 만든 BP 마스터 등)도 「-」다. 한계: api 의 updatedAt(Prisma @updatedAt)은 로그인 · 초기 비밀번호 미발송 표시에도 올라가는데,
+  // 수정자(updatedBy)는 등록 때부터 등록자로 채워져 있어 이 검사로는 그 갱신을 거르지 못한다 — 로그인한 계정은 「로그인 시각 · 등록자」가
+  // 최종수정으로 보이고, 등록 직후에도 메일을 보낸 뒤 미발송 표시를 끄며 몇 초 늦게 찍혀 보일 수 있다(api 요청 대기)
+  const edited = admin.updatedByName !== null && wasUpdated(admin.createdAt, admin.updatedAt);
   const rows: DetailRow[] = [
     { label: "아이디", value: admin.loginId },
     { label: "이름", value: name },
@@ -132,7 +137,7 @@ function DetailBody({
       ),
     },
     // 비밀번호 아래 줄 — 플랫폼 관리자 상세와 같이 표에 둔다(2026-10-27 사용자 지정)
-    { label: "최근 로그인", value: admin.lastLoginAt ? formatDateTime(admin.lastLoginAt) : muted("로그인 기록 없음") },
+    { label: "최근 로그인", value: admin.lastLoginAt ? formatDateTime(admin.lastLoginAt) : muted("-") },
     // 가맹 관리자만 — 등록 때 정해진 연결 가맹 마스터. 누가 열든 보인다(2026-10-23). 표 맨 끝, 최근 로그인 아래(2026-10-27 사용자 지정)
     ...(admin.franchiseMaster
       ? [
@@ -168,6 +173,31 @@ function DetailBody({
         </span>
       </div>
       {failure && <FailedBand message={failure} />}
+      {/* 버튼을 숨기거나 막은 이유(목업 admins-detail). 연결 가맹 마스터가 아닌 사람이 보는 가맹 관리자 문구는 2026-10-27 사용자 지정 */}
+      {admin.actions.isSelf ? (
+        admin.roleTypeCode === "FA" ? (
+          <InfoBand>
+            <p>내 계정입니다 — 조회만 합니다</p>
+            <p className="font-normal text-erp-label">
+              가맹 관리자는 계정을 수정하지 않습니다. 계정 정보 · 권한명 · 점포 · 계정상태는 연결된 가맹 마스터가 바꾸고, 비밀번호는 내 정보에서 직접 바꿉니다.
+            </p>
+          </InfoBand>
+        ) : (
+          // 수정 화면을 설명하는 띠라 [수정]이 보일 때만(메뉴 수정 권한 + api canUpdate)
+          canUpdate && (
+            <InfoBand>
+              <p>내 계정입니다</p>
+              <p className="font-normal text-erp-label">
+                수정 화면에서는 기본정보(이름 · 연락처 · 이메일)만 바뀝니다. 권한명 · 계정상태 · 대상점포는 BP 마스터 · BP 관리자 · 플랫폼 사용자가,
+                비밀번호는 내 정보에서 직접 바꿉니다.
+              </p>
+            </InfoBand>
+          )
+        )
+      ) : (
+        admin.roleTypeCode === "FA" &&
+        !admin.actions.canUpdate && <InfoBand>가맹 관리자 계정은 연결된 가맹 마스터만 수정 · 비밀번호 초기화할 수 있습니다.</InfoBand>
+      )}
       <DetailTable title="기본정보" rows={rows} />
       {/* 적용 대상은 대상점포 제목 바 옆에 「전체 점포 · 일부 점포」로 합쳤다(2026-10-27 사용자 지정 — 전엔 따로 「적용 대상」 줄) */}
       <MappedStores admin={admin} />

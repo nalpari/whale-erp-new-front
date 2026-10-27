@@ -8,14 +8,17 @@
     <link rel="stylesheet" href="../assets/whale.css" />
   </head>
   <body data-root="../" data-page="bp" data-sub="bp/detail.html">
-    <!-- BP 마스터 계정 상세 조회·삭제 · /platform/bp/:BP코드 · S-GZDODB · 비밀번호 초기화 S-PRRLMA · 1팀
-         기본정보(계정 관리정보 포함) · 사업자정보 · 변경 이력을 나눠 보인다. 모든 항목은 읽기 전용이다.
-         미인증 BP 의 비어 있는 사업자정보는 하이픈(-)으로 보인다. 계정 삭제는 비밀번호 초기화 옆 버튼이고, 조건을 채우지 못하면 흐리게 두고 이유를 말풍선으로 보인다.
+    <!-- BP 마스터 계정 상세 조회·삭제 · /bp-masters?bp= 상세 패널 · S-GZDODB · 비밀번호 초기화 S-PRRLMA · 1팀
+         기본정보(계정 관리정보 포함) · 사업자정보를 나눠 보이고, 변경 이력은 하단 [변경 이력] 버튼의 팝업으로 본다. 모든 항목은 읽기 전용이다.
+         미인증 BP 의 비어 있는 사업자정보는 하이픈(-)으로 보인다. 계정 삭제는 하단 버튼이고, 조건을 채우지 못하면 흐리게 두고 이유를 말풍선으로 보인다.
          수정은 BP 마스터 계정 수정 화면, BP 상태 변경(사용·미사용) · 비밀번호 초기화 · 삭제 확인은 이 화면의 팝업이 맡는다.
-         상태 변경은 점포 상세의 점포 상태 변경처럼 제목줄 버튼으로 연다. 미사용은 선행 조건 없이 바로, 사용 복원은 BP 와 BP 마스터만 살아난다. 사유는 받지 않는다.
+         버튼 자리는 플랫폼 관리자 상세와 같다 — 상태 변경 · 비밀번호 초기화는 기본정보의 그 줄 버튼, 하단은 [닫기][삭제][수정][변경 이력](2026-10-22 결정).
+         실제 화면은 목록 위로 밀려 나오는 슬라이드 패널이고(/bp-masters?bp=), 이 목업은 내용과 버튼 자리만 보인다.
+         미사용은 선행 조건 없이 바로, 사용 복원은 BP 와 BP 마스터만 살아난다. 사유는 받지 않는다.
          BP 상태는 BP 정보(bp_codes.status)에 두고 BP 마스터 계정 상태와 같은 처리 안에서 함께 바꾼다 — 둘은 늘 같은 값(사용·미사용·탈퇴)이다. 삭제는 상태가 아니라 삭제 여부로 따로 본다(확정 2026-09-30).
          삭제는 사용·미사용이면서 한 번도 로그인하지 않았고, 하위 관리자와 등록 점포가 없는 BP 만 된다.
-         소속 점포 수를 누르면 점포 목록으로 가서 이 BP 로 좁혀 조회한다 — 개별 점포는 여기서 보이지 않는다.
+         소속 점포는 수만 보인다 — 점포 목록으로 가는 연결은 나중에 한다(2026-10-22). 개별 점포는 여기서 보이지 않는다.
+         수정 일시 · 수정자는 BP 정보나 BP 마스터 계정을 마지막으로 고친 시각과 사람이다(데모에서 가져옴, 2026-10-22).
          BP 탈퇴는 BP 마스터 본인만 한다 — 플랫폼 사용자는 미사용까지만 바꾸고 탈퇴로는 바꾸지 못한다(확정 2026-09-29).
          위쪽 점선 줄 둘은 목업 전용이다 — 권한과 BP 를 따로 바꾼다. -->
     <a class="skip" href="#main">본문으로 건너뛰기</a>
@@ -38,19 +41,6 @@
               <span class="filters__count mono" data-show="fresh created" hidden>BP000031</span>
               <span class="filters__count mono" data-show="off" hidden>BP000012</span>
               <span class="filters__count mono" data-show="gone" hidden>BP000008</span>
-              <!-- 실행 항목 — 수정 권한이 있고 탈퇴가 아닐 때만 -->
-              <!-- BP 상태 변경 — 점포 상태 변경처럼 상세에서 한다. 사용 → 미사용, 미사용 → 사용 둘뿐이고 탈퇴 BP 에는 없다. -->
-              <button class="btn btn--secondary btn--sm" type="button" data-open="pop-off" data-show-role="all" data-show="use">BP 상태 변경</button>
-              <button class="btn btn--secondary btn--sm" type="button" data-open="pop-off-fresh" data-show-role="all" data-show="fresh created" hidden>BP 상태 변경</button>
-              <button class="btn btn--secondary btn--sm" type="button" data-open="pop-on" data-show-role="all" data-show="off" hidden>BP 상태 변경</button>
-              <button class="btn btn--secondary btn--sm" type="button" data-open="pop-reset" data-show-role="all" data-show="use fresh created off">비밀번호 초기화</button>
-              <!-- 계정 삭제 — 오등록 정리용. 삭제 권한 + 조건(사용·미사용 · 로그인 기록 없음 · 하위 관리자 0명 · 등록 점포 0곳)을 채운 BP 만 누를 수 있다.
-                   조건을 못 채우면 흐리게 두고 이유를 말풍선으로 보인다. 탈퇴 BP 에는 버튼이 없다. -->
-              <button class="btn btn--danger btn--sm" type="button" data-open="pop-delete" data-show-role="all" data-show="fresh created" hidden>계정 삭제</button>
-              <span data-show-role="all" data-show="use" data-tip="삭제할 수 없습니다 — 로그인 기록이 있고(2026-09-20), 하위 관리자 4명과 등록 점포 11곳이 있습니다. 대신 BP 상태를 미사용으로 바꾸세요." tabindex="0"><button class="btn btn--danger btn--sm" type="button" disabled>계정 삭제</button></span>
-              <span data-show-role="all" data-show="off" hidden data-tip="삭제할 수 없습니다 — 로그인 기록이 있고 등록 점포 3곳이 있습니다." tabindex="0"><button class="btn btn--danger btn--sm" type="button" disabled>계정 삭제</button></span>
-              <a class="btn btn--primary btn--sm" href="edit.html" data-show-role="all" data-show="use fresh created">BP 마스터 계정 수정</a>
-              <a class="btn btn--primary btn--sm" href="edit.html?state=off" data-show-role="all" data-show="off" hidden>BP 마스터 계정 수정</a>
               <button type="button" class="btn btn--primary btn--sm" onclick="window.open('./bp-detail.screen-def.html', 'screenDef', 'width=1620,height=900')"><span data-icon="clipboard" data-icon-size="14"></span>화면정의서</button>
             </div>
           </div>
@@ -90,7 +80,7 @@
               <span class="band__ic" data-icon="lock" data-icon-size="20"></span>
               <div class="band__body">
                 <div class="band__title">미사용 BP입니다 — 이 BP의 모든 관리자 계정이 로그인할 수 없습니다</div>
-                <p class="band__desc">점포 3곳은 상태를 그대로 두고 직원 초대·근로계약·부가서비스·매출 연동·출퇴근 기록만 멈췄습니다. 목록·상세 조회는 됩니다. 다시 쓰려면 위의 ‘BP 상태 변경’에서 사용으로 바꿉니다.</p>
+                <p class="band__desc">점포 3곳은 상태를 그대로 두고 직원 초대·근로계약·부가서비스·매출 연동·출퇴근 기록만 멈췄습니다. 목록·상세 조회는 됩니다. 다시 쓰려면 기본정보 BP 상태 줄의 [상태 변경]에서 사용으로 바꿉니다.</p>
               </div>
             </div>
             <div class="band band--info" data-show="gone" hidden>
@@ -116,30 +106,42 @@
                     <dd class="mono"><span data-show="use">010-3380-1127</span><span data-show="fresh created" hidden>010-2291-7730</span><span data-show="off" hidden>010-7732-0918</span><span class="subtle" data-show="gone" hidden>탈퇴로 삭제됨</span></dd>
                     <dt>이메일</dt>
                     <dd class="mono"><span data-show="use">hayoon@hangang.co.kr</span><span data-show="fresh created" hidden>serin@breadlab.kr</span><span data-show="off" hidden>junho@sotbap.kr</span><span class="subtle" data-show="gone" hidden>탈퇴로 삭제됨</span></dd>
+                    <!-- 비밀번호 초기화 — 플랫폼 관리자 상세처럼 이 줄의 버튼(수정 권한). 탈퇴 BP 에는 없다 -->
+                    <dt>비밀번호</dt>
+                    <dd>
+                      <span class="mono subtle">********</span>
+                      <button class="btn btn--secondary btn--sm" type="button" data-open="pop-reset" data-show-role="all" data-show="use fresh created off">초기화</button>
+                    </dd>
+                    <!-- BP 상태 변경 — 이 줄의 버튼(수정 권한). 사용 → 미사용, 미사용 → 사용 둘뿐이고 탈퇴 BP 에는 없다 -->
                     <dt>BP 상태</dt>
                     <dd>
                       <span data-show="use"><span class="badge badge--ok">사용</span> <span class="mono subtle">2025-02-03 11:12</span></span>
                       <span data-show="fresh created" hidden><span class="badge badge--ok">사용</span> <span class="mono subtle">2026-09-18 10:04</span></span>
                       <span data-show="off" hidden><span class="badge badge--warn">미사용</span> <span class="mono subtle">2026-07-01 18:30</span></span>
                       <span data-show="gone" hidden><span class="badge badge--risk">탈퇴</span> <span class="mono subtle">2026-05-30 21:15</span></span>
+                      <button class="btn btn--secondary btn--sm" type="button" data-open="pop-off" data-show-role="all" data-show="use">상태 변경</button>
+                      <button class="btn btn--secondary btn--sm" type="button" data-open="pop-off-fresh" data-show-role="all" data-show="fresh created" hidden>상태 변경</button>
+                      <button class="btn btn--secondary btn--sm" type="button" data-open="pop-on" data-show-role="all" data-show="off" hidden>상태 변경</button>
                     </dd>
                     <dt>소속 점포</dt>
                     <dd>
-                      <a class="tlink" href="../stores/index.html?bp=㈜한강상회%20·%20BP000017" data-show="use"><b>11곳</b> · 점포 목록에서 보기</a>
+                      <span data-show="use"><b>11곳</b></span>
                       <span data-show="fresh created" hidden><b>0곳</b></span>
-                      <a class="tlink" href="../stores/index.html?bp=솥밥상회%20·%20BP000012" data-show="off" hidden><b>3곳</b> · 점포 목록에서 보기</a>
+                      <span data-show="off" hidden><b>3곳</b></span>
                       <span data-show="gone" hidden><b>0곳</b> <span class="subtle">· 탈퇴 때 모두 폐점</span></span>
                     </dd>
                     <dt>가입경로</dt><dd><span data-show="use off gone">회원가입</span><span data-show="fresh created" hidden>플랫폼등록</span></dd>
                     <dt>등록 일시 · 등록자</dt>
                     <dd><span data-show="use"><span class="mono">2025-02-03 11:12</span> · <span class="mono">hangang01</span></span><span data-show="fresh created" hidden><span class="mono">2026-09-18 10:04</span> · <span class="mono">platjung</span></span><span data-show="off" hidden><span class="mono">2024-11-05 14:08</span> · <span class="mono">sotbap</span></span><span data-show="gone" hidden><span class="mono">2024-06-14 08:47</span> · <span class="mono">gukbap24</span></span></dd>
+                    <dt>수정 일시 · 수정자</dt>
+                    <dd><span data-show="use"><span class="mono">2026-08-14 10:31</span> · <span class="mono">platkim</span></span><span data-show="fresh created" hidden><span class="mono">2026-09-18 10:04</span> · <span class="mono">platjung</span></span><span data-show="off" hidden><span class="mono">2026-07-01 18:30</span> · <span class="mono">platjung</span></span><span data-show="gone" hidden><span class="mono">2026-05-30 21:15</span> · <span class="mono">gukbap24</span></span></dd>
                     <dt>최근 로그인</dt>
-                    <dd><span class="mono" data-show="use">2026-09-20 08:41</span><span class="subtle" data-show="fresh created" hidden>로그인 기록 없음</span><span class="mono" data-show="off" hidden>2026-06-30 22:10</span><span class="mono" data-show="gone" hidden>2026-05-30 21:02</span></dd>
+                    <dd><span class="mono" data-show="use">2026-09-20 08:41</span><span class="subtle" data-show="fresh created" hidden>-</span><span class="mono" data-show="off" hidden>2026-06-30 22:10</span><span class="mono" data-show="gone" hidden>2026-05-30 21:02</span></dd>
                     <dt>약관 동의</dt><dd><span data-show="use off gone">동의</span><span data-show="fresh created" hidden>미동의 <span class="subtle">· 첫 로그인 때 받음</span></span></dd>
                     <dt>강제 비밀번호 변경</dt><dd><span data-show="use off gone">대상 아님</span><span data-show="fresh created" hidden>대상 <span class="subtle">· 초기 비밀번호 발급</span></span></dd>
                   </dl>
                 </div>
-                <div class="panel__note">소속 점포 수는 폐점·삭제한 점포를 뺀 수다. 누르면 점포 목록이 이 BP 와 폐점 제외 조건으로 바로 조회된다. 권한 그룹은 BP 마스터 기본 권한으로 고정이다. 이 화면은 BP 관리자·가맹 관리자 계정을 보이지 않는다.</div>
+                <div class="panel__note">소속 점포 수는 폐점·삭제한 점포를 뺀 수다. 수정 일시는 BP 정보와 BP 마스터 계정 중 나중에 고친 쪽이다. 권한 그룹은 BP 마스터 기본 권한으로 고정이다. 이 화면은 BP 관리자·가맹 관리자 계정을 보이지 않는다.</div>
               </section>
 
               <div class="stack--lg" style="display: flex; flex-direction: column">
@@ -184,11 +186,32 @@
               </div>
             </div>
 
-            <section class="panel">
-              <div class="panel__head">
-                <h2 class="t-h2">변경이력</h2>
-                <span class="badge badge--quiet">정보 변경 · 상태 변경 · 시간순</span>
-              </div>
+            <!-- 하단 버튼 — 플랫폼 관리자 상세와 같은 순서 [닫기][삭제][수정][변경 이력].
+                 삭제는 삭제 권한 + 조건(사용·미사용 · 로그인 기록 없음 · 하위 관리자 0명 · 등록 점포 0곳)을 채운 BP 만 누를 수 있고,
+                 못 채우면 흐리게 두고 이유를 말풍선으로 보인다. 탈퇴 BP 는 삭제 · 수정 없이 [닫기][변경 이력]만. -->
+            <div class="inline" style="justify-content: flex-end">
+              <a class="btn btn--ghost" href="index.html">닫기</a>
+              <button class="btn btn--danger" type="button" data-open="pop-delete" data-show-role="all" data-show="fresh created" hidden>삭제</button>
+              <span data-show-role="all" data-show="use" data-tip="삭제할 수 없습니다 — 로그인 기록이 있고(2026-09-20), 하위 관리자 4명과 등록 점포 11곳이 있습니다. 대신 BP 상태를 미사용으로 바꾸세요." tabindex="0"><button class="btn btn--danger" type="button" disabled>삭제</button></span>
+              <span data-show-role="all" data-show="off" hidden data-tip="삭제할 수 없습니다 — 로그인 기록이 있고 등록 점포 3곳이 있습니다." tabindex="0"><button class="btn btn--danger" type="button" disabled>삭제</button></span>
+              <a class="btn btn--primary" href="edit.html" data-show-role="all" data-show="use fresh created">수정</a>
+              <a class="btn btn--primary" href="edit.html?state=off" data-show-role="all" data-show="off" hidden>수정</a>
+              <button class="btn btn--secondary" type="button" data-open="pop-history">변경 이력</button>
+            </div>
+
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- 변경 이력 팝업 — BP 정보와 BP 마스터 계정 이력을 한 표로, 최신순 · 페이지 나눔(플랫폼 관리자 이력 팝업과 같다) -->
+    <div class="modal" id="pop-history" hidden role="dialog" aria-modal="true" aria-labelledby="ph-t">
+      <div class="modal__box modal__box--wide" style="max-width: 900px">
+        <div class="modal__head">
+          <h2 class="t-h2" id="ph-t">변경 이력</h2>
+          <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+        </div>
+        <div class="modal__body">
               <div class="tblwrap" data-show="use off gone">
                 <table class="tbl tbl--dense">
                   <thead>
@@ -207,12 +230,13 @@
                 <span class="empty__ic" data-icon="clock" data-icon-size="22"></span>
                 <p>변경 이력이 없습니다.</p>
               </div>
-              <div class="panel__note">변경 사유는 받지 않는다. 사유는 회원 탈퇴 때 받은 탈퇴 사유만 탈퇴 줄에 붙는다. 비밀번호 초기화 이력은 메일 발송 이력으로 따로 남는다.</div>
-            </section>
-
-          </div>
+              <div data-show="use off gone"><div data-pager="3" data-pager-unit="건"></div></div>
+              <p class="subtle" style="margin: 0; font-size: 12px">변경 사유는 받지 않는다. 사유는 회원 탈퇴 때 받은 탈퇴 사유만 탈퇴 줄에 붙는다. 비밀번호 초기화 이력은 메일 발송 이력으로 따로 남는다.</p>
         </div>
-      </main>
+        <div class="modal__foot">
+          <button class="btn btn--primary" type="button" data-close>닫기</button>
+        </div>
+      </div>
     </div>
 
     <!-- 사용 → 미사용 확인 — 선행 조건 없이 바로 적용된다 -->

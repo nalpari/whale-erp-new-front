@@ -133,3 +133,15 @@ test("계정 역할을 바꾸면 그 역할로 다시 맞춘다 — 전체 점�
   assert.deepEqual([ba.isAllStores, ba.roleGroupId], [true, ""]);
   assert.equal(withRole(filled, "", groups).roleGroupId, "");
 });
+
+test("연락처 — 숫자 9~12자리(02 유선 · 050X 평생번호 포함), 문구는 이 화면 것", () => {
+  const phoneError = (phone: [string, string, string]) => validateBpAdminForm({ ...filled, phone }, { mode: "create" }).phone;
+  assert.equal(phoneError(["010", "1", "5678"]), "연락처는 숫자 9~12자리입니다.", "8자리");
+  assert.equal(phoneError(["02", "123", "4567"]), undefined, "9자리");
+  assert.equal(phoneError(["0507", "2033", "1334"]), undefined, "12자리");
+  assert.ok(phoneError(["0507", "2033", "13345"]), "13자리");
+});
+
+test("bpAdminFormOf — 050X 평생번호(12자리)는 4-4-4 로 나눈다", () => {
+  assert.deepEqual(bpAdminFormOf({ ...detail, phone: "050720331334" }).phone, ["0507", "2033", "1334"]);
+});

@@ -6,7 +6,7 @@ import { CodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
 import { usePagePermission } from "@/components/site/session-gate";
 import type { EnumValue } from "@/lib/enums";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, wasUpdated } from "@/lib/format";
 import type { RoleGroupDetail } from "@/lib/platform-role-groups";
 import { RoleDeleteDialog, type DeleteDialogActions } from "@/components/role-groups/role-delete-dialog";
 import { createRoleGroupAction, deleteRoleGroupAction, getDeletionCandidatesAction, updateRoleGroupAction } from "./actions";
@@ -101,7 +101,12 @@ function RoleView({ role, lockReasons, onDeleted }: { role: RoleGroupDetail; loc
           <ReadonlyValue label="등록" value={when(role.createdAt, role.createdBy)} title={whenText(role.createdAt, role.createdBy)} bold />
         </FormRow>
         <FormRow>
-          <ReadonlyValue label="최종수정" value={when(role.updatedAt, role.updatedBy)} title={whenText(role.updatedAt, role.updatedBy)} bold />
+          {/* 등록만 하고 고친 적 없으면 「-」(2026-10-27 사용자 요청) */}
+          {wasUpdated(role.createdAt, role.updatedAt) ? (
+            <ReadonlyValue label="최종수정" value={when(role.updatedAt, role.updatedBy)} title={whenText(role.updatedAt, role.updatedBy)} bold />
+          ) : (
+            <ReadonlyValue label="최종수정" value={<span className="font-normal text-erp-muted">-</span>} bold />
+          )}
         </FormRow>
       </ReadonlyCard>
     </div>

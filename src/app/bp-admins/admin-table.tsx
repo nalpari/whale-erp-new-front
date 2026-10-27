@@ -71,7 +71,7 @@ export function AdminTable({
         ) : a.lastLoginAt ? (
           dim(a, formatDateTime(a.lastLoginAt))
         ) : (
-          <span className="text-erp-muted">로그인 기록 없음</span>
+          <span className="text-erp-muted">-</span>
         ),
     },
     // 최근 로그인 다음에 등록일시(2026-10-27 사용자 지정 — 전엔 등록일시 · 최근 로그인 순)

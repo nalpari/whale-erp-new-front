@@ -81,7 +81,7 @@ export function validateBpAdminForm(
   if (loginId) errors.loginId = loginId;
   if (!NAME_PATTERN.test(form.name.trim())) errors.name = form.name.trim() ? "이름은 한글 또는 영문 2~20자입니다." : "이름을 입력해 주세요.";
   const phone = phoneOf(form);
-  if (!PHONE_PATTERN.test(phone)) errors.phone = phone ? "연락처는 숫자 10~11자리입니다." : "연락처를 입력해 주세요."; // 라벨 「연락처」 — 플랫폼 관리자와 같은 문구(2026-10-27 사용자 지정)
+  if (!PHONE_PATTERN.test(phone)) errors.phone = phone ? "연락처는 숫자 9~12자리입니다." : "연락처를 입력해 주세요."; // 라벨 「연락처」 — 플랫폼 관리자와 같은 문구(2026-10-27 사용자 지정), 자릿수는 1팀 9~12자리
   const email = emailError(form.email);
   if (email) errors.email = email;
   if (mode === "create" && !form.roleTypeCode) errors.roleTypeCode = "계정 역할을 골라 주세요.";
