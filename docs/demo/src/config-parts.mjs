@@ -95,7 +95,16 @@ export const storePicker = (A, { pool, picked, hint, label = "관리할 점포 �
 // 두 목록 위 옵션(전체 선택 · 직영점포 · 가맹점포)은 그 목록에서 묶음을 한꺼번에 체크한다. 사유가 있는 점포는 흐리게 두고 옮기지 않는다.
 // 묶음 체크의 켜진 바탕·테두리는 aria-checked 변형으로 칠한다 — bg-white 가 erp.css 에서 bg-erp-brand 뒤에 나와 클래스 바꾸기로는 덮이지 않는다.
 // 끌어 놓을 목록은 data-over 일 때 브랜드색 테두리가 된다. 열 때마다 erp.js 가 지금 칩(선택한 점포)으로 두 목록을 다시 나눈다.
-function storeBulkDialog(A, id, { stores, picked }) {
+// 목록 필터의 [일괄검색](store-filter.mjs storeFilterSection)도 이 창을 쓴다 — text 로 「매핑」 대신 「선택」 문구를 넘긴다.
+// 안내 · 오른쪽 빈 목록은 2026-10-27 사용자 지정 문구다(앱 store-mapping-picker.tsx TEXTS 와 같다).
+const BULK_MAP_TEXT = {
+  guide: "점포를 선택한 후 [추가] 버튼을 누르거나 오른쪽으로 드래그하여 매핑할 수 있습니다. 매핑 해제는 [빼기] 버튼을 이용해 주세요.",
+  left: "매핑 안 된 점포",
+  right: "매핑된 점포",
+  leftDone: "고를 수 있는 점포를 모두 매핑했습니다.",
+  rightEmpty: "매핑된 점포가 없습니다.<br>왼쪽 목록에서 점포를 선택하여 추가해 주세요.",
+};
+export function storeBulkDialog(A, id, { stores, picked, text = BULK_MAP_TEXT }) {
   const groupCheck = (key, side, label) =>
     `<span role="checkbox" tabindex="0" aria-checked="false" aria-label="${label}" data-bulk-group="${key}" data-bulk-side="${side}" class="relative grid size-[20px] shrink-0 place-items-center rounded-[2px] border border-erp-field-line bg-white aria-checked:border-erp-brand aria-checked:bg-erp-brand aria-[checked=mixed]:border-erp-brand aria-disabled:opacity-40"><img alt="" width="12" height="9" class="hidden" data-group-check src="${A}icons/check.svg"><span class="hidden h-[2px] w-[10px] bg-erp-brand" data-group-mixed></span></span>`;
   const opt = (key, side, label) =>
@@ -119,20 +128,20 @@ function storeBulkDialog(A, id, { stores, picked }) {
     ui.button(label, { variant: "off", "data-bulk-move": to, disabled: true }).replace('class="', 'class="disabled:pointer-events-none disabled:opacity-40 ');
   const left = pane(
     "L",
-    "매핑 안 된 점포",
-    { opts: opts("L", "매핑 안 된 점포에서 한꺼번에 체크") },
+    text.left,
+    { opts: opts("L", `${text.left}에서 한꺼번에 체크`) },
     stores.map((s, i) => (picked.includes(s[1]) ? "" : items[i])).join(""),
-    "고를 수 있는 점포를 모두 매핑했습니다.",
+    text.leftDone,
   );
   const right = pane(
     "R",
-    "매핑된 점포",
-    { opts: opts("R", "매핑된 점포에서 한꺼번에 체크") },
+    text.right,
+    { opts: opts("R", `${text.right}에서 한꺼번에 체크`) },
     stores.map((s, i) => (picked.includes(s[1]) ? items[i] : "")).join(""),
-    "매핑된 점포가 없습니다.<br>왼쪽 목록에서 점포를 선택하여 추가해 주세요.",
+    text.rightEmpty,
   );
   const body =
-    `<p class="text-[13px] text-erp-label">점포를 선택한 후 [추가] 버튼을 누르거나 오른쪽으로 드래그하여 매핑할 수 있습니다. 매핑 해제는 [빼기] 버튼을 이용해 주세요.</p>` +
+    `<p class="text-[13px] text-erp-label">${text.guide}</p>` +
     `<div class="mt-[12px] flex items-stretch gap-[12px]">${left}<div class="flex shrink-0 flex-col justify-center gap-[6px]">${move("R", "추가 ›")}${move("L", "‹ 빼기")}</div>${right}</div>`;
   return `<dialog id="${id}" data-bulk-popup aria-labelledby="${id}-t" class="m-auto w-[800px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"><h2 id="${id}-t" class="text-[18px] font-semibold">점포 일괄 검색</h2><div class="mt-[12px] text-[14px] leading-[1.6] text-erp-ink">${body}</div><div class="mt-[24px] flex justify-end gap-[6px]">${ui.button("취소", { variant: "off", "data-close": true })}${ui.button(`${picked.length}개점 적용`, { "data-bulk-apply": true })}</div></dialog>`;
 }

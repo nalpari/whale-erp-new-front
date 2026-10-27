@@ -312,6 +312,16 @@
     const after = bulkItems(dlg, side).find((it) => +it.dataset.order > +item.dataset.order);
     list.insertBefore(item, after || $("[data-bulk-empty]", list));
   }
+  // 묶음 체크(전체 선택 · 유형) 칠하기 — BP 선택 팝업을 정리하며(2e029653) 함께 지워져 일괄 검색 창이 열리지 않던 것을 되살렸다(2026-10-27)
+  function paintScopeGroup(g, state) {
+    g.setAttribute("aria-checked", state);
+    g.classList.toggle("border-erp-brand", state !== "false");
+    g.classList.toggle("bg-erp-brand", state === "true");
+    const check = $("[data-group-check]", g);
+    const mixed = $("[data-group-mixed]", g);
+    if (check) check.classList.toggle("hidden", state !== "true");
+    if (mixed) mixed.classList.toggle("hidden", state !== "mixed");
+  }
   function syncBulkDialog(dlg) {
     for (const side of ["L", "R"]) {
       const pane = bulkPane(dlg, side);
