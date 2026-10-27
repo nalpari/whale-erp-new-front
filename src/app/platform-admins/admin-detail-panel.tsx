@@ -182,19 +182,19 @@ function DetailBody({
   ];
   // 미사용 전환일시는 상세에 더 보이지 않는다 — 누가 바꿨는지까지는 변경이력에 이미 쌓인다(2026-10-20 피드백).
 
-  // 등록만 한 계정은 수정일시가 등록일시와 같아(등록 때 함께 찍힌다) 등록이 수정처럼 보인다 — 같으면 최종수정은 「-」(BP 관리자 상세와 같다, 2026-10-27 사용자 지정).
-  // 두 값이 따로 찍혀 ms 가 어긋날 수 있어 1초 안쪽은 같은 것으로 본다
+  // 등록만 한 계정은 수정일시가 등록일시와 같아 등록이 수정처럼 보인다 — 같으면 최종수정은 「-」(BP 관리자 상세와 같다, 2026-10-27 사용자 지정).
+  // 등록 때 두 값이 따로 찍혀 ms 가 어긋날 수 있어 1초 안쪽은 같은 것으로 본다
   const edited = Math.abs(Date.parse(admin.updatedAt) - Date.parse(admin.createdAt)) >= 1000;
   const who = <WhoList rows={[["아이디", admin.loginId], ["이름", name]]} />;
   const roleType = useCodeLabel("ROLE_TYPE");
 
   return (
     <div className="flex flex-col gap-[16px]">
-      {/* 이름 옆에 「역할 값 | 권한그룹 값 | 상태 배지」 — 공통코드 상세 코드 머리와 같은 모양(2026-10-27 사용자 지정 — 전엔 상태 배지와 「사용자 권한 · 그룹명」 띠지). 상태는 라벨 없이 배지만 */}
-      {/* 역할 · 권한그룹 · 상태는 이름 아랫줄에 — 이름 길이와 상관없이 두 화면이 같은 자리에 선다(2026-10-27 사용자 지정) */}
-      <h2 className="flex flex-col items-start gap-[6px] text-[18px] font-semibold text-erp-ink">
-        <span>{name}</span>
-        <span className="text-[14px] font-normal">
+      {/* 이름 아랫줄에 「역할 값 | 권한그룹 값 | 상태 배지」 — 공통코드 상세 코드 머리와 같은 모양(2026-10-27 사용자 지정 — 전엔 상태 배지와 「사용자 권한 · 그룹명」 띠지).
+          상태는 라벨 없이 배지만. 이름 길이와 상관없이 두 화면이 같은 자리에 선다. 제목(h2)은 이름만 — 값 줄까지 제목 이름으로 읽히지 않게(리뷰로 찾음) */}
+      <div className="flex flex-col items-start gap-[6px]">
+        <h2 className="text-[18px] font-semibold text-erp-ink">{name}</h2>
+        <span className="text-[14px]">
           <HeadValues
             items={[
               { label: "역할", value: roleType(admin.roleGroup.roleTypeCode) },
@@ -203,7 +203,7 @@ function DetailBody({
             ]}
           />
         </span>
-      </h2>
+      </div>
       {failure && <FailedBand message={failure} />}
       <DetailTable title="기본정보" rows={rows} />
       {/* 등록 · 최종수정을 한 줄에 하나씩 — BP 관리자 상세 · 권한 그룹 상세와 같은 테두리 없는 카드(2026-10-27 사용자 지정) */}

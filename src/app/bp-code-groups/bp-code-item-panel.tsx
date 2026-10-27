@@ -100,8 +100,11 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
   const update = (key: string, patch: Partial<Draft>) => {
     const rows = drafts.map((d) => (d.key === key ? { ...d, ...patch } : d));
     setDrafts(rows);
-    // 오류가 난 칸을 고치면 그 칸만 다시 본다 — 맞으면 빨간 테두리 · 문구를 지운다(2026-10-27 사용자 지정). 다른 칸 · 서버가 알린 오류는 그대로 둔다
-    const fields = [...("label" in patch ? [`label:${key}`] : []), ...("itemCode" in patch ? [`code:${key}`] : [])].filter((f) => f in errors);
+    // 오류가 난 칸을 고치면 그 칸을 다시 본다 — 맞으면 빨간 테두리 · 문구를 지운다(2026-10-27 사용자 지정). 다른 칸의 오류는 그대로 두고,
+    // 고친 칸의 서버 오류(409)는 화면 검사로 다시 알 수 없어 지운다 — 다시 저장해야 확인된다
+    // 코드를 바꾸면 이미 오류가 난 다른 새 행의 코드 칸도 다시 본다 — 겹치던 짝을 고치면 그 짝의 「다른 새 행과 같은 …」도 사라져야 한다(리뷰로 찾음)
+    const codeFields = "itemCode" in patch ? [`code:${key}`, ...Object.keys(errors).filter((f) => f.startsWith("code:") && f !== "code:server")] : [];
+    const fields = [...new Set([...("label" in patch ? [`label:${key}`] : []), ...codeFields])].filter((f) => f in errors);
     if (fields.length) setErrors(recheck(errors, validate(rows), fields));
   };
 

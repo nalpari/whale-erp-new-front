@@ -24,10 +24,15 @@ export function HelpTip({ text, label = "도움말", floating, focusable = true 
     // 화면 오른쪽 끝 열(BP 공통코드 관리주체)이면 상자가 창 밖으로 잘렸다 — 띄운 뒤 폭을 재서 창 안(오른쪽 8px 여백)으로 당긴다(사용자가 찾음)
     const overflow = box.getBoundingClientRect().right - (document.documentElement.clientWidth - 8);
     if (overflow > 0) box.style.left = `${Math.max(8, at.left - 8 - overflow)}px`;
+    // 자리는 열 때 한 번 잡는다 — 표를 밀거나 창 크기가 바뀌면 아이콘에서 떨어지지 않게 닫는다(리뷰로 찾음)
+    window.addEventListener("scroll", hide, { capture: true, once: true });
+    window.addEventListener("resize", hide, { once: true });
   };
-  const hide = () => {
-    if (tip.current?.matches(":popover-open")) tip.current.hidePopover();
-  };
+  // popover 를 모르는 브라우저는 :popover-open 을 matches 에 넘기면 예외를 던진다 — show 와 같이 먼저 가린다(리뷰로 찾음)
+  function hide() {
+    const box = tip.current;
+    if (box && "hidePopover" in box && box.matches(":popover-open")) box.hidePopover();
+  }
 
   const icon = (
     <button

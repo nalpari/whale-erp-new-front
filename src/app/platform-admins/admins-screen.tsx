@@ -182,7 +182,7 @@ export function AdminsScreen({
                 </Select>
               </div>
             </ListToolbar>
-            <AdminTable rows={list.items} selected={query.admin} onOpen={openDetail} />
+            <AdminTable rows={list.items} selected={query.admin} onOpen={openDetail} noStatus={query.status === "NONE"} />
             <div className="pt-[14px]">
               <Pagination page={query.page} totalPages={Math.max(1, Math.ceil(list.total / query.pageSize))} onPageChange={(page) => go({ page, admin: undefined })} />
             </div>

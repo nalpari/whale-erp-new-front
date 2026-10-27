@@ -103,7 +103,8 @@ export function CodeGroupPanel({
   const update = (key: string, patch: Partial<Draft>) => {
     const rows = drafts.map((d) => ((d.added ? key === "" : d.groupCode === key) ? { ...d, ...patch } : d));
     setDrafts(rows);
-    // 오류가 난 칸을 고치면 그 칸만 다시 본다 — 맞으면 빨간 테두리 · 문구를 지운다(2026-10-27 사용자 지정). 다른 칸 · 서버가 알린 오류는 그대로 둔다
+    // 오류가 난 칸을 고치면 그 칸을 다시 본다 — 맞으면 빨간 테두리 · 문구를 지운다(2026-10-27 사용자 지정). 다른 칸의 오류는 그대로 두고,
+    // 고친 칸의 서버 오류(409)는 화면 검사로 다시 알 수 없어 지운다 — 다시 저장해야 확인된다
     const fields = [
       ...("groupName" in patch ? [`name:${key}`] : []),
       ...("groupCode" in patch ? ["code"] : []),
@@ -183,7 +184,7 @@ export function CodeGroupPanel({
       // 저장했는데 서버가 화면을 무효화하지 못했으면 직접 다시 받는다 — 새 목록이 와야 이어 둔 새 행 · 바뀐 값이 정리된다
       if ((result.ok || result.anySaved) && !result.refreshed) router.refresh();
       if (result.ok) {
-        // 저장한 값으로 이 패널을 마무리한다. 새 그룹이 다음 쪽에 들어가 이 쪽 목록이 그대로여도(위 재설정이 돌지 않아도)
+        // 저장한 값으로 이 패널을 마무리한다. 다시 받은 목록이 늦거나 같은 참조로 와서 위 재설정이 돌지 않아도
         // 입력 행이 남지 않게 한다. 다시 그린 목록이 먼저 와서 새 행을 이어 뒀으면 그것도 여기서 빠진다.
         setSavingFrom(null);
         setDrafts((rows) => rows.filter((d) => !d.added).map((d) => ({ ...d, groupName: d.groupName.trim() })));
@@ -320,9 +321,9 @@ export function CodeGroupPanel({
       actions={
         canSave && (
           <>
-            {/* 저장 전 새 행은 하나만 둔다 */}
+            {/* 저장 전 새 행은 하나만 둔다. 관리주체를 둘 다 끄면(목록 없음) 새 그룹의 표시 순서를 셀 목록이 없어 막는다(리뷰로 찾음) */}
             {canAdd && (
-              <Button variant="soft" onClick={handleAdd} disabled={Boolean(added) || saving}>
+              <Button variant="soft" onClick={handleAdd} disabled={Boolean(added) || saving || search.manageOwnerCode === "NONE"}>
                 추가
               </Button>
             )}

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { cloneElement, isValidElement, useId, type ReactNode } from "react";
 import { HeadValues } from "@/components/site/head-values";
 
 // 공통코드 화면(플랫폼 공통코드 관리 · BP 공통코드 관리)의 두 카드(그룹 목록 · 상세 코드) 껍데기. 제목 줄 오른쪽에 버튼, 아래에 표를 둔다.
@@ -27,7 +27,7 @@ export function CodePanel({
   return (
     <section
       id={id}
-      // 표(DataTable scroll)는 남는 높이를 먹고 그 안에서만 스크롤한다 — 나머지(제목 · 띠 · 쪽 넘김)는 줄지 않는다(2026-10-26 사용자 지정)
+      // 표(DataTable scroll)는 남는 높이를 먹고 그 안에서만 스크롤한다 — 나머지(제목 · 띠 · 오류 줄)는 줄지 않는다(2026-10-26 사용자 지정)
       className={`flex flex-col gap-[12px] overflow-y-auto [scrollbar-gutter:stable] rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>:not([data-table-scroll])]:shrink-0 ${
         wide ? "min-w-0 flex-1" : narrow ? "w-[560px] shrink-0" : "w-[750px] shrink-0"
       }`}
@@ -80,11 +80,14 @@ export function SaveFailedBand({ message, detail = "입력한 값은 그대로 �
  * 같은 줄의 다른 칸에만 오류가 있으면 reserve 로 문구 한 줄만큼 빈 자리를 둬 입력칸 높이를 맞춘다.
  */
 export function CellError({ message, reserve, children }: { message?: string; reserve?: boolean; children: ReactNode }) {
+  const id = useId();
   if (!message && !reserve) return children;
+  // 화면 낭독기가 칸에 닿을 때 이유도 읽게 문구를 칸의 설명(aria-describedby)으로 잇는다 — 전엔 표 아래 role=alert 목록이 읽어 줬다(리뷰로 찾음)
+  const field = message && isValidElement<{ "aria-describedby"?: string }>(children) ? cloneElement(children, { "aria-describedby": id }) : children;
   return (
     <span className="flex flex-col gap-[4px] py-[6px]">
-      {children}
-      <span title={message} aria-hidden={message ? undefined : true} className="truncate text-left text-[12px] leading-[1.4] text-erp-off">
+      {field}
+      <span id={message ? id : undefined} title={message} aria-hidden={message ? undefined : true} className="truncate text-left text-[12px] leading-[1.4] text-erp-off">
         {message ?? " "}
       </span>
     </span>
@@ -92,7 +95,8 @@ export function CellError({ message, reserve, children }: { message?: string; re
 }
 
 /**
- * 고친 칸(fields)의 오류만 새 검사 결과(found)로 바꾼다 — 맞으면 지우고, 아직 틀리면 새 문구로. 다른 칸 · 서버가 알린 오류는 그대로 둔다.
+ * 고친 칸(fields)의 오류만 새 검사 결과(found)로 바꾼다 — 맞으면 지우고, 아직 틀리면 새 문구로. 넘기지 않은 칸의 오류는 그대로 둔다.
+ * 넘긴 칸의 서버 오류(409)는 화면 검사가 다시 알 수 없어 지워진다 — 다시 저장해야 확인된다.
  * 칠 때마다 새 오류를 띄우지 않도록, 이미 오류가 있던 칸만 부르는 쪽이 넘긴다.
  */
 export function recheck(errors: Record<string, string>, found: Record<string, string>, fields: string[]): Record<string, string> {

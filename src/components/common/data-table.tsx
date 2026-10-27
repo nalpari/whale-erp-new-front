@@ -4,7 +4,10 @@ import { ScrollHeadSync } from "./scroll-head-sync";
 
 export type Column<T> = {
   header: string;
-  /** 열 이름 옆 i 도움말 문구 — 마우스를 올리면 뜬다(BP 공통코드 관리주체, 2026-10-27). 화면 낭독기는 본문 표의 열 이름과 함께 읽는다. */
+  /**
+   * 열 이름 옆 i 도움말 문구 — 마우스를 올리면 뜬다(BP 공통코드 관리주체, 2026-10-27). 화면 낭독기는 고정 머리 표(scroll · none)에서는
+   * 본문 표의 sr-only 열 이름에 붙여, 그 밖에는 i 버튼의 설명(aria-describedby)으로 읽는다.
+   */
   help?: ReactNode;
   /** Tailwind 너비 클래스(w-[60px] 등). 없으면 남는 폭을 나눠 갖는다. */
   width?: `w-[${number}px]`;
@@ -167,8 +170,8 @@ export function DataTable<T>({
 }
 
 /**
- * 보이는 열 이름 — 도움말이 있으면 옆에 i. 고정 머리 표(scroll)는 overflow 가 숨겨진 상자 안이라 상자를 최상위 레이어에 띄우고(floating),
- * 화면 낭독기에서 숨긴 머리라 탭 순서에서도 뺀다 — 문구는 본문 표의 열 이름(srLabel)이 읽힌다.
+ * 보이는 열 이름 — 도움말이 있으면 옆에 i. 고정 머리 표(scroll)의 머리 상자가 overflow 를 숨기고 표 칸도 넘치면 잘려 늘 최상위 레이어에 띄운다(floating).
+ * 고정 머리 표의 머리는 화면 낭독기에서 숨긴 표라 탭 순서에서도 빼고, 문구는 본문 표의 sr-only 열 이름(srLabel)으로 읽힌다.
  */
 function headLabel<T>(c: Column<T>, readable: boolean): ReactNode {
   if (!c.help) return c.header;

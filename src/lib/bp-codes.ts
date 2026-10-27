@@ -37,8 +37,12 @@ export async function getBpCodeGroups({ groupCode = "", groupName = "" }: { grou
     if (groupName) params.set("groupName", groupName);
     const list: BpCodeGroupList = await request(`/bp-code-groups?${params}`, await json("GET"));
     items.push(...list.items);
-    // 빈 쪽이면 멈춘다 — 받는 사이 그룹이 줄어 total 에 못 미쳐도 끝없이 돌지 않는다
-    if (list.items.length === 0 || items.length >= list.total) return { items, total: items.length };
+    if (items.length >= list.total) return { items, total: items.length };
+    // 빈 쪽이면 멈춘다 — 받는 사이 그룹이 줄어 total 에 못 미쳐도 끝없이 돌지 않는다. 덜 받은 것은 기록을 남긴다
+    if (list.items.length === 0) {
+      console.warn("공통코드 그룹 목록을 끝까지 받지 못했습니다", { received: items.length, total: list.total });
+      return { items, total: items.length };
+    }
   }
 }
 

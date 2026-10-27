@@ -30,7 +30,7 @@ test("검색어는 앞뒤 공백을 빼고 20자까지 — 자른 끝의 공백�
   assert.equal(parseAdminsQuery({ keyword: "a".repeat(19) + " bc" }).keyword, "a".repeat(19));
 });
 
-test("주소 만들기 — 1쪽은 빼고 특수문자는 인코딩한다", () => {
+test("주소 만들기 — 1쪽 · 기본 쪽 건수(20)는 빼고, 상태 NONE 은 남기며 특수문자는 인코딩한다", () => {
   assert.equal(adminsHref({}), "/platform-admins");
   assert.equal(adminsHref({ page: 1, pageSize: 20, keyword: "a&b c" }), "/platform-admins?keyword=a%26b+c");
   assert.equal(adminsHref({ pageSize: 100, status: "NONE" }), "/platform-admins?status=NONE&pageSize=100");

@@ -18,7 +18,7 @@ import { getBpAdminHistoriesAction, resetBpAdminPasswordAction } from "./actions
 import { unknownResult } from "./bp-admin-parts";
 
 // BP 관리자 상세(S-EBIPGZ · 데모 config/admins-detail). 모두 읽기 전용이고, 상태 · 권한 그룹 · 점포는 수정 패널에서만 바꾼다.
-// 계정 상태 · 역할 · 권한 그룹은 제목 줄 꼬리표로 보인다(2026-10-07). 가맹 관리자는 기본정보에 연결 가맹 마스터 줄을 둔다(2026-10-23).
+// 계정 상태 · 역할 · 권한 그룹은 이름 아랫줄에 「역할 | 권한그룹 | 상태 배지」(HeadValues)로 보인다(2026-10-27, 전엔 제목 줄 꼬리표). 가맹 관리자는 기본정보에 연결 가맹 마스터 줄을 둔다(2026-10-23).
 // [수정] · [비밀번호 초기화]는 메뉴 수정 권한과 api 가 준 actions 를 함께 본다(bp-admin-rules.ts) — 막는 것은 api 다.
 // 미사용 계정은 초기화 버튼 · 미발송 표시를 숨긴다 — 플랫폼 관리자와 같다(2026-10-27 사용자 지정). 본인 계정은 초기화 버튼을 막는다(내 정보에서 바꾼다).
 // 등록 · 최종수정과 적용 대상은 표가 아니라 권한 그룹 상세와 같은 테두리 없는 카드로 보인다. 최근 로그인은 기본정보 표의 비밀번호 아래 줄이다(2026-10-27 사용자 지정).
@@ -151,11 +151,11 @@ function DetailBody({
   return (
     // 제목 줄과 기본정보 표 사이를 16 으로 — 플랫폼 관리자 상세와 같다(2026-10-27 사용자 지정 — 전엔 24)
     <div className="flex flex-col gap-[16px]">
-      {/* 이름 옆에 「역할 값 | 권한그룹 값 | 상태 배지」 — 공통코드 상세 코드 머리 · 플랫폼 관리자 상세와 같은 모양(2026-10-27 사용자 지정 — 전엔 꼬리표). 상태는 라벨 없이 배지만 */}
-      {/* 역할 · 권한그룹 · 상태는 이름 아랫줄에 — 이름 길이와 상관없이 두 화면이 같은 자리에 선다(2026-10-27 사용자 지정) */}
-      <h2 className="flex flex-col items-start gap-[6px] text-[18px] font-semibold text-erp-ink">
-        <span>{name}</span>
-        <span className="text-[14px] font-normal">
+      {/* 이름 아랫줄에 「역할 값 | 권한그룹 값 | 상태 배지」 — 공통코드 상세 코드 머리 · 플랫폼 관리자 상세와 같은 모양(2026-10-27 사용자 지정 — 전엔 꼬리표).
+          상태는 라벨 없이 배지만. 이름 길이와 상관없이 두 화면이 같은 자리에 선다. 제목(h2)은 이름만 — 값 줄까지 제목 이름으로 읽히지 않게(리뷰로 찾음) */}
+      <div className="flex flex-col items-start gap-[6px]">
+        <h2 className="text-[18px] font-semibold text-erp-ink">{name}</h2>
+        <span className="text-[14px]">
           <HeadValues
             items={[
               { label: "역할", value: roleType(admin.roleTypeCode) },
@@ -164,7 +164,7 @@ function DetailBody({
             ]}
           />
         </span>
-      </h2>
+      </div>
       {failure && <FailedBand message={failure} />}
       <DetailTable title="기본정보" rows={rows} />
       {/* 등록 · 최종수정을 한 줄에 하나씩(2026-10-27 사용자 지정 — 전엔 기본정보 표의 등록일시 · 최종 수정일시 줄) */}
