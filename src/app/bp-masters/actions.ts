@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
 import {
   changeBpMasterStatus,
+  checkBpMasterEmailAvailable,
   checkBpMasterLoginIdAvailable,
   createBpMaster,
   deleteBpMaster,
@@ -128,7 +129,16 @@ export async function checkBpMasterLoginIdAction(loginId: string): Promise<Actio
   }
 }
 
-/** 사업자 진위확인 — 중복을 먼저 보고 국세청에 묻는다. 수정은 bpCodeId 를 실어 자기 BP 를 중복에서 뺀다. */
+/** 이메일 중복 확인 — 등록 · 수정 화면이 아이디와 같은 때(칸을 벗어나거나 Enter) 부른다. 형식은 화면이 먼저 본다. */
+export async function checkBpMasterEmailAction(email: string): Promise<ActionResult<{ available: boolean }>> {
+  try {
+    return { ok: true, available: await checkBpMasterEmailAvailable(email) };
+  } catch (error) {
+    return failureOf(error, "이메일 확인");
+  }
+}
+
+/** 사업자 진위확인 —중복을 먼저 보고 국세청에 묻는다. 수정은 bpCodeId 를 실어 자기 BP 를 중복에서 뺀다. */
 export async function verifyBpBusinessAction(input: BpBusinessVerificationInput): Promise<ActionResult<{ verificationToken: string }>> {
   if (input.bpCodeId !== undefined && !validId(input.bpCodeId)) return NOT_FOUND;
   try {

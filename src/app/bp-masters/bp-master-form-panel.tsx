@@ -6,6 +6,7 @@ import { Badge, Button, ConfirmDialog, DateField, Field, FormGroup, FormRow, Req
 import { AddressField } from "@/components/address-field";
 import {
   bpMasterServerErrorField,
+  emailError,
   EMPTY_BP_MASTER_FORM,
   formOfBpMaster,
   hasPendingVerification,
@@ -23,7 +24,7 @@ import { loginIdError } from "@/lib/platform-admin-form";
 import { formatDateTime } from "@/lib/format";
 import { formatBizNumber } from "@/lib/store-view";
 import { FailedBand, FieldMessage } from "../platform-admins/admin-parts";
-import { checkBpMasterLoginIdAction, createBpMasterAction, updateBpMasterAction, verifyBpBusinessAction } from "./actions";
+import { checkBpMasterEmailAction, checkBpMasterLoginIdAction,createBpMasterAction, updateBpMasterAction, verifyBpBusinessAction } from "./actions";
 import { BpStatusBadge, unknownResult } from "./bp-master-parts";
 
 // BP 마스터 계정 등록(S-OJEYQJ) · 수정(S-CQGGZS) 슬라이드 패널. 패널 폭(464)이라 칸을 한 줄에 하나씩 쌓고,
@@ -34,6 +35,8 @@ import { BpStatusBadge, unknownResult } from "./bp-master-parts";
 
 /** 아이디 중복 문구 — 저장할 때 api 가 주는 409 문구와 같게 둔다 */
 const LOGIN_ID_TAKEN = "이미 사용 중인 아이디입니다. 탈퇴 · 삭제된 계정의 아이디도 다시 쓸 수 없습니다";
+/** 이메일 중복 문구 — 저장 409(EMAIL_TAKEN)와 같게 둔다 */
+const EMAIL_TAKEN = "사용 중이거나 미사용인 다른 관리자 계정의 이메일입니다";
 
 type Props = {
   id: string;
@@ -76,8 +79,8 @@ export function BpMasterFormPanel(props: Props) {
   const [saving, startSaving] = useTransition();
   const [verifying, startVerifying] = useTransition();
   const router = useRouter();
-  /** 아이디 중복 확인 차례 — 고치거나 다시 물으면 올라가, 앞선 답을 버린다 */
-  const checkNumber = useRef(0);
+  /** 칸별 중복 확인 차례 — 고치거나 다시 물으면 올라가, 앞선 답을 버린다 */
+  const checkNumber = useRef({ loginId: 0, email: 0 });
   /** 진위확인 차례 — 세 칸을 고치면 올라가, 기다리던 인증 응답을 버린다(옛 값이 「인증 완료」로 되살아나지 않게) */
   const verifyNumber = useRef(0);
 
@@ -103,22 +106,28 @@ export function BpMasterFormPanel(props: Props) {
     focusFirstError();
   };
 
-  /** 아이디 중복 확인(등록만) — 칸을 벗어나거나 Enter 를 칠 때. 플랫폼 관리자 등록과 같은 규칙이다(admin-form-panel.tsx). */
-  const checkLoginId = (value: string) => {
-    if (mode !== "create" || !value.trim()) return;
-    const formatError = loginIdError(value);
-    if (formatError) return setErrors((e) => ({ ...e, loginId: formatError }));
-    const mine = ++checkNumber.current;
-    checkBpMasterLoginIdAction(value.trim())
+  /**
+   * 아이디(등록만) · 이메일 중복 확인 — 칸을 벗어나거나 Enter 를 칠 때. 플랫폼 관리자 · BP 관리자 등록과 같은 규칙이다.
+   * 이메일 확인은 자기 계정을 빼지 않으므로, 수정에서 원래 이메일 그대로면 묻지 않는다.
+   */
+  const checkAvailable = (key: "loginId" | "email", raw: string) => {
+    const value = key === "email" ? raw.trim().toLowerCase() : raw.trim();
+    if (!value || (key === "loginId" && mode !== "create")) return;
+    if (key === "email" && props.mode === "edit" && value === (props.bp.email ?? "").toLowerCase()) return;
+    const formatError = key === "loginId" ? loginIdError(raw) : emailError(raw);
+    if (formatError) return setErrors((e) => ({ ...e, [key]: formatError }));
+    const what = key === "loginId" ? "아이디" : "이메일";
+    const mine = ++checkNumber.current[key];
+    (key === "loginId" ? checkBpMasterLoginIdAction : checkBpMasterEmailAction)(value)
       .then((result) => {
-        if (mine !== checkNumber.current) return;
+        if (mine !== checkNumber.current[key]) return;
         if (result.ok) {
-          if (!result.available) setErrors((e) => ({ ...e, loginId: LOGIN_ID_TAKEN }));
-        } else if (result.status === 400) setErrors((e) => ({ ...e, loginId: result.message }));
+          if (!result.available) setErrors((e) => ({ ...e, [key]: key === "loginId" ? LOGIN_ID_TAKEN : EMAIL_TAKEN }));
+        } else if (result.status === 400) setErrors((e) => ({ ...e, [key]: result.message }));
         else if (result.status === 401) setFailure(result.message);
-        else console.warn("아이디 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다", result.status, result.message);
+        else console.warn(`${what} 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다`, result.status, result.message);
       })
-      .catch((error: unknown) => console.warn("아이디 중복 확인 호출 실패 — 저장할 때 api 가 다시 본다", error));
+      .catch((error: unknown) => console.warn(`${what} 중복 확인 호출 실패 — 저장할 때 api 가 다시 본다`, error));
   };
 
   /** 진위확인 칸을 고치면 기다리던 응답은 버리고 그 칸 오류 · 실패 문구를 지운다 */
@@ -230,15 +239,15 @@ export function BpMasterFormPanel(props: Props) {
               <TextField
                 value={form.loginId}
                 onChange={(e) => {
-                  checkNumber.current++;
+                  checkNumber.current.loginId++;
                   set("loginId", e.target.value, "loginId");
                 }}
-                onBlur={(e) => checkLoginId(e.currentTarget.value)}
+                onBlur={(e) => checkAvailable("loginId", e.currentTarget.value)}
                 onKeyDown={(e) => {
                   // 한글 조합 중 Enter 는 글자 확정이라 넘긴다
                   if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
                   e.preventDefault();
-                  checkLoginId(e.currentTarget.value);
+                  checkAvailable("loginId", e.currentTarget.value);
                 }}
                 maxLength={20}
                 placeholder="영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요."
@@ -281,7 +290,16 @@ export function BpMasterFormPanel(props: Props) {
             <TextField
               type="email"
               value={form.email}
-              onChange={(e) => set("email", e.target.value, "email")}
+              onChange={(e) => {
+                checkNumber.current.email++;
+                set("email", e.target.value, "email");
+              }}
+              onBlur={(e) => checkAvailable("email", e.currentTarget.value)}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter" || e.nativeEvent.isComposing) return;
+                e.preventDefault();
+                checkAvailable("email", e.currentTarget.value);
+              }}
               maxLength={100}
               aria-invalid={invalid("email")}
               aria-describedby={describe("email")}

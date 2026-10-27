@@ -115,6 +115,13 @@ export function verificationErrors(f: Pick<BpMasterForm, "bizNumber" | "ceoName"
   return errors;
 }
 
+/** 계정 이메일 형식 — 저장 검사와 중복 확인(칸을 벗어날 때)이 함께 쓴다. */
+export function emailError(value: string): string | undefined {
+  const email = value.trim();
+  if (!email) return "이메일을 입력해 주세요.";
+  if (email.length > 100 || !EMAIL_PATTERN.test(email)) return "이메일 형식이 아닙니다.";
+}
+
 /**
  * 저장할 때 칸별 오류. 인증 상자의 세 칸은 보지 않는다 — 번호 중복 · 확인 불가 · 처리 오류여도 인증 없이 저장할 수 있다(S-OJEYQJ · S-CQGGZS).
  * 대표자 연락처 · 이메일과 업태 · 종목 · 주소는 선택이고, 적었을 때만 형식을 본다.
@@ -126,9 +133,8 @@ export function validateBpMasterForm(form: BpMasterForm, mode: "create" | "edit"
   if (!NAME_PATTERN.test(form.name.trim())) errors.name = form.name.trim() ? "이름은 한글 또는 영문 2~20자입니다." : "이름을 입력해 주세요.";
   const phone = phoneOf(form.phone);
   if (!PHONE_PATTERN.test(phone)) errors.phone = phone ? "연락처는 숫자 10~11자리입니다." : "연락처를 입력해 주세요.";
-  const email = form.email.trim();
-  if (!email) errors.email = "이메일을 입력해 주세요.";
-  else if (email.length > 100 || !EMAIL_PATTERN.test(email)) errors.email = "이메일 형식이 아닙니다.";
+  const email = emailError(form.email);
+  if (email) errors.email = email;
   const tradeName = form.tradeName.trim();
   if (!tradeName) errors.tradeName = "상호명을 입력해 주세요.";
   else if (tradeName.length > 50) errors.tradeName = "상호명은 50자까지입니다.";

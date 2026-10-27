@@ -1437,6 +1437,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/bp-masters/email-availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 이메일 중복 확인. 아이디 확인과 같은 등록 권한이다. `:id` 보다 먼저 둔다. */
+        get: operations["BpMastersController_emailAvailability"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/bp-masters/business-verifications": {
         parameters: {
             query?: never;
@@ -13216,6 +13233,44 @@ export interface operations {
                 };
             };
             /** @description 아이디 형식 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 메뉴 권한 없음 · 플랫폼 계정이 아님 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BpMastersController_emailAvailability: {
+        parameters: {
+            query: {
+                email: string;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProfileEmailAvailabilityResponseDto"];
+                };
+            };
+            /** @description 이메일 형식 */
             400: {
                 headers: {
                     [name: string]: unknown;

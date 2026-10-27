@@ -65,6 +65,12 @@ export async function checkBpMasterLoginIdAvailable(loginId: string): Promise<bo
   return (await request<Schemas["LoginIdAvailabilityResponseDto"]>(`/bp-masters/login-id-availability?${params}`, await json("GET"))).available;
 }
 
+/** GET /bp-masters/email-availability — 지우지 않았고 탈퇴하지 않은 관리자 계정끼리 겹치면 쓸 수 없다(저장 409 와 같은 규칙). 자기 계정을 빼지 않으므로 수정 화면은 원래 이메일이면 묻지 않는다. */
+export async function checkBpMasterEmailAvailable(email: string): Promise<boolean> {
+  const params = new URLSearchParams({ email });
+  return (await request<Schemas["AdminProfileEmailAvailabilityResponseDto"]>(`/bp-masters/email-availability?${params}`, await json("GET"))).available;
+}
+
 /** POST /bp-masters/business-verifications — 번호 중복을 먼저 보고 국세청 진위확인. 수정은 bpCodeId 로 자기 BP 를 중복에서 뺀다. 토큰은 10분. */
 export async function verifyBpBusiness(input: BpBusinessVerificationInput): Promise<Schemas["BpMasterBusinessVerificationResponseDto"]> {
   return request("/bp-masters/business-verifications", await json("POST", input));
