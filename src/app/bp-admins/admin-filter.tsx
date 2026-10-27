@@ -11,8 +11,8 @@ import { fillScopeOf } from "@/app/stores/stores-query";
 import { keepingPanel, parseBpAdminsQuery, withBpAdminFilter, withPickedStores, withScopeCondition, type BpAdminsQuery } from "./bp-admins-href";
 
 /**
- * 왼쪽 필터(데모 config/admins). 점포 · 아이디 · 이름 · 권한 그룹 · 계정 상태, 조건은 모두 AND 다(S-AJHXFU).
- * 점포는 고르는 즉시, 아이디 · 이름은 Enter · 돋보기에 걸고, 권한 그룹 · 계정 상태는 고르는 즉시 건다.
+ * 왼쪽 필터(데모 config/admins). 점포 · 아이디 · 이름 · 권한명 · 계정상태, 조건은 모두 AND 다(S-AJHXFU).
+ * 점포는 고르는 즉시, 아이디 · 이름은 Enter · 돋보기에 걸고, 권한명 · 계정상태는 고르는 즉시 건다.
  * 점포 칸은 점포 목록 필터와 같다 — 목록에서 고른 점포(storeIds), 없으면 헤더가 실어 온 범위(scope)를 칩으로 그리고, 점포 조건이 주소에
  * 없으면(주소 직접 입력 · 즐겨찾기) 헤더 범위로 채워 다시 검색한다(stores/store-filter.tsx). 고른 점포를 관리하는 계정을 찾고,
  * 전체 점포 계정은 늘 결과에 나온다(api). 칩 이름은 로그인 정보의 점포에서 찾는다 — 찾지 못한 점포는 조건에서 빼고 알린다.
@@ -120,9 +120,10 @@ export function AdminFilter({
           maxLength={20}
         />
       </FilterSection>
-      <FilterSection label="권한 그룹" tight>
+      {/* 라벨은 목록 열 · 상세 머리와 같은 「권한명」(2026-10-27 사용자 지정 — 전엔 「권한 그룹」) */}
+      <FilterSection label="권한명" tight>
         <Select
-          aria-label="권한 그룹"
+          aria-label="권한명"
           value={query.roleGroupId ? String(query.roleGroupId) : ""}
           onChange={(e) => navigate(withBpAdminFilter(query, { roleGroupId: e.target.value ? Number(e.target.value) : undefined }))}
           disabled={roleGroups === null}
@@ -131,7 +132,7 @@ export function AdminFilter({
           <option value="">{roleGroups === null ? "불러오지 못함" : "전체"}</option>
           {/* 주소의 권한 그룹이 선택지에 없어도(받지 못함 · 고를 수 없는 그룹) 걸린 조건을 「전체」로 숨기지 않는다 */}
           {query.roleGroupId && !roleGroups?.some((r) => r.roleGroupId === query.roleGroupId) && (
-            <option value={query.roleGroupId}>선택한 권한 그룹(#{query.roleGroupId})</option>
+            <option value={query.roleGroupId}>선택한 권한명(#{query.roleGroupId})</option>
           )}
           {roleGroups?.map((r) => (
             <option key={r.roleGroupId} value={r.roleGroupId}>

@@ -41,7 +41,7 @@ export default ({ A, R }) => {
     // 점포 — 점포 정보 관리와 같은 점포 고르기(찾아 고르면 「선택한 점포」에 쌓임 · 5개 넘으면 스크롤)
     ui.filterSection("점포", storeFilter(A), { tight: true }),
     ui.filterSection("아이디 · 이름", ui.searchField(A, { placeholder: "아이디 또는 이름 일부를 입력하세요", label: "아이디 · 이름" }), { tight: true }),
-    ui.filterSection("권한 그룹", ui.select(GROUPS, { "aria-label": "권한 그룹" }), { tight: true }),
+    ui.filterSection("권한명", ui.select(GROUPS, { "aria-label": "권한명" }), { tight: true }),
     ui.filterSection("계정상태", ui.select(["전체", "사용", "미사용"], { "aria-label": "계정상태" }), { tight: true, last: true }),
   ]);
 
