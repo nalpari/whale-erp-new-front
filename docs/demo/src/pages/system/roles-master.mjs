@@ -119,7 +119,7 @@ function menuDialog(A, R, role, id) {
           const gb = open.length ? null : kids.length ? block(kids[0], op) : "view";
           const n = open.filter((k) => has(map, k[0], op)).length;
           if (TIP[gb]) reasons.add(TIP[gb]);
-          // 일부만 켜졌으면 「–」(머리칸은 「–」 없이 해제 — 아래 head)
+          // 일부만 켜졌으면 「–」(머리칸도 같다 — 아래 head)
           if (n > 0 && n < open.length) return `<span class="inline-flex">${partialBox(label)}</span>`;
           return cell(open.length > 0 && n === open.length, gb, label, m[1] === 1);
         }
@@ -130,7 +130,7 @@ function menuDialog(A, R, role, id) {
       const nm = `<span style="padding-left:${(m[1] - 1) * 18}px">${m[1] > 1 ? sub("└ ") : ""}${m[1] === 1 ? `<b class="font-semibold">${m[2]}</b>` : m[2]}</span>${[...reasons].map((r) => ` <span class="text-[13px] text-erp-label">· ${r}</span>`).join("")}`;
       return [nm, sub(`${m[1]}단계`), ...cells];
     });
-    // 머리칸 전체 선택: 고를 수 있는 칸이 모두 켜져 있으면 켜짐, 고를 칸이 없으면 흐리게
+    // 머리칸 전체 선택: 고를 수 있는 칸이 모두 켜져 있으면 켜짐, 일부만 켜졌으면 「–」, 고를 칸이 없으면 흐리게
     const head = ([op, label]) => {
       const open = vis.filter((m) => !m[4] && !block(m, op));
       // 체크박스는 칸 가운데(본문과 같은 세로줄), 글자는 그 오른쪽(앱 role-menu-dialog.tsx 와 같다, 2026-10-26 사용자 지정)
