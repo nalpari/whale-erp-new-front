@@ -53,15 +53,14 @@ export function bpCodePanelAccess(o: { lock: BpPanelLock; update: boolean; creat
 export const bpDeletable = (d: Pick<BpItemDraft, "added" | "manageOwnerCode">) =>
   !d.added && (d.manageOwnerCode === "BP_ONLY" || d.manageOwnerCode === "PLATFORM_PROVIDED");
 
-/** 화면 주소의 조건 — 쪽 · 고른 그룹 · 검색(그룹 코드 · 그룹명 · 관리주체). 새로 고쳐도, 링크를 보내도 같은 화면이 선다. */
-export type BpCodesQuery = { page?: number; group?: string; groupCode?: string; groupName?: string; manageOwnerCode?: string };
+/** 화면 주소의 조건 — 쪽 · 고른 그룹 · 검색(그룹 코드 · 그룹명). 새로 고쳐도, 링크를 보내도 같은 화면이 선다. */
+export type BpCodesQuery = { page?: number; group?: string; groupCode?: string; groupName?: string };
 
 /** 화면 주소(폴더 경로). 탭 BP 는 부르는 쪽이 bpPath 로 씌운다 — /bp/{id}/bp-code-groups. 기본값은 뺀다. */
-export function bpCodesHref({ page, group, groupCode, groupName, manageOwnerCode }: BpCodesQuery): string {
+export function bpCodesHref({ page, group, groupCode, groupName }: BpCodesQuery): string {
   const params = new URLSearchParams();
   if (groupCode) params.set("groupCode", groupCode);
   if (groupName) params.set("groupName", groupName);
-  if (manageOwnerCode) params.set("manageOwnerCode", manageOwnerCode);
   if (page && page > 1) params.set("page", String(page));
   if (group) params.set("group", group);
   const query = params.toString();

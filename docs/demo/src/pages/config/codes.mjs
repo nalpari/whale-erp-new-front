@@ -37,9 +37,8 @@ const handle = '<span title="끌어서 순서 바꾸기" aria-label="끌어서 �
 export default ({ A, R }) => {
   const filter = ui.filterPanel(A, [
     ui.filterSection("그룹 코드", ui.searchField(A, { placeholder: "예: EMP_TYPE", label: "그룹 코드" }), { tight: true }),
-    ui.filterSection("그룹명", ui.searchField(A, { placeholder: "예: 고용 형태", label: "그룹명" }), { tight: true }),
-    // 관리주체 — 기본 둘 다, 하나만 고른 때만 조건(앱 code-group-filter.tsx, 2026-10-27)
-    ui.filterSection("관리주체", ui.checkbox(A, "플랫폼고정", true) + ui.checkbox(A, "플랫폼제공", true), { last: true }),
+    // 관리주체 칸은 플랫폼 공통코드 관리에만 둔다(앱 code-group-filter.tsx showOwner, 2026-10-27)
+    ui.filterSection("그룹명", ui.searchField(A, { placeholder: "예: 고용 형태", label: "그룹명" }), { tight: true, last: true }),
   ]);
 
   const groupCols = [

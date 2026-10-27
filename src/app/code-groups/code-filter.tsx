@@ -8,5 +8,5 @@ import { codesHref } from "./codes-href";
 // 그룹 · 상세 코드에 저장하지 않은 변경이 있으면 이동 전에 묻는다.
 export function CodeFilter(search: CodeGroupSearch) {
   const { navigate } = useUnsavedChanges();
-  return <CodeGroupFilter {...search} onSearch={(next) => navigate(codesHref(next))} />;
+  return <CodeGroupFilter {...search} showOwner onSearch={(next) => navigate(codesHref(next))} />;
 }

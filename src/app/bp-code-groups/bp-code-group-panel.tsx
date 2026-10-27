@@ -64,7 +64,7 @@ export function BpCodeGroupPanel({
         rows={groups}
         rowKey={(g) => g.groupCode}
         rowState={(g) => (g.groupCode === selected ? "selected" : undefined)}
-        empty={searchedEmpty(search, search.manageOwnerCode && ownerLabel(search.manageOwnerCode)) ?? "볼 수 있는 공통코드 그룹이 없습니다."}
+        empty={searchedEmpty(search) ?? "볼 수 있는 공통코드 그룹이 없습니다."}
       />
       <div className="pt-[14px]">
         <Pagination page={page} totalPages={Math.max(1, Math.ceil(total / pageSize))} onPageChange={(next) => navigate(hrefOf({ page: next }))} />
