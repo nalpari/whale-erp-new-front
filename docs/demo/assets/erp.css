@@ -2579,6 +2579,9 @@
   .align-\[-1px\] {
     vertical-align: -1px;
   }
+  .align-baseline {
+    vertical-align: baseline;
+  }
   .align-middle {
     vertical-align: middle;
   }

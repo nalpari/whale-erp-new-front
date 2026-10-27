@@ -47,15 +47,16 @@ export function CodePanel({
  * 플랫폼 · BP 공통코드 관리가 같이 쓴다.
  */
 export function GroupHead({ groupCode, groupName, owner }: { groupCode: string; groupName: string; owner?: ReactNode }) {
-  const bar = <span aria-hidden="true" className="h-[11px] w-px shrink-0 bg-[#d9d9d9]" />;
+  // 제목(「상세 코드」)과 같은 글자 기준선에 선다 — 가운데 맞춤이면 18px 제목 옆에서 위아래로 어긋나 보였다(2026-10-27 사용자 지정). 구분선만 가운데
+  const bar = <span aria-hidden="true" className="h-[11px] w-px shrink-0 self-center bg-[#d9d9d9]" />;
   return (
-    <span className="inline-flex items-center gap-[10px] align-middle">
-      <span className="inline-flex items-center gap-[6px]">
+    <span className="inline-flex items-baseline gap-[10px] align-baseline">
+      <span className="inline-flex items-baseline gap-[6px]">
         <span className="text-erp-label">그룹코드</span>
         <b className="font-semibold text-erp-ink">{groupCode}</b>
       </span>
       {bar}
-      <span className="inline-flex items-center gap-[6px]">
+      <span className="inline-flex items-baseline gap-[6px]">
         <span className="text-erp-label">그룹명</span>
         <b className="font-semibold text-erp-ink">{groupName}</b>
       </span>
