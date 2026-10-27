@@ -134,7 +134,7 @@ function DetailBody({
     { label: "등록일시", value: <DetailValues items={[formatDateTime(admin.createdAt), admin.createdByName ?? muted("시스템")]} /> },
     {
       label: "최종 수정일시",
-      // 등록만 한 계정은 수정일시가 등록일시와 같아 등록이 수정처럼 보인다 — 같으면 비운다(2026-10-26 사용자 요청).
+      // 등록만 한 계정은 수정일시가 등록일시와 같아 등록이 수정처럼 보인다 — 같으면 일시 · 수정자 대신 「수정한 적 없음」을 둔다(2026-10-26 사용자 요청).
       // 등록 때 두 값이 따로 찍혀 ms 가 어긋날 수 있어 1초 안쪽은 같은 것으로 본다
       value:
         Math.abs(Date.parse(admin.updatedAt) - Date.parse(admin.createdAt)) >= 1000 ? (

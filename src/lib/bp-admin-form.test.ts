@@ -115,4 +115,6 @@ test("api 오류를 붙일 칸 — 문구로 가른다", () => {
   assert.equal(bpAdminServerErrorField(400, "선택할 수 없는 권한입니다.", "create"), "roleGroupId");
   assert.equal(bpAdminServerErrorField(403, "점포 범위를 벗어났습니다", "edit"), null);
   assert.equal(bpAdminServerErrorField(409, "아이디 또는 이메일이 이미 쓰였습니다", "create"), null);
+  // 여러 칸의 검증 실패는 한 칸에 몰지 않고 띠로
+  assert.equal(bpAdminServerErrorField(400, "아이디는 4~20자입니다, 이메일 형식이 아닙니다", "create"), null);
 });

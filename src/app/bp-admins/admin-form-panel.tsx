@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useRef, useState, useTransition, type KeyboardEvent, type ReactNode, type RefObject } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState, useTransition, type KeyboardEvent, type ReactNode, type RefObject } from "react";
 import { Button, DataTable, Field, FormGroup, FormRow, RequiredMark, Select, SlidePanel, TextField } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { useAccount } from "@/components/site/session-gate";
@@ -75,6 +75,8 @@ export function AdminFormPanel(props: Props) {
   const [form, setForm] = useState<BpAdminForm>(initialForm);
   const [errors, setErrors] = useState<Partial<Record<BpAdminFormField, string>>>({});
   const [failure, setFailure] = useState<string | null>(null);
+  /** 칸을 되돌릴 때마다 올라간다 — 아래 layout effect 가 이 값을 보고 중복 확인 차례(ref)를 올린다(platform-admins 와 같다) */
+  const [resetSignal, setResetSignal] = useState(0);
 
   // 열 때마다(취소한 입력을 남기지 않는다) · 최신 정보를 다시 받았을 때(동시 수정 409 뒤) 칸을 새로 채운다(platform-admins 와 같다).
   const updatedAt = mode === "edit" ? props.admin.updatedAt : null;
@@ -88,13 +90,26 @@ export function AdminFormPanel(props: Props) {
       setForm(initialForm());
       setErrors({});
       if (reopened) setFailure(null);
+      // 닫는 사이 떠 있던 중복 확인이 늦게 와 되돌린 칸에 옛 결과를 칠하지 않게 차례를 올린다 — ref 는 그리는 중에 건드릴 수 없어
+      // (react-hooks/refs) 아래 layout effect 가 올린다(platform-admins 4f17a7c3 와 같다)
+      setResetSignal((n) => n + 1);
     }
   }
   const [saving, startSaving] = useTransition();
   const router = useRouter();
-  /** 아이디 중복 확인 차례 — 고치거나 다시 물으면 올라가, 앞선 답을 버린다 */
-  /** 칸별 중복 확인 차례 — 고치거나 다시 물으면 올라가, 앞선 답을 버린다 */
+  /** 칸별 중복 확인 차례 — 고치거나 다시 묻거나 칸을 되돌리면 올라가, 앞선 답을 버린다 */
   const checkNumber = useRef({ loginId: 0, email: 0 });
+  useLayoutEffect(() => {
+    if (resetSignal === 0) return;
+    checkNumber.current.loginId++;
+    checkNumber.current.email++;
+  }, [resetSignal]);
+  /**
+   * 저장 요청이 떠 있는 동안 보낸 값과 달라진 칸 — 입력칸은 저장 중에도 잠기지 않는다. 늦게 온 거절은 보낸 값(sentForm)의 것이라
+   * 바뀐 값에 붙이면 틀린 문구가 된다. 그런 칸의 거절은 위 띠로만 알린다(platform-admins 97d55377 와 같다).
+   */
+  const editedWhileSaving = useRef(new Set<BpAdminFormField>());
+  const sentForm = useRef<BpAdminForm | null>(null);
 
   // 대상 점포 후보 — 패널이 열려 있고 점포를 고를 수 있을 때, 계정 역할마다 받는다(가맹 마스터면 다른 가맹 마스터 담당 점포가 빠져 온다)
   const optionsRole = open && !locks.stores && form.roleTypeCode ? form.roleTypeCode : "";
@@ -130,6 +145,9 @@ export function AdminFormPanel(props: Props) {
   const clearError = (key: BpAdminFormField) => setErrors((e) => (key in e ? Object.fromEntries(Object.entries(e).filter(([k]) => k !== key)) : e));
   const set = <K extends keyof BpAdminForm>(key: K, value: BpAdminForm[K]) => {
     setForm((f) => ({ ...f, [key]: value }));
+    const sent = sentForm.current?.[key];
+    if (sent !== undefined && JSON.stringify(sent) === JSON.stringify(value)) editedWhileSaving.current.delete(key as BpAdminFormField);
+    else editedWhileSaving.current.add(key as BpAdminFormField);
     clearError(key as BpAdminFormField);
   };
   const invalid = (key: BpAdminFormField) => (errors[key] ? true : undefined);
@@ -142,7 +160,8 @@ export function AdminFormPanel(props: Props) {
 
   const applyServerError = (status: number | undefined, text: string) => {
     const field = bpAdminServerErrorField(status, text, mode);
-    if (!field) return setFailure(text);
+    // 보낸 뒤 고친 칸의 거절이면 지금 값에 붙이지 않고 띠로만 알린다
+    if (!field || editedWhileSaving.current.has(field)) return setFailure(text);
     setErrors((e) => ({ ...e, [field]: text }));
     focusFirstError();
   };
@@ -195,6 +214,8 @@ export function AdminFormPanel(props: Props) {
     setFailure(null);
     if (Object.keys(found).length) return focusFirstError();
 
+    editedWhileSaving.current = new Set();
+    sentForm.current = form;
     startSaving(async () => {
       if (props.mode === "create") {
         const result = await createBpAdminAction(toCreateBpAdminInput(form)).catch(unknownResult("등록"));
@@ -340,6 +361,7 @@ export function AdminFormPanel(props: Props) {
                   onChange={(e) => set("accountStatus", e.target.value as BpAdminForm["accountStatus"])}
                   disabled={locks.status}
                   title={locks.status ? "본인 계정의 상태는 바꿀 수 없습니다" : undefined}
+                  aria-required
                 >
                   <option value="ACTIVE">사용</option>
                   <option value="INACTIVE">미사용</option>
@@ -407,6 +429,7 @@ export function AdminFormPanel(props: Props) {
                 clearError("stores");
               }}
               disabled={locks.scope || !allowsAllStores(form.roleTypeCode)}
+              aria-required={!locks.scope}
               title={
                 locks.scope && mode === "edit" && props.admin.isAllStores
                   ? "관리 범위가 일부 점포인 사용자는 전체 점포 계정의 범위를 바꿀 수 없습니다"

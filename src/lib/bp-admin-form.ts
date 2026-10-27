@@ -81,6 +81,8 @@ export function validateBpAdminForm(
  */
 export function bpAdminServerErrorField(status: number | undefined, message: string, mode: "create" | "edit"): BpAdminFormField | null {
   if (status !== 400 && status !== 409) return null;
+  // 여러 칸의 검증 실패(400 배열)는 api.ts 가 「, 」로 이어 붙인다 — 한 칸에 몰아 붙이면 다른 칸의 이유가 묻히므로 띠로(platform-admins 와 같다)
+  if (status === 400 && message.includes(", ")) return null;
   if (message.includes("아이디 또는 이메일")) return null;
   if (message.includes("아이디")) return mode === "create" ? "loginId" : null;
   if (message.includes("이메일")) return "email";
