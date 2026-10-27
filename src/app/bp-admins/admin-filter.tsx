@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useEffectEvent, useState } from "react";
-import { FilterPanel, FilterSection, SearchField, Select, useToast } from "@/components/common";
+import { Checkbox, FilterPanel, FilterSection, SearchField, Select, useToast } from "@/components/common";
 import { useScope, useStores } from "@/components/site/session-gate";
 import { StorePicker, type PickedStore } from "@/components/site/store-picker";
 import type { Scope } from "@/lib/browser-storage";
@@ -87,6 +87,13 @@ export function AdminFilter({
     setKeyword(query.keyword ?? "");
   }
 
+  // 하나만 고르면 그 상태, 둘 다 고르면 전체, 둘 다 끄면 결과 없음(NONE) — 플랫폼 관리자 필터와 같다(2026-10-27 사용자 지정)
+  const shows = (s: BpAdminStatus) => query.accountStatus !== "NONE" && (!query.accountStatus || query.accountStatus === s);
+  const toggleStatus = (s: BpAdminStatus, checked: boolean) => {
+    const next = (["ACTIVE", "INACTIVE"] as const).filter((x) => (x === s ? checked : shows(x)));
+    navigate(withBpAdminFilter(query, { accountStatus: next.length === 0 ? "NONE" : next.length === 1 ? next[0] : undefined }));
+  };
+
   return (
     <FilterPanel
       onReset={() => {
@@ -115,7 +122,7 @@ export function AdminFilter({
           value={keyword}
           onValueChange={setKeyword}
           onSearch={(v) => navigate(withBpAdminFilter(query, { keyword: v.trim().slice(0, 20).trim() || undefined }))}
-          placeholder="아이디 또는 이름 일부를 입력하세요"
+          placeholder="아이디 또는 이름 일부"
           aria-label="아이디 · 이름"
           maxLength={20}
         />
@@ -141,16 +148,10 @@ export function AdminFilter({
           ))}
         </Select>
       </FilterSection>
-      <FilterSection label="계정상태" tight last>
-        <Select
-          aria-label="계정상태"
-          value={query.accountStatus ?? ""}
-          onChange={(e) => navigate(withBpAdminFilter(query, { accountStatus: (e.target.value || undefined) as BpAdminStatus | undefined }))}
-        >
-          <option value="">전체</option>
-          <option value="ACTIVE">사용</option>
-          <option value="INACTIVE">미사용</option>
-        </Select>
+      {/* 체크박스 둘, 처음엔 모두 켠다(플랫폼 관리자와 같다, 2026-10-27 사용자 지정 — 전엔 선택 상자) */}
+      <FilterSection label="계정상태" last>
+        <Checkbox label="사용" checked={shows("ACTIVE")} onChange={(e) => toggleStatus("ACTIVE", e.target.checked)} />
+        <Checkbox label="미사용" checked={shows("INACTIVE")} onChange={(e) => toggleStatus("INACTIVE", e.target.checked)} />
       </FilterSection>
     </FilterPanel>
   );

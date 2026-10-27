@@ -14,7 +14,8 @@ export default async function BpAdminsPage({ searchParams }: PageProps<"/bp-admi
   const query = parseBpAdminsQuery(await searchParams);
 
   const [list, roleGroups, detail] = await Promise.all([
-    getBpAdmins(bpAdminListQueryOf(query)).catch(listDenied),
+    // 계정상태를 모두 끄면(NONE) 결과 없음 — api 를 부르지 않는다(플랫폼 관리자와 같다, 2026-10-27 사용자 지정)
+    query.accountStatus === "NONE" ? { items: [], total: 0, inactiveCount: 0 } : getBpAdmins(bpAdminListQueryOf(query)).catch(listDenied),
     // 권한 그룹 선택지를 못 받아도 목록은 연다 — null 로 넘겨 필터 · 폼이 받지 못한 것을 알린다(빈 선택지로 조용히 두지 않는다).
     // 로그인 만료 · 권한 없음은 목록도 같은 이유로 막혀 그쪽이 알리므로 장애 로그를 남기지 않는다
     getBpAdminRoleGroups().catch((error: unknown) => {
