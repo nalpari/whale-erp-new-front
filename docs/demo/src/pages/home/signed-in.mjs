@@ -203,7 +203,8 @@ function oneStore(A, R) {
       ][i],
       "재직",
     ]),
-    [ui.link("박서연", link(R, "staff/index.html")), "파트타이머", p.sub("—"), p.sub("—"), `${p.tag("risk", "연결 보류")} ${p.sub("번호 불일치")}`, p.sub("가입 대기")],
+    // 아직 가입하지 않은 직원은 상태 칸이 「가입 대기」다(목업 HOME-9). 「연결 보류」는 없앤 규칙이다
+    [ui.link("박서연", link(R, "staff/index.html")), "파트타이머", p.sub("—"), p.sub("—"), `${p.tag("warn", "발송 대기")} ${p.sub("초대 발송 09-02")}`, p.sub("가입 대기")],
   ];
   const staff = card(
     head(
