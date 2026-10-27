@@ -46,9 +46,10 @@ export default async function NewContractPage({ searchParams }: PageProps<"/cont
               <ContractForm stores={stores} labels={labels} signedIn={signedIn} back={back} />
             ) : !previous ? (
               <Notice title={notice} back={back} />
-            ) : previous.renewedBy !== null ? (
-              // 이미 이어지는 재계약이 있다 — 그 계약으로 안내한다(진행 중이면 거기서 고치거나 대체한다, api #157 리뷰)
-              <Notice title="이 근로계약에는 이미 이어지는 재계약이 있습니다. 그 근로계약을 확인해 주세요" back={back}>
+            ) : previous.renewedBy != null ? (
+              // 이미 체결된 재계약이 이어져 있다 — 그 계약으로 안내한다. 진행 중 재계약은 api 가 renewedBy 에 싣지 않아 이 화면을 열고,
+              // 저장할 때 대체를 묻는다(api #157 리뷰 · front #135 참고 1). 칸이 없는 옛 api 응답(undefined)도 안내로 빠지지 않게 != null
+              <Notice title="이 근로계약에는 이미 체결된 재계약이 이어져 있습니다. 그 근로계약에서 재계약해 주세요" back={back}>
                 <Button href={withBack(`/contracts/${previous.renewedBy}`, query.back)}>이어지는 계약</Button>
               </Notice>
             ) : !canRenew(previous) ? (

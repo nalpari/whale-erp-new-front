@@ -6485,8 +6485,8 @@ export interface components {
              */
             registeredBy: string | null;
             /**
-             * @description 이 계약을 직전 계약으로 둔 살아 있는(진행 중이거나 체결을 거친) 재계약 ID(WHALEERP-156) — 있으면 상세가 「새 계약」을 띄우지 않는다.
-             *     없으면 null
+             * @description 이 계약을 직전 계약으로 둔 체결을 거친 재계약 ID(WHALEERP-156) — 있으면 상세가 「새 계약」을 띄우지 않는다. 진행 중 재계약은 치지
+             *     않는다(새 재계약을 저장할 때 대체를 묻는다). 없으면 null
              */
             renewedBy: number | null;
             contractId: number;
