@@ -7,7 +7,7 @@ import { useCodeLabel } from "@/components/site/code-label";
 import { FailedBand, InfoBand } from "@/components/site/side-parts";
 import { repeatBasis, repeatEndText, weekdayName, yesterdayOf, type RepeatType } from "@/lib/bp-holiday-view";
 import type { BpHolidayDetail, BpHolidayStore } from "@/lib/bp-holidays";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, wasUpdated } from "@/lib/format";
 import { deleteBpHolidayAction, terminateBpHolidayAction } from "./actions";
 import { OwnHistoryButton } from "./history-dialog";
 import { Muted, ScopeTag, unknownResult, useHolidayTypeText } from "./holiday-parts";
@@ -115,12 +115,14 @@ function DetailBody({
     });
 
   const dated = (date: string | null) => (date ? <>{date} <Muted>({weekdayName(date).slice(0, 1)})</Muted></> : null);
+  // api 는 등록 때 수정자 · 수정일시도 등록자 · 등록일시로 채운다 — 1팀 화면처럼 등록 뒤 고친 적이 없으면 「-」(format.ts wasUpdated, 관리자 상세와 같은 규칙)
+  const edited = h.updatedByName !== null && wasUpdated(h.createdAt, h.updatedAt);
   const info: DetailRow[] = [
     { label: "휴일명", value: h.name },
     { label: "휴일 유형", value: typeText(h.holidayTypeCode, h.holidayRepeatTypeCode) },
     { label: "설명", value: h.description, multiline: Boolean(h.description) },
     { label: "등록일시", value: <DetailValues items={[formatDateTime(h.createdAt), h.createdByName ?? <Muted>시스템</Muted>]} /> },
-    { label: "최종수정일시", value: h.updatedByName ? <DetailValues items={[formatDateTime(h.updatedAt), h.updatedByName]} /> : <Muted>수정한 적 없음</Muted> },
+    { label: "최종수정일시", value: edited ? <DetailValues items={[formatDateTime(h.updatedAt), h.updatedByName]} /> : <Muted>-</Muted> },
   ];
   const repeat = h.holidayRepeatTypeCode as RepeatType | null;
   const dates: DetailRow[] =

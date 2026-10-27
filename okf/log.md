@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-27
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일 상세의 최종수정일시를 1팀 규칙(`wasUpdated` + 수정자)으로: 등록만 한 휴일은 「수정한 적 없음」 대신 「-」다. 전엔 수정자 유무로만 갈라, api 가 등록 때 수정자를 채워 등록 시각 · 등록자가 최종수정으로 보였다(PR #154 코드 리뷰).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 코드 리뷰 반영: DESIGN.md Buttons 에 작은 버튼(24px, 1팀 확인 필요)을 적었다. 「선택한 점포」 줄 높이를 24px 로 미리 둬 첫 점포를 고를 때 필터가 밀리지 않게, 필터 일괄 검색은 남긴 칩 뒤에 새 점포를 붙이게, BP 휴일은 적용 범위를 바꾸면 점포 오류 · 찾기 글자를 비우게 했다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 점포 고르기의 [전체 제거]를 [일괄검색]과 같은 작은 버튼(`theme.ts` `SMALL_BUTTON`, 24px)으로 바꿨다(사용자 요청). 목업(`docs/mockup/stores/index.html` · `auth.js` 필터용 일괄 검색 문구) · 데모(`store-filter.mjs` `storeFilterSection`)도 맞췄고, 데모 `erp.js` 에서 지워져 일괄 검색 창이 열리지 않던 `paintScopeGroup` 을 되살렸다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 점포 정보 관리 필터의 점포 고르기: 「모두 빼기」를 「전체 제거」로(공통 `StorePicker` 라 다른 목록 필터도 같이), 「점포」 라벨 오른쪽에 작은 [일괄검색]을 더해 BP 관리자 등록과 같은 일괄 검색 창(`StoreBulkDialog`)을 연다(사용자 요청). `FilterSection` 에 라벨 줄 오른쪽 자리 `action` 을 더했다.
