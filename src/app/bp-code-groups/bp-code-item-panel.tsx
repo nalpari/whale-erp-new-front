@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Badge, Button, DataTable, Tag, TextField, Toggle, useToast, type Column } from "@/components/common";
-import { CodePanel, DoneNotice, FieldErrors, SaveFailedBand, UNKNOWN_RESULT } from "@/components/site/code-editor/code-panel";
+import { CodePanel, DoneNotice, FieldErrors, GroupHead, SaveFailedBand, UNKNOWN_RESULT } from "@/components/site/code-editor/code-panel";
 import { useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
 import { useRowReorder } from "@/components/site/code-editor/use-row-reorder";
 import { DeletePending, DeleteToggle, Struck } from "@/components/site/code-editor/delete-mark";
@@ -283,13 +283,11 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
       wide
       sub={
         group && (
-          <>
-            {/* 그룹명은 굵게(2026-10-27 사용자 지정) */}
-            {group.groupCode} · <b className="font-semibold text-erp-ink">{group.groupName}</b>
-            <span className="ml-[10px] inline-flex align-middle">
-              <Tag tone={ownerTagTone(group.manageOwnerCode)}>{ownerLabel(group.manageOwnerCode)}</Tag>
-            </span>
-          </>
+          <GroupHead
+            groupCode={group.groupCode}
+            groupName={group.groupName}
+            owner={<Tag tone={ownerTagTone(group.manageOwnerCode)}>{ownerLabel(group.manageOwnerCode)}</Tag>}
+          />
         )
       }
       actions={

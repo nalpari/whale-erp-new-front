@@ -152,7 +152,8 @@ export default ({ A, R }) => {
   ]);
   const right = card(
     "min-w-0 flex-1",
-    ui.sectionHead(`상세 코드${sub('SERVICE · <b class="font-semibold text-erp-ink">서비스</b>')}<span class="ml-[10px] inline-flex align-middle">${c.ownerTag("플랫폼고정")}</span>`, dim(ui.button("추가", { variant: "soft", "data-add-row": "new-code", "data-multi": true })) + ui.button("저장")) +
+    // 고른 그룹: 그룹코드 · 그룹명 라벨은 회색, 값은 굵게, 관리주체는 띠지만(앱 code-panel GroupHead, 2026-10-27)
+    ui.sectionHead(`상세 코드${sub(`<span class="inline-flex items-center gap-[10px] align-middle"><span class="inline-flex items-center gap-[6px]"><span class="text-erp-label">그룹코드</span><b class="font-semibold text-erp-ink">SERVICE</b></span><span aria-hidden="true" class="h-[11px] w-px shrink-0 bg-[#d9d9d9]"></span><span class="inline-flex items-center gap-[6px]"><span class="text-erp-label">그룹명</span><b class="font-semibold text-erp-ink">서비스</b></span><span aria-hidden="true" class="h-[11px] w-px shrink-0 bg-[#d9d9d9]"></span>${c.ownerTag("플랫폼고정")}</span>`)}`, dim(ui.button("추가", { variant: "soft", "data-add-row": "new-code", "data-multi": true })) + ui.button("저장")) +
       ui.scrollTable(ui.dataTable(codeCols, codeRows)) +
       addRows(
         "new-code",

@@ -70,7 +70,7 @@ export default ({ A, R }) => {
   const right = c.card(
     "min-w-0 flex-1",
       head(
-        `상세 코드${c.sub('EMP_TYPE · <b class="font-semibold text-erp-ink">고용 형태</b>')}<span class="ml-[10px] inline-flex align-middle">${c.ownerTag("플랫폼제공")}</span>`,
+        `상세 코드${c.sub(`<span class="inline-flex items-center gap-[10px] align-middle"><span class="inline-flex items-center gap-[6px]"><span class="text-erp-label">그룹코드</span><b class="font-semibold text-erp-ink">EMP_TYPE</b></span><span aria-hidden="true" class="h-[11px] w-px shrink-0 bg-[#d9d9d9]"></span><span class="inline-flex items-center gap-[6px]"><span class="text-erp-label">그룹명</span><b class="font-semibold text-erp-ink">고용 형태</b></span><span aria-hidden="true" class="h-[11px] w-px shrink-0 bg-[#d9d9d9]"></span>${c.ownerTag("플랫폼제공")}</span>`)}`, // 앱 code-panel GroupHead 와 같다(2026-10-27)
         ui.button("추가", { variant: "soft" }) + ui.button("저장"),
       ) +
       ui.scrollTable(ui.dataTable(codeCols, codeRows)),

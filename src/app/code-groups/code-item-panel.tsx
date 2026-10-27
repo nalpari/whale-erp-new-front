@@ -24,7 +24,7 @@ import { codeFormatError, duplicateCodes, normalizeCode } from "@/lib/code-valid
 import type { CodeGroup, CodeItem } from "@/lib/codes";
 import { usePagePermission } from "@/components/site/session-gate";
 import { saveCodeItemsAction } from "./actions";
-import { CodePanel, FieldErrors, SaveFailedBand, UNKNOWN_RESULT } from "@/components/site/code-editor/code-panel";
+import { CodePanel, FieldErrors, GroupHead, SaveFailedBand, UNKNOWN_RESULT } from "@/components/site/code-editor/code-panel";
 import { useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
 import { useRowReorder } from "@/components/site/code-editor/use-row-reorder";
 import { DeletePending, DeleteToggle, Struck } from "@/components/site/code-editor/delete-mark";
@@ -305,14 +305,11 @@ export function CodeItemPanel({
       // 그룹 코드 · 그룹명(굵게) 뒤에 관리주체 띠지 — 그룹 목록의 관리주체 칸 · BP 공통코드와 같은 모양(2026-10-27 사용자 지정)
       sub={
         group && (
-          <>
-            {group.groupCode} · <b className="font-semibold text-erp-ink">{group.groupName}</b>
-            {ownerLabel && (
-              <span className="ml-[10px] inline-flex align-middle">
-                <Tag tone={ownerTagTone(group.manageOwnerCode)}>{ownerLabel}</Tag>
-              </span>
-            )}
-          </>
+          <GroupHead
+            groupCode={group.groupCode}
+            groupName={group.groupName}
+            owner={ownerLabel && <Tag tone={ownerTagTone(group.manageOwnerCode)}>{ownerLabel}</Tag>}
+          />
         )
       }
       actions={
