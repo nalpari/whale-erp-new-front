@@ -127,6 +127,14 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
         if (mine !== saveNumber.current) return; // 그사이 패널을 닫았다 다시 열었다 — 지난 응답은 버린다
         setConfirmOpen(false);
         if (!result.ok) {
+          // 401은 칸 오류가 아니라 세션이 이미 끝났다는 뜻이다 — 탈퇴가 서버에서 커밋된 뒤 응답만 잃고
+          // 재시도한 경우도 여기로 온다(탈퇴 쪽 execute()가 커밋과 같은 트랜잭션에서 세션을 revoke 한다).
+          // 되돌릴 수 없는 동작이라 "실패"로 남겨 다시 시도하게 하면 안 된다 — 바로 로그아웃으로 보낸다
+          // (ip-code-review-claude 블로커 #2, 2026-10-27).
+          if (result.status === 401) {
+            void logout();
+            return;
+          }
           const field = withdrawFormField(result.status, result.message);
           if (field === "currentPassword") {
             setStep("password");
