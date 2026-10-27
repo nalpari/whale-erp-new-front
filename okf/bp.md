@@ -3,7 +3,10 @@ type: Area
 title: BP 마스터 계정 관리
 description: 플랫폼 사용자가 전체 BP 와 그 BP 마스터 계정을 조회·등록·수정하고 상태를 바꾸는 영역 — BP 하나에 BP 마스터 계정 하나.
 tags: [mockup, bp]
-generated: { by: claude-code/opus-5.5, at: 2026-10-22T09:13:19Z }
+sources:
+  - { id: bp-masters-app, resource: ../src/app/bp-masters, title: BP 마스터 계정 관리 화면 }
+  - { id: bp-masters-lib, resource: ../src/lib/bp-masters.ts, title: BP 마스터 계정 api 호출 }
+generated: { by: claude-code/opus-5.5, at: 2026-10-27T04:35:13Z }
 ---
 
 근거: `docs/mockup/bp/` (목업 · 1차 · R-NMDCYH)
@@ -12,6 +15,8 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-22T09:13:19Z }
 BP 마스터 계정 하나라 목록은 BP 를 기준으로 선다. 상태는 사용 · 미사용 · 탈퇴
 셋이고, 이 화면에서 고르는 것은 사용과 미사용뿐이다. 메뉴구조도의 "BP 정보관리"
 (BP Master · 휴면 BP)를 이 이름으로 바꾸고, 휴면 BP 는 목록의 상태 조건으로 합쳤다.
+
+구현: `src/app/bp-masters/`(메뉴 `/bp-masters`, front PR #144). 화면 · 정책은 아래 목업 확정분대로다. 다른 점은 둘이다 — 소속 점포 수를 눌러 점포 목록으로 가는 동작은 두지 않았다(필요해지면 정책을 세워 만든다, Plane #416 코멘트 2026-10-27). 상세의 수정 일시는 등록 뒤 실제로 고친 BP 에만 보이고, 수정 · 로그인 기록이 없으면 「-」다. 구현 세부는 [Whale ERP Frontend](/whale-erp-front.md).
 
 # 화면
 

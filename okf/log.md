@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-27
+* **Update**: [BP 마스터 계정 관리](/bp.md) — sources 에 구현(`src/app/bp-masters` · `src/lib/bp-masters.ts`)을 걸고 구현 위치와 목업과 다른 점(점포 목록 연결 없음 · 수정 일시 표시 조건)을 한 줄로 적었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 마스터 계정 등록 · 수정이 이메일 중복을 아이디와 같은 때(칸을 벗어나거나 Enter) `GET /bp-masters/email-availability` 로 묻는다. 상세의 수정 일시는 실제로 고친 BP 에만 보이고, 수정 · 로그인 기록이 없으면 「-」. 생성 타입을 api 브랜치(stonehenge · lucario, api main #161 병합 뒤) 기준으로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 공통코드 관리에 관리주체 필터(체크박스, 주소 `?manageOwnerCode` · 둘 다 끔은 NONE, api `manageOwnerCodes`)를 더했다. BP 공통코드 관리에는 두지 않는다. 관리주체 꼬리표(`OwnerTag`), 상세 코드 머리(`GroupHead`), 고른 그룹 줄(`current`), 사용여부 · 관리주체 문구, 저장 안 한 변경 확인창 문구도 바꿨다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 공통 Button `danger` · ConfirmDialog `confirmVariant` 가 1팀 동의를 받았다(DESIGN.md Buttons 에 Danger 추가). 같은 날 1팀이 DetailTable 라벨 110px, 점포 카드 모서리 8px, 트리 표 머리(subtle) · 고른 줄(current), ReadonlyCard, 스위치 알약형에도 동의해 DESIGN.md 와 코드 주석의 「1팀 확인 필요」 표시를 동의 기록으로 바꿨다. 플랫폼 관리자 상세의 버튼 줄 위 선을 없앴다(데모의 BP 마스터 · BP 관리자 · 휴일 상세도 같이).
