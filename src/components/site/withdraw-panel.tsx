@@ -13,9 +13,10 @@ const EMPTY: Form = { currentPassword: "", reasonCode: "", reasonDetail: "" };
 type FieldAt = "currentPassword" | "reasonDetail";
 
 // 경고 상자 — bp-apply-dialog.tsx 의 위험 띠(채도 높은 border-erp-off/bg-erp-off-bg)와는 다른 패턴이다. 이
-// 상자는 승인된 데모의 notice() 상자를 그대로 따른다(docs/demo/src/site.mjs:323) — 바탕은 중립(border-erp-panel-line
-// / bg-erp-thead-bg)이고 제목만 #e93737(DESIGN.md 가 토큰 없이 직접 쓰기로 둔 Figma 전용 색). head/text
-// 블록은 head 를 굵게, text 는 \n 을 그대로 줄바꿈으로 보인다(whitespace-pre-line).
+// 상자는 승인된 데모의 notice() 상자를 그대로 따른다(docs/demo/src/site.mjs:314-323) — 제목("탈퇴 전 꼭
+// 확인해 주세요")과 본문 블록이 한 상자(border-erp-panel-line / bg-erp-thead-bg) 안에 함께 들어간다. 제목만
+// #e93737(DESIGN.md 가 토큰 없이 직접 쓰기로 둔 Figma 전용 색). head/text 블록은 head 를 굵게, text 는 \n 을
+// 그대로 줄바꿈으로 보인다(whitespace-pre-line).
 function WarningBlock({ block }: { block: WithdrawWarningBlock }) {
   if (typeof block === "string") return <p className="whitespace-pre-line">{block}</p>;
   return (
@@ -97,9 +98,17 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
   const reasonDetailMessageId = `${ids}-reasonDetail`;
 
   // password-change-panel.tsx 의 handleClose 와 같은 이유 — 저장 중이거나 확인창이 떠 있을 때 닫으면
-  // 제출 결과(성공한 완료 화면, 실패한 오류 문구)를 아무도 못 본다.
+  // 제출 결과(성공한 완료 화면, 실패한 오류 문구)를 아무도 못 본다. done 단계에서는 이미 api 에서 탈퇴
+  // 처리가 끝난 뒤라 — Esc·바탕 클릭·"확인" 중 무엇으로 나가든 로그아웃을 거치게 한다. 그냥 onClose 로
+  // 닫으면 서버는 탈퇴 상태인데 이 브라우저의 세션 쿠키만 남아, 갱신 토큰이 만료(최대 1시간)되기 전까지
+  // 어긋난 상태로 남는다(최종 리뷰로 찾음).
   const handleClose = () => {
-    if (!saving && !confirmOpen) onClose();
+    if (saving || confirmOpen) return;
+    if (step === "done") {
+      void logout();
+      return;
+    }
+    onClose();
   };
 
   const handleConfirm = () => {
@@ -146,6 +155,9 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
 
       {step === "password" && (
         <>
+          {/* 데모의 panel-mode 비밀번호 단계(docs/demo/src/site.mjs:400)와 같은 안내 문구 — FormGroup 으로
+           * 올리면서 지웠던 것을 최종 리뷰로 되살렸다. */}
+          <p className="text-[14px] text-erp-ink">회원 탈퇴를 하려면 현재 비밀번호를 입력해 주세요.</p>
           <FormGroup title="본인 확인">
             <div className="flex flex-col gap-[8px]">
               <Field label="현재 비밀번호" required>
@@ -199,13 +211,11 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
             </>
           ) : (
             <>
-              <div className="flex flex-col gap-[8px]">
+              <div className="flex flex-col gap-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[16px] py-[14px] text-[14px] leading-[1.6]">
                 <p className="font-semibold text-[#e93737]">탈퇴 전 꼭 확인해 주세요</p>
-                <div className="flex flex-col gap-[12px] rounded-[2px] border border-erp-panel-line bg-erp-thead-bg px-[16px] py-[14px] text-[14px] leading-[1.6]">
-                  {withdrawWarningText(eligibility).map((block, i) => (
-                    <WarningBlock key={i} block={block} />
-                  ))}
-                </div>
+                {withdrawWarningText(eligibility).map((block, i) => (
+                  <WarningBlock key={i} block={block} />
+                ))}
               </div>
 
               <FormGroup title="탈퇴 조건">
