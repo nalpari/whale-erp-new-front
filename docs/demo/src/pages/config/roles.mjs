@@ -171,9 +171,9 @@ export default ({ A, R }) => {
       ? `<div class="flex flex-col gap-[18px]">${ui.field(c.req("권한명"), ui.textField({ placeholder: "권한명을 입력해 주세요. (예: 프로모션 담당자)", value: name }))}${ui.field("설명", ui.textarea({ rows: 2, placeholder: "해당 권한에 대한 역할과 담당 업무를 입력해 주세요.", value: desc }))}</div>` +
         record +
         `<div class="flex justify-center gap-[6px]">${x.dialogTrigger("삭제", del[code], "soft")}${editSaveButton()}</div>`
-      : // 고칠 수 없는 그룹(BP 마스터가 보는 가맹 관리자 그룹)은 표 위에 막힌 이유 띠 — api enum PlatformRoleGroupLockReason 의
-        // NO_PERMISSION 한글(앱 bp-role-groups/role-side.tsx InfoBand, 2026-10-26)
-        band("권한 관리 메뉴 권한 없음") + plainTable(rowsInfo) + record;
+      : // 고칠 수 없는 그룹(BP 마스터가 보는 가맹 관리자 그룹)은 표 위에 막힌 이유 띠 — 앱 bp-role-groups/role-side.tsx InfoBand 와 같은 문장
+        // (api NO_PERMISSION · 가맹 관리자 그룹, 2026-10-27 사용자 지정)
+        band("가맹관리자의 권한그룹은 조회만 가능합니다.") + plainTable(rowsInfo) + record;
     return (
       `<div data-role-view="${code}" class="flex flex-col gap-[18px]"${editable ? " data-dirty-scope" : ""}${i === SELECTED ? "" : " hidden"}>` +
       sideHead(`권한 그룹 상세<span class="ml-[10px] inline-flex items-center gap-[6px] align-middle">${c.tag(`<span class="font-normal">권한유형 ·</span> <b class="font-semibold">${type}</b>`)}<span class="text-[14px] font-normal text-erp-label">${code}</span></span>`) +
