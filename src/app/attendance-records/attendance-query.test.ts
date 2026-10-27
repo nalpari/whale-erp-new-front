@@ -1,7 +1,7 @@
 // node --test src/app/attendance-records/attendance-query.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { byLabel, type DayRow, defaultQuery, editTail, fixPairIndex, lateMinutes, matchesFilter, matchesSummary, mondayOf, needsFix, overnightNote, parseAttendanceQuery, storeParams, toAttendanceSearch, weekSummary } from "./attendance-query.ts";
+import { byLabel, type DayRow, defaultQuery, editTail, fixPairIndex, lateMinutes, matchesFilter, matchesSummary, mondayOf, needsFix, keptCheckOutNote, laterDayMark, overnightNote, parseAttendanceQuery, storeParams, toAttendanceSearch, weekSummary } from "./attendance-query.ts";
 
 const TODAY = "2026-10-23";
 const def = defaultQuery(TODAY);
@@ -146,4 +146,21 @@ test("보정이 필요한 기록 꼬리 · 처리한 사람 · 지각 분", () =
   const late = { status: "LATE" as const, schedules: [{ startTime: "13:00", endTime: "22:00", breakMinutes: 0 }], pairs: [{ checkIn: punch("13:18"), checkOut: null }] };
   assert.equal(lateMinutes(late), 18);
   assert.equal(lateMinutes({ ...late, status: "NORMAL" }), 0);
+});
+
+test("24시간 넘는 짝 — 퇴근 날 표시 · 퇴근 시각을 그대로 두면 원래 날을 지킨다는 안내(api 와 같은 규칙)", () => {
+  assert.equal(laterDayMark("2026-10-23", "2026-10-24T01:00:00.000Z"), "(다음날)");
+  assert.equal(laterDayMark("2026-10-23", "2026-10-23T09:00:00.000Z"), "");
+  assert.equal(laterDayMark("2026-10-23", "2026-10-25T01:00:00.000Z"), "(+2일)");
+  const long = { checkIn: { recordedAt: "2026-10-23T00:00:00.000Z" }, checkOut: { recordedAt: "2026-10-24T01:00:00.000Z", time: "10:00" } };
+  assert.equal(keptCheckOutNote(long, "08:30", "10:00"), "10/24 10:00 퇴근을 그대로 둡니다.");
+  // 퇴근을 바꾸면 같은 날 퇴근으로 다시 만든다 — 하루치가 말없이 사라지지 않게 알린다. 퇴근이 출근보다 이르면 다음 날 안내(overnightNote)
+  assert.equal(keptCheckOutNote(long, "08:30", "18:00"), "같은 날(10/23) 18:00 퇴근으로 저장합니다. 원래 날(10/24) 퇴근을 지키려면 퇴근을 원본 10:00 그대로 두세요.");
+  assert.equal(keptCheckOutNote(long, "08:30", "07:00"), null);
+  // 24시간 안의 밤샘(22:00 → 06:00)은 시각으로 다시 만든다
+  const night = { checkIn: { recordedAt: "2026-10-23T13:00:00.000Z" }, checkOut: { recordedAt: "2026-10-23T21:00:00.000Z", time: "06:00" } };
+  assert.equal(keptCheckOutNote(night, "05:00", "06:00"), "같은 날(10/23) 06:00 퇴근으로 저장합니다. 원래 날(10/24) 퇴근을 지키려면 퇴근을 원본 06:00 그대로 두세요.");
+  assert.equal(keptCheckOutNote(night, "21:00", "06:00"), null);
+  const sameDay = { checkIn: { recordedAt: "2026-10-23T00:00:00.000Z" }, checkOut: { recordedAt: "2026-10-23T09:00:00.000Z", time: "18:00" } };
+  assert.equal(keptCheckOutNote(sameDay, "08:00", "18:00"), null);
 });

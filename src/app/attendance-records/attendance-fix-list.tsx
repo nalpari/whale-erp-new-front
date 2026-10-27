@@ -7,7 +7,7 @@ import { usePagePermission } from "@/components/site/session-gate";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import type { AttendanceHistory, ProxyStaff } from "@/lib/attendance-records-api";
 import { correctAttendanceAction, getAttendanceHistoryAction, getProxyStaffAction, proxyAttendanceAction, reviewAttendanceAction, type EditResult } from "./actions";
-import { byLabel, editTail, fixPairIndex, overnightNote, shortDay, type FixRow } from "./attendance-query";
+import { byLabel, editTail, fixPairIndex, keptCheckOutNote, laterDayMark, overnightNote, shortDay, type FixRow } from "./attendance-query";
 
 // 보정이 필요한 기록의 표와 동작(데모 staff-sections.mjs fixList · fixForm · proxyForm · histDialog, WHALEERP-220). 확인 필요 · 미등록 줄에는
 // 「보정」 · 「이상 없음」, 보정 · 대신 등록한 줄에는 「이력」. 보정 · 대신 등록은 오른쪽 패널, 「이상 없음」은 확인창, 이력은 창이다.
@@ -285,7 +285,7 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
           <Select aria-label="고칠 기록" value={fix.pairIndex} onChange={(e) => onPick(Number(e.target.value))}>
             {fix.row.pairs.map((p, i) => (
               <option key={i} value={i}>
-                출근 {p.checkIn?.time ?? "없음"} · 퇴근 {p.checkOut?.time ?? "없음"}
+                출근 {p.checkIn?.time ?? "없음"} · 퇴근 {p.checkOut ? p.checkOut.time + laterDayMark(fix.row.date, p.checkOut.recordedAt) : "없음"}
               </option>
             ))}
           </Select>
@@ -296,15 +296,15 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
           <HelpField label="출근" help={`원본 ${pair.checkIn?.time ?? "없음"}`}>
             <TextField type="time" aria-label="출근" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
           </HelpField>
-          <HelpField label="퇴근" help={`원본 ${pair.checkOut?.time ?? "없음"}`}>
+          <HelpField label="퇴근" help={`원본 ${pair.checkOut ? pair.checkOut.time + laterDayMark(fix.row.date, pair.checkOut.recordedAt) : "없음"}`}>
             <TextField type="time" aria-label="퇴근" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />
           </HelpField>
         </FormRow>
-        <OvernightNote date={fix.row.date} checkIn={checkIn} checkOut={checkOut} />
+        <OvernightNote date={fix.row.date} checkIn={checkIn} checkOut={checkOut} kept={keptCheckOutNote(pair, checkIn, checkOut)} />
         <Field label="수정 사유" required>
           <Textarea aria-label="수정 사유" rows={4} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="예: 퇴근 등록 누락 · 근무스케줄 종료 시각으로 보정. 점장 구두 확인." />
         </Field>
-        <p className="text-[13px] text-erp-label">퇴근이 출근보다 이르거나 같으면 다음 날 퇴근으로 저장합니다. 보정하면 확인 필요 꼬리표와 사유도 지웁니다.</p>
+        <p className="text-[13px] text-erp-label">퇴근이 출근보다 이르거나 같으면 다음 날 퇴근으로 저장합니다. 24시간 넘는 기록은 퇴근 시각을 그대로 두면 원래 날을 지킵니다. 보정하면 확인 필요 꼬리표와 사유도 지웁니다.</p>
       </FormGroup>
       {error && (
         <p role="alert" className="text-[14px] text-erp-off">
@@ -484,8 +484,9 @@ function PayslipWarning() {
 }
 
 /** 퇴근이 출근보다 이르거나 같으면 다음 날 퇴근으로 저장된다는 것을 실제 날짜로 알린다(api 와 같은 규칙) */
-function OvernightNote({ date, checkIn, checkOut }: { date: string; checkIn: string; checkOut: string }) {
-  const note = overnightNote(date, checkIn, checkOut);
+function OvernightNote({ date, checkIn, checkOut, kept }: { date: string; checkIn: string; checkOut: string; kept?: string | null }) {
+  // 24시간 넘는 짝의 퇴근 시각을 그대로 두면 api 가 원래 날을 지킨다 — 그 안내가 다음 날 안내보다 앞선다
+  const note = kept ?? overnightNote(date, checkIn, checkOut);
   return note && <p className="text-[13px] font-medium text-erp-ink">{note}</p>;
 }
 
