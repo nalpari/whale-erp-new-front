@@ -415,6 +415,9 @@
   .right-\[32px\] {
     right: 32px;
   }
+  .bottom-0 {
+    bottom: 0px;
+  }
   .bottom-4 {
     bottom: calc(var(--spacing) * 4);
   }
@@ -952,6 +955,9 @@
   }
   .h-full {
     height: 100%;
+  }
+  .h-px {
+    height: 1px;
   }
   .max-h-\[60dvh\] {
     max-height: 60dvh;
@@ -3283,30 +3289,6 @@
       background-color: color-mix(in oklab, var(--color-erp-nav) 40%, transparent);
     }
   }
-  .after\:pointer-events-none::after {
-    content: var(--tw-content);
-    pointer-events: none;
-  }
-  .after\:absolute::after {
-    content: var(--tw-content);
-    position: absolute;
-  }
-  .after\:inset-x-0::after {
-    content: var(--tw-content);
-    inset-inline: 0px;
-  }
-  .after\:bottom-0::after {
-    content: var(--tw-content);
-    bottom: 0px;
-  }
-  .after\:h-px::after {
-    content: var(--tw-content);
-    height: 1px;
-  }
-  .after\:bg-erp-thead-line::after {
-    content: var(--tw-content);
-    background-color: var(--color-erp-thead-line);
-  }
   .last\:border-b-0:last-child {
     border-bottom-style: var(--tw-border-style);
     border-bottom-width: 0px;
@@ -4195,11 +4177,6 @@ details[name="guest-faq"][open]::details-content {
   syntax: "*";
   inherits: false;
 }
-@property --tw-content {
-  syntax: "*";
-  initial-value: "";
-  inherits: false;
-}
 @layer properties {
   @supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {
     *, ::before, ::after, ::backdrop {
@@ -4267,7 +4244,6 @@ details[name="guest-faq"][open]::details-content {
       --tw-backdrop-sepia: initial;
       --tw-duration: initial;
       --tw-ease: initial;
-      --tw-content: "";
     }
   }
 }

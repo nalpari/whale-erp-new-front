@@ -151,7 +151,7 @@ export const linkedUsersTable = (users) => {
     }),
   );
   // 여섯 명부터는 높이를 묶고 열 이름 줄을 고정한 채 사람 줄만 스크롤한다(앱과 같다, 2026-10-27 사용자 지정)
-  return users.length > 5 ? `<div class="relative flex h-[274px] flex-col after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-erp-thead-line">${ui.scrollTable(table)}</div>` : table; // 스크롤 중에도 아래 선이 보이게 덧그린다(앱과 같다)
+  return users.length > 5 ? `<div class="relative flex h-[274px] flex-col">${ui.scrollTable(table)}<span aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden [scrollbar-gutter:stable]"><span class="absolute inset-x-0 bottom-0 h-px bg-erp-thead-line"></span></span></div>` : table; // 스크롤 중에도 아래 선이 보이게 덧그린다. 스크롤바 자리를 비운 겹 상자 안이라 표 오른쪽 끝에서 멈춘다(앱과 같다)
 };
 
 // 화면 아래 가운데 버튼 줄
