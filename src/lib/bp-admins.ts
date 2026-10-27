@@ -165,7 +165,7 @@ export async function checkBpAdminEmailAvailable(email: string): Promise<boolean
   return (await request<{ available: boolean }>(`/bp-admins/email-availability?${params}`, await json("GET"))).available;
 }
 
-/** POST /bp-admins —사용으로 만들고 초기 비밀번호를 메일로만 보낸다. 메일이 실패해도 계정은 만들어진다. */
+/** POST /bp-admins — 사용으로 만들고 초기 비밀번호를 메일로만 보낸다. 메일이 실패해도 계정은 만들어진다. */
 export async function createBpAdmin(input: CreateBpAdminInput): Promise<{ adminAccountId: number; isMailSent: boolean }> {
   return request("/bp-admins", await json("POST", input));
 }

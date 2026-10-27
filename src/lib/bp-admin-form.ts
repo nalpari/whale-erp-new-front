@@ -1,9 +1,10 @@
 // BP 관리자 등록 · 수정 입력칸 — 검사와 요청 만들기. 패널(src/app/bp-admins/)에서 뺀 순수 함수라 node --test 로 검사한다(bp-admin-form.test.ts).
 // 아이디 · 이름 · 휴대전화 · 이메일 형식은 플랫폼 관리자와 같아 그쪽 것을 쓴다. api 가 다시 막으므로 화면은 저장 전에 칸 아래 먼저 알리기만 한다.
-import type { BpAdminDetail, BpAdminRoleType, BpAdminStatus, CreateBpAdminInput, UpdateBpAdminInput } from "./bp-admins";
+import type { BpAdminDetail, BpAdminRoleGroup, BpAdminRoleType, BpAdminStatus, CreateBpAdminInput, UpdateBpAdminInput } from "./bp-admins";
 import { emailError, loginIdError, NAME_PATTERN, PHONE_PATTERN, splitPhone } from "./platform-admin-form.ts";
+import { allowsAllStores } from "./bp-admin-rules.ts";
 
-// 이메일 형식 · 문구는 플랫폼 관리자 · MY PAGE 와 같다(email-format.ts) — 등록 패널이 중복 확인 전에도 쓴다
+// 이메일 형식 · 문구는 플랫폼 관리자와 같다(platform-admin-form.ts emailError — 형식 판정은 email-format.ts). 등록 패널이 중복 확인 전에도 쓴다
 export { emailError };
 
 export type PickedMappingStore = { storeId: number; name: string; storeCode: string };
@@ -47,6 +48,21 @@ export function bpAdminFormOf(detail: BpAdminDetail): BpAdminForm {
     isAllStores: detail.isAllStores,
     stores: detail.stores.filter((s) => !s.isOutOfScope).map(({ storeId, name, storeCode }) => ({ storeId, name, storeCode })),
     accountStatus: detail.accountStatus,
+  };
+}
+
+/**
+ * 계정 역할을 정하고 그 역할의 권한 그룹 · 점포로 새로 고른다. 그룹이 하나뿐이면(가맹 마스터 고정 그룹 등) 미리 고르고,
+ * 「전체 점포」는 BP 관리자만 고를 수 있어 다른 역할이면 일부 점포로 돌린다. 앞 역할의 후보에서 고른 점포는 비운다.
+ */
+export function withRole(form: BpAdminForm, role: BpAdminRoleType | "", roleGroups: BpAdminRoleGroup[]): BpAdminForm {
+  const groups = roleGroups.filter((r) => r.roleTypeCode === role);
+  return {
+    ...form,
+    roleTypeCode: role,
+    roleGroupId: groups.length === 1 ? String(groups[0].roleGroupId) : "",
+    isAllStores: allowsAllStores(role) ? form.isAllStores : false,
+    stores: [],
   };
 }
 

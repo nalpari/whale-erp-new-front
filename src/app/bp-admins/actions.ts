@@ -114,7 +114,7 @@ export async function getBpAdminHistoriesAction(id: number, page: number): Promi
   }
 }
 
-/** 대상 점포 선택지 — 등록 · 수정 패널이 열릴 때와 계정 역할을 바꿀 때 받는다(가맹 마스터면 다른 가맹 마스터 담당 점포가 막혀 온다). */
+/** 대상 점포 선택지 — 등록 · 수정 패널이 열릴 때와 (등록에서) 계정 역할을 바꿀 때 받는다. 폐점 · (가맹 마스터면) 다른 가맹 마스터 담당 점포는 api 가 빼고 보낸다. */
 export async function getBpAdminStoreOptionsAction(
   roleTypeCode: BpAdminRoleType,
   adminAccountId?: number,

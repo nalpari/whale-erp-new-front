@@ -29,7 +29,8 @@ export function AdminsScreen({
   detail,
 }: {
   list: BpAdminList;
-  roleGroups: BpAdminRoleGroup[];
+  /** null 이면 받지 못했다 — 필터 · 폼이 알린다 */
+  roleGroups: BpAdminRoleGroup[] | null;
   query: BpAdminsQuery;
   detail: { admin: BpAdminDetail } | { failed: string } | null;
 }) {

@@ -23,7 +23,8 @@ export function AdminFilter({
   navigate,
 }: {
   query: BpAdminsQuery;
-  roleGroups: BpAdminRoleGroup[];
+  /** null 이면 받지 못했다 — 선택칸을 막고 이유를 단다 */
+  roleGroups: BpAdminRoleGroup[] | null;
   navigate: (next: BpAdminsQuery, replace?: boolean) => void;
 }) {
   const [headerScope] = useScope();
@@ -121,9 +122,15 @@ export function AdminFilter({
           aria-label="권한 그룹"
           value={query.roleGroupId ? String(query.roleGroupId) : ""}
           onChange={(e) => navigate(withBpAdminFilter(query, { roleGroupId: e.target.value ? Number(e.target.value) : undefined }))}
+          disabled={roleGroups === null}
+          title={roleGroups === null ? "권한 그룹 목록을 불러오지 못했습니다. 화면을 새로 고쳐 주세요." : undefined}
         >
-          <option value="">전체</option>
-          {roleGroups.map((r) => (
+          <option value="">{roleGroups === null ? "불러오지 못함" : "전체"}</option>
+          {/* 주소의 권한 그룹이 선택지에 없어도(받지 못함 · 고를 수 없는 그룹) 걸린 조건을 「전체」로 숨기지 않는다 */}
+          {query.roleGroupId && !roleGroups?.some((r) => r.roleGroupId === query.roleGroupId) && (
+            <option value={query.roleGroupId}>선택한 권한 그룹(#{query.roleGroupId})</option>
+          )}
+          {roleGroups?.map((r) => (
             <option key={r.roleGroupId} value={r.roleGroupId}>
               {r.name} · {r.roleCode}
             </option>

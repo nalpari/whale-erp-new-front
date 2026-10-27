@@ -8,7 +8,7 @@ import { useCodeLabel } from "./code-label";
 // 등록 · 수정 폼의 「대상 점포」 고르기(데모 config-parts storePicker · bulk). 목록 필터의 StorePicker(188px)와 달리 폼 폭에 맞춰
 // 위는 점포 찾기 칸과 [일괄 검색], 아래는 고른 점포 칩(줄바꿈으로 쌓고 5줄 높이 넘으면 이 안에서 스크롤)이다.
 // 후보(options)는 화면이 api 로 받아 넘긴다 — 로그인 정보의 점포가 아니라 그 폼이 고를 수 있는 점포다(BP 관리자: store-options).
-// 후보에는 고를 수 있는 점포만 온다 — 폐점 · 다른 가맹 마스터 담당은 api 가 빼고 보낸다(흐리게 보이는 것은 상단 점포 선택 · 목록 필터 쪽, 2026-10-23).
+// 후보에는 고를 수 있는 점포만 온다 — 폐점 · 다른 가맹 마스터 담당은 api 가 빼고 보낸다.
 // 찾기 칸을 누르면 아직 고르지 않은 점포가 모두 펼쳐지고, 글자를 넣으면 점포명 · 점포코드로 좁힌다. 고르면 칩 맨 앞에 붙는다.
 
 export type MappingStoreOption = {
@@ -31,6 +31,7 @@ export function StoreMappingPicker({
   invalid,
   describedBy,
   loading,
+  failed,
   panelOpen,
 }: {
   /** 감싼 패널이 열려 있는가 — 뒤로 가기처럼 클릭 아닌 길로 닫히면 최상위 레이어의 일괄 검색 창 · 찾기 목록도 닫는다 */
@@ -43,6 +44,8 @@ export function StoreMappingPicker({
   describedBy?: string;
   /** 후보를 받는 중 */
   loading?: boolean;
+  /** 후보를 받지 못했다 — 빈 후보를 「고를 점포가 없다」로 보이지 않게 찾기 목록 · 일괄 검색을 막는다(화면이 실패 띠를 보인다) */
+  failed?: boolean;
 }) {
   const listId = useId();
   const box = useRef<HTMLDivElement>(null);
@@ -59,6 +62,9 @@ export function StoreMappingPicker({
   const pickedIds = new Set(picked.map((p) => p.storeId));
   const candidates = options.filter((s) => !pickedIds.has(s.storeId) && matches(s, keyword));
   const listShown = open && candidates.length > 0;
+  // 후보가 없을 때도 층을 열어 이유를 말한다 — 받는 중 · 받지 못함은 화면이 따로 알린다
+  const emptyShown = open && !candidates.length && !loading && !failed;
+  const emptyText = !options.length ? "고를 수 있는 점포가 없습니다." : keyword.trim() ? "맞는 점포가 없습니다." : "고를 수 있는 점포를 모두 골랐습니다.";
 
   const choose = (s: MappingStoreOption) => {
     onChange([{ storeId: s.storeId, name: s.name, storeCode: s.storeCode }, ...picked]);
@@ -89,7 +95,7 @@ export function StoreMappingPicker({
               onFocus={() => setOpen(true)}
               onClick={() => setOpen(true)}
               onKeyDown={(e) => {
-                if (e.key === "Escape" && listShown) {
+                if (e.key === "Escape" && (listShown || emptyShown)) {
                   e.preventDefault();
                   setOpen(false);
                 } else if (e.key === "ArrowDown" && candidates.length) {
@@ -145,8 +151,17 @@ export function StoreMappingPicker({
                 ))}
               </ul>
             )}
+            {emptyShown && (
+              <p
+                data-dismiss-open=""
+                onMouseDown={(e) => e.preventDefault()}
+                className="absolute top-[calc(100%+4px)] right-0 left-0 z-20 rounded-[2px] border border-[#ebebeb] bg-white px-[12px] py-[10px] text-[14px] text-erp-muted shadow-[0_2px_6px_rgba(40,47,55,0.08)]"
+              >
+                {emptyText}
+              </p>
+            )}
           </div>
-          <Button variant="soft" onClick={() => setBulkOpen(true)} disabled={loading}>
+          <Button variant="soft" onClick={() => setBulkOpen(true)} disabled={loading || failed}>
             일괄 검색
           </Button>
         </div>
@@ -369,7 +384,7 @@ function BulkDialog({
       <div className="mt-[12px] text-[14px] leading-[1.6]">
         <p className="text-[13px] text-erp-label">왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 매핑됩니다. 오른쪽에서 빼면 매핑이 풀립니다.</p>
         <div className="mt-[12px] flex items-stretch gap-[12px]">
-          {pane("L", "매핑 안 된 점포", left, "고를 수 있는 점포를 모두 매핑했습니다.")}
+          {pane("L", "매핑 안 된 점포", left, options.length ? "고를 수 있는 점포를 모두 매핑했습니다." : "고를 수 있는 점포가 없습니다.")}
           <div className="flex shrink-0 flex-col justify-center gap-[6px]">
             <Button variant="off" onClick={() => move("R")} disabled={!canAdd}>
               추가 ›

@@ -17,6 +17,7 @@ import {
   toCreateBpAdminInput,
   toUpdateBpAdminInput,
   validateBpAdminForm,
+  withRole,
   type BpAdminForm,
   type BpAdminFormField,
 } from "@/lib/bp-admin-form";
@@ -32,7 +33,7 @@ import { unknownResult } from "./bp-admin-parts";
 // 수정에서 아이디 · 계정 역할은 읽기 전용이다. 본인 계정은 기본정보만 고친다(권한 그룹 · 상태 · 범위 · 점포를 막는다 — api 도 막는다).
 // 대상 점포 후보는 api 의 store-options 다 — 수정하는 사람의 관리 범위 안에서 고를 수 있는 점포만 온다(폐점 · 다른 가맹 마스터 담당은 빠진다).
 // 수정하는 사람의 범위 밖에 이미 매핑된 점포는 칩이 아니라 아래 읽기 전용 표로 보이고, 저장해도 api 가 그대로 둔다(목업 확정 2026-09-29).
-// shortcut: 가맹 마스터 · 가맹 관리자 분기(가맹 관리자 등록 · 가맹 마스터 미사용 · 점포 축소 연쇄 확인창)는 프런트 2단계에서 더한다.
+// shortcut: 가맹 마스터 미사용 · 점포 축소 때 딸린 가맹 관리자에 번지는 연쇄 확인창이 없다(api 가 처리한다), 프런트 2단계에서 더한다.
 
 /** 동시 수정 409 문구(작업 지시서). 이때만 최신 정보를 다시 불러온다. */
 const STALE = "먼저 바꿨습니다";
@@ -48,7 +49,8 @@ type Props = {
   /** 바탕창 클릭 — 겹친 패널을 모두 닫는다(admins-screen.tsx closeAll). 저장하는 동안은 닫히지 않는다 */
   onBackdropClose: () => void;
   trigger: RefObject<HTMLElement | null>;
-  roleGroups: BpAdminRoleGroup[];
+  /** null 이면 권한 그룹 목록을 받지 못했다 — 선택지가 비어 저장할 수 없는 이유를 띠로 알린다 */
+  roleGroups: BpAdminRoleGroup[] | null;
 } & (
   | { mode: "create"; admin?: never; onSaved: (result: { adminAccountId: number; isMailSent: boolean }) => void; onStale?: never }
   | { mode: "edit"; admin: BpAdminDetail; onSaved: () => void; onStale: () => void }
@@ -70,8 +72,10 @@ export function AdminFormPanel(props: Props) {
     mode === "edit" ? editLocksOf(props.admin) : { roleGroup: false, status: false, scope: false, stores: false };
   const outOfScope: BpAdminStore[] = mode === "edit" && !props.admin.isAllStores ? props.admin.stores.filter((s) => s.isOutOfScope) : [];
   const roles = creatableRolesOf(me);
+  const groupsFailed = roleGroups === null;
+  const groups = roleGroups ?? [];
   const initialForm = (): BpAdminForm =>
-    mode === "edit" ? bpAdminFormOf(props.admin) : roles.length === 1 ? withRole(EMPTY_BP_ADMIN_FORM, roles[0], roleGroups) : EMPTY_BP_ADMIN_FORM;
+    mode === "edit" ? bpAdminFormOf(props.admin) : roles.length === 1 ? withRole(EMPTY_BP_ADMIN_FORM, roles[0], groups) : EMPTY_BP_ADMIN_FORM;
   const [form, setForm] = useState<BpAdminForm>(initialForm);
   const [errors, setErrors] = useState<Partial<Record<BpAdminFormField, string>>>({});
   const [failure, setFailure] = useState<string | null>(null);
@@ -115,31 +119,31 @@ export function AdminFormPanel(props: Props) {
   const optionsRole = open && !locks.stores && form.roleTypeCode ? form.roleTypeCode : "";
   // 고치는 계정 — api 가 그 계정이 맡은 점포를 「다른 가맹 마스터 담당」으로 빼지 않게 함께 보낸다
   const editingId = mode === "edit" ? props.admin.adminAccountId : undefined;
-  const [options, setOptions] = useState<{ role: string; count: number; items: MappingStoreOption[] } | null>(null);
-  // 실패는 그 요청(역할 · 연 횟수)에 묶는다 — 앞 역할 · 앞서 연 때의 띠가 새로 받는 동안 「불러오는 중」 대신 실패로 보이지 않게
-  const optionsKey = `${optionsRole}|${openCount}`;
+  /** [다시 불러오기]를 누른 횟수 — 패널을 닫았다 열면 입력이 지워지므로 그 자리에서 다시 받는다 */
+  const [optionsRetry, setOptionsRetry] = useState(0);
+  // 받은 값 · 실패는 그 요청(역할 · 연 횟수 · 다시 받기)에 묶는다 — 앞 요청의 값 · 띠가 새로 받는 동안 남지 않게
+  const optionsKey = `${optionsRole}|${openCount}|${optionsRetry}`;
+  const [options, setOptions] = useState<{ key: string; items: MappingStoreOption[] } | null>(null);
   const [failedOptions, setFailedOptions] = useState<{ key: string; message: string } | null>(null);
   const optionsFailure = failedOptions?.key === optionsKey ? failedOptions.message : null;
   useEffect(() => {
     if (!optionsRole) return;
     let live = true;
-    const key = `${optionsRole}|${openCount}`;
     getBpAdminStoreOptionsAction(optionsRole as BpAdminRoleType, editingId)
       .then((result) => {
         if (!live) return;
-        if (result.ok) {
-          setOptions({ role: optionsRole, count: openCount, items: result.items.map(optionOf) });
-        } else setFailedOptions({ key, message: result.message });
+        if (result.ok) setOptions({ key: optionsKey, items: result.items.map(optionOf) });
+        else setFailedOptions({ key: optionsKey, message: result.message });
       })
       .catch((error: unknown) => {
         console.error("BP 관리자 점포 선택지 호출 실패", error);
-        if (live) setFailedOptions({ key, message: "점포 목록을 받지 못했습니다. 패널을 닫았다 다시 열어 주세요." });
+        if (live) setFailedOptions({ key: optionsKey, message: "점포 목록을 받지 못했습니다." });
       });
     return () => {
       live = false;
     };
-  }, [optionsRole, openCount, editingId]);
-  const optionsReady = !!options && options.role === optionsRole && options.count === openCount;
+  }, [optionsRole, optionsKey, editingId]);
+  const optionsReady = options?.key === optionsKey;
 
   const ids = useId();
   const clearError = (key: BpAdminFormField) => setErrors((e) => (key in e ? Object.fromEntries(Object.entries(e).filter(([k]) => k !== key)) : e));
@@ -160,8 +164,9 @@ export function AdminFormPanel(props: Props) {
 
   const applyServerError = (status: number | undefined, text: string) => {
     const field = bpAdminServerErrorField(status, text, mode);
-    // 보낸 뒤 고친 칸의 거절이면 지금 값에 붙이지 않고 띠로만 알린다
-    if (!field || editedWhileSaving.current.has(field)) return setFailure(text);
+    // 보낸 뒤 고친 칸의 거절이면 지금 값에 붙이지 않고 띠로만 알린다. 점포 칸이 숨어 있으면(전체 점포 · 본인 계정) 붙여도 안 보이므로 띠로
+    const hidden = field === "stores" && (form.isAllStores || locks.stores);
+    if (!field || hidden || editedWhileSaving.current.has(field)) return setFailure(text);
     setErrors((e) => ({ ...e, [field]: text }));
     focusFirstError();
   };
@@ -200,11 +205,11 @@ export function AdminFormPanel(props: Props) {
 
   /** 계정 역할을 바꾸면 그 역할의 권한 그룹 · 점포로 새로 고른다 — 가맹 마스터는 고정 그룹 하나이고 늘 일부 점포다. */
   const changeRole = (role: BpAdminRoleType | "") => {
-    setForm((f) => withRole(f, role, roleGroups));
+    setForm((f) => withRole(f, role, groups));
     setErrors((e) => Object.fromEntries(Object.entries(e).filter(([k]) => !["roleTypeCode", "roleGroupId", "stores"].includes(k))));
   };
 
-  const groupOptions = roleGroups.filter((r) => r.roleTypeCode === form.roleTypeCode);
+  const groupOptions = groups.filter((r) => r.roleTypeCode === form.roleTypeCode);
   // 지금 권한 그룹이 선택지에 없으면(보는 사람이 고를 수 없는 그룹) 그 그룹도 남겨 값이 비지 않게 한다
   if (mode === "edit" && !groupOptions.some((r) => r.roleGroupId === props.admin.roleGroup.roleGroupId)) groupOptions.unshift(props.admin.roleGroup);
 
@@ -378,6 +383,7 @@ export function AdminFormPanel(props: Props) {
         </FormGroup>
 
         <FormGroup title="계정 역할">
+          {groupsFailed && <FailedBand message="권한 그룹 목록을 불러오지 못했습니다. 화면을 새로 고쳐 주세요." />}
           {mode === "create" && roles.length > 1 ? (
             <Labeled label="계정 역할" required message={message("roleTypeCode")}>
               <Select
@@ -442,13 +448,21 @@ export function AdminFormPanel(props: Props) {
           </Field>
           {!form.isAllStores && !locks.stores && (
             <div className="flex flex-col gap-[8px]">
-              {optionsFailure && <FailedBand message={optionsFailure} />}
+              {optionsFailure && (
+                <div className="flex flex-col items-start gap-[6px]">
+                  <FailedBand message={optionsFailure} detail="고른 점포와 입력한 값은 그대로 두었습니다." />
+                  <Button variant="soft" onClick={() => setOptionsRetry((n) => n + 1)}>
+                    다시 불러오기
+                  </Button>
+                </div>
+              )}
               <StoreMappingPicker
                 panelOpen={open}
                 options={optionsReady ? options.items : []}
                 picked={form.stores}
                 onChange={(next) => set("stores", next)}
                 loading={!!optionsRole && !optionsReady && !optionsFailure}
+                failed={!!optionsFailure}
                 invalid={invalid("stores")}
                 describedBy={describe("stores")}
               />
@@ -491,24 +505,13 @@ export function AdminFormPanel(props: Props) {
         <Button variant="off" onClick={onClose} disabled={saving}>
           취소
         </Button>
-        <Button onClick={handleSave} disabled={saving}>
+        {/* 권한 그룹을 받지 못하면 등록은 고를 그룹이 없어 저장할 수 없다(수정은 지금 그룹을 그대로 둔다) */}
+        <Button onClick={handleSave} disabled={saving || (mode === "create" && groupsFailed)}>
           저장
         </Button>
       </div>
     </SlidePanel>
   );
-}
-
-/** 계정 역할을 정하고 그 역할의 권한 그룹 · 점포로 새로 고른다 — 그룹이 하나뿐이면(가맹 마스터 고정 그룹 등) 미리 고른다. */
-function withRole(form: BpAdminForm, role: BpAdminRoleType | "", roleGroups: BpAdminRoleGroup[]): BpAdminForm {
-  const groups = roleGroups.filter((r) => r.roleTypeCode === role);
-  return {
-    ...form,
-    roleTypeCode: role,
-    roleGroupId: groups.length === 1 ? String(groups[0].roleGroupId) : "",
-    isAllStores: allowsAllStores(role) ? form.isAllStores : false,
-    stores: [],
-  };
 }
 
 /** 입력칸 하나와 그 아래 오류 문구 */

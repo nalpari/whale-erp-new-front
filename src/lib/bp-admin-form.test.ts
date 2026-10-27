@@ -10,6 +10,7 @@ import {
   toCreateBpAdminInput,
   toUpdateBpAdminInput,
   validateBpAdminForm,
+  withRole,
   type BpAdminForm,
 } from "./bp-admin-form.ts";
 
@@ -117,4 +118,18 @@ test("api 오류를 붙일 칸 — 문구로 가른다", () => {
   assert.equal(bpAdminServerErrorField(409, "아이디 또는 이메일이 이미 쓰였습니다", "create"), null);
   // 여러 칸의 검증 실패는 한 칸에 몰지 않고 띠로
   assert.equal(bpAdminServerErrorField(400, "아이디는 4~20자입니다, 이메일 형식이 아닙니다", "create"), null);
+});
+
+test("계정 역할을 바꾸면 그 역할로 다시 맞춘다 — 전체 점포는 BP 관리자만, 점포는 비우고, 그룹이 하나면 미리 고른다", () => {
+  const groups = [
+    { roleGroupId: 1, roleCode: "FM000001", name: "가맹 마스터(고정)", roleTypeCode: "FM" as const },
+    { roleGroupId: 4, roleCode: "BA000004", name: "인사 담당", roleTypeCode: "BA" as const },
+    { roleGroupId: 5, roleCode: "BA000005", name: "정산 조회", roleTypeCode: "BA" as const },
+  ];
+  const allStoresBa = { ...filled, isAllStores: true, roleGroupId: "4" };
+  const fm = withRole(allStoresBa, "FM", groups);
+  assert.deepEqual([fm.roleTypeCode, fm.isAllStores, fm.stores, fm.roleGroupId], ["FM", false, [], "1"]);
+  const ba = withRole(allStoresBa, "BA", groups);
+  assert.deepEqual([ba.isAllStores, ba.roleGroupId], [true, ""]);
+  assert.equal(withRole(filled, "", groups).roleGroupId, "");
 });

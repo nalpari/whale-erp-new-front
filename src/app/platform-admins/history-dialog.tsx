@@ -6,16 +6,16 @@ import { formatDateTime } from "@/lib/format";
 import { HISTORY_PAGE_SIZE } from "@/lib/platform-admin-paging";
 import { FailedBand } from "./admin-parts";
 
-// 변경이력 팝업(S-BRSPGB). BP 관리자 상세처럼 버튼을 누르면 팝업으로 본다(2026-10-08). 최신순, 한 쪽 10건.
+// 변경이력 팝업(S-BRSPGB). 상세의 [변경이력] 버튼으로 연다(2026-10-08). 최신순, 한 쪽 10건.
 // 변경 전후 값 · 변경자 · 변경일시만 있고 사유와 비밀번호 값은 남기지 않는다.
 // 확인창(ConfirmDialog)과 같은 네이티브 <dialog> 다 — 표가 넓어 이 창만 넓힌다.
 // 미입력 값(변경 전후 값이 없을 때)은 빈 칸으로 둔다(대시 표시를 없앤 2026-10-20 디자인 수정 — 상세 표와 같다).
+// 제목·칸 이름은 1팀 영역 모두(점포·BP·휴일 등) 같은 말을 쓴다(2026-10-20 디자인 수정).
 // BP 관리자 상세도 같은 팝업을 쓴다 — 이력을 받는 서버 액션(load)만 다르다. 이력 줄 모양은 두 api 가 같다.
 
 type History = { changeId: number; field: string; beforeValue: string | null; afterValue: string | null; changedAt: string; changedByName: string | null };
 type HistoryList = { items: History[]; total: number };
 type LoadResult = ({ ok: true } & HistoryList) | { ok: false; message: string };
-// 제목·칸 이름은 1팀 영역 모두(점포·BP·휴일 등) 같은 말을 쓴다(2026-10-20 디자인 수정).
 
 const COLUMNS: Column<History>[] = [
   { header: "변경일시", width: "w-[140px]", cell: (h) => formatDateTime(h.changedAt) },

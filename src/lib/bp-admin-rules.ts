@@ -18,7 +18,7 @@ export const allowsAllStores = (roleTypeCode: BpAdminRoleType | "") => roleTypeC
 /**
  * 상세의 버튼.
  * - 수정은 메뉴 수정 권한과 api 의 canUpdate 가 모두 참일 때.
- * - 비밀번호 초기화는 미사용 계정에도 보인다(목업 기준). 본인 계정은 버튼은 보이되 막는다 — 내 정보에서 바꾼다.
+ * - 비밀번호 초기화는 미사용 계정에도 보인다(목업 기준). 본인 계정은 api 가 수정을 허락할 때만 버튼을 보이되 막는다 — 내 정보에서 바꾼다.
  */
 export function detailButtonsOf(actions: BpAdminActions, can: Pick<BpAdminPermission, "update">) {
   const canUpdate = can.update && actions.canUpdate;
