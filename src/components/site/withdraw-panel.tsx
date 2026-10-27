@@ -36,8 +36,9 @@ function WarningBlock({ block }: { block: WithdrawWarningBlock }) {
   );
 }
 
-// DetailTable 한 칸(값)에 들어간다(표로 바꿈, 사용자 지정, 2026-10-27) — 아이콘·설명문 대신 값 색으로만
-// 상태를 말한다. checked 가 null 이면 1차 범위 밖(확인하지 않음)이라 값도 중립색이다.
+// DataTable 한 칸(값)에 들어간다(가로 표로 바꿈, 사용자 지정, 2026-10-27 — 스크린샷으로 받은 "제목 칼럼 +
+// 값 한 줄" 모양을 그대로 따른다, 이 저장소에서 한 건을 세로로 펼치는 DetailTable 과는 다른 자리다). 아이콘·
+// 설명문 대신 값 색으로만 상태를 말한다. checked 가 null 이면 1차 범위 밖(확인하지 않음)이라 값도 중립색이다.
 function ConditionValue({ value, checked }: { value: string; checked: boolean | null }) {
   const tone = checked === null ? "text-erp-label" : checked ? "text-erp-link" : "text-erp-off";
   return <span className={`font-semibold ${tone}`}>{value}</span>;
@@ -219,18 +220,23 @@ export function WithdrawPanel({ id, open, onClose, trigger }: { id: string; open
                 ))}
               </div>
 
-              <DataTable
-                columns={[
-                  { header: "부가서비스 구독", cell: () => <ConditionValue value="-" checked={null} /> },
-                  { header: "미정산 금액", cell: () => <ConditionValue value="-" checked={null} /> },
-                  {
-                    header: "진행 중인 근로계약",
-                    cell: (e) => <ConditionValue value={e.hasInProgressContract ? "있음" : "없음"} checked={!e.hasInProgressContract} />,
-                  },
-                ]}
-                rows={[eligibility]}
-                rowKey={() => "conditions"}
-              />
+              {/* DataTable 에는 title 이 없어 FormGroup 과 같은 제목 글자만 따로 둔다(가로 표로 바꾸며 제목이
+               * 빠졌던 것을 코드리뷰로 찾음, 2026-10-27) — 화면읽기 도구도 이 h3 를 표 앞 landmark 로 읽는다. */}
+              <div className="flex flex-col gap-[10px]">
+                <h3 className="text-[15px] font-semibold text-erp-ink">탈퇴 조건</h3>
+                <DataTable
+                  columns={[
+                    { header: "부가서비스 구독", cell: () => <ConditionValue value="-" checked={null} /> },
+                    { header: "미정산 금액", cell: () => <ConditionValue value="-" checked={null} /> },
+                    {
+                      header: "진행 중인 근로계약",
+                      cell: (e) => <ConditionValue value={e.hasInProgressContract ? "있음" : "없음"} checked={!e.hasInProgressContract} />,
+                    },
+                  ]}
+                  rows={[eligibility]}
+                  rowKey={() => "conditions"}
+                />
+              </div>
 
               <div className="flex flex-col gap-[18px]">
                 <div className="flex flex-col gap-[8px]">
