@@ -12,6 +12,7 @@ import { bpPath } from "@/lib/bp-path";
 import { HOME, MENU_CODE, menuOfPath } from "@/lib/menus";
 import { formatAt } from "@/lib/notification-view";
 import { withScope } from "@/lib/store-scope";
+import { isPlatformRole } from "@/lib/auth-routes";
 import { homeSearchOf, pendingLineOf, renewalNamesOf, type HomePending, type HomeSummary } from "./home-view";
 
 const CARD = "rounded-[4px] border border-erp-panel-line bg-white";
@@ -26,6 +27,8 @@ type Loaded<T> = { key: string; data: T } | { key: string; error: string };
 function useHomeApi<T>(path: string | null, key: string, what: string): Loaded<T> | null {
   const router = useRouter();
   const [got, setGot] = useState<Loaded<T> | null>(null);
+  // 부르지 않는 동안(빈 범위)에는 지난 결과를 비운다 — 원래 범위로 돌아오면 key 가 지난 결과와 같아져 옛 값이 잠깐 보였다(#148 재리뷰)
+  if (path === null && got !== null) setGot(null);
   useEffect(() => {
     if (path === null) return;
     let cancelled = false;
@@ -69,7 +72,10 @@ export function HomeScreen() {
   const s = summary && "data" in summary ? summary.data : null;
   const p = pending && "data" in pending ? pending.data : null;
   const asOf = s?.asOf ?? p?.asOf;
-  const platform = s?.platform || p?.platform;
+  // 플랫폼 계정은 로그인 정보의 역할로 먼저 가른다 — 빈 범위면 api 를 부르지 않아 응답의 platform 을 받지 못한다
+  const platform = isPlatformRole(account.roleTypeCode) || s?.platform || p?.platform;
+  // 본사 역할에게는 본사 제공 동의가 없는 가맹 직원이 고용 형태 · 출근 수에서 빠진다(운영 정책 ATT-30) — 카드에 그 사실을 적는다
+  const hq = account.roleTypeCode === "BM" || account.roleTypeCode === "BA";
 
   let body: ReactNode;
   if (platform) {
@@ -97,7 +103,7 @@ export function HomeScreen() {
     body = (
       <>
         {p?.renewals?.length ? <RenewalBand renewals={p.renewals} href={renewalItem ? (pendingLineOf(renewalItem, bp)?.href ?? "/contracts") : "/contracts"} /> : null}
-        {s?.cards && <Cards cards={s.cards} scopeHref={(href) => withScope(href, scope)} canOpen={canOpen} bp={bp} />}
+        {s?.cards && <Cards cards={s.cards} hq={hq} scopeHref={(href) => withScope(href, scope)} canOpen={canOpen} bp={bp} />}
         <div className="grid grid-cols-[minmax(0,7fr)_minmax(0,5fr)] items-start gap-[12px]">
           {!summary ? <Notice text="현황을 불러오는 중입니다." /> : "error" in summary ? failed("현황을", summary.error) : <StoreTable table={summary.data.storeTable} staffHref={canOpen("/staff-members") ? withScope("/staff-members", scope) : null} />}
           {!pending ? <Notice text="처리 대기를 불러오는 중입니다." /> : "error" in pending ? failed("처리 대기를", pending.error) : <Pending data={pending.data} bp={bp} />}
@@ -159,7 +165,7 @@ function RenewalBand({ renewals, href }: { renewals: NonNullable<HomePending["re
 }
 
 // 수치 카드 — 라벨 · 숫자 · 아랫줄(데모 figure). 갈 화면에 조회 권한이 있으면 카드 전체가 링크다
-function Figure({ href, label, value, unit, sub }: { href: string | null; label: string; value: number; unit: string; sub: ReactNode }) {
+function Figure({ href, label, value, unit, sub, note }: { href: string | null; label: string; value: number; unit: string; sub: ReactNode; note?: string }) {
   const inner = (
     <>
       <span className="flex items-center gap-[6px] text-[14px] font-medium text-erp-label">
@@ -171,6 +177,7 @@ function Figure({ href, label, value, unit, sub }: { href: string | null; label:
         <span className="ml-[2px] text-[14px] font-medium">{unit}</span>
       </span>
       <span className="text-[14px] text-erp-label">{sub}</span>
+      {note && <span className="text-[12px] text-erp-muted">{note}</span>}
     </>
   );
   const box = `${CARD} flex flex-col gap-[10px] p-[24px]`;
@@ -190,7 +197,7 @@ const num = (n: number | null) => (n ? n : <span className="text-erp-muted">—<
 type CardsData = NonNullable<HomeSummary["cards"]>;
 
 // 수치 카드 넷 — api 가 null 을 준 카드(그 메뉴의 조회 권한 없음)는 숨긴다. 「준비 중」 자리를 남기지 않는다(HOME-5)
-function Cards({ cards, scopeHref, canOpen, bp }: { cards: CardsData; scopeHref: (href: string) => string; canOpen: (path: string) => boolean; bp: number }) {
+function Cards({ cards, hq, scopeHref, canOpen, bp }: { cards: CardsData; hq: boolean; scopeHref: (href: string) => string; canOpen: (path: string) => boolean; bp: number }) {
   const { staff, unsignedContractCount: unsigned, stores, todayAttendance: today, myInquiries: inquiries } = cards;
   return (
     <div className="grid grid-cols-4 gap-[12px]">
@@ -198,6 +205,7 @@ function Cards({ cards, scopeHref, canOpen, bp }: { cards: CardsData; scopeHref:
         <Figure
           href={canOpen("/staff-members") ? scopeHref("/staff-members") : null}
           label="재직 직원"
+          note={hq ? "동의하지 않은 가맹 직원은 고용 형태에 세지 않습니다" : undefined}
           value={staff.total}
           unit="명"
           sub={
@@ -214,6 +222,7 @@ function Cards({ cards, scopeHref, canOpen, bp }: { cards: CardsData; scopeHref:
         <Figure
           href={null}
           label="오늘 출근"
+          note={hq ? "동의하지 않은 가맹 직원은 출근 · 미출근에 세지 않습니다" : undefined}
           value={today.checkedIn}
           unit="명"
           sub={
