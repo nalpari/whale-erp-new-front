@@ -191,10 +191,12 @@ export function PayslipReview({
   const deductionHelp = (item: PayslipItem) =>
     item.itemCategory === "WITHHOLDING" ? `3.3% 원천징수 · 비과세를 포함한 지급 총액 ${formatAmount(totals.gross)}원에 매긴다` : "직접 입력";
 
-  // 끄면 연장수당을 가산 없이 1배로 계산한다(PAY-05). 금액은 임시저장 때 api 가 그 값으로 다시 계산한다 — 칸을 고치지 않았으면 새 계산값을 따른다.
-  // 저장하기 전에는 칸이 저장된 가산 값의 금액이라, 도움말도 저장된 값으로 쓰고 스위치 아래에 다시 계산한다고 알린다.
+  // 끄면 연장수당을 가산 없이 1배로 계산한다(PAY-05). 금액은 임시저장 때 api 가 그 값으로 다시 계산한다 — 칸을 고치지 않았으면 새 계산값을 따르고,
+  // 앞서 직접 고쳐 둔 연장수당은 그대로 두고 계산값만 바꾼다(PR #159 리뷰). 저장하기 전에는 칸이 저장된 가산 값의 금액이라, 도움말도 저장된 값으로
+  // 쓰고 스위치 아래에 다시 계산한다고 알린다.
   const togglePremium = (on: boolean) => setPremium(on);
   const premiumPending = premium !== payslip.isPremiumApplied;
+  const adjustedOvertime = payslip.items.find((i) => i.itemCode === "OVERTIME_PAY" && i.adjustedAmount !== null);
 
   /** api 를 부르고, 성공하면 확인창을 닫고 알린 뒤 상세를 다시 받는다. 실패하면 확인창에 남기고, 결과를 모르면 상세도 다시 받는다. */
   const run = (call: () => Promise<{ ok: true } | EditFailure>, done: string) =>
@@ -331,7 +333,13 @@ export function PayslipReview({
           </SectionHead>
           <div className="flex flex-col gap-[8px]">
             <Toggle label="연장·야간·휴일 가산 적용" checked={premium} disabled={!editable} onChange={(e) => togglePremium(e.target.checked)} />
-            {premiumPending && <span className={HELP}>임시저장하면 연장수당을 {premium ? "1.5배" : "가산 없이 1배"}로 다시 계산합니다.</span>}
+            {premiumPending && (
+              <span className={HELP}>
+                {adjustedOvertime
+                  ? `임시저장하면 연장수당 계산값을 ${premium ? "1.5배" : "가산 없이 1배"}로 다시 계산합니다. 직접 고친 연장수당(${formatAmount(adjustedOvertime.adjustedAmount!)}원)은 그대로 둡니다.`
+                  : `임시저장하면 연장수당을 ${premium ? "1.5배" : "가산 없이 1배"}로 다시 계산합니다.`}
+              </span>
+            )}
             {/* 파트타이머 명세서에만 선다(PAY-03). 켜면 공제가 4대보험 넷과 3.3% 가 되고 소득세 · 지방소득세는 빠진다 */}
             {isPartTime && (
               <>
