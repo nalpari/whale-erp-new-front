@@ -200,7 +200,7 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
       : []),
     {
       header: "상세 코드",
-      width: "w-[150px]",
+      width: "w-[190px]", // 코드명 칸을 오른쪽으로 옮긴다(2026-10-27 사용자 지정, 전엔 150)
       align: "left",
       cell: (d) =>
         d.deleted ? (

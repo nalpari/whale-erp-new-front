@@ -14,4 +14,6 @@ test("codesHref — 관리주체는 하나만 고른 때만 검색어 뒤에 둔
   assert.equal(codesHref({ manageOwnerCode: "PLATFORM_PROVIDED" }), "/code-groups?manageOwnerCode=PLATFORM_PROVIDED");
   assert.equal(codesHref({ groupCode: "EMP", manageOwnerCode: "PLATFORM_FIXED", page: 2 }), "/code-groups?groupCode=EMP&manageOwnerCode=PLATFORM_FIXED&page=2");
   assert.equal(codesHref({ manageOwnerCode: undefined }), "/code-groups");
+  // 둘 다 끔도 주소에 남는다 — 다시 그려져도 체크 모양이 유지되게
+  assert.equal(codesHref({ manageOwnerCode: "NONE" }), "/code-groups?manageOwnerCode=NONE");
 });

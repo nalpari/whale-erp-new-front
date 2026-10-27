@@ -1,5 +1,5 @@
 import { PageBar } from "@/components/common";
-import { ownerTerm, searchTerm } from "@/lib/code-drafts";
+import { ownerQuery, ownerTerm, searchTerm } from "@/lib/code-drafts";
 import { DEFAULT_PAGE_SIZE, getCodeGroups, getCodeItems } from "@/lib/codes";
 import { CodeFilter } from "./code-filter";
 import { CodeGroupPanel } from "./code-group-panel";
@@ -17,7 +17,7 @@ export default async function PlatformCodesPage({ searchParams }: PageProps<"/co
   const manageOwnerCode = ownerTerm(params.manageOwnerCode);
 
   const [groups, owners] = await Promise.all([
-    getCodeGroups({ page, pageSize: DEFAULT_PAGE_SIZE, groupCode, groupName, manageOwnerCode }),
+    getCodeGroups({ page, pageSize: DEFAULT_PAGE_SIZE, groupCode, groupName, manageOwnerCode: ownerQuery(manageOwnerCode) }),
     // 관리 주체 한글은 화면에 상수로 두지 않고 공통코드 MANAGE_OWNER 에서 읽는다(naming.md 화면 문구).
     getCodeItems("MANAGE_OWNER"),
   ]);

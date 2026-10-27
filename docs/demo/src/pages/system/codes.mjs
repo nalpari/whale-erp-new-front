@@ -138,10 +138,10 @@ export default ({ A, R }) => {
 
   const codeCols = [
     { header: "이동", width: "w-[60px]" },
-    { header: "상세 코드", width: "w-[220px]", align: "left" },
+    { header: "상세 코드", width: "w-[160px]", align: "left" }, // 앱과 같다(2026-10-27)
     { header: "코드명", align: "left" },
     { header: "표시 순서", width: "w-[90px]" },
-    { header: "사용여부", width: "w-[120px]" },
+    { header: "사용여부", width: "w-[100px]" },
   ];
   const codeRows = SERVICES.map(([code, name, on = true], i) => [
     handle,

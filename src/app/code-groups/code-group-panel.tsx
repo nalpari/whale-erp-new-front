@@ -325,7 +325,7 @@ export function CodeGroupPanel({
         rowKey={(d) => (d.added ? "__added" : d.groupCode)}
         // 고른 그룹은 한 단계 어두운 바탕 + 왼쪽 브랜드색 선 — 플랫폼 메뉴 관리 트리와 같다(2026-10-27 사용자 지정)
         rowState={(d) => (d.added ? "added" : d.groupCode === selected ? "current" : undefined)}
-        empty={searchedEmpty(search, search.manageOwnerCode && ownerLabels[search.manageOwnerCode]) ?? "등록한 공통코드 그룹이 없습니다."}
+        empty={searchedEmpty(search, search.manageOwnerCode && search.manageOwnerCode !== "NONE" ? ownerLabels[search.manageOwnerCode] : undefined) ?? "등록한 공통코드 그룹이 없습니다."}
       />
       <FieldErrors messages={Object.values(errors)} />
       {manage && <BpApplyDialog group={applyTarget} busy={applying} onConfirm={handleApply} onCancel={() => setApplyTarget(null)} />}

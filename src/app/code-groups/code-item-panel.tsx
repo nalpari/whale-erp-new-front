@@ -227,7 +227,7 @@ export function CodeItemPanel({
       : []),
     {
       header: "상세 코드",
-      width: "w-[220px]",
+      width: "w-[160px]", // 코드명과 사이를 좁혀 코드명 칸을 넓힌다(2026-10-27 사용자 지정, 전엔 220)
       align: "left",
       cell: (d) =>
         d.deleted ? (
@@ -270,7 +270,7 @@ export function CodeItemPanel({
     { header: "표시 순서", width: "w-[90px]", cell: (d) => d.sortOrder },
     {
       header: "사용여부",
-      width: "w-[120px]",
+      width: "w-[100px]", // 표시 순서를 오른쪽으로 조금 옮겨 코드명 칸을 넓힌다(2026-10-27 사용자 지정, 전엔 120)
       cell: (d) =>
         d.deleted ? (
           <DeletePending />
