@@ -85,6 +85,21 @@ export function gapsOf(coverage: readonly number[], carry: readonly number[] = [
   return gaps;
 }
 
+/**
+ * 읽기 전용(로그인 후 홈 점포 하나 화면) 주간 보기의 직원 줄 — 그날 근무가 있는 직원과, 근무 인원(headcount)에서 그 수를 뺀 만큼의 가린 직원 줄
+ * (이름 · 막대 없이, 관리 화면의 가린 줄과 같다). 가린 직원은 근무스케줄이 오지 않아 누가 일하는지 모른다 — 인원 줄과 줄 수만 맞춘다
+ * (2026-10-27 재영). 휴무 직원 줄은 없다. staff 는 그날 받을 수 있는 직원(schedulableDates)이다.
+ */
+export function readOnlyRows<S extends { staffMemberId: number | null; isMasked: boolean }>(
+  staff: readonly S[],
+  items: readonly { staffMemberId: number; workDate: string }[],
+  day: string,
+  headcount: number,
+): S[] {
+  const working = staff.filter((s) => !s.isMasked && items.some((it) => it.staffMemberId === s.staffMemberId && it.workDate === day));
+  return [...working, ...staff.filter((s) => s.isMasked).slice(0, Math.max(0, headcount - working.length))];
+}
+
 /** 「1시간 30분」 · 「30분」 · 「2시간」 */
 export function durationLabel(minutes: number): string {
   const h = Math.floor(minutes / 60);

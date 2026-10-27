@@ -2,9 +2,11 @@
 
 import { useEffect, useEffectEvent, useState } from "react";
 import { Checkbox, FilterPanel, FilterSection, SearchField, useToast } from "@/components/common";
+import { SMALL_BUTTON } from "@/components/common/theme";
 import { STORE_STATUSES, STORE_TYPES } from "@/lib/store-types";
 import { useCodeLabel } from "@/components/site/code-label";
 import { useScope, useStores } from "@/components/site/session-gate";
+import { StoreBulkDialog } from "@/components/site/store-mapping-picker";
 import { StorePicker, type PickedStore } from "@/components/site/store-picker";
 import type { Scope } from "@/lib/browser-storage";
 import { isUnusableScope, scopeKeyOf, scopeStores, toPickedStore } from "@/lib/store-scope";
@@ -51,6 +53,13 @@ export function StoreFilter({ picked, scope, requested }: { picked: PickedStore[
     setChips(chipsOf(scope));
   }
   const [resets, setResets] = useState(0);
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const hidden = droppedStoreIds(requested, picked);
+  /** 고른 점포로 목록을 다시 건다 — 찾아 고르기 · 일괄 검색이 같이 쓴다 */
+  const pickStores = (next: PickedStore[]) => {
+    setChips(next);
+    navigate(withPickedStores(current, next.map((s) => s.storeId)));
+  };
   // 점포상태를 사용자가 고치지 않았으면 서버가 그 범위에 맞는 기본값을 정한다(statusesDefault).
   // 마운트 뒤에도 점포 조건이 없는 주소로 오면(뒤로 · 앞으로 가기는 이 화면을 다시 그리지 않는다) 그때의 헤더 범위로 다시 채운다.
   // 다시 채울지는 주소(점포 조건이 있나)로만 정한다 — 헤더 범위가 바뀐 것으로 돌면 헤더의 이동(다른 조건 초기화 · 기록)을 이 replace 가 덮는다.
@@ -82,13 +91,29 @@ export function StoreFilter({ picked, scope, requested }: { picked: PickedStore[
         });
       }}
     >
-      <FilterSection label="점포" tight>
-        <StorePicker
-          hidden={droppedStoreIds(requested, picked)}
+      <FilterSection
+        label="점포"
+        tight
+        action={
+          // 필터 라벨 줄에 맞춘 작은 버튼(24px) — 칩 머리의 [전체 제거]와 같은 모양이다
+          <button type="button" onClick={() => setBulkOpen(true)} className={SMALL_BUTTON}>
+            일괄검색
+          </button>
+        }
+      >
+        <StorePicker hidden={hidden} picked={chips} onChange={pickStores} />
+        {/* 후보는 찾기 칸과 같은 로그인 정보의 관리 점포(폐점 포함)에서 서버가 뺀 점포를 숨긴 것이다 */}
+        <StoreBulkDialog
+          open={bulkOpen}
+          options={stores.filter((s) => !hidden.includes(s.storeId))}
           picked={chips}
-          onChange={(next) => {
-            setChips(next);
-            navigate(withPickedStores(current, next.map((s) => s.storeId)));
+          onCancel={() => setBulkOpen(false)}
+          onApply={(next) => {
+            setBulkOpen(false);
+            // 창은 새로 넣은 점포를 앞에 둔다(매핑 폼의 순서) — 필터는 찾아 고르기처럼 남긴 칩 뒤에 붙인다
+            const nextIds = new Set(next.map((s) => s.storeId));
+            const chipIds = new Set(chips.map((s) => s.storeId));
+            pickStores([...chips.filter((s) => nextIds.has(s.storeId)), ...next.filter((s) => !chipIds.has(s.storeId))]);
           }}
         />
       </FilterSection>

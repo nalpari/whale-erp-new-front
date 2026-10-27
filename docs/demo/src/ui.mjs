@@ -112,10 +112,14 @@ export const detailValues = (items) =>
 export const textField = (a = {}) => `<input${attrs(a)} class="${FIELD}">`;
 export const textarea = ({ rows = 8, value = "", ...a } = {}) =>
   `<textarea${attrs(a)} rows="${rows}" class="${FIELD_BOX} resize-none px-[16px] py-[12px] leading-[1.6]">${value}</textarea>`;
-export const select = (options, { value, ...a } = {}) =>
-  `<select${attrs(a)} class="${FIELD} appearance-none bg-[url(/icons/select-arrow.svg)] bg-[length:30px_30px] bg-[position:right_center] bg-no-repeat pr-[30px]">${options
-    .map((o) => `<option${o === (value ?? options[0]) ? " selected" : ""}>${o}</option>`)
+// 선택지 자리에 { group, options } 를 주면 그 묶음(optgroup)으로 그린다(플랫폼 관리자 권한명, 2026-10-27)
+export const select = (options, { value, ...a } = {}) => {
+  const flat = options.flatMap((o) => (typeof o === "object" ? o.options : [o]));
+  const opt = (o) => `<option${o === (value ?? flat[0]) ? " selected" : ""}>${o}</option>`;
+  return `<select${attrs(a)} class="${FIELD} appearance-none bg-[url(/icons/select-arrow.svg)] bg-[length:30px_30px] bg-[position:right_center] bg-no-repeat pr-[30px]">${options
+    .map((o) => (typeof o === "object" ? `<optgroup label="${o.group}">${o.options.map(opt).join("")}</optgroup>` : opt(o)))
     .join("")}</select>`;
+};
 const MARK_MOTION =
   "pointer-events-none relative scale-75 opacity-0 transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] peer-checked:scale-100 peer-checked:opacity-100 motion-reduce:scale-100";
 export const checkbox = (A, label, checked = false, a = {}) =>

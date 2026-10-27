@@ -17,25 +17,25 @@ export function adminEditBody(A, R, { panel = false } = {}) {
     "기본정보",
     // 아이디 칸은 제목 줄 띠지로 옮겼다. 등록일시 · 최근 로그인은 상세에서 본다(2026-10-27 사용자 지정)
     row(ui.field(c.req("이름"), ui.textField({ value: "이서아", maxlength: 20 })), c.blank),
-    row(ui.field(c.req("휴대전화번호"), c.tel("010", "2290", "5173")), ui.field(c.req("이메일"), ui.textField({ value: "seoa.lee@hangang.co.kr", maxlength: 100 }))),
-    row(ui.field(c.req("계정 상태"), ui.select(["사용", "미사용"])), c.blank),
+    row(ui.field(c.req("연락처"), c.tel("010", "2290", "5173")), ui.field(c.req("이메일"), ui.textField({ value: "seoa.lee@hangang.co.kr", maxlength: 100 }))),
+    row(ui.field(c.req("계정상태"), ui.select(["사용", "미사용"])), c.blank),
   );
 
   // 계정 역할 · 권한 그룹은 패널에서도 한 줄에 나란히(2026-10-27 사용자 지정 — 전엔 패널에서 두 줄)
-  const role = ui.formGroup(
-    "계정 역할",
+  // 계정 역할 · 권한명은 기본정보 안 맨 아래 — 「계정 역할」 묶음 제목은 없앴다(앱과 같다, 2026-10-27 사용자 지정)
+  const roleRow = [
     c.row(
       // 계정 역할은 130px 고정, 권한 그룹이 남는 폭(앱 admin-form-panel, 2026-10-27)
       ui.field("계정 역할", ui.textField({ value: "BP 관리자", readonly: true }), "w-[130px] shrink-0"),
       ui.field(
-        "권한 그룹",
+        "권한명",
         ui.select(["운영 총괄 · BA000003", "인사 담당 · BA000004", "정산 조회 · BA000005", "고객응대 · BA000006", "점포 조회 전용 · BA000007"], { value: "인사 담당 · BA000004" }),
       ),
     ),
-  );
+  ][0];
 
   const stores = ui.formGroup(
-    "대상 점포",
+    "대상점포",
     row(ui.field("범위", ui.select(["전체 점포", "일부 점포"], { value: "일부 점포", "data-spick-scope": true })), c.blank),
     c.storePicker(A, {
       clearLabel: "전체 제거",
@@ -57,7 +57,7 @@ export function adminEditBody(A, R, { panel = false } = {}) {
   const save = panel
     ? ui.button("저장", { "data-save-panel": "admin-detail-panel" })
     : ui.button("저장", { href: `${link(R, "config/admins.html")}?panel=admin-detail-panel` });
-  return basic + role + stores + c.buttons(cancel, save);
+  return basic.replace("</div></section>", `${roleRow}</div></section>`) + stores + c.buttons(cancel, save);
 }
 
 export function adminEditPanel(A, R) {

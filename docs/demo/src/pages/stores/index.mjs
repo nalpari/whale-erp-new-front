@@ -4,7 +4,7 @@ import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import { tag } from "../../config-parts.mjs";
 import { STORES, erpHeader, link } from "../../site.mjs";
-import { storeFilter } from "../../store-filter.mjs";
+import { storeFilterSection } from "../../store-filter.mjs";
 
 // 필터의 점포 고르기는 1팀 공통 부품(store-filter.mjs) — 휴일 등록 「대상 점포」처럼 찾아 고르면 「선택한 점포」에 쌓인다.
 
@@ -41,7 +41,7 @@ const STORE_FILTER_SCRIPT = `<style>[data-store-out]{display:none!important}</st
 
 export default ({ A, R }) => {
   const filter = ui.filterPanel(A, [
-    ui.filterSection("점포", storeFilter(A), { tight: true }),
+    storeFilterSection(A),
     ui.filterSection("사업자등록번호", ui.searchField(A, { placeholder: "하이픈 없이 10자리", label: "사업자등록번호" }), { tight: true }),
     ui.filterSection("점포상태", ui.checkbox(A, "미운영", true) + ui.checkbox(A, "운영", true) + ui.checkbox(A, "폐점")),
     ui.filterSection("점포유형", ui.checkbox(A, "직영점포", true) + ui.checkbox(A, "가맹점포", true), { last: true }),

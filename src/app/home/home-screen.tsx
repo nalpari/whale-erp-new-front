@@ -2,57 +2,25 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Badge, Button, DataTable, PageBar } from "@/components/common";
 import { CodeLabel } from "@/components/site/code-label";
 import { useAccount, useCurrentBp, useMenuRole, useMenus, useScope, useService, useStores } from "@/components/site/session-gate";
-import { bff, BffError } from "@/lib/bff";
 import { bpPath } from "@/lib/bp-path";
 import { HOME, MENU_CODE, menuOfPath } from "@/lib/menus";
 import { formatAt } from "@/lib/notification-view";
 import { withScope } from "@/lib/store-scope";
 import { isPlatformRole } from "@/lib/auth-routes";
+import { OneStoreScreen } from "./one-store-screen";
+import { oneStoreIdOf } from "./one-store-view";
+import { useHomeApi } from "./use-home-api";
 import { homeSearchOf, pendingLineOf, renewalNamesOf, type HomePending, type HomeSummary } from "./home-view";
 
 const CARD = "rounded-[4px] border border-erp-panel-line bg-white";
 
-type Loaded<T> = { key: string; data: T } | { key: string; error: string };
-
-/**
- * api 하나를 부른다. key(범위 + 새로고침 횟수)가 바뀔 때만 다시 부른다(HOM-08) — 그 밖에는 부르지 않는다.
- * 지금 key 의 결과가 아니면 null(부르는 중)이다. summary 와 pending 을 따로 불러 한쪽이 실패해도 다른 쪽은 보인다.
- * path 가 null 이면 부르지 않는다(범위에 드는 점포가 없음). 401 이면 로그인 화면으로 보낸다(SessionGate 와 같다).
- */
-function useHomeApi<T>(path: string | null, key: string, what: string): Loaded<T> | null {
-  const router = useRouter();
-  const [got, setGot] = useState<Loaded<T> | null>(null);
-  // 부르지 않는 동안(빈 범위)에는 지난 결과를 비운다 — 원래 범위로 돌아오면 key 가 지난 결과와 같아져 옛 값이 잠깐 보였다(#148 재리뷰)
-  if (path === null && got !== null) setGot(null);
-  useEffect(() => {
-    if (path === null) return;
-    let cancelled = false;
-    bff<T>(path).then(
-      (data) => {
-        if (!cancelled) setGot({ key, data });
-      },
-      (e: unknown) => {
-        if (cancelled) return;
-        if (e instanceof BffError && e.status === 401) return router.replace("/login");
-        console.error(`홈 ${what} 조회 실패`, e);
-        setGot({ key, error: e instanceof BffError ? e.message : "잠시 뒤 다시 불러와 주세요" });
-      },
-    );
-    return () => {
-      cancelled = true;
-    };
-  }, [path, key, what, router]);
-  return got?.key === key ? got : null;
-}
-
 // 로그인 후 홈 — 여러 점포 화면(WHALEERP-307~310, 목업 home/signed-in.html 「BP 마스터 화면」 · 데모 home/signed-in).
 // 업무 범위는 헤더 범위 선택기다. 홈은 메뉴가 아니라 헤더가 이동시키지 않으므로 이 화면이 범위를 보고 다시 부른다.
-// 점포 하나 화면(HOME-6)은 다음 PR 이다 — 그때까지는 점포 하나 범위도 이 화면에 그 점포 하나로 보인다.
+// 업무 범위가 점포 하나면 점포 하나 화면(one-store-screen.tsx, HOME-6)이다.
 export function HomeScreen() {
   const account = useAccount();
   const bp = useCurrentBp().bpCodeId;
@@ -61,8 +29,11 @@ export function HomeScreen() {
   const [reloads, setReloads] = useState(0);
   const search = homeSearchOf(scope, stores);
   const key = `${search}#${reloads}`;
-  const summary = useHomeApi<HomeSummary>(search === null ? null : `/home/summary${search}`, key, "현황");
-  const pending = useHomeApi<HomePending>(search === null ? null : `/home/pending${search}`, key, "처리 대기");
+  // 점포 하나면 점포 하나 화면(HOME-6) — 홈 집계(summary · pending)는 부르지 않는다. 플랫폼 계정 · 쓸 수 없는 범위는 아래에서 먼저 가른다
+  const oneStore = search === null || isPlatformRole(account.roleTypeCode) ? null : oneStoreIdOf(scope, account.roleTypeCode, stores);
+  const many = search !== null && oneStore === null;
+  const summary = useHomeApi<HomeSummary>(many ? `/home/summary${search}` : null, key, "현황");
+  const pending = useHomeApi<HomePending>(many ? `/home/pending${search}` : null, key, "처리 대기");
 
   const menus = useMenus();
   const service = useService();
@@ -97,6 +68,8 @@ export function HomeScreen() {
   } else if (search === null) {
     // 범위에 드는 점포가 이 탭에 없다(다른 BP 탭에서 복사한 범위 등) — 쿼리를 빼면 BP 전체가 보이므로 부르지 않는다
     body = <Notice text="상단 범위에 해당하는 점포가 이 탭에 없습니다. 상단에서 범위를 다시 고르세요." />;
+  } else if (oneStore !== null) {
+    body = <OneStoreScreen storeId={oneStore} reloadKey={String(reloads)} />;
   } else {
     const renewalItem = p?.items.find((i) => i.type === "CONTRACT_RENEWAL");
     const failed = (what: string, error: string) => <Notice text={`${what} 불러오지 못했습니다. ${error}`} />;
@@ -120,7 +93,7 @@ export function HomeScreen() {
           <button
             type="button"
             aria-label="다시 불러오기"
-            disabled={!summary || !pending}
+            disabled={many && (!summary || !pending)}
             onClick={() => setReloads((n) => n + 1)}
             className="grid h-[34px] w-[34px] place-items-center rounded-[2px] border border-erp-button-line bg-white transition-[border-color] duration-150 ease-out hover:border-erp-brand disabled:opacity-40"
           >

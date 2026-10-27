@@ -10,7 +10,7 @@ import { findMenu, HOME, PENDING_PLATFORM_MENU } from "@/lib/menus";
 import type { AccountBp, AdminStore } from "@/lib/session";
 import { isClosedStore, openStores, SCOPE_PARAM, scopeFromAddress, scopeKeyOf, scopeOfKey, withScope } from "@/lib/store-scope";
 import { BpSelectDialog } from "./bp-select-dialog";
-import { useAccount, useCurrentBp, useMenus, useMyPageOpen, useMyPageTrigger, usePageMenu, usePasswordChangeOpen, useScope, useService, useStores } from "./session-gate";
+import { useAccount, useCurrentBp, useMenus, useMyPageOpen, useMyPageTrigger, usePageMenu, usePasswordChangeOpen, useScope, useService, useStores, useWithdrawOpen } from "./session-gate";
 
 /** ERP 메뉴 url 의 화면 주소 — /bp/{id} 주소로 옮긴 화면에만 탭 BP 를 붙인다(BP_PATH_SCREENS). 메뉴 url 자체는 옛 경로 그대로다. */
 const screenOf = (url: string, tabBp: number) => (isBpPathScreen(url) ? bpPath(tabBp, url) : url);
@@ -29,6 +29,7 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   const [bpSelectOpen, setBpSelectOpen] = useState(false);
   const [, setMyPageOpen] = useMyPageOpen();
   const [, setPasswordChangeOpen] = usePasswordChangeOpen();
+  const [, setWithdrawOpen] = useWithdrawOpen();
   const myPageTrigger = useMyPageTrigger();
   const tabBp = useCurrentBp().bpCodeId;
   const [scope] = useScope();
@@ -45,15 +46,13 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
       });
       return { label: m.name, items, href: items.length === 0 && m.permission.read && m.url ? linkOf(m.url) : undefined };
     });
-  // 회원 탈퇴는 슬라이드 패널 작업 전이라 아직 아무 데도 가지 않는다(S-JHQQNR).
   const mine: UserPopItem[] = [
     { label: "내정보 관리", onSelect: () => setMyPageOpen(true) },
     { label: "비밀번호 변경", onSelect: () => setPasswordChangeOpen(true) },
   ];
-  const userItems: UserPopItem[] =
-    service === "WHALE_ERP"
-      ? [...mine, { label: "회원 탈퇴", href: "#" }, { label: "로그아웃", action: logout, danger: true }]
-      : [...mine, { label: "로그아웃", action: logout, danger: true }];
+  // 회원 탈퇴는 BP 마스터(BM)에게만 보인다(S-JHQQNR) — 다른 유형은 항목 자체가 없다.
+  const withdraw: UserPopItem[] = service === "WHALE_ERP" && account.roleTypeCode === "BM" ? [{ label: "회원 탈퇴", onSelect: () => setWithdrawOpen(true) }] : [];
+  const userItems: UserPopItem[] = [...mine, ...withdraw, { label: "로그아웃", action: logout, danger: true }];
 
   return (
     <GlobalHeader
