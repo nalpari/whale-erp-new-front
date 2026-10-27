@@ -27,7 +27,7 @@ const ICON = {
   ),
 };
 
-function WithIcon({ icon, children }: { icon: keyof typeof ICON; children: ReactNode }) {
+export function WithIcon({ icon, children }: { icon: keyof typeof ICON; children: ReactNode }) {
   return (
     <span className="inline-flex max-w-full items-center gap-[6px]">
       <svg
