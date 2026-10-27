@@ -25,6 +25,7 @@ export function PayslipTable({
   statusLabels,
   employmentTypeLabels,
   reviewReasonLabels,
+  filtered = false,
 }: {
   items: PayslipListItem[];
   total: number;
@@ -35,6 +36,8 @@ export function PayslipTable({
   statusLabels: EnumValue[];
   employmentTypeLabels: EnumValue[];
   reviewReasonLabels: EnumValue[];
+  /** 상태 · 직원명 · 검토 대기만으로 거른 목록인가 — 비었을 때 문구가 다르다 */
+  filtered?: boolean;
 }) {
   const rows: Row[] = items.map((payslip, i) => ({ no: rowNumber(total, page, pageSize, i), payslip }));
   const columns: Column<Row>[] = [
@@ -64,21 +67,24 @@ export function PayslipTable({
     {
       header: "상태",
       width: "w-[180px]",
-      // 검토 대기는 상태가 아니라 분류라 상태 배지 옆에 붙인다 — 사유는 배지에 마우스를 올리면 보이고, 내용은 상세에서 본다
-      cell: shown((p) =>
-        p.status ? (
+      // 검토 대기는 상태가 아니라 분류라 상태 배지 옆에 붙인다 — 사유는 배지에 마우스를 올리면 보이고(화면 낭독기는 숨긴 글자로 읽는다),
+      // 내용은 상세에서 본다
+      cell: shown((p) => {
+        const reasons = p.pendingReviewReasons?.map((r) => labelOf(reviewReasonLabels, r)).join(" · ");
+        return p.status ? (
           <span className="inline-flex flex-wrap items-center gap-[4px]">
             <CellView cell={{ text: labelOf(statusLabels, p.status), style: STATUS_STYLE[p.status] }} />
-            {!!p.pendingReviewReasons?.length && (
-              <span title={p.pendingReviewReasons.map((r) => labelOf(reviewReasonLabels, r)).join(" · ")}>
+            {reasons && (
+              <span title={reasons}>
                 <CellView cell={{ text: REVIEW_PENDING_TEXT, style: "badge-off" }} />
+                <span className="sr-only"> — {reasons}</span>
               </span>
             )}
           </span>
         ) : (
           DASH
-        ),
-      ),
+        );
+      }),
     },
     { header: "발송일", width: "w-[100px]", cell: shown(sentDateText) },
   ];
@@ -89,7 +95,7 @@ export function PayslipTable({
       rows={rows}
       // 가린 줄은 payslipId 가 null 이라 순번으로 가른다(직원 목록과 같다)
       rowKey={(r) => r.payslip.payslipId ?? `masked-${r.no}`}
-      empty="이 달의 급여명세서가 없습니다."
+      empty={filtered ? "조건에 맞는 급여명세서가 없습니다." : "이 달의 급여명세서가 없습니다."}
     />
   );
 }

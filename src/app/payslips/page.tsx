@@ -1,5 +1,6 @@
 import { ListToolbar, PageBar } from "@/components/common";
 import { getEnum } from "@/lib/api";
+import { PAYSLIP_STATUSES } from "@/lib/payslips";
 import { getPayslips } from "@/lib/payslips-api";
 import { kstToday } from "@/lib/staff-members";
 import { PayslipFilter } from "./payslip-filter";
@@ -42,6 +43,10 @@ export default async function PayslipsPage({ searchParams }: PageProps<"/payslip
             ))}
             {" · "}검토 대기 <b className="font-semibold text-erp-ink">{reviewPendingCount}</b>
           </p>
+          {/* 검토 대기 건수는 본사 제공 동의 없는 직원 명세서도 세고, 「검토 대기만」 목록은 그 명세서를 뺀다(ATT-30) — 숫자가 다른 까닭을 알린다 */}
+          {query.reviewPending && reviewPendingCount > total && (
+            <p className="text-[13px] text-erp-label">본사 제공 동의 없는 직원의 명세서는 「검토 대기만」 목록에서 빠집니다.</p>
+          )}
           <ListToolbar total={total}>
             <PayslipListActions query={query} confirmedCount={statusCounts.CONFIRMED} employmentTypeLabels={employmentTypeLabels} />
             <PayslipPageSize query={query} />
@@ -55,6 +60,8 @@ export default async function PayslipsPage({ searchParams }: PageProps<"/payslip
             statusLabels={statusLabels}
             employmentTypeLabels={employmentTypeLabels}
             reviewReasonLabels={reviewReasonLabels}
+            // 거른 목록이 비면 그달 명세서가 없는 것이 아니다
+            filtered={query.reviewPending || !!query.staffName || query.statuses.length !== PAYSLIP_STATUSES.length}
           />
           {total > 0 && (
             <div className="pt-[14px]">
