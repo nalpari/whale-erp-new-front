@@ -8,8 +8,8 @@ import type { AdminStatus, CreatePlatformAdminInput, PlatformAdminDetail, Update
 export const LOGIN_ID_PATTERN = /^(?=.*[A-Za-z])[A-Za-z0-9]{4,20}$/;
 /** 이름 — 한글 · 영문 2~20자. */
 export const NAME_PATTERN = /^[가-힣A-Za-z ]{2,20}$/;
-/** 연락처 — 하이픈 없이 숫자 10~11자리. */
-export const PHONE_PATTERN = /^[0-9]{10,11}$/;
+/** 연락처 — 하이픈 없이 숫자 9~12자리. 점포 연락처와 같다 — 02 유선은 9자리부터, 050X 평생번호는 12자리. */
+export const PHONE_PATTERN = /^[0-9]{9,12}$/;
 
 /** 입력칸 값 그대로. 연락처는 세 칸, 권한은 select 값(문자열)이다. */
 export type AdminForm = {
@@ -42,10 +42,10 @@ export const EMPTY_FORM: AdminForm = {
   accountStatus: "ACTIVE",
 };
 
-/** 하이픈 없는 번호를 세 칸으로 — 휴대전화(3-4-4) · 02 지역번호(2-3/4-4) · 그 밖 지역번호(3-3/4-4). */
+/** 하이픈 없는 번호를 세 칸으로 — 휴대전화(3-4-4) · 02 지역번호(2-3/4-4) · 050X 평생번호(4-4-4, 12자리) · 그 밖 지역번호(3-3/4-4). */
 export function splitPhone(digits: string | null): [string, string, string] {
   if (!digits) return ["", "", ""];
-  const head = digits.startsWith("02") ? 2 : 3;
+  const head = digits.startsWith("02") ? 2 : digits.startsWith("050") && digits.length === 12 ? 4 : 3;
   return [digits.slice(0, head), digits.slice(head, digits.length - 4), digits.slice(-4)];
 }
 
@@ -102,7 +102,7 @@ export function validateAdminForm(form: AdminForm, mode: "create" | "edit"): Par
   if (loginId) errors.loginId = loginId;
   if (!NAME_PATTERN.test(form.name.trim())) errors.name = form.name.trim() ? "이름은 한글 또는 영문 2~20자입니다." : "이름을 입력해 주세요.";
   const phone = phoneOf(form);
-  if (!PHONE_PATTERN.test(phone)) errors.phone = phone ? "연락처는 숫자 10~11자리입니다." : "연락처를 입력해 주세요.";
+  if (!PHONE_PATTERN.test(phone)) errors.phone = phone ? "연락처는 숫자 9~12자리입니다." : "연락처를 입력해 주세요.";
   const email = emailError(form.email);
   if (email) errors.email = email;
   if (form.department.trim().length > 30) errors.department = "소속 부서는 30자까지입니다.";

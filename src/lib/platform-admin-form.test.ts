@@ -67,6 +67,9 @@ test("필수 칸 — 이름 · 연락처 · 이메일 · 사용자 권한", () =
   assert.ok(validateAdminForm({ ...filled, name: "이" }, "create").name, "1자");
   assert.ok(validateAdminForm({ ...filled, email: "seojun@" }, "create").email);
   assert.ok(validateAdminForm({ ...filled, phone: ["010", "12a4", "5678"] }, "create").phone);
+  assert.ok(validateAdminForm({ ...filled, phone: ["010", "1", "5678"] }, "create").phone, "8자리");
+  assert.equal(validateAdminForm({ ...filled, phone: ["02", "123", "4567"] }, "create").phone, undefined, "9자리");
+  assert.equal(validateAdminForm({ ...filled, phone: ["0507", "2033", "1334"] }, "create").phone, undefined, "12자리");
 });
 
 test("등록 요청 — 공백을 빼고, 이메일은 소문자로, 빈 선택 칸은 null", () => {
@@ -95,6 +98,7 @@ test("연락처를 세 칸으로 나눈다", () => {
   assert.deepEqual(splitPhone("01012345678"), ["010", "1234", "5678"]);
   assert.deepEqual(splitPhone("0311234567"), ["031", "123", "4567"]);
   assert.deepEqual(splitPhone("0212345678"), ["02", "1234", "5678"]);
+  assert.deepEqual(splitPhone("050720331334"), ["0507", "2033", "1334"]);
   assert.deepEqual(splitPhone(null), ["", "", ""]);
 });
 

@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-27
+* **Update**: [점포 관리](/stores.md) · [MY PAGE](/mypage.md) · [Whale ERP Frontend](/whale-erp-front.md) — 1팀 연락처 칸을 모두 점포 연락처처럼 숫자 9~12자리로 맞췄다(사용자 요청): 플랫폼 관리자 · BP 관리자 등록 · 수정(`platform-admin-form.ts` · `bp-admin-form.ts`), MY PAGE 기본정보(`my-profile-form.ts`), BP 정보 대표자 연락처(`bp-profile-form.ts`, 9~11 → 9~12), 점포 대표자 연락처(`store-form.ts`), BP 회원가입(`signup/validators.ts`). 앞자리 칸은 050X 평생번호 때문에 모두 4자리이고, `splitPhone` 은 050 으로 시작하는 12자리를 4-4-4 로 나눈다. 3팀 화면(근로계약 · 도입문의)은 그대로다. api 검사 · DB 제약은 사용자가 따로 요청한다(api 작업 대기).
 * **Update**: [BP 환경설정](/config.md) — BP 공통코드에서 플랫폼고정 그룹을 보이지 않게 했다(2026-10-27 사용자 결정, 2026-10-22 A안 변경). 목록 · total 에서 빼고 상세 코드 조회 · 저장은 404 로 하는 것은 api 작업 대기 — 화면에서 거르면 쪽 나눔과 개수가 어긋난다. front 는 `bp-codes.ts` · `bp-code-group-panel.tsx` · `bp-code-item-panel.tsx` · `bp-code-drafts.ts` · `actions.ts` 주석을 맞추고, 플랫폼고정 잠금(`bpPanelLock` 의 `fixed`)은 api 보다 먼저 배포될 때를 위해 남겼다. 목업 · 데모 BP 공통코드 화면에서도 플랫폼고정 그룹을 뺐다.
 
 ## 2026-10-26

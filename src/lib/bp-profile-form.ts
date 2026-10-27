@@ -7,7 +7,7 @@ import { splitPhone } from "./my-profile-form.ts";
 import type { BpProfile, UpdateBpProfileInput, VerifyBpBusinessInput } from "./bp-profile.ts";
 
 export const BIZ_NUMBER_PATTERN = /^[0-9]{10}$/;
-export const CEO_PHONE_PATTERN = /^[0-9]{9,11}$/;
+export const CEO_PHONE_PATTERN = /^[0-9]{9,12}$/;
 export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -107,7 +107,7 @@ export function validateBpProfileForm(form: BpProfileForm): Partial<Record<BpPro
   else if (tradeName.length > 50) errors.tradeName = "상호명은 1~50자입니다.";
   if (!form.sameAsBasicPhone) {
     const phone = phoneOf(form.bizCeoPhone);
-    if (phone && !CEO_PHONE_PATTERN.test(phone)) errors.bizCeoPhone = "대표자 연락처는 숫자 9~11자리입니다.";
+    if (phone && !CEO_PHONE_PATTERN.test(phone)) errors.bizCeoPhone = "대표자 연락처는 숫자 9~12자리입니다.";
   }
   if (!form.sameAsBasicEmail) {
     const email = form.bizCeoEmail.trim();

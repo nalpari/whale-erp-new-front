@@ -81,7 +81,7 @@ export function validateBpAdminForm(
   if (loginId) errors.loginId = loginId;
   if (!NAME_PATTERN.test(form.name.trim())) errors.name = form.name.trim() ? "이름은 한글 또는 영문 2~20자입니다." : "이름을 입력해 주세요.";
   const phone = phoneOf(form);
-  if (!PHONE_PATTERN.test(phone)) errors.phone = phone ? "휴대전화번호는 숫자 10~11자리입니다." : "휴대전화번호를 입력해 주세요.";
+  if (!PHONE_PATTERN.test(phone)) errors.phone = phone ? "휴대전화번호는 숫자 9~12자리입니다." : "휴대전화번호를 입력해 주세요.";
   const email = emailError(form.email);
   if (email) errors.email = email;
   if (mode === "create" && !form.roleTypeCode) errors.roleTypeCode = "계정 역할을 골라 주세요.";

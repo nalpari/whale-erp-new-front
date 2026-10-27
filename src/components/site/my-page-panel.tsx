@@ -314,7 +314,7 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
                       set("phone", next);
                     }}
                     inputMode="numeric"
-                    maxLength={i === 0 ? 3 : 4}
+                    maxLength={4}
                     aria-label={`연락처 ${label}`}
                     aria-invalid={invalid("phone")}
                     aria-describedby={describe("phone")}

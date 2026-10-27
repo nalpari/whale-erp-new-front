@@ -346,7 +346,7 @@ test("toUpdateBpProfileInput — pendingClear 가 verification 보다 앞선다(
 
 test("serverErrorField — 상호명 · 연락처 · 이메일 · 업태 · 종목 문구만 그 칸, 나머지는 띠", () => {
   assert.equal(serverErrorField(400, "상호명은 1~50자로 입력해 주세요."), "tradeName");
-  assert.equal(serverErrorField(400, "대표자 연락처는 숫자 9~11자리입니다"), "bizCeoPhone");
+  assert.equal(serverErrorField(400, "대표자 연락처는 숫자 9~12자리입니다"), "bizCeoPhone");
   assert.equal(serverErrorField(400, "대표자 이메일 형식이 아닙니다"), "bizCeoEmail");
   assert.equal(serverErrorField(409, "다른 곳에서 먼저 수정했습니다. 최신 정보를 불러온 뒤 다시 저장해 주세요"), null);
   assert.equal(serverErrorField(401, "상호명"), null);

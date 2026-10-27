@@ -8,7 +8,7 @@ sources:
   - { id: stores-data, resource: ../src/lib/stores.ts, title: 점포 데이터 접근 }
   - { id: store-form, resource: ../src/lib/store-form.ts, title: 점포 등록 · 수정 폼 규칙 }
   - { id: store-view, resource: ../src/lib/store-view.ts, title: 점포 표기 }
-generated: { by: claude-code/opus-5.5, at: 2026-10-23T08:49:27Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-27T13:00:00Z }
 ---
 
 근거: `docs/mockup/stores/` (목업 · 1차 · R-QTPRUQ)
@@ -32,7 +32,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-23T08:49:27Z }
 
 * 점포 연락처는 숫자 9~12자리다. 12자리는 050X 평생번호(0507-2033-1334)를 받으려고 넓혔고, 앞자리 칸은 4자리까지 받는다. 불러올 때 050 으로 시작하는 12자리만 앞자리 4자리로 나누고, 목록 · 상세는 `0507-2033-1334` 로 보인다(2026-10-23). api 의 저장 검사(`save-store.dto`)와 DB 제약(`stores_phone_format`)도 9~12자리다(api main 머지됨)
 * 검사는 front · api 모두 자릿수만 본다 — 050 이 아닌 12자리(0311-2345-6789 등)도 저장된다. 그 번호는 목록 · 상세에 하이픈 없이 보이고, 수정 화면에서는 3-5-4 로 나뉘어 가운데 칸이 5자리가 된다. 좁히지 않기로 했다(2026-10-23 사용자 결정)
-* 대표자 연락처는 숫자 10~11자리(유선 포함) 그대로이고, 앞자리 칸도 3자리다
+* ~~대표자 연락처는 숫자 10~11자리(유선 포함) 그대로이고, 앞자리 칸도 3자리다~~ → 대표자 연락처도 점포 연락처와 같은 9~12자리이고 앞자리 칸도 4자리다. 1팀 연락처 칸을 모두 이 규칙으로 맞췄다(2026-10-27 사용자 요청). api `save-store.dto` 는 따로 맞춘다(api 작업 대기)
 
 ## 상태 · 권한
 
