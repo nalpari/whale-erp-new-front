@@ -85,9 +85,9 @@ export function recordCard({ manager, reg, mod }) {
   return `<div class="flex w-full flex-col gap-[18px]">${head}${ui.formRow(ui.readonlyField("등록", when(reg), true))}${ui.formRow(ui.readonlyField("최종수정", when(mod), true))}</div>`;
 }
 
-// 권한별 메뉴설정 표의 묶음(1단계) 칸이 일부만 켜졌을 때의 「–」 — 앱은 공용 Checkbox indeterminate, 데모는 같은 모양을 그린다(2026-10-26 사용자 지정: 묶음 줄은 「–」 유지, 머리칸만 제외)
+// 권한별 메뉴설정 표의 묶음(1단계) 칸이 일부만 켜졌을 때의 「–」 — 앱은 공용 Checkbox indeterminate, 데모는 같은 모양을 그린다(2026-10-26 사용자 지정: 묶음 줄은 「–」 유지 · 2026-10-27 머리칸도 같은 「–」)
 export const partialBox = (label) =>
-  `<span role="checkbox" aria-checked="mixed" aria-label="${label}" tabindex="0" class="grid size-[20px] place-items-center rounded-[2px] border border-erp-on bg-erp-on-bg"><span class="h-[2px] w-[10px] bg-erp-on"></span></span>`; // 1단계 줄에서만 쓰여 「등록」 배지 모양(연한 파랑 바탕 · 파랑 막대, 앱과 같다)
+  `<span role="checkbox" aria-checked="mixed" aria-label="${label}" tabindex="0" class="grid size-[20px] place-items-center rounded-[2px] border border-erp-on bg-erp-on-bg"><span class="h-[2px] w-[10px] bg-erp-on"></span></span>`; // 1단계 줄 · 머리칸에서 쓰여 「등록」 배지 모양(연한 파랑 바탕 · 파랑 막대, 앱과 같다)
 
 // 권한별 메뉴설정 [저장] — 앱 role-menu-dialog 와 같다(2026-10-26): 바뀐 칸이 없으면 막고, 켜져 있던 칸을 껐으면 「메뉴 권한 회수」를 먼저 묻고,
 // 저장하면 팝업을 닫지 않고 안에 「저장되었습니다.」를 띄운다. 회수 확인창은 화면에 하나 두고 [저장] 의 data-role-name 으로 권한명을 채운다.

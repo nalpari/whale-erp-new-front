@@ -20,7 +20,7 @@ import {
   type MenuFormValues,
   type MenuStatus,
 } from "@/lib/menu-form";
-import { findRow, pathNamesOf, type createPlacement } from "@/lib/menu-tree";
+import { descendantCountOf, findRow, pathNamesOf, type createPlacement } from "@/lib/menu-tree";
 import { MENU_CODE } from "@/lib/menus";
 import type { MenuDetail, MenuNode } from "@/lib/platform-menus";
 import { createMenuAction, updateMenuAction } from "./actions";
@@ -255,6 +255,8 @@ function MenuForm(
 
   const describe = (key: "name" | "url") => (errors[key] ? `${id}-${key}-error` : undefined);
   const depth = props.mode === "edit" ? props.menu.depth : props.placement.depth;
+  const editRow = props.mode === "edit" ? findRow(props.nodes, props.menu.menuId) : undefined;
+  const childCount = editRow ? descendantCountOf(editRow.node) : 0;
   const parentLabel =
     props.mode === "edit"
       ? parentLabelOf(props.menu)
@@ -319,6 +321,13 @@ function MenuForm(
             {"미사용으로 변경하면 사용자 화면과 [권한관리 > 메뉴 설정]에 표시되지 않습니다."}
             <br />
             {`다시 '사용'으로 변경하면 기존 설정값이 그대로 적용됩니다.`}
+            {/* 하위 메뉴가 있으면 함께 숨는다는 것과, 하위의 사용여부는 바뀌지 않는다는 것을 덧붙인다(2026-10-27 사용자 지정) */}
+            {childCount > 0 && (
+              <>
+                <br />
+                {`하위 메뉴 ${childCount.toLocaleString("ko-KR")}개도 함께 표시되지 않습니다. 하위 메뉴의 사용여부는 바뀌지 않아, 다시 '사용'으로 바꾸면 하위 메뉴도 그대로 보입니다.`}
+              </>
+            )}
           </div>
         )}
       </fieldset>

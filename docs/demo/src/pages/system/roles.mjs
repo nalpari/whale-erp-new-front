@@ -128,7 +128,10 @@ function menuDialog(A, R, role, id) {
     const head = ([op, label]) => {
       const open = vis.filter((m) => !m[4] && !block(m, op));
       // 체크박스는 칸 가운데(본문과 같은 세로줄), 글자는 그 오른쪽(앱 role-menu-dialog.tsx 와 같다, 2026-10-26 사용자 지정)
-      return `<span class="grid grid-cols-[1fr_auto_1fr] items-center gap-[6px]"><span></span><span class="inline-flex${open.length ? "" : " opacity-40"}">${ui.checkbox(A, "", open.length > 0 && open.every((m) => has(map, m[0], op)), { "aria-label": `${label} 전체 선택`, disabled: !open.length })}</span><span class="justify-self-start whitespace-nowrap">${label}</span></span>`;
+      // 일부만 켜졌으면 1단계 줄과 같은 하늘색 「–」(앱 role-menu-dialog 머리칸과 같다, 2026-10-27 사용자 지정)
+      const on = open.filter((m) => has(map, m[0], op)).length;
+      const box = on > 0 && on < open.length ? partialBox(`${label} 전체 선택`) : ui.checkbox(A, "", open.length > 0 && on === open.length, { "aria-label": `${label} 전체 선택`, disabled: !open.length });
+      return `<span class="grid grid-cols-[1fr_auto_1fr] items-center gap-[6px]"><span></span><span class="inline-flex${open.length ? "" : " opacity-40"}">${box}</span><span class="justify-self-start whitespace-nowrap">${label}</span></span>`;
     };
     // 메뉴 영역은 BP 권한별 메뉴설정처럼 높이를 고정하고 넘치면 그 안에서 스크롤한다
     return menuScroll(depthRows(ui.dataTable(
