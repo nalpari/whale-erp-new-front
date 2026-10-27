@@ -54,7 +54,7 @@ function platformAdminEditBody(A) {
       ui.field(
         "권한명",
         stack(
-          ui.select([{ group: "플랫폼 마스터", options: ["플랫폼 마스터 · PM000001"] }, { group: "플랫폼 관리자", options: ["플랫폼 관리자 · PA000001", "고객지원 담당 · PA000002", "정산 담당 · PA000003", "기준정보 조회 · PA000004"] }], {
+          ui.select([{ group: "역할 · 플랫폼 마스터", options: ["플랫폼 마스터 · PM000001"] }, { group: "역할 · 플랫폼 관리자", options: ["플랫폼 관리자 · PA000001", "고객지원 담당 · PA000002", "정산 담당 · PA000003", "기준정보 조회 · PA000004"] }], {
             value: "고객지원 담당 · PA000002",
             "aria-label": "권한명",
           }),

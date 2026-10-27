@@ -64,7 +64,7 @@ function platformAdminNewBody(A) {
       ui.field(
         req("권한명"),
         stack(
-          ui.select([{ group: "플랫폼 관리자", options: ["플랫폼 관리자 · PA000001", "고객지원 담당 · PA000002", "정산 담당 · PA000003", "기준정보 조회 · PA000004"] }], { "aria-label": "권한명" }),
+          ui.select([{ group: "역할 · 플랫폼 관리자", options: ["플랫폼 관리자 · PA000001", "고객지원 담당 · PA000002", "정산 담당 · PA000003", "기준정보 조회 · PA000004"] }], { "aria-label": "권한명" }),
         ),
       ),
       BLANK,

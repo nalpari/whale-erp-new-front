@@ -227,7 +227,7 @@ export function AdminFormPanel(props: Props) {
   // 수정할 계정이 지금 권한 목록에 없으면(플랫폼 관리자가 보는 마스터 등) 그 권한도 선택지에 남겨 값이 비지 않게 한다
   const options =
     mode === "edit" && !roleGroups.some((r) => r.roleGroupId === props.admin.roleGroup.roleGroupId) ? [props.admin.roleGroup, ...roleGroups] : roleGroups;
-  // 선택지를 역할(권한유형)로 묶는다 — 묶음 제목이 역할 이름이라 선택지에는 「권한명 · 권한코드」만 둔다(2026-10-27 사용자 지정 — 전엔 괄호에 역할). 묶음 순서는 받은 순서
+  // 선택지를 역할(권한유형)로 묶는다 — 묶음 제목은 「역할 · 역할 이름」이라(브라우저 기본 선택 상자라 글자 크기는 못 줄여 라벨로 가른다) 선택지에는 「권한명 · 권한코드」만 둔다(2026-10-27 사용자 지정 — 전엔 괄호에 역할). 묶음 순서는 받은 순서
   const optionGroups = [...new Set(options.map((r) => r.roleTypeCode))].map((code) => ({ code, items: options.filter((r) => r.roleTypeCode === code) }));
 
   const handleSave = () => {
@@ -419,7 +419,7 @@ export function AdminFormPanel(props: Props) {
               >
                 {mode === "create" && <option value="">선택</option>}
                 {optionGroups.map((g) => (
-                  <optgroup key={g.code} label={labelOf(roleTypes, g.code)}>
+                  <optgroup key={g.code} label={`역할 · ${labelOf(roleTypes, g.code)}`}>
                     {g.items.map((r) => (
                       <option key={r.roleGroupId} value={r.roleGroupId}>
                         {r.name} · {r.roleCode}
