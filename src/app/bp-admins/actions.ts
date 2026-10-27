@@ -101,7 +101,7 @@ export async function getBpAdminUpdateImpactAction(
   input: Pick<UpdateBpAdminInput, "accountStatus" | "storeIds">,
 ): Promise<ActionResult<BpAdminUpdateImpact>> {
   if (!validId(id)) return NOT_FOUND;
-  if (input?.accountStatus !== "ACTIVE" && input?.accountStatus !== "INACTIVE") return { ok: false, status: 400, message: "계정 상태를 골라 주세요." };
+  if (input?.accountStatus !== "ACTIVE" && input?.accountStatus !== "INACTIVE") return { ok: false, status: 400, message: "계정상태를 골라 주세요." };
   if (!Array.isArray(input.storeIds) || !input.storeIds.every(validId)) return { ok: false, status: 400, message: "점포를 다시 골라 주세요." };
   try {
     const impact = await getBpAdminUpdateImpact(id, input);

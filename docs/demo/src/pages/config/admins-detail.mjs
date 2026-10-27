@@ -14,10 +14,10 @@ const STORES = [
   ["온기식당 판교점", "ST000003"],
   ["온기식당 광화문점", "ST000004"],
 ];
-// 이름 아랫줄에 「역할 | 권한그룹 | 상태 배지」 — 공통코드 상세 코드 머리 · 플랫폼 관리자 상세와 같은 모양(2026-10-27 사용자 지정 — 전엔 이름 옆 꼬리표)
+// 이름 아랫줄에 「역할 | 권한명 | 상태 배지」 — 공통코드 상세 코드 머리 · 플랫폼 관리자 상세와 같은 모양(2026-10-27 사용자 지정 — 전엔 이름 옆 꼬리표)
 const HEAD = c.adminHead("이서아", "BP 관리자", "인사 담당", ui.badge("on", "사용"));
-// 전체 화면은 제목 줄에 이름만 두고, 「역할 | 권한그룹 | 상태 배지」 줄을 본문 맨 위에 둔다 — 제목 줄(59px)은 한 줄뿐이다(2026-10-27)
-const HEAD_LINE = `<p class="text-[14px]">${c.headValues([["역할", "BP 관리자"], ["권한그룹", "인사 담당"], ["", ui.badge("on", "사용")]])}</p>`;
+// 전체 화면은 제목 줄에 이름만 두고, 「역할 | 권한명 | 상태 배지」 줄을 본문 맨 위에 둔다 — 제목 줄(59px)은 한 줄뿐이다(2026-10-27)
+const HEAD_LINE = `<p class="text-[14px]">${c.headValues([["역할", "BP 관리자"], ["권한명", "인사 담당"], ["", ui.badge("on", "사용")]])}</p>`;
 
 export function adminDetailBody(A, R, { panel = false } = {}) {
   const resetId = x.dialogId();
@@ -27,23 +27,27 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
     ui.detailTable("기본정보", [
       ["아이디", "hghr"],
       ["이름", "이서아"],
-      ["휴대전화번호", "010-2290-5173"],
+      ["연락처", "010-2290-5173"],
       ["이메일", "seoa.lee@hangang.co.kr"],
       // 미사용 계정이면 초기화 버튼 없이 빈칸(플랫폼 관리자와 같다, 2026-10-27 사용자 지정)
       ["비밀번호", x.dialogTrigger("초기화", resetId, "soft")],
       // 최근 로그인은 비밀번호 아래 줄(2026-10-27 사용자 지정)
       ["최근 로그인", "2026-09-20 17:55"],
     ]),
-    // 등록 · 최종수정은 표 밖 테두리 없는 카드, 선 아래에 적용 대상(표 없이 제목 · 값만, 2026-10-27 사용자 지정)
-    c.recordValues(["2025-04-01 09:12", "정하윤"], ["2026-02-03 15:10", "정하윤"], ui.formRow(ui.readonlyField("적용 대상", "일부 점포", true))),
   ].join("");
 
-  const storeTable = ui.dataTable(
-    [{ header: "점포명", align: "left" }, { header: "점포코드", width: "w-[110px]" }, { header: "점포 상태", width: "w-[90px]" }],
-    STORES.map(([n, code]) => [n, code, ui.badge("on", "운영")]),
-  );
+  // 열 이름 줄은 두지 않는다 — 화면 낭독기용으로만 남긴다(앱 DataTable headVariant="none", 2026-10-27 사용자 지정)
+  const storeTable = ui
+    .dataTable(
+      [{ header: "점포명", align: "left" }, { header: "점포코드", width: "w-[110px]" }, { header: "점포 상태", width: "w-[90px]" }],
+      STORES.map(([n, code]) => [n, `<span class="text-[12px] text-erp-muted">${code}</span>`, ui.badge("on", "운영")]), // 점포코드는 작은 회색 글자(앱과 같다)
+    )
+    .replace("<thead>", '<thead class="sr-only">')
+    .replace('class="w-full table-fixed border-collapse border-x', 'class="w-full table-fixed border-collapse border-t border-x');
+  // 대상점포는 기본정보처럼 회색 제목 바 아래 표(제목 옆 「일부 점포 · 전체 점포」 — 적용 대상을 합쳤다), 등록 · 최종수정 카드는 맨 아래(앱과 같다, 2026-10-27 사용자 지정)
   const right =
-    `<div class="flex flex-col gap-[12px]">${ui.sectionHead(`대상 점포${c.sub("일부 · 4개점")}`)}${panel ? `<div class="overflow-x-auto">${storeTable}</div>` : storeTable}</div>`;
+    `<section class="flex flex-col"><h3 class="flex h-[42px] items-center gap-[10px] rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink"><span class="flex items-baseline gap-[10px]">대상점포<span class="text-[14px] font-normal text-erp-label">일부 점포 · 4개점</span></span></h3>${storeTable}</section>` +
+    c.recordValues(["2025-04-01 09:12", "정하윤"], ["2026-02-03 15:10", "정하윤"]);
 
   const history = ui.dataTable(
     [
@@ -84,7 +88,7 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
   // 패널: 이름은 맨 위에 혼자(닫기도 포함해 기능 버튼은 모두 맨 아래로, 2026-10-07 피드백). 전체 화면: 아래 버튼 줄.
   const head = panel ? HEAD : HEAD_LINE;
   const bottomButtons = panel
-    ? `<div class="flex flex-wrap items-center gap-[6px]">${ui.button("닫기", { variant: "off", "data-close": true })}<span class="flex-1"></span>${editBtn}${histBtn}</div>`
+    ? `<div class="flex flex-wrap items-center gap-[6px] pt-[8px]">${ui.button("닫기", { variant: "off", "data-close": true })}<span class="flex-1"></span>${editBtn}${histBtn}</div>`
     : "";
   const info = panel
     ? `<div class="flex flex-col gap-[24px]">${left}${right}</div>` // 제목 줄과 표 사이는 패널 칸 간격(16) — 플랫폼 관리자 상세와 같다(2026-10-27)

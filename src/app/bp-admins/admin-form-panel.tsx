@@ -359,7 +359,7 @@ export function AdminFormPanel(props: Props) {
       {failure && <FailedBand message={failure} detail="입력한 값은 그대로 두었습니다." />}
       {locks.stores && (
         <Note>
-          수정 화면에서는 기본정보(이름 · 휴대전화번호 · 이메일)만 바뀝니다. 권한 그룹 · 계정 상태 · 대상 점포는 이 계정을 관리할 수 있는 다른 사용자가,
+          수정 화면에서는 기본정보(이름 · 연락처 · 이메일)만 바뀝니다. 권한명 · 계정상태 · 대상점포는 이 계정을 관리할 수 있는 다른 사용자가,
           비밀번호는 내 정보에서 직접 바꿉니다.
         </Note>
       )}
@@ -401,7 +401,7 @@ export function AdminFormPanel(props: Props) {
               aria-required
             />
           </Labeled>
-          <Group label="휴대전화번호" required>
+          <Group label="연락처" required>
             <FormRow>
               {(["앞자리", "가운데자리", "끝자리"] as const).map((label, i) => (
                 <TextField
@@ -414,7 +414,7 @@ export function AdminFormPanel(props: Props) {
                   }}
                   inputMode="numeric"
                   maxLength={4}
-                  aria-label={`휴대전화번호 ${label}`}
+                  aria-label={`연락처 ${label}`}
                   aria-invalid={invalid("phone")}
                   aria-describedby={describe("phone")}
                   aria-required
@@ -445,7 +445,7 @@ export function AdminFormPanel(props: Props) {
           </Labeled>
           {mode === "edit" && (
             <>
-              <Field label="계정 상태" required>
+              <Field label="계정상태" required>
                 <Select
                   value={form.accountStatus}
                   onChange={(e) => set("accountStatus", e.target.value as BpAdminForm["accountStatus"])}
@@ -468,14 +468,13 @@ export function AdminFormPanel(props: Props) {
               {/* 등록일시 · 최근 로그인은 상세에서 본다 — 수정에는 두지 않는다(2026-10-27 사용자 지정) */}
             </>
           )}
-        </FormGroup>
-
-        <FormGroup title="계정 역할">
+          {/* 계정 역할 · 권한명은 기본정보 안 맨 아래 — 따로 있던 「계정 역할」 묶음 제목은 없앴다(2026-10-27 사용자 지정) */}
           {groupsFailed && <FailedBand message="권한 그룹 목록을 불러오지 못했습니다. 화면을 새로 고쳐 주세요." />}
           {noGroupForRole && <FailedBand message="붙일 권한 그룹이 없습니다. BP 권한 그룹 관리에서 먼저 만들어 주세요." />}
-          {/* 계정 역할 · 권한 그룹은 한 줄에 나란히(2026-10-27 사용자 지정 — 전엔 두 줄). 역할 이름은 7자를 넘지 않아
-              계정 역할 칸은 그 폭(글자 + 화살표 30, 150 → 130)으로 줄이고 권한 그룹이 남는 폭을 쓴다(2026-10-27 사용자 지정) */}
-          <FormRow>
+          {/* 계정 역할 · 권한명은 한 줄에 나란히(2026-10-27 사용자 지정 — 전엔 두 줄). 역할 이름은 7자를 넘지 않아
+              계정 역할 칸은 그 폭(글자 + 화살표 30, 150 → 130)으로 줄이고 권한명이 남는 폭을 쓴다(2026-10-27 사용자 지정) */}
+          {/* 위쪽 정렬 — 한 칸에만 오류 문구가 붙어 줄이 높아져도 두 입력칸이 같은 높이에 선다(사용자가 찾음). FormRow 는 늘여 세워 옆 칸이 가운데로 내려갔다 */}
+          <div className="flex w-full items-start gap-[6px]">
             {mode === "create" && roles.length > 1 ? (
               <Labeled label="계정 역할" width="w-[130px]" required message={message("roleTypeCode")}>
                 <Select
@@ -498,12 +497,12 @@ export function AdminFormPanel(props: Props) {
                 <TextField value={form.roleTypeCode ? roleType(form.roleTypeCode) : ""} readOnly />
               </Field>
             )}
-            <Labeled label="권한 그룹" required={!locks.roleGroup} message={message("roleGroupId")}>
+            <Labeled label="권한명" required={!locks.roleGroup} message={message("roleGroupId")}>
               <Select
                 value={form.roleGroupId}
                 onChange={(e) => set("roleGroupId", e.target.value)}
                 disabled={locks.roleGroup || !form.roleTypeCode}
-                title={locks.roleGroup ? "이 계정의 권한 그룹은 여기서 바꿀 수 없습니다" : undefined}
+                title={locks.roleGroup ? "이 계정의 권한명은 여기서 바꿀 수 없습니다" : undefined}
                 aria-invalid={invalid("roleGroupId")}
                 aria-describedby={describe("roleGroupId")}
                 aria-required
@@ -516,10 +515,11 @@ export function AdminFormPanel(props: Props) {
                 ))}
               </Select>
             </Labeled>
-          </FormRow>
+          </div>
         </FormGroup>
 
-        <FormGroup title="대상 점포">
+        {/* 상세와 같은 「대상점포」(2026-10-27 사용자 지정) */}
+        <FormGroup title="대상점포">
           {/* 「전체 점포」가 막힌 이유를 라벨 옆에 둔다(2026-10-27 사용자 지정 문구 · 자리). 공통코드 이름은 띄어 쓰지 않아(가맹마스터) 문구를 적어 둔다 */}
           <HintedField
             label="범위"
@@ -648,7 +648,7 @@ export function AdminFormPanel(props: Props) {
             </dl>
             <p className="text-[13px] text-erp-label">아이디는 첫 계정만 보입니다.</p>
             {cascade.impact.unmappedCount > 0 && (
-              <p>점포가 하나도 남지 않는 가맹 관리자도 계정 상태는 사용 그대로입니다. 그 계정을 다음에 수정할 때 관리 점포를 한 곳 이상 골라야 저장됩니다.</p>
+              <p>점포가 하나도 남지 않는 가맹 관리자도 계정상태는 사용 그대로입니다. 그 계정을 다음에 수정할 때 관리 점포를 한 곳 이상 골라야 저장됩니다.</p>
             )}
             {cascade.impact.deactivatedCount > 0 && (
               <p>
@@ -684,7 +684,7 @@ function Labeled({
   children,
 }: {
   label: string;
-  /** 한 줄에 나란히 둘 때의 고정 폭. 없으면 Field 처럼 남는 폭을 나눠 가진다(계정 역할 · 권한 그룹) */
+  /** 한 줄에 나란히 둘 때의 고정 폭. 없으면 Field 처럼 남는 폭을 나눠 가진다(계정 역할 · 권한명) */
   width?: `w-[${number}px]`;
   required?: boolean;
   message: ReactNode;
@@ -716,7 +716,7 @@ function HintedField({ label, required, hint, children }: { label: string; requi
   );
 }
 
-/** 입력칸이 여럿인 칸(휴대전화번호). Field 는 라벨이 입력칸 하나를 감싸므로 묶음 이름만 단다. */
+/** 입력칸이 여럿인 칸(연락처). Field 는 라벨이 입력칸 하나를 감싸므로 묶음 이름만 단다. */
 function Group({ label, required, children }: { label: string; required?: boolean; children: ReactNode }) {
   return (
     <div role="group" aria-label={label} className="flex flex-col gap-[8px]">

@@ -10,6 +10,7 @@ import { BP_SWITCH_PATH, bpOfSwitchUrl, HOME, isAllowed, menuOfPath, menuPermiss
 import { ForcePasswordDialog } from "./force-password-dialog";
 import { MyPagePanel } from "./my-page-panel";
 import { PasswordChangePanel } from "./password-change-panel";
+import { WithdrawPanel } from "./withdraw-panel";
 import {
   clearBpFix,
   clearSelectedBp,
@@ -66,6 +67,9 @@ type LoginActions = {
   /** GNB 「비밀번호 변경」 패널 열림 여부(S-PTWREE) — myPageOpen 과 같은 자리·같은 이유로 children 뒤에 그린다. */
   passwordChangeOpen: boolean;
   setPasswordChangeOpen: (open: boolean) => void;
+  /** GNB 「회원 탈퇴」 패널 열림 여부(S-JHQQNR) — passwordChangeOpen 과 같은 자리·같은 이유로 children 뒤에 그린다. */
+  withdrawOpen: boolean;
+  setWithdrawOpen: (open: boolean) => void;
   /** UserPop 의 이름 버튼 — MyPagePanel · PasswordChangePanel 의 SlidePanel trigger 로 같이 써서(둘 다 같은
    * UserPop 안의 서로 다른 항목에서 연다) 패널을 닫으면 포커스가 이 버튼으로 돌아오게 한다(코드 리뷰로 찾음,
    * 2026-10-21 — 전에는 못 꺼내 body 로 빠졌다). AdminHeader 가 UserPop 에 넘긴다. */
@@ -90,6 +94,11 @@ export const useMyPageTrigger = () => useLogin().myPageTrigger;
 export function usePasswordChangeOpen() {
   const { passwordChangeOpen, setPasswordChangeOpen } = useLogin();
   return [passwordChangeOpen, setPasswordChangeOpen] as const;
+}
+/** GNB 「회원 탈퇴」 패널 열림 여부(S-JHQQNR) — usePasswordChangeOpen 과 같은 모양. */
+export function useWithdrawOpen() {
+  const { withdrawOpen, setWithdrawOpen } = useLogin();
+  return [withdrawOpen, setWithdrawOpen] as const;
 }
 /** 이 탭의 서비스. 헤더 메뉴·홈·메뉴 권한 확인과 오른쪽 선택기(플랫폼이면 BP, ERP 면 점포 범위)가 이것을 본다. */
 export const useService = () => useLogin().serviceCode;
@@ -267,6 +276,8 @@ function Ready({
   const [myPageOpen, setMyPageOpen] = useState(false);
   // GNB 「비밀번호 변경」(S-PTWREE) — myPageOpen 과 같은 이유로 같은 자리에 둔다.
   const [passwordChangeOpen, setPasswordChangeOpen] = useState(false);
+  // GNB 「회원 탈퇴」(S-JHQQNR) — passwordChangeOpen 과 같은 이유로 같은 자리에 둔다.
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
   // UserPop 의 이름 버튼 — AdminHeader 가 UserPop 에 triggerRef 로 넘겨 실제 DOM 버튼을 단다. 패널을
   // 닫으면 SlidePanel 이 여기로 포커스를 되돌린다(DESIGN.md Slide Panel). 전엔 못 꺼내 body 로 빠졌다
   // (코드 리뷰로 찾음, 2026-10-21 — UserPop 공개 API 를 triggerRef 로 넓혀 고쳤다).
@@ -341,7 +352,7 @@ function Ready({
     location.assign(home);
   };
   return (
-    <LoginContext value={{ ...value, setScope, patchAccount, myPageOpen, setMyPageOpen, passwordChangeOpen, setPasswordChangeOpen, myPageTrigger }}>
+    <LoginContext value={{ ...value, setScope, patchAccount, myPageOpen, setMyPageOpen, passwordChangeOpen, setPasswordChangeOpen, withdrawOpen, setWithdrawOpen, myPageTrigger }}>
       {allowed && !switching && (
         <>
           {header}
@@ -350,11 +361,12 @@ function Ready({
               있어 함께 inert 가 되어 버튼을 못 눌렀다(ip-code-review-claude 적대적 리뷰로 찾음, 2026-10-21).
               이 둘이 열려 있을 때는 그 패널이 다른 패널 뒤에 그려져(DOM 순서) 늘 맨 위이므로 이 조건으로
               충분하다 — 바탕창이 뜬 상태로는 페이지 쪽에서 새 패널을 열 수 없다(전부 inert). */}
-          <div className="contents" inert={(myPageOpen || passwordChangeOpen) && backdropActive}>
+          <div className="contents" inert={(myPageOpen || passwordChangeOpen || withdrawOpen) && backdropActive}>
             {children}
           </div>
           <MyPagePanel id="mypage-panel" open={myPageOpen} onClose={() => setMyPageOpen(false)} trigger={myPageTrigger} />
           <PasswordChangePanel id="password-change-panel" open={passwordChangeOpen} onClose={() => setPasswordChangeOpen(false)} trigger={myPageTrigger} />
+          <WithdrawPanel id="withdraw-panel" open={withdrawOpen} onClose={() => setWithdrawOpen(false)} trigger={myPageTrigger} />
         </>
       )}
       {value.account.isPasswordChangeRequired && <ForcePasswordDialog account={value.account} onDone={passwordChanged} />}

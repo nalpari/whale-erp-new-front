@@ -40,27 +40,27 @@ export default ({ A, R }) => {
   const filter = ui.filterPanel(A, [
     // 점포 — 점포 정보 관리와 같은 점포 고르기(찾아 고르면 「선택한 점포」에 쌓임 · 5개 넘으면 스크롤)
     ui.filterSection("점포", storeFilter(A), { tight: true }),
-    ui.filterSection("아이디 · 이름", ui.searchField(A, { placeholder: "아이디 또는 이름 일부를 입력하세요", label: "아이디 · 이름" }), { tight: true }),
-    ui.filterSection("권한 그룹", ui.select(GROUPS, { "aria-label": "권한 그룹" }), { tight: true }),
-    ui.filterSection("계정 상태", ui.select(["전체", "사용", "미사용"], { "aria-label": "계정 상태" }), { tight: true, last: true }),
+    ui.filterSection("아이디 · 이름", ui.searchField(A, { placeholder: "아이디 또는 이름 일부", label: "아이디 · 이름" }), { tight: true }),
+    ui.filterSection("권한명", ui.select(GROUPS, { "aria-label": "권한명" }), { tight: true }),
+    ui.filterSection("계정상태", ui.checkbox(A, "사용", true) + ui.checkbox(A, "미사용", true), { last: true }), // 앱과 같이 체크박스 · 처음엔 모두 켬(2026-10-27)
   ]);
 
-  // 아이디 · 이름 · 역할 · 권한 그룹은 폭을 정하지 않아 남는 폭을 똑같이 나눈다. 최근 로그인 다음에 등록일시(2026-10-27 사용자 지정)
+  // 아이디 · 이름 · 역할 · 권한명 · 코드 · 최근 로그인 · 등록일시는 폭을 정하지 않아 남는 폭을 똑같이 나눈다. 최근 로그인 다음에 등록일시(2026-10-27 사용자 지정)
   const cols = [
     { header: "아이디" },
     { header: "이름" },
     { header: "역할" },
-    { header: "권한 그룹", align: "left" },
-    { header: "계정 상태", width: "w-[100px]" },
+    { header: "권한명 · 코드" }, // 열 이름도 값과 같은 형식 · 가운데 정렬(앱과 같다, 2026-10-27)
+    { header: "계정상태", width: "w-[100px]" },
     { header: "매핑 점포", width: "w-[110px]" },
-    { header: "최근 로그인", width: "w-[160px]" },
-    { header: "등록일시", width: "w-[160px]" },
+    { header: "최근 로그인" },
+    { header: "등록일시" },
   ];
   const rows = ADMINS.map(([id, name, role, group, code, state, stores, reg, login]) => [
     id,
     detailTrigger(name),
     role,
-    `${group} ${c.muted(`· ${code}`)}`,
+    `${group} <span class="text-[12px] text-erp-muted">· ${code}</span>`, // 코드는 12px(앱과 같다, 2026-10-27)
     ui.badge(state === "사용" ? "on" : "off", state),
     stores,
     login,

@@ -77,8 +77,8 @@ def read_catalog():
 
 # ─── 물리 결정 ──────────────────────────────────────────────────────────────
 # 논리 PK 를 그대로 두는 테이블 (코드 PK · 복합 PK · 1:1)
-KEEP_PK = {"code_groups", "code_items", "admin_store_mappings", "role_group_menus",
-           "holiday_store_mappings", "holiday_excluded_stores", "store_business_profiles"}
+# 휴일 점포 매핑 · 예외 점포는 한 행이 한 기간이라(2026-10-26) 행 ID 를 기본키로 둔다 — 복합 PK 목록에서 뺐다.
+KEEP_PK = {"code_groups", "code_items", "admin_store_mappings", "role_group_menus", "store_business_profiles"}
 
 # FK 컬럼 → 참조 (테이블, 컬럼)
 FK_TARGET = {
@@ -178,7 +178,7 @@ REQUIRED = {
     "code_items": ["group_code", "item_code", "bp_code", "label", "manage_owner_code", "status", "sort_order"],
     "menus": ["menu_code", "service_code", "name", "sort_order", "depth", "status"],
     "bp_holidays": ["bp_code_id", "holiday_type_code", "start_date", "name"],
-    "holiday_store_mappings": ["bp_holiday_id", "store_id"],
+    "holiday_store_mappings": ["bp_holiday_id", "store_id", "effective_start_date"],
     "holiday_excluded_stores": ["bp_holiday_id", "store_id", "effective_start_date"],
     "bp_holiday_change_histories": ["bp_holiday_id", "field", "changed_at"],
     "public_holidays": ["holiday_date", "year", "name", "source"],
@@ -202,6 +202,12 @@ UNIQUES = [
     ("role_groups", ["role_code"], None, "권한 코드 고유"),
     ("menus", ["menu_code"], None, "메뉴 코드 고유"),
     ("public_holidays", ["holiday_date"], None, "한 날짜에 한 건"),
+    ("menus", ["url"], "\"is_deleted\" = false AND \"status\" = 'ACTIVE' AND \"url\" IS NOT NULL",
+     "사용 중 메뉴끼리 url 고유 — api 가드가 url 로 메뉴 권한을 찾는다(api 마이그레이션 menus_url_active_key)"),
+    ("holiday_store_mappings", ["bp_holiday_id", "store_id"], "\"is_deleted\" = false AND \"effective_end_date\" IS NULL",
+     "열린 기간(종료일 없음)은 휴일 · 점포마다 하나 — api 이름 holiday_store_mappings_open_period_key"),
+    ("holiday_excluded_stores", ["bp_holiday_id", "store_id"], "\"is_deleted\" = false AND \"effective_end_date\" IS NULL",
+     "열린 예외 기간은 휴일 · 점포마다 하나 — api 이름 holiday_excluded_stores_open_period_key"),
 ]
 # NULLS NOT DISTINCT 가 필요한 고유 제약 (PostgreSQL 15+)
 UNIQUES_NND = [
@@ -223,7 +229,7 @@ CHECKS = [
     ("admin_accounts", "failed_login_count_nonnegative", "\"failed_login_count\" >= 0"),
     ("stores", "store_code_format", "\"store_code\" ~ '^ST[0-9]{6}$'"),
     ("stores", "name_length", "char_length(\"name\") BETWEEN 1 AND 50"),
-    ("stores", "phone_format", "\"phone\" ~ '^[0-9]{9,11}$'"),
+    ("stores", "phone_format", "\"phone\" ~ '^[0-9]{9,12}$'"),
     ("stores", "latitude_range", "\"latitude\" BETWEEN -90 AND 90"),
     ("stores", "longitude_range", "\"longitude\" BETWEEN -180 AND 180"),
     ("store_floors", "seat_count_nonnegative", "\"seat_count\" >= 0"),
@@ -241,6 +247,8 @@ CHECKS = [
     ("bp_holidays", "name_length", "char_length(\"name\") BETWEEN 1 AND 30"),
     ("bp_holidays", "end_date_after_start", "\"end_date\" >= \"start_date\""),
     ("bp_holidays", "repeat_count_positive", "\"repeat_count\" > 0"),
+    ("holiday_store_mappings", "effective_end_after_start", "\"effective_end_date\" >= \"effective_start_date\""),
+    ("holiday_excluded_stores", "effective_end_after_start", "\"effective_end_date\" >= \"effective_start_date\""),
     ("public_holidays", "year_range", "\"year\" BETWEEN 2000 AND 2100"),
     ("public_holiday_synchronization_logs", "counts_nonnegative",
      "\"created_count\" >= 0 AND \"updated_count\" >= 0 AND \"deleted_count\" >= 0 AND \"failed_count\" >= 0"),
@@ -262,6 +270,7 @@ INDEXES = [
     ("menus", ["parent_menu_id"]),
     ("bp_holidays", ["bp_code_id", "start_date"]),
     ("holiday_store_mappings", ["store_id"]), ("holiday_excluded_stores", ["store_id"]),
+    ("holiday_store_mappings", ["bp_holiday_id"]), ("holiday_excluded_stores", ["bp_holiday_id"]),
     ("bp_holiday_change_histories", ["bp_holiday_id", "changed_at"]),
     ("public_holidays", ["year"]),
 ]
