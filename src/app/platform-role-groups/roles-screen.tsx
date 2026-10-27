@@ -47,7 +47,7 @@ export function RolesScreen({
       header: "권한유형 · 코드",
       // 「플랫폼 관리자 · PA000002」가 권한명과 너무 붙어 보여 200px(2026-10-26 사용자 지정). BP 권한 그룹 관리도 이 폭에 맞췄다(2026-10-27)
       width: "w-[200px]",
-      align: "left", // 2026-10-26 사용자 지정
+      // 가운데 정렬 — 열 이름과 맞춘다(2026-10-27 사용자 지정, 전엔 왼쪽)
       cell: (r) => (
         <span className="truncate">
           <CodeLabel group="ROLE_TYPE" value={r.roleTypeCode} /> <span className="text-erp-label">· {r.roleCode}</span>
