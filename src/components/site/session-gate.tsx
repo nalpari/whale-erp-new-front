@@ -9,6 +9,7 @@ import { bpOfPath, bpPath, isBpPathScreen, stripBp } from "@/lib/bp-path";
 import { BP_SWITCH_PATH, bpOfSwitchUrl, HOME, isAllowed, menuOfPath, menuPermissionOf, menusOf, serviceOfPath, type MenuAction, type MenuCode } from "@/lib/menus";
 import { ForcePasswordDialog } from "./force-password-dialog";
 import { MyPagePanel } from "./my-page-panel";
+import { PasswordChangePanel } from "./password-change-panel";
 import {
   clearBpFix,
   clearSelectedBp,
@@ -62,8 +63,12 @@ type LoginActions = {
   /** GNB 「내정보 관리」 패널 열림 여부 — 패널 자체는 SessionGate 가 children 뒤에 그린다(DOM 순서 때문, 위 주석 참고). */
   myPageOpen: boolean;
   setMyPageOpen: (open: boolean) => void;
-  /** UserPop 의 이름 버튼 — MyPagePanel 의 SlidePanel trigger 로 써서 패널을 닫으면 포커스가 이 버튼으로
-   * 돌아오게 한다(코드 리뷰로 찾음, 2026-10-21 — 전에는 못 꺼내 body 로 빠졌다). AdminHeader 가 UserPop 에 넘긴다. */
+  /** GNB 「비밀번호 변경」 패널 열림 여부(S-PTWREE) — myPageOpen 과 같은 자리·같은 이유로 children 뒤에 그린다. */
+  passwordChangeOpen: boolean;
+  setPasswordChangeOpen: (open: boolean) => void;
+  /** UserPop 의 이름 버튼 — MyPagePanel · PasswordChangePanel 의 SlidePanel trigger 로 같이 써서(둘 다 같은
+   * UserPop 안의 서로 다른 항목에서 연다) 패널을 닫으면 포커스가 이 버튼으로 돌아오게 한다(코드 리뷰로 찾음,
+   * 2026-10-21 — 전에는 못 꺼내 body 로 빠졌다). AdminHeader 가 UserPop 에 넘긴다. */
   myPageTrigger: RefObject<HTMLButtonElement | null>;
 };
 const LoginContext = createContext<(LoginState & LoginActions) | null>(null);
@@ -81,6 +86,11 @@ export function useMyPageOpen() {
   return [myPageOpen, setMyPageOpen] as const;
 }
 export const useMyPageTrigger = () => useLogin().myPageTrigger;
+/** GNB 「비밀번호 변경」 패널 열림 여부 — useMyPageOpen 과 같은 모양. */
+export function usePasswordChangeOpen() {
+  const { passwordChangeOpen, setPasswordChangeOpen } = useLogin();
+  return [passwordChangeOpen, setPasswordChangeOpen] as const;
+}
 /** 이 탭의 서비스. 헤더 메뉴·홈·메뉴 권한 확인과 오른쪽 선택기(플랫폼이면 BP, ERP 면 점포 범위)가 이것을 본다. */
 export const useService = () => useLogin().serviceCode;
 /** 이 탭 서비스의 메뉴 트리(3단계까지). */
@@ -255,6 +265,8 @@ function Ready({
   // DOM 순서가 쌓임을 가른다(PanelBackdrop 의 같은 설명 참고). header 는 먼저, children 은 그다음, 패널은 가장
   // 뒤라야 화면이 자기 등록 패널을 열어 둔 채로 MY PAGE 를 열어도 그 패널 아래 깔리지 않는다(코드 리뷰로 찾음, 2026-10-21).
   const [myPageOpen, setMyPageOpen] = useState(false);
+  // GNB 「비밀번호 변경」(S-PTWREE) — myPageOpen 과 같은 이유로 같은 자리에 둔다.
+  const [passwordChangeOpen, setPasswordChangeOpen] = useState(false);
   // UserPop 의 이름 버튼 — AdminHeader 가 UserPop 에 triggerRef 로 넘겨 실제 DOM 버튼을 단다. 패널을
   // 닫으면 SlidePanel 이 여기로 포커스를 되돌린다(DESIGN.md Slide Panel). 전엔 못 꺼내 body 로 빠졌다
   // (코드 리뷰로 찾음, 2026-10-21 — UserPop 공개 API 를 triggerRef 로 넓혀 고쳤다).
@@ -329,19 +341,20 @@ function Ready({
     location.assign(home);
   };
   return (
-    <LoginContext value={{ ...value, setScope, patchAccount, myPageOpen, setMyPageOpen, myPageTrigger }}>
+    <LoginContext value={{ ...value, setScope, patchAccount, myPageOpen, setMyPageOpen, passwordChangeOpen, setPasswordChangeOpen, myPageTrigger }}>
       {allowed && !switching && (
         <>
           {header}
-          {/* MY PAGE 패널이 맨 위일 때만 본문을 inert 로 뺀다 — 그냥 backdropActive 를 쓰면 화면 자신의
-              closeOnBackdrop 패널(platform-admins 상세·수정 등)이 맨 위일 때 그 패널까지 children 안에
+          {/* MY PAGE · 비밀번호 변경 패널이 맨 위일 때만 본문을 inert 로 뺀다 — 그냥 backdropActive 를 쓰면 화면
+              자신의 closeOnBackdrop 패널(platform-admins 상세·수정 등)이 맨 위일 때 그 패널까지 children 안에
               있어 함께 inert 가 되어 버튼을 못 눌렀다(ip-code-review-claude 적대적 리뷰로 찾음, 2026-10-21).
-              MY PAGE 가 열려 있을 때는 그 패널이 다른 패널 뒤에 그려져(DOM 순서) 늘 맨 위이므로 이 조건으로
+              이 둘이 열려 있을 때는 그 패널이 다른 패널 뒤에 그려져(DOM 순서) 늘 맨 위이므로 이 조건으로
               충분하다 — 바탕창이 뜬 상태로는 페이지 쪽에서 새 패널을 열 수 없다(전부 inert). */}
-          <div className="contents" inert={myPageOpen && backdropActive}>
+          <div className="contents" inert={(myPageOpen || passwordChangeOpen) && backdropActive}>
             {children}
           </div>
           <MyPagePanel id="mypage-panel" open={myPageOpen} onClose={() => setMyPageOpen(false)} trigger={myPageTrigger} />
+          <PasswordChangePanel id="password-change-panel" open={passwordChangeOpen} onClose={() => setPasswordChangeOpen(false)} trigger={myPageTrigger} />
         </>
       )}
       {value.account.isPasswordChangeRequired && <ForcePasswordDialog account={value.account} onDone={passwordChanged} />}

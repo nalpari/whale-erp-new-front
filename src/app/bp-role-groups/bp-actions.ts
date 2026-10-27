@@ -26,7 +26,7 @@ const ACTIONS = {
   form: { create: createBpRoleGroupAction, update: updateBpRoleGroupAction } satisfies RoleFormActions,
   remove: { candidates: getBpDeletionCandidatesAction, remove: deleteBpRoleGroupAction } satisfies DeleteDialogActions,
   menus: { load: getBpRoleGroupMenusAction, preview: previewBpRoleGroupMenusAction, save: saveBpRoleGroupMenusAction } satisfies MenuDialogActions,
-  // 가맹마스터 보기 — save 가 없어 팝업은 볼 수만 있다
+  // 가맹마스터 메뉴설정 보기 — save 가 없어 팝업은 볼 수만 있다
   franchiseMaster: { load: () => getFranchiseMasterMenusAction() } satisfies MenuDialogActions,
 };
 

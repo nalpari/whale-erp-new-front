@@ -6,7 +6,7 @@ import type { BpRoleDetailState } from "./bp-actions";
 import { BpRolesScreen } from "./roles-screen";
 
 // BP 권한 그룹 관리(MN000013 · S-LYKAEI · 메뉴 등록 S-KUDELB). 플랫폼 권한 관리와 같은 틀 — 왼쪽 그룹 목록(쪽 나눔), 오른쪽 고정 칸에
-// 고른 그룹의 수정(고칠 수 없으면 상세) · 등록 양식. 메뉴 권한은 줄마다 [메뉴등록] 팝업, 가맹 마스터 고정 권한은 [가맹마스터 보기] 팝업이다.
+// 고른 그룹의 수정(고칠 수 없으면 상세) · 등록 양식. 메뉴 권한은 줄마다 [메뉴설정] 팝업, 가맹 마스터 고정 권한은 [가맹마스터 메뉴설정 보기] 팝업이다.
 // 화면 주소는 /bp/{탭 BP}/bp-role-groups 다 — proxy 가 이 폴더로 rewrite 하며 탭 BP 를 헤더에 싣고, api 호출(authHeaders)이 그 헤더를 넘긴다.
 // BP 없이 들어오면 SessionGate 가 탭 BP 주소로 보낸다. 고른 그룹은 ?role=, 쪽은 ?page= 에 둔다. 상세만 못 불러오면 목록은 그대로 두고 오른쪽 칸에서 알린다.
 export default async function BpRolesPage({ searchParams }: PageProps<"/bp-role-groups">) {

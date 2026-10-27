@@ -357,6 +357,8 @@ export const BpProfileTab = forwardRef<
         layout="row"
         // 좁은 슬라이드 패널 전용 비율 — 회원가입 · 점포는 그대로(2026-10-23 사용자 지정)
         compactRow
+        // 머리를 기본정보 탭 「계정 정보」와 같은 회색 제목 바로 뗀다(2026-10-26 사용자 지정)
+        titleBar
         values={bizValues}
         onChange={(key, value) => setVerify(BIZ_TO_VERIFY[key], value)}
         locked={{ bizNumber: locked, ceoName: locked, openDate: locked }}

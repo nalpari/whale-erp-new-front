@@ -1,11 +1,18 @@
 # Bundle history
 
 ## 2026-10-27
+* **Update**: main 병합(front poliwag, main #139 까지): okf 충돌은 양쪽 기록을 살렸다(whale-erp-front.md 는 줄이 맞닿아 난 충돌이라 main 줄에 이 브랜치의 줄을 다시 얹었다).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — WHALEERP-156 재영 문의 반영: 종이 계약이 기간이 겹치는 체결 완료와 부딪히면(api 409 `SIGNED_CONTRACT_OVERLAP`) 「잘못 올린 계약 바로잡기」 확인창(`correctSignedContracts`), 재계약 시작일은 직전 계약 시작일 다음 날부터(작성 · 이어 쓰기). api 타입은 api gyarados(3ddc4d3d) 기준으로 다시 만들었다.
 
 ## 2026-10-26
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 code-review 반영: 이어지는 재계약이 있으면 「새 계약」을 숨기고(api `renewedBy`), 재계약 임시저장 이어 쓰기도 근무지 · 번호 잠금, 고를 수 없는 근무지면 재계약 화면을 열지 않음, 시작일이 지난 날이면 비우고 수습은 끔, 목록 「재계약」은 체결 전까지 · 갱신 예정은 날짜(해 포함) 또는 D-n, 직전 계약과 작성 재료를 함께 읽음. api 타입 다시 만듦(api main + 재계약).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 재계약(WHALEERP-156): 근로계약 상세의 「새 계약」을 체결 완료 · 체결 뒤 종료에서 켜고 `/contracts/new?from=` 재계약 작성(직전 값 채움 · 근무지 · 번호 잠금 · `previousContractId`). 목록 상태 칸에 재계약 서명 대기 「재계약」, 체결 완료 「갱신 예정 MM-DD」. api 타입 다시 만듦.
+* **Update**: main 병합(front raichu, main #134 까지): okf 충돌은 양쪽 기록을 살렸다.
+* **Update**: main 병합(front raichu, main #132 까지): okf 충돌은 양쪽 기록을 살렸다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 디자인 수정 모음(front raichu): 공통 컴포넌트(DataTable `scroll` · DetailTable `title` 생략 · ReadonlyCard/ReadonlyValue 공통화 · HelpTip 신설), BP · 플랫폼 권한 그룹 목록 · 상세 · [메뉴설정] 팝업, 공통코드 관리 표 머리 고정.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — GNB 「비밀번호 변경」(MY PAGE, S-PTWREE) 슬라이드 패널을 열었다(`password-change-panel.tsx`). 현재 비밀번호를 받아 `POST /auth/admin/me/password-change`(api PR #155/metapod 짝 — front 가 먼저 배포되면 이 호출이 404 이니, api 가 먼저 머지·배포돼야 한다)를 부른다. 오류 문구는 화면이 만들지 않고 api message 를 그대로 쓴다(force-password-dialog.tsx 와 같은 규칙) — `myPasswordErrorField`(`my-password-form.ts`)가 어느 칸 탓인지만 가른다. `session-gate.tsx`에 `passwordChangeOpen`을 `myPageOpen`과 같은 자리에 더하고 같은 `myPageTrigger`로 포커스를 돌린다. 세션은 건드리지 않는다(이 기기 · 다른 기기 로그인 모두 이어짐, S-PTWREE outcome).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 비밀번호 변경 패널 디자인 정리(사용자 지정, 2026-10-26). 세 칸 모두 보기/숨기기 눈 아이콘(`PasswordInput`)을 더하고, 칸 아래 늘 보이던 `passwordChecks` 체크리스트를 빼 조건 안내는 placeholder로만 둔다(긴 문구가 칸 너비에 잘려 발견). 성공하면 패널을 닫지 않고 완료 화면(연한 파랑 원 + 체크 아이콘, 비교 시안 C안)으로 바꾼다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — ip-code-review-claude 적대적 리뷰 반영: 비밀번호 변경 패널을 저장하지 않고 닫아도 입력값 · 보기 상태가 DOM 에 남던 것을 열고 닫을 때 모두 비우도록 고쳤다(`fieldGeneration` 을 `PasswordInput` 의 key 로 줌). 100자 넘는 입력의 영문 메시지 오귀속(`maxLength=100`), 429 영문 문구(한글로 교체)도 같이 고쳤다.
 * **Update**: main 병합(front horsea, main #131 까지): okf 충돌은 양쪽 기록을 살렸다. `api-types.generated.ts` 는 main 과 같다(api main `d7c5daa` 기준).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #127 재리뷰 참고 반영: 저장 뒤 안내 쿠키 값을 `decodeURIComponent` 에 넘기지 않는다(깨진 값이면 URIError 로 근로계약 목록이 오류 화면이 됐다), 상태별 개수 주석을 api #146(보이는 계약만 셈)에 맞췄다. api 타입을 api main(`d7c5daa`, #148 · #149 머지 뒤) 기준으로 다시 만들었다.
 * **Update**: main 병합(front flaaffy, main #130 까지): okf 충돌은 양쪽 기록을 살렸다.
