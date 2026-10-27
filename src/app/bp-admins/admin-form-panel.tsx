@@ -291,7 +291,8 @@ export function AdminFormPanel(props: Props) {
       // 가맹 마스터 저장은 늘 함께 바뀔 가맹 관리자를 먼저 센다 — 패널을 연 뒤 점포 등록으로 매핑이 늘면(가맹 마스터 updatedAt 은 그대로)
       // 화면은 뺀 점포가 없다고 보지만 저장은 그 점포를 뺀다. 판단은 api 에 맡기고 cascadeOf 는 확인창 문구에만 쓴다
       const { deactivating, removed } = cascadeOf(admin, input);
-      if (admin.roleTypeCode === "FM") {
+      // 본인은 상태 · 점포를 바꾸지 못해(api 도 막는다) 번질 것이 없다 — 세지 않는다
+      if (admin.roleTypeCode === "FM" && !admin.actions.isSelf) {
         const impact = await getBpAdminUpdateImpactAction(admin.adminAccountId, input).catch((error: unknown) => {
           console.error("BP 관리자 함께 바뀌는 계정 조회 호출 실패", error);
           return { ok: false as const, status: undefined, message: "" };
@@ -327,7 +328,8 @@ export function AdminFormPanel(props: Props) {
   // 확인창(<dialog>)이 떠 있으면 Esc 는 그 창만 닫아야 한다 — 패널은 data-dismiss-open · keydown 의 defaultPrevented 로 거르는데,
   // 확인창은 그 표시가 없고 Esc 를 cancel 이벤트에서야 막아 패널까지 온다
   const safeClose = () => {
-    if (!saving && !document.querySelector("dialog[open]")) onClose();
+    // 이 패널이 띄운 확인창만 본다 — 일괄 검색 창 등 data-dismiss-open 층은 패널이 먼저 거른다
+    if (!saving && !cascade) onClose();
   };
   const title = mode === "create" ? "관리자 등록" : "관리자 수정";
 
