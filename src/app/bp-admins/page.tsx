@@ -36,12 +36,8 @@ export default async function BpAdminsPage({ searchParams }: PageProps<"/bp-admi
       </>
     );
 
-  return (
-    <>
-      <PageBar title="BP 관리자 관리" />
-      <AdminsScreen list={list} roleGroups={roleGroups} query={query} detail={detail} />
-    </>
-  );
+  // 제목 줄(PageBar)은 AdminsScreen 이 그린다 — [등록]이 등록 패널을 여는 상태와 같은 곳에 있어야 해서다
+  return <AdminsScreen list={list} roleGroups={roleGroups} query={query} detail={detail} />;
 }
 
 /** 목록을 api 가 거절했으면(deniedMessageOf) 오류 화면 대신 그 문장을 보인다. 거절이 아닌 것은 그대로 던져 error.tsx 가 받는다. */
