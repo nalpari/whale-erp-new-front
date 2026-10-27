@@ -9,7 +9,7 @@ import { adminNewPanel } from "./admins-new.mjs";
 import { adminDetailPanel } from "./admins-detail.mjs";
 import { adminEditPanel } from "./admins-edit.mjs";
 
-// 아이디·이름은 상세를 슬라이드 패널로 연다
+// 이름은 상세를 슬라이드 패널로 연다. 아이디는 링크 없이 본문 글자(플랫폼 관리자 목록과 같다, 2026-10-27 사용자 지정)
 const detailTrigger = (text) => `<button type="button" aria-controls="admin-detail-panel" aria-expanded="false" class="text-erp-link hover:underline">${text}</button>`;
 
 // [아이디, 이름, 역할, 권한 그룹, 그룹 코드, 상태, 매핑 점포, 등록일시, 최근 로그인] — 등록일시 최신순
@@ -45,38 +45,38 @@ export default ({ A, R }) => {
     ui.filterSection("계정 상태", ui.select(["전체", "사용", "미사용"], { "aria-label": "계정 상태" }), { tight: true, last: true }),
   ]);
 
+  // 아이디 · 이름 · 역할 · 권한 그룹은 폭을 정하지 않아 남는 폭을 똑같이 나눈다. 최근 로그인 다음에 등록일시(2026-10-27 사용자 지정)
   const cols = [
-    { header: "아이디", width: "w-[140px]", align: "left" },
-    { header: "이름", width: "w-[110px]" },
-    { header: "역할", width: "w-[120px]" },
+    { header: "아이디" },
+    { header: "이름" },
+    { header: "역할" },
     { header: "권한 그룹", align: "left" },
     { header: "계정 상태", width: "w-[100px]" },
     { header: "매핑 점포", width: "w-[110px]" },
-    { header: "등록일시", width: "w-[160px]" },
     { header: "최근 로그인", width: "w-[160px]" },
+    { header: "등록일시", width: "w-[160px]" },
   ];
   const rows = ADMINS.map(([id, name, role, group, code, state, stores, reg, login]) => [
-    detailTrigger(id),
+    id,
     detailTrigger(name),
     role,
-    `${group} ${c.muted(code)}`,
+    `${group} ${c.muted(`· ${code}`)}`,
     ui.badge(state === "사용" ? "on" : "off", state),
     stores,
-    reg,
     login,
+    reg,
   ]);
   const off = ADMINS.flatMap((a, i) => (a[5] === "미사용" ? [i] : []));
 
-  const toolbar = ui.listToolbar(
-    ADMINS.length,
-    ui.slideTrigger("등록", "admin-new-panel") + `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`,
-  );
+  // [등록]은 제목 줄 — 플랫폼 관리자 관리와 같은 자리(2026-10-27 사용자 지정 — 전엔 목록 건수 줄)
+  const toolbar = ui.listToolbar(ADMINS.length, `<div class="w-[80px] shrink-0">${ui.select(["20", "50", "100"], { "aria-label": "페이지당 건수" })}</div>`);
 
   return {
     title: "BP 관리자 관리",
     html: ui.erpFrame({
       header: erpHeader(A, R),
       title: "BP 관리자 관리",
+      titleRight: ui.slideTrigger("등록", "admin-new-panel"),
       body: ui.listBody(
         filter,
         toolbar + c.dimRows(ui.dataTable(cols, rows, "조건에 맞는 관리자 계정이 없습니다."), off) + `<div class="pt-[14px]">${ui.pagination(A, 1, 1)}</div>`,

@@ -28,7 +28,8 @@ export type BpApplication = Schemas["BpApplicationResponseDto"];
 export type UseStatus = Schemas["UseStatus"];
 export type ManageOwnerCode = CodeGroup["manageOwnerCode"];
 
-export const DEFAULT_PAGE_SIZE = 20;
+/** api 목록의 쪽 크기 상한(네이밍 규칙 「목록 응답」 pageSize 최대 200). 그룹 목록은 쪽을 나누지 않고 이 크기로 끝까지 받아 이어 붙인다. */
+const API_PAGE_MAX = 200;
 
 const json = async (method: string, body?: unknown): Promise<RequestInit> => ({
   method,
@@ -36,17 +37,30 @@ const json = async (method: string, body?: unknown): Promise<RequestInit> => ({
   body: body === undefined ? undefined : JSON.stringify(body),
 });
 
-/** GET /code-groups — 플랫폼고정 · 플랫폼제공 그룹을 표시 순서대로 한 쪽씩. 그룹 코드 · 그룹명은 일부 일치(대소문자 무시)이고 빈 값은 보내지 않는다. */
+/**
+ * GET /code-groups — 플랫폼고정 · 플랫폼제공 그룹을 표시 순서대로 전부. 쪽을 나누지 않고 한 목록으로 보인다(2026-10-27 사용자 지정) —
+ * api 쪽 크기 상한씩 끝까지 받아 이어 붙인다. 그룹 코드 · 그룹명은 일부 일치(대소문자 무시)이고 빈 값은 보내지 않는다. 관리주체를 주면 그 그룹만.
+ */
 export async function getCodeGroups({
-  page = 1,
-  pageSize = DEFAULT_PAGE_SIZE,
   groupCode = "",
   groupName = "",
-}: { page?: number; pageSize?: number; groupCode?: string; groupName?: string } = {}): Promise<CodeGroupList> {
-  const query = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
-  if (groupCode) query.set("groupCode", groupCode);
-  if (groupName) query.set("groupName", groupName);
-  return request(`/code-groups?${query}`, await json("GET"));
+  manageOwnerCode,
+}: { groupCode?: string; groupName?: string; manageOwnerCode?: string } = {}): Promise<CodeGroupList> {
+  const items: CodeGroupList["items"] = [];
+  for (let page = 1; ; page++) {
+    const query = new URLSearchParams({ page: String(page), pageSize: String(API_PAGE_MAX) });
+    if (groupCode) query.set("groupCode", groupCode);
+    if (groupName) query.set("groupName", groupName);
+    if (manageOwnerCode) query.set("manageOwnerCodes", manageOwnerCode);
+    const list: CodeGroupList = await request(`/code-groups?${query}`, await json("GET"));
+    items.push(...list.items);
+    if (items.length >= list.total) return { items, total: items.length };
+    // 빈 쪽이면 멈춘다 — 받는 사이 그룹이 줄어 total 에 못 미쳐도 끝없이 돌지 않는다. 덜 받은 것은 기록을 남긴다
+    if (list.items.length === 0) {
+      console.warn("공통코드 그룹 목록을 끝까지 받지 못했습니다", { received: items.length, total: list.total });
+      return { items, total: items.length };
+    }
+  }
 }
 
 /** GET /code-groups/{groupCode}/items — 플랫폼 원본 상세 코드. BP전용 코드는 나오지 않는다. */

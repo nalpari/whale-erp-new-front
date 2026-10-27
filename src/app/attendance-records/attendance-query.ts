@@ -20,10 +20,10 @@ export type EmploymentType = Schemas["EmploymentType"];
 /** 필터 「출퇴근 상태」(STAFF-31) — 화면 순서 */
 export const DAY_STATUSES: readonly DayStatus[] = ["NORMAL", "LATE", "ABSENT", "MISSING_CHECK_IN", "MISSING_CHECK_OUT", "OFF"];
 /**
- * 필터 「확인 필요 사유」의 선택지 — 반경 밖 출근 · 반경 밖 퇴근 · 위치 조작 감지 셋(ATT-11, 2026-10-26 재영). 위치 오차 초과(ACCURACY_EXCEEDED)는
- * 확인 필요 사유에서 빠진 값이라(직원 앱 목업 HIST-4) api 는 값만 남겼다.
+ * 필터 「확인 필요 사유」의 선택지 — 반경 밖 출근 · 반경 밖 퇴근 · 위치 조작 감지(ATT-11, 2026-10-26 재영) · 근무 12시간 초과(출근부터 퇴근까지
+ * 12시간 넘는 직원 퇴근, 2026-10-27 재영) 넷. 위치 오차 초과(ACCURACY_EXCEEDED)는 확인 필요 사유에서 빠진 값이라(직원 앱 목업 HIST-4) api 는 값만 남겼다.
  */
-export const REVIEW_REASONS: readonly ReviewReason[] = ["OUT_OF_RADIUS_CHECKIN", "OUT_OF_RADIUS_CHECKOUT", "MOCK_LOCATION"];
+export const REVIEW_REASONS: readonly ReviewReason[] = ["OUT_OF_RADIUS_CHECKIN", "OUT_OF_RADIUS_CHECKOUT", "MOCK_LOCATION", "LONG_SHIFT"];
 export const EMPLOYMENT_TYPES: readonly EmploymentType[] = ["FULL_TIME", "PART_TIME"];
 /** 필터 「기록 구분」 — 직원 등록 · 대신 등록 · 보정됨 */
 export const ENTRY_KINDS = ["SELF", "PROXY", "CORRECTED"] as const;
@@ -296,6 +296,35 @@ export function overnightNote(date: string, checkIn: string, checkOut: string): 
   if (!hhmm.test(checkIn) || !hhmm.test(checkOut) || checkOut > checkIn) return null;
   const next = addDays(date, 1);
   return `다음 날(${Number(next.slice(5, 7))}/${Number(next.slice(8, 10))}) ${checkOut} 퇴근으로 저장합니다.`;
+}
+
+const kstDateOf = (iso: string) => new Date(new Date(iso).getTime() + 9 * 60 * 60_000).toISOString().slice(0, 10);
+const dayGap = (from: string, to: string) => Math.round((Date.parse(to) - Date.parse(from)) / 86_400_000);
+
+/** 출근한 날(그 줄의 날) 뒤 퇴근이면 「(다음날)」 · 「(+2일)」 — api 이력 글자와 같다. 같은 날이면 빈 글자 */
+export function laterDayMark(date: string, recordedAt: string): string {
+  const n = dayGap(date, kstDateOf(recordedAt));
+  return n === 1 ? "(다음날)" : n > 1 ? `(+${n}일)` : "";
+}
+
+/**
+ * 출근이 있는 짝의 보정 — 퇴근 날을 「다음 날 퇴근」으로 api 에 보낸다(`checkOutNextDay`, PR #159 리뷰). 퇴근은 출근한 다음 날까지 받아
+ * 24시간 넘는 짝(09:00 → 다음 날 10:00)이 있어 시각만으로는 날을 알 수 없다. 처음 값은 원래 퇴근이 출근한 날 뒤인가. 퇴근이 출근보다
+ * 이르거나 같으면 다음 날일 수밖에 없어 늘 다음 날이다
+ */
+export function initialNextDay(date: string, checkOut: { recordedAt: string } | null): boolean {
+  return !!checkOut && laterDayMark(date, checkOut.recordedAt) !== "";
+}
+export const forcedNextDay = (checkIn: string, checkOut: string) => !!checkIn && !!checkOut && checkOut <= checkIn;
+
+/** 보정 패널 안내 — 출근이 있는 짝은 퇴근 날을, 출근 없는 퇴근에 출근을 채우면 출근 날을 알린다(api 가 저장할 순간과 같다). 같은 날이면 null */
+export function fixSaveNote(date: string, hasCheckIn: boolean, checkIn: string, checkOut: string, nextDay: boolean): string | null {
+  const hhmm = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
+  if (!hhmm.test(checkIn) || !hhmm.test(checkOut)) return null;
+  const md = (day: string) => `${Number(day.slice(5, 7))}/${Number(day.slice(8, 10))}`;
+  // 출근 없는 퇴근: 퇴근은 그날 그대로, 출근이 퇴근보다 늦거나 같으면 전날 밤 출근이다(api correct)
+  if (!hasCheckIn) return checkOut <= checkIn ? `전날(${md(addDays(date, -1))}) ${checkIn} 출근으로 저장합니다.` : null;
+  return nextDay || forcedNextDay(checkIn, checkOut) ? `다음 날(${md(addDays(date, 1))}) ${checkOut} 퇴근으로 저장합니다.` : null;
 }
 
 /** 처리한 사람 — 「정하윤 (BP 마스터)」(데모 이력 창) */

@@ -16,9 +16,12 @@ test("이름 — 한글 · 영문 2~20자", () => {
   assert.ok(validateMyProfileForm({ ...filled, name: "이서준1" }).name, "숫자 섞임");
 });
 
-test("연락처 — 숫자 10~11자리", () => {
+test("연락처 — 숫자 9~12자리", () => {
   assert.equal(validateMyProfileForm({ ...filled, phone: ["", "", ""] }).phone, "연락처를 입력해 주세요.");
-  assert.ok(validateMyProfileForm({ ...filled, phone: ["010", "12", "5678"] }).phone, "9자리");
+  assert.ok(validateMyProfileForm({ ...filled, phone: ["010", "1", "5678"] }).phone, "8자리");
+  assert.ok(validateMyProfileForm({ ...filled, phone: ["0507", "2033", "13345"] }).phone, "13자리");
+  assert.equal(validateMyProfileForm({ ...filled, phone: ["02", "123", "4567"] }).phone, undefined, "9자리");
+  assert.equal(validateMyProfileForm({ ...filled, phone: ["0507", "2033", "1334"] }).phone, undefined, "12자리");
 });
 
 test("이메일 — 형식과 100자", () => {
@@ -34,6 +37,10 @@ test("이메일 — 형식과 100자", () => {
 test("splitPhone — 숫자만 세 칸으로, 02는 두 자리", () => {
   assert.deepEqual(splitPhone("01012345678"), ["010", "1234", "5678"]);
   assert.deepEqual(splitPhone("0212345678"), ["02", "1234", "5678"]);
+  assert.deepEqual(splitPhone("050720331334"), ["0507", "2033", "1334"], "050X 평생번호는 네 자리 국번");
+  assert.deepEqual(splitPhone("05012345678"), ["050", "1234", "5678"], "11자리 050 은 3자리 국번");
+  assert.deepEqual(splitPhone("010123456789"), ["010", "12345", "6789"], "050 이 아닌 12자리는 050X 규칙을 타지 않는다");
+  assert.deepEqual(splitPhone("021234567"), ["02", "123", "4567"], "9자리 02 유선");
   assert.deepEqual(splitPhone(""), ["", "", ""]);
 });
 

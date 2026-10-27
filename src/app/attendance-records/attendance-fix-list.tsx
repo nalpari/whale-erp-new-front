@@ -2,12 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition, type ReactNode } from "react";
-import { Button, ConfirmDialog, DataTable, DetailTable, Field, FormGroup, FormRow, Select, SlidePanel, TextField, Textarea, useToast, type Column } from "@/components/common";
+import { Button, Checkbox, ConfirmDialog, DataTable, DetailTable, Field, FormGroup, FormRow, Select, SlidePanel, TextField, Textarea, useToast, type Column } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import type { AttendanceHistory, ProxyStaff } from "@/lib/attendance-records-api";
 import { correctAttendanceAction, getAttendanceHistoryAction, getProxyStaffAction, proxyAttendanceAction, reviewAttendanceAction, type EditResult } from "./actions";
-import { byLabel, editTail, fixPairIndex, overnightNote, shortDay, type FixRow } from "./attendance-query";
+import { byLabel, editTail, fixPairIndex, fixSaveNote, forcedNextDay, initialNextDay, laterDayMark, overnightNote, shortDay, type FixRow } from "./attendance-query";
 
 // 보정이 필요한 기록의 표와 동작(데모 staff-sections.mjs fixList · fixForm · proxyForm · histDialog, WHALEERP-220). 확인 필요 · 미등록 줄에는
 // 「보정」 · 「이상 없음」, 보정 · 대신 등록한 줄에는 「이력」. 보정 · 대신 등록은 오른쪽 패널, 「이상 없음」은 확인창, 이력은 창이다.
@@ -247,6 +247,9 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
   const [checkIn, setCheckIn] = useState(pair.checkIn?.time ?? "");
   // 퇴근 미등록 줄만 근무스케줄 종료 시각으로 채워 둔다(데모 「근무스케줄 종료 시각으로 보정」) — 오늘 근무 중인 줄에 미래 퇴근을 넣지 않게
   const [checkOut, setCheckOut] = useState(pair.checkOut?.time ?? (fix.row.status === "MISSING_CHECK_OUT" ? (fix.row.schedules[0]?.endTime ?? "") : ""));
+  // 퇴근 날 — 출근이 있는 짝은 「다음 날 퇴근」을 api 에 보낸다(24시간 넘는 짝은 시각만으로 날을 알 수 없다, PR #159 리뷰)
+  const [nextDay, setNextDay] = useState(initialNextDay(fix.row.date, pair.checkOut));
+  const forced = forcedNextDay(checkIn, checkOut);
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, startTransition] = useTransition();
@@ -262,6 +265,7 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
       const result = await correctAttendanceAction(anchorOf(pair), {
         ...(checkIn ? { checkInTime: checkIn } : {}),
         ...(checkOut ? { checkOutTime: checkOut } : {}),
+        ...(pair.checkIn && checkOut ? { checkOutNextDay: forced || nextDay } : {}),
         reason: reason.trim(),
         ...(pair.checkIn ? { expectedCheckInAt: pair.checkIn.recordedAt } : {}),
         ...(pair.checkOut ? { expectedCheckOutAt: pair.checkOut.recordedAt } : {}),
@@ -285,7 +289,7 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
           <Select aria-label="고칠 기록" value={fix.pairIndex} onChange={(e) => onPick(Number(e.target.value))}>
             {fix.row.pairs.map((p, i) => (
               <option key={i} value={i}>
-                출근 {p.checkIn?.time ?? "없음"} · 퇴근 {p.checkOut?.time ?? "없음"}
+                출근 {p.checkIn?.time ?? "없음"} · 퇴근 {p.checkOut ? p.checkOut.time + laterDayMark(fix.row.date, p.checkOut.recordedAt) : "없음"}
               </option>
             ))}
           </Select>
@@ -296,15 +300,18 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
           <HelpField label="출근" help={`원본 ${pair.checkIn?.time ?? "없음"}`}>
             <TextField type="time" aria-label="출근" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
           </HelpField>
-          <HelpField label="퇴근" help={`원본 ${pair.checkOut?.time ?? "없음"}`}>
+          <HelpField label="퇴근" help={`원본 ${pair.checkOut ? pair.checkOut.time + laterDayMark(fix.row.date, pair.checkOut.recordedAt) : "없음"}`}>
             <TextField type="time" aria-label="퇴근" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />
           </HelpField>
         </FormRow>
-        <OvernightNote date={fix.row.date} checkIn={checkIn} checkOut={checkOut} />
+        {pair.checkIn && checkOut && (
+          <Checkbox label="다음 날 퇴근" checked={forced || nextDay} disabled={forced} onChange={(e) => setNextDay(e.target.checked)} />
+        )}
+        <SaveNote note={fixSaveNote(fix.row.date, !!pair.checkIn, checkIn, checkOut, nextDay)} />
         <Field label="수정 사유" required>
           <Textarea aria-label="수정 사유" rows={4} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="예: 퇴근 등록 누락 · 근무스케줄 종료 시각으로 보정. 점장 구두 확인." />
         </Field>
-        <p className="text-[13px] text-erp-label">퇴근이 출근보다 이르거나 같으면 다음 날 퇴근으로 저장합니다. 보정하면 확인 필요 꼬리표와 사유도 지웁니다.</p>
+        <p className="text-[13px] text-erp-label">퇴근이 출근보다 이르거나 같으면 다음 날 퇴근입니다. 그 밖에 다음 날 퇴근이면 「다음 날 퇴근」을 고릅니다. 보정하면 확인 필요 꼬리표와 사유도 지웁니다.</p>
       </FormGroup>
       {error && (
         <p role="alert" className="text-[14px] text-erp-off">
@@ -485,7 +492,11 @@ function PayslipWarning() {
 
 /** 퇴근이 출근보다 이르거나 같으면 다음 날 퇴근으로 저장된다는 것을 실제 날짜로 알린다(api 와 같은 규칙) */
 function OvernightNote({ date, checkIn, checkOut }: { date: string; checkIn: string; checkOut: string }) {
-  const note = overnightNote(date, checkIn, checkOut);
+  return <SaveNote note={overnightNote(date, checkIn, checkOut)} />;
+}
+
+/** 저장할 날 안내(보정 · 대신 등록) */
+function SaveNote({ note }: { note: string | null }) {
   return note && <p className="text-[13px] font-medium text-erp-ink">{note}</p>;
 }
 

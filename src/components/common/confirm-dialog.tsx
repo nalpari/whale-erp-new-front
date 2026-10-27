@@ -25,7 +25,7 @@ export function ConfirmDialog({
   title: string;
   children: ReactNode;
   confirmLabel?: string;
-  /** 확인 버튼 색. 기본은 primary, 되돌리기 어려운 동작(퇴직 처리)은 danger. */
+  /** 확인 버튼 색. 기본은 primary, 되돌리기 어려운 동작(퇴직 처리)은 danger(1팀 동의 2026-10-27). */
   confirmVariant?: ButtonVariant;
   /** null 이면 취소 버튼 없이 확인 하나만 둔다 — 알리기만 하는 결과 창. Esc 는 그대로 onCancel 이다. */
   cancelLabel?: string | null;

@@ -23,7 +23,7 @@ export function bpDetailBody(A, R, { panel = false } = {}) {
 
   // 이름 옆에 BP 상태를 꼬리표로 보이고, 기능 버튼은 닫기까지 모두 맨 아래로 내린다(패널 · 전체 화면 같다 · 2026-10-08).
   const head = `<h2 class="text-[18px] font-semibold whitespace-nowrap text-erp-ink">${BP.name}<span class="ml-[10px] inline-flex align-middle">${ui.badge("on", "사용")}</span></h2>`;
-  const bottomButtons = `<div class="flex flex-wrap items-center gap-[6px] border-t border-erp-panel-line pt-[16px]">${closeBtn}<span class="flex-1"></span>${actionButtons}</div>`; // 닫기는 맨 왼쪽(상세 슬라이드 공통 · 2026-10-08)
+  const bottomButtons = `<div class="flex flex-wrap items-center gap-[6px]">${closeBtn}<span class="flex-1"></span>${actionButtons}</div>`; // 닫기는 맨 왼쪽(상세 슬라이드 공통 · 2026-10-08)
 
   const basic = ui.detailTable("BP 마스터 기본정보", [
     ["BP 코드", BP.code],

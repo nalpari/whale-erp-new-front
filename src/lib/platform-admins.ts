@@ -25,6 +25,7 @@ export type PlatformAdminQuery = {
   roleGroupId?: number;
   /** 주지 않으면 사용 · 미사용 둘 다 */
   statuses?: AdminStatus[];
+  pageSize?: number;
 };
 
 const json = async (method: "GET" | "POST" | "PUT" | "DELETE", body?: unknown): Promise<RequestInit> => ({
@@ -34,8 +35,8 @@ const json = async (method: "GET" | "POST" | "PUT" | "DELETE", body?: unknown): 
 });
 
 /** GET /platform-admins — 지우지 않은 플랫폼 마스터 · 플랫폼 관리자, 등록일시 최신순. */
-export async function getPlatformAdmins({ page = 1, keyword, roleGroupId, statuses }: PlatformAdminQuery = {}): Promise<PlatformAdminList> {
-  const params = new URLSearchParams({ page: String(page), pageSize: String(ADMIN_PAGE_SIZE) });
+export async function getPlatformAdmins({ page = 1, keyword, roleGroupId, statuses, pageSize = ADMIN_PAGE_SIZE }: PlatformAdminQuery = {}): Promise<PlatformAdminList> {
+  const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
   if (keyword) params.set("keyword", keyword);
   if (roleGroupId) params.set("roleGroupId", String(roleGroupId));
   if (statuses?.length) params.set("statuses", statuses.join(","));

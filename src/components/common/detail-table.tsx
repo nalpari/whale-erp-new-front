@@ -18,7 +18,7 @@ export function DetailTable({ title, rows }: { title?: ReactNode; rows: DetailRo
   return (
     <div className="w-full">
       {title !== undefined && (
-        <h3 className="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[16px] font-medium text-erp-ink">
+        <h3 className="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">
           {title}
         </h3>
       )}

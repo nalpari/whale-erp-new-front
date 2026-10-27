@@ -27,7 +27,8 @@
          입력 값은 역할과 관계없이 등록 직후 표본(hgcs 문가은)을 그대로 둔다.
          등록 화면에는 계정 상태 항목을 두지 않는다 — 새 계정은 늘 사용이다 (CONFIG-4 확정).
          가맹 마스터 계정의 관리 점포는 직영을 포함한 전체 점포에서 고른다. 한 점포는 한 가맹 마스터만 맡는다 —
-           다른 가맹 마스터가 이미 맡은 점포는 후보에 흐리게 ‘ongifm 담당’처럼 보이고 고를 수 없다 (확정 2026-09-29).
+           다른 가맹 마스터가 이미 맡은 점포는 후보에 나오지 않는다 (확정 2026-09-29, 2026-10-23 흐리게 보이던 것을 뺐다).
+         매핑할 수 있는 점포는 미운영 · 운영뿐이다. 폐점 점포는 후보에 나오지 않는다 — 흐리게 보이는 것은 상단 점포 선택 · 목록 필터뿐이다 (확정 2026-10-23).
          가맹 마스터는 ‘일부 점포’만 쓴다 — ‘전체 점포’는 BP 관리자에게만 준다. 가맹 마스터를 고르면 범위의 ‘전체 점포’가 막힌다 (확정 2026-09-29).
          관리 점포는 필수다 — ‘일부 점포’면 한 곳 이상 골라야 등록된다 (확정 2026-09-29 · ‘일부 점포 · 점포 없음’ 상태).
          아이디는 영문·숫자만 쓴다(밑줄 불가). 표본 아이디도 밑줄을 뺐다 — hg_cs → hgcs, mori_yn → moriyn (확정 2026-09-29).
@@ -191,7 +192,7 @@
                         <input class="input mono" value="" inputmode="numeric" aria-invalid="true" aria-label="가운데자리" />
                         <input class="input mono" value="" inputmode="numeric" aria-invalid="true" aria-label="끝자리" />
                       </div>
-                      <span class="help" data-show="in part nostore fmr dupid dupmail nogroup badgroup fail">세 칸을 합친 숫자 10~11자리</span>
+                      <span class="help" data-show="in part nostore fmr dupid dupmail nogroup badgroup fail">세 칸을 합친 숫자 9~12자리</span>
                       <span class="err" data-show="miss" hidden><span data-icon="alert" data-icon-size="13"></span>휴대전화번호를 입력해 주세요.</span>
                     </div>
                     <div class="field">
@@ -337,7 +338,7 @@
                     </div>
                   </div>
                   <div class="panel__body" data-show="fmr" hidden>
-                    <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포;ST000005|모리커피 을지로점|가맹점포|morinam01 담당;ST000006|모리커피 연남점|가맹점포|morinam01 담당;ST000007|모리커피 청담점|가맹점포|morinam01 담당;ST000008|모리커피 부평점|가맹점포|morinam01 담당;ST000009|온기식당 둔산점|가맹점포|ongifm 담당;ST000010|온기식당 서면점|가맹점포|ongifm 담당;ST000011|온기식당 일산점|가맹점포|ongifm 담당" data-picked="">
+                    <div class="spick" data-spick data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포" data-picked="">
                       <div class="spick__find">
                         <div class="spick__head"><b>점포 찾기</b></div>
                         <div class="spick__row">
@@ -348,7 +349,7 @@
                           </div>
                           <button class="btn btn--secondary" type="button" data-spick-bulk>일괄 검색</button>
                         </div>
-                        <span class="help" style="display: block; margin-top: var(--s-2)">직영을 포함한 전체 점포에서 고릅니다. 한 점포는 한 가맹 마스터만 맡아, 다른 가맹 마스터가 맡은 점포는 흐리게 보이고 고를 수 없습니다.</span>
+                        <span class="help" style="display: block; margin-top: var(--s-2)">직영을 포함한 전체 점포에서 고릅니다. 한 점포는 한 가맹 마스터만 맡아, 다른 가맹 마스터가 맡은 점포는 후보에 나오지 않습니다.</span>
                       </div>
                       <div class="spick__box">
                         <div class="spick__head"><b>선택한 점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>전체 제거</button></div>

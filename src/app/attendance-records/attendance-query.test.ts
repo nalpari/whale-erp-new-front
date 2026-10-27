@@ -1,7 +1,7 @@
 // node --test src/app/attendance-records/attendance-query.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { byLabel, type DayRow, defaultQuery, editTail, fixPairIndex, lateMinutes, matchesFilter, matchesSummary, mondayOf, needsFix, overnightNote, parseAttendanceQuery, storeParams, toAttendanceSearch, weekSummary } from "./attendance-query.ts";
+import { byLabel, type DayRow, defaultQuery, editTail, fixPairIndex, lateMinutes, matchesFilter, matchesSummary, mondayOf, needsFix, fixSaveNote, forcedNextDay, initialNextDay, laterDayMark, overnightNote, parseAttendanceQuery, storeParams, toAttendanceSearch, weekSummary } from "./attendance-query.ts";
 
 const TODAY = "2026-10-23";
 const def = defaultQuery(TODAY);
@@ -146,4 +146,22 @@ test("보정이 필요한 기록 꼬리 · 처리한 사람 · 지각 분", () =
   const late = { status: "LATE" as const, schedules: [{ startTime: "13:00", endTime: "22:00", breakMinutes: 0 }], pairs: [{ checkIn: punch("13:18"), checkOut: null }] };
   assert.equal(lateMinutes(late), 18);
   assert.equal(lateMinutes({ ...late, status: "NORMAL" }), 0);
+});
+
+test("보정 퇴근 날 — 처음 값은 원래 퇴근이 다음 날인가, 퇴근이 출근보다 이르면 늘 다음 날, 안내는 api 가 저장할 날", () => {
+  assert.equal(laterDayMark("2026-10-23", "2026-10-24T01:00:00.000Z"), "(다음날)");
+  assert.equal(laterDayMark("2026-10-23", "2026-10-23T09:00:00.000Z"), "");
+  assert.equal(laterDayMark("2026-10-23", "2026-10-25T01:00:00.000Z"), "(+2일)");
+  assert.equal(initialNextDay("2026-10-23", { recordedAt: "2026-10-24T01:00:00.000Z" }), true);
+  assert.equal(initialNextDay("2026-10-23", { recordedAt: "2026-10-23T09:00:00.000Z" }), false);
+  assert.equal(initialNextDay("2026-10-23", null), false);
+  assert.equal(forcedNextDay("22:00", "06:00"), true);
+  assert.equal(forcedNextDay("09:00", "10:00"), false);
+  // 24시간 넘는 짝(09:00 → 다음 날 10:00)을 다음 날 09:30 으로
+  assert.equal(fixSaveNote("2026-10-23", true, "09:00", "09:30", true), "다음 날(10/24) 09:30 퇴근으로 저장합니다.");
+  assert.equal(fixSaveNote("2026-10-23", true, "09:00", "18:00", false), null);
+  assert.equal(fixSaveNote("2026-10-23", true, "22:00", "06:00", false), "다음 날(10/24) 06:00 퇴근으로 저장합니다.");
+  // 출근 없는 퇴근에 밤 출근을 채우면 출근이 전날이다
+  assert.equal(fixSaveNote("2026-10-24", false, "22:00", "06:00", false), "전날(10/23) 22:00 출근으로 저장합니다.");
+  assert.equal(fixSaveNote("2026-10-24", false, "05:00", "06:00", false), null);
 });
