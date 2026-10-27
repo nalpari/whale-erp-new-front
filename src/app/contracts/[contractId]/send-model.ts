@@ -1,7 +1,10 @@
 // 재발송 · 저장 뒤 보내기 실패를 화면이 다룰 모양으로 바꾼다(front #41 리뷰). 서버 액션 · 상세와 테스트가 함께 쓴다.
 
-/** 실패 결과. recheck 면 api 가 이미 쓰고 보냈을 수 있다 — 확인창의 보내기를 막고 상세를 다시 읽는다(두 번 가지 않게) */
-export type SendFailure = { ok: false; error: string; code?: string; recheck: boolean };
+/**
+ * 실패 결과. recheck 면 api 가 이미 쓰고 보냈을 수 있다 — 확인창의 보내기를 막고 상세를 다시 읽는다(두 번 가지 않게). blocked 면
+ * 다시 보내도 같은 까닭으로 막힌다 — 보내기만 막고 다시 읽지 않는다(다시 읽으면 버튼 · 확인창과 함께 까닭 문장이 사라진다)
+ */
+export type SendFailure = { ok: false; error: string; code?: string; recheck: boolean; blocked?: true };
 
 /** 접수됐는지 모를 때(응답이 끊김 · 코드 없는 502 · 504)의 문장 */
 export const SEND_UNKNOWN = "발송됐는지 알 수 없습니다. 상세를 다시 읽었으니 직원에게 받았는지 확인한 뒤 다시 보내 주세요";
@@ -14,18 +17,19 @@ export const END_UNKNOWN = "종료됐는지 확인하지 못했습니다. 상세
  * - SEND_UNCONFIRMED: api 가 쓰고 보냈을 수 있다(되돌리기 실패 포함) → recheck
  * - 409 상태 충돌 · 「다른 요청이 먼저 고침」(code 없음): 화면이 낡았다 → recheck
  * - 409 REOPEN_BLOCKED · WORK_TIME_OVERLAP(거부 · 만료를 되살릴 수 없음, WHALEERP-153): 화면을 연 뒤 막혔다 → api 문장 그대로 보이고
- *   recheck(다시 읽으면 api canResend 가 거짓이라 버튼이 사라진다, front #136 code-review)
+ *   blocked(보내기만 막는다). 다시 읽으면 api canResend 가 거짓이라 버튼 · 확인창과 함께 까닭이 사라진다(front #136 재리뷰)
  * - 코드 없는 502 · 504, 응답 없음: 앞단에서 끊겨 접수 여부를 모른다 → recheck, 문장은 SEND_UNKNOWN
  * - 나머지: api 문장 그대로, 보내기를 막지 않는다(SEND_FAILED · 503 은 다시 보내면 될 수 있고, SEND_CHANNEL_NOT_READY ·
  *   SEND_PHONE_NOT_MOBILE 은 원인이 풀릴 때까지 같은 409)
  */
-const STALE_CODES = new Set(["CONTRACT_STATUS_CONFLICT", "REOPEN_BLOCKED", "WORK_TIME_OVERLAP"]);
+const BLOCKED_CODES = new Set(["REOPEN_BLOCKED", "WORK_TIME_OVERLAP"]);
 
 export function sendFailureOf(status: number | null, code: string | undefined, message: string, unknown = SEND_UNKNOWN): SendFailure {
   const withCode = code ? { code } : {};
   if (status === null || ((status === 502 || status === 504) && !code)) return { ok: false, error: unknown, recheck: true };
-  const recheck = code === "SEND_UNCONFIRMED" || (status === 409 && (!code || STALE_CODES.has(code)));
-  return { ok: false, error: message, ...withCode, recheck };
+  const recheck = code === "SEND_UNCONFIRMED" || (status === 409 && (!code || code === "CONTRACT_STATUS_CONFLICT"));
+  const blocked = status === 409 && !!code && BLOCKED_CODES.has(code);
+  return { ok: false, error: message, ...withCode, recheck, ...(blocked && { blocked: true as const }) };
 }
 
 /**

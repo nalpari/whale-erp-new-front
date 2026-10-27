@@ -14,8 +14,8 @@ import { resendDialogCopy, sendFailureOf } from "./send-model";
 // 으로, 계정이 없는 직원은 가입 초대 알림톡으로 간다(WHALEERP-611). 소속 추가 확인 · 복귀 확인(계정 있음 · 이 점포 미가입)은
 // 상세가 버튼을 숨긴다(canResend). 화면을 연 뒤 그 번호로 계정이 생겼으면 api 가 409 SEND_CHANNEL_NOT_READY 로 막고, 그 문장을 확인창에 그대로 보인다.
 // 확인창 문구는 resendDialogCopy(send-model.ts) — 가입 여부(api staffJoined)로 앱 문구(데모)와 가입 초대 문구를 고른다.
-// 접수 여부를 모르거나 화면이 낡았으면(recheck — 거부 · 만료를 되살릴 수 없게 된 409 도) 보내기를 막고 상세를 다시 읽는다 — 다시
-// 눌러 두 번 가지 않게(front #41 리뷰).
+// 접수 여부를 모르거나 화면이 낡았으면(recheck) 보내기를 막고 상세를 다시 읽는다 — 다시 눌러 두 번 가지 않게(front #41 리뷰).
+// 거부 · 만료를 되살릴 수 없게 됐으면(blocked) 보내기만 막고 까닭 문장을 남긴다 — 다시 읽으면 버튼과 함께 사라진다(front #136 재리뷰).
 export function SendContractButton({ contractId, status, name, back, staffJoined }: { contractId: number; status: string; name: string | null; back: string; staffJoined: boolean }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -59,10 +59,8 @@ export function SendContractButton({ contractId, status, name, back, staffJoined
               return;
             }
             setError(result.error);
-            if (result.recheck) {
-              setLocked(true);
-              router.refresh();
-            }
+            if (result.recheck || result.blocked) setLocked(true);
+            if (result.recheck) router.refresh();
           })
         }
       >

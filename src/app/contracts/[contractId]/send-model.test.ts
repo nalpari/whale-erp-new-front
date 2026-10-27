@@ -158,13 +158,16 @@ test("거부 · 만료 재발송 확인창 — 같은 조건으로 다시 보낸
   assert.match(expired.body[1], /가입 초대 알림톡/);
 });
 
-test("거부 · 만료 재발송이 막히면(REOPEN_BLOCKED · WORK_TIME_OVERLAP) api 문장을 확인창에 보이고 보내기를 막아 다시 읽는다(front #136 리뷰 · code-review)", () => {
+test("거부 · 만료 재발송이 막히면(REOPEN_BLOCKED · WORK_TIME_OVERLAP) api 문장을 확인창에 보이고 보내기만 막는다 — 다시 읽지 않는다(front #136 재리뷰)", () => {
   for (const code of ["REOPEN_BLOCKED", "WORK_TIME_OVERLAP"]) {
     assert.deepEqual(sendFailureOf(409, code, "퇴직했거나 퇴직일을 정한 직원에게는 근로계약서를 다시 보낼 수 없습니다"), {
       ok: false,
       error: "퇴직했거나 퇴직일을 정한 직원에게는 근로계약서를 다시 보낼 수 없습니다",
       code,
-      recheck: true,
+      recheck: false,
+      blocked: true,
     });
   }
+  // 그 밖의 409 코드는 막지 않는다
+  assert.equal(sendFailureOf(409, "SEND_CHANNEL_NOT_READY", "x").blocked, undefined);
 });
