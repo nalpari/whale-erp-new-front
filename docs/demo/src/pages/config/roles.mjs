@@ -130,8 +130,8 @@ export default ({ A, R }) => {
   );
 
   // 삭제 확인창 — BP 관리자 그룹마다. 대체 후보는 같은 BP·같은 유형의 다른 그룹이다.
-  // 앱 role-delete-dialog.tsx 와 같다(2026-10-26): 480px, 권한명 · 연결 사용자 두 줄(라벨 84px), 연결 사용자는 「N명」 아래 한 사람씩
-  // 연결 사용자는 「N명」만 두고 그 아래 표(아이디 · 이름 · 계정 상태, 다섯 명 넘으면 그 안에서 스크롤 — c.linkedUsersTable, 2026-10-27), 연결 사용자가 있으면 대체 권한을 골라야 [삭제]가 켜진다(data-needs-choice · erp.js)
+  // 앱 role-delete-dialog.tsx 와 같다(2026-10-26): 480px, 권한명 · 연결 사용자 두 줄(라벨 84px),
+  // 연결 사용자는 「N명」만 두고 그 아래 표(아이디 · 이름 · 계정 상태, 여섯 명부터 열 이름 줄 고정 · 사람 줄만 스크롤 — c.linkedUsersTable, 2026-10-27), 연결 사용자가 있으면 대체 권한을 골라야 [삭제]가 켜진다(data-needs-choice · erp.js)
   const del = {};
   const delDialogs = GROUPS.filter((g) => g[0] === "BP 관리자")
     .map(([type, code, name, , , , , , , , users]) => {

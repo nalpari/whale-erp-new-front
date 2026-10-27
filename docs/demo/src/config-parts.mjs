@@ -137,18 +137,22 @@ function storeBulkDialog(A, id, { stores, picked }) {
   return `<dialog id="${id}" data-bulk-popup aria-labelledby="${id}-t" class="m-auto w-[800px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"><h2 id="${id}-t" class="text-[18px] font-semibold">점포 일괄 검색</h2><div class="mt-[12px] text-[14px] leading-[1.6] text-erp-ink">${body}</div><div class="mt-[24px] flex justify-end gap-[6px]">${ui.button("취소", { variant: "off", "data-close": true })}${ui.button(`${picked.length}개점 적용`, { "data-bulk-apply": true })}</div></dialog>`;
 }
 
-// 화면 아래 가운데 버튼 줄
-// 권한 그룹 삭제 확인창의 연결 사용자 표 — 아이디 · 이름 · 계정 상태(사용 · 미사용 배지). 다섯 명까지 보이고 넘으면 그 안에서 스크롤(머리 42 + 줄 46 × 5 + 선).
+// 권한 그룹 삭제 확인창의 연결 사용자 표 — 아이디 · 이름 · 계정 상태(사용 · 미사용 배지). 여섯 명부터는 머리 42 + 줄 46 × 5 + 선 높이 안에서 사람 줄만 스크롤.
 // 앱 role-delete-dialog.tsx 와 같다(2026-10-27 사용자 지정 — 전엔 「아이디 | 이름」을 옅은 회색으로 이어 붙였다). 표본 글자는 「아이디 이름」 또는 「아이디 이름(미사용)」
-export const linkedUsersTable = (users) =>
-  `<div class="max-h-[274px] overflow-y-auto overscroll-contain">${ui.dataTable(
-    [{ header: "아이디", align: "left" }, { header: "이름", align: "left" }, { header: "계정 상태", width: "w-[100px]" }],
+export const linkedUsersTable = (users) => {
+  const table = ui.dataTable(
+    // 값도 열 이름처럼 가운데, 아이디는 140px(앱과 같다, 2026-10-27)
+    [{ header: "아이디", width: "w-[140px]" }, { header: "이름" }, { header: "계정 상태", width: "w-[100px]" }],
     users.map((u) => {
       const [id, ...rest] = u.split(" ");
       const raw = rest.join(" ");
       const off = raw.includes("(미사용)");
       return [id, raw.replace("(미사용)", "").trim() || "-", ui.badge(off ? "off" : "on", off ? "미사용" : "사용")];
     }),
-  )}</div>`;
+  );
+  // 여섯 명부터는 높이를 묶고 열 이름 줄을 고정한 채 사람 줄만 스크롤한다(앱과 같다, 2026-10-27 사용자 지정)
+  return users.length > 5 ? `<div class="flex h-[274px] flex-col">${ui.scrollTable(table)}</div>` : table;
+};
 
+// 화면 아래 가운데 버튼 줄
 export const buttons = (...b) => `<div class="flex justify-center gap-[6px]">${b.join("")}</div>`;

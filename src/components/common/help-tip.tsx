@@ -66,7 +66,7 @@ export function HelpTip({ text, label = "도움말", floating, focusable = true 
       <span className="relative inline-flex shrink-0">
         {icon}
         {/* popover 의 기본 자리(가운데 · 바깥 여백)를 풀고 show 가 잡은 자리에 선다. 열 때 투명도를 200ms 로 올린다.
-            표 머리 도움말은 줄마다 접지 않고 두는 글(관리주체)이 있어 최대 폭을 320 으로 둔다 — 창 밖으로 넘치면 show 가 안으로 당긴다 */}
+            표 머리 도움말은 줄마다 접지 않고 두는 글(관리주체)이 있어 최대 폭을 320 으로 둔다 — 표 · 창 오른쪽 끝을 넘으면 show 가 왼쪽으로 당긴다 */}
         <span
           ref={tip}
           popover="manual"

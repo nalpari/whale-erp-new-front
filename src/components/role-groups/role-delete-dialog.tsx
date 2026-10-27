@@ -87,8 +87,9 @@ export function RoleDeleteDialog({
 
   const admins = data?.admins ?? [];
   const userColumns: Column<(typeof admins)[number]>[] = [
-    { header: "아이디", align: "left", cell: (a) => a.loginId },
-    { header: "이름", align: "left", cell: (a) => a.name ?? <span className="text-erp-muted">-</span> },
+    // 값도 열 이름처럼 가운데 — 왼쪽 정렬이면 가운데인 열 이름과 시작점이 어긋나 보였다. 아이디는 140px, 이름이 남는 폭(2026-10-27 사용자 지정)
+    { header: "아이디", width: "w-[140px]", cell: (a) => a.loginId },
+    { header: "이름", cell: (a) => a.name || <span className="text-erp-muted">-</span> },
     {
       header: "계정 상태",
       width: "w-[100px]",
@@ -153,10 +154,12 @@ export function RoleDeleteDialog({
             </dd>
           </dl>
           {/* 연결 사용자는 표로(아이디 · 이름 · 계정 상태) — 전엔 「아이디 | 이름」을 옅은 회색으로 이어 붙였다(2026-10-27 사용자 지정).
-              다섯 명까지 보이고 넘으면 이 안에서 세로로 스크롤한다 — 머리 42 + 줄 46 × 5 + 선(BP 관리자 상세 대상 점포와 같다) */}
-          {admins.length > 0 && (
-            <div className="max-h-[274px] overflow-y-auto overscroll-contain">
-              <DataTable columns={userColumns} rows={admins} rowKey={(a) => a.adminAccountId} />
+              다섯 명까지는 표가 내용만큼 서고, 여섯 명부터는 높이를 머리 42 + 줄 46 × 5 + 선으로 묶고 열 이름 줄은 고정한 채 사람 줄만 스크롤한다
+              (DataTable scroll — 공통코드 목록 표와 같다, 2026-10-27 사용자 지정) */}
+          {admins.length > 0 && admins.length <= 5 && <DataTable columns={userColumns} rows={admins} rowKey={(a) => a.adminAccountId} />}
+          {admins.length > 5 && (
+            <div className="flex h-[274px] flex-col">
+              <DataTable scroll columns={userColumns} rows={admins} rowKey={(a) => a.adminAccountId} />
             </div>
           )}
           {/* 두 줄로 나눠 보인다(2026-10-26 사용자 지정) */}
