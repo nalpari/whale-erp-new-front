@@ -49,7 +49,7 @@ function platformAdminEditBody(A) {
   );
 
   const role = ui.formGroup(
-    "사용자 권한 · 계정 상태",
+    "사용자 권한 · 계정상태",
     row(
       ui.field(
         "사용자 권한",
@@ -60,7 +60,7 @@ function platformAdminEditBody(A) {
           }),
         ),
       ),
-      ui.field(req("계정 상태"), ui.select(["사용", "미사용"], { "aria-label": "계정 상태" })),
+      ui.field(req("계정상태"), ui.select(["사용", "미사용"], { "aria-label": "계정상태" })),
     ),
   );
 

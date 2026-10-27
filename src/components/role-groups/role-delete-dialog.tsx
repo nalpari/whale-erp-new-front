@@ -91,7 +91,7 @@ export function RoleDeleteDialog({
     { header: "아이디", width: "w-[140px]", cell: (a) => a.loginId },
     { header: "이름", cell: (a) => a.name || <span className="text-erp-muted">-</span> },
     {
-      header: "계정 상태",
+      header: "계정상태",
       width: "w-[100px]",
       cell: (a) => <Badge tone={a.accountStatusCode === "INACTIVE" ? "off" : "on"}>{statusLabel(a.accountStatusCode)}</Badge>,
     },

@@ -275,7 +275,7 @@ export function AdminFormPanel(props: Props) {
       {failure && <FailedBand message={failure} detail="입력한 값은 그대로 두었습니다." />}
       {locks.stores && (
         <Note>
-          수정 화면에서는 기본정보(이름 · 연락처 · 이메일)만 바뀝니다. 권한 그룹 · 계정 상태 · 대상 점포는 이 계정을 관리할 수 있는 다른 사용자가,
+          수정 화면에서는 기본정보(이름 · 연락처 · 이메일)만 바뀝니다. 권한 그룹 · 계정상태 · 대상 점포는 이 계정을 관리할 수 있는 다른 사용자가,
           비밀번호는 내 정보에서 직접 바꿉니다.
         </Note>
       )}
@@ -361,7 +361,7 @@ export function AdminFormPanel(props: Props) {
           </Labeled>
           {mode === "edit" && (
             <>
-              <Field label="계정 상태" required>
+              <Field label="계정상태" required>
                 <Select
                   value={form.accountStatus}
                   onChange={(e) => set("accountStatus", e.target.value as BpAdminForm["accountStatus"])}

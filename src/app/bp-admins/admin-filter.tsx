@@ -140,9 +140,9 @@ export function AdminFilter({
           ))}
         </Select>
       </FilterSection>
-      <FilterSection label="계정 상태" tight last>
+      <FilterSection label="계정상태" tight last>
         <Select
-          aria-label="계정 상태"
+          aria-label="계정상태"
           value={query.accountStatus ?? ""}
           onChange={(e) => navigate(withBpAdminFilter(query, { accountStatus: (e.target.value || undefined) as BpAdminStatus | undefined }))}
         >

@@ -142,7 +142,7 @@ function storeBulkDialog(A, id, { stores, picked }) {
 export const linkedUsersTable = (users) => {
   const table = ui.dataTable(
     // 값도 열 이름처럼 가운데, 아이디는 140px(앱과 같다, 2026-10-27)
-    [{ header: "아이디", width: "w-[140px]" }, { header: "이름" }, { header: "계정 상태", width: "w-[100px]" }],
+    [{ header: "아이디", width: "w-[140px]" }, { header: "이름" }, { header: "계정상태", width: "w-[100px]" }],
     users.map((u) => {
       const [id, ...rest] = u.split(" ");
       const raw = rest.join(" ");

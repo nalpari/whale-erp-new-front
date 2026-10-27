@@ -63,7 +63,7 @@ export function AdminFilter({
           ))}
         </Select>
       </FilterSection>
-      <FilterSection label="계정 상태" last>
+      <FilterSection label="계정상태" last>
         <Checkbox label="사용" checked={shows("ACTIVE")} onChange={(e) => toggle("ACTIVE", e.target.checked)} />
         <Checkbox label="미사용" checked={shows("INACTIVE")} onChange={(e) => toggle("INACTIVE", e.target.checked)} />
       </FilterSection>

@@ -18,7 +18,7 @@ export function adminEditBody(A, R, { panel = false } = {}) {
     // 아이디 칸은 제목 줄 띠지로 옮겼다. 등록일시 · 최근 로그인은 상세에서 본다(2026-10-27 사용자 지정)
     row(ui.field(c.req("이름"), ui.textField({ value: "이서아", maxlength: 20 })), c.blank),
     row(ui.field(c.req("연락처"), c.tel("010", "2290", "5173")), ui.field(c.req("이메일"), ui.textField({ value: "seoa.lee@hangang.co.kr", maxlength: 100 }))),
-    row(ui.field(c.req("계정 상태"), ui.select(["사용", "미사용"])), c.blank),
+    row(ui.field(c.req("계정상태"), ui.select(["사용", "미사용"])), c.blank),
   );
 
   // 계정 역할 · 권한 그룹은 패널에서도 한 줄에 나란히(2026-10-27 사용자 지정 — 전엔 패널에서 두 줄)
