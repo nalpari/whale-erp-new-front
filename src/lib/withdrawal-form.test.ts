@@ -1,7 +1,7 @@
-// node --test src/lib/withdrawal.test.ts
+// node --test src/lib/withdrawal-form.test.ts
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { withdrawFormField, withdrawWarningText } from "./withdrawal.ts";
+import { withdrawFormField, withdrawWarningText } from "./withdrawal-form.ts";
 
 test("비밀번호 불일치 메시지는 currentPassword 칸", () => {
   assert.equal(withdrawFormField(400, "현재 비밀번호가 올바르지 않습니다."), "currentPassword");
