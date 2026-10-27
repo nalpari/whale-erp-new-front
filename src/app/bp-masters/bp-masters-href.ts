@@ -27,6 +27,8 @@ const positiveInt = (v: string | undefined) => {
   const n = v && /^\d{1,9}$/.test(v) ? Number(v) : 0;
   return n >= 1 ? n : undefined;
 };
+/** api 목록 조회의 page 상한(생성 타입 설명) */
+const MAX_PAGE = 10_000_000;
 const isSearchType = (v: string | undefined): v is BpMasterSearchType => BP_MASTER_SEARCH_TYPES.some((t) => t.value === v);
 const isStatus = (v: string): v is BpMasterStatusValue => (BP_MASTER_STATUSES as readonly string[]).includes(v);
 
@@ -40,11 +42,13 @@ export function parseBpMastersQuery(params: Params): BpMastersQuery {
   const searchType = one(params.searchType);
   const pageSize = Number(one(params.pageSize));
   const verification = one(params.verification);
-  // 검색어는 50자까지 — 상호명이 가장 길다(50자)
+  // 검색어는 50자까지 — 가장 긴 칸(상호명 · 대표자명)이 50자다
   const keyword = one(params.keyword)?.trim().slice(0, 50).trim() || undefined;
   const bp = positiveInt(one(params.bp));
+  // api 쪽 번호 상한(1,000만)을 넘기면 목록 조회가 400 으로 화면 전체가 오류가 된다 — 넘는 주소는 1쪽으로 본다
+  const page = positiveInt(one(params.page));
   return {
-    page: positiveInt(one(params.page)) ?? 1,
+    page: page !== undefined && page <= MAX_PAGE ? page : 1,
     pageSize: (BP_MASTER_PAGE_SIZES as readonly number[]).includes(pageSize) ? (pageSize as BpMasterPageSize) : 20,
     searchType: isSearchType(searchType) ? searchType : "BP_CODE",
     keyword,

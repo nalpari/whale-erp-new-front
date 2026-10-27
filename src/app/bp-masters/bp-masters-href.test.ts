@@ -19,6 +19,9 @@ test("주소 값이 틀리면 기본값으로 — api 에 400 · 500 을 일으�
   assert.equal(parseBpMastersQuery({ bp: "017" }).bp, 17);
   // 같은 이름이 여럿이면(배열) 무시한다
   assert.equal(parseBpMastersQuery({ page: ["2", "3"] }).page, 1);
+  // api 쪽 번호 상한(1,000만)을 넘는 주소는 1쪽으로 — 그대로 보내면 목록 조회가 400 이다
+  assert.equal(parseBpMastersQuery({ page: "10000000" }).page, 10_000_000);
+  assert.equal(parseBpMastersQuery({ page: "10000001" }).page, 1);
 });
 
 test("상태는 정해진 순서로, 셋 다 고르면 전체(빈 목록)와 같다", () => {
