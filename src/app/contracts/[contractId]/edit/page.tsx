@@ -31,10 +31,10 @@ export default async function EditContractPage({ params, searchParams }: PagePro
       if (e.status === 403) notice = e.message;
     }
   }
-  // 재계약 임시저장(WHALEERP-156)이면 직전 계약 시작일 — 새 계약 시작일은 그 다음 날부터라 화면이 먼저 막는다. 읽지 못하면 비워 두고
-  // api 의 400 에 맡긴다
+  // 재계약(WHALEERP-156)의 임시저장 · 수정 요청이면 직전 계약 시작일 — 새 계약 시작일은 그 다음 날부터라 화면이 먼저 막는다. 읽지 못하면
+  // 비워 두고 api 의 400 에 맡긴다
   const previousStartDate =
-    detail?.status === "DRAFT" && detail.previousContractId
+    (detail?.status === "DRAFT" || detail?.status === "CORRECTION_REQUESTED") && detail.previousContractId
       ? await request<ContractDetail>(`/contracts/${detail.previousContractId}`, { headers: await authHeaders() }).then(
           (p) => p.startDate ?? undefined,
           () => undefined,
@@ -50,7 +50,18 @@ export default async function EditContractPage({ params, searchParams }: PagePro
             <Notice title={notice} back={back} />
           ) : detail.status === "CORRECTION_REQUESTED" ? (
             <ContractPermission action="update" fallback={<Notice title="근로계약서를 고칠 권한이 없습니다" contractId={contractId} back={back} />}>
-              <ContractForm stores={stores} labels={labels} signedIn contractId={contractId} initial={fromDetail(detail)} correction back={back} />
+              {/* 재계약 수정 요청도 번호 · 시작일을 임시저장 이어 쓰기와 같이 막는다(api 가 400 으로 다시 본다, api #157 리뷰) */}
+              <ContractForm
+                stores={stores}
+                labels={labels}
+                signedIn
+                contractId={contractId}
+                initial={fromDetail(detail)}
+                correction
+                previousContractId={detail.previousContractId ?? undefined}
+                previousStartDate={previousStartDate}
+                back={back}
+              />
             </ContractPermission>
           ) : detail.status !== "DRAFT" ? (
             <Notice title="임시저장 · 수정 요청 근로계약서만 고칠 수 있습니다" back={back} />
