@@ -76,7 +76,7 @@ export function AdminTable({
   const columns: Column<PlatformAdmin>[] = [
     { header: "아이디", width: "w-[130px]", cell: (a) => dim(a, a.loginId) },
     { header: "이름", width: "w-[110px]", cell: (a) => open(a, a.name ?? a.loginId) },
-    { header: "사용자 권한", width: "w-[150px]", cell: (a) => dim(a, a.roleGroup.name) },
+    { header: "권한명", width: "w-[150px]", cell: (a) => dim(a, a.roleGroup.name) },
     {
       header: "계정상태",
       width: "w-[100px]",

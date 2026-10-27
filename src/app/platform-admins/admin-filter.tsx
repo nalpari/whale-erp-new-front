@@ -49,9 +49,9 @@ export function AdminFilter({
           maxLength={20}
         />
       </FilterSection>
-      <FilterSection label="사용자 권한" tight>
+      <FilterSection label="권한명" tight>
         <Select
-          aria-label="사용자 권한"
+          aria-label="권한명"
           value={query.roleGroupId ? String(query.roleGroupId) : ""}
           onChange={(e) => apply({ roleGroupId: e.target.value ? Number(e.target.value) : undefined })}
         >

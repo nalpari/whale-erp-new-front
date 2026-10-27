@@ -41,14 +41,14 @@ const ADMINS = [
 export default ({ A, R }) => {
   const filter = ui.filterPanel(A, [
     ui.filterSection("아이디 · 이름", ui.searchField(A, { placeholder: "아이디 또는 이름 일부" }), { tight: true }),
-    ui.filterSection("사용자 권한", ui.select(["전체", "플랫폼 마스터", "플랫폼 관리자", "고객지원 담당", "정산 담당", "기준정보 조회"], { "aria-label": "사용자 권한" }), { tight: true }),
+    ui.filterSection("권한명", ui.select(["전체", "플랫폼 마스터", "플랫폼 관리자", "고객지원 담당", "정산 담당", "기준정보 조회"], { "aria-label": "권한명" }), { tight: true }),
     ui.filterSection("계정상태", ui.checkbox(A, "사용", true) + ui.checkbox(A, "미사용", true), { last: true }),
   ]);
 
   const cols = [
     { header: "아이디", width: "w-[130px]" },
     { header: "이름", width: "w-[110px]" },
-    { header: "사용자 권한", width: "w-[150px]" }, // 앱 admin-table.tsx 와 같은 폭(2026-10-26)
+    { header: "권한명", width: "w-[150px]" }, // 앱 admin-table.tsx 와 같은 폭(2026-10-26)
     { header: "계정상태", width: "w-[100px]" },
     { header: "연락처", width: "w-[150px]", align: "left" },
     { header: "이메일", width: "w-[220px]", align: "left" },
