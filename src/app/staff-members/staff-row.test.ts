@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { StaffMemberListItem } from "../../lib/staff-members.ts";
-import { canResendInvitation, contractCell, employmentStatusCells, formatPhone, invitationText, joinCell, resendsAffiliation, rowNumber, statusCells } from "./staff-row.ts";
+import { canResendInvitation, contractCell, employmentStatusCells, formatPhone, invitationText, joinCell, rowNumber, statusCells } from "./staff-row.ts";
 
 const TODAY = "2026-10-12";
 const item = (over: Partial<StaffMemberListItem> = {}): StaffMemberListItem => ({
@@ -177,11 +177,6 @@ test("재발송 — api 의 contract.canResend 하나로 정한다(WHALEERP-611 
   const old = { contractId: 1, status: "PENDING_SEND", signDeadlineAt: null, endDate: null, updatedAt: null } as unknown as StaffMemberListItem["contract"];
   assert.equal(canResendInvitation(item({ joinState: "INVITED", invitation: invitation(), contract: old })), true);
   assert.equal(canResendInvitation(item({ joinState: "INVITED", invitation: invitation({ canResend: false }), contract: old })), false);
-});
-
-test("재발송 문구 — 소속 추가 확인 · 복귀 확인 · 초대 행 없는 옛 소속 확인 계약은 소속 추가 확인 요청(WHALEERP-130)", () => {
-  for (const joinState of ["AFFILIATION_PENDING", "RETURN_PENDING", "DRAFT"] as const) assert.equal(resendsAffiliation({ joinState }), true, joinState);
-  for (const joinState of ["INVITED", "EXPIRED", "JOINED", null] as const) assert.equal(resendsAffiliation({ joinState }), false, String(joinState));
 });
 
 test("상세 초대 줄 — 유형 · 상태 · 보낸 한국 날짜, 모르는 한글은 뺀다", () => {

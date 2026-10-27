@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { redirect, unstable_rethrow } from "next/navigation.js";
-import { callSave, END_UNKNOWN, SAVE_CALL_LOST, saveOutcomeUnknown, SEND_UNKNOWN, sendFailedTarget, resendDialogCopy, sendFailureOf, sendNoticeOf, signingResendCopy } from "./send-model.ts";
+import { callSave, END_UNKNOWN, SAVE_CALL_LOST, saveOutcomeUnknown, SEND_UNKNOWN, sendFailedTarget, resendDialogCopy, inviteResendCopy, sendFailureOf, sendNoticeOf, signingResendCopy } from "./send-model.ts";
 
 test("sendFailureOf — 접수 여부 모름은 보내기를 막고 상세를 다시 읽는다", () => {
   assert.deepEqual(sendFailureOf(502, "SEND_UNCONFIRMED", "알림톡이 접수됐는지 알 수 없습니다"), {
@@ -116,16 +116,14 @@ test("근로계약 상세 재발송 확인창 — 서명 대기는 데모 문구
   const invite = resendDialogCopy("PENDING_SEND", "남도현");
   assert.equal(invite.title, "근로계약서를 다시 보내시겠습니까?");
   assert.equal(invite.body.length, 2);
-  assert.match(invite.body.join(" "), /초대 코드/);
-  assert.deepEqual(resendDialogCopy("PENDING_SEND", "남도현", "SIGNUP_INVITE"), invite);
-  // 발송 대기의 소속 추가 확인 · 복귀 확인은 소속 추가 확인 요청 문구(WHALEERP-130)
-  for (const action of ["AFFILIATION_CONFIRM", "RETURN_CONFIRM"]) {
-    const affiliation = resendDialogCopy("PENDING_SEND", "남도현", action);
-    assert.equal(affiliation.title, "소속 추가 확인 요청을 다시 보내시겠습니까?", action);
-    assert.match(affiliation.body.join(" "), /수락한 날부터/);
-  }
-  // 서명 대기는 판별과 무관하게 데모 문구
-  assert.equal(resendDialogCopy("PENDING_SIGNATURE", "권도윤", "AFFILIATION_CONFIRM").title, "계약서를 다시 보내시겠습니까?");
+  // 보낼 때 api 가 다시 판별한다 — 가입 초대 · 소속 추가 확인 요청을 함께 알린다(WHALEERP-130)
+  assert.match(invite.body.join(" "), /가입 초대 알림톡\(초대 코드\)/);
+  assert.match(invite.body.join(" "), /소속 추가 확인 요청/);
+  assert.match(invite.body[0], /^남도현 님의 /);
+  // 직원 목록 재발송도 같은 문구다
+  const { title, body } = inviteResendCopy("남도현");
+  assert.deepEqual({ title, body }, invite);
+  assert.match(inviteResendCopy(null).body[0], /^직원 휴대전화번호로/);
 });
 
 test("발송 대기 종료도 같은 규칙 — 모를 때 문장만 종료 문장이다", () => {

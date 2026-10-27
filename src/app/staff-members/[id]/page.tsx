@@ -10,7 +10,7 @@ import { MENU_CODE } from "@/lib/menus";
 import { getStaffMember, staffMemberIdOf } from "@/lib/staff-members-api";
 import { detailListHrefOf } from "../staff-list-query";
 import { ResendInvitationButton } from "../resend-invitation-button";
-import { canResendInvitation, EMPLOYMENT_TYPE_LABELS, employmentStatusCells, formatPhone, invitationText, joinCell, resendsAffiliation } from "../staff-row";
+import { canResendInvitation, EMPLOYMENT_TYPE_LABELS, employmentStatusCells, formatPhone, invitationText, joinCell } from "../staff-row";
 import { CellView } from "../staff-table";
 import { BirthDateCell } from "./birth-date-dialog";
 import { ContractBox } from "./contract-box";
@@ -138,7 +138,7 @@ export default async function StaffMemberDetailPage({
       value: (
         <span className="inline-flex items-center gap-[6px]">
           <CellView cell={joinCell(staff, today)} />
-          {staff.contract && canResendInvitation(staff) && <ResendInvitationButton contractId={staff.contract.contractId} name={staff.name} affiliation={resendsAffiliation(staff)} />}
+          {staff.contract && canResendInvitation(staff) && <ResendInvitationButton contractId={staff.contract.contractId} name={staff.name} />}
         </span>
       ),
     },

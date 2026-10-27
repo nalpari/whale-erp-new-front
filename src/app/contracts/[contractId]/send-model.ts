@@ -37,40 +37,35 @@ export function signingResendCopy(name: string | null | undefined): { title: str
   };
 }
 
-/** 발송 대기(가입 초대 알림톡)의 재발송 확인창 문구 */
-const INVITE_RESEND_COPY = {
-  title: "근로계약서를 다시 보내시겠습니까?",
-  body: [
-    "직원 휴대전화번호로 가입 초대 알림톡(초대 코드)을 다시 보냅니다. 초대 코드와 서명 기한은 보낸 날부터 30일입니다.",
-    "앞서 보낸 초대 코드는 쓸 수 없고, 서명 기한도 새로 잡힙니다.",
-  ],
-};
-
-/** 발송 대기 소속 추가 확인 · 복귀 확인의 재발송 확인창 문구(WHALEERP-130, api #164) — 직원 목록 재발송과 같은 뜻 */
-const AFFILIATION_RESEND_COPY = {
-  title: "소속 추가 확인 요청을 다시 보내시겠습니까?",
-  body: [
-    "직원 휴대전화번호와 이메일로 소속 추가 확인 요청을 다시 보냅니다. 요청은 보낸 날부터 30일 동안 유효합니다.",
-    "앞서 보낸 요청은 끝나고, 계약은 직원이 수락할 때까지 발송 대기로 남습니다. 날인 기한은 수락한 날부터 30일입니다.",
-  ],
-};
+/**
+ * 가입 전 직원의 재발송 확인창 문구(WHALEERP-611 · 130) — 근로계약 상세의 발송 대기와 직원 목록 · 상세의 재발송이 같이 쓴다.
+ * api 가 보낼 때 다시 판별해 그 번호로 가입한 계정이 없으면 가입 초대 알림톡(초대 코드, 서명 기한은 보낸 날부터 30일), 있으면
+ * 소속 추가 확인 요청(알림톡 · 메일, 계약은 발송 대기 · 날인 기한은 수락한 날부터 30일, api #164)을 보낸다. 화면이 읽은 값
+ * (가입 상태 · draftAction)은 보낼 때의 판별과 다를 수 있어(그사이 계정이 생기거나 없어짐) 둘을 함께 알린다.
+ */
+export function inviteResendCopy(name: string | null | undefined): { title: string; body: string[]; done: string } {
+  return {
+    title: "근로계약서를 다시 보내시겠습니까?",
+    body: [
+      `${name ? `${name} 님의 ` : "직원 "}휴대전화번호로 다시 보냅니다. 그 번호로 가입한 계정이 없으면 가입 초대 알림톡(초대 코드)을, 있으면 소속 추가 확인 요청(알림톡 · 메일)을 보냅니다.`,
+      "앞서 보낸 초대 코드 · 요청은 쓸 수 없습니다. 서명 기한은 가입 초대면 보낸 날부터, 소속 추가 확인이면 직원이 수락한 날부터 30일입니다.",
+    ],
+    done: "근로계약서를 다시 보냈습니다.",
+  };
+}
 
 /**
- * 근로계약 상세 재발송 확인창 문구 — 서명 대기면 signingResendCopy, 발송 대기의 소속 추가 확인 · 복귀 확인(draftAction)이면 소속 추가
- * 확인 요청 문구, 그 밖(발송 대기)은 가입 초대 문구. 서명 대기의 옛 소속 확인 계약(api #164 전 요청 없이 서명 대기)은 상세 응답에 가입
- * 여부가 없어 데모 문구를 본다. 본문은 문단마다 한 줄
+ * 근로계약 상세 재발송 확인창 문구 — 서명 대기면 signingResendCopy, 그 밖(발송 대기)은 inviteResendCopy. 상세 응답에 가입 여부가 없어
+ * 서명 대기면 가입 전이어도 데모 문구다 — 서명 대기의 옛 소속 확인 계약(api #164 전 요청 없이 서명 대기)은 api 가 발송 대기로 되돌려
+ * 소속 추가 확인 요청을 보내지만 이 문구는 날인 기한을 말한다(받아들인 한계, 상세 응답에 가입 여부가 생기면 나눈다). 본문은 문단마다 한 줄
  */
-export function resendDialogCopy(
-  status: string | null | undefined,
-  name: string | null | undefined,
-  draftAction?: string | null,
-): { title: string; body: string[] } {
+export function resendDialogCopy(status: string | null | undefined, name: string | null | undefined): { title: string; body: string[] } {
   if (status === "PENDING_SIGNATURE") {
     const { title, body } = signingResendCopy(name);
     return { title, body: [body] };
   }
-  const copy = draftAction === "AFFILIATION_CONFIRM" || draftAction === "RETURN_CONFIRM" ? AFFILIATION_RESEND_COPY : INVITE_RESEND_COPY;
-  return { title: copy.title, body: [...copy.body] };
+  const { title, body } = inviteResendCopy(name);
+  return { title, body };
 }
 
 /**

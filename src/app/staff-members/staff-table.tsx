@@ -4,7 +4,7 @@ import { Badge, DataTable, type Column } from "@/components/common";
 import type { StaffMemberListItem } from "@/lib/staff-members";
 import { ResendInvitationButton } from "./resend-invitation-button";
 import { withBack } from "./staff-list-query";
-import { canResendInvitation, contractCell, EMPLOYMENT_TYPE_LABELS, formatPhone, joinCell, resendsAffiliation, rowNumber, statusCells, type Cell } from "./staff-row";
+import { canResendInvitation, contractCell, EMPLOYMENT_TYPE_LABELS, formatPhone, joinCell, rowNumber, statusCells, type Cell } from "./staff-row";
 
 // 데모 staff-parts.mjs 의 회색 배지(quiet). 공통 Badge 에는 on · off 두 가지뿐이다.
 const NEUTRAL = "inline-block rounded-[2px] px-[4px] py-[2px] text-center text-[14px] font-medium bg-erp-subtle text-erp-ink whitespace-nowrap";
@@ -80,7 +80,7 @@ export function StaffTable({
       cell: personal((item) => (
         <span className="inline-flex items-center justify-center gap-[6px]">
           <CellView cell={joinCell(item, today)} />
-          {item.contract && canResendInvitation(item) && <ResendInvitationButton contractId={item.contract.contractId} name={item.name} affiliation={resendsAffiliation(item)} />}
+          {item.contract && canResendInvitation(item) && <ResendInvitationButton contractId={item.contract.contractId} name={item.name} />}
         </span>
       )),
     },
