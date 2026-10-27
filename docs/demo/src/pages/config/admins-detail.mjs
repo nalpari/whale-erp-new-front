@@ -34,16 +34,16 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
       // 최근 로그인은 비밀번호 아래 줄(2026-10-27 사용자 지정)
       ["최근 로그인", "2026-09-20 17:55"],
     ]),
-    // 등록 · 최종수정은 표 밖 테두리 없는 카드, 선 아래에 적용 대상(표 없이 제목 · 값만, 2026-10-27 사용자 지정)
-    c.recordValues(["2025-04-01 09:12", "정하윤"], ["2026-02-03 15:10", "정하윤"], ui.formRow(ui.readonlyField("적용 대상", "일부 점포", true))),
   ].join("");
 
   const storeTable = ui.dataTable(
     [{ header: "점포명", align: "left" }, { header: "점포코드", width: "w-[110px]" }, { header: "점포 상태", width: "w-[90px]" }],
     STORES.map(([n, code]) => [n, code, ui.badge("on", "운영")]),
   );
+  // 적용 대상은 대상 점포 제목 옆 「일부 점포 · 전체 점포」로 합치고, 등록 · 최종수정 카드는 맨 아래(앱과 같다, 2026-10-27 사용자 지정)
   const right =
-    `<div class="flex flex-col gap-[12px]">${ui.sectionHead(`대상 점포${c.sub("일부 · 4개점")}`)}${panel ? `<div class="overflow-x-auto">${storeTable}</div>` : storeTable}</div>`;
+    `<div class="flex flex-col gap-[12px]">${ui.sectionHead(`대상 점포${c.sub("일부 점포 · 4개점")}`)}${panel ? `<div class="overflow-x-auto">${storeTable}</div>` : storeTable}</div>` +
+    c.recordValues(["2025-04-01 09:12", "정하윤"], ["2026-02-03 15:10", "정하윤"]);
 
   const history = ui.dataTable(
     [

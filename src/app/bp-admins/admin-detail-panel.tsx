@@ -21,7 +21,7 @@ import { unknownResult } from "./bp-admin-parts";
 // 계정 상태 · 역할 · 권한 그룹은 이름 아랫줄에 「역할 | 권한그룹 | 상태 배지」(HeadValues)로 보인다(2026-10-27, 전엔 제목 줄 꼬리표). 가맹 관리자는 기본정보에 연결 가맹 마스터 줄을 둔다(2026-10-23).
 // [수정] · [비밀번호 초기화]는 메뉴 수정 권한과 api 가 준 actions 를 함께 본다(bp-admin-rules.ts) — 막는 것은 api 다.
 // 미사용 계정은 초기화 버튼 · 미발송 표시를 숨긴다 — 플랫폼 관리자와 같다(2026-10-27 사용자 지정). 본인 계정은 초기화 버튼을 막는다(내 정보에서 바꾼다).
-// 등록 · 최종수정과 적용 대상은 표가 아니라 권한 그룹 상세와 같은 테두리 없는 카드로 보인다. 최근 로그인은 기본정보 표의 비밀번호 아래 줄이다(2026-10-27 사용자 지정).
+// 등록 · 최종수정은 화면 맨 아래 권한 그룹 상세와 같은 테두리 없는 카드로, 적용 대상(전체 · 일부 점포)은 대상 점포 제목 옆에 보인다. 최근 로그인은 기본정보 표의 비밀번호 아래 줄이다(2026-10-27 사용자 지정).
 
 export function AdminDetailPanel({
   open,
@@ -167,7 +167,9 @@ function DetailBody({
       </div>
       {failure && <FailedBand message={failure} />}
       <DetailTable title="기본정보" rows={rows} />
-      {/* 등록 · 최종수정을 한 줄에 하나씩(2026-10-27 사용자 지정 — 전엔 기본정보 표의 등록일시 · 최종 수정일시 줄) */}
+      {/* 적용 대상은 대상 점포 제목 옆에 「전체 점포 · 일부 점포」로 합쳤다(2026-10-27 사용자 지정 — 전엔 따로 「적용 대상」 줄) */}
+      <MappedStores admin={admin} />
+      {/* 등록 · 최종수정은 화면 맨 아래, 한 줄에 하나씩(2026-10-27 사용자 지정 — 전엔 기본정보 표 바로 아래) */}
       <ReadonlyCard>
         <FormRow>
           <ReadonlyValue label="등록" value={when(admin.createdAt, admin.createdByName)} title={whenText(admin.createdAt, admin.createdByName)} bold />
@@ -180,13 +182,7 @@ function DetailBody({
             bold
           />
         </FormRow>
-        <hr className="border-erp-divider" />
-        {/* 적용 대상은 표 없이 제목 · 값만(2026-10-27 사용자 지정 — 전엔 「적용 대상」 상세 표의 적용 범위 줄) */}
-        <FormRow>
-          <ReadonlyValue label="적용 대상" value={admin.isAllStores ? "전체 점포" : "일부 점포"} bold />
-        </FormRow>
       </ReadonlyCard>
-      <MappedStores admin={admin} />
 
       {/* 맨 아래 버튼 줄은 위와 선으로 가르지 않는다(DESIGN.md 슬라이드 패널) */}
       <div className="flex flex-wrap items-center gap-[6px]">
@@ -241,7 +237,7 @@ function MappedStores({ admin }: { admin: BpAdminDetail }) {
       <h3 className="text-[15px] font-semibold text-erp-ink">
         대상 점포
         <span className="ml-[6px] text-[14px] font-normal text-erp-label">
-          {admin.isAllStores ? `전체 · 지금 ${admin.bpStoreCount.toLocaleString("ko-KR")}개점` : `일부 · ${admin.stores.length.toLocaleString("ko-KR")}개점`}
+          {admin.isAllStores ? `전체 점포 · 지금 ${admin.bpStoreCount.toLocaleString("ko-KR")}개점` : `일부 점포 · ${admin.stores.length.toLocaleString("ko-KR")}개점`}
         </span>
       </h3>
       {admin.isAllStores ? (
