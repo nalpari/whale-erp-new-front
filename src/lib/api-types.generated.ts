@@ -8018,6 +8018,8 @@ export interface components {
             storeName: string;
             /** Format: date-time */
             recordedAt: string;
+            /** @description 퇴근 등록 기한(출근한 다음 날, 한국)이 지났다 — 직원은 퇴근할 수 없고 관리자 보정으로 닫는다(퇴근 409 `CHECK_OUT_EXPIRED`) */
+            isCheckOutExpired: boolean;
         };
         TodayScheduleDto: {
             /** Format: date-time */
@@ -18702,7 +18704,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description NO_OPEN_CHECK_IN — 고른 소속에 열린 출근이 없음. 다른 소속에 있으면 openCheckIn 을 함께 */
+            /** @description NO_OPEN_CHECK_IN — 고른 소속에 열린 출근이 없음. 다른 소속에 있으면 openCheckIn 을 함께. CHECK_OUT_EXPIRED — 열린 출근이 출근한 다음 날을 지남(관리자 보정으로 닫는다) */
             409: {
                 headers: {
                     [name: string]: unknown;
