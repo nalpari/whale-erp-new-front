@@ -25,6 +25,17 @@ const address = (A, zip, base, detail) =>
 function platformAdminNewBody(A) {
   // 패널(464px)이라 두 칸 줄을 한 칸씩 세로로 쌓는다
   const row = (...cells) => cells.filter((c) => c !== BLANK).join("");
+  // 권한명 · 계정상태는 기본정보 안 이메일 다음에 둔다(앱 admin-form-panel, 2026-10-27 사용자 지정 — 전엔 따로 묶음)
+  const roleFields =
+    row(
+      ui.field(
+        req("권한명"),
+        stack(
+          ui.select([{ group: "역할 · 플랫폼 관리자", options: ["플랫폼 관리자 · PA000001", "고객지원 담당 · PA000002", "정산 담당 · PA000003", "기준정보 조회 · PA000004"] }], { "aria-label": "권한명" }),
+        ),
+      ),
+      BLANK,
+    );
   const basic = ui.formGroup(
     "기본정보",
     row(
@@ -51,6 +62,7 @@ function platformAdminNewBody(A) {
         ),
       ),
     ),
+    roleFields,
     row(
       ui.field("소속부서", stack(ui.textField({ value: "플랫폼운영팀", maxlength: 30 }))),
       ui.field("직책", stack(ui.textField({ value: "사원", maxlength: 30 }))),
@@ -58,22 +70,9 @@ function platformAdminNewBody(A) {
     address(A, "13529", "경기 성남시 분당구 판교역로 166", "7층"),
   );
 
-  const role = ui.formGroup(
-    "권한명",
-    row(
-      ui.field(
-        req("권한명"),
-        stack(
-          ui.select([{ group: "역할 · 플랫폼 관리자", options: ["플랫폼 관리자 · PA000001", "고객지원 담당 · PA000002", "정산 담당 · PA000003", "기준정보 조회 · PA000004"] }], { "aria-label": "권한명" }),
-        ),
-      ),
-      BLANK,
-    ),
-  );
-
   // 저장하면 등록 패널을 닫고 상세 패널을 연다
   const buttons = `<div class="flex justify-center gap-[6px]">${ui.button("취소", { variant: "off", "data-close": true })}${ui.button("저장", { "data-save-panel": "platform-admin-detail-panel" })}</div>`;
-  return basic + role + note("관리자 계정의 초기 비밀번호는 등록된 이메일로 발송됩니다.") + buttons;
+  return basic + note("관리자 계정의 초기 비밀번호는 등록된 이메일로 발송됩니다.") + buttons;
 }
 
 export const platformAdminNewPanel = (A, R) =>

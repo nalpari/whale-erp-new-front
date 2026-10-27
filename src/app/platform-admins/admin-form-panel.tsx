@@ -379,30 +379,7 @@ export function AdminFormPanel(props: Props) {
           </Field>
           <EmailFormatValid id={messageId("email")} valid={emailValid} message={errors.email} />
         </div>
-        <div className="flex flex-col gap-[8px]">
-          <Field label="소속부서">
-            <TextField value={form.department} onChange={(e) => set("department", e.target.value)} maxLength={30} aria-invalid={invalid("department")} aria-describedby={describe("department")} />
-          </Field>
-          {message("department")}
-        </div>
-        <div className="flex flex-col gap-[8px]">
-          <Field label="직책">
-            <TextField value={form.jobTitle} onChange={(e) => set("jobTitle", e.target.value)} maxLength={30} aria-invalid={invalid("jobTitle")} aria-describedby={describe("jobTitle")} />
-          </Field>
-          {message("jobTitle")}
-        </div>
-        <AddressField
-          key={openCount}
-          value={{ zipCode: form.zipCode, address: form.address, addressDetail: form.addressDetail }}
-          onChange={(a) => {
-            setForm((f) => ({ ...f, ...a }));
-            clearError("addressDetail");
-          }}
-          detailError={errors.addressDetail}
-        />
-      </FormGroup>
-
-      <FormGroup title={mode === "create" ? "권한명" : "권한명 · 계정상태"}>
+        {/* 권한명 · 계정상태는 기본정보 안 이메일 다음에 둔다(2026-10-27 사용자 지정 — 전엔 따로 묶음) */}
         {/* 본인 계정은 이 칸들을 고칠 수 없어 비활성 처리한다 — 흰 바탕과 구별되게 막힌 칸만 회색으로 그린다
             (공통 입력칸 토큰은 그대로 두고 이 화면 테두리에서만 셈한다, contract-form.tsx 와 같은 방식). */}
         <div className="flex flex-col gap-[12px] [&_select:disabled]:bg-erp-thead-bg">
@@ -445,8 +422,29 @@ export function AdminFormPanel(props: Props) {
             </Field>
           )}
         </div>
-        {isSelf && <Note>본인 계정의 권한 및 상태는 변경할 수 없으며, 기본정보만 수정할 수 있습니다.</Note>}
+        <div className="flex flex-col gap-[8px]">
+          <Field label="소속부서">
+            <TextField value={form.department} onChange={(e) => set("department", e.target.value)} maxLength={30} aria-invalid={invalid("department")} aria-describedby={describe("department")} />
+          </Field>
+          {message("department")}
+        </div>
+        <div className="flex flex-col gap-[8px]">
+          <Field label="직책">
+            <TextField value={form.jobTitle} onChange={(e) => set("jobTitle", e.target.value)} maxLength={30} aria-invalid={invalid("jobTitle")} aria-describedby={describe("jobTitle")} />
+          </Field>
+          {message("jobTitle")}
+        </div>
+        <AddressField
+          key={openCount}
+          value={{ zipCode: form.zipCode, address: form.address, addressDetail: form.addressDetail }}
+          onChange={(a) => {
+            setForm((f) => ({ ...f, ...a }));
+            clearError("addressDetail");
+          }}
+          detailError={errors.addressDetail}
+        />
       </FormGroup>
+      {isSelf && <Note>본인 계정의 권한 및 상태는 변경할 수 없으며, 이름 · 연락처 등 나머지 칸만 수정할 수 있습니다.</Note>}
 
       {mode === "create" && <Note>관리자 계정의 초기 비밀번호는 등록된 이메일로 발송됩니다.</Note>}
       {mode === "edit" && form.accountStatus === "INACTIVE" && props.admin.accountStatus === "ACTIVE" && (

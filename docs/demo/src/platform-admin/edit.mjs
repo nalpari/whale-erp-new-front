@@ -26,6 +26,20 @@ function platformAdminEditBody(A) {
   const row = (...cells) => cells.join("");
 
   // 아이디는 고칠 수 없고 패널 제목 줄에 이미 보이므로(sub) 칸을 다시 두지 않는다(2026-10-20 디자인 수정).
+  // 권한명 · 계정상태는 기본정보 안 이메일 다음에 둔다(앱 admin-form-panel, 2026-10-27 사용자 지정 — 전엔 따로 묶음)
+  const roleFields =
+    row(
+      ui.field(
+        req("권한명"),
+        stack(
+          ui.select([{ group: "역할 · 플랫폼 마스터", options: ["플랫폼 마스터 · PM000001"] }, { group: "역할 · 플랫폼 관리자", options: ["플랫폼 관리자 · PA000001", "고객지원 담당 · PA000002", "정산 담당 · PA000003", "기준정보 조회 · PA000004"] }], {
+            value: "고객지원 담당 · PA000002",
+            "aria-label": "권한명",
+          }),
+        ),
+      ),
+      ui.field(req("계정상태"), ui.select(["사용", "미사용"], { "aria-label": "계정상태" })),
+    );
   const basic = ui.formGroup(
     "기본정보",
     ui.field(req("이름"), ui.textField({ value: "박지우", maxlength: 20, placeholder: "한글 또는 영문 2~20자" })),
@@ -41,6 +55,7 @@ function platformAdminEditBody(A) {
         ),
       ),
     ),
+    roleFields,
     row(
       ui.field("소속부서", ui.textField({ value: "고객지원팀", maxlength: 30 })),
       ui.field("직책", ui.textField({ value: "매니저", maxlength: 30 })),
@@ -48,25 +63,9 @@ function platformAdminEditBody(A) {
     address(A, "06236", "서울 강남구 테헤란로 152", "12층"),
   );
 
-  const role = ui.formGroup(
-    "권한명 · 계정상태",
-    row(
-      ui.field(
-        "권한명",
-        stack(
-          ui.select([{ group: "역할 · 플랫폼 마스터", options: ["플랫폼 마스터 · PM000001"] }, { group: "역할 · 플랫폼 관리자", options: ["플랫폼 관리자 · PA000001", "고객지원 담당 · PA000002", "정산 담당 · PA000003", "기준정보 조회 · PA000004"] }], {
-            value: "고객지원 담당 · PA000002",
-            "aria-label": "권한명",
-          }),
-        ),
-      ),
-      ui.field(req("계정상태"), ui.select(["사용", "미사용"], { "aria-label": "계정상태" })),
-    ),
-  );
-
   // 저장하면 수정 패널을 닫아 아래 상세 패널을 보인다
   const buttons = `<div class="flex justify-center gap-[6px]">${ui.button("취소", { variant: "off", "data-close": true })}${ui.button("저장", { "data-save-panel": "platform-admin-detail-panel" })}</div>`;
-  return basic + role + buttons;
+  return basic + buttons;
 }
 
 export const platformAdminEditPanel = (A, R) =>
