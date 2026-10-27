@@ -35,7 +35,7 @@ export function adminEditBody(A, R, { panel = false } = {}) {
   );
 
   const stores = ui.formGroup(
-    "대상 점포",
+    "대상점포",
     row(ui.field("범위", ui.select(["전체 점포", "일부 점포"], { value: "일부 점포", "data-spick-scope": true })), c.blank),
     c.storePicker(A, {
       clearLabel: "전체 제거",

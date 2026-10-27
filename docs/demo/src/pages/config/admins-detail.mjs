@@ -40,9 +40,9 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
     [{ header: "점포명", align: "left" }, { header: "점포코드", width: "w-[110px]" }, { header: "점포 상태", width: "w-[90px]" }],
     STORES.map(([n, code]) => [n, code, ui.badge("on", "운영")]),
   );
-  // 적용 대상은 대상 점포 제목 옆 「일부 점포 · 전체 점포」로 합치고, 등록 · 최종수정 카드는 맨 아래(앱과 같다, 2026-10-27 사용자 지정)
+  // 대상점포는 기본정보처럼 회색 제목 바 아래 표(제목 옆 「일부 점포 · 전체 점포」 — 적용 대상을 합쳤다), 등록 · 최종수정 카드는 맨 아래(앱과 같다, 2026-10-27 사용자 지정)
   const right =
-    `<div class="flex flex-col gap-[12px]">${ui.sectionHead(`대상 점포${c.sub("일부 점포 · 4개점")}`)}${panel ? `<div class="overflow-x-auto">${storeTable}</div>` : storeTable}</div>` +
+    `<section class="flex flex-col"><h3 class="flex h-[42px] items-center gap-[10px] rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">대상점포<span class="text-[14px] font-normal text-erp-label">일부 점포 · 4개점</span></h3>${storeTable}</section>` +
     c.recordValues(["2025-04-01 09:12", "정하윤"], ["2026-02-03 15:10", "정하윤"]);
 
   const history = ui.dataTable(

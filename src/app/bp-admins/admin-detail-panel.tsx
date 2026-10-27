@@ -21,7 +21,7 @@ import { unknownResult } from "./bp-admin-parts";
 // 계정 상태 · 역할 · 권한 그룹은 이름 아랫줄에 「역할 | 권한그룹 | 상태 배지」(HeadValues)로 보인다(2026-10-27, 전엔 제목 줄 꼬리표). 가맹 관리자는 기본정보에 연결 가맹 마스터 줄을 둔다(2026-10-23).
 // [수정] · [비밀번호 초기화]는 메뉴 수정 권한과 api 가 준 actions 를 함께 본다(bp-admin-rules.ts) — 막는 것은 api 다.
 // 미사용 계정은 초기화 버튼 · 미발송 표시를 숨긴다 — 플랫폼 관리자와 같다(2026-10-27 사용자 지정). 본인 계정은 초기화 버튼을 막는다(내 정보에서 바꾼다).
-// 등록 · 최종수정은 화면 맨 아래 권한 그룹 상세와 같은 테두리 없는 카드로, 적용 대상(전체 · 일부 점포)은 대상 점포 제목 옆에 보인다. 최근 로그인은 기본정보 표의 비밀번호 아래 줄이다(2026-10-27 사용자 지정).
+// 등록 · 최종수정은 화면 맨 아래 권한 그룹 상세와 같은 테두리 없는 카드로, 적용 대상(전체 · 일부 점포)은 대상점포 제목 바 옆에 보인다. 최근 로그인은 기본정보 표의 비밀번호 아래 줄이다(2026-10-27 사용자 지정).
 
 export function AdminDetailPanel({
   open,
@@ -167,7 +167,7 @@ function DetailBody({
       </div>
       {failure && <FailedBand message={failure} />}
       <DetailTable title="기본정보" rows={rows} />
-      {/* 적용 대상은 대상 점포 제목 옆에 「전체 점포 · 일부 점포」로 합쳤다(2026-10-27 사용자 지정 — 전엔 따로 「적용 대상」 줄) */}
+      {/* 적용 대상은 대상점포 제목 바 옆에 「전체 점포 · 일부 점포」로 합쳤다(2026-10-27 사용자 지정 — 전엔 따로 「적용 대상」 줄) */}
       <MappedStores admin={admin} />
       {/* 등록 · 최종수정은 화면 맨 아래, 한 줄에 하나씩(2026-10-27 사용자 지정 — 전엔 기본정보 표 바로 아래) */}
       <ReadonlyCard>
@@ -225,28 +225,32 @@ function DetailBody({
   );
 }
 
-/** 대상 점포 — 전체 점포면 목록으로 펼치지 않고 한 줄로 보인다(2026-09-29). */
+/** 대상점포 — 전체 점포면 목록으로 펼치지 않고 안내 한 줄로 보인다(2026-09-29). */
 function MappedStores({ admin }: { admin: BpAdminDetail }) {
   const columns = [
     { header: "점포명", align: "left" as const, cell: (s: BpAdminStore) => s.name },
     { header: "점포코드", width: "w-[110px]" as const, cell: (s: BpAdminStore) => s.storeCode },
     { header: "점포 상태", width: "w-[90px]" as const, cell: (s: BpAdminStore) => <StoreStatusBadge status={s.storeStatusCode as StoreStatus} /> },
   ];
+  const many = admin.stores.length > 5;
+  const table = <DataTable scroll={many} columns={columns} rows={admin.stores} rowKey={(s) => s.storeId} empty="매핑된 점포가 없습니다." />;
   return (
-    <section className="flex flex-col gap-[12px]">
-      <h3 className="text-[15px] font-semibold text-erp-ink">
-        대상 점포
-        <span className="ml-[6px] text-[14px] font-normal text-erp-label">
+    // 기본정보처럼 회색 제목 바(42px · 15px 600 — DetailTable 제목과 같다) 아래에 표를 붙인다(2026-10-27 사용자 지정 — 전엔 글자 제목 아래 따로 선 표).
+    // 제목 바는 아래 선을 두지 않는다 — 표 머리 줄(또는 안내 칸)의 위 선이 그 자리를 맡아 선이 두 겹이 되지 않게 한다
+    <section className="flex flex-col">
+      <h3 className="flex h-[42px] items-center gap-[10px] rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">
+        대상점포
+        <span className="text-[14px] font-normal text-erp-label">
           {admin.isAllStores ? `전체 점포 · 지금 ${admin.bpStoreCount.toLocaleString("ko-KR")}개점` : `일부 점포 · ${admin.stores.length.toLocaleString("ko-KR")}개점`}
         </span>
       </h3>
       {admin.isAllStores ? (
-        <p className="text-[14px] text-erp-label">소속 BP 의 모든 점포를 관리합니다. 새로 등록하는 점포도 함께 관리합니다.</p>
+        <p className="rounded-b-[2px] border border-erp-thead-line px-[16px] py-[14px] text-[14px] text-erp-label">소속 BP 의 모든 점포를 관리합니다. 새로 등록하는 점포도 함께 관리합니다.</p>
+      ) : many ? (
+        // 여섯 개부터는 높이를 머리 42 + 줄 46 × 5 + 선으로 묶고 열 이름 줄은 고정한 채 점포 줄만 스크롤한다(권한 그룹 삭제 확인창과 같다, 2026-10-27)
+        <div className="flex h-[274px] flex-col">{table}</div>
       ) : (
-        // 5개까지 보이고 그 뒤로는 이 안에서 세로로 스크롤한다 — 머리 42 + 줄 46 × 5 + 선(2026-10-26 사용자 요청)
-        <div className="max-h-[274px] overflow-y-auto overscroll-contain">
-          <DataTable columns={columns} rows={admin.stores} rowKey={(s) => s.storeId} empty="매핑된 점포가 없습니다." />
-        </div>
+        table
       )}
     </section>
   );

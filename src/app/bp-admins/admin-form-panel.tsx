@@ -427,7 +427,8 @@ export function AdminFormPanel(props: Props) {
           </FormRow>
         </FormGroup>
 
-        <FormGroup title="대상 점포">
+        {/* 상세와 같은 「대상점포」(2026-10-27 사용자 지정) */}
+        <FormGroup title="대상점포">
           <Field label="범위" required={!locks.scope}>
             <Select
               value={form.isAllStores ? "ALL" : "PART"}
