@@ -16,7 +16,8 @@ export type BpAdminsQuery = {
   pageSize: BpAdminPageSize;
   keyword?: string;
   roleGroupId?: number;
-  accountStatus?: BpAdminStatus;
+  /** 하나만 고른 때 그 상태, 둘 다 끄면 NONE(결과 없음 — api 를 부르지 않고 빈 목록, 플랫폼 관리자와 같다, 2026-10-27 사용자 지정). 둘 다 고르면 두지 않는다(전체). */
+  accountStatus?: BpAdminStatus | "NONE";
   storeIds: number[];
   storesCleared: boolean;
   scope: Scope | null;
@@ -47,7 +48,7 @@ export function parseBpAdminsQuery(params: Params): BpAdminsQuery {
     // api 는 20자까지 받는다. 넘는 검색어는 400 이 되므로 잘라 둔다.
     keyword: one(params.keyword)?.trim().slice(0, 20).trim() || undefined,
     roleGroupId: positiveInt(one(params.roleGroupId)),
-    accountStatus: status === "ACTIVE" || status === "INACTIVE" ? status : undefined,
+    accountStatus: status === "ACTIVE" || status === "INACTIVE" || status === "NONE" ? status : undefined,
     storeIds,
     // 빈 storeIds 는 목록에서 비운 「전체」다 — 헤더 범위가 아니다. 고른 점포가 있으면 범위는 쓰지 않는다
     storesCleared: rawStoreIds !== undefined && !storeIds.length,
@@ -76,7 +77,9 @@ export function bpAdminsHref(query: Partial<BpAdminsQuery>): string {
 
 /** api 조회 조건 — 고른 점포는 storeIds, 헤더 범위가 직영 · 가맹 전체면 점포를 풀지 않고 storeTypeCode 로 보낸다(점포 목록과 같다). */
 export function bpAdminListQueryOf(query: BpAdminsQuery): BpAdminListQuery {
-  const { page, pageSize, keyword, roleGroupId, accountStatus } = query;
+  const { page, pageSize, keyword, roleGroupId } = query;
+  // NONE 이면 화면이 api 를 부르지 않는다(page.tsx). 혹시 불려도 상태 조건 없이 보내지 않게 막을 값이 없어 그대로 뺀다
+  const accountStatus = query.accountStatus === "NONE" ? undefined : query.accountStatus;
   const scopeType = !query.storeIds.length && (query.scope?.type === "DIRECT" || query.scope?.type === "FRANCHISE") ? query.scope.type : undefined;
   return { page, pageSize, keyword, roleGroupId, accountStatus, storeIds: pickedIdsOf(query), storeTypeCode: scopeType };
 }

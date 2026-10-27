@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useEffectEvent, useState } from "react";
-import { FilterPanel, FilterSection, SearchField, Select, useToast } from "@/components/common";
+import { Checkbox, FilterPanel, FilterSection, SearchField, Select, useToast } from "@/components/common";
 import { useScope, useStores } from "@/components/site/session-gate";
 import { StorePicker, type PickedStore } from "@/components/site/store-picker";
 import type { Scope } from "@/lib/browser-storage";
@@ -11,8 +11,8 @@ import { fillScopeOf } from "@/app/stores/stores-query";
 import { keepingPanel, parseBpAdminsQuery, withBpAdminFilter, withPickedStores, withScopeCondition, type BpAdminsQuery } from "./bp-admins-href";
 
 /**
- * 왼쪽 필터(데모 config/admins). 점포 · 아이디 · 이름 · 권한 그룹 · 계정 상태, 조건은 모두 AND 다(S-AJHXFU).
- * 점포는 고르는 즉시, 아이디 · 이름은 Enter · 돋보기에 걸고, 권한 그룹 · 계정 상태는 고르는 즉시 건다.
+ * 왼쪽 필터(데모 config/admins). 점포 · 아이디 · 이름 · 권한명 · 계정상태, 조건은 모두 AND 다(S-AJHXFU).
+ * 점포는 고르는 즉시, 아이디 · 이름은 Enter · 돋보기에 걸고, 권한명 · 계정상태는 고르는 즉시 건다.
  * 점포 칸은 점포 목록 필터와 같다 — 목록에서 고른 점포(storeIds), 없으면 헤더가 실어 온 범위(scope)를 칩으로 그리고, 점포 조건이 주소에
  * 없으면(주소 직접 입력 · 즐겨찾기) 헤더 범위로 채워 다시 검색한다(stores/store-filter.tsx). 고른 점포를 관리하는 계정을 찾고,
  * 전체 점포 계정은 늘 결과에 나온다(api). 칩 이름은 로그인 정보의 점포에서 찾는다 — 찾지 못한 점포는 조건에서 빼고 알린다.
@@ -87,6 +87,13 @@ export function AdminFilter({
     setKeyword(query.keyword ?? "");
   }
 
+  // 하나만 고르면 그 상태, 둘 다 고르면 전체, 둘 다 끄면 결과 없음(NONE) — 플랫폼 관리자 필터와 같다(2026-10-27 사용자 지정)
+  const shows = (s: BpAdminStatus) => query.accountStatus !== "NONE" && (!query.accountStatus || query.accountStatus === s);
+  const toggleStatus = (s: BpAdminStatus, checked: boolean) => {
+    const next = (["ACTIVE", "INACTIVE"] as const).filter((x) => (x === s ? checked : shows(x)));
+    navigate(withBpAdminFilter(query, { accountStatus: next.length === 0 ? "NONE" : next.length === 1 ? next[0] : undefined }));
+  };
+
   return (
     <FilterPanel
       onReset={() => {
@@ -115,14 +122,15 @@ export function AdminFilter({
           value={keyword}
           onValueChange={setKeyword}
           onSearch={(v) => navigate(withBpAdminFilter(query, { keyword: v.trim().slice(0, 20).trim() || undefined }))}
-          placeholder="아이디 또는 이름 일부를 입력하세요"
+          placeholder="아이디 또는 이름 일부"
           aria-label="아이디 · 이름"
           maxLength={20}
         />
       </FilterSection>
-      <FilterSection label="권한 그룹" tight>
+      {/* 라벨은 목록 열 · 상세 머리와 같은 「권한명」(2026-10-27 사용자 지정 — 전엔 「권한 그룹」) */}
+      <FilterSection label="권한명" tight>
         <Select
-          aria-label="권한 그룹"
+          aria-label="권한명"
           value={query.roleGroupId ? String(query.roleGroupId) : ""}
           onChange={(e) => navigate(withBpAdminFilter(query, { roleGroupId: e.target.value ? Number(e.target.value) : undefined }))}
           disabled={roleGroups === null}
@@ -131,7 +139,7 @@ export function AdminFilter({
           <option value="">{roleGroups === null ? "불러오지 못함" : "전체"}</option>
           {/* 주소의 권한 그룹이 선택지에 없어도(받지 못함 · 고를 수 없는 그룹) 걸린 조건을 「전체」로 숨기지 않는다 */}
           {query.roleGroupId && !roleGroups?.some((r) => r.roleGroupId === query.roleGroupId) && (
-            <option value={query.roleGroupId}>선택한 권한 그룹(#{query.roleGroupId})</option>
+            <option value={query.roleGroupId}>선택한 권한명(#{query.roleGroupId})</option>
           )}
           {roleGroups?.map((r) => (
             <option key={r.roleGroupId} value={r.roleGroupId}>
@@ -140,16 +148,10 @@ export function AdminFilter({
           ))}
         </Select>
       </FilterSection>
-      <FilterSection label="계정 상태" tight last>
-        <Select
-          aria-label="계정 상태"
-          value={query.accountStatus ?? ""}
-          onChange={(e) => navigate(withBpAdminFilter(query, { accountStatus: (e.target.value || undefined) as BpAdminStatus | undefined }))}
-        >
-          <option value="">전체</option>
-          <option value="ACTIVE">사용</option>
-          <option value="INACTIVE">미사용</option>
-        </Select>
+      {/* 체크박스 둘, 처음엔 모두 켠다(플랫폼 관리자와 같다, 2026-10-27 사용자 지정 — 전엔 선택 상자) */}
+      <FilterSection label="계정상태" last>
+        <Checkbox label="사용" checked={shows("ACTIVE")} onChange={(e) => toggleStatus("ACTIVE", e.target.checked)} />
+        <Checkbox label="미사용" checked={shows("INACTIVE")} onChange={(e) => toggleStatus("INACTIVE", e.target.checked)} />
       </FilterSection>
     </FilterPanel>
   );

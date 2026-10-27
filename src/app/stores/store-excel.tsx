@@ -25,8 +25,11 @@ const ExcelContext = createContext<ExcelState | null>(null);
 
 const FAILED = "엑셀 파일을 만들지 못했습니다. 잠시 후 다시 시도해 주세요.";
 
-/** 목록 영역을 감싼다. 안의 StoreExcelNotice · StoreExcelButton 이 같은 상태를 본다 */
-export function StoreExcelProvider({ children }: { children: ReactNode }) {
+/**
+ * 목록 영역을 감싼다. 안의 StoreExcelNotice · StoreExcelButton 이 같은 상태를 본다.
+ * BP 마스터 계정 목록도 같은 방식이라 파일 이름만 바꿔 쓴다(fileName — 응답에 이름이 없을 때).
+ */
+export function StoreExcelProvider({ children, fileName = "점포목록.xlsx" }: { children: ReactNode; fileName?: string }) {
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
   const [notice, setNotice] = useState<Notice | null>(null);
   const [noticeFor, setNoticeFor] = useState("");
@@ -80,7 +83,7 @@ export function StoreExcelProvider({ children }: { children: ReactNode }) {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = fileNameOfDisposition(response.headers.get("Content-Disposition"), "점포목록.xlsx");
+      link.download = fileNameOfDisposition(response.headers.get("Content-Disposition"), fileName);
       document.body.append(link);
       link.click();
       link.remove();
@@ -111,7 +114,7 @@ export function StoreExcelNotice({ href }: { href: string }) {
 }
 
 /** [엑셀 다운로드] — 받는 동안 「파일 만드는 중 · N%」로 바뀌고 잠긴다. 0건이면 막는다 */
-export function StoreExcelButton({ href, empty }: { href: string; empty: boolean }) {
+export function StoreExcelButton({ href, empty, emptyTitle = "받을 점포가 없습니다" }: { href: string; empty: boolean; emptyTitle?: string }) {
   const { phase, download } = useExcel();
   const busy = phase.kind !== "idle";
   const label =
@@ -121,7 +124,7 @@ export function StoreExcelButton({ href, empty }: { href: string; empty: boolean
         ? `파일 만드는 중 · ${phase.percent}%`
         : "파일 만드는 중";
   return (
-    <Button variant="soft" onClick={() => download(href)} disabled={busy || empty} aria-busy={busy || undefined} title={empty ? "받을 점포가 없습니다" : undefined}>
+    <Button variant="soft" onClick={() => download(href)} disabled={busy || empty} aria-busy={busy || undefined} title={empty ? emptyTitle : undefined}>
       {label}
     </Button>
   );

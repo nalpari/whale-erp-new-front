@@ -3,12 +3,13 @@
 import { DetailTable, FormRow, ReadonlyCard, ReadonlyValue, Tag, type DetailRow } from "@/components/common";
 import { RoleDeleteDialog } from "@/components/role-groups/role-delete-dialog";
 import { RoleForm } from "@/components/role-groups/role-form";
-import { actorOf, CARD, FailedBand, InfoBand, reasonLabel } from "@/components/role-groups/role-parts";
+import { actorOf, CARD, FailedBand, reasonLabel, WarnBand } from "@/components/role-groups/role-parts";
 import { CodeLabel } from "@/components/site/code-label";
+import { HeadValues } from "@/components/site/head-values";
 import { usePagePermission } from "@/components/site/session-gate";
 import type { BpRoleGroupDetail, BpRoleType } from "@/lib/bp-role-groups";
 import type { EnumValue } from "@/lib/enums";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, wasUpdated } from "@/lib/format";
 import { useBpActions, type BpRoleDetailState } from "./bp-actions";
 
 // 오른쪽 고정 칸(S-LYKAEI 상세 · 데모 config/roles) — 고른 그룹 없음 · 수정 · 상세(고칠 수 없는 그룹) · 등록 네 상태.
@@ -122,7 +123,12 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
           <ReadonlyValue label="등록" value={when(role.createdAt, role.createdBy)} title={whenText(role.createdAt, role.createdBy)} bold />
         </FormRow>
         <FormRow>
-          <ReadonlyValue label="최종수정" value={when(role.updatedAt, role.updatedBy)} title={whenText(role.updatedAt, role.updatedBy)} bold />
+          {/* 등록만 하고 고친 적 없으면 「-」(2026-10-27 사용자 요청) */}
+          {wasUpdated(role.createdAt, role.updatedAt) ? (
+            <ReadonlyValue label="최종수정" value={when(role.updatedAt, role.updatedBy)} title={whenText(role.updatedAt, role.updatedBy)} bold />
+          ) : (
+            <ReadonlyValue label="최종수정" value={<span className="font-normal text-erp-muted">-</span>} bold />
+          )}
         </FormRow>
       </ReadonlyCard>
     </div>
@@ -131,13 +137,24 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
     <h2 className="flex min-h-[34px] flex-wrap content-end items-center gap-[6px] text-[18px] font-semibold text-erp-ink">
       <span className="mr-[4px]">권한 그룹 상세</span>
       {/* 띠 「권한유형 · {유형}」(유형만 굵게) → 코드 순 — 목록 「권한유형 · 코드」와 같은 순서(2026-10-26 사용자 지정). Tag 는 className 을 받지 않아 안쪽 span 으로 굵힌다 */}
-      <Tag>
-        <span className="font-normal">권한유형 ·</span>{" "}
-        <span className="font-semibold">
-          <CodeLabel group="ROLE_TYPE" value={role.roleTypeCode} />
-        </span>
-      </Tag>
-      <span className="text-[14px] font-normal text-erp-label">{role.roleCode}</span>
+      {/* 띠지 뒤에 「| 권한코드 값」 — 권한코드는 띠지가 아니라 글자(라벨 회색 · 값 굵게, 공통코드 상세 코드 머리와 같은 구분선, 2026-10-27 사용자 지정) */}
+      <span className="text-[14px] font-normal">
+        <HeadValues
+          items={[
+            {
+              value: (
+                <Tag>
+                  <span className="font-normal">권한유형 ·</span>{" "}
+                  <span className="font-semibold">
+                    <CodeLabel group="ROLE_TYPE" value={role.roleTypeCode} />
+                  </span>
+                </Tag>
+              ),
+            },
+            { label: "권한코드", value: role.roleCode },
+          ]}
+        />
+      </span>
     </h2>
   );
   // 지울 수 없는 그룹(역할 · 본인 연결)은 버튼을 숨긴다. 막힌 이유는 수정 권한이 있으면 위 띠(editBlockedReason, 같은 값)로 보인다.
@@ -158,14 +175,15 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
         {/* 조회 권한만 있으면 이유 띠 없이 상세로만 보인다 */}
         {/* 본인 연결(SELF_LINKED)은 api 이유 문구(「본인이 연결된 권한」) 대신 문장으로 풀어 쓴다(2026-10-26 사용자 지정).
             가맹 마스터가 아닌 사람이 보는 가맹 관리자 그룹(NO_PERMISSION · FA)도 문장으로(2026-10-27 사용자 지정) */}
+        {/* 막힌 이유는 빨간 안내 상자(WarnBand — 2026-10-27 사용자 지정, 전엔 회색 띠) */}
         {can.update && role.editBlockedReason && (
-          <InfoBand>
+          <WarnBand>
             {role.editBlockedReason === "SELF_LINKED"
               ? "본인 계정에 연결된 권한그룹은 수정할 수 없습니다."
               : role.editBlockedReason === "NO_PERMISSION" && role.roleTypeCode === "FA"
                 ? "본인 계정은 가맹관리자 권한 그룹을 수정할 수 없습니다."
                 : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한 그룹입니다")}
-          </InfoBand>
+          </WarnBand>
         )}
         {rows.length > 0 && <DetailTable rows={rows} />}
         {record}

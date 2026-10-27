@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { PayslipReviewReason } from "../../lib/payslips.ts";
-import { attendanceCell, earningHelp, periodText, reviewBand, sentDateText } from "./payslip-row.ts";
+import { attendanceCell, attendanceHref, earningHelp, periodText, reviewBand, sentDateText } from "./payslip-row.ts";
 
 test("목록 칸 — 급여 기간, 출퇴근 확인 전은 「누락」 · 확인은 「확인」 · 가린 줄은 null", () => {
   assert.equal(periodText({ periodStartDate: "2026-09-01", periodEndDate: "2026-09-30" }), "2026-09-01 ~ 2026-09-30");
@@ -29,8 +29,9 @@ test("지급 도움말 — 계산값, 고친 값, 직접 입력, 비과세", () 
   assert.equal(earningHelp({ ...item, itemCode: "MEAL_ALLOWANCE", isTaxFree: true, calculatedAmount: null }, true), "비과세");
 });
 
-test("가산을 끄면 연장수당은 계산하지 않고 야간 · 휴일근무수당은 가산 대상 아님", () => {
-  assert.equal(earningHelp(item, false), "가산 미적용이라 연장수당을 계산하지 않는다");
+test("가산을 끄면 연장수당은 1배로 계산하고 야간 · 휴일근무수당은 가산 대상 아님", () => {
+  assert.equal(earningHelp(item, false), "가산 미적용 · 1배로 계산 · 계산값");
+  assert.equal(earningHelp({ ...item, adjustedAmount: 128_000 }, false), "가산 미적용 · 1배로 계산 · 계산값 96,000 을 128,000 으로 고침");
   assert.equal(earningHelp({ ...item, itemCode: "NIGHT_WORK_PAY", calculatedAmount: null }, false), "가산 대상 아님 · 넣어도 가산하지 않는다");
   assert.equal(earningHelp({ ...item, itemCode: "HOLIDAY_WORK_PAY", calculatedAmount: null }, false), "가산 대상 아님 · 넣어도 가산하지 않는다");
 });
@@ -63,4 +64,11 @@ test("경고 띠 — 다른 사유는 사유 한글로, 상세가 없으면 한�
     title: "기간 중 계약 변경 사유로 검토 대기로 분류되었습니다",
     desc: "기간 중 계약 변경. 확인한 뒤에는 경고가 있어도 확정할 수 있습니다.",
   });
+});
+
+test("출퇴근 보정 · 기록 보기 — 출·퇴근 현황 조회를 점포 · 직원 레코드 · 급여 기간으로, 퇴직자도 보이게 재직 상태 전체", () => {
+  assert.equal(
+    attendanceHref({ storeId: 5, staffMemberId: 30, staffName: "서 지안", periodStartDate: "2026-09-01", periodEndDate: "2026-09-30" }),
+    "/attendance-records?storeIds=5&staff=%EC%84%9C+%EC%A7%80%EC%95%88&staffMemberId=30&employment=ALL&fixFrom=2026-09-01&fixTo=2026-09-30",
+  );
 });

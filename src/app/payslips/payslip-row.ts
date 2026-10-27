@@ -34,16 +34,33 @@ export const sentDateText = (item: Pick<PayslipListItem, "lastSentAt">) => sentT
 
 /** 지급 칸 아래 도움말. 데모 payrolls-detail 의 help 글자와 같다. */
 export function earningHelp(item: Pick<PayslipItem, "itemCode" | "isTaxFree" | "calculatedAmount" | "adjustedAmount">, isPremiumApplied: boolean): string {
-  // 가산을 끄면 연장수당을 계산하지 않고, 관리자가 넣는 야간 · 휴일근무수당은 가산 대상이 아니다(PAY-05).
-  if (!isPremiumApplied && item.itemCode === "OVERTIME_PAY") return "가산 미적용이라 연장수당을 계산하지 않는다";
+  // 가산을 끄면 연장수당을 가산 없이 1배로 계산하고, 관리자가 넣는 야간 · 휴일근무수당은 가산 대상이 아니다(PAY-05, 2026-10-26 재영).
   if (!isPremiumApplied && (item.itemCode === "NIGHT_WORK_PAY" || item.itemCode === "HOLIDAY_WORK_PAY"))
     return "가산 대상 아님 · 넣어도 가산하지 않는다";
   if (item.isTaxFree) return "비과세";
   if (item.calculatedAmount === null) return "직접 입력";
   // 계산값을 고쳤으면 계산값을 함께 보인다(okf/staff.md 급여). 계산 근거 글자(데모 「8.0h × 1.5배」)는 api 에 칸이 없다.
-  return item.adjustedAmount !== null && item.adjustedAmount !== item.calculatedAmount
-    ? `계산값 ${formatAmount(item.calculatedAmount)} 을 ${formatAmount(item.adjustedAmount)} 으로 고침`
-    : "계산값";
+  const calculated =
+    item.adjustedAmount !== null && item.adjustedAmount !== item.calculatedAmount
+      ? `계산값 ${formatAmount(item.calculatedAmount)} 을 ${formatAmount(item.adjustedAmount)} 으로 고침`
+      : "계산값";
+  return !isPremiumApplied && item.itemCode === "OVERTIME_PAY" ? `가산 미적용 · 1배로 계산 · ${calculated}` : calculated;
+}
+
+/**
+ * 출·퇴근 현황 조회를 그 명세서의 점포 · 직원 · 급여 기간으로 연다 — 「출퇴근 보정」 · 「출퇴근 기록 보기」. 기간은 보정이 필요한 기록의 기간이다.
+ * 직원은 레코드 id 로 좁히고(이름이 비슷한 다른 직원이 섞이지 않게), 퇴직자 명세서도 보이게 재직 상태는 전체로 연다.
+ */
+export function attendanceHref(p: { storeId: number; staffMemberId: number; staffName: string; periodStartDate: string; periodEndDate: string }): string {
+  const q = new URLSearchParams({
+    storeIds: String(p.storeId),
+    staff: p.staffName,
+    staffMemberId: String(p.staffMemberId),
+    employment: "ALL",
+    fixFrom: p.periodStartDate,
+    fixTo: p.periodEndDate,
+  });
+  return `/attendance-records?${q.toString()}`;
 }
 
 /** 위쪽 경고 띠. 공제 미입력은 금액 칸 아래 빨간 띠가 따로 말하므로 뺀다. 이미 확인한 사유(확정 때 확인됨)도 뺀다. 띠가 없으면 null. */

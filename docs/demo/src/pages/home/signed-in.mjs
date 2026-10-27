@@ -43,7 +43,7 @@ export default ({ A, R }) => {
   ].map(([name, type, staff, open, today, todo]) => [name, type, staff || nil, open || nil, today ?? nil, todo || nil]);
   const stores = `<section class="${CARD} flex flex-col gap-[12px] p-[24px]">${ui.sectionHead(
     "점포별 현황",
-    `<span class="self-center pr-[6px] text-[14px] text-erp-label">전체 11개점</span><div class="w-[96px] shrink-0">${ui.select(["전체", "직영", "가맹"], { "aria-label": "점포 유형" })}</div>`,
+    `<span class="self-center pr-[6px] text-[14px] text-erp-label">전체 11개점</span>`,
   )}${ui.dataTable(
     [
       { header: "점포", align: "left" },
@@ -56,15 +56,16 @@ export default ({ A, R }) => {
     storeRows,
   )}<div class="flex items-center text-[14px]"><p class="flex-1 text-erp-label">11개점 중 상위 7개 · 미조치 많은 순</p>${ui.link("직원 목록", link(R, "staff/index.html"))}</div></section>`;
 
+  // 순서는 api 처리 대기 순서(갱신 예정 → 계약 → 직원 → 문의 → TO-DO). 「가입 연결 확인 필요」는 없앤 규칙이라 뺐다(목업 HOME-8)
   const todo = [
+    ["계약", "계약 갱신 예정 2건", "서지안 외 1명 · 새 근로계약서 초안 없음", "staff/contracts.html"],
     ["계약", "근로계약 서명 대기 3건", "남도현 외 2명 · 발송 후 6일 경과", "staff/contracts.html"],
-    ["직원", "가입 연결 확인 필요 1건", "번호 불일치 · 4일 경과", "staff/index.html"],
-    ["직원", "소속 확인 거절 1건", "이준호 · 서초점", "staff/index.html"],
-    ["계약", "계약 갱신 예정 2건", "서지안 09-08 · 문태경 09-10 · 새 근로계약서 초안 없음", "staff/contracts.html"],
-    ["문의", "답변 완료 1건", "KIOSK 영수증 프린터 연동 문의", "support/inquiries.html"],
-    ["TO-DO", "긴급 TO-DO 미완료 1건", "성수점 · 냉장고 재료 폐기 · 오늘 14:00", "staff/todos.html"],
+    ["계약", "근로계약 수정 요청 1건", "정우진 · 요청 후 2일 경과", "staff/contracts.html"],
+    ["직원", "소속 확인 거절 1건", "이준호 · 거절 후 3일 경과", "staff/index.html"],
+    ["문의", "문의 답변완료 1건", "KIOSK 영수증 프린터 연동 문의 · 답변 후 1일 경과", "support/inquiries.html"],
+    ["TO-DO", "긴급 TO-DO 1건", "냉장고 재료 폐기 · 오늘 등록", "staff/todos.html"],
   ];
-  const waiting = `<section class="${CARD} flex flex-col gap-[12px] p-[24px]">${ui.sectionHead("처리 대기", '<p class="text-[14px]">총 <b class="font-semibold">10</b> 건</p>')}${ui.dataTable(
+  const waiting = `<section class="${CARD} flex flex-col gap-[12px] p-[24px]">${ui.sectionHead("처리 대기", '<p class="text-[14px]">총 <b class="font-semibold">9</b> 건</p>')}${ui.dataTable(
     [
       { header: "구분", width: "w-[70px]" },
       { header: "항목", align: "left", width: "w-[190px]" },
@@ -202,7 +203,8 @@ function oneStore(A, R) {
       ][i],
       "재직",
     ]),
-    [ui.link("박서연", link(R, "staff/index.html")), "파트타이머", p.sub("—"), p.sub("—"), `${p.tag("risk", "연결 보류")} ${p.sub("번호 불일치")}`, p.sub("가입 대기")],
+    // 아직 가입하지 않은 직원은 상태 칸이 「가입 대기」다(목업 HOME-9). 「연결 보류」는 없앤 규칙이다
+    [ui.link("박서연", link(R, "staff/index.html")), "파트타이머", p.sub("—"), p.sub("—"), `${p.tag("warn", "발송 대기")} ${p.sub("초대 발송 09-02")}`, p.sub("가입 대기")],
   ];
   const staff = card(
     head(

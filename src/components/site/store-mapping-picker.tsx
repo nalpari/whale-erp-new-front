@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Button, Checkbox } from "@/components/common";
 import { FIELD } from "@/components/common/theme";
 import { useCodeLabel } from "./code-label";
@@ -176,8 +176,8 @@ export function StoreMappingPicker({
             </Button>
           </span>
         </p>
-        {/* 칩 34px × 5 + 간격 6px × 4 = 194px. 넘치면 이 안에서 세로로 스크롤한다 */}
-        <div className="relative h-[194px]">
+        {/* 194px(칩 다섯 줄)에서 1/3 줄인 130px(2026-10-27 사용자 지정) — 넷째 줄 윗부분이 살짝 보여 더 있다는 것을 알린다. 넘치면 이 안에서 세로로 스크롤한다 */}
+        <div className="relative h-[130px]">
           <ul aria-label="선택한 점포" className="flex h-full flex-wrap content-start gap-[6px] overflow-y-auto overscroll-contain">
             {picked.map((s) => (
               <li
@@ -200,7 +200,12 @@ export function StoreMappingPicker({
             ))}
           </ul>
           {!picked.length && (
-            <p className="pointer-events-none absolute inset-0 grid place-items-center text-[13px] text-erp-muted">아직 고른 점포가 없습니다. 위에서 찾아 더하세요.</p>
+            <p className="pointer-events-none absolute inset-0 grid place-items-center text-center text-[13px] leading-[1.6] text-erp-muted">
+              {/* 두 줄 안내(2026-10-27 사용자 지정 — 전엔 「아직 고른 점포가 없습니다. 위에서 찾아 더하세요.」) */}
+              선택된 점포가 없습니다.
+              <br />
+              점포찾기에서 점포를 검색하여 추가해주세요.
+            </p>
           )}
         </div>
       </div>
@@ -291,7 +296,7 @@ function BulkDialog({
     setOver(null);
   };
 
-  const pane = (side: "L" | "R", title: string, rows: MappingStoreOption[], empty: string) => {
+  const pane = (side: "L" | "R", title: string, rows: MappingStoreOption[], empty: ReactNode) => {
     const group = (label: string, members: MappingStoreOption[]) => {
       const on = members.filter((m) => checked.has(m.storeId)).length;
       return (
@@ -383,7 +388,8 @@ function BulkDialog({
         점포 일괄 검색
       </h2>
       <div className="mt-[12px] text-[14px] leading-[1.6]">
-        <p className="text-[13px] text-erp-label">왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 매핑됩니다. 오른쪽에서 빼면 매핑이 풀립니다.</p>
+        {/* 한 줄 안내(2026-10-27 사용자 지정 — 전엔 「왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 매핑됩니다. 오른쪽에서 빼면 매핑이 풀립니다.」) */}
+        <p className="text-[13px] text-erp-label">점포를 선택한 후 [추가] 버튼을 누르거나 오른쪽으로 드래그하여 매핑할 수 있습니다. 매핑 해제는 [빼기] 버튼을 이용해 주세요.</p>
         <div className="mt-[12px] flex items-stretch gap-[12px]">
           {pane("L", "매핑 안 된 점포", left, options.length ? "고를 수 있는 점포를 모두 매핑했습니다." : "고를 수 있는 점포가 없습니다.")}
           <div className="flex shrink-0 flex-col justify-center gap-[6px]">
@@ -394,7 +400,17 @@ function BulkDialog({
               ‹ 빼기
             </Button>
           </div>
-          {pane("R", "매핑된 점포", right, "아직 매핑된 점포가 없습니다. 왼쪽에서 골라 옮기세요.")}
+          {/* 두 줄 안내(2026-10-27 사용자 지정 — 전엔 「아직 매핑된 점포가 없습니다. 왼쪽에서 골라 옮기세요.」) */}
+          {pane(
+            "R",
+            "매핑된 점포",
+            right,
+            <>
+              매핑된 점포가 없습니다.
+              <br />
+              왼쪽 목록에서 점포를 선택하여 추가해 주세요.
+            </>,
+          )}
         </div>
       </div>
       <div className="mt-[24px] flex justify-end gap-[6px]">

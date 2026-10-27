@@ -91,3 +91,10 @@ test("화면이 스스로 채우는 점포 조건은 열린 상세 · 수정을 
   // 사용자가 조건을 바꾸면 그대로 닫는다
   assert.equal(withScopeCondition(deepLink, { type: "DIRECT" }).admin, undefined);
 });
+
+test("계정상태를 둘 다 끄면 NONE — 주소에 남고 api 조건에는 실리지 않는다", () => {
+  const none = parseBpAdminsQuery({ accountStatus: "NONE" });
+  assert.equal(none.accountStatus, "NONE");
+  assert.equal(bpAdminsHref(none), "/bp-admins?accountStatus=NONE");
+  assert.equal(bpAdminListQueryOf(none).accountStatus, undefined);
+});

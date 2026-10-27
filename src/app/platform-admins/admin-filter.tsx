@@ -49,9 +49,9 @@ export function AdminFilter({
           maxLength={20}
         />
       </FilterSection>
-      <FilterSection label="사용자 권한" tight>
+      <FilterSection label="권한명" tight>
         <Select
-          aria-label="사용자 권한"
+          aria-label="권한명"
           value={query.roleGroupId ? String(query.roleGroupId) : ""}
           onChange={(e) => apply({ roleGroupId: e.target.value ? Number(e.target.value) : undefined })}
         >
@@ -63,7 +63,7 @@ export function AdminFilter({
           ))}
         </Select>
       </FilterSection>
-      <FilterSection label="계정 상태" last>
+      <FilterSection label="계정상태" last>
         <Checkbox label="사용" checked={shows("ACTIVE")} onChange={(e) => toggle("ACTIVE", e.target.checked)} />
         <Checkbox label="미사용" checked={shows("INACTIVE")} onChange={(e) => toggle("INACTIVE", e.target.checked)} />
       </FilterSection>

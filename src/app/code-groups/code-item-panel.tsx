@@ -23,7 +23,7 @@ import { CODE_PLACEHOLDER, codeFormatError, duplicateCodes, normalizeCode } from
 import type { CodeGroup, CodeItem } from "@/lib/codes";
 import { usePagePermission } from "@/components/site/session-gate";
 import { saveCodeItemsAction } from "./actions";
-import { CellError, CodePanel, FieldErrors, focusFirstInvalid, recheck, GroupHead, SaveFailedBand, UNKNOWN_RESULT } from "@/components/site/code-editor/code-panel";
+import { CellError, CodePanel, FieldErrors, focusFirstInvalid, recheck, GroupHead, PendingNotice, REORDERED, SaveFailedBand, UNKNOWN_RESULT } from "@/components/site/code-editor/code-panel";
 import { useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
 import { useRowReorder } from "@/components/site/code-editor/use-row-reorder";
 import { DeletePending, DeleteToggle, Struck } from "@/components/site/code-editor/delete-mark";
@@ -98,6 +98,8 @@ export function CodeItemPanel({
   }
 
   const original = new Map(items.map((i) => [i.itemCode, i]));
+  // 저장된 행의 표시 순서를 옮겼는가 — 저장 전까지 표 위에 안내한다(BP 공통코드와 같다, 2026-10-27 사용자 지정)
+  const reordered = drafts.some((d) => !d.added && !d.deleted && d.sortOrder !== original.get(d.itemCode)?.sortOrder);
   const addedRows = drafts.filter((d) => d.added);
   const dirty = itemsDirty(drafts, items);
 
@@ -352,6 +354,7 @@ export function CodeItemPanel({
         )
       }
     >
+      {reordered && <PendingNotice message={REORDERED} />}
       {failure && <SaveFailedBand message={failure} />}
       <DataTable
         // 열 이름 줄까지 고정하고 그 아래만 스크롤한다(2026-10-26 사용자 지정)
