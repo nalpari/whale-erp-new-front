@@ -173,7 +173,7 @@ export default ({ A, R }) => {
     dialogs.push(menuDialog(A, R, r, id));
     const n = Object.values(GRANT[code]).reduce((s, m) => s + Object.values(m).filter(Boolean).length, 0);
     return [
-      `${type} <span class="text-erp-label">· ${code}</span>`,
+      `${type} <span class="text-[12px] text-erp-label">· ${code}</span>`,
       `<span class="text-erp-link hover:underline">${name}</span>`, // 권한명은 링크색 — 앱(platform-role-groups · bp-role-groups)과 같다(2026-10-26 사용자 지정)
       desc,
       // 등록일시 열은 뺐다 — 앱 platform-role-groups 와 같이 최종수정만(2026-10-26 사용자 지정)
@@ -185,10 +185,10 @@ export default ({ A, R }) => {
   });
   const cols = [
     // 권한유형 · 코드를 한 칸에 — BP 권한 그룹 관리(앱 bp-role-groups)와 같은 모양(2026-10-26 사용자 지정)
-    { header: "권한유형 · 코드", width: "w-[200px]", align: "left" },
-    { header: "권한명", width: "w-[180px]", align: "left" }, // 설명이 칸 한가운데서 시작하지 않게 고정한다(앱 platform-role-groups 와 같다, 2026-10-26 사용자 지정)
+    { header: "권한유형 · 코드", width: "w-[260px]" }, // 가운데 정렬(앱과 같다, 2026-10-27)
+    { header: "권한명", width: "w-[260px]", align: "left" }, // 설명이 칸 한가운데서 시작하지 않게 고정한다(앱 platform-role-groups 와 같다, 2026-10-26 사용자 지정)
     { header: "설명", align: "left" },
-    { header: "최종수정", width: "w-[220px]", align: "left" },
+    { header: "최종수정", width: "w-[260px]", align: "left" } /* 세 열 같은 260px(앱과 같다, 2026-10-27) */,
     { header: "메뉴설정", width: "w-[124px]" }, // 버튼 열을 상태 앞에(앱 platform-role-groups 와 같다, 2026-10-26 사용자 지정)
     { header: "메뉴설정 여부", width: "w-[120px]" },
   ];
@@ -213,9 +213,10 @@ export default ({ A, R }) => {
       const body = users.length
         ? kv([
             ["권한명", `${name} ${sub(`· ${code}`)}`],
-            // 몇 명인지 먼저, 그 아래에 한 사람씩 「아이디 | 사용자명」으로 줄을 바꿔 보인다. 다섯 명까지 보이고 넘으면 목록 안에서 스크롤한다(2026-10-15)
-            ["연결 사용자", `<p>${users.length}명</p><ul class="mt-[4px] flex max-h-[118px] flex-col gap-[2px] overflow-y-auto text-erp-label">${users.map((u) => `<li class="h-[22px] shrink-0 truncate leading-[22px]">${u.replace(" ", " | ").replace("(미사용)", " (미사용)")}</li>`).join("")}</ul>`],
+            // 몇 명인지만 두고, 사람은 아래 표(아이디 · 이름 · 계정 상태)로 보인다 — 다섯 명 넘으면 표 안에서 스크롤(앱 role-delete-dialog.tsx 와 같다, 2026-10-27)
+            ["연결 사용자", `${users.length}명`],
           ]) +
+          c.linkedUsersTable(users) +
           ui.field(req("대체 권한"), ui.select(["선택하세요", ...others])) +
           band(`변경된 권한은 다시 로그인하지 않아도, 사용자가 화면을 새로고침하거나 이동하면 적용됩니다.`)
         : kv([

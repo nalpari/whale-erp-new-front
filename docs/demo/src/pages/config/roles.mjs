@@ -100,15 +100,15 @@ export default ({ A, R }) => {
 
   const cols = [
     // 권한유형 · 코드를 한 칸에 — BP 권한 그룹 관리(앱 bp-role-groups)와 같은 모양(2026-10-26 사용자 지정)
-    { header: "권한유형 · 코드", width: "w-[200px]", align: "left" }, // 플랫폼 권한 관리와 같은 폭(2026-10-27)
-    { header: "권한명", width: "w-[180px]", align: "left" }, // 설명 글자가 칸 한가운데서 시작하지 않게 권한명을 넓혀 고정한다(앱 bp-role-groups 와 같다, 2026-10-26 사용자 지정)
+    { header: "권한유형 · 코드", width: "w-[260px]" }, // 플랫폼 권한 관리와 같은 폭 · 가운데 정렬(2026-10-27)
+    { header: "권한명", width: "w-[260px]", align: "left" }, // 설명 글자가 칸 한가운데서 시작하지 않게 권한명을 넓혀 고정한다(앱 bp-role-groups 와 같다, 2026-10-26 사용자 지정)
     { header: "설명", align: "left" },
-    { header: "최종수정", width: "w-[280px]", align: "left" }, // 앱 bp-role-groups 와 같이 한 줄 「일시 · 사람」(2026-10-26). 수정자 이름이 잘리지 않게 280(2026-10-27 사용자 지정)
+    { header: "최종수정", width: "w-[260px]", align: "left" }, // 앱 bp-role-groups 와 같이 한 줄 「일시 · 사람」(2026-10-26). 수정자 이름이 잘리지 않게(2026-10-27 사용자 지정)
     { header: "메뉴설정", width: "w-[124px]" }, // 버튼 열을 상태 앞에(앱 bp-role-groups 와 같다, 2026-10-26 사용자 지정)
     { header: "메뉴설정 여부", width: "w-[120px]" },
   ];
   const rows = GROUPS.map(([type, code, name, desc, at, by, n], i) => [
-    `${type} <span class="text-erp-label">· ${code}</span>`,
+    `${type} <span class="text-[12px] text-erp-label">· ${code}</span>`,
     `<span class="text-erp-link hover:underline">${name}</span>`, // 권한명은 링크색 — 앱 bp-role-groups 와 같다(2026-10-26)
     desc || c.muted("-"),
     `${at} <span class="text-erp-label">· ${by}</span>`,
@@ -130,8 +130,8 @@ export default ({ A, R }) => {
   );
 
   // 삭제 확인창 — BP 관리자 그룹마다. 대체 후보는 같은 BP·같은 유형의 다른 그룹이다.
-  // 앱 role-delete-dialog.tsx 와 같다(2026-10-26): 480px, 권한명 · 연결 사용자 두 줄(라벨 84px), 연결 사용자는 「N명」 아래 한 사람씩
-  // 「아이디 | 이름」(다섯 명 넘으면 그 안에서 스크롤), 연결 사용자가 있으면 대체 권한을 골라야 [삭제]가 켜진다(data-needs-choice · erp.js)
+  // 앱 role-delete-dialog.tsx 와 같다(2026-10-26): 480px, 권한명 · 연결 사용자 두 줄(라벨 84px),
+  // 연결 사용자는 「N명」만 두고 그 아래 표(아이디 · 이름 · 계정 상태, 여섯 명부터 열 이름 줄 고정 · 사람 줄만 스크롤 — c.linkedUsersTable, 2026-10-27), 연결 사용자가 있으면 대체 권한을 골라야 [삭제]가 켜진다(data-needs-choice · erp.js)
   const del = {};
   const delDialogs = GROUPS.filter((g) => g[0] === "BP 관리자")
     .map(([type, code, name, , , , , , , , users]) => {
@@ -142,10 +142,11 @@ export default ({ A, R }) => {
         ? c.kv(
             [
               nameRow,
-              ["연결 사용자", `<p>${users.length}명</p><ul class="mt-[4px] flex max-h-[118px] flex-col gap-[2px] overflow-y-auto text-erp-label">${users.map((u) => `<li class="h-[22px] shrink-0 truncate leading-[22px]">${u.replace(" ", " | ").replace("(미사용)", " (미사용)")}</li>`).join("")}</ul>`],
+              ["연결 사용자", `${users.length}명`],
             ],
             84,
           ) +
+          c.linkedUsersTable(users) +
           ui.field(c.req("대체 권한"), ui.select(["선택하세요", ...others])) +
           band("변경된 권한은 다시 로그인하지 않아도, 사용자가 화면을 새로고침하거나 이동하면 적용됩니다.")
         : c.kv([nameRow, ["연결 사용자", "없음"]], 84) + `<div class="text-erp-label"><p>연결된 사용자가 없어 바로 삭제할 수 있습니다.</p><p>삭제된 권한 그룹은 복구할 수 없습니다.</p></div>`;
@@ -176,7 +177,7 @@ export default ({ A, R }) => {
         band("본인 계정은 가맹관리자 권한 그룹을 수정할 수 없습니다.") + plainTable(rowsInfo) + record;
     return (
       `<div data-role-view="${code}" class="flex flex-col gap-[18px]"${editable ? " data-dirty-scope" : ""}${i === SELECTED ? "" : " hidden"}>` +
-      sideHead(`권한 그룹 상세<span class="ml-[10px] inline-flex items-center gap-[6px] align-middle">${c.tag(`<span class="font-normal">권한유형 ·</span> <b class="font-semibold">${type}</b>`)}<span class="text-[14px] font-normal text-erp-label">${code}</span></span>`) +
+      sideHead(`권한 그룹 상세<span class="ml-[10px] inline-flex items-center gap-[10px] align-middle">${c.tag(`<span class="font-normal">권한유형 ·</span> <b class="font-semibold">${type}</b>`)}<span aria-hidden="true" class="h-[11px] w-px bg-[#d9d9d9]"></span><span class="text-[14px] font-normal"><span class="text-erp-label">권한코드</span> <b class="font-semibold">${code}</b></span></span>`) +
       // 고칠 수 있는 그룹은 입력칸 아래에 생성·최종 수정을 둔다(목업과 같은 순서)
       edit +
       `</div>`

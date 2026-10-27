@@ -147,7 +147,7 @@ export function AdminsScreen({
                 </Select>
               </div>
             </ListToolbar>
-            <AdminTable rows={list.items} selected={query.admin} onOpen={openDetail} />
+            <AdminTable rows={list.items} selected={query.admin} onOpen={openDetail} noStatus={query.accountStatus === "NONE"} />
             <div className="pt-[14px]">
               <Pagination
                 page={query.page}

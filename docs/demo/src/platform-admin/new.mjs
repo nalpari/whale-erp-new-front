@@ -1,5 +1,5 @@
 // 플랫폼 관리자 등록. 목업 docs/mockup/system/admins-new.html 의 기본 상태(입력)를 플랫폼 관리자(등록 권한)로 본 것.
-// 플랫폼 관리자라 사용자 권한 목록에 플랫폼 마스터가 없다. 목업 제목 줄의 [취소][저장]은 화면 아래로 내렸다.
+// 플랫폼 관리자라 권한명 목록에 플랫폼 마스터가 없다. 목업 제목 줄의 [취소][저장]은 화면 아래로 내렸다.
 // 상세·등록·수정은 따로 화면(주소)이 없고 목록(system/admins.html)의 슬라이드 패널로만 연다(2026-10-08). 저장하면 상세 패널로 간다(erp.js data-save-panel).
 import * as ui from "../ui.mjs";
 
@@ -25,6 +25,17 @@ const address = (A, zip, base, detail) =>
 function platformAdminNewBody(A) {
   // 패널(464px)이라 두 칸 줄을 한 칸씩 세로로 쌓는다
   const row = (...cells) => cells.filter((c) => c !== BLANK).join("");
+  // 권한명 · 계정상태는 기본정보 안 이메일 다음에 둔다(앱 admin-form-panel, 2026-10-27 사용자 지정 — 전엔 따로 묶음)
+  const roleFields =
+    row(
+      ui.field(
+        req("권한명"),
+        stack(
+          ui.select([{ group: "역할 · 플랫폼 관리자", options: ["플랫폼 관리자 · PA000001", "고객지원 담당 · PA000002", "정산 담당 · PA000003", "기준정보 조회 · PA000004"] }], { "aria-label": "권한명" }),
+        ),
+      ),
+      BLANK,
+    );
   const basic = ui.formGroup(
     "기본정보",
     row(
@@ -51,6 +62,7 @@ function platformAdminNewBody(A) {
         ),
       ),
     ),
+    roleFields,
     row(
       ui.field("소속부서", stack(ui.textField({ value: "플랫폼운영팀", maxlength: 30 }))),
       ui.field("직책", stack(ui.textField({ value: "사원", maxlength: 30 }))),
@@ -58,22 +70,9 @@ function platformAdminNewBody(A) {
     address(A, "13529", "경기 성남시 분당구 판교역로 166", "7층"),
   );
 
-  const role = ui.formGroup(
-    "사용자 권한",
-    row(
-      ui.field(
-        req("사용자 권한"),
-        stack(
-          ui.select(["플랫폼 관리자 · PA000001", "고객지원 담당 · PA000002", "정산 담당 · PA000003", "기준정보 조회 · PA000004"], { "aria-label": "사용자 권한" }),
-        ),
-      ),
-      BLANK,
-    ),
-  );
-
   // 저장하면 등록 패널을 닫고 상세 패널을 연다
   const buttons = `<div class="flex justify-center gap-[6px]">${ui.button("취소", { variant: "off", "data-close": true })}${ui.button("저장", { "data-save-panel": "platform-admin-detail-panel" })}</div>`;
-  return basic + role + note("관리자 계정의 초기 비밀번호는 등록된 이메일로 발송됩니다.") + buttons;
+  return basic + note("관리자 계정의 초기 비밀번호는 등록된 이메일로 발송됩니다.") + buttons;
 }
 
 export const platformAdminNewPanel = (A, R) =>

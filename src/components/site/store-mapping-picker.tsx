@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Button, Checkbox } from "@/components/common";
 import { FIELD } from "@/components/common/theme";
 import { useCodeLabel } from "./code-label";
@@ -20,39 +20,75 @@ export type MappingStoreOption = {
 };
 export type MappingStore = { storeId: number; name: string; storeCode: string };
 
-/** 고른 점포의 뜻에 따라 바뀌는 문구 — 기본은 매핑할 점포, exclude 는 전체 점포에서 뺄 점포 */
-const TEXTS = {
+/** 일괄 검색 창이 쓰는 문구 — 필터용(filter)은 창만 쓰므로 이것만 둔다 */
+type BulkTexts = { guide: string; left: string; right: string; leftDone: string; rightEmpty: ReactNode };
+/** 고르기 칸까지 쓰는 문구 */
+type PickerTexts = BulkTexts & { search: string; picked: string; noPicked: ReactNode };
+
+/**
+ * 고른 점포의 뜻에 따라 바뀌는 문구 — 기본은 매핑할 점포, exclude 는 전체 점포에서 뺄 점포.
+ * 기본 문구는 2026-10-27 사용자 지정(빈 칩 · 오른쪽 빈 목록은 두 줄, 일괄 검색 안내는 한 줄)이고, 예외 · 필터 문구도 같은 말투로 맞췄다.
+ */
+const TEXTS: { include: PickerTexts; exclude: PickerTexts; filter: BulkTexts } = {
   include: {
     search: "관리할 점포 찾기",
     picked: "선택한 점포",
-    noPicked: "아직 고른 점포가 없습니다. 위에서 찾아 더하세요.",
-    guide: "왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 매핑됩니다. 오른쪽에서 빼면 매핑이 풀립니다.",
+    noPicked: (
+      <>
+        선택된 점포가 없습니다.
+        <br />
+        점포찾기에서 점포를 검색하여 추가해주세요.
+      </>
+    ),
+    guide: "점포를 선택한 후 [추가] 버튼을 누르거나 오른쪽으로 드래그하여 매핑할 수 있습니다. 매핑 해제는 [빼기] 버튼을 이용해 주세요.",
     left: "매핑 안 된 점포",
     right: "매핑된 점포",
     leftDone: "고를 수 있는 점포를 모두 매핑했습니다.",
-    rightEmpty: "아직 매핑된 점포가 없습니다. 왼쪽에서 골라 옮기세요.",
+    rightEmpty: (
+      <>
+        매핑된 점포가 없습니다.
+        <br />
+        왼쪽 목록에서 점포를 선택하여 추가해 주세요.
+      </>
+    ),
   },
   exclude: {
     search: "예외로 뺄 점포 찾기",
     picked: "예외 점포",
-    noPicked: "예외 점포가 없습니다. 모든 점포에 적용합니다.",
-    guide: "왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 예외로 빠집니다. 오른쪽에서 빼면 다시 적용됩니다.",
+    noPicked: (
+      <>
+        예외 점포가 없습니다.
+        <br />
+        모든 점포에 적용합니다.
+      </>
+    ),
+    guide: "점포를 선택한 후 [추가] 버튼을 누르거나 오른쪽으로 드래그하여 예외로 뺄 수 있습니다. 예외 해제는 [빼기] 버튼을 이용해 주세요.",
     left: "적용 점포",
     right: "예외 점포",
     leftDone: "고를 수 있는 점포를 모두 예외로 뺐습니다.",
-    rightEmpty: "아직 예외 점포가 없습니다. 왼쪽에서 골라 옮기세요.",
+    rightEmpty: (
+      <>
+        예외 점포가 없습니다.
+        <br />
+        왼쪽 목록에서 점포를 선택하여 추가해 주세요.
+      </>
+    ),
   },
   // 목록 필터의 점포 고르기(StorePicker) 옆 [일괄검색] — 고른 점포만 목록에 보인다(점포 정보 관리)
   filter: {
-    guide: "왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 선택됩니다. 오른쪽에서 빼면 선택이 풀립니다.",
+    guide: "점포를 선택한 후 [추가] 버튼을 누르거나 오른쪽으로 드래그하여 선택할 수 있습니다. 선택 해제는 [빼기] 버튼을 이용해 주세요.",
     left: "고를 수 있는 점포",
     right: "선택한 점포",
     leftDone: "고를 수 있는 점포를 모두 골랐습니다.",
-    rightEmpty: "아직 고른 점포가 없습니다. 왼쪽에서 골라 옮기세요.",
+    rightEmpty: (
+      <>
+        선택된 점포가 없습니다.
+        <br />
+        왼쪽 목록에서 점포를 선택하여 추가해 주세요.
+      </>
+    ),
   },
 };
-/** 일괄 검색 창이 쓰는 문구 — 필터용(filter)은 창만 쓰므로 이것만 둔다 */
-type BulkTexts = (typeof TEXTS)["filter"];
 
 const matches = (s: MappingStoreOption, keyword: string) => {
   const k = keyword.trim().toLowerCase();
@@ -215,8 +251,8 @@ export function StoreMappingPicker({
             </Button>
           </span>
         </p>
-        {/* 칩 34px × 5 + 간격 6px × 4 = 194px. 넘치면 이 안에서 세로로 스크롤한다 */}
-        <div className="relative h-[194px]">
+        {/* 194px(칩 다섯 줄)에서 1/3 줄인 130px(2026-10-27 사용자 지정) — 넷째 줄 윗부분이 살짝 보여 더 있다는 것을 알린다. 넘치면 이 안에서 세로로 스크롤한다 */}
+        <div className="relative h-[130px]">
           <ul aria-label={text.picked} className="flex h-full flex-wrap content-start gap-[6px] overflow-y-auto overscroll-contain">
             {picked.map((s) => (
               <li
@@ -239,7 +275,10 @@ export function StoreMappingPicker({
             ))}
           </ul>
           {!picked.length && (
-            <p className="pointer-events-none absolute inset-0 grid place-items-center text-[13px] text-erp-muted">{text.noPicked}</p>
+            <p className="pointer-events-none absolute inset-0 grid place-items-center text-center text-[13px] leading-[1.6] text-erp-muted">
+              {/* 두 줄 안내 — TEXTS 의 noPicked */}
+              <span>{text.noPicked}</span>
+            </p>
           )}
         </div>
       </div>
@@ -338,7 +377,7 @@ function BulkDialog({
     setOver(null);
   };
 
-  const pane = (side: "L" | "R", title: string, rows: MappingStoreOption[], empty: string) => {
+  const pane = (side: "L" | "R", title: string, rows: MappingStoreOption[], empty: ReactNode) => {
     const group = (label: string, members: MappingStoreOption[]) => {
       const on = members.filter((m) => checked.has(m.storeId)).length;
       return (

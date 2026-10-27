@@ -67,7 +67,7 @@ function platformAdminDetailBody(A, R) {
   const deleteDialog = x.dialog(
     deleteId,
     "관리자 계정을 삭제하시겠습니까?",
-    `<div class="flex flex-col gap-[12px] break-keep">${WHO}<p>삭제한 계정은 <b class="font-semibold">관리자 목록 및 검색 결과에서 제외</b>되며, <b class="font-semibold">해당 계정으로 더 이상 로그인할 수 없습니다</b>.</p><p>삭제한 계정은 복구할 수 없습니다.</p></div>`,
+    `<div class="flex flex-col gap-[12px] break-keep">${WHO}<div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off"><p>삭제한 계정은 관리자 목록 및 검색 결과에서 제외되며, 해당 계정으로 더 이상 로그인할 수 없습니다.</p><p>삭제한 계정은 복구할 수 없습니다.</p></div></div>` /* 빨간 안내 상자 · 굵은 글씨 없음(앱과 같다, 2026-10-27) */,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("삭제", { href: link(R, "system/admins.html") }),
   );
 

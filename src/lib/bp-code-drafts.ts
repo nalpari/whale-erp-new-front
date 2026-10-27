@@ -1,7 +1,7 @@
 // BP 공통코드 관리 화면(src/app/bp-code-groups)의 판단 — 패널이 왜 막혔는지, 지울 수 있는 행인지, 화면 주소.
 // 플랫폼 공통코드와 같은 초안 다루기(code-drafts.ts)에 BP 에만 있는 규칙(okf/config.md 공통코드)을 더한 순수 함수라 node --test 로 검사한다.
 // node --test 가 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
-import type { BpCodeGroup, BpCodeItem, BpManageOwnerCode } from "./bp-codes";
+import type { BpCodeItem, BpManageOwnerCode } from "./bp-codes";
 import { codePanelAccess, type ItemDraft } from "./code-drafts.ts";
 
 /**
@@ -31,7 +31,7 @@ export const newBpItemDraft = (key: string): BpItemDraft => ({
  */
 export type BpPanelLock = "platform-user" | "fixed" | null;
 
-export function bpPanelLock(group: Pick<BpCodeGroup, "manageOwnerCode"> | undefined, isPlatform: boolean): BpPanelLock {
+export function bpPanelLock(group: { manageOwnerCode: BpManageOwnerCode } | undefined, isPlatform: boolean): BpPanelLock {
   if (isPlatform) return "platform-user";
   if (group?.manageOwnerCode === "PLATFORM_FIXED") return "fixed";
   return null;

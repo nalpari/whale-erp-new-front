@@ -56,7 +56,16 @@ test("합계 — 지급은 비과세 포함, 공제는 보이는 줄만, 비어 
   assert.equal(payslipTotals(items, new Map([...amounts, [4, 0]]), false).blankDeductions, 0);
 });
 
-const base: PayslipListQuery = { month: "2026-09", store: "", storeIds: [], staffName: "", statuses: [...PAYSLIP_STATUSES], page: 1, pageSize: 20 };
+const base: PayslipListQuery = {
+  month: "2026-09",
+  storeIds: [],
+  storesCleared: false,
+  scope: null,
+  staffName: "",
+  statuses: [...PAYSLIP_STATUSES],
+  page: 1,
+  pageSize: 20,
+};
 
 test("api 쿼리 — 달 · 쪽 · 건수는 늘 싣고, 상태는 모두 골랐으면 뺀다", () => {
   assert.equal(payslipListApiSearch(base), "month=2026-09&page=1&pageSize=20");
@@ -70,17 +79,16 @@ test("api 쿼리 — 상태를 하나도 고르지 않았으면 status 를 뺀�
   assert.equal(payslipListApiSearch({ ...base, statuses: [] }), "month=2026-09&page=1&pageSize=20");
 });
 
-test("api 쿼리 — 점포명이 있으면 맞는 점포 id 를, 직원명은 그대로 싣는다", () => {
+test("api 쿼리 — 고른 점포는 storeIds, 직원명은 그대로 싣는다", () => {
   assert.equal(
-    payslipListApiSearch({ ...base, store: "서초", storeIds: [5, 7], staffName: "서지안" }),
+    payslipListApiSearch({ ...base, storeIds: [5, 7], staffName: "서지안" }),
     "month=2026-09&storeIds=5%2C7&staffName=%EC%84%9C%EC%A7%80%EC%95%88&page=1&pageSize=20",
   );
-  // 점포명이 없으면 점포 id 는 싣지 않는다(관리 범위 전체)
-  assert.equal(payslipListApiSearch({ ...base, storeIds: [5] }), "month=2026-09&page=1&pageSize=20");
 });
 
-test("api 쿼리 — 맞는 점포가 없거나 아직 찾지 않았거나 너무 많으면 부르지 않는다(null → 0건)", () => {
-  assert.equal(payslipListApiSearch({ ...base, store: "없는점", storeIds: [] }), null);
-  assert.equal(payslipListApiSearch({ ...base, store: "서초", storeIds: null }), null);
-  assert.equal(payslipListApiSearch({ ...base, store: "점", storeIds: Array.from({ length: 501 }, (_, i) => i + 1) }), null);
+test("api 쿼리 — 상단 범위: 점포 하나는 storeIds, 직영 · 가맹은 storeTypes, 전체 · 비운 전체는 조건 없음", () => {
+  assert.equal(payslipListApiSearch({ ...base, scope: { type: "STORE", storeId: 9 } }), "month=2026-09&storeIds=9&page=1&pageSize=20");
+  assert.equal(payslipListApiSearch({ ...base, scope: { type: "FRANCHISE" } }), "month=2026-09&storeTypes=FRANCHISE&page=1&pageSize=20");
+  assert.equal(payslipListApiSearch({ ...base, scope: { type: "ALL" } }), "month=2026-09&page=1&pageSize=20");
+  assert.equal(payslipListApiSearch({ ...base, storesCleared: true, scope: { type: "DIRECT" } }), "month=2026-09&page=1&pageSize=20");
 });

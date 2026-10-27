@@ -14,11 +14,14 @@ export function AdminTable({
   rows,
   selected,
   onOpen,
+  noStatus,
 }: {
   rows: BpAdmin[];
   /** 상세를 연 계정 — 그 줄에 바탕을 깐다 */
   selected?: number;
   onOpen: (id: number, from: HTMLElement) => void;
+  /** 계정상태를 둘 다 껐다(NONE) — 결과가 없는 이유를 말한다 */
+  noStatus?: boolean;
 }) {
   const roleType = useCodeLabel("ROLE_TYPE");
   const inactive = (a: BpAdmin) => a.accountStatus === "INACTIVE";
@@ -36,32 +39,31 @@ export function AdminTable({
   );
 
   const columns: Column<BpAdmin>[] = [
-    // 아이디 · 이름 · 역할 · 권한 그룹은 폭을 정하지 않아 남는 폭을 똑같이 나눈다(2026-10-27 사용자 지정)
+    // 아이디 · 이름 · 역할 · 권한명 · 코드 · 최근 로그인 · 등록일시는 폭을 정하지 않아 남는 폭을 똑같이 나눈다(2026-10-27 사용자 지정).
+    // 계정 상태 · 매핑 점포만 고정 폭이다
     // 아이디도 가운데 정렬 — 플랫폼 관리자 목록과 같다(2026-10-27 사용자 지정)
     { header: "아이디", cell: (a) => dim(a, <span className="block truncate">{a.loginId}</span>) },
     { header: "이름", cell: (a) => open(a, a.name ?? a.loginId) },
     { header: "역할", cell: (a) => dim(a, roleType(a.roleTypeCode)) },
     {
-      header: "권한 그룹",
-      align: "left",
+      header: "권한명 · 코드", // 열 이름도 값과 같은 「권한명 · 코드」(2026-10-27 사용자 지정 — 전엔 「권한 그룹」). 가운데 정렬(권한 그룹 목록과 같다)
       cell: (a) =>
         dim(
           a,
           <span className="truncate">
             {/* 권한 그룹명과 코드 사이에 「 · 」(2026-10-27 사용자 지정) */}
-            {a.roleGroup.name} <span className="text-erp-muted">· {a.roleGroup.roleCode}</span>
+            {a.roleGroup.name} <span className="text-[12px] text-erp-muted">· {a.roleGroup.roleCode}</span>
           </span>,
         ),
     },
     {
-      header: "계정 상태",
+      header: "계정상태",
       width: "w-[100px]",
       cell: (a) => (inactive(a) ? <Badge tone="off">미사용</Badge> : <Badge tone="on">사용</Badge>),
     },
     { header: "매핑 점포", width: "w-[110px]", cell: (a) => dim(a, a.isAllStores ? "전체" : a.storeCount.toLocaleString("ko-KR")) },
     {
       header: "최근 로그인",
-      width: "w-[160px]",
       // 초기 비밀번호 메일이 실패한 계정은 그 사실을 먼저 알린다 — 상세의 비밀번호 초기화로 다시 보낸다
       cell: (a) =>
         a.isInitialPasswordUnsent ? (
@@ -73,7 +75,7 @@ export function AdminTable({
         ),
     },
     // 최근 로그인 다음에 등록일시(2026-10-27 사용자 지정 — 전엔 등록일시 · 최근 로그인 순)
-    { header: "등록일시", width: "w-[160px]", cell: (a) => dim(a, formatDateTime(a.createdAt)) },
+    { header: "등록일시", cell: (a) => dim(a, formatDateTime(a.createdAt)) },
   ];
 
   return (
@@ -82,7 +84,7 @@ export function AdminTable({
       rows={rows}
       rowKey={(a) => a.adminAccountId}
       rowState={(a) => (a.adminAccountId === selected ? "selected" : undefined)}
-      empty="조건에 맞는 관리자 계정이 없습니다."
+      empty={noStatus ? "선택한 계정상태가 없어 표시할 관리자 계정이 없습니다. 계정상태를 하나 이상 선택해 주세요." : "조건에 맞는 관리자 계정이 없습니다."}
     />
   );
 }

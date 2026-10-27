@@ -74,18 +74,19 @@ function RolesBody({
   const columns: Column<BpRoleGroup>[] = [
     {
       header: "권한유형 · 코드",
-      width: "w-[200px]", // 플랫폼 권한 관리와 같은 폭 — 170px 이면 설명 칸이 넓어져 최종수정이 멀어 보였다(2026-10-27 사용자 지정)
-      align: "left", // 2026-10-26 사용자 지정
+      // 권한유형 · 코드 · 권한명 · 최종수정은 같은 260px(2026-10-27 사용자 지정 — 최종수정의 「일시 · 수정자」가 들어가는 폭에 맞췄다). 설명이 남는 폭
+      width: "w-[260px]",
+      // 가운데 정렬 — 열 이름과 맞춘다(2026-10-27 사용자 지정, 전엔 왼쪽)
       cell: (r) => (
         <span className="truncate">
-          <CodeLabel group="ROLE_TYPE" value={r.roleTypeCode} /> <span className="text-erp-label">· {r.roleCode}</span>
+          <CodeLabel group="ROLE_TYPE" value={r.roleTypeCode} /> <span className="text-[12px] text-erp-label">· {r.roleCode}</span>
         </span>
       ),
     },
     {
       header: "권한명",
       // 폭을 정하지 않으면 설명과 남는 폭을 반씩 나눠 설명 글자가 칸 한가운데서 시작했다 — 권한명을 고정하고 설명이 나머지를 쓴다(2026-10-26 사용자 지정)
-      width: "w-[180px]", // 설명이 권한명에 더 붙게 260 → 180(2026-10-26 사용자 지정)
+      width: "w-[260px]", // 권한유형 · 코드 · 최종수정과 같은 폭(2026-10-27 사용자 지정, 전엔 180)
       align: "left",
       cell: (r) => (
         <span className="flex min-w-0 items-center gap-[6px]">
@@ -103,8 +104,8 @@ function RolesBody({
       ),
     },
     { header: "설명", align: "left", cell: (r) => r.description || <span className="text-erp-muted">-</span> },
-    // 「일시 · 수정자」가 220px 에선 수정자 이름이 말줄임됐다 — 280px 로 넓힌다(2026-10-27 사용자 지정)
-    { header: "최종수정", width: "w-[280px]", align: "left", cell: (r) =>
+    // 「일시 · 수정자」가 220px 에선 수정자 이름이 말줄임됐다 — 260px(권한유형 · 코드 · 권한명과 같은 폭, 2026-10-27 사용자 지정)
+    { header: "최종수정", width: "w-[260px]", align: "left", cell: (r) =>
         // 등록만 하고 고친 적 없으면 「-」(2026-10-27 사용자 요청)
         wasUpdated(r.createdAt, r.updatedAt) ? <WhenWho at={r.updatedAt} actor={r.updatedBy} /> : <span className="text-erp-muted">-</span>,
     },

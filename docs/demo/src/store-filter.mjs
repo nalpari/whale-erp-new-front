@@ -29,11 +29,11 @@ export const storeFilter = (A, stores = STORES) => `<div class="flex flex-col ga
 // 점포 정보 관리 필터의 「점포」 묶음 전체(2026-10-27 — 앱 store-filter.tsx 와 같게). 칩 지우기는 작은 [전체 제거], 라벨 줄 오른쪽에 같은 모양의 [일괄검색](24px)을 두어
 // BP 관리자 등록과 같은 일괄 검색 창을 「고를 수 있는 점포 / 선택한 점포」 문구로 연다. erp.js 가 버튼 · 창을 같은 [data-spick] 안에서 찾으므로 묶음 자체에 data-spick 을 단다.
 const FILTER_BULK_TEXT = {
-  guide: "왼쪽에서 체크하고 [추가 ›] 를 누르거나 끌어서 오른쪽에 놓으면 선택됩니다. 오른쪽에서 빼면 선택이 풀립니다.",
+  guide: "점포를 선택한 후 [추가] 버튼을 누르거나 오른쪽으로 드래그하여 선택할 수 있습니다. 선택 해제는 [빼기] 버튼을 이용해 주세요.",
   left: "고를 수 있는 점포",
   right: "선택한 점포",
   leftDone: "고를 수 있는 점포를 모두 골랐습니다.",
-  rightEmpty: "아직 고른 점포가 없습니다.<br>왼쪽에서 골라 옮기세요.",
+  rightEmpty: "선택된 점포가 없습니다.<br>왼쪽 목록에서 점포를 선택하여 추가해 주세요.",
 };
 export const storeFilterSection = (A, stores = STORES) => {
   const dlg = ui.uid("filter-bulk");
