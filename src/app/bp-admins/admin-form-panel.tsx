@@ -527,6 +527,10 @@ export function AdminFormPanel(props: Props) {
               <option value="PART">일부 점포</option>
             </Select>
           </Field>
+          {/* 「전체 점포」가 막힌 이유(2026-10-27 사용자 지정 문구). 공통코드 이름은 띄어 쓰지 않아(가맹마스터) 문구를 적어 둔다 */}
+          {(form.roleTypeCode === "FM" || form.roleTypeCode === "FA") && (
+            <Note>{form.roleTypeCode === "FM" ? "가맹 마스터" : "가맹 관리자"}는 점포를 골라서 맡습니다.</Note>
+          )}
           {!form.isAllStores && !locks.stores && (
             <div className="flex flex-col gap-[8px]">
               {optionsFailure && (
