@@ -8130,7 +8130,7 @@ export interface components {
          * @description 확인 필요 사유 — 검토를 마치면 null
          * @enum {string}
          */
-        AttendanceReviewReason: "ACCURACY_EXCEEDED" | "OUT_OF_RADIUS_CHECKIN" | "OUT_OF_RADIUS_CHECKOUT" | "MOCK_LOCATION";
+        AttendanceReviewReason: "ACCURACY_EXCEEDED" | "OUT_OF_RADIUS_CHECKIN" | "OUT_OF_RADIUS_CHECKOUT" | "MOCK_LOCATION" | "LONG_SHIFT";
         /** @enum {string} */
         AttendanceEntryMethod: "SELF" | "PROXY";
         AttendancePunchDto: {

@@ -20,10 +20,10 @@ export type EmploymentType = Schemas["EmploymentType"];
 /** 필터 「출퇴근 상태」(STAFF-31) — 화면 순서 */
 export const DAY_STATUSES: readonly DayStatus[] = ["NORMAL", "LATE", "ABSENT", "MISSING_CHECK_IN", "MISSING_CHECK_OUT", "OFF"];
 /**
- * 필터 「확인 필요 사유」의 선택지 — 반경 밖 출근 · 반경 밖 퇴근 · 위치 조작 감지 셋(ATT-11, 2026-10-26 재영). 위치 오차 초과(ACCURACY_EXCEEDED)는
- * 확인 필요 사유에서 빠진 값이라(직원 앱 목업 HIST-4) api 는 값만 남겼다.
+ * 필터 「확인 필요 사유」의 선택지 — 반경 밖 출근 · 반경 밖 퇴근 · 위치 조작 감지(ATT-11, 2026-10-26 재영) · 근무 12시간 초과(출근부터 퇴근까지
+ * 12시간 넘는 직원 퇴근, 2026-10-27 재영) 넷. 위치 오차 초과(ACCURACY_EXCEEDED)는 확인 필요 사유에서 빠진 값이라(직원 앱 목업 HIST-4) api 는 값만 남겼다.
  */
-export const REVIEW_REASONS: readonly ReviewReason[] = ["OUT_OF_RADIUS_CHECKIN", "OUT_OF_RADIUS_CHECKOUT", "MOCK_LOCATION"];
+export const REVIEW_REASONS: readonly ReviewReason[] = ["OUT_OF_RADIUS_CHECKIN", "OUT_OF_RADIUS_CHECKOUT", "MOCK_LOCATION", "LONG_SHIFT"];
 export const EMPLOYMENT_TYPES: readonly EmploymentType[] = ["FULL_TIME", "PART_TIME"];
 /** 필터 「기록 구분」 — 직원 등록 · 대신 등록 · 보정됨 */
 export const ENTRY_KINDS = ["SELF", "PROXY", "CORRECTED"] as const;
