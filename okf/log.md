@@ -1,7 +1,7 @@
 # Bundle history
 
 ## 2026-10-27
-* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 관리자 2단계: 가맹 마스터 미사용 띠 · 미사용/점포 빼기 저장 전 연쇄 확인창(api update-impact), 범위 칸 도움말, 상세의 본인 · 남이 연 가맹 관리자 안내 띠, [등록]을 제목 줄로.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 관리자 2단계: 가맹 마스터 미사용 띠 · 미사용/점포 빼기 저장 전 연쇄 확인창(api update-impact), 범위 칸 도움말, 상세의 본인 · 수정할 수 없는 가맹 관리자 안내 띠, [등록]을 제목 줄로.
 
 ## 2026-10-26
 * **Update**: main 병합(front sandshrew, main #139 까지): okf 충돌은 양쪽 기록을 살렸다. 플랫폼 관리자 이메일 검사가 `email-format.ts` 로 모여, BP 관리자 폼도 그 `emailError` 를 쓴다(문구 「이메일 형식이 올바르지 않습니다.」).
