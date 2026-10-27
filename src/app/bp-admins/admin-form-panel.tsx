@@ -406,7 +406,7 @@ export function AdminFormPanel(props: Props) {
                 <TextField value={form.roleTypeCode ? roleType(form.roleTypeCode) : ""} readOnly />
               </Field>
             )}
-            <Labeled label="권한 그룹" required={!locks.roleGroup} message={message("roleGroupId")}>
+            <Labeled label="권한명" required={!locks.roleGroup} message={message("roleGroupId")}>
               <Select
                 value={form.roleGroupId}
                 onChange={(e) => set("roleGroupId", e.target.value)}

@@ -28,7 +28,7 @@ export function adminEditBody(A, R, { panel = false } = {}) {
       // 계정 역할은 130px 고정, 권한 그룹이 남는 폭(앱 admin-form-panel, 2026-10-27)
       ui.field("계정 역할", ui.textField({ value: "BP 관리자", readonly: true }), "w-[130px] shrink-0"),
       ui.field(
-        "권한 그룹",
+        "권한명",
         ui.select(["운영 총괄 · BA000003", "인사 담당 · BA000004", "정산 조회 · BA000005", "고객응대 · BA000006", "점포 조회 전용 · BA000007"], { value: "인사 담당 · BA000004" }),
       ),
     ),

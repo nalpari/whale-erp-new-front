@@ -85,7 +85,7 @@ export function validateBpAdminForm(
   const email = emailError(form.email);
   if (email) errors.email = email;
   if (mode === "create" && !form.roleTypeCode) errors.roleTypeCode = "계정 역할을 골라 주세요.";
-  if (!form.roleGroupId) errors.roleGroupId = "권한 그룹을 골라 주세요.";
+  if (!form.roleGroupId) errors.roleGroupId = "권한명을 골라 주세요."; // 칸 라벨 「권한명」(2026-10-27 사용자 지정)
   if (!storesLocked && !form.isAllStores && form.stores.length + outOfScopeCount === 0) errors.stores = "대상 점포를 1곳 이상 골라 주세요.";
   return errors;
 }
