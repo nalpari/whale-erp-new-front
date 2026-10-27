@@ -1,5 +1,5 @@
 // 플랫폼 관리자 수정. 목업 docs/mockup/system/admins-edit.html 의 기본 상태(platpark 박지우 · 일반)를 플랫폼 관리자로 본 것.
-// 목업 제목 줄의 [취소][저장]은 화면 아래로 내렸다. 권한 선택의 묶음(optgroup)은 Select 가 받지 않아 한 줄 목록으로 폈다.
+// 목업 제목 줄의 [취소][저장]은 화면 아래로 내렸다. 권한 선택은 역할 묶음(optgroup)으로 나눈다(2026-10-27).
 // 상세·등록·수정은 따로 화면(주소)이 없고 목록(system/admins.html)의 슬라이드 패널로만 연다(2026-10-08). 저장하면 상세 패널로 간다(erp.js data-save-panel).
 import * as ui from "../ui.mjs";
 import * as c from "../config-parts.mjs";
@@ -54,8 +54,8 @@ function platformAdminEditBody(A) {
       ui.field(
         "권한명",
         stack(
-          ui.select(["플랫폼 마스터 · PM000001 (역할-플랫폼 마스터)", "플랫폼 관리자 · PA000001 (역할-플랫폼 관리자)", "고객지원 담당 · PA000002 (역할-플랫폼 관리자)", "정산 담당 · PA000003 (역할-플랫폼 관리자)", "기준정보 조회 · PA000004 (역할-플랫폼 관리자)"], {
-            value: "고객지원 담당 · PA000002 (역할-플랫폼 관리자)",
+          ui.select([{ group: "플랫폼 마스터", options: ["플랫폼 마스터 · PM000001"] }, { group: "플랫폼 관리자", options: ["플랫폼 관리자 · PA000001", "고객지원 담당 · PA000002", "정산 담당 · PA000003", "기준정보 조회 · PA000004"] }], {
+            value: "고객지원 담당 · PA000002",
             "aria-label": "권한명",
           }),
         ),
