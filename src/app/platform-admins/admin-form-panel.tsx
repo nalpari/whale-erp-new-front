@@ -29,7 +29,7 @@ import { EmailFormatValid, FailedBand, FieldMessage, LoginIdAvailability, unknow
 // 플랫폼 관리자 등록(S-FOJJKB) · 수정(S-CZGHBS) 슬라이드 패널. 패널 폭(464)이라 칸을 한 줄에 하나씩 쌓는다(데모와 같다).
 // 등록에는 상태 · 비밀번호 칸이 없다 — 사용으로 생기고 초기 비밀번호가 등록 이메일로 간다.
 // 수정에서 아이디는 읽기 전용이고, 본인 계정은 권한 · 상태를 바꿀 수 없다(칸을 막는다 · api 도 막는다).
-// 사용자 권한 선택지는 api 가 준 목록이다 — 플랫폼 관리자에게는 플랫폼 마스터 권한이 빠져 온다.
+// 권한명 선택지는 api 가 준 목록이다 — 플랫폼 관리자에게는 플랫폼 마스터 권한이 빠져 온다.
 /** 동시 수정 409 문구(api platform-admins.service). 이때만 최신 정보를 다시 불러온다. */
 const STALE = "먼저 수정했습니다";
 
@@ -286,7 +286,7 @@ export function AdminFormPanel(props: Props) {
         {mode === "edit" && (
           // 아이디 칸을 없앤 대신(위 FormGroup 주석) 제목 줄에 라벨을 달아 값만으로는 안 보이던 것을 바로
           // 알게 한다(점포코드 ST000123 처럼 라벨+값, 2026-10-20 디자인 수정 — 이름은 중복이라 뺀다). 상세
-          // 제목 줄의 사용자 권한 꼬리표와 같은 뱃지 모양으로 맞췄다.
+          // 공통 띠지(Tag) 모양이다.
           <span className="ml-[6px] inline-flex">
             <Tag>
               아이디 · <b className="font-semibold">{props.admin.loginId}</b>

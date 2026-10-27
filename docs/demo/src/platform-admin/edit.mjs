@@ -73,7 +73,7 @@ export const platformAdminEditPanel = (A, R) =>
     "platform-admin-edit-panel",
     "플랫폼 관리자 수정",
     // 아이디 칸을 없앤 대신 제목 줄에 라벨을 달아 값만으로는 안 보이던 것을 바로 알게 한다(이름은 중복이라
-    // 뺀다, 2026-10-20 디자인 수정). 상세 제목 줄의 사용자 권한 꼬리표와 같은 뱃지 모양으로 맞췄다.
+    // 뺀다, 2026-10-20 디자인 수정). 공통 띠지(Tag) 모양이다.
     ui.sectionHead(
       `플랫폼 관리자 수정<span class="ml-[6px] inline-flex">${c.tag('아이디 · <b class="font-semibold">platpark</b>')}</span>`,
     ) + platformAdminEditBody(A),
@@ -101,7 +101,7 @@ export const platformMyPanel = (A, { master = false } = {}) => {
     ui.field("직책", ui.textField({ value: me.title, maxlength: 30 })),
     myAddress(A, "13529", "경기 성남시 분당구 판교역로 166", "7층"),
   );
-  const role = ui.formGroup("권한명", ui.field("권한명", ui.textField({ value: me.role, readonly: true })));
+  const role = ui.formGroup("사용자 권한", ui.field("사용자 권한", ui.textField({ value: me.role, readonly: true })));
   const buttons = `<div class="flex justify-center gap-[6px]">${ui.button("취소", { variant: "off", "data-close": true })}${ui.button("저장", { "data-close": true })}</div>`;
   return ui.slidePanel("platform-mypage-panel", "내 정보", ui.sectionHead(`내 정보${sub(`${me.name} · ${me.id}`)}`) + basic + role + buttons);
 };
