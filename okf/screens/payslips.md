@@ -4,12 +4,12 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-21T09:45:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-27T06:46:08Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
     title: 타입(생성한 api 타입) · 조회 조건 · api 쿼리 · 달 · 합계
-    last_modified: 2026-10-19T09:00:00Z
+    last_modified: 2026-10-27T06:46:08Z
   - id: payslips-api
     resource: ../../src/lib/payslips-api.ts
     title: GET /payslips · GET /payslips/:id 호출(404 → null)
@@ -17,11 +17,11 @@ sources:
   - id: payslip-list-page
     resource: ../../src/app/payslips/page.tsx
     title: 목록 화면 — 상태 필터 · 달 이동 · 상태 건수 · 건수 선택 · 목록
-    last_modified: 2026-10-19T09:00:00Z
+    last_modified: 2026-10-27T06:46:08Z
   - id: payslip-list-query
     resource: ../../src/app/payslips/payslip-list-query.ts
     title: 목록 URL ↔ 조회 조건(달은 늘 싣는다, 기본 건수 20 은 뺀다)
-    last_modified: 2026-10-19T09:00:00Z
+    last_modified: 2026-10-27T06:46:08Z
   - id: payslip-row
     resource: ../../src/app/payslips/payslip-row.ts
     title: 목록 칸(급여 기간 · 출퇴근 확인 · 발송일 · 검토 대기 배지) · 상태 색 · 지급 도움말 · 경고 띠
