@@ -28,7 +28,7 @@ import { assigneeText, dueText, MASKED_STAFF } from "../todos/todo-row";
 import { ScheduleMonth } from "../work-schedules/schedule-month";
 import { ScheduleWeek } from "../work-schedules/schedule-week";
 import { addDays, mondayOf, moved, parseScheduleQuery, scheduleApiSearch, toScheduleSearch, type ScheduleQuery } from "../work-schedules/work-schedule-query";
-import { latestNotices, oneStorePaths, oneStoreStatusCells, STAFF_LIMIT, staffCountsOf, todoSummaryOf } from "./one-store-view";
+import { latestNotices, oneStorePaths, staffRowsOf, oneStoreStatusCells, STAFF_LIMIT, staffCountsOf, todoSummaryOf } from "./one-store-view";
 import { useHomeLoad, type Loaded } from "./use-home-api";
 
 // 로그인 후 홈 — 점포 하나 화면(WHALEERP-342, HOME-6 · HOME-9, 목업 home/signed-in.html 「점포 하나 화면」 · 데모 oneStore).
@@ -375,7 +375,7 @@ function StaffCard({
                   )),
                 },
               ]}
-              rows={items.map((item, i) => ({ no: i, item }))}
+              rows={staffRowsOf(items).map((item, i) => ({ no: i, item }))}
               // 가린 행은 api 가 staffMemberId 를 null 로 준다 — 순번으로 가른다
               rowKey={(r) => r.item.staffMemberId ?? `masked-${r.no}`}
               empty={

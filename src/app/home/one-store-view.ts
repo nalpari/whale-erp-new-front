@@ -27,16 +27,22 @@ const NOTICE_SHOWN = 3;
 /** 가입 대기로 보이는 가입 상태(HOME-9) — 초대 발송 · 초대 만료 · 거절 · 소속 추가 확인 · 복귀 확인 */
 const WAITING_STATES: ReadonlySet<string> = new Set(["INVITED", "EXPIRED", "REJECTED", "AFFILIATION_PENDING", "RETURN_PENDING"]);
 /**
- * 직원 정보 표가 받는 가입 상태 — 임시저장만 있는 레코드(DRAFT)는 재직이 아니라(운영 정책 CTR-29) 표와 수에서 뺀다. 연결 보류(LINK_HOLD)는
- * 없앤 규칙이라 받지 않는다. 가입 불가(UNDER_AGE)는 받아 그대로 보인다.
+ * 직원 정보 표에서 빼는 가입 상태 — 임시저장만 있는 레코드(DRAFT)는 재직이 아니고(운영 정책 CTR-29), 연결 보류(LINK_HOLD)는 없앤 규칙이다.
+ * api 의 joinState 조건으로 빼지 않는다 — 본사 역할이 개인 칸으로 거르면 api 가 가려지는 가맹 직원 줄을 통째로 빼서(filtersPersonal)
+ * 「가려진 직원」이 늘 0 이 된다(#153 재확인). 그래서 받은 줄 가운데 보이는 줄만 화면에서 거른다 — 가린 줄은 joinState 가 null 이라 남는다.
  */
-const STAFF_STATES = ["JOINED", ...WAITING_STATES, "UNDER_AGE"];
+const HIDDEN_STATES: ReadonlySet<string> = new Set(["DRAFT", "LINK_HOLD"]);
+
+/** 직원 정보 표에 그릴 줄 — 보이는 줄의 임시저장 · 연결 보류만 뺀다(HIDDEN_STATES) */
+export const staffRowsOf = <I extends Pick<StaffMemberListItem, "isMasked" | "joinState">>(items: readonly I[]): I[] =>
+  items.filter((i) => i.isMasked || !i.joinState || !HIDDEN_STATES.has(i.joinState));
 
 /** 영역별 api 경로(BFF) */
 export function oneStorePaths(storeId: number, today: string) {
   const todo = (extra: Record<string, string>, pageSize: number) =>
     `/todos?${new URLSearchParams({ storeIds: String(storeId), ...extra, page: "1", pageSize: String(pageSize) })}`;
-  const staff = new URLSearchParams({ storeIds: String(storeId), joinState: STAFF_STATES.join(","), employmentStatus: "EMPLOYED", page: "1", pageSize: String(STAFF_LIMIT) });
+  // 재직 상태는 개인 칸이 아니라 본사 역할에게도 가린 줄을 빼지 않는다 — 가입 상태 조건은 싣지 않는다(HIDDEN_STATES)
+  const staff = new URLSearchParams({ storeIds: String(storeId), employmentStatus: "EMPLOYED", page: "1", pageSize: String(STAFF_LIMIT) });
   return {
     notices: `/support-notices?page=1&pageSize=${NOTICE_FETCH}`,
     store: `/stores/${storeId}`,
@@ -82,10 +88,11 @@ export function oneStoreStatusCells(item: StaffMemberListItem): Cell[] {
  * 전체(total)가 받은 줄보다 많으면 partial — 화면이 「앞 100명 기준」을 밝힌다(가린 직원 수는 api total 로 가를 수 없다).
  */
 export function staffCountsOf(list: { items: readonly StaffMemberListItem[]; total: number }) {
-  const { items } = list;
+  // 수는 그릴 줄(staffRowsOf)로 센다. 앞 100명인지는 거르기 전 받은 줄 수로 본다 — total 에는 임시저장 · 연결 보류도 들어 있다
+  const items = staffRowsOf(list.items);
   const masked = items.filter((i) => i.isMasked).length;
   const visible = items.filter((i) => !i.isMasked);
   const waiting = visible.filter((i) => i.joinState && WAITING_STATES.has(i.joinState)).length;
   const underAge = visible.filter((i) => i.joinState === "UNDER_AGE").length;
-  return { employed: visible.length - waiting - underAge, waiting, underAge, masked, partial: items.length < list.total };
+  return { employed: visible.length - waiting - underAge, waiting, underAge, masked, partial: list.items.length < list.total };
 }

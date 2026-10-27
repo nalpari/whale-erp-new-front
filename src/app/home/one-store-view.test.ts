@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { AdminStore } from "../../lib/session.ts";
 import type { StaffMemberListItem } from "../../lib/staff-members.ts";
-import { latestNotices, oneStoreIdOf, oneStorePaths, oneStoreStatusCells, staffCountsOf, todoSummaryOf } from "./one-store-view.ts";
+import { latestNotices, oneStoreIdOf, oneStorePaths, oneStoreStatusCells, staffCountsOf, staffRowsOf, todoSummaryOf } from "./one-store-view.ts";
 
 const store = (storeId: number) => ({ storeId }) as AdminStore;
 const staff = (over: Partial<StaffMemberListItem>) =>
@@ -29,7 +29,8 @@ test("api 경로 — TO-DO 는 그 점포 오늘 전부 · 긴급(대기 · 진�
   assert.equal(q(p.todoUrgent).get("dueDateFrom"), null);
   assert.deepEqual(q(p.inquiriesWaiting).getAll("status"), ["RECEIVED", "IN_PROGRESS"]);
   assert.deepEqual([q(p.staff).get("storeIds"), q(p.staff).get("employmentStatus"), q(p.staff).get("pageSize")], ["5", "EMPLOYED", "100"]);
-  assert.deepEqual(q(p.staff).get("joinState")?.split(","), ["JOINED", "INVITED", "EXPIRED", "REJECTED", "AFFILIATION_PENDING", "RETURN_PENDING", "UNDER_AGE"]);
+  // 가입 상태 조건을 실으면 본사 역할에게 가린 줄이 api 에서 통째로 빠진다(filtersPersonal)
+  assert.equal(q(p.staff).get("joinState"), null);
   assert.equal(q(p.notices).get("pageSize"), "20");
   assert.equal(p.store, "/stores/5");
 });
@@ -61,4 +62,15 @@ test("직원 상태 칸 — 초대 발송 · 만료 · 거절 · 소속 추가 �
   const items = [staff({}), staff({ joinState: "EXPIRED" }), staff({ joinState: "UNDER_AGE" }), staff({ isMasked: true, joinState: null })];
   assert.deepEqual(staffCountsOf({ items, total: 4 }), { employed: 1, waiting: 1, underAge: 1, masked: 1, partial: false });
   assert.equal(staffCountsOf({ items, total: 120 }).partial, true);
+});
+
+test("본사 역할 · 가맹 점포 — 가린 줄(joinState null)은 남아 「가려진 직원」으로 세고, 보이는 임시저장 · 연결 보류 줄은 뺀다", () => {
+  const masked = staff({ isMasked: true, joinState: null, employmentStatus: null });
+  const draft = staff({ joinState: "DRAFT" });
+  const linkHold = staff({ joinState: "LINK_HOLD" });
+  const items = [staff({}), masked, masked, draft, linkHold, staff({ joinState: "INVITED" })];
+  assert.deepEqual(staffRowsOf(items), [items[0], masked, masked, items[5]]);
+  assert.deepEqual(staffCountsOf({ items, total: 6 }), { employed: 1, waiting: 1, underAge: 0, masked: 2, partial: false });
+  // 앞 100명인지는 거르기 전 받은 줄 수로 본다
+  assert.equal(staffCountsOf({ items, total: 7 }).partial, true);
 });
