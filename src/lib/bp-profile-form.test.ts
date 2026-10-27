@@ -89,6 +89,10 @@ test("formOf — BpProfile 값을 칸으로, 전화는 세 칸으로 나눈다. 
   });
 });
 
+test("formOf — 050X 평생번호(12자리) 대표자 연락처는 4-4-4 로 나눈다", () => {
+  assert.deepEqual(formOf({ ...profile, bizCeoPhone: "050720331334" }, "", "").bizCeoPhone, ["0507", "2033", "1334"]);
+});
+
 test("formOf — 저장된 대표자 연락처 · 이메일이 지금 기본정보 값과 같으면 동일 체크박스가 켜진다(store-form.ts sameAddress 와 같은 패턴)", () => {
   const form = formOf(profile, "01055301182", "ceo@hangang.co.kr");
   assert.equal(form.sameAsBasicPhone, true);
@@ -138,7 +142,10 @@ test("validateBpProfileForm — 상호명만 필수, 나머지는 비워도 된�
 });
 
 test("validateBpProfileForm — 채웠을 때만 형식을 본다(연락처 · 이메일)", () => {
-  assert.ok(validateBpProfileForm({ ...filledForm, bizCeoPhone: ["01", "12", "5678"] }).bizCeoPhone, "8자리");
+  assert.equal(validateBpProfileForm({ ...filledForm, bizCeoPhone: ["01", "12", "5678"] }).bizCeoPhone, "대표자 연락처는 숫자 9~12자리입니다.", "8자리");
+  assert.equal(validateBpProfileForm({ ...filledForm, bizCeoPhone: ["02", "123", "4567"] }).bizCeoPhone, undefined, "9자리(02 유선)");
+  assert.equal(validateBpProfileForm({ ...filledForm, bizCeoPhone: ["0507", "2033", "1334"] }).bizCeoPhone, undefined, "12자리(050X 평생번호)");
+  assert.ok(validateBpProfileForm({ ...filledForm, bizCeoPhone: ["0507", "2033", "13345"] }).bizCeoPhone, "13자리");
   assert.ok(validateBpProfileForm({ ...filledForm, bizCeoEmail: "not-an-email" }).bizCeoEmail);
 });
 

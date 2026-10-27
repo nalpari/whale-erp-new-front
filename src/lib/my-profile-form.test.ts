@@ -38,6 +38,9 @@ test("splitPhone — 숫자만 세 칸으로, 02는 두 자리", () => {
   assert.deepEqual(splitPhone("01012345678"), ["010", "1234", "5678"]);
   assert.deepEqual(splitPhone("0212345678"), ["02", "1234", "5678"]);
   assert.deepEqual(splitPhone("050720331334"), ["0507", "2033", "1334"], "050X 평생번호는 네 자리 국번");
+  assert.deepEqual(splitPhone("05012345678"), ["050", "1234", "5678"], "11자리 050 은 3자리 국번");
+  assert.deepEqual(splitPhone("010123456789"), ["010", "12345", "6789"], "050 이 아닌 12자리는 050X 규칙을 타지 않는다");
+  assert.deepEqual(splitPhone("021234567"), ["02", "123", "4567"], "9자리 02 유선");
   assert.deepEqual(splitPhone(""), ["", "", ""]);
 });
 

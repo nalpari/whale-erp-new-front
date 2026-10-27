@@ -36,4 +36,9 @@ test("고친 적 있는지 — 등록일시와 1초 이상 다를 때만. 없거
   assert.equal(wasUpdated("2026-10-27T01:00:00.000Z", "2026-10-28T09:30:00.000Z"), true);
   assert.equal(wasUpdated(null, "2026-10-27T01:00:00.000Z"), false);
   assert.equal(wasUpdated("2026-10-27T01:00:00.000Z", "깨진 값"), false);
+  assert.equal(wasUpdated("깨진 값", "2026-10-27T01:00:00.000Z"), false, "등록일시 쪽이 깨진 경우");
+  assert.equal(wasUpdated(undefined, "2026-10-27T01:00:00.000Z"), false);
+  assert.equal(wasUpdated("2026-10-27T01:00:00.000Z", undefined), false);
+  assert.equal(wasUpdated("2026-10-27T01:00:00.000Z", "2026-10-27T01:00:00.999Z"), false, "999ms 는 같은 것으로");
+  assert.equal(wasUpdated("2026-10-27T01:00:05.000Z", "2026-10-27T01:00:00.000Z"), true, "수정일시가 앞선 깨진 데이터도 차이가 1초 이상이면 고친 것으로(사용자 지정)");
 });
