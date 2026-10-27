@@ -4,7 +4,7 @@ import { type RoleDetailState } from "./role-parts";
 import { RolesScreen } from "./roles-screen";
 
 // 플랫폼 권한 관리(MN000214 · S-JDCOAG · 메뉴 등록 S-EFQREM). 데모 docs/demo/system/roles.html 을 공통 컴포넌트로 옮겼다.
-// 왼쪽 권한 목록(쪽 나눔 없음), 오른쪽 고정 칸에 고른 권한의 수정(고칠 수 없으면 상세) · 등록 양식. 메뉴 권한은 줄마다 [메뉴등록] 팝업이다.
+// 왼쪽 권한 목록(쪽 나눔 없음), 오른쪽 고정 칸에 고른 권한의 수정(고칠 수 없으면 상세) · 등록 양식. 메뉴 권한은 줄마다 [메뉴설정] 팝업이다.
 // 고른 권한은 주소(?role=)에 둔다. 상세만 못 불러오면 목록은 그대로 두고 오른쪽 칸에서 알린다.
 // 막힌 이유 한글은 api enum(PlatformRoleGroupLockReason · PlatformRoleMenuBlockReason)에서 읽는다 — 못 받으면 영문 값 대신 일반 문구를 보인다.
 export default async function PlatformRolesPage({ searchParams }: PageProps<"/platform-role-groups">) {

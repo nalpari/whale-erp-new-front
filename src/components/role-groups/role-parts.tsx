@@ -34,11 +34,11 @@ type Actor = { name: string | null; loginId: string } | null;
 /** 등록자 · 수정자. 마이그레이션이 넣은 행이면 「시스템」 */
 export const actorOf = (actor: Actor) => (actor ? (actor.name ?? actor.loginId) : "시스템");
 
-/** 목록의 「일시 | 사람」 한 줄 — 상세의 등록일시 · 최종수정일시와 같은 모양. 사람은 이름(없으면 아이디), 시스템이 넣은 행은 「시스템」 */
+/** 목록의 「일시 · 사람」 한 줄 — 상세의 등록 · 최종수정(ReadonlyCard)과 같은 구분자. 사람은 이름(없으면 아이디), 시스템이 넣은 행은 「시스템」 */
 export function WhenWho({ at, actor }: { at: string; actor: Actor }) {
   return (
     <span className="truncate">
-      {formatDateTime(at)} <span className="text-erp-label">| {actorOf(actor)}</span>
+      {formatDateTime(at)} <span className="text-erp-label">· {actorOf(actor)}</span>
     </span>
   );
 }

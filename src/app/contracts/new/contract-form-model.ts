@@ -98,6 +98,11 @@ export interface SaveResult {
   error: string;
   /** 있으면 같은 점포에 진행 중 계약이 있어 저장하지 않았다 — 대체를 확인받아 다시 보낸다 */
   inProgress?: InProgressContract[];
+  /**
+   * 있으면 종이 계약이 같은 점포 · 같은 번호의 체결 완료 계약과 기간이 겹쳐 등록하지 않았다(api SIGNED_CONTRACT_OVERLAP, WHALEERP-156).
+   * 잘못 올린 계약이면 「잘못 올린 계약 바로잡기」로 이 목록을 대체해 다시 보낸다
+   */
+  signedOverlap?: InProgressContract[];
   /** 저장 요청의 결과를 받지 못했다(저장 · 발송됐을 수 있음) — 같은 폼으로 다시 저장하지 못하게 막는다 */
   locked?: boolean;
 }
@@ -106,9 +111,14 @@ export interface SaveResult {
  * api 409 본문에서 대체할 진행 중 계약 목록을 꺼낸다(code CONTRACT_IN_PROGRESS). 다른 409(근무 시간 겹침 ·
  * 재직 중)는 undefined — 그 문장을 그대로 보이면 된다(겹침은 다른 점포의 요일 · 시각을 싣지 않는다, CTR-26).
  */
-export function inProgressOf(body: unknown): InProgressContract[] | undefined {
+export const inProgressOf = (body: unknown) => contractsOf(body, "CONTRACT_IN_PROGRESS");
+
+/** api 409 본문에서 종이 계약과 기간이 겹치는 체결 완료 — 바로잡기가 대체할 목록을 꺼낸다(code SIGNED_CONTRACT_OVERLAP, WHALEERP-156) */
+export const signedOverlapOf = (body: unknown) => contractsOf(body, "SIGNED_CONTRACT_OVERLAP");
+
+function contractsOf(body: unknown, code: string): InProgressContract[] | undefined {
   const b = body as { code?: unknown; contracts?: unknown } | null;
-  if (b?.code !== "CONTRACT_IN_PROGRESS" || !Array.isArray(b.contracts)) return undefined;
+  if (b?.code !== code || !Array.isArray(b.contracts)) return undefined;
   const text = (v: unknown) => (typeof v === "string" && v ? v : null);
   const list = b.contracts
     .filter((c): c is { contractId: number; status: string } & Record<string, unknown> => typeof c?.contractId === "number" && typeof c?.status === "string")
@@ -230,6 +240,9 @@ export function renewalFromDetail(d: ContractDetail, now = new Date()): Contract
   const start = d.endDate ? nextDay(d.endDate) : "";
   return { ...base, startDate: start && start >= today ? start : "", endDate: "", probation: false };
 }
+
+/** 재계약 시작일 안내 — api 400 과 같은 문장 */
+export const renewalStartProblem = (previousStartDate: string) => `재계약 시작일은 직전 계약 시작일(${previousStartDate}) 다음 날부터입니다`;
 
 const nextDay = (iso: string) => {
   const t = new Date(`${iso}T00:00:00Z`);
@@ -449,7 +462,7 @@ export const isMinor = (f: Pick<ContractForm, "birthDate" | "startDate">) =>
  * 저장 전에 화면이 먼저 막는 것. api 도 같은 것을 다시 본다.
  * 임시저장은 직원 칸(이름 · 번호 · 직무)과 근무지만 필수이고, 비운 칸은 묻지 않되 넣은 값은 똑같이 본다.
  */
-export function problems(f: ContractForm, temporary = false, hasEmploymentFile = false): string[] {
+export function problems(f: ContractForm, temporary = false, hasEmploymentFile = false, previousStartDate?: string): string[] {
   const out: string[] = [];
   const need = (empty: boolean, message: string) => {
     if (empty && !temporary) out.push(message);
@@ -462,6 +475,8 @@ export function problems(f: ContractForm, temporary = false, hasEmploymentFile =
   if (!f.jobTitle.trim()) out.push("직무를 입력하세요");
   need(!f.startDate, "계약 시작일을 입력하세요");
   if (f.startDate && f.endDate && f.endDate < f.startDate) out.push("계약 종료일은 시작일보다 앞설 수 없습니다");
+  // 재계약은 직전 계약 시작일 다음 날부터 — 그 뒤로는 직전 계약과 겹쳐도 된다(WHALEERP-156, 2026-10-26 김민식 · 재영 확인)
+  if (previousStartDate && f.startDate && f.startDate <= previousStartDate) out.push(renewalStartProblem(previousStartDate));
   if (digits(f.wage) ? !(Number(digits(f.wage)) > 0) : !temporary) out.push("시급을 입력하세요"); // 고용 형태와 상관없이 시급(2026-10-12 재영)
   need(f.days.length === 0, "근무요일을 하나 이상 고르세요");
   out.push(...timeProblems(f));

@@ -31,8 +31,9 @@ const BTN_TONE = {
   // 퇴직 처리처럼 되돌리기 어려운 동작(2026-10-08 재영). 미운영 배지와 같은 상태 빨강 토큰을 쓴다. 공통 Button 에는 아직 없다.
   danger: "border-erp-off bg-erp-off text-white",
 };
+// 막힌 버튼(disabled)은 흐리게 두고 호버하지 않는다 — 앱 button.tsx 에 있던 것을 옮겼다(2026-10-26, 수정 양식 [저장] · 권한 삭제 [삭제]가 막혀 보이게)
 const BTN_SHELL =
-  "inline-flex h-[34px] shrink-0 items-center justify-center rounded-[2px] border px-[24px] text-[14px] font-medium whitespace-nowrap transition-[background-color,border-color,color] duration-150 ease-out hover:border-erp-brand hover:bg-white hover:text-erp-ink";
+  "inline-flex h-[34px] shrink-0 items-center justify-center rounded-[2px] border px-[24px] text-[14px] font-medium whitespace-nowrap transition-[background-color,border-color,color] duration-150 ease-out hover:border-erp-brand hover:bg-white hover:text-erp-ink disabled:pointer-events-none disabled:opacity-40";
 export function button(label, { variant = "primary", href, ...a } = {}) {
   const cls = `${BTN_SHELL} ${BTN_TONE[variant]} `;
   return href !== undefined
@@ -74,6 +75,20 @@ export function dataTable(columns, rows, empty = "데이터가 없습니다.") {
   const head = columns.map((c) => `<th scope="col" class="px-[10px] font-medium text-erp-thead-text">${c.header}</th>`).join("");
   const body = rows.length ? rows.map((r) => tableRow(columns, r)).join("") : tableEmptyRow(columns, empty);
   return `<table class="w-full table-fixed border-collapse border-x border-erp-thead-line text-[14px]"><colgroup>${cols}</colgroup><thead><tr class="h-[42px] border-y border-erp-thead-line bg-erp-thead-bg">${head}</tr></thead><tbody class="text-erp-ink">${body}</tbody></table>`;
+}
+
+// data-table.tsx 의 scroll — 열 이름 줄을 고정하고 그 아래 줄만 스크롤한다. 부모(flex 세로 묶음)가 정한 높이를 채운다(2026-10-26).
+// 머리 · 본문을 두 표로 나누고 둘 다 스크롤바 자리를 비워 열이 어긋나지 않는다. table: dataTable 결과(줄 표시를 얹은 뒤에 감싼다)
+export function scrollTable(table) {
+  const open = table.slice(0, table.indexOf(">") + 1);
+  const pick = (tag) => table.slice(table.indexOf(`<${tag}`), table.indexOf(`</${tag}>`) + tag.length + 3);
+  const cols = pick("colgroup");
+  return (
+    `<div data-table-scroll class="flex min-h-[134px] flex-1 flex-col">` +
+    `<div aria-hidden="true" class="shrink-0 overflow-hidden [scrollbar-gutter:stable]">${open}${cols}${pick("thead")}</table></div>` +
+    `<div class="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]" onscroll="this.previousElementSibling.scrollLeft=this.scrollLeft">${open}${cols}${pick("thead").replace("<thead>", '<thead class="sr-only">')}${pick("tbody")}</table></div>` +
+    `</div>`
+  );
 }
 
 // detail-table.tsx. rows: [label, valueHtml, multiline?] — multiline 은 값이 여러 줄인 줄(주소 · 대표 이미지처럼)만

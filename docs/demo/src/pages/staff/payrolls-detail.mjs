@@ -1,4 +1,4 @@
-// 급여명세서 검토. 목업 docs/mockup/staff/payrolls-detail.html(서지안 · 2026-08 · 검토 중)을 BP 마스터로 본 것.
+// 급여명세서 검토. 목업 docs/mockup/staff/payrolls-detail.html(서지안 · 2026-08 · 작성 중 · 검토 대기)을 BP 마스터로 본 것.
 // 표본이 정직원이라 파트타이머 명세서에만 서는 3.3% 원천징수 스위치와 칸은 넣지 않았다.
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";

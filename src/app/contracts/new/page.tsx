@@ -50,7 +50,7 @@ export default async function NewContractPage({ searchParams }: PageProps<"/cont
             ) : !storeOpen ? (
               <Notice title="이 근무지에는 근로계약서를 작성할 수 없습니다(폐점했거나 맡은 점포가 아님)" back={back} />
             ) : (
-              <ContractForm stores={stores} labels={labels} signedIn={signedIn} initial={renewalFromDetail(previous)} previousContractId={from} back={back} />
+              <ContractForm stores={stores} labels={labels} signedIn={signedIn} initial={renewalFromDetail(previous)} previousContractId={from} previousStartDate={previous.startDate ?? undefined} back={back} />
             )}
           </ContractPermission>
         </div>

@@ -14,12 +14,16 @@ export const req = (label) => `${label}${REQ}`;
 export const group = (label, control, width) =>
   `<div role="group" aria-label="${label.replace(REQ, "")}" class="flex flex-col justify-center gap-[8px] ${width ?? "min-w-px flex-1"}"><span class="truncate text-[14px] font-medium text-erp-label">${label}</span>${control}</div>`;
 
-// 비밀번호 칸 + [보기]. 1팀 컴포넌트에 비밀번호 칸이 없어 TextField 위에 글자 버튼을 겹쳤다. MY PAGE 비밀번호 변경과 회원가입이 같이 쓴다.
-export const pwField = (label, value, autocomplete, helpText = "", placeholder = "") =>
+// 비밀번호 칸 + 눈 아이콘(보기·숨기기). 1팀 컴포넌트에 비밀번호 칸이 없어 TextField 위에 아이콘 버튼을 겹쳤다 — 회원가입
+// (guest.mjs eyeButton)과 같은 눈/눈-금지 아이콘 쌍이다(2026-10-26 사용자 지정 — 전엔 "보기"/"숨기기" 글자 버튼이었다).
+// 안내(비밀번호 정책 조건)는 칸 안 placeholder 로 두고, 칸 아래는 error 가 있을 때만 — 실제 화면(FieldMessage)과 같은
+// 모양(text-[13px] text-erp-off, role=alert)으로 보인다. 올바르면 아래에 아무것도 없다(2026-10-26 사용자 지정 — 전엔
+// 조건 문구가 칸 아래 늘 남아 있었다).
+export const pwField = (A, label, value, autocomplete, { placeholder = "", error = "" } = {}) =>
   group(
     req(label),
-    `<div class="relative">${ui.textField({ type: "password", value, autocomplete, placeholder, "aria-label": label })}<button type="button" aria-pressed="false" aria-label="비밀번호 보기" class="absolute top-0 right-0 h-[34px] px-[10px] text-[13px] text-erp-label hover:text-erp-ink" onclick="const i=this.previousElementSibling,on=i.type==='password';i.type=on?'text':'password';this.setAttribute('aria-pressed',on);this.textContent=on?'숨기기':'보기'">보기</button></div>` +
-      (helpText ? help(helpText) : ""),
+    `<div class="relative">${ui.textField({ type: "password", value, autocomplete, placeholder, "aria-label": label, "aria-invalid": error ? "true" : undefined })}<button type="button" aria-pressed="false" aria-label="비밀번호 보기" class="absolute top-0 right-0 grid h-[34px] w-[34px] place-items-center text-erp-label hover:text-erp-ink" onclick="const i=this.previousElementSibling,on=i.type==='password';i.type=on?'text':'password';this.setAttribute('aria-pressed',on);this.children[0].hidden=on;this.children[1].hidden=!on">${ui.img(A, "eye-on.svg", 16, 16)}${ui.img(A, "eye-off.svg", 16, 16).replace("<img", "<img hidden")}</button></div>` +
+      (error ? `<p role="alert" class="text-[13px] leading-[1.5] text-erp-off">${error}</p>` : ""),
   );
 
 // 연락처 세 칸. 세 칸 모두 숫자 4자리를 넘지 않는다.

@@ -31,6 +31,15 @@ export default async function EditContractPage({ params, searchParams }: PagePro
       if (e.status === 403) notice = e.message;
     }
   }
+  // 재계약 임시저장(WHALEERP-156)이면 직전 계약 시작일 — 새 계약 시작일은 그 다음 날부터라 화면이 먼저 막는다. 읽지 못하면 비워 두고
+  // api 의 400 에 맡긴다
+  const previousStartDate =
+    detail?.status === "DRAFT" && detail.previousContractId
+      ? await request<ContractDetail>(`/contracts/${detail.previousContractId}`, { headers: await authHeaders() }).then(
+          (p) => p.startDate ?? undefined,
+          () => undefined,
+        )
+      : undefined;
 
   return (
     <>
@@ -66,6 +75,7 @@ export default async function EditContractPage({ params, searchParams }: PagePro
                 initial={fromDetail(detail)}
                 // 재계약 임시저장(WHALEERP-156)은 근무지 · 번호를 바꾸지 않는다(api 가 400 으로 다시 본다)
                 previousContractId={detail.previousContractId ?? undefined}
+                previousStartDate={previousStartDate}
                 back={back}
                 deleteButton={
                   <ContractPermission action="delete">
