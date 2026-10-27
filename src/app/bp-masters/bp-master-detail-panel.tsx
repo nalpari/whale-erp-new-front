@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition, type ReactNode, type RefObject } from "react";
 import { Badge, Button, ConfirmDialog, DetailTable, DetailValues, SlidePanel, Tag, useToast, type DetailRow } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
-import type { BpMasterDetail } from "@/lib/bp-masters";
+import type { BpMasterDetail, CreateBpMasterResult } from "@/lib/bp-masters";
 import { formatDateTime, formatPhone } from "@/lib/format";
 import { formatBizNumber } from "@/lib/store-view";
 import { Blocked, FailedBand, WhoList } from "../platform-admins/admin-parts";
@@ -19,7 +19,7 @@ import { HistoryButton } from "./history-dialog";
 // 화면은 미리 숨기거나 흐리게만 한다 — 막는 것은 api 다.
 
 /** 방금 등록한 BP — 상세 위쪽 띠로 BP 코드와 메일 발송 주소를 알린다(BP-3) */
-export type CreatedNotice = { bpCodeId: number; bpCode: string; email: string; isMailSent: boolean };
+export type CreatedNotice = CreateBpMasterResult;
 
 export function BpMasterDetailPanel({
   open,
@@ -197,8 +197,9 @@ function DetailBody({
     { label: "소속 점포", value: `${bp.storeCount.toLocaleString("ko-KR")}곳` },
     { label: "가입경로", value: bp.joinPath === "SIGNUP" ? "회원가입" : "플랫폼등록" },
     { label: "등록 일시", value: <DetailValues items={[formatDateTime(bp.createdAt), bp.createdByName ?? bp.loginId]} /> },
-    // BP 정보와 BP 마스터 계정 중 나중에 고친 쪽(BP-7). 등록할 때 api 가 수정 일시 · 수정자도 함께 채우므로(같은 insert 라 ms 차이) 1초 넘게 다를 때만 수정으로 본다
-    { label: "수정 일시", value: bp.updatedByName && Date.parse(bp.updatedAt) - Date.parse(bp.createdAt) >= 1000 ?<DetailValues items={[formatDateTime(bp.updatedAt), bp.updatedByName]} /> : "-" },
+    // api 의 최종수정 일시는 BP 정보(bp_codes.updated_at) 것이다 — 수정 저장 · 상태 변경 때 바뀌고, 비밀번호 초기화처럼 계정만 고친 것은 들어가지 않는다(BP-7).
+    // 등록할 때 같은 insert 로 수정 일시 · 수정자가 함께 채워지므로(ms 차이) 1초 이상 다를 때만 수정으로 본다
+    { label: "수정 일시", value: bp.updatedByName && Date.parse(bp.updatedAt) - Date.parse(bp.createdAt) >= 1000 ? <DetailValues items={[formatDateTime(bp.updatedAt), bp.updatedByName]} /> : "-" },
     { label: "최근 로그인", value: bp.lastLoginAt ? formatDateTime(bp.lastLoginAt) : "-" },
     // 「첫 로그인 때 받음」은 아직 로그인하지 않은 BP 에만 붙인다
     { label: "약관 동의", value: bp.termsAgreedAt ? "동의" : bp.lastLoginAt ? "미동의" : <>미동의 {muted("· 첫 로그인 때 받음")}</> },

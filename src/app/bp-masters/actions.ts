@@ -28,7 +28,7 @@ const PATH = "/bp-masters";
 export type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; status?: number; message: string };
 
 /**
- * api 오류를 화면 문구로 바꾼다. 400 · 403 · 404 · 409 · 422(국세청 불일치)는 api 가 한국어로 알리므로 그대로,
+ * api 오류를 화면 문구로 바꾼다. 400 · 403 · 404 · 409 · 422(국세청 불일치) · 429(진위확인 시간당 한도)는 api 가 한국어로 알리므로 그대로,
  * 503(국세청 장애)은 인증 없이 저장할 수 있다는 것을 함께, 401 은 고정 문구로, 그 밖(5xx · 연결 실패)은 일반 문구로 바꾼다.
  */
 function failureOf(error: unknown, what: string): { ok: false; status?: number; message: string } {
@@ -91,7 +91,7 @@ export async function resetBpMasterPasswordAction(bpCodeId: number): Promise<Act
   if (!validId(bpCodeId)) return NOT_FOUND;
   try {
     const result = await resetBpMasterPassword(bpCodeId);
-    // 강제 변경 대상 · 수정 일시가 바뀐다
+    // 강제 변경 대상 · 초기 비밀번호 미발송 표시 · 변경 이력이 바뀐다(수정 일시는 BP 정보 것이라 그대로다)
     refresh();
     return { ok: true, ...result };
   } catch (error) {
