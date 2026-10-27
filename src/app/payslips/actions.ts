@@ -75,13 +75,19 @@ export async function bulkCreatePayslips(month: string): Promise<{ ok: true; res
   }
 }
 
-/** 「확정 N건 발송」 — 그 달 · 점포 · 직원명의 확정 명세서를 보낸다. 일부가 실패해도 보낸 것은 그대로이고 실패 대상을 돌려준다. */
+/** 「확정 N건 발송」 — 그 달 · 점포 조건(고른 점포 또는 직영 · 가맹) · 직원명의 확정 명세서를 보낸다. 일부가 실패해도 보낸 것은 그대로이고 실패 대상을 돌려준다. */
 export async function sendPayslips(target: {
   month: string;
   storeIds?: number[];
+  storeTypes?: ("DIRECT" | "FRANCHISE")[];
   staffName?: string;
 }): Promise<{ ok: true; result: PayslipSendResult } | DraftFailure> {
-  if (!validMonth(target.month) || (target.storeIds && !target.storeIds.every(validId))) return BAD_INPUT;
+  if (
+    !validMonth(target.month) ||
+    (target.storeIds && !target.storeIds.every(validId)) ||
+    (target.storeTypes && !target.storeTypes.every((t) => t === "DIRECT" || t === "FRANCHISE"))
+  )
+    return BAD_INPUT;
   try {
     return { ok: true, result: await request<PayslipSendResult>("/payslips/send", await post(target)) };
   } catch (error) {

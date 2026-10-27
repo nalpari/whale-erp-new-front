@@ -232,6 +232,7 @@ export function staffSections({ A, R }) {
       ["주휴 대상", paid],
     ])}</div>`;
   };
+  // 본사 계정의 근태 요약 숫자에서는 본사 제공 동의가 없는 가맹 점포 직원을 뺀다 — 근로계약 목록 상태별 개수와 같은 기준(WHALEERP-133, 2026-10-26 재영).
   const summary = p.section(
     "근태 요약",
     p.weekNav(A, "attend-sums", "2026-08-31"),
@@ -342,8 +343,8 @@ export function staffSections({ A, R }) {
       ),
       rows.length ? pageNav(4) : "",
     );
-  const counts = (a, b, c, d) =>
-    `<p class="text-[14px] text-erp-label">작성 중 <b class="font-semibold text-erp-ink">${a}</b> · 검토 중 <b class="font-semibold text-erp-ink">${b}</b> · 확정 <b class="font-semibold text-erp-ink">${c}</b> · 발송 완료 <b class="font-semibold text-erp-ink">${d}</b></p>`;
+  const counts = (a, c, d) =>
+    `<p class="text-[14px] text-erp-label">작성 중 <b class="font-semibold text-erp-ink">${a}</b> · 확정 <b class="font-semibold text-erp-ink">${c}</b> · 발송 완료 <b class="font-semibold text-erp-ink">${d}</b></p>`;
   // 목록 오른쪽 위 버튼: 「급여명세서 작성」은 어느 달이든 늘 보인다(2026-10-02 재영). 누르면 점포·직원을 고르는 팝업이 뜨고, 고른 직원으로 작성하면 데모라 명세서 화면으로 간다.
   // 근로계약이 없거나 이 달 명세서가 이미 있는 직원은 고를 수 없다(WHALEERP-226). 점포 · 이름으로 좁히기와 「작성」 켜기는 PICK_SCRIPT.
   const pickId = x.dialogId();
@@ -399,7 +400,7 @@ export function staffSections({ A, R }) {
     ) +
     month(
       "2026-07-01",
-      counts(0, 0, 0, 61) +
+      counts(0, 0, 61) +
         payList("급여명세서", payButtons(0), [
           payRow("오세라", "모리커피 서초점", "176.0", "3,420,000", "142,000", "241,800", "3,320,200", sent),
           payRow("서지안", "모리커피 서초점", "168.0", "2,840,000", "142,000", "241,800", "2,740,200", sent),
@@ -408,7 +409,7 @@ export function staffSections({ A, R }) {
           payRow("권도윤", "모리커피 서초점", "172.0", "1,926,400", "158,000", "68,780", "2,015,620", sent),
         ]),
     ) +
-    month("", counts(0, 0, 0, 0) + payList("급여명세서", payButtons(0), []));
+    month("", counts(0, 0, 0) + payList("급여명세서", payButtons(0), []));
   // 급여명세서 관리: 왼쪽 필터(점포 · 직원 · 명세서 상태) + 달 이동 · 상태 건수 · 명세서 목록. 「급여 월」 선택칸은 달 이동으로 옮겼다.
   const payslipsFilter = ui.filterPanel(A, [
     storeFilter(),
@@ -510,6 +511,8 @@ export function staffSections({ A, R }) {
   );
   // 출퇴근 대신 등록(운영 정책 ATT-20): 직원 · 날짜 · 출근 · 퇴근 · 사유(필수). 직원 근무 앱에는 연필 표시로 보인다.
   // 그 날짜에 체결 완료 계약이 없는 직원은 선택지에서 뺀다(STAFF-29) — 09-06의 권도윤은 재계약 서명 대기라 빠졌다.
+  // 위치정보에 동의한 직원은 여기서 고르지 않는다. 그날 출근 · 퇴근이 둘 다 없으면 「보정」으로 두 시각을 넣는다 — 조건은 대신 등록과 같다(최근 3개월 · 사유 필수 · 그날 체결 완료 계약, 2026-10-26 재영).
+  // 보정으로 채운 줄은 「수정됨」 하나로만 보이고 「대신 등록」으로 같이 보이지 않는다.
   const proxyForm = ui.slidePanel(
     proxyPanel,
     "출퇴근 대신 등록",
@@ -523,6 +526,7 @@ export function staffSections({ A, R }) {
         ui.formRow(p.fieldH(req("출근"), p.timeField("09:00", "출근"), ""), p.fieldH("퇴근", p.timeField("", "퇴근"), "")),
         p.fieldH(req("사유"), ui.textarea({ rows: 4, placeholder: "예: 위치 수집 일시 중지 · 점장 확인" }), ""),
       ) +
+      p.note("위치정보 동의를 거부·철회했거나 위치 수집을 일시 중지한 직원만 고를 수 있습니다. 동의한 직원은 그날 출근·퇴근 기록이 모두 없어도 「보정」으로 두 시각을 넣습니다.") +
       ui.panelButtons("취소", "대신 등록"),
   );
   // 배정 대상·수행 방식 라벨과 ⓘ 툴팁(2026-10-08 재영)

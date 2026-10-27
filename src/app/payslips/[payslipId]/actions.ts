@@ -53,6 +53,17 @@ export async function savePayslip(payslipId: number, body: SavePayslipBody): Pro
   }
 }
 
+/** 출퇴근으로 다시 계산 — 기본급 · 주휴수당 · 연장수당을 지금 출퇴근 기록으로 다시 채우고 고친 값은 버린다(WHALEERP-227). */
+export async function recalculatePayslip(payslipId: number, updatedAt: string): Promise<Result> {
+  if (!validId(payslipId)) return NOT_FOUND;
+  try {
+    await request(`/payslips/${payslipId}/recalculate`, await send("POST", { updatedAt }));
+    return { ok: true };
+  } catch (error) {
+    return failureOf(error, "다시 계산");
+  }
+}
+
 /** 확정 — 비어 있는 공제가 있으면 422(missing 에 이름). */
 export async function confirmPayslip(payslipId: number, updatedAt: string): Promise<Result> {
   if (!validId(payslipId)) return NOT_FOUND;
