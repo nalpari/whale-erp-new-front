@@ -60,13 +60,13 @@ test("이름 — 한글 또는 영문 2~20자", () => {
   assert.equal(validateName("Kim"), undefined);
 });
 
-test("연락처 — 숫자만, 세 칸 합쳐 10~11자리", () => {
+test("연락처 — 숫자만, 세 칸 합쳐 9~12자리", () => {
   assert.equal(validatePhone("", "", ""), "연락처를 입력해 주세요.");
-  assert.ok(validatePhone("010", "123", "456"), "9자리");
-  assert.ok(validatePhone("010", "12345", "6789"), "12자리");
+  assert.ok(validatePhone("010", "12", "456"), "8자리");
+  assert.ok(validatePhone("0507", "2033", "13345"), "13자리");
   assert.ok(validatePhone("010", "12a4", "5678"), "숫자가 아닌 글자 섞임");
-  assert.equal(validatePhone("010", "123", "4567"), undefined, "10자리 경계값");
-  assert.equal(validatePhone("010", "1234", "5678"), undefined, "11자리 경계값");
+  assert.equal(validatePhone("02", "123", "4567"), undefined, "9자리 경계값(02 유선)");
+  assert.equal(validatePhone("0507", "2033", "1334"), undefined, "12자리 경계값(050X 평생번호)");
 });
 
 test("이메일 — 형식 검사", () => {

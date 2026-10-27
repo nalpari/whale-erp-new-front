@@ -5,8 +5,9 @@ import { useState, useTransition, type RefObject } from "react";
 import { Badge, Button, ConfirmDialog, DetailTable, FormRow, ReadonlyCard, ReadonlyValue, SlidePanel, useToast, type DetailRow } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
+import { WarnBand } from "@/components/site/side-parts";
 import { useAccount, usePagePermission } from "@/components/site/session-gate";
-import { formatDateTime, formatPhone } from "@/lib/format";
+import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
 import { adminActionsOf } from "@/lib/platform-admin-actions";
 import type { PlatformAdminDetail } from "@/lib/platform-admins";
 import { deletePlatformAdminAction, getPlatformAdminHistoriesAction, resetPlatformAdminPasswordAction } from "./actions";
@@ -178,13 +179,16 @@ function DetailBody({
       ),
     },
     // 최근 로그인은 표 맨 아래 줄. 등록 · 최종수정은 표 밖 테두리 없는 카드로 둔다(2026-10-27 사용자 지정 — 전엔 표의 두 줄)
-    { label: "최근 로그인", value: admin.lastLoginAt ? formatDateTime(admin.lastLoginAt) : muted("로그인 기록 없음") },
+    { label: "최근 로그인", value: admin.lastLoginAt ? formatDateTime(admin.lastLoginAt) : muted("-") },
   ];
   // 미사용 전환일시는 상세에 더 보이지 않는다 — 누가 바꿨는지까지는 변경이력에 이미 쌓인다(2026-10-20 피드백).
 
   // 등록만 한 계정은 수정일시가 등록일시와 같아 등록이 수정처럼 보인다 — 같으면 최종수정은 「-」(BP 관리자 상세와 같다, 2026-10-27 사용자 지정).
-  // 등록 때 두 값이 따로 찍혀 ms 가 어긋날 수 있어 1초 안쪽은 같은 것으로 본다
-  const edited = Math.abs(Date.parse(admin.updatedAt) - Date.parse(admin.createdAt)) >= 1000;
+  // 1초 안쪽 어긋남은 같은 것으로 본다(wasUpdated).
+  // 수정자가 없는 계정(마이그레이션으로 넣은 플랫폼 마스터 등)도 「-」다. 한계: api 의 updatedAt(Prisma @updatedAt)은 로그인 · 초기 비밀번호 미발송 표시에도 올라가는데,
+  // 수정자(updatedBy)는 등록 때부터 등록자로 채워져 있어 이 검사로는 그 갱신을 거르지 못한다 — 로그인한 계정은 「로그인 시각 · 등록자」가
+  // 최종수정으로 보이고, 등록 직후에도 메일을 보낸 뒤 미발송 표시를 끄며 몇 초 늦게 찍혀 보일 수 있다(api 요청 대기)
+  const edited = admin.updatedByName !== null && wasUpdated(admin.createdAt, admin.updatedAt);
   const who = <WhoList rows={[["아이디", admin.loginId], ["이름", name]]} />;
   const roleType = useCodeLabel("ROLE_TYPE");
 
@@ -198,7 +202,7 @@ function DetailBody({
           <HeadValues
             items={[
               { label: "역할", value: roleType(admin.roleGroup.roleTypeCode) },
-              { label: "권한그룹", value: admin.roleGroup.name },
+              { label: "권한명", value: admin.roleGroup.name }, // 라벨 「권한명」(2026-10-27 사용자 지정 — 전엔 「권한그룹」)
               { value: admin.accountStatus === "ACTIVE" ? <Badge tone="on">사용</Badge> : <Badge tone="off">미사용</Badge> },
             ]}
           />
@@ -214,7 +218,7 @@ function DetailBody({
         <FormRow>
           <ReadonlyValue
             label="최종수정"
-            value={edited ? when(admin.updatedAt, admin.updatedByName ?? "시스템") : <span className="font-normal text-erp-muted">-</span>}
+            value={edited && admin.updatedByName ? when(admin.updatedAt, admin.updatedByName) : <span className="font-normal text-erp-muted">-</span>}
             bold
           />
         </FormRow>
@@ -274,10 +278,13 @@ function DetailBody({
           >
             <div className="flex flex-col gap-[12px]">
               {who}
-              <p>
-                삭제한 계정은 <b className="font-semibold">관리자 목록 및 검색 결과에서 제외</b>되며, <b className="font-semibold">해당 계정으로 더 이상 로그인할 수 없습니다</b>.
-              </p>
-              <p>삭제한 계정은 복구할 수 없습니다.</p>
+              {/* 되돌릴 수 없는 결과 안내 — 플랫폼 메뉴 관리의 미사용 안내와 같은 빨간 테두리 · 연한 빨간 바탕 상자(2026-10-27 사용자 지정 — 전엔 본문 글자) */}
+              <WarnBand>
+                <p>
+                  삭제한 계정은 관리자 목록 및 검색 결과에서 제외되며, 해당 계정으로 더 이상 로그인할 수 없습니다.
+                </p>
+                <p>삭제한 계정은 복구할 수 없습니다.</p>
+              </WarnBand>
             </div>
           </ConfirmDialog>
         </>

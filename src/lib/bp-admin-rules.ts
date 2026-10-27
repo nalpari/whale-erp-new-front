@@ -1,7 +1,7 @@
 // BP 관리자 화면에서 어느 버튼을 보이고 어느 칸을 막을지. 화면 없이 node --test 로 바로 돌린다(next/* 를 import 하지 않는다).
 // 누가 누구를 고칠 수 있는지는 api 가 상세의 actions 로 계산해 준다 — 여기서는 그 값과 메뉴 권한을 합칠 뿐 규칙을 다시 짜지 않는다.
 // 막는 것은 api 다. 화면은 미리 숨기거나 막기만 한다.
-import type { BpAdminActions, BpAdminRoleType } from "./bp-admins";
+import type { BpAdminActions, BpAdminRoleType, BpAdminStatus } from "./bp-admins";
 
 export type BpAdminViewer = { roleTypeCode: string };
 export type BpAdminPermission = { create: boolean; update: boolean };
@@ -44,3 +44,22 @@ export function editLocksOf(target: { roleTypeCode: BpAdminRoleType; actions: Bp
     stores: isSelf,
   };
 }
+
+/**
+ * 가맹 마스터 저장이 연결된 가맹 관리자에 번지는가 — 사용 → 미사용(deactivating) · 내 범위 안 점포 빼기(removed).
+ * 범위 밖 매핑은 폼에 없지만 api 가 그대로 두므로 뺀 것으로 세지 않는다. 패널을 연 때의 상세로 셈하므로 확인창 문구(제목 · 버튼 ·
+ * 빼는 점포)에만 쓰고, 확인창을 띄울지는 api 의 update-impact 수로 정한다.
+ */
+export function cascadeOf<S extends { storeId: number; isOutOfScope: boolean }>(
+  admin: { roleTypeCode: BpAdminRoleType; accountStatus: BpAdminStatus; stores: S[] },
+  input: { accountStatus: BpAdminStatus; storeIds: number[] },
+): { deactivating: boolean; removed: S[] } {
+  if (admin.roleTypeCode !== "FM") return { deactivating: false, removed: [] };
+  return {
+    deactivating: admin.accountStatus === "ACTIVE" && input.accountStatus === "INACTIVE",
+    removed: admin.stores.filter((s) => !s.isOutOfScope && !input.storeIds.includes(s.storeId)),
+  };
+}
+
+/** 「moriyn 외 1명」 — 아이디는 첫 계정만 보인다(목업 확정 2026-09-29). 첫 아이디를 받지 못하면 수만 보인다. */
+export const andOthers = (first: string | null, count: number) => (first ? `${first}${count > 1 ? ` 외 ${count - 1}명` : ""}` : `${count}명`);

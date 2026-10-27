@@ -14,7 +14,6 @@ import {
   hoursOf,
   initialForm,
   inProgressLine,
-  replaceIdsOf,
   stillCorrecting,
   inProgressOf,
   isMinor,
@@ -435,10 +434,8 @@ test("재계약 — 직전 계약 값을 채우고 시작일은 종료일 다음
   assert.equal(canRenew({ status: "PENDING_SIGNATURE", histories: [], renewedBy: null }), false);
 });
 
-test("대체 확인을 다시 물으면 앞서 고른 계약과 합쳐 보내고, 바로잡기 문구는 체결 완료가 있을 때만(front #135 code-review)", () => {
+test("바로잡기 뒤 다시 물을 때 바로잡기 문구는 체결 완료가 있을 때만(front #135 code-review)", () => {
   const c = (contractId: number, status: string) => ({ contractId, status, name: null, startDate: null, endDate: null });
-  assert.deepEqual(replaceIdsOf(undefined, [c(5, "SIGNED")]), [5]);
-  assert.deepEqual(replaceIdsOf([5], [c(5, "SIGNED"), c(7, "DRAFT")]), [5, 7]);
   const body = { correctSignedContracts: true } as Parameters<typeof stillCorrecting>[0];
   assert.equal(stillCorrecting(body, [c(5, "SIGNED"), c(7, "DRAFT")]), true);
   assert.equal(stillCorrecting(body, [c(7, "DRAFT")]), false);

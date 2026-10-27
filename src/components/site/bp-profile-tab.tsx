@@ -441,7 +441,7 @@ export const BpProfileTab = forwardRef<
                   readOnly={form.sameAsBasicPhone}
                   disabled={form.sameAsBasicPhone}
                   inputMode="numeric"
-                  maxLength={i === 0 ? 3 : 4}
+                  maxLength={4}
                   aria-label={`대표자 연락처 ${label}`}
                   aria-invalid={invalid("bizCeoPhone")}
                   aria-describedby={describe("bizCeoPhone")}

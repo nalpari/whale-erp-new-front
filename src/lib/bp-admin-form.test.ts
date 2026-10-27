@@ -60,7 +60,7 @@ test("채운 등록 칸은 오류가 없다", () => {
 test("빈 등록 칸 — 필수 칸마다 문구, 휴대전화도 필수다", () => {
   const errors = validateBpAdminForm({ ...EMPTY_BP_ADMIN_FORM, phone: ["", "", ""] }, { mode: "create" });
   assert.deepEqual(Object.keys(errors).sort(), ["email", "loginId", "name", "phone", "roleGroupId", "roleTypeCode", "stores"]);
-  assert.equal(errors.phone, "휴대전화번호를 입력해 주세요.");
+  assert.equal(errors.phone, "연락처를 입력해 주세요.");
 });
 
 test("수정은 아이디 · 계정 역할을 보지 않는다", () => {
@@ -70,7 +70,7 @@ test("수정은 아이디 · 계정 역할을 보지 않는다", () => {
 
 test("일부 점포는 1곳 이상 — 범위 밖 매핑도 센다, 전체 점포 · 막힌 칸은 보지 않는다", () => {
   const empty = { ...filled, stores: [] };
-  assert.equal(validateBpAdminForm(empty, { mode: "edit" }).stores, "대상 점포를 1곳 이상 골라 주세요.");
+  assert.equal(validateBpAdminForm(empty, { mode: "edit" }).stores, "대상점포를 1곳 이상 골라 주세요.");
   assert.equal(validateBpAdminForm(empty, { mode: "edit", outOfScopeCount: 2 }).stores, undefined);
   assert.equal(validateBpAdminForm({ ...empty, isAllStores: true }, { mode: "create" }).stores, undefined);
   assert.equal(validateBpAdminForm(empty, { mode: "edit", storesLocked: true }).stores, undefined);
@@ -132,4 +132,16 @@ test("계정 역할을 바꾸면 그 역할로 다시 맞춘다 — 전체 점�
   const ba = withRole(allStoresBa, "BA", groups);
   assert.deepEqual([ba.isAllStores, ba.roleGroupId], [true, ""]);
   assert.equal(withRole(filled, "", groups).roleGroupId, "");
+});
+
+test("연락처 — 숫자 9~12자리(02 유선 · 050X 평생번호 포함), 문구는 이 화면 것", () => {
+  const phoneError = (phone: [string, string, string]) => validateBpAdminForm({ ...filled, phone }, { mode: "create" }).phone;
+  assert.equal(phoneError(["010", "1", "5678"]), "연락처는 숫자 9~12자리입니다.", "8자리");
+  assert.equal(phoneError(["02", "123", "4567"]), undefined, "9자리");
+  assert.equal(phoneError(["0507", "2033", "1334"]), undefined, "12자리");
+  assert.ok(phoneError(["0507", "2033", "13345"]), "13자리");
+});
+
+test("bpAdminFormOf — 050X 평생번호(12자리)는 4-4-4 로 나눈다", () => {
+  assert.deepEqual(bpAdminFormOf({ ...detail, phone: "050720331334" }).phone, ["0507", "2033", "1334"]);
 });

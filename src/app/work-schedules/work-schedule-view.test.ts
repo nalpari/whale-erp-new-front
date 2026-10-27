@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { barOf, carryOver, copyStatus, durationLabel, gapsOf, historyLine, hourCells, shiftLabel, totalsLabel } from "./work-schedule-view.ts";
+import { barOf, carryOver, copyStatus, durationLabel, gapsOf, historyLine, hourCells, readOnlyRows, shiftLabel, totalsLabel } from "./work-schedule-view.ts";
 
 /** 30분 칸 48개 — [시작 칸, 끝 칸) 구간마다 인원을 더한다 */
 const cov = (...spans: [number, number][]) => {
@@ -113,4 +113,18 @@ test("지난 주 복사 처리 — 복사 · 일부 제외 · 제외 사유(STAF
     detail: "10-30 10-29 퇴직, 10-28 시간 겹침",
   });
   assert.equal(copyStatus(row(0, [{ workDate: "2026-10-26", code: "SOMETHING_NEW" }])).label, "제외 · 규칙에 맞지 않음");
+});
+
+test("읽기 전용 직원 줄 — 그날 근무자 + 근무 인원만큼 가린 줄, 휴무 직원은 없음", () => {
+  const staff = [
+    { staffMemberId: 1, isMasked: false },
+    { staffMemberId: 2, isMasked: false },
+    { staffMemberId: null, isMasked: true },
+    { staffMemberId: null, isMasked: true },
+  ];
+  const items = [{ staffMemberId: 1, workDate: "2026-10-27" }, { staffMemberId: 2, workDate: "2026-10-28" }];
+  // 근무 인원 2 = 보이는 근무자 1 + 가린 직원 1
+  assert.deepEqual(readOnlyRows(staff, items, "2026-10-27", 2), [staff[0], staff[2]]);
+  assert.deepEqual(readOnlyRows(staff, items, "2026-10-27", 1), [staff[0]]);
+  assert.deepEqual(readOnlyRows(staff, items, "2026-10-29", 0), []);
 });

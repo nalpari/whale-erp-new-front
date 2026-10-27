@@ -51,7 +51,7 @@ export function validateName(value: string): string | undefined {
 export function validatePhone(a: string, b: string, c: string): string | undefined {
   const digits = `${a}${b}${c}`;
   if (!digits) return "연락처를 입력해 주세요.";
-  if (!/^[0-9]+$/.test(digits) || digits.length < 10 || digits.length > 11) return "숫자만, 세 칸을 합쳐 10~11자리로 입력해 주세요.";
+  if (!/^[0-9]+$/.test(digits) || digits.length < 9 || digits.length > 12) return "숫자만, 세 칸을 합쳐 9~12자리로 입력해 주세요.";
   return undefined;
 }
 

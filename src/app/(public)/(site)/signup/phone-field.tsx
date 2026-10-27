@@ -5,7 +5,7 @@ const LABELS = ["앞자리", "가운데자리", "끝자리"] as const;
 // 연락처 세 칸. 세 칸 모두 숫자 4자리를 넘지 않는다. 1팀 비로그인 폼 규격(guest-form.ts)을 쓴다.
 // 검증을 위해 값을 부모(SignupForm)가 들고 있는 controlled 입력칸이다.
 // onBlur 는 포커스가 세 칸 밖으로 나갈 때만 부른다 — 칸 사이를 옮길 때 부르면 앞자리만 친 채로
-// 다음 칸에 들어가자마자 "10~11자리" 오류가 뜬다.
+// 다음 칸에 들어가자마자 "9~12자리" 오류가 뜬다.
 export function PhoneField({
   values,
   onChange,
