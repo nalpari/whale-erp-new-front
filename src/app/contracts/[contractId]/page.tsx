@@ -17,7 +17,7 @@ type Status = Parameters<typeof StatusBadge>[0]["status"];
 
 // 상태마다 위쪽에 서는 버튼(CTR-19, 2026-10-19 재영). 보내기는 저장할 때 곧바로 한다 — 「발송」 버튼은 없다.
 // 발송 대기 · 서명 대기는 「재발송」과 「수정」(당사자 정보), 발송 대기는 「종료」도(채용을 접을 때, WHALEERP-327), 수정 요청은
-// 「수정」(계약서 전체). 재발송은 api 가 보낼 수 없다고 하면 숨긴다(canResend — 소속 추가 확인 · 복귀 확인은 아직 보낼 길이 없다. 칸이 없는
+// 「수정」(계약서 전체). 재발송은 api 가 보낼 수 없다고 하면 숨긴다(canResend — 소속 추가 확인 · 복귀 확인은 소속 추가 확인 요청을 다시 보낸다, api #164. 칸이 없는
 // 옛 api 응답이면 보인다 — front 가 먼저 배포돼도 재발송 버튼이 모두 사라지지 않게). 만료 재발송(WHALEERP-153) ·
 // 새 계약은 아직 API 가 없어 비활성으로 둔다. 거부 · 종료는 버튼이 없다.
 const PENDING: Partial<Record<Status, string>> = {
@@ -78,7 +78,7 @@ export default async function ContractDetailPage({ params, searchParams }: PageP
       <>
         {(status === "PENDING_SEND" || status === "PENDING_SIGNATURE") && c?.canResend !== false && (
           <ContractPermission action="update">
-            <SendContractButton contractId={contractId} status={status} name={c?.name ?? null} back={backHrefOf(query.back)} />
+            <SendContractButton contractId={contractId} status={status} name={c?.name ?? null} draftAction={c?.draftAction ?? null} back={backHrefOf(query.back)} />
           </ContractPermission>
         )}
         {/* 직원이 수정을 요청했다 — 계약서 전체를 고치면 곧바로 서명 대기로 다시 보낸다(WHALEERP-125 · 126) */}

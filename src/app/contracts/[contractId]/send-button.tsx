@@ -11,18 +11,30 @@ import { resendDialogCopy, sendFailureOf } from "./send-model";
 // (가입 초대를 받지 못함) · 서명 대기. 누르면 확인창으로 묻고, 보내면 상세를 다시 읽는다(기한이 바뀐다).
 // 가입한 직원은 앱 알림(알림함 · 푸시 대기 — 푸시는 #261 · #321 뒤. 받을 계정이 없거나 탈퇴면 알림 없이 기한만 새로, api NTF-25)
 // 으로, 계정이 없는 직원은 가입 초대 알림톡으로 간다(WHALEERP-611). 소속 추가 확인 · 복귀 확인(계정 있음 · 이 점포 미가입)은
-// 상세가 버튼을 숨긴다(canResend). 화면을 연 뒤 그 번호로 계정이 생겼으면 api 가 409 SEND_CHANNEL_NOT_READY 로 막고, 그 문장을 확인창에 그대로 보인다.
-// 확인창 문구는 resendDialogCopy(send-model.ts) — 서명 대기면 데모 문구, 발송 대기면 가입 초대 문구다. 상세 응답에 가입 여부가 없어
+// 소속 추가 확인 요청(알림톡 · 메일)을 다시 보내고 계약은 발송 대기로 남는다(WHALEERP-130, api #164).
+// 확인창 문구는 resendDialogCopy(send-model.ts) — 서명 대기면 데모 문구, 발송 대기면 가입 초대 또는 소속 추가 확인 요청 문구다. 상세 응답에 가입 여부가 없어
 // 서명 대기의 가입 전 직원(가입 초대 알림톡)도 데모 문구를 본다. 가입한 직원의 발송 대기(데이터가 이상할 때만)는 api 가 앱 알림으로
 // 보내고 서명 대기로 넘기지만, 화면은 가입 여부를 몰라 가입 초대 문구를 보인다.
 // 접수 여부를 모르거나 화면이 낡았으면(recheck) 보내기를 막고 상세를 다시 읽는다 — 다시 눌러 두 번 가지 않게(front #41 리뷰).
-export function SendContractButton({ contractId, status, name, back }: { contractId: number; status: string; name: string | null; back: string }) {
+export function SendContractButton({
+  contractId,
+  status,
+  name,
+  draftAction,
+  back,
+}: {
+  contractId: number;
+  status: string;
+  name: string | null;
+  draftAction: string | null;
+  back: string;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [locked, setLocked] = useState(false);
   const [pending, start] = useTransition();
-  const copy = resendDialogCopy(status, name);
+  const copy = resendDialogCopy(status, name, draftAction);
 
   return (
     <>

@@ -83,8 +83,17 @@ export function joinCell(item: StaffMemberListItem, today: string): Cell {
  * 대기 또는 서명 대기 · 수락하지 않은 초대). 초대 행이 없는 옛 소속 확인 계약도 보이도록 invitation 이 아니라 contract 에 실린다.
  * 가입한 직원의 앱 알림 재발송은 근로계약 상세에서 한다.
  */
-export function canResendInvitation(item: Pick<StaffMemberListItem, "contract">): boolean {
-  return !!item.contract?.canResend;
+export function canResendInvitation(item: Pick<StaffMemberListItem, "contract" | "invitation">): boolean {
+  // api #164 전 응답에는 contract.canResend 가 없다 — 그때는 같은 값인 invitation.canResend 를 본다(배포 순서와 무관하게 버튼이 남게)
+  return !!(item.contract?.canResend ?? item.invitation?.canResend);
+}
+
+/**
+ * 재발송이 소속 추가 확인 요청인지(WHALEERP-130) — 계정 있는 번호(소속 추가 확인 · 복귀 확인)와 초대 행 없는 옛 소속 확인 계약(초안)은
+ * api 가 가입 초대 대신 소속 추가 확인 요청(알림톡 · 메일)을 보내고 계약을 발송 대기로 둔다. 확인창 · 토스트 문구를 이 값으로 가른다.
+ */
+export function resendsAffiliation(item: Pick<StaffMemberListItem, "joinState">): boolean {
+  return item.joinState === "AFFILIATION_PENDING" || item.joinState === "RETURN_PENDING" || item.joinState === "DRAFT";
 }
 
 /**
