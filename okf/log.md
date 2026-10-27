@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-27
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 리뷰 참고 반영(노영주): 이어지는 재계약이 있으면 「새 계약」 작성 화면이 「이미 이어지는 재계약」 안내와 그 계약으로 가는 버튼을 보인다(틀린 사유 「체결 완료만…」 대신), 재계약 수정 요청 화면도 번호 · 시작일을 임시저장 이어 쓰기처럼 막는다.
 * **Update**: main 병합(front poliwag, main #139 까지): okf 충돌은 양쪽 기록을 살렸다(whale-erp-front.md 는 줄이 맞닿아 난 충돌이라 main 줄에 이 브랜치의 줄을 다시 얹었다).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — WHALEERP-156 재영 문의 반영: 종이 계약이 기간이 겹치는 체결 완료와 부딪히면(api 409 `SIGNED_CONTRACT_OVERLAP`) 「잘못 올린 계약 바로잡기」 확인창(`correctSignedContracts`), 재계약 시작일은 직전 계약 시작일 다음 날부터(작성 · 이어 쓰기). api 타입은 api gyarados(3ddc4d3d) 기준으로 다시 만들었다.
 

@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
+import type { ReactNode } from "react";
 import { Button, PageBar } from "@/components/common";
 import { ApiError, authHeaders, request } from "@/lib/api";
-import { backHrefOf } from "../contract-list";
+import { backHrefOf, withBack } from "../contract-list";
 import { ContractPermission } from "../contract-permission";
 import { ContractForm } from "./contract-form";
 import { canRenew, renewalFromDetail, type ContractDetail } from "./contract-form-model";
@@ -45,6 +46,11 @@ export default async function NewContractPage({ searchParams }: PageProps<"/cont
               <ContractForm stores={stores} labels={labels} signedIn={signedIn} back={back} />
             ) : !previous ? (
               <Notice title={notice} back={back} />
+            ) : previous.renewedBy !== null ? (
+              // 이미 이어지는 재계약이 있다 — 그 계약으로 안내한다(진행 중이면 거기서 고치거나 대체한다, api #157 리뷰)
+              <Notice title="이 근로계약에는 이미 이어지는 재계약이 있습니다. 그 근로계약을 확인해 주세요" back={back}>
+                <Button href={withBack(`/contracts/${previous.renewedBy}`, query.back)}>이어지는 계약</Button>
+              </Notice>
             ) : !canRenew(previous) ? (
               <Notice title="체결 완료되었거나 체결 뒤 종료된 근로계약만 재계약할 수 있습니다" back={back} />
             ) : !storeOpen ? (
@@ -59,10 +65,11 @@ export default async function NewContractPage({ searchParams }: PageProps<"/cont
   );
 }
 
-function Notice({ title, back }: { title: string; back: string }) {
+function Notice({ title, back, children }: { title: string; back: string; children?: ReactNode }) {
   return (
     <div className="flex items-center gap-[6px]">
       <p className="flex-1 text-[14px] font-semibold text-erp-ink">{title}</p>
+      {children}
       <Button href={back}>목록</Button>
     </div>
   );
