@@ -1,6 +1,5 @@
 "use client";
 
-import { OwnerTag } from "@/components/site/code-editor/owner-tag";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Badge, Button, DataTable, TextField, Toggle, useToast, type Column } from "@/components/common";
@@ -28,6 +27,7 @@ import { CodePanel, FieldErrors, GroupHead, SaveFailedBand, UNKNOWN_RESULT } fro
 import { useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
 import { useRowReorder } from "@/components/site/code-editor/use-row-reorder";
 import { DeletePending, DeleteToggle, Struck } from "@/components/site/code-editor/delete-mark";
+import { OwnerTag } from "@/components/site/code-editor/owner-tag";
 
 // 오른쪽 상세 코드 목록 — 고른 그룹의 플랫폼 원본 상세 코드. BP전용 코드는 api 가 빼고 준다.
 // 상세 코드에는 관리 주체 칸이 없다 — 소속 그룹을 따른다(PL-VOCZCE). SERVICE 그룹이면 상세 코드가 서비스 코드, 코드명이 서비스명이다.

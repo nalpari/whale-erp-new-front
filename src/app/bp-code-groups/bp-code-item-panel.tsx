@@ -1,6 +1,5 @@
 "use client";
 
-import { OwnerTag } from "@/components/site/code-editor/owner-tag";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Badge, Button, DataTable, TextField, Toggle, useToast, type Column } from "@/components/common";
@@ -8,6 +7,7 @@ import { CodePanel, DoneNotice, FieldErrors, GroupHead, SaveFailedBand, UNKNOWN_
 import { useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
 import { useRowReorder } from "@/components/site/code-editor/use-row-reorder";
 import { DeletePending, DeleteToggle, Struck } from "@/components/site/code-editor/delete-mark";
+import { OwnerTag } from "@/components/site/code-editor/owner-tag";
 import { useCodeLabel } from "@/components/site/code-label";
 import { useAccount, usePagePermission } from "@/components/site/session-gate";
 import { bpCodePanelAccess, bpDeletable, bpPanelLock, newBpItemDraft, toBpItemDraft, type BpItemDraft } from "@/lib/bp-code-drafts";

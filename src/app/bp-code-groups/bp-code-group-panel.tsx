@@ -4,10 +4,10 @@ import { DataTable, Pagination, type Column } from "@/components/common";
 import { searchedEmpty, type CodeGroupSearch } from "@/components/site/code-editor/code-group-filter";
 import { CodePanel } from "@/components/site/code-editor/code-panel";
 import { GuardedLink, useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
+import { OwnerTag } from "@/components/site/code-editor/owner-tag";
 import { useCodeLabel } from "@/components/site/code-label";
 import { useCurrentBp } from "@/components/site/session-gate";
 import { bpCodesHref } from "@/lib/bp-code-drafts";
-import { OwnerTag } from "@/components/site/code-editor/owner-tag";
 import type { BpCodeGroup } from "@/lib/bp-codes";
 import { bpPath } from "@/lib/bp-path";
 

@@ -35,11 +35,14 @@ export function CodeGroupFilter({
   groupName,
   manageOwnerCode,
   showOwner = false,
+  ownerLabels,
   onSearch,
-}: CodeGroupSearch & { showOwner?: boolean; onSearch: (next: CodeGroupSearch) => void }) {
+}: CodeGroupSearch & { showOwner?: boolean; ownerLabels?: Record<string, string>; onSearch: (next: CodeGroupSearch) => void }) {
   const [code, setCode] = useState(groupCode);
   const [name, setName] = useState(groupName);
-  const ownerLabel = useCodeLabel("MANAGE_OWNER");
+  // 관리주체 한글 — 화면이 넘긴 값(플랫폼 공통코드가 서버에서 받은 MANAGE_OWNER)을 먼저, 없으면 로그인 공통코드
+  const codeLabel = useCodeLabel("MANAGE_OWNER");
+  const ownerLabel = (o: GroupOwner) => ownerLabels?.[o] ?? codeLabel(o);
   const search = (next: CodeGroupSearch) =>
     onSearch({ groupCode: next.groupCode.trim(), groupName: next.groupName.trim(), manageOwnerCode: next.manageOwnerCode });
   const owners: GroupOwner[] = manageOwnerCode === "NONE" ? [] : manageOwnerCode ? [manageOwnerCode] : [...GROUP_OWNERS];

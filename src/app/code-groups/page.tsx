@@ -6,7 +6,7 @@ import { CodeGroupPanel } from "./code-group-panel";
 import { CodeItemPanel } from "./code-item-panel";
 import { UnsavedChangesProvider } from "@/components/site/code-editor/unsaved-changes";
 
-// 플랫폼 공통코드 관리 (S-UQPNIH). 한 화면에 왼쪽 필터(그룹 코드 · 그룹명 — BP 공통코드 관리와 같다), 그룹 목록, 고른 그룹의 상세 코드를 둔다.
+// 플랫폼 공통코드 관리 (S-UQPNIH). 한 화면에 왼쪽 필터(그룹 코드 · 그룹명 · 관리주체 — BP 공통코드 관리는 관리주체 없이 둘만), 그룹 목록, 고른 그룹의 상세 코드를 둔다.
 // 검색 · 쪽 · 고른 그룹은 주소(?groupCode · ?groupName · ?manageOwnerCode · ?page · ?group)에 둔다. 고른 그룹이 이 쪽에 없으면 이 쪽의 첫 그룹을 고른다.
 // 메뉴 조회 권한이 없으면 공통 틀이 메뉴에서 숨기고, 주소로 들어오면 안내 뒤 돌려보낸다(SessionGate). 고치기 · 추가 버튼은 패널이 메뉴 권한으로 가른다.
 export default async function PlatformCodesPage({ searchParams }: PageProps<"/code-groups">) {
@@ -37,7 +37,7 @@ export default async function PlatformCodesPage({ searchParams }: PageProps<"/co
       <PageBar title="플랫폼 공통코드 관리" />
       <UnsavedChangesProvider>
         <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
-          <CodeFilter key={`${groupCode}|${groupName}`} groupCode={groupCode} groupName={groupName} manageOwnerCode={manageOwnerCode} />
+          <CodeFilter key={`${groupCode}|${groupName}`} groupCode={groupCode} groupName={groupName} manageOwnerCode={manageOwnerCode} ownerLabels={ownerLabels} />
           <CodeGroupPanel
             // 다른 쪽 · 다른 검색으로 가면 새로 그린다. 그룹만 바꿀 때는 그대로 두어 목록 스크롤 위치를 지킨다 —
             // 버리기로 한 변경은 패널이 고른 그룹이 바뀔 때 스스로 지운다.

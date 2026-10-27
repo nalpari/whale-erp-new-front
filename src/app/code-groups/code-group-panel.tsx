@@ -1,6 +1,5 @@
 "use client";
 
-import { OwnerTag } from "@/components/site/code-editor/owner-tag";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { Badge, Button, DataTable, Pagination, Select, TextField, Toggle, useToast, type Column } from "@/components/common";
@@ -15,6 +14,7 @@ import { CodePanel, DoneNotice, FieldErrors, SaveFailedBand, UNKNOWN_RESULT, UNR
 import { codesHref } from "./codes-href";
 import { searchedEmpty, type CodeGroupSearch } from "@/components/site/code-editor/code-group-filter";
 import { GuardedLink, useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
+import { OwnerTag } from "@/components/site/code-editor/owner-tag";
 
 // 가운데 공통코드 그룹 목록. 그룹 코드를 누르면 오른쪽에 그 그룹의 상세 코드가 선다(?group=). 그룹 · 쪽을 옮겨도 왼쪽 필터의 검색 조건은 이어 간다.
 // 기존 그룹은 그룹명 · 사용 상태만 고치고(코드 · 관리 주체는 바꾸지 않는다), [추가]는 맨 끝에 입력 행 하나를 붙인다.
