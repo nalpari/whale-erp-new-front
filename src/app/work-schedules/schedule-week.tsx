@@ -3,7 +3,7 @@ import { Badge } from "@/components/common";
 import type { WorkScheduleList } from "@/lib/work-schedules-api";
 import { addDays, moved, toScheduleSearch, type ScheduleQuery } from "./work-schedule-query";
 import { AssignGapButton, ScheduleBar } from "./schedule-form";
-import { barOf, carryOver, coverTone, durationLabel, gapsOf, hourCells } from "./work-schedule-view";
+import { barOf, carryOver, coverTone, durationLabel, gapsOf, hourCells, readOnlyRows } from "./work-schedule-view";
 
 // 주간 보기(#202 · #343, STAFF-26). 데모 schedWeek — 요일 칩 7개 → 고른 요일의 시간축 24칸(00~23시) · 직원 줄 · 근무 인원 줄 · 공백.
 // 공백 줄은 근무 인원 줄 바로 아래, 범례는 맨 아래다(데모 순서). 직원 줄은 그날 받을 수 있는 직원만(휴무 포함, STAFF-29). 본사에게 가려진 직원은 줄은 두되 이름 · 막대를 비운다(STAFF-39).
@@ -28,11 +28,28 @@ export function CoverLegend() {
   );
 }
 
-export function ScheduleWeek({ data, query, today }: { data: WorkScheduleList; query: ScheduleQuery; today: string }) {
+/**
+ * hrefBase · readOnly 는 로그인 후 홈 점포 하나 화면(WHALEERP-342)이 쓴다 — 관리 화면은 주지 않아 그대로다.
+ * readOnly 면 그날 근무가 있는 직원만(휴무 직원 행 없음, 가린 직원은 readOnlyRows), 막대는 누를 수 없는 글자, 공백 줄 · 배정 버튼 없음.
+ */
+export function ScheduleWeek({
+  data,
+  query,
+  today,
+  hrefBase = "/work-schedules",
+  readOnly = false,
+}: {
+  data: WorkScheduleList;
+  query: ScheduleQuery;
+  today: string;
+  hrefBase?: string;
+  readOnly?: boolean;
+}) {
   const days = Array.from({ length: 7 }, (_, i) => addDays(query.week, i));
   const dayOf = (d: string) => data.days.find((x) => x.workDate === d);
   const day = dayOf(query.day);
-  const rows = data.staff.filter((s) => s.schedulableDates.includes(query.day));
+  const schedulable = data.staff.filter((s) => s.schedulableDates.includes(query.day));
+  const rows = readOnly ? readOnlyRows(schedulable, data.items, query.day, day?.headcount ?? 0) : schedulable;
   // 전날에서 넘어온 근무 — 공백에서 뺀다. 주간은 전주 일요일부터 받는다(weekRange)
   const carry = carryOver(data.items.filter((s) => s.workDate === addDays(query.day, -1)));
   const cells = hourCells(day?.coverage ?? []);
@@ -47,7 +64,7 @@ export function ScheduleWeek({ data, query, today }: { data: WorkScheduleList; q
           return (
             <Link
               key={d}
-              href={`/work-schedules${toScheduleSearch(moved(query, { day: d }), today)}`}
+              href={`${hrefBase}${toScheduleSearch(moved(query, { day: d }), today)}`}
               aria-current={picked ? "date" : undefined}
               scroll={false}
               className={`flex h-[34px] flex-1 items-center justify-center gap-[6px] rounded-[2px] border text-[14px] transition-colors duration-150 ease-out ${
@@ -71,7 +88,11 @@ export function ScheduleWeek({ data, query, today }: { data: WorkScheduleList; q
             ))}
           </div>
         </div>
-        {rows.length === 0 && <p className="border-b border-erp-thead-line px-[10px] py-[14px] text-[14px] text-erp-label">이날 근무스케줄을 받을 수 있는 직원이 없습니다.</p>}
+        {rows.length === 0 && (
+          <p className="border-b border-erp-thead-line px-[10px] py-[14px] text-[14px] text-erp-label">
+            {readOnly ? "이날 근무가 없습니다." : "이날 근무스케줄을 받을 수 있는 직원이 없습니다."}
+          </p>
+        )}
         {rows.map((s, i) => {
           const shifts = s.isMasked ? [] : data.items.filter((it) => it.staffMemberId === s.staffMemberId && it.workDate === query.day);
           return (
@@ -88,13 +109,20 @@ export function ScheduleWeek({ data, query, today }: { data: WorkScheduleList; q
                 )}
                 {shifts.map((it) => {
                   const bar = barOf(it);
+                  const barClass = "absolute inset-y-0 flex items-center truncate rounded-[2px] bg-erp-brand-soft px-[10px] text-[13px] text-white";
+                  if (readOnly)
+                    return (
+                      <span key={it.workScheduleId} className={barClass} style={{ left: `${bar.left}%`, width: `${bar.width}%` }} title={bar.label}>
+                        {bar.label}
+                      </span>
+                    );
                   return (
                     // 누르면 수정 패널(수정 권한이 있을 때, #203)
                     <ScheduleBar
                       key={it.workScheduleId}
                       item={it}
                       staffName={s.name ?? ""}
-                      className="absolute inset-y-0 flex items-center truncate rounded-[2px] bg-erp-brand-soft px-[10px] text-[13px] text-white"
+                      className={barClass}
                       style={{ left: `${bar.left}%`, width: `${bar.width}%` }}
                       title={bar.label}
                     >
@@ -117,7 +145,7 @@ export function ScheduleWeek({ data, query, today }: { data: WorkScheduleList; q
           </div>
         </div>
         {/* 공백 줄 — 데모 gapBar 처럼 근무 인원 줄 바로 아래, 「이 시간대에 배정」은 오른쪽 끝 */}
-        {day && day.headcount > 0 && (
+        {!readOnly && day && day.headcount > 0 && (
           <div className="flex items-center gap-[6px]">
             <Badge tone={gapMinutes ? "off" : "on"}>{gapMinutes ? `공백 ${durationLabel(gapMinutes)}` : "공백 없음"}</Badge>
             <p className="text-[13px] leading-[1.6] text-erp-label">
