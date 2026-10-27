@@ -163,7 +163,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
             {role.editBlockedReason === "SELF_LINKED"
               ? "본인 계정에 연결된 권한그룹은 수정할 수 없습니다."
               : role.editBlockedReason === "NO_PERMISSION" && role.roleTypeCode === "FA"
-                ? "가맹관리자의 권한그룹은 조회만 가능합니다."
+                ? "본인 계정은 가맹관리자 권한 그룹을 수정할 수 없습니다."
                 : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한 그룹입니다")}
           </InfoBand>
         )}
