@@ -84,14 +84,14 @@ export function AdminTable({
     {
       header: "최근 로그인",
       width: "w-[180px]",
-      // 로그인한 적이 없으면 안내를 보인다. 초기 비밀번호 메일이 실패한 계정은 그 사실을 먼저 알린다(SYSTEM-3).
+      // 로그인한 적이 없으면 「-」(2026-10-27 사용자 요청). 초기 비밀번호 메일이 실패한 계정은 그 사실을 먼저 알린다(SYSTEM-3).
       cell: (a) =>
         a.isInitialPasswordUnsent ? (
           <span className="text-erp-off">초기 비밀번호 미발송</span>
         ) : a.lastLoginAt ? (
           dim(a, formatDateTime(a.lastLoginAt))
         ) : (
-          <span className="text-erp-muted">로그인 기록 없음</span>
+          <span className="text-erp-muted">-</span>
         ),
     },
     { header: "등록", width: "w-[170px]", cell: (a) => dim(a, formatDateTime(a.createdAt)) },

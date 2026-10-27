@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition, type RefObject } from "react";
 import { Badge, Button, ConfirmDialog, DetailTable, SlidePanel, Tag, useToast, type DetailRow } from "@/components/common";
 import { useAccount, usePagePermission } from "@/components/site/session-gate";
-import { formatDateTime, formatPhone } from "@/lib/format";
+import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
 import { adminActionsOf } from "@/lib/platform-admin-actions";
 import type { PlatformAdminDetail } from "@/lib/platform-admins";
 import { deletePlatformAdminAction, getPlatformAdminHistoriesAction, resetPlatformAdminPasswordAction } from "./actions";
@@ -176,11 +176,14 @@ function DetailBody({
     },
     // 최근 로그인 → 등록 → 최종수정 순으로 둔다(2026-10-20 디자인 수정). 일시와 사람은 세로선 대신 「일시 · 사람」으로 —
     // 권한 그룹 관리와 같은 라벨 · 구분자(2026-10-26 사용자 지정)
-    { label: "최근 로그인", value: admin.lastLoginAt ? formatDateTime(admin.lastLoginAt) : muted("로그인 기록 없음") },
+    { label: "최근 로그인", value: admin.lastLoginAt ? formatDateTime(admin.lastLoginAt) : muted("-") },
     { label: "등록", value: when(admin.createdAt, admin.createdByName ?? "시스템") },
     {
       label: "최종수정",
-      value: admin.updatedByName ? when(admin.updatedAt, admin.updatedByName) : muted("수정한 적 없음"),
+      // 등록만 하고 고친 적 없으면 「-」(2026-10-27 사용자 요청, wasUpdated). 수정자가 없는 계정(회원가입으로 만든 계정 등)도 「-」다.
+      // 한계: api 의 updatedAt(Prisma @updatedAt)은 로그인(최근 로그인 · 실패 횟수) · 초기 비밀번호 미발송 표시에도 올라가는데, 수정자(updatedBy)는 등록 때부터
+      // 등록자로 채워져 있어 이 검사로는 그 갱신을 거르지 못한다 — 로그인한 계정은 「로그인 시각 · 등록자」가 최종수정으로 보인다(api 요청 대기)
+      value: admin.updatedByName && wasUpdated(admin.createdAt, admin.updatedAt) ? when(admin.updatedAt, admin.updatedByName) : muted("-"),
     },
   ];
   // 미사용 전환일시는 상세에 더 보이지 않는다 — 누가 바꿨는지까지는 변경이력에 이미 쌓인다(2026-10-20 피드백).

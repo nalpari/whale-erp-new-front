@@ -19,6 +19,17 @@ export function formatDateTime(iso: string | null | undefined): string {
   return Number.isNaN(date.getTime()) ? "" : DATE_TIME.format(date);
 }
 
+/**
+ * 등록 뒤 고친 적이 있는지 — 등록만 한 행은 최종수정일시가 등록일시와 같다. 1팀 화면은 같으면 최종수정을 「-」로 둔다(2026-10-27 사용자 요청).
+ * 초까지 견준다(사용자 지정) — 등록 때 두 값이 따로 찍혀 ms 가 어긋날 수 있어 1초 안쪽은 같은 것으로 본다. 값이 없거나 깨졌으면 고친 적 없는 것으로 본다.
+ * 관리자 등록은 초기 비밀번호 메일을 보낸 뒤 api 가 미발송 표시를 끄며 updatedAt 이 몇 초 늦게 찍혀, 화면에는 같은 분이어도 최종수정이 보인다.
+ */
+export function wasUpdated(createdAt: string | null | undefined, updatedAt: string | null | undefined): boolean {
+  if (!createdAt || !updatedAt) return false;
+  const gap = Date.parse(updatedAt) - Date.parse(createdAt);
+  return Number.isFinite(gap) && Math.abs(gap) >= 1000;
+}
+
 /** ISO 일시 → `2026-10-13`(한국 시간, 날짜만). 값이 없거나 깨졌으면 빈 문자열. */
 export function formatDate(iso: string | null | undefined): string {
   if (!iso) return "";

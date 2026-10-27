@@ -278,7 +278,7 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
                 </FormRow>
                 <hr className="border-erp-divider" />
                 <FormRow>
-                  <ReadonlyValue label="최근 로그인" value={profile.lastLoginAt ? formatDateTime(profile.lastLoginAt) : "로그인 기록 없음"} bold />
+                  <ReadonlyValue label="최근 로그인" value={profile.lastLoginAt ? formatDateTime(profile.lastLoginAt) : "-"} bold />
                   <ReadonlyValue label="가입일" value={formatDate(profile.createdAt)} bold />
                 </FormRow>
               </ReadonlyCard>

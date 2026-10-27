@@ -379,7 +379,7 @@ export function AdminFormPanel(props: Props) {
                 <TextField value={formatDateTime(props.admin.createdAt)} readOnly />
               </Field>
               <Field label="최근 로그인">
-                <TextField value={props.admin.lastLoginAt ? formatDateTime(props.admin.lastLoginAt) : "로그인 기록 없음"} readOnly />
+                <TextField value={props.admin.lastLoginAt ? formatDateTime(props.admin.lastLoginAt) : "-"} readOnly />
               </Field>
             </>
           )}

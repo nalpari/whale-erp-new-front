@@ -66,7 +66,7 @@ export function AdminTable({
         ) : a.lastLoginAt ? (
           dim(a, formatDateTime(a.lastLoginAt))
         ) : (
-          <span className="text-erp-muted">로그인 기록 없음</span>
+          <span className="text-erp-muted">-</span>
         ),
     },
   ];
