@@ -28,7 +28,7 @@ import { assigneeText, dueText, MASKED_STAFF } from "../todos/todo-row";
 import { ScheduleMonth } from "../work-schedules/schedule-month";
 import { ScheduleWeek } from "../work-schedules/schedule-week";
 import { addDays, mondayOf, moved, parseScheduleQuery, scheduleApiSearch, toScheduleSearch, type ScheduleQuery } from "../work-schedules/work-schedule-query";
-import { oneStorePaths, oneStoreStatusCells, STAFF_LIMIT, staffCountsOf, todoSummaryOf } from "./one-store-view";
+import { latestNotices, oneStorePaths, oneStoreStatusCells, STAFF_LIMIT, staffCountsOf, todoSummaryOf } from "./one-store-view";
 import { useHomeLoad, type Loaded } from "./use-home-api";
 
 // 로그인 후 홈 — 점포 하나 화면(WHALEERP-342, HOME-6 · HOME-9, 목업 home/signed-in.html 「점포 하나 화면」 · 데모 oneStore).
@@ -95,7 +95,7 @@ export function OneStoreScreen({ storeId, reloadKey }: { storeId: number; reload
   const notices = useHomeLoad(canOpen("/support-notices") ? () => Promise.all([bff<SupportPostList>(paths.notices), enumOf("NoticeType")]) : null, key, "공지사항");
   const store = useHomeLoad(canOpen("/stores") ? () => bff<StoreDetail>(paths.store) : null, key, "점포 정보");
   const todos = useHomeLoad(
-    canOpen("/todos") ? () => Promise.all([bff<TodoList>(paths.todoToday), bff<TodoList>(paths.todoTodayDone), bff<TodoList>(paths.todoUrgent)]) : null,
+    canOpen("/todos") ? () => Promise.all([bff<TodoList>(paths.todoToday), bff<TodoList>(paths.todoUrgent)]) : null,
     `${key}|${today}`,
     "TO-DO",
   );
@@ -131,8 +131,8 @@ export function OneStoreScreen({ storeId, reloadKey }: { storeId: number; reload
     canOpen("/todos") && (
       <Card key="todo" title="TO-DO" actions={soft("TO-DO 리스트", `/todos${toTodoListSearch({ ...DEFAULT_TODO_LIST_QUERY, storeIds: [storeId] })}`)}>
         <Body section={todos} what="TO-DO 를">
-          {([todayList, doneList, urgentList]) => {
-            const n = todoSummaryOf(todayList.total, doneList.total, urgentList.total);
+          {([todayList, urgentList]) => {
+            const n = todoSummaryOf(todayList, urgentList.total);
             return (
               <>
                 <div className="flex items-end justify-between">
@@ -140,6 +140,7 @@ export function OneStoreScreen({ storeId, reloadKey }: { storeId: number; reload
                   <span className="text-[22px] font-semibold">
                     {n.done}
                     <span className="ml-[2px] text-[14px] font-medium">/ {n.today}건</span>
+                    {n.partial && <span className="ml-[6px] text-[13px] font-normal text-erp-label">(앞 {todayList.items.length}건 기준)</span>}
                   </span>
                 </div>
                 <div className="h-[6px] overflow-hidden rounded-[2px] bg-erp-subtle" role="progressbar" aria-label="오늘 완료" aria-valuenow={n.percent} aria-valuemin={0} aria-valuemax={100}>
@@ -150,7 +151,7 @@ export function OneStoreScreen({ storeId, reloadKey }: { storeId: number; reload
                 </span>
                 {todayList.items.length > 0 && (
                   <ul className={LIST}>
-                    {todayList.items.map((t) => (
+                    {todayList.items.slice(0, 2).map((t) => (
                       <li key={t.todoId} className={ROW}>
                         {t.isUrgent && <Badge tone="off">긴급</Badge>}
                         <Link href={`/todos/${t.todoId}`} className="min-w-0 flex-1 truncate hover:underline">
@@ -205,7 +206,7 @@ export function OneStoreScreen({ storeId, reloadKey }: { storeId: number; reload
             <Body section={notices} what="공지사항을">
               {([list, types]) =>
                 list.items.length ? (
-                  list.items.map((p) => (
+                  latestNotices(list.items).map((p) => (
                     <Link key={p.postId} href={at(`/support-notices/${p.postId}`)} className="flex min-w-0 items-center gap-[6px] hover:underline">
                       {p.noticeType && <Tag>{labelOf(types, p.noticeType)}</Tag>}
                       <span className="truncate">{p.title}</span>
@@ -309,7 +310,7 @@ function StaffCard({
   today: string;
 }) {
   const create = canCreateContract && <Button href="/contracts/new">계약서 작성</Button>;
-  const counts = section.got && "data" in section.got ? staffCountsOf(section.got.data.items) : null;
+  const counts = section.got && "data" in section.got ? staffCountsOf(section.got.data) : null;
   const masked = (render: (item: StaffMemberListItem) => ReactNode) => (r: StaffRow) => (r.item.isMasked ? DASH : render(r.item));
   return (
     <Card
@@ -319,7 +320,9 @@ function StaffCard({
           {counts && (
             <span className="ml-[6px] text-[14px] font-normal text-erp-label">
               재직 {counts.employed} · 가입 대기 {counts.waiting}
+              {counts.underAge ? ` · 가입 불가 ${counts.underAge}` : ""}
               {counts.masked ? ` · 가려진 직원 ${counts.masked}` : ""}
+              {counts.partial ? ` (앞 ${STAFF_LIMIT}명 기준)` : ""}
             </span>
           )}
         </>
