@@ -20,7 +20,7 @@ import {
   type MenuFormValues,
   type MenuStatus,
 } from "@/lib/menu-form";
-import { descendantCountOf, findRow, pathNamesOf, type createPlacement } from "@/lib/menu-tree";
+import { findRow, pathNamesOf, type createPlacement } from "@/lib/menu-tree";
 import { MENU_CODE } from "@/lib/menus";
 import type { MenuDetail, MenuNode } from "@/lib/platform-menus";
 import { createMenuAction, updateMenuAction } from "./actions";
@@ -256,7 +256,9 @@ function MenuForm(
   const describe = (key: "name" | "url") => (errors[key] ? `${id}-${key}-error` : undefined);
   const depth = props.mode === "edit" ? props.menu.depth : props.placement.depth;
   const editRow = props.mode === "edit" ? findRow(props.nodes, props.menu.menuId) : undefined;
-  const childCount = editRow ? descendantCountOf(editRow.node) : 0;
+  // 이 메뉴를 끄면 새로 숨는 하위 메뉴 수 — 이미 미사용인 하위와 그 아래는 지금도 숨어 있어 세지 않는다(리뷰로 찾음)
+  const shownBelow = (n: MenuNode): number => n.children.reduce((sum, c) => sum + (c.status === "ACTIVE" ? 1 + shownBelow(c) : 0), 0);
+  const childCount = editRow ? shownBelow(editRow.node) : 0;
   const parentLabel =
     props.mode === "edit"
       ? parentLabelOf(props.menu)

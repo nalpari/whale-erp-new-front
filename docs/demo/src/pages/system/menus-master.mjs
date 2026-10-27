@@ -168,7 +168,7 @@ function treeTab(key, s) {
       ui.field("서비스 코드", ro(s.code)) +
       ui.field("상위 메뉴", ro(p ? `${p.code} · ${path(p)}` : "없음 · 최상위(1단계) 메뉴")) +
       ui.formRow(ui.field("메뉴 코드", ro(n.code)), ui.field("메뉴 순서", ro(String(n.order)))) +
-      nameFields(n.name, n.url, n.use, `use-${key}-${n.code}`, false, nodes.filter((m) => { for (let q = m.parent; q; q = q.parent) if (q === n) return true; return false; }).length) +
+      nameFields(n.name, n.url, n.use, `use-${key}-${n.code}`, false, nodes.filter((m) => { for (let q = m; q.parent; q = q.parent) { if (!q.use) return false; if (q.parent === n) return true; } return false; }).length) +
       `<div class="flex justify-end gap-[6px]">${ui.button("저장", { "data-dirty-save": true, "data-toast": "수정되었습니다.", disabled: true })}</div>` +
       `</section>`
     );
