@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { Badge, Button, DataTable, PageBar } from "@/components/common";
 import { CodeLabel } from "@/components/site/code-label";
@@ -20,10 +21,13 @@ type Loaded<T> = { key: string; data: T } | { key: string; error: string };
 /**
  * api 하나를 부른다. key(범위 + 새로고침 횟수)가 바뀔 때만 다시 부른다(HOM-08) — 그 밖에는 부르지 않는다.
  * 지금 key 의 결과가 아니면 null(부르는 중)이다. summary 와 pending 을 따로 불러 한쪽이 실패해도 다른 쪽은 보인다.
+ * path 가 null 이면 부르지 않는다(범위에 드는 점포가 없음). 401 이면 로그인 화면으로 보낸다(SessionGate 와 같다).
  */
-function useHomeApi<T>(path: string, key: string, what: string): Loaded<T> | null {
+function useHomeApi<T>(path: string | null, key: string, what: string): Loaded<T> | null {
+  const router = useRouter();
   const [got, setGot] = useState<Loaded<T> | null>(null);
   useEffect(() => {
+    if (path === null) return;
     let cancelled = false;
     bff<T>(path).then(
       (data) => {
@@ -31,6 +35,7 @@ function useHomeApi<T>(path: string, key: string, what: string): Loaded<T> | nul
       },
       (e: unknown) => {
         if (cancelled) return;
+        if (e instanceof BffError && e.status === 401) return router.replace("/login");
         console.error(`홈 ${what} 조회 실패`, e);
         setGot({ key, error: e instanceof BffError ? e.message : "잠시 뒤 다시 불러와 주세요" });
       },
@@ -38,7 +43,7 @@ function useHomeApi<T>(path: string, key: string, what: string): Loaded<T> | nul
     return () => {
       cancelled = true;
     };
-  }, [path, key, what]);
+  }, [path, key, what, router]);
   return got?.key === key ? got : null;
 }
 
@@ -53,12 +58,13 @@ export function HomeScreen() {
   const [reloads, setReloads] = useState(0);
   const search = homeSearchOf(scope, stores);
   const key = `${search}#${reloads}`;
-  const summary = useHomeApi<HomeSummary>(`/home/summary${search}`, key, "현황");
-  const pending = useHomeApi<HomePending>(`/home/pending${search}`, key, "처리 대기");
+  const summary = useHomeApi<HomeSummary>(search === null ? null : `/home/summary${search}`, key, "현황");
+  const pending = useHomeApi<HomePending>(search === null ? null : `/home/pending${search}`, key, "처리 대기");
 
   const menus = useMenus();
   const service = useService();
   const canOpen = (path: string) => menuOfPath(menus, path, service) !== null;
+  const canCreateStore = !!menuOfPath(menus, "/stores", service)?.permission.create;
 
   const s = summary && "data" in summary ? summary.data : null;
   const p = pending && "data" in pending ? pending.data : null;
@@ -79,15 +85,18 @@ export function HomeScreen() {
     // 점포가 없는 BP — 빈 현황 대신 등록으로 안내한다(HOME-4)
     body = (
       <Notice text="등록된 점포가 없습니다. 점포를 먼저 등록하세요.">
-        {canOpen("/stores") && <Button href={bpPath(bp, "/stores/new")}>점포 등록</Button>}
+        {canCreateStore && <Button href={bpPath(bp, "/stores/new")}>점포 등록</Button>}
       </Notice>
     );
+  } else if (search === null) {
+    // 범위에 드는 점포가 이 탭에 없다(다른 BP 탭에서 복사한 범위 등) — 쿼리를 빼면 BP 전체가 보이므로 부르지 않는다
+    body = <Notice text="상단 범위에 해당하는 점포가 이 탭에 없습니다. 상단에서 범위를 다시 고르세요." />;
   } else {
     const renewalItem = p?.items.find((i) => i.type === "CONTRACT_RENEWAL");
     const failed = (what: string, error: string) => <Notice text={`${what} 불러오지 못했습니다. ${error}`} />;
     body = (
       <>
-        {p?.renewals?.length ? <RenewalBand renewals={p.renewals} href={renewalItem ? pendingLineOf(renewalItem, bp).href : "/contracts"} /> : null}
+        {p?.renewals?.length ? <RenewalBand renewals={p.renewals} href={renewalItem ? (pendingLineOf(renewalItem, bp)?.href ?? "/contracts") : "/contracts"} /> : null}
         {s?.cards && <Cards cards={s.cards} scopeHref={(href) => withScope(href, scope)} canOpen={canOpen} bp={bp} />}
         <div className="grid grid-cols-[minmax(0,7fr)_minmax(0,5fr)] items-start gap-[12px]">
           {!summary ? <Notice text="현황을 불러오는 중입니다." /> : "error" in summary ? failed("현황을", summary.error) : <StoreTable table={summary.data.storeTable} staffHref={canOpen("/staff-members") ? withScope("/staff-members", scope) : null} />}
@@ -267,8 +276,12 @@ function StoreTable({ table, staffHref }: { table: HomeSummary["storeTable"]; st
 
 // 처리 대기 — api 순서 그대로(갱신 예정 → 계약 → 직원 → 문의 → TO-DO), 0건 유형은 api 가 뺀다. 운영 알림은 나열하지 않는다(HOM-08)
 function Pending({ data, bp }: { data: HomePending; bp: number }) {
-  const lines = data.items.map((item) => ({ type: item.type, ...pendingLineOf(item, bp) }));
-  const total = data.items.reduce((sum, i) => sum + i.count, 0);
+  // 이 화면이 모르는 유형(api 가 새로 더한 것)은 건너뛴다 — 홈 전체가 오류 화면이 되지 않게
+  const lines = data.items.flatMap((item) => {
+    const line = pendingLineOf(item, bp);
+    return line ? [{ type: item.type, count: item.count, ...line }] : [];
+  });
+  const total = lines.reduce((sum, l) => sum + l.count, 0);
   return (
     <section className={`${CARD} flex flex-col gap-[12px] p-[24px]`}>
       <div className="flex items-end gap-[6px]">

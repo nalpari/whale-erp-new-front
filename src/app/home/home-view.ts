@@ -6,7 +6,7 @@ import type { Scope } from "../../lib/browser-storage.ts";
 import { bpPath } from "../../lib/bp-path.ts";
 import type { AdminStore } from "../../lib/session.ts";
 import { JOIN_GROUP_STATES, JOIN_GROUPS } from "../../lib/staff-members.ts";
-import { scopeStores } from "../../lib/store-scope.ts";
+import { isUnusableScope, scopeStores } from "../../lib/store-scope.ts";
 import { listHrefOf } from "../contracts/contract-list.ts";
 import { DEFAULT_STAFF_LIST_QUERY, staffListHrefOf } from "../staff-members/staff-list-query.ts";
 import { DEFAULT_TODO_LIST_QUERY, TODO_STATUSES, toTodoListSearch } from "../todos/todo-list-query.ts";
@@ -16,8 +16,12 @@ export type HomePending = components["schemas"]["HomePendingResponseDto"];
 export type HomePendingItem = components["schemas"]["HomePendingItemDto"];
 export type HomeRenewal = components["schemas"]["HomeRenewalDto"];
 
-/** /home/summary · /home/pending 쿼리 — 전체면 빈 값(관리 범위 전체), 아니면 범위의 점포 ID 쉼표 목록 */
-export function homeSearchOf(scope: Scope, stores: readonly AdminStore[]): string {
+/**
+ * /home/summary · /home/pending 쿼리 — 전체면 빈 값(관리 범위 전체), 아니면 범위의 점포 ID 쉼표 목록. 범위에 드는 점포가 이 탭에 없으면
+ * (isUnusableScope) null — 쿼리를 빼면 BP 전체가 보이므로 부르지 않고 안내한다.
+ */
+export function homeSearchOf(scope: Scope, stores: readonly AdminStore[]): string | null {
+  if (isUnusableScope(scope, stores)) return null;
   const ids = scopeStores(scope, stores).map((s) => s.storeId);
   return ids.length ? `?storeIds=${ids.join(",")}` : "";
 }
@@ -66,9 +70,10 @@ export function pendingHrefOf(item: HomePendingItem, bpCodeId: number): string {
   }
 }
 
-/** 처리 대기 한 줄 — 구분 · 항목 · 내용 · 이동 주소 */
+/** 처리 대기 한 줄 — 구분 · 항목 · 내용 · 이동 주소. api 가 이 화면이 모르는 유형을 주면 null(그 줄만 건너뛴다) */
 export function pendingLineOf(item: HomePendingItem, bpCodeId: number) {
-  const text = PENDING_TEXT[item.type];
+  const text = PENDING_TEXT[item.type] as (typeof PENDING_TEXT)[HomePendingItem["type"]] | undefined;
+  if (!text) return null;
   const days = item.waitingDays;
   const waited =
     item.type === "CONTRACT_RENEWAL" ? "새 근로계약서 초안 없음" : !text.since || days === null ? null : days === 0 ? `오늘 ${text.since}` : `${text.since} 후 ${days}일 경과`;
