@@ -288,9 +288,10 @@ export function AdminFormPanel(props: Props) {
       }
       const admin = props.admin;
       const input = toUpdateBpAdminInput(form, admin.updatedAt);
-      // 가맹 마스터를 미사용으로 바꾸거나 내 범위 안 점포를 빼면 저장 전에 함께 바뀔 가맹 관리자를 센다
+      // 가맹 마스터 저장은 늘 함께 바뀔 가맹 관리자를 먼저 센다 — 패널을 연 뒤 점포 등록으로 매핑이 늘면(가맹 마스터 updatedAt 은 그대로)
+      // 화면은 뺀 점포가 없다고 보지만 저장은 그 점포를 뺀다. 판단은 api 에 맡기고 cascadeOf 는 확인창 문구에만 쓴다
       const { deactivating, removed } = cascadeOf(admin, input);
-      if (deactivating || removed.length) {
+      if (admin.roleTypeCode === "FM") {
         const impact = await getBpAdminUpdateImpactAction(admin.adminAccountId, input).catch((error: unknown) => {
           console.error("BP 관리자 함께 바뀌는 계정 조회 호출 실패", error);
           return { ok: false as const, status: undefined, message: "" };
@@ -668,7 +669,10 @@ const cascadeTitle = ({ deactivating, removed }: { deactivating: boolean; remove
     ? "가맹 마스터 점포를 빼고 미사용으로 저장"
     : removed.length
       ? "가맹 마스터 점포를 빼고 저장"
-      : "가맹 마스터를 미사용으로 저장";
+      : deactivating
+        ? "가맹 마스터를 미사용으로 저장"
+        : // 화면은 바꾼 것이 없다고 보지만 api 가 함께 바뀌는 계정을 센 때(패널을 연 뒤 매핑이 바뀜)
+          "가맹 마스터 저장";
 
 /** 입력칸 하나와 그 아래 오류 문구 */
 function Labeled({ label, required, message, children }: { label: string; required?: boolean; message: ReactNode; children: ReactNode }) {

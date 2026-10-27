@@ -47,7 +47,8 @@ export function editLocksOf(target: { roleTypeCode: BpAdminRoleType; actions: Bp
 
 /**
  * 가맹 마스터 저장이 연결된 가맹 관리자에 번지는가 — 사용 → 미사용(deactivating) · 내 범위 안 점포 빼기(removed).
- * 범위 밖 매핑은 폼에 없지만 api 가 그대로 두므로 뺀 것으로 세지 않는다. 둘 다 없으면 함께 바뀌는 계정을 세지 않고 저장한다.
+ * 범위 밖 매핑은 폼에 없지만 api 가 그대로 두므로 뺀 것으로 세지 않는다. 패널을 연 때의 상세로 셈하므로 확인창 문구(제목 · 버튼 ·
+ * 빼는 점포)에만 쓰고, 확인창을 띄울지는 api 의 update-impact 수로 정한다.
  */
 export function cascadeOf<S extends { storeId: number; isOutOfScope: boolean }>(
   admin: { roleTypeCode: BpAdminRoleType; accountStatus: BpAdminStatus; stores: S[] },

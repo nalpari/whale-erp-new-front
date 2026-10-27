@@ -105,7 +105,7 @@ export async function getBpAdminUpdateImpactAction(
   if (!Array.isArray(input.storeIds) || !input.storeIds.every(validId)) return { ok: false, status: 400, message: "점포를 다시 골라 주세요." };
   try {
     const impact = await getBpAdminUpdateImpact(id, input);
-    // 수가 비면 0 으로 읽혀 확인창 없이 저장된다 — 모양이 다르면 실패로 돌려 저장을 막는다
+    // 수가 빠지면 패널의 `deactivatedCount || unmappedCount` 검사가 거짓이 되어 확인창 없이 저장된다 — 모양이 다르면 실패로 돌려 저장을 막는다
     if (typeof impact?.deactivatedCount !== "number" || typeof impact.unmappedCount !== "number") {
       console.error("BP 관리자 함께 바뀌는 계정 응답 모양이 다르다", impact);
       return { ok: false, message: "함께 바뀌는 계정을 확인하지 못했습니다." };
