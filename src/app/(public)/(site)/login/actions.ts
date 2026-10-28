@@ -48,7 +48,7 @@ export async function login(_prev: LoginFormState, formData: FormData): Promise<
     // 4xx 는 api 문구 그대로, 5xx·연결 실패는 인증 결과가 아니고 Nest 문구도 영어라 시스템 오류 문구로 바꾼다.
     // api 스로틀러 429 문구는 영어 기본값이다. api 에서 바꾸면 직원 앱 문구도 바뀌므로 여기서만 바꾼다(잠금 429 는 api 의 한글 문구 그대로).
     if (e instanceof ApiError && e.status === 429 && e.message.startsWith("ThrottlerException"))
-      return { error: "요청이 많습니다. 잠시 뒤 다시 시도해 주세요" };
+      return { error: "요청이 많습니다. 잠시 뒤 다시 시도해 주세요." };
     if (e instanceof ApiError && e.status < 500) return { error: e.message };
     console.error(e);
     return { error: SYSTEM_ERROR };
