@@ -15,6 +15,7 @@ import { labelOf, type EnumValue } from "@/lib/enums";
 import { MENU_CODE, menuOfPath } from "@/lib/menus";
 import { formatAt } from "@/lib/notification-view";
 import { kstToday, type StaffMemberListItem } from "@/lib/staff-members";
+import type { PayslipSummary } from "@/lib/payslips";
 import type { StoreDetail } from "@/lib/store-types";
 import type { TodoListResponse as TodoList } from "@/lib/todos-api";
 import type { WorkScheduleList } from "@/lib/work-schedules-api";
@@ -28,12 +29,12 @@ import { assigneeText, dueText, MASKED_STAFF } from "../todos/todo-row";
 import { ScheduleMonth } from "../work-schedules/schedule-month";
 import { ScheduleWeek } from "../work-schedules/schedule-week";
 import { addDays, mondayOf, moved, parseScheduleQuery, scheduleApiSearch, toScheduleSearch, type ScheduleQuery } from "../work-schedules/work-schedule-query";
-import { latestNotices, oneStorePaths, staffRowsOf, oneStoreStatusCells, STAFF_LIMIT, staffCountsOf, todoSummaryOf } from "./one-store-view";
+import { latestNotices, manWon, oneStorePaths, staffRowsOf, oneStoreStatusCells, STAFF_LIMIT, staffCountsOf, todoSummaryOf } from "./one-store-view";
 import { useHomeLoad, type Loaded } from "./use-home-api";
 
 // 로그인 후 홈 — 점포 하나 화면(WHALEERP-342, HOME-6 · HOME-9, 목업 home/signed-in.html 「점포 하나 화면」 · 데모 oneStore).
 // 업무 범위가 점포 하나일 때다. 처리 대기 · 점포별 현황 표는 없다. api 는 새로 만들지 않고 영역마다 기존 목록을 따로 부른다(2026-10-27 재영) —
-// 한 영역이 실패하면 그 영역만 오류와 [다시 시도]다. 메뉴 조회 권한이 없는 영역은 숨긴다. 직원 급여 카드는 api #621 뒤에 붙인다.
+// 한 영역이 실패하면 그 영역만 오류와 [다시 시도]다. 메뉴 조회 권한이 없는 영역은 숨긴다.
 
 const CARD = "rounded-[4px] border border-erp-panel-line bg-white";
 const HOME = "/home";
@@ -104,6 +105,7 @@ export function OneStoreScreen({ storeId, reloadKey }: { storeId: number; reload
     key,
     "내 문의",
   );
+  const pay = useHomeLoad(canOpen("/payslips") ? () => bff<PayslipSummary>(paths.payslipSummary) : null, key, "직원 급여");
   const staff = useHomeLoad(canOpen("/staff-members") ? () => bff<{ items: StaffMemberListItem[]; total: number }>(paths.staff) : null, key, "직원 정보");
 
   const cards = [
@@ -124,6 +126,26 @@ export function OneStoreScreen({ storeId, reloadKey }: { storeId: number; reload
               <dt className="text-erp-label">개점일</dt>
               <dd>{s.business.openDate ?? "-"}</dd>
             </dl>
+          )}
+        </Body>
+      </Card>
+    ),
+    canOpen("/payslips") && (
+      // 이번 달 급여명세서 합계(WHALEERP-621) — 네 상태 모두, 본사 역할은 본사 제공 동의한 가맹 직원만(api 가 센다, ATT-30)
+      <Card key="pay" title="직원 급여" actions={soft("급여명세서", `/payslips?${new URLSearchParams({ month: today.slice(0, 7), storeIds: String(storeId) })}`)}>
+        <Body section={pay} what="직원 급여를">
+          {(s) => (
+            <>
+              <span className="text-[14px] text-erp-label">{Number(s.month.slice(5))}월 급여 지급 예정</span>
+              <span className="text-[22px] font-semibold">{manWon(s.total.grossPayAmount)}</span>
+              <span className="text-[13px] text-erp-label">직원 {s.total.count}명 · 급여명세서 합계</span>
+              <dl className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-[12px] gap-y-[8px] text-[14px]">
+                <dt className="text-erp-label">정직원 {s.fullTime.count}명</dt>
+                <dd>{manWon(s.fullTime.grossPayAmount)}</dd>
+                <dt className="text-erp-label">파트타이머 {s.partTime.count}명</dt>
+                <dd>{manWon(s.partTime.grossPayAmount)}</dd>
+              </dl>
+            </>
           )}
         </Body>
       </Card>

@@ -4,6 +4,7 @@
 import type { Scope } from "../../lib/browser-storage.ts";
 import type { AdminStore } from "../../lib/session.ts";
 import { employmentStatusCells, type Cell } from "../staff-members/staff-row.ts";
+import { formatAmount } from "../../lib/payslips.ts";
 import type { StaffMemberListItem } from "../../lib/staff-members.ts";
 
 /**
@@ -53,6 +54,8 @@ export function oneStorePaths(storeId: number, today: string) {
     inquiries: "/support-inquiries?page=1&pageSize=2",
     inquiriesWaiting: "/support-inquiries?status=RECEIVED&status=IN_PROGRESS&page=1&pageSize=1",
     staff: `/staff-members?${staff}`,
+    /** 직원 급여 — 이번 달(급여 기간 시작일이 그 달, 목록의 month 와 같다) 네 상태 모두 */
+    payslipSummary: `/payslips/summary?${new URLSearchParams({ storeId: String(storeId), month: today.slice(0, 7) })}`,
   };
 }
 
@@ -66,6 +69,9 @@ export function todoSummaryOf(list: { items: readonly { status: string }[]; tota
   const done = list.items.filter((t) => t.status === "DONE").length;
   return { today, done, open: Math.max(0, today - done), urgent, percent: today ? Math.round((done / today) * 100) : 0, partial: list.items.length < list.total };
 }
+
+/** 직원 급여 카드의 금액 — 목업처럼 만원 단위로 반올림한다(1,184만원). 만원이 안 되는 금액이 0만원으로 보이지 않게 그때는 원 단위다 */
+export const manWon = (won: number): string => (won !== 0 && Math.abs(won) < 10_000 ? `${formatAmount(won)}원` : `${formatAmount(Math.round(won / 10_000))}만원`);
 
 /** 공지 띠 — 고정 여부와 상관없이 게시일 최신 3건(같은 날이면 나중 글). api 는 고정 공지를 먼저 주므로 게시일로 다시 고른다 */
 export function latestNotices<P extends { postId: number; postedDate: string }>(items: readonly P[]): P[] {
