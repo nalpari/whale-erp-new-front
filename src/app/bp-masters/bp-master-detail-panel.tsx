@@ -148,7 +148,8 @@ function DetailBody({
 
   const muted = (text: string) => <span className="text-erp-muted">{text}</span>;
   const gone = muted(WITHDRAWN_TEXT);
-  // 미인증 BP 는 진위확인으로 채워지는 값과 대표자 연락 · 주소를 하이픈으로 보인다(S-GZDODB)
+  // 미인증 BP 는 진위확인으로 채워지는 값(사업자번호 · 대표자명 · 개업일자 · 최종 인증일시)만 하이픈으로 보인다.
+  // 대표자 연락처 · 이메일 · 주소는 인증 없이 입력하는 칸이라 입력한 값을 그대로 보인다(2026-10-28 사용자 지적 — 전엔 미인증이면 함께 가렸다, S-GZDODB)
   const verified = Boolean(bp.bizVerifiedAt);
   const unverified = (value: ReactNode) => (verified ? value : muted("-"));
   const address = [bp.bizZipCode, bp.bizAddress, bp.bizAddressDetail].filter((line): line is string => Boolean(line));
@@ -206,21 +207,19 @@ function DetailBody({
     { label: "상호명", value: bp.tradeName },
     { label: "사업자번호", value: unverified(formatBizNumber(bp.bizRegistrationNumber)) },
     { label: "대표자명", value: unverified(bp.bizCeoName) },
-    { label: "대표자 연락처", value: unverified(withdrawn ? gone : formatPhone(bp.bizCeoPhone)) },
-    { label: "대표자 이메일", value: unverified(withdrawn ? gone : bp.bizCeoEmail) },
+    { label: "대표자 연락처", value: withdrawn ? gone : formatPhone(bp.bizCeoPhone) },
+    { label: "대표자 이메일", value: withdrawn ? gone : bp.bizCeoEmail },
     { label: "개업일자", value: unverified(bp.bizOpenDate) },
     {
       label: "사업자주소",
-      multiline: verified && address.length > 0,
-      value: unverified(
-        address.length ? (
-          <div className="py-[2px]">
-            {address.map((line, i) => (
-              <p key={i}>{line}</p>
-            ))}
-          </div>
-        ) : null,
-      ),
+      multiline: address.length > 0,
+      value: address.length ? (
+        <div className="py-[2px]">
+          {address.map((line, i) => (
+            <p key={i}>{line}</p>
+          ))}
+        </div>
+      ) : null,
     },
     { label: "업태 · 종목", value: <DetailValues items={[bp.bizCategory ?? "", bp.bizItem ?? ""].filter(Boolean)} /> },
     // 라벨 · 빈 값은 점포 상세(stores/[storeId]/page.tsx)와 같다
