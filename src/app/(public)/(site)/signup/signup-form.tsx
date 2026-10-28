@@ -124,6 +124,12 @@ const LOGIN_ID_CHECK_TEXT = {
   failed: "아이디를 확인하지 못했습니다. 저장 시 다시 확인합니다.",
 } as const;
 
+// 이메일도 같은 모양 — 관리자 등록 · 내 정보의 EMAIL_CHECK_TEXT(platform-admins/admin-parts.tsx)와 같은 문구다(2026-10-28 사용자 지정).
+const EMAIL_CHECK_TEXT = {
+  checking: "이메일을 확인하는 중입니다.",
+  failed: "이메일을 확인하지 못했습니다. 저장 시 다시 확인합니다.",
+} as const;
+
 // 체크 표시는 1팀 비로그인 폼의 확인 색(#5e8ce9) — design/guest/sign-up 의 CheckedInput 과 같다(2026-10-14).
 const CHECK_CIRCLE = (
   <svg viewBox="0 0 20 20" className="size-[16px] shrink-0" aria-hidden>
@@ -174,9 +180,12 @@ export function SignupForm({ loggedInHomeHref }: { loggedInHomeHref?: string }) 
   const availabilityRun = useRef<Record<AvailabilityKey, number>>({ loginId: 0, email: 0 });
   // 아이디 확인 중 · 확인 실패 안내(2026-10-28 사용자 지정). 쓸 수 있음은 위 available, 오류는 errors.loginId 가 맡는다.
   const [loginIdCheck, setLoginIdCheck] = useState<"idle" | keyof typeof LOGIN_ID_CHECK_TEXT>("idle");
+  // 이메일 확인 중 · 확인 실패 안내 — 아이디와 같다(2026-10-28 사용자 지정). 오류는 errors.email 이 맡는다.
+  const [emailCheck, setEmailCheck] = useState<"idle" | keyof typeof EMAIL_CHECK_TEXT>("idle");
+  const setCheck = (key: AvailabilityKey, check: "idle" | "checking" | "failed") => (key === "loginId" ? setLoginIdCheck : setEmailCheck)(check);
 
   // formatError 를 미리 알고 있으면(제출 때 ALL_KEYS 검사에서 이미 계산됨) 형식 검사를 다시 돌리지 않는다.
-  // softFail 은 칸을 벗어날 때의 확인이다 — 아이디 확인 요청 자체가 실패(429 · 5xx · 연결)하면 칸 오류 대신 회색 안내만 둔다.
+  // softFail 은 칸을 벗어날 때의 확인이다 — 아이디 · 이메일 확인 요청 자체가 실패(429 · 5xx · 연결)하면 칸 오류 대신 회색 안내만 둔다.
   // 쓸 수 있다고 확인된 것은 아니라(available 은 false) 가입하기를 누르면 다시 확인하고, 그때도 실패하면 칸 오류로 막는다.
   async function verifyAvailability(
     key: AvailabilityKey,
@@ -189,7 +198,7 @@ export function SignupForm({ loggedInHomeHref }: { loggedInHomeHref?: string }) 
     let message = formatError;
     let requestFailed = false;
     if (!message) {
-      if (key === "loginId") setLoginIdCheck("checking");
+      setCheck(key, "checking");
       const result = await request(value).catch((e) => {
         // 서버 액션 자체가 실패했을 때만 여기로 온다 — request 는 자기 실패를 {ok:false} 로 돌려준다.
         console.error("[signup] availability request failed", key, e);
@@ -202,8 +211,8 @@ export function SignupForm({ loggedInHomeHref }: { loggedInHomeHref?: string }) 
       // 400(형식)만 api 문구를 그대로 받는다 — 나머지 실패는 actions.ts 가 이 두 문구로 바꿔 준다(api-failure.ts)
       requestFailed = message === CHECK_FAILED_MESSAGE || message === BUSY_MESSAGE;
     }
-    const soft = key === "loginId" && softFail && requestFailed;
-    if (key === "loginId") setLoginIdCheck(soft ? "failed" : "idle");
+    const soft = softFail && requestFailed;
+    setCheck(key, soft ? "failed" : "idle");
     setErrors((e) => ({ ...e, [key]: soft ? undefined : message }));
     setAvailable((a) => ({ ...a, [key]: !message }));
     return !message;
@@ -213,7 +222,7 @@ export function SignupForm({ loggedInHomeHref }: { loggedInHomeHref?: string }) 
     set(key, value);
     availabilityRun.current[key]++;
     setAvailable((a) => ({ ...a, [key]: false }));
-    if (key === "loginId") setLoginIdCheck("idle");
+    setCheck(key, "idle");
   }
 
   // 한 번 제출을 시도한 뒤로는 체크박스를 누를 때마다(아직 안 된 것만 이름을 들어) 바로 따라 바뀐다.
@@ -335,6 +344,7 @@ export function SignupForm({ loggedInHomeHref }: { loggedInHomeHref?: string }) 
     setSubmitError(undefined);
     setAvailable({ loginId: false, email: false });
     setLoginIdCheck("idle");
+    setEmailCheck("idle");
     setUncertain(false);
   }
 
@@ -430,16 +440,20 @@ export function SignupForm({ loggedInHomeHref }: { loggedInHomeHref?: string }) 
                   value={values.email}
                   onChange={(e) => handleAvailabilityChange("email", e.target.value)}
                   onBlur={() =>
-                    !pending && !available.email && verifyAvailability("email", values.email).catch((e) => console.error("[signup] blur check failed", "email", e))
+                    !pending && !available.email && verifyAvailability("email", values.email, undefined, true).catch((e) => console.error("[signup] blur check failed", "email", e))
                   }
                   placeholder="example@company.com"
                   aria-invalid={invalid("email")}
                   aria-describedby={describe("email")}
+                  aria-busy={emailCheck === "checking" || undefined}
                   className={INPUT}
                 />
               </span>
-              {available.email && !errors.email ? (
+              {errors.email ? null : available.email ? (
                 <span className="-mt-[2px] flex items-center gap-[4px] text-[14px] leading-[1.5] text-[#5e8ce9]">{CHECK_CIRCLE} 사용가능합니다.</span>
+              ) : emailCheck !== "idle" ? (
+                // 아이디와 같은 자리 · 크기 · 보조 글자색(#767676)
+                <span className="-mt-[2px] text-[14px] leading-[1.5] text-[#767676]">{EMAIL_CHECK_TEXT[emailCheck]}</span>
               ) : null}
             </RequiredField>
             <RequiredField label="연락처" error={errors.phone} errorId={messageId("phone")}>

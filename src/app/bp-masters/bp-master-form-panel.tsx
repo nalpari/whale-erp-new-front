@@ -26,7 +26,7 @@ import type { BpMasterDetail, CreateBpMasterResult } from "@/lib/bp-masters";
 import { loginIdError, type LoginIdCheck } from "@/lib/platform-admin-form";
 import { formatDateTime } from "@/lib/format";
 import { formatBizNumber } from "@/lib/store-view";
-import { FailedBand, FieldMessage, LoginIdAvailability } from "../platform-admins/admin-parts";
+import { EmailAvailability, FailedBand, FieldMessage, LoginIdAvailability } from "../platform-admins/admin-parts";
 import { checkBpMasterEmailAction, checkBpMasterLoginIdAction,createBpMasterAction, updateBpMasterAction, verifyBpBusinessAction } from "./actions";
 import { BpStatusBadge, unknownResult } from "./bp-master-parts";
 
@@ -65,6 +65,8 @@ export function BpMasterFormPanel(props: Props) {
    * 플랫폼 관리자 등록과 같은 문구를 칸 아래에 보인다(2026-10-28 사용자 지정).
    */
   const [loginIdCheck, setLoginIdCheck] = useState<LoginIdCheck>("idle");
+  /** 이메일 중복확인 대기 · 성공 · 실패 상태 — 아이디와 같다. 오류는 errors.email 에 둔다(2026-10-28 사용자 지정) */
+  const [emailCheck, setEmailCheck] = useState<LoginIdCheck>("idle");
   /** 진위확인 실패 문구(중복 · 불일치 · 장애) — 인증 상자 아래 한 줄 */
   const [verifyFailure, setVerifyFailure] = useState<string | null>(null);
   const [reverifyAsk, setReverifyAsk] = useState(false);
@@ -87,8 +89,9 @@ export function BpMasterFormPanel(props: Props) {
       setErrors({});
       setFailure(null);
       setVerifyFailure(null);
-      // 되돌린 빈 칸에 이전에 확인했던 "사용가능합니다."가 남지 않게 아이디 확인 표시도 내린다
+      // 되돌린 빈 칸에 이전에 확인했던 "사용가능합니다."가 남지 않게 아이디 · 이메일 확인 표시도 내린다
       setLoginIdCheck("idle");
+      setEmailCheck("idle");
     }
   }
 
@@ -127,6 +130,11 @@ export function BpMasterFormPanel(props: Props) {
       checkNumber.current.loginId++;
       setLoginIdCheck("idle");
     }
+    // 이메일도 같다(2026-10-28 사용자 지정)
+    if (!field || field === "email") {
+      checkNumber.current.email++;
+      setEmailCheck("idle");
+    }
     if (!field) return setFailure(text);
     setErrors((e) => ({ ...e, [field]: text }));
     focusFirstError();
@@ -136,41 +144,40 @@ export function BpMasterFormPanel(props: Props) {
    * 아이디(등록만) · 이메일 중복 확인 — 칸을 벗어나거나 Enter 를 칠 때. 플랫폼 관리자 · BP 관리자 등록과 같은 규칙이다.
    * 이메일 확인은 자기 계정을 빼지 않으므로, 수정에서 원래 이메일 그대로면 묻지 않는다.
    * 아이디는 묻는 동안 · 쓸 수 있을 때 · 확인하지 못했을 때(429 · 5xx · 연결)를 칸 아래에 플랫폼 관리자 등록과 같은 문구로
-   * 보인다(LoginIdAvailability, 2026-10-28 사용자 지정). 이메일은 전처럼 오류만 단다.
+   * 보인다(LoginIdAvailability, 2026-10-28 사용자 지정). 이메일도 같은 세 상태를 이메일 문구로 보인다(EmailAvailability, 2026-10-28 사용자 지정).
    */
   const checkAvailable = (key: "loginId" | "email", raw: string) => {
     const value = key === "email" ? raw.trim().toLowerCase() : raw.trim();
     if (!value || (key === "loginId" && mode !== "create")) return;
     if (key === "email" && props.mode === "edit" && value === (props.bp.email ?? "").toLowerCase()) return;
     const isLoginId = key === "loginId";
+    const setCheck = isLoginId ? setLoginIdCheck : setEmailCheck;
     const formatError = isLoginId ? loginIdError(raw) : emailError(raw);
     if (formatError) {
-      if (isLoginId) setLoginIdCheck("idle");
+      setCheck("idle");
       return setErrors((e) => ({ ...e, [key]: formatError }));
     }
     const what = isLoginId ? "아이디" : "이메일";
     const mine = ++checkNumber.current[key];
-    if (isLoginId) {
-      // 같은 값을 다시 물을 때(Enter 재확인 등)도 앞서 달렸던 오류를 지운다 — 안 그러면 묻는 동안 확인 중 문구 대신 옛 오류가 보인다
-      clearError("loginId");
-      setLoginIdCheck("checking");
-    }
+    // 같은 값을 다시 물을 때(Enter 재확인 등)도 앞서 달렸던 오류를 지운다 — 안 그러면 묻는 동안 확인 중 문구 대신 옛 오류가 보인다
+    clearError(key);
+    setCheck("checking");
     (isLoginId ? checkBpMasterLoginIdAction : checkBpMasterEmailAction)(value)
       .then((result) => {
         if (mine !== checkNumber.current[key]) return;
         if (result.ok) {
           if (!result.available) setErrors((e) => ({ ...e, [key]: isLoginId ? LOGIN_ID_TAKEN : EMAIL_TAKEN }));
-          if (isLoginId) setLoginIdCheck(result.available ? "available" : "idle");
+          setCheck(result.available ? "available" : "idle");
           return;
         }
-        if (isLoginId) setLoginIdCheck(result.status === 400 || result.status === 401 ? "idle" : "failed");
+        setCheck(result.status === 400 || result.status === 401 ? "idle" : "failed");
         if (result.status === 400) setErrors((e) => ({ ...e, [key]: result.message }));
         else if (result.status === 401) setFailure(result.message);
         else console.warn(`${what} 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다`, result.status, result.message);
       })
       .catch((error: unknown) => {
         if (mine !== checkNumber.current[key]) return;
-        if (isLoginId) setLoginIdCheck("failed");
+        setCheck("failed");
         console.warn(`${what} 중복 확인 호출 실패 — 저장할 때 api 가 다시 본다`, error);
       });
   };
@@ -240,6 +247,7 @@ export function BpMasterFormPanel(props: Props) {
     const found = validateBpMasterForm(form, mode);
     setErrors(found);
     if (found.loginId) setLoginIdCheck("idle");
+    if (found.email) setEmailCheck("idle");
     setFailure(null);
     if (Object.keys(found).length) return focusFirstError();
     // 펼친 상자의 값은 인증해야만 저장된다 — 그대로 저장하면 적은 값이 말없이 사라진다
@@ -367,6 +375,7 @@ export function BpMasterFormPanel(props: Props) {
               value={form.email}
               onChange={(e) => {
                 checkNumber.current.email++;
+                setEmailCheck("idle");
                 set("email", e.target.value, "email");
               }}
               onBlur={(e) => checkAvailable("email", e.currentTarget.value)}
@@ -377,11 +386,12 @@ export function BpMasterFormPanel(props: Props) {
               }}
               maxLength={100}
               aria-invalid={invalid("email")}
-              aria-describedby={describe("email")}
+              aria-describedby={describe("email") ?? (emailCheck !== "idle" ? messageId("email") : undefined)}
+              aria-busy={emailCheck === "checking" || undefined}
               aria-required
             />
           </Field>
-          {message("email")}
+          <EmailAvailability id={messageId("email")} check={emailCheck} message={errors.email} />
         </Stack>
         {props.mode === "edit" && (
           <Stack>

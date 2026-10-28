@@ -32,7 +32,7 @@ import type {
   UpdateBpAdminInput,
 } from "@/lib/bp-admins";
 import { loginIdError, type LoginIdCheck } from "@/lib/platform-admin-form";
-import { LoginIdAvailability } from "@/app/platform-admins/admin-parts";
+import { EmailAvailability, LoginIdAvailability } from "@/app/platform-admins/admin-parts";
 import type { StoreStatus } from "@/lib/store-types";
 import {
   checkBpAdminEmailAction,
@@ -103,6 +103,8 @@ export function AdminFormPanel(props: Props) {
    * 플랫폼 관리자 등록과 같은 문구를 칸 아래에 보인다(2026-10-28 사용자 지정).
    */
   const [loginIdCheck, setLoginIdCheck] = useState<LoginIdCheck>("idle");
+  /** 이메일 중복확인 대기 · 성공 · 실패 상태 — 아이디와 같다. 오류는 errors.email 에 둔다(2026-10-28 사용자 지정) */
+  const [emailCheck, setEmailCheck] = useState<LoginIdCheck>("idle");
   /** 칸을 되돌릴 때마다 올라간다 — 아래 layout effect 가 이 값을 보고 중복 확인 차례(ref)를 올린다(platform-admins 와 같다) */
   const [resetSignal, setResetSignal] = useState(0);
 
@@ -118,8 +120,9 @@ export function AdminFormPanel(props: Props) {
       setForm(initialForm());
       setErrors({});
       if (reopened) setFailure(null);
-      // 되돌린 빈 칸에 이전에 확인했던 "사용가능합니다."가 남지 않게 아이디 확인 표시도 내린다
+      // 되돌린 빈 칸에 이전에 확인했던 "사용가능합니다."가 남지 않게 아이디 · 이메일 확인 표시도 내린다
       setLoginIdCheck("idle");
+      setEmailCheck("idle");
       // 닫는 사이 떠 있던 중복 확인이 늦게 와 되돌린 칸에 옛 결과를 칠하지 않게 차례를 올린다 — ref 는 그리는 중에 건드릴 수 없어
       // (react-hooks/refs) 아래 layout effect 가 올린다(platform-admins 4f17a7c3 와 같다)
       setResetSignal((n) => n + 1);
@@ -235,6 +238,11 @@ export function AdminFormPanel(props: Props) {
       checkNumber.current.loginId++;
       setLoginIdCheck("idle");
     }
+    // 이메일도 같다(2026-10-28 사용자 지정)
+    if ((!field || field === "email") && !editedWhileSaving.current.has("email")) {
+      checkNumber.current.email++;
+      setEmailCheck("idle");
+    }
     if (!field || hidden || editedWhileSaving.current.has(field)) return setFailure(text);
     setErrors((e) => ({ ...e, [field]: text }));
     focusFirstError();
@@ -244,7 +252,7 @@ export function AdminFormPanel(props: Props) {
    * 아이디 · 이메일 중복 확인(등록만) — 칸을 벗어나거나 Enter 를 칠 때, 두 칸 모두 같은 때에 묻는다(2026-10-26 사용자 요청).
    * 형식이 틀리면 api 에 묻지 않는다. 그 밖의 실패(403 · 404 · 5xx)는 칸에 달지 않고 넘어간다 — 저장할 때 api 가 다시 본다.
    * 아이디는 묻는 동안 · 쓸 수 있을 때 · 확인하지 못했을 때를 칸 아래에 플랫폼 관리자 등록과 같은 문구로 보인다(LoginIdAvailability,
-   * 2026-10-28 사용자 지정). 이메일은 전처럼 오류만 단다.
+   * 2026-10-28 사용자 지정). 이메일도 같은 세 상태를 이메일 문구로 보인다(EmailAvailability, 2026-10-28 사용자 지정).
    */
   const CHECKS = {
     loginId: { formatError: loginIdError, ask: checkBpAdminLoginIdAction, taken: LOGIN_ID_TAKEN, value: (v: string) => v.trim() },
@@ -253,36 +261,34 @@ export function AdminFormPanel(props: Props) {
   const checkAvailable = (field: "loginId" | "email", raw: string) => {
     if (mode !== "create" || !raw.trim()) return;
     const check = CHECKS[field];
-    const isLoginId = field === "loginId";
+    const setCheck = field === "loginId" ? setLoginIdCheck : setEmailCheck;
     const formatError = check.formatError(raw);
     if (formatError) {
       setErrors((e) => ({ ...e, [field]: formatError }));
-      if (isLoginId) setLoginIdCheck("idle");
+      setCheck("idle");
       return;
     }
     const mine = ++checkNumber.current[field];
-    if (isLoginId) {
-      // 같은 값을 다시 물을 때(Enter 재확인 등)도 앞서 달렸던 오류를 지운다 — 안 그러면 묻는 동안 확인 중 문구 대신 옛 오류가 보인다
-      clearError("loginId");
-      setLoginIdCheck("checking");
-    }
+    // 같은 값을 다시 물을 때(Enter 재확인 등)도 앞서 달렸던 오류를 지운다 — 안 그러면 묻는 동안 확인 중 문구 대신 옛 오류가 보인다
+    clearError(field);
+    setCheck("checking");
     check
       .ask(check.value(raw))
       .then((result) => {
         if (mine !== checkNumber.current[field]) return;
         if (result.ok) {
           if (!result.available) setErrors((e) => ({ ...e, [field]: check.taken }));
-          if (isLoginId) setLoginIdCheck(result.available ? "available" : "idle");
+          setCheck(result.available ? "available" : "idle");
           return;
         }
-        if (isLoginId) setLoginIdCheck(result.status === 400 || result.status === 401 ? "idle" : "failed");
+        setCheck(result.status === 400 || result.status === 401 ? "idle" : "failed");
         if (result.status === 400) setErrors((e) => ({ ...e, [field]: result.message }));
         else if (result.status === 401) setFailure(result.message);
         else console.warn(`${field} 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다`, result.status, result.message);
       })
       .catch((error: unknown) => {
         if (mine !== checkNumber.current[field]) return;
-        if (isLoginId) setLoginIdCheck("failed");
+        setCheck("failed");
         console.warn(`${field} 중복 확인 호출 실패 — 저장할 때 api 가 다시 본다`, error);
       });
   };
@@ -305,6 +311,7 @@ export function AdminFormPanel(props: Props) {
     const found = validateBpAdminForm(form, { mode, outOfScopeCount: outOfScope.length, storesLocked: locks.stores });
     setErrors(found);
     if (found.loginId) setLoginIdCheck("idle");
+    if (found.email) setEmailCheck("idle");
     setFailure(null);
     if (Object.keys(found).length) return focusFirstError();
 
@@ -460,12 +467,13 @@ export function AdminFormPanel(props: Props) {
             </FormRow>
             {message("phone")}
           </Group>
-          <Labeled label="이메일" required message={message("email")}>
+          <Labeled label="이메일" required message={<EmailAvailability id={messageId("email")} check={emailCheck} message={errors.email} />}>
             <TextField
               type="email"
               value={form.email}
               onChange={(e) => {
                 checkNumber.current.email++;
+                setEmailCheck("idle");
                 set("email", e.target.value);
               }}
               onBlur={(e) => checkAvailable("email", e.currentTarget.value)}
@@ -476,7 +484,8 @@ export function AdminFormPanel(props: Props) {
               }}
               maxLength={100}
               aria-invalid={invalid("email")}
-              aria-describedby={describe("email")}
+              aria-describedby={describe("email") ?? (emailCheck !== "idle" ? messageId("email") : undefined)}
+              aria-busy={emailCheck === "checking" || undefined}
               aria-required
             />
           </Labeled>

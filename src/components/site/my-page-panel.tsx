@@ -6,6 +6,8 @@ import { EMAIL_FORMAT_ERROR } from "@/lib/email-format";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { formOf, serverErrorField, toUpdateInput, validateMyProfileForm, type MyProfileForm, type MyProfileFormField } from "@/lib/my-profile-form";
 import type { MyProfile } from "@/lib/my-profile";
+import type { LoginIdCheck } from "@/lib/platform-admin-form";
+import { EmailAvailability } from "@/app/platform-admins/admin-parts";
 import { checkMyEmailAvailableAction, getMyProfileAction, updateMyProfileAction, type ActionResult } from "./my-page-actions";
 import { BpProfileTab, type BpProfileTabHandle } from "./bp-profile-tab";
 import { useCodeLabel } from "./code-label";
@@ -158,6 +160,12 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
 
   const applyServerError = (status: number | undefined, msg: string) => {
     const field = serverErrorField(status, msg);
+    // 이메일이 거절되면 떠 있던 확인 답을 버리고 확인 중 · 확인 실패 표시를 내린다(등록 화면들의 아이디 · 이메일과 같다, 2026-10-28 사용자 지정)
+    if (field === "email") {
+      checkNumber.current++;
+      setEmailChecking(false);
+      setEmailCheckSkipped(false);
+    }
     if (!field) return setFailure(msg);
     // 이메일 400(형식)은 칸에서 본 형식 문구로 — api 문구(「이메일 형식이 아닙니다」)와 달라지지 않게. 여러 칸 검증 오류
     // (api.ts messageOf 가 ", " 로 잇는다)는 원문 그대로 둔다 — 덮으면 함께 온 다른 칸의 이유가 사라진다(플랫폼 관리자와 같다).
@@ -204,6 +212,17 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
   };
 
   const emailPassed = !!form && (form.email.trim() === emailChecked || form.email.trim() === profile?.email);
+  /**
+   * 칸 아래 중복확인 표시 — 등록 화면들(EmailAvailability)과 같은 세 상태 · 문구(2026-10-28 사용자 지정).
+   * 원래 이메일 그대로면 확인 대상이 아니라 아무것도 보이지 않는다(checkEmail 이 묻지 않는다).
+   */
+  const emailCheck: LoginIdCheck = emailChecking
+    ? "checking"
+    : emailCheckSkipped
+      ? "failed"
+      : !!form && form.email.trim() !== profile?.email && form.email.trim() === emailChecked
+        ? "available"
+        : "idle";
 
   const handleSave = () => {
     if (!form || !profile) return;
@@ -340,17 +359,16 @@ export function MyPagePanel({ id, open, onClose, trigger }: { id: string; open: 
                   maxLength={100}
                   placeholder="example@company.com"
                   aria-invalid={invalid("email")}
-                  aria-describedby={describe("email")}
+                  aria-describedby={describe("email") ?? (emailCheck !== "idle" ? messageId("email") : undefined)}
+                  aria-busy={emailCheck === "checking" || undefined}
                   aria-required
                 />
               </Field>
-              {!errors.email && emailCheckSkipped && (
-                <p className="text-[13px] leading-[1.5] text-erp-label">이메일 확인을 하지 못했습니다. 저장할 때 다시 확인합니다.</p>
+              {/* 바꾼 이메일을 아직 묻지 않았을 때 — 저장 버튼이 꺼진 이유를 알린다 */}
+              {!errors.email && emailCheck === "idle" && !emailPassed && (
+                <p className="text-[13px] leading-[1.5] text-erp-label">중복되지 않은 이메일만 사용할 수 있습니다.</p>
               )}
-              {!errors.email && !emailCheckSkipped && !emailPassed && (
-                <p className="text-[13px] leading-[1.5] text-erp-label">{emailChecking ? "이메일을 확인하는 중입니다." : "중복되지 않은 이메일만 사용할 수 있습니다."}</p>
-              )}
-              {message("email")}
+              <EmailAvailability id={messageId("email")} check={emailCheck} message={errors.email} />
             </div>
               </FormGroup>
           </div>
