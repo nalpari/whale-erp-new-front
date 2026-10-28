@@ -24,7 +24,7 @@ export default ({ A, R }) => {
   );
 
   const figures = `<div class="grid grid-cols-4 gap-[12px]">${[
-    figure(A, link(R, "staff/index.html"), "재직 직원", "63", "명", `${warn("미체결 계약 3")} · 정직원 21 · 파트 42`),
+    figure(A, link(R, "staff/index.html"), "재직 직원", "63", "명", "정직원 21 · 파트 42"),
     figure(A, link(R, "stores/index.html"), "운영 점포", "11", "개점", "직영 4 · 가맹 7"),
     figure(A, link(R, "staff/attendance.html"), "오늘 출근", "27", "명", `근무 예정 31 · ${warn("미출근 4")}`),
     figure(A, link(R, "support/inquiries.html"), "내 문의", "2", "건", "답변 대기 1 · 답변 완료 1"),

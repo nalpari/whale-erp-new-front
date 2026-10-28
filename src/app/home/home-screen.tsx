@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
-import { Badge, Button, DataTable, PageBar } from "@/components/common";
+import { Badge, Button, DataTable, PageBar, type Column } from "@/components/common";
 import { CodeLabel } from "@/components/site/code-label";
 import { useAccount, useCurrentBp, useMenuRole, useMenus, useScope, useService, useStores } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
@@ -78,7 +78,7 @@ export function HomeScreen() {
         {p?.renewals?.length ? <RenewalBand renewals={p.renewals} href={renewalItem ? (pendingLineOf(renewalItem, bp)?.href ?? "/contracts") : "/contracts"} /> : null}
         {s?.cards && <Cards cards={s.cards} hq={hq && s.cards.stores.franchise > 0} scopeHref={(href) => withScope(href, scope)} canOpen={canOpen} bp={bp} />}
         <div className="grid grid-cols-[minmax(0,7fr)_minmax(0,5fr)] items-start gap-[12px]">
-          {!summary ? <Notice text="현황을 불러오는 중입니다." /> : "error" in summary ? failed("현황을", summary.error) : <StoreTable table={summary.data.storeTable} staffHref={canOpen("/staff-members") ? withScope("/staff-members", scope) : null} />}
+          {!summary ? <Notice text="현황을 불러오는 중입니다." /> : "error" in summary ? failed("현황을", summary.error) : <StoreTable table={summary.data.storeTable} hq={hq && !!s?.cards?.stores.franchise} staffHref={canOpen("/staff-members") ? withScope("/staff-members", scope) : null} />}
           {!pending ? <Notice text="처리 대기를 불러오는 중입니다." /> : "error" in pending ? failed("처리 대기를", pending.error) : <Pending data={pending.data} bp={bp} />}
         </div>
       </>
@@ -169,24 +169,20 @@ const num = (n: number | null) => (n ? n : <span className="text-erp-muted">—<
 
 type CardsData = NonNullable<HomeSummary["cards"]>;
 
-// 수치 카드 넷 — api 가 null 을 준 카드(그 메뉴의 조회 권한 없음)는 숨긴다. 「준비 중」 자리를 남기지 않는다(HOME-5)
+// 수치 카드 넷 — api 가 null 을 준 카드(그 메뉴의 조회 권한 없음)는 숨긴다. 「준비 중」 자리를 남기지 않고 남은 카드가 칸을 나눠 채운다(HOME-5).
+// 미체결 계약 수는 카드에 두지 않는다 — 직원 정보 관리 권한이 없으면 재직 직원 카드와 함께 사라졌다. 점포별 현황 표에만 둔다(WHALEERP-620 A안, 2026-10-28 재영)
 function Cards({ cards, hq, scopeHref, canOpen, bp }: { cards: CardsData; hq: boolean; scopeHref: (href: string) => string; canOpen: (path: string) => boolean; bp: number }) {
-  const { staff, unsignedContractCount: unsigned, stores, todayAttendance: today, myInquiries: inquiries } = cards;
+  const { staff, stores, todayAttendance: today, myInquiries: inquiries } = cards;
   return (
-    <div className="grid grid-cols-4 gap-[12px]">
+    <div className="grid auto-cols-fr grid-flow-col gap-[12px]">
       {staff && (
         <Figure
           href={canOpen("/staff-members") ? scopeHref("/staff-members") : null}
           label="재직 직원"
-          note={hq ? "동의하지 않은 가맹 직원은 고용 형태 · 미체결 계약에 세지 않습니다" : undefined}
+          note={hq ? "동의하지 않은 가맹 직원은 고용 형태에 세지 않습니다" : undefined}
           value={staff.total}
           unit="명"
-          sub={
-            <>
-              {unsigned ? <>{warn(`미체결 계약 ${unsigned}`)} · </> : null}
-              {`정직원 ${staff.fullTime} · 파트 ${staff.partTime}`}
-            </>
-          }
+          sub={`정직원 ${staff.fullTime} · 파트 ${staff.partTime}`}
         />
       )}
       <Figure href={canOpen("/stores") ? bpPath(bp, scopeHref("/stores")) : null} label="운영 점포" value={stores.total} unit="개점" sub={`직영 ${stores.direct} · 가맹 ${stores.franchise}`} />
@@ -219,9 +215,16 @@ function Cards({ cards, hq, scopeHref, canOpen, bp }: { cards: CardsData; hq: bo
 }
 
 type StoreRow = HomeSummary["storeTable"]["items"][number];
+/** 권한이 없으면 api 가 null 을 주는 칸 */
+type NullableCount = "staffCount" | "unsignedContractCount" | "checkedInCount";
 
-// 점포별 현황 표 — api 가 준 미조치 많은 순 일곱 곳. 목업의 전체 · 직영 · 가맹 탭은 두지 않는다 — 업무 범위는 헤더 한 곳에서 고른다(운영 정책 SCP-01)
-function StoreTable({ table, staffHref }: { table: HomeSummary["storeTable"]; staffHref: string | null }) {
+// 점포별 현황 표 — api 가 준 미조치 많은 순 일곱 곳. 목업의 전체 · 직영 · 가맹 탭은 두지 않는다 — 업무 범위는 헤더 한 곳에서 고른다(운영 정책 SCP-01).
+// 그 메뉴의 조회 권한이 없어 api 가 모든 줄에 null 을 준 열은 숨긴다 — 「—」가 0건과 권한 없음을 같이 뜻하지 않게(WHALEERP-620, 2026-10-28 재영)
+function StoreTable({ table, hq, staffHref }: { table: HomeSummary["storeTable"]; hq: boolean; staffHref: string | null }) {
+  const shown = (key: NullableCount) => table.items.some((r) => r[key] !== null);
+  const hqNote = hq
+    ? [shown("unsignedContractCount") && "미체결 계약", shown("checkedInCount") && "오늘 출근"].filter(Boolean).join(" · ")
+    : "";
   return (
     <section className={`${CARD} flex flex-col gap-[12px] p-[24px]`}>
       <div className="flex items-end gap-[6px]">
@@ -229,21 +232,29 @@ function StoreTable({ table, staffHref }: { table: HomeSummary["storeTable"]; st
         <span className="text-[14px] text-erp-label">전체 {table.total}개점</span>
       </div>
       <DataTable<StoreRow>
-        columns={[
-          { header: "점포", align: "left", cell: (r) => <span className="truncate">{r.storeName}</span> },
-          { header: "유형", width: "w-[70px]", cell: (r) => <CodeLabel group="STORE_TYPE" value={r.storeTypeCode} /> },
-          { header: "재직 직원", width: "w-[86px]", cell: (r) => num(r.staffCount) },
-          { header: "미체결 계약", width: "w-[96px]", cell: (r) => num(r.unsignedContractCount) },
-          // 출근 / 근무 예정. 근무 예정이 없거나 권한이 없으면 「—」
-          { header: "오늘 출근", width: "w-[86px]", cell: (r) => (r.checkedInCount !== null && r.scheduledCount ? `${r.checkedInCount} / ${r.scheduledCount}` : num(r.checkedInCount)) },
-          { header: "미조치", width: "w-[70px]", cell: (r) => num(r.pendingActionCount) },
-        ]}
+        columns={(
+          [
+            { header: "점포", align: "left", cell: (r) => <span className="truncate">{r.storeName}</span> },
+            { header: "유형", width: "w-[70px]", cell: (r) => <CodeLabel group="STORE_TYPE" value={r.storeTypeCode} /> },
+            shown("staffCount") && { header: "재직 직원", width: "w-[86px]", cell: (r) => num(r.staffCount) },
+            shown("unsignedContractCount") && { header: "미체결 계약", width: "w-[96px]", cell: (r) => num(r.unsignedContractCount) },
+            // 출근 / 근무 예정. 근무 예정이 없으면 「—」
+            shown("checkedInCount") && {
+              header: "오늘 출근",
+              width: "w-[86px]",
+              cell: (r) => (r.checkedInCount !== null && r.scheduledCount ? `${r.checkedInCount} / ${r.scheduledCount}` : num(r.checkedInCount)),
+            },
+            { header: "미조치", width: "w-[70px]", cell: (r) => num(r.pendingActionCount) },
+          ] satisfies (Column<StoreRow> | false)[]
+        ).filter((c) => c !== false)}
         rows={table.items}
         rowKey={(r) => r.storeId}
       />
       <div className="flex items-center text-[14px]">
         <p className="flex-1 text-erp-label">
           {table.total}개점 중 상위 {table.items.length}개 · 미조치 많은 순
+          {/* 출근 수만 가린 값이라 「1 / 5」처럼 보일 수 있다 — 수치 카드와 같은 안내(운영 정책 ATT-30). 보이는 열만 적는다 */}
+          {hqNote && <span className="ml-[8px] text-[12px] text-erp-muted">동의하지 않은 가맹 직원은 {hqNote}에 세지 않습니다</span>}
         </p>
         {staffHref && (
           <Link href={staffHref} className="text-erp-link hover:underline">
