@@ -26,7 +26,7 @@ import {
 import { BIZ_MESSAGE, bizVerifyFailure, type BizVerifyField } from "@/lib/biz-verification-rules";
 import type { BpMasterDetail, CreateBpMasterResult } from "@/lib/bp-masters";
 import { loginIdError, type LoginIdCheck } from "@/lib/platform-admin-form";
-import { formatDate } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 import { formatBizNumber } from "@/lib/store-view";
 import { EmailAvailability, FailedBand, FieldMessage, LoginIdAvailability } from "../platform-admins/admin-parts";
 import { checkBpMasterEmailAction, checkBpMasterLoginIdAction,createBpMasterAction, updateBpMasterAction, verifyBpBusinessAction } from "./actions";
@@ -421,7 +421,7 @@ export function BpMasterFormPanel(props: Props) {
         lockedDisplay={bizValues.bizNumber ? { bizNumber: formatBizNumber(bizValues.bizNumber) } : {}}
         verified={bizLocked}
         // 저장돼 있던 인증만 날짜를 보인다 — 이번 화면에서 받은 인증은 아직 저장 전이다
-        verifiedDate={bizLocked && !form.verified?.token && props.mode === "edit" && props.bp.bizVerifiedAt ? formatDate(props.bp.bizVerifiedAt) : ""}
+        verifiedDate={bizLocked && !form.verified?.token && props.mode === "edit" && props.bp.bizVerifiedAt ? formatDateTime(props.bp.bizVerifiedAt) : ""}
         verifying={verifying}
         fieldErrors={bizFieldErrors}
         missing={bizMissing}
