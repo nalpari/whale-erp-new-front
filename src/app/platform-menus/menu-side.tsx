@@ -351,21 +351,18 @@ function MenuForm(
       </div>
       <ConfirmDialog
         open={confirmSelfLock !== null}
-        // 트리에서 미사용 메뉴 아래로 옮길 때의 확인창과 같은 틀 — 메뉴 이름 · 코드는 넣지 않는다(2026-10-28 사용자 지정)
-        title="이 화면에 접근할 수 없게 됩니다."
+        // 트리에서 미사용 메뉴 아래로 옮길 때의 확인창과 같은 틀(제목은 묻는 말, 본문은 결과 한 줄) — 메뉴 이름 · 코드는 넣지 않는다(2026-10-28 사용자 지정)
+        title={confirmSelfLock === "url" ? "메뉴 URL을 변경하시겠습니까?" : "미사용으로 변경하시겠습니까?"}
         confirmLabel={confirmSelfLock === "url" ? "변경 후 저장" : "미사용으로 저장"}
         busy={saving}
         onConfirm={save}
         onCancel={() => setConfirmSelfLock(null)}
       >
-        <div className="flex flex-col gap-[12px] text-[14px] leading-[1.6]">
-          <p>
-            {confirmSelfLock === "url"
-              ? "메뉴 URL을 변경하면 실제 화면 주소와 달라져 접근할 수 없습니다."
-              : "미사용으로 변경하면 해당 화면이 사용자 메뉴에서 제외되어 접근할 수 없습니다."}
-          </p>
-          <p>변경하시겠습니까?</p>
-        </div>
+        <p className="text-[14px] leading-[1.6]">
+          {confirmSelfLock === "url"
+            ? "변경 후에는 실제 화면 주소와 달라져 현재 화면에 접근할 수 없습니다."
+            : "변경 후에는 현재 화면이 사용자 메뉴에서 제외되어 접근할 수 없습니다."}
+        </p>
       </ConfirmDialog>
     </form>
   );
