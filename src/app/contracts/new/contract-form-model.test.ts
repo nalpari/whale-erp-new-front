@@ -15,6 +15,7 @@ import {
   initialForm,
   inProgressLine,
   stillCorrecting,
+  reaskedBody,
   inProgressOf,
   isMinor,
   monthlyWage,
@@ -440,4 +441,7 @@ test("바로잡기 뒤 다시 물을 때 바로잡기 문구는 체결 완료가
   assert.equal(stillCorrecting(body, [c(5, "SIGNED"), c(7, "DRAFT")]), true);
   assert.equal(stillCorrecting(body, [c(7, "DRAFT")]), false);
   assert.equal(stillCorrecting({} as typeof body, [c(5, "SIGNED")]), false);
+  // 바로잡기 문구를 보이지 않으면 본문에서도 바로잡기를 뺀다 — 그사이 체결된 계약이 「대체」로 종료되지 않게(front #135 재리뷰)
+  assert.equal(reaskedBody(body, [c(7, "DRAFT")]).correctSignedContracts, undefined);
+  assert.equal(reaskedBody(body, [c(5, "SIGNED")]).correctSignedContracts, true);
 });

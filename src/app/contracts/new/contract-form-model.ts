@@ -136,6 +136,18 @@ export function inProgressLine(c: InProgressContract, statusLabel: string): stri
 export const stillCorrecting = (body: CreateContractBody, list: InProgressContract[]): boolean =>
   body.correctSignedContracts === true && list.some((c) => c.status === "SIGNED");
 
+/**
+ * 다시 물을 때 보낼 본문 — 바로잡기 문구를 보이지 않으면(stillCorrecting 이 거짓) correctSignedContracts 를 뺀다. 그대로 두면 확인창을
+ * 띄워 둔 사이 체결된 계약이 「대체」 확인만으로 종료된다 — 빼고 보내면 api 가 SIGNED_CONTRACT_OVERLAP 으로 바로잡기를 다시
+ * 묻는다(front #135 재리뷰)
+ */
+export function reaskedBody(body: CreateContractBody, list: InProgressContract[]): CreateContractBody {
+  if (stillCorrecting(body, list)) return body;
+  const plain = { ...body };
+  delete plain.correctSignedContracts;
+  return plain;
+}
+
 const span = (sh: string, eh: string): TimeSpan => ({ start: { hour: sh, minute: "00" }, end: { hour: eh, minute: "00" } });
 
 /** 처음 열었을 때의 값. 정직원 · 월~금 09~18 · 휴게 12~13 · 익월 10일 (데모와 같다). 주휴일은 근무로 정해진다 */

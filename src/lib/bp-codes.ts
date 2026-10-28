@@ -11,7 +11,11 @@ export type BpCodeGroup = Schemas["BpCodeGroupResponseDto"];
 export type BpCodeGroupList = Schemas["BpCodeGroupListResponseDto"];
 export type BpCodeItem = Schemas["BpCodeItemResponseDto"];
 export type BpCodeItemList = Schemas["BpCodeItemListResponseDto"];
-export type BpManageOwnerCode = BpCodeItem["manageOwnerCode"];
+/**
+ * 상세 코드의 관리 주체. api #165 부터 BP 에게 플랫폼고정은 오지 않아(목록 · 상세에서 뺀다) 생성 타입에 없지만,
+ * 막는 판단(bp-code-drafts.ts 의 bpPanelLock · bpDeletable)은 옛 응답 대비로 남겨 두므로 값으로 받아 둔다.
+ */
+export type BpManageOwnerCode = BpCodeItem["manageOwnerCode"] | "PLATFORM_FIXED";
 export type { SaveCodeItemsInput };
 
 /** api 목록의 쪽 크기 상한(네이밍 규칙 「목록 응답」 pageSize 최대 200). 화면은 쪽을 나누지 않고 이 크기로 끝까지 받아 이어 붙인다. */

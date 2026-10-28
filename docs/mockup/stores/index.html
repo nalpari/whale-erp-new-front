@@ -59,8 +59,10 @@
             <div class="panel__body stack--lg" style="display: flex; flex-direction: column">
               <!-- 검색 조건 — 검색 기준+검색어 · 점포상태 · 점포유형을 한 줄 격자로, 초기화 · 조회는 아래 오른쪽 -->
               <!-- 점포 — 휴일 등록 「대상 점포」처럼 점포명·점포코드로 찾아 고르면 아래 「선택한 점포」에 쌓이고, 목록은 고른 점포만 보인다. 고른 점포가 없으면 모두 본다(2026-10-12) -->
-              <div class="field">
+              <!-- 「점포」 라벨 오른쪽 작은 [일괄검색] — BP 관리자 등록의 일괄 검색 팝업을 「고를 수 있는 점포 / 선택한 점포」 문구로 연다(auth.js data-spick-bulk, 2026-10-27) -->
+              <div class="field" style="position: relative">
                 <label for="q-store">점포</label>
+                <button class="btn btn--secondary btn--sm" type="button" data-spick-bulk style="position: absolute; top: -3px; right: 0; height: 22px; padding: 0 8px; font-size: 11.5px">일괄검색</button>
                 <div class="spick" data-spick data-spick-nocode data-pool="ST000001|모리커피 서초점|직영점포;ST000002|모리커피 성수점|직영점포;ST000003|온기식당 판교점|직영점포;ST000004|온기식당 광화문점|직영점포;ST000005|모리커피 을지로점|가맹점포;ST000006|모리커피 연남점|가맹점포;ST000007|모리커피 청담점|가맹점포;ST000008|모리커피 부평점|가맹점포;ST000009|온기식당 둔산점|가맹점포;ST000010|온기식당 서면점|가맹점포;ST000011|온기식당 일산점|가맹점포" data-picked="">
                   <div class="spick__find">
                     <div class="spick__row">
@@ -72,7 +74,7 @@
                     </div>
                   </div>
                   <div class="spick__box">
-                    <div class="spick__head"><b>선택한 점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear>모두 빼기</button></div>
+                    <div class="spick__head"><b>선택한 점포</b><span class="badge badge--quiet" data-spick-count>0개점</span><button class="btn btn--secondary btn--sm" type="button" data-spick-clear style="height: 22px; padding: 0 8px; font-size: 11.5px">전체 제거</button></div>
                     <!-- 검색 조건 안이라 칩 영역을 두 줄 높이로 줄이고 넘치면 그 안에서 스크롤 -->
                     <ul class="spick__picked" data-spick-list aria-label="선택한 점포" style="height: auto; min-height: 0; max-height: 92px"></ul>
                   </div>

@@ -294,7 +294,7 @@ BP 마스터·BP 관리자·가맹 마스터·가맹 관리자·플랫폼 마스
 | FK | BP | id | `bp_code_id` | 소속 BP, bp_codes FK |
 |  | 점포 유형 코드 | code | `store_type_code` | 공통코드 `STORE_TYPE`(DIRECT 직영점포·FRANCHISE 가맹점포), 변경 불가 |
 |  | 점포명 | text | `name` | 1~50자, 필수 |
-|  | 점포 연락처 | text | `phone` | 숫자 9~11자리 |
+|  | 점포 연락처 | text | `phone` | 숫자 9~12자리(050X 평생번호 12자리 · api 마이그레이션 `20261023103403_team1_stores_phone_twelve_digits`) |
 |  | 우편번호 | text | `zip_code` |  |
 |  | 기본주소 | text | `address` |  |
 |  | 상세주소 | text | `address_detail` |  |
@@ -523,7 +523,7 @@ PK 는 그룹 코드 + 상세코드 + BP 코드이며 셋 다 필수다. 플랫�
 |  | 서비스 코드 | code | `service_code` | 공통코드 `SERVICE` |
 | FK | 상위 메뉴 | id | `parent_menu_id` | 최대 3단계 |
 |  | 노출 메뉴명 | text | `name` | 필수 |
-|  | 메뉴 URL | text | `url` |  |
+|  | 메뉴 URL | text | `url` | 사용 중 · 지우지 않은 메뉴끼리 고유 — api 가드가 url 로 메뉴 권한을 찾는다(api 마이그레이션 `20261021112158_team1_menus_active_url_unique`) |
 |  | 메뉴 순서 | int | `sort_order` |  |
 |  | 단계 | int | `depth` | 1~3 |
 |  | 사용 상태 | enum | `status` | 사용·사용중지 |
@@ -551,7 +551,7 @@ PK 는 그룹 코드 + 상세코드 + BP 코드이며 셋 다 필수다. 플랫�
 |  | 반복 횟수 | int | `repeat_count` |  |
 |  | 휴일명 | text | `name` | 30자 |
 |  | 설명 | text | `description` |  |
-| FK | 원래 휴일 | id | `origin_bp_holiday_id` | bp_holidays 자기 참조, '이후 모두' 수정으로 분할된 경우 |
+| FK | 원래 휴일 | id | `origin_bp_holiday_id` | bp_holidays 자기 참조. 쓰지 않음 — 「이후 모두」 분할 수정을 없앴다(BP 휴일 변경 · 종료 정책, 2026-10-26). 그전에 나뉜 휴일만 값이 있다 |
 |  | 삭제 여부 | bool | `is_deleted` |  |
 |  | 등록 일시 | datetime | `created_at` |  |
 | FK | 등록자 | id | `created_by` |  |
@@ -560,14 +560,16 @@ PK 는 그룹 코드 + 상세코드 + BP 코드이며 셋 다 필수다. 플랫�
 
 ### 휴일 점포 매핑 `holiday_store_mappings` · 엔티티
 
-특정 점포 휴일이 적용되는 점포를 묶는 매핑 테이블이다. 한 휴일에 여러 점포가 붙는다.
+특정 점포 휴일이 적용되는 점포를 묶는 매핑 테이블이다. 한 휴일에 여러 점포가 붙는다. 한 행이 한 적용 기간이다 — 점포를 더하면 오늘부터(시작 전 휴일은 휴일 시작일부터), 빼면 어제까지이고, 같은 점포를 다시 더하면 새 행이 생긴다. 열린 기간(종료일 없음)은 휴일 · 점포마다 하나다(BP 휴일 변경 · 종료 정책, 2026-10-26 · api 마이그레이션 `20261026135250_team1_bp_holiday_store_periods`).
 
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
-| PK·FK | 휴일 | id | `bp_holiday_id` | bp_holidays FK |
-| PK·FK | 대상 점포 | id | `store_id` | stores FK |
-|  | 적용 종료일 | date | `effective_end_date` | 일부 점포를 빼거나 떼어 고칠 때 행을 지우지 않고 고른 날짜 전날을 넣는다 — 지난 날짜 보존 |
-|  | 삭제 여부 | bool | `is_deleted` |  |
+| PK | 휴일 점포 매핑 ID | id | `holiday_store_mapping_id` | 한 행이 한 적용 기간 |
+| FK | 휴일 | id | `bp_holiday_id` | bp_holidays FK |
+| FK | 대상 점포 | id | `store_id` | stores FK |
+|  | 적용 시작일 | date | `effective_start_date` | 점포를 더한 날(시작 전 휴일이면 휴일 시작일). 시작 전 휴일의 시작일을 옮기면 함께 옮긴다 |
+|  | 적용 종료일 | date | `effective_end_date` | 점포를 뺀 날의 전날. 비어 있으면 휴일이 끝날 때까지 — 지난 날짜 보존 |
+|  | 삭제 여부 | bool | `is_deleted` | 적용된 날이 없는 기간(오늘 더하고 오늘 뺌 · 시작 전 휴일에서 뺌) |
 |  | 등록 일시 | datetime | `created_at` |  |
 | FK | 등록자 | id | `created_by` | admin_accounts FK |
 |  | 최근 수정 일시 | datetime | `updated_at` |  |
@@ -575,14 +577,16 @@ PK 는 그룹 코드 + 상세코드 + BP 코드이며 셋 다 필수다. 플랫�
 
 ### 휴일 예외 점포 `holiday_excluded_stores` · 엔티티
 
-전체 점포 휴일에서 빠지는 점포를 관리하는 매핑 테이블이다. 휴일의 모든 날짜에 적용된다.
+전체 점포 휴일에서 빠지는 점포를 관리하는 매핑 테이블이다. 대상 점포와 같은 규칙으로 한 행이 한 예외 기간이다 — 오늘부터 예외, 예외를 풀면 어제까지(BP 휴일 변경 · 종료 정책, 2026-10-26).
 
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
-| PK·FK | 휴일 | id | `bp_holiday_id` | bp_holidays FK |
-| PK·FK | 예외 점포 | id | `store_id` | stores FK |
-|  | 적용 시작일 | date | `effective_start_date` | 이 날짜부터 예외 — 지난 날짜 보존 |
-|  | 삭제 여부 | bool | `is_deleted` |  |
+| PK | 휴일 예외 점포 ID | id | `holiday_excluded_store_id` | 한 행이 한 예외 기간 |
+| FK | 휴일 | id | `bp_holiday_id` | bp_holidays FK |
+| FK | 예외 점포 | id | `store_id` | stores FK |
+|  | 적용 시작일 | date | `effective_start_date` | 이 날짜부터 예외(시작 전 휴일이면 휴일 시작일) — 지난 날짜 보존 |
+|  | 적용 종료일 | date | `effective_end_date` | 예외를 푼 날의 전날. 비어 있으면 휴일이 끝날 때까지 예외 |
+|  | 삭제 여부 | bool | `is_deleted` | 적용된 날이 없는 기간(오늘 더하고 오늘 뺌 · 시작 전 휴일에서 뺌) |
 |  | 등록 일시 | datetime | `created_at` |  |
 | FK | 등록자 | id | `created_by` | admin_accounts FK |
 |  | 최근 수정 일시 | datetime | `updated_at` |  |
@@ -590,7 +594,7 @@ PK 는 그룹 코드 + 상세코드 + BP 코드이며 셋 다 필수다. 플랫�
 
 ### BP 휴일 변경 이력 `bp_holiday_change_histories` · 이력
 
-수정·삭제는 고른 날짜부터 이후 모두에 적용한다. 삭제는 행을 지우지 않고 종료 조건·종료일을 앞당기는 것으로 기록한다.
+변경은 오늘부터만 영향을 준다 — 시작 전이면 모든 칸, 진행 중이면 휴일명 · 설명 · 점포만 고치고, 지난 날짜가 있는 휴일은 삭제 대신 강제 종료(어제로 끝냄)한다. 등록 · 휴일명 · 설명 · 날짜 · 적용 범위 · 대상 점포 · 예외 점포 · 강제 종료 · 삭제를 한 줄씩 남긴다(BP 휴일 변경 · 종료 정책, 2026-10-26).
 
 | 키 | 속성 | 논리 타입 | 제안 컬럼 | 비고 |
 |---|---|---|---|---|
