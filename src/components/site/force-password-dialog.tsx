@@ -65,7 +65,8 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
       onCancel={(e) => e.target === e.currentTarget && e.preventDefault()}
       // Chrome 은 사용자 입력 뒤 cancel 막기를 한 번만 허용해 두 번째 Esc 는 그냥 닫는다. 닫히면 바로 다시 연다.
       onClose={(e) => e.target === e.currentTarget && ref.current?.showModal()}
-      className="m-auto w-[464px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
+      // 폭 480 — 비밀번호 초기화 등 넓은 확인창(ConfirmDialog wide)과 같다(2026-10-28 사용자 지정, 전엔 등록 패널 폭 464)
+      className="m-auto w-[480px] max-w-[calc(100vw-32px)] rounded-[2px] border border-[#ebebeb] bg-white p-[23px] font-erp tracking-[-0.025em] text-erp-ink shadow-[0_2px_6px_rgba(40,47,55,0.08)] backdrop:bg-erp-nav/40"
     >
       <form onSubmit={submit} className="flex flex-col gap-[18px]">
         <div className="flex flex-col gap-[6px]">
