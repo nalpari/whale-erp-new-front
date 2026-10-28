@@ -87,7 +87,7 @@
               <span class="band__ic" data-icon="info" data-icon-size="20"></span>
               <div class="band__body">
                 <div class="band__title">탈퇴 BP는 조회만 됩니다</div>
-                <p class="band__desc">2026-05-30 BP 마스터가 회원 탈퇴했습니다. BP 정보와 업무 이력은 보존 정책대로 남기고, 수정·비밀번호 초기화·삭제는 하지 않습니다. 다시 쓰려면 새 BP 로 등록합니다.</p>
+                <p class="band__desc">2026-05-30 BP 마스터가 회원 탈퇴했습니다. BP 정보와 업무 이력은 보존 정책대로 남기고, 수정·비밀번호 초기화·삭제는 하지 않습니다. 변경 이력은 볼 수 없고 탈퇴 사유는 상태의 [사유 보기]에서 봅니다. 다시 쓰려면 새 BP 로 등록합니다.</p>
               </div>
             </div>
 
@@ -112,16 +112,14 @@
                       <span class="mono subtle">********</span>
                       <button class="btn btn--secondary btn--sm" type="button" data-open="pop-reset" data-show-role="all" data-show="use fresh created off">초기화</button>
                     </dd>
-                    <!-- BP 상태 변경 — 이 줄의 버튼(수정 권한). 사용 → 미사용, 미사용 → 사용 둘뿐이고 탈퇴 BP 에는 없다 -->
-                    <dt>BP 상태</dt>
+                    <!-- BP 상태 변경 — 이 줄은 버튼만(현재 상태는 머리 배지, 2026-10-28). 사용 → 미사용, 미사용 → 사용 둘뿐이고 탈퇴 BP 는 [사유 보기] -->
+                    <dt>상태</dt>
                     <dd>
-                      <span data-show="use"><span class="badge badge--ok">사용</span> <span class="mono subtle">2025-02-03 11:12</span></span>
-                      <span data-show="fresh created" hidden><span class="badge badge--ok">사용</span> <span class="mono subtle">2026-09-18 10:04</span></span>
-                      <span data-show="off" hidden><span class="badge badge--warn">미사용</span> <span class="mono subtle">2026-07-01 18:30</span></span>
-                      <span data-show="gone" hidden><span class="badge badge--risk">탈퇴</span> <span class="mono subtle">2026-05-30 21:15</span></span>
                       <button class="btn btn--secondary btn--sm" type="button" data-open="pop-off" data-show-role="all" data-show="use">상태 변경</button>
                       <button class="btn btn--secondary btn--sm" type="button" data-open="pop-off-fresh" data-show-role="all" data-show="fresh created" hidden>상태 변경</button>
                       <button class="btn btn--secondary btn--sm" type="button" data-open="pop-on" data-show-role="all" data-show="off" hidden>상태 변경</button>
+                      <!-- 탈퇴 BP 는 변경 이력을 보이지 않으므로 탈퇴 사유를 여기서 본다(WHALEERP-626, 2026-10-27) -->
+                      <button class="btn btn--secondary btn--sm" type="button" data-open="pop-withdraw" data-show="gone" hidden>사유 보기</button>
                     </dd>
                     <dt>소속 점포</dt>
                     <dd>
@@ -188,7 +186,7 @@
 
             <!-- 하단 버튼 — 플랫폼 관리자 상세와 같은 순서 [닫기][삭제][수정][변경 이력].
                  삭제는 삭제 권한 + 조건(사용·미사용 · 로그인 기록 없음 · 하위 관리자 0명 · 등록 점포 0곳)을 채운 BP 만 누를 수 있고,
-                 못 채우면 흐리게 두고 이유를 말풍선으로 보인다. 탈퇴 BP 는 삭제 · 수정 없이 [닫기][변경 이력]만. -->
+                 못 채우면 흐리게 두고 이유를 말풍선으로 보인다. 탈퇴 BP 는 [닫기]만 — 이력에 탈퇴로 지운 개인정보의 예전 값이 남아 변경 이력도 보이지 않는다(api 409, WHALEERP-625 · 2026-10-27). -->
             <div class="inline" style="justify-content: flex-end">
               <a class="btn btn--ghost" href="index.html">닫기</a>
               <button class="btn btn--danger" type="button" data-open="pop-delete" data-show-role="all" data-show="fresh created" hidden>삭제</button>
@@ -196,7 +194,7 @@
               <span data-show-role="all" data-show="off" hidden data-tip="삭제할 수 없습니다 — 로그인 기록이 있고 등록 점포 3곳이 있습니다." tabindex="0"><button class="btn btn--danger" type="button" disabled>삭제</button></span>
               <a class="btn btn--primary" href="edit.html" data-show-role="all" data-show="use fresh created">수정</a>
               <a class="btn btn--primary" href="edit.html?state=off" data-show-role="all" data-show="off" hidden>수정</a>
-              <button class="btn btn--secondary" type="button" data-open="pop-history">변경 이력</button>
+              <button class="btn btn--secondary" type="button" data-open="pop-history" data-show="use fresh created off">변경 이력</button>
             </div>
 
           </div>
@@ -231,7 +229,7 @@
                 <p>변경 이력이 없습니다.</p>
               </div>
               <div data-show="use off gone"><div data-pager="3" data-pager-unit="건"></div></div>
-              <p class="subtle" style="margin: 0; font-size: 12px">변경 사유는 받지 않는다. 사유는 회원 탈퇴 때 받은 탈퇴 사유만 탈퇴 줄에 붙는다. 비밀번호 초기화 이력은 메일 발송 이력으로 따로 남는다.</p>
+              <p class="subtle" style="margin: 0; font-size: 12px">변경 사유는 받지 않는다. 사유는 회원 탈퇴 때 받은 탈퇴 사유만 탈퇴 줄에 붙는다. 비밀번호 초기화는 「비밀번호 → 초기화」 한 줄로 남는다.</p>
         </div>
         <div class="modal__foot">
           <button class="btn btn--primary" type="button" data-close>닫기</button>
@@ -252,12 +250,12 @@
             <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
             <div class="band__body">
               <div class="band__title">㈜한강상회 · 사용 → 미사용</div>
-              <p class="band__desc">이 BP 의 관리자 계정 <b>5개</b>(BP 마스터 1 · BP 관리자 2 · 가맹 마스터 1 · 가맹 관리자 1)가 모두 미사용이 됩니다. 로그인 중인 세션은 끊지 않고 비밀번호도 그대로 둡니다.</p>
+              <p class="band__desc">이 BP의 관리자 계정 <b>5개</b>(BP 마스터 포함)가 모두 미사용이 되어 로그인할 수 없습니다.</p>
             </div>
           </div>
           <ul class="stack" style="margin: 0; padding-left: 18px; font-size: 13px; gap: 4px">
-            <li>점포 <b>11곳</b>은 상태를 그대로 두고 업무만 멈춥니다 — 직원 초대 · 근로계약 · 부가서비스 · 매출 연동 · 출퇴근 기록.</li>
-            <li>운영 중인 점포 · 구독 · 미정산 금액 같은 선행 조건은 검사하지 않고 <b>바로 적용</b>합니다.</li>
+            <li>점포 <b>11곳</b>은 상태를 그대로 두고 직원 초대 · 근로계약 · 출퇴근 기록 등 업무만 멈춥니다.</li>
+            <li>확인하면 바로 적용됩니다. 로그인 중인 세션과 비밀번호는 그대로 유지됩니다.</li>
           </ul>
         </div>
         <div class="modal__foot">
@@ -278,7 +276,7 @@
           <p style="margin: 0; font-size: 13px">현재 상태 <span class="badge badge--warn">미사용</span> — <b>솥밥상회</b>를 사용으로 되돌립니다.</p>
           <ul class="stack" style="margin: 0; padding-left: 18px; font-size: 13px; gap: 4px">
             <li><b>BP 마스터 계정(sotbap)만</b> 사용으로 바뀌어 기존 비밀번호로 다시 로그인할 수 있습니다.</li>
-            <li>BP 관리자 · 가맹 관리자 계정은 미사용으로 남습니다. BP 마스터가 BP 관리자 관리에서 하나씩 다시 켭니다.</li>
+            <li>BP 관리자 · 가맹 관리자 계정은 미사용으로 남습니다. BP 마스터가 BP 관리자 관리에서 다시 켜야 합니다.</li>
             <li>멈췄던 점포 3곳의 업무는 다시 됩니다.</li>
           </ul>
         </div>
@@ -302,10 +300,13 @@
             <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
             <div class="band__body">
               <div class="band__title">브레드랩 2호 · 사용 → 미사용</div>
-              <p class="band__desc">BP 마스터 계정(bakerylab)이 미사용이 되어 로그인할 수 없습니다. 하위 관리자와 점포는 없습니다.</p>
+              <p class="band__desc">BP 마스터 계정(bakerylab)이 미사용이 되어 로그인할 수 없습니다.</p>
             </div>
           </div>
-          <p class="subtle" style="margin: 0; font-size: 12px">선행 조건은 검사하지 않고 바로 적용합니다. 사유는 받지 않습니다.</p>
+          <ul class="stack" style="margin: 0; padding-left: 18px; font-size: 13px; gap: 4px">
+            <li>점포 <b>0곳</b>은 상태를 그대로 두고 직원 초대 · 근로계약 · 출퇴근 기록 등 업무만 멈춥니다.</li>
+            <li>확인하면 바로 적용됩니다. 로그인 중인 세션과 비밀번호는 그대로 유지됩니다.</li>
+          </ul>
         </div>
         <div class="modal__foot">
           <button class="btn btn--ghost" type="button" data-close>취소</button>
@@ -314,21 +315,50 @@
       </div>
     </div>
 
+    <!-- 탈퇴 사유 (WHALEERP-626) — 상세 응답의 탈퇴 정보로 그린다, 따로 조회하지 않는다. 직접입력이면 상세 내용을 함께 보인다. -->
+    <div class="modal" id="pop-withdraw" hidden role="dialog" aria-modal="true" aria-labelledby="pw-t">
+      <div class="modal__box">
+        <div class="modal__head">
+          <h2 class="t-h2" id="pw-t">탈퇴 사유</h2>
+          <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
+        </div>
+        <div class="modal__body stack--lg" style="display: flex; flex-direction: column">
+          <div style="font-weight: 600">국밥24 <span class="badge badge--quiet mono">BP000008</span></div>
+          <dl class="kv">
+            <dt>아이디</dt><dd class="mono">gukbap24</dd>
+            <dt>탈퇴 일시</dt><dd class="mono">2026-05-30 21:15</dd>
+            <dt>탈퇴 사유</dt><dd>직접입력</dd>
+          </dl>
+          <!-- 직접입력일 때만 — 긴 글(최대 500자)은 표 밖 읽기 전용 상자에, 줄바꿈 유지 · 길면 상자 안에서 스크롤 -->
+          <div>
+            <div style="font-weight: 500; margin-bottom: 6px">직접 입력한 사유</div>
+            <div class="panel__note" style="white-space: pre-wrap">가게를 정리하고 다른 지역으로 이전합니다.
+이전 후 다시 가입하겠습니다.</div>
+          </div>
+          <div class="inline" style="justify-content: flex-end">
+            <button class="btn btn--ghost" type="button" data-close>닫기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 비밀번호 초기화 확인 (S-PRRLMA) — 새 비밀번호는 누구에게도 보이지 않고 계정 이메일로만 간다.
-         메일은 BP 신규 등록 포맷이 아니라 비밀번호 초기화 전용 포맷을 쓴다 (BP-4 확정 · 플랫폼·BP 관리자도 같은 양식, 2026-09-29). -->
+         메일은 BP 신규 등록 포맷이 아니라 비밀번호 초기화 전용 포맷을 쓴다 (BP-4 확정 · 플랫폼·BP 관리자도 같은 양식, 2026-09-29).
+         실제 화면(front #144)은 성공하면 확인창을 닫고 알림만 띄우고, 메일 발송 실패는 상세 위 안내 띠로 보인다. 아래 결과 단계는 그 두 문구를 보이려는 것이다.
+         변경 이력에는 「비밀번호 → 초기화」 한 줄이 남는다(2026-10-27 구현에 맞춤). -->
     <div class="modal" id="pop-reset" hidden role="dialog" aria-modal="true" aria-labelledby="pr-t">
       <div class="modal__box">
         <div class="modal__head">
-          <h2 class="t-h2" id="pr-t">비밀번호 초기화</h2>
+          <h2 class="t-h2" id="pr-t">비밀번호를 초기화하시겠습니까?</h2>
           <button class="iconbtn" type="button" data-close aria-label="닫기" data-icon="x" data-icon-size="16"></button>
         </div>
         <div class="modal__body" id="preset">
           <div data-step="ask" class="stack--lg" style="display: flex; flex-direction: column">
             <dl class="kv">
               <dt>BP</dt><dd>㈜한강상회 <span class="mono subtle">BP000017</span></dd>
-              <dt>계정</dt><dd><span class="mono">hangang01</span> · 정하윤</dd>
+              <dt>계정</dt><dd><span class="mono">hangang01</span></dd>
             </dl>
-            <p style="margin: 0; font-size: 13px">새 초기 비밀번호(12자 무작위)를 계정 이메일로 보냅니다.</p>
+            <p style="margin: 0; font-size: 13px">새 초기 비밀번호(12자 무작위)를 계정 이메일로만 보내며, 기존 비밀번호는 즉시 무효가 됩니다.<br>초기 비밀번호는 1시간 안에 로그인해야 하고, 로그인 때 비밀번호를 새로 정합니다. 현재 로그인 중인 세션은 유지됩니다.</p>
             <div class="inline" style="justify-content: flex-end">
               <button class="btn btn--ghost" type="button" data-close>취소</button>
               <button class="btn btn--primary" type="button" data-step-to="sent">초기화</button>
@@ -339,8 +369,8 @@
             <div class="band band--info">
               <span class="band__ic" data-icon="check" data-icon-size="20"></span>
               <div class="band__body">
-                <div class="band__title">비밀번호를 초기화했습니다</div>
-                <p class="band__desc">새 초기 비밀번호를 <b class="mono">hayoon@hangang.co.kr</b> 로 보냈습니다. 화면에는 보이지 않습니다. 초기 비밀번호는 1시간 안에 로그인해야 하며, 지나면 로그인 화면의 비밀번호 찾기로 임시 비밀번호를 다시 받습니다.</p>
+                <div class="band__title">알림 · 새 초기 비밀번호를 <span class="mono">hayoon@hangang.co.kr</span> 로 보냈습니다.</div>
+                <p class="band__desc">실제 화면은 확인창을 닫고 이 문구를 알림으로만 띄운다. 비밀번호는 어디에도 보이지 않는다.</p>
               </div>
             </div>
             <div class="inline" style="justify-content: flex-end">
@@ -352,7 +382,7 @@
               <span class="band__ic" data-icon="alert" data-icon-size="20"></span>
               <div class="band__body">
                 <div class="band__title">초기화는 됐지만 안내 메일을 보내지 못했습니다</div>
-                <p class="band__desc">기존 비밀번호는 이미 무효입니다. 다시 초기화하면 새 비밀번호로 메일을 다시 보냅니다.</p>
+                <p class="band__desc">기존 비밀번호는 이미 무효입니다. 다시 초기화하면 새 비밀번호로 메일을 다시 보냅니다. (실제 화면은 상세 위 안내 띠로 보이고, 비밀번호 줄에 「초기 비밀번호 미발송」을 붙인다)</p>
               </div>
             </div>
             <div class="inline" style="justify-content: flex-end">
@@ -377,7 +407,7 @@
             <dt>계정</dt><dd class="mono">bakerylab</dd>
           </dl>
           <p style="margin: 0; font-size: 13.5px">계정과 이 계정이 대표하는 <b>BP 정보가 함께 삭제</b>되고 되돌릴 수 없습니다. 삭제 이력만 남습니다.</p>
-          <p class="subtle" style="margin: 0; font-size: 13px">삭제한 뒤에도 아이디 <span class="mono">bakerylab</span> 는 다시 쓸 수 없고, BP 코드 순번도 다시 쓰지 않습니다.</p>
+          <p class="subtle" style="margin: 0; font-size: 13px">해당 아이디 <span class="mono">bakerylab</span>, BP 코드도 다시 사용하지 못합니다.</p>
         </div>
         <div class="modal__foot">
           <button class="btn btn--ghost" type="button" data-close>취소</button>
