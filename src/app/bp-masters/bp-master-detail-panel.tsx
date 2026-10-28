@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition, type ReactNode, type RefObject } from "react";
 import { Badge, Button, ConfirmDialog, DetailTable, DetailValues, SlidePanel, Tag, useToast, type DetailRow } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
+import { HeadValues } from "@/components/site/head-values";
 import { WarnBand } from "@/components/site/side-parts";
 import type { BpMasterDetail, CreateBpMasterResult } from "@/lib/bp-masters";
 import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
@@ -244,15 +245,12 @@ function DetailBody({
 
   return (
     <div className="flex flex-col gap-[16px]">
-      {/* 머리: 첫 줄 상호명, 줄을 바꿔 상태 배지 · BP 코드(2026-10-28 사용자 지정 — 전엔 한 줄) */}
+      {/* 머리: 첫 줄 상호명, 둘째 줄 「BP 코드 값 | 상태 배지」 — 플랫폼 관리자 상세와 같은 모양(2026-10-28 사용자 지정) */}
       <div className="flex flex-col gap-[6px]">
         <h2 className="text-[18px] font-semibold break-all text-erp-ink">{bp.tradeName}</h2>
-        <div className="flex flex-wrap items-center gap-[6px]">
-          <BpStatusBadge status={bp.accountStatus} />
-          <Tag>
-            BP 코드 · <b className="font-semibold">{bp.bpCode}</b>
-          </Tag>
-        </div>
+        <span className="text-[14px]">
+          <HeadValues items={[{ label: "BP 코드", value: bp.bpCode }, { value: <BpStatusBadge status={bp.accountStatus} /> }]} />
+        </span>
       </div>
 
       {created && (
