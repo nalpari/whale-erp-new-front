@@ -267,7 +267,7 @@ function DetailBody({
         </span>
       </div>
 
-      {created && !created.isMailSent && <WarnBand>초기 비밀번호 메일을 보내지 못했습니다. [초기화]로 다시 보내 주세요.</WarnBand>}
+      {created && !created.isMailSent && <WarnBand>초기 비밀번호 미발송! [초기화]로 다시 보내주세요.</WarnBand>}
       {/* 미사용 · 탈퇴 안내는 빨간 안내 상자(WarnBand — 2026-10-28 사용자 지정, 점포 BP 탈퇴 · 미사용 안내와 같다). 미사용은 두 줄로 줄였다(같은 날 사용자 지정) */}
       {bp.accountStatus === "INACTIVE" && (
         <WarnBand>
