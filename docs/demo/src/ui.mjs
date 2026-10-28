@@ -93,7 +93,8 @@ export function scrollTable(table) {
 
 // detail-table.tsx. rows: [label, valueHtml, multiline?] — multiline 은 값이 여러 줄인 줄(주소 · 대표 이미지처럼)만
 // 46 을 최소로 내용만큼 늘린다(real DetailRow.multiline 과 같다). 라벨 칸 110px(180px에서 줄임, 2026-10-20 — 앱·DESIGN.md 와 같다).
-export function detailTable(title, rows) {
+// action 을 주면 제목 줄 오른쪽 끝에 버튼을 둔다(앱 detail-table.tsx action — BP 마스터 상세 [BP 상태 변경], 2026-10-28)
+export function detailTable(title, rows, action = "") {
   const items = rows
     .map(([label, value, multiline], i) => {
       const last = i === rows.length - 1;
@@ -101,7 +102,10 @@ export function detailTable(title, rows) {
       return `<div class="flex w-full"><dt class="flex ${height} w-[110px] shrink-0 items-center truncate border-b border-l border-erp-thead-line bg-white p-[12px] text-[14px] font-medium text-erp-label ${last ? "rounded-bl-[2px]" : ""}">${label}</dt><dd class="flex ${height} min-w-px flex-1 items-center gap-[10px] overflow-hidden border-r border-b border-erp-thead-line bg-white p-[12px] text-[14px] text-erp-ink ${last ? "rounded-br-[2px]" : ""} ${multiline ? "leading-[1.6] break-keep" : ""}">${value}</dd></div>`;
     })
     .join("");
-  return `<div class="w-full"><h3 class="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">${title}</h3><dl class="flex w-full flex-col">${items}</dl></div>`; // 제목은 MY PAGE 「계정 정보」와 같은 15px 600(앱 detail-table.tsx, 2026-10-27 사용자 지정)
+  const head = action
+    ? `<div class="flex h-[42px] items-center gap-[6px] rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px]"><h3 class="flex min-w-0 flex-1 items-center text-[15px] font-semibold text-erp-ink">${title}</h3>${action}</div>`
+    : `<h3 class="flex h-[42px] items-center rounded-t-[2px] border border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink">${title}</h3>`;
+  return `<div class="w-full">${head}<dl class="flex w-full flex-col">${items}</dl></div>`; // 제목은 MY PAGE 「계정 정보」와 같은 15px 600(앱 detail-table.tsx, 2026-10-27 사용자 지정)
 }
 export const detailValues = (items) =>
   items
@@ -237,6 +241,7 @@ const ICON_HOVER =
 const tip = (label) =>
   `<span class="pointer-events-none absolute top-[calc(100%+10px)] left-1/2 z-20 -translate-x-1/2 translate-y-[4px] rounded-[100px] border border-[#ebebeb] bg-white px-[12px] py-[10px] text-[14px] leading-[2] whitespace-nowrap text-erp-brand opacity-0 transition-[opacity,translate] duration-150 ease-out [text-box:trim-both_cap_alphabetic] group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:translate-y-0">${TAIL}${label}</span>`;
 // scopeDialog 를 주면(플랫폼 콘솔) 웨일ERP 아이콘이 바로 이동하지 않고 그 id 의 BP 선택 확인창을 먼저 연다(F-TLJOCK).
+// hideAddon 이면 부가서비스 현황 아이콘을 뺀다 — 플랫폼관리 사이트(global-header.tsx 와 같다, 2026-10-28 사용자 지정).
 export const serviceLinks = (A, hrefs = {}) => {
   const erpLink = hrefs.scopeDialog
     ? `<button type="button" aria-label="웨일ERP" data-dialog="${hrefs.scopeDialog}" class="${ICON_HOVER} w-[32px]">${img(A, "service-erp.svg", 32, 32)}${tip("웨일ERP")}</button>`
@@ -245,7 +250,7 @@ export const serviceLinks = (A, hrefs = {}) => {
   const platformLink = hrefs.platform
     ? `<a aria-label="플랫폼관리" class="${ICON_HOVER} w-[20px] bg-white" href="${hrefs.platform}">${img(A, "service-platform.svg", 20, 20)}${tip("플랫폼관리")}</a>`
     : "";
-  return `<div class="flex h-[42px] shrink-0 items-center gap-[18px] rounded-full border border-erp-field-line bg-white px-[24px]"><span class="text-[15px] font-medium whitespace-nowrap text-erp-ink">서비스 바로가기</span><div class="flex items-center gap-[12px]">${erpLink}<a aria-label="부가서비스 현황" class="${ICON_HOVER} w-[32px] bg-white" href="${hrefs.addon ?? "#"}">${img(A, "service-chat.svg", 19, 19)}${tip("부가서비스 현황")}</a>${platformLink}</div></div>`;
+  return `<div class="flex h-[42px] shrink-0 items-center gap-[18px] rounded-full border border-erp-field-line bg-white px-[24px]"><span class="text-[15px] font-medium whitespace-nowrap text-erp-ink">서비스 바로가기</span><div class="flex items-center gap-[12px]">${erpLink}${hrefs.hideAddon ? "" : `<a aria-label="부가서비스 현황" class="${ICON_HOVER} w-[32px] bg-white" href="${hrefs.addon ?? "#"}">${img(A, "service-chat.svg", 19, 19)}${tip("부가서비스 현황")}</a>`}${platformLink}</div></div>`;
 };
 export const alarmLink = (A, href) =>
   `<a aria-label="알림" class="shrink-0 rounded-full transition-opacity duration-150 ease-out hover:opacity-70" href="${href}">${img(A, "alarm.svg", 42, 42)}</a>`;

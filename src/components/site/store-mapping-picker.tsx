@@ -43,7 +43,7 @@ const TEXTS: { include: PickerTexts; exclude: PickerTexts; filter: BulkTexts } =
     guide: "점포를 선택한 후 [추가] 버튼을 누르거나 오른쪽으로 드래그하여 매핑할 수 있습니다. 매핑 해제는 [빼기] 버튼을 이용해 주세요.",
     left: "매핑 안 된 점포",
     right: "매핑된 점포",
-    leftDone: "고를 수 있는 점포를 모두 매핑했습니다.",
+    leftDone: "선택할 수 있는 점포를 모두 매핑했습니다.",
     rightEmpty: (
       <>
         매핑된 점포가 없습니다.
@@ -65,7 +65,7 @@ const TEXTS: { include: PickerTexts; exclude: PickerTexts; filter: BulkTexts } =
     guide: "점포를 선택한 후 [추가] 버튼을 누르거나 오른쪽으로 드래그하여 예외로 뺄 수 있습니다. 예외 해제는 [빼기] 버튼을 이용해 주세요.",
     left: "적용 점포",
     right: "예외 점포",
-    leftDone: "고를 수 있는 점포를 모두 예외로 뺐습니다.",
+    leftDone: "선택할 수 있는 점포를 모두 예외로 지정했습니다.",
     rightEmpty: (
       <>
         예외 점포가 없습니다.
@@ -77,9 +77,9 @@ const TEXTS: { include: PickerTexts; exclude: PickerTexts; filter: BulkTexts } =
   // 목록 필터의 점포 고르기(StorePicker) 옆 [일괄검색] — 고른 점포만 목록에 보인다(점포 정보 관리)
   filter: {
     guide: "점포를 선택한 후 [추가] 버튼을 누르거나 오른쪽으로 드래그하여 선택할 수 있습니다. 선택 해제는 [빼기] 버튼을 이용해 주세요.",
-    left: "고를 수 있는 점포",
+    left: "선택할 수 있는 점포",
     right: "선택한 점포",
-    leftDone: "고를 수 있는 점포를 모두 골랐습니다.",
+    leftDone: "선택할 수 있는 점포를 모두 선택했습니다.",
     rightEmpty: (
       <>
         선택된 점포가 없습니다.
@@ -125,6 +125,7 @@ export function StoreMappingPicker({
   const listId = useId();
   const box = useRef<HTMLDivElement>(null);
   const [keyword, setKeyword] = useState("");
+  const escClearing = useRef(false);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const [bulkOpen, setBulkOpen] = useState(false);
@@ -139,7 +140,7 @@ export function StoreMappingPicker({
   const listShown = open && candidates.length > 0;
   // 후보가 없을 때도 층을 열어 이유를 말한다 — 받는 중 · 받지 못함은 화면이 따로 알린다
   const emptyShown = open && !candidates.length && !loading && !failed;
-  const emptyText = !options.length ? "고를 수 있는 점포가 없습니다." : keyword.trim() ? "맞는 점포가 없습니다." : "고를 수 있는 점포를 모두 골랐습니다.";
+  const emptyText = !options.length ? "선택할 수 있는 점포가 없습니다." : keyword.trim() ? "검색 결과가 없습니다." : "선택할 수 있는 점포를 모두 선택했습니다.";
 
   const choose = (s: MappingStoreOption) => {
     onChange([{ storeId: s.storeId, name: s.name, storeCode: s.storeCode }, ...picked]);
@@ -159,10 +160,19 @@ export function StoreMappingPicker({
               if (!box.current?.contains(e.relatedTarget as Node | null)) setOpen(false);
             }}
           >
+            {/* type="search" — 크롬 비밀번호 관리자가 이 칸을 아이디 칸으로 보고 저장한 계정 목록을 띄웠다(autoComplete="off" 로는 안 막힌다, 2026-10-28 사용자 지적).
+                검색칸에는 계정 목록을 띄우지 않는다. 브라우저 기본 지우기 단추는 숨겨 모양은 그대로 둔다. 1Password · LastPass 도 빼 둔다 */}
             <input
-              type="text"
+              type="search"
+              data-1p-ignore
+              data-lpignore="true"
               value={keyword}
               onChange={(e) => {
+                // search 칸은 Esc 에 브라우저가 값을 지운다 — 목록이 닫힌 채 Esc 로 패널을 닫을 때 입력이 사라지지 않게 그 지우기는 받지 않는다
+                if (escClearing.current) {
+                  escClearing.current = false;
+                  return;
+                }
                 setKeyword(e.target.value);
                 setOpen(true);
                 setActive(0);
@@ -173,6 +183,10 @@ export function StoreMappingPicker({
                 if (e.key === "Escape" && (listShown || emptyShown)) {
                   e.preventDefault();
                   setOpen(false);
+                } else if (e.key === "Escape") {
+                  // preventDefault 하면 패널 Esc 닫기까지 막힌다(slide-panel) — 대신 뒤따르는 브라우저 지우기만 무시한다
+                  escClearing.current = true;
+                  requestAnimationFrame(() => (escClearing.current = false));
                 } else if (e.key === "ArrowDown" && candidates.length) {
                   e.preventDefault();
                   setOpen(true);
@@ -197,13 +211,13 @@ export function StoreMappingPicker({
               aria-describedby={describedBy}
               autoComplete="off"
               maxLength={50}
-              className={`${FIELD} pr-[10px]`}
+              className={`${FIELD} pr-[10px] [&::-webkit-search-cancel-button]:hidden`}
             />
             {listShown && (
               <ul
                 id={listId}
                 role="listbox"
-                aria-label="고를 수 있는 점포"
+                aria-label="선택할 수 있는 점포"
                 // 열려 있는 동안 Esc 가 이 층부터 닫도록 알린다(slide-panel.tsx 의 data-dismiss-open 규칙)
                 data-dismiss-open=""
                 onMouseDown={(e) => e.preventDefault()}
@@ -471,7 +485,7 @@ function BulkDialog({
       <div className="mt-[12px] text-[14px] leading-[1.6]">
         <p className="text-[13px] text-erp-label">{text.guide}</p>
         <div className="mt-[12px] flex items-stretch gap-[12px]">
-          {pane("L", text.left, left, options.length ? text.leftDone : "고를 수 있는 점포가 없습니다.")}
+          {pane("L", text.left, left, options.length ? text.leftDone : "선택할 수 있는 점포가 없습니다.")}
           <div className="flex shrink-0 flex-col justify-center gap-[6px]">
             <Button variant="off" onClick={() => move("R")} disabled={!canAdd}>
               추가 ›

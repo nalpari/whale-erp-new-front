@@ -13,6 +13,7 @@ test("주소 값이 틀리면 기본값으로 — api 에 400 · 500 을 일으�
     verification: undefined,
     bp: undefined,
     edit: undefined,
+    statusNone: undefined,
   });
   // 9자리까지만 받는다 — api 의 int4 상한을 넘는 값이 가지 않게
   assert.equal(parseBpMastersQuery({ bp: "1234567890" }).bp, undefined);
@@ -28,6 +29,13 @@ test("상태는 정해진 순서로, 셋 다 고르면 전체(빈 목록)와 같
   assert.deepEqual(parseBpMastersQuery({ status: "WITHDRAWN,ACTIVE,ACTIVE" }).statuses, ["ACTIVE", "WITHDRAWN"]);
   assert.deepEqual(parseBpMastersQuery({ status: "ACTIVE,INACTIVE,WITHDRAWN" }).statuses, []);
   assert.equal(bpMastersHref({ statuses: ["ACTIVE", "INACTIVE", "WITHDRAWN"] }), "/bp-masters");
+});
+
+test("상태를 셋 다 끄면 status=NONE — 다시 읽어도 결과 없음으로 남는다", () => {
+  assert.equal(bpMastersHref({ statuses: [], statusNone: true }), "/bp-masters?status=NONE");
+  assert.equal(parseBpMastersQuery({ status: "NONE" }).statusNone, true);
+  assert.deepEqual(parseBpMastersQuery({ status: "NONE" }).statuses, []);
+  assert.equal(parseBpMastersQuery({ status: "ACTIVE" }).statusNone, undefined);
 });
 
 test("검색어는 앞뒤 공백을 빼고 50자까지, 검색 기준은 검색어가 있을 때만 주소에 남는다", () => {
@@ -47,6 +55,7 @@ test("만든 주소를 다시 읽으면 같은 조건 — 새로 고침 · 링�
     verification: "UNVERIFIED",
     bp: 17,
     edit: true,
+    statusNone: undefined,
   };
   const read = parseBpMastersQuery(Object.fromEntries(new URL(bpMastersHref(query), "http://x").searchParams));
   assert.deepEqual(read, query);

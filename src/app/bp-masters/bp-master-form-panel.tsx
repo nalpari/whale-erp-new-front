@@ -23,10 +23,10 @@ import {
 } from "@/lib/bp-master-form";
 import { BIZ_MESSAGE, bizVerifyFailure } from "@/lib/biz-verification-rules";
 import type { BpMasterDetail, CreateBpMasterResult } from "@/lib/bp-masters";
-import { loginIdError } from "@/lib/platform-admin-form";
+import { loginIdError, type LoginIdCheck } from "@/lib/platform-admin-form";
 import { formatDateTime } from "@/lib/format";
 import { formatBizNumber } from "@/lib/store-view";
-import { FailedBand, FieldMessage } from "../platform-admins/admin-parts";
+import { EmailAvailability, FailedBand, FieldMessage, LoginIdAvailability } from "../platform-admins/admin-parts";
 import { checkBpMasterEmailAction, checkBpMasterLoginIdAction,createBpMasterAction, updateBpMasterAction, verifyBpBusinessAction } from "./actions";
 import { BpStatusBadge, unknownResult } from "./bp-master-parts";
 
@@ -34,12 +34,13 @@ import { BpStatusBadge, unknownResult } from "./bp-master-parts";
 // 기본정보 / 사업자정보 두 묶음으로 나눈다(데모와 같다, 2026-10-22).
 // 사업자 인증은 [사업자 번호 인증하기]로 상자를 펼쳐 한다(데모처럼 처음부터 펼치지 않는다). 인증하면 같은 자리가 읽기 전용 완료 카드가 되고,
 // [재인증]은 확인을 한 번 받는다. 번호 중복 · 확인 불가 · 처리 오류여도 인증 없이 저장할 수 있다.
-// 수정은 BP 코드 · 아이디 · 가입경로를 보여 주기만 하고, BP 상태는 상세의 [상태 변경]에서만 바꾼다. 마지막 저장이 남는다(409 없음).
+// 수정은 BP 코드를 제목 옆에 보여 주기만 하고(아이디 · 가입경로 칸은 2026-10-28 사용자 지정으로 뺐다), BP 상태는 상세의 [BP 상태 변경]에서만 바꾼다. 마지막 저장이 남는다(409 없음).
 
-/** 아이디 중복 문구 — 저장할 때 api 가 주는 409 문구와 같게 둔다 */
-const LOGIN_ID_TAKEN = "이미 사용 중인 아이디입니다. 탈퇴 · 삭제된 계정의 아이디도 다시 쓸 수 없습니다";
-/** 이메일 중복 문구 — 저장 409(EMAIL_TAKEN)와 같게 둔다 */
-const EMAIL_TAKEN = "사용 중이거나 미사용인 다른 관리자 계정의 이메일입니다";
+/** 아이디 중복 문구 — 칸을 벗어날 때 중복 확인에 보인다. 저장 409 는 api 문구 그대로라 다를 수 있다(칸은 「아이디」 포함으로 가른다) */
+// 관리자 등록 세 화면(플랫폼 · BP 관리자 · BP 마스터)이 같은 문구(2026-10-28 사용자 지정)
+const LOGIN_ID_TAKEN = "이미 사용 중인 아이디입니다. 다른 아이디를 입력해 주세요.";
+/** 이메일 중복 문구 — 중복 확인에 보인다. 저장 409 는 api 문구 그대로 */
+const EMAIL_TAKEN = "이미 사용 중인 이메일입니다. 다른 이메일을 입력해 주세요."; // 네 화면 같은 문구(2026-10-28 사용자 지정)
 
 type Props = {
   id: string;
@@ -59,6 +60,13 @@ export function BpMasterFormPanel(props: Props) {
   const [form, setForm] = useState<BpMasterForm>(initialForm);
   const [errors, setErrors] = useState<BpMasterFormErrors>({});
   const [failure, setFailure] = useState<string | null>(null);
+  /**
+   * 아이디 중복확인 대기 · 성공 · 실패 상태(platform-admins 와 같다). 오류는 errors.loginId 에 두고, 오류를 달 때는 "idle" 로 내린다.
+   * 플랫폼 관리자 등록과 같은 문구를 칸 아래에 보인다(2026-10-28 사용자 지정).
+   */
+  const [loginIdCheck, setLoginIdCheck] = useState<LoginIdCheck>("idle");
+  /** 이메일 중복확인 대기 · 성공 · 실패 상태 — 아이디와 같다. 오류는 errors.email 에 둔다(2026-10-28 사용자 지정) */
+  const [emailCheck, setEmailCheck] = useState<LoginIdCheck>("idle");
   /** 진위확인 실패 문구(중복 · 불일치 · 장애) — 인증 상자 아래 한 줄 */
   const [verifyFailure, setVerifyFailure] = useState<string | null>(null);
   const [reverifyAsk, setReverifyAsk] = useState(false);
@@ -81,6 +89,9 @@ export function BpMasterFormPanel(props: Props) {
       setErrors({});
       setFailure(null);
       setVerifyFailure(null);
+      // 되돌린 빈 칸에 이전에 확인했던 "사용가능합니다."가 남지 않게 아이디 · 이메일 확인 표시도 내린다
+      setLoginIdCheck("idle");
+      setEmailCheck("idle");
     }
   }
 
@@ -114,6 +125,16 @@ export function BpMasterFormPanel(props: Props) {
 
   const applyServerError = (status: number | undefined, text: string) => {
     const field = bpMasterServerErrorField(status, text, mode);
+    // 아이디가 거절됐거나 칸을 가를 수 없는 거절(띠)이면 아이디의 "사용가능합니다."를 내리고 떠 있던 확인 답도 버린다(platform-admins 와 같다)
+    if (!field || field === "loginId") {
+      checkNumber.current.loginId++;
+      setLoginIdCheck("idle");
+    }
+    // 이메일도 같다(2026-10-28 사용자 지정)
+    if (!field || field === "email") {
+      checkNumber.current.email++;
+      setEmailCheck("idle");
+    }
     if (!field) return setFailure(text);
     setErrors((e) => ({ ...e, [field]: text }));
     focusFirstError();
@@ -122,25 +143,43 @@ export function BpMasterFormPanel(props: Props) {
   /**
    * 아이디(등록만) · 이메일 중복 확인 — 칸을 벗어나거나 Enter 를 칠 때. 플랫폼 관리자 · BP 관리자 등록과 같은 규칙이다.
    * 이메일 확인은 자기 계정을 빼지 않으므로, 수정에서 원래 이메일 그대로면 묻지 않는다.
+   * 아이디는 묻는 동안 · 쓸 수 있을 때 · 확인하지 못했을 때(429 · 5xx · 연결)를 칸 아래에 플랫폼 관리자 등록과 같은 문구로
+   * 보인다(LoginIdAvailability, 2026-10-28 사용자 지정). 이메일도 같은 세 상태를 이메일 문구로 보인다(EmailAvailability, 2026-10-28 사용자 지정).
    */
   const checkAvailable = (key: "loginId" | "email", raw: string) => {
     const value = key === "email" ? raw.trim().toLowerCase() : raw.trim();
     if (!value || (key === "loginId" && mode !== "create")) return;
     if (key === "email" && props.mode === "edit" && value === (props.bp.email ?? "").toLowerCase()) return;
-    const formatError = key === "loginId" ? loginIdError(raw) : emailError(raw);
-    if (formatError) return setErrors((e) => ({ ...e, [key]: formatError }));
-    const what = key === "loginId" ? "아이디" : "이메일";
+    const isLoginId = key === "loginId";
+    const setCheck = isLoginId ? setLoginIdCheck : setEmailCheck;
+    const formatError = isLoginId ? loginIdError(raw) : emailError(raw);
+    if (formatError) {
+      setCheck("idle");
+      return setErrors((e) => ({ ...e, [key]: formatError }));
+    }
+    const what = isLoginId ? "아이디" : "이메일";
     const mine = ++checkNumber.current[key];
-    (key === "loginId" ? checkBpMasterLoginIdAction : checkBpMasterEmailAction)(value)
+    // 같은 값을 다시 물을 때(Enter 재확인 등)도 앞서 달렸던 오류를 지운다 — 안 그러면 묻는 동안 확인 중 문구 대신 옛 오류가 보인다
+    clearError(key);
+    setCheck("checking");
+    (isLoginId ? checkBpMasterLoginIdAction : checkBpMasterEmailAction)(value)
       .then((result) => {
         if (mine !== checkNumber.current[key]) return;
         if (result.ok) {
-          if (!result.available) setErrors((e) => ({ ...e, [key]: key === "loginId" ? LOGIN_ID_TAKEN : EMAIL_TAKEN }));
-        } else if (result.status === 400) setErrors((e) => ({ ...e, [key]: result.message }));
+          if (!result.available) setErrors((e) => ({ ...e, [key]: isLoginId ? LOGIN_ID_TAKEN : EMAIL_TAKEN }));
+          setCheck(result.available ? "available" : "idle");
+          return;
+        }
+        setCheck(result.status === 400 || result.status === 401 ? "idle" : "failed");
+        if (result.status === 400) setErrors((e) => ({ ...e, [key]: result.message }));
         else if (result.status === 401) setFailure(result.message);
         else console.warn(`${what} 중복 확인을 하지 못했습니다 — 저장할 때 api 가 다시 본다`, result.status, result.message);
       })
-      .catch((error: unknown) => console.warn(`${what} 중복 확인 호출 실패 — 저장할 때 api 가 다시 본다`, error));
+      .catch((error: unknown) => {
+        if (mine !== checkNumber.current[key]) return;
+        setCheck("failed");
+        console.warn(`${what} 중복 확인 호출 실패 — 저장할 때 api 가 다시 본다`, error);
+      });
   };
 
   /** 진위확인 칸을 고치면 기다리던 응답은 버리고 그 칸 오류 · 실패 문구를 지운다 */
@@ -207,6 +246,8 @@ export function BpMasterFormPanel(props: Props) {
   const handleSave = () => {
     const found = validateBpMasterForm(form, mode);
     setErrors(found);
+    if (found.loginId) setLoginIdCheck("idle");
+    if (found.email) setEmailCheck("idle");
     setFailure(null);
     if (Object.keys(found).length) return focusFirstError();
     // 펼친 상자의 값은 인증해야만 저장된다 — 그대로 저장하면 적은 값이 말없이 사라진다
@@ -280,6 +321,7 @@ export function BpMasterFormPanel(props: Props) {
                 value={form.loginId}
                 onChange={(e) => {
                   checkNumber.current.loginId++;
+                  setLoginIdCheck("idle");
                   set("loginId", e.target.value, "loginId");
                 }}
                 onBlur={(e) => checkAvailable("loginId", e.currentTarget.value)}
@@ -292,23 +334,15 @@ export function BpMasterFormPanel(props: Props) {
                 maxLength={20}
                 placeholder="영문 또는 영문·숫자 조합으로 4~20자 입력해 주세요."
                 aria-invalid={invalid("loginId")}
-                aria-describedby={describe("loginId")}
+                aria-describedby={describe("loginId") ?? (loginIdCheck !== "idle" ? messageId("loginId") : undefined)}
+                aria-busy={loginIdCheck === "checking" || undefined}
                 aria-required
                 autoComplete="off"
               />
             </Field>
-            {message("loginId")}
+            <LoginIdAvailability id={messageId("loginId")} check={loginIdCheck} message={errors.loginId} />
           </Stack>
-        ) : (
-          <>
-            <Field label="아이디">
-              <TextField value={props.bp.loginId} readOnly />
-            </Field>
-            <Field label="가입경로">
-              <TextField value={props.bp.joinPath === "SIGNUP" ? "회원가입" : "플랫폼등록"} readOnly />
-            </Field>
-          </>
-        )}
+        ) : null /* 수정은 아이디 · 가입경로 칸을 두지 않는다 — 바꿀 수 없는 값이라 상세에서 본다(2026-10-28 사용자 지정) */}
         <Stack>
           <Field label="이름" required>
             <TextField
@@ -332,6 +366,7 @@ export function BpMasterFormPanel(props: Props) {
               value={form.email}
               onChange={(e) => {
                 checkNumber.current.email++;
+                setEmailCheck("idle");
                 set("email", e.target.value, "email");
               }}
               onBlur={(e) => checkAvailable("email", e.currentTarget.value)}
@@ -342,20 +377,22 @@ export function BpMasterFormPanel(props: Props) {
               }}
               maxLength={100}
               aria-invalid={invalid("email")}
-              aria-describedby={describe("email")}
+              aria-describedby={describe("email") ?? (emailCheck !== "idle" ? messageId("email") : undefined)}
+              aria-busy={emailCheck === "checking" || undefined}
               aria-required
             />
           </Field>
-          {message("email")}
+          <EmailAvailability id={messageId("email")} check={emailCheck} message={errors.email} />
         </Stack>
         {props.mode === "edit" && (
           <Stack>
-            <span className="text-[14px] font-medium text-erp-label">상태</span>
+            <span className="text-[14px] font-medium text-erp-label">계정상태</span>
             <span className="flex items-center gap-[6px] text-[14px] text-erp-ink">
               <BpStatusBadge status={props.bp.accountStatus} />
               {props.bp.statusChangedAt && <span className="text-erp-label">{formatDateTime(props.bp.statusChangedAt)} 부터</span>}
             </span>
-            <Note>상태는 여기서 바꾸지 않습니다. 상세의 상태 줄 [상태 변경]에서 사용 · 미사용을 바꿉니다.</Note>
+            {/* 라벨 「계정상태」(목록 · 필터와 같다), 안내는 바뀐 버튼 자리 · 이름에 맞춘다(2026-10-28) */}
+            <Note>계정상태는 상세의 [BP 상태 변경]에서 바꿉니다.</Note>
           </Stack>
         )}
       </FormGroup>
@@ -439,7 +476,6 @@ export function BpMasterFormPanel(props: Props) {
                 사업자 번호 인증하기
               </Button>
             </div>
-            <Note>사업자 인증은 선택입니다. 인증하면 사업자등록번호 · 대표자명 · 개업일자가 채워집니다.</Note>
           </Stack>
         )}
         {/* 성공은 화면이 완료 카드로 바뀌는 것으로 보여 주고, 화면 낭독기에만 알린다(점포 등록과 같다) */}
@@ -498,10 +534,9 @@ export function BpMasterFormPanel(props: Props) {
         />
       </FormGroup>
 
-      {mode === "create" ? (
-        <Note>BP 마스터 계정의 초기 비밀번호는 등록한 이메일로 발송됩니다. 권한 그룹은 BP 마스터 기본 권한으로 정해지고, 약관 동의는 첫 로그인 때 받습니다.</Note>
-      ) : (
-        <Note>정보를 고칠 때 사유는 받지 않습니다. 여럿이 같은 BP 를 고치면 마지막에 저장한 내용이 남습니다.</Note>
+      {/* 등록 안내는 한 줄로 줄였고(권한 그룹 · 약관 동의 안내 삭제), 수정 화면의 「사유는 받지 않습니다 …」 안내는 지웠다(2026-10-28 사용자 지정) */}
+      {mode === "create" && (
+        <Note>초기 비밀번호는 등록한 이메일로 발송됩니다.</Note>
       )}
 
       <div className="flex justify-center gap-[6px]">

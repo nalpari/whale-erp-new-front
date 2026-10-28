@@ -613,8 +613,8 @@
   .mt-auto {
     margin-top: auto;
   }
-  .mr-\[4px\] {
-    margin-right: 4px;
+  .mr-\[6px\] {
+    margin-right: 6px;
   }
   .mr-\[10px\] {
     margin-right: 10px;
@@ -645,6 +645,9 @@
   }
   .mb-\[18px\] {
     margin-bottom: 18px;
+  }
+  .-ml-px {
+    margin-left: -1px;
   }
   .ml-\[2px\] {
     margin-left: 2px;
@@ -1580,6 +1583,12 @@
   .grid-cols-\[268px_minmax\(0\,1fr\)\] {
     grid-template-columns: 268px minmax(0,1fr);
   }
+  .grid-cols-\[auto_minmax\(0\,1fr\)\] {
+    grid-template-columns: auto minmax(0,1fr);
+  }
+  .grid-cols-\[minmax\(max-content\,7fr\)_13fr\] {
+    grid-template-columns: minmax(max-content,7fr) 13fr;
+  }
   .grid-rows-\[0fr\] {
     grid-template-rows: 0fr;
   }
@@ -1749,6 +1758,9 @@
     --tw-space-y-reverse: 0;
     margin-block-start: calc(calc(var(--spacing) * 4) * var(--tw-space-y-reverse));
     margin-block-end: calc(calc(var(--spacing) * 4) * calc(1 - var(--tw-space-y-reverse)));
+  }
+  .gap-x-\[6px\] {
+    column-gap: 6px;
   }
   .gap-x-\[12px\] {
     column-gap: 12px;
@@ -2792,6 +2804,9 @@
   .tracking-normal {
     --tw-tracking: var(--tracking-normal);
     letter-spacing: var(--tracking-normal);
+  }
+  .break-all {
+    word-break: break-all;
   }
   .break-keep {
     word-break: keep-all;

@@ -125,7 +125,8 @@ function ServiceLink({ target, label, className, children }: { target?: ServiceT
 }
 
 // Figma Top2 의 서비스 바로가기. 둥근 테두리 안에 세 아이콘을 두고, 올리면 이름 툴팁이 뜬다.
-export function ServiceLinks({ targets = {} }: { targets?: { erp?: ServiceTarget; addon?: ServiceTarget; platform?: ServiceTarget } }) {
+// hideAddon — 플랫폼관리 사이트에서는 부가서비스 현황 아이콘 자리를 없앤다(2026-10-28 사용자 지정).
+export function ServiceLinks({ targets = {}, hideAddon = false }: { targets?: { erp?: ServiceTarget; addon?: ServiceTarget; platform?: ServiceTarget }; hideAddon?: boolean }) {
   return (
     <div className="flex h-[42px] shrink-0 items-center gap-[18px] rounded-full border border-erp-field-line bg-white px-[24px]">
       <span className="text-[15px] font-medium whitespace-nowrap text-erp-ink">서비스 바로가기</span>
@@ -133,9 +134,11 @@ export function ServiceLinks({ targets = {} }: { targets?: { erp?: ServiceTarget
         <ServiceLink target={targets.erp} label="웨일ERP" className={`${ICON_HOVER} w-[32px]`}>
           <Image src="/icons/service-erp.svg" alt="" width={32} height={32} />
         </ServiceLink>
-        <ServiceLink target={targets.addon} label="부가서비스 현황" className={`${ICON_HOVER} w-[32px] bg-white`}>
-          <Image src="/icons/service-chat.svg" alt="" width={19} height={19} />
-        </ServiceLink>
+        {!hideAddon && (
+          <ServiceLink target={targets.addon} label="부가서비스 현황" className={`${ICON_HOVER} w-[32px] bg-white`}>
+            <Image src="/icons/service-chat.svg" alt="" width={19} height={19} />
+          </ServiceLink>
+        )}
         {/* 플랫폼관리는 톱니바퀴(데모 service-platform.svg, 2026-10-20). 아홉 점 아이콘에서 바꿨다.
             플랫폼 계정에게만 보인다 — BP·가맹 계정은 자리 자체를 없앤다(사용자 지적, 2026-10-21). */}
         {targets.platform && (
