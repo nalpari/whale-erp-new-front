@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState, type FormEvent } from "react";
 import { CHECKBOX, INPUT, INPUT_BOX, SUBMIT } from "@/app/design/guest/guest-form";
 import { SITE_ROUTES } from "@/app/design/guest/guest-routes";
 import { HOVER } from "@/app/design/guest/theme";
@@ -13,6 +13,11 @@ import { login, type LoginFormState } from "./actions";
 const SAVED_ID = "whale-erp:saved-login-id";
 
 const ICON_BUTTON = "flex size-[16px] items-center justify-center";
+// 칸 아래 오류 문구 — 회원가입(required-field.tsx)과 같은 모양.
+const FIELD_ERROR = "text-[14px] leading-[1.5] text-[#e93737]";
+// 빈칸 문구는 화면 정의(S-XJDKSI)대로다. 형식은 검사하지 않는다(okf/auth.md).
+const EMPTY = { loginId: "아이디를 입력해주세요.", password: "비밀번호를 입력해주세요." } as const;
+type EmptyField = keyof typeof EMPTY;
 
 // 모양은 Figma 「로그인전_로그인」 샘플(design/guest/login/login-form.tsx)의 폼 규격(guest-form.ts)을 쓴다(2026-10-19).
 // 샘플의 「로그인 상태 유지」 자리에는 아이디 저장을 둔다 — 로그인 유지 선택은 없다.
@@ -22,6 +27,7 @@ export function LoginForm() {
   const [loginId, setLoginId] = useState("");
   const [save, setSave] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [empty, setEmpty] = useState<Partial<Record<EmptyField, true>>>({});
 
   useEffect(() => {
     // 로그아웃·세션 만료로 왔다. 앞 로그인의 메뉴·점포·공통코드를 지운다(남아 있어도 login-key 가 달라 쓰이지 않지만 이 브라우저에 두지 않는다).
@@ -48,48 +54,85 @@ export function LoginForm() {
     return action(form);
   };
 
+  // 브라우저 말풍선 대신 빈칸마다 칸 아래에 문구를 둔다. 막을 때는 action 전에 멈춰야 친 비밀번호가 폼 초기화로 지워지지 않는다.
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    const form = new FormData(e.currentTarget);
+    const next = {
+      ...(String(form.get("loginId") ?? "").trim() ? {} : { loginId: true as const }),
+      ...(String(form.get("password") ?? "") ? {} : { password: true as const }),
+    };
+    setEmpty(next);
+    const first = (Object.keys(EMPTY) as EmptyField[]).find((key) => next[key]);
+    if (!first) return;
+    e.preventDefault();
+    e.currentTarget.querySelector<HTMLInputElement>(`input[name="${first}"]`)?.focus();
+  };
+  const clearEmpty = (key: EmptyField) => empty[key] && setEmpty((current) => ({ ...current, [key]: undefined }));
+
   return (
-    <form action={remember} className="flex flex-col gap-[24px]">
+    <form action={remember} onSubmit={handleSubmit} noValidate className="flex flex-col gap-[24px]">
       <div className="flex flex-col gap-[10px]">
-        <label className={INPUT_BOX}>
-          <span className="sr-only">아이디</span>
-          <input
-            name="loginId"
-            autoComplete="username"
-            placeholder="User ID"
-            value={loginId}
-            onChange={(e) => setLoginId(e.target.value)}
-            required
-            maxLength={20}
-            className={INPUT}
-          />
-          {loginId && (
-            <button type="button" aria-label="아이디 지우기" onClick={() => setLoginId("")} className={ICON_BUTTON}>
-              <Image src="/guest/login/clear.svg" alt="" width={16} height={16} />
-            </button>
+        <div className="flex flex-col gap-[6px]">
+          <label className={INPUT_BOX}>
+            <span className="sr-only">아이디</span>
+            <input
+              name="loginId"
+              autoComplete="username"
+              placeholder="User ID"
+              value={loginId}
+              onChange={(e) => {
+                setLoginId(e.target.value);
+                clearEmpty("loginId");
+              }}
+              required
+              aria-invalid={empty.loginId}
+              aria-describedby={empty.loginId ? "login-id-error" : undefined}
+              maxLength={20}
+              className={INPUT}
+            />
+            {loginId && (
+              <button type="button" aria-label="아이디 지우기" onClick={() => setLoginId("")} className={ICON_BUTTON}>
+                <Image src="/guest/login/clear.svg" alt="" width={16} height={16} />
+              </button>
+            )}
+          </label>
+          {empty.loginId && (
+            <span id="login-id-error" role="alert" className={FIELD_ERROR}>
+              {EMPTY.loginId}
+            </span>
           )}
-        </label>
-        <label className={INPUT_BOX}>
-          <span className="sr-only">비밀번호</span>
-          <input
-            name="password"
-            type={showPassword ? "text" : "password"}
-            autoComplete="current-password"
-            placeholder="Password"
-            required
-            maxLength={128}
-            className={INPUT}
-          />
-          <button
-            type="button"
-            aria-label={showPassword ? "비밀번호 숨기기" : "비밀번호 보기"}
-            aria-pressed={showPassword}
-            onClick={() => setShowPassword((v) => !v)}
-            className={ICON_BUTTON}
-          >
-            <Image src={showPassword ? "/guest/login/eye-off.svg" : "/guest/login/eye-on.svg"} alt="" width={16} height={16} />
-          </button>
-        </label>
+        </div>
+        <div className="flex flex-col gap-[6px]">
+          <label className={INPUT_BOX}>
+            <span className="sr-only">비밀번호</span>
+            <input
+              name="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
+              placeholder="Password"
+              onChange={() => clearEmpty("password")}
+              required
+              aria-invalid={empty.password}
+              aria-describedby={empty.password ? "login-password-error" : undefined}
+              maxLength={128}
+              className={INPUT}
+            />
+            <button
+              type="button"
+              aria-label={showPassword ? "비밀번호 숨기기" : "비밀번호 보기"}
+              aria-pressed={showPassword}
+              onClick={() => setShowPassword((v) => !v)}
+              className={ICON_BUTTON}
+            >
+              <Image src={showPassword ? "/guest/login/eye-off.svg" : "/guest/login/eye-on.svg"} alt="" width={16} height={16} />
+            </button>
+          </label>
+          {empty.password && (
+            <span id="login-password-error" role="alert" className={FIELD_ERROR}>
+              {EMPTY.password}
+            </span>
+          )}
+        </div>
       </div>
       {state.error && (
         <p role="alert" className="text-[15px] text-[#e93737]">

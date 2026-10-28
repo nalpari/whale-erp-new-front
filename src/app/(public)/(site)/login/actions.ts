@@ -28,7 +28,9 @@ const SYSTEM_ERROR = "시스템 오류로 로그인할 수 없습니다. 잠시 
 export async function login(_prev: LoginFormState, formData: FormData): Promise<LoginFormState> {
   const loginId = String(formData.get("loginId") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  if (!loginId || !password) return { error: "아이디와 비밀번호를 입력해 주세요" };
+  // 폼이 먼저 막는다(login-form.tsx). 스크립트 없이 낸 요청만 여기 온다.
+  if (!loginId) return { error: "아이디를 입력해주세요." };
+  if (!password) return { error: "비밀번호를 입력해주세요." };
 
   const jar = await cookies();
   const deviceId = deviceIdOf(jar.get(DEVICE_COOKIE)?.value);
