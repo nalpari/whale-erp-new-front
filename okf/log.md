@@ -1,7 +1,7 @@
 # Bundle history
 
 ## 2026-10-28
-* **Update**: [BP 마스터 계정 관리](/bp.md) · [Whale ERP Frontend](/whale-erp-front.md) — 사용자 디자인 수정 2(front clefable): 초기화 비밀번호 안내 상자 · 토스트 · 확인창 문구, BP 마스터 사업자정보를 MY PAGE 모양으로, 상세 계정상태 줄 · 인증 일시, 강제 비밀번호 변경 팝업 다듬기.
+* **Update**: [BP 마스터 계정 관리](/bp.md) · [점포 관리](/stores.md) · [Whale ERP Frontend](/whale-erp-front.md) — 사용자 디자인 수정 2(front clefable, 점포는 인증 상자 일시 · 국세청 안내): 초기화 비밀번호 안내 상자 · 토스트 · 확인창 문구, BP 마스터 사업자정보를 MY PAGE 모양으로, 상세 계정상태 줄 · 인증 일시, 강제 비밀번호 변경 팝업 다듬기.
 * **Update**: main 병합(front poliwag, #164 mudkip 까지): okf 충돌은 양쪽 기록을 살렸다 — [Whale ERP Frontend](/whale-erp-front.md) 는 main 의 LoadGroup · loading · `send`/`actionFailure` 줄과 이 브랜치의 근로계약 두 줄.
 * **Update**: main 병합(front poliwag, main 최신까지): okf 충돌은 양쪽 기록을 살렸다(BP 휴일 겹침 확인 버튼 이름은 main, api 타입 설명은 이 브랜치).
 * **Fix**: api 타입을 gyarados 로 다시 뽑으며 front main 의 BP 마스터 탈퇴 타입(`withdrawal`, 아직 api main 에 없음)을 지워 tsc 가 깨진 것을 3-way 병합(`git merge-file`)으로 되살렸다.
