@@ -104,7 +104,7 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
             ? { message: "다른 관리자가 메뉴 구성을 변경하여 저장하지 못했습니다.", detail: "변경된 내용을 확인한 후 다시 시도해 주세요." }
             : result.status === undefined
               ? // 응답을 못 받았다 — 옮겨졌는지 모른다(2026-10-28 사용자 지정 문구)
-                { message: "메뉴 이동 결과를 확인할 수 없습니다.", detail: "메뉴순서를 확인한 후 다시 시도해 주세요." }
+                { message: "메뉴 이동 결과를 확인하지 못했습니다.", detail: "메뉴가 이동되었는지 확인한 후, 다시 시도해 주세요." }
               : { message: result.message, detail: `‘${moved.name}’ 메뉴는 옮기기 전 자리 그대로입니다.` },
         );
         if (stale) router.refresh();
