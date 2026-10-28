@@ -12,7 +12,7 @@ export type SeenContract = { status: SendContractBody["expectedStatus"] | null; 
  * 두 번 보내는 것을 막는다(재발송마다 바뀐다). 모르는 값은 비운다(api 가 그 검사를 하지 않는다)
  */
 export function sendBodyOf(seen: SeenContract | null | undefined): SendContractBody {
-  // 서버 액션은 누구나 직접 부를 수 있다 — 모양이 다른 값은 싣지 않는다(api 가 그 검사를 하지 않고 보낸다, 셀프 code-review)
+  // 서버 액션은 누구나 직접 부를 수 있다 — 문자열이 아닌 값은 싣지 않는다(터지지 않게). 틀린 문자열은 api 가 400 으로 막는다(셀프 code-review)
   const status = typeof seen?.status === "string" ? seen.status : null;
   const sentAt = typeof seen?.sentAt === "string" ? seen.sentAt : null;
   return { ...(status && { expectedStatus: status }), ...(sentAt && { expectedSentAt: sentAt }) };
