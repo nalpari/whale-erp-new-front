@@ -253,8 +253,8 @@ function DetailBody({
             onCancel={() => setConfirm(null)}
           >
             <div className="flex flex-col gap-[12px]">
-              <WhoList rows={[["아이디/이름", [admin.loginId, name].filter(Boolean).join(" / ")], ["이메일", admin.email ?? "-"]]} />
-              {/* 세 관리 화면 같은 문구 · 대상은 아이디/이름 · 이메일(2026-10-28 사용자 지정) */}
+              <WhoList rows={[["아이디", admin.loginId], ["이름", name ?? "-"], ["이메일", admin.email ?? "-"]]} />
+              {/* 세 관리 화면 같은 문구 · 대상은 아이디 · 이름 · 이메일 각각(「아이디/이름」 한 줄은 라벨이 잘렸다)(2026-10-28 사용자 지정) */}
               <p>
                 비밀번호 초기화 시 새로운 비밀번호가 등록된 이메일로 발송됩니다.
                 <br />
