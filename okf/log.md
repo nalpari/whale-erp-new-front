@@ -1,5 +1,8 @@
 # Bundle history
 
+## 2026-10-28
+* **Update**: [급여명세서 관리 화면](/screens/payslips.md) — 재영 재리뷰(front #151, 2026-10-28): 상세 「검토 사유」에도 공제 미입력을 보인다. api 상세는 사유 행만 주므로 상세가 저장된 공제 칸으로 판정해(`detailReviewReasons` — 작성 중 · 검토 중, 보이는 지급 밖 칸 가운데 넣지 않은 것, 목록 검토 대기와 같은 기준) 「공제 미입력 · 빈 공제 이름」 줄을 더하고, 「그 밖의 사유」에서 공제 미입력을 빼던 것을 없앴다.
+
 ## 2026-10-27
 * **Update**: main 병합(front venusaur, main #155 까지): okf/log 충돌은 양쪽 기록을 살렸다.
 * **Update**: main 병합(front venusaur, v221 반영 뒤 main 최신까지): okf/log 충돌은 양쪽 기록을 살렸다.

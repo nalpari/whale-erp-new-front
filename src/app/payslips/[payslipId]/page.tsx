@@ -9,7 +9,7 @@ import { formatAmount } from "@/lib/payslips";
 import { getPayslip } from "@/lib/payslips-api";
 import { kstToday } from "@/lib/staff-members";
 import { payslipListHref } from "../payslip-list-query";
-import { attendanceHref, reviewBand } from "../payslip-row";
+import { attendanceHref, detailReviewReasons, reviewBand } from "../payslip-row";
 import { PayslipReview, SectionHead } from "./payslip-review";
 
 export const metadata: Metadata = {
@@ -33,22 +33,23 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
   if (!payslip) notFound();
   const listHref = payslipListHref(await searchParams, kstToday());
   const reasonOf = (value: string) => labelOf(reasonLabels, value);
-  const present = new Set<string>(payslip.reviewReasons.map((r) => r.reviewReason));
+  // 공제 미입력은 사유 줄로 저장되지 않아 저장된 공제 칸으로 판정해 더한다 — 목록의 검토 대기 사유와 같다(v221 PAY-06).
+  const reviewReasons = detailReviewReasons(payslip);
+  const present = new Set<string>(reviewReasons.map((r) => r.reviewReason));
   // 사유 목록은 api 가 준 것으로 그린다 — 새 사유가 생겨도 front 는 따로 고치지 않는다(naming.md 「조회한 목록으로 그린다」).
-  // 공제 미입력은 사유 줄로 남기지 않고 확정을 막는다(api okf) — 「해당 없음」으로 그리면 금액 칸 아래 빨간 띠와 어긋나 뺀다
-  const absentReasons = reasonLabels.filter((r) => !present.has(r.value) && r.value !== "DEDUCTION_MISSING");
+  const absentReasons = reasonLabels.filter((r) => !present.has(r.value));
   const { contract } = payslip;
 
   const aside = (
     <>
       <section className="flex min-w-0 flex-col gap-[12px]">
-        <SectionHead title="검토 사유">{payslip.reviewReasons.length > 0 && <Badge tone="off">{payslip.reviewReasons.length}건</Badge>}</SectionHead>
+        <SectionHead title="검토 사유">{reviewReasons.length > 0 && <Badge tone="off">{reviewReasons.length}건</Badge>}</SectionHead>
         <DataTable
           columns={[
             { header: "사유", width: "w-[140px]", cell: (r) => <Badge tone="off">{reasonOf(r.reviewReason)}</Badge> },
             { header: "내용", align: "left", cell: (r) => r.detail ?? "-" },
           ]}
-          rows={payslip.reviewReasons}
+          rows={reviewReasons}
           rowKey={(r) => r.payslipReviewReasonId}
           empty="검토 사유가 없습니다."
         />

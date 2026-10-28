@@ -4,7 +4,7 @@ title: 급여명세서 관리 화면 (구현)
 description: /payslips 목록(급여명세서 작성 팝업 포함)과 /payslips/[payslipId] 검토 화면. 데이터는 급여명세서 api(GET /payslips · GET /payslips/:id · GET /payslips/candidates · POST /payslips · POST /payslips/bulk)이고, api 에 칸이 없어 뺀 것과 아직 동작이 없는 버튼.
 tags: [staff, payroll, screen]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-27T09:23:13Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-28T01:08:20Z }
 sources:
   - id: payslips-lib
     resource: ../../src/lib/payslips.ts
@@ -25,7 +25,7 @@ sources:
   - id: payslip-row
     resource: ../../src/app/payslips/payslip-row.ts
     title: 목록 칸(급여 기간 · 출퇴근 확인 · 발송일 · 검토 대기 꼬리표) · 상태 색 · 지급 도움말 · 경고 띠
-    last_modified: 2026-10-27T09:10:13Z
+    last_modified: 2026-10-28T01:08:20Z
   - id: payslip-draft-dialog
     resource: ../../src/app/payslips/payslip-draft-dialog.tsx
     title: 급여명세서 작성 팝업 — 점포 · 이름 좁히기 · 직원 고르기 · 작성 · 일괄 작성(칸 문구 payslip-draft.ts, server action actions.ts)
@@ -33,7 +33,7 @@ sources:
   - id: payslip-detail-page
     resource: ../../src/app/payslips/[payslipId]/page.tsx
     title: 검토 화면 — 오른쪽 단(검토 사유 · 참조한 것 · 처리 이력 · 발송 이력)
-    last_modified: 2026-10-27T11:00:00Z
+    last_modified: 2026-10-28T01:08:27Z
   - id: payslip-edit
     resource: ../../src/app/payslips/[payslipId]/payslip-edit.ts
     title: 검토 화면 고칠 거리 — 임시저장 본문 · 추가 공제 붙이기 · 떼기 · 지난 명세서 불러오기(server action actions.ts)
@@ -78,7 +78,7 @@ sources:
   포함, 공제 미입력은 api 가 공제 칸으로 판정한다)가 남은 줄의 상태 칸에 상태 배지 옆 「검토 대기」 꼬리표(공통 `Tag` — 표 머리 바탕 · 선 ·
   보조 글자색)를 붙인다. 「검토 중」 상태 배지(빨강)와 다른 모양이어야 해서 데모의 빨간 `p.tag("warn", "검토 대기")` 대신 DESIGN.md
   「분류를 말할 뿐 상태가 아니다」 꼬리표를 쓴다(운영 정책 v221 PAY-06, 2026-10-27 재영). 꼬리표에 마우스를 올리면
-  사유 이름(`GET /enums` 의 `PayslipReviewReason`)이 보이고, 내용은 상세 「검토 사유」에서 본다(공제 미입력은 사유 행이 없어 금액 칸 아래 빨간 띠로 보인다). 왼쪽 필터 맨 아래 「분류 · 검토 대기만」
+  사유 이름(`GET /enums` 의 `PayslipReviewReason`)이 보이고, 내용은 상세 「검토 사유」에서 본다. 공제 미입력은 api 사유 행이 없어 상세가 저장된 공제 칸으로 판정해 「공제 미입력 · 빈 공제 이름」 줄을 더한다(`detailReviewReasons`, 작성 중 · 검토 중만, 재영 2026-10-28) — 임시저장 전 고친 칸은 금액 칸 아래 빨간 띠만 따라 바뀐다. 왼쪽 필터 맨 아래 「분류 · 검토 대기만」
   체크(주소 `reviewPending=true`, api 도 같은 이름 — 본사 역할에게 가린 줄은 api 가 뺀다). 건수 줄은 상태 넷 뒤에 11px 세로선을
   긋고 「검토 대기 N」 꼬리표를 따로 둔다(`reviewPendingCount`, 그 달 · 고른 점포(직원명이면 그 이름)) — 검토 대기는 작성 중 · 검토 중
   모두에 생기는 분류라 다섯째 상태처럼 「·」로 잇으면 합계가 맞지 않게 읽힌다(운영 정책 v221 PAY-06). 검토 대기 건수도 「검토 대기만」 목록처럼 본사 역할에게 가린 줄(본사 제공 동의 없는 가맹 직원)은 세지 않는다 — 둘의 차이로 가린 직원의 검토 대기(근태 이상 · 공제 미입력) 여부가 드러나지 않게(ATT-30, 운영 정책 v218, api PR #169 리뷰). 상태 · 직원명 · 검토 대기만으로 거른 목록이 비면 「조건에 맞는 급여명세서가 없습니다.」(거르지 않았으면 「이 달의 급여명세서가 없습니다.」). 꼬리표에 화면 낭독기용 숨긴 사유 글자를 붙인다.

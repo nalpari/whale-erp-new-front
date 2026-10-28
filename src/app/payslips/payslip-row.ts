@@ -1,7 +1,15 @@
 // 급여명세서 목록 · 상세의 표시 규칙. 문구와 색은 데모(docs/demo/src/staff-sections.mjs · pages/staff/payrolls-detail.mjs)를 따른다.
 // 상태 · 사유 한글은 화면이 getEnum 으로 받아 label 로 넘긴다 — 여기는 색과 숫자 모양만 정한다.
 // node --test 가 이 파일을 직접 읽으므로 import 는 상대 경로 + .ts 로 쓴다.
-import { formatAmount, type PayslipItem, type PayslipListItem, type PayslipReviewReason, type PayslipStatus } from "../../lib/payslips.ts";
+import {
+  formatAmount,
+  isItemShown,
+  type PayslipDetail,
+  type PayslipItem,
+  type PayslipListItem,
+  type PayslipReviewReason,
+  type PayslipStatus,
+} from "../../lib/payslips.ts";
 import { sentText } from "../contracts/contract-list.ts";
 import type { Cell, CellStyle } from "../staff-members/staff-row.ts";
 
@@ -64,6 +72,28 @@ export function attendanceHref(p: { storeId: number; staffMemberId: number; staf
     fixTo: p.periodEndDate,
   });
   return `/attendance-records?${q.toString()}`;
+}
+
+/**
+ * 상세 「검토 사유」 줄 — api 가 준 사유 줄에, 저장된 공제 칸이 비었으면 「공제 미입력」 줄을 더한다(운영 정책 v221 PAY-06,
+ * 재영 2026-10-28). 공제 미입력은 사유 줄로 저장되지 않고 공제 칸으로 판정한다 — 목록의 검토 대기 사유와 같은 기준(작성 중 ·
+ * 검토 중, 보이는 지급 밖 칸 가운데 넣지 않은 것)이다. 저장한 값 기준이라 임시저장 전 고친 칸은 반영되지 않는다(금액 칸 아래
+ * 빨간 띠는 입력 중인 값을 따른다). 더한 줄의 id 는 0 이다(api 사유 id 는 1 부터).
+ */
+export function detailReviewReasons(
+  payslip: Pick<PayslipDetail, "status" | "isWithholdingApplied" | "reviewReasons" | "items">,
+): PayslipReviewReason[] {
+  // 공제 미입력은 저장된 사유 줄이 아니라 공제 칸으로만 판정한다 — 예전 데이터에 줄이 남아 있어도 두 번 보이지 않게 뺀다
+  const stored = payslip.reviewReasons.filter((r) => r.reviewReason !== "DEDUCTION_MISSING");
+  if (payslip.status !== "DRAFTING" && payslip.status !== "REVIEWING") return stored;
+  const blank = payslip.items.filter(
+    (i) => i.itemCategory !== "EARNING" && !i.isEntered && isItemShown(i, payslip.isWithholdingApplied),
+  );
+  if (!blank.length) return stored;
+  return [
+    ...stored,
+    { payslipReviewReasonId: 0, reviewReason: "DEDUCTION_MISSING", detail: blank.map((i) => i.itemName).join(", "), acknowledgedAt: null },
+  ];
 }
 
 /** 위쪽 경고 띠. 공제 미입력은 금액 칸 아래 빨간 띠가 따로 말하므로 뺀다. 이미 확인한 사유(확정 때 확인됨)도 뺀다. 띠가 없으면 null. */
