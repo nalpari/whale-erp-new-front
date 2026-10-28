@@ -97,6 +97,8 @@ function DetailBody({
   if (!panelOpen && confirm) setConfirm(null);
   const [failure, setFailure] = useState<{ message: string; detail?: string } | null>(null);
   const [busy, startBusy] = useTransition();
+  /** 이 상세에서 초기화 메일을 보냈다 — 로그인한 적이 있어도 하늘색 안내를 띄운다(등록 때와 같은 안내, 2026-10-28 사용자 지정) */
+  const [resetSent, setResetSent] = useState(false);
 
   const can = usePagePermission();
   const withdrawn = bp.accountStatus === "WITHDRAWN";
@@ -132,16 +134,10 @@ function DetailBody({
       const result = await resetBpMasterPasswordAction(bp.bpCodeId).catch(unknownResult("비밀번호 초기화"));
       setConfirm(null);
       if (!result.ok) return fail(result.status, result.message);
-      if (result.isMailSent) {
-        setFailure(null);
-        toast(`새 초기화 비밀번호를 ${bp.email ?? "계정 이메일"} 로 보냈습니다.`);
-      } else {
-        // 기존 비밀번호는 이미 막혔다 — 다시 초기화하면 새 값으로 다시 보낸다(S-PRRLMA)
-        setFailure({
-          message: "초기화는 됐지만 안내 메일을 보내지 못했습니다.",
-          detail: "기존 비밀번호는 이미 무효입니다. 다시 초기화하면 새 비밀번호로 메일을 다시 보냅니다.",
-        });
-      }
+      // 결과는 등록 때와 같은 안내로 — 성공은 하늘색, 메일 실패는 빨간 상자(액션이 refresh 해 isInitialPasswordUnsent 가 켜진다). 따로 띠를 세우지 않는다(2026-10-28 사용자 지정)
+      setFailure(null);
+      setResetSent(result.isMailSent);
+      if (result.isMailSent) toast("초기화되었습니다.");
     });
 
   const handleDelete = () => run(() => deleteBpMasterAction(bp.bpCodeId).catch(unknownResult("삭제")), onDeleted);
@@ -261,7 +257,7 @@ function DetailBody({
       {bp.accountStatus === "ACTIVE" && bp.isInitialPasswordUnsent && <WarnBand>{"초기화 비밀번호가 발송되지 않았습니다.\n비밀번호 [초기화] 버튼을 눌러 다시 발송해주세요."}</WarnBand>}
       {/* 메일이 나갔고 아직 한 번도 로그인하지 않은 사용 BP — 초기 비밀번호는 1시간만 유효해(api) 그 뒤 할 일을 함께 적는다. 첫 로그인하면 사라진다.
           미사용 → 사용으로 되돌린 BP(statusChangedAt 있음 — 상태를 바꿀 때만 찍힌다)는 그 사이 초기화 비밀번호가 만료돼 「발송했습니다」가 맞지 않아 띄우지 않는다(2026-10-28 사용자 지정) */}
-      {bp.accountStatus === "ACTIVE" && !bp.isInitialPasswordUnsent && !bp.lastLoginAt && !bp.statusChangedAt && (
+      {bp.accountStatus === "ACTIVE" && !bp.isInitialPasswordUnsent && (resetSent || (!bp.lastLoginAt && !bp.statusChangedAt)) && (
         <SuccessBand>{"초기화 비밀번호를 발송했습니다.\n1시간 내 미로그인 시 [초기화] 버튼으로 재발송해주세요."}</SuccessBand>
       )}
       {/* 미사용 · 탈퇴 안내는 빨간 안내 상자(WarnBand — 2026-10-28 사용자 지정, 점포 BP 탈퇴 · 미사용 안내와 같다). 미사용은 두 줄로 줄였다(같은 날 사용자 지정) */}
