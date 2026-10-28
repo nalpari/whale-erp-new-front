@@ -101,6 +101,9 @@ export async function resetPlatformAdminPasswordAction(id: number): Promise<Acti
     refresh();
     return { ok: true, ...result };
   } catch (error) {
+    // api 문구 「이메일이 없는 계정이라 보낼 곳이 없습니다」(409)는 화면 말투로 바꾼다 — 세 관리 화면 같다(2026-10-28 사용자 지정)
+    if (error instanceof ApiError && error.status === 409 && error.message.includes("이메일이 없는 계정"))
+      return { ok: false, status: 409, message: "해당 계정에는 등록된 이메일 주소가 없어 메일을 발송할 수 없습니다." };
     return failureOf(error, "비밀번호를 초기화");
   }
 }
