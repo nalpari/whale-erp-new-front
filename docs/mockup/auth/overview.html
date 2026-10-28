@@ -179,8 +179,8 @@
                   <li><span class="pol__t">로그인에 성공하면 계정 유형에 따라 접속 사이트를 나눈다 — BP·가맹 마스터·관리자는 <b>웨일ERP(BP) 홈</b>, 플랫폼 마스터·관리자는 <b>웨일ERP(플랫폼관리) 사이트</b>로 이동한다.</span><span class="pol__ref">F-DZVFIC</span></li>
                   <li><span class="pol__t">플랫폼관리 사이트에는 홈이 없다. 플랫폼 계정은 계정에 등록된 메뉴 가운데 조회 권한과 URL 이 있는 <b>첫 메뉴</b>(GNB 순서상 첫 화면)로 들어가고, 비밀번호 강제 변경·약관 동의를 마치기 전에는 넘어가지 않는다 (2026-10-28 변경 · manyfast 반영 대기).</span><span class="pol__ref">F-DZVFIC</span></li>
                   <li><span class="pol__t">식별자는 <b>아이디</b>다. 영문 또는 영문·숫자 4~20자이고 탈퇴·삭제한 계정의 아이디도 다시 쓸 수 없다.</span><span class="pol__ref">S-XJDKSI · PL-OCJOFP</span></li>
-                  <li><span class="pol__t">연속 5회 틀리면 5분 잠근다. 풀리는 길은 5분 경과와 임시 비밀번호 발급 둘뿐이고 운영자가 푸는 기능은 1차에 없다.</span><span class="pol__ref">F-DZVFIC</span></li>
-                  <li><span class="pol__t">틀린 경우와 탈퇴 계정은 같은 문구 하나로 답한다. 미사용 계정은 비밀번호까지 맞을 때만 이용 제한을 알린다.</span><span class="pol__ref">S-XJDKSI</span></li>
+                  <li><span class="pol__t">연속 5회 틀리면 5분 잠근다. 풀리는 길은 5분 경과 · 임시 비밀번호 발급 · 운영자의 비밀번호 초기화 셋이고, 잠금만 푸는 버튼은 1차에 없다.</span><span class="pol__ref">F-DZVFIC</span></li>
+                  <li><span class="pol__t">틀린 경우와 탈퇴 계정은 같은 문구 하나로 답한다. 미사용 계정은 비밀번호까지 맞을 때만 이용 제한을 알린다. 잠금은 있는 계정에만 걸리므로 5회 틀려 잠김 안내가 나오면 그 아이디가 있다는 것이 드러나는데, 이것은 받아들인다 (확정 2026-10-22, WHALEERP-392).</span><span class="pol__ref">S-XJDKSI</span></li>
                   <li><span class="pol__t">아이디 저장은 브라우저에만 둔다. 로그인 유지 선택은 없다.</span><span class="pol__ref">S-XJDKSI</span></li>
                   <li><span class="pol__t">접근 토큰 1시간, 갱신 토큰은 마지막 사용부터 1시간. 쓰는 동안은 끊기지 않는다.</span><span class="pol__ref">S-QCNVFC</span></li>
                   <li><span class="pol__t">갱신 토큰으로 세션을 연장할 때 계정 상태를 확인해 미사용·삭제·탈퇴 계정이면 거절한다. 비밀번호 초기화·미사용·삭제·탈퇴로 로그인 중인 세션을 바로 끊지는 않지만, 미사용·삭제·탈퇴 계정의 세션은 접근 토큰이 끝나는 최대 1시간 안에 끝난다. BP 마스터 탈퇴로 함께 탈퇴된 하위 계정(BP 관리자·가맹 마스터·가맹 관리자)도 같다 (확정 2026-10-07).</span><span class="pol__ref">S-QCNVFC</span></li>
