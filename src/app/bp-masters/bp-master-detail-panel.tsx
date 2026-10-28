@@ -175,10 +175,10 @@ function DetailBody({
     { label: "이메일", value: withdrawn ? gone : bp.email },
     {
       label: "비밀번호",
-      // 칸을 반으로 나눠 왼쪽 「[초기화] 초기 비밀번호 미발송」, 오른쪽 절반 자리에서 「강제변경 대상 · 대상아님」(2026-10-28 사용자 지정 — 잠시 하위 줄 「└ 강제변경」이었다).
+      // 칸을 4:6 으로 나눠 왼쪽 「[초기화] 초기 비밀번호 미발송」, 오른쪽 40% 자리에서 「강제변경 대상 · 대상아님」(2026-10-28 사용자 지정 — 잠시 하위 줄 「└ 강제변경」이었다).
       // 미사용 · 탈퇴 BP 는 초기화 버튼 · 미발송 표시를 숨긴다(플랫폼 관리자 상세와 같다, 2026-10-28 사용자 지정) — 화면에서만 숨긴다
       value: (
-        <span className="grid w-full grid-cols-2 items-center gap-[10px]">
+        <span className="grid w-full grid-cols-[2fr_3fr] items-center gap-[10px]">
           <span className="flex min-w-0 items-center gap-[10px]">
             {bp.accountStatus === "ACTIVE" && canUpdate && (
               <Button variant="soft" onClick={() => setConfirm("reset")} disabled={busy}>
