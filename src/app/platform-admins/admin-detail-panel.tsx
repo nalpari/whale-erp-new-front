@@ -224,7 +224,7 @@ function DetailBody({
       {/* 방금 한 동작의 실패는 머리 바로 아래, 다른 안내 상자보다 위에(2026-10-28 사용자 지정) */}
       {failure && <FailedBand message={failure} />}
       {admin.accountStatus === "ACTIVE" && admin.isInitialPasswordUnsent && <WarnBand>{"초기화 비밀번호가 발송되지 않았습니다.\n비밀번호 [초기화] 버튼을 눌러 다시 발송해주세요."}</WarnBand>}
-      {admin.accountStatus === "ACTIVE" && !admin.isInitialPasswordUnsent && (resetSent || !admin.lastLoginAt) && (
+      {admin.accountStatus === "ACTIVE" && !admin.isInitialPasswordUnsent && (resetSent || (!admin.lastLoginAt && !admin.statusChangedAt)) && (
         <SuccessBand>{"초기화 비밀번호를 발송했습니다.\n1시간 내 미로그인 시 [초기화] 버튼으로 재발송해주세요."}</SuccessBand>
       )}
       <DetailTable title="기본정보" rows={rows} />
