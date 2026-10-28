@@ -97,14 +97,15 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
       // 값 칸이 넘치면 잘려 도움말 상자는 최상위 레이어에 띄운다(floating)
       label: "가맹마스터 계정",
       value: (
+        // i 를 앞에, 가맹마스터 정보는 그 뒤에(2026-10-28 사용자 지정)
         <span className="flex min-w-0 items-center gap-[6px]">
+          <HelpTip text="가맹관리자 권한을 생성한 가맹마스터의 정보가 표시됩니다." floating />
           {role.manager && (
             <span className="truncate" title={[role.manager.loginId, role.manager.name].filter(Boolean).join(" · ")}>
               {role.manager.loginId}
               {role.manager.name && <span className="text-erp-label"> · {role.manager.name}</span>}
             </span>
           )}
-          <HelpTip text="가맹관리자 권한을 생성한 가맹마스터의 정보가 표시됩니다." floating />
         </span>
       ),
     },
