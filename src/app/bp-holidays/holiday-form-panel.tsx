@@ -125,7 +125,7 @@ export function HolidayFormPanel(props: Props) {
     return { ...read, name: next.name, description: next.description, storeIds: next.storeIds, excludedStoreIds: next.excludedStoreIds };
   };
 
-  /** 저장 — 칸 검사 → 겹침 확인(겹치면 묻는다) → 저장. force 면 겹침 확인을 건너뛴다(확인창의 [그래도 저장]). */
+  /** 저장 — 칸 검사 → 겹침 확인(겹치면 묻는다) → 저장. force 면 겹침 확인을 건너뛴다(확인창의 [저장]). */
   const handleSave = (force = false) => {
     const f = outgoing();
     const found = validateHolidayForm(f, today, { scheduleLocked });
@@ -334,7 +334,7 @@ export function HolidayFormPanel(props: Props) {
       <ConfirmDialog
         open={overlaps !== null}
         title="같은 날짜에 이미 휴일이 있습니다"
-        confirmLabel="그래도 저장"
+        confirmLabel="저장" // 「그래도 저장」은 어색해 「저장」(2026-10-28 사용자 지정)
         wide
         busy={saving}
         onConfirm={() => handleSave(true)}

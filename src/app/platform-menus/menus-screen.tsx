@@ -6,7 +6,7 @@ import { Badge, Button, ConfirmDialog, DataTable, PageBar, Tag, useToast, type C
 import { ServiceTabs } from "@/components/site/service-tabs";
 import { usePagePermission } from "@/components/site/session-gate";
 import { CARD, FailedBand } from "@/components/site/side-parts";
-import { createPlacement, descendantCountOf, findRow, flatten, placeLabel, type FlatRow, type Spot, type Verdict } from "@/lib/menu-tree";
+import { createPlacement, findRow, flatten, type FlatRow, type Spot, type Verdict } from "@/lib/menu-tree";
 import { MENU_CODE } from "@/lib/menus";
 import type { MenuNode, MenuService, MenuTree } from "@/lib/platform-menus";
 import { moveMenuAction } from "./actions";
@@ -48,7 +48,7 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
   const serviceCode = tree?.service.serviceCode ?? "";
   const [creating, setCreating] = useState(false);
   const [draftName, setDraftName] = useState("");
-  const [moveFailure, setMoveFailure] = useState<{ message: string; detail: string } | null>(null);
+  const [moveFailure, setMoveFailure] = useState<{ message: string; detail?: string } | null>(null);
   const [moving, startMoving] = useTransition();
   // 이 화면이 닫히는 옮기기 — 확인을 받는 동안 쥐고 있다
   const [pendingMove, setPendingMove] = useState<{ menuId: number; spot: Spot; verdict: Extract<Verdict, { kind: "ok" }>; via: "drag" | "key" } | null>(null);
@@ -79,14 +79,10 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
   const handleDrop = (menuId: number, spot: Spot, verdict: Verdict, via: "drag" | "key") => {
     const moved = findRow(nodes, menuId)?.node;
     if (!moved || verdict.kind === "noop") return;
-    if (verdict.kind === "cycle") return setMoveFailure({ message: "메뉴를 자기 자신이나 하위 메뉴 아래로 옮길 수 없습니다", detail: "옮기지 않았습니다 — 트리는 그대로입니다." });
-    if (verdict.kind === "depth") {
-      const parent = spot.parentMenuId === null ? null : findRow(nodes, spot.parentMenuId)?.node;
-      return setMoveFailure({
-        message: "메뉴는 최대 3단계까지만 둘 수 있습니다",
-        detail: `‘${moved.name}’ 메뉴를 ${parent ? `‘${parent.name}’ 아래` : "최상위"}에 놓으면 ${verdict.level}단계${verdict.deep > verdict.level ? `, 그 하위 메뉴가 ${verdict.deep}단계` : ""}가 됩니다. 옮기지 않았습니다.`,
-      });
-    }
+    // 한 줄로 — 「옮기지 않았습니다 …」는 같은 말을 되풀이해 뺐다. 단계와 상관없이 자기 · 자기 하위 아래에 놓을 때라 「상위」라고 쓰지 않는다(2026-10-28 사용자 지정)
+    if (verdict.kind === "cycle") return setMoveFailure({ message: "메뉴를 자기 하위 메뉴 아래로 옮길 수 없습니다." });
+    // 단계 초과도 한 줄로 — 어디에 놓으면 몇 단계가 되는지 · 「옮기지 않았습니다」는 길어 안 읽혀 뺐다(2026-10-28 사용자 지정)
+    if (verdict.kind === "depth") return setMoveFailure({ message: "메뉴는 최대 3단계까지만 만들 수 있습니다." });
     // 이 화면(MN000215)을 미사용 상위 아래로 옮기면 다음 로그인부터 메뉴 트리에서 빠져 화면으로는 되돌릴 수 없다 — 미사용으로 저장할 때처럼 확인받는다
     if (locksSelfByMove(nodes, moved, spot.parentMenuId)) return setPendingMove({ menuId, spot, verdict, via });
     saveMove(menuId, spot, verdict, via);
@@ -96,26 +92,27 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
     setPendingMove(null);
     const moved = findRow(nodes, menuId)?.node;
     if (!moved) return;
-    const where = `${placeLabel(nodes, spot.parentMenuId, verdict.index + 1)}(${verdict.level}단계)`;
-    const carried = descendantCountOf(moved);
     startMoving(async () => {
       const result = await moveMenuAction(menuId, { parentMenuId: spot.parentMenuId, index: verdict.index }).catch(unknownResult("메뉴 이동 저장"));
       if (!result.ok) {
         // 화면이 cycle · depth 를 미리 막으므로 api 의 400 · 409 는 이 트리가 낡았다는 뜻이다(남이 옮기거나 하위를 더함).
         // 그 사이 지워졌거나(404) 결과를 모를 때와 함께 최신 트리를 받는다 — 안 받으면 같은 이동이 새로고침 전까지 계속 거절된다
         const stale = result.status === undefined || result.status === 400 || result.status === 404 || result.status === 409;
-        setMoveFailure({
-          message: result.message,
-          detail:
-            result.status === undefined
-              ? `최신 트리를 다시 받았습니다. ‘${moved.name}’ 메뉴가 옮겨졌는지 확인해 주세요.`
-              : `‘${moved.name}’ 메뉴는 옮기기 전 자리 그대로입니다.${stale ? " 최신 트리를 다시 받았습니다." : ""}`,
-        });
+        // 그 사이 남이 트리를 바꿨으면(400 · 404 · 409) api 문장 대신 쉬운 말로(2026-10-28 사용자 지정 문구). 응답을 못 받으면 옮겨졌는지 모른다는 문구, 그 밖의 거절은 받은 문장 그대로
+        setMoveFailure(
+          result.status !== undefined && stale
+            ? { message: "다른 관리자가 메뉴 구성을 변경하여 저장하지 못했습니다.", detail: "변경된 내용을 확인한 후 다시 시도해 주세요." }
+            : result.status === undefined
+              ? // 응답을 못 받았다 — 옮겨졌는지 모른다(2026-10-28 사용자 지정 문구)
+                { message: "메뉴 이동 결과를 확인하지 못했습니다.", detail: "메뉴가 이동되었는지 확인한 후, 다시 시도해 주세요." }
+              : { message: result.message, detail: `‘${moved.name}’ 메뉴는 옮기기 전 자리 그대로입니다.` },
+        );
         if (stale) router.refresh();
         return;
       }
       setMoveFailure(null);
-      toast(`이동했습니다 — ${where}로 옮기고 순서를 다시 매겼습니다.${carried ? ` 하위 메뉴 ${carried}개가 함께 움직였습니다.` : ""}`);
+      // 결과는 트리에서 바로 보이고 옮긴 메뉴가 골라진 채 남아 자리 설명은 두지 않는다 — 문구가 길어 안 읽혔다(2026-10-28 사용자 지정)
+      toast("메뉴를 이동했습니다.");
       if (via === "key") focusAfterMove.current = menuId;
       // 옮긴 메뉴를 고른다(목업)
       if (menuId !== picked) router.push(hrefOf(serviceCode, menuId), { scroll: false });
@@ -160,6 +157,8 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
         const name = r.kind === "menu" ? r.row.node.name : draftName.trim() || "새 메뉴";
         return (
           <span style={{ paddingLeft: (depth - 1) * 18 }} className={r.kind === "menu" && r.row.node.status !== "ACTIVE" ? "text-erp-muted" : undefined}>
+            {/* 2단계부터 회색 「└ 」 — 권한별 메뉴설정 팝업과 같은 모양(2026-10-28 사용자 지정) */}
+            {depth > 1 && <span className="text-erp-label">└ </span>}
             {r.kind === "menu" ? (
               // 줄 누르기와 같은 고르기를 키보드로도 — 눌림은 줄(tr)의 onClick 으로 올라간다
               <button type="button" aria-pressed={r.row.node.menuId === picked && !creating} className="max-w-full truncate text-left">
@@ -168,7 +167,7 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
             ) : (
               <b className="font-semibold">{name}</b>
             )}
-            {r.kind === "menu" && r.row.node.isGroup && <span className="text-[13px] text-erp-label"> 묶음</span>}
+            {/* 하위가 있는 메뉴의 「묶음」 글자는 두지 않는다 — 들여쓰기 · 굵은 글씨로 이미 보인다(2026-10-28 사용자 지정) */}
             {r.kind === "draft" && <span className="text-[13px] text-erp-label"> 작성 중</span>}
           </span>
         );
@@ -194,9 +193,12 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
       cell: (r) =>
         r.kind === "menu" ? (
           // 상위가 미사용이면 자기 값(사용 · 미사용)은 그대로 보이고, 숨는 이유를 회색 꼬리표로 덧붙인다(2026-10-27 사용자 지정 — 안 A)
-          <span className="inline-flex items-center gap-[6px]">
-            <Badge tone={r.row.node.status === "ACTIVE" ? "on" : "off"}>{statusText(r.row.node.status)}</Badge>
-            {hiddenByParent.has(r.row.node.menuId) && <Tag>상위 미사용</Tag>}
+          // 배지는 늘 같은 자리(166px 묶음을 칸 가운데에 두고 트리 들여쓰기 한 칸(18px) 더 민 뒤, 그 왼쪽 56px 칸 가운데)에 두고 꼬리표는 그 오른쪽 — 꼬리표 유무로 배지가 좌우로 흔들려 읽기 어려웠다(2026-10-28 사용자 지정)
+          <span className="mx-auto grid w-[166px] grid-cols-[56px_1fr] pl-[18px] items-center gap-[6px]">
+            <span className="justify-self-center">
+              <Badge tone={r.row.node.status === "ACTIVE" ? "on" : "off"}>{statusText(r.row.node.status)}</Badge>
+            </span>
+            <span className="justify-self-start">{hiddenByParent.has(r.row.node.menuId) && <Tag>상위 미사용</Tag>}</span>
           </span>
         ) : (
           <span className="text-erp-muted">—</span>
@@ -248,14 +250,20 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
             </div>
             {moveFailure && <FailedBand message={moveFailure.message} detail={moveFailure.detail} />}
             {/* 머리 줄까지 고정하고 아래만 스크롤(DataTable scroll) — 칸이 남는 높이를 채우게 flex 묶음으로 둔다. CARD 의 [&>*]:shrink-0 를 이 칸만 푼다.
-                1단계 줄 바탕 · 머리 색은 권한별 메뉴설정 팝업과 같다(2026-10-26 사용자 지정) */}
-            <div {...drag.wrapProps} className="relative flex min-h-0 flex-1 shrink! flex-col">
+                머리 색은 권한별 메뉴설정 팝업과 같다(2026-10-26 사용자 지정). 1단계 줄 바탕은 두지 않고 굵은 글씨로만 가른다 — 고른 줄(current)
+                회색과 거의 같아 헷갈렸다(2026-10-28 사용자 지정 — 전엔 erp-thead-bg) */}
+            {/* 1단계 묶음 사이에 1px 진한 선(2px 는 무거웠다) — 묶음이 한눈에 갈라지게(2026-10-28 사용자 지정, 비교 페이지 3번). 공통 DataTable 은 줄 모양을 받지 않아
+                줄에 data-top 을 달고(rowProps) 감싸는 칸에서 칠한다. #c9d1de — 표 선(#e9edf5)보다 한 단계 진한 선, 이 표에만 쓰여 토큰이 없다 */}
+            <div
+              {...drag.wrapProps}
+              className="relative flex min-h-0 flex-1 shrink! flex-col [&_tbody_tr[data-top]:not(:first-child)>td]:border-t [&_tbody_tr[data-top]:not(:first-child)>td]:border-t-[#c9d1de]"
+            >
               <DataTable
                 columns={columns}
                 rows={rows}
                 rowKey={(r) => (r.kind === "menu" ? r.row.node.menuId : "draft")}
                 rowState={(r) =>
-                  r.kind === "draft" ? "added" : !creating && r.row.node.menuId === picked ? "current" : r.row.node.depth === 1 ? "group" : undefined
+                  r.kind === "draft" ? "added" : !creating && r.row.node.menuId === picked ? "current" : undefined
                 }
                 headVariant="subtle"
                 scroll
@@ -264,8 +272,9 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
                     ? {
                         ...(editable ? drag.rowProps(r.row.node) : {}),
                         onClick: () => handleRowClick(r.row.node.menuId),
+                        "data-top": r.row.node.depth === 1 ? "" : undefined,
                       }
-                    : {}
+                    : { "data-top": placement?.depth === 1 ? "" : undefined, onClick: undefined } // 새 1단계 메뉴 줄도 위에 묶음 선(onClick 은 data-* 만으로는 줄 속성 타입에 안 맞아 둔다)
                 }
                 empty="이 서비스에 등록된 메뉴가 없습니다."
               />
@@ -298,14 +307,18 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
           />
           <ConfirmDialog
             open={pendingMove !== null}
-            title="이 화면이 닫힙니다"
-            confirmLabel="옮겨 저장"
+            // 문구 · 버튼 이름은 사용자 지정(2026-10-28) — 메뉴 이름 · 코드는 넣지 않는다(바뀌면 문구도 고쳐야 해서)
+            title="미사용 메뉴 아래로 이동하시겠습니까?"
+            confirmLabel="이동 후 저장"
             busy={moving}
             onConfirm={() => pendingMove && saveMove(pendingMove.menuId, pendingMove.spot, pendingMove.verdict, pendingMove.via)}
             onCancel={() => setPendingMove(null)}
           >
+            {/* 「다.」만 다음 줄로 넘어가지 않게 「접근할 수 없습니다.」 앞에서 줄을 바꾼다(2026-10-28 사용자 지정) */}
             <p className="text-[14px] leading-[1.6]">
-              미사용 메뉴 아래로 옮기면 플랫폼 메뉴 관리({SELF_MENU_CODE})도 사용자 화면과 메뉴 권한에서 빠져, 다음 로그인부터 이 화면으로는 되돌릴 수 없습니다. 계속할까요?
+              이동 후에는 현재 화면이 사용자 메뉴에서 제외되어
+              <br />
+              접근할 수 없습니다.
             </p>
           </ConfirmDialog>
         </div>

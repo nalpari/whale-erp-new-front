@@ -1,11 +1,12 @@
 // BP 관리자 등록. 목업 docs/mockup/config/admins-new.html 의 기본 상태(입력 · BP 관리자 · 전체 점포)를 BP 마스터로 본 것.
 // 제목 줄의 [취소][등록]은 폼 아래 버튼 줄로 내렸다.
 // 목록(config/admins.html)에서 슬라이드 패널로 연다(BP 마스터 계정 관리와 같다) — 전체 화면은 그대로 두고 직접 들어와도 쓸 수 있게 둔다.
+// noRoleGroup 을 주면 고른 계정 역할(가맹 마스터)에 권한명이 하나도 없는 상태다(admins-new-no-role.mjs, 앱 admin-form-panel.tsx 와 같다, 2026-10-28).
 import * as ui from "../../ui.mjs";
 import * as c from "../../config-parts.mjs";
 import { erpHeader, link, STORES } from "../../site.mjs";
 
-export function adminNewBody(A, R, { panel = false } = {}) {
+export function adminNewBody(A, R, { panel = false, noRoleGroup = false } = {}) {
   // 패널(464px)에서는 두 칸 줄을 한 칸씩 세로로 쌓는다
   const row = panel ? (...cells) => cells.filter((x) => x !== c.blank).join("") : c.row;
 
@@ -29,11 +30,14 @@ export function adminNewBody(A, R, { panel = false } = {}) {
   const roleRow = [
     c.row(
       // 계정 역할은 130px 고정, 권한 그룹이 남는 폭(앱 admin-form-panel, 2026-10-27)
-      ui.field(c.req("계정 역할"), ui.select(["BP 관리자", "가맹 마스터"]), "w-[130px] shrink-0"),
-      ui.field(
-        c.req("권한명"),
-        ui.select(["운영 총괄 · BA000003", "인사 담당 · BA000004", "정산 조회 · BA000005", "고객응대 · BA000006", "점포 조회 전용 · BA000007"], { value: "고객응대 · BA000006" }),
-      ),
+      ui.field(c.req("계정 역할"), ui.select(["BP 관리자", "가맹 마스터"], { value: noRoleGroup ? "가맹 마스터" : "BP 관리자" }), "w-[130px] shrink-0"),
+      // 고른 역할에 권한명이 없으면 칸 아래 빨간 한 줄 + [이동](권한 그룹 관리로) — 위 띠 대신 이 칸 아래에 둔다(앱 admin-form-panel.tsx 와 같다, 2026-10-28 사용자 지정 문구)
+      noRoleGroup
+        ? `<div class="flex min-w-px flex-1 flex-col gap-[8px]"><span class="truncate text-[14px] font-medium text-erp-label">${c.req("권한명")}</span>${ui.select(["선택"], { "aria-label": "권한명" })}<span class="flex items-center gap-[10px]"><p role="alert" class="text-[13px] leading-[1.5] text-erp-off">선택할 수 있는 권한명이 없습니다. 먼저 권한명을 등록해주세요.</p>${ui.button("이동", { variant: "soft", href: link(R, "config/roles.html") })}</span></div>`
+        : ui.field(
+            c.req("권한명"),
+            ui.select(["운영 총괄 · BA000003", "인사 담당 · BA000004", "정산 조회 · BA000005", "고객응대 · BA000006", "점포 조회 전용 · BA000007"], { value: "고객응대 · BA000006" }),
+          ),
     ),
   ][0];
 
@@ -62,7 +66,9 @@ export function adminNewPanel(A, R) {
   return ui.slidePanel("admin-new-panel", "관리자 등록", ui.sectionHead("관리자 등록") + adminNewBody(A, R, { panel: true }));
 }
 
-export default ({ A, R }) => {
-  const body = ui.detailBody(ui.sectionHead("관리자 등록") + adminNewBody(A, R));
-  return { title: "관리자 등록", html: ui.erpFrame({ header: erpHeader(A, R), title: "BP 관리자 관리", body }) };
+export const render = ({ A, R }, { noRoleGroup = false } = {}) => {
+  const body = ui.detailBody(ui.sectionHead("관리자 등록") + adminNewBody(A, R, { noRoleGroup }));
+  return { title: noRoleGroup ? "관리자 등록 · 권한명 없음" : "관리자 등록", html: ui.erpFrame({ header: erpHeader(A, R), title: "BP 관리자 관리", body }) };
 };
+
+export default (ctx) => render(ctx);
