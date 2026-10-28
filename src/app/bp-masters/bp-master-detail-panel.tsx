@@ -207,8 +207,8 @@ function DetailBody({
     { label: "가입경로", value: bp.joinPath === "SIGNUP" ? "회원가입" : "플랫폼등록" },
     // 「첫 로그인 때 받음」은 아직 로그인하지 않은 BP 에만 붙인다
     { label: "약관동의", value: bp.termsAgreedAt ? "동의" : bp.lastLoginAt ? "미동의" : <>미동의 {muted("· 첫 로그인 때 받음")}</> },
-    // 값은 「대상」 · 「대상아님」(2026-10-28 사용자 지정 — 전엔 「비밀번호 변경 대상」). 라벨을 「비밀번호 강제변경」으로 늘리면 110px 칸에서 잘린다
-    { label: "강제변경", value: bp.isPasswordChangeRequired ? "대상" : "대상아님" },
+    // 값은 「대상」 · 「대상아님」(2026-10-28 사용자 지정 — 전엔 「비밀번호 변경 대상」). 라벨 「비밀번호강제변경」(사용자 지정) — 110px 칸에서 말줄임될 수 있다
+    { label: "비밀번호강제변경", value: bp.isPasswordChangeRequired ? "대상" : "대상아님" },
     { label: "최근 로그인", value: bp.lastLoginAt ? formatDateTime(bp.lastLoginAt) : "-" },
     { label: "등록", value: when(bp.createdAt, bp.createdByName ?? bp.loginId) },
     // api 의 최종수정 일시는 BP 정보(bp_codes.updated_at) 것이다 — 수정 저장 · 상태 변경 때 바뀌고, 비밀번호 초기화처럼 계정만 고친 것은 들어가지 않는다(BP-7).
