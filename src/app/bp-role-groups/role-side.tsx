@@ -1,6 +1,6 @@
 "use client";
 
-import { DetailTable, Tag, type DetailRow } from "@/components/common";
+import { DetailTable, HelpTip, Tag, type DetailRow } from "@/components/common";
 import { RoleDeleteDialog } from "@/components/role-groups/role-delete-dialog";
 import { RoleForm } from "@/components/role-groups/role-form";
 import { actorOf, CARD, FailedBand, reasonLabel, WarnBand } from "@/components/role-groups/role-parts";
@@ -93,15 +93,20 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
   const recordRows: DetailRow[] = [
     {
       // 가맹마스터 계정(api manager) — 가맹 관리자 그룹을 만든 가맹 마스터. BP 관리자 그룹은 없어서 「-」(S-LYKAEI). 줄은 늘 둔다.
-      // 도움말 i 는 라벨 옆(DetailRow help — 값 끝 「- i」는 어색했다, 2026-10-28 사용자 지정)
+      // 도움말 i 는 값 칸에 — 라벨 옆에 두면 라벨이 잘렸다. 가맹 관리자 그룹에만 값이 있고, 없으면 「-」 없이 i 만 둔다(2026-10-28 사용자 지정).
+      // 값 칸이 넘치면 잘려 도움말 상자는 최상위 레이어에 띄운다(floating)
       label: "가맹마스터 계정",
-      help: "가맹관리자 권한을 생성한 가맹마스터의 정보가 표시됩니다.",
-      value: role.manager ? (
-        <span className="truncate" title={[role.manager.loginId, role.manager.name].filter(Boolean).join(" · ")}>
-          {role.manager.loginId}
-          {role.manager.name && <span className="text-erp-label"> · {role.manager.name}</span>}
+      value: (
+        <span className="flex min-w-0 items-center gap-[6px]">
+          {role.manager && (
+            <span className="truncate" title={[role.manager.loginId, role.manager.name].filter(Boolean).join(" · ")}>
+              {role.manager.loginId}
+              {role.manager.name && <span className="text-erp-label"> · {role.manager.name}</span>}
+            </span>
+          )}
+          <HelpTip text="가맹관리자 권한을 생성한 가맹마스터의 정보가 표시됩니다." floating />
         </span>
-      ) : null, // 가맹 관리자 그룹에만 값이 있다 — 없으면 「-」 없이 비우고 라벨 옆 i 만 둔다(2026-10-28 사용자 지정)
+      ),
     },
     { label: "등록", value: when(role.createdAt, role.createdBy) },
     // 등록만 하고 고친 적 없으면 「-」(2026-10-27 사용자 요청)
