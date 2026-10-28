@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-28
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [홈·계정 진입](/home.md) · [직원 정보 관리 화면](/screens/staff-members.md) — 공통 로딩 `LoadingNotice` 의 모양을 딤 + 스피너에서 네모 파도 위로 뛰는 고래 그림(`WhaleLoader`, 노영주 님 제공 whale-loader(Whale ERP 로고 SVG))으로 바꿨다. 띄우고 내리는 로직은 그대로, 최소 표시 시간 없음. 큰 자리에만 쓰고 작은 영역(직원 상세 네 영역)과 상세 진입(직원 상세 `LoadGroup`)에는 쓰지 않고 최소 높이 92px 빈 자리만 둔다. SessionGate 의 로딩 안내(불러오는 중 · BP 이동 · 전체 점포로 여는 중)는 고래로 바꿨다(오류 안내는 그대로).
 * **Update**: main 병합(front poliwag, #164 mudkip 까지): okf 충돌은 양쪽 기록을 살렸다 — [Whale ERP Frontend](/whale-erp-front.md) 는 main 의 LoadGroup · loading · `send`/`actionFailure` 줄과 이 브랜치의 근로계약 두 줄.
 * **Update**: main 병합(front poliwag, main 최신까지): okf 충돌은 양쪽 기록을 살렸다(BP 휴일 겹침 확인 버튼 이름은 main, api 타입 설명은 이 브랜치).
 * **Fix**: api 타입을 gyarados 로 다시 뽑으며 front main 의 BP 마스터 탈퇴 타입(`withdrawal`, 아직 api main 에 없음)을 지워 tsc 가 깨진 것을 3-way 병합(`git merge-file`)으로 되살렸다.

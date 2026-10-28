@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보에 재입사로 이은 재직 이력 줄(WHALEERP-615)을, 그 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 오른쪽에 근무스케줄 · 출퇴근 현황(준비 중) · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다), 기본 정보 생년월일 줄에 [정정] 확인창(WHALEERP-602)을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation, birth-date]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-28T07:07:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-28T09:12:07Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -198,7 +198,7 @@ sources:
 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO. 근무스케줄 · 급여명세서 표의 열 이름 줄은 데모 `whiteHead` 대로 흰 바탕 · 600 먹색 글자(공통 `DataTable` `headVariant="plain"` —
 기본값은 그대로라 다른 화면은 바뀌지 않는다)이고, 표 아래 요약 줄은 데모 `foot` 처럼 모서리를 둥글리지 않는다.
 
-처음 들어올 때는 「직원 상세」 제목 줄 아래 본문 전체(기본 정보 · 비밀번호 초기화 · 네 영역)를 `LoadGroup` 이 딤 + 스피너 + 「로딩중입니다」(`LoadingNotice`)로 덮고, 근로계약 · 근무스케줄 · 급여명세서 · TO-DO 네 영역(`LoadGroupArea`)이 모두 온 뒤 한 번에 보인다(2026-10-28). 15초가 지나면 풀어 늦는 영역만 그 자리에 같은 딤 + 스피너(compact)를 보이고, 풀린 뒤 주를 바꾸면(`LoadGroupArea key={monday}`) 근무스케줄 영역만 딤 + 스피너(`LoadingNotice compact`, 최소 높이 92px — 이전 영역 로딩과 같아 주를 넘길 때 상자 높이가 출렁이지 않는다)를 보인다. 영역 실패는 지금처럼 영역 안 안내 · 다시 하기다.
+처음 들어올 때는 「직원 상세」 제목 줄 아래 본문 전체(기본 정보 · 비밀번호 초기화 · 네 영역)를 `LoadGroup` 이 빈 자리(`AREA_PENDING`, 상세 진입에는 고래 로딩을 쓰지 않는다)로 덮고, 근로계약 · 근무스케줄 · 급여명세서 · TO-DO 네 영역(`LoadGroupArea`)이 모두 온 뒤 한 번에 보인다(2026-10-28). 15초가 지나면 풀어 늦는 영역은 그 자리에 빈 자리(`AREA_PENDING`, 최소 높이 92px — 영역이 들어올 때 상자 높이가 크게 출렁이지 않는다)만 둔다. 작은 영역에는 고래 로딩을 쓰지 않는다. 주를 바꾸면(`LoadGroupArea key={monday}`) 근무스케줄 영역은 같은 빈 자리를 두지만, 주 넘김이 `startTransition` 안의 `router.replace` 라 새 화면이 올 때까지 이전 화면이 남아 보통 보이지 않는다. 영역 실패는 지금처럼 영역 안 안내 · 다시 하기다.
 
 **기본 정보**는 상세 응답(`GET /staff-members/:id`)으로 채운다. api #183 이 직무(`jobTitle`) · 입사일(`hiredDate`) · 생년월일(`birthDate`)을 더했다.
 
