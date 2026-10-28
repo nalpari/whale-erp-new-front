@@ -6,7 +6,7 @@ import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as c from "../../config-parts.mjs";
 import { erpHeader, link } from "../../site.mjs";
-import { recordCard, roleHead, sideHead, depthRows, menuScroll, menuSaveButton, revokeDialog, MENU_SAVE_SCRIPT, tagRows, newButton, editSaveButton, createdToast, band, ROLE_SCRIPT } from "../../role-side.mjs";
+import { recordCard, partialBox, roleHead, sideHead, depthRows, menuScroll, menuSaveButton, revokeDialog, MENU_SAVE_SCRIPT, tagRows, newButton, editSaveButton, createdToast, band, ROLE_SCRIPT } from "../../role-side.mjs";
 
 // [유형, 코드, 권한명, 설명, 수정일시, 수정자, 메뉴 수, 생성일시, 생성자, 가맹마스터 계정, 연결 사용자] — 목업 표본과 같다
 const GROUPS = [
@@ -69,13 +69,20 @@ const cell = (A, v, label, ro, top = false) =>
 const menuName = (lv, name) =>
   `<span style="padding-left:${(lv - 1) * 18}px">${lv > 1 ? '<span class="text-erp-label">└ </span>' : ""}${lv === 1 ? `<b class="font-semibold">${name}</b>` : name}</span>`;
 // 머리칸 체크박스는 칸 가운데(본문 체크박스와 같은 세로줄), 글자는 그 오른쪽(앱 role-menu-dialog.tsx 와 같다, 2026-10-26 사용자 지정)
-const headCheck = (A, t, ro) =>
-  `<span class="grid grid-cols-[1fr_auto_1fr] items-center gap-[6px]"><span></span><span class="inline-flex">${ui.checkbox(A, "", false, { "aria-label": `${t} 전체 선택`, disabled: ro })}</span><span class="justify-self-start whitespace-nowrap">${t}</span></span>`;
+// 일부만 켜졌으면 1단계 줄과 같은 하늘색 「–」, 모두 켜졌으면 켜짐(앱 role-menu-dialog 머리칸과 같다, 2026-10-27 사용자 지정)
+const headCheck = (A, t, ro, state) =>
+  `<span class="grid grid-cols-[1fr_auto_1fr] items-center gap-[6px]"><span></span><span class="inline-flex">${state === "mixed" ? partialBox(`${t} 전체 선택`) : ui.checkbox(A, "", state === "on", { "aria-label": `${t} 전체 선택`, disabled: ro })}</span><span class="justify-self-start whitespace-nowrap">${t}</span></span>`;
 function matrix(A, rows, ro) {
   const cols = [
     { header: "메뉴명", align: "left" },
     { header: "메뉴단계", width: "w-[80px]" },
-    ...["조회", "등록", "수정", "삭제"].map((t) => ({ header: headCheck(A, t, ro), width: "w-[100px]" })),
+    ...["조회", "등록", "수정", "삭제"].map((t, i) => {
+      // 잎 메뉴(다음 줄이 더 깊지 않은 줄)의 값으로 셈한다
+      const leaves = rows.filter((r, k) => !(rows[k + 1] && rows[k + 1][0] > r[0]));
+      const on = leaves.filter((r) => r[3 + i] === 1).length;
+      const state = leaves.length && on === leaves.length ? "on" : on > 0 ? "mixed" : "off";
+      return { header: headCheck(A, t, ro, state), width: "w-[100px]" };
+    }),
   ];
   const body = rows.map(([lv, name, , ...v]) => [
     menuName(lv, name),

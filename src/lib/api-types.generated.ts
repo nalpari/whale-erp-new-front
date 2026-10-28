@@ -452,6 +452,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/admin/me/withdraw-eligibility": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 회원 탈퇴 조건 조회(MY PAGE, S-JHQQNR). 탈퇴 버튼을 누르기 전에 보여줄 영향 범위 — BP명 · 함께 탈퇴될
+         *     하위 관리자 수 · 함께 강제 폐점될 점포 수 · 가로막는 진행 중 계약 여부. BP 마스터만 받는다 — 그 밖의
+         *     권한은 403, 계정이 지워졌으면 404. 조회만 하고 실제 탈퇴는 하지 않는다.
+         */
+        get: operations["AdminAuthController_getWithdrawEligibility"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/admin/me/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 회원 탈퇴 실행(MY PAGE, S-JHQQNR). BP 마스터가 현재 비밀번호와 사유를 보내면 본인 · 같은 BP 의 하위 관리자가
+         *     모두 탈퇴하고 점포는 모두 폐점된다. 진행 중인 근로계약이 있으면 막는다(조건 조회와 같은 기준). 비밀번호를
+         *     받는 경로라 내 비밀번호 변경과 같은 한도를 건다.
+         */
+        post: operations["AdminAuthController_withdraw"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/admin/me/email-availability": {
         parameters: {
             query?: never;
@@ -883,7 +925,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 그룹 목록 — 사용 중인 플랫폼고정 · 플랫폼제공 그룹(적용 여부와 관계없이), 표시 순서대로. 사용중지 그룹은 빠진다. */
+        /** 그룹 목록 — 사용 중인 플랫폼제공 그룹(적용 여부와 관계없이), 표시 순서대로. 플랫폼고정 · 사용중지 그룹은 items · total 에서 빠진다. */
         get: operations["BpCodeGroupsController_listGroups"];
         put?: never;
         post?: never;
@@ -900,7 +942,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 고른 그룹의 상세 코드. 플랫폼고정은 플랫폼 원본, 플랫폼제공은 이 BP 의 행(BP전용 포함). */
+        /** 고른 플랫폼제공 그룹의 상세 코드 — 이 BP 의 행(BP전용 포함). 플랫폼고정 · 사용중지 그룹은 404. */
         get: operations["BpCodeGroupsController_listItems"];
         /** 상세 코드 수정 — 이 BP 의 행 여러 개를 한 번에. 하나라도 막히면 아무것도 고치지 않는다. */
         put: operations["BpCodeGroupsController_updateItems"];
@@ -4419,7 +4461,7 @@ export interface components {
             loginId: string;
             /** @description 이름. */
             name: string;
-            /** @description 연락처 — 하이픈 없이 숫자 10~11자리. */
+            /** @description 연락처 — 하이픈 없이 숫자 9~12자리. */
             phone: string;
             /** @description 이메일. */
             email: string;
@@ -4458,7 +4500,7 @@ export interface components {
              */
             name: string;
             /**
-             * @description 연락처. 하이픈 없이 숫자 10~11자리.
+             * @description 연락처. 하이픈 없이 숫자 9~12자리.
              * @example 01012345678
              */
             phone: string;
@@ -4476,6 +4518,27 @@ export interface components {
             newPassword: string;
             /** @description 새 비밀번호 확인. */
             newPasswordConfirm: string;
+        };
+        WithdrawEligibilityResponseDto: {
+            /** @description BP 상호명. */
+            bpName: string;
+            /** @description 함께 탈퇴될 하위 관리자 수(BP 관리자 · 가맹마스터 · 가맹관리자) — 요청한 BP 마스터 자신은 빼고 센다. */
+            adminCount: number;
+            /** @description 함께 강제 폐점될 점포 수 — 이미 폐점한 점포는 빼고 센다. */
+            storeCount: number;
+            /** @description 진행 중인 근로계약(임시저장 · 발송 대기 · 서명 대기 · 수정 요청 · 체결 완료)이 있으면 true — 있으면 탈퇴를 막는다. */
+            hasInProgressContract: boolean;
+        };
+        CreateWithdrawalDto: {
+            /** @description 현재 비밀번호. */
+            currentPassword: string;
+            /**
+             * @description 탈퇴 사유 — 공통코드 WITHDRAW_REASON.
+             * @enum {string}
+             */
+            reasonCode: "WD_CLOSE" | "WD_SWITCH" | "WD_COST" | "WD_FEATURE" | "WD_HARD" | "WD_INPUT";
+            /** @description 탈퇴 사유 상세 — 직접입력(WD_INPUT)일 때 필수. 그 검사는 서비스에서 한다. */
+            reasonDetail?: string;
         };
         AdminProfileEmailAvailabilityResponseDto: {
             /** @description true 면 이 이메일로 저장할 수 있다. */
@@ -4525,7 +4588,7 @@ export interface components {
              */
             tradeName: string;
             /**
-             * @description 대표자 연락처. 하이픈 없이 숫자 9~11자리(02 지역번호 포함). 비워 둘 수 있다.
+             * @description 대표자 연락처. 하이픈 없이 숫자 9~12자리(02 지역번호 · 050X 평생번호 포함). 비워 둘 수 있다.
              * @example 01012345678
              */
             bizCeoPhone?: string;
@@ -4626,7 +4689,7 @@ export interface components {
             password: string;
             /** @description 한글 또는 영문 2~20자 */
             name: string;
-            /** @description 숫자만 10~11자리. 화면의 세 칸을 이어 붙인 값이다 */
+            /** @description 숫자만 9~12자리. 화면의 세 칸을 이어 붙인 값이다 */
             phone: string;
             /**
              * Format: email
@@ -5013,7 +5076,8 @@ export interface components {
              */
             name: string;
             /**
-             * @description 휴대전화. 하이픈 없이 숫자 10~11자리. 중복 검사는 하지 않는다.
+             * @description 휴대전화. 하이픈 없이 숫자 9~12자리 — 화면 이름은 휴대전화지만 1팀 연락처 범위(02 지역번호 9자리 · 050X
+             *     평생번호 12자리)를 그대로 받는다. 중복 검사는 하지 않는다.
              * @example 01012345678
              */
             phone: string;
@@ -5046,7 +5110,8 @@ export interface components {
              */
             name: string;
             /**
-             * @description 휴대전화. 하이픈 없이 숫자 10~11자리. 중복 검사는 하지 않는다.
+             * @description 휴대전화. 하이픈 없이 숫자 9~12자리 — 화면 이름은 휴대전화지만 1팀 연락처 범위(02 지역번호 9자리 · 050X
+             *     평생번호 12자리)를 그대로 받는다. 중복 검사는 하지 않는다.
              * @example 01012345678
              */
             phone: string;
@@ -5073,10 +5138,11 @@ export interface components {
         };
         BpCodeGroupResponseDto: {
             /**
-             * @description 관리 주체. 그룹 단계에는 BP전용이 없다 — 플랫폼고정은 조회만, 플랫폼제공은 상세 코드를 고치고 더한다.
+             * @description 관리 주체 — 늘 플랫폼제공이다. 그룹 단계에는 BP전용이 없고, 플랫폼고정 그룹은 BP 화면에 보이지 않는다(목록 ·
+             *     total 에서 빠진다, 2026-10-27 사용자 결정).
              * @enum {string}
              */
-            manageOwnerCode: "PLATFORM_FIXED" | "PLATFORM_PROVIDED";
+            manageOwnerCode: "PLATFORM_PROVIDED";
             /** @description 사용 상태(플랫폼이 정한다). BP 화면에는 사용 중인 그룹만 나오므로 늘 사용이다 — 사용중지 그룹은 목록에서 빠진다. */
             status: components["schemas"]["UseStatus"];
             /**
@@ -5098,10 +5164,10 @@ export interface components {
             /** @description 사용 상태. */
             status: components["schemas"]["UseStatus"];
             /**
-             * @description 관리 주체 — 플랫폼이 등록한 코드는 그룹의 관리 주체, 이 BP 가 더한 코드는 BP전용.
+             * @description 관리 주체 — 플랫폼이 등록해 복사된 코드는 플랫폼제공, 이 BP 가 더하거나 되살린 코드는 BP전용.
              * @enum {string}
              */
-            manageOwnerCode: "PLATFORM_FIXED" | "PLATFORM_PROVIDED" | "BP_ONLY";
+            manageOwnerCode: "PLATFORM_PROVIDED" | "BP_ONLY";
             /**
              * @description 상세 코드. 등록 뒤 바뀌지 않는다.
              * @example FULL
@@ -5116,7 +5182,7 @@ export interface components {
             sortOrder: number;
             /**
              * @description 플랫폼 원본이 사용중지인가(안내용). BP전용은 늘 거짓. 플랫폼제공 그룹에서 BP 는 이 값과 관계없이 사용 상태를
-             *     자유롭게 바꾼다(2026-10-22 결정). 플랫폼고정 그룹은 모든 칸이 읽기 전용이다.
+             *     자유롭게 바꾼다(2026-10-22 결정).
              */
             isPlatformInactive: boolean;
         };
@@ -5256,7 +5322,7 @@ export interface components {
              */
             name: string;
             /**
-             * @description 연락처. 하이픈 없이 숫자 10~11자리.
+             * @description 연락처. 하이픈 없이 숫자 9~12자리.
              * @example 01012345678
              */
             phone: string;
@@ -5298,7 +5364,7 @@ export interface components {
              */
             name: string;
             /**
-             * @description 연락처. 하이픈 없이 숫자 10~11자리.
+             * @description 연락처. 하이픈 없이 숫자 9~12자리.
              * @example 01012345678
              */
             phone: string;
@@ -6254,8 +6320,23 @@ export interface components {
         };
         /** @enum {string} */
         ContractStatus: "DRAFT" | "PENDING_SEND" | "PENDING_SIGNATURE" | "CORRECTION_REQUESTED" | "SIGNED" | "REJECTED" | "EXPIRED" | "ENDED";
+        /** @enum {string} */
+        Weekday: "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN";
+        ContractDetailWorkDayDto: {
+            weekday: components["schemas"]["Weekday"];
+            breakStartTime: string | null;
+            breakEndTime: string | null;
+            startTime: string;
+            endTime: string;
+        };
         StaffMemberContractDto: {
             status: components["schemas"]["ContractStatus"] | null;
+            /**
+             * @description 근무 요일 — 월→일, 시각 HH:mm. 근로계약은 자정을 넘지 않는다(contract_work_days CHECK). 없으면 빈 배열.
+             *     null 은 「근로계약 조회 권한 없음」 — 근무 시간 · 근무요일은 근로계약 조항에서 나온 값이라 근로계약 관리 메뉴 조회
+             *     권한이 없는 관리자에게는 주지 않는다(재영 결정 2026-10-27)
+             */
+            workDays: components["schemas"]["ContractDetailWorkDayDto"][] | null;
             contractId: number;
             /** Format: date-time */
             signDeadlineAt: string | null;
@@ -6978,12 +7059,6 @@ export interface components {
          * @enum {string}
          */
         Gender: "MALE" | "FEMALE";
-        /**
-         * @description 주휴일 — 근무하지 않는 요일 하나(노무사 확인 2026-10-14). 주 소정근로시간이 15시간 이상이면 넣어야 하고,
-         *     15시간 미만이면 주휴가 없어 비운다(contracts.service checkWeeklyHoliday).
-         * @enum {string}
-         */
-        Weekday: "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN";
         ContractWorkDayDto: {
             weekday: components["schemas"]["Weekday"];
             /** @description 시업 HH:mm */
@@ -7070,7 +7145,7 @@ export interface components {
             isTemporarySave?: boolean;
             /**
              * @description 재계약의 직전 계약(WHALEERP-156) — 저장(POST)에서만 본다. 체결 완료이거나 체결 뒤 종료된 같은 근무지 · 같은 번호의
-             *     계약이어야 하고, 이미 살아 있는(진행 중이거나 체결을 거친) 재계약이 있으면 409 다. 그 직원이 재직 중이면(퇴직 · 퇴직 예정이
+             *     계약이어야 하고, 이미 체결을 거친 재계약이 있으면 409 다(진행 중 재계약은 같은 점포 진행 중 계약처럼 대체를 묻는다). 그 직원이 재직 중이면(퇴직 · 퇴직 예정이
              *     아니면) 연장이라 같은 직원 레코드에 새 계약을 붙인다 — 가입한 재직 직원이어도 막지 않는다. 퇴직한 직원이면 재입사라 지금처럼
              *     새 레코드를 만든다(가입한 직원이 퇴직 예정이면 아직 재직이라 409 — 퇴직 뒤에). 앞 계약은 새 계약이 체결 완료이고 그 시작일이
              *     되면 하루 배치가 종료로 바꾼다(2026-10-26 김민식). 고르지 않아도 이 점포에 같은 번호로 가입한 재직 직원이 있으면 그 사람의
@@ -7108,13 +7183,6 @@ export interface components {
             draftAction: components["schemas"]["ContractDraftAction"] | null;
             contractId: number;
             staffMemberId: number;
-        };
-        ContractDetailWorkDayDto: {
-            weekday: components["schemas"]["Weekday"];
-            breakStartTime: string | null;
-            breakEndTime: string | null;
-            startTime: string;
-            endTime: string;
         };
         ContractStatusHistoryDto: {
             /** @description 처음 만든 줄은 null */
@@ -7725,7 +7793,7 @@ export interface components {
         StoreBusinessInputDto: {
             /** @description 상호명 — 국세청이 돌려주지 않아 직접 넣는다. 50자. */
             tradeName?: string | null;
-            /** @description 대표자 연락처 — 숫자 10~11자리 */
+            /** @description 대표자 연락처 — 숫자 9~12자리(점포 연락처와 같다) */
             ceoPhone?: string | null;
             /** @description 사업자 우편번호 — 숫자 5자리 */
             zipCode?: string | null;
@@ -9352,7 +9420,8 @@ export interface components {
         };
         InvitationCheckResponseDto: {
             /**
-             * @description 고용 형태 — 정직원 · 파트타이머
+             * @description 고용 형태 — 정직원 · 파트타이머. 함께 온 계약(발송 대기)의 값이고, 계약 칸이 비었으면 직원 레코드 값이다(직원 레코드는
+             *     체결을 거친 계약이 시작할 때 옮긴다)
              * @enum {string}
              */
             employmentType: "FULL_TIME" | "PART_TIME";
@@ -9614,7 +9683,23 @@ export interface components {
             dateCount: number;
             stores: components["schemas"]["BpHolidayOverlapStoreResponseDto"][];
         };
+        /**
+         * @description 오늘(한국 날짜) 기준 이 기간의 상태 — UPCOMING 적용 예정 · ACTIVE 적용 중 · ENDED 빠짐. 휴일 자체의 끝도 반영해
+         *     강제 종료 · 끝난 휴일은 열린 기간도 ENDED, 시작 전 휴일의 기간은 UPCOMING 이다. 수정 양식의 「지금 열린 점포」는
+         *     `effectiveEndDate === null && periodState !== 'ENDED'` 인 줄이다.
+         * @enum {string}
+         */
+        BpHolidayPeriodState: "UPCOMING" | "ACTIVE" | "ENDED";
         BpHolidayStoreResponseDto: {
+            /**
+             * @description 오늘(한국 날짜) 기준 이 기간의 상태 — UPCOMING 적용 예정 · ACTIVE 적용 중 · ENDED 빠짐. 휴일 자체의 끝도 반영해
+             *     강제 종료 · 끝난 휴일은 열린 기간도 ENDED, 시작 전 휴일의 기간은 UPCOMING 이다. 수정 양식의 「지금 열린 점포」는
+             *     `effectiveEndDate === null && periodState !== 'ENDED'` 인 줄이다.
+             * @example ACTIVE
+             */
+            periodState: components["schemas"]["BpHolidayPeriodState"];
+            /** @description 기간 행 ID(holiday_store_mapping_id · holiday_excluded_store_id) — 같은 점포가 기간마다 한 줄이라 화면 key 로 쓴다. */
+            periodId: number;
             storeId: number;
             /** @example ST000003 */
             storeCode: string;
@@ -9634,6 +9719,11 @@ export interface components {
              * @example 2026-09-21
              */
             effectiveStartDate: string;
+            /**
+             * @description 이 기간의 종료일(점포를 뺀 날의 전날). 열린 기간이면 null — 휴일 자체가 끝났는지는 periodState 로 본다.
+             * @example 2026-10-25
+             */
+            effectiveEndDate: string | null;
             /** @description 이 사용자가 맡은 점포인가 — 일부 점포 사용자는 맡은 점포만 빼거나 더한다. */
             isManaged: boolean;
         };
@@ -9657,7 +9747,7 @@ export interface components {
              * @enum {string}
              */
             state: "ENDED" | "UPCOMING" | "ONGOING";
-            /** @description 특정 점포면 대상 점포, 전체 점포면 예외 점포(지금 열린 기간). */
+            /** @description 특정 점포면 대상 점포, 전체 점포면 예외 점포 — 지우지 않은 모든 기간(닫힌 기간 포함), 기간마다 한 줄. */
             stores: components["schemas"]["BpHolidayStoreResponseDto"][];
             /** @description 고른 날짜(없으면 오늘)에 이 휴일이 적용되는 점포 수. */
             appliedStoreCount: number;
@@ -9820,10 +9910,11 @@ export interface components {
             updatedAt: string;
         };
         HomeStaffCardDto: {
+            /** @description 총수 — 본사 역할에게도 가림 없이 센다(점포별 숫자, 운영 정책 ATT-30) */
             total: number;
-            /** @description 정직원 */
+            /** @description 정직원. 본사 역할에게 가려지는 점포(직영이 아닌 점포)는 본사 제공 동의한 직원만 — 그래서 정직원 + 파트타이머가 총수보다 작을 수 있다 */
             fullTime: number;
-            /** @description 파트타이머 */
+            /** @description 파트타이머. 정직원과 같은 기준 */
             partTime: number;
         };
         HomeStoreCardDto: {
@@ -9832,11 +9923,14 @@ export interface components {
             franchise: number;
         };
         HomeAttendanceCardDto: {
-            /** @description 근무 예정 — 오늘 근무스케줄이 있는 재직 직원 수 */
+            /** @description 근무 예정 — 오늘 근무스케줄이 있는 재직 직원 수. 근무스케줄 화면처럼 본사 역할에게도 가림 없이 센다 */
             scheduled: number;
-            /** @description 출근 — 오늘 출근 기록이 있는 직원 수 */
+            /** @description 출근 — 오늘 출근 기록이 있는 직원 수. 본사 역할에게 가려지는 점포(직영이 아닌 점포)는 본사 제공 동의한 직원만(운영 정책 ATT-30 v217) */
             checkedIn: number;
-            /** @description 미출근 — 근무 예정인데 출근 기록이 없는 수 */
+            /**
+             * @description 미출근 — 근무 예정인데 그날 출퇴근 기록이 하나도 없고 첫 근무 시작 시각이 지난 수. 출퇴근 현황의 미출근과 같다(운영 정책
+             *     ATT-34) — 시작 시각 정각은 아직 예정, 출근 없는 퇴근만 있으면 출근 미등록이라 들지 않는다. 출근과 같은 기준으로 가린다
+             */
             notCheckedIn: number;
         };
         HomeInquiryCardDto: {
@@ -9848,7 +9942,7 @@ export interface components {
         HomeCardsDto: {
             /** @description 직원 정보 관리 조회 권한 */
             staff: components["schemas"]["HomeStaffCardDto"] | null;
-            /** @description 미체결 계약(발송 대기 + 서명 대기 + 수정 요청). 근로계약 관리 조회 권한 */
+            /** @description 미체결 계약(발송 대기 + 서명 대기 + 수정 요청). 본사 역할에게 가려지는 점포는 동의한 직원의 계약만. 근로계약 관리 조회 권한 */
             unsignedContractCount: number | null;
             stores: components["schemas"]["HomeStoreCardDto"];
             /** @description 출퇴근 현황 · 근무스케줄 관리 조회 권한 둘 다 */
@@ -9863,9 +9957,9 @@ export interface components {
             storeTypeCode: string;
             staffCount: number | null;
             unsignedContractCount: number | null;
-            /** @description 오늘 출근 */
+            /** @description 오늘 출근 — 카드의 checkedIn 과 같은 기준(본사 역할에게 가려지는 점포는 동의한 직원만) */
             checkedInCount: number | null;
-            /** @description 오늘 근무 예정 */
+            /** @description 오늘 근무 예정 — 가림 없이 */
             scheduledCount: number | null;
             /** @description 미조치 — 서명 대기 + 근로계약 수정 요청 + 소속 확인 거절 + 긴급 TO-DO 미완료. 볼 수 있는 영역의 건수만 더한다 */
             pendingActionCount: number;
@@ -9900,7 +9994,7 @@ export interface components {
             endDate: string;
         };
         /**
-         * @description 계약 갱신 예정 · 근로계약 서명 대기 · 근로계약 수정 요청 · 소속 확인 거절 · 문의 답변완료(최근 7일) · 긴급 TO-DO 미완료
+         * @description 계약 갱신 예정 · 근로계약 서명 대기 · 근로계약 수정 요청 · 소속 확인 거절 · 문의 답변완료(마지막 답변이 최근 7일 안) · 긴급 TO-DO 미완료
          * @enum {string}
          */
         HomePendingType: "CONTRACT_RENEWAL" | "CONTRACT_PENDING_SIGNATURE" | "CONTRACT_CORRECTION_REQUESTED" | "AFFILIATION_REJECTED" | "INQUIRY_ANSWERED" | "URGENT_TODO";
@@ -9911,7 +10005,7 @@ export interface components {
             status: string[];
         };
         HomePendingItemDto: {
-            /** @description 계약 갱신 예정 · 근로계약 서명 대기 · 근로계약 수정 요청 · 소속 확인 거절 · 문의 답변완료(최근 7일) · 긴급 TO-DO 미완료 */
+            /** @description 계약 갱신 예정 · 근로계약 서명 대기 · 근로계약 수정 요청 · 소속 확인 거절 · 문의 답변완료(마지막 답변이 최근 7일 안) · 긴급 TO-DO 미완료 */
             type: components["schemas"]["HomePendingType"];
             count: number;
             /** @description 대표 이름 — 가장 오래 기다린 것의 직원 이름(문의 · TO-DO 는 제목). 가려지는 직원이면 null */
@@ -9919,7 +10013,7 @@ export interface components {
             isFirstNameMasked: boolean;
             /** @description 대표 말고 나머지 건수(「외 N명」) */
             othersCount: number;
-            /** @description 가장 오래 기다린 일수(한국 날짜) — 서명 대기는 발송 뒤, 수정 요청은 요청 뒤, 소속 확인 거절은 거절 뒤, 문의는 답변 뒤, TO-DO 는 등록 뒤. 갱신 예정은 null */
+            /** @description 가장 오래 기다린 일수(한국 날짜) — 서명 대기는 발송 뒤, 수정 요청은 요청 뒤, 소속 확인 거절은 거절 뒤, 문의는 마지막 답변 뒤, TO-DO 는 등록 뒤. 갱신 예정은 null */
             waitingDays: number | null;
             filter: components["schemas"]["HomePendingFilterDto"];
         };
@@ -10607,6 +10701,81 @@ export interface operations {
             };
             /** @description 현재 비밀번호 불일치 · 비밀번호 정책 위반 · 새 비밀번호가 현재와 같음 · 확인 불일치 */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminAuthController_getWithdrawEligibility: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WithdrawEligibilityResponseDto"];
+                };
+            };
+            /** @description BP 마스터가 아님 · 플랫폼 BP */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 관리자 계정을 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminAuthController_withdraw: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateWithdrawalDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 현재 비밀번호 불일치 · 직접입력 사유 상세 누락 · 진행 중인 근로계약 있음 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description BP 마스터가 아님 · 플랫폼 BP */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 관리자 계정을 찾을 수 없음 */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -11839,15 +12008,12 @@ export interface operations {
     BpCodeGroupsController_listGroups: {
         parameters: {
             query: {
+                /** @description 관리 주체. BP 공통코드 관리에는 플랫폼제공 그룹만 보이므로 `PLATFORM_PROVIDED` 만 받는다(다른 값은 400). 주지 않으면 플랫폼제공 전체. */
+                manageOwnerCodes?: "PLATFORM_PROVIDED"[];
                 /** @description 그룹 코드에 들어 있으면 나온다(대소문자 무시). */
                 groupCode?: string;
                 /** @description 그룹명에 들어 있으면 나온다. */
                 groupName?: string;
-                /**
-                 * @description 관리 주체. 여러 개는 `manageOwnerCodes=PLATFORM_FIXED&manageOwnerCodes=PLATFORM_PROVIDED` 또는 쉼표로.
-                 *     주지 않으면 둘 다(플랫폼고정 · 플랫폼제공).
-                 */
-                manageOwnerCodes?: ("PLATFORM_FIXED" | "PLATFORM_PROVIDED")[];
                 /** @description 쪽 번호. 1부터, 최대 10,000,000 — 건너뛸 행 수가 integer 범위를 넘지 않게. */
                 page: number;
                 /** @description 한 쪽 건수. 기본 20, 최대 200. */
@@ -11884,7 +12050,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 플랫폼 사용자의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) — `:groupCode` 경로는 그룹 404(없음 · 지움 · 사용중지)도 있다 */
+            /** @description 플랫폼 사용자의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) — `:groupCode` 경로는 그룹 404(없음 · 지움 · 사용중지 · 플랫폼고정 — BP 화면에 보이지 않는 그룹)도 있다 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -11929,7 +12095,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 플랫폼 사용자의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) — `:groupCode` 경로는 그룹 404(없음 · 지움 · 사용중지)도 있다 */
+            /** @description 플랫폼 사용자의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) — `:groupCode` 경로는 그룹 404(없음 · 지움 · 사용중지 · 플랫폼고정 — BP 화면에 보이지 않는 그룹)도 있다 */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -11976,14 +12142,14 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 대상 BP(가드) · 그룹(없음 · 지움 · 사용중지) 404, 그리고 이 BP 에 없는 상세 코드(플랫폼 원본에만 있는 코드 포함) */
+            /** @description 대상 BP(가드) · 그룹(없음 · 지움 · 사용중지 · 플랫폼고정) 404, 그리고 이 BP 에 없는 상세 코드(플랫폼 원본에만 있는 코드 포함) */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 플랫폼고정 그룹 · 한 요청에 같은 코드가 두 번 · 확인 뒤 다른 관리자가 먼저 지운 코드(「다른 관리자가 먼저 지운…저장해 주세요」) */
+            /** @description 한 요청에 같은 코드가 두 번 · 확인 뒤 다른 관리자가 먼저 지운 코드(「다른 관리자가 먼저 지운…저장해 주세요」) */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -12030,14 +12196,14 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 플랫폼 사용자의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) — `:groupCode` 경로는 그룹 404(없음 · 지움 · 사용중지)도 있다 */
+            /** @description 플랫폼 사용자의 X-Bp-Code-Id 가 없는 · 지운 · 플랫폼 BP 이거나 형식이 틀림(가드) — `:groupCode` 경로는 그룹 404(없음 · 지움 · 사용중지 · 플랫폼고정 — BP 화면에 보이지 않는 그룹)도 있다 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 플랫폼고정 그룹 · 같은 그룹의 살아 있는 플랫폼 원본(「플랫폼이 등록한…」)이나 이 BP 의 살아 있는 행(「이미 있는…」)과 겹친 코드 · 요청 안에서 겹친 코드 · 확인 뒤 다른 관리자가 같은 코드를 먼저 등록하거나 되살림 — 이 BP 의 지운 행과 같은 코드는 BP전용으로 되살린다 */
+            /** @description 같은 그룹의 살아 있는 플랫폼 원본(「플랫폼이 등록한…」)이나 이 BP 의 살아 있는 행(「이미 있는…」)과 겹친 코드 · 요청 안에서 겹친 코드 · 확인 뒤 다른 관리자가 같은 코드를 먼저 등록하거나 되살림 — 이 BP 의 지운 행과 같은 코드는 BP전용으로 되살린다 */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -12084,14 +12250,14 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description 대상 BP(가드) · 그룹(없음 · 지움 · 사용중지) 404, 그리고 이 BP 에 없는 상세 코드 */
+            /** @description 대상 BP(가드) · 그룹(없음 · 지움 · 사용중지 · 플랫폼고정) 404, 그리고 이 BP 에 없는 상세 코드 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description 플랫폼고정 그룹 · 한 요청에 같은 코드가 두 번 · 확인 뒤 다른 관리자가 먼저 지움 */
+            /** @description 한 요청에 같은 코드가 두 번 · 확인 뒤 다른 관리자가 먼저 지움 */
             409: {
                 headers: {
                     [name: string]: unknown;
