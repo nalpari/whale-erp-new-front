@@ -24,4 +24,6 @@ export { StoreSelect } from "./store-select";
 export { ScopeSelect, type ScopeSelectOption, type ScopeSelectSection } from "./scope-select";
 export { UserPop, type UserPopItem } from "./user-pop";
 export { PageBar } from "./page-bar";
+export { useAction } from "./action-overlay";
+export { LoadGroup, LoadGroupArea, LoadingNotice } from "./load-group";
 export { PanelBackdrop, SlidePanel, useBackdropActive } from "./slide-panel";
