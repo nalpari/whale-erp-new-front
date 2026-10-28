@@ -29,10 +29,12 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
 
   // 확인 칸이 새 비밀번호와 다르면 바로 알린다 — 회원가입과 같은 문구(validators.ts validatePasswordConfirm, 2026-10-28 사용자 지정)
   const mismatch = confirm !== "" && confirm !== password;
+  // 두 칸을 다 채워야 [변경]이 켜진다(2026-10-28 사용자 지정)
+  const filled = password !== "" && confirm !== "";
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    if (!agreed || mismatch) return;
+    if (!agreed || mismatch || !filled) return;
     startTransition(async () => {
       const r = await changeForcedPassword({
         newPassword: password,
@@ -127,7 +129,7 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
           <Button variant="off" onClick={() => signOut(logout)}>
             로그아웃
           </Button>
-          <Button type="submit" disabled={pending || !agreed || mismatch}>
+          <Button type="submit" disabled={pending || !agreed || mismatch || !filled}>
             {pending ? "변경 중" : "변경"}
           </Button>
         </div>
