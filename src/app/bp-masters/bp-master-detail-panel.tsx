@@ -17,7 +17,7 @@ import { HistoryButton } from "./history-dialog";
 import { WithdrawalButton } from "./withdrawal-dialog";
 
 // BP 마스터 계정 상세(S-GZDODB · 초기화 S-PRRLMA). 모두 읽기 전용이고, 기본정보 · 사업자정보를 나눠 보인다.
-// 버튼 자리는 플랫폼 관리자 상세와 같다(BP-6) — [BP 상태 변경]은 기본정보 제목 줄, 비밀번호 초기화는 비밀번호 줄의 버튼(수정 권한),
+// 버튼 자리는 플랫폼 관리자 상세와 같다(BP-6) — [BP상태변경]은 기본정보 표 맨 위 「계정상태」 줄, 비밀번호 초기화는 비밀번호 줄의 버튼(수정 권한),
 // 하단은 [닫기] … [삭제][수정][변경 이력]. 탈퇴 BP 는 조회만 된다(상태 변경 · 초기화 · 삭제 · 수정 · 변경 이력 없음, 탈퇴 사유는 [사유 보기]).
 // 화면은 미리 숨기거나 흐리게만 한다 — 막는 것은 api 다.
 
@@ -145,7 +145,7 @@ function DetailBody({
 
   const muted = (text: string) => <span className="text-erp-muted">{text}</span>;
   const gone = muted(WITHDRAWN_TEXT);
-  // 미인증 BP 는 진위확인으로 채워지는 값(사업자번호 · 대표자명 · 개업일자 · 최종 인증일시)만 하이픈으로 보인다.
+  // 미인증 BP 는 진위확인으로 채워지는 값(사업자번호 · 대표자명 · 개업일자 — 인증 일시는 제목 줄 「인증 완료 · 일시」)만 하이픈으로 보인다.
   // 대표자 연락처 · 이메일 · 주소는 인증 없이 입력하는 칸이라 입력한 값을 그대로 보인다(2026-10-28 사용자 지적 — 전엔 미인증이면 함께 가렸다, S-GZDODB)
   const verified = Boolean(bp.bizVerifiedAt);
   const unverified = (value: ReactNode) => (verified ? value : muted("-"));
@@ -158,7 +158,7 @@ function DetailBody({
   );
 
   // 기본정보 표 맨 위 「계정상태」 줄의 버튼(2026-10-28 사용자 지정 — 잠시 기본정보 제목 줄 오른쪽이었다). 누를 버튼이 없으면 배지를 보인다.
-  // 수정 권한이면 [BP 상태 변경](2026-10-28 사용자 지정 문구), 탈퇴 BP 는 [사유 보기](변경 이력을 보이지 않으니 탈퇴 사유를 여기서 본다, WHALEERP-626)
+  // 수정 권한이면 [BP상태변경](2026-10-28 사용자 지정 문구), 탈퇴 BP 는 [사유 보기](변경 이력을 보이지 않으니 탈퇴 사유를 여기서 본다, WHALEERP-626)
   const statusAction = canUpdate ? (
     <Button variant="soft" onClick={() => setConfirm(bp.accountStatus === "ACTIVE" ? "inactive" : "active")} disabled={busy}>
       BP상태변경
