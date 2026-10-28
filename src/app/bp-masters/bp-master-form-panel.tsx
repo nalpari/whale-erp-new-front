@@ -476,7 +476,6 @@ export function BpMasterFormPanel(props: Props) {
                 사업자 번호 인증하기
               </Button>
             </div>
-            <Note>사업자 인증은 선택입니다. 인증하면 사업자등록번호 · 대표자명 · 개업일자가 채워집니다.</Note>
           </Stack>
         )}
         {/* 성공은 화면이 완료 카드로 바뀌는 것으로 보여 주고, 화면 낭독기에만 알린다(점포 등록과 같다) */}
