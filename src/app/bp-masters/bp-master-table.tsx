@@ -49,7 +49,7 @@ export function BpMasterTable({
     { header: "BP 코드", width: "w-[110px]", cell: (b) => dim(b, b.bpCode) },
     // 상호명도 상세를 여는 링크(굵은 600, 2026-10-28 사용자 지정 — 잠시 링크 없는 먹색이었다). 폭 240px(남는 폭을 다 받으면 너무 넓었다)
     { header: "상호명", width: "w-[240px]", align: "left", cell: (b) => open(b, b.tradeName, true) },
-    { header: "아이디", width: "w-[130px]", cell: (b) => dim(b, b.loginId) },
+    { header: "아이디", width: "w-[130px]", align: "left", cell: (b) => dim(b, b.loginId) },
     { header: "이름", width: "w-[110px]", cell: (b) => (withdrawn(b) ? gone : b.name) },
     { header: "계정상태", width: "w-[100px]", cell: (b) => <BpStatusBadge status={b.accountStatus} /> },
     { header: "연락처", width: "w-[150px]", align: "left", cell: (b) => (withdrawn(b) ? gone : b.phone ? <WithIcon icon="phone">{formatPhone(b.phone)}</WithIcon> : "") },
