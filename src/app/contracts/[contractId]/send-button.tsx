@@ -17,7 +17,21 @@ import { resendDialogCopy, sendFailureOf } from "./send-model";
 // 접수 여부를 모르거나 화면이 낡았으면(recheck) 보내기를 막고 상세를 다시 읽는다 — 다시 눌러 두 번 가지 않게(front #41 리뷰).
 // 거부 · 만료를 되살릴 수 없게 됐으면(blocked) 보내기만 막고 까닭 문장을 남긴다 — 다시 읽으면 버튼과 함께 사라진다(front #136 재리뷰).
 // 확인창을 닫을 때 상세를 다시 읽는다 — 낡은 버튼으로 같은 409 를 되풀이하지 않게(front #136 셀프 code-review).
-export function SendContractButton({ contractId, status, name, back, staffJoined }: { contractId: number; status: string; name: string | null; back: string; staffJoined: boolean }) {
+export function SendContractButton({
+  contractId,
+  status,
+  sentAt,
+  name,
+  back,
+  staffJoined,
+}: {
+  contractId: number;
+  status: ContractStatus;
+  sentAt: string | null;
+  name: string | null;
+  back: string;
+  staffJoined: boolean;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
@@ -51,7 +65,7 @@ export function SendContractButton({ contractId, status, name, back, staffJoined
           start(async () => {
             let result: SendContractResult;
             try {
-              result = await sendContract(contractId, status as ContractStatus);
+              result = await sendContract(contractId, { status, sentAt });
             } catch {
               // 서버 액션 호출 자체가 끊겼다(브라우저 ↔ Next, 배포 중 재시작) — api 는 이미 보냈을 수 있어 「모름」으로 다룬다(front #41 재리뷰)
               result = sendFailureOf(null, undefined, "");

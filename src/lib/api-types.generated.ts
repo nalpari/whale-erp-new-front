@@ -7333,11 +7333,16 @@ export interface components {
         };
         SendContractDto: {
             /**
-             * @description 화면이 본 계약 상태 — 지금 상태와 다르면 409 CONTRACT_STATUS_CONFLICT(그사이 거부 · 만료되었거나 다른 탭에서 먼저 보냄). 재발송은
-             *     서명 대기 · 발송 대기 · 거부 · 만료를 모두 받아, 이 값이 없으면 열어 둔 서명 대기 화면에서 거부된 계약을 모르고 되살리거나
-             *     두 탭이 같은 만료 계약을 두 번 보낸다(front #136 재리뷰)
+             * @description 화면이 본 계약 상태. 재발송은 서명 대기 · 발송 대기 · 거부 · 만료를 모두 받아, 이 값이 없으면 열어 둔 서명 대기 화면에서 그사이
+             *     거부 · 만료된 계약을 모르고 되살린다
              */
             expectedStatus?: components["schemas"]["ContractStatus"];
+            /**
+             * Format: date-time
+             * @description 화면이 본 마지막 발송 시각(상세 lastSentAt, ISO 8601). 재발송하면 바뀐다 — 상태가 그대로인 발송 대기 · 서명 대기를 두 탭에서 각각
+             *     다시 보내면 상태만으로는 잡히지 않아 알림이 두 번 가고 앞 초대 코드가 무효가 된다. 아직 보낸 적 없으면(lastSentAt null) 비운다
+             */
+            expectedSentAt?: string;
         };
         SignedMyContractResponseDto: {
             contractId: number;
@@ -16566,7 +16571,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
+        requestBody?: {
             content: {
                 "application/json": components["schemas"]["SendContractDto"];
             };
@@ -16593,7 +16598,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description CONTRACT_STATUS_CONFLICT(발송 대기 · 서명 대기 · 거부 · 만료가 아님, 또는 본문 expectedStatus 와 지금 상태가 다름 — 그사이 거부 · 만료되었거나 다른 탭에서 먼저 보냄) · REOPEN_BLOCKED(거부 · 만료를 되살릴 수 없음 — 퇴직 · 퇴직일 있음, 폐점 · 삭제 점포, 같은 점포 · 번호의 다른 진행 중 계약, 계약 기간이 끝남, 기간이 겹치거나 더 늦게 시작한 다른 체결 완료, 같은 직전 계약의 다른 재계약. message 에 까닭) · WORK_TIME_OVERLAP(거부 · 만료를 되살리면 다른 점포 근무 시간과 겹침) · SEND_CHANNEL_NOT_READY(계정이 있는 번호의 소속 추가 확인 · 복귀 확인 — 직원 앱에 소속 확인이 없음) · SEND_PHONE_NOT_MOBILE(휴대폰 번호가 아님) · 코드 없음 「이 점포에 이미 재직 중인 직원입니다」(가입 전 레코드인데 그 번호의 계정이 이 점포에 재직 중) · 다른 요청이 먼저 고침 */
+            /** @description CONTRACT_STATUS_CONFLICT(발송 대기 · 서명 대기 · 거부 · 만료가 아님, 또는 본문 expectedStatus · expectedSentAt 이 지금 계약과 다름 — 그사이 거부 · 만료되었거나 다른 탭에서 먼저 보냄) · REOPEN_BLOCKED(거부 · 만료를 되살릴 수 없음 — 퇴직 · 퇴직일 있음, 폐점 · 삭제 점포, 같은 점포 · 번호의 다른 진행 중 계약, 계약 기간이 끝남, 기간이 겹치거나 더 늦게 시작한 다른 체결 완료, 같은 직전 계약의 다른 재계약. message 에 까닭) · WORK_TIME_OVERLAP(거부 · 만료를 되살리면 다른 점포 근무 시간과 겹침) · SEND_CHANNEL_NOT_READY(계정이 있는 번호의 소속 추가 확인 · 복귀 확인 — 직원 앱에 소속 확인이 없음) · SEND_PHONE_NOT_MOBILE(휴대폰 번호가 아님) · 코드 없음 「이 점포에 이미 재직 중인 직원입니다」(가입 전 레코드인데 그 번호의 계정이 이 점포에 재직 중) · 다른 요청이 먼저 고침 */
             409: {
                 headers: {
                     [name: string]: unknown;

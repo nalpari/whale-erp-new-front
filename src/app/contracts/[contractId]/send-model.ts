@@ -3,11 +3,18 @@ import type { components } from "../../../lib/api-types.generated";
 
 export type SendContractBody = components["schemas"]["SendContractDto"];
 
+/** 화면이 본 계약 — 상태와 마지막 발송 시각(상세 lastSentAt, 직원 목록은 모른다) */
+export type SeenContract = { status: SendContractBody["expectedStatus"] | null; sentAt?: string | null };
+
 /**
- * 재발송 본문 — 화면이 본 계약 상태를 싣는다. 그사이 바뀌었으면(거부 · 만료 · 다른 탭에서 먼저 보냄) api 가 409
- * CONTRACT_STATUS_CONFLICT 로 막아 다시 읽는다(front #136 재리뷰). 상태를 모르면 비운다(api 가 전처럼 보낸다)
+ * 재발송 본문 — 화면이 본 계약 상태 · 발송 시각을 싣는다. 그사이 바뀌었으면(거부 · 만료 · 다른 탭에서 먼저 보냄) api 가 409
+ * CONTRACT_STATUS_CONFLICT 로 막아 다시 읽는다(front #136 재리뷰). 발송 시각은 상태가 그대로인 발송 대기 · 서명 대기를 두 탭에서
+ * 두 번 보내는 것을 막는다(재발송마다 바뀐다). 모르는 값은 비운다(api 가 그 검사를 하지 않는다)
  */
-export const sendBodyOf = (status: SendContractBody["expectedStatus"] | null): SendContractBody => (status ? { expectedStatus: status } : {});
+export const sendBodyOf = (seen: SeenContract): SendContractBody => ({
+  ...(seen.status && { expectedStatus: seen.status }),
+  ...(seen.sentAt && { expectedSentAt: seen.sentAt }),
+});
 
 /**
  * 실패 결과. recheck 면 api 가 이미 쓰고 보냈을 수 있다 — 확인창의 보내기를 막고 상세를 다시 읽는다(두 번 가지 않게). blocked 면

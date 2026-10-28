@@ -173,6 +173,11 @@ test("거부 · 만료 재발송이 막히면(REOPEN_BLOCKED · WORK_TIME_OVERLA
 });
 
 test("재발송 본문은 화면이 본 상태를 싣는다 — 모르면 비운다(front #136 재리뷰)", () => {
-  assert.deepEqual(sendBodyOf("REJECTED"), { expectedStatus: "REJECTED" });
-  assert.deepEqual(sendBodyOf(null), {});
+  assert.deepEqual(sendBodyOf({ status: "REJECTED" }), { expectedStatus: "REJECTED" });
+  // 발송 시각도 싣는다 — 상태가 그대로인 재발송을 두 탭에서 두 번 보내지 않게(front #136 셀프 code-review)
+  assert.deepEqual(sendBodyOf({ status: "PENDING_SEND", sentAt: "2026-10-10T01:00:00.000Z" }), {
+    expectedStatus: "PENDING_SEND",
+    expectedSentAt: "2026-10-10T01:00:00.000Z",
+  });
+  assert.deepEqual(sendBodyOf({ status: null, sentAt: null }), {});
 });

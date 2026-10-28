@@ -55,7 +55,7 @@ export function ResendInvitationButton({ contractId, name, status }: { contractI
           start(async () => {
             let result: SendContractResult;
             try {
-              result = await sendContract(contractId, status);
+              result = await sendContract(contractId, { status });
             } catch {
               // 서버 액션 호출 자체가 끊겼다 — api 는 이미 보냈을 수 있어 「모름」으로 다룬다(send-button.tsx 와 같다)
               result = sendFailureOf(null, undefined, "");

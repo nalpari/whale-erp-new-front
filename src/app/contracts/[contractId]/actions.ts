@@ -5,7 +5,7 @@ import { ApiError, authHeaders, request } from "@/lib/api";
 import type { components } from "@/lib/api-types.generated";
 import { listAfterSave, withBack } from "../contract-list";
 import { inProgressOf, type SaveResult } from "../new/contract-form-model";
-import { END_UNKNOWN, saveOutcomeUnknown, sendBodyOf, sendFailedTarget, sendFailureOf, type SendFailure } from "./send-model";
+import { END_UNKNOWN, saveOutcomeUnknown, sendBodyOf, sendFailedTarget, sendFailureOf, type SeenContract, type SendFailure } from "./send-model";
 import type { WorkerBody } from "./worker/worker-model";
 
 // 경로에 넣는 id — 1..2147483647 정수만. 서버 액션은 누구나 직접 부를 수 있어 TS 타입이 막아 주지 않는다.
@@ -73,10 +73,10 @@ export type SendContractResult = { ok: true } | SendFailure;
  * 근로계약 발송 · 재발송(WHALEERP-136). 계정이 없는 직원에게는 가입 초대 알림톡, 가입한 직원에게는 앱 알림(알림함 · 푸시 대기 —
  * 푸시는 #261 · #321 뒤. 받을 계정이 없거나 탈퇴면 알림 없이 기한만 새로, api NTF-25)을 보내고 서명 대기로 둔다
  * (WHALEERP-611). 소속 추가 확인 · 복귀 확인(계정 있음 · 이 점포 미가입)은 api 가 409 SEND_CHANNEL_NOT_READY 로 막는다.
- * 화면이 본 계약 상태(expectedStatus)를 함께 보낸다 — 그사이 상태가 바뀌었으면(거부 · 만료 · 다른 탭에서 먼저 보냄) api 가 409
+ * 화면이 본 계약 상태 · 발송 시각(expectedStatus · expectedSentAt)을 함께 보낸다 — 그사이 바뀌었으면(거부 · 만료 · 다른 탭에서 먼저 보냄) api 가 409
  * CONTRACT_STATUS_CONFLICT 로 막아 화면이 다시 읽는다(front #136 재리뷰).
  */
-export async function sendContract(contractId: number, expectedStatus: ContractStatus | null): Promise<SendContractResult> {
+export async function sendContract(contractId: number, seen: SeenContract): Promise<SendContractResult> {
   if (!isContractId(contractId)) return { ok: false, error: "근로계약을 찾을 수 없습니다", recheck: false };
   const headers = await authHeaders();
   if (!headers.Authorization) return { ok: false, error: "로그인이 필요합니다", recheck: false };
@@ -84,7 +84,7 @@ export async function sendContract(contractId: number, expectedStatus: ContractS
     await request(`/contracts/${contractId}/send`, {
       method: "POST",
       headers: { ...headers, "Content-Type": "application/json" },
-      body: JSON.stringify(sendBodyOf(expectedStatus)),
+      body: JSON.stringify(sendBodyOf(seen)),
     });
   } catch (e) {
     if (e instanceof ApiError) {
