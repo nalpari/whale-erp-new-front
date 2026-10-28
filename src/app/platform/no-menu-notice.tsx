@@ -17,7 +17,7 @@ export function NoMenuNotice() {
   if (hasMenu) return null;
   return (
     <section aria-labelledby="no-menu-title" className="flex w-[420px] flex-col items-center gap-[24px] text-center">
-      <span className="flex size-[64px] items-center justify-center rounded-full border border-erp-panel-line bg-erp-thead-bg text-erp-brand" aria-hidden>
+      <span className="flex size-[64px] items-center justify-center rounded-[4px] border border-erp-panel-line bg-erp-thead-bg text-erp-brand" aria-hidden>
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
           <rect x="4" y="10.5" width="16" height="10" rx="2" />
           <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />

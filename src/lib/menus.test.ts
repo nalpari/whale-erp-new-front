@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { bpOfSwitchUrl, bpSwitchUrl, firstMenuUrl, isAllowed, MENU_CODE, menuOfPath, menuPermissionOf, menusOf, serviceOfPath } from "./menus.ts";
+import { bpOfSwitchUrl, bpSwitchUrl, firstMenuRedirect, firstMenuUrl, isAllowed, MENU_CODE, menuOfPath, menuPermissionOf, menusOf, serviceOfPath } from "./menus.ts";
 import type { AdminMenu } from "./session.ts";
 
 const menu = (url: string | null, read: boolean, children: AdminMenu[] = [], serviceCode = "WHALE_ERP"): AdminMenu => ({
@@ -176,9 +176,21 @@ test("플랫폼 첫 메뉴 — 헤더 순서상 첫 화면, 권한 없는 메뉴
   assert.equal(firstMenuUrl([p("/settings", true, [p("/platform-admins", true)])], "PLATFORM"), "/platform-admins");
   // 하위가 하나도 열리지 않으면 1단계 자신
   assert.equal(firstMenuUrl([p("/settings", true, [p("/x", false)])], "PLATFORM"), "/settings");
+  // 1단계 자신도 조회 권한이 없으면 건너뛴다 — 권한 없는 메뉴로 보내면 「이전 화면으로」가 되돌아오며 맴돈다
+  assert.equal(firstMenuUrl([p("/settings", false, [p("/x", false)]), p("/code-groups", true)], "PLATFORM"), "/code-groups");
   // 홈 주소는 맴돌므로 뺀다
   assert.equal(firstMenuUrl([p("/platform", true), p("/code-groups", true)], "PLATFORM"), "/code-groups");
   // 메뉴가 없거나 ERP 메뉴뿐이면 null — 임시 메뉴(알림 템플릿)는 후보가 아니다
   assert.equal(firstMenuUrl([], "PLATFORM"), null);
   assert.equal(firstMenuUrl(menus, "PLATFORM"), null);
+});
+
+test("첫 메뉴로 넘기기 — 플랫폼 탭의 /platform 에서만, 비밀번호 강제 변경 전에는 넘기지 않는다", () => {
+  const platform = [menu("/code-groups", true, [], "PLATFORM")];
+  assert.equal(firstMenuRedirect(platform, "PLATFORM", "/platform", false), "/code-groups");
+  assert.equal(firstMenuRedirect(platform, "PLATFORM", "/platform", true), null);
+  assert.equal(firstMenuRedirect(platform, "PLATFORM", "/code-groups", false), null);
+  assert.equal(firstMenuRedirect(platform, "WHALE_ERP", "/platform", false), null);
+  // 메뉴가 없으면 /platform 에 머물러 권한 요청 안내를 그린다
+  assert.equal(firstMenuRedirect([], "PLATFORM", "/platform", false), null);
 });

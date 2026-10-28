@@ -35,7 +35,7 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   const myPageTrigger = useMyPageTrigger();
   const tabBp = useCurrentBp().bpCodeId;
   const [scope] = useScope();
-  // 플랫폼은 홈이 없어 로고 · 플랫폼관리 바로가기가 첫 메뉴를 바로 가리킨다 — /platform 을 거쳐 같은 화면을 다시 열지 않게(SessionGate 의 같은 판정).
+  // 플랫폼은 홈이 없어 로고 · 플랫폼관리 바로가기가 첫 메뉴를 바로 가리킨다 — /platform 을 거쳐 같은 화면을 다시 열지 않게(firstMenuUrl 로 같은 첫 메뉴를 고른다).
   const home = service === "PLATFORM" ? (firstMenuUrl(all, service) ?? HOME.PLATFORM) : HOME[service];
   const linkOf = (url: string) => withScope(service === "WHALE_ERP" ? screenOf(url, tabBp) : url, scope);
   const menus: HeaderMenu[] = all.map((m) => {
@@ -100,7 +100,7 @@ function BpStatusNote() {
 // noopener — 새 탭이 이 탭의 sessionStorage(ERP · 고른 BP)를 물려받지 않아, 주소(/platform)대로 자기 BP 의 플랫폼으로 열린다.
 // 플랫폼관리 아이콘은 플랫폼 계정에게만 보인다 — BP·가맹 계정은 애초에 그 화면에 들어갈 권한이 없어
 // platform 자리를 비워 ServiceLinks 가 아이콘을 그리지 않게 한다(사용자 지적, 2026-10-21).
-// home 은 이 탭의 홈 링크(플랫폼 탭이면 첫 메뉴)다. 새 탭은 메뉴를 받기 전이라 /platform 으로 열고 SessionGate 가 첫 메뉴로 보낸다.
+// home 은 이 탭의 홈 링크(플랫폼 탭이면 첫 메뉴)다. ERP 탭의 헤더 메뉴(useMenus)는 플랫폼 메뉴를 걸러 첫 메뉴를 모르므로, 새 탭은 /platform 으로 열고 SessionGate 가 첫 메뉴로 보낸다.
 function serviceTargets(bp: AccountBp, service: ServiceCode, home: string, openBpSelect: () => void) {
   if (!bp.isPlatform) return { erp: "/home" };
   const openPlatform = () => window.open(HOME.PLATFORM, "_blank", "noopener");
