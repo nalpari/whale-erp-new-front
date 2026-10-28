@@ -182,13 +182,13 @@ function DetailBody({
     },
     {
       label: "상태",
-      // 현재 상태는 머리의 배지가 보이므로 이 줄은 버튼만 둔다(2026-10-28 사용자 지정). 누를 버튼이 없는 조회 권한만 배지를 보인다.
+      // 현재 상태는 머리의 배지가 보이므로 이 줄은 버튼만 둔다(2026-10-28 사용자 지정) — 수정 권한이면 [상태 변경], 탈퇴 BP 는 [사유 보기]. 누를 버튼이 없을 때만 배지를 보인다.
       value: canUpdate ? (
         <Button variant="soft" onClick={() => setConfirm(bp.accountStatus === "ACTIVE" ? "inactive" : "active")} disabled={busy}>
           상태 변경
         </Button>
       ) : withdrawn && bp.withdrawal ? (
-        // 탈퇴 BP 는 변경 이력이 없으니 탈퇴 사유를 여기서 본다(WHALEERP-626)
+        // 탈퇴 BP 는 변경 이력을 보이지 않으니 탈퇴 사유를 여기서 본다(WHALEERP-626)
         <WithdrawalButton bp={bp} withdrawal={bp.withdrawal} panelOpen={panelOpen} />
       ) : (
         <BpStatusBadge status={bp.accountStatus} />
@@ -261,6 +261,7 @@ function DetailBody({
           detail="점포 상태는 그대로 두고 직원 초대 · 근로계약 · 부가서비스 · 매출 연동 · 출퇴근 기록만 멈췄습니다. 목록 · 상세 조회는 됩니다."
         />
       )}
+      {/* [사유 보기] 안내는 api 가 탈퇴 BP 에 withdrawal 을 늘 채워 준다는 전제다(WHALEERP-625) */}
       {withdrawn && (
         <NoticeBand
           tone="info"
@@ -299,7 +300,7 @@ function DetailBody({
             수정
           </Button>
         )}
-        {/* 탈퇴 BP 의 이력에는 탈퇴로 지운 개인정보의 예전 값이 남아 있어 보이지 않는다 — api 도 409 로 거절한다(WHALEERP-625) */}
+        {/* 탈퇴 BP 의 이력에는 탈퇴로 지운 개인정보의 예전 값이 남아 있어 보이지 않게 한다 — api 도 409 로 거절한다(WHALEERP-625) */}
         {!withdrawn && <HistoryButton bpCodeId={bp.bpCodeId} panelOpen={panelOpen} />}
       </div>
 

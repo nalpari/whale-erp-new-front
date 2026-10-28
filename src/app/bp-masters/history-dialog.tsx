@@ -24,7 +24,7 @@ const COLUMNS: Column<BpMasterHistory>[] = [
     cell: (h) => (
       <>
         {h.afterValue}
-        {/* 비고 — 탈퇴 줄의 탈퇴 사유, 사업자 번호 인증으로 바뀐 줄의 「사업자 번호 인증」 */}
+        {/* 비고 — 사업자 번호 인증으로 바뀐 줄의 「사업자 번호 인증」 */}
         {h.note && <span className="text-erp-label"> · {h.note}</span>}
       </>
     ),

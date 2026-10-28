@@ -7,11 +7,11 @@ import { formatDateTime } from "@/lib/format";
 
 // 탈퇴 사유 팝업(WHALEERP-626). 탈퇴 BP 는 변경 이력을 보이지 않으므로(예전 개인정보가 이력에 남는다, api 409) 탈퇴 사유는 여기서 본다.
 // 상세 응답의 withdrawal 로 그린다 — 따로 조회하지 않는다. 변경 이력 팝업(history-dialog.tsx)과 같은 네이티브 <dialog> 다.
-// 머리는 상세 패널처럼 상호명 + BP 코드 꼬리표, 일시 · 사유는 상세와 같은 DetailTable, 직접 입력한 긴 글은 표 밖 읽기 전용 상자에 둔다.
+// 머리는 상호명 + BP 코드 꼬리표, 아이디 · 탈퇴 일시 · 사유는 상세와 같은 DetailTable, 직접 입력한 긴 글은 표 밖 읽기 전용 상자에 둔다.
 
 type Withdrawal = NonNullable<BpMasterDetail["withdrawal"]>;
 
-/** BP 상태 줄의 [사유 보기] 버튼과 그 팝업 */
+/** 상세 상태 줄의 [사유 보기] 버튼과 그 팝업 */
 export function WithdrawalButton({
   bp,
   withdrawal,
@@ -24,7 +24,6 @@ export function WithdrawalButton({
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
-  const detailId = useId();
   const [open, setOpen] = useState(false);
   // <dialog> 는 최상위 레이어라 패널이 클릭 아닌 길로 닫혀도 혼자 남는다 — 함께 닫는다(HistoryButton 과 같다)
   if (!panelOpen && open) setOpen(false);
@@ -71,12 +70,9 @@ export function WithdrawalButton({
         </div>
         {withdrawal.reasonDetail && (
           <div className="mt-[18px] flex flex-col gap-[6px]">
-            <p id={detailId} className="text-[14px] font-medium">
-              직접 입력한 사유
-            </p>
+            <p className="text-[14px] font-medium">직접 입력한 사유</p>
             {/* 최대 500자 — 줄바꿈을 살리고 길면 상자 안에서만 스크롤한다 */}
             <p
-              aria-labelledby={detailId}
               className="max-h-[200px] overflow-y-auto rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[16px] py-[12px] text-[14px] leading-[1.6] break-words whitespace-pre-wrap"
             >
               {withdrawal.reasonDetail}
