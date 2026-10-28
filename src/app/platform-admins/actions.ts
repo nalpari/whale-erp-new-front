@@ -32,6 +32,8 @@ function failureOf(error: unknown, what: string): { ok: false; status?: number; 
   if (error instanceof ApiError) {
     if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     if ([400, 403, 404, 409].includes(error.status)) return { ok: false, status: error.status, message: withPeriod(error.message) };
+    // 503 은 메일 설정 없음(비밀번호 초기화) — api 문구 그대로(2026-10-28, 일반 문구로 덮여 이유가 안 보였다)
+    if (error.status === 503) return { ok: false, status: 503, message: withPeriod(error.message) };
   }
   console.error(`플랫폼 관리자 ${what} 실패`, error);
   return { ok: false, message: `${what}하지 못했습니다. 잠시 후 다시 시도해 주세요.` };
@@ -101,7 +103,7 @@ export async function resetPlatformAdminPasswordAction(id: number): Promise<Acti
     refresh();
     return { ok: true, ...result };
   } catch (error) {
-    return failureOf(error, "비밀번호 초기화");
+    return failureOf(error, "비밀번호를 초기화");
   }
 }
 

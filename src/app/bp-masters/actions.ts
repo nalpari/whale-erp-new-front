@@ -98,7 +98,7 @@ export async function resetBpMasterPasswordAction(bpCodeId: number): Promise<Act
     refresh();
     return { ok: true, ...result };
   } catch (error) {
-    return failureOf(error, "비밀번호 초기화", true);
+    return failureOf(error, "비밀번호를 초기화", true);
   }
 }
 
