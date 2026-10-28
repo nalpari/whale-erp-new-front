@@ -98,13 +98,15 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
         // 화면이 cycle · depth 를 미리 막으므로 api 의 400 · 409 는 이 트리가 낡았다는 뜻이다(남이 옮기거나 하위를 더함).
         // 그 사이 지워졌거나(404) 결과를 모를 때와 함께 최신 트리를 받는다 — 안 받으면 같은 이동이 새로고침 전까지 계속 거절된다
         const stale = result.status === undefined || result.status === 400 || result.status === 404 || result.status === 409;
-        setMoveFailure({
-          message: result.message,
-          detail:
-            result.status === undefined
-              ? `최신 트리를 다시 받았습니다. ‘${moved.name}’ 메뉴가 옮겨졌는지 확인해 주세요.`
-              : `‘${moved.name}’ 메뉴는 옮기기 전 자리 그대로입니다.${stale ? " 최신 트리를 다시 받았습니다." : ""}`,
-        });
+        // 그 사이 남이 트리를 바꿨으면(400 · 404 · 409) api 문장 대신 쉬운 말로(2026-10-28 사용자 지정 문구). 응답을 못 받았거나 그 밖의 거절은 받은 문장 그대로
+        setMoveFailure(
+          result.status !== undefined && stale
+            ? { message: "다른 관리자가 메뉴 구성을 변경하여 저장할 수 없습니다.", detail: "최신 메뉴 정보를 다시 불러온 후 수정해 주세요.\n※ 현재 수정한 내용은 저장되지 않았습니다." }
+            : result.status === undefined
+              ? // 응답을 못 받았다 — 옮겨졌는지 모른다(2026-10-28 사용자 지정 문구)
+                { message: "메뉴 이동 결과를 확인할 수 없습니다.", detail: "메뉴순서를 확인한 후 다시 시도해 주세요." }
+              : { message: result.message, detail: `‘${moved.name}’ 메뉴는 옮기기 전 자리 그대로입니다.` },
+        );
         if (stale) router.refresh();
         return;
       }
@@ -305,15 +307,17 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
           />
           <ConfirmDialog
             open={pendingMove !== null}
-            title="이 화면이 닫힙니다"
-            confirmLabel="옮겨 저장"
+            // 문구 · 버튼 이름은 사용자 지정(2026-10-28) — 메뉴 이름 · 코드는 넣지 않는다(바뀌면 문구도 고쳐야 해서)
+            title="이 화면에 접근할 수 없게 됩니다."
+            confirmLabel="이동 후 저장"
             busy={moving}
             onConfirm={() => pendingMove && saveMove(pendingMove.menuId, pendingMove.spot, pendingMove.verdict, pendingMove.via)}
             onCancel={() => setPendingMove(null)}
           >
-            <p className="text-[14px] leading-[1.6]">
-              미사용 메뉴 아래로 옮기면 플랫폼 메뉴 관리({SELF_MENU_CODE})도 사용자 화면과 메뉴 권한에서 빠져, 다음 로그인부터 이 화면으로는 되돌릴 수 없습니다. 계속할까요?
-            </p>
+            <div className="flex flex-col gap-[12px] text-[14px] leading-[1.6]">
+              <p>미사용 메뉴 아래로 이동하면 해당 화면이 사용자 메뉴에서 제외되어 접근할 수 없습니다.</p>
+              <p>그래도 이동하시겠습니까?</p>
+            </div>
           </ConfirmDialog>
         </div>
       </div>
