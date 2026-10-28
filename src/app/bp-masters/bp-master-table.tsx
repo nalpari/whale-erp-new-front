@@ -43,8 +43,8 @@ export function BpMasterTable({
   // 열 순서는 BP 코드 · 상호명 · 아이디 …, 이름은 플랫폼 관리자 목록 느낌으로(2026-10-28 사용자 지정) — 연락처 · 이메일은 나누고, 등록은 일시만
   const columns: Column<BpMaster>[] = [
     { header: "BP 코드", width: "w-[110px]", cell: (b) => open(b, b.bpCode) },
-    // 상호명은 링크 없이 먹색 글자 — 상세는 BP 코드로 연다(2026-10-28 사용자 지정)
-    { header: "상호명", align: "left", cell: (b) => b.tradeName },
+    // 상호명은 링크 없이 굵은(600) 먹색 글자 — 상세는 BP 코드로 연다(2026-10-28 사용자 지정)
+    { header: "상호명", align: "left", cell: (b) => <span className="max-w-full truncate font-semibold">{b.tradeName}</span> },
     { header: "아이디", width: "w-[130px]", cell: (b) => b.loginId },
     { header: "이름", width: "w-[110px]", cell: (b) => (withdrawn(b) ? gone : b.name) },
     { header: "상태", width: "w-[100px]", cell: (b) => <BpStatusBadge status={b.accountStatus} /> },
