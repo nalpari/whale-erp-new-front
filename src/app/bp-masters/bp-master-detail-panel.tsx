@@ -258,7 +258,8 @@ function DetailBody({
       {/* 라벨 칸을 두 줄이 같이 쓰는 grid — 「상호명」 · 「BP코드」 길이가 달라도 값이 같은 자리에서 시작한다(2026-10-28 사용자 지정, 「BP코드」 붙여 씀) */}
       <div className="sticky -top-[24px] z-[1] -mx-[24px] -mt-[24px] -mb-[16px] grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-[6px] gap-y-[6px] bg-white px-[24px] pt-[24px] pb-[16px] text-[14px]">
         <span className="text-erp-label">상호명</span>
-        <h2 className="text-[18px] font-semibold break-all text-erp-ink">{bp.tradeName}</h2>
+        {/* 18px 한글은 글자 앞 여백이 14px 영문(BP…)보다 넓어 1px 뒤로 서 보인다 — 1px 당겨 맞춘다 */}
+        <h2 className="-ml-px text-[18px] font-semibold break-all text-erp-ink">{bp.tradeName}</h2>
         <span className="text-erp-label">BP코드</span>
         <span>
           <HeadValues
