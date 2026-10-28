@@ -59,7 +59,10 @@ export interface PayslipListQuery {
   /** 직원명 검색어. 주면 본사 역할에게 가린 줄은 api 가 목록 · 상태 건수에서 뺀다 */
   staffName: string;
   statuses: PayslipStatus[];
-  /** 「분류 · 검토 대기만」 — 확인하지 않은 검토 사유가 남은 명세서만(WHALEERP-234). 검토 대기는 상태가 아니라 분류다(2026-10-26) */
+  /**
+   * 「분류 · 검토 대기만」 — 확인하지 않은 검토 사유가 남았거나 공제 미입력인 작성 중 · 검토 중 명세서만(공제 미입력은 api 가 공제 칸으로
+   * 판정, WHALEERP-234 · 운영 정책 v221 PAY-06). 검토 대기는 상태가 아니라 분류다
+   */
   reviewPending: boolean;
   page: number;
   pageSize: PageSize;

@@ -6637,7 +6637,7 @@ export interface components {
             total: number;
             /** @description 그 달 · 관리 범위의 상태 건수. 상태 필터와 상관없고 점포 · 직원명 필터는 따른다 — 직원명으로 거르면 가린 줄은 빼고, 아니면 가린 줄도 센다 */
             statusCounts: components["schemas"]["PayslipStatusCountsDto"];
-            /** @description 그 달 · 고른 점포(직원명으로 거르면 그 이름)의 검토 대기 명세서 수 — 본사 역할에게 가린 줄은 세지 않는다(ATT-30, 운영 정책 v218 — 근태 이상 여부가 드러나지 않게). 관리자 웹 건수 줄 끝 「· 검토 대기 N」 */
+            /** @description 그 달 · 고른 점포(직원명으로 거르면 그 이름)의 검토 대기 명세서 수 — 본사 역할에게 가린 줄은 세지 않는다(ATT-30, 운영 정책 v218 — 검토 대기(근태 이상 · 공제 미입력) 여부가 드러나지 않게). 관리자 웹 건수 줄의 「검토 대기 N」 꼬리표 */
             reviewPendingCount: number;
         };
         PayslipCandidateDto: {
@@ -15204,7 +15204,7 @@ export interface operations {
                 storeTypes?: string;
                 /**
                  * @description true 면 검토 대기(확인하지 않은 검토 사유 — 출퇴근 누락 · 계약 만료 후 기록 · 기간 중 계약 변경 · 확인 필요 기록 포함 —
-                 *     가 남은 명세서)만(WHALEERP-234). 검토 대기는 상태가 아니라 분류다(2026-10-26). 주면 본사 역할에게 가린 줄은 빠진다 —
+                 *     가 남았거나 공제 미입력인 작성 중 · 검토 중 명세서 — 공제 미입력은 공제 칸으로 판정, 운영 정책 v221 PAY-06)만(WHALEERP-234). 검토 대기는 상태가 아니라 분류다(2026-10-26). 주면 본사 역할에게 가린 줄은 빠진다 —
                  *     상태 필터와 같다. false · 없음은 거르지 않는다. 'true' · 'false' 밖의 값은 400.
                  */
                 reviewPending?: boolean;

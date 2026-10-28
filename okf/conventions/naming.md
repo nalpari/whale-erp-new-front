@@ -5,7 +5,7 @@ description: DB·API·FRONT 세 계층이 같은 개념을 같은 영문 이름�
 tags: [convention, naming, shared]
 sources:
   - { id: naming-2026-09-30, resource: ../../docs/raw/2026-09-30-네이밍-규칙.md, title: WHALE ERP 네이밍 규칙 (DB · API · FRONT) }
-generated: { by: claude-code/opus-5.5, at: 2026-10-14T03:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-27T09:23:20Z }
 ---
 
 근거: `docs/raw/2026-09-30-네이밍-규칙.md` (3팀 기획 세션 · 2026-10-08 고침)
@@ -271,7 +271,7 @@ DB 테이블은 복수형, 모델·타입은 PascalCase 단수형으로 바꿔 �
 | 급여명세서 | `payslip` | |
 | 상태 4종 | `DRAFTING` · `REVIEWING` · `CONFIRMED` · `SENT` | 작성 중 · 검토 중 · 확정 · 발송 완료 |
 | 확정 취소 · 처리 이력 | `cancel_confirmation` · `payslip_log` | |
-| 검토 대기 사유 4종 | `MISSING_ATTENDANCE` · `AFTER_CONTRACT_END` · `CONTRACT_CHANGED` · `DEDUCTION_MISSING` | |
+| 검토 대기 사유 5종 | `MISSING_ATTENDANCE` · `AFTER_CONTRACT_END` · `CONTRACT_CHANGED` · `DEDUCTION_MISSING` · `ATTENDANCE_NEEDS_REVIEW` | 이 순서로 보인다. `DEDUCTION_MISSING` 은 사유 행 없이 공제 칸으로 판정(운영 정책 v221 PAY-06) |
 | 지급 항목 / 공제 항목 | `earning` / `deduction` | 줄 하나는 `payslip_item` |
 | 기본 공제 / 추가 공제 | `BASIC` / `ADDITIONAL` | |
 | 비과세 | `is_tax_free` | |
