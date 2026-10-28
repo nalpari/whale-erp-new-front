@@ -274,7 +274,7 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
                         onClick: () => handleRowClick(r.row.node.menuId),
                         "data-top": r.row.node.depth === 1 ? "" : undefined,
                       }
-                    : { "data-top": placement?.depth === 1 ? "" : undefined } // 새 1단계 메뉴 줄도 위에 묶음 선
+                    : { "data-top": placement?.depth === 1 ? "" : undefined, onClick: undefined } // 새 1단계 메뉴 줄도 위에 묶음 선(onClick 은 data-* 만으로는 줄 속성 타입에 안 맞아 둔다)
                 }
                 empty="이 서비스에 등록된 메뉴가 없습니다."
               />
