@@ -221,11 +221,7 @@ function Remaining({ expiresAt }: { expiresAt: string }) {
           <span className="text-erp-label">남은 시간</span>
           <b className={`text-[18px] font-semibold tabular-nums ${urgent ? "text-erp-off" : "text-erp-ink"}`}>{`${m}:${String(s).padStart(2, "0")}`}</b>
         </p>
-        <p className="text-[14px] text-erp-label">
-          시간 안에 새 비밀번호로 변경해 주세요.
-          <br />
-          시간이 지나면 다시 로그인해야 합니다.
-        </p>
+        <p className="text-[14px] text-erp-label">시간 안에 새 비밀번호로 변경해 주세요.</p>
       </div>
     </div>
   );
