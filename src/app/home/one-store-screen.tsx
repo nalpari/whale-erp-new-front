@@ -109,7 +109,7 @@ export function OneStoreScreen({ storeId, reloadKey }: { storeId: number; reload
     key,
     "내 문의",
   );
-  const pay = useHomeLoad(canOpen("/payslips") ? () => bff<PayslipSummary>(paths.payslipSummary) : null, key, "직원 급여");
+  const pay = useHomeLoad(canOpen("/payslips") ? () => bff<PayslipSummary>(paths.payslipSummary) : null, `${key}|${today.slice(0, 7)}`, "직원 급여");
   const staff = useHomeLoad(canOpen("/staff-members") ? () => bff<{ items: StaffMemberListItem[]; total: number }>(paths.staff) : null, key, "직원 정보");
 
   const cards = [
