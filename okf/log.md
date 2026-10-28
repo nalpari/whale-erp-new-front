@@ -4,6 +4,11 @@
 * **Update**: [급여명세서 관리 화면](/screens/payslips.md) — 재영 재리뷰(front #151, 2026-10-28): 상세 「검토 사유」에도 공제 미입력을 보인다. api 상세는 사유 행만 주므로 상세가 저장된 공제 칸으로 판정해(`detailReviewReasons` — 작성 중 · 검토 중, 보이는 지급 밖 칸 가운데 넣지 않은 것, 목록 검토 대기와 같은 기준) 「공제 미입력 · 빈 공제 이름」 줄을 더하고, 「그 밖의 사유」에서 공제 미입력을 빼던 것을 없앴다.
 
 ## 2026-10-27
+* **Update**: main 병합(front butterfree, #151 머지 뒤): okf/log 는 양쪽 기록을, screens/payslips.md 시각은 늦은 값을 남겼다. payslip-review.tsx 는 자동 병합.
+* **Update**: main 병합(front butterfree, main #155 까지): okf/log 충돌은 양쪽 기록을 살렸다.
+* **Update**: main 병합(front butterfree, 재영 리뷰 뒤 main 최신까지): okf/log 충돌은 양쪽 기록을 살렸다.
+* **Update**: main 병합(front butterfree, main 최신까지): okf/log 충돌은 양쪽 기록을 살렸다.
+* **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) · [급여명세서 관리 화면 (구현)](/screens/payslips.md) — 후속(PR #137 리뷰): 보정 창의 고정 안내 「다음 날 퇴근을 고릅니다」는 출근이 있는 짝에만(출근 미등록 줄은 「출근이 퇴근보다 늦거나 같으면 전날 출근입니다」). 가산 스위치의 「고친 연장수당은 그대로」 안내를 지금 칸 값으로 판단한다(저장 전에 칸을 고쳐도 안내와 결과가 맞게, api 와 같은 기준).
 * **Update**: main 병합(front venusaur, main #155 까지): okf/log 충돌은 양쪽 기록을 살렸다.
 * **Update**: main 병합(front venusaur, v221 반영 뒤 main 최신까지): okf/log 충돌은 양쪽 기록을 살렸다.
 * **Update**: [급여명세서 관리 화면](/screens/payslips.md) — 재영 리뷰(front #151, 운영 정책 v221 PAY-06): 건수 줄의 「검토 대기 N」을 상태 넷과 세로선으로 떼어 꼬리표(`Tag`)로, 줄의 「검토 대기」도 「검토 중」 빨간 배지와 다른 꼬리표로 바꿨다. 공제 미입력(`DEDUCTION_MISSING`)도 api 가 검토 대기 사유로 보내 꼬리표 · 사유 글자에 보인다. 확정 확인창의 「검토 사유는 확인한 것으로 남습니다」에 「확정 취소하면 다시 검토 대기가 됩니다」를 붙였다. [이름 규칙](/conventions/naming.md) 검토 대기 사유를 다섯으로. api 타입은 venusaur api openapi 로 다시 만들었다.
