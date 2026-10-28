@@ -14,7 +14,7 @@ const cache = new Map<number, { at: number; pending: Promise<string | null> }>()
  * 이 탭 BP 의 계정 상태(공통코드 ACCOUNT_STATUS — 사용 · 미사용 · 탈퇴). 플랫폼 계정만 본다 — BP 계정은 자기 BP 가 사용이 아니면 로그인하지 못한다.
  * BP 하나를 따로 묻는 api 가 없어 BP 선택 창과 같은 GET /bp-codes 를 BP코드로 찾는다. 받기 전 · 받지 못함 · BP 계정은 null 이다(2026-10-28).
  */
-export function useCurrentBpStatus(): string | null {
+export function useCurrentBpStatus(refreshKey?: string): string | null {
   const account = useAccount();
   const bp = useCurrentBp();
   const [status, setStatus] = useState<{ bpCodeId: number; code: string | null } | null>(null);
@@ -39,6 +39,7 @@ export function useCurrentBpStatus(): string | null {
     return () => {
       live = false;
     };
-  }, [account.bp.isPlatform, bp.bpCodeId, bp.bpCode]);
+    // refreshKey 가 바뀌면(헤더처럼 계속 떠 있는 곳은 화면 주소) 다시 묻는다 — 30초 안이면 캐시를 그대로 쓴다
+  }, [account.bp.isPlatform, bp.bpCodeId, bp.bpCode, refreshKey]);
   return account.bp.isPlatform && status?.bpCodeId === bp.bpCodeId ? status.code : null;
 }

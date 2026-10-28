@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useEffectEvent, useState, type ReactNode } from "react";
 import { Badge, GlobalHeader, ScopeSelect, ServiceLinks, useBackdropActive, UserPop, type HeaderMenu, type ScopeSelectSection, type UserPopItem } from "@/components/common";
 import { logout } from "@/app/actions";
@@ -79,7 +79,8 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
  * (2026-10-28 사용자 지정). 사용 중이거나 상태를 모르면(BP 계정 · 받기 전 · 받지 못함) 그리지 않는다.
  */
 function BpStatusNote() {
-  const status = useCurrentBpStatus();
+  // 헤더는 화면을 옮겨도 그대로 떠 있다 — 화면 주소가 바뀔 때마다 다시 묻게 한다(30초 캐시 안이면 그대로, 리뷰로 찾음)
+  const status = useCurrentBpStatus(usePathname());
   const label = useCodeLabel("ACCOUNT_STATUS");
   if (!status || status === "ACTIVE") return null;
   return (
