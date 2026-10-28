@@ -6591,9 +6591,20 @@ export interface components {
              */
             birthDate: string;
         };
+        /**
+         * @description 급여명세서 검토 사유 — 출퇴근 누락 · 계약 만료 후 기록 · 기간 중 계약 변경 · 공제 미입력 · 확인 필요 기록 포함
+         * @enum {string}
+         */
+        PayslipReviewReason: "MISSING_ATTENDANCE" | "AFTER_CONTRACT_END" | "CONTRACT_CHANGED" | "DEDUCTION_MISSING" | "ATTENDANCE_NEEDS_REVIEW";
         PayslipListItemDto: {
             employmentType: components["schemas"]["EmploymentType"] | null;
             status: components["schemas"]["PayslipStatus"] | null;
+            /**
+             * @description 검토 대기 사유(WHALEERP-234) — 확인하지 않은 검토 사유와 공제 미입력(공제 칸으로 판정, 운영 정책 v221 PAY-06). 하나라도
+             *     있으면 검토 대기다. 사유 다섯 — 출퇴근 누락 · 계약 만료 후 기록 · 기간 중 계약 변경 · 공제 미입력 · 확인 필요 기록 포함 — 의
+             *     순서. 작성 중 · 검토 중이 아니면 빈 배열, 가린 줄은 null
+             */
+            pendingReviewReasons: components["schemas"]["PayslipReviewReason"][] | null;
             payslipId: number | null;
             isMasked: boolean;
             staffName: string | null;
@@ -6626,6 +6637,8 @@ export interface components {
             total: number;
             /** @description 그 달 · 관리 범위의 상태 건수. 상태 필터와 상관없고 점포 · 직원명 필터는 따른다 — 직원명으로 거르면 가린 줄은 빼고, 아니면 가린 줄도 센다 */
             statusCounts: components["schemas"]["PayslipStatusCountsDto"];
+            /** @description 그 달 · 고른 점포(직원명으로 거르면 그 이름)의 검토 대기 명세서 수 — 본사 역할에게 가린 줄은 세지 않는다(ATT-30, 운영 정책 v218 — 검토 대기(근태 이상 · 공제 미입력) 여부가 드러나지 않게). 관리자 웹 건수 줄의 「검토 대기 N」 꼬리표 */
+            reviewPendingCount: number;
         };
         PayslipCandidateDto: {
             /** @description 계약 유형 — 유효한 근로계약의 값, 없으면 직원 레코드의 값 */
@@ -6756,8 +6769,6 @@ export interface components {
             /** @description 입력 여부 — 공제 미입력과 0 을 가른다 */
             isEntered: boolean;
         };
-        /** @enum {string} */
-        PayslipReviewReason: "MISSING_ATTENDANCE" | "AFTER_CONTRACT_END" | "CONTRACT_CHANGED" | "DEDUCTION_MISSING" | "ATTENDANCE_NEEDS_REVIEW";
         PayslipReviewReasonDto: {
             reviewReason: components["schemas"]["PayslipReviewReason"];
             payslipReviewReasonId: number;
@@ -15191,6 +15202,12 @@ export interface operations {
                  *     목록과 같다). storeIds 와 함께 주면 둘 다 맞는 점포만이다. 빈 값 · 모르는 값이 하나라도 있으면 400 이다.
                  */
                 storeTypes?: string;
+                /**
+                 * @description true 면 검토 대기(확인하지 않은 검토 사유 — 출퇴근 누락 · 계약 만료 후 기록 · 기간 중 계약 변경 · 확인 필요 기록 포함 —
+                 *     가 남았거나 공제 미입력인 작성 중 · 검토 중 명세서 — 공제 미입력은 공제 칸으로 판정, 운영 정책 v221 PAY-06)만(WHALEERP-234). 검토 대기는 상태가 아니라 분류다(2026-10-26). 주면 본사 역할에게 가린 줄은 빠진다 —
+                 *     상태 필터와 같다. false · 없음은 거르지 않는다. 'true' · 'false' 밖의 값은 400.
+                 */
+                reviewPending?: boolean;
                 /** @description 페이지당 건수 — 20 · 50 · 100, 기본 20 */
                 pageSize?: 20 | 50 | 100;
                 /**
