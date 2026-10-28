@@ -89,7 +89,8 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
             onChange={(e) => setPassword(e.target.value)}
           />
         </Field>
-        {/* 조건 체크 줄 · 「현재 비밀번호는 묻지 않습니다」 · 약관 동의 옆 설명은 지웠다(2026-10-28 사용자 지정) — 조건은 칸 안내와 저장 때 검사가 알린다 */}
+        {/* 약관 제목 · 전체 동의 문구는 회원가입(agree-section.tsx)과 같다 — 「약관동의」 · 「모두 동의합니다.」(2026-10-28 사용자 지정).
+            조건 체크 줄 · 「현재 비밀번호는 묻지 않습니다」 · 약관 동의 옆 설명은 지웠다(2026-10-28 사용자 지정) — 조건은 칸 안내와 저장 때 검사가 알린다 */}
         {error?.at === "password" && <ErrorText>{error.message}</ErrorText>}
         <Field label="새 비밀번호 확인">
           <PasswordInput
@@ -106,12 +107,12 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
 
         {needTerms && (
           <fieldset className="flex flex-col gap-[12px] border-t border-erp-divider pt-[18px]">
-            <legend className="sr-only">약관 동의</legend>
+            <legend className="sr-only">약관동의</legend>
             <p>
-              <b className="text-[16px] font-semibold">약관 동의</b>
+              <b className="text-[16px] font-semibold">약관동의</b>
             </p>
             <Checkbox
-              label="약관 전체 동의"
+              label="모두 동의합니다."
               checked={terms.use && terms.policy}
               onChange={(e) => setTerms({ use: e.target.checked, policy: e.target.checked })}
             />
@@ -141,7 +142,7 @@ function ErrorText({ children }: { children: string }) {
   );
 }
 
-// 필수 항목도 「약관 전체 동의」와 같은 줄에서 시작한다(들여쓰기 없음, 2026-10-28 사용자 지정)
+// 필수 항목도 「모두 동의합니다.」와 같은 줄에서 시작한다(들여쓰기 없음, 2026-10-28 사용자 지정)
 function TermsRow({ kind, label, checked, onChange }: { kind: "use" | "policy"; label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <div className="flex items-center justify-between">
