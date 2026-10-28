@@ -74,9 +74,12 @@ export function FilterSection({
   children,
   tight,
   last,
+  action,
 }: {
   label: string;
   children: ReactNode;
+  /** 라벨 줄 오른쪽에 둘 작은 동작(점포 [일괄검색]) */
+  action?: ReactNode;
   /** 라벨과 내용 간격을 8 로 줄인다(입력칸 묶음). 없으면 12(체크박스 묶음). */
   tight?: boolean;
   last?: boolean;
@@ -87,7 +90,14 @@ export function FilterSection({
       aria-label={label}
       className={`flex flex-col ${tight ? "gap-[8px]" : "gap-[12px]"} ${last ? "" : "border-b border-erp-divider pb-[18px]"}`}
     >
-      <p className="text-[14px] font-medium text-erp-label">{label}</p>
+      {action ? (
+        <div className="flex items-center justify-between gap-[6px]">
+          <p className="text-[14px] font-medium text-erp-label">{label}</p>
+          {action}
+        </div>
+      ) : (
+        <p className="text-[14px] font-medium text-erp-label">{label}</p>
+      )}
       {children}
     </div>
   );

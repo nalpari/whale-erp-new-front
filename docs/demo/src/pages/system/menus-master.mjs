@@ -17,6 +17,8 @@ const ro = (value) => ui.textField({ value, readonly: true });
 // 사용 상태 고르기(목업 seg) — 라디오 둘
 const useRadios = (name, on) => `<div role="radiogroup" class="flex h-[34px] items-center gap-[18px]">${ui.radio("사용", name, on)}${ui.radio("미사용", name, !on)}</div>`;
 const useBadge = (on) => (on ? ui.badge("on", "사용") : ui.badge("off", "미사용"));
+// 앱 공통 Tag 와 같은 꼬리표
+const UPPER_OFF_TAG = '<span class="inline-block rounded-[2px] border border-erp-thead-line bg-erp-thead-bg px-[4px] py-px text-[14px] font-medium whitespace-nowrap text-erp-sub">상위 미사용</span>';
 
 // [메뉴 코드, 단계, 노출 메뉴명, 메뉴 URL, 사용] — 적은 순서가 메뉴 순서다.
 const SVC = {
@@ -119,7 +121,8 @@ function treeTab(key, s) {
     sub(`${n.lvl}단계`),
     n.url || '<span class="text-erp-muted">—</span>', // 빈 URL 은 옅은 줄표(앱 menus-screen.tsx 와 같다, 2026-10-26)
     n.order,
-    useBadge(n.use),
+    // 위 단계가 미사용이면 자기 값 배지 옆에 회색 꼬리표 「상위 미사용」(앱 menus-screen.tsx 와 같다, 2026-10-27 사용자 지정)
+    `<span class="inline-flex items-center gap-[6px]">${useBadge(n.use)}${n.parent && hides(n.parent) ? UPPER_OFF_TAG : ""}</span>`,
   ]);
   const cols = [
     { header: "이동", width: "w-[56px]" },
@@ -128,7 +131,7 @@ function treeTab(key, s) {
     { header: "메뉴단계", width: "w-[90px]" },
     { header: "메뉴 URL", align: "left", width: "w-[240px]" },
     { header: "순서", width: "w-[60px]" },
-    { header: "사용여부", width: "w-[100px]" },
+    { header: "사용여부", width: "w-[180px]" }, // 「사용 + 상위 미사용」이 한 줄에 들게(앱과 같다, 2026-10-27)
   ];
   // 줄마다 스크립트가 읽을 단서를 단다 — 이 줄 아래에 새 메뉴를 만들 때의 단계·상위 표시·순서
   let i = -1;
@@ -148,11 +151,13 @@ function treeTab(key, s) {
   // 라벨 · 입력 예시는 앱 menu-side.tsx 그대로 — 메뉴명 예시는 등록에만, URL 예시는 등록 · 수정 모두(2026-10-26)
   // 미사용 안내 빨간 박스는 use 값(처음 그릴 때 상태)에 맞춰서만 보인다 — 데모는 라디오를 눌러도 다시 그리지
   // 않아 앱처럼 그 자리에서 즉시 뜨고 꺼지지는 않는다(사용자 지정, 2026-10-26 · 앱 menu-side.tsx 와 같은 문구).
-  const useWarn = `<div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off">미사용으로 변경하면 사용자 화면과 [권한관리 &gt; 메뉴 설정]에 표시되지 않습니다.<br>다시 '사용'으로 변경하면 기존 설정값이 그대로 적용됩니다.</div>`;
-  const nameFields = (name, url, use, id, isNew) =>
+  const kidsWarn = (kids) =>
+    kids ? `<br>하위 메뉴 ${kids}개도 함께 표시되지 않습니다. 하위 메뉴의 사용여부는 바뀌지 않아, 다시 '사용'으로 바꾸면 하위 메뉴도 그대로 보입니다.` : "";
+  const useWarn = (kids) => `<div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off">미사용으로 변경하면 사용자 화면과 [권한관리 &gt; 메뉴 설정]에 표시되지 않습니다.<br>다시 '사용'으로 변경하면 기존 설정값이 그대로 적용됩니다.${kidsWarn(kids)}</div>`;
+  const nameFields = (name, url, use, id, isNew, kids = 0) =>
     ui.field(req("메뉴명"), ui.textField({ value: name, placeholder: isNew ? "예: 플랫폼 배치 관리" : undefined, "data-new-name": isNew })) +
     ui.field("메뉴 URL (선택)", ui.textField({ value: url, placeholder: "예: /staff-content" })) +
-    `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">사용여부</span>${useRadios(id, use)}${use ? "" : useWarn}</div>`;
+    `<div class="flex flex-col gap-[8px]"><span class="text-[14px] font-medium text-erp-label">사용여부</span>${useRadios(id, use)}${use ? "" : useWarn(kids)}</div>`;
 
   // 메뉴 하나의 수정 칸. 고른 줄의 것만 보인다(위치 옮기기는 두지 않는다 · 2026-10-08).
   // [저장]은 칸을 하나라도 고쳐야 켜지고 저장하면 「수정되었습니다.」(앱 menu-side.tsx 의 isDirty · toast 와 같다, 2026-10-26 · erp.js data-dirty-save)
@@ -163,7 +168,7 @@ function treeTab(key, s) {
       ui.field("서비스 코드", ro(s.code)) +
       ui.field("상위 메뉴", ro(p ? `${p.code} · ${path(p)}` : "없음 · 최상위(1단계) 메뉴")) +
       ui.formRow(ui.field("메뉴 코드", ro(n.code)), ui.field("메뉴 순서", ro(String(n.order)))) +
-      nameFields(n.name, n.url, n.use, `use-${key}-${n.code}`, false) +
+      nameFields(n.name, n.url, n.use, `use-${key}-${n.code}`, false, nodes.filter((m) => { for (let q = m; q.parent; q = q.parent) { if (!q.use) return false; if (q.parent === n) return true; } return false; }).length) +
       `<div class="flex justify-end gap-[6px]">${ui.button("저장", { "data-dirty-save": true, "data-toast": "수정되었습니다.", disabled: true })}</div>` +
       `</section>`
     );

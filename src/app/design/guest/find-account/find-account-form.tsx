@@ -85,15 +85,15 @@ export function FindAccountForm() {
         ) : (
           <div className="flex flex-col gap-[16px]">
             <Field label="이름">
-              <input name="name" autoComplete="name" placeholder="이름을 입력해 주세요" required maxLength={20} className={INPUT} />
+              <input name="name" autoComplete="name" placeholder="이름을 입력해 주세요." required maxLength={20} className={INPUT} />
             </Field>
             {tab === "password" && (
               <Field label="아이디">
-                <input name="loginId" autoComplete="username" placeholder="아이디를 입력해 주세요" required maxLength={20} className={INPUT} />
+                <input name="loginId" autoComplete="username" placeholder="아이디를 입력해 주세요." required maxLength={20} className={INPUT} />
               </Field>
             )}
             <Field label="이메일">
-              <input name="email" type="email" autoComplete="email" placeholder="가입할 때 등록한 이메일" required maxLength={254} className={INPUT} />
+              <input name="email" type="email" autoComplete="email" placeholder="가입 시 등록한 이메일 주소를 입력해 주세요." required maxLength={254} className={INPUT} />
             </Field>
           </div>
         )}

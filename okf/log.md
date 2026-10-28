@@ -1,8 +1,34 @@
 # Bundle history
 
+## 2026-10-28
+* **Update**: main 병합(front pidgeot, main 최신까지): okf/log 충돌은 양쪽 기록을 살렸고, 데모 HTML 은 main 쪽을 받은 뒤 합쳐진 원본으로 다시 빌드했다.
+* **Update**: [급여명세서 관리 화면](/screens/payslips.md) — 재영 재리뷰(front #151, 2026-10-28): 상세 「검토 사유」에도 공제 미입력을 보인다. api 상세는 사유 행만 주므로 상세가 저장된 공제 칸으로 판정해(`detailReviewReasons` — 작성 중 · 검토 중, 보이는 지급 밖 칸 가운데 넣지 않은 것, 목록 검토 대기와 같은 기준) 「공제 미입력 · 빈 공제 이름」 줄을 더하고, 「그 밖의 사유」에서 공제 미입력을 빼던 것을 없앴다.
+
 ## 2026-10-27
 * **Update**: [BP 마스터 계정 관리](/bp.md) — 탈퇴 BP 는 변경 이력을 보이지 않고(버튼 숨김 · api 409, 이력 데이터는 그대로) 탈퇴 사유를 BP 상태 줄의 [사유 보기] 팝업으로 본다(WHALEERP-625 · 626, 2026-10-27 재영). 목업 상세 · 화면정의서도 맞췄다.
 * **Update**: [BP 마스터 계정 관리](/bp.md) — 구현(front #144 · api #163)에 맞춤: 비밀번호 초기화는 변경 이력에 「비밀번호 → 초기화」 한 줄로 남고, 성공은 알림 · 메일 실패는 안내 띠로 보인다. 목업 상세 · 화면정의서와 데모 상세(BP 상태 줄 · 소속 점포 수만 · 라벨 · 초기화 확인창 문구)도 같이 고쳤다.
+* **Update**: main 병합(front butterfree, #151 머지 뒤): okf/log 는 양쪽 기록을, screens/payslips.md 시각은 늦은 값을 남겼다. payslip-review.tsx 는 자동 병합.
+* **Update**: main 병합(front butterfree, main #155 까지): okf/log 충돌은 양쪽 기록을 살렸다.
+* **Update**: main 병합(front butterfree, 재영 리뷰 뒤 main 최신까지): okf/log 충돌은 양쪽 기록을 살렸다.
+* **Update**: main 병합(front butterfree, main 최신까지): okf/log 충돌은 양쪽 기록을 살렸다.
+* **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) · [급여명세서 관리 화면 (구현)](/screens/payslips.md) — 후속(PR #137 리뷰): 보정 창의 고정 안내 「다음 날 퇴근을 고릅니다」는 출근이 있는 짝에만(출근 미등록 줄은 「출근이 퇴근보다 늦거나 같으면 전날 출근입니다」). 가산 스위치의 「고친 연장수당은 그대로」 안내를 지금 칸 값으로 판단한다(저장 전에 칸을 고쳐도 안내와 결과가 맞게, api 와 같은 기준).
+* **Update**: main 병합(front venusaur, main #155 까지): okf/log 충돌은 양쪽 기록을 살렸다.
+* **Update**: main 병합(front venusaur, v221 반영 뒤 main 최신까지): okf/log 충돌은 양쪽 기록을 살렸다.
+* **Update**: [급여명세서 관리 화면](/screens/payslips.md) — 재영 리뷰(front #151, 운영 정책 v221 PAY-06): 건수 줄의 「검토 대기 N」을 상태 넷과 세로선으로 떼어 꼬리표(`Tag`)로, 줄의 「검토 대기」도 「검토 중」 빨간 배지와 다른 꼬리표로 바꿨다. 공제 미입력(`DEDUCTION_MISSING`)도 api 가 검토 대기 사유로 보내 꼬리표 · 사유 글자에 보인다. 확정 확인창의 「검토 사유는 확인한 것으로 남습니다」에 「확정 취소하면 다시 검토 대기가 됩니다」를 붙였다. [이름 규칙](/conventions/naming.md) 검토 대기 사유를 다섯으로. api 타입은 venusaur api openapi 로 다시 만들었다.
+* **Update**: main 병합(front venusaur, main 최신까지): okf/log 충돌은 양쪽 기록을 살렸다.
+* **Update**: main 병합(front venusaur, ⑥ 블로커 수정 뒤 main 최신까지): okf/log 충돌은 양쪽 기록을 살렸다.
+* **Fix**: [급여명세서 관리 화면](/screens/payslips.md) — PR #151 ⑥ 머지 블로커: api 가 검토 대기 건수에서도 본사 역할에게 가린 줄을 빼므로(ATT-30 v218) 「본사 제공 동의 없는 직원의 명세서는 …빠집니다」 안내를 뺐다.
+* **Update**: main 병합(front venusaur, ivysaur 머지 뒤 main 최신까지): okf/log 충돌은 양쪽 기록을 살렸다.
+* **Update**: [급여명세서 관리 화면 (구현)](/screens/payslips.md) — 검토 대기(WHALEERP-234, 운영 정책 PAY-01 · 06 2026-10-26 — 상태가 아니라 분류): 목록 상태 칸에 「검토 대기」 배지(사유는 마우스를 올리면), 왼쪽 필터 「분류 · 검토 대기만」(`reviewPending`), 건수 줄 끝 「검토 대기 N」. 상세 오른쪽 단에 채널별 성공 · 실패 「발송 이력」(WHALEERP-236). api 타입을 다시 만들었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 권한별 메뉴설정 팝업 머리칸도 일부만 켜졌으면 하늘색 「–」, 플랫폼 메뉴 관리에서 상위가 미사용인 메뉴에 「상위 미사용」 꼬리표 · 하위 메뉴가 있는 메뉴를 미사용으로 고르면 하위도 함께 숨는다는 안내, 플랫폼 · BP 관리자 상세의 등록 · 최종수정을 기본정보 표 안으로 · 본인 계정 수정 안내 문구, 하위 메뉴 숨김 안내 수는 새로 숨는 메뉴만, 아이디 · 비밀번호 찾기 플레이스홀더(front weedle).
+* **Update**: main 병합(front snubbull, main #147 · #148 까지): api 타입은 git 이 합친 것이 아니라 api main `65a871a` openapi 로 다시 만들었다(BP 휴일 기간 필드와 홈 · 출퇴근 · BP 마스터 · BP 관리자가 함께 들어 있다). `StoreMappingPicker` 는 main 의 사용자 지정 문구(빈 칩 · 오른쪽 빈 목록 두 줄, 일괄 검색 안내 한 줄)와 칩 영역 130px 를 `TEXTS.include` 로 옮기고 예외 · 필터 문구도 같은 말투로 맞췄다(데모 `BULK_MAP_TEXT` · `FILTER_BULK_TEXT` 도). okf 충돌은 양쪽 기록을 살렸다(PR #154 머지 블로커).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일 상세의 최종수정일시를 1팀 규칙(`wasUpdated` + 수정자)으로: 등록만 한 휴일은 「수정한 적 없음」 대신 「-」다. 전엔 수정자 유무로만 갈라, api 가 등록 때 수정자를 채워 등록 시각 · 등록자가 최종수정으로 보였다(PR #154 코드 리뷰).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 코드 리뷰 반영: DESIGN.md Buttons 에 작은 버튼(24px, 1팀 확인 필요)을 적었다. 「선택한 점포」 줄 높이를 24px 로 미리 둬 첫 점포를 고를 때 필터가 밀리지 않게, 필터 일괄 검색은 남긴 칩 뒤에 새 점포를 붙이게, BP 휴일은 적용 범위를 바꾸면 점포 오류 · 찾기 글자를 비우게 했다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 점포 고르기의 [전체 제거]를 [일괄검색]과 같은 작은 버튼(`theme.ts` `SMALL_BUTTON`, 24px)으로 바꿨다(사용자 요청). 목업(`docs/mockup/stores/index.html` · `auth.js` 필터용 일괄 검색 문구) · 데모(`store-filter.mjs` `storeFilterSection`)도 맞췄고, 데모 `erp.js` 에서 지워져 일괄 검색 창이 열리지 않던 `paintScopeGroup` 을 되살렸다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 점포 정보 관리 필터의 점포 고르기: 「모두 빼기」를 「전체 제거」로(공통 `StorePicker` 라 다른 목록 필터도 같이), 「점포」 라벨 오른쪽에 작은 [일괄검색]을 더해 BP 관리자 등록과 같은 일괄 검색 창(`StoreBulkDialog`)을 연다(사용자 요청). `FilterSection` 에 라벨 줄 오른쪽 자리 `action` 을 더했다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일 등록 · 수정의 점포 고르기를 `StorePicker` 에서 BP 관리자 등록과 같은 `StoreMappingPicker` 로 바꿨다(사용자 요청). `StoreMappingPicker` 에 `exclude` 를 더해 전체 점포일 때 고른 점포를 「예외 점포」 문구로 보인다(BP 관리자 화면은 그대로).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 일부 점포만 맡은 가맹 마스터(BPMaster003)로 BP 휴일 브라우저 시험: 목록 범위 · 공유 휴일 상세(막힘 사유 · 삭제 없음) · 수정(맡은 점포만, 안 맡은 점포는 그대로 다시 보냄) · 등록(일부 점포만 · 맡은 점포 후보) 통과. 맡지 않은 점포가 묶인 시작 전 휴일에서 날짜 · 유형 칸이 열려 있던 것을 막았다(api 403).
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일 브라우저 시험(등록 · 수정 · 뒤로 가기 · 바탕 클릭 · 진행 중 잠금 · 입력 검사 · 반복 · 전체 점포 예외 · 삭제 · 변경 이력)에서 찾은 것을 고쳤다: 등록 직후 · 시작일을 옮긴 뒤 상세의 적용 점포가 0곳이던 것(고른 날짜가 휴일 기간 밖 — 시작일 기준으로 다시 받는다). 등록 · 수정 패널 제목 아래 안내 띠를 없애고 오류 띠만 남겼다(사용자 요청).
 * **Update**: main 병합(front caterpie, main 최신까지): okf 충돌은 양쪽 기록을 모두 남기고, 본문은 문장 단위로 합쳤다. BP 관리자 연락처는 main 의 9~12자리 규칙에 이 PR 의 「연락처」 라벨 문구를 얹었고, 권한 그룹 목록 최종수정은 main 의 「-」 표시에 이 PR 의 260px 폭을 얹었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 관리자 화면 라벨 「사용자 권한」(플랫폼) · 「권한 그룹」(BP)을 필터 · 목록 · 폼에서 「권한명」으로, 플랫폼 관리자 폼의 권한명 · 계정상태를 기본정보 안 이메일 다음으로 · 권한명 선택지를 역할 묶음(optgroup)으로, BP 관리자 계정상태 필터를 체크박스 둘(처음엔 모두 켬 · 둘 다 끄면 NONE), 아이디 · 이름 플레이스홀더 「아이디 또는 이름 일부」, 점포 고르기 「선택한 점포」 영역 130px(front caterpie).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 공통코드 상세 코드 표: 코드명 160px 고정 · 상세 코드 남는 폭(좁은 화면에서 코드명이 찌그러지던 것), 새 행 플레이스홀더를 「영문 대문자로 시작, 영문·숫자·언더바(_) (최대20자)」로 바꿈 · 관리주체 도움말은 표 오른쪽 끝을 넘지 않게, 표시 순서를 옮긴 뒤 안내를 빨간 안내 상자(`PendingNotice`)와 새 문구로 바꾸고 플랫폼 상세 코드에도 둠. 권한 그룹 삭제 확인창의 연결 사용자를 표로, 대체 후보 없음 안내를 빨간 안내 상자로. 권한 그룹 상세 머리에 「| 권한코드 값」(플랫폼 · BP). BP 관리자 상세: 등록 · 최종수정을 맨 아래로, 적용 대상을 대상 점포 제목 옆으로 합침, 「대상점포」 제목 바 · 스크롤 상자 위아래 선. 플랫폼 관리자 삭제 확인창 안내를 빨간 안내 상자로. 대상점포 표는 열 이름 줄 없이(headVariant none), 버튼 줄 8px 아래로, 권한 그룹 상세의 막힌 이유를 빨간 안내 상자(WarnBand)로, BP 관리자 「휴대전화번호」→「연락처」, 대상점포 점포코드 작은 회색 글자 · 전체 점포 안내 두 줄, 점포 고르기 빈 안내 「선택된 점포가 없습니다. / 점포찾기에서 점포를 검색하여 추가해주세요.」, 점포 일괄 검색 창 위 안내 · 오른쪽 빈 안내 문구, 관리자 상세 머리 라벨 「권한그룹」→「권한명」, 「연결 가맹마스터」 라벨 · 「아이디 · 이름」, 관리주체 도움말의 「(수정·삭제 가능)」을 다음 줄로(front caterpie).
@@ -22,6 +48,15 @@
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 마스터 계정 등록 · 수정이 이메일 중복을 아이디와 같은 때(칸을 벗어나거나 Enter) `GET /bp-masters/email-availability` 로 묻는다. 상세의 수정 일시는 실제로 고친 BP 에만 보이고, 수정 · 로그인 기록이 없으면 「-」. 생성 타입을 api 브랜치(stonehenge · lucario, api main #161 병합 뒤) 기준으로 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 공통코드 관리에 관리주체 필터(체크박스, 주소 `?manageOwnerCode` · 둘 다 끔은 NONE, api `manageOwnerCodes`)를 더했다. BP 공통코드 관리에는 두지 않는다. 관리주체 꼬리표(`OwnerTag`), 상세 코드 머리(`GroupHead`), 고른 그룹 줄(`current`), 사용여부 · 관리주체 문구, 저장 안 한 변경 확인창 문구도 바꿨다.
 * **Update**: [직원 정보 관리 화면 (구현)](/screens/staff-members.md) — 공통 Button `danger` · ConfirmDialog `confirmVariant` 가 1팀 동의를 받았다(DESIGN.md Buttons 에 Danger 추가). 같은 날 1팀이 DetailTable 라벨 110px, 점포 카드 모서리 8px, 트리 표 머리(subtle) · 고른 줄(current), ReadonlyCard, 스위치 알약형에도 동의해 DESIGN.md 와 코드 주석의 「1팀 확인 필요」 표시를 동의 기록으로 바꿨다. 플랫폼 관리자 상세의 버튼 줄 위 선을 없앴다(데모의 BP 마스터 · BP 관리자 · 휴일 상세도 같이).
+
+## 2026-10-26 (BP 휴일)
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일 수정 패널을 주소(`?edit=1`)에 남겨 뒤로 가기 · 바탕창 클릭이 플랫폼 관리자 관리와 같게 동작한다(사용자 요청). 상세 반복 영역의 다음 날짜 · 오늘 시작한 휴일의 강제 종료 불가 띠 · 점포 표의 적용 중 수를 뺐다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일 상세 점포 표에서 기간 상태 열을 뺐고(사용자 요청), 적용 기간을 짧은 날짜(`26.10.20 ~` / `26.10.25` · `계속`) 두 줄로 줄였다. 상태 한글(enum)은 더 받지 않는다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일 상세의 대상 · 예외 점포를 기간 단위로(사용자 요청 → api 브랜치 totodile): 지우지 않은 모든 기간을 한 줄씩, 적용 기간(시작 ~ 종료 / 계속) · 상태(적용 예정 · 적용 중 · 빠짐, api enum `BpHolidayPeriodState`), 같은 점포는 「〃」로 묶음, 「적용 중 N곳 · 전체 M건」. 수정 양식은 열린 기간만 쓴다(`openStores`). 표는 다섯 줄까지 보이고 열 이름 줄을 고정한다. 타입은 api main `590ade2` 에 브랜치의 `/bp-holidays` 를 덮어 만들었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [BP 환경설정](/config.md) — api #154(BP 휴일) 머지 뒤 맞춤: 삭제가 읽은 `updatedAt` 을 쿼리로 보내지 않아 「updatedAt must be a valid ISO 8601 …」 400 이 나던 것을 고쳤다(api `DeleteBpHolidayQueryDto`). 날짜 2100-12-31 상한을 칸 검사에 더했다. `api-types.generated.ts` 를 api main `029ff60` 으로 다시 만들었다(머지 전 브랜치에서 떼어 얹던 방식 정리 — 빠진 경로 · 스키마 없음).
+* **Update**: 1팀 ERD(`docs/erd/team1`) — api 마이그레이션에 맞췄다: `holiday_store_mappings` · `holiday_excluded_stores` 를 한 행이 한 기간인 표로(행 ID 기본키 `holiday_store_mapping_id` · `holiday_excluded_store_id`, 대상 점포에 `effective_start_date`, 예외 점포에 `effective_end_date`, 열린 기간 부분 고유 · 기간 CHECK · `bp_holiday_id` 인덱스, `20261026135250_team1_bp_holiday_store_periods`), `bp_holidays.origin_bp_holiday_id` 는 「쓰지 않음」, 점포 연락처 CHECK 9~12자리(`20261023103403`), 사용 중 메뉴 url 부분 고유(`20261021112158`). `python _build.py` 로 다시 그렸다(시스템 장 박스 좌표 조정). DDL · 테이블 정의서(api `docs/raw`)는 api 저장소 몫이라 쓰지 않았다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) · [BP 환경설정](/config.md) — BP 휴일 관리 화면(`/bp/{id}/bp-holidays`, S-YAFRYZ · S-UCPMYB · S-MQELTV · S-BXEAEZ)을 만들었다: 캘린더 · 목록, 등록 · 상세 · 수정 슬라이드 패널, 강제 종료 · 삭제, 겹침 확인, 변경 이력. api 에 새로 들어온 「BP 휴일 변경 · 종료 정책」(1팀, 2026-10-26 — 상태별 수정 범위 · 강제 종료 · 점포 기간 · 부분 담당자는 맡은 점포만 · 시작일 오늘 이후 · 기간 종료일은 시작일 이상)을 config.md 휴일 정책에 반영하고, 목업의 「고른 날짜부터 이후 모두」 나누어 고치기 · 날짜 범위 삭제 · 「그 점포만의 새 휴일」 서술을 바꿨다. api 타입은 api main openapi 에 머지 전 브랜치의 `/bp-holidays` 만 얹어 만들었다.
+
 ## 2026-10-26
 * **Update**: main 병합(front ivysaur, main 7927b49 까지): okf/log 충돌은 양쪽 기록을 살렸다.
 * **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) — 재영 답(2026-10-26 두 번째) 반영: 대신 등록 패널이 위치정보에 동의한 직원도 「(보정)」으로 받아 기록 없는 날을 보정으로 채운다(퇴근 필수). 보정이 필요한 기록의 출근 · 퇴근 칸을 짝마다 줄을 바꿔 쌓고, 보정 패널에서 고칠 기록을 바꾸면 입력칸을 그 짝 값으로 다시 채운다(앞 짝 값이 남아 엉뚱한 짝에 저장되던 문제). 데모 · 목업: 미등록 줄의 「이상 없음」을 없애고, 급여명세서 「검토 중」 상태를 「작성 중」으로. api 타입을 다시 만들었다.

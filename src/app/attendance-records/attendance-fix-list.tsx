@@ -311,7 +311,13 @@ function FixForm({ fix, onPick, onClose, onDone }: { fix: Fix; onPick: (i: numbe
         <Field label="수정 사유" required>
           <Textarea aria-label="수정 사유" rows={4} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="예: 퇴근 등록 누락 · 근무스케줄 종료 시각으로 보정. 점장 구두 확인." />
         </Field>
-        <p className="text-[13px] text-erp-label">퇴근이 출근보다 이르거나 같으면 다음 날 퇴근입니다. 그 밖에 다음 날 퇴근이면 「다음 날 퇴근」을 고릅니다. 보정하면 확인 필요 꼬리표와 사유도 지웁니다.</p>
+        {/* 「다음 날 퇴근」 체크는 출근이 있는 짝에만 선다 — 출근 미등록 줄은 출근을 전날로 저장한다(위 안내) */}
+        <p className="text-[13px] text-erp-label">
+          {pair.checkIn
+            ? "퇴근이 출근보다 이르거나 같으면 다음 날 퇴근입니다. 그 밖에 다음 날 퇴근이면 「다음 날 퇴근」을 고릅니다. "
+            : "출근이 퇴근보다 늦거나 같으면 전날 출근입니다. "}
+          보정하면 확인 필요 꼬리표와 사유도 지웁니다.
+        </p>
       </FormGroup>
       {error && (
         <p role="alert" className="text-[14px] text-erp-off">
