@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { AdminStore } from "../../lib/session.ts";
 import type { StaffMemberListItem } from "../../lib/staff-members.ts";
-import { latestNotices, manWon, oneStoreIdOf, oneStorePaths, oneStoreStatusCells, staffCountsOf, staffRowsOf, todoSummaryOf } from "./one-store-view.ts";
+import { latestNotices, manWon, oneStoreIdOf, oneStorePaths, oneStoreStatusCells, staffCountsOf, staffRowsOf, todoSummaryOf, workDaysText, workTimeText } from "./one-store-view.ts";
 
 const store = (storeId: number) => ({ storeId }) as AdminStore;
 const staff = (over: Partial<StaffMemberListItem>) =>
@@ -81,4 +81,21 @@ test("본사 역할 · 가맹 점포 — 가린 줄(joinState null)은 남아 �
   assert.deepEqual(staffCountsOf({ items, total: 6 }), { employed: 1, waiting: 1, underAge: 0, masked: 2, partial: false });
   // 앞 100명인지는 거르기 전 받은 줄 수로 본다
   assert.equal(staffCountsOf({ items, total: 7 }).partial, true);
+});
+
+const wd = (weekday: string, startTime = "09:00", endTime = "18:00") => ({ weekday, startTime, endTime, breakStartTime: null, breakEndTime: null }) as never;
+
+test("근무 시간 — 같으면 그 시간, 다르면 가장 많은 시간 + 외, 없으면 —", () => {
+  assert.equal(workTimeText([wd("MON"), wd("TUE")]), "09:00~18:00");
+  assert.equal(workTimeText([wd("MON", "12:00", "18:00"), wd("THU"), wd("FRI")]), "09:00~18:00 외");
+  assert.equal(workTimeText([wd("MON", "12:00", "18:00"), wd("THU")]), "12:00~18:00 외");
+  assert.equal(workTimeText([]), "—");
+});
+
+test("근무요일 — 셋 이상 이어지면 물결, 아니면 가운뎃점, 없으면 —", () => {
+  assert.equal(workDaysText(["MON", "TUE", "WED", "THU", "FRI"].map((d) => wd(d))), "월~금");
+  assert.equal(workDaysText(["FRI", "MON", "THU"].map((d) => wd(d))), "월·목·금");
+  assert.equal(workDaysText(["MON", "TUE", "WED", "FRI"].map((d) => wd(d))), "월~수·금");
+  assert.equal(workDaysText(["SAT", "SUN"].map((d) => wd(d))), "토·일");
+  assert.equal(workDaysText([]), "—");
 });
