@@ -156,7 +156,18 @@ function DetailBody({
     </span>
   );
 
+  // 기본정보 표 맨 위 「계정상태」 줄의 버튼(2026-10-28 사용자 지정 — 잠시 기본정보 제목 줄 오른쪽이었다). 누를 버튼이 없으면 배지를 보인다.
+  // 수정 권한이면 [BP 상태 변경](2026-10-28 사용자 지정 문구), 탈퇴 BP 는 [사유 보기](변경 이력을 보이지 않으니 탈퇴 사유를 여기서 본다, WHALEERP-626)
+  const statusAction = canUpdate ? (
+    <Button variant="soft" onClick={() => setConfirm(bp.accountStatus === "ACTIVE" ? "inactive" : "active")} disabled={busy}>
+      BP상태변경
+    </Button>
+  ) : withdrawn && bp.withdrawal ? (
+    <WithdrawalButton bp={bp} withdrawal={bp.withdrawal} panelOpen={panelOpen} />
+  ) : undefined;
+
   const basic: DetailRow[] = [
+    { label: "계정상태", value: statusAction ?? <BpStatusBadge status={bp.accountStatus} /> },
     // BP 코드 · 아이디는 머리 줄에 있어 표에서 뺐다(2026-10-28 사용자 지정)
     { label: "이름", value: withdrawn ? gone : bp.name },
     { label: "연락처", value: withdrawn ? gone : formatPhone(bp.phone) },
@@ -222,15 +233,6 @@ function DetailBody({
     { label: "최종 인증일시", value: unverified(formatDateTime(bp.bizVerifiedAt)) },
   ];
 
-  // 상태 줄은 없앴다 — 현재 상태는 머리 배지가, 버튼은 「기본정보」 제목 줄 오른쪽이 맡는다(2026-10-28 사용자 지정).
-  // 수정 권한이면 [BP 상태 변경](2026-10-28 사용자 지정 문구), 탈퇴 BP 는 [사유 보기](변경 이력을 보이지 않으니 탈퇴 사유를 여기서 본다, WHALEERP-626)
-  const statusAction = canUpdate ? (
-    <Button variant="soft" onClick={() => setConfirm(bp.accountStatus === "ACTIVE" ? "inactive" : "active")} disabled={busy}>
-      BP상태변경
-    </Button>
-  ) : withdrawn && bp.withdrawal ? (
-    <WithdrawalButton bp={bp} withdrawal={bp.withdrawal} panelOpen={panelOpen} />
-  ) : undefined;
 
   const who = <WhoList rows={[["BP", `${bp.tradeName} · ${bp.bpCode}`], ["계정", bp.loginId]]} />;
 
@@ -271,7 +273,7 @@ function DetailBody({
       {/* 탈퇴 안내는 한 줄(2026-10-28 사용자 지정 — 전엔 보존 · 막힌 동작 · 사유 보기 · 재등록까지 두 줄) */}
       {withdrawn && <WarnBand>탈퇴BP는 조회만 가능합니다.</WarnBand>}
 
-      <DetailTable title="기본정보" action={statusAction} rows={basic} />
+      <DetailTable title="기본정보" rows={basic} />
       <DetailTable
         title={
           <span className="flex items-center gap-[6px]">
