@@ -88,6 +88,8 @@ function DetailBody({
 
   const can = usePagePermission();
   const { canUpdate, showReset, resetBlocked } = detailButtonsOf(admin.actions, can);
+  // 안내 상자의 「[초기화] 버튼으로 …」는 그 버튼을 누를 수 있는 사람에게만 — 권한 없음 · 본인 계정은 앞 문장만(리뷰로 찾음)
+  const canReset = showReset && !resetBlocked;
   const name = admin.name ?? admin.loginId;
 
   const handleReset = () =>
@@ -184,9 +186,9 @@ function DetailBody({
           보냈고 첫 로그인 전이거나 이 상세에서 방금 초기화했으면 하늘색 상자. 초기화 비밀번호는 1시간만 유효하다(api) */}
       {/* 방금 한 동작의 실패는 머리 바로 아래, 다른 안내 상자보다 위에(2026-10-28 사용자 지정) */}
       {failure && <FailedBand message={failure} />}
-      {admin.accountStatus === "ACTIVE" && admin.isInitialPasswordUnsent && <WarnBand>{"초기화 비밀번호가 발송되지 않았습니다.\n비밀번호 [초기화] 버튼을 눌러 다시 발송해주세요."}</WarnBand>}
+      {admin.accountStatus === "ACTIVE" && admin.isInitialPasswordUnsent && <WarnBand>{`초기화 비밀번호가 발송되지 않았습니다.${canReset ? "\n비밀번호 [초기화] 버튼을 눌러 다시 발송해주세요." : ""}`}</WarnBand>}
       {admin.accountStatus === "ACTIVE" && !admin.isInitialPasswordUnsent && (resetSent || (!admin.lastLoginAt && !admin.statusChangedAt)) && (
-        <SuccessBand>{"초기화 비밀번호를 발송했습니다.\n1시간 내 미로그인 시 [초기화] 버튼으로 재발송해주세요."}</SuccessBand>
+        <SuccessBand>{`초기화 비밀번호를 발송했습니다.${canReset ? "\n1시간 내 미로그인 시 [초기화] 버튼으로 재발송해주세요." : ""}`}</SuccessBand>
       )}
       {/* 버튼을 숨기거나 막은 이유(목업 admins-detail). 연결 가맹 마스터가 아닌 사람이 보는 가맹 관리자 문구는 2026-10-27 사용자 지정 */}
       {admin.actions.isSelf ? (

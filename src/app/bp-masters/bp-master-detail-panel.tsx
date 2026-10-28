@@ -238,6 +238,8 @@ function DetailBody({
 
   const who = <WhoList rows={[["BP", `${bp.tradeName} · ${bp.bpCode}`], ["계정", bp.loginId]]} />;
 
+  // 안내 상자의 「[초기화] 버튼으로 …」는 그 버튼을 누를 수 있는 사람에게만 — 권한 없음 · 본인 계정은 앞 문장만(리뷰로 찾음)
+  const canReset = canUpdate;
   return (
     <div className="flex flex-col gap-[16px]">
       {/* 머리: 첫 줄 상호명, 둘째 줄 「BP 코드 값 | 아이디 값 | 상태 배지」 — 플랫폼 관리자 상세와 같은 모양(2026-10-28 사용자 지정) */}
@@ -260,11 +262,11 @@ function DetailBody({
 
       {/* 등록 · 초기화 메일이 실패한 사용 BP — 다시 보내는 길은 초기화뿐이다. 비밀번호 줄의 「초기 비밀번호 미발송」 대신 머리 아래 빨간 상자로(칸이 틀어지지 않게, 2026-10-28 사용자 지정).
           api isInitialPasswordUnsent 를 따르므로 초기화 메일이 나갈 때까지 상세를 열 때마다 보인다 */}
-      {bp.accountStatus === "ACTIVE" && bp.isInitialPasswordUnsent && <WarnBand>{"초기화 비밀번호가 발송되지 않았습니다.\n비밀번호 [초기화] 버튼을 눌러 다시 발송해주세요."}</WarnBand>}
+      {bp.accountStatus === "ACTIVE" && bp.isInitialPasswordUnsent && <WarnBand>{`초기화 비밀번호가 발송되지 않았습니다.${canReset ? "\n비밀번호 [초기화] 버튼을 눌러 다시 발송해주세요." : ""}`}</WarnBand>}
       {/* 메일이 나갔고 아직 한 번도 로그인하지 않은 사용 BP — 초기 비밀번호는 1시간만 유효해(api) 그 뒤 할 일을 함께 적는다. 첫 로그인하면 사라진다.
           직접 회원가입한 BP 는 초기화 비밀번호를 받은 적이 없어 띄우지 않는다(리뷰로 찾음). 미사용 → 사용으로 되돌린 BP(statusChangedAt 있음 — 상태를 바꿀 때만 찍힌다)는 그 사이 초기화 비밀번호가 만료돼 「발송했습니다」가 맞지 않아 띄우지 않는다(2026-10-28 사용자 지정) */}
       {bp.accountStatus === "ACTIVE" && !bp.isInitialPasswordUnsent && (resetSent || (bp.joinPath === "PLATFORM_REGISTERED" && !bp.lastLoginAt && !bp.statusChangedAt)) && (
-        <SuccessBand>{"초기화 비밀번호를 발송했습니다.\n1시간 내 미로그인 시 [초기화] 버튼으로 재발송해주세요."}</SuccessBand>
+        <SuccessBand>{`초기화 비밀번호를 발송했습니다.${canReset ? "\n1시간 내 미로그인 시 [초기화] 버튼으로 재발송해주세요." : ""}`}</SuccessBand>
       )}
       {/* 미사용 · 탈퇴 안내는 빨간 안내 상자(WarnBand — 2026-10-28 사용자 지정, 점포 BP 탈퇴 · 미사용 안내와 같다). 미사용은 두 줄로 줄였다(같은 날 사용자 지정) */}
       {bp.accountStatus === "INACTIVE" && (
