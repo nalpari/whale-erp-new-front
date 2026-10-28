@@ -58,7 +58,7 @@ export const render = ({ A, R }, { bpStatus } = {}) => {
   const saved = ["105-22-81934", "박서윤", "2019-05-10"];
   const savedGuide = "대표자 변경 시 새 대표자명으로 재인증해야 합니다.<br>사업자등록번호와 개업일자는 수정할 수 없으며, 인증 실패 시 기존 정보가 유지됩니다.";
   const biz = ui.formGroup(
-    f.titleBadge("사업자정보", "on", "인증 완료 · 2026-03-04"),
+    f.titleBadge("사업자정보", "on", "인증 완료 · 2026-03-04 10:20"),
     f.bizVerifyBox(A, {
       id: "ebiz-locked",
       row: true,

@@ -48,3 +48,9 @@ export function formatPhone(digits: string | null | undefined): string {
   if (digits.startsWith("02")) return digits.replace(/^(02)([0-9]{3,4})([0-9]{4})$/, "$1-$2-$3");
   return digits.replace(/^([0-9]{3})([0-9]{3,4})([0-9]{4})$/, "$1-$2-$3");
 }
+
+/** api 문구 끝에 마침표가 없으면 붙인다 — 화면 문구는 마침표로 끝낸다(api 한국어 문구는 마침표 없이 오는 것이 많다, 2026-10-28 사용자 지정). */
+export function withPeriod(message: string): string {
+  const text = message.trim();
+  return /[.!?。]$/.test(text) ? text : `${text}.`;
+}

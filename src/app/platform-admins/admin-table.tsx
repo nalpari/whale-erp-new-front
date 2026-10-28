@@ -92,7 +92,7 @@ export function AdminTable({
       // 로그인한 적이 없으면 「-」(2026-10-27 사용자 요청). 초기 비밀번호 메일이 실패한 계정은 그 사실을 먼저 알린다(SYSTEM-3).
       cell: (a) =>
         a.isInitialPasswordUnsent ? (
-          <span className="text-erp-off">초기 비밀번호 미발송</span>
+          <span className="text-erp-off">초기화 비밀번호 미발송</span>
         ) : a.lastLoginAt ? (
           dim(a, formatDateTime(a.lastLoginAt))
         ) : (

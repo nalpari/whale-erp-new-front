@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
+import { withPeriod } from "@/lib/format";
 import {
   checkLoginIdAvailable,
   createPlatformAdmin,
@@ -30,7 +31,7 @@ export type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; status?
 function failureOf(error: unknown, what: string): { ok: false; status?: number; message: string } {
   if (error instanceof ApiError) {
     if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
-    if ([400, 403, 404, 409].includes(error.status)) return { ok: false, status: error.status, message: error.message };
+    if ([400, 403, 404, 409].includes(error.status)) return { ok: false, status: error.status, message: withPeriod(error.message) };
   }
   console.error(`플랫폼 관리자 ${what} 실패`, error);
   return { ok: false, message: `${what}하지 못했습니다. 잠시 후 다시 시도해 주세요.` };
@@ -100,7 +101,10 @@ export async function resetPlatformAdminPasswordAction(id: number): Promise<Acti
     refresh();
     return { ok: true, ...result };
   } catch (error) {
-    return failureOf(error, "비밀번호 초기화");
+    // api 문구 「이메일이 없는 계정이라 보낼 곳이 없습니다」(409)는 화면 말투로 바꾼다 — 세 관리 화면 같다(2026-10-28 사용자 지정)
+    if (error instanceof ApiError && error.status === 409 && error.message.includes("이메일이 없는 계정"))
+      return { ok: false, status: 409, message: "해당 계정에는 등록된 이메일 주소가 없어 메일을 발송할 수 없습니다." };
+    return failureOf(error, "비밀번호를 초기화");
   }
 }
 

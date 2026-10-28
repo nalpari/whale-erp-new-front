@@ -2,32 +2,28 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type ReactNode, type RefObject } from "react";
-import { Badge, Button, ConfirmDialog, DetailTable, DetailValues, SlidePanel, useToast, type DetailRow } from "@/components/common";
+import { Button, ConfirmDialog, DetailTable, DetailValues, SlidePanel, useToast, type DetailRow } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
 import { HeadValues } from "@/components/site/head-values";
-import { WarnBand } from "@/components/site/side-parts";
-import type { BpMasterDetail, CreateBpMasterResult } from "@/lib/bp-masters";
+import { BizVerifiedStatus } from "@/components/site/biz-verification-box";
+import { SuccessBand, WarnBand } from "@/components/site/side-parts";
+import type { BpMasterDetail } from "@/lib/bp-masters";
 import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
 import { formatBizNumber } from "@/lib/store-view";
 import { Blocked, FailedBand, WhoList } from "../platform-admins/admin-parts";
-import { NoticeBand } from "../stores/store-parts";
 import { changeBpMasterStatusAction, deleteBpMasterAction, resetBpMasterPasswordAction } from "./actions";
 import { BpStatusBadge, unknownResult, WITHDRAWN_TEXT } from "./bp-master-parts";
 import { HistoryButton } from "./history-dialog";
 import { WithdrawalButton } from "./withdrawal-dialog";
 
 // BP 마스터 계정 상세(S-GZDODB · 초기화 S-PRRLMA). 모두 읽기 전용이고, 기본정보 · 사업자정보를 나눠 보인다.
-// 버튼 자리는 플랫폼 관리자 상세와 같다(BP-6) — [BP 상태 변경]은 기본정보 제목 줄, 비밀번호 초기화는 비밀번호 줄의 버튼(수정 권한),
+// 버튼 자리는 플랫폼 관리자 상세와 같다(BP-6) — [BP상태변경]은 기본정보 표 맨 위 「계정상태」 줄, 비밀번호 초기화는 비밀번호 줄의 버튼(수정 권한),
 // 하단은 [닫기] … [삭제][수정][변경 이력]. 탈퇴 BP 는 조회만 된다(상태 변경 · 초기화 · 삭제 · 수정 · 변경 이력 없음, 탈퇴 사유는 [사유 보기]).
 // 화면은 미리 숨기거나 흐리게만 한다 — 막는 것은 api 다.
-
-/** 방금 등록한 BP — 상세 위쪽 띠로 BP 코드와 메일 발송 주소를 알린다(BP-3) */
-export type CreatedNotice = CreateBpMasterResult;
 
 export function BpMasterDetailPanel({
   open,
   detail,
-  created,
   onClose,
   onBackdropClose,
   trigger,
@@ -36,7 +32,6 @@ export function BpMasterDetailPanel({
 }: {
   open: boolean;
   detail: { bp: BpMasterDetail } | { failed: string } | null;
-  created: CreatedNotice | null;
   onClose: () => void;
   /** 바탕창 클릭 — 겹친 패널을 모두 닫는다(bp-masters-screen.tsx closeAll) */
   onBackdropClose: () => void;
@@ -61,7 +56,6 @@ export function BpMasterDetailPanel({
           key={detail.bp.bpCodeId}
           bp={detail.bp}
           panelOpen={open}
-          created={created}
           onClose={onClose}
           onEdit={onEdit}
           onDeleted={onDeleted}
@@ -85,7 +79,6 @@ type Confirm = "inactive" | "active" | "reset" | "delete";
 function DetailBody({
   bp,
   panelOpen,
-  created,
   onClose,
   onEdit,
   onDeleted,
@@ -93,7 +86,6 @@ function DetailBody({
   bp: BpMasterDetail;
   /** 상세 패널이 열려 있는가 — 닫히면 이 안에서 띄운 팝업도 닫는다 */
   panelOpen: boolean;
-  created: CreatedNotice | null;
   onClose: () => void;
   onEdit: (from: HTMLButtonElement) => void;
   onDeleted: () => void;
@@ -106,6 +98,8 @@ function DetailBody({
   if (!panelOpen && confirm) setConfirm(null);
   const [failure, setFailure] = useState<{ message: string; detail?: string } | null>(null);
   const [busy, startBusy] = useTransition();
+  /** 이 상세에서 초기화 메일을 보냈다 — 로그인한 적이 있어도 하늘색 안내를 띄운다(등록 때와 같은 안내, 2026-10-28 사용자 지정) */
+  const [resetSent, setResetSent] = useState(false);
 
   const can = usePagePermission();
   const withdrawn = bp.accountStatus === "WITHDRAWN";
@@ -133,7 +127,10 @@ function DetailBody({
   const handleStatus = (status: "ACTIVE" | "INACTIVE") =>
     run(
       () => changeBpMasterStatusAction(bp.bpCodeId, status).catch(unknownResult("상태 변경")),
-      () => toast(status === "INACTIVE" ? "미사용으로 바꿨습니다." : "사용으로 바꿨습니다."),
+      () => {
+        toast("변경되었습니다."); // 토스트는 동작만 짧게 — 저장 · 수정 · 삭제 · 초기화와 같은 말투(2026-10-28 사용자 지정)
+        setResetSent(false); // 상태를 바꾸면 방금 초기화 안내도 내린다 — 되돌린 BP 에는 띄우지 않는 규칙(리뷰로 찾음)
+      },
     );
 
   const handleReset = () =>
@@ -141,23 +138,18 @@ function DetailBody({
       const result = await resetBpMasterPasswordAction(bp.bpCodeId).catch(unknownResult("비밀번호 초기화"));
       setConfirm(null);
       if (!result.ok) return fail(result.status, result.message);
-      if (result.isMailSent) {
-        setFailure(null);
-        toast(`새 초기 비밀번호를 ${bp.email ?? "계정 이메일"} 로 보냈습니다.`);
-      } else {
-        // 기존 비밀번호는 이미 막혔다 — 다시 초기화하면 새 값으로 다시 보낸다(S-PRRLMA)
-        setFailure({
-          message: "초기화는 됐지만 안내 메일을 보내지 못했습니다.",
-          detail: "기존 비밀번호는 이미 무효입니다. 다시 초기화하면 새 비밀번호로 메일을 다시 보냅니다.",
-        });
-      }
+      // 결과는 등록 때와 같은 안내로 — 성공은 하늘색, 메일 실패는 빨간 상자(액션이 refresh 해 isInitialPasswordUnsent 가 켜진다). 따로 띠를 세우지 않는다(2026-10-28 사용자 지정)
+      setFailure(null);
+      setResetSent(result.isMailSent);
+      if (result.isMailSent) toast("초기화되었습니다.");
     });
 
   const handleDelete = () => run(() => deleteBpMasterAction(bp.bpCodeId).catch(unknownResult("삭제")), onDeleted);
 
   const muted = (text: string) => <span className="text-erp-muted">{text}</span>;
   const gone = muted(WITHDRAWN_TEXT);
-  // 미인증 BP 는 진위확인으로 채워지는 값과 대표자 연락 · 주소를 하이픈으로 보인다(S-GZDODB)
+  // 미인증 BP 는 진위확인으로 채워지는 값(사업자번호 · 대표자명 · 개업일자 — 인증 일시는 제목 줄 「인증 완료 · 일시」)만 하이픈으로 보인다.
+  // 대표자 연락처 · 이메일 · 주소는 인증 없이 입력하는 칸이라 입력한 값을 그대로 보인다(2026-10-28 사용자 지적 — 전엔 미인증이면 함께 가렸다, S-GZDODB)
   const verified = Boolean(bp.bizVerifiedAt);
   const unverified = (value: ReactNode) => (verified ? value : muted("-"));
   const address = [bp.bizZipCode, bp.bizAddress, bp.bizAddressDetail].filter((line): line is string => Boolean(line));
@@ -168,15 +160,26 @@ function DetailBody({
     </span>
   );
 
+  // 기본정보 표 맨 위 「계정상태」 줄의 버튼(2026-10-28 사용자 지정 — 잠시 기본정보 제목 줄 오른쪽이었다). 누를 버튼이 없으면 배지를 보인다.
+  // 수정 권한이면 [BP상태변경](2026-10-28 사용자 지정 문구), 탈퇴 BP 는 [사유 보기](변경 이력을 보이지 않으니 탈퇴 사유를 여기서 본다, WHALEERP-626)
+  const statusAction = canUpdate ? (
+    <Button variant="soft" onClick={() => setConfirm(bp.accountStatus === "ACTIVE" ? "inactive" : "active")} disabled={busy}>
+      BP상태변경
+    </Button>
+  ) : withdrawn && bp.withdrawal ? (
+    <WithdrawalButton bp={bp} withdrawal={bp.withdrawal} panelOpen={panelOpen} />
+  ) : undefined;
+
   const basic: DetailRow[] = [
+    { label: "계정상태", value: statusAction ?? <BpStatusBadge status={bp.accountStatus} /> },
     // BP 코드 · 아이디는 머리 줄에 있어 표에서 뺐다(2026-10-28 사용자 지정)
     { label: "이름", value: withdrawn ? gone : bp.name },
     { label: "연락처", value: withdrawn ? gone : formatPhone(bp.phone) },
     { label: "이메일", value: withdrawn ? gone : bp.email },
     {
       label: "비밀번호",
-      // 칸을 35:65 로 나눠 왼쪽 「[초기화] 초기 비밀번호 미발송」, 오른쪽 35% 자리에서(왼쪽 내용보다 좁아지지 않고, 구분선과 18px 띄운다) 「강제변경 대상 · 대상아님」(2026-10-28 사용자 지정 — 잠시 하위 줄 「└ 강제변경」이었다).
-      // 미사용 · 탈퇴 BP 는 초기화 버튼 · 미발송 표시를 숨긴다(플랫폼 관리자 상세와 같다, 2026-10-28 사용자 지정) — 화면에서만 숨긴다
+      // 칸을 35:65 로 나눠 왼쪽 「[초기화]」(미발송은 머리 아래 빨간 상자로 옮겼다), 오른쪽 35% 자리에서(왼쪽 내용보다 좁아지지 않고, 구분선과 18px 띄운다) 「강제변경 대상 · 대상아님」(2026-10-28 사용자 지정 — 잠시 하위 줄 「└ 강제변경」이었다).
+      // 미사용 · 탈퇴 BP 는 초기화 버튼을 숨긴다(플랫폼 관리자 상세와 같다, 2026-10-28 사용자 지정) — 화면에서만 숨긴다
       value: (
         <span className="grid w-full grid-cols-[minmax(max-content,7fr)_13fr] items-center gap-[18px]">
           <span className="flex min-w-0 items-center gap-[10px]">
@@ -185,10 +188,8 @@ function DetailBody({
                 초기화
               </Button>
             )}
-            {/* 등록 · 초기화 메일이 실패했다 — 다시 보내는 길은 초기화뿐이다 */}
-            {bp.accountStatus === "ACTIVE" && bp.isInitialPasswordUnsent && <span className="truncate text-erp-off">초기 비밀번호 미발송</span>}
-            {/* 초기화 버튼 · 미발송 표시가 모두 없으면(미사용 · 탈퇴 · 수정 권한 없음) 빈칸 대신 「-」(2026-10-28 사용자 지정) */}
-            {!(bp.accountStatus === "ACTIVE" && (canUpdate || bp.isInitialPasswordUnsent)) && muted("-")}
+            {/* 초기화 버튼이 없으면(미사용 · 탈퇴 · 수정 권한 없음) 빈칸 대신 「-」(2026-10-28 사용자 지정) */}
+            {!(bp.accountStatus === "ACTIVE" && canUpdate) && muted("-")}
           </span>
           {/* 앞에 머리 줄(HeadValues)과 같은 11px 세로 구분선 — #d9d9d9 는 Figma 값 구분선(DESIGN.md) */}
           <span className="flex min-w-0 items-center gap-[10px]">
@@ -217,39 +218,27 @@ function DetailBody({
     { label: "상호명", value: bp.tradeName },
     { label: "사업자번호", value: unverified(formatBizNumber(bp.bizRegistrationNumber)) },
     { label: "대표자명", value: unverified(bp.bizCeoName) },
-    { label: "대표자 연락처", value: unverified(withdrawn ? gone : formatPhone(bp.bizCeoPhone)) },
-    { label: "대표자 이메일", value: unverified(withdrawn ? gone : bp.bizCeoEmail) },
+    { label: "대표자 연락처", value: withdrawn ? gone : formatPhone(bp.bizCeoPhone) },
+    { label: "대표자 이메일", value: withdrawn ? gone : bp.bizCeoEmail },
     { label: "개업일자", value: unverified(bp.bizOpenDate) },
     {
       label: "사업자주소",
-      multiline: verified && address.length > 0,
-      value: unverified(
-        address.length ? (
-          <div className="py-[2px]">
-            {address.map((line, i) => (
-              <p key={i}>{line}</p>
-            ))}
-          </div>
-        ) : null,
-      ),
+      multiline: address.length > 0,
+      value: address.length ? (
+        <div className="py-[2px]">
+          {address.map((line, i) => (
+            <p key={i}>{line}</p>
+          ))}
+        </div>
+      ) : null,
     },
     { label: "업태 · 종목", value: <DetailValues items={[bp.bizCategory ?? "", bp.bizItem ?? ""].filter(Boolean)} /> },
-    // 라벨 · 빈 값은 점포 상세(stores/[storeId]/page.tsx)와 같다
-    { label: "최종 인증일시", value: unverified(formatDateTime(bp.bizVerifiedAt)) },
   ];
 
-  // 상태 줄은 없앴다 — 현재 상태는 머리 배지가, 버튼은 「기본정보」 제목 줄 오른쪽이 맡는다(2026-10-28 사용자 지정).
-  // 수정 권한이면 [BP 상태 변경](2026-10-28 사용자 지정 문구), 탈퇴 BP 는 [사유 보기](변경 이력을 보이지 않으니 탈퇴 사유를 여기서 본다, WHALEERP-626)
-  const statusAction = canUpdate ? (
-    <Button variant="soft" onClick={() => setConfirm(bp.accountStatus === "ACTIVE" ? "inactive" : "active")} disabled={busy}>
-      BP 상태 변경
-    </Button>
-  ) : withdrawn && bp.withdrawal ? (
-    <WithdrawalButton bp={bp} withdrawal={bp.withdrawal} panelOpen={panelOpen} />
-  ) : undefined;
 
-  const who = <WhoList rows={[["BP", `${bp.tradeName} · ${bp.bpCode}`], ["계정", bp.loginId]]} />;
 
+  // 안내 상자의 「[초기화] 버튼으로 …」는 그 버튼을 누를 수 있는 사람에게만 — 권한 없음 · 본인 계정은 앞 문장만(리뷰로 찾음)
+  const canReset = canUpdate;
   return (
     <div className="flex flex-col gap-[16px]">
       {/* 머리: 첫 줄 상호명, 둘째 줄 「BP 코드 값 | 아이디 값 | 상태 배지」 — 플랫폼 관리자 상세와 같은 모양(2026-10-28 사용자 지정) */}
@@ -267,17 +256,16 @@ function DetailBody({
           />
         </span>
       </div>
+      {/* 방금 한 동작의 실패는 머리 바로 아래, 다른 안내 상자보다 위에(2026-10-28 사용자 지정) */}
+      {failure && <FailedBand message={failure.message} detail={failure.detail} />}
 
-      {created && (
-        <NoticeBand
-          tone="info"
-          title={`BP를 등록했습니다 · BP 코드 ${created.bpCode}`}
-          detail={
-            created.isMailSent
-              ? `초기 비밀번호를 ${created.email} 로 보냈습니다. BP 마스터는 첫 로그인 때 비밀번호 변경과 약관 동의를 마쳐야 ERP 를 쓸 수 있습니다.`
-              : `초기 비밀번호 메일을 ${created.email} 로 보내지 못했습니다. 아래 비밀번호 [초기화]로 다시 보내 주세요.`
-          }
-        />
+      {/* 등록 · 초기화 메일이 실패한 사용 BP — 다시 보내는 길은 초기화뿐이다. 비밀번호 줄의 「초기 비밀번호 미발송」 대신 머리 아래 빨간 상자로(칸이 틀어지지 않게, 2026-10-28 사용자 지정).
+          api isInitialPasswordUnsent 를 따르므로 초기화 메일이 나갈 때까지 상세를 열 때마다 보인다 */}
+      {bp.accountStatus === "ACTIVE" && bp.isInitialPasswordUnsent && <WarnBand>{`초기화 비밀번호가 발송되지 않았습니다.${canReset ? "\n비밀번호 [초기화] 버튼을 눌러 다시 발송해주세요." : ""}`}</WarnBand>}
+      {/* 메일이 나갔고 아직 한 번도 로그인하지 않은 사용 BP — 초기 비밀번호는 1시간만 유효해(api) 그 뒤 할 일을 함께 적는다. 첫 로그인하면 사라진다.
+          직접 회원가입한 BP 는 초기화 비밀번호를 받은 적이 없어 띄우지 않는다(리뷰로 찾음). 미사용 → 사용으로 되돌린 BP(statusChangedAt 있음 — 상태를 바꿀 때만 찍힌다)는 그 사이 초기화 비밀번호가 만료돼 「발송했습니다」가 맞지 않아 띄우지 않는다(2026-10-28 사용자 지정) */}
+      {bp.accountStatus === "ACTIVE" && !bp.isInitialPasswordUnsent && (resetSent || (bp.joinPath === "PLATFORM_REGISTERED" && !bp.lastLoginAt && !bp.statusChangedAt)) && (
+        <SuccessBand>{`초기화 비밀번호를 발송했습니다.${canReset ? "\n1시간 내 미로그인 시 [초기화] 버튼으로 재발송해주세요." : ""}`}</SuccessBand>
       )}
       {/* 미사용 · 탈퇴 안내는 빨간 안내 상자(WarnBand — 2026-10-28 사용자 지정, 점포 BP 탈퇴 · 미사용 안내와 같다). 미사용은 두 줄로 줄였다(같은 날 사용자 지정) */}
       {bp.accountStatus === "INACTIVE" && (
@@ -287,13 +275,13 @@ function DetailBody({
       )}
       {/* 탈퇴 안내는 한 줄(2026-10-28 사용자 지정 — 전엔 보존 · 막힌 동작 · 사유 보기 · 재등록까지 두 줄) */}
       {withdrawn && <WarnBand>탈퇴BP는 조회만 가능합니다.</WarnBand>}
-      {failure && <FailedBand message={failure.message} detail={failure.detail} />}
 
-      <DetailTable title="기본정보" action={statusAction} rows={basic} />
+      <DetailTable title="기본정보" rows={basic} />
       <DetailTable
         title={
-          <span className="flex items-center gap-[6px]">
-            사업자정보 {verified ? <Badge tone="on">인증완료</Badge> : <Badge tone="off">미인증</Badge>}
+          // 「인증 완료 · 일시」를 제목 줄 오른쪽에 — 아래 「최종 인증일시」 줄을 올렸다(수정 화면 인증 상자와 같은 자리 · 글, 2026-10-28 사용자 지정)
+          <span className="flex w-full items-center justify-between gap-[6px]">
+            사업자정보 <BizVerifiedStatus verified={verified} date={verified ? formatDateTime(bp.bizVerifiedAt) : ""} />
           </span>
         }
         rows={business}
@@ -326,7 +314,7 @@ function DetailBody({
         <>
           <ConfirmDialog
             open={confirm === "inactive"}
-            title="BP를 미사용으로 바꾸시겠습니까?"
+            title="BP상태를 미사용으로 바꾸시겠습니까?"
             confirmLabel="미사용으로 변경"
             confirmVariant="danger"
             wide
@@ -334,38 +322,30 @@ function DetailBody({
             onConfirm={() => handleStatus("INACTIVE")}
             onCancel={() => setConfirm(null)}
           >
+            {/* 대상은 상호명 · 아이디 · 이름, 안내는 빨간 상자 두 줄 — 상세 미사용 안내와 같은 말투, 하위 관리자 계정도 함께 미사용이 된다는 것을 늘 적는다(2026-10-28 사용자 지정, 점포 수 · 세션 안내는 뺐다) */}
             <div className="flex flex-col gap-[12px]">
-              {who}
-              {bp.subAdminCount > 0 ? (
-                <p>
-                  이 BP의 관리자 계정 <b className="font-semibold">{bp.subAdminCount + 1}개</b>(BP 마스터 포함)가 모두 미사용이 되어 로그인할 수 없습니다.
-                </p>
-              ) : (
-                <p>BP 마스터 계정이 미사용이 되어 로그인할 수 없습니다.</p>
-              )}
-              <p>
-                점포 <b className="font-semibold">{bp.storeCount.toLocaleString("ko-KR")}곳</b>은 상태를 그대로 두고 직원 초대 · 근로계약 · 출퇴근 기록 등
-                업무만 멈춥니다.
-              </p>
-              <p>확인하면 바로 적용됩니다. 로그인 중인 세션과 비밀번호는 그대로 유지됩니다.</p>
+              <WhoList rows={[["상호명", bp.tradeName], ["아이디", bp.loginId], ["이름", bp.name ?? "-"]]} />
+              <WarnBand>
+                {"BP 마스터를 포함한 모든 관리자 계정은 [미사용]되어 로그인할 수 없습니다.\n점포 상태는 유지되고, 직원초대 · 계약 · 출퇴근 기능은 중지됩니다."}
+              </WarnBand>
             </div>
           </ConfirmDialog>
 
           <ConfirmDialog
             open={confirm === "active"}
-            title="BP를 사용으로 되돌리시겠습니까?"
+            title="BP상태를 사용으로 바꾸시겠습니까?"
             confirmLabel="사용으로 변경"
             wide
             busy={busy}
             onConfirm={() => handleStatus("ACTIVE")}
             onCancel={() => setConfirm(null)}
           >
+            {/* 미사용으로 바꾸기와 같은 모양(2026-10-28 사용자 지정) */}
             <div className="flex flex-col gap-[12px]">
-              {who}
-              <p>
-                <b className="font-semibold">BP 마스터 계정만</b> 사용으로 바뀌어 기존 비밀번호로 다시 로그인할 수 있습니다.
-              </p>
-              <p>BP 관리자 · 가맹 관리자 계정은 미사용으로 남습니다. BP 마스터가 BP 관리자 관리에서 다시 켜야 합니다.</p>
+              <WhoList rows={[["상호명", bp.tradeName], ["아이디", bp.loginId], ["이름", bp.name ?? "-"]]} />
+              <WarnBand>
+                {"BP 마스터 계정만 사용으로 바뀌어 기존 비밀번호로 다시 로그인할 수 있습니다.\nBP 관리자 · 가맹 관리자 계정은 미사용으로 남습니다."}
+              </WarnBand>
             </div>
           </ConfirmDialog>
 
@@ -379,12 +359,10 @@ function DetailBody({
             onCancel={() => setConfirm(null)}
           >
             <div className="flex flex-col gap-[12px]">
-              {who}
-              <p>
-                새 초기 비밀번호(12자 무작위)를 계정 이메일로만 보내며, 기존 비밀번호는 즉시 무효가 됩니다.
-                <br />
-                초기 비밀번호는 1시간 안에 로그인해야 하고, 로그인 때 비밀번호를 새로 정합니다. 현재 로그인 중인 세션은 유지됩니다.
-              </p>
+              <WhoList rows={[["아이디", bp.loginId], ["이름", bp.name ?? "-"], ["이메일", bp.email ?? "-"]]} />
+              {/* 세 관리 화면 같은 문구 · 대상은 아이디 · 이름 · 이메일 각각(「아이디/이름」 한 줄은 라벨이 잘렸다)(2026-10-28 사용자 지정) */}
+              {/* 안내는 빨간 안내 상자로 — 되돌릴 수 없는 동작이라 놓치지 않게(2026-10-28 사용자 지정) */}
+              <WarnBand>{"비밀번호 초기화 시 새로운 비밀번호가 등록된 이메일로 발송됩니다.\n새 비밀번호는 1시간 동안 유효하며, 로그인 시 변경해야 합니다.\n기존 비밀번호는 즉시 사용할 수 없게 됩니다."}</WarnBand>
             </div>
           </ConfirmDialog>
         </>
@@ -400,12 +378,10 @@ function DetailBody({
           onConfirm={handleDelete}
           onCancel={() => setConfirm(null)}
         >
+          {/* 대상은 상호명 · 아이디 · 이름, 안내는 빨간 안내 상자에 관리자 계정 삭제와 같은 문구 한 줄(2026-10-28 사용자 지정) */}
           <div className="flex flex-col gap-[12px]">
-            {who}
-            <p>
-              계정과 이 계정이 대표하는 <b className="font-semibold">BP 정보가 함께 삭제</b>되고 되돌릴 수 없습니다.
-            </p>
-            <p>해당 아이디 {bp.loginId}, BP 코드도 다시 사용하지 못합니다.</p>
+            <WhoList rows={[["상호명", bp.tradeName], ["아이디", bp.loginId], ["이름", bp.name ?? "-"]]} />
+            <WarnBand>삭제한 계정은 BP 목록 및 검색 결과에서 제외되며, 해당 계정으로 더 이상 로그인할 수 없습니다.</WarnBand>
           </div>
         </ConfirmDialog>
       )}
