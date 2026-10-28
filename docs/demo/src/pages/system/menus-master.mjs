@@ -220,7 +220,7 @@ function treeTab(key, s) {
 // 트리의 새 자리(고른 메뉴 맨 끝, 3단계를 고르면 그 상위 맨 끝)에 ‘작성 중’ 줄이 선다. 취소·저장하면 상세로 돌아간다(데모라 트리에 넣지는 않는다).
 const MENU_SCRIPT = `<script>
 (() => {
-  // 고른 줄 표시 — 1단계 줄 바탕(bg-erp-thead-bg)과 겹치지 않게 다른 바탕 + 왼쪽 선(앱 DataTable current 와 같다)
+  // 고른 줄 표시 — 한 단계 어두운 바탕 + 왼쪽 선(앱 DataTable current 와 같다). 1단계 줄은 바탕 없이 굵은 글씨로만 가른다(앱 menus-screen.tsx 와 같다, 2026-10-28)
   const SEL = "bg-erp-subtle";
   const BAR = "[&>td:first-child]:shadow-[inset_3px_0_0_var(--color-erp-brand)]";
   document.querySelectorAll("[data-side]").forEach((side) => {
@@ -242,7 +242,6 @@ const MENU_SCRIPT = `<script>
         const on = !draft && r.dataset.code === cur;
         r.classList.toggle(SEL, on);
         r.classList.toggle(BAR, on);
-        r.classList.toggle("bg-erp-thead-bg", !on && r.dataset.lvl === "1");
       });
     const parentOf = (r) => {
       for (let i = rows.indexOf(r) - 1; i >= 0; i--) if (+rows[i].dataset.lvl < +r.dataset.lvl) return rows[i];
