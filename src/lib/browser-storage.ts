@@ -141,7 +141,7 @@ function pickBp({ bpCodeId, bpCode, tradeName }: StoredBp): StoredBp {
  *   BP 선택 팝업이 연 주소는 서버에서 찾은 그 BP 가 selectedBp 로 함께 오고, 플랫폼관리 바로가기는 자기 BP 를 싣는다.
  *   둘 다 아니면 이름을 알 수 없어 무시한다.
  * - 탭 값이 없는 새 탭(주소 직접 입력·즐겨찾기)은 ERP 메뉴 주소면 마지막으로 고른 BP 의 ERP, 그 밖은 자기 BP 의 플랫폼이다.
- *   고른 BP 가 없는데 ERP 주소면 플랫폼으로 열려 메뉴 권한 확인이 막고 이전 화면(없으면 플랫폼 홈)으로 보낸다.
+ *   고른 BP 가 없는데 ERP 주소면 플랫폼으로 열려 메뉴 권한 확인이 막고 이전 화면(없으면 플랫폼 첫 주소 /platform)으로 보낸다.
  */
 export function resolveTab(o: {
   ownBp: StoredBp;
