@@ -64,7 +64,7 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
       right={
         <>
           {service === "WHALE_ERP" ? <HeaderScopeSelect /> : <div className="flex-1" />}
-          <ServiceLinks targets={serviceTargets(account.bp, service, () => setBpSelectOpen(true))} />
+          <ServiceLinks targets={serviceTargets(account.bp, service, () => setBpSelectOpen(true))} hideAddon={service === "PLATFORM"} />
           {alarm}
           <UserPop name={account.name ?? account.loginId} items={userItems} triggerRef={myPageTrigger} />
           {bpSelectOpen && <BpSelectDialog onClose={() => setBpSelectOpen(false)} />}
