@@ -6,7 +6,7 @@ import { Badge, Button, ConfirmDialog, DataTable, DetailTable, SlidePanel, useTo
 import { useCodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
 import { usePagePermission } from "@/components/site/session-gate";
-import { FailedBand, InfoBand, WarnBand } from "@/components/site/side-parts";
+import { FailedBand, InfoBand, SuccessBand, WarnBand } from "@/components/site/side-parts";
 import { Blocked, WhoList } from "@/app/platform-admins/admin-parts";
 import { HistoryButton } from "@/app/platform-admins/history-dialog";
 import { StoreStatusBadge } from "@/app/stores/store-parts";
@@ -81,6 +81,8 @@ function DetailBody({
   if (!panelOpen && confirmOpen) setConfirmOpen(false);
   const [failure, setFailure] = useState<string | null>(null);
   const [busy, startBusy] = useTransition();
+  /** 이 상세에서 초기화 메일을 보냈다 — 로그인한 적이 있어도 하늘색 안내를 띄운다(BP 마스터 상세와 같다, 2026-10-28 사용자 지정) */
+  const [resetSent, setResetSent] = useState(false);
 
   const can = usePagePermission();
   const { canUpdate, showReset, resetBlocked } = detailButtonsOf(admin.actions, can);
@@ -97,8 +99,9 @@ function DetailBody({
         return;
       }
       setFailure(null);
-      // 메일이 실패해도 기존 비밀번호는 이미 막혔다 — 다시 초기화하면 보낸다
-      toast(result.isMailSent ? "초기화 비밀번호를 계정 이메일로 보냈습니다." : "초기화했지만 메일을 보내지 못했습니다. 다시 초기화해 주세요.");
+      // 메일이 실패해도 기존 비밀번호는 이미 막혔다 — 다시 초기화하면 보낸다. 결과는 상세 위 상자로(액션이 refresh 해 미발송이 켜진다)
+      setResetSent(result.isMailSent);
+      if (result.isMailSent) toast("초기화되었습니다.");
     });
 
   const muted = (text: string) => <span className="font-normal text-erp-muted">{text}</span>;
@@ -122,8 +125,9 @@ function DetailBody({
     { label: "이메일", value: admin.email ?? null },
     {
       label: "비밀번호",
-      // 미사용 계정은 초기화 버튼 · 미발송 표시 없이 빈칸으로 둔다 — 화면에서만 숨긴다(api 는 미사용 계정 초기화를 막지 않는다, 플랫폼 관리자와 같다)
-      value: admin.accountStatus === "INACTIVE" ? null : (
+      // 미사용 계정 · 초기화 버튼을 못 보는 계정은 「-」 — 화면에서만 숨긴다(api 는 미사용 계정 초기화를 막지 않는다, 플랫폼 관리자와 같다, 2026-10-28).
+      // 미발송은 상세 위 빨간 상자가 알린다
+      value: admin.accountStatus === "INACTIVE" || !showReset ? muted("-") : (
         <span className="flex items-center gap-[10px]">
           {showReset && (
             <Blocked reason={resetBlocked ? "본인 비밀번호는 내 정보에서 바꿉니다" : undefined}>
@@ -132,7 +136,6 @@ function DetailBody({
               </Button>
             </Blocked>
           )}
-          {admin.isInitialPasswordUnsent && <span className="text-erp-off">초기화 비밀번호 미발송</span>}
         </span>
       ),
     },
@@ -175,6 +178,12 @@ function DetailBody({
           />
         </span>
       </div>
+      {/* 초기화 비밀번호 안내 — BP 마스터 상세와 같은 상자(2026-10-28 사용자 지정). 메일 실패는 빨간 상자(비밀번호 줄의 「미발송」 글자 대신),
+          보냈고 첫 로그인 전이거나 이 상세에서 방금 초기화했으면 하늘색 상자. 초기화 비밀번호는 1시간만 유효하다(api) */}
+      {admin.accountStatus === "ACTIVE" && admin.isInitialPasswordUnsent && <WarnBand>{"초기화 비밀번호가 발송되지 않았습니다.\n비밀번호 [초기화] 버튼을 눌러 다시 발송해주세요."}</WarnBand>}
+      {admin.accountStatus === "ACTIVE" && !admin.isInitialPasswordUnsent && (resetSent || (!admin.lastLoginAt && !admin.statusChangedAt)) && (
+        <SuccessBand>{"초기화 비밀번호를 발송했습니다.\n1시간 내 미로그인 시 [초기화] 버튼으로 재발송해주세요."}</SuccessBand>
+      )}
       {failure && <FailedBand message={failure} />}
       {/* 버튼을 숨기거나 막은 이유(목업 admins-detail). 연결 가맹 마스터가 아닌 사람이 보는 가맹 관리자 문구는 2026-10-27 사용자 지정 */}
       {admin.actions.isSelf ? (

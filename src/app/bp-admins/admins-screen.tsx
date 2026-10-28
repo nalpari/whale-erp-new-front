@@ -170,7 +170,7 @@ export function AdminsScreen({
             onSaved={(result) => {
               setNewOpen(false);
               // 초기 비밀번호 메일이 실패해도 계정은 만들어졌다 — 상세의 비밀번호 초기화로 다시 보낸다(SYSTEM-3 과 같다).
-              toast(result.isMailSent ? "saved" : "저장되었습니다. 초기화 비밀번호 메일은 보내지 못했습니다 — 상세에서 비밀번호를 초기화해 주세요.");
+              toast("saved"); // 늘 「저장되었습니다.」 — 메일 실패는 열리는 상세 위 빨간 상자가 알린다(BP 마스터와 같다, 2026-10-28)
               detailTrigger.current = newTrigger.current;
               go({ admin: result.adminAccountId, edit: undefined });
             }}
