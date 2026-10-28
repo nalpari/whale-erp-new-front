@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-28
+* **Update**: [로그인](/auth.md) — 잠김 문구를 「로그인이 잠겼습니다. 5분 뒤에 다시 시도해주세요.」로 바꿨다 — 임시 비밀번호 안내를 문구에서 뺐고, 풀리는 길은 그대로다(목업 auth/login 데모 · 화면 정의, api #179 요청, 레드마인 #2620)(재영).
 * **Update**: [로그인](/auth.md) — 로그인 실패 문구를 모두 마침표로 끝낸다: 잠김 문구(api 맞춤 요청) · 요청 제한 문구(front `login/actions.ts`). 목업 auth/login 데모 · 화면 정의도 맞췄다(레드마인 #2619)(재영).
 * **Update**: [로그인](/auth.md) — 메뉴가 없는 BP · 가맹 계정은 홈에 권한 요청 안내를 두지 않고 홈과 MY PAGE 만 쓴다. 권한 요청 안내는 홈이 없는 플랫폼 계정에만 둔다(목업 auth/overview)(재영).
 * **Update**: main 병합(front abra, #164 · #135 까지): okf 충돌은 양쪽 기록을 살렸다 — [Whale ERP Frontend](/whale-erp-front.md) 는 main 본문에 이 브랜치의 플랫폼 첫 메뉴 이동 세 곳을 다시 얹었다.
