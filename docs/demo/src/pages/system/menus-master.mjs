@@ -142,9 +142,9 @@ function treeTab(key, s) {
     .replaceAll('class="px-[10px] font-medium text-erp-thead-text"', 'class="px-[10px] font-semibold text-erp-ink"')
     .replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, () => {
     const n = nodes[++i];
-    // 1단계 줄은 권한별 메뉴설정 팝업과 같은 바탕(2026-10-26 사용자 지정)
+    // 1단계 줄은 바탕 없이 굵은 글씨로만 가른다 — 고른 줄 회색과 헷갈렸다(앱 menus-screen.tsx 와 같다, 2026-10-28 사용자 지정)
     // 고른 줄은 한 단계 어두운 바탕 + 왼쪽 브랜드색 3px 선(앱 DataTable current 와 같다, 2026-10-26)
-    const cls = ["cursor-pointer", n === sel ? "bg-erp-subtle [&>td:first-child]:shadow-[inset_3px_0_0_var(--color-erp-brand)]" : n.lvl === 1 ? "bg-erp-thead-bg" : "", n.use ? "" : "text-erp-muted"].filter(Boolean).join(" ");
+    const cls = ["cursor-pointer", n === sel ? "bg-erp-subtle [&>td:first-child]:shadow-[inset_3px_0_0_var(--color-erp-brand)]" : "", n.use ? "" : "text-erp-muted"].filter(Boolean).join(" ");
     return `<tr class="h-[46px] border-b border-erp-thead-line ${cls}" data-row="${key}" data-code="${n.code}" data-lvl="${n.lvl}" data-name="${n.name}" data-label="${n.code} · ${path(n)}" data-kids="${n.kids}"${hides(n) ? " data-hides" : ""}>`;
   });
 

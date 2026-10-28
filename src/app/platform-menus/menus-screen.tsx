@@ -248,14 +248,15 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
             </div>
             {moveFailure && <FailedBand message={moveFailure.message} detail={moveFailure.detail} />}
             {/* 머리 줄까지 고정하고 아래만 스크롤(DataTable scroll) — 칸이 남는 높이를 채우게 flex 묶음으로 둔다. CARD 의 [&>*]:shrink-0 를 이 칸만 푼다.
-                1단계 줄 바탕 · 머리 색은 권한별 메뉴설정 팝업과 같다(2026-10-26 사용자 지정) */}
+                머리 색은 권한별 메뉴설정 팝업과 같다(2026-10-26 사용자 지정). 1단계 줄 바탕은 두지 않고 굵은 글씨로만 가른다 — 고른 줄(current)
+                회색과 거의 같아 헷갈렸다(2026-10-28 사용자 지정 — 전엔 erp-thead-bg) */}
             <div {...drag.wrapProps} className="relative flex min-h-0 flex-1 shrink! flex-col">
               <DataTable
                 columns={columns}
                 rows={rows}
                 rowKey={(r) => (r.kind === "menu" ? r.row.node.menuId : "draft")}
                 rowState={(r) =>
-                  r.kind === "draft" ? "added" : !creating && r.row.node.menuId === picked ? "current" : r.row.node.depth === 1 ? "group" : undefined
+                  r.kind === "draft" ? "added" : !creating && r.row.node.menuId === picked ? "current" : undefined
                 }
                 headVariant="subtle"
                 scroll
