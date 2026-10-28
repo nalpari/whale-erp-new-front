@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { AdminStore } from "../../lib/session.ts";
 import type { StaffMemberListItem } from "../../lib/staff-members.ts";
-import { latestNotices, manWon, oneStoreIdOf, oneStorePaths, oneStoreStatusCells, staffCountsOf, staffRowsOf, todoSummaryOf, workDaysText, workTimeText } from "./one-store-view.ts";
+import { latestNotices, payAmounts, oneStoreIdOf, oneStorePaths, oneStoreStatusCells, staffCountsOf, staffRowsOf, todoSummaryOf, workDaysText, workTimeText } from "./one-store-view.ts";
 
 const store = (storeId: number) => ({ storeId }) as AdminStore;
 const staff = (over: Partial<StaffMemberListItem>) =>
@@ -36,11 +36,21 @@ test("api 경로 — TO-DO 는 그 점포 오늘 전부 · 긴급(대기 · 진�
   assert.deepEqual([q(p.payslipSummary).get("storeId"), q(p.payslipSummary).get("month")], ["5", "2026-10"]);
 });
 
-test("직원 급여 금액 — 만원 반올림, 만원 미만은 원", () => {
-  assert.equal(manWon(11_840_000), "1,184만원");
-  assert.equal(manWon(6_425_000), "643만원");
-  assert.equal(manWon(0), "0만원");
-  assert.equal(manWon(9_500), "9,500원");
+test("직원 급여 금액 — 보이는 정직원 + 파트타이머가 늘 합계와 같다", () => {
+  assert.deepEqual(payAmounts(6_425_000, 5_415_000), { total: "1,184만원", fullTime: "643만원", partTime: "541만원" });
+  assert.deepEqual(payAmounts(0, 7_559_500), { total: "756만원", fullTime: "0만원", partTime: "756만원" });
+  assert.deepEqual(payAmounts(0, 0), { total: "0만원", fullTime: "0만원", partTime: "0만원" });
+  // 합계가 만원 미만이면 셋 다 원
+  assert.deepEqual(payAmounts(4_000, 5_500), { total: "9,500원", fullTime: "4,000원", partTime: "5,500원" });
+  // 묶음은 만원 미만이어도 합계가 만원 이상이면 셋 다 만원 — 7,500 + 7,500 = 15,000 → 2만원 = 1 + 1
+  assert.deepEqual(payAmounts(7_500, 7_500), { total: "2만원", fullTime: "1만원", partTime: "1만원" });
+  assert.deepEqual(payAmounts(3_000, 1_000_000), { total: "100만원", fullTime: "0만원", partTime: "100만원" });
+  for (const [f, p] of [[6_425_000, 5_415_000], [7_500, 7_500], [14_999, 5_001], [1_234_567, 7_654_321], [5_000, 5_000]]) {
+    const r = payAmounts(f, p);
+    const n = (x: string) => Number(x.replace(/[^0-9]/g, ""));
+    assert.equal(n(r.fullTime) + n(r.partTime), n(r.total), `${f} + ${p}`);
+    assert.equal(n(r.total), Math.round((f + p) / 10_000), `${f} + ${p} 합계 반올림`);
+  }
 });
 
 test("TO-DO 숫자 — 완료는 줄의 묶음 상태(한 명만 끝낸 근무지 전체는 진행 중), 대기 · 진행 중은 전체 − 완료, 0건이면 막대 0%", () => {
