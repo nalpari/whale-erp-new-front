@@ -126,7 +126,7 @@ function DetailBody({
   const handleStatus = (status: "ACTIVE" | "INACTIVE") =>
     run(
       () => changeBpMasterStatusAction(bp.bpCodeId, status).catch(unknownResult("상태 변경")),
-      () => toast(status === "INACTIVE" ? "미사용으로 바꿨습니다." : "사용으로 바꿨습니다."),
+      () => toast("변경되었습니다."), // 토스트는 동작만 짧게 — 저장 · 수정 · 삭제 · 초기화와 같은 말투(2026-10-28 사용자 지정)
     );
 
   const handleReset = () =>
