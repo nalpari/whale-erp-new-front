@@ -12,10 +12,11 @@ import { NoticeBand } from "../stores/store-parts";
 import { changeBpMasterStatusAction, deleteBpMasterAction, resetBpMasterPasswordAction } from "./actions";
 import { BpStatusBadge, unknownResult, WITHDRAWN_TEXT } from "./bp-master-parts";
 import { HistoryButton } from "./history-dialog";
+import { WithdrawalButton } from "./withdrawal-dialog";
 
 // BP 마스터 계정 상세(S-GZDODB · 초기화 S-PRRLMA). 모두 읽기 전용이고, 기본정보 · 사업자정보를 나눠 보인다.
 // 버튼 자리는 플랫폼 관리자 상세와 같다(BP-6) — 상태 변경 · 비밀번호 초기화는 그 줄의 버튼(수정 권한),
-// 하단은 [닫기] … [삭제][수정][변경 이력]. 탈퇴 BP 는 조회만 된다(상태 변경 · 초기화 · 삭제 · 수정 없음).
+// 하단은 [닫기] … [삭제][수정][변경 이력]. 탈퇴 BP 는 조회만 된다(상태 변경 · 초기화 · 삭제 · 수정 · 변경 이력 없음, 탈퇴 사유는 [사유 보기]).
 // 화면은 미리 숨기거나 흐리게만 한다 — 막는 것은 api 다.
 
 /** 방금 등록한 BP — 상세 위쪽 띠로 BP 코드와 메일 발송 주소를 알린다(BP-3) */
@@ -180,17 +181,17 @@ function DetailBody({
       ),
     },
     {
-      label: "BP 상태",
-      value: (
-        <>
-          <BpStatusBadge status={bp.accountStatus} />
-          {bp.statusChangedAt && <span className="text-erp-label">{formatDateTime(bp.statusChangedAt)}</span>}
-          {canUpdate && (
-            <Button variant="soft" onClick={() => setConfirm(bp.accountStatus === "ACTIVE" ? "inactive" : "active")} disabled={busy}>
-              상태 변경
-            </Button>
-          )}
-        </>
+      label: "상태",
+      // 현재 상태는 머리의 배지가 보이므로 이 줄은 버튼만 둔다(2026-10-28 사용자 지정) — 수정 권한이면 [상태 변경], 탈퇴 BP 는 [사유 보기]. 누를 버튼이 없을 때만 배지를 보인다.
+      value: canUpdate ? (
+        <Button variant="soft" onClick={() => setConfirm(bp.accountStatus === "ACTIVE" ? "inactive" : "active")} disabled={busy}>
+          상태 변경
+        </Button>
+      ) : withdrawn && bp.withdrawal ? (
+        // 탈퇴 BP 는 변경 이력을 보이지 않으니 탈퇴 사유를 여기서 본다(WHALEERP-626)
+        <WithdrawalButton bp={bp} withdrawal={bp.withdrawal} panelOpen={panelOpen} />
+      ) : (
+        <BpStatusBadge status={bp.accountStatus} />
       ),
     },
     // 소속 점포는 수만 보인다 — 점포 목록 연결은 나중에(BP-8)
@@ -264,7 +265,10 @@ function DetailBody({
         <NoticeBand
           tone="info"
           title="탈퇴 BP는 조회만 됩니다"
-          detail="BP 정보와 업무 이력은 보존 정책대로 남기고, 수정 · 비밀번호 초기화 · 삭제는 하지 않습니다. 다시 쓰려면 새 BP 로 등록합니다."
+          // [사유 보기]는 withdrawal 이 있을 때만 그려지므로 안내도 그때만 붙인다(api #175 전이나 값이 비면 버튼이 없다)
+          detail={`BP 정보와 업무 이력은 보존 정책대로 남기고, 수정 · 비밀번호 초기화 · 삭제는 하지 않습니다. 변경 이력은 볼 수 없${
+            bp.withdrawal ? "고 탈퇴 사유는 상태의 [사유 보기]에서 봅니다" : "습니다"
+          }. 다시 쓰려면 새 BP 로 등록합니다.`}
         />
       )}
       {failure && <FailedBand message={failure.message} detail={failure.detail} />}
@@ -298,7 +302,8 @@ function DetailBody({
             수정
           </Button>
         )}
-        <HistoryButton bpCodeId={bp.bpCodeId} panelOpen={panelOpen} />
+        {/* 탈퇴 BP 의 이력에는 탈퇴로 지운 개인정보의 예전 값이 남아 있어 보이지 않게 한다 — api 도 409 로 거절한다(WHALEERP-625) */}
+        {!withdrawn && <HistoryButton bpCodeId={bp.bpCodeId} panelOpen={panelOpen} />}
       </div>
 
       {canUpdate && (
@@ -317,13 +322,16 @@ function DetailBody({
               {who}
               {bp.subAdminCount > 0 ? (
                 <p>
-                  이 BP 의 관리자 계정 <b className="font-semibold">{bp.subAdminCount + 1}개</b>(BP 마스터 포함)가 모두 미사용이 됩니다. 점포
-                  {` ${bp.storeCount.toLocaleString("ko-KR")}곳`}은 상태를 그대로 두고 업무만 멈춥니다.
+                  이 BP의 관리자 계정 <b className="font-semibold">{bp.subAdminCount + 1}개</b>(BP 마스터 포함)가 모두 미사용이 되어 로그인할 수 없습니다.
                 </p>
               ) : (
-                <p>BP 마스터 계정이 미사용이 되어 로그인할 수 없습니다. 하위 관리자는 없습니다.</p>
+                <p>BP 마스터 계정이 미사용이 되어 로그인할 수 없습니다.</p>
               )}
-              <p>운영 점포 · 구독 · 미정산 같은 선행 조건은 보지 않고 바로 적용합니다. 로그인 중인 세션은 끊지 않고 비밀번호도 그대로 둡니다.</p>
+              <p>
+                점포 <b className="font-semibold">{bp.storeCount.toLocaleString("ko-KR")}곳</b>은 상태를 그대로 두고 직원 초대 · 근로계약 · 출퇴근 기록 등
+                업무만 멈춥니다.
+              </p>
+              <p>확인하면 바로 적용됩니다. 로그인 중인 세션과 비밀번호는 그대로 유지됩니다.</p>
             </div>
           </ConfirmDialog>
 
@@ -339,9 +347,9 @@ function DetailBody({
             <div className="flex flex-col gap-[12px]">
               {who}
               <p>
-                <b className="font-semibold">BP 마스터 계정만</b> 사용으로 바뀌어 기존 비밀번호로 다시 로그인할 수 있습니다. BP 관리자 · 가맹 관리자 계정은
-                미사용으로 남고, BP 마스터가 BP 관리자 관리에서 하나씩 다시 켭니다.
+                <b className="font-semibold">BP 마스터 계정만</b> 사용으로 바뀌어 기존 비밀번호로 다시 로그인할 수 있습니다.
               </p>
+              <p>BP 관리자 · 가맹 관리자 계정은 미사용으로 남습니다. BP 마스터가 BP 관리자 관리에서 다시 켜야 합니다.</p>
             </div>
           </ConfirmDialog>
 
@@ -381,7 +389,7 @@ function DetailBody({
             <p>
               계정과 이 계정이 대표하는 <b className="font-semibold">BP 정보가 함께 삭제</b>되고 되돌릴 수 없습니다.
             </p>
-            <p>삭제한 뒤에도 아이디 {bp.loginId} 는 다시 쓸 수 없고, BP 코드 순번도 다시 쓰지 않습니다.</p>
+            <p>해당 아이디 {bp.loginId}, BP 코드도 다시 사용하지 못합니다.</p>
           </div>
         </ConfirmDialog>
       )}

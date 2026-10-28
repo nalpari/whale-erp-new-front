@@ -350,12 +350,12 @@ export function BpMasterFormPanel(props: Props) {
         </Stack>
         {props.mode === "edit" && (
           <Stack>
-            <span className="text-[14px] font-medium text-erp-label">BP 상태</span>
+            <span className="text-[14px] font-medium text-erp-label">상태</span>
             <span className="flex items-center gap-[6px] text-[14px] text-erp-ink">
               <BpStatusBadge status={props.bp.accountStatus} />
               {props.bp.statusChangedAt && <span className="text-erp-label">{formatDateTime(props.bp.statusChangedAt)} 부터</span>}
             </span>
-            <Note>상태는 여기서 바꾸지 않습니다. 상세의 BP 상태 줄 [상태 변경]에서 사용 · 미사용을 바꿉니다.</Note>
+            <Note>상태는 여기서 바꾸지 않습니다. 상세의 상태 줄 [상태 변경]에서 사용 · 미사용을 바꿉니다.</Note>
           </Stack>
         )}
       </FormGroup>

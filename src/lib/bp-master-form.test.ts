@@ -85,6 +85,7 @@ test("상세로 채우면 인증된 BP 는 완료 카드 값을, 미인증 BP �
     bizAddressDetail: "7층",
     bizCategory: "음식점업",
     bizItem: "한식 음식점",
+    withdrawal: null,
   } as BpMasterDetail;
   const form = formOfBpMaster(detail);
   assert.deepEqual(form.verified, { bizNumber: "1058633412", ceoName: "정하윤", openDate: "2016-05-20" });
