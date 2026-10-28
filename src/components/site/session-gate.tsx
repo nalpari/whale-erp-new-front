@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, use, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
-import { Button, useBackdropActive } from "@/components/common";
+import { Button, LoadingNotice, useBackdropActive } from "@/components/common";
 import { logout } from "@/app/actions";
 import { bff, BffError, PASSWORD_REQUIRED_EVENT, signOut } from "@/lib/bff";
 import { bpOfPath, bpPath, isBpPathScreen, stripBp } from "@/lib/bp-path";
@@ -227,7 +227,7 @@ export function SessionGate({ header, children }: { header: ReactNode; children:
     // tabKey: 주소의 탭 BP 가 바뀌면 다시 준비한다. 같은 BP 안의 이동이나 안 옮긴 화면끼리의 이동은 그대로다.
   }, [attempt, router, tabKey]);
 
-  if (state.status === "loading" || stale) return <Notice>{switchNotice ?? (pathname === BP_SWITCH_PATH ? "BP 로 이동하는 중입니다" : "불러오는 중입니다")}</Notice>;
+  if (state.status === "loading" || stale) return <LoadingNotice text={switchNotice ?? (pathname === BP_SWITCH_PATH ? "BP 로 이동하는 중입니다" : "불러오는 중입니다")} />;
   if (state.status === "error")
     return (
       <Notice>
