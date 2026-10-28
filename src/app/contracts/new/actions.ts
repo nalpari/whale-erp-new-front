@@ -28,7 +28,7 @@ export async function updateContract(contractId: number, body: CreateContractBod
 }
 
 /**
- * 저장의 결과를 받지 못했을 때(saveOutcomeUnknown) — 이어 쓰기는 그 계약 상세로 옮겨 알리고, 새 계약은 계약 ID 를 몰라 폼에 남기되
+ * 저장의 결과를 받지 못했을 때(saveFailureOf 의 unknown — api 의 503 이 아닌 5xx 전부) — 이어 쓰기는 그 계약 상세로 옮겨 알리고, 새 계약은 계약 ID 를 몰라 폼에 남기되
  * 다시 저장하지 못하게 막는다(locked).
  */
 function unknownOutcome(contractId: number | null, back: string | undefined): SaveResult {

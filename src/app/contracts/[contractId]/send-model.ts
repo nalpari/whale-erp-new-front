@@ -1,6 +1,6 @@
 // 재발송 · 저장 뒤 보내기 실패를 화면이 다룰 모양으로 바꾼다(front #41 리뷰). 서버 액션 · 상세와 테스트가 함께 쓴다.
 import { failureOf } from "../../../lib/action-failure.ts";
-import type { ApiError } from "../../../lib/api-error.ts";
+import { isApiSendRefusal, type ApiError } from "../../../lib/api-error.ts";
 import { inProgressOf, type InProgressContract } from "../new/contract-form-model.ts";
 
 /** 실패 결과. recheck 면 api 가 이미 쓰고 보냈을 수 있다 — 확인창의 보내기를 막고 상세를 다시 읽는다(두 번 가지 않게) */
@@ -126,11 +126,11 @@ export type SaveFailure =
 
 /**
  * 근로계약 저장(새 계약 · 이어 쓰기 · 당사자 정보 수정)의 ApiError 를 가른다. 순서가 뜻이다 — 401 → 저장은 됐는데 보내기만 실패(502 + 코드 + 계약 ID) →
- * 503(설정 · 템플릿 문제) → 5xx 는 모두 결과 모름 → 그 밖(4xx).
+ * api 의 503(설정 · 템플릿 문제) → 그 밖 5xx 는 모두 결과 모름 → 4xx.
  * - api 는 저장 트랜잭션을 커밋한 뒤 발송(delivery.dispatch)을 부른다(create · update · updateWorker 모두). dispatch 앞쪽 조회가 실패하면 이미 저장된
  *   요청이 코드 없는 500 이 될 수 있어, 5xx 는 저장 전 실패를 코드로 확인할 수 없으면 확정 실패로 다루지 않는다 — 저장 전에 던지는 5xx 코드는 api 에 없다.
- * - 예외 503: 직원 앱 주소 · 대체 문자 발신번호 · 가입 초대 템플릿이 없거나 꺼진 경우로, 저장 트랜잭션 안에서 던져 저장째 되돌아간다(assertCanInvite) —
- *   저장 전 실패가 확실하므로 api 문장을 그대로 보이고 폼을 잠그지 않는다.
+ * - 예외 api 의 503(isApiSendRefusal — Nest 본문 statusCode 503 + 비어 있지 않은 message): 직원 앱 주소 · 대체 문자 발신번호 · 가입 초대 템플릿이 없거나 꺼진 경우로, 저장 트랜잭션 안에서 던져 저장째 되돌아간다(assertCanInvite) —
+ *   저장 전 실패가 확실하므로 api 문장을 그대로 보이고 폼을 잠그지 않는다. 프록시 · 로드밸런서의 503(본문 없음 · HTML · 문구 없음)은 api 에 닿았는지 몰라 결과 모름이다.
  * - 502 SEND_FAILED · SEND_UNCONFIRMED 인데 계약 ID 가 빠져 상세로 보낼 수 없으면 결과 모름이다.
  * 409 + 진행 중 계약이면 목록도 싣는다. 4xx 는 api 문구 그대로다. 로그는 failureOf 가 남기고, 503 은 여기서 남긴다.
  */
@@ -138,7 +138,7 @@ export function saveFailureOf(e: ApiError, log: Record<string, unknown>): SaveFa
   if (e.status === 401) return { kind: "login" };
   const target = sendFailedTarget(e.status, e.body);
   if (target) return { kind: "sendFailed", target };
-  if (e.status === 503) {
+  if (isApiSendRefusal(e.status, e.body)) {
     console.error("근로계약 저장 실패(발송 설정)", log, e);
     return { kind: "error", error: e.message };
   }
@@ -152,7 +152,7 @@ export function saveFailureOf(e: ApiError, log: Record<string, unknown>): SaveFa
 }
 
 /**
- * 임시저장 삭제 실패의 문장. 저장과 같은 기준이다 — 결과 모름(코드 없는 502 · 504)은 「삭제 결과를 확인하지 못했습니다…」, 그 밖의 5xx 는 확정 실패,
+ * 임시저장 삭제 실패의 문장. 결과 모름만 따로 가르고(저장과 달리 발송이 없어 남은 5xx 는 확정 실패) — 결과 모름(코드 없는 502 · 504)은 「삭제 결과를 확인하지 못했습니다…」, 그 밖의 5xx 는 확정 실패,
  * 4xx 는 api 문구. 401 은 로그인이 필요하다는 고정 문구.
  */
 export function deleteFailureOf(e: ApiError, log: Record<string, unknown>): string {

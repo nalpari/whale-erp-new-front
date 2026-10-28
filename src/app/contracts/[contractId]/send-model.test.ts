@@ -165,9 +165,20 @@ test("saveFailureOf — 코드 없는 502 · 504 · 500 과 코드 있는 5xx �
     assert.deepEqual(quiet(() => saveFailureOf(e, log)), { kind: "unknown" });
 });
 
-test("saveFailureOf — 503(설정 · 템플릿 문제, 저장 전 실패)은 api 문장 그대로 보이고 잠그지 않는다", () => {
+test("saveFailureOf — api 의 503(Nest 본문, 설정 · 템플릿 문제 — 저장 전 실패)은 api 문장 그대로 보이고 잠그지 않는다", () => {
   const message = "가입 초대 알림톡 템플릿이 없거나 꺼져 있어 보낼 수 없습니다";
-  assert.deepEqual(quiet(() => saveFailureOf(new ApiError(503, message, [message]), log)), { kind: "error", error: message });
+  const body = { statusCode: 503, message, error: "Service Unavailable" };
+  assert.deepEqual(quiet(() => saveFailureOf(new ApiError(503, message, [message], body), log)), { kind: "error", error: message });
+});
+
+test("saveFailureOf — 본문 없는 503 · HTML 503 · 문구가 빈 503(프록시 · 로드밸런서)은 결과 모름", () => {
+  for (const e of [
+    new ApiError(503, "요청이 실패했습니다 (HTTP 503)"),
+    new ApiError(503, "요청이 실패했습니다 (HTTP 503)", undefined, null),
+    new ApiError(503, "x", ["x"], { statusCode: 503, message: "" }),
+    new ApiError(503, "x", ["x"], { message: "Service Unavailable" }),
+  ])
+    assert.deepEqual(quiet(() => saveFailureOf(e, log)), { kind: "unknown" });
 });
 
 test("saveFailureOf — 409 + 진행 중 계약이면 api 문구와 목록, 400 은 api 문구", () => {
