@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-28
+* **Fix**: api 타입을 gyarados 로 다시 뽑으며 front main 의 BP 마스터 탈퇴 타입(`withdrawal`, 아직 api main 에 없음)을 지워 tsc 가 깨진 것을 3-way 병합(`git merge-file`)으로 되살렸다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 셀프 code-review: 대체 확인 본문(대체 목록 · 바로잡기)을 `replaceConfirmBody` 한 곳에서 정하고 판정을 테스트한다. main 병합 · api 타입을 gyarados `d520d95a`(api main 포함)에서 다시 만듦.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 재리뷰 참고 반영: 바로잡기로 보낸 뒤 진행 중 목록으로 다시 물을 때 바로잡기 문구를 보이지 않으면 본문에서 `correctSignedContracts` 도 뺀다(확인 본문은 `replaceConfirmBody` 한 곳에서 확인창의 바로잡기 여부로 정한다, 확인창을 띄워 둔 사이 체결된 계약이 대체 확인만으로 종료되지 않게). main 병합, api 타입을 #157 gyarados `ba054c7b` 에서 다시 만듦(설명 2곳만 바뀜).
 * **Update**: [BP 마스터 계정 관리](/bp.md) — 사용자 피드백(front #156): 상세 · 수정의 「BP 상태」 줄 이름을 「상태」로, 상세 상태 줄은 버튼만([상태 변경] · 탈퇴는 [사유 보기], 누를 버튼이 없으면 배지 — 상태가 바뀐 일시는 보이지 않는다). 삭제 · 상태 변경 확인창 문구를 다듬었다. 목업 · 화면정의서 · 데모도 맞췄다.
