@@ -405,7 +405,7 @@
                   <div class="panel__body">
                     <div class="figure__label">9월 급여 지급 예정</div>
                     <div class="stat">1,184<span class="stat__unit">만원</span></div>
-                    <div class="subtle" style="font-size: 12px">직원 6명 · 급여명세서 초안 합계</div>
+                    <div class="subtle" style="font-size: 12px">직원 6명 · 급여명세서 합계</div>
                     <dl class="kv" style="margin-top: var(--s-4)">
                       <dt>정직원 2명</dt><dd class="mono">642만원</dd>
                       <dt>파트타이머 4명</dt><dd class="mono">542만원</dd>
@@ -433,6 +433,32 @@
                     <a class="row" href="#"><span class="badge badge--ok">답변완료</span><div class="rowmain__text"><b>근무스케줄을 주 단위로 일괄 등록할 수 있나요</b><span class="mono">08-27</span></div></a>
                   </div>
                 </section>
+              </div>
+
+              <div class="gap">
+                <div class="gap__head">
+                  <span class="gap__no">HOME-10</span>
+                  <b>본사 역할이 가맹 점포를 볼 때 직원 급여 카드가 0으로 보이는 것을 어떻게 알리는가</b>
+                  <span class="gap__note">미정 · 2026-10-28 재영 「지금 모양대로 두고 쟁점으로」</span>
+                  <span class="gap__ref">S-KRERLI · WHALEERP-621</span>
+                </div>
+                <div class="gap__block">
+                  <p>직원 급여 합계는 본사 역할(BP 마스터 · BP 관리자)이면 본사 제공 동의한 가맹 직원만 센다(운영 정책 ATT-30, api 가 거른다). 동의한 직원이 없으면 명세서가 있어도 「0만원 · 직원 0명」이라 명세서가 없는 것처럼 읽힌다. 직원 정보 표는 「가려진 직원 K」로 따로 알리지만 급여 요약 api 는 가린 수를 주지 않는다. 지금은 안내 없이 그대로 둔다.</p>
+                </div>
+                <div class="gap__opts">
+                  <div class="gap__opt" data-side="a">
+                    <div class="gap__label">A · 그대로 둔다 · 지금 화면</div>
+                    <p>숫자만 보인다. 본사는 동의한 직원만 본다는 규칙을 다른 화면에서 이미 알고 있다고 본다.</p>
+                  </div>
+                  <div class="gap__opt" data-side="b">
+                    <div class="gap__label">B · 늘 안내 한 줄</div>
+                    <p>본사 역할이 가맹 점포를 볼 때 카드 아래 「본사 제공 동의한 직원만 셉니다」를 붙인다. api 는 그대로다.</p>
+                  </div>
+                  <div class="gap__opt" data-side="c">
+                    <div class="gap__label">C · 가린 수를 받아 보인다</div>
+                    <p>급여 요약 api 가 가린 명세서 수를 더 주고 「· 가려진 직원 K」를 직원 정보 표처럼 붙인다. api 변경(최효준)이 든다.</p>
+                  </div>
+                </div>
               </div>
 
               <div class="gap is-decided">
