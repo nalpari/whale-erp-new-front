@@ -8,7 +8,7 @@ import { formatBizNumber } from "@/lib/store-view";
 import { WithIcon } from "../platform-admins/admin-table";
 import { BpStatusBadge, WITHDRAWN_TEXT } from "./bp-master-parts";
 
-// BP 마스터 계정 목록 표(S-ALHCJS). BP 코드를 누르면 상세 패널이 열린다(상호명 링크는 2026-10-28 사용자 지정으로 뺐다).
+// BP 마스터 계정 목록 표(S-ALHCJS). BP 코드 · 상호명을 누르면 상세 패널이 열린다(목업과 같다).
 // 연락처 · 이메일은 열을 나눈다(플랫폼 관리자 목록과 같은 모양, 2026-10-28 사용자 지정 — 전엔 한 칸 두 줄).
 // 사업자등록번호가 빈 줄이 미인증 BP 다. 탈퇴 BP 는 이름 · 연락처 · 이메일이 「탈퇴로 삭제됨」으로 보인다.
 
@@ -31,13 +31,13 @@ export function BpMasterTable({
   const withdrawn = (b: BpMaster) => b.accountStatus === "WITHDRAWN";
   // 탈퇴 BP 줄은 글자를 모두 회색으로(BP 코드 링크 · 상태 배지는 그대로) — 플랫폼 관리자 목록의 미사용 줄과 같다(2026-10-28 사용자 지정)
   const dim = (b: BpMaster, node: ReactNode) => (withdrawn(b) ? <span className="text-erp-muted">{node}</span> : node);
-  const open = (b: BpMaster, text: string) => (
+  const open = (b: BpMaster, text: string, bold = false) => (
     <button
       type="button"
       aria-controls="bp-master-detail-panel"
       aria-expanded={selected === b.bpCodeId}
       onClick={(e) => onOpen(b.bpCodeId, e.currentTarget)}
-      className="max-w-full truncate text-erp-link hover:underline"
+      className={`max-w-full truncate text-erp-link hover:underline ${bold ? "font-semibold" : ""}`}
     >
       {text}
     </button>
@@ -49,8 +49,8 @@ export function BpMasterTable({
     { header: "아이디", width: "w-[130px]", cell: (b) => dim(b, b.loginId) },
     { header: "이름", width: "w-[110px]", cell: (b) => (withdrawn(b) ? gone : b.name) },
     { header: "계정상태", width: "w-[100px]", cell: (b) => <BpStatusBadge status={b.accountStatus} /> },
-    // 상호명은 링크 없이 굵은(600) 먹색 글자, 폭 240px(남는 폭을 다 받으면 너무 넓었다) — 상세는 BP 코드로 연다(2026-10-28 사용자 지정)
-    { header: "상호명", width: "w-[240px]", align: "left", cell: (b) => dim(b, <span className="max-w-full truncate font-semibold">{b.tradeName}</span>) },
+    // 상호명도 상세를 여는 링크(굵은 600, 2026-10-28 사용자 지정 — 잠시 링크 없는 먹색이었다). 폭 240px(남는 폭을 다 받으면 너무 넓었다)
+    { header: "상호명", width: "w-[240px]", align: "left", cell: (b) => open(b, b.tradeName, true) },
     { header: "연락처", width: "w-[150px]", align: "left", cell: (b) => (withdrawn(b) ? gone : b.phone ? <WithIcon icon="phone">{formatPhone(b.phone)}</WithIcon> : "") },
     { header: "이메일", width: "w-[220px]", align: "left", cell: (b) => (withdrawn(b) ? gone : b.email ? <WithIcon icon="mail">{b.email}</WithIcon> : "") },
     { header: "사업자등록번호", width: "w-[130px]", cell: (b) => dim(b, formatBizNumber(b.bizRegistrationNumber)) },
