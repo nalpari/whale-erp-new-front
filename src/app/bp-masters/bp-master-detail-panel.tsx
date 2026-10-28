@@ -256,7 +256,11 @@ function DetailBody({
       {/* 패널을 내려도 머리(상호명 · BP 코드 · 아이디 · 상태)는 위에 고정 — 아래 내용만 스크롤(2026-10-28 사용자 지정).
           패널(aside)이 스크롤 상자라 sticky 로 붙인다. 위 · 아래 여백(패널 24 · 칸 간격 16)까지 흰 바탕으로 덮어 지나가는 내용을 가린다 */}
       <div className="sticky top-0 z-[1] -mx-[24px] -mt-[24px] -mb-[16px] flex flex-col gap-[6px] bg-white px-[24px] pt-[24px] pb-[16px]">
-        <h2 className="text-[18px] font-semibold break-all text-erp-ink">{bp.tradeName}</h2>
+        {/* 상호명 앞에 회색 라벨 「상호명」(아랫줄 「BP 코드 · 아이디」 라벨과 같은 색, 2026-10-28 사용자 지정) */}
+        <h2 className="text-[18px] font-semibold break-all text-erp-ink">
+          <span className="mr-[8px] font-normal text-erp-label">상호명</span>
+          {bp.tradeName}
+        </h2>
         <span className="text-[14px]">
           <HeadValues items={[{ label: "BP 코드", value: bp.bpCode }, { label: "아이디", value: bp.loginId }, { value: <BpStatusBadge status={bp.accountStatus} /> }]} />
         </span>
