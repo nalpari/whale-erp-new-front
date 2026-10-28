@@ -71,8 +71,22 @@ export function todoSummaryOf(list: { items: readonly { status: string }[]; tota
   return { today, done, open: Math.max(0, today - done), urgent, percent: today ? Math.round((done / today) * 100) : 0, partial: list.items.length < list.total };
 }
 
-/** 직원 급여 카드의 금액 — 목업처럼 만원 단위로 반올림한다(1,184만원). 만원이 안 되는 금액이 0만원으로 보이지 않게 그때는 원 단위다 */
-export const manWon = (won: number): string => (won !== 0 && Math.abs(won) < 10_000 ? `${formatAmount(won)}원` : `${formatAmount(Math.round(won / 10_000))}만원`);
+/**
+ * 직원 급여 카드의 금액 — 합계 · 정직원 · 파트타이머(합계 = 둘의 합, 고용 형태는 둘뿐). 보이는 정직원 + 파트타이머가 합계와 같게 단위를 합계로
+ * 하나 정한다: 합계가 만원 미만(0 제외)이면 셋 다 원 그대로, 아니면 셋 다 만원(목업 1,184만원). 만원은 합계를 반올림하고 두 묶음은 내림한 뒤
+ * 남는 만원을 버린 끝자리가 큰 쪽부터 1씩 준다(최대 잔여법) — 따로 반올림하면 642.5 + 541.5 가 643 + 542 로 합계 1,184 와 어긋났다.
+ * 그래서 만원 미만인 묶음도 만원 합계에서는 0만원 · 1만원으로 보인다.
+ */
+export function payAmounts(fullTime: number, partTime: number): { total: string; fullTime: string; partTime: string } {
+  const total = fullTime + partTime;
+  if (total !== 0 && total < 10_000) return { total: `${formatAmount(total)}원`, fullTime: `${formatAmount(fullTime)}원`, partTime: `${formatAmount(partTime)}원` };
+  const parts = [fullTime / 10_000, partTime / 10_000];
+  const shown = parts.map(Math.floor);
+  const order = [0, 1].sort((a, b) => parts[b] - shown[b] - (parts[a] - shown[a]));
+  for (let left = Math.round(total / 10_000) - shown[0] - shown[1], i = 0; left > 0; left--, i++) shown[order[i % 2]]++;
+  const man = (n: number) => `${formatAmount(n)}만원`;
+  return { total: man(shown[0] + shown[1]), fullTime: man(shown[0]), partTime: man(shown[1]) };
+}
 type WorkDay = NonNullable<NonNullable<StaffMemberListItem["contract"]>["workDays"]>[number];
 const NO_VALUE = "—";
 

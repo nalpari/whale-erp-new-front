@@ -34,7 +34,7 @@
 |---|---|---|---|
 | 공지 띠 | `GET /support-notices?pageSize=20` | 게시일 최신 3건(고정 여부와 상관없이, `latestNotices`) · [공지 목록] | 공지사항 `/support-notices` |
 | 운영 점포 정보 | `GET /stores/:id` | 점포명 · 유형 · 전화번호 · 개점일(`business.openDate`) · [점포 정보 관리] | 점포 정보 관리 `/stores` |
-| 직원 급여 | `GET /payslips/summary?storeId=n&month=이번 달` | 「M월 급여 지급 예정」 합계 · 직원 N명 · 정직원 · 파트타이머별 인원과 금액(만원 반올림, 만원 미만은 원 — `manWon`) · [급여명세서](이번 달 · 그 점포 목록) | 급여명세서 관리 `/payslips` |
+| 직원 급여 | `GET /payslips/summary?storeId=n&month=이번 달` | 「M월 급여 지급 예정」 합계 · 직원 N명 · 정직원 · 파트타이머별 인원과 금액(보이는 정직원 + 파트타이머 = 합계 — `payAmounts`: 합계가 만원 미만이면 셋 다 원, 아니면 셋 다 만원으로 합계는 반올림 · 두 묶음은 최대 잔여법) · [급여명세서](이번 달 · 그 점포 목록) | 급여명세서 관리 `/payslips` |
 | TO-DO | `GET /todos?storeIds=n` 두 번 — 오늘 전부(`pageSize=200`) · 긴급(`total`) | 오늘 완료 / 오늘 전체 · 진행 막대 · 대기·진행 중 N건 · 긴급 N · 오늘 것 앞 2건 · [TO-DO 리스트] | TO-DO `/todos` |
 | 내 문의 | `GET /support-inquiries` 두 번 | 답변 대기(접수 · 처리중) N건 · 전체 N건 · 최근 2건 · [문의 내역] | 문의하기 `/support-inquiries` |
 | 근무스케줄 | `GET /work-schedules?storeId&from&to` | 주간 · 월간 보기(아래) · [근무스케줄 관리] | 근무스케줄 `/work-schedules` |
