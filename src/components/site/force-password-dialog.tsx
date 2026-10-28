@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition, type FormEvent } from "reac
 import { Button, Checkbox, Field, PasswordInput } from "@/components/common";
 import { changeForcedPassword, logout } from "@/app/actions";
 import { signOut } from "@/lib/bff";
+import { passwordChecks } from "@/lib/password";
 import type { LoginInfoAccount } from "@/lib/session";
 import { TermsLink } from "./terms-link";
 
@@ -16,6 +17,8 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
   const ref = useRef<HTMLDialogElement>(null);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  /** 새 비밀번호 칸을 한 번 벗어났다 — 규칙 오류는 그 뒤부터 보인다(입력 중에는 재촉하지 않는다, 회원가입과 같다) */
+  const [passwordTouched, setPasswordTouched] = useState(false);
   const [terms, setTerms] = useState({ use: false, policy: false });
   // 정책 위반은 비밀번호 칸 아래, 약관 미동의는 약관 아래에 보인다.
   const [error, setError] = useState<{ at: "password" | "terms"; message: string } | null>(null);
@@ -31,10 +34,14 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
   const mismatch = confirm !== "" && confirm !== password;
   // 두 칸을 다 채워야 [변경]이 켜진다(2026-10-28 사용자 지정)
   const filled = password !== "" && confirm !== "";
+  // 비밀번호 규칙(PL-QSBSYY) — 어기면 칸 아래 오류, [변경]도 막는다. 「받은 비밀번호와 다름」은 화면이 몰라 api 가 판정한다(2026-10-28 사용자 지정)
+  const [ruleCheck, idCheck] = passwordChecks(password, account.loginId);
+  const ruleError =
+    password === "" ? undefined : !ruleCheck.met ? "영문·숫자·특수문자를 모두 포함해 8~20자로 입력해 주세요." : !idCheck.met ? "아이디와 다른 비밀번호를 입력해 주세요." : undefined;
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    if (!agreed || mismatch || !filled) return;
+    if (!agreed || mismatch || !filled || ruleError) return setPasswordTouched(true);
     startTransition(async () => {
       const r = await changeForcedPassword({
         newPassword: password,
@@ -93,8 +100,11 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onBlur={() => setPasswordTouched(true)}
+            aria-invalid={(passwordTouched && Boolean(ruleError)) || undefined}
           />
         </Field>
+        {passwordTouched && ruleError && <ErrorText>{ruleError}</ErrorText>}
         {/* 약관 제목 · 전체 동의 문구는 회원가입(agree-section.tsx)과 같다 — 「약관동의」 · 「모두 동의합니다.」(2026-10-28 사용자 지정).
             조건 체크 줄 · 「현재 비밀번호는 묻지 않습니다」 · 약관 동의 옆 설명은 지웠다(2026-10-28 사용자 지정) — 조건은 칸 안내와 저장 때 검사가 알린다 */}
         {error?.at === "password" && <ErrorText>{error.message}</ErrorText>}
@@ -134,7 +144,7 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
           <Button variant="off" onClick={() => signOut(logout)}>
             로그아웃
           </Button>
-          <Button type="submit" disabled={pending || !agreed || mismatch || !filled}>
+          <Button type="submit" disabled={pending || !agreed || mismatch || !filled || Boolean(ruleError)}>
             {pending ? "변경 중" : "변경"}
           </Button>
         </div>
