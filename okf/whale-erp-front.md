@@ -10,7 +10,7 @@ sources:
   - { id: lib, resource: ../src/lib, title: 세션·공개 경로·메뉴 판정·api 호출 }
   - { id: proxy, resource: ../src/proxy.ts, title: 세션 확인·갱신 }
   - { id: common-components, resource: ../src/components/common, title: 공통 ERP 컴포넌트 }
-generated: { by: claude-code/opus-5.5, at: 2026-10-28T08:55:16Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-28T09:00:00Z }
 ---
 
 # Stack
