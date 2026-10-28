@@ -100,7 +100,9 @@ function DetailBody({
   const [failure, setFailure] = useState<string | null>(null);
   const [busy, startBusy] = useTransition();
   /** 이 상세에서 초기화 메일을 보냈다 — 로그인한 적이 있어도 하늘색 안내를 띄운다(BP 마스터 상세와 같다, 2026-10-28 사용자 지정) */
-  const [resetSent, setResetSent] = useState(false);
+  const [resetMark, setResetMark] = useState<{ statusChangedAt: string | null } | null>(null);
+  // 초기화한 뒤 상태를 바꾸면(수정 패널에서 미사용 → 사용) 방금 초기화 안내를 내린다 — 그때의 상태 변경 일시와 같을 때만(리뷰로 찾음)
+  const resetSent = resetMark !== null && resetMark.statusChangedAt === (admin.statusChangedAt ?? null);
 
   const me = useAccount();
   const can = usePagePermission();
@@ -115,7 +117,7 @@ function DetailBody({
       if (!result.ok) return fail(result.status, result.message);
       setFailure(null);
       // 메일이 실패해도 기존 비밀번호는 이미 막혔다 — 다시 초기화하면 보낸다(SYSTEM-3). 결과는 상세 위 상자로(액션이 refresh 해 미발송이 켜진다)
-      setResetSent(result.isMailSent);
+      setResetMark(result.isMailSent ? { statusChangedAt: admin.statusChangedAt ?? null } : null);
       if (result.isMailSent) toast("초기화되었습니다.");
     });
 
