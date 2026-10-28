@@ -58,7 +58,9 @@ export function entryUrlOf(menu: AdminMenu): string | undefined {
  */
 export function firstMenuUrl(menus: AdminMenu[], service: ServiceCode): string | null {
   for (const m of menusOf(menus, service)) {
-    const url = m.children.map(entryUrlOf).find(Boolean) ?? (m.permission.read ? m.url : null);
+    // 헤더는 열 수 있는 하위 항목이 하나라도 있으면 그것들만, 없을 때만 1단계 자신을 건다. 홈 주소인 항목은 건너뛰고 다음 항목을 본다.
+    const entries = m.children.map(entryUrlOf).filter((u): u is string => !!u);
+    const url = entries.length ? entries.find((u) => u !== HOME[service]) : m.permission.read ? m.url : null;
     if (url && url !== HOME[service]) return url;
   }
   return null;

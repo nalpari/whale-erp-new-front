@@ -357,7 +357,8 @@ function Ready({
   const passwordChanged = () => {
     setPasswordRequired(false);
     // 바꾼 뒤에는 이 탭 서비스의 HOME 으로 다시 연다 — 플랫폼은 /platform 을 거쳐 첫 메뉴로 간다.
-    location.assign(home);
+    // replace — assign 이면 같은 HOME 이 기록에 두 번 남아 뒤로 가기가 한 번 제자리처럼 보인다.
+    location.replace(home);
   };
   return (
     <LoginContext value={{ ...value, setScope, patchAccount, myPageOpen, setMyPageOpen, passwordChangeOpen, setPasswordChangeOpen, withdrawOpen, setWithdrawOpen, myPageTrigger }}>

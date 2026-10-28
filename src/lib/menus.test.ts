@@ -178,8 +178,11 @@ test("플랫폼 첫 메뉴 — 헤더 순서상 첫 화면, 권한 없는 메뉴
   assert.equal(firstMenuUrl([p("/settings", true, [p("/x", false)])], "PLATFORM"), "/settings");
   // 1단계 자신도 조회 권한이 없으면 건너뛴다 — 권한 없는 메뉴로 보내면 「이전 화면으로」가 되돌아오며 맴돈다
   assert.equal(firstMenuUrl([p("/settings", false, [p("/x", false)]), p("/code-groups", true)], "PLATFORM"), "/code-groups");
-  // 홈 주소는 맴돌므로 뺀다
+  // 홈 주소는 맴돌므로 뺀다 — 1단계든, 같은 1단계 안의 하위 항목이든 다음 것을 본다
   assert.equal(firstMenuUrl([p("/platform", true), p("/code-groups", true)], "PLATFORM"), "/code-groups");
+  assert.equal(firstMenuUrl([p(null, false, [p("/platform", true), p("/platform-admins", true)])], "PLATFORM"), "/platform-admins");
+  // 3단계로 가는 길만 있고 그 아래가 하나도 열리지 않으면 1단계 자신
+  assert.equal(firstMenuUrl([p("/settings", true, [p(null, false, [p("/y", false)])])], "PLATFORM"), "/settings");
   // 메뉴가 없거나 ERP 메뉴뿐이면 null — 임시 메뉴(알림 템플릿)는 후보가 아니다
   assert.equal(firstMenuUrl([], "PLATFORM"), null);
   assert.equal(firstMenuUrl(menus, "PLATFORM"), null);
