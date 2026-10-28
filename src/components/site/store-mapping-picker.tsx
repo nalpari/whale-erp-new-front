@@ -125,6 +125,7 @@ export function StoreMappingPicker({
   const listId = useId();
   const box = useRef<HTMLDivElement>(null);
   const [keyword, setKeyword] = useState("");
+  const escClearing = useRef(false);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const [bulkOpen, setBulkOpen] = useState(false);
@@ -167,6 +168,11 @@ export function StoreMappingPicker({
               data-lpignore="true"
               value={keyword}
               onChange={(e) => {
+                // search 칸은 Esc 에 브라우저가 값을 지운다 — 목록이 닫힌 채 Esc 로 패널을 닫을 때 입력이 사라지지 않게 그 지우기는 받지 않는다
+                if (escClearing.current) {
+                  escClearing.current = false;
+                  return;
+                }
                 setKeyword(e.target.value);
                 setOpen(true);
                 setActive(0);
@@ -177,6 +183,10 @@ export function StoreMappingPicker({
                 if (e.key === "Escape" && (listShown || emptyShown)) {
                   e.preventDefault();
                   setOpen(false);
+                } else if (e.key === "Escape") {
+                  // preventDefault 하면 패널 Esc 닫기까지 막힌다(slide-panel) — 대신 뒤따르는 브라우저 지우기만 무시한다
+                  escClearing.current = true;
+                  requestAnimationFrame(() => (escClearing.current = false));
                 } else if (e.key === "ArrowDown" && candidates.length) {
                   e.preventDefault();
                   setOpen(true);

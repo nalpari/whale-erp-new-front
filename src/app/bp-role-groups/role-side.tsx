@@ -113,7 +113,12 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
     // 등록만 하고 고친 적 없으면 「-」(2026-10-27 사용자 요청)
     { label: "최종수정", value: wasUpdated(role.createdAt, role.updatedAt) ? when(role.updatedAt, role.updatedBy) : muted("-") },
   ];
-  const record = <DetailTable rows={recordRows} />;
+  // 위 입력칸과 18px(칸 간격 12 + 6) — 입력칸 사이와 같다(2026-10-26 권한 그룹 다듬기와 같은 간격)
+  const record = (
+    <div className="mt-[6px]">
+      <DetailTable rows={recordRows} />
+    </div>
+  );
   const heading = (
     <h2 className="flex min-h-[34px] flex-wrap content-end items-center gap-[6px] text-[18px] font-semibold text-erp-ink">
       <span className="mr-[4px]">권한 그룹 상세</span>
