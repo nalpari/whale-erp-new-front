@@ -1,12 +1,13 @@
 // 점포 등록. 목업 docs/mockup/stores/new.html 의 기본 상태(아무것도 넣기 전 · 이미지 없음 · 인증 전)를 BP 마스터로 본 것.
 // 입력칸은 모두 빈 값으로 둔다 — 등록 화면이니 처음 열었을 때 그대로여야 한다.
 // 목업처럼 목록 옆 패널이 아니라 별도 화면이다(재영 결정). 폼은 1팀 FormGroup·FormRow·Field.
+// render 의 bpStatus(「탈퇴」 · 「미사용」)를 주면 그 상태인 BP 를 플랫폼 계정으로 고르고 들어온 것이다(new-bp-withdrawn.mjs, 앱 store-form-view.tsx 와 같다, 2026-10-28).
 import * as ui from "../../ui.mjs";
 import * as x from "../../extra.mjs";
 import * as f from "../../biz-form.mjs";
 import { erpHeader, link } from "../../site.mjs";
 
-export default ({ A, R }) => {
+export const render = ({ A, R }, { bpStatus } = {}) => {
 
   // 대표 이미지는 기본정보 맨 아래에 둬 오른쪽 사업자정보 묶음과 높이를 맞춘다.
   const image = f.group(
@@ -79,12 +80,18 @@ export default ({ A, R }) => {
 
   // 취소 · 저장은 제목 줄 오른쪽에 둔다 — 근로계약서 작성 화면(staff/contracts-new.mjs)과 같은 자리
   // (2026-10-19 점검 — 실사용자 확인). 전에는 화면 맨 아래에 있어 긴 폼에서 저장하려면 끝까지 스크롤해야 했다.
+  // 등록할 BP 가 탈퇴 · 미사용이면 들어오자마자 제목 줄 위에 알리고 저장을 막는다 — 미사용 · 탈퇴를 가르지 않는 한 문장(앱 store-form-view.tsx BP_BLOCKED_TEXT.create 와 같다, 2026-10-28)
+  const blocked = bpStatus ? "BP가 탈퇴 또는 미사용 상태로, 점포를 등록할 수 없습니다." : "";
+  const save = blocked ? f.disabledButton("저장", blocked, "primary") : ui.button("저장", { href: link(R, "stores/detail.html") });
   const body = ui.detailBody(
-    ui.sectionHead("점포 등록", ui.button("취소", { variant: "off", href: link(R, "stores/index.html") }) + ui.button("저장", { href: link(R, "stores/detail.html") })) +
+    (blocked ? f.noticeBand(blocked) : "") +
+    ui.sectionHead("점포 등록", ui.button("취소", { variant: "off", href: link(R, "stores/index.html") }) + save) +
       // 두 묶음은 각자 내용만큼의 높이로 둔다. 높이를 맞추려 늘리면 짧은 쪽 상자에 빈 자리가 남는다.
       `<div class="grid grid-cols-2 items-start gap-[24px]">${basic}${biz}</div>` +
       floors +
       f.SWAP_SCRIPT,
   );
-  return { title: "점포 등록", html: ui.erpFrame({ header: erpHeader(A, R), title: "점포 정보 관리", body }) };
+  return { title: bpStatus ? `점포 등록 · BP ${bpStatus}` : "점포 등록", html: ui.erpFrame({ header: erpHeader(A, R, { bpStatus }), title: "점포 정보 관리", body }) };
 };
+
+export default (ctx) => render(ctx);

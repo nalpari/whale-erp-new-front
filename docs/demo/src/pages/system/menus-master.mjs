@@ -116,13 +116,13 @@ function treeTab(key, s) {
 
   const rows = nodes.map((n) => [
     handle,
-    `<span style="padding-left:${(n.lvl - 1) * 18}px">${n.lvl === 1 ? `<b class="font-semibold">${n.name}</b>` : n.name}${n.kids ? ` <span class="text-[13px] text-erp-label">묶음</span>` : ""}</span>`,
+    `<span style="padding-left:${(n.lvl - 1) * 18}px">${n.lvl > 1 ? `<span class="text-erp-label">└ </span>` : ""}${n.lvl === 1 ? `<b class="font-semibold">${n.name}</b>` : n.name}</span>`,
     n.code,
     sub(`${n.lvl}단계`),
     n.url || '<span class="text-erp-muted">—</span>', // 빈 URL 은 옅은 줄표(앱 menus-screen.tsx 와 같다, 2026-10-26)
     n.order,
     // 위 단계가 미사용이면 자기 값 배지 옆에 회색 꼬리표 「상위 미사용」(앱 menus-screen.tsx 와 같다, 2026-10-27 사용자 지정)
-    `<span class="inline-flex items-center gap-[6px]">${useBadge(n.use)}${n.parent && hides(n.parent) ? UPPER_OFF_TAG : ""}</span>`,
+    `<span class="mx-auto grid w-[166px] grid-cols-[56px_1fr] pl-[18px] items-center gap-[6px]"><span class="justify-self-center">${useBadge(n.use)}</span><span class="justify-self-start">${n.parent && hides(n.parent) ? UPPER_OFF_TAG : ""}</span></span>`,
   ]);
   const cols = [
     { header: "이동", width: "w-[56px]" },
@@ -142,18 +142,20 @@ function treeTab(key, s) {
     .replaceAll('class="px-[10px] font-medium text-erp-thead-text"', 'class="px-[10px] font-semibold text-erp-ink"')
     .replace(/<tr class="h-\[46px\] border-b border-erp-thead-line">/g, () => {
     const n = nodes[++i];
-    // 1단계 줄은 권한별 메뉴설정 팝업과 같은 바탕(2026-10-26 사용자 지정)
+    // 1단계 줄은 바탕 없이 굵은 글씨로만 가른다 — 고른 줄 회색과 헷갈렸다(앱 menus-screen.tsx 와 같다, 2026-10-28 사용자 지정)
     // 고른 줄은 한 단계 어두운 바탕 + 왼쪽 브랜드색 3px 선(앱 DataTable current 와 같다, 2026-10-26)
-    const cls = ["cursor-pointer", n === sel ? "bg-erp-subtle [&>td:first-child]:shadow-[inset_3px_0_0_var(--color-erp-brand)]" : n.lvl === 1 ? "bg-erp-thead-bg" : "", n.use ? "" : "text-erp-muted"].filter(Boolean).join(" ");
-    return `<tr class="h-[46px] border-b border-erp-thead-line ${cls}" data-row="${key}" data-code="${n.code}" data-lvl="${n.lvl}" data-name="${n.name}" data-label="${n.code} · ${path(n)}" data-kids="${n.kids}"${hides(n) ? " data-hides" : ""}>`;
+    const cls = ["cursor-pointer", n === sel ? "bg-erp-subtle [&>td:first-child]:shadow-[inset_3px_0_0_var(--color-erp-brand)]" : "", n.use ? "" : "text-erp-muted"].filter(Boolean).join(" ");
+    // 1단계 묶음 사이 1px 진한 선 #c9d1de(첫 줄 빼고, 앱 menus-screen.tsx 와 같다, 2026-10-28 사용자 지정)
+    const top = n.lvl === 1 && i > 0 ? " [&>td]:border-t [&>td]:border-t-[#c9d1de]" : "";
+    return `<tr class="h-[46px] border-b border-erp-thead-line ${cls}${top}" data-row="${key}" data-code="${n.code}" data-lvl="${n.lvl}" data-name="${n.name}" data-label="${n.code} · ${path(n)}" data-kids="${n.kids}"${hides(n) ? " data-hides" : ""}>`;
   });
 
   // 라벨 · 입력 예시는 앱 menu-side.tsx 그대로 — 메뉴명 예시는 등록에만, URL 예시는 등록 · 수정 모두(2026-10-26)
   // 미사용 안내 빨간 박스는 use 값(처음 그릴 때 상태)에 맞춰서만 보인다 — 데모는 라디오를 눌러도 다시 그리지
   // 않아 앱처럼 그 자리에서 즉시 뜨고 꺼지지는 않는다(사용자 지정, 2026-10-26 · 앱 menu-side.tsx 와 같은 문구).
   const kidsWarn = (kids) =>
-    kids ? `<br>하위 메뉴 ${kids}개도 함께 표시되지 않습니다. 하위 메뉴의 사용여부는 바뀌지 않아, 다시 '사용'으로 바꾸면 하위 메뉴도 그대로 보입니다.` : "";
-  const useWarn = (kids) => `<div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off">미사용으로 변경하면 사용자 화면과 [권한관리 &gt; 메뉴 설정]에 표시되지 않습니다.<br>다시 '사용'으로 변경하면 기존 설정값이 그대로 적용됩니다.${kidsWarn(kids)}</div>`;
+    kids ? `<br>하위 메뉴 ${kids}개도 함께 표시되지 않습니다.` : "";
+  const useWarn = (kids) => `<div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off">미사용으로 변경하면 사용자 메뉴와 권한 설정에서 표시되지 않습니다.<br>다시 '사용'으로 변경하면 기존 설정값이 그대로 적용됩니다.${kidsWarn(kids)}</div>`;
   const nameFields = (name, url, use, id, isNew, kids = 0) =>
     ui.field(req("메뉴명"), ui.textField({ value: name, placeholder: isNew ? "예: 플랫폼 배치 관리" : undefined, "data-new-name": isNew })) +
     ui.field("메뉴 URL (선택)", ui.textField({ value: url, placeholder: "예: /staff-content" })) +
@@ -218,7 +220,7 @@ function treeTab(key, s) {
 // 트리의 새 자리(고른 메뉴 맨 끝, 3단계를 고르면 그 상위 맨 끝)에 ‘작성 중’ 줄이 선다. 취소·저장하면 상세로 돌아간다(데모라 트리에 넣지는 않는다).
 const MENU_SCRIPT = `<script>
 (() => {
-  // 고른 줄 표시 — 1단계 줄 바탕(bg-erp-thead-bg)과 겹치지 않게 다른 바탕 + 왼쪽 선(앱 DataTable current 와 같다)
+  // 고른 줄 표시 — 한 단계 어두운 바탕 + 왼쪽 선(앱 DataTable current 와 같다). 1단계 줄은 바탕 없이 굵은 글씨로만 가른다(앱 menus-screen.tsx 와 같다, 2026-10-28)
   const SEL = "bg-erp-subtle";
   const BAR = "[&>td:first-child]:shadow-[inset_3px_0_0_var(--color-erp-brand)]";
   document.querySelectorAll("[data-side]").forEach((side) => {
@@ -240,7 +242,6 @@ const MENU_SCRIPT = `<script>
         const on = !draft && r.dataset.code === cur;
         r.classList.toggle(SEL, on);
         r.classList.toggle(BAR, on);
-        r.classList.toggle("bg-erp-thead-bg", !on && r.dataset.lvl === "1");
       });
     const parentOf = (r) => {
       for (let i = rows.indexOf(r) - 1; i >= 0; i--) if (+rows[i].dataset.lvl < +r.dataset.lvl) return rows[i];

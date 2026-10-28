@@ -326,14 +326,14 @@ function MenuForm(
         {/* 미사용을 고르면 저장 전에도 바로 보인다 — 저장 뒤 토스트(빠르게 사라짐)로만 알리면 놓치기 쉽다(사용자 지적, 2026-10-26). */}
         {form.status === "INACTIVE" && (
           <div className="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off">
-            {"미사용으로 변경하면 사용자 화면과 [권한관리 > 메뉴 설정]에 표시되지 않습니다."}
+            {"미사용으로 변경하면 사용자 메뉴와 권한 설정에서 표시되지 않습니다."}
             <br />
             {`다시 '사용'으로 변경하면 기존 설정값이 그대로 적용됩니다.`}
             {/* 하위 메뉴가 있으면 함께 숨는다는 것과, 하위의 사용여부는 바뀌지 않는다는 것을 덧붙인다(2026-10-27 사용자 지정) */}
             {childCount > 0 && (
               <>
                 <br />
-                {`하위 메뉴 ${childCount.toLocaleString("ko-KR")}개도 함께 표시되지 않습니다. 하위 메뉴의 사용여부는 바뀌지 않아, 다시 '사용'으로 바꾸면 하위 메뉴도 그대로 보입니다.`}
+                {`하위 메뉴 ${childCount.toLocaleString("ko-KR")}개도 함께 표시되지 않습니다.`}
               </>
             )}
           </div>
@@ -351,16 +351,18 @@ function MenuForm(
       </div>
       <ConfirmDialog
         open={confirmSelfLock !== null}
-        title="이 화면이 닫힙니다"
-        confirmLabel={confirmSelfLock === "url" ? "URL 바꿔 저장" : "미사용으로 저장"}
+        // 트리에서 미사용 메뉴 아래로 옮길 때의 확인창과 같은 틀(제목은 묻는 말, 본문은 결과 한 줄) — 메뉴 이름 · 코드는 넣지 않는다(2026-10-28 사용자 지정)
+        title={confirmSelfLock === "url" ? "메뉴 URL을 변경하시겠습니까?" : "미사용으로 변경하시겠습니까?"}
+        confirmLabel={confirmSelfLock === "url" ? "변경 후 저장" : "미사용으로 저장"}
         busy={saving}
         onConfirm={save}
         onCancel={() => setConfirmSelfLock(null)}
       >
+        {/* 「다.」만 다음 줄로 넘어가지 않게 「접근할 수 없습니다.」 앞에서 줄을 바꾼다(2026-10-28 사용자 지정) */}
         <p className="text-[14px] leading-[1.6]">
-          {confirmSelfLock === "url"
-            ? `플랫폼 메뉴 관리(${SELF_MENU_CODE})의 URL 을 바꾸면 실제 화면 주소와 어긋나, 다음 로그인부터 이 화면에 들어올 수 없습니다. 계속할까요?`
-            : `이 메뉴를 미사용으로 돌리면 플랫폼 메뉴 관리(${SELF_MENU_CODE})도 사용자 화면과 메뉴 권한에서 빠져, 이 화면으로는 다시 켤 수 없습니다. 계속할까요?`}
+          {confirmSelfLock === "url" ? "변경 후에는 실제 화면 주소와 달라져 현재 화면에" : "변경 후에는 현재 화면이 사용자 메뉴에서 제외되어"}
+          <br />
+          접근할 수 없습니다.
         </p>
       </ConfirmDialog>
     </form>

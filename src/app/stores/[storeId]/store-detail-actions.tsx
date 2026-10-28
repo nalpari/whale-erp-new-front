@@ -78,7 +78,9 @@ export function StoreDetailActions({
 
   const closed = store.storeStatusCode === "CLOSED";
   const bpInactive = store.bpAccountStatusCode !== "ACTIVE";
-  const blockedReason = bpInactive ? "소속 BP 가 미사용 상태여서 이 업무를 할 수 없습니다." : undefined;
+  // 상세 위 안내와 같은 표현 — 상태(미사용 · 탈퇴)를 밝힌다(2026-10-28 사용자 지정)
+  const accountStatus = useCodeLabel("ACCOUNT_STATUS");
+  const blockedReason = bpInactive ? `이 점포가 속한 BP가 ${accountStatus(store.bpAccountStatusCode)} 상태로, 조회 기능만 이용할 수 있습니다.` : undefined;
   const targets = nextStatuses(store.storeStatusCode).filter((s) => s !== store.storeStatusCode);
 
   const deleteReason =

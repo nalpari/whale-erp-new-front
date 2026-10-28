@@ -2,9 +2,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  BP_BLOCKED_TEXT,
   EMPTY_STORE_FORM,
   formOfStore,
   hasCoordinateInput,
+  isBpBlockedMessage,
   newFloorRow,
   splitPhone,
   storeServerErrorField,
@@ -383,4 +385,11 @@ test("api 오류 나누기 — 저장 때 번호 중복 409 는 번호 칸에 �
 
 test("api 오류 칸 — 운영 조건 문구는 조건 이름에 「진위확인」이 있어도 점포상태 칸", () => {
   assert.equal(storeServerErrorField(400, "운영으로 바꾸려면 다음이 필요합니다 — 사업자 진위확인, 좌표(위도 · 경도)"), "storeStatus");
+});
+
+test("BP 미사용 · 탈퇴 거절 문장 — 409 의 api 문장만 알아본다", () => {
+  assert.equal(isBpBlockedMessage(409, "소속 BP가 미사용 상태여서 이 업무를 할 수 없습니다. 조회는 그대로 됩니다"), true);
+  assert.equal(isBpBlockedMessage(400, "소속 BP가 미사용 상태여서 이 업무를 할 수 없습니다."), false);
+  assert.equal(isBpBlockedMessage(409, "이미 등록된 사업자등록번호입니다."), false);
+  assert.equal(BP_BLOCKED_TEXT.create, "BP가 탈퇴 또는 미사용 상태로, 점포를 등록할 수 없습니다.");
 });

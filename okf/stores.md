@@ -8,7 +8,7 @@ sources:
   - { id: stores-data, resource: ../src/lib/stores.ts, title: 점포 데이터 접근 }
   - { id: store-form, resource: ../src/lib/store-form.ts, title: 점포 등록 · 수정 폼 규칙 }
   - { id: store-view, resource: ../src/lib/store-view.ts, title: 점포 표기 }
-generated: { by: claude-code/opus-5.5, at: 2026-10-27T15:00:00Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-28T01:26:53Z }
 ---
 
 근거: `docs/mockup/stores/` (목업 · 1차 · R-QTPRUQ)
@@ -45,6 +45,7 @@ generated: { by: claude-code/opus-5.5, at: 2026-10-27T15:00:00Z }
 * 상태 변경은 상세의 상태 변경 팝업과 수정 화면의 점포상태 선택이 같은 조건으로 맡는다. 선택지는 현재 상태에서 갈 수 있는 곳만 보인다 — `S-MNRZOM` · `S-JEPOMK`
 * 수정 화면에서 폐점을 고르는 순간 폐점 조건을 확인하고, 못 채우면 팝업으로 못 채운 조건을 보인 뒤 선택을 이전 상태로 돌린다. 조건을 채운 전환은 저장 때 확인 창을 거쳐 다른 수정 내용과 함께 반영하고, 저장 직전에 조건을 한 번 더 확인한다 — `S-JEPOMK`
 * 소속 BP 가 미사용이면 목록·상세 조회만 되고 등록·수정·상태 변경·삭제는 막는다. 점포 상태는 그대로 둔다 — `F-MOQKGY`
+* 화면 안내(2026-10-28 사용자 지정): 상세 · 수정은 점포명 머리 위 빨간 띠 「이 점포가 속한 BP가 {탈퇴 · 미사용} 상태로, 조회 기능만 이용할 수 있습니다.」(상태 이름은 공통코드 `ACCOUNT_STATUS`), 막힌 버튼의 이유도 같은 문구다. 등록은 플랫폼 계정이 들어오면 고른 BP 의 상태를 `GET /bp-codes`(BP코드로 찾기)로 보고, 탈퇴 · 미사용이면 맨 위에 「BP가 탈퇴 또는 미사용 상태로, 점포를 등록할 수 없습니다.」를 띄우고 [저장]을 막는다. 저장 때 api 가 같은 이유로 거절해도(409 「소속 BP가 미사용 상태여서 …」 — 미사용 · 탈퇴를 가르지 않는다) 화면은 이 문구로 바꿔 보인다(`isBpBlockedMessage`).
 * 목록·상세에 소속 BP 상태 칸은 두지 않는다. BP 미사용으로 막혔을 때만 안내를 보인다 — `S-BAYAJS` · `S-AGGZZG` · `STORE-3`
 * BP 가 탈퇴하면 그 BP 의 미운영·운영 점포를 조건 검사 없이 모두 폐점한다 — `F-MOQKGY` · `S-JHQQNR`
 * 가맹 마스터·가맹 관리자는 등록 권한이 켜져 있어도 점포를 등록할 수 없고, 매핑된 점포만 보고 고친다. 목록에서도 등록 버튼이 보이지 않는다 — `S-ALHLHW`
