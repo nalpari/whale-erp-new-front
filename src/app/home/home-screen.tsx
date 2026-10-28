@@ -222,6 +222,9 @@ type NullableCount = "staffCount" | "unsignedContractCount" | "checkedInCount";
 // 그 메뉴의 조회 권한이 없어 api 가 모든 줄에 null 을 준 열은 숨긴다 — 「—」가 0건과 권한 없음을 같이 뜻하지 않게(WHALEERP-620, 2026-10-28 재영)
 function StoreTable({ table, hq, staffHref }: { table: HomeSummary["storeTable"]; hq: boolean; staffHref: string | null }) {
   const shown = (key: NullableCount) => table.items.some((r) => r[key] !== null);
+  const hqNote = hq
+    ? [shown("unsignedContractCount") && "미체결 계약", shown("checkedInCount") && "오늘 출근"].filter(Boolean).join(" · ")
+    : "";
   return (
     <section className={`${CARD} flex flex-col gap-[12px] p-[24px]`}>
       <div className="flex items-end gap-[6px]">
@@ -250,8 +253,8 @@ function StoreTable({ table, hq, staffHref }: { table: HomeSummary["storeTable"]
       <div className="flex items-center text-[14px]">
         <p className="flex-1 text-erp-label">
           {table.total}개점 중 상위 {table.items.length}개 · 미조치 많은 순
-          {/* 출근 수만 가린 값이라 「1 / 5」처럼 보일 수 있다 — 수치 카드와 같은 안내(운영 정책 ATT-30) */}
-          {hq && <span className="ml-[8px] text-[12px] text-erp-muted">동의하지 않은 가맹 직원은 미체결 계약 · 오늘 출근에 세지 않습니다</span>}
+          {/* 출근 수만 가린 값이라 「1 / 5」처럼 보일 수 있다 — 수치 카드와 같은 안내(운영 정책 ATT-30). 보이는 열만 적는다 */}
+          {hqNote && <span className="ml-[8px] text-[12px] text-erp-muted">동의하지 않은 가맹 직원은 {hqNote}에 세지 않습니다</span>}
         </p>
         {staffHref && (
           <Link href={staffHref} className="text-erp-link hover:underline">
