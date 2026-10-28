@@ -69,16 +69,20 @@
                         <ul style="margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 6px">
                           <li>로그인에 성공하면 계정 유형에 따라 접속 사이트를 나눈다.</li>
                           <li>BP·가맹 마스터·관리자는 <b>웨일ERP(BP) 홈</b>으로 이동한다.</li>
-                          <li>플랫폼 마스터·관리자는 <b>웨일ERP(플랫폼관리) 사이트</b>로 이동한다.</li>
+                          <li>플랫폼 마스터·관리자는 <b>웨일ERP(플랫폼관리) 사이트</b>로 이동한다. 플랫폼관리 사이트에는 홈이 없어, 계정에 등록된 메뉴 가운데 조회 권한과 URL 이 있는 <b>첫 메뉴</b>(GNB 에 보이는 순서상 첫 화면)로 들어간다(2026-10-28 변경).</li>
+                          <li>접근할 플랫폼 메뉴가 하나도 없으면 권한 요청 안내 화면에 머문다.</li>
+                          <li>비밀번호 강제 변경·약관 동의를 마치기 전에는 첫 메뉴로 넘어가지 않는다.</li>
                         </ul>
                       </td>
                       <td>
                         <ul style="margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 6px">
                           <li>계정 유형별로 다른 사이트가 열린다.</li>
                           <li>로그인 화면 자체는 하나로 같다.</li>
+                          <li>권한 요청 안내: <b>접근할 수 있는 메뉴가 없습니다.</b> 이 계정에는 아직 플랫폼관리 메뉴 권한이 없습니다. 아래 계정 정보로 관리자에게 권한을 요청해 주세요. (계정 정보: 아이디 · 사용자 권한) <span class="mono">[내정보 관리] [로그아웃]</span></li>
+                          <li>플랫폼관리 GNB 의 로고와 서비스 바로가기 「플랫폼관리」도 첫 메뉴로 간다.</li>
                         </ul>
                       </td>
-                      <td><span class="badge badge--ok">확정</span><br /><span class="mono">F-DZVFIC</span></td>
+                      <td><span class="badge badge--warn">변경 · manyfast 반영 대기</span><br /><span class="mono">F-DZVFIC</span></td>
                     </tr>
                     <tr>
                       <td class="n">2</td>
@@ -207,7 +211,8 @@
               </div>
               <div class="panel__note">
                 맨 오른쪽 <b>확정여부</b> 칸은 1팀·3팀 협의 결과를 표시하는 자리다. 지금은 1번(로그인 후 이동)이
-                manyfast <span class="mono">F-DZVFIC</span>(로그인)에, 2번(GNB 점포 전환: 선택 방식)이
+                manyfast <span class="mono">F-DZVFIC</span>(로그인)에 반영된 확정 상태였으나 2026-10-28 플랫폼 계정의 이동처(첫 메뉴)가 바뀌어
+                manyfast 반영을 기다리고, 2번(GNB 점포 전환: 선택 방식)이
                 <span class="mono">F-TLJOCK</span>(상단 조회 범위 선택)에 반영된 <b>확정</b> 상태이고, 나머지 열한 가지는 특정 명세의
                 슬롯이 아니라 여러 화면에 공통으로 적용되는 규칙이라 아직 어느 manyfast 항목에도 붙어 있지 않은
                 <b>미정</b>이다. 회의에서 정해지는 대로 이 칸을 확정으로 바꾸고 해당 공통 컴포넌트(토스트·확인창 등)

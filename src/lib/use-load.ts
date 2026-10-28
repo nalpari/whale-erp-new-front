@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useState } from "react";
 import { useLoadGroupHold } from "@/components/common/load-group";
 import { bff, BffError } from "@/lib/bff";
+import { PASSWORD_CHANGE_REQUIRED_MESSAGE } from "@/lib/retirement";
 
 export type Loaded<T> = { key: string; data: T } | { key: string; error: string };
 
@@ -37,7 +38,9 @@ export function useLoad<T>(load: (() => Promise<T>) | null, key: string, what: s
       (e: unknown) => {
         if (cancelled) return;
         if (e instanceof BffError && e.status === 401) return router.replace("/login");
-        console.error(`${what} 조회 실패`, e);
+        // 강제 비밀번호 변경 전 403 은 정해진 동작이라 오류로 남기지 않는다 — 팝업 뒤 화면이 먼저 부른다(2026-10-28)
+        const passwordPending = e instanceof BffError && e.status === 403 && e.message === PASSWORD_CHANGE_REQUIRED_MESSAGE;
+        if (!passwordPending) console.error(`${what} 조회 실패`, e);
         setGot({ key: full, error: e instanceof BffError ? e.message : "잠시 뒤 다시 불러와 주세요" });
       },
     );

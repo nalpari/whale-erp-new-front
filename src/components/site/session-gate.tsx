@@ -6,7 +6,7 @@ import { Button, useBackdropActive } from "@/components/common";
 import { logout } from "@/app/actions";
 import { bff, BffError, PASSWORD_REQUIRED_EVENT, signOut } from "@/lib/bff";
 import { bpOfPath, bpPath, isBpPathScreen, stripBp } from "@/lib/bp-path";
-import { BP_SWITCH_PATH, bpOfSwitchUrl, HOME, isAllowed, menuOfPath, menuPermissionOf, menusOf, serviceOfPath, type MenuAction, type MenuCode } from "@/lib/menus";
+import { BP_SWITCH_PATH, bpOfSwitchUrl, firstMenuRedirect, HOME, isAllowed, menuOfPath, menuPermissionOf, menusOf, serviceOfPath, type MenuAction, type MenuCode } from "@/lib/menus";
 import { ForcePasswordDialog } from "./force-password-dialog";
 import { MyPagePanel } from "./my-page-panel";
 import { PasswordChangePanel } from "./password-change-panel";
@@ -212,7 +212,7 @@ export function SessionGate({ header, children }: { header: ReactNode; children:
           alert(e.message);
           const loginKey = readLoginKey();
           if (e.bpCodeId !== null && loginKey && readSelectedBp(loginKey)?.bpCodeId === e.bpCodeId) clearSelectedBp();
-          // 이 탭에 앞서 연 BP(ERP)가 남아 있으면 플랫폼 홈이 ERP 탭으로 열려 막히고 뒤로 간다 — 지우고 주소로 다시 정하게 한다.
+          // 이 탭에 앞서 연 BP(ERP)가 남아 있으면 플랫폼 첫 주소(/platform)가 ERP 탭으로 열려 막히고 뒤로 간다 — 지우고 주소로 다시 정하게 한다.
           clearTabBp();
           location.replace(HOME.PLATFORM); // 다른 BP 는 플랫폼 계정만 연다. 자기 BP(플랫폼)로 다시 연다.
           return;
@@ -286,10 +286,18 @@ function Ready({
   // 열 수 있어 화면마다 따로 감싸 둘 수 없다. admins-screen.tsx 의 같은 처리(자기 등록 패널용)와 겹쳐도 무해하다.
   const backdropActive = useBackdropActive();
 
+  // 플랫폼은 홈이 없다 — /platform 은 헤더 순서상 첫 메뉴로 넘겨 주는 주소다(2026-10-28 재영). 메뉴가 없으면 /platform 이 권한 요청 안내를 그린다.
+  // 비밀번호 강제 변경(약관 동의 포함) 전에는 메뉴 화면의 api 가 403 이라 /platform 에 머문다 — 바꾸면 passwordChanged 가 /platform 을 다시 연다.
+  const firstMenu = firstMenuRedirect(value.menus, value.serviceCode, pathname, value.account.isPasswordChangeRequired);
+
   // BP 이동 화면은 준비가 끝났으니 그 서비스의 홈으로 바꿔 간다(뒤로 가기에 남지 않게 replace).
   useEffect(() => {
     if (switching) router.replace(home);
   }, [switching, home, router]);
+  // replace — /platform 이 뒤로 가기 기록에 남으면 뒤로 갈 때마다 다시 첫 메뉴로 돌아온다.
+  useEffect(() => {
+    if (firstMenu) router.replace(firstMenu);
+  }, [firstMenu, router]);
 
   useEffect(() => {
     // 틀은 화면을 옮겨도 그대로 있다. 열린 화면에 오면 기록을 비워야 같은 막힌 주소에 다시 와도 안내한다.
@@ -348,12 +356,15 @@ function Ready({
   });
   const passwordChanged = () => {
     setPasswordRequired(false);
-    // 바꾼 뒤에는 이 탭 서비스의 홈으로 다시 연다.
-    location.assign(home);
+    // 바꾼 뒤에는 이 탭 서비스의 HOME 으로 다시 연다 — 플랫폼은 /platform 을 거쳐 첫 메뉴로 간다.
+    // replace — assign 이면 같은 HOME 이 기록에 두 번 남아 뒤로 가기가 한 번 제자리처럼 보인다.
+    location.replace(home);
   };
   return (
     <LoginContext value={{ ...value, setScope, patchAccount, myPageOpen, setMyPageOpen, passwordChangeOpen, setPasswordChangeOpen, withdrawOpen, setWithdrawOpen, myPageTrigger }}>
-      {allowed && !switching && (
+      {/* 첫 메뉴로 넘어가는 동안 /platform 의 빈 화면을 한 번 그리지 않게 안내만 둔다. */}
+      {firstMenu && <Notice>불러오는 중입니다</Notice>}
+      {allowed && !switching && !firstMenu && (
         <>
           {header}
           {/* MY PAGE · 비밀번호 변경 패널이 맨 위일 때만 본문을 inert 로 뺀다 — 그냥 backdropActive 를 쓰면 화면
@@ -433,7 +444,7 @@ async function prepare(onSwitchBp: (bp: StoredBp) => void): Promise<LoginState> 
   // BP · 가맹 계정은 소속 BP 하나만 연다. 남의 BP 주소는 proxy 가 쿠키로 이미 보냈어야 한다 — 쿠키에 BP 가 없는 옛 세션이거나 쿠키의 BP 가 로그인 정보와 어긋난 경우에만 여기 온다.
   if (!platform && pathBp !== null && pathBp !== ownBp.bpCodeId) return fixBpPath(ownBp.bpCodeId, url);
   // 비밀번호를 바꾸기 전의 플랫폼 계정은 다른 BP 를 열지 않고 자기 BP 로 연다(아래 tab). 고객 BP 주소에 그대로 두면 주소의 BP 와 탭 BP 가
-  // 영영 달라 준비가 끝나지 않고(stale) 강제 변경 팝업도 뜨지 않는다 — 플랫폼 홈으로 보낸다.
+  // 영영 달라 준비가 끝나지 않고(stale) 강제 변경 팝업도 뜨지 않는다 — 플랫폼 첫 주소(/platform)로 보낸다.
   if (platform && account.isPasswordChangeRequired && pathBp !== null) return moveTo(HOME.PLATFORM);
   // 옮긴 화면에 BP 없이 왔다(옛 즐겨찾기 · 알림 링크 · 아직 접두를 안 붙인 링크). 탭 BP 주소로 보낸다.
   // 플랫폼 계정이 BP 를 고른 적이 없으면 플랫폼 탭으로 열려 Ready 가 「BP 를 먼저 골라 주세요」로 막는다.

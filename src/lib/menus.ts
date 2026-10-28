@@ -14,7 +14,7 @@ export const MENU_CODE = { platformMenus: "MN000215", staffMembers: "MN000005", 
 export type MenuCode = (typeof MENU_CODE)[keyof typeof MENU_CODE];
 export type MenuAction = keyof AdminMenu["permission"];
 
-/** 서비스마다의 홈. 메뉴에 없어도 늘 열린다. */
+/** 서비스마다 들어오는 주소. 메뉴에 없어도 늘 열린다. ERP 는 홈 화면, 플랫폼은 홈이 없어 첫 메뉴로 넘겨 준다(firstMenuRedirect). */
 export const HOME: Record<ServiceCode, string> = { WHALE_ERP: "/home", PLATFORM: "/platform" };
 /** BP 이동 화면 — ?bp= 의 BP 로 이 탭을 준비하고 그 서비스의 홈으로 간다(SessionGate). 주소 자체로 이동해야(전체 로드) 준비가 돈다. */
 export const BP_SWITCH_PATH = "/bp-switch";
@@ -44,6 +44,34 @@ export function findMenu(menus: AdminMenu[], match: (m: AdminMenu) => boolean): 
     const found = findMenu(m.children, match);
     if (found) return found;
   }
+}
+
+/** 헤더 2단계 항목이 가리키는 주소 — 조회 권한이 있으면 자기 url, 하위 메뉴로 가는 길로만 들어온 메뉴면 권한 있는 첫 하위 메뉴. 없으면 undefined. */
+export function entryUrlOf(menu: AdminMenu): string | undefined {
+  return menu.permission.read && menu.url ? menu.url : findMenu(menu.children, (m) => m.permission.read && !!m.url)?.url ?? undefined;
+}
+
+/**
+ * 플랫폼 계정은 홈이 없다 — /platform 에 오면 헤더 순서상 첫 화면으로 보낸다(2026-10-28 재영). 그 첫 화면의 주소이고, 없으면 null.
+ * 1단계 순서대로 그 안의 첫 하위 항목(entryUrlOf), 열 수 있는 하위 항목이 없으면 조회 권한이 있는 1단계 자신 — 헤더(admin-header.tsx)가 그리는 순서와 같다.
+ * 계정에 등록된 메뉴만 본다 — 임시로 여는 PENDING_PLATFORM_MENU 는 넣지 않는다. 홈 주소는 다시 홈으로 돌아와 맴돌므로 뺀다.
+ */
+export function firstMenuUrl(menus: AdminMenu[], service: ServiceCode): string | null {
+  for (const m of menusOf(menus, service)) {
+    // 헤더는 열 수 있는 하위 항목이 하나라도 있으면 그것들만, 없을 때만 1단계 자신을 건다. 홈 주소인 항목은 건너뛰고 다음 항목을 본다.
+    const entries = m.children.map(entryUrlOf).filter((u): u is string => !!u);
+    const url = entries.length ? entries.find((u) => u !== HOME[service]) : m.permission.read ? m.url : null;
+    if (url && url !== HOME[service]) return url;
+  }
+  return null;
+}
+
+/**
+ * 이 주소에서 첫 메뉴로 넘겨야 하면 그 주소, 아니면 null(SessionGate). 플랫폼 탭의 /platform 에서만 넘긴다.
+ * 비밀번호 강제 변경(약관 동의 포함) 전에는 메뉴 화면의 api 가 403 이라 넘기지 않는다 — 바꾸면 /platform 을 다시 열어 넘어간다.
+ */
+export function firstMenuRedirect(menus: AdminMenu[], service: ServiceCode, pathname: string, isPasswordChangeRequired: boolean): string | null {
+  return service === "PLATFORM" && pathname === HOME.PLATFORM && !isPasswordChangeRequired ? firstMenuUrl(menus, service) : null;
 }
 
 /** 그 서비스의 메뉴만 남긴다(하위 메뉴까지). 플랫폼 계정은 두 서비스 메뉴를 모두 받으므로 탭의 서비스로 거른다. */

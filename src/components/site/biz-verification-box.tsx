@@ -5,10 +5,10 @@ import { Badge, Button, DateField, Field, TextField } from "@/components/common"
 import { FieldMessage } from "@/components/site/side-parts";
 import {
   BIZ_CEO_NAME_MAX,
-  BIZ_MESSAGE,
   bizNumberInput,
   bizVerifiedLabel,
   missingMessage,
+  BIZ_MESSAGE,
   type BizVerifyField,
   type BizVerifyValues,
 } from "@/lib/biz-verification-rules";
@@ -55,6 +55,7 @@ export function BizVerificationBox({
   onRevert,
   revertLabel = "재인증 취소",
   onClearSaved,
+  // 국세청 안내 줄은 인증하기 전에만 보인다 — 인증한 뒤에도 남으면 어색했다(점포 · MY PAGE · BP 마스터, 2026-10-28 사용자 지정)
   guide = BIZ_MESSAGE.GUIDE,
   note,
   layout = "stack",
@@ -246,15 +247,18 @@ export function BizVerificationBox({
         <span role="status" className="sr-only">
           {verified ? "사업자정보 인증이 완료되었습니다." : ""}
         </span>
+        {/* 인증한 뒤에는 안내 줄을 빼고 note 만 둔다(2026-10-28 사용자 지정) */}
+        {((!verified && guide) || note) && (
         <p className="text-[13px] leading-[1.5] text-erp-label">
-          {guide}
+          {!verified && guide}
           {note && (
             <>
-              <br />
+              {!verified && guide && <br />}
               {note}
             </>
           )}
         </p>
+        )}
       </div>
     </section>
   );

@@ -5,6 +5,11 @@
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #136 셀프 code-review(2차): 직원 목록 · 직원 상세의 초대 재발송도 마지막 발송 시각(api 계약 칸 `lastSentAt`)을 보내 두 화면 재발송을 막는다, 서버 액션이 받은 값의 모양을 보고 싣는다(`sendBodyOf` — 직접 불러 null 을 넘겨도 터지지 않음). api 타입을 tentacruel `c03a7e3b`(api main 포함)에서 다시 만듦.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #136 셀프 code-review: 상세 재발송이 마지막 발송 시각(`lastSentAt` → `expectedSentAt`)도 보내 상태가 그대로인 두 탭 재발송을 막는다(api #158), `SendContractButton` 의 `status` 를 `ContractStatus` 로(단언 없앰), api 타입을 tentacruel `437523d8` 에서 다시 만듦.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #136 재리뷰 참고 1: 재발송(상세 · 직원 목록 · 직원 상세)이 화면이 본 계약 상태를 `expectedStatus` 로 함께 보낸다(`sendBodyOf`) — 그사이 거부 · 만료되었거나 다른 탭에서 먼저 보냈으면 api(#158)가 409 로 막아 다시 읽는다. #135(main 병합) 병합, api 타입을 #158 tentacruel `2347eac7` 에서 다시 만듦.
+* **Update**: main 병합(front clefable, #165 까지): okf 충돌은 양쪽 기록을 살렸고, [Whale ERP Frontend](/whale-erp-front.md) 시각은 늦은 값을 남겼다.
+* **Update**: [BP 마스터 계정 관리](/bp.md) · [점포 관리](/stores.md) · [Whale ERP Frontend](/whale-erp-front.md) — 사용자 디자인 수정 2(front clefable, 점포는 인증 상자 일시 · 국세청 안내): 초기화 비밀번호 안내 상자 · 토스트 · 확인창 문구, BP 마스터 사업자정보를 MY PAGE 모양으로, 상세 계정상태 줄 · 인증 일시, 강제 비밀번호 변경 팝업 다듬기.
+* **Update**: main 병합(front abra, #164 · #135 까지): okf 충돌은 양쪽 기록을 살렸다 — [Whale ERP Frontend](/whale-erp-front.md) 는 main 본문에 이 브랜치의 플랫폼 첫 메뉴 이동 세 곳을 다시 얹었다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 계정 로그인 후 첫 메뉴로 이동(`/platform` 은 넘겨 주는 주소, `firstMenuUrl` · `firstMenuRedirect`), 헤더 로고 · 플랫폼관리 바로가기, `src/app/platform/` 권한 요청 안내(front abra, PR #165 리뷰).
+* **Update**: [로그인](/auth.md) — 플랫폼 계정은 홈이 없고 로그인하면 헤더 순서상 첫 플랫폼 메뉴로 간다(2026-10-28 재영). `/platform` 은 넘겨 주는 주소이고, 메뉴가 없으면 권한 요청 안내, 비밀번호 강제 변경 전에는 머문다(front abra).
 * **Update**: main 병합(front poliwag, #164 mudkip 까지): okf 충돌은 양쪽 기록을 살렸다 — [Whale ERP Frontend](/whale-erp-front.md) 는 main 의 LoadGroup · loading · `send`/`actionFailure` 줄과 이 브랜치의 근로계약 두 줄.
 * **Update**: main 병합(front poliwag, main 최신까지): okf 충돌은 양쪽 기록을 살렸다(BP 휴일 겹침 확인 버튼 이름은 main, api 타입 설명은 이 브랜치).
 * **Fix**: api 타입을 gyarados 로 다시 뽑으며 front main 의 BP 마스터 탈퇴 타입(`withdrawal`, 아직 api main 에 없음)을 지워 tsc 가 깨진 것을 3-way 병합(`git merge-file`)으로 되살렸다.

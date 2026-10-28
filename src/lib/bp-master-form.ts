@@ -25,17 +25,24 @@ export type BpMasterForm = {
   email: string;
   tradeName: string;
   ceoPhone: [string, string, string];
+  /** 체크하면 대표자 연락처는 기본정보 연락처를 그대로 쓴다 — ceoPhone 은 지우지 않아 풀면 적던 값으로 돌아온다(MY PAGE 와 같다, 2026-10-28 사용자 지정) */
+  sameAsBasicPhone: boolean;
   ceoEmail: string;
+  /** 체크하면 대표자 이메일은 기본정보 이메일을 그대로 쓴다 */
+  sameAsBasicEmail: boolean;
   zipCode: string;
   address: string;
   addressDetail: string;
   category: string;
   item: string;
-  /** 진위확인 입력 — 인증 상자를 펼쳤을 때만 쓴다 */
+  /** 진위확인 입력 — 인증 상자가 열려 있을 때(verifying) 쓴다 */
   bizNumber: string;
   ceoName: string;
   openDate: string;
-  /** 인증 상자를 펼쳤는가. 처음엔 접혀 있고 [사업자 번호 인증하기] · [재인증]으로 연다 */
+  /**
+   * 인증 상자의 세 칸이 열려 있는가. 인증이 없으면 처음부터 열려 있고(MY PAGE 처럼, 2026-10-28 사용자 지정 — 전엔 [사업자 번호 인증하기]로 펼쳤다),
+   * 인증이 있으면 잠겨 있다가 [재인증]으로 연다.
+   */
   verifying: boolean;
   /** 인증 완료 카드에 보이는 값 — 수정은 저장돼 있던 인증, 등록은 이번 화면의 인증 */
   verified: BpVerified | null;
@@ -65,7 +72,9 @@ export const EMPTY_BP_MASTER_FORM: BpMasterForm = {
   email: "",
   tradeName: "",
   ceoPhone: ["", "", ""],
+  sameAsBasicPhone: false,
   ceoEmail: "",
+  sameAsBasicEmail: false,
   zipCode: "",
   address: "",
   addressDetail: "",
@@ -74,16 +83,21 @@ export const EMPTY_BP_MASTER_FORM: BpMasterForm = {
   bizNumber: "",
   ceoName: "",
   openDate: "",
-  verifying: false,
+  verifying: true,
   verified: null,
 };
 
-/** 상세 값으로 수정 칸을 채운다. 인증된 BP 면 완료 카드에 저장된 세 값을 둔다. */
+/**
+ * 상세 값으로 수정 칸을 채운다. 인증된 BP 면 잠긴 상자에 저장된 세 값을 둔다.
+ * 「기본정보와 동일」은 저장된 대표자 연락처 · 이메일이 기본정보 값과 같고 비어 있지 않을 때만 켠다(MY PAGE formOf 와 같은 규칙).
+ */
 export function formOfBpMaster(d: BpMasterDetail): BpMasterForm {
   const verified =
     d.bizVerifiedAt && d.bizRegistrationNumber
       ? { bizNumber: d.bizRegistrationNumber, ceoName: d.bizCeoName ?? "", openDate: d.bizOpenDate ?? "" }
       : null;
+  const ceoPhone = (d.bizCeoPhone ?? "").trim();
+  const ceoEmail = (d.bizCeoEmail ?? "").trim().toLowerCase();
   return {
     ...EMPTY_BP_MASTER_FORM,
     loginId: d.loginId,
@@ -92,18 +106,25 @@ export function formOfBpMaster(d: BpMasterDetail): BpMasterForm {
     email: d.email ?? "",
     tradeName: d.tradeName,
     ceoPhone: splitPhone(d.bizCeoPhone),
+    sameAsBasicPhone: ceoPhone !== "" && ceoPhone === (d.phone ?? "").trim(),
     ceoEmail: d.bizCeoEmail ?? "",
+    sameAsBasicEmail: ceoEmail !== "" && ceoEmail === (d.email ?? "").trim().toLowerCase(),
     zipCode: d.bizZipCode ?? "",
     address: d.bizAddress ?? "",
     addressDetail: d.bizAddressDetail ?? "",
     category: d.bizCategory ?? "",
     item: d.bizItem ?? "",
+    verifying: !verified,
     verified,
   };
 }
 
 const phoneOf = (parts: [string, string, string]) => parts.map((p) => p.trim()).join("");
 const optional = (value: string) => value.trim() || null;
+
+/** 저장 · 검사에 쓰는 대표자 연락처 · 이메일 — 「기본정보와 동일」이면 기본정보 값이다 */
+export const effectiveCeoPhone = (f: Pick<BpMasterForm, "sameAsBasicPhone" | "phone" | "ceoPhone">) => (f.sameAsBasicPhone ? f.phone : f.ceoPhone);
+export const effectiveCeoEmail = (f: Pick<BpMasterForm, "sameAsBasicEmail" | "email" | "ceoEmail">) => (f.sameAsBasicEmail ? f.email : f.ceoEmail);
 
 /** 진위확인에 보낼 세 값 — 지금 칸 값을 다듬은 것 */
 export function verificationValuesOf(f: Pick<BpMasterForm, "bizNumber" | "ceoName" | "openDate">) {
@@ -144,9 +165,9 @@ export function validateBpMasterForm(form: BpMasterForm, mode: "create" | "edit"
   const tradeName = form.tradeName.trim();
   if (!tradeName) errors.tradeName = "상호명을 입력해 주세요.";
   else if (tradeName.length > 50) errors.tradeName = "상호명은 50자까지입니다.";
-  const ceoPhone = phoneOf(form.ceoPhone);
+  const ceoPhone = phoneOf(effectiveCeoPhone(form));
   if (ceoPhone && !CEO_PHONE_PATTERN.test(ceoPhone)) errors.ceoPhone = "대표자 연락처는 숫자 9~12자리입니다.";
-  const ceoEmail = form.ceoEmail.trim();
+  const ceoEmail = effectiveCeoEmail(form).trim();
   if (ceoEmail && (ceoEmail.length > 100 || !EMAIL_PATTERN.test(ceoEmail))) errors.ceoEmail = "대표자 이메일 형식이 아닙니다.";
   if (form.category.trim().length > 50) errors.category = "업태는 50자까지입니다.";
   if (form.item.trim().length > 50) errors.item = "종목은 50자까지입니다.";
@@ -157,8 +178,8 @@ export function validateBpMasterForm(form: BpMasterForm, mode: "create" | "edit"
 }
 
 /**
- * 인증 상자를 펼친 채 저장하려 하는가. 펼친 상자의 값은 인증해야만 저장되므로, 그대로 저장하면 적은 값이 사라진다 —
- * 화면이 「인증하지 않은 값은 저장되지 않습니다」를 한 번 알린다.
+ * 인증 상자에 값을 적은 채(인증 전) 저장하려 하는가. 상자의 값은 인증해야만 저장되므로, 그대로 저장하면 적은 값이 사라진다 —
+ * 화면이 「인증하지 않은 값은 저장되지 않습니다」를 한 번 알린다. 비어 있으면 인증 없이 저장한다.
  */
 export function hasPendingVerification(form: BpMasterForm): boolean {
   if (!form.verifying) return false;
@@ -172,8 +193,8 @@ function profileOf(form: BpMasterForm) {
     phone: phoneOf(form.phone),
     email: form.email.trim().toLowerCase(),
     tradeName: form.tradeName.trim(),
-    bizCeoPhone: optional(phoneOf(form.ceoPhone)),
-    bizCeoEmail: optional(form.ceoEmail.toLowerCase()),
+    bizCeoPhone: optional(phoneOf(effectiveCeoPhone(form))),
+    bizCeoEmail: optional(effectiveCeoEmail(form).toLowerCase()),
     bizZipCode: optional(form.zipCode),
     bizAddress: optional(form.address),
     bizAddressDetail: optional(form.addressDetail),

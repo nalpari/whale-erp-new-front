@@ -60,7 +60,7 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
       { header: "변경 후", align: "left" },
     ],
     [
-      ["2026-06-18 17:25", "hangang01", "초기 비밀번호", "—", `초기화 메일 발송 완료 ${c.muted("· 값은 남기지 않음")}`],
+      ["2026-06-18 17:25", "hangang01", "초기화 비밀번호", "—", `초기화 메일 발송 완료 ${c.muted("· 값은 남기지 않음")}`],
       ["2026-02-03 15:10", "hangang01", "대상 점포", "일부 · ST000001~002", "일부 · ST000001~004"],
       ["2025-09-15 11:02", "hangang01", "권한 그룹", `정산 조회 ${c.muted("BA000005")}`, `인사 담당 ${c.muted("BA000004")}`],
       ["2025-04-01 09:12", "hangang01", "계정", "", `사용 · BP 관리자 · 정산 조회 ${c.muted("BA000005")}`],
@@ -69,9 +69,9 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
 
   const resetDialog = x.dialog(
     resetId,
-    // 제목 · 문구는 플랫폼 관리자 관리의 초기화 확인창과 같다(2026-10-27 사용자 지정)
+    // 세 관리 화면 같은 확인창 — 대상 아이디 · 이름 · 이메일, 안내는 빨간 상자(앱과 같다, 2026-10-28)
     "비밀번호를 초기화하시겠습니까?",
-    `<div class="flex flex-col gap-[12px] break-keep">${c.kv([["아이디", "hghr"], ["이름", "이서아"]], 60)}<p>임시 비밀번호가 등록된 이메일로 발송되며, 기존 비밀번호는 즉시 무효화됩니다.<br>임시 비밀번호는 1시간 동안 유효하며, 로그인 시 비밀번호를 변경해야 합니다.<br>현재 로그인 중인 세션은 유지됩니다.</p></div>`,
+    `<div class="flex flex-col gap-[12px] break-keep">${c.kv([["아이디", "hghr"], ["이름", "이서아"], ["이메일", "seoa@hangang.co.kr"]], 60)}<div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off">비밀번호 초기화 시 새로운 비밀번호가 등록된 이메일로 발송됩니다.<br>새 비밀번호는 1시간 동안 유효하며, 로그인 시 변경해야 합니다.<br>기존 비밀번호는 즉시 사용할 수 없게 됩니다.</div></div>`,
     ui.button("취소", { variant: "off", "data-close": true }) + ui.button("초기화", { "data-close": true }),
     "w-[480px]",
   );
