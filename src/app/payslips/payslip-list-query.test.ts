@@ -24,6 +24,7 @@ test("왕복 — 달 · 상태 · 쪽 · 건수", () => {
     scope: null,
     staffName: "",
     statuses: ["REVIEWING", "CONFIRMED"],
+    reviewPending: false,
     page: 2,
     pageSize: 50,
   });
@@ -80,4 +81,11 @@ test("일괄 발송 대상 — 목록과 같은 달 · 점포 조건 · 직원�
   assert.deepEqual(sendTargetOf({ ...base, scope: { type: "DIRECT" } }), { month: "2026-09", storeTypes: ["DIRECT"] });
   assert.deepEqual(sendTargetOf({ ...base, storesCleared: true }), { month: "2026-09" });
   assert.deepEqual(sendTargetOf({ ...base, scope: { type: "ALL" } }), { month: "2026-09" });
+});
+
+test("왕복 — 검토 대기만은 reviewPending=true, 다른 값은 거르지 않는다", () => {
+  const q = parsePayslipListQuery({ reviewPending: "true" }, TODAY);
+  assert.equal(q.reviewPending, true);
+  assert.equal(toPayslipListSearch(q), "?month=2026-09&reviewPending=true");
+  assert.equal(parsePayslipListQuery({ reviewPending: "1" }, TODAY).reviewPending, false);
 });
