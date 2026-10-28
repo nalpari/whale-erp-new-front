@@ -125,18 +125,29 @@ export type SaveFailure =
   | { kind: "error"; error: string; inProgress?: InProgressContract[] };
 
 /**
- * 근로계약 저장(새 계약 · 이어 쓰기 · 당사자 정보 수정)의 ApiError 를 가른다. 순서가 뜻이다 — 401 → 저장은 됐는데 보내기만 실패(502 + 코드) →
- * 결과 모름(코드 없는 502 · 504) → 그 밖. 마지막은 409 + 진행 중 계약이면 목록도 싣고, 4xx 는 api 문구 그대로, 결과 모름이 아닌 5xx 는
- * 「저장하지 못했습니다」 확정 실패(폼을 잠그지 않는다)다. 로그는 failureOf 가 남긴다.
+ * 근로계약 저장(새 계약 · 이어 쓰기 · 당사자 정보 수정)의 ApiError 를 가른다. 순서가 뜻이다 — 401 → 저장은 됐는데 보내기만 실패(502 + 코드 + 계약 ID) →
+ * 503(설정 · 템플릿 문제) → 5xx 는 모두 결과 모름 → 그 밖(4xx).
+ * - api 는 저장 트랜잭션을 커밋한 뒤 발송(delivery.dispatch)을 부른다(create · update · updateWorker 모두). dispatch 앞쪽 조회가 실패하면 이미 저장된
+ *   요청이 코드 없는 500 이 될 수 있어, 5xx 는 저장 전 실패를 코드로 확인할 수 없으면 확정 실패로 다루지 않는다 — 저장 전에 던지는 5xx 코드는 api 에 없다.
+ * - 예외 503: 직원 앱 주소 · 대체 문자 발신번호 · 가입 초대 템플릿이 없거나 꺼진 경우로, 저장 트랜잭션 안에서 던져 저장째 되돌아간다(assertCanInvite) —
+ *   저장 전 실패가 확실하므로 api 문장을 그대로 보이고 폼을 잠그지 않는다.
+ * - 502 SEND_FAILED · SEND_UNCONFIRMED 인데 계약 ID 가 빠져 상세로 보낼 수 없으면 결과 모름이다.
+ * 409 + 진행 중 계약이면 목록도 싣는다. 4xx 는 api 문구 그대로다. 로그는 failureOf 가 남기고, 503 은 여기서 남긴다.
  */
 export function saveFailureOf(e: ApiError, log: Record<string, unknown>): SaveFailure {
   if (e.status === 401) return { kind: "login" };
   const target = sendFailedTarget(e.status, e.body);
   if (target) return { kind: "sendFailed", target };
-  const code = (e.body as { code?: unknown } | null)?.code;
-  if (saveOutcomeUnknown(e.status, typeof code === "string" ? code : undefined)) return { kind: "unknown" };
+  if (e.status === 503) {
+    console.error("근로계약 저장 실패(발송 설정)", log, e);
+    return { kind: "error", error: e.message };
+  }
+  if (e.status >= 500) {
+    console.error("근로계약 저장 결과 모름", log, e);
+    return { kind: "unknown" };
+  }
   const inProgress = e.status === 409 ? inProgressOf(e.body) : undefined;
-  const { message } = failureOf(e, "저장", log, { definite: true });
+  const { message } = failureOf(e, "저장", log);
   return inProgress ? { kind: "error", error: message, inProgress } : { kind: "error", error: message };
 }
 

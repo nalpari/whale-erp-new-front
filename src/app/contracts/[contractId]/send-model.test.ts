@@ -142,7 +142,6 @@ function quiet<T>(fn: () => T): T {
   }
 }
 const log = { feature: "근로계약", contractId: 1 };
-const SAVE_FAIL = "저장하지 못했습니다. 잠시 뒤 다시 시도해 주세요.";
 
 test("saveFailureOf — 401 은 로그인 필요", () => {
   assert.deepEqual(saveFailureOf(new ApiError(401, "Unauthorized"), log), { kind: "login" });
@@ -153,14 +152,22 @@ test("saveFailureOf — 저장은 됐고 보내기만 실패(502 + 코드 + 계�
   assert.deepEqual(saveFailureOf(e, log), { kind: "sendFailed", target: "/contracts/7?send=failed" });
 });
 
-test("saveFailureOf — 코드 없는 502 · 504 는 결과 모름", () => {
-  assert.deepEqual(saveFailureOf(new ApiError(504, "Gateway Timeout"), log), { kind: "unknown" });
-  assert.deepEqual(saveFailureOf(new ApiError(502, "Bad Gateway"), log), { kind: "unknown" });
+test("saveFailureOf — 코드 없는 502 · 504 · 500 과 코드 있는 5xx 는 모두 결과 모름(커밋 뒤 발송 단계 실패일 수 있다)", () => {
+  for (const e of [
+    new ApiError(504, "Gateway Timeout"),
+    new ApiError(502, "Bad Gateway"),
+    new ApiError(500, "boom"),
+    new ApiError(502, "x", ["x"], { code: "OTHER" }),
+    // 상세로 보낼 계약 ID 가 없으면 보내기 실패도 결과 모름이다
+    new ApiError(502, "x", ["x"], { code: "SEND_FAILED" }),
+    new ApiError(502, "x", ["x"], { code: "SEND_UNCONFIRMED", contractId: "7" }),
+  ])
+    assert.deepEqual(quiet(() => saveFailureOf(e, log)), { kind: "unknown" });
 });
 
-test("saveFailureOf — 코드 있는 502 · 500 은 확정 실패(잠그지 않는다)", () => {
-  assert.deepEqual(quiet(() => saveFailureOf(new ApiError(502, "x", ["x"], { code: "OTHER" }), log)), { kind: "error", error: SAVE_FAIL });
-  assert.deepEqual(quiet(() => saveFailureOf(new ApiError(500, "boom"), log)), { kind: "error", error: SAVE_FAIL });
+test("saveFailureOf — 503(설정 · 템플릿 문제, 저장 전 실패)은 api 문장 그대로 보이고 잠그지 않는다", () => {
+  const message = "가입 초대 알림톡 템플릿이 없거나 꺼져 있어 보낼 수 없습니다";
+  assert.deepEqual(quiet(() => saveFailureOf(new ApiError(503, message, [message]), log)), { kind: "error", error: message });
 });
 
 test("saveFailureOf — 409 + 진행 중 계약이면 api 문구와 목록, 400 은 api 문구", () => {
