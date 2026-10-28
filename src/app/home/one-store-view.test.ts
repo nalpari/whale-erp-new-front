@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { AdminStore } from "../../lib/session.ts";
 import type { StaffMemberListItem } from "../../lib/staff-members.ts";
-import { latestNotices, oneStoreIdOf, oneStorePaths, oneStoreStatusCells, staffCountsOf, staffRowsOf, todoSummaryOf } from "./one-store-view.ts";
+import { latestNotices, payAmounts, oneStoreIdOf, oneStorePaths, oneStoreStatusCells, staffCountsOf, staffRowsOf, todoSummaryOf, workDaysText, workTimeText } from "./one-store-view.ts";
 
 const store = (storeId: number) => ({ storeId }) as AdminStore;
 const staff = (over: Partial<StaffMemberListItem>) =>
@@ -33,6 +33,24 @@ test("api 경로 — TO-DO 는 그 점포 오늘 전부 · 긴급(대기 · 진�
   assert.equal(q(p.staff).get("joinState"), null);
   assert.equal(q(p.notices).get("pageSize"), "20");
   assert.equal(p.store, "/stores/5");
+  assert.deepEqual([q(p.payslipSummary).get("storeId"), q(p.payslipSummary).get("month")], ["5", "2026-10"]);
+});
+
+test("직원 급여 금액 — 보이는 정직원 + 파트타이머가 늘 합계와 같다", () => {
+  assert.deepEqual(payAmounts(6_425_000, 5_415_000), { total: "1,184만원", fullTime: "643만원", partTime: "541만원" });
+  assert.deepEqual(payAmounts(0, 7_559_500), { total: "756만원", fullTime: "0만원", partTime: "756만원" });
+  assert.deepEqual(payAmounts(0, 0), { total: "0만원", fullTime: "0만원", partTime: "0만원" });
+  // 합계가 만원 미만이면 셋 다 원
+  assert.deepEqual(payAmounts(4_000, 5_500), { total: "9,500원", fullTime: "4,000원", partTime: "5,500원" });
+  // 묶음은 만원 미만이어도 합계가 만원 이상이면 셋 다 만원 — 7,500 + 7,500 = 15,000 → 2만원 = 1 + 1
+  assert.deepEqual(payAmounts(7_500, 7_500), { total: "2만원", fullTime: "1만원", partTime: "1만원" });
+  assert.deepEqual(payAmounts(3_000, 1_000_000), { total: "100만원", fullTime: "0만원", partTime: "100만원" });
+  for (const [f, p] of [[6_425_000, 5_415_000], [7_500, 7_500], [14_999, 5_001], [1_234_567, 7_654_321], [5_000, 5_000]]) {
+    const r = payAmounts(f, p);
+    const n = (x: string) => Number(x.replace(/[^0-9]/g, ""));
+    assert.equal(n(r.fullTime) + n(r.partTime), n(r.total), `${f} + ${p}`);
+    assert.equal(n(r.total), Math.round((f + p) / 10_000), `${f} + ${p} 합계 반올림`);
+  }
 });
 
 test("TO-DO 숫자 — 완료는 줄의 묶음 상태(한 명만 끝낸 근무지 전체는 진행 중), 대기 · 진행 중은 전체 − 완료, 0건이면 막대 0%", () => {
@@ -73,4 +91,21 @@ test("본사 역할 · 가맹 점포 — 가린 줄(joinState null)은 남아 �
   assert.deepEqual(staffCountsOf({ items, total: 6 }), { employed: 1, waiting: 1, underAge: 0, masked: 2, partial: false });
   // 앞 100명인지는 거르기 전 받은 줄 수로 본다
   assert.equal(staffCountsOf({ items, total: 7 }).partial, true);
+});
+
+const wd = (weekday: string, startTime = "09:00", endTime = "18:00") => ({ weekday, startTime, endTime, breakStartTime: null, breakEndTime: null }) as never;
+
+test("근무 시간 — 같으면 그 시간, 다르면 가장 많은 시간 + 외, 없으면 —", () => {
+  assert.equal(workTimeText([wd("MON"), wd("TUE")]), "09:00~18:00");
+  assert.equal(workTimeText([wd("MON", "12:00", "18:00"), wd("THU"), wd("FRI")]), "09:00~18:00 외");
+  assert.equal(workTimeText([wd("MON", "12:00", "18:00"), wd("THU")]), "12:00~18:00 외");
+  assert.equal(workTimeText([]), "—");
+});
+
+test("근무요일 — 셋 이상 이어지면 물결, 아니면 가운뎃점, 없으면 —", () => {
+  assert.equal(workDaysText(["MON", "TUE", "WED", "THU", "FRI"].map((d) => wd(d))), "월~금");
+  assert.equal(workDaysText(["FRI", "MON", "THU"].map((d) => wd(d))), "월·목·금");
+  assert.equal(workDaysText(["MON", "TUE", "WED", "FRI"].map((d) => wd(d))), "월~수·금");
+  assert.equal(workDaysText(["SAT", "SUN"].map((d) => wd(d))), "토·일");
+  assert.equal(workDaysText([]), "—");
 });

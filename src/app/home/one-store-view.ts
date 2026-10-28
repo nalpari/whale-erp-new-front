@@ -4,7 +4,9 @@
 import type { Scope } from "../../lib/browser-storage.ts";
 import type { AdminStore } from "../../lib/session.ts";
 import { employmentStatusCells, type Cell } from "../staff-members/staff-row.ts";
+import { formatAmount } from "../../lib/payslips.ts";
 import type { StaffMemberListItem } from "../../lib/staff-members.ts";
+import { DAY_KO, WEEKDAYS } from "../contracts/new/contract-form-model.ts";
 
 /**
  * 점포 하나 화면으로 그릴 점포. 범위가 점포 하나면 그 점포, 가맹마스터 · 가맹관리자(FM · FA)는 고를 점포가 하나라 범위(전체 · 가맹 등)와
@@ -53,6 +55,8 @@ export function oneStorePaths(storeId: number, today: string) {
     inquiries: "/support-inquiries?page=1&pageSize=2",
     inquiriesWaiting: "/support-inquiries?status=RECEIVED&status=IN_PROGRESS&page=1&pageSize=1",
     staff: `/staff-members?${staff}`,
+    /** 직원 급여 — 이번 달(급여 기간 시작일이 그 달, 목록의 month 와 같다) 네 상태 모두 */
+    payslipSummary: `/payslips/summary?${new URLSearchParams({ storeId: String(storeId), month: today.slice(0, 7) })}`,
   };
 }
 
@@ -65,6 +69,47 @@ export function todoSummaryOf(list: { items: readonly { status: string }[]; tota
   const today = list.total;
   const done = list.items.filter((t) => t.status === "DONE").length;
   return { today, done, open: Math.max(0, today - done), urgent, percent: today ? Math.round((done / today) * 100) : 0, partial: list.items.length < list.total };
+}
+
+/**
+ * 직원 급여 카드의 금액 — 합계 · 정직원 · 파트타이머(합계 = 둘의 합, 고용 형태는 둘뿐). 보이는 정직원 + 파트타이머가 합계와 같게 단위를 합계로
+ * 하나 정한다: 합계가 만원 미만(0 제외)이면 셋 다 원 그대로, 아니면 셋 다 만원(목업 1,184만원). 만원은 합계를 반올림하고 두 묶음은 내림한 뒤
+ * 남는 만원을 버린 끝자리가 큰 쪽부터 1씩 준다(최대 잔여법) — 따로 반올림하면 642.5 + 541.5 가 643 + 542 로 합계 1,184 와 어긋났다.
+ * 그래서 만원 미만인 묶음도 만원 합계에서는 0만원 · 1만원으로 보인다.
+ */
+export function payAmounts(fullTime: number, partTime: number): { total: string; fullTime: string; partTime: string } {
+  const total = fullTime + partTime;
+  if (total !== 0 && total < 10_000) return { total: `${formatAmount(total)}원`, fullTime: `${formatAmount(fullTime)}원`, partTime: `${formatAmount(partTime)}원` };
+  const parts = [fullTime / 10_000, partTime / 10_000];
+  const shown = parts.map(Math.floor);
+  const order = [0, 1].sort((a, b) => parts[b] - shown[b] - (parts[a] - shown[a]));
+  for (let left = Math.round(total / 10_000) - shown[0] - shown[1], i = 0; left > 0; left--, i++) shown[order[i % 2]]++;
+  const man = (n: number) => `${formatAmount(n)}만원`;
+  return { total: man(shown[0] + shown[1]), fullTime: man(shown[0]), partTime: man(shown[1]) };
+}
+type WorkDay = NonNullable<NonNullable<StaffMemberListItem["contract"]>["workDays"]>[number];
+const NO_VALUE = "—";
+
+/** 직원 정보 표의 근무 시간 — 요일마다 같으면 「09:00~18:00」, 다르면 가장 많은 시간(같으면 앞 요일 것)에 「외」. 근무 요일이 없으면 「—」 */
+export function workTimeText(days: readonly WorkDay[]): string {
+  const counts = new Map<string, number>();
+  for (const d of days) counts.set(`${d.startTime}~${d.endTime}`, (counts.get(`${d.startTime}~${d.endTime}`) ?? 0) + 1);
+  const [top] = [...counts].sort((a, b) => b[1] - a[1]);
+  if (!top) return NO_VALUE;
+  return counts.size === 1 ? top[0] : `${top[0]} 외`;
+}
+
+/** 직원 정보 표의 근무요일 — 월→일 순, 셋 이상 이어지면 「월~금」, 아니면 「월·목·금」(섞이면 「월~수·금」). 없으면 「—」 */
+export function workDaysText(days: readonly WorkDay[]): string {
+  const idx = WEEKDAYS.map((w, i) => (days.some((d) => d.weekday === w) ? i : -1)).filter((i) => i >= 0);
+  const runs: number[][] = [];
+  for (const i of idx) {
+    const last = runs.at(-1);
+    if (last && last.at(-1) === i - 1) last.push(i);
+    else runs.push([i]);
+  }
+  const name = (i: number) => DAY_KO[WEEKDAYS[i]];
+  return runs.flatMap((r) => (r.length >= 3 ? [`${name(r[0])}~${name(r.at(-1)!)}`] : r.map(name))).join("·") || NO_VALUE;
 }
 
 /** 공지 띠 — 고정 여부와 상관없이 게시일 최신 3건(같은 날이면 나중 글). api 는 고정 공지를 먼저 주므로 게시일로 다시 고른다 */

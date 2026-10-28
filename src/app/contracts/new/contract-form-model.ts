@@ -453,7 +453,7 @@ function oneYearLastDay(start: string): string {
 export const probationTermOk = (f: Pick<ContractForm, "startDate" | "endDate">) =>
   !f.startDate || !f.endDate || f.endDate >= oneYearLastDay(f.startDate);
 
-const DAY_KO: Record<Weekday, string> = { MON: "월", TUE: "화", WED: "수", THU: "목", FRI: "금", SAT: "토", SUN: "일" };
+export const DAY_KO: Record<Weekday, string> = { MON: "월", TUE: "화", WED: "수", THU: "목", FRI: "금", SAT: "토", SUN: "일" };
 
 /** 근무시간 · 휴게시간 한 벌의 문제. who 는 「월요일 」처럼 요일을 앞에 붙일 때 */
 function timeProblems(t: DayTimes, who = ""): string[] {
