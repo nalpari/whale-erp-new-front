@@ -9,7 +9,7 @@ import { formatAmount } from "@/lib/payslips";
 import { getPayslip } from "@/lib/payslips-api";
 import { kstToday } from "@/lib/staff-members";
 import { payslipListHref } from "../payslip-list-query";
-import { attendanceHref, reviewBand } from "../payslip-row";
+import { attendanceHref, detailReviewReasons, reviewBand } from "../payslip-row";
 import { PayslipReview, SectionHead } from "./payslip-review";
 
 export const metadata: Metadata = {
@@ -19,34 +19,37 @@ export const metadata: Metadata = {
 const muted = (text: string) => <span className="text-erp-muted">{text}</span>;
 
 // 급여명세서 검토. 데모 docs/demo/staff/payrolls-detail.html(원본 src/pages/staff/payrolls-detail.mjs)의 틀 — 머리(목록 · 임시저장 ·
-// 확정 · 발송) + 경고 띠, 7:5 두 단(왼쪽 지급 내역, 오른쪽 검토 사유 · 참조한 것 · 처리 이력). 데이터는 GET /payslips/:id(getPayslip)이고
+// 확정 · 발송) + 경고 띠, 7:5 두 단(왼쪽 지급 내역, 오른쪽 검토 사유 · 참조한 것 · 처리 이력 · 발송 이력). 데이터는 GET /payslips/:id(getPayslip)이고
 // 상태 · 사유 · 처리 구분 한글은 GET /enums 로 받는다. 없는 명세서 · 관리 범위 밖 · 가린 명세서 · 이상한 id 는 404 다.
 export default async function PayslipDetailPage({ params, searchParams }: PageProps<"/payslips/[payslipId]">) {
-  const [payslip, reasonLabels, logTypes, contractStatuses] = await Promise.all([
+  const [payslip, reasonLabels, logTypes, contractStatuses, channels, results] = await Promise.all([
     getPayslip((await params).payslipId),
     getEnum("PayslipReviewReason"),
     getEnum("PayslipLogType"),
     getEnum("ContractStatus"),
+    getEnum("PayslipDispatchChannel"),
+    getEnum("DispatchResult"),
   ]);
   if (!payslip) notFound();
   const listHref = payslipListHref(await searchParams, kstToday());
   const reasonOf = (value: string) => labelOf(reasonLabels, value);
-  const present = new Set<string>(payslip.reviewReasons.map((r) => r.reviewReason));
+  // 공제 미입력은 사유 줄로 저장되지 않아 저장된 공제 칸으로 판정해 더한다 — 목록의 검토 대기 사유와 같다(v221 PAY-06).
+  const reviewReasons = detailReviewReasons(payslip);
+  const present = new Set<string>(reviewReasons.map((r) => r.reviewReason));
   // 사유 목록은 api 가 준 것으로 그린다 — 새 사유가 생겨도 front 는 따로 고치지 않는다(naming.md 「조회한 목록으로 그린다」).
-  // 공제 미입력은 사유 줄로 남기지 않고 확정을 막는다(api okf) — 「해당 없음」으로 그리면 금액 칸 아래 빨간 띠와 어긋나 뺀다
-  const absentReasons = reasonLabels.filter((r) => !present.has(r.value) && r.value !== "DEDUCTION_MISSING");
+  const absentReasons = reasonLabels.filter((r) => !present.has(r.value));
   const { contract } = payslip;
 
   const aside = (
     <>
       <section className="flex min-w-0 flex-col gap-[12px]">
-        <SectionHead title="검토 사유">{payslip.reviewReasons.length > 0 && <Badge tone="off">{payslip.reviewReasons.length}건</Badge>}</SectionHead>
+        <SectionHead title="검토 사유">{reviewReasons.length > 0 && <Badge tone="off">{reviewReasons.length}건</Badge>}</SectionHead>
         <DataTable
           columns={[
             { header: "사유", width: "w-[140px]", cell: (r) => <Badge tone="off">{reasonOf(r.reviewReason)}</Badge> },
             { header: "내용", align: "left", cell: (r) => r.detail ?? "-" },
           ]}
-          rows={payslip.reviewReasons}
+          rows={reviewReasons}
           rowKey={(r) => r.payslipReviewReasonId}
           empty="검토 사유가 없습니다."
         />
@@ -94,6 +97,23 @@ export default async function PayslipDetailPage({ params, searchParams }: PagePr
           ]}
           rows={payslip.logs}
           rowKey={(l) => l.payslipLogId}
+        />
+      </section>
+      <section className="flex min-w-0 flex-col gap-[12px]">
+        {/* 발송은 채널마다 한 줄 — 성공 · 실패를 따로 본다(WHALEERP-236). 처리 이력과 같이 최근 것이 위 */}
+        <SectionHead title="발송 이력" />
+        <DataTable
+          columns={[
+            { header: "일시", width: "w-[110px]", cell: (d) => formatDateTime(d.sentAt).slice(5) },
+            { header: "채널", width: "w-[90px]", cell: (d) => labelOf(channels, d.channel) },
+            {
+              header: "결과",
+              cell: (d) => <Badge tone={d.status === "SUCCEEDED" ? "on" : "off"}>{labelOf(results, d.status)}</Badge>,
+            },
+          ]}
+          rows={[...payslip.dispatches].reverse()}
+          rowKey={(d) => d.payslipDispatchId}
+          empty="발송 이력이 없습니다."
         />
       </section>
     </>

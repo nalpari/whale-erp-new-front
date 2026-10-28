@@ -5,6 +5,12 @@
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #136 셀프 code-review: 상세 재발송이 마지막 발송 시각(`lastSentAt` → `expectedSentAt`)도 보내 상태가 그대로인 두 탭 재발송을 막는다(api #158), `SendContractButton` 의 `status` 를 `ContractStatus` 로(단언 없앰), api 타입을 tentacruel `437523d8` 에서 다시 만듦.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #136 재리뷰 참고 1: 재발송(상세 · 직원 목록 · 직원 상세)이 화면이 본 계약 상태를 `expectedStatus` 로 함께 보낸다(`sendBodyOf`) — 그사이 거부 · 만료되었거나 다른 탭에서 먼저 보냈으면 api(#158)가 409 로 막아 다시 읽는다. #135(main 병합) 병합, api 타입을 #158 tentacruel `2347eac7` 에서 다시 만듦.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 재리뷰 참고 반영: 바로잡기로 보낸 뒤 진행 중 목록으로 다시 물을 때 바로잡기 문구를 보이지 않으면 본문에서 `correctSignedContracts` 도 뺀다(`withoutCorrection` — 문구와 본문이 한 판정(`stillCorrecting`)을 따른다, 확인창을 띄워 둔 사이 체결된 계약이 대체 확인만으로 종료되지 않게). main 병합, api 타입을 #157 gyarados `ba054c7b` 에서 다시 만듦(설명 2곳만 바뀜).
+* **Fix**: api 타입을 gyarados 로 다시 뽑으며 front main 의 BP 마스터 탈퇴 타입(`withdrawal`, 아직 api main 에 없음)을 지워 tsc 가 깨진 것을 3-way 병합(`git merge-file`)으로 되살렸다.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 셀프 code-review: 대체 확인 본문(대체 목록 · 바로잡기)을 `replaceConfirmBody` 한 곳에서 정하고 판정을 테스트한다. main 병합 · api 타입을 gyarados `d520d95a`(api main 포함)에서 다시 만듦.
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 재리뷰 참고 반영: 바로잡기로 보낸 뒤 진행 중 목록으로 다시 물을 때 바로잡기 문구를 보이지 않으면 본문에서 `correctSignedContracts` 도 뺀다(확인 본문은 `replaceConfirmBody` 한 곳에서 확인창의 바로잡기 여부로 정한다, 확인창을 띄워 둔 사이 체결된 계약이 대체 확인만으로 종료되지 않게). main 병합, api 타입을 #157 gyarados `ba054c7b` 에서 다시 만듦(설명 2곳만 바뀜).
+* **Update**: [BP 마스터 계정 관리](/bp.md) — 사용자 피드백(front #156): 상세 · 수정의 「BP 상태」 줄 이름을 「상태」로, 상세 상태 줄은 버튼만([상태 변경] · 탈퇴는 [사유 보기], 누를 버튼이 없으면 배지 — 상태가 바뀐 일시는 보이지 않는다). 삭제 · 상태 변경 확인창 문구를 다듬었다. 목업 · 화면정의서 · 데모도 맞췄다.
+* **Update**: main 병합(front pidgeot, main 최신까지): okf/log 충돌은 양쪽 기록을 살렸고, 데모 HTML 은 main 쪽을 받은 뒤 합쳐진 원본으로 다시 빌드했다.
+* **Update**: [급여명세서 관리 화면](/screens/payslips.md) — 재영 재리뷰(front #151, 2026-10-28): 상세 「검토 사유」에도 공제 미입력을 보인다. api 상세는 사유 행만 주므로 상세가 저장된 공제 칸으로 판정해(`detailReviewReasons` — 작성 중 · 검토 중, 보이는 지급 밖 칸 가운데 넣지 않은 것, 목록 검토 대기와 같은 기준) 「공제 미입력 · 빈 공제 이름」 줄을 더하고, 「그 밖의 사유」에서 공제 미입력을 빼던 것을 없앴다.
 
 ## 2026-10-27
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #136 셀프 code-review: 재발송이 막힌(`blocked`) 확인창을 닫을 때 상세를 다시 읽는다 — 낡은 재발송 버튼으로 같은 409 를 되풀이하지 않게.
@@ -14,6 +20,21 @@
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 code-review(델타) 반영: 이어 쓰기(`PUT`)에는 `previousContractId` 를 싣지 않음, 재계약이면 바로잡기 확인창을 띄우지 않음(`signedOverlap` 이어도), 대체 확인을 다시 물으면 앞서 고른 계약과 합쳐 보냄(`replaceIdsOf`), 바로잡기 뒤 진행 중 목록으로 다시 물을 때 바로잡기 문구는 체결 완료가 있을 때만(`stillCorrecting`), 낡은 주석 고침.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #136 리뷰 참고 반영: 거부 · 만료 재발송이 막히면 api 가 code 를 실어(`REOPEN_BLOCKED` · `WORK_TIME_OVERLAP`) 화면이 다시 읽지 않고 막힌 까닭을 확인창에 보인다(테스트로 고정). #135 병합.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 재리뷰 참고 반영(노영주): 진행 중인 재계약이 있어도 재계약 작성 화면을 연다 — api `renewedBy` 가 체결된 재계약만 싣고, 저장할 때 대체를 묻는다. `renewedBy != null` 로 봐 칸 없는 옛 응답에도 안전. main 병합 · api 타입 다시 만듦.
+* **Update**: [BP 마스터 계정 관리](/bp.md) — 탈퇴 BP 는 변경 이력을 보이지 않고(버튼 숨김 · api 409, 이력 데이터는 그대로) 탈퇴 사유를 BP 상태 줄의 [사유 보기] 팝업으로 본다(WHALEERP-625 · 626, 2026-10-27 재영). 목업 상세 · 화면정의서도 맞췄다.
+* **Update**: [BP 마스터 계정 관리](/bp.md) — 구현(front #144 · api #163)에 맞춤: 비밀번호 초기화는 변경 이력에 「비밀번호 → 초기화」 한 줄로 남고, 성공은 알림 · 메일 실패는 안내 띠로 보인다. 목업 상세 · 화면정의서와 데모 상세(BP 상태 줄 · 소속 점포 수만 · 라벨 · 초기화 확인창 문구)도 같이 고쳤다.
+* **Update**: main 병합(front butterfree, #151 머지 뒤): okf/log 는 양쪽 기록을, screens/payslips.md 시각은 늦은 값을 남겼다. payslip-review.tsx 는 자동 병합.
+* **Update**: main 병합(front butterfree, main #155 까지): okf/log 충돌은 양쪽 기록을 살렸다.
+* **Update**: main 병합(front butterfree, 재영 리뷰 뒤 main 최신까지): okf/log 충돌은 양쪽 기록을 살렸다.
+* **Update**: main 병합(front butterfree, main 최신까지): okf/log 충돌은 양쪽 기록을 살렸다.
+* **Update**: [출·퇴근 현황 조회 화면 (구현)](/screens/attendance-records.md) · [급여명세서 관리 화면 (구현)](/screens/payslips.md) — 후속(PR #137 리뷰): 보정 창의 고정 안내 「다음 날 퇴근을 고릅니다」는 출근이 있는 짝에만(출근 미등록 줄은 「출근이 퇴근보다 늦거나 같으면 전날 출근입니다」). 가산 스위치의 「고친 연장수당은 그대로」 안내를 지금 칸 값으로 판단한다(저장 전에 칸을 고쳐도 안내와 결과가 맞게, api 와 같은 기준).
+* **Update**: main 병합(front venusaur, main #155 까지): okf/log 충돌은 양쪽 기록을 살렸다.
+* **Update**: main 병합(front venusaur, v221 반영 뒤 main 최신까지): okf/log 충돌은 양쪽 기록을 살렸다.
+* **Update**: [급여명세서 관리 화면](/screens/payslips.md) — 재영 리뷰(front #151, 운영 정책 v221 PAY-06): 건수 줄의 「검토 대기 N」을 상태 넷과 세로선으로 떼어 꼬리표(`Tag`)로, 줄의 「검토 대기」도 「검토 중」 빨간 배지와 다른 꼬리표로 바꿨다. 공제 미입력(`DEDUCTION_MISSING`)도 api 가 검토 대기 사유로 보내 꼬리표 · 사유 글자에 보인다. 확정 확인창의 「검토 사유는 확인한 것으로 남습니다」에 「확정 취소하면 다시 검토 대기가 됩니다」를 붙였다. [이름 규칙](/conventions/naming.md) 검토 대기 사유를 다섯으로. api 타입은 venusaur api openapi 로 다시 만들었다.
+* **Update**: main 병합(front venusaur, main 최신까지): okf/log 충돌은 양쪽 기록을 살렸다.
+* **Update**: main 병합(front venusaur, ⑥ 블로커 수정 뒤 main 최신까지): okf/log 충돌은 양쪽 기록을 살렸다.
+* **Fix**: [급여명세서 관리 화면](/screens/payslips.md) — PR #151 ⑥ 머지 블로커: api 가 검토 대기 건수에서도 본사 역할에게 가린 줄을 빼므로(ATT-30 v218) 「본사 제공 동의 없는 직원의 명세서는 …빠집니다」 안내를 뺐다.
+* **Update**: main 병합(front venusaur, ivysaur 머지 뒤 main 최신까지): okf/log 충돌은 양쪽 기록을 살렸다.
+* **Update**: [급여명세서 관리 화면 (구현)](/screens/payslips.md) — 검토 대기(WHALEERP-234, 운영 정책 PAY-01 · 06 2026-10-26 — 상태가 아니라 분류): 목록 상태 칸에 「검토 대기」 배지(사유는 마우스를 올리면), 왼쪽 필터 「분류 · 검토 대기만」(`reviewPending`), 건수 줄 끝 「검토 대기 N」. 상세 오른쪽 단에 채널별 성공 · 실패 「발송 이력」(WHALEERP-236). api 타입을 다시 만들었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 권한별 메뉴설정 팝업 머리칸도 일부만 켜졌으면 하늘색 「–」, 플랫폼 메뉴 관리에서 상위가 미사용인 메뉴에 「상위 미사용」 꼬리표 · 하위 메뉴가 있는 메뉴를 미사용으로 고르면 하위도 함께 숨는다는 안내, 플랫폼 · BP 관리자 상세의 등록 · 최종수정을 기본정보 표 안으로 · 본인 계정 수정 안내 문구, 하위 메뉴 숨김 안내 수는 새로 숨는 메뉴만, 아이디 · 비밀번호 찾기 플레이스홀더(front weedle).
 * **Update**: main 병합(front snubbull, main #147 · #148 까지): api 타입은 git 이 합친 것이 아니라 api main `65a871a` openapi 로 다시 만들었다(BP 휴일 기간 필드와 홈 · 출퇴근 · BP 마스터 · BP 관리자가 함께 들어 있다). `StoreMappingPicker` 는 main 의 사용자 지정 문구(빈 칩 · 오른쪽 빈 목록 두 줄, 일괄 검색 안내 한 줄)와 칩 영역 130px 를 `TEXTS.include` 로 옮기고 예외 · 필터 문구도 같은 말투로 맞췄다(데모 `BULK_MAP_TEXT` · `FILTER_BULK_TEXT` 도). okf 충돌은 양쪽 기록을 살렸다(PR #154 머지 블로커).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — BP 휴일 상세의 최종수정일시를 1팀 규칙(`wasUpdated` + 수정자)으로: 등록만 한 휴일은 「수정한 적 없음」 대신 「-」다. 전엔 수정자 유무로만 갈라, api 가 등록 때 수정자를 채워 등록 시각 · 등록자가 최종수정으로 보였다(PR #154 코드 리뷰).

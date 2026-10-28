@@ -137,14 +137,15 @@ export const stillCorrecting = (body: CreateContractBody, list: InProgressContra
   body.correctSignedContracts === true && list.some((c) => c.status === "SIGNED");
 
 /**
- * 바로잡기를 뺀 본문 — 바로잡기 문구를 보이지 않고 다시 물을 때(stillCorrecting 이 거짓) 보낸다. 그대로 두면 확인창을 띄워 둔 사이
- * 체결된 계약이 「대체」 확인만으로 종료된다 — 빼고 보내면 api 가 SIGNED_CONTRACT_OVERLAP 으로 바로잡기를 다시 묻는다(front #135
- * 재리뷰)
+ * 대체 확인을 누르면 보낼 본문 — 대체할 계약은 확인창에 보인 목록(api checkReplace 는 지금 목록과 같은 집합만 받는다), 바로잡기
+ * (correctSignedContracts)는 확인창이 바로잡기 문구일 때만 싣는다. 한 곳에서 정한다 — 바로잡기 뒤 「대체」 문구로 다시 물었는데
+ * 본문에 바로잡기가 남으면 확인창을 띄워 둔 사이 체결된 계약이 대체 확인만으로 종료된다(빼면 api 가 SIGNED_CONTRACT_OVERLAP 으로
+ * 바로잡기를 다시 묻는다, front #135 재리뷰 · 셀프 code-review)
  */
-export function withoutCorrection(body: CreateContractBody): CreateContractBody {
-  const plain = { ...body };
+export function replaceConfirmBody(body: CreateContractBody, list: InProgressContract[], correcting: boolean): CreateContractBody {
+  const plain = { ...body, replaceContractIds: list.map((c) => c.contractId) };
   delete plain.correctSignedContracts;
-  return plain;
+  return correcting ? { ...plain, correctSignedContracts: true } : plain;
 }
 
 const span = (sh: string, eh: string): TimeSpan => ({ start: { hour: sh, minute: "00" }, end: { hour: eh, minute: "00" } });
@@ -452,7 +453,7 @@ function oneYearLastDay(start: string): string {
 export const probationTermOk = (f: Pick<ContractForm, "startDate" | "endDate">) =>
   !f.startDate || !f.endDate || f.endDate >= oneYearLastDay(f.startDate);
 
-const DAY_KO: Record<Weekday, string> = { MON: "월", TUE: "화", WED: "수", THU: "목", FRI: "금", SAT: "토", SUN: "일" };
+export const DAY_KO: Record<Weekday, string> = { MON: "월", TUE: "화", WED: "수", THU: "목", FRI: "금", SAT: "토", SUN: "일" };
 
 /** 근무시간 · 휴게시간 한 벌의 문제. who 는 「월요일 」처럼 요일을 앞에 붙일 때 */
 function timeProblems(t: DayTimes, who = ""): string[] {
