@@ -251,6 +251,8 @@ function DetailBody({
           />
         </span>
       </div>
+      {/* 방금 한 동작의 실패는 머리 바로 아래, 다른 안내 상자보다 위에(2026-10-28 사용자 지정) */}
+      {failure && <FailedBand message={failure.message} detail={failure.detail} />}
 
       {/* 등록 · 초기화 메일이 실패한 사용 BP — 다시 보내는 길은 초기화뿐이다. 비밀번호 줄의 「초기 비밀번호 미발송」 대신 머리 아래 빨간 상자로(칸이 틀어지지 않게, 2026-10-28 사용자 지정).
           api isInitialPasswordUnsent 를 따르므로 초기화 메일이 나갈 때까지 상세를 열 때마다 보인다 */}
@@ -268,7 +270,6 @@ function DetailBody({
       )}
       {/* 탈퇴 안내는 한 줄(2026-10-28 사용자 지정 — 전엔 보존 · 막힌 동작 · 사유 보기 · 재등록까지 두 줄) */}
       {withdrawn && <WarnBand>탈퇴BP는 조회만 가능합니다.</WarnBand>}
-      {failure && <FailedBand message={failure.message} detail={failure.detail} />}
 
       <DetailTable title="기본정보" action={statusAction} rows={basic} />
       <DetailTable
