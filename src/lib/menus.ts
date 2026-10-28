@@ -46,6 +46,24 @@ export function findMenu(menus: AdminMenu[], match: (m: AdminMenu) => boolean): 
   }
 }
 
+/** 헤더 2단계 항목이 가리키는 주소 — 조회 권한이 있으면 자기 url, 하위 메뉴로 가는 길로만 들어온 메뉴면 권한 있는 첫 하위 메뉴. 없으면 undefined. */
+export function entryUrlOf(menu: AdminMenu): string | undefined {
+  return menu.permission.read && menu.url ? menu.url : findMenu(menu.children, (m) => m.permission.read && !!m.url)?.url ?? undefined;
+}
+
+/**
+ * 플랫폼 계정은 홈이 없다 — /platform 에 오면 헤더 순서상 첫 화면으로 보낸다(2026-10-28 재영). 그 첫 화면의 주소이고, 없으면 null.
+ * 1단계 순서대로 그 안의 첫 하위 항목(entryUrlOf), 하위 항목이 없으면 1단계 자신 — 헤더(admin-header.tsx)가 그리는 순서와 같다.
+ * 계정에 등록된 메뉴만 본다 — 임시로 여는 PENDING_PLATFORM_MENU 는 넣지 않는다. 홈 주소는 다시 홈으로 돌아와 맴돌므로 뺀다.
+ */
+export function firstMenuUrl(menus: AdminMenu[], service: ServiceCode): string | null {
+  for (const m of menusOf(menus, service)) {
+    const url = m.children.map(entryUrlOf).find(Boolean) ?? (m.permission.read ? m.url : null);
+    if (url && url !== HOME[service]) return url;
+  }
+  return null;
+}
+
 /** 그 서비스의 메뉴만 남긴다(하위 메뉴까지). 플랫폼 계정은 두 서비스 메뉴를 모두 받으므로 탭의 서비스로 거른다. */
 export function menusOf(menus: AdminMenu[], service: ServiceCode): AdminMenu[] {
   return menus.filter((m) => m.serviceCode === service).map((m) => ({ ...m, children: menusOf(m.children, service) }));

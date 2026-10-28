@@ -6,7 +6,7 @@ import { Button, useBackdropActive } from "@/components/common";
 import { logout } from "@/app/actions";
 import { bff, BffError, PASSWORD_REQUIRED_EVENT, signOut } from "@/lib/bff";
 import { bpOfPath, bpPath, isBpPathScreen, stripBp } from "@/lib/bp-path";
-import { BP_SWITCH_PATH, bpOfSwitchUrl, HOME, isAllowed, menuOfPath, menuPermissionOf, menusOf, serviceOfPath, type MenuAction, type MenuCode } from "@/lib/menus";
+import { BP_SWITCH_PATH, bpOfSwitchUrl, firstMenuUrl, HOME, isAllowed, menuOfPath, menuPermissionOf, menusOf, serviceOfPath, type MenuAction, type MenuCode } from "@/lib/menus";
 import { ForcePasswordDialog } from "./force-password-dialog";
 import { MyPagePanel } from "./my-page-panel";
 import { PasswordChangePanel } from "./password-change-panel";
@@ -286,10 +286,19 @@ function Ready({
   // 열 수 있어 화면마다 따로 감싸 둘 수 없다. admins-screen.tsx 의 같은 처리(자기 등록 패널용)와 겹쳐도 무해하다.
   const backdropActive = useBackdropActive();
 
+  // 플랫폼은 홈이 없다 — /platform 은 헤더 순서상 첫 메뉴로 넘겨 주는 주소다(2026-10-28 재영). 메뉴가 없으면 /platform 이 권한 요청 안내를 그린다.
+  // 비밀번호 강제 변경(약관 동의 포함) 전에는 메뉴 화면의 api 가 403 이라 /platform 에 머문다 — 바꾸면 passwordChanged 가 /platform 을 다시 연다.
+  const firstMenu =
+    value.serviceCode === "PLATFORM" && pathname === HOME.PLATFORM && !value.account.isPasswordChangeRequired ? firstMenuUrl(value.menus, "PLATFORM") : null;
+
   // BP 이동 화면은 준비가 끝났으니 그 서비스의 홈으로 바꿔 간다(뒤로 가기에 남지 않게 replace).
   useEffect(() => {
     if (switching) router.replace(home);
   }, [switching, home, router]);
+  // replace — /platform 이 뒤로 가기 기록에 남으면 뒤로 갈 때마다 다시 첫 메뉴로 돌아온다.
+  useEffect(() => {
+    if (firstMenu) router.replace(firstMenu);
+  }, [firstMenu, router]);
 
   useEffect(() => {
     // 틀은 화면을 옮겨도 그대로 있다. 열린 화면에 오면 기록을 비워야 같은 막힌 주소에 다시 와도 안내한다.
@@ -353,7 +362,9 @@ function Ready({
   };
   return (
     <LoginContext value={{ ...value, setScope, patchAccount, myPageOpen, setMyPageOpen, passwordChangeOpen, setPasswordChangeOpen, withdrawOpen, setWithdrawOpen, myPageTrigger }}>
-      {allowed && !switching && (
+      {/* 첫 메뉴로 넘어가는 동안 /platform 의 빈 화면을 한 번 그리지 않게 안내만 둔다. */}
+      {firstMenu && <Notice>불러오는 중입니다</Notice>}
+      {allowed && !switching && !firstMenu && (
         <>
           {header}
           {/* MY PAGE · 비밀번호 변경 패널이 맨 위일 때만 본문을 inert 로 뺀다 — 그냥 backdropActive 를 쓰면 화면

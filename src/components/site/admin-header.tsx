@@ -6,7 +6,7 @@ import { Badge, GlobalHeader, ScopeSelect, ServiceLinks, useBackdropActive, User
 import { logout } from "@/app/actions";
 import { bpPath, isBpPathScreen } from "@/lib/bp-path";
 import type { ServiceCode } from "@/lib/browser-storage";
-import { findMenu, HOME, PENDING_PLATFORM_MENU } from "@/lib/menus";
+import { entryUrlOf, findMenu, firstMenuUrl, HOME, PENDING_PLATFORM_MENU } from "@/lib/menus";
 import type { AccountBp, AdminStore } from "@/lib/session";
 import { isClosedStore, openStores, SCOPE_PARAM, scopeFromAddress, scopeKeyOf, scopeOfKey, withScope } from "@/lib/store-scope";
 import { BpSelectDialog } from "./bp-select-dialog";
@@ -35,11 +35,13 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   const myPageTrigger = useMyPageTrigger();
   const tabBp = useCurrentBp().bpCodeId;
   const [scope] = useScope();
+  // 플랫폼은 홈이 없어 로고 · 플랫폼관리 바로가기가 첫 메뉴를 바로 가리킨다 — /platform 을 거쳐 같은 화면을 다시 열지 않게(SessionGate 의 같은 판정).
+  const home = service === "PLATFORM" ? (firstMenuUrl(all, service) ?? HOME.PLATFORM) : HOME[service];
   const linkOf = (url: string) => withScope(service === "WHALE_ERP" ? screenOf(url, tabBp) : url, scope);
   const menus: HeaderMenu[] = all.map((m) => {
       const items = m.children.flatMap((c) => {
         // 하위 메뉴로 가는 길로만 들어온 메뉴는 조회 권한이 없다(isAllowed 가 막는다). 권한 있는 첫 하위 메뉴로 보내고, 없으면 뺀다.
-        const href = c.permission.read && c.url ? c.url : findMenu(c.children, (x) => x.permission.read && !!x.url)?.url;
+        const href = entryUrlOf(c);
         if (!href) return [];
         const item = { label: c.name, href: linkOf(href) };
         const pending = PENDING_PLATFORM_MENU;
@@ -60,11 +62,11 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
     <GlobalHeader
       menus={menus}
       inert={backdropActive}
-      logoHref={HOME[service]}
+      logoHref={home}
       right={
         <>
           {service === "WHALE_ERP" ? <HeaderScopeSelect /> : <div className="flex-1" />}
-          <ServiceLinks targets={serviceTargets(account.bp, service, () => setBpSelectOpen(true))} />
+          <ServiceLinks targets={serviceTargets(account.bp, service, home, () => setBpSelectOpen(true))} />
           {alarm}
           <UserPop name={account.name ?? account.loginId} items={userItems} triggerRef={myPageTrigger} />
           {bpSelectOpen && <BpSelectDialog onClose={() => setBpSelectOpen(false)} />}
@@ -98,10 +100,11 @@ function BpStatusNote() {
 // noopener — 새 탭이 이 탭의 sessionStorage(ERP · 고른 BP)를 물려받지 않아, 주소(/platform)대로 자기 BP 의 플랫폼으로 열린다.
 // 플랫폼관리 아이콘은 플랫폼 계정에게만 보인다 — BP·가맹 계정은 애초에 그 화면에 들어갈 권한이 없어
 // platform 자리를 비워 ServiceLinks 가 아이콘을 그리지 않게 한다(사용자 지적, 2026-10-21).
-function serviceTargets(bp: AccountBp, service: ServiceCode, openBpSelect: () => void) {
+// home 은 이 탭의 홈 링크(플랫폼 탭이면 첫 메뉴)다. 새 탭은 메뉴를 받기 전이라 /platform 으로 열고 SessionGate 가 첫 메뉴로 보낸다.
+function serviceTargets(bp: AccountBp, service: ServiceCode, home: string, openBpSelect: () => void) {
   if (!bp.isPlatform) return { erp: "/home" };
   const openPlatform = () => window.open(HOME.PLATFORM, "_blank", "noopener");
-  return { erp: openBpSelect, platform: service === "PLATFORM" ? HOME.PLATFORM : openPlatform };
+  return { erp: openBpSelect, platform: service === "PLATFORM" ? home : openPlatform };
 }
 
 // 범위 선택기 — 전체 · 직영 · 가맹 · 점포 하나 중 하나(okf/home.md). 모양은 데모 scopeDropdown(칸은 「BP 이름 · 고른 값」, 목록은 BP 묶음 · 직영 · 가맹 묶음 + 검색).

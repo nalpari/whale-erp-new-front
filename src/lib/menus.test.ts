@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { bpOfSwitchUrl, bpSwitchUrl, isAllowed, MENU_CODE, menuOfPath, menuPermissionOf, menusOf, serviceOfPath } from "./menus.ts";
+import { bpOfSwitchUrl, bpSwitchUrl, firstMenuUrl, isAllowed, MENU_CODE, menuOfPath, menuPermissionOf, menusOf, serviceOfPath } from "./menus.ts";
 import type { AdminMenu } from "./session.ts";
 
 const menu = (url: string | null, read: boolean, children: AdminMenu[] = [], serviceCode = "WHALE_ERP"): AdminMenu => ({
@@ -166,4 +166,19 @@ test("bpOfSwitchUrl: ?bp= 는 BP 이동 화면의 것만, 숫자일 때만 받�
   // BP 코드 형식이 아니면(잘렸거나 손으로 고친 값) 검색어로 쓰지 않는다
   assert.deepEqual(read(`/bp-switch?bp=17&bpCode=${"X".repeat(60)}`), { bpCodeId: 17, bpCode: null });
   assert.deepEqual(read("/bp-switch?bp=17&bpCode=BP00001"), { bpCodeId: 17, bpCode: null });
+});
+
+test("플랫폼 첫 메뉴 — 헤더 순서상 첫 화면, 권한 없는 메뉴 · 다른 서비스 · 홈은 건너뛴다", () => {
+  const p = (url: string | null, read: boolean, children: AdminMenu[] = []) => menu(url, read, children, "PLATFORM");
+  // 하위로 가는 길로만 들어온 1단계(조회 false)의 첫 하위, 그 하위도 길뿐이면 3단계의 권한 있는 메뉴
+  assert.equal(firstMenuUrl([menu("/home/x", true), p(null, false, [p(null, false, [p("/bp-masters", true)]), p("/code-groups", true)])], "PLATFORM"), "/bp-masters");
+  // 1단계에 url 과 하위가 둘 다 있으면 헤더처럼 하위가 먼저다
+  assert.equal(firstMenuUrl([p("/settings", true, [p("/platform-admins", true)])], "PLATFORM"), "/platform-admins");
+  // 하위가 하나도 열리지 않으면 1단계 자신
+  assert.equal(firstMenuUrl([p("/settings", true, [p("/x", false)])], "PLATFORM"), "/settings");
+  // 홈 주소는 맴돌므로 뺀다
+  assert.equal(firstMenuUrl([p("/platform", true), p("/code-groups", true)], "PLATFORM"), "/code-groups");
+  // 메뉴가 없거나 ERP 메뉴뿐이면 null — 임시 메뉴(알림 템플릿)는 후보가 아니다
+  assert.equal(firstMenuUrl([], "PLATFORM"), null);
+  assert.equal(firstMenuUrl(menus, "PLATFORM"), null);
 });
