@@ -6,7 +6,7 @@ import { Badge, Button, ConfirmDialog, DataTable, PageBar, Tag, useToast, type C
 import { ServiceTabs } from "@/components/site/service-tabs";
 import { usePagePermission } from "@/components/site/session-gate";
 import { CARD, FailedBand } from "@/components/site/side-parts";
-import { createPlacement, descendantCountOf, findRow, flatten, placeLabel, type FlatRow, type Spot, type Verdict } from "@/lib/menu-tree";
+import { createPlacement, findRow, flatten, type FlatRow, type Spot, type Verdict } from "@/lib/menu-tree";
 import { MENU_CODE } from "@/lib/menus";
 import type { MenuNode, MenuService, MenuTree } from "@/lib/platform-menus";
 import { moveMenuAction } from "./actions";
@@ -48,7 +48,7 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
   const serviceCode = tree?.service.serviceCode ?? "";
   const [creating, setCreating] = useState(false);
   const [draftName, setDraftName] = useState("");
-  const [moveFailure, setMoveFailure] = useState<{ message: string; detail: string } | null>(null);
+  const [moveFailure, setMoveFailure] = useState<{ message: string; detail?: string } | null>(null);
   const [moving, startMoving] = useTransition();
   // 이 화면이 닫히는 옮기기 — 확인을 받는 동안 쥐고 있다
   const [pendingMove, setPendingMove] = useState<{ menuId: number; spot: Spot; verdict: Extract<Verdict, { kind: "ok" }>; via: "drag" | "key" } | null>(null);
@@ -79,14 +79,10 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
   const handleDrop = (menuId: number, spot: Spot, verdict: Verdict, via: "drag" | "key") => {
     const moved = findRow(nodes, menuId)?.node;
     if (!moved || verdict.kind === "noop") return;
-    if (verdict.kind === "cycle") return setMoveFailure({ message: "메뉴를 자기 자신이나 하위 메뉴 아래로 옮길 수 없습니다", detail: "옮기지 않았습니다 — 트리는 그대로입니다." });
-    if (verdict.kind === "depth") {
-      const parent = spot.parentMenuId === null ? null : findRow(nodes, spot.parentMenuId)?.node;
-      return setMoveFailure({
-        message: "메뉴는 최대 3단계까지만 둘 수 있습니다",
-        detail: `‘${moved.name}’ 메뉴를 ${parent ? `‘${parent.name}’ 아래` : "최상위"}에 놓으면 ${verdict.level}단계${verdict.deep > verdict.level ? `, 그 하위 메뉴가 ${verdict.deep}단계` : ""}가 됩니다. 옮기지 않았습니다.`,
-      });
-    }
+    // 한 줄로 — 「옮기지 않았습니다 …」는 같은 말을 되풀이해 뺐다. 단계와 상관없이 자기 · 자기 하위 아래에 놓을 때라 「상위」라고 쓰지 않는다(2026-10-28 사용자 지정)
+    if (verdict.kind === "cycle") return setMoveFailure({ message: "메뉴를 자기 하위 메뉴 아래로 옮길 수 없습니다." });
+    // 단계 초과도 한 줄로 — 어디에 놓으면 몇 단계가 되는지 · 「옮기지 않았습니다」는 길어 안 읽혀 뺐다(2026-10-28 사용자 지정)
+    if (verdict.kind === "depth") return setMoveFailure({ message: "메뉴는 최대 3단계까지만 만들 수 있습니다." });
     // 이 화면(MN000215)을 미사용 상위 아래로 옮기면 다음 로그인부터 메뉴 트리에서 빠져 화면으로는 되돌릴 수 없다 — 미사용으로 저장할 때처럼 확인받는다
     if (locksSelfByMove(nodes, moved, spot.parentMenuId)) return setPendingMove({ menuId, spot, verdict, via });
     saveMove(menuId, spot, verdict, via);
@@ -96,8 +92,6 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
     setPendingMove(null);
     const moved = findRow(nodes, menuId)?.node;
     if (!moved) return;
-    const where = `${placeLabel(nodes, spot.parentMenuId, verdict.index + 1)}(${verdict.level}단계)`;
-    const carried = descendantCountOf(moved);
     startMoving(async () => {
       const result = await moveMenuAction(menuId, { parentMenuId: spot.parentMenuId, index: verdict.index }).catch(unknownResult("메뉴 이동 저장"));
       if (!result.ok) {
@@ -115,7 +109,8 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
         return;
       }
       setMoveFailure(null);
-      toast(`이동했습니다 — ${where}로 옮기고 순서를 다시 매겼습니다.${carried ? ` 하위 메뉴 ${carried}개가 함께 움직였습니다.` : ""}`);
+      // 결과는 트리에서 바로 보이고 옮긴 메뉴가 골라진 채 남아 자리 설명은 두지 않는다 — 문구가 길어 안 읽혔다(2026-10-28 사용자 지정)
+      toast("메뉴를 이동했습니다.");
       if (via === "key") focusAfterMove.current = menuId;
       // 옮긴 메뉴를 고른다(목업)
       if (menuId !== picked) router.push(hrefOf(serviceCode, menuId), { scroll: false });
