@@ -188,8 +188,12 @@ function DetailBody({
             {/* 등록 · 초기화 메일이 실패했다 — 다시 보내는 길은 초기화뿐이다 */}
             {bp.accountStatus === "ACTIVE" && bp.isInitialPasswordUnsent && <span className="truncate text-erp-off">초기 비밀번호 미발송</span>}
           </span>
-          <span className="truncate">
-            <span className="text-erp-label">강제변경</span> {bp.isPasswordChangeRequired ? "대상" : "대상아님"}
+          {/* 앞에 머리 줄(HeadValues)과 같은 11px 세로 구분선 — #d9d9d9 는 Figma 값 구분선(DESIGN.md) */}
+          <span className="flex min-w-0 items-center gap-[10px]">
+            <span aria-hidden="true" className="h-[11px] w-px shrink-0 bg-[#d9d9d9]" />
+            <span className="truncate">
+              <span className="text-erp-label">강제변경</span> {bp.isPasswordChangeRequired ? "대상" : "대상아님"}
+            </span>
           </span>
         </span>
       ),
