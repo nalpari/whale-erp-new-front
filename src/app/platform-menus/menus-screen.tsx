@@ -308,16 +308,13 @@ export function MenusScreen({ services, tree, selected, detail }: { services: Me
           <ConfirmDialog
             open={pendingMove !== null}
             // 문구 · 버튼 이름은 사용자 지정(2026-10-28) — 메뉴 이름 · 코드는 넣지 않는다(바뀌면 문구도 고쳐야 해서)
-            title="이 화면에 접근할 수 없게 됩니다."
+            title="미사용 메뉴 아래로 이동하시겠습니까?"
             confirmLabel="이동 후 저장"
             busy={moving}
             onConfirm={() => pendingMove && saveMove(pendingMove.menuId, pendingMove.spot, pendingMove.verdict, pendingMove.via)}
             onCancel={() => setPendingMove(null)}
           >
-            <div className="flex flex-col gap-[12px] text-[14px] leading-[1.6]">
-              <p>미사용 메뉴 아래로 이동하면 해당 화면이 사용자 메뉴에서 제외되어 접근할 수 없습니다.</p>
-              <p>이동하시겠습니까?</p>
-            </div>
+            <p className="text-[14px] leading-[1.6]">이동 후에는 현재 화면이 사용자 메뉴에서 제외되어 접근할 수 없습니다.</p>
           </ConfirmDialog>
         </div>
       </div>
