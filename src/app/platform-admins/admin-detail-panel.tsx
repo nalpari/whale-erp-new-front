@@ -5,7 +5,7 @@ import { useState, useTransition, type RefObject } from "react";
 import { Badge, Button, ConfirmDialog, DetailTable, SlidePanel, useToast, type DetailRow } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
-import { WarnBand } from "@/components/site/side-parts";
+import { SuccessBand, WarnBand } from "@/components/site/side-parts";
 import { useAccount, usePagePermission } from "@/components/site/session-gate";
 import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
 import { adminActionsOf } from "@/lib/platform-admin-actions";
@@ -99,6 +99,10 @@ function DetailBody({
   if (!panelOpen && confirm) setConfirm(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [busy, startBusy] = useTransition();
+  /** 이 상세에서 초기화 메일을 보냈다 — 로그인한 적이 있어도 하늘색 안내를 띄운다(BP 마스터 상세와 같다, 2026-10-28 사용자 지정) */
+  const [resetMark, setResetMark] = useState<{ statusChangedAt: string | null } | null>(null);
+  // 초기화한 뒤 상태를 바꾸면(수정 패널에서 미사용 → 사용) 방금 초기화 안내를 내린다 — 그때의 상태 변경 일시와 같을 때만(리뷰로 찾음)
+  const resetSent = resetMark !== null && resetMark.statusChangedAt === (admin.statusChangedAt ?? null);
 
   const me = useAccount();
   const can = usePagePermission();
@@ -112,8 +116,9 @@ function DetailBody({
       setConfirm(null);
       if (!result.ok) return fail(result.status, result.message);
       setFailure(null);
-      // 메일이 실패해도 기존 비밀번호는 이미 막혔다 — 다시 초기화하면 보낸다(SYSTEM-3)
-      toast(result.isMailSent ? "초기 비밀번호를 계정 이메일로 보냈습니다." : "초기화했지만 메일을 보내지 못했습니다. 다시 초기화해 주세요.");
+      // 메일이 실패해도 기존 비밀번호는 이미 막혔다 — 다시 초기화하면 보낸다(SYSTEM-3). 결과는 상세 위 상자로(액션이 refresh 해 미발송이 켜진다)
+      setResetMark(result.isMailSent ? { statusChangedAt: admin.statusChangedAt ?? null } : null);
+      if (result.isMailSent) toast("초기화되었습니다.");
     });
 
   const handleDelete = () =>
@@ -155,10 +160,10 @@ function DetailBody({
     { label: "이메일", value: admin.email ?? null },
     {
       label: "비밀번호",
-      // 미사용 계정은 초기화 버튼 · 미발송 표시를 숨긴다(2026-10-23) — 화면에서만 숨긴다(api 는 미사용 계정 초기화를 막지 않는다).
-      // 초기화할 수 없어 보일 것이 없으면(미사용 · 수정 권한 없음) 빈칸 대신 「-」(BP 마스터 상세와 같다, 2026-10-28 사용자 지정)
+      // 미사용 계정은 초기화 버튼을 숨긴다(2026-10-23) — 화면에서만 숨긴다(api 는 미사용 계정 초기화를 막지 않는다).
+      // 초기화할 수 없으면(미사용 · 수정 권한 없음) 빈칸 대신 「-」(BP 마스터 상세와 같다, 2026-10-28 사용자 지정). 미발송은 상세 위 빨간 상자가 알린다
       value:
-        admin.accountStatus === "INACTIVE" || (!canUpdate && !admin.isInitialPasswordUnsent) ? muted("-") : (
+        admin.accountStatus === "INACTIVE" || !canUpdate ? muted("-") : (
         <>
           {canUpdate && (
             <Blocked reason={isSelf ? "본인 비밀번호는 내 정보에서 바꿔 주세요" : undefined}>
@@ -167,7 +172,6 @@ function DetailBody({
               </Button>
             </Blocked>
           )}
-          {admin.isInitialPasswordUnsent && <span className="text-erp-off">초기 비밀번호 미발송</span>}
         </>
       ),
     },
@@ -197,6 +201,8 @@ function DetailBody({
   const who = <WhoList rows={[["아이디", admin.loginId], ["이름", name]]} />;
   const roleType = useCodeLabel("ROLE_TYPE");
 
+  // 안내 상자의 「[초기화] 버튼으로 …」는 그 버튼을 누를 수 있는 사람에게만 — 권한 없음 · 본인 계정은 앞 문장만(리뷰로 찾음)
+  const canReset = canUpdate && !isSelf;
   return (
     <div className="flex flex-col gap-[16px]">
       {/* 이름 아랫줄에 「역할 값 | 권한그룹 값 | 상태 배지」 — 공통코드 상세 코드 머리와 같은 모양(2026-10-27 사용자 지정 — 전엔 상태 배지와 「사용자 권한 · 그룹명」 띠지).
@@ -217,7 +223,14 @@ function DetailBody({
           />
         </span>
       </div>
+      {/* 초기화 비밀번호 안내 — BP 마스터 상세와 같은 상자(2026-10-28 사용자 지정). 메일 실패는 빨간 상자(비밀번호 줄의 「미발송」 글자 대신),
+          보냈고 첫 로그인 전이거나 이 상세에서 방금 초기화했으면 하늘색 상자. 초기화 비밀번호는 1시간만 유효하다(api) */}
+      {/* 방금 한 동작의 실패는 머리 바로 아래, 다른 안내 상자보다 위에(2026-10-28 사용자 지정) */}
       {failure && <FailedBand message={failure} />}
+      {admin.accountStatus === "ACTIVE" && admin.isInitialPasswordUnsent && <WarnBand>{`초기화 비밀번호가 발송되지 않았습니다.${canReset ? "\n비밀번호 [초기화] 버튼을 눌러 다시 발송해주세요." : ""}`}</WarnBand>}
+      {admin.accountStatus === "ACTIVE" && !admin.isInitialPasswordUnsent && (resetSent || (!admin.lastLoginAt && !admin.statusChangedAt)) && (
+        <SuccessBand>{`초기화 비밀번호를 발송했습니다.${canReset ? "\n1시간 내 미로그인 시 [초기화] 버튼으로 재발송해주세요." : ""}`}</SuccessBand>
+      )}
       <DetailTable title="기본정보" rows={rows} />
 
       <div className="flex flex-wrap items-center gap-[6px]">
@@ -253,14 +266,10 @@ function DetailBody({
             onCancel={() => setConfirm(null)}
           >
             <div className="flex flex-col gap-[12px]">
-              {who}
-              <p>
-                임시 비밀번호가 등록된 이메일로 발송되며, 기존 비밀번호는 즉시 무효화됩니다.
-                <br />
-                임시 비밀번호는 1시간 동안 유효하며, 로그인 시 비밀번호를 변경해야 합니다.
-                <br />
-                현재 로그인 중인 세션은 유지됩니다.
-              </p>
+              <WhoList rows={[["아이디", admin.loginId], ["이름", name ?? "-"], ["이메일", admin.email ?? "-"]]} />
+              {/* 세 관리 화면 같은 문구 · 대상은 아이디 · 이름 · 이메일 각각(「아이디/이름」 한 줄은 라벨이 잘렸다)(2026-10-28 사용자 지정) */}
+              {/* 안내는 빨간 안내 상자로 — 되돌릴 수 없는 동작이라 놓치지 않게(2026-10-28 사용자 지정) */}
+              <WarnBand>{"비밀번호 초기화 시 새로운 비밀번호가 등록된 이메일로 발송됩니다.\n새 비밀번호는 1시간 동안 유효하며, 로그인 시 변경해야 합니다.\n기존 비밀번호는 즉시 사용할 수 없게 됩니다."}</WarnBand>
             </div>
           </ConfirmDialog>
 
@@ -279,7 +288,6 @@ function DetailBody({
                 <p>
                   삭제한 계정은 관리자 목록 및 검색 결과에서 제외되며, 해당 계정으로 더 이상 로그인할 수 없습니다.
                 </p>
-                <p>삭제한 계정은 복구할 수 없습니다.</p>
               </WarnBand>
             </div>
           </ConfirmDialog>

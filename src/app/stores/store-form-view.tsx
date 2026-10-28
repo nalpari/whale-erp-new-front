@@ -45,7 +45,7 @@ import { FLOOR_TYPES, floorTypeOf, type StoreDetail, type StoreImageFileType, ty
 import { closeBlockText, formatBizNumber, nextStatuses } from "@/lib/store-view";
 import { BizVerificationBox, BizVerifiedStatus } from "@/components/site/biz-verification-box";
 import { BIZ_MESSAGE, bizDigits, bizVerifyFailure, type BizVerifyField } from "@/lib/biz-verification-rules";
-import { formatDate } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
 import { useCurrentBp } from "@/components/site/session-gate";
 import { useCurrentBpStatus } from "@/components/site/current-bp-status";
@@ -515,7 +515,7 @@ export function StoreFormView(props: Props) {
   const pending = currentVerification(form);
   const savedLocked = Boolean(form.savedBizNumber) && !reopenSaved && !pending;
   const verified = Boolean(pending) || savedLocked;
-  const savedVerifiedAt = props.mode === "edit" ? formatDate(props.store.business?.verifiedAt) : "";
+  const savedVerifiedAt = props.mode === "edit" ? formatDateTime(props.store.business?.verifiedAt) : "";
   // 인증일은 저장할 때 api 가 기록한다(store-management.service profileFields) — 저장 전 막 받은 인증은 날짜 없이 「인증 완료」만,
   // 저장된 인증은 그 인증일을 보인다. 인증만 하고 지우거나 저장하지 않으면 인증일은 그대로다(2026-10-22 사용자 확인)
   const verifiedDate = savedLocked ? savedVerifiedAt : "";

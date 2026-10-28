@@ -59,7 +59,7 @@ export function adminNewBody(A, R, { panel = false, noRoleGroup = false } = {}) 
   const save = panel
     ? ui.button("저장", { "data-save-panel": "admin-detail-panel" })
     : ui.button("저장", { href: `${link(R, "config/admins.html")}?panel=admin-detail-panel` });
-  return basic.replace("</div></section>", `${roleRow}</div></section>`) + stores + c.note("초기 비밀번호는 등록한 이메일로 발송됩니다.") /* 플랫폼 관리자 등록과 같은 문구(2026-10-27 사용자 지정) */ + c.buttons(cancel, save);
+  return basic.replace("</div></section>", `${roleRow}</div></section>`) + stores + c.note("초기화 비밀번호는 등록한 이메일로 발송됩니다.") /* 플랫폼 관리자 등록과 같은 문구(2026-10-27 사용자 지정) */ + c.buttons(cancel, save);
 }
 
 export function adminNewPanel(A, R) {
