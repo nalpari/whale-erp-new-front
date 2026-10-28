@@ -165,7 +165,7 @@ function RoleView({ role, lockReasons, onDeleted }: { role: BpRoleGroupDetail; l
                 ? "본인 계정은 가맹관리자 권한 그룹을 수정할 수 없습니다."
                 : // 남은 이유도 문장으로(2026-10-28 사용자 지정 — 전엔 api 이유 이름 「권한 관리 메뉴 권한 없음」 · 「고정 권한」)
                   role.editBlockedReason === "NO_PERMISSION"
-                  ? "이 권한 그룹을 수정할 권한이 없습니다."
+                  ? "선택한 권한그룹에 대한 수정 권한이 없습니다."
                   : role.editBlockedReason === "FIXED_ROLE"
                     ? "시스템이 제공하는 기본권한 그룹은 수정할 수 없습니다."
                     : reasonLabel(lockReasons, role.editBlockedReason, "고칠 수 없는 권한 그룹입니다")}
