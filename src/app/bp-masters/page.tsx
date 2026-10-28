@@ -1,4 +1,3 @@
-import { PageBar } from "@/components/common";
 import { ApiError } from "@/lib/api";
 import { getBpMaster, getBpMasters, type BpMasterDetail } from "@/lib/bp-masters";
 import { parseBpMastersQuery } from "./bp-masters-href";
@@ -13,12 +12,8 @@ export default async function BpMastersPage({ searchParams }: PageProps<"/bp-mas
   // 상태를 셋 다 끄면(status=NONE) 결과 없음 — api 를 부르지 않는다(플랫폼 관리자와 같다, 2026-10-28 사용자 지정)
   const [list, detail] = await Promise.all([query.statusNone ? { items: [], total: 0 } : getBpMasters(query), query.bp ? loadDetail(query.bp) : null]);
 
-  return (
-    <>
-      <PageBar title="BP 마스터 계정 관리" />
-      <BpMastersScreen list={list} query={query} detail={detail} />
-    </>
-  );
+  // 제목 줄(PageBar)은 BpMastersScreen 이 그린다 — [등록]이 등록 패널을 여는 상태와 같은 곳에 있어야 해서다(플랫폼 관리자와 같다)
+  return <BpMastersScreen list={list} query={query} detail={detail} />;
 }
 
 /** 상세를 못 불러오면 패널은 열되 실패 띠로 알린다 — 404(지웠거나 없는 BP)는 그 사실을, 그 밖은 일반 문구를. */

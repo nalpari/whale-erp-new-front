@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Button, ListToolbar, Pagination, Select, useBackdropActive, useToast } from "@/components/common";
+import { Button, ListToolbar, PageBar, Pagination, Select, useBackdropActive, useToast } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
 import { BP_MASTER_PAGE_SIZES, type BpMasterPageSize } from "@/lib/bp-master-paging";
 import type { BpMasterDetail, BpMasterList } from "@/lib/bp-masters";
@@ -123,93 +123,100 @@ export function BpMastersScreen({
   const excelHref = bpMastersExcelHref(query);
 
   return (
-    <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
+    <>
+      {/* [등록]은 제목 줄 오른쪽 — 플랫폼 관리자 관리와 같은 자리(2026-10-28 사용자 지정, 전엔 목록 위 도구 줄). 바탕창이 떠 있는 동안은 목록처럼 inert 로 뺀다 */}
       <div className="contents" inert={backdropActive}>
-        <BpMasterFilter query={query} onApply={(next) => go({ ...next, page: 1, bp: undefined })} />
-        <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>*]:shrink-0">
-          <StoreExcelProvider fileName="BP목록.xlsx">
-            <StoreExcelNotice href={excelHref} />
-            <ListToolbar total={list.total}>
-              <StoreExcelButton href={excelHref} empty={list.total === 0} emptyTitle="받을 BP 가 없습니다" />
-              {can.create && (
-                <Button ref={newTrigger} aria-controls="bp-master-new-panel" aria-expanded={newOpen} onClick={() => setNewOpen(true)}>
-                  등록
-                </Button>
-              )}
-              <div className="w-[80px] shrink-0">
-                <Select
-                  aria-label="페이지당 건수"
-                  value={String(query.pageSize)}
-                  onChange={(e) => go({ pageSize: Number(e.target.value) as BpMasterPageSize, page: 1, bp: undefined })}
-                >
-                  {BP_MASTER_PAGE_SIZES.map((size) => (
-                    <option key={size} value={size}>
-                      {size}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-            </ListToolbar>
-          </StoreExcelProvider>
-          <BpMasterTable rows={list.items} selected={query.bp} onOpen={openDetail} noStatus={query.statusNone} />
-          <div className="pt-[14px]">
-            <Pagination page={query.page} totalPages={Math.max(1, Math.ceil(list.total / query.pageSize))} onPageChange={(page) => go({ page, bp: undefined })} />
-          </div>
-        </main>
+        <PageBar title="BP 마스터 계정 관리">
+          {can.create && (
+            <Button ref={newTrigger} aria-controls="bp-master-new-panel" aria-expanded={newOpen} onClick={() => setNewOpen(true)}>
+              등록
+            </Button>
+          )}
+        </PageBar>
       </div>
+      <div className="flex min-h-0 flex-1 gap-[12px] p-[24px]">
+        <div className="contents" inert={backdropActive}>
+          <BpMasterFilter query={query} onApply={(next) => go({ ...next, page: 1, bp: undefined })} />
+          <main className="flex min-h-0 flex-1 flex-col gap-[12px] overflow-y-auto rounded-[4px] border border-erp-panel-line bg-white p-[25px] [&>*]:shrink-0">
+            <StoreExcelProvider fileName="BP목록.xlsx">
+              <StoreExcelNotice href={excelHref} />
+              <ListToolbar total={list.total}>
+                <StoreExcelButton href={excelHref} empty={list.total === 0} emptyTitle="받을 BP 가 없습니다" />
+                <div className="w-[80px] shrink-0">
+                  <Select
+                    aria-label="페이지당 건수"
+                    value={String(query.pageSize)}
+                    onChange={(e) => go({ pageSize: Number(e.target.value) as BpMasterPageSize, page: 1, bp: undefined })}
+                  >
+                    {BP_MASTER_PAGE_SIZES.map((size) => (
+                      <option key={size} value={size}>
+                        {size}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+              </ListToolbar>
+            </StoreExcelProvider>
+            <BpMasterTable rows={list.items} selected={query.bp} onOpen={openDetail} noStatus={query.statusNone} />
+            <div className="pt-[14px]">
+              <Pagination page={query.page} totalPages={Math.max(1, Math.ceil(list.total / query.pageSize))} onPageChange={(page) => go({ page, bp: undefined })} />
+            </div>
+          </main>
+        </div>
 
-      {can.create && (
-        <BpMasterFormPanel
-          id="bp-master-new-panel"
-          mode="create"
-          open={newOpen}
-          onClose={dismissNew}
+        {can.create && (
+          <BpMasterFormPanel
+            id="bp-master-new-panel"
+            mode="create"
+            open={newOpen}
+            onClose={dismissNew}
+            onBackdropClose={closeAll}
+            trigger={newTrigger}
+            onSaved={(result) => {
+              setNewOpen(false);
+              // 상세 띠는 상세를 불러와야 보이고 다른 줄을 누르면 사라진다 — 메일 실패를 놓치지 않게 토스트로도 알린다(platform-admins 와 같다)
+              toast(result.isMailSent ? "saved" : "저장되었습니다. 초기 비밀번호 메일은 보내지 못했습니다 — 상세에서 비밀번호를 초기화해 주세요.");
+              setCreated(result);
+              detailTrigger.current = newTrigger.current;
+              go({ bp: result.bpCodeId });
+            }}
+          />
+        )}
+
+        <BpMasterDetailPanel
+          open={Boolean(query.bp)}
+          detail={shown}
+          created={created && shown && "bp" in shown && shown.bp.bpCodeId === created.bpCodeId ? created : null}
+          onClose={dismissDetail}
           onBackdropClose={closeAll}
-          trigger={newTrigger}
-          onSaved={(result) => {
-            setNewOpen(false);
-            // 상세 띠는 상세를 불러와야 보이고 다른 줄을 누르면 사라진다 — 메일 실패를 놓치지 않게 토스트로도 알린다(platform-admins 와 같다)
-            toast(result.isMailSent ? "saved" : "저장되었습니다. 초기 비밀번호 메일은 보내지 못했습니다 — 상세에서 비밀번호를 초기화해 주세요.");
-            setCreated(result);
-            detailTrigger.current = newTrigger.current;
-            go({ bp: result.bpCodeId });
+          trigger={detailTrigger}
+          onEdit={openEdit}
+          onDeleted={() => {
+            toast("deleted");
+            // 삭제를 기다리는 동안 뒤로 가기로 상세가 이미 닫혔으면 목록 주소를 다시 쌓지 않는다
+            if (detailOpenRef.current) closeDetail();
           }}
         />
-      )}
 
-      <BpMasterDetailPanel
-        open={Boolean(query.bp)}
-        detail={shown}
-        created={created && shown && "bp" in shown && shown.bp.bpCodeId === created.bpCodeId ? created : null}
-        onClose={dismissDetail}
-        onBackdropClose={closeAll}
-        trigger={detailTrigger}
-        onEdit={openEdit}
-        onDeleted={() => {
-          toast("deleted");
-          // 삭제를 기다리는 동안 뒤로 가기로 상세가 이미 닫혔으면 목록 주소를 다시 쌓지 않는다
-          if (detailOpenRef.current) closeDetail();
-        }}
-      />
-
-      {/* 상세보다 뒤에 둔다 — 상세의 Esc 처리(dismissDetail)가 수정의 것보다 먼저 달려야 editOpen 을 보고 거른다(admins-screen.tsx 참고) */}
-      {canUpdateShown && shown && "bp" in shown && (
-        <BpMasterFormPanel
-          // 다른 BP 면 새로 그린다. 같은 BP 를 다시 열면 패널이 스스로 칸을 다시 채운다.
-          key={shown.bp.bpCodeId}
-          id="bp-master-edit-panel"
-          mode="edit"
-          bp={shown.bp}
-          open={editOpen}
-          onClose={closeEdit}
-          onBackdropClose={closeAll}
-          trigger={editTrigger}
-          onSaved={() => {
-            closeEdit();
-            toast("updated");
-          }}
-        />
-      )}
-    </div>
+        {/* 상세보다 뒤에 둔다 — 상세의 Esc 처리(dismissDetail)가 수정의 것보다 먼저 달려야 editOpen 을 보고 거른다(admins-screen.tsx 참고) */}
+        {canUpdateShown && shown && "bp" in shown && (
+          <BpMasterFormPanel
+            // 다른 BP 면 새로 그린다. 같은 BP 를 다시 열면 패널이 스스로 칸을 다시 채운다.
+            key={shown.bp.bpCodeId}
+            id="bp-master-edit-panel"
+            mode="edit"
+            bp={shown.bp}
+            open={editOpen}
+            onClose={closeEdit}
+            onBackdropClose={closeAll}
+            trigger={editTrigger}
+            onSaved={() => {
+              closeEdit();
+              toast("updated");
+            }}
+          />
+        )}
+      </div>
+    </>
   );
 }

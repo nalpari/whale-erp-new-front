@@ -159,6 +159,12 @@ function DetailBody({
   const verified = Boolean(bp.bizVerifiedAt);
   const unverified = (value: ReactNode) => (verified ? value : muted("-"));
   const address = [bp.bizZipCode, bp.bizAddress, bp.bizAddressDetail].filter((line): line is string => Boolean(line));
+  // 등록 · 최종수정 값 — 「일시 · 사람」, 사람은 회색(플랫폼 관리자 상세와 같다, 2026-10-28 사용자 지정)
+  const when = (at: string, who: string) => (
+    <span className="truncate" title={`${formatDateTime(at)} · ${who}`}>
+      {formatDateTime(at)} <span className="text-erp-label">· {who}</span>
+    </span>
+  );
 
   const basic: DetailRow[] = [
     { label: "BP 코드", value: bp.bpCode },
@@ -196,15 +202,16 @@ function DetailBody({
     },
     // 소속 점포는 수만 보인다 — 점포 목록 연결은 나중에(BP-8)
     { label: "소속 점포", value: `${bp.storeCount.toLocaleString("ko-KR")}곳` },
+    // 아래 여섯 줄은 가입경로 · 약관동의 · 강제변경 · 최근 로그인 · 등록 · 최종수정 순(2026-10-28 사용자 지정)
     { label: "가입경로", value: bp.joinPath === "SIGNUP" ? "회원가입" : "플랫폼등록" },
-    { label: "등록 일시", value: <DetailValues items={[formatDateTime(bp.createdAt), bp.createdByName ?? bp.loginId]} /> },
+    // 「첫 로그인 때 받음」은 아직 로그인하지 않은 BP 에만 붙인다
+    { label: "약관동의", value: bp.termsAgreedAt ? "동의" : bp.lastLoginAt ? "미동의" : <>미동의 {muted("· 첫 로그인 때 받음")}</> },
+    { label: "강제변경", value: bp.isPasswordChangeRequired ? "비밀번호 변경 대상" : "대상 아님" },
+    { label: "최근 로그인", value: bp.lastLoginAt ? formatDateTime(bp.lastLoginAt) : "-" },
+    { label: "등록", value: when(bp.createdAt, bp.createdByName ?? bp.loginId) },
     // api 의 최종수정 일시는 BP 정보(bp_codes.updated_at) 것이다 — 수정 저장 · 상태 변경 때 바뀌고, 비밀번호 초기화처럼 계정만 고친 것은 들어가지 않는다(BP-7).
     // 등록할 때 같은 insert 로 수정 일시 · 수정자가 함께 채워지므로 1팀 공통 판정(wasUpdated — 1초 이상 차이)으로 고친 적이 있는지 본다
-    { label: "수정 일시", value: bp.updatedByName && wasUpdated(bp.createdAt, bp.updatedAt) ? <DetailValues items={[formatDateTime(bp.updatedAt), bp.updatedByName]} /> : "-" },
-    { label: "최근 로그인", value: bp.lastLoginAt ? formatDateTime(bp.lastLoginAt) : "-" },
-    // 「첫 로그인 때 받음」은 아직 로그인하지 않은 BP 에만 붙인다
-    { label: "약관 동의", value: bp.termsAgreedAt ? "동의" : bp.lastLoginAt ? "미동의" : <>미동의 {muted("· 첫 로그인 때 받음")}</> },
-    { label: "강제 변경", value: bp.isPasswordChangeRequired ? "비밀번호 변경 대상" : "대상 아님" },
+    { label: "최종수정", value: bp.updatedByName && wasUpdated(bp.createdAt, bp.updatedAt) ? when(bp.updatedAt, bp.updatedByName) : muted("-") },
   ];
 
   const business: DetailRow[] = [
