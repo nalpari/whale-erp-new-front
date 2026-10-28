@@ -1,8 +1,18 @@
 "use server";
 
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { ACCESS_TOKEN_TTL_MS, ApiError, loginKeyCookie, request, sessionCookie, type AdminLoginResponse } from "@/lib/api";
+import {
+  ACCESS_TOKEN_TTL_MS,
+  ApiError,
+  DEVICE_COOKIE,
+  deviceCookie,
+  deviceIdOf,
+  loginKeyCookie,
+  request,
+  sessionCookie,
+  type AdminLoginResponse,
+} from "@/lib/api";
 import { homeOf } from "@/lib/auth-routes";
 import { apiHeaders } from "@/lib/forwarded-headers";
 
@@ -17,13 +27,17 @@ export async function login(_prev: LoginFormState, formData: FormData): Promise<
   const password = String(formData.get("password") ?? "");
   if (!loginId || !password) return { error: "아이디와 비밀번호를 입력해 주세요" };
 
+  const jar = await cookies();
+  const deviceId = deviceIdOf(jar.get(DEVICE_COOKIE)?.value);
+  jar.set(deviceCookie(deviceId));
+
   let res: AdminLoginResponse;
   try {
     res = await request<AdminLoginResponse>("/auth/admin/login", {
       method: "POST",
       // 사용자 IP 를 넘긴다(로그인 이력의 접속 IP · IP 한도) — 이유와 전제는 apiHeaders() 참고.
       headers: await apiHeaders(),
-      body: JSON.stringify({ loginId, password, deviceInformation: (await headers()).get("user-agent")?.slice(0, 200) }),
+      body: JSON.stringify({ loginId, password, deviceInformation: deviceId }),
     });
   } catch (e) {
     // 4xx 는 api 문구 그대로, 5xx·연결 실패는 인증 결과가 아니고 Nest 문구도 영어라 연결 문구로 바꾼다.
@@ -40,7 +54,6 @@ export async function login(_prev: LoginFormState, formData: FormData): Promise<
     console.error("로그인 응답에 토큰·계정이 없습니다", res);
     return { error: "로그인 서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요" };
   }
-  const jar = await cookies();
   jar.set(
     sessionCookie({
       accessToken: res.accessToken,

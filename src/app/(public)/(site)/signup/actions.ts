@@ -1,12 +1,15 @@
 "use server";
 
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import {
   ACCESS_TOKEN_TTL_MS,
   apiError,
   ApiError,
   baseUrl,
+  DEVICE_COOKIE,
+  deviceCookie,
+  deviceIdOf,
   getSession,
   LOGIN_KEY_COOKIE,
   loginKeyCookie,
@@ -217,11 +220,13 @@ export async function startSessionFromSignup(): Promise<void> {
 
   let res: AdminLoginResponse | null = null;
   if (value) {
+    const deviceId = deviceIdOf(jar.get(DEVICE_COOKIE)?.value);
+    jar.set(deviceCookie(deviceId));
     try {
       res = await request<AdminLoginResponse>("/auth/admin/signup-session", {
         method: "POST",
         headers: await apiHeaders(),
-        body: JSON.stringify({ signupToken: value.signupToken, deviceInformation: (await headers()).get("user-agent")?.slice(0, 200) }),
+        body: JSON.stringify({ signupToken: value.signupToken, deviceInformation: deviceId }),
         signal: AbortSignal.timeout(TIMEOUT_MS),
       });
     } catch (e) {
