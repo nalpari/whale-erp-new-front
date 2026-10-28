@@ -244,13 +244,16 @@ function DetailBody({
 
   return (
     <div className="flex flex-col gap-[16px]">
-      <h2 className="flex flex-wrap items-center gap-[6px] text-[18px] font-semibold text-erp-ink">
-        <span className="mr-[4px]">{bp.tradeName}</span>
-        <BpStatusBadge status={bp.accountStatus} />
-        <Tag>
-          BP 코드 · <b className="font-semibold">{bp.bpCode}</b>
-        </Tag>
-      </h2>
+      {/* 머리: 첫 줄 상호명, 줄을 바꿔 상태 배지 · BP 코드(2026-10-28 사용자 지정 — 전엔 한 줄) */}
+      <div className="flex flex-col gap-[6px]">
+        <h2 className="text-[18px] font-semibold break-all text-erp-ink">{bp.tradeName}</h2>
+        <div className="flex flex-wrap items-center gap-[6px]">
+          <BpStatusBadge status={bp.accountStatus} />
+          <Tag>
+            BP 코드 · <b className="font-semibold">{bp.bpCode}</b>
+          </Tag>
+        </div>
+      </div>
 
       {created && (
         <NoticeBand
