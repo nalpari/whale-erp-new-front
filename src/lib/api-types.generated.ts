@@ -1818,6 +1818,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/payslips/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 점포 하나 · 급여 월 하나의 요약(로그인 후 홈 점포 하나 화면 직원 급여 카드, WHALEERP-621). `:id` 보다 먼저 선언해야
+         *     한다.
+         */
+        get: operations["PayslipsController_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/payslips/candidates": {
         parameters: {
             query?: never;
@@ -3570,7 +3590,7 @@ export interface paths {
         };
         /**
          * 일별 출퇴근 — 점포 조건(상단 범위 · 필터) 안 하루의 직원별 예정 · 출근 · 퇴근 · 상태. 업무 범위 밖 점포는 빠진다. 본사 계정에게
-         *     동의 없는 가맹 직원은 줄째로 빼고 건수에만 센다(ATT-30)
+         *     동의 없는 가맹 직원은 줄도 상태별 건수도 빼고 센다(ATT-30, 운영 정책 v218 2026-10-27)
          */
         get: operations["AttendanceRecordsController_daily"];
         put?: never;
@@ -3590,7 +3610,7 @@ export interface paths {
         };
         /**
          * 기간 출퇴근 — 점포 조건 안 기간(92일 이하)의 직원 · 날 줄, 직원을 고르면 그 직원만(WHALEERP-217 「직원별 · 근무지별 · 기간」).
-         *     근무스케줄이나 기록이 있는 날만. 본사 계정에게 동의 없는 가맹 직원은 빠지고 건수에만 센다(ATT-30)
+         *     근무스케줄이나 기록이 있는 날만. 본사 계정에게 동의 없는 가맹 직원은 줄 · 건수 모두에서 빠진다(ATT-30, 운영 정책 v218 2026-10-27)
          */
         get: operations["AttendanceRecordsController_period"];
         put?: never;
@@ -6640,6 +6660,19 @@ export interface components {
             /** @description 그 달 · 고른 점포(직원명으로 거르면 그 이름)의 검토 대기 명세서 수 — 본사 역할에게 가린 줄은 세지 않는다(ATT-30, 운영 정책 v218 — 검토 대기(근태 이상 · 공제 미입력) 여부가 드러나지 않게). 관리자 웹 건수 줄의 「검토 대기 N」 꼬리표 */
             reviewPendingCount: number;
         };
+        PayslipSummaryGroupDto: {
+            count: number;
+            grossPayAmount: number;
+        };
+        PayslipSummaryResponseDto: {
+            /** @example 2026-09 */
+            month: string;
+            total: components["schemas"]["PayslipSummaryGroupDto"];
+            /** @description 정직원(명세서의 고용형태 FULL_TIME) */
+            fullTime: components["schemas"]["PayslipSummaryGroupDto"];
+            /** @description 파트타이머(PART_TIME) */
+            partTime: components["schemas"]["PayslipSummaryGroupDto"];
+        };
         PayslipCandidateDto: {
             /** @description 계약 유형 — 유효한 근로계약의 값, 없으면 직원 레코드의 값 */
             employmentType: components["schemas"]["EmploymentType"];
@@ -9147,7 +9180,7 @@ export interface components {
             date: string;
             /** @description 점포 · 이름순 */
             items: components["schemas"]["AttendanceDayItemDto"][];
-            /** @description 상태별 인원 — 가린 직원도 센다(ATT-30 「점포별 숫자에는 센다」) */
+            /** @description 상태별 인원 — 본사에게 가려지는 직원은 세지 않는다(ATT-30, 운영 정책 v218 2026-10-27 — 로그인 후 홈 · 근태 요약과 같은 기준) */
             counts: {
                 [key: string]: number;
             };
@@ -9187,7 +9220,7 @@ export interface components {
             to: string;
             /** @description 근무스케줄이나 기록이 있는 직원 · 날만(휴무는 없음). 날짜 내림차순, 같은 날은 점포 · 이름순 */
             items: components["schemas"]["AttendancePeriodItemDto"][];
-            /** @description 직원 · 날 상태별 건수 — 본사에게 가려지는 직원도 센다(ATT-30) */
+            /** @description 직원 · 날 상태별 건수 — 본사에게 가려지는 직원은 세지 않는다(ATT-30, 운영 정책 v218 2026-10-27 — 로그인 후 홈 · 근태 요약과 같은 기준) */
             counts: {
                 [key: string]: number;
             };
@@ -15305,6 +15338,47 @@ export interface operations {
             };
             /** @description NO_VALID_CONTRACT — 급여 기간에 유효한 근로계약 없음 */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PayslipsController_summary: {
+        parameters: {
+            query: {
+                /** @description 급여 월(YYYY-MM). 목록의 month 와 같다 — 급여 기간 시작일이 그 달인 명세서다 */
+                month: string;
+                /** @description 점포 ID */
+                storeId: number;
+            };
+            header?: {
+                /** @description 대상 BP(bpCodeId). WHALE_ERP 메뉴 경로에서만 읽는다 — 없으면 소속 BP. 플랫폼 계정은 없는 BP · 플랫폼 BP 면 404, BP · 가맹 계정은 소속 BP 가 아니면 403 */
+                "X-Bp-Code-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayslipSummaryResponseDto"];
+                };
+            };
+            /** @description 쿼리 형식 오류(month · storeId 누락 포함) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 급여명세서 관리의 해당 권한(조회 · 등록 · 수정) 없음 · 직원 앱 토큰 · 사용 중인 관리자 계정이 아님 */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
