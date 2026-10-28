@@ -204,7 +204,7 @@ function DetailBody({
       <div className="flex flex-col items-start gap-[6px]">
         {/* 이름 앞에 14px 회색 라벨 「이름」 — BP 마스터 상세 「상호명」과 같다(2026-10-28 사용자 지정) */}
         <h2 className="text-[18px] font-semibold text-erp-ink">
-          <span className="mr-[8px] text-[14px] font-normal text-erp-label">이름</span>
+          <span className="mr-[6px] text-[14px] font-normal text-erp-label">이름</span>
           {name}
         </h2>
         <span className="text-[14px]">

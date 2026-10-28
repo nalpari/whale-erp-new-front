@@ -258,7 +258,7 @@ function DetailBody({
       <div className="sticky -top-[24px] z-[1] -mx-[24px] -mt-[24px] -mb-[16px] flex flex-col gap-[6px] bg-white px-[24px] pt-[24px] pb-[16px]">
         {/* 상호명 앞에 회색 라벨 「상호명」(아랫줄 「BP 코드 · 아이디」 라벨과 같은 14px · 색, 2026-10-28 사용자 지정) */}
         <h2 className="text-[18px] font-semibold break-all text-erp-ink">
-          <span className="mr-[8px] text-[14px] font-normal text-erp-label">상호명</span>
+          <span className="mr-[6px] text-[14px] font-normal text-erp-label">상호명</span>
           {bp.tradeName}
         </h2>
         <span className="text-[14px]">
