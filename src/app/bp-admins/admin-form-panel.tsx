@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useLayoutEffect, useRef, useState, useTransition, type KeyboardEvent, type ReactNode, type RefObject } from "react";
 import { Button, ConfirmDialog, DataTable, Field, FormGroup, FormRow, RequiredMark, Select, SlidePanel, Tag, TextField } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
-import { useAccount } from "@/components/site/session-gate";
+import { useAccount, useCurrentBp } from "@/components/site/session-gate";
+import { bpPath } from "@/lib/bp-path";
 import { FailedBand, FieldMessage, InfoBand } from "@/components/site/side-parts";
 import { StoreMappingPicker, type MappingStoreOption } from "@/components/site/store-mapping-picker";
 import { StoreStatusBadge } from "@/app/stores/store-parts";
@@ -82,6 +83,7 @@ const optionOf = (s: BpAdminStoreOption): MappingStoreOption => ({
 export function AdminFormPanel(props: Props) {
   const { id, mode, open, onClose, onBackdropClose, trigger, roleGroups } = props;
   const me = useAccount();
+  const currentBp = useCurrentBp();
   const roleType = useCodeLabel("ROLE_TYPE");
   const locks =
     mode === "edit" ? editLocksOf(props.admin) : { roleGroup: false, status: false, scope: false, stores: false };
@@ -469,8 +471,6 @@ export function AdminFormPanel(props: Props) {
             </>
           )}
           {/* 계정 역할 · 권한명은 기본정보 안 맨 아래 — 따로 있던 「계정 역할」 묶음 제목은 없앴다(2026-10-27 사용자 지정) */}
-          {groupsFailed && <FailedBand message="권한 그룹 목록을 불러오지 못했습니다. 화면을 새로 고쳐 주세요." />}
-          {noGroupForRole && <FailedBand message="붙일 권한 그룹이 없습니다. BP 권한 그룹 관리에서 먼저 만들어 주세요." />}
           {/* 계정 역할 · 권한명은 한 줄에 나란히(2026-10-27 사용자 지정 — 전엔 두 줄). 역할 이름은 7자를 넘지 않아
               계정 역할 칸은 그 폭(글자 + 화살표 30, 150 → 130)으로 줄이고 권한명이 남는 폭을 쓴다(2026-10-27 사용자 지정) */}
           {/* 위쪽 정렬 — 한 칸에만 오류 문구가 붙어 줄이 높아져도 두 입력칸이 같은 높이에 선다(사용자가 찾음). FormRow 는 늘여 세워 옆 칸이 가운데로 내려갔다 */}
@@ -497,7 +497,26 @@ export function AdminFormPanel(props: Props) {
                 <TextField value={form.roleTypeCode ? roleType(form.roleTypeCode) : ""} readOnly />
               </Field>
             )}
-            <Labeled label="권한명" required={!locks.roleGroup} message={message("roleGroupId")}>
+            {/* 권한명을 고를 수 없는 이유(목록을 못 받음 · 이 역할의 권한명이 없음)는 위 띠 대신 이 칸 아래에 둔다(2026-10-28 사용자 지정 — 전엔 계정 역할 줄 위 띠) */}
+            <Labeled
+              label="권한명"
+              required={!locks.roleGroup}
+              message={
+                groupsFailed ? (
+                  <FieldMessage id={messageId("roleGroupId")} message="권한명 목록을 불러오지 못했습니다. 화면을 새로 고쳐 주세요." />
+                ) : noGroupForRole ? (
+                  // [이동]은 환경설정 > 권한그룹 관리(/bp-role-groups, 이 탭 BP 주소)로 간다 — 권한명이 없으면 어차피 저장할 수 없다(2026-10-28 사용자 지정 문구)
+                  <span className="flex items-center gap-[10px]">
+                    <FieldMessage id={messageId("roleGroupId")} message="선택할 수 있는 권한명이 없습니다. 먼저 권한명을 등록해주세요." />
+                    <Button variant="soft" href={bpPath(currentBp.bpCodeId, "/bp-role-groups")}>
+                      이동
+                    </Button>
+                  </span>
+                ) : (
+                  message("roleGroupId")
+                )
+              }
+            >
               <Select
                 value={form.roleGroupId}
                 onChange={(e) => set("roleGroupId", e.target.value)}

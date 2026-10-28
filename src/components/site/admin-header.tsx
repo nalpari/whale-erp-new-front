@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useEffectEvent, useState, type ReactNode } from "react";
-import { GlobalHeader, ScopeSelect, ServiceLinks, useBackdropActive, UserPop, type HeaderMenu, type ScopeSelectSection, type UserPopItem } from "@/components/common";
+import { Badge, GlobalHeader, ScopeSelect, ServiceLinks, useBackdropActive, UserPop, type HeaderMenu, type ScopeSelectSection, type UserPopItem } from "@/components/common";
 import { logout } from "@/app/actions";
 import { bpPath, isBpPathScreen } from "@/lib/bp-path";
 import type { ServiceCode } from "@/lib/browser-storage";
@@ -10,6 +10,8 @@ import { findMenu, HOME, PENDING_PLATFORM_MENU } from "@/lib/menus";
 import type { AccountBp, AdminStore } from "@/lib/session";
 import { isClosedStore, openStores, SCOPE_PARAM, scopeFromAddress, scopeKeyOf, scopeOfKey, withScope } from "@/lib/store-scope";
 import { BpSelectDialog } from "./bp-select-dialog";
+import { useCodeLabel } from "./code-label";
+import { useCurrentBpStatus } from "./current-bp-status";
 import { useAccount, useCurrentBp, useMenus, useMyPageOpen, useMyPageTrigger, usePageMenu, usePasswordChangeOpen, useScope, useService, useStores, useWithdrawOpen } from "./session-gate";
 
 /** ERP 메뉴 url 의 화면 주소 — /bp/{id} 주소로 옮긴 화면에만 탭 BP 를 붙인다(BP_PATH_SCREENS). 메뉴 url 자체는 옛 경로 그대로다. */
@@ -72,6 +74,22 @@ export function AdminHeader({ alarm }: { alarm: ReactNode }) {
   );
 }
 
+/**
+ * 플랫폼 계정이 탈퇴 · 미사용 BP 를 보고 있으면 범위 선택기 옆에 상태 배지와 한 줄을 둔다 — 어느 화면에서든 조회만 된다는 것을 먼저 안다
+ * (2026-10-28 사용자 지정). 사용 중이거나 상태를 모르면(BP 계정 · 받기 전 · 받지 못함) 그리지 않는다.
+ */
+function BpStatusNote() {
+  const status = useCurrentBpStatus();
+  const label = useCodeLabel("ACCOUNT_STATUS");
+  if (!status || status === "ACTIVE") return null;
+  return (
+    <span role="status" className="flex shrink-0 items-center gap-[6px] text-[14px] text-erp-off">
+      <Badge tone="off">{label(status)}</Badge>
+      조회 기능만 이용할 수 있는 BP입니다.
+    </span>
+  );
+}
+
 // 서비스 바로가기. BP · 가맹 계정은 늘 자기 BP 의 웨일ERP 다.
 // 플랫폼 계정의 웨일ERP 는 BP 선택 팝업이다 — ERP 탭에서 눌러도 다시 열어 다른 BP 를 고르게 한다(고른 BP 는 새 탭).
 // 플랫폼관리는 ERP 탭이면 그 탭은 두고 플랫폼을 새 탭으로 연다 — 웨일ERP 가 고른 BP 를 새 탭으로 여는 것과 같다.
@@ -105,17 +123,23 @@ function HeaderScopeSelect() {
       <Suspense fallback={null}>
         <ScopeFromAddress />
       </Suspense>
-      <ScopeSelect
-        title={bp.tradeName}
-        sections={scopeSections(bp.tradeName, stores)}
-        value={scopeKeyOf(scope)}
-        onChange={(key) => {
-          const next = scopeOfKey(key);
-          if (!next) return;
-          setScope(next);
-          if (pageUrl) router.push(withScope(screenOf(pageUrl, bp.bpCodeId), next));
-        }}
-      />
+      {/* 상태 안내를 범위 선택기 바로 오른쪽(빈자리 왼쪽 끝)에 붙인다 — ScopeSelect 는 남는 폭을 다 받아(flex-1) 칸 폭(420)만큼 감싸 둔다(2026-10-28 사용자 지정) */}
+      <div className="flex min-w-0 flex-1 items-center gap-[12px]">
+        <div className="flex w-[420px] shrink-0">
+          <ScopeSelect
+            title={bp.tradeName}
+            sections={scopeSections(bp.tradeName, stores)}
+            value={scopeKeyOf(scope)}
+            onChange={(key) => {
+              const next = scopeOfKey(key);
+              if (!next) return;
+              setScope(next);
+              if (pageUrl) router.push(withScope(screenOf(pageUrl, bp.bpCodeId), next));
+            }}
+          />
+        </div>
+        <BpStatusNote />
+      </div>
     </>
   );
 }

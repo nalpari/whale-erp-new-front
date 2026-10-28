@@ -152,8 +152,8 @@ function treeTab(key, s) {
   // 미사용 안내 빨간 박스는 use 값(처음 그릴 때 상태)에 맞춰서만 보인다 — 데모는 라디오를 눌러도 다시 그리지
   // 않아 앱처럼 그 자리에서 즉시 뜨고 꺼지지는 않는다(사용자 지정, 2026-10-26 · 앱 menu-side.tsx 와 같은 문구).
   const kidsWarn = (kids) =>
-    kids ? `<br>하위 메뉴 ${kids}개도 함께 표시되지 않습니다. 하위 메뉴의 사용여부는 바뀌지 않아, 다시 '사용'으로 바꾸면 하위 메뉴도 그대로 보입니다.` : "";
-  const useWarn = (kids) => `<div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off">미사용으로 변경하면 사용자 화면과 [권한관리 &gt; 메뉴 설정]에 표시되지 않습니다.<br>다시 '사용'으로 변경하면 기존 설정값이 그대로 적용됩니다.${kidsWarn(kids)}</div>`;
+    kids ? `<br>하위 메뉴 ${kids}개도 함께 표시되지 않습니다.` : "";
+  const useWarn = (kids) => `<div class="rounded-[2px] border border-erp-off bg-erp-off-bg px-[16px] py-[12px] text-[14px] text-erp-off">미사용으로 변경하면 사용자 메뉴와 권한 설정에서 표시되지 않습니다.<br>다시 '사용'으로 변경하면 기존 설정값이 그대로 적용됩니다.${kidsWarn(kids)}</div>`;
   const nameFields = (name, url, use, id, isNew, kids = 0) =>
     ui.field(req("메뉴명"), ui.textField({ value: name, placeholder: isNew ? "예: 플랫폼 배치 관리" : undefined, "data-new-name": isNew })) +
     ui.field("메뉴 URL (선택)", ui.textField({ value: url, placeholder: "예: /staff-content" })) +

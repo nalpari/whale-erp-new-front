@@ -47,9 +47,8 @@ import { BizVerificationBox, BizVerifiedStatus } from "@/components/site/biz-ver
 import { BIZ_MESSAGE, bizDigits, bizVerifyFailure, type BizVerifyField } from "@/lib/biz-verification-rules";
 import { formatDate } from "@/lib/format";
 import { CodeLabel, useCodeLabel } from "@/components/site/code-label";
-import { useAccount, useCurrentBp } from "@/components/site/session-gate";
-import { bff } from "@/lib/bff";
-import type { BpOption } from "@/lib/session";
+import { useCurrentBp } from "@/components/site/session-gate";
+import { useCurrentBpStatus } from "@/components/site/current-bp-status";
 import { bpPath } from "@/lib/bp-path";
 import { withoutStoreSearch } from "@/lib/store-scope";
 import { storeImageAccept, storeImageFileError, storeImageTypesText } from "@/lib/store-image";
@@ -117,23 +116,10 @@ export function StoreFormView(props: Props) {
   // 등록할 BP — 이 탭의 BP(플랫폼 계정이 고른 BP, 그 밖은 소속 BP). 주소 /bp/{id} 의 BP 와 같다(SessionGate 가 주소로 정한다) —
   // api 가 헤더로 대상 BP 를 정하면(점포 탭 BP 전환) 본문의 bpCodeId 가 proxy 가 실은 헤더와 다를 때 400 이다
   const currentBp = useCurrentBp();
-  const account = useAccount();
   // 등록할 BP 가 탈퇴 · 미사용인가 — 들어오자마자 알려 저장까지 가서야 거절당하지 않게 한다(2026-10-28 사용자 지정).
-  // 다른 BP 를 고를 수 있는 플랫폼 계정만 본다(BP 계정은 자기 BP 가 사용이 아니면 로그인하지 못한다). BP 하나를 따로 묻는 api 가 없어
-  // BP 선택 창과 같은 GET /bp-codes 를 BP코드로 찾는다. 확인하지 못하면 아무것도 띄우지 않는다 — 저장 때 api 가 막고 같은 문구가 뜬다
-  const [bpBlocked, setBpBlocked] = useState(false);
-  useEffect(() => {
-    if (mode !== "create" || !account.bp.isPlatform) return;
-    let live = true;
-    const params = new URLSearchParams({ page: "1", pageSize: "20", keyword: currentBp.bpCode });
-    bff<{ items: BpOption[] }>(`/bp-codes?${params}`).then(
-      (r) => live && setBpBlocked(r.items.some((b) => b.bpCodeId === currentBp.bpCodeId && b.accountStatusCode !== "ACTIVE")),
-      (e: unknown) => console.warn("등록할 BP 상태를 확인하지 못했습니다 — 저장 때 api 가 다시 본다", e),
-    );
-    return () => {
-      live = false;
-    };
-  }, [mode, account.bp.isPlatform, currentBp.bpCodeId, currentBp.bpCode]);
+  // 플랫폼 계정만 본다(useCurrentBpStatus). 확인하지 못하면(null) 아무것도 띄우지 않는다 — 저장 때 api 가 막고 같은 문구가 뜬다
+  const bpStatus = useCurrentBpStatus();
+  const bpBlocked = mode === "create" && bpStatus !== null && bpStatus !== "ACTIVE";
   // 화면 주소는 탭 BP 를 붙인다. backHref 는 옛 경로(목록 쿼리)다
   const at = (path: string) => bpPath(currentBp.bpCodeId, path);
   const toast = useToast();
@@ -545,7 +531,7 @@ export function StoreFormView(props: Props) {
   return (
     <div id={`${ids}-form`} className="flex flex-col gap-[24px]">
       {/* 소속 BP 상태 이름(미사용 · 탈퇴)을 밝힌다 — 상세와 같은 문구 · 같은 자리(점포명 제목 줄 위, 2026-10-28 사용자 지정) */}
-      {mode === "create" && bpBlocked && <NoticeBand title={BP_BLOCKED_TEXT.create} />}
+      {bpBlocked && <NoticeBand title={BP_BLOCKED_TEXT.create} />}
       {store && store.bpAccountStatusCode !== "ACTIVE" && <NoticeBand title={<>이 점포가 속한 BP가 <CodeLabel group="ACCOUNT_STATUS" value={store.bpAccountStatusCode} /> 상태로, 조회 기능만 이용할 수 있습니다.</>} />}
       {/* 취소 · 저장은 제목 줄 오른쪽에 둔다 — 근로계약서 작성 화면(contract-form.tsx)과 같은 자리(2026-10-19 점검 — 실사용자 확인). 전에는
           화면 맨 아래에 있어 긴 폼에서 저장하려면 끝까지 스크롤해야 했다. */}
