@@ -530,7 +530,7 @@ export function StoreFormView(props: Props) {
 
   return (
     <div id={`${ids}-form`} className="flex flex-col gap-[24px]">
-      {/* 소속 BP 상태 이름(미사용 · 탈퇴)을 밝힌다 — 상세와 같은 문구 · 같은 자리(점포명 제목 줄 위, 2026-10-28 사용자 지정) */}
+      {/* 등록: 고른 BP 가 탈퇴 · 미사용이면 들어올 때 알린다. 수정: 소속 BP 상태 이름(미사용 · 탈퇴)을 상세와 같은 문구 · 같은 자리(점포명 제목 줄 위)에(2026-10-28 사용자 지정) */}
       {bpBlocked && <NoticeBand title={BP_BLOCKED_TEXT.create} />}
       {store && store.bpAccountStatusCode !== "ACTIVE" && <NoticeBand title={<>이 점포가 속한 BP가 <CodeLabel group="ACCOUNT_STATUS" value={store.bpAccountStatusCode} /> 상태로, 조회 기능만 이용할 수 있습니다.</>} />}
       {/* 취소 · 저장은 제목 줄 오른쪽에 둔다 — 근로계약서 작성 화면(contract-form.tsx)과 같은 자리(2026-10-19 점검 — 실사용자 확인). 전에는
