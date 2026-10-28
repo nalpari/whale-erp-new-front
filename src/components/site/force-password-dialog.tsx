@@ -4,7 +4,6 @@ import { useEffect, useRef, useState, useTransition, type FormEvent } from "reac
 import { Button, Checkbox, Field, TextField } from "@/components/common";
 import { changeForcedPassword, logout } from "@/app/actions";
 import { signOut } from "@/lib/bff";
-import { passwordChecks } from "@/lib/password";
 import type { LoginInfoAccount } from "@/lib/session";
 import { TermsLink } from "./terms-link";
 
@@ -86,28 +85,17 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
             onChange={(e) => setPassword(e.target.value)}
           />
         </Field>
-        <ul aria-label="비밀번호 조건" className="-mt-[10px] flex flex-wrap gap-x-[10px] text-[13px]">
-          {passwordChecks(password, account.loginId).map((c) => (
-            <li key={c.label} className={c.met ? "text-erp-brand" : "text-erp-label"}>
-              {c.met ? "✓ " : ""}
-              {c.label}
-              <span className="sr-only">{c.met ? " (충족)" : " (미충족)"}</span>
-            </li>
-          ))}
-          <li className="text-erp-label">받은 비밀번호와 다름</li>
-        </ul>
+        {/* 조건 체크 줄 · 「현재 비밀번호는 묻지 않습니다」 · 약관 동의 옆 설명은 지웠다(2026-10-28 사용자 지정) — 조건은 칸 안내와 저장 때 검사가 알린다 */}
         {error?.at === "password" && <ErrorText>{error.message}</ErrorText>}
         <Field label="새 비밀번호 확인">
           <TextField type="password" autoComplete="new-password" maxLength={20} required value={confirm} onChange={(e) => setConfirm(e.target.value)} />
         </Field>
-        <p className="text-[13px] leading-[1.6] text-erp-label">현재 비밀번호는 묻지 않습니다. 바꿔도 이 기기와 다른 기기의 로그인은 모두 그대로 이어집니다.</p>
 
         {needTerms && (
           <fieldset className="flex flex-col gap-[12px] border-t border-erp-divider pt-[18px]">
             <legend className="sr-only">약관 동의</legend>
-            <p className="flex items-baseline gap-[10px]">
+            <p>
               <b className="text-[16px] font-semibold">약관 동의</b>
-              <span className="text-[13px] text-erp-label">운영자가 만든 계정이라 본인 동의가 필요합니다</span>
             </p>
             <Checkbox
               label="약관 전체 동의"
@@ -141,9 +129,10 @@ function ErrorText({ children }: { children: string }) {
   );
 }
 
+// 필수 항목도 「약관 전체 동의」와 같은 줄에서 시작한다(들여쓰기 없음, 2026-10-28 사용자 지정)
 function TermsRow({ kind, label, checked, onChange }: { kind: "use" | "policy"; label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <div className="flex items-center justify-between pl-[28px]">
+    <div className="flex items-center justify-between">
       <Checkbox label={label} checked={checked} onChange={(e) => onChange(e.target.checked)} />
       <span className="text-[13px] text-erp-label underline underline-offset-2">
         {/* 약관 유형은 공통코드 TERMS_TYPE — 이용약관은 BP 사업자 회원가입용, 개인정보는 그 수집·이용 동의다. */}
