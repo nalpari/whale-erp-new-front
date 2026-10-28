@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
-import { Badge, Button, DataTable, PageBar } from "@/components/common";
+import { Badge, Button, DataTable, LoadGroup, LoadingNotice, PageBar } from "@/components/common";
 import { CodeLabel } from "@/components/site/code-label";
 import { useAccount, useCurrentBp, useMenuRole, useMenus, useScope, useService, useStores } from "@/components/site/session-gate";
 import { bpPath } from "@/lib/bp-path";
@@ -13,7 +13,7 @@ import { withScope } from "@/lib/store-scope";
 import { isPlatformRole } from "@/lib/auth-routes";
 import { OneStoreScreen } from "./one-store-screen";
 import { oneStoreIdOf } from "./one-store-view";
-import { useHomeApi } from "./use-home-api";
+import { useApi } from "@/lib/use-load";
 import { homeSearchOf, pendingLineOf, renewalNamesOf, type HomePending, type HomeSummary } from "./home-view";
 
 const CARD = "rounded-[4px] border border-erp-panel-line bg-white";
@@ -21,7 +21,31 @@ const CARD = "rounded-[4px] border border-erp-panel-line bg-white";
 // 로그인 후 홈 — 여러 점포 화면(WHALEERP-307~310, 목업 home/signed-in.html 「BP 마스터 화면」 · 데모 home/signed-in).
 // 업무 범위는 헤더 범위 선택기다. 홈은 메뉴가 아니라 헤더가 이동시키지 않으므로 이 화면이 범위를 보고 다시 부른다.
 // 업무 범위가 점포 하나면 점포 하나 화면(one-store-screen.tsx, HOME-6)이다.
+// 영역(현황 · 처리 대기, 점포 하나 화면의 카드들)은 LoadGroup 으로 묶어 처음 들어올 때와 업무 범위 · 탭 BP 를 바꿀 때 모두 받은 뒤 한 번에 보인다
+// (범위가 바뀌면 화면 전체가 다른 데이터라서 key 로 묶음을 다시 건다 — 점포 하나 ↔ 여러 점포 전환도 같이 덮인다). 새로고침 · 영역 다시 하기 · 근무스케줄 보기 전환은 묶지 않는다(그 영역만).
 export function HomeScreen() {
+  const account = useAccount();
+  const bp = useCurrentBp().bpCodeId;
+  const [scope] = useScope();
+  const greeting = account.name ? `안녕하세요, ${account.name}님` : "안녕하세요";
+  return (
+    <LoadGroup
+      key={`${bp}|${JSON.stringify(scope)}`}
+      fallback={
+        <>
+          <PageBar title={greeting} />
+          <div className="flex min-h-0 flex-1 flex-col">
+            <LoadingNotice />
+          </div>
+        </>
+      }
+    >
+      <HomeBody greeting={greeting} />
+    </LoadGroup>
+  );
+}
+
+function HomeBody({ greeting }: { greeting: string }) {
   const account = useAccount();
   const bp = useCurrentBp().bpCodeId;
   const stores = useStores();
@@ -32,8 +56,8 @@ export function HomeScreen() {
   // 점포 하나면 점포 하나 화면(HOME-6) — 홈 집계(summary · pending)는 부르지 않는다. 플랫폼 계정 · 쓸 수 없는 범위는 아래에서 먼저 가른다
   const oneStore = search === null || isPlatformRole(account.roleTypeCode) ? null : oneStoreIdOf(scope, account.roleTypeCode, stores);
   const many = search !== null && oneStore === null;
-  const summary = useHomeApi<HomeSummary>(many ? `/home/summary${search}` : null, key, "현황");
-  const pending = useHomeApi<HomePending>(many ? `/home/pending${search}` : null, key, "처리 대기");
+  const summary = useApi<HomeSummary>(many ? `/home/summary${search}` : null, key, "현황");
+  const pending = useApi<HomePending>(many ? `/home/pending${search}` : null, key, "처리 대기");
 
   const menus = useMenus();
   const service = useService();
@@ -87,7 +111,7 @@ export function HomeScreen() {
 
   return (
     <>
-      <PageBar title={account.name ? `안녕하세요, ${account.name}님` : "안녕하세요"}>
+      <PageBar title={greeting}>
         <div className="flex items-center gap-[10px]">
           {asOf && <span className="text-[13px] text-erp-label">{formatAt(asOf)} 기준</span>}
           <button

@@ -57,8 +57,3 @@ export function AreaFailure({ kind, subject }: { kind: "forbidden" | "error"; su
     </BoxMessage>
   );
 }
-
-/** 영역을 받는 동안. 같은 92px 자리를 쓴다 */
-export function AreaLoading() {
-  return <BoxMessage>불러오는 중입니다.</BoxMessage>;
-}
