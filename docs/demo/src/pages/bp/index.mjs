@@ -30,7 +30,7 @@ export default ({ A, R }) => {
         ui.searchField(A, { placeholder: "BP000001 · 아이디·이름 일부 · 상호명 일부 · 사업자등록번호", label: "검색어" }),
       { tight: true },
     ),
-    ui.filterSection("상태", ui.checkbox(A, "사용", true) + ui.checkbox(A, "미사용", true) + ui.checkbox(A, "탈퇴", true)),
+    ui.filterSection("계정상태", ui.checkbox(A, "사용", true) + ui.checkbox(A, "미사용", true) + ui.checkbox(A, "탈퇴", true)),
     ui.filterSection("사업자정보 인증", ui.select(["전체", "인증완료", "미인증"], { "aria-label": "사업자정보 인증" }), { tight: true, last: true }),
   ]);
 
@@ -40,7 +40,7 @@ export default ({ A, R }) => {
     { header: "이름", width: "w-[110px]" },
     { header: "연락처", width: "w-[130px]" },
     { header: "이메일", align: "left" },
-    { header: "상태", width: "w-[90px]" },
+    { header: "계정상태", width: "w-[90px]" },
     { header: "상호명", width: "w-[160px]" },
     { header: "사업자등록번호", width: "w-[150px]" },
     { header: "가입경로", width: "w-[110px]" },

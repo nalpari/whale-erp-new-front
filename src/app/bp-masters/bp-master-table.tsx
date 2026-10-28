@@ -48,7 +48,7 @@ export function BpMasterTable({
     { header: "BP 코드", width: "w-[110px]", cell: (b) => open(b, b.bpCode) },
     { header: "아이디", width: "w-[130px]", cell: (b) => dim(b, b.loginId) },
     { header: "이름", width: "w-[110px]", cell: (b) => (withdrawn(b) ? gone : b.name) },
-    { header: "상태", width: "w-[100px]", cell: (b) => <BpStatusBadge status={b.accountStatus} /> },
+    { header: "계정상태", width: "w-[100px]", cell: (b) => <BpStatusBadge status={b.accountStatus} /> },
     // 상호명은 링크 없이 굵은(600) 먹색 글자, 폭 240px(남는 폭을 다 받으면 너무 넓었다) — 상세는 BP 코드로 연다(2026-10-28 사용자 지정)
     { header: "상호명", width: "w-[240px]", align: "left", cell: (b) => dim(b, <span className="max-w-full truncate font-semibold">{b.tradeName}</span>) },
     { header: "연락처", width: "w-[150px]", align: "left", cell: (b) => (withdrawn(b) ? gone : b.phone ? <WithIcon icon="phone">{formatPhone(b.phone)}</WithIcon> : "") },
@@ -64,7 +64,7 @@ export function BpMasterTable({
       rows={rows}
       rowKey={(b) => b.bpCodeId}
       rowState={(b) => (b.bpCodeId === selected ? "selected" : undefined)}
-      empty={noStatus ? "선택한 상태가 없어 표시할 BP가 없습니다. 상태를 하나 이상 선택해 주세요." : "일치하는 BP가 없습니다."}
+      empty={noStatus ? "선택한 계정상태가 없어 표시할 BP가 없습니다. 계정상태를 하나 이상 선택해 주세요." : "일치하는 BP가 없습니다."}
     />
   );
 }

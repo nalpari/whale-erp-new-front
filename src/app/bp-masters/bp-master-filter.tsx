@@ -74,7 +74,7 @@ export function BpMasterFilter({ query, onApply }: { query: BpMastersQuery; onAp
           />
         </div>
       </FilterSection>
-      <FilterSection label="상태">
+      <FilterSection label="계정상태">
         {BP_MASTER_STATUSES.map((s) => (
           <Checkbox key={s} label={STATUS_LABEL[s]} checked={shows(s)} onChange={(e) => toggle(s, e.target.checked)} />
         ))}
