@@ -380,12 +380,10 @@ function DetailBody({
           onConfirm={handleDelete}
           onCancel={() => setConfirm(null)}
         >
+          {/* 대상은 상호명 · 아이디 · 이름, 안내는 빨간 안내 상자에 관리자 계정 삭제와 같은 문구 한 줄(2026-10-28 사용자 지정) */}
           <div className="flex flex-col gap-[12px]">
-            {who}
-            <p>
-              계정과 이 계정이 대표하는 <b className="font-semibold">BP 정보가 함께 삭제</b>되고 되돌릴 수 없습니다.
-            </p>
-            <p>해당 아이디 {bp.loginId}, BP 코드도 다시 사용하지 못합니다.</p>
+            <WhoList rows={[["상호명", bp.tradeName], ["아이디", bp.loginId], ["이름", bp.name ?? "-"]]} />
+            <WarnBand>삭제한 계정은 BP 목록 및 검색 결과에서 제외되며, 해당 계정으로 더 이상 로그인할 수 없습니다.</WarnBand>
           </div>
         </ConfirmDialog>
       )}
