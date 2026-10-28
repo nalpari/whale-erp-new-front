@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-28
+* **Update**: [로그인](/auth.md) — 메뉴가 없는 BP · 가맹 계정은 홈에 권한 요청 안내를 두지 않고 홈과 MY PAGE 만 쓴다. 권한 요청 안내는 홈이 없는 플랫폼 계정에만 둔다(목업 auth/overview)(재영).
 * **Update**: main 병합(front abra, #164 · #135 까지): okf 충돌은 양쪽 기록을 살렸다 — [Whale ERP Frontend](/whale-erp-front.md) 는 main 본문에 이 브랜치의 플랫폼 첫 메뉴 이동 세 곳을 다시 얹었다.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 계정 로그인 후 첫 메뉴로 이동(`/platform` 은 넘겨 주는 주소, `firstMenuUrl` · `firstMenuRedirect`), 헤더 로고 · 플랫폼관리 바로가기, `src/app/platform/` 권한 요청 안내(front abra, PR #165 리뷰).
 * **Update**: [로그인](/auth.md) — 플랫폼 계정은 홈이 없고 로그인하면 헤더 순서상 첫 플랫폼 메뉴로 간다(2026-10-28 재영). `/platform` 은 넘겨 주는 주소이고, 메뉴가 없으면 권한 요청 안내, 비밀번호 강제 변경 전에는 머문다(front abra).
