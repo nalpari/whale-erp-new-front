@@ -118,6 +118,9 @@
                       <button class="btn btn--secondary btn--sm" type="button" data-open="pop-off" data-show-role="all" data-show="use">상태 변경</button>
                       <button class="btn btn--secondary btn--sm" type="button" data-open="pop-off-fresh" data-show-role="all" data-show="fresh created" hidden>상태 변경</button>
                       <button class="btn btn--secondary btn--sm" type="button" data-open="pop-on" data-show-role="all" data-show="off" hidden>상태 변경</button>
+                      <!-- 조회만: 누를 버튼이 없으니 상태 배지를 보인다(구현과 같다) -->
+                      <span class="badge badge--ok" data-show-role="view" data-show="use fresh created" hidden>사용</span>
+                      <span class="badge badge--warn" data-show-role="view" data-show="off" hidden>미사용</span>
                       <!-- 탈퇴 BP 는 변경 이력을 보이지 않으므로 탈퇴 사유를 여기서 본다(WHALEERP-626, 2026-10-27) -->
                       <button class="btn btn--secondary btn--sm" type="button" data-open="pop-withdraw" data-show="gone" hidden>사유 보기</button>
                     </dd>
