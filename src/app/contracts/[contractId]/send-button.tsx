@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button, ConfirmDialog } from "@/components/common";
 import { withBack } from "../contract-list";
-import { sendContract, type SendContractResult } from "./actions";
+import { sendContract, type ContractStatus, type SendContractResult } from "./actions";
 import { resendDialogCopy, sendFailureOf } from "./send-model";
 
 // 근로계약 재발송(WHALEERP-136). 보내기는 저장할 때 곧바로 하고(2026-10-19 재영), 이 버튼은 다시 보내기만 한다 — 발송 대기
@@ -51,7 +51,7 @@ export function SendContractButton({ contractId, status, name, back, staffJoined
           start(async () => {
             let result: SendContractResult;
             try {
-              result = await sendContract(contractId);
+              result = await sendContract(contractId, status as ContractStatus);
             } catch {
               // 서버 액션 호출 자체가 끊겼다(브라우저 ↔ Next, 배포 중 재시작) — api 는 이미 보냈을 수 있어 「모름」으로 다룬다(front #41 재리뷰)
               result = sendFailureOf(null, undefined, "");

@@ -1,4 +1,13 @@
 // 재발송 · 저장 뒤 보내기 실패를 화면이 다룰 모양으로 바꾼다(front #41 리뷰). 서버 액션 · 상세와 테스트가 함께 쓴다.
+import type { components } from "../../../lib/api-types.generated";
+
+export type SendContractBody = components["schemas"]["SendContractDto"];
+
+/**
+ * 재발송 본문 — 화면이 본 계약 상태를 싣는다. 그사이 바뀌었으면(거부 · 만료 · 다른 탭에서 먼저 보냄) api 가 409
+ * CONTRACT_STATUS_CONFLICT 로 막아 다시 읽는다(front #136 재리뷰). 상태를 모르면 비운다(api 가 전처럼 보낸다)
+ */
+export const sendBodyOf = (status: SendContractBody["expectedStatus"] | null): SendContractBody => (status ? { expectedStatus: status } : {});
 
 /**
  * 실패 결과. recheck 면 api 가 이미 쓰고 보냈을 수 있다 — 확인창의 보내기를 막고 상세를 다시 읽는다(두 번 가지 않게). blocked 면

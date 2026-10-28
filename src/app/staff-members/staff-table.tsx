@@ -80,7 +80,7 @@ export function StaffTable({
       cell: personal((item) => (
         <span className="inline-flex items-center justify-center gap-[6px]">
           <CellView cell={joinCell(item, today)} />
-          {item.contract && canResendInvitation(item) && <ResendInvitationButton contractId={item.contract.contractId} name={item.name} />}
+          {item.contract && canResendInvitation(item) && <ResendInvitationButton contractId={item.contract.contractId} name={item.name} status={item.contract.status} />}
         </span>
       )),
     },

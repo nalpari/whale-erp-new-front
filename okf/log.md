@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-28
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #136 재리뷰 참고 1: 재발송(상세 · 직원 목록 · 직원 상세)이 화면이 본 계약 상태를 `expectedStatus` 로 함께 보낸다(`sendBodyOf`) — 그사이 거부 · 만료되었거나 다른 탭에서 먼저 보냈으면 api(#158)가 409 로 막아 다시 읽는다. #135(main 병합) 병합, api 타입을 #158 tentacruel `2347eac7` 에서 다시 만듦.
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — front #135 재리뷰 참고 반영: 바로잡기로 보낸 뒤 진행 중 목록으로 다시 물을 때 바로잡기 문구를 보이지 않으면 본문에서 `correctSignedContracts` 도 뺀다(`reaskedBody` — 확인창을 띄워 둔 사이 체결된 계약이 대체 확인만으로 종료되지 않게). main 병합, api 타입을 #157 gyarados `ba054c7b` 에서 다시 만듦(설명 2곳만 바뀜).
 
 ## 2026-10-27

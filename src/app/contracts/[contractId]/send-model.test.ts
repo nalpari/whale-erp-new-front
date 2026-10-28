@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { redirect, unstable_rethrow } from "next/navigation.js";
-import { callSave, END_UNKNOWN, SAVE_CALL_LOST, saveOutcomeUnknown, SEND_UNKNOWN, sendFailedTarget, resendDialogCopy, sendFailureOf, sendNoticeOf, signingResendCopy, canShowResend } from "./send-model.ts";
+import { callSave, END_UNKNOWN, SAVE_CALL_LOST, saveOutcomeUnknown, SEND_UNKNOWN, sendFailedTarget, resendDialogCopy, sendFailureOf, sendNoticeOf, signingResendCopy, canShowResend, sendBodyOf } from "./send-model.ts";
 
 test("sendFailureOf — 접수 여부 모름은 보내기를 막고 상세를 다시 읽는다", () => {
   assert.deepEqual(sendFailureOf(502, "SEND_UNCONFIRMED", "알림톡이 접수됐는지 알 수 없습니다"), {
@@ -170,4 +170,9 @@ test("거부 · 만료 재발송이 막히면(REOPEN_BLOCKED · WORK_TIME_OVERLA
   }
   // 그 밖의 409 코드는 막지 않는다
   assert.equal(sendFailureOf(409, "SEND_CHANNEL_NOT_READY", "x").blocked, undefined);
+});
+
+test("재발송 본문은 화면이 본 상태를 싣는다 — 모르면 비운다(front #136 재리뷰)", () => {
+  assert.deepEqual(sendBodyOf("REJECTED"), { expectedStatus: "REJECTED" });
+  assert.deepEqual(sendBodyOf(null), {});
 });
