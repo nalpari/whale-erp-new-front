@@ -504,8 +504,11 @@ function platformScopeDialog(A, R, id) {
 }
 
 // master: true 면 플랫폼 마스터로 로그인한 헤더(마스터 기준 화면용).
-export function platformHeader(A, R, { master = false } = {}) {
-  const menus = PLATFORM_MENUS.map(([label, items]) => ({ label, items: items.map(([l, p]) => ({ label: l, href: to(R, p) })) }));
+// noMenu: true 면 접근할 플랫폼 메뉴가 없는 계정의 헤더(권한 요청 안내 화면용) — 메뉴 줄이 비고 로고 · 플랫폼관리 바로가기가 안내 화면을 가리킨다.
+// 플랫폼은 홈이 없어 로고 · 플랫폼관리 바로가기는 GNB 순서상 첫 메뉴(BP 마스터 계정 관리)로 간다(2026-10-28 재영).
+export function platformHeader(A, R, { master = false, noMenu = false } = {}) {
+  const home = to(R, noMenu ? "auth/platform-no-menu.html" : "bp/index.html");
+  const menus = noMenu ? [] : PLATFORM_MENUS.map(([label, items]) => ({ label, items: items.map(([l, p]) => ({ label: l, href: to(R, p) })) }));
   const user = [
     // 내정보 관리 · 비밀번호 변경은 화면을 옮기지 않고 슬라이드에서 한다(ERP 헤더와 같다 · 2026-10-08)
     { label: "내정보 관리", panel: "platform-mypage-panel" },
@@ -519,10 +522,10 @@ export function platformHeader(A, R, { master = false } = {}) {
       menus,
       // 플랫폼 콘솔에는 BP 선택 드롭다운을 두지 않는다 — BP 는 서비스 바로가기 「웨일ERP」로 고른다(2026-10-19 재영). 빈 칸이 오른쪽 컨트롤을 민다.
       `<div class="flex-1"></div>` +
-        ui.serviceLinks(A, { erp: to(R, "home/signed-in.html"), platform: to(R, "bp/index.html"), scopeDialog: scopeId }) +
+        ui.serviceLinks(A, { erp: to(R, "home/signed-in.html"), platform: home, scopeDialog: scopeId }) +
         ui.alarmLink(A, "#") +
         ui.userPop(A, master ? PLATFORM_MASTER : PLATFORM_USER, user),
-      to(R, "bp/index.html"),
+      home,
     ) + platformScopeDialog(A, R, scopeId) + platformMyPanel(A, { master }) + passwordPanel(A)
   );
 }

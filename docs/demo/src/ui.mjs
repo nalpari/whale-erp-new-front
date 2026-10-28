@@ -256,7 +256,8 @@ export function globalHeader(A, menus, right, home = "#") {
     `<button type="button" aria-expanded="false" class="flex h-[52px] shrink-0 items-center text-[16px] font-semibold whitespace-nowrap transition-colors duration-150 ease-out hover:text-erp-brand-soft ${
       i === 0 ? "pr-[20px]" : "px-[20px]"
     } text-white">${m.label}</button>`;
-  const sub = menus[0].items
+  // 메뉴가 없는 계정(플랫폼 권한 요청 안내)은 짙은 줄만 남는다.
+  const sub = (menus[0]?.items ?? [])
     .map((it) => `<li><a class="whitespace-nowrap transition-colors duration-150 ease-out hover:text-erp-brand" href="${it.href}">${it.label}</a></li>`)
     .join("");
   return `<header class="bg-white" data-menus='${JSON.stringify(menus)}'><div class="flex h-[70px] items-center gap-[34px] px-[24px]"><a class="flex w-[177px] shrink-0 items-center gap-[10px]" href="${home}">${img(A, "logo-whale.svg", 53, 40)}<p class="leading-[1.3] text-[#252525]"><span class="block text-[16px] font-extrabold uppercase">Whale ERP</span><span class="block text-[12px]">Management System</span></p></a><div class="flex flex-1 items-center gap-[12px]">${right}</div></div><nav class="flex h-[52px] items-center gap-[54px] bg-erp-nav px-[24px]">${menus
