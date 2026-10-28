@@ -255,14 +255,15 @@ function DetailBody({
       {/* 머리: 첫 줄 상호명, 둘째 줄 「BP 코드 값 | 아이디 값 | 상태 배지」 — 플랫폼 관리자 상세와 같은 모양(2026-10-28 사용자 지정) */}
       {/* 패널을 내려도 머리(상호명 · BP 코드 · 아이디 · 상태)는 위에 고정 — 아래 내용만 스크롤(2026-10-28 사용자 지정).
           패널(aside)이 스크롤 상자라 sticky 로 붙인다 — sticky 기준선이 패널 안쪽 여백(24) 아래라 top 을 -24 로 당겨야 위 여백 틈으로 내용이 비치지 않는다. 위 · 아래 여백(패널 24 · 칸 간격 16)까지 흰 바탕으로 덮어 지나가는 내용을 가린다 */}
-      <div className="sticky -top-[24px] z-[1] -mx-[24px] -mt-[24px] -mb-[16px] flex flex-col gap-[6px] bg-white px-[24px] pt-[24px] pb-[16px]">
-        {/* 상호명 앞에 회색 라벨 「상호명」(아랫줄 「BP 코드 · 아이디」 라벨과 같은 14px · 색, 2026-10-28 사용자 지정) */}
-        <h2 className="text-[18px] font-semibold break-all text-erp-ink">
-          <span className="mr-[6px] text-[14px] font-normal text-erp-label">상호명</span>
-          {bp.tradeName}
-        </h2>
-        <span className="text-[14px]">
-          <HeadValues items={[{ label: "BP 코드", value: bp.bpCode }, { label: "아이디", value: bp.loginId }, { value: <BpStatusBadge status={bp.accountStatus} /> }]} />
+      {/* 라벨 칸을 두 줄이 같이 쓰는 grid — 「상호명」 · 「BP코드」 길이가 달라도 값이 같은 자리에서 시작한다(2026-10-28 사용자 지정, 「BP코드」 붙여 씀) */}
+      <div className="sticky -top-[24px] z-[1] -mx-[24px] -mt-[24px] -mb-[16px] grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-[6px] gap-y-[6px] bg-white px-[24px] pt-[24px] pb-[16px] text-[14px]">
+        <span className="text-erp-label">상호명</span>
+        <h2 className="text-[18px] font-semibold break-all text-erp-ink">{bp.tradeName}</h2>
+        <span className="text-erp-label">BP코드</span>
+        <span>
+          <HeadValues
+            items={[{ value: <b className="font-semibold text-erp-ink">{bp.bpCode}</b> }, { label: "아이디", value: bp.loginId }, { value: <BpStatusBadge status={bp.accountStatus} /> }]}
+          />
         </span>
       </div>
 
