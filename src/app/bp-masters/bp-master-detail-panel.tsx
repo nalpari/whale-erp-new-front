@@ -2,9 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type ReactNode, type RefObject } from "react";
-import { Badge, Button, ConfirmDialog, DetailTable, DetailValues, SlidePanel, useToast, type DetailRow } from "@/components/common";
+import { Button, ConfirmDialog, DetailTable, DetailValues, SlidePanel, useToast, type DetailRow } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
 import { HeadValues } from "@/components/site/head-values";
+import { BizVerifiedStatus } from "@/components/site/biz-verification-box";
 import { SuccessBand, WarnBand } from "@/components/site/side-parts";
 import type { BpMasterDetail } from "@/lib/bp-masters";
 import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
@@ -229,8 +230,6 @@ function DetailBody({
       ) : null,
     },
     { label: "업태 · 종목", value: <DetailValues items={[bp.bizCategory ?? "", bp.bizItem ?? ""].filter(Boolean)} /> },
-    // 라벨 · 빈 값은 점포 상세(stores/[storeId]/page.tsx)와 같다
-    { label: "최종 인증일시", value: unverified(formatDateTime(bp.bizVerifiedAt)) },
   ];
 
 
@@ -276,8 +275,9 @@ function DetailBody({
       <DetailTable title="기본정보" rows={basic} />
       <DetailTable
         title={
-          <span className="flex items-center gap-[6px]">
-            사업자정보 {verified ? <Badge tone="on">인증완료</Badge> : <Badge tone="off">미인증</Badge>}
+          // 「인증 완료 · 일시」를 제목 줄 오른쪽에 — 아래 「최종 인증일시」 줄을 올렸다(수정 화면 인증 상자와 같은 자리 · 글, 2026-10-28 사용자 지정)
+          <span className="flex w-full items-center justify-between gap-[6px]">
+            사업자정보 <BizVerifiedStatus verified={verified} date={verified ? formatDateTime(bp.bizVerifiedAt) : ""} />
           </span>
         }
         rows={business}
