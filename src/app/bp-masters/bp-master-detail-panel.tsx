@@ -17,7 +17,7 @@ import { HistoryButton } from "./history-dialog";
 import { WithdrawalButton } from "./withdrawal-dialog";
 
 // BP 마스터 계정 상세(S-GZDODB · 초기화 S-PRRLMA). 모두 읽기 전용이고, 기본정보 · 사업자정보를 나눠 보인다.
-// 버튼 자리는 플랫폼 관리자 상세와 같다(BP-6) — 상태 변경 · 비밀번호 초기화는 그 줄의 버튼(수정 권한),
+// 버튼 자리는 플랫폼 관리자 상세와 같다(BP-6) — [BP 상태 변경]은 기본정보 제목 줄, 비밀번호 초기화는 그 줄의 버튼(수정 권한),
 // 하단은 [닫기] … [삭제][수정][변경 이력]. 탈퇴 BP 는 조회만 된다(상태 변경 · 초기화 · 삭제 · 수정 · 변경 이력 없음, 탈퇴 사유는 [사유 보기]).
 // 화면은 미리 숨기거나 흐리게만 한다 — 막는 것은 api 다.
 
@@ -241,10 +241,10 @@ function DetailBody({
   ];
 
   // 상태 줄은 없앴다 — 현재 상태는 머리 배지가, 버튼은 「기본정보」 제목 줄 오른쪽이 맡는다(2026-10-28 사용자 지정).
-  // 수정 권한이면 [상태 변경], 탈퇴 BP 는 [사유 보기](변경 이력을 보이지 않으니 탈퇴 사유를 여기서 본다, WHALEERP-626)
+  // 수정 권한이면 [BP 상태 변경](2026-10-28 사용자 지정 문구), 탈퇴 BP 는 [사유 보기](변경 이력을 보이지 않으니 탈퇴 사유를 여기서 본다, WHALEERP-626)
   const statusAction = canUpdate ? (
     <Button variant="soft" onClick={() => setConfirm(bp.accountStatus === "ACTIVE" ? "inactive" : "active")} disabled={busy}>
-      상태 변경
+      BP 상태 변경
     </Button>
   ) : withdrawn && bp.withdrawal ? (
     <WithdrawalButton bp={bp} withdrawal={bp.withdrawal} panelOpen={panelOpen} />
