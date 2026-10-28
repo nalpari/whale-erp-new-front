@@ -200,8 +200,8 @@ function DetailBody({
         </span>
       ),
     },
-    // 소속 점포는 수만 보인다 — 점포 목록 연결은 나중에(BP-8)
-    { label: "소속 점포", value: `${bp.storeCount.toLocaleString("ko-KR")}곳` },
+    // 소속점포는 수만 보인다(「N개」, 2026-10-28 사용자 지정 — 전엔 「소속 점포」 · 「N곳」) — 점포 목록 연결은 나중에(BP-8)
+    { label: "소속점포", value: `${bp.storeCount.toLocaleString("ko-KR")}개` },
     // 아래 다섯 줄은 가입경로 · 약관동의 · 최근 로그인 · 등록 · 최종수정 순(강제변경은 비밀번호 줄로 옮겼다)(2026-10-28 사용자 지정)
     { label: "가입경로", value: bp.joinPath === "SIGNUP" ? "회원가입" : "플랫폼등록" },
     // 「첫 로그인 때 받음」은 아직 로그인하지 않은 BP 에만 붙인다
