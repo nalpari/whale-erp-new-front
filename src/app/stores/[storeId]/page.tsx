@@ -191,6 +191,9 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
     <StoreFrame>
       <StoreCardBody>
         <div className="flex flex-col gap-[12px]">
+          {/* 소속 BP 가 미사용인지 탈퇴인지 상태 이름(공통코드 ACCOUNT_STATUS)으로 밝힌다(2026-10-28 사용자 지정 — 전엔 늘 「미사용」). 문구는 「이 점포가 속한 BP가 … 상태로, 조회 기능만 이용할 수 있습니다.」(사용자 지정).
+              미사용 · 탈퇴 BP 의 점포는 플랫폼 사용자만 열 수 있어 그들에게만 보인다 — 점포명 머리 카드 위에 둔다(2026-10-28 사용자 지정) */}
+          {bpInactive && <NoticeBand title={<>이 점포가 속한 BP가 <CodeLabel group="ACCOUNT_STATUS" value={store.bpAccountStatusCode} /> 상태로, 조회 기능만 이용할 수 있습니다.</>} />}
           {/* 대표 이미지 · 점포명 · 점포코드 · 유형 · 폐점일 · 실행 버튼을 한 머리 카드에 묶는다(2026-10-19 점검 —
               실사용자 확인, 디자인 데모 1안 채택). 운영 상태는 아래 점포 기본정보 표의 점포상태 줄로만 보인다
               (바로 아래 주석 참고). 이미지가 없으면 48px 아이콘(목록 카드와 같은 크기)을 그대로 쓴다 — 머리 카드
@@ -219,7 +222,6 @@ export default async function StoreDetailPage({ params, searchParams }: PageProp
             </div>
           </div>
           <ImageFailedNotice message={imageFailure} />
-          {bpInactive && <NoticeBand title="소속 BP 가 미사용 상태여서 이 업무를 할 수 없습니다." detail="조회만 됩니다. 등록 · 수정 · 상태 변경 · 삭제는 BP 를 다시 사용하면 할 수 있습니다." />}
           {store.storeStatusCode === "CLOSED" && (
             <NoticeBand tone="info" title="폐점한 점포는 조회만 가능하며, 수정할 수 없습니다. 다시 운영하려면 신규 점포로 등록해 주세요." />
           )}

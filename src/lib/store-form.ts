@@ -396,6 +396,17 @@ export function storeServerErrorField(status: number | undefined, message: strin
 }
 
 /**
+ * 소속 BP 가 사용 상태가 아니어서 api 가 거절한 문장인가(409). api 는 미사용 · 탈퇴를 가르지 않고 「소속 BP가 미사용 상태여서 …」 한 문장을 준다 —
+ * 화면은 이 문장 대신 「BP가 탈퇴 또는 미사용 상태로 …」를 보인다(2026-10-28 사용자 지정). api 에 오류 코드가 없어 문장 앞머리로 가른다.
+ */
+export const isBpBlockedMessage = (status: number | undefined, message: string) => status === 409 && message.startsWith("소속 BP가 미사용 상태");
+/** 등록 · 수정에서 그 거절을 받았을 때 띠에 보일 문장 */
+export const BP_BLOCKED_TEXT = {
+  create: "BP가 탈퇴 또는 미사용 상태로, 점포를 등록할 수 없습니다.",
+  edit: "이 점포가 속한 BP가 탈퇴 또는 미사용 상태로, 조회 기능만 이용할 수 있습니다.",
+} as const;
+
+/**
  * api 오류 문장들(검증 실패면 여러 개)을 칸별로 나눈다. 같은 칸에 여럿이면 이어 붙이고, 칸을 못 찾은 문장은 rest 로 남겨 띠에 보인다.
  */
 export function storeServerErrors(status: number | undefined, messages: readonly string[]): { fields: StoreFormErrors; rest: string[] } {
