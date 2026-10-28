@@ -175,31 +175,23 @@ function DetailBody({
     { label: "이메일", value: withdrawn ? gone : bp.email },
     {
       label: "비밀번호",
-      // 「[초기화] | 강제변경 대상 | 초기 비밀번호 미발송」 — 강제변경도 이 줄에(2026-10-28 사용자 지정, 잠시 하위 줄 「└ 강제변경」이었다). 값은 「대상」 · 「대상아님」.
+      // 칸을 반으로 나눠 왼쪽 「[초기화] 초기 비밀번호 미발송」, 오른쪽 절반 자리에서 「강제변경 대상 · 대상아님」(2026-10-28 사용자 지정 — 잠시 하위 줄 「└ 강제변경」이었다).
       // 미사용 · 탈퇴 BP 는 초기화 버튼 · 미발송 표시를 숨긴다(플랫폼 관리자 상세와 같다, 2026-10-28 사용자 지정) — 화면에서만 숨긴다
       value: (
-        <DetailValues
-          items={[
-            ...(bp.accountStatus === "ACTIVE" && canUpdate
-              ? [
-                  <Button key="reset" variant="soft" onClick={() => setConfirm("reset")} disabled={busy}>
-                    초기화
-                  </Button>,
-                ]
-              : []),
-            <span key="forced">
-              <span className="text-erp-label">강제변경</span> {bp.isPasswordChangeRequired ? "대상" : "대상아님"}
-            </span>,
-            // 등록 · 초기화 메일이 실패했다 — 다시 보내는 길은 초기화뿐이다
-            ...(bp.accountStatus === "ACTIVE" && bp.isInitialPasswordUnsent
-              ? [
-                  <span key="unsent" className="text-erp-off">
-                    초기 비밀번호 미발송
-                  </span>,
-                ]
-              : []),
-          ]}
-        />
+        <span className="grid w-full grid-cols-2 items-center gap-[10px]">
+          <span className="flex min-w-0 items-center gap-[10px]">
+            {bp.accountStatus === "ACTIVE" && canUpdate && (
+              <Button variant="soft" onClick={() => setConfirm("reset")} disabled={busy}>
+                초기화
+              </Button>
+            )}
+            {/* 등록 · 초기화 메일이 실패했다 — 다시 보내는 길은 초기화뿐이다 */}
+            {bp.accountStatus === "ACTIVE" && bp.isInitialPasswordUnsent && <span className="truncate text-erp-off">초기 비밀번호 미발송</span>}
+          </span>
+          <span className="truncate">
+            <span className="text-erp-label">강제변경</span> {bp.isPasswordChangeRequired ? "대상" : "대상아님"}
+          </span>
+        </span>
       ),
     },
     // 소속 점포는 수만 보인다 — 점포 목록 연결은 나중에(BP-8)
