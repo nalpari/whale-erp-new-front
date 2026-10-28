@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
 import { Badge, Button, DataTable, Tag } from "@/components/common";
 import { CodeLabel } from "@/components/site/code-label";
-import { useCurrentBp, useMenuRole, useMenus, useService } from "@/components/site/session-gate";
+import { useAccount, useCurrentBp, useMenuRole, useMenus, useService, useStores } from "@/components/site/session-gate";
 import { InquiryStatusBadge } from "@/components/support/support-lists";
 import { bff } from "@/lib/bff";
 import { bpPath } from "@/lib/bp-path";
@@ -88,6 +88,10 @@ export function OneStoreScreen({ storeId, reloadKey }: { storeId: number; reload
   const service = useService();
   const canOpen = (path: string) => menuOfPath(menus, path, service) !== null;
   const canCreateContract = useMenuRole(MENU_CODE.contracts, "create");
+  // 본사 역할이 가맹 점포를 보면 본사 제공 동의가 없는 직원이 급여 합계에서 빠진다(운영 정책 ATT-30) — 카드에 그 사실을 늘 적는다(HOME-10)
+  const { roleTypeCode } = useAccount();
+  const stores = useStores();
+  const hqFranchise = (roleTypeCode === "BM" || roleTypeCode === "BA") && stores.find((s) => s.storeId === storeId)?.storeTypeCode === "FRANCHISE";
   const today = kstToday();
   const paths = oneStorePaths(storeId, today);
   const key = `${storeId}|${reloadKey}`;
@@ -145,6 +149,7 @@ export function OneStoreScreen({ storeId, reloadKey }: { storeId: number; reload
                 <dt className="text-erp-label">파트타이머 {s.partTime.count}명</dt>
                 <dd>{manWon(s.partTime.grossPayAmount)}</dd>
               </dl>
+              {hqFranchise && <span className="text-[12px] text-erp-muted">동의하지 않은 가맹 직원은 급여 합계에 세지 않습니다</span>}
             </>
           )}
         </Body>
