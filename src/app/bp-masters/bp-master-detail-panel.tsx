@@ -169,8 +169,7 @@ function DetailBody({
   );
 
   const basic: DetailRow[] = [
-    { label: "BP 코드", value: bp.bpCode },
-    { label: "아이디", value: bp.loginId },
+    // BP 코드 · 아이디는 머리 줄에 있어 표에서 뺐다(2026-10-28 사용자 지정)
     { label: "이름", value: withdrawn ? gone : bp.name },
     { label: "연락처", value: withdrawn ? gone : formatPhone(bp.phone) },
     { label: "이메일", value: withdrawn ? gone : bp.email },
