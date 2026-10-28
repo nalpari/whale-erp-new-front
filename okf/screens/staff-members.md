@@ -4,7 +4,7 @@ title: 직원 정보 관리 화면 (구현)
 description: /staff-members 목록과 /staff-members/[id] 상세의 구현 상태 — 목록 · 상세를 api 에 붙였고, 목록 가입·인증 칸과 상세 가입 상태 줄에 가입 초대 재발송을 두었으며, 상세 머리에 퇴직 처리 · 퇴직일 변경 · 취소 확인창을, 기본 정보에 재입사로 이은 재직 이력 줄(WHALEERP-615)을, 그 아래에 비밀번호 초기화 확인창을, 그 아래에 가장 최근 근로계약 요약 칸을, 오른쪽에 근무스케줄 · 출퇴근 현황(준비 중) · 급여명세서 · TO-DO 영역을 영역마다 상세 요약 api(#183)로 따로 받아 두었다 — 근무스케줄은 데모대로 한 주 보기 · 주 넘김 · 주 선택 달력이다(2026-10-22 노영주, WHALEERP-185 기간 선택을 걷었다), 기본 정보 생년월일 줄에 [정정] 확인창(WHALEERP-602)을 두었다. 남은 것.
 tags: [staff, screen, retirement, password-reset, invitation, birth-date]
 status: draft
-generated: { by: claude-code/opus-5.5, at: 2026-10-27T02:07:39Z }
+generated: { by: claude-code/opus-5.5, at: 2026-10-28T06:43:17Z }
 sources:
   - id: staff-members-lib
     resource: ../../src/lib/staff-members.ts
@@ -198,6 +198,8 @@ sources:
 근무스케줄 · 출퇴근 현황 · 급여명세서 · TO-DO. 근무스케줄 · 급여명세서 표의 열 이름 줄은 데모 `whiteHead` 대로 흰 바탕 · 600 먹색 글자(공통 `DataTable` `headVariant="plain"` —
 기본값은 그대로라 다른 화면은 바뀌지 않는다)이고, 표 아래 요약 줄은 데모 `foot` 처럼 모서리를 둥글리지 않는다.
 
+처음 들어올 때는 「직원 상세」 제목 줄 아래 본문 전체(기본 정보 · 비밀번호 초기화 · 네 영역)를 `LoadGroup` 이 딤 + 스피너 + 「로딩중입니다」(`LoadingNotice`)로 덮고, 근로계약 · 근무스케줄 · 급여명세서 · TO-DO 네 영역(`LoadGroupArea`)이 모두 온 뒤 한 번에 보인다(2026-10-28). 15초가 지나면 풀어 늦는 영역만 그 자리에 같은 딤 + 스피너(compact)를 보이고, 풀린 뒤 주를 바꾸면(`LoadGroupArea key={monday}`) 근무스케줄 영역만 딤 + 스피너(`LoadingNotice compact`, 최소 높이 92px — 이전 영역 로딩과 같아 주를 넘길 때 상자 높이가 출렁이지 않는다)를 보인다. 영역 실패는 지금처럼 영역 안 안내 · 다시 하기다.
+
 **기본 정보**는 상세 응답(`GET /staff-members/:id`)으로 채운다. api #183 이 직무(`jobTitle`) · 입사일(`hiredDate`) · 생년월일(`birthDate`)을 더했다.
 
 * 재직 상태는 이름 옆 칩이다(`employmentStatusCells` — 재직 · 퇴직 예정(퇴직일) · 퇴직). Plane 완료 조건은 「이름 아래」지만 줄 높이가 46 고정이라
@@ -219,7 +221,7 @@ sources:
   본사 제공 동의한 가맹 직원은 본사 역할에게도 상세가 열리지만, 비밀번호 초기화는 범위가 달라 버튼이 없다(아래).
 
 **나머지 영역은 영역마다 따로 받는다** — 근로계약 · 근무스케줄 · 급여명세서 · TO-DO 모두
-상세 요약 api(`GET /staff-members/:id/summary/…`, api #183)다(`summary-boxes.tsx`, 근로계약은 `contract-box.tsx`). 영역마다 `Suspense` 안의 서버 컴포넌트라 기본 정보가 먼저 그려지고, 한 영역이 실패해도 나머지는 그대로다.
+상세 요약 api(`GET /staff-members/:id/summary/…`, api #183)다(`summary-boxes.tsx`, 근로계약은 `contract-box.tsx`). 영역마다 `LoadGroupArea`(자기 Suspense 경계) 안의 서버 컴포넌트다. 처음 들어올 때는 `LoadGroup` 이 기본 정보까지 본문 전체를 딤으로 덮었다가 네 영역이 모두 온 뒤 한 번에 보이고, 한 영역이 실패해도 나머지는 그대로다.
 
 * 경로마다 직원 정보 관리 조회 + 그 영역 메뉴 조회 권한이 필요하다. 영역 권한이 없으면 그 영역만 403 이고 message 가 정확히
   「조회 권한이 없습니다.」다(api `READ_DENIED_MESSAGE`, 403 문구 네 번째로 확정 2026-10-21 재영). 화면은 이 문구로만 가른다(`areaFailureOf`, 문구 상수는
@@ -252,7 +254,7 @@ sources:
   그대로이고, 문구는 등록(이전 상태 없음) · 긴급 표시 변경 · 「이전 → 이후」 상태(`TodoStatus` 한글), 바꾼 쪽은 `StatusChangeActor` 한글(관리자 · 직원 ·
   시스템)이다 — 사람 이름은 오지 않는다(2026-10-21 노영주 A안). **TO-DO 관리 조회 권한이 없으면 목록까지 영역 전체를 막는다**(2026-10-22 노영주, front #90 리뷰). api 가 목록 · 요약 두 경로에 같은 영역 권한을
   걸어(api #113, `requireAreaRead`) 권한이 없으면 둘 다 403 「조회 권한이 없습니다.」다. 화면은 한 경로라도 그러면(`isAreaForbidden`) 목록을 그리지 않고
-  「TO-DO 를 볼 권한이 없습니다.」만 보인다(`TodoBox`). 그 밖에는 목록과 요약이 따로 실패한다 — 목록 자리 · 요약 줄 자리에 각각 안내 · 다시 하기. 한 `Suspense` 로 묶어 칸 높이가 두 번 바뀌지 않게 했다.
+  「TO-DO 를 볼 권한이 없습니다.」만 보인다(`TodoBox`). 그 밖에는 목록과 요약이 따로 실패한다 — 목록 자리 · 요약 줄 자리에 각각 안내 · 다시 하기. 한 `LoadGroupArea` 로 묶어 칸 높이가 두 번 바뀌지 않게 했다.
   배정이 없으면 목록의 빈 상태(「배정된 TO-DO 가 없습니다.」)가 말해 요약 줄을 그리지 않는다. 제목 링크는 「TO-DO 리스트 관리」(MN000026)
   조회 권한이 없으면 글자로 둔다(`todo-links.tsx`).
 
