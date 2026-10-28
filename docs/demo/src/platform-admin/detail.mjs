@@ -36,9 +36,11 @@ function platformAdminDetailBody(A, R) {
     ["직책", "매니저"],
     // 주소는 우편번호 · 기본주소 · 상세주소를 줄을 바꿔 보이고, 위아래 선에 붙지 않게 여백을 준다
     ["주소", `<div class="py-[2px] leading-[1.6]">${["06236", "서울 강남구 테헤란로 152", "12층"].join("<br>")}</div>`],
-    // 최근 로그인은 표 맨 아래 줄. 등록 · 최종수정은 표 밖 테두리 없는 카드로(2026-10-27 사용자 지정)
+    // 최근 로그인 다음에 등록 · 최종수정을 표 안 두 줄로 「일시 · 사람」(앱 admin-detail-panel.tsx 와 같다, 2026-10-27 사용자 지정)
     ["최근 로그인", "2026-09-21 09:03"],
-  ])) + c.recordValues(["2025-06-02 10:11", "platjung"], ["2026-08-12 09:40", "platkim"]);
+    ["등록", `2025-06-02 10:11 <span class="text-erp-label">· platjung</span>`],
+    ["최종수정", `2026-08-12 09:40 <span class="text-erp-label">· platkim</span>`],
+  ]));
 
   const history = ui.dataTable(
     [
