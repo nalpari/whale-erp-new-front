@@ -33,6 +33,9 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
       ["비밀번호", x.dialogTrigger("초기화", resetId, "soft")],
       // 최근 로그인은 비밀번호 아래 줄(2026-10-27 사용자 지정)
       ["최근 로그인", "2026-09-20 17:55"],
+      // 등록 · 최종수정도 표 안 두 줄로(앱 admin-detail-panel.tsx 와 같다, 2026-10-27 사용자 지정 — 전엔 맨 아래 카드)
+      ["등록", `2025-04-01 09:12 <span class="text-erp-label">· 정하윤</span>`],
+      ["최종수정", `2026-02-03 15:10 <span class="text-erp-label">· 정하윤</span>`],
     ]),
   ].join("");
 
@@ -44,10 +47,9 @@ export function adminDetailBody(A, R, { panel = false } = {}) {
     )
     .replace("<thead>", '<thead class="sr-only">')
     .replace('class="w-full table-fixed border-collapse border-x', 'class="w-full table-fixed border-collapse border-t border-x');
-  // 대상점포는 기본정보처럼 회색 제목 바 아래 표(제목 옆 「일부 점포 · 전체 점포」 — 적용 대상을 합쳤다), 등록 · 최종수정 카드는 맨 아래(앱과 같다, 2026-10-27 사용자 지정)
+  // 대상점포는 기본정보처럼 회색 제목 바 아래 표(제목 옆 「일부 점포 · 전체 점포」 — 적용 대상을 합쳤다), 등록 · 최종수정은 기본정보 표 안(앱과 같다, 2026-10-27 사용자 지정)
   const right =
-    `<section class="flex flex-col"><h3 class="flex h-[42px] items-center gap-[10px] rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink"><span class="flex items-baseline gap-[10px]">대상점포<span class="text-[14px] font-normal text-erp-label">일부 점포 · 4개점</span></span></h3>${storeTable}</section>` +
-    c.recordValues(["2025-04-01 09:12", "정하윤"], ["2026-02-03 15:10", "정하윤"]);
+    `<section class="flex flex-col"><h3 class="flex h-[42px] items-center gap-[10px] rounded-t-[2px] border border-b-0 border-erp-thead-line bg-erp-thead-bg px-[10px] text-[15px] font-semibold text-erp-ink"><span class="flex items-baseline gap-[10px]">대상점포<span class="text-[14px] font-normal text-erp-label">일부 점포 · 4개점</span></span></h3>${storeTable}</section>`;
 
   const history = ui.dataTable(
     [

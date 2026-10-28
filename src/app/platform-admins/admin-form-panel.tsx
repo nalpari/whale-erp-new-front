@@ -444,7 +444,7 @@ export function AdminFormPanel(props: Props) {
           detailError={errors.addressDetail}
         />
       </FormGroup>
-      {isSelf && <Note>본인 계정의 권한 및 상태는 변경할 수 없으며, 이름 · 연락처 등 나머지 칸만 수정할 수 있습니다.</Note>}
+      {isSelf && <Note>본인 계정의 권한과 상태는 변경할 수 없습니다. 이름, 연락처 등 기타 정보만 수정할 수 있습니다.</Note>}
 
       {mode === "create" && <Note>관리자 계정의 초기 비밀번호는 등록된 이메일로 발송됩니다.</Note>}
       {mode === "edit" && form.accountStatus === "INACTIVE" && props.admin.accountStatus === "ACTIVE" && (

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type RefObject } from "react";
-import { Badge, Button, ConfirmDialog, DataTable, DetailTable, FormRow, ReadonlyCard, ReadonlyValue, SlidePanel, useToast, type DetailRow } from "@/components/common";
+import { Badge, Button, ConfirmDialog, DataTable, DetailTable, SlidePanel, useToast, type DetailRow } from "@/components/common";
 import { useCodeLabel } from "@/components/site/code-label";
 import { HeadValues } from "@/components/site/head-values";
 import { usePagePermission } from "@/components/site/session-gate";
@@ -102,13 +102,13 @@ function DetailBody({
     });
 
   const muted = (text: string) => <span className="font-normal text-erp-muted">{text}</span>;
-  // 일시는 굵게, 사람은 회색 · 보통 굵기로 「일시 · 사람」 — 권한 그룹 상세의 등록 · 최종수정과 같다
+  // 등록 · 최종수정 줄의 값 — 「일시 · 사람」, 사람은 회색(플랫폼 관리자 상세와 같다)
+  // 값 칸 폭(약 280px)을 넘는 긴 이름은 말줄임하고, 마우스를 올리면 전체를 보인다(리뷰로 찾음)
   const when = (at: string, who: string | null | undefined) => (
-    <>
-      {formatDateTime(at)} <span className="font-normal text-erp-label">· {who ?? "시스템"}</span>
-    </>
+    <span className="truncate" title={`${formatDateTime(at)} · ${who ?? "시스템"}`}>
+      {formatDateTime(at)} <span className="text-erp-label">· {who ?? "시스템"}</span>
+    </span>
   );
-  const whenText = (at: string, who: string | null | undefined) => `${formatDateTime(at)} · ${who ?? "시스템"}`;
   // 등록만 한 계정은 수정일시가 등록일시와 같아 등록이 수정처럼 보인다 — 같으면 일시 · 수정자 대신 「-」를 둔다(2026-10-26 사용자 요청, 2026-10-27 「수정한 적 없음」 → 「-」).
   // 1초 안쪽 어긋남은 같은 것으로 본다(wasUpdated).
   // 수정자가 없는 계정(회원가입으로 만든 BP 마스터 등)도 「-」다. 한계: api 의 updatedAt(Prisma @updatedAt)은 로그인 · 초기 비밀번호 미발송 표시에도 올라가는데,
@@ -138,7 +138,10 @@ function DetailBody({
     },
     // 비밀번호 아래 줄 — 플랫폼 관리자 상세와 같이 표에 둔다(2026-10-27 사용자 지정)
     { label: "최근 로그인", value: admin.lastLoginAt ? formatDateTime(admin.lastLoginAt) : muted("-") },
-    // 가맹 관리자만 — 등록 때 정해진 연결 가맹 마스터. 누가 열든 보인다(2026-10-23). 표 맨 끝, 최근 로그인 아래(2026-10-27 사용자 지정)
+    // 등록 · 최종수정도 표 안 두 줄로 — 플랫폼 관리자 상세와 같다(2026-10-27 사용자 지정 — 전엔 화면 맨 아래 테두리 없는 카드). 연결 가맹마스터는 그대로 표 맨 끝
+    { label: "등록", value: when(admin.createdAt, admin.createdByName) },
+    { label: "최종수정", value: edited ? when(admin.updatedAt, admin.updatedByName) : muted("-") },
+    // 가맹 관리자만 — 등록 때 정해진 연결 가맹 마스터. 누가 열든 보인다(2026-10-23). 표 맨 끝(2026-10-27 사용자 지정)
     ...(admin.franchiseMaster
       ? [
           {
@@ -201,22 +204,8 @@ function DetailBody({
       <DetailTable title="기본정보" rows={rows} />
       {/* 적용 대상은 대상점포 제목 바 옆에 「전체 점포 · 일부 점포」로 합쳤다(2026-10-27 사용자 지정 — 전엔 따로 「적용 대상」 줄) */}
       <MappedStores admin={admin} />
-      {/* 등록 · 최종수정은 화면 맨 아래, 한 줄에 하나씩(2026-10-27 사용자 지정 — 전엔 기본정보 표 바로 아래) */}
-      <ReadonlyCard>
-        <FormRow>
-          <ReadonlyValue label="등록" value={when(admin.createdAt, admin.createdByName)} title={whenText(admin.createdAt, admin.createdByName)} bold />
-        </FormRow>
-        <FormRow>
-          <ReadonlyValue
-            label="최종수정"
-            value={edited ? when(admin.updatedAt, admin.updatedByName) : muted("-")}
-            title={edited ? whenText(admin.updatedAt, admin.updatedByName) : undefined}
-            bold
-          />
-        </FormRow>
-      </ReadonlyCard>
 
-      {/* 맨 아래 버튼 줄은 위와 선으로 가르지 않는다(DESIGN.md 슬라이드 패널). 위 카드와 조금 더 떨어지게 패널 칸 간격 16 에 8 을 더한다(2026-10-27 사용자 지정) */}
+      {/* 맨 아래 버튼 줄은 위와 선으로 가르지 않는다(DESIGN.md 슬라이드 패널). 위 대상점포와 조금 더 떨어지게 패널 칸 간격 16 에 8 을 더한다(2026-10-27 사용자 지정) */}
       <div className="flex flex-wrap items-center gap-[6px] pt-[8px]">
         <Button variant="off" onClick={onClose}>
           닫기
