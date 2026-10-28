@@ -110,10 +110,10 @@ const AVAILABILITY: Record<
   AvailabilityKey,
   { validate: (value: string) => string | undefined; request: (value: string) => Promise<AvailabilityResult>; takenMessage: string }
 > = {
-  // 이메일은 "이미 가입하셨다면 로그인해 주세요" 를 덧붙인다(아이디는 2026-10-28 사용자 지정으로 관리자 등록 화면과 같은 「다른 아이디를 입력해 주세요」) — 결과 불명(uncertain) 제출 뒤 다시 냈을 때 이 문구만 보면
+  // 아이디 · 이메일 모두 관리자 등록 화면과 같은 「다른 … 입력해 주세요」(2026-10-28 사용자 지정 — 전엔 「이미 가입하셨다면 로그인해 주세요」를 덧붙였다: 결과 불명(uncertain) 제출 뒤 다시 냈을 때 이 문구만 보면
   // 남이 쓰는 아이디·이메일로 오해해 값을 바꿔 다시 낼 수 있다(BP 중복 생성, 2026-10-15 코드리뷰 3차).
   loginId: { validate: validateLoginId, request: checkLoginIdAvailability, takenMessage: "이미 사용 중인 아이디입니다. 다른 아이디를 입력해 주세요." },
-  email: { validate: validateEmail, request: checkEmailAvailability, takenMessage: "이미 사용 중인 이메일입니다. 이미 가입하셨다면 로그인해 주세요." },
+  email: { validate: validateEmail, request: checkEmailAvailability, takenMessage: "이미 사용 중인 이메일입니다. 다른 이메일을 입력해 주세요." },
 };
 
 // 아이디 중복확인 중 · 확인 실패 안내 — 관리자 등록 세 화면(플랫폼 · BP 관리자 · BP 마스터, platform-admins/admin-parts.tsx 의

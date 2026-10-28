@@ -1,10 +1,13 @@
 import type { ReactNode } from "react";
+import { HelpTip } from "./help-tip";
 
 export type DetailRow = {
   label: string;
   value: ReactNode;
   /** 값이 여러 줄인 줄(주소처럼). 높이를 46 최소로 두고 내용만큼 늘린다 — 이 줄만 고정 높이에서 잘리지 않는다. */
   multiline?: boolean;
+  /** 라벨 옆 i 도움말 — 마우스를 올리면 뜬다. 라벨 칸은 넘치면 잘려 최상위 레이어에 띄운다(floating, 권한 그룹 상세 가맹마스터, 2026-10-28) */
+  help?: ReactNode;
 };
 
 // Figma 03.프레임_상세의 TABLE. 목록(DataTable)과 달리 한 건을 세로로 펼쳐 보여 준다.
@@ -23,7 +26,7 @@ export function DetailTable({ title, rows }: { title?: ReactNode; rows: DetailRo
         </h3>
       )}
       <dl className={`flex w-full flex-col ${title === undefined ? "rounded-t-[2px] border-t border-erp-thead-line" : ""}`}>
-        {rows.map(({ label, value, multiline }, i) => {
+        {rows.map(({ label, value, multiline, help }, i) => {
           const last = i === rows.length - 1;
           const height = multiline ? "min-h-[46px]" : "h-[46px]";
           return (
@@ -33,7 +36,14 @@ export function DetailTable({ title, rows }: { title?: ReactNode; rows: DetailRo
                   last ? "rounded-bl-[2px]" : ""
                 }`}
               >
-                {label}
+                {help ? (
+                  <span className="flex min-w-0 items-center gap-[4px]">
+                    <span className="truncate">{label}</span>
+                    <HelpTip text={help} floating />
+                  </span>
+                ) : (
+                  label
+                )}
               </dt>
               <dd
                 className={`flex ${height} min-w-px flex-1 items-center gap-[10px] overflow-hidden border-r border-b border-erp-thead-line bg-white p-[12px] text-[14px] text-erp-ink ${

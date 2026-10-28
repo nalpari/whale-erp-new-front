@@ -40,7 +40,7 @@ import { BpStatusBadge, unknownResult } from "./bp-master-parts";
 // 관리자 등록 세 화면(플랫폼 · BP 관리자 · BP 마스터)이 같은 문구(2026-10-28 사용자 지정)
 const LOGIN_ID_TAKEN = "이미 사용 중인 아이디입니다. 다른 아이디를 입력해 주세요.";
 /** 이메일 중복 문구 — 저장 409(EMAIL_TAKEN)와 같게 둔다 */
-const EMAIL_TAKEN = "사용 중이거나 미사용인 다른 관리자 계정의 이메일입니다";
+const EMAIL_TAKEN = "이미 사용 중인 이메일입니다. 다른 이메일을 입력해 주세요."; // 네 화면 같은 문구(2026-10-28 사용자 지정)
 
 type Props = {
   id: string;
