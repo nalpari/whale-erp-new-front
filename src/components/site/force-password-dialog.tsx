@@ -82,7 +82,7 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
           <h2 id="force-password-title" className="text-[18px] font-semibold">
             새 비밀번호 설정
           </h2>
-          <p className="text-[14px] text-erp-label">서비스 이용을 위해 새로운 비밀번호를 설정해 주세요.</p>
+          <p className="text-[15px] text-erp-label">서비스 이용을 위해 새로운 비밀번호를 설정해 주세요.</p>
         </div>
 
         {account.temporaryPasswordExpiresAt && <Remaining expiresAt={account.temporaryPasswordExpiresAt} />}
