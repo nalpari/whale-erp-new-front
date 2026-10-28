@@ -122,10 +122,11 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
             {error?.at === "terms" && <ErrorText>{error.message}</ErrorText>}
           </fieldset>
         )}
-        <div className="flex items-center justify-between text-[14px]">
-          <button type="button" onClick={() => signOut(logout)} className="text-erp-label transition-colors duration-150 ease-out hover:text-erp-ink">
+        {/* 버튼은 가운데, 로그아웃도 버튼 모양(Off) — 다른 확인창의 [취소][확인] 줄과 같다(2026-10-28 사용자 지정) */}
+        <div className="flex justify-center gap-[6px]">
+          <Button variant="off" onClick={() => signOut(logout)}>
             로그아웃
-          </button>
+          </Button>
           <Button type="submit" disabled={pending || !agreed || mismatch}>
             {pending ? "변경 중" : "변경"}
           </Button>
@@ -148,7 +149,7 @@ function TermsRow({ kind, label, checked, onChange }: { kind: "use" | "policy"; 
   return (
     <div className="flex items-center justify-between">
       <Checkbox label={label} checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      <span className="text-[13px] text-erp-label underline underline-offset-2">
+      <span className="text-[13px] text-erp-link underline underline-offset-2">
         {/* 약관 유형은 공통코드 TERMS_TYPE — 이용약관은 BP 사업자 회원가입용, 개인정보는 그 수집·이용 동의다. */}
         <TermsLink termsTypeCode={kind === "use" ? "TERMS_SERVICE" : "PRIVACY_COLLECT"}>전문 보기</TermsLink>
       </span>
@@ -176,12 +177,21 @@ function Remaining({ expiresAt }: { expiresAt: string }) {
   if (Number.isNaN(end)) return null; // 잘못된 시각이면 남은 시간을 보이지 않는다(만료는 api 가 끊는다).
   const m = Math.floor(left / 60_000);
   const s = Math.floor((left % 60_000) / 1000);
+  // 시계 아이콘 · 큰 남은 시간 · 부드러운 안내(2026-10-28 사용자 지정). 5분 아래로 내려가면 남은 시간을 빨갛게(상태 빨강)
+  const urgent = left < 5 * 60_000;
   return (
-    <div className="flex flex-col gap-[4px] rounded-[2px] bg-erp-thead-bg px-[12px] py-[10px] text-[14px]">
-      <p>
-        임시 비밀번호 남은 시간 <b className="font-semibold tabular-nums">{`${m}:${String(s).padStart(2, "0")}`}</b>
-      </p>
-      <p className="text-[13px] text-erp-label">시간이 지나면 이 세션이 끝나고 로그인 화면으로 돌아갑니다.</p>
+    <div className="flex items-center gap-[12px] rounded-[4px] border border-erp-panel-line bg-erp-thead-bg px-[16px] py-[12px]">
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="size-[28px] shrink-0 text-erp-brand" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+        <circle cx="12" cy="13" r="8" />
+        <path d="M12 9v4l2.5 2.5M9.5 3h5" />
+      </svg>
+      <div className="flex min-w-0 flex-col gap-[2px]">
+        <p className="flex items-baseline gap-[8px] text-[14px]">
+          <span className="text-erp-label">임시 비밀번호 남은 시간</span>
+          <b className={`text-[18px] font-semibold tabular-nums ${urgent ? "text-erp-off" : "text-erp-ink"}`}>{`${m}:${String(s).padStart(2, "0")}`}</b>
+        </p>
+        <p className="text-[13px] text-erp-label">시간 안에 새 비밀번호로 변경해 주세요. 시간이 지나면 다시 로그인해야 합니다.</p>
+      </div>
     </div>
   );
 }
