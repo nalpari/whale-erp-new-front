@@ -418,6 +418,8 @@ export function BpMasterFormPanel(props: Props) {
 
       {/* 사업자정보 — MY PAGE 사업자정보 탭과 같은 모양(2026-10-28 사용자 지정): 회색 제목 바(오른쪽 인증 상태) + 세 칸 한 줄 인증 상자 */}
       <BizVerificationBox
+        // 「사업자정보가 국세청에 등록된 정보와 일치하는지 확인합니다.」 안내는 뺀다(2026-10-28 사용자 지정)
+        guide={null}
         layout="row"
         compactRow
         titleBar
