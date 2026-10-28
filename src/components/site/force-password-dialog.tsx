@@ -81,10 +81,13 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
         {account.temporaryPasswordExpiresAt && <Remaining expiresAt={account.temporaryPasswordExpiresAt} />}
 
         <Field label="새 비밀번호">
+          {/* 크롬 비밀번호 생성 제안 창을 막는다 — new-password 대신 off, 1Password · LastPass 도 빼 둔다(2026-10-28 사용자 지정). 크롬 버전에 따라 다 막히지 않을 수 있다 */}
           {/* 칸 끝에 보기 · 숨기기 눈 아이콘 — 다른 비밀번호 변경 화면과 같은 공통 PasswordInput(2026-10-28 사용자 지정) */}
           <PasswordInput
             fieldLabel="새 비밀번호"
-            autoComplete="new-password"
+            autoComplete="off"
+            data-1p-ignore
+            data-lpignore="true"
             placeholder="영문·숫자·특수문자를 조합하여 8~20자 입력해 주세요."
             maxLength={20}
             required
@@ -98,7 +101,9 @@ export function ForcePasswordDialog({ account, onDone }: { account: LoginInfoAcc
         <Field label="새 비밀번호 확인">
           <PasswordInput
             fieldLabel="새 비밀번호 확인"
-            autoComplete="new-password"
+            autoComplete="off"
+            data-1p-ignore
+            data-lpignore="true"
             maxLength={20}
             required
             value={confirm}
