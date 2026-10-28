@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition, type ReactNode, type RefObject } from "react";
 import { Badge, Button, ConfirmDialog, DetailTable, DetailValues, SlidePanel, Tag, useToast, type DetailRow } from "@/components/common";
 import { usePagePermission } from "@/components/site/session-gate";
+import { WarnBand } from "@/components/site/side-parts";
 import type { BpMasterDetail, CreateBpMasterResult } from "@/lib/bp-masters";
 import { formatDateTime, formatPhone, wasUpdated } from "@/lib/format";
 import { formatBizNumber } from "@/lib/store-view";
@@ -262,21 +263,19 @@ function DetailBody({
           }
         />
       )}
+      {/* 미사용 · 탈퇴 안내는 빨간 안내 상자(WarnBand — 2026-10-28 사용자 지정, 점포 BP 탈퇴 · 미사용 안내와 같다). 첫 줄이 제목, 둘째 줄이 설명 */}
       {bp.accountStatus === "INACTIVE" && (
-        <NoticeBand
-          title="미사용 BP입니다 — 이 BP의 모든 관리자 계정이 로그인할 수 없습니다"
-          detail="점포 상태는 그대로 두고 직원 초대 · 근로계약 · 부가서비스 · 매출 연동 · 출퇴근 기록만 멈췄습니다. 목록 · 상세 조회는 됩니다."
-        />
+        <WarnBand>
+          {"미사용 BP입니다 — 이 BP의 모든 관리자 계정이 로그인할 수 없습니다\n점포 상태는 그대로 두고 직원 초대 · 근로계약 · 부가서비스 · 매출 연동 · 출퇴근 기록만 멈췄습니다. 목록 · 상세 조회는 됩니다."}
+        </WarnBand>
       )}
       {withdrawn && (
-        <NoticeBand
-          tone="info"
-          title="탈퇴 BP는 조회만 됩니다"
-          // [사유 보기]는 withdrawal 이 있을 때만 그려지므로 안내도 그때만 붙인다(api #175 전이나 값이 비면 버튼이 없다)
-          detail={`BP 정보와 업무 이력은 보존 정책대로 남기고, 수정 · 비밀번호 초기화 · 삭제는 하지 않습니다. 변경 이력은 볼 수 없${
+        // [사유 보기]는 withdrawal 이 있을 때만 그려지므로 안내도 그때만 붙인다(api #175 전이나 값이 비면 버튼이 없다)
+        <WarnBand>
+          {`탈퇴 BP는 조회만 됩니다\nBP 정보와 업무 이력은 보존 정책대로 남기고, 수정 · 비밀번호 초기화 · 삭제는 하지 않습니다. 변경 이력은 볼 수 없${
             bp.withdrawal ? "고 탈퇴 사유는 상태의 [사유 보기]에서 봅니다" : "습니다"
           }. 다시 쓰려면 새 BP 로 등록합니다.`}
-        />
+        </WarnBand>
       )}
       {failure && <FailedBand message={failure.message} detail={failure.detail} />}
 

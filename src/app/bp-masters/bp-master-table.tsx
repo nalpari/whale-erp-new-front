@@ -40,15 +40,15 @@ export function BpMasterTable({
     </button>
   );
 
-  // 열 순서 · 이름은 플랫폼 관리자 목록 느낌으로(2026-10-28 사용자 지정) — 연락처 · 이메일은 나누고, 등록은 일시만
+  // 열 순서는 BP 코드 · 상호명 · 아이디 …, 이름은 플랫폼 관리자 목록 느낌으로(2026-10-28 사용자 지정) — 연락처 · 이메일은 나누고, 등록은 일시만
   const columns: Column<BpMaster>[] = [
-    { header: "코드", width: "w-[110px]", cell: (b) => open(b, b.bpCode) },
+    { header: "BP 코드", width: "w-[110px]", cell: (b) => open(b, b.bpCode) },
+    { header: "상호명", align: "left", cell: (b) => open(b, b.tradeName) },
     { header: "아이디", width: "w-[130px]", cell: (b) => b.loginId },
     { header: "이름", width: "w-[110px]", cell: (b) => (withdrawn(b) ? gone : b.name) },
     { header: "상태", width: "w-[100px]", cell: (b) => <BpStatusBadge status={b.accountStatus} /> },
     { header: "연락처", width: "w-[150px]", align: "left", cell: (b) => (withdrawn(b) ? gone : b.phone ? <WithIcon icon="phone">{formatPhone(b.phone)}</WithIcon> : "") },
     { header: "이메일", width: "w-[220px]", align: "left", cell: (b) => (withdrawn(b) ? gone : b.email ? <WithIcon icon="mail">{b.email}</WithIcon> : "") },
-    { header: "상호명", align: "left", cell: (b) => open(b, b.tradeName) },
     { header: "사업자등록번호", width: "w-[130px]", cell: (b) => formatBizNumber(b.bizRegistrationNumber) },
     { header: "가입경로", width: "w-[100px]", cell: (b) => JOIN_PATH[b.joinPath] },
     { header: "등록", width: "w-[170px]", cell: (b) => formatDateTime(b.createdAt) },
