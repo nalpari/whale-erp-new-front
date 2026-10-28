@@ -105,7 +105,7 @@ export function StorePicker({
           >
             {options.length === 0 ? (
               <div className="flex flex-col gap-[6px] px-[6px] py-[6px]">
-                <p className="text-erp-muted">맞는 점포가 없습니다.</p>
+                <p className="text-erp-muted">검색 결과가 없습니다.</p>
                 {/* 찾기는 로그인 정보 안에서 한다 — 방금 등록한 점포를 「없음」으로 오해하지 않게 */}
                 <p className="text-[12px] text-erp-label">로그인 뒤 등록한 점포는 다시 로그인하면 찾을 수 있습니다.</p>
               </div>

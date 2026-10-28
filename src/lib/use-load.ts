@@ -19,8 +19,13 @@ export function useLoad<T>(load: (() => Promise<T>) | null, key: string, what: s
   const [got, setGot] = useState<Loaded<T> | null>(null);
   const enabled = load !== null;
   const full = `${key}#${retries}`;
-  // 부르지 않는 동안(빈 범위)에는 지난 결과를 비운다 — 원래 범위로 돌아오면 key 가 지난 결과와 같아져 옛 값이 잠깐 보였다(#148 재리뷰)
-  if (!enabled && got !== null) setGot(null);
+  // key 가 바뀌거나 부르지 않는 동안(빈 범위)에는 지난 결과를 비운다 — A → B → A 처럼 원래 key 로 돌아오면 B 응답 전이라도
+  // 남아 있던 A 의 옛 결과가 key 와 같아져 잠깐 보였다(#148 재리뷰 · WHALEERP-620)
+  const [seen, setSeen] = useState(full);
+  if (seen !== full) {
+    setSeen(full);
+    if (got !== null) setGot(null);
+  } else if (!enabled && got !== null) setGot(null);
   const run = useEffectEvent(() => load?.());
   useEffect(() => {
     if (!enabled) return;

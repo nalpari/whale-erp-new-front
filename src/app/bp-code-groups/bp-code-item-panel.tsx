@@ -3,12 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Badge, Button, DataTable, TextField, Toggle, useToast, type Column } from "@/components/common";
-import { CellError, CodePanel, DoneNotice, FieldErrors, focusFirstInvalid, recheck, GroupHead, PendingNotice, REORDERED, SaveFailedBand, UNKNOWN_RESULT } from "@/components/site/code-editor/code-panel";
+import { CellError, CodePanel, FieldErrors, focusFirstInvalid, recheck, GroupHead, PendingNotice, REORDERED, SaveFailedBand, UNKNOWN_RESULT } from "@/components/site/code-editor/code-panel";
 import { useUnsavedChanges } from "@/components/site/code-editor/unsaved-changes";
 import { useRowReorder } from "@/components/site/code-editor/use-row-reorder";
 import { DeletePending, DeleteToggle, Struck } from "@/components/site/code-editor/delete-mark";
 import { OwnerTag } from "@/components/site/code-editor/owner-tag";
 import { useCodeLabel } from "@/components/site/code-label";
+import { WarnBand } from "@/components/site/side-parts";
 import { useAccount, usePagePermission } from "@/components/site/session-gate";
 import { bpCodePanelAccess, bpDeletable, bpPanelLock, newBpItemDraft, toBpItemDraft, type BpItemDraft } from "@/lib/bp-code-drafts";
 import type { BpCodeGroup, BpCodeItem } from "@/lib/bp-codes";
@@ -341,8 +342,9 @@ export function BpCodeItemPanel({ group, items, loadFailed }: { group?: BpCodeGr
         )
       }
     >
-      {lock === "platform-user" && <DoneNotice message="플랫폼 사용자는 BP 공통코드를 조회만 할 수 있습니다." />}
-      {group && lock === "fixed" && <DoneNotice message="플랫폼고정 그룹이라 조회만 할 수 있습니다." />}
+      {/* 고칠 수 없는 이유는 빨간 안내(WarnBand)로 — 권한 그룹 상세의 막힌 이유와 같은 모양 · 말투(2026-10-28 사용자 지정, 전엔 회색 띠 「…조회만 할 수 있습니다」) */}
+      {lock === "platform-user" && <WarnBand>BP 공통코드는 BP 계정만 수정할 수 있습니다.</WarnBand>}
+      {group && lock === "fixed" && <WarnBand>플랫폼고정 그룹은 수정할 수 없습니다.</WarnBand>}
       {reordered && <PendingNotice message={REORDERED} />}
       {failure && <SaveFailedBand message={failure} />}
       <DataTable
