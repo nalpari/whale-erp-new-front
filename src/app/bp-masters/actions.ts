@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
+import { withPeriod } from "@/lib/format";
 import {
   changeBpMasterStatus,
   checkBpMasterEmailAvailable,
@@ -36,8 +37,8 @@ function failureOf(error: unknown, what: string, keep503 = false): { ok: false; 
   if (error instanceof ApiError) {
     if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
     // 429 는 사업자 진위확인 시간당 한도(10건)
-    if ([400, 403, 404, 409, 422, 429].includes(error.status)) return { ok: false, status: error.status, message: error.message };
-    if (error.status === 503 && keep503) return { ok: false, status: 503, message: error.message };
+    if ([400, 403, 404, 409, 422, 429].includes(error.status)) return { ok: false, status: error.status, message: withPeriod(error.message) };
+    if (error.status === 503 && keep503) return { ok: false, status: 503, message: withPeriod(error.message) };
     if (error.status === 503) return { ok: false, status: 503, message: "지금은 국세청 확인을 할 수 없습니다. 인증 없이 저장하고 나중에 인증할 수 있습니다." };
   }
   console.error(`BP 마스터 계정 ${what} 실패`, error);

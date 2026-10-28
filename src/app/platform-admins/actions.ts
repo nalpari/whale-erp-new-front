@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
+import { withPeriod } from "@/lib/format";
 import {
   checkLoginIdAvailable,
   createPlatformAdmin,
@@ -30,7 +31,7 @@ export type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; status?
 function failureOf(error: unknown, what: string): { ok: false; status?: number; message: string } {
   if (error instanceof ApiError) {
     if (error.status === 401) return { ok: false, status: 401, message: "로그인이 만료되었습니다. 다시 로그인해 주세요." };
-    if ([400, 403, 404, 409].includes(error.status)) return { ok: false, status: error.status, message: error.message };
+    if ([400, 403, 404, 409].includes(error.status)) return { ok: false, status: error.status, message: withPeriod(error.message) };
   }
   console.error(`플랫폼 관리자 ${what} 실패`, error);
   return { ok: false, message: `${what}하지 못했습니다. 잠시 후 다시 시도해 주세요.` };
