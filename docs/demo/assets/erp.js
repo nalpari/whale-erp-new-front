@@ -489,7 +489,7 @@
               `<button type="button" role="option" tabindex="-1" aria-selected="false" data-i="${i}" class="flex w-full items-center gap-[10px] rounded-[2px] px-[10px] py-[8px] text-left text-[14px] text-erp-ink hover:bg-erp-thead-bg aria-selected:bg-erp-thead-bg"><span class="min-w-0 flex-1 truncate">${s.name}</span>${box.hasAttribute("data-spick-nocode") ? "" : `<span class="shrink-0 text-[12px] text-erp-muted">${s.code}</span>`}</button>`,
           )
           .join("")
-      : `<p class="px-[10px] py-[14px] text-center text-[13px] text-erp-label">${picked.length >= spickPool(box).length ? "고를 수 있는 점포를 모두 골랐습니다." : "맞는 점포가 없습니다."}</p>`;
+      : `<p class="px-[10px] py-[14px] text-center text-[13px] text-erp-label">${picked.length >= spickPool(box).length ? "선택할 수 있는 점포를 모두 선택했습니다." : "검색 결과가 없습니다."}</p>`;
     dd.hidden = false;
     input.setAttribute("aria-expanded", "true");
     spickMark(dd, found.length ? 0 : -1);

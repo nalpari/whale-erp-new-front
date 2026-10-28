@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { LoginIdCheck } from "@/lib/platform-admin-form";
 
 // 플랫폼 관리자 패널들이 같이 쓰는 작은 조각. 공통 컴포넌트에 없는 것만 둔다.
+// LoginIdAvailability 는 BP 관리자 · BP 마스터 등록도 가져다 쓴다(아이디 중복확인 문구를 한 곳에서, 2026-10-28 사용자 지정).
 
 /**
  * server action 호출 자체가 거절됐을 때(응답을 못 받음). 요청이 서버에 닿지 않았다는 뜻은 아니다 — 받는 도중 끊겼거나
@@ -64,7 +65,8 @@ function LiveText({ text }: { text: string }) {
 
 const LOGIN_ID_CHECK_TEXT: Record<Exclude<LoginIdCheck, "idle">, string> = {
   checking: "아이디를 확인하는 중입니다.",
-  available: "사용 가능한 아이디입니다.",
+  // 아이디 중복확인이 있는 네 화면(플랫폼 · BP 관리자 · BP 마스터 등록, 회원가입)이 같은 문구 — 회원가입의 「사용가능합니다.」로 맞췄다(2026-10-28 사용자 지정)
+  available: "사용가능합니다.",
   // 확인 요청 자체가 실패(429 · 5xx · 연결)했을 때(401 · 403 은 패널 위 띠). 저장은 막지 않는다 — 저장할 때 api 가 중복을 다시 막는다.
   failed: "아이디를 확인하지 못했습니다. 저장 시 다시 확인합니다.",
 };
