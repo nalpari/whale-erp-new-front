@@ -40,12 +40,12 @@ export function BpMasterTable({
     </button>
   );
 
-  // 열 순서는 BP 코드 · 상태 · 아이디 · 이름 · 상호명 …, 이름은 플랫폼 관리자 목록 느낌으로(2026-10-28 사용자 지정) — 연락처 · 이메일은 나누고, 등록은 일시만
+  // 열 순서는 BP 코드 · 아이디 · 이름 · 상태 · 상호명 …, 이름은 플랫폼 관리자 목록 느낌으로(2026-10-28 사용자 지정) — 연락처 · 이메일은 나누고, 등록은 일시만
   const columns: Column<BpMaster>[] = [
     { header: "BP 코드", width: "w-[110px]", cell: (b) => open(b, b.bpCode) },
-    { header: "상태", width: "w-[100px]", cell: (b) => <BpStatusBadge status={b.accountStatus} /> },
     { header: "아이디", width: "w-[130px]", cell: (b) => b.loginId },
     { header: "이름", width: "w-[110px]", cell: (b) => (withdrawn(b) ? gone : b.name) },
+    { header: "상태", width: "w-[100px]", cell: (b) => <BpStatusBadge status={b.accountStatus} /> },
     // 상호명은 링크 없이 굵은(600) 먹색 글자, 폭 240px(남는 폭을 다 받으면 너무 넓었다) — 상세는 BP 코드로 연다(2026-10-28 사용자 지정)
     { header: "상호명", width: "w-[240px]", align: "left", cell: (b) => <span className="max-w-full truncate font-semibold">{b.tradeName}</span> },
     { header: "연락처", width: "w-[150px]", align: "left", cell: (b) => (withdrawn(b) ? gone : b.phone ? <WithIcon icon="phone">{formatPhone(b.phone)}</WithIcon> : "") },
