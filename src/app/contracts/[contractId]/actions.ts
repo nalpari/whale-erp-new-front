@@ -1,10 +1,10 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { ApiError, authHeaders, request } from "@/lib/api";
+import { actionFailure, ApiError, authHeaders, send } from "@/lib/api";
 import { listAfterSave, withBack } from "../contract-list";
-import { inProgressOf, type SaveResult } from "../new/contract-form-model";
-import { END_UNKNOWN, saveOutcomeUnknown, sendFailedTarget, sendFailureOf, type SendFailure } from "./send-model";
+import { type SaveResult } from "../new/contract-form-model";
+import { END_UNKNOWN, deleteFailureOf, saveFailureOf, sendFailureOf, type SendFailure } from "./send-model";
 import type { WorkerBody } from "./worker/worker-model";
 
 // 경로에 넣는 id — 1..2147483647 정수만. 서버 액션은 누구나 직접 부를 수 있어 TS 타입이 막아 주지 않는다.
@@ -20,13 +20,10 @@ export async function deleteContract(contractId: number, back?: string): Promise
   const headers = await authHeaders();
   if (!headers.Authorization) return { error: "로그인이 필요합니다" };
   try {
-    await request(`/contracts/${contractId}`, {
-      method: "DELETE",
-      headers,
-    });
+    await send(`/contracts/${contractId}`, "DELETE");
   } catch (e) {
-    if (e instanceof ApiError) return { error: e.status === 401 ? "로그인이 필요합니다" : e.message };
-    throw e;
+    if (e instanceof ApiError) return { error: deleteFailureOf(e, { feature: "근로계약", contractId }) };
+    return { error: actionFailure(e, "삭제", { feature: "근로계약", contractId }).message };
   }
   redirect(listAfterSave(back, null));
 }
@@ -40,22 +37,17 @@ export async function updateWorker(contractId: number, body: WorkerBody, back?: 
   const headers = await authHeaders();
   if (!headers.Authorization) return { error: "로그인이 필요합니다" };
   try {
-    await request(`/contracts/${contractId}/worker`, {
-      method: "PATCH",
-      headers: { ...headers, "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+    await send(`/contracts/${contractId}/worker`, "PATCH", body);
   } catch (e) {
     if (e instanceof ApiError) {
-      if (e.status === 401) return { error: "로그인이 필요합니다" };
+      const failure = saveFailureOf(e, { feature: "근로계약 당사자 정보", contractId });
+      if (failure.kind === "login") return { error: "로그인이 필요합니다" };
       // 고친 내용은 저장했는데 다시 보내기(가입 초대 알림톡)가 실패했다 — 상세에서 알린다
-      const sendFailed = sendFailedTarget(e.status, e.body);
-      if (sendFailed) redirect(withBack(sendFailed, back));
+      if (failure.kind === "sendFailed") redirect(withBack(failure.target, back));
       // 결과를 받지 못했다(코드 없는 502 · 504) — 저장 · 다시 보내기가 됐을 수 있어 같은 폼으로 다시 저장하지 않게 상세로(front #50 리뷰)
-      const code = (e.body as { code?: unknown } | null)?.code;
-      if (saveOutcomeUnknown(e.status, typeof code === "string" ? code : undefined)) redirect(withBack(`/contracts/${contractId}?send=unknown`, back));
-      const inProgress = e.status === 409 ? inProgressOf(e.body) : undefined;
-      return inProgress ? { error: e.message, inProgress } : { error: e.message };
+      if (failure.kind === "unknown") redirect(withBack(`/contracts/${contractId}?send=unknown`, back));
+      // 새 번호로 같은 점포에 진행 중 계약이 있으면(409) 목록도 돌려준다
+      return failure.inProgress ? { error: failure.error, inProgress: failure.inProgress } : { error: failure.error };
     }
     console.error("당사자 정보 저장 응답을 받지 못함", contractId, e);
     redirect(withBack(`/contracts/${contractId}?send=unknown`, back));
@@ -76,10 +68,7 @@ export async function sendContract(contractId: number): Promise<SendContractResu
   const headers = await authHeaders();
   if (!headers.Authorization) return { ok: false, error: "로그인이 필요합니다", recheck: false };
   try {
-    await request(`/contracts/${contractId}/send`, {
-      method: "POST",
-      headers,
-    });
+    await send(`/contracts/${contractId}/send`, "POST");
   } catch (e) {
     if (e instanceof ApiError) {
       if (e.status === 401) return { ok: false, error: "로그인이 필요합니다", recheck: false };
@@ -107,7 +96,7 @@ export async function endContract(contractId: number): Promise<EndContractResult
   const headers = await authHeaders();
   if (!headers.Authorization) return { ok: false, error: "로그인이 필요합니다", recheck: false };
   try {
-    await request(`/contracts/${contractId}/end`, { method: "POST", headers });
+    await send(`/contracts/${contractId}/end`, "POST");
   } catch (e) {
     if (e instanceof ApiError) {
       if (e.status === 401) return { ok: false, error: "로그인이 필요합니다", recheck: false };

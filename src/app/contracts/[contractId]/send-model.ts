@@ -1,4 +1,7 @@
 // 재발송 · 저장 뒤 보내기 실패를 화면이 다룰 모양으로 바꾼다(front #41 리뷰). 서버 액션 · 상세와 테스트가 함께 쓴다.
+import { failureOf } from "../../../lib/action-failure.ts";
+import type { ApiError } from "../../../lib/api-error.ts";
+import { inProgressOf, type InProgressContract } from "../new/contract-form-model.ts";
 
 /** 실패 결과. recheck 면 api 가 이미 쓰고 보냈을 수 있다 — 확인창의 보내기를 막고 상세를 다시 읽는다(두 번 가지 않게) */
 export type SendFailure = { ok: false; error: string; code?: string; recheck: boolean };
@@ -112,4 +115,38 @@ export async function callSave<T>(action: () => Promise<T>, rethrow: (e: unknown
     rethrow(e);
     return SAVE_CALL_LOST;
   }
+}
+
+/** 저장 실패를 서버 액션이 어떻게 처리할지. login 은 로그인 필요, sendFailed 는 저장은 됐고 보내기가 실패해 그 상세로, unknown 은 결과 모름(폼 잠금 · 상세로) */
+export type SaveFailure =
+  | { kind: "login" }
+  | { kind: "sendFailed"; target: string }
+  | { kind: "unknown" }
+  | { kind: "error"; error: string; inProgress?: InProgressContract[] };
+
+/**
+ * 근로계약 저장(새 계약 · 이어 쓰기 · 당사자 정보 수정)의 ApiError 를 가른다. 순서가 뜻이다 — 401 → 저장은 됐는데 보내기만 실패(502 + 코드) →
+ * 결과 모름(코드 없는 502 · 504) → 그 밖. 마지막은 409 + 진행 중 계약이면 목록도 싣고, 4xx 는 api 문구 그대로, 결과 모름이 아닌 5xx 는
+ * 「저장하지 못했습니다」 확정 실패(폼을 잠그지 않는다)다. 로그는 failureOf 가 남긴다.
+ */
+export function saveFailureOf(e: ApiError, log: Record<string, unknown>): SaveFailure {
+  if (e.status === 401) return { kind: "login" };
+  const target = sendFailedTarget(e.status, e.body);
+  if (target) return { kind: "sendFailed", target };
+  const code = (e.body as { code?: unknown } | null)?.code;
+  if (saveOutcomeUnknown(e.status, typeof code === "string" ? code : undefined)) return { kind: "unknown" };
+  const inProgress = e.status === 409 ? inProgressOf(e.body) : undefined;
+  const { message } = failureOf(e, "저장", log, { definite: true });
+  return inProgress ? { kind: "error", error: message, inProgress } : { kind: "error", error: message };
+}
+
+/**
+ * 임시저장 삭제 실패의 문장. 저장과 같은 기준이다 — 결과 모름(코드 없는 502 · 504)은 「삭제 결과를 확인하지 못했습니다…」, 그 밖의 5xx 는 확정 실패,
+ * 4xx 는 api 문구. 401 은 로그인이 필요하다는 고정 문구.
+ */
+export function deleteFailureOf(e: ApiError, log: Record<string, unknown>): string {
+  if (e.status === 401) return "로그인이 필요합니다";
+  const code = (e.body as { code?: unknown } | null)?.code;
+  const unknown = saveOutcomeUnknown(e.status, typeof code === "string" ? code : undefined);
+  return failureOf(e, "삭제", log, { definite: !unknown }).message;
 }

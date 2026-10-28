@@ -2,7 +2,7 @@
 
 import { unstable_rethrow, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { Button, Checkbox, ConfirmDialog, DateField, Field, FormGroup, FormRow, Radio, TextField } from "@/components/common";
+import { Button, Checkbox, ConfirmDialog, DateField, Field, FormGroup, FormRow, Radio, TextField, useAction } from "@/components/common";
 import { labelOf, type EnumValue } from "@/lib/enums";
 import { formatPhone, GENDERS, inProgressLine, type InProgressContract } from "../../new/contract-form-model";
 import { withBack } from "../../contract-list";
@@ -31,6 +31,7 @@ export function WorkerForm({
   const [tried, setTried] = useState(false);
   const [serverError, setServerError] = useState("");
   const [saving, startSaving] = useTransition();
+  const update = useAction(updateWorker, { kind: "update" });
   // 새 번호로 같은 점포에 진행 중 계약이 있으면(409) 대체할지 묻는다 — 작성 화면과 같다
   const [replace, setReplace] = useState<InProgressContract[] | null>(null);
   const failureRef = useRef<HTMLDivElement>(null);
@@ -46,7 +47,7 @@ export function WorkerForm({
     startSaving(async () => {
       // 성공하면 액션이 상세로 보낸다. 돌아왔다면 실패다.
       // 액션의 redirect(성공 · 보내기 실패)는 callSave 가 다시 던져 그 목적지로 간다
-      const result = await callSave(() => updateWorker(contractId, workerBody(form, replaceContractIds), back), unstable_rethrow);
+      const result = await callSave(() => update(contractId, workerBody(form, replaceContractIds), back), unstable_rethrow);
       if (result === SAVE_CALL_LOST) {
         // 서버 액션 호출 자체가 끊겼다 — 저장하면 다시 보내므로 이미 보냈을 수 있다. 같은 폼으로 다시 저장하지 않게 상세로(front #50 재리뷰)
         router.replace(withBack(`/contracts/${contractId}?send=unknown`, back));
