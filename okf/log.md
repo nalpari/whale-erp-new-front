@@ -1,6 +1,7 @@
 # Bundle history
 
 ## 2026-10-28
+* **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 플랫폼 계정 로그인 후 첫 메뉴로 이동(`/platform` 은 넘겨 주는 주소, `firstMenuUrl` · `firstMenuRedirect`), 헤더 로고 · 플랫폼관리 바로가기, `src/app/platform/` 권한 요청 안내(front abra, PR #165 리뷰).
 * **Update**: [로그인](/auth.md) — 플랫폼 계정은 홈이 없고 로그인하면 헤더 순서상 첫 플랫폼 메뉴로 간다(2026-10-28 재영). `/platform` 은 넘겨 주는 주소이고, 메뉴가 없으면 권한 요청 안내, 비밀번호 강제 변경 전에는 머문다(front abra).
 * **Update**: [점포 관리](/stores.md) — BP 탈퇴 · 미사용 안내 문구 · 자리(상세 · 수정 머리 위), 등록 화면은 들어올 때 BP 상태를 보고 안내 · 저장 막기(front kakuna).
 * **Update**: [Whale ERP Frontend](/whale-erp-front.md) — 헤더 BP 탈퇴 · 미사용 배지(`useCurrentBpStatus`), BP 관리자 등록의 권한명 없음 안내 · [이동], 플랫폼 메뉴 관리 트리 모양(1단계 바탕 없음 · 묶음 사이 선 · 「└」 · 배지 정렬) · 미사용 안내 · 끌어 옮기기 안내 · 확인창 문구, BP 휴일 겹침 확인창 버튼 「저장」(front kakuna).
